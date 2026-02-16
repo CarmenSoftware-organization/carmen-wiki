@@ -1,87 +1,87 @@
 ---
-title: วิธีการคำนวณต้นทุนสินค้าคงคลัง: FIFO เทียบกับ ต้นทุนถัวเฉลี่ย
-description: เอกสารวิเคราะห์วิธีการคำนวณต้นทุนสินค้าคงคลัง FIFO และต้นทุนถัวเฉลี่ย สำหรับแพลตฟอร์ม Carmen Software
+title: Inventory Costing Methods: FIFO vs. Weighted Average
+description: Analysis of inventory costing methods: FIFO vs. Weighted Average for the Carmen Software platform
 published: true
-date: 2026-02-16T11:21:28.079Z
+date: 2026-02-16T11:24:32.555Z
 tags: inventory, costing, fifo, weighted-average, carmen-software
 editor: markdown
-dateCreated: 2026-02-16T11:21:28.079Z
+dateCreated: 2026-02-16T11:19:18.975Z
 ---
 
-# วิธีการคำนวณต้นทุนสินค้าคงคลัง: FIFO เทียบกับ ต้นทุนถัวเฉลี่ย
+# Inventory Costing Methods: FIFO vs. Weighted Average
 
-## 1. ภาพรวม
+## 1. Overview
 
-เอกสารนี้วิเคราะห์วิธีการคิดต้นทุนสินค้าคงคลัง 2 วิธีหลักสำหรับแพลตฟอร์มบริหารสินค้าคงคลัง:
+This document analyzes two primary inventory costing methods for the inventory management platform:
 
-- **FIFO (เข้าก่อน-ออกก่อน)**: สินค้าที่ซื้อเข้ามาก่อนจะถูกขาย/ใช้ก่อน
-- **ต้นทุนถัวเฉลี่ย (Weighted Average)**: สินค้าทั้งหมดจะถูกตีมูลค่าด้วยต้นทุนถัวเฉลี่ยถ่วงน้ำหนัก
+- **FIFO (First-In, First-Out)**: Items purchased first are sold/used first
+- **Weighted Average Cost**: All items are valued at a weighted average cost
 
-ทั้งสองวิธีใช้กำหนด **ต้นทุนสินค้าขาย (COGS)** และ **มูลค่าสินค้าคงเหลือปลายงวด** ซึ่งส่งผลโดยตรงต่อการรายงานทางการเงินและการตัดสินใจด้านการดำเนินงาน
+Both methods are used to determine **Cost of Goods Sold (COGS)** and **ending inventory value**, which directly impact financial reporting and operational decision-making.
 
 ---
 
-## 2. FIFO (เข้าก่อน-ออกก่อน)
+## 2. FIFO (First-In, First-Out)
 
-### 2.1 แนวคิด
+### 2.1 Concept
 
-FIFO ถือว่าสินค้าคงคลังที่เก่าที่สุดจะถูกใช้ก่อน แต่ละล็อตที่ซื้อเข้ามาจะคงต้นทุนเดิมไว้จนกว่าจะถูกใช้หมด
+FIFO assumes that the oldest inventory is consumed first. Each purchased lot retains its original cost until it is fully consumed.
 
-### 2.2 วิธีการทำงาน
-
-```
-ล็อตซื้อที่ 1: 100 หน่วย @ ฿10.00
-ล็อตซื้อที่ 2:  50 หน่วย @ ฿12.00
-ล็อตซื้อที่ 3:  80 หน่วย @ ฿11.50
-
-เบิกออก 120 หน่วย:
-  - 100 หน่วย จากล็อตที่ 1 @ ฿10.00 = ฿1,000.00
-  -  20 หน่วย จากล็อตที่ 2 @ ฿12.00 = ฿  240.00
-  - ต้นทุนสินค้าขายรวม = ฿1,240.00
-
-สินค้าคงเหลือ:
-  - 30 หน่วย จากล็อตที่ 2 @ ฿12.00 = ฿360.00
-  - 80 หน่วย จากล็อตที่ 3 @ ฿11.50 = ฿920.00
-  - รวม = ฿1,280.00 (110 หน่วย)
-```
-
-### 2.3 โมเดลข้อมูล
-
-การเคลื่อนไหวสินค้าคงคลังแต่ละรายการต้องติดตามข้อมูล **ล็อต/แบตช์**:
+### 2.2 How It Works
 
 ```
-inventory_lot (ล็อตสินค้าคงคลัง):
+Purchase Lot 1: 100 units @ ฿10.00
+Purchase Lot 2:  50 units @ ฿12.00
+Purchase Lot 3:  80 units @ ฿11.50
+
+Issue 120 units:
+  - 100 units from Lot 1 @ ฿10.00 = ฿1,000.00
+  -  20 units from Lot 2 @ ฿12.00 = ฿  240.00
+  - Total COGS = ฿1,240.00
+
+Remaining Inventory:
+  - 30 units from Lot 2 @ ฿12.00 = ฿360.00
+  - 80 units from Lot 3 @ ฿11.50 = ฿920.00
+  - Total = ฿1,280.00 (110 units)
+```
+
+### 2.3 Data Model
+
+Each inventory movement must track **lot/batch** information:
+
+```
+inventory_lot:
   - lot_id          (PK)
   - product_id      (FK)
   - warehouse_id    (FK)
-  - purchase_date   (timestamp)       -- วันที่ซื้อ
-  - quantity         (decimal)         -- จำนวนคงเหลือในล็อตนี้
-  - unit_cost        (decimal)         -- ต้นทุนซื้อเดิม
+  - purchase_date   (timestamp)       -- Purchase date
+  - quantity         (decimal)         -- Remaining quantity in this lot
+  - unit_cost        (decimal)         -- Original purchase cost
   - created_at       (timestamp)
 
-inventory_transaction (รายการเคลื่อนไหวสินค้า):
+inventory_transaction:
   - transaction_id   (PK)
   - product_id       (FK)
   - warehouse_id     (FK)
-  - transaction_type (enum: IN, OUT, ADJUST)  -- รับเข้า, เบิกออก, ปรับปรุง
+  - transaction_type (enum: IN, OUT, ADJUST)  -- Receive, Issue, Adjust
   - quantity          (decimal)
-  - reference_doc     (varchar)        -- เลขที่ใบสั่งซื้อ, เลขที่ใบสั่งขาย ฯลฯ
+  - reference_doc     (varchar)        -- PO number, SO number, etc.
   - created_at        (timestamp)
 
-inventory_transaction_lot (รายการเคลื่อนไหวตามล็อต):
+inventory_transaction_lot:
   - transaction_id   (FK)
   - lot_id           (FK)
-  - quantity          (decimal)        -- จำนวนที่ใช้จากล็อตนี้
-  - unit_cost         (decimal)        -- ต้นทุน ณ เวลาที่ใช้
+  - quantity          (decimal)        -- Quantity consumed from this lot
+  - unit_cost         (decimal)        -- Cost at time of consumption
 ```
 
-### 2.4 อัลกอริทึม (การเบิกสินค้า)
+### 2.4 Algorithm (Stock Issuance)
 
 ```
 function issueStock_FIFO(productId, warehouseId, requiredQty):
     lots = getLots(productId, warehouseId)
              .filter(qty > 0)
-             .orderBy(purchase_date ASC)  // เก่าสุดก่อน
+             .orderBy(purchase_date ASC)  // Oldest first
 
     totalCost = 0
     remaining = requiredQty
@@ -98,86 +98,86 @@ function issueStock_FIFO(productId, warehouseId, requiredQty):
         recordTransactionLot(lot.id, consume, lot.unit_cost)
 
     if remaining > 0:
-        throw InsufficientStockError  // สินค้าไม่เพียงพอ
+        throw InsufficientStockError  // Insufficient stock
 
     return totalCost
 ```
 
-### 2.5 ข้อดี
+### 2.5 Advantages
 
-| ข้อดี | รายละเอียด |
-|-------|-----------|
-| ติดตามต้นทุนได้แม่นยำ | แต่ละหน่วยคงต้นทุนซื้อจริง |
-| ตรงกับการไหลของสินค้าจริง | เหมาะอย่างยิ่งสำหรับสินค้าที่เน่าเสียได้ |
-| ดีกว่าในช่วงราคาขาขึ้น | ต้นทุนสินค้าขายต่ำกว่า กำไรรายงานสูงกว่า มูลค่าสินค้าคงเหลือสูงกว่า |
-| มีเส้นทางการตรวจสอบ | ตรวจสอบย้อนกลับไปถึงแหล่งซื้อได้ทั้งหมด |
+| Advantage | Details |
+|-----------|---------|
+| Accurate cost tracking | Each unit retains its actual purchase cost |
+| Matches physical flow of goods | Ideal for perishable goods |
+| Better in rising price environments | Lower COGS, higher reported profit, higher inventory value |
+| Full audit trail | Fully traceable back to purchase source |
 
-### 2.6 ข้อเสีย
+### 2.6 Disadvantages
 
-| ข้อเสีย | รายละเอียด |
-|---------|-----------|
-| ความซับซ้อนสูง | ต้องติดตามล็อตแต่ละล็อต |
-| ใช้พื้นที่จัดเก็บมากกว่า | แต่ละล็อตต้องมีเรคคอร์ดของตัวเอง |
-| การเบิกช้ากว่า | ต้องวนลูปผ่านล็อตตามลำดับ |
-| การจัดการล็อตที่ใช้บางส่วน | ล็อตอาจถูกใช้บางส่วน เพิ่มความซับซ้อน |
+| Disadvantage | Details |
+|--------------|---------|
+| High complexity | Must track each individual lot |
+| Higher storage requirements | Each lot requires its own record |
+| Slower issuance | Must iterate through lots sequentially |
+| Partial lot management | Lots may be partially consumed, adding complexity |
 
 ---
 
-## 3. ต้นทุนถัวเฉลี่ย (Weighted Average)
+## 3. Weighted Average Cost
 
-### 3.1 แนวคิด
+### 3.1 Concept
 
-ต้นทุนถัวเฉลี่ยจะรวมต้นทุนของสินค้าทั้งหมดที่มีอยู่เป็นค่าเฉลี่ยถ่วงน้ำหนักเดียว สินค้าทุกหน่วยในคลังมีต้นทุนเท่ากัน ณ เวลาใดเวลาหนึ่ง
+Weighted average cost combines the cost of all available items into a single weighted average. Every unit in stock has the same cost at any given point in time.
 
-### 3.2 วิธีการทำงาน
-
-```
-ยอดเปิด:        0 หน่วย @ ฿0.00    | ต้นทุนเฉลี่ย = ฿0.00
-
-ซื้อครั้งที่ 1:  100 หน่วย @ ฿10.00
-  รวม:          100 หน่วย, มูลค่า = ฿1,000.00
-  ต้นทุนเฉลี่ย = ฿1,000.00 / 100 = ฿10.00
-
-ซื้อครั้งที่ 2:   50 หน่วย @ ฿12.00
-  รวม:          150 หน่วย, มูลค่า = ฿1,000.00 + ฿600.00 = ฿1,600.00
-  ต้นทุนเฉลี่ย = ฿1,600.00 / 150 = ฿10.6667
-
-เบิกออก 120 หน่วย:
-  ต้นทุนสินค้าขาย = 120 * ฿10.6667 = ฿1,280.00
-
-คงเหลือ:         30 หน่วย * ฿10.6667 = ฿320.00
-
-ซื้อครั้งที่ 3:   80 หน่วย @ ฿11.50
-  รวม:          110 หน่วย, มูลค่า = ฿320.00 + ฿920.00 = ฿1,240.00
-  ต้นทุนเฉลี่ย = ฿1,240.00 / 110 = ฿11.2727
-```
-
-### 3.3 โมเดลข้อมูล
-
-ไม่ต้องติดตามล็อต แต่ละคู่สินค้า-คลังสินค้าจะเก็บค่าเฉลี่ยที่คำนวณต่อเนื่อง:
+### 3.2 How It Works
 
 ```
-inventory_balance (ยอดคงเหลือสินค้าคงคลัง):
+Opening Balance:    0 units @ ฿0.00    | Average Cost = ฿0.00
+
+Purchase 1:  100 units @ ฿10.00
+  Total:     100 units, Value = ฿1,000.00
+  Average Cost = ฿1,000.00 / 100 = ฿10.00
+
+Purchase 2:   50 units @ ฿12.00
+  Total:     150 units, Value = ฿1,000.00 + ฿600.00 = ฿1,600.00
+  Average Cost = ฿1,600.00 / 150 = ฿10.6667
+
+Issue 120 units:
+  COGS = 120 * ฿10.6667 = ฿1,280.00
+
+Remaining:    30 units * ฿10.6667 = ฿320.00
+
+Purchase 3:   80 units @ ฿11.50
+  Total:     110 units, Value = ฿320.00 + ฿920.00 = ฿1,240.00
+  Average Cost = ฿1,240.00 / 110 = ฿11.2727
+```
+
+### 3.3 Data Model
+
+No lot tracking required. Each product-warehouse pair maintains a running average:
+
+```
+inventory_balance:
   - product_id       (FK, composite PK)
   - warehouse_id     (FK, composite PK)
-  - quantity          (decimal)         -- จำนวนคงเหลือปัจจุบัน
-  - average_cost      (decimal)         -- ต้นทุนถัวเฉลี่ยถ่วงน้ำหนักปัจจุบัน
+  - quantity          (decimal)         -- Current quantity on hand
+  - average_cost      (decimal)         -- Current weighted average cost
   - total_value       (decimal)         -- quantity * average_cost
   - updated_at        (timestamp)
 
-inventory_transaction (รายการเคลื่อนไหวสินค้า):
+inventory_transaction:
   - transaction_id   (PK)
   - product_id       (FK)
   - warehouse_id     (FK)
-  - transaction_type (enum: IN, OUT, ADJUST)  -- รับเข้า, เบิกออก, ปรับปรุง
+  - transaction_type (enum: IN, OUT, ADJUST)  -- Receive, Issue, Adjust
   - quantity          (decimal)
-  - unit_cost         (decimal)         -- ต้นทุนเฉลี่ย ณ เวลาที่ทำรายการ
+  - unit_cost         (decimal)         -- Average cost at time of transaction
   - total_cost        (decimal)
   - reference_doc     (varchar)
   - created_at        (timestamp)
 ```
 
-### 3.4 อัลกอริทึม
+### 3.4 Algorithm
 
 ```
 function receiveStock_AVG(productId, warehouseId, receivedQty, purchaseCost):
@@ -199,126 +199,126 @@ function issueStock_AVG(productId, warehouseId, requiredQty):
     balance = getBalance(productId, warehouseId)
 
     if balance.quantity < requiredQty:
-        throw InsufficientStockError  // สินค้าไม่เพียงพอ
+        throw InsufficientStockError  // Insufficient stock
 
     totalCost = requiredQty * balance.average_cost
 
     balance.quantity    -= requiredQty
     balance.total_value -= totalCost
-    // ต้นทุนเฉลี่ยไม่เปลี่ยนแปลงเมื่อเบิกออก
+    // Average cost does not change on issuance
 
     recordTransaction(OUT, requiredQty, balance.average_cost)
 
     return totalCost
 ```
 
-### 3.5 ข้อดี
+### 3.5 Advantages
 
-| ข้อดี | รายละเอียด |
-|-------|-----------|
-| โมเดลข้อมูลง่ายกว่า | ไม่ต้องติดตามล็อต |
-| การดำเนินงานเร็วกว่า | O(1) สำหรับทั้งการรับเข้าและเบิกออก |
-| ใช้พื้นที่จัดเก็บน้อยกว่า | เรคคอร์ดเดียวต่อคู่สินค้า-คลังสินค้า |
-| ลดผลกระทบจากราคาผันผวน | ลดผลกระทบจากความผันผวนของราคา |
+| Advantage | Details |
+|-----------|---------|
+| Simpler data model | No lot tracking required |
+| Faster operations | O(1) for both receiving and issuing |
+| Lower storage requirements | Single record per product-warehouse pair |
+| Smooths price volatility | Reduces the impact of price fluctuations |
 
-### 3.6 ข้อเสีย
+### 3.6 Disadvantages
 
-| ข้อเสีย | รายละเอียด |
-|---------|-----------|
-| ไม่สามารถตรวจสอบย้อนกลับต้นทุนได้ | ไม่สามารถตรวจสอบต้นทุนย้อนกลับไปยังการซื้อเฉพาะได้ |
-| ปัญหาการปัดเศษ | การคำนวณซ้ำอาจสะสมความคลาดเคลื่อนจากการปัดเศษ |
-| ไม่เหมาะกับสินค้าเน่าเสีย | ไม่มีการติดตามแบตช์/วันหมดอายุในตัว |
-| ความซับซ้อนในการคำนวณใหม่ | การแก้ไขข้อผิดพลาดในอดีตต้องคำนวณรายการที่ตามมาทั้งหมดใหม่ |
-
----
-
-## 4. ตารางเปรียบเทียบ
-
-| เกณฑ์ | FIFO | ต้นทุนถัวเฉลี่ย |
-|-------|------|----------------|
-| **ความซับซ้อน** | สูง (จัดการล็อต) | ต่ำ (เรคคอร์ดยอดคงเหลือเดียว) |
-| **ประสิทธิภาพ** | O(n) ต่อการเบิก (n = จำนวนล็อต) | O(1) ต่อการเบิก |
-| **พื้นที่จัดเก็บ** | มากกว่า (เรคคอร์ดล็อต) | น้อยกว่า (ยอดคงเหลือเดียว) |
-| **ความถูกต้องของต้นทุน** | ต้นทุนต่อหน่วยที่แน่นอน | ค่าประมาณแบบถัวเฉลี่ย |
-| **การตรวจสอบย้อนกลับ** | ครบถ้วน (ระดับล็อต) | ไม่มี (รวมกันแล้ว) |
-| **ความผันผวนของราคา** | สะท้อนการเปลี่ยนแปลงต้นทุนจริง | ลดความผันผวน |
-| **สินค้าเน่าเสีย** | เหมาะสมอย่างยิ่ง | ไม่เหมาะสม |
-| **การแก้ไขข้อผิดพลาด** | ง่ายกว่า (ปรับล็อตเฉพาะ) | ยากกว่า (คำนวณใหม่ทั้งสาย) |
-| **รายงาน** | วิเคราะห์ต้นทุนละเอียด | รายงานง่ายกว่า |
-| **มาตรฐานบัญชี** | IFRS และ GAAP ยอมรับ | IFRS และ GAAP ยอมรับ |
+| Disadvantage | Details |
+|--------------|---------|
+| No cost traceability | Cannot trace cost back to a specific purchase |
+| Rounding issues | Repeated calculations may accumulate rounding errors |
+| Not suitable for perishables | No built-in batch/expiry date tracking |
+| Recalculation complexity | Correcting past errors requires recalculating all subsequent transactions |
 
 ---
 
-## 5. ตัวอย่างเปรียบเทียบเชิงตัวเลข
+## 4. Comparison Table
 
-จากรายการเดียวกัน เปรียบเทียบผลลัพธ์:
+| Criteria | FIFO | Weighted Average |
+|----------|------|-----------------|
+| **Complexity** | High (lot management) | Low (single balance record) |
+| **Performance** | O(n) per issuance (n = number of lots) | O(1) per issuance |
+| **Storage** | Higher (lot records) | Lower (single balance) |
+| **Cost Accuracy** | Exact per-unit cost | Averaged approximation |
+| **Traceability** | Complete (lot-level) | None (aggregated) |
+| **Price Volatility** | Reflects actual cost changes | Smooths volatility |
+| **Perishable Goods** | Highly suitable | Not suitable |
+| **Error Correction** | Easier (adjust specific lot) | Harder (recalculate entire chain) |
+| **Reporting** | Detailed cost analysis | Simpler reporting |
+| **Accounting Standards** | Accepted by IFRS and GAAP | Accepted by IFRS and GAAP |
+
+---
+
+## 5. Numerical Comparison Example
+
+Using the same transactions, compare the results:
 
 ```
-รายการ:
-  1. รับเข้า 100 หน่วย @ ฿10.00
-  2. รับเข้า  50 หน่วย @ ฿12.00
-  3. เบิกออก 120 หน่วย
-  4. รับเข้า  80 หน่วย @ ฿11.50
+Transactions:
+  1. Receive 100 units @ ฿10.00
+  2. Receive  50 units @ ฿12.00
+  3. Issue   120 units
+  4. Receive  80 units @ ฿11.50
 
-                            FIFO            ต้นทุนถัวเฉลี่ย
+                            FIFO            Weighted Average
                             ----            ----------------
-หลังรับเข้าครั้งที่ 1:
-  คงเหลือ                   100             100
-  มูลค่าสินค้าคงคลัง        ฿1,000.00       ฿1,000.00
-  ต้นทุนต่อหน่วย            ฿10.00          ฿10.00
+After Receive 1:
+  On Hand                   100             100
+  Inventory Value           ฿1,000.00       ฿1,000.00
+  Unit Cost                 ฿10.00          ฿10.00
 
-หลังรับเข้าครั้งที่ 2:
-  คงเหลือ                   150             150
-  มูลค่าสินค้าคงคลัง        ฿1,600.00       ฿1,600.00
-  ต้นทุนต่อหน่วย            แตกต่างตามล็อต   ฿10.6667
+After Receive 2:
+  On Hand                   150             150
+  Inventory Value           ฿1,600.00       ฿1,600.00
+  Unit Cost                 Varies by lot   ฿10.6667
 
-หลังเบิกออก 120 หน่วย:
-  ต้นทุนสินค้าขาย           ฿1,240.00       ฿1,280.00
-  คงเหลือ                   30              30
-  มูลค่าสินค้าคงคลัง        ฿360.00         ฿320.00
+After Issue 120 units:
+  COGS                      ฿1,240.00       ฿1,280.00
+  On Hand                   30              30
+  Inventory Value           ฿360.00         ฿320.00
 
-หลังรับเข้าครั้งที่ 3:
-  คงเหลือ                   110             110
-  มูลค่าสินค้าคงคลัง        ฿1,280.00       ฿1,240.00
+After Receive 3:
+  On Hand                   110             110
+  Inventory Value           ฿1,280.00       ฿1,240.00
 ```
 
-**ข้อสังเกตสำคัญ**: ในสถานการณ์ที่ราคาขาขึ้น FIFO จะให้ต้นทุนสินค้าขายต่ำกว่าและมูลค่าสินค้าคงเหลือสูงกว่าเมื่อเทียบกับต้นทุนถัวเฉลี่ย
+**Key Observation**: In a rising price scenario, FIFO results in lower COGS and higher ending inventory value compared to Weighted Average.
 
 ---
 
-## 6. ข้อพิจารณาในการออกแบบแพลตฟอร์ม
+## 6. Platform Design Considerations
 
-### 6.1 การรองรับทั้งสองวิธี
+### 6.1 Supporting Both Methods
 
-แพลตฟอร์มควรอนุญาตให้ตั้งค่าได้ในระดับ **องค์กรหรือหมวดหมู่สินค้า**:
+The platform should allow configuration at the **organization or product category** level:
 
 ```
-organization_settings (การตั้งค่าองค์กร):
+organization_settings:
   - org_id                (FK)
-  - costing_method        (enum: FIFO, AVERAGE)   -- วิธีคิดต้นทุน
-  - allow_negative_stock  (boolean, default: false) -- อนุญาตสต๊อกติดลบ
-  - decimal_precision     (integer, default: 4)     -- ความละเอียดทศนิยม
+  - costing_method        (enum: FIFO, AVERAGE)   -- Costing method
+  - allow_negative_stock  (boolean, default: false) -- Allow negative stock
+  - decimal_precision     (integer, default: 4)     -- Decimal precision
 
--- หรือตั้งตามหมวดหมู่สินค้า:
-product_category (หมวดหมู่สินค้า):
+-- Or configure by product category:
+product_category:
   - category_id           (PK)
-  - costing_method        (enum: FIFO, AVERAGE)   -- วิธีคิดต้นทุน
+  - costing_method        (enum: FIFO, AVERAGE)   -- Costing method
 ```
 
-### 6.2 รูปแบบสถาปัตยกรรม (Strategy Pattern)
+### 6.2 Architecture Pattern (Strategy Pattern)
 
 ```
 interface InventoryCostingStrategy:
-    receiveStock(productId, warehouseId, qty, cost)    // รับสินค้าเข้า
-    issueStock(productId, warehouseId, qty) -> totalCost  // เบิกสินค้าออก
-    getValuation(productId, warehouseId) -> value       // ดึงมูลค่าสินค้า
-    recalculate(productId, warehouseId, fromDate)       // คำนวณใหม่
+    receiveStock(productId, warehouseId, qty, cost)    // Receive stock
+    issueStock(productId, warehouseId, qty) -> totalCost  // Issue stock
+    getValuation(productId, warehouseId) -> value       // Get inventory valuation
+    recalculate(productId, warehouseId, fromDate)       // Recalculate
 
 class FIFOStrategy implements InventoryCostingStrategy:
-    // การประมวลผลแบบล็อต
+    // Lot-based processing
 
 class AverageCostStrategy implements InventoryCostingStrategy:
-    // การประมวลผลแบบถัวเฉลี่ยถ่วงน้ำหนัก
+    // Weighted average processing
 
 class CostingService:
     getStrategy(productId) -> InventoryCostingStrategy:
@@ -329,48 +329,48 @@ class CostingService:
             return AverageCostStrategy()
 ```
 
-### 6.3 ขั้นตอนการประมวลผลรายการ
+### 6.3 Transaction Processing Workflow
 
 ```
-การรับสินค้าเข้า:
-  1. ตรวจสอบใบสั่งซื้อ / เอกสารรับสินค้า
-  2. กำหนดวิธีคิดต้นทุนสำหรับสินค้า
-  3. ดำเนินการรับเข้าผ่าน Strategy ที่เหมาะสม
-  4. บันทึกรายการเคลื่อนไหวสินค้าพร้อมรายละเอียดต้นทุน
-  5. ปรับปรุงบัญชีแยกประเภท (เดบิต: สินค้าคงคลัง, เครดิต: เจ้าหนี้/เงินสด)
+Receiving Stock:
+  1. Validate purchase order / goods receipt document
+  2. Determine costing method for the product
+  3. Execute receiving via the appropriate Strategy
+  4. Record inventory movement with cost details
+  5. Update general ledger (Debit: Inventory, Credit: Accounts Payable/Cash)
 
-การเบิกสินค้าออก:
-  1. ตรวจสอบใบสั่งขาย / เอกสารเบิกสินค้า
-  2. ตรวจสอบจำนวนสินค้าคงเหลือ
-  3. กำหนดวิธีคิดต้นทุนสำหรับสินค้า
-  4. ดำเนินการเบิกออกผ่าน Strategy ที่เหมาะสม -> ได้ต้นทุนสินค้าขาย
-  5. บันทึกรายการเคลื่อนไหวสินค้าพร้อมรายละเอียดต้นทุน
-  6. ปรับปรุงบัญชีแยกประเภท (เดบิต: ต้นทุนสินค้าขาย, เครดิต: สินค้าคงคลัง)
+Issuing Stock:
+  1. Validate sales order / stock requisition document
+  2. Verify available stock quantity
+  3. Determine costing method for the product
+  4. Execute issuance via the appropriate Strategy -> obtain COGS
+  5. Record inventory movement with cost details
+  6. Update general ledger (Debit: COGS, Credit: Inventory)
 ```
 
-### 6.4 กรณีพิเศษที่ต้องจัดการ
+### 6.4 Edge Cases to Handle
 
-| กรณีพิเศษ | การจัดการแบบ FIFO | การจัดการแบบต้นทุนถัวเฉลี่ย |
-|-----------|-------------------|---------------------------|
-| **สต๊อกเป็นศูนย์ + รับเข้า** | สร้างล็อตใหม่ | ตั้งต้นทุนเฉลี่ย = ต้นทุนซื้อ |
-| **คืนสินค้าให้ผู้ขาย** | กลับรายการล็อตเฉพาะ | คำนวณค่าเฉลี่ยใหม่ |
-| **ลูกค้าคืนสินค้า** | สร้างล็อตใหม่ด้วยต้นทุนเดิม | คำนวณค่าเฉลี่ยใหม่ด้วยต้นทุนสินค้าคืน |
-| **ปรับปรุงสต๊อก (+)** | สร้างล็อตด้วยต้นทุนที่ระบุ | คำนวณค่าเฉลี่ยใหม่ |
-| **ปรับปรุงสต๊อก (-)** | ใช้จากล็อตที่เก่าที่สุด | ลดจำนวน คงต้นทุนเฉลี่ยเดิม |
-| **โอนย้ายระหว่างคลัง** | ย้ายเรคคอร์ดล็อต | เบิกออกด้วยต้นทุนเฉลี่ย รับเข้าด้วยต้นทุนเดียวกัน |
-| **สต๊อกติดลบ (ถ้าอนุญาต)** | ติดตามล็อตติดลบ | อนุญาตจำนวนติดลบ คงต้นทุนเฉลี่ย |
-| **การปัดเศษ** | ปัดเศษต่อล็อต | เสี่ยงสะสมคลาดเคลื่อน - ใช้ความละเอียดสูง |
+| Edge Case | FIFO Handling | Weighted Average Handling |
+|-----------|--------------|-------------------------|
+| **Zero stock + receive** | Create new lot | Set average cost = purchase cost |
+| **Return to vendor** | Reverse specific lot | Recalculate average |
+| **Customer return** | Create new lot with original cost | Recalculate average with return cost |
+| **Stock adjustment (+)** | Create lot with specified cost | Recalculate average |
+| **Stock adjustment (-)** | Consume from oldest lot | Reduce quantity, keep current average cost |
+| **Inter-warehouse transfer** | Move lot records | Issue at average cost, receive at same cost |
+| **Negative stock (if allowed)** | Track negative lots | Allow negative quantity, keep average cost |
+| **Rounding** | Round per lot | Risk of accumulated errors - use high precision |
 
-### 6.5 การคำนวณใหม่และการแก้ไขข้อผิดพลาด
+### 6.5 Recalculation and Error Correction
 
-เมื่อมีการแก้ไขรายการในอดีต รายการที่ตามมาทั้งหมดต้องถูกคำนวณใหม่:
+When past transactions are corrected, all subsequent transactions must be recalculated:
 
 ```
 function recalculate(productId, warehouseId, fromDate):
-    // รีเซ็ตยอดคงเหลือไปยังสถานะก่อน fromDate
+    // Reset balance to state before fromDate
     balance = getSnapshotBefore(fromDate)
 
-    // เล่นรายการทั้งหมดซ้ำตามลำดับเวลา
+    // Replay all transactions in chronological order
     transactions = getTransactions(productId, warehouseId, fromDate)
                     .orderBy(created_at ASC)
 
@@ -379,56 +379,56 @@ function recalculate(productId, warehouseId, fromDate):
             strategy.receiveStock(txn.qty, txn.cost)
         else if txn.type == OUT:
             txn.updated_cost = strategy.issueStock(txn.qty)
-            // อัปเดตเรคคอร์ดรายการด้วยต้นทุนที่แก้ไขแล้ว
+            // Update transaction record with corrected cost
 
-    // บันทึกยอดคงเหลือสุดท้าย
+    // Save final balance
     saveBalance(balance)
 ```
 
 ---
 
-## 7. ข้อกำหนดด้านรายงาน
+## 7. Reporting Requirements
 
-### 7.1 รายงานหลัก
+### 7.1 Core Reports
 
-| รายงาน | คำอธิบาย | ข้อมูล FIFO | ข้อมูลต้นทุนถัวเฉลี่ย |
-|--------|---------|------------|---------------------|
-| **มูลค่าสินค้าคงคลัง** | มูลค่าปัจจุบันของสินค้าคงคลังทั้งหมด | ผลรวมมูลค่าทุกล็อต | จำนวน * ต้นทุนเฉลี่ย |
-| **รายงานต้นทุนสินค้าขาย** | ต้นทุนสินค้าที่เบิกออกในงวด | ต้นทุนล็อตจริงที่ใช้ | ต้นทุนเฉลี่ย ณ เวลาที่เบิก |
-| **รายงานการเคลื่อนไหวสินค้า** | รายการรับเข้า/เบิกออกทั้งหมดพร้อมต้นทุน | รายละเอียดต่อล็อต | ต้นทุนเฉลี่ยต่อรายการ |
-| **รายงานอายุสินค้า** | อายุสินค้าตามล็อต | รองรับโดยตรง | ไม่สามารถใช้ได้ |
-| **ผลต่างราคา** | การเปลี่ยนแปลงราคาซื้อ | เห็นได้ต่อล็อต | ถูกดูดซับเข้าค่าเฉลี่ย |
+| Report | Description | FIFO Data | Weighted Average Data |
+|--------|-------------|-----------|----------------------|
+| **Inventory Valuation** | Current value of all inventory | Sum of all lot values | Quantity * Average Cost |
+| **COGS Report** | Cost of goods issued in the period | Actual lot costs consumed | Average cost at time of issuance |
+| **Stock Movement Report** | All receipts/issues with costs | Per-lot details | Average cost per transaction |
+| **Inventory Aging Report** | Age of inventory by lot | Directly supported | Not available |
+| **Price Variance** | Purchase price changes | Visible per lot | Absorbed into average |
 
-### 7.2 เส้นทางการตรวจสอบ (Audit Trail)
+### 7.2 Audit Trail
 
-ทุกรายการต้องบันทึก:
-- ใครเป็นผู้ดำเนินการ
-- เกิดขึ้นเมื่อใด
-- อะไรเปลี่ยนแปลง (ค่าก่อน/หลัง)
-- ทำไม (เอกสารอ้างอิง, รหัสเหตุผล)
-- วิธีการคำนวณที่ใช้และรายละเอียดการคำนวณต้นทุน
+Every transaction must record:
+- Who performed the action
+- When it occurred
+- What changed (before/after values)
+- Why (reference document, reason code)
+- Costing method used and cost calculation details
 
 ---
 
-## 8. คำแนะนำ
+## 8. Recommendations
 
-| สถานการณ์ | วิธีที่แนะนำ |
-|-----------|-------------|
-| อาหารและเครื่องดื่ม / สินค้าเน่าเสีย | **FIFO** (จำเป็นต้องติดตามแบตช์/วันหมดอายุ) |
-| เวชภัณฑ์ | **FIFO** (ข้อกำหนดทางกฎหมายสำหรับการติดตามล็อต) |
-| สินค้าโภคภัณฑ์ / สินค้าจำนวนมาก | **ต้นทุนถัวเฉลี่ย** (ง่ายกว่า ราคาผันผวน) |
-| ค้าปลีกปริมาณสูง | **ต้นทุนถัวเฉลี่ย** (ประสิทธิภาพ ความเรียบง่าย) |
-| การผลิตด้วยวัตถุดิบ | **ต้นทุนถัวเฉลี่ย** (วัตถุดิบผสมรวมกัน) |
-| อิเล็กทรอนิกส์ / สินค้าที่มีหมายเลขซีเรียล | **FIFO** (ต้องติดตามซีเรียล/แบตช์) |
-| องค์กรที่ใช้หลายวิธี | **รองรับทั้งสองวิธี** ตั้งค่าตามหมวดหมู่ |
+| Scenario | Recommended Method |
+|----------|-------------------|
+| Food & Beverage / Perishables | **FIFO** (batch/expiry tracking required) |
+| Pharmaceuticals | **FIFO** (regulatory requirement for lot tracking) |
+| Commodities / Bulk goods | **Weighted Average** (simpler, price volatility) |
+| High-volume retail | **Weighted Average** (performance, simplicity) |
+| Manufacturing with raw materials | **Weighted Average** (raw materials are blended) |
+| Electronics / Serialized items | **FIFO** (serial/batch tracking required) |
+| Multi-method organizations | **Support both methods** configured by category |
 
-### คำแนะนำสุดท้ายสำหรับแพลตฟอร์ม
+### Final Recommendation for the Platform
 
-**รองรับทั้งสองวิธี** ด้วยแนวทาง Strategy Pattern ซึ่งให้ประโยชน์ดังนี้:
+**Support both methods** using the Strategy Pattern approach, which provides:
 
-1. **ความยืดหยุ่น** - หมวดหมู่สินค้าต่างๆ สามารถใช้วิธีที่แตกต่างกันได้
-2. **การปฏิบัติตามกฎระเบียบ** - ตอบโจทย์ข้อกำหนดในหลากหลายอุตสาหกรรมและมาตรฐานบัญชี
-3. **เส้นทางการเปลี่ยนผ่าน** - องค์กรสามารถเปลี่ยนวิธีได้ ณ ขอบเขตของรอบบัญชี
-4. **ความได้เปรียบทางการแข่งขัน** - ดึงดูดตลาดได้กว้างกว่าแพลตฟอร์มที่รองรับวิธีเดียว
+1. **Flexibility** - Different product categories can use different methods
+2. **Regulatory compliance** - Meets requirements across various industries and accounting standards
+3. **Migration path** - Organizations can switch methods at accounting period boundaries
+4. **Competitive advantage** - Attracts a broader market than single-method platforms
 
-เริ่มต้นด้วย **ต้นทุนถัวเฉลี่ย** เป็นค่าเริ่มต้น (ง่ายกว่าในการพัฒนาและทดสอบ) จากนั้นเพิ่มการรองรับ **FIFO** ทั้งสองวิธีใช้โครงสร้างตารางรายการเดียวกัน แตกต่างกันเพียงวิธีการคำนวณและจัดเก็บต้นทุน
+Start with **Weighted Average** as the default (simpler to develop and test), then add **FIFO** support. Both methods use the same transaction table structure, differing only in how costs are calculated and stored.
