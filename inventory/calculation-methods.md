@@ -2,10 +2,10 @@
 title: วิธีการคำนวณต้นทุนสินค้าคงคลัง: FIFO เทียบกับ ต้นทุนถัวเฉลี่ย
 description: เอกสารวิเคราะห์วิธีการคำนวณต้นทุนสินค้าคงคลัง FIFO และต้นทุนถัวเฉลี่ย สำหรับแพลตฟอร์ม Carmen Software
 published: true
-date: 2026-02-16T11:19:18.975Z
+date: 2026-02-16T11:21:28.079Z
 tags: inventory, costing, fifo, weighted-average, carmen-software
 editor: markdown
-dateCreated: 2026-02-16T11:19:18.975Z
+dateCreated: 2026-02-16T11:21:28.079Z
 ---
 
 # วิธีการคำนวณต้นทุนสินค้าคงคลัง: FIFO เทียบกับ ต้นทุนถัวเฉลี่ย
