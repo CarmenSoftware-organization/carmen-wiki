@@ -4,7 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Nature
 
-**carmen-wiki** is a **documentation-only repository** — Markdown knowledge-base content rendered by [Wiki.js](https://js.wiki/). There is no application code, no package manager, no build pipeline, and no test suite in this repo. Do not look for `package.json`, run linters, or attempt builds; tasks here are always content edits.
+**carmen-wiki** is a **user manual for developers and testers** of the Carmen **inventory ERP** product. Content is Markdown rendered by [Wiki.js](https://js.wiki/). There is no application code, no package manager, no build pipeline, and no test suite in this repo — tasks here are always content edits.
+
+Audience and scope:
+- Readers are developers building inventory features and QA engineers testing them — not end users, not architects designing greenfield platforms.
+- Inventory ERP topics are in scope: costing methods, GRN/receiving flow, stock take, spot check, valuation, transaction edge cases, data models, algorithms.
+- Other Carmen modules (PR Approval, vendor catalogs, business unit management) are out of scope **unless** they directly interact with inventory.
+- Useful page shapes: developer how-tos, test scenarios, expected behaviors, edge-case matrices, algorithm pseudo-code, data-model references.
 
 Work is organized into top-level topic directories (e.g. `inventory/`). Each `.md` file is a standalone wiki page.
 
@@ -38,23 +44,23 @@ Conventions established by the existing wiki content — match them when adding 
 
 ## Project Context
 
-**carmen-wiki** is the documentation/knowledge-base repository within the Carmen Software organization. The organization builds a hospitality supply chain management platform spanning multiple repositories. This wiki documents *platform design and domain concepts* — it is not tied to one codebase's implementation.
+**carmen-wiki** documents the inventory ERP slice of the Carmen Software platform, a hospitality supply chain management system. The wiki is the reference manual that developers and testers consult while working on inventory features across the repos below.
 
-### Related Repositories (subjects of this documentation)
+### Reference Repositories (source of truth — always consult before writing)
 
-- **carmen-turborepo-frontend** — Main frontend (Turborepo, Bun, Next.js 15, React 19, Tailwind 4, Shadcn/ui)
-- **carmen-turborepo-backend-v2** — Main backend (Turborepo)
-- **cmobile** — Mobile PWA (Next.js 15, React 19)
-- **carmen-platform** — Admin dashboard (React 18, CRA)
-- **mock-backend-mobile** — Mock API (Bun/Elysia)
-- **carmen-inventory-wiki** — Separate inventory system documentation
+Sibling directories under `/Users/samutpra/GitHub/carmensoftware-organize/`. Before drafting or revising a page, read the corresponding source rather than inventing details. Check each path exists on the current machine before reading.
 
-### Organization Tech Stack (referenced in design docs)
+| Role | Path | Use for |
+|------|------|---------|
+| **Concepts / design docs** | `../carmen/docs/` | Canonical concept reference. Topic folders for inventory-management, costing, recipe, purchase-request/order-management, GRN, store-requisitions, vendor-pricelist, product-management, workflow-permissions, business-rules, API/technical specs, prd, use-cases, mobile-app, prisma-schema, etc. Carmen-wiki pages should synthesize from here. |
+| **Frontend** | `../carmen-inventory-frontend/` | Next.js inventory UI — App Router, TypeScript, Tailwind, Bun, Vitest, Playwright. Source of truth for screen/component behavior. Has its own `CLAUDE.md` and `DESIGN.md`. |
+| **Backend (main)** | `../carmen-turborepo-backend-v2/` | Turborepo monorepo (`apps/`, `packages/`, Bun, Docker, k8s). REST API surface. |
+| **Backend (reports)** | `../micro-report/` | Go microservice for reporting (controllers, services, queues, migrations). |
+| **Backend (cron)** | `../micro-cronjobs/` | Go microservice for scheduled inventory jobs. |
+| **API contracts** | `../carmen-turborepo-backend-bruno/` | Bruno API collections — verify exact request/response shapes here, not by guessing. |
+| **E2E tests** | `../carmen-inventory-frontend-e2e/` | Playwright suite. Existing tests are the executable spec — consult before writing test-scenario or expected-behavior pages. |
 
-- **Frontend:** React 18/19, TypeScript (strict), Next.js 14/15 App Router, Tailwind CSS, Shadcn/ui + Radix UI, Zustand, React Query, Zod
-- **Backend:** NestJS, Elysia/Bun, PostgreSQL
-- **Build tooling:** Turborepo, Bun (preferred package manager), ESLint, Vitest
-- **Auth:** JWT with refresh tokens, RBAC, x-app-id header validation
+When in doubt about what the system actually does: implementation (frontend/backend) and E2E tests beat `../carmen/docs/`; `../carmen/docs/` beats memory or speculation.
 
 ### Domain
 
