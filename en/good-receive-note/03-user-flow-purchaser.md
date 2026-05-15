@@ -60,6 +60,6 @@ The Purchaser's involvement on a given GRN ends at one of four boundaries:
 - Sibling: [02-business-rules.md](./02-business-rules.md) — price-variance tolerance and pricelist-check rules referenced in step 4 of the primary flow.
 - Related: [[purchase-order]] — upstream module owned by this persona; the source of `pending_qty`, `po_status`, and the activity log that captures vendor-side resolution (chase, amendment, cancellation).
 - Related: [[vendor-pricelist]] — the active pricing reference used at step 4 to detect GRN unit-price drift and on every Department Manager cost-centre review.
-- Related: [[credit-note]] — the downstream document that books the AP offset when the Purchaser secures a credit from the vendor for damaged / short / price-variance receipts.
+- Related: credit note — the downstream document that books the AP offset when the Purchaser secures a credit from the vendor for damaged / short / price-variance receipts.
 - `../carmen/docs/good-recive-note-managment/GRN-User-Experience.md` — carmen/docs source for the Procurement Manager persona (goals: monitor vendor performance, analyse procurement metrics, ensure policy compliance) and the variance-handling user flow.
 - `../carmen/docs/good-recive-note-managment/GRN-Overview.md` — carmen/docs module overview: PO reconciliation as the GRN's purpose, vendor performance tracking on receipt outcomes, and the integration points between the GRN module and the Purchase Order / Vendor Management modules.

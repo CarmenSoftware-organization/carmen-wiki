@@ -2,7 +2,7 @@
 title: Good Receive Note (GRN)
 description: The receiving document that records physical goods received against a purchase order and adds them to inventory.
 published: true
-date: 2026-05-15T07:48:00.000Z
+date: 2026-05-15T11:00:00.000Z
 tags: good-receive-note, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -66,4 +66,15 @@ Food-safety and quality control sit on top of all this. Perishable goods carry l
 
 ## 7. Pages in This Module
 
-No sub-pages yet.
+- [01 — Data Model](./01-data-model.md) — Entities, fields, relationships, and enums (Prisma-derived).
+- [02 — Business Rules](./02-business-rules.md) — Validation, calculation, authorization, posting, and three-way-match rules.
+- [03 — User Flow](./03-user-flow.md) — Document lifecycle and persona index.
+  - [Receiver](./03-user-flow-receiver.md)
+  - [Purchaser](./03-user-flow-purchaser.md)
+  - [Finance](./03-user-flow-finance.md)
+  - [Audit / Config](./03-user-flow-audit-config.md)
+- [04 — Test Scenarios](./04-test-scenarios.md) — Persona scope, cross-persona scenarios, E2E mapping.
+  - [Receiver](./04-test-scenarios-receiver.md)
+  - [Purchaser](./04-test-scenarios-purchaser.md)
+  - [Finance](./04-test-scenarios-finance.md)
+  - [Audit / Config](./04-test-scenarios-audit-config.md)
