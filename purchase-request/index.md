@@ -2,7 +2,7 @@
 title: Purchase Request
 description: Internal request to procure goods — the upstream demand signal that becomes a purchase order after approval.
 published: true
-date: 2026-05-15T07:48:00.000Z
+date: 2026-05-15T09:00:00.000Z
 tags: purchase-request, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -69,4 +69,17 @@ Financial accuracy is enforced at the calculation layer rather than left to the 
 
 ## 7. Pages in This Module
 
-No sub-pages yet.
+- [01 — Data Model](./01-data-model.md) ([TH](./01-data-model.th.md)) — Entities, fields, relationships, and enums (Prisma-derived).
+- [02 — Business Rules](./02-business-rules.md) ([TH](./02-business-rules.th.md)) — Validation, calculation, authorization, and posting rules.
+- [03 — User Flow](./03-user-flow.md) ([TH](./03-user-flow.th.md)) — Document lifecycle and persona index.
+  - [Requestor](./03-user-flow-requestor.md) ([TH](./03-user-flow-requestor.th.md))
+  - [Approver](./03-user-flow-approver.md) ([TH](./03-user-flow-approver.th.md))
+  - [Purchaser](./03-user-flow-purchaser.md) ([TH](./03-user-flow-purchaser.th.md))
+  - [Procurement Manager](./03-user-flow-procurement-manager.md) ([TH](./03-user-flow-procurement-manager.th.md))
+  - [Audit / Config](./03-user-flow-audit-config.md) ([TH](./03-user-flow-audit-config.th.md))
+- [04 — Test Scenarios](./04-test-scenarios.md) ([TH](./04-test-scenarios.th.md)) — Persona scope, cross-persona scenarios, E2E mapping.
+  - [Requestor](./04-test-scenarios-requestor.md) ([TH](./04-test-scenarios-requestor.th.md))
+  - [Approver](./04-test-scenarios-approver.md) ([TH](./04-test-scenarios-approver.th.md))
+  - [Purchaser](./04-test-scenarios-purchaser.md) ([TH](./04-test-scenarios-purchaser.th.md))
+  - [Procurement Manager](./04-test-scenarios-procurement-manager.md) ([TH](./04-test-scenarios-procurement-manager.th.md))
+  - [Audit / Config](./04-test-scenarios-audit-config.md) ([TH](./04-test-scenarios-audit-config.th.md))
