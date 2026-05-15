@@ -432,3 +432,6 @@ Every transaction must record:
 4. **Competitive advantage** - Attracts a broader market than single-method platforms
 
 Start with **Weighted Average** as the default (simpler to develop and test), then add **FIFO** support. Both methods use the same transaction table structure, differing only in how costs are calculated and stored.
+
+
+TEST
