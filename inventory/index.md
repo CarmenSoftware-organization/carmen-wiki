@@ -3,7 +3,7 @@ title: Inventory
 description: Stock balances, locations, and the period-end process — the core of the inventory ERP.
 published: true
 date: 2026-05-15T07:48:00.000Z
-tags: inventory, inventory, carmen-software
+tags: inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
 ---
