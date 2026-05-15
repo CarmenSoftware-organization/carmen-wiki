@@ -2,7 +2,7 @@
 title: Inventory
 description: Stock balances, locations, and the period-end process — the core of the inventory ERP.
 published: true
-date: 2026-05-15T07:48:00.000Z
+date: 2026-05-15T12:00:00.000Z
 tags: inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -64,4 +64,15 @@ This module sits between **Procurement** (receipts in) and **Operations** (requi
 
 ## 7. Pages in This Module
 
-No sub-pages yet.
+- [01 — Data Model](./01-data-model.md) — Entities, fields, relationships, and enums (Prisma-derived).
+- [02 — Business Rules](./02-business-rules.md) — Validation, calculation, authorization, posting, and cross-module rules.
+- [03 — User Flow](./03-user-flow.md) — Movement and period lifecycle, plus persona index.
+  - [Store Keeper](./03-user-flow-store-keeper.md)
+  - [Inventory Controller](./03-user-flow-inventory-controller.md)
+  - [Finance](./03-user-flow-finance.md)
+  - [Audit / Config](./03-user-flow-audit-config.md)
+- [04 — Test Scenarios](./04-test-scenarios.md) — Persona scope, cross-persona scenarios, E2E mapping.
+  - [Store Keeper](./04-test-scenarios-store-keeper.md)
+  - [Inventory Controller](./04-test-scenarios-inventory-controller.md)
+  - [Finance](./04-test-scenarios-finance.md)
+  - [Audit / Config](./04-test-scenarios-audit-config.md)
