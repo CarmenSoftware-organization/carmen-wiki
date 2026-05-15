@@ -312,8 +312,7 @@ tb_workflow
     │
     │ * workflow_id
     ▼
-tb_purchase_request_template ──1──*──► tb_purchase_request_template_comment
-    │  1
+tb_purchase_request_template
     │
     │ * purchase_request_template_id
     ▼
