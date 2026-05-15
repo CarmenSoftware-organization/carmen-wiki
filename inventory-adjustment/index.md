@@ -16,7 +16,7 @@ An **Inventory Adjustment** is a controlled correction to inventory quantity and
 
 Adjustments follow a tightly bounded lifecycle: `Draft` (editable, no stock impact) → `Posted` (immutable, stock and GL updated) → `Void` (reverses a posted adjustment via a separate transaction). A draft can be edited freely, but once posted the document is locked — corrections require a void plus a new adjustment. Posting also triggers stock-movement creation, FIFO layer or weighted-average cost recalculation per the item's costing method, and automatic journal entries against the GL account mapped from the reason code.
 
-Adjustments are used whenever stock changes outside the normal documents: damaged goods discovered in storage, expired items written off, theft or shrinkage write-offs, found stock recovered during a sweep, count variances from stock-take or spot-check posted as structured adjustments, and reclassifications between locations or units of measure. The module supports both positive (`IN` — write-on) and negative (`OUT` — write-off) directions, with lot-level granularity for batch-tracked products.
+Adjustments are used whenever stock changes outside the normal documents: damaged goods discovered in storage, expired items written off, theft or shrinkage write-offs, found stock recovered during a sweep, count variances from physical-count or spot-check posted as structured adjustments, and reclassifications between locations or units of measure. The module supports both positive (`IN` — write-on) and negative (`OUT` — write-off) directions, with lot-level granularity for batch-tracked products.
 
 ## 2. Business Context
 
@@ -24,7 +24,7 @@ Adjustments are the one channel that lets stock change without a matching upstre
 
 The financial side mirrors this. Each posted adjustment generates journal entries: a write-off (`OUT`) debits an expense or loss account mapped from the reason code and credits inventory, reducing balance-sheet stock value; a found-stock entry (`IN`) debits inventory and credits a gain/recovery account. Reason codes are configured per direction (`IN`, `OUT`, or `BOTH`) and carry their own GL mapping, so the same physical event (e.g. damage write-off vs. expiry write-off) lands in distinct accounts for cost analysis. Period-end validation rejects any adjustment dated into a closed period, protecting locked valuations.
 
-Operationally, adjustments are also the formal landing point for variances detected by **stock-take** (full physical count) and **spot-check** (partial verification). When a count variance is confirmed, the system creates an adjustment document for the variance lines and routes it through the same approval and posting flow as an ad-hoc adjustment, so all stock corrections share one audit trail.
+Operationally, adjustments are also the formal landing point for variances detected by **physical-count** (full count) and **spot-check** (partial verification). When a count variance is confirmed, the system creates an adjustment document for the variance lines and routes it through the same approval and posting flow as an ad-hoc adjustment, so all stock corrections share one audit trail.
 
 ## 3. Key Concepts
 
@@ -50,7 +50,7 @@ Operationally, adjustments are also the formal landing point for variances detec
 
 - [[inventory]] — adjustments modify inventory balances directly
 - [[costing]] — adjustments require a cost basis (entered manually or from costing engine)
-- [[stock-take]] — count variances become adjustment documents
+- [[physical-count]] — count variances become adjustment documents
 - [[spot-check]] — partial count variances become adjustment documents
 
 ## 6. Reference Sources

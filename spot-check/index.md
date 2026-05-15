@@ -1,6 +1,6 @@
 ---
 title: Spot Check
-description: Targeted partial count of selected items or locations — a lighter-weight check than a full stock take.
+description: Targeted partial count of selected items or locations — a lighter-weight check than a full physical count.
 published: true
 date: 2026-05-15T07:48:00.000Z
 tags: spot-check, inventory, carmen-software
@@ -12,19 +12,19 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 ## 1. Overview
 
-A **spot check** is a targeted, partial count of selected inventory items or storage locations performed to verify that on-hand quantities match recorded balances. Unlike a full **stock take**, which counts every item across all locations on a fixed cycle, a spot check focuses on a deliberately narrow scope — a handful of high-value SKUs, a single shelf, one storeroom, or items flagged by an exception report. This makes spot checks fast enough to run during normal operating hours without freezing inventory movement.
+A **spot check** is a targeted, partial count of selected inventory items or storage locations performed to verify that on-hand quantities match recorded balances. Unlike a full **physical count**, which counts every item across all locations on a fixed cycle, a spot check focuses on a deliberately narrow scope — a handful of high-value SKUs, a single shelf, one storeroom, or items flagged by an exception report. This makes spot checks fast enough to run during normal operating hours without freezing inventory movement.
 
 Spot checks are typically **triggered** by one of three patterns: *random sampling* (rotating through items to maintain general count discipline), *risk-based selection* (high-value, high-theft, or fast-moving items checked more frequently), and *event-driven* checks (after a suspected discrepancy, a delivery dispute, a system error, or a loss-prevention incident). The typical workflow is short and self-contained: an inventory controller selects the items in scope, a counter performs the physical count, the system compares counted vs. on-hand quantities, variances above a threshold are reviewed and either recounted or accepted, and approved variances are posted as **inventory adjustments** so the perpetual balance reflects reality.
 
-Because spot checks are quick to launch and easy to repeat, they are a core control in any inventory program — catching shrinkage, miscounts, and process errors early, between the longer cycles of the formal stock take.
+Because spot checks are quick to launch and easy to repeat, they are a core control in any inventory program — catching shrinkage, miscounts, and process errors early, between the longer cycles of the formal physical count.
 
 > **TODO:** Source content from `../carmen-inventory-frontend/` (UI flow) and `../carmen-inventory-frontend-e2e/` (test scenarios). No carmen/docs source folder exists for this module.
 
 ## 2. Business Context
 
-In hospitality operations, spot checks provide **daily or weekly verification** of high-risk items — premium spirits, prime cuts, branded amenities, controlled goods — without the operational disruption of a full count. By running short, frequent checks on the items most exposed to loss, operators close the visibility gap between scheduled stock takes (typically monthly or quarterly) and the day-to-day movement of inventory.
+In hospitality operations, spot checks provide **daily or weekly verification** of high-risk items — premium spirits, prime cuts, branded amenities, controlled goods — without the operational disruption of a full count. By running short, frequent checks on the items most exposed to loss, operators close the visibility gap between scheduled physical counts (typically monthly or quarterly) and the day-to-day movement of inventory.
 
-The control serves two complementary purposes. First, it is a **loss-prevention** tool: targeted counts on theft-prone or pilferage-prone categories deter shrinkage and surface issues while the trail is still warm enough to investigate. Second, it is a **supplement to the periodic stock-take cycle**: by continuously sampling, finance and operations gain ongoing assurance that perpetual balances are reliable, rather than only learning about discrepancies at month-end. Together, spot checks reduce variance shocks at closing time and keep cost-of-goods reporting trustworthy throughout the period.
+The control serves two complementary purposes. First, it is a **loss-prevention** tool: targeted counts on theft-prone or pilferage-prone categories deter shrinkage and surface issues while the trail is still warm enough to investigate. Second, it is a **supplement to the periodic physical-count cycle**: by continuously sampling, finance and operations gain ongoing assurance that perpetual balances are reliable, rather than only learning about discrepancies at month-end. Together, spot checks reduce variance shocks at closing time and keep cost-of-goods reporting trustworthy throughout the period.
 
 ## 3. Key Concepts
 
@@ -46,7 +46,7 @@ The control serves two complementary purposes. First, it is a **loss-prevention*
 
 - [[inventory]] — spot check verifies a subset of inventory balances
 - [[inventory-adjustment]] — variances are posted as adjustments
-- [[stock-take]] — full count counterpart
+- [[physical-count]] — full count counterpart
 
 ## 6. Reference Sources
 

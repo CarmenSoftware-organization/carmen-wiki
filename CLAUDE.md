@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Audience and scope:
 - Readers are developers building inventory features and QA engineers testing them — not end users, not architects designing greenfield platforms.
-- Inventory ERP topics are in scope: costing methods, GRN/receiving flow, stock take, spot check, valuation, transaction edge cases, data models, algorithms.
+- Inventory ERP topics are in scope: costing methods, GRN/receiving flow, physical count, spot check, valuation, transaction edge cases, data models, algorithms.
 - Other Carmen modules (PR Approval, vendor catalogs, business unit management) are out of scope **unless** they directly interact with inventory.
 - Useful page shapes: developer how-tos, test scenarios, expected behaviors, edge-case matrices, algorithm pseudo-code, data-model references.
 
@@ -64,4 +64,4 @@ When in doubt about what the system actually does: implementation (frontend/back
 
 ### Domain
 
-Hospitality supply chain management — modules include Dashboard, Receiving (GRN), PR Approval, Store Requisition, Stock Take, Spot Check, vendor/product catalogs, and business unit/cluster management.
+Hospitality supply chain management — modules include Dashboard, Receiving (GRN), PR Approval, Store Requisition, Physical Count, Spot Check, vendor/product catalogs, and business unit/cluster management.

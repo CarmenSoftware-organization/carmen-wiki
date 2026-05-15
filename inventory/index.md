@@ -50,7 +50,7 @@ This module sits between **Procurement** (receipts in) and **Operations** (requi
 - [[good-receive-note]] — GRN is the primary upstream source of stock receipts
 - [[store-requisition]] — store requisitions are the primary downstream consumer
 - [[inventory-adjustment]] — manual corrections to balances
-- [[stock-take]] — periodic full count
+- [[physical-count]] — periodic full count
 - [[spot-check]] — partial verification counts
 
 ## 6. Reference Sources
