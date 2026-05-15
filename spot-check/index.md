@@ -43,11 +43,13 @@ The control serves two complementary purposes. First, it is a **loss-prevention*
 | Auditor | Independently reviews spot-check results, recount evidence, and posted adjustments to confirm controls are operating and shrinkage is investigated. |
 
 ## 5. Related Modules
+
 - [[inventory]] — spot check verifies a subset of inventory balances
 - [[inventory-adjustment]] — variances are posted as adjustments
 - [[stock-take]] — full count counterpart
 
 ## 6. Reference Sources
+
 - Concepts: (no source — see TODO in section 1)
 - Frontend: `../carmen-inventory-frontend/`
 - Backend: `../carmen-turborepo-backend-v2/`
@@ -55,4 +57,5 @@ The control serves two complementary purposes. First, it is a **loss-prevention*
 - E2E tests: `../carmen-inventory-frontend-e2e/`
 
 ## 7. Pages in This Module
+
 No sub-pages yet.
