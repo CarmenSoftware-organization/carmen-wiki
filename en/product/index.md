@@ -64,4 +64,13 @@ This module is therefore the system of record for the *definition* of an item, n
 
 ## 7. Pages in This Module
 
-No sub-pages yet.
+- [01 — Data Model](./01-data-model.md) — Entities, fields, relationships, and enums (Prisma-derived).
+- [02 — Business Rules](./02-business-rules.md) — Validation, calculation / inheritance, authorization, lifecycle, and cross-module rules.
+- [03 — User Flow](./03-user-flow.md) — Product record lifecycle, plus persona index.
+  - [Product Administrator](./03-user-flow-product-admin.md)
+  - [Purchaser](./03-user-flow-purchaser.md)
+  - [Store Keeper](./03-user-flow-store-keeper.md)
+- [04 — Test Scenarios](./04-test-scenarios.md) — Persona scope, cross-persona scenarios, E2E mapping.
+  - [Product Administrator](./04-test-scenarios-product-admin.md)
+  - [Purchaser](./04-test-scenarios-purchaser.md)
+  - [Store Keeper](./04-test-scenarios-store-keeper.md)
