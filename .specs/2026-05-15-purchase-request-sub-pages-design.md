@@ -20,6 +20,14 @@ Produce a complete set of sub-pages for the `purchase-request` module so develop
 
 The result is the reference implementation that downstream module work (10 more modules) can pattern-match.
 
+### 1.1 Bilingual Output (EN + TH)
+
+Every sub-page is produced in **two languages — English (default/canonical) and Thai**.
+
+- **Canonical:** the English file at `<name>.md` is the source of truth for content. When facts diverge between EN and TH, EN wins; TH is updated to match.
+- **TH variant:** sits alongside the EN file at `<name>.th.md` (suffix convention). Same frontmatter shape with title and description translated, same section structure, same numbering — only prose is translated.
+- **Out of scope:** retrofitting existing content (the 12 module `index.md` files and `costing/calculation-methods.md`) to bilingual. A separate effort handles those if needed.
+
 ## 2. Persona Adaptation
 
 The general template spec (Section 3 of `.specs/2026-05-15-sub-page-templates-design.md`) defines `03-user-flow.md` and `04-test-scenarios.md` as single files with persona-axis Section 3. **For this module, those single files are decomposed into separate files per persona, plus an overview file.**
@@ -67,25 +75,41 @@ Selected from the 18 files in `../carmen/docs/purchase-request-management/`:
 
 The remaining 9 carmen/docs files (API specs, component specs, module-implementation, README, consolidation reports, template-ba) are out of scope for this round.
 
-## 5. File List (14 new sub-page files + 1 index.md update)
+## 5. File List (28 new sub-page files + 1 index.md update)
+
+14 page concepts × 2 languages = 28 files. EN file is canonical; TH file is the same content translated.
 
 ```
 purchase-request/
-├── index.md                                       (existing — Section 7 updated)
-├── 01-data-model.md                               (NEW)
-├── 02-business-rules.md                           (NEW)
-├── 03-user-flow.md                                (NEW, overview)
-├── 03-user-flow-requestor.md                      (NEW)
-├── 03-user-flow-approver.md                       (NEW)
-├── 03-user-flow-purchaser.md                      (NEW)
-├── 03-user-flow-procurement-manager.md            (NEW)
-├── 03-user-flow-audit-config.md                   (NEW)
-├── 04-test-scenarios.md                           (NEW, overview)
-├── 04-test-scenarios-requestor.md                 (NEW)
-├── 04-test-scenarios-approver.md                  (NEW)
-├── 04-test-scenarios-purchaser.md                 (NEW)
-├── 04-test-scenarios-procurement-manager.md       (NEW)
-└── 04-test-scenarios-audit-config.md              (NEW)
+├── index.md                                          (existing — Section 7 updated)
+├── 01-data-model.md                                  (NEW, EN)
+├── 01-data-model.th.md                               (NEW, TH)
+├── 02-business-rules.md                              (NEW, EN)
+├── 02-business-rules.th.md                           (NEW, TH)
+├── 03-user-flow.md                                   (NEW, EN, overview)
+├── 03-user-flow.th.md                                (NEW, TH, overview)
+├── 03-user-flow-requestor.md                         (NEW, EN)
+├── 03-user-flow-requestor.th.md                      (NEW, TH)
+├── 03-user-flow-approver.md                          (NEW, EN)
+├── 03-user-flow-approver.th.md                       (NEW, TH)
+├── 03-user-flow-purchaser.md                         (NEW, EN)
+├── 03-user-flow-purchaser.th.md                      (NEW, TH)
+├── 03-user-flow-procurement-manager.md               (NEW, EN)
+├── 03-user-flow-procurement-manager.th.md            (NEW, TH)
+├── 03-user-flow-audit-config.md                      (NEW, EN)
+├── 03-user-flow-audit-config.th.md                   (NEW, TH)
+├── 04-test-scenarios.md                              (NEW, EN, overview)
+├── 04-test-scenarios.th.md                           (NEW, TH, overview)
+├── 04-test-scenarios-requestor.md                    (NEW, EN)
+├── 04-test-scenarios-requestor.th.md                 (NEW, TH)
+├── 04-test-scenarios-approver.md                     (NEW, EN)
+├── 04-test-scenarios-approver.th.md                  (NEW, TH)
+├── 04-test-scenarios-purchaser.md                    (NEW, EN)
+├── 04-test-scenarios-purchaser.th.md                 (NEW, TH)
+├── 04-test-scenarios-procurement-manager.md          (NEW, EN)
+├── 04-test-scenarios-procurement-manager.th.md       (NEW, TH)
+├── 04-test-scenarios-audit-config.md                 (NEW, EN)
+└── 04-test-scenarios-audit-config.th.md              (NEW, TH)
 ```
 
 ## 6. Templates
@@ -252,41 +276,49 @@ dateCreated: <ISO 8601 timestamp>
 
 ## 7. `purchase-request/index.md` Section 7 Update
 
-Replace the current "No sub-pages yet." with:
+Replace the current "No sub-pages yet." with this ToC. Each entry shows the EN link first (default), then a `[TH]` link to the Thai variant in parentheses.
 
 ```markdown
 ## 7. Pages in This Module
 
-- [01 — Data Model](./01-data-model.md) — Entities, fields, relationships, and enums (Prisma-derived).
-- [02 — Business Rules](./02-business-rules.md) — Validation, calculation, authorization, and posting rules.
-- [03 — User Flow](./03-user-flow.md) — Document lifecycle and persona index.
-  - [Requestor](./03-user-flow-requestor.md)
-  - [Approver](./03-user-flow-approver.md)
-  - [Purchaser](./03-user-flow-purchaser.md)
-  - [Procurement Manager](./03-user-flow-procurement-manager.md)
-  - [Audit / Config](./03-user-flow-audit-config.md)
-- [04 — Test Scenarios](./04-test-scenarios.md) — Persona scope, cross-persona scenarios, E2E mapping.
-  - [Requestor](./04-test-scenarios-requestor.md)
-  - [Approver](./04-test-scenarios-approver.md)
-  - [Purchaser](./04-test-scenarios-purchaser.md)
-  - [Procurement Manager](./04-test-scenarios-procurement-manager.md)
-  - [Audit / Config](./04-test-scenarios-audit-config.md)
+- [01 — Data Model](./01-data-model.md) ([TH](./01-data-model.th.md)) — Entities, fields, relationships, and enums (Prisma-derived).
+- [02 — Business Rules](./02-business-rules.md) ([TH](./02-business-rules.th.md)) — Validation, calculation, authorization, and posting rules.
+- [03 — User Flow](./03-user-flow.md) ([TH](./03-user-flow.th.md)) — Document lifecycle and persona index.
+  - [Requestor](./03-user-flow-requestor.md) ([TH](./03-user-flow-requestor.th.md))
+  - [Approver](./03-user-flow-approver.md) ([TH](./03-user-flow-approver.th.md))
+  - [Purchaser](./03-user-flow-purchaser.md) ([TH](./03-user-flow-purchaser.th.md))
+  - [Procurement Manager](./03-user-flow-procurement-manager.md) ([TH](./03-user-flow-procurement-manager.th.md))
+  - [Audit / Config](./03-user-flow-audit-config.md) ([TH](./03-user-flow-audit-config.th.md))
+- [04 — Test Scenarios](./04-test-scenarios.md) ([TH](./04-test-scenarios.th.md)) — Persona scope, cross-persona scenarios, E2E mapping.
+  - [Requestor](./04-test-scenarios-requestor.md) ([TH](./04-test-scenarios-requestor.th.md))
+  - [Approver](./04-test-scenarios-approver.md) ([TH](./04-test-scenarios-approver.th.md))
+  - [Purchaser](./04-test-scenarios-purchaser.md) ([TH](./04-test-scenarios-purchaser.th.md))
+  - [Procurement Manager](./04-test-scenarios-procurement-manager.md) ([TH](./04-test-scenarios-procurement-manager.th.md))
+  - [Audit / Config](./04-test-scenarios-audit-config.md) ([TH](./04-test-scenarios-audit-config.th.md))
 ```
 
 ## 8. Out of Scope
 
 - **Other modules** — only `purchase-request/` is implemented in this round. The 10 remaining modules with sources (and the 2 skeleton modules) are future per-module plans.
+- **Retrofitting existing content to bilingual** — the 12 module `index.md` files and `costing/calculation-methods.md` stay EN-only in this round. Bilingual retrofit is a separate effort if needed.
 - **The 9 unread carmen/docs files** for PR (API specs, component specs, module-implementation, etc.) — not needed for developer/tester user-manual content. Can be folded in later if specific pages need them.
-- **Updating `.specs/templates/`** to reflect the persona-file split — defer until this approach is validated. If validated and the team wants it as the default, a follow-up commit can regenerate templates and update the predecessor spec.
+- **Updating `.specs/templates/`** to reflect the persona-file split and bilingual variants — defer until this approach is validated. If validated and the team wants it as the default, a follow-up commit can regenerate templates and update the predecessor spec.
 - **Fixing carmen/docs divergences** — record them in `01-data-model.md` Section 5 but do not modify carmen/docs.
 
 ## 9. Implementation Notes (for the plan)
 
-1. **Order:** create files in numeric order (01 → 02 → 03 overview → 03 persona files → 04 overview → 04 persona files), then update index.md. Each file is its own commit so review and rollback are easy.
+1. **Order:** for each numbered concept (01, 02, 03 overview, 03-requestor, ...), produce the EN file first, then translate to the TH file. One commit per concept pair (EN + TH together) — see note 7 below. Update `index.md` Section 7 last as a final commit.
 2. **Synthesis discipline:** every sub-page must be grounded in the listed sources. Inventing rules or scenarios not present in carmen/docs / Prisma / E2E is a quality failure.
 3. **Persona consistency:** the 5 group slugs (`requestor`, `approver`, `purchaser`, `procurement-manager`, `audit-config`) are fixed. Both `03-user-flow-*` and `04-test-scenarios-*` use the same slug per persona. Frontmatter `tags` include the persona slug.
-4. **Cross-link integrity:** persona files link back to their parent overview file. Test scenario persona files link to the matching user-flow persona file.
-5. **Verifier:** run `.specs/verify_frontmatter.py` on every new file before commit. All 14 new files plus the updated index.md must pass.
+4. **Cross-link integrity:** persona files link back to their parent overview file. Test scenario persona files link to the matching user-flow persona file. Within a language, links stay within that language (EN file links to EN siblings; TH file links to TH siblings).
+5. **Translation discipline:**
+   - The EN file is the source of truth. Write it first, get it right, then translate.
+   - The TH file mirrors the EN file section-for-section, table-for-table, with the same numbering. No omissions, no additions specific to one language.
+   - Frontmatter `title` and `description` are translated to Thai. `tags`, `published`, `date`, `dateCreated`, `editor` stay as in EN.
+   - Code-like content (Prisma model names, enum values, rule IDs, field names) stays in English — these are identifiers, not prose.
+   - Cross-links in TH files point to other TH files (e.g. `03-user-flow.th.md` links to `03-user-flow-requestor.th.md`, not `.md`).
+6. **Verifier:** run `.specs/verify_frontmatter.py` on every new file before commit. All 28 new files plus the updated `index.md` must pass.
+7. **Each commit covers both EN and TH for the same concept** to keep them paired in history (e.g. one commit adds `01-data-model.md` + `01-data-model.th.md` together).
 
 ## 10. Open Questions
 
