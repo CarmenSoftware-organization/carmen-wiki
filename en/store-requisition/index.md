@@ -67,4 +67,17 @@ Financially, every posted issuance generates journal entries that credit the sou
 
 ## 7. Pages in This Module
 
-No sub-pages yet.
+- [01 — Data Model](./01-data-model.md) — Prisma entities (`tb_store_requisition`, `tb_store_requisition_detail`, comment tables), enums (`enum_doc_status`, `enum_sr_type`), relationships, and divergences from carmen/docs.
+- [02 — Business Rules](./02-business-rules.md) — Validation (`SR_VAL_*`), calculation (`SR_CALC_*`, quantity invariant), authorization (`SR_AUTH_*`, SoD), posting (`SR_POST_*`, single posting event at `in_progress → completed`), and cross-module rules (`SR_XMOD_*`).
+- [03 — User Flow](./03-user-flow.md) — Document lifecycle overview and persona-specific flow files:
+  - [Requester](./03-user-flow-requester.md) — Outlet Manager: identifies needs, creates SR, submits.
+  - [Approver](./03-user-flow-approver.md) — Department Head: reviews, trims, rejects, sends back.
+  - [Fulfiller](./03-user-flow-fulfiller.md) — Store Keeper: picks, records `issued_qty`, selects lots, commits.
+  - [Receiver](./03-user-flow-receiver.md) — Destination representative: acknowledges receipt, flags discrepancies.
+  - [Audit / Config](./03-user-flow-audit-config.md) — Inventory Controller, Finance, Sysadmin, Auditor oversight.
+- [04 — Test Scenarios](./04-test-scenarios.md) — Cross-persona scenarios + Playwright mapping, with per-persona drill-downs:
+  - [Requester scenarios](./04-test-scenarios-requester.md)
+  - [Approver scenarios](./04-test-scenarios-approver.md)
+  - [Fulfiller scenarios](./04-test-scenarios-fulfiller.md)
+  - [Receiver scenarios](./04-test-scenarios-receiver.md)
+  - [Audit / Config scenarios](./04-test-scenarios-audit-config.md)
