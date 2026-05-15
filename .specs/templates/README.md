@@ -17,12 +17,18 @@ The spec is canonical. If the spec changes, these files must be regenerated.
 
 When implementing sub-pages for a module `<m>`:
 
-1. Copy each template into the module folder:
+1. Copy each template into the module folder under the appropriate locale (`en/` for English, `th/` for Thai — translate after copying):
    ```bash
-   cp .specs/templates/01-data-model.md <m>/01-data-model.md
-   cp .specs/templates/02-business-rules.md <m>/02-business-rules.md
-   cp .specs/templates/03-user-flow.md <m>/03-user-flow.md
-   cp .specs/templates/04-test-scenarios.md <m>/04-test-scenarios.md
+   cp .specs/templates/01-data-model.md en/<m>/01-data-model.md
+   cp .specs/templates/02-business-rules.md en/<m>/02-business-rules.md
+   cp .specs/templates/03-user-flow.md en/<m>/03-user-flow.md
+   cp .specs/templates/04-test-scenarios.md en/<m>/04-test-scenarios.md
+
+   # When a Thai translation is also being authored:
+   cp .specs/templates/01-data-model.md th/<m>/01-data-model.md  # then translate
+   cp .specs/templates/02-business-rules.md th/<m>/02-business-rules.md  # then translate
+   cp .specs/templates/03-user-flow.md th/<m>/03-user-flow.md  # then translate
+   cp .specs/templates/04-test-scenarios.md th/<m>/04-test-scenarios.md  # then translate
    ```
 
 2. Substitute placeholders in each copied file:
@@ -41,7 +47,7 @@ When implementing sub-pages for a module `<m>`:
 
 5. Run the frontmatter verifier:
    ```bash
-   python3 .specs/verify_frontmatter.py <m>/01-data-model.md
+   python3 .specs/verify_frontmatter.py en/<m>/01-data-model.md
    ```
    Each filled-in sub-page should print `OK: ... — title='<Module> — ...'`.
 

@@ -12,11 +12,11 @@ Audience and scope:
 - Other Carmen modules (PR Approval, vendor catalogs, business unit management) are out of scope **unless** they directly interact with inventory.
 - Useful page shapes: developer how-tos, test scenarios, expected behaviors, edge-case matrices, algorithm pseudo-code, data-model references.
 
-Work is organized into top-level topic directories (e.g. `inventory/`). Each `.md` file is a standalone wiki page.
+Work is organized under top-level locale directories `en/` and `th/`, each containing topic subdirectories (e.g. `en/inventory/`, `th/purchase-request/`). Each `.md` file is a standalone wiki page. Wiki.js handles the language toggle natively across the locale trees, so individual pages should not include inline cross-locale links. The `.specs/` directory is hidden meta and stays at the repo root.
 
 ## Wiki.js Page Format
 
-Every page must begin with Wiki.js YAML frontmatter. Match the existing pattern in `inventory/calculation-methods.md`:
+Every page must begin with Wiki.js YAML frontmatter. Match the existing pattern in `en/costing/calculation-methods.md`:
 
 ```yaml
 ---

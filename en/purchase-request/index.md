@@ -69,17 +69,17 @@ Financial accuracy is enforced at the calculation layer rather than left to the 
 
 ## 7. Pages in This Module
 
-- [01 — Data Model](./01-data-model.md) ([TH](./01-data-model.th.md)) — Entities, fields, relationships, and enums (Prisma-derived).
-- [02 — Business Rules](./02-business-rules.md) ([TH](./02-business-rules.th.md)) — Validation, calculation, authorization, and posting rules.
-- [03 — User Flow](./03-user-flow.md) ([TH](./03-user-flow.th.md)) — Document lifecycle and persona index.
-  - [Requestor](./03-user-flow-requestor.md) ([TH](./03-user-flow-requestor.th.md))
-  - [Approver](./03-user-flow-approver.md) ([TH](./03-user-flow-approver.th.md))
-  - [Purchaser](./03-user-flow-purchaser.md) ([TH](./03-user-flow-purchaser.th.md))
-  - [Procurement Manager](./03-user-flow-procurement-manager.md) ([TH](./03-user-flow-procurement-manager.th.md))
-  - [Audit / Config](./03-user-flow-audit-config.md) ([TH](./03-user-flow-audit-config.th.md))
-- [04 — Test Scenarios](./04-test-scenarios.md) ([TH](./04-test-scenarios.th.md)) — Persona scope, cross-persona scenarios, E2E mapping.
-  - [Requestor](./04-test-scenarios-requestor.md) ([TH](./04-test-scenarios-requestor.th.md))
-  - [Approver](./04-test-scenarios-approver.md) ([TH](./04-test-scenarios-approver.th.md))
-  - [Purchaser](./04-test-scenarios-purchaser.md) ([TH](./04-test-scenarios-purchaser.th.md))
-  - [Procurement Manager](./04-test-scenarios-procurement-manager.md) ([TH](./04-test-scenarios-procurement-manager.th.md))
-  - [Audit / Config](./04-test-scenarios-audit-config.md) ([TH](./04-test-scenarios-audit-config.th.md))
+- [01 — Data Model](./01-data-model.md) — Entities, fields, relationships, and enums (Prisma-derived).
+- [02 — Business Rules](./02-business-rules.md) — Validation, calculation, authorization, and posting rules.
+- [03 — User Flow](./03-user-flow.md) — Document lifecycle and persona index.
+  - [Requestor](./03-user-flow-requestor.md)
+  - [Approver](./03-user-flow-approver.md)
+  - [Purchaser](./03-user-flow-purchaser.md)
+  - [Procurement Manager](./03-user-flow-procurement-manager.md)
+  - [Audit / Config](./03-user-flow-audit-config.md)
+- [04 — Test Scenarios](./04-test-scenarios.md) — Persona scope, cross-persona scenarios, E2E mapping.
+  - [Requestor](./04-test-scenarios-requestor.md)
+  - [Approver](./04-test-scenarios-approver.md)
+  - [Purchaser](./04-test-scenarios-purchaser.md)
+  - [Procurement Manager](./04-test-scenarios-procurement-manager.md)
+  - [Audit / Config](./04-test-scenarios-audit-config.md)
