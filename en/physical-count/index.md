@@ -59,4 +59,15 @@ The financial accuracy stakes are immediate. Hospitality operations run on thin 
 
 ## 7. Pages in This Module
 
-No sub-pages yet.
+- [[physical-count/01-data-model]] — entities, fields, relationships, enums (`tb_physical_count_period`, `tb_physical_count`, `tb_physical_count_detail` plus three comment tables; four enums).
+- [[physical-count/02-business-rules]] — validation, calculation, authorization, posting, cross-module rules (`PHC_VAL_*` / `PHC_CALC_*` / `PHC_AUTH_*` / `PHC_POST_*` / `PHC_XMOD_*`).
+- [[physical-count/03-user-flow]] — document lifecycle overview + persona index.
+  - [[physical-count/03-user-flow-count-lead]] — Inventory Controller / Inventory Manager path.
+  - [[physical-count/03-user-flow-counter]] — Counter / Store Keeper path.
+  - [[physical-count/03-user-flow-audit-config]] — Approver / Finance + Auditor + Sysadmin path.
+- [[physical-count/04-test-scenarios]] — test scenarios overview + cross-persona handoff scenarios + E2E mapping target.
+  - [[physical-count/04-test-scenarios-count-lead]] — Count Lead scenarios.
+  - [[physical-count/04-test-scenarios-counter]] — Counter scenarios.
+  - [[physical-count/04-test-scenarios-audit-config]] — Approver / Finance + Auditor + Sysadmin scenarios.
+
+> **Status:** all sub-pages are skeleton-level (~50-100 lines each). Each carries explicit TODO callouts pointing at the upstream sources to use when filling in (`../carmen-inventory-frontend/` for UI flow; `../carmen-inventory-frontend-e2e/tests/` for E2E specs — no physical-count spec exists yet). Data-model section is grounded in the Prisma schema and is the most-developed page; business-rules introduces a proposed `PHC_*` rule-ID catalogue that needs carmen/docs confirmation; user-flow and test-scenarios are structural placeholders.
