@@ -78,4 +78,17 @@ The other major business function the module supports is **theoretical vs. actua
 
 ## 7. Pages in This Module
 
-No sub-pages yet.
+- [01 — Data Model](./01-data-model.md) — Prisma entities (`tb_recipe`, `tb_recipe_ingredient`, `tb_recipe_preparation_step`, `tb_recipe_yield_variant`, `tb_recipe_version`, `tb_recipe_pricing_history`, `tb_recipe_category`, `tb_recipe_cuisines`, equipment masters), enums (`enum_recipe_status`, `enum_recipe_difficulty`, `enum_ingredient_type`, `enum_temperature_unit`, `enum_cuisine_region`), relationships (sub-recipe self-relation, two-unit ingredient model), and divergences from carmen/docs.
+- [02 — Business Rules](./02-business-rules.md) — Validation (`REC_VAL_*`), calculation (`REC_CALC_*`, line → recipe → portion → price → margin chain, sub-recipe cascade), authorization (`REC_AUTH_*`), posting (`REC_POST_*`, publish / edit-published / cascade / archive events), and cross-module rules (`REC_XMOD_*`).
+- [03 — User Flow](./03-user-flow.md) — Recipe lifecycle overview and persona-specific flow files:
+  - [Chef](./03-user-flow-chef.md) — Chef / Kitchen Manager (+ Kitchen Staff read-only): creates, revises, publishes, archives.
+  - [Cost Controller](./03-user-flow-cost-controller.md) — Cost Controller (+ Cost Control Department): reviews cost, signs off, monitors drift, runs variance.
+  - [Outlet Manager](./03-user-flow-outlet-manager.md) — Outlet Manager: demand-side consumer, raises SRs from recipe demand, feeds back issues.
+  - [Procurement / F&B Ops](./03-user-flow-procurement-fb-ops.md) — Procurement (PO sizing, substitution) + F&B Ops (menu-item linkage approval, menu engineering).
+  - [Audit / Config](./03-user-flow-audit-config.md) — Sysadmin (config, RBAC, tenant policy, integration) + Auditor (read-only versioning trace).
+- [04 — Test Scenarios](./04-test-scenarios.md) — Cross-persona scenarios + E2E coverage status (no dedicated `recipe.spec.ts` yet), with per-persona drill-downs:
+  - [Chef scenarios](./04-test-scenarios-chef.md)
+  - [Cost Controller scenarios](./04-test-scenarios-cost-controller.md)
+  - [Outlet Manager scenarios](./04-test-scenarios-outlet-manager.md)
+  - [Procurement / F&B Ops scenarios](./04-test-scenarios-procurement-fb-ops.md)
+  - [Audit / Config scenarios](./04-test-scenarios-audit-config.md)
