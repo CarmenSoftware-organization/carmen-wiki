@@ -2,7 +2,7 @@
 title: Costing
 description: Inventory valuation methods (FIFO, Weighted Average) and the costing engine that calculates COGS and ending inventory value.
 published: true
-date: 2026-05-15T07:48:00.000Z
+date: 2026-05-15T12:30:00.000Z
 tags: costing, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -58,4 +58,14 @@ Operationally, costing is where **food cost control** lives. Plate cost, recipe 
 
 ## 7. Pages in This Module
 
-- [Inventory Costing Methods: FIFO vs. Weighted Average](./calculation-methods.md) — Analysis and algorithms for the two supported costing methods.
+- [01 — Data Model](./01-data-model.md) — Entities, fields, relationships, and enums (Prisma-derived).
+- [02 — Business Rules](./02-business-rules.md) — Validation, calculation, authorization, posting, and cross-module rules.
+- [03 — User Flow](./03-user-flow.md) — Document lifecycle and persona index.
+  - [Finance](./03-user-flow-finance.md)
+  - [Inventory Controller](./03-user-flow-inventory-controller.md)
+  - [Auditor](./03-user-flow-auditor.md)
+- [04 — Test Scenarios](./04-test-scenarios.md) — Persona scope, cross-persona scenarios, E2E mapping.
+  - [Finance](./04-test-scenarios-finance.md)
+  - [Inventory Controller](./04-test-scenarios-inventory-controller.md)
+  - [Auditor](./04-test-scenarios-auditor.md)
+- [Inventory Costing Methods: FIFO vs. Weighted Average](./calculation-methods.md) — Method comparison and algorithms.
