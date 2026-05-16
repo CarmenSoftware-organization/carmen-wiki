@@ -2,7 +2,7 @@
 title: Store Requisition (SR) — User Flow
 description: Document lifecycle and persona-specific flow files for store-requisition.
 published: true
-date: 2026-05-15T13:30:00.000Z
+date: 2026-05-16T13:00:00.000Z
 tags: store-requisition, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -21,6 +21,32 @@ A note on workflow stages: unlike GRN where approval and fulfilment are separate
 ## 2. Document Lifecycle
 
 The SR document status is stored on `tb_store_requisition.doc_status` and constrained to the five values declared in the shared `enum_doc_status`: `draft` (initial editable state, no stock or GL impact, line entry by requester), `in_progress` (submitted and under workflow control — approval + fulfilment phases live here; still no stock or GL impact until commit), `completed` (single posting event has fired — inventory decremented at source, cost-layer consumed, destination receives stock or expense, document locked), `cancelled` (user-initiated retraction or all-lines-rejected automatic move; no inventory or GL impact), and `voided` (administrative cancellation with no inventory or GL impact). The transitions below cover the legal moves between them; everything else is rejected by the workflow engine. Downstream effects (source on-hand decrement, destination on-hand increment for `transfer`, journal-entry write) fire on the `in_progress → completed` transition only — see [02-business-rules.md](./02-business-rules.md) Section 5 for posting rules.
+
+```mermaid
+stateDiagram-v2
+    [*] --> draft: create (Requester — manual or recipe auto-create)
+    draft --> in_progress: submit (Requester — SR_VAL_001–009 pass)
+    draft --> cancelled: withdraw / cancel (Requester — own draft)
+    draft --> voided: void admin (Inventory Controller / Sysadmin)
+    in_progress --> in_progress: approve / trim / reject line (Approver — workflow-internal)
+    in_progress --> in_progress: send back for correction (Approver → Requester stage)
+    in_progress --> completed: commit issued_qty (Fulfiller — Variant A auto-complete · Variants B/C explicit)
+    in_progress --> cancelled: all lines rejected / requester retract at first stage
+    in_progress --> voided: void admin (Inventory Controller / Sysadmin)
+    completed --> completed: discrepancy flag (Receiver — no status change; SR_POST_013)
+    completed --> [*]
+    cancelled --> [*]
+    voided --> [*]
+
+    note right of in_progress
+        Variant A (INV→INV / sr_type=transfer): Issue = Complete, auto-complete
+        Variant B (INV→DIR / sr_type=issue): explicit Complete by Fulfiller
+        Variant C (INV→CONS / sr_type=issue): explicit Complete by Fulfiller
+        Sub-stage tracked via workflow_current_stage, not doc_status
+    end note
+```
+
+> ℹ️ **Note — intra-`in_progress` stages:** The `in_progress` self-loop covers two distinct workflow sub-stages — the approval phase and the fulfilment phase — both sharing the same `doc_status`. The actual sub-stage is tracked via `tb_store_requisition.workflow_current_stage`. For Variant A (INV → INV transfers), the fulfilment (Issue) and completion steps are auto-collapsed into a single transition; Variants B and C require an explicit Complete action by the Fulfiller.
 
 | From state | Action | To state | Allowed for | Pre-conditions |
 | ---------- | ------ | -------- | ----------- | -------------- |

@@ -2,7 +2,7 @@
 title: Store Requisition (SR) — User Flow — Audit / Config
 description: Inventory Controller, Finance, Sysadmin, and Auditor flow within the store-requisition module — oversight, configuration, period close, and post-commit signoff.
 published: true
-date: 2026-05-15T13:30:00.000Z
+date: 2026-05-16T13:00:00.000Z
 tags: store-requisition, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -13,6 +13,48 @@ dateCreated: 2026-05-15T13:30:00.000Z
 ## 1. Role in This Module
 
 The **Audit / Config** persona covers four overlapping operational roles that together govern the SR module's correctness, completeness, and configuration: the **Inventory Controller** (oversees the SR flow end-to-end, monitors variance and partial-fulfilment patterns, reconciles inventory sub-ledger against GL postings, manages approval thresholds, signs off on period-end activity, and is the administrative-void authority for `draft` / `in_progress` SRs), the **Finance Team** (verifies cost-centre mapping and journal entries on `completed` SRs, reconciles outlet food-cost reports against SR postings, ensures cost allocation between departments is accurate at period close, and blocks closed-period commits via `SR_VAL_014`), the **System Administrator** (owns RBAC for create / approve / fulfil authority, the workflow stage configuration in `tb_workflow`, approval value thresholds, segregation-of-duties relaxations for low-value SRs, and the auto-create wiring from `[[recipe]]`), and the **Auditor** (read-only review of SR history — per-line signatures, `history` JSON timelines, comment threads, linked inventory transactions, journal entries — to confirm controls are operating, variance is being investigated, and SoD is enforced). None of these roles act on the SR happy path; they act on the **periphery** — before any SR exists (config), during the flow (variance monitoring), and after commit (signoff, period close, audit trace). Two of them — Inventory Controller and System Administrator — hold the administrative-void authority (`SR_AUTH_013`) for pre-commit SRs; none can void a `completed` SR (corrections after commit flow through `[[inventory-adjustment]]`).
+
+### Position relative to the transactional flow (off-path observers)
+
+```mermaid
+graph LR
+    subgraph transactional["Transactional Happy Path"]
+        draft(("draft")) -->|"submit"| inprog(("in_progress"))
+        inprog -->|"commit"| completed(("completed"))
+        inprog -->|"cancelled"| cancelled(("cancelled"))
+    end
+    ic["Inventory Controller\n(variance review, pre-commit void)"]:::audit -.-> transactional
+    finance["Finance Team\n(GL verification, period close)"]:::audit -.-> transactional
+    sysadmin["System Administrator\n(RBAC, workflow config)"]:::cfg -.-> transactional
+    auditor["Auditor\n(read-only signature trace)"]:::audit -.-> transactional
+    classDef audit fill:#eab308,color:#000,stroke:#eab308;
+    classDef cfg fill:#7c3aed,color:#fff,stroke:#7c3aed;
+```
+
+### Permission Matrix — V6 Action × Sub-persona (Audit / Config)
+
+These roles act on the periphery of the SR lifecycle — before any SR exists (Sysadmin config), during the flow (Inventory Controller variance monitoring), and after commit (Finance signoff, Auditor trace). None advance the happy-path lifecycle; two hold administrative-void authority for pre-commit SRs.
+
+| Action | Inventory Controller | Finance Team | System Administrator | Auditor |
+|---|---|---|---|---|
+| View SR at any status | ✅ (`SR_AUTH_009`) | ✅ (`SR_AUTH_010`) | ✅ | ✅ (read-only) |
+| View per-line signature chain and `history` JSON | ✅ | ✅ | ✅ | ✅ |
+| Monitor variance dashboard (`requested − issued`) | ✅ (`SR_AUTH_009`) | ✅ | — | ✅ |
+| Pre-commit administrative void (`draft` / `in_progress → voided`) | ✅ (`SR_AUTH_013`) | ❌ | ✅ (`SR_AUTH_013`) | ❌ |
+| Void `completed` SR | ❌ (`SR_POST_010` — not allowed; use inventory-adjustment) | ❌ | ❌ | ❌ |
+| Investigate and resolve Receiver discrepancy | ✅ | ✅ (GL side) | — | ❌ |
+| Co-author inventory adjustment for post-commit correction | ✅ (`SR_XMOD_009`) | ✅ (verify GL balance) | — | ❌ |
+| Block closed-period commits (`SR_VAL_014`) | — | ✅ (`SR_AUTH_010`) | — | ❌ |
+| Period-end reconciliation signoff | ✅ (sub-ledger) | ✅ (outlet food-cost) | — | ✅ (independent review) |
+| Configure workflow stages (`tb_workflow`) | — | — | ✅ (`SR_AUTH_014`) | ❌ |
+| Manage RBAC (assign / revoke roles per location) | — | — | ✅ | ❌ |
+| Configure SoD-relaxation thresholds | — | — | ✅ | ❌ |
+| Wire recipe auto-create (`[[recipe]]` → SR draft) | — | — | ✅ | ❌ |
+| Edit SR header / lines | ❌ | ❌ | ❌ | ❌ |
+| Approve lines | ❌ | ❌ | ❌ | ❌ |
+| Commit / issue goods | ❌ | ❌ | ❌ | ❌ |
+
+> ℹ️ **Void scope:** Administrative void (`SR_AUTH_013`) is pre-commit only. A `completed` SR cannot be voided by any sub-role here — corrections flow through `[[inventory-adjustment]]` with the SR `id` as back-reference (`SR_XMOD_009`).
 
 ## 2. Entry Point and Primary Flow
 

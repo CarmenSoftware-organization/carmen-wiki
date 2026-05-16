@@ -2,7 +2,7 @@
 title: Store Requisition (SR) — Business Rules
 description: Validation, calculation, authorization, posting, and cross-module rules for store-requisition.
 published: true
-date: 2026-05-15T13:30:00.000Z
+date: 2026-05-16T13:00:00.000Z
 tags: store-requisition, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -132,6 +132,27 @@ State diagram (Prisma-canonical):
 ```
 
 `completed`, `cancelled`, and `voided` are terminal. `draft` accepts soft-delete.
+
+### 5.1 Status Lifecycle — Live UI vs BRD Mapping
+
+The Prisma enum `enum_doc_status` documented above is what the live UI uses. The BRD (`BR-store-requisitions v1.5.0`) and `SR-User-Experience.md` describe a 6-state lifecycle. The table below maps every observable live-UI status to its BRD equivalent so testers and developers can reconcile the two without ambiguity. Source: `Test_case/System_Process/tx-03-sr.md` (capture date 2026-04-27).
+
+> Diff legend: ✅ match · 🟡 renamed · 🔴 new in live UI · 🔵 BRD only.
+
+| Live UI status | BRD equivalent | Diff | Notes |
+|---|---|---|---|
+| `draft` | `Draft` | ✅ match | Initial editable state; requester entering line data. |
+| `in_progress` | `Submitted`, `UnderReview`, `Approved`, `PartiallyApproved`, `InProcess`, `Fulfilled` | 🟡 renamed | BRD 6-state model collapses into a single Prisma status; actual sub-stage is tracked via `workflow_current_stage`. Stage flow per `BR-SR-014`: Draft → Submit → Approve → Issue → Complete. |
+| `completed` | `Completed` / `Fulfilled` | 🟡 renamed | The single posting event (`in_progress → completed`). Source on-hand decremented; cost-layer consumed; inventory transactions written. |
+| `cancelled` | `Rejected` / `Reject` | 🟡 renamed | Triggered by requester withdrawal, approver full-rejection, or automatic `Σ approved_qty = 0` path. |
+| `voided` | `Voided` / `Void` | 🟡 renamed | Administrative path; Inventory Controller or Sysadmin only; pre-commit only. |
+| — | `PartiallyApproved` | 🔵 BRD only | Not a separate Prisma status; represented by mixed per-line approval outcomes while `doc_status = in_progress`. |
+
+> ⚠️ **Discrepancy — 3-variant nature not reflected in `enum_doc_status`:** The live UI supports three destination variants (INV → INV / INV → DIR / INV → CONS) that produce different GL effects, but all three share the same `draft → in_progress → completed` status path. The `sr_type` enum (`issue` / `transfer`) distinguishes the two live variants (DIR and CONS are both `sr_type = issue`; INV → INV is `sr_type = transfer`). BRD `BR-store-requisitions v1.5.0` and `Test_case/System_Process/tx-03-sr.md` describe three variants; the live system collapses DIR and CONS under a single `sr_type = issue` value, differentiating them only by the destination `tb_location.location_type`. Source: `Test_case/System_Process/tx-03-sr.md` (capture date 2026-04-27).
+
+> ⚠️ **Discrepancy — Stock Transfer view vs separate TRF transaction code:** BRD `BR-period-end v2.0.0` lists `TRF` as a peer transaction code alongside `SR` in Stage 1 of the period-close validation gate. The implementation (`BR-stock-transfers.md`) confirms that Stock Transfers are **not** a separate entity — they are SRs with INVENTORY destinations (`sr_type = transfer`). For period-close Stage 1 validation, SR records with INV → INV destinations satisfy both the `SR` and `TRF` buckets. The Stock Transfer page is a read-only filtered view of SR records, not a separate document. Source: `Test_case/System_Process/tx-03-sr.md` (capture date 2026-04-27).
+
+> ℹ️ **Note — Variant A auto-complete:** For `sr_type = transfer` (INV → INV), the Issue and Complete stages are treated as the same stage — auto-complete with no separate receiver confirmation step. For Variants B and C (`sr_type = issue`), the Storekeeper explicitly completes the document after issue.
 
 ## 6. Cross-Module Rules
 

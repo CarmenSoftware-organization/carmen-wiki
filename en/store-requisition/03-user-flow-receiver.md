@@ -2,7 +2,7 @@
 title: Store Requisition (SR) — User Flow — Receiver
 description: Receiver's flow within the store-requisition module — confirms destination receipt and flags discrepancies on issued SRs.
 published: true
-date: 2026-05-15T13:30:00.000Z
+date: 2026-05-16T13:00:00.000Z
 tags: store-requisition, user-flow, receiver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -13,6 +13,36 @@ dateCreated: 2026-05-15T13:30:00.000Z
 ## 1. Role in This Module
 
 The **Receiver** persona is the **destination outlet representative** — the person at the consuming outlet (kitchen, bar, banquet) or the destination warehouse who confirms physical receipt of stock issued from the source location. In small operations the Receiver is often the same physical user as the Requester (the Outlet Manager) wearing a second hat at the dock; in larger operations the Receiver is a dedicated stock controller at the destination. On entry the SR is at `doc_status = completed` (the Fulfiller has committed the issue at source and the inventory transactions have been written; the destination's on-hand has already been incremented for `sr_type = transfer` or the destination cost-centre has been debited for `sr_type = issue`). The Receiver's job is **physical acknowledgement and discrepancy detection** — counting what physically arrives, comparing against the SR's `issued_qty` per line, verifying lot and expiry data on the linked inventory transaction, and **flagging any mismatch** between what the system says was issued and what was actually received. The Receiver does NOT change `doc_status` directly — the SR is already terminal at `completed` — but they raise discrepancy events through the comment system (`tb_store_requisition_comment`, `tb_store_requisition_detail_comment`) that escalate to the Inventory Controller for resolution via `[[inventory-adjustment]]`. The Receiver has **no commit authority** on the SR; their role is verification and signal-raising after the source-side commit has already fired. For `sr_type = transfer` SRs paired with a destination GRN (the `[[good-receive-note]]` paired pattern used in tenants where the destination is a different legal entity or remote facility), the Receiver's flow may overlap with the GRN Receiver flow — see [[good-receive-note/03-user-flow-receiver]].
+
+### Workflow position (Receiver highlighted)
+
+```mermaid
+graph LR
+    completed(("completed\n(SR locked)")) -->|"goods arrive at dest"| verify["Verify physical receipt\nagainst issued_qty + lot data"]:::current
+    verify -->|"full match"| ack["Acknowledge receipt\n(comment on line)"]:::current
+    verify -->|"discrepancy"| flag["Flag discrepancy\n(discrepancy comment)"]:::current
+    flag -->|"escalate"| ic["Inventory Controller\n(investigation)"]
+    ic -->|"post corrective adj"| adj[["Inventory Adjustment\n(SR_XMOD_009)"]]
+    ack --> closed["Receipt closed out"]:::current
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+```
+
+### Permission Matrix — V1 Status × Action (Receiver)
+
+The Receiver operates exclusively on `completed` SRs — the SR is already terminal when the Receiver enters the flow. The Receiver cannot change `doc_status`, alter `issued_qty`, or raise an inventory adjustment directly; their authority is limited to verification and signal-raising. Per `SR_AUTH_008`, the Receiver may confirm physical receipt and flag discrepancies.
+
+| Action | `completed` | All other statuses |
+|---|---|---|
+| View SR (header, lines, issued_qty, lot data on linked inventory transaction) | ✅ (`SR_AUTH_008`) | ✅ (read-only) |
+| Acknowledge full receipt (append `user` comment on line) | ✅ (`SR_AUTH_008`, `SR_POST_013`) | ❌ |
+| Flag discrepancy (append discrepancy comment with actual received qty) | ✅ (`SR_AUTH_008`, `SR_POST_013`) | ❌ |
+| Attach evidence (photos, weight tickets) to line comment | ✅ | ❌ |
+| Change `doc_status` | ❌ (`SR_POST_013` — status does not move) | ❌ |
+| Alter `issued_qty` on any line | ❌ | ❌ |
+| Void SR | ❌ | ❌ |
+| Post inventory adjustment directly | ❌ (goes via Inventory Controller → `SR_XMOD_009`) | ❌ |
+
+> ℹ️ **Discrepancy handling:** A discrepancy comment does NOT move `doc_status` — the SR stays `completed`. Resolution is via `[[inventory-adjustment]]` co-authored by the Inventory Controller (`SR_XMOD_009`). For `sr_type = transfer` SRs paired with a destination GRN, the Receiver's flow may extend into the GRN module.
 
 ## 2. Entry Point and Primary Flow
 

@@ -2,7 +2,7 @@
 title: Store Requisition (SR) — User Flow — Fulfiller
 description: Fulfiller's flow within the store-requisition module — picks, issues, selects lots, and commits the SR.
 published: true
-date: 2026-05-15T13:30:00.000Z
+date: 2026-05-16T13:00:00.000Z
 tags: store-requisition, user-flow, fulfiller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -13,6 +13,37 @@ dateCreated: 2026-05-15T13:30:00.000Z
 ## 1. Role in This Module
 
 The **Fulfiller** persona is the **Store Keeper / Warehouse Supervisor** at the source location who owns the irrevocable posting step — they receive the approved SR at the source warehouse, pick the items from the shelf, record `issued_qty` per line (which may be less than `approved_qty` if stock has dropped between approval and issue), select specific lots for lot-controlled items, and **commit** the SR (`in_progress → completed`). The commit is the single posting event for the SR: it fires the source on-hand decrement, the cost-layer consumption (per `[[costing]]` FIFO or moving-average for the source location), the destination on-hand increment (for `sr_type = transfer`) or the destination cost-centre debit (for `sr_type = issue`), and the journal-entry write. On entry the SR is at `doc_status = in_progress` with `workflow_current_stage` pointing at the fulfilment stage and the Fulfiller in `user_action.execute`; each line has `approved_qty > 0` (otherwise the SR would have moved to `cancelled` at approval) and the Approver's per-line signature is preserved on `tb_store_requisition_detail.approved_by_*`. The states owned by this persona are the fulfilment phase of `in_progress` (during which `issued_qty` is set and lots are selected without committing) and the `in_progress → completed` transition itself. Segregation of duties forbids the Approver from being the Fulfiller on the same SR (`SR_AUTH_012`) — the SR module enforces this at commit time; tenant config may relax this for low-value SRs below a threshold. Post-commit corrections are out of scope for the routine Fulfiller path; they go through `[[inventory-adjustment]]`.
+
+### Workflow position (Fulfiller highlighted)
+
+```mermaid
+graph LR
+    approved(("in_progress\n— fulfilment stage")) -->|"re-check source availability"| pick["Pick items; enter issued_qty; select lots"]:::current
+    pick -->|"commit (SR_VAL_011–014)"| completed(("completed")):::current
+    pick -->|"short fulfilment\n(live on-hand < approved_qty)"| partial["Partial commit\n(issued_qty < approved_qty)"]:::current
+    partial -->|"commit partial"| completed
+    completed -.->|"Variant A (transfer): destination on-hand +qty\nVariants B/C (issue): dest cost-centre debited"| effects[["Inventory + GL effects"]]
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+```
+
+### Permission Matrix — V1 Status × Action (Fulfiller)
+
+The Fulfiller acts at `doc_status = in_progress` while `workflow_current_stage` is at the fulfilment stage and the Fulfiller is in `user_action.execute`. The Fulfiller cannot exceed the Approver's `approved_qty` per line. Segregation of Duties (`SR_AUTH_012`) forbids the Approver of a line from being the same user who commits the SR; tenant config may relax this for low-value SRs.
+
+| Action | `in_progress` (fulfilment stage) | `completed` |
+|---|---|---|
+| View SR and approved quantities | ✅ (`SR_AUTH_007`) | ✅ |
+| Re-check live source availability | ✅ (`SR_VAL_013` pre-check) | — |
+| Enter `issued_qty` per line (`≤ approved_qty`) | ✅ (`SR_AUTH_007`, `SR_VAL_008`) | ❌ |
+| Select lots for lot-controlled items | ✅ (`SR_VAL_012`) | ❌ |
+| Enter per-line comments / attachments | ✅ | ❌ |
+| Commit SR (`in_progress → completed`) | ✅ (`SR_AUTH_007`, `SR_VAL_011`–`SR_VAL_014`) | ❌ |
+| Short fulfilment (partial issue; `issued_qty < approved_qty`) | ✅ (`SR_POST_012`) | — |
+| Commit where Fulfiller = line Approver | ❌ (SOD: `SR_AUTH_012`) | — |
+| Edit header / line quantities above `approved_qty` | ❌ | ❌ |
+| Void SR | ❌ | ❌ |
+
+> ℹ️ **3-variant commit behaviour:** For `sr_type = transfer` (Variant A — INV → INV), the fulfilment and completion steps are auto-collapsed (Issue = Complete); no separate completion action is needed. For `sr_type = issue` (Variants B and C — INV → DIR and INV → CONS), the Fulfiller explicitly commits after recording `issued_qty`.
 
 ## 2. Entry Point and Primary Flow
 

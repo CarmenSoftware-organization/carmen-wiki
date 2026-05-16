@@ -2,7 +2,7 @@
 title: Store Requisition (SR) — User Flow — Approver
 description: Approver's flow within the store-requisition module — reviews, trims, rejects, splits, or sends back submitted SRs.
 published: true
-date: 2026-05-15T13:30:00.000Z
+date: 2026-05-16T13:00:00.000Z
 tags: store-requisition, user-flow, approver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -13,6 +13,37 @@ dateCreated: 2026-05-15T13:30:00.000Z
 ## 1. Role in This Module
 
 The **Approver** persona is the **Department Head** (or, at later approval stages in a multi-tier workflow, the Operations Manager / Cost Controller) who owns the review of a submitted SR before it can be released for fulfilment. The Approver is the control gate between the outlet's demand (`requested_qty`) and the store's release authority (`approved_qty ≤ requested_qty`). On entry the SR is at `doc_status = in_progress` with `workflow_current_stage` pointing at an approval stage where the Approver is in `user_action.execute`. The Approver reviews each line against operational need, par levels, current source availability, and budget; approves in full, trims `approved_qty` down, rejects with a reason, or sends the document back to the requester for correction. Per-line approval / review / rejection signatures (`approved_by_id`, `review_by_id`, `reject_by_id` plus name / date / message columns) are persisted directly on `tb_store_requisition_detail` for audit; per-line `history` JSON appends a `{ seq, name, status, message, by, at }` entry for every action. The Approver never advances `doc_status` directly — they advance `workflow_current_stage`; the header status stays `in_progress` throughout the approval phase. Segregation of duties forbids the requester from being the approver (`SR_AUTH_011`); the SR module enforces this at the approve action. Approval delegation (a Department Head assigning their approval right to a deputy) is handled at the workflow layer (`tb_workflow` config), not on the SR itself.
+
+### Workflow position (Approver highlighted)
+
+```mermaid
+graph LR
+    submitted(("in_progress\n— approval stage")) -->|"approve / trim lines"| advance["Advance workflow"]:::current
+    advance -->|"more approval stages"| nextstage(("in_progress\n— next approval stage")):::current
+    nextstage -->|"final approval stage"| fulfil(("in_progress\n— fulfilment stage"))
+    advance -->|"all lines approved\nat final stage"| fulfil
+    submitted -->|"send back for correction"| sendback["Return to Requester stage"]:::current
+    submitted -->|"all lines rejected"| cancelled(("cancelled")):::current
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+```
+
+### Permission Matrix — V2 Action × Stage Role (Approver)
+
+The Approver acts at `doc_status = in_progress` while `workflow_current_stage` points to an approval stage where the Approver is in `user_action.execute`. The SR module enforces Segregation of Duties: the Approver must not be the same user as the Requester (`SR_AUTH_011`). In multi-tier workflows the same action set applies at each stage; the second-stage Approver (Operations Manager / Cost Controller) sees the first-stage signature as additional context.
+
+| Action | First-stage Approver (Dept Head) | Second-stage Approver (Ops Mgr / multi-tier) |
+|---|---|---|
+| Open SR pending approval | ✅ (`SR_AUTH_005`) | ✅ (after first-stage acts) |
+| Approve line in full (`approved_qty = requested_qty`) | ✅ (`SR_AUTH_005`) | ✅ (`SR_AUTH_005`) |
+| Trim `approved_qty` down (`0 < approved_qty < requested_qty`) | ✅ (`SR_AUTH_005`) | ✅ (`SR_AUTH_005`) |
+| Reject line (`approved_qty = 0` + mandatory `reject_message`) | ✅ (`SR_AUTH_005`, `SR_VAL_010`) | ✅ (`SR_AUTH_005`, `SR_VAL_010`) |
+| Send back line for correction (`review_message` non-empty) | ✅ (`SR_AUTH_005`) | ✅ (`SR_AUTH_005`) |
+| Split decision — mix approve / reject / send-back per line | ✅ (`SR_AUTH_006`) | ✅ (`SR_AUTH_006`) |
+| Approve own SR (where Approver = Requester) | ❌ (SOD: `SR_AUTH_011`) | ❌ (SOD: `SR_AUTH_011`) |
+| Raise `approved_qty` above `requested_qty` | ❌ (`SR_VAL_010`) | ❌ (`SR_VAL_010`) |
+| Commit / issue goods | ❌ (SOD: Approver ≠ Fulfiller `SR_AUTH_012`) | ❌ (SOD: `SR_AUTH_012`) |
+
+> ℹ️ **Multi-tier escalation:** When the SR's total value exceeds the first-stage approver's threshold, the workflow advances to a second-stage approver after the first stage acts. Each stage's approver sees previous signatures as context; further trimming or rejection is permitted at each stage.
 
 ## 2. Entry Point and Primary Flow
 

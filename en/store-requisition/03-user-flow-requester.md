@@ -2,7 +2,7 @@
 title: Store Requisition (SR) — User Flow — Requester
 description: Requester's flow within the store-requisition module — identifies stock needs, raises and submits the SR.
 published: true
-date: 2026-05-15T13:30:00.000Z
+date: 2026-05-16T13:00:00.000Z
 tags: store-requisition, user-flow, requester, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -13,6 +13,40 @@ dateCreated: 2026-05-15T13:30:00.000Z
 ## 1. Role in This Module
 
 The **Requester** persona is the **Outlet Manager** (kitchen, bar, banquet, restaurant) — the person at the consuming location who identifies stock needs and raises the requisition against a source warehouse or central store. The Requester owns the editable `draft`: they pick the source location and destination outlet, choose the movement type (`sr_type = issue` for direct-cost consumption pulls, `sr_type = transfer` for moves into another inventory-holding location), add product lines with `requested_qty` and a required date (`expected_date`), attach supporting notes (recipe demand snapshot, banquet event detail, par-level rationale), and submit the document for approval. On entry the requester is logged in with create-SR permission and is a member of `tb_store_requisition.department_id`; the requester is permitted to act between the chosen `from_location_id` and `to_location_id`. The SR states owned by this persona are `draft` (full edit rights) and a sliver of `in_progress` — the requester can retract their own SR while the workflow is still at the first approval stage and no approver has yet acted (`SR_AUTH_004`), and can amend / resubmit when an approver sends the document back for correction (the requester stage is re-entered via the workflow). Segregation of duties forbids the requester from approving their own SR (`SR_AUTH_011`) — the SR module enforces this at the approve action.
+
+### Workflow position (Requester highlighted)
+
+```mermaid
+graph LR
+    create["Create SR (draft)"]:::current -->|"submit"| approval(("in_progress\n— approval stage"))
+    approval -->|"send back"| amend["Amend & resubmit"]:::current
+    amend -->|"resubmit"| approval
+    approval -->|"all lines approved"| fulfil(("in_progress\n— fulfilment stage"))
+    fulfil -->|"commit"| completed(("completed"))
+    approval -->|"all lines rejected\nor requester retract"| cancelled(("cancelled"))
+    draft_cancel["Withdraw own draft"]:::current --> cancelled
+    create --> draft_cancel
+    completed -.->|"monitor / observe"| observer["Requester monitors\nreceipt"]:::current
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+```
+
+### Permission Matrix — V1 Status × Action (Requester)
+
+The Requester holds full edit rights at `draft` and re-enters `in_progress` only when an approver sends the document back for correction. Segregation of duties (`SR_AUTH_011`) forbids the Requester from approving their own SR — the module enforces this at the approve action.
+
+| Action | `draft` | `in_progress` (send-back only) | `completed` | `cancelled` / `voided` |
+|---|---|---|---|---|
+| Create SR | ✅ (`SR_AUTH_001`) | — | — | — |
+| Edit header (locations, dates, description, dimension) | ✅ (`SR_AUTH_002`) | ✅ send-back only | ❌ | ❌ |
+| Add / edit / delete lines (`requested_qty`) | ✅ (`SR_AUTH_002`) | ✅ send-back only | ❌ | ❌ |
+| Attach supporting evidence (comments / attachments) | ✅ | ✅ | ❌ | ❌ |
+| Submit for approval (`draft → in_progress`) | ✅ (`SR_AUTH_003`) | — | — | — |
+| Resubmit after send-back | — | ✅ (`SR_AUTH_003`) | — | — |
+| Withdraw / cancel own draft | ✅ (`SR_AUTH_004`) | ✅ at first approval stage only (`SR_AUTH_004`) | ❌ | — |
+| View SR (read-only) | ✅ | ✅ | ✅ | ✅ |
+| Approve own SR | ❌ (SOD: Requester ≠ Approver per `SR_AUTH_011`) | ❌ | — | — |
+
+> ℹ️ **Send-back loop:** When an Approver sends the SR back for correction, the SR remains at `doc_status = in_progress` but the `workflow_current_stage` returns to the requester stage. The Requester amends and resubmits; already-approved lines are not reversed.
 
 ## 2. Entry Point and Primary Flow
 
