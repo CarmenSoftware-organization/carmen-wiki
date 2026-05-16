@@ -2,7 +2,7 @@
 title: Spot Check — User Flow — Counter
 description: Counter path through the spot-check lifecycle.
 published: true
-date: 2026-05-15T14:30:00.000Z
+date: 2026-05-16T16:00:00.000Z
 tags: spot-check, user-flow, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -13,6 +13,35 @@ dateCreated: 2026-05-15T14:30:00.000Z
 ## 1. Persona
 
 **Counter** — the floor-level worker who performs the physical count of in-scope items or locations on assigned spot checks, records counted quantities on the detail sheet (`tb_spot_check_detail.actual_qty`) accurately and on time, flags items that are damaged, unlabelled, or unfamiliar via line-level comments, and signs off completed sheets back to the Inventory Controller. Authority anchor for `SPC_AUTH_002`.
+
+### Workflow position (Counter highlighted)
+
+```mermaid
+graph LR
+    lead_create["Inventory Controller\ncreates spot check"] --> pending(("pending\n— counter\nassigned"))
+    pending -->|"counter enters\nfirst actual_qty"| in_progress(("in_progress\n— counting")):::current
+    in_progress -->|"enter / edit actual_qty\non assigned lines"| in_progress:::current
+    in_progress -->|"all assigned lines\ncompleted — notify IC"| lead_submit["Inventory Controller\nreviews + submits"]
+    lead_submit --> completed(("completed\n— rollup fires"))
+    completed --> adj["Inventory Adjustment\n(rollup: tb_stock_in /\ntb_stock_out)"]
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+```
+
+### Permission Matrix — V1 Status × Action (Counter)
+
+The Counter is a data-entry persona scoped to their assigned location. They can read and write `actual_qty` on their lines and add comments, but cannot submit the spot-check document or change any configuration. Rows are derived from Section 3 (Primary Actions) of this file; rule citations refer to [[spot-check/02-business-rules]] § 4 / § 5.
+
+| Action | Spot check `pending` | Spot check `in_progress` | Spot check `completed` |
+|---|---|---|---|
+| View assigned spot-check sheet (location-scoped lines) | ✅ (`SPC_AUTH_004`) | ✅ (`SPC_AUTH_004`) | ✅ (read-only) |
+| Enter first `actual_qty` (triggers `pending → in_progress`) | ✅ (`SPC_AUTH_002`) | — | ❌ |
+| Enter / edit `actual_qty` on assigned location lines | — | ✅ (`SPC_VAL_005` — qty ≥ 0) | ❌ (`SPC_VAL_007` — immutable) |
+| Flag damaged / unlabelled / unfamiliar item (comment + photo) | — | ✅ (`SPC_AUTH_002`) | ❌ |
+| Add free-text comment to spot check | — | ✅ (`SPC_AUTH_002`) | ❌ |
+| Sign off completed sheet (notify Inventory Controller) | — | ✅ (notification; no status change) | — |
+| Submit spot check (`in_progress → completed`) | ❌ (`SPC_AUTH_002` — Inventory Controller only) | ❌ (`SPC_AUTH_002` — Inventory Controller only) | — |
+| View lines outside assigned location | ❌ (`SPC_AUTH_004` — location-scoped) | ❌ (`SPC_AUTH_004` — location-scoped) | ❌ |
+| Re-enter a recount line flagged by Inventory Controller | — | ✅ (ideally a different counter to remove bias) | ❌ |
 
 ## 2. Entry Points
 

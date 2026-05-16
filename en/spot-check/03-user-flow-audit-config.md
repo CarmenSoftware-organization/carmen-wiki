@@ -2,7 +2,7 @@
 title: Spot Check — User Flow — Audit / Config
 description: Auditor and (implicit) Sysadmin paths through the spot-check lifecycle.
 published: true
-date: 2026-05-15T14:30:00.000Z
+date: 2026-05-16T16:00:00.000Z
 tags: spot-check, user-flow, audit, config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -20,6 +20,39 @@ This persona group collapses two roles whose touch on the spot-check module is o
 > **Note:** Unlike physical-count, the spot-check module does **not** define an Approver / Finance Reviewer persona at this level — the rollup-adjustment approval lands on the [[inventory-adjustment]] document and is governed by `ADJ_AUTH_*`, not by spot-check rules. The Auditor / Sysadmin pair captures the audit-and-config surface specific to spot-check.
 
 Authority anchor for `SPC_AUTH_003`.
+
+### Position relative to the transactional flow (off-path observers)
+
+```mermaid
+graph LR
+    subgraph transactional["Transactional Happy Path"]
+        pending(("pending")) -->|"count starts"| in_progress(("in_progress"))
+        in_progress -->|"submit"| completed(("completed"))
+        completed -->|"rollup"| adj(("inventory-adjustment\napproval"))
+    end
+    sysadmin["Sysadmin\n(tolerance thresholds,\ndefault size/method,\nreason-code mapping)"]:::cfg -.-> transactional
+    auditor["Auditor\n(read-only inspection:\nspot-check sheets, recount records,\napprovals, posted adjustments)"]:::audit -.-> transactional
+    classDef audit fill:#eab308,color:#000,stroke:#eab308;
+    classDef cfg fill:#7c3aed,color:#fff,stroke:#7c3aed;
+```
+
+### Permission Matrix — V6 Action × Sub-persona (Audit / Config)
+
+Both sub-personas are non-transactional within the spot-check module — neither creates, edits, submits, or voids spot-check documents. Note: unlike Physical Count, there is no Approver / Finance persona at the spot-check level — rollup-adjustment approval lands on [[inventory-adjustment]] per `ADJ_AUTH_*`. Rows are derived from Section 3 (Primary Actions) of this file; rule citations refer to [[spot-check/02-business-rules]] § 4 / § 5.
+
+| Action | Auditor | Sysadmin |
+|---|---|---|
+| View spot-check header / detail / comment threads (read-only) | ✅ (`SPC_AUTH_003`) | ✅ |
+| View counter assignments (location-grants) and counted-by stamps | ✅ (`SPC_AUTH_003`) | ✅ |
+| View rollup adjustment (`tb_stock_in` / `tb_stock_out`) in [[inventory-adjustment]] | ✅ | ✅ |
+| Observe spot check in progress (sample-based; add observation comment) | ✅ (`SPC_AUTH_003`) | ❌ |
+| Inspect full chain (spot-check sheet → recount → approvals → posted adj → inventory tx) | ✅ (`SPC_AUTH_003`) | ❌ |
+| Verify SoD (submitter ≠ rollup approver) | ✅ (`SPC_AUTH_003`) | ❌ |
+| Configure tolerance threshold (`SPC_VAL_006` default) | ❌ | ✅ (`SPC_AUTH_003`) |
+| Configure default sample `size` | ❌ | ✅ (`SPC_AUTH_003`) |
+| Configure default `method` (`enum_spot_check_method`) | ❌ | ✅ (`SPC_AUTH_003`) |
+| Configure reason-code mapping (`SPOT_CHECK_OVERAGE` / `SPOT_CHECK_SHORTAGE` → GL account) | ❌ | ✅ (`SPC_AUTH_003`) |
+| Create / edit / submit / void spot-check documents | ❌ | ❌ |
 
 ## 2. Entry Points
 

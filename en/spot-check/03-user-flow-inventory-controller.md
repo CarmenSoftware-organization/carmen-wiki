@@ -2,7 +2,7 @@
 title: Spot Check — User Flow — Inventory Controller
 description: Inventory Controller path through the spot-check lifecycle.
 published: true
-date: 2026-05-15T14:30:00.000Z
+date: 2026-05-16T16:00:00.000Z
 tags: spot-check, user-flow, inventory-controller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -13,6 +13,36 @@ dateCreated: 2026-05-15T14:30:00.000Z
 ## 1. Persona
 
 **Inventory Controller** — the single owner of the spot-check exercise: defines selection criteria (`method` = random / high_value / manual, `size` of the sample), schedules and launches the spot check, assigns the Counter, monitors progress, reviews variances, approves or rejects recount requests, and triggers the variance rollup to [[inventory-adjustment]]. Authority anchor for `SPC_AUTH_001`.
+
+### Workflow position (Inventory Controller highlighted)
+
+```mermaid
+graph LR
+    create(("create\n— tb_spot_check\npending")):::current -->|"assign counter\n+ location-grant"| pending(("pending\n— counter\nassigned")):::current
+    pending -->|"counter enters\nfirst actual_qty"| in_progress(("in_progress\n— counting")):::current
+    in_progress -->|"monitor; flag recount;\noverride variance"| in_progress
+    in_progress -->|"submit\n(all lines counted)"| completed(("completed\n— rollup fires")):::current
+    completed -->|"route rollup\nfor approval"| adj["Inventory Adjustment\n(Approver / Finance)"]:::current
+    pending -->|"void\n(cancel before counting)"| void_st(("void")):::current
+    in_progress -->|"void\n(cancel mid-count)"| void_st
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+```
+
+### Permission Matrix — V1 Status × Action (Inventory Controller)
+
+The Inventory Controller is the single owner of the spot-check exercise — the only persona who can create spot checks, configure method and size, assign counters, flag recounts, submit, and void. Rows are derived from Section 3 (Primary Actions) of this file; rule citations refer to [[spot-check/02-business-rules]] § 4 / § 5.
+
+| Action | `pending` | `in_progress` | `completed` | `void` |
+|---|---|---|---|---|
+| Create spot check (random / high_value / manual) | ✅ (`SPC_VAL_001`–`SPC_VAL_003`) | — | — | — |
+| Assign counter to spot check | ✅ (`SPC_AUTH_004`) | ✅ | ❌ | ❌ |
+| Monitor progress (lines counted vs total) | ✅ | ✅ (`SPC_CALC_004`) | ✅ (read-only) | ✅ (read-only) |
+| Flag line for recount (variance breach) | — | ✅ (`SPC_VAL_006`) | ❌ | ❌ |
+| Override / accept variance (countersignature) | — | ✅ (`SPC_AUTH_001`) | ❌ | ❌ |
+| Submit spot check (`in_progress → completed`) | — | ✅ (`SPC_AUTH_001`; `SPC_VAL_004` — all lines counted; `SPC_POST_001` rollup fires) | — | — |
+| Void spot check | ✅ (`SPC_VAL_008`) | ✅ (`SPC_VAL_008`) | ❌ (`SPC_VAL_007` — terminal) | — |
+| Route rollup adjustment for approval | — | — | ✅ — to Approver / Finance via [[inventory-adjustment]] | — |
+| Edit lines after completion | — | — | ❌ (`SPC_VAL_007` — immutable; raise manual adjustment per `SPC_POST_004`) | — |
 
 ## 2. Entry Points
 

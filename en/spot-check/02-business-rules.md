@@ -2,7 +2,7 @@
 title: Spot Check — Business Rules
 description: Validation, calculation, authorization, posting, and cross-module rules for spot checks.
 published: true
-date: 2026-05-15T14:30:00.000Z
+date: 2026-05-16T16:00:00.000Z
 tags: spot-check, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -67,6 +67,28 @@ Rule IDs follow `SPC_POST_NNN`. Posting in this module refers to the variance-ro
 | `SPC_POST_002` | The rollup adjustment header carries `info.spotCheckId = <tb_spot_check.id>` (and / or `info.countId` if reasons are aliased) for the audit-side join back to the spot-check source. The reason-code on `tb_adjustment_type` must exist with the appropriate direction (per [[inventory-adjustment/01-data-model]] § 2.1). |
 | `SPC_POST_003` | The cost-per-unit on each rollup line is set per `SPC_CALC_003` (inherited costing method). The Inventory Controller countersignature on the adjustment submission satisfies [[inventory-adjustment/02-business-rules]] approval per the rollup-fast-path (counter authority pre-approved at the spot check's submission). |
 | `SPC_POST_004` | Once the rollup adjustment is `completed`, the spot-check document is **immutable** — any subsequent correction at the same location requires a fresh `tb_stock_in` / `tb_stock_out` raised manually (or a new spot check), not a re-open. |
+
+### 5.1 Status Lifecycle — Live UI vs BRD Mapping
+
+The Prisma enum `enum_spot_check_status` documented in [[spot-check/01-data-model]] § 4 is what the live schema uses. `tx-10-spot-check.md` (BR-spot-check.md v2.2.0) describes the intended status set. Source: `Test_case/System_Process/tx-10-spot-check.md` (capture date 2026-04-27).
+
+> Diff legend: 🔴 new in live schema (no BRD equivalent) · 🟡 renamed/semantically shifted
+
+| Live schema status (`enum_spot_check_status`) | BRD (`tx-10-spot-check.md`) equivalent | Diff | Notes |
+|---|---|---|---|
+| `pending` | `draft` / `pending` | 🟡 | BRD uses `draft` (created, not submitted) → `pending` (submitted, awaiting start) as two distinct states. Live schema collapses both into `pending`. Counter entering first qty triggers `pending → in_progress`. |
+| `in_progress` | `in-progress` | — | Direct match. Counting underway. |
+| `completed` | `completed` | — | Direct match. Terminal; satisfies End Period Close Stage 2 (BR-PE-006). |
+| `void` | `cancelled` | 🟡 | BRD uses `cancelled` with a note that all entered data is preserved and no inventory changes are posted (BR-SC-007). Live schema uses `void`. |
+| — | `on-hold` | 🔴 | BRD defines `on-hold` (paused; → `in-progress`, `cancelled`). No `on_hold` value exists in `enum_spot_check_status` in the Prisma schema — pause/resume may be handled via UI state or a future migration. |
+
+> ⚠️ **Discrepancy — `draft` vs `pending` collapse:** BRD `tx-10-spot-check.md` defines two distinct pre-counting states: `draft` (created, not submitted → `pending`) and `pending` (submitted, awaiting start → `in-progress`). The live `enum_spot_check_status` has only `pending` — the create/submit distinction is not persisted as separate enum values. Source: `Test_case/System_Process/tx-10-spot-check.md` (capture date 2026-04-27).
+
+> ⚠️ **Discrepancy — `on-hold` state not in schema:** BRD defines `on-hold` as a valid pause state (`in-progress → on-hold → in-progress`). The live `enum_spot_check_status` does not include an `on_hold` value — pause/resume behaviour (e.g. "staff unavailable") may be handled at the UI layer without persisting a separate enum state, or may be deferred. Source: `Test_case/System_Process/tx-10-spot-check.md` (capture date 2026-04-27).
+
+> ⚠️ **Discrepancy — End Period Close Stage 2 gate not modelled in BRD posting rules:** The test-case INDEX specifies that all Spot Checks must be `completed` before End Period Close Stage 2 passes (BR-PE-006). The BRD (BR-spot-check.md v2.2.0) does not include a corresponding rule in the spot-check posting rules — the period-close gate is defined on the End Period Close side (tx-09). The wiki cross-references this in `SPC_POST_001` via the `completed` terminal state, but the live UI enforces it as an external gate, not a spot-check-internal constraint. Source: `Test_case/System_Process/tx-10-spot-check.md` (capture date 2026-04-27).
+
+> ⚠️ **Discrepancy — variance posting to inventory is PENDING:** BRD (BR-spot-check.md v2.2.0) implies variance posting to QOH / lots / cost upon completion (the same rollup pattern as Physical Count). The live implementation reaches `completed` status and satisfies End Period Close Stage 2 but does **not** currently post variance adjustments to inventory, lots, or cost. Lot impact and cost impact are both marked TBC. Source: `Test_case/System_Process/tx-10-spot-check.md` (capture date 2026-04-27).
 
 ## 6. Cross-Module Rules
 

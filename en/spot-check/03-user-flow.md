@@ -2,7 +2,7 @@
 title: Spot Check — User Flow
 description: Document lifecycle and persona-specific flow files for spot checks.
 published: true
-date: 2026-05-15T14:30:00.000Z
+date: 2026-05-16T16:00:00.000Z
 tags: spot-check, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -19,6 +19,33 @@ Section 2 below describes the **document lifecycle state machine** for `tb_spot_
 > **TODO:** Source the canonical UI screens / wizard flows from `../carmen-inventory-frontend/` once a `spot-check` route is discoverable; cross-reference E2E specs at `../carmen-inventory-frontend-e2e/tests/` once added (no `spot-check` spec exists as of this writing). No carmen/docs source folder exists for this module.
 
 ## 2. Document Lifecycle
+
+**Document-level state machine (`enum_spot_check_status`):**
+
+```mermaid
+stateDiagram-v2
+    [*] --> pending : Inventory Controller creates tb_spot_check (location + method + size) — SPC_VAL_001/002; on_hand_qty snapshot captured per line
+    pending --> in_progress : Counter enters first actual_qty — SPC_AUTH_004; counted_at / counted_by_id stamped
+    in_progress --> in_progress : Counter enters/edits actual_qty on assigned lines OR Inventory Controller flags line for recount (SPC_VAL_006)
+    in_progress --> completed : Inventory Controller submits — all lines have actual_qty (SPC_VAL_004); recount flags resolved; rollup fires (SPC_POST_001)
+    pending --> void : Inventory Controller cancels before counting starts — SPC_VAL_008; no rollup
+    in_progress --> void : Inventory Controller cancels mid-count — SPC_VAL_008; partial entries preserved; no rollup
+    completed --> [*]
+    void --> [*]
+
+    note right of completed
+        Terminal — immutable (SPC_VAL_007).
+        Satisfies End Period Close Stage 2 (BR-PE-006).
+        Variance rollup fires: diff_qty > 0 -> tb_stock_in (SPOT_CHECK_OVERAGE);
+        diff_qty < 0 -> tb_stock_out (SPOT_CHECK_SHORTAGE) — SPC_POST_001.
+        Note: variance posting to inventory is PENDING (see 02-business-rules § 5.1).
+    end note
+
+    note right of void
+        Terminal alternative — no ledger effect.
+        Cancelled checks do not satisfy End Period Close Stage 2.
+    end note
+```
 
 ### 2.1 Document-level transitions (`enum_spot_check_status`)
 
