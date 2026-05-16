@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow — Requestor
 description: Requestor's flow within the purchase-request module.
 published: true
-date: 2026-05-15T09:00:00.000Z
+date: 2026-05-16T10:00:00.000Z
 tags: purchase-request, user-flow, requestor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -13,6 +13,36 @@ dateCreated: 2026-05-15T09:00:00.000Z
 ## 1. Role in This Module
 
 The **Requestor** is the hotel or department staff member who originates a Purchase Request — the upstream demand signal that authorises procurement before any external commitment is made to a vendor. They own the PR while it is in `draft`: they fill the header (PR type — `General Purchase`, `Market List`, `Asset` — department, currency, requestor, request and required delivery dates, job/cost code, delivery point, description and justification), build the line list (product or free-text description, store location, requested quantity, FOC quantity, unit of measure, estimated unit price, discount, tax treatment, line delivery date), attach supporting documents (quotations, specs, photos), and submit when the request is ready for approval. Their involvement does not end at submit: when an approver chooses **Send Back** the PR returns to `draft` and the Requestor re-enters the flow to revise and resubmit, and at any time while the PR is still in `draft` they may cancel it. They cannot edit a PR after submission and they are not part of the approval, vendor-allocation, or PO-conversion steps — those belong to the Approver chain, the Purchaser, and the Procurement Manager respectively (see [index.md](./index.md) Section 4).
+
+### Workflow position (Requestor highlighted)
+
+```mermaid
+graph LR
+    create["Create PR<br/>(Requestor)"]:::current --> draft(("draft")):::current
+    draft -->|"Submit"| inprog(("in_progress"))
+    draft -->|"Cancel"| cancelled(("cancelled"))
+    inprog -->|"Send-back"| draft
+    inprog -->|"Approve final"| approved(("approved"))
+    inprog -->|"Reject"| cancelled
+    approved -->|"Convert to PO"| completed(("completed"))
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+```
+
+### Permission Matrix — Status × Action (Requestor)
+
+The Requestor is **the owner** of a PR only while it is in `draft`. Once it leaves `draft` (`in_progress`, `approved`, `completed`) or terminates (`cancelled`, `voided`) the Requestor retains view-only access. Action availability is enforced server-side by `PR_AUTH_001` and the state-machine guards.
+
+| Action | draft (own) | in_progress | approved | completed | cancelled / voided |
+|---|---|---|---|---|---|
+| View PR | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Edit header / lines | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Add / remove items | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Add attachments / comments | ✅ | ✅ (comment only) | ✅ (comment only) | ✅ (comment only) | ❌ |
+| Submit | ✅ (≥1 line + workflow selected) | ❌ | ❌ | ❌ | ❌ |
+| Cancel | ✅ | ❌ | ❌ | ❌ | — |
+| Resubmit (after Send-back) | ✅ (PR is in `draft` again) | ❌ | ❌ | ❌ | ❌ |
+
+> ℹ️ **Send-back loop:** when an approver chooses *Send Back* the PR's `pr_status` returns to `draft` and the Requestor is once again the owner — every cell in the **draft (own)** column above re-applies. Revision history is preserved (`PR_POST_008`).
 
 ## 2. Entry Point and Primary Flow
 

@@ -2,7 +2,7 @@
 title: Purchase Order — User Flow — Audit / Config
 description: Auditor (read-only audit trail across PR/PO/GRN/invoice) and System Administrator (PO numbering, RBAC, integration config) flows for purchase-order.
 published: true
-date: 2026-05-15T10:00:00.000Z
+date: 2026-05-16T10:00:00.000Z
 tags: purchase-order, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -13,6 +13,54 @@ dateCreated: 2026-05-15T10:00:00.000Z
 ## 1. Role in This Module
 
 The **Audit / Config** persona axis groups two distinct roles that both sit **outside the transactional happy path** of the `purchase-order` module but are essential to its governance and operability. The **Auditor** is a read-only persona whose interest spans the **end-to-end procurement chain** — Purchase Request → Purchase Order → Goods Receive Note → vendor invoice / AP posting — and who uses the PO module's activity log (`ActivityLogTab`), `workflow_history`, `tb_purchase_order_comment` (`PO_POST_005`, `PO_POST_009`), and the cross-document bridges (PR→PO via `tb_purchase_order_detail_tb_purchase_request_detail`, PO→GRN via the GRN detail back-reference per `PO_XMOD_003`, PO/GRN→invoice via the three-way match record under `PO_POST_008`) to verify policy compliance, segregation of duties (`PO_AUTH_010`: Purchaser ≠ Receiver), three-way-match integrity (`PO_POST_008` / `PO_POST_009`), and full traceability from requisition through commitment, receipt, and payable. The Auditor has **no write surface** in the module: they cannot approve, transmit, void, close, edit lines, or change PO state. The **System Administrator** is a configuration persona who owns the **policy and integration surface** for the module — the PO numbering scheme that drives `tb_purchase_order.po_no`, the workflow definition referenced by `tb_purchase_order.workflow_id` (stages, `stage_role`, and the `user_action.execute[]` membership that gates every transition per `PO_AUTH_011`), the RBAC role-to-permission map for `PO_AUTH_001`–`PO_AUTH_011`, the integration wiring to vendor, vendor-pricelist (snapshot at PR-to-PO conversion), budget (soft-commit on submit per `PO_POST_002`), and inventory (on-hand increment via GRN per `PO_XMOD_003`), the PR-to-PO conversion and vendor+currency grouping rules, the document templates used at transmission (`PO_POST_004`), and the tax / currency / FX rate sources consumed by `PO_CALC_001`–`PO_CALC_011`. Neither role is on the create-to-close happy path; each has its own entry point, surface, and exit semantics: the Auditor exits via a generated report with no PO state change, the Sysadmin exits via a saved configuration that takes effect for new POs while preserving snapshot semantics for POs already `in_progress` or beyond. The pair is documented here on a single persona axis because both roles are peripheral to the transactional flow and share a common pattern of "off-path, governance-oriented" operation.
+
+### Position relative to the transactional flow (off-path observers)
+
+```mermaid
+graph LR
+    subgraph transactional["Transactional Happy Path (Purchaser → Vendor → Receiver → Finance)"]
+        draft(("draft")) --> inprog(("in_progress"))
+        inprog --> sent(("sent"))
+        sent --> partial(("partial"))
+        partial --> completed(("completed"))
+        partial --> closed(("closed"))
+    end
+    auditor["Auditor<br/>(read-only)"]:::audit -.->|"Forward chain<br/>+ back-chain to PR"| transactional
+    auditor -.->|"Walks PR→PO→GRN→invoice"| chain[["End-to-end<br/>procurement chain"]]
+    sysadmin["System Administrator<br/>(config + integration)"]:::cfg -.->|"Numbering, workflow,<br/>RBAC, integration, grouping"| transactional
+    sysadmin -.->|"Triggers (via PM): Void (PO_AUTH_007)"| voided(("voided"))
+    classDef audit fill:#eab308,color:#000,stroke:#eab308;
+    classDef cfg fill:#7c3aed,color:#fff,stroke:#7c3aed;
+```
+
+### Permission Matrix — Action × Sub-persona (Audit / Config)
+
+The Auditor observes the end-to-end chain (PR → PO → GRN → invoice) with no write surface. The Sysadmin owns the policy / integration surface and does not directly mutate PO state — remediation that requires a state change (void, early-close) escalates to the Procurement Manager.
+
+| Action | Auditor | System Administrator |
+|---|---|---|
+| Read PO `workflow_history` / `tb_purchase_order_comment` | ✅ | ✅ |
+| Read header / lines / snapshots (vendor / pricelist / FX) | ✅ | ✅ |
+| Walk PR→PO bridge (`tb_purchase_order_detail_tb_purchase_request_detail`) | ✅ | ✅ |
+| Walk PO→GRN back-reference (`PO_XMOD_003`) | ✅ | ✅ |
+| Walk PO/GRN → vendor-invoice three-way match (`PO_POST_008`) | ✅ | ✅ |
+| Detect `PO_AUTH_010` segregation-of-duties breach (Purchaser ≡ Receiver) | ✅ | ✅ |
+| Flag PO in audit case file (audit-side store only) | ✅ | ❌ |
+| Export report (sensitive fields require export-approver) | ✅ | ✅ |
+| Edit PO numbering scheme / templates | ❌ | ✅ |
+| Edit workflow stages / `stage_role` / threshold (`PO_AUTH_004`, `PO_AUTH_011`) | ❌ | ✅ |
+| Assign / remove users from `user_action.execute[]` | ❌ | ✅ |
+| Edit RBAC permission map (`PO_AUTH_001`–`PO_AUTH_011`) | ❌ | ✅ |
+| Edit integration endpoints (vendor / pricelist / budget / inventory) | ❌ | ✅ |
+| Edit PR-to-PO conversion / grouping rule | ❌ | ✅ |
+| Save configuration with `effective_from` (in-flight snapshot preserved) | ❌ | ✅ |
+| Roll back configuration | ❌ | ✅ |
+| Integration cutover (probe + drain + go-live) | ❌ | ✅ |
+| Edit PO header / lines / vendor / qty | ❌ | ❌ |
+| Approve / Transmit / Reject / Send-back | ❌ | ❌ |
+| Void / Early-close PO | ❌ | ❌ (escalate to PM under `PO_AUTH_007` / `PO_AUTH_008`) |
+
+> ℹ️ **Snapshot principle:** Sysadmin configuration changes apply forward-only. POs already at `in_progress`, `sent`, `partial`, or `closed` retain their snapshotted workflow stage chain, threshold, integration wiring, and tax / currency context. New POs created after `effective_from` use the new configuration.
 
 ## 2. Entry Point and Primary Flow
 

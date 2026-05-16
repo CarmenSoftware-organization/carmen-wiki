@@ -2,7 +2,7 @@
 title: Purchase Order — User Flow — Purchaser
 description: Purchaser's flow within the purchase-order module.
 published: true
-date: 2026-05-15T10:00:00.000Z
+date: 2026-05-16T10:00:00.000Z
 tags: purchase-order, user-flow, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -13,6 +13,42 @@ dateCreated: 2026-05-15T10:00:00.000Z
 ## 1. Role in This Module
 
 The **Purchaser** (also titled **Procurement Officer**) owns the PO from creation through transmission to the vendor — the span from `draft` to `sent`. Two creation paths converge on the same flow: a **manual PO** (`po_type = manual`) raised directly by procurement, and a **PR-sourced PO** (`po_type = purchase_request`) materialised by running Convert-to-PO from the upstream [[purchase-request]] module, which writes one row per (PO line, PR line) pair into the bridge table `tb_purchase_order_detail_tb_purchase_request_detail` ([01-data-model.md](./01-data-model.md) Section 2.5). Once the draft exists the Purchaser fills (or inherits and validates) the header — `vendor_id`, `currency_id`, `exchange_rate`, `credit_term_id`, `order_date`, `delivery_date`, `workflow_id` — and walks each line to verify pricing against the [[vendor-pricelist]], adjust quantity / discount / tax / FOC where authorised, set delivery and payment terms, and submit (`draft → in_progress`, `PO_AUTH_003` and `PO_POST_002`). The Purchaser also holds the transmit action on final approval (`PO_AUTH_006`, `PO_POST_004`), handles amendments to the open PO under the post-`sent` restrictions of `PO_VAL_016`, runs the bounce-back to send the PR back to the Requestor when vendor or spec clarification is unrecoverable, and voids a PO in `draft` when needed (`PO_AUTH_007` reserves void from non-`draft` to the Procurement Manager). The Purchaser operates under `enum_stage_role = purchase` (mirrored from `PR_AUTH_008` on the PR side).
+
+### Workflow position (Purchaser highlighted)
+
+```mermaid
+graph LR
+    create["Create PO<br/>(manual or PR-sourced)"]:::current --> draft(("draft")):::current
+    draft -->|"Submit"| inprog(("in_progress"))
+    draft -->|"Soft-delete<br/>(escalate to PM)"| voided(("voided"))
+    inprog -->|"Send-back"| draft
+    inprog -->|"Approve final<br/>+ transmit"| sent(("sent"))
+    sent -.->|"Amendment<br/>(cancelled_qty + note only)"| sent
+    sent -->|"GRN partial"| partial(("partial"))
+    sent -->|"GRN full"| completed(("completed"))
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+```
+
+### Permission Matrix — Status × Action (Purchaser)
+
+The Purchaser fully owns the document at `draft` and re-enters on send-back. After `sent` the right to edit collapses to `cancelled_qty` and per-line notes (`PO_VAL_016`). Receipt-driven states (`partial`, `completed`, `closed`) are observed but not directly mutated by the Purchaser. `voided` is reserved for the Procurement Manager (`PO_AUTH_007`).
+
+| Action | draft | in_progress | sent | partial | completed | closed | voided |
+|---|---|---|---|---|---|---|---|
+| View PO | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Edit header (vendor, currency, terms) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Add / remove lines | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Edit line qty / price / tax / FOC | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Submit for approval | ✅ (≥1 line + workflow) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Self-approve (below threshold) | ❌ | ✅ (`PO_AUTH_004`) | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Transmit to vendor | ❌ | ✅ (on final approve, `PO_AUTH_006`) | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Set `cancelled_qty` / per-line note (amendment) | ❌ | ❌ | ✅ (`PO_VAL_016`) | ✅ | ❌ | ❌ | ❌ |
+| Add Comment / Attachment | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Soft-delete (draft only) | escalate to PM (`PO_AUTH_005`) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Void (`PO_AUTH_007`) | ❌ | ❌ | ❌ (PM only) | ❌ (PM only) | ❌ | ❌ | — |
+| Early-close (`PO_AUTH_008`) | ❌ | ❌ | ❌ | ❌ (PM / Inv Mgr) | ❌ | — | ❌ |
+
+> ⚠️ **Discrepancy — `IN PROGRESS` not in BRD:** The live UI uses `DRAFT` → `IN PROGRESS` for the FC-approval phase before transmission. BRD `FR-PO-005` defines the flow as `Draft → Sent → Acknowledged → Partial Received → Fully Received → Closed/Cancelled` with no `IN PROGRESS` state. Source: `Test_case/Purchase_Order/Purchaser/INDEX.md` § Status Lifecycle (capture date 2026-04-26). See [02-business-rules.md](./02-business-rules.md) § Status Lifecycle Mapping.
 
 ## 2. Entry Point and Primary Flow
 

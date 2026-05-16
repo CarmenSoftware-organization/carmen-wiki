@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow
 description: Document lifecycle and persona-specific flow files for purchase-request.
 published: true
-date: 2026-05-15T09:00:00.000Z
+date: 2026-05-16T10:00:00.000Z
 tags: purchase-request, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -19,6 +19,25 @@ Section 2 below is the **global state machine** — the canonical list of transi
 ## 2. Document Lifecycle
 
 The PR document status is stored on `tb_purchase_request.pr_status` and constrained to the values declared in `enum_purchase_request_doc_status`: `draft`, `in_progress`, `voided`, `approved`, `completed`, `cancelled`. The transitions below cover the legal moves between them; everything else is rejected by the workflow engine.
+
+```mermaid
+stateDiagram-v2
+    [*] --> draft: create (Requestor)
+    draft --> draft: save / edit (Requestor)
+    draft --> in_progress: submit (Requestor)
+    draft --> cancelled: cancel (Requestor, owner)
+    in_progress --> in_progress: approve intermediate stage
+    in_progress --> in_progress: escalate (threshold breach)
+    in_progress --> approved: approve final stage
+    in_progress --> draft: send-back (any approver)
+    in_progress --> cancelled: reject (any approver)
+    in_progress --> voided: void (System Administrator)
+    approved --> completed: convert to PO (Purchaser)
+    approved --> voided: void (System Administrator)
+    cancelled --> [*]
+    voided --> [*]
+    completed --> [*]
+```
 
 | From state | Action | To state | Allowed for | Pre-conditions |
 | ---------- | ------ | -------- | ----------- | -------------- |

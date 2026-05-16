@@ -2,7 +2,7 @@
 title: Purchase Order — Business Rules
 description: Validation, calculation, authorization, posting, three-way-match, and cross-module rules for purchase-order.
 published: true
-date: 2026-05-15T10:00:00.000Z
+date: 2026-05-16T10:00:00.000Z
 tags: purchase-order, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -110,7 +110,7 @@ Rule IDs follow `PO_POST_NNN`.
 | `PO_POST_001` | Create (→ `draft`) | Insert `tb_purchase_order` with `po_status = draft`, `doc_version = 0`, `total_qty = total_price = total_tax = total_amount = 0`. Append to `history`: `{ po_status: 'draft', action: 'created', by, at }`. |
 | `PO_POST_002` | Submit (`draft → in_progress`) | Recompute all roll-ups (`PO_CALC_008`–`PO_CALC_011`). Set `last_action = submitted`, `last_action_at_date = now()`, `last_action_by_id = user`. Initialise `workflow_history`, `workflow_current_stage = <first stage>`, `stages_status = [...]`, and populate `user_action.execute` from the workflow stage definition. Append `history` entry. Soft commitment on budget/inventory is created downstream by the workflow. |
 | `PO_POST_003` | Approve (within `in_progress`) | Append `workflow_history` entry; advance `workflow_current_stage`. Update `user_action.execute` for the next stage. `last_action = approved`. No status change yet — the PO stays `in_progress` until the final approval stage. |
-| `PO_POST_004` | Final approval (`in_progress → sent`) | Set `po_status = sent`, `approval_date = now()`, `last_action = approved`. Append `history`. Send PO to vendor via the application's email/transmit layer. From this point on, the PO is a vendor-facing commitment. |
+| `PO_POST_004` | Final approval (`in_progress → sent`) | Set `po_status = sent`, `approval_date = now()`, `last_action = approved`. Append `history`. Send PO to vendor via the application's email/transmit layer **on the same transition** — there is no separate manual "Send to Vendor" action in the live UI (the `APPROVED → SENT` step is auto). From this point on, the PO is a vendor-facing commitment. |
 | `PO_POST_005` | Reject (`in_progress → draft`) | Set `po_status = draft`, `last_action = rejected`, reset `workflow_current_stage` to start. Append rejection comment in `tb_purchase_order_comment` (type `system`). Lines remain editable. |
 | `PO_POST_006` | GRN partial receipt (`sent → partial` or `partial → partial`) | For each affected PO line, the GRN posting increments `tb_purchase_order_detail.received_qty` by the GRN quantity (in order UoM). If `received_qty < order_qty − cancelled_qty` for at least one line, set `po_status = partial`. Bridge rows `tb_purchase_order_detail_tb_purchase_request_detail.received_qty` are updated proportionally to retain PR-side allocation visibility. |
 | `PO_POST_007` | GRN full receipt (`sent → completed` or `partial → completed`) | When every active line satisfies `received_qty = order_qty − cancelled_qty`, set `po_status = completed`. Append `history`. PO is closed normally — no further GRNs accepted. |
@@ -132,6 +132,29 @@ State diagram (Prisma-canonical):
 ```
 
 `completed`, `closed`, and `voided` are terminal. `draft` accepts soft-delete.
+
+### 5.1 Status Lifecycle — Live UI vs BRD Mapping
+
+The Prisma enum `enum_purchase_order_doc_status` documented above is what the live UI uses. BRD `FR-PO-005` describes a different, slightly thinner set of statuses. The table below maps every observable live-UI status to its BRD equivalent so testers and developers can reconcile the two without ambiguity. Source: `Test_case/Purchase_Order/Purchaser/INDEX.md` § Status Lifecycle (capture date 2026-04-26).
+
+| Live UI status | BRD `FR-PO-005` equivalent | Diff | Notes |
+|---|---|---|---|
+| `DRAFT` | `Draft` | ✅ match | — |
+| `IN PROGRESS` | _(not in BRD)_ | 🔴 new in live UI | PO submitted by Purchaser, pending FC approval. Not modelled by BRD. |
+| `APPROVED` | _(not in BRD)_ | 🔴 new in live UI | FC approved; PO auto-sent to vendor immediately on this transition. |
+| `SENT` | `Sent` | ✅ match | Auto-set after FC approval. No manual "Send" step in live UI. |
+| `PARTIAL` | `Partial Received` | 🟡 renamed | BRD label is `Partial Received`. |
+| `COMPLETED` | `Fully Received` | 🟡 renamed | BRD label is `Fully Received`. |
+| `CLOSED` | `Closed` | ✅ match | — |
+| `VOIDED` | `Cancelled` | 🟡 renamed | BRD label is `Cancelled`; `VOIDED` is used in live UI for "Close with no items received". |
+| `REJECTED` | _(not in BRD)_ | 🔴 new in live UI | FC rejects PO outright. PO returned to Purchaser. |
+| _(absent)_ | `Acknowledged` | 🔵 BRD only | BRD defines a vendor-confirmation status that is not present in live UI. |
+
+> ⚠️ **Discrepancy — FC-approval phase not in BRD:** BRD `FR-PO-005` defines a linear flow `Draft → Sent → Acknowledged → Partial Received → Fully Received → Closed/Cancelled`. The live UI inserts an FC-approval phase (`DRAFT → IN PROGRESS → APPROVED → SENT`) with the `APPROVED` status auto-transitioning to `SENT` immediately. `IN PROGRESS`, `APPROVED`, and `REJECTED` are not in the BRD.
+
+> ⚠️ **Discrepancy — no `ACKNOWLEDGED` status in live UI:** BRD models vendor confirmation as a distinct status. The live UI does not capture an acknowledgement transition — vendor acknowledgement, when received, is logged in `tb_purchase_order_comment` only. `po_status` stays at `sent`.
+
+> ⚠️ **Discrepancy — `VOIDED` semantics:** BRD `Cancelled` covers any termination of an open PO. Live UI `VOIDED` is narrower — it specifically means "Close approved PO with no items received". Voiding from `sent` or `partial` after some GRNs have posted leaves the GRNs intact and only voids the unfulfilled remainder (per `PO_POST_010`).
 
 ## 6. Cross-Module Rules
 

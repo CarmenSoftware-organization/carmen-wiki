@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow — Purchaser
 description: Purchaser's flow within the purchase-request module.
 published: true
-date: 2026-05-15T09:00:00.000Z
+date: 2026-05-16T10:00:00.000Z
 tags: purchase-request, user-flow, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -13,6 +13,39 @@ dateCreated: 2026-05-15T09:00:00.000Z
 ## 1. Role in This Module
 
 The **Purchaser** (also titled **Procurement Officer**) is the bridge persona between the upstream PR side and the downstream PO side of the procure-to-pay chain. They do **not** approve PR content — by the time a PR reaches their queue it has already cleared the entire approver chain and `pr_status = approved` (`PR_POST_005`). Their job is to take what is already approved, validate the vendor allocation per line, look up the current vendor pricelist to verify price and deviation, group lines from different PRs that share **vendor + currency** so they can be issued as a single PO, and run the Convert-to-PO action. The link from PR line to PO line is recorded on the bridge table `tb_purchase_order_detail_tb_purchase_request_detail` ([01-data-model.md](./01-data-model.md) Section 2) — a many-to-many that supports both **consolidation** (multiple PR lines → one PO line) and **partial conversion** (one PR line → multiple PO lines across vendors / delivery dates). When a vendor or spec issue surfaces, the Purchaser can route the PR back to the Requestor via the standard PR send-back mechanism rather than completing the conversion. The Purchaser operates under `enum_stage_role = purchase` (`PR_AUTH_008`).
+
+### Workflow position (Purchaser highlighted)
+
+```mermaid
+graph LR
+    approved(("approved")):::current --> alloc["Validate vendor /<br/>pricelist deviation"]:::current
+    alloc --> conv["Convert to PO<br/>(vendor + currency<br/>grouping)"]:::current
+    conv -->|"Every line bridged"| completed(("completed")):::current
+    conv -->|"Some lines bridged"| approved
+    conv -->|"Vendor / spec issue"| draft(("draft"))
+    completed -.->|"Read-only audit"| terminal[["terminal"]]
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+```
+
+### Permission Matrix — Action × pr_status seen by Purchaser
+
+The Purchaser sees PRs only after the approve chain is cleared. The two relevant document states are `approved` (active conversion candidates) and `completed` (historical, read-only). Edit rights are scoped to vendor allocation, pricelist refresh, and the per-line convert quantity — never PR content.
+
+| Action | approved (open or partially bridged) | completed (fully bridged) |
+|---|---|---|
+| View PR | ✅ | ✅ (read-only) |
+| Allocate / change vendor on a line (`vendor_id`) | ✅ | ❌ |
+| Refresh `pricelist_price` to current | ✅ | ❌ |
+| Set per-line **convert quantity** (full or partial) | ✅ | ❌ |
+| Run **Convert to PO** (writes bridge rows) | ✅ | ❌ |
+| Bounce-back to Requestor (send-back from `purchase` stage) | ✅ | ❌ |
+| Add Comment | ✅ | ✅ |
+| Edit header / lines (qty, price, tax, FOC) | ❌ | ❌ |
+| Adjust `approved_qty` | ❌ (Approver's right; `PR_VAL_013`) | ❌ |
+| Reject / Approve / Split-Reject | ❌ | ❌ |
+| Delete / Void PR | ❌ (sysadmin only — `PR_AUTH_007`) | ❌ |
+
+> ℹ️ **PR → PO snapshot:** when the Purchaser runs Convert to PO, the **PO** snapshots a fresh `exchange_rate` and current pricelist context onto each PO line; the **PR** retains its original snapshot per `PR_CALC_006`. PR-side and PO-side base totals may differ — this is by design.
 
 ## 2. Entry Point and Primary Flow
 

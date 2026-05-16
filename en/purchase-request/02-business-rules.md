@@ -2,7 +2,7 @@
 title: Purchase Request — Business Rules
 description: Validation, calculation, authorization, and posting rules for purchase-request.
 published: true
-date: 2026-05-15T09:00:00.000Z
+date: 2026-05-16T10:00:00.000Z
 tags: purchase-request, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -154,12 +154,20 @@ Actual stages are configurable per organisation in `tb_workflow`; the chain a gi
 - **`PR_AUTH_007`** — **Void** rights belong to a Finance or system-admin role and are available at any stage after submit. Void sets `pr_status = voided`, freezes the document for further action, and releases any open soft-commitments.
 - **`PR_AUTH_008`** — Conversion to PO is restricted to roles with `enum_stage_role = purchase`. Approved PRs may sit in the `approved` status until a procurement user creates the PO via the bridge `tb_purchase_order_detail_tb_purchase_request_detail`.
 
+> ⚠️ **Discrepancy — bulk-toolbar vs row-level actions (BRD FR-PR-005A):** The BRD specifies per-row standalone **Approve / Reject / Send for Review** buttons in the PR list / detail header. The current live UI exposes these actions only as **bulk toolbar actions** inside Edit Mode (via the Select All dropdown → bulk action toolbar). Confirmed bulk actions: Approve, Reject, Send for Review (BRD "Return Selected"), Split. Standalone row-level buttons remain absent. Source: `Test_case/Purchase_Request/Approver/INDEX.md` (capture date 2026-04-19). Verification status: confirmed for HOD; assumed for FC / GM / Owner.
+
+> ⚠️ **Discrepancy — Send-back disabled-button tooltip:** The Submit / Send-back buttons are disabled when pre-conditions are not met (`PR_VAL_004`–`PR_VAL_006`) but the live UI shows no tooltip explaining the disabled reason. Known usability gap captured in `Test_case/Purchase_Request/Creator/step-06-submit-confirmation.md` § 6.4.
+
 ## 5. Posting Rules
 
 Status transitions are recorded on `tb_purchase_request.pr_status` (`enum_purchase_request_doc_status = { draft, in_progress, voided, approved, completed, cancelled }`). Every transition writes both a header row in `workflow_history` (JSON timeline) and a `tb_purchase_request_comment` row with `type = system` for the audit trail.
 
 - **`PR_POST_001` — Create.** New PR is inserted with `pr_status = draft`, `last_action = submitted` is **not** yet set, `workflow_current_stage` is the workflow's entry stage, and `base_*_amount` totals are zero until lines are added.
-- **`PR_POST_002` — Submit.** Transition `draft → in_progress`. The system: (a) sets `last_action = submitted`, `last_action_at_date = now()`, `last_action_by_*` to the requestor; (b) snapshots `workflow_name` from the chosen `tb_workflow`; (c) initialises `stages_status` per stage; (d) computes the budget soft-commitment (see Section 6) and inserts the period reservation; (e) inserts a `tb_purchase_request_comment` with `type = system` and the submit message; (f) notifies the users in `user_action.execute[]` of the first approval stage.
+- **`PR_POST_002` — Submit.** Transition `draft → in_progress`. The system: (a) sets `last_action = submitted`, `last_action_at_date = now()`, `last_action_by_*` to the requestor; (b) snapshots `workflow_name` from the chosen `tb_workflow`; (c) initialises `stages_status` per stage; (d) computes the budget soft-commitment (see Section 6) and inserts the period reservation; (e) inserts a `tb_purchase_request_comment` with `type = system` and the submit message; (f) notifies the users in `user_action.execute[]` of the first approval stage. BRD `FR-PR-005` sets the first-approver notification SLA at **5 minutes** from submit; the SLA is not yet verified against the live notification service.
+
+> ⚠️ **Discrepancy — notification SLA unverified:** BRD `FR-PR-005` specifies a 5-minute email notification SLA for the first approver on submit. Not yet verified in the test environment because dispatch depends on the notification service availability. Source: `Test_case/Purchase_Request/Creator/step-06-submit-confirmation.md` § BR-06.
+
+> ⚠️ **Discrepancy — budget check `warn` vs `block`:** BRD `FR-PR-004` makes the budget check configurable per organisation policy — either *warn* (allow submit with warning) or *block* (prevent submit when over budget). The current test account has zero unit prices on items (commitment = `฿0.00`) so the live behaviour for an over-budget submit is not observable. Source: `Test_case/Purchase_Request/Creator/step-06-submit-confirmation.md` § BR-09.
 - **`PR_POST_003` — Send-back.** Transition `in_progress → in_progress` with `workflow_current_stage` moved one step back and `last_action = reviewed`. Notification is sent to the user at the new (previous) stage. The soft-commitment remains in place.
 - **`PR_POST_004` — Approve (intermediate stage).** Updates `workflow_previous_stage`, `workflow_current_stage`, `workflow_next_stage`, `last_action = approved`, `stages_status` for the just-completed stage; appends `workflow_history`; recomputes `user_action.execute[]` for the next stage. `pr_status` stays `in_progress`.
 - **`PR_POST_005` — Final approve.** When the last `approve` stage clears, `pr_status` flips from `in_progress` to `approved`. The PR is now eligible for PO conversion; the soft-commitment remains in place (it is converted to a hard commitment when the PO is created — see [[purchase-order]]).

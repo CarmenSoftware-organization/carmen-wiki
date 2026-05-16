@@ -2,7 +2,7 @@
 title: Purchase Order — User Flow
 description: Document lifecycle and persona-specific flow files for purchase-order.
 published: true
-date: 2026-05-15T10:00:00.000Z
+date: 2026-05-16T10:00:00.000Z
 tags: purchase-order, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -19,6 +19,27 @@ Section 2 below is the **global state machine** — the canonical list of transi
 ## 2. Document Lifecycle
 
 The PO document status is stored on `tb_purchase_order.po_status` and constrained to the values declared in `enum_purchase_order_doc_status`: `draft`, `in_progress`, `voided`, `sent`, `partial`, `closed`, `completed`. The transitions below cover the legal moves between them; everything else is rejected by the workflow engine. Note that receipt-driven transitions (`sent → partial → completed`) are triggered by GRN postings in the downstream [[good-receive-note]] module, not by direct user action on the PO.
+
+```mermaid
+stateDiagram-v2
+    [*] --> draft: create (Purchaser)
+    draft --> draft: save / edit
+    draft --> in_progress: submit for approval
+    draft --> [*]: soft-delete (PO_AUTH_005)
+    in_progress --> in_progress: approve intermediate stage
+    in_progress --> sent: approve final + transmit
+    in_progress --> draft: send-back (any approver)
+    in_progress --> voided: reject / void
+    sent --> partial: GRN posts partial receipt
+    sent --> completed: GRN posts full receipt
+    sent --> voided: void (no GRN posted; PO_AUTH_007)
+    partial --> partial: subsequent partial GRN
+    partial --> completed: GRN clears outstanding balance
+    partial --> closed: early-close (Inv. Mgr / PM; PO_AUTH_008)
+    completed --> [*]
+    closed --> [*]
+    voided --> [*]
+```
 
 | From state | Action | To state | Allowed for | Pre-conditions |
 | ---------- | ------ | -------- | ----------- | -------------- |

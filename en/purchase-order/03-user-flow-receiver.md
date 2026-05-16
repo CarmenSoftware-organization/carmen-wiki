@@ -2,7 +2,7 @@
 title: Purchase Order — User Flow — Receiver
 description: Receiver's flow within the purchase-order module — physically accepts goods, raises GRN against PO, triggers receipt state transition.
 published: true
-date: 2026-05-15T10:00:00.000Z
+date: 2026-05-16T10:00:00.000Z
 tags: purchase-order, user-flow, receiver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -13,6 +13,40 @@ dateCreated: 2026-05-15T10:00:00.000Z
 ## 1. Role in This Module
 
 The **Receiver** persona covers the **Receiver / Store Keeper** at the dock and the **Inventory Manager** who oversees receipt closure for the location. Together they own the physical-acceptance leg of the procure-to-pay chain: the Store Keeper inspects the vendor's delivery against the PO, raises the **Good Receive Note** (GRN) line by line, and records `received_qty` and `accepted_qty` on each PO line; the Inventory Manager supervises that posting and closes POs once receipt is complete or accepted as final. The PO status on entry to this flow is `sent` (or `partial` for follow-on deliveries). The GRN posting itself is performed in the downstream `[[good-receive-note]]` module — this page describes the **PO-side effects only**: how the Receiver's GRN flips `tb_purchase_order.po_status` from `sent → partial` (`PO_POST_006`) or `sent → completed` / `partial → completed` (`PO_POST_007`), how the Inventory Manager closes a `partial` PO with the remainder written to `cancelled_qty` (`PO_POST_011`), and how the PO line counters (`received_qty`, `cancelled_qty`) advance against `order_qty`. Inventory on-hand is incremented by the GRN module, not by the PO. Segregation of duties is enforced by `PO_AUTH_010` — the user who created or transmitted the PO MUST NOT be the same user who posts the GRN against it.
+
+### Workflow position (Receiver highlighted)
+
+```mermaid
+graph LR
+    sent(("sent")):::current --> grn["Post GRN<br/>(Store Keeper)"]:::current
+    grn -->|"received < pending"| partial(("partial")):::current
+    grn -->|"received covers all lines"| completed(("completed")):::current
+    partial -->|"Next shipment<br/>(repeat GRN)"| grn
+    partial -->|"Early-close<br/>(Inv Mgr; PO_AUTH_008)"| closed(("closed")):::current
+    completed -.->|"Finance three-way match"| ap[["AP liability"]]
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+```
+
+### Permission Matrix — Status × Action (Receiver sub-roles)
+
+The Store Keeper drives the per-shipment GRN; the Inventory Manager handles the early-close override. Segregation of duties (`PO_AUTH_010`) forbids the GRN poster from being the same user who created or transmitted the PO. Inventory on-hand effects belong to the GRN / inventory module, not to the PO.
+
+| Action | sent | partial | completed | closed |
+|---|---|---|---|---|
+| View PO (open / received) | ✅ | ✅ | ✅ | ✅ |
+| Open Receive screen (deep-link to GRN) | ✅ | ✅ | ❌ | ❌ |
+| Post GRN — Store Keeper | ✅ (`PO_AUTH_008`) | ✅ | ❌ | ❌ |
+| Enter `received_qty` (≤ pending balance, or per over-deliv tolerance) | ✅ | ✅ | ❌ | ❌ |
+| Enter `accepted_qty` (≤ `received_qty`) | ✅ | ✅ | ❌ | ❌ |
+| Trigger `sent → partial` (`PO_POST_006`) | ✅ | — | ❌ | ❌ |
+| Trigger `sent → completed` / `partial → completed` (`PO_POST_007`) | ✅ | ✅ | ❌ | ❌ |
+| Early-close `partial → closed` — Inventory Manager | ❌ | ✅ (`PO_AUTH_008`, `PO_POST_011`; reason required) | ❌ | — |
+| Refuse delivery at dock (no GRN, no system effect) | ✅ | ✅ | — | — |
+| Edit PO header / lines | ❌ | ❌ | ❌ | ❌ |
+| Approve / Transmit / Void | ❌ | ❌ | ❌ | ❌ |
+| Post GRN against own-buyer PO | ❌ (`PO_AUTH_010` — segregation of duties) | ❌ | — | — |
+
+> ℹ️ **`accepted_qty` vs `received_qty`:** inventory on-hand is incremented only by `accepted_qty`; the gap (`received_qty − accepted_qty`) is the quality-rejection variance carried by the GRN for vendor return / credit-note follow-up. The PO is not auto-corrected for this variance — resolution is logged in `tb_purchase_order_comment` and any agreed write-off goes to `cancelled_qty`.
 
 ## 2. Entry Point and Primary Flow
 

@@ -2,7 +2,7 @@
 title: Purchase Order — User Flow — Finance
 description: Finance's flow within the purchase-order module — three-way match (PO ↔ GRN ↔ invoice), AP posting, currency/FX handling.
 published: true
-date: 2026-05-15T10:00:00.000Z
+date: 2026-05-16T10:00:00.000Z
 tags: purchase-order, user-flow, finance, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -13,6 +13,48 @@ dateCreated: 2026-05-15T10:00:00.000Z
 ## 1. Role in This Module
 
 The **Finance** persona covers the **Finance Officer / Accounts Payable** clerk who runs the day-to-day invoice match and posts the AP liability, and the **Finance Manager** who exercises pre-transmission financial sign-off on high-value or FX-sensitive POs. Finance has **two distinct touch points** in the PO lifecycle, and they sit at opposite ends of the document: a **pre-transmission review** at the tail of approval (Finance Manager checks currency, exchange rate, tax codes, and line totals while the PO is still at `po_status = in_progress`, before the final-stage transition to `sent` under `PO_POST_004`), and a **post-receipt three-way match** after GRN posting (Finance Officer / AP receives the vendor invoice, looks up the PO and the matching GRN(s), and runs the match algorithm under `PO_POST_008` / `PO_POST_009`). The three-way match is the **key Finance activity** in the PO module — it is the control that converts a matched-but-unbilled accrual into a payable, clears the GRN accrual, and posts the AP liability on the linked vendor invoice. The PO itself is **not** transitioned by the three-way match (`PO_POST_008` is explicit on this); the PO retains whichever fulfilment status it reached (`partial`, `completed`, or `closed`) and the match outcome lives on the invoice record. On match failure, the discrepancy is flagged back to the **Purchaser** for resolution via amendment, credit note, or void, and the invoice is held in dispute until reconciled.
+
+### Workflow position (Finance touch points highlighted)
+
+```mermaid
+graph LR
+    inprog(("in_progress")) -->|"Pre-transmit review"| fm["Finance Manager<br/>sign-off"]:::current
+    fm -->|"Sign off"| sent(("sent"))
+    fm -->|"Send-back<br/>(PO_POST_005)"| draft(("draft"))
+    sent --> partial(("partial"))
+    sent --> completed(("completed"))
+    partial --> completed
+    partial --> closed(("closed"))
+    completed -.->|"Vendor invoice"| match["AP three-way match<br/>(Finance Officer)"]:::current
+    partial -.-> match
+    closed -.-> match
+    match -->|"Pass (PO_POST_008)"| ap[["AP liability posted"]]:::current
+    match -->|"Fail (PO_POST_009)"| dispute["Invoice held in dispute"]:::current
+    dispute -.->|"Resolved"| match
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+```
+
+### Permission Matrix — Touch point × Action (Finance sub-roles)
+
+Finance has **no direct PO status mutation** outside the pre-transmission review (send-back at `in_progress`). The three-way match outcome lives on the invoice record, not on the PO.
+
+| Action | Finance Manager (pre-transmit, PO at `in_progress`) | Finance Officer / AP (post-receipt, PO at `partial` / `completed` / `closed`) |
+|---|---|---|
+| View PO header / lines / Financial Details | ✅ | ✅ |
+| Sign-off at the Finance approval stage (advance workflow) | ✅ (`PO_AUTH_003`) | ❌ |
+| Send-back at the Finance stage (`PO_POST_005`) | ✅ | ❌ |
+| Capture vendor invoice | ❌ | ✅ |
+| Run three-way match (qty / price / product / currency) | ❌ | ✅ |
+| Post AP liability on match success (`PO_POST_008`) | ❌ | ✅ |
+| Hold invoice in dispute on match failure (`PO_POST_009`) | ❌ | ✅ |
+| Auto-pass price variance within tolerance | ❌ | ✅ (config-driven) |
+| Flag discrepancy back to Purchaser via `tb_purchase_order_comment` | ❌ | ✅ |
+| Edit PO header / lines / vendor / qty | ❌ | ❌ |
+| Approve at final stage / Transmit | ❌ (FM signs off, then chain proceeds; final transmit per `PO_AUTH_006`) | ❌ |
+| Void / Early-close PO | ❌ (PM only) | ❌ (PM only) |
+| Re-match after dispute resolution | ❌ | ✅ |
+
+> ℹ️ **PO status unchanged by three-way match:** The PO retains its receipt-side status (`partial`, `completed`, or `closed`) regardless of match outcome. AP success / failure / dispute lives entirely on the linked invoice record (`PO_POST_008` / `PO_POST_009`).
 
 ## 2. Entry Point and Primary Flow
 

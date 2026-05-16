@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow — Approver
 description: Approver's flow within the purchase-request module.
 published: true
-date: 2026-05-15T09:00:00.000Z
+date: 2026-05-16T10:00:00.000Z
 tags: purchase-request, user-flow, approver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -13,6 +13,47 @@ dateCreated: 2026-05-15T09:00:00.000Z
 ## 1. Role in This Module
 
 The **Approver** is the umbrella persona that covers the three intermediate decision-makers in the PR approval chain — **Department Head** (Stage 1 approve), **Budget Controller** (Stage 2), and **Finance Officer / Manager** (Stage 3) — all of whom share the same review-and-decide UI but apply it to different concerns (departmental justification, budget availability, and financial-impact correctness respectively). At each stage the Approver opens a submitted PR, reviews the header and lines, optionally adjusts `approved_qty` per line, and chooses one of four actions: **Approve** (advance to the next stage), **Send Back** (return to the Requestor at `draft`), **Reject** (terminate the document), or **Split-Reject** (per-line accept / reject so the surviving lines continue while the rejected ones are recorded with `current_stage_status = rejected`). The document state remains `in_progress` for every intermediate approval — `pr_status` only flips to `approved` when the **final** approve stage clears (see `PR_POST_004` / `PR_POST_005` in [02-business-rules.md](./02-business-rules.md)). Approvers are not part of vendor allocation or PO conversion — those rights belong to the Procurement Manager / Purchaser persona under `enum_stage_role = purchase` (`PR_AUTH_008`).
+
+### Workflow position (Approver chain highlighted)
+
+```mermaid
+graph LR
+    draft(("draft")) -->|"Submit"| s1["Stage 1<br/>Dept. Head"]:::current
+    s1 -->|"Approve"| s2["Stage 2<br/>Budget Ctrl."]:::current
+    s2 -->|"Approve"| s3["Stage 3<br/>Finance"]:::current
+    s3 -->|"Approve (final)"| approved(("approved"))
+    s1 -->|"Send-back"| draft
+    s2 -->|"Send-back"| draft
+    s3 -->|"Send-back"| draft
+    s1 -->|"Reject"| cancelled(("cancelled"))
+    s2 -->|"Reject"| cancelled
+    s3 -->|"Reject"| cancelled
+    s3 -.->|"Escalate ≥ threshold"| pm["PM<br/>(escalated)"]:::escalated
+    pm -->|"Approve final"| approved
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+    classDef escalated stroke-dasharray: 4 4,stroke:#555;
+```
+
+### Permission Matrix — Action × Stage Role (Approver)
+
+All three sub-roles share the same review-and-decide UI and the same action set. Differences come from scope (department visibility) and the policy each stage is meant to enforce. Edit rights are scoped to the **line-level Approved Qty / approved unit** fields per `PR_VAL_013`; vendor and pricing fields are read-only at every approve stage (`PR_AUTH_008` reserves those for the `purchase` stage).
+
+| Action | Dept. Head (Stage 1) | Budget Controller (Stage 2) | Finance (Stage 3) |
+|---|---|---|---|
+| View own-dept PRs | ✅ | ✅ (all departments) | ✅ (all departments) |
+| View Items / Budget Impact / Activity Log | ✅ | ✅ | ✅ |
+| Approve (advance stage) | ✅ | ✅ | ✅ |
+| Send-back (with reason) | ✅ | ✅ | ✅ |
+| Reject — header level (terminate to `cancelled`) | ✅ | ✅ | ✅ |
+| Split-Reject — line level | ✅ | ✅ | ✅ |
+| Adjust `approved_qty` / `approved_unit` (per `PR_VAL_013`) | ✅ | ✅ | ✅ |
+| Add Comments | ✅ | ✅ | ✅ |
+| Edit vendor / unit price / discount / tax / FOC | ❌ | ❌ | ❌ |
+| Delete PR | ❌ | ❌ | ❌ |
+| Convert to PO | ❌ | ❌ | ❌ |
+| Override prior-stage send-back | ❌ | ❌ | ❌ (Procurement Manager only) |
+
+> ⚠️ **Discrepancy — bulk-toolbar vs row-level actions (BRD FR-PR-005A):** The BRD specifies per-row standalone **Approve / Reject / Send for Review** buttons in the PR list / detail header. The current live UI exposes these only as **bulk toolbar actions** inside Edit Mode (via the Select All dropdown → bulk action toolbar). Confirmed bulk actions: Approve, Reject, Send for Review (BRD "Return Selected"), Split. Standalone row-level buttons remain absent. Source: `Test_case/Purchase_Request/Approver/INDEX.md` (capture date 2026-04-19). Verification status: confirmed HOD; assumed for FC / GM / Owner.
 
 ## 2. Entry Point and Primary Flow
 

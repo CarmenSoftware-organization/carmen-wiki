@@ -2,7 +2,7 @@
 title: Purchase Order — User Flow — Procurement Manager
 description: Procurement Manager's flow within the purchase-order module — high-value approval, vendor ranking, and rule tuning.
 published: true
-date: 2026-05-15T10:00:00.000Z
+date: 2026-05-16T10:00:00.000Z
 tags: purchase-order, user-flow, procurement-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -13,6 +13,49 @@ dateCreated: 2026-05-15T10:00:00.000Z
 ## 1. Role in This Module
 
 The **Procurement Manager** owns oversight of the procurement function and engages with the PO module across **two distinct surfaces**. The **transactional surface** is the high-value approval gate at the final stage of the workflow chain — POs whose `tb_purchase_order.total_amount` exceeds the tenant high-value threshold (or whose pricelist deviation exceeds tolerance per `PO_XMOD_006`) are routed here for the `in_progress → sent` transition that the Purchaser cannot self-approve under `PO_AUTH_004`, and the Manager either approves-and-transmits (`PO_POST_004`), sends the PO back to the Purchaser for revision (`PO_POST_005`), or rejects to terminate the workflow at `voided` (`PO_POST_010`). The **configurational surface** is the rule-tuning workbench where the Manager maintains the vendor master and ranking, the `(vendor_id, currency_id)` grouping rules used by Convert-to-PO, the unit-conversion factors that drive `PO_VAL_009` / `PO_CALC_011`, the pricelist tolerance band that gates `PO_XMOD_006`, and the high-value threshold itself on the workflow definition referenced by `tb_purchase_order.workflow_id`. The Manager additionally holds the **override authorities** that the Purchaser cannot exercise: soft-delete-in-draft (`PO_AUTH_005`), void from any non-terminal state (`PO_AUTH_007`, `PO_POST_010`), early-close from `partial → closed` (`PO_POST_011`, shared with Inventory Manager per `PO_AUTH_008`), and the override of a Purchaser's send-back where a return-to-draft would otherwise stall a time-critical PO. The Manager operates under `enum_stage_role = approve` at the high-value stage and additionally as a configuration administrator outside the transactional workflow.
+
+### Workflow position (PM transactional + override paths highlighted)
+
+```mermaid
+graph LR
+    inprog(("in_progress")) -->|"High-value (PO_AUTH_004)<br/>or deviation (PO_XMOD_006)"| pm["PM High-Value Approval"]:::current
+    pm -->|"Approve + transmit"| sent(("sent"))
+    pm -->|"Send-back"| draft(("draft"))
+    pm -->|"Reject"| voided(("voided"))
+    draft -.->|"Soft-delete<br/>(PO_AUTH_005)"| voided
+    sent -.->|"Void (PO_AUTH_007)"| voided
+    partial(("partial")) -.->|"Void (PO_AUTH_007)"| voided
+    partial -.->|"Early-close<br/>(PO_AUTH_008)"| closed(("closed"))
+    cfg["Vendor ranking, grouping,<br/>unit conv, tolerance, threshold"]:::current2 -.->|"Effective from"| draft
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+    classDef current2 fill:#7c3aed,color:#fff,stroke:#7c3aed;
+```
+
+### Permission Matrix — Surface × Action (Procurement Manager)
+
+The Manager's authority spans the transactional approval gate and the configuration / override surfaces. Receipt-driven transitions (`sent → partial → completed`) are not part of this role.
+
+| Action | Transactional (High-value approval) | Override (any non-terminal state) | Configurational (Rule workbench) |
+|---|---|---|---|
+| View PO | ✅ | ✅ | — |
+| Approve & Transmit (`in_progress → sent`) | ✅ (`PO_POST_004`) | — | — |
+| Send-back (`in_progress → draft`) | ✅ (`PO_POST_005`) | — | — |
+| Reject (`in_progress → voided`) | ✅ (`PO_POST_010`) | — | — |
+| Soft-delete draft (`PO_AUTH_005`) | — | ✅ (`PO_POST_012`) | — |
+| Void from `sent` / `partial` (`PO_AUTH_007`) | — | ✅ (`PO_POST_010`) | — |
+| Early-close `partial → closed` (`PO_AUTH_008`, shared with Inv Mgr) | — | ✅ (`PO_POST_011`) | — |
+| Override Purchaser send-back (re-submit + approve) | ✅ | — | — |
+| Maintain vendor ranking & performance score | — | — | ✅ |
+| Edit Convert-to-PO grouping key (vendor + currency, optional secondary) | — | — | ✅ |
+| Edit unit-conversion factors (drives `PO_VAL_009` / `PO_CALC_011`) | — | — | ✅ |
+| Edit pricelist tolerance band (gates `PO_XMOD_006`) | — | — | ✅ |
+| Edit high-value threshold (gates `PO_AUTH_004`) | — | — | ✅ |
+| Save rule version with `effective_from` (in-flight snapshot preserved) | — | — | ✅ |
+| Roll back rule version | — | — | ✅ |
+| Bulk Void / Bulk Close | — | ✅ | — |
+| Edit header / lines (qty, price, tax, FOC) | ❌ | ❌ | — |
+
+> ℹ️ **Snapshot principle:** rule changes apply **forward-only**. POs already at `in_progress`, `sent`, or `partial` retain their snapshot of `vendor_id`, `currency_id`, `exchange_rate`, line `price`, `order_unit_conversion_factor`, and workflow threshold — they do not re-evaluate under the new rule.
 
 ## 2. Entry Point and Primary Flow
 

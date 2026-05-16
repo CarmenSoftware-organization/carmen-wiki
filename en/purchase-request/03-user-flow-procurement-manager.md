@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow — Procurement Manager
 description: Procurement Manager's flow within the purchase-request module — high-value approval, vendor ranking, and Allocate Vendor rule tuning.
 published: true
-date: 2026-05-15T09:00:00.000Z
+date: 2026-05-16T10:00:00.000Z
 tags: purchase-request, user-flow, procurement-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -13,6 +13,44 @@ dateCreated: 2026-05-15T09:00:00.000Z
 ## 1. Role in This Module
 
 The **Procurement Manager** is the senior procurement persona that owns two distinct surfaces in the `purchase-request` module. The **transactional** surface is the final escalated approval stage above Finance: when a PR's `base_total_amount` breaches a configured high-value threshold (`PR_AUTH_005`), or when the workflow routes a strategically sensitive PR explicitly to procurement, the document lands in the Procurement Manager's queue for an oversight decision (approve, send back, reject, or split-reject) that uses the same review-and-decide UI as the rest of the Approver chain but with broader scope — including the right to override an Approver-issued send-back when business need warrants. The **configurational** surface is the Allocate Vendor rule set: the Procurement Manager maintains the vendor-ranking and pricelist-priority configuration that drives every Purchaser's vendor-selection ranking, tunes the scoring weights (vendor rank vs. lowest price vs. last-receiving history) and per-vendor priority overrides, and runs bulk oversight actions on PRs stuck in `in_progress` beyond an SLA window. Procurement Managers operate under `enum_stage_role = purchase` (`PR_AUTH_008`) on the configurational side and on the same `approve` action set as the Approver chain (`PR_AUTH_002`–`PR_AUTH_004`) on the transactional side. They differ from the base Approver because they hold both escalation-chain authority **and** ownership of the vendor allocation rules that feed downstream Purchaser flow; they differ from the Purchaser because they do not personally run vendor allocation on individual PRs — they configure the rules that drive it.
+
+### Workflow position (PM transactional path highlighted)
+
+```mermaid
+graph LR
+    inprog(("in_progress")) -->|"Threshold breach<br/>(PR_AUTH_005)"| pm["PM Escalated Review"]:::current
+    pm -->|"Approve (final)"| approved(("approved"))
+    pm -->|"Send-back"| draft(("draft"))
+    pm -->|"Reject"| cancelled(("cancelled"))
+    approved -->|"Convert to PO<br/>(Purchaser)"| completed(("completed"))
+    pm -.->|"Override prior send-back"| approved
+    cfg["Vendor Allocation Rules<br/>(configurational)"]:::current2 -.->|"Feeds Purchaser ranking"| approved
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+    classDef current2 fill:#7c3aed,color:#fff,stroke:#7c3aed;
+```
+
+### Permission Matrix — Surface × Action (Procurement Manager)
+
+The Manager engages with the module across two surfaces. Transactional rights are scoped to the escalated stage (`PR_AUTH_005`); configurational rights are scoped to the Allocate Vendor rule workbench (`PR_AUTH_008`).
+
+| Action | Transactional (Escalated stage) | Configurational (Allocate Vendor rules) |
+|---|---|---|
+| View PR (escalated) | ✅ | — |
+| Approve (final stage, → `approved`) | ✅ | — |
+| Send-back (with reason) | ✅ | — |
+| Reject (terminate → `cancelled`) | ✅ | — |
+| Split-Reject — line level | ✅ | — |
+| Adjust `approved_qty` (`PR_VAL_013`) | ✅ | — |
+| Override prior-stage Approver send-back | ✅ | — |
+| Maintain vendor ranking criteria & weights | — | ✅ |
+| Set per-vendor priority overrides / blacklist | — | ✅ |
+| Bulk action on stuck `in_progress` PRs (send-back / ping / re-allocate) | ✅ (per-PR `PR_AUTH_002`) | ✅ (bulk wrapper) |
+| Save rule set with `effective_from` timestamp | — | ✅ |
+| Delegate the role (`PR_AUTH_006`) | ✅ (delegable) | ❌ (config not delegable by default) |
+| Edit PR header / lines / vendor / pricing | ❌ | ❌ |
+| Void PR (`PR_AUTH_007`) | ❌ (sysadmin only) | ❌ |
+
+> ℹ️ **Snapshot semantics:** saving a new Allocate Vendor rule set takes effect for **new** PRs only. PRs already at `in_progress` retain their snapshotted vendor allocation (parallels `PR_CALC_006` exchange-rate snapshot). Re-allocation against the new rules requires either a send-back to `draft` and resubmission, or a one-off bulk re-allocate from Stuck PR Oversight.
 
 ## 2. Entry Point and Primary Flow
 

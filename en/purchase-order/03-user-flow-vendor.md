@@ -2,7 +2,7 @@
 title: Purchase Order — User Flow — Vendor
 description: Vendor's flow within the purchase-order module — external party (no system login); receives PO, acknowledges, fulfils, invoices.
 published: true
-date: 2026-05-15T10:00:00.000Z
+date: 2026-05-16T10:00:00.000Z
 tags: purchase-order, user-flow, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -13,6 +13,38 @@ dateCreated: 2026-05-15T10:00:00.000Z
 ## 1. Role in This Module
 
 The **Vendor** is an **external party with no Carmen system login**. The vendor receives the transmitted PO, acknowledges acceptance, fulfils the agreed delivery, and issues an invoice for three-way match — but every system-side effect of these actions is recorded by an internal persona on the vendor's behalf. When the PO is transmitted on final approval the system state moves to `sent` (`PO_POST_004`); thereafter the vendor's acknowledgement is captured manually by the **Purchaser** in `tb_purchase_order_comment` (or, where a vendor portal is configured, written directly through the portal callback), the physical delivery has no immediate system effect, the **Receiver**'s GRN posting flips `po_status` to `partial` or `completed` via `PO_POST_006` / `PO_POST_007`, and the vendor's invoice is captured and three-way-matched by the **Finance** persona. The vendor never operates `po_status` directly — its actions drive state only through the internal personas who record them.
+
+### Workflow position (Vendor touch points highlighted)
+
+```mermaid
+graph LR
+    sent(("sent")) -->|"PO transmitted<br/>(channel: email / EDI / portal)"| vendor["Vendor receives PO"]:::current
+    vendor -->|"Acknowledges<br/>(captured by Purchaser)"| sent
+    vendor -->|"Ships goods"| recv["Physical delivery"]:::current
+    recv -->|"Receiver posts GRN"| partial(("partial"))
+    recv -->|"Receiver posts GRN"| completed(("completed"))
+    vendor -->|"Issues invoice"| inv["Vendor invoice"]:::current
+    inv -->|"Finance three-way match"| ap[["AP liability posted"]]
+    vendor -.->|"Declines after sent"| voided(("voided"))
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+```
+
+### Permission Matrix — Vendor Event × System Effect (recorded by internal persona)
+
+The Vendor has **no direct write access** in Carmen. Each vendor-side event is recorded by an internal persona; the table below maps the event to the persona, the system surface, and the PO-state effect (if any).
+
+| Vendor event | Internal persona who records | System surface | `po_status` effect |
+|---|---|---|---|
+| Acknowledges PO | Purchaser (or portal callback) | `tb_purchase_order_comment` | none (stays `sent`) |
+| Ships partial qty | Receiver | GRN posting | `sent → partial` (`PO_POST_006`) |
+| Ships full / final balance | Receiver | GRN posting | `sent → completed` or `partial → completed` (`PO_POST_007`) |
+| Declines / cancels after `sent` | Procurement Manager | Void (`PO_AUTH_007`) | `sent → voided` (`PO_POST_010`) |
+| Cannot supply outstanding balance | Procurement Manager / Inventory Manager | Early-close (`PO_AUTH_008`) | `partial → closed` (`PO_POST_011`) |
+| Delivers wrong item / over qty | Receiver (refuses at dock) | none — escalates to Purchaser via `tb_purchase_order_comment` | none |
+| Delivers quality-failed goods | Receiver | GRN with `accepted_qty < received_qty` | per `PO_POST_006` / `PO_POST_007` |
+| Issues invoice | Finance Officer / AP | AP capture screen + three-way match | none — three-way-match outcome lives on invoice record (`PO_POST_008` / `PO_POST_009`) |
+
+> ⚠️ **Discrepancy — auto-transmit on final approve:** The live UI transmits the PO to the vendor **immediately on final approval** (no separate manual "Send to Vendor" button) — `APPROVED` and `SENT` are observed as effectively the same step. BRD `FR-PO-005` describes a distinct manual *Send* action and an `ACKNOWLEDGED` status that the vendor confirms. Neither the manual send button nor the `ACKNOWLEDGED` status are present in the live UI. Source: `Test_case/Purchase_Order/Purchaser/INDEX.md` § Status Lifecycle (capture date 2026-04-26).
 
 ## 2. Entry Point and Primary Flow
 

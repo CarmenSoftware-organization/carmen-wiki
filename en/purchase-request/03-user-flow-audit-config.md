@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow — Audit / Config
 description: Auditor (read-only) and System Administrator (workflow / threshold / delegation configuration) flows for purchase-request.
 published: true
-date: 2026-05-15T09:00:00.000Z
+date: 2026-05-16T10:00:00.000Z
 tags: purchase-request, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -13,6 +13,51 @@ dateCreated: 2026-05-15T09:00:00.000Z
 ## 1. Role in This Module
 
 The **Audit / Config** persona axis groups two distinct roles that both sit **outside the transactional happy path** of the `purchase-request` module but are essential to its governance and operability. The **Auditor** is a read-only persona who reviews the immutable activity trail of every PR — the status-history timeline in `workflow_history`, the comment log in `tb_purchase_request_comment` (`PR_POST_008`), every header / line / status / vendor / pricelist change captured as system events, and the per-stage authorization snapshot in `user_action` — and verifies that documents comply with policy, that segregation of duties was respected (no single user acted as Requestor and Approver on the same PR, no out-of-band approvals), and that the audit trail is complete and tamper-evident. The Auditor has **no write surface** in the module: they cannot approve, reject, send back, edit lines, change workflows, or void PRs. The **System Administrator** is a configuration persona who owns the **workflow and policy surface** for the module — workflow stages and their `stage_role` chain, amount thresholds that drive routing and escalation (`PR_AUTH_005`), delegation rules and windows (`PR_AUTH_006`), per-PR-type defaults (default workflow per `enum_purchase_request_type`, line-level tax-treatment defaults, default approve / reject mandatory-reason policies), tax codes and tax-inclusive/exclusive defaults consumed by `PR_CALC_002`–`PR_CALC_004`, currency rate sources feeding `exchange_rate` and `PR_CALC_006` snapshots, and the user / role / business-unit assignments that determine who lands in `user_action.execute[]` at each stage. Neither role is on the request-to-PO happy path; each has its own entry point, its own surface, and its own exit semantics: the Auditor exits via a generated report with no PR state change, the Sysadmin exits via a saved configuration that takes effect for future PRs while preserving snapshot semantics for PRs already `in_progress`. The pair is documented here on a single persona axis because both roles are peripheral to the transactional flow and share a common pattern of "off-path, governance-oriented" operation.
+
+### Position relative to the transactional flow (off-path observers)
+
+```mermaid
+graph LR
+    subgraph transactional["Transactional Happy Path"]
+        draft(("draft")) --> inprog(("in_progress"))
+        inprog --> approved(("approved"))
+        approved --> completed(("completed"))
+        inprog --> cancelled(("cancelled"))
+    end
+    auditor["Auditor<br/>(read-only)"]:::audit -.->|"Reads"| draft
+    auditor -.->|"Reads"| inprog
+    auditor -.->|"Reads"| approved
+    auditor -.->|"Reads"| completed
+    auditor -.->|"Reads"| cancelled
+    sysadmin["System Administrator<br/>(config + elevated void)"]:::cfg -.->|"Configures workflow / threshold"| transactional
+    sysadmin -.->|"Void (PR_AUTH_007)"| voided(("voided"))
+    classDef audit fill:#eab308,color:#000,stroke:#eab308;
+    classDef cfg fill:#7c3aed,color:#fff,stroke:#7c3aed;
+```
+
+### Permission Matrix — Action × Sub-persona (Audit / Config)
+
+The two sub-personas have complementary, non-overlapping rights. Auditors observe and report; Sysadmins configure and (exceptionally) void. Neither participates in approve / send-back / reject.
+
+| Action | Auditor | System Administrator |
+|---|---|---|
+| Read `workflow_history` / `tb_purchase_request_comment` | ✅ | ✅ |
+| Read header / lines / snapshots (vendor / pricelist / exchange rate) | ✅ | ✅ |
+| Build ad-hoc audit query (filtered) | ✅ | ✅ |
+| Flag PR in audit case file (audit-side store only) | ✅ | ❌ |
+| Export report (CSV / PDF) — sensitive fields require export-approver | ✅ | ✅ |
+| Edit workflow stages / `stage_role` chain | ❌ | ✅ |
+| Edit amount thresholds (`PR_AUTH_005`) | ❌ | ✅ |
+| Edit delegation rules / windows (`PR_AUTH_006`) | ❌ | ✅ |
+| Assign / remove users from `user_action.execute[]` | ❌ | ✅ |
+| Edit PR-type defaults / tax codes / currency rates | ❌ | ✅ |
+| Save configuration with `effective_from` (snapshot for in-flight PRs) | ❌ | ✅ |
+| Roll back configuration to prior version | ❌ | ✅ |
+| Void in-flight PR (`PR_AUTH_007`, `PR_POST_006`) | ❌ | ✅ |
+| Edit PR header / lines / vendor / pricing | ❌ | ❌ |
+| Approve / Reject / Send-back / Split-Reject | ❌ | ❌ |
+
+> ℹ️ **Auditor → Sysadmin escalation:** when an audit finding requires a state change (e.g. void of a non-compliant PR), the Auditor flags the case file and the **System Administrator** performs the void under `PR_AUTH_007`. The Auditor never executes the action themselves.
 
 ## 2. Entry Point and Primary Flow
 
