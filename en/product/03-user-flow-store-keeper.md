@@ -41,7 +41,7 @@ The **count / spot-check** flow is a parallel pattern:
 - Reference handling notes — is the product perishable (expiry-date required on the count line per `INV_VAL_006` extension)?
 - Add the count line; the product is read, not edited.
 
-The **stock-in / stock-out** flow (manual adjustments per [[inventory/03-user-flow-store-keeper.md]]):
+The **stock-in / stock-out** flow (manual adjustments per [[inventory/03-user-flow-store-keeper]]):
 
 - For non-barcode workflows (e.g. a found-stock entry with no label), the Store Keeper searches by code or name in the manual picker. Same scope rules apply (`active` + `is_active = true` + non-deleted).
 - For perishable products, the form prompts for expiry date (required per `INV_VAL_006`); the perishable flag comes from `tb_product.info` JSON (or by category convention).
@@ -71,7 +71,7 @@ The Store Keeper's interaction with the product master ends at one of these boun
 - **Barcode resolved, line populated, work continues in the source module.** The product master was read; the GRN / count / SR / stock-in / stock-out line is populated with `product_id`. The product master is unchanged; the Store Keeper's transactional work proceeds in the source module per its persona file.
 - **Comment posted for barcode mismatch.** The barcode-mismatch comment is logged on the affected product; the Product Administrator picks it up from the comments queue per [03-user-flow-product-admin.md](./03-user-flow-product-admin.md) Section 4. The Store Keeper may need to defer the GRN line / count line until the master is updated and the rescan succeeds (or use manual search to proceed with the work and post the comment for later master-data clean-up).
 - **Comment posted for unresolved barcode / new-product request.** Same as above; the work pauses or proceeds via manual search depending on the urgency.
-- **Per-location policy feedback routed to Inventory Controller.** Min / max / par / reorder feedback is logged via comment on the product's location tab; the **Inventory Controller** picks it up (not Product Administrator). The Store Keeper's involvement on the policy concern ends; the Inventory Controller may engage them for context during the review per [[inventory/03-user-flow-inventory-controller.md]].
+- **Per-location policy feedback routed to Inventory Controller.** Min / max / par / reorder feedback is logged via comment on the product's location tab; the **Inventory Controller** picks it up (not Product Administrator). The Store Keeper's involvement on the policy concern ends; the Inventory Controller may engage them for context during the review per [[inventory/03-user-flow-inventory-controller]].
 - **Handling-note correction posted.** Comment on the product with the proposed correction (storage temp, shelf life, allergen flag) is logged; the Product Administrator updates `tb_product.info` JSON per their flow.
 - **Lookup session ends without state change.** When the Store Keeper used the catalogue purely for reference (e.g. checking handling instructions before opening a perishables shipment), the session ends with no master change and no transactional posting.
 
