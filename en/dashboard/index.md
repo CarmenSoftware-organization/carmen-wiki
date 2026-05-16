@@ -1,8 +1,8 @@
 ---
 title: Dashboard
-description: Cross-module dashboard surface — landing screen plus per-module KPI views (PR, PO, GRN, Inventory, SR) that summarise live counts, aging, and exception buckets without opening each module.
+description: Cross-module dashboard surface — landing screen plus per-domain KPI views (PR, PO, GRN, Inventory, SR) that summarise live counts, aging, and exception buckets without opening each module.
 published: true
-date: 2026-05-16T15:00:00.000Z
+date: 2026-05-16T17:00:00.000Z
 tags: dashboard, kpi, reporting, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -10,28 +10,51 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 # Dashboard
 
-## 1. Overview
+## 1. Purpose
 
-> **Status:** Documentation in progress — module registered for parity with the app navigation at `/dashboard/*`. Detail to be filled when the corresponding module captures land. For now this section serves as the navigation target so testers and developers can confirm the slugs exist and reach the related concepts.
+The Dashboard module is the first screen most operators see after login. The bare `/dashboard` URL server-redirects to `/dashboard/main`, and a sidebar group exposes six sibling pages — one per operational domain. Each page is a read-only collage of tiles, tables, and charts that answers the question *"what needs my attention today?"* without requiring the user to open the underlying transactional module.
 
-The Dashboard module is the first screen most operators see on login. It aggregates read-only counts and exception buckets from across the procure-to-pay and inventory chains so that a manager can spot pending approvals, overdue receipts, low-stock locations, or open requisitions without opening each module individually. Each sub-page is a per-domain summary backed by the same transactional tables — drilling into a tile navigates the user into the underlying module (PR / PO / GRN / Inventory / SR) with the relevant filter pre-applied.
+Two design notes that matter for developers and testers:
 
-## 2. Pages in This Module
+- The current frontend implementation under `app/(root)/dashboard/*` is **mock-data-driven**. Every chart, KPI card, and table reads from `app/(root)/dashboard/mock/{main,pr,po,grn,inventory,sr}.ts` rather than a live API. The live hooks `useMyPendingPrCount` / `useMyPendingPoCount` / `useMyPendingSrCount` and `useApprovalPending` exist in `hooks/use-dashboard.ts` and `hooks/use-approval.ts` and back the reusable `dashboard-my-pending.tsx` and `dashboard-my-approval.tsx` components — but those reusable widgets are **not currently mounted** on any of the six sub-dashboard pages. Treat the rendered tiles as a UI prototype until the wiring to real endpoints lands.
+- Tile colour stripes come from the longest-prefix match in `constant/module-color-map.ts`, which assigns each route to a CSS variable (`--sub-pr`, `--sub-po`, `--sub-grn`, `--sub-store-requisition`, `--module-inventory`).
 
-- [[dashboard/main]] — landing dashboard with cross-module KPIs
-- [[dashboard/pr]] — Purchase Request summary tiles
-- [[dashboard/po]] — Purchase Order summary tiles
-- [[dashboard/grn]] — Goods Receive Note summary tiles
-- [[dashboard/inventory]] — Inventory Management summary tiles
-- [[dashboard/sr]] — Store Requisition summary tiles
+## 3. Data Sources
 
-## 3. Related Modules
+When the live wiring is enabled, each tile will resolve to one of three backend surfaces:
 
-- [[purchase-request]], [[purchase-order]], [[good-receive-note]] — procure-to-pay sources
-- [[inventory]], [[store-requisition]] — inventory-side sources
-- [[reporting-audit]] — deeper report catalogue once a tile-drill is not enough
+- **My-pending counts** — `GET /api/proxy/api/my-pending/{purchase-requests,purchase-orders,store-requisitions}/count` (see `constant/api-endpoints.ts`). Returns `{ pending: number }` per doc type.
+- **Approval queue** — `GET /api/proxy/api/approval/pending` and its `/summary` sibling. Returns `ApprovalItem[]` grouped by `doc_type` (`pr` / `po` / `sr`) with `workflow_current_stage`, `doc_date`, `total_amount`, etc.
+- **Per-domain aggregates** — the per-dashboard pipeline / KPI numbers (currently mock) will eventually resolve to query-dataset reports from [[reporting-audit]], not to per-row scans of the transactional tables.
 
-## 4. Reference Sources
+See each sub-page for the specific tile-to-endpoint mapping.
 
-- `../carmen-inventory-frontend/app/(root)/(protected)/dashboard/` — frontend pages
-- `../carmen-inventory-frontend/constant/module-list.ts` — menu definition that registers each dashboard sub-page
+## 5. Audience & Persona
+
+| Persona | Lands on | Why |
+|---|---|---|
+| Requestor | [[dashboard/sr]], [[dashboard/pr]] | Their own pending requisitions and sent-back items |
+| Approver (HOD, Procurement Manager) | [[dashboard/pr]], [[dashboard/po]] | Approval queue + bottleneck pipeline |
+| Purchaser | [[dashboard/po]] | Open POs, overdue deliveries, vendor performance |
+| Receiver | [[dashboard/grn]] | Pending POs to receive today/week, partial receipts |
+| Inventory Controller / Store Manager | [[dashboard/inventory]] | Slow-moving stock, replenishment, PST status |
+| Executive | [[dashboard/main]] | Cross-domain spend, budget utilisation, top vendors |
+
+## 6. Pages in This Module
+
+- [[dashboard/main]] — landing dashboard with cross-module KPIs (spend, pending PRs, open POs, budget)
+- [[dashboard/pr]] — Purchase Request pipeline, sent-back/rejected, approval queue
+- [[dashboard/po]] — Purchase Order pipeline, overdue deliveries, on-time / completeness gauges
+- [[dashboard/grn]] — Goods Receive Note KPIs, pending PO by day-band, incomplete/over-received GRNs
+- [[dashboard/inventory]] — stock pipeline, slow-moving, replenishment, PST status, expired items
+- [[dashboard/sr]] — Store Requisition pipeline, sent-back, awaiting approval, consumption charts
+
+## 7. Reference Sources
+
+- `../carmen-inventory-frontend/app/(root)/dashboard/page.tsx` — `/dashboard` redirect to `/dashboard/main`
+- `../carmen-inventory-frontend/app/(root)/dashboard/{main,pr,po,grn,inventory,sr}/page.tsx` — per-domain page shells
+- `../carmen-inventory-frontend/app/(root)/dashboard/_components/dashboard-{main,pr,po,grn,inventory,sr}.tsx` — tile compositions
+- `../carmen-inventory-frontend/app/(root)/dashboard/mock/{main,pr,po,grn,inventory,sr}.ts` — current mock data
+- `../carmen-inventory-frontend/constant/module-list.ts` — sidebar registration of the six sub-pages
+- `../carmen-inventory-frontend/constant/module-color-map.ts` — colour-stripe assignment per route
+- `../carmen-inventory-frontend/hooks/use-dashboard.ts`, `hooks/use-approval.ts` — live count + approval hooks (not yet wired to the per-domain dashboards)
