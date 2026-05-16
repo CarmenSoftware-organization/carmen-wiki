@@ -39,13 +39,12 @@ These roles act on the periphery of the SR lifecycle — before any SR exists (S
 |---|---|---|---|---|
 | View SR at any status | ✅ (`SR_AUTH_009`) | ✅ (`SR_AUTH_010`) | ✅ | ✅ (read-only) |
 | View per-line signature chain and `history` JSON | ✅ | ✅ | ✅ | ✅ |
-| Monitor variance dashboard (`requested − issued`) | ✅ (`SR_AUTH_009`) | ✅ | — | ✅ |
+| Monitor variance dashboard (`requested − issued`) | ✅ (`SR_AUTH_009`) | ✅ | — | ❌ |
 | Pre-commit administrative void (`draft` / `in_progress → voided`) | ✅ (`SR_AUTH_013`) | ❌ | ✅ (`SR_AUTH_013`) | ❌ |
 | Void `completed` SR | ❌ (`SR_POST_010` — not allowed; use inventory-adjustment) | ❌ | ❌ | ❌ |
 | Investigate and resolve Receiver discrepancy | ✅ | ✅ (GL side) | — | ❌ |
 | Co-author inventory adjustment for post-commit correction | ✅ (`SR_XMOD_009`) | ✅ (verify GL balance) | — | ❌ |
 | Block closed-period commits (`SR_VAL_014`) | — | ✅ (`SR_AUTH_010`) | — | ❌ |
-| Period-end reconciliation signoff | ✅ (sub-ledger) | ✅ (outlet food-cost) | — | ✅ (independent review) |
 | Configure workflow stages (`tb_workflow`) | — | — | ✅ (`SR_AUTH_014`) | ❌ |
 | Manage RBAC (assign / revoke roles per location) | — | — | ✅ | ❌ |
 | Configure SoD-relaxation thresholds | — | — | ✅ | ❌ |
