@@ -2,7 +2,7 @@
 title: Costing — User Flow — Finance
 description: Finance's flow within the costing module — valuation policy, sub-ledger ↔ GL reconciliation, credit-note revaluation approval, period-end valuation lock.
 published: true
-date: 2026-05-15T12:30:00.000Z
+date: 2026-05-16T17:00:00.000Z
 tags: costing, user-flow, finance, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -13,6 +13,49 @@ dateCreated: 2026-05-15T12:30:00.000Z
 ## 1. Role in This Module
 
 The **Finance** persona is the **valuation authority** on the costing module. Within this module Finance's work spans five threads. (1) **Own the valuation policy** — choose `tb_business_unit.calculation_method` (FIFO vs `average` per business unit per `COST_AUTH_001`), pick the count-variance valuation source via `enum_physical_count_costing_method` (`standard` / `last` / `average` / `last_receiving` per `COST_AUTH_002`), set the standard cost on `tb_product.standard_cost` for recipes and for count-variance under the `standard` method per `COST_AUTH_003`, configure the reconciliation tolerance and the period-end cadence. The Finance Officer / Cost Controller drives the policy day-to-day; the Finance Manager is the elevated gate at the boundary (method change with non-zero on-hand requires drain — see Decision Branches). (2) **Reconcile the inventory sub-ledger to the GL** — periodic (typically weekly or monthly) reconciliation of `Σ tb_inventory_transaction_cost_layer.total_cost + Σ diff_amount` against the GL Inventory control account net change, per `INV_XMOD_008` / `COST_XMOD_009`. Costing-side variances surface here as e.g. a credit-note-amount adjustment that didn't replicate to GL, an outlier cost-pick that produced unexpected COGS, an FX revaluation gap. (3) **Approve credit-note-amount adjustments** — vendor concessions on a posted GRN's lot cost. Finance approves the `tb_credit_note` document; the inventory module fires the cost-layer revaluation (`COST_POST_003` / `COST_CALC_005`) which adjusts the originating lot's `cost_per_unit` and routes the `diff_amount` to GL via Dr AP / Cr Inventory. (4) **Run period-end valuation** — orchestrate the close-of-period after Inventory Controller variance sign-off; verify the cost-layer-to-snapshot rollup math, sign off the locked `closing_cost_per_unit` / `closing_total_cost`; this is the moment the period's COGS and ending inventory become the audit-anchored balance-sheet figures. (5) **Period-lock progression** at the Finance Manager level — advance `tb_period.status = closed → locked` per `COST_AUTH_006` / `INV_AUTH_006` after the audit window. Critically, Finance does **not** edit `cost_per_unit` or `average_cost_per_unit` directly per `COST_AUTH_010`; cost revaluation always flows through credit-note-amount, compensating stock-in / stock-out, or the period-end rollforward.
+
+### Workflow position (Finance highlighted)
+
+Costing has no per-document state machine. Finance's costing work is anchored to the **cost-layer lifecycle** and the **period valuation lifecycle** — Finance operates at the valuation-policy, credit-note-revaluation, and period-close nodes, not on a document status progression.
+
+```mermaid
+graph LR
+    policyConsole["Valuation policy console<br/>(AVCO/FIFO method, count-costing source,<br/>standard-cost cadence)"]:::current
+    reconDash["Sub-ledger ↔ GL<br/>reconciliation dashboard"]:::current
+    cnQueue["Credit-note approval queue<br/>(cost revaluation)"]:::current
+    periodClose["Period-end valuation<br/>orchestration"]:::current
+    periodLock["Period-lock<br/>(Finance Manager only)"]:::current
+
+    policyConsole -->|"Config saved by Sysadmin"| reconDash
+    reconDash -->|"Variance resolved"| periodClose
+    cnQueue -->|"Revaluation approved → COST_POST_003"| reconDash
+    periodClose -->|"Snapshot written — tb_period.status = closed"| periodLock
+    periodLock -->|"tb_period.status = locked"| auditHandoff["Handoff to Auditor"]
+
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+```
+
+### Permission Matrix — V5 Touchpoint × Action (Finance)
+
+Finance is the **valuation authority** in the costing module. Costing has no doc-status enum; there is no GRN-style `draft → saved → committed` lifecycle to gate. Instead, Finance operates across five costing touchpoints described in Sections 2.1–2.5. Rule citations refer to [[costing/02-business-rules]] §§ 4, 5.
+
+| Action | Valuation policy | Sub-ledger reconciliation | Credit-note revaluation | Period-end orchestration | Period-lock (Finance Manager) |
+|---|---|---|---|---|---|
+| Read cost-layer ledger (`tb_inventory_transaction_cost_layer`) | ✅ (`COST_AUTH_004`) | ✅ (`COST_AUTH_004`) | ✅ (`COST_AUTH_004`) | ✅ (`COST_AUTH_004`) | ✅ (`COST_AUTH_004`) |
+| Read period snapshots (`tb_period_snapshot`) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Configure `tb_business_unit.calculation_method` (AVCO ↔ FIFO) | ✅ (as requester / co-approver; Sysadmin executes — `COST_AUTH_001`) | ❌ | ❌ | ❌ | ❌ |
+| Configure `enum_physical_count_costing_method` | ✅ (as requester; Sysadmin executes — `COST_AUTH_002`) | ❌ | ❌ | ❌ | ❌ |
+| Update `tb_product.standard_cost` | ✅ (as requester; Sysadmin executes — `COST_AUTH_003`) | ❌ | ❌ | ❌ | ❌ |
+| Post compensating GL journal (sub-ledger variance) | ❌ | ✅ (`COST_XMOD_009`) | ❌ | ❌ | ❌ |
+| Route cost-layer variance to Inventory Controller | ❌ | ✅ (`COST_AUTH_004`) | ❌ | ❌ | ❌ |
+| Approve `tb_credit_note` (vendor cost revaluation) | ❌ | ❌ | ✅ (`COST_AUTH_005`) | ❌ | ❌ |
+| Fire period-end valuation run (close period) | ❌ | ❌ | ❌ | ✅ (`COST_POST_007` / `COST_POST_008`) | ❌ |
+| Advance `tb_period.status = closed → locked` | ❌ | ❌ | ❌ | ❌ | ✅ (`COST_AUTH_006`) |
+| Re-open a `closed` period (exceptional) | ❌ | ❌ | ❌ | ❌ | ✅ (Finance Manager; audit-logged) |
+| Edit `cost_per_unit` or `average_cost_per_unit` directly on a posted row | ❌ (`COST_AUTH_010`) | ❌ (`COST_AUTH_010`) | ❌ (`COST_AUTH_010`) | ❌ (`COST_AUTH_010`) | ❌ (`COST_AUTH_010`) |
+| Re-open a `locked` period | ❌ | ❌ | ❌ | ❌ | ❌ (no role can re-open a locked period) |
+
+> ℹ️ **No doc-status transitions by Finance:** Costing has no `doc_status` enum. Finance does not transition any document status. Cost corrections flow through (a) credit-note-amount approval, (b) compensating stock-in / stock-out, or (c) the period-end rollforward — never by direct cost-layer edit.
 
 ## 2. Entry Point and Primary Flow
 

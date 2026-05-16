@@ -2,7 +2,7 @@
 title: Costing — Business Rules
 description: Validation, calculation, authorization, posting, period-end, and cross-module rules for costing.
 published: true
-date: 2026-05-15T12:30:00.000Z
+date: 2026-05-16T17:00:00.000Z
 tags: costing, business-rules, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -141,6 +141,39 @@ State diagram for cost-layer write (degenerate, single-state, mirrors inventory)
    → (immutable: no edit; revaluation only via credit-note-amount diff_amount, or
       period-end rollforward writing open_period / close_period anchor rows)
 ```
+
+### 5.1 Cost Method × Trigger Mapping — Live UI vs BRD
+
+Costing has no per-document status lifecycle. Instead, the cost engine is invoked by inventory-affecting transactions. The table below maps each trigger transaction to its AVCO (Weighted Average) and FIFO effects. Sources: `Test_case/System_Process/proc-03-cost-calculation.md` (capture date 2026-04-26), plus the originating transaction's Test_case file for trigger details. "AVCO" and "FIFO" match the terminology used in `Test_case`; the Prisma schema uses `average` and `fifo` as the `enum_calculation_method` values.
+
+| Trigger transaction | AVCO effect | FIFO effect | Notes / Source |
+|---|---|---|---|
+| GRN (stock-in) | Re-average: `new_avg = (prior_qty × prior_avg + in_qty × in_cost) / (prior_qty + in_qty)` | New cost layer added; `lot_seq_no` incremented | `COST_CALC_003` / `COST_CALC_004`; `Test_case/System_Process/tx-01-grn.md` |
+| CRN (credit-return) | Re-average; qty removed from on-hand | Oldest layer consumed at originating lot cost (`credit_note_quantity`) or lot revalued (`credit_note_amount` via `diff_amount`) | `COST_POST_003` / `COST_POST_004`; `Test_case/System_Process/proc-03-cost-calculation.md` P2 |
+| Stock In adjustment | Re-average (same as GRN inbound path) | New cost layer added at manually entered unit cost | `COST_CALC_003` / `COST_CALC_004`; `Test_case/System_Process/tx-06-stock-in-adj.md` |
+| Stock Out adjustment | Cost held (outbound consumes at prevailing average; average is not updated by outbound) | Oldest cost layer consumed first; spans multiple lots if needed | `COST_CALC_001` / `COST_CALC_002`; `Test_case/System_Process/tx-07-stock-out-adj.md` |
+| Issues | Cost held (same as stock-out) | Oldest cost layer consumed | `COST_POST_002`; `Test_case/System_Process/proc-03-cost-calculation.md` P2 |
+| Sales Consumption (SC) | Cost held | Oldest cost layer consumed | `COST_POST_002`; `Test_case/System_Process/proc-03-cost-calculation.md` P2 |
+| Wastage Report (WR) | Cost held (WR approval generates a Stock Out adj) | Oldest cost layer consumed | `COST_POST_002`; `Test_case/System_Process/INDEX.md` Transaction × Process Matrix |
+| Physical Count — variance exists | Re-average per direction (overage → re-average inbound; shortage → cost held outbound) | Overage → new cost layer; shortage → oldest layer consumed | `COST_POST_009`; `COST_CALC_008`; `Test_case/System_Process/tx-08-physical-stocktake.md` |
+| Physical Count — no variance | **NOT triggered** | **NOT triggered** | No qty change; no cost-layer write; `Test_case/System_Process/tx-08-physical-stocktake.md` |
+| Store Requisition (SR) | **NOT triggered** | **NOT triggered** | Goods transfer at existing cost — SR is a location transfer, not a consumption event. Lot is consumed at source (cost preserved), not cost-recalculated. See discrepancy callout § 5.2. `Test_case/System_Process/INDEX.md` Process Execution Swim Lane |
+| Spot Check | **PENDING** | **PENDING** | Variance posting not yet implemented per `Test_case/System_Process/INDEX.md` — Spot Checks reach `completed` but do not post QOH / lot / cost changes |
+| End Period Close | Locks period cost; no new recalc | Same | `COST_POST_007` / `COST_POST_008`; period-snapshot rows written; cost locked — no backdated entries after close |
+
+**Diff legend:** ✅ = confirmed alignment between live Test_case and BRD; **NOT triggered** = explicitly excluded from cost engine.
+
+### 5.2 Discrepancy Callouts — Live behaviour vs BRD / carmen/docs
+
+> ⚠️ **SR does NOT trigger cost recalculation.** Store Requisition moves goods from an inventory location to a Direct or Consignment destination at the existing unit cost. The cost engine is **not invoked** for any SR variant (INV → INV, INV → DIR, INV → CONS). This is explicitly confirmed in `Test_case/System_Process/proc-03-cost-calculation.md` P1 and the INDEX.md Process Execution Swim Lane. BRD documentation that implies SR triggers AVCO/FIFO recalc is incorrect; the goods move at book value with no re-averaging or layer consumption. Source: `Test_case/System_Process/proc-03-cost-calculation.md` § SR Exception — Why No Recalc (capture date 2026-04-26).
+
+> ⚠️ **Costing method locked at implementation — cannot be changed after go-live.** `tb_business_unit.calculation_method` (AVCO or FIFO) is configured per Business Unit at implementation and is **permanently locked** once inventory is live. `COST_VAL_009` blocks any change on a business unit with non-zero on-hand. A hotel group with multiple Business Units may have some on AVCO and others on FIFO, but each individual BU's method is immutable. Source: `Test_case/System_Process/proc-03-cost-calculation.md` P4 Q1 (confirmed 2026-04-26); `Test_case/System_Process/INDEX.md` § Scope and Constraints.
+
+> ⚠️ **Physical Count cost source is configurable, not fixed.** Count-variance posts use `enum_physical_count_costing_method` (`standard`, `last`, `average`, `last_receiving`) to select the unit cost for the variance — this is separate from the AVCO/FIFO cost-pick on regular transactions. carmen/docs does not describe this enum. Source: `costing/01-data-model.md` § 2.6; `COST_CALC_008`.
+
+> ⚠️ **CRN lot cost reversal path TBC.** Whether a CRN reverses the original GRN's lot cost or uses the current cost is confirmed as "TBC" in `Test_case/System_Process/proc-03-cost-calculation.md` P4 Q5. The Prisma engine has two distinct paths — `credit_note_quantity` (returns at originating lot cost) and `credit_note_amount` (revalues via `diff_amount`) — but the UX-level mapping to "which path for which CRN type" is not yet confirmed. Do not describe the CRN cost path as definitive until this TBC is resolved.
+
+> ⚠️ **Multi-currency cost storage TBC.** Whether costs are stored in base currency only or with FX conversion preserved per-layer is TBC per `Test_case/System_Process/proc-03-cost-calculation.md` P4 Q6. All current examples assume a single currency (Thai Baht `฿`).
 
 ## 6. Cross-Module Rules
 

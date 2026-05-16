@@ -2,7 +2,7 @@
 title: Costing — User Flow — Auditor
 description: Auditor's flow within the costing module — verify costed COGS and ending inventory tie back to source receipts; method-consistency audit across periods.
 published: true
-date: 2026-05-15T12:30:00.000Z
+date: 2026-05-16T17:00:00.000Z
 tags: costing, user-flow, auditor, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -13,6 +13,61 @@ dateCreated: 2026-05-15T12:30:00.000Z
 ## 1. Role in This Module
 
 The **Auditor** persona is **strictly read-only** across the costing surface — `tb_inventory_transaction_cost_layer` (the canonical cost-flow ledger), `tb_inventory_transaction_detail.cost_per_unit` (the per-line cost on the source-document line), `tb_period_snapshot.closing_cost_per_unit` / `closing_total_cost` (the period-locked valuation), `tb_business_unit.calculation_method` (the configured method and its history), `tb_product.standard_cost` (the reference cost and its update history), and the full configuration history for `enum_physical_count_costing_method` changes. The Auditor's work spans three audit threads. (1) **Verify costed COGS ties back to source receipts** — the cost-flow chain-of-custody trace: walk forward from a `committed` GRN's inbound cost-layer row through every downstream outbound that consumed from the introduced lot (under FIFO) or was costed against the running average the receipt contributed to (under WA); verify each outbound's `cost_per_unit` matches what the engine would have picked at the post timestamp under the then-configured method. (2) **Verify ending inventory ties back** — for any period-end `tb_period_snapshot.closing_total_cost`, drill into the constituent cost-layer rows that built it (residual FIFO lots, or the running WA at period close), verify the closing balance reconciles to the cost-layer sum at period boundary, and verify the `close_period` / `open_period` rollforward preserved the cost across the boundary (FIFO `lot_seq_no` preserved; WA running average carried forward). (3) **Costing-method consistency audit across periods** — verify the business unit's `calculation_method` was not silently changed during a period with non-zero on-hand (would violate `COST_VAL_009`); verify the FIFO-vs-WA-shadow drift is within expected bounds (the `average_cost_per_unit` shadow maintained even under FIFO should reconcile to an independent WA recompute); verify credit-note-amount revaluations correctly affected only the originating lot's `cost_per_unit` and produced the corresponding GL entry. The Auditor's deliverable is the audit report or the chain-of-custody trace — never a write. Critically, the Auditor does **not** edit any cost-layer row (terminal per `COST_AUTH_010`), does **not** approve credit-notes (Finance per `COST_AUTH_005`), does **not** advance period state (Finance Manager per `COST_AUTH_006`), and does **not** configure costing method (Sysadmin per `COST_AUTH_001`).
+
+### Position relative to the transactional flow (off-path observers)
+
+The Auditor is **strictly read-only** and **off the transactional path** — they do not appear in any inventory or cost-layer write sequence. The Auditor's entry point is **after** Finance Manager locks the period, at which point the cost-layer ledger and period snapshot are permanently immutable.
+
+```mermaid
+graph LR
+    auditEntry["Costing audit workspace<br/>(read-only)"]:::audit
+    costTrace["Cost-flow chain-of-custody trace<br/>(forward + backward per lot)"]:::audit
+    snapshotVerify["Period-end snapshot verification<br/>(COST_CALC_006 / COST_CALC_007 reconcile)"]:::audit
+    shadowDrift["FIFO-vs-WA shadow drift audit<br/>(average_cost_per_unit consistency)"]:::audit
+    cfgHistory["Configuration history audit<br/>(calculation_method, physical_count_costing_method)"]:::audit
+    auditReport["Export report / chain-of-custody<br/>(PDF / CSV)"]:::audit
+
+    txFinanceManager["Period locked by Finance Manager<br/>(tb_period.status = locked)"] --> auditEntry
+    auditEntry --> costTrace
+    auditEntry --> snapshotVerify
+    auditEntry --> shadowDrift
+    auditEntry --> cfgHistory
+    costTrace --> auditReport
+    snapshotVerify --> auditReport
+    shadowDrift --> auditReport
+    cfgHistory --> auditReport
+    auditReport -->|"Anomaly found"| financeEsc["Escalate to Finance / Sysadmin"]
+
+    classDef audit fill:#eab308,color:#000,stroke:#eab308;
+```
+
+### Permission Matrix — V6 Audit Action × Read Scope (Auditor)
+
+The Auditor is **strictly read-only** across the full costing surface. Costing has no doc-status enum; the Auditor verifies the cost-layer ledger's algorithmic invariants and the period-locked snapshot's integrity. Rows are derived from the audit thread actions in Sections 2.1–2.4 and the authorization rules at [[costing/02-business-rules]] § 4.
+
+| Action | Auditor |
+|---|---|
+| Read `tb_inventory_transaction_cost_layer` (full dataset) | ✅ (`COST_AUTH_008`) |
+| Read `tb_inventory_transaction_detail.cost_per_unit` (per-line cost) | ✅ (`COST_AUTH_008`) |
+| Read `tb_period_snapshot` (period-locked valuation) | ✅ (`COST_AUTH_008`) |
+| Read `tb_business_unit.calculation_method` and its change history | ✅ (`COST_AUTH_008`) |
+| Read `enum_physical_count_costing_method` config and its change history | ✅ (`COST_AUTH_008`) |
+| Read `tb_product.standard_cost` and its update history | ✅ (`COST_AUTH_008`) |
+| Run cost-flow chain-of-custody trace (forward + backward per lot) | ✅ (`COST_AUTH_008`) |
+| Run period-end snapshot verification (cost-layer sum vs snapshot) | ✅ (`COST_AUTH_008`) |
+| Run FIFO-vs-WA shadow drift audit (`average_cost_per_unit` consistency) | ✅ (`COST_AUTH_008`) |
+| Run configuration history audit (method-change pre-condition verification) | ✅ (`COST_AUTH_008`) |
+| Export activity log (plain — no cost / PII fields) | ✅ (no secondary approval) |
+| Export activity log (sensitive — unit costs, vendor terms, PII) | ✅ (secondary approval from Controller / DPO required — mirrors GRN audit pattern) |
+| Escalate anomaly to Finance / Sysadmin (read-only initiator) | ✅ (initiates; does not resolve) |
+| Edit any cost-layer row | ❌ (`COST_AUTH_010` — no role can edit a posted cost-layer row) |
+| Approve credit-note revaluation | ❌ (`COST_AUTH_005` — Finance only) |
+| Advance period status | ❌ (`COST_AUTH_006` — Finance Manager only) |
+| Configure costing method or count-costing method | ❌ (`COST_AUTH_001` / `COST_AUTH_002` — Sysadmin only) |
+
+> ℹ️ **SR cost-flow invariant for audit.** SR does NOT write a cost-layer row at the destination (`COST_XMOD_003`). A correct cost-flow audit trace for an SR source-location outbound will show a `transfer_out` cost-layer row at the inventory source at the existing cost-per-unit — **not** an AVCO re-average or a new FIFO layer. An SR destination that shows a cost-layer write is anomalous and warrants escalation. Source: `Test_case/System_Process/proc-03-cost-calculation.md` § SR Exception — Why No Recalc.
+
+> ℹ️ **Spot Check cost-flow invariant for audit.** Spot Checks do NOT currently post QOH, lot, or cost-layer changes (status: PENDING per `Test_case/System_Process/INDEX.md`). A cost-flow trace that shows a `spot_check` transaction_type on `tb_inventory_transaction_cost_layer` is unexpected and warrants escalation to Sysadmin.
 
 ## 2. Entry Point and Primary Flow
 

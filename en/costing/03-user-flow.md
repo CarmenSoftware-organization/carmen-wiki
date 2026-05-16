@@ -2,7 +2,7 @@
 title: Costing — User Flow
 description: Cost-flow lifecycle and persona-specific flow files for costing.
 published: true
-date: 2026-05-15T12:30:00.000Z
+date: 2026-05-16T17:00:00.000Z
 tags: costing, user-flow, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -17,6 +17,51 @@ This page is the **overview entry point** for the user-flow set of the `costing`
 Section 2 below describes the **cost-flow lifecycle** — the canonical set of legal transitions on a unit cost, from inbound creation through outbound consumption through period rollforward, independent of who acts. Each per-persona file (linked from Section 3) describes that persona's *path through* this state space — their entry point, the actions available to them, the decision branches they face, and the handoff that ends their involvement. Section 4 then summarises the cross-persona handoffs that stitch the individual paths together (Inventory Controller → Finance for variance / credit-note approval, Finance → Finance Manager for period-end valuation lock, Finance Manager → Auditor for audit-cycle handoff). Read this overview first to anchor the lifecycle, then drill into the persona file that matches your role.
 
 ## 2. Cost-Flow Lifecycle
+
+### 2.0 Transaction → Cost Engine Sequence
+
+Costing has no per-document state machine (no `draft → saved → committed` lifecycle). The cost engine is invoked by inventory-affecting transactions. The diagram below mirrors the Process Execution Swim Lane from `Test_case/System_Process/INDEX.md` (version 1.3.0, capture date 2026-04-27) and `Test_case/System_Process/proc-03-cost-calculation.md` (version 1.1.0, capture date 2026-04-26).
+
+```mermaid
+sequenceDiagram
+    participant TX as Trigger Transaction
+    participant INV as ① Inventory Update
+    participant LOT as ② Lot Management
+    participant COST as ③ Cost Calculation
+
+    Note over TX,COST: Stock-in — GRN · Stock In (adj)
+    TX->>INV: +qty at inventory location
+    INV->>LOT: New lot created; lot_seq_no assigned
+    LOT->>COST: AVCO re-average (COST_CALC_003) / FIFO add cost layer (COST_CALC_004)
+
+    Note over TX,COST: Stock-out — CRN · Issues · Sales Consumption · Stock Out (adj) · Wastage Report
+    TX->>INV: -qty at inventory location
+    INV->>LOT: Oldest lot consumed / closed (oldest lot_seq_no first)
+    LOT->>COST: AVCO cost held at prevailing average (COST_CALC_002) / FIFO oldest layer consumed (COST_CALC_001)
+
+    Note over TX,COST: SR — Store Requisition (internal transfer, any variant)
+    TX->>INV: -qty inv source / +qty direct or consignment destination
+    INV->>LOT: Lot consumed at inv source — no lot at destination
+    Note over COST: NOT triggered — goods move at existing unit cost (no re-average, no layer write). See COST_XMOD_003.
+
+    Note over TX,COST: Physical Count — variance exists
+    TX->>INV: ±qty variance (physical count transaction type)
+    INV->>LOT: Lots adjusted up (overage) or consumed down (shortage)
+    LOT->>COST: Recalc only if variance exists — cost source per enum_physical_count_costing_method (COST_CALC_008)
+
+    Note over TX,COST: Physical Count — no variance
+    TX->>INV: Count confirmed, no qty change
+    Note over LOT,COST: NOT triggered — no lot or cost-layer write
+
+    Note over TX,COST: Credit-note-amount revaluation
+    TX->>COST: diff_amount posted to originating lot (COST_POST_003 / COST_CALC_005)
+    COST->>LOT: Originating lot cost_per_unit recalculated; downstream FIFO picks revalued cost
+
+    Note over TX,COST: End Period Close
+    TX->>INV: Period snapshot recorded
+    INV->>LOT: Open lots anchored for the period
+    LOT->>COST: Period costs locked — close_period / open_period cost-layer rows written (COST_POST_007 / COST_POST_008)
+```
 
 Two state machines coexist in this module: the **per-cost-layer-row** lifecycle (degenerate — each cost-layer row is written immutable at post time, optionally revalued via a `diff_amount` row, optionally rolled forward at period close) and the **per-period valuation** lifecycle that mirrors the inventory module's `tb_period.status` (`open` → `closed` → `locked`, the substantive lifecycle for valuation reporting). The transitions below cover both.
 

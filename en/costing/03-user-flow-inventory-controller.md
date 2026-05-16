@@ -2,7 +2,7 @@
 title: Costing — User Flow — Inventory Controller
 description: Inventory Controller's flow within the costing module — engine input cleanliness, cost-pick preview review, valuation variance investigation.
 published: true
-date: 2026-05-15T12:30:00.000Z
+date: 2026-05-16T17:00:00.000Z
 tags: costing, user-flow, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -13,6 +13,50 @@ dateCreated: 2026-05-15T12:30:00.000Z
 ## 1. Role in This Module
 
 The **Inventory Controller** persona owns **the cleanliness of the costing engine's inputs**. The engine itself is a system service that runs under the actor's RBAC on each inventory transaction post (per `COST_AUTH_009`); the Controller's responsibility is to make sure the inputs flowing into the engine are correct and defensible: **lot dates** (assigned at inbound, drive the FIFO `lot_seq_no` — a back-dated GRN can shuffle FIFO order), **receipt costs** (the inbound unit cost after extra-cost allocation that becomes `cost_per_unit` on the new layer — out-of-band cost reduces FIFO COGS accuracy and skews WA averages), **adjustment cost bases** (the cost-per-unit on `tb_stock_in` rows — a new-lot stock-in at an anomalous cost pollutes downstream FIFO consumption), **waste write-off cost bases** (`tb_stock_out` outbound rows — the engine picks the cost via FIFO / WA but the Controller verifies the picked cost is sensible before approval), and the **standard cost** on `tb_product` to the extent the Controller has request authority (the actual standard-cost update is Finance / Sysadmin's via `COST_AUTH_003`). The Controller's other costing-relevant responsibility is **valuation variance investigation** — Finance surfaces above-tolerance variances during sub-ledger ↔ GL reconciliation, and the Controller drills into the cost-layer ledger to identify the offending row(s): an unexpected FIFO consumption that ate an older lot than expected, an adjustment cost that didn't match the vendor pricelist, a count-variance whose `physical_count_costing_method`-resolved cost differed from the expected basis. Crucially, the Controller does **not** approve credit-note-amount revaluations (that is Finance's `COST_AUTH_005`), does **not** lock the period (Finance Manager's `COST_AUTH_006`), does **not** configure `calculation_method` (Sysadmin's `COST_AUTH_001`), and **never edits cost-layer rows directly** per `COST_AUTH_010`. Corrections flow through the standard channels: a corrective stock-in / stock-out under their approval authority, a credit-note routed to Finance, or a configuration change request routed to Sysadmin.
+
+### Workflow position (Inventory Controller highlighted)
+
+The Inventory Controller operates **upstream** of Finance in the costing module — ensuring the engine's inputs are clean before cost-layer rows become immutable, and investigating cost-layer variances that Finance surfaces during reconciliation.
+
+```mermaid
+graph LR
+    adjQueue["Adjustment approval queue<br/>(cost-pick preview — FIFO or AVCO)"]:::current
+    newLotQueue["New-lot cost-basis review<br/>(price_deviation_limit check)"]:::current
+    varianceInv["Valuation variance investigation<br/>(Finance-escalated)"]:::current
+    anomalyDash["Cost-anomaly dashboard<br/>(proactive sweep)"]:::current
+
+    adjQueue -->|"Approved → COST_POST_001 / COST_POST_002"| costLayer["Cost-layer row written (immutable)"]
+    adjQueue -->|"Rejected"| storeKeeper["Return to Store Keeper"]
+    newLotQueue -->|"Within price_deviation_limit"| adjQueue
+    newLotQueue -->|"Above tolerance"| financeEsc["Escalate to Finance (COST_AUTH_004)"]
+    anomalyDash -->|"Investigate"| varianceInv
+    varianceInv -->|"Compensating adj / credit-note route / config fix"| reconPass["Reconciliation variance cleared"]
+    reconPass -->|"Period-end sign-off"| financeHandoff["Handoff to Finance — period close"]
+
+    classDef current fill:#0e9f6e,color:#fff,stroke:#0e9f6e;
+```
+
+### Permission Matrix — V1 Action × Approval Threshold (Inventory Controller)
+
+The Inventory Controller is the **primary approval gate** for inventory adjustment documents that write cost-layer rows. Costing has no doc-status enum; the Controller's costing authority is expressed through the adjustment approval flow and cost-anomaly investigation. Rows are derived from the primary flow steps in Sections 2.1–2.4 and the authorization rules at [[costing/02-business-rules]] § 4.
+
+| Action | Controller authority | Constraint |
+|---|---|---|
+| View cost-layer ledger (read) | ✅ (`COST_AUTH_007`) | Read-only; via cost-pick preview on outbound approval |
+| View cost-pick preview (FIFO lot walk / AVCO average) on outbound `tb_stock_out` | ✅ (`COST_AUTH_007`) | Preview screen only; cannot override the picked cost |
+| Approve `tb_stock_in` (inbound adjustment — new lot cost-basis) | ✅ — within `price_deviation_limit` tolerance | Above tolerance: escalate to Finance (`COST_AUTH_004`) |
+| Approve `tb_stock_out` (outbound adjustment — FIFO/AVCO cost-pick fires on approval) | ✅ — within Controller cost-impact threshold | Above threshold: escalate to Finance |
+| Reject `tb_stock_in` / `tb_stock_out` (return to Store Keeper) | ✅ | Cannot edit the cost on behalf of Store Keeper (SoD preservation) |
+| Investigate Finance-escalated valuation variance (cost-layer drill) | ✅ (`COST_AUTH_007`) | Read-only drill; resolution via compensating adjustment or escalation |
+| Draft compensating stock-in / stock-out (corrective cost fix) | ✅ | Routes through normal approval flow; Finance co-approves above threshold |
+| Route credit-note revaluation to Finance | ✅ (initiator) | Finance approves (`COST_AUTH_005`); Controller does not approve credit-notes |
+| Configure `tb_business_unit.calculation_method` | ❌ (`COST_AUTH_001` — Sysadmin only) | Controller may request via Finance |
+| Configure `enum_physical_count_costing_method` | ❌ (`COST_AUTH_002` — Sysadmin only) | Controller may flag count-costing method concern to Finance |
+| Approve credit-note-amount revaluation | ❌ (`COST_AUTH_005` — Finance only) | Controller may initiate; Finance approves |
+| Lock period / advance period status | ❌ (`COST_AUTH_006` — Finance Manager only) | Controller signs off cost-side pre-condition; Finance Manager executes |
+| Edit `cost_per_unit` or `average_cost_per_unit` directly on a posted row | ❌ (`COST_AUTH_010`) | No role can edit a posted cost-layer row directly |
+
+> ℹ️ **SR is NOT in the Controller's costing queue.** Store Requisitions do not trigger the cost engine (`COST_XMOD_003`; [[costing/02-business-rules]] § 5.2). SR cost-pick preview does not appear in the Controller's adjustment queue for the source location's cost-layer — the SR moves goods at existing cost without a new cost-layer write.
 
 ## 2. Entry Point and Primary Flow
 
