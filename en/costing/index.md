@@ -2,7 +2,7 @@
 title: Costing
 description: Inventory valuation methods (FIFO, Weighted Average) and the costing engine that calculates COGS and ending inventory value.
 published: true
-date: 2026-05-15T12:30:00.000Z
+date: 2026-05-16T09:00:00.000Z
 tags: costing, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -43,10 +43,18 @@ Operationally, costing is where **food cost control** lives. Plate cost, recipe 
 
 ## 5. Related Modules
 
+**Cross-module flow:**
 - [[inventory]] — costing operates on inventory movements; every IN/OUT triggers a costing calculation
 - [[good-receive-note]] — GRN receipts set unit costs (FIFO) or update averages (WAC)
 - [[recipe]] — recipe consumption uses costed quantities to derive food cost
 - [[inventory-adjustment]] — adjustments require a cost basis from the costing engine
+
+**Master configuration:**
+- [[master-data/business-unit]] — tenant/property scope for the valuation ledger
+- [[master-data/currency]] — transaction and base currencies plus FX rates for dual-posted COGS
+- [[master-data/unit]] — base unit conversion required to value any costed line
+- [[system-config/period]] — accounting period that gates costing posting and locks valuation
+- [[reporting-audit/activity]] — costing recalculation and posting activity log for audit
 
 ## 6. Reference Sources
 

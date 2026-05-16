@@ -2,7 +2,7 @@
 title: Purchase Request
 description: Internal request to procure goods — the upstream demand signal that becomes a purchase order after approval.
 published: true
-date: 2026-05-15T09:00:00.000Z
+date: 2026-05-16T09:00:00.000Z
 tags: purchase-request, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -54,10 +54,24 @@ Financial accuracy is enforced at the calculation layer rather than left to the 
 
 ## 5. Related Modules
 
+**Cross-module flow:**
 - [[purchase-order]] — approved PRs become POs
 - [[product]] — PR lines reference products from the catalog
 - [[vendor-pricelist]] — preferred vendors and reference prices come from the pricelist
 - [[inventory]] — current stock levels often justify a PR
+
+**Master configuration:**
+- [[master-data/vendor]] — allocated vendor per line resolved from the pricelist
+- [[master-data/currency]] — transaction currency and exchange rate for multi-currency PRs
+- [[master-data/tax-profile]] — tax codes derived for PR lines
+- [[master-data/unit]] — unit of measure on each PR line
+- [[master-data/department]] — requesting department / cost-centre on the PR header
+- [[system-config/workflow]] — multi-level approval workflow definitions for PR authorization
+- [[system-config/running-code]] — PR document number sequencing
+- [[system-config/dimension]] — analytical dimensions (job/cost code, project) carried on the PR
+- [[reporting-audit/activity]] — PR status-transition and approval-history log for audit
+- [[reporting-audit/attachment]] — supporting documents (quotes, specifications) attached to the PR
+- [[reporting-audit/notification]] — approval / send-back / reject notifications routed through the workflow
 
 ## 6. Reference Sources
 

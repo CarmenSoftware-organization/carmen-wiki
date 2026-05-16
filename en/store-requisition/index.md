@@ -2,7 +2,7 @@
 title: Store Requisition
 description: Internal request to draw stock from a warehouse or central store to a consuming location (kitchen, bar, outlet).
 published: true
-date: 2026-05-15T07:48:00.000Z
+date: 2026-05-16T09:00:00.000Z
 tags: store-requisition, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -52,10 +52,21 @@ Financially, every posted issuance generates journal entries that credit the sou
 
 ## 5. Related Modules
 
+**Cross-module flow:**
 - [[inventory]] — issuing a requisition posts a stock OUT movement at source and a stock IN movement at destination (or a single OUT for consumption)
 - [[costing]] — issued quantities are costed at the source location's current cost
 - [[recipe]] — recipes may auto-generate requisitions for ingredients needed
 - [[good-receive-note]] — inter-location transfers may use a paired SR + GRN
+
+**Master configuration:**
+- [[master-data/unit]] — unit of measure for each requisition line
+- [[master-data/location]] — source (issuing) and destination (receiving) locations on the requisition header
+- [[master-data/department]] — requesting department / cost-centre the issued cost lands on
+- [[system-config/workflow]] — approval workflow definitions for requisition authorization
+- [[system-config/dimension]] — analytical dimensions stamped on the issuance journal entries
+- [[system-config/running-code]] — SR document number sequencing
+- [[access-control/user-location]] — restricts source and destination locations a user can transact between
+- [[reporting-audit/activity]] — requisition status-transition and approval-history log for audit
 
 ## 6. Reference Sources
 

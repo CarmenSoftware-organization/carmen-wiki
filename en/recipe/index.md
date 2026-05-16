@@ -2,7 +2,7 @@
 title: Recipe
 description: Recipes (ingredient lists with yields) — the bridge between menu items and inventory consumption.
 published: true
-date: 2026-05-15T07:48:00.000Z
+date: 2026-05-16T09:00:00.000Z
 tags: recipe, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -62,10 +62,18 @@ The other major business function the module supports is **theoretical vs. actua
 
 ## 5. Related Modules
 
+**Cross-module flow:**
 - [[product]] — recipe ingredients reference products
 - [[inventory]] — recipe usage drives inventory OUT movements (theoretical consumption)
 - [[costing]] — recipe cost is the sum of costed ingredient quantities
 - [[store-requisition]] — recipes may auto-generate requisitions
+
+**Master configuration:**
+- [[master-data/unit]] — recipe and stock units of measure plus conversion factor per ingredient
+- [[master-data/currency]] — recipe cost and selling price expressed in the property's base currency
+- [[system-config/application-config]] — tenant-level defaults (target food-cost %, rounding, status policy)
+- [[reporting-audit/activity]] — recipe version-history, publish, and cost-change log for audit
+- [[reporting-audit/attachment]] — recipe images and step photos attached to each recipe
 
 ## 6. Reference Sources
 

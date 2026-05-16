@@ -2,7 +2,7 @@
 title: Vendor Pricelist
 description: Vendor catalogs of products with agreed prices, units, and validity periods — the reference for PR/PO pricing.
 published: true
-date: 2026-05-15T15:00:00.000Z
+date: 2026-05-16T09:00:00.000Z
 tags: vendor-pricelist, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -60,10 +60,20 @@ Operationally, the module compresses a process that is otherwise email-and-sprea
 
 ## 5. Related Modules
 
+**Cross-module flow:**
 - [[product]] — pricelist entries reference products
 - [[purchase-request]] — PRs default to preferred vendor pricelists
 - [[purchase-order]] — POs validate prices against the active pricelist
 - [[good-receive-note]] — GRN price variance is calculated against pricelist
+
+**Master configuration:**
+- [[master-data/vendor]] — vendor master each pricelist is scoped to
+- [[master-data/currency]] — currency the vendor selects at submission
+- [[master-data/tax-profile]] — tax codes on each pricelist line
+- [[master-data/pricelist-template]] — reusable template defining what to ask vendors for in a campaign
+- [[master-data/unit]] — pricing unit (Box / Carton / Pack) plus conversion to base inventory unit
+- [[system-config/workflow]] — pricelist submission and approval workflow
+- [[reporting-audit/activity]] — pricelist submission, validation, and approval activity log for audit
 
 ## 6. Reference Sources
 

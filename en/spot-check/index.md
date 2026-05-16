@@ -2,7 +2,7 @@
 title: Spot Check
 description: Targeted partial count of selected items or locations — a lighter-weight check than a full physical count.
 published: true
-date: 2026-05-15T14:30:00.000Z
+date: 2026-05-16T09:00:00.000Z
 tags: spot-check, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -44,9 +44,18 @@ The control serves two complementary purposes. First, it is a **loss-prevention*
 
 ## 5. Related Modules
 
+**Cross-module flow:**
 - [[inventory]] — spot check verifies a subset of inventory balances
 - [[inventory-adjustment]] — variances are posted as adjustments
 - [[physical-count]] — full count counterpart
+
+**Master configuration:**
+- [[master-data/unit]] — unit of measure for each spot-check line
+- [[master-data/location]] — the (sub-)location in scope for the spot check
+- [[master-data/adjustment-type]] — reason codes used when posting variance adjustments
+- [[system-config/workflow]] — approval workflow for recount and variance posting
+- [[access-control/user-location]] — restricts which locations a user can spot-check
+- [[reporting-audit/activity]] — spot-check and recount activity log for audit
 
 ## 6. Reference Sources
 

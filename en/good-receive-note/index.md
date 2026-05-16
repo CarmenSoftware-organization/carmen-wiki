@@ -2,7 +2,7 @@
 title: Good Receive Note (GRN)
 description: The receiving document that records physical goods received against a purchase order and adds them to inventory.
 published: true
-date: 2026-05-15T11:00:00.000Z
+date: 2026-05-16T09:00:00.000Z
 tags: good-receive-note, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -51,10 +51,26 @@ Food-safety and quality control sit on top of all this. Perishable goods carry l
 
 ## 5. Related Modules
 
+**Cross-module flow:**
 - [[purchase-order]] — GRN is created against a PO; matched on receipt
 - [[inventory]] — receiving a GRN posts a stock IN movement
 - [[costing]] — GRN unit costs feed FIFO lot records or update Weighted Average
 - [[vendor-pricelist]] — GRN price variance is checked against the vendor pricelist
+
+**Master configuration:**
+- [[master-data/vendor]] — vendor master referenced by GRN header
+- [[master-data/currency]] — transaction currency and exchange rate for dual-posted receipts
+- [[master-data/tax-profile]] — tax codes applied to GRN lines
+- [[master-data/credit-term]] — payment terms copied from vendor master onto the GRN
+- [[master-data/extra-cost-type]] — landed-cost components (freight, duties, handling) allocated across lines
+- [[master-data/delivery-point]] — receiving location where goods are physically accepted
+- [[master-data/unit]] — unit of measure for received quantities
+- [[master-data/location]] — store location each line writes its stock-IN movement against
+- [[system-config/workflow]] — approval / commit workflow for GRN authorization
+- [[system-config/period]] — accounting period gate for GRN posting
+- [[system-config/running-code]] — GRN document number sequencing
+- [[reporting-audit/activity]] — GRN status-transition and amendment log for audit
+- [[reporting-audit/attachment]] — packing slips, delivery notes, and quality evidence attached to each GRN
 
 ## 6. Reference Sources
 

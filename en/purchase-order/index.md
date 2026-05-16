@@ -2,7 +2,7 @@
 title: Purchase Order
 description: Formal commitment to a vendor to purchase goods at agreed prices, quantities, and delivery terms.
 published: true
-date: 2026-05-15T10:00:00.000Z
+date: 2026-05-16T09:00:00.000Z
 tags: purchase-order, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -57,10 +57,23 @@ Financial accuracy is enforced at the calculation layer. Item subtotal, discount
 
 ## 5. Related Modules
 
+**Cross-module flow:**
 - [[purchase-request]] — POs are generated from approved PRs
 - [[good-receive-note]] — GRN is created against a PO on receipt
 - [[vendor-pricelist]] — PO prices are validated against vendor pricelists
 - [[product]] — PO lines reference products from the catalog
+
+**Master configuration:**
+- [[master-data/vendor]] — vendor master (header + addresses + contacts) referenced by PO header
+- [[master-data/currency]] — currency and exchange rate for multi-currency POs
+- [[master-data/tax-profile]] — tax codes applied to PO lines
+- [[master-data/credit-term]] — payment terms copied from vendor master onto the PO header
+- [[master-data/delivery-point]] — agreed delivery point for the commitment
+- [[master-data/unit]] — unit of measure for PO line quantities
+- [[system-config/workflow]] — approval workflow definitions for PO authorization and amendments
+- [[system-config/running-code]] — PO document number sequencing
+- [[reporting-audit/activity]] — PO status-transition, amendment, and three-way-match log for audit
+- [[reporting-audit/attachment]] — vendor acknowledgements and contract documents attached to the PO
 
 ## 6. Reference Sources
 

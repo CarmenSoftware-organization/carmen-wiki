@@ -2,7 +2,7 @@
 title: Product
 description: Product master data — categories, units of measure, locations, and import/export — the catalog every inventory document references.
 published: true
-date: 2026-05-15T07:48:00.000Z
+date: 2026-05-16T09:00:00.000Z
 tags: product, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -48,11 +48,18 @@ This module is therefore the system of record for the *definition* of an item, n
 
 ## 5. Related Modules
 
+**Cross-module flow:**
 - [[inventory]] — every inventory balance is keyed by product
 - [[vendor-pricelist]] — pricelists reference products
 - [[purchase-request]] — PR lines reference products
 - [[purchase-order]] — PO lines reference products
 - [[recipe]] — recipes reference products as ingredients
+
+**Master configuration:**
+- [[master-data/unit]] — base, order, and recipe units of measure plus conversion factors
+- [[system-config/application-config]] — tenant-level defaults (deviation tolerances, barcode policy, attribute schema)
+- [[reporting-audit/activity]] — product lifecycle and bulk-import activity log for audit
+- [[reporting-audit/attachment]] — product images, spec sheets, and certificates attached to each product
 
 ## 6. Reference Sources
 

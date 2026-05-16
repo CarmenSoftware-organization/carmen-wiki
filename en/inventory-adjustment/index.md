@@ -2,7 +2,7 @@
 title: Inventory Adjustment
 description: Manual corrections to stock balances — write-offs, write-ons, reclassifications.
 published: true
-date: 2026-05-15T13:00:00.000Z
+date: 2026-05-16T09:00:00.000Z
 tags: inventory-adjustment, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -48,10 +48,21 @@ Operationally, adjustments are also the formal landing point for variances detec
 
 ## 5. Related Modules
 
+**Cross-module flow:**
 - [[inventory]] — adjustments modify inventory balances directly
 - [[costing]] — adjustments require a cost basis (entered manually or from costing engine)
 - [[physical-count]] — count variances become adjustment documents
 - [[spot-check]] — partial count variances become adjustment documents
+
+**Master configuration:**
+- [[master-data/adjustment-type]] — reason-code master with direction (IN/OUT/BOTH) and GL mapping per reason
+- [[master-data/unit]] — unit of measure for each adjustment line quantity
+- [[master-data/location]] — source location whose balance the adjustment moves
+- [[system-config/workflow]] — approval workflow definitions for adjustment authorization
+- [[system-config/period]] — accounting period gate; adjustments dated into a closed period are rejected
+- [[access-control/user-location]] — restricts which locations a user can adjust
+- [[reporting-audit/activity]] — adjustment status-transition log for audit
+- [[reporting-audit/attachment]] — required photos / damage reports / evidence stored against each adjustment
 
 ## 6. Reference Sources
 

@@ -2,7 +2,7 @@
 title: Physical Count
 description: Periodic count of every item at a location to reconcile system balances against reality.
 published: true
-date: 2026-05-15T07:48:00.000Z
+date: 2026-05-16T09:00:00.000Z
 tags: physical-count, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -45,9 +45,19 @@ The financial accuracy stakes are immediate. Hospitality operations run on thin 
 
 ## 5. Related Modules
 
+**Cross-module flow:**
 - [[inventory]] — physical count resets balances to counted quantities
 - [[inventory-adjustment]] — variances between count and book are posted as adjustments
 - [[spot-check]] — narrower partial count uses the same concept
+
+**Master configuration:**
+- [[master-data/unit]] — unit of measure for each count line
+- [[master-data/location]] — the location whose balances are being counted
+- [[master-data/adjustment-type]] — reason codes used when posting variance adjustments
+- [[system-config/workflow]] — approval workflow for count sign-off and variance posting
+- [[system-config/period]] — accounting period gate for count posting
+- [[access-control/user-location]] — restricts which locations a user can count
+- [[reporting-audit/activity]] — count and recount activity log for audit
 
 ## 6. Reference Sources
 
