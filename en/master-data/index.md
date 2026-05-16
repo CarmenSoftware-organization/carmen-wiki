@@ -2,7 +2,7 @@
 title: Master Data
 description: Business master data referenced by transactional documents — units, departments, vendors, currencies, tax profiles, and related catalogs.
 published: true
-date: 2026-05-16T08:00:00.000Z
+date: 2026-05-16T16:30:00.000Z
 tags: master-data, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -32,6 +32,7 @@ Product Admin and Configurator manage these. Sysadmin oversees integration and R
 | [delivery-point](./delivery-point.md) | Physical drop-off points for vendor deliveries | Product Admin |
 | [business-unit](./business-unit.md) | The operating unit — owns calculation method and default currency | Sysadmin |
 | [currency](./currency.md) | Enabled currencies, ISO reference, and dated exchange-rate history | Product Admin / Sysadmin |
+| [exchange-rate](./exchange-rate.md) | Dated FX rate history feeding document snapshots and costing FX revaluation | Product Admin |
 | [vendor](./vendor.md) | Suppliers with addresses, contacts, and business-type taxonomy | Product Admin |
 | [tax-profile](./tax-profile.md) | Named tax rate definitions | Product Admin |
 | [credit-term](./credit-term.md) | Vendor payment terms (NET 30, COD, etc.) | Product Admin |
@@ -41,15 +42,15 @@ Product Admin and Configurator manage these. Sysadmin oversees integration and R
 
 ## 4. Cross-Module Dependencies
 
-- [[purchase-request]] requires [[master-data/unit]], [[master-data/department]], [[master-data/location]], [[master-data/vendor]], [[master-data/tax-profile]], [[master-data/currency]].
-- [[purchase-order]] requires [[master-data/unit]], [[master-data/vendor]], [[master-data/currency]], [[master-data/tax-profile]], [[master-data/credit-term]], [[master-data/delivery-point]].
-- [[good-receive-note]] requires [[master-data/unit]], [[master-data/vendor]], [[master-data/currency]], [[master-data/tax-profile]], [[master-data/extra-cost-type]], [[master-data/credit-note-reason]], [[master-data/delivery-point]], [[master-data/location]].
+- [[purchase-request]] requires [[master-data/unit]], [[master-data/department]], [[master-data/location]], [[master-data/vendor]], [[master-data/tax-profile]], [[master-data/currency]], [[master-data/exchange-rate]].
+- [[purchase-order]] requires [[master-data/unit]], [[master-data/vendor]], [[master-data/currency]], [[master-data/exchange-rate]], [[master-data/tax-profile]], [[master-data/credit-term]], [[master-data/delivery-point]].
+- [[good-receive-note]] requires [[master-data/unit]], [[master-data/vendor]], [[master-data/currency]], [[master-data/exchange-rate]], [[master-data/tax-profile]], [[master-data/extra-cost-type]], [[master-data/credit-note-reason]], [[master-data/delivery-point]], [[master-data/location]].
 - [[store-requisition]] requires [[master-data/unit]], [[master-data/location]], [[master-data/department]].
 - [[inventory]] requires [[master-data/unit]], [[master-data/location]], [[master-data/business-unit]].
 - [[inventory-adjustment]] requires [[master-data/unit]], [[master-data/location]], [[master-data/adjustment-type]], [[master-data/credit-note-reason]].
 - [[physical-count]] requires [[master-data/location]], [[master-data/unit]], [[master-data/adjustment-type]].
 - [[spot-check]] requires [[master-data/location]], [[master-data/adjustment-type]].
-- [[costing]] requires [[master-data/business-unit]] (for `calculation_method`) and [[master-data/currency]] (for dated FX).
+- [[costing]] requires [[master-data/business-unit]] (for `calculation_method`), [[master-data/currency]], and [[master-data/exchange-rate]] (for dated FX revaluation).
 - [[vendor-pricelist]] requires [[master-data/vendor]], [[master-data/currency]], [[master-data/tax-profile]], [[templates/price-list]].
 - [[product]] requires [[master-data/unit]], [[master-data/tax-profile]].
 - [[recipe]] requires [[master-data/unit]].
