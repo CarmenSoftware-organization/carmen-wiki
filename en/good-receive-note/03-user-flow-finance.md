@@ -2,7 +2,7 @@
 title: Good Receive Note (GRN) — User Flow — Finance
 description: Finance's flow within the good-receive-note module — three-way match (GRN ↔ PO ↔ invoice), extra-cost allocation, AP posting, period close.
 published: true
-date: 2026-05-15T11:00:00.000Z
+date: 2026-05-16T12:00:00.000Z
 tags: good-receive-note, user-flow, finance, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
@@ -13,6 +13,44 @@ dateCreated: 2026-05-15T11:00:00.000Z
 ## 1. Role in This Module
 
 The **Finance** persona covers the **Finance Officer / AP Clerk** at the front line (day-to-day three-way matching and AP posting) and the **Finance Manager / Controller** at the sign-off boundary (period close, GL reconciliation, dispute resolution). Finance is a **post-commit** participant — they do **not** create, save, or commit the GRN; entry to this flow presupposes that the Inventory Manager has already fired the `saved → committed` transition on the Receiver path, which has already raised the inventory accrual (`Dr Inventory / Cr GRN Clearing`, `GRN_POST_006`) and incremented on-hand. Two distinct activities live under this persona. **First**, *pre-AP financial adjustment* on `committed` GRNs while the vendor invoice has not yet arrived — review the extra-cost allocation that the Inventory Manager finalised on commit, correct the allocation method (`manual`, `by_value`, `by_qty` — the three-mode `enum_allocate_extra_cost_type` is canonical; the legacy five-mode list is not), correct tax-code assignment on lines where the receiver guessed the wrong rate, and persist the corrected financial snapshot. Allocation edits in this window are explicitly permitted by `GRN_AUTH_007`; corrections after AP has posted require a `tb_credit_note` instead. **Second**, *three-way match* when the vendor invoice arrives — match the invoice against the upstream PO and the committed GRN(s) on qty and price within tenant tolerance, post the AP-side journal on success (`Dr GRN Clearing / Cr AP-Trade`, `GRN_POST_008`), and flag the discrepancy back to the Purchaser on failure (`GRN_POST_009`). On the close cadence, the Finance Manager runs *period-close sign-off*: reconcile the inventory sub-ledger against the GL inventory control account, confirm that every `committed` GRN in the period has either matched to an invoice or been correctly held in the GRN Clearing accrual, age open GRN Clearing balances, and sign off on receipt activity for the period. Critically: **the GRN's `doc_status` enum is not transitioned by Finance** — `saved → committed` is the only posting event the document undergoes, and post-commit match outcome lives on a separate match flag, not on the four-state enum. Discrepancies do not roll the GRN back; they live as activity-log entries and flow back to the Purchaser for vendor-side resolution.
+
+### Workflow position (Finance highlighted)
+
+```mermaid
+graph LR
+    committed(("committed")):::current --> preAP["Pre-AP adjustment<br/>(extra-cost + tax codes)"]:::current
+    committed --> matchQ["Pending Match<br/>worklist"]:::current
+    preAP -->|"Financial snapshot<br/>corrected"| matchQ
+    matchQ -->|"Invoice arrives"| match["Three-way match<br/>PO ↔ GRN ↔ Invoice"]:::current
+    match -->|"Clean match"| apPost["AP posting<br/>Dr GRN Clearing / Cr AP-Trade"]:::current
+    match -->|"Discrepancy"| flagged["Flagged — handoff<br/>to Purchaser"]
+    apPost --> periodClose["Period-close<br/>sign-off"]:::current
+    flagged -->|"Vendor credit note<br/>received"| creditNote["Book credit note"]:::current
+    creditNote --> periodClose
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+```
+
+### Permission Matrix — Touchpoint × Action (Finance)
+
+Finance operates across two distinct touchpoints on a `committed` GRN: **AP capture + three-way match** (from invoice arrival to match outcome) and **Accrual / close-out review** (period-close reconciliation of GRN Clearing balances and the inventory sub-ledger). Finance has **no direct GRN status mutation** — the four-state `enum_good_received_note_status` is not transitioned by Finance; match outcomes live on a separate match flag.
+
+| Action | AP capture + three-way match | Accrual / close-out review |
+|---|---|---|
+| View committed GRN (read) | ✅ — Pending Match worklist and PO Receiving History | ✅ — period-close dashboard |
+| Review extra-cost allocation | ✅ — pre-AP adjustment per `GRN_AUTH_007` | ✅ (historical review only) |
+| Adjust extra-cost allocation method (`manual` / `by_value` / `by_qty`) | ✅ — while invoice not yet posted | ❌ (frozen after AP posting) |
+| Adjust tax-code / rate per line | ✅ — `is_tax_adjustment` override pre-AP | ❌ (frozen after AP posting) |
+| Run three-way match (PO ↔ GRN ↔ invoice) | ✅ | ❌ |
+| Post AP on clean match (`Dr GRN Clearing / Cr AP-Trade`) | ✅ — `GRN_POST_008` | ❌ |
+| Flag discrepancy (handoff to Purchaser) | ✅ — `GRN_POST_009` | ❌ |
+| Book credit note against GRN | ✅ — vendor concession path | ✅ (post-close correction) |
+| Reconcile inventory sub-ledger vs GL | ❌ | ✅ — Finance Manager |
+| Age GRN Clearing open balances | ❌ | ✅ — Finance Manager |
+| Period-close sign-off | ❌ | ✅ — Finance Manager |
+| Mutate GRN `doc_status` | ❌ | ❌ |
+| Void / reverse GRN (co-auth) | ✅ (elevated co-auth with Inventory Manager, `GRN_POST_010`) | ❌ |
+
+> ℹ️ **GRN status immutable by Finance:** Finance never transitions `doc_status`. The three-way match outcome is captured on a separate match flag (`unmatched` → `matched` / `flagged` / `partially_matched`). `doc_status` stays at `committed` through the full Finance lifecycle — clean match, discrepancy, credit note, and period close.
 
 ## 2. Entry Point and Primary Flow
 

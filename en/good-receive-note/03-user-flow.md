@@ -2,7 +2,7 @@
 title: Good Receive Note (GRN) — User Flow
 description: Document lifecycle and persona-specific flow files for good-receive-note.
 published: true
-date: 2026-05-15T11:00:00.000Z
+date: 2026-05-16T12:00:00.000Z
 tags: good-receive-note, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
@@ -19,6 +19,22 @@ Section 2 below is the **global state machine** — the canonical list of legal 
 ## 2. Document Lifecycle
 
 The GRN document status is stored on `tb_good_received_note.doc_status` and constrained to the four values declared in `enum_good_received_note_status`: `draft` (initial editable state, no stock or GL impact), `saved` (line entry complete and saved for review, still editable, still no stock or GL impact), `committed` (single posting event has fired — inventory incremented, cost layers written, PO line advanced, document locked), and `voided` (administratively cancelled with no inventory or GL impact, or post-commit reversed via the elevated path). The transitions below cover the legal moves between them; everything else is rejected by the workflow engine. Receipt-driven downstream effects (`sent → partial → completed` on the source PO, FIFO / average-cost layer creation in [[costing]]) fire on the `saved → committed` transition only — see [02-business-rules.md](./02-business-rules.md) Section 5 for posting rules.
+
+```mermaid
+stateDiagram-v2
+    [*] --> draft: create from PO / manual (Receiver)
+    draft --> draft: save edit (Receiver)
+    draft --> saved: save for review (Receiver)
+    draft --> voided: cancel / void pre-commit (Receiver, Inventory Manager)
+    saved --> saved: resume edit (Receiver)
+    saved --> committed: commit (Inventory Manager)
+    saved --> committed: batch commit (Inventory Manager)
+    saved --> committed: auto-commit scheduled (System Administrator)
+    saved --> voided: cancel / void pre-commit (Receiver, Inventory Manager)
+    committed --> voided: void post-commit reversal (Inventory Manager + Finance, elevated co-auth)
+    committed --> [*]
+    voided --> [*]
+```
 
 | From state | Action | To state | Allowed for | Pre-conditions |
 | ---------- | ------ | -------- | ----------- | -------------- |

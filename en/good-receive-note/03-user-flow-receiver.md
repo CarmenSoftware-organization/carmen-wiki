@@ -2,7 +2,7 @@
 title: Good Receive Note (GRN) — User Flow — Receiver
 description: Receiver's flow within the good-receive-note module — dock receipt, GRN creation with lot/expiry capture, commit.
 published: true
-date: 2026-05-15T11:00:00.000Z
+date: 2026-05-16T12:00:00.000Z
 tags: good-receive-note, user-flow, receiver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
@@ -13,6 +13,48 @@ dateCreated: 2026-05-15T11:00:00.000Z
 ## 1. Role in This Module
 
 The **Receiver** persona covers the **Store Keeper / Receiving Clerk** at the dock and the **Store Manager / Inventory Manager** who supervises the receipt. The Store Keeper owns the editable draft — they create the GRN against the upstream PO (or manually for ad-hoc receipts), count and inspect the physical delivery against the PO and the vendor delivery note, record `received_qty` and `accepted_qty` per line, capture lot numbers and expiry dates through the linked inventory transaction (`tb_inventory_transaction_detail`, addressed from the GRN detail_item via `inventory_transaction_id`), attach packing slips and quality evidence, and save the document for review. The Inventory Manager owns the irrevocable posting step — they review the `saved` GRN against the actual stock received, run the commit (`saved → committed`) on individual documents or batch-commit multiple `saved` GRNs at end of shift / end of period, and are the only persona within this drill-down authorised to fire the inventory increment, cost-layer write, and PO line `received_qty` advance. On entry to this flow the source PO is at `po_status ∈ {sent, partial}`. The GRN states owned by this persona are `draft` and `saved` (Store Keeper) and the `saved → committed` transition (Inventory Manager); `voided` is reachable from `draft` or `saved` by either sub-persona with a reason and no inventory impact, while post-commit reversal of a `committed` GRN requires elevated co-authorisation with Finance and is out of scope for the routine Receiver path. Segregation of duties forbids the user who created or transmitted the upstream PO from posting the GRN against it (carries over from the PO persona's `PO_AUTH_010`).
+
+### Workflow position (Receiver highlighted)
+
+```mermaid
+graph LR
+    createPO["Create GRN from PO"]:::current --> draft(("draft")):::current
+    createManual["Create GRN manual"]:::current --> draft
+    draft -->|"Save edit"| draft
+    draft -->|"Save for review"| saved(("saved")):::current
+    draft -->|"Void"| voided(("voided"))
+    saved -->|"Resume edit"| saved
+    saved -->|"Commit"| committed(("committed")):::current2
+    saved -->|"Batch commit"| committed
+    saved -->|"Void"| voided
+    committed -.->|"Post-commit reversal<br/>(elevated co-auth)"| voided
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+    classDef current2 fill:#7c3aed,color:#fff,stroke:#7c3aed;
+```
+
+### Permission Matrix — Status × Action with Sub-roles (Receiver)
+
+The Receiver persona covers two sub-roles: **Store Keeper / Receiving Clerk** (creates and edits the GRN, `draft` and `saved` owner) and **Inventory Manager / Store Manager** (commits the GRN, `saved → committed`). Both sub-roles operate on GRNs across both PO-sourced and manual creation paths. The server-side RBAC (`GRN_AUTH_001`–`GRN_AUTH_011`) enforces the segregation-of-duties rule at commit: the user committing the GRN must not be the same user who created or transmitted the upstream PO.
+
+| Action | draft | saved | committed | voided | Store Keeper | Inventory Manager |
+|---|---|---|---|---|---|---|
+| Create GRN (from PO) | ✅ → creates `draft` | ❌ | ❌ | ❌ | ✅ | ❌ |
+| Create GRN (manual) | ✅ → creates `draft` | ❌ | ❌ | ❌ | ✅ | ❌ |
+| Edit header (vendor, currency, date) | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ (reverts to `draft` on substantive change) |
+| Add / edit lines and detail_items | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ |
+| Enter `received_qty` per line | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ |
+| Enter `accepted_qty` per line | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ |
+| Record lot / expiry (via linked inventory transaction) | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ |
+| Attach packing slips / evidence | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Save for review (`draft → saved`) | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ |
+| Resume edit (stay in `saved`) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ |
+| Commit (`saved → committed`) | ❌ | ✅ | ❌ | ❌ | ❌ per `GRN_AUTH_005` (unless below-threshold self-commit) | ✅ |
+| Batch commit | ❌ | ✅ (multiple GRNs) | ❌ | ❌ | ❌ | ✅ |
+| Void (`draft → voided` or `saved → voided`) | ✅ | ✅ | ❌ | ❌ | ✅ (own document) | ✅ |
+| Add comment | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| View (read only) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+> ℹ️ **Post-commit reversal:** Voiding a `committed` GRN requires elevated co-authorisation by the Inventory Manager **and** Finance (or System Administrator); this is out of scope for the routine Receiver path and is not an action either sub-role can trigger unilaterally. See `GRN_POST_010` and `GRN_AUTH_008`.
 
 ## 2. Entry Point and Primary Flow
 

@@ -2,7 +2,7 @@
 title: Good Receive Note (GRN) — User Flow — Purchaser
 description: Purchaser's flow within the good-receive-note module — own-PO GRN review, variance investigation, vendor coordination. Department Manager reviews cost-centre.
 published: true
-date: 2026-05-15T11:00:00.000Z
+date: 2026-05-16T12:00:00.000Z
 tags: good-receive-note, user-flow, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
@@ -13,6 +13,44 @@ dateCreated: 2026-05-15T11:00:00.000Z
 ## 1. Role in This Module
 
 The **Purchaser** persona covers the **Purchaser / Procurement Officer** who raised the upstream PO and, as a subset, the **Department Manager** who owns the cost-centre that the GRN posts against. Within the GRN module the Purchaser is a **review-only** participant — they do **not** create the GRN at the dock, do **not** save line entries, and do **not** post the commit. Segregation of duties (`PO_AUTH_010`, carried over from the upstream PO persona) explicitly forbids the user who created or transmitted the PO from posting the GRN against it; the `saved → committed` transition is reserved for the Inventory Manager on the Receiver path. The Purchaser is notified when a GRN goes `saved` or `committed` against one of their POs, opens the document in read mode to review receiving information against the PO they own (`received_qty` vs `order_qty`, `accepted_qty` vs `received_qty`, lot / expiry data on the linked `tb_inventory_transaction_detail`, attached packing slips and quality evidence, and any variance comment written by the Receiver), and owns the **vendor-side follow-up** for every variance flagged on the GRN — short-ship chase, return / credit-note negotiation for damaged goods, substitution for wrong items, and renegotiation when the GRN unit price drifts from the active vendor pricelist. The Department Manager subset reviews GRNs hitting their department's cost-centre, validates that what was received matches what was ordered for the department, and monitors price variance against `[[vendor-pricelist]]` for budget control. Neither sub-persona alters the GRN document state — their resolution lives on the vendor's response document (credit note, replacement GRN) or on the upstream PO via amendment.
+
+### Workflow position (Purchaser highlighted)
+
+```mermaid
+graph LR
+    poOwner["PO Owner<br/>(raised upstream PO)"]:::current --> notif(("Notification<br/>received")):::current
+    notif -->|"GRN saved or committed<br/>against own PO"| review["Review GRN<br/>read-only"]:::current
+    review -->|"Variance flagged"| resolve["Vendor follow-up<br/>& resolution"]:::current
+    review -->|"Clean receipt"| done(("Review closed"))
+    resolve -->|"Credit note path"| finance["Handoff to Finance"]
+    resolve -->|"Replacement path"| receiver["Handoff to Receiver<br/>(new GRN)"]
+    draft(("draft")) -.->|"SOD: Purchaser<br/>cannot commit"| committed(("committed"))
+    saved(("saved")) -.->|"SOD: Purchaser<br/>cannot commit"| committed
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+```
+
+### Permission Matrix — Status × Action (Purchaser)
+
+The Purchaser is a **review-only** participant in the GRN module. Segregation of duties (`GRN_AUTH_010`, mirroring `PO_AUTH_010`) explicitly forbids the user who created or transmitted the upstream PO from committing the GRN against it. The Purchaser observes all non-`voided` states and owns vendor-side resolution; they do not alter the document state.
+
+| Action | draft | saved | committed | voided |
+|---|---|---|---|---|
+| View GRN (read) | ❌ (not yet visible to Purchaser) | ✅ | ✅ | ✅ (audit only) |
+| Receive notification (GRN saved / committed) | ❌ | ✅ | ✅ | ❌ |
+| Review `received_qty` vs `order_qty` | ❌ | ✅ | ✅ | ❌ |
+| Review `accepted_qty` vs `received_qty` | ❌ | ✅ | ✅ | ❌ |
+| Review lot / expiry data (read-only) | ❌ | ✅ | ✅ | ❌ |
+| Review attached packing slips / evidence | ❌ | ✅ | ✅ | ❌ |
+| Check vendor pricelist deviation | ❌ | ✅ | ✅ | ❌ |
+| Add comment / log vendor resolution | ❌ | ✅ | ✅ | ❌ |
+| Edit header (vendor, currency, lines) | ❌ | ❌ | ❌ | ❌ |
+| Save GRN / save for review | ❌ | ❌ | ❌ | ❌ |
+| Commit GRN (`saved → committed`) | ❌ | ❌ (`GRN_AUTH_010`) | ❌ | ❌ |
+| Void GRN | ❌ | ❌ | ❌ | ❌ |
+| Raise PO amendment / cancel line | ❌ | ❌ (own PO, not GRN) | ✅ (own PO, not GRN) | ❌ |
+| Handoff credit note reference to Finance | ❌ | ❌ | ✅ | ❌ |
+
+> ⚠️ **Discrepancy — standalone GRN (no PO reference):** `Test_case/System_Process/tx-01-grn.md` BR-01 documents that a GRN can be created independently by the Receiver without a PO reference (`doc_type = manual`). For manual GRNs there is no upstream Purchaser — the "My POs filter" and "Receiving History tab" entry points do not surface manual GRNs, and the Purchaser has no notification entitlement. Testers should verify that manual GRNs are not routed to Purchaser notification queues. Source: `Test_case/System_Process/tx-01-grn.md` (capture date 2026-04-27).
 
 ## 2. Entry Point and Primary Flow
 

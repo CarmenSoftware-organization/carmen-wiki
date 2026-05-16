@@ -2,7 +2,7 @@
 title: Good Receive Note (GRN) — User Flow — Audit / Config
 description: Auditor (read-only audit trail) and System Administrator (lot-number format, RBAC, tax/currency/reason codes, integration config) flows for good-receive-note.
 published: true
-date: 2026-05-15T11:00:00.000Z
+date: 2026-05-16T12:00:00.000Z
 tags: good-receive-note, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
@@ -13,6 +13,55 @@ dateCreated: 2026-05-15T11:00:00.000Z
 ## 1. Role in This Module
 
 The **Audit / Config** persona folds two non-transactional roles into a single flow because neither participates in the GRN document state machine and the carmen-wiki GRN index does not list Auditor separately. The **System Administrator** sub-persona maintains the lot-number generation format that the Receiver applies on `draft → saved`, configures RBAC and approval thresholds that gate every `GRN_AUTH_001`–`GRN_AUTH_011` action (in particular the segregation-of-duties enforcement on the `saved → committed` transition per `GRN_AUTH_010`), manages tax codes, currency exchange rates, and reason codes for cancellations and rejections, and oversees the integration wiring between the GRN module and [[purchase-order]], [[inventory]], Finance / AP, and Vendor modules. The **Auditor** sub-persona (folded in) is **strictly read-only** across the full GRN dataset — receipt activity, variance comments, three-way-match outcomes, credit-note linkages, period-close sign-offs, and the underlying `workflow_history` JSON on `tb_good_received_note` — and runs lot-tracing investigations during product-recall or quality-incident workstreams by walking the `tb_inventory_transaction_detail.lot_no` linkage back from on-hand stock and forward from `committed` GRNs. Neither sub-persona ever appears in the transactional flow: the Sysadmin's edits change rules that apply to **future** GRNs (in-flight GRNs retain a snapshot of the rules in force when they were saved), and the Auditor's queries return data without writing any state. Critically, the segregation-of-duties enforcement (`GRN_AUTH_010` Receiver ≠ Purchaser, mirrored by `PO_AUTH_010` on the PO side) and the post-commit elevated-void rule (`GRN_POST_010` — voiding a `committed` GRN is forbidden, and post-commit reversal requires Inventory Manager + Finance co-authorisation via credit-note or compensating adjustment) live in the RBAC and posting-rule layer that this persona owns the configuration of.
+
+### Workflow position (Audit / Config highlighted — off-path observers)
+
+```mermaid
+graph LR
+    draft(("draft")) --> saved(("saved")) --> committed(("committed"))
+    draft --> voided(("voided"))
+    saved --> voided
+    committed -.-> voided
+
+    auditEntry["Audit module<br/>/ activity log"]:::audit --> auditReview["Read-only GRN review<br/>+ lot-recall trace"]:::audit
+    auditReview --> auditReport["Export report<br/>/ chain-of-custody"]:::audit
+
+    cfgEntry["GRN config console"]:::cfg --> cfgChange["Lot-format / RBAC /<br/>tax / integration config"]:::cfg
+    cfgChange --> cfgSave["Save — effective<br/>for new GRNs"]:::cfg
+
+    classDef audit fill:#eab308,color:#000,stroke:#eab308;
+    classDef cfg fill:#7c3aed,color:#fff,stroke:#7c3aed;
+```
+
+### Permission Matrix — Action × Sub-persona (Audit / Config)
+
+Neither sub-persona participates in the GRN document state machine. The **Auditor** is strictly read-only across the full GRN dataset. The **System Administrator** configures the rules that govern future GRNs but does not execute transactions on GRN documents directly.
+
+| Action | Auditor | System Administrator |
+|---|---|---|
+| View any GRN (all statuses) | ✅ — full dataset, read-only | ✅ — via config console impact preview |
+| Read `workflow_history` JSON | ✅ | ❌ (not a routine config action) |
+| Read line edits, comment threads, match outcomes | ✅ | ❌ |
+| Read credit-note linkages, period-close sign-offs | ✅ | ❌ |
+| Run lot-recall trace (`lot_no` → GRN → downstream movements) | ✅ | ❌ |
+| Export activity log (plain — no cost / PII) | ✅ (no secondary approval) | ❌ |
+| Export activity log (sensitive — unit costs, vendor terms, PII) | ✅ (secondary approval from Controller / DPO required) | ❌ |
+| Configure lot-number format | ❌ | ✅ |
+| Configure RBAC roles and approval thresholds | ❌ | ✅ |
+| Configure `GRN_AUTH_010` segregation-of-duties enforcement | ❌ | ✅ |
+| Configure tax codes / rates | ❌ | ✅ |
+| Configure currency exchange-rate feed | ❌ | ✅ |
+| Configure cancellation / rejection reason codes | ❌ | ✅ |
+| Configure integration endpoints (PO / Inventory / Finance / Vendor) | ❌ | ✅ |
+| Run integration endpoint dual-write window | ❌ | ✅ |
+| Flag GRN / escalate anomaly | ✅ (annotates audit log, does not change GRN) | ❌ |
+| Mutate GRN `doc_status` | ❌ | ❌ |
+| Void / reverse `committed` GRN | ❌ | ❌ (ensure co-auth gate only — `GRN_POST_010`) |
+| Force-revoke active user sessions (RBAC change) | ❌ | ✅ (with warning, optional) |
+
+> ℹ️ **In-flight GRN snapshot rule:** Sysadmin configuration changes (tax codes, reason codes, RBAC) apply only to **new** GRNs created after the effective-from timestamp. In-flight `draft` / `saved` GRNs retain the configuration snapshot in force at create time. Attempting to retire a configuration value referenced by in-flight GRNs is blocked by the impact preview.
+
+> ℹ️ **TBC — lot number generation:** `Test_case/System_Process/tx-01-grn.md` Step 2 notes that the lot number may be system-generated or supplier-provided (`TBC`). The Sysadmin's lot-format configuration panel covers the system-generated path; the supplier-provided override path is not yet specified. Source: `Test_case/System_Process/tx-01-grn.md` (capture date 2026-04-27).
 
 ## 2. Entry Point and Primary Flow
 

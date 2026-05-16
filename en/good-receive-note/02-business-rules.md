@@ -2,7 +2,7 @@
 title: Good Receive Note (GRN) — Business Rules
 description: Validation, calculation, authorization, posting, three-way-match, and cross-module rules for good-receive-note.
 published: true
-date: 2026-05-15T11:00:00.000Z
+date: 2026-05-16T12:00:00.000Z
 tags: good-receive-note, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
@@ -132,6 +132,23 @@ State diagram (Prisma-canonical):
 ```
 
 `committed` and `voided` are terminal. `draft` accepts soft-delete.
+
+### 5.1 Status Lifecycle — Live UI vs BRD Mapping
+
+The Prisma enum `enum_good_received_note_status` documented above is what the live UI uses. No formal BRD `FR-XXX` identifier has been assigned to the GRN status specification in the available source documents — the closest references are the `grn-master-prd.md` 3-state model and `GRN-Technical-Specification.md` 5-state enum, both divergent from Prisma (see [[good-receive-note/01-data-model]] § 5 item 1). The table below maps every observable live-UI status to its PRD / Technical Spec equivalent so testers and developers can reconcile the two without ambiguity. Source: `Test_case/System_Process/tx-01-grn.md` (capture date 2026-04-27).
+
+| Live UI status | PRD / Technical Spec equivalent | Diff | Notes |
+|---|---|---|---|
+| `draft` | _(absent in tx-01-grn.md)_ | 🔴 new in live UI | PRD describes `Received → Committed`; no Draft state appears. Prisma default is `draft`. Editable; no stock or GL impact. |
+| `saved` | `Received` (grn-master-prd.md 3-state model) | 🟡 renamed | PRD labels this state `Received`. Live UI calls it `saved` (review-ready, not yet posted). Technical Spec has no equivalent. |
+| `committed` | `Committed` | ✅ match | Terminal posting state. Inventory incremented, cost layers written, PO line advanced, GL accrual raised. |
+| `voided` | _(absent in tx-01-grn.md)_ | 🔴 new in live UI | Pre-commit administrative cancellation. Not present in `Test_case/System_Process/tx-01-grn.md` status flow string. |
+
+> ⚠️ **Discrepancy — no Draft state in Test_case:** `Test_case/System_Process/tx-01-grn.md` records the status flow as `Received → Committed` with no `Draft` state. The live Prisma schema opens with `draft` as the default creation state before `saved` (≈ `Received`). Testers should expect to see `draft` GRNs in the UI that tx-01-grn.md does not explicitly document. Source: `Test_case/System_Process/tx-01-grn.md` (capture date 2026-04-27).
+
+> ⚠️ **Discrepancy — two creation paths:** `Test_case/System_Process/tx-01-grn.md` BR-01 documents both PO-linked and standalone (manual) GRN creation, consistent with `enum_good_received_note_type { purchase_order, manual }`. The PRD and Technical Spec only describe the PO-sourced path. Testers must cover both paths; the standalone path sets `doc_type = manual` and writes no `purchase_order_detail_id` on any line. Source: `Test_case/System_Process/tx-01-grn.md` (capture date 2026-04-27).
+
+> ℹ️ **Note — no BRD FR-XXX identifier:** Unlike the PO module (`FR-PO-005`), no formal BRD requirement ID has been assigned to the GRN status specification in available source documents. The column heading above references `grn-master-prd.md` prose rather than a versioned BRD identifier.
 
 ## 6. Cross-Module Rules
 
