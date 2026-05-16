@@ -2,7 +2,7 @@
 title: Physical Count — User Flow
 description: Document lifecycle and persona-specific flow files for physical counts.
 published: true
-date: 2026-05-15T14:00:00.000Z
+date: 2026-05-16T15:00:00.000Z
 tags: physical-count, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -19,6 +19,42 @@ Section 2 below describes the **document lifecycle state machines** for both `tb
 > **TODO:** Source the canonical UI screens / wizard flows from `../carmen-inventory-frontend/` once a `physical-count` route is discoverable; cross-reference E2E specs at `../carmen-inventory-frontend-e2e/tests/` once added. No carmen/docs source folder exists for this module.
 
 ## 2. Document Lifecycle
+
+**Period-level state machine (`enum_physical_count_period_status`):**
+
+```mermaid
+stateDiagram-v2
+    [*] --> draft : Count Lead creates period header\n(tb_period open per INV_VAL_008 — PHC_VAL_001)
+    draft --> counting : First tb_physical_count created under period\n(auto-transition — Count Lead)
+    counting --> completed : All child tb_physical_count rows reach completed\n(system — terminal; period locked from new counts)
+    completed --> [*]
+
+    note right of counting
+        One or more count documents (one per location) may be
+        in_progress simultaneously. Period stays in counting
+        until every location's document reaches completed.
+    end note
+```
+
+**Document-level state machine (`enum_physical_count_status`):**
+
+```mermaid
+stateDiagram-v2
+    [*] --> pending : Count Lead generates count sheet for (period, location)\non_hand_qty snapshot captured per line (PHC_VAL_002–PHC_VAL_003)
+    pending --> in_progress : Counter enters first actual_qty\n(start_counting_at / start_counting_by_id stamped — PHC_AUTH_004)
+    in_progress --> in_progress : Counter enters / edits actual_qty within own zone\nOR Count Lead flags line for recount (PHC_VAL_007)
+    in_progress --> completed : Count Lead submits\n(product_counted == product_total — PHC_VAL_004;\nall recount flags resolved — PHC_POST_001 fires rollup)
+    completed --> [*]
+
+    note right of in_progress
+        Location is locked while status = in_progress (PHC_VAL_006):
+        GRN, SR, Issues, Stock In/Out adj for the location are blocked.
+        Variance rollup (PHC_POST_001) creates tb_stock_in (overage)
+        and/or tb_stock_out (shortage) in inventory-adjustment on submit.
+        GL posting of the rollup (completed status in inventory-adjustment)
+        is required before End Period Close Stage 3 passes (BR-PE-005).
+    end note
+```
 
 ### 2.1 Period-level transitions (`enum_physical_count_period_status`)
 

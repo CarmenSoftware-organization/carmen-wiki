@@ -2,13 +2,41 @@
 title: Physical Count — User Flow — Counter
 description: Counter / Store Keeper path through the physical-count lifecycle.
 published: true
-date: 2026-05-15T14:00:00.000Z
+date: 2026-05-16T15:00:00.000Z
 tags: physical-count, user-flow, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
 ---
 
 # Physical Count — User Flow — Counter
+
+### Workflow position (Counter highlighted)
+
+```mermaid
+graph LR
+    period_open["Count Lead\nopens period"] --> pending(("pending\n— sheet generated"))
+    pending -->|"counter enters\nfirst actual_qty"| in_progress(("in_progress\n— counting")):::current
+    in_progress -->|"all zone lines\ncompleted"| lead_submit["Count Lead\nreviews & submits"]
+    lead_submit --> completed(("completed\n— rollup fires"))
+    completed --> adj["Inventory Adjustment\n(rollup: tb_stock_in /\ntb_stock_out)"]
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+```
+
+### Permission Matrix — V1 Status × Action (Counter)
+
+The Counter is a data-entry persona scoped to their assigned zone. They can read and write `actual_qty` on their lines and add comments, but cannot submit the count document or change any configuration. Rows are derived from Section 2 (Entry Point and Primary Flow) of this file; rule citations refer to [[physical-count/02-business-rules]] § 4 / § 5.
+
+| Action | Count document `pending` | Count document `in_progress` | Count document `completed` |
+|---|---|---|---|
+| View assigned count sheet (zone-scoped lines) | ✅ (`PHC_AUTH_004`) | ✅ (`PHC_AUTH_004`) | ✅ (read-only) |
+| Enter first `actual_qty` (triggers `pending → in_progress`) | ✅ (`PHC_AUTH_002`) | — | ❌ |
+| Enter / edit `actual_qty` on own zone lines | — | ✅ (`PHC_VAL_005` — qty ≥ 0) | ❌ (`PHC_VAL_008` — immutable) |
+| Flag damaged / unlabelled / unfamiliar item (comment + photo) | — | ✅ (`PHC_AUTH_002`) | ❌ |
+| Add free-text comment to count document | — | ✅ (`PHC_AUTH_002`) | ❌ |
+| Sign off completed zone (notify Count Lead) | — | ✅ (notification; no status change) | — |
+| Submit count document (`in_progress → completed`) | ❌ (`PHC_AUTH_002` — Count Lead only) | ❌ (`PHC_AUTH_002` — Count Lead only) | — |
+| View lines outside own zone | ❌ (`PHC_AUTH_004` — zone-scoped) | ❌ (`PHC_AUTH_004` — zone-scoped) | ❌ |
+| Re-enter a recount line flagged by Count Lead | — | ✅ (different counter from original) | ❌ |
 
 ## 1. Persona
 

@@ -2,13 +2,42 @@
 title: Physical Count — User Flow — Count Lead
 description: Inventory Controller / Inventory Manager path through the physical-count lifecycle.
 published: true
-date: 2026-05-15T14:00:00.000Z
+date: 2026-05-16T15:00:00.000Z
 tags: physical-count, user-flow, count-lead, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
 ---
 
 # Physical Count — User Flow — Count Lead
+
+### Workflow position (Count Lead highlighted)
+
+```mermaid
+graph LR
+    period_create(("draft\n— period\nopened")):::current -->|"generate sheet\nper location"| pending(("pending\n— sheet\ngenerated")):::current
+    pending -->|"assign counters\n+ zone grants"| in_progress(("in_progress\n— counting")):::current
+    in_progress -->|"monitor progress;\nflag recount;\noverride variance"| in_progress
+    in_progress -->|"submit\n(all lines counted)"| completed(("completed\n— rollup fires")):::current
+    completed -->|"route rollup\nfor approval"| adj["Inventory Adjustment\n(Approver / Finance)"]:::current
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+```
+
+### Permission Matrix — V1 Status × Action (Count Lead)
+
+The Count Lead is the single owner of the count exercise — the only persona who can open periods, generate sheets, assign counters, flag recounts, and submit. Rows are derived from Section 2 (Entry Point and Primary Flow) of this file; rule citations refer to [[physical-count/02-business-rules]] § 4 / § 5.
+
+| Action | Period `draft` | Count `pending` | Count `in_progress` | Count `completed` |
+|---|---|---|---|---|
+| Open count period (`tb_physical_count_period`) | ✅ (`PHC_VAL_001` — tb_period open) | — | — | — |
+| Generate count sheet for (period, location) | ✅ | ✅ (`PHC_VAL_002`–`PHC_VAL_003`) | — | — |
+| Set count mode (`physical_count_type`: frozen / live) | ✅ | ✅ (before in_progress only) | ❌ (`PHC_VAL_002` — immutable once started) | ❌ |
+| Assign counter(s) to zone | — | ✅ (`PHC_AUTH_004`) | ✅ | ❌ |
+| Monitor progress (`product_counted` vs `product_total`) | — | ✅ | ✅ (`PHC_CALC_004`) | ✅ (read-only) |
+| Flag variance line for recount (`PHC_VAL_007`) | — | — | ✅ (`PHC_AUTH_001`) | ❌ |
+| Override / accept variance (countersignature) | — | — | ✅ (`PHC_AUTH_001`) | ❌ |
+| Submit count (`in_progress → completed`) | — | — | ✅ (`PHC_AUTH_002`; `PHC_VAL_004` — all lines counted; `PHC_POST_001` rollup fires) | — |
+| Route rollup adjustment for approval | — | — | — | ✅ — to Approver / Finance via [[inventory-adjustment]] |
+| Edit lines after completion | — | — | — | ❌ (`PHC_VAL_008` — immutable; raise manual adjustment) |
 
 ## 1. Persona
 

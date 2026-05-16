@@ -2,13 +2,51 @@
 title: Physical Count — User Flow — Audit / Config
 description: Approver / Finance Reviewer, Auditor, and Sysadmin paths through the physical-count lifecycle.
 published: true
-date: 2026-05-15T14:00:00.000Z
+date: 2026-05-16T15:00:00.000Z
 tags: physical-count, user-flow, audit, config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
 ---
 
 # Physical Count — User Flow — Audit / Config
+
+### Position relative to the transactional flow (off-path observers)
+
+```mermaid
+graph LR
+    subgraph transactional["Transactional Happy Path"]
+        pending(("pending")) -->|"count starts"| in_progress(("in_progress"))
+        in_progress -->|"submit"| completed(("completed"))
+        completed -->|"rollup"| adj(("inventory-adjustment\napproval"))
+    end
+    sysadmin["Sysadmin\n(tolerance thresholds,\ncosting-method default,\nreason-code mapping)"]:::cfg -.-> transactional
+    auditor["Auditor\n(read-only inspection:\ncount sheets, recount records,\napprovals, posted adjustments)"]:::audit -.-> transactional
+    approver["Approver / Finance\n(reviews + approves\nrollup adjustment\nin inventory-adjustment)"]:::audit -.-> adj
+    classDef audit fill:#eab308,color:#000,stroke:#eab308;
+    classDef cfg fill:#7c3aed,color:#fff,stroke:#7c3aed;
+```
+
+### Permission Matrix — V6 Action × Sub-persona (Audit / Config)
+
+All three sub-personas are non-transactional within the physical-count module — none creates, edits, submits, or re-opens count documents. Approver / Finance approval action lands on the rollup adjustment in [[inventory-adjustment]], not on `tb_physical_count`. Rows are derived from Section 2 (Entry Point and Primary Flow) of this file; rule citations refer to [[physical-count/02-business-rules]] § 4 / § 5.
+
+| Action | Approver / Finance | Auditor | Sysadmin |
+|---|---|---|---|
+| View count period / count document / count detail (read-only) | ✅ | ✅ (`PHC_AUTH_003`) | ✅ |
+| View recount comment threads and counter zone-assignments | ✅ | ✅ (`PHC_AUTH_003`) | ✅ |
+| View rollup adjustment (`tb_stock_in` / `tb_stock_out`) in [[inventory-adjustment]] | ✅ | ✅ | ✅ |
+| Review variance lines + linked `info.countId` back to source count | ✅ (`PHC_AUTH_003`) | ✅ | ❌ |
+| Approve rollup adjustment (`in_progress → completed`) | ✅ (`ADJ_AUTH_*` in [[inventory-adjustment]]) | ❌ | ❌ |
+| Reject rollup adjustment (return to Count Lead) | ✅ | ❌ | ❌ |
+| Observe count in progress (sample-based; add observation comment) | ❌ | ✅ (`PHC_AUTH_003`) | ❌ |
+| Inspect full chain (count sheet → recount → approvals → posted adj → inventory tx) | ❌ | ✅ (`PHC_AUTH_003`) | ❌ |
+| Configure tolerance threshold (`PHC_VAL_007` default) | ❌ | ❌ | ✅ (`PHC_AUTH_003`) |
+| Configure costing-method default (`enum_physical_count_costing_method`) | ❌ | ❌ | ✅ (`PHC_AUTH_003`) |
+| Configure reason-code mapping (`COUNT_OVERAGE` / `COUNT_SHORTAGE` → GL account) | ❌ | ❌ | ✅ (`PHC_AUTH_003`) |
+| Create / edit / submit count documents | ❌ | ❌ | ❌ |
+| Re-open completed count (`PHC_VAL_008`) | ❌ | ❌ | ❌ |
+
+> ℹ️ **Approval scope note:** Approver / Finance approval authority is exercised on the rollup `tb_stock_in` / `tb_stock_out` document in [[inventory-adjustment]], not directly on `tb_physical_count`. The physical-count document itself is terminal at `completed`; only the rollup adjustment progresses to GL posting. This means the Approver / Finance column above applies at the inventory-adjustment boundary, not at the physical-count boundary.
 
 ## 1. Persona
 
