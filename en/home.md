@@ -2,7 +2,7 @@
 title: Carmen Inventory ERP — Developer & Tester Manual
 description: Landing page for the Carmen Inventory ERP wiki — module index for developers and testers across procure-to-pay, inventory control, costing, master configuration, and reporting.
 published: true
-date: 2026-05-16T14:00:00.000Z
+date: 2026-05-16T15:30:00.000Z
 tags: home, index, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T14:00:00.000Z
@@ -16,7 +16,13 @@ This wiki is the canonical user manual for developers and QA engineers working o
 
 Content is organised by module under the top-level locale directories `en/` (canonical) and `th/` (translation tracking). Each module folder follows the same sub-page convention: `01-data-model`, `02-business-rules`, `03-user-flow*`, `04-test-scenarios*`, with role-specific sub-pages under user-flow and test-scenarios when the module has multiple personas. Cross-module references use Wiki.js `[[slug]]` links so the navigation stays internal to the current locale.
 
-## 2. Procure-to-Pay
+## 2. Dashboard
+
+The post-login landing surface — cross-module KPI tiles, aging buckets, and exception lists. Each tile drills into the underlying transactional module with a pre-applied filter.
+
+- [[dashboard]] — Module index for the six dashboard pages (Main, PR, PO, GRN, Inventory, SR).
+
+## 3. Procure-to-Pay
 
 The procurement chain — from internal demand signal through external vendor commitment, physical receipt, and three-way match for AP posting.
 
@@ -25,7 +31,7 @@ The procurement chain — from internal demand signal through external vendor co
 - [[good-receive-note]] — Physical receipt against PO (or standalone for emergency receipts); lot/expiry capture, segregation of duties with PO creator, commit fires inventory and cost-layer writes.
 - [[vendor-pricelist]] — Vendor master, pricelist coverage, ranking criteria, tolerance bands that feed PR/PO snapshot semantics and deviation routing.
 
-## 3. Inventory Control
+## 4. Inventory Control
 
 The inventory side — stock balances, lot management, adjustments, and the count-vs-spot-check cadence that gates period-end close.
 
@@ -36,14 +42,14 @@ The inventory side — stock balances, lot management, adjustments, and the coun
 - [[store-requisition]] — Internal stock transfer (three variants: DIR, CONS, INV-to-INV); no AVCO re-average, cost flows through at existing layer.
 - [[product]] — Product master, SKU catalogue, inventory unit base UoM, costing-method assignment per item.
 
-## 4. Costing & Recipe
+## 5. Costing & Recipe
 
 How unit cost is computed, recalculated, and consumed by the recipe / menu side.
 
 - [[costing]] — AVCO vs FIFO cost engine; trigger transactions (GRN, stock adjustments, physical count), pass-through for SR, period-lock semantics. AVCO/FIFO is selected at Business Unit setup and cannot change after go-live.
 - [[recipe]] — Recipe master, ingredient lines, yield, allergen flags; menu-engineering inputs that consume the cost engine's output.
 
-## 5. Master Configuration
+## 6. Master Configuration
 
 Cross-cutting master data and configuration that every transactional module consumes.
 
@@ -51,13 +57,13 @@ Cross-cutting master data and configuration that every transactional module cons
 - [[system-config]] — Workflow definitions, running-code numbering schemes, dimension setup; the policy surface that drives every approval / posting / numbering decision.
 - [[access-control]] — Role / permission map, user-action gates, segregation-of-duties rules; the authorisation backbone referenced by every `*_AUTH_*` rule.
 
-## 6. Reporting & Audit
+## 7. Reporting & Audit
 
 The off-path observation and governance surface.
 
 - [[reporting-audit]] — Activity logs, attachments, notifications, report catalogue, widgets, and the audit-case file mechanism cited by Auditor and System Administrator personas across every transactional module.
 
-## 7. How to Navigate
+## 8. How to Navigate
 
 Each module's `index.md` is its landing page (Overview, Business Context, Key Concepts, Roles & Personas, Related Modules, Reference Sources, Pages in This Module). From there:
 
@@ -66,7 +72,7 @@ Each module's `index.md` is its landing page (Overview, Business Context, Key Co
 - **User flow** → `03-user-flow.md` (overview with state-machine Mermaid) + per-persona drill-downs `03-user-flow-{role}.md` with workflow-position Mermaid and a Permission Matrix.
 - **Test scenarios** → `04-test-scenarios.md` (cross-persona) + per-persona drill-downs with happy-path / permission / validation / edge-case scenarios mapped to rule IDs and E2E spec files.
 
-## 8. Reference Sources
+## 9. Reference Sources
 
 The wiki is synthesised from these external sources (sibling repos in the Carmen Software organisation):
 
