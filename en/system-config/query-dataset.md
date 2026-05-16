@@ -42,7 +42,7 @@ Query Dataset (rendered as **SQL Workbench** in the UI) is the Sysadmin-only scr
 | "Database is busy" | Connection pool exhausted; one retry already attempted after 500 ms | Retry later; investigate concurrent load |
 | `BigInt` column returns as string in result | Expected — JSON cannot natively carry `bigint` | Cast in SQL if numeric handling needed downstream |
 | Report errors after drop | Bound view / procedure removed from catalog | Re-create the object or update the report binding |
-| 403 / route invisible | User lacks `sql-query.execute` / `.save` / `.drop` App IDs | Grant via [[access-control/role]] |
+| 403 / route invisible | User lacks `sql-query.execute` / `.save` / `.drop` App IDs | Grant via [[access-control/application-role]] |
 
 ## 4. Edge Cases
 

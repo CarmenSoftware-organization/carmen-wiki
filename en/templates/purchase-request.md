@@ -119,7 +119,7 @@ Template **does NOT** participate in the workflow engine. Three logical states d
 - [[purchase-request]] — sole consumer. **Create PR from Template** clones header + detail into a new `tb_purchase_request` + `tb_purchase_request_detail` at `pr_status = draft`.
 - [[purchase-request/03-user-flow-requestor]] — REQ-HP-06 happy-path scenario uses this flow.
 - [[system-config/workflow]] — the `workflow_id` is the workflow the cloned PR enters at submit.
-- [[master-data/product]], [[master-data/location]], [[master-data/currency]], [[master-data/tax-profile]] — every line snapshots from these at template-edit time; clone re-resolves currency/rate but leaves other refs as-is.
+- [[product]], [[master-data/location]], [[master-data/currency]], [[master-data/tax-profile]] — every line snapshots from these at template-edit time; clone re-resolves currency/rate but leaves other refs as-is.
 - [[templates/price-list]] — sibling template under the [[templates]] umbrella.
 
 ## 8. References

@@ -72,7 +72,7 @@ The 10-day threshold (`OVERDUE_THRESHOLD`) is hard-coded in `dashboard-grn.tsx` 
 - **Overdue PO** — [[purchase-order]] where `expected_delivery_date < CURRENT_DATE` AND not fully received; days overdue = `CURRENT_DATE - expected_delivery_date`
 - **Incomplete / Over-Received GRNs** — join committed [[good-receive-note]] line to PO line; incomplete `received_qty < ordered_qty`, over `received_qty > ordered_qty`; Variance % computed frontend
 - **Top Vendors YTD** — sum GRN-line amount grouped by `vendor_id`, top 5
-- **Spend by Category** — sum GRN-line amount grouped by [[master-data/product-category]], split current month vs YTD
+- **Spend by Category** — sum GRN-line amount grouped by [[product/category]], split current month vs YTD
 
 ## 6. Refresh Cadence
 

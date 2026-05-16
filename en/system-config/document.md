@@ -38,7 +38,7 @@ Document Management is the **file-storage registry surface** at `/system-admin/d
 | `fileSizeLimit` toast on upload | File > 10 MB | Compress / split before upload |
 | File rejected by picker | MIME not in allow-list (`.pdf, .docx, .xls/.xlsx, .csv, .txt`) | Convert to an accepted format; `FILE_SERVICE` also sniffs server-side |
 | "Missing" attachment on a PR/PO/GRN | File was hard-deleted from this registry while still referenced | Re-upload and re-attach; clean up dangling `fileToken`s manually |
-| 403 on delete | User lacks `documents.delete` App ID | Grant via [[access-control/role]] |
+| 403 on delete | User lacks `documents.delete` App ID | Grant via [[access-control/application-role]] |
 | File from BU `T01` invisible in BU `T02` | Expected — BU-scoped storage prefix | Each BU has its own partition; cross-BU access impossible |
 | Presigned URL expired | `expirySeconds` elapsed | Request a new one |
 
@@ -103,7 +103,7 @@ Every transactional table that supports attachments (`tb_purchase_request`, `tb_
 ## 7. Cross-References
 
 - [[purchase-request]] / [[purchase-order]] / [[good-receive-note]] / [[store-requisition]] / [[inventory-adjustment]] / [[physical-count]] / [[spot-check]] — carry `attachments` JSONB.
-- [[vendor]] / [[product-management]] — vendor and product master records carry their own `attachments` arrays.
+- [[master-data/vendor]] / [[product]] — vendor and product master records carry their own `attachments` arrays.
 - [[reporting-audit/attachment]] — cross-module attachment policy and visibility rules.
 - [[reporting-audit/report]] — generated report artefacts land here via the same `fileToken` mechanism.
 - [[system-config/workflow]] — workflow comments embed `attachments` arrays for evidence files.

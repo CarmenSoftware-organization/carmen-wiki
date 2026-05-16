@@ -118,7 +118,7 @@ Per-lot FIFO layer with `lot_no`, `lot_index`, `in_qty` / `out_qty`, `cost_per_u
 
 - [[inventory]] — current-state view (`InventoryStatus`) is the running sum of this ledger
 - [[costing]] — `COST_CALC_*` rules derive from cost-layer rows
-- [[good-receive-note]] &nbsp;·&nbsp; [[inventory-adjustment]] &nbsp;·&nbsp; [[inventory-adjustment/wastage-reporting]] &nbsp;·&nbsp; [[store-requisition]] &nbsp;·&nbsp; [[physical-count]] &nbsp;·&nbsp; [[credit-note]] — source documents
+- [[good-receive-note]] &nbsp;·&nbsp; [[inventory-adjustment]] &nbsp;·&nbsp; [[inventory-adjustment/wastage-reporting]] &nbsp;·&nbsp; [[store-requisition]] &nbsp;·&nbsp; [[physical-count]] &nbsp;·&nbsp; [[purchase-order/credit-note]] — source documents
 - [[inventory/period-end]] — writes `close` / `open` rows and freezes the snapshot
 
 ## 8. References

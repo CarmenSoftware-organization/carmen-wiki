@@ -49,7 +49,7 @@ The header column labels read "PR No" / "PR Number" inside SR tables — this is
 | Does "Bulk Submit" on Sent Back actually re-submit? | (Inferred — to be verified against live UI) Mock has no handler; live wiring should batch re-submit through [[store-requisition]] workflow. |
 | How does the Today / Week / Month tab differ? | Same query (`useApprovalPending({ doc_type: "sr" })`), different `doc_date` filter window. |
 | Where are "My Templates" stored? | TBD — likely `tb_sr_template` keyed by `user_id`. Schema not finalised. |
-| How is "My Consumption" computed? | Sum on consumed inventory (recipe + wastage + manual) where `requestor_id = current_user`, grouped by [[master-data/product-category]]. |
+| How is "My Consumption" computed? | Sum on consumed inventory (recipe + wastage + manual) where `requestor_id = current_user`, grouped by [[product/category]]. |
 | What lands in "SR Awaiting Received"? | [[store-requisition]] where `status = "issued"` AND `destination_location_id IN (user's locations)` AND not yet receipted. |
 
 ## 4. Troubleshooting
@@ -69,7 +69,7 @@ The header column labels read "PR No" / "PR Number" inside SR tables — this is
 - **Pipeline counts** — group-count on [[store-requisition]] by workflow stage, projecting `workflow_current_stage` onto the 4 buckets
 - **Sent Back / Reject List** — `workflow_action_history` filtered to send-back / reject, joined back to [[store-requisition]]
 - **Awaiting Approval** — `useApprovalPending({ doc_type: "sr" })` (`hooks/use-approval.ts`); tabs differ by `doc_date` filter
-- **My Consumption** — sum consumed inventory (recipe + wastage + manual) where `requestor_id = current_user`, grouped by [[master-data/product-category]]
+- **My Consumption** — sum consumed inventory (recipe + wastage + manual) where `requestor_id = current_user`, grouped by [[product/category]]
 - **SR Awaiting Received** — [[store-requisition]] where `status = "issued"` AND `destination_location_id IN (user's locations)` AND not receipted
 - **Dept Consumption** — same query as My Consumption, scoped by `department_id` not `requestor_id`
 - **My Templates** — user-saved SR templates (table TBD; likely `tb_sr_template` keyed by `user_id`)

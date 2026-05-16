@@ -58,7 +58,6 @@ See each sub-page for tile-to-endpoint mapping.
 
 - [[purchase-request]], [[purchase-order]], [[good-receive-note]], [[store-requisition]], [[inventory]] — transactional sources behind every tile
 - [[reporting-audit]] — query datasets for KPI aggregates
-- [[app-menu]] — sidebar registration that exposes the six sub-pages
 
 ## 5. Reference Sources
 

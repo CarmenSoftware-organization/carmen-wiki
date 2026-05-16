@@ -38,7 +38,7 @@ Email Configuration is the **per-BU SMTP profile** Carmen uses for every outboun
 | "Recipient is not a valid email" | Bad address in `recipients` or `cc` | Fix the comma-separated list |
 | Test email succeeds in form but no mail arrives | Form draft not saved — Test uses the saved value | Click **Save** first, then **Test Email** |
 | All notifications silent in production | `smtp.enabled = false` accidentally left set | Re-enable on the form and Save |
-| 403 on save / load | User lacks `app-config.upsert` (Sysadmin only) | Grant via [[access-control/role]] |
+| 403 on save / load | User lacks `app-config.upsert` (Sysadmin only) | Grant via [[access-control/application-role]] |
 | Password field shows `***ENCRYPTED***` | Expected — masked on read so ciphertext never reaches the browser | Leave as-is to keep current password; type new to rotate |
 
 ## 4. Edge Cases

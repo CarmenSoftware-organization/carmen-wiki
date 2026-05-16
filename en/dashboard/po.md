@@ -70,7 +70,7 @@ Currency renders as `$` in the mock — production should localise to BU base cu
 - **Pending PRs for PO** — [[purchase-request]] where `workflow_current_stage = "approved"` AND `po_id IS NULL`; SLA-based badge (`Pending PO` < N days, `Overdue Follow-up` ≥ N days)
 - **Overdue Deliveries** — [[purchase-order]] lines where `expected_delivery_date < CURRENT_DATE` AND not fully received against [[good-receive-note]]
 - **On-Time Delivery / Order Completeness** — period KPIs by [[reporting-audit]] over committed GRNs against PO expected dates/quantities
-- **Category Spend** — sum PO-line amount grouped by [[master-data/product-category]], current-month vs YTD
+- **Category Spend** — sum PO-line amount grouped by [[product/category]], current-month vs YTD
 - **Top Vendors** — sum PO total grouped by `vendor_id`, top 5
 - **Delivery Schedule** — count PO lines where `expected_delivery_date` falls in today / this week / next week
 - **Over-Received POs** — join [[purchase-order]] line to committed [[good-receive-note]] line where `received_qty > ordered_qty`

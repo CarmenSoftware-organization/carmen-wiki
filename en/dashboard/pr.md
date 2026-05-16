@@ -44,7 +44,7 @@ Currency in spending charts renders as `$` in the mock — production should fol
 |---|---|
 | Why don't my pipeline counts update after I submit a PR? | **Mock-data today** — counts come from `mock/pr.ts`, not from [[purchase-request]]. Live wiring will refresh on focus. |
 | Where do the five stages come from? | Collapsed projection of `workflow_current_stage` (see [[system-config/workflow]]) into Requests / In Process / Approved / PO Generated / Received. |
-| Is "My Spending" my PRs only, or my department's? | "My" is `requestor_id = current_user`; "Department" is `department_id` scoped — same query, different scope on PR-line amounts grouped by [[master-data/product-category]]. |
+| Is "My Spending" my PRs only, or my department's? | "My" is `requestor_id = current_user`; "Department" is `department_id` scoped — same query, different scope on PR-line amounts grouped by [[product/category]]. |
 | When will Awaiting Approval go live? | Hook exists — `useApprovalPending({ doc_type: "pr" })` in `hooks/use-approval.ts` — but is **not yet mounted** on this page. |
 | Why is currency showing `$` not `฿`? | Mock fixture quirk; production will localise to BU base currency. |
 
@@ -63,7 +63,7 @@ Currency in spending charts renders as `$` in the mock — production should fol
 
 - **Pipeline counts** — group-count on [[purchase-request]] by `workflow_current_stage`
 - **Sent Back / Rejected** — `workflow_action_history` filtered to `action ∈ {send_back, reject}` joined to [[purchase-request]]
-- **My / Department Spending** — sum PR-line amount grouped by [[master-data/product-category]], scoped by `requestor_id` / `department_id`
+- **My / Department Spending** — sum PR-line amount grouped by [[product/category]], scoped by `requestor_id` / `department_id`
 - **Awaiting Approval** — `useApprovalPending({ doc_type: "pr" })` (`hooks/use-approval.ts`) once wired
 
 ## 6. Refresh Cadence

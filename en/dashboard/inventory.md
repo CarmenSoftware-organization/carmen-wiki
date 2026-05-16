@@ -51,7 +51,7 @@ The Replenishment table renders **two "CREATE PR" buttons** side-by-side with di
 | What's the threshold for "Slow-Moving"? | Configurable threshold against last-movement date — currently mock; no central config surface today. |
 | How is "Order Qty" suggested in Replenishment? | `max_level - on_hand` (or per [[store-requisition/stock-replenishment]] policy). |
 | Does "CREATE PR" actually create the PR? | **Inferred — to be verified against live UI.** Mock has no handler. Live wiring should pre-fill a new [[purchase-request]] with the line items. |
-| How is Inventory Value calculated? | `on_hand × unit_cost` grouped by [[master-data/product-category]] root; `unit_cost` comes from [[costing]]. |
+| How is Inventory Value calculated? | `on_hand × unit_cost` grouped by [[product/category]] root; `unit_cost` comes from [[costing]]. |
 | What triggers the Expired Items Alert? | [[inventory]] lot table where `expiry_date ≤ CURRENT_DATE + N_days` (N configurable). |
 
 ## 4. Troubleshooting
@@ -72,7 +72,7 @@ The Replenishment table renders **two "CREATE PR" buttons** side-by-side with di
 - **Slow-Moving / Dead Stock** — [[inventory]] item-location balances joined to last-movement date; threshold configurable
 - **Replenishment** — items where `on_hand < par_level`; order qty = `max_level - on_hand` (or per [[store-requisition/stock-replenishment]])
 - **PST Status** — [[physical-count]] header records, latest count per location; workflow stage projects to 3 badge variants
-- **Inventory Value by Material Group** — sum `on_hand × unit_cost` grouped by [[master-data/product-category]] root
+- **Inventory Value by Material Group** — sum `on_hand × unit_cost` grouped by [[product/category]] root
 - **Expired Items Alert** — [[inventory]] lot where `expiry_date ≤ CURRENT_DATE + N_days`
 - **Consumption by Location / Category** — sum committed [[inventory]] outbound movements (SR-issued, wastage, recipe) grouped by location / category
 - **SR Awaiting Receipt** — [[store-requisition]] where `status = "issued"` AND destination location not yet committed receipt
