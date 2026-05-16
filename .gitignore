@@ -1,0 +1,13 @@
+# macOS metadata
+.DS_Store
+**/.DS_Store
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS / Python (for .specs/verify_frontmatter.py)
+__pycache__/
+*.pyc
