@@ -38,7 +38,7 @@ Finance operates across two distinct touchpoints on a `committed` GRN: **AP capt
 |---|---|---|
 | View committed GRN (read) | ✅ — Pending Match worklist and PO Receiving History | ✅ — period-close dashboard |
 | Review extra-cost allocation | ✅ — pre-AP adjustment per `GRN_AUTH_007` | ✅ (historical review only) |
-| Adjust extra-cost allocation method (`manual` / `by_value` / `by_qty`) | ✅ — while invoice not yet posted | ❌ (frozen after AP posting) |
+| Adjust extra-cost allocation method (`manual` / `by_value` / `by_qty`) | ❌ — `GRN_AUTH_007` limits allocation adjustment to `doc_status ∈ {draft, saved}`; once `committed`, allocation is frozen (corrections via `tb_credit_note`) | ❌ (frozen after AP posting) |
 | Adjust tax-code / rate per line | ✅ — `is_tax_adjustment` override pre-AP | ❌ (frozen after AP posting) |
 | Run three-way match (PO ↔ GRN ↔ invoice) | ✅ | ❌ |
 | Post AP on clean match (`Dr GRN Clearing / Cr AP-Trade`) | ✅ — `GRN_POST_008` | ❌ |
@@ -48,7 +48,7 @@ Finance operates across two distinct touchpoints on a `committed` GRN: **AP capt
 | Age GRN Clearing open balances | ❌ | ✅ — Finance Manager |
 | Period-close sign-off | ❌ | ✅ — Finance Manager |
 | Mutate GRN `doc_status` | ❌ | ❌ |
-| Void / reverse GRN (co-auth) | ✅ (elevated co-auth with Inventory Manager, `GRN_POST_010`) | ❌ |
+| Void / reverse GRN (co-auth) | ❌ — `GRN_AUTH_008` restricts void to `{draft, saved}` only; voiding a `committed` GRN is not allowed by any GRN rule (post-commit corrections use `tb_credit_note` or [[inventory-adjustment]]) | ❌ |
 
 > ℹ️ **GRN status immutable by Finance:** Finance never transitions `doc_status`. The three-way match outcome is captured on a separate match flag (`unmatched` → `matched` / `flagged` / `partially_matched`). `doc_status` stays at `committed` through the full Finance lifecycle — clean match, discrepancy, credit note, and period close.
 

@@ -24,8 +24,8 @@ graph LR
     review -->|"Clean receipt"| done(("Review closed"))
     resolve -->|"Credit note path"| finance["Handoff to Finance"]
     resolve -->|"Replacement path"| receiver["Handoff to Receiver<br/>(new GRN)"]
-    draft(("draft")) -.->|"SOD: Purchaser<br/>cannot commit"| committed(("committed"))
-    saved(("saved")) -.->|"SOD: Purchaser<br/>cannot commit"| committed
+    draft(("draft")) -.->|"SOD: PO creator<br/>cannot commit (GRN_AUTH_010)"| committed(("committed"))
+    saved(("saved")) -.->|"SOD: PO creator<br/>cannot commit (GRN_AUTH_010)"| committed
     classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
 ```
 
