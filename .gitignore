@@ -11,3 +11,7 @@
 # OS / Python (for .specs/verify_frontmatter.py)
 __pycache__/
 *.pyc
+
+# Playwright MCP artifacts (browser snapshots, console logs, screenshots)
+.playwright-mcp/
+/*.png
