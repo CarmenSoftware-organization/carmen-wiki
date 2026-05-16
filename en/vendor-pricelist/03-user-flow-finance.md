@@ -2,13 +2,17 @@
 title: Vendor Pricelist — User Flow — Finance
 description: Finance's flow within the vendor-pricelist module — variance audit against posted GRN/invoice, currency/FX validation, multi-currency sign-off.
 published: true
-date: 2026-05-15T15:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: vendor-pricelist, user-flow, finance, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
 # Vendor Pricelist — User Flow — Finance
+
+> **At a Glance**
+> **Persona:** Finance Officer / AP + Finance Manager &nbsp;·&nbsp; **Module:** [[vendor-pricelist]] &nbsp;·&nbsp; **Workflow stages:** off-path — multi-currency / high-value pre-activation co-approve + post-receipt variance audit &nbsp;·&nbsp; **Key permissions:** read across pricelists, co-approve multi-currency / high-value, audit GRN / invoice variance, no direct status write
+> **What this persona does:** Audits price variance against posted GRN / invoice, validates currency / FX, and co-signs multi-currency or high-value activations.
 
 ## 1. Role in This Module
 

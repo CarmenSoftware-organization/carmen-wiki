@@ -2,13 +2,16 @@
 title: Reporting and Audit
 description: Activity log, attachments, notifications, reporting, dashboards.
 published: true
-date: 2026-05-16T08:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: reporting-audit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
 ---
 
 # Reporting and Audit
+
+> **At a Glance**
+> **Module purpose:** Cross-cutting plumbing for activity audit log, polymorphic attachments, inbox notifications, report job/template pipeline, and dashboard widgets &nbsp;·&nbsp; **Audience:** Auditor (read), Sysadmin (config), Platform Admin (cross-tenant), every module (write) &nbsp;·&nbsp; **Key entities/tables:** `tb_activity`, `tb_attachment`, `tb_notification`, `tb_report_template` + `tb_report_job`, `tb_widget_dashboard` &nbsp;·&nbsp; **Sub-pages:** 8
 
 ## 1. Overview
 

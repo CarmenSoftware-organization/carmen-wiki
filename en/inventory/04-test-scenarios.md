@@ -2,13 +2,18 @@
 title: Inventory — Test Scenarios
 description: Test cases by persona, cross-persona scenarios, and E2E mapping for inventory.
 published: true
-date: 2026-05-15T12:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: inventory, test-scenarios, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
 # Inventory — Test Scenarios
+
+> **At a Glance**
+> **Module:** [[inventory]] &nbsp;·&nbsp; **Total scenarios:** ~17 cross-persona + ~115 per-persona &nbsp;·&nbsp; **Personas covered:** Store Keeper, Inventory Controller, Finance, Audit / Config
+> **Run order:** Audit / Config setup → primary persona happy paths → cross-persona scenarios
+> **Each persona's drill-down is `04-test-scenarios-<role>.md`**
 
 ## 1. Overview
 

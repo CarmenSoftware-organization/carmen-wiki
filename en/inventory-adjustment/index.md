@@ -2,13 +2,16 @@
 title: Inventory Adjustment
 description: Manual corrections to stock balances — write-offs, write-ons, reclassifications.
 published: true
-date: 2026-05-16T09:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: inventory-adjustment, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
 ---
 
 # Inventory Adjustment
+
+> **At a Glance**
+> **Module purpose:** Controlled stock corrections (IN / OUT) outside procurement and consumption — write-offs, write-ons, count variances, reclassifications (`Draft` → `Posted` → `Void`) &nbsp;·&nbsp; **Audience:** Store Keeper, Inventory Controller, Finance, Auditor &nbsp;·&nbsp; **Key entities/tables:** `tb_inventory_adjustment`, `tb_inventory_adjustment_detail`, `InventoryStatus`, `JournalEntry`, reason-code master &nbsp;·&nbsp; **Sub-pages:** 13
 
 ## 1. Overview
 

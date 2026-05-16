@@ -2,13 +2,19 @@
 title: Inventory — Business Rules
 description: Validation, calculation, authorization, posting, period-end, and cross-module rules for inventory.
 published: true
-date: 2026-05-15T12:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: inventory, business-rules, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
 # Inventory — Business Rules
+
+> **At a Glance**
+> **Rule families:** `INV_VAL_*` validation &nbsp;·&nbsp; `INV_AUTH_*` permission &nbsp;·&nbsp; `INV_CALC_*` calc &nbsp;·&nbsp; `INV_POST_*` posting &nbsp;·&nbsp; `INV_XMOD_*` cross-module
+> **Rule count:** approximately 60 rules
+> **Audience:** Test author + developer — every rule ID is anchored from `04-test-scenarios*` pages
+> **Status lifecycle:** Section 5.1 (where present) carries the Live UI vs BRD discrepancy callouts
 
 ## 1. Overview
 

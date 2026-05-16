@@ -2,13 +2,17 @@
 title: Physical Count — User Flow — Count Lead
 description: Inventory Controller / Inventory Manager path through the physical-count lifecycle.
 published: true
-date: 2026-05-16T15:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: physical-count, user-flow, count-lead, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
 ---
 
 # Physical Count — User Flow — Count Lead
+
+> **At a Glance**
+> **Persona:** Count Lead (Inventory Controller / Manager) &nbsp;·&nbsp; **Module:** [[physical-count]] &nbsp;·&nbsp; **Workflow stages:** Create `tb_physical_count_period` (`draft`) &nbsp;·&nbsp; generate count sheets per `(period, location)` (`pending`) &nbsp;·&nbsp; assign counters / zones &nbsp;·&nbsp; flag variance for recount &nbsp;·&nbsp; submit to `completed` (fires variance rollup to [[inventory-adjustment]] per `PHC_POST_001`) &nbsp;·&nbsp; **Key permissions:** open period, generate count sheets, flag recount (`PHC_VAL_007`), submit count (`PHC_AUTH_001`)
+> **What this persona does:** Single owner of the count exercise — schedules, scopes, monitors, resolves discrepancies, and triggers the variance rollup to inventory-adjustment.
 
 ## 1. Persona
 

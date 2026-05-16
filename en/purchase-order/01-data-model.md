@@ -2,13 +2,19 @@
 title: Purchase Order — Data Model
 description: Entities, fields, relationships, and enums for the purchase-order module.
 published: true
-date: 2026-05-15T10:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-order, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
 # Purchase Order — Data Model
+
+> **At a Glance**
+> **Tables:** `tb_purchase_order` &nbsp;·&nbsp; `tb_purchase_order_detail` &nbsp;·&nbsp; `tb_purchase_order_comment` &nbsp;·&nbsp; `tb_purchase_order_detail_comment` &nbsp;·&nbsp; `tb_purchase_order_detail_tb_purchase_request_detail` (PR↔PO bridge)
+> **Audience:** Developer / Auditor (dev reference)
+> **Key FKs:** detail `→ tb_product` / `tb_tax_profile` / `tb_unit` ×2 (order + base); header `→ tb_vendor` / `tb_currency` / `tb_credit_term`; bridge `→ tb_purchase_request_detail` (many-to-many supports PR consolidation & partial conversion); back-relation from `tb_good_received_note_detail` (downstream GRN)
+> **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*`; per-line `received_qty` / `cancelled_qty` running counters; workflow snapshot on header JSON
 
 > **Source of truth:** Backend Prisma schema. Always read these first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`

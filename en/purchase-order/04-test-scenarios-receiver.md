@@ -2,13 +2,18 @@
 title: Purchase Order — Test Scenarios — Receiver
 description: Receiver's test cases (happy path, permission, validation, edge cases) for purchase-order.
 published: true
-date: 2026-05-15T10:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-order, test-scenarios, receiver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
 # Purchase Order — Test Scenarios — Receiver
+
+> **At a Glance**
+> **Persona:** Receiver (Store Keeper + Inventory Manager) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Scenarios:** ~23
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** no dedicated Receiver spec yet; shared coverage in `tests/401-po.spec.ts` (TC-PO-340001..340003 GRN sync, TC-PO-060501..060504 Close) in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Receiver persona (the **Store Keeper** at the dock plus the **Inventory Manager** who oversees closure for the location) directly drives in the `purchase-order` module. The Receiver's involvement begins when the PO reaches `po_status = sent` and ends when the PO leaves the receipt zone — either through `completed` (full receipt), `partial` (open balance carried forward), or `closed` (Inventory Manager early-terminates a `partial` PO). The GRN posting itself lives in the downstream `[[good-receive-note]]` module; this page captures only the **PO-side effects** — how a GRN flips `tb_purchase_order.po_status` via `PO_POST_006` (`sent → partial`) and `PO_POST_007` (`* → completed`), how the Inventory Manager closes a `partial` PO with the remainder written to `cancelled_qty` via `PO_POST_011`, and how the PO line counters (`received_qty`, `cancelled_qty`) advance against `order_qty` ([03-user-flow-receiver.md](./03-user-flow-receiver.md) Section 2). Scenarios are grouped into the happy paths described in the user flow, the RBAC boundary enforced by `PO_AUTH_008` (Receiver / Inventory Manager scope) and `PO_AUTH_010` (segregation of duties — GRN poster ≠ PO buyer / transmitter) versus `PO_AUTH_001`–`PO_AUTH_007` (Purchaser / Manager scope), the validation rules around `received_qty`, `accepted_qty`, over-receipt tolerance, and voided / closed-PO state guards, and a small set of edge cases around tolerance boundaries, decimal precision, concurrency, and multi-currency context. Cross-persona handoffs that pivot off the Receiver (`X-PO-03`, `X-PO-04`, `X-PO-06`, `X-PO-08`) live in the parent overview, not here.
 

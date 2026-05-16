@@ -2,13 +2,17 @@
 title: Store Requisition (SR) — User Flow — Requester
 description: Requester's flow within the store-requisition module — identifies stock needs, raises and submits the SR.
 published: true
-date: 2026-05-16T13:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: store-requisition, user-flow, requester, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
 ---
 
 # Store Requisition (SR) — User Flow — Requester
+
+> **At a Glance**
+> **Persona:** Outlet Manager (consuming location) &nbsp;·&nbsp; **Module:** [[store-requisition]] &nbsp;·&nbsp; **Workflow stages:** draft → in_progress (first approval stage; retract / amend on send-back) &nbsp;·&nbsp; **Key permissions:** create / edit / submit draft, withdraw draft, retract at first stage, amend after send-back
+> **What this persona does:** Raises the SR — picks source/destination + sr_type, adds lines with requested_qty, submits for approval, and amends on send-back.
 
 ## 1. Role in This Module
 

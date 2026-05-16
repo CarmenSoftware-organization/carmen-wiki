@@ -2,13 +2,18 @@
 title: Good Receive Note (GRN) — Test Scenarios — Finance
 description: Finance's test cases (three-way match, extra-cost allocation, AP posting, period close) for good-receive-note.
 published: true
-date: 2026-05-15T11:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: good-receive-note, test-scenarios, finance, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
 ---
 
 # Good Receive Note (GRN) — Test Scenarios — Finance
+
+> **At a Glance**
+> **Persona:** Finance (Officer / AP Clerk + Finance Manager / Controller) &nbsp;·&nbsp; **Module:** [[good-receive-note]] &nbsp;·&nbsp; **Scenarios:** ~30
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `501-grn.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Finance persona (the **Finance Officer / AP Clerk** at the day-to-day three-way match desk plus the **Finance Manager / Controller** at the period-close sign-off boundary) directly drives in the `good-receive-note` module. Finance is a **post-commit** participant — entry to this flow presupposes that the Inventory Manager has already fired the `saved → committed` transition on the Receiver path, which has already raised the inventory accrual (`Dr Inventory / Cr GRN Clearing`, `GRN_POST_006`) and incremented on-hand. Finance's involvement covers two distinct activities: **pre-AP financial adjustment** on `committed` GRNs (correcting extra-cost allocation methods — `manual`, `by_value`, `by_qty` per `enum_allocate_extra_cost_type` — and tax codes while the vendor invoice has not yet arrived; allowed by `GRN_AUTH_007`); and **three-way match** when the invoice arrives (matching `PO ↔ GRN ↔ Invoice` on qty and price within tenant tolerance, posting the AP-side journal `Dr GRN Clearing / Cr AP-Trade` on success per `GRN_POST_008`, flagging the discrepancy back to the Purchaser on failure per `GRN_POST_009`). The Finance Manager additionally runs **period-close sign-off** — reconciling the inventory sub-ledger against the GL inventory control account, ageing open GRN Clearing balances, and locking the period. Critically: **the GRN's `doc_status` enum is not transitioned by Finance** — `saved → committed` is the only posting event the document undergoes; match outcome lives on a separate match flag, not on the four-state enum. Scenarios are grouped into **happy paths** (pre-AP allocation adjust, clean three-way match, partial GRN match, price-within-tolerance auto-pass, FX adjustment, period-close sign-off), **permission** (pre-AP adjust allow, three-way match allow, AP post allow, override-failed-match deny, Finance ≠ Purchaser/Receiver SoD, period-close lock by Finance Manager), **validation** (negative tests against discrepancy flagging, missing GRN, voided GRN, multi-invoice splits, closed-period blocks, duplicate invoice match), and **edge cases** around tolerance boundaries, FX rate equality, multi-GRN single-invoice consolidation, concurrent invoice posts, and decimal precision on AP amounts. Cross-persona handoffs that pivot off Finance (Finance ↔ Purchaser bounce-back on flagged discrepancies, Finance ↔ Controller at period close) live in [04-test-scenarios.md](./04-test-scenarios.md).
 

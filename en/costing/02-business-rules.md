@@ -2,13 +2,19 @@
 title: Costing — Business Rules
 description: Validation, calculation, authorization, posting, period-end, and cross-module rules for costing.
 published: true
-date: 2026-05-16T17:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: costing, business-rules, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
 ---
 
 # Costing — Business Rules
+
+> **At a Glance**
+> **Rule families:** `COST_VAL_*` validation &nbsp;·&nbsp; `COST_AUTH_*` permission &nbsp;·&nbsp; `COST_CALC_*` calc &nbsp;·&nbsp; `COST_POST_*` posting &nbsp;·&nbsp; `COST_XMOD_*` cross-module
+> **Rule count:** approximately 85 rules
+> **Audience:** Test author + developer — every rule ID is anchored from `04-test-scenarios*` pages
+> **Status lifecycle:** Section 5.1 (where present) carries the Live UI vs BRD discrepancy callouts
 
 ## 1. Overview
 

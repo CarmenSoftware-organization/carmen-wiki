@@ -2,13 +2,18 @@
 title: Inventory Adjustment — Test Scenarios
 description: Test cases by persona, cross-persona scenarios, and E2E mapping for inventory adjustments.
 published: true
-date: 2026-05-15T13:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: inventory-adjustment, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
 ---
 
 # Inventory Adjustment — Test Scenarios
+
+> **At a Glance**
+> **Module:** [[inventory-adjustment]] &nbsp;·&nbsp; **Total scenarios:** ~22 cross-persona + ~130 per-persona &nbsp;·&nbsp; **Personas covered:** Store Keeper, Inventory Controller, Finance, Audit / Config
+> **Run order:** Audit / Config setup → primary persona happy paths → cross-persona scenarios
+> **Each persona's drill-down is `04-test-scenarios-<role>.md`**
 
 ## 1. Overview
 

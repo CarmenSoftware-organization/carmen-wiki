@@ -2,13 +2,17 @@
 title: Inventory — User Flow — Finance
 description: Finance's flow within the inventory module — valuation verification, inventory-to-GL reconciliation, period close and lock.
 published: true
-date: 2026-05-15T12:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: inventory, user-flow, finance, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
 # Inventory — User Flow — Finance
+
+> **At a Glance**
+> **Persona:** Finance (Officer / Accountant + Manager / Controller) &nbsp;·&nbsp; **Module:** [[inventory]] &nbsp;·&nbsp; **Workflow stages:** Approve cost-impact adjustments above Controller threshold &nbsp;·&nbsp; sub-ledger ↔ GL reconciliation &nbsp;·&nbsp; period-end run (close + open next) &nbsp;·&nbsp; period-lock (`closed → locked`) &nbsp;·&nbsp; **Key permissions:** approve above Controller threshold (`INV_AUTH_005`); advance `tb_period.status` (`INV_AUTH_006`); fire `INV_POST_009 / INV_POST_010 / INV_POST_011`
+> **What this persona does:** Owns valuation and GL reconciliation; signs off the period-end run and advances `tb_period.status` through to lock.
 
 ## 1. Role in This Module
 

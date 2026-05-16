@@ -2,13 +2,17 @@
 title: Product — User Flow — Store Keeper
 description: Store Keeper's flow within the product module — read-only barcode-driven lookup, location policy reference, and feedback paths.
 published: true
-date: 2026-05-15T15:30:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: product, user-flow, store-keeper, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
 ---
 
 # Product — User Flow — Store Keeper
+
+> **At a Glance**
+> **Persona:** Store Keeper &nbsp;·&nbsp; **Module:** [[product]] &nbsp;·&nbsp; **Workflow stages:** Read-only lookup at floor level — barcode scan (`tb_product.barcode`); view handling notes, shelf life, perishable flags; reference per-location stock policy (`tb_product_location.min_qty / max_qty / par_qty / re_order_qty`); post barcode-mismatch and handling-note comments &nbsp;·&nbsp; **Key permissions:** read-only on catalogue; comment (`tb_product_comment`); no lifecycle transitions
+> **What this persona does:** Scans and reads product master data during receiving, picking, transfers, and counts; reports operational issues back through comments.
 
 ## 1. Role in This Module
 

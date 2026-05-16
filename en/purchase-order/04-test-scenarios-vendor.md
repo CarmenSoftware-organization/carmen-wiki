@@ -2,13 +2,18 @@
 title: Purchase Order — Test Scenarios — Vendor
 description: Vendor's test cases (happy path, validation, edge cases) for purchase-order. External party — no in-system permission scenarios.
 published: true
-date: 2026-05-15T10:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-order, test-scenarios, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
 # Purchase Order — Test Scenarios — Vendor
+
+> **At a Glance**
+> **Persona:** Vendor (external party — no Carmen login) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Scenarios:** ~15
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission (N/A) &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** no dedicated vendor spec (no Carmen login); vendor-driven events exercised indirectly via `tests/401-po.spec.ts` (TC-PO-030001..030004 send-to-vendor, TC-PO-340001..340003 GRN-sync) in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that exercise the **Vendor** persona's interaction with the `purchase-order` module. Unlike the other persona files, the Vendor is an **external party with no Carmen system login** ([03-user-flow-vendor.md](./03-user-flow-vendor.md) Section 1) — every system-side effect of a vendor action is recorded by an internal persona (the **Purchaser** for acknowledgement and amendment, the **Receiver** for GRN postings against `PO_POST_006` / `PO_POST_007`, the **Finance** persona for invoice capture and three-way match). The scenarios below therefore describe **vendor-driven events** (transmitted PO received, acknowledgement returned, shipment dispatched, invoice issued) together with the system effects that the internal personas record on the vendor's behalf. Because the vendor has no in-system role, the file is intentionally shorter than the other persona scenario files — the Permission / Authorization section is reduced to a single N/A row, and cross-persona handoffs (`X-PO-01`, `X-PO-05`, three-way-match) live in the parent overview, not here.
 

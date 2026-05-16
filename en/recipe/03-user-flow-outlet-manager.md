@@ -2,13 +2,17 @@
 title: Recipe — User Flow — Outlet Manager
 description: Outlet Manager's flow within the recipe module — consumes recipes for demand planning, monitors outlet food-cost variance, feeds back accuracy / portion-control issues.
 published: true
-date: 2026-05-15T16:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: recipe, user-flow, outlet-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
 ---
 
 # Recipe — User Flow — Outlet Manager
+
+> **At a Glance**
+> **Persona:** Outlet Manager &nbsp;·&nbsp; **Module:** [[recipe]] &nbsp;·&nbsp; **Workflow stages:** off-path — consumes PUBLISHED recipes for demand planning and variance monitoring &nbsp;·&nbsp; **Key permissions:** read recipes; author / submit downstream SRs; raise feedback to Chef
+> **What this persona does:** Reads recipes to plan production and raise SRs; monitors outlet food-cost variance and feeds back accuracy issues to the Chef.
 
 ## 1. Role in This Module
 

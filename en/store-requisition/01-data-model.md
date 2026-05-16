@@ -2,13 +2,19 @@
 title: Store Requisition (SR) — Data Model
 description: Entities, fields, relationships, and enums for the store-requisition module.
 published: true
-date: 2026-05-15T13:30:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: store-requisition, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
 ---
 
 # Store Requisition (SR) — Data Model
+
+> **At a Glance**
+> **Tables:** `tb_store_requisition` &nbsp;·&nbsp; `tb_store_requisition_detail` &nbsp;·&nbsp; `tb_store_requisition_comment` &nbsp;·&nbsp; `tb_store_requisition_detail_comment`
+> **Audience:** Developer / Auditor (dev reference)
+> **Key FKs:** header `→ tb_location` ×2 (`from_location_id` + `to_location_id`, named relations) and `→ tb_workflow` (explicit `@relation`, unlike PR/PO/GRN); detail `→ tb_product` and `→ tb_inventory_transaction` (populated at commit — canonical lot / cost / expiry data lives on the inventory side)
+> **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*`; three-qty per line (`requested` / `approved` / `issued`); per-line approval / review / reject signature columns; **no monetary roll-ups on header** (SR is a qty document)
 
 > **Source of truth:** Backend Prisma schema. Always read these first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`

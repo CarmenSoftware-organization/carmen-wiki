@@ -2,13 +2,19 @@
 title: Store Requisition (SR) — Business Rules
 description: Validation, calculation, authorization, posting, and cross-module rules for store-requisition.
 published: true
-date: 2026-05-16T13:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: store-requisition, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
 ---
 
 # Store Requisition (SR) — Business Rules
+
+> **At a Glance**
+> **Rule families:** `SR_VAL_*` validation &nbsp;·&nbsp; `SR_AUTH_*` permission &nbsp;·&nbsp; `SR_CALC_*` calc &nbsp;·&nbsp; `SR_POST_*` posting &nbsp;·&nbsp; `SR_XMOD_*` cross-module
+> **Rule count:** approximately 60 rules
+> **Audience:** Test author + developer — every rule ID is anchored from `04-test-scenarios*` pages
+> **Status lifecycle:** Section 5.1 (where present) carries the Live UI vs BRD discrepancy callouts
 
 ## 1. Overview
 

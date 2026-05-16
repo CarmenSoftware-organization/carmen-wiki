@@ -2,13 +2,17 @@
 title: Vendor Pricelist — User Flow — Vendor
 description: Vendor's flow within the vendor-pricelist module — external party with portal-token access (no Carmen system login).
 published: true
-date: 2026-05-15T15:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: vendor-pricelist, user-flow, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
 # Vendor Pricelist — User Flow — Vendor
+
+> **At a Glance**
+> **Persona:** Vendor (external — token-authenticated portal session, no Carmen login) &nbsp;·&nbsp; **Module:** [[vendor-pricelist]] &nbsp;·&nbsp; **Workflow stages:** pricelist (none) → draft → submitted (then Purchaser approve / reject) &nbsp;·&nbsp; **Key permissions:** token-scoped portal access — enter / upload pricing, set currency / MOQ, save draft, submit
+> **What this persona does:** Accesses the per-vendor portal via a cryptographic token, enters or uploads pricing per template, and submits for Purchaser review.
 
 ## 1. Role in This Module
 

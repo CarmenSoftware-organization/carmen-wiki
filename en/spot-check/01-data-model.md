@@ -2,13 +2,19 @@
 title: Spot Check — Data Model
 description: Entities, fields, relationships, and enums for the spot-check module.
 published: true
-date: 2026-05-15T14:30:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: spot-check, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
 ---
 
 # Spot Check — Data Model
+
+> **At a Glance**
+> **Tables:** `tb_spot_check` &nbsp;·&nbsp; `tb_spot_check_detail` &nbsp;·&nbsp; `tb_spot_check_comment` &nbsp;·&nbsp; `tb_spot_check_detail_comment`
+> **Audience:** Developer / Auditor (dev reference)
+> **Key FKs:** header `→ tb_location`; detail `→ tb_product` and `→ tb_unit` (`inventory_unit_id`). Variance rollup link to [[inventory-adjustment]] is JSON-only (`tb_stock_in.info.spotCheckId` / `tb_stock_out.info.spotCheckId`) — no Prisma FK
+> **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*`; **flat two-level tree** (no period parent — ad-hoc, not period-bound, unlike [[physical-count]]); spot-check itself does not write to the inventory ledger — adjustment post is the integration anchor
 
 > **Source of truth:** Backend Prisma schema. Always read this first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`

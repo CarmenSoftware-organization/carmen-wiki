@@ -2,13 +2,18 @@
 title: Physical Count — Test Scenarios
 description: Test cases by persona, cross-persona scenarios, and E2E mapping for physical counts.
 published: true
-date: 2026-05-15T14:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: physical-count, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
 ---
 
 # Physical Count — Test Scenarios
+
+> **At a Glance**
+> **Module:** [[physical-count]] &nbsp;·&nbsp; **Total scenarios:** ~20 cross-persona + ~90 per-persona (skeleton) &nbsp;·&nbsp; **Personas covered:** Count Lead, Counter, Audit / Config
+> **Run order:** Audit / Config setup → primary persona happy paths → cross-persona scenarios
+> **Each persona's drill-down is `04-test-scenarios-<role>.md`**
 
 ## 1. Overview
 

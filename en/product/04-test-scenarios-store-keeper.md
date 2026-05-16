@@ -2,13 +2,18 @@
 title: Product — Test Scenarios — Store Keeper
 description: Store Keeper's test cases (happy-path barcode scan, RBAC scope, validation read-side, comment / feedback, edge cases) for the product module.
 published: true
-date: 2026-05-15T15:30:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: product, test-scenarios, store-keeper, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
 ---
 
 # Product — Test Scenarios — Store Keeper
+
+> **At a Glance**
+> **Persona:** Store Keeper (read-only floor consumer; barcode-scan lookups) &nbsp;·&nbsp; **Module:** [[product]] &nbsp;·&nbsp; **Scenarios:** ~35
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** indirect — exercised through `501-grn.spec.ts`, `701-sr.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios the Store Keeper persona drives in the `product` module. They are **read-only consumers** at the floor / location level — they scan barcodes for fast product identification during receiving / picking / counting, view handling instructions and per-location stock policy, and post comments for barcode mismatches and operational issues. Their authority on the product master is **read + comment only**; they do not create, edit, or delete any master-data field. Scenarios concentrate on **barcode-scan lookup behaviour**, **handling-note and per-location-policy reference** during count execution, **RBAC scope** (what they can and cannot see), and **the comment / feedback paths** for barcode mismatches and handling-note corrections. Their transactional work (running GRN at the dock, executing physical / spot counts, raising stock-in / stock-out, dispatching SR) lives in the respective module persona files. Cross-persona handoffs that pivot off the Store Keeper (Scenarios 1, 9 in the parent overview) live in [04-test-scenarios.md](./04-test-scenarios.md), not here.
 

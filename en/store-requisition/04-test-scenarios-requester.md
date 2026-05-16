@@ -2,13 +2,18 @@
 title: Store Requisition (SR) — Test Scenarios — Requester
 description: Requester's test cases (happy path, permission, validation, edge cases) for store-requisition.
 published: true
-date: 2026-05-15T13:30:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: store-requisition, test-scenarios, requester, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
 ---
 
 # Store Requisition (SR) — Test Scenarios — Requester
+
+> **At a Glance**
+> **Persona:** Requester (Outlet Manager at consuming destination) &nbsp;·&nbsp; **Module:** [[store-requisition]] &nbsp;·&nbsp; **Scenarios:** ~29
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `tests/701-sr.spec.ts` (TC-SR-010001..010005, 020001..020003, 030001..030004, 040001..040005, 050001..050005) in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Requester persona (the **Outlet Manager** at the consuming destination) directly drives in the `store-requisition` module. The Requester's involvement begins when a stock need is identified at the outlet (a planned production event, a par-level breach, a banquet event sheet, or a recipe-driven auto-create from `[[recipe]]`) and ends when the SR leaves the requester zone — either through submit (handoff to Approver), withdrawal (`SR_AUTH_004` → `cancelled`), or all-lines rejection by approver (`SR_POST_004` tail). Scenarios are grouped into **happy paths** (`draft` walk: create / line entry / submit; auto-create from recipe; resubmit after send-back), **RBAC** (Requester not assigned to department, segregation-of-duties carry-over at the approve step), **validation** (negative tests against `SR_VAL_001`–`SR_VAL_009` that the Requester can trigger at save or submit), and a small set of **edge cases** around soft vs hard source-availability mode, split cost-dimension lines, decimal precision on `requested_qty`, and concurrent submits on the same outlet. Cross-persona handoffs that pivot off the Requester (Scenarios 1, 2, 3, 4, 11, 12 in the parent overview) live in [04-test-scenarios.md](./04-test-scenarios.md), not here.
 

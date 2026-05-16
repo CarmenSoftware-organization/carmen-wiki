@@ -2,13 +2,18 @@
 title: Vendor Pricelist — Test Scenarios — Finance
 description: Finance's test cases (variance audit, multi-currency co-signoff, FX validation) for vendor-pricelist.
 published: true
-date: 2026-05-15T15:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: vendor-pricelist, test-scenarios, finance, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
 # Vendor Pricelist — Test Scenarios — Finance
+
+> **At a Glance**
+> **Persona:** Finance (Finance Officer / AP + Finance Manager) &nbsp;·&nbsp; **Module:** [[vendor-pricelist]] &nbsp;·&nbsp; **Scenarios:** ~26
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** none — variance dashboard and co-signoff coverage runs at API / integration level pending roadmap item; no dedicated spec in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Finance persona (Finance Officer / AP + Finance Manager) directly drives in the `vendor-pricelist` module. Finance has **no write surface on the pricelist itself** — `VPL_AUTH_009` is read-only across pricelists, campaigns, and invitations. The Finance Manager's contribution to activation of multi-currency / high-value pricelists is captured as a co-signoff `system` comment in `tb_pricelist_comment`, not as a direct status change; the `VPL_POST_017` flip is recorded against the Purchaser / Purchasing Manager. Finance's primary touch point is **post-receipt variance audit** — when GRN / invoice posting in the downstream [[purchase-order]] chain flags a variance against the active pricelist (per `VPL_XMOD_005`), Finance investigates, categorises, and either (a) accepts a within-tolerance variance with a PPV entry on the AP side, (b) routes a vendor over-bill or out-of-date pricelist back to the Purchaser for action, or (c) attributes an FX-only variance to the cross-currency posting. Scenarios are grouped into the happy paths described in [03-user-flow-finance.md](./03-user-flow-finance.md), the RBAC boundary that separates Finance Officer read-only from Finance Manager co-signoff right (`VPL_AUTH_010`) and from the no-direct-write-on-pricelist constraint (`VPL_AUTH_009`), the validation surfaces around FX / currency policy enforcement, and a small set of edge cases around variance race conditions and cross-currency boundary cases. Cross-persona handoffs that pivot off Finance (`X-VPL-03` multi-currency co-signoff, `X-VPL-06` GRN variance audit) live in the parent overview, not here.
 

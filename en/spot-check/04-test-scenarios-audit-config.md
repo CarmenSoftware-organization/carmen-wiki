@@ -2,13 +2,18 @@
 title: Spot Check — Test Scenarios — Audit / Config
 description: Auditor and Sysadmin test cases for the spot-check module.
 published: true
-date: 2026-05-15T14:30:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: spot-check, test-scenarios, audit, config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
 ---
 
 # Spot Check — Test Scenarios — Audit / Config
+
+> **At a Glance**
+> **Persona:** Audit / Config (Auditor read-only + Sysadmin config) &nbsp;·&nbsp; **Module:** [[spot-check]] &nbsp;·&nbsp; **Scenarios:** ~23
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** none — no spot-check Playwright spec exists yet in `../carmen-inventory-frontend-e2e/tests/`
 
 ## 1. Persona Scope
 

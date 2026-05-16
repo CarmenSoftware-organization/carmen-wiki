@@ -2,13 +2,18 @@
 title: Purchase Request — Test Scenarios — Procurement Manager
 description: Procurement Manager's test cases (transactional high-value approval + configuration of vendor allocation rules) for purchase-request.
 published: true
-date: 2026-05-15T09:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-request, test-scenarios, procurement-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
 # Purchase Request — Test Scenarios — Procurement Manager
+
+> **At a Glance**
+> **Persona:** Procurement Manager (high-value approval + Allocate Vendor configuration) &nbsp;·&nbsp; **Module:** [[purchase-request]] &nbsp;·&nbsp; **Scenarios:** ~29
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** no dedicated Procurement Manager spec yet; escalation paths exercised via `gmTest` blocks in `tests/301-pr.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Procurement Manager persona directly drives in the `purchase-request` module. The Procurement Manager owns **two surfaces** described in [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md): a **transactional** surface — the final escalated approval stage that fires when `base_total_amount` breaches a configured high-value threshold per `PR_AUTH_005` and uses the same review-and-decide UI as the base Approver chain with broader scope (including override of a prior Approver send-back) — and a **configurational** surface — the Allocate Vendor rule set (vendor ranking weights, per-vendor priority overrides, and Stuck PR Oversight bulk actions) that drives every Purchaser's downstream vendor-selection flow. Scenarios are grouped into the happy paths from [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md) Section 2 (escalated high-value approve / reject / send-back, adjust ranking weights, tune Allocate Vendor priority, bulk-action on stuck PRs, override delegation rules), the RBAC boundaries from `PR_AUTH_002`–`PR_AUTH_008` in [02-business-rules.md](./02-business-rules.md) Section 4, the validation rules that fire on each surface (`PR_AUTH_005` threshold semantics, `PR_VAL_013` on `approved_qty`, snapshot-preservation per `PR_CALC_006`), and a small set of boundary / concurrency cases unique to having both transactional and configurational rights. Cross-persona handoffs that pivot off the Procurement Manager (`X-PR-05` threshold escalation, `X-PR-10` returned-PR round trip when an escalated PR is sent back to draft) live in the parent overview, not here.
 

@@ -2,13 +2,19 @@
 title: Inventory Adjustment — Data Model
 description: Entities, fields, relationships, and enums for the inventory-adjustment module.
 published: true
-date: 2026-05-15T13:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: inventory-adjustment, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
 ---
 
 # Inventory Adjustment — Data Model
+
+> **At a Glance**
+> **Tables:** `tb_adjustment_type` (reason classifier) &nbsp;·&nbsp; `tb_stock_in` / `tb_stock_in_detail` (inbound) &nbsp;·&nbsp; `tb_stock_out` / `tb_stock_out_detail` (outbound) &nbsp;·&nbsp; per-level `_comment` tables
+> **Audience:** Developer / Auditor (dev reference)
+> **Key FKs:** `stock_in_detail.inventory_transaction_id` / `stock_out_detail.inventory_transaction_id → tb_inventory_transaction` (populated at post); detail `→ tb_product`; header `→ tb_location` / `tb_adjustment_type`. Variance rollup link from [[physical-count]] / [[spot-check]] is JSON-only (`info.countId`), no FK
+> **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*`; **two parallel document trees, no shared `tb_inventory_adjustment` parent** — direction gated by `tb_adjustment_type.type ∈ {STOCK_IN, STOCK_OUT}`
 
 > **Source of truth:** Backend Prisma schema. Always read these first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`

@@ -2,13 +2,18 @@
 title: Costing — User Flow
 description: Cost-flow lifecycle and persona-specific flow files for costing.
 published: true
-date: 2026-05-16T17:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: costing, user-flow, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
 ---
 
 # Costing — User Flow
+
+> **At a Glance**
+> **Module:** [[costing]] &nbsp;·&nbsp; **Personas:** Finance &nbsp;·&nbsp; Inventory Controller &nbsp;·&nbsp; Auditor
+> **Workflow lifecycle:** Cost-layer row born (inbound) → picked (FIFO/WA outbound) → revalued (credit-note) → period-close anchor → period-open rollforward → period locked. Period valuation: `open` → `closed` → `locked`.
+> **Drill into per-persona views below for action-level detail**
 
 ## 1. Overview
 

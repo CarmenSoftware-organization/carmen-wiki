@@ -2,13 +2,17 @@
 title: Vendor Pricelist — User Flow — Purchaser
 description: Purchaser's (and Purchasing Manager's) flow within the vendor-pricelist module — template builder, campaign launcher, submission reviewer, preferred-vendor curator.
 published: true
-date: 2026-05-15T15:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: vendor-pricelist, user-flow, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
 # Vendor Pricelist — User Flow — Purchaser
+
+> **At a Glance**
+> **Persona:** Purchaser / Purchasing Staff (+ Purchasing Manager) &nbsp;·&nbsp; **Module:** [[vendor-pricelist]] &nbsp;·&nbsp; **Workflow stages:** Template draft → active; Campaign draft → active → completed; Pricelist submitted → active / inactive / expired &nbsp;·&nbsp; **Key permissions:** build templates, launch campaigns, invite vendors, review / approve / reject submissions, preferred-vendor curation, high-value sign-off (Manager)
+> **What this persona does:** Owns the pricelist lifecycle end-to-end on the Carmen side — templates, campaigns, vendor submissions, approvals, and preferred-vendor flags.
 
 ## 1. Role in This Module
 

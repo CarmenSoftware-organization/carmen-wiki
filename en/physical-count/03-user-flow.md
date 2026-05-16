@@ -2,13 +2,18 @@
 title: Physical Count — User Flow
 description: Document lifecycle and persona-specific flow files for physical counts.
 published: true
-date: 2026-05-16T15:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: physical-count, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
 ---
 
 # Physical Count — User Flow
+
+> **At a Glance**
+> **Module:** [[physical-count]] &nbsp;·&nbsp; **Personas:** Count Lead (Inventory Controller / Manager) &nbsp;·&nbsp; Counter (Store Keeper) &nbsp;·&nbsp; Audit / Config (Approver / Finance Reviewer + Auditor + Sysadmin)
+> **Workflow lifecycle:** Period (`enum_physical_count_period_status`): `draft → counting → completed`. Per-document (`enum_physical_count_status`): `pending → in_progress → completed`. Submit fires variance rollup into [[inventory-adjustment]] (`tb_stock_in` overage / `tb_stock_out` shortage).
+> **Drill into per-persona views below for action-level detail**
 
 ## 1. Overview
 

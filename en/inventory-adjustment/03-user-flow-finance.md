@@ -2,13 +2,17 @@
 title: Inventory Adjustment — User Flow — Finance
 description: Finance's flow within the inventory-adjustment module — cost-impact verification, GL mapping, large-cost approval, period-end sign-off.
 published: true
-date: 2026-05-16T14:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: inventory-adjustment, user-flow, finance, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
 ---
 
 # Inventory Adjustment — User Flow — Finance
+
+> **At a Glance**
+> **Persona:** Finance &nbsp;·&nbsp; **Module:** [[inventory-adjustment]] &nbsp;·&nbsp; **Workflow stages:** Above-Controller-threshold queue — review at `in_progress`; approve to `completed` (`ADJ_AUTH_005`), reject to `draft`, send back to Controller; GL mapping verification; period-end sign-off &nbsp;·&nbsp; **Key permissions:** approve above Finance threshold (`ADJ_AUTH_005`); period-close gate
+> **What this persona does:** Reviews cost-impact of above-threshold adjustments, posts to `completed`, and signs off the period-end inventory-to-GL reconciliation for the module.
 
 ### Workflow position (Finance highlighted)
 

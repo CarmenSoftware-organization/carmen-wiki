@@ -2,13 +2,18 @@
 title: Spot Check — User Flow
 description: Document lifecycle and persona-specific flow files for spot checks.
 published: true
-date: 2026-05-16T16:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: spot-check, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
 ---
 
 # Spot Check — User Flow
+
+> **At a Glance**
+> **Module:** [[spot-check]] &nbsp;·&nbsp; **Personas:** Inventory Controller &nbsp;·&nbsp; Counter &nbsp;·&nbsp; Audit / Config
+> **Workflow lifecycle:** Pending → In Progress → Completed (variance rollup to [[inventory-adjustment]]) with Void branch
+> **Drill into per-persona views below for action-level detail**
 
 ## 1. Overview
 

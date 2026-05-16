@@ -2,13 +2,16 @@
 title: Physical Count
 description: Periodic count of every item at a location to reconcile system balances against reality.
 published: true
-date: 2026-05-16T09:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: physical-count, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
 ---
 
 # Physical Count
+
+> **At a Glance**
+> **Module purpose:** Scheduled full count of every item at a location, with recount workflow and variance posting via inventory adjustments &nbsp;·&nbsp; **Audience:** Inventory Controller (count lead), Counter / Store Keeper, Finance Reviewer, Auditor &nbsp;·&nbsp; **Key entities/tables:** `tb_physical_count_period`, `tb_physical_count`, `tb_physical_count_detail`, three comment tables, four `enum_physical_count_*` enums &nbsp;·&nbsp; **Sub-pages:** 10
 
 ## 1. Overview
 

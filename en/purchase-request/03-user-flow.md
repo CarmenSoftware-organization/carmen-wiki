@@ -2,13 +2,18 @@
 title: Purchase Request — User Flow
 description: Document lifecycle and persona-specific flow files for purchase-request.
 published: true
-date: 2026-05-16T10:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-request, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
 # Purchase Request — User Flow
+
+> **At a Glance**
+> **Module:** [[purchase-request]] &nbsp;·&nbsp; **Personas:** Requestor &nbsp;·&nbsp; Approver &nbsp;·&nbsp; Procurement Manager &nbsp;·&nbsp; Purchaser &nbsp;·&nbsp; Audit / Config
+> **Workflow lifecycle:** Draft → In Progress (multi-stage approval) → Approved → Completed (with Cancelled / Voided branches)
+> **Drill into per-persona views below for action-level detail**
 
 ## 1. Overview
 

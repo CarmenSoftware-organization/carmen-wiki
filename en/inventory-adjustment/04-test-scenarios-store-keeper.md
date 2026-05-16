@@ -2,13 +2,18 @@
 title: Inventory Adjustment — Test Scenarios — Store Keeper
 description: Store Keeper's test cases (happy path, permission, validation, edge cases) for inventory adjustments.
 published: true
-date: 2026-05-15T13:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: inventory-adjustment, test-scenarios, store-keeper, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
 ---
 
 # Inventory Adjustment — Test Scenarios — Store Keeper
+
+> **At a Glance**
+> **Persona:** Store Keeper &nbsp;·&nbsp; **Module:** [[inventory-adjustment]] &nbsp;·&nbsp; **Scenarios:** ~38
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `501-grn.spec.ts`, `720-stock-issue.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Store Keeper persona directly drives in the `inventory-adjustment` module. The Store Keeper initiates `tb_stock_in` (inbound write-on) and `tb_stock_out` (outbound write-off) documents, attaches evidence, picks the reason code, enters product / qty / lot data, and submits — landing in `completed` (below threshold, non-new-lot) or `in_progress` (above threshold, new-lot, or requires-quality-check reasons). Scenarios are grouped into **happy paths** (auto-approve stock-in / stock-out, new-lot routing, multi-line submission, lot override for expiry write-off), **RBAC / permission** (Store Keeper scope vs Inventory Controller scope, SoD on receive-then-write-off), **validation** (negative tests against `ADJ_VAL_001`–`ADJ_VAL_014` the Store Keeper can trigger at submit time), and **edge cases** around threshold boundaries, decimal precision, concurrent posts, location-type gates, and reason-flag effects. Cross-persona handoffs that pivot off the Store Keeper (Scenarios 1, 2, 4, 9, 10, 11, 14, 15, 16 in the parent overview) live in [04-test-scenarios.md](./04-test-scenarios.md), not here.
 

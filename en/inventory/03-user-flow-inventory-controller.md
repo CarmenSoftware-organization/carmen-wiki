@@ -2,13 +2,17 @@
 title: Inventory — User Flow — Inventory Controller
 description: Inventory Controller's flow within the inventory module — balance accuracy, variance review, count coordination, stock policy.
 published: true
-date: 2026-05-15T12:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: inventory, user-flow, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
 # Inventory — User Flow — Inventory Controller
+
+> **At a Glance**
+> **Persona:** Inventory Controller &nbsp;·&nbsp; **Module:** [[inventory]] &nbsp;·&nbsp; **Workflow stages:** Approve adjustments above Store Keeper threshold (`draft → in_progress → completed`) &nbsp;·&nbsp; coordinate physical-count and spot-check programmes &nbsp;·&nbsp; tune per-product / per-location stock policy &nbsp;·&nbsp; pre-period-end variance sign-off &nbsp;·&nbsp; **Key permissions:** approve above threshold (`INV_AUTH_003`); stock-policy edits (`INV_AUTH_004`); count programme owner
+> **What this persona does:** Owns balance accuracy — approves above-threshold adjustments, coordinates counts, and signs off variance before Finance closes the period.
 
 ## 1. Role in This Module
 

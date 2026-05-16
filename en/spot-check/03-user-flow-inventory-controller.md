@@ -2,13 +2,17 @@
 title: Spot Check — User Flow — Inventory Controller
 description: Inventory Controller path through the spot-check lifecycle.
 published: true
-date: 2026-05-16T16:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: spot-check, user-flow, inventory-controller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
 ---
 
 # Spot Check — User Flow — Inventory Controller
+
+> **At a Glance**
+> **Persona:** Inventory Controller &nbsp;·&nbsp; **Module:** [[spot-check]] &nbsp;·&nbsp; **Workflow stages:** create → pending → in_progress → completed (+ void) &nbsp;·&nbsp; **Key permissions:** create / assign / monitor, flag recount, override variance, submit (fires rollup), void
+> **What this persona does:** Owns the spot-check exercise end-to-end — defines sampling, assigns the Counter, reviews variance, and submits to fire the adjustment rollup.
 
 ## 1. Persona
 

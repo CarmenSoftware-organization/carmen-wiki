@@ -2,13 +2,18 @@
 title: Good Receive Note (GRN) — Test Scenarios — Audit / Config
 description: Auditor (read-only audit trail + lot recall) and System Administrator (lot-number format, RBAC, integration config) test cases for good-receive-note.
 published: true
-date: 2026-05-15T11:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: good-receive-note, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
 ---
 
 # Good Receive Note (GRN) — Test Scenarios — Audit / Config
+
+> **At a Glance**
+> **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [[good-receive-note]] &nbsp;·&nbsp; **Scenarios:** ~29
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `501-grn.spec.ts` in `../carmen-inventory-frontend-e2e/` (audit-log and config surfaces are largely planned manual / API-test coverage)
 
 This page captures the test scenarios that the Audit / Config persona — split into two non-transactional sub-personas, **Auditor** (strictly read-only across the full GRN dataset; runs activity-log queries, three-way-match outcome reviews, lot-recall traces) and **System Administrator** (configures the lot-number generation format, RBAC roles and approval thresholds, tax / currency / reason codes, and integration endpoints to [[purchase-order]] / [[inventory]] / Finance / Vendor modules) — directly drives in the `good-receive-note` module. Neither sub-persona participates in the `draft / saved / committed / voided` state machine on `enum_good_received_note_status`: the Auditor's queries return data without writing any state, and the Sysadmin's edits change rules that apply to **future** GRNs (in-flight `draft` / `saved` GRNs retain a snapshot of the rules in force when they were saved; `committed` GRNs are immutable). The shared rule IDs that this persona's tests exercise are `GRN_AUTH_009` (read-only export rights), `GRN_AUTH_010` (Receiver ≠ Purchaser segregation enforced at commit, configured in the RBAC panel), `GRN_AUTH_011` (workflow-derived authorization at the current `workflow_current_stage`), `GRN_POST_010` (post-commit-void prohibition that gates the Inventory Manager + Finance co-authorisation reversal workflow), `GRN_XMOD_001`–`GRN_XMOD_010` (the integration wiring the Sysadmin maintains across PO / Inventory / Finance / Vendor), and the snapshot rule that protects in-flight GRNs from Sysadmin config changes (described in Section 3 of [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) and not assigned a separate rule ID — it lives in the persistence layer's effective-from timestamp). The single common prefix on test IDs is `AUD-`. Scenarios are grouped into **happy paths** (Auditor activity-log query and lot-recall trace, Sysadmin lot-number format change and RBAC adjustment, tax / reason-code maintenance, integration cutover), **permission** (Auditor read-only allow, Auditor write deny, Sysadmin configure allow, Sysadmin no-transact deny, sensitive-field export approval, elevated post-commit co-authorisation), **validation** (snapshot preservation on in-flight GRNs, export-approval enforcement, deadlock prevention on RBAC changes, lot-number format backwards-compatibility checks, date-range scan limits, tax-code shape rejection, no-op save), and **edge cases** around in-flight snapshot boundary, rollback of bad config, audit-log gap during lot-recall, query timeout, mass-RBAC activation, and lot-number format collision. Cross-persona handoffs that pivot off this persona (Auditor → Quality / Recall lead, Sysadmin → cross-module change board) live in [04-test-scenarios.md](./04-test-scenarios.md).
 

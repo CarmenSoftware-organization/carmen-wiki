@@ -2,13 +2,17 @@
 title: Costing — User Flow — Auditor
 description: Auditor's flow within the costing module — verify costed COGS and ending inventory tie back to source receipts; method-consistency audit across periods.
 published: true
-date: 2026-05-16T17:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: costing, user-flow, auditor, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
 ---
 
 # Costing — User Flow — Auditor
+
+> **At a Glance**
+> **Persona:** Auditor &nbsp;·&nbsp; **Module:** [[costing]] &nbsp;·&nbsp; **Workflow stages:** Post-lock observer — runs cost-flow chain-of-custody traces, period-snapshot verification, FIFO-vs-WA shadow drift audits, configuration-history audits &nbsp;·&nbsp; **Key permissions:** read-only (`COST_AUTH_008`); no edit, no approve, no period advance
+> **What this persona does:** Verifies costed COGS and ending inventory tie back to source receipts, and that the costing method is applied consistently across periods.
 
 ## 1. Role in This Module
 

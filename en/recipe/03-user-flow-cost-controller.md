@@ -2,13 +2,17 @@
 title: Recipe — User Flow — Cost Controller
 description: Cost Controller's flow within the recipe module — reviews recipe cost, target margins, selling price, gross margin; monitors drift; signs off changes.
 published: true
-date: 2026-05-15T16:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: recipe, user-flow, cost-controller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
 ---
 
 # Recipe — User Flow — Cost Controller
+
+> **At a Glance**
+> **Persona:** Cost Controller (+ Cost Control Department) &nbsp;·&nbsp; **Module:** [[recipe]] &nbsp;·&nbsp; **Workflow stages:** DRAFT / PUBLISHED (cost-only edit + off-target publish co-approve) &nbsp;·&nbsp; **Key permissions:** edit-cost (target %, labor / overhead, selling price), publish co-approve (off-target), read across library
+> **What this persona does:** Reviews recipe cost rollups and margins, edits cost / pricing columns, monitors drift, and co-approves off-target publishes.
 
 ## 1. Role in This Module
 

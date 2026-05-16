@@ -2,13 +2,18 @@
 title: Purchase Order — User Flow
 description: Document lifecycle and persona-specific flow files for purchase-order.
 published: true
-date: 2026-05-16T10:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-order, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
 # Purchase Order — User Flow
+
+> **At a Glance**
+> **Module:** [[purchase-order]] &nbsp;·&nbsp; **Personas:** Purchaser &nbsp;·&nbsp; Procurement Manager &nbsp;·&nbsp; Vendor &nbsp;·&nbsp; Receiver &nbsp;·&nbsp; Finance &nbsp;·&nbsp; Audit / Config
+> **Workflow lifecycle:** Draft → In Progress → Sent → Partial → Completed / Closed (with Voided branch)
+> **Drill into per-persona views below for action-level detail**
 
 ## 1. Overview
 

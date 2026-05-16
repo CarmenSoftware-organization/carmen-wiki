@@ -2,13 +2,17 @@
 title: Purchase Request — User Flow — Purchaser
 description: Purchaser's flow within the purchase-request module.
 published: true
-date: 2026-05-16T10:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-request, user-flow, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
 # Purchase Request — User Flow — Purchaser
+
+> **At a Glance**
+> **Persona:** Purchaser / Procurement Officer &nbsp;·&nbsp; **Module:** [[purchase-request]] &nbsp;·&nbsp; **Workflow stages:** approved → completed (Convert to PO) &nbsp;·&nbsp; **Key permissions:** vendor allocation, pricelist refresh, set convert qty, Convert to PO, bounce-back to Requestor
+> **What this persona does:** Takes approved PRs, validates vendor and pricing, groups by vendor + currency, and converts lines into one or more POs.
 
 ## 1. Role in This Module
 

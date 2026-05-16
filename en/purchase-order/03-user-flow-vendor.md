@@ -2,13 +2,17 @@
 title: Purchase Order — User Flow — Vendor
 description: Vendor's flow within the purchase-order module — external party (no system login); receives PO, acknowledges, fulfils, invoices.
 published: true
-date: 2026-05-16T10:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-order, user-flow, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
 # Purchase Order — User Flow — Vendor
+
+> **At a Glance**
+> **Persona:** Vendor (external — no Carmen login) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Workflow stages:** sent (touch points) → partial / completed / voided &nbsp;·&nbsp; **Key permissions:** none direct — events recorded by Purchaser / Receiver / Finance / PM on vendor's behalf
+> **What this persona does:** Receives the transmitted PO, acknowledges, fulfils delivery, and issues invoice — every system effect captured by an internal persona.
 
 ## 1. Role in This Module
 

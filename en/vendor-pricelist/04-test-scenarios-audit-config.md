@@ -2,13 +2,18 @@
 title: Vendor Pricelist — Test Scenarios — Audit / Config
 description: Auditor (read-only across templates/campaigns/invitations/pricelists/validation/activity-log) and System Administrator (numbering, RBAC, portal-token policy, email integration, validation rules, token revocation, audit retention) test cases.
 published: true
-date: 2026-05-15T15:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: vendor-pricelist, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
 # Vendor Pricelist — Test Scenarios — Audit / Config
+
+> **At a Glance**
+> **Persona:** Audit / Config (Auditor read-only + System Administrator config) &nbsp;·&nbsp; **Module:** [[vendor-pricelist]] &nbsp;·&nbsp; **Scenarios:** ~34
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** none — audit-log query and configuration surfaces exercised at API / integration level pending roadmap item; no dedicated spec in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the **Audit / Config** persona axis directly drives in the `vendor-pricelist` module. Two distinct roles sit on this axis: the **Auditor** (read-only across the full procurement-pricing chain — Template → Campaign → Invitation → Vendor Portal Submission → Pricelist Approval → downstream PR / PO / GRN consumption), who uses every tier's activity log, the application-derived campaign / invitation statuses, the validation engine output stored in `tb_pricelist.info`, the portal-token telemetry written as `system` comments on the invitation row, and the cross-document bridges to verify policy compliance, segregation of duties (`VPL_AUTH_014`), validation-engine integrity, and traceability end-to-end; and the **System Administrator** (configuration only), who owns the pricelist numbering scheme, the RBAC role-to-permission map for `VPL_AUTH_001`–`VPL_AUTH_015`, the portal-token policy, the email-integration wiring, the validation-rule registry, the currency / FX rate sources consumed by Finance, the audit-log retention policy, and the per-invitation token-revocation right (`VPL_AUTH_015`). Neither role transitions a pricelist across `enum_pricelist_status`: the Auditor exits via a generated report (no document state change), the Sysadmin exits via a saved configuration with an `effective_from` timestamp (existing documents retain their snapshotted configuration; new documents use the new configuration). The Sysadmin's only direct touch on a transactional document is the token revocation, which mutates `tb_request_for_pricing_detail.pricelist_url_token` and appends a `system` comment, but does **not** change pricelist `status`. Scenarios are grouped into the happy paths described in [03-user-flow-audit-config.md](./03-user-flow-audit-config.md), the RBAC boundary that separates read-only-audit from configure-only-sysadmin from no-direct-transact, the validation rules around snapshot preservation, export approval, and configuration race conditions, and a small set of edge cases around in-flight boundaries, rollback, deadlock prevention, and the validation-rule registry. No dedicated audit-config E2E spec exists at this time; coverage is at the API / integration level pending the roadmap item in `../carmen/docs/vendor-pricelist-management/tasks.md`.
 

@@ -2,13 +2,18 @@
 title: Inventory — User Flow
 description: Movement lifecycle and persona-specific flow files for inventory.
 published: true
-date: 2026-05-15T12:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: inventory, user-flow, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
 # Inventory — User Flow
+
+> **At a Glance**
+> **Module:** [[inventory]] &nbsp;·&nbsp; **Personas:** Store Keeper &nbsp;·&nbsp; Inventory Controller &nbsp;·&nbsp; Finance &nbsp;·&nbsp; Audit / Config (Auditor + Sysadmin)
+> **Workflow lifecycle:** Movement-driven — each `tb_inventory_transaction` is itself the posting event (no draft → committed on the movement). Per-period lifecycle on `tb_period.status`: `open` → `closed` → `locked`. Compensating reversal writes a new transaction; the original row is never edited.
+> **Drill into per-persona views below for action-level detail**
 
 ## 1. Overview
 

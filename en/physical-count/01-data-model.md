@@ -2,13 +2,19 @@
 title: Physical Count — Data Model
 description: Entities, fields, relationships, and enums for the physical-count module.
 published: true
-date: 2026-05-15T14:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: physical-count, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
 ---
 
 # Physical Count — Data Model
+
+> **At a Glance**
+> **Tables:** `tb_physical_count_period` &nbsp;·&nbsp; `tb_physical_count` &nbsp;·&nbsp; `tb_physical_count_detail` &nbsp;·&nbsp; per-level `_comment` tables (three)
+> **Audience:** Developer / Auditor (dev reference)
+> **Key FKs:** period `→ tb_period`; count `→ tb_location` and `→ tb_physical_count_period`; detail `→ tb_product` and `→ tb_unit` (`inventory_unit_id`). Variance rollup link to [[inventory-adjustment]] is JSON-only (`tb_stock_in.info.countId` / `tb_stock_out.info.countId`) — no Prisma FK
+> **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*`; three-level hierarchy (period → document → detail) — count itself does **not** write to the inventory ledger; adjustment post is the integration anchor
 
 > **Source of truth:** Backend Prisma schema. Always read this first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`

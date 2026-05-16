@@ -2,13 +2,18 @@
 title: Product — User Flow
 description: Product master-data lifecycle and persona-specific flow files.
 published: true
-date: 2026-05-15T15:30:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: product, user-flow, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
 ---
 
 # Product — User Flow
+
+> **At a Glance**
+> **Module:** [[product]] &nbsp;·&nbsp; **Personas:** Product Administrator (CRUD owner) &nbsp;·&nbsp; Purchaser (read-only) &nbsp;·&nbsp; Store Keeper (read-only)
+> **Workflow lifecycle:** Master-data — no `doc_status`, no period lock. `(none) → active ↔ inactive → soft-deleted (restore possible)`. `is_active = false` hides from pickers. Every transition is auditable and instantaneous.
+> **Drill into per-persona views below for action-level detail**
 
 ## 1. Overview
 

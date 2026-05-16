@@ -2,13 +2,18 @@
 title: Inventory Adjustment — Test Scenarios — Finance
 description: Finance's test cases (happy path, permission, validation, edge cases) for inventory adjustments.
 published: true
-date: 2026-05-15T13:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: inventory-adjustment, test-scenarios, finance, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
 ---
 
 # Inventory Adjustment — Test Scenarios — Finance
+
+> **At a Glance**
+> **Persona:** Finance &nbsp;·&nbsp; **Module:** [[inventory-adjustment]] &nbsp;·&nbsp; **Scenarios:** ~26
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `900-period-end.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Finance persona directly drives in the `inventory-adjustment` module. Finance owns **cost-impact and GL-mapping verification**: approving above-Controller-threshold adjustments (large recall / damage / theft write-offs), verifying the resolved `info.glAccount` matches the chart of accounts, reconciling inventory sub-ledger against GL at period close, and signing off on period-end adjustment activity ahead of Finance Manager's `tb_period.status` close per [[inventory]] `INV_AUTH_006`. Scenarios are grouped into **happy paths** (large-cost approval, GL-mapping verification, period-end review and sign-off, void initiation), **RBAC** (Finance scope vs Controller / Finance-Manager scope), **validation** (re-checked rules at approval), and **edge cases** around recovery routing, period-reopen scenarios, cost-anomaly investigation.
 

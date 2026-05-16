@@ -2,13 +2,18 @@
 title: Product — Test Scenarios
 description: Test cases by persona, cross-persona scenarios, and E2E mapping for product.
 published: true
-date: 2026-05-15T15:30:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: product, test-scenarios, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
 ---
 
 # Product — Test Scenarios
+
+> **At a Glance**
+> **Module:** [[product]] &nbsp;·&nbsp; **Total scenarios:** ~17 cross-persona + ~127 per-persona &nbsp;·&nbsp; **Personas covered:** Product Administrator, Purchaser, Store Keeper
+> **Run order:** Audit / Config setup → primary persona happy paths → cross-persona scenarios
+> **Each persona's drill-down is `04-test-scenarios-<role>.md`**
 
 ## 1. Overview
 

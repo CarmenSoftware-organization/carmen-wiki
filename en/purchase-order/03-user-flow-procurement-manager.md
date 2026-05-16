@@ -2,13 +2,17 @@
 title: Purchase Order — User Flow — Procurement Manager
 description: Procurement Manager's flow within the purchase-order module — high-value approval, vendor ranking, and rule tuning.
 published: true
-date: 2026-05-16T10:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-order, user-flow, procurement-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
 # Purchase Order — User Flow — Procurement Manager
+
+> **At a Glance**
+> **Persona:** Procurement Manager &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Workflow stages:** High-value approval at final stage (`in_progress → sent` per `PO_POST_004`) — approve-and-transmit, send-back to Purchaser, or reject to `voided` (`PO_POST_010`); soft-delete-in-draft (`PO_AUTH_005`); void from non-terminal (`PO_AUTH_007`); early-close `partial → closed` (`PO_POST_011`); rule-tuning workbench (vendor master, grouping rules, unit conversions, pricelist tolerance, high-value threshold) &nbsp;·&nbsp; **Key permissions:** high-value approve / send-back / reject (`PO_AUTH_004`); override authorities (`PO_AUTH_005` / `PO_AUTH_007` / `PO_AUTH_008`)
+> **What this persona does:** High-value approval gate and procurement-rule administrator; holds the override authorities the Purchaser cannot exercise.
 
 ## 1. Role in This Module
 

@@ -2,13 +2,18 @@
 title: Good Receive Note (GRN) — User Flow
 description: Document lifecycle and persona-specific flow files for good-receive-note.
 published: true
-date: 2026-05-16T12:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: good-receive-note, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
 ---
 
 # Good Receive Note (GRN) — User Flow
+
+> **At a Glance**
+> **Module:** [[good-receive-note]] &nbsp;·&nbsp; **Personas:** Receiver (Store Keeper + Inventory Manager) &nbsp;·&nbsp; Purchaser (review-only) &nbsp;·&nbsp; Finance (AP / Controller) &nbsp;·&nbsp; Audit / Config (Auditor + Sysadmin)
+> **Workflow lifecycle:** `draft → saved → committed → (voided)` per `enum_good_received_note_status`. The `saved → committed` posting event fires inventory increment, cost-layer write, PO line `received_qty` advance, and AP accrual.
+> **Drill into per-persona views below for action-level detail**
 
 ## 1. Overview
 

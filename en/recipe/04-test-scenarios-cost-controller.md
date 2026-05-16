@@ -2,13 +2,18 @@
 title: Recipe — Test Scenarios — Cost Controller
 description: Cost Controller's test cases (cost review, drift, co-approval, variance, pricing-history) for the recipe module.
 published: true
-date: 2026-05-15T16:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: recipe, test-scenarios, cost-controller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
 ---
 
 # Recipe — Test Scenarios — Cost Controller
+
+> **At a Glance**
+> **Persona:** Cost Controller (+ Cost Control Department) &nbsp;·&nbsp; **Module:** [[recipe]] &nbsp;·&nbsp; **Scenarios:** ~26
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** none at this time — Cost-Controller-internal E2E is a gap; closest adjacent coverage is indirect via `tests/701-sr.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Cost Controller persona (Cost Controller + Cost Control Department) directly drives in the `recipe` module. The Cost Controller is read across the recipe library and writes on cost / pricing columns only (per `REC_AUTH_006`); their primary work is cost drift monitoring, co-approval of off-target publishes (per `REC_AUTH_007`), and theoretical-vs-actual variance investigation. Scenarios are grouped into **happy paths** (cost-only edit; co-approval at off-target publish; sub-recipe cascade verification; variance dashboard; category-level target adjustment), **RBAC** (cost controller without `recipe:edit-cost`; attempted ingredient edits; auditor read-only side), **validation** (negative tests against `REC_VAL_008` cost percentage bounds, pricing-history integrity), and **edge cases** around high-fanout ingredient drift, sub-recipe deep cascade, currency precision, multi-tenant target settings. Cross-persona handoffs that pivot off the Cost Controller (Scenarios 2, 3, 13 in the parent overview) live in [04-test-scenarios.md](./04-test-scenarios.md), not here.
 

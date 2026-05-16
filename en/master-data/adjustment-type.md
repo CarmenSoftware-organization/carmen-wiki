@@ -2,7 +2,7 @@
 title: Adjustment Type
 description: Coded reasons for stock-in / stock-out adjustments — used by inventory adjustments, physical count, and spot check to explain variance.
 published: true
-date: 2026-05-16T08:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: master-data, adjustment-type, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -10,17 +10,46 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 # Adjustment Type
 
-## 1. Purpose
+> **At a Glance**
+> **Owner:** Product Admin &nbsp;·&nbsp; **Table:** `tb_adjustment_type` &nbsp;·&nbsp; **Used by:** inventory adjustment / physical count / spot check &nbsp;·&nbsp; Coded reason for every stock-in / stock-out movement.
 
-Adjustment types classify *why* a stock balance is being adjusted up or down: write-off, write-on, spoilage, theft, transfer-in error, count variance, etc. Every stock-in (`tb_stock_in`) and stock-out (`tb_stock_out`) record must carry an adjustment type, and downstream variance reports group by it so the controller can spot patterns (e.g. recurring spoilage in a specific location).
+## 1. What & Who
 
-The `type` discriminator (`STOCK_IN` / `STOCK_OUT`) lets the same catalogue be filtered by direction in the UI — a stock-out screen does not need to offer write-on reasons.
+Adjustment types classify *why* a stock balance moves up or down — write-off, write-on, spoilage, theft, count variance, transfer error, etc. Every `tb_stock_in` and `tb_stock_out` record carries one, and downstream variance reports group by reason so the controller can spot patterns. The `type` discriminator (`STOCK_IN` / `STOCK_OUT`) lets the catalogue be filtered by direction.
 
-## 2. Prisma Model(s)
+**Maintained by** Product Admin. **Read by** any developer or tester working on adjustments, physical count, or spot check posting paths.
+
+## 2. Common Tasks
+
+| Task | Where | Notes |
+|---|---|---|
+| Add a new reason | Configuration → Master Data → Adjustment Type → **New** | Set `code`, `name`, and `type` (`STOCK_IN` or `STOCK_OUT`) |
+| Deactivate a reason | Same screen → toggle `is_active` | Historical rows still resolve the name; hidden from new pickers |
+| Edit description | Edit dialog | `code`, `name`, `type` should not change after first use |
+| Check which reason a posting used | Open the stock-in/out record, look at the reason field | Snapshot via FK |
+
+## 3. Validation & Errors
+
+| Symptom / Message | Cause | Action |
+|---|---|---|
+| "Code already in use" | Duplicate `code` on a non-deleted row | Pick a different code or reactivate the existing row |
+| "Type required" | Form submitted without `STOCK_IN` / `STOCK_OUT` | Pick the direction — the UI filters by it |
+| "Cannot delete — referenced by postings" | At least one stock-in/out record points to this reason | Inactivate instead |
+| "Type cannot be changed" | Attempt to flip `STOCK_IN` ↔ `STOCK_OUT` after use | Create a new reason in the correct direction |
+
+## 4. Edge Cases
+
+- **Direction flip after use** corrupts historical reporting — the system rejects it.
+- **Deletion of a referenced reason** is blocked; soft-delete also leaves historical rows resolvable.
+- **Direction filtering** is at the picker — stock-in screens never see `STOCK_OUT` rows and vice versa.
+
+---
+
+## 5. Data Model (Dev)
 
 Source: tenant schema.
 
-### 2.1 `tb_adjustment_type`
+### 5.1 `tb_adjustment_type`
 
 | Field | Prisma Type | Nullable | Description |
 | --- | --- | --- | --- |
@@ -37,26 +66,21 @@ Source: tenant schema.
 
 `enum_adjustment_type` values: `STOCK_IN`, `STOCK_OUT`.
 
-## 3. Usage / Cross-References
-
-- [[inventory-adjustment]] — every adjustment line carries an adjustment-type FK explaining the reason.
-- [[physical-count]] — variance lines that resolve to write-on / write-off post against an adjustment type.
-- [[spot-check]] — spot-check variances follow the same posting path.
-
-## 4. Configuration UI
-
-Managed by **Product Admin** under the Master Data area. List screen plus an edit dialog (code, name, type, active).
-
-## 5. Business Rules
+## 6. Business Rules
 
 - **Uniqueness.** `code` is unique among non-deleted rows (DB-enforced).
-- **Deletion guards.** An adjustment type referenced by any posted stock-in/out cannot be hard-deleted. Inactivate instead.
-- **Validation.** `code`, `name`, and `type` are required. `type` cannot be flipped after the row has been used (would corrupt historical reporting).
-- **Lifecycle.** Inactive types stay readable on historical adjustments but are hidden from new-adjustment pickers.
-- **Direction filtering.** UI for stock-in posting only shows `type = STOCK_IN` rows; stock-out only shows `STOCK_OUT`. The discriminator should never need to be re-filtered downstream.
+- **Deletion guards.** A reason referenced by any posted stock-in/out cannot be hard-deleted — inactivate.
+- **Validation.** `code`, `name`, and `type` are required. `type` cannot be flipped after first use.
+- **Lifecycle.** Inactive reasons stay readable on historical adjustments; hidden from new-adjustment pickers.
+- **Direction filtering.** UI pickers filter by `type` — the discriminator never needs re-filtering downstream.
 
-## 6. References
+## 7. Cross-References
+
+- [[inventory-adjustment]] — every adjustment line carries an adjustment-type FK.
+- [[physical-count]] — variance write-on / write-off posts against an adjustment type.
+- [[spot-check]] — spot-check variances follow the same posting path.
+
+## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_adjustment_type` (lines ~2569-2594), `enum_adjustment_type` (lines ~2564-2567).
-- **Frontend route (if known):** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/adjustment-type/`.
-- **Cross-module:** see Section 3.
+- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/adjustment-type/`.

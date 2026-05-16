@@ -2,13 +2,18 @@
 title: Purchase Order — Test Scenarios — Purchaser
 description: Purchaser's test cases (happy path, permission, validation, edge cases) for purchase-order.
 published: true
-date: 2026-05-15T10:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-order, test-scenarios, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
 # Purchase Order — Test Scenarios — Purchaser
+
+> **At a Glance**
+> **Persona:** Purchaser (Procurement Officer) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Scenarios:** ~34
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `tests/402-po-purchaser-journey.spec.ts` and `tests/401-po.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Purchaser persona (also titled **Procurement Officer**) directly drives in the `purchase-order` module. The Purchaser owns the PO from creation through transmission to the vendor — the span from `po_status = draft` to `sent` ([03-user-flow-purchaser.md](./03-user-flow-purchaser.md) Section 2). Two creation paths converge on the same flow: a **manual PO** (`po_type = manual`) raised directly by procurement, and a **PR-sourced PO** (`po_type = purchase_request`) materialised via Convert-to-PO from the upstream [[purchase-request]] module through the bridge table `tb_purchase_order_detail_tb_purchase_request_detail` ([01-data-model.md](./01-data-model.md) Section 2.5). Scenarios are grouped into the happy paths described in the user flow, the RBAC boundary enforced by `PO_AUTH_001`–`PO_AUTH_003` and `PO_AUTH_006` (Purchaser's edit / submit / transmit scope) versus `PO_AUTH_004`, `PO_AUTH_005`, `PO_AUTH_007` (escalation to the Procurement Manager), the validation rules in [02-business-rules.md](./02-business-rules.md) Section 2 (`PO_VAL_001`–`PO_VAL_016`) that the Purchaser can trigger from create / edit / submit time, and a small set of edge cases around decimal precision, currency, concurrency, and vendor-master state changes. Cross-persona handoffs that pivot off the Purchaser (`X-PO-01`, `X-PO-02`, `X-PO-05`, `X-PO-10`) live in the parent overview, not here.
 

@@ -2,7 +2,7 @@
 title: Extra Cost Type
 description: Catalogue of GRN landed-cost categories (freight, duty, handling) with per-instance allocation modes (by value, by qty, manual).
 published: true
-date: 2026-05-16T08:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: master-data, extra-cost-type, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -10,17 +10,50 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 # Extra Cost Type
 
-## 1. Purpose
+> **At a Glance**
+> **Owner:** Product Admin &nbsp;·&nbsp; **Tables:** `tb_extra_cost_type` (catalogue) + `tb_extra_cost` (per-GRN instance) &nbsp;·&nbsp; **Used by:** GRN landed-cost allocation &nbsp;·&nbsp; Categories like Freight / Duty / Handling with `by_value` / `by_qty` / `manual` allocation modes.
 
-Extra costs are the freight, duty, handling, and other landed-cost components that need to be allocated onto received goods so the unit cost in inventory reflects the *delivered* cost, not just the invoice line. The catalogue table `tb_extra_cost_type` holds the named categories (e.g. `Freight`, `Customs Duty`, `Brokerage`), and the transactional table `tb_extra_cost` is an instance of an extra cost attached to a specific GRN with a chosen allocation mode.
+## 1. What & Who
 
-The allocation mode is per-instance and lives on `tb_extra_cost.allocate_extra_cost_type` — values are `by_value`, `by_qty`, or `manual`. `by_value` spreads proportional to line value, `by_qty` spreads proportional to received quantity, `manual` lets the user enter a per-line amount directly.
+**Extra costs** are the freight, duty, handling, and other **landed-cost** components allocated onto received goods so the **unit cost in inventory** reflects the *delivered* cost, not just the invoice line. `tb_extra_cost_type` holds the named categories (`Freight`, `Customs Duty`, `Brokerage`); `tb_extra_cost` is a per-GRN instance with a chosen **allocation mode** (`by_value`, `by_qty`, or `manual`).
 
-## 2. Prisma Model(s)
+`by_value` spreads proportional to line value, `by_qty` proportional to received quantity, and `manual` accepts a per-line amount directly. **Maintained by** Product Admin (catalogue) and GRN users (instances). **Read by** the costing engine — misallocated extra costs distort inventory valuation.
+
+## 2. Common Tasks
+
+| Task | Where | Notes |
+|---|---|---|
+| Add a cost type | Configuration → Master Data → Extra Cost Type → **New** | Required: `name` |
+| Deactivate a type | Toggle `is_active` | Hidden from new GRNs; historical GRNs unaffected |
+| Attach to GRN | GRN edit screen → **Extra Costs** | Creates `tb_extra_cost` row; pick allocation mode |
+| Switch allocation mode on draft GRN | Same screen | Triggers recalc of per-line amounts |
+| Manual allocation | Set `allocate_extra_cost_type = manual` | Every GRN line must receive an explicit amount |
+
+## 3. Validation & Errors
+
+| Symptom / Message | Cause | Action |
+|---|---|---|
+| "Name already in use" | Duplicate `name` on a non-deleted row | Pick a different name |
+| "Cannot delete — referenced by GRN extra-cost detail" | FK references exist | Inactivate instead |
+| "Missing allocation amount on line N" | `manual` mode with a blank line | Enter an explicit amount on every line |
+| "Allocated sum doesn't equal parent" | `by_value` / `by_qty` rounding outside tolerance | Re-run allocation or adjust manually |
+| "Cannot change allocation on posted GRN" | Edit attempted after posting | Reverse / repost, or refuse the change |
+
+## 4. Edge Cases
+
+- **`manual` mode** requires every GRN line to have an explicit amount — posting is rejected if any line is blank.
+- **Rounding tolerance** — `by_value` / `by_qty` must reconcile to parent total within tolerance.
+- **Re-allocation on posted GRN** requires a recalc step or is refused; never silently mutate posted cost.
+- **Inactive types** stay readable on historical GRNs.
+- **Costing impact** — extra costs flow into the landed unit cost the costing engine consumes; bad allocation distorts every downstream balance.
+
+---
+
+## 5. Data Model (Dev)
 
 Source: tenant schema.
 
-### 2.1 `tb_extra_cost_type`
+### 5.1 `tb_extra_cost_type`
 
 | Field | Prisma Type | Nullable | Description |
 | --- | --- | --- | --- |
@@ -34,13 +67,13 @@ Source: tenant schema.
 
 **Constraints:** `@@unique([name, deleted_at])` map `extra_cost_type_name_u`. Index on `name`. Reverse relation to `tb_extra_cost_detail`.
 
-### 2.2 `tb_extra_cost`
+### 5.2 `tb_extra_cost`
 
 | Field | Prisma Type | Nullable | Description |
 | --- | --- | --- | --- |
 | `id` | `String @db.Uuid` | No | Primary key. |
-| `name` | `String? @db.VarChar` | Yes | Free-text label for this instance. |
-| `good_received_note_id` | `String? @db.Uuid` | Yes | FK to `tb_good_received_note` — which GRN the cost is attached to. |
+| `name` | `String? @db.VarChar` | Yes | Free-text label. |
+| `good_received_note_id` | `String? @db.Uuid` | Yes | FK to `tb_good_received_note`. |
 | `allocate_extra_cost_type` | `enum_allocate_extra_cost_type?` | Yes | `manual`, `by_value`, or `by_qty`. |
 | `description`, `note` | `String?` | Yes | Free text. |
 | `info`, `doc_version` | — | Mixed | Standard metadata. |
@@ -50,26 +83,21 @@ Source: tenant schema.
 
 `enum_allocate_extra_cost_type` values: `manual`, `by_value`, `by_qty`.
 
-## 3. Usage / Cross-References
+## 6. Business Rules
 
-- [[good-receive-note]] — sole consumer. Each GRN can attach multiple `tb_extra_cost` instances; the allocation runs at posting time and feeds into the per-line landed unit cost.
-- [[costing]] — landed unit cost from GRN is what the costing engine consumes for inventory valuation, so misallocated extra costs distort costing.
+- **Uniqueness.** `tb_extra_cost_type.name` unique among non-deleted rows.
+- **Deletion guards.** Referenced types cannot be hard-deleted — inactivate.
+- **Validation.** `manual` mode requires every line to have an amount; system rejects posting otherwise.
+- **Allocation invariants.** `by_value` and `by_qty` must sum to parent total within rounding tolerance.
+- **Lifecycle.** Inactive types readable on historical GRNs; hidden from new GRN pickers.
+- **Re-allocation.** Changing mode on a posted GRN requires recalc or is refused.
 
-## 4. Configuration UI
+## 7. Cross-References
 
-`tb_extra_cost_type` is managed by **Product Admin** under the Master Data area as a simple list + edit dialog. `tb_extra_cost` instances are created inside the GRN edit screen.
+- [[good-receive-note]] — sole consumer. Each GRN can attach multiple `tb_extra_cost` instances; allocation runs at posting.
+- [[costing]] — landed unit cost flows from extra-cost allocation; misallocation distorts valuation.
 
-## 5. Business Rules
-
-- **Uniqueness.** `tb_extra_cost_type.name` is unique among non-deleted rows.
-- **Deletion guards.** An extra-cost type referenced by any GRN extra-cost detail cannot be hard-deleted. Inactivate instead.
-- **Validation.** When `allocate_extra_cost_type = manual`, every GRN line must receive an explicit amount; system rejects posting if any line is blank.
-- **Allocation invariants.** `by_value` and `by_qty` must produce a sum of allocated amounts equal to the parent `tb_extra_cost` total within rounding tolerance.
-- **Lifecycle.** Inactive types stay readable on historical GRNs but are hidden from new GRN pickers.
-- **Re-allocation.** Changing `allocate_extra_cost_type` on a posted GRN requires a recalc step; the system either reposts the GRN or refuses the change.
-
-## 6. References
+## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_extra_cost_type` (lines ~4828-4851), `tb_extra_cost` (lines ~4694-4718), `enum_allocate_extra_cost_type` (lines ~109-113).
-- **Frontend route (if known):** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/extra-cost-type/`.
-- **Cross-module:** see Section 3.
+- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/extra-cost-type/`.

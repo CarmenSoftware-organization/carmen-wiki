@@ -2,13 +2,17 @@
 title: Store Requisition (SR) — User Flow — Receiver
 description: Receiver's flow within the store-requisition module — confirms destination receipt and flags discrepancies on issued SRs.
 published: true
-date: 2026-05-16T13:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: store-requisition, user-flow, receiver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
 ---
 
 # Store Requisition (SR) — User Flow — Receiver
+
+> **At a Glance**
+> **Persona:** Destination outlet representative / dock stock controller &nbsp;·&nbsp; **Module:** [[store-requisition]] &nbsp;·&nbsp; **Workflow stages:** completed (already terminal — physical verification, no status change) &nbsp;·&nbsp; **Key permissions:** acknowledge receipt (comment), raise discrepancy comment escalation
+> **What this persona does:** Confirms physical receipt against issued_qty / lot, flags discrepancies via comments, and escalates to Inventory Controller for adjustment.
 
 ## 1. Role in This Module
 

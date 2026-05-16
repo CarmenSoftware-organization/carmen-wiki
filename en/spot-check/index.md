@@ -2,13 +2,16 @@
 title: Spot Check
 description: Targeted partial count of selected items or locations — a lighter-weight check than a full physical count.
 published: true
-date: 2026-05-16T09:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: spot-check, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
 ---
 
 # Spot Check
+
+> **At a Glance**
+> **Module purpose:** Narrow-scope targeted partial count (random / risk-based / event-driven) with recount and variance-to-adjustment posting &nbsp;·&nbsp; **Audience:** Inventory Controller, Counter, Auditor &nbsp;·&nbsp; **Key entities/tables:** `tb_spot_check`, `tb_spot_check_detail`, two comment tables, `enum_spot_check_status`, `enum_spot_check_method` &nbsp;·&nbsp; **Sub-pages:** 10
 
 ## 1. Overview
 

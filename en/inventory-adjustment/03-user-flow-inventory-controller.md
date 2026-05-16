@@ -2,13 +2,17 @@
 title: Inventory Adjustment — User Flow — Inventory Controller
 description: Inventory Controller's flow within the inventory-adjustment module — review, variance monitoring, approval, posting, count-rollup commit.
 published: true
-date: 2026-05-16T14:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: inventory-adjustment, user-flow, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
 ---
 
 # Inventory Adjustment — User Flow — Inventory Controller
+
+> **At a Glance**
+> **Persona:** Inventory Controller &nbsp;·&nbsp; **Module:** [[inventory-adjustment]] &nbsp;·&nbsp; **Workflow stages:** Above-Store-Keeper-threshold queue — review at `in_progress`; approve to `completed` (below Finance threshold) or escalate to Finance; reject back to `draft`; cancel in `in_progress` (`ADJ_AUTH_007`); count-rollup commit; pre-period-end variance sign-off &nbsp;·&nbsp; **Key permissions:** approve below Finance threshold (`ADJ_AUTH_004`); new-lot stock-in approval (`ADJ_AUTH_003`); commit count-rollup
+> **What this persona does:** Reviews above-threshold adjustments and new-lot stock-ins, posts to ledger, and clears variance before Finance closes the period.
 
 ### Workflow position (Inventory Controller highlighted)
 

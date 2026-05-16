@@ -2,13 +2,16 @@
 title: Inventory Costing Methods: FIFO vs. Weighted Average
 description: Analysis of inventory costing methods: FIFO vs. Weighted Average for the Carmen Software platform
 published: true
-date: 2026-05-15T07:48:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: inventory, costing, fifo, weighted-average, carmen-software
 editor: markdown
 dateCreated: 2026-02-16T11:19:18.975Z
 ---
 
 # Inventory Costing Methods: FIFO vs. Weighted Average
+
+> **At a Glance**
+> **Audience:** Inventory devs & QA &nbsp;·&nbsp; **Scope:** FIFO vs. Weighted Average — concept, formulas, COGS impact, trade-offs &nbsp;·&nbsp; Costing method is locked at BU setup; this page is the decision reference.
 
 ## 1. Overview
 

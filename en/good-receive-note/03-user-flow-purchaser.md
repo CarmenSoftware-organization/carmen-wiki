@@ -2,13 +2,17 @@
 title: Good Receive Note (GRN) — User Flow — Purchaser
 description: Purchaser's flow within the good-receive-note module — own-PO GRN review, variance investigation, vendor coordination. Department Manager reviews cost-centre.
 published: true
-date: 2026-05-16T12:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: good-receive-note, user-flow, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
 ---
 
 # Good Receive Note (GRN) — User Flow — Purchaser
+
+> **At a Glance**
+> **Persona:** Purchaser / Procurement Officer (+ Department Manager subset) &nbsp;·&nbsp; **Module:** [[good-receive-note]] &nbsp;·&nbsp; **Workflow stages:** Notified on `saved` / `committed` against own PO — read-only review of receipt vs PO, lot data, packing slips, variance comments; vendor-side follow-up (chase / credit-note / substitution / re-negotiation) &nbsp;·&nbsp; **Key permissions:** read-only on GRN document; SoD (`PO_AUTH_010`) forbids posting GRN against own PO
+> **What this persona does:** Reviews own-PO GRNs for receiving variances and drives vendor-side resolution; does not alter GRN document state.
 
 ## 1. Role in This Module
 

@@ -2,13 +2,19 @@
 title: Costing — Data Model
 description: Entities, fields, relationships, and enums for the costing module.
 published: true
-date: 2026-05-15T12:30:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: costing, data-model, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
 ---
 
 # Costing — Data Model
+
+> **At a Glance**
+> **Tables:** `tb_inventory_transaction_cost_layer` &nbsp;·&nbsp; `tb_inventory_transaction_detail` &nbsp;·&nbsp; `tb_period_snapshot` &nbsp;·&nbsp; `tb_business_unit.calculation_method` &nbsp;·&nbsp; `tb_product.standard_cost`
+> **Audience:** Developer / Auditor (dev reference)
+> **Key FKs:** cost-layer `→ tb_inventory_transaction_detail`; cost-layer `→ tb_period`; cross-schema link: tenant cost-layer reads platform `tb_business_unit.calculation_method` via JWT `x-app-id` (no Prisma `@relation`)
+> **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*` on cost-layer and snapshot; **`tb_inventory_transaction_detail` has no soft-delete** — reversal posts a compensating row instead
 
 > **Source of truth:** Backend Prisma schema. Always read these first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`

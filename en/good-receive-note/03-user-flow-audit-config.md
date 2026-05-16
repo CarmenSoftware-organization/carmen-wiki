@@ -2,13 +2,17 @@
 title: Good Receive Note (GRN) — User Flow — Audit / Config
 description: Auditor (read-only audit trail) and System Administrator (lot-number format, RBAC, tax/currency/reason codes, integration config) flows for good-receive-note.
 published: true
-date: 2026-05-16T12:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: good-receive-note, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
 ---
 
 # Good Receive Note (GRN) — User Flow — Audit / Config
+
+> **At a Glance**
+> **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [[good-receive-note]] &nbsp;·&nbsp; **Workflow stages:** Off-path observers — Sysadmin owns lot-number format, RBAC, tax/currency/reason codes, integration wiring; Auditor reads the full GRN dataset, runs recall and lot-trace queries &nbsp;·&nbsp; **Key permissions:** Sysadmin configures rules (`GRN_AUTH_001`–`GRN_AUTH_011`); Auditor read-only (no transactional writes)
+> **What this persona does:** Configures the GRN module's rules and integration surface (Sysadmin); inspects the full audit trail and runs lot-recall traces (Auditor).
 
 ## 1. Role in This Module
 

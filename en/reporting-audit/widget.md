@@ -2,7 +2,7 @@
 title: Widget
 description: Dashboard composition entity — per-user / per-BU dashboards, default layouts, and personal saved workspace queries.
 published: true
-date: 2026-05-16T08:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: reporting-audit, widget, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -10,98 +10,104 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 # Widget
 
-## 1. Purpose
+> **At a Glance**
+> **Owner:** End users (personal) + BU admins (BU) + Sysadmin (defaults) &nbsp;·&nbsp; **Table:** `tb_widget_dashboard` (+ `tb_widget_default_layout`, `tb_widget_workspace`) &nbsp;·&nbsp; **Used by:** dashboard renderer + data-explorer panel &nbsp;·&nbsp; Dashboards, seed layouts, saved queries.
 
-The widget entity powers the **dashboards layer** of the application. It is multi-table by design because dashboards solve three related-but-distinct problems: composing a personal-or-BU-scoped dashboard out of widget tiles (`tb_widget_dashboard` + items), seeding new users with sensible defaults (`tb_widget_default_layout`), and letting users save reusable ad-hoc data queries that surface across the app (`tb_widget_workspace`).
+## 1. What & Who
 
-`tb_widget_dashboard` is the dashboard header — a `scope` enum (`personal` or `bu`) decides whether the dashboard is visible only to its creator or to everyone in the active business unit. Items (in a sibling `tb_widget_dashboard_item` table referenced via Prisma relation) describe each tile's type, dimensions (`w`, `h`), order, and free-form `config` JSON.
+The widget entity powers the **dashboards layer** — multi-table because dashboards solve three related problems: composing a personal-or-BU-scoped dashboard out of tiles, seeding new users with sensible defaults, and letting users save reusable data queries.
 
-`tb_widget_default_layout` holds one row per `scope` — the JSON `items` payload describes the seed layout for users who do not yet have a personal dashboard, and for BUs that do not yet have a BU dashboard. Editing the row immediately changes the layout new users / BUs are seeded with.
+- `tb_widget_dashboard` — dashboard header; `scope` (`personal` or `bu`) decides visibility; items live in a sibling `tb_widget_dashboard_item` table.
+- `tb_widget_default_layout` — exactly one row per scope; JSON `items` describes the seed layout for new users / new BU dashboards.
+- `tb_widget_workspace` — per-user saved queries; surfaces in the data-explorer panel and may be referenced from dashboard tiles.
 
-`tb_widget_workspace` is the **saved-query** surface — a name + raw query string per user. Workspace rows appear in the data-explorer panel and may be referenced from dashboard tiles via their `config` JSON. The query language is application-defined (typically a structured filter spec, not raw SQL).
+**Maintained by** end users (their personal dashboards + workspaces), BU admins (BU dashboards), Sysadmin (defaults). **Read by** the dashboard layer and data-explorer.
 
-## 2. Prisma Model(s)
+## 2. Common Tasks
 
-Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prisma`).
+| Task | Where | Notes |
+|---|---|---|
+| Add a tile to dashboard | Dashboard → Edit → Add tile | Writes a sibling `tb_widget_dashboard_item` row |
+| Resize / reorder tiles | Drag handles in edit mode | `w`, `h` (grid units) + `sort_order` |
+| Save a data-explorer query | Data explorer → Save as workspace | Per-user `tb_widget_workspace` row |
+| Set default layout for new users | Sysadmin → Dashboard Defaults → `personal` | Edits the JSON payload |
+| Create a BU dashboard | Dashboard → New, scope = `bu` | Visible to every BU member |
+| Soft-delete a dashboard | Dashboard menu → Delete | Items remain; reaped by GC after retention |
 
-### 2.1 `tb_widget_dashboard`
+## 3. Validation & Errors
+
+| Symptom | Cause | Action |
+|---|---|---|
+| User does not see their personal dashboard | Wrong `created_by_id` | Personal dashboards filter by current user |
+| BU dashboard invisible to a user | User not a member of the BU | Grant via [[access-control/business-unit-user]] |
+| Workspace query rejected | Mis-shaped (not a structured filter doc) | Use the structured filter language; raw SQL not accepted |
+| New user sees old defaults | Default layout was edited post-seed | New users get current defaults; existing materialised dashboards untouched |
+
+## 4. Edge Cases
+
+- **Default seeding** materialises into a real `tb_widget_dashboard` the first time the user edits any tile.
+- **No soft-delete on default layout** — `tb_widget_default_layout` is overwritten in place; only `updated_*` audit fields.
+- **No workspace sharing surface** in the current schema — workspaces are strictly per-user.
+- **Accent semantics** purely cosmetic.
+
+---
+
+## 5. Data Model (Dev)
+
+Source: tenant schema.
+
+### 5.1 `tb_widget_dashboard`
 
 | Field | Prisma Type | Nullable | Description |
 | --- | --- | --- | --- |
 | `id` | `String @db.Uuid` | No | Primary key. |
-| `label` | `String @db.VarChar(48)` | No | Dashboard display name. |
-| `scope` | `enum_widget_dashboard_scope` | No | Either `personal` or `bu`. |
-| `accent` | `enum_widget_accent?` | Yes | Optional accent colour: `muted`, `primary`, `success`, `warning`, `destructive`, `info`. |
-| `created_at` | `DateTime @db.Timestamptz(6)` | No | Default `now()`. |
-| `created_by_id` | `String @db.Uuid` | No | Owner — used for visibility on `scope = personal`. |
-| `updated_at` | `DateTime @db.Timestamptz(6)` | No | `@updatedAt`. |
-| `updated_by_id` | `String? @db.Uuid` | Yes | Last editor. |
-| `deleted_at` | `DateTime? @db.Timestamptz(6)` | Yes | Soft-delete timestamp. |
-| `deleted_by_id` | `String? @db.Uuid` | Yes | Soft-delete actor. |
+| `label` | `String @db.VarChar(48)` | No | Display name. |
+| `scope` | `enum_widget_dashboard_scope` | No | `personal` or `bu`. |
+| `accent` | `enum_widget_accent?` | Yes | `muted`, `primary`, `success`, `warning`, `destructive`, `info`. |
+| `created_*` / `updated_*` / `deleted_*` | — | Mixed | Standard audit. |
 
-**Relations:** `items` — has-many to `tb_widget_dashboard_item` (sibling table; documented under the relation here for context but out of scope of the 3-table umbrella inventory).
+**Relations:** has-many `tb_widget_dashboard_item` (sibling). **Indexes:** `(scope, deleted_at)`, `(created_by_id, scope)`.
 
-**Constraints:** `@@index([scope, deleted_at])` for the "all live dashboards by scope" list. `@@index([created_by_id, scope])` for "my personal dashboards" lookup.
-
-### 2.2 `tb_widget_default_layout`
+### 5.2 `tb_widget_default_layout`
 
 | Field | Prisma Type | Nullable | Description |
 | --- | --- | --- | --- |
-| `scope` | `enum_widget_dashboard_scope` | No | Primary key — exactly one row per scope (`personal`, `bu`). |
-| `items` | `Json @db.JsonB` | No | The seed layout payload — an array of item descriptors (type, position, size, config). |
-| `created_at` | `DateTime @db.Timestamptz(6)` | No | Default `now()`. |
-| `updated_at` | `DateTime @db.Timestamptz(6)` | No | `@updatedAt`. |
-| `updated_by_id` | `String? @db.Uuid` | Yes | Last editor. |
+| `scope` | `enum_widget_dashboard_scope` | No | Primary key — exactly one row per scope. |
+| `items` | `Json @db.JsonB` | No | Seed layout (array of item descriptors). |
+| `created_at` / `updated_at` / `updated_by_id` | — | Mixed | Limited audit (no creator / no soft-delete). |
 
-**Constraints:** `scope` is the primary key — exactly two possible rows. No audit columns beyond `updated_*` (the row never has a meaningful "creator" — it is part of the tenant bootstrap).
-
-### 2.3 `tb_widget_workspace`
+### 5.3 `tb_widget_workspace`
 
 | Field | Prisma Type | Nullable | Description |
 | --- | --- | --- | --- |
 | `id` | `String @db.Uuid` | No | Primary key. |
-| `name` | `String @db.VarChar(48)` | No | Display name for the saved workspace. |
-| `query` | `String @db.Text` | No | Stored query body. Format is application-defined (typically a structured filter document). |
-| `created_at` | `DateTime @db.Timestamptz(6)` | No | Default `now()`. |
-| `created_by_id` | `String @db.Uuid` | No | Owner. |
-| `updated_at` | `DateTime @db.Timestamptz(6)` | No | `@updatedAt`. |
-| `updated_by_id` | `String? @db.Uuid` | Yes | Last editor. |
-| `deleted_at` | `DateTime? @db.Timestamptz(6)` | Yes | Soft-delete timestamp. |
-| `deleted_by_id` | `String? @db.Uuid` | Yes | Soft-delete actor. |
+| `name` | `String @db.VarChar(48)` | No | Display name. |
+| `query` | `String @db.Text` | No | Stored query body (structured filter doc). |
+| Audit columns | — | Mixed | Standard. |
 
-**Constraints:** `@@index([created_by_id, created_at])` and `@@index([created_by_id, deleted_at])` for "my workspaces" lookups.
+**Indexes:** `(created_by_id, created_at)`, `(created_by_id, deleted_at)`.
 
-**`enum_widget_dashboard_scope` values:** `personal`, `bu`.
-**`enum_widget_accent` values:** `muted`, `primary`, `success`, `warning`, `destructive`, `info`.
+**Enums:** `enum_widget_dashboard_scope`: `personal`, `bu`. `enum_widget_accent`: `muted`, `primary`, `success`, `warning`, `destructive`, `info`.
 
-## 3. Usage / Cross-References
+## 6. Business Rules
 
-- **Dashboards** — the app shell renders the dashboard layer from `tb_widget_dashboard` plus its items, scoped by the active BU and the current user.
-- [[access-control/user]] — `created_by_id` on a `personal` dashboard and on every workspace decides visibility.
-- [[master-data/business-unit]] — the active BU bounds which `bu`-scope dashboards are listed.
-- [[reporting-audit/report]] — widget tile `config` may embed a `report_template_id`; the widget executes the template through the same pipeline as on-demand reports and renders the result inline.
-- [[inventory]], [[costing]], [[purchase-request]], [[purchase-order]], [[good-receive-note]], [[store-requisition]], [[inventory-adjustment]], [[physical-count]], [[spot-check]], [[vendor-pricelist]], [[product]], [[recipe]] — common data sources for widget tiles (KPI cards, charts, recent-activity feeds).
-- [[reporting-audit/activity]] — dashboard create / edit actions are logged.
+- **Scope visibility.** `personal` visible only to creator; `bu` visible to every BU member. App enforces both checks before listing.
+- **Default seeding.** New user without a personal dashboard sees `tb_widget_default_layout[personal]`; materialised on first edit.
+- **Soft-delete on dashboards/workspaces.** Items remain in sibling table; reaped by GC after retention.
+- **No soft-delete on default layout.** Overwritten in place; exactly two rows.
+- **Item ordering.** Sibling table; `sort_order` + 12-column grid.
+- **Workspace query format.** Structured filter doc only; raw SQL rejected at API layer.
+- **Accent is cosmetic.**
 
-## 4. Configuration UI
+## 7. Cross-References
 
-- **Personal dashboards** — every user manages their own through the Dashboard screen (add tile, drag-to-reorder, resize, edit config). The row's `created_by_id = active user` and `scope = personal`.
-- **BU dashboards** — managed by a BU admin (a user whose [[access-control/business-unit-user]] role grants dashboard-edit). The row's `scope = bu` and visibility extends to every member of the BU.
-- **Default layouts** — managed by **Sysadmin** under System Configuration → Dashboard Defaults. There are exactly two rows (one per `scope`); editing the JSON payload immediately changes the seed layout for new users / new BU dashboards.
-- **Workspaces** — managed by each user from the data-explorer panel ("Save as workspace"). Workspaces are per-user; no sharing surface is exposed in the current schema.
+- [[access-control/user]] — owner of personal dashboards and workspaces.
+- [[master-data/business-unit]] — bounds `bu`-scope visibility.
+- [[reporting-audit/report]] — tile `config` may embed `report_template_id`.
+- [[reporting-audit/activity]] — dashboard edits logged.
+- All transactional modules — common data sources for tiles.
 
-## 5. Business Rules
+## 8. References
 
-- **Scope visibility.** `scope = personal` dashboards are visible only when `created_by_id = active user`. `scope = bu` dashboards are visible to every member of the BU bound to the current session. Application code enforces both checks before listing.
-- **Default seeding.** A new user without a personal dashboard sees the `tb_widget_default_layout` row for `personal`; the layout is materialised into a real `tb_widget_dashboard` + items the first time the user edits any tile. The same applies to a new BU and the `bu` default.
-- **Soft-delete on dashboards and workspaces.** `deleted_at` hides the row; items remain in the sibling table referenced by the deleted dashboard. A garbage-collection job reaps items belonging to dashboards soft-deleted for longer than the retention window.
-- **No soft-delete on default layout.** `tb_widget_default_layout` is overwritten in place — it has only `updated_*` audit fields, not `deleted_*`. There are exactly two rows; editing them is non-destructive.
-- **Item ordering and sizing.** Items are stored in the sibling `tb_widget_dashboard_item` table; ordering is driven by `sort_order`. The widget renderer treats `w` and `h` as grid units (typically a 12-column grid).
-- **Workspace query format.** `query` is opaque to the schema. The application contract is a structured filter document; raw SQL is not accepted. Mis-shaped queries are rejected at the API layer, not at the database.
-- **Accent semantics.** `accent` is purely cosmetic; it tints the dashboard header strip and has no behavioural effect.
-
-## 6. References
-
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_widget_dashboard` (lines ~5727-5744), `tb_widget_workspace` (lines ~5787-5801), `tb_widget_default_layout` (lines ~5803-5809), `enum_widget_dashboard_scope` (lines ~5713-5716), `enum_widget_accent` (lines ~5718-5725).
-- **Frontend route (if known):** `../carmen-turborepo-frontend/apps/web/app/(app)/dashboard/` for the dashboard renderer; data-explorer panel hosts the workspace save / load UI. Sysadmin defaults under System Configuration.
-- **Cross-module:** see Section 3.
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_widget_dashboard` (lines ~5727-5744), `tb_widget_workspace` (lines ~5787-5801), `tb_widget_default_layout` (lines ~5803-5809), enums (lines ~5713-5725).
+- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/dashboard/`; data-explorer panel for workspaces.

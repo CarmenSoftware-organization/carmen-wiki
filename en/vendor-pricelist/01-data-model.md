@@ -2,13 +2,19 @@
 title: Vendor Pricelist — Data Model
 description: Entities, fields, relationships, and enums for the vendor-pricelist module.
 published: true
-date: 2026-05-15T15:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: vendor-pricelist, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
 # Vendor Pricelist — Data Model
+
+> **At a Glance**
+> **Tables:** Tier 1 — `tb_pricelist_template` / `_detail` &nbsp;·&nbsp; Tier 2 — `tb_request_for_pricing` / `_detail` (vendor invitations + URL tokens) &nbsp;·&nbsp; Tier 3 — `tb_pricelist` / `_detail` (vendor submission); plus per-level `_comment` tables
+> **Audience:** Developer / Auditor (dev reference)
+> **Key FKs:** request-for-pricing `→ tb_pricelist_template`; invitation `→ tb_vendor` + optional `→ tb_pricelist`; pricelist `→ tb_vendor` / `tb_currency`; pricelist-detail `→ tb_product` / `tb_unit` / `tb_tax_profile`; back-relation from `tb_purchase_request_detail.pricelist_detail_id` (PR price source)
+> **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*`; uniqueness includes `deleted_at`; pricelist-detail unique on `(pricelist_id, product_id, unit_id, moq_qty)` supporting multi-MOQ-tier pricing
 
 > **Source of truth:** Backend Prisma schema. Always read this first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`

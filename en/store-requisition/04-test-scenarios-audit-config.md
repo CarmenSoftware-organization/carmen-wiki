@@ -2,13 +2,18 @@
 title: Store Requisition (SR) — Test Scenarios — Audit / Config
 description: Inventory Controller, Finance, Sysadmin, and Auditor test cases for store-requisition.
 published: true
-date: 2026-05-15T13:30:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: store-requisition, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
 ---
 
 # Store Requisition (SR) — Test Scenarios — Audit / Config
+
+> **At a Glance**
+> **Persona:** Audit / Config (Inventory Controller + Finance + Sysadmin + Auditor) &nbsp;·&nbsp; **Module:** [[store-requisition]] &nbsp;·&nbsp; **Scenarios:** ~27
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** largely manual / planned; closest automated coverage is `tests/701-sr.spec.ts` TC-SR-060005 (Delegate Approvals) in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Audit / Config persona — comprising **Inventory Controller** (variance, admin void on pre-commit, post-commit adjustment co-author), **Finance** (closed-period block, journal-entry verification, cost-centre reconciliation, period close), **System Administrator** (RBAC, workflow / `tb_workflow` config, SoD-relaxation thresholds, recipe auto-create wiring), and **Auditor** (read-only SR history review, signature trace, SoD enforcement verification) — directly drives in the `store-requisition` module. Unlike the four operational personas (Requester, Approver, Fulfiller, Receiver) who work the happy-path lifecycle, the Audit / Config sub-roles act on the **periphery**: before any SR exists (config), during the flow (variance monitoring, period-close enforcement), and after commit (signoff, audit). Scenarios are grouped into **happy paths** (variance review, admin void on pre-commit, closed-period block, period close, RBAC / workflow config, audit signature trace), **RBAC** (admin void only on pre-commit, Finance closed-period authority, Sysadmin workflow config, Auditor read-only), **validation** (negative tests around mis-routed workflow, SoD breaches detected at audit, recipe auto-create failures), and **edge cases** around multi-tenant config, period-reopen, large-scale period-end batch, and Auditor sample testing. Cross-persona handoffs that pivot off this persona (Scenarios 7, 10, 11, 13, 14 in the parent overview — discrepancy resolution, closed-period block resolution, admin void, period close, workflow / RBAC config change) live in [04-test-scenarios.md](./04-test-scenarios.md), not here.
 

@@ -2,13 +2,17 @@
 title: Store Requisition (SR) — User Flow — Approver
 description: Approver's flow within the store-requisition module — reviews, trims, rejects, splits, or sends back submitted SRs.
 published: true
-date: 2026-05-16T13:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: store-requisition, user-flow, approver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
 ---
 
 # Store Requisition (SR) — User Flow — Approver
+
+> **At a Glance**
+> **Persona:** Approver (Department Head + later-stage Ops / Cost Controller) &nbsp;·&nbsp; **Module:** [[store-requisition]] &nbsp;·&nbsp; **Workflow stages:** in_progress (approval stage) → in_progress (fulfilment) / cancelled / draft (send-back) &nbsp;·&nbsp; **Key permissions:** approve, trim approved_qty, reject (line / header), split-reject, send-back
+> **What this persona does:** Reviews submitted SR lines against need, par level, and budget; approves, trims, rejects, or sends back via workflow stage advance.
 
 ## 1. Role in This Module
 

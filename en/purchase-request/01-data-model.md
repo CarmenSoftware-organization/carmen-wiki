@@ -2,13 +2,19 @@
 title: Purchase Request — Data Model
 description: Entities, fields, relationships, and enums for the purchase-request module.
 published: true
-date: 2026-05-15T09:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-request, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
 # Purchase Request — Data Model
+
+> **At a Glance**
+> **Tables:** `tb_purchase_request` &nbsp;·&nbsp; `tb_purchase_request_detail` &nbsp;·&nbsp; `tb_purchase_request_comment` &nbsp;·&nbsp; `tb_purchase_request_detail_comment` &nbsp;·&nbsp; `tb_purchase_request_template` / `_detail` (recurring orders)
+> **Audience:** Developer / Auditor (dev reference)
+> **Key FKs:** header `→ tb_workflow`; detail `→ tb_product` / `tb_vendor` / `tb_pricelist_detail` / `tb_location` / `tb_delivery_point` / `tb_unit` ×3 (requested + approved + FOC); many-to-many bridge to PO via `tb_purchase_order_detail_tb_purchase_request_detail`
+> **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*`; three-qty per line (`requested` / `approved` / FOC); per-line `history` / `stages_status` JSON for workflow
 
 > **Source of truth:** Backend Prisma schema. Always read these first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`

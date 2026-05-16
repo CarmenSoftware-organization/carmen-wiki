@@ -2,13 +2,17 @@
 title: Purchase Order — User Flow — Audit / Config
 description: Auditor (read-only audit trail across PR/PO/GRN/invoice) and System Administrator (PO numbering, RBAC, integration config) flows for purchase-order.
 published: true
-date: 2026-05-16T10:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-order, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
 # Purchase Order — User Flow — Audit / Config
+
+> **At a Glance**
+> **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Workflow stages:** Off-path observers — Sysadmin owns PO numbering, workflow definition (stages / `stage_role` / `user_action.execute[]`), RBAC for `PO_AUTH_001`–`PO_AUTH_011`, integrations (vendor, pricelist snapshot, budget soft-commit, GRN); Auditor traces PR → PO → GRN → invoice via `workflow_history`, comments, three-way match record &nbsp;·&nbsp; **Key permissions:** Sysadmin configures workflow / RBAC / integrations; Auditor read-only across the chain
+> **What this persona does:** Configures the PO module's policy and integration surface (Sysadmin); audits end-to-end procurement chain integrity, SoD (`PO_AUTH_010`), and three-way-match conformance (Auditor).
 
 ## 1. Role in This Module
 

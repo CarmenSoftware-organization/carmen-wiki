@@ -2,13 +2,18 @@
 title: Purchase Order — Test Scenarios
 description: Test cases by persona, cross-persona scenarios, and Playwright mapping for purchase-order.
 published: true
-date: 2026-05-15T10:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-order, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
 # Purchase Order — Test Scenarios
+
+> **At a Glance**
+> **Module:** [[purchase-order]] &nbsp;·&nbsp; **Total scenarios:** ~10 cross-persona + per-persona drill-downs across all personas &nbsp;·&nbsp; **Personas covered:** Purchaser, Procurement Manager, Vendor, Receiver, Finance, Audit / Config
+> **Run order:** Audit / Config setup → primary persona happy paths → cross-persona scenarios
+> **Each persona's drill-down is `04-test-scenarios-<role>.md`**
 
 ## 1. Overview
 

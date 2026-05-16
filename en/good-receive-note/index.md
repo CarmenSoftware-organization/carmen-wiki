@@ -2,13 +2,16 @@
 title: Good Receive Note (GRN)
 description: The receiving document that records physical goods received against a purchase order and adds them to inventory.
 published: true
-date: 2026-05-16T09:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: good-receive-note, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
 ---
 
 # Good Receive Note (GRN)
+
+> **At a Glance**
+> **Module purpose:** Records physical receipt of goods against a PO, posts stock-IN movements, updates costing, and creates AP entries (`Received` → `Committed` → `Voided`) &nbsp;·&nbsp; **Audience:** Store Keeper / Receiver, Inventory Manager, Purchaser, Finance / AP &nbsp;·&nbsp; **Key entities/tables:** `tb_good_receive_note`, `tb_good_receive_note_detail`, `InventoryStatus`, `JournalEntry`, FIFO lot layers &nbsp;·&nbsp; **Sub-pages:** 12
 
 ## 1. Overview
 

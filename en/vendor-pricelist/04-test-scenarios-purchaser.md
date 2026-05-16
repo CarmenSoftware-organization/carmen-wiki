@@ -2,13 +2,18 @@
 title: Vendor Pricelist — Test Scenarios — Purchaser
 description: Purchaser's (and Purchasing Manager's) test cases (happy path, permission, validation, edge cases) for vendor-pricelist.
 published: true
-date: 2026-05-15T15:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: vendor-pricelist, test-scenarios, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
 # Vendor Pricelist — Test Scenarios — Purchaser
+
+> **At a Glance**
+> **Persona:** Purchaser (Purchasing Staff + Purchasing Manager) &nbsp;·&nbsp; **Module:** [[vendor-pricelist]] &nbsp;·&nbsp; **Scenarios:** ~39
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** no dedicated vendor-pricelist spec; From-Price-List wizard exercised via `tests/402-po-purchaser-journey.spec.ts` (TC-PO-060205..060208) in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Purchaser persona (consolidating Purchaser / Purchasing Staff + Purchasing Manager per [03-user-flow-purchaser.md](./03-user-flow-purchaser.md)) directly drives in the `vendor-pricelist` module. The Purchaser owns the full operational lifecycle on the Carmen side: template create / edit / activate, campaign launch / pause / cancel, invitation issuance, manual upload of email-submitted pricelists, submitted-pricelist review and approval / rejection, preferred-vendor curation, and inactivation. The Purchasing Manager role on the same persona file extends with high-value approval, business-rule configuration, and multi-currency sign-off authority. Scenarios are grouped into the happy paths described in the user flow, the RBAC boundary enforced by `VPL_AUTH_001`–`VPL_AUTH_006` (Purchaser scope) versus `VPL_AUTH_005`–`VPL_AUTH_006` (Manager elevation), the validation rules in [02-business-rules.md](./02-business-rules.md) § 2 (`VPL_VAL_001`–`VPL_VAL_025`) that the Purchaser can trigger across template / campaign / pricelist surfaces, and a small set of edge cases around concurrency, MOQ boundaries, currency edge values, and snapshot semantics during inactivation. Cross-persona handoffs that pivot off the Purchaser (`X-VPL-01`, `X-VPL-02`, `X-VPL-03`, `X-VPL-04`, `X-VPL-05`, `X-VPL-09`, `X-VPL-10`, `X-VPL-12`) live in the parent overview, not here.
 

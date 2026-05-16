@@ -2,13 +2,18 @@
 title: Vendor Pricelist — User Flow
 description: Document lifecycle and persona-specific flow files for vendor-pricelist.
 published: true
-date: 2026-05-15T15:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: vendor-pricelist, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
 # Vendor Pricelist — User Flow
+
+> **At a Glance**
+> **Module:** [[vendor-pricelist]] &nbsp;·&nbsp; **Personas:** Purchaser (+ Purchasing Manager) &nbsp;·&nbsp; Vendor &nbsp;·&nbsp; Finance &nbsp;·&nbsp; Audit / Config
+> **Workflow lifecycle:** Template (draft → active → inactive) &nbsp;·&nbsp; Campaign (draft → active → completed / cancelled) &nbsp;·&nbsp; Invitation (pending → in-progress → submitted → approved / expired) &nbsp;·&nbsp; Pricelist (draft → submitted → active / inactive / expired)
+> **Drill into per-persona views below for action-level detail**
 
 ## 1. Overview
 

@@ -2,13 +2,18 @@
 title: Recipe — User Flow
 description: Recipe lifecycle and persona-specific flow files for the recipe module.
 published: true
-date: 2026-05-15T16:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: recipe, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
 ---
 
 # Recipe — User Flow
+
+> **At a Glance**
+> **Module:** [[recipe]] &nbsp;·&nbsp; **Personas:** Chef &nbsp;·&nbsp; Cost Controller &nbsp;·&nbsp; Outlet Manager &nbsp;·&nbsp; Procurement / F&B Ops &nbsp;·&nbsp; Audit / Config
+> **Workflow lifecycle:** DRAFT → PUBLISHED → ARCHIVED (RBAC-gated, direct transitions; versioning + pricing-history audit trail)
+> **Drill into per-persona views below for action-level detail**
 
 ## 1. Overview
 

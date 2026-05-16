@@ -2,13 +2,17 @@
 title: Costing — User Flow — Inventory Controller
 description: Inventory Controller's flow within the costing module — engine input cleanliness, cost-pick preview review, valuation variance investigation.
 published: true
-date: 2026-05-16T17:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: costing, user-flow, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
 ---
 
 # Costing — User Flow — Inventory Controller
+
+> **At a Glance**
+> **Persona:** Inventory Controller &nbsp;·&nbsp; **Module:** [[costing]] &nbsp;·&nbsp; **Workflow stages:** Upstream of Finance — lot-date / receipt-cost / adjustment-cost-basis verification &nbsp;·&nbsp; Cost-pick preview review at stock-out approval &nbsp;·&nbsp; Valuation variance investigation &nbsp;·&nbsp; **Key permissions:** approve adjustment posts below Finance threshold; cannot approve credit-note revaluation (`COST_AUTH_005` Finance) or edit cost-layer rows (`COST_AUTH_010`)
+> **What this persona does:** Ensures the costing engine's inputs are clean and defensible, and investigates variances Finance surfaces during reconciliation.
 
 ## 1. Role in This Module
 

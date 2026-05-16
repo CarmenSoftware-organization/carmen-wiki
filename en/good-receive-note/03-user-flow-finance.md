@@ -2,13 +2,17 @@
 title: Good Receive Note (GRN) — User Flow — Finance
 description: Finance's flow within the good-receive-note module — three-way match (GRN ↔ PO ↔ invoice), extra-cost allocation, AP posting, period close.
 published: true
-date: 2026-05-16T12:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: good-receive-note, user-flow, finance, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
 ---
 
 # Good Receive Note (GRN) — User Flow — Finance
+
+> **At a Glance**
+> **Persona:** Finance (Officer / AP Clerk + Manager / Controller) &nbsp;·&nbsp; **Module:** [[good-receive-note]] &nbsp;·&nbsp; **Workflow stages:** Post-`committed` — extra-cost allocation review &nbsp;·&nbsp; tax-code correction &nbsp;·&nbsp; three-way match (PO ↔ GRN ↔ invoice) &nbsp;·&nbsp; AP posting &nbsp;·&nbsp; period-close sign-off &nbsp;·&nbsp; **Key permissions:** edit allocation method post-commit (`GRN_AUTH_007`); post AP journal (`GRN_POST_008`); flag match discrepancy (`GRN_POST_009`); period-close reconciliation
+> **What this persona does:** Post-commit financial adjustment, three-way match, AP posting, and period-close inventory-to-GL reconciliation.
 
 ## 1. Role in This Module
 

@@ -2,13 +2,17 @@
 title: Good Receive Note (GRN) — User Flow — Receiver
 description: Receiver's flow within the good-receive-note module — dock receipt, GRN creation with lot/expiry capture, commit.
 published: true
-date: 2026-05-16T12:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: good-receive-note, user-flow, receiver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
 ---
 
 # Good Receive Note (GRN) — User Flow — Receiver
+
+> **At a Glance**
+> **Persona:** Receiver (Store Keeper / Receiving Clerk + Store / Inventory Manager) &nbsp;·&nbsp; **Module:** [[good-receive-note]] &nbsp;·&nbsp; **Workflow stages:** `(none) → draft` (create against PO or manual) &nbsp;·&nbsp; `draft → saved` (line entry complete) &nbsp;·&nbsp; `saved → committed` (Inventory Manager — fires inventory increment + cost-layer write + PO advance + AP accrual) &nbsp;·&nbsp; `draft / saved → voided` &nbsp;·&nbsp; **Key permissions:** create / edit draft (Store Keeper); commit (Inventory Manager); SoD — cannot commit GRN against own upstream PO
+> **What this persona does:** Records dock receipt, captures lot / expiry, then commits the GRN that increments inventory and writes the cost layer.
 
 ## 1. Role in This Module
 

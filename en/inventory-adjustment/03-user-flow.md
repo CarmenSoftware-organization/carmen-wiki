@@ -2,13 +2,18 @@
 title: Inventory Adjustment — User Flow
 description: Document lifecycle and persona-specific flow files for inventory adjustments.
 published: true
-date: 2026-05-16T14:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: inventory-adjustment, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
 ---
 
 # Inventory Adjustment — User Flow
+
+> **At a Glance**
+> **Module:** [[inventory-adjustment]] &nbsp;·&nbsp; **Personas:** Store Keeper &nbsp;·&nbsp; Inventory Controller &nbsp;·&nbsp; Finance &nbsp;·&nbsp; Audit / Config (Auditor + Sysadmin)
+> **Workflow lifecycle:** `draft → in_progress → completed → (voided via compensating)` per `enum_doc_status`; pre-post cancel via `draft / in_progress → cancelled`. Two parallel trees — `tb_stock_in` (IN) and `tb_stock_out` (OUT). Below-threshold + existing-lot auto-approves; above-threshold or new-lot routes to Controller / Finance.
+> **Drill into per-persona views below for action-level detail**
 
 ## 1. Overview
 

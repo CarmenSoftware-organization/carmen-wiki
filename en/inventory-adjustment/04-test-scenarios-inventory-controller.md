@@ -2,13 +2,18 @@
 title: Inventory Adjustment — Test Scenarios — Inventory Controller
 description: Inventory Controller's test cases (happy path, permission, validation, edge cases) for inventory adjustments.
 published: true
-date: 2026-05-15T13:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: inventory-adjustment, test-scenarios, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
 ---
 
 # Inventory Adjustment — Test Scenarios — Inventory Controller
+
+> **At a Glance**
+> **Persona:** Inventory Controller (+ Department Manager review) &nbsp;·&nbsp; **Module:** [[inventory-adjustment]] &nbsp;·&nbsp; **Scenarios:** ~30
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `720-stock-issue.spec.ts`, `900-period-end.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Inventory Controller persona directly drives in the `inventory-adjustment` module. The Controller is the **governance authority above the auto-approve threshold and the balance-accuracy owner**: they review and approve `in_progress` documents in the Controller threshold band, validate new-lot stock-ins regardless of cost, commit count-variance lines (which auto-creates and posts rollup documents), forward above-Controller-threshold documents to Finance, cancel pre-post or void post-fact, and monitor variance patterns. The Department Manager review responsibility (read-only cost-centre oversight) is folded into this persona group. Scenarios are grouped into **happy paths** (review-and-approve above-threshold, new-lot approval, count-variance commit, reject / cancel, forward to Finance), **RBAC** (Controller scope vs Store Keeper / Finance scope, void authority), **validation** (re-checked rules at approval time), and **edge cases** around threshold borderline, count-rollup with mixed outcomes, oversize-variance investigation flags.
 

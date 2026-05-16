@@ -2,13 +2,17 @@
 title: Spot Check — User Flow — Audit / Config
 description: Auditor and (implicit) Sysadmin paths through the spot-check lifecycle.
 published: true
-date: 2026-05-16T16:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: spot-check, user-flow, audit, config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
 ---
 
 # Spot Check — User Flow — Audit / Config
+
+> **At a Glance**
+> **Persona:** Auditor + Sysadmin (implicit) &nbsp;·&nbsp; **Module:** [[spot-check]] &nbsp;·&nbsp; **Workflow stages:** off-path — observes pending → in_progress → completed (+ void); Sysadmin configures tenant defaults &nbsp;·&nbsp; **Key permissions:** read audit chain (Auditor), configure tolerances / sampling / reason codes (Sysadmin)
+> **What this persona does:** Auditor reviews end-to-end spot-check evidence for compliance; Sysadmin configures variance tolerances and reason-code mapping.
 
 ## 1. Persona
 

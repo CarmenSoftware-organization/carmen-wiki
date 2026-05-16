@@ -2,13 +2,19 @@
 title: Inventory — Data Model
 description: Entities, fields, relationships, and enums for the inventory module.
 published: true
-date: 2026-05-15T12:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: inventory, data-model, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
 # Inventory — Data Model
+
+> **At a Glance**
+> **Tables:** `tb_inventory_transaction` &nbsp;·&nbsp; `tb_inventory_transaction_detail` &nbsp;·&nbsp; `tb_inventory_transaction_cost_layer` &nbsp;·&nbsp; `tb_location` &nbsp;·&nbsp; `tb_product_location` &nbsp;·&nbsp; `tb_period` &nbsp;·&nbsp; `tb_period_snapshot`
+> **Audience:** Developer / Auditor (dev reference)
+> **Key FKs:** `inventory_doc_no` is **polymorphic** (no `@relation`) — resolves to `tb_good_received_note` / `tb_store_requisition` / `tb_stock_in` / `tb_stock_out` / `tb_credit_note` / `tb_period` by `inventory_doc_type`; cost-layer `→ tb_period`; source-side modules reach back via UUID `inventory_transaction_id` columns
+> **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*` on most tables; **`tb_inventory_transaction_detail` has no soft-delete** — reversal posts a compensating row. No `tb_stock_balance` — on-hand is derived from cost-layer rows since the latest snapshot
 
 > **Source of truth:** Backend Prisma schema. Always read these first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`

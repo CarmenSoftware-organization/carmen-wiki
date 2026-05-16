@@ -2,13 +2,17 @@
 title: Vendor Pricelist — User Flow — Audit / Config
 description: Auditor (read-only across templates/campaigns/invitations/pricelists/validation/activity-log) and System Administrator (numbering, RBAC, portal-token policy, email integration, validation rules, token revocation, audit retention) flows.
 published: true
-date: 2026-05-15T15:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: vendor-pricelist, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
 # Vendor Pricelist — User Flow — Audit / Config
+
+> **At a Glance**
+> **Persona:** Auditor + System Administrator &nbsp;·&nbsp; **Module:** [[vendor-pricelist]] &nbsp;·&nbsp; **Workflow stages:** off-path — observes Template / Campaign / Invitation / Pricelist chain; Sysadmin configures policy &nbsp;·&nbsp; **Key permissions:** audit/read across the chain + downstream PR/PO/GRN (Auditor); numbering, RBAC, portal-token policy, validation rules, token-revocation (Sysadmin)
+> **What this persona does:** Auditor verifies end-to-end procurement-pricing trail and SoD; Sysadmin owns numbering, RBAC, token policy, validation, integration, and audit retention.
 
 ## 1. Role in This Module
 

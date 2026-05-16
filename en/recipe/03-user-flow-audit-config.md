@@ -2,13 +2,17 @@
 title: Recipe — User Flow — Audit / Config
 description: System Administrator + Auditor flow within the recipe module — config (categories, cuisines, RBAC, integration), versioning audit, compliance review.
 published: true
-date: 2026-05-15T16:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: recipe, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
 ---
 
 # Recipe — User Flow — Audit / Config
+
+> **At a Glance**
+> **Persona:** System Administrator + Auditor &nbsp;·&nbsp; **Module:** [[recipe]] &nbsp;·&nbsp; **Workflow stages:** off-path — configure (categories / cuisines / equipment / RBAC / publish-gate / integrations) and audit (versioning, pricing history) &nbsp;·&nbsp; **Key permissions:** config write (Sysadmin), read-history (Auditor), soft-delete archived (Sysadmin)
+> **What this persona does:** Sysadmin owns master data, RBAC, and integration wiring; Auditor reviews the version and pricing-history trail for compliance.
 
 ## 1. Role in This Module
 

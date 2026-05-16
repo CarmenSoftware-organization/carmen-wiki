@@ -2,13 +2,18 @@
 title: Store Requisition (SR) — Test Scenarios — Receiver
 description: Receiver's test cases (happy path, permission, validation, edge cases) for store-requisition.
 published: true
-date: 2026-05-15T13:30:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: store-requisition, test-scenarios, receiver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
 ---
 
 # Store Requisition (SR) — Test Scenarios — Receiver
+
+> **At a Glance**
+> **Persona:** Receiver (destination outlet representative) &nbsp;·&nbsp; **Module:** [[store-requisition]] &nbsp;·&nbsp; **Scenarios:** ~20
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** manual / planned at this time; closest automated coverage is implicit in `tests/701-sr.spec.ts` TC-SR-120001..120004 (Issuance) in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Receiver persona (the **destination outlet representative** at the consuming outlet or destination warehouse) directly drives in the `store-requisition` module. The Receiver's involvement begins when an SR transitions to `doc_status = completed` (the Fulfiller has committed the issue at source and the linked inventory transactions have been written) and ends when the receipt is acknowledged in full or the discrepancy is resolved by the Inventory Controller via `[[inventory-adjustment]]`. The Receiver has **no commit authority** on the SR — the SR is already terminal at `completed` when they pick it up; their role is **verification, acknowledgement, and discrepancy signal-raising**. Scenarios are grouped into **happy paths** (full match acknowledgement, multi-line full match, lot verification against linked inventory transaction, paired-GRN destination acknowledgement for inter-warehouse transfers), **RBAC** (Receiver at destination only, cannot edit SR, cannot post adjustments directly), **validation** (negative tests around discrepancy reporting completeness), and **edge cases** around short receipt, over receipt, wrong-lot delivery, damaged goods, late arrival vs `expected_date`, and the missing-on-arrival path. Cross-persona handoffs that pivot off the Receiver (Scenario 7 in the parent overview — discrepancy flag to Inventory Controller) live in [04-test-scenarios.md](./04-test-scenarios.md), not here.
 

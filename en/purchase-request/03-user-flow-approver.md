@@ -2,13 +2,17 @@
 title: Purchase Request — User Flow — Approver
 description: Approver's flow within the purchase-request module.
 published: true
-date: 2026-05-16T10:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-request, user-flow, approver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
 # Purchase Request — User Flow — Approver
+
+> **At a Glance**
+> **Persona:** Approver (Dept. Head / Budget Controller / Finance) &nbsp;·&nbsp; **Module:** [[purchase-request]] &nbsp;·&nbsp; **Workflow stages:** in_progress (Stage 1 → Stage 2 → Stage 3 → approved) &nbsp;·&nbsp; **Key permissions:** approve / send-back / reject / split-reject, adjust approved_qty
+> **What this persona does:** Reviews submitted PRs at each approval stage and advances, returns, or terminates the document via the workflow.
 
 ## 1. Role in This Module
 

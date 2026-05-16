@@ -2,13 +2,17 @@
 title: Inventory Adjustment — User Flow — Store Keeper
 description: Store Keeper's flow within the inventory-adjustment module — discrepancy identification, evidence capture, draft submission.
 published: true
-date: 2026-05-16T14:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: inventory-adjustment, user-flow, store-keeper, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
 ---
 
 # Inventory Adjustment — User Flow — Store Keeper
+
+> **At a Glance**
+> **Persona:** Store Keeper &nbsp;·&nbsp; **Module:** [[inventory-adjustment]] &nbsp;·&nbsp; **Workflow stages:** Create `tb_stock_in` / `tb_stock_out` `draft` &nbsp;·&nbsp; submit &nbsp;·&nbsp; auto-approve to `completed` (below threshold + existing lot) OR route to Controller queue (above threshold or new-lot stock-in) &nbsp;·&nbsp; cancel own draft &nbsp;·&nbsp; **Key permissions:** create / edit / submit / cancel own draft (`ADJ_AUTH_001`); auto-approve below threshold (`ADJ_AUTH_002`)
+> **What this persona does:** Identifies discrepancies (found stock / breakage / count variance), captures evidence, and submits the adjustment draft.
 
 ### Workflow position (Store Keeper highlighted)
 

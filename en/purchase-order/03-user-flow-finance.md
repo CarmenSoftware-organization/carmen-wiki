@@ -2,13 +2,17 @@
 title: Purchase Order — User Flow — Finance
 description: Finance's flow within the purchase-order module — three-way match (PO ↔ GRN ↔ invoice), AP posting, currency/FX handling.
 published: true
-date: 2026-05-16T10:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-order, user-flow, finance, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
 # Purchase Order — User Flow — Finance
+
+> **At a Glance**
+> **Persona:** Finance (Officer / AP Clerk + Finance Manager) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Workflow stages:** Pre-transmission review at `po_status = in_progress` (Finance Manager — currency / FX / tax / line totals before `PO_POST_004` send) &nbsp;·&nbsp; post-receipt three-way match (PO ↔ GRN ↔ invoice — `PO_POST_008` / `PO_POST_009`) &nbsp;·&nbsp; AP posting on success &nbsp;·&nbsp; **Key permissions:** financial sign-off pre-transmission; three-way match; flag discrepancy to Purchaser. PO state is not transitioned by the match.
+> **What this persona does:** Pre-transmission financial sign-off and post-receipt three-way match; clears GRN accrual, posts the AP liability.
 
 ## 1. Role in This Module
 

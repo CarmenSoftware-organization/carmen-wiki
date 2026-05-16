@@ -2,13 +2,17 @@
 title: Spot Check — User Flow — Counter
 description: Counter path through the spot-check lifecycle.
 published: true
-date: 2026-05-16T16:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: spot-check, user-flow, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
 ---
 
 # Spot Check — User Flow — Counter
+
+> **At a Glance**
+> **Persona:** Counter (floor-level counter) &nbsp;·&nbsp; **Module:** [[spot-check]] &nbsp;·&nbsp; **Workflow stages:** pending → in_progress (first actual_qty entry; edit assigned lines; notify IC) &nbsp;·&nbsp; **Key permissions:** enter / edit actual_qty on assigned lines, line-level comments, sign-off back to IC
+> **What this persona does:** Walks the location, counts in-scope items, and records actual_qty against the assigned spot-check sheet.
 
 ## 1. Persona
 

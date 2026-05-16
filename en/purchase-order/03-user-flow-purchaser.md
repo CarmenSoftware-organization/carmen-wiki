@@ -2,13 +2,17 @@
 title: Purchase Order — User Flow — Purchaser
 description: Purchaser's flow within the purchase-order module.
 published: true
-date: 2026-05-16T10:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-order, user-flow, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
 # Purchase Order — User Flow — Purchaser
+
+> **At a Glance**
+> **Persona:** Purchaser / Procurement Officer &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Workflow stages:** draft → in_progress → sent (+ amendment on sent) &nbsp;·&nbsp; **Key permissions:** create, edit, submit, transmit, amend, bounce-back
+> **What this persona does:** Creates manual or PR-sourced POs, validates pricing and vendor, submits for approval, and transmits to vendor on final approve.
 
 ## 1. Role in This Module
 

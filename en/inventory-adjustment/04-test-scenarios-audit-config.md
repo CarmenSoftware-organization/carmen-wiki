@@ -2,13 +2,18 @@
 title: Inventory Adjustment — Test Scenarios — Audit / Config
 description: Auditor and System Administrator test cases for inventory adjustments.
 published: true
-date: 2026-05-15T13:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: inventory-adjustment, test-scenarios, audit, sysadmin, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
 ---
 
 # Inventory Adjustment — Test Scenarios — Audit / Config
+
+> **At a Glance**
+> **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [[inventory-adjustment]] &nbsp;·&nbsp; **Scenarios:** ~38
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `031-adjustment-type.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the **Audit / Config** persona group — Auditor (read-only audit-trail inspection) and System Administrator (master-data and configuration CRUD) — drives in the `inventory-adjustment` module. Both roles are **non-transactional** in the document lifecycle: they don't raise, approve, edit, or void adjustment documents. Sysadmin scenarios are largely exercised by the E2E spec [`031-adjustment-type.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/031-adjustment-type.spec.ts) (reason-code admin CRUD); Auditor scenarios are typically manual / planned audit-query patterns. Sections are grouped into **happy paths** (reason-code add/edit/deactivate, threshold change, audit-trail review, SoD compliance check, lot-recall trace, void-chain verification), **RBAC / permission** (configuration scope, read-only scope, sensitive-export approval), **validation** (Sysadmin master-data CRUD validation, audit-query input validation), and **edge cases** around configuration timing (apply prospectively, in-flight document inheritance), audit-export approval gates, and historical configuration snapshots.
 

@@ -2,13 +2,18 @@
 title: Store Requisition (SR) — Test Scenarios — Approver
 description: Approver's test cases (happy path, permission, validation, edge cases) for store-requisition.
 published: true
-date: 2026-05-15T13:30:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: store-requisition, test-scenarios, approver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
 ---
 
 # Store Requisition (SR) — Test Scenarios — Approver
+
+> **At a Glance**
+> **Persona:** Approver (Department Head + higher-tier approvers) &nbsp;·&nbsp; **Module:** [[store-requisition]] &nbsp;·&nbsp; **Scenarios:** ~27
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `tests/701-sr.spec.ts` (TC-SR-060001..060005, 070001..070003, 080001..080002, 090001+, 100001+, 110001+) in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Approver persona (the **Department Head** at the first approval stage, and any higher-tier approver — Operations Manager / Cost Controller — at later stages) directly drives in the `store-requisition` module. The Approver's involvement begins when an SR transitions to `in_progress` and the workflow lands at an approval stage where the Approver is in `user_action.execute`; it ends when all lines have been actioned (advancing the workflow to fulfilment) or when all lines are rejected (auto-cancellation per `SR_POST_004` tail). Scenarios are grouped into **happy paths** (per-line approve in full, trim down with `approved_message`, reject with `reject_message`, send-back with `review_message`, mixed outcomes on a single SR, multi-tier escalation, delegation), **RBAC** (segregation-of-duties `Requester ≠ Approver` per `SR_AUTH_011`, stage-gated authorization per `SR_AUTH_014`, delegated authority), **validation** (negative tests against `SR_VAL_010` — `approved_qty > requested_qty`, empty `reject_message`), and **edge cases** around concurrent approvers on different lines, time-out / SLA escalation, second-stage approver value threshold, and the all-lines-rejected auto-cancel boundary. Cross-persona handoffs that pivot off the Approver (Scenarios 1, 3, 4, 5 in the parent overview) live in [04-test-scenarios.md](./04-test-scenarios.md), not here.
 

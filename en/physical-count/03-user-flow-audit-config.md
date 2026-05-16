@@ -2,13 +2,17 @@
 title: Physical Count — User Flow — Audit / Config
 description: Approver / Finance Reviewer, Auditor, and Sysadmin paths through the physical-count lifecycle.
 published: true
-date: 2026-05-16T15:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: physical-count, user-flow, audit, config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
 ---
 
 # Physical Count — User Flow — Audit / Config
+
+> **At a Glance**
+> **Persona:** Audit / Config (Approver / Finance Reviewer + Auditor + Sysadmin) &nbsp;·&nbsp; **Module:** [[physical-count]] &nbsp;·&nbsp; **Workflow stages:** Approver / Finance Reviewer signs off the rollup adjustment downstream; Auditor observes counts in progress and inspects the count → recount → approval → adjustment → journal chain; Sysadmin configures tolerance thresholds (`PHC_VAL_007`), default `enum_physical_count_costing_method`, reason-code mapping &nbsp;·&nbsp; **Key permissions:** Approver approves rollup adjustment; Auditor read-only; Sysadmin configures defaults
+> **What this persona does:** Approves the variance-rollup adjustment (Approver / Finance), observes counts for SoD and policy compliance (Auditor), and configures the tolerance / costing-method defaults (Sysadmin).
 
 ## 1. Persona
 

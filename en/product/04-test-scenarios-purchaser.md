@@ -2,13 +2,18 @@
 title: Product — Test Scenarios — Purchaser
 description: Purchaser's test cases (happy-path lookup, RBAC scope, validation read-side, comment / feedback, edge cases) for the product module.
 published: true
-date: 2026-05-15T15:30:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: product, test-scenarios, purchaser, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
 ---
 
 # Product — Test Scenarios — Purchaser
+
+> **At a Glance**
+> **Persona:** Purchaser (read-only catalogue consumer) &nbsp;·&nbsp; **Module:** [[product]] &nbsp;·&nbsp; **Scenarios:** ~33
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** indirect — exercised through upstream module specs (`300-pr.spec.ts`, `400-po.spec.ts`) in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios the Purchaser persona drives in the `product` module. They are **read-only consumers** of the catalogue — they search, filter, view, and pick products for PR / PO composition; reference standard cost, last-receiving cost (derived), unit conversions, and vendor mapping; and post comments for stale entries or new-product requests. Because the persona is lookup-only, the scenarios concentrate on **search / picker behaviour** (filtering, scoping, sorting), **read-side RBAC** (what they can and cannot see), **validation rules they encounter as a consumer** (rejected attempts to pick inactive products, rejected attempts to use unconfigured units), and **the comment / feedback paths** that route their concerns back to the Product Administrator. There are no CRUD scenarios for this persona; their transactional work (composing PRs and POs) lives in [[purchase-request]] and [[purchase-order]]. Cross-persona handoffs that pivot off the Purchaser (Scenarios 1, 8, 10, 16 in the parent overview) live in [04-test-scenarios.md](./04-test-scenarios.md), not here.
 

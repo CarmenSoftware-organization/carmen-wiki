@@ -2,13 +2,19 @@
 title: Recipe — Data Model
 description: Entities, fields, relationships, and enums for the recipe module.
 published: true
-date: 2026-05-15T16:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: recipe, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
 ---
 
 # Recipe — Data Model
+
+> **At a Glance**
+> **Tables:** `tb_recipe` &nbsp;·&nbsp; `tb_recipe_ingredient` &nbsp;·&nbsp; `tb_recipe_preparation_step` &nbsp;·&nbsp; `tb_recipe_yield_variant` &nbsp;·&nbsp; `tb_recipe_version` &nbsp;·&nbsp; `tb_recipe_pricing_history` &nbsp;·&nbsp; `tb_recipe_category` / `tb_recipe_cuisines` (masters)
+> **Audience:** Developer / Auditor (dev reference)
+> **Key FKs:** recipe `→ tb_recipe_category` / `tb_recipe_cuisines` (Restrict); ingredient `→ tb_product` (when type=product) **OR** `→ tb_recipe` self-ref via `sub_recipe_id` (when type=recipe); ingredient `→ tb_unit` ×2 (recipe + inventory UoM); variant / step / version / pricing-history all `→ tb_recipe` (Cascade)
+> **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*`; **no `tb_recipe_comment` and no workflow** — audit comes from `tb_recipe_version` snapshots + `tb_recipe_pricing_history`; 3-state lifecycle `DRAFT / PUBLISHED / ARCHIVED`
 
 > **Source of truth:** Backend Prisma schema. Always read these first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`

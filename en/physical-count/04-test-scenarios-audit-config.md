@@ -2,13 +2,18 @@
 title: Physical Count — Test Scenarios — Audit / Config
 description: Approver / Finance Reviewer, Auditor, and Sysadmin test cases for the physical-count module.
 published: true
-date: 2026-05-15T14:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: physical-count, test-scenarios, audit, config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
 ---
 
 # Physical Count — Test Scenarios — Audit / Config
+
+> **At a Glance**
+> **Persona:** Audit / Config (Approver / Finance Reviewer + Auditor + Sysadmin) &nbsp;·&nbsp; **Module:** [[physical-count]] &nbsp;·&nbsp; **Scenarios:** ~30 (skeleton)
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** no `physical-count` Playwright spec exists at `../carmen-inventory-frontend-e2e/`; scenarios are manual / planned coverage. Rollup approval scenarios cross-reference [[inventory-adjustment]] specs.
 
 ## 1. Persona Scope
 

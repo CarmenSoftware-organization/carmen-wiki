@@ -2,13 +2,18 @@
 title: Purchase Order — Test Scenarios — Audit / Config
 description: Auditor (read-only audit log across PR/PO/GRN/invoice) and System Administrator (PO numbering, RBAC, integration config) test cases for purchase-order.
 published: true
-date: 2026-05-15T10:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-order, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
 # Purchase Order — Test Scenarios — Audit / Config
+
+> **At a Glance**
+> **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Scenarios:** ~30
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `401-po.spec.ts` (transactional paths only) in `../carmen-inventory-frontend-e2e/`; audit-log query and config-management surfaces covered by API / integration tests
 
 This page captures the test scenarios that the **Audit / Config** persona axis directly drives in the `purchase-order` module. Two distinct roles sit on this axis: the **Auditor** (read-only across the full procurement chain — Purchase Request → Purchase Order → Goods Receive Note → vendor invoice / AP posting), who uses the PO module's `ActivityLogTab`, `workflow_history`, `tb_purchase_order_comment` (`PO_POST_005`, `PO_POST_009`), and the cross-document bridges (`tb_purchase_order_detail_tb_purchase_request_detail`, GRN back-references per `PO_XMOD_003`, three-way-match records under `PO_POST_008`) to verify policy compliance, segregation of duties (`PO_AUTH_010`), three-way-match integrity (`PO_POST_008` / `PO_POST_009`), and traceability end-to-end; and the **System Administrator** (configuration only), who owns the PO numbering scheme, the workflow definition (`tb_purchase_order.workflow_id`, stages, `user_action.execute[]` membership per `PO_AUTH_011`), the RBAC role-to-permission map for `PO_AUTH_001`–`PO_AUTH_011`, the integration wiring (vendor, vendor-pricelist, budget, inventory), the PR-to-PO conversion and vendor+currency grouping rules per carmen/docs § 2.3.2, the document templates referenced at transmission per `PO_POST_004`, and the tax / currency / FX rate sources consumed by `PO_CALC_001`–`PO_CALC_011`. Neither role transitions a PO across `enum_purchase_order_doc_status`: the Auditor exits via a generated report (no PO state change), the Sysadmin exits via a saved configuration with an `effective_from` timestamp (POs already at `in_progress` / `sent` / `partial` retain their original snapshot; new POs use the new configuration). Scenarios are grouped into the happy paths described in [03-user-flow-audit-config.md](./03-user-flow-audit-config.md), the RBAC boundary that separates read-only-audit from configure-only-sysadmin from no-direct-transact, the validation rules around snapshot preservation, export approval, deadlock prevention, delegation windows, and scan limits, and a small set of edge cases around in-flight boundaries, rollback, mass delegation, audit-log gaps, and config vs in-flight race conditions. The shared `401-po.spec.ts` E2E spec exercises transactional paths only; audit-log query and configuration-management surfaces are covered by API / integration tests today (no dedicated audit-config E2E spec exists at this time).
 

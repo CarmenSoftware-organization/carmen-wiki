@@ -2,13 +2,18 @@
 title: Vendor Pricelist — Test Scenarios — Vendor
 description: Vendor's test cases (happy path, validation, edge cases) for vendor-pricelist. External party — Permission / Authorization section is reduced to a single N/A row.
 published: true
-date: 2026-05-15T15:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: vendor-pricelist, test-scenarios, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
 # Vendor Pricelist — Test Scenarios — Vendor
+
+> **At a Glance**
+> **Persona:** Vendor (external party — token-authenticated portal only) &nbsp;·&nbsp; **Module:** [[vendor-pricelist]] &nbsp;·&nbsp; **Scenarios:** ~25
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission (N/A) &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** none — vendor portal is a separate public surface; coverage at API / integration level (token middleware, validator output, auto-save) pending roadmap item in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that exercise the **Vendor** persona's interaction with the `vendor-pricelist` module. Unlike most external personas in the Carmen suite, the vendor here drives system state directly through a **token-authenticated portal session** — the only place an external party operates inside the Carmen ecosystem with persistent in-system effect ([03-user-flow-vendor.md](./03-user-flow-vendor.md) Section 1). The vendor's surface is bounded: open the portal via per-vendor URL, pick a submission currency, enter or upload pricing for the template's product list, save drafts (auto-save every ~30 s), and click Submit. Approval, rejection, inactivation, expiry, and token-policy controls are all driven by internal personas (Purchaser / Manager / Finance Manager / Sysadmin / cron). Because the vendor has no Carmen login and no Carmen-side RBAC matrix, the Permission / Authorization section below is intentionally reduced to a single N/A row — the portal-token policy itself is tested as a Sysadmin-side configuration concern in [04-test-scenarios-audit-config.md](./04-test-scenarios-audit-config.md), and segregation of duties (`VPL_AUTH_014`) is verified from the Purchaser / Auditor side. Cross-persona handoffs that pivot off the vendor's submission (`X-VPL-01`, `X-VPL-04`, `X-VPL-05`, `X-VPL-07`, `X-VPL-08`) live in the parent overview, not here.
 

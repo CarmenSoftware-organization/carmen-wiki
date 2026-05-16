@@ -2,13 +2,19 @@
 title: Spot Check — Business Rules
 description: Validation, calculation, authorization, posting, and cross-module rules for spot checks.
 published: true
-date: 2026-05-16T16:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: spot-check, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
 ---
 
 # Spot Check — Business Rules
+
+> **At a Glance**
+> **Rule families:** `SPC_VAL_*` validation &nbsp;·&nbsp; `SPC_AUTH_*` permission &nbsp;·&nbsp; `SPC_CALC_*` calc &nbsp;·&nbsp; `SPC_POST_*` posting &nbsp;·&nbsp; `SPC_XMOD_*` cross-module
+> **Rule count:** approximately 30 rules
+> **Audience:** Test author + developer — every rule ID is anchored from `04-test-scenarios*` pages
+> **Status lifecycle:** Section 5.1 (where present) carries the Live UI vs BRD discrepancy callouts
 
 ## 1. Overview
 

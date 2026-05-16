@@ -2,13 +2,19 @@
 title: Product — Data Model
 description: Entities, fields, relationships, and enums for the product module.
 published: true
-date: 2026-05-15T15:30:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: product, data-model, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
 ---
 
 # Product — Data Model
+
+> **At a Glance**
+> **Tables:** `tb_product` &nbsp;·&nbsp; `tb_product_category` → `tb_product_sub_category` → `tb_product_item_group` (3-level classification) &nbsp;·&nbsp; `tb_unit` &nbsp;·&nbsp; `tb_unit_conversion` &nbsp;·&nbsp; `tb_product_location` &nbsp;·&nbsp; `tb_product_tb_vendor`
+> **Audience:** Developer / Auditor (dev reference)
+> **Key FKs:** product `→ tb_unit` (`inventory_unit_id`), `→ tb_product_item_group`, `→ tb_tax_profile`; unit-conversion `→ tb_product` + two `→ tb_unit`; product-location `→ tb_location`. Reached BY every downstream transactional table via `product_id` (PR / PO / GRN / SR / count / inventory ledger / recipe)
+> **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*` universal across all entities; uniqueness scoped to `deleted_at`. **Costing method is NOT on the product** — lives at `tb_business_unit.calculation_method`
 
 > **Source of truth:** Backend Prisma schema. Always read these first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`

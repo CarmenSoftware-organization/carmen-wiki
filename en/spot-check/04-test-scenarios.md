@@ -2,13 +2,18 @@
 title: Spot Check — Test Scenarios
 description: Test cases by persona, cross-persona scenarios, and E2E mapping for spot checks.
 published: true
-date: 2026-05-15T14:30:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: spot-check, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
 ---
 
 # Spot Check — Test Scenarios
+
+> **At a Glance**
+> **Module:** [[spot-check]] &nbsp;·&nbsp; **Total scenarios:** per-persona drill-downs across all personas &nbsp;·&nbsp; **Personas covered:** Inventory Controller, Counter, Audit / Config
+> **Run order:** Audit / Config setup → primary persona happy paths → cross-persona scenarios
+> **Each persona's drill-down is `04-test-scenarios-<role>.md`**
 
 ## 1. Overview
 

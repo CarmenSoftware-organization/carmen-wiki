@@ -2,13 +2,17 @@
 title: Recipe — User Flow — Chef
 description: Chef's flow within the recipe module — creates and revises recipes, maintains sub-recipes, publishes and archives.
 published: true
-date: 2026-05-15T16:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: recipe, user-flow, chef, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
 ---
 
 # Recipe — User Flow — Chef
+
+> **At a Glance**
+> **Persona:** Chef / Kitchen Manager (+ Kitchen Staff read-only) &nbsp;·&nbsp; **Module:** [[recipe]] &nbsp;·&nbsp; **Workflow stages:** DRAFT → PUBLISHED → ARCHIVED (+ un-publish round-trip) &nbsp;·&nbsp; **Key permissions:** create, edit, publish, archive, edit-published (with versioning), clone
+> **What this persona does:** Authors and maintains the recipe library — ingredients, steps, yield variants, sub-recipes — and owns publish and archive authority.
 
 ## 1. Role in This Module
 

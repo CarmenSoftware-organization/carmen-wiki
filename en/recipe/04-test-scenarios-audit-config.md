@@ -2,13 +2,18 @@
 title: Recipe — Test Scenarios — Audit / Config
 description: System Administrator and Auditor test cases (config, RBAC, versioning audit, pricing-history audit, integration health) for the recipe module.
 published: true
-date: 2026-05-15T16:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: recipe, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
 ---
 
 # Recipe — Test Scenarios — Audit / Config
+
+> **At a Glance**
+> **Persona:** Audit / Config (System Administrator config + Auditor read-only) &nbsp;·&nbsp; **Module:** [[recipe]] &nbsp;·&nbsp; **Scenarios:** ~31
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** none for recipe internals; integration-health checks separate from recipe E2E in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Audit / Config persona — comprising **System Administrator** (categories, cuisines, equipment masters, RBAC, tenant policy on publish gate / un-publish / co-approval, integration wiring with `[[product]]` / `[[inventory]]` / `[[store-requisition]]`) and **Auditor** (read-only versioning / pricing-history / signature trace; compliance review) — directly drives in the `recipe` module. Unlike the four operational personas (Chef, Cost Controller, Outlet Manager, Procurement / F&B Ops) who work the happy-path lifecycle, the Audit / Config sub-roles act on the **periphery**: before any recipe exists (config), during the lifecycle (RBAC enforcement, integration health), and after publish (audit trace, signature verification). The Sysadmin has full read / write on configuration tables and the RBAC mapping; the Auditor is read-only on `tb_recipe_version`, `tb_recipe_pricing_history`, and the per-row audit columns. There is no "void" or "admin-cancel" path on the recipe — data hygiene on archived recipes after retention period is the only delete authority, and it sits with the Sysadmin per `REC_AUTH_014`. Scenarios are grouped into **happy paths** (category / cuisine / equipment masters; RBAC; tenant policy; integration health; auditor sample; auditor compliance review; soft-delete archived), **RBAC** (Sysadmin authority; auditor read-only), **validation** (negative tests around incomplete masters, in-flight orphaned references), and **edge cases** around multi-tenant configs, retention-period soft-delete, versioning chain reconstruction. Cross-persona handoffs that pivot off this persona (Scenarios 10, 11 in the parent overview) live in [04-test-scenarios.md](./04-test-scenarios.md), not here.
 

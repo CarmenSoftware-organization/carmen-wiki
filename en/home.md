@@ -2,13 +2,16 @@
 title: Carmen Inventory ERP — Developer & Tester Manual
 description: Landing page for the Carmen Inventory ERP wiki — module index for developers and testers across procure-to-pay, inventory control, costing, master configuration, and reporting.
 published: true
-date: 2026-05-16T16:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: home, index, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T14:00:00.000Z
 ---
 
 # Carmen Inventory ERP — Developer & Tester Manual
+
+> **At a Glance**
+> **Audience:** Inventory devs & QA on the Carmen Software platform &nbsp;·&nbsp; **Scope:** procure-to-pay, inventory control, costing, master config, reporting &nbsp;·&nbsp; Module index — start at the section for your area, then drill into `01-data-model` / `02-business-rules` / `03-user-flow` / `04-test-scenarios`.
 
 ## 1. About This Wiki
 

@@ -2,13 +2,18 @@
 title: Costing — Test Scenarios — Finance
 description: Finance's test cases (valuation policy, credit-note revaluation approval, sub-ledger ↔ GL reconciliation, period-end valuation, period lock) for costing.
 published: true
-date: 2026-05-15T12:30:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: costing, test-scenarios, finance, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
 ---
 
 # Costing — Test Scenarios — Finance
+
+> **At a Glance**
+> **Persona:** Finance (Officer / Cost Controller + Finance Manager) &nbsp;·&nbsp; **Module:** [[costing]] &nbsp;·&nbsp; **Scenarios:** ~34
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `601-cn.spec.ts`, `900-period-end.spec.ts`, `501-grn.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Finance persona (Finance Officer / Cost Controller for day-to-day policy and reconciliation, plus Finance Manager for period-lock authority) directly drives in the `costing` module. Finance is the valuation authority — the role that owns the `tb_business_unit.calculation_method` policy, the `enum_physical_count_costing_method` selection, the `tb_product.standard_cost` cadence, the reconciliation tolerance, the credit-note-amount revaluation approval per `COST_AUTH_005`, the sub-ledger ↔ GL reconciliation per `COST_XMOD_009`, the period-end valuation orchestration per `COST_POST_007` / `COST_POST_008`, and (at the Finance Manager level) the `closed → locked` advance per `COST_AUTH_006`. Finance does **not** edit `cost_per_unit` directly per `COST_AUTH_010`; cost revaluation flows through credit-notes, compensating stock-in / stock-out, or the period-end rollforward. Their costing-module ownership begins when (a) a Controller escalates a cost-anomaly, (b) a credit-note arrives for approval, (c) reconciliation surfaces a variance, (d) the period-end run is due, or (e) a method-change config request lands, and ends when (a) the policy is applied, (b) the credit-note revaluation posts, (c) variance resolves, (d) the period transitions `open → closed → (audit window) → locked`. Scenarios are grouped into **happy paths** (credit-note approval, reconciliation pass, period close + open-next, period lock, method change after drain), **RBAC** (Finance Officer vs Finance Manager vs Sysadmin), **validation** (reconciliation above tolerance, close-with-open-credit-notes, method-change-with-on-hand, credit-note revaluation drives lot cost negative), and **edge cases** (FX revaluation at period end, multi-period reconciliation, locked-period restatement, standard-cost cadence boundary).
 

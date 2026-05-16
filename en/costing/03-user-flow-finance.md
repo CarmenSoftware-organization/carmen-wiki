@@ -2,13 +2,17 @@
 title: Costing — User Flow — Finance
 description: Finance's flow within the costing module — valuation policy, sub-ledger ↔ GL reconciliation, credit-note revaluation approval, period-end valuation lock.
 published: true
-date: 2026-05-16T17:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: costing, user-flow, finance, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
 ---
 
 # Costing — User Flow — Finance
+
+> **At a Glance**
+> **Persona:** Finance (Officer / Cost Controller / Finance Manager) &nbsp;·&nbsp; **Module:** [[costing]] &nbsp;·&nbsp; **Workflow stages:** Valuation policy &nbsp;·&nbsp; Sub-ledger ↔ GL reconciliation &nbsp;·&nbsp; Credit-note revaluation approval &nbsp;·&nbsp; Period-end valuation &nbsp;·&nbsp; Period lock (`closed → locked`) &nbsp;·&nbsp; **Key permissions:** configure method (`COST_AUTH_001`), approve credit-note revaluation (`COST_AUTH_005`), advance period status (`COST_AUTH_006`)
+> **What this persona does:** Owns valuation policy, approves credit-note-amount revaluations, reconciles inventory sub-ledger to GL, and signs off period-end valuation through to lock.
 
 ## 1. Role in This Module
 

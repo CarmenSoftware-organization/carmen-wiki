@@ -2,13 +2,17 @@
 title: Product — User Flow — Purchaser
 description: Purchaser's flow within the product module — read-only lookup, reference, and feedback paths.
 published: true
-date: 2026-05-15T15:30:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: product, user-flow, purchaser, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
 ---
 
 # Product — User Flow — Purchaser
+
+> **At a Glance**
+> **Persona:** Purchaser &nbsp;·&nbsp; **Module:** [[product]] &nbsp;·&nbsp; **Workflow stages:** Read-only lookup — search / filter live catalogue; reference `standard_cost`, last-receiving-cost (`PRD_CALC_008`), unit conversions, vendor mapping, tax profile; post comments for stale catalogue or new-product requests &nbsp;·&nbsp; **Key permissions:** read-only on catalogue; comment (`tb_product_comment`); no lifecycle transitions
+> **What this persona does:** Looks up products and references master-data values while composing PR / PO lines; feeds back via comments.
 
 ## 1. Role in This Module
 

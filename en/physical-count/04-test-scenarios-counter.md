@@ -2,13 +2,18 @@
 title: Physical Count — Test Scenarios — Counter
 description: Counter / Store Keeper test cases for the physical-count module.
 published: true
-date: 2026-05-15T14:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: physical-count, test-scenarios, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
 ---
 
 # Physical Count — Test Scenarios — Counter
+
+> **At a Glance**
+> **Persona:** Counter (Counter / Store Keeper) &nbsp;·&nbsp; **Module:** [[physical-count]] &nbsp;·&nbsp; **Scenarios:** ~30 (skeleton)
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** no `physical-count` Playwright spec exists at `../carmen-inventory-frontend-e2e/`; scenarios are manual / planned coverage.
 
 ## 1. Persona Scope
 

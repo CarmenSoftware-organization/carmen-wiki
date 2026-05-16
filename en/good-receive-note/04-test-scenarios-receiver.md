@@ -2,13 +2,18 @@
 title: Good Receive Note (GRN) — Test Scenarios — Receiver
 description: Receiver's test cases (happy path, permission, validation, edge cases) for good-receive-note.
 published: true
-date: 2026-05-15T11:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: good-receive-note, test-scenarios, receiver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
 ---
 
 # Good Receive Note (GRN) — Test Scenarios — Receiver
+
+> **At a Glance**
+> **Persona:** Receiver (Store Keeper / Receiving Clerk + Inventory Manager) &nbsp;·&nbsp; **Module:** [[good-receive-note]] &nbsp;·&nbsp; **Scenarios:** ~31
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `501-grn.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Receiver persona (the **Store Keeper / Receiving Clerk** at the dock plus the **Store Manager / Inventory Manager** who owns the irrevocable `saved → committed` post) directly drives in the `good-receive-note` module. The Receiver's involvement begins when a PO arrives at `po_status ∈ {sent, partial}` (or, for `doc_type = manual`, when an ad-hoc receipt occurs without an upstream PO) and ends when the GRN leaves the receiver zone — either through `committed` (hand-off to Finance for the three-way match), `voided` from `draft` / `saved` (no inventory / GL impact), or a flagged variance handed off to the Purchaser ([03-user-flow-receiver.md](./03-user-flow-receiver.md) Section 4). Scenarios are grouped into **happy paths** (the four-state walk from `draft → saved → committed`, manual GRN, partial GRN, batch commit, lot/expiry capture, and quality-issue accept-with-variance), **RBAC** (Store Keeper vs Inventory Manager scope, segregation of duties enforced by `PO_AUTH_010` carrying over from the upstream PO, and the elevated co-authorisation required for post-commit reversal), **validation** (negative tests against `GRN_VAL_001`–`GRN_VAL_014` that the Receiver can trigger at save or commit time), and a small set of **edge cases** around tolerance boundaries, decimal precision on lot quantities, concurrent posts on the same PO, the end-of-period auto-commit sweep catching stale `saved` GRNs, and multi-line mixed-quality outcomes. Cross-persona handoffs that pivot off the Receiver (Scenarios 1, 2, 3, 4, 7, 9, 10 in the parent overview) live in [04-test-scenarios.md](./04-test-scenarios.md), not here.
 

@@ -2,13 +2,18 @@
 title: Recipe — Test Scenarios — Outlet Manager
 description: Outlet Manager's test cases (read-only consumption, demand explosion, variance, feedback) for the recipe module.
 published: true
-date: 2026-05-15T16:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: recipe, test-scenarios, outlet-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
 ---
 
 # Recipe — Test Scenarios — Outlet Manager
+
+> **At a Glance**
+> **Persona:** Outlet Manager (read-only on recipe library) &nbsp;·&nbsp; **Module:** [[recipe]] &nbsp;·&nbsp; **Scenarios:** ~23
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** none for recipe internals; `tests/701-sr.spec.ts` covers the SR-side of recipe-driven auto-create in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Outlet Manager persona directly drives in the `recipe` module. The Outlet Manager is **read-only on the recipe library** (`recipe:read` per `REC_AUTH_009`); the persona's interaction with the recipe is downstream — using recipe explosions to plan ingredient pulls, monitoring outlet variance driven in part by recipe accuracy, and feeding back portion-control / accuracy issues for the Chef to revise. Scenarios are grouped into **happy paths** (read recipe detail in outlet view; planned-production explosion; auto-create SR from recipe demand; outlet variance review; recipe-feedback submission), **RBAC** (Outlet Manager attempting any write; cross-outlet read scope), **validation** (negative tests around forecast accuracy, demand-zero recipes), and **edge cases** around banquet-event demand, par-level top-up patterns, multi-outlet recipe usage. Cross-persona handoffs that pivot off the Outlet Manager (Scenarios 5, 6 in the parent overview) live in [04-test-scenarios.md](./04-test-scenarios.md), not here.
 

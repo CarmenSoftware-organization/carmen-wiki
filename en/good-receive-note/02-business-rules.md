@@ -2,13 +2,19 @@
 title: Good Receive Note (GRN) — Business Rules
 description: Validation, calculation, authorization, posting, three-way-match, and cross-module rules for good-receive-note.
 published: true
-date: 2026-05-16T12:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: good-receive-note, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
 ---
 
 # Good Receive Note (GRN) — Business Rules
+
+> **At a Glance**
+> **Rule families:** `GRN_VAL_*` validation &nbsp;·&nbsp; `GRN_AUTH_*` permission &nbsp;·&nbsp; `GRN_CALC_*` calc &nbsp;·&nbsp; `GRN_POST_*` posting &nbsp;·&nbsp; `GRN_XMOD_*` cross-module
+> **Rule count:** approximately 62 rules
+> **Audience:** Test author + developer — every rule ID is anchored from `04-test-scenarios*` pages
+> **Status lifecycle:** Section 5.1 (where present) carries the Live UI vs BRD discrepancy callouts
 
 ## 1. Overview
 

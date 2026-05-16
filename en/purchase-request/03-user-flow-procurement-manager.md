@@ -2,13 +2,17 @@
 title: Purchase Request — User Flow — Procurement Manager
 description: Procurement Manager's flow within the purchase-request module — high-value approval, vendor ranking, and Allocate Vendor rule tuning.
 published: true
-date: 2026-05-16T10:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-request, user-flow, procurement-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
 # Purchase Request — User Flow — Procurement Manager
+
+> **At a Glance**
+> **Persona:** Procurement Manager &nbsp;·&nbsp; **Module:** [[purchase-request]] &nbsp;·&nbsp; **Workflow stages:** in_progress (escalated final approve) + configurational (Allocate Vendor rules) &nbsp;·&nbsp; **Key permissions:** high-value approve, override prior send-back, vendor-ranking config
+> **What this persona does:** Acts as the escalated final-approve authority for high-value PRs and owns the vendor allocation rule set that feeds the Purchaser.
 
 ## 1. Role in This Module
 

@@ -2,13 +2,18 @@
 title: Purchase Request — Test Scenarios — Requestor
 description: Requestor's test cases (happy path, permission, validation, edge cases) for purchase-request.
 published: true
-date: 2026-05-15T09:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-request, test-scenarios, requestor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
 # Purchase Request — Test Scenarios — Requestor
+
+> **At a Glance**
+> **Persona:** Requestor &nbsp;·&nbsp; **Module:** [[purchase-request]] &nbsp;·&nbsp; **Scenarios:** ~36
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `tests/302-pr-creator-journey.spec.ts`, `tests/311-pr-returned-flow.spec.ts`, and `tests/301-pr.spec.ts` (requestorTest / noAuthTest fixtures) in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Requestor persona directly drives in the `purchase-request` module. It covers the happy paths described in [03-user-flow-requestor.md](./03-user-flow-requestor.md) Section 2, the RBAC boundaries implied by `PR_AUTH_001` and the draft-only edit rule in [02-business-rules.md](./02-business-rules.md), the submit-time validation rules `PR_VAL_001`..`PR_VAL_012` that a Requestor can trigger first-hand, and a small set of boundary / concurrency cases that fall out of `Decimal(15, 5)` / `Decimal(20, 5)` precision and the send-back loop. Cross-persona handoffs (`X-PR-02`, `X-PR-10`) that start at the Requestor and bounce off an Approver live in the parent overview, not here.
 

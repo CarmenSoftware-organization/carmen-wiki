@@ -2,13 +2,17 @@
 title: Inventory — User Flow — Store Keeper
 description: Store Keeper's flow within the inventory module — daily stock movements, stock-in / stock-out documents, count execution.
 published: true
-date: 2026-05-15T12:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: inventory, user-flow, store-keeper, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
 # Inventory — User Flow — Store Keeper
+
+> **At a Glance**
+> **Persona:** Store Keeper &nbsp;·&nbsp; **Module:** [[inventory]] &nbsp;·&nbsp; **Workflow stages:** Initiate manual stock-in / stock-out drafts &nbsp;·&nbsp; auto-post below threshold (transaction posts directly into `tb_inventory_transaction`) &nbsp;·&nbsp; route above-threshold documents to Controller &nbsp;·&nbsp; execute physical counts on scoped locations &nbsp;·&nbsp; **Key permissions:** initiate / post below threshold; cannot edit cost-layer ledger; SoD (`INV_AUTH_010`) limits write-off of own-received lots above threshold
+> **What this persona does:** Records day-to-day movements at the floor / location level and hands above-threshold documents off for Controller approval.
 
 ## 1. Role in This Module
 

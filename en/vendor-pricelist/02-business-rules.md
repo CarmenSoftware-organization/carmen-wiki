@@ -2,13 +2,19 @@
 title: Vendor Pricelist — Business Rules
 description: Validation, calculation, authorization, status transitions, and cross-module rules for vendor-pricelist.
 published: true
-date: 2026-05-15T15:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: vendor-pricelist, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
 # Vendor Pricelist — Business Rules
+
+> **At a Glance**
+> **Rule families:** `VPL_VAL_*` validation &nbsp;·&nbsp; `VPL_AUTH_*` permission &nbsp;·&nbsp; `VPL_CALC_*` calc &nbsp;·&nbsp; `VPL_POST_*` posting &nbsp;·&nbsp; `VPL_XMOD_*` cross-module
+> **Rule count:** approximately 81 rules
+> **Audience:** Test author + developer — every rule ID is anchored from `04-test-scenarios*` pages
+> **Status lifecycle:** Section 5.1 (where present) carries the Live UI vs BRD discrepancy callouts
 
 ## 1. Overview
 

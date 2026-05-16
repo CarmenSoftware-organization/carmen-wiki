@@ -2,13 +2,18 @@
 title: Purchase Request — Test Scenarios — Approver
 description: Approver's test cases (happy path, permission, validation, edge cases) for purchase-request.
 published: true
-date: 2026-05-15T09:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-request, test-scenarios, approver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
 # Purchase Request — Test Scenarios — Approver
+
+> **At a Glance**
+> **Persona:** Approver (Department Head, Budget Controller, Finance Officer / Manager) &nbsp;·&nbsp; **Module:** [[purchase-request]] &nbsp;·&nbsp; **Scenarios:** ~33
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `tests/303-pr-approver-journey.spec.ts`, `tests/311-pr-returned-flow.spec.ts`, and `tests/301-pr.spec.ts` (hodTest / fcTest / gmTest fixtures) in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Approver persona directly drives in the `purchase-request` module. The Approver covers the three intermediate decision-makers in the approval chain — **Department Head** (Stage 1), **Budget Controller** (Stage 2), and **Finance Officer / Manager** (Stage 3) — all sharing the same review-and-decide UI. Scenarios are grouped into the four happy-path actions described in [03-user-flow-approver.md](./03-user-flow-approver.md) Section 2 (approve, send-back, reject, split-reject), the RBAC boundaries enforced by `PR_AUTH_002`–`PR_AUTH_006` in [02-business-rules.md](./02-business-rules.md) Section 4, the validation rules that fire on an approval action (especially `PR_VAL_013` on `approved_qty` and `PR_VAL_016` on optimistic concurrency), and a small set of boundary / concurrency cases that come from the multi-stage state machine. Cross-persona handoffs that pivot off the Approver (`X-PR-02`, `X-PR-03`, `X-PR-05`, `X-PR-06`, `X-PR-07`) live in the parent overview, not here.
 

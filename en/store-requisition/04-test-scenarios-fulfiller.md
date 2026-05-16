@@ -2,13 +2,18 @@
 title: Store Requisition (SR) — Test Scenarios — Fulfiller
 description: Fulfiller's test cases (happy path, permission, validation, edge cases) for store-requisition.
 published: true
-date: 2026-05-15T13:30:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: store-requisition, test-scenarios, fulfiller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
 ---
 
 # Store Requisition (SR) — Test Scenarios — Fulfiller
+
+> **At a Glance**
+> **Persona:** Fulfiller (Store Keeper / Warehouse Supervisor at source) &nbsp;·&nbsp; **Module:** [[store-requisition]] &nbsp;·&nbsp; **Scenarios:** ~27
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `tests/701-sr.spec.ts` (TC-SR-120001..120004+ Issuance) in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Fulfiller persona (the **Store Keeper / Warehouse Supervisor** at the source location) directly drives in the `store-requisition` module. The Fulfiller's involvement begins when an SR transitions to the fulfilment stage of `in_progress` (after all approvals complete and at least one line has `approved_qty > 0`) and ends at commit — either through `in_progress → completed` (the single posting event) or through a pre-commit interruption (system / SoD failure) that returns the SR to the fulfiller queue. Scenarios are grouped into **happy paths** (full fulfilment matching `approved_qty`, single-lot pick, multi-lot pick on a single line, partial fulfilment at-issue stock-out, `sr_type = transfer` paired with destination on-hand increment, `sr_type = issue` with destination cost-centre debit), **RBAC** (Approver ≠ Fulfiller SoD per `SR_AUTH_012`, stage-gated authorization, location-scoped fulfiller permission), **validation** (negative tests against `SR_VAL_008` — `issued_qty > approved_qty`, `SR_VAL_011`–`SR_VAL_014` — commit-time gates), and **edge cases** around closed-period commit, optimistic concurrency at commit, lot-data completeness for perishable items, and multi-line mixed outcomes (some lines fully issued, others short, others zero). Cross-persona handoffs that pivot off the Fulfiller (Scenarios 1, 2, 6, 8, 9, 10 in the parent overview) live in [04-test-scenarios.md](./04-test-scenarios.md), not here.
 

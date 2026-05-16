@@ -2,13 +2,17 @@
 title: Recipe — User Flow — Procurement / F&B Ops
 description: Procurement and F&B Operations Manager flow within the recipe module — sizes POs from recipe demand, validates ingredient availability, approves menu-item linkages, signs off menu engineering.
 published: true
-date: 2026-05-15T16:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: recipe, user-flow, procurement-fb-ops, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
 ---
 
 # Recipe — User Flow — Procurement / F&B Ops
+
+> **At a Glance**
+> **Persona:** Procurement Department + F&B Operations Manager &nbsp;·&nbsp; **Module:** [[recipe]] &nbsp;·&nbsp; **Workflow stages:** off-path — strategic upstream (menu-item linkage approve) + purchasing downstream (PO sizing) &nbsp;·&nbsp; **Key permissions:** read recipes, approve-menu-link (F&B Ops), raise substitution requests (Procurement)
+> **What this persona does:** Procurement sizes POs from recipe demand and surfaces substitution requests; F&B Ops approves menu-item linkages and runs menu engineering.
 
 ## 1. Role in This Module
 

@@ -2,13 +2,18 @@
 title: Good Receive Note (GRN) — Test Scenarios — Purchaser
 description: Purchaser's test cases (happy path, permission, validation, edge cases) for good-receive-note.
 published: true
-date: 2026-05-15T11:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: good-receive-note, test-scenarios, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
 ---
 
 # Good Receive Note (GRN) — Test Scenarios — Purchaser
+
+> **At a Glance**
+> **Persona:** Purchaser (Procurement Officer + Department Manager) &nbsp;·&nbsp; **Module:** [[good-receive-note]] &nbsp;·&nbsp; **Scenarios:** ~20
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `501-grn.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Purchaser persona (the **Purchaser / Procurement Officer** who raised the upstream PO, plus the **Department Manager** subset who owns the cost-centre that a GRN posts against) directly drives in the `good-receive-note` module. The Purchaser is a **review-only** participant on the GRN — they do **not** create the GRN at the dock (Receiver path), do **not** save line entries, do **not** post the irrevocable commit (Inventory Manager path), and do **not** edit the GRN document at any state. Their work is bounded by three activities: (1) react to the notification fired by a Receiver `draft → saved` (variance-flagged) or Inventory Manager `saved → committed` transition on a GRN whose source PO they own, (2) review the receipt versus the PO they raised — `received_qty` vs `pending_qty`, `accepted_qty` vs `received_qty`, lot / expiry on the linked `tb_inventory_transaction_detail`, attached packing slips, and price drift against `[[vendor-pricelist]]` — and (3) own the vendor-side resolution for every variance (chase short-ships, negotiate credit / replacement for damage, raise PO amendments, renegotiate price drift). The Department Manager subset performs the same review scoped to lines posting to their department's cost-centre and signs off on budget impact. Segregation of duties (`PO_AUTH_010`, carried over from the upstream PO module) explicitly forbids the user who raised or transmitted the PO from posting the GRN against it; the test set below verifies that boundary on every permission row. Scenarios are grouped into **happy paths** (notification consumption, clean-receipt close-out, short-ship chase, price-variance escalation, Department Manager cost-centre signoff, PO amendment for over-receipt resolution), **permission** (view scope by PO ownership, SoD on modify / create / commit, Department Manager cost-centre read scope), **validation** (denial of state-changing actions that belong to Receiver / Inventory Manager, denial of cost-centre override on the GRN document, SoD self-receipt block), and **edge cases** (notification timing on commit, variance tolerance boundary driving the chase decision, multi-PO consolidation review, cross-cost-centre Department Manager review). Cross-persona handoffs that pivot off the Purchaser (Scenarios 4, 6 of the parent overview — quality-rejection handoff and price-variance handoff) live in [04-test-scenarios.md](./04-test-scenarios.md), not here.
 

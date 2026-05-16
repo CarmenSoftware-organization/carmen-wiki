@@ -2,13 +2,19 @@
 title: Good Receive Note (GRN) — Data Model
 description: Entities, fields, relationships, and enums for the good-receive-note module.
 published: true
-date: 2026-05-15T11:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: good-receive-note, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
 ---
 
 # Good Receive Note (GRN) — Data Model
+
+> **At a Glance**
+> **Tables:** `tb_good_received_note` &nbsp;·&nbsp; `tb_good_received_note_detail` &nbsp;·&nbsp; `tb_good_received_note_detail_item` &nbsp;·&nbsp; `tb_good_received_note_comment` &nbsp;·&nbsp; `tb_good_received_note_detail_comment`
+> **Audience:** Developer / Auditor (dev reference)
+> **Key FKs:** detail `→ tb_purchase_order_detail` (upstream PO line); `detail_item.inventory_transaction_id → tb_inventory_transaction` (UUID-only, no `@relation` — downstream inventory ledger); detail `→ tb_location` / `tb_product`; header `→ tb_vendor` / `tb_currency`
+> **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*` across all five tables; per-line workflow signatures + `workflow_history` JSON on header
 
 > **Source of truth:** Backend Prisma schema. Always read these first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`

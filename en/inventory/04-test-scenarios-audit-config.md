@@ -2,13 +2,18 @@
 title: Inventory — Test Scenarios — Audit / Config
 description: Auditor (read-only audit trail + lot recall + period-snapshot reconciliation) and System Administrator (location, costing method, adjustment types, periods, RBAC, integrations) test cases for inventory.
 published: true
-date: 2026-05-15T12:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: inventory, test-scenarios, audit-config, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
 # Inventory — Test Scenarios — Audit / Config
+
+> **At a Glance**
+> **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [[inventory]] &nbsp;·&nbsp; **Scenarios:** ~32
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `080-location.spec.ts`, `031-adjustment-type.spec.ts`, `900-period-end.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Audit / Config persona drives in the `inventory` module. The persona splits into two non-transactional sub-personas: the **Auditor** (strictly read-only across the full inventory dataset — `tb_inventory_transaction`, `tb_inventory_transaction_cost_layer`, `tb_period_snapshot`, configuration history; runs lot-recall traces, audit-log queries, and period-snapshot reconciliation queries) and the **System Administrator** (configures `tb_location` including `location_type` per `enum_location_type` and `physical_count_type`, the costing method per product on `tb_product.costing_method` — owned by [[product]] module config, surfaced here, `tb_adjustment_type` reason codes, `tb_period` definitions, the threshold tier values that route Store Keeper / Controller / Finance approval, RBAC role definitions and `tb_user_location` scope mapping per `INV_AUTH_008`, and integration endpoints to the source modules). Neither sub-persona participates in the inventory movement lifecycle — the Auditor's queries return data without writing any state; the Sysadmin's edits apply to future movements (in-flight source documents retain a snapshot of the rules in force when they were created; `posted` inventory transactions are immutable per `INV_POST_012`). The shared rule IDs this persona's tests exercise are `INV_AUTH_006` (period lock / re-open authority — Sysadmin configures the RBAC), `INV_AUTH_008` (Sysadmin's config scope and the drain requirement on location-type / costing-method change), `INV_AUTH_009` (Auditor read-only access), `INV_AUTH_010` (SoD configuration), `INV_POST_011` / `INV_POST_012` (lock and reversal-via-compensation patterns the Sysadmin's RBAC layer gates), and `INV_XMOD_009` (costing-method drain requirement). Scenarios are grouped into **happy paths** (Auditor audit-log query, lot-recall trace, period-snapshot reconciliation query; Sysadmin location-type config, costing-method change with drain, adjustment-type maintenance, threshold edit, RBAC scope grant, integration cutover), **permission** (Auditor read-only allow, Sysadmin config-only deny on transact), **validation** (drain requirement on type change, period definition non-overlap, snapshot preservation on in-flight documents, RBAC deadlock prevention), and **edge cases** (in-flight snapshot boundary, rollback of bad config, lot-trace gap, query timeout, mass-RBAC, period-history hard-delete protection).
 

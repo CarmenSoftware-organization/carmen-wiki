@@ -2,13 +2,18 @@
 title: Inventory — Test Scenarios — Inventory Controller
 description: Inventory Controller's test cases (approval, count-variance commit, policy maintenance, period-end sign-off) for inventory.
 published: true
-date: 2026-05-15T12:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: inventory, test-scenarios, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
 # Inventory — Test Scenarios — Inventory Controller
+
+> **At a Glance**
+> **Persona:** Inventory Controller &nbsp;·&nbsp; **Module:** [[inventory]] &nbsp;·&nbsp; **Scenarios:** ~26
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `720-stock-issue.spec.ts`, `900-period-end.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Inventory Controller persona directly drives in the `inventory` module. The Controller owns balance accuracy: they approve `tb_stock_in` / `tb_stock_out` documents above the Store Keeper auto-approve threshold per `INV_AUTH_003`, commit count-variance rollups arising from physical / spot counts per `INV_XMOD_003` / `INV_XMOD_004`, maintain per-product / per-location stock policy on `tb_product_location` per `INV_AUTH_004`, and sign off on variance before period close. Their inventory-module ownership begins when a Store Keeper escalates a document or a count completes, and ends when (a) the document posts on Controller approval (below Finance threshold), (b) the document escalates further to Finance for very-large cost impact, (c) the count is committed and the rollup posts, or (d) the period-end variance sign-off is recorded. Scenarios are grouped into **happy paths** (approval, count-variance commit, stock-policy edit, period-end sign-off), **RBAC** (Controller scope vs Store Keeper / Finance / Sysadmin, self-approval prevention), **validation** (negative tests on approval gates), and **edge cases** (concurrent approvals, count rollup with mixed outcomes, threshold-boundary routing).
 

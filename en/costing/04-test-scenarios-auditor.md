@@ -2,13 +2,18 @@
 title: Costing — Test Scenarios — Auditor
 description: Auditor's test cases (chain-of-custody trace, period-snapshot verification, FIFO-WA shadow drift, configuration history audit) for costing.
 published: true
-date: 2026-05-15T12:30:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: costing, test-scenarios, auditor, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
 ---
 
 # Costing — Test Scenarios — Auditor
+
+> **At a Glance**
+> **Persona:** Auditor &nbsp;·&nbsp; **Module:** [[costing]] &nbsp;·&nbsp; **Scenarios:** ~23
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `900-period-end.spec.ts` in `../carmen-inventory-frontend-e2e/` (chain-of-custody / shadow-drift / configuration-history audits are typically planned manual coverage)
 
 This page captures the test scenarios that the Auditor persona drives in the `costing` module. The Auditor is **strictly read-only** across `tb_inventory_transaction_cost_layer`, `tb_period_snapshot`, `tb_business_unit.calculation_method`, `tb_product.standard_cost`, and the configuration history feed per `COST_AUTH_008`. They run **four query patterns**: (1) **cost-flow chain-of-custody trace** — forward + backward walk of a lot's cost-flow through every inbound, revaluation, consumption, transfer, and period rollforward event; (2) **period-end snapshot verification** — defensive reconciliation that the snapshot's `closing_cost_per_unit` / `closing_total_cost` matches an independent reconstruction from the cost-layer ledger, and that the FIFO `lot_seq_no` / WA running average roll forward intact across the period boundary; (3) **FIFO-vs-WA shadow drift audit** — under FIFO, the `average_cost_per_unit` shadow column is maintained on every cost-layer write per `COST_CALC_004`; the Auditor independently recomputes the running WA and verifies the shadow is consistent (drift indicates a maintenance bug or out-of-order writes); (4) **configuration history audit** — every change to `tb_business_unit.calculation_method`, `enum_physical_count_costing_method` config value, and `tb_product.standard_cost` is reviewed for pre-condition compliance (drain check on method change, prospective-only effect on `standard_cost`) and consistency (no mid-period method change). Neither sub-persona ever appears in the transactional flow — the Auditor never edits a cost-layer row, never approves a credit-note, never advances a period, never configures a method. Their deliverable is the audit report or the chain-of-custody trace. Scenarios are grouped into **happy paths** (clean trace, clean snapshot verification, clean shadow audit, clean configuration history), **permission** (Auditor read-only allow, write attempts deny), **validation / anomaly surfacing** (trace surfaces orphan, snapshot mismatch surfaces, shadow drift above tolerance, configuration anomaly surfaces), and **edge cases** (lot revaluation in mid-trace, locked-period restatement audit, query timeout on huge dataset, mass-trace export).
 

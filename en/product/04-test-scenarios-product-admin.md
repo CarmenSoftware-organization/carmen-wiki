@@ -2,13 +2,18 @@
 title: Product — Test Scenarios — Product Administrator
 description: Product Administrator's test cases (happy path, permission, validation, lifecycle, bulk, edge cases) for the product module.
 published: true
-date: 2026-05-15T15:30:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: product, test-scenarios, product-admin, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
 ---
 
 # Product — Test Scenarios — Product Administrator
+
+> **At a Glance**
+> **Persona:** Product Administrator &nbsp;·&nbsp; **Module:** [[product]] &nbsp;·&nbsp; **Scenarios:** ~59
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Lifecycle &nbsp;·&nbsp; Bulk &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `100-product.spec.ts`, `101-product-category.spec.ts` in `../carmen-inventory-frontend-e2e/` (CRUD surface largely manual / planned)
 
 This page captures the test scenarios the Product Administrator persona directly drives in the `product` module. They own full CRUD on `tb_product`, classification (`tb_product_category` / `tb_product_sub_category` / `tb_product_item_group`), units (`tb_unit`), conversions (`tb_unit_conversion`), location mapping (`tb_product_location`), vendor mapping (`tb_product_tb_vendor`), and run bulk import / export. Their catalogue-side ownership begins at create and ends at soft-delete (or restore, exceptionally). Scenarios are grouped into **happy paths** (single create, classification CRUD, unit and conversion definition, location mapping, vendor mapping, bulk import success), **RBAC** (Product Administrator scope vs Cost Controller / Inventory Controller scope, segregation of duties on standard-cost changes), **validation** (negative tests against `PRD_VAL_001`–`PRD_VAL_018`), **lifecycle** (deactivate / re-activate / soft-delete / restore with in-use guards `PRD_LIFE_*`), **bulk operations** (import dry-run, error report, partial-success, strict-commit), and **edge cases** (concurrent edits, inheritance overrides, classification re-org, restore-vs-recreate, hard-disable). Cross-persona handoffs that pivot off the Product Administrator (Scenarios 1, 2, 3, 4, 5, 6, 7, 11, 12, 13, 14, 16 in the parent overview) live in [04-test-scenarios.md](./04-test-scenarios.md), not here.
 

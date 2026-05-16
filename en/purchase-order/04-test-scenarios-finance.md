@@ -2,13 +2,18 @@
 title: Purchase Order — Test Scenarios — Finance
 description: Finance's test cases (three-way match, AP posting, FX, discrepancy bounce-back) for purchase-order.
 published: true
-date: 2026-05-15T10:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-order, test-scenarios, finance, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
 # Purchase Order — Test Scenarios — Finance
+
+> **At a Glance**
+> **Persona:** Finance (Officer / AP Clerk + Finance Manager) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Scenarios:** ~25
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `401-po.spec.ts`, `403-po-finance-ap-match.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Finance persona (the **Finance Officer / Accounts Payable** clerk who runs the day-to-day three-way match and posts the AP liability, plus the **Finance Manager** who exercises pre-transmission financial sign-off on high-value or FX-sensitive POs) directly drives in the `purchase-order` module. Finance has two distinct touch points on the PO lifecycle: a **pre-transmission review** while the PO is still at `po_status = in_progress` (Finance Manager signs off currency, exchange rate, tax codes, and totals before `PO_POST_004` transmits the PO to the vendor), and a **post-receipt three-way match** after GRN posting (Finance Officer captures the vendor invoice, looks up the matching PO and GRN(s), and runs the match under `PO_POST_008` / `PO_POST_009`). The three-way match is the key Finance activity — on success, AP clears the GRN accrual and posts the vendor liability; on failure, the invoice is held in dispute and the discrepancy is flagged back to the Purchaser for resolution. The PO itself is **not** transitioned by the three-way match (`PO_POST_008` is explicit on this) — the match outcome lives on the invoice record, and the PO retains whatever fulfilment status it reached (`partial`, `completed`, or `closed`). Scenarios are grouped into the happy paths described in [03-user-flow-finance.md](./03-user-flow-finance.md), the RBAC boundary enforced by `PO_AUTH_009` (Finance Officer scope — read-only across the PO + match + post AP on the AP side) and the Finance Manager pre-transmission approver right under `PO_AUTH_011` (stage-gated approval), the validation rules around qty / price tolerance, missing GRN, FX, closed-period, and duplicate-invoice guards, and a small set of edge cases around tolerance boundaries, FX no-op cases, multi-invoice matching, concurrency, and decimal precision on AP amounts. Cross-persona handoffs that pivot off Finance (`X-PO-05` pre-transmission send-back, `X-PO-07` three-way-match dispute bounce-back, `X-PO-09` AP posting close-out) live in the parent overview, not here.
 

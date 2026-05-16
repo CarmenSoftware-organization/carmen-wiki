@@ -2,13 +2,18 @@
 title: Inventory — Test Scenarios — Finance
 description: Finance's test cases (cost-impact approval, inventory-to-GL reconciliation, period close / lock) for inventory.
 published: true
-date: 2026-05-15T12:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: inventory, test-scenarios, finance, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
 # Inventory — Test Scenarios — Finance
+
+> **At a Glance**
+> **Persona:** Finance (Officer / Inventory Accountant + Finance Manager) &nbsp;·&nbsp; **Module:** [[inventory]] &nbsp;·&nbsp; **Scenarios:** ~28
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `900-period-end.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Finance persona (Finance Officer / Inventory Accountant for day-to-day reconciliation, plus Finance Manager / Controller for period-lock authority) directly drives in the `inventory` module. Finance is the valuation authority — the role that approves above-Controller-threshold adjustments per `INV_AUTH_005`, runs the inventory-to-GL reconciliation per `INV_XMOD_008`, orchestrates the period-end close per `INV_POST_009` / `INV_POST_010`, and (at the Finance Manager level) advances `tb_period.status = closed → locked` per `INV_AUTH_006` / `INV_POST_011`. Finance does **not** post inventory transactions directly — corrections flow through stock-in / stock-out / credit-note documents that Finance approves; period-end fan-out fires under system context per `INV_AUTH_007`. Their inventory-module ownership begins when (a) a Controller escalates a cost-impact adjustment, (b) a periodic reconciliation pass is due, or (c) the Controller signs off variance for the closing period, and ends when (a) the document posts, (b) the reconciliation is clean, (c) the period transitions `open → closed`, or (d) the Finance Manager advances `closed → locked`. Scenarios are grouped into **happy paths** (cost-impact approval, reconciliation pass, period close + open-next, period lock, period re-open within audit window), **RBAC** (Finance scope vs Controller / Sysadmin, Finance Manager exclusivity on lock), **validation** (reconciliation variance, close-with-open-items, lock-after-window), and **edge cases** (boundary variance, FX revaluation at period end, multi-period reconciliation, locked-period correction path).
 

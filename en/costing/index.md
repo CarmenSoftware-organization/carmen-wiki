@@ -2,13 +2,16 @@
 title: Costing
 description: Inventory valuation methods (FIFO, Weighted Average) and the costing engine that calculates COGS and ending inventory value.
 published: true
-date: 2026-05-16T09:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: costing, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
 ---
 
 # Costing
+
+> **At a Glance**
+> **Module purpose:** Per-transaction valuation engine that computes COGS on outgoing stock and updates cost basis on incoming stock under FIFO or Weighted Average &nbsp;·&nbsp; **Audience:** Finance, Inventory Controller, Auditor &nbsp;·&nbsp; **Key entities/tables:** `tb_period_snapshot`, FIFO cost layers, `AverageCostTracking`, `JournalEntry`, [[costing/calculation-methods]] &nbsp;·&nbsp; **Sub-pages:** 11
 
 ## 1. Overview
 

@@ -2,13 +2,19 @@
 title: Purchase Order — Business Rules
 description: Validation, calculation, authorization, posting, three-way-match, and cross-module rules for purchase-order.
 published: true
-date: 2026-05-16T10:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-order, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
 # Purchase Order — Business Rules
+
+> **At a Glance**
+> **Rule families:** `PO_VAL_*` validation &nbsp;·&nbsp; `PO_AUTH_*` permission &nbsp;·&nbsp; `PO_CALC_*` calc &nbsp;·&nbsp; `PO_POST_*` posting &nbsp;·&nbsp; `PO_XMOD_*` cross-module
+> **Rule count:** approximately 60 rules
+> **Audience:** Test author + developer — every rule ID is anchored from `04-test-scenarios*` pages
+> **Status lifecycle:** Section 5.1 (where present) carries the Live UI vs BRD discrepancy callouts
 
 ## 1. Overview
 

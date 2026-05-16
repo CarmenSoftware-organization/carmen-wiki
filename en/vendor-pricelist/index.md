@@ -2,13 +2,16 @@
 title: Vendor Pricelist
 description: Vendor catalogs of products with agreed prices, units, and validity periods — the reference for PR/PO pricing.
 published: true
-date: 2026-05-16T09:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: vendor-pricelist, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
 ---
 
 # Vendor Pricelist
+
+> **At a Glance**
+> **Module purpose:** Vendor-specific, time-bound MOQ-tiered price catalogue collected via a 6-phase campaign / portal workflow — the reference for PR / PO / GRN pricing and variance &nbsp;·&nbsp; **Audience:** Purchaser, Purchasing Manager, Vendor (external portal), Finance, Auditor &nbsp;·&nbsp; **Key entities/tables:** `tb_pricelist`, `tb_pricelist_detail`, `tb_request_for_pricing`, `tb_pricelist_template`, [[vendor-pricelist/request-price-list]] &nbsp;·&nbsp; **Sub-pages:** 13
 
 ## 1. Overview
 

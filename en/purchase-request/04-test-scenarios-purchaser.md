@@ -2,13 +2,18 @@
 title: Purchase Request — Test Scenarios — Purchaser
 description: Purchaser's test cases (happy path, permission, validation, edge cases) for purchase-request.
 published: true
-date: 2026-05-15T09:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-request, test-scenarios, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
 # Purchase Request — Test Scenarios — Purchaser
+
+> **At a Glance**
+> **Persona:** Purchaser (Procurement Officer — PR-to-PO bridge) &nbsp;·&nbsp; **Module:** [[purchase-request]] &nbsp;·&nbsp; **Scenarios:** ~33
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `tests/304-pr-purchaser-journey.spec.ts`, `tests/310-pr-template.spec.ts`, and `tests/301-pr.spec.ts` (purchaseTest fixture) in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Purchaser persona directly drives in the `purchase-request` module. The Purchaser (also titled **Procurement Officer**) is the bridge persona between the upstream PR side and the downstream PO side of the procure-to-pay chain; they do **not** approve PR content. By the time a PR reaches their queue it has already cleared the entire approval chain and `pr_status = approved` (`PR_POST_005`). Scenarios are grouped into the happy paths described in [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) Section 2 (validate vendor allocation, run Allocate Vendor, look up pricelist deviation, consolidate by vendor + currency, convert to PO — full and partial), the RBAC boundary enforced by `PR_AUTH_008` (only `enum_stage_role = purchase` may convert), the cross-module / PO conversion rules in [02-business-rules.md](./02-business-rules.md) Section 6 (bridge table `tb_purchase_order_detail_tb_purchase_request_detail`, consolidation by `(vendor_id, currency_id)`, partial conversion, FX rate snapshot at conversion), and a small set of bridge-integrity and concurrency edges. Cross-persona handoffs that pivot off the Purchaser (`X-PR-01`, `X-PR-04`, `X-PR-07`) live in the parent overview, not here.
 

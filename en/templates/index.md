@@ -2,13 +2,16 @@
 title: Templates
 description: Reusable scaffold definitions consumed by PR and Vendor Pricelist — shared mechanics for seed-only documents that prefill a new transactional record on instantiation.
 published: true
-date: 2026-05-16T16:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: templates, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T16:00:00.000Z
 ---
 
 # Templates
+
+> **At a Glance**
+> **Module purpose:** Seed-only scaffolds (PR draft, RFQ / pricelist round) that deep-copy header and detail rows into a new transactional record on instantiation &nbsp;·&nbsp; **Audience:** Requestor (PR), Purchaser (pricelist), Sysadmin &nbsp;·&nbsp; **Key entities/tables:** `tb_purchase_request_template`, `tb_pricelist_template` &nbsp;·&nbsp; **Sub-pages:** 2
 
 ## 1. Overview
 

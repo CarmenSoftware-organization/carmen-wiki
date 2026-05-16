@@ -2,7 +2,7 @@
 title: Credit Term
 description: Vendor payment terms (NET 30, COD, etc.) selected on purchase orders to drive due-date and accounts-payable schedules.
 published: true
-date: 2026-05-16T08:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: master-data, credit-term, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -10,17 +10,47 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 # Credit Term
 
-## 1. Purpose
+> **At a Glance**
+> **Owner:** Product Admin &nbsp;·&nbsp; **Table:** `tb_credit_term` &nbsp;·&nbsp; **Used by:** purchase orders (default per vendor) &nbsp;·&nbsp; Named payment terms — `name` + day-count `value`.
 
-Credit terms encode the supplier-payment agreement as a named record with a day count. `NET 30` means payment is due 30 days after invoice date; `COD` (`value = 0`) means payment due on delivery. POs reference a credit term so the downstream accounts-payable schedule has a concrete due-date target.
+## 1. What & Who
 
-The entity is intentionally minimal — just name, day-count value, and an active flag. Anything more sophisticated (early-payment discounts, multi-tier schedules) is layered on top in application logic or a future companion table.
+Credit terms encode the supplier-payment agreement as a named record with a day count: `NET 30` means payment due 30 days after invoice date; `COD` (`value = 0`) means payment on delivery. POs reference a credit term so the **accounts-payable schedule** has a concrete due-date target.
 
-## 2. Prisma Model(s)
+The entity is intentionally minimal — `name`, `value` (days), and an `is_active` flag. Anything richer (early-payment discounts, tiered schedules) lives in application logic, not on this record. **Maintained by** Product Admin; **read by** developers and testers on the PO and AP paths.
+
+## 2. Common Tasks
+
+| Task | Where | Notes |
+|---|---|---|
+| Add a new term | Configuration → Master Data → Credit Term → **New** | Required: `name`; `value` defaults `0` (COD) |
+| Deactivate a term | Toggle `is_active` | Hidden from new-PO pickers; historical POs keep their term |
+| Change day-count | Edit `value` | New POs default to new value; historical POs already have the due date stored |
+| Set default per vendor | [[master-data/vendor]] detail | App-layer; not on this record |
+
+## 3. Validation & Errors
+
+| Symptom / Message | Cause | Action |
+|---|---|---|
+| "Name already in use" | Duplicate `name` on a non-deleted row | Pick a different name |
+| "Value must be >= 0" | Negative day-count entered | Use `0` for COD or a positive integer |
+| "Name required" | Empty `name` | Add a display name (e.g. `NET 30`) |
+| "Cannot delete — referenced by open POs" | At least one open PO uses this term | Inactivate instead |
+
+## 4. Edge Cases
+
+- **Renaming or value-changes** affect only **new** POs; the due date is **computed and stored** on the PO at creation.
+- **Soft-deleted terms** stay resolvable on historical POs.
+- **COD = `value = 0`** is the standard convention; same-day due.
+- **Vendor default** is app-layer — Carmen seeds the term onto the PO at vendor selection, but the user can still override.
+
+---
+
+## 5. Data Model (Dev)
 
 Source: tenant schema.
 
-### 2.1 `tb_credit_term`
+### 5.1 `tb_credit_term`
 
 | Field | Prisma Type | Nullable | Description |
 | --- | --- | --- | --- |
@@ -35,25 +65,20 @@ Source: tenant schema.
 
 **Constraints:** `@@unique([name, deleted_at])` map `credit_term_name_u`. Index on `name`. Reverse relation to `tb_purchase_order`.
 
-## 3. Usage / Cross-References
+## 6. Business Rules
 
-- [[purchase-order]] — PO header carries `credit_term_id`; the due date is `po_date + value` days.
-- [[master-data/vendor]] — many properties pre-assign a default credit term per vendor in application logic; the value is then defaulted onto new POs for that vendor.
+- **Uniqueness.** `name` unique among non-deleted rows (DB-enforced).
+- **Deletion guards.** Open POs block hard-delete — inactivate instead.
+- **Validation.** `value >= 0`; `name` required.
+- **Lifecycle.** Inactive terms hidden from new-PO pickers; historical POs keep their assigned term.
+- **Snapshot semantics.** PO stores the term id; the due date is computed at PO creation and stored. Rate/value changes here do not retro-edit historical POs.
 
-## 4. Configuration UI
+## 7. Cross-References
 
-Managed by **Product Admin** under the Master Data area. Simple list + edit dialog (name, value, active).
+- [[purchase-order]] — PO header carries `credit_term_id`; due date = `po_date + value` days.
+- [[master-data/vendor]] — vendors pre-assign a default credit term in app logic; defaulted onto new POs.
 
-## 5. Business Rules
-
-- **Uniqueness.** `name` is unique among non-deleted rows (DB-enforced).
-- **Deletion guards.** A credit term referenced by open POs cannot be deleted; inactivate instead.
-- **Validation.** `value` must be `>= 0`. `name` is required.
-- **Lifecycle.** Inactive credit terms are hidden from new-PO pickers; historical POs continue to render their assigned term.
-- **Snapshot semantics.** PO stores the term id; the day-count is read at lookup time. Renaming a term or changing the `value` changes how *new* POs default but does not retro-edit the saved due date on historical POs (the due date is computed and stored on the PO).
-
-## 6. References
+## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_credit_term` (lines ~4548-4572).
-- **Frontend route (if known):** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/credit-term/`.
-- **Cross-module:** see Section 3.
+- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/credit-term/`.

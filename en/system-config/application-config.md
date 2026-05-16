@@ -2,7 +2,7 @@
 title: Application Config
 description: Generic key-value application settings — tenant-wide configuration and per-user preference overrides stored as JSONB.
 published: true
-date: 2026-05-16T08:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: system-config, application-config, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -10,64 +10,90 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 # Application Config
 
-## 1. Purpose
+> **At a Glance**
+> **Owner:** Sysadmin (tenant) + each user (preferences) &nbsp;·&nbsp; **Table:** `tb_application_config` (+ `tb_application_user_config`) &nbsp;·&nbsp; **Used by:** all modules for feature flags + per-user prefs &nbsp;·&nbsp; Generic JSONB key-value store — the escape hatch for small settings.
 
-Application Config is the **generic key-value store** for settings that do not warrant a dedicated schema. Two tables share the same shape: `tb_application_config` holds tenant-wide settings (e.g. the active `tax_profile`, feature flags, default behaviour toggles), and `tb_application_user_config` holds per-user preference overrides (table column order, saved filters, theme preference, default location). Both store the value as JSONB, so any shape — string, number, object, array — works without a migration.
+## 1. What & Who
 
-This pattern is the *escape hatch* — small settings that would otherwise pollute the schema as one-column tables live here under a stable key. The trade-off is that the schema does not enforce the value shape — consumers must validate at read-time — so it should not be used for high-volume relational data or anything that needs FKs.
+Application Config is the **generic key-value store** for settings that do not warrant a dedicated schema. Two tables share the same shape: `tb_application_config` holds tenant-wide settings (e.g. the active `tax_profile`, feature flags, default toggles), and `tb_application_user_config` holds per-user preference overrides (table column order, saved filters, theme, default location). Both store the value as JSONB so any shape — string, number, object, array — works without a migration.
 
-## 2. Prisma Model(s)
+This pattern is the *escape hatch* — small settings that would otherwise pollute the schema as one-column tables live here under a stable key. The trade-off: schema does not enforce shape — consumers must validate at read-time.
 
-Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prisma`).
+**Maintained by** Sysadmin (tenant settings) and end users (preferences, written transparently). **Read by** every list view, every feature-gated path.
 
-### 2.1 `tb_application_config`
+## 2. Common Tasks
+
+| Task | Where | Notes |
+|---|---|---|
+| Set tenant feature flag | System Config → Application Settings | Typed editor or raw JSON for unknown keys |
+| Change tax profile | System Config → Application Settings → `tax_profile` | Drop-down editor |
+| Reorder columns (per user) | Drag in any list view | Persisted automatically to `tb_application_user_config` |
+| Reset my preferences | User profile menu → Reset my preferences | Bulk-delete by `user_id` |
+| Add a new config key | Insert via service code | Convention: dotted namespace |
+
+## 3. Validation & Errors
+
+| Symptom | Cause | Action |
+|---|---|---|
+| Key collision on insert | Existing non-deleted row | Update existing or pick different key |
+| Value rejected at runtime | Zod schema mismatch | Fix shape per consumer's contract |
+| Preference not honoured | User row missing — fell back to tenant | Verify `user_id`+`key` row exists |
+| Secret leaked | Stored credentials in config | Move to env / secrets manager — config is human-editable |
+
+## 4. Edge Cases
+
+- **Schema by convention.** No DB-level shape enforcement on `value` — consuming code owns the shape (typically Zod-validated at read-time).
+- **Resolution order.** Per-user value wins over tenant value when both exist for the same logical setting.
+- **No secrets.** API keys, credentials must NOT be stored here.
+- **Hard-delete is fine** for tenant-wide rows (fall back to compile-time defaults).
+
+---
+
+## 5. Data Model (Dev)
+
+Source: tenant schema.
+
+### 5.1 `tb_application_config`
 
 | Field | Prisma Type | Nullable | Description |
 | --- | --- | --- | --- |
 | `id` | `String @db.Uuid` | No | Primary key. |
-| `key` | `String @db.VarChar` | No | Setting key (e.g. `tax_profile`, `default_currency`, `feature.enable_recipe_costing`). |
-| `value` | `Json @db.JsonB` | No | Setting value. Default `{}`. Shape is application-defined per key. |
+| `key` | `String @db.VarChar` | No | Setting key (e.g. `tax_profile`, `feature.enable_recipe_costing`). |
+| `value` | `Json @db.JsonB` | No | Default `{}`. Shape is application-defined per key. |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |
 
-**Constraints:** `@@unique([key, deleted_at])` map `application_config_key_u`. Index on `[key]`.
+**Constraints:** `@@unique([key, deleted_at])`. Index on `[key]`.
 
-### 2.2 `tb_application_user_config`
+### 5.2 `tb_application_user_config`
 
 | Field | Prisma Type | Nullable | Description |
 | --- | --- | --- | --- |
 | `id` | `String @db.Uuid` | No | Primary key. |
-| `user_id` | `String @db.Uuid` | No | Owner — references the platform `tb_user.id`. |
-| `key` | `String @db.VarChar` | No | Preference key (e.g. `pr_list.columns`, `default_location`, `theme`). |
-| `value` | `Json @db.JsonB` | No | Preference value. Default `{}`. |
+| `user_id` | `String @db.Uuid` | No | Owner (cross-schema to platform `tb_user`). |
+| `key` | `String @db.VarChar` | No | Preference key (e.g. `pr_list.columns`, `theme`). |
+| `value` | `Json @db.JsonB` | No | Default `{}`. |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |
 
-**Constraints:** `@@unique([user_id, key, deleted_at])` map `application_user_config_u`. Index on `[user_id, key]`. No FK to `tb_user` at the tenant schema (`user_id` resolves cross-schema to the platform `tb_user`).
+**Constraints:** `@@unique([user_id, key, deleted_at])`. Index on `[user_id, key]`. No FK to `tb_user` (cross-schema).
 
-## 3. Usage / Cross-References
+## 6. Business Rules
 
-- All modules — global config keys gate behaviour across the application (tax-profile selection, default currency, feature flags, working hours).
-- [[purchase-request]], [[purchase-order]], [[good-receive-note]], [[store-requisition]], [[inventory-adjustment]], [[physical-count]], [[spot-check]] — per-user preferences (table column order, saved filters, default location) are read on list-view render.
-- [[access-control/user]] — `tb_application_user_config.user_id` resolves to the platform user record.
-- [[reporting-audit/widget]] — dashboard layouts and saved widget configurations may be persisted here per user as an alternative to the dedicated widget tables.
+- **Uniqueness.** `key` unique among non-deleted in tenant table; `(user_id, key)` unique in user table.
+- **Schema by convention.** Consumers validate shape; no DB-level enforcement.
+- **Key namespace.** Dotted-namespace convention (`feature.*`, `default_*`, `<module>.*`).
+- **Resolution order.** User wins over tenant for the same logical setting.
+- **Sensitive values.** Forbidden — use env / secrets manager.
+- **Deletion.** Hard-delete acceptable; app falls back to compile-time defaults.
 
-## 4. Configuration UI
+## 7. Cross-References
 
-`tb_application_config` is managed by **Sysadmin** under System Configuration → Application Settings. The screen lists known keys with typed editors per key (toggle, dropdown, text, JSON). Unknown keys are shown in a raw-JSON pane for advanced edit.
+- All modules — feature gates and per-user prefs.
+- [[purchase-request]], [[purchase-order]], [[good-receive-note]], [[store-requisition]], [[inventory-adjustment]], [[physical-count]], [[spot-check]] — list-view prefs.
+- [[access-control/user]] — `user_id` resolution.
+- [[reporting-audit/widget]] — alternative store for dashboard configs.
 
-`tb_application_user_config` is *not* surfaced as a config screen — it is written transparently by client code (e.g. when a user reorders columns or saves a filter). A "Reset my preferences" action under the user-profile menu issues a bulk-delete by `user_id`.
-
-## 5. Business Rules
-
-- **Uniqueness.** `key` is unique among non-deleted rows in `tb_application_config`; `(user_id, key)` is unique among non-deleted rows in `tb_application_user_config`.
-- **Schema by convention.** No DB-level shape enforcement on `value`. The application code that consumes a key owns the shape — typically validated via a Zod schema at read-time.
-- **Key namespace.** Convention: dotted-namespace keys (`feature.enable_recipe_costing`, `pr_list.columns`) to avoid collisions across modules. Reserved root namespaces: `feature.*`, `default_*`, `<module>.*`.
-- **Resolution order.** Per-user value wins over tenant value when both exist for the same logical setting (e.g. `default_currency`).
-- **Sensitive values.** Secrets, API keys, and credentials must not be stored here — use environment variables and the platform secrets manager. This store is human-editable and not encrypted at rest beyond standard DB encryption.
-- **Deletion.** Hard-delete is fine for tenant-wide rows (the application falls back to compile-time defaults). User rows hard-delete on user removal.
-
-## 6. References
+## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_application_config` (lines ~4910-4924), `tb_application_user_config` (lines ~4926-4941).
-- **Seed example:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/seed-data-a01/tb_application_config.json`.
-- **Frontend route (if known):** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/application-config/`.
-- **Cross-module:** see Section 3.
+- **Seed:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/seed-data-a01/tb_application_config.json`.
+- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/application-config/`.

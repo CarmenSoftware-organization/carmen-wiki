@@ -2,13 +2,18 @@
 title: Purchase Request — Test Scenarios — Audit / Config
 description: Auditor (read-only audit trail) and System Administrator (workflow / threshold / delegation configuration) test cases for purchase-request.
 published: true
-date: 2026-05-15T09:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-request, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
 # Purchase Request — Test Scenarios — Audit / Config
+
+> **At a Glance**
+> **Persona:** Audit / Config (Auditor read-only + System Administrator config) &nbsp;·&nbsp; **Module:** [[purchase-request]] &nbsp;·&nbsp; **Scenarios:** ~30
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** no dedicated `30X-pr-audit-config-journey.spec.ts` yet; audit-log read paths partly via `tests/301-pr.spec.ts` activity-log assertions in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the **Audit / Config** persona axis drives in the `purchase-request` module. Two roles share this axis even though they sit on opposite sides of the read / write divide: the **Auditor** is a read-only persona who walks the immutable activity trail (`workflow_history`, `tb_purchase_request_comment` per `PR_POST_008`, line-level `current_stage_status` history, vendor / pricelist / exchange-rate snapshots from `PR_CALC_006`) to verify policy compliance, segregation of duties, and trail completeness; the **System Administrator** is a configuration persona who owns workflow stages, amount thresholds (`PR_AUTH_005`), delegation rules and windows (`PR_AUTH_006`), per-PR-type defaults, tax / currency masters feeding `PR_CALC_002`–`PR_CALC_006`, and user / role assignments on `user_action.execute[]`. Neither role sits on the request-to-PO happy path. Scenarios are grouped into the happy paths from [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) Section 2 (Auditor: query PRs by period, drill into the activity log, export with secondary approval, flag a policy violation; Sysadmin: change a workflow stage, adjust a threshold, set up a delegation window, change a PR-type default, change tax / currency masters), the RBAC boundaries from `PR_AUTH_002`, `PR_AUTH_005`–`PR_AUTH_008` in [02-business-rules.md](./02-business-rules.md) Section 4, the validation rules that fire on each surface (snapshot preservation per `PR_CALC_006`, export-approval policy, configuration-deadlock prevention, threshold range checks, date-range scan limits), and a set of boundary cases unique to having both a passive audit surface and an active configuration surface. Cross-persona handoffs that pivot off the Audit / Config axis (Auditor case-file escalation that triggers a Sysadmin `PR_AUTH_007` void, Sysadmin rollback affecting subsequent Requestor submissions) live in the parent overview, not here.
 

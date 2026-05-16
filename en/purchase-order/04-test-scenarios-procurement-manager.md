@@ -2,13 +2,18 @@
 title: Purchase Order — Test Scenarios — Procurement Manager
 description: Procurement Manager's test cases (transactional high-value approval + configuration) for purchase-order.
 published: true
-date: 2026-05-15T10:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-order, test-scenarios, procurement-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
 # Purchase Order — Test Scenarios — Procurement Manager
+
+> **At a Glance**
+> **Persona:** Procurement Manager (high-value approval + configurational rule-tuning) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Scenarios:** ~29
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `401-po.spec.ts`, `403-po-approver-journey.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Procurement Manager persona drives in the `purchase-order` module. Unlike the Purchaser — who owns the document end-to-end — the Procurement Manager engages with the PO across **two distinct surfaces** ([03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md) Section 1). The **transactional surface** is the high-value approval gate that the Purchaser cannot self-clear under `PO_AUTH_004`: POs whose `tb_purchase_order.total_amount` exceeds the tenant threshold (or whose pricelist deviation exceeds tolerance per `PO_XMOD_006`) escalate to the Manager's **My Approvals** queue, where the Manager runs **Approve & Transmit** (`PO_POST_004`), **Return to Buyer** (`PO_POST_005`), or **Reject** (`PO_POST_010`). The **configurational surface** is the rule-tuning workbench — vendor ranking and allocation, Convert-to-PO `(vendor_id, currency_id)` grouping, unit conversion factors, pricelist tolerance band, and the high-value threshold itself — whose edits affect new POs only because in-flight POs retain their snapshot of the prior rule version. The Manager additionally holds the **override authorities** the Purchaser cannot exercise: soft-delete-in-draft (`PO_AUTH_005`), void from any non-terminal state (`PO_AUTH_007`, `PO_POST_010`), and early-close from `partial → closed` (`PO_AUTH_008`, `PO_POST_011`). Scenarios below mirror the same five-section shape as the Purchaser file: the happy paths trace both the transactional escalation cycle and a configurational rule edit; the permission section pins down `PO_AUTH_004`–`PO_AUTH_007` against neighbouring stages; the validation section covers threshold mismatches, snapshot preservation, and rule-edit integrity; and the edge cases cover boundary-amount POs, in-flight rule changes, bulk failures, and delegation timing.
 

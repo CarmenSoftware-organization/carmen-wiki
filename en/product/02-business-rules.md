@@ -2,13 +2,19 @@
 title: Product — Business Rules
 description: Validation, calculation, authorization, lifecycle, and cross-module rules for the product master.
 published: true
-date: 2026-05-15T15:30:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: product, business-rules, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
 ---
 
 # Product — Business Rules
+
+> **At a Glance**
+> **Rule families:** `PRD_VAL_*` validation &nbsp;·&nbsp; `PRD_AUTH_*` permission &nbsp;·&nbsp; `PRD_CALC_*` calc &nbsp;·&nbsp; `PRD_LIFE_*` lifecycle &nbsp;·&nbsp; `PRD_XMOD_*` cross-module
+> **Rule count:** approximately 65 rules
+> **Audience:** Test author + developer — every rule ID is anchored from `04-test-scenarios*` pages
+> **Status lifecycle:** Section 5.1 (where present) carries the Live UI vs BRD discrepancy callouts
 
 ## 1. Overview
 

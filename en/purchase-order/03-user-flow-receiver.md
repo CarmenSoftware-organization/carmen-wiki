@@ -2,13 +2,17 @@
 title: Purchase Order — User Flow — Receiver
 description: Receiver's flow within the purchase-order module — physically accepts goods, raises GRN against PO, triggers receipt state transition.
 published: true
-date: 2026-05-16T10:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-order, user-flow, receiver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
 # Purchase Order — User Flow — Receiver
+
+> **At a Glance**
+> **Persona:** Receiver / Store Keeper (+ Inventory Manager) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Workflow stages:** sent → partial → completed (+ closed via early-close) &nbsp;·&nbsp; **Key permissions:** post GRN, set received/accepted qty, early-close (Inv Mgr)
+> **What this persona does:** Physically inspects vendor deliveries, posts GRN line by line, and flips PO status from sent to partial or completed.
 
 ## 1. Role in This Module
 

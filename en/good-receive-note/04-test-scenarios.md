@@ -2,13 +2,18 @@
 title: Good Receive Note (GRN) — Test Scenarios
 description: Test cases by persona, cross-persona scenarios, and Playwright mapping for good-receive-note.
 published: true
-date: 2026-05-15T11:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: good-receive-note, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
 ---
 
 # Good Receive Note (GRN) — Test Scenarios
+
+> **At a Glance**
+> **Module:** [[good-receive-note]] &nbsp;·&nbsp; **Total scenarios:** ~10 cross-persona + ~110 per-persona &nbsp;·&nbsp; **Personas covered:** Receiver, Purchaser, Finance, Audit / Config
+> **Run order:** Audit / Config setup → primary persona happy paths → cross-persona scenarios
+> **Each persona's drill-down is `04-test-scenarios-<role>.md`**
 
 ## 1. Overview
 

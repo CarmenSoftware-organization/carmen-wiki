@@ -2,13 +2,18 @@
 title: Costing — Test Scenarios — Inventory Controller
 description: Inventory Controller's test cases (cost-pick preview review, new-lot cost basis, variance investigation, cost-anomaly triage) for costing.
 published: true
-date: 2026-05-15T12:30:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: costing, test-scenarios, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
 ---
 
 # Costing — Test Scenarios — Inventory Controller
+
+> **At a Glance**
+> **Persona:** Inventory Controller &nbsp;·&nbsp; **Module:** [[costing]] &nbsp;·&nbsp; **Scenarios:** ~27
+> **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
+> **E2E coverage:** maps to `501-grn.spec.ts`, `701-sr.spec.ts`, `720-stock-issue.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
 This page captures the test scenarios that the Inventory Controller persona directly drives in the `costing` module. The Controller owns engine-input cleanliness: lot dates and `lot_seq_no` assignment correctness, receipt costs (the `cost_per_unit` written on inbound layers), adjustment cost bases (cost on `tb_stock_in` for new lots, picked cost on `tb_stock_out` for outbound), and waste write-off cost basis. They review the **cost-pick preview** on every adjustment approval (FIFO walk vs WA current average per `COST_AUTH_007`), verify new-lot cost basis against vendor pricelists / `tb_product.price_deviation_limit`, investigate valuation variances Finance surfaces during reconciliation, and proactively triage cost anomalies on the cost-layer ledger. The Controller does **not** approve credit-note revaluations (Finance per `COST_AUTH_005`), does **not** advance period state (Finance Manager per `COST_AUTH_006`), does **not** configure `calculation_method` (Sysadmin per `COST_AUTH_001`), and never edits cost-layer rows directly per `COST_AUTH_010`. Their costing-module ownership begins when (a) a Store Keeper raises an adjustment with cost implications, (b) a new-lot stock-in lands, (c) Finance escalates a variance, or (d) the cost-anomaly sweep surfaces an outlier, and ends when (a) the document posts at the picked cost, (b) the document escalates to Finance for above-threshold cost-impact or credit-note path, (c) the variance is resolved via compensating adjustment, or (d) the anomaly is dismissed or routed. Scenarios are grouped into **happy paths** (cost-pick preview matches, new-lot cost approved within tolerance, variance investigation resolved by compensating adjustment, anomaly dismissed), **RBAC** (Controller cannot edit cost-layer; Controller cannot approve credit-note), **validation** (cost-pick preview drives negative balance, new-lot cost above tolerance), and **edge cases** (FIFO consumption spanning many lots; WA average drift at boundary; concurrent approval on documents affecting the same lot).
 

@@ -2,13 +2,17 @@
 title: Physical Count — User Flow — Counter
 description: Counter / Store Keeper path through the physical-count lifecycle.
 published: true
-date: 2026-05-16T15:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: physical-count, user-flow, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
 ---
 
 # Physical Count — User Flow — Counter
+
+> **At a Glance**
+> **Persona:** Counter (Store Keeper) &nbsp;·&nbsp; **Module:** [[physical-count]] &nbsp;·&nbsp; **Workflow stages:** Enter first `actual_qty` (auto-transitions `pending → in_progress`; stamps `start_counting_at` / `start_counting_by_id`) &nbsp;·&nbsp; edit `actual_qty` and add line comments on own zone &nbsp;·&nbsp; sign off completed sheet back to Count Lead &nbsp;·&nbsp; **Key permissions:** edit own-zone lines (`PHC_AUTH_002 / PHC_AUTH_004`); cannot submit document to `completed` (Count Lead only)
+> **What this persona does:** Walks assigned zones, records physical quantities line by line, and flags damaged / unlabelled / unfamiliar items for the Count Lead.
 
 ## 1. Persona
 

@@ -2,13 +2,18 @@
 title: Recipe — Test Scenarios
 description: Test cases by persona, cross-persona scenarios, and Playwright mapping for the recipe module.
 published: true
-date: 2026-05-15T16:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: recipe, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
 ---
 
 # Recipe — Test Scenarios
+
+> **At a Glance**
+> **Module:** [[recipe]] &nbsp;·&nbsp; **Total scenarios:** ~14 cross-persona + per-persona drill-downs across all personas &nbsp;·&nbsp; **Personas covered:** Chef, Cost Controller, Outlet Manager, Procurement / F&B Ops, Audit / Config
+> **Run order:** Audit / Config setup → primary persona happy paths → cross-persona scenarios
+> **Each persona's drill-down is `04-test-scenarios-<role>.md`**
 
 ## 1. Overview
 

@@ -2,13 +2,17 @@
 title: Purchase Request — User Flow — Audit / Config
 description: Auditor (read-only) and System Administrator (workflow / threshold / delegation configuration) flows for purchase-request.
 published: true
-date: 2026-05-16T10:00:00.000Z
+date: 2026-05-17T11:00:00.000Z
 tags: purchase-request, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
 # Purchase Request — User Flow — Audit / Config
+
+> **At a Glance**
+> **Persona:** Auditor (read-only) + System Administrator (config) &nbsp;·&nbsp; **Module:** [[purchase-request]] &nbsp;·&nbsp; **Workflow stages:** off-path — observes all states; Sysadmin holds elevated void (PR_AUTH_007) &nbsp;·&nbsp; **Key permissions:** audit/read history, configure workflow / thresholds / delegation, elevated void
+> **What this persona does:** Reviews the immutable audit trail (Auditor) and owns workflow, threshold, delegation, and policy configuration (Sysadmin).
 
 ## 1. Role in This Module
 
