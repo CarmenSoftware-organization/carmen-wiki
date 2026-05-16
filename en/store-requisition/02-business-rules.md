@@ -137,7 +137,7 @@ State diagram (Prisma-canonical):
 
 The Prisma enum `enum_doc_status` documented above is what the live UI uses. The BRD (`BR-store-requisitions v1.5.0`) and `SR-User-Experience.md` describe a 6-state lifecycle. The table below maps every observable live-UI status to its BRD equivalent so testers and developers can reconcile the two without ambiguity. Source: `Test_case/System_Process/tx-03-sr.md` (capture date 2026-04-27).
 
-> Diff legend: ✅ match · 🟡 renamed · 🔴 new in live UI · 🔵 BRD only.
+> Diff legend: ✅ match · 🟡 renamed · 🔵 BRD only.
 
 | Live UI status | BRD equivalent | Diff | Notes |
 |---|---|---|---|
@@ -152,7 +152,7 @@ The Prisma enum `enum_doc_status` documented above is what the live UI uses. The
 
 > ⚠️ **Discrepancy — Stock Transfer view vs separate TRF transaction code:** BRD `BR-period-end v2.0.0` lists `TRF` as a peer transaction code alongside `SR` in Stage 1 of the period-close validation gate. The implementation (`BR-stock-transfers.md`) confirms that Stock Transfers are **not** a separate entity — they are SRs with INVENTORY destinations (`sr_type = transfer`). For period-close Stage 1 validation, SR records with INV → INV destinations satisfy both the `SR` and `TRF` buckets. The Stock Transfer page is a read-only filtered view of SR records, not a separate document. Source: `Test_case/System_Process/tx-03-sr.md` (capture date 2026-04-27).
 
-> ℹ️ **Note — Variant A auto-complete:** For `sr_type = transfer` (INV → INV), the Issue and Complete stages are treated as the same stage — auto-complete with no separate receiver confirmation step. For Variants B and C (`sr_type = issue`), the Storekeeper explicitly completes the document after issue.
+> ℹ️ **Note — Variant A auto-complete:** For `sr_type = transfer` (INV → INV), the Issue and Complete stages are treated as the same stage — auto-complete with no separate receiver confirmation step. For Variants B and C (`sr_type = issue`), the Fulfiller explicitly completes the document after issue.
 
 ## 6. Cross-Module Rules
 
