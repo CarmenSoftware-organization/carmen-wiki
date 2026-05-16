@@ -24,9 +24,9 @@ Section 2 below describes the **document lifecycle state machines** for both `tb
 
 ```mermaid
 stateDiagram-v2
-    [*] --> draft : Count Lead creates period header\n(tb_period open per INV_VAL_008 — PHC_VAL_001)
-    draft --> counting : First tb_physical_count created under period\n(auto-transition — Count Lead)
-    counting --> completed : All child tb_physical_count rows reach completed\n(system — terminal; period locked from new counts)
+    [*] --> draft : Count Lead creates period header (tb_period open per INV_VAL_008 — PHC_VAL_001)
+    draft --> counting : First tb_physical_count created under period (auto-transition — Count Lead)
+    counting --> completed : All child tb_physical_count rows reach completed (system — terminal; period locked)
     completed --> [*]
 
     note right of counting
@@ -40,10 +40,10 @@ stateDiagram-v2
 
 ```mermaid
 stateDiagram-v2
-    [*] --> pending : Count Lead generates count sheet for (period, location)\non_hand_qty snapshot captured per line (PHC_VAL_002–PHC_VAL_003)
-    pending --> in_progress : Counter enters first actual_qty\n(start_counting_at / start_counting_by_id stamped — PHC_AUTH_004)
-    in_progress --> in_progress : Counter enters / edits actual_qty within own zone\nOR Count Lead flags line for recount (PHC_VAL_007)
-    in_progress --> completed : Count Lead submits\n(product_counted == product_total — PHC_VAL_004;\nall recount flags resolved — PHC_POST_001 fires rollup)
+    [*] --> pending : Count Lead generates count sheet for (period, location) — on_hand_qty snapshot captured (PHC_VAL_002–003)
+    pending --> in_progress : Counter enters first actual_qty (start_counting_at / start_counting_by_id stamped — PHC_AUTH_004)
+    in_progress --> in_progress : Counter enters / edits actual_qty within own zone OR Count Lead flags for recount (PHC_VAL_007)
+    in_progress --> completed : Count Lead submits (product_counted == product_total — PHC_VAL_004 / all recount flags resolved — PHC_POST_001)
     completed --> [*]
 
     note right of in_progress
