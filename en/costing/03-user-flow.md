@@ -42,7 +42,7 @@ sequenceDiagram
     Note over TX,COST: SR — Store Requisition (internal transfer, any variant)
     TX->>INV: -qty inv source / +qty direct or consignment destination
     INV->>LOT: Lot consumed at inv source — no lot at destination
-    Note over COST: NOT triggered — goods move at existing unit cost (no re-average, no layer write). See COST_XMOD_003.
+    Note over COST: Cost-pick (COST_POST_002): existing layer consumed at existing cost. No AVCO re-average. No new FIFO layer. See COST_XMOD_003.
 
     Note over TX,COST: Physical Count — variance exists
     TX->>INV: ±qty variance (physical count transaction type)

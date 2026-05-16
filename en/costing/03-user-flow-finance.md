@@ -42,7 +42,7 @@ Finance is the **valuation authority** in the costing module. Costing has no doc
 | Action | Valuation policy | Sub-ledger reconciliation | Credit-note revaluation | Period-end orchestration | Period-lock (Finance Manager) |
 |---|---|---|---|---|---|
 | Read cost-layer ledger (`tb_inventory_transaction_cost_layer`) | ✅ (`COST_AUTH_004`) | ✅ (`COST_AUTH_004`) | ✅ (`COST_AUTH_004`) | ✅ (`COST_AUTH_004`) | ✅ (`COST_AUTH_004`) |
-| Read period snapshots (`tb_period_snapshot`) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Read period snapshots (`tb_period_snapshot`) | ✅ (`COST_AUTH_004`) | ✅ (`COST_AUTH_004`) | ✅ (`COST_AUTH_004`) | ✅ (`COST_AUTH_004`) | ✅ (`COST_AUTH_004`) |
 | Configure `tb_business_unit.calculation_method` (AVCO ↔ FIFO) | ✅ (as requester / co-approver; Sysadmin executes — `COST_AUTH_001`) | ❌ | ❌ | ❌ | ❌ |
 | Configure `enum_physical_count_costing_method` | ✅ (as requester; Sysadmin executes — `COST_AUTH_002`) | ❌ | ❌ | ❌ | ❌ |
 | Update `tb_product.standard_cost` | ✅ (as requester; Sysadmin executes — `COST_AUTH_003`) | ❌ | ❌ | ❌ | ❌ |

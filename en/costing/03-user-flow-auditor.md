@@ -65,7 +65,7 @@ The Auditor is **strictly read-only** across the full costing surface. Costing h
 | Advance period status | ❌ (`COST_AUTH_006` — Finance Manager only) |
 | Configure costing method or count-costing method | ❌ (`COST_AUTH_001` / `COST_AUTH_002` — Sysadmin only) |
 
-> ℹ️ **SR cost-flow invariant for audit.** SR does NOT write a cost-layer row at the destination (`COST_XMOD_003`). A correct cost-flow audit trace for an SR source-location outbound will show a `transfer_out` cost-layer row at the inventory source at the existing cost-per-unit — **not** an AVCO re-average or a new FIFO layer. An SR destination that shows a cost-layer write is anomalous and warrants escalation. Source: `Test_case/System_Process/proc-03-cost-calculation.md` § SR Exception — Why No Recalc.
+> ℹ️ **SR cost-flow invariant for audit.** SR cost-pick is pass-through — existing layer consumed at existing cost, no AVCO re-average or new FIFO layer (`COST_POST_002`, `COST_XMOD_003`). A correct cost-flow audit trace for an SR source-location outbound will show a `transfer_out` cost-layer row at the inventory source at the existing cost-per-unit — **not** an AVCO re-average or a new FIFO layer. An SR destination that shows a new cost-layer write or a re-averaged cost is anomalous and warrants escalation. Source: `Test_case/System_Process/proc-03-cost-calculation.md` § SR Exception — Why No Recalc.
 
 > ℹ️ **Spot Check cost-flow invariant for audit.** Spot Checks do NOT currently post QOH, lot, or cost-layer changes (status: PENDING per `Test_case/System_Process/INDEX.md`). A cost-flow trace that shows a `spot_check` transaction_type on `tb_inventory_transaction_cost_layer` is unexpected and warrants escalation to Sysadmin.
 

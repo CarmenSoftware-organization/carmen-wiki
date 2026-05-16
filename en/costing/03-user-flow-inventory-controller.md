@@ -56,7 +56,7 @@ The Inventory Controller is the **primary approval gate** for inventory adjustme
 | Lock period / advance period status | ❌ (`COST_AUTH_006` — Finance Manager only) | Controller signs off cost-side pre-condition; Finance Manager executes |
 | Edit `cost_per_unit` or `average_cost_per_unit` directly on a posted row | ❌ (`COST_AUTH_010`) | No role can edit a posted cost-layer row directly |
 
-> ℹ️ **SR is NOT in the Controller's costing queue.** Store Requisitions do not trigger the cost engine (`COST_XMOD_003`; [[costing/02-business-rules]] § 5.2). SR cost-pick preview does not appear in the Controller's adjustment queue for the source location's cost-layer — the SR moves goods at existing cost without a new cost-layer write.
+> ℹ️ **SR cost-pick is pass-through — not in the Controller's costing queue.** Store Requisitions invoke the cost engine (`COST_POST_002`, `COST_XMOD_003`) to pick the existing layer cost at the source location, but AVCO is not re-averaged and no new FIFO layer is created — existing layer is consumed at existing cost. SR cost-pick preview does not appear in the Controller's adjustment queue because no recalculation occurs; the SR moves goods at book value.
 
 ## 2. Entry Point and Primary Flow
 
