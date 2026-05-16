@@ -28,7 +28,7 @@ graph LR
 
 ### Permission Matrix — V6 Action × Sub-persona (Audit / Config)
 
-Both sub-personas are non-transactional — they do not raise, approve, edit, post, or void adjustment documents. Their work is on the boundaries: configuration (System Administrator) and read-only inspection (Auditor). Rows are derived from Section 2 of this file (`ADJ_AUTH_008`, `ADJ_AUTH_009`, `ADJ_AUTH_010`, `ADJ_POST_004`).
+Both sub-personas are non-transactional — they do not raise, approve, edit, post, or void adjustment documents. Their work is on the boundaries: configuration (System Administrator) and read-only inspection (Auditor). Rows are derived from Section 2 (Entry Point and Primary Flow) of this file; rule citations refer to [[inventory-adjustment/02-business-rules]] § 4 (Authorization Rules) and § 5 (Posting Rules).
 
 | Action | System Administrator | Auditor |
 |---|---|---|

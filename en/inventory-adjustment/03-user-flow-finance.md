@@ -26,7 +26,7 @@ graph LR
 
 ### Permission Matrix — V5 Touchpoint × Action (Finance)
 
-Finance operates across two distinct touchpoints: **large-cost approval** (above-Controller-threshold documents in the Finance queue) and **period-end reconciliation** (verifying the adjustment activity rolls up correctly into the inventory sub-ledger and GL). Finance has no authority over below-Controller-threshold documents. Rows are derived from Section 2 of this file (`ADJ_AUTH_005`, `ADJ_POST_002`, `ADJ_POST_004`, `ADJ_CALC_008`, `ADJ_CALC_010`, `ADJ_XMOD_007`).
+Finance operates across two distinct touchpoints: **large-cost approval** (above-Controller-threshold documents in the Finance queue) and **period-end reconciliation** (verifying the adjustment activity rolls up correctly into the inventory sub-ledger and GL). Finance has no authority over below-Controller-threshold documents. Rows are derived from Section 2 (Entry Point and Primary Flow) of this file; rule citations refer to [[inventory-adjustment/02-business-rules]] § 4 (Authorization Rules) and § 5 (Posting Rules).
 
 | Action | Large-cost approval (Finance queue) | Period-end reconciliation |
 |---|---|---|

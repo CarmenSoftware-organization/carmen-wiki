@@ -29,7 +29,7 @@ graph LR
 
 ### Permission Matrix — V1 Status × Action (Store Keeper)
 
-The Store Keeper holds create and edit rights at `draft`, auto-approve authority for below-threshold existing-lot documents, and read-only visibility once `in_progress` or `completed`. Rows are derived from Section 2 of this file (`ADJ_AUTH_001`–`ADJ_AUTH_003`, `ADJ_AUTH_010`, `ADJ_VAL_013`).
+The Store Keeper holds create and edit rights at `draft`, auto-approve authority for below-threshold existing-lot documents, and read-only visibility once `in_progress` or `completed`. Rows are derived from Section 2 (Entry Point and Primary Flow) of this file; rule citations refer to [[inventory-adjustment/02-business-rules]] § 4 (Authorization Rules) and § 5 (Posting Rules).
 
 | Action | `draft` | `in_progress` | `completed` | `cancelled` / `voided` |
 |---|---|---|---|---|
@@ -108,7 +108,7 @@ The **count-rollup** flow is owned by [[physical-count]] / [[spot-check]] person
 
 ## 4. Exit Point / Handoffs
 
-The Store Keeper's involvement on a given adjustment ends at one of five boundaries:
+The Store Keeper's involvement on a given adjustment ends at one of six boundaries:
 
 - **Auto-approve post complete.** Below-threshold, non-new-lot, non-requires-quality-check stock-in / stock-out posts immediately on submit. `doc_status = completed`; inventory transaction posted; GL entry generated. The Store Keeper's work is done; no handoff. Activity log records `auto_approve_post`.
 - **Above-threshold handoff to Inventory Controller.** Document at `tb_stock_in.doc_status = in_progress` (or `tb_stock_out.doc_status = in_progress`) routes to **Inventory Controller** ([03-user-flow-inventory-controller.md](./03-user-flow-inventory-controller.md)) for approval. The Store Keeper re-engages only if the Controller rejects (document returns to `draft`) or asks for additional evidence on the activity log.

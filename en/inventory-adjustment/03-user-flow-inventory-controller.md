@@ -27,7 +27,7 @@ graph LR
 
 ### Permission Matrix — V2 Action × Stage Role (Inventory Controller)
 
-The Inventory Controller is the **approval authority between the auto-approve threshold and the Finance threshold**. The matrix below uses a two-stage axis (Controller-band approval and count-rollup commit) from the Controller's perspective. Rows are derived from Section 2 of this file (`ADJ_AUTH_003`–`ADJ_AUTH_007`, `ADJ_POST_004`, `ADJ_POST_006`, `ADJ_CALC_008`).
+The Inventory Controller is the **approval authority between the auto-approve threshold and the Finance threshold**. The matrix below uses a two-stage axis (Controller-band approval and count-rollup commit) from the Controller's perspective. Rows are derived from Section 2 (Entry Point and Primary Flow) of this file; rule citations refer to [[inventory-adjustment/02-business-rules]] § 4 (Authorization Rules) and § 5 (Posting Rules).
 
 | Action | Controller-band approval (`฿500–฿10,000`) | Count-rollup commit |
 |---|---|---|
@@ -36,7 +36,7 @@ The Inventory Controller is the **approval authority between the auto-approve th
 | Approve new-lot stock-in (any cost impact) | ✅ (`ADJ_AUTH_003`) — validates lot identity + cost defensibility | — |
 | Reject document (`in_progress → draft`) | ✅ (`ADJ_AUTH_004`) — rejection reason in `workflow_history` | ✅ (can reject count before commit) |
 | Cancel `in_progress` document (`→ cancelled`) | ✅ (`ADJ_AUTH_007`) | — |
-| Forward above-threshold to Finance | ✅ (`ADJ_AUTH_005` — routes to Finance queue) | — |
+| Forward above-threshold to Finance | ❌ (out of band — see above-band note) | — |
 | Commit count variances (Physical Count / Spot Check) | — | ✅ (`ADJ_POST_006`) — auto-creates `tb_stock_in` (overage) + `tb_stock_out` (shortage) |
 | Direct-create `tb_stock_in` / `tb_stock_out` | ✅ (`ADJ_AUTH_001` — same scope as Store Keeper) | — |
 | Void `completed` document (compensating reversal) | ✅ (`ADJ_AUTH_007`, `ADJ_POST_004`) | — |
