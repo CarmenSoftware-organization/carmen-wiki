@@ -26,14 +26,14 @@ The adjustment module uses **two parallel document trees** — `tb_stock_in` (di
 
 ```mermaid
 stateDiagram-v2
-    [*] --> draft : create tb_stock_in\n(Store Keeper / Inventory Controller — ADJ_AUTH_001)
-    draft --> in_progress : submit — below threshold + existing lot\n(auto-approve cascade to completed fires per ADJ_POST_001)
-    draft --> in_progress : submit — above threshold OR new-lot stock-in\n(routes to Inventory Controller queue — ADJ_AUTH_003 / ADJ_AUTH_004)
+    [*] --> draft : create tb_stock_in — Store Keeper / Inventory Controller (ADJ_AUTH_001)
+    draft --> in_progress : submit — below threshold + existing lot — auto-approve to completed (ADJ_POST_001)
+    draft --> in_progress : submit — above threshold OR new-lot stock-in — routes to Controller (ADJ_AUTH_003 / ADJ_AUTH_004)
     draft --> cancelled : cancel (creator — ADJ_POST_003)
-    in_progress --> completed : approve (Inventory Controller below Finance threshold — ADJ_AUTH_004)\nor Finance (above Controller threshold — ADJ_AUTH_005)\nPosting fires: new lot created · WA refreshed / FIFO layer added (ADJ_POST_002)
+    in_progress --> completed : approve — Controller below threshold (ADJ_AUTH_004) or Finance above (ADJ_AUTH_005) — Posting: new lot / WA refresh / FIFO layer (ADJ_POST_002)
     in_progress --> draft : reject (Inventory Controller / Finance — return to creator)
     in_progress --> cancelled : cancel in_progress (Inventory Controller — ADJ_AUTH_007)
-    completed --> voided : void via compensating tb_stock_out (ADJ_POST_004)\nOriginal inventory transaction not edited (INV_POST_012)
+    completed --> voided : void via compensating tb_stock_out — Original transaction not edited (ADJ_POST_004 / INV_POST_012)
     completed --> [*]
     cancelled --> [*]
     voided --> [*]
@@ -50,14 +50,14 @@ stateDiagram-v2
 
 ```mermaid
 stateDiagram-v2
-    [*] --> draft : create tb_stock_out\n(Store Keeper / Inventory Controller — ADJ_AUTH_001)
-    draft --> in_progress : submit — below threshold\n(auto-approve cascade to completed fires per ADJ_POST_001)
-    draft --> in_progress : submit — above threshold or requires-quality-check\n(routes to Inventory Controller / Finance queue — ADJ_AUTH_004 / ADJ_AUTH_005)
+    [*] --> draft : create tb_stock_out — Store Keeper / Inventory Controller (ADJ_AUTH_001)
+    draft --> in_progress : submit — below threshold — auto-approve to completed (ADJ_POST_001)
+    draft --> in_progress : submit — above threshold or requires-quality-check — routes to Controller / Finance (ADJ_AUTH_004 / ADJ_AUTH_005)
     draft --> cancelled : cancel (creator — ADJ_POST_003)
-    in_progress --> completed : approve (Inventory Controller / Finance — ADJ_POST_002)\nPosting fires: oldest lot consumed first · FIFO layers consumed / WA cost picked
+    in_progress --> completed : approve — Controller / Finance (ADJ_POST_002) — Posting: oldest lot first / FIFO layers / WA cost picked
     in_progress --> draft : reject (Inventory Controller / Finance — return to creator)
     in_progress --> cancelled : cancel in_progress (Inventory Controller — ADJ_AUTH_007)
-    completed --> voided : void via compensating tb_stock_in (ADJ_POST_004)\nOriginal inventory transaction not edited (INV_POST_012)
+    completed --> voided : void via compensating tb_stock_in — Original transaction not edited (ADJ_POST_004 / INV_POST_012)
     completed --> [*]
     cancelled --> [*]
     voided --> [*]
