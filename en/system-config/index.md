@@ -1,0 +1,56 @@
+---
+title: System Configuration
+description: Document-flow and accounting-period system configuration — workflow, period, dimensions, numbering.
+published: true
+date: 2026-05-16T08:00:00.000Z
+tags: system-config, configuration, carmen-software
+editor: markdown
+dateCreated: 2026-05-16T08:00:00.000Z
+---
+
+# System Configuration
+
+## 1. Overview
+
+System Configuration is the umbrella for the **document-flow and accounting-period machinery** that every transactional module depends on. Workflows define multi-stage approval routing with per-stage actions, recipients, and field visibility. Periods define the accounting calendar and gate which dated postings are allowed. Dimensions are the user-extensible custom-field system threaded through every transactional table. Running codes drive document numbering. Application config is the generic key-value escape hatch. The menu registry feeds the app shell.
+
+The six entities here sit between [[master-data]] (the static catalogues — units, vendors, currencies) and the runtime [[access-control]] layer (users, roles, permissions). Where master data answers *what* a transaction is referencing, system configuration answers *how* it should flow, *when* it should post, and *what extra dimensions* it should carry. Most rows are owned and edited by Sysadmin; a few — workflow stages and dimension catalogues in particular — see day-to-day adjustment from a designated Workflow Administrator.
+
+All six entities live in the **tenant** schema. None of them have a platform counterpart — they describe per-property document flow, so each tenant gets its own copy.
+
+## 2. Audience
+
+Sysadmin. Workflow definition may be delegated to a Workflow Administrator persona (typically the Finance Manager or Procurement Manager) for day-to-day stage / approver maintenance. Finance owns period close.
+
+## 3. Entity List
+
+| Entity | Purpose | Managed by |
+| ------ | ------- | ---------- |
+| [workflow](./workflow.md) | Multi-stage approval workflows with per-stage actions, recipients, field visibility | Sysadmin / Workflow Admin |
+| [period](./period.md) | Accounting periods (open/closed/locked) and per-period inventory snapshots | Sysadmin / Finance |
+| [dimension](./dimension.md) | User-defined custom fields with per-place display matrix | Sysadmin |
+| [running-code](./running-code.md) | Document-number patterns per document type | Sysadmin |
+| [application-config](./application-config.md) | Tenant-wide key-value settings + per-user preference overrides | Sysadmin |
+| [menu](./menu.md) | Navigation registry rendered by the app shell | Sysadmin |
+
+## 4. Cross-Module Dependencies
+
+- [[purchase-request]] requires [[system-config/workflow]] (PR approval routing), [[system-config/running-code]] (PR number), [[system-config/dimension]] (PR header/detail tagging).
+- [[purchase-order]] requires [[system-config/workflow]] (PO approval routing where policy demands it), [[system-config/running-code]] (PO number), [[system-config/dimension]] (PO header/detail tagging).
+- [[good-receive-note]] requires [[system-config/period]] (posting-date guard), [[system-config/running-code]] (GRN number), [[system-config/dimension]] (GRN header/detail tagging), [[system-config/workflow]] (optional approval).
+- [[store-requisition]] requires [[system-config/workflow]] (SR approval routing — canonical multi-stage workflow), [[system-config/running-code]] (SR number), [[system-config/dimension]] (issue tagging — project / event).
+- [[inventory-adjustment]] requires [[system-config/period]] (posting-date guard), [[system-config/running-code]] (IA / SI / SO numbers), [[system-config/dimension]] (stock-in / stock-out tagging), [[system-config/workflow]] (optional approval).
+- [[inventory]] requires [[system-config/period]] (period boundaries on every movement) and [[system-config/dimension]] (cost-centre allocation on transfer).
+- [[costing]] requires [[system-config/period]] (the cost-close engine writes `tb_period_snapshot`).
+- [[physical-count]] requires [[system-config/period]] (count documents are frozen against a period), [[system-config/running-code]] (count document number), [[system-config/workflow]] (variance approval).
+- [[spot-check]] requires [[system-config/running-code]] (document number), [[system-config/workflow]] (variance approval).
+- [[vendor-pricelist]] requires [[system-config/running-code]] (pricelist reference), [[system-config/workflow]] (optional publish-approval), [[system-config/dimension]] (pricelist tagging).
+- [[system-config/application-config]] and [[system-config/menu]] are referenced by every module — application-config tunes feature toggles and defaults, menu controls navigation visibility.
+
+## 5. References
+
+- **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`.
+- **carmen/docs:** `../carmen/docs/workflow-permissions-system.md` (workflow role types and the permission matrix consumed by [[system-config/workflow]]).
+- **Seed data:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/seed-data-a01/` — `tb_workflow.json`, `tb_config_running_code.json`, `tb_application_config.json`.
+- **Design spec:** `.specs/2026-05-16-master-config-design.md`.
+- **Plan:** `.specs/2026-05-16-master-config-plan.md`.
