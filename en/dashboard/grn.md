@@ -2,7 +2,7 @@
 title: GRN Dashboard
 description: Goods Receive Note KPIs — receiving-now / received-today / MTD / YTD counts, tabbed pending PO by day-band, overdue PO with critical highlight, incomplete and over-received GRN tables, plus top vendors and category spend.
 published: true
-date: 2026-05-16T17:00:00.000Z
+date: 2026-05-17T08:00:00.000Z
 tags: dashboard, good-receive-note, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -10,61 +10,85 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 # GRN Dashboard
 
-## 1. Purpose
+> **At a Glance**
+> **Route:** `/dashboard/grn` &nbsp;·&nbsp; **For:** Receiver &nbsp;·&nbsp; Inventory Controller &nbsp;·&nbsp; Procurement Manager &nbsp;·&nbsp; **Status:** **Mock-data today**; live wiring pending
 
-GRN Dashboard at `/dashboard/grn` is the receiver's operations board. It answers *"what's hitting the dock today, what's late, and where are receipts disagreeing with the order?"* The page leads with four KPI cards (Receiving Now, Received Today, MTD, YTD), then arranges four data tables in a 2×2 grid (Pending PO by day-band tabs, Overdue PO, Incomplete GRNs, Over-Received GRNs), and closes with two analytics charts on YTD spend.
+## 1. What & Who
 
-The Pending PO block is interactive — a three-button tab strip (TODAY / THIS WEEK / NEXT WEEK) swaps the table data client-side without a page navigation.
+Receiver's operations board. Answers *"what's hitting the dock today, what's late, and where are receipts disagreeing with the order?"*
 
-## 2. Tiles / Widgets
+**Layout:** 4 KPI cards (top: Receiving Now / Received Today / MTD / YTD) → 2×2 grid of tables (Pending PO by day-band, Overdue PO, Incomplete GRNs, Over-Received GRNs) → 2 YTD spend charts (bottom).
 
-| Tile | Type | What it shows | Drill-down | Data source (current) |
-|---|---|---|---|---|
-| Receiving Now | KPI card | Integer count, arrow icon, primary colour | (Inferred) → [[good-receive-note]] in-progress | `mock/grn.ts` → `grnKpi.receivingNow` |
-| Received Today | KPI card | Integer count, check icon, success colour | (Inferred) → [[good-receive-note]] today | `mock/grn.ts` → `grnKpi.receivedToday` |
-| GRN Total (MTD) | KPI card | Integer count, calendar icon | (Inferred) → [[good-receive-note]] month-to-date | `mock/grn.ts` → `grnKpi.grnMtd` |
-| GRN Total (YTD) | KPI card | Formatted number, package icon | (Inferred) → [[good-receive-note]] year-to-date | `mock/grn.ts` → `grnKpi.grnYtd` |
-| Pending Purchase Orders (PO) | Tabbed table — Today / This Week / Next Week | PO ID, Supplier Name, Expected Date, Items Count, Total Amount, Priority badge (`High` / `Medium` / `Low`) | (Inferred) → [[purchase-order]] | `mock/grn.ts` → `pendingPoToday` / `pendingPoThisWeek` / `pendingPoNextWeek` |
-| Overdue Purchase Orders | Table with critical highlight | PO ID, Supplier, Original Due Date, Days Overdue (red badge `OVERDUE` if ≥ 10 days, otherwise red number), Items Count | (Inferred) → [[purchase-order]] | `mock/grn.ts` → `overduePos` (threshold `OVERDUE_THRESHOLD = 10`) |
-| Incomplete GRNs (Partial Receipts) | Table | GRN ID, PO ID, Supplier, Qty Ordered, Qty Received, Variance %, "Partially Received" info badge | (Inferred) → [[good-receive-note]] | `mock/grn.ts` → `incompleteGrns` |
-| Over-Received GRNs (Excess Receipts) | Table | GRN ID (with AlertTriangle), PO ID, Supplier, PO Amount, GRN Amount, Excess Amount, Variance % | (Inferred) → [[good-receive-note]] | `mock/grn.ts` → `overReceivedGrns` |
-| Top 5 Vendors by Purchase YTD (USD Millions) | Horizontal bar chart | Vendor name + `$NM` value labels | (Inferred) → [[vendor-pricelist]] | `mock/grn.ts` → `topVendorsYtd` |
-| Purchasing Spend by Category | Grouped vertical bar chart | Current Month vs YTD Total per category | — | `mock/grn.ts` → `spendByCategory` |
+The Pending PO block is interactive — a 3-button tab strip (TODAY / THIS WEEK / NEXT WEEK) swaps the table client-side without navigation.
 
-The 10-day overdue threshold (`OVERDUE_THRESHOLD`) is hard-coded in `dashboard-grn.tsx` — production should source this from a configurable SLA setting.
+**Audience**
 
-## 3. Data Sources
-
-Currently mocked. Expected live mapping:
-
-- KPI cards — count queries on [[good-receive-note]] filtered by `status` ("in progress" for Receiving Now, `commit_date = today` for Received Today, etc.).
-- Pending PO tabs — [[purchase-order]] lines grouped by `expected_delivery_date` bucket (today / this-week / next-week) where no [[good-receive-note]] line has been committed.
-- Overdue PO — [[purchase-order]] lines where `expected_delivery_date < CURRENT_DATE` AND not fully received. Days overdue = `CURRENT_DATE - expected_delivery_date`.
-- Incomplete / Over-Received GRNs — both join committed [[good-receive-note]] lines back to their [[purchase-order]] line; "incomplete" is `received_qty < ordered_qty`, "over-received" is `received_qty > ordered_qty`. Variance % is computed on the frontend.
-- Top Vendors YTD — sum on GRN line amount grouped by `vendor_id`, top 5.
-- Spend by Category — sum on GRN line amount grouped by [[master-data/product-category]], split current month vs YTD.
-
-## 4. Refresh Cadence
-
-Static mock today. The four KPI cards and the Receiving Now figure should refetch frequently once wired (dock activity is real-time-ish); recommend `CACHE_DYNAMIC` (1-minute stale) at minimum. The Top Vendors YTD chart can use `CACHE_NORMAL` (5-minute stale) since YTD totals change slowly.
-
-## 5. Audience & Persona
-
-- **Receiver / Dock Operator** — primary. Watches Pending PO tabs to prep for the day, Overdue PO to escalate to Purchasing, and Receiving Now to know who's at the dock right now.
-- **Inventory Controller** — uses Incomplete and Over-Received GRN tables for variance investigation before committing to inventory.
+- **Receiver / Dock Operator** — primary. Watches Pending PO tabs to prep the day, Overdue PO to escalate, Receiving Now to know who's at the dock.
+- **Inventory Controller** — uses Incomplete and Over-Received tables for variance investigation before committing.
 - **Procurement Manager** — reviews Top Vendors YTD and Spend by Category for supplier performance.
 
-## 6. Related Modules
+## 2. Tiles & Drill-downs
+
+| Tile | What it shows | Drill-down (when live) |
+|---|---|---|
+| **Receiving Now** | Integer count, arrow icon (primary colour) | → [[good-receive-note]] in-progress |
+| **Received Today** | Integer count, check icon (success colour) | → [[good-receive-note]] today |
+| **GRN Total (MTD)** | Integer count, calendar icon | → [[good-receive-note]] month-to-date |
+| **GRN Total (YTD)** | Formatted number, package icon | → [[good-receive-note]] year-to-date |
+| **Pending Purchase Orders** | Tabs Today / This Week / Next Week — PO, Supplier, Expected Date, Items, Total, Priority (`High` / `Medium` / `Low`) | → [[purchase-order]] |
+| **Overdue Purchase Orders** | PO, Supplier, Original Due Date, Days Overdue (red `OVERDUE` badge if ≥ 10 days), Items | → [[purchase-order]] |
+| **Incomplete GRNs (Partial Receipts)** | GRN, PO, Supplier, Qty Ordered, Qty Received, Variance %, "Partially Received" badge | → [[good-receive-note]] |
+| **Over-Received GRNs (Excess Receipts)** | GRN (AlertTriangle), PO, Supplier, PO Amount, GRN Amount, Excess, Variance % | → [[good-receive-note]] |
+| **Top 5 Vendors by Purchase YTD** | Horizontal bar with `$NM` value labels | → [[vendor-pricelist]] |
+| **Purchasing Spend by Category** | Grouped vertical bar: Cur Month vs YTD per category | — |
+
+The 10-day threshold (`OVERDUE_THRESHOLD`) is hard-coded in `dashboard-grn.tsx` — production should source from a configurable SLA setting.
+
+## 3. Common Questions
+
+| Question | Answer |
+|---|---|
+| Why doesn't "Received Today" tick up after I commit a GRN? | **Mock-data today** — counts come from `mock/grn.ts`. Live wiring uses `CACHE_DYNAMIC` (1-min stale) with refetch-on-focus. |
+| What classifies a PO as "Overdue" vs "Critical OVERDUE"? | Overdue = `expected_delivery_date < CURRENT_DATE` AND not fully received. Critical badge fires when days-overdue ≥ `OVERDUE_THRESHOLD = 10` (currently hard-coded). |
+| How is Variance % computed for partial / over receipts? | Frontend computes from `received_qty` vs `ordered_qty` on each row joined back to its [[purchase-order]] line. |
+| Where do day-band tabs (Today / This Week / Next Week) get their lists? | [[purchase-order]] lines grouped by `expected_delivery_date` bucket where no [[good-receive-note]] line has been committed. |
+| Why do YTD totals show in USD millions? | Mock fixture uses `$M`; production localises to BU base currency from [[master-data/exchange-rate]]. |
+
+## 4. Troubleshooting
+
+| Symptom | Cause | Action |
+|---|---|---|
+| Receiving Now badge stuck on same number all day | Mock has no real-time tick | Live wiring should refetch on focus and on commit-event hook |
+| Overdue threshold not matching SLA policy | `OVERDUE_THRESHOLD = 10` hard-coded in component | File enhancement ticket to source from [[system-config/workflow]] config |
+| Incomplete vs Over-Received GRN both show same row | Mock fixture seeded inconsistently | Live query is mutually exclusive: `received_qty < ordered_qty` vs `received_qty > ordered_qty` |
+| Tab switch (Today/This Week/Next Week) doesn't change data | Mock arrays differ but state-binding may regress | Inspect `pendingPoToday` / `pendingPoThisWeek` / `pendingPoNextWeek` |
+
+---
+
+## 5. Data Sources (Dev)
+
+- **KPI cards** — count queries on [[good-receive-note]] filtered by `status` (`in progress` for Receiving Now, `commit_date = today` for Received Today, etc.)
+- **Pending PO tabs** — [[purchase-order]] lines grouped by `expected_delivery_date` bucket where no [[good-receive-note]] line committed
+- **Overdue PO** — [[purchase-order]] where `expected_delivery_date < CURRENT_DATE` AND not fully received; days overdue = `CURRENT_DATE - expected_delivery_date`
+- **Incomplete / Over-Received GRNs** — join committed [[good-receive-note]] line to PO line; incomplete `received_qty < ordered_qty`, over `received_qty > ordered_qty`; Variance % computed frontend
+- **Top Vendors YTD** — sum GRN-line amount grouped by `vendor_id`, top 5
+- **Spend by Category** — sum GRN-line amount grouped by [[master-data/product-category]], split current month vs YTD
+
+## 6. Refresh Cadence
+
+Static mock today. Once wired: KPI cards and Receiving Now should refetch frequently (dock activity is real-time-ish) — `CACHE_DYNAMIC` (1-min stale) minimum. Top Vendors YTD can use `CACHE_NORMAL` (5-min) since YTD totals change slowly.
+
+## 7. Related Modules
 
 - [[good-receive-note]] — transactional system-of-record
 - [[purchase-order]] — upstream commitment behind every pending / overdue row
 - [[inventory]] — downstream stock impact once GRN commits
 - [[vendor-pricelist]] — vendor master for the Top Vendors chart
-- [[costing]] — variance handling for over-received quantities tied to commit-time costing
+- [[costing]] — variance handling for over-received quantities at commit-time costing
 
-## 7. Reference Sources
+## 8. Reference Sources
 
-- `../carmen-inventory-frontend/app/(root)/dashboard/grn/page.tsx` — page shell
-- `../carmen-inventory-frontend/app/(root)/dashboard/_components/dashboard-grn.tsx` — `DashboardGrn` composition (KPI cards, pending PO tabs, overdue PO, incomplete GRNs, over-received GRNs, top vendors, spend by category)
-- `../carmen-inventory-frontend/app/(root)/dashboard/mock/grn.ts` — fixture data
-- `../carmen-inventory-frontend/messages/en.json` → `dashboard.grn.title` = "Goods Receive Note Dashboard"
+- **Page shell:** `../carmen-inventory-frontend/app/(root)/dashboard/grn/page.tsx`
+- **Composition:** `../carmen-inventory-frontend/app/(root)/dashboard/_components/dashboard-grn.tsx`
+- **Mock data:** `../carmen-inventory-frontend/app/(root)/dashboard/mock/grn.ts`
+- **i18n:** `messages/en.json` → `dashboard.grn.title` = "Goods Receive Note Dashboard"

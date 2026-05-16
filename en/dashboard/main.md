@@ -2,7 +2,7 @@
 title: Main Dashboard
 description: Landing dashboard surfacing top-level KPIs across PR, PO, GRN, Inventory, and SR — the single pane shown immediately after login.
 published: true
-date: 2026-05-16T17:00:00.000Z
+date: 2026-05-16T18:00:00.000Z
 tags: dashboard, landing, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -10,57 +10,78 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 # Main Dashboard
 
-## 1. Purpose
+> **At a Glance**
+> **Route:** `/dashboard/main` (also from bare `/dashboard` via redirect) &nbsp;·&nbsp; **For:** Executive / Controller / HOD post-login &nbsp;·&nbsp; **Status:** Mock-data today; live wiring pending
 
-Main Dashboard is the post-login landing surface at `/dashboard/main` (reached from the bare `/dashboard` URL via server-side redirect). It answers the question *"how is the whole procure-to-pay chain doing this month?"* — a single pane of cross-domain KPIs aimed at an executive, controller, or department head who needs a snapshot before drilling into a specific module.
+## 1. What & Who
 
-The page composes four KPI cards across the top, two charts (donut + horizontal bar) in the middle row, and two analysis blocks (PR pipeline bottleneck + top-5 vendors) at the bottom. Tiles are read-only and do not link out in the current implementation — drill-down behaviour is expected once the live data wiring lands.
+Post-login landing surface. Answers *"how is the whole procure-to-pay chain doing this month?"* — a single pane of cross-domain KPIs aimed at someone who needs a snapshot before drilling into a specific module.
 
-## 2. Tiles / Widgets
+**Layout:** 4 KPI cards (top) → 2 charts (middle: donut + bar) → 2 analysis blocks (PR pipeline bottleneck + top vendors).
 
-| Tile | Type | What it shows | Drill-down | Data source (current) |
-|---|---|---|---|---|
-| Total Spend This Month | KPI card | `฿` value with up/down arrow vs. last month and % change | (Inferred — to be verified against live UI) | `mock/main.ts` → `kpiData.totalSpendThisMonth` |
-| Pending PRs Count | KPI card | Integer count + subtext "HOD Approved, Awaiting Purchase" | (Inferred) → [[purchase-request]] | `mock/main.ts` → `kpiData.pendingPrCount` |
-| Open POs Count | KPI card | Integer count + subtext "Waiting for Delivery" | (Inferred) → [[purchase-order]] | `mock/main.ts` → `kpiData.openPoCount` |
-| Actual Spend vs Budget | KPI card with progress bar | Percent (0-100) and description | (Inferred) | `mock/main.ts` → `kpiData.budgetUtilization` |
-| Spend by Material Group | Donut chart | Five segments (Food, Beverage, Supplies, Chemicals, Others) with percent labels | — | `mock/main.ts` → `spendByMaterialGroup` |
-| Spend by Business Unit / Department | Horizontal bar chart | Five departments with `฿` amount labels | — | `mock/main.ts` → `spendByDepartment` |
-| PR Pipeline: Bottleneck Analysis | Stacked bar list | Six stages (Saved, Committed, Awaiting HOD, Awaiting Purchase, Approved, Rejected) with count, `฿` amount, and a "Bottleneck" badge where flagged | (Inferred) → [[purchase-request]] | `mock/main.ts` → `prPipeline` |
-| Top 5 Vendors by Spend | Table | Vendor name, total spend, PO count, average delivery time (days) | (Inferred) → [[vendor-pricelist]] | `mock/main.ts` → `topVendors` |
+**Audience**
 
-All amounts render via `formatCurrency` which uses `฿` and Thai locale grouping (`th-TH`).
+- **Executive / GM** — 4 KPI cards + spend-by-department bar
+- **Procurement Manager** — PR Pipeline bottleneck + Top Vendors
+- **Finance Controller** — Budget Utilisation + spend-mix donut
 
-## 3. Data Sources
+## 2. Tiles & Drill-downs
 
-Current build uses static fixtures in `app/(root)/dashboard/mock/main.ts`. When live data arrives the expected mapping is:
+| Tile | What it shows | Drill-down (when live) |
+|---|---|---|
+| **Total Spend This Month** | `฿` amount, ↑/↓ vs last month, % change | (Inferred — to be verified) |
+| **Pending PRs Count** | Integer + "HOD Approved, Awaiting Purchase" | → [[purchase-request]] |
+| **Open POs Count** | Integer + "Waiting for Delivery" | → [[purchase-order]] |
+| **Actual Spend vs Budget** | % progress bar 0–100 | (Inferred) |
+| **Spend by Material Group** | Donut: Food / Beverage / Supplies / Chemicals / Others | — |
+| **Spend by Department** | Bar: 5 departments, `฿` amounts | — |
+| **PR Pipeline — Bottleneck** | 6 stages (Saved / Committed / Awaiting HOD / Awaiting Purchase / Approved / Rejected) with count, `฿`, bottleneck badge | → [[purchase-request]] |
+| **Top 5 Vendors by Spend** | Vendor, total spend, PO count, avg delivery days | → [[vendor-pricelist]] |
 
-- KPI cards — aggregate queries against the [[purchase-request]], [[purchase-order]], and ledger tables, plus a budget-vs-actual report from [[reporting-audit]].
-- Spend by Material Group / Department — grouped sum on PO or GRN lines joined to [[master-data/product-category]] and [[master-data/department]].
-- PR Pipeline — group-count on [[purchase-request]] by `workflow_current_stage`.
-- Top Vendors — sum on PO total amount grouped by `vendor_id`, joined to [[vendor-pricelist]] for vendor name.
+Currency formatted via `formatCurrency` → `฿` + Thai locale grouping (`th-TH`).
 
-## 4. Refresh Cadence
+## 3. Common Questions
 
-Currently static (mock module-level constants — rendered once on mount). Once wired to the my-pending and approval endpoints (`hooks/use-dashboard.ts`), TanStack Query's `CACHE_DYNAMIC` profile applies: `staleTime` 1 minute, `gcTime` 5 minutes — no auto-refetch interval, refetch on window focus per default TanStack behaviour.
+| Question | Answer |
+|---|---|
+| Why aren't my tiles refreshing? | All tiles are **mock-data today**. Live hooks exist but are not yet mounted. |
+| Where do the PR Pipeline numbers come from? | Will be group-count on [[purchase-request]] by `workflow_current_stage` once wired |
+| Where is the live data path? | `hooks/use-dashboard.ts` (`useMyPendingPrCount` / `useMyPendingPoCount` / `useMyPendingSrCount`) and `hooks/use-approval.ts` (`useApprovalPending`) — wired to `/api/proxy/api/my-pending/*` and `/api/proxy/api/approval/pending` but **not mounted** on this page yet |
+| What does the orange "Bottleneck" badge mean? | One stage holding more `฿` value than its expected share — flagged in `mock/main.ts` per-stage `isBottleneck` |
+| Should the Budget tile reflect just this month or YTD? | Currently `mock/main.ts` shows month % only — production will source from a [[reporting-audit]] query dataset |
 
-## 5. Audience & Persona
+## 4. Troubleshooting
 
-- **Executive / GM** — wants the four KPI cards and the spend-by-department bar in one glance.
-- **Procurement Manager** — uses the PR Pipeline block to spot bottleneck stages and the Top Vendors table to gauge supplier concentration.
-- **Finance Controller** — watches Budget Utilisation and the donut share of Food vs. Beverage vs. Supplies.
+| Symptom | Cause | Action |
+|---|---|---|
+| Tile not clickable / drill goes nowhere | Drill-down routes not wired in current build | (Inferred — to be verified against live UI) |
+| Numbers don't match the PR/PO sub-dashboards | Every dashboard reads its own independent mock today | Will resolve once all tiles read live endpoints |
+| Currency renders as `$` instead of `฿` on some pages | Mock fixture quirk on PR / PO / Inventory mocks | Production wiring should localise to BU base currency from [[master-data/exchange-rate]] |
+| Tile shows zero or blank | Mock fixture intentionally seeded with that value | Inspect `app/(root)/dashboard/mock/main.ts` to confirm |
+
+---
+
+## 5. Data Sources (Dev)
+
+When live wiring arrives, expected mapping:
+
+- **KPI cards** — aggregate queries against [[purchase-request]], [[purchase-order]], ledger tables, plus a budget-vs-actual report from [[reporting-audit]].
+- **Spend by Material Group / Department** — grouped sum on PO/GRN lines joined to product-category and [[master-data/department]].
+- **PR Pipeline** — group-count on [[purchase-request]] by `workflow_current_stage`.
+- **Top Vendors** — sum PO total amount grouped by `vendor_id`, joined to [[vendor-pricelist]].
+
+**Refresh cadence:** static mock today. With live hooks: `CACHE_DYNAMIC` (1-min stale, 5-min gc), refetch on focus, no polling interval.
 
 ## 6. Related Modules
 
-- [[dashboard]] — module index with all sibling sub-pages
-- [[dashboard/pr]] — drill destination for the PR Pipeline block
-- [[dashboard/po]] — drill destination for Open POs and Top Vendors
-- [[purchase-request]], [[purchase-order]], [[good-receive-note]] — transactional sources behind the spend aggregates
-- [[reporting-audit]] — query datasets that will eventually back the spend-by-group and budget tiles
+- [[dashboard]] — module index + sibling sub-pages
+- [[dashboard/pr]], [[dashboard/po]] — drill destinations for the PR Pipeline and Open POs / Top Vendors blocks
+- [[purchase-request]], [[purchase-order]], [[good-receive-note]] — transactional sources behind every spend aggregate
+- [[reporting-audit]] — query datasets that will back the spend-by-group and budget tiles
 
 ## 7. Reference Sources
 
-- `../carmen-inventory-frontend/app/(root)/dashboard/main/page.tsx` — page shell, dynamic-imports `DashboardMain`
-- `../carmen-inventory-frontend/app/(root)/dashboard/_components/dashboard-main.tsx` — full tile composition
-- `../carmen-inventory-frontend/app/(root)/dashboard/mock/main.ts` — current mock data
-- `../carmen-inventory-frontend/messages/en.json` → `dashboard.main.title` = "Dashboard"
+- **Page shell:** `../carmen-inventory-frontend/app/(root)/dashboard/main/page.tsx`
+- **Composition:** `../carmen-inventory-frontend/app/(root)/dashboard/_components/dashboard-main.tsx`
+- **Mock data:** `../carmen-inventory-frontend/app/(root)/dashboard/mock/main.ts`
+- **i18n:** `messages/en.json` → `dashboard.main.title` = "Dashboard"

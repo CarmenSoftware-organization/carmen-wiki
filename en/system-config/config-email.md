@@ -2,7 +2,7 @@
 title: Email Configuration
 description: SMTP / sender / template configuration for outbound system email — workflow notifications, scheduled report delivery, password reset.
 published: true
-date: 2026-05-16T17:00:00.000Z
+date: 2026-05-17T08:00:00.000Z
 tags: system-config, email, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -10,19 +10,54 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 # Email Configuration
 
-## 1. Purpose
+> **At a Glance**
+> **Owner:** Sysadmin only &nbsp;·&nbsp; **Storage:** `tb_application_config` row (`key = "report_email"`) &nbsp;·&nbsp; **Used by:** `micro-notification`, scheduled reports, password reset, audit alerts &nbsp;·&nbsp; **One SMTP profile per BU; SMTP password encrypted at rest.**
 
-Email Configuration is the per-business-unit SMTP profile Carmen uses for every outbound email — workflow notifications (PR / PO / GRN / SR approvals, sendbacks, rejections), scheduled report delivery from [[reporting-audit/report]] / [[reporting-audit/schedule]], password-reset and access-grant notices from [[access-control]], audit / alert emails from [[reporting-audit/activity]], and ad-hoc test emails fired from the admin screen. There is no separate "email server" record — the SMTP host, port, credentials, default-from address, default-to / CC list, and subject prefix all live as a single JSON blob in `tb_application_config` under the key `report_email`. Sysadmin curates the profile per BU; rotation of SMTP credentials is logged via [[reporting-audit/activity]] and the SMTP password is encrypted at rest before it leaves the request handler.
+## 1. What & Who
 
-There is currently **no separate email-template table** in the tenant schema — message bodies are built by the notification service from a fixed template per notification type, with the document's denormalised display fields substituted at send time. The `subject_prefix` field on this config (default `[Carmen]`) is the one user-tunable string in the subject line.
+Email Configuration is the **per-BU SMTP profile** Carmen uses for every outbound email — workflow notifications (PR / PO / GRN / SR approvals, sendbacks, rejections), scheduled report delivery, password-reset notices, and ad-hoc test emails. There is no dedicated table: the SMTP host, port, credentials, default-from, default-to / CC, and subject prefix all live as a **single JSON blob** in `tb_application_config` under the key `report_email`.
 
-## 2. Prisma Model(s) OR Data Model
+**Audience:** Sysadmin only (App ID `app-config.upsert`). No separate email-template table exists — bodies are built by `micro-notification` from per-notification-type templates; only `subject_prefix` (default `[Carmen]`) is user-tunable in the subject line.
 
-There is no dedicated `tb_email_config` table — the entire profile is one JSON row in `tb_application_config` keyed by `key = "report_email"`.
+## 2. Common Tasks
 
-### 2.1 `tb_application_config` row (`key = "report_email"`)
+| Task | Where | Notes |
+|---|---|---|
+| Update SMTP host / port / username / from | System Admin → Email Configuration → **SMTP Server** section | `Save` calls `PUT /api/config/:bu_code/app-config/report_email` |
+| Rotate SMTP password | Type the new password in the masked field, then **Save** | Encrypted at rest by `encryptSecret`; unchanged masked value = "leave password as-is" |
+| Add / remove a default recipient or CC | **Recipients** section, comma-separated | Must be valid emails; Zod-validated on write |
+| Change subject prefix | **Recipients** → Subject Prefix | Prepended to every subject (default `[Carmen]`) |
+| Send a test email | **Test Email** button (top of form) | Uses the *saved* config, not the form draft — **save first, then test** |
+| Silence email without breaking workflow | Set `smtp.enabled = false` | Kill-switch: notifications short-circuit; documents still progress |
 
-`tb_application_config` is the generic tenant-wide KV store ([[system-config/application-config]] for the umbrella entity). The `report_email` row carries a Zod-validated value with this shape:
+## 3. Validation & Errors
+
+| Symptom / Message | Cause | Action |
+|---|---|---|
+| "Invalid SMTP config" Zod error | Missing host / username / from, or port outside `1..65535` | Fill the required fields; check the port |
+| "Recipient is not a valid email" | Bad address in `recipients` or `cc` | Fix the comma-separated list |
+| Test email succeeds in form but no mail arrives | Form draft not saved — Test uses the saved value | Click **Save** first, then **Test Email** |
+| All notifications silent in production | `smtp.enabled = false` accidentally left set | Re-enable on the form and Save |
+| 403 on save / load | User lacks `app-config.upsert` (Sysadmin only) | Grant via [[access-control/role]] |
+| Password field shows `***ENCRYPTED***` | Expected — masked on read so ciphertext never reaches the browser | Leave as-is to keep current password; type new to rotate |
+
+## 4. Edge Cases
+
+- **Password encryption at rest.** `smtp.password` is encrypted with `encryptSecret` before persistence and replaced with literal `***ENCRYPTED***` on `GET`. Idempotent — already-encrypted values are not re-encrypted.
+- **Decrypted access path.** Only the internal `getReportEmailForSend(bu_code)` (TCP-only, called by `micro-notification` / cron) decrypts. The public HTTP path never returns plaintext.
+- **Audit safety.** Every upsert is captured via `EnrichAuditUsers` into [[reporting-audit/activity]] — but the value itself is *not* logged, avoiding accidental ciphertext disclosure.
+- **One row per BU.** `tb_application_config` has `@@unique([key, deleted_at])`. Cross-BU isolation is enforced by the BU-scoped route.
+- **`enabled` is a kill-switch, not a delete.** Toggling off pauses email cleanly without losing the config.
+
+---
+
+## 5. Backing Service / Data Shape (Dev)
+
+Source: tenant schema. **No dedicated `tb_email_config`** — the entire profile is one JSON row.
+
+### 5.1 `tb_application_config` row (`key = "report_email"`)
+
+`tb_application_config` is the generic tenant-wide KV store (see [[system-config/application-config]]). The Zod-validated shape:
 
 ```jsonc
 {
@@ -30,59 +65,46 @@ There is no dedicated `tb_email_config` table — the entire profile is one JSON
     "host": "smtp.gmail.com",          // string, required
     "port": 587,                        // int 1..65535
     "username": "noreply@example.com", // string, required
-    "password": "ENC:<ciphertext>",    // string, encrypted at rest
-    "from": "noreply@example.com",     // string, From: header
-    "enabled": true                     // boolean, master kill-switch
+    "password": "ENC:<ciphertext>",    // encrypted at rest; masked on GET
+    "from": "noreply@example.com",     // From: header
+    "enabled": true                     // master kill-switch
   },
-  "recipients": ["admin@example.com"], // array of email — default To
-  "cc": ["finance@example.com"],       // array of email — default CC
-  "subject_prefix": "[Carmen]"         // string, prepended to every subject
+  "recipients": ["admin@example.com"], // default To
+  "cc": ["finance@example.com"],       // default CC
+  "subject_prefix": "[Carmen]"         // prepended to every subject
 }
 ```
 
-When the row is read by the admin UI, the `smtp.password` field is masked as `***ENCRYPTED***` so the ciphertext never reaches the browser. When it is read by the internal `getReportEmailForSend(bu_code)` path (TCP-only, called by `micro-notification` / cron), the password is decrypted and handed to nodemailer.
+### 5.2 Related downstream tables
 
-### 2.2 Related downstream tables
+- `tb_report_schedule.recipients` (JSONB) — per-schedule override.
+- `tb_report_job` — actual send attempt (`status`, `started_at`, `completed_at`, `error_message`).
+- `tb_purchase_request.email_template_id`, `tb_purchase_order.email_template_id` — string handle for the per-document template family in `micro-notification`.
 
-- `tb_report_schedule.recipients` (JSONB array) — per-schedule overrides for who receives a scheduled report.
-- `tb_report_job` — captures the actual send attempt with `status`, `started_at`, `completed_at`, `error_message`.
-- `tb_purchase_request.email_template_id`, `tb_purchase_order.email_template_id` (VarChar) — string handle for the per-document email template family; the actual template body lives in `micro-notification`, not in this table.
+## 6. Business Rules
 
-## 3. Usage / Cross-References
+- **Sysadmin-only.** Read and write gated by App ID `app-config.upsert`.
+- **Password encryption + masking.** Encrypted via `encryptSecret`; replaced with `***ENCRYPTED***` on read. Unchanged masked value means "leave as-is".
+- **Zod validation on write.** Host, port (1–65535), username, password, from, enabled all required by `ReportEmailSchema`; `recipients` / `cc` must be valid emails.
+- **`enabled` kill-switch.** When `false`, the notification service short-circuits before opening a connection — workflow still progresses, no email leaves.
+- **Send context.** Decryption only via internal `getReportEmailForSend` over TCP from `micro-notification` / cron — no user_id required.
+- **Test email** uses the *saved* config (not the form draft) and goes to configured recipients.
+- **Audit logging** via `EnrichAuditUsers`; the JSON value itself is *not* logged.
 
-- [[reporting-audit/notification]] — every workflow notification (submit / approve / reject / sendback) reads this config to send. `micro-notification` is the runtime consumer.
-- [[reporting-audit/schedule]] — scheduled report emails (`tb_report_schedule`) use this SMTP profile for delivery; per-schedule `recipients` overrides the default-to list.
-- [[reporting-audit/report]] — on-demand report delivery routes through the same SMTP.
-- [[access-control/user]] — password reset, invite, and access-grant emails route here.
-- [[system-config/workflow]] — recipient routing rules (`requestor`, `current_approve`, `next_step`) are resolved against the workflow definition; the actual SMTP transport is this config.
-- [[system-config/application-config]] — `report_email` is one of several reserved keys; this page documents that one key in detail.
+## 7. Cross-References
 
-## 4. Configuration UI
+- [[system-config/application-config]] — umbrella KV store; `report_email` is one reserved key.
+- [[reporting-audit/notification]] — `micro-notification` is the runtime consumer.
+- [[reporting-audit/schedule]] / [[reporting-audit/report]] — scheduled and on-demand report delivery.
+- [[access-control/user]] — password reset, invite, access-grant emails.
+- [[system-config/workflow]] — recipient routing rules (`requestor`, `current_approve`, `next_step`) resolved against workflow; transport is this config.
+- [[reporting-audit/activity]] — upserts logged here.
 
-Managed by **Sysadmin** under System Admin → Email Configuration (`/system-admin/config-email`). The screen is a single form with two sections:
-
-1. **SMTP Server** — Host, Port (default `587`), Username, Password (`type=password`, never round-trips the ciphertext), From Address, Enabled toggle.
-2. **Recipients** — To (comma-separated), CC (comma-separated), Subject Prefix.
-
-Two top-level actions: **Save** persists the value via `PUT /api/config/:bu_code/app-config/report_email`; **Test Email** calls `POST /api/config/:bu_code/app-config/test-email`, which delegates to `micro-notification` and sends an audit-traced test message to the configured recipients using the *currently-saved* config (not the form draft — save first, then test).
-
-## 5. Business Rules
-
-- **One row per BU.** `tb_application_config` has `@@unique([key, deleted_at])`. Only Sysadmin can read or write this row (App ID `app-config.upsert`).
-- **Password encryption at rest.** The `smtp.password` field is encrypted with the platform secret (`encryptSecret` / `decryptSecret` in `@/common/crypto.util`) before being persisted. Idempotent — if the value is already encrypted it is not re-encrypted.
-- **Password masking on read.** The `GET` endpoint replaces `smtp.password` with the literal string `***ENCRYPTED***` before returning. The admin form treats an unchanged masked value as "leave password as-is".
-- **Zod validation on write.** Host, port (1-65535), username, password, from, and enabled are all required by `ReportEmailSchema`; `recipients` and `cc` must be valid email addresses if provided. Invalid writes are rejected with the validation error.
-- **Enabled flag is a kill-switch.** When `smtp.enabled` is `false`, the notification service short-circuits before opening a connection — the document still progresses through workflow, but no email leaves the system. This is the safe way to silence email in staging or during incidents.
-- **Send context.** The decrypted password is only accessible through the internal `getReportEmailForSend` path, which uses `getdb_connection_for_external` so system callers (cron, micro-notification) don't need a real user_id. The public HTTP path never returns the decrypted value.
-- **Test email behaviour.** Tests use the *saved* config and go to the configured recipients — they do *not* validate the form's current draft. Failures bubble up as a toast and are logged.
-- **Audit logging.** Every upsert is captured via the `EnrichAuditUsers` interceptor and lands in [[reporting-audit/activity]] with the actor's user_id; the value itself is *not* logged (avoiding accidental ciphertext disclosure).
-
-## 6. References
+## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_application_config` (lines ~4910-4924).
 - **Backend service:** `../carmen-turborepo-backend-v2/apps/micro-business/src/app-config/app-config.service.ts` — `ReportEmailSchema`, `encryptSensitiveFields`, `maskSensitiveFields`, `getReportEmailForSend`, `testEmail`.
 - **Backend gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_app-config/config_app-config.controller.ts`.
 - **Frontend route:** `../carmen-inventory-frontend/app/(root)/system-admin/config-email/page.tsx` and `_components/config-email-component.tsx`.
 - **Frontend hook:** `../carmen-inventory-frontend/hooks/use-app-config.ts` — `useAppConfigByKey('report_email')`, `useUpsertAppConfig`, `useTestEmail`.
-- **Notification consumer:** `micro-notification` reads `tb_application_config(report_email)` via TCP from `getReportEmailForSend`.
-- **Cross-module:** see Section 3.
+- **Notification consumer:** `micro-notification` reads via TCP from `getReportEmailForSend`.

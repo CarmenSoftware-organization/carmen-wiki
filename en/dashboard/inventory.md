@@ -2,7 +2,7 @@
 title: Inventory Dashboard
 description: Inventory operations cockpit — status pipeline, slow-moving / replenishment / PST tables filtered by location, value by material group, expired-items alert, and consumption charts by location and category.
 published: true
-date: 2026-05-16T17:00:00.000Z
+date: 2026-05-17T08:00:00.000Z
 tags: dashboard, inventory, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -10,67 +10,89 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 # Inventory Dashboard
 
-## 1. Purpose
+> **At a Glance**
+> **Route:** `/dashboard/inventory` &nbsp;·&nbsp; **For:** Inventory Controller &nbsp;·&nbsp; Store Manager &nbsp;·&nbsp; Finance &nbsp;·&nbsp; QA &nbsp;·&nbsp; **Status:** **Mock-data today**; live wiring pending
 
-Inventory Dashboard at `/dashboard/inventory` is the inventory controller's daily board. It answers *"where is stock locked, what's not moving, what needs reordering, and where is consumption running?"* The page opens with a five-step status pipeline strip, follows with a left-side stack of three location-filtered tables (Slow-Moving / Dead Stock, Replenishment, PST Status), and a right-side grid of analytics cards (Inventory Value by Material Group, Expired Items Alert, Consumption by Location, Consumption by Category).
+## 1. What & Who
 
-Two of the tables expose a Location tab picker (`Main Store`, `Bar`, `Restaurant`, etc. — see `INVENTORY_LOCATIONS`) so the same widget retargets without a navigation.
+Inventory controller's daily board. Answers *"where is stock locked, what's not moving, what needs reordering, and where is consumption running?"*
 
-## 2. Tiles / Widgets
+**Layout:** 5-step status pipeline (top) → left stack of 3 location-filtered tables (Slow-Moving / Replenishment / PST) → right grid of analytics (Value by Material Group / Expired Items / Consumption by Location / Consumption by Category).
 
-| Tile | Type | What it shows | Drill-down | Data source (current) |
-|---|---|---|---|---|
-| Status Pipeline | Five-card strip with arrow connectors | Location count (Stock-Take Not Complete), Location count (Stock-Take Complete), Doc count (Uncommitted Docs Curr Mo), Item count (Expiring Items Curr Mo), Inventory Value (Curr Mo) | (Inferred) → [[physical-count]] / [[inventory]] | `mock/inventory.ts` → `inventoryPipeline` |
-| Slow-Moving / Dead Stock | Table + Location tabs | Item Name, SKU, Location, Days No Movement, Est. Value | (Inferred) → [[inventory]] item detail | `mock/inventory.ts` → `slowMovingItems` |
-| Inventory Replenishment (Below Par) | Table + Location tabs + Create-PR buttons | Item Name, SKU, Location, On Hand, Par Level, Max Level, Order Qty; "CREATE PR" actions | (Inferred) → [[purchase-request]] new with prefilled items | `mock/inventory.ts` → `replenishmentItems` |
-| Physical Stock Take Status | Table | Location, Dept, Last Count Date, PST Status badge (`Completed` / `Awaiting Approval` / `In Progress`), SVF Name | (Inferred) → [[physical-count]] | `mock/inventory.ts` → `pstRecords` |
-| Inventory Value by Material Group | Donut + adjacent bar chart + legend | Three groups (Food / Beverage / Supplies) with percent and `$K` amounts | — | `mock/inventory.ts` → `inventoryByMaterialGroup` |
-| Expired Items Alert (Lot/Exp Master) | Table | Item Name (XCircle icon), Expiry Date | (Inferred) → [[inventory]] lot/expiry | `mock/inventory.ts` → `expiredItems` |
-| Total Consumption by Location (Cur MO vs YTD) | Horizontal bar chart | Location + amount labels | — | `mock/inventory.ts` → `consumptionByLocation` |
-| Total Consumption by Category | Horizontal bar chart + SR Awaiting Receipt callout | Category + amount labels; small bar above lists SR# awaiting receipt with "Details" link | (Inferred) → [[store-requisition]] for SR# rows | `mock/inventory.ts` → `consumptionByCategory`, `srAwaitingReceipt` |
+Two tables expose a Location tab picker (`Main Store`, `Bar`, `Restaurant`, etc. — see `INVENTORY_LOCATIONS`) so the same widget retargets without navigation.
 
-The Replenishment table has two "CREATE PR" buttons rendered side-by-side with different styling — likely placeholders for two PR templates (e.g., normal PR vs. urgent PR). Mark this **(Inferred — to be verified against live UI)**.
+**Audience**
 
-## 3. Data Sources
+- **Inventory Controller** — primary. Watches Slow-Moving / Dead Stock, Replenishment, and PST Status.
+- **Store Manager** — uses Location tab picker to scope every table; uses "CREATE PR" in Replenishment.
+- **Finance Controller** — watches Inventory Value by Material Group as on-hand financial exposure.
+- **Compliance / QA** — watches Expired Items Alert.
 
-Currently mocked. Expected live mapping:
+## 2. Tiles & Drill-downs
 
-- Status Pipeline — counts derived from [[physical-count]] (locations not yet committed for the period), [[inventory]] aggregate (uncommitted documents this month), [[inventory]] lot table filtered by expiry within the month, and the rolling inventory-value rollup.
-- Slow-Moving / Dead Stock — query against [[inventory]] item-location balances joined to last-movement date; threshold for "slow" is configurable.
-- Replenishment — items where `on_hand < par_level`; order qty suggestion = `max_level - on_hand` (or per [[store-requisition/stock-replenishment]] policy).
-- PST Status — [[physical-count]] header records filtered to the latest count per location, with the workflow stage projecting to one of the three badge variants.
-- Inventory Value by Material Group — sum on `on_hand × unit_cost` grouped by [[master-data/product-category]] root.
-- Expired Items Alert — [[inventory]] lot table where `expiry_date ≤ CURRENT_DATE + N_days` (N configurable).
-- Consumption by Location / Category — sum on committed [[inventory]] outbound movements (SR-issued, wastage, recipe consumption) grouped by location and category.
-- SR Awaiting Receipt — [[store-requisition]] rows where `status = "issued"` and the destination location has not yet committed receipt.
+| Tile | What it shows | Drill-down (when live) |
+|---|---|---|
+| **Status Pipeline** | 5 cards: Stock-Take Not Complete (Loc count) / Stock-Take Complete (Loc count) / Uncommitted Docs Curr Mo (Doc count) / Expiring Items Curr Mo (Item count) / Inventory Value (Curr Mo) | → [[physical-count]] / [[inventory]] |
+| **Slow-Moving / Dead Stock** | Item, SKU, Location, Days No Movement, Est. Value (with Location tabs) | → [[inventory]] item detail |
+| **Inventory Replenishment (Below Par)** | Item, SKU, Location, On Hand, Par, Max, Order Qty + two "CREATE PR" buttons (Location tabs) | → [[purchase-request]] new with prefilled items |
+| **Physical Stock Take Status** | Location, Dept, Last Count Date, PST Status badge (`Completed` / `Awaiting Approval` / `In Progress`), SVF Name | → [[physical-count]] |
+| **Inventory Value by Material Group** | Donut + bar + legend: Food / Beverage / Supplies with percent + `$K` | — |
+| **Expired Items Alert** | Item (XCircle), Expiry Date | → [[inventory]] lot/expiry |
+| **Total Consumption by Location** | Horizontal bar with Cur Mo vs YTD amounts | — |
+| **Total Consumption by Category** | Horizontal bar + SR Awaiting Receipt callout listing SR# with "Details" link | → [[store-requisition]] for SR# rows |
 
-## 4. Refresh Cadence
+The Replenishment table renders **two "CREATE PR" buttons** side-by-side with different styling — likely placeholders for two PR templates (e.g., normal vs. urgent). **(Inferred — to be verified against live UI)**
 
-Static mock today. Once wired:
+## 3. Common Questions
 
-- Status Pipeline and the value rollups can use `CACHE_NORMAL` (5-minute stale) — they roll up slowly.
-- Replenishment and PST Status should be `CACHE_DYNAMIC` (1-minute) — operators take action against these tables in real time.
-- Consumption charts can be `CACHE_NORMAL` since they aggregate over the month / YTD.
+| Question | Answer |
+|---|---|
+| Why doesn't the Location tab filter all tables at once? | Each table owns its own Location state; tab picker only retargets that one widget. |
+| What's the threshold for "Slow-Moving"? | Configurable threshold against last-movement date — currently mock; no central config surface today. |
+| How is "Order Qty" suggested in Replenishment? | `max_level - on_hand` (or per [[store-requisition/stock-replenishment]] policy). |
+| Does "CREATE PR" actually create the PR? | **Inferred — to be verified against live UI.** Mock has no handler. Live wiring should pre-fill a new [[purchase-request]] with the line items. |
+| How is Inventory Value calculated? | `on_hand × unit_cost` grouped by [[master-data/product-category]] root; `unit_cost` comes from [[costing]]. |
+| What triggers the Expired Items Alert? | [[inventory]] lot table where `expiry_date ≤ CURRENT_DATE + N_days` (N configurable). |
 
-## 5. Audience & Persona
+## 4. Troubleshooting
 
-- **Inventory Controller** — primary. Watches Slow-Moving / Dead Stock to prune dead inventory, Replenishment to keep par levels healthy, and PST Status to chase outstanding counts.
-- **Store Manager** — uses the Location tab picker to scope every table to their store, and uses the "CREATE PR" buttons in Replenishment to raise new requests.
-- **Finance Controller** — watches Inventory Value by Material Group as the on-hand financial exposure.
-- **Compliance / QA** — watches the Expired Items Alert.
+| Symptom | Cause | Action |
+|---|---|---|
+| Switching Location tab shows same rows | Mock fixture not partitioned by location | Live query filters on `location_id` |
+| "CREATE PR" click does nothing | No handler wired in current build | (Inferred — to be verified against live UI) |
+| PST Status badge missing for a known count | Mock has finite rows; live data uses latest count per location | Verify against [[physical-count]] header records |
+| Expired Items list empty though items have expired | Mock fixture seeded with few rows | Live query reads [[inventory]] lot table with expiry filter |
+| Inventory Value chart shows `$K` not `฿K` | Mock fixture currency quirk | Production localises to BU base currency |
 
-## 6. Related Modules
+---
+
+## 5. Data Sources (Dev)
+
+- **Status Pipeline** — counts from [[physical-count]] (locations not committed for period), [[inventory]] aggregate (uncommitted docs this month), [[inventory]] lot table (expiring within month), inventory-value rollup
+- **Slow-Moving / Dead Stock** — [[inventory]] item-location balances joined to last-movement date; threshold configurable
+- **Replenishment** — items where `on_hand < par_level`; order qty = `max_level - on_hand` (or per [[store-requisition/stock-replenishment]])
+- **PST Status** — [[physical-count]] header records, latest count per location; workflow stage projects to 3 badge variants
+- **Inventory Value by Material Group** — sum `on_hand × unit_cost` grouped by [[master-data/product-category]] root
+- **Expired Items Alert** — [[inventory]] lot where `expiry_date ≤ CURRENT_DATE + N_days`
+- **Consumption by Location / Category** — sum committed [[inventory]] outbound movements (SR-issued, wastage, recipe) grouped by location / category
+- **SR Awaiting Receipt** — [[store-requisition]] where `status = "issued"` AND destination location not yet committed receipt
+
+## 6. Refresh Cadence
+
+Static mock today. Once wired: Status Pipeline and value rollups → `CACHE_NORMAL` (5-min). Replenishment and PST Status → `CACHE_DYNAMIC` (1-min, operators act in real time). Consumption charts → `CACHE_NORMAL` (aggregate over month / YTD).
+
+## 7. Related Modules
 
 - [[inventory]] — transactional balances and movements behind every tile
 - [[inventory-adjustment]] — variance posting after PST
-- [[physical-count]], [[spot-check]] — count operations that drive the PST Status table
-- [[store-requisition]] — outbound issues feeding Consumption charts and the SR Awaiting Receipt callout
-- [[purchase-request]] — target of the "CREATE PR" replenishment buttons
-- [[costing]] — supplies the `unit_cost` for the inventory-value donut
+- [[physical-count]], [[spot-check]] — count operations driving PST Status
+- [[store-requisition]] — outbound issues feeding Consumption + SR Awaiting Receipt
+- [[purchase-request]] — target of "CREATE PR" replenishment buttons
+- [[costing]] — supplies `unit_cost` for the inventory-value donut
 
-## 7. Reference Sources
+## 8. Reference Sources
 
-- `../carmen-inventory-frontend/app/(root)/dashboard/inventory/page.tsx` — page shell
-- `../carmen-inventory-frontend/app/(root)/dashboard/_components/dashboard-inventory.tsx` — `DashboardInventory` composition (pipeline, slow-moving, replenishment, PST, value chart, expired alert, consumption charts)
-- `../carmen-inventory-frontend/app/(root)/dashboard/mock/inventory.ts` — fixture data including `INVENTORY_LOCATIONS`
-- `../carmen-inventory-frontend/messages/en.json` → `dashboard.inventory.title` = "Inventory Dashboard"
+- **Page shell:** `../carmen-inventory-frontend/app/(root)/dashboard/inventory/page.tsx`
+- **Composition:** `../carmen-inventory-frontend/app/(root)/dashboard/_components/dashboard-inventory.tsx`
+- **Mock data:** `../carmen-inventory-frontend/app/(root)/dashboard/mock/inventory.ts` (includes `INVENTORY_LOCATIONS`)
+- **i18n:** `messages/en.json` → `dashboard.inventory.title` = "Inventory Dashboard"

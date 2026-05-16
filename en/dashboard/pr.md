@@ -2,7 +2,7 @@
 title: PR Dashboard
 description: Purchase Request summary tiles — pipeline by stage, sent-back/rejected lists, personal vs department spending, and the approver task queue.
 published: true
-date: 2026-05-16T17:00:00.000Z
+date: 2026-05-17T08:00:00.000Z
 tags: dashboard, purchase-request, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -10,56 +10,78 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 # PR Dashboard
 
-## 1. Purpose
+> **At a Glance**
+> **Route:** `/dashboard/pr` &nbsp;·&nbsp; **For:** Requester &nbsp;·&nbsp; HOD / Approver &nbsp;·&nbsp; Procurement &nbsp;·&nbsp; **Status:** **Mock-data today**; live hooks defined but not mounted &nbsp;·&nbsp; **Scope:** Personal — the signed-in user's PRs
 
-PR Dashboard at `/dashboard/pr` is a personal-requisitions cockpit. The page header reads "MY PR – PERSONAL REQUISITIONS DASHBOARD" with a date subtitle, signalling that the surface is scoped to the signed-in user's work rather than a system-wide view. It answers two questions for a requester or approver: *"where are my PRs stuck?"* and *"what's waiting on me right now?"*
+## 1. What & Who
 
-The layout is a five-stage pipeline strip at the top, two tables (Sent Back, Rejected) on the left, a spending donut + bar pair on the right, and a full-width Awaiting Approval task queue at the bottom.
+Personal-requisitions cockpit. Header reads "MY PR – PERSONAL REQUISITIONS DASHBOARD". Answers two questions: *"where are my PRs stuck?"* and *"what's waiting on me right now?"*
 
-## 2. Tiles / Widgets
+**Layout:** Five-stage pipeline strip (top) → two tables Sent Back / Rejected (left) + spending donut + dept bar (right) → full-width Awaiting Approval queue (bottom).
 
-| Tile | Type | What it shows | Drill-down | Data source (current) |
-|---|---|---|---|---|
-| PR Summary (Status Pipeline) | Five-step pipeline strip with icons + arrows | Stages: Requests, In Process, Approved, PO Generated, Received — each with count and progress bar | (Inferred) → [[purchase-request]] filtered by stage | `mock/pr.ts` → `prPipelineSummary` |
-| Sent Back PRs | Table | PR Number, Item Name, Date Sent, Sender, Reason — with CornerUpLeft icon | (Inferred) → [[purchase-request]] detail | `mock/pr.ts` → `sentBackPrs` |
-| PRs Rejected & Item Rejects | Table | PR Number/Item ID, Material Name, Requester, Rejected By, Reason — with XCircle icon | (Inferred) → [[purchase-request]] detail | `mock/pr.ts` → `rejectedPrs` |
-| My Spending (Personal) | Donut chart | Personal spend split by 3 categories with external-label percent | — | `mock/pr.ts` → `personalSpending` |
-| Department Spending (F&B Dept) | Horizontal bar chart | 3 categories (Food, Beverage, Guest Supply) with amount labels | — | `mock/pr.ts` → `departmentSpending` |
-| PRs Awaiting Approval (Task Queue) | Table with status badge | PR Number, Item Name, Requester, Dept, Date Requested, Status (`Awaiting HOD Approve` / `Awaiting PO`), "Direct details" action | (Inferred) → [[purchase-request]] detail | `mock/pr.ts` → `awaitingApprovalQueue` |
+**Audience**
 
-Currency formatting in the spending charts uses USD (`$`) in the current mock — this is a sample-data quirk; production should follow the BU base currency rule from [[master-data/exchange-rate]].
+- **Requester** — primary. Watches Sent Back / Rejected to fix and resubmit; tracks the pipeline strip.
+- **HOD / Approver** — uses the Awaiting Approval task queue at the bottom; `Awaiting HOD Approve` badge targets HOD action.
+- **Procurement** — checks `Awaiting PO` rows ready to convert into a [[purchase-order]].
 
-## 3. Data Sources
+## 2. Tiles & Drill-downs
 
-Currently mocked. Expected live mapping:
+| Tile | What it shows | Drill-down (when live) |
+|---|---|---|
+| **PR Summary (Pipeline)** | 5 stages: Requests / In Process / Approved / PO Generated / Received — count + progress bar | → [[purchase-request]] filtered by stage |
+| **Sent Back PRs** | PR Number, Item, Date Sent, Sender, Reason | → [[purchase-request]] detail |
+| **PRs Rejected & Item Rejects** | PR Number/Item ID, Material, Requester, Rejected By, Reason | → [[purchase-request]] detail |
+| **My Spending (Personal)** | Donut by 3 categories with external-label percent | — |
+| **Department Spending (F&B Dept)** | Horizontal bar: Food / Beverage / Guest Supply | — |
+| **PRs Awaiting Approval** | PR, Item, Requester, Dept, Date, Status badge (`Awaiting HOD Approve` / `Awaiting PO`), "Direct details" action | → [[purchase-request]] detail |
 
-- Pipeline counts — group-count on [[purchase-request]] by workflow stage. The five buckets collapse the underlying `workflow_current_stage` values (see [[system-config/workflow]]) into Requests / In Process / Approved / PO Generated / Received.
-- Sent Back / Rejected tables — `workflow_action_history` rows filtered to `action ∈ {send_back, reject}` joined back to [[purchase-request]] for material name and requester.
-- Personal vs Department spending — sum on PR line amount grouped by [[master-data/product-category]], scoped first by `requestor_id = current_user` then by `department_id`.
-- Awaiting Approval — equivalent to `useApprovalPending({ doc_type: "pr" })` defined in `hooks/use-approval.ts` once wired.
+Currency in spending charts renders as `$` in the mock — production should follow BU base currency from [[master-data/exchange-rate]].
 
-## 4. Refresh Cadence
+## 3. Common Questions
 
-Static mock today. Once wired through `useApprovalPending`, the TanStack Query default applies with no explicit `staleTime` override — refetch on window focus, no polling interval. The pending-count badges shown in the sidebar (separate from this page) use `CACHE_DYNAMIC` (1-minute stale time).
+| Question | Answer |
+|---|---|
+| Why don't my pipeline counts update after I submit a PR? | **Mock-data today** — counts come from `mock/pr.ts`, not from [[purchase-request]]. Live wiring will refresh on focus. |
+| Where do the five stages come from? | Collapsed projection of `workflow_current_stage` (see [[system-config/workflow]]) into Requests / In Process / Approved / PO Generated / Received. |
+| Is "My Spending" my PRs only, or my department's? | "My" is `requestor_id = current_user`; "Department" is `department_id` scoped — same query, different scope on PR-line amounts grouped by [[master-data/product-category]]. |
+| When will Awaiting Approval go live? | Hook exists — `useApprovalPending({ doc_type: "pr" })` in `hooks/use-approval.ts` — but is **not yet mounted** on this page. |
+| Why is currency showing `$` not `฿`? | Mock fixture quirk; production will localise to BU base currency. |
 
-## 5. Audience & Persona
+## 4. Troubleshooting
 
-- **Requester** — primary audience. Watches the Sent Back and Rejected tables to fix and resubmit, and the pipeline strip to see their own PRs progress.
-- **HOD / Approver** — uses the Awaiting Approval task queue at the bottom as a work-list; the `Awaiting HOD Approve` badge specifically targets HOD action.
-- **Procurement** — checks `Awaiting PO` badged rows to see what's been HOD-approved and is ready to convert into a [[purchase-order]].
+| Symptom | Cause | Action |
+|---|---|---|
+| Tile not clickable / drill goes nowhere | Drill-down routes not wired in current build | (Inferred — to be verified against live UI) |
+| Numbers differ from [[purchase-request]] list | Page reads independent mock fixture, not live data | Resolves when `useApprovalPending` is mounted |
+| Sent Back table empty for known sent-back PR | Mock fixture has finite seed rows | Inspect `mock/pr.ts` → `sentBackPrs` |
+| `Awaiting HOD Approve` badge not refreshing after approve action | Mock is static; no event listener | Live wiring uses TanStack Query refetch-on-focus |
 
-## 6. Related Modules
+---
 
-- [[purchase-request]] — the transactional system-of-record behind every tile
+## 5. Data Sources (Dev)
+
+- **Pipeline counts** — group-count on [[purchase-request]] by `workflow_current_stage`
+- **Sent Back / Rejected** — `workflow_action_history` filtered to `action ∈ {send_back, reject}` joined to [[purchase-request]]
+- **My / Department Spending** — sum PR-line amount grouped by [[master-data/product-category]], scoped by `requestor_id` / `department_id`
+- **Awaiting Approval** — `useApprovalPending({ doc_type: "pr" })` (`hooks/use-approval.ts`) once wired
+
+## 6. Refresh Cadence
+
+Static mock today. Once wired through `useApprovalPending`, TanStack Query default applies — refetch on focus, no polling. Sidebar pending-count badges (separate from this page) use `CACHE_DYNAMIC` (1-min stale).
+
+## 7. Related Modules
+
+- [[purchase-request]] — transactional system-of-record
 - [[purchase-request/my-approval]] — drill destination for the task queue
-- [[purchase-order]] — downstream conversion target for `PO Generated` stage
+- [[purchase-order]] — downstream conversion target for `PO Generated`
 - [[good-receive-note]] — downstream `Received` stage
-- [[system-config/workflow]] — stage definitions that drive the pipeline buckets
+- [[system-config/workflow]] — stage definitions that drive pipeline buckets
 
-## 7. Reference Sources
+## 8. Reference Sources
 
-- `../carmen-inventory-frontend/app/(root)/dashboard/pr/page.tsx` — page shell
-- `../carmen-inventory-frontend/app/(root)/dashboard/_components/dashboard-pr.tsx` — `DashboardPr` composition (PR pipeline, sent-back, rejected, spending, awaiting approval)
-- `../carmen-inventory-frontend/app/(root)/dashboard/mock/pr.ts` — fixture data
-- `../carmen-inventory-frontend/messages/en.json` → `dashboard.pr.title` = "Purchase Request Dashboard"
-- `../carmen-inventory-frontend/hooks/use-approval.ts` — `useApprovalPending` for the awaiting-approval task queue (not yet mounted on this page)
+- **Page shell:** `../carmen-inventory-frontend/app/(root)/dashboard/pr/page.tsx`
+- **Composition:** `../carmen-inventory-frontend/app/(root)/dashboard/_components/dashboard-pr.tsx`
+- **Mock data:** `../carmen-inventory-frontend/app/(root)/dashboard/mock/pr.ts`
+- **i18n:** `messages/en.json` → `dashboard.pr.title` = "Purchase Request Dashboard"
+- **Live hook (not mounted):** `../carmen-inventory-frontend/hooks/use-approval.ts` → `useApprovalPending`

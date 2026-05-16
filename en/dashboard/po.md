@@ -2,7 +2,7 @@
 title: PO Dashboard
 description: Purchase Order summary tiles — six-stage pipeline, pending PRs and overdue deliveries, on-time / completeness gauges, category spend, top vendors, and over-received variance flagging.
 published: true
-date: 2026-05-16T17:00:00.000Z
+date: 2026-05-17T08:00:00.000Z
 tags: dashboard, purchase-order, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -10,62 +10,87 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 # PO Dashboard
 
-## 1. Purpose
+> **At a Glance**
+> **Route:** `/dashboard/po` &nbsp;·&nbsp; **For:** Purchaser &nbsp;·&nbsp; Procurement Manager &nbsp;·&nbsp; Receiver &nbsp;·&nbsp; **Status:** **Mock-data today**; live wiring pending
 
-PO Dashboard at `/dashboard/po` is the purchaser's cockpit. It answers *"which POs are in flight, which are slipping, and where am I exposed?"* The page leads with a six-tile pipeline strip across the top, follows with two action tables (Pending PRs for PO creation, Overdue Deliveries) on the left and a stack of KPI gauges + spend visualisations on the right, then closes with a full-width Over-Received POs table that flags receipts exceeding the order quantity.
+## 1. What & Who
 
-Two KPI gauges (semicircular) call out the most-watched purchasing metrics: On-Time Delivery % and Order Completeness %.
+Purchaser's cockpit. Answers *"which POs are in flight, which are slipping, and where am I exposed?"*
 
-## 2. Tiles / Widgets
+**Layout:** Six-tile pipeline strip (top) → action tables Pending PRs / Overdue Deliveries (left) + KPI gauges + spend visualisations (right) → full-width Over-Received POs table (bottom).
 
-| Tile | Type | What it shows | Drill-down | Data source (current) |
-|---|---|---|---|---|
-| PO Pipeline | Six-card grid | Stages: Not Sent, Sent, Partial, Closed, Completed, Rejected — each with icon, count, and progress bar | (Inferred) → [[purchase-order]] filtered by status | `mock/po.ts` → `poPipelineSummary` |
-| Pending PRs for PO Creation | Table | PR ID, Requester, Dept, Date Approved, status badge (`Pending PO` / `Hold for Info` / `Overdue Follow-up`) | (Inferred) → [[purchase-request]] | `mock/po.ts` → `pendingPrsForPo` |
-| Overdue Deliveries List | Table | PO ID, Vendor, Dept, Due Date, "N days overdue" in destructive colour | (Inferred) → [[purchase-order]] | `mock/po.ts` → `overdueDeliveries` |
-| On-Time Delivery | Gauge (semicircle) | Single percent (0-100), warning colour | — | `mock/po.ts` → `poKpi.onTimeDelivery` |
-| Order Completeness | Gauge (semicircle) | Single percent (0-100), success colour | — | `mock/po.ts` → `poKpi.orderCompleteness` |
-| Category Spend (Cur Mo vs YTD) | Donut + legend with two amounts per row | Categories with current-month and YTD amount | — | `mock/po.ts` → `categorySpend` |
-| Top 5 Vendors by Spend | Horizontal bar chart | Vendor name + amount labels | (Inferred) → [[vendor-pricelist]] | `mock/po.ts` → `topVendorsBySpend` |
-| Delivery Schedule | Three stat cards | Today / This Week / Next Week delivery counts (success / primary / destructive tints) | (Inferred) → [[good-receive-note]] today's expected | `mock/po.ts` → `deliverySchedule` |
-| Over-Received POs (Received > Ordered) | Table | PO Number, Material Name, Material Code, Vendor, Ordered Qty, Received Qty, Variance (`+N`), "Variance Flagged" badge | (Inferred) → [[good-receive-note]] | `mock/po.ts` → `overReceivedPos` |
+Two semicircular gauges call out the watched purchasing metrics: **On-Time Delivery %** and **Order Completeness %**.
 
-Currency labels render as USD (`$`) in the current mock — production should localise to BU base currency.
+**Audience**
 
-## 3. Data Sources
-
-Currently mocked. Expected live mapping:
-
-- Pipeline buckets — group-count on [[purchase-order]] by `status` (mapped to the six PoPipelineKey values).
-- Pending PRs for PO — [[purchase-request]] where `workflow_current_stage = "approved"` and `po_id IS NULL`, augmented with the SLA-based status badge (`Pending PO` < N days, `Overdue Follow-up` ≥ N days).
-- Overdue Deliveries — [[purchase-order]] lines where `expected_delivery_date < CURRENT_DATE` and not fully received against [[good-receive-note]].
-- On-Time Delivery / Order Completeness — period KPIs computed by [[reporting-audit]] over committed GRNs against PO expected dates and quantities.
-- Category Spend — sum on PO line amount grouped by [[master-data/product-category]], split current-month vs YTD.
-- Top Vendors — sum on PO total amount grouped by `vendor_id`, top 5.
-- Delivery Schedule — count of PO lines where `expected_delivery_date` falls in today / this week / next week.
-- Over-Received POs — join of [[purchase-order]] line to committed [[good-receive-note]] lines where `received_qty > ordered_qty`.
-
-## 4. Refresh Cadence
-
-Static mock today. Live wiring will inherit `CACHE_DYNAMIC` (1-min stale time) from the proxy hooks. The Overdue Deliveries and Over-Received tables are time-sensitive — testers should verify they recompute on tab focus once wired.
-
-## 5. Audience & Persona
-
-- **Purchaser** — primary. Triages Pending PRs (to issue new POs), chases Overdue Deliveries, and watches On-Time % as a personal KPI.
-- **Procurement Manager** — uses Top Vendors and Category Spend for supplier-mix reviews; watches Over-Received variance for control breaches.
+- **Purchaser** — primary. Triages Pending PRs (to issue new POs), chases Overdue Deliveries, watches On-Time %.
+- **Procurement Manager** — uses Top Vendors and Category Spend for supplier-mix reviews; watches Over-Received variance.
 - **Receiver** — glances at Delivery Schedule (Today / This Week / Next Week) to prep dock staffing.
 
-## 6. Related Modules
+## 2. Tiles & Drill-downs
+
+| Tile | What it shows | Drill-down (when live) |
+|---|---|---|
+| **PO Pipeline** | 6 stages: Not Sent / Sent / Partial / Closed / Completed / Rejected — count + progress bar | → [[purchase-order]] filtered by status |
+| **Pending PRs for PO Creation** | PR ID, Requester, Dept, Date Approved, badge (`Pending PO` / `Hold for Info` / `Overdue Follow-up`) | → [[purchase-request]] |
+| **Overdue Deliveries** | PO ID, Vendor, Dept, Due Date, "N days overdue" (destructive colour) | → [[purchase-order]] |
+| **On-Time Delivery** | Semicircle gauge, percent (warning colour) | — |
+| **Order Completeness** | Semicircle gauge, percent (success colour) | — |
+| **Category Spend (Cur Mo vs YTD)** | Donut + legend with two amounts per row | — |
+| **Top 5 Vendors by Spend** | Horizontal bar + amount labels | → [[vendor-pricelist]] |
+| **Delivery Schedule** | 3 stat cards: Today / This Week / Next Week counts | → [[good-receive-note]] today's expected |
+| **Over-Received POs** | PO #, Material, Code, Vendor, Ordered, Received, Variance `+N`, "Variance Flagged" badge | → [[good-receive-note]] |
+
+Currency renders as `$` in the mock — production should localise to BU base currency.
+
+## 3. Common Questions
+
+| Question | Answer |
+|---|---|
+| Why are the gauges static? | **Mock-data today** — On-Time / Completeness will resolve to query-dataset reports from [[reporting-audit]]. |
+| Which PRs surface in "Pending PRs for PO Creation"? | [[purchase-request]] where `workflow_current_stage = "approved"` AND `po_id IS NULL`. SLA threshold drives the badge variant. |
+| What flags a PO as "Overdue"? | `expected_delivery_date < CURRENT_DATE` AND not fully received against [[good-receive-note]]. |
+| Where does Over-Received variance get reconciled? | Join PO line → committed GRN line where `received_qty > ordered_qty`; see [[costing]] for variance posting. |
+| Why is `$` showing not `฿`? | Mock fixture quirk; production localises to BU base currency. |
+
+## 4. Troubleshooting
+
+| Symptom | Cause | Action |
+|---|---|---|
+| Gauges show identical % for every BU | Mock fixture seeds the same `poKpi.onTimeDelivery` / `orderCompleteness` everywhere | Inspect `mock/po.ts` — values are static |
+| Delivery Schedule "Today" empty on a known delivery day | Mock has no today-aware filter | Live wiring filters on `expected_delivery_date` against `CURRENT_DATE` |
+| Over-Received row disappeared after page reload | Mock arrays are re-imported per render — stable today; not stable when live | Verify against [[good-receive-note]] commit log once wired |
+| Top Vendors bar shows duplicate vendor names | Mock fixture quirk — `vendor_id` not de-duped | Live query groups by `vendor_id` and joins [[vendor-pricelist]] |
+
+---
+
+## 5. Data Sources (Dev)
+
+- **Pipeline buckets** — group-count on [[purchase-order]] by `status` → 6 `PoPipelineKey` values
+- **Pending PRs for PO** — [[purchase-request]] where `workflow_current_stage = "approved"` AND `po_id IS NULL`; SLA-based badge (`Pending PO` < N days, `Overdue Follow-up` ≥ N days)
+- **Overdue Deliveries** — [[purchase-order]] lines where `expected_delivery_date < CURRENT_DATE` AND not fully received against [[good-receive-note]]
+- **On-Time Delivery / Order Completeness** — period KPIs by [[reporting-audit]] over committed GRNs against PO expected dates/quantities
+- **Category Spend** — sum PO-line amount grouped by [[master-data/product-category]], current-month vs YTD
+- **Top Vendors** — sum PO total grouped by `vendor_id`, top 5
+- **Delivery Schedule** — count PO lines where `expected_delivery_date` falls in today / this week / next week
+- **Over-Received POs** — join [[purchase-order]] line to committed [[good-receive-note]] line where `received_qty > ordered_qty`
+
+## 6. Refresh Cadence
+
+Static mock today. Live wiring inherits `CACHE_DYNAMIC` (1-min stale) from proxy hooks. Overdue Deliveries and Over-Received are time-sensitive — testers should verify recompute on tab focus once wired.
+
+## 7. Related Modules
 
 - [[purchase-order]] — transactional system-of-record
 - [[purchase-request]] — upstream feed for Pending PRs for PO Creation
-- [[good-receive-note]] — downstream receipts that drive On-Time, Completeness, and Over-Received tiles
+- [[good-receive-note]] — downstream receipts driving On-Time, Completeness, Over-Received
 - [[vendor-pricelist]] — vendor master behind the Top Vendors bar
 - [[reporting-audit]] — query datasets for the KPI gauges
+- [[costing]] — variance handling for over-received quantities
 
-## 7. Reference Sources
+## 8. Reference Sources
 
-- `../carmen-inventory-frontend/app/(root)/dashboard/po/page.tsx` — page shell
-- `../carmen-inventory-frontend/app/(root)/dashboard/_components/dashboard-po.tsx` — `DashboardPo` composition (pipeline, pending PRs, overdue, gauges, category spend, top vendors, delivery schedule, over-received)
-- `../carmen-inventory-frontend/app/(root)/dashboard/mock/po.ts` — fixture data
-- `../carmen-inventory-frontend/messages/en.json` → `dashboard.po.title` = "Purchase Order Dashboard"
+- **Page shell:** `../carmen-inventory-frontend/app/(root)/dashboard/po/page.tsx`
+- **Composition:** `../carmen-inventory-frontend/app/(root)/dashboard/_components/dashboard-po.tsx`
+- **Mock data:** `../carmen-inventory-frontend/app/(root)/dashboard/mock/po.ts`
+- **i18n:** `messages/en.json` → `dashboard.po.title` = "Purchase Order Dashboard"

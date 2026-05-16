@@ -2,7 +2,7 @@
 title: Document Management
 description: Tenant-scoped file storage registry — upload, list, download, presigned URLs, and delete for documents attached to transactional records.
 published: true
-date: 2026-05-16T17:00:00.000Z
+date: 2026-05-17T08:00:00.000Z
 tags: system-config, document, attachment, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -10,101 +10,110 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 # Document Management
 
-## 1. Purpose
+> **At a Glance**
+> **Owner:** Sysadmin (delete); list / download via App ID grants &nbsp;·&nbsp; **Storage:** `FILE_SERVICE` microservice (S3-compatible) + `tb_attachment` metadata mirror &nbsp;·&nbsp; **Used by:** PR / PO / GRN / SR / IA / count / pricelist / vendor / product attachments &nbsp;·&nbsp; **10 MB cap, BU-scoped.**
 
-Document Management is the **file-storage registry surface** under System Admin — not a per-document-type policy table, but the BU-scoped index of every file that has been uploaded into Carmen. Each row represents one binary blob held in object storage (S3-compatible) plus its display metadata. The screen at `/system-admin/document` lets Sysadmin browse, filter by MIME type, upload new files, and delete stale ones; the same files surface elsewhere as attachments on PR / PO / GRN / SR / IA / pricelist / count documents, where each transactional table carries its own `attachments` JSONB column referencing file tokens from this registry.
+## 1. What & Who
 
-The page also serves as the upload entry-point for documents that aren't (yet) attached to a transaction — for example, vendor master documents, signed contracts, scanned invoices waiting to be linked to a GRN, or supporting evidence for an audit. The file microservice (`FILE_SERVICE`, command `files.upload` / `files.get` / `files.list` / `files.delete`) owns the storage; the gateway exposes the REST surface.
+Document Management is the **file-storage registry surface** at `/system-admin/document` — the BU-scoped index of every file uploaded into Carmen. Each row is one binary blob in object storage (S3-compatible) plus its display metadata. The same files surface elsewhere as attachments on PR / PO / GRN / SR / IA / pricelist / count documents, where each transactional table carries an `attachments` JSONB referencing **file tokens** from this registry.
 
-## 2. Prisma Model(s) OR Data Model
+**Audience:** Sysadmin manages uploads / deletes here; non-admin roles typically have list / get / download but not delete. The file microservice (`FILE_SERVICE`, commands `files.upload` / `files.get` / `files.list` / `files.delete`) owns storage; the gateway exposes the REST surface.
 
-The tenant schema does not have a `tb_document` table. Files are tracked in two places:
+## 2. Common Tasks
 
-### 2.1 `tb_attachment` (file metadata mirror)
+| Task | Where | Notes |
+|---|---|---|
+| Upload a new file | System Admin → Document → **Upload** | Single-file picker; accepts `.pdf, .docx, .xls/.xlsx, .csv, .txt`; 10 MB cap |
+| Check the 10 MB upload limit | Frontend rejects pre-`POST` | `MAX_FILE_SIZE = 10 * 1024 * 1024`; backend re-validates; toast `fileSizeLimit` on rejection |
+| Filter by file type | Type multi-select (PDF, Excel/CSV, Word, Image, Text, Archive, Code) | URL-synced; active-filter badge bar appears |
+| Download a file | Per-row download action | Presigned URL via `GET /api/:bu_code/documents/:filetoken/download` |
+| Share a time-limited link | `GET /api/:bu_code/documents/:filetoken/presigned-url?expirySeconds=N` | Never embed permanent storage creds in the browser |
+| Delete a stale file | Per-row delete (Sysadmin only) | Confirmation dialog; **hard delete** — dangling `fileToken`s render as "missing" on bound documents |
+| Attach a file to a PR / PO / GRN | **NOT here** — use the transactional screen | This page is the registry, not per-document attachment management |
+
+## 3. Validation & Errors
+
+| Symptom / Message | Cause | Action |
+|---|---|---|
+| `fileSizeLimit` toast on upload | File > 10 MB | Compress / split before upload |
+| File rejected by picker | MIME not in allow-list (`.pdf, .docx, .xls/.xlsx, .csv, .txt`) | Convert to an accepted format; `FILE_SERVICE` also sniffs server-side |
+| "Missing" attachment on a PR/PO/GRN | File was hard-deleted from this registry while still referenced | Re-upload and re-attach; clean up dangling `fileToken`s manually |
+| 403 on delete | User lacks `documents.delete` App ID | Grant via [[access-control/role]] |
+| File from BU `T01` invisible in BU `T02` | Expected — BU-scoped storage prefix | Each BU has its own partition; cross-BU access impossible |
+| Presigned URL expired | `expirySeconds` elapsed | Request a new one |
+
+## 4. Edge Cases
+
+- **10 MB hard cap.** Enforced client-side *and* server-side. Larger files have no workaround in the current pipeline.
+- **MIME allow-list at upload, broader categories at list.** Frontend filter recognises Image / Archive / Code so legacy uploads remain discoverable, but new uploads must land in the picker's allow-list. `FILE_SERVICE` performs defence-in-depth MIME sniffing server-side.
+- **Hard delete, no cascade.** `DELETE` removes storage and sets `tb_attachment.deleted_at`; per-document `attachments` JSONB arrays are *not* cleaned up — dangling tokens render as "missing". Do not delete files still attached to in-flight documents.
+- **No in-place versioning.** `tb_attachment.doc_version` defaults to `0` and is reserved; current pipeline overwrites by delete-and-re-upload.
+- **Presigned URLs preferred over direct streaming** for browser sharing — never embed permanent storage credentials in the page.
+
+---
+
+## 5. Data Model (Dev)
+
+The tenant schema does not have a `tb_document` table. Files are tracked in two places: a metadata mirror table and per-document JSONB arrays.
+
+### 5.1 `tb_attachment` (file metadata mirror)
 
 | Field | Prisma Type | Nullable | Description |
 | --- | --- | --- | --- |
 | `id` | `String @db.Uuid` | No | Primary key. |
-| `s3_token` | `String? @db.VarChar(255)` | Yes | Storage token returned by `FILE_SERVICE` — the canonical handle used everywhere downstream. |
-| `s3_folder` | `String? @db.VarChar(255)` | Yes | Storage folder / prefix (typically `<bu_code>/<yyyy-mm>/`). |
-| `file_name` | `String? @db.VarChar(255)` | Yes | Display name. |
-| `file_ext` | `String? @db.VarChar(255)` | Yes | Extension (`pdf`, `xlsx`, `png`, …). |
-| `file_type` | `String? @db.VarChar(255)` | Yes | MIME type. |
+| `s3_token` | `String? @db.VarChar(255)` | Yes | Storage token returned by `FILE_SERVICE` — canonical handle downstream. |
+| `s3_folder` | `String? @db.VarChar(255)` | Yes | Storage prefix (typically `<bu_code>/<yyyy-mm>/`). |
+| `file_name` / `file_ext` / `file_type` | `String?` | Yes | Display name, extension, MIME. |
 | `file_size` | `BigInt? @db.BigInt` | Yes | Bytes. |
-| `file_url` | `String? @db.VarChar(255)` | Yes | Persistent URL (presigned URLs are issued on demand and not stored here). |
-| `info` | `Json? @db.Json` | Yes | Free-form metadata. |
+| `file_url` | `String? @db.VarChar(255)` | Yes | Persistent URL (presigned URLs issued on demand, not stored). |
 | `doc_version` | `Int` | No | Default `0`; reserved for future versioning. |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |
 
-**Constraints:** `@@unique([s3_token, deleted_at], map: "attachment_s3_token_u")` and index on `[s3_token]`. There are no foreign keys *out* of this table — referential integrity to transactional documents lives in the per-document `attachments` JSONB.
+**Constraints:** `@@unique([s3_token, deleted_at], map: "attachment_s3_token_u")` + index on `[s3_token]`. **No FKs out** — referential integrity to transactional documents lives in their `attachments` JSONB.
 
-### 2.2 Per-document `attachments` JSONB
+### 5.2 Per-document `attachments` JSONB
 
-Every transactional table that supports attachments (`tb_purchase_request`, `tb_purchase_order`, `tb_goods_received_note`, `tb_store_requisition`, `tb_inventory_adjustment`, `tb_physical_count`, `tb_spot_check`, `tb_credit_note`, `tb_recipe`, `tb_product`, `tb_vendor`, `tb_tax_profile`, …) carries a column:
+Every transactional table that supports attachments (`tb_purchase_request`, `tb_purchase_order`, `tb_goods_received_note`, `tb_store_requisition`, `tb_inventory_adjustment`, `tb_physical_count`, `tb_spot_check`, `tb_credit_note`, `tb_recipe`, `tb_product`, `tb_vendor`, `tb_tax_profile`, …) carries:
 
 ```jsonc
 "attachments": [
-  {
-    "fileToken": "S3_UUID",
-    "fileName":  "vendor-invoice.pdf",
-    "fileSize":  102400,
-    "contentType": "application/pdf",
-    "uploadedAt": "2026-05-15T08:00:00.000Z"
-  }
+  { "fileToken": "S3_UUID", "fileName": "vendor-invoice.pdf",
+    "fileSize": 102400, "contentType": "application/pdf",
+    "uploadedAt": "2026-05-15T08:00:00.000Z" }
 ]
 ```
 
-The `fileToken` matches `tb_attachment.s3_token` and is the link between the registry and the using document. The list endpoint surfaced by `/system-admin/document` does not query `tb_attachment` directly — it queries the file microservice, which is the source of truth.
+`fileToken` matches `tb_attachment.s3_token`. The list endpoint queries `FILE_SERVICE` (source of truth), not `tb_attachment` directly.
 
-### 2.3 Document-management API shape (`DocumentFile`)
+### 5.3 `DocumentFile` API projection
 
-The list endpoint returns the following projection per file (see `types/document.ts`):
+`fileToken` (may carry `<buCode>/` prefix — stripped before delete) &nbsp;·&nbsp; `objectName` &nbsp;·&nbsp; `originalName` &nbsp;·&nbsp; `size` &nbsp;·&nbsp; `contentType` (drives type filter) &nbsp;·&nbsp; `lastModified`.
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `fileToken` | `string` | Stable handle. May carry a `<buCode>/` prefix in the response — frontend strips before issuing delete. |
-| `objectName` | `string` | Storage key. |
-| `originalName` | `string` | User-supplied file name at upload. |
-| `size` | `number` | Bytes. |
-| `contentType` | `string` | MIME type. Drives the grid type filter (PDF / Excel / Word / Image / Text / Archive / Code). |
-| `lastModified` | `string` | ISO 8601. |
+## 6. Business Rules
 
-## 3. Usage / Cross-References
+- **10 MB upload cap.** Client and server enforced.
+- **MIME allow-list** on picker + server-side sniffing.
+- **BU-scoped.** All endpoints under `/api/:bu_code/documents/*`; storage partitioned by `bu_code`.
+- **Presigned URLs** for download / sharing — never embed permanent credentials.
+- **AppId guards.** `documents.upload`, `documents.list`, `documents.get`, `documents.download`, `documents.info`, `documents.presignedUrl`, `documents.delete`. Non-admin = list / get / download only.
+- **Hard delete.** Storage removed, `tb_attachment.deleted_at` set, per-document arrays *not* cascaded.
+- **Audit logging** via `EnrichAuditUsers` (uploads, deletes; presigned-URL specifically *inferred — to be verified*).
+- **No in-place versioning** — overwrite via delete + re-upload.
 
-- [[purchase-request]] / [[purchase-order]] / [[good-receive-note]] / [[store-requisition]] / [[inventory-adjustment]] / [[physical-count]] / [[spot-check]] — every transactional document carries an `attachments` JSONB referencing `fileToken`s from this registry.
-- [[vendor]] / [[product-management]] — vendor and product master records carry their own `attachments` arrays for contracts, certificates, spec sheets.
+## 7. Cross-References
+
+- [[purchase-request]] / [[purchase-order]] / [[good-receive-note]] / [[store-requisition]] / [[inventory-adjustment]] / [[physical-count]] / [[spot-check]] — carry `attachments` JSONB.
+- [[vendor]] / [[product-management]] — vendor and product master records carry their own `attachments` arrays.
 - [[reporting-audit/attachment]] — cross-module attachment policy and visibility rules.
-- [[reporting-audit/report]] — generated report artefacts (PDF / Excel) land back here via the same `fileToken` mechanism; `tb_report_job.file_url` references storage in the same bucket.
-- [[system-config/workflow]] — workflow comments (`tb_workflow_comment`, `tb_period_comment`, etc.) embed `attachments` arrays for evidence files.
+- [[reporting-audit/report]] — generated report artefacts land here via the same `fileToken` mechanism.
+- [[system-config/workflow]] — workflow comments embed `attachments` arrays for evidence files.
+- [[reporting-audit/activity]] — upload / delete / presigned-URL audit entries.
 
-## 4. Configuration UI
-
-Managed by **Sysadmin** under System Admin → Document (`/system-admin/document`). The page is a paginated DataGrid with:
-
-- **Header:** module-accent dot, title, total-record count badge, and an **Upload** button (single-file picker, accepts `.pdf, .docx, .xls/.xlsx, .csv, .txt`).
-- **Filter bar:** free-text search plus a multi-select **Type** filter with seven categories (PDF, Excel/CSV, Word, Image, Text, Archive, Code). Filters are URL-synced; an active-filter badge bar appears under the search.
-- **List:** desktop renders the DataGrid (sortable columns, sticky header, pagination); mobile renders a card grid with infinite scroll.
-- **Per-row actions:** download (via presigned URL) and delete (with confirmation dialog).
-
-The screen is **read-mostly** for non-admin users; only Sysadmin can delete. Per-document attachment management (adding a file to a PR / PO / GRN) happens inside the relevant transactional screen, not here.
-
-## 5. Business Rules
-
-- **10 MB upload cap.** The frontend enforces `MAX_FILE_SIZE = 10 * 1024 * 1024` bytes before issuing the multipart `POST`. The backend re-validates server-side. Larger files are rejected with the localised `fileSizeLimit` toast.
-- **MIME allow-list.** The file picker accepts `.pdf, .docx, .xls, .xlsx, .csv, .txt`. The frontend filter recognises additional categories (image, archive, code) so legacy uploads remain discoverable — but new uploads should land in the picker's allow-list. The `FILE_SERVICE` performs its own server-side MIME sniffing as a defence-in-depth check.
-- **BU-scoped.** Every endpoint is mounted under `/api/:bu_code/documents/*`. A file uploaded in BU `T01` is invisible to BU `T02`; the file microservice partitions the storage prefix by `bu_code`.
-- **Presigned URLs for download.** Direct download is via `GET /api/:bu_code/documents/:filetoken/download` (binary stream) or `GET /api/:bu_code/documents/:filetoken/presigned-url?expirySeconds=N` for a time-limited link suitable for sharing — never embed permanent storage credentials in the browser.
-- **Permissions via AppId guards.** Each endpoint is gated by `documents.upload`, `documents.list`, `documents.get`, `documents.download`, `documents.info`, `documents.presignedUrl`, `documents.delete`. Non-admin roles typically have list / get / download but not delete.
-- **Deletion is hard.** `DELETE /api/:bu_code/documents/:filetoken` removes the file from storage; `tb_attachment.deleted_at` is set; per-document `attachments` arrays are *not* cleaned up — a dangling `fileToken` on a PR/PO/GRN renders as "missing" in the attachment list. Cleaning dangling references is a future enhancement; for now, do not delete files still attached to in-flight documents.
-- **Audit logging.** All endpoints carry `EnrichAuditUsers`; uploads, deletes, and presigned-URL generations land in [[reporting-audit/activity]] with `user_id`, `bu_code`, `fileToken`. (*Inferred — to be verified for the presigned-URL action specifically.*)
-- **Versioning.** `tb_attachment.doc_version` defaults to `0` and is reserved; the current pipeline overwrites by deleting and re-uploading rather than versioning in place.
-
-## 6. References
+## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_attachment` (lines ~4427-4449); per-document `attachments` JSONB columns throughout.
 - **Backend controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/document-management/document-management.controller.ts`.
-- **Backend service:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/document-management/document-management.service.ts` — forwards to `FILE_SERVICE` over the `files.*` microservice commands.
+- **Backend service:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/document-management/document-management.service.ts` — forwards to `FILE_SERVICE` over `files.*` microservice commands.
 - **Frontend route:** `../carmen-inventory-frontend/app/(root)/system-admin/document/page.tsx` and `_components/document-component.tsx`.
 - **Frontend hook:** `../carmen-inventory-frontend/hooks/use-document.ts` — `useDocument`, `useUploadDocument`, `useDeleteDocument`.
 - **Frontend type:** `../carmen-inventory-frontend/types/document.ts` — `DocumentFile`.
-- **Cross-module:** see Section 3.
