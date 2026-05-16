@@ -2,7 +2,7 @@
 title: Carmen Inventory ERP — Developer & Tester Manual
 description: Landing page for the Carmen Inventory ERP wiki — module index for developers and testers across procure-to-pay, inventory control, costing, master configuration, and reporting.
 published: true
-date: 2026-05-16T15:30:00.000Z
+date: 2026-05-16T16:00:00.000Z
 tags: home, index, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T14:00:00.000Z
@@ -56,6 +56,7 @@ Cross-cutting master data and configuration that every transactional module cons
 - [[master-data]] — Vendor, currency, tax-profile, unit (UoM), department, location, dimension — the reference data snapshotted onto every transaction document.
 - [[system-config]] — Workflow definitions, running-code numbering schemes, dimension setup; the policy surface that drives every approval / posting / numbering decision.
 - [[access-control]] — Role / permission map, user-action gates, segregation-of-duties rules; the authorisation backbone referenced by every `*_AUTH_*` rule.
+- [[templates]] — Reusable scaffold definitions (PR, Price List) cloned into new transactional records; seed-only, never enter a workflow themselves.
 
 ## 7. Reporting & Audit
 

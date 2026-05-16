@@ -59,6 +59,7 @@ Financial accuracy is enforced at the calculation layer rather than left to the 
 - [[product]] — PR lines reference products from the catalog
 - [[vendor-pricelist]] — preferred vendors and reference prices come from the pricelist
 - [[inventory]] — current stock levels often justify a PR
+- [[templates/purchase-request]] — reusable PR scaffold cloned via "Create from Template"
 
 **Master configuration:**
 - [[master-data/vendor]] — allocated vendor per line resolved from the pricelist

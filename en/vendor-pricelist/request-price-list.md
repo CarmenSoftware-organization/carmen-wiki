@@ -20,7 +20,7 @@ Request Price List is the procurement-initiated RFQ surface. The Purchaser or Pr
 
 - [[vendor-pricelist]] — the catalogue RFQs ultimately update
 - [[master-data/vendor]] — vendors the RFQ is dispatched to
-- [[master-data/pricelist-template]] — request scaffold reuse
+- [[templates/price-list]] — request scaffold reuse
 
 ## 3. Reference Sources
 

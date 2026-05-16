@@ -70,7 +70,7 @@ Operationally, the module compresses a process that is otherwise email-and-sprea
 - [[master-data/vendor]] — vendor master each pricelist is scoped to
 - [[master-data/currency]] — currency the vendor selects at submission
 - [[master-data/tax-profile]] — tax codes on each pricelist line
-- [[master-data/pricelist-template]] — reusable template defining what to ask vendors for in a campaign
+- [[templates/price-list]] — reusable template defining what to ask vendors for in a campaign
 - [[master-data/unit]] — pricing unit (Box / Carton / Pack) plus conversion to base inventory unit
 - [[system-config/workflow]] — pricelist submission and approval workflow
 - [[reporting-audit/activity]] — pricelist submission, validation, and approval activity log for audit

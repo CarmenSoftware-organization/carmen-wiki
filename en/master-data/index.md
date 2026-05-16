@@ -38,7 +38,6 @@ Product Admin and Configurator manage these. Sysadmin oversees integration and R
 | [extra-cost-type](./extra-cost-type.md) | GRN landed-cost categories with allocation modes | Product Admin |
 | [adjustment-type](./adjustment-type.md) | Coded reasons for stock-in / stock-out adjustments | Product Admin |
 | [credit-note-reason](./credit-note-reason.md) | Coded reasons for credit notes raised against GRN | Product Admin |
-| [pricelist-template](./pricelist-template.md) | Reusable RFQ / pricelist template definitions | Product Admin |
 
 ## 4. Cross-Module Dependencies
 
@@ -51,7 +50,7 @@ Product Admin and Configurator manage these. Sysadmin oversees integration and R
 - [[physical-count]] requires [[master-data/location]], [[master-data/unit]], [[master-data/adjustment-type]].
 - [[spot-check]] requires [[master-data/location]], [[master-data/adjustment-type]].
 - [[costing]] requires [[master-data/business-unit]] (for `calculation_method`) and [[master-data/currency]] (for dated FX).
-- [[vendor-pricelist]] requires [[master-data/vendor]], [[master-data/currency]], [[master-data/tax-profile]], [[master-data/pricelist-template]].
+- [[vendor-pricelist]] requires [[master-data/vendor]], [[master-data/currency]], [[master-data/tax-profile]], [[templates/price-list]].
 - [[product]] requires [[master-data/unit]], [[master-data/tax-profile]].
 - [[recipe]] requires [[master-data/unit]].
 

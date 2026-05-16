@@ -1,14 +1,14 @@
 ---
-title: Pricelist Template
+title: Price List Template
 description: Reusable RFQ / pricelist template defining currency, validity, reminders, and escalation — the parent of vendor pricelists.
 published: true
-date: 2026-05-16T08:00:00.000Z
-tags: master-data, pricelist-template, configuration, carmen-software
+date: 2026-05-16T16:00:00.000Z
+tags: templates, price-list, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
 ---
 
-# Pricelist Template
+# Price List Template
 
 ## 1. Purpose
 
@@ -64,5 +64,5 @@ Managed by **Product Admin** (or the procurement lead) under the Master Data are
 ## 6. References
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_pricelist_template` (lines ~3869-3911), `enum_pricelist_template_status` (lines ~3863-3867).
-- **Frontend route (if known):** `../carmen-turborepo-frontend/apps/web/app/(app)/vendor-management/pricelist-template/`.
+- **Frontend route:** `../carmen-inventory-frontend/app/(root)/(protected)/vendor-management/price-list-template/`.
 - **Cross-module:** see Section 3.

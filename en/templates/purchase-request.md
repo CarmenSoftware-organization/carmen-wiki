@@ -2,8 +2,8 @@
 title: Purchase Request Template
 description: Reusable PR scaffold — frequently-purchased line bundles saved as templates so a Requestor can instantiate a PR with one click.
 published: true
-date: 2026-05-16T15:00:00.000Z
-tags: purchase-request, template, configuration, carmen-software
+date: 2026-05-16T16:00:00.000Z
+tags: templates, purchase-request, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
 ---
