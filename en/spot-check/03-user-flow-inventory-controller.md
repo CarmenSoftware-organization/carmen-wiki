@@ -35,7 +35,7 @@ The Inventory Controller is the single owner of the spot-check exercise — the 
 | Action | `pending` | `in_progress` | `completed` | `void` |
 |---|---|---|---|---|
 | Create spot check (random / high_value / manual) | ✅ (`SPC_VAL_001`–`SPC_VAL_003`) | — | — | — |
-| Assign counter to spot check | ✅ (`SPC_AUTH_004`) | ✅ | ❌ | ❌ |
+| Assign counter to spot check | ✅ (`SPC_AUTH_001`) | ✅ | ❌ | ❌ |
 | Monitor progress (lines counted vs total) | ✅ | ✅ (`SPC_CALC_004`) | ✅ (read-only) | ✅ (read-only) |
 | Flag line for recount (variance breach) | — | ✅ (`SPC_VAL_006`) | ❌ | ❌ |
 | Override / accept variance (countersignature) | — | ✅ (`SPC_AUTH_001`) | ❌ | ❌ |
@@ -58,7 +58,7 @@ The Inventory Controller is the single owner of the spot-check exercise — the 
 | Open spot check (random sampling) | Location is inventory- or consignment-type per `SPC_VAL_001` | New `tb_spot_check` in `pending`; `method = random`; system samples `size` distinct products | Per `SPC_VAL_002`–`SPC_VAL_003`. |
 | Open spot check (high-value sampling) | Same | New `tb_spot_check` in `pending`; `method = high_value`; top-`size` products by value / velocity sampled | Per `SPC_VAL_003`. |
 | Open spot check (manual selection) | Same | New `tb_spot_check` in `pending`; `method = manual`; controller adds `tb_spot_check_detail` rows explicitly | Manual is the event-driven path (suspected discrepancy, incident). |
-| Assign counter | Spot check in `pending` | Counter location-grant recorded | Per `SPC_AUTH_004`. |
+| Assign counter | Spot check in `pending` | Counter location-grant recorded | Per `SPC_AUTH_001`. |
 | Monitor progress | Spot check in `in_progress` | (read) lines with `actual_qty` populated vs total | No persisted progress counters on `tb_spot_check` — derived per `SPC_CALC_004`. |
 | Flag line for recount | Variance breaches tolerance per `SPC_VAL_006` | Detail-comment with recount tag | Recount ideally by a different counter to remove bias. |
 | Override / accept variance | `SPC_VAL_006` flag exists | Flag cleared; line eligible for rollup | Controller countersignature recorded in detail-comment thread. |

@@ -72,13 +72,13 @@ Rule IDs follow `SPC_POST_NNN`. Posting in this module refers to the variance-ro
 
 The Prisma enum `enum_spot_check_status` documented in [[spot-check/01-data-model]] § 4 is what the live schema uses. `tx-10-spot-check.md` (BR-spot-check.md v2.2.0) describes the intended status set. Source: `Test_case/System_Process/tx-10-spot-check.md` (capture date 2026-04-27).
 
-> Diff legend: 🔴 new in live schema (no BRD equivalent) · 🟡 renamed/semantically shifted
+> Diff legend: ✅ match · 🟡 renamed/semantically shifted · 🔴 new in live schema (no BRD equivalent)
 
 | Live schema status (`enum_spot_check_status`) | BRD (`tx-10-spot-check.md`) equivalent | Diff | Notes |
 |---|---|---|---|
 | `pending` | `draft` / `pending` | 🟡 | BRD uses `draft` (created, not submitted) → `pending` (submitted, awaiting start) as two distinct states. Live schema collapses both into `pending`. Counter entering first qty triggers `pending → in_progress`. |
-| `in_progress` | `in-progress` | — | Direct match. Counting underway. |
-| `completed` | `completed` | — | Direct match. Terminal; satisfies End Period Close Stage 2 (BR-PE-006). |
+| `in_progress` | `in-progress` | ✅ match | Direct match. Counting underway. |
+| `completed` | `completed` | ✅ match | Direct match. Terminal; satisfies End Period Close Stage 2 (BR-PE-006). |
 | `void` | `cancelled` | 🟡 | BRD uses `cancelled` with a note that all entered data is preserved and no inventory changes are posted (BR-SC-007). Live schema uses `void`. |
 | — | `on-hold` | 🔴 | BRD defines `on-hold` (paused; → `in-progress`, `cancelled`). No `on_hold` value exists in `enum_spot_check_status` in the Prisma schema — pause/resume may be handled via UI state or a future migration. |
 
