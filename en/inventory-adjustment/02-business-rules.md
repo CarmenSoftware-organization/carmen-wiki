@@ -132,14 +132,14 @@ State diagram (per Prisma `enum_doc_status`):
 
 The Prisma enum `enum_doc_status` documented above is what the live UI uses. The carmen/docs set (`INV-ADJ-Business-Requirements.md`) describes the intended status set as a three-state lifecycle (`Draft → Posted → Void`). The table below maps every observable live-UI status to its BRD equivalent so testers and developers can reconcile the two without ambiguity. Sources: `Test_case/System_Process/tx-06-stock-in-adj.md` (capture date 2026-04-27) and `Test_case/System_Process/tx-07-stock-out-adj.md` (capture date 2026-04-27).
 
-> Diff legend: ✅ match · 🟡 renamed · 🔵 BRD only.
+> Diff legend: ✅ match · 🟡 renamed · 🔴 new in live UI · 🔵 BRD only.
 
 | Live UI status | BRD equivalent | Diff | Notes |
 |---|---|---|---|
 | `draft` | `Draft` | ✅ match | Initial editable state. Both stock-in and stock-out documents start here; creator enters lines, reason code, department, attachments. No inventory effect. |
-| `in_progress` | — (collapsed into `Draft` in BRD three-state model) | 🟡 renamed | Submitted for approval; document is locked to the creator while awaiting Controller or Finance review. Both stock-in and stock-out variants use this state for the above-threshold or new-lot routing gate. BRD's three-state model has no equivalent — it collapses this into `Draft`. |
+| `in_progress` | — (collapsed into `Draft` in BRD three-state model) | 🔴 new in live UI | Submitted for approval; document is locked to the creator while awaiting Controller or Finance review. Both stock-in and stock-out variants use this state for the above-threshold or new-lot routing gate. BRD's three-state model has no equivalent — it collapses this into `Draft`. |
 | `completed` | `Posted` | 🟡 renamed | Terminal active state; the `in_progress → completed` transition fires the posting event: inventory transaction written, cost-layer rows created (new lot for stock-in; oldest-lot-first consumption for stock-out), GL entry generated. Immutable after posting. Applies to both stock-in (direction IN) and stock-out (direction OUT). |
-| `cancelled` | — (no BRD equivalent) | 🟡 renamed | Document cancelled before posting — creator or reviewer abandoned. No inventory effect. Terminal. BRD three-state model has no explicit pre-post cancel; documents in BRD either advance to `Posted` or are `Void`. |
+| `cancelled` | — (no BRD equivalent) | 🔴 new in live UI | Document cancelled before posting — creator or reviewer abandoned. No inventory effect. Terminal. BRD three-state model has no explicit pre-post cancel; documents in BRD either advance to `Posted` or are `Void`. |
 | `voided` | `Void` | 🟡 renamed | Post-fact void via compensating reversal pattern (`ADJ_POST_004`). The original `completed` document moves to `voided` only after a compensating `tb_stock_in` (if voiding a stock-out) or `tb_stock_out` (if voiding a stock-in) has posted. Original inventory transaction is not edited per [[inventory]] `INV_POST_012`. Applies to both directions. |
 | — | `Draft` (editable + submitted, pre-post) | 🔵 BRD only | The BRD `Draft` state covers both the carmen-wiki `draft` and `in_progress` states — BRD does not distinguish the editable pre-submit from the submitted-awaiting-approval window. |
 
