@@ -10,6 +10,10 @@ dateCreated: 2026-05-15T14:00:00.000Z
 
 # Physical Count — User Flow — Counter
 
+## 1. Persona
+
+**Counter** — Counter / Store Keeper. The floor-level worker who performs the physical count on assigned zones, records quantities on the count sheet (`tb_physical_count_detail.actual_qty`), flags items that are damaged, unlabelled, or unfamiliar via line-level comments, and signs off completed sheets back to the Count Lead. Authority anchor for `PHC_AUTH_002`.
+
 ### Workflow position (Counter highlighted)
 
 ```mermaid
@@ -24,7 +28,7 @@ graph LR
 
 ### Permission Matrix — V1 Status × Action (Counter)
 
-The Counter is a data-entry persona scoped to their assigned zone. They can read and write `actual_qty` on their lines and add comments, but cannot submit the count document or change any configuration. Rows are derived from Section 2 (Entry Point and Primary Flow) of this file; rule citations refer to [[physical-count/02-business-rules]] § 4 / § 5.
+The Counter is a data-entry persona scoped to their assigned zone. They can read and write `actual_qty` on their lines and add comments, but cannot submit the count document or change any configuration. Rows are derived from Section 3 (Primary Actions) of this file; rule citations refer to [[physical-count/02-business-rules]] § 4 / § 5.
 
 | Action | Count document `pending` | Count document `in_progress` | Count document `completed` |
 |---|---|---|---|
@@ -37,10 +41,6 @@ The Counter is a data-entry persona scoped to their assigned zone. They can read
 | Submit count document (`in_progress → completed`) | ❌ (`PHC_AUTH_002` — Count Lead only) | ❌ (`PHC_AUTH_002` — Count Lead only) | — |
 | View lines outside own zone | ❌ (`PHC_AUTH_004` — zone-scoped) | ❌ (`PHC_AUTH_004` — zone-scoped) | ❌ |
 | Re-enter a recount line flagged by Count Lead | — | ✅ (different counter from original) | ❌ |
-
-## 1. Persona
-
-**Counter** — Counter / Store Keeper. The floor-level worker who performs the physical count on assigned zones, records quantities on the count sheet (`tb_physical_count_detail.actual_qty`), flags items that are damaged, unlabelled, or unfamiliar via line-level comments, and signs off completed sheets back to the Count Lead. Authority anchor for `PHC_AUTH_002`.
 
 ## 2. Entry Points
 

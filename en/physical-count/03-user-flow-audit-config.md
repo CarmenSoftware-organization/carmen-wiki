@@ -10,6 +10,16 @@ dateCreated: 2026-05-15T14:00:00.000Z
 
 # Physical Count — User Flow — Audit / Config
 
+## 1. Persona
+
+This persona group collapses three roles whose touch on the physical-count module is approval, observation, or configuration:
+
+- **Approver / Finance Reviewer** — reviews completed counts and rollup adjustments, validates variance reasonableness against historical patterns, approves the variance-adjustment document, signs off financial impact at period close.
+- **Auditor** — observes a sample of counts in progress, inspects the full chain end-to-end (count sheets, recount records, approvals, posted adjustments, journal entries) for compliance, segregation-of-duties, and policy adherence.
+- **Sysadmin** — configures tenant defaults: tolerance thresholds for variance flagging (`PHC_VAL_007`), the default `enum_physical_count_costing_method`, and reason-code mapping for `COUNT_OVERAGE` / `COUNT_SHORTAGE` in [[inventory-adjustment]].
+
+Authority anchor for `PHC_AUTH_003`.
+
 ### Position relative to the transactional flow (off-path observers)
 
 ```mermaid
@@ -28,7 +38,7 @@ graph LR
 
 ### Permission Matrix — V6 Action × Sub-persona (Audit / Config)
 
-All three sub-personas are non-transactional within the physical-count module — none creates, edits, submits, or re-opens count documents. Approver / Finance approval action lands on the rollup adjustment in [[inventory-adjustment]], not on `tb_physical_count`. Rows are derived from Section 2 (Entry Point and Primary Flow) of this file; rule citations refer to [[physical-count/02-business-rules]] § 4 / § 5.
+All three sub-personas are non-transactional within the physical-count module — none creates, edits, submits, or re-opens count documents. Approver / Finance approval action lands on the rollup adjustment in [[inventory-adjustment]], not on `tb_physical_count`. Rows are derived from Section 3 (Primary Actions) of this file; rule citations refer to [[physical-count/02-business-rules]] § 4 / § 5.
 
 | Action | Approver / Finance | Auditor | Sysadmin |
 |---|---|---|---|
@@ -47,16 +57,6 @@ All three sub-personas are non-transactional within the physical-count module �
 | Re-open completed count (`PHC_VAL_008`) | ❌ | ❌ | ❌ |
 
 > ℹ️ **Approval scope note:** Approver / Finance approval authority is exercised on the rollup `tb_stock_in` / `tb_stock_out` document in [[inventory-adjustment]], not directly on `tb_physical_count`. The physical-count document itself is terminal at `completed`; only the rollup adjustment progresses to GL posting. This means the Approver / Finance column above applies at the inventory-adjustment boundary, not at the physical-count boundary.
-
-## 1. Persona
-
-This persona group collapses three roles whose touch on the physical-count module is approval, observation, or configuration:
-
-- **Approver / Finance Reviewer** — reviews completed counts and rollup adjustments, validates variance reasonableness against historical patterns, approves the variance-adjustment document, signs off financial impact at period close.
-- **Auditor** — observes a sample of counts in progress, inspects the full chain end-to-end (count sheets, recount records, approvals, posted adjustments, journal entries) for compliance, segregation-of-duties, and policy adherence.
-- **Sysadmin** — configures tenant defaults: tolerance thresholds for variance flagging (`PHC_VAL_007`), the default `enum_physical_count_costing_method`, and reason-code mapping for `COUNT_OVERAGE` / `COUNT_SHORTAGE` in [[inventory-adjustment]].
-
-Authority anchor for `PHC_AUTH_003`.
 
 ## 2. Entry Points
 

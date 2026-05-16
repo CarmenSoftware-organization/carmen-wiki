@@ -10,6 +10,10 @@ dateCreated: 2026-05-15T14:00:00.000Z
 
 # Physical Count — User Flow — Count Lead
 
+## 1. Persona
+
+**Count Lead** — Inventory Controller / Inventory Manager. The single owner of the count exercise: schedules the period, configures scope (location, categories, mode — frozen vs live), assigns counters and zones, generates and distributes count sheets, monitors progress, resolves discrepancies via recounts, and triggers the variance rollup to [[inventory-adjustment]]. Authority anchor for `PHC_AUTH_001`.
+
 ### Workflow position (Count Lead highlighted)
 
 ```mermaid
@@ -24,7 +28,7 @@ graph LR
 
 ### Permission Matrix — V1 Status × Action (Count Lead)
 
-The Count Lead is the single owner of the count exercise — the only persona who can open periods, generate sheets, assign counters, flag recounts, and submit. Rows are derived from Section 2 (Entry Point and Primary Flow) of this file; rule citations refer to [[physical-count/02-business-rules]] § 4 / § 5.
+The Count Lead is the single owner of the count exercise — the only persona who can open periods, generate sheets, assign counters, flag recounts, and submit. Rows are derived from Section 3 (Primary Actions) of this file; rule citations refer to [[physical-count/02-business-rules]] § 4 / § 5.
 
 | Action | Period `draft` | Count `pending` | Count `in_progress` | Count `completed` |
 |---|---|---|---|---|
@@ -35,13 +39,9 @@ The Count Lead is the single owner of the count exercise — the only persona wh
 | Monitor progress (`product_counted` vs `product_total`) | — | ✅ | ✅ (`PHC_CALC_004`) | ✅ (read-only) |
 | Flag variance line for recount (`PHC_VAL_007`) | — | — | ✅ (`PHC_AUTH_001`) | ❌ |
 | Override / accept variance (countersignature) | — | — | ✅ (`PHC_AUTH_001`) | ❌ |
-| Submit count (`in_progress → completed`) | — | — | ✅ (`PHC_AUTH_002`; `PHC_VAL_004` — all lines counted; `PHC_POST_001` rollup fires) | — |
+| Submit count (`in_progress → completed`) | — | — | ✅ (`PHC_AUTH_001`; `PHC_VAL_004` — all lines counted; `PHC_POST_001` rollup fires) | — |
 | Route rollup adjustment for approval | — | — | — | ✅ — to Approver / Finance via [[inventory-adjustment]] |
 | Edit lines after completion | — | — | — | ❌ (`PHC_VAL_008` — immutable; raise manual adjustment) |
-
-## 1. Persona
-
-**Count Lead** — Inventory Controller / Inventory Manager. The single owner of the count exercise: schedules the period, configures scope (location, categories, mode — frozen vs live), assigns counters and zones, generates and distributes count sheets, monitors progress, resolves discrepancies via recounts, and triggers the variance rollup to [[inventory-adjustment]]. Authority anchor for `PHC_AUTH_001`.
 
 ## 2. Entry Points
 
