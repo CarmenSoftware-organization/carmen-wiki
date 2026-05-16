@@ -53,11 +53,8 @@ Neither sub-persona participates in the GRN document state machine. The **Audito
 | Configure currency exchange-rate feed | ❌ | ✅ |
 | Configure cancellation / rejection reason codes | ❌ | ✅ |
 | Configure integration endpoints (PO / Inventory / Finance / Vendor) | ❌ | ✅ |
-| Run integration endpoint dual-write window | ❌ | ✅ |
-| Flag GRN / escalate anomaly | ✅ (annotates audit log, does not change GRN) | ❌ |
 | Mutate GRN `doc_status` | ❌ | ❌ |
 | Void / reverse `committed` GRN | ❌ | ❌ (ensure co-auth gate only — `GRN_POST_010`) |
-| Force-revoke active user sessions (RBAC change) | ❌ | ✅ (with warning, optional) |
 
 > ℹ️ **In-flight GRN snapshot rule:** Sysadmin configuration changes (tax codes, reason codes, RBAC) apply only to **new** GRNs created after the effective-from timestamp. In-flight `draft` / `saved` GRNs retain the configuration snapshot in force at create time. Attempting to retire a configuration value referenced by in-flight GRNs is blocked by the impact preview.
 

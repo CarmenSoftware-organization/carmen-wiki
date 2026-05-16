@@ -24,12 +24,11 @@ graph LR
     draft -->|"Save for review"| saved(("saved")):::current
     draft -->|"Void"| voided(("voided"))
     saved -->|"Resume edit"| saved
-    saved -->|"Commit"| committed(("committed")):::current2
+    saved -->|"Commit"| committed(("committed")):::current
     saved -->|"Batch commit"| committed
     saved -->|"Void"| voided
     committed -.->|"Post-commit reversal<br/>(elevated co-auth)"| voided
     classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
-    classDef current2 fill:#7c3aed,color:#fff,stroke:#7c3aed;
 ```
 
 ### Permission Matrix — Status × Action with Sub-roles (Receiver)
