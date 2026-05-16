@@ -2,7 +2,7 @@
 title: Inventory Adjustment — Business Rules
 description: Validation, calculation, authorization, posting, and cross-module rules for inventory adjustments.
 published: true
-date: 2026-05-15T13:00:00.000Z
+date: 2026-05-16T14:00:00.000Z
 tags: inventory-adjustment, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -127,6 +127,29 @@ State diagram (per Prisma `enum_doc_status`):
                            │
                            └──cancel──> cancelled (terminal)
 ```
+
+### 5.1 Status Lifecycle — Live UI vs BRD Mapping
+
+The Prisma enum `enum_doc_status` documented above is what the live UI uses. The carmen/docs set (`INV-ADJ-Business-Requirements.md`) describes the intended status set as a three-state lifecycle (`Draft → Posted → Void`). The table below maps every observable live-UI status to its BRD equivalent so testers and developers can reconcile the two without ambiguity. Sources: `Test_case/System_Process/tx-06-stock-in-adj.md` (capture date 2026-04-27) and `Test_case/System_Process/tx-07-stock-out-adj.md` (capture date 2026-04-27).
+
+> Diff legend: ✅ match · 🟡 renamed · 🔵 BRD only.
+
+| Live UI status | BRD equivalent | Diff | Notes |
+|---|---|---|---|
+| `draft` | `Draft` | ✅ match | Initial editable state. Both stock-in and stock-out documents start here; creator enters lines, reason code, department, attachments. No inventory effect. |
+| `in_progress` | — (collapsed into `Draft` in BRD three-state model) | 🟡 renamed | Submitted for approval; document is locked to the creator while awaiting Controller or Finance review. Both stock-in and stock-out variants use this state for the above-threshold or new-lot routing gate. BRD's three-state model has no equivalent — it collapses this into `Draft`. |
+| `completed` | `Posted` | 🟡 renamed | Terminal active state; the `in_progress → completed` transition fires the posting event: inventory transaction written, cost-layer rows created (new lot for stock-in; oldest-lot-first consumption for stock-out), GL entry generated. Immutable after posting. Applies to both stock-in (direction IN) and stock-out (direction OUT). |
+| `cancelled` | — (no BRD equivalent) | 🟡 renamed | Document cancelled before posting — creator or reviewer abandoned. No inventory effect. Terminal. BRD three-state model has no explicit pre-post cancel; documents in BRD either advance to `Posted` or are `Void`. |
+| `voided` | `Void` | 🟡 renamed | Post-fact void via compensating reversal pattern (`ADJ_POST_004`). The original `completed` document moves to `voided` only after a compensating `tb_stock_in` (if voiding a stock-out) or `tb_stock_out` (if voiding a stock-in) has posted. Original inventory transaction is not edited per [[inventory]] `INV_POST_012`. Applies to both directions. |
+| — | `Draft` (editable + submitted, pre-post) | 🔵 BRD only | The BRD `Draft` state covers both the carmen-wiki `draft` and `in_progress` states — BRD does not distinguish the editable pre-submit from the submitted-awaiting-approval window. |
+
+> ⚠️ **Discrepancy — Two parallel document trees vs single `InventoryAdjustment` entity:** The carmen/docs BRD (`INV-ADJ-Business-Requirements.md`) and interface definitions describe a single `InventoryAdjustment` entity with a `type: 'IN' | 'OUT'` discriminator and a three-state lifecycle (`Draft → Posted → Void`). The live implementation uses **two parallel document tables** — `tb_stock_in` (direction IN) and `tb_stock_out` (direction OUT) — each with the same five-state `enum_doc_status`, joined by the shared reason-code classifier `tb_adjustment_type` whose `enum_adjustment_type` (`STOCK_IN` / `STOCK_OUT`) gates which document tree a given reason can appear on. The BRD single-entity view is a read-model union; the two-table split is the canonical persistence layer. Sources: `Test_case/System_Process/tx-06-stock-in-adj.md` (capture date 2026-04-27) and `Test_case/System_Process/tx-07-stock-out-adj.md` (capture date 2026-04-27).
+
+> ⚠️ **Discrepancy — Status flow TBC markers in Test_case sources:** Both `Test_case/System_Process/tx-06-stock-in-adj.md` and `Test_case/System_Process/tx-07-stock-out-adj.md` annotate the status flow with `TBC — verify live UI statuses`. The five-state lifecycle (`draft → in_progress → completed → cancelled / voided`) documented in [[inventory-adjustment/01-data-model]] § 4 is the canonical Prisma schema reality; the TBC markers indicate the live UI label phrasing for each state has not yet been verified against the running system. Testers should confirm the displayed badge text matches the enum values above. Sources: `Test_case/System_Process/tx-06-stock-in-adj.md` (capture date 2026-04-27) and `Test_case/System_Process/tx-07-stock-out-adj.md` (capture date 2026-04-27).
+
+> ⚠️ **Discrepancy — Lot impact differs by direction:** Stock-in adjustments (`tb_stock_in`) always create a **new lot** for the adjusted-in quantity (new lot created at the inventory location; lot number and metadata may be entered manually or system-generated — TBC per `Test_case/System_Process/tx-06-stock-in-adj.md`, capture date 2026-04-27). Stock-out adjustments (`tb_stock_out`) **consume existing lots oldest-first** (FIFO lot consumption; if adjustment qty spans multiple lots, each is reduced in chronological order until adjustment qty is satisfied — per `Test_case/System_Process/tx-07-stock-out-adj.md`, capture date 2026-04-27). This directional asymmetry means new-lot stock-in always routes for Inventory Controller approval per `ADJ_AUTH_003` regardless of cost, whereas stock-out's lot selection is engine-driven (not user-entered) at post time.
+
+> ℹ️ **Note — Unit cost entry differs by direction:** For stock-in, `cost_per_unit` is user-entered on the document line (required; used for the new lot's cost layer and WA/FIFO calculation). For stock-out, the user-entered `cost_per_unit` is a draft preview only — the authoritative cost is picked at post time by the costing engine (`ADJ_CALC_006` / `ADJ_CALC_007`). BRD `ADJ_VAL_003` applies to stock-in; for stock-out, the validation is on the preview value only. Sources: `Test_case/System_Process/tx-06-stock-in-adj.md` (capture date 2026-04-27) and `Test_case/System_Process/tx-07-stock-out-adj.md` (capture date 2026-04-27).
 
 ## 6. Cross-Module Rules
 

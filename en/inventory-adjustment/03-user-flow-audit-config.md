@@ -2,13 +2,54 @@
 title: Inventory Adjustment — User Flow — Audit / Config
 description: Auditor and System Administrator flows within the inventory-adjustment module — audit trail inspection and configuration maintenance.
 published: true
-date: 2026-05-15T13:00:00.000Z
+date: 2026-05-16T14:00:00.000Z
 tags: inventory-adjustment, user-flow, audit, sysadmin, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
 ---
 
 # Inventory Adjustment — User Flow — Audit / Config
+
+### Position relative to the transactional flow (off-path observers)
+
+```mermaid
+graph LR
+    subgraph transactional["Transactional Happy Path"]
+        draft(("draft")) -->|"submit"| inprog(("in_progress"))
+        inprog -->|"approve"| completed(("completed"))
+        inprog -->|"cancel"| cancelled(("cancelled"))
+        completed -->|"void"| voided(("voided"))
+    end
+    sysadmin["System Administrator\n(reason-code config, thresholds,\nRBAC, workflow definitions)"]:::cfg -.-> transactional
+    auditor["Auditor\n(read-only trail inspection,\nSoD compliance, lot-recall trace)"]:::audit -.-> transactional
+    classDef audit fill:#eab308,color:#000,stroke:#eab308;
+    classDef cfg fill:#7c3aed,color:#fff,stroke:#7c3aed;
+```
+
+### Permission Matrix — V6 Action × Sub-persona (Audit / Config)
+
+Both sub-personas are non-transactional — they do not raise, approve, edit, post, or void adjustment documents. Their work is on the boundaries: configuration (System Administrator) and read-only inspection (Auditor). Rows are derived from Section 2 of this file (`ADJ_AUTH_008`, `ADJ_AUTH_009`, `ADJ_AUTH_010`, `ADJ_POST_004`).
+
+| Action | System Administrator | Auditor |
+|---|---|---|
+| View all `tb_stock_in` / `tb_stock_out` (any status, incl. soft-deleted) | ✅ | ✅ (`ADJ_AUTH_009`) |
+| View `workflow_history`, `last_action_by_id`, approval signatures | ✅ | ✅ (`ADJ_AUTH_009`) |
+| View attachments (photos, damage reports, recall notices) | ✅ | ✅ (`ADJ_AUTH_009`) |
+| View inventory transaction and cost-layer effects | ✅ | ✅ |
+| Export sensitive fields (cost-per-unit, vendor terms) | ✅ | ✅ (secondary-approval audit pattern) |
+| CRUD on `tb_adjustment_type` reason codes (`ADJ_AUTH_008`) | ✅ (`ADJ_AUTH_008`) | ❌ |
+| Set `info.glAccount`, `info.requiresDocument`, `info.requiresQualityCheck` | ✅ (`ADJ_AUTH_008`) | ❌ |
+| Configure threshold ladder (auto-approve / Controller / Finance / SoD) | ✅ (`ADJ_AUTH_008`) | ❌ |
+| Manage `tb_user_location` scope and RBAC | ✅ | ❌ |
+| Define `tb_workflow` stages for adjustment documents | ✅ | ❌ |
+| SoD compliance check (`ADJ_AUTH_010` — receiver ≠ adjuster) | ❌ | ✅ — flag violations in audit report |
+| Verify void chains (compensating reversal exists per `ADJ_POST_004`) | ❌ | ✅ — orphaned voids are hard-fail audit findings |
+| Lot-recall trace (receipt → consumption → adjustment → void chain) | ❌ | ✅ — via shared `tb_inventory_transaction` join |
+| Raise / approve / void adjustment documents | ❌ (`ADJ_AUTH_008` — config only) | ❌ |
+
+> ℹ️ **Configuration scope:** System Administrator changes apply **prospectively** — new and future draft documents inherit the updated reason codes, thresholds, and workflow stages. Existing `draft` / `in_progress` documents retain the config active at their submit time. `completed` documents are immutable and retain their reason-code snapshot per [[inventory-adjustment/01-data-model]] § 3.
+
+> ℹ️ **Sensitive-field export:** Single-Auditor export of cost-per-unit and joined vendor-pricelist data requires a secondary-approval step per the audit pattern. This is enforced at the platform layer, not within the adjustment module itself.
 
 ## 1. Role in This Module
 

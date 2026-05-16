@@ -2,7 +2,7 @@
 title: Inventory Adjustment — User Flow
 description: Document lifecycle and persona-specific flow files for inventory adjustments.
 published: true
-date: 2026-05-15T13:00:00.000Z
+date: 2026-05-16T14:00:00.000Z
 tags: inventory-adjustment, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -19,6 +19,60 @@ Section 2 below describes the **document lifecycle state machine** — the canon
 ## 2. Document Lifecycle
 
 The document follows the five-state Prisma lifecycle on `enum_doc_status`. The carmen/docs framing of "Draft → Posted → Void" collapses the explicit workflow stage (`in_progress`) and the pre-post cancel state (`cancelled`); the table below uses the five-state Prisma reality per [[inventory-adjustment/01-data-model]] § 5 item 4.
+
+The adjustment module uses **two parallel document trees** — `tb_stock_in` (direction IN / stock-in adjustment) and `tb_stock_out` (direction OUT / stock-out adjustment) — both governed by the same five-state `enum_doc_status`. The diagrams below show the legal `doc_status` transitions for each document tree. The `enum_adjustment_type` classifier (`STOCK_IN` / `STOCK_OUT`) on the reason-code master (`tb_adjustment_type`) gates which tree a given reason can be used on.
+
+**Stock-in adjustment (`tb_stock_in`) — direction IN (green badge):**
+
+```mermaid
+stateDiagram-v2
+    [*] --> draft : create tb_stock_in\n(Store Keeper / Inventory Controller — ADJ_AUTH_001)
+    draft --> in_progress : submit — below threshold + existing lot\n(auto-approve cascade to completed fires per ADJ_POST_001)
+    draft --> in_progress : submit — above threshold OR new-lot stock-in\n(routes to Inventory Controller queue — ADJ_AUTH_003 / ADJ_AUTH_004)
+    draft --> cancelled : cancel (creator — ADJ_POST_003)
+    in_progress --> completed : approve (Inventory Controller below Finance threshold — ADJ_AUTH_004)\nor Finance (above Controller threshold — ADJ_AUTH_005)\nPosting fires: new lot created · WA refreshed / FIFO layer added (ADJ_POST_002)
+    in_progress --> draft : reject (Inventory Controller / Finance — return to creator)
+    in_progress --> cancelled : cancel in_progress (Inventory Controller — ADJ_AUTH_007)
+    completed --> voided : void via compensating tb_stock_out (ADJ_POST_004)\nOriginal inventory transaction not edited (INV_POST_012)
+    completed --> [*]
+    cancelled --> [*]
+    voided --> [*]
+
+    note right of in_progress
+        New-lot stock-in always routes to Controller (ADJ_AUTH_003)
+        regardless of cost impact.
+        Below-threshold + existing-lot: auto-approve fast path
+        (draft → in_progress → completed, ADJ_POST_001).
+    end note
+```
+
+**Stock-out adjustment (`tb_stock_out`) — direction OUT (red badge):**
+
+```mermaid
+stateDiagram-v2
+    [*] --> draft : create tb_stock_out\n(Store Keeper / Inventory Controller — ADJ_AUTH_001)
+    draft --> in_progress : submit — below threshold\n(auto-approve cascade to completed fires per ADJ_POST_001)
+    draft --> in_progress : submit — above threshold or requires-quality-check\n(routes to Inventory Controller / Finance queue — ADJ_AUTH_004 / ADJ_AUTH_005)
+    draft --> cancelled : cancel (creator — ADJ_POST_003)
+    in_progress --> completed : approve (Inventory Controller / Finance — ADJ_POST_002)\nPosting fires: oldest lot consumed first · FIFO layers consumed / WA cost picked
+    in_progress --> draft : reject (Inventory Controller / Finance — return to creator)
+    in_progress --> cancelled : cancel in_progress (Inventory Controller — ADJ_AUTH_007)
+    completed --> voided : void via compensating tb_stock_in (ADJ_POST_004)\nOriginal inventory transaction not edited (INV_POST_012)
+    completed --> [*]
+    cancelled --> [*]
+    voided --> [*]
+
+    note right of in_progress
+        SoD constraint (ADJ_AUTH_010): the user who submitted a large
+        tb_stock_out write-off must not be the same user who received
+        the originating GRN lot (above SoD threshold).
+        Cost-per-unit for stock-out is engine-picked at post time
+        (ADJ_CALC_006 FIFO / ADJ_CALC_007 WA); user-entered value
+        on the draft is a preview only.
+    end note
+```
+
+> ℹ️ **Note — single `enum_doc_status`, two document trees:** Both `tb_stock_in` and `tb_stock_out` share the same `enum_doc_status` (`draft`, `in_progress`, `completed`, `cancelled`, `voided`). The two diagrams above show the same transition rules applied to each tree; the key behavioural difference is in the posting fan-out: stock-in creates a new lot and adds a cost layer (or refreshes WA), while stock-out consumes existing lots oldest-first and picks cost at post time. Count-rollup documents (`ADJ_POST_006`) auto-advance to `completed` under Inventory Controller commit authority, bypassing the explicit `in_progress` approval queue.
 
 ### 2.1 Document-level transitions
 

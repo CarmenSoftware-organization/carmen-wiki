@@ -2,13 +2,50 @@
 title: Inventory Adjustment — User Flow — Inventory Controller
 description: Inventory Controller's flow within the inventory-adjustment module — review, variance monitoring, approval, posting, count-rollup commit.
 published: true
-date: 2026-05-15T13:00:00.000Z
+date: 2026-05-16T14:00:00.000Z
 tags: inventory-adjustment, user-flow, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
 ---
 
 # Inventory Adjustment — User Flow — Inventory Controller
+
+### Workflow position (Inventory Controller highlighted)
+
+```mermaid
+graph LR
+    keeper_submit(("in_progress\n— from Store Keeper\nor direct create")):::current -->|"review"| approve_gate{{"Approve /\nReject / Cancel"}}:::current
+    approve_gate -->|"approve — below\nFinance threshold"| completed(("completed\n(Controller posts)")):::current
+    approve_gate -->|"approve — above\nFinance threshold"| finance_q(("in_progress\n— Finance queue"))
+    approve_gate -->|"reject"| draft_return(("draft\n(Store Keeper amends)"))
+    approve_gate -->|"cancel"| cancelled(("cancelled")):::current
+    count_commit["Count-variance commit\n(Physical Count / Spot Check)"]:::current -->|"ADJ_POST_006 auto-rollup"| completed
+    direct_create["Direct create\n(Controller raises adjustment)"]:::current -->|"submit"| keeper_submit
+    completed -->|"void (compensating\nreversal)"| voided(("voided")):::current
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+```
+
+### Permission Matrix — V2 Action × Stage Role (Inventory Controller)
+
+The Inventory Controller is the **approval authority between the auto-approve threshold and the Finance threshold**. The matrix below uses a two-stage axis (Controller-band approval and count-rollup commit) from the Controller's perspective. Rows are derived from Section 2 of this file (`ADJ_AUTH_003`–`ADJ_AUTH_007`, `ADJ_POST_004`, `ADJ_POST_006`, `ADJ_CALC_008`).
+
+| Action | Controller-band approval (`฿500–฿10,000`) | Count-rollup commit |
+|---|---|---|
+| Review `in_progress` documents in approval queue | ✅ (`ADJ_AUTH_004`) | ✅ (variance lines review) |
+| Approve stock-in / stock-out (`in_progress → completed`) | ✅ (`ADJ_AUTH_004`) — fires posting per `ADJ_POST_002` | ✅ auto-advance per `ADJ_POST_006` |
+| Approve new-lot stock-in (any cost impact) | ✅ (`ADJ_AUTH_003`) — validates lot identity + cost defensibility | — |
+| Reject document (`in_progress → draft`) | ✅ (`ADJ_AUTH_004`) — rejection reason in `workflow_history` | ✅ (can reject count before commit) |
+| Cancel `in_progress` document (`→ cancelled`) | ✅ (`ADJ_AUTH_007`) | — |
+| Forward above-threshold to Finance | ✅ (`ADJ_AUTH_005` — routes to Finance queue) | — |
+| Commit count variances (Physical Count / Spot Check) | — | ✅ (`ADJ_POST_006`) — auto-creates `tb_stock_in` (overage) + `tb_stock_out` (shortage) |
+| Direct-create `tb_stock_in` / `tb_stock_out` | ✅ (`ADJ_AUTH_001` — same scope as Store Keeper) | — |
+| Void `completed` document (compensating reversal) | ✅ (`ADJ_AUTH_007`, `ADJ_POST_004`) | — |
+| Monitor variance dashboard (`ADJ_CALC_010` period impact) | ✅ (`ADJ_CALC_008` variance %) | ✅ |
+| Edit lines on `completed` document | ❌ (`ADJ_VAL_013` — immutable after posting) | ❌ |
+| Configure `tb_adjustment_type` reason codes / thresholds | ❌ (System Administrator per `ADJ_AUTH_008`) | ❌ |
+| Approve above-Controller-threshold documents | ❌ (Finance per `ADJ_AUTH_005`) | ❌ |
+
+> ℹ️ **Department Manager review responsibility:** The Department Manager role (cost-centre oversight, comment / flag capability) is folded into the Inventory Controller persona group in this wiki. Department Managers receive notifications on documents affecting their cost-centre (resolved via the document's `dimension.department`) but do not approve — they comment and escalate to the Controller or Finance.
 
 ## 1. Role in This Module
 

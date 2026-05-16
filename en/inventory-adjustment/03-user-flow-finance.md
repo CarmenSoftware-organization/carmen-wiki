@@ -2,13 +2,49 @@
 title: Inventory Adjustment — User Flow — Finance
 description: Finance's flow within the inventory-adjustment module — cost-impact verification, GL mapping, large-cost approval, period-end sign-off.
 published: true
-date: 2026-05-15T13:00:00.000Z
+date: 2026-05-16T14:00:00.000Z
 tags: inventory-adjustment, user-flow, finance, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
 ---
 
 # Inventory Adjustment — User Flow — Finance
+
+### Workflow position (Finance highlighted)
+
+```mermaid
+graph LR
+    controller_forward(("in_progress\n— above Controller\nthreshold")):::current -->|"review"| finance_gate{{"Approve /\nReject / Send-back"}}:::current
+    finance_gate -->|"approve\n(ADJ_AUTH_005)"| completed(("completed\n(Finance posts)")):::current
+    finance_gate -->|"reject"| draft_return(("draft\n(Store Keeper amends)"))
+    finance_gate -->|"send back\nto Controller"| controller_q(("in_progress\n— Controller re-review"))
+    completed -->|"period-end\nreconciliation"| period_close["Period-close\nsign-off"]:::current
+    completed -->|"void via compensating\nreversal (ADJ_POST_004)"| voided(("voided")):::current
+    period_close -->|"sub-ledger reconciled"| fm_close["Finance Manager\nperiod close"]
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+```
+
+### Permission Matrix — V5 Touchpoint × Action (Finance)
+
+Finance operates across two distinct touchpoints: **large-cost approval** (above-Controller-threshold documents in the Finance queue) and **period-end reconciliation** (verifying the adjustment activity rolls up correctly into the inventory sub-ledger and GL). Finance has no authority over below-Controller-threshold documents. Rows are derived from Section 2 of this file (`ADJ_AUTH_005`, `ADJ_POST_002`, `ADJ_POST_004`, `ADJ_CALC_008`, `ADJ_CALC_010`, `ADJ_XMOD_007`).
+
+| Action | Large-cost approval (Finance queue) | Period-end reconciliation |
+|---|---|---|
+| View `in_progress` documents above Controller threshold | ✅ (`ADJ_AUTH_005`) | ✅ (historical view) |
+| Verify reason-code GL-account mapping (`info.glAccount`) | ✅ — confirms correct expense / loss account | ✅ (historical verification) |
+| Verify FIFO / WA cost-per-unit pick defensibility | ✅ — cross-check against vendor pricelist | ✅ |
+| Verify department / cost-centre (`dimension.department`) | ✅ — confirms budget responsibility | ✅ |
+| Approve above-Controller-threshold adjustment (`in_progress → completed`) | ✅ (`ADJ_AUTH_005`) — fires posting per `ADJ_POST_002` | ❌ |
+| Reject document (`in_progress → draft`) | ✅ (`ADJ_AUTH_005`) | ❌ |
+| Send back to Controller for re-investigation | ✅ (comment only; document stays `in_progress`) | ❌ |
+| Void `completed` document (compensating reversal) | ✅ (`ADJ_POST_004`) — for prior-period cost-mapping errors | ✅ |
+| Reconcile inventory sub-ledger vs GL Inventory control | ❌ | ✅ (`ADJ_XMOD_007`) |
+| Period-end sign-off (pre-condition for Finance Manager close) | ❌ | ✅ (`ADJ_CALC_010` period-impact aggregation) |
+| Edit below-Controller-threshold documents | ❌ (Controller domain) | ❌ |
+| Configure `tb_adjustment_type` reason codes / thresholds | ❌ (System Administrator per `ADJ_AUTH_008`) | ❌ |
+| Edit `completed` document directly | ❌ (`ADJ_VAL_013` — immutable) | ❌ |
+
+> ℹ️ **Finance cannot initiate a void without a compensating reversal:** The `completed → voided` transition requires a compensating `tb_stock_in` (if voiding a stock-out) or `tb_stock_out` (if voiding a stock-in) to post first per `ADJ_POST_004`. Finance may initiate and approve the compensating document; only after that post does the original move to `voided`.
 
 ## 1. Role in This Module
 

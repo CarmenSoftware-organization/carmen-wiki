@@ -2,13 +2,52 @@
 title: Inventory Adjustment — User Flow — Store Keeper
 description: Store Keeper's flow within the inventory-adjustment module — discrepancy identification, evidence capture, draft submission.
 published: true
-date: 2026-05-15T13:00:00.000Z
+date: 2026-05-16T14:00:00.000Z
 tags: inventory-adjustment, user-flow, store-keeper, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
 ---
 
 # Inventory Adjustment — User Flow — Store Keeper
+
+### Workflow position (Store Keeper highlighted)
+
+```mermaid
+graph LR
+    create_in["Create Stock-In draft\n(found stock / count overage\n/ vendor replacement)"]:::current -->|"submit"| gate{{"Threshold /\nnew-lot gate"}}
+    create_out["Create Stock-Out draft\n(breakage / missing\n/ count shortage)"]:::current -->|"submit"| gate
+    gate -->|"below threshold +\nexisting lot"| auto_complete(("completed\n(auto-approve)")):::current
+    gate -->|"above threshold OR\nnew-lot stock-in"| controller_q(("in_progress\n— Controller queue"))
+    gate -->|"requires-quality-check\nreason"| controller_q
+    controller_q -->|"approved"| completed(("completed"))
+    controller_q -->|"rejected"| amend["Amend & resubmit"]:::current
+    amend -->|"resubmit"| gate
+    create_in --> cancel_draft["Cancel own draft"]:::current --> cancelled(("cancelled"))
+    create_out --> cancel_draft
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+```
+
+### Permission Matrix — V1 Status × Action (Store Keeper)
+
+The Store Keeper holds create and edit rights at `draft`, auto-approve authority for below-threshold existing-lot documents, and read-only visibility once `in_progress` or `completed`. Rows are derived from Section 2 of this file (`ADJ_AUTH_001`–`ADJ_AUTH_003`, `ADJ_AUTH_010`, `ADJ_VAL_013`).
+
+| Action | `draft` | `in_progress` | `completed` | `cancelled` / `voided` |
+|---|---|---|---|---|
+| Create `tb_stock_in` (stock-in adjustment) | ✅ (`ADJ_AUTH_001`) | — | — | — |
+| Create `tb_stock_out` (stock-out adjustment) | ✅ (`ADJ_AUTH_001`) | — | — | — |
+| Edit header (location, reason, description, department) | ✅ (`ADJ_AUTH_001`) | ❌ read-only while awaiting approval | ❌ (`ADJ_VAL_013`) | ❌ |
+| Add / edit / delete lines (product, qty, lot) | ✅ (`ADJ_AUTH_001`) | ❌ | ❌ (`ADJ_VAL_013`) | ❌ |
+| Enter `cost_per_unit` (stock-in, new lot) | ✅ (`ADJ_AUTH_001`) — routes to Controller per `ADJ_AUTH_003` | ❌ | ❌ | ❌ |
+| Attach supporting evidence (photos, damage report, lot label) | ✅ (`ADJ_VAL_010`) | ✅ (comment only) | ❌ | ❌ |
+| Submit — below threshold + existing lot (auto-approve) | ✅ (`ADJ_AUTH_002`) | — | — | — |
+| Submit — above threshold or new-lot stock-in | ✅ (`ADJ_AUTH_003`) — routes to Controller | — | — | — |
+| Cancel own draft | ✅ (`ADJ_POST_003`) | ❌ | ❌ | — |
+| View document (read-only) | ✅ | ✅ | ✅ | ✅ |
+| Raise large stock-out for lot they received (SoD) | ❌ (`ADJ_AUTH_010` — SoD restriction above threshold) | ❌ | — | — |
+
+> ℹ️ **Auto-approve fast path:** When the aggregate document cost is below the tenant auto-approve threshold (default `฿500`) and the stock-in is for an **existing lot** (not a new-lot creation), the document cascades `draft → in_progress → completed` in a single submit action. The inventory transaction and GL entry post immediately. The Store Keeper's work ends at this point with no Controller handoff.
+
+> ℹ️ **New-lot stock-in always routes to Controller:** Even when cost is below the auto-approve threshold, a stock-in that creates a **new lot** (`info.isNewLot = true`) always routes to Inventory Controller for approval per `ADJ_AUTH_003`. This is a sensitive event — new lots can mask cost manipulation — so the Controller validates lot identity and `cost_per_unit` defensibility before approving.
 
 ## 1. Role in This Module
 
