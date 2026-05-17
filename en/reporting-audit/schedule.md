@@ -2,7 +2,7 @@
 title: Report Schedule
 description: Cron-driven schedule for recurring report generation — fires runs on a cadence and delivers output to configured recipients.
 published: true
-date: 2026-05-17T08:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: reporting-audit, schedule, automation, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Sysadmin / schedule-admin &nbsp;·&nbsp; **Table:** `tb_report_schedule` &nbsp;·&nbsp; **Retention:** indefinite (soft-delete only); artefacts age out via [[reporting-audit/history]] &nbsp;·&nbsp; **Used by:** `micro-cronjobs` poller &nbsp;·&nbsp; **Pairs a report template with a cron expression, frozen filters, and a delivery list.**
+
+![Report Schedule screen](/assets/screenshots/reporting-audit/schedule.png)
 
 ## 1. What & Who
 

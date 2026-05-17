@@ -2,7 +2,7 @@
 title: ประเภทการปรับสต๊อก (Adjustment Type)
 description: รหัสเหตุผลสำหรับการปรับสต๊อก stock-in / stock-out — ใช้โดย inventory adjustment, physical count และ spot check เพื่ออธิบาย variance
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: master-data, adjustment-type, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_adjustment_type` &nbsp;·&nbsp; **ใช้โดย:** inventory adjustment / physical count / spot check &nbsp;·&nbsp; รหัสเหตุผลสำหรับการเคลื่อนไหว stock-in / stock-out ทุกครั้ง
+
+![ประเภทการปรับสต๊อก (Adjustment Type) screen](/assets/screenshots/master-data/adjustment-type.png)
 
 ## 1. คืออะไร / ใครใช้
 

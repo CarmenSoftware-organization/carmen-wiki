@@ -2,7 +2,7 @@
 title: เหตุผลใบลดหนี้ (Credit Note Reason)
 description: รหัสเหตุผลสำหรับใบลดหนี้ที่ออกต่อ GRN — รองรับ flow การคืนสินค้าให้ผู้ขายและการแก้ราคา
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: master-data, credit-note-reason, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_credit_note_reason` &nbsp;·&nbsp; **ใช้โดย:** flow ใบลดหนี้ (return-to-vendor, แก้ราคา) &nbsp;·&nbsp; *ทำไม* ของทุกใบลดหนี้ที่ออกต่อ GRN
+
+![เหตุผลใบลดหนี้ (Credit Note Reason) screen](/assets/screenshots/master-data/credit-note-reason.png)
 
 ## 1. คืออะไร / ใครใช้
 

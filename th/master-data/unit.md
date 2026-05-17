@@ -2,7 +2,7 @@
 title: หน่วยนับ (Unit)
 description: หน่วยนับและการแปลงระหว่างหน่วยที่ใช้โดยเอกสารธุรกรรมและระเบียนสินค้าทุกใบ
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: master-data, unit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_unit`, `tb_unit_conversion` &nbsp;·&nbsp; **ใช้โดย:** product, recipe, PR / PO / GRN / SR / inventory / costing &nbsp;·&nbsp; หน่วย inventory + order และตัวคูณระหว่างกัน
+
+![หน่วยนับ (Unit) screen](/assets/screenshots/master-data/unit.png)
 
 ## 1. คืออะไร / ใครใช้
 

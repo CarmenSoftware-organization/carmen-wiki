@@ -2,7 +2,7 @@
 title: Department
 description: Organisational departments and their user assignments — used as cost-centre and approval scope on requisition and PR documents.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: master-data, department, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Product Admin (list) / Sysadmin (user mapping) &nbsp;·&nbsp; **Tables:** `tb_department`, `tb_department_user` &nbsp;·&nbsp; **Used by:** PR, SR, approval workflows, RBAC, reports &nbsp;·&nbsp; Cost-centre + requesting-unit dimension; resolves Head-of-Department reviewer.
+
+![Department screen](/assets/screenshots/master-data/department.png)
 
 ## 1. What & Who
 

@@ -2,7 +2,7 @@
 title: Exchange Rate
 description: Dated history of currency-to-base-currency conversion rates — every transactional document snapshots the rate effective on its document date.
 published: true
-date: 2026-05-16T18:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: master-data, exchange-rate, currency, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Product Admin &nbsp;·&nbsp; **Table:** `tb_exchange_rate` &nbsp;·&nbsp; **Used by:** PR / PO / GRN / pricelist / costing &nbsp;·&nbsp; **Feed:** daily (manual or cron)
+
+![Exchange Rate screen](/assets/screenshots/master-data/exchange-rate.png)
 
 ## 1. What & Who
 

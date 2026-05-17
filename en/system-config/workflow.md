@@ -2,7 +2,7 @@
 title: Workflow
 description: Named multi-stage approval workflows attached to transactional documents — defines stages, actions, recipients, SLA, and field visibility per stage.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: system-config, workflow, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Sysadmin / Workflow Administrator &nbsp;·&nbsp; **Table:** `tb_workflow` &nbsp;·&nbsp; **Used by:** PR / SR / PO (approval-bearing modules) &nbsp;·&nbsp; Stage-chain definitions — actions, recipients, SLA, hidden fields, assignees.
+
+![Workflow screen](/assets/screenshots/system-config/workflow.png)
 
 ## 1. What & Who
 

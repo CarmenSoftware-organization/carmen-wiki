@@ -2,7 +2,7 @@
 title: Profile ภาษี (Tax Profile)
 description: นิยามอัตราภาษีแบบมีชื่อที่ถูกอ้างอิงโดยผู้ขาย สินค้า และทุกบรรทัดเอกสารที่มีราคา
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: master-data, tax-profile, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Product Admin (หรือ Sysadmin) &nbsp;·&nbsp; **ตาราง:** `tb_tax_profile` &nbsp;·&nbsp; **ใช้โดย:** vendor, product, PR / PO / GRN / pricelist / credit note &nbsp;·&nbsp; อัตรามีชื่อ (`VAT 7%`, `Zero-rated`) — โหมดภาษีของบรรทัดตัดสินวิธีนำไปใช้
+
+![Profile ภาษี (Tax Profile) screen](/assets/screenshots/master-data/tax-profile.png)
 
 ## 1. คืออะไร / ใครใช้
 

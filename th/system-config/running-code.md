@@ -2,7 +2,7 @@
 title: Running Code
 description: การตั้งค่า generator เลขที่เอกสาร — prefix, date token และรูปแบบ running counter ต่อประเภทเอกสาร (PR, PO, GRN, SR ฯลฯ)
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: system-config, running-code, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Sysadmin &nbsp;·&nbsp; **ตาราง:** `tb_config_running_code` &nbsp;·&nbsp; **ใช้โดย:** บริการ numbering ตอน document create ทุกครั้ง &nbsp;·&nbsp; กฎ document-numbering — `PR202605-00001` ฯลฯ
+
+![Running Code screen](/assets/screenshots/system-config/running-code.png)
 
 ## 1. คืออะไรและใครใช้
 

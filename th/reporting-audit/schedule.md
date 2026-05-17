@@ -2,7 +2,7 @@
 title: กำหนดการรายงาน (Report Schedule)
 description: ตารางเวลาขับโดย cron สำหรับการสร้างรายงานเกิดซ้ำ — fire การรันตาม cadence และส่ง output ไปยังผู้รับที่ตั้งค่า
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: reporting-audit, schedule, automation, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Sysadmin / schedule-admin &nbsp;·&nbsp; **ตาราง:** `tb_report_schedule` &nbsp;·&nbsp; **Retention:** ไม่จำกัด (soft-delete เท่านั้น); artefact หมดอายุผ่าน [[reporting-audit/history]] &nbsp;·&nbsp; **ใช้โดย:** poller ของ `micro-cronjobs` &nbsp;·&nbsp; **จับคู่ template ของรายงานกับ cron expression, ชุด filter แบบ frozen และรายการการส่ง**
+
+![กำหนดการรายงาน (Report Schedule) screen](/assets/screenshots/reporting-audit/schedule.png)
 
 ## 1. ภาพรวมและผู้ใช้งาน
 

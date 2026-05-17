@@ -2,7 +2,7 @@
 title: อัตราแลกเปลี่ยน (Exchange Rate)
 description: ประวัติอัตราแปลงสกุลเงินไปยังสกุลเงินฐานแบบมีวันที่ — เอกสารธุรกรรมทุกใบ snapshot อัตราที่มีผลในวันที่ของเอกสาร
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: master-data, exchange-rate, currency, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_exchange_rate` &nbsp;·&nbsp; **ใช้โดย:** PR / PO / GRN / pricelist / costing &nbsp;·&nbsp; **Feed:** รายวัน (ด้วยมือหรือ cron)
+
+![อัตราแลกเปลี่ยน (Exchange Rate) screen](/assets/screenshots/master-data/exchange-rate.png)
 
 ## 1. คืออะไร / ใครใช้
 

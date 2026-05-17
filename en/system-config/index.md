@@ -2,7 +2,7 @@
 title: System Configuration
 description: Document-flow and accounting-period system configuration — workflow, period, dimensions, numbering.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: system-config, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **Module purpose:** Document-flow and accounting-period machinery — approval workflows, accounting periods, dimensions, document numbering, app config, menu &nbsp;·&nbsp; **Audience:** Sysadmin, Workflow Administrator, Finance (period close) &nbsp;·&nbsp; **Key entities/tables:** `tb_workflow`, `tb_period`, `tb_dimension`, `tb_config_running_code`, `tb_application_config`, `tb_menu` &nbsp;·&nbsp; **Sub-pages:** 9
+
+![System Configuration screen](/assets/screenshots/system-config/index.png)
 
 ## 1. Overview
 

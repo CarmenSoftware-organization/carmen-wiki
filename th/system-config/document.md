@@ -2,7 +2,7 @@
 title: การจัดการเอกสาร (Document Management)
 description: Registry การจัดเก็บไฟล์ scope ตาม tenant — upload, list, download, presigned URL และ delete สำหรับเอกสารที่แนบกับ record ธุรกรรม
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: system-config, document, attachment, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Sysadmin (delete); list / download ผ่าน App ID grant &nbsp;·&nbsp; **การจัดเก็บ:** Microservice `FILE_SERVICE` (S3-compatible) + metadata mirror ใน `tb_attachment` &nbsp;·&nbsp; **ใช้โดย:** การแนบไฟล์ PR / PO / GRN / SR / IA / count / pricelist / vendor / product &nbsp;·&nbsp; **จำกัด 10 MB, scope ตาม BU**
+
+![การจัดการเอกสาร (Document Management) screen](/assets/screenshots/system-config/document.png)
 
 ## 1. คืออะไรและใครใช้
 

@@ -2,7 +2,7 @@
 title: การตั้งค่าอีเมล (Email Configuration)
 description: การตั้งค่า SMTP / ผู้ส่ง / template สำหรับอีเมลขาออกของระบบ — การแจ้งเตือนเวิร์กโฟลว์ การส่งรายงานตามตารางเวลา การรีเซ็ตรหัสผ่าน
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: system-config, email, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Sysadmin เท่านั้น &nbsp;·&nbsp; **การจัดเก็บ:** Row ใน `tb_application_config` (`key = "report_email"`) &nbsp;·&nbsp; **ใช้โดย:** `micro-notification`, รายงานตามตารางเวลา, การรีเซ็ตรหัสผ่าน, การแจ้งเตือนการตรวจสอบ &nbsp;·&nbsp; **หนึ่ง SMTP profile ต่อ BU; รหัสผ่าน SMTP เข้ารหัสตอนเก็บ**
+
+![การตั้งค่าอีเมล (Email Configuration) screen](/assets/screenshots/system-config/config-email.png)
 
 ## 1. คืออะไรและใครใช้
 

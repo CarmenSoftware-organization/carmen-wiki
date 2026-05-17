@@ -2,7 +2,7 @@
 title: ช่วงงวด (Period)
 description: นิยามช่วงงวดบัญชีและ snapshot ต้นทุนสต๊อกต่องวด — สถานะ open/closed/locked ขับเคลื่อนการ์ดการ back-date และการปิดต้นทุน
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: system-config, period, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Sysadmin / Finance Manager &nbsp;·&nbsp; **ตาราง:** `tb_period` (+ `tb_period_snapshot`) &nbsp;·&nbsp; **ใช้โดย:** GRN, IA, count, spot-check, engine ต้นทุน &nbsp;·&nbsp; ปฏิทินบัญชี — ควบคุมการ back-date และขับเคลื่อนการปิดต้นทุน
+
+![ช่วงงวด (Period) screen](/assets/screenshots/system-config/period.png)
 
 ## 1. คืออะไรและใครใช้
 

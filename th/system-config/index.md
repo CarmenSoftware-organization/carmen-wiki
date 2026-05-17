@@ -2,7 +2,7 @@
 title: ระบบและการตั้งค่า (System Configuration)
 description: การตั้งค่าระบบสำหรับการไหลของเอกสารและช่วงงวดบัญชี — เวิร์กโฟลว์ ช่วงงวด มิติ การกำหนดเลขที่เอกสาร
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: system-config, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **วัตถุประสงค์โมดูล:** กลไกสำหรับการไหลของเอกสารและช่วงงวดบัญชี — เวิร์กโฟลว์การอนุมัติ ช่วงงวดบัญชี มิติ การกำหนดเลขที่เอกสาร การตั้งค่าแอป เมนู &nbsp;·&nbsp; **กลุ่มเป้าหมาย:** Sysadmin, Workflow Administrator, Finance (ปิดงวด) &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_workflow`, `tb_period`, `tb_dimension`, `tb_config_running_code`, `tb_application_config`, `tb_menu` &nbsp;·&nbsp; **หน้าย่อย:** 9
+
+![ระบบและการตั้งค่า (System Configuration) screen](/assets/screenshots/system-config/index.png)
 
 ## 1. ภาพรวม
 

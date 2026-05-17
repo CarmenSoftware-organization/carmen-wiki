@@ -2,7 +2,7 @@
 title: Credit Term
 description: Vendor payment terms (NET 30, COD, etc.) selected on purchase orders to drive due-date and accounts-payable schedules.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: master-data, credit-term, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Product Admin &nbsp;·&nbsp; **Table:** `tb_credit_term` &nbsp;·&nbsp; **Used by:** purchase orders (default per vendor) &nbsp;·&nbsp; Named payment terms — `name` + day-count `value`.
+
+![Credit Term screen](/assets/screenshots/master-data/credit-term.png)
 
 ## 1. What & Who
 

@@ -2,7 +2,7 @@
 title: เงื่อนไขการชำระเงิน (Credit Term)
 description: เงื่อนไขการชำระเงินกับผู้ขาย (NET 30, COD ฯลฯ) ที่เลือกบนใบสั่งซื้อเพื่อขับเคลื่อนวันครบกำหนดและตาราง accounts payable
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: master-data, credit-term, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_credit_term` &nbsp;·&nbsp; **ใช้โดย:** ใบสั่งซื้อ (default ต่อผู้ขาย) &nbsp;·&nbsp; เงื่อนไขการชำระเงินแบบมีชื่อ — `name` + `value` (จำนวนวัน)
+
+![เงื่อนไขการชำระเงิน (Credit Term) screen](/assets/screenshots/master-data/credit-term.png)
 
 ## 1. คืออะไร / ใครใช้
 

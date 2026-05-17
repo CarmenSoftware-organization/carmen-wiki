@@ -2,7 +2,7 @@
 title: Application Role
 description: Per-business-unit role definitions plus the join tables that map roles to permissions and users to roles — the heart of tenant RBAC.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: access-control, application-role, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Sysadmin (per BU) &nbsp;·&nbsp; **Table:** `tb_application_role` (+ `tb_application_role_tb_permission`, `tb_user_tb_application_role`) &nbsp;·&nbsp; **Used by:** every transactional module's permission check &nbsp;·&nbsp; Named bundles of permissions assigned to users inside a BU.
+
+![Application Role screen](/assets/screenshots/access-control/application-role.png)
 
 ## 1. What & Who
 

@@ -2,7 +2,7 @@
 title: Business Unit
 description: The legal/operating unit (property or BU) that scopes every transaction — owns calculation method, default currency, and module subscriptions.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: master-data, business-unit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Sysadmin &nbsp;·&nbsp; **Table:** `tb_business_unit` (platform) &nbsp;·&nbsp; **Used by:** every transactional document &nbsp;·&nbsp; Top-level scope — owns costing method, default currency, and module enablement.
+
+![Business Unit screen](/assets/screenshots/master-data/business-unit.png)
 
 ## 1. What & Who
 

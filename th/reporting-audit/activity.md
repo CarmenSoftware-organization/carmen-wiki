@@ -2,7 +2,7 @@
 title: บันทึกกิจกรรม (Activity)
 description: บันทึก activity ระดับ tenant — ทุกการเปลี่ยนสถานะที่มีความหมายถูกเก็บเป็นหนึ่งแถวพร้อม actor, entity, snapshot ก่อน/หลัง, IP และ user agent
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: reporting-audit, activity, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Append-only (audit service) &nbsp;·&nbsp; **ตาราง:** `tb_activity` &nbsp;·&nbsp; **ใช้โดย:** chain audit ของทุกโมดูลธุรกรรม &nbsp;·&nbsp; Audit log ของ tenant — หนึ่งแถวต่อหนึ่งการเปลี่ยนสถานะที่มีความหมาย
+
+![บันทึกกิจกรรม (Activity) screen](/assets/screenshots/reporting-audit/activity.png)
 
 ## 1. ภาพรวมและผู้ใช้งาน
 

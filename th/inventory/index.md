@@ -2,7 +2,7 @@
 title: คลังสินค้า (Inventory)
 description: ยอดคงเหลือสต๊อก ตำแหน่งจัดเก็บ และกระบวนการปิดงวด — แกนกลางของระบบ ERP ด้านคลังสินค้า
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** ระบบบันทึกหลักของยอดคงเหลือสต๊อก (สินค้า × คลัง × ตำแหน่ง × lot) และสายธารของการเคลื่อนไหวที่ป้อนข้อมูลให้กับการคำนวณต้นทุนและ snapshot ปิดงวด &nbsp;·&nbsp; **ผู้ใช้งาน:** Store Keeper, Inventory Controller, Finance &nbsp;·&nbsp; **เอนทิตี/ตารางสำคัญ:** `InventoryStatus`, รายการเคลื่อนไหวสต๊อก (`RECEIPT`/`ISSUE`/`TRANSFER`/`ADJUSTMENT`/`RETURN`/`WRITE_OFF`), `tb_period_snapshot`, ตาราง lot/batch &nbsp;·&nbsp; **หน้าย่อย:** 14
+
+![คลังสินค้า (Inventory) screen](/assets/screenshots/inventory/index.png)
 
 ## 1. ภาพรวม
 

@@ -2,7 +2,7 @@
 title: Delivery Point
 description: Physical drop-off points for vendor deliveries — referenced by purchase orders and GRNs and joined to inventory locations.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: master-data, delivery-point, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Product Admin &nbsp;·&nbsp; **Table:** `tb_delivery_point` &nbsp;·&nbsp; **Used by:** PO, GRN, locations &nbsp;·&nbsp; Physical drop-off address for vendor deliveries.
+
+![Delivery Point screen](/assets/screenshots/master-data/delivery-point.png)
 
 ## 1. What & Who
 

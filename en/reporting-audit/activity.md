@@ -2,7 +2,7 @@
 title: Activity
 description: Tenant-wide activity log — every meaningful state change captured as a row with actor, entity, before/after snapshot, IP, and user agent.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: reporting-audit, activity, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Append-only (audit service) &nbsp;·&nbsp; **Table:** `tb_activity` &nbsp;·&nbsp; **Used by:** every transactional module's audit chain &nbsp;·&nbsp; The tenant audit log — one row per meaningful state change.
+
+![Activity screen](/assets/screenshots/reporting-audit/activity.png)
 
 ## 1. What & Who
 

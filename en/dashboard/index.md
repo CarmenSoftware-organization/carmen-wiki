@@ -2,7 +2,7 @@
 title: Dashboard
 description: Cross-module dashboard surface — landing screen plus per-domain KPI views (PR, PO, GRN, Inventory, SR) that summarise live counts, aging, and exception buckets without opening each module.
 published: true
-date: 2026-05-17T08:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: dashboard, kpi, reporting, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **Route:** `/dashboard` (server-redirects to `/dashboard/main`) &nbsp;·&nbsp; **For:** All operator roles post-login &nbsp;·&nbsp; **Status:** **Mock-data today**; live hooks defined but not mounted
+
+![Dashboard screen](/assets/screenshots/dashboard/index.png)
 
 ## 1. What & Who
 

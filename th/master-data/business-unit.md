@@ -2,7 +2,7 @@
 title: หน่วยธุรกิจ (Business Unit)
 description: หน่วยปฏิบัติการ / นิติบุคคล (property หรือ BU) ที่กำหนด scope ของทุกธุรกรรม — เป็นเจ้าของ calculation method, default currency และ module subscription
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: master-data, business-unit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Sysadmin &nbsp;·&nbsp; **ตาราง:** `tb_business_unit` (platform) &nbsp;·&nbsp; **ใช้โดย:** เอกสารธุรกรรมทุกใบ &nbsp;·&nbsp; Scope บนสุด — เป็นเจ้าของวิธี costing, default currency และการเปิดใช้งาน module
+
+![หน่วยธุรกิจ (Business Unit) screen](/assets/screenshots/master-data/business-unit.png)
 
 ## 1. คืออะไร / ใครใช้
 

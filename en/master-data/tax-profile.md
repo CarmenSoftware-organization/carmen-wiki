@@ -2,7 +2,7 @@
 title: Tax Profile
 description: Named tax rate definitions referenced by vendors, products, and every priced document line.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: master-data, tax-profile, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Product Admin (or Sysadmin) &nbsp;·&nbsp; **Table:** `tb_tax_profile` &nbsp;·&nbsp; **Used by:** vendor, product, PR / PO / GRN / pricelist / credit note &nbsp;·&nbsp; Named rate (`VAT 7%`, `Zero-rated`) — line tax mode decides how it's applied.
+
+![Tax Profile screen](/assets/screenshots/master-data/tax-profile.png)
 
 ## 1. What & Who
 

@@ -2,7 +2,7 @@
 title: Credit Note Reason
 description: Coded reasons for credit notes raised against GRN — supports the return-to-vendor and price-correction flows.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: master-data, credit-note-reason, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Product Admin &nbsp;·&nbsp; **Table:** `tb_credit_note_reason` &nbsp;·&nbsp; **Used by:** credit-note flow (return-to-vendor, price correction) &nbsp;·&nbsp; The *why* behind every credit note raised against a GRN.
+
+![Credit Note Reason screen](/assets/screenshots/master-data/credit-note-reason.png)
 
 ## 1. What & Who
 

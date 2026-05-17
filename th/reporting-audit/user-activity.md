@@ -2,7 +2,7 @@
 title: กิจกรรมผู้ใช้ (User Activity)
 description: Timeline forensic ที่เน้น actor — login, logout, อายุ session, การเปิดหน้าที่ละเอียดอ่อน — แยกจาก activity ระดับ entity
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: reporting-audit, activity, security, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Sysadmin / Security Officer / Auditor (อ่านอย่างเดียว) &nbsp;·&nbsp; **ตาราง:** `tb_user_login_session` (platform) + projection ที่กรองจาก `tb_activity` (tenant) &nbsp;·&nbsp; **Retention:** แถว activity ตามนโยบาย tenant; แถว session ลบที่ `expired_on` &nbsp;·&nbsp; **ใช้โดย:** `/system-admin/user-activity`, compliance export &nbsp;·&nbsp; **Timeline forensic ต่อผู้ใช้ของการ login, logout และการเปิดหน้าที่ละเอียดอ่อน**
+
+![กิจกรรมผู้ใช้ (User Activity) screen](/assets/screenshots/reporting-audit/user-activity.png)
 
 > **ไม่มีตาราง `tb_user_activity` แยกในปัจจุบัน** Surface นี้ถูก **reconstruct** โดยการ join `tb_user_login_session` ฝั่งแพลตฟอร์มกับ `tb_activity` ฝั่ง tenant กรองที่ `action IN ('login', 'logout', 'view')` และ group โดย `actor_id` ตารางแยกอยู่ใน roadmap — mark "(Inferred — ต้องตรวจสอบตาราง)" ต่อฟิลด์ที่มองไปข้างหน้า
 

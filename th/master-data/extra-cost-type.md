@@ -2,7 +2,7 @@
 title: ประเภทค่าใช้จ่ายเพิ่ม (Extra Cost Type)
 description: แคตตาล็อกหมวด landed cost ของ GRN (ค่าขนส่ง อากร handling) พร้อมโหมดการจัดสรรต่อ instance (by value, by qty, manual)
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: master-data, extra-cost-type, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_extra_cost_type` (catalogue) + `tb_extra_cost` (per-GRN instance) &nbsp;·&nbsp; **ใช้โดย:** การจัดสรร landed cost ของ GRN &nbsp;·&nbsp; หมวดเช่น Freight / Duty / Handling พร้อมโหมดจัดสรร `by_value` / `by_qty` / `manual`
+
+![ประเภทค่าใช้จ่ายเพิ่ม (Extra Cost Type) screen](/assets/screenshots/master-data/extra-cost-type.png)
 
 ## 1. คืออะไร / ใครใช้
 

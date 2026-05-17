@@ -2,7 +2,7 @@
 title: สกุลเงิน (Currency)
 description: แคตตาล็อกสกุลเงินต่อ tenant, รายการอ้างอิง ISO และประวัติอัตราแลกเปลี่ยนแบบมีวันที่ — ขับเคลื่อนการแปลง FX ทั้งหมดบน PO, GRN, pricelist และ costing
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: master-data, currency, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Sysadmin (ISO seed) / Product Admin (tenant catalogue) &nbsp;·&nbsp; **ตาราง:** `tb_currency_iso`, `tb_currency`, `tb_exchange_rate` &nbsp;·&nbsp; **ใช้โดย:** ทุกเอกสารที่มีราคา + costing engine &nbsp;·&nbsp; สกุลเงินที่ tenant เปิดใช้งาน + cache อัตรา "ปัจจุบัน"
+
+![สกุลเงิน (Currency) screen](/assets/screenshots/master-data/currency.png)
 
 ## 1. คืออะไร / ใครใช้
 

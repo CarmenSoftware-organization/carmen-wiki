@@ -2,7 +2,7 @@
 title: แดชบอร์ด (Dashboard)
 description: หน้าแดชบอร์ดข้ามโมดูล — หน้าแรกหลังเข้าระบบและมุมมอง KPI แยกตามโดเมน (PR, PO, GRN, คลังสินค้า, SR) ที่สรุปจำนวนสด, aging และรายการผิดปกติโดยไม่ต้องเปิดทีละโมดูล
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: dashboard, kpi, reporting, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **Route:** `/dashboard` (server-redirects ไปยัง `/dashboard/main`) &nbsp;·&nbsp; **สำหรับ:** ทุก role ของผู้ปฏิบัติงานหลังเข้าระบบ &nbsp;·&nbsp; **สถานะ:** **ยังเป็น mock data ในปัจจุบัน**; live hook ถูกนิยามไว้แล้วแต่ยังไม่ถูก mount
+
+![แดชบอร์ด (Dashboard) screen](/assets/screenshots/dashboard/index.png)
 
 ## 1. คืออะไรและสำหรับใคร
 

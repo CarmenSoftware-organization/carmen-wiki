@@ -2,7 +2,7 @@
 title: Adjustment Type
 description: Coded reasons for stock-in / stock-out adjustments — used by inventory adjustments, physical count, and spot check to explain variance.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: master-data, adjustment-type, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Product Admin &nbsp;·&nbsp; **Table:** `tb_adjustment_type` &nbsp;·&nbsp; **Used by:** inventory adjustment / physical count / spot check &nbsp;·&nbsp; Coded reason for every stock-in / stock-out movement.
+
+![Adjustment Type screen](/assets/screenshots/master-data/adjustment-type.png)
 
 ## 1. What & Who
 

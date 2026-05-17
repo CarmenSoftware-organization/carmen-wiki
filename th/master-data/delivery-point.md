@@ -2,7 +2,7 @@
 title: จุดส่งของ (Delivery Point)
 description: จุดส่งของทางกายภาพสำหรับการจัดส่งของผู้ขาย — ถูกอ้างอิงโดย PO และ GRN และเชื่อมโยงกับ inventory location
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: master-data, delivery-point, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_delivery_point` &nbsp;·&nbsp; **ใช้โดย:** PO, GRN, locations &nbsp;·&nbsp; ที่อยู่ทางกายภาพสำหรับ drop-off ของผู้ขาย
+
+![จุดส่งของ (Delivery Point) screen](/assets/screenshots/master-data/delivery-point.png)
 
 ## 1. คืออะไร / ใครใช้
 

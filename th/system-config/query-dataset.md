@@ -2,7 +2,7 @@
 title: Query Dataset
 description: SQL Workbench — รัน SELECT แบบ ad-hoc และสร้าง / browse / drop view, stored procedure และ function ของ tenant ที่ใช้เป็นแหล่งข้อมูลใช้ซ้ำได้สำหรับรายงานและ dashboard
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: system-config, query, dataset, sql, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Sysadmin เท่านั้น (`sql-query.*` App IDs) &nbsp;·&nbsp; **การจัดเก็บ:** PostgreSQL catalog (`pg_class`, `pg_proc`) ใน tenant schema — **ไม่มี `tb_query_dataset`** &nbsp;·&nbsp; **ใช้โดย:** [[reporting-audit/report]], [[reporting-audit/widget]], [[reporting-audit/schedule]] &nbsp;·&nbsp; **Run เป็น read-only; timeout 30 วินาที**
+
+![Query Dataset screen](/assets/screenshots/system-config/query-dataset.png)
 
 ## 1. คืออะไรและใครใช้
 

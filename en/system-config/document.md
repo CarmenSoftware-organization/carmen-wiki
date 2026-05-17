@@ -2,7 +2,7 @@
 title: Document Management
 description: Tenant-scoped file storage registry — upload, list, download, presigned URLs, and delete for documents attached to transactional records.
 published: true
-date: 2026-05-17T08:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: system-config, document, attachment, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Sysadmin (delete); list / download via App ID grants &nbsp;·&nbsp; **Storage:** `FILE_SERVICE` microservice (S3-compatible) + `tb_attachment` metadata mirror &nbsp;·&nbsp; **Used by:** PR / PO / GRN / SR / IA / count / pricelist / vendor / product attachments &nbsp;·&nbsp; **10 MB cap, BU-scoped.**
+
+![Document Management screen](/assets/screenshots/system-config/document.png)
 
 ## 1. What & Who
 

@@ -2,7 +2,7 @@
 title: User Activity
 description: Actor-centric forensic timeline — login, logout, session lifetime, sensitive-page views — distinct from entity-level activity.
 published: true
-date: 2026-05-17T08:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: reporting-audit, activity, security, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Sysadmin / Security Officer / Auditor (read-only) &nbsp;·&nbsp; **Tables:** `tb_user_login_session` (platform) + `tb_activity` filtered projection (tenant) &nbsp;·&nbsp; **Retention:** activity rows per tenant policy; session rows deleted at `expired_on` &nbsp;·&nbsp; **Used by:** `/system-admin/user-activity`, compliance export &nbsp;·&nbsp; **Per-user forensic timeline of logins, logouts, and sensitive-page views.**
+
+![User Activity screen](/assets/screenshots/reporting-audit/user-activity.png)
 
 > **No dedicated `tb_user_activity` table exists today.** The surface is **reconstructed** by joining platform `tb_user_login_session` to tenant `tb_activity` filtered on `action IN ('login', 'logout', 'view')` and grouped by `actor_id`. A dedicated table is on the roadmap — mark "(Inferred — table to be verified)" against any forward-looking field.
 

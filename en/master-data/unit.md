@@ -2,7 +2,7 @@
 title: Unit
 description: Units of measure and inter-unit conversions used by every transactional document and product record.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: master-data, unit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Product Admin &nbsp;·&nbsp; **Tables:** `tb_unit`, `tb_unit_conversion` &nbsp;·&nbsp; **Used by:** product, recipe, PR / PO / GRN / SR / inventory / costing &nbsp;·&nbsp; Inventory + order units and the multipliers between them.
+
+![Unit screen](/assets/screenshots/master-data/unit.png)
 
 ## 1. What & Who
 

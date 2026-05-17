@@ -2,7 +2,7 @@
 title: Running Code
 description: Document-number generator configuration — prefix, date token, and running counter pattern per document type (PR, PO, GRN, SR, etc.).
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-17T07:28:28.000Z
 tags: system-config, running-code, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Sysadmin &nbsp;·&nbsp; **Table:** `tb_config_running_code` &nbsp;·&nbsp; **Used by:** numbering service on every document create &nbsp;·&nbsp; Document-numbering rules — `PR202605-00001` etc.
+
+![Running Code screen](/assets/screenshots/system-config/running-code.png)
 
 ## 1. What & Who
 
