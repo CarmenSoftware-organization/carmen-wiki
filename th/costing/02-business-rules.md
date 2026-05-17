@@ -1,5 +1,5 @@
 ---
-title: การคำนวณต้นทุน — กฎทางธุรกิจ (Costing — Business Rules)
+title: การคำนวณต้นทุน (Costing) — Business Rules
 description: การตรวจสอบ การคำนวณ การกำหนดสิทธิ์ การ posting การปลายงวด และกฎข้ามโมดูลสำหรับ costing
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
 ---
 
-# การคำนวณต้นทุน — กฎทางธุรกิจ
+# การคำนวณต้นทุน (Costing) — Business Rules
 
 > **At a Glance**
 > **กลุ่มกฎ:** `COST_VAL_*` validation &nbsp;·&nbsp; `COST_AUTH_*` permission &nbsp;·&nbsp; `COST_CALC_*` calc &nbsp;·&nbsp; `COST_POST_*` posting &nbsp;·&nbsp; `COST_XMOD_*` cross-module

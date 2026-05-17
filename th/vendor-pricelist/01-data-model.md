@@ -1,5 +1,5 @@
 ---
-title: รายการราคาผู้ขาย — โมเดลข้อมูล (Vendor Pricelist — Data Model)
+title: รายการราคาผู้ขาย (Vendor Pricelist) — Data Model
 description: เอนทิตี, ฟิลด์, ความสัมพันธ์ และ enum สำหรับโมดูล vendor-pricelist
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
-# รายการราคาผู้ขาย — โมเดลข้อมูล (Vendor Pricelist — Data Model)
+# รายการราคาผู้ขาย (Vendor Pricelist) — Data Model
 
 > **At a Glance**
 > **ตาราง:** Tier 1 — `tb_pricelist_template` / `_detail` &nbsp;·&nbsp; Tier 2 — `tb_request_for_pricing` / `_detail` (vendor invitation + URL token) &nbsp;·&nbsp; Tier 3 — `tb_pricelist` / `_detail` (vendor submission); บวกตาราง `_comment` ต่อระดับ

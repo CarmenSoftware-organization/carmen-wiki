@@ -1,5 +1,5 @@
 ---
-title: Physical Count — Test Scenarios — Audit / Config
+title: Physical Count — Test Scenarios — Audit & Config
 description: Approver / Finance Reviewer, Auditor, and Sysadmin test cases for the physical-count module.
 published: true
 date: 2026-05-17T11:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
 ---
 
-# Physical Count — Test Scenarios — Audit / Config
+# Physical Count — Test Scenarios — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Approver / Finance Reviewer + Auditor + Sysadmin) &nbsp;·&nbsp; **Module:** [[physical-count]] &nbsp;·&nbsp; **Scenarios:** ~30 (skeleton)

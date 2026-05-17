@@ -1,5 +1,5 @@
 ---
-title: ใบสั่งซื้อ — Test Scenarios — Finance
+title: ใบสั่งซื้อ (Purchase Order) — Test Scenarios — Finance
 description: Test cases ของ Finance (three-way match, AP posting, FX, discrepancy bounce-back) สำหรับ purchase-order
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
-# ใบสั่งซื้อ — Test Scenarios — Finance
+# ใบสั่งซื้อ (Purchase Order) — Test Scenarios — Finance
 
 > **At a Glance**
 > **Persona:** Finance (Officer / AP Clerk + Finance Manager) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Scenarios:** ~25

@@ -1,5 +1,5 @@
 ---
-title: Product — User Flow — Product Administrator
+title: Product — User Flow — Product Admin
 description: Product Administrator's flow within the product module — full CRUD on master data, classification, units, conversions, location and vendor mapping, lifecycle, and bulk import/export.
 published: true
 date: 2026-05-17T11:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
 ---
 
-# Product — User Flow — Product Administrator
+# Product — User Flow — Product Admin
 
 > **At a Glance**
 > **Persona:** Product Administrator &nbsp;·&nbsp; **Module:** [[product]] &nbsp;·&nbsp; **Workflow stages:** Create / edit `tb_product` (`active`) &nbsp;·&nbsp; classification chain (category / sub-category / item-group) &nbsp;·&nbsp; units and conversions &nbsp;·&nbsp; location and vendor mappings &nbsp;·&nbsp; bulk import / export &nbsp;·&nbsp; deactivate / re-activate / soft-delete / restore &nbsp;·&nbsp; respond to inbound comments &nbsp;·&nbsp; **Key permissions:** full CRUD on master data (`PRD_AUTH_001` / `PRD_AUTH_003` / `PRD_AUTH_004`); SoD on `standard_cost` change above tenant threshold (`PRD_AUTH_012` — Cost Controller / Finance second signature)

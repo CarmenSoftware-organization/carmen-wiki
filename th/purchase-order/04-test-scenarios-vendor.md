@@ -1,5 +1,5 @@
 ---
-title: ใบสั่งซื้อ — Test Scenarios — Vendor
+title: ใบสั่งซื้อ (Purchase Order) — Test Scenarios — Vendor
 description: Test cases ของ Vendor (happy path, validation, edge cases) สำหรับ purchase-order ฝ่ายภายนอก — ไม่มี in-system permission scenarios
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
-# ใบสั่งซื้อ — Test Scenarios — Vendor
+# ใบสั่งซื้อ (Purchase Order) — Test Scenarios — Vendor
 
 > **At a Glance**
 > **Persona:** Vendor (ฝ่ายภายนอก — ไม่มี Carmen login) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Scenarios:** ~15

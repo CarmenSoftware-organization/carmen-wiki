@@ -1,5 +1,5 @@
 ---
-title: การปรับสต๊อก (Inventory Adjustment) — Test Scenarios — Audit / Config
+title: การปรับสต๊อก (Inventory Adjustment) — Test Scenarios — Audit & Config
 description: Test cases ของ Auditor และ System Administrator สำหรับการปรับสต๊อก
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
 ---
 
-# การปรับสต๊อก (Inventory Adjustment) — Test Scenarios — Audit / Config
+# การปรับสต๊อก (Inventory Adjustment) — Test Scenarios — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **โมดูล:** [[inventory-adjustment]] &nbsp;·&nbsp; **Scenarios:** ~38

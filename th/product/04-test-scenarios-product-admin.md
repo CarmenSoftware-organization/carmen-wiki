@@ -1,5 +1,5 @@
 ---
-title: สินค้า (Product) — Test Scenarios — Product Administrator
+title: สินค้า (Product) — Test Scenarios — Product Admin
 description: test case ของ Product Administrator (happy path, permission, validation, lifecycle, bulk, edge case) สำหรับโมดูลสินค้า
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
 ---
 
-# สินค้า (Product) — Test Scenarios — Product Administrator
+# สินค้า (Product) — Test Scenarios — Product Admin
 
 > **At a Glance**
 > **Persona:** Product Administrator &nbsp;·&nbsp; **โมดูล:** [[product]] &nbsp;·&nbsp; **scenario:** ~59

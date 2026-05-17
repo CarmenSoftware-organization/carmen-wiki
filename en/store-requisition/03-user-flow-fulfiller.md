@@ -1,5 +1,5 @@
 ---
-title: Store Requisition (SR) — User Flow — Fulfiller
+title: Store Requisition — User Flow — Fulfiller
 description: Fulfiller's flow within the store-requisition module — picks, issues, selects lots, and commits the SR.
 published: true
 date: 2026-05-17T11:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
 ---
 
-# Store Requisition (SR) — User Flow — Fulfiller
+# Store Requisition — User Flow — Fulfiller
 
 > **At a Glance**
 > **Persona:** Store Keeper / Warehouse Supervisor at source &nbsp;·&nbsp; **Module:** [[store-requisition]] &nbsp;·&nbsp; **Workflow stages:** in_progress (fulfilment stage) → completed (commit fires postings) &nbsp;·&nbsp; **Key permissions:** pick + record issued_qty, select lots, commit (full or partial), SoD-blocked from approving same SR

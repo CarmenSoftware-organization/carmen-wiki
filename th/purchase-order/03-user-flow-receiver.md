@@ -1,5 +1,5 @@
 ---
-title: ใบสั่งซื้อ — User Flow — Receiver
+title: ใบสั่งซื้อ (Purchase Order) — User Flow — Receiver
 description: เส้นทางผู้ใช้งานของ Receiver ภายในโมดูล purchase-order — รับสินค้าจริง สร้าง GRN เทียบกับ PO และ trigger receipt state transition
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
-# ใบสั่งซื้อ — User Flow — Receiver
+# ใบสั่งซื้อ (Purchase Order) — User Flow — Receiver
 
 > **At a Glance**
 > **Persona:** Receiver / Store Keeper (+ Inventory Manager) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Workflow stages:** sent → partial → completed (+ closed ผ่าน early-close) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** post GRN, ตั้ง received/accepted qty, early-close (Inv Mgr)

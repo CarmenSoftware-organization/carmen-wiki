@@ -1,5 +1,5 @@
 ---
-title: Spot Check — Test Scenarios — Audit / Config
+title: Spot Check — Test Scenarios — Audit & Config
 description: Auditor and Sysadmin test cases for the spot-check module.
 published: true
 date: 2026-05-17T11:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
 ---
 
-# Spot Check — Test Scenarios — Audit / Config
+# Spot Check — Test Scenarios — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Auditor read-only + Sysadmin config) &nbsp;·&nbsp; **Module:** [[spot-check]] &nbsp;·&nbsp; **Scenarios:** ~23

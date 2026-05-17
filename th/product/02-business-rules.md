@@ -1,5 +1,5 @@
 ---
-title: สินค้า (Product) — กติกาทางธุรกิจ
+title: สินค้า (Product) — Business Rules
 description: การตรวจสอบความถูกต้อง การคำนวณ การกำหนดสิทธิ์ วงจรชีวิต และกฎข้ามโมดูลสำหรับข้อมูลหลักของสินค้า
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
 ---
 
-# สินค้า (Product) — กติกาทางธุรกิจ
+# สินค้า (Product) — Business Rules
 
 > **At a Glance**
 > **family ของกฎ:** `PRD_VAL_*` validation &nbsp;·&nbsp; `PRD_AUTH_*` permission &nbsp;·&nbsp; `PRD_CALC_*` calc &nbsp;·&nbsp; `PRD_LIFE_*` lifecycle &nbsp;·&nbsp; `PRD_XMOD_*` cross-module

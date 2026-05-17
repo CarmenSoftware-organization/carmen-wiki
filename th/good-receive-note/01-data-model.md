@@ -1,5 +1,5 @@
 ---
-title: ใบรับสินค้า (Goods Receive Note) — โมเดลข้อมูล
+title: ใบรับสินค้า (Goods Receive Note) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูล good-receive-note
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
 ---
 
-# ใบรับสินค้า (Goods Receive Note) — โมเดลข้อมูล
+# ใบรับสินค้า (Goods Receive Note) — Data Model
 
 > **At a Glance**
 > **ตาราง:** `tb_good_received_note` &nbsp;·&nbsp; `tb_good_received_note_detail` &nbsp;·&nbsp; `tb_good_received_note_detail_item` &nbsp;·&nbsp; `tb_good_received_note_comment` &nbsp;·&nbsp; `tb_good_received_note_detail_comment`

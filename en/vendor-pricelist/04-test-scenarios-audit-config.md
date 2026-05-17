@@ -1,5 +1,5 @@
 ---
-title: Vendor Pricelist — Test Scenarios — Audit / Config
+title: Vendor Pricelist — Test Scenarios — Audit & Config
 description: Auditor (read-only across templates/campaigns/invitations/pricelists/validation/activity-log) and System Administrator (numbering, RBAC, portal-token policy, email integration, validation rules, token revocation, audit retention) test cases.
 published: true
 date: 2026-05-17T11:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
-# Vendor Pricelist — Test Scenarios — Audit / Config
+# Vendor Pricelist — Test Scenarios — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Auditor read-only + System Administrator config) &nbsp;·&nbsp; **Module:** [[vendor-pricelist]] &nbsp;·&nbsp; **Scenarios:** ~34

@@ -1,5 +1,5 @@
 ---
-title: คลังสินค้า — Test Scenarios — Finance (Inventory — Test Scenarios — Finance)
+title: คลังสินค้า (Inventory) — Test Scenarios — Finance
 description: Test cases ของ Finance (อนุมัติผลกระทบต้นทุน, inventory-to-GL reconciliation, ปิด/ล็อกงวด) สำหรับ inventory
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
-# คลังสินค้า — Test Scenarios — Finance (Inventory — Test Scenarios — Finance)
+# คลังสินค้า (Inventory) — Test Scenarios — Finance
 
 > **At a Glance**
 > **Persona:** Finance (Officer / Inventory Accountant + Finance Manager) &nbsp;·&nbsp; **โมดูล:** [[inventory]] &nbsp;·&nbsp; **Scenarios:** ~28

@@ -1,5 +1,5 @@
 ---
-title: คลังสินค้า — Test Scenarios — Inventory Controller (Inventory — Test Scenarios — Inventory Controller)
+title: คลังสินค้า (Inventory) — Test Scenarios — Inventory Controller
 description: Test cases ของ Inventory Controller (อนุมัติ, commit count-variance, ดูแล policy, เซ็นรับรองปิดงวด) สำหรับ inventory
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
-# คลังสินค้า — Test Scenarios — Inventory Controller (Inventory — Test Scenarios — Inventory Controller)
+# คลังสินค้า (Inventory) — Test Scenarios — Inventory Controller
 
 > **At a Glance**
 > **Persona:** Inventory Controller &nbsp;·&nbsp; **โมดูล:** [[inventory]] &nbsp;·&nbsp; **Scenarios:** ~26

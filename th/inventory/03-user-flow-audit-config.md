@@ -1,5 +1,5 @@
 ---
-title: คลังสินค้า — User Flow — Audit / Config (Inventory — User Flow — Audit / Config)
+title: คลังสินค้า (Inventory) — User Flow — Audit & Config
 description: Flow ของ Auditor (audit trail แบบอ่านอย่างเดียว + lot recall) และ System Administrator (location type, costing method, adjustment types, period config, RBAC) สำหรับ inventory
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
-# คลังสินค้า — User Flow — Audit / Config (Inventory — User Flow — Audit / Config)
+# คลังสินค้า (Inventory) — User Flow — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **โมดูล:** [[inventory]] &nbsp;·&nbsp; **ขั้นตอน workflow:** ผู้สังเกตการณ์นอกเส้นทาง — Sysadmin ตั้งค่า `tb_location` types, `tb_product.costing_method`, `tb_adjustment_type`, `tb_period`, thresholds, RBAC, integration endpoints; Auditor อ่าน transactions / cost-layer / snapshots, run lot-recall traces และ period-snapshot reconciliation queries &nbsp;·&nbsp; **สิทธิ์สำคัญ:** Sysadmin เป็นเจ้าของ configuration (`INV_AUTH_008`); Auditor อ่านอย่างเดียวข้าม dataset เต็มรวม rows ที่ soft-deleted

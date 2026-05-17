@@ -1,5 +1,5 @@
 ---
-title: การนับสต๊อกประจำงวด (Physical Count) — โมเดลข้อมูล
+title: การนับสต๊อกประจำงวด (Physical Count) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูลการนับสต๊อกประจำงวด
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
 ---
 
-# การนับสต๊อกประจำงวด (Physical Count) — โมเดลข้อมูล
+# การนับสต๊อกประจำงวด (Physical Count) — Data Model
 
 > **At a Glance**
 > **ตาราง:** `tb_physical_count_period` &nbsp;·&nbsp; `tb_physical_count` &nbsp;·&nbsp; `tb_physical_count_detail` &nbsp;·&nbsp; ตาราง `_comment` ต่อระดับ (สามตาราง)

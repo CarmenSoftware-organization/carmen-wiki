@@ -1,5 +1,5 @@
 ---
-title: การคำนวณต้นทุน — Test Scenarios — Inventory Controller
+title: การคำนวณต้นทุน (Costing) — Test Scenarios — Inventory Controller
 description: Test cases ของ Inventory Controller (ทบทวน cost-pick preview, new-lot cost basis, ตรวจสอบ variance, triage cost anomaly) สำหรับ costing
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
 ---
 
-# การคำนวณต้นทุน — Test Scenarios — Inventory Controller
+# การคำนวณต้นทุน (Costing) — Test Scenarios — Inventory Controller
 
 > **At a Glance**
 > **Persona:** Inventory Controller &nbsp;·&nbsp; **Module:** [[costing]] &nbsp;·&nbsp; **Scenarios:** ~27

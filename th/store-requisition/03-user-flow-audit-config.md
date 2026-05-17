@@ -1,5 +1,5 @@
 ---
-title: ใบเบิกของสโตร์ (Store Requisition) — User Flow — Audit / Config
+title: ใบเบิกของสโตร์ (Store Requisition) — User Flow — Audit & Config
 description: flow ของ Inventory Controller, Finance, Sysadmin และ Auditor ในโมดูล store-requisition — การกำกับดูแล การตั้งค่า period close และการเซ็นรับรองหลัง commit
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
 ---
 
-# ใบเบิกของสโตร์ (Store Requisition) — User Flow — Audit / Config
+# ใบเบิกของสโตร์ (Store Requisition) — User Flow — Audit & Config
 
 > **At a Glance**
 > **Persona:** Inventory Controller + Finance + Sysadmin + Auditor &nbsp;·&nbsp; **โมดูล:** [[store-requisition]] &nbsp;·&nbsp; **ขั้น workflow:** นอกเส้นทาง — การกำกับดูแล การตรวจสอบ GL ตั้งค่า workflow / RBAC, void ก่อน commit &nbsp;·&nbsp; **สิทธิ์สำคัญ:** อ่าน audit chain, ตั้งค่า workflow / RBAC / threshold, admin-void ของ draft / in_progress, signoff period-close

@@ -1,5 +1,5 @@
 ---
-title: ใบขอซื้อ — User Flow (Purchase Request — User Flow)
+title: ใบขอซื้อ (Purchase Request) — User Flow
 description: วงจรชีวิตของเอกสารและไฟล์ flow แยกตาม persona สำหรับโมดูล purchase-request
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
-# ใบขอซื้อ — User Flow (Purchase Request — User Flow)
+# ใบขอซื้อ (Purchase Request) — User Flow
 
 > **At a Glance**
 > **โมดูล:** [[purchase-request]] &nbsp;·&nbsp; **Persona:** Requestor &nbsp;·&nbsp; Approver &nbsp;·&nbsp; Procurement Manager &nbsp;·&nbsp; Purchaser &nbsp;·&nbsp; Audit / Config

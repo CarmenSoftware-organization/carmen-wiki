@@ -1,5 +1,5 @@
 ---
-title: Store Requisition (SR) — Data Model
+title: Store Requisition — Data Model
 description: Entities, fields, relationships, and enums for the store-requisition module.
 published: true
 date: 2026-05-17T11:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
 ---
 
-# Store Requisition (SR) — Data Model
+# Store Requisition — Data Model
 
 > **At a Glance**
 > **Tables:** `tb_store_requisition` &nbsp;·&nbsp; `tb_store_requisition_detail` &nbsp;·&nbsp; `tb_store_requisition_comment` &nbsp;·&nbsp; `tb_store_requisition_detail_comment`

@@ -1,5 +1,5 @@
 ---
-title: ใบขอซื้อ — User Flow — Purchaser (Purchase Request — User Flow — Purchaser)
+title: ใบขอซื้อ (Purchase Request) — User Flow — Purchaser
 description: เส้นทางการใช้งานของ Purchaser ในโมดูล purchase-request
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
-# ใบขอซื้อ — User Flow — Purchaser (Purchase Request — User Flow — Purchaser)
+# ใบขอซื้อ (Purchase Request) — User Flow — Purchaser
 
 > **At a Glance**
 > **Persona:** Purchaser / Procurement Officer &nbsp;·&nbsp; **โมดูล:** [[purchase-request]] &nbsp;·&nbsp; **Stage ของ workflow:** approved → completed (Convert to PO) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** vendor allocation, pricelist refresh, set convert qty, Convert to PO, bounce-back ให้ Requestor

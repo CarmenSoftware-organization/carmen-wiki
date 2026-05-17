@@ -1,5 +1,5 @@
 ---
-title: คลังสินค้า — กฎทางธุรกิจ (Inventory — Business Rules)
+title: คลังสินค้า (Inventory) — Business Rules
 description: การตรวจสอบ การคำนวณ การกำหนดสิทธิ์ การ posting ปิดงวด และกฎข้ามโมดูลของ inventory
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
-# คลังสินค้า — กฎทางธุรกิจ (Inventory — Business Rules)
+# คลังสินค้า (Inventory) — Business Rules
 
 > **At a Glance**
 > **ตระกูลกฎ:** `INV_VAL_*` การตรวจสอบ &nbsp;·&nbsp; `INV_AUTH_*` สิทธิ์ &nbsp;·&nbsp; `INV_CALC_*` การคำนวณ &nbsp;·&nbsp; `INV_POST_*` การ posting &nbsp;·&nbsp; `INV_XMOD_*` ข้ามโมดูล

@@ -1,5 +1,5 @@
 ---
-title: ใบขอซื้อ — User Flow — Approver (Purchase Request — User Flow — Approver)
+title: ใบขอซื้อ (Purchase Request) — User Flow — Approver
 description: เส้นทางการใช้งานของ Approver ในโมดูล purchase-request
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
-# ใบขอซื้อ — User Flow — Approver (Purchase Request — User Flow — Approver)
+# ใบขอซื้อ (Purchase Request) — User Flow — Approver
 
 > **At a Glance**
 > **Persona:** Approver (Dept. Head / Budget Controller / Finance) &nbsp;·&nbsp; **โมดูล:** [[purchase-request]] &nbsp;·&nbsp; **Stage ของ workflow:** in_progress (Stage 1 → Stage 2 → Stage 3 → approved) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** approve / send-back / reject / split-reject, ปรับ approved_qty

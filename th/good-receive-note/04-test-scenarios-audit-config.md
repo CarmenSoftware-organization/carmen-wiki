@@ -1,5 +1,5 @@
 ---
-title: ใบรับสินค้า (Goods Receive Note) — Test Scenarios — Audit / Config
+title: ใบรับสินค้า (Goods Receive Note) — Test Scenarios — Audit & Config
 description: เคสทดสอบของ Auditor (audit trail read-only + lot recall) และ System Administrator (รูปแบบเลข lot, RBAC, ตั้งค่า integration) สำหรับ good-receive-note
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
 ---
 
-# ใบรับสินค้า (Goods Receive Note) — Test Scenarios — Audit / Config
+# ใบรับสินค้า (Goods Receive Note) — Test Scenarios — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **โมดูล:** [[good-receive-note]] &nbsp;·&nbsp; **Scenario:** ~29

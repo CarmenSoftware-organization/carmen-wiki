@@ -1,5 +1,5 @@
 ---
-title: รายการราคาผู้ขาย — กติกาทางธุรกิจ (Vendor Pricelist — Business Rules)
+title: รายการราคาผู้ขาย (Vendor Pricelist) — Business Rules
 description: การ validate, การคำนวณ, authorization, การเปลี่ยนสถานะ และกติกาข้ามโมดูลสำหรับ vendor-pricelist
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
-# รายการราคาผู้ขาย — กติกาทางธุรกิจ (Vendor Pricelist — Business Rules)
+# รายการราคาผู้ขาย (Vendor Pricelist) — Business Rules
 
 > **At a Glance**
 > **กลุ่มกติกา:** `VPL_VAL_*` validation &nbsp;·&nbsp; `VPL_AUTH_*` permission &nbsp;·&nbsp; `VPL_CALC_*` calc &nbsp;·&nbsp; `VPL_POST_*` posting &nbsp;·&nbsp; `VPL_XMOD_*` cross-module

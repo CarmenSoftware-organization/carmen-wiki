@@ -1,5 +1,5 @@
 ---
-title: การคำนวณต้นทุน — Test Scenarios — Finance
+title: การคำนวณต้นทุน (Costing) — Test Scenarios — Finance
 description: Test cases ของ Finance (valuation policy, อนุมัติ credit-note revaluation, sub-ledger ↔ GL reconciliation, period-end valuation, period lock) สำหรับ costing
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
 ---
 
-# การคำนวณต้นทุน — Test Scenarios — Finance
+# การคำนวณต้นทุน (Costing) — Test Scenarios — Finance
 
 > **At a Glance**
 > **Persona:** Finance (Officer / Cost Controller + Finance Manager) &nbsp;·&nbsp; **Module:** [[costing]] &nbsp;·&nbsp; **Scenarios:** ~34

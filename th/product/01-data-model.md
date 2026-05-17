@@ -1,5 +1,5 @@
 ---
-title: สินค้า (Product) — โมเดลข้อมูล
+title: สินค้า (Product) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum สำหรับโมดูลสินค้า
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
 ---
 
-# สินค้า (Product) — โมเดลข้อมูล
+# สินค้า (Product) — Data Model
 
 > **At a Glance**
 > **ตาราง:** `tb_product` &nbsp;·&nbsp; `tb_product_category` → `tb_product_sub_category` → `tb_product_item_group` (การจำแนก 3 ระดับ) &nbsp;·&nbsp; `tb_unit` &nbsp;·&nbsp; `tb_unit_conversion` &nbsp;·&nbsp; `tb_product_location` &nbsp;·&nbsp; `tb_product_tb_vendor`

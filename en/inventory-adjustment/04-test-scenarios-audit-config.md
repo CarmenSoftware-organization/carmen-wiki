@@ -1,5 +1,5 @@
 ---
-title: Inventory Adjustment — Test Scenarios — Audit / Config
+title: Inventory Adjustment — Test Scenarios — Audit & Config
 description: Auditor and System Administrator test cases for inventory adjustments.
 published: true
 date: 2026-05-17T11:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
 ---
 
-# Inventory Adjustment — Test Scenarios — Audit / Config
+# Inventory Adjustment — Test Scenarios — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [[inventory-adjustment]] &nbsp;·&nbsp; **Scenarios:** ~38

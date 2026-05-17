@@ -1,5 +1,5 @@
 ---
-title: การสุ่มตรวจ (Spot Check) — User Flow — Audit / Config
+title: การสุ่มตรวจ (Spot Check) — User Flow — Audit & Config
 description: เส้นทางของ Auditor และ Sysadmin (โดยปริยาย) ผ่านวงจรชีวิตการสุ่มตรวจ
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
 ---
 
-# การสุ่มตรวจ (Spot Check) — User Flow — Audit / Config
+# การสุ่มตรวจ (Spot Check) — User Flow — Audit & Config
 
 > **At a Glance**
 > **Persona:** Auditor + Sysadmin (โดยปริยาย) &nbsp;·&nbsp; **โมดูล:** [[spot-check]] &nbsp;·&nbsp; **ขั้นตอน workflow:** off-path — สังเกต pending → in_progress → completed (+ void); Sysadmin config default ของ tenant &nbsp;·&nbsp; **สิทธิ์สำคัญ:** อ่าน audit chain (Auditor), config tolerance / sampling / reason codes (Sysadmin)

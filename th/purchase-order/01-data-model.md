@@ -1,5 +1,5 @@
 ---
-title: ใบสั่งซื้อ — โมเดลข้อมูล (Purchase Order — Data Model)
+title: ใบสั่งซื้อ (Purchase Order) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum สำหรับโมดูล purchase-order
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
-# ใบสั่งซื้อ — โมเดลข้อมูล (Purchase Order — Data Model)
+# ใบสั่งซื้อ (Purchase Order) — Data Model
 
 > **At a Glance**
 > **ตาราง:** `tb_purchase_order` &nbsp;·&nbsp; `tb_purchase_order_detail` &nbsp;·&nbsp; `tb_purchase_order_comment` &nbsp;·&nbsp; `tb_purchase_order_detail_comment` &nbsp;·&nbsp; `tb_purchase_order_detail_tb_purchase_request_detail` (bridge PR↔PO)

@@ -1,5 +1,5 @@
 ---
-title: ใบเบิกของสโตร์ (Store Requisition) — โมเดลข้อมูล
+title: ใบเบิกของสโตร์ (Store Requisition) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูล store-requisition
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
 ---
 
-# ใบเบิกของสโตร์ (Store Requisition) — โมเดลข้อมูล
+# ใบเบิกของสโตร์ (Store Requisition) — Data Model
 
 > **At a Glance**
 > **ตาราง:** `tb_store_requisition` &nbsp;·&nbsp; `tb_store_requisition_detail` &nbsp;·&nbsp; `tb_store_requisition_comment` &nbsp;·&nbsp; `tb_store_requisition_detail_comment`

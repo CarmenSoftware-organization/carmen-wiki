@@ -1,5 +1,5 @@
 ---
-title: สูตรอาหาร (Recipe) — Test Scenarios — Audit / Config
+title: สูตรอาหาร (Recipe) — Test Scenarios — Audit & Config
 description: test case ของ System Administrator และ Auditor (config, RBAC, audit versioning, audit pricing-history, สุขภาพ integration) สำหรับโมดูล recipe
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
 ---
 
-# สูตรอาหาร (Recipe) — Test Scenarios — Audit / Config
+# สูตรอาหาร (Recipe) — Test Scenarios — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (System Administrator config + Auditor read-only) &nbsp;·&nbsp; **โมดูล:** [[recipe]] &nbsp;·&nbsp; **scenario:** ~31

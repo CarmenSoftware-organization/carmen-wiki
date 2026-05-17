@@ -1,5 +1,5 @@
 ---
-title: คลังสินค้า — User Flow (Inventory — User Flow)
+title: คลังสินค้า (Inventory) — User Flow
 description: วงจรชีวิตของ movement และไฟล์ flow เฉพาะ persona สำหรับ inventory
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
-# คลังสินค้า — User Flow (Inventory — User Flow)
+# คลังสินค้า (Inventory) — User Flow
 
 > **At a Glance**
 > **โมดูล:** [[inventory]] &nbsp;·&nbsp; **Personas:** Store Keeper &nbsp;·&nbsp; Inventory Controller &nbsp;·&nbsp; Finance &nbsp;·&nbsp; Audit / Config (Auditor + Sysadmin)

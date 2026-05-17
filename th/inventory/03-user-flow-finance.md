@@ -1,5 +1,5 @@
 ---
-title: คลังสินค้า — User Flow — Finance (Inventory — User Flow — Finance)
+title: คลังสินค้า (Inventory) — User Flow — Finance
 description: Flow ของ Finance ในโมดูล inventory — การตรวจสอบการตีมูลค่า การกระทบยอด inventory-to-GL การปิดและล็อกงวด
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
-# คลังสินค้า — User Flow — Finance (Inventory — User Flow — Finance)
+# คลังสินค้า (Inventory) — User Flow — Finance
 
 > **At a Glance**
 > **Persona:** Finance (Officer / Accountant + Manager / Controller) &nbsp;·&nbsp; **โมดูล:** [[inventory]] &nbsp;·&nbsp; **ขั้นตอน workflow:** อนุมัติ adjustment ผลกระทบต้นทุนเหนือ threshold ของ Controller &nbsp;·&nbsp; sub-ledger ↔ GL reconciliation &nbsp;·&nbsp; run ปิดงวด (close + open next) &nbsp;·&nbsp; period-lock (`closed → locked`) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** อนุมัติเหนือ threshold ของ Controller (`INV_AUTH_005`); advance `tb_period.status` (`INV_AUTH_006`); fire `INV_POST_009 / INV_POST_010 / INV_POST_011`

@@ -1,5 +1,5 @@
 ---
-title: Purchase Order — Test Scenarios — Audit / Config
+title: Purchase Order — Test Scenarios — Audit & Config
 description: Auditor (read-only audit log across PR/PO/GRN/invoice) and System Administrator (PO numbering, RBAC, integration config) test cases for purchase-order.
 published: true
 date: 2026-05-17T11:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
-# Purchase Order — Test Scenarios — Audit / Config
+# Purchase Order — Test Scenarios — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Scenarios:** ~30

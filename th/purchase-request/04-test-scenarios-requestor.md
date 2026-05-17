@@ -1,5 +1,5 @@
 ---
-title: ใบขอซื้อ — Test Scenarios — Requestor (Purchase Request — Test Scenarios — Requestor)
+title: ใบขอซื้อ (Purchase Request) — Test Scenarios — Requestor
 description: Test case ของ Requestor (happy path, permission, validation, edge case) สำหรับโมดูล purchase-request
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
-# ใบขอซื้อ — Test Scenarios — Requestor (Purchase Request — Test Scenarios — Requestor)
+# ใบขอซื้อ (Purchase Request) — Test Scenarios — Requestor
 
 > **At a Glance**
 > **Persona:** Requestor &nbsp;·&nbsp; **โมดูล:** [[purchase-request]] &nbsp;·&nbsp; **Scenario:** ~36

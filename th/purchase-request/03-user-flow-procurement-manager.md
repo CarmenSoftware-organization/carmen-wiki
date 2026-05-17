@@ -1,5 +1,5 @@
 ---
-title: ใบขอซื้อ — User Flow — Procurement Manager (Purchase Request — User Flow — Procurement Manager)
+title: ใบขอซื้อ (Purchase Request) — User Flow — Procurement Manager
 description: เส้นทางการใช้งานของ Procurement Manager ในโมดูล purchase-request — อนุมัติมูลค่าสูง, vendor ranking และปรับกฎ Allocate Vendor
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
-# ใบขอซื้อ — User Flow — Procurement Manager (Purchase Request — User Flow — Procurement Manager)
+# ใบขอซื้อ (Purchase Request) — User Flow — Procurement Manager
 
 > **At a Glance**
 > **Persona:** Procurement Manager &nbsp;·&nbsp; **โมดูล:** [[purchase-request]] &nbsp;·&nbsp; **Stage ของ workflow:** in_progress (escalated final approve) + configurational (กฎ Allocate Vendor) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** approve มูลค่าสูง, override send-back ของ stage ก่อนหน้า, ตั้งค่า vendor-ranking

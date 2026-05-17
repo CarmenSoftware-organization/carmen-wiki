@@ -1,5 +1,5 @@
 ---
-title: โมเดลข้อมูลของใบขอซื้อ (Purchase Request — Data Model)
+title: ใบขอซื้อ (Purchase Request) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูล purchase-request
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
-# โมเดลข้อมูลของใบขอซื้อ (Purchase Request — Data Model)
+# ใบขอซื้อ (Purchase Request) — Data Model
 
 > **At a Glance**
 > **ตาราง:** `tb_purchase_request` &nbsp;·&nbsp; `tb_purchase_request_detail` &nbsp;·&nbsp; `tb_purchase_request_comment` &nbsp;·&nbsp; `tb_purchase_request_detail_comment` &nbsp;·&nbsp; `tb_purchase_request_template` / `_detail` (สำหรับ recurring order)

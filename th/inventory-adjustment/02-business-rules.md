@@ -1,5 +1,5 @@
 ---
-title: การปรับสต๊อก (Inventory Adjustment) — กติกาทางธุรกิจ
+title: การปรับสต๊อก (Inventory Adjustment) — Business Rules
 description: การตรวจสอบ การคำนวณ การกำหนดสิทธิ์ การ posting และกฎข้ามโมดูลสำหรับการปรับสต๊อก
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
 ---
 
-# การปรับสต๊อก (Inventory Adjustment) — กติกาทางธุรกิจ
+# การปรับสต๊อก (Inventory Adjustment) — Business Rules
 
 > **At a Glance**
 > **ตระกูลกฎ:** `ADJ_VAL_*` validation &nbsp;·&nbsp; `ADJ_AUTH_*` permission &nbsp;·&nbsp; `ADJ_CALC_*` calc &nbsp;·&nbsp; `ADJ_POST_*` posting &nbsp;·&nbsp; `ADJ_XMOD_*` cross-module

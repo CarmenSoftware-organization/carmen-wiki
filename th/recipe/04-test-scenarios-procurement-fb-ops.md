@@ -1,5 +1,5 @@
 ---
-title: สูตรอาหาร (Recipe) — Test Scenarios — Procurement / F&B Ops
+title: สูตรอาหาร (Recipe) — Test Scenarios — Procurement F&B Ops
 description: test case ของ Procurement และ F&B Ops (การขนาด PO, การทดแทน, การอนุมัติ menu-item linkage, menu engineering) สำหรับโมดูล recipe
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
 ---
 
-# สูตรอาหาร (Recipe) — Test Scenarios — Procurement / F&B Ops
+# สูตรอาหาร (Recipe) — Test Scenarios — Procurement F&B Ops
 
 > **At a Glance**
 > **Persona:** Procurement / F&B Ops (Procurement Department + F&B Operations Manager) &nbsp;·&nbsp; **โมดูล:** [[recipe]] &nbsp;·&nbsp; **scenario:** ~25

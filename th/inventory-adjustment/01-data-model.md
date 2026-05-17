@@ -1,5 +1,5 @@
 ---
-title: การปรับสต๊อก (Inventory Adjustment) — โมเดลข้อมูล
+title: การปรับสต๊อก (Inventory Adjustment) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูล inventory-adjustment
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
 ---
 
-# การปรับสต๊อก (Inventory Adjustment) — โมเดลข้อมูล
+# การปรับสต๊อก (Inventory Adjustment) — Data Model
 
 > **At a Glance**
 > **ตาราง:** `tb_adjustment_type` (ตัวจำแนก reason) &nbsp;·&nbsp; `tb_stock_in` / `tb_stock_in_detail` (ขาเข้า) &nbsp;·&nbsp; `tb_stock_out` / `tb_stock_out_detail` (ขาออก) &nbsp;·&nbsp; ตาราง `_comment` แยกตามระดับ

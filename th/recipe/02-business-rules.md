@@ -1,5 +1,5 @@
 ---
-title: สูตรอาหาร (Recipe) — กติกาทางธุรกิจ
+title: สูตรอาหาร (Recipe) — Business Rules
 description: การตรวจสอบความถูกต้อง การคำนวณ การกำหนดสิทธิ์ การ posting และกฎข้ามโมดูลสำหรับโมดูลสูตรอาหาร
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
 ---
 
-# สูตรอาหาร (Recipe) — กติกาทางธุรกิจ
+# สูตรอาหาร (Recipe) — Business Rules
 
 > **At a Glance**
 > **family ของกฎ:** `REC_VAL_*` validation &nbsp;·&nbsp; `REC_AUTH_*` permission &nbsp;·&nbsp; `REC_CALC_*` calc &nbsp;·&nbsp; `REC_POST_*` posting &nbsp;·&nbsp; `REC_XMOD_*` cross-module

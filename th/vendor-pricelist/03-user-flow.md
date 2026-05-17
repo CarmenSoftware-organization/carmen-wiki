@@ -1,5 +1,5 @@
 ---
-title: รายการราคาผู้ขาย — User Flow (Vendor Pricelist — User Flow)
+title: รายการราคาผู้ขาย (Vendor Pricelist) — User Flow
 description: Lifecycle ของเอกสารและไฟล์ flow ตาม persona สำหรับ vendor-pricelist
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
-# รายการราคาผู้ขาย — User Flow (Vendor Pricelist — User Flow)
+# รายการราคาผู้ขาย (Vendor Pricelist) — User Flow
 
 > **At a Glance**
 > **โมดูล:** [[vendor-pricelist]] &nbsp;·&nbsp; **Persona:** Purchaser (+ Purchasing Manager) &nbsp;·&nbsp; Vendor &nbsp;·&nbsp; Finance &nbsp;·&nbsp; Audit / Config

@@ -1,5 +1,5 @@
 ---
-title: Purchase Request — Test Scenarios — Audit / Config
+title: Purchase Request — Test Scenarios — Audit & Config
 description: Auditor (read-only audit trail) and System Administrator (workflow / threshold / delegation configuration) test cases for purchase-request.
 published: true
 date: 2026-05-17T11:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
-# Purchase Request — Test Scenarios — Audit / Config
+# Purchase Request — Test Scenarios — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Auditor read-only + System Administrator config) &nbsp;·&nbsp; **Module:** [[purchase-request]] &nbsp;·&nbsp; **Scenarios:** ~30

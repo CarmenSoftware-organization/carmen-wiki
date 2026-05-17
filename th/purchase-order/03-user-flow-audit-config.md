@@ -1,5 +1,5 @@
 ---
-title: ใบสั่งซื้อ — User Flow — Audit / Config
+title: ใบสั่งซื้อ (Purchase Order) — User Flow — Audit & Config
 description: Flow ของ Auditor (read-only audit trail ข้าม PR/PO/GRN/invoice) และ System Administrator (PO numbering, RBAC, integration config) สำหรับ purchase-order
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
-# ใบสั่งซื้อ — User Flow — Audit / Config
+# ใบสั่งซื้อ (Purchase Order) — User Flow — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Workflow stages:** ผู้สังเกตการณ์นอกเส้นทาง — Sysadmin เป็นเจ้าของ PO numbering, workflow definition (stages / `stage_role` / `user_action.execute[]`), RBAC สำหรับ `PO_AUTH_001`–`PO_AUTH_011`, integrations (vendor, pricelist snapshot, budget soft-commit, GRN); Auditor trace PR → PO → GRN → invoice ผ่าน `workflow_history`, comments, three-way match record &nbsp;·&nbsp; **สิทธิ์สำคัญ:** Sysadmin ตั้งค่า workflow / RBAC / integrations; Auditor read-only ข้าม chain

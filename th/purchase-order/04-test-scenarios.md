@@ -1,5 +1,5 @@
 ---
-title: ใบสั่งซื้อ — Test Scenarios (Purchase Order — Test Scenarios)
+title: ใบสั่งซื้อ (Purchase Order) — Test Scenarios
 description: Test cases แยกตาม persona, scenarios ข้าม persona และ Playwright mapping สำหรับ purchase-order
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
-# ใบสั่งซื้อ — Test Scenarios (Purchase Order — Test Scenarios)
+# ใบสั่งซื้อ (Purchase Order) — Test Scenarios
 
 > **At a Glance**
 > **Module:** [[purchase-order]] &nbsp;·&nbsp; **จำนวน scenarios ทั้งหมด:** ~10 ข้าม persona + drill-down ต่อ persona ข้ามทุก personas &nbsp;·&nbsp; **Personas ที่ครอบคลุม:** Purchaser, Procurement Manager, Vendor, Receiver, Finance, Audit / Config

@@ -1,5 +1,5 @@
 ---
-title: รายการราคาผู้ขาย — User Flow — Vendor (Vendor Pricelist — User Flow — Vendor)
+title: รายการราคาผู้ขาย (Vendor Pricelist) — User Flow — Vendor
 description: Flow ของ Vendor ภายในโมดูล vendor-pricelist — external party ที่มีการเข้าถึง portal-token (ไม่มี Carmen system login)
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
-# รายการราคาผู้ขาย — User Flow — Vendor (Vendor Pricelist — User Flow — Vendor)
+# รายการราคาผู้ขาย (Vendor Pricelist) — User Flow — Vendor
 
 > **At a Glance**
 > **Persona:** Vendor (external — portal session ที่ authenticate ด้วย token, ไม่มี Carmen login) &nbsp;·&nbsp; **โมดูล:** [[vendor-pricelist]] &nbsp;·&nbsp; **Workflow stage:** pricelist (none) → draft → submitted (จากนั้น Purchaser approve / reject) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** การเข้า portal scope ด้วย token — ป้อน / upload ราคา, ตั้งสกุลเงิน / MOQ, save draft, submit

@@ -1,5 +1,5 @@
 ---
-title: คลังสินค้า — Test Scenarios — Audit / Config (Inventory — Test Scenarios — Audit / Config)
+title: คลังสินค้า (Inventory) — Test Scenarios — Audit & Config
 description: Test cases ของ Auditor (audit trail อ่านอย่างเดียว + lot recall + period-snapshot reconciliation) และ System Administrator (location, costing method, adjustment types, periods, RBAC, integrations) สำหรับ inventory
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
-# คลังสินค้า — Test Scenarios — Audit / Config (Inventory — Test Scenarios — Audit / Config)
+# คลังสินค้า (Inventory) — Test Scenarios — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **โมดูล:** [[inventory]] &nbsp;·&nbsp; **Scenarios:** ~32

@@ -1,5 +1,5 @@
 ---
-title: ใบสั่งซื้อ — User Flow (Purchase Order — User Flow)
+title: ใบสั่งซื้อ (Purchase Order) — User Flow
 description: วงจรชีวิตของเอกสารและไฟล์ flow แยกตาม persona สำหรับ purchase-order
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
-# ใบสั่งซื้อ — User Flow (Purchase Order — User Flow)
+# ใบสั่งซื้อ (Purchase Order) — User Flow
 
 > **At a Glance**
 > **Module:** [[purchase-order]] &nbsp;·&nbsp; **Personas:** Purchaser &nbsp;·&nbsp; Procurement Manager &nbsp;·&nbsp; Vendor &nbsp;·&nbsp; Receiver &nbsp;·&nbsp; Finance &nbsp;·&nbsp; Audit / Config

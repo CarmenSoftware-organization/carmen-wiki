@@ -1,5 +1,5 @@
 ---
-title: ใบสั่งซื้อ — User Flow — Finance
+title: ใบสั่งซื้อ (Purchase Order) — User Flow — Finance
 description: เส้นทางผู้ใช้งานของ Finance ภายในโมดูล purchase-order — three-way match (PO ↔ GRN ↔ invoice), AP posting, การจัดการ currency/FX
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
-# ใบสั่งซื้อ — User Flow — Finance
+# ใบสั่งซื้อ (Purchase Order) — User Flow — Finance
 
 > **At a Glance**
 > **Persona:** Finance (Officer / AP Clerk + Finance Manager) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Workflow stages:** Pre-transmission review ที่ `po_status = in_progress` (Finance Manager — currency / FX / tax / line totals ก่อน `PO_POST_004` send) &nbsp;·&nbsp; post-receipt three-way match (PO ↔ GRN ↔ invoice — `PO_POST_008` / `PO_POST_009`) &nbsp;·&nbsp; AP posting บน success &nbsp;·&nbsp; **สิทธิ์สำคัญ:** financial sign-off pre-transmission; three-way match; flag discrepancy ให้ Purchaser PO state ไม่ transition โดย match

@@ -1,5 +1,5 @@
 ---
-title: การสุ่มตรวจ (Spot Check) — Test Scenarios — Audit / Config
+title: การสุ่มตรวจ (Spot Check) — Test Scenarios — Audit & Config
 description: Test case ของ Auditor และ Sysadmin สำหรับโมดูลการสุ่มตรวจ
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
 ---
 
-# การสุ่มตรวจ (Spot Check) — Test Scenarios — Audit / Config
+# การสุ่มตรวจ (Spot Check) — Test Scenarios — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Auditor read-only + Sysadmin config) &nbsp;·&nbsp; **โมดูล:** [[spot-check]] &nbsp;·&nbsp; **Scenario:** ~23

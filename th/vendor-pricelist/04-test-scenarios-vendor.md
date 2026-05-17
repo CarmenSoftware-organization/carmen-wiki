@@ -1,5 +1,5 @@
 ---
-title: รายการราคาผู้ขาย — Test Scenarios — Vendor (Vendor Pricelist — Test Scenarios — Vendor)
+title: รายการราคาผู้ขาย (Vendor Pricelist) — Test Scenarios — Vendor
 description: Test case ของ Vendor (happy path, validation, edge case) สำหรับ vendor-pricelist External party — section Permission / Authorization ลดลงเป็นแถว N/A เดียว
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
-# รายการราคาผู้ขาย — Test Scenarios — Vendor (Vendor Pricelist — Test Scenarios — Vendor)
+# รายการราคาผู้ขาย (Vendor Pricelist) — Test Scenarios — Vendor
 
 > **At a Glance**
 > **Persona:** Vendor (external party — portal ที่ authenticate ด้วย token เท่านั้น) &nbsp;·&nbsp; **โมดูล:** [[vendor-pricelist]] &nbsp;·&nbsp; **Scenario:** ~25

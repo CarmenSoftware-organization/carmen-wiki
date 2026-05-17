@@ -1,5 +1,5 @@
 ---
-title: ใบสั่งซื้อ — Test Scenarios — Procurement Manager
+title: ใบสั่งซื้อ (Purchase Order) — Test Scenarios — Procurement Manager
 description: Test cases ของ Procurement Manager (transactional high-value approval + configuration) สำหรับ purchase-order
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
-# ใบสั่งซื้อ — Test Scenarios — Procurement Manager
+# ใบสั่งซื้อ (Purchase Order) — Test Scenarios — Procurement Manager
 
 > **At a Glance**
 > **Persona:** Procurement Manager (อนุมัติมูลค่าสูง + การปรับ rule configuration) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Scenarios:** ~29

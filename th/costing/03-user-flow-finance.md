@@ -1,5 +1,5 @@
 ---
-title: การคำนวณต้นทุน — User Flow — Finance
+title: การคำนวณต้นทุน (Costing) — User Flow — Finance
 description: Flow ของ Finance ในโมดูล costing — นโยบาย valuation, sub-ledger ↔ GL reconciliation, อนุมัติ credit-note revaluation, period-end valuation lock
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
 ---
 
-# การคำนวณต้นทุน — User Flow — Finance
+# การคำนวณต้นทุน (Costing) — User Flow — Finance
 
 > **At a Glance**
 > **Persona:** Finance (Officer / Cost Controller / Finance Manager) &nbsp;·&nbsp; **Module:** [[costing]] &nbsp;·&nbsp; **Workflow stages:** นโยบาย Valuation &nbsp;·&nbsp; Sub-ledger ↔ GL reconciliation &nbsp;·&nbsp; อนุมัติ Credit-note revaluation &nbsp;·&nbsp; Period-end valuation &nbsp;·&nbsp; Period lock (`closed → locked`) &nbsp;·&nbsp; **Key permissions:** configure method (`COST_AUTH_001`), approve credit-note revaluation (`COST_AUTH_005`), advance period status (`COST_AUTH_006`)

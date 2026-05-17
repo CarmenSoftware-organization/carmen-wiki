@@ -1,5 +1,5 @@
 ---
-title: ใบสั่งซื้อ — กติกาทางธุรกิจ (Purchase Order — Business Rules)
+title: ใบสั่งซื้อ (Purchase Order) — Business Rules
 description: กฎการ validation การคำนวณ การกำหนดสิทธิ์ การ posting การ three-way-match และกฎข้ามโมดูลสำหรับ purchase-order
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
-# ใบสั่งซื้อ — กติกาทางธุรกิจ (Purchase Order — Business Rules)
+# ใบสั่งซื้อ (Purchase Order) — Business Rules
 
 > **At a Glance**
 > **กลุ่ม rule:** `PO_VAL_*` validation &nbsp;·&nbsp; `PO_AUTH_*` permission &nbsp;·&nbsp; `PO_CALC_*` calc &nbsp;·&nbsp; `PO_POST_*` posting &nbsp;·&nbsp; `PO_XMOD_*` cross-module

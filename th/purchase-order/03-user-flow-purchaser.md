@@ -1,5 +1,5 @@
 ---
-title: ใบสั่งซื้อ — User Flow — Purchaser
+title: ใบสั่งซื้อ (Purchase Order) — User Flow — Purchaser
 description: เส้นทางผู้ใช้งานของ Purchaser ภายในโมดูล purchase-order
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
-# ใบสั่งซื้อ — User Flow — Purchaser
+# ใบสั่งซื้อ (Purchase Order) — User Flow — Purchaser
 
 > **At a Glance**
 > **Persona:** Purchaser / Procurement Officer &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Workflow stages:** draft → in_progress → sent (+ amendment บน sent) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** create, edit, submit, transmit, amend, bounce-back

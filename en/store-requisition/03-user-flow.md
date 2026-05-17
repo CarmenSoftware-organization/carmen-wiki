@@ -1,5 +1,5 @@
 ---
-title: Store Requisition (SR) — User Flow
+title: Store Requisition — User Flow
 description: Document lifecycle and persona-specific flow files for store-requisition.
 published: true
 date: 2026-05-17T11:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
 ---
 
-# Store Requisition (SR) — User Flow
+# Store Requisition — User Flow
 
 > **At a Glance**
 > **Module:** [[store-requisition]] &nbsp;·&nbsp; **Personas:** Requester &nbsp;·&nbsp; Approver &nbsp;·&nbsp; Fulfiller &nbsp;·&nbsp; Receiver &nbsp;·&nbsp; Audit / Config

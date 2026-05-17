@@ -1,5 +1,5 @@
 ---
-title: การนับสต๊อกประจำงวด (Physical Count) — กติกาทางธุรกิจ
+title: การนับสต๊อกประจำงวด (Physical Count) — Business Rules
 description: กฎการตรวจสอบ การคำนวณ การกำหนดสิทธิ์ การ post และกฎข้ามโมดูลของการนับสต๊อกประจำงวด
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
 ---
 
-# การนับสต๊อกประจำงวด (Physical Count) — กติกาทางธุรกิจ
+# การนับสต๊อกประจำงวด (Physical Count) — Business Rules
 
 > **At a Glance**
 > **กลุ่มกฎ:** `PHC_VAL_*` validation &nbsp;·&nbsp; `PHC_AUTH_*` permission &nbsp;·&nbsp; `PHC_CALC_*` calc &nbsp;·&nbsp; `PHC_POST_*` posting &nbsp;·&nbsp; `PHC_XMOD_*` cross-module

@@ -1,5 +1,5 @@
 ---
-title: คลังสินค้า — Test Scenarios — Store Keeper (Inventory — Test Scenarios — Store Keeper)
+title: คลังสินค้า (Inventory) — Test Scenarios — Store Keeper
 description: Test cases ของ Store Keeper (happy path, permission, validation, edge cases) สำหรับ inventory
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
-# คลังสินค้า — Test Scenarios — Store Keeper (Inventory — Test Scenarios — Store Keeper)
+# คลังสินค้า (Inventory) — Test Scenarios — Store Keeper
 
 > **At a Glance**
 > **Persona:** Store Keeper &nbsp;·&nbsp; **โมดูล:** [[inventory]] &nbsp;·&nbsp; **Scenarios:** ~29

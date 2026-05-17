@@ -1,5 +1,5 @@
 ---
-title: ใบขอซื้อ — Test Scenarios — Audit / Config (Purchase Request — Test Scenarios — Audit / Config)
+title: ใบขอซื้อ (Purchase Request) — Test Scenarios — Audit & Config
 description: Test case ของ Auditor (audit trail read-only) และ System Administrator (ตั้งค่า workflow / threshold / delegation) สำหรับโมดูล purchase-request
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
-# ใบขอซื้อ — Test Scenarios — Audit / Config (Purchase Request — Test Scenarios — Audit / Config)
+# ใบขอซื้อ (Purchase Request) — Test Scenarios — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Auditor read-only + System Administrator config) &nbsp;·&nbsp; **โมดูล:** [[purchase-request]] &nbsp;·&nbsp; **Scenario:** ~30

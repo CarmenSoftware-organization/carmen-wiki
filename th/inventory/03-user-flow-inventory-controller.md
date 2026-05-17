@@ -1,5 +1,5 @@
 ---
-title: คลังสินค้า — User Flow — Inventory Controller (Inventory — User Flow — Inventory Controller)
+title: คลังสินค้า (Inventory) — User Flow — Inventory Controller
 description: Flow ของ Inventory Controller ในโมดูล inventory — ความถูกต้องของยอด การ review variance การประสานงานนับสต๊อก policy สต๊อก
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
-# คลังสินค้า — User Flow — Inventory Controller (Inventory — User Flow — Inventory Controller)
+# คลังสินค้า (Inventory) — User Flow — Inventory Controller
 
 > **At a Glance**
 > **Persona:** Inventory Controller &nbsp;·&nbsp; **โมดูล:** [[inventory]] &nbsp;·&nbsp; **ขั้นตอน workflow:** อนุมัติ adjustment เหนือ threshold ของ Store Keeper (`draft → in_progress → completed`) &nbsp;·&nbsp; ประสานงานโปรแกรม physical-count และ spot-check &nbsp;·&nbsp; ปรับ policy สต๊อกต่อสินค้า / ต่อ location &nbsp;·&nbsp; เซ็นรับรอง variance ก่อนปิดงวด &nbsp;·&nbsp; **สิทธิ์สำคัญ:** อนุมัติเหนือ threshold (`INV_AUTH_003`); แก้ไข stock-policy (`INV_AUTH_004`); เจ้าของโปรแกรมนับ

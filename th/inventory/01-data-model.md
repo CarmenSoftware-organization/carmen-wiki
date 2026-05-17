@@ -1,5 +1,5 @@
 ---
-title: คลังสินค้า — แบบจำลองข้อมูล (Inventory — Data Model)
+title: คลังสินค้า (Inventory) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูล inventory
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
-# คลังสินค้า — แบบจำลองข้อมูล (Inventory — Data Model)
+# คลังสินค้า (Inventory) — Data Model
 
 > **At a Glance**
 > **ตาราง:** `tb_inventory_transaction` &nbsp;·&nbsp; `tb_inventory_transaction_detail` &nbsp;·&nbsp; `tb_inventory_transaction_cost_layer` &nbsp;·&nbsp; `tb_location` &nbsp;·&nbsp; `tb_product_location` &nbsp;·&nbsp; `tb_period` &nbsp;·&nbsp; `tb_period_snapshot`

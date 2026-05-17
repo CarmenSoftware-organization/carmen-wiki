@@ -1,5 +1,5 @@
 ---
-title: รายการราคาผู้ขาย — User Flow — Purchaser (Vendor Pricelist — User Flow — Purchaser)
+title: รายการราคาผู้ขาย (Vendor Pricelist) — User Flow — Purchaser
 description: Flow ของ Purchaser (และ Purchasing Manager) ภายในโมดูล vendor-pricelist — template builder, campaign launcher, submission reviewer, preferred-vendor curator
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
-# รายการราคาผู้ขาย — User Flow — Purchaser (Vendor Pricelist — User Flow — Purchaser)
+# รายการราคาผู้ขาย (Vendor Pricelist) — User Flow — Purchaser
 
 > **At a Glance**
 > **Persona:** Purchaser / Purchasing Staff (+ Purchasing Manager) &nbsp;·&nbsp; **โมดูล:** [[vendor-pricelist]] &nbsp;·&nbsp; **Workflow stage:** Template draft → active; Campaign draft → active → completed; Pricelist submitted → active / inactive / expired &nbsp;·&nbsp; **สิทธิ์สำคัญ:** สร้าง template, launch campaign, เชิญ vendor, review / approve / reject submission, การ curate preferred-vendor, high-value sign-off (Manager)

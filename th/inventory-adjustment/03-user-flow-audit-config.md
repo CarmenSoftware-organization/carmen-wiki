@@ -1,5 +1,5 @@
 ---
-title: การปรับสต๊อก (Inventory Adjustment) — User Flow — Audit / Config
+title: การปรับสต๊อก (Inventory Adjustment) — User Flow — Audit & Config
 description: Flow ของ Auditor และ System Administrator ภายในโมดูล inventory-adjustment — การ inspect audit trail และการบำรุงรักษาการกำหนดค่า
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
 ---
 
-# การปรับสต๊อก (Inventory Adjustment) — User Flow — Audit / Config
+# การปรับสต๊อก (Inventory Adjustment) — User Flow — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **โมดูล:** [[inventory-adjustment]] &nbsp;·&nbsp; **ขั้น workflow:** ผู้สังเกตการณ์นอกเส้นทาง — Sysadmin เป็นเจ้าของ list reason-code (`tb_adjustment_type`), thresholds, RBAC, period config; Auditor อ่านชุดข้อมูล adjustment เต็มรวม soft-deleted compensating reversals &nbsp;·&nbsp; **สิทธิ์สำคัญ:** Sysadmin กำหนดค่ากฎและ thresholds; Auditor read-only (ไม่เขียนสถานะเอกสาร)

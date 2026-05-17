@@ -1,5 +1,5 @@
 ---
-title: ใบสั่งซื้อ — User Flow — Procurement Manager
+title: ใบสั่งซื้อ (Purchase Order) — User Flow — Procurement Manager
 description: เส้นทางผู้ใช้งานของ Procurement Manager ภายในโมดูล purchase-order — การอนุมัติมูลค่าสูง vendor ranking และการปรับ rule
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
-# ใบสั่งซื้อ — User Flow — Procurement Manager
+# ใบสั่งซื้อ (Purchase Order) — User Flow — Procurement Manager
 
 > **At a Glance**
 > **Persona:** Procurement Manager &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Workflow stages:** การอนุมัติมูลค่าสูงที่ stage สุดท้าย (`in_progress → sent` ตาม `PO_POST_004`) — approve-and-transmit, send-back ให้ Purchaser, หรือ reject เป็น `voided` (`PO_POST_010`); soft-delete-in-draft (`PO_AUTH_005`); void จาก non-terminal (`PO_AUTH_007`); early-close `partial → closed` (`PO_POST_011`); workbench ปรับ rule (vendor master, grouping rules, unit conversions, pricelist tolerance, high-value threshold) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** approve / send-back / reject มูลค่าสูง (`PO_AUTH_004`); override authorities (`PO_AUTH_005` / `PO_AUTH_007` / `PO_AUTH_008`)

@@ -1,5 +1,5 @@
 ---
-title: สูตรอาหาร (Recipe) — User Flow — Audit / Config
+title: สูตรอาหาร (Recipe) — User Flow — Audit & Config
 description: flow ของ System Administrator + Auditor ในโมดูลสูตร — config (หมวดหมู่ ประเภทอาหาร RBAC integration) versioning audit compliance review
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
 ---
 
-# สูตรอาหาร (Recipe) — User Flow — Audit / Config
+# สูตรอาหาร (Recipe) — User Flow — Audit & Config
 
 > **At a Glance**
 > **Persona:** System Administrator + Auditor &nbsp;·&nbsp; **โมดูล:** [[recipe]] &nbsp;·&nbsp; **ขั้นตอน workflow:** off-path — ตั้งค่า (หมวดหมู่ / ประเภทอาหาร / อุปกรณ์ / RBAC / publish-gate / integration) และ audit (versioning, pricing history) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** เขียน config (Sysadmin), read-history (Auditor), soft-delete archived (Sysadmin)

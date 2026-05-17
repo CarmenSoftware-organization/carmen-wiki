@@ -1,5 +1,5 @@
 ---
-title: การคำนวณต้นทุน — Test Scenarios — Auditor
+title: การคำนวณต้นทุน (Costing) — Test Scenarios — Auditor
 description: Test cases ของ Auditor (chain-of-custody trace, period-snapshot verification, FIFO-WA shadow drift, configuration history audit) สำหรับ costing
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
 ---
 
-# การคำนวณต้นทุน — Test Scenarios — Auditor
+# การคำนวณต้นทุน (Costing) — Test Scenarios — Auditor
 
 > **At a Glance**
 > **Persona:** Auditor &nbsp;·&nbsp; **Module:** [[costing]] &nbsp;·&nbsp; **Scenarios:** ~23

@@ -1,5 +1,5 @@
 ---
-title: Store Requisition (SR) — User Flow — Approver
+title: Store Requisition — User Flow — Approver
 description: Approver's flow within the store-requisition module — reviews, trims, rejects, splits, or sends back submitted SRs.
 published: true
 date: 2026-05-17T11:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
 ---
 
-# Store Requisition (SR) — User Flow — Approver
+# Store Requisition — User Flow — Approver
 
 > **At a Glance**
 > **Persona:** Approver (Department Head + later-stage Ops / Cost Controller) &nbsp;·&nbsp; **Module:** [[store-requisition]] &nbsp;·&nbsp; **Workflow stages:** in_progress (approval stage) → in_progress (fulfilment) / cancelled / draft (send-back) &nbsp;·&nbsp; **Key permissions:** approve, trim approved_qty, reject (line / header), split-reject, send-back

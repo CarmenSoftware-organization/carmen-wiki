@@ -1,5 +1,5 @@
 ---
-title: การคำนวณต้นทุน — User Flow — Auditor
+title: การคำนวณต้นทุน (Costing) — User Flow — Auditor
 description: Flow ของ Auditor ในโมดูล costing — ตรวจสอบว่า costed COGS และ ending inventory tie กลับไปยัง source receipts; ตรวจสอบ method-consistency ข้ามงวด
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
 ---
 
-# การคำนวณต้นทุน — User Flow — Auditor
+# การคำนวณต้นทุน (Costing) — User Flow — Auditor
 
 > **At a Glance**
 > **Persona:** Auditor &nbsp;·&nbsp; **Module:** [[costing]] &nbsp;·&nbsp; **Workflow stages:** Post-lock observer — รัน cost-flow chain-of-custody traces, period-snapshot verification, FIFO-vs-WA shadow drift audits, configuration-history audits &nbsp;·&nbsp; **Key permissions:** read-only (`COST_AUTH_008`); no edit, no approve, no period advance

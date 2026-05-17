@@ -1,5 +1,5 @@
 ---
-title: ใบเบิกของสโตร์ (Store Requisition) — Test Scenarios — Audit / Config
+title: ใบเบิกของสโตร์ (Store Requisition) — Test Scenarios — Audit & Config
 description: test case ของ Inventory Controller, Finance, Sysadmin และ Auditor สำหรับ store-requisition
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
 ---
 
-# ใบเบิกของสโตร์ (Store Requisition) — Test Scenarios — Audit / Config
+# ใบเบิกของสโตร์ (Store Requisition) — Test Scenarios — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Inventory Controller + Finance + Sysadmin + Auditor) &nbsp;·&nbsp; **โมดูล:** [[store-requisition]] &nbsp;·&nbsp; **Scenarios:** ~27

@@ -1,5 +1,5 @@
 ---
-title: Inventory — User Flow — Audit / Config
+title: Inventory — User Flow — Audit & Config
 description: Auditor (read-only audit trail + lot recall) and System Administrator (location type, costing method, adjustment types, period config, RBAC) flows for inventory.
 published: true
 date: 2026-05-17T11:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
-# Inventory — User Flow — Audit / Config
+# Inventory — User Flow — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [[inventory]] &nbsp;·&nbsp; **Workflow stages:** Off-path observers — Sysadmin configures `tb_location` types, `tb_product.costing_method`, `tb_adjustment_type`, `tb_period`, thresholds, RBAC, integration endpoints; Auditor reads transactions / cost-layer / snapshots, runs lot-recall traces and period-snapshot reconciliation queries &nbsp;·&nbsp; **Key permissions:** Sysadmin owns configuration (`INV_AUTH_008`); Auditor read-only across full dataset including soft-deleted rows

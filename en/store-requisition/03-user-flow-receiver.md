@@ -1,5 +1,5 @@
 ---
-title: Store Requisition (SR) — User Flow — Receiver
+title: Store Requisition — User Flow — Receiver
 description: Receiver's flow within the store-requisition module — confirms destination receipt and flags discrepancies on issued SRs.
 published: true
 date: 2026-05-17T11:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
 ---
 
-# Store Requisition (SR) — User Flow — Receiver
+# Store Requisition — User Flow — Receiver
 
 > **At a Glance**
 > **Persona:** Destination outlet representative / dock stock controller &nbsp;·&nbsp; **Module:** [[store-requisition]] &nbsp;·&nbsp; **Workflow stages:** completed (already terminal — physical verification, no status change) &nbsp;·&nbsp; **Key permissions:** acknowledge receipt (comment), raise discrepancy comment escalation

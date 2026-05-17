@@ -1,5 +1,5 @@
 ---
-title: ใบสั่งซื้อ — Test Scenarios — Purchaser
+title: ใบสั่งซื้อ (Purchase Order) — Test Scenarios — Purchaser
 description: Test cases ของ Purchaser (happy path, permission, validation, edge cases) สำหรับ purchase-order
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
-# ใบสั่งซื้อ — Test Scenarios — Purchaser
+# ใบสั่งซื้อ (Purchase Order) — Test Scenarios — Purchaser
 
 > **At a Glance**
 > **Persona:** Purchaser (Procurement Officer) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Scenarios:** ~34

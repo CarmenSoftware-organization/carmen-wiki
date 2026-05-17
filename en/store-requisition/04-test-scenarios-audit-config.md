@@ -1,5 +1,5 @@
 ---
-title: Store Requisition (SR) — Test Scenarios — Audit / Config
+title: Store Requisition — Test Scenarios — Audit & Config
 description: Inventory Controller, Finance, Sysadmin, and Auditor test cases for store-requisition.
 published: true
 date: 2026-05-17T11:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
 ---
 
-# Store Requisition (SR) — Test Scenarios — Audit / Config
+# Store Requisition — Test Scenarios — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Inventory Controller + Finance + Sysadmin + Auditor) &nbsp;·&nbsp; **Module:** [[store-requisition]] &nbsp;·&nbsp; **Scenarios:** ~27

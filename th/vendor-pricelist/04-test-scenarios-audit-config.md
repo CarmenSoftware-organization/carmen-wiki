@@ -1,5 +1,5 @@
 ---
-title: รายการราคาผู้ขาย — Test Scenarios — Audit / Config (Vendor Pricelist — Test Scenarios — Audit / Config)
+title: รายการราคาผู้ขาย (Vendor Pricelist) — Test Scenarios — Audit & Config
 description: Test case ของ Auditor (อ่านอย่างเดียวข้าม template/campaign/invitation/pricelist/validation/activity-log) และ System Administrator (การกำหนดเลข, RBAC, นโยบาย portal-token, การเชื่อม email, กติกา validation, การ revoke token, การเก็บ audit)
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
-# รายการราคาผู้ขาย — Test Scenarios — Audit / Config (Vendor Pricelist — Test Scenarios — Audit / Config)
+# รายการราคาผู้ขาย (Vendor Pricelist) — Test Scenarios — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Auditor อ่านอย่างเดียว + System Administrator การตั้งค่า) &nbsp;·&nbsp; **โมดูล:** [[vendor-pricelist]] &nbsp;·&nbsp; **Scenario:** ~34

@@ -1,5 +1,5 @@
 ---
-title: การคำนวณต้นทุน — Test Scenarios
+title: การคำนวณต้นทุน (Costing) — Test Scenarios
 description: Test cases ตาม persona, cross-persona scenarios, และ E2E mapping สำหรับ costing
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
 ---
 
-# การคำนวณต้นทุน — Test Scenarios
+# การคำนวณต้นทุน (Costing) — Test Scenarios
 
 > **At a Glance**
 > **Module:** [[costing]] &nbsp;·&nbsp; **Scenarios ทั้งหมด:** ~18 cross-persona + ~84 per-persona &nbsp;·&nbsp; **Personas ครอบคลุม:** Finance, Inventory Controller, Auditor

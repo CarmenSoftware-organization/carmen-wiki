@@ -1,5 +1,5 @@
 ---
-title: คลังสินค้า — Test Scenarios (Inventory — Test Scenarios)
+title: คลังสินค้า (Inventory) — Test Scenarios
 description: Test cases ตาม persona, scenarios ข้าม persona และการ map E2E สำหรับ inventory
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
-# คลังสินค้า — Test Scenarios (Inventory — Test Scenarios)
+# คลังสินค้า (Inventory) — Test Scenarios
 
 > **At a Glance**
 > **โมดูล:** [[inventory]] &nbsp;·&nbsp; **Scenarios รวม:** ~17 cross-persona + ~115 per-persona &nbsp;·&nbsp; **Personas ครอบคลุม:** Store Keeper, Inventory Controller, Finance, Audit / Config

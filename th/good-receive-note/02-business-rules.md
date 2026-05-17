@@ -1,5 +1,5 @@
 ---
-title: ใบรับสินค้า (Goods Receive Note) — กฎทางธุรกิจ
+title: ใบรับสินค้า (Goods Receive Note) — Business Rules
 description: การตรวจสอบ การคำนวณ การกำหนดสิทธิ์ การ posting การจับคู่สามทาง และกฎข้ามโมดูลของ good-receive-note
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
 ---
 
-# ใบรับสินค้า (Goods Receive Note) — กฎทางธุรกิจ
+# ใบรับสินค้า (Goods Receive Note) — Business Rules
 
 > **At a Glance**
 > **กลุ่มกฎ:** `GRN_VAL_*` validation &nbsp;·&nbsp; `GRN_AUTH_*` permission &nbsp;·&nbsp; `GRN_CALC_*` calc &nbsp;·&nbsp; `GRN_POST_*` posting &nbsp;·&nbsp; `GRN_XMOD_*` cross-module

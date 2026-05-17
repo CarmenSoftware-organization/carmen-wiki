@@ -1,5 +1,5 @@
 ---
-title: ใบขอซื้อ — User Flow — Audit / Config (Purchase Request — User Flow — Audit / Config)
+title: ใบขอซื้อ (Purchase Request) — User Flow — Audit & Config
 description: เส้นทางการใช้งานของ Auditor (read-only) และ System Administrator (ตั้งค่า workflow / threshold / delegation) ในโมดูล purchase-request
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
-# ใบขอซื้อ — User Flow — Audit / Config (Purchase Request — User Flow — Audit / Config)
+# ใบขอซื้อ (Purchase Request) — User Flow — Audit & Config
 
 > **At a Glance**
 > **Persona:** Auditor (read-only) + System Administrator (config) &nbsp;·&nbsp; **โมดูล:** [[purchase-request]] &nbsp;·&nbsp; **Stage ของ workflow:** off-path — สังเกตทุกสถานะ; Sysadmin ถือ void ระดับสูง (PR_AUTH_007) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** audit/อ่านประวัติ, ตั้งค่า workflow / threshold / delegation, void ระดับสูง

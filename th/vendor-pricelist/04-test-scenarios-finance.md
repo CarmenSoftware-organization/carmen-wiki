@@ -1,5 +1,5 @@
 ---
-title: รายการราคาผู้ขาย — Test Scenarios — Finance (Vendor Pricelist — Test Scenarios — Finance)
+title: รายการราคาผู้ขาย (Vendor Pricelist) — Test Scenarios — Finance
 description: Test case ของ Finance (variance audit, multi-currency co-signoff, FX validation) สำหรับ vendor-pricelist
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
-# รายการราคาผู้ขาย — Test Scenarios — Finance (Vendor Pricelist — Test Scenarios — Finance)
+# รายการราคาผู้ขาย (Vendor Pricelist) — Test Scenarios — Finance
 
 > **At a Glance**
 > **Persona:** Finance (Finance Officer / AP + Finance Manager) &nbsp;·&nbsp; **โมดูล:** [[vendor-pricelist]] &nbsp;·&nbsp; **Scenario:** ~26

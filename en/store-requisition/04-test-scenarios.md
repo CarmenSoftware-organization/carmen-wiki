@@ -1,5 +1,5 @@
 ---
-title: Store Requisition (SR) — Test Scenarios
+title: Store Requisition — Test Scenarios
 description: Test cases by persona, cross-persona scenarios, and Playwright mapping for store-requisition.
 published: true
 date: 2026-05-17T11:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
 ---
 
-# Store Requisition (SR) — Test Scenarios
+# Store Requisition — Test Scenarios
 
 > **At a Glance**
 > **Module:** [[store-requisition]] &nbsp;·&nbsp; **Total scenarios:** ~14 cross-persona + per-persona drill-downs across all personas &nbsp;·&nbsp; **Personas covered:** Requester, Approver, Fulfiller, Receiver, Audit / Config

@@ -1,5 +1,5 @@
 ---
-title: คลังสินค้า — User Flow — Store Keeper (Inventory — User Flow — Store Keeper)
+title: คลังสินค้า (Inventory) — User Flow — Store Keeper
 description: Flow ของ Store Keeper ในโมดูล inventory — การเคลื่อนไหวสต๊อกประจำวัน เอกสาร stock-in / stock-out การดำเนินการนับสต๊อก
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
-# คลังสินค้า — User Flow — Store Keeper (Inventory — User Flow — Store Keeper)
+# คลังสินค้า (Inventory) — User Flow — Store Keeper
 
 > **At a Glance**
 > **Persona:** Store Keeper &nbsp;·&nbsp; **โมดูล:** [[inventory]] &nbsp;·&nbsp; **ขั้นตอน workflow:** เริ่ม draft ของ manual stock-in / stock-out &nbsp;·&nbsp; auto-post ต่ำกว่า threshold (transaction post ตรงเข้า `tb_inventory_transaction`) &nbsp;·&nbsp; route เอกสารเหนือ threshold ไปที่ Controller &nbsp;·&nbsp; ดำเนินการนับสต๊อกบน location ที่อยู่ใน scope &nbsp;·&nbsp; **สิทธิ์สำคัญ:** เริ่ม / post ต่ำกว่า threshold; แก้ไข cost-layer ledger ไม่ได้; SoD (`INV_AUTH_010`) จำกัด write-off ของ lot ที่ตนรับเองเหนือ threshold

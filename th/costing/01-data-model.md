@@ -1,5 +1,5 @@
 ---
-title: การคำนวณต้นทุน — แบบจำลองข้อมูล (Costing — Data Model)
+title: การคำนวณต้นทุน (Costing) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum สำหรับโมดูล costing
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
 ---
 
-# การคำนวณต้นทุน — แบบจำลองข้อมูล
+# การคำนวณต้นทุน (Costing) — Data Model
 
 > **At a Glance**
 > **ตาราง:** `tb_inventory_transaction_cost_layer` &nbsp;·&nbsp; `tb_inventory_transaction_detail` &nbsp;·&nbsp; `tb_period_snapshot` &nbsp;·&nbsp; `tb_business_unit.calculation_method` &nbsp;·&nbsp; `tb_product.standard_cost`

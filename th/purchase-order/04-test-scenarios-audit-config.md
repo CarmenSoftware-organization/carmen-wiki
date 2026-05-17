@@ -1,5 +1,5 @@
 ---
-title: ใบสั่งซื้อ — Test Scenarios — Audit / Config
+title: ใบสั่งซื้อ (Purchase Order) — Test Scenarios — Audit & Config
 description: Test cases ของ Auditor (read-only audit log ข้าม PR/PO/GRN/invoice chain) และ System Administrator (PO numbering, RBAC, integration config) สำหรับ purchase-order
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
-# ใบสั่งซื้อ — Test Scenarios — Audit / Config
+# ใบสั่งซื้อ (Purchase Order) — Test Scenarios — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Scenarios:** ~30

@@ -1,5 +1,5 @@
 ---
-title: Recipe — Test Scenarios — Audit / Config
+title: Recipe — Test Scenarios — Audit & Config
 description: System Administrator and Auditor test cases (config, RBAC, versioning audit, pricing-history audit, integration health) for the recipe module.
 published: true
 date: 2026-05-17T11:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
 ---
 
-# Recipe — Test Scenarios — Audit / Config
+# Recipe — Test Scenarios — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (System Administrator config + Auditor read-only) &nbsp;·&nbsp; **Module:** [[recipe]] &nbsp;·&nbsp; **Scenarios:** ~31

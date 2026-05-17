@@ -1,5 +1,5 @@
 ---
-title: ใบขอซื้อ — Test Scenarios — Procurement Manager (Purchase Request — Test Scenarios — Procurement Manager)
+title: ใบขอซื้อ (Purchase Request) — Test Scenarios — Procurement Manager
 description: Test case ของ Procurement Manager (อนุมัติมูลค่าสูง transactional + ตั้งค่ากฎ vendor allocation configurational) สำหรับโมดูล purchase-request
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
-# ใบขอซื้อ — Test Scenarios — Procurement Manager (Purchase Request — Test Scenarios — Procurement Manager)
+# ใบขอซื้อ (Purchase Request) — Test Scenarios — Procurement Manager
 
 > **At a Glance**
 > **Persona:** Procurement Manager (อนุมัติมูลค่าสูง + ตั้งค่า Allocate Vendor) &nbsp;·&nbsp; **โมดูล:** [[purchase-request]] &nbsp;·&nbsp; **Scenario:** ~29

@@ -1,5 +1,5 @@
 ---
-title: รายการราคาผู้ขาย — Test Scenarios — Purchaser (Vendor Pricelist — Test Scenarios — Purchaser)
+title: รายการราคาผู้ขาย (Vendor Pricelist) — Test Scenarios — Purchaser
 description: Test case ของ Purchaser (และ Purchasing Manager) (happy path, permission, validation, edge case) สำหรับ vendor-pricelist
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
-# รายการราคาผู้ขาย — Test Scenarios — Purchaser (Vendor Pricelist — Test Scenarios — Purchaser)
+# รายการราคาผู้ขาย (Vendor Pricelist) — Test Scenarios — Purchaser
 
 > **At a Glance**
 > **Persona:** Purchaser (Purchasing Staff + Purchasing Manager) &nbsp;·&nbsp; **โมดูล:** [[vendor-pricelist]] &nbsp;·&nbsp; **Scenario:** ~39

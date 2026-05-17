@@ -1,5 +1,5 @@
 ---
-title: รายการราคาผู้ขาย — User Flow — Audit / Config (Vendor Pricelist — User Flow — Audit / Config)
+title: รายการราคาผู้ขาย (Vendor Pricelist) — User Flow — Audit & Config
 description: Flow ของ Auditor (อ่านอย่างเดียวข้าม template/campaign/invitation/pricelist/validation/activity-log) และ System Administrator (การกำหนดเลข, RBAC, นโยบาย portal-token, การเชื่อม email, กติกา validation, การ revoke token, การเก็บ audit)
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
-# รายการราคาผู้ขาย — User Flow — Audit / Config (Vendor Pricelist — User Flow — Audit / Config)
+# รายการราคาผู้ขาย (Vendor Pricelist) — User Flow — Audit & Config
 
 > **At a Glance**
 > **Persona:** Auditor + System Administrator &nbsp;·&nbsp; **โมดูล:** [[vendor-pricelist]] &nbsp;·&nbsp; **Workflow stage:** off-path — สังเกต chain Template / Campaign / Invitation / Pricelist; Sysadmin ตั้งค่านโยบาย &nbsp;·&nbsp; **สิทธิ์สำคัญ:** audit/อ่านข้าม chain + PR/PO/GRN ปลายน้ำ (Auditor); การกำหนดเลข, RBAC, นโยบาย portal-token, กติกา validation, การ revoke token (Sysadmin)

@@ -1,5 +1,5 @@
 ---
-title: Recipe — Test Scenarios — Procurement / F&B Ops
+title: Recipe — Test Scenarios — Procurement F&B Ops
 description: Procurement and F&B Ops test cases (PO sizing, substitution, menu-item linkage approval, menu engineering) for the recipe module.
 published: true
 date: 2026-05-17T11:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
 ---
 
-# Recipe — Test Scenarios — Procurement / F&B Ops
+# Recipe — Test Scenarios — Procurement F&B Ops
 
 > **At a Glance**
 > **Persona:** Procurement / F&B Ops (Procurement Department + F&B Operations Manager) &nbsp;·&nbsp; **Module:** [[recipe]] &nbsp;·&nbsp; **Scenarios:** ~25

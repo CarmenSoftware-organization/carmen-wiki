@@ -1,5 +1,5 @@
 ---
-title: ใบเบิกของสโตร์ (Store Requisition) — กติกาทางธุรกิจ
+title: ใบเบิกของสโตร์ (Store Requisition) — Business Rules
 description: กฎ validation, calculation, authorization, posting และข้ามโมดูลของ store-requisition
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
 ---
 
-# ใบเบิกของสโตร์ (Store Requisition) — กติกาทางธุรกิจ
+# ใบเบิกของสโตร์ (Store Requisition) — Business Rules
 
 > **At a Glance**
 > **กลุ่มของกฎ:** `SR_VAL_*` validation &nbsp;·&nbsp; `SR_AUTH_*` permission &nbsp;·&nbsp; `SR_CALC_*` calc &nbsp;·&nbsp; `SR_POST_*` posting &nbsp;·&nbsp; `SR_XMOD_*` cross-module

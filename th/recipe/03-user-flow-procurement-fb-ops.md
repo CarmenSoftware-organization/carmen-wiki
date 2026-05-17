@@ -1,5 +1,5 @@
 ---
-title: สูตรอาหาร (Recipe) — User Flow — Procurement / F&B Ops
+title: สูตรอาหาร (Recipe) — User Flow — Procurement F&B Ops
 description: flow ของ Procurement และ F&B Operations Manager ในโมดูลสูตร — ขนาด PO จาก demand สูตร ตรวจสอบการมีอยู่ของวัตถุดิบ อนุมัติ menu-item linkage เซ็นอนุมัติ menu engineering
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
 ---
 
-# สูตรอาหาร (Recipe) — User Flow — Procurement / F&B Ops
+# สูตรอาหาร (Recipe) — User Flow — Procurement F&B Ops
 
 > **At a Glance**
 > **Persona:** Procurement Department + F&B Operations Manager &nbsp;·&nbsp; **โมดูล:** [[recipe]] &nbsp;·&nbsp; **ขั้นตอน workflow:** off-path — กลยุทธ์ต้นน้ำ (approve menu-item linkage) + การซื้อปลายน้ำ (ขนาด PO) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** อ่านสูตร, approve-menu-link (F&B Ops), ยกคำขอทดแทน (Procurement)

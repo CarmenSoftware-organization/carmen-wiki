@@ -1,5 +1,5 @@
 ---
-title: ใบขอซื้อ — Test Scenarios — Approver (Purchase Request — Test Scenarios — Approver)
+title: ใบขอซื้อ (Purchase Request) — Test Scenarios — Approver
 description: Test case ของ Approver (happy path, permission, validation, edge case) สำหรับโมดูล purchase-request
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
-# ใบขอซื้อ — Test Scenarios — Approver (Purchase Request — Test Scenarios — Approver)
+# ใบขอซื้อ (Purchase Request) — Test Scenarios — Approver
 
 > **At a Glance**
 > **Persona:** Approver (Department Head, Budget Controller, Finance Officer / Manager) &nbsp;·&nbsp; **โมดูล:** [[purchase-request]] &nbsp;·&nbsp; **Scenario:** ~33

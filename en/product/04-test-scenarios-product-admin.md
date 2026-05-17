@@ -1,5 +1,5 @@
 ---
-title: Product — Test Scenarios — Product Administrator
+title: Product — Test Scenarios — Product Admin
 description: Product Administrator's test cases (happy path, permission, validation, lifecycle, bulk, edge cases) for the product module.
 published: true
 date: 2026-05-17T11:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
 ---
 
-# Product — Test Scenarios — Product Administrator
+# Product — Test Scenarios — Product Admin
 
 > **At a Glance**
 > **Persona:** Product Administrator &nbsp;·&nbsp; **Module:** [[product]] &nbsp;·&nbsp; **Scenarios:** ~59

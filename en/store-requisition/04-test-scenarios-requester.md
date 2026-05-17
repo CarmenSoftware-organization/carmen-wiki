@@ -1,5 +1,5 @@
 ---
-title: Store Requisition (SR) — Test Scenarios — Requester
+title: Store Requisition — Test Scenarios — Requester
 description: Requester's test cases (happy path, permission, validation, edge cases) for store-requisition.
 published: true
 date: 2026-05-17T11:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
 ---
 
-# Store Requisition (SR) — Test Scenarios — Requester
+# Store Requisition — Test Scenarios — Requester
 
 > **At a Glance**
 > **Persona:** Requester (Outlet Manager at consuming destination) &nbsp;·&nbsp; **Module:** [[store-requisition]] &nbsp;·&nbsp; **Scenarios:** ~29

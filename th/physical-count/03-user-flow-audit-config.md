@@ -1,5 +1,5 @@
 ---
-title: การนับสต๊อกประจำงวด (Physical Count) — User Flow — Audit / Config
+title: การนับสต๊อกประจำงวด (Physical Count) — User Flow — Audit & Config
 description: เส้นทางของ Approver / Finance Reviewer, Auditor และ Sysadmin ผ่านวงจรชีวิตการนับสต๊อกประจำงวด
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
 ---
 
-# การนับสต๊อกประจำงวด (Physical Count) — User Flow — Audit / Config
+# การนับสต๊อกประจำงวด (Physical Count) — User Flow — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Approver / Finance Reviewer + Auditor + Sysadmin) &nbsp;·&nbsp; **โมดูล:** [[physical-count]] &nbsp;·&nbsp; **ขั้นตอน workflow:** Approver / Finance Reviewer เซ็นรับ rollup adjustment ฝั่ง downstream; Auditor สังเกตการณ์การนับขณะ in-progress และตรวจ chain count → recount → approval → adjustment → journal; Sysadmin ตั้งค่า tolerance threshold (`PHC_VAL_007`), default `enum_physical_count_costing_method`, การ map reason-code &nbsp;·&nbsp; **สิทธิ์สำคัญ:** Approver อนุมัติ rollup adjustment; Auditor read-only; Sysadmin ตั้งค่า default

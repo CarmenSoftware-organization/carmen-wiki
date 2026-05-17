@@ -1,5 +1,5 @@
 ---
-title: ใบขอซื้อ — Test Scenarios — Purchaser (Purchase Request — Test Scenarios — Purchaser)
+title: ใบขอซื้อ (Purchase Request) — Test Scenarios — Purchaser
 description: Test case ของ Purchaser (happy path, permission, validation, edge case) สำหรับโมดูล purchase-request
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
-# ใบขอซื้อ — Test Scenarios — Purchaser (Purchase Request — Test Scenarios — Purchaser)
+# ใบขอซื้อ (Purchase Request) — Test Scenarios — Purchaser
 
 > **At a Glance**
 > **Persona:** Purchaser (Procurement Officer — สะพาน PR-to-PO) &nbsp;·&nbsp; **โมดูล:** [[purchase-request]] &nbsp;·&nbsp; **Scenario:** ~33

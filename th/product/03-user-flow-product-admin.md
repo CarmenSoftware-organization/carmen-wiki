@@ -1,5 +1,5 @@
 ---
-title: สินค้า (Product) — User Flow — Product Administrator
+title: สินค้า (Product) — User Flow — Product Admin
 description: flow ของ Product Administrator ในโมดูลสินค้า — CRUD เต็มบนข้อมูลหลัก การจำแนก หน่วย การแปลง location และ vendor mapping วงจรชีวิต และ bulk import/export
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
 ---
 
-# สินค้า (Product) — User Flow — Product Administrator
+# สินค้า (Product) — User Flow — Product Admin
 
 > **At a Glance**
 > **Persona:** Product Administrator &nbsp;·&nbsp; **โมดูล:** [[product]] &nbsp;·&nbsp; **ขั้นตอน workflow:** สร้าง / แก้ `tb_product` (`active`) &nbsp;·&nbsp; ห่วงโซ่การจำแนก (category / sub-category / item-group) &nbsp;·&nbsp; หน่วยและการแปลง &nbsp;·&nbsp; location และ vendor mapping &nbsp;·&nbsp; bulk import / export &nbsp;·&nbsp; ปิดใช้ / re-activate / soft-delete / restore &nbsp;·&nbsp; ตอบ comment ขาเข้า &nbsp;·&nbsp; **สิทธิ์สำคัญ:** CRUD เต็มบนข้อมูลหลัก (`PRD_AUTH_001` / `PRD_AUTH_003` / `PRD_AUTH_004`); SoD บนการเปลี่ยน `standard_cost` เกินเกณฑ์ tenant (`PRD_AUTH_012` — Cost Controller / Finance signature ที่สอง)

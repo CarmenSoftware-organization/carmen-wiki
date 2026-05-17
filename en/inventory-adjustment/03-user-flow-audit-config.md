@@ -1,5 +1,5 @@
 ---
-title: Inventory Adjustment — User Flow — Audit / Config
+title: Inventory Adjustment — User Flow — Audit & Config
 description: Auditor and System Administrator flows within the inventory-adjustment module — audit trail inspection and configuration maintenance.
 published: true
 date: 2026-05-17T11:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
 ---
 
-# Inventory Adjustment — User Flow — Audit / Config
+# Inventory Adjustment — User Flow — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [[inventory-adjustment]] &nbsp;·&nbsp; **Workflow stages:** Off-path observers — Sysadmin owns reason-code list (`tb_adjustment_type`), thresholds, RBAC, period config; Auditor reads the full adjustment dataset including soft-deleted compensating reversals &nbsp;·&nbsp; **Key permissions:** Sysadmin configures rules and thresholds; Auditor read-only (no document state writes)

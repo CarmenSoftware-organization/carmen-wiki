@@ -1,5 +1,5 @@
 ---
-title: การสุ่มตรวจ (Spot Check) — โมเดลข้อมูล
+title: การสุ่มตรวจ (Spot Check) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูลการสุ่มตรวจ
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
 ---
 
-# การสุ่มตรวจ (Spot Check) — โมเดลข้อมูล
+# การสุ่มตรวจ (Spot Check) — Data Model
 
 > **At a Glance**
 > **ตาราง:** `tb_spot_check` &nbsp;·&nbsp; `tb_spot_check_detail` &nbsp;·&nbsp; `tb_spot_check_comment` &nbsp;·&nbsp; `tb_spot_check_detail_comment`

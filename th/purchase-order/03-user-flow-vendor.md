@@ -1,5 +1,5 @@
 ---
-title: ใบสั่งซื้อ — User Flow — Vendor
+title: ใบสั่งซื้อ (Purchase Order) — User Flow — Vendor
 description: เส้นทางผู้ใช้งานของ Vendor ภายในโมดูล purchase-order — ฝ่ายภายนอก (ไม่มี Carmen login); รับ PO ตอบรับ ส่งของ และออกใบแจ้งหนี้
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
-# ใบสั่งซื้อ — User Flow — Vendor
+# ใบสั่งซื้อ (Purchase Order) — User Flow — Vendor
 
 > **At a Glance**
 > **Persona:** Vendor (ภายนอก — ไม่มี Carmen login) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Workflow stages:** sent (จุดสัมผัส) → partial / completed / voided &nbsp;·&nbsp; **สิทธิ์สำคัญ:** ไม่มีตรง — events บันทึกโดย Purchaser / Receiver / Finance / PM แทน vendor

@@ -1,5 +1,5 @@
 ---
-title: การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios — Audit / Config
+title: การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios — Audit & Config
 description: Test case ของ Approver / Finance Reviewer, Auditor และ Sysadmin สำหรับโมดูลการนับสต๊อกประจำงวด
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
 ---
 
-# การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios — Audit / Config
+# การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Approver / Finance Reviewer + Auditor + Sysadmin) &nbsp;·&nbsp; **โมดูล:** [[physical-count]] &nbsp;·&nbsp; **Scenario:** ~30 (skeleton)

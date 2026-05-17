@@ -1,5 +1,5 @@
 ---
-title: รายการราคาผู้ขาย — Test Scenarios (Vendor Pricelist — Test Scenarios)
+title: รายการราคาผู้ขาย (Vendor Pricelist) — Test Scenarios
 description: Test case ตาม persona, scenario ข้าม persona และ E2E mapping สำหรับ vendor-pricelist
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
-# รายการราคาผู้ขาย — Test Scenarios (Vendor Pricelist — Test Scenarios)
+# รายการราคาผู้ขาย (Vendor Pricelist) — Test Scenarios
 
 > **At a Glance**
 > **โมดูล:** [[vendor-pricelist]] &nbsp;·&nbsp; **Scenario รวม:** ~12 ข้าม persona + drill-down ต่อ persona ข้ามทุก persona &nbsp;·&nbsp; **Persona ครอบคลุม:** Purchaser, Vendor, Finance, Audit / Config

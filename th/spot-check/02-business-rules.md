@@ -1,5 +1,5 @@
 ---
-title: การสุ่มตรวจ (Spot Check) — กติกาทางธุรกิจ
+title: การสุ่มตรวจ (Spot Check) — Business Rules
 description: กฎการตรวจสอบ การคำนวณ การกำหนดสิทธิ์ การ post และกฎข้ามโมดูลของการสุ่มตรวจ
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
 ---
 
-# การสุ่มตรวจ (Spot Check) — กติกาทางธุรกิจ
+# การสุ่มตรวจ (Spot Check) — Business Rules
 
 > **At a Glance**
 > **กลุ่มกฎ:** `SPC_VAL_*` validation &nbsp;·&nbsp; `SPC_AUTH_*` permission &nbsp;·&nbsp; `SPC_CALC_*` calc &nbsp;·&nbsp; `SPC_POST_*` posting &nbsp;·&nbsp; `SPC_XMOD_*` cross-module

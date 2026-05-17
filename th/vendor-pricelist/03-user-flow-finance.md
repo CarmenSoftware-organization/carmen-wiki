@@ -1,5 +1,5 @@
 ---
-title: รายการราคาผู้ขาย — User Flow — Finance (Vendor Pricelist — User Flow — Finance)
+title: รายการราคาผู้ขาย (Vendor Pricelist) — User Flow — Finance
 description: Flow ของ Finance ภายในโมดูล vendor-pricelist — การ audit variance เทียบกับ GRN/invoice ที่ post, การ validate สกุลเงิน/FX, การ sign-off multi-currency
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
-# รายการราคาผู้ขาย — User Flow — Finance (Vendor Pricelist — User Flow — Finance)
+# รายการราคาผู้ขาย (Vendor Pricelist) — User Flow — Finance
 
 > **At a Glance**
 > **Persona:** Finance Officer / AP + Finance Manager &nbsp;·&nbsp; **โมดูล:** [[vendor-pricelist]] &nbsp;·&nbsp; **Workflow stage:** off-path — multi-currency / high-value pre-activation co-approve + post-receipt variance audit &nbsp;·&nbsp; **สิทธิ์สำคัญ:** อ่านข้าม pricelist, co-approve multi-currency / high-value, audit variance GRN / invoice, ไม่มีการเขียน status โดยตรง

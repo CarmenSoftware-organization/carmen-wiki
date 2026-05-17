@@ -1,5 +1,5 @@
 ---
-title: กติกาทางธุรกิจของใบขอซื้อ (Purchase Request — Business Rules)
+title: ใบขอซื้อ (Purchase Request) — Business Rules
 description: กฎการตรวจสอบ การคำนวณ การให้สิทธิ์ และการ posting ของโมดูล purchase-request
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
-# กติกาทางธุรกิจของใบขอซื้อ (Purchase Request — Business Rules)
+# ใบขอซื้อ (Purchase Request) — Business Rules
 
 > **At a Glance**
 > **กลุ่มกฎ:** `PR_VAL_*` validation &nbsp;·&nbsp; `PR_AUTH_*` permission &nbsp;·&nbsp; `PR_CALC_*` calc &nbsp;·&nbsp; `PR_POST_*` posting

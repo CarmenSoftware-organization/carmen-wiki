@@ -1,5 +1,5 @@
 ---
-title: Inventory — Test Scenarios — Audit / Config
+title: Inventory — Test Scenarios — Audit & Config
 description: Auditor (read-only audit trail + lot recall + period-snapshot reconciliation) and System Administrator (location, costing method, adjustment types, periods, RBAC, integrations) test cases for inventory.
 published: true
 date: 2026-05-17T11:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
 ---
 
-# Inventory — Test Scenarios — Audit / Config
+# Inventory — Test Scenarios — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [[inventory]] &nbsp;·&nbsp; **Scenarios:** ~32

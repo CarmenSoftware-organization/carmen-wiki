@@ -1,5 +1,5 @@
 ---
-title: Store Requisition (SR) — User Flow — Audit / Config
+title: Store Requisition — User Flow — Audit & Config
 description: Inventory Controller, Finance, Sysadmin, and Auditor flow within the store-requisition module — oversight, configuration, period close, and post-commit signoff.
 published: true
 date: 2026-05-17T11:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
 ---
 
-# Store Requisition (SR) — User Flow — Audit / Config
+# Store Requisition — User Flow — Audit & Config
 
 > **At a Glance**
 > **Persona:** Inventory Controller + Finance + Sysadmin + Auditor &nbsp;·&nbsp; **Module:** [[store-requisition]] &nbsp;·&nbsp; **Workflow stages:** off-path — oversight, GL verification, RBAC / workflow config, pre-commit void &nbsp;·&nbsp; **Key permissions:** read audit chain, configure workflow / RBAC / thresholds, admin-void of draft / in_progress, period-close signoff

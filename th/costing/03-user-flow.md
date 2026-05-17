@@ -1,5 +1,5 @@
 ---
-title: การคำนวณต้นทุน — User Flow (Costing — User Flow)
+title: การคำนวณต้นทุน (Costing) — User Flow
 description: วงจรชีวิต cost-flow และไฟล์ flow ตาม persona สำหรับ costing
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
 ---
 
-# การคำนวณต้นทุน — User Flow
+# การคำนวณต้นทุน (Costing) — User Flow
 
 > **At a Glance**
 > **Module:** [[costing]] &nbsp;·&nbsp; **Personas:** Finance &nbsp;·&nbsp; Inventory Controller &nbsp;·&nbsp; Auditor

@@ -1,5 +1,5 @@
 ---
-title: ใบรับสินค้า (Goods Receive Note) — User Flow — Audit / Config
+title: ใบรับสินค้า (Goods Receive Note) — User Flow — Audit & Config
 description: Flow ของ Auditor (audit trail แบบ read-only) และ System Administrator (รูปแบบเลข lot, RBAC, ตั้งค่า tax/currency/reason code, integration) ของ good-receive-note
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
 ---
 
-# ใบรับสินค้า (Goods Receive Note) — User Flow — Audit / Config
+# ใบรับสินค้า (Goods Receive Note) — User Flow — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **โมดูล:** [[good-receive-note]] &nbsp;·&nbsp; **ขั้น workflow:** ผู้สังเกตการณ์นอกเส้นทาง — Sysadmin เป็นเจ้าของรูปแบบเลข lot, RBAC, tax/currency/reason code, การ wire integration; Auditor อ่านชุดข้อมูล GRN ทั้งหมดและรันคิวรี recall และ lot-trace &nbsp;·&nbsp; **สิทธิ์สำคัญ:** Sysadmin ตั้งค่ากติกา (`GRN_AUTH_001`–`GRN_AUTH_011`); Auditor read-only (ไม่มีการเขียน transaction)

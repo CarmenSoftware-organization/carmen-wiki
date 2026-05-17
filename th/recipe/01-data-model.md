@@ -1,5 +1,5 @@
 ---
-title: สูตรอาหาร (Recipe) — โมเดลข้อมูล
+title: สูตรอาหาร (Recipe) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum สำหรับโมดูลสูตรอาหาร
 published: true
 date: 2026-05-17T12:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
 ---
 
-# สูตรอาหาร (Recipe) — โมเดลข้อมูล
+# สูตรอาหาร (Recipe) — Data Model
 
 > **At a Glance**
 > **ตาราง:** `tb_recipe` &nbsp;·&nbsp; `tb_recipe_ingredient` &nbsp;·&nbsp; `tb_recipe_preparation_step` &nbsp;·&nbsp; `tb_recipe_yield_variant` &nbsp;·&nbsp; `tb_recipe_version` &nbsp;·&nbsp; `tb_recipe_pricing_history` &nbsp;·&nbsp; `tb_recipe_category` / `tb_recipe_cuisines` (master)

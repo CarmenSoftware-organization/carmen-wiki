@@ -1,5 +1,5 @@
 ---
-title: Good Receive Note (GRN) — Test Scenarios — Audit / Config
+title: Good Receive Note (GRN) — Test Scenarios — Audit & Config
 description: Auditor (read-only audit trail + lot recall) and System Administrator (lot-number format, RBAC, integration config) test cases for good-receive-note.
 published: true
 date: 2026-05-17T11:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
 ---
 
-# Good Receive Note (GRN) — Test Scenarios — Audit / Config
+# Good Receive Note (GRN) — Test Scenarios — Audit & Config
 
 > **At a Glance**
 > **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [[good-receive-note]] &nbsp;·&nbsp; **Scenarios:** ~29
