@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe)
 description: สูตรอาหาร (รายการวัตถุดิบพร้อม yield) — สะพานเชื่อมระหว่างเมนูและการใช้คลังสินค้า
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:00:36.000Z
 tags: recipe, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** สูตรการผลิตที่คิดต้นทุนและจัดเวอร์ชัน (พร้อม sub-recipe, yield, wastage, prep steps) ที่ขับเคลื่อนการใช้วัตถุดิบเชิงทฤษฎีและความแปรปรวนของ food-cost เทียบกับยอดขาย POS &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Chef / Kitchen Manager, Cost Controller, Outlet Manager, F&B Operations, Procurement &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_recipe`, `tb_recipe_ingredient`, `tb_recipe_preparation_step`, `tb_recipe_yield_variant`, `tb_recipe_version`, `tb_recipe_pricing_history` &nbsp;·&nbsp; **หน้าย่อย:** 18
+
+![สูตรอาหาร (Recipe) screen](/assets/screenshots/recipe/index.png)
 
 ## 1. ภาพรวม
 

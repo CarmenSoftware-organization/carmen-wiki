@@ -2,7 +2,7 @@
 title: PO Dashboard
 description: Purchase Order summary tiles — six-stage pipeline, pending PRs and overdue deliveries, on-time / completeness gauges, category spend, top vendors, and over-received variance flagging.
 published: true
-date: 2026-05-17T08:00:00.000Z
+date: 2026-05-17T07:00:16.000Z
 tags: dashboard, purchase-order, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **Route:** `/dashboard/po` &nbsp;·&nbsp; **For:** Purchaser &nbsp;·&nbsp; Procurement Manager &nbsp;·&nbsp; Receiver &nbsp;·&nbsp; **Status:** **Mock-data today**; live wiring pending
+
+![PO Dashboard screen](/assets/screenshots/dashboard/po.png)
 
 ## 1. What & Who
 

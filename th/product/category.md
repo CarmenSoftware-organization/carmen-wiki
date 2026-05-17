@@ -2,7 +2,7 @@
 title: หมวดหมู่สินค้า (Product Category)
 description: taxonomy สินค้าสามระดับ (หมวดหมู่ > หมวดหมู่ย่อย > กลุ่มสินค้า) ขับเคลื่อนการนำทางแคตตาล็อก การสืบทอดคุณสมบัติ ค่าความคลาดเคลื่อน และ permission filter ตามหมวดหมู่
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:00:36.000Z
 tags: product, category, taxonomy, master-data, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_product_category` → `tb_product_sub_category` → `tb_product_item_group` (**3 ระดับคงที่** ไม่ใช่ self-referential) &nbsp;·&nbsp; **Trigger:** การดูแล taxonomy &nbsp;·&nbsp; **ใช้โดย:** PR / PO / GRN / recipe / รายงาน / การกำหนดสิทธิ์ &nbsp;·&nbsp; **สรุป 1 บรรทัด:** ชั้นการจำแนกประเภทที่ขับเคลื่อนการนำทาง ค่า default ที่สืบทอดมา และค่าความคลาดเคลื่อน
+
+![หมวดหมู่สินค้า (Product Category) screen](/assets/screenshots/product/category.png)
 
 ## 1. คืออะไรและใครใช้
 

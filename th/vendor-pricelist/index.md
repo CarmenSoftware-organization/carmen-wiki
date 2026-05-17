@@ -2,7 +2,7 @@
 title: รายการราคาผู้ขาย (Vendor Pricelist)
 description: แคตตาล็อกของผู้ขายที่เก็บสินค้าพร้อมราคาที่ตกลง, หน่วย และช่วงเวลาที่มีผลใช้ — แหล่งอ้างอิงราคาของ PR/PO
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:00:36.000Z
 tags: vendor-pricelist, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** แคตตาล็อกราคาตามผู้ขายแบบมีช่วงเวลาและมี MOQ tier ที่เก็บผ่าน workflow แบบ 6-phase campaign / portal — แหล่งอ้างอิงสำหรับราคา PR / PO / GRN และ variance &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Purchaser, Purchasing Manager, Vendor (portal ภายนอก), Finance, Auditor &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_pricelist`, `tb_pricelist_detail`, `tb_request_for_pricing`, `tb_pricelist_template`, [[vendor-pricelist/request-price-list]] &nbsp;·&nbsp; **หน้าย่อย:** 13
+
+![รายการราคาผู้ขาย (Vendor Pricelist) screen](/assets/screenshots/vendor-pricelist/index.png)
 
 ## 1. ภาพรวม
 

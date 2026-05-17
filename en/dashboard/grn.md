@@ -2,7 +2,7 @@
 title: GRN Dashboard
 description: Goods Receive Note KPIs — receiving-now / received-today / MTD / YTD counts, tabbed pending PO by day-band, overdue PO with critical highlight, incomplete and over-received GRN tables, plus top vendors and category spend.
 published: true
-date: 2026-05-17T08:00:00.000Z
+date: 2026-05-17T07:00:16.000Z
 tags: dashboard, good-receive-note, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **Route:** `/dashboard/grn` &nbsp;·&nbsp; **For:** Receiver &nbsp;·&nbsp; Inventory Controller &nbsp;·&nbsp; Procurement Manager &nbsp;·&nbsp; **Status:** **Mock-data today**; live wiring pending
+
+![GRN Dashboard screen](/assets/screenshots/dashboard/grn.png)
 
 ## 1. What & Who
 

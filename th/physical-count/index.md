@@ -2,7 +2,7 @@
 title: การนับสต๊อกประจำงวด (Physical Count)
 description: การนับสต๊อกแบบเต็มทุกรายการที่สถานที่จัดเก็บตามรอบกำหนด เพื่อกระทบยอดระบบกับของจริงบนชั้น
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:00:36.000Z
 tags: physical-count, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** การนับสต๊อกแบบเต็มที่กำหนดตามรอบสำหรับทุกรายการที่สถานที่จัดเก็บ พร้อม workflow การนับซ้ำและการลงบันทึกผลต่างผ่าน inventory adjustment &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Inventory Controller (count lead), Counter / Store Keeper, Finance Reviewer, Auditor &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_physical_count_period`, `tb_physical_count`, `tb_physical_count_detail`, ตาราง comment สามระดับ, enum `enum_physical_count_*` สี่ตัว &nbsp;·&nbsp; **หน้าย่อย:** 10
+
+![การนับสต๊อกประจำงวด (Physical Count) screen](/assets/screenshots/physical-count/index.png)
 
 ## 1. ภาพรวม
 

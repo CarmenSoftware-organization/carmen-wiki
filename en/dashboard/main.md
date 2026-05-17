@@ -2,7 +2,7 @@
 title: Main Dashboard
 description: Landing dashboard surfacing top-level KPIs across PR, PO, GRN, Inventory, and SR — the single pane shown immediately after login.
 published: true
-date: 2026-05-16T18:00:00.000Z
+date: 2026-05-17T07:00:16.000Z
 tags: dashboard, landing, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **Route:** `/dashboard/main` (also from bare `/dashboard` via redirect) &nbsp;·&nbsp; **For:** Executive / Controller / HOD post-login &nbsp;·&nbsp; **Status:** Mock-data today; live wiring pending
+
+![Main Dashboard screen](/assets/screenshots/dashboard/main.png)
 
 ## 1. What & Who
 

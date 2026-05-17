@@ -2,7 +2,7 @@
 title: Equipment
 description: Kitchen equipment master — referenced from recipe preparation steps that require specific tools (sous-vide bath, deep fryer, smoker, etc.).
 published: true
-date: 2026-05-17T08:00:00.000Z
+date: 2026-05-17T07:00:16.000Z
 tags: recipe, equipment, master-data, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Chef / Product Admin &nbsp;·&nbsp; **Table:** `tb_recipe_equipment` &nbsp;·&nbsp; **Parent:** [[recipe/equipment-category]] via `category_id` &nbsp;·&nbsp; **Used by:** [[recipe]] preparation steps, fit-out checklists, maintenance dashboard &nbsp;·&nbsp; **Tracks:** specs, station, qty, usage, maintenance dates
+
+![Equipment screen](/assets/screenshots/recipe/equipment.png)
 
 ## 1. What & Who
 

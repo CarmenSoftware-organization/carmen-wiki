@@ -2,7 +2,7 @@
 title: รายงานของเสีย (Wastage Reporting)
 description: Variant เฉพาะของ stock-out สำหรับ spoilage, breakage, expiry และ theft — จัดประเภทเพื่อให้ finance วิเคราะห์รูปแบบการสูญเสียตาม reason, outlet และงวด
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:00:36.000Z
 tags: inventory-adjustment, wastage, loss, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Store Keeper (submit) &nbsp;·&nbsp; Inventory Controller (approve) &nbsp;·&nbsp; **ตาราง:** `tb_stock_out` ด้วย flavour `adjustment_type = 'wastage'` (ไม่ใช่ตารางแยก) &nbsp;·&nbsp; **Trigger:** spoilage / breakage / expiry / theft / sample &nbsp;·&nbsp; **เขียนไปยัง:** ledger เป็น `stock_out` / `adjustment_out` &nbsp;·&nbsp; **สรุปบรรทัดเดียว:** variant OUT-only ของ [[inventory-adjustment]] ด้วย reason บังคับและบัญชี GL wastage
+
+![รายงานของเสีย (Wastage Reporting) screen](/assets/screenshots/inventory-adjustment/wastage-reporting.png)
 
 ## 1. อะไร & ใคร
 

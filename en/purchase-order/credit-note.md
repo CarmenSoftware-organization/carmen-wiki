@@ -2,7 +2,7 @@
 title: Credit Note
 description: Vendor-issued credit document reversing all or part of a prior PO / GRN — adjusts AP liability and either cost-revalues the inventory layer or returns goods.
 published: true
-date: 2026-05-17T08:00:00.000Z
+date: 2026-05-17T07:00:16.000Z
 tags: purchase-order, credit-note, accounting, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Procurement / AP &nbsp;·&nbsp; **Table:** `tb_credit_note` (+ detail, comments) &nbsp;·&nbsp; **Workflow:** reuses PO-side definition &nbsp;·&nbsp; **Upstream:** [[good-receive-note]] &nbsp;·&nbsp; Post-receipt offset against a prior GRN — reverses AP and either returns goods or revalues cost.
+
+![Credit Note screen](/assets/screenshots/purchase-order/credit-note.png)
 
 ## 1. What & Who
 

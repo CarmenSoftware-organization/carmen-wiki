@@ -2,7 +2,7 @@
 title: หมวดหมู่อุปกรณ์ (Equipment Category)
 description: การจัดกลุ่มตามฟังก์ชันสำหรับอุปกรณ์ครัว — preparation, cooking, holding, refrigeration, dispense, cleaning ฯลฯ
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:00:36.000Z
 tags: recipe, equipment, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Chef / Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_recipe_equipment_category` &nbsp;·&nbsp; **รูปทรง:** แบน (ไม่มี `parent_id`) &nbsp;·&nbsp; **ลูก:** [[recipe/equipment]] ผ่าน `category_id` &nbsp;·&nbsp; **ใช้โดย:** filter ของ equipment picker, dashboard maintenance, checklist การ fit-out
+
+![หมวดหมู่อุปกรณ์ (Equipment Category) screen](/assets/screenshots/recipe/equipment-category.png)
 
 ## 1. คืออะไรและใครใช้
 

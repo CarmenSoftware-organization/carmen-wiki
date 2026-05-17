@@ -2,7 +2,7 @@
 title: My Approval
 description: Personal approval queue surfacing every PR (and related document) the current user must act on — single pane across modules.
 published: true
-date: 2026-05-17T08:00:00.000Z
+date: 2026-05-17T07:00:16.000Z
 tags: purchase-request, approval, workflow, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Any workflow approver &nbsp;·&nbsp; **Table:** *none — projection over workflow state* &nbsp;·&nbsp; **Workflow:** read-only inbox &nbsp;·&nbsp; **Upstream:** [[purchase-request]], [[purchase-order]], [[purchase-order/credit-note]] &nbsp;·&nbsp; Aggregated personal inbox of documents awaiting the signed-in user's action.
+
+![My Approval screen](/assets/screenshots/purchase-request/my-approval.png)
 
 ## 1. What & Who
 

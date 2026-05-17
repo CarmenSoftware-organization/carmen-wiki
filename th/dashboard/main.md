@@ -2,7 +2,7 @@
 title: แดชบอร์ดหลัก (Main Dashboard)
 description: หน้าแดชบอร์ดแรกที่แสดง KPI ระดับบนของ PR, PO, GRN, คลังสินค้า และ SR — หน้าเดียวที่แสดงทันทีหลังเข้าระบบ
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:00:36.000Z
 tags: dashboard, landing, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **Route:** `/dashboard/main` (เข้าจาก `/dashboard` ผ่าน redirect ก็ได้) &nbsp;·&nbsp; **สำหรับ:** Executive / Controller / HOD หลังเข้าระบบ &nbsp;·&nbsp; **สถานะ:** Mock data ในปัจจุบัน; การเชื่อมต่อข้อมูลจริงรอ wire
+
+![แดชบอร์ดหลัก (Main Dashboard) screen](/assets/screenshots/dashboard/main.png)
 
 ## 1. คืออะไรและสำหรับใคร
 

@@ -2,7 +2,7 @@
 title: หมวดหมู่สูตรอาหาร (Recipe Category)
 description: taxonomy หมวดหมู่เชิงลำดับชั้นสำหรับสูตรอาหาร — ขับเคลื่อน menu engineering, รายงาน cost-band และการนำทาง recipe library
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:00:36.000Z
 tags: recipe, category, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Chef / Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_recipe_category` &nbsp;·&nbsp; **รูปทรง:** ต้นไม้เชิงลำดับชั้น (self-FK บน `parent_id`) &nbsp;·&nbsp; **ใช้โดย:** ส่วนหัวของ [[recipe]], menu engineering, รายงาน cost-band &nbsp;·&nbsp; **Seed:** `default_cost_settings` + `default_margins` ลงในสูตรใหม่
+
+![หมวดหมู่สูตรอาหาร (Recipe Category) screen](/assets/screenshots/recipe/category.png)
 
 ## 1. คืออะไรและใครใช้
 

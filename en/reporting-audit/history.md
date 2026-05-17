@@ -2,7 +2,7 @@
 title: Report History
 description: Append-only archive of every executed report run — date, parameters, status, link to the generated artefact.
 published: true
-date: 2026-05-17T08:00:00.000Z
+date: 2026-05-17T07:00:16.000Z
 tags: reporting-audit, history, archive, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **Owner:** `micro-report` executor (read-only UI) &nbsp;·&nbsp; **Table:** `tb_report_job` &nbsp;·&nbsp; **Retention:** `expires_at` per tenant policy (artefact reaped; row kept) &nbsp;·&nbsp; **Used by:** Reports → History, Print History drawer &nbsp;·&nbsp; **Append-only audit log of every report run.**
+
+![Report History screen](/assets/screenshots/reporting-audit/history.png)
 
 ## 1. What & Who
 

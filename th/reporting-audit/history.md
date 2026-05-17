@@ -2,7 +2,7 @@
 title: ประวัติรายงาน (Report History)
 description: คลังเก็บแบบ append-only ของทุกการรันรายงานที่ execute — วันที่, parameter, สถานะ, ลิงก์ไปยัง artefact ที่สร้างขึ้น
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:00:36.000Z
 tags: reporting-audit, history, archive, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** `micro-report` executor (UI อ่านอย่างเดียว) &nbsp;·&nbsp; **ตาราง:** `tb_report_job` &nbsp;·&nbsp; **Retention:** `expires_at` ตามนโยบาย tenant (artefact ถูก reap; แถวคงไว้) &nbsp;·&nbsp; **ใช้โดย:** Reports → History, drawer Print History &nbsp;·&nbsp; **บันทึก audit แบบ append-only ของทุกการรันรายงาน**
+
+![ประวัติรายงาน (Report History) screen](/assets/screenshots/reporting-audit/history.png)
 
 ## 1. ภาพรวมและผู้ใช้งาน
 

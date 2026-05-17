@@ -2,7 +2,7 @@
 title: แดชบอร์ดใบสั่งซื้อ (PO Dashboard)
 description: tile สรุปใบสั่งซื้อ — pipeline หก stage, PR ค้างและการส่งของล่าช้า, มาตรวัด on-time / completeness, ค่าใช้จ่ายตามหมวด, top vendor และการ flag variance รับเกิน
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:00:36.000Z
 tags: dashboard, purchase-order, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **Route:** `/dashboard/po` &nbsp;·&nbsp; **สำหรับ:** Purchaser &nbsp;·&nbsp; Procurement Manager &nbsp;·&nbsp; Receiver &nbsp;·&nbsp; **สถานะ:** **ยังเป็น mock data ในปัจจุบัน**; การ wire จริงรอ
+
+![แดชบอร์ดใบสั่งซื้อ (PO Dashboard) screen](/assets/screenshots/dashboard/po.png)
 
 ## 1. คืออะไรและสำหรับใคร
 

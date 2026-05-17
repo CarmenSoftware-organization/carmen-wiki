@@ -2,7 +2,7 @@
 title: Purchase Order
 description: Formal commitment to a vendor to purchase goods at agreed prices, quantities, and delivery terms.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-17T07:00:16.000Z
 tags: purchase-order, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 > **At a Glance**
 > **Module purpose:** External vendor commitment document (`Draft` → `Sent` → `Partial`/`Fully Received` → `Closed`/`Voided`) that anchors the three-way match with GRN and invoice &nbsp;·&nbsp; **Audience:** Purchaser, Procurement Manager, Vendor, Receiver, Finance / AP, Auditor &nbsp;·&nbsp; **Key entities/tables:** `tb_purchase_order`, `tb_purchase_order_detail`, PR→PO trace fields (`prItemId`, `prNumber`), amendment activity log, [[purchase-order/credit-note]] &nbsp;·&nbsp; **Sub-pages:** 17
+
+![Purchase Order screen](/assets/screenshots/purchase-order/index.png)
 
 ## 1. Overview
 

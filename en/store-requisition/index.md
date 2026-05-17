@@ -2,7 +2,7 @@
 title: Store Requisition
 description: Internal request to draw stock from a warehouse or central store to a consuming location (kitchen, bar, outlet).
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-17T07:00:16.000Z
 tags: store-requisition, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 > **At a Glance**
 > **Module purpose:** Internal stock movement document — `Issue` (to a direct-cost destination) or `Transfer` (location-to-location) with approval workflow and three-quantity tracking (requested / approved / issued) &nbsp;·&nbsp; **Audience:** Outlet Manager / Requester, Approver, Store Keeper / Fulfiller, Receiver, Inventory Controller, Finance &nbsp;·&nbsp; **Key entities/tables:** `tb_store_requisition`, `tb_store_requisition_detail`, `StockMovement`, `JournalEntry`, `enum_doc_status`, `enum_sr_type` &nbsp;·&nbsp; **Sub-pages:** 15
+
+![Store Requisition screen](/assets/screenshots/store-requisition/index.png)
 
 ## 1. Overview
 

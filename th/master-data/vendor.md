@@ -2,7 +2,7 @@
 title: ผู้ขาย (Vendor)
 description: ผู้ขายและที่อยู่ ผู้ติดต่อ และ taxonomy ของประเภทธุรกิจ — counterparty ของทุกเอกสารจัดซื้อ
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:00:36.000Z
 tags: master-data, vendor, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_vendor`, `tb_vendor_address`, `tb_vendor_contact`, `tb_vendor_business_type` &nbsp;·&nbsp; **ใช้โดย:** PR, PO, GRN, pricelist, RFQ &nbsp;·&nbsp; ระเบียนผู้ขาย — default tax profile, credit term และ currency ลงบนเอกสารจัดซื้อ
+
+![ผู้ขาย (Vendor) screen](/assets/screenshots/master-data/vendor.png)
 
 ## 1. คืออะไร / ใครใช้
 

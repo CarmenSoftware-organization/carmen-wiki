@@ -2,7 +2,7 @@
 title: PR Dashboard
 description: Purchase Request summary tiles — pipeline by stage, sent-back/rejected lists, personal vs department spending, and the approver task queue.
 published: true
-date: 2026-05-17T08:00:00.000Z
+date: 2026-05-17T07:00:16.000Z
 tags: dashboard, purchase-request, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **Route:** `/dashboard/pr` &nbsp;·&nbsp; **For:** Requester &nbsp;·&nbsp; HOD / Approver &nbsp;·&nbsp; Procurement &nbsp;·&nbsp; **Status:** **Mock-data today**; live hooks defined but not mounted &nbsp;·&nbsp; **Scope:** Personal — the signed-in user's PRs
+
+![PR Dashboard screen](/assets/screenshots/dashboard/pr.png)
 
 ## 1. What & Who
 

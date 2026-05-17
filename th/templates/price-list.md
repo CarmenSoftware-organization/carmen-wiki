@@ -2,7 +2,7 @@
 title: เทมเพลตรายการราคา (Price List Template)
 description: template RFQ / pricelist ที่ใช้ซ้ำได้ นิยาม currency, validity, การเตือน และการ escalate — parent ของ vendor pricelist
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:00:36.000Z
 tags: templates, price-list, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Product Admin / Procurement Lead &nbsp;·&nbsp; **Table:** `tb_pricelist_template` &nbsp;·&nbsp; **ใช้โดย:** [[vendor-pricelist]] (รอบ RFQ spawn จาก template) &nbsp;·&nbsp; รูปร่างของรอบ pricelist — currency, validity, การเตือน, การ escalate
+
+![เทมเพลตรายการราคา (Price List Template) screen](/assets/screenshots/templates/price-list.png)
 
 ## 1. คืออะไรและสำหรับใคร
 

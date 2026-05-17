@@ -2,7 +2,7 @@
 title: Report
 description: Report generation pipeline — tenant-side job and schedule rows backed by platform-side templates and document-type print mappings.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-17T07:00:16.000Z
 tags: reporting-audit, report, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Sysadmin (schedules) + Platform Admin (templates, mappings) &nbsp;·&nbsp; **Table:** `tb_report_job` + `tb_report_schedule` (tenant), `tb_report_template` + `tb_print_template_mapping` (platform) &nbsp;·&nbsp; **Used by:** every "Print" button + dashboard / scheduled exports &nbsp;·&nbsp; Full report and print-layout pipeline.
+
+![Report screen](/assets/screenshots/reporting-audit/report.png)
 
 ## 1. What & Who
 

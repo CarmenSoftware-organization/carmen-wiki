@@ -2,7 +2,7 @@
 title: Purchase Request Template
 description: Reusable PR scaffold — frequently-purchased line bundles saved as templates so a Requestor can instantiate a PR with one click.
 published: true
-date: 2026-05-17T08:00:00.000Z
+date: 2026-05-17T07:00:16.000Z
 tags: templates, purchase-request, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Procurement Manager / Product Admin &nbsp;·&nbsp; **Table:** `tb_purchase_request_template` (+ detail, comments) &nbsp;·&nbsp; **Workflow:** none (config artefact) &nbsp;·&nbsp; **Used by:** [[purchase-request]] **Create PR from Template** &nbsp;·&nbsp; Reusable line-bundle scaffold cloned into a new PR on demand.
+
+![Purchase Request Template screen](/assets/screenshots/templates/purchase-request.png)
 
 ## 1. What & Who
 

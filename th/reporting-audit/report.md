@@ -2,7 +2,7 @@
 title: รายงาน (Report)
 description: pipeline การสร้างรายงาน — แถว job และ schedule ฝั่ง tenant ที่อยู่เบื้องหลังของ template และ document-type print mapping ฝั่งแพลตฟอร์ม
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:00:36.000Z
 tags: reporting-audit, report, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Sysadmin (schedule) + Platform Admin (template, mapping) &nbsp;·&nbsp; **ตาราง:** `tb_report_job` + `tb_report_schedule` (tenant), `tb_report_template` + `tb_print_template_mapping` (platform) &nbsp;·&nbsp; **ใช้โดย:** ทุกปุ่ม "Print" + dashboard / scheduled export &nbsp;·&nbsp; Pipeline เต็มของรายงานและ print layout
+
+![รายงาน (Report) screen](/assets/screenshots/reporting-audit/report.png)
 
 ## 1. ภาพรวมและผู้ใช้งาน
 

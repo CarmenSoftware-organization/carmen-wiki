@@ -13,6 +13,8 @@ dateCreated: 2026-05-15T07:48:00.000Z
 > **At a Glance**
 > **Module purpose:** Multi-level, budget-aware internal demand workflow (`Draft` → `Submitted` → `Under Review` → `Approved`/`Rejected`/`Sent Back`) that hands a vendor-allocated requirement to procurement &nbsp;·&nbsp; **Audience:** Requestor, Department Head, Budget Controller, Finance, Purchaser, Procurement Manager, Auditor &nbsp;·&nbsp; **Key entities/tables:** `tb_purchase_request`, `tb_purchase_request_detail`, approval history, pricelist allocation, [[purchase-request/my-approval]] &nbsp;·&nbsp; **Sub-pages:** 15
 
+![Purchase Request module screen](/assets/screenshots/purchase-request/index.png)
+
 ## 1. Overview
 
 A **Purchase Request (PR)** is the internal demand document raised by an operating department to authorise the procurement of goods or services before any external commitment is made to a vendor. Each PR has a header — auto-generated reference number, request and required delivery dates, PR type (General Purchase, Market List, Asset), requestor and department, job/cost code, delivery point, description and justification, currency and exchange rate — and one or more item lines that carry the product or free-text description, store location, requested and approved quantities, FOC quantity, unit of measure, estimated unit price, discount, tax treatment, computed line totals, and links to inventory and PO history. The header rolls the lines into subtotal, total discount, total tax, and grand total figures in both transaction and base currencies.

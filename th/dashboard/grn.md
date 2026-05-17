@@ -2,7 +2,7 @@
 title: แดชบอร์ดใบรับสินค้า (GRN Dashboard)
 description: KPI ของใบรับสินค้า — จำนวน receiving-now / received-today / MTD / YTD, PO ค้างตามช่วงวันแบบ tab, PO ล่าช้าพร้อมไฮไลต์วิกฤต, ตาราง GRN ไม่ครบและรับเกิน รวมถึง top vendor และค่าใช้จ่ายตามหมวด
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:00:36.000Z
 tags: dashboard, good-receive-note, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **Route:** `/dashboard/grn` &nbsp;·&nbsp; **สำหรับ:** Receiver &nbsp;·&nbsp; Inventory Controller &nbsp;·&nbsp; Procurement Manager &nbsp;·&nbsp; **สถานะ:** **ยังเป็น mock data ในปัจจุบัน**; การ wire จริงรอ
+
+![แดชบอร์ดใบรับสินค้า (GRN Dashboard) screen](/assets/screenshots/dashboard/grn.png)
 
 ## 1. คืออะไรและสำหรับใคร
 

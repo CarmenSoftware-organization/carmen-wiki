@@ -2,7 +2,7 @@
 title: Vendor
 description: Suppliers and their addresses, contacts, and business-type taxonomy — the counterparty on every procurement document.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-17T07:00:16.000Z
 tags: master-data, vendor, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Product Admin &nbsp;·&nbsp; **Tables:** `tb_vendor`, `tb_vendor_address`, `tb_vendor_contact`, `tb_vendor_business_type` &nbsp;·&nbsp; **Used by:** PR, PO, GRN, pricelist, RFQ &nbsp;·&nbsp; The supplier record — defaults tax profile, credit term, and currency onto procurement documents.
+
+![Vendor screen](/assets/screenshots/master-data/vendor.png)
 
 ## 1. What & Who
 

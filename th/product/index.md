@@ -2,7 +2,7 @@
 title: สินค้า (Product)
 description: ข้อมูลหลักของสินค้า — หมวดหมู่ หน่วยนับ คลังจัดเก็บ และการนำเข้า/ส่งออก — แคตตาล็อกที่เอกสารคลังทุกใบอ้างอิง
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:00:36.000Z
 tags: product, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** แคตตาล็อกข้อมูลหลักของสินค้า — รหัส หมวดหมู่ หน่วยฐาน/หน่วยสั่งซื้อ/หน่วยสูตรอาหารพร้อมการแปลงหน่วย การจับคู่กับคลังจัดเก็บ สารก่อภูมิแพ้ ตัวแปร และการนำเข้า/ส่งออกเป็นชุด &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Product Administrator, Purchaser, Store Keeper &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_product`, `tb_product_category`, `tb_product_unit_conversion`, `tb_product_location`, `tb_product_variant` &nbsp;·&nbsp; **หน้าย่อย:** 11
+
+![สินค้า (Product) screen](/assets/screenshots/product/index.png)
 
 ## 1. ภาพรวม
 

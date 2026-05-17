@@ -2,7 +2,7 @@
 title: แดชบอร์ดใบเบิกของสโตร์ (SR Dashboard)
 description: ห้องนักบินใบเบิกของสโตร์ — pipeline สี่ stage, รายการ send-back / reject, ตารางรออนุมัติแบ่งช่วงเวลา, กราฟการบริโภคส่วนตัวเทียบกับแผนก, SR รอรับ และทางลัด template
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:00:36.000Z
 tags: dashboard, store-requisition, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **Route:** `/dashboard/sr` &nbsp;·&nbsp; **สำหรับ:** Requester / Store Staff &nbsp;·&nbsp; HOD / Approver &nbsp;·&nbsp; Dept Manager &nbsp;·&nbsp; **สถานะ:** **ยังเป็น mock data ในปัจจุบัน**; การ wire จริงรอ
+
+![แดชบอร์ดใบเบิกของสโตร์ (SR Dashboard) screen](/assets/screenshots/dashboard/sr.png)
 
 ## 1. คืออะไรและสำหรับใคร
 

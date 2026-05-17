@@ -2,7 +2,7 @@
 title: แดชบอร์ดคลังสินค้า (Inventory Dashboard)
 description: ห้องนักบินของฝ่ายปฏิบัติการคลังสินค้า — pipeline สถานะ, ตารางสต๊อกเคลื่อนไหวช้า / เติมสต๊อก / PST กรองตาม location, มูลค่าตาม material group, การแจ้งเตือนของหมดอายุ และกราฟการบริโภคตาม location และหมวด
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:00:36.000Z
 tags: dashboard, inventory, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **Route:** `/dashboard/inventory` &nbsp;·&nbsp; **สำหรับ:** Inventory Controller &nbsp;·&nbsp; Store Manager &nbsp;·&nbsp; Finance &nbsp;·&nbsp; QA &nbsp;·&nbsp; **สถานะ:** **ยังเป็น mock data ในปัจจุบัน**; การ wire จริงรอ
+
+![แดชบอร์ดคลังสินค้า (Inventory Dashboard) screen](/assets/screenshots/dashboard/inventory.png)
 
 ## 1. คืออะไรและสำหรับใคร
 

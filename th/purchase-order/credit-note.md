@@ -2,7 +2,7 @@
 title: ใบลดหนี้ (Credit Note)
 description: เอกสารใบลดหนี้จากผู้ขายที่กลับรายการบางส่วนหรือทั้งหมดของ PO/GRN ก่อนหน้า — ปรับยอด AP และอาจคืนสินค้าหรือ revalue ต้นทุน inventory layer
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:00:36.000Z
 tags: purchase-order, credit-note, accounting, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** ฝ่ายจัดซื้อ / AP &nbsp;·&nbsp; **ตาราง:** `tb_credit_note` (+ detail, comments) &nbsp;·&nbsp; **Workflow:** ใช้นิยามเดียวกับฝั่ง PO &nbsp;·&nbsp; **เอกสารต้นทาง:** [[good-receive-note]] &nbsp;·&nbsp; การปรับยอดหลังรับของกับ GRN เดิม — กลับยอด AP และคืนสินค้าหรือ revalue ต้นทุน
+
+![ใบลดหนี้ (Credit Note) screen](/assets/screenshots/purchase-order/credit-note.png)
 
 ## 1. ภาพรวมและผู้ใช้งาน
 

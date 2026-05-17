@@ -2,7 +2,7 @@
 title: การปรับสต๊อก (Inventory Adjustment)
 description: การแก้ไขยอดสต๊อกด้วยมือ — write-off, write-on, การจัดประเภทใหม่
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:00:36.000Z
 tags: inventory-adjustment, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** การแก้ไขสต๊อกแบบควบคุม (IN / OUT) นอกเหนือจากการจัดซื้อและการบริโภค — write-off, write-on, ผลต่างการนับ, การจัดประเภทใหม่ (`Draft` → `Posted` → `Void`) &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Store Keeper, Inventory Controller, Finance, Auditor &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_inventory_adjustment`, `tb_inventory_adjustment_detail`, `InventoryStatus`, `JournalEntry`, master ของ reason-code &nbsp;·&nbsp; **หน้าย่อย:** 13
+
+![การปรับสต๊อก (Inventory Adjustment) screen](/assets/screenshots/inventory-adjustment/index.png)
 
 ## 1. ภาพรวม
 

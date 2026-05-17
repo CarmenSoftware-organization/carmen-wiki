@@ -2,7 +2,7 @@
 title: รายการอนุมัติของฉัน (My Approval)
 description: คิวอนุมัติส่วนบุคคลที่รวมเอกสารทุกใบ (PR และเอกสารที่เกี่ยวข้อง) ที่ผู้ใช้ปัจจุบันต้องดำเนินการ — รวมไว้ในหน้าจอเดียวข้ามทุกโมดูล
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-17T07:00:36.000Z
 tags: purchase-request, approval, workflow, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** ผู้อนุมัติของ workflow ใด ๆ &nbsp;·&nbsp; **ตาราง:** *ไม่มี — เป็น projection จากสถานะ workflow* &nbsp;·&nbsp; **Workflow:** กล่องขาเข้าแบบอ่านอย่างเดียว &nbsp;·&nbsp; **ต้นน้ำ:** [[purchase-request]], [[purchase-order]], [[purchase-order/credit-note]] &nbsp;·&nbsp; กล่องขาเข้าส่วนบุคคลที่รวมเอกสารทั้งหมดที่รอให้ผู้ใช้ลงนามจัดการ
+
+![รายการอนุมัติของฉัน (My Approval) screen](/assets/screenshots/purchase-request/my-approval.png)
 
 ## 1. ภาพรวมและผู้ใช้งาน
 
