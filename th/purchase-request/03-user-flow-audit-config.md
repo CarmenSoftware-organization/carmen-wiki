@@ -1,83 +1,132 @@
 ---
-title: ใบขอซื้อ — เส้นทางผู้ใช้งาน — ผู้ตรวจสอบและผู้ดูแลระบบ (Audit / Config)
-description: เส้นทางผู้ใช้งานของ Auditor (อ่านอย่างเดียว) และ System Administrator (กำหนด workflow / threshold / delegation) สำหรับโมดูล purchase-request
+title: ใบขอซื้อ — User Flow — Audit / Config (Purchase Request — User Flow — Audit / Config)
+description: เส้นทางการใช้งานของ Auditor (read-only) และ System Administrator (ตั้งค่า workflow / threshold / delegation) ในโมดูล purchase-request
 published: true
-date: 2026-05-15T09:00:00.000Z
+date: 2026-05-17T12:00:00.000Z
 tags: purchase-request, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
-# ใบขอซื้อ — เส้นทางผู้ใช้งาน — ผู้ตรวจสอบและผู้ดูแลระบบ (Audit / Config)
+# ใบขอซื้อ — User Flow — Audit / Config (Purchase Request — User Flow — Audit / Config)
+
+> **At a Glance**
+> **Persona:** Auditor (read-only) + System Administrator (config) &nbsp;·&nbsp; **โมดูล:** [[purchase-request]] &nbsp;·&nbsp; **Stage ของ workflow:** off-path — สังเกตทุกสถานะ; Sysadmin ถือ void ระดับสูง (PR_AUTH_007) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** audit/อ่านประวัติ, ตั้งค่า workflow / threshold / delegation, void ระดับสูง
+> **persona นี้ทำอะไร:** review audit trail immutable (Auditor) และเป็นเจ้าของการตั้งค่า workflow, threshold, delegation และนโยบาย (Sysadmin)
 
 ## 1. บทบาทในโมดูลนี้
 
-แกน persona **Audit / Config** รวมสองบทบาทที่แตกต่างกันแต่ทั้งคู่อยู่ **นอกเส้นทางหลักของรายการ (transactional happy path)** ของโมดูล `purchase-request` ทั้งสองบทบาทเป็นกลไกสำคัญสำหรับการกำกับดูแลและการทำงานของระบบ **Auditor (ผู้ตรวจสอบ)** เป็น persona แบบอ่านอย่างเดียวที่ตรวจสอบ activity trail ที่แก้ไขไม่ได้ของทุก PR — timeline สถานะใน `workflow_history`, log ความเห็นใน `tb_purchase_request_comment` (`PR_POST_008`), ทุกการเปลี่ยนแปลงระดับ header / line / status / vendor / pricelist ที่ถูกบันทึกเป็น system event และ snapshot ของ authorization รายstage ใน `user_action` — เพื่อยืนยันว่าเอกสารปฏิบัติตามนโยบาย, มี segregation of duties (ไม่มีผู้ใช้คนเดียวที่ทำหน้าที่ทั้ง Requestor และ Approver บน PR เดียวกัน, ไม่มี approval นอกระบบ) และ audit trail ครบถ้วนพร้อมตรวจหารอยการแก้ไขได้ Auditor **ไม่มีพื้นผิวการเขียน (write surface)** ในโมดูล: ไม่สามารถ approve, reject, send back, แก้บรรทัด, เปลี่ยน workflow หรือ void PR ได้ **System Administrator (ผู้ดูแลระบบ)** เป็น persona เชิงการตั้งค่าที่ดูแล **พื้นผิว workflow และนโยบาย** ของโมดูล — workflow stage และห่วงโซ่ `stage_role`, amount threshold ที่ขับการ route และ escalate (`PR_AUTH_005`), กฎและช่วงเวลา delegation (`PR_AUTH_006`), default รายชนิด PR (default workflow ตาม `enum_purchase_request_type`, default tax-treatment ระดับบรรทัด, นโยบายเหตุผลบังคับสำหรับ approve / reject), tax code และ default tax-inclusive/exclusive ที่ป้อนให้ `PR_CALC_002`–`PR_CALC_004`, แหล่งอัตราแลกเปลี่ยนที่ป้อน `exchange_rate` และ snapshot ของ `PR_CALC_006` รวมถึงการกำหนด user / role / business-unit ที่ตัดสินว่าใครจะเข้าไปอยู่ใน `user_action.execute[]` ของแต่ละ stage ทั้งสองบทบาทไม่ได้อยู่ใน happy path ของ request-to-PO; แต่ละบทบาทมีจุดเริ่มต้น, พื้นผิว และ exit เป็นของตัวเอง: Auditor exit ด้วย report ที่ถูกสร้างขึ้นโดยไม่เปลี่ยนสถานะ PR ส่วน Sysadmin exit ด้วยการตั้งค่าที่ถูกบันทึกซึ่งมีผลกับ PR ใหม่ในอนาคต โดยรักษา snapshot semantics ของ PR ที่อยู่ใน `in_progress` แล้ว ทั้งคู่ถูกบันทึกในไฟล์เดียวกันบนแกน persona นี้เพราะทั้งคู่อยู่นอกเส้นทางหลักของรายการและใช้ pattern เดียวกันคือ "นอกเส้นทาง เน้นการกำกับดูแล"
+แกน persona **Audit / Config** group สอง role ที่นั่ง **นอกเส้นทาง happy path** ของ transactional ของโมดูล `purchase-request` แต่จำเป็นสำหรับ governance และ operability ของมัน **Auditor** เป็น persona อ่านอย่างเดียวที่ review activity trail ที่ immutable ของ PR ทุกใบ — timeline ประวัติสถานะใน `workflow_history`, log comment ใน `tb_purchase_request_comment` (`PR_POST_008`), การเปลี่ยน header / บรรทัด / สถานะ / vendor / pricelist ทุกการเปลี่ยนที่จับเป็น system event และ snapshot การให้สิทธิ์ต่อ stage ใน `user_action` — และ verify ว่าเอกสารปฏิบัติตามนโยบาย, segregation of duties ได้รับการเคารพ (ไม่มีผู้ใช้เดียวทำหน้าที่ทั้ง Requestor และ Approver บน PR เดียวกัน, ไม่มีการอนุมัตินอก band) และ audit trail สมบูรณ์และตรวจจับการแทรกแซงได้ Auditor **ไม่มี write surface** ในโมดูล: พวกเขา approve, reject, send back, แก้บรรทัด, เปลี่ยน workflow หรือ void PR ไม่ได้ **System Administrator** เป็น persona configuration ที่เป็นเจ้าของ **surface workflow และนโยบาย** สำหรับโมดูล — stage ของ workflow และ chain `stage_role`, threshold มูลค่าที่ขับ routing และ escalation (`PR_AUTH_005`), กฎ delegation และหน้าต่าง (`PR_AUTH_006`), default ต่อประเภท PR (workflow default ต่อ `enum_purchase_request_type`, default tax-treatment ระดับบรรทัด, default นโยบายเหตุผล mandatory ของ approve / reject), tax code และ default tax-inclusive/exclusive ที่ consume โดย `PR_CALC_002`–`PR_CALC_004`, แหล่งอัตราสกุลเงินที่ feed `exchange_rate` และ snapshot `PR_CALC_006` และ assignment ผู้ใช้ / role / business-unit ที่กำหนดว่าใครลงใน `user_action.execute[]` ที่แต่ละ stage ไม่มี role ใดอยู่บนเส้นทาง happy ของ request-to-PO; แต่ละ role มีจุดเริ่มต้นของตัวเอง, surface ของตัวเอง และ semantic จุดออกของตัวเอง: Auditor ออกผ่าน report ที่ generate โดยไม่มีการเปลี่ยนสถานะ PR, Sysadmin ออกผ่าน configuration ที่ save ที่มีผลกับ PR อนาคตในขณะที่รักษา semantic snapshot สำหรับ PR ที่อยู่ใน `in_progress` แล้ว คู่นี้ถูกบันทึกที่นี่บนแกน persona เดียวเพราะทั้งสอง role peripheral ต่อ flow transactional และ share pattern ทั่วไป "off-path, governance-oriented"
 
-## 2. จุดเริ่มต้นและเส้นทางหลัก
+### ตำแหน่งเทียบกับ flow transactional (ผู้สังเกต off-path)
 
-### เส้นทาง Auditor
+```mermaid
+graph LR
+    subgraph transactional["Transactional Happy Path"]
+        draft(("draft")) --> inprog(("in_progress"))
+        inprog --> approved(("approved"))
+        approved --> completed(("completed"))
+        inprog --> cancelled(("cancelled"))
+    end
+    auditor["Auditor<br/>(read-only)"]:::audit -.->|"Reads"| draft
+    auditor -.->|"Reads"| inprog
+    auditor -.->|"Reads"| approved
+    auditor -.->|"Reads"| completed
+    auditor -.->|"Reads"| cancelled
+    sysadmin["System Administrator<br/>(config + elevated void)"]:::cfg -.->|"Configures workflow / threshold"| transactional
+    sysadmin -.->|"Void (PR_AUTH_007)"| voided(("voided"))
+    classDef audit fill:#eab308,color:#000,stroke:#eab308;
+    classDef cfg fill:#7c3aed,color:#fff,stroke:#7c3aed;
+```
 
-**จุดเริ่มต้น:** Sidebar → workspace **Audit** → **PR Activity Queries** (หรือเมื่อเริ่มจากเอกสารที่รู้แล้ว: Sidebar → โมดูล **Purchase Request** → เปิด PR → tab **Activity Log**) Auditor เริ่มที่หน้า query builder ที่ scope อยู่กับ document family `purchase-request` ไม่ใช่ที่คิว My Approvals / My PRs ที่ persona เชิงรายการใช้
+### ตารางสิทธิ์ — Action × Sub-persona (Audit / Config)
 
-**เส้นทางหลัก (happy path — Auditor):**
+สอง sub-persona มีสิทธิ์ที่เสริมกันโดยไม่ทับซ้อน Auditor สังเกตและรายงาน; Sysadmin ตั้งค่าและ (ในกรณีพิเศษ) void ทั้งสองไม่มีส่วนใน approve / send-back / reject
 
-1. จาก **Audit → PR Activity Queries** เลือก template ของ audit query (เช่น "All PRs voided in period", "All send-backs by stage", "All split-rejects", "Threshold escalations", "Delegations exercised", "All status transitions for a PR") หรือสร้าง query แบบเฉพาะกิจกับ `workflow_history`, `tb_purchase_request_comment` และ snapshot ของ header / detail
-2. ใส่ **filter**: ช่วงวัน (`pr_date`, `last_action_at` หรือ `created_at`), แผนก / business unit, ผู้ร้องขอ, ผู้อนุมัติ / ผู้ได้รับมอบหมาย, ค่า `pr_status`, `enum_purchase_request_type`, band ของ `base_total_amount` และ flag การฟัง threshold filter chip ปรากฏเหนือตารางผลลัพธ์; filter ว่างเปล่าจะถูกปฏิเสธเพื่อกัน scan ที่ไม่มีขอบเขต
-3. ตรวจ **ผลลัพธ์ที่ได้**: แต่ละแถวคือหนึ่ง PR (หรือหนึ่ง event ขึ้นกับลักษณะ query) พร้อม `pr_no`, ผู้ร้องขอ, สถานะปัจจุบัน, action ล่าสุด, ผู้ดำเนินการล่าสุด และข้อเท็จจริงเชิง audit ที่เกี่ยวข้อง (เช่น เหตุผล void, hop ของ send-back, จำนวนบรรทัดที่ split-reject) เรียงตามคอลัมน์ใด ๆ; คลิกที่แถวเพื่อ drill เข้า **activity trail ทั้งหมด** ของ PR นั้น
-4. ในหน้าผลลัพธ์ drill-down เดิน **timeline ของสถานะ** ตั้งแต่ `created_at` จนถึงสถานะปัจจุบัน: ทุกแถวใน `workflow_history` (เข้า stage, ผ่าน stage, ใครเป็นผู้ทำ พร้อมความเห็นใด), ทุก entry ใน `tb_purchase_request_comment` (ความเห็นผู้ใช้และความเห็น `type = system` ที่บันทึก action ที่เกิดจากกฎ), การตัดสินรายบรรทัด (`current_stage_status` ของแต่ละบรรทัด) และทุก snapshot reference (snapshot ของ vendor / pricelist / exchange-rate ที่ถ่ายเมื่อ submit และเมื่ออนุมัติ ตาม `PR_CALC_006`) ยืนยันว่า trail ต่อเนื่อง (ไม่มีช่องว่าง, ไม่มี timestamp ที่ผิดลำดับ) และทุกการเปลี่ยนสถานะมีทั้งผู้ดำเนินการและเหตุผลในกรณีที่บังคับ
-5. หากพบความผิดปกติ (เช่น approval ที่บันทึกจากผู้ใช้ที่ไม่ได้อยู่ใน `user_action.execute[]` ของ stage นั้น, void โดยไม่มี comment เหตุผล, ผู้ได้รับมอบหมาย act นอกช่วงเวลามอบหมาย) ให้ **flag** PR ในแฟ้มคดี audit พร้อม note การ flag **ไม่** เปลี่ยนแปลง PR — มันเขียนเฉพาะใน store ฝั่ง audit เท่านั้น
-6. **Export report** เป็น CSV / PDF สำหรับช่วงเวลาที่กำหนดหรือสำหรับแฟ้มคดี การ export ฟิลด์ที่อ่อนไหว (เช่น ชื่อผู้ร้องขอ, ข้อความ justification เต็ม, payload ของไฟล์แนบ) ต้องการการอนุมัติชั้นที่สองตามนโยบาย data-export ที่อธิบายใน [02-business-rules.th.md](./02-business-rules.th.md) หัวข้อ 4 — Auditor ส่งคำขอ export และผู้อนุมัติการ export ปล่อยให้ดำเนินการ report ที่ export ออกมาและบันทึกการอนุมัติเองก็เป็นวัตถุ audit
+| Action | Auditor | System Administrator |
+|---|---|---|
+| อ่าน `workflow_history` / `tb_purchase_request_comment` | ✅ | ✅ |
+| อ่าน header / บรรทัด / snapshot (vendor / pricelist / exchange rate) | ✅ | ✅ |
+| สร้าง audit query แบบ ad-hoc (filter) | ✅ | ✅ |
+| Flag PR ใน audit case file (ฝั่ง audit เท่านั้น) | ✅ | ❌ |
+| Export report (CSV / PDF) — ฟิลด์ที่ sensitive ต้อง export-approver | ✅ | ✅ |
+| แก้ stage ของ workflow / chain `stage_role` | ❌ | ✅ |
+| แก้ amount threshold (`PR_AUTH_005`) | ❌ | ✅ |
+| แก้กฎ delegation / window (`PR_AUTH_006`) | ❌ | ✅ |
+| Assign / remove ผู้ใช้จาก `user_action.execute[]` | ❌ | ✅ |
+| แก้ default ของประเภท PR / tax code / อัตราสกุลเงิน | ❌ | ✅ |
+| Save configuration ด้วย `effective_from` (snapshot สำหรับ PR กลาง flow) | ❌ | ✅ |
+| Roll back configuration ไป version ก่อน | ❌ | ✅ |
+| Void PR กลาง flow (`PR_AUTH_007`, `PR_POST_006`) | ❌ | ✅ |
+| แก้ header / บรรทัด / vendor / pricing ของ PR | ❌ | ❌ |
+| Approve / Reject / Send-back / Split-Reject | ❌ | ❌ |
 
-### เส้นทาง System Administrator
+> ℹ️ **Auditor → Sysadmin escalation:** เมื่อ audit finding ต้องการเปลี่ยนสถานะ (เช่น void PR ที่ไม่ compliant) Auditor flag case file และ **System Administrator** ทำ void ภายใต้ `PR_AUTH_007` Auditor ไม่ทำ action เอง
 
-**จุดเริ่มต้น:** Sidebar → workspace **Configuration** → **PR Workflow Settings** (สำหรับ stage, threshold, delegation), **PR Type Defaults** (สำหรับ default ของ `enum_purchase_request_type` และ default tax-treatment), **Tax Codes**, **Currency Rates** หรือ **Users & Roles** (สำหรับการกำหนด `user_action.execute[]`) แต่ละพื้นผิวเป็นหน้าแยกภายใต้ workspace เดียวกัน
+## 2. จุดเริ่มต้นและ flow หลัก
 
-**เส้นทางหลัก (happy path — Sysadmin, การเปลี่ยน workflow / threshold / delegation):**
+### Flow ของ Auditor
 
-1. **ระบุการเปลี่ยนแปลงนโยบาย** ทริกเกอร์มาจากภายนอก — เช่น Finance ต้องการ approver มูลค่าสูงรายใหม่ใน Stage 4, การปรับโครงสร้างแผนกเปลี่ยนผู้รับผิดชอบ Stage 1, ต้องเปิดใช้ delegation ก่อนหน้าช่วงลา หรือ band ของ threshold ต้องปรับหลังการตรวจงบ เปิด ticket การเปลี่ยนแปลงและแนบเอกสารอ้างอิงนโยบาย (memo / approval) ก่อนเปิดพื้นผิวการตั้งค่า
-2. **เปิดหน้าการตั้งค่าที่เกี่ยวข้อง** สำหรับการเปลี่ยน workflow / threshold: **Configuration → PR Workflow Settings** → เลือกแถว workflow (รายต่อ business unit / รายต่อชนิด PR) → เปิด stage editor สำหรับ delegation: **Configuration → Delegation Rules** → เลือกผู้ใช้ที่จะมอบหมาย → กำหนดผู้ได้รับและช่วงเวลา สำหรับ default รายชนิด PR: **Configuration → PR Type Defaults**
-3. **ปรับการตั้งค่า** ใน editor แบบ staged: เพิ่ม / ลบ / จัดลำดับ stage, เปลี่ยน `stage_role` ของ stage (`approve`, `purchase`, `review`), assign หรือถอนผู้ใช้ออกจาก `user_action.execute[]`, แก้ amount threshold ที่ทริกเกอร์การ escalate ไปยัง stage `purchase` ตาม `PR_AUTH_005`, ตั้งช่วงเวลา delegation (`start_at`, `end_at`, ผู้ได้รับ, scope ตาม `PR_AUTH_006`) หรือเปลี่ยน default workflow / tax treatment ของชนิด PR ทุกการแก้ไขสะสมอยู่ใน draft แบบ pending; ไม่มีอะไร persist จนกว่าจะ Save
-4. **Preview ผลกระทบ** หน้าการตั้งค่าแสดง side-panel สรุป: จำนวน PR ที่ active ซึ่งจะคงเดินภายใต้ snapshot เดิม, จำนวน PR ใหม่ที่จะใช้กฎใหม่ (ประมาณการจากอัตราการสร้างล่าสุด), stage ที่เปลี่ยน และผู้ใช้ที่ถูกเพิ่ม / ถอนจาก `user_action.execute[]` สำหรับการเปลี่ยน threshold panel แสดงการเลื่อน band และจำนวน PR ล่าสุดที่จะ route ต่างจากเดิม Sysadmin สามารถแก้หรือทิ้ง draft ในขั้นตอนนี้
-5. **บันทึกการตั้งค่า** ระบบเขียนการตั้งค่าใหม่พร้อม timestamp `effective_from`, บันทึกการเปลี่ยนแปลงใน configuration audit log ฝั่งระบบ (แยกจาก `tb_purchase_request_comment`) และ notify ประชากรผู้ใช้ที่ได้รับผลกระทบ (เช่น approver ที่เพิ่งถูกเพิ่ม, ผู้มอบหมายและผู้ได้รับมอบหมาย) PR ที่อยู่ใน `in_progress` แล้วจะคง **snapshot** ของการตั้งค่าเดิม — ห่วงโซ่ stage, band ของ threshold และ context ของภาษี / สกุลเงินที่ใช้ตอน submit ถูก pin ไว้ตาม snapshot semantics ที่อธิบายใน [02-business-rules.th.md](./02-business-rules.th.md) หัวข้อ 6 PR ใหม่ที่สร้างหลัง `effective_from` ใช้การตั้งค่าใหม่
-6. **ตรวจสอบการเปิดใช้** เลือก PR test ตัวแทน (หรือจำลองในสภาพแวดล้อม non-production) แล้วยืนยันว่าการ route ใหม่ทำงานตามที่คาด: stage, พฤติกรรมการฟัง threshold และการสืบทอดของผู้ได้รับมอบหมาย หากพบ regression ให้ rollback โดยเปิดการตั้งค่ากลับและย้อนไปยังเวอร์ชันก่อนหน้า (ทุกเวอร์ชันที่บันทึกถูกเก็บใน configuration audit log)
-7. **ปิด ticket การเปลี่ยนแปลง** พร้อม link ไปยัง configuration audit log จากจุดนี้การเปลี่ยนแปลงมีผลกับ PR ใหม่; บทบาทของ Sysadmin จบจนกว่าจะมีการเปลี่ยนนโยบายครั้งต่อไป
+**จุดเริ่มต้น:** Sidebar → workspace **Audit** → **PR Activity Queries** (หรือเมื่อเริ่มจากเอกสารที่รู้ Sidebar → โมดูล **Purchase Request** → เปิด PR → แท็บ **Activity Log**) Auditor ลงบน surface query-builder scope กับ document family `purchase-request` ไม่ใช่บนคิว My Approvals / My PRs ที่ persona transactional ใช้
 
-## 3. สาขาการตัดสินใจ
+**Flow หลัก (happy path — Auditor):**
 
-- **ถ้า Auditor พบการละเมิดนโยบาย** (เช่น approval โดยผู้ใช้ที่ไม่ได้อยู่ใน `user_action.execute[]`, void โดยไม่มีเหตุผลบังคับ, ผู้ได้รับมอบหมาย act นอกช่วง `PR_AUTH_006`): Auditor **ไม่สามารถ act กับ PR ในโมดูลได้** (read-only) ต้อง escalate ผ่านแฟ้มคดี audit — flag PR, แนบหลักฐาน (screenshot ของ timeline, ส่วนคัดจาก comment log, diff ของเวอร์ชันการตั้งค่า) แล้วส่งคดีให้ business owner ที่รับผิดชอบ (Finance, Compliance หรือ department head ที่เกี่ยวข้อง) เพื่อแก้ไขนอกระบบ หากการแก้ไขต้องการ action ระดับระบบ (เช่น void เพื่อยุติ PR ที่ไม่เป็นไปตามนโยบาย) action นั้นถูกดำเนินการโดย System Administrator ภายใต้ `PR_AUTH_007` ไม่ใช่โดย Auditor
-- **ถ้า Sysadmin พยายามเปลี่ยนการตั้งค่าขณะที่ PR ที่กำลังเดินอยู่ขึ้นกับกฎปัจจุบัน**: การบันทึกได้รับอนุญาต (กฎไม่ถูก lock จาก PR ที่กำลังเดิน) แต่การเปลี่ยนแปลง **ไม่** retroactive กับ PR ที่กำลังเดิน หน้าการตั้งค่าแสดงจำนวน PR ที่ `in_progress` ซึ่งได้รับผลกระทบใน panel preview; PR เหล่านั้นเดินต่อภายใต้ snapshot ของตนตาม [02-business-rules.th.md](./02-business-rules.th.md) หัวข้อ 6 และจะรับกฎใหม่เฉพาะกรณีที่ถูกส่งกลับเป็น `draft` แล้ว resubmit (กรณีนั้นการ resubmit ใช้การตั้งค่าใหม่) พฤติกรรม snapshot นี้เป็นแบบเดียวกับที่ปกป้องอัตราแลกเปลี่ยน `PR_CALC_006`
-- **ถ้า delegation ถูกเปิดใช้ในช่วงเวลาที่มีผลทันที**: ผู้ได้รับมอบหมายสืบทอด membership ใน `user_action.execute[]` ของผู้มอบหมายตาม scope ของช่วงเวลา (ตาม `PR_AUTH_006`) notification ของ PR ใด ๆ ที่กำลังอยู่ที่ stage ของผู้มอบหมายจะถูก re-fan ไปยังผู้ได้รับ เมื่อช่วงเวลามอบหมายหมดอายุ (ถึง `end_at`) สิทธิ์ที่สืบทอดของผู้ได้รับจะหลุดอัตโนมัติ; PR ที่ยังอยู่ที่ stage นั้นเดินต่อด้วย `user_action.execute[]` ของผู้ใช้ต้นเดิม (ซึ่งไม่เคยเปลี่ยน) — ไม่ต้อง re-route PR
-- **ถ้าช่วงเวลา delegation ถูกตั้งให้ `start_at` ในอนาคต**: ผู้ได้รับยังไม่ได้สิทธิ์ใด ๆ จนกว่าจะถึง `start_at` ระบบ schedule event เปิดใช้; เมื่อถึง `start_at` delegation เปิดและ notification เริ่ม re-fan Sysadmin สามารถถอนการ delegation ที่ pending ก่อนเปิดใช้ได้ทุกเมื่อโดยไม่มี side effect
-- **ถ้า Auditor ขอ export ที่รวมฟิลด์อ่อนไหว** (ชื่อเต็มผู้ร้องขอ, ข้อความ justification เต็ม, snapshot ของ pricelist vendor, payload ไฟล์แนบ): การ export เข้าสู่สถานะ **pending** และต้องได้รับการอนุมัติจากผู้อนุมัติ data-export ตามนโยบาย Auditor ไม่สามารถข้ามขั้นตอนนี้ ขณะที่ pending การ export มองไม่เห็นนอกแฟ้มคดี audit; เมื่ออนุมัติ การ export ถูก materialise และ link ดาวน์โหลดถูกบันทึกในแฟ้มคดีพร้อมตัวตนของผู้อนุมัติ
-- **ถ้าการเปลี่ยนแปลงของ Sysadmin block PR ที่กำลังเดิน** (เช่น การตั้งค่าถอนผู้ใช้ออกจาก `user_action.execute[]` ของ stage ที่ผู้ใช้นั้นเป็นคนเดียวที่ assign อยู่ และ PR กำลังรออยู่ที่ stage นั้นโดยไม่มี approver อื่น): panel preview จะ flag การ deadlock ในขั้นตอนที่ 4 หาก Sysadmin ยังบันทึก PR ที่ได้รับผลกระทบจะ timeout ที่ stage นั้นและต้อง intervention ด้วยมือ — โดยปกติคือ delegation ครั้งเดียว (`PR_AUTH_006`) หรือ void ที่เริ่มโดย Sysadmin (`PR_AUTH_007`) — เพื่อ unblock configuration audit log บันทึกการเปลี่ยนแปลงและ warning ของ deadlock ทำให้ audit trail ชัดเจนว่าเป็นเพราะอะไร
+1. จาก **Audit → PR Activity Queries** เลือก template audit query (เช่น "All PRs voided in period", "All send-backs by stage", "All split-rejects", "Threshold escalations", "Delegations exercised", "All status transitions for a PR") หรือสร้าง ad-hoc query กับ `workflow_history`, `tb_purchase_request_comment` และ snapshot header / detail
+2. Apply **filter**: ช่วงวันที่ (`pr_date`, `last_action_at` หรือ `created_at`), แผนก / business unit, requestor, ผู้อนุมัติ / delegate, ค่า `pr_status`, `enum_purchase_request_type`, แถบ `base_total_amount` และ flag threshold-breach Chip filter ปรากฏเหนือตาราง result; filter set ว่างถูกปฏิเสธเพื่อกัน unbounded scan
+3. Review **result set**: แต่ละแถวเป็น PR หนึ่งใบ (หรือ event หนึ่ง, ขึ้นกับ shape query) พร้อม `pr_no`, requestor, สถานะปัจจุบัน, action ล่าสุด, ผู้ทำล่าสุด และ audit fact ที่เกี่ยวข้องสำหรับ query (เช่นเหตุผล void, ระยะ send-back hop, จำนวนบรรทัด split-reject) Sort ตามคอลัมน์ใด; คลิกเข้าแถวเพื่อเจาะลงไป **trail activity เต็ม** สำหรับ PR นั้น
+4. ที่หน้า drill-down เดิน **timeline สถานะ** จาก `created_at` ถึงสถานะปัจจุบัน: ทุกแถว `workflow_history` (stage ที่เข้า, stage ที่ผ่าน, โดยใคร, ด้วย comment ใด), ทุก entry `tb_purchase_request_comment` (user comment และ comment `type = system` ที่จับ action จากกฎ), การตัดสินใจระดับบรรทัด (`current_stage_status` ต่อบรรทัด) และ reference snapshot ทุกตัว (snapshot vendor / pricelist / exchange-rate ที่ถูกถ่ายตอน submit และตอน approval ตาม `PR_CALC_006`) Verify ว่า trail contiguous (ไม่มีช่องว่าง, ไม่มี timestamp out-of-order) และทุก state transition มีทั้งผู้ทำและเหตุผลที่จำเป็น
+5. ถ้าพบ anomaly (เช่น approval บันทึกนอก `user_action.execute[]` ของ stage, void โดยไม่มี comment เหตุผล, delegate ทำงานนอก window ของพวกเขา) **flag** PR ใน audit case file พร้อม note การ flag **ไม่** เปลี่ยน PR — มันเขียนไปยัง store ฝั่ง audit เท่านั้น
+6. **Export report** เป็น CSV / PDF สำหรับงวดหรือสำหรับ case file Export ของฟิลด์ sensitive (เช่นชื่อ requestor, ข้อความ free-text เต็ม, payload attachment) ต้องการการอนุมัติทุติยภูมิตามนโยบาย data-export ที่อธิบายใน [02-business-rules.md](./02-business-rules.md) Section 4 — Auditor submit คำขอ export และ export-approver ปล่อยมัน Report ที่ export และ record การอนุมัติเองเป็น audit object
 
-## 4. จุดสิ้นสุด / การส่งต่อ
+### Flow ของ System Administrator
 
-แกน persona Audit / Config exit ในรูปแบบใดรูปแบบหนึ่งต่อไปนี้ โดยขึ้นกับว่าบทบาทใด act:
+**จุดเริ่มต้น:** Sidebar → workspace **Configuration** → **PR Workflow Settings** (สำหรับ stage, threshold, delegation), **PR Type Defaults** (สำหรับ default `enum_purchase_request_type` และ default tax-treatment), **Tax Codes**, **Currency Rates** หรือ **Users & Roles** (สำหรับ assignment `user_action.execute[]`) แต่ละ surface เป็นหน้าแยกใต้ workspace เดียวกัน
 
-- **Auditor — report ถูกสร้าง** ผลของ query, trail ของ drill-down หรือแฟ้มคดีถูก materialise (ตรวจบนหน้าจอหรือ export เป็น CSV / PDF หลังขั้นตอนการอนุมัติการ export) **ไม่มีการเปลี่ยนสถานะ PR**: `pr_status`, `workflow_current_stage`, `workflow_history`, `tb_purchase_request_comment` และทุก snapshot บนเอกสารคงสภาพเดิมตามก่อนที่ Auditor จะเปิดหน้า การส่งต่อของ Auditor เป็น **out-of-band** ไปยัง business owner ใดก็ตาม (Finance, Compliance, department head หรือ System Administrator) ที่รับผิดชอบการแก้ไขที่ audit เปิดเผย หากแฟ้มคดีของ Auditor แนะนำให้ void, System Administrator ดำเนินการ void ภายใต้ `PR_AUTH_007`
-- **Auditor — แฟ้มคดีปิดโดยไม่ต้อง action** เมื่อ query / drill-down ของ audit ไม่พบความผิดปกติ Auditor ปิดแฟ้มคดีพร้อม note "no findings" ไม่มีการเปลี่ยนสถานะ PR; แฟ้มคดีเองถูกเก็บไว้เป็นหลักฐานว่าช่วงเวลา / scope นั้นถูกตรวจสอบแล้ว
-- **Sysadmin — การตั้งค่าถูกบันทึก** เวอร์ชันใหม่ของการตั้งค่า (workflow stage, threshold, กฎ delegation, default ชนิด PR, tax code, อัตราแลกเปลี่ยน หรือการกำหนด user-role) ถูกเขียนพร้อม timestamp `effective_from` และบันทึกใน configuration audit log **PR ที่สร้างหลัง `effective_from`** ใช้การตั้งค่าใหม่; **PR ที่อยู่ใน `in_progress` แล้ว** คงการตั้งค่าตาม snapshot ตาม [02-business-rules.th.md](./02-business-rules.th.md) หัวข้อ 6 — รวมถึงห่วงโซ่ stage, band ของ threshold, tax treatment และ semantics อัตราแลกเปลี่ยนของ `PR_CALC_006` notification ไปยังประชากรผู้ใช้ที่ได้รับผลกระทบยิงเมื่อบันทึก การส่งต่อเป็น **forward in time** — Requestor คนถัดไปที่สร้าง PR เห็นพฤติกรรมใหม่อัตโนมัติ
-- **Sysadmin — void บน PR ที่กำลังเดิน (`PR_AUTH_007`)** แตกต่างจากการบันทึกการตั้งค่า: เมื่อ Sysadmin ใช้สิทธิ์ void ที่ยกระดับเพื่อยกเลิก PR ฉบับเดียว (โดยทั่วไปหลังจากแฟ้มคดี Auditor), `pr_status` เปลี่ยนจาก `in_progress` (หรือ `approved`) เป็น `voided` (terminal); soft (หรือ hard) commitment ถูกปลด; เหตุผลบังคับถูกบันทึกใน `tb_purchase_request_comment` (`PR_POST_006`); และ `workflow_history` บันทึก void การส่งต่อไปยัง **Auditor** เพื่อตรวจสอบย้อนหลังและไปยัง **ผู้ร้องขอ** ที่เห็นสถานะ voided บน dashboard **My PRs** ไม่มี user action เพิ่มเติมบน PR ได้
-- **Sysadmin — การตั้งค่าถูก rollback** หากการตรวจสอบในขั้นตอนที่ 6 ของเส้นทางหลักพบ regression Sysadmin ย้อนไปยังเวอร์ชันก่อนหน้าของการตั้งค่า การ rollback ก็เป็นการบันทึกการตั้งค่าด้วย `effective_from` ของตัวเอง; PR ที่สร้างระหว่างการเปลี่ยนแปลงเดิมและการ rollback ไม่ถูก re-evaluate ย้อนหลัง (snapshot semantics) แต่ PR ใหม่ที่สร้างหลัง rollback ใช้การตั้งค่าที่ย้อนกลับมา configuration audit log บันทึกทั้งการเปลี่ยนแปลงไปข้างหน้าและการ rollback รักษา trail ที่สะอาดไว้
+**Flow หลัก (happy path — Sysadmin, การเปลี่ยน workflow / threshold / delegation):**
 
-สถานะเอกสารทุกแบบของ exit ใน Audit / Config ถูกกำกับโดย `enum_purchase_request_doc_status = { draft, in_progress, voided, approved, completed, cancelled }` flow ของ Auditor ไม่เคยทำให้ PR ขยับใน enum นี้; flow การตั้งค่าของ Sysadmin ก็ไม่ขยับ PR ใน enum นี้เช่นกัน (มีผลกับ PR ในอนาคตเท่านั้น) action เดียวของ Sysadmin ที่เปลี่ยนสถานะ PR คือการ void ที่ยกระดับภายใต้ `PR_AUTH_007` และถือเป็นการดำเนินการแบบ exceptional ที่ทริกเกอร์โดย audit ไม่ใช่ขั้นตอนการตั้งค่าปกติ
+1. **ระบุการเปลี่ยนนโยบาย** Trigger จากภายนอก — เช่น Finance ต้องการ Stage 4 approver มูลค่าสูงใหม่, การปรับโครงสร้างแผนกเปลี่ยนว่าใครเป็นเจ้าของ Stage 1, ต้อง activate delegation สำหรับ window ลาที่จะมา หรือต้องปรับแถบ threshold หลัง budget review เปิด change ticket และ link reference นโยบาย (memo / approval) ก่อนเปิด surface configuration
+2. **เปิดหน้า configuration ที่เกี่ยวข้อง** สำหรับการเปลี่ยน workflow / threshold: **Configuration → PR Workflow Settings** → เลือกแถว workflow (ต่อ business unit / ต่อประเภท PR) → เปิด stage editor สำหรับ delegation: **Configuration → Delegation Rules** → เลือกผู้ใช้ที่ delegate, set delegate และ window สำหรับ default ประเภท PR: **Configuration → PR Type Defaults**
+3. **ปรับ setting** ใน staged editor: เพิ่ม / ลบ / จัดลำดับ stage, เปลี่ยน `stage_role` ของ stage (`approve`, `purchase`, `review`), assign หรือลบผู้ใช้จาก `user_action.execute[]`, แก้ amount threshold ที่ trigger escalation ไปยัง stage `purchase` ตาม `PR_AUTH_005`, set delegation window (`start_at`, `end_at`, delegate user, scope ตาม `PR_AUTH_006`) หรือเปลี่ยน workflow default / tax treatment ของประเภท PR ทุกการแก้สะสมใน draft configuration ที่ค้าง; ไม่มีอะไร persist จนกว่าจะ Save
+4. **Preview ผลกระทบ** หน้า configuration แสดงสรุป side-panel: จำนวน active-PR ที่จะดำเนินต่อภายใต้ snapshot เก่า, จำนวน new-PR ที่จะใช้กฎใหม่ (forecast จากอัตราการสร้างล่าสุด), stage ที่เปลี่ยน และผู้ใช้ที่เพิ่มเข้าหรือลบจาก `user_action.execute[]` สำหรับการเปลี่ยน threshold panel แสดงการเลื่อนแถบและจำนวน PR ล่าสุดที่จะถูก route ต่างออกไป Sysadmin สามารถ revise หรือทิ้ง draft ที่จุดนี้
+5. **Save configuration** ระบบเขียน configuration ใหม่ด้วย timestamp `effective_from`, บันทึกการเปลี่ยนใน configuration audit log ฝั่งระบบ (อิสระจาก `tb_purchase_request_comment`) และแจ้งกลุ่มผู้ใช้ที่ได้รับผลกระทบ (เช่น approver ที่เพิ่งเพิ่ม, ผู้ที่ delegate และผู้รับ delegate) PR ที่อยู่ใน `in_progress` แล้วยังคง **snapshot** configuration ดั้งเดิม — chain stage ของ workflow, แถบ threshold และบริบท tax / currency ที่พวกเขา submit ภายใต้ถูกตรึงตาม semantic snapshot ที่อธิบายใน [02-business-rules.md](./02-business-rules.md) Section 6 PR ใหม่ที่สร้างหลัง `effective_from` ใช้ configuration ใหม่
+6. **Verify การ activate** เลือก PR test ใหม่ตัวแทน (หรือจำลองหนึ่งใน environment ที่ไม่ใช่ production) และยืนยันว่า routing ใหม่ fire ตามที่คาด: stage, พฤติกรรม threshold breach และการสืบทอด delegate ถ้าพบ regression roll back โดยเปิด configuration ใหม่และ revert ไป version ก่อน (ทุก version ที่ save ถูกเก็บไว้ใน configuration audit log)
+7. **ปิด change ticket** ด้วย link configuration audit-log จากจุดนี้การเปลี่ยนมีผลกับ PR ใหม่; การมีส่วนร่วมของ Sysadmin จบจนกว่าจะมีการเปลี่ยนนโยบายถัดไป
+
+## 3. แขนงการตัดสินใจ
+
+- **ถ้า Auditor พบการละเมิดนโยบาย** (เช่น approval โดยผู้ใช้ที่ไม่อยู่ใน `user_action.execute[]`, void โดยไม่มีเหตุผล mandatory, delegate ทำงานนอก window `PR_AUTH_006` ของพวกเขา): Auditor **ไม่สามารถ act บน PR ในโมดูล** (read-only) Auditor escalate ผ่าน audit case file — flag PR, แนบหลักฐาน (screenshot timeline, ตัดตอน comment-log, diff version configuration) และ route case ไปยัง business owner ที่รับผิดชอบ (Finance, Compliance หรือหัวหน้าแผนกที่เกี่ยวข้อง) สำหรับการแก้ไขนอก band ถ้าการแก้ไขต้องการ action ระดับระบบ (เช่น void เพื่อยุติ PR ที่ไม่ compliant) action นั้นทำโดย System Administrator ภายใต้ `PR_AUTH_007` ไม่ใช่ Auditor
+- **ถ้า Sysadmin พยายามเปลี่ยน configuration ขณะที่ PR กลาง flow พึ่งกฎปัจจุบัน**: การ save ได้รับอนุญาต (กฎไม่ถูก lock โดย PR กลาง flow) แต่การเปลี่ยน **ไม่** re-route หรือ re-rank PR กลาง flow ที่มีอยู่ย้อนหลัง หน้า configuration แสดงจำนวน PR `in_progress` ที่ได้รับผลกระทบใน preview panel; PR เหล่านั้นดำเนินต่อภายใต้ snapshot ตาม [02-business-rules.md](./02-business-rules.md) Section 6 และจะรู้สึกถึงกฎใหม่เฉพาะถ้าถูกส่งกลับเป็น `draft` และ resubmit (ในกรณีนั้น resubmission ใช้ configuration ใหม่) นี่เป็นพฤติกรรม snapshot-preservation เดียวกันที่ปกป้องอัตราแลกเปลี่ยน `PR_CALC_006`
+- **ถ้า delegation activate สำหรับ window ทันที**: delegate สืบทอด membership `user_action.execute[]` ของผู้ที่ delegate สำหรับ scope ของ window (ตาม `PR_AUTH_006`) Notification สำหรับ PR ใด ๆ ที่นั่งอยู่ที่ stage ที่ผู้ delegate เป็นเจ้าของถูกส่งใหม่ไปยัง delegate เมื่อ window delegation หมดอายุ (`end_at` ถึง) สิทธิ์ที่ delegate สืบทอดหายอัตโนมัติ; PR ที่ยังที่ stage นั้นดำเนินต่อกับ `user_action.execute[]` ของผู้ใช้ดั้งเดิม (ที่ไม่เคยเปลี่ยน) — ไม่ต้อง re-route PR
+- **ถ้า window delegation ถูก set ด้วย `start_at` ในอนาคต**: delegate ไม่ได้อะไรจนกว่าจะถึง `start_at` ระบบ schedule activation event; ที่ `start_at` delegation go live และ notification เริ่ม fan ใหม่ Sysadmin สามารถ revoke pending delegation ใด ๆ ก่อน activation โดยไม่มี side effect
+- **ถ้า Auditor request export ที่รวมฟิลด์ sensitive** (ชื่อ requestor เต็ม, ข้อความ free-text justification เต็ม, snapshot pricelist vendor, payload attachment): export ไปสู่สถานะ **pending** และต้องการการอนุมัติจาก data-export approver ตามนโยบาย export Auditor ไม่สามารถ bypass step นี้ ขณะ pending export ไม่เห็นนอก audit case file; เมื่ออนุมัติ export ถูก materialize และ link download ถูกบันทึกใน case file พร้อม identity ของผู้อนุมัติ
+- **ถ้าการเปลี่ยนของ Sysadmin block PR กลาง flow** (เช่น configuration ลบผู้ใช้จาก `user_action.execute[]` บน stage ที่ผู้ใช้นั้นเป็นคนเดียวที่ assigned และ PR กำลังรอที่ stage นั้นโดยไม่มีผู้อนุมัติคนอื่น): preview panel flag deadlock ใน step 4 ถ้า Sysadmin save ยังไงก็ตาม PR ที่ได้รับผลกระทบจะ time out ที่ stage นั้นและต้องการ intervention ด้วยมือ — โดยทั่วไปคือ delegation one-off (`PR_AUTH_006`) หรือ void ที่ Sysadmin เริ่ม (`PR_AUTH_007`) — เพื่อปลด block Configuration audit log บันทึกการเปลี่ยนและคำเตือน deadlock เพื่อให้ audit trail ทำสาเหตุชัดเจน
+
+## 4. จุดออก / Handoff
+
+แกน persona Audit / Config ออกในรูปแบบต่อไปนี้ขึ้นกับ role ที่ลงมือ:
+
+- **Auditor — report ที่ generate** Result ของ query, trail ของ drill-down หรือ case file ถูก materialize (review บนหน้าจอหรือ export ไป CSV / PDF หลัง flow การอนุมัติ export) **ไม่มีการเปลี่ยนสถานะ PR**: `pr_status`, `workflow_current_stage`, `workflow_history`, `tb_purchase_request_comment` และทุก snapshot บนเอกสารยังคงเหมือนก่อนที่ Auditor เปิดหน้า Handoff ของ Auditor เป็นแบบ **out-of-band** ไปยัง business owner ที่รับผิดชอบ (Finance, Compliance, หัวหน้าแผนก หรือ System Administrator) สำหรับการแก้ไขใด ๆ ที่ audit surface ถ้า case file ของ Auditor แนะนำ void System Administrator ทำ void ภายใต้ `PR_AUTH_007`
+- **Auditor — case file ปิดโดยไม่มี action** เมื่อ audit query / drill-down ไม่พบ anomaly Auditor ปิด case file ด้วย note "no findings" ไม่มีการเปลี่ยนสถานะ PR; case file เองถูกเก็บไว้เป็นหลักฐานว่า period / scope ถูก audit
+- **Sysadmin — configuration ที่ save** Version ใหม่ของ configuration (stage ของ workflow, threshold, กฎ delegation, default ประเภท PR, tax code, อัตราสกุลเงิน หรือ assignment user-role) ถูกเขียนด้วย timestamp `effective_from` และบันทึกใน configuration audit log **PR ที่สร้างหลัง `effective_from`** ใช้ configuration ใหม่; **PR ที่อยู่ใน `in_progress` แล้ว** ยังคง configuration ดั้งเดิมที่ snapshot ตาม [02-business-rules.md](./02-business-rules.md) Section 6 — รวม chain stage, แถบ threshold, การจัดการภาษี และ semantic exchange-rate `PR_CALC_006` Notification ไปยังกลุ่มผู้ใช้ที่ได้รับผลกระทบ fire ตอน save Handoff คือ **forward in time** — Requestor คนถัดไปที่สร้าง PR เห็นพฤติกรรมใหม่อัตโนมัติ
+- **Sysadmin — void บน PR กลาง flow (`PR_AUTH_007`).** ต่างจาก configuration save: เมื่อ Sysadmin ใช้สิทธิ์ `void` ระดับสูงเพื่อถอน PR เดี่ยว (โดยทั่วไปตาม case file ของ Auditor) `pr_status` พลิกจาก `in_progress` (หรือ `approved`) เป็น `voided` (terminal); commitment soft (หรือ hard) ถูกปล่อย; เหตุผล mandatory ถูกจับใน `tb_purchase_request_comment` (`PR_POST_006`); และ `workflow_history` บันทึก void Handoff ไปยัง **Auditor** สำหรับ review หลังเหตุการณ์และไปยัง **Requestor** ที่เห็นสถานะ voided บน dashboard **My PRs** ของพวกเขา ไม่มี action ของผู้ใช้บน PR เพิ่มเติม
+- **Sysadmin — configuration ที่ roll back** ถ้า verification ใน step 6 ของ flow หลักพบ regression Sysadmin revert ไป version configuration ก่อนหน้า การ rollback เองเป็น configuration save ของตัวเองพร้อม `effective_from` ของตัวเอง; PR ที่สร้างระหว่างการเปลี่ยนต้นฉบับและการ rollback ไม่ถูก re-evaluate ย้อนหลัง (semantic snapshot) แต่ PR ใหม่หลัง rollback ใช้ configuration ที่ revert Configuration audit log จับทั้งการเปลี่ยน forward และ rollback รักษา trail ที่สะอาด
+
+สถานะเอกสารข้ามทุกจุดออก Audit / Config ถูก govern โดย `enum_purchase_request_doc_status = { draft, in_progress, voided, approved, completed, cancelled }` Flow ของ Auditor ไม่เคยย้าย PR ข้าม enum นี้; flow configuration ของ Sysadmin ก็ไม่เคยย้าย PR ข้าม enum (PR อนาคตเท่านั้นที่ได้รับผลกระทบ) Action เดียวของ Sysadmin ที่เปลี่ยนสถานะ PR คือ void ระดับสูงภายใต้ `PR_AUTH_007` และถือเป็น operation พิเศษที่ trigger โดย audit แทนที่จะเป็น step configuration ประจำ
 
 ## 5. แหล่งอ้างอิง
 
-- ภาพรวมหลัก: [03-user-flow.th.md](./03-user-flow.th.md)
-- กฎ authorization: [02-business-rules.th.md](./02-business-rules.th.md) หัวข้อ 4 — `PR_AUTH_002` (ผู้ดำเนินการรายstage), `PR_AUTH_005` (การ route ด้วย threshold มูลค่า), `PR_AUTH_006` (delegation), `PR_AUTH_007` (void ยกระดับ / การเปลี่ยนสถานะเฉพาะ sysadmin), `PR_AUTH_008` (`enum_stage_role` ownership)
-- กฎ posting: [02-business-rules.th.md](./02-business-rules.th.md) หัวข้อ 5 — `PR_POST_006` (void), `PR_POST_008` (audit comment immutable)
-- กฎ cross-module: [02-business-rules.th.md](./02-business-rules.th.md) หัวข้อ 6 — snapshot semantics เมื่อการตั้งค่าเปลี่ยน, ความคล้ายของ snapshot อัตราแลกเปลี่ยน `PR_CALC_006` กับ context ของภาษี / สกุลเงิน / threshold
-- `../carmen/docs/purchase-request-management/PR-Module-Structure.md` — พื้นผิวการตั้งค่า (workflow stage, threshold, delegation, default ชนิด PR, การตั้งค่า tax / currency / user-role)
-- `../carmen/docs/purchase-request-management/PR-User-Experience.md` — UX ของ activity log, การนำเสนอ audit trail, แบบแผน drill-down
-- `../carmen/docs/purchase-request-management/PR-Overview.md` — บทบาทของ Auditor และ System Administrator ในฐานะ stakeholder, จุดเชื่อมต่อเชิงการกำกับดูแล
-- `../carmen/docs/purchase-request-management/purchase-request-module-prd.md` — product requirement สำหรับ audit log, พื้นผิวการตั้งค่า และ action เชิงบริหารที่ยกระดับ
-- ไฟล์พี่น้อง: [03-user-flow-requestor.th.md](./03-user-flow-requestor.th.md) — persona ต้นน้ำที่ action ป้อนให้ audit trail
-- ไฟล์พี่น้อง: [03-user-flow-approver.th.md](./03-user-flow-approver.th.md) — การตัดสินของห่วงโซ่ approval ที่บันทึกใน `workflow_history` เพื่อตรวจสอบ audit
-- ไฟล์พี่น้อง: [03-user-flow-purchaser.th.md](./03-user-flow-purchaser.th.md) — persona ปลายน้ำที่การส่งต่อแปลงเป็น PO ถูก audit
-- ไฟล์พี่น้อง: [03-user-flow-procurement-manager.th.md](./03-user-flow-procurement-manager.th.md) — escalation และการเปลี่ยน rule set ที่การตั้งค่า threshold / workflow ของ Sysadmin เปิดทาง
-- ไฟล์พี่น้อง: [index.md](./index.md) หัวข้อ 4 — นิยามมาตรฐานของบทบาท Auditor และ System Administrator
-- Cross-link: [[inventory-adjustment]] — พื้นผิว audit-trail พี่น้องสำหรับการกำกับดูแลฝั่งสต๊อก
+- ภาพรวมหลัก: [03-user-flow.md](./03-user-flow.md)
+- กฎการให้สิทธิ์: [02-business-rules.md](./02-business-rules.md) Section 4 — `PR_AUTH_002` (ผู้ทำต่อ stage), `PR_AUTH_005` (routing ตาม amount-threshold), `PR_AUTH_006` (delegation), `PR_AUTH_007` (void ระดับสูง / การเปลี่ยนสถานะ sysadmin-only), `PR_AUTH_008` (เป็นเจ้าของ `enum_stage_role`)
+- กฎการ posting: [02-business-rules.md](./02-business-rules.md) Section 5 — `PR_POST_006` (void), `PR_POST_008` (audit comment immutable)
+- กฎข้ามโมดูล: [02-business-rules.md](./02-business-rules.md) Section 6 — semantic snapshot สำหรับการเปลี่ยน configuration, snapshot exchange-rate `PR_CALC_006` ที่ขนานกันสำหรับบริบท tax / currency / threshold
+- `../carmen/docs/purchase-request-management/PR-Module-Structure.md` — surface configuration (stage workflow, threshold, delegation, default ประเภท PR, configuration tax / currency / user-role)
+- `../carmen/docs/purchase-request-management/PR-User-Experience.md` — UX activity-log, การนำเสนอ audit-trail, convention drill-down
+- `../carmen/docs/purchase-request-management/PR-Overview.md` — role stakeholder Auditor และ System Administrator, จุด integration governance
+- `../carmen/docs/purchase-request-management/purchase-request-module-prd.md` — product requirement สำหรับ audit log, surface configuration และ action ธุรการระดับสูง
+- หน้าพี่น้อง: [03-user-flow-requestor.md](./03-user-flow-requestor.md) — persona ต้นน้ำที่ action feed audit trail
+- หน้าพี่น้อง: [03-user-flow-approver.md](./03-user-flow-approver.md) — การตัดสินใจของ chain อนุมัติที่จับใน `workflow_history` สำหรับ audit review
+- หน้าพี่น้อง: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — persona ปลายน้ำที่ handoff การแปลง PO ถูก audit
+- หน้าพี่น้อง: [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md) — การเปลี่ยน escalation และชุดกฎที่ configuration threshold / workflow ของ Sysadmin enable
+- หน้าพี่น้อง: [index.md](./index.md) Section 4 — คำอธิบาย role ของ Auditor และ System Administrator ตามมาตรฐาน
+- Cross-link: [[inventory-adjustment]] — surface audit-trail พี่น้องสำหรับ governance ฝั่ง inventory
 - Cross-link: [[purchase-order]] — โมดูลปลายน้ำที่ event การแปลงถูกสังเกตใน audit trail ของ PR

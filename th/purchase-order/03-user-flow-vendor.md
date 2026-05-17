@@ -1,52 +1,88 @@
 ---
-title: ใบสั่งซื้อ — เส้นทางผู้ใช้งาน — ผู้ขาย (Vendor)
-description: เส้นทางของผู้ขายในโมดูล purchase-order — บุคคลภายนอก (ไม่มี login เข้าระบบ); รับ PO ตอบรับ ส่งของ และออกใบแจ้งหนี้
+title: ใบสั่งซื้อ — User Flow — Vendor
+description: เส้นทางผู้ใช้งานของ Vendor ภายในโมดูล purchase-order — ฝ่ายภายนอก (ไม่มี Carmen login); รับ PO ตอบรับ ส่งของ และออกใบแจ้งหนี้
 published: true
-date: 2026-05-15T10:00:00.000Z
+date: 2026-05-17T12:00:00.000Z
 tags: purchase-order, user-flow, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
-# ใบสั่งซื้อ — เส้นทางผู้ใช้งาน — ผู้ขาย (Vendor)
+# ใบสั่งซื้อ — User Flow — Vendor
+
+> **At a Glance**
+> **Persona:** Vendor (ภายนอก — ไม่มี Carmen login) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Workflow stages:** sent (จุดสัมผัส) → partial / completed / voided &nbsp;·&nbsp; **สิทธิ์สำคัญ:** ไม่มีตรง — events บันทึกโดย Purchaser / Receiver / Finance / PM แทน vendor
+> **Persona นี้ทำอะไร:** รับ PO ที่ส่งมา ตอบรับ ส่งของ และออก invoice — ทุก effect ระบบ capture โดย internal persona
 
 ## 1. บทบาทในโมดูลนี้
 
-**ผู้ขาย (Vendor)** เป็น **บุคคลภายนอกที่ไม่มี login เข้าระบบ Carmen** ผู้ขายรับ PO ที่ถูกส่งมา ตอบรับการสั่งซื้อ ส่งของตามที่ตกลง และออกใบแจ้งหนี้สำหรับการทำ three-way match — แต่ผลกระทบทางระบบทุกครั้งของ action เหล่านี้ถูกบันทึกโดย persona ภายในแทนผู้ขาย เมื่อ PO ถูกส่งหลังการอนุมัติขั้นสุดท้าย สถานะระบบจะเปลี่ยนเป็น `sent` (`PO_POST_004`); หลังจากนั้นการตอบรับของผู้ขายจะถูกบันทึกแบบ manual โดย **เจ้าหน้าที่จัดซื้อ (Purchaser)** ใน `tb_purchase_order_comment` (หรือถ้ามี vendor portal ตั้งไว้ จะถูกเขียนผ่าน callback ของ portal โดยตรง), การส่งของจริงไม่มีผลกระทบทางระบบทันที, การ post GRN ของ **Receiver** จะ flip `po_status` ไปเป็น `partial` หรือ `completed` ผ่าน `PO_POST_006` / `PO_POST_007`, และใบแจ้งหนี้ของผู้ขายถูกบันทึกและ three-way-match โดย persona **Finance** ผู้ขายไม่มีสิทธิ์ดำเนินการ `po_status` โดยตรง — action ของผู้ขายขับเคลื่อนสถานะผ่าน persona ภายในที่บันทึกแทนเท่านั้น
+**Vendor** คือ **ฝ่ายภายนอกที่ไม่มี Carmen system login** Vendor รับ PO ที่ส่งมา ตอบรับการตอบรับ ส่งของตามที่ตกลง และออก invoice สำหรับ three-way match — แต่ทุก effect ฝั่งระบบของ actions เหล่านี้บันทึกโดย internal persona แทน vendor เมื่อ PO ส่งบน final approval state ระบบเคลื่อนเป็น `sent` (`PO_POST_004`); หลังจากนั้น acknowledgement ของ vendor capture ด้วยมือโดย **Purchaser** ใน `tb_purchase_order_comment` (หรือเมื่อมี vendor portal ตั้งค่า เขียนตรงผ่าน portal callback), การส่งของจริงไม่มี effect ระบบทันที, การ post GRN ของ **Receiver** flip `po_status` เป็น `partial` หรือ `completed` ผ่าน `PO_POST_006` / `PO_POST_007`, และ invoice ของ vendor capture และ three-way-matched โดย persona **Finance** Vendor ไม่ operate `po_status` โดยตรง — actions ของมัน drive state เฉพาะผ่าน internal personas ที่บันทึก
 
-## 2. จุดเริ่มต้นและเส้นทางหลัก
+### ตำแหน่งใน Workflow (เน้นจุดสัมผัสของ Vendor)
 
-**จุดเริ่มต้น:** ผู้ขายรับ PO ที่ถูกส่งผ่าน channel ที่ tenant ตั้งไว้ — email PDF, EDI feed หรือ link ของ vendor portal การส่งจะเขียน `tb_purchase_order.email` และ `approval_date` และ PO อยู่ที่ `po_status = sent`
+```mermaid
+graph LR
+    sent(("sent")) -->|"PO ส่ง<br/>(channel: email / EDI / portal)"| vendor["Vendor รับ PO"]:::current
+    vendor -->|"ตอบรับ<br/>(บันทึกโดย Purchaser)"| sent
+    vendor -->|"ส่งสินค้า"| recv["การส่งของจริง"]:::current
+    recv -->|"Receiver post GRN"| partial(("partial"))
+    recv -->|"Receiver post GRN"| completed(("completed"))
+    vendor -->|"ออก invoice"| inv["Vendor invoice"]:::current
+    inv -->|"Finance three-way match"| ap[["AP liability posted"]]
+    vendor -.->|"ปฏิเสธหลัง sent"| voided(("voided"))
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+```
 
-**เส้นทางหลัก (เชิงแนวคิด — ผลกระทบทางระบบเกิดเฉพาะเมื่อ persona ภายในบันทึก):**
+### ตารางสิทธิ์ — Vendor Event × System Effect (บันทึกโดย internal persona)
 
-1. **ตอบรับการได้รับ PO** ผู้ขายยืนยันการรับเงื่อนไข (ราคา จำนวน วันส่ง เงื่อนไขการชำระเงิน) **ผลกระทบทางระบบ:** Purchaser บันทึกการตอบรับใน `tb_purchase_order_comment` พร้อมวันที่ยืนยันและเลขอ้างอิง; ถ้ามี vendor portal callback ของ portal จะเขียน comment เดียวกันโดยอัตโนมัติ `po_status` ยังคงเป็น `sent`
-2. **เตรียมและจัดส่งสินค้าตามวันส่งที่ตกลง** ผู้ขายจัดเตรียม stock เก็บของ บรรจุ และส่งสินค้าพร้อม delivery note / packing list ที่อ้างถึง `po_no` **ผลกระทบทางระบบ:** ไม่มี — การเคลื่อนย้ายทางกายภาพไม่สะท้อนใน Carmen จนกว่า Receiver จะเปิดรับที่ dock
-3. **ส่งสินค้าให้ที่จุดรับ** logistics partner ของผู้ขายส่งของตาม PO และจุดส่งที่ตกลง **ผลกระทบทางระบบ:** ไม่มีโดยตรง — persona **Receiver** สแกน/นับและออก GRN ในโมดูลปลายน้ำ [[good-receive-note]] ซึ่งเป็นสิ่งที่ทำให้ `po_status` เปลี่ยน (`sent → partial` หรือ `sent → completed`)
-4. **ออกใบแจ้งหนี้** ผู้ขายส่ง AP invoice (กระดาษ PDF หรือ EDI) อ้างถึง `po_no` และจำนวนที่ส่งแล้ว **ผลกระทบทางระบบ:** persona **Finance** เก็บใบแจ้งหนี้ รัน three-way match (PO ↔ GRN ↔ invoice) และ post AP liability เมื่อ match สำเร็จ; PO เองไม่ถูก update สถานะจากการรับใบแจ้งหนี้ — three-way match ถูกติดตามบน record ใบแจ้งหนี้ที่เชื่อมโยง
+Vendor มี **สิทธิ์เขียนโดยตรงไม่มี** ใน Carmen แต่ละ event ฝั่ง vendor บันทึกโดย internal persona; ตารางด้านล่าง map event ไปยัง persona, surface ระบบ, และ effect ของ `po_status` (ถ้ามี)
 
-## 3. สาขาการตัดสินใจ
+| Vendor event | Internal persona ที่บันทึก | System surface | Effect ของ `po_status` |
+|---|---|---|---|
+| ตอบรับ PO | Purchaser (หรือ portal callback) | `tb_purchase_order_comment` | ไม่มี (ยังคงเป็น `sent`) |
+| ส่งของ partial qty | Receiver | GRN posting | `sent → partial` (`PO_POST_006`) |
+| ส่งของเต็ม / final balance | Receiver | GRN posting | `sent → completed` หรือ `partial → completed` (`PO_POST_007`) |
+| ปฏิเสธ / ยกเลิกหลัง `sent` | Procurement Manager | Void (`PO_AUTH_007`) | `sent → voided` (`PO_POST_010`) |
+| ไม่สามารถ supply outstanding balance | Procurement Manager / Inventory Manager | Early-close (`PO_AUTH_008`) | `partial → closed` (`PO_POST_011`) |
+| ส่งของผิด / qty over | Receiver (ปฏิเสธที่ dock) | ไม่มี — escalate ไปยัง Purchaser ผ่าน `tb_purchase_order_comment` | ไม่มี |
+| ส่งของที่ failed คุณภาพ | Receiver | GRN with `accepted_qty < received_qty` | ตาม `PO_POST_006` / `PO_POST_007` |
+| ออก invoice | Finance Officer / AP | หน้า AP capture + three-way match | ไม่มี — three-way-match outcome อยู่บนเร็คคอร์ด invoice (`PO_POST_008` / `PO_POST_009`) |
 
-- **ถ้าผู้ขายปฏิเสธ PO หลังการส่ง** (ราคาไม่ตกลง, ของหมด, lead-time ไม่ทัน): ผู้ขายแจ้งการปฏิเสธผ่าน channel เดิม **ผลกระทบทางระบบ:** Purchaser บันทึกการปฏิเสธใน `tb_purchase_order_comment` และ re-route ไปยังการแก้ไข (ภายใต้ข้อจำกัด post-`sent` ของ `PO_VAL_016`) หรือ escalate ให้ **Procurement Manager** เพื่อ void จาก `sent` ตาม `PO_AUTH_007` / `PO_POST_010` สถานะปลายทางของ PO คือ `voided`
-- **ถ้าผู้ขายส่งบางส่วน** (ส่งเพียงบางจำนวนของที่สั่ง ยอดที่เหลือจะตามมา): ผู้ขายส่งเท่าที่มีพร้อม delivery note ระบุว่าเป็น partial **ผลกระทบทางระบบ:** **Receiver** post GRN แบบ partial — `received_qty < order_qty − cancelled_qty` บนบรรทัดที่ได้รับผลกระทบ — ทำให้ `po_status` เปลี่ยนเป็น `partial` (`PO_POST_006`) การส่งครั้งต่อ ๆ ไปถูกบันทึกผ่าน GRN เพิ่มเติมจนเคลียร์ยอดคงเหลือ (`partial → completed`, `PO_POST_007`) หรือถูกตัดทิ้งเป็น `cancelled_qty` โดย **Procurement Manager** / **Inventory Manager** (`partial → closed`, `PO_POST_011`)
-- **ถ้าผู้ขายส่งของผิด เกินจำนวน หรือคุณภาพไม่ได้มาตรฐาน**: ความไม่ตรงกันของผู้ขายถูกตรวจพบที่จุดรับ **ผลกระทบทางระบบ:** **Receiver** บันทึกความไม่ตรงกันบน GRN (จำนวนผันแปร เหตุผล) และ **Purchaser** ได้รับการแจ้งเพื่อเริ่มเส้นทาง return / replacement / credit note กับผู้ขายภายใต้ amendment loop PO ไม่แก้ตัวเองอัตโนมัติ — การแก้ไขถูกบันทึกใน `tb_purchase_order_comment` และยอดที่ตกลงตัดทิ้งจะไปอยู่ที่ `cancelled_qty` บนบรรทัดที่ได้รับผลกระทบ
+> ⚠️ **ความแตกต่าง — auto-transmit บน final approve:** Live UI ส่ง PO ให้ vendor **ทันทีบน final approval** (ไม่มีปุ่ม "Send to Vendor" ด้วยมือแยกต่างหาก) — `APPROVED` และ `SENT` สังเกตเหมือนเป็นขั้นตอนเดียวกัน BRD `FR-PO-005` อธิบาย action *Send* ด้วยมือแยกและ status `ACKNOWLEDGED` ที่ vendor confirm ทั้งปุ่ม send ด้วยมือและ status `ACKNOWLEDGED` ไม่อยู่ใน live UI Source: `Test_case/Purchase_Order/Purchaser/INDEX.md` § Status Lifecycle (วันที่ capture 2026-04-26)
 
-## 4. จุดสิ้นสุด / การส่งต่อ
+## 2. Entry Point และ Primary Flow
 
-บทบาทของผู้ขายต่อ PO แต่ละฉบับสิ้นสุดที่ **การออกใบแจ้งหนี้** ตั้งแต่จุดนั้น สถานะเอกสารใน Carmen จะเป็นหนึ่งใน:
+**Entry point:** Vendor รับ PO ที่ส่งผ่าน channel ที่ตั้งค่าบน tenant — email PDF, EDI feed, หรือ vendor portal link การส่งเขียน `tb_purchase_order.email` และ `approval_date`, และ PO อยู่ที่ `po_status = sent`
 
-- `sent` — PO ถูกส่งแล้วแต่ยังไม่มี GRN post (ผู้ขายยังไม่ส่ง หรืออยู่ระหว่างขนส่ง)
-- `partial` — Receiver post GRN อย่างน้อยหนึ่งครั้งแล้วแต่ PO ยังมียอดเปิดในบรรทัดอย่างน้อยหนึ่งบรรทัด
-- `completed` — Receiver เคลียร์ทุกบรรทัดผ่าน GRN; PO ถึงสถานะปลายทางของการรับสินค้าแล้ว
-- `voided` — PO ถูก void หลังการส่ง (ผู้ขายปฏิเสธ หรือการแก้ไขเชิงเนื้อหาบังคับให้ออกใหม่); ใบแจ้งหนี้ของผู้ขาย (ถ้ามี) ไม่ถูก match
+**Primary flow (เชิงแนวคิด — system effects เฉพาะใน internal entry):**
 
-**Three-way match** (PO ↔ GRN ↔ invoice) ดำเนินการโดย persona **Finance** หลังจากทั้ง GRN และใบแจ้งหนี้ถูกบันทึกแล้ว — สถานะของ PO เองไม่ถูกเปลี่ยนจากผลลัพธ์ของการ match แต่ AP liability จะถูก post เทียบกับใบแจ้งหนี้ที่ match สำเร็จ ดูไฟล์ persona Finance สำหรับฝั่งรับของการส่งต่อใบแจ้งหนี้
+1. **ตอบรับการรับ PO** Vendor confirm การตอบรับ terms (price, quantity, delivery date, payment terms) **System effect:** Purchaser บันทึก acknowledgement ใน `tb_purchase_order_comment` พร้อมวันที่ confirm และ reference; หากใช้ vendor portal portal callback เขียน comment เดียวกันโดยอัตโนมัติ `po_status` ยังคงเป็น `sent`
+2. **เตรียมและส่งสินค้าตามวันส่งที่ตกลง** Vendor allocate stock, pick, pack, และ dispatch shipment พร้อม delivery note / packing list อ้างอิง `po_no` **System effect:** ไม่มี — การเคลื่อนไหวจริงมองไม่เห็นใน Carmen จนกว่า Receiver เปิดที่ dock
+3. **ส่งสินค้าไปยัง receiving location** logistics partner ของ vendor ส่งเทียบกับ PO และ delivery point ที่ตกลง **System effect:** ไม่มีโดยตรง — persona **Receiver** scan / count และ raise GRN ในโมดูล [[good-receive-note]] ปลายน้ำ ซึ่งจริง ๆ flip `po_status` (`sent → partial` หรือ `sent → completed`)
+4. **ออก invoice** Vendor ส่ง AP invoice (paper, PDF, หรือ EDI) อ้างอิง `po_no` และปริมาณที่ส่ง **System effect:** persona **Finance** capture invoice, รัน three-way match (PO ↔ GRN ↔ invoice) และ post AP liability บน match สำเร็จ; PO เองไม่ status-updated โดย invoice — three-way match track บนเร็คคอร์ด invoice ที่ link
+
+## 3. Decision Branches
+
+- **หาก vendor ปฏิเสธ PO หลัง transmission** (price disagreement, stock-out, lead-time impossible): vendor สื่อสารการปฏิเสธผ่าน channel ดั้งเดิม **System effect:** Purchaser log การปฏิเสธใน `tb_purchase_order_comment` และทั้ง re-route สำหรับ amendment (ภายในข้อจำกัด post-`sent` ของ `PO_VAL_016`) หรือ escalate ไปยัง **Procurement Manager** สำหรับ void จาก `sent` ภายใต้ `PO_AUTH_007` / `PO_POST_010` Terminal state ของ PO คือ `voided`
+- **หาก vendor partial-ships** (เฉพาะบางของปริมาณที่สั่งถูกส่งตอนนี้, balance ตามมา): vendor ส่งสิ่งที่มีพร้อม delivery note ทำเครื่องหมาย partial **System effect:** **Receiver** post partial GRN — `received_qty < order_qty − cancelled_qty` บนบรรทัดที่ได้รับผลกระทบ — ซึ่ง flip `po_status` เป็น `partial` (`PO_POST_006`) Shipments ถัดไป capture โดย GRN posts เพิ่มจนกว่า balance จะ clear (`partial → completed`, `PO_POST_007`) หรือ write off เป็น `cancelled_qty` โดย **Procurement Manager** / **Inventory Manager** (`partial → closed`, `PO_POST_011`)
+- **หาก vendor ส่งสินค้าผิด, qty over, หรือคุณภาพต่ำกว่ามาตรฐาน**: ความคลาดเคลื่อนของ vendor ตรวจพบที่ dock **System effect:** **Receiver** บันทึกความคลาดเคลื่อนบน GRN (variance qty, reason code) และ **Purchaser** แจ้งเตือนเพื่อ initiate return / replacement / credit note กับ vendor ภายใต้ amendment loop PO ไม่ auto-correct — การ resolve log ใน `tb_purchase_order_comment` และ write-off ที่ตกลงไปที่ `cancelled_qty` บนบรรทัดที่ได้รับผลกระทบ
+
+## 4. Exit Point / Handoffs
+
+การ involve ของ vendor บน PO ที่กำหนดจบที่ **invoice issuance** จากจุดนั้น document state บน Carmen เป็นหนึ่งใน:
+
+- `sent` — PO ส่งแล้วแต่ยังไม่ได้ post GRN (vendor ยังไม่ส่งหรือ delivery ระหว่าง transit)
+- `partial` — Receiver ได้ post อย่างน้อย GRN หนึ่งใบแต่ PO ยังมี open balance บนบรรทัดหนึ่งหรือมากกว่า
+- `completed` — Receiver ได้ clear ทุกบรรทัดผ่าน GRN; PO ถึง terminal receipt state
+- `voided` — PO ถูก void post-transmission (vendor ปฏิเสธ หรือ material amendment force re-issue); invoice ของ vendor ถ้ามี ไม่ถูก match
+
+**Three-way match** (PO ↔ GRN ↔ invoice) รันโดย persona **Finance** หลังทั้ง GRN และ invoice บันทึก — PO status เองไม่เปลี่ยนโดย match outcome แต่ AP liability post เทียบกับ matched invoice บน success ดู finance persona file สำหรับฝั่งรับของ invoice handoff
 
 ## 5. แหล่งอ้างอิง
 
-- ภาพรวมหลัก: [03-user-flow.md](./03-user-flow.md) — global state machine ของ PO และตาราง handoff ข้าม persona
-- ไฟล์พี่น้อง: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — persona ภายในที่ส่ง PO บันทึกการตอบรับของผู้ขาย และรัน amendment loop แทนผู้ขาย
-- ไฟล์พี่น้อง: [03-user-flow-receiver.md](./03-user-flow-receiver.md) — persona ภายในปลายน้ำที่รับของจริงจากผู้ขายและ post GRN ที่ขับเคลื่อน `sent → partial → completed`
-- ไฟล์พี่น้อง: [03-user-flow-finance.md](./03-user-flow-finance.md) — persona ภายในที่เก็บใบแจ้งหนี้ของผู้ขายและรัน three-way match
-- โมดูลที่เกี่ยวข้อง: [[good-receive-note]] — โมดูลปลายน้ำที่บันทึกการส่งของจริงของผู้ขายและขับเคลื่อน transition สถานะการรับสินค้าของ PO
-- `../carmen/docs/purchase-order-management/purchase-order-module.md` — แหล่งหลักจาก carmen/docs สำหรับการวิเคราะห์ทางธุรกิจของโมดูล PO การส่ง PO และ flow ของ three-way match
+- ภาพรวม parent: [03-user-flow.md](./03-user-flow.md) — global PO state machine และตาราง cross-persona handoff
+- Sibling: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — internal persona ที่ส่ง PO บันทึก vendor acknowledgement และรัน amendment loop แทน vendor
+- Sibling: [03-user-flow-receiver.md](./03-user-flow-receiver.md) — internal persona ปลายน้ำที่รับการส่งของจริงของ vendor และ post GRN ที่ขับเคลื่อน `sent → partial → completed`
+- Sibling: [03-user-flow-finance.md](./03-user-flow-finance.md) — internal persona ที่ capture invoice ของ vendor และรัน three-way match
+- เกี่ยวข้อง: [[good-receive-note]] — โมดูลปลายน้ำที่บันทึกการส่งของจริงของ vendor และขับเคลื่อน receipt-state transitions บน PO
+- `../carmen/docs/purchase-order-management/purchase-order-module.md` — แหล่ง carmen/docs หลักสำหรับ business analysis โมดูล PO, transmission, และ flow three-way-match

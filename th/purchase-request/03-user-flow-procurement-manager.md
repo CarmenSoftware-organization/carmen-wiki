@@ -1,81 +1,123 @@
 ---
-title: ใบขอซื้อ — เส้นทางผู้ใช้งาน — ผู้จัดการฝ่ายจัดซื้อ (Procurement Manager)
-description: เส้นทางผู้ใช้งานของ Procurement Manager ในโมดูล purchase-request — การอนุมัติมูลค่าสูง, การจัดอันดับผู้ขาย, และการปรับกฎ Allocate Vendor
+title: ใบขอซื้อ — User Flow — Procurement Manager (Purchase Request — User Flow — Procurement Manager)
+description: เส้นทางการใช้งานของ Procurement Manager ในโมดูล purchase-request — อนุมัติมูลค่าสูง, vendor ranking และปรับกฎ Allocate Vendor
 published: true
-date: 2026-05-15T09:00:00.000Z
+date: 2026-05-17T12:00:00.000Z
 tags: purchase-request, user-flow, procurement-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
 ---
 
-# ใบขอซื้อ — เส้นทางผู้ใช้งาน — ผู้จัดการฝ่ายจัดซื้อ (Procurement Manager)
+# ใบขอซื้อ — User Flow — Procurement Manager (Purchase Request — User Flow — Procurement Manager)
+
+> **At a Glance**
+> **Persona:** Procurement Manager &nbsp;·&nbsp; **โมดูล:** [[purchase-request]] &nbsp;·&nbsp; **Stage ของ workflow:** in_progress (escalated final approve) + configurational (กฎ Allocate Vendor) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** approve มูลค่าสูง, override send-back ของ stage ก่อนหน้า, ตั้งค่า vendor-ranking
+> **persona นี้ทำอะไร:** เป็น authority ของ approve สุดท้ายแบบ escalated สำหรับ PR มูลค่าสูงและเป็นเจ้าของชุดกฎจัดสรร vendor ที่ feed Purchaser
 
 ## 1. บทบาทในโมดูลนี้
 
-**ผู้จัดการฝ่ายจัดซื้อ (Procurement Manager)** เป็น persona ระดับอาวุโสของฝ่ายจัดซื้อที่ดูแลสองพื้นผิว (surface) ในโมดูล `purchase-request` พื้นผิว **transactional** คือ stage อนุมัติสุดท้ายแบบ escalate ที่อยู่เหนือ Finance: เมื่อ `base_total_amount` ของ PR เกิน threshold มูลค่าสูงที่ตั้งไว้ (`PR_AUTH_005`) หรือเมื่อ workflow route PR ที่มีนัยยะเชิงกลยุทธ์ตรงมาให้ฝ่ายจัดซื้อ เอกสารจะเข้าคิวของผู้จัดการฝ่ายจัดซื้อเพื่อตัดสินเชิงกำกับดูแล (approve, send back, reject หรือ split-reject) โดยใช้หน้าจอ review-and-decide เดียวกับห่วงโซ่ผู้อนุมัติ (Approver chain) แต่มีขอบเขตกว้างกว่า — รวมถึงสิทธิ์ override การ send-back ของผู้อนุมัติก่อนหน้าได้เมื่อมีเหตุผลทางธุรกิจรองรับ พื้นผิว **configurational** คือชุดกฎ Allocate Vendor: ผู้จัดการฝ่ายจัดซื้อดูแลการตั้งค่า vendor ranking และ pricelist priority ที่ขับเคลื่อนการจัดอันดับ vendor ของ Purchaser ทุกคน ปรับ scoring weight (vendor rank vs. ราคาต่ำสุด vs. ประวัติการรับของล่าสุด) และ priority override รายผู้ขาย รวมถึงรัน bulk action เชิงกำกับดูแลกับ PR ที่ค้างอยู่ใน `in_progress` เกิน SLA ที่ตั้งไว้ ผู้จัดการฝ่ายจัดซื้อทำงานภายใต้ `enum_stage_role = purchase` (`PR_AUTH_008`) ในฝั่ง configurational และใช้ชุด action `approve` เดียวกับ Approver chain (`PR_AUTH_002`–`PR_AUTH_004`) ในฝั่ง transactional ต่างจาก Approver พื้นฐานตรงที่ผู้จัดการฝ่ายจัดซื้อถือทั้งอำนาจในห่วงโซ่ escalate **และ** เป็นเจ้าของกฎ vendor allocation ที่ป้อนต่อให้กับ Purchaser ในขั้นถัดไป; ต่างจาก Purchaser ตรงที่ผู้จัดการฝ่ายจัดซื้อไม่ได้รัน vendor allocation รายฉบับด้วยตนเอง — แต่กำหนดกฎที่ขับเคลื่อนกระบวนการนั้น
+**Procurement Manager** เป็น persona procurement ระดับซีเนียร์ที่เป็นเจ้าของสอง surface ที่แตกต่างในโมดูล `purchase-request` Surface **transactional** คือ stage อนุมัติ escalated สุดท้ายเหนือ Finance: เมื่อ `base_total_amount` ของ PR ข้าม threshold มูลค่าสูงที่ตั้งไว้ (`PR_AUTH_005`) หรือเมื่อ workflow route PR ที่มีความสำคัญเชิงกลยุทธ์ตรงไปที่ procurement เอกสารลงในคิวของ Procurement Manager สำหรับการตัดสินกำกับ (approve, send back, reject หรือ split-reject) ที่ใช้ UI review-and-decide เดียวกันกับ chain Approver ที่เหลือแต่ scope กว้างกว่า — รวมสิทธิ์ override send-back ที่ Approver issue เมื่อความต้องการธุรกิจสมเหตุผล Surface **configurational** คือชุดกฎ Allocate Vendor: Procurement Manager ดูแลการตั้งค่า vendor-ranking และ pricelist-priority ที่ขับการจัดอันดับการเลือก vendor ของทุก Purchaser, ปรับ scoring weight (vendor rank vs ราคาต่ำสุด vs ประวัติการรับของล่าสุด) และ override priority ต่อ vendor และรัน bulk oversight action บน PR ที่ค้างใน `in_progress` เกินหน้าต่าง SLA Procurement Manager ทำงานภายใต้ `enum_stage_role = purchase` (`PR_AUTH_008`) บนด้าน configurational และบนชุด action `approve` เดียวกันกับ chain Approver (`PR_AUTH_002`–`PR_AUTH_004`) บนด้าน transactional พวกเขาต่างจาก Approver พื้นฐานเพราะถือทั้ง authority chain escalation **และ** เป็นเจ้าของกฎ vendor allocation ที่ feed Purchaser ปลายน้ำ; พวกเขาต่างจาก Purchaser เพราะไม่รัน vendor allocation บน PR แต่ละใบเอง — พวกเขาตั้งค่ากฎที่ขับมัน
 
-## 2. จุดเริ่มต้นและเส้นทางหลัก
+### ตำแหน่งใน workflow (เส้นทาง transactional ของ PM highlighted)
 
-**จุดเริ่มต้น — transactional:** Notification ทาง email / in-app "Purchase Request [PR-ID] Escalated for Procurement Manager Review" → กด deep link ซึ่งพาเข้าหน้ารายละเอียด PR โดยตรง ทางเลือก: Sidebar → โมดูล **Purchase Request** → คิว **Escalated PRs** (กรอง PR ที่ workflow route stage ปัจจุบันมายังผู้ใช้ role `purchase` ในฐานะปลายทางของการ escalate โดยปกติเพราะ `base_total_amount` เกิน threshold ใน `tb_workflow` ตาม `PR_AUTH_005`)
+```mermaid
+graph LR
+    inprog(("in_progress")) -->|"Threshold breach<br/>(PR_AUTH_005)"| pm["PM Escalated Review"]:::current
+    pm -->|"Approve (final)"| approved(("approved"))
+    pm -->|"Send-back"| draft(("draft"))
+    pm -->|"Reject"| cancelled(("cancelled"))
+    approved -->|"Convert to PO<br/>(Purchaser)"| completed(("completed"))
+    pm -.->|"Override prior send-back"| approved
+    cfg["Vendor Allocation Rules<br/>(configurational)"]:::current2 -.->|"Feeds Purchaser ranking"| approved
+    classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+    classDef current2 fill:#7c3aed,color:#fff,stroke:#7c3aed;
+```
 
-**จุดเริ่มต้น — configurational:** Sidebar → workspace **Procurement** → **Vendor Allocation Rules** (พื้นผิวการตั้งค่า Allocate Vendor ตามที่อธิบายใน `../carmen/docs/purchase-request-management/PR-Module-Structure.md`) workspace เดียวกันยังเปิดมุมมอง **Stuck PR Oversight** ที่กรอง PR ซึ่งค้างอยู่ใน `in_progress` เกินช่วง SLA ที่ตั้งไว้
+### ตารางสิทธิ์ — Surface × Action (Procurement Manager)
 
-**เส้นทางหลัก (happy path — transactional, อนุมัติมูลค่าสูง):**
+Manager engage กับโมดูลข้ามสอง surface สิทธิ์ Transactional scope อยู่ที่ stage escalated (`PR_AUTH_005`); สิทธิ์ Configurational scope อยู่ที่ workbench ของกฎ Allocate Vendor (`PR_AUTH_008`)
 
-1. จากคิว **Escalated PRs** (หรือ link ใน notification) เลือก PR ที่รอการตัดสินเชิง escalate คิวแสดง `pr_no`, ผู้ร้องขอ, แผนก, `base_total_amount` ทั้งในสกุลเงินทำรายการและสกุลเงินฐาน, stage ต้นทางที่ทริกเกอร์การ escalate, band ของ threshold ที่ฟัง และเวลาที่ PR รออยู่ใน stage escalate นี้ คลิกเข้าไปเปิดหน้ารายละเอียด PR ในโหมด read-mostly (ส่วนหัวและบรรทัดแก้ไม่ได้ ยกเว้น `approved_qty` และ flag การตัดสินรายบรรทัด เหมือนหน้าจอ Approver พื้นฐาน)
-2. ตรวจ **context ต้นน้ำทั้งหมด**: ส่วนหัว (PR type, ผู้ร้องขอ, แผนก, `pr_date`, วันส่งของที่ต้องการ, สกุลเงิน, `exchange_rate`, `workflow_name`, เหตุผล, ไฟล์แนบ), การตัดสินของผู้อนุมัติก่อนหน้าใน **Activity Log** (note ของ Department Head, ความเห็นเรื่องงบของ Budget Controller, การตรวจของ Finance) และ system event รวมถึง annotation การฟัง threshold Activity Log แสดงทุกความเห็นจากทุก stage ก่อนหน้าใน `tb_purchase_request_comment` ทำให้ผู้จัดการฝ่ายจัดซื้อเห็นภาพเดียวกับที่ผู้ตัดสินทุกคนเห็นมา รวมถึงเหตุผลการ escalate
-3. เปิดแท็บ **Items** แล้วไล่ดูทุกบรรทัด ยืนยันสินค้า, store location, `requested_qty`, หน่วยนับ, `approved_qty` (ถ้าผู้อนุมัติก่อนหน้าลดไว้), ราคาต่อหน่วย, FOC, ส่วนลด, การคิดภาษี, วันส่งของบรรทัด, note บรรทัด และ context ของสต๊อก (on-hand, on-order, reorder level, average monthly usage, last purchase price) ที่ดึงสด ๆ จาก [[inventory]] รวมถึง context ของ vendor / pricelist จาก [[vendor-pricelist]] สำหรับ PR มูลค่าสูง ยังตรวจมุมมอง vendor-impact รวม — ว่าแต่ละบรรทัด auto-allocate ไปยัง vendor ใดภายใต้กฎ Allocate Vendor ปัจจุบัน — เพื่อ sanity check ภาระผูกพันต่อ vendor ที่ตนกำลังจะอนุมัติ
-4. เปิด panel **Budget Impact** สำหรับภาพรวมงบประมาณระดับ PR (งบรวม, soft commitment จาก PR ฉบับนี้และ PR / PO เปิดอื่น ๆ, hard commitment, `availableBudget` ที่เหลือ) — ผู้จัดการฝ่ายจัดซื้อให้ความสนใจ headroom ของงบในระดับพอร์ตข้ามแผนก ไม่ใช่แค่ cost-centre ต้นทาง
-5. หากจำเป็นต้องปรับจำนวนใน stage นี้ (พบไม่บ่อยใน stage escalate แต่อนุญาต) แก้ `approved_qty` บนบรรทัดที่ต้องการ ตาม `PR_VAL_013` ค่าใหม่ต้อง `> 0` และ `≤ requested_qty` หลังแปลง UoM แล้ว และต้องบันทึก `approved_unit_id` กับ `approved_unit_conversion_factor` คู่กัน ยอดรวมของส่วนหัว (`base_sub_total_amount`, `base_total_amount` ฯลฯ) recompute เมื่อบันทึก และอาจทำให้บรรทัดหลุดจาก band มูลค่าสูงในการ re-submit
-6. ตัดสิน **disposition รายบรรทัด** ถ้าต้องทำ split-reject: ทำเครื่องหมายแต่ละบรรทัดเป็น accept หรือ reject พร้อมเหตุผลในบรรทัดที่ปฏิเสธ ตาม `PR_AUTH_003` บรรทัดที่ปฏิเสธคงอยู่ในเอกสารโดยมี `current_stage_status = rejected` และจะไม่ไปแปลงเป็น PO; บรรทัดที่ accept เดินต่อ
-7. เลือก **header-level action** จากแถบ action: **Approve** (ผ่าน stage escalate), **Send Back** (ส่งกลับไปยัง stage ก่อนหน้าหรือผู้ร้องขอ — override การ send-back ของผู้อนุมัติก่อนหน้าได้ในกรณีเหมาะสม), **Reject** (ยุติเอกสาร) หรือ commit **Split-Reject** โดยกด Approve พร้อมมีอย่างน้อยหนึ่งบรรทัดถูกปฏิเสธ Reject และ Send Back บังคับให้กรอกเหตุผล; Approve กรอกความเห็นเป็น optional
-8. ยืนยัน action ใน dialog ระบบรัน authorization check (`PR_AUTH_002` — ผู้ใช้ปัจจุบันต้องอยู่ใน `user_action.execute[]` ของ stage escalate; `PR_VAL_013` กับทุก `approved_qty` ที่แก้)
-9. เมื่อกด **Approve** ที่ stage escalate ซึ่งโดยนิยามคือ stage `approve` **สุดท้าย** ของห่วงโซ่ (การ escalate route ฝ่ายจัดซื้อให้เป็น stage `approve` ตัวสุดท้ายก่อน stage `purchase`) ระบบ apply `PR_POST_005`: `pr_status` เปลี่ยนจาก `in_progress` เป็น `approved`, workflow stepper แสดงว่า chain ครบ, notification ถูกส่งไปยังผู้ร้องขอ ("Approved") และคิวของ Purchaser แล้ว PR พร้อมสำหรับการแปลงเป็น PO soft commitment ยังคงอยู่จนกว่า Purchaser จะสร้าง PO
-10. ผู้จัดการฝ่ายจัดซื้อกลับไปที่คิว **Escalated PRs** ซึ่ง PR ที่เพิ่งตัดสินถูกตัดออก action และความเห็นที่กรอกถูกบันทึกใน `tb_purchase_request_comment` log แบบ immutable (`PR_POST_008`)
+| Action | Transactional (Stage escalated) | Configurational (กฎ Allocate Vendor) |
+|---|---|---|
+| ดู PR (escalated) | ✅ | — |
+| Approve (stage สุดท้าย → `approved`) | ✅ | — |
+| Send-back (พร้อมเหตุผล) | ✅ | — |
+| Reject (ยุติ → `cancelled`) | ✅ | — |
+| Split-Reject — ระดับบรรทัด | ✅ | — |
+| ปรับ `approved_qty` (`PR_VAL_013`) | ✅ | — |
+| Override send-back ของ Approver stage ก่อนหน้า | ✅ | — |
+| ดูแลเกณฑ์และน้ำหนัก vendor ranking | — | ✅ |
+| ตั้ง override priority ต่อ vendor / blacklist | — | ✅ |
+| Bulk action บน PR ที่ค้าง `in_progress` (send-back / ping / re-allocate) | ✅ (ต่อ PR `PR_AUTH_002`) | ✅ (bulk wrapper) |
+| Save ชุดกฎด้วย timestamp `effective_from` | — | ✅ |
+| Delegate role (`PR_AUTH_006`) | ✅ (delegate ได้) | ❌ (config delegate ไม่ได้ตาม default) |
+| แก้ header / บรรทัด / vendor / pricing ของ PR | ❌ | ❌ |
+| Void PR (`PR_AUTH_007`) | ❌ (sysadmin เท่านั้น) | ❌ |
 
-**เส้นทางหลัก (configurational — การปรับกฎ Allocate Vendor):**
+> ℹ️ **Semantic snapshot:** การ save ชุดกฎ Allocate Vendor ใหม่มีผลสำหรับ PR **ใหม่** เท่านั้น PR ที่อยู่ใน `in_progress` แล้วยังคง vendor allocation ที่ snapshot ไว้ (คล้าย `PR_CALC_006` exchange-rate snapshot) การ re-allocate กับกฎใหม่ต้องใช้ send-back กลับเป็น `draft` และ resubmit หรือ bulk re-allocate ครั้งเดียวจาก Stuck PR Oversight
 
-1. ไปยัง **Procurement → Vendor Allocation Rules** หน้าจอแสดง rule set ที่ active (แยกตามองค์กร / business unit) พร้อม: stack ของเกณฑ์ตามลำดับ priority (ค่าเริ่มต้น: **vendor rank** → **ราคาต่อหน่วยต่ำสุด** → **ประวัติการรับของล่าสุด**), scoring weight ของแต่ละเกณฑ์, priority override รายผู้ขาย และช่วงวันที่ effective ของการตั้งค่าปัจจุบัน
-2. ตรวจ **ranking ปัจจุบัน** ใน panel จำลอง: เลือกสินค้าหรือกลุ่มสินค้าตัวอย่าง แล้วดูว่า vendor candidate ถูกจัดอันดับอย่างไรภายใต้ weight ปัจจุบัน — ชื่อ vendor, ราคาใน pricelist ปัจจุบัน, lead time, อัตราการส่งของในอดีต, คะแนนที่คำนวณได้ และอันดับที่ออกมา
-3. ปรับ **scoring weight** (เช่น โยก weight จาก price ไปยังประวัติการส่ง) หรือ set / clear **priority override รายผู้ขาย** (pin vendor เชิงกลยุทธ์ให้อยู่อันดับบนสุด, blacklist vendor สำหรับกลุ่มสินค้าหนึ่ง, exclude vendor จาก auto-allocation แต่ยังเลือก manual ได้) การเปลี่ยนแปลงทุกอย่างถูก staging ไว้เป็น draft ที่ pending และ preview ใน panel จำลองก่อนบันทึก
-4. บันทึก rule set ที่ปรับใหม่ ระบบเขียนการตั้งค่าใหม่พร้อม timestamp effective-from ใหม่ และ notify ทีม Purchaser PR ใหม่และ **re-allocation** ใด ๆ ที่ทริกเกอร์บน PR ที่ยังอยู่ใน `draft` จะใช้กฎใหม่; PR ที่อยู่ใน `in_progress` แล้วยังคง vendor allocation ที่ snapshot ไว้เดิม ตามความหมายแบบ snapshot ใน `PR_CALC_006` ที่อธิบายไว้ใน [02-business-rules.th.md](./02-business-rules.th.md) หัวข้อ 6
-5. จากมุมมอง **Stuck PR Oversight** สามารถรัน **bulk action** กับ PR ที่ค้างอยู่ใน `in_progress` เกิน SLA ได้: send-back กลับไปยังผู้ร้องขอด้วยเหตุผลแบบ template, escalate ไปยัง stage ถัดไปพร้อมความเห็น "ping" หรือสำหรับ PR ที่ติดเฉพาะเรื่อง vendor allocation ให้ทริกเกอร์ re-allocation ครั้งเดียวกับ rule set ที่เพิ่งบันทึก bulk action ยังคงผ่านการตรวจ authorization รายฉบับ (`PR_AUTH_002`) และเขียน audit comment รายฉบับ (`PR_POST_008`)
+## 2. จุดเริ่มต้นและ flow หลัก
 
-## 3. สาขาการตัดสินใจ
+**จุดเริ่มต้น — transactional:** Email / in-app notification "Purchase Request [PR-ID] Escalated for Procurement Manager Review" → คลิก deep link ซึ่งพาตรงไปยังหน้า PR detail หรือทางเลือก: Sidebar → โมดูล **Purchase Request** → คิว **Escalated PRs** (filter เป็น PR ที่ workflow route stage ปัจจุบันไปยังผู้ใช้ role `purchase` เป็นเป้าหมาย escalation, โดยทั่วไปเพราะ `base_total_amount` เกิน threshold ของ `tb_workflow` ตาม `PR_AUTH_005`)
 
-- **ถ้า PR ที่ escalate มีมูลค่าสูงมากหรือมีนัยยะเชิงกลยุทธ์จนต้องมีผู้บริหารระดับสูงเซ็นเพิ่ม** (เหนือกว่าห่วงโซ่ที่ตั้งไว้ในโมดูล PR): ผู้จัดการฝ่ายจัดซื้อบันทึก approval ของผู้บริหารแบบ out-of-band (email, board minute), แนบหลักฐานเข้า PR แล้ว commit Approve ในระบบ โมดูล PR ไม่ได้ออกแบบ stage ที่อยู่เหนือผู้จัดการฝ่ายจัดซื้อ — อะไรก็ตามที่อยู่เหนือ `enum_stage_role = approve` จะจบที่ `purchase` Approve ของผู้จัดการฝ่ายจัดซื้อจึงเป็นคำตัดสินสุดท้ายของระบบ
-- **ถ้าผู้จัดการฝ่ายจัดซื้อต้องการ override การ send-back ของผู้อนุมัติก่อนหน้า**: Activity Log แสดงเหตุผลของการ send-back ก่อนหน้า ผู้จัดการฝ่ายจัดซื้อสามารถ (a) ยืนยันการ send-back (PR คงอยู่ใน `draft` หรือ stage ก่อนหน้า) หรือ (b) override โดยกด **Approve** จาก stage escalate โดยตรง — ข้าม loop การส่งกลับใหม่ การ override ถูกบันทึกใน `workflow_history` พร้อม user id ของผู้จัดการฝ่ายจัดซื้อและความเห็นเชิง justification ที่บังคับใส่ใน `tb_purchase_request_comment`
-- **ถ้าผู้จัดการฝ่ายจัดซื้อเลือก Send Back** แทน Approve ที่ stage escalate: dialog บังคับให้กรอกเหตุผล เมื่อยืนยัน `PR_POST_003` มีผล — `workflow_current_stage` เลื่อนย้อนหนึ่งก้าว; ขึ้นกับการตั้งค่า workflow อาจเป็น Finance (Stage 3), Budget Controller (Stage 2) หรือกลับไปถึงผู้ร้องขอที่ `draft` soft budget commitment จะถูกปลดเฉพาะกรณีที่การย้อนกลับไปถึง create stage ของผู้ร้องขอ บทบาทของผู้จัดการฝ่ายจัดซื้อจบที่นี่
-- **ถ้าผู้จัดการฝ่ายจัดซื้อเลือก Reject ที่ระดับ header**: dialog บังคับให้กรอกเหตุผล เมื่อยืนยัน `PR_AUTH_004` + `PR_POST_006` มีผล — `pr_status` เปลี่ยนเป็น `cancelled` (terminal), soft budget commitment ถูกปลด, `workflow_history` ถูก append และ comment `type = system` บันทึกการ reject chain จบโดยไม่มี stage ถัดไป
-- **ถ้าพยายามแก้ rule set ขณะที่ยังมี PR อยู่ระหว่างทาง (`in_progress`) และ PR นั้นขึ้นกับกฎที่กำลังถูกแก้**: พื้นผิว configurational ยังอนุญาตให้บันทึก (กฎ vendor ไม่ถูก lock จาก PR ที่กำลังเดินอยู่) แต่การเปลี่ยนแปลง **ไม่** retroactive กับ PR ที่กำลังเดินอยู่ PR แต่ละฉบับเก็บ vendor allocation ที่ snapshot ไว้เดิม กฎใหม่มีผลเฉพาะ: (a) PR ใหม่ที่สร้างหลัง timestamp effective-from, (b) PR ที่ถูกส่งกลับเป็น `draft` ด้วย send-back แล้วถูก re-allocate ตอน submit ใหม่ และ (c) PR ที่ถูกรันผ่าน bulk re-allocation จาก Stuck PR Oversight อย่างชัดเจน พฤติกรรม snapshot นี้สอดคล้องกับ `PR_CALC_006` ที่ใช้ตอน snapshot exchange rate
-- **ถ้า bulk action ครอบคลุม PR ที่ผู้จัดการฝ่ายจัดซื้อไม่ได้รับสิทธิ์** (เช่น PR ของ business unit อื่นที่อยู่นอก `user_action.execute[]` ของตน): PR นั้นจะถูกข้ามอย่างเงียบ ๆ ในผลของ bulk โดยมีบรรทัดอธิบายใน audit log ของ bulk action ส่วน PR ที่มีสิทธิ์เดินต่อ; ผู้จัดการเห็นจำนวนของแต่ละกลุ่มใน dialog ผลลัพธ์
-- **ถ้าผู้จัดการฝ่ายจัดซื้อไม่อยู่ชั่วคราว** และมอบหมาย stage ของตนไว้: ตาม `PR_AUTH_006` ผู้ที่ได้รับมอบหมายได้สิทธิ์ transactional เหมือนเดิม (approve, send back, reject, split-reject) ในช่วงที่มอบหมาย แต่สิทธิ์ configurational (การดูแลกฎ) **ไม่** delegable โดยค่าเริ่มต้น — การแก้กฎสงวนไว้ให้กับ role ของผู้จัดการฝ่ายจัดซื้อตาม `PR_AUTH_008`
+**จุดเริ่มต้น — configurational:** Sidebar → workspace **Procurement** → **Vendor Allocation Rules** (surface การตั้งค่า Allocate Vendor ที่อธิบายใน `../carmen/docs/purchase-request-management/PR-Module-Structure.md`) Workspace เดียวกันยังเปิดมุมมอง **Stuck PR Oversight** ที่ filter เป็น PR ที่อยู่ใน `in_progress` เกิน SLA ที่ตั้งค่าได้
 
-## 4. จุดสิ้นสุด / การส่งต่อ
+**Flow หลัก (happy path — transactional, อนุมัติมูลค่าสูง):**
 
-บทบาทของผู้จัดการฝ่ายจัดซื้อสิ้นสุดในรูปแบบใดรูปแบบหนึ่งต่อไปนี้ โดยปลายทางขึ้นกับพื้นผิว (transactional หรือ configurational) ที่ผู้จัดการ act เป็นครั้งสุดท้าย:
+1. จากคิว **Escalated PRs** (หรือ link notification) เลือก PR ที่รอการตัดสิน escalated คิวแสดง `pr_no`, requestor, แผนก, `base_total_amount` ในสกุลเงินธุรกรรมและสกุลฐาน, stage ต้นทางที่ trigger escalation, แถบ threshold ที่ fire และเวลารอที่ stage escalated นี้ คลิกเข้า PR เพื่อเปิดหน้า detail ใน read-mostly mode (header และบรรทัดแก้ไม่ได้ยกเว้น `approved_qty` และ flag การตัดสินใจระดับบรรทัด เหมือนกับ UI Approver พื้นฐาน)
+2. Review **บริบทต้นน้ำเต็ม**: header (ประเภท PR, requestor, แผนก, `pr_date`, วันส่งของที่ต้องการ, สกุลเงิน, `exchange_rate`, `workflow_name`, เหตุผล, attachment), การตัดสินใจของ Approver ก่อนหน้าใน **Activity Log** (note Department Head, commentary budget ของ Budget Controller, review ของ Finance) และ system event ใด ๆ รวมถึง annotation threshold breach Activity Log แสดง comment ของทุก stage ก่อนหน้าจาก `tb_purchase_request_comment` เพื่อให้ Procurement Manager มีภาพเดียวกับที่ decision-maker ก่อนหน้ามี บวกกับเหตุผล escalation
+3. เปิดแท็บ **Items** และเดินทีละบรรทัด ยืนยันสินค้า, store location, `requested_qty`, หน่วยนับ, `approved_qty` (ถ้า Approver ลดไว้ก่อนหน้า), ราคาต่อหน่วย, FOC, ส่วนลด, การจัดการภาษี, วันส่งของของบรรทัด, note บรรทัด และบริบท inventory (on-hand, on-order, reorder level, average monthly usage, ราคาซื้อล่าสุด) ที่ pull จาก [[inventory]] แบบ live และบริบท preferred-vendor / pricelist ที่ pull จาก [[vendor-pricelist]] สำหรับ PR มูลค่าสูงยังยืนยันมุมมอง vendor-impact ที่ consolidate — บรรทัดใด auto-allocate ไปยัง vendor ใดภายใต้กฎ Allocate Vendor ปัจจุบัน — เพื่อให้ Procurement Manager sense-check vendor commitment ปลายน้ำที่กำลังจะอนุมัติ
+4. เปิด panel **Budget Impact** สำหรับ footprint budget ระดับ PR เต็ม (total budget, soft commitment จาก PR นี้และ PR / PO อื่นที่เปิดอยู่, hard commitment, `availableBudget` ผลลัพธ์) — Procurement Manager ใส่ใจ headroom budget ระดับ portfolio ข้ามแผนก ไม่ใช่แค่ cost-centre ต้นทาง
+5. ถ้าจำนวนต้องปรับที่ stage นี้ (พบไม่บ่อยที่ stage escalated แต่อนุญาต) แก้ `approved_qty` บนบรรทัดที่ได้รับผลกระทบตาม `PR_VAL_013` — ค่าใหม่ต้อง `> 0` และ `≤ requested_qty` หลังแปลง UoM; `approved_unit_id` และ `approved_unit_conversion_factor` ถูก persist ไปด้วย Roll-up header (`base_sub_total_amount`, `base_total_amount` ฯลฯ) คำนวณใหม่เมื่อ save และอาจย้ายบรรทัดออกจากแถบมูลค่าสูงตอน re-submit
+6. ตัดสิน **disposition ต่อบรรทัด** ถ้าต้องการ split-reject: mark บรรทัดเดี่ยว accept / reject พร้อมเหตุผลบนแต่ละบรรทัดที่ reject ตาม `PR_AUTH_003` บรรทัดที่ reject ยังอยู่บนเอกสารด้วย `current_stage_status = rejected` และไม่ถึงการแปลงเป็น PO; บรรทัดที่ accept เดินต่อ
+7. เลือก **action ระดับ header** จาก action bar: **Approve** (clear stage escalated), **Send Back** (ส่งกลับไป stage ก่อนหน้าหรือ Requestor — override การตัดสินใจ send-back ของ Approver ก่อนหน้าเมื่อ applicable), **Reject** (ยุติเอกสาร) หรือ commit **Split-Reject** โดยทิ้ง Approve ไว้พร้อมอย่างน้อยหนึ่งบรรทัดที่ reject Reject และ Send Back ต้องการเหตุผล mandatory; Approve อนุญาต comment optional
+8. ยืนยัน action ใน dialog ระบบรันเช็คการให้สิทธิ์ (`PR_AUTH_002` — ผู้ใช้ปัจจุบันต้องอยู่ใน `user_action.execute[]` ของ stage escalated; `PR_VAL_013` บน `approved_qty` ที่แก้)
+9. เมื่อกด **Approve** ที่ stage escalated เนื่องจากเป็น stage **สุดท้าย** ของ approve ใน chain ตามนิยาม (escalation route ไปยัง procurement เป็น step `approve` สุดท้ายก่อน `purchase`) ระบบใช้ `PR_POST_005`: `pr_status` พลิกจาก `in_progress` เป็น `approved`, stepper ของ workflow mark chain เสร็จ, notification ไปที่ Requestor ("Approved") และคิวของ Purchaser และ PR เข้าเกณฑ์การแปลงเป็น PO Soft commitment ยังอยู่จนกว่า Purchaser สร้าง PO
+10. Procurement Manager กลับไปคิว **Escalated PRs** ซึ่ง PR ที่เพิ่งตัดสินใจหายไป Action และ comment ใด ๆ ปรากฏใน log `tb_purchase_request_comment` ของ PR แบบ immutable (`PR_POST_008`)
 
-- **Transactional — Approve ที่ stage escalate (stage `approve` สุดท้ายของห่วงโซ่)** `pr_status` เปลี่ยนจาก `in_progress` เป็น `approved` ตาม `PR_POST_005`; ส่งต่อไปยังคิว **Purchaser** ([03-user-flow-purchaser.th.md](./03-user-flow-purchaser.th.md)) เพื่อ validate vendor และแปลงเป็น PO soft budget commitment คงอยู่จนกว่า PO ถูกสร้างซึ่งจะแปลงเป็น hard commitment (ดู [[purchase-order]]) PR คงอยู่ใน `approved` จนกว่าทุกบรรทัดจะถูก bridge ครบหรือถูกยกเลิก ซึ่งตอนนั้น `pr_status` จะเปลี่ยนเป็น `completed` (`PR_POST_007`)
-- **Transactional — Send Back** `pr_status` ยังคงเป็น `in_progress` แต่ `workflow_current_stage` เลื่อนย้อนหนึ่งก้าว; ถ้าการย้อนกลับไปถึง create stage ของผู้ร้องขอ เอกสารจะกลับสู่ `draft` และ **ผู้ร้องขอ** มารับช่วงต่อที่ [03-user-flow-requestor.th.md](./03-user-flow-requestor.th.md) หัวข้อ 2 ขั้นตอน 2 soft budget commitment จะถูกปลดเฉพาะกรณีที่ย้อนกลับไปถึง create stage; กรณีย้อนสั้น ๆ ผู้อนุมัติก่อนหน้ารับช่วงต่อและ commitment ยังอยู่
-- **Transactional — Header Reject** `pr_status` เปลี่ยนเป็น `cancelled` (terminal, `PR_POST_006`); soft budget commitment ถูกปลด; **Auditor** ตรวจสอบย้อนหลังแต่ไม่มี user action เพิ่มเติม ผู้ร้องขอเห็นการยกเลิกใน dashboard **My PRs**
-- **Configurational — Rule set ถูกบันทึก** ไม่มีการเปลี่ยนสถานะ PR กฎใหม่มีผลกับ PR ที่สร้างหลัง timestamp effective-from; PR ที่อยู่ใน `in_progress` แล้วยังคง vendor allocation และ pricelist ที่ snapshot ไว้เดิม **ทีม Purchaser** ได้รับ notification ว่าการตั้งค่า Allocate Vendor เปลี่ยน; การ Convert-to-PO ครั้งถัดไปกับ PR ที่เพิ่งอนุมัติใหม่จะใช้ ranking ใหม่
-- **Configurational — Bulk action ถูก commit** PR เป้าหมายแต่ละฉบับได้รับผลตาม action ที่เลือก (send-back กลับเป็น `draft` ตาม `PR_POST_003`, ping escalate โดยไม่เปลี่ยนสถานะ หรือ re-allocation ครั้งเดียวที่ update snapshot `vendor_id` / `pricelist_*` ในแถว PR detail) PR ที่ได้รับผลแต่ละฉบับได้รับ comment `type = system` (`PR_POST_008`) บันทึก bulk action และต้นทาง flow ถัดไปของแต่ละ PR ดำเนินตามสถานะใหม่ (ผู้ร้องขอรับช่วง `draft`, ผู้อนุมัติ stage ถัดไปรับช่วงหลัง ping ฯลฯ)
+**Flow หลัก (configurational — ปรับกฎ Allocate Vendor):**
 
-สถานะเอกสารในทุกการเปลี่ยนสถานะถูกบันทึกโดย `enum_purchase_request_doc_status = { draft, in_progress, voided, approved, completed, cancelled }` และ timeline ของ workflow ใน `workflow_history` การ void (`pr_status → voided`) สงวนไว้ให้ Finance หรือ system-admin ตาม `PR_AUTH_007` และไม่อยู่ใน flow มาตรฐานของผู้จัดการฝ่ายจัดซื้อ
+1. ไปที่ **Procurement → Vendor Allocation Rules** หน้าจอแสดงชุดกฎ active (ต่อองค์กร, ต่อ business-unit) ด้วย: stack เกณฑ์ที่จัดลำดับ (ลำดับ default: **vendor rank** → **ราคาต่อหน่วยต่ำสุด** → **ประวัติการรับล่าสุด**), น้ำหนัก scoring ต่อเกณฑ์, override priority ต่อ vendor และช่วงวันที่มีผลของ configuration ปัจจุบัน
+2. Review **ranking ปัจจุบัน** ใน panel simulation: เลือกสินค้าหรือ category สินค้าตัวแทนและดูว่า vendor candidate จัดอันดับอย่างไรภายใต้น้ำหนักปัจจุบัน — ชื่อ vendor, ราคา pricelist ปัจจุบัน, lead time, อัตรา fulfillment ในอดีต, คะแนนที่คำนวณ และ rank ผลลัพธ์
+3. ปรับ **น้ำหนัก scoring** (เช่นย้ายน้ำหนักจาก price ไปยัง delivery-history มากขึ้น) หรือ set / ล้าง **override priority ต่อ vendor** (pin vendor เชิงกลยุทธ์ไปยัง top rank, blacklist vendor สำหรับ family สินค้า, ตัด vendor ออกจาก auto-allocation ขณะที่ยังเลือก manual ได้) แต่ละการเปลี่ยนถูก stage ใน draft configuration ที่ค้างและ preview live ใน panel simulation ก่อน save
+4. Save ชุดกฎที่ปรับ ระบบเขียน configuration ใหม่ด้วย timestamp effective-from ใหม่และแจ้งทีม Purchaser PR ใหม่และ **re-allocation** ใด ๆ ที่ trigger บน PR ที่มีอยู่ใน `draft` จะใช้กฎใหม่; PR ที่อยู่ใน `in_progress` แล้วยังคง vendor allocation ที่ snapshot ตาม semantic snapshot แบบ `PR_CALC_006` ที่อธิบายใน [02-business-rules.md](./02-business-rules.md) Section 6
+5. แบบ optional จากมุมมอง **Stuck PR Oversight** รัน **bulk action** บน PR ที่อยู่ใน `in_progress` เกินหน้าต่าง SLA: send-back ไปยัง Requestor ต้นทางด้วยเหตุผล template, escalate ไปยัง stage ถัดไปด้วย comment "ping" หรือสำหรับ PR ที่ block เฉพาะที่ vendor allocation trigger one-off re-allocation กับชุดกฎที่เพิ่ง save Bulk action ยังคงผ่านเช็คการให้สิทธิ์ต่อ PR (`PR_AUTH_002`) และเขียน comment audit ต่อ PR (`PR_POST_008`)
+
+## 3. แขนงการตัดสินใจ
+
+- **ถ้า PR ที่ escalated ใหญ่หรือมีความสำคัญเชิงกลยุทธ์มากจนต้องมีการเซ็นอนุมัติของ executive เพิ่ม** (เกิน chain ที่ตั้งของโมดูล PR): Procurement Manager บันทึกการอนุมัติของ executive นอก band (อีเมล, board minute), แนบหลักฐานกับ PR แล้ว commit Approve ในระบบ โมดูล PR เองไม่ model stage เหนือ procurement — อะไรเกินกว่า `enum_stage_role = approve` จบที่ `purchase` Approve ของ Procurement Manager คือคำสุดท้ายของระบบ
+- **ถ้า Procurement Manager เลือก override send-back ของ Approver ก่อนหน้า**: Activity Log แสดงเหตุผล send-back ก่อนหน้า Procurement Manager สามารถ (a) ยืนยัน send-back (PR ยังคงเป็น `draft` หรือที่ stage ก่อนหน้า) หรือ (b) override โดย issue **Approve** ตรงจาก stage escalated — bypass loop send-back ใหม่ Override ถูกบันทึกใน `workflow_history` พร้อม user id ของ Procurement Manager และ comment เหตุผล mandatory ที่จับใน `tb_purchase_request_comment`
+- **ถ้า Procurement Manager เลือก Send Back** แทน Approve ที่ stage escalated: dialog ต้องการเหตุผล เมื่อยืนยัน `PR_POST_003` ใช้ — `workflow_current_stage` ย้ายไปก่อนหน้าหนึ่ง stage; ขึ้นกับ workflow configuration อาจเป็น Finance (Stage 3), Budget Controller (Stage 2) หรือกลับไปยัง Requestor ที่ `draft` Soft budget commitment ถูกปล่อยเฉพาะถ้าการ rollback ถึง create stage ของ Requestor การมีส่วนร่วมของ Procurement Manager จบที่นี่
+- **ถ้า Procurement Manager เลือก Reject ระดับ header**: dialog ต้องการเหตุผล เมื่อยืนยัน `PR_AUTH_004` + `PR_POST_006` ใช้ — `pr_status` ย้ายเป็น `cancelled` (terminal), soft budget commitment ถูกปล่อย, `workflow_history` ถูก append และ comment `type = system` จับการ reject Chain จบไม่มี stage ถัดไป
+- **ถ้าพยายามเปลี่ยนชุดกฎขณะที่ PR อยู่กลาง flow (`in_progress`) และ PR นั้นพึ่งกฎที่ถูกเปลี่ยน**: surface configuration อนุญาตให้ save (กฎ vendor ไม่ถูก lock โดย PR แต่ละใบที่อยู่กลาง flow) แต่การเปลี่ยน **ไม่** re-rank PR ที่อยู่กลาง flow ย้อนหลัง แต่ละ PR กลาง flow ยังคง vendor allocation ที่ snapshot; กฎใหม่ใช้กับ: (a) PR ใหม่หลัง effective-from timestamp, (b) PR ที่ส่งกลับเป็น `draft` ผ่าน send-back ที่ถูก re-allocate ตอน re-submit และ (c) PR ที่รันผ่าน bulk re-allocation ครั้งเดียวจาก Stuck PR Oversight พฤติกรรม snapshot-preservation นี้เลียนแบบ semantic exchange-rate `PR_CALC_006`
+- **ถ้า bulk action target PR ที่ Procurement Manager ไม่มีสิทธิ์** (เช่น PR ของ business unit อื่น scope นอก `user_action.execute[]` ของพวกเขา): PR นั้นถูกตัดออกจากผล bulk แบบเงียบพร้อมบรรทัดอธิบายใน audit log ของ bulk action PR ที่มีสิทธิ์เดินต่อ; ที่ไม่มีสิทธิ์ไม่และ manager เห็นจำนวนของแต่ละแบบใน dialog ผล
+- **ถ้า Procurement Manager ไม่อยู่ชั่วคราว** และ delegate stage ของตน: ตาม `PR_AUTH_006` delegate สืบทอดสิทธิ์ transactional เดียวกัน (approve, send back, reject, split-reject) เฉพาะช่วง delegation สิทธิ์ Configurational (การดูแลกฎ) **ไม่** delegate ได้ตาม default — การแก้ไขกฎสงวนสำหรับ role Procurement Manager ตาม `PR_AUTH_008`
+
+## 4. จุดออก / Handoff
+
+การมีส่วนร่วมของ Procurement Manager จบในรูปแบบต่อไปนี้ จุดออกขึ้นกับว่า manager ลงมือสุดท้ายบน surface ใด (transactional หรือ configurational):
+
+- **Transactional — Approve ของ stage escalated (approve สุดท้ายใน chain).** `pr_status` พลิกจาก `in_progress` เป็น `approved` ตาม `PR_POST_005`; handoff ไปยังคิว **Purchaser** ([03-user-flow-purchaser.md](./03-user-flow-purchaser.md)) สำหรับ validation vendor และการแปลงเป็น PO Soft budget commitment ยังอยู่จนกว่าการสร้าง PO จะแปลงเป็น hard commitment (ดู [[purchase-order]]) PR ยังคงเป็น `approved` จนกว่าทุกบรรทัดจะ bridge เต็มหรือยกเลิก จุดนั้น `pr_status` พลิกเป็น `completed` (`PR_POST_007`)
+- **Transactional — Send Back.** `pr_status` ยังคง `in_progress` แต่ `workflow_current_stage` ย้ายไปก่อนหน้าหนึ่ง stage; ถ้า rollback ถึง create stage ของ Requestor เอกสารกลับเป็น `draft` และ **Requestor** รับต่อที่ [03-user-flow-requestor.md](./03-user-flow-requestor.md) Section 2 step 2 Soft budget commitment ถูกปล่อยเฉพาะเมื่อ rollback ถึง create stage; สำหรับ rollback สั้นกว่า ผู้อนุมัติก่อนหน้ารับ handoff และ commitment ยังอยู่
+- **Transactional — Header Reject.** `pr_status` พลิกเป็น `cancelled` (terminal, `PR_POST_006`); soft budget commitment ถูกปล่อย; **Auditor** review หลังเหตุการณ์แต่ไม่มี action ของผู้ใช้เพิ่มเติม Requestor เห็นการยกเลิกใน dashboard **My PRs**
+- **Configurational — ชุดกฎที่ save.** ไม่มีการเปลี่ยนสถานะ PR ชุดกฎใหม่มีผลกับ PR อนาคตที่สร้างหลัง effective-from timestamp; PR ที่มีอยู่ใน `in_progress` ยังคง vendor allocation ดั้งเดิมและ pricelist reference ที่ snapshot **ทีม Purchaser** ได้รับแจ้งว่า configuration Allocate Vendor เปลี่ยน; การกด Convert-to-PO ครั้งถัดไปที่พวกเขาทำบน PR ที่ approved ใหม่จะใช้ ranking ที่อัปเดต
+- **Configurational — Bulk action ที่ commit.** PR ที่ target ได้รับ effect ต่อ action (send-back ไปยัง `draft` ตาม `PR_POST_003`, escalation ping โดยไม่มีการเปลี่ยนสถานะ หรือ one-off re-allocation ที่อัปเดต snapshot `vendor_id` / `pricelist_*` บนแถว PR detail) PR ที่ได้รับผลกระทบแต่ละใบรับ comment `type = system` (`PR_POST_008`) บันทึก bulk action และต้นทาง Flow ถัดไปของแต่ละ PR ดำเนินตามสถานะใหม่ (Requestor รับ `draft` ต่อ, ผู้อนุมัติ stage ถัดไปรับหลังจาก ping ฯลฯ)
+
+สถานะเอกสารข้ามทุก transition บันทึกโดย `enum_purchase_request_doc_status = { draft, in_progress, voided, approved, completed, cancelled }` และ workflow timeline ใน `workflow_history` การ void (`pr_status → voided`) สงวนสำหรับ Finance หรือ system-admin ต่อ `PR_AUTH_007` และไม่ใช่ส่วนของ flow Procurement Manager มาตรฐาน
 
 ## 5. แหล่งอ้างอิง
 
-- ภาพรวมหลัก: [03-user-flow.th.md](./03-user-flow.th.md)
-- กฎ authorization: [02-business-rules.th.md](./02-business-rules.th.md) หัวข้อ 4 — `PR_AUTH_002` (ผู้ดำเนินการรายstage), `PR_AUTH_003` (action ระดับบรรทัดและ split-reject), `PR_AUTH_004` (reject ระดับ header), `PR_AUTH_005` (การ route ด้วย threshold มูลค่าและการ escalate), `PR_AUTH_006` (delegation), `PR_AUTH_008` (`enum_stage_role = purchase` เป็นเจ้าของกฎ vendor allocation)
-- กฎ posting: [02-business-rules.th.md](./02-business-rules.th.md) หัวข้อ 5 — `PR_POST_003` (send-back), `PR_POST_005` (final approve → `approved`), `PR_POST_006` (reject / void / cancel), `PR_POST_008` (audit comment immutable)
-- กฎ cross-module: [02-business-rules.th.md](./02-business-rules.th.md) หัวข้อ 6 — ความหมาย snapshot ของ vendor / pricelist, การส่งต่อ soft→hard commitment ของงบ, การคง snapshot ระหว่างที่กฎเปลี่ยน
-- `../carmen/docs/purchase-request-management/PR-Module-Structure.md` — พื้นผิวโมดูล Allocate Vendor, รูปร่างการตั้งค่า vendor allocation, การตั้งค่า threshold routing
-- `../carmen/docs/purchase-request-management/PR-User-Experience.md` — หน้าจอ review-and-decide ใช้ร่วมกับ Approver chain พื้นฐาน, กระบวนการ escalation
-- `../carmen/docs/purchase-request-management/PR-Overview.md` — บทบาทของผู้จัดการฝ่ายจัดซื้อในฐานะ stakeholder, การเชื่อมต่อ workflow engine (escalation procedures), vendor management
-- `../carmen/docs/purchase-request-management/purchase-request-module-prd.md` — product requirement สำหรับ threshold-based routing และการตั้งค่ากฎ Allocate Vendor
-- ไฟล์พี่น้อง: [03-user-flow-approver.th.md](./03-user-flow-approver.th.md) — flow อนุมัติพื้นฐานที่ไฟล์นี้ extend; หน้าจอ review-and-decide และ mechanism ของ split-reject ถูก inherit มา
-- ไฟล์พี่น้อง: [03-user-flow-purchaser.th.md](./03-user-flow-purchaser.th.md) — persona ปลายน้ำที่บริโภคกฎ vendor allocation ที่ผู้จัดการฝ่ายจัดซื้อดูแล
-- ไฟล์พี่น้อง: [03-user-flow-requestor.th.md](./03-user-flow-requestor.th.md) — เป้าหมายของการ bounce-back ที่ส่งกลับถึง create stage
-- ไฟล์พี่น้อง: [index.md](./index.md) หัวข้อ 4 — นิยามมาตรฐานของบทบาทผู้จัดการฝ่ายจัดซื้อ
-- Cross-link: [[vendor-pricelist]] — ข้อมูล pricelist ที่ป้อนให้กับ ranking ของ Allocate Vendor
-- Cross-link: [[purchase-order]] — โมดูลปลายน้ำที่รับ PR ซึ่งอนุมัติขั้นสุดท้ายแล้วเพื่อนำไปแปลง
+- ภาพรวมหลัก: [03-user-flow.md](./03-user-flow.md)
+- กฎการให้สิทธิ์: [02-business-rules.md](./02-business-rules.md) Section 4 — `PR_AUTH_002` (ผู้ทำต่อ stage), `PR_AUTH_003` (action ระดับบรรทัดและ split-reject), `PR_AUTH_004` (reject header), `PR_AUTH_005` (routing ตาม amount-threshold และ escalation), `PR_AUTH_006` (delegation), `PR_AUTH_008` (`enum_stage_role = purchase` เป็นเจ้าของกฎ vendor allocation)
+- กฎการ posting: [02-business-rules.md](./02-business-rules.md) Section 5 — `PR_POST_003` (send-back), `PR_POST_005` (final approve → `approved`), `PR_POST_006` (reject / void / cancel), `PR_POST_008` (audit comment immutable)
+- กฎข้ามโมดูล: [02-business-rules.md](./02-business-rules.md) Section 6 — semantic snapshot vendor / pricelist, handoff soft→hard commitment ของ budget, พฤติกรรม snapshot-preservation ระหว่างการเปลี่ยนกฎ
+- `../carmen/docs/purchase-request-management/PR-Module-Structure.md` — surface โมดูล Allocate Vendor, shape การตั้งค่า vendor-allocation, การตั้งค่า threshold-routing
+- `../carmen/docs/purchase-request-management/PR-User-Experience.md` — UI review-and-decide ที่ใช้ร่วมกับ chain Approver พื้นฐาน, ขั้นตอน escalation
+- `../carmen/docs/purchase-request-management/PR-Overview.md` — role stakeholder Procurement Manager, integration ของ workflow engine (ขั้นตอน escalation), การจัดการ vendor
+- `../carmen/docs/purchase-request-management/purchase-request-module-prd.md` — product requirement สำหรับ routing ตาม threshold และการตั้งค่ากฎ Allocate Vendor
+- หน้าพี่น้อง: [03-user-flow-approver.md](./03-user-flow-approver.md) — flow อนุมัติพื้นฐานที่นี่ extend; UI review-and-decide และ mechanics split-reject สืบทอด
+- หน้าพี่น้อง: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — persona ปลายน้ำที่ consume กฎ vendor-allocation ที่ Procurement Manager ดูแล
+- หน้าพี่น้อง: [03-user-flow-requestor.md](./03-user-flow-requestor.md) — เป้าหมาย bounce-back สำหรับ send-back ที่ถึง create stage
+- หน้าพี่น้อง: [index.md](./index.md) Section 4 — คำอธิบาย role ของ Procurement Manager ตามมาตรฐาน
+- Cross-link: [[vendor-pricelist]] — ข้อมูล pricelist ที่ feed ranking Allocate Vendor
+- Cross-link: [[purchase-order]] — โมดูลปลายน้ำที่รับ PR ที่ final-approved สำหรับการแปลง

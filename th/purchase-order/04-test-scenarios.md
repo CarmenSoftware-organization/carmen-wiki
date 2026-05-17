@@ -1,100 +1,105 @@
 ---
-title: ใบสั่งซื้อ — กรณีทดสอบ
-description: กรณีทดสอบแยกตาม persona, กรณีข้าม persona, และการเชื่อมโยงกับ Playwright สำหรับโมดูล purchase-order
+title: ใบสั่งซื้อ — Test Scenarios (Purchase Order — Test Scenarios)
+description: Test cases แยกตาม persona, scenarios ข้าม persona และ Playwright mapping สำหรับ purchase-order
 published: true
-date: 2026-05-15T10:00:00.000Z
+date: 2026-05-17T12:00:00.000Z
 tags: purchase-order, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
 ---
 
-# ใบสั่งซื้อ — กรณีทดสอบ
+# ใบสั่งซื้อ — Test Scenarios (Purchase Order — Test Scenarios)
+
+> **At a Glance**
+> **Module:** [[purchase-order]] &nbsp;·&nbsp; **จำนวน scenarios ทั้งหมด:** ~10 ข้าม persona + drill-down ต่อ persona ข้ามทุก personas &nbsp;·&nbsp; **Personas ที่ครอบคลุม:** Purchaser, Procurement Manager, Vendor, Receiver, Finance, Audit / Config
+> **ลำดับการรัน:** Audit / Config setup → happy paths persona หลัก → scenarios ข้าม persona
+> **Drill-down ของแต่ละ persona คือ `04-test-scenarios-<role>.md`**
 
 ## 1. ภาพรวม
 
-หน้านี้คือ **จุดเริ่มต้นภาพรวม** ของชุดเอกสารกรณีทดสอบสำหรับโมดูล `purchase-order` วงจรชีวิตของ PO ครอบคลุม persona หกราย ได้แก่ Purchaser, Procurement Manager, Vendor, Receiver, Finance, และ Audit / Config และความครอบคลุมของการทดสอบถูกแบ่งตาม persona เหล่านี้ โดยแต่ละ persona มีไฟล์ของตัวเอง (ลิงก์ใน Section 3) ที่ระบุกรณีทดสอบเชิง functional, authorization, validation, edge และ golden journey ของ persona นั้น ๆ หน้าภาพรวมนี้ให้มุมมองโดยรวม คือ ใครอยู่ใน scope, แต่ละ persona ครอบคลุมอะไรในระดับหัวข้อ, กรณีส่งต่อข้าม persona ที่เชื่อมโยงเส้นทางแต่ละสาย ให้กลายเป็น flow ปลายทางถึงปลายทาง และการเชื่อมโยงแต่ละ scenario กลับไปยังไฟล์ Playwright spec ที่ใช้ทดสอบ
+หน้านี้คือ **จุดเริ่มต้นภาพรวม** สำหรับชุด test-scenario ของโมดูล `purchase-order` วงจรชีวิตของ PO ครอบคลุมหก personas — Purchaser, Procurement Manager, Vendor, Receiver, Finance และ Audit / Config — และ test coverage แบ่งตาม: แต่ละ persona มีไฟล์เฉพาะ (link ใน Section 3) ที่ enumerate scenarios functional, authorization, validation, edge และ golden-journey ของ persona นั้น ไฟล์ภาพรวมนี้ให้ภาพ global: ใครอยู่ในขอบเขต, tests ของแต่ละ persona ครอบคลุมอะไรที่ระดับ headline, scenarios cross-persona handoff ที่เย็บ journeys ส่วนตัวเป็น flow end-to-end สมบูรณ์ และ mapping จากแต่ละ scenario กลับไปยังไฟล์ Playwright spec ที่ exercise
 
-ขอบเขตการทดสอบของโมดูล PO ครอบคลุมสี่ด้านหลัก ได้แก่ **functional coverage** ของทุก action ที่อยู่ในหน้า list, detail, create wizards (Blank, From Price List, From PR), edit mode, และ post-approval toolbar; **RBAC / authorization** ของผู้ที่ทำ action ได้ในแต่ละ state (Purchaser แก้ไขได้เฉพาะ draft, FC อนุมัติได้เฉพาะ `in_progress`, read-only สำหรับ Sent/Completed); **edge cases** เกี่ยวกับข้อมูลว่างเปล่า ผู้ใช้ไม่มีสิทธิ์ การ save โดยไม่มี item การ skip แบบ dynamic เมื่อไม่มี seed data; และ **three-way match** ที่จุดส่งต่อ PO ↔ GRN ↔ invoice ซึ่งครอบคลุม persona Receiver และ Finance และส่วนใหญ่ถูกทดสอบผ่านกรณีข้าม persona ใน Section 4
+ขอบเขตของ testing บนโมดูล PO ครอบคลุมสี่พื้นที่กว้าง: **functional coverage** ของทุก action ที่ใช้ได้บน PO list, detail, create wizards (Blank, From Price List, From PR), edit mode, และ post-approval toolbar; **RBAC / authorization** ของใครสามารถ perform แต่ละ action ที่แต่ละ state (Purchaser-only edit บน draft, FC-only approval บน `in_progress`, read-only สำหรับ Sent/Completed); **edge cases** รอบ ๆ empty data, no-permission users, save-without-items, dynamic skip เมื่อ seed data ไม่มี; และ **three-way match** rules ที่ PO ↔ GRN ↔ invoice handoff ซึ่ง span Receiver และ Finance personas และ exercised หลักผ่าน cross-persona scenarios ใน Section 4
 
-## 2. Personas ใน Scope
+## 2. Personas ในขอบเขต
 
-- **Purchaser** — สร้าง PO (blank, จาก price list, จาก PR), แก้ไข draft, submit เพื่อขออนุมัติ, ส่งให้ vendor, จัดการการแก้ไขและการปิดเอกสาร เป็นเจ้าของกรณีทดสอบ 24+ ครอบคลุม list, create, detail, edit, post-approval, และ golden journey
-- **Procurement Manager** — ทำหน้าที่เป็น FC approver ใน seed data เป็นเจ้าของ dashboard My-Approvals, การทำเครื่องหมายระดับ item (Approve / Review / Reject), การ Approve / Send Back / Reject ระดับเอกสาร, และการส่งให้ vendor ใน stage สุดท้าย
-- **Vendor** — บุคคลภายนอก ไม่มี login ในระบบและไม่มี coverage ใน E2E ระบุไว้สำหรับกรณีข้าม persona (การส่ง, การตอบรับ, การจัดส่ง, การปฏิเสธ) และเพื่อกำหนดความคาดหวังสำหรับ persona ปลายน้ำ
-- **Receiver** — Post GRN ทีละรายการเทียบกับ PO ที่ Sent ขับเคลื่อน state transition `sent → partial → completed` ยังไม่มี E2E spec เฉพาะ — การรับแบบ partial / final ถูกทดสอบผ่านกรณีข้าม persona ใน Section 4
-- **Finance** — รัน three-way match (PO ↔ GRN ↔ invoice), จัดการ currency / FX, และ post AP ยังไม่มี E2E spec เฉพาะ — coverage ฝั่ง invoice อยู่ใน spec ของโมดูล AP และอ้างอิงผ่าน handoff scenario
-- **Audit / Config** — Auditor (อ่านเท่านั้นสำหรับ activity log) และ System Administrator (workflow stage, RBAC, การ numbering) พฤติกรรมส่วนใหญ่เกิดที่ระยะ configuration ไม่ได้ถูกขับผ่าน UI ของโมดูล PO ระบุไว้ใน Section 3 เพื่อความครบถ้วน และอ้างอิงข้ามจากกรณีข้าม persona เกี่ยวกับ void / amendment
+- **Purchaser** — สร้าง POs (blank, from price list, from PR), edit drafts, submit สำหรับ approval, ส่งให้ vendor, จัดการ amendments และ close-out เป็นเจ้าของ 24+ scenarios ข้าม list, create, detail, edit, post-approval, และ golden journey
+- **Procurement Manager** — ทำหน้าที่เป็น FC approver ใน seeded data เป็นเจ้าของ My-Approvals dashboard, item-level mark (Approve / Review / Reject), document-level Approve / Send Back / Reject flows, และ final-stage transmission ไปยัง vendor
+- **Vendor** — ฝ่ายภายนอก ไม่มี system login และไม่มี in-system test coverage; documented สำหรับ cross-persona scenarios (transmission, acknowledgement, fulfilment, decline) และเพื่อตั้ง expectations สำหรับ personas ปลายน้ำ
+- **Receiver** — Post GRN ทีละบรรทัดเทียบกับ Sent PO ขับเคลื่อน receipt-state transitions `sent → partial → completed` ยังไม่มี E2E spec เฉพาะ — partial / final receipt behaviour exercised ผ่าน cross-persona scenarios ใน Section 4
+- **Finance** — รัน three-way match (PO ↔ GRN ↔ invoice), จัดการ currency / FX, และ post AP ยังไม่มี E2E spec เฉพาะ — invoice-side coverage อยู่ในไฟล์ spec ของโมดูล AP และ referenced ผ่าน handoff scenarios
+- **Audit / Config** — Auditor (review activity log แบบ read-only) และ System Administrator (workflow stage, RBAC, numbering) Behaviour ส่วนใหญ่เป็น configuration-time และไม่ driven ผ่าน runtime UI ของโมดูล PO; documented ใน Section 3 สำหรับความสมบูรณ์และ cross-referenced จาก scenarios void / amendment ข้าม persona
 
-## 3. ไฟล์กรณีทดสอบรายตาม Persona
+## 3. ไฟล์ Test ต่อ Persona
 
-- [กรณีทดสอบ Purchaser](./04-test-scenarios-purchaser.md)
-- [กรณีทดสอบ Procurement Manager](./04-test-scenarios-procurement-manager.md)
-- [กรณีทดสอบ Vendor](./04-test-scenarios-vendor.md)
-- [กรณีทดสอบ Receiver](./04-test-scenarios-receiver.md)
-- [กรณีทดสอบ Finance](./04-test-scenarios-finance.md)
-- [กรณีทดสอบ Audit / Config](./04-test-scenarios-audit-config.md)
+- [Purchaser scenarios](./04-test-scenarios-purchaser.md)
+- [Procurement Manager scenarios](./04-test-scenarios-procurement-manager.md)
+- [Vendor scenarios](./04-test-scenarios-vendor.md)
+- [Receiver scenarios](./04-test-scenarios-receiver.md)
+- [Finance scenarios](./04-test-scenarios-finance.md)
+- [Audit / Config scenarios](./04-test-scenarios-audit-config.md)
 
-## 4. กรณีข้าม Persona / Handoff
+## 4. Scenarios Cross-Persona / Handoff
 
-ตารางด้านล่างไล่ตาม PO ที่ข้ามผ่านหลาย persona แต่ละแถวยึด sequence ของ handoff ไว้กับ state ของเอกสาร ณ จุดเปลี่ยน และ state สุดท้ายที่คาดหวัง ข้อมูลถูก derive มาจากตาราง handoff ใน [03-user-flow.md](./03-user-flow.md) Section 4
+Scenarios ด้านล่าง trace PO ข้าม personas หลายตัว แต่ละ row anchor ลำดับ handoff กับ document state ที่ boundary และ expected end state มาจากตาราง handoff ใน [03-user-flow.md](./03-user-flow.md) Section 4
 
-| # | Scenario | Personas เรียงลำดับ | เงื่อนไขก่อนหน้า | State สุดท้ายที่คาดหวัง |
-| - | -------- | ------------------- | ----------------- | ----------------------- |
-| X-PO-01 | Happy path เต็มรูปแบบ (มูลค่าสูง, จาก PR) | Purchaser → Procurement Manager → Vendor → Receiver → Finance | มี PR ที่ approved; มูลค่าเข้าเกณฑ์มูลค่าสูง; vendor ติดต่อได้ | `completed` (ทุก line รับครบ; three-way match post แล้ว) |
-| X-PO-02 | Manual PO (ไม่มี PR linkage) | Purchaser → Procurement Manager → Vendor → Receiver → Finance | Vendor อยู่ใน catalogue; pricelist optional; ไม่มี PR ต้นทาง | `completed` (สาย manual; ไม่มี PR ถูกใช้) |
-| X-PO-03 | รับแบบ partial แล้วตามด้วยยอดที่เหลือ | Purchaser → Procurement Manager → Vendor → Receiver (GRN partial) → Receiver (GRN ครั้งที่สอง) → Finance | PO `sent`; vendor ส่งของสองเที่ยว | `completed` ผ่าน `partial` (state ข้าม `sent → partial → completed`) |
-| X-PO-04 | Three-way match จำนวนไม่ตรง | Purchaser → Procurement Manager → Vendor → Receiver → Finance (flag) → Purchaser (แก้ไข) | จำนวนใน invoice ≠ จำนวนใน GRN อย่างน้อยหนึ่ง line | Bounce-back ไป Purchaser; PO ยังคง `partial` หรือ `completed` จนกว่าจะถูก reconcile |
-| X-PO-05 | Amendment cycle บน PO ที่ Sent | Purchaser → Procurement Manager (อนุมัติ amendment) → Vendor (re-transmit) | PO `sent`; vendor ยอมรับ amendment | PO `sent` พร้อม revision history; vendor ตอบรับใหม่ |
-| X-PO-06 | ปฏิเสธมูลค่าสูงใน stage สุดท้าย | Purchaser → Procurement Manager (reject) | PO `in_progress` ที่ stage สุดท้าย; ระบุเหตุผล | `voided` (workflow ยุติ; เหตุผลถูกบันทึก) |
-| X-PO-07 | Void กลางทาง (ยังไม่มี GRN) | Purchaser → Procurement Manager (void) | PO `in_progress` หรือ `sent`; ยังไม่มี GRN บน line ใด ๆ; ระบุเหตุผล | `voided` |
-| X-PO-08 | Vendor ปฏิเสธหลังตอบรับแล้ว | Purchaser → Procurement Manager → Vendor (ปฏิเสธ) | PO `sent`; vendor ไม่สามารถจัดส่งได้ | Bounce-back ไป Purchaser (amend) หรือ `voided` (cancel) |
-| X-PO-09 | ปิด PO บางส่วน (vendor ส่งของที่เหลือไม่ได้) | Purchaser → Procurement Manager → Vendor → Receiver (GRN partial) → Inventory Manager (ปิด) | PO `partial`; ยอดคงค้างถูกถือเป็น cancel | `closed` (ยอดที่เหลือถูกเขียนเป็น `cancelled_qty`) |
-| X-PO-10 | Send-back ระหว่างอนุมัติ (Review ระดับ item) | Purchaser → Procurement Manager (Send Back) → Purchaser (แก้ไข) → Procurement Manager (อนุมัติ) | PO `in_progress`; รายการ line อย่างน้อยหนึ่งรายการถูกทำเครื่องหมาย Review | `sent` (หลังแก้ไข + re-approve) |
+| # | Scenario | Personas ตามลำดับ | เงื่อนไขก่อน | Expected end state |
+| - | -------- | ----------------- | ------------- | ------------------ |
+| X-PO-01 | Full happy path (high-value, from PR) | Purchaser → Procurement Manager → Vendor → Receiver → Finance | PR ที่อนุมัติแล้วมีอยู่; high-value threshold ใช้ได้; vendor reachable | `completed` (ทุกบรรทัดรับครบ; three-way match posted) |
+| X-PO-02 | Manual PO (no PR linkage) | Purchaser → Procurement Manager → Vendor → Receiver → Finance | Vendor ในแคตตาล็อก; pricelist optional; ไม่มี source PR | `completed` (manual flow; ไม่มี PR consumed) |
+| X-PO-03 | Partial receipt แล้ว final balance | Purchaser → Procurement Manager → Vendor → Receiver (partial GRN) → Receiver (second GRN) → Finance | PO `sent`; vendor ส่งใน 2 shipments | `completed` ผ่าน `partial` (state ข้าม `sent → partial → completed`) |
+| X-PO-04 | Three-way match qty discrepancy | Purchaser → Procurement Manager → Vendor → Receiver → Finance (flags) → Purchaser (resolve) | Invoice qty ≠ GRN qty สำหรับอย่างน้อยหนึ่งบรรทัด | Bounce-back ไปยัง Purchaser; PO ยังคงเป็น `partial` หรือ `completed` จนกว่า reconciled |
+| X-PO-05 | Amendment cycle บน Sent PO | Purchaser → Procurement Manager (approve amendment) → Vendor (re-transmit) | PO `sent`; vendor accept amendment | PO `sent` พร้อม revision history; vendor re-acknowledged |
+| X-PO-06 | การปฏิเสธ high-value ที่ final stage | Purchaser → Procurement Manager (reject) | PO `in_progress` ที่ final stage; reason provided | `voided` (workflow terminated; reason recorded) |
+| X-PO-07 | Void mid-flight (ยังไม่มี GRN posted) | Purchaser → Procurement Manager (void) | PO `in_progress` หรือ `sent`; ไม่มี GRN เทียบกับบรรทัดใด ๆ; reason provided | `voided` |
+| X-PO-08 | Vendor ปฏิเสธหลัง acknowledgement | Purchaser → Procurement Manager → Vendor (declines) | PO `sent`; vendor ไม่สามารถ fulfil | Bounce-back ไปยัง Purchaser (amend) หรือ `voided` (cancel) |
+| X-PO-09 | ปิด partial PO (vendor ไม่สามารถ supply remainder) | Purchaser → Procurement Manager → Vendor → Receiver (partial GRN) → Inventory Manager (close) | PO `partial`; outstanding balance treat เป็น cancelled | `closed` (qty ที่เหลือเขียนเป็น `cancelled_qty`) |
+| X-PO-10 | Send-back ระหว่าง approval (item-level Review) | Purchaser → Procurement Manager (Send Back) → Purchaser (revise) → Procurement Manager (approve) | PO `in_progress`; รายการสินค้าหนึ่งหรือมากกว่ามาร์ก Review | `sent` (หลัง revise + re-approve) |
 
-## 5. การเชื่อมโยงกับ E2E
+## 5. E2E Test Mapping
 
-มี Playwright spec สามไฟล์สำหรับโมดูล PO ภายใต้ `../carmen-inventory-frontend-e2e/tests/` ปัจจุบันเฉพาะ persona Purchaser และ Procurement Manager (FC Approver) ที่มี spec ของตัวเอง ส่วน persona Vendor, Receiver, Finance, และ Audit / Config จะระบุในไฟล์ของตนว่า "ยังไม่มี E2E spec เฉพาะ — ดู `401-po.spec.ts` ที่ใช้ร่วม" และยึดกรณีข้าม persona ใน Section 4 เป็นจุดตรึงพฤติกรรมที่คาดหวังสำหรับการทำ automation ในอนาคต
+มี Playwright specs สามตัวสำหรับโมดูล PO ภายใต้ `../carmen-inventory-frontend-e2e/tests/` เฉพาะ Purchaser และ Procurement Manager (FC Approver) personas เท่านั้นที่มี specs เฉพาะวันนี้ ไฟล์ persona Vendor, Receiver, Finance และ Audit / Config note "ไม่มี E2E spec เฉพาะ — ดู `401-po.spec.ts` ที่ใช้ร่วมกันสำหรับ PO list coverage ทั่วไป" และพึ่งพา cross-persona scenarios ใน Section 4 เพื่อ anchor expected behaviour สำหรับ automation ปลายน้ำ
 
-### 5.1 `401-po.spec.ts` — Coverage ทั่วไป / ใช้ร่วม
+### 5.1 `401-po.spec.ts` — General / shared coverage
 
-Spec ที่ใช้หลาย persona รันทั้ง `purchase@blueledgers.com` (Purchaser) และ `requestor@blueledgers.com` (ผู้ใช้ที่ไม่มีสิทธิ์ PO — ใช้ทดสอบ negative) ครอบคลุม:
+Mixed-persona spec รันทั้ง `purchase@blueledgers.com` (Purchaser) และ `requestor@blueledgers.com` (no-PO-permission negative cases) ครอบคลุม:
 
-- TC-PO-010001 — Create PO จาก approved PR (happy path)
-- TC-PO-010003 — Edge case เมื่อไม่มี approved PR
-- TC-PO-010004 — Negative: vendor assignment ไม่ถูกต้อง
-- Fixture หน้า list, search, filter, sort ที่ persona ทุกตัวใช้ร่วมกัน
-- กรณี backend / time-based ที่ติดป้าย `SKIP_NOTE_BACKEND` / `SKIP_NOTE_TIME` (ระบุไว้แต่ไม่สามารถ run ผ่าน UI ได้)
+- TC-PO-010001 — สร้าง PO จาก PR ที่อนุมัติ (happy path)
+- TC-PO-010003 — Edge case เมื่อไม่มี approved PRs
+- TC-PO-010004 — Negative: invalid vendor assignment
+- List-view fixtures, search, filter, sort scenarios ที่ใช้โดยทุก personas
+- Backend / time-based scenarios marked `SKIP_NOTE_BACKEND` / `SKIP_NOTE_TIME` (documented แต่ไม่ executable ผ่าน UI)
 
-ครอบคลุมข้าม persona: X-PO-02 (จุดเริ่ม manual), X-PO-01 (จุดเริ่ม PR-sourced), กรณี list/search/filter ที่ persona ปลายน้ำใช้ร่วม
+Cross-persona coverage: X-PO-02 (manual PO entry point), X-PO-01 (PR-sourced PO entry point), list/search/filter scenarios ทั่วไปที่ใช้โดยทุก persona ปลายน้ำ
 
-### 5.2 `402-po-purchaser-journey.spec.ts` — Persona Purchaser
+### 5.2 `402-po-purchaser-journey.spec.ts` — Purchaser persona
 
-รันด้วย `purchase@blueledgers.com` มาจาก `docs/persona-doc/Purchase Order/Purchaser/INDEX.md` ครอบคลุม Step 1–5 บวก Golden Journey (TC-PO-060101 ถึง TC-PO-060901):
+รันเป็น `purchase@blueledgers.com` มาจาก `docs/persona-doc/Purchase Order/Purchaser/INDEX.md` ครอบคลุม Steps 1–5 บวก Golden Journey (TC-PO-060101 ถึง TC-PO-060901):
 
-- Step 1 — หน้า list ของ PO (โหลด, สลับแท็บ, filter, search, sort)
-- Step 2 — สร้าง PO ผ่าน Blank / From Price List / From PR wizard
-- Step 3 — หน้า detail ของ PO (Draft) โหลดพร้อม header + items + panel Item Details
-- Step 4 — Edit mode (แก้ qty, เพิ่ม line, cancel edit, submit Draft, delete in-progress)
-- Step 5 — Post-approval (Send to Vendor, Close ที่มีของรับแล้ว, Close ที่ยังไม่มีของรับ)
-- Golden Journey TC-PO-060901 — create → submit → FC อนุมัติ (cross-context) → Send to Vendor ครบถ้วน
+- Step 1 — PO list (load, tab switch, filter, search, sort)
+- Step 2 — Create PO ผ่าน Blank / From Price List / From PR wizards
+- Step 3 — PO detail loads (Draft) พร้อม header + items + Item Details panel
+- Step 4 — Edit mode (modify qty, add line, cancel edit, submit Draft, delete in-progress)
+- Step 5 — Post-approval (Send to Vendor, Close with received items, Close without received items)
+- Golden Journey TC-PO-060901 — full create → submit → FC approve (cross-context) → Send to Vendor
 
-ครอบคลุมข้าม persona: X-PO-01 (happy path จาก PR), X-PO-02 (สาย manual), X-PO-05 (amendment ผ่าน edit mode), X-PO-07 (void ผ่านสาย Close-ไม่มีการรับ), X-PO-09 (close partial)
+Cross-persona coverage: X-PO-01 (happy path PR-sourced), X-PO-02 (manual flow), X-PO-05 (amendment ผ่าน edit mode), X-PO-07 (void ผ่าน Close-without-receipt path), X-PO-09 (close partial)
 
-### 5.3 `403-po-approver-journey.spec.ts` — Persona Procurement Manager (FC Approver)
+### 5.3 `403-po-approver-journey.spec.ts` — Procurement Manager (FC Approver) persona
 
-รันด้วย `fc@blueledgers.com` มาจาก `docs/persona-doc/Purchase Order/Approver/INDEX.md` ครอบคลุม Step 1–3 บวก Golden Journey (TC-PO-070101 ถึง TC-PO-070901):
+รันเป็น `fc@blueledgers.com` มาจาก `docs/persona-doc/Purchase Order/Approver/INDEX.md` ครอบคลุม Steps 1–3 บวก Golden Journey (TC-PO-070101 ถึง TC-PO-070901):
 
-- Step 1 — Dashboard My Approval (โหลด, แท็บ filter PO, คลิก row เข้า detail)
-- Step 2 — หน้า detail ของ PO (มุมมอง FC) — header read-only, ปุ่ม Edit + Comment visible, status badge `IN PROGRESS`
-- Step 3 — Action การอนุมัติ: mark ระดับ item (Approve / Review / Reject) + Approve / Send Back / Reject ระดับเอกสาร + cancel edit mode
-- Golden Journey TC-PO-070901 — open → edit → mark ทั้งหมด approved → document approve → status `APPROVED / SENT` ครบถ้วน
+- Step 1 — My Approval dashboard (load, PO filter tab, row click to detail)
+- Step 2 — PO detail (FC view) — header read-only, Edit + Comment visible, status badge `IN PROGRESS`
+- Step 3 — Approval actions: item-level mark (Approve / Review / Reject) + document-level Approve / Send Back / Reject + edit-mode cancel
+- Golden Journey TC-PO-070901 — full open → edit → mark all approved → document approve → status `APPROVED / SENT`
 
-ครอบคลุมข้าม persona: X-PO-01 / X-PO-02 (ขา approval), X-PO-06 (ปฏิเสธมูลค่าสูง), X-PO-07 (void ผ่านสาย reject), X-PO-10 (Send-Back ระหว่างอนุมัติ)
+Cross-persona coverage: X-PO-01 / X-PO-02 (approval leg), X-PO-06 (high-value rejection), X-PO-07 (void ผ่าน reject path), X-PO-10 (Send-Back ระหว่าง approval)
 
-## 6. อ้างอิง
+## 6. แหล่งอ้างอิง
 
 - `../carmen-inventory-frontend-e2e/tests/401-po.spec.ts`
 - `../carmen-inventory-frontend-e2e/tests/402-po-purchaser-journey.spec.ts`
 - `../carmen-inventory-frontend-e2e/tests/403-po-approver-journey.spec.ts`
-- ไฟล์พี่น้อง: [03-user-flow.md](./03-user-flow.md) Section 4 (แหล่งของ handoff)
-- ไฟล์พี่น้อง: [02-business-rules.md](./02-business-rules.md) Section 5 (กฎ posting + three-way match)
+- Sibling: [03-user-flow.md](./03-user-flow.md) Section 4 (แหล่ง handoff)
+- Sibling: [02-business-rules.md](./02-business-rules.md) Section 5 (posting + กฎ three-way match)
