@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 > **At a Glance**
 > **Module purpose:** Multi-level, budget-aware internal demand workflow (`Draft` → `Submitted` → `Under Review` → `Approved`/`Rejected`/`Sent Back`) that hands a vendor-allocated requirement to procurement &nbsp;·&nbsp; **Audience:** Requestor, Department Head, Budget Controller, Finance, Purchaser, Procurement Manager, Auditor &nbsp;·&nbsp; **Key entities/tables:** `tb_purchase_request`, `tb_purchase_request_detail`, approval history, pricelist allocation, [[purchase-request/my-approval]] &nbsp;·&nbsp; **Sub-pages:** 15
 
-![Purchase Request module screen](/assets/screenshots/purchase-request/index.png)
+![Purchase Request module screen](/screenshots/purchase-request/index.png)
 
 ## 1. Overview
 
