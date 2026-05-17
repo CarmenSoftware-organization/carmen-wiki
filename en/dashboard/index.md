@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Route:** `/dashboard` (server-redirects to `/dashboard/main`) &nbsp;·&nbsp; **For:** All operator roles post-login &nbsp;·&nbsp; **Status:** **Mock-data today**; live hooks defined but not mounted
 
-![Dashboard screen](/assets/screenshots/dashboard/index.png)
+![Dashboard screen](/screenshots/dashboard/index.png)
 
 ## 1. What & Who
 

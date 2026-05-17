@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **Owner:** Product Admin &nbsp;·&nbsp; **Tables:** `tb_vendor`, `tb_vendor_address`, `tb_vendor_contact`, `tb_vendor_business_type` &nbsp;·&nbsp; **Used by:** PR, PO, GRN, pricelist, RFQ &nbsp;·&nbsp; The supplier record — defaults tax profile, credit term, and currency onto procurement documents.
 
-![Vendor screen](/assets/screenshots/master-data/vendor.png)
+![Vendor screen](/screenshots/master-data/vendor.png)
 
 ## 1. What & Who
 

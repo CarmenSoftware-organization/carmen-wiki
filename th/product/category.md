@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_product_category` → `tb_product_sub_category` → `tb_product_item_group` (**3 ระดับคงที่** ไม่ใช่ self-referential) &nbsp;·&nbsp; **Trigger:** การดูแล taxonomy &nbsp;·&nbsp; **ใช้โดย:** PR / PO / GRN / recipe / รายงาน / การกำหนดสิทธิ์ &nbsp;·&nbsp; **สรุป 1 บรรทัด:** ชั้นการจำแนกประเภทที่ขับเคลื่อนการนำทาง ค่า default ที่สืบทอดมา และค่าความคลาดเคลื่อน
 
-![หมวดหมู่สินค้า (Product Category) screen](/assets/screenshots/product/category.png)
+![หมวดหมู่สินค้า (Product Category) screen](/screenshots/product/category.png)
 
 ## 1. คืออะไรและใครใช้
 

@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Route:** `/dashboard/grn` &nbsp;·&nbsp; **For:** Receiver &nbsp;·&nbsp; Inventory Controller &nbsp;·&nbsp; Procurement Manager &nbsp;·&nbsp; **Status:** **Mock-data today**; live wiring pending
 
-![GRN Dashboard screen](/assets/screenshots/dashboard/grn.png)
+![GRN Dashboard screen](/screenshots/dashboard/grn.png)
 
 ## 1. What & Who
 

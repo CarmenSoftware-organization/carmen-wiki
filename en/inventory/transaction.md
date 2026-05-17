@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Owner:** System (read-only for users) &nbsp;·&nbsp; **Tables:** `tb_inventory_transaction` (header) + `_detail` + `_cost_layer` &nbsp;·&nbsp; **Trigger:** every source-document posting (GRN / SR / adjustment / wastage / count / close) &nbsp;·&nbsp; **Used by:** balance computation + audit trace &nbsp;·&nbsp; **1-liner:** the immutable event tape; **append-only, never updated, never deleted**.
 
-![Inventory Transaction Log screen](/assets/screenshots/inventory/transaction.png)
+![Inventory Transaction Log screen](/screenshots/inventory/transaction.png)
 
 ## 1. What & Who
 

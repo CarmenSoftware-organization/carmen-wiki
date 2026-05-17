@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Route:** `/dashboard/inventory` &nbsp;·&nbsp; **สำหรับ:** Inventory Controller &nbsp;·&nbsp; Store Manager &nbsp;·&nbsp; Finance &nbsp;·&nbsp; QA &nbsp;·&nbsp; **สถานะ:** **ยังเป็น mock data ในปัจจุบัน**; การ wire จริงรอ
 
-![แดชบอร์ดคลังสินค้า (Inventory Dashboard) screen](/assets/screenshots/dashboard/inventory.png)
+![แดชบอร์ดคลังสินค้า (Inventory Dashboard) screen](/screenshots/dashboard/inventory.png)
 
 ## 1. คืออะไรและสำหรับใคร
 

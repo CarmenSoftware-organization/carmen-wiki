@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Owner:** Procurement Manager / Product Admin &nbsp;·&nbsp; **Table:** `tb_purchase_request_template` (+ detail, comments) &nbsp;·&nbsp; **Workflow:** none (config artefact) &nbsp;·&nbsp; **Used by:** [[purchase-request]] **Create PR from Template** &nbsp;·&nbsp; Reusable line-bundle scaffold cloned into a new PR on demand.
 
-![Purchase Request Template screen](/assets/screenshots/templates/purchase-request.png)
+![Purchase Request Template screen](/screenshots/templates/purchase-request.png)
 
 ## 1. What & Who
 

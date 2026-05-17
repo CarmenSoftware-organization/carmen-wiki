@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Route:** `/dashboard/main` (also from bare `/dashboard` via redirect) &nbsp;·&nbsp; **For:** Executive / Controller / HOD post-login &nbsp;·&nbsp; **Status:** Mock-data today; live wiring pending
 
-![Main Dashboard screen](/assets/screenshots/dashboard/main.png)
+![Main Dashboard screen](/screenshots/dashboard/main.png)
 
 ## 1. What & Who
 

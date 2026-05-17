@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **Owner:** Product Admin &nbsp;·&nbsp; **Tables:** `tb_extra_cost_type` (catalogue) + `tb_extra_cost` (per-GRN instance) &nbsp;·&nbsp; **Used by:** GRN landed-cost allocation &nbsp;·&nbsp; Categories like Freight / Duty / Handling with `by_value` / `by_qty` / `manual` allocation modes.
 
-![Extra Cost Type screen](/assets/screenshots/master-data/extra-cost-type.png)
+![Extra Cost Type screen](/screenshots/master-data/extra-cost-type.png)
 
 ## 1. What & Who
 

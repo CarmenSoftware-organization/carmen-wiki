@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Product Admin (รายการ) / Sysadmin (user mapping) &nbsp;·&nbsp; **ตาราง:** `tb_department`, `tb_department_user` &nbsp;·&nbsp; **ใช้โดย:** PR, SR, approval workflows, RBAC, รายงาน &nbsp;·&nbsp; มิติ cost-centre + requesting-unit; resolve ผู้ review ระดับ Head-of-Department
 
-![แผนก (Department) screen](/assets/screenshots/master-data/department.png)
+![แผนก (Department) screen](/screenshots/master-data/department.png)
 
 ## 1. คืออะไร / ใครใช้
 

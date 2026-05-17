@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **Owner:** Product Admin &nbsp;·&nbsp; **Table:** `tb_delivery_point` &nbsp;·&nbsp; **Used by:** PO, GRN, locations &nbsp;·&nbsp; Physical drop-off address for vendor deliveries.
 
-![Delivery Point screen](/assets/screenshots/master-data/delivery-point.png)
+![Delivery Point screen](/screenshots/master-data/delivery-point.png)
 
 ## 1. What & Who
 

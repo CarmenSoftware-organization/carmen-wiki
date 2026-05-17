@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **Owner:** Sysadmin (ISO seed) / Product Admin (tenant catalogue) &nbsp;·&nbsp; **Tables:** `tb_currency_iso`, `tb_currency`, `tb_exchange_rate` &nbsp;·&nbsp; **Used by:** every priced document + costing engine &nbsp;·&nbsp; Tenant-enabled currencies + their "current" rate cache.
 
-![Currency screen](/assets/screenshots/master-data/currency.png)
+![Currency screen](/screenshots/master-data/currency.png)
 
 ## 1. What & Who
 

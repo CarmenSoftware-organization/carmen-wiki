@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** ผู้อนุมัติของ workflow ใด ๆ &nbsp;·&nbsp; **ตาราง:** *ไม่มี — เป็น projection จากสถานะ workflow* &nbsp;·&nbsp; **Workflow:** กล่องขาเข้าแบบอ่านอย่างเดียว &nbsp;·&nbsp; **ต้นน้ำ:** [[purchase-request]], [[purchase-order]], [[purchase-order/credit-note]] &nbsp;·&nbsp; กล่องขาเข้าส่วนบุคคลที่รวมเอกสารทั้งหมดที่รอให้ผู้ใช้ลงนามจัดการ
 
-![รายการอนุมัติของฉัน (My Approval) screen](/assets/screenshots/purchase-request/my-approval.png)
+![รายการอนุมัติของฉัน (My Approval) screen](/screenshots/purchase-request/my-approval.png)
 
 ## 1. ภาพรวมและผู้ใช้งาน
 

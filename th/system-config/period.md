@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Sysadmin / Finance Manager &nbsp;·&nbsp; **ตาราง:** `tb_period` (+ `tb_period_snapshot`) &nbsp;·&nbsp; **ใช้โดย:** GRN, IA, count, spot-check, engine ต้นทุน &nbsp;·&nbsp; ปฏิทินบัญชี — ควบคุมการ back-date และขับเคลื่อนการปิดต้นทุน
 
-![ช่วงงวด (Period) screen](/assets/screenshots/system-config/period.png)
+![ช่วงงวด (Period) screen](/screenshots/system-config/period.png)
 
 ## 1. คืออะไรและใครใช้
 

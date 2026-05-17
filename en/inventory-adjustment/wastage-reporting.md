@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Owner:** Store Keeper (submit) &nbsp;·&nbsp; Inventory Controller (approve) &nbsp;·&nbsp; **Table:** `tb_stock_out` with `adjustment_type = 'wastage'` flavour (NOT a separate table) &nbsp;·&nbsp; **Trigger:** spoilage / breakage / expiry / theft / sample &nbsp;·&nbsp; **Writes to:** ledger as `stock_out` / `adjustment_out` &nbsp;·&nbsp; **1-liner:** OUT-only variant of [[inventory-adjustment]] with mandatory reason and wastage GL account.
 
-![Wastage Reporting screen](/assets/screenshots/inventory-adjustment/wastage-reporting.png)
+![Wastage Reporting screen](/screenshots/inventory-adjustment/wastage-reporting.png)
 
 ## 1. What & Who
 

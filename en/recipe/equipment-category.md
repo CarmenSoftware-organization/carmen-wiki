@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Owner:** Chef / Product Admin &nbsp;·&nbsp; **Table:** `tb_recipe_equipment_category` &nbsp;·&nbsp; **Shape:** Flat (no `parent_id`) &nbsp;·&nbsp; **Children:** [[recipe/equipment]] via `category_id` &nbsp;·&nbsp; **Used by:** equipment picker filter, maintenance dashboard, fit-out checklists
 
-![Equipment Category screen](/assets/screenshots/recipe/equipment-category.png)
+![Equipment Category screen](/screenshots/recipe/equipment-category.png)
 
 ## 1. What & Who
 

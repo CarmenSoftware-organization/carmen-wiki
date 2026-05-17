@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Owner:** Sysadmin (delete); list / download via App ID grants &nbsp;·&nbsp; **Storage:** `FILE_SERVICE` microservice (S3-compatible) + `tb_attachment` metadata mirror &nbsp;·&nbsp; **Used by:** PR / PO / GRN / SR / IA / count / pricelist / vendor / product attachments &nbsp;·&nbsp; **10 MB cap, BU-scoped.**
 
-![Document Management screen](/assets/screenshots/system-config/document.png)
+![Document Management screen](/screenshots/system-config/document.png)
 
 ## 1. What & Who
 

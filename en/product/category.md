@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Owner:** Product Admin &nbsp;·&nbsp; **Tables:** `tb_product_category` → `tb_product_sub_category` → `tb_product_item_group` (**3 FIXED levels**, NOT self-referential) &nbsp;·&nbsp; **Trigger:** taxonomy maintenance &nbsp;·&nbsp; **Used by:** PR / PO / GRN / recipe / reports / permission scoping &nbsp;·&nbsp; **1-liner:** classification layer driving navigation, inherited defaults, and tolerances.
 
-![Product Category screen](/assets/screenshots/product/category.png)
+![Product Category screen](/screenshots/product/category.png)
 
 ## 1. What & Who
 

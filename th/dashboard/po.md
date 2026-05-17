@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Route:** `/dashboard/po` &nbsp;·&nbsp; **สำหรับ:** Purchaser &nbsp;·&nbsp; Procurement Manager &nbsp;·&nbsp; Receiver &nbsp;·&nbsp; **สถานะ:** **ยังเป็น mock data ในปัจจุบัน**; การ wire จริงรอ
 
-![แดชบอร์ดใบสั่งซื้อ (PO Dashboard) screen](/assets/screenshots/dashboard/po.png)
+![แดชบอร์ดใบสั่งซื้อ (PO Dashboard) screen](/screenshots/dashboard/po.png)
 
 ## 1. คืออะไรและสำหรับใคร
 

@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Sysadmin / schedule-admin &nbsp;·&nbsp; **ตาราง:** `tb_report_schedule` &nbsp;·&nbsp; **Retention:** ไม่จำกัด (soft-delete เท่านั้น); artefact หมดอายุผ่าน [[reporting-audit/history]] &nbsp;·&nbsp; **ใช้โดย:** poller ของ `micro-cronjobs` &nbsp;·&nbsp; **จับคู่ template ของรายงานกับ cron expression, ชุด filter แบบ frozen และรายการการส่ง**
 
-![กำหนดการรายงาน (Report Schedule) screen](/assets/screenshots/reporting-audit/schedule.png)
+![กำหนดการรายงาน (Report Schedule) screen](/screenshots/reporting-audit/schedule.png)
 
 ## 1. ภาพรวมและผู้ใช้งาน
 

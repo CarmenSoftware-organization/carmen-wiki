@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Inventory Controller (review / submit) &nbsp;·&nbsp; service account ของ Cron (draft เท่านั้น) &nbsp;·&nbsp; **ตาราง:** ไม่มีเฉพาะ — output เป็น `tb_store_requisition` draft &nbsp;·&nbsp; **Trigger:** cron กลางคืน (หรือ on-demand) &nbsp;·&nbsp; **Inputs:** `tb_product_location` (min/max/par/reorder) + on-hand + on-order &nbsp;·&nbsp; **สรุป 1 บรรทัด:** cron กวาด deficit และ pre-fill SR drafts; มนุษย์อนุมัติ
 
-![การเติมสต๊อก (Stock Replenishment) screen](/assets/screenshots/store-requisition/stock-replenishment.png)
+![การเติมสต๊อก (Stock Replenishment) screen](/screenshots/store-requisition/stock-replenishment.png)
 
 ## 1. ภาพรวมและผู้ใช้งาน
 

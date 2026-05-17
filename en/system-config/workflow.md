@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **Owner:** Sysadmin / Workflow Administrator &nbsp;·&nbsp; **Table:** `tb_workflow` &nbsp;·&nbsp; **Used by:** PR / SR / PO (approval-bearing modules) &nbsp;·&nbsp; Stage-chain definitions — actions, recipients, SLA, hidden fields, assignees.
 
-![Workflow screen](/assets/screenshots/system-config/workflow.png)
+![Workflow screen](/screenshots/system-config/workflow.png)
 
 ## 1. What & Who
 

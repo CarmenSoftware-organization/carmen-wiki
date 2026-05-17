@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Route:** `/dashboard/grn` &nbsp;·&nbsp; **สำหรับ:** Receiver &nbsp;·&nbsp; Inventory Controller &nbsp;·&nbsp; Procurement Manager &nbsp;·&nbsp; **สถานะ:** **ยังเป็น mock data ในปัจจุบัน**; การ wire จริงรอ
 
-![แดชบอร์ดใบรับสินค้า (GRN Dashboard) screen](/assets/screenshots/dashboard/grn.png)
+![แดชบอร์ดใบรับสินค้า (GRN Dashboard) screen](/screenshots/dashboard/grn.png)
 
 ## 1. คืออะไรและสำหรับใคร
 

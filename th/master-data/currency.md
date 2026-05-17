@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Sysadmin (ISO seed) / Product Admin (tenant catalogue) &nbsp;·&nbsp; **ตาราง:** `tb_currency_iso`, `tb_currency`, `tb_exchange_rate` &nbsp;·&nbsp; **ใช้โดย:** ทุกเอกสารที่มีราคา + costing engine &nbsp;·&nbsp; สกุลเงินที่ tenant เปิดใช้งาน + cache อัตรา "ปัจจุบัน"
 
-![สกุลเงิน (Currency) screen](/assets/screenshots/master-data/currency.png)
+![สกุลเงิน (Currency) screen](/screenshots/master-data/currency.png)
 
 ## 1. คืออะไร / ใครใช้
 

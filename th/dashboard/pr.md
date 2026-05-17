@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Route:** `/dashboard/pr` &nbsp;·&nbsp; **สำหรับ:** Requester &nbsp;·&nbsp; HOD / Approver &nbsp;·&nbsp; Procurement &nbsp;·&nbsp; **สถานะ:** **ยังเป็น mock data ในปัจจุบัน**; live hook ถูกนิยามแล้วแต่ยังไม่ mount &nbsp;·&nbsp; **ขอบเขต:** ส่วนบุคคล — PR ของผู้ใช้ที่ลงชื่อเข้าใช้
 
-![แดชบอร์ดใบขอซื้อ (PR Dashboard) screen](/assets/screenshots/dashboard/pr.png)
+![แดชบอร์ดใบขอซื้อ (PR Dashboard) screen](/screenshots/dashboard/pr.png)
 
 ## 1. คืออะไรและสำหรับใคร
 

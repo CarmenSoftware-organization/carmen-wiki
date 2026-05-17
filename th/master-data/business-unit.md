@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Sysadmin &nbsp;·&nbsp; **ตาราง:** `tb_business_unit` (platform) &nbsp;·&nbsp; **ใช้โดย:** เอกสารธุรกรรมทุกใบ &nbsp;·&nbsp; Scope บนสุด — เป็นเจ้าของวิธี costing, default currency และการเปิดใช้งาน module
 
-![หน่วยธุรกิจ (Business Unit) screen](/assets/screenshots/master-data/business-unit.png)
+![หน่วยธุรกิจ (Business Unit) screen](/screenshots/master-data/business-unit.png)
 
 ## 1. คืออะไร / ใครใช้
 

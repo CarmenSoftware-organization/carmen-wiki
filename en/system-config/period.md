@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **Owner:** Sysadmin / Finance Manager &nbsp;·&nbsp; **Table:** `tb_period` (+ `tb_period_snapshot`) &nbsp;·&nbsp; **Used by:** GRN, IA, count, spot-check, costing engine &nbsp;·&nbsp; The accounting calendar — gates back-dating and drives costing close.
 
-![Period screen](/assets/screenshots/system-config/period.png)
+![Period screen](/screenshots/system-config/period.png)
 
 ## 1. What & Who
 

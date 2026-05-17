@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Route:** `/dashboard/po` &nbsp;·&nbsp; **For:** Purchaser &nbsp;·&nbsp; Procurement Manager &nbsp;·&nbsp; Receiver &nbsp;·&nbsp; **Status:** **Mock-data today**; live wiring pending
 
-![PO Dashboard screen](/assets/screenshots/dashboard/po.png)
+![PO Dashboard screen](/screenshots/dashboard/po.png)
 
 ## 1. What & Who
 

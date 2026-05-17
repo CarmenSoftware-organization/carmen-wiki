@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 > **At a Glance**
 > **Module purpose:** System of record for stock balances (product × warehouse × location × lot) and the movement stream feeding costing and period-end snapshots &nbsp;·&nbsp; **Audience:** Store Keeper, Inventory Controller, Finance &nbsp;·&nbsp; **Key entities/tables:** `InventoryStatus`, stock-movement records (`RECEIPT`/`ISSUE`/`TRANSFER`/`ADJUSTMENT`/`RETURN`/`WRITE_OFF`), `tb_period_snapshot`, lot/batch table &nbsp;·&nbsp; **Sub-pages:** 14
 
-![Inventory screen](/assets/screenshots/inventory/index.png)
+![Inventory screen](/screenshots/inventory/index.png)
 
 ## 1. Overview
 

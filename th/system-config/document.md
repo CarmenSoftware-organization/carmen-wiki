@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Sysadmin (delete); list / download ผ่าน App ID grant &nbsp;·&nbsp; **การจัดเก็บ:** Microservice `FILE_SERVICE` (S3-compatible) + metadata mirror ใน `tb_attachment` &nbsp;·&nbsp; **ใช้โดย:** การแนบไฟล์ PR / PO / GRN / SR / IA / count / pricelist / vendor / product &nbsp;·&nbsp; **จำกัด 10 MB, scope ตาม BU**
 
-![การจัดการเอกสาร (Document Management) screen](/assets/screenshots/system-config/document.png)
+![การจัดการเอกสาร (Document Management) screen](/screenshots/system-config/document.png)
 
 ## 1. คืออะไรและใครใช้
 

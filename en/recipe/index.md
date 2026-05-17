@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 > **At a Glance**
 > **Module purpose:** Costed, versioned production formulas (with sub-recipes, yield, wastage, prep steps) that drive theoretical consumption and food-cost variance against POS sales &nbsp;·&nbsp; **Audience:** Chef / Kitchen Manager, Cost Controller, Outlet Manager, F&B Operations, Procurement &nbsp;·&nbsp; **Key entities/tables:** `tb_recipe`, `tb_recipe_ingredient`, `tb_recipe_preparation_step`, `tb_recipe_yield_variant`, `tb_recipe_version`, `tb_recipe_pricing_history` &nbsp;·&nbsp; **Sub-pages:** 18
 
-![Recipe screen](/assets/screenshots/recipe/index.png)
+![Recipe screen](/screenshots/recipe/index.png)
 
 ## 1. Overview
 

@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Owner:** Procurement Manager / Product Admin &nbsp;·&nbsp; **Table:** `tb_purchase_request_template` (+ detail, comments) &nbsp;·&nbsp; **Workflow:** ไม่มี (config artefact) &nbsp;·&nbsp; **ใช้โดย:** [[purchase-request]] **Create PR from Template** &nbsp;·&nbsp; scaffold bundle รายการที่ใช้ซ้ำได้ ถูก clone ไปยัง PR ใหม่ตามต้องการ
 
-![เทมเพลตใบขอซื้อ (Purchase Request Template) screen](/assets/screenshots/templates/purchase-request.png)
+![เทมเพลตใบขอซื้อ (Purchase Request Template) screen](/screenshots/templates/purchase-request.png)
 
 ## 1. คืออะไรและสำหรับใคร
 

@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** บันทึกการรับสินค้าจริงตามใบ PO โพสต์การเคลื่อนไหวสต๊อกเข้า อัปเดต costing และสร้างรายการ AP (`Received` → `Committed` → `Voided`) &nbsp;·&nbsp; **ผู้ใช้:** Store Keeper / Receiver, Inventory Manager, Purchaser, Finance / AP &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_good_receive_note`, `tb_good_receive_note_detail`, `InventoryStatus`, `JournalEntry`, FIFO lot layers &nbsp;·&nbsp; **หน้าย่อย:** 12
 
-![ใบรับสินค้า (Goods Receive Note) screen](/assets/screenshots/good-receive-note/index.png)
+![ใบรับสินค้า (Goods Receive Note) screen](/screenshots/good-receive-note/index.png)
 
 ## 1. ภาพรวม
 

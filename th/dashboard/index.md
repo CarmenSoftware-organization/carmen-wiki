@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Route:** `/dashboard` (server-redirects ไปยัง `/dashboard/main`) &nbsp;·&nbsp; **สำหรับ:** ทุก role ของผู้ปฏิบัติงานหลังเข้าระบบ &nbsp;·&nbsp; **สถานะ:** **ยังเป็น mock data ในปัจจุบัน**; live hook ถูกนิยามไว้แล้วแต่ยังไม่ถูก mount
 
-![แดชบอร์ด (Dashboard) screen](/assets/screenshots/dashboard/index.png)
+![แดชบอร์ด (Dashboard) screen](/screenshots/dashboard/index.png)
 
 ## 1. คืออะไรและสำหรับใคร
 

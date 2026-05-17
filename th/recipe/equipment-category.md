@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Chef / Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_recipe_equipment_category` &nbsp;·&nbsp; **รูปทรง:** แบน (ไม่มี `parent_id`) &nbsp;·&nbsp; **ลูก:** [[recipe/equipment]] ผ่าน `category_id` &nbsp;·&nbsp; **ใช้โดย:** filter ของ equipment picker, dashboard maintenance, checklist การ fit-out
 
-![หมวดหมู่อุปกรณ์ (Equipment Category) screen](/assets/screenshots/recipe/equipment-category.png)
+![หมวดหมู่อุปกรณ์ (Equipment Category) screen](/screenshots/recipe/equipment-category.png)
 
 ## 1. คืออะไรและใครใช้
 

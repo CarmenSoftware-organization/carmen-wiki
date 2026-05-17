@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_extra_cost_type` (catalogue) + `tb_extra_cost` (per-GRN instance) &nbsp;·&nbsp; **ใช้โดย:** การจัดสรร landed cost ของ GRN &nbsp;·&nbsp; หมวดเช่น Freight / Duty / Handling พร้อมโหมดจัดสรร `by_value` / `by_qty` / `manual`
 
-![ประเภทค่าใช้จ่ายเพิ่ม (Extra Cost Type) screen](/assets/screenshots/master-data/extra-cost-type.png)
+![ประเภทค่าใช้จ่ายเพิ่ม (Extra Cost Type) screen](/screenshots/master-data/extra-cost-type.png)
 
 ## 1. คืออะไร / ใครใช้
 

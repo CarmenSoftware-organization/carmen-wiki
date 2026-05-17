@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_location` &nbsp;·&nbsp; **ใช้โดย:** inventory, GRN, SR, physical count, spot check, PR/PO &nbsp;·&nbsp; `location_type` (`inventory` / `direct` / `consignment`) ตัดสินพฤติกรรมการ posting
 
-![ที่ตั้ง / สถานที่ (Location) screen](/assets/screenshots/master-data/location.png)
+![ที่ตั้ง / สถานที่ (Location) screen](/screenshots/master-data/location.png)
 
 ## 1. คืออะไร / ใครใช้
 

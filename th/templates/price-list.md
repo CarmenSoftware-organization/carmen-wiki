@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **Owner:** Product Admin / Procurement Lead &nbsp;·&nbsp; **Table:** `tb_pricelist_template` &nbsp;·&nbsp; **ใช้โดย:** [[vendor-pricelist]] (รอบ RFQ spawn จาก template) &nbsp;·&nbsp; รูปร่างของรอบ pricelist — currency, validity, การเตือน, การ escalate
 
-![เทมเพลตรายการราคา (Price List Template) screen](/assets/screenshots/templates/price-list.png)
+![เทมเพลตรายการราคา (Price List Template) screen](/screenshots/templates/price-list.png)
 
 ## 1. คืออะไรและสำหรับใคร
 

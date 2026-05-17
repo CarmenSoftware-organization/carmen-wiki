@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_vendor`, `tb_vendor_address`, `tb_vendor_contact`, `tb_vendor_business_type` &nbsp;·&nbsp; **ใช้โดย:** PR, PO, GRN, pricelist, RFQ &nbsp;·&nbsp; ระเบียนผู้ขาย — default tax profile, credit term และ currency ลงบนเอกสารจัดซื้อ
 
-![ผู้ขาย (Vendor) screen](/assets/screenshots/master-data/vendor.png)
+![ผู้ขาย (Vendor) screen](/screenshots/master-data/vendor.png)
 
 ## 1. คืออะไร / ใครใช้
 

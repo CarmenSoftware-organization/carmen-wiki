@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 > **At a Glance**
 > **Module purpose:** Internal stock movement document — `Issue` (to a direct-cost destination) or `Transfer` (location-to-location) with approval workflow and three-quantity tracking (requested / approved / issued) &nbsp;·&nbsp; **Audience:** Outlet Manager / Requester, Approver, Store Keeper / Fulfiller, Receiver, Inventory Controller, Finance &nbsp;·&nbsp; **Key entities/tables:** `tb_store_requisition`, `tb_store_requisition_detail`, `StockMovement`, `JournalEntry`, `enum_doc_status`, `enum_sr_type` &nbsp;·&nbsp; **Sub-pages:** 15
 
-![Store Requisition screen](/assets/screenshots/store-requisition/index.png)
+![Store Requisition screen](/screenshots/store-requisition/index.png)
 
 ## 1. Overview
 

@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Owner:** Any workflow approver &nbsp;·&nbsp; **Table:** *none — projection over workflow state* &nbsp;·&nbsp; **Workflow:** read-only inbox &nbsp;·&nbsp; **Upstream:** [[purchase-request]], [[purchase-order]], [[purchase-order/credit-note]] &nbsp;·&nbsp; Aggregated personal inbox of documents awaiting the signed-in user's action.
 
-![My Approval screen](/assets/screenshots/purchase-request/my-approval.png)
+![My Approval screen](/screenshots/purchase-request/my-approval.png)
 
 ## 1. What & Who
 

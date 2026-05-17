@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Owner:** Inventory Controller (review / submit) &nbsp;·&nbsp; Cron service account (draft only) &nbsp;·&nbsp; **Table:** none dedicated — output is `tb_store_requisition` draft &nbsp;·&nbsp; **Trigger:** nightly cron (or on-demand) &nbsp;·&nbsp; **Inputs:** `tb_product_location` (min/max/par/reorder) + on-hand + on-order &nbsp;·&nbsp; **1-liner:** cron sweeps deficits and pre-fills SR drafts; humans approve.
 
-![Stock Replenishment screen](/assets/screenshots/store-requisition/stock-replenishment.png)
+![Stock Replenishment screen](/screenshots/store-requisition/stock-replenishment.png)
 
 ## 1. What & Who
 

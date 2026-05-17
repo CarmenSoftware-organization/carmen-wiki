@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Product Admin (หรือ Sysadmin) &nbsp;·&nbsp; **ตาราง:** `tb_tax_profile` &nbsp;·&nbsp; **ใช้โดย:** vendor, product, PR / PO / GRN / pricelist / credit note &nbsp;·&nbsp; อัตรามีชื่อ (`VAT 7%`, `Zero-rated`) — โหมดภาษีของบรรทัดตัดสินวิธีนำไปใช้
 
-![Profile ภาษี (Tax Profile) screen](/assets/screenshots/master-data/tax-profile.png)
+![Profile ภาษี (Tax Profile) screen](/screenshots/master-data/tax-profile.png)
 
 ## 1. คืออะไร / ใครใช้
 

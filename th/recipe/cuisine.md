@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Chef / Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_recipe_cuisines` &nbsp;·&nbsp; **รูปทรง:** list แบน ผูกกับ enum `region` 6 ค่า &nbsp;·&nbsp; **ใช้โดย:** ส่วนหัวของ [[recipe]], filter ของ library, menu engineering &nbsp;·&nbsp; **มี:** `popular_dishes` + `key_ingredients` ที่ดูแลคัดสรร
 
-![ประเภทอาหาร (Cuisine Type) screen](/assets/screenshots/recipe/cuisine.png)
+![ประเภทอาหาร (Cuisine Type) screen](/screenshots/recipe/cuisine.png)
 
 ## 1. คืออะไรและใครใช้
 

@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** System (read-only สำหรับ users) &nbsp;·&nbsp; **Tables:** `tb_inventory_transaction` (header) + `_detail` + `_cost_layer` &nbsp;·&nbsp; **Trigger:** ทุก source-document posting (GRN / SR / adjustment / wastage / count / close) &nbsp;·&nbsp; **ใช้โดย:** การคำนวณ balance + audit trace &nbsp;·&nbsp; **1-liner:** event tape ที่ immutable; **append-only, ไม่เคย update, ไม่เคย delete**
 
-![บันทึกธุรกรรมคลังสินค้า (Inventory Transaction Log) screen](/assets/screenshots/inventory/transaction.png)
+![บันทึกธุรกรรมคลังสินค้า (Inventory Transaction Log) screen](/screenshots/inventory/transaction.png)
 
 ## 1. ภาพรวมและผู้ใช้งาน
 

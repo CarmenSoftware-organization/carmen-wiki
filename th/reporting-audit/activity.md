@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Append-only (audit service) &nbsp;·&nbsp; **ตาราง:** `tb_activity` &nbsp;·&nbsp; **ใช้โดย:** chain audit ของทุกโมดูลธุรกรรม &nbsp;·&nbsp; Audit log ของ tenant — หนึ่งแถวต่อหนึ่งการเปลี่ยนสถานะที่มีความหมาย
 
-![บันทึกกิจกรรม (Activity) screen](/assets/screenshots/reporting-audit/activity.png)
+![บันทึกกิจกรรม (Activity) screen](/screenshots/reporting-audit/activity.png)
 
 ## 1. ภาพรวมและผู้ใช้งาน
 

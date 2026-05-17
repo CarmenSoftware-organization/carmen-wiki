@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_delivery_point` &nbsp;·&nbsp; **ใช้โดย:** PO, GRN, locations &nbsp;·&nbsp; ที่อยู่ทางกายภาพสำหรับ drop-off ของผู้ขาย
 
-![จุดส่งของ (Delivery Point) screen](/assets/screenshots/master-data/delivery-point.png)
+![จุดส่งของ (Delivery Point) screen](/screenshots/master-data/delivery-point.png)
 
 ## 1. คืออะไร / ใครใช้
 

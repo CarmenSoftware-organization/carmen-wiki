@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 > **At a Glance**
 > **Module purpose:** Scheduled full count of every item at a location, with recount workflow and variance posting via inventory adjustments &nbsp;·&nbsp; **Audience:** Inventory Controller (count lead), Counter / Store Keeper, Finance Reviewer, Auditor &nbsp;·&nbsp; **Key entities/tables:** `tb_physical_count_period`, `tb_physical_count`, `tb_physical_count_detail`, three comment tables, four `enum_physical_count_*` enums &nbsp;·&nbsp; **Sub-pages:** 10
 
-![Physical Count screen](/assets/screenshots/physical-count/index.png)
+![Physical Count screen](/screenshots/physical-count/index.png)
 
 ## 1. Overview
 

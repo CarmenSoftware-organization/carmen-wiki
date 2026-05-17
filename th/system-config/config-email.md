@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Sysadmin เท่านั้น &nbsp;·&nbsp; **การจัดเก็บ:** Row ใน `tb_application_config` (`key = "report_email"`) &nbsp;·&nbsp; **ใช้โดย:** `micro-notification`, รายงานตามตารางเวลา, การรีเซ็ตรหัสผ่าน, การแจ้งเตือนการตรวจสอบ &nbsp;·&nbsp; **หนึ่ง SMTP profile ต่อ BU; รหัสผ่าน SMTP เข้ารหัสตอนเก็บ**
 
-![การตั้งค่าอีเมล (Email Configuration) screen](/assets/screenshots/system-config/config-email.png)
+![การตั้งค่าอีเมล (Email Configuration) screen](/screenshots/system-config/config-email.png)
 
 ## 1. คืออะไรและใครใช้
 

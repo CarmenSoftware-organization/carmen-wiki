@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **Owner:** Product Admin &nbsp;·&nbsp; **Table:** `tb_credit_term` &nbsp;·&nbsp; **Used by:** purchase orders (default per vendor) &nbsp;·&nbsp; Named payment terms — `name` + day-count `value`.
 
-![Credit Term screen](/assets/screenshots/master-data/credit-term.png)
+![Credit Term screen](/screenshots/master-data/credit-term.png)
 
 ## 1. What & Who
 

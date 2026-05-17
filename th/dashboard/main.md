@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Route:** `/dashboard/main` (เข้าจาก `/dashboard` ผ่าน redirect ก็ได้) &nbsp;·&nbsp; **สำหรับ:** Executive / Controller / HOD หลังเข้าระบบ &nbsp;·&nbsp; **สถานะ:** Mock data ในปัจจุบัน; การเชื่อมต่อข้อมูลจริงรอ wire
 
-![แดชบอร์ดหลัก (Main Dashboard) screen](/assets/screenshots/dashboard/main.png)
+![แดชบอร์ดหลัก (Main Dashboard) screen](/screenshots/dashboard/main.png)
 
 ## 1. คืออะไรและสำหรับใคร
 

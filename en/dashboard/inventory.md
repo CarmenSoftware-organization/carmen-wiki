@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Route:** `/dashboard/inventory` &nbsp;·&nbsp; **For:** Inventory Controller &nbsp;·&nbsp; Store Manager &nbsp;·&nbsp; Finance &nbsp;·&nbsp; QA &nbsp;·&nbsp; **Status:** **Mock-data today**; live wiring pending
 
-![Inventory Dashboard screen](/assets/screenshots/dashboard/inventory.png)
+![Inventory Dashboard screen](/screenshots/dashboard/inventory.png)
 
 ## 1. What & Who
 

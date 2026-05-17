@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Route:** `/dashboard/sr` &nbsp;·&nbsp; **สำหรับ:** Requester / Store Staff &nbsp;·&nbsp; HOD / Approver &nbsp;·&nbsp; Dept Manager &nbsp;·&nbsp; **สถานะ:** **ยังเป็น mock data ในปัจจุบัน**; การ wire จริงรอ
 
-![แดชบอร์ดใบเบิกของสโตร์ (SR Dashboard) screen](/assets/screenshots/dashboard/sr.png)
+![แดชบอร์ดใบเบิกของสโตร์ (SR Dashboard) screen](/screenshots/dashboard/sr.png)
 
 ## 1. คืออะไรและสำหรับใคร
 

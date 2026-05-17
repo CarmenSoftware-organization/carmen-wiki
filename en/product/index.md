@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 > **At a Glance**
 > **Module purpose:** Product catalogue master — codes, categories, base/order/recipe units with conversions, location mapping, allergens, variants, and bulk import/export &nbsp;·&nbsp; **Audience:** Product Administrator, Purchaser, Store Keeper &nbsp;·&nbsp; **Key entities/tables:** `tb_product`, `tb_product_category`, `tb_product_unit_conversion`, `tb_product_location`, `tb_product_variant` &nbsp;·&nbsp; **Sub-pages:** 11
 
-![Product screen](/assets/screenshots/product/index.png)
+![Product screen](/screenshots/product/index.png)
 
 ## 1. Overview
 

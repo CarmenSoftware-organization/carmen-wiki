@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **Module purpose:** Document-flow and accounting-period machinery — approval workflows, accounting periods, dimensions, document numbering, app config, menu &nbsp;·&nbsp; **Audience:** Sysadmin, Workflow Administrator, Finance (period close) &nbsp;·&nbsp; **Key entities/tables:** `tb_workflow`, `tb_period`, `tb_dimension`, `tb_config_running_code`, `tb_application_config`, `tb_menu` &nbsp;·&nbsp; **Sub-pages:** 9
 
-![System Configuration screen](/assets/screenshots/system-config/index.png)
+![System Configuration screen](/screenshots/system-config/index.png)
 
 ## 1. Overview
 

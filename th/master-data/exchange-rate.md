@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_exchange_rate` &nbsp;·&nbsp; **ใช้โดย:** PR / PO / GRN / pricelist / costing &nbsp;·&nbsp; **Feed:** รายวัน (ด้วยมือหรือ cron)
 
-![อัตราแลกเปลี่ยน (Exchange Rate) screen](/assets/screenshots/master-data/exchange-rate.png)
+![อัตราแลกเปลี่ยน (Exchange Rate) screen](/screenshots/master-data/exchange-rate.png)
 
 ## 1. คืออะไร / ใครใช้
 

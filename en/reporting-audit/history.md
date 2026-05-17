@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Owner:** `micro-report` executor (read-only UI) &nbsp;·&nbsp; **Table:** `tb_report_job` &nbsp;·&nbsp; **Retention:** `expires_at` per tenant policy (artefact reaped; row kept) &nbsp;·&nbsp; **Used by:** Reports → History, Print History drawer &nbsp;·&nbsp; **Append-only audit log of every report run.**
 
-![Report History screen](/assets/screenshots/reporting-audit/history.png)
+![Report History screen](/screenshots/reporting-audit/history.png)
 
 ## 1. What & Who
 

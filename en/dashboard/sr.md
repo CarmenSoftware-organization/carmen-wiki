@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Route:** `/dashboard/sr` &nbsp;·&nbsp; **For:** Requester / Store Staff &nbsp;·&nbsp; HOD / Approver &nbsp;·&nbsp; Dept Manager &nbsp;·&nbsp; **Status:** **Mock-data today**; live wiring pending
 
-![SR Dashboard screen](/assets/screenshots/dashboard/sr.png)
+![SR Dashboard screen](/screenshots/dashboard/sr.png)
 
 ## 1. What & Who
 

@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **Owner:** Product Admin &nbsp;·&nbsp; **Table:** `tb_credit_note_reason` &nbsp;·&nbsp; **Used by:** credit-note flow (return-to-vendor, price correction) &nbsp;·&nbsp; The *why* behind every credit note raised against a GRN.
 
-![Credit Note Reason screen](/assets/screenshots/master-data/credit-note-reason.png)
+![Credit Note Reason screen](/screenshots/master-data/credit-note-reason.png)
 
 ## 1. What & Who
 

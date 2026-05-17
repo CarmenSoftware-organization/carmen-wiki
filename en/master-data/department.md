@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **Owner:** Product Admin (list) / Sysadmin (user mapping) &nbsp;·&nbsp; **Tables:** `tb_department`, `tb_department_user` &nbsp;·&nbsp; **Used by:** PR, SR, approval workflows, RBAC, reports &nbsp;·&nbsp; Cost-centre + requesting-unit dimension; resolves Head-of-Department reviewer.
 
-![Department screen](/assets/screenshots/master-data/department.png)
+![Department screen](/screenshots/master-data/department.png)
 
 ## 1. What & Who
 

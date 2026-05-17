@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **Owner:** Product Admin &nbsp;·&nbsp; **Table:** `tb_location` &nbsp;·&nbsp; **Used by:** inventory, GRN, SR, physical count, spot check, PR/PO &nbsp;·&nbsp; `location_type` (`inventory` / `direct` / `consignment`) decides posting behaviour.
 
-![Location screen](/assets/screenshots/master-data/location.png)
+![Location screen](/screenshots/master-data/location.png)
 
 ## 1. What & Who
 

@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Chef / Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_recipe_category` &nbsp;·&nbsp; **รูปทรง:** ต้นไม้เชิงลำดับชั้น (self-FK บน `parent_id`) &nbsp;·&nbsp; **ใช้โดย:** ส่วนหัวของ [[recipe]], menu engineering, รายงาน cost-band &nbsp;·&nbsp; **Seed:** `default_cost_settings` + `default_margins` ลงในสูตรใหม่
 
-![หมวดหมู่สูตรอาหาร (Recipe Category) screen](/assets/screenshots/recipe/category.png)
+![หมวดหมู่สูตรอาหาร (Recipe Category) screen](/screenshots/recipe/category.png)
 
 ## 1. คืออะไรและใครใช้
 

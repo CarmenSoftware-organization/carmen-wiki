@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Owner:** Finance (trigger) &nbsp;·&nbsp; Inventory Manager (prerequisite checklist) &nbsp;·&nbsp; **Process:** orchestrator over `tb_period` / `tb_period_snapshot` &nbsp;·&nbsp; **Trigger:** monthly close on the open period &nbsp;·&nbsp; **Writes to:** costing snapshot + GL handoff + backdating lock &nbsp;·&nbsp; **1-liner:** freezes the period and produces the per-lot snapshot.
 
-![Period End screen](/assets/screenshots/inventory/period-end.png)
+![Period End screen](/screenshots/inventory/period-end.png)
 
 ## 1. What & Who
 

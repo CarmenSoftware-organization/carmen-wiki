@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Owner:** Procurement / AP &nbsp;·&nbsp; **Table:** `tb_credit_note` (+ detail, comments) &nbsp;·&nbsp; **Workflow:** reuses PO-side definition &nbsp;·&nbsp; **Upstream:** [[good-receive-note]] &nbsp;·&nbsp; Post-receipt offset against a prior GRN — reverses AP and either returns goods or revalues cost.
 
-![Credit Note screen](/assets/screenshots/purchase-order/credit-note.png)
+![Credit Note screen](/screenshots/purchase-order/credit-note.png)
 
 ## 1. What & Who
 

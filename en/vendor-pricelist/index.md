@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 > **At a Glance**
 > **Module purpose:** Vendor-specific, time-bound MOQ-tiered price catalogue collected via a 6-phase campaign / portal workflow — the reference for PR / PO / GRN pricing and variance &nbsp;·&nbsp; **Audience:** Purchaser, Purchasing Manager, Vendor (external portal), Finance, Auditor &nbsp;·&nbsp; **Key entities/tables:** `tb_pricelist`, `tb_pricelist_detail`, `tb_request_for_pricing`, `tb_pricelist_template`, [[vendor-pricelist/request-price-list]] &nbsp;·&nbsp; **Sub-pages:** 13
 
-![Vendor Pricelist screen](/assets/screenshots/vendor-pricelist/index.png)
+![Vendor Pricelist screen](/screenshots/vendor-pricelist/index.png)
 
 ## 1. Overview
 

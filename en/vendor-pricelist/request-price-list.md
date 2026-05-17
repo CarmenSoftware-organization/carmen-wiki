@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Owner:** Purchaser / Procurement Manager &nbsp;·&nbsp; **Table:** `tb_request_for_pricing` (+ detail, comments) &nbsp;·&nbsp; **Workflow:** none (date-window driven) &nbsp;·&nbsp; **Upstream:** [[templates/price-list]] &nbsp;·&nbsp; Solicits price quotes from vendors before a `tb_pricelist` is awarded.
 
-![Request for Quotation screen](/assets/screenshots/vendor-pricelist/request-price-list.png)
+![Request for Quotation screen](/screenshots/vendor-pricelist/request-price-list.png)
 
 ## 1. What & Who
 

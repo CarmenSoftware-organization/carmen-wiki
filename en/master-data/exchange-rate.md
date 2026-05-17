@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Owner:** Product Admin &nbsp;·&nbsp; **Table:** `tb_exchange_rate` &nbsp;·&nbsp; **Used by:** PR / PO / GRN / pricelist / costing &nbsp;·&nbsp; **Feed:** daily (manual or cron)
 
-![Exchange Rate screen](/assets/screenshots/master-data/exchange-rate.png)
+![Exchange Rate screen](/screenshots/master-data/exchange-rate.png)
 
 ## 1. What & Who
 

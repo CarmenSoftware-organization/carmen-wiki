@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Sysadmin / Workflow Administrator &nbsp;·&nbsp; **ตาราง:** `tb_workflow` &nbsp;·&nbsp; **ใช้โดย:** PR / SR / PO (โมดูลที่มีการอนุมัติ) &nbsp;·&nbsp; นิยามสาย stage — action, ผู้รับ, SLA, ฟิลด์ที่ซ่อน, ผู้ได้รับมอบหมาย
 
-![เวิร์กโฟลว์ (Workflow) screen](/assets/screenshots/system-config/workflow.png)
+![เวิร์กโฟลว์ (Workflow) screen](/screenshots/system-config/workflow.png)
 
 ## 1. คืออะไรและใครใช้
 

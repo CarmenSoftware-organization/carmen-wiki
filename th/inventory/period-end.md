@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Finance (trigger) &nbsp;·&nbsp; Inventory Manager (prerequisite checklist) &nbsp;·&nbsp; **กระบวนการ:** orchestrator เหนือ `tb_period` / `tb_period_snapshot` &nbsp;·&nbsp; **Trigger:** การปิดรายเดือนบนงวดที่เปิด &nbsp;·&nbsp; **เขียนถึง:** snapshot costing + GL handoff + lock การ backdate &nbsp;·&nbsp; **1-liner:** freeze งวดและผลิต snapshot ต่อ lot
 
-![ปิดงวด (Period End) screen](/assets/screenshots/inventory/period-end.png)
+![ปิดงวด (Period End) screen](/screenshots/inventory/period-end.png)
 
 ## 1. ภาพรวมและผู้ใช้งาน
 

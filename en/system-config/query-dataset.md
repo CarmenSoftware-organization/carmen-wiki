@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Owner:** Sysadmin only (`sql-query.*` App IDs) &nbsp;·&nbsp; **Storage:** PostgreSQL catalog (`pg_class`, `pg_proc`) in the tenant schema — **no `tb_query_dataset`** &nbsp;·&nbsp; **Used by:** [[reporting-audit/report]], [[reporting-audit/widget]], [[reporting-audit/schedule]] &nbsp;·&nbsp; **Run is read-only; 30-second timeout.**
 
-![Query Dataset screen](/assets/screenshots/system-config/query-dataset.png)
+![Query Dataset screen](/screenshots/system-config/query-dataset.png)
 
 ## 1. What & Who
 

@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **Owner:** Sysadmin &nbsp;·&nbsp; **Table:** `tb_business_unit` (platform) &nbsp;·&nbsp; **Used by:** every transactional document &nbsp;·&nbsp; Top-level scope — owns costing method, default currency, and module enablement.
 
-![Business Unit screen](/assets/screenshots/master-data/business-unit.png)
+![Business Unit screen](/screenshots/master-data/business-unit.png)
 
 ## 1. What & Who
 

@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** แคตตาล็อกของระเบียนที่มีชื่อ (หน่วยนับ ผู้ขาย สกุลเงิน สถานที่ Profile ภาษี รหัสเหตุผล) ที่เอกสารธุรกรรมอ้างอิงผ่าน FK + denormalised snapshot &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Product Admin, Configurator, Sysadmin &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_unit`, `tb_vendor`, `tb_currency` + `tb_exchange_rate`, `tb_tax_profile`, `tb_location` &nbsp;·&nbsp; **หน้าย่อย:** 13
 
-![ข้อมูลหลัก (Master Data) screen](/assets/screenshots/master-data/index.png)
+![ข้อมูลหลัก (Master Data) screen](/screenshots/master-data/index.png)
 
 ## 1. ภาพรวม
 

@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Owner:** Sysadmin / schedule-admin &nbsp;·&nbsp; **Table:** `tb_report_schedule` &nbsp;·&nbsp; **Retention:** indefinite (soft-delete only); artefacts age out via [[reporting-audit/history]] &nbsp;·&nbsp; **Used by:** `micro-cronjobs` poller &nbsp;·&nbsp; **Pairs a report template with a cron expression, frozen filters, and a delivery list.**
 
-![Report Schedule screen](/assets/screenshots/reporting-audit/schedule.png)
+![Report Schedule screen](/screenshots/reporting-audit/schedule.png)
 
 ## 1. What & Who
 

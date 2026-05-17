@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_credit_term` &nbsp;·&nbsp; **ใช้โดย:** ใบสั่งซื้อ (default ต่อผู้ขาย) &nbsp;·&nbsp; เงื่อนไขการชำระเงินแบบมีชื่อ — `name` + `value` (จำนวนวัน)
 
-![เงื่อนไขการชำระเงิน (Credit Term) screen](/assets/screenshots/master-data/credit-term.png)
+![เงื่อนไขการชำระเงิน (Credit Term) screen](/screenshots/master-data/credit-term.png)
 
 ## 1. คืออะไร / ใครใช้
 

@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **Owner:** Product Admin &nbsp;·&nbsp; **Tables:** `tb_unit`, `tb_unit_conversion` &nbsp;·&nbsp; **Used by:** product, recipe, PR / PO / GRN / SR / inventory / costing &nbsp;·&nbsp; Inventory + order units and the multipliers between them.
 
-![Unit screen](/assets/screenshots/master-data/unit.png)
+![Unit screen](/screenshots/master-data/unit.png)
 
 ## 1. What & Who
 

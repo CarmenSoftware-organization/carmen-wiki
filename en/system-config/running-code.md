@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **Owner:** Sysadmin &nbsp;·&nbsp; **Table:** `tb_config_running_code` &nbsp;·&nbsp; **Used by:** numbering service on every document create &nbsp;·&nbsp; Document-numbering rules — `PR202605-00001` etc.
 
-![Running Code screen](/assets/screenshots/system-config/running-code.png)
+![Running Code screen](/screenshots/system-config/running-code.png)
 
 ## 1. What & Who
 

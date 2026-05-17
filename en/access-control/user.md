@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **Owner:** Sysadmin (+ Security Officer for credentials) &nbsp;·&nbsp; **Table:** `tb_user` (+ `tb_user_profile`, `tb_password`, `tb_user_login_session`) &nbsp;·&nbsp; **Used by:** every `*_by_id` audit column in the system &nbsp;·&nbsp; Identity layer — the most-FK'd entity in the platform.
 
-![User screen](/assets/screenshots/access-control/user.png)
+![User screen](/screenshots/access-control/user.png)
 
 ## 1. What & Who
 

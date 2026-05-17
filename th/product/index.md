@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** แคตตาล็อกข้อมูลหลักของสินค้า — รหัส หมวดหมู่ หน่วยฐาน/หน่วยสั่งซื้อ/หน่วยสูตรอาหารพร้อมการแปลงหน่วย การจับคู่กับคลังจัดเก็บ สารก่อภูมิแพ้ ตัวแปร และการนำเข้า/ส่งออกเป็นชุด &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Product Administrator, Purchaser, Store Keeper &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_product`, `tb_product_category`, `tb_product_unit_conversion`, `tb_product_location`, `tb_product_variant` &nbsp;·&nbsp; **หน้าย่อย:** 11
 
-![สินค้า (Product) screen](/assets/screenshots/product/index.png)
+![สินค้า (Product) screen](/screenshots/product/index.png)
 
 ## 1. ภาพรวม
 

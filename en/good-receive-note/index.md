@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 > **At a Glance**
 > **Module purpose:** Records physical receipt of goods against a PO, posts stock-IN movements, updates costing, and creates AP entries (`Received` → `Committed` → `Voided`) &nbsp;·&nbsp; **Audience:** Store Keeper / Receiver, Inventory Manager, Purchaser, Finance / AP &nbsp;·&nbsp; **Key entities/tables:** `tb_good_receive_note`, `tb_good_receive_note_detail`, `InventoryStatus`, `JournalEntry`, FIFO lot layers &nbsp;·&nbsp; **Sub-pages:** 12
 
-![Good Receive Note (GRN) screen](/assets/screenshots/good-receive-note/index.png)
+![Good Receive Note (GRN) screen](/screenshots/good-receive-note/index.png)
 
 ## 1. Overview
 

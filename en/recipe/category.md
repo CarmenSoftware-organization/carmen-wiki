@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Owner:** Chef / Product Admin &nbsp;·&nbsp; **Table:** `tb_recipe_category` &nbsp;·&nbsp; **Shape:** Hierarchical tree (self-FK on `parent_id`) &nbsp;·&nbsp; **Used by:** [[recipe]] header, menu engineering, cost-band reports &nbsp;·&nbsp; **Seeds:** `default_cost_settings` + `default_margins` onto new recipes
 
-![Recipe Category screen](/assets/screenshots/recipe/category.png)
+![Recipe Category screen](/screenshots/recipe/category.png)
 
 ## 1. What & Who
 

@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Route:** `/dashboard/pr` &nbsp;·&nbsp; **For:** Requester &nbsp;·&nbsp; HOD / Approver &nbsp;·&nbsp; Procurement &nbsp;·&nbsp; **Status:** **Mock-data today**; live hooks defined but not mounted &nbsp;·&nbsp; **Scope:** Personal — the signed-in user's PRs
 
-![PR Dashboard screen](/assets/screenshots/dashboard/pr.png)
+![PR Dashboard screen](/screenshots/dashboard/pr.png)
 
 ## 1. What & Who
 

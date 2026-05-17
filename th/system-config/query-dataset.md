@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Sysadmin เท่านั้น (`sql-query.*` App IDs) &nbsp;·&nbsp; **การจัดเก็บ:** PostgreSQL catalog (`pg_class`, `pg_proc`) ใน tenant schema — **ไม่มี `tb_query_dataset`** &nbsp;·&nbsp; **ใช้โดย:** [[reporting-audit/report]], [[reporting-audit/widget]], [[reporting-audit/schedule]] &nbsp;·&nbsp; **Run เป็น read-only; timeout 30 วินาที**
 
-![Query Dataset screen](/assets/screenshots/system-config/query-dataset.png)
+![Query Dataset screen](/screenshots/system-config/query-dataset.png)
 
 ## 1. คืออะไรและใครใช้
 

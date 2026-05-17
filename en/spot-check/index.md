@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 > **At a Glance**
 > **Module purpose:** Narrow-scope targeted partial count (random / risk-based / event-driven) with recount and variance-to-adjustment posting &nbsp;·&nbsp; **Audience:** Inventory Controller, Counter, Auditor &nbsp;·&nbsp; **Key entities/tables:** `tb_spot_check`, `tb_spot_check_detail`, two comment tables, `enum_spot_check_status`, `enum_spot_check_method` &nbsp;·&nbsp; **Sub-pages:** 10
 
-![Spot Check screen](/assets/screenshots/spot-check/index.png)
+![Spot Check screen](/screenshots/spot-check/index.png)
 
 ## 1. Overview
 

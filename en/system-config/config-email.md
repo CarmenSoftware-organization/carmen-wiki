@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Owner:** Sysadmin only &nbsp;·&nbsp; **Storage:** `tb_application_config` row (`key = "report_email"`) &nbsp;·&nbsp; **Used by:** `micro-notification`, scheduled reports, password reset, audit alerts &nbsp;·&nbsp; **One SMTP profile per BU; SMTP password encrypted at rest.**
 
-![Email Configuration screen](/assets/screenshots/system-config/config-email.png)
+![Email Configuration screen](/screenshots/system-config/config-email.png)
 
 ## 1. What & Who
 

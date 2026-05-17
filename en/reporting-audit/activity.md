@@ -13,7 +13,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **Owner:** Append-only (audit service) &nbsp;·&nbsp; **Table:** `tb_activity` &nbsp;·&nbsp; **Used by:** every transactional module's audit chain &nbsp;·&nbsp; The tenant audit log — one row per meaningful state change.
 
-![Activity screen](/assets/screenshots/reporting-audit/activity.png)
+![Activity screen](/screenshots/reporting-audit/activity.png)
 
 ## 1. What & Who
 
