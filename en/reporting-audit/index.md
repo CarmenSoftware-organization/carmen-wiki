@@ -13,8 +13,6 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **Module purpose:** Cross-cutting plumbing for activity audit log, polymorphic attachments, inbox notifications, report job/template pipeline, and dashboard widgets &nbsp;·&nbsp; **Audience:** Auditor (read), Sysadmin (config), Platform Admin (cross-tenant), every module (write) &nbsp;·&nbsp; **Key entities/tables:** `tb_activity`, `tb_attachment`, `tb_notification`, `tb_report_template` + `tb_report_job`, `tb_widget_dashboard` &nbsp;·&nbsp; **Sub-pages:** 8
 
-![Reporting and Audit screen](/assets/screenshots/reporting-audit/index.png)
-
 ## 1. Overview
 
 Reporting and Audit is the umbrella for **what happened, what was attached, who got told, what gets exported, and what gets shown on the dashboard**. Five entities cover the surface. [[reporting-audit/activity]] is the append-only tenant audit log — one row per meaningful state change, with actor, old/new snapshots, IP, and user agent. [[reporting-audit/attachment]] is the generic file-storage entity that every transactional module links to for quotations, dockets, photos, and signed paperwork. [[reporting-audit/notification]] is the platform-side fan-out for inbox messages, reusable templates, and broadcast news. [[reporting-audit/report]] is the four-table pipeline (tenant jobs + schedules, platform templates + print mappings) that produces every analytical export and every "Print" output. [[reporting-audit/widget]] is the dashboard composition layer — per-scope dashboards, default layouts, and saved workspaces.

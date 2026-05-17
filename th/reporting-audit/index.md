@@ -13,8 +13,6 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** ระบบโครงสร้างพื้นฐานที่ใช้ร่วมกันสำหรับ activity audit log, ไฟล์แนบแบบ polymorphic, การแจ้งเตือนใน inbox, pipeline ของ report job / template และ widget สำหรับ dashboard &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Auditor (อ่าน), Sysadmin (ตั้งค่า), Platform Admin (ข้าม tenant), ทุกโมดูล (เขียน) &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_activity`, `tb_attachment`, `tb_notification`, `tb_report_template` + `tb_report_job`, `tb_widget_dashboard` &nbsp;·&nbsp; **หน้าย่อย:** 8
 
-![รายงานและการตรวจสอบ (Reporting & Audit) screen](/assets/screenshots/reporting-audit/index.png)
-
 ## 1. ภาพรวม
 
 Reporting and Audit คือร่มของระบบที่ครอบ **เกิดอะไรขึ้น, อะไรถูกแนบ, ใครได้รับการแจ้งเตือน, อะไรถูกส่งออก และอะไรแสดงบน dashboard** ครอบคลุมด้วยห้าเอนทิตี [[reporting-audit/activity]] คือ audit log ของ tenant แบบ append-only — หนึ่งแถวต่อหนึ่งการเปลี่ยนสถานะที่มีความหมาย พร้อม actor, snapshot เก่า/ใหม่, IP และ user agent [[reporting-audit/attachment]] คือเอนทิตีจัดเก็บไฟล์แบบ generic ที่ทุกโมดูลธุรกรรมเชื่อมโยงไปสำหรับใบเสนอราคา, docket, รูปภาพ และเอกสารที่มีลายเซ็น [[reporting-audit/notification]] คือ fan-out ฝั่งแพลตฟอร์มสำหรับข้อความ inbox, message template ที่ใช้ซ้ำได้ และข่าวประกาศ broadcast [[reporting-audit/report]] คือ pipeline สี่ตาราง (tenant jobs + schedules, platform templates + print mappings) ที่ผลิต analytical export และ output ของ "Print" ทุกตัว [[reporting-audit/widget]] คือชั้นการประกอบ dashboard — dashboard ตาม scope, default layout และ workspace ที่บันทึกไว้

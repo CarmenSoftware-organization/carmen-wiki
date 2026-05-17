@@ -13,8 +13,6 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Sysadmin (schedule) + Platform Admin (template, mapping) &nbsp;·&nbsp; **ตาราง:** `tb_report_job` + `tb_report_schedule` (tenant), `tb_report_template` + `tb_print_template_mapping` (platform) &nbsp;·&nbsp; **ใช้โดย:** ทุกปุ่ม "Print" + dashboard / scheduled export &nbsp;·&nbsp; Pipeline เต็มของรายงานและ print layout
 
-![รายงาน (Report) screen](/assets/screenshots/reporting-audit/report.png)
-
 ## 1. ภาพรวมและผู้ใช้งาน
 
 เอนทิตี report คือ **pipeline เต็มของการสร้างรายงาน** — การ export แบบ ad-hoc on-demand + การ export แบบเกิดซ้ำตามเวลา + print layout เบื้องหลังทุกปุ่ม "Print" สี่ตารางข้ามสอง schema:

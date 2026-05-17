@@ -13,8 +13,6 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **Owner:** Sysadmin (schedules) + Platform Admin (templates, mappings) &nbsp;·&nbsp; **Table:** `tb_report_job` + `tb_report_schedule` (tenant), `tb_report_template` + `tb_print_template_mapping` (platform) &nbsp;·&nbsp; **Used by:** every "Print" button + dashboard / scheduled exports &nbsp;·&nbsp; Full report and print-layout pipeline.
 
-![Report screen](/assets/screenshots/reporting-audit/report.png)
-
 ## 1. What & Who
 
 The report entity is the full **report generation pipeline** — ad-hoc on-demand exports + scheduled recurring exports + the print layout behind every "Print" button. Four tables across two schemas:

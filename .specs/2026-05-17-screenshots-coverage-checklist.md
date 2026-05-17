@@ -2,7 +2,7 @@
 
 **Created:** 2026-05-17
 **Baseline commit:** `f260b0f` — embedded 34 screenshots across 68 pages (34 EN + 34 TH)
-**Round 2 (this update):** 34 existing PNGs refreshed from Carmen frontend; 27 NEW PNGs captured and embedded across 54 more pages (27 EN + 27 TH). Total: **61 PNGs embedded into 122 pages.**
+**Round 2 (this update):** 34 existing PNGs refreshed from Carmen frontend; 25 NEW PNGs captured and embedded across 50 more pages (25 EN + 25 TH). Total: **59 PNGs embedded into 118 pages.** (`/report` returned a backend error so `reporting-audit/index.png` and `reporting-audit/report.png` were rolled back — see deferred list.)
 
 ## How to use
 
@@ -31,7 +31,7 @@ See `[[screenshot-pattern]]` memory for the full convention. Capture flow: log i
 
 - [x] `dashboard/index.md` ← `dashboard/index.png` ← `/dashboard` (redirects to `/dashboard/main`)
 - [x] `inventory/index.md` ← `inventory/index.png` ← `/inventory-management`
-- [x] `reporting-audit/index.md` ← `reporting-audit/index.png` ← `/report`
+- [ ] `reporting-audit/index.md` ← `/report` — **blocked: backend error** ("Unable to load reports services"). Capture aborted; embed removed.
 - [x] `master-data/index.md` ← `master-data/index.png` ← `/config`
 - [x] `system-config/index.md` ← `system-config/index.png` ← `/system-admin`
 - [ ] `templates/index.md` — **deferred** (no `/templates` landing in app; module index is wiki-only. Could reuse one of `templates/price-list.png` or `templates/purchase-request.png`.)
@@ -46,6 +46,7 @@ See `[[screenshot-pattern]]` memory for the full convention. Capture flow: log i
 - [ ] `costing/calculation-methods.md` — **out of scope** (concept page, no UI)
 
 ### reporting-audit
+- [ ] `reporting-audit/report.md` ← `/report` — **blocked: backend error** ("Unable to load reports services"). Embed removed; was part of round-1 baseline. Re-capture when backend stabilises.
 - [x] `reporting-audit/activity.md` ← `/system-admin/activity-log`
 - [x] `reporting-audit/schedule.md` ← `/report/schedules`
 - [x] `reporting-audit/user-activity.md` ← `/system-admin/user-activity`
@@ -90,11 +91,11 @@ See `[[screenshot-pattern]]` memory for the full convention. Capture flow: log i
 
 | Bucket | Captured this round | Remaining (deferred) |
 |---|---:|---:|
-| Module index | 5 | 3 (`templates/index`, `costing/index`, `access-control/index`) |
-| Sub-page | 22 | 10 (1 costing + 3 reporting-audit + 3 access-control + 3 system-config) |
-| **Total** | **27** | **13** |
+| Module index | 4 | 4 (`templates/index`, `costing/index`, `access-control/index`, `reporting-audit/index` — last blocked by backend) |
+| Sub-page | 21 | 11 (1 costing + 4 reporting-audit incl. `report` + 3 access-control + 3 system-config) |
+| **Total** | **25** | **15** |
 
-Embedded into 27 EN + 27 TH = 54 pages. Plus 34 refreshed PNGs (same paths, no .md edits needed) = **61 PNGs embedded into 122 pages total**.
+Embedded into 25 EN + 25 TH = 50 pages. Plus 32 refreshed PNGs (same paths, no .md edits needed) = **57 PNGs successfully embedded across 114 pages**. (Round-1 had 34 PNGs; 2 were rolled back due to `/report` backend error.)
 
 ## Out of scope (permanent)
 
