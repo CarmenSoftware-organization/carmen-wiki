@@ -339,3 +339,39 @@ def push_navigation(
         raise SystemExit(
             f"updateTree failed: code={rr['errorCode']} message={rr['message']}"
         )
+
+
+# ===== Section 9: Reporting =====
+
+
+def format_item_line(
+    en_item: dict[str, Any],
+    th_item: dict[str, Any],
+    source: LabelSource,
+) -> str:
+    """Single-line verbose report entry for one transformed nav item."""
+    marker = "⚠" if source == LabelSource.FALLBACK else "✓"
+    kind = en_item["kind"]
+    if kind == "header":
+        return (
+            f"  {marker} header  {en_item['label']!r:30s} →  "
+            f"{th_item['label']!r}   [{source.value}]"
+        )
+    if kind == "divider":
+        return f"  {marker} divider"
+    # link
+    return (
+        f"  {marker} link    {en_item['target']:30s} →  "
+        f"{th_item['target']:30s} {th_item['label']!r}  [{source.value}]"
+    )
+
+
+def format_summary(total: int, counts: dict[str, int]) -> str:
+    """Single-line summary across all items."""
+    return (
+        f"Summary: {total} items  "
+        f"·  {counts.get('frontmatter', 0)} frontmatter  "
+        f"·  {counts.get('home.md', 0)} home.md  "
+        f"·  {counts.get('override', 0)} override  "
+        f"·  {counts.get('fallback', 0)} fallback"
+    )

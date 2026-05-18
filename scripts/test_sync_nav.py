@@ -351,3 +351,41 @@ def test_transform_items_counts_sources(tmp_path: Path):
         "fallback": 1,
         "none": 1,
     }
+
+
+from scripts.sync_nav import format_item_line, format_summary
+
+
+def test_format_item_line_link_page():
+    en = _item(target="/en/purchase-request", label="Purchase Request")
+    th = _item(target="/th/purchase-request", label="คำขอซื้อ")
+    line = format_item_line(en, th, LabelSource.FRONTMATTER)
+    assert "/en/purchase-request" in line
+    assert "/th/purchase-request" in line
+    assert "คำขอซื้อ" in line
+    assert "[frontmatter]" in line
+    assert line.startswith("  ✓")
+
+
+def test_format_item_line_fallback_has_warning_marker():
+    en = _item(target="/en/missing", label="Missing")
+    th = _item(target="/th/missing", label="Missing")
+    line = format_item_line(en, th, LabelSource.FALLBACK)
+    assert line.startswith("  ⚠")
+    assert "[fallback]" in line
+
+
+def test_format_summary_one_line():
+    counts = {
+        "frontmatter": 29,
+        "home.md": 6,
+        "override": 4,
+        "fallback": 3,
+        "none": 0,
+    }
+    s = format_summary(42, counts)
+    assert "42 items" in s
+    assert "29 frontmatter" in s
+    assert "6 home.md" in s
+    assert "4 override" in s
+    assert "3 fallback" in s
