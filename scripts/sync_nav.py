@@ -8,6 +8,8 @@ import logging
 import re
 from pathlib import Path
 
+import yaml
+
 log = logging.getLogger("sync_nav")
 
 
@@ -46,3 +48,15 @@ def build_header_label_map(en_headings: list[str], th_headings: list[str]) -> di
         )
     pairs = zip(en_headings, th_headings)
     return {en: th for en, th in pairs}
+
+
+# ===== Section 2: Overrides loader =====
+
+
+def load_overrides(path: Path) -> dict[str, dict[str, str]]:
+    """Load nav-overrides.yaml; missing sections default to empty dicts."""
+    raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    return {
+        "headers": dict(raw.get("headers") or {}),
+        "links": dict(raw.get("links") or {}),
+    }

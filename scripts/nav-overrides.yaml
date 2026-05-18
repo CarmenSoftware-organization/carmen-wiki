@@ -1,0 +1,15 @@
+# Manual TH label overrides for Wiki.js navigation sync.
+#
+# Used only when the primary sources cannot resolve a label:
+#   - headers/: when EN heading text has no match in th/home.md
+#   - links/:   for kind=link items with targetType=url (external URLs)
+#
+# Keys must match EXACTLY (case-sensitive, whitespace-preserved).
+
+headers: {}
+  # Example:
+  # "Procure-to-Pay": "จัดซื้อจัดจ้าง (Procure-to-Pay)"
+
+links: {}
+  # Example:
+  # "https://github.com/CarmenSoftware-organization/carmen-wiki": "GitHub repository"

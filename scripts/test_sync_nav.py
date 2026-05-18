@@ -56,3 +56,37 @@ def test_build_header_label_map_mismatch_returns_partial_and_warns(caplog):
         out = build_header_label_map(en, th)
     assert out == {"A": "ก", "B": "ข"}
     assert any("home.md heading count" in r.message for r in caplog.records)
+
+
+from scripts.sync_nav import load_overrides
+
+
+def test_load_overrides_parses_headers_and_links(tmp_path: Path):
+    cfg = tmp_path / "nav-overrides.yaml"
+    cfg.write_text(
+        'headers:\n'
+        '  "Procure-to-Pay": "จัดซื้อ"\n'
+        'links:\n'
+        '  "https://example.com": "ตัวอย่าง"\n',
+        encoding="utf-8",
+    )
+    out = load_overrides(cfg)
+    assert out == {
+        "headers": {"Procure-to-Pay": "จัดซื้อ"},
+        "links": {"https://example.com": "ตัวอย่าง"},
+    }
+
+
+def test_load_overrides_empty_sections(tmp_path: Path):
+    """Empty mappings (`{}`) become empty dicts."""
+    cfg = tmp_path / "nav-overrides.yaml"
+    cfg.write_text("headers: {}\nlinks: {}\n", encoding="utf-8")
+    assert load_overrides(cfg) == {"headers": {}, "links": {}}
+
+
+def test_load_overrides_missing_section_defaults_to_empty(tmp_path: Path):
+    """If `headers:` or `links:` is omitted, default to empty dict."""
+    cfg = tmp_path / "nav-overrides.yaml"
+    cfg.write_text("headers:\n  A: B\n", encoding="utf-8")
+    out = load_overrides(cfg)
+    assert out == {"headers": {"A": "B"}, "links": {}}
