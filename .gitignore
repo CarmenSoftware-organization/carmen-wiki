@@ -15,3 +15,9 @@ __pycache__/
 # Playwright MCP artifacts (browser snapshots, console logs, screenshots)
 .playwright-mcp/
 /*.png
+
+# Sync-nav script — local env and pytest artifacts
+.env
+scripts/.env
+.pytest_cache/
+.venv/
