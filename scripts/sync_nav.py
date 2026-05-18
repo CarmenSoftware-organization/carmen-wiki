@@ -176,3 +176,55 @@ def transform_item(
     # Defensive: copy mutable nested fields so caller can't mutate ours
     new["visibilityGroups"] = list(new.get("visibilityGroups") or [])
     return new
+
+
+# ===== Section 6: List transformation with source counts =====
+
+
+def transform_items(
+    en_items: list[dict[str, Any]],
+    *,
+    repo_root: Path,
+    header_map: dict[str, str],
+    overrides: dict[str, dict[str, str]],
+) -> tuple[list[dict[str, Any]], dict[str, int]]:
+    """Transform a list of EN items into TH equivalents, with source counts.
+
+    Returns (new_items, counts) where counts is keyed by LabelSource.value.
+    """
+    new_items: list[dict[str, Any]] = []
+    counts = {s.value: 0 for s in LabelSource}
+    for item in en_items:
+        # Resolve label twice (once here for counting, once inside
+        # transform_item) — second resolution is cheap and keeps
+        # transform_item self-contained.
+        _label, source = resolve_label(
+            item,
+            repo_root=repo_root,
+            header_map=header_map,
+            overrides=overrides,
+        )
+        # For "link + page", resolve_label sees /en/... — same result as /th/...
+        # since both paths lead to the same frontmatter lookup outcome
+        # (file existence check tries /th/ via transform_item rewrite).
+        # But here we haven't rewritten yet, so we need to test against /th/.
+        # Re-resolve with rewritten target for accurate count:
+        if item["kind"] == "link" and item["targetType"] == "page":
+            rewritten = dict(item)
+            rewritten["target"] = item["target"].replace("/en/", "/th/", 1)
+            _label, source = resolve_label(
+                rewritten,
+                repo_root=repo_root,
+                header_map=header_map,
+                overrides=overrides,
+            )
+        counts[source.value] += 1
+        new_items.append(
+            transform_item(
+                item,
+                repo_root=repo_root,
+                header_map=header_map,
+                overrides=overrides,
+            )
+        )
+    return new_items, counts

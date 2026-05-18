@@ -304,3 +304,31 @@ def test_transform_item_does_not_mutate_input(tmp_path: Path):
         overrides={"headers": {}, "links": {}},
     )
     assert en_item == original
+
+
+from scripts.sync_nav import transform_items
+
+
+def test_transform_items_counts_sources(tmp_path: Path):
+    _write_md(tmp_path / "th" / "a.md", "หน้า A")
+    en_items = [
+        _item(kind="header", label="Procure-to-Pay", target=""),       # home.md
+        _item(target="/en/a", label="A"),                              # frontmatter
+        _item(target="/en/missing", label="Missing"),                  # fallback
+        _item(targetType="url", target="https://x", label="X"),        # override
+        _item(kind="divider", label="", target=""),                    # none
+    ]
+    new_items, counts = transform_items(
+        en_items,
+        repo_root=tmp_path,
+        header_map={"Procure-to-Pay": "จัดซื้อ"},
+        overrides={"headers": {}, "links": {"https://x": "เอ็กซ์"}},
+    )
+    assert len(new_items) == 5
+    assert counts == {
+        "frontmatter": 1,
+        "home.md": 1,
+        "override": 1,
+        "fallback": 1,
+        "none": 1,
+    }
