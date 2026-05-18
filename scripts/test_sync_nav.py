@@ -389,3 +389,36 @@ def test_format_summary_one_line():
     assert "6 home.md" in s
     assert "4 override" in s
     assert "3 fallback" in s
+
+
+from scripts.sync_nav import run_sync
+
+
+def test_run_sync_full_pipeline(tmp_path: Path):
+    """Pure orchestration: given EN items + repo root, produce TH items + counts."""
+    # repo layout
+    (tmp_path / "th").mkdir()
+    _write_md(tmp_path / "th" / "home.md",
+              "# H\n## 1. Procure-to-Pay\n")
+    (tmp_path / "en").mkdir()
+    _write_md(tmp_path / "en" / "home.md",
+              "# H\n## 1. Procure-to-Pay\n")
+    _write_md(tmp_path / "th" / "pr.md", "คำขอซื้อ")
+    overrides_path = tmp_path / "nav-overrides.yaml"
+    overrides_path.write_text("headers: {}\nlinks: {}\n", encoding="utf-8")
+
+    en_items = [
+        _item(kind="header", label="Procure-to-Pay", target=""),
+        _item(target="/en/pr", label="PR"),
+    ]
+
+    th_items, counts = run_sync(
+        en_items=en_items,
+        repo_root=tmp_path,
+        overrides_path=overrides_path,
+    )
+    assert th_items[0]["label"] == "Procure-to-Pay"  # home.md exact-match self-pair
+    assert th_items[1]["target"] == "/th/pr"
+    assert th_items[1]["label"] == "คำขอซื้อ"
+    assert counts["frontmatter"] == 1
+    assert counts["home.md"] == 1

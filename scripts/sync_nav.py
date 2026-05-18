@@ -4,9 +4,12 @@ See docs/superpowers/specs/2026-05-18-th-navigation-design.md for design.
 """
 from __future__ import annotations
 
+import argparse
 from enum import Enum
 import logging
+import os
 import re
+import sys
 import uuid
 from pathlib import Path
 from typing import Any
@@ -375,3 +378,144 @@ def format_summary(total: int, counts: dict[str, int]) -> str:
         f"·  {counts.get('override', 0)} override  "
         f"·  {counts.get('fallback', 0)} fallback"
     )
+
+
+# ===== Section 10: Orchestration =====
+
+
+def run_sync(
+    *,
+    en_items: list[dict[str, Any]],
+    repo_root: Path,
+    overrides_path: Path,
+) -> tuple[list[dict[str, Any]], dict[str, int]]:
+    """Pure pipeline: EN items → TH items + counts.
+
+    No GraphQL I/O; called by main() after fetch_navigation and before
+    push_navigation. Tested directly in unit tests.
+    """
+    en_home = parse_home_headings(repo_root / "en" / "home.md")
+    th_home = parse_home_headings(repo_root / "th" / "home.md")
+    header_map = build_header_label_map(en_home, th_home)
+    overrides = load_overrides(overrides_path)
+    return transform_items(
+        en_items,
+        repo_root=repo_root,
+        header_map=header_map,
+        overrides=overrides,
+    )
+
+
+# ===== Section 11: CLI =====
+
+
+def _setup_logging(verbose: bool) -> None:
+    logging.basicConfig(
+        level=logging.DEBUG if verbose else logging.INFO,
+        format="%(message)s",
+        stream=sys.stderr,
+    )
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        description="Sync Wiki.js TH navigation from EN.",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Fetch + transform + print diff; do not push.",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Print per-item label resolution lines.",
+    )
+    args = parser.parse_args(argv)
+
+    _setup_logging(args.verbose)
+
+    api_url = os.environ.get("WIKI_API_URL")
+    api_token = os.environ.get("WIKI_API_TOKEN")
+    if not api_url or not api_token:
+        print(
+            "ERROR: WIKI_API_URL and WIKI_API_TOKEN must be set "
+            "(see .env.example). Source your .env first.",
+            file=sys.stderr,
+        )
+        return 2
+
+    repo_root = Path(__file__).resolve().parent.parent
+    overrides_path = Path(__file__).resolve().parent / "nav-overrides.yaml"
+
+    # 1. fetch
+    print(f"[FETCH]  api={api_url}", file=sys.stderr)
+    nav = fetch_navigation(api_url, api_token)
+    assert_static_mode(nav)
+    tree = nav["tree"]
+    en = next((t for t in tree if t["locale"] == "en"), None)
+    if en is None:
+        print("ERROR: no en locale in Wiki.js navigation tree.", file=sys.stderr)
+        return 3
+    th_old = next((t for t in tree if t["locale"] == "th"), {"locale": "th", "items": []})
+    print(
+        f"         mode=STATIC  locales: en ({len(en['items'])} items), "
+        f"th ({len(th_old['items'])} items)",
+        file=sys.stderr,
+    )
+
+    # 2. transform
+    print("[XFORM]  resolving labels...", file=sys.stderr)
+    th_new_items, counts = run_sync(
+        en_items=en["items"],
+        repo_root=repo_root,
+        overrides_path=overrides_path,
+    )
+
+    if args.verbose:
+        for en_item, th_item in zip(en["items"], th_new_items):
+            _label, source = resolve_label(
+                # Use rewritten /th/ target so per-item source matches counts
+                {**en_item, "target": en_item["target"].replace("/en/", "/th/", 1)}
+                if en_item["kind"] == "link" and en_item["targetType"] == "page"
+                else en_item,
+                repo_root=repo_root,
+                header_map=build_header_label_map(
+                    parse_home_headings(repo_root / "en" / "home.md"),
+                    parse_home_headings(repo_root / "th" / "home.md"),
+                ),
+                overrides=load_overrides(overrides_path),
+            )
+            print(format_item_line(en_item, th_item, source), file=sys.stderr)
+
+    # 3. diff
+    diff = compute_diff(th_old["items"], th_new_items)
+    print(
+        f"[DIFF]   th tree:  {diff['old_count']} → {diff['new_count']} items"
+        + ("  (all new)" if diff["all_new"] else ""),
+        file=sys.stderr,
+    )
+
+    if args.dry_run:
+        print("[DRY-RUN] no mutation sent.", file=sys.stderr)
+        print(format_summary(len(th_new_items), counts), file=sys.stderr)
+        return 0
+
+    # 4. push (full tree, EN unchanged + new TH; preserve any other locales verbatim)
+    new_tree = []
+    for t in tree:
+        if t["locale"] == "th":
+            new_tree.append({"locale": "th", "items": th_new_items})
+        else:
+            new_tree.append(t)
+    if not any(t["locale"] == "th" for t in tree):
+        new_tree.append({"locale": "th", "items": th_new_items})
+
+    push_navigation(api_url, api_token, new_tree)
+    print("[PUSH]   updateTree succeeded.", file=sys.stderr)
+    print(format_summary(len(th_new_items), counts), file=sys.stderr)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
