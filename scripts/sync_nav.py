@@ -4,9 +4,11 @@ See docs/superpowers/specs/2026-05-18-th-navigation-design.md for design.
 """
 from __future__ import annotations
 
+from enum import Enum
 import logging
 import re
 from pathlib import Path
+from typing import Any
 
 import frontmatter
 import yaml
@@ -83,3 +85,54 @@ def resolve_th_page_title(repo_root: Path, target: str) -> str | None:
             title = post.metadata.get("title")
             return str(title) if title else None
     return None
+
+
+# ===== Section 4: Label resolution =====
+
+
+class LabelSource(str, Enum):
+    """Where a TH label was sourced from. Used in --verbose output."""
+    FRONTMATTER = "frontmatter"
+    HOME_MD = "home.md"
+    OVERRIDE = "override"
+    FALLBACK = "fallback"
+    NONE = "none"  # divider items have no label
+
+
+def resolve_label(
+    item: dict[str, Any],
+    *,
+    repo_root: Path,
+    header_map: dict[str, str],
+    overrides: dict[str, dict[str, str]],
+) -> tuple[str | None, LabelSource]:
+    """Resolve the TH label for a navigation item.
+
+    Returns (label, source). Label is None for dividers. Source records
+    which of the three input sources produced the label (or FALLBACK
+    when none did, in which case the EN label is returned verbatim).
+    """
+    kind = item["kind"]
+    if kind == "divider":
+        return None, LabelSource.NONE
+
+    if kind == "link" and item["targetType"] == "page":
+        title = resolve_th_page_title(repo_root, item["target"])
+        if title:
+            return title, LabelSource.FRONTMATTER
+        return item["label"], LabelSource.FALLBACK
+
+    if kind == "header":
+        if item["label"] in header_map:
+            return header_map[item["label"]], LabelSource.HOME_MD
+        if item["label"] in overrides["headers"]:
+            return overrides["headers"][item["label"]], LabelSource.OVERRIDE
+        return item["label"], LabelSource.FALLBACK
+
+    if kind == "link" and item["targetType"] == "url":
+        if item["target"] in overrides["links"]:
+            return overrides["links"][item["target"]], LabelSource.OVERRIDE
+        return item["label"], LabelSource.FALLBACK
+
+    # Unknown kind/targetType — preserve EN label
+    return item["label"], LabelSource.FALLBACK

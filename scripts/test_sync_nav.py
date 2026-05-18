@@ -131,3 +131,102 @@ def test_resolve_th_page_title_handles_subpath(tmp_path: Path):
     """target='/th/foo/bar' resolves to th/foo/bar.md."""
     _write_md(tmp_path / "th" / "foo" / "bar.md", "Bar")
     assert resolve_th_page_title(tmp_path, "/th/foo/bar") == "Bar"
+
+
+from scripts.sync_nav import resolve_label, LabelSource
+
+
+def _item(**kw):
+    """Build a minimal navigation item dict with sensible defaults."""
+    base = {
+        "id": "abc",
+        "kind": "link",
+        "label": "EN Label",
+        "icon": "",
+        "targetType": "page",
+        "target": "/th/foo",
+        "visibilityMode": "all",
+        "visibilityGroups": [],
+    }
+    base.update(kw)
+    return base
+
+
+def test_resolve_label_link_page_uses_frontmatter(tmp_path: Path):
+    _write_md(tmp_path / "th" / "foo.md", "หน้า Foo")
+    label, source = resolve_label(
+        _item(),
+        repo_root=tmp_path,
+        header_map={},
+        overrides={"headers": {}, "links": {}},
+    )
+    assert label == "หน้า Foo"
+    assert source == LabelSource.FRONTMATTER
+
+
+def test_resolve_label_link_page_missing_falls_back_to_en(tmp_path: Path):
+    label, source = resolve_label(
+        _item(target="/th/missing", label="Missing"),
+        repo_root=tmp_path,
+        header_map={},
+        overrides={"headers": {}, "links": {}},
+    )
+    assert label == "Missing"
+    assert source == LabelSource.FALLBACK
+
+
+def test_resolve_label_header_uses_home_md(tmp_path: Path):
+    label, source = resolve_label(
+        _item(kind="header", label="Procure-to-Pay", target=""),
+        repo_root=tmp_path,
+        header_map={"Procure-to-Pay": "จัดซื้อจัดจ้าง"},
+        overrides={"headers": {}, "links": {}},
+    )
+    assert label == "จัดซื้อจัดจ้าง"
+    assert source == LabelSource.HOME_MD
+
+
+def test_resolve_label_header_falls_back_to_override(tmp_path: Path):
+    """home.md doesn't have it → overrides.headers wins."""
+    label, source = resolve_label(
+        _item(kind="header", label="X", target=""),
+        repo_root=tmp_path,
+        header_map={},
+        overrides={"headers": {"X": "เอกซ์"}, "links": {}},
+    )
+    assert label == "เอกซ์"
+    assert source == LabelSource.OVERRIDE
+
+
+def test_resolve_label_header_falls_back_to_en(tmp_path: Path):
+    """No home.md match, no override → EN label."""
+    label, source = resolve_label(
+        _item(kind="header", label="Unknown", target=""),
+        repo_root=tmp_path,
+        header_map={},
+        overrides={"headers": {}, "links": {}},
+    )
+    assert label == "Unknown"
+    assert source == LabelSource.FALLBACK
+
+
+def test_resolve_label_link_url_uses_overrides(tmp_path: Path):
+    label, source = resolve_label(
+        _item(targetType="url", target="https://example.com", label="Example"),
+        repo_root=tmp_path,
+        header_map={},
+        overrides={"headers": {}, "links": {"https://example.com": "ตัวอย่าง"}},
+    )
+    assert label == "ตัวอย่าง"
+    assert source == LabelSource.OVERRIDE
+
+
+def test_resolve_label_divider_returns_none(tmp_path: Path):
+    label, source = resolve_label(
+        _item(kind="divider", label="", target=""),
+        repo_root=tmp_path,
+        header_map={},
+        overrides={"headers": {}, "links": {}},
+    )
+    assert label is None
+    assert source == LabelSource.NONE
