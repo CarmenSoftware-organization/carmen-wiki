@@ -8,6 +8,7 @@ import logging
 import re
 from pathlib import Path
 
+import frontmatter
 import yaml
 
 log = logging.getLogger("sync_nav")
@@ -60,3 +61,25 @@ def load_overrides(path: Path) -> dict[str, dict[str, str]]:
         "headers": dict(raw.get("headers") or {}),
         "links": dict(raw.get("links") or {}),
     }
+
+
+# ===== Section 3: TH page title resolution =====
+
+
+def resolve_th_page_title(repo_root: Path, target: str) -> str | None:
+    """Look up the `title:` frontmatter from a TH page given a Wiki.js target.
+
+    Tries both '<rel>.md' and '<rel>/index.md' — Wiki.js page targets may
+    refer to either a file or a folder. Returns None if no file is found
+    or the frontmatter has no `title` key.
+    """
+    rel = target.lstrip("/")
+    for candidate in (
+        repo_root / f"{rel}.md",
+        repo_root / rel / "index.md",
+    ):
+        if candidate.exists():
+            post = frontmatter.load(str(candidate))
+            title = post.metadata.get("title")
+            return str(title) if title else None
+    return None

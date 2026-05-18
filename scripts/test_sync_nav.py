@@ -90,3 +90,44 @@ def test_load_overrides_missing_section_defaults_to_empty(tmp_path: Path):
     cfg.write_text("headers:\n  A: B\n", encoding="utf-8")
     out = load_overrides(cfg)
     assert out == {"headers": {"A": "B"}, "links": {}}
+
+
+from scripts.sync_nav import resolve_th_page_title
+
+
+def _write_md(path: Path, title: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        f"---\ntitle: {title}\ndescription: x\npublished: true\n---\n\n# {title}\n",
+        encoding="utf-8",
+    )
+
+
+def test_resolve_th_page_title_file_form(tmp_path: Path):
+    """target='/th/foo' resolves to th/foo.md if that file exists."""
+    _write_md(tmp_path / "th" / "foo.md", "หน้า Foo")
+    assert resolve_th_page_title(tmp_path, "/th/foo") == "หน้า Foo"
+
+
+def test_resolve_th_page_title_folder_form(tmp_path: Path):
+    """target='/th/foo' resolves to th/foo/index.md if no th/foo.md exists."""
+    _write_md(tmp_path / "th" / "foo" / "index.md", "Foo Index")
+    assert resolve_th_page_title(tmp_path, "/th/foo") == "Foo Index"
+
+
+def test_resolve_th_page_title_prefers_file_over_folder(tmp_path: Path):
+    """If both th/foo.md and th/foo/index.md exist, the file wins."""
+    _write_md(tmp_path / "th" / "foo.md", "FILE")
+    _write_md(tmp_path / "th" / "foo" / "index.md", "FOLDER")
+    assert resolve_th_page_title(tmp_path, "/th/foo") == "FILE"
+
+
+def test_resolve_th_page_title_missing_returns_none(tmp_path: Path):
+    """No file exists → None (caller falls back to EN label)."""
+    assert resolve_th_page_title(tmp_path, "/th/missing") is None
+
+
+def test_resolve_th_page_title_handles_subpath(tmp_path: Path):
+    """target='/th/foo/bar' resolves to th/foo/bar.md."""
+    _write_md(tmp_path / "th" / "foo" / "bar.md", "Bar")
+    assert resolve_th_page_title(tmp_path, "/th/foo/bar") == "Bar"
