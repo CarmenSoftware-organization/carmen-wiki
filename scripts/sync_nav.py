@@ -12,6 +12,8 @@ from pathlib import Path
 from typing import Any
 
 import frontmatter
+from gql import Client, gql
+from gql.transport.requests import RequestsHTTPTransport
 import yaml
 
 log = logging.getLogger("sync_nav")
@@ -247,3 +249,93 @@ def compute_diff(
         "new_count": len(th_new),
         "all_new": len(th_old) == 0,
     }
+
+
+# ===== Section 8: Wiki.js GraphQL =====
+
+_QUERY_NAVIGATION = gql("""
+query {
+  navigation {
+    tree {
+      locale
+      items {
+        id
+        kind
+        label
+        icon
+        targetType
+        target
+        visibilityMode
+        visibilityGroups
+      }
+    }
+    config { mode }
+  }
+}
+""")
+
+_MUTATION_UPDATE_TREE = gql("""
+mutation($tree: [NavigationTreeInput]!) {
+  navigation {
+    updateTree(tree: $tree) {
+      responseResult { succeeded errorCode message }
+    }
+  }
+}
+""")
+
+
+def _make_client(api_url: str, api_token: str) -> Client:
+    transport = RequestsHTTPTransport(
+        url=api_url,
+        headers={"Authorization": f"Bearer {api_token}"},
+        retries=2,
+        timeout=30,
+    )
+    return Client(transport=transport, fetch_schema_from_transport=False)
+
+
+def fetch_navigation(api_url: str, api_token: str) -> dict[str, Any]:
+    """Fetch the full navigation tree + config mode.
+
+    Returns the raw `navigation` payload: {tree: [...], config: {mode: ...}}.
+    """
+    client = _make_client(api_url, api_token)
+    result = client.execute(_QUERY_NAVIGATION)
+    return result["navigation"]
+
+
+def assert_static_mode(nav_payload: dict[str, Any]) -> None:
+    """Abort unless Wiki.js navigation mode is STATIC.
+
+    Other modes (NONE, TREE, MIXED) either provide no static tree to
+    sync or would be partially overwritten in ways the script doesn't
+    handle.
+    """
+    mode = nav_payload.get("config", {}).get("mode")
+    if mode != "STATIC":
+        raise SystemExit(
+            f"Wiki.js navigation mode is {mode!r}, not STATIC. "
+            "Set Navigation Mode to Static in Wiki.js admin "
+            "(Administration → Navigation → Mode) before running this script."
+        )
+
+
+def push_navigation(
+    api_url: str,
+    api_token: str,
+    tree: list[dict[str, Any]],
+) -> None:
+    """Push the full navigation tree via updateTree mutation.
+
+    `tree` is a list of {locale, items} dicts covering ALL locales
+    Wiki.js currently knows about — partial pushes wipe missing locales.
+    Raises SystemExit if the mutation reports failure.
+    """
+    client = _make_client(api_url, api_token)
+    result = client.execute(_MUTATION_UPDATE_TREE, variable_values={"tree": tree})
+    rr = result["navigation"]["updateTree"]["responseResult"]
+    if not rr["succeeded"]:
+        raise SystemExit(
+            f"updateTree failed: code={rr['errorCode']} message={rr['message']}"
+        )
