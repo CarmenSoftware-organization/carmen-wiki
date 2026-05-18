@@ -398,11 +398,13 @@ def test_run_sync_full_pipeline(tmp_path: Path):
     """Pure orchestration: given EN items + repo root, produce TH items + counts."""
     # repo layout
     (tmp_path / "th").mkdir()
-    _write_md(tmp_path / "th" / "home.md",
-              "# H\n## 1. Procure-to-Pay\n")
+    (tmp_path / "th" / "home.md").write_text(
+        "# Carmen Wiki TH\n\n## 1. Procure-to-Pay\n", encoding="utf-8"
+    )
     (tmp_path / "en").mkdir()
-    _write_md(tmp_path / "en" / "home.md",
-              "# H\n## 1. Procure-to-Pay\n")
+    (tmp_path / "en" / "home.md").write_text(
+        "# Carmen Wiki EN\n\n## 1. Procure-to-Pay\n", encoding="utf-8"
+    )
     _write_md(tmp_path / "th" / "pr.md", "คำขอซื้อ")
     overrides_path = tmp_path / "nav-overrides.yaml"
     overrides_path.write_text("headers: {}\nlinks: {}\n", encoding="utf-8")

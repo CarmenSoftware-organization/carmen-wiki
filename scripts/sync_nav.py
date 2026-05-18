@@ -451,8 +451,12 @@ def main(argv: list[str] | None = None) -> int:
     # 1. fetch
     print(f"[FETCH]  api={api_url}", file=sys.stderr)
     nav = fetch_navigation(api_url, api_token)
-    assert_static_mode(nav)
-    tree = nav["tree"]
+    try:
+        assert_static_mode(nav)
+    except SystemExit as e:
+        print(str(e), file=sys.stderr)
+        return 4
+    tree = nav.get("tree") or []
     en = next((t for t in tree if t["locale"] == "en"), None)
     if en is None:
         print("ERROR: no en locale in Wiki.js navigation tree.", file=sys.stderr)

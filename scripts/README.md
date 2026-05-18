@@ -64,7 +64,7 @@ For each EN nav item, the TH label is resolved in this order:
 
 | Symptom | Likely cause | Fix |
 |--------|------|-----|
-| `Wiki.js navigation mode is 'TREE', not STATIC.` | Wiki.js mode is auto-tree | Admin → Navigation → Mode: Static |
+| Exit 4: `Wiki.js navigation mode is 'TREE', not STATIC.` | Wiki.js mode is auto-tree | Admin → Navigation → Mode: Static |
 | Exit 2: `WIKI_API_URL and WIKI_API_TOKEN must be set` | `.env` not sourced or empty | `set -a; source .env; set +a` and verify token |
 | `updateTree failed: code=Unauthorized` | Token lacks scopes or expired | Generate a new token with navigation: manage |
 | Many `⚠ [fallback]` lines | TH translations missing / home.md headings drifted | Translate the TH pages or sync home.md; add entries to `nav-overrides.yaml` if needed |
