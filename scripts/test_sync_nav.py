@@ -230,3 +230,77 @@ def test_resolve_label_divider_returns_none(tmp_path: Path):
     )
     assert label is None
     assert source == LabelSource.NONE
+
+
+import uuid as _uuid
+from scripts.sync_nav import transform_item
+
+
+def test_transform_item_link_page_rewrites_target(tmp_path: Path):
+    _write_md(tmp_path / "th" / "foo.md", "Foo TH")
+    en_item = _item(target="/en/foo", label="Foo")
+    new = transform_item(
+        en_item,
+        repo_root=tmp_path,
+        header_map={},
+        overrides={"headers": {}, "links": {}},
+    )
+    assert new["target"] == "/th/foo"
+    assert new["label"] == "Foo TH"
+    assert new["id"] != en_item["id"]  # fresh UUID
+    _uuid.UUID(new["id"], version=4)    # parses as UUIDv4
+
+
+def test_transform_item_link_url_keeps_target(tmp_path: Path):
+    en_item = _item(targetType="url", target="https://example.com", label="Ex")
+    new = transform_item(
+        en_item,
+        repo_root=tmp_path,
+        header_map={},
+        overrides={"headers": {}, "links": {"https://example.com": "ตัวอย่าง"}},
+    )
+    assert new["target"] == "https://example.com"
+    assert new["label"] == "ตัวอย่าง"
+
+
+def test_transform_item_header_preserves_target(tmp_path: Path):
+    en_item = _item(kind="header", label="Procure-to-Pay", target="")
+    new = transform_item(
+        en_item,
+        repo_root=tmp_path,
+        header_map={"Procure-to-Pay": "จัดซื้อ"},
+        overrides={"headers": {}, "links": {}},
+    )
+    assert new["target"] == ""
+    assert new["label"] == "จัดซื้อ"
+    assert new["kind"] == "header"
+
+
+def test_transform_item_preserves_icon_and_visibility(tmp_path: Path):
+    en_item = _item(
+        target="/en/foo",
+        icon="mdi-folder",
+        visibilityMode="restricted",
+        visibilityGroups=[1, 2],
+    )
+    new = transform_item(
+        en_item,
+        repo_root=tmp_path,
+        header_map={},
+        overrides={"headers": {}, "links": {}},
+    )
+    assert new["icon"] == "mdi-folder"
+    assert new["visibilityMode"] == "restricted"
+    assert new["visibilityGroups"] == [1, 2]
+
+
+def test_transform_item_does_not_mutate_input(tmp_path: Path):
+    en_item = _item(target="/en/foo", label="Foo")
+    original = dict(en_item)
+    transform_item(
+        en_item,
+        repo_root=tmp_path,
+        header_map={},
+        overrides={"headers": {}, "links": {}},
+    )
+    assert en_item == original

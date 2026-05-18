@@ -7,6 +7,7 @@ from __future__ import annotations
 from enum import Enum
 import logging
 import re
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -136,3 +137,42 @@ def resolve_label(
 
     # Unknown kind/targetType — preserve EN label
     return item["label"], LabelSource.FALLBACK
+
+
+# ===== Section 5: Item transformation =====
+
+
+def transform_item(
+    en_item: dict[str, Any],
+    *,
+    repo_root: Path,
+    header_map: dict[str, str],
+    overrides: dict[str, dict[str, str]],
+) -> dict[str, Any]:
+    """Clone an EN navigation item into its TH counterpart.
+
+    - id        → fresh UUIDv4
+    - target    → /en/... rewritten to /th/... (only for kind=link, targetType=page)
+    - label     → resolved via resolve_label() (3 sources)
+    - icon, visibilityMode, visibilityGroups, kind, targetType: preserved
+
+    Does not mutate the input item.
+    """
+    new = dict(en_item)
+    new["id"] = str(uuid.uuid4())
+
+    if new["kind"] == "link" and new["targetType"] == "page":
+        new["target"] = new["target"].replace("/en/", "/th/", 1)
+
+    label, _source = resolve_label(
+        new,
+        repo_root=repo_root,
+        header_map=header_map,
+        overrides=overrides,
+    )
+    # Dividers return None from resolve_label — keep their label field empty
+    new["label"] = label if label is not None else ""
+
+    # Defensive: copy mutable nested fields so caller can't mutate ours
+    new["visibilityGroups"] = list(new.get("visibilityGroups") or [])
+    return new
