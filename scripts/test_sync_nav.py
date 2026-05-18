@@ -232,6 +232,25 @@ def test_resolve_label_divider_returns_none(tmp_path: Path):
     assert source == LabelSource.NONE
 
 
+from scripts.sync_nav import compute_diff
+
+
+def test_compute_diff_empty_to_new():
+    """First sync — th_old is empty."""
+    th_old = []
+    th_new = [_item(target="/th/foo", label="Foo")]
+    diff = compute_diff(th_old, th_new)
+    assert diff == {"old_count": 0, "new_count": 1, "all_new": True}
+
+
+def test_compute_diff_replacement():
+    """Re-sync — th_old has items, replaced."""
+    th_old = [_item(target="/th/foo", label="OLD")]
+    th_new = [_item(target="/th/foo", label="NEW")]
+    diff = compute_diff(th_old, th_new)
+    assert diff == {"old_count": 1, "new_count": 1, "all_new": False}
+
+
 import uuid as _uuid
 from scripts.sync_nav import transform_item
 

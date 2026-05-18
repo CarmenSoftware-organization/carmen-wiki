@@ -228,3 +228,22 @@ def transform_items(
             )
         )
     return new_items, counts
+
+
+# ===== Section 7: Diff computation =====
+
+
+def compute_diff(
+    th_old: list[dict[str, Any]],
+    th_new: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Compute a high-level diff summary for the TH tree.
+
+    For the report headline only. Per-item diffs are printed inline
+    during transform_items via the LabelSource counts and verbose log.
+    """
+    return {
+        "old_count": len(th_old),
+        "new_count": len(th_new),
+        "all_new": len(th_old) == 0,
+    }
