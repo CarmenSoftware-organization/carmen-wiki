@@ -33,3 +33,26 @@ def test_parse_home_headings_ignores_h1_and_h3(tmp_path: Path):
         encoding="utf-8",
     )
     assert parse_home_headings(home) == ["A", "B"]
+
+
+from scripts.sync_nav import build_header_label_map
+
+
+def test_build_header_label_map_pairs_by_index():
+    en = ["About", "Dashboard", "Procure-to-Pay"]
+    th = ["เกี่ยวกับ", "แดชบอร์ด", "Procure-to-Pay"]
+    assert build_header_label_map(en, th) == {
+        "About": "เกี่ยวกับ",
+        "Dashboard": "แดชบอร์ด",
+        "Procure-to-Pay": "Procure-to-Pay",
+    }
+
+
+def test_build_header_label_map_mismatch_returns_partial_and_warns(caplog):
+    """If lists differ in length, pair up to min(len) and log a warning."""
+    en = ["A", "B", "C"]
+    th = ["ก", "ข"]
+    with caplog.at_level("WARNING"):
+        out = build_header_label_map(en, th)
+    assert out == {"A": "ก", "B": "ข"}
+    assert any("home.md heading count" in r.message for r in caplog.records)

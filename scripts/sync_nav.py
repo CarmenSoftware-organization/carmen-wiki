@@ -4,8 +4,11 @@ See docs/superpowers/specs/2026-05-18-th-navigation-design.md for design.
 """
 from __future__ import annotations
 
+import logging
 import re
 from pathlib import Path
+
+log = logging.getLogger("sync_nav")
 
 
 # ===== Section 1: Markdown / YAML parsing =====
@@ -26,3 +29,20 @@ def parse_home_headings(home_md: Path) -> list[str]:
         if m:
             out.append(m.group(1).strip())
     return out
+
+
+def build_header_label_map(en_headings: list[str], th_headings: list[str]) -> dict[str, str]:
+    """Pair EN and TH home.md headings by index → {en_text: th_text}.
+
+    If the two lists differ in length, pairs up to the shorter list and
+    logs a WARNING. Mismatching indices fall back to override / EN label
+    in resolve_label().
+    """
+    if len(en_headings) != len(th_headings):
+        log.warning(
+            "home.md heading count mismatch: en=%d th=%d — pairing up to min",
+            len(en_headings),
+            len(th_headings),
+        )
+    pairs = zip(en_headings, th_headings)
+    return {en: th for en, th in pairs}
