@@ -2,7 +2,7 @@
 title: Business Unit — Data Model
 description: BU entity, formatting/locale block, DB connection, config array, module activation join, and license field.
 published: true
-date: '2026-05-19T17:30:00.000Z'
+date: '2026-05-19T18:00:00.000Z'
 tags: book/platform, business-units, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -40,6 +40,7 @@ The primary business unit record. One row per operational BU, holding the identi
 
 | Field | Prisma Type | Nullable | Default | Description |
 | ----- | ----------- | -------- | ------- | ----------- |
+| **— Identity —** | | | | |
 | `id` | `String @db.Uuid` | No | `gen_random_uuid()` | Primary key, UUID v4 |
 | `cluster_id` | `String @db.Uuid` | No | — | FK to `tb_cluster.id`; determines which cluster owns this BU |
 | `code` | `String @db.VarChar(30)` | No | — | Short identifier for the BU; unique within the cluster among live rows (with `deleted_at`) |
@@ -47,13 +48,18 @@ The primary business unit record. One row per operational BU, holding the identi
 | `alias_name` | `String? @db.VarChar(10)` | Yes | — | Short alias (up to 10 chars); shown in compact UI surfaces |
 | `description` | `String?` | Yes | — | Optional free-text description |
 | `info` | `Json?` | Yes | — | Free-form metadata blob; present in Prisma and `BusinessUnit` TS interface (`info?: unknown`), but not written or read by any identifiable key in `BusinessUnitEdit.tsx`. Reserved for extensibility — see §5. |
-| `is_hq` | `Boolean?` | Yes | `true` | Marks this BU as the headquarter unit within the cluster |
+| **— Status —** | | | | |
+| `is_hq` | `Boolean?` | Yes | `true` | Marks this BU as the headquarter unit within its cluster. Uniqueness is enforced at the application layer only — Prisma declares no `@@unique` constraint on `(cluster_id, is_hq)`, so the schema permits multiple HQ flags per cluster. Prisma default is `true`; SPA `BusinessUnitEdit` `initialFormData` defaults to `false`. |
 | `is_active` | `Boolean?` | Yes | `true` | When `false`, the BU is considered inactive |
+| **— DB Connection —** | | | | |
 | `db_connection` | `Json?` | Yes | — | DB connection parameters for the BU's operational database; stored as opaque JSON |
+| **— Modules-config —** | | | | |
 | `config` | `Json?` | Yes | — | Array of `BusinessUnitConfig` objects (`{ id?, key, label, datatype?, value? }`); editable key/value pairs maintained via the SPA config panel — see §5 |
+| **— License —** | | | | |
 | `default_currency_id` | `String? @db.Uuid` | Yes | — | FK (logical, no Prisma `@relation`) to the default currency for this BU; displayed via the currency selector in `BusinessUnitEdit.tsx` |
 | `calculation_method` | `enum_calculation_method` | No | `average` | Costing method used for inventory valuation: `average` or `fifo` |
 | `max_license_users` | `Int?` | Yes | — | Cap on the number of users that may be assigned to this BU. `NULL` means no cap. Enforcement is at the application layer; not a DB constraint |
+| **— Company —** | | | | |
 | `branch_no` | `String?` | Yes | — | Thai tax branch number (สาขา) for the BU's company entity |
 | `company_name` | `String?` | Yes | — | Legal company name for the BU |
 | `company_address` | `String?` | Yes | — | Company street/postal address |
@@ -61,11 +67,13 @@ The primary business unit record. One row per operational BU, holding the identi
 | `company_tel` | `String?` | Yes | — | Company telephone number |
 | `company_zip_code` | `String?` | Yes | — | Company postal code |
 | `tax_no` | `String?` | Yes | — | Thai tax identification number (เลขภาษี) |
+| **— Hotel —** | | | | |
 | `hotel_name` | `String?` | Yes | — | Property/hotel name (may differ from company name) |
 | `hotel_address` | `String?` | Yes | — | Property street/postal address |
 | `hotel_email` | `String?` | Yes | — | Property email address |
 | `hotel_tel` | `String?` | Yes | — | Property telephone number |
 | `hotel_zip_code` | `String?` | Yes | — | Property postal code |
+| **— Formatting & Locale —** | | | | |
 | `date_format` | `String?` | Yes | `"yyyy-MM-dd"` | Date display format string used in the inventory UI |
 | `date_time_format` | `String?` | Yes | `"yyyy-MM-dd HH:mm:ss"` | Date-time display format string |
 | `time_format` | `String?` | Yes | `"HH:mm:ss"` | Full time display format string |
@@ -76,10 +84,12 @@ The primary business unit record. One row per operational BU, holding the identi
 | `quantity_format` | `Json?` | Yes | — | JSON object for quantity number formatting |
 | `perpage_format` | `Json?` | Yes | — | JSON object for pagination defaults (e.g. `{"default":10}`) |
 | `recipe_format` | `Json?` | Yes | — | JSON object for recipe quantity formatting |
+| **— Audit —** | | | | |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: row creation time |
 | `created_by_id` | `String? @db.Uuid` | Yes | — | Audit: FK to `tb_user.id` of the creator |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: last update time |
 | `updated_by_id` | `String? @db.Uuid` | Yes | — | Audit: FK to `tb_user.id` of the last updater |
+| **— Soft-delete —** | | | | |
 | `deleted_at` | `DateTime? @db.Timestamptz(6)` | Yes | — | Soft-delete timestamp; `NULL` = live row |
 | `deleted_by_id` | `String? @db.Uuid` | Yes | — | Audit: FK to `tb_user.id` of the deleter (stored by convention; no Prisma `@relation`) |
 
@@ -123,7 +133,7 @@ Many-to-many join that activates which platform modules are enabled for a given 
 
 ### 2.3 `tb_user_tb_business_unit` (BU-side view)
 
-The full field table for `tb_user_tb_business_unit` is documented in [[users]] and [users data-model](../users/data-model.md) §2.3. From the business-unit perspective, the key points are:
+The full field table for `tb_user_tb_business_unit` is documented in [users data-model](../users/data-model.md) §2.3. From the business-unit perspective, the key points are:
 
 - **`business_unit_id` FK** — `String? @db.Uuid` (nullable), FK to `tb_business_unit.id` with `onDelete: NoAction, onUpdate: NoAction`. Removing a BU does not automatically remove join rows — application-layer cleanup is required.
 - **`role`** — `enum_user_business_unit_role` (non-nullable, default `user`). Records the per-BU role for this user-BU assignment: `admin` or `user`. This role is independent of `platform_role` on `tb_user` and of `enum_cluster_user_role` on `tb_cluster_user`. See §4 for the full enum definition.
@@ -173,7 +183,7 @@ Note: `default_currency_id` on `tb_business_unit` is a logical reference to the 
 
 ### `enum_user_business_unit_role` — 2 values
 
-Carried on `tb_user_tb_business_unit.role`. Controls what a user can do within a specific business unit. Orthogonal to both `platform_role` on `tb_user` and `enum_cluster_user_role` on `tb_cluster_user` — the three role axes are evaluated independently. This enum is also documented in [[users]] / [users data-model](../users/data-model.md) §4 — restated here for readers who arrive from the business-units module.
+Carried on `tb_user_tb_business_unit.role`. Controls what a user can do within a specific business unit. Orthogonal to both `platform_role` on `tb_user` and `enum_cluster_user_role` on `tb_cluster_user` — the three role axes are evaluated independently. This enum is also documented in [users data-model](../users/data-model.md) §4 — restated here for readers who arrive from the business-units module.
 
 | Value | Meaning |
 | ----- | ------- |
@@ -192,6 +202,8 @@ Carried on `tb_business_unit.calculation_method`. Determines the costing method 
 The default is `average`. Both values match the costing methods documented in the Carmen Inventory ERP ([calculation-methods](../../inventory/costing/calculation-methods.md)).
 
 ## 5. The `config` and `info` JSON columns
+
+These two JSON columns differ in both structure and editability: `config` carries a typed, SPA-editable array of operator-defined key/value pairs; `info` is an unstructured `Json?` column with no SPA edit path, mirroring the same dormant pattern as `tb_cluster.info`.
 
 ### `config` — operator-defined key/value pairs
 
@@ -226,7 +238,7 @@ The `BusinessUnit` interface in `../carmen-platform/src/types/index.ts` (lines 5
 | 3 | `max_license_users` | `Int?` | `max_license_users?: number` on `BusinessUnit`; `max_license_users: string` in `BusinessUnitFormData` | Form holds the value as a string (HTML input coercion: `String(bu.max_license_users)`); converted back to number before the API call. Read interface correctly types it as `number`. |
 | 4 | `amount_format` / `quantity_format` / `recipe_format` / `perpage_format` | `Json?` (JSON objects) | Typed as `string?` on `BusinessUnit` interface; `string` in `BusinessUnitFormData` | The SPA serialises these JSON objects to strings for textarea inputs (`toJsonString()` helper) and parses them back before the API call. The `BusinessUnit` read interface types them as `string?` rather than `Json`, which reflects the serialised wire shape rather than the Prisma storage shape. |
 | 5 | `db_connection` | `Json?` | `db_connection?: unknown` on `BusinessUnit`; `db_connection: string` in `BusinessUnitFormData` | Same pattern as the format JSON fields: serialised to a string for the textarea input, parsed before save. |
-| 6 | `config` | `Json?` | `config?: BusinessUnitConfig[] | null` on `BusinessUnit`; `config: BusinessUnitConfig[]` in `BusinessUnitFormData` | The SPA correctly treats the Prisma JSON column as a typed array of config objects. This is the only JSON column with a structured TS type. |
+| 6 | `config` | `Json?` | `config?: BusinessUnitConfig[] | null` on `BusinessUnit`; `config: BusinessUnitConfig[]` in `BusinessUnitFormData` | The only JSON column with a structured TS type; programmatic reads and writes should use `BusinessUnitConfig[]` from `src/types/index.ts` rather than raw `Json` or `unknown`. |
 | 7 | `info` | `Json?` | `info?: unknown` on `BusinessUnit` | Exposed in the read interface but not in `BusinessUnitFormData` — no edit path in the SPA. |
 
 All core identity, hotel info, company info, format, locale, audit, and soft-delete fields align between Prisma and the SPA shapes. Divergences are either API-resolved display names (items 1–2), form-layer string coercions for JSON fields (items 3–5), or a write-absent optional field (item 7).
