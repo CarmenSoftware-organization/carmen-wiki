@@ -1,8 +1,8 @@
 ---
 title: Business Unit — UI Screens
-description: BusinessUnitManagement (list) and BusinessUnitEdit (9 collapsible form sections, Users card, 3 dialogs) — layout, filters, actions, persisted state.
+description: BusinessUnitManagement (list) and BusinessUnitEdit (9 always-expanded form sections, Users card, 3 dialogs) — layout, filters, actions, persisted state.
 published: true
-date: '2026-05-19T17:30:00.000Z'
+date: '2026-05-19T18:00:00.000Z'
 tags: book/platform, business-units, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -11,15 +11,17 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 # Business Unit — UI Screens
 
 > **At a Glance**
-> **Screens:** `BusinessUnitManagement` (list, `/business-units`) &nbsp;·&nbsp; `BusinessUnitEdit` create (`/business-units/new`) &nbsp;·&nbsp; `BusinessUnitEdit` view/edit (`/business-units/:id/edit`) &nbsp;·&nbsp; **Edit layout:** 9 collapsible `CollapsibleSection` cards in a 2-column grid (Basic Information · Hotel Information · Company Information · Tax Information · Date/Time Formats · Number Formats · Calculation Settings · Configuration · Database Connection) plus a full-width Users card below the form &nbsp;·&nbsp; **Dialogs:** Add User to BU · Edit BU User · Remove BU User confirm · Soft Delete BU confirm &nbsp;·&nbsp; **Access:** all three routes "Authenticated" — no `allowedRoles` prop &nbsp;·&nbsp; **Persisted UI state:** 6 `localStorage` keys
+> **Screens:** `BusinessUnitManagement` (list, `/business-units`) &nbsp;·&nbsp; `BusinessUnitEdit` create (`/business-units/new`) &nbsp;·&nbsp; `BusinessUnitEdit` view/edit (`/business-units/:id/edit`) &nbsp;·&nbsp; **Edit layout:** 9 form sections (always expanded) via `CollapsibleSection` cards in a 2-column grid (Basic Information · Hotel Information · Company Information · Tax Information · Date/Time Formats · Number Formats · Calculation Settings · Configuration · Database Connection) plus a full-width Users card below the form &nbsp;·&nbsp; **Dialogs:** Add User to BU · Edit BU User · Remove BU User confirm · Soft Delete BU confirm &nbsp;·&nbsp; **Access:** all three routes "Authenticated" — no `allowedRoles` prop &nbsp;·&nbsp; **Persisted UI state:** 6 `localStorage` keys
 
 ## 1. Overview
 
-The business-unit surface follows the Platform SPA's standard two-screen pattern: a server-side `DataTable` list page (`BusinessUnitManagement`) and a shared create/view/edit page (`BusinessUnitEdit`). Unlike the cluster edit page — which uses a 3-column grid with Business Units and Users as sibling cards — the BU edit page stacks all content vertically: a 2-column `grid-cols-1 lg:grid-cols-2` form area containing 9 collapsible section cards, followed by a full-width Users card that only renders in view/edit mode (hidden in create mode).
+The business-unit surface follows the Platform SPA's standard two-screen pattern: a server-side `DataTable` list page (`BusinessUnitManagement`) and a shared create/view/edit page (`BusinessUnitEdit`). Unlike the cluster edit page — which uses a 3-column grid with Business Units and Users as sibling cards — the BU edit page stacks all content vertically: a 2-column `grid-cols-1 lg:grid-cols-2` form area containing 9 always-expanded section cards, followed by a full-width Users card that only renders in view/edit mode (hidden in create mode).
 
 `BusinessUnitEdit` is the largest edit page in the Platform SPA at 1785 lines. The density comes from the `BusinessUnitFormData` interface covering 33 fields across identity, contact, locale, formatting, costing, connection, and config domains. Every section card uses the shared `CollapsibleSection` component, which has a clickable `CardHeader` that toggles an expand/collapse chevron. All 9 sections are initially rendered with `forceOpen` (they cannot be collapsed), keeping all fields in the DOM and visible on load — the `forceOpen` prop overrides whatever `defaultOpen` value was set. The Users card is outside the `<form>` element and has its own independent mutation lifecycle.
 
 Both screens access all three registered routes without `allowedRoles` — any authenticated platform user can reach the BU list and edit routes. Compare [[clusters]], whose three routes require `platform_admin`, `support_manager`, or `support_staff`.
+
+Note: although `tb_business_unit_tb_module` exists in the Prisma schema as a M:N modules-activation join, the Platform admin SPA does not currently surface module activation — `BusinessUnitEdit` has exactly 9 form sections and no module-management dialog. The join is managed at the backend / DB level only.
 
 ## 2. `BusinessUnitManagement` — list page (`/business-units`)
 
@@ -81,6 +83,8 @@ The form renders all 9 `CollapsibleSection` cards in the 2-column grid. All fiel
 
 ## 4. `BusinessUnitEdit` — view/edit mode (`/business-units/:id/edit`)
 
+All 9 section cards are rendered identically in view and edit mode. Each section uses the `CollapsibleSection` component with the `forceOpen` prop set, so the expand/collapse chevron is visible but non-functional — the cards are always open.
+
 The page starts in **view mode** (`editing = false`, `isNew = false`). Title: "Business Unit Details". A single **Edit** button appears in the header. Clicking **Edit** saves `formData` to `savedFormData` and sets `editing = true`. In edit mode the title changes to "Edit Business Unit" / "Update business unit information"; Save Changes and Cancel buttons appear in a full-width row spanning both grid columns (`lg:col-span-2`). **Cancel** restores `formData` from `savedFormData` without an API call. **Save Changes** → `PUT /api-system/business-unit/:id`; on success, `fetchBusinessUnit()` re-fetches and `setEditing(false)` returns to view mode. The `useUnsavedChanges` hook fires if the user attempts to navigate away while `editing = true` and `formData !== savedFormData`.
 
 All 9 section cards are rendered identically in view and edit mode. In view mode the `CollapsibleSection` renders fields using `ReadOnlyText` (styled `div` with `bg-muted/50`) or `ReadOnlyTextarea` for multi-line fields. In edit mode the same positions render `Input`, `textarea`, or `select` elements.
@@ -107,6 +111,8 @@ Fields: **Company Name** (text), **Telephone** (text, validated on blur), **Emai
 
 Fields (2-column grid): **Tax No.** (text), **Branch No.** (text). Both optional.
 
+Both fields are free-text inputs (no format validation, no country-specific tax-ID checking) and both are nullable in the schema. They are surfaced in printed documents and receipts but not enforced at any data layer.
+
 ### 4.5 Date/Time Formats
 
 Fields (2-column grid, 3 rows): **Date Format** (e.g. `YYYY-MM-DD`), **Date/Time Format** (e.g. `YYYY-MM-DD HH:mm:ss`), **Time Format** (e.g. `HH:mm:ss`), **Long Time Format** (e.g. `HH:mm:ss.SSS`), **Short Time Format** (e.g. `HH:mm`), **Timezone** (e.g. `Asia/Bangkok`). All are free-text inputs with placeholder hints. No dropdown or IANA picker.
@@ -130,7 +136,7 @@ The `config` column stores an array of `BusinessUnitConfig` entries (`{ key: str
 - **Edit mode** — each existing row is shown as an inline 5-column row (Key\*, Label\*, Data Type select, Value, Delete button). Supported Data Type options: `string`, `number`, `boolean`, `date`, `json`. An **Add Config Entry** button appends a blank row. The Delete button (Trash icon, destructive colour) removes the row from `formData.config` immediately with no confirmation. On save, `buildPayload` filters out rows where both `key` and `label` are empty before sending.
 - **View mode** — rows are shown in a read-only `<table>` with columns Key, Label, Type, Value. If `config` is empty, a "No configuration entries." message is shown.
 
-There is no separate dialog for adding/editing config rows — all editing is in-place within the section.
+There is no separate dialog for adding/editing config rows — all editing is in-place within the section. The inline-row pattern is unique among Platform admin pages — the equivalent BU-user assignment elsewhere uses a modal dialog (see [[users]] Add BU dialog). The Configuration table is the only inline-add surface in the BU edit page.
 
 ### 4.9 Database Connection
 
@@ -151,7 +157,7 @@ After selecting a user (click on a row), the selected-user display replaces the 
 Fields:
 - **BU Role** — select from `BU_ROLES = ['admin', 'user']`. Default: `user`.
 
-Note: there is no `is_default` checkbox in the Add User dialog. The `is_default` field on the `tb_user_tb_business_unit` join exists in the schema but is not exposed in the current UI.
+Note: there is no `is_default` checkbox in the Add User dialog. The `is_default` field on the `tb_user_tb_business_unit` join exists in the schema but is not exposed in the current UI. See [Data Model](./data-model.md) §2.3 for the join-table schema and the `is_default` field definition.
 
 On submit (clicking **Add User**, disabled until a user is selected and the request is not in flight), calls `POST /api-system/user/business-unit` with body `{ user_id, business_unit_id, role }`. On success, the dialog closes, a toast confirms, and `fetchBuUsers()` re-fetches the BU record to refresh the Users table.
 
