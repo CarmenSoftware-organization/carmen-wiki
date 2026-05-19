@@ -2,7 +2,7 @@
 title: Clusters
 description: Cluster module overview — the top-level tenant grouping that owns business units and licensed users.
 published: true
-date: '2026-05-19T22:00:00.000Z'
+date: '2026-05-19T23:30:00.000Z'
 tags: platform/clusters, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -143,9 +143,9 @@ Templates module.
 
 ## 7. Pages in This Module
 
-- [[clusters/data-model|Data Model]] — cluster entity fields, the 1:N link to BUs,
+- [Data Model](/en/platform/clusters/data-model) — cluster entity fields, the 1:N link to BUs,
   the join through `tb_cluster_user`, and the two license-cap fields.
-- [[clusters/permissions|Permissions]] — exact `allowedRoles` gates per route and
+- [Permissions](/en/platform/clusters/permissions) — exact `allowedRoles` gates per route and
   what each admin-tier role can do on the screen.
-- [[clusters/ui-screens|UI Screens]] — `ClusterManagement` list screen and the
+- [UI Screens](/en/platform/clusters/ui-screens) — `ClusterManagement` list screen and the
   three-card `ClusterEdit` layout, including the add-user dialog flow.

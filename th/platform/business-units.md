@@ -2,7 +2,7 @@
 title: หน่วยธุรกิจ (Business Units)
 description: เอนทิตีต่อ property/ต่อโรงแรม พร้อมฟอร์มหลายเซกชันที่ครอบคลุมข้อมูลระบุตัวตน ข้อมูลติดต่อ ภาษี รูปแบบ การคำนวณ การตั้งค่า การเชื่อมต่อฐานข้อมูล และรายชื่อผู้ใช้ที่ผูกกับ BU
 published: true
-date: 2026-05-19T22:00:00.000Z
+date: 2026-05-19T23:30:00.000Z
 tags: platform/business-units, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -66,5 +66,5 @@ Route `/business-units`, `/business-units/new`, และ `/business-units/:id/e
 
 ## 7. หน้าในโมดูลนี้
 
-- [[business-units/data-model|Data Model]] — เอกสารอ้างอิงเอนทิตี BU (stub — ยังไม่สมบูรณ์): ฟิลด์ระบุตัวตน บล็อกข้อมูลติดต่อของ hotel/company ฟิลด์รูปแบบวันที่/เวลา/ตัวเลข การตั้งค่าการคำนวณ array `config[]` แบบ key/value บล็อก JSON `db_connection` และ schema ของตาราง join BU-user
-- [[business-units/ui-screens|UI Screens]] — ทัวร์ของหน้ารายการ (`BusinessUnitManagement`) และหน้าแก้ไข (`BusinessUnitEdit`) ทุกเซกชันฟอร์ม (stub — ยังไม่สมบูรณ์) บวกกับ card Users พร้อม select สำหรับ BU role และ dialog เพิ่ม user จาก cluster
+- [Data Model](/th/platform/business-units/data-model) — เอกสารอ้างอิงเอนทิตี BU (stub — ยังไม่สมบูรณ์): ฟิลด์ระบุตัวตน บล็อกข้อมูลติดต่อของ hotel/company ฟิลด์รูปแบบวันที่/เวลา/ตัวเลข การตั้งค่าการคำนวณ array `config[]` แบบ key/value บล็อก JSON `db_connection` และ schema ของตาราง join BU-user
+- [UI Screens](/th/platform/business-units/ui-screens) — ทัวร์ของหน้ารายการ (`BusinessUnitManagement`) และหน้าแก้ไข (`BusinessUnitEdit`) ทุกเซกชันฟอร์ม (stub — ยังไม่สมบูรณ์) บวกกับ card Users พร้อม select สำหรับ BU role และ dialog เพิ่ม user จาก cluster
