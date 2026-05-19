@@ -1,5 +1,9 @@
 """Tests for folder_moves.py."""
-from scripts.migrate_books.folder_moves import generate_content_moves, generate_asset_moves
+from scripts.migrate_books.folder_moves import (
+    format_git_mv,
+    generate_asset_moves,
+    generate_content_moves,
+)
 
 
 INVENTORY_MODULES = [
@@ -37,8 +41,8 @@ def test_asset_moves_includes_all_modules():
 
 
 def test_format_as_git_mv_commands():
-    from scripts.migrate_books.folder_moves import format_git_mv
     moves = [("en/foo", "en/inventory/foo"), ("th/foo", "th/inventory/foo")]
     output = format_git_mv(moves)
     assert "git mv en/foo en/inventory/foo" in output
     assert "git mv th/foo th/inventory/foo" in output
+    assert output.endswith("\n")

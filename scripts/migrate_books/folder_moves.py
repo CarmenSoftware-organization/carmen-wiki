@@ -31,7 +31,10 @@ def generate_asset_moves(
     book: str,
     assets_root: str = "assets/screenshots",
 ) -> list[tuple[str, str]]:
-    """Return list of (src, dst) pairs for asset folder moves."""
+    """Return list of (src, dst) pairs for asset folder moves.
+
+    For each module M: <assets_root>/<M>  ->  <assets_root>/<book>/<M>
+    """
     return [
         (f"{assets_root}/{m}", f"{assets_root}/{book}/{m}")
         for m in modules
