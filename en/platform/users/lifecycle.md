@@ -11,11 +11,11 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 # User — Lifecycle
 
 > **At a Glance**
-> **Operations covered:** create &nbsp;·&nbsp; edit &nbsp;·&nbsp; activate/deactivate (`is_active`) &nbsp;·&nbsp; soft-delete &nbsp;·&nbsp; hard-delete &nbsp;·&nbsp; admin password reset &nbsp;·&nbsp; Keycloak sync &nbsp;·&nbsp; **Not in this product:** SSO, MFA, OAuth, email-link password reset &nbsp;·&nbsp; **Endpoints:** 8 methods under `/api-system/user` &nbsp;·&nbsp; **Cross-entity effects:** cluster assignments (read-only here), BU assignments (mutated here via Add BU dialog)
+> **Operations covered:** create · edit · activate/deactivate (`is_active`) · soft-delete · hard-delete · admin password reset · Keycloak sync &nbsp;·&nbsp; **Not in this product:** SSO · MFA · OAuth · email-link password reset &nbsp;·&nbsp; **Endpoints:** 8 methods under `/api-system/user` &nbsp;·&nbsp; **Cross-entity effects:** cluster assignments (read-only here) · BU assignments (mutated here via Add BU dialog)
 
 ## 1. Overview
 
-This page covers every mutating operation that an admin performs on a user record through the Platform SPA: creating an account, editing identity fields, toggling the `is_active` flag, soft-deleting and hard-deleting, resetting a password without the user's current credential, and pulling user records from Keycloak into the platform database. The data model that underpins these operations (field definitions, enums, constraints) is on the [[data-model]] sibling page.
+This page covers every mutating operation that an admin performs on a user record through the Platform SPA: creating an account, editing identity fields, toggling the `is_active` flag, soft-deleting and hard-deleting, resetting a password without the user's current credential, and pulling user records from Keycloak into the platform database. The data model that underpins these operations (field definitions, enums, constraints) is on the [Data Model](./data-model.md) sibling page.
 
 The product does not implement SSO, MFA, OAuth, or email-link password reset. All credential management is delegated to Keycloak; the SPA performs an admin-override password push via the `reset-password` endpoint and a pull-from-Keycloak sync via the `fetch-user` endpoint — there is no self-service reset link sent to the user's inbox.
 
@@ -42,7 +42,7 @@ Mutation scope is split between two surfaces. This page (user edit screen) owns 
 
 There is no separate password field in `UserFormData`. The account is created without a credential in the SPA payload; the admin must use the "Change Password" button (§6) after creation, or the user's credential is managed entirely by Keycloak.
 
-**Success:** On a successful `POST`, the SPA calls `navigate('/users/${created.id}/edit', { replace: true })`, switching the page into edit mode for the new record. A `toast.success('User created successfully')` appears.
+**Success:** On a successful `POST`, the SPA calls `navigate('/users/:id/edit', { replace: true })` (where `:id` is the newly created user's UUID), switching the page into edit mode for the new record. A `toast.success('User created successfully')` appears.
 
 **Failure:** Any `4xx`/`5xx` response is caught and surfaced as `setError("Failed to save user: " + detail)`, shown in a red alert band at the top of the form.
 
@@ -52,7 +52,7 @@ There is no separate password field in `UserFormData`. The account is created wi
 
 **Endpoint:** `PUT /api-system/user/:id` via `userService.update(id, formData)`.
 
-**Username lock:** The `username` input carries `disabled={!isNew}`, so it is always disabled in edit mode. The field is included in `formData` but the backend receives it — whether the backend ignores it on `PUT` is not enforced by the SPA; the SPA always sends the full object.
+**Username lock:** The `username` input carries `disabled={!isNew}`, so it is always disabled in edit mode. The SPA always sends the full `formData` object including `username`; backend handling of this field on `PUT` is not reflected in the SPA source.
 
 **Mode toggle:** Clicking "Edit" reveals "Save" and "Cancel" buttons. "Cancel" calls `handleCancelEdit()`, which restores `formData` to the snapshot taken at `handleEditToggle()` time — no API call is made. Unsaved changes are tracked by comparing `formData` to `savedFormData` using `JSON.stringify`; the `useUnsavedChanges` hook will prompt the user before navigation if there are pending changes.
 
@@ -125,7 +125,7 @@ For self-service password change by the user themselves, see [[profile]].
 
 **Effect:** The backend pulls the current Keycloak user roster and upserts matching records into `tb_user`. After the call, the SPA triggers a table reload by calling `setPaginate(prev => ({ ...prev }))`. The button shows a spinning `Loader2` icon and the label "Fetching..." while `syncing` is true.
 
-**Access control:** The SPA attaches no `allowedRoles` gate to this button — it is visible to any authenticated user who can reach the `UserManagement` page. Operationally the action is meaningful only when the backend service account has admin access to Keycloak; without it, the backend call will fail and the SPA shows `toast.error('Failed to fetch users from Keycloak', ...)`.
+**Access control:** The SPA attaches no `allowedRoles` gate to this button — it is visible to any authenticated user who can reach the `UserManagement` page.
 
 ## 8. Cross-entity side effects
 
@@ -133,7 +133,7 @@ For self-service password change by the user themselves, see [[profile]].
 
 **BU assignments (`tb_user_tb_business_unit`):** The Business Units card on the user edit screen provides an "Add BU" button that opens a two-step dialog: select a cluster (from the user's existing memberships), then select a BU from that cluster. The resulting `POST` to `businessUnitService.createUserBusinessUnit()` writes a new row to `tb_user_tb_business_unit` with the chosen `user_id`, `business_unit_id`, and `role`. Existing BU rows can be removed via the trash-icon button beside each entry, which calls `businessUnitService.deleteUserBusinessUnit(id)` after a `ConfirmDialog`.
 
-**Cascade behaviour on hard delete:** As established in §5.2, both `tb_cluster_user.user_id` and `tb_user_tb_business_unit.user_id` FK constraints declare `onDelete: NoAction, onUpdate: NoAction` (Prisma platform schema, lines 212 and ~490 respectively). No rows in either join table are automatically removed when a `tb_user` row is hard-deleted. The hard delete will fail with a FK violation unless the operator manually removes all cluster and BU memberships for the user first.
+For FK cascade behaviour affecting these joins on hard delete, see §5.2.
 
 ## 9. References
 
@@ -147,5 +147,5 @@ For self-service password change by the user themselves, see [[profile]].
 
 **Cross-links:**
 - [[users]] — module landing: overview, key concepts, navigation map.
-- [[data-model]] — schema reference: field definitions, enums, constraints, SPA divergences.
+- [Data Model](./data-model.md) — schema reference: field definitions, enums, constraints, SPA divergences.
 - [[profile]] — self-service password change by the signed-in user.
