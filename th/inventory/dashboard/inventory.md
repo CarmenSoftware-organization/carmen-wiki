@@ -2,7 +2,7 @@
 title: แดชบอร์ดคลังสินค้า (Inventory Dashboard)
 description: ห้องนักบินของฝ่ายปฏิบัติการคลังสินค้า — pipeline สถานะ, ตารางสต๊อกเคลื่อนไหวช้า / เติมสต๊อก / PST กรองตาม location, มูลค่าตาม material group, การแจ้งเตือนของหมดอายุ และกราฟการบริโภคตาม location และหมวด
 published: true
-date: 2026-05-17T07:00:36.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: dashboard, inventory, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -34,14 +34,14 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 | Tile | แสดงอะไร | Drill-down (เมื่อ live) |
 |---|---|---|
-| **Pipeline สถานะ** | 5 การ์ด: Stock-Take Not Complete (จำนวน Loc) / Stock-Take Complete (จำนวน Loc) / Uncommitted Docs เดือนปัจจุบัน (จำนวน Doc) / Expiring Items เดือนปัจจุบัน (จำนวน Item) / มูลค่า Inventory (เดือนปัจจุบัน) | → [[physical-count]] / [[inventory]] |
-| **Slow-Moving / Dead Stock** | Item, SKU, Location, Days No Movement, Est. Value (พร้อม Location tab) | → [[inventory]] item detail |
-| **การเติมสต๊อก (ต่ำกว่า Par)** | Item, SKU, Location, On Hand, Par, Max, Order Qty + ปุ่ม "CREATE PR" 2 ปุ่ม (Location tab) | → [[purchase-request]] ใหม่ที่ pre-fill items |
-| **สถานะ Physical Stock Take** | Location, Dept, Last Count Date, badge สถานะ PST (`Completed` / `Awaiting Approval` / `In Progress`), SVF Name | → [[physical-count]] |
+| **Pipeline สถานะ** | 5 การ์ด: Stock-Take Not Complete (จำนวน Loc) / Stock-Take Complete (จำนวน Loc) / Uncommitted Docs เดือนปัจจุบัน (จำนวน Doc) / Expiring Items เดือนปัจจุบัน (จำนวน Item) / มูลค่า Inventory (เดือนปัจจุบัน) | → [physical-count](/th/inventory/physical-count) / [inventory](/th/inventory/inventory) |
+| **Slow-Moving / Dead Stock** | Item, SKU, Location, Days No Movement, Est. Value (พร้อม Location tab) | → [inventory](/th/inventory/inventory) item detail |
+| **การเติมสต๊อก (ต่ำกว่า Par)** | Item, SKU, Location, On Hand, Par, Max, Order Qty + ปุ่ม "CREATE PR" 2 ปุ่ม (Location tab) | → [purchase-request](/th/inventory/purchase-request) ใหม่ที่ pre-fill items |
+| **สถานะ Physical Stock Take** | Location, Dept, Last Count Date, badge สถานะ PST (`Completed` / `Awaiting Approval` / `In Progress`), SVF Name | → [physical-count](/th/inventory/physical-count) |
 | **มูลค่า Inventory ตาม Material Group** | Donut + bar + legend: Food / Beverage / Supplies พร้อม % + `$K` | — |
-| **การแจ้งเตือนสินค้าหมดอายุ** | Item (XCircle), Expiry Date | → [[inventory]] lot/expiry |
+| **การแจ้งเตือนสินค้าหมดอายุ** | Item (XCircle), Expiry Date | → [inventory](/th/inventory/inventory) lot/expiry |
 | **การบริโภครวมตาม Location** | bar แนวนอนพร้อมจำนวนเดือนปัจจุบัน vs YTD | — |
-| **การบริโภครวมตามหมวด** | bar แนวนอน + callout SR Awaiting Receipt ที่ list SR# พร้อมลิงก์ "Details" | → [[store-requisition]] สำหรับแถว SR# |
+| **การบริโภครวมตามหมวด** | bar แนวนอน + callout SR Awaiting Receipt ที่ list SR# พร้อมลิงก์ "Details" | → [store-requisition](/th/inventory/store-requisition) สำหรับแถว SR# |
 
 ตาราง Replenishment แสดง **ปุ่ม "CREATE PR" 2 ปุ่ม** ข้างกันด้วยสไตล์ต่างกัน — น่าจะเป็น placeholder สำหรับ template PR 2 แบบ (เช่น normal vs urgent) **(Inferred — ต้องยืนยันกับ UI จริง)**
 
@@ -51,10 +51,10 @@ dateCreated: 2026-05-16T15:00:00.000Z
 |---|---|
 | ทำไม Location tab ไม่ filter ทุกตารางพร้อมกัน? | แต่ละตารางถือ Location state ของตัวเอง tab picker retarget เฉพาะ widget นั้น |
 | เกณฑ์ของ "Slow-Moving" คืออะไร? | เกณฑ์ที่ปรับได้เทียบกับวันที่เคลื่อนไหวล่าสุด — ปัจจุบันเป็น mock; ยังไม่มี config กลาง |
-| "Order Qty" ใน Replenishment คำนวณอย่างไร? | `max_level - on_hand` (หรือตามนโยบาย [[store-requisition/stock-replenishment]]) |
-| "CREATE PR" สร้าง PR จริงหรือไม่? | **Inferred — ต้องยืนยันกับ UI จริง** Mock ไม่มี handler wire จริงควร pre-fill [[purchase-request]] ใหม่ด้วย line items |
-| มูลค่า Inventory คำนวณอย่างไร? | `on_hand × unit_cost` จัดกลุ่มตาม root ของ [[product/category]]; `unit_cost` มาจาก [[costing]] |
-| อะไรกระตุ้นการแจ้งเตือนสินค้าหมดอายุ? | ตาราง lot ของ [[inventory]] ที่ `expiry_date ≤ CURRENT_DATE + N_days` (N ปรับได้) |
+| "Order Qty" ใน Replenishment คำนวณอย่างไร? | `max_level - on_hand` (หรือตามนโยบาย [store-requisition/stock-replenishment](/th/inventory/store-requisition/stock-replenishment)) |
+| "CREATE PR" สร้าง PR จริงหรือไม่? | **Inferred — ต้องยืนยันกับ UI จริง** Mock ไม่มี handler wire จริงควร pre-fill [purchase-request](/th/inventory/purchase-request) ใหม่ด้วย line items |
+| มูลค่า Inventory คำนวณอย่างไร? | `on_hand × unit_cost` จัดกลุ่มตาม root ของ [product/category](/th/inventory/product/category); `unit_cost` มาจาก [costing](/th/inventory/costing) |
+| อะไรกระตุ้นการแจ้งเตือนสินค้าหมดอายุ? | ตาราง lot ของ [inventory](/th/inventory/inventory) ที่ `expiry_date ≤ CURRENT_DATE + N_days` (N ปรับได้) |
 
 ## 4. การแก้ปัญหา
 
@@ -62,22 +62,22 @@ dateCreated: 2026-05-16T15:00:00.000Z
 |---|---|---|
 | สลับ Location tab แสดง row เดิม | Mock fixture ไม่ได้ partition ตาม location | live query กรอง `location_id` |
 | คลิก "CREATE PR" ไม่มีอะไรเกิดขึ้น | ยังไม่ wire handler ในบิลด์ปัจจุบัน | (Inferred — ต้องยืนยันกับ UI จริง) |
-| badge PST Status หายไปสำหรับ count ที่มีจริง | mock มี row จำกัด; ข้อมูลจริงใช้ count ล่าสุดต่อ location | ตรวจสอบกับ header record ของ [[physical-count]] |
-| รายการ Expired Items ว่างทั้งที่มีของหมดอายุ | Mock fixture seed row น้อย | live query อ่านตาราง lot ของ [[inventory]] พร้อม filter expiry |
+| badge PST Status หายไปสำหรับ count ที่มีจริง | mock มี row จำกัด; ข้อมูลจริงใช้ count ล่าสุดต่อ location | ตรวจสอบกับ header record ของ [physical-count](/th/inventory/physical-count) |
+| รายการ Expired Items ว่างทั้งที่มีของหมดอายุ | Mock fixture seed row น้อย | live query อ่านตาราง lot ของ [inventory](/th/inventory/inventory) พร้อม filter expiry |
 | Inventory Value chart แสดง `$K` ไม่ใช่ `฿K` | Mock fixture currency quirk | production localise ไปยังสกุลเงินฐานของ BU |
 
 ---
 
 ## 5. แหล่งข้อมูล (Dev)
 
-- **Pipeline สถานะ** — จำนวนจาก [[physical-count]] (location ที่ยังไม่ commit สำหรับงวด), aggregate ของ [[inventory]] (uncommitted docs เดือนนี้), ตาราง lot ของ [[inventory]] (ใกล้หมดอายุภายในเดือน), rollup มูลค่า inventory
-- **Slow-Moving / Dead Stock** — ยอด item-location ของ [[inventory]] join กับวันที่เคลื่อนไหวล่าสุด; เกณฑ์ปรับได้
-- **Replenishment** — item ที่ `on_hand < par_level`; order qty = `max_level - on_hand` (หรือตาม [[store-requisition/stock-replenishment]])
-- **PST Status** — header record ของ [[physical-count]], count ล่าสุดต่อ location; workflow stage project ไปยัง 3 ชนิด badge
-- **มูลค่า Inventory ตาม Material Group** — sum `on_hand × unit_cost` จัดกลุ่มตาม root ของ [[product/category]]
-- **การแจ้งเตือนสินค้าหมดอายุ** — lot ของ [[inventory]] ที่ `expiry_date ≤ CURRENT_DATE + N_days`
-- **การบริโภคตาม Location / หมวด** — sum การเคลื่อนไหวออกที่ commit ของ [[inventory]] (SR-issued, wastage, recipe) จัดกลุ่มตาม location / หมวด
-- **SR Awaiting Receipt** — [[store-requisition]] ที่ `status = "issued"` AND location ปลายทางยังไม่ commit รับ
+- **Pipeline สถานะ** — จำนวนจาก [physical-count](/th/inventory/physical-count) (location ที่ยังไม่ commit สำหรับงวด), aggregate ของ [inventory](/th/inventory/inventory) (uncommitted docs เดือนนี้), ตาราง lot ของ [inventory](/th/inventory/inventory) (ใกล้หมดอายุภายในเดือน), rollup มูลค่า inventory
+- **Slow-Moving / Dead Stock** — ยอด item-location ของ [inventory](/th/inventory/inventory) join กับวันที่เคลื่อนไหวล่าสุด; เกณฑ์ปรับได้
+- **Replenishment** — item ที่ `on_hand < par_level`; order qty = `max_level - on_hand` (หรือตาม [store-requisition/stock-replenishment](/th/inventory/store-requisition/stock-replenishment))
+- **PST Status** — header record ของ [physical-count](/th/inventory/physical-count), count ล่าสุดต่อ location; workflow stage project ไปยัง 3 ชนิด badge
+- **มูลค่า Inventory ตาม Material Group** — sum `on_hand × unit_cost` จัดกลุ่มตาม root ของ [product/category](/th/inventory/product/category)
+- **การแจ้งเตือนสินค้าหมดอายุ** — lot ของ [inventory](/th/inventory/inventory) ที่ `expiry_date ≤ CURRENT_DATE + N_days`
+- **การบริโภคตาม Location / หมวด** — sum การเคลื่อนไหวออกที่ commit ของ [inventory](/th/inventory/inventory) (SR-issued, wastage, recipe) จัดกลุ่มตาม location / หมวด
+- **SR Awaiting Receipt** — [store-requisition](/th/inventory/store-requisition) ที่ `status = "issued"` AND location ปลายทางยังไม่ commit รับ
 
 ## 6. จังหวะการ Refresh
 
@@ -85,12 +85,12 @@ mock แบบ static ในปัจจุบัน เมื่อ wire แล
 
 ## 7. โมดูลที่เกี่ยวข้อง
 
-- [[inventory]] — ยอดและการเคลื่อนไหว transactional เบื้องหลังทุก tile
-- [[inventory-adjustment]] — การ post variance หลัง PST
-- [[physical-count]], [[spot-check]] — การ count operation ที่ขับ PST Status
-- [[store-requisition]] — การออกของที่ป้อน Consumption + SR Awaiting Receipt
-- [[purchase-request]] — เป้าหมายของปุ่ม "CREATE PR" replenishment
-- [[costing]] — แหล่ง `unit_cost` สำหรับ donut มูลค่า inventory
+- [inventory](/th/inventory/inventory) — ยอดและการเคลื่อนไหว transactional เบื้องหลังทุก tile
+- [inventory-adjustment](/th/inventory/inventory-adjustment) — การ post variance หลัง PST
+- [physical-count](/th/inventory/physical-count), [spot-check](/th/inventory/spot-check) — การ count operation ที่ขับ PST Status
+- [store-requisition](/th/inventory/store-requisition) — การออกของที่ป้อน Consumption + SR Awaiting Receipt
+- [purchase-request](/th/inventory/purchase-request) — เป้าหมายของปุ่ม "CREATE PR" replenishment
+- [costing](/th/inventory/costing) — แหล่ง `unit_cost` สำหรับ donut มูลค่า inventory
 
 ## 8. แหล่งข้อมูลอ้างอิง
 

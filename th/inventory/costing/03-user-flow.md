@@ -2,7 +2,7 @@
 title: การคำนวณต้นทุน (Costing) — User Flow
 description: วงจรชีวิต cost-flow และไฟล์ flow ตาม persona สำหรับ costing
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: costing, user-flow, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 # การคำนวณต้นทุน (Costing) — User Flow
 
 > **At a Glance**
-> **Module:** [[costing]] &nbsp;·&nbsp; **Personas:** Finance &nbsp;·&nbsp; Inventory Controller &nbsp;·&nbsp; Auditor
+> **Module:** [costing](/th/inventory/costing) &nbsp;·&nbsp; **Personas:** Finance &nbsp;·&nbsp; Inventory Controller &nbsp;·&nbsp; Auditor
 > **Workflow lifecycle:** Cost-layer row born (inbound) → picked (FIFO/WA outbound) → revalued (credit-note) → period-close anchor → period-open rollforward → period locked. Period valuation: `open` → `closed` → `locked`
 > **เจาะลึก per-persona views ด้านล่างเพื่อรายละเอียดระดับ action**
 
@@ -121,5 +121,5 @@ State machines สองตัวอยู่ในโมดูลนี้: **p
 - Sibling: [calculation-methods.md](./calculation-methods.md)
 - Sibling: [01-data-model.md](./01-data-model.md)
 - Sibling: [02-business-rules.md](./02-business-rules.md)
-- Related: [[inventory/03-user-flow]]
-- Related modules: [[good-receive-note]], [[store-requisition]], [[physical-count]] / [[spot-check]], [[inventory-adjustment]], [[recipe]], [[product]]
+- Related: [inventory/03-user-flow](/th/inventory/inventory/03-user-flow)
+- Related modules: [good-receive-note](/th/inventory/good-receive-note), [store-requisition](/th/inventory/store-requisition), [physical-count](/th/inventory/physical-count) / [spot-check](/th/inventory/spot-check), [inventory-adjustment](/th/inventory/inventory-adjustment), [recipe](/th/inventory/recipe), [product](/th/inventory/product)

@@ -2,7 +2,7 @@
 title: Inventory
 description: Stock balances, locations, and the period-end process — the core of the inventory ERP.
 published: true
-date: 2026-05-19T23:45:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -39,7 +39,7 @@ This module sits between **Procurement** (receipts in) and **Operations** (requi
 - **Location Type**: Classifies a storage location as `INVENTORY` (stock asset, posts to inventory GL account), `DIRECT` (direct-cost centre, posts straight to department expense), or transit/special-purpose. Location type determines the journal entries a movement generates and whether the item ever appears as an asset on the balance sheet.
 - **Stock Movement**: An immutable, posted record of a quantity change. Identified by type (`RECEIPT`, `ISSUE`, `TRANSFER`, `ADJUSTMENT`, `RETURN`, `WRITE_OFF`), references a source document (GRN, store requisition, count, write-off authorisation), and produces both a balance update and a journal entry. Movements are the atomic unit the audit trail is built from.
 - **Period-End Snapshot**: The locked state of every stock balance at the close of an accounting period. Created after the period-end checklist (physical count → variance reconciliation → adjustment approval → valuation verification → period lock). Backdated transactions into a closed period are rejected by the system.
-- **Valuation Method**: The cost-flow assumption applied to a product — `FIFO` or `WEIGHTED_AVERAGE` — configured per product (or globally) and applied by the costing engine when movements consume inventory. See [[costing]] for the calculation rules; this module stores the inputs (lots, dates, costs) the engine needs.
+- **Valuation Method**: The cost-flow assumption applied to a product — `FIFO` or `WEIGHTED_AVERAGE` — configured per product (or globally) and applied by the costing engine when movements consume inventory. See [costing](/en/inventory/costing) for the calculation rules; this module stores the inputs (lots, dates, costs) the engine needs.
 
 ## 4. Roles and Personas
 
@@ -52,21 +52,21 @@ This module sits between **Procurement** (receipts in) and **Operations** (requi
 ## 5. Related Modules
 
 **Cross-module flow:**
-- [[costing]] — costing is calculated against inventory balances; every stock movement updates valuation
-- [[good-receive-note]] — GRN is the primary upstream source of stock receipts
-- [[store-requisition]] — store requisitions are the primary downstream consumer
-- [[inventory-adjustment]] — manual corrections to balances
-- [[physical-count]] — periodic full count
-- [[spot-check]] — partial verification counts
+- [costing](/en/inventory/costing) — costing is calculated against inventory balances; every stock movement updates valuation
+- [good-receive-note](/en/inventory/good-receive-note) — GRN is the primary upstream source of stock receipts
+- [store-requisition](/en/inventory/store-requisition) — store requisitions are the primary downstream consumer
+- [inventory-adjustment](/en/inventory/inventory-adjustment) — manual corrections to balances
+- [physical-count](/en/inventory/physical-count) — periodic full count
+- [spot-check](/en/inventory/spot-check) — partial verification counts
 
 **Master configuration:**
-- [[master-data/unit]] — base, order, and recipe units of measure for every product balance
-- [[master-data/location]] — warehouse and storage locations that anchor every stock balance
-- [[master-data/business-unit]] — tenant/property scope that segregates balances and movements
-- [[system-config/period]] — accounting period that gates posting and locks the snapshot
-- [[system-config/dimension]] — analytical dimensions stamped on stock-movement journal lines
-- [[access-control/user-location]] — restricts which locations a user can transact against
-- [[reporting-audit/activity]] — movement and balance-change activity log for audit
+- [master-data/unit](/en/inventory/master-data/unit) — base, order, and recipe units of measure for every product balance
+- [master-data/location](/en/inventory/master-data/location) — warehouse and storage locations that anchor every stock balance
+- [master-data/business-unit](/en/inventory/master-data/business-unit) — tenant/property scope that segregates balances and movements
+- [system-config/period](/en/inventory/system-config/period) — accounting period that gates posting and locks the snapshot
+- [system-config/dimension](/en/inventory/system-config/dimension) — analytical dimensions stamped on stock-movement journal lines
+- [access-control/user-location](/en/inventory/access-control/user-location) — restricts which locations a user can transact against
+- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — movement and balance-change activity log for audit
 
 ## 6. Reference Sources
 

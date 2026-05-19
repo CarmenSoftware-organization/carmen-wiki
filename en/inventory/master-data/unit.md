@@ -2,7 +2,7 @@
 title: Unit
 description: Units of measure and inter-unit conversions used by every transactional document and product record.
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, unit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -102,15 +102,15 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 
 ## 7. Cross-References
 
-- [[product]] — every product has order/ingredient/inventory unit refs and a per-product conversion set.
-- [[recipe]] — recipe lines use ingredient units; yields convert to inventory unit.
-- [[purchase-request]] — requested / approved / FOC qtys carry a unit FK.
-- [[purchase-order]] — order_unit and base_unit per detail line.
-- [[good-receive-note]] — ordered / received / FOC unit columns; conversion applied to post inventory qty.
-- [[store-requisition]] — requisition lines carry unit references.
-- [[inventory]] — balances kept in inventory unit; conversions translate from receipt.
-- [[inventory-adjustment]] — adjustment qtys in inventory unit.
-- [[costing]] — costing engine consumes inventory-unit balances.
+- [product](/en/inventory/product) — every product has order/ingredient/inventory unit refs and a per-product conversion set.
+- [recipe](/en/inventory/recipe) — recipe lines use ingredient units; yields convert to inventory unit.
+- [purchase-request](/en/inventory/purchase-request) — requested / approved / FOC qtys carry a unit FK.
+- [purchase-order](/en/inventory/purchase-order) — order_unit and base_unit per detail line.
+- [good-receive-note](/en/inventory/good-receive-note) — ordered / received / FOC unit columns; conversion applied to post inventory qty.
+- [store-requisition](/en/inventory/store-requisition) — requisition lines carry unit references.
+- [inventory](/en/inventory/inventory) — balances kept in inventory unit; conversions translate from receipt.
+- [inventory-adjustment](/en/inventory/inventory-adjustment) — adjustment qtys in inventory unit.
+- [costing](/en/inventory/costing) — costing engine consumes inventory-unit balances.
 
 ## 8. References
 

@@ -2,7 +2,7 @@
 title: การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios — Counter
 description: Test case ของ Counter / Store Keeper สำหรับโมดูลการนับสต๊อกประจำงวด
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: physical-count, test-scenarios, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -11,13 +11,13 @@ dateCreated: 2026-05-15T14:00:00.000Z
 # การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios — Counter
 
 > **At a Glance**
-> **Persona:** Counter (Counter / Store Keeper) &nbsp;·&nbsp; **โมดูล:** [[physical-count]] &nbsp;·&nbsp; **Scenario:** ~30 (skeleton)
+> **Persona:** Counter (Counter / Store Keeper) &nbsp;·&nbsp; **โมดูล:** [physical-count](/th/inventory/physical-count) &nbsp;·&nbsp; **Scenario:** ~30 (skeleton)
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **ความครอบคลุม E2E:** ไม่มี Playwright spec ของ `physical-count` ที่ `../carmen-inventory-frontend-e2e/`; scenario เป็น manual / planned
 
 ## 1. ขอบเขต Persona
 
-**Counter** = Counter / Store Keeper พนักงานพื้นที่ที่ป้อน `actual_qty` ต่อบรรทัดใน zone ที่ได้รับมอบหมาย flag รายการเสียหาย / ไม่มีป้าย และเซ็นปิด zone ที่เสร็จ Scenario ด้านล่างใช้ action ที่ catalogue ใน [[physical-count/03-user-flow-counter]] หัวข้อ 3 — การเปิด sheet ที่ได้รับมอบหมาย, การป้อนการนับ, การ flag รายการ, การเพิ่ม comment, การเซ็นปิด zone Authority anchor `PHC_AUTH_002`
+**Counter** = Counter / Store Keeper พนักงานพื้นที่ที่ป้อน `actual_qty` ต่อบรรทัดใน zone ที่ได้รับมอบหมาย flag รายการเสียหาย / ไม่มีป้าย และเซ็นปิด zone ที่เสร็จ Scenario ด้านล่างใช้ action ที่ catalogue ใน [physical-count/03-user-flow-counter](/th/inventory/physical-count/03-user-flow-counter) หัวข้อ 3 — การเปิด sheet ที่ได้รับมอบหมาย, การป้อนการนับ, การ flag รายการ, การเพิ่ม comment, การเซ็นปิด zone Authority anchor `PHC_AUTH_002`
 
 ## 2. Functional — Happy Path
 
@@ -77,4 +77,4 @@ dateCreated: 2026-05-15T14:00:00.000Z
 - **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
 - **Frontend (TODO):** `../carmen-inventory-frontend/` — source ของพฤติกรรม UI Counter; ตรวจ `../cmobile/` สำหรับการ implement count sheet ฝั่ง PWA ถ้ามี
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count
-- ที่เกี่ยวข้อง: [[physical-count/03-user-flow-counter]], [[physical-count/02-business-rules]] (`PHC_AUTH_002`, `PHC_AUTH_004`, `PHC_VAL_004`–`PHC_VAL_005`), [[physical-count/04-test-scenarios]] (scenario handoff ข้าม persona)
+- ที่เกี่ยวข้อง: [physical-count/03-user-flow-counter](/th/inventory/physical-count/03-user-flow-counter), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_AUTH_002`, `PHC_AUTH_004`, `PHC_VAL_004`–`PHC_VAL_005`), [physical-count/04-test-scenarios](/th/inventory/physical-count/04-test-scenarios) (scenario handoff ข้าม persona)

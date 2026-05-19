@@ -2,7 +2,7 @@
 title: ประเภทอาหาร (Cuisine Type)
 description: แคตตาล็อกประเภทอาหาร — label ตามภูมิภาค/สไตล์ที่ใช้กับสูตรอาหารสำหรับการแบ่งกลุ่มเมนู (ไทย อิตาเลียน ฝรั่งเศส ฟิวชัน ฯลฯ)
 published: true
-date: 2026-05-17T07:00:36.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: recipe, cuisine, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # ประเภทอาหาร (Cuisine Type)
 
 > **At a Glance**
-> **เจ้าของ:** Chef / Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_recipe_cuisines` &nbsp;·&nbsp; **รูปทรง:** list แบน ผูกกับ enum `region` 6 ค่า &nbsp;·&nbsp; **ใช้โดย:** ส่วนหัวของ [[recipe]], filter ของ library, menu engineering &nbsp;·&nbsp; **มี:** `popular_dishes` + `key_ingredients` ที่ดูแลคัดสรร
+> **เจ้าของ:** Chef / Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_recipe_cuisines` &nbsp;·&nbsp; **รูปทรง:** list แบน ผูกกับ enum `region` 6 ค่า &nbsp;·&nbsp; **ใช้โดย:** ส่วนหัวของ [recipe](/th/inventory/recipe), filter ของ library, menu engineering &nbsp;·&nbsp; **มี:** `popular_dishes` + `key_ingredients` ที่ดูแลคัดสรร
 
 ![ประเภทอาหาร (Cuisine Type) screen](/screenshots/recipe/cuisine.png)
 
@@ -19,7 +19,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ประเภทอาหารคือ **แคตตาล็อกแบน** ที่ label สูตรแต่ละตัวด้วยต้นกำเนิดตามภูมิภาค / วัฒนธรรม (`Thai`, `Italian`, `Japanese`, `French` ฯลฯ) ขับเคลื่อน filter ของ menu engineering — outlet ที่มีธีมไทยดึงเฉพาะ `Thai` และรายการฟิวชันที่เลือกจาก library กลาง
 
-แตกต่างจาก [[recipe/category]] ซึ่งเป็น *ตามฟังก์ชัน* และ *เชิงลำดับชั้น* ประเภทอาหารเป็น *ภูมิศาสตร์* และ *แบน* แต่ละแถวผูกกับ **region** ระดับสูง (`ASIA`, `EUROPE`, `AMERICAS`, `AFRICA`, `MIDDLE_EAST`, `OCEANIA`) สำหรับ rollup ระดับภูมิภาค **ดูแลโดย Chef** (หรือ **Product Admin**) ภายใต้ Operation Plan → Cuisine
+แตกต่างจาก [recipe/category](/th/inventory/recipe/category) ซึ่งเป็น *ตามฟังก์ชัน* และ *เชิงลำดับชั้น* ประเภทอาหารเป็น *ภูมิศาสตร์* และ *แบน* แต่ละแถวผูกกับ **region** ระดับสูง (`ASIA`, `EUROPE`, `AMERICAS`, `AFRICA`, `MIDDLE_EAST`, `OCEANIA`) สำหรับ rollup ระดับภูมิภาค **ดูแลโดย Chef** (หรือ **Product Admin**) ภายใต้ Operation Plan → Cuisine
 
 ## 2. งานที่พบบ่อย
 
@@ -85,10 +85,10 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ## 7. Cross-References
 
-- [[recipe]] — สูตรทุกตัวมี `cuisine_id` (จำเป็น) แสดงบนส่วนหัวและขับเคลื่อน filter ของ library
-- [[recipe/category]] — taxonomy พี่น้องบนแกน (ตามฟังก์ชัน) ที่ต่างกัน
-- [[recipe/01-data-model]] — ฟิลด์ส่วนหัวของสูตรรวมถึง FK ของ cuisine
-- [[recipe/03-user-flow-chef]], [[recipe/03-user-flow-procurement-fb-ops]] — Chef หยิบ F&B Ops ใช้ cuisine + rollup ภูมิภาค
+- [recipe](/th/inventory/recipe) — สูตรทุกตัวมี `cuisine_id` (จำเป็น) แสดงบนส่วนหัวและขับเคลื่อน filter ของ library
+- [recipe/category](/th/inventory/recipe/category) — taxonomy พี่น้องบนแกน (ตามฟังก์ชัน) ที่ต่างกัน
+- [recipe/01-data-model](/th/inventory/recipe/01-data-model) — ฟิลด์ส่วนหัวของสูตรรวมถึง FK ของ cuisine
+- [recipe/03-user-flow-chef](/th/inventory/recipe/03-user-flow-chef), [recipe/03-user-flow-procurement-fb-ops](/th/inventory/recipe/03-user-flow-procurement-fb-ops) — Chef หยิบ F&B Ops ใช้ cuisine + rollup ภูมิภาค
 
 ## 8. แหล่งอ้างอิง
 

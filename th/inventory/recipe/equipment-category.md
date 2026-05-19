@@ -2,7 +2,7 @@
 title: หมวดหมู่อุปกรณ์ (Equipment Category)
 description: การจัดกลุ่มตามฟังก์ชันสำหรับอุปกรณ์ครัว — preparation, cooking, holding, refrigeration, dispense, cleaning ฯลฯ
 published: true
-date: 2026-05-17T07:00:36.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: recipe, equipment, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # หมวดหมู่อุปกรณ์ (Equipment Category)
 
 > **At a Glance**
-> **เจ้าของ:** Chef / Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_recipe_equipment_category` &nbsp;·&nbsp; **รูปทรง:** แบน (ไม่มี `parent_id`) &nbsp;·&nbsp; **ลูก:** [[recipe/equipment]] ผ่าน `category_id` &nbsp;·&nbsp; **ใช้โดย:** filter ของ equipment picker, dashboard maintenance, checklist การ fit-out
+> **เจ้าของ:** Chef / Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_recipe_equipment_category` &nbsp;·&nbsp; **รูปทรง:** แบน (ไม่มี `parent_id`) &nbsp;·&nbsp; **ลูก:** [recipe/equipment](/th/inventory/recipe/equipment) ผ่าน `category_id` &nbsp;·&nbsp; **ใช้โดย:** filter ของ equipment picker, dashboard maintenance, checklist การ fit-out
 
 ![หมวดหมู่อุปกรณ์ (Equipment Category) screen](/screenshots/recipe/equipment-category.png)
 
@@ -19,7 +19,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 หมวดหมู่อุปกรณ์จัดกลุ่มอุปกรณ์ครัวตาม **ฟังก์ชัน** — ค่าทั่วไปคือ `Preparation`, `Cooking`, `Holding`, `Refrigeration`, `Dispense` และ `Cleaning` ขับเคลื่อนการกรองใน equipment picker กำหนดขอบเขต dashboard maintenance และป้อน checklist การ fit-out ของ property ("ครัวนี้มีอย่างน้อยหนึ่งชิ้นในทุกหมวดหมู่หรือไม่?")
 
-**taxonomy แบน** — ไม่มี `parent_id` ต่างจาก [[recipe/category]] ที่เชิงลำดับชั้น การจำแนกย่อยใช้ฟิลด์ `station` อิสระบนแถวอุปกรณ์ **ดูแลโดย Chef** (หรือ **Product Admin**) ภายใต้ Operation Plan → Equipment Category tenant ส่วนใหญ่ seed ครั้งเดียวตอน onboarding และไม่ค่อยแก้
+**taxonomy แบน** — ไม่มี `parent_id` ต่างจาก [recipe/category](/th/inventory/recipe/category) ที่เชิงลำดับชั้น การจำแนกย่อยใช้ฟิลด์ `station` อิสระบนแถวอุปกรณ์ **ดูแลโดย Chef** (หรือ **Product Admin**) ภายใต้ Operation Plan → Equipment Category tenant ส่วนใหญ่ seed ครั้งเดียวตอน onboarding และไม่ค่อยแก้
 
 ## 2. งานที่พบบ่อย
 
@@ -79,9 +79,9 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ## 7. Cross-References
 
-- [[recipe/equipment]] — ลูกผ่าน `category_id` มี `category_name` ที่ denormalise
-- [[recipe]] — โดยอ้อม equipment-category ปรากฏเป็น filter ใน equipment picker ของขั้นตอนการเตรียม
-- [[recipe/03-user-flow-chef]] — Chef ใช้ filter หมวดหมู่เมื่อหยิบอุปกรณ์
+- [recipe/equipment](/th/inventory/recipe/equipment) — ลูกผ่าน `category_id` มี `category_name` ที่ denormalise
+- [recipe](/th/inventory/recipe) — โดยอ้อม equipment-category ปรากฏเป็น filter ใน equipment picker ของขั้นตอนการเตรียม
+- [recipe/03-user-flow-chef](/th/inventory/recipe/03-user-flow-chef) — Chef ใช้ filter หมวดหมู่เมื่อหยิบอุปกรณ์
 
 ## 8. แหล่งอ้างอิง
 

@@ -2,7 +2,7 @@
 title: Report History
 description: Append-only archive of every executed report run — date, parameters, status, link to the generated artefact.
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: reporting-audit, history, archive, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -88,11 +88,11 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 
 ## 7. Cross-References
 
-- [[reporting-audit/report]] — parent module; every `kind = report` template firing produces a row here.
-- [[reporting-audit/schedule]] — recurring runs enqueue jobs here; `last_run_at` derived from latest completed job.
-- [[reporting-audit/activity]] — `export` and `print` actions are also logged with `entity_type = 'report_job'`.
-- [[purchase-request]], [[purchase-order]], [[good-receive-note]], [[store-requisition]], [[inventory-adjustment]], [[physical-count]], [[spot-check]], [[vendor-pricelist]] — Print invocations land here.
-- [[access-control/user]] — `requested_by_id` resolves through platform `tb_user`.
+- [reporting-audit/report](/en/inventory/reporting-audit/report) — parent module; every `kind = report` template firing produces a row here.
+- [reporting-audit/schedule](/en/inventory/reporting-audit/schedule) — recurring runs enqueue jobs here; `last_run_at` derived from latest completed job.
+- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — `export` and `print` actions are also logged with `entity_type = 'report_job'`.
+- [purchase-request](/en/inventory/purchase-request), [purchase-order](/en/inventory/purchase-order), [good-receive-note](/en/inventory/good-receive-note), [store-requisition](/en/inventory/store-requisition), [inventory-adjustment](/en/inventory/inventory-adjustment), [physical-count](/en/inventory/physical-count), [spot-check](/en/inventory/spot-check), [vendor-pricelist](/en/inventory/vendor-pricelist) — Print invocations land here.
+- [access-control/user](/en/inventory/access-control/user) — `requested_by_id` resolves through platform `tb_user`.
 
 ## 8. References
 

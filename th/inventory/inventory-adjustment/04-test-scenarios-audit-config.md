@@ -2,7 +2,7 @@
 title: การปรับสต๊อก (Inventory Adjustment) — Test Scenarios — Audit & Config
 description: Test cases ของ Auditor และ System Administrator สำหรับการปรับสต๊อก
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: inventory-adjustment, test-scenarios, audit, sysadmin, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 # การปรับสต๊อก (Inventory Adjustment) — Test Scenarios — Audit & Config
 
 > **At a Glance**
-> **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **โมดูล:** [[inventory-adjustment]] &nbsp;·&nbsp; **Scenarios:** ~38
+> **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **โมดูล:** [inventory-adjustment](/th/inventory/inventory-adjustment) &nbsp;·&nbsp; **Scenarios:** ~38
 > **ประเภท:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **การครอบคลุม E2E:** map ไปยัง `031-adjustment-type.spec.ts` ใน `../carmen-inventory-frontend-e2e/`
 
@@ -58,7 +58,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 | # | Scenario | พฤติกรรมที่คาดหวัง (allow/deny + เหตุผล) |
 | - | -------- | --------------------------------------- |
 | AC-PERM-07 | Auditor อ่าน `tb_stock_in` / `tb_stock_out` / detail / comment / attachment ใด ๆ | **Allow ตาม `ADJ_AUTH_009`** Full read scope รวมเอกสาร soft-deleted และ voided |
-| AC-PERM-08 | Auditor อ่าน `tb_inventory_transaction` / cost-layer ledger / GL journal entries | **Allow ตาม [[inventory]] `INV_AUTH_009`** (รูปแบบการอ่านเดียวกัน, join) |
+| AC-PERM-08 | Auditor อ่าน `tb_inventory_transaction` / cost-layer ledger / GL journal entries | **Allow ตาม [inventory](/th/inventory/inventory) `INV_AUTH_009`** (รูปแบบการอ่านเดียวกัน, join) |
 | AC-PERM-09 | Auditor พยายามแก้ไข, อนุมัติ หรือ void เอกสาร | **Deny — read-only** Auditor role ไม่มีอำนาจเขียนบนเอกสาร adjustment |
 | AC-PERM-10 | Auditor export aggregate ที่ไม่อ่อนไหว (counts, totals ตาม reason) | **Allow** Read scope มาตรฐาน |
 | AC-PERM-11 | Auditor export ฟิลด์อ่อนไหว (cost-per-unit, vendor terms) | **Allow ด้วยการอนุมัติ Auditor รอง** ตาม `ADJ_AUTH_009` Single-Auditor export block Map ไปยัง AC-HP-11 |
@@ -102,6 +102,6 @@ dateCreated: 2026-05-15T13:00:00.000Z
 - User flow: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — Sysadmin primary 7 ขั้น CRUD flow สำหรับ reason codes; Auditor primary 7 ขั้น trail-review flow และ 4 ขั้น lot-recall flow; decision branches (soft-fail vs hard-fail audit findings, add vs modify reason, threshold scope)
 - กฎทางธุรกิจ: [02-business-rules.md](./02-business-rules.md) — `ADJ_AUTH_008` (scope Sysadmin), `ADJ_AUTH_009` (scope การอ่าน Auditor), `ADJ_AUTH_010` (SoD), `ADJ_VAL_001` (รูปแบบเลขที่เอกสาร unique แชร์กับ reason-code uniqueness), `ADJ_VAL_002` (reason direction), `ADJ_VAL_010` (requiresDocument flag), `ADJ_POST_004` (void chain)
 - E2E specs: [`../carmen-inventory-frontend-e2e/tests/031-adjustment-type.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/031-adjustment-type.spec.ts) — spec CRUD Sysadmin canonical (TC-AT-010001..n ครอบคลุม list / search / pagination / create / edit / activate-toggle / validation / security cases) ผู้ใช้ fixture `admin@blueledgers.com`
-- Cross-link: [[inventory]] — `INV_AUTH_008` (scope การกำหนดค่า Sysadmin span นิยาม location-type / costing-method / period นอกเหนือจาก adjustment-type); `INV_AUTH_009` (scope การอ่าน Auditor span ข้อมูล inventory ทั้งหมด)
-- Cross-link: [[good-receive-note]] — รูปแบบ lot-recall trace ของ Auditor สะท้อนวิธีของ [[good-receive-note/04-test-scenarios-audit-config]]
-- Cross-link: [[physical-count]] / [[spot-check]] — adjustments variance-rollup cross-check โดย Auditor สำหรับความสมเหตุสมผลและ SoD compliance
+- Cross-link: [inventory](/th/inventory/inventory) — `INV_AUTH_008` (scope การกำหนดค่า Sysadmin span นิยาม location-type / costing-method / period นอกเหนือจาก adjustment-type); `INV_AUTH_009` (scope การอ่าน Auditor span ข้อมูล inventory ทั้งหมด)
+- Cross-link: [good-receive-note](/th/inventory/good-receive-note) — รูปแบบ lot-recall trace ของ Auditor สะท้อนวิธีของ [good-receive-note/04-test-scenarios-audit-config](/th/inventory/good-receive-note/04-test-scenarios-audit-config)
+- Cross-link: [physical-count](/th/inventory/physical-count) / [spot-check](/th/inventory/spot-check) — adjustments variance-rollup cross-check โดย Auditor สำหรับความสมเหตุสมผลและ SoD compliance

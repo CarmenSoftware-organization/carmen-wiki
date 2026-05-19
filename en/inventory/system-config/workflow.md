@@ -2,7 +2,7 @@
 title: Workflow
 description: Named multi-stage approval workflows attached to transactional documents — defines stages, actions, recipients, SLA, and field visibility per stage.
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: system-config, workflow, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -43,12 +43,12 @@ Workflows are *typed*: an SR workflow cannot attach to a PR. Typing is via `enum
 | Validation: missing submit stage | First stage lacks `submit: is_active=true` | Add submit action to first stage |
 | Cannot delete workflow | Referenced by non-completed documents | Clone + inactivate the old version |
 | Approver sees masked prices | `hide_fields.price_per_unit = true` at active stage | Expected — adjust stage if unintended |
-| HoD route fails | No HoD configured for document's department | Configure HoD on [[master-data/department]] |
+| HoD route fails | No HoD configured for document's department | Configure HoD on [master-data/department](/en/inventory/master-data/department) |
 
 ## 4. Edge Cases
 
 - **Versioning.** Editing a live workflow does NOT retroactively change in-flight documents — runtime reads stage list as it was at attach-time. Breaking changes: clone under a new name.
-- **Assigned users vs roles.** `assigned_users` accepts either user IDs or role descriptors (resolved via [[access-control/application-role]]). Empty list at non-HOD approve stage = anyone with the workflow-stage role.
+- **Assigned users vs roles.** `assigned_users` accepts either user IDs or role descriptors (resolved via [access-control/application-role](/en/inventory/access-control/application-role)). Empty list at non-HOD approve stage = anyone with the workflow-stage role.
 - **HoD resolution.** When `is_hod: true`, runtime looks up department HoD and routes there — `assigned_users` ignored.
 - **Hidden fields** mask UI cells but values still flow through API.
 
@@ -111,12 +111,12 @@ Per-stage keys: `name`, `description`; `sla` + `sla_unit` (`hours`/`days`); `ava
 
 ## 7. Cross-References
 
-- [[purchase-request]] — primary consumer (`purchase_request_workflow`).
-- [[store-requisition]] — canonical multi-stage user (`store_requisition_workflow`).
-- [[purchase-order]] — high-value approval (`purchase_order_workflow`).
-- [[good-receive-note]], [[inventory-adjustment]], [[vendor-pricelist]], [[physical-count]], [[spot-check]] — optional workflow gating.
-- [[access-control/application-role]] — role descriptors in `assigned_users`.
-- [[master-data/department]] — HoD resolution.
+- [purchase-request](/en/inventory/purchase-request) — primary consumer (`purchase_request_workflow`).
+- [store-requisition](/en/inventory/store-requisition) — canonical multi-stage user (`store_requisition_workflow`).
+- [purchase-order](/en/inventory/purchase-order) — high-value approval (`purchase_order_workflow`).
+- [good-receive-note](/en/inventory/good-receive-note), [inventory-adjustment](/en/inventory/inventory-adjustment), [vendor-pricelist](/en/inventory/vendor-pricelist), [physical-count](/en/inventory/physical-count), [spot-check](/en/inventory/spot-check) — optional workflow gating.
+- [access-control/application-role](/en/inventory/access-control/application-role) — role descriptors in `assigned_users`.
+- [master-data/department](/en/inventory/master-data/department) — HoD resolution.
 
 ## 8. References
 

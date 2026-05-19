@@ -2,7 +2,7 @@
 title: Vendor Pricelist — Test Scenarios — Audit & Config
 description: Auditor (read-only across templates/campaigns/invitations/pricelists/validation/activity-log) and System Administrator (numbering, RBAC, portal-token policy, email integration, validation rules, token revocation, audit retention) test cases.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: vendor-pricelist, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 # Vendor Pricelist — Test Scenarios — Audit & Config
 
 > **At a Glance**
-> **Persona:** Audit / Config (Auditor read-only + System Administrator config) &nbsp;·&nbsp; **Module:** [[vendor-pricelist]] &nbsp;·&nbsp; **Scenarios:** ~34
+> **Persona:** Audit / Config (Auditor read-only + System Administrator config) &nbsp;·&nbsp; **Module:** [vendor-pricelist](/en/inventory/vendor-pricelist) &nbsp;·&nbsp; **Scenarios:** ~34
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** none — audit-log query and configuration surfaces exercised at API / integration level pending roadmap item; no dedicated spec in `../carmen-inventory-frontend-e2e/`
 
@@ -83,8 +83,8 @@ This page captures the test scenarios that the **Audit / Config** persona axis d
 - Sibling: [04-test-scenarios-purchaser.md](./04-test-scenarios-purchaser.md) — upstream persona whose template / campaign / pricelist actions populate the activity log the Auditor walks; consumer of Sysadmin numbering, RBAC, and validation configuration.
 - Sibling: [04-test-scenarios-vendor.md](./04-test-scenarios-vendor.md) — external counterparty whose portal access is governed by Sysadmin token policy (VPL-AUD-HP-07) and may be terminated by Sysadmin revocation (VPL-AUD-HP-08); whose telemetry feeds the Auditor's chain audit (VPL-AUD-HP-02 / VPL-AUD-HP-03).
 - Sibling: [04-test-scenarios-finance.md](./04-test-scenarios-finance.md) — internal persona whose variance investigations and FX policy enforcement consume Sysadmin currency / FX source configuration (VPL-AUD-HP-10); whose case files feed the Auditor's downstream chain audit.
-- Cross-link: [[purchase-request]] — downstream module whose PR records reference the active pricelist; Auditor walks the back-chain on every preferred-vendor defaulting decision per VPL-AUD-HP-03.
-- Cross-link: [[purchase-order]] — downstream module whose PO records snapshot the pricelist price; chain audit verifies snapshot integrity at PR-to-PO conversion.
-- Cross-link: [[good-receive-note]] — downstream module whose GRN postings drive variance entries against the active pricelist; chain audit verifies the variance categorisation Finance recorded.
-- Cross-link: [[product]] — every pricelist row references a product; Auditor consumes the data-hygiene report on orphaned references.
+- Cross-link: [purchase-request](/en/inventory/purchase-request) — downstream module whose PR records reference the active pricelist; Auditor walks the back-chain on every preferred-vendor defaulting decision per VPL-AUD-HP-03.
+- Cross-link: [purchase-order](/en/inventory/purchase-order) — downstream module whose PO records snapshot the pricelist price; chain audit verifies snapshot integrity at PR-to-PO conversion.
+- Cross-link: [good-receive-note](/en/inventory/good-receive-note) — downstream module whose GRN postings drive variance entries against the active pricelist; chain audit verifies the variance categorisation Finance recorded.
+- Cross-link: [product](/en/inventory/product) — every pricelist row references a product; Auditor consumes the data-hygiene report on orphaned references.
 - E2E: No dedicated audit-config E2E spec exists; audit-log query and configuration-management surfaces are exercised at the API / integration level (cross-module audit and config services). The roadmap item in `../carmen/docs/vendor-pricelist-management/tasks.md` covers the future dedicated coverage; the `SKIP_NOTE_BACKEND` annotation pattern from the PO module (`401-po.spec.ts`) applies similarly here for configuration-driven behaviour (numbering generation, RBAC enforcement, token policy, validation rule firing) which is validated via the audit logs the Auditor walks and the configuration audit log the Sysadmin writes.

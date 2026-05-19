@@ -2,7 +2,7 @@
 title: Authentication & Roles
 description: Login flow, session model, role catalog, route guards, and sidebar role-based filtering for the Carmen Platform admin product.
 published: true
-date: 2026-05-19T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: platform/auth-roles, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -54,11 +54,11 @@ All five roles can reach `Dashboard`, `Business Units`, `Users`, and `Profile` b
 
 ## 5. Related Modules
 
-- [[users]] — manages the `platform_role` field this module reads; creating or editing a user is where roles are actually assigned
-- [[clusters]] — the highest-impact role-gated surface; its `allowedRoles` array is the canonical example of how features consume `hasRole()`
-- [[report-templates]] — second example of a role-gated surface using the same admin-tier role list
-- [[profile]] — the only authenticated-only page reachable from the avatar menu rather than the sidebar; depends on this module's session model
-- [[business-units]] — reached by every authenticated role; useful counter-example showing what "no `allowedRoles`" looks like in practice
+- [users](/en/platform/users) — manages the `platform_role` field this module reads; creating or editing a user is where roles are actually assigned
+- [clusters](/en/platform/clusters) — the highest-impact role-gated surface; its `allowedRoles` array is the canonical example of how features consume `hasRole()`
+- [report-templates](/en/platform/report-templates) — second example of a role-gated surface using the same admin-tier role list
+- [profile](/en/platform/profile) — the only authenticated-only page reachable from the avatar menu rather than the sidebar; depends on this module's session model
+- [business-units](/en/platform/business-units) — reached by every authenticated role; useful counter-example showing what "no `allowedRoles`" looks like in practice
 
 ## 6. Reference Sources
 

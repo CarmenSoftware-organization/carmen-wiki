@@ -2,7 +2,7 @@
 title: Equipment Category
 description: Functional grouping for kitchen equipment — preparation, cooking, holding, refrigeration, dispense, cleaning, etc.
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: recipe, equipment, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # Equipment Category
 
 > **At a Glance**
-> **Owner:** Chef / Product Admin &nbsp;·&nbsp; **Table:** `tb_recipe_equipment_category` &nbsp;·&nbsp; **Shape:** Flat (no `parent_id`) &nbsp;·&nbsp; **Children:** [[recipe/equipment]] via `category_id` &nbsp;·&nbsp; **Used by:** equipment picker filter, maintenance dashboard, fit-out checklists
+> **Owner:** Chef / Product Admin &nbsp;·&nbsp; **Table:** `tb_recipe_equipment_category` &nbsp;·&nbsp; **Shape:** Flat (no `parent_id`) &nbsp;·&nbsp; **Children:** [recipe/equipment](/en/inventory/recipe/equipment) via `category_id` &nbsp;·&nbsp; **Used by:** equipment picker filter, maintenance dashboard, fit-out checklists
 
 ![Equipment Category screen](/screenshots/recipe/equipment-category.png)
 
@@ -19,7 +19,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 Equipment Category groups kitchen equipment by **function** — typical values are `Preparation`, `Cooking`, `Holding`, `Refrigeration`, `Dispense`, and `Cleaning`. Drives filtering in the equipment picker, scopes maintenance dashboards, and feeds property-fit-out checklists ("does this kitchen have at least one piece in every category?").
 
-**Flat taxonomy** — no `parent_id`, unlike the hierarchical [[recipe/category]]. Sub-classification uses the equipment row's free-text `station` field. **Maintained by Chef** (or **Product Admin**) under Operation Plan → Equipment Category. Most tenants seed once at onboarding and rarely edit.
+**Flat taxonomy** — no `parent_id`, unlike the hierarchical [recipe/category](/en/inventory/recipe/category). Sub-classification uses the equipment row's free-text `station` field. **Maintained by Chef** (or **Product Admin**) under Operation Plan → Equipment Category. Most tenants seed once at onboarding and rarely edit.
 
 ## 2. Common Tasks
 
@@ -79,9 +79,9 @@ Source: tenant schema.
 
 ## 7. Cross-References
 
-- [[recipe/equipment]] — children via `category_id`; carries denormalised `category_name`.
-- [[recipe]] — indirect; equipment-category surfaces as a filter in the equipment picker on preparation steps.
-- [[recipe/03-user-flow-chef]] — Chef uses category filter when picking equipment.
+- [recipe/equipment](/en/inventory/recipe/equipment) — children via `category_id`; carries denormalised `category_name`.
+- [recipe](/en/inventory/recipe) — indirect; equipment-category surfaces as a filter in the equipment picker on preparation steps.
+- [recipe/03-user-flow-chef](/en/inventory/recipe/03-user-flow-chef) — Chef uses category filter when picking equipment.
 
 ## 8. References
 

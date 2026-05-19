@@ -2,7 +2,7 @@
 title: Costing — Test Scenarios — Finance
 description: Finance's test cases (valuation policy, credit-note revaluation approval, sub-ledger ↔ GL reconciliation, period-end valuation, period lock) for costing.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: costing, test-scenarios, finance, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 # Costing — Test Scenarios — Finance
 
 > **At a Glance**
-> **Persona:** Finance (Officer / Cost Controller + Finance Manager) &nbsp;·&nbsp; **Module:** [[costing]] &nbsp;·&nbsp; **Scenarios:** ~34
+> **Persona:** Finance (Officer / Cost Controller + Finance Manager) &nbsp;·&nbsp; **Module:** [costing](/en/inventory/costing) &nbsp;·&nbsp; **Scenarios:** ~34
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** maps to `601-cn.spec.ts`, `900-period-end.spec.ts`, `501-grn.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
@@ -79,7 +79,7 @@ This page captures the test scenarios that the Finance persona (Finance Officer 
 - Sibling: [04-test-scenarios-inventory-controller.md](./04-test-scenarios-inventory-controller.md) — upstream persona that surfaces cost anomalies (IC-HP-04 anomaly rejection feeds FIN-HP-01 if revaluation is the right path).
 - Sibling: [04-test-scenarios-auditor.md](./04-test-scenarios-auditor.md) — downstream persona that audits Finance's reconciliation activity, credit-note revaluation history, and period-end snapshot.
 - E2E specs: [`900-period-end.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/900-period-end.spec.ts) — canonical period-end for FIN-HP-04 / FIN-HP-05 / FIN-HP-07 / FIN-HP-10; [`601-cn.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/601-cn.spec.ts) — credit-note approval and inventory-side revaluation effect for FIN-HP-01; [`501-grn.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts) — Stock Movements describe block as supporting context for cost-layer write assertions.
-- Cross-link: [[inventory/04-test-scenarios-finance]] — parallel inventory-side Finance flow; the period-close + lock cells overlap (same click, both modules affected).
-- Cross-link: [[good-receive-note]] — Finance's reconciliation drills into GRN-side AP-clearing posts when a credit-note revaluation gap surfaces.
-- Cross-link: [[inventory-adjustment]] — corrective stock-in / stock-out path Finance approves for cost-layer gaps that the credit-note path cannot resolve.
+- Cross-link: [inventory/04-test-scenarios-finance](/en/inventory/inventory/04-test-scenarios-finance) — parallel inventory-side Finance flow; the period-close + lock cells overlap (same click, both modules affected).
+- Cross-link: [good-receive-note](/en/inventory/good-receive-note) — Finance's reconciliation drills into GRN-side AP-clearing posts when a credit-note revaluation gap surfaces.
+- Cross-link: [inventory-adjustment](/en/inventory/inventory-adjustment) — corrective stock-in / stock-out path Finance approves for cost-layer gaps that the credit-note path cannot resolve.
 - Cross-link: credit-note — the canonical cost-revaluation event (`credit_note_amount`); Finance is the approval authority for the cost-side effect.

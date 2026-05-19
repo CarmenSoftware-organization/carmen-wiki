@@ -2,7 +2,7 @@
 title: Purchase Request — Test Scenarios — Requestor
 description: Requestor's test cases (happy path, permission, validation, edge cases) for purchase-request.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-request, test-scenarios, requestor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 # Purchase Request — Test Scenarios — Requestor
 
 > **At a Glance**
-> **Persona:** Requestor &nbsp;·&nbsp; **Module:** [[purchase-request]] &nbsp;·&nbsp; **Scenarios:** ~36
+> **Persona:** Requestor &nbsp;·&nbsp; **Module:** [purchase-request](/en/inventory/purchase-request) &nbsp;·&nbsp; **Scenarios:** ~36
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** maps to `tests/302-pr-creator-journey.spec.ts`, `tests/311-pr-returned-flow.spec.ts`, and `tests/301-pr.spec.ts` (requestorTest / noAuthTest fixtures) in `../carmen-inventory-frontend-e2e/`
 

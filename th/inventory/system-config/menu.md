@@ -2,7 +2,7 @@
 title: เมนู (Menu)
 description: รายการนำทางแอปพลิเคชัน — รายการเมนูต่อโมดูลที่ render ใน app shell พร้อม flag การมองเห็น active และ lock
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: system-config, menu, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -76,13 +76,13 @@ dateCreated: 2026-05-16T08:00:00.000Z
 - **Cascade การมองเห็น** ทุกเงื่อนไขต้องผ่าน (active + visible + ไม่ถูก delete + RBAC)
 - **URL hygiene** เก็บตามตัวอักษร; ไม่มี validation
 - **การจัดกลุ่มโมดูล** `module_id` opaque ต่อ schema; การจัดเรียง / icon อยู่ใน metadata แอป
-- **Audit** การแก้ไขรายการที่ lock ควรเขียน row [[reporting-audit/activity]]
+- **Audit** การแก้ไขรายการที่ lock ควรเขียน row [reporting-audit/activity](/th/inventory/reporting-audit/activity)
 
 ## 7. การอ้างอิงข้าม
 
 - ทุกโมดูลธุรกรรม — แต่ละโมดูลโดยทั่วไปมีรายการเมนูหนึ่งหรือมากกว่า
-- [[access-control/permission]] — การมองเห็นตัดกับสิทธิ์ต่อผู้ใช้
-- [[system-config/application-config]] — feature flag สามารถซ่อนรายการเพิ่มเติม
+- [access-control/permission](/th/inventory/access-control/permission) — การมองเห็นตัดกับสิทธิ์ต่อผู้ใช้
+- [system-config/application-config](/th/inventory/system-config/application-config) — feature flag สามารถซ่อนรายการเพิ่มเติม
 
 ## 8. แหล่งข้อมูลอ้างอิง
 

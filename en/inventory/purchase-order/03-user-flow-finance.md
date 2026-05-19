@@ -2,7 +2,7 @@
 title: Purchase Order — User Flow — Finance
 description: Finance's flow within the purchase-order module — three-way match (PO ↔ GRN ↔ invoice), AP posting, currency/FX handling.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-order, user-flow, finance, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 # Purchase Order — User Flow — Finance
 
 > **At a Glance**
-> **Persona:** Finance (Officer / AP Clerk + Finance Manager) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Workflow stages:** Pre-transmission review at `po_status = in_progress` (Finance Manager — currency / FX / tax / line totals before `PO_POST_004` send) &nbsp;·&nbsp; post-receipt three-way match (PO ↔ GRN ↔ invoice — `PO_POST_008` / `PO_POST_009`) &nbsp;·&nbsp; AP posting on success &nbsp;·&nbsp; **Key permissions:** financial sign-off pre-transmission; three-way match; flag discrepancy to Purchaser. PO state is not transitioned by the match.
+> **Persona:** Finance (Officer / AP Clerk + Finance Manager) &nbsp;·&nbsp; **Module:** [purchase-order](/en/inventory/purchase-order) &nbsp;·&nbsp; **Workflow stages:** Pre-transmission review at `po_status = in_progress` (Finance Manager — currency / FX / tax / line totals before `PO_POST_004` send) &nbsp;·&nbsp; post-receipt three-way match (PO ↔ GRN ↔ invoice — `PO_POST_008` / `PO_POST_009`) &nbsp;·&nbsp; AP posting on success &nbsp;·&nbsp; **Key permissions:** financial sign-off pre-transmission; three-way match; flag discrepancy to Purchaser. PO state is not transitioned by the match.
 > **What this persona does:** Pre-transmission financial sign-off and post-receipt three-way match; clears GRN accrual, posts the AP liability.
 
 ## 1. Role in This Module
@@ -124,6 +124,6 @@ The persona handoffs are: Finance Manager ↔ Purchaser (pre-transmission send-b
 - Sibling: [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md) — holds void / close override authority where a discrepancy can only be resolved by `PO_POST_010` / `PO_POST_011`.
 - Sibling: [03-user-flow-vendor.md](./03-user-flow-vendor.md) — external party that issues the invoice this flow captures and matches.
 - Sibling: [02-business-rules.md](./02-business-rules.md) § 5 (Posting Rules) — `PO_POST_004` (final approval / transmission), `PO_POST_005` (send-back), `PO_POST_008` (three-way match success), `PO_POST_009` (three-way match failure), and `PO_POST_011` (close with cancelled remainder) for the rules referenced above.
-- Related: [[good-receive-note]] — upstream module whose posting creates the matched-but-unbilled accrual that AP clears on match success.
-- Related: [[inventory]] — the inventory accrual cleared on match success is owned by the inventory / GL integration; the PO contributes only the on-order pipeline quantity until GRN.
+- Related: [good-receive-note](/en/inventory/good-receive-note) — upstream module whose posting creates the matched-but-unbilled accrual that AP clears on match success.
+- Related: [inventory](/en/inventory/inventory) — the inventory accrual cleared on match success is owned by the inventory / GL integration; the PO contributes only the on-order pipeline quantity until GRN.
 - `../carmen/docs/purchase-order-management/purchase-order-module.md` — primary carmen/docs source for the PO module business analysis, Finance integration, and the three-way-match flow.

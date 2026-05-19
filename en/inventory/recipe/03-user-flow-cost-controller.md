@@ -2,7 +2,7 @@
 title: Recipe — User Flow — Cost Controller
 description: Cost Controller's flow within the recipe module — reviews recipe cost, target margins, selling price, gross margin; monitors drift; signs off changes.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: recipe, user-flow, cost-controller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 # Recipe — User Flow — Cost Controller
 
 > **At a Glance**
-> **Persona:** Cost Controller (+ Cost Control Department) &nbsp;·&nbsp; **Module:** [[recipe]] &nbsp;·&nbsp; **Workflow stages:** DRAFT / PUBLISHED (cost-only edit + off-target publish co-approve) &nbsp;·&nbsp; **Key permissions:** edit-cost (target %, labor / overhead, selling price), publish co-approve (off-target), read across library
+> **Persona:** Cost Controller (+ Cost Control Department) &nbsp;·&nbsp; **Module:** [recipe](/en/inventory/recipe) &nbsp;·&nbsp; **Workflow stages:** DRAFT / PUBLISHED (cost-only edit + off-target publish co-approve) &nbsp;·&nbsp; **Key permissions:** edit-cost (target %, labor / overhead, selling price), publish co-approve (off-target), read across library
 > **What this persona does:** Reviews recipe cost rollups and margins, edits cost / pricing columns, monitors drift, and co-approves off-target publishes.
 
 ## 1. Role in This Module
@@ -81,5 +81,5 @@ The Cost Controller is in continuous engagement with the recipe module — every
 - Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — Sysadmin sets category defaults that the Cost Controller's target adjustments flow through; Auditor reviews `tb_recipe_pricing_history` timeline and co-approval signatures.
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical cost columns on `tb_recipe` (`total_ingredient_cost`, `labor_cost`, `overhead_cost`, `cost_per_portion`, `target_food_cost_percentage`, `actual_food_cost_percentage`, `selling_price`, `gross_margin`, `gross_margin_percentage`); `tb_recipe_pricing_history` as the audit trail for cost / price changes.
 - Sibling: [02-business-rules.md](./02-business-rules.md) — `REC_CALC_001`–`REC_CALC_015` (the math the Cost Controller reviews and the basis for drift detection), `REC_AUTH_006`–`REC_AUTH_008` (Cost Controller's authority scope), `REC_POST_010` (pricing-only edit posting effects), `REC_XMOD_005`–`REC_XMOD_006` (costing-module coupling), `REC_XMOD_009` (versioning / audit).
-- Related: [[costing]] — upstream of every per-ingredient cost feed; cost-drift events flow from `[[costing]]` to the recipe module per `REC_XMOD_006`.
-- Related: [[inventory]] — the theoretical-vs-actual variance dashboard joins recipe-driven theoretical OUT movements with actual stock movements.
+- Related: [costing](/en/inventory/costing) — upstream of every per-ingredient cost feed; cost-drift events flow from `[costing](/en/inventory/costing)` to the recipe module per `REC_XMOD_006`.
+- Related: [inventory](/en/inventory/inventory) — the theoretical-vs-actual variance dashboard joins recipe-driven theoretical OUT movements with actual stock movements.

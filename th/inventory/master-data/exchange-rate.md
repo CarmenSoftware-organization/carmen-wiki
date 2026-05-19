@@ -2,7 +2,7 @@
 title: อัตราแลกเปลี่ยน (Exchange Rate)
 description: ประวัติอัตราแปลงสกุลเงินไปยังสกุลเงินฐานแบบมีวันที่ — เอกสารธุรกรรมทุกใบ snapshot อัตราที่มีผลในวันที่ของเอกสาร
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, exchange-rate, currency, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -38,9 +38,9 @@ Exchange Rate เก็บ **ประวัติอัตราแบบมี
 |---|---|---|
 | "Exchange rate must be > 0" | อัตราเป็นศูนย์หรือค่าลบ | ใส่ค่าบวก |
 | "Effective date too far in future" | `at_date` > วันนี้ + 1 วัน (horizon ที่ตั้งค่าได้) | ใช้วันที่ของวันนี้สำหรับการใส่รายวัน |
-| "Currency must be active" | `tb_currency.is_active = false` สำหรับรหัสที่เลือก | activate ก่อนที่ [[master-data/currency]] |
+| "Currency must be active" | `tb_currency.is_active = false` สำหรับรหัสที่เลือก | activate ก่อนที่ [master-data/currency](/th/inventory/master-data/currency) |
 | Duplicate rate for the same date | มีแถวสำหรับ `(currency, at_date)` อยู่แล้ว | แก้แถวที่มีอยู่; อย่าแทรกแถวที่สอง |
-| "Period is closed" | `at_date` อยู่ใน [[system-config/period]] ที่ปิดแล้ว | ไม่สามารถ back-fill เข้างวดที่ปิดได้; ออก JV |
+| "Period is closed" | `at_date` อยู่ใน [system-config/period](/th/inventory/system-config/period) ที่ปิดแล้ว | ไม่สามารถ back-fill เข้างวดที่ปิดได้; ออก JV |
 | เอกสารแสดง warning **"rate not in history"** | ไม่มี `tb_exchange_rate` row ที่หรือก่อนวันที่เอกสารสำหรับสกุลเงินนั้น | เพิ่ม backdated rate แล้วเปิดเอกสารใหม่ให้ resolution ทำงาน |
 
 ## 4. Edge Cases
@@ -85,11 +85,11 @@ Exchange Rate เก็บ **ประวัติอัตราแบบมี
 
 ## 7. การอ้างอิงข้ามโมดูล
 
-- [[master-data/currency]] — parent แต่ละแถวอัตรา scoped ต่อ `tb_currency` หนึ่งราย
-- [[master-data/business-unit]] — `default_currency_id` เป็นด้าน "to" โดยปริยายของทุกอัตรา
-- [[purchase-order]], [[good-receive-note]], [[purchase-request]] — เอกสารที่ snapshot อัตรา
-- [[vendor-pricelist]] — การเปรียบเทียบ normalise เป็น BU default ผ่านอัตราที่มีวันที่
-- [[costing]] — `COST_CALC_005` (FX revaluation ของใบลดหนี้) และการปิดงวดอ่านจากที่นี่
+- [master-data/currency](/th/inventory/master-data/currency) — parent แต่ละแถวอัตรา scoped ต่อ `tb_currency` หนึ่งราย
+- [master-data/business-unit](/th/inventory/master-data/business-unit) — `default_currency_id` เป็นด้าน "to" โดยปริยายของทุกอัตรา
+- [purchase-order](/th/inventory/purchase-order), [good-receive-note](/th/inventory/good-receive-note), [purchase-request](/th/inventory/purchase-request) — เอกสารที่ snapshot อัตรา
+- [vendor-pricelist](/th/inventory/vendor-pricelist) — การเปรียบเทียบ normalise เป็น BU default ผ่านอัตราที่มีวันที่
+- [costing](/th/inventory/costing) — `COST_CALC_005` (FX revaluation ของใบลดหนี้) และการปิดงวดอ่านจากที่นี่
 
 ## 8. แหล่งอ้างอิง
 

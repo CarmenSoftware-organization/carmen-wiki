@@ -2,7 +2,7 @@
 title: Recipe — Test Scenarios — Cost Controller
 description: Cost Controller's test cases (cost review, drift, co-approval, variance, pricing-history) for the recipe module.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: recipe, test-scenarios, cost-controller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 # Recipe — Test Scenarios — Cost Controller
 
 > **At a Glance**
-> **Persona:** Cost Controller (+ Cost Control Department) &nbsp;·&nbsp; **Module:** [[recipe]] &nbsp;·&nbsp; **Scenarios:** ~26
+> **Persona:** Cost Controller (+ Cost Control Department) &nbsp;·&nbsp; **Module:** [recipe](/en/inventory/recipe) &nbsp;·&nbsp; **Scenarios:** ~26
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** none at this time — Cost-Controller-internal E2E is a gap; closest adjacent coverage is indirect via `tests/701-sr.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
@@ -69,5 +69,5 @@ This page captures the test scenarios that the Cost Controller persona (Cost Con
 - User flow: [03-user-flow-cost-controller.md](./03-user-flow-cost-controller.md) — happy-path source for Section 1 above; describes the 10-step primary flow (drift dashboard → drill → corrective action → variance → period close) and the decision branches.
 - Business rules being verified: [02-business-rules.md](./02-business-rules.md) Section 2 — validation `REC_VAL_008` (cost percentage bounds); Section 3 — calculation rules `REC_CALC_001`–`REC_CALC_015` (the math the Cost Controller verifies); Section 4 — `REC_AUTH_006`–`REC_AUTH_008` (Cost Controller's authority scope); Section 5 — `REC_POST_006` (sub-recipe cascade), `REC_POST_010` (pricing-only edit); Section 6 — `REC_XMOD_005`–`REC_XMOD_006` (costing-module coupling), `REC_XMOD_009` (audit / versioning).
 - E2E spec: **none at the time of writing** — Cost-Controller-internal E2E coverage is a gap; closest adjacent coverage is indirect via the SR module's `701-sr.spec.ts` (variance reports indirectly).
-- Cross-link: [[costing]] — upstream cost feed; cost-drift events fire from there.
-- Cross-link: [[inventory]] — theoretical-vs-actual variance dashboard joins recipe theoretical OUT with actual stock movements.
+- Cross-link: [costing](/en/inventory/costing) — upstream cost feed; cost-drift events fire from there.
+- Cross-link: [inventory](/en/inventory/inventory) — theoretical-vs-actual variance dashboard joins recipe theoretical OUT with actual stock movements.

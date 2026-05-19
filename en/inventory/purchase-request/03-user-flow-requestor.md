@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow — Requestor
 description: Requestor's flow within the purchase-request module.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-request, user-flow, requestor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 # Purchase Request — User Flow — Requestor
 
 > **At a Glance**
-> **Persona:** Requestor (hotel / department staff) &nbsp;·&nbsp; **Module:** [[purchase-request]] &nbsp;·&nbsp; **Workflow stages:** draft → submit → in_progress (+ send-back re-entry, cancel from draft) &nbsp;·&nbsp; **Key permissions:** create/edit draft, attach, submit, cancel own draft, resubmit after send-back
+> **Persona:** Requestor (hotel / department staff) &nbsp;·&nbsp; **Module:** [purchase-request](/en/inventory/purchase-request) &nbsp;·&nbsp; **Workflow stages:** draft → submit → in_progress (+ send-back re-entry, cancel from draft) &nbsp;·&nbsp; **Key permissions:** create/edit draft, attach, submit, cancel own draft, resubmit after send-back
 > **What this persona does:** Originates the PR — fills header and line list, attaches supporting docs, submits for approval, and revises on send-back.
 
 ## 1. Role in This Module

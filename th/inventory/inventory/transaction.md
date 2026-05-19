@@ -2,7 +2,7 @@
 title: บันทึกธุรกรรมคลังสินค้า (Inventory Transaction Log)
 description: Ledger append-only ของทุก event ที่กระทบ inventory — GRN, SR, adjustment, wastage, count variance, period flip — และเป็น source of truth สำหรับการคำนวณ balance
 published: true
-date: 2026-05-17T07:00:36.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: inventory, transaction, audit, ledger, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -118,13 +118,13 @@ FIFO layer ต่อ lot ด้วย `lot_no`, `lot_index`, `in_qty` / `out_qty
 
 ## 7. ความเชื่อมโยงข้ามโมดูล
 
-- [[inventory]] — มุมมอง current-state (`InventoryStatus`) คือ running sum ของ ledger นี้
-- [[costing]] — กฎ `COST_CALC_*` derive จาก cost-layer rows
-- [[good-receive-note]] &nbsp;·&nbsp; [[inventory-adjustment]] &nbsp;·&nbsp; [[inventory-adjustment/wastage-reporting]] &nbsp;·&nbsp; [[store-requisition]] &nbsp;·&nbsp; [[physical-count]] &nbsp;·&nbsp; [[purchase-order/credit-note]] — เอกสาร source
-- [[inventory/period-end]] — เขียน `close` / `open` rows และ freeze snapshot
+- [inventory](/th/inventory/inventory) — มุมมอง current-state (`InventoryStatus`) คือ running sum ของ ledger นี้
+- [costing](/th/inventory/costing) — กฎ `COST_CALC_*` derive จาก cost-layer rows
+- [good-receive-note](/th/inventory/good-receive-note) &nbsp;·&nbsp; [inventory-adjustment](/th/inventory/inventory-adjustment) &nbsp;·&nbsp; [inventory-adjustment/wastage-reporting](/th/inventory/inventory-adjustment/wastage-reporting) &nbsp;·&nbsp; [store-requisition](/th/inventory/store-requisition) &nbsp;·&nbsp; [physical-count](/th/inventory/physical-count) &nbsp;·&nbsp; [purchase-order/credit-note](/th/inventory/purchase-order/credit-note) — เอกสาร source
+- [inventory/period-end](/th/inventory/inventory/period-end) — เขียน `close` / `open` rows และ freeze snapshot
 
 ## 8. แหล่งอ้างอิง
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_inventory_transaction` (~1048-1073), `tb_inventory_transaction_detail` (~1075-1101), `tb_inventory_transaction_cost_layer` (~1123-1164), `enum_inventory_doc_type` (~208-216), `enum_transaction_type` (~1103-1121)
 - **Frontend:** `../carmen-inventory-frontend/app/(root)/inventory-management/transaction/`
-- **Module landing:** [[inventory]] § 3 (แนวคิด Stock Movement)
+- **Module landing:** [inventory](/th/inventory/inventory) § 3 (แนวคิด Stock Movement)

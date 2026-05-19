@@ -2,7 +2,7 @@
 title: Purchase Request — Test Scenarios — Purchaser
 description: Purchaser's test cases (happy path, permission, validation, edge cases) for purchase-request.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-request, test-scenarios, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 # Purchase Request — Test Scenarios — Purchaser
 
 > **At a Glance**
-> **Persona:** Purchaser (Procurement Officer — PR-to-PO bridge) &nbsp;·&nbsp; **Module:** [[purchase-request]] &nbsp;·&nbsp; **Scenarios:** ~33
+> **Persona:** Purchaser (Procurement Officer — PR-to-PO bridge) &nbsp;·&nbsp; **Module:** [purchase-request](/en/inventory/purchase-request) &nbsp;·&nbsp; **Scenarios:** ~33
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** maps to `tests/304-pr-purchaser-journey.spec.ts`, `tests/310-pr-template.spec.ts`, and `tests/301-pr.spec.ts` (purchaseTest fixture) in `../carmen-inventory-frontend-e2e/`
 
@@ -36,7 +36,7 @@ This page captures the test scenarios that the Purchaser persona directly drives
 | # | Scenario | Expected behaviour (allow/deny + reason) |
 | - | -------- | --------------------------------------- |
 | PUR-PERM-01 | Purchaser opens an `approved` PR (current user has `enum_stage_role = purchase` and is in `user_action.execute[]` for the `purchase` stage) | **Allow** read and the conversion / vendor-allocation actions (Allocate Vendor / Convert to PO / Send Back to Requestor). `PR_AUTH_002` is satisfied for the `purchase` stage; `PR_AUTH_008` grants conversion rights. |
-| PUR-PERM-02 | Purchaser runs **Convert to PO** on an `approved` PR | **Allow.** `PR_AUTH_008` (`enum_stage_role = purchase` owns vendor allocation and PO conversion); `PR_POST_007` runs the bridge writes and `pr_status` transition. The PO module ([[purchase-order]]) creates the new `tb_purchase_order` rows. |
+| PUR-PERM-02 | Purchaser runs **Convert to PO** on an `approved` PR | **Allow.** `PR_AUTH_008` (`enum_stage_role = purchase` owns vendor allocation and PO conversion); `PR_POST_007` runs the bridge writes and `pr_status` transition. The PO module ([purchase-order](/en/inventory/purchase-order)) creates the new `tb_purchase_order` rows. |
 | PUR-PERM-03 | Purchaser attempts to convert a PR currently in `pr_status = in_progress` (still mid-approval chain) | **Deny — wrong status.** `PR_AUTH_008` and `PR_POST_007` both require the source PR to be in `approved` (or partially-converted `approved` with open lines). The Convert-to-PO endpoint rejects an `in_progress` source PR with `"This PR has not completed approval and cannot be converted to a PO"`. The workbench filters such PRs out of the selection pool. |
 | PUR-PERM-04 | Purchaser attempts to edit a PR header (e.g. `delivery_date`, `description`, `currency_id`) | **Deny — edit reserved.** Header edits are scoped to the Requestor on `draft` (`PR_AUTH_001`) and approvers on `in_progress` for the narrow `approved_qty` field only (`PR_AUTH_003`). The Purchaser's detail page is read-mostly: header inputs are disabled; a direct API call to update `tb_purchase_request` header columns is rejected with `"This PR is in approved status and only conversion-related fields may be modified"`. |
 | PUR-PERM-05 | Purchaser attempts to edit PR line content (`requested_qty`, `approved_qty`, `description`, `product_id`) | **Deny — edit reserved.** Line `approved_qty` was set by the Approver chain (`PR_AUTH_003` + `PR_VAL_013`) and is frozen at `approved`. The Purchaser may only update vendor / pricelist snapshots on the line and write a converted-qty into the bridge table — not edit the source line itself. Direct API call rejected with `"This field is read-only for the purchase stage role"`. |
@@ -78,5 +78,5 @@ This page captures the test scenarios that the Purchaser persona directly drives
 - Data model: [01-data-model.md](./01-data-model.md) Section 2 — bridge table `tb_purchase_order_detail_tb_purchase_request_detail` (many-to-many PR↔PO line linkage supporting consolidation and partial conversion); `tb_purchase_request_detail` snapshot columns (`vendor_id`, `vendor_name`, `pricelist_detail_id`, `pricelist_no`, `pricelist_unit`, `pricelist_price`, `pricelist_type`).
 - E2E: `../carmen-inventory-frontend-e2e/tests/304-pr-purchaser-journey.spec.ts` — persona-journey spec for the Purchaser. Covers list scoping to the `Purchase` stage, edit-mode permissions (vendor / unit-price / discount / tax-profile editable, approved-qty read-only), **Auto Allocate** vendors, bulk approve / reject / send-for-review / split, and the `TC-PR-070901` golden full-flow scenario (PR `approved` → Convert to PO → PR `completed`). Per-action × per-role permission coverage lives in `../carmen-inventory-frontend-e2e/tests/301-pr.spec.ts` (`purchaseTest` fixture). PR Template create / edit coverage adjacent to Purchaser scope is in `../carmen-inventory-frontend-e2e/tests/310-pr-template.spec.ts`.
 - Source: `../carmen/docs/purchase-request-management/PR-User-Experience.md` (Allocate Vendor dialog, Convert-to-PO workbench UX, pricelist-deviation panel), `../carmen/docs/purchase-request-management/purchase-request-module-prd.md` (consolidation grouping by vendor + currency, partial-conversion behaviour), `../carmen/docs/purchase-request-management/testing.md` (testing levels — convert-to-po and allocate-vendor spec patterns), `../carmen/docs/purchase-request-management/troubleshooting.md` (Section 2.3 — PO conversion problems: missing vendor allocation, pricelist deviation, partial-conversion bridge-integrity errors, FX rate snapshot mismatches).
-- Cross-link: [[purchase-order]] — downstream module that receives the converted POs; the hard budget commitment lives there after `PR_POST_007`.
-- Cross-link: [[vendor-pricelist]] — pricelist deviation reference and Allocate Vendor ranking source.
+- Cross-link: [purchase-order](/en/inventory/purchase-order) — downstream module that receives the converted POs; the hard budget commitment lives there after `PR_POST_007`.
+- Cross-link: [vendor-pricelist](/en/inventory/vendor-pricelist) — pricelist deviation reference and Allocate Vendor ranking source.

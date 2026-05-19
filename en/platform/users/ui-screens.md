@@ -2,7 +2,7 @@
 title: User — UI Screens
 description: UserManagement (list) and UserEdit (BU assignment matrix).
 published: true
-date: '2026-05-19T15:00:00.000Z'
+date: 2026-05-19T23:55:00.000Z'
 tags: book/platform, users, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -187,4 +187,4 @@ The list page writes 7 keys to `localStorage` so the filter and pagination state
 - `../carmen-platform/src/pages/UserManagement.tsx` — list page: filters, header actions (Fetch Keycloak, Export, Add User), row action menu (Edit / Delete / Hard Delete), audit columns, `localStorage` keys.
 - `../carmen-platform/src/pages/UserEdit.tsx` — create/view/edit page: three-card layout, Add BU dialog, Change Password dialog, `username` disabled-in-edit behaviour.
 - `../carmen-platform/src/services/userService.ts` — API surface: all endpoints referenced in this page.
-- Cross-links: [[users]] (landing), [Data Model](./data-model.md) (schema view), [Lifecycle](./lifecycle.md) (operations view), [[clusters]] (mutates `tb_cluster_user`), [[business-units]] (the other surface mutating `tb_user_tb_business_unit`).
+- Cross-links: [users](/en/platform/users) (landing), [Data Model](./data-model.md) (schema view), [Lifecycle](./lifecycle.md) (operations view), [clusters](/en/platform/clusters) (mutates `tb_cluster_user`), [business-units](/en/platform/business-units) (the other surface mutating `tb_user_tb_business_unit`).

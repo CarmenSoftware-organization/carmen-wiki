@@ -2,7 +2,7 @@
 title: Store Requisition — User Flow — Requester
 description: Requester's flow within the store-requisition module — identifies stock needs, raises and submits the SR.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: store-requisition, user-flow, requester, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T13:30:00.000Z
 # Store Requisition — User Flow — Requester
 
 > **At a Glance**
-> **Persona:** Outlet Manager (consuming location) &nbsp;·&nbsp; **Module:** [[store-requisition]] &nbsp;·&nbsp; **Workflow stages:** draft → in_progress (first approval stage; retract / amend on send-back) &nbsp;·&nbsp; **Key permissions:** create / edit / submit draft, withdraw draft, retract at first stage, amend after send-back
+> **Persona:** Outlet Manager (consuming location) &nbsp;·&nbsp; **Module:** [store-requisition](/en/inventory/store-requisition) &nbsp;·&nbsp; **Workflow stages:** draft → in_progress (first approval stage; retract / amend on send-back) &nbsp;·&nbsp; **Key permissions:** create / edit / submit draft, withdraw draft, retract at first stage, amend after send-back
 > **What this persona does:** Raises the SR — picks source/destination + sr_type, adds lines with requested_qty, submits for approval, and amends on send-back.
 
 ## 1. Role in This Module
@@ -57,7 +57,7 @@ The Requester holds full edit rights at `draft` and re-enters `in_progress` only
 **Entry point:** Three paths into draft creation.
 
 - **SR module → Create SR** — pick the destination outlet (defaults to the requester's home outlet), then the source location; choose `sr_type` (`issue` or `transfer`); start adding line items.
-- **Auto-create from recipe demand** — `[[recipe]]` module computes ingredient quantities for an upcoming production / banquet event at the outlet and posts an SR `draft` for the requester to review; `info.recipe_id` carries the back-reference. The requester opens the pre-populated draft, adjusts quantities if needed, and continues from step 4 below.
+- **Auto-create from recipe demand** — `[recipe](/en/inventory/recipe)` module computes ingredient quantities for an upcoming production / banquet event at the outlet and posts an SR `draft` for the requester to review; `info.recipe_id` carries the back-reference. The requester opens the pre-populated draft, adjusts quantities if needed, and continues from step 4 below.
 - **Edit returned SR (send-back from approver)** — approver routed the document back to the requester stage with `review_message` per line; the requester re-enters the same workflow stage they originated, amends quantities / notes, and resubmits.
 
 **Primary flow (happy path, 10 steps):**
@@ -66,7 +66,7 @@ The Requester holds full edit rights at `draft` and re-enters `in_progress` only
 2. **Open the SR module → Create SR.** The system writes `tb_store_requisition` at `doc_status = draft`; `sr_no` is assigned per tenant numbering policy; `requestor_id` / `requestor_name` / `department_id` / `department_name` are populated from the logged-in user's profile.
 3. **Pick the source location, destination location, and movement type.** Source is `from_location_id` (typically a `tb_location.location_type = 'inventory'` warehouse); destination is `to_location_id` (`direct` for `sr_type = issue`, `inventory` for `sr_type = transfer`). The screen surfaces the location-type / movement-type compatibility check from `SR_VAL_003`.
 4. **Enter header detail.** `sr_date` (defaults to today), `expected_date` (the date the outlet needs the goods by — used for fulfilment prioritisation), `description` (free-text rationale: "weekly replenishment", "banquet event Friday", "emergency pull"), and the cost-dimension `dimension` JSON if the outlet splits across multiple cost-centres.
-5. **Add line items.** Search the product catalog by name, code, or category; pick a product. The screen surfaces a UI-only enrichment block showing current on-hand at the source, on-order, last price, last vendor, and the product's category / barcode (these are **not** stored on the SR line — see [[store-requisition/01-data-model]] § 5 item 5). Enter `requested_qty` (in the product's UoM); the line writes one row to `tb_store_requisition_detail`. Repeat for each product needed.
+5. **Add line items.** Search the product catalog by name, code, or category; pick a product. The screen surfaces a UI-only enrichment block showing current on-hand at the source, on-order, last price, last vendor, and the product's category / barcode (these are **not** stored on the SR line — see [store-requisition/01-data-model](/en/inventory/store-requisition/01-data-model) § 5 item 5). Enter `requested_qty` (in the product's UoM); the line writes one row to `tb_store_requisition_detail`. Repeat for each product needed.
 6. **Split lines by cost-dimension if needed.** A single product on the same SR with two different cost-dimension allocations (e.g. 60% to Banquet, 40% to A-la-carte) is modelled as two separate lines, each with its own `dimension` JSON (per the unique index `SRT1_*`). Identical product+dimension is a duplicate (`SR_VAL_007`).
 7. **Attach supporting evidence.** Recipe demand snapshot, event sheet, photos, par-level analysis, approval pre-clearance memo. Attachments are scoped to the SR header (via `tb_store_requisition_comment.attachments`) or to individual lines (via `tb_store_requisition_detail_comment.attachments`).
 8. **Pre-submit validation review.** The screen surfaces the `SR_VAL_009` source-availability check (per tenant config: hard block or soft warn) — for each line, current source on-hand minus reservations from other open SRs is shown; lines breaching the cap are flagged. The requester adjusts `requested_qty` or accepts the soft warning.
@@ -106,5 +106,5 @@ After successful commit by the fulfiller, the Requester is in **observer / recei
 - Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — Inventory Controller / Finance / Sysadmin oversight of the SR flow; variance review and config that bounds the requester's choices.
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical `enum_doc_status`, `enum_sr_type`, and the `tb_store_requisition_detail` columns the requester writes (`product_id`, `requested_qty`, `dimension`).
 - Sibling: [02-business-rules.md](./02-business-rules.md) — `SR_VAL_001`–`SR_VAL_009` (submit-time gates the requester encounters), `SR_AUTH_001`–`SR_AUTH_004` (the requester's authority scope), `SR_AUTH_011` (Requester ≠ Approver SoD).
-- Related: [[recipe]] — the auto-create path; recipe demand pre-populates an SR `draft` for the requester to review and submit.
-- Related: [[inventory]] — source on-hand visibility at line-entry time (UI-only enrichment, not persisted on the SR line) and the downstream inventory-transaction write the SR triggers on commit.
+- Related: [recipe](/en/inventory/recipe) — the auto-create path; recipe demand pre-populates an SR `draft` for the requester to review and submit.
+- Related: [inventory](/en/inventory/inventory) — source on-hand visibility at line-entry time (UI-only enrichment, not persisted on the SR line) and the downstream inventory-transaction write the SR triggers on commit.

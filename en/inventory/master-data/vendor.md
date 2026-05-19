@@ -2,7 +2,7 @@
 title: Vendor
 description: Suppliers and their addresses, contacts, and business-type taxonomy — the counterparty on every procurement document.
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, vendor, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -130,12 +130,12 @@ Flat lookup — `id`, `name`, `description`, `note`, `is_active`, standard metad
 
 ## 7. Cross-References
 
-- [[purchase-request]] — PR detail may suggest a preferred vendor.
-- [[purchase-order]] — PO header binds a single vendor; FX, tax, credit terms default from here.
-- [[good-receive-note]] — GRN inherits PO vendor.
-- [[vendor-pricelist]] — pricelists and RFQ rounds scoped per vendor.
-- [[master-data/tax-profile]] — vendor default tax profile.
-- [[master-data/credit-term]] — vendor default credit term flows to PO header.
+- [purchase-request](/en/inventory/purchase-request) — PR detail may suggest a preferred vendor.
+- [purchase-order](/en/inventory/purchase-order) — PO header binds a single vendor; FX, tax, credit terms default from here.
+- [good-receive-note](/en/inventory/good-receive-note) — GRN inherits PO vendor.
+- [vendor-pricelist](/en/inventory/vendor-pricelist) — pricelists and RFQ rounds scoped per vendor.
+- [master-data/tax-profile](/en/inventory/master-data/tax-profile) — vendor default tax profile.
+- [master-data/credit-term](/en/inventory/master-data/credit-term) — vendor default credit term flows to PO header.
 
 ## 8. References
 

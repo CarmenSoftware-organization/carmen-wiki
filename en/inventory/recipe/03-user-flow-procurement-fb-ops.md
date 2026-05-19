@@ -2,7 +2,7 @@
 title: Recipe — User Flow — Procurement F&B Ops
 description: Procurement and F&B Operations Manager flow within the recipe module — sizes POs from recipe demand, validates ingredient availability, approves menu-item linkages, signs off menu engineering.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: recipe, user-flow, procurement-fb-ops, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 # Recipe — User Flow — Procurement F&B Ops
 
 > **At a Glance**
-> **Persona:** Procurement Department + F&B Operations Manager &nbsp;·&nbsp; **Module:** [[recipe]] &nbsp;·&nbsp; **Workflow stages:** off-path — strategic upstream (menu-item linkage approve) + purchasing downstream (PO sizing) &nbsp;·&nbsp; **Key permissions:** read recipes, approve-menu-link (F&B Ops), raise substitution requests (Procurement)
+> **Persona:** Procurement Department + F&B Operations Manager &nbsp;·&nbsp; **Module:** [recipe](/en/inventory/recipe) &nbsp;·&nbsp; **Workflow stages:** off-path — strategic upstream (menu-item linkage approve) + purchasing downstream (PO sizing) &nbsp;·&nbsp; **Key permissions:** read recipes, approve-menu-link (F&B Ops), raise substitution requests (Procurement)
 > **What this persona does:** Procurement sizes POs from recipe demand and surfaces substitution requests; F&B Ops approves menu-item linkages and runs menu engineering.
 
 ## 1. Role in This Module
@@ -53,7 +53,7 @@ The **Procurement / F&B Ops** persona covers two related operational roles: **Pr
 
 The Procurement / F&B Ops persona's involvement on a given recipe / menu cycle ends at one of several boundaries:
 
-- **(Procurement) PO raised** — handoff to the procurement module's PO flow (vendor side, [[purchase-order]]); the recipe demand input is preserved as the rationale for PO sizing; the PO advances independently. Procurement returns to the recipe module on the next planning cycle.
+- **(Procurement) PO raised** — handoff to the procurement module's PO flow (vendor side, [purchase-order](/en/inventory/purchase-order)); the recipe demand input is preserved as the rationale for PO sizing; the PO advances independently. Procurement returns to the recipe module on the next planning cycle.
 - **(Procurement) Substitution request issued to Chef** — handoff to the **Chef** for evaluation and recipe revision per `REC_POST_004` / `REC_POST_005`. Procurement monitors for recipe update or temporary pause confirmation.
 - **(F&B Ops) Menu-item linkage approved** — handoff to the **menu / POS-integration layer** (outside the recipe schema per `REC_XMOD_008`); the recipe is now driving theoretical consumption on menu sales. F&B Ops returns to maintenance mode (menu engineering, periodic review).
 - **(F&B Ops) Menu-item linkage rejected** — handoff back to the **Chef** (with feedback) for revision and re-proposal; the recipe remains `PUBLISHED` but is unlinked.
@@ -73,6 +73,6 @@ Procurement is in continuous engagement with the recipe module — every PO sizi
 - Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — Sysadmin owns RBAC including the `recipe:approve-menu-link` permission F&B Ops uses; Auditor reviews menu-item linkage approvals as part of audit.
 - Sibling: [01-data-model.md](./01-data-model.md) — `tb_recipe.cost_per_portion`, `actual_food_cost_percentage`, `gross_margin_percentage` (the figures F&B Ops reviews at menu-engineering); `tb_recipe_pricing_history` (the timeline of cost / price changes informing menu engineering).
 - Sibling: [02-business-rules.md](./02-business-rules.md) — `REC_CALC_014` (theoretical-consumption formula — the demand-explosion math Procurement uses), `REC_AUTH_010`–`REC_AUTH_011` (Procurement / F&B Ops authority scope), `REC_XMOD_008` (menu-item linkage is application-layer, not in the recipe schema).
-- Related: [[purchase-order]] — Procurement's primary downstream document; recipe-driven demand sizes the PO.
-- Related: [[vendor-pricelist]] — vendor cost data is the upstream input to product cost, which is upstream of recipe cost; vendor changes flow through to recipe-cost drift events.
-- Related: [[costing]] — F&B Ops reviews cost data sourced from the costing module via the recipe.
+- Related: [purchase-order](/en/inventory/purchase-order) — Procurement's primary downstream document; recipe-driven demand sizes the PO.
+- Related: [vendor-pricelist](/en/inventory/vendor-pricelist) — vendor cost data is the upstream input to product cost, which is upstream of recipe cost; vendor changes flow through to recipe-cost drift events.
+- Related: [costing](/en/inventory/costing) — F&B Ops reviews cost data sourced from the costing module via the recipe.

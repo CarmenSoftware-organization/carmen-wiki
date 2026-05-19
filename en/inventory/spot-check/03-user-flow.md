@@ -2,7 +2,7 @@
 title: Spot Check — User Flow
 description: Document lifecycle and persona-specific flow files for spot checks.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: spot-check, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -11,15 +11,15 @@ dateCreated: 2026-05-15T14:30:00.000Z
 # Spot Check — User Flow
 
 > **At a Glance**
-> **Module:** [[spot-check]] &nbsp;·&nbsp; **Personas:** Inventory Controller &nbsp;·&nbsp; Counter &nbsp;·&nbsp; Audit / Config
-> **Workflow lifecycle:** Pending → In Progress → Completed (variance rollup to [[inventory-adjustment]]) with Void branch
+> **Module:** [spot-check](/en/inventory/spot-check) &nbsp;·&nbsp; **Personas:** Inventory Controller &nbsp;·&nbsp; Counter &nbsp;·&nbsp; Audit / Config
+> **Workflow lifecycle:** Pending → In Progress → Completed (variance rollup to [inventory-adjustment](/en/inventory/inventory-adjustment)) with Void branch
 > **Drill into per-persona views below for action-level detail**
 
 ## 1. Overview
 
-This page is the **overview entry point** for the user-flow set of the `spot-check` module. Unlike [[physical-count]]'s three-tier period / document / detail exercise, a spot check is a **two-tier ad-hoc check** — one `tb_spot_check` header per (location, time-window) pairing with a `method` (random / high_value / manual) and `size`, plus `tb_spot_check_detail` rows holding per-product `on_hand_qty` (book snapshot) / `actual_qty` (counted) / `diff_qty` (variance). The work moves quickly along this hierarchy: Inventory Controller opens the spot check, the system (or the controller, for `method = manual`) samples `size` items, assigns a Counter; the Counter walks the location and enters physical quantities line by line; the Inventory Controller inspects variance, triggers recounts, approves completion; the rollup then writes a variance adjustment to [[inventory-adjustment]] which is the path to the [[inventory]] ledger.
+This page is the **overview entry point** for the user-flow set of the `spot-check` module. Unlike [physical-count](/en/inventory/physical-count)'s three-tier period / document / detail exercise, a spot check is a **two-tier ad-hoc check** — one `tb_spot_check` header per (location, time-window) pairing with a `method` (random / high_value / manual) and `size`, plus `tb_spot_check_detail` rows holding per-product `on_hand_qty` (book snapshot) / `actual_qty` (counted) / `diff_qty` (variance). The work moves quickly along this hierarchy: Inventory Controller opens the spot check, the system (or the controller, for `method = manual`) samples `size` items, assigns a Counter; the Counter walks the location and enters physical quantities line by line; the Inventory Controller inspects variance, triggers recounts, approves completion; the rollup then writes a variance adjustment to [inventory-adjustment](/en/inventory/inventory-adjustment) which is the path to the [inventory](/en/inventory/inventory) ledger.
 
-Section 2 below describes the **document lifecycle state machine** for `tb_spot_check.doc_status` (`pending → in_progress → completed`, plus the `void` cancel path), independent of who acts. Each per-persona file (linked from Section 3) describes that persona's *path through* this state space — entry point, available actions, decision branches, handoff that ends their involvement. Section 4 then summarises the cross-persona handoffs that stitch the individual paths together (Inventory Controller → Counter for assignment; Counter → Inventory Controller for completed-sheet sign-off; Inventory Controller → Approver/Finance for variance-adjustment approval via [[inventory-adjustment]]).
+Section 2 below describes the **document lifecycle state machine** for `tb_spot_check.doc_status` (`pending → in_progress → completed`, plus the `void` cancel path), independent of who acts. Each per-persona file (linked from Section 3) describes that persona's *path through* this state space — entry point, available actions, decision branches, handoff that ends their involvement. Section 4 then summarises the cross-persona handoffs that stitch the individual paths together (Inventory Controller → Counter for assignment; Counter → Inventory Controller for completed-sheet sign-off; Inventory Controller → Approver/Finance for variance-adjustment approval via [inventory-adjustment](/en/inventory/inventory-adjustment)).
 
 > **TODO:** Source the canonical UI screens / wizard flows from `../carmen-inventory-frontend/` once a `spot-check` route is discoverable; cross-reference E2E specs at `../carmen-inventory-frontend-e2e/tests/` once added (no `spot-check` spec exists as of this writing). No carmen/docs source folder exists for this module.
 
@@ -74,17 +74,17 @@ The `in_progress → completed` transition on `tb_spot_check` is the **rollup ev
 - Lines with `diff_qty < 0` group into one or more `tb_stock_out` documents under reason `SPOT_CHECK_SHORTAGE` (or aliased `COUNT_SHORTAGE`).
 - Lines with `diff_qty = 0` produce no rollup row.
 - Each rollup document carries `info.spotCheckId = <tb_spot_check.id>` for the back-join.
-- Adjustment post (per [[inventory-adjustment/03-user-flow]]) writes the inventory transaction and GL entry; the spot check itself does not write to the ledger directly.
+- Adjustment post (per [inventory-adjustment/03-user-flow](/en/inventory/inventory-adjustment/03-user-flow)) writes the inventory transaction and GL entry; the spot check itself does not write to the ledger directly.
 
 > **TODO:** Document the rollup-document-numbering convention (whether one rollup per spot check, one per reason, or one per line) when frontend logic is confirmed. Confirm reason-code naming.
 
 ## 3. Persona Files
 
-Each file describes one persona group's path through the lifecycle above. The three groups collapse from the source personas in [[spot-check]] § 4:
+Each file describes one persona group's path through the lifecycle above. The three groups collapse from the source personas in [spot-check](/en/inventory/spot-check) § 4:
 
-- **[[spot-check/03-user-flow-inventory-controller|Inventory Controller]]** — defines selection criteria (`method`, `size`), schedules and launches spot checks, assigns Counters, monitors progress, reviews variances, approves or rejects recount requests, approves adjustments for posting.
-- **[[spot-check/03-user-flow-counter|Counter]]** — performs the physical count of in-scope items or locations and records counted quantities accurately and on time.
-- **[[spot-check/03-user-flow-audit-config|Audit / Config]]** — Auditor independently reviews spot-check results, recount evidence, and posted adjustments to confirm controls operating and shrinkage investigated. Sysadmin (implicit) configures tolerance / sampling defaults / reason codes.
+- **[Inventory Controller](/en/inventory/spot-check/03-user-flow-inventory-controller)** — defines selection criteria (`method`, `size`), schedules and launches spot checks, assigns Counters, monitors progress, reviews variances, approves or rejects recount requests, approves adjustments for posting.
+- **[Counter](/en/inventory/spot-check/03-user-flow-counter)** — performs the physical count of in-scope items or locations and records counted quantities accurately and on time.
+- **[Audit / Config](/en/inventory/spot-check/03-user-flow-audit-config)** — Auditor independently reviews spot-check results, recount evidence, and posted adjustments to confirm controls operating and shrinkage investigated. Sysadmin (implicit) configures tolerance / sampling defaults / reason codes.
 
 ## 4. Cross-Persona Handoffs
 
@@ -93,16 +93,16 @@ Each file describes one persona group's path through the lifecycle above. The th
 | Inventory Controller | Generates spot check + assigns counter | Counter | `tb_spot_check` in `pending`; counter location-grant. |
 | Counter | Completes assigned lines | Inventory Controller | `tb_spot_check_detail` lines all have non-null `actual_qty`. |
 | Inventory Controller | Flags variance line for recount | Counter (ideally different from original counter) | Detail-comment with recount-required tag. |
-| Inventory Controller | Submits the spot check | System → rollup → [[inventory-adjustment]] | `tb_spot_check.doc_status = completed`; rollup `tb_stock_in` / `tb_stock_out` created. |
+| Inventory Controller | Submits the spot check | System → rollup → [inventory-adjustment](/en/inventory/inventory-adjustment) | `tb_spot_check.doc_status = completed`; rollup `tb_stock_in` / `tb_stock_out` created. |
 | Inventory Controller | Routes rollup adjustment for approval | Audit / Config (Approver / Finance via adjustment side) | `tb_stock_in` / `tb_stock_out` in `in_progress`. |
-| Approver / Finance (on adjustment side) | Approves rollup adjustment | System → [[inventory]] ledger | `tb_stock_in` / `tb_stock_out` in `completed`; `tb_inventory_transaction` written. |
+| Approver / Finance (on adjustment side) | Approves rollup adjustment | System → [inventory](/en/inventory/inventory) ledger | `tb_stock_in` / `tb_stock_out` in `completed`; `tb_inventory_transaction` written. |
 | Auditor | Reviews completed spot checks + posted adjustments | (read-only — terminal) | Full chain readable: spot-check sheet, recount records, approvals, posted adjustments, journal entries. |
 
-> **TODO:** Diagram these handoffs once Mermaid / sequence-diagram convention is established for the wiki. Cross-link to [[inventory-adjustment/03-user-flow]] for the rollup-side flow.
+> **TODO:** Diagram these handoffs once Mermaid / sequence-diagram convention is established for the wiki. Cross-link to [inventory-adjustment/03-user-flow](/en/inventory/inventory-adjustment/03-user-flow) for the rollup-side flow.
 
 ## 5. References
 
 - **Primary (TODO):** carmen/docs source — does not exist for this module.
 - **Frontend (TODO):** `../carmen-inventory-frontend/` — UI flow source.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists.
-- Related flow pages: [[inventory-adjustment/03-user-flow]] (rollup-side flow), [[physical-count/03-user-flow]] (full-count counterpart flow with three-tier structure).
+- Related flow pages: [inventory-adjustment/03-user-flow](/en/inventory/inventory-adjustment/03-user-flow) (rollup-side flow), [physical-count/03-user-flow](/en/inventory/physical-count/03-user-flow) (full-count counterpart flow with three-tier structure).

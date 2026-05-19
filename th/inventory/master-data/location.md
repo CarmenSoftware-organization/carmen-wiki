@@ -2,7 +2,7 @@
 title: ที่ตั้ง / สถานที่ (Location)
 description: สถานที่จัดเก็บและบริโภคที่จำแนกเป็น inventory, direct หรือ consignment — ขับเคลื่อนการ post สต๊อกและพฤติกรรมการ physical count
 published: true
-date: 2026-05-17T07:00:36.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, location, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -92,12 +92,12 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 7. การอ้างอิงข้ามโมดูล
 
-- [[inventory]] — ทุกยอดสต๊อก keyed ด้วย location; type ตัดสินว่าจะ track balance หรือไม่
-- [[good-receive-note]] — บรรทัด detail ของ GRN เป้าหมาย location ปลายทาง; type ขับเคลื่อน journal entry
-- [[store-requisition]] — `from_location` / `to_location` ในทุก issue/transfer
-- [[physical-count]] — การนับ scope ไปยัง location ที่ `physical_count_type = yes`
-- [[spot-check]] — เซสชัน enumerate location
-- [[purchase-request]] และ [[purchase-order]] — บรรทัด detail อาจบรรจุ location ปลายทาง
+- [inventory](/th/inventory/inventory) — ทุกยอดสต๊อก keyed ด้วย location; type ตัดสินว่าจะ track balance หรือไม่
+- [good-receive-note](/th/inventory/good-receive-note) — บรรทัด detail ของ GRN เป้าหมาย location ปลายทาง; type ขับเคลื่อน journal entry
+- [store-requisition](/th/inventory/store-requisition) — `from_location` / `to_location` ในทุก issue/transfer
+- [physical-count](/th/inventory/physical-count) — การนับ scope ไปยัง location ที่ `physical_count_type = yes`
+- [spot-check](/th/inventory/spot-check) — เซสชัน enumerate location
+- [purchase-request](/th/inventory/purchase-request) และ [purchase-order](/th/inventory/purchase-order) — บรรทัด detail อาจบรรจุ location ปลายทาง
 
 ## 8. แหล่งอ้างอิง
 

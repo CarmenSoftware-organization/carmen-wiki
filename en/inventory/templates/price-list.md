@@ -2,7 +2,7 @@
 title: Price List Template
 description: Reusable RFQ / pricelist template defining currency, validity, reminders, and escalation — the parent of vendor pricelists.
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: templates, price-list, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # Price List Template
 
 > **At a Glance**
-> **Owner:** Product Admin / Procurement Lead &nbsp;·&nbsp; **Table:** `tb_pricelist_template` &nbsp;·&nbsp; **Used by:** [[vendor-pricelist]] (RFQ rounds spawn from a template) &nbsp;·&nbsp; The shape of a pricelist round — currency, validity, reminders, escalation.
+> **Owner:** Product Admin / Procurement Lead &nbsp;·&nbsp; **Table:** `tb_pricelist_template` &nbsp;·&nbsp; **Used by:** [vendor-pricelist](/en/inventory/vendor-pricelist) (RFQ rounds spawn from a template) &nbsp;·&nbsp; The shape of a pricelist round — currency, validity, reminders, escalation.
 
 ![Price List Template screen](/screenshots/templates/price-list.png)
 
@@ -41,7 +41,7 @@ Templates speed up recurring procurement cycles — instead of re-configuring ev
 | "Name already exists" | Duplicate among non-deleted templates | Pick different name (app-enforced) |
 | Cannot delete | Template has issued RFQ rounds | Flip `status = inactive` instead |
 | Reminder days rejected | Not sorted descending or contains non-positive integers | Fix the array (e.g. `[14,7,3,1]`) |
-| "Currency not active" | `tb_currency.is_active = false` | Activate currency under [[master-data/currency]] |
+| "Currency not active" | `tb_currency.is_active = false` | Activate currency under [master-data/currency](/en/inventory/master-data/currency) |
 | Validity negative | `validity_period < 0` | Use a non-negative integer |
 
 ## 4. Edge Cases
@@ -91,8 +91,8 @@ Source: tenant schema.
 
 ## 7. Cross-References
 
-- [[vendor-pricelist]] — sole consumer. RFQ rounds spawn from a template.
-- [[master-data/currency]] — `currency_id` resolution.
+- [vendor-pricelist](/en/inventory/vendor-pricelist) — sole consumer. RFQ rounds spawn from a template.
+- [master-data/currency](/en/inventory/master-data/currency) — `currency_id` resolution.
 
 ## 8. References
 

@@ -2,7 +2,7 @@
 title: Exchange Rate
 description: Dated history of currency-to-base-currency conversion rates — every transactional document snapshots the rate effective on its document date.
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, exchange-rate, currency, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -38,9 +38,9 @@ Exchange Rate stores the **dated history** of currency-to-base-currency rates. E
 |---|---|---|
 | "Exchange rate must be > 0" | Rate entered as zero or negative | Re-enter a positive number |
 | "Effective date too far in future" | `at_date` > today + 1 day (configurable horizon) | Use today's date for the daily entry |
-| "Currency must be active" | `tb_currency.is_active = false` for the chosen code | Activate first under [[master-data/currency]] |
+| "Currency must be active" | `tb_currency.is_active = false` for the chosen code | Activate first under [master-data/currency](/en/inventory/master-data/currency) |
 | Duplicate rate for the same date | A row already exists for `(currency, at_date)` | Edit the existing row; do NOT insert a second |
-| "Period is closed" | `at_date` falls inside a closed [[system-config/period]] | Cannot back-fill into a closed period; raise a JV |
+| "Period is closed" | `at_date` falls inside a closed [system-config/period](/en/inventory/system-config/period) | Cannot back-fill into a closed period; raise a JV |
 | Document shows **"rate not in history"** warning | No `tb_exchange_rate` row at or before document date for that currency | Add a backdated rate, then re-open the document so resolution can run |
 
 ## 4. Edge Cases
@@ -85,11 +85,11 @@ Source: tenant schema.
 
 ## 7. Cross-References
 
-- [[master-data/currency]] — parent. Each rate row scoped to one `tb_currency`.
-- [[master-data/business-unit]] — `default_currency_id` is the implicit "to" side of every rate.
-- [[purchase-order]], [[good-receive-note]], [[purchase-request]] — documents that snapshot rates.
-- [[vendor-pricelist]] — comparison normalised to BU default via the dated rate.
-- [[costing]] — `COST_CALC_005` (credit-note FX revaluation) and period close read here.
+- [master-data/currency](/en/inventory/master-data/currency) — parent. Each rate row scoped to one `tb_currency`.
+- [master-data/business-unit](/en/inventory/master-data/business-unit) — `default_currency_id` is the implicit "to" side of every rate.
+- [purchase-order](/en/inventory/purchase-order), [good-receive-note](/en/inventory/good-receive-note), [purchase-request](/en/inventory/purchase-request) — documents that snapshot rates.
+- [vendor-pricelist](/en/inventory/vendor-pricelist) — comparison normalised to BU default via the dated rate.
+- [costing](/en/inventory/costing) — `COST_CALC_005` (credit-note FX revaluation) and period close read here.
 
 ## 8. References
 

@@ -2,7 +2,7 @@
 title: การแจ้งเตือน (Notification)
 description: Fan-out การแจ้งเตือนข้าม tenant — แถว notification, message template ที่ใช้ซ้ำได้ และข่าวประกาศของแพลตฟอร์ม
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: reporting-audit, notification, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -104,10 +104,10 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 7. ความเชื่อมโยงข้ามโมดูล
 
-- ทุกโมดูล workflow — [[purchase-request]], [[purchase-order]], [[good-receive-note]], [[store-requisition]], [[inventory-adjustment]], [[physical-count]], [[spot-check]], [[vendor-pricelist]]
-- [[access-control/user]] — การ resolve `from_user_id` / `to_user_id`
-- [[reporting-audit/activity]] — event ของ workflow โดยปกติเขียนทั้งสองแถว
-- [[system-config/workflow]] — การ resolve ผู้รับกับ role type ของ stage
+- ทุกโมดูล workflow — [purchase-request](/th/inventory/purchase-request), [purchase-order](/th/inventory/purchase-order), [good-receive-note](/th/inventory/good-receive-note), [store-requisition](/th/inventory/store-requisition), [inventory-adjustment](/th/inventory/inventory-adjustment), [physical-count](/th/inventory/physical-count), [spot-check](/th/inventory/spot-check), [vendor-pricelist](/th/inventory/vendor-pricelist)
+- [access-control/user](/th/inventory/access-control/user) — การ resolve `from_user_id` / `to_user_id`
+- [reporting-audit/activity](/th/inventory/reporting-audit/activity) — event ของ workflow โดยปกติเขียนทั้งสองแถว
+- [system-config/workflow](/th/inventory/system-config/workflow) — การ resolve ผู้รับกับ role type ของ stage
 
 ## 8. แหล่งอ้างอิง
 

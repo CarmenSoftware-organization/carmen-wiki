@@ -2,7 +2,7 @@
 title: Running Code
 description: Document-number generator configuration — prefix, date token, and running counter pattern per document type (PR, PO, GRN, SR, etc.).
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: system-config, running-code, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -96,13 +96,13 @@ Observed in seed data:
 
 ## 7. Cross-References
 
-- [[purchase-request]] — `pr_no`.
-- [[purchase-order]] — `po_no`.
-- [[good-receive-note]] — GRN reference.
-- [[store-requisition]] — SR reference.
-- [[inventory-adjustment]] — IA / SI / SO references.
-- [[physical-count]], [[spot-check]] — count document numbering.
-- [[vendor-pricelist]] — pricelist reference.
+- [purchase-request](/en/inventory/purchase-request) — `pr_no`.
+- [purchase-order](/en/inventory/purchase-order) — `po_no`.
+- [good-receive-note](/en/inventory/good-receive-note) — GRN reference.
+- [store-requisition](/en/inventory/store-requisition) — SR reference.
+- [inventory-adjustment](/en/inventory/inventory-adjustment) — IA / SI / SO references.
+- [physical-count](/en/inventory/physical-count), [spot-check](/en/inventory/spot-check) — count document numbering.
+- [vendor-pricelist](/en/inventory/vendor-pricelist) — pricelist reference.
 
 ## 8. References
 

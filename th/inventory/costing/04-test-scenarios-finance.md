@@ -2,7 +2,7 @@
 title: การคำนวณต้นทุน (Costing) — Test Scenarios — Finance
 description: Test cases ของ Finance (valuation policy, อนุมัติ credit-note revaluation, sub-ledger ↔ GL reconciliation, period-end valuation, period lock) สำหรับ costing
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: costing, test-scenarios, finance, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 # การคำนวณต้นทุน (Costing) — Test Scenarios — Finance
 
 > **At a Glance**
-> **Persona:** Finance (Officer / Cost Controller + Finance Manager) &nbsp;·&nbsp; **Module:** [[costing]] &nbsp;·&nbsp; **Scenarios:** ~34
+> **Persona:** Finance (Officer / Cost Controller + Finance Manager) &nbsp;·&nbsp; **Module:** [costing](/th/inventory/costing) &nbsp;·&nbsp; **Scenarios:** ~34
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** map ไปยัง `601-cn.spec.ts`, `900-period-end.spec.ts`, `501-grn.spec.ts` ใน `../carmen-inventory-frontend-e2e/`
 
@@ -81,7 +81,7 @@ Scenarios group เป็น **happy paths** (credit-note approval, reconciliati
 - Sibling: [04-test-scenarios-inventory-controller.md](./04-test-scenarios-inventory-controller.md)
 - Sibling: [04-test-scenarios-auditor.md](./04-test-scenarios-auditor.md)
 - E2E specs: [`900-period-end.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/900-period-end.spec.ts), [`601-cn.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/601-cn.spec.ts), [`501-grn.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts)
-- Cross-link: [[inventory/04-test-scenarios-finance]]
-- Cross-link: [[good-receive-note]]
-- Cross-link: [[inventory-adjustment]]
+- Cross-link: [inventory/04-test-scenarios-finance](/th/inventory/inventory/04-test-scenarios-finance)
+- Cross-link: [good-receive-note](/th/inventory/good-receive-note)
+- Cross-link: [inventory-adjustment](/th/inventory/inventory-adjustment)
 - Cross-link: credit-note

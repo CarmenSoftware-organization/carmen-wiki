@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow — Approver
 description: Approver's flow within the purchase-request module.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-request, user-flow, approver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 # Purchase Request — User Flow — Approver
 
 > **At a Glance**
-> **Persona:** Approver (Dept. Head / Budget Controller / Finance) &nbsp;·&nbsp; **Module:** [[purchase-request]] &nbsp;·&nbsp; **Workflow stages:** in_progress (Stage 1 → Stage 2 → Stage 3 → approved) &nbsp;·&nbsp; **Key permissions:** approve / send-back / reject / split-reject, adjust approved_qty
+> **Persona:** Approver (Dept. Head / Budget Controller / Finance) &nbsp;·&nbsp; **Module:** [purchase-request](/en/inventory/purchase-request) &nbsp;·&nbsp; **Workflow stages:** in_progress (Stage 1 → Stage 2 → Stage 3 → approved) &nbsp;·&nbsp; **Key permissions:** approve / send-back / reject / split-reject, adjust approved_qty
 > **What this persona does:** Reviews submitted PRs at each approval stage and advances, returns, or terminates the document via the workflow.
 
 ## 1. Role in This Module
@@ -67,14 +67,14 @@ All three sub-roles share the same review-and-decide UI and the same action set.
 
 1. From the **My Approvals** queue (or notification link), pick the PR awaiting decision. The queue shows `pr_no`, requestor, department, grand total in transaction and base currency, current workflow stage, and the time the PR has been waiting. Click into the PR to open the detail page in read-mostly mode (header and lines are non-editable for the Approver except for `approved_qty` and line-level decision flags).
 2. Review the **header**: PR type (`General Purchase` / `Market List` / `Asset`), requestor and department, `pr_date`, required delivery date, currency and exchange rate, `workflow_name`, description / justification, and attachments. Use the **Activity Log** panel to read prior comments (Requestor notes, previous-stage approver comments, system events).
-3. Open the **Items** tab and walk each line. For each line confirm product, store location, `requested_qty`, unit of measure, estimated unit price, FOC quantity, discount, tax treatment, line delivery date, and any line notes. The Approver also sees the inventory context (on-hand, on-order, reorder level, average monthly usage, last purchase price) pulled live from [[inventory]] and the preferred-vendor / pricelist context pulled from [[vendor-pricelist]].
+3. Open the **Items** tab and walk each line. For each line confirm product, store location, `requested_qty`, unit of measure, estimated unit price, FOC quantity, discount, tax treatment, line delivery date, and any line notes. The Approver also sees the inventory context (on-hand, on-order, reorder level, average monthly usage, last purchase price) pulled live from [inventory](/en/inventory/inventory) and the preferred-vendor / pricelist context pulled from [vendor-pricelist](/en/inventory/vendor-pricelist).
 4. Open the **Budget Impact** panel. The system shows availability per department / cost-centre / budget category for the relevant period: total budget, current soft-commitments from this PR and other open PRs / POs, hard commitments, and the resulting `availableBudget`. Budget Controllers (Stage 2) pay closest attention to this panel, but every Approver can see it.
 5. If a quantity needs to come down (e.g. budget is tight, requested qty exceeds policy, partial fulfilment is preferred), edit **`approved_qty`** on the affected line. Per `PR_VAL_013` the new value must be `> 0` and `≤ requested_qty` after UoM conversion; `approved_unit_id` and `approved_unit_conversion_factor` are persisted alongside. The header roll-up totals (`base_sub_total_amount`, `base_total_amount`, etc.) recompute on save.
 6. Decide the **per-line disposition** if a split-reject is needed: mark individual lines as **accept** (default) or **reject**. Rejected lines must carry a reason. The remaining accepted lines continue through the workflow; the rejected lines stay on the document with `current_stage_status = rejected` and never reach PO conversion (`PR_AUTH_003`).
 7. Choose the **header-level action** from the action bar: **Approve**, **Send Back**, **Reject**, or (when at least one line is marked reject and others accept) the system treats the Approve action as a **Split-Reject** commit. For Send Back and Reject the system prompts for a mandatory reason; for Approve a comment is optional.
 8. Confirm the action in the dialog. The system runs authorization checks (`PR_AUTH_002` — current user must be in `user_action.execute[]` for the current stage; `PR_VAL_013` on any edited `approved_qty`).
 9. On **Approve** at an intermediate stage: the system applies `PR_POST_004` — appends to `workflow_history`, updates `workflow_previous_stage` / `workflow_current_stage` / `workflow_next_stage`, sets `last_action = approved` and `last_action_by_*` to the current user, recomputes `user_action.execute[]` for the next stage from the threshold and routing rules in `tb_workflow`, and notifies the next-stage approver. `pr_status` stays `in_progress`. The soft budget commitment remains in place.
-10. On **Approve** at the **final** approve stage: `PR_POST_005` flips `pr_status` from `in_progress` to `approved`, the workflow stepper marks the chain complete, notifications go to the Requestor ("Approved") and to the Purchaser queue, and the PR becomes eligible for PO conversion. The soft commitment persists until the Purchaser creates the PO, at which point it converts to a hard commitment (see [[purchase-order]]).
+10. On **Approve** at the **final** approve stage: `PR_POST_005` flips `pr_status` from `in_progress` to `approved`, the workflow stepper marks the chain complete, notifications go to the Requestor ("Approved") and to the Purchaser queue, and the PR becomes eligible for PO conversion. The soft commitment persists until the Purchaser creates the PO, at which point it converts to a hard commitment (see [purchase-order](/en/inventory/purchase-order)).
 11. The Approver returns to the **My Approvals** queue, where the just-decided PR has dropped out. The action and any comment appear in the PR's `tb_purchase_request_comment` log immutably (`PR_POST_008`).
 
 ## 3. Decision Branches

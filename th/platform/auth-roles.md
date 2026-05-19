@@ -2,7 +2,7 @@
 title: การยืนยันตัวตนและสิทธิ์ (Authentication & Roles)
 description: flow การล็อกอิน โมเดล session แคตตาล็อก role ตัวป้องกัน route และการกรองแถบเมนูข้างตาม role ของผลิตภัณฑ์ Carmen Platform admin
 published: true
-date: 2026-05-19T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: platform/auth-roles, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -54,11 +54,11 @@ Role ทั้งห้าเข้าถึง `Dashboard`, `Business Units`, `
 
 ## 5. โมดูลที่เกี่ยวข้อง
 
-- [[users]] — จัดการฟิลด์ `platform_role` ที่โมดูลนี้อ่าน การสร้างหรือแก้ไขผู้ใช้คือจุดที่ Role ถูกกำหนดจริง
-- [[clusters]] — หน้าจอที่ถูก gate ด้วย Role ที่ส่งผลกระทบสูงสุด array `allowedRoles` ของมันคือตัวอย่างมาตรฐานของวิธีที่ฟีเจอร์ใช้ `hasRole()`
-- [[report-templates]] — ตัวอย่างที่สองของหน้าจอที่ถูก gate ด้วย Role โดยใช้ list Role ระดับ admin เดียวกัน
-- [[profile]] — หน้าที่ต้องล็อกอินเพียงหน้าเดียวที่เข้าถึงได้จากเมนู avatar แทนที่จะเป็นแถบเมนูข้าง พึ่งพาโมเดล session ของโมดูลนี้
-- [[business-units]] — เข้าถึงได้โดยทุก Role ที่ล็อกอินแล้ว เป็นตัวอย่างตรงข้ามที่มีประโยชน์ ให้เห็นว่า "ไม่มี `allowedRoles`" หน้าตาเป็นอย่างไรในทางปฏิบัติ
+- [users](/th/platform/users) — จัดการฟิลด์ `platform_role` ที่โมดูลนี้อ่าน การสร้างหรือแก้ไขผู้ใช้คือจุดที่ Role ถูกกำหนดจริง
+- [clusters](/th/platform/clusters) — หน้าจอที่ถูก gate ด้วย Role ที่ส่งผลกระทบสูงสุด array `allowedRoles` ของมันคือตัวอย่างมาตรฐานของวิธีที่ฟีเจอร์ใช้ `hasRole()`
+- [report-templates](/th/platform/report-templates) — ตัวอย่างที่สองของหน้าจอที่ถูก gate ด้วย Role โดยใช้ list Role ระดับ admin เดียวกัน
+- [profile](/th/platform/profile) — หน้าที่ต้องล็อกอินเพียงหน้าเดียวที่เข้าถึงได้จากเมนู avatar แทนที่จะเป็นแถบเมนูข้าง พึ่งพาโมเดล session ของโมดูลนี้
+- [business-units](/th/platform/business-units) — เข้าถึงได้โดยทุก Role ที่ล็อกอินแล้ว เป็นตัวอย่างตรงข้ามที่มีประโยชน์ ให้เห็นว่า "ไม่มี `allowedRoles`" หน้าตาเป็นอย่างไรในทางปฏิบัติ
 
 ## 6. แหล่งข้อมูลอ้างอิง
 

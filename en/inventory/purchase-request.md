@@ -2,7 +2,7 @@
 title: Purchase Request
 description: Internal request to procure goods — the upstream demand signal that becomes a purchase order after approval.
 published: true
-date: 2026-05-19T23:30:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-request, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 # Purchase Request
 
 > **At a Glance**
-> **Module purpose:** Multi-level, budget-aware internal demand workflow (`Draft` → `Submitted` → `Under Review` → `Approved`/`Rejected`/`Sent Back`) that hands a vendor-allocated requirement to procurement &nbsp;·&nbsp; **Audience:** Requestor, Department Head, Budget Controller, Finance, Purchaser, Procurement Manager, Auditor &nbsp;·&nbsp; **Key entities/tables:** `tb_purchase_request`, `tb_purchase_request_detail`, approval history, pricelist allocation, [[purchase-request/my-approval]] &nbsp;·&nbsp; **Sub-pages:** 15
+> **Module purpose:** Multi-level, budget-aware internal demand workflow (`Draft` → `Submitted` → `Under Review` → `Approved`/`Rejected`/`Sent Back`) that hands a vendor-allocated requirement to procurement &nbsp;·&nbsp; **Audience:** Requestor, Department Head, Budget Controller, Finance, Purchaser, Procurement Manager, Auditor &nbsp;·&nbsp; **Key entities/tables:** `tb_purchase_request`, `tb_purchase_request_detail`, approval history, pricelist allocation, [purchase-request/my-approval](/en/inventory/purchase-request/my-approval) &nbsp;·&nbsp; **Sub-pages:** 15
 
 ![Purchase Request module screen](/screenshots/purchase-request/index.png)
 
@@ -60,24 +60,24 @@ Financial accuracy is enforced at the calculation layer rather than left to the 
 ## 5. Related Modules
 
 **Cross-module flow:**
-- [[purchase-order]] — approved PRs become POs
-- [[product]] — PR lines reference products from the catalog
-- [[vendor-pricelist]] — preferred vendors and reference prices come from the pricelist
-- [[inventory]] — current stock levels often justify a PR
-- [[templates/purchase-request]] — reusable PR scaffold cloned via "Create from Template"
+- [purchase-order](/en/inventory/purchase-order) — approved PRs become POs
+- [product](/en/inventory/product) — PR lines reference products from the catalog
+- [vendor-pricelist](/en/inventory/vendor-pricelist) — preferred vendors and reference prices come from the pricelist
+- [inventory](/en/inventory/inventory) — current stock levels often justify a PR
+- [templates/purchase-request](/en/inventory/templates/purchase-request) — reusable PR scaffold cloned via "Create from Template"
 
 **Master configuration:**
-- [[master-data/vendor]] — allocated vendor per line resolved from the pricelist
-- [[master-data/currency]] — transaction currency and exchange rate for multi-currency PRs
-- [[master-data/tax-profile]] — tax codes derived for PR lines
-- [[master-data/unit]] — unit of measure on each PR line
-- [[master-data/department]] — requesting department / cost-centre on the PR header
-- [[system-config/workflow]] — multi-level approval workflow definitions for PR authorization
-- [[system-config/running-code]] — PR document number sequencing
-- [[system-config/dimension]] — analytical dimensions (job/cost code, project) carried on the PR
-- [[reporting-audit/activity]] — PR status-transition and approval-history log for audit
-- [[reporting-audit/attachment]] — supporting documents (quotes, specifications) attached to the PR
-- [[reporting-audit/notification]] — approval / send-back / reject notifications routed through the workflow
+- [master-data/vendor](/en/inventory/master-data/vendor) — allocated vendor per line resolved from the pricelist
+- [master-data/currency](/en/inventory/master-data/currency) — transaction currency and exchange rate for multi-currency PRs
+- [master-data/tax-profile](/en/inventory/master-data/tax-profile) — tax codes derived for PR lines
+- [master-data/unit](/en/inventory/master-data/unit) — unit of measure on each PR line
+- [master-data/department](/en/inventory/master-data/department) — requesting department / cost-centre on the PR header
+- [system-config/workflow](/en/inventory/system-config/workflow) — multi-level approval workflow definitions for PR authorization
+- [system-config/running-code](/en/inventory/system-config/running-code) — PR document number sequencing
+- [system-config/dimension](/en/inventory/system-config/dimension) — analytical dimensions (job/cost code, project) carried on the PR
+- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — PR status-transition and approval-history log for audit
+- [reporting-audit/attachment](/en/inventory/reporting-audit/attachment) — supporting documents (quotes, specifications) attached to the PR
+- [reporting-audit/notification](/en/inventory/reporting-audit/notification) — approval / send-back / reject notifications routed through the workflow
 
 ## 6. Reference Sources
 

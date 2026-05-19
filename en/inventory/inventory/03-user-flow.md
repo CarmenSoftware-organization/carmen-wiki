@@ -2,7 +2,7 @@
 title: Inventory — User Flow
 description: Movement lifecycle and persona-specific flow files for inventory.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: inventory, user-flow, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 # Inventory — User Flow
 
 > **At a Glance**
-> **Module:** [[inventory]] &nbsp;·&nbsp; **Personas:** Store Keeper &nbsp;·&nbsp; Inventory Controller &nbsp;·&nbsp; Finance &nbsp;·&nbsp; Audit / Config (Auditor + Sysadmin)
+> **Module:** [inventory](/en/inventory/inventory) &nbsp;·&nbsp; **Personas:** Store Keeper &nbsp;·&nbsp; Inventory Controller &nbsp;·&nbsp; Finance &nbsp;·&nbsp; Audit / Config (Auditor + Sysadmin)
 > **Workflow lifecycle:** Movement-driven — each `tb_inventory_transaction` is itself the posting event (no draft → committed on the movement). Per-period lifecycle on `tb_period.status`: `open` → `closed` → `locked`. Compensating reversal writes a new transaction; the original row is never edited.
 > **Drill into per-persona views below for action-level detail**
 
@@ -50,7 +50,7 @@ Two distinct state machines coexist in this module: the **per-movement** lifecyc
 
 Each persona below has a dedicated drill-down file describing their entry point, primary flow, decision branches, and exit point. Slugs match the persona role; clicking the link opens the per-persona view.
 
-- [Store Keeper](./03-user-flow-store-keeper.md) — records day-to-day stock movements at the location level. Issues stock-in / stock-out documents for routine adjustments (found-stock, breakage), runs physical counts on their locations, captures count-variance lines that route upward for approval, and operates the receiving dock for GRN-driven inbound (covered in detail in [[good-receive-note]]'s Receiver flow). Their inventory-module ownership starts when a movement needs to be initiated at the floor level and ends when the document carrying the movement is handed off to the Inventory Controller for above-threshold approval.
+- [Store Keeper](./03-user-flow-store-keeper.md) — records day-to-day stock movements at the location level. Issues stock-in / stock-out documents for routine adjustments (found-stock, breakage), runs physical counts on their locations, captures count-variance lines that route upward for approval, and operates the receiving dock for GRN-driven inbound (covered in detail in [good-receive-note](/en/inventory/good-receive-note)'s Receiver flow). Their inventory-module ownership starts when a movement needs to be initiated at the floor level and ends when the document carrying the movement is handed off to the Inventory Controller for above-threshold approval.
 - [Inventory Controller](./03-user-flow-inventory-controller.md) — owns **balance accuracy**. Reviews variance from physical / spot counts, approves stock-in / stock-out documents above the Store Keeper threshold, coordinates the count cadence and the spot-check programme, maintains per-product / per-location stock policy (par / min / max / reorder) on `tb_product_location`, and is the second signature on the period-end pre-flight (variance approved before Finance runs the close).
 - [Finance](./03-user-flow-finance.md) — owns **valuation and the GL reconciliation**. Reviews the costing feed (FIFO layer integrity, weighted-average drift), reconciles the inventory sub-ledger against the GL Inventory control account, approves cost-impact adjustments above the Inventory Controller threshold, posts the period-end inventory-to-GL reconciliation entry, and (as Finance Manager) runs the period-close → period-lock progression on `tb_period.status`.
 - [Audit / Config](./03-user-flow-audit-config.md) — System Administrator (configures `tb_location` including `location_type` and `physical_count_type`, `tb_adjustment_type` reason codes, costing method per product, period definitions, integration endpoints with the source modules, RBAC) and Auditor (read-only review of all inventory transactions, cost-layer ledger, period snapshots, configuration history; runs lot-trace and reconciliation queries during audit and recall workstreams).
@@ -69,13 +69,13 @@ The table below captures the moments where inventory work moves from one persona
 | Finance Manager | Period close run | Finance, Inventory Controller, Store Keeper | Period at `tb_period.status = closed`; `tb_period_snapshot` rows written; backdated postings rejected per `INV_VAL_008`. Personas re-engage at the new (open) period. |
 | Finance Manager | Period lock run | Auditor | Period at `tb_period.status = locked`; immutable; ready for external audit. |
 | System Administrator | Configuration change applied (location type, costing method, adjustment-type list, RBAC, integration endpoint) | All personas | No transaction state change; new rules apply prospectively to new movements; in-flight source documents may need re-evaluation per the snapshot rule in `[03-user-flow-audit-config.md](./03-user-flow-audit-config.md)`. |
-| Auditor | Lot-recall trace complete | Inventory Controller (write-off coordination) + Finance (financial provisioning) | No transaction state change; recall execution lives on `[[inventory-adjustment]]` and `[[good-receive-note]]` credit-note paths. |
+| Auditor | Lot-recall trace complete | Inventory Controller (write-off coordination) + Finance (financial provisioning) | No transaction state change; recall execution lives on `[inventory-adjustment](/en/inventory/inventory-adjustment)` and `[good-receive-note](/en/inventory/good-receive-note)` credit-note paths. |
 
 ## 5. References
 
-- `../carmen/docs/Inventory/inventory-management-prd.md` — carmen/docs PRD describing inventory-module personas and goals (note: the PRD's `StockMovement` workflow status is **not** canonical — Prisma has no `doc_status` on `tb_inventory_transaction`; this page follows the movement-driven model documented in [[inventory/01-data-model]]).
+- `../carmen/docs/Inventory/inventory-management-prd.md` — carmen/docs PRD describing inventory-module personas and goals (note: the PRD's `StockMovement` workflow status is **not** canonical — Prisma has no `doc_status` on `tb_inventory_transaction`; this page follows the movement-driven model documented in [inventory/01-data-model](/en/inventory/inventory/01-data-model)).
 - `../carmen/docs/Inventory/location-type-and-financial-treatment.md` — carmen/docs reference for the `location_type` posting variants that change the persona flow for direct-cost and consignment locations.
 - `../carmen/docs/inventory-management/period-end-process.md` — carmen/docs period-end checklist, the procedural backdrop to Section 2.2 (period-level state machine) and the cross-persona handoffs at period close / lock.
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical `enum_inventory_doc_type`, `enum_transaction_type`, `enum_period_status`, `enum_location_type`, `enum_physical_count_type` (the enums used in Section 2's transitions), and the divergences against carmen/docs that shape the no-`doc_status` framing.
 - Sibling: [02-business-rules.md](./02-business-rules.md) — posting and authorization rules referenced by each transition row in Section 2 (notably `INV_POST_001`–`INV_POST_012` for the fan-out effects, `INV_AUTH_001`–`INV_AUTH_010` for the role gates, `INV_VAL_008` for the period-lock guard).
-- Related modules: [[good-receive-note]] (primary upstream source of inbound; receipts post via `enum_inventory_doc_type = good_received_note`), [[store-requisition]] (primary upstream source of outbound; issues / transfers), [[physical-count]] (variance source for period-end), [[spot-check]] (mid-period variance source), [[inventory-adjustment]] (manual stock-in / stock-out), [[costing]] (downstream consumer of cost-layer data), [[product]] (carries the costing-method configuration).
+- Related modules: [good-receive-note](/en/inventory/good-receive-note) (primary upstream source of inbound; receipts post via `enum_inventory_doc_type = good_received_note`), [store-requisition](/en/inventory/store-requisition) (primary upstream source of outbound; issues / transfers), [physical-count](/en/inventory/physical-count) (variance source for period-end), [spot-check](/en/inventory/spot-check) (mid-period variance source), [inventory-adjustment](/en/inventory/inventory-adjustment) (manual stock-in / stock-out), [costing](/en/inventory/costing) (downstream consumer of cost-layer data), [product](/en/inventory/product) (carries the costing-method configuration).

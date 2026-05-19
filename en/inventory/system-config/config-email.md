@@ -2,7 +2,7 @@
 title: Email Configuration
 description: SMTP / sender / template configuration for outbound system email — workflow notifications, scheduled report delivery, password reset.
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: system-config, email, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -40,14 +40,14 @@ Email Configuration is the **per-BU SMTP profile** Carmen uses for every outboun
 | "Recipient is not a valid email" | Bad address in `recipients` or `cc` | Fix the comma-separated list |
 | Test email succeeds in form but no mail arrives | Form draft not saved — Test uses the saved value | Click **Save** first, then **Test Email** |
 | All notifications silent in production | `smtp.enabled = false` accidentally left set | Re-enable on the form and Save |
-| 403 on save / load | User lacks `app-config.upsert` (Sysadmin only) | Grant via [[access-control/application-role]] |
+| 403 on save / load | User lacks `app-config.upsert` (Sysadmin only) | Grant via [access-control/application-role](/en/inventory/access-control/application-role) |
 | Password field shows `***ENCRYPTED***` | Expected — masked on read so ciphertext never reaches the browser | Leave as-is to keep current password; type new to rotate |
 
 ## 4. Edge Cases
 
 - **Password encryption at rest.** `smtp.password` is encrypted with `encryptSecret` before persistence and replaced with literal `***ENCRYPTED***` on `GET`. Idempotent — already-encrypted values are not re-encrypted.
 - **Decrypted access path.** Only the internal `getReportEmailForSend(bu_code)` (TCP-only, called by `micro-notification` / cron) decrypts. The public HTTP path never returns plaintext.
-- **Audit safety.** Every upsert is captured via `EnrichAuditUsers` into [[reporting-audit/activity]] — but the value itself is *not* logged, avoiding accidental ciphertext disclosure.
+- **Audit safety.** Every upsert is captured via `EnrichAuditUsers` into [reporting-audit/activity](/en/inventory/reporting-audit/activity) — but the value itself is *not* logged, avoiding accidental ciphertext disclosure.
 - **One row per BU.** `tb_application_config` has `@@unique([key, deleted_at])`. Cross-BU isolation is enforced by the BU-scoped route.
 - **`enabled` is a kill-switch, not a delete.** Toggling off pauses email cleanly without losing the config.
 
@@ -59,7 +59,7 @@ Source: tenant schema. **No dedicated `tb_email_config`** — the entire profile
 
 ### 5.1 `tb_application_config` row (`key = "report_email"`)
 
-`tb_application_config` is the generic tenant-wide KV store (see [[system-config/application-config]]). The Zod-validated shape:
+`tb_application_config` is the generic tenant-wide KV store (see [system-config/application-config](/en/inventory/system-config/application-config)). The Zod-validated shape:
 
 ```jsonc
 {
@@ -95,12 +95,12 @@ Source: tenant schema. **No dedicated `tb_email_config`** — the entire profile
 
 ## 7. Cross-References
 
-- [[system-config/application-config]] — umbrella KV store; `report_email` is one reserved key.
-- [[reporting-audit/notification]] — `micro-notification` is the runtime consumer.
-- [[reporting-audit/schedule]] / [[reporting-audit/report]] — scheduled and on-demand report delivery.
-- [[access-control/user]] — password reset, invite, access-grant emails.
-- [[system-config/workflow]] — recipient routing rules (`requestor`, `current_approve`, `next_step`) resolved against workflow; transport is this config.
-- [[reporting-audit/activity]] — upserts logged here.
+- [system-config/application-config](/en/inventory/system-config/application-config) — umbrella KV store; `report_email` is one reserved key.
+- [reporting-audit/notification](/en/inventory/reporting-audit/notification) — `micro-notification` is the runtime consumer.
+- [reporting-audit/schedule](/en/inventory/reporting-audit/schedule) / [reporting-audit/report](/en/inventory/reporting-audit/report) — scheduled and on-demand report delivery.
+- [access-control/user](/en/inventory/access-control/user) — password reset, invite, access-grant emails.
+- [system-config/workflow](/en/inventory/system-config/workflow) — recipient routing rules (`requestor`, `current_approve`, `next_step`) resolved against workflow; transport is this config.
+- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — upserts logged here.
 
 ## 8. References
 

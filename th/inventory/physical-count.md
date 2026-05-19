@@ -2,7 +2,7 @@
 title: การนับสต๊อกประจำงวด (Physical Count)
 description: การนับสต๊อกแบบเต็มทุกรายการที่สถานที่จัดเก็บตามรอบกำหนด เพื่อกระทบยอดระบบกับของจริงบนชั้น
 published: true
-date: 2026-05-17T07:00:36.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: physical-count, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -51,18 +51,18 @@ dateCreated: 2026-05-15T07:48:00.000Z
 ## 5. โมดูลที่เกี่ยวข้อง
 
 **การไหลข้ามโมดูล:**
-- [[inventory]] — การนับสต๊อกประจำงวดตั้ง balance ใหม่เป็นปริมาณที่นับได้
-- [[inventory-adjustment]] — ผลต่างระหว่างปริมาณนับและปริมาณตามบัญชี post เป็น adjustment
-- [[spot-check]] — การนับบางส่วนแบบแคบลงใช้แนวคิดเดียวกัน
+- [inventory](/th/inventory/inventory) — การนับสต๊อกประจำงวดตั้ง balance ใหม่เป็นปริมาณที่นับได้
+- [inventory-adjustment](/th/inventory/inventory-adjustment) — ผลต่างระหว่างปริมาณนับและปริมาณตามบัญชี post เป็น adjustment
+- [spot-check](/th/inventory/spot-check) — การนับบางส่วนแบบแคบลงใช้แนวคิดเดียวกัน
 
 **Master configuration:**
-- [[master-data/unit]] — หน่วยนับของแต่ละบรรทัดในใบนับ
-- [[master-data/location]] — สถานที่ที่ balance กำลังถูกนับ
-- [[master-data/adjustment-type]] — reason code ที่ใช้ตอน post adjustment ของผลต่าง
-- [[system-config/workflow]] — workflow อนุมัติสำหรับการเซ็นปิดการนับและการ post ผลต่าง
-- [[system-config/period]] — ประตูงวดบัญชีสำหรับการ post การนับ
-- [[access-control/user-location]] — จำกัดว่าผู้ใช้คนใดสามารถนับสถานที่ใดได้บ้าง
-- [[reporting-audit/activity]] — log กิจกรรมการนับและการนับซ้ำสำหรับการตรวจสอบ
+- [master-data/unit](/th/inventory/master-data/unit) — หน่วยนับของแต่ละบรรทัดในใบนับ
+- [master-data/location](/th/inventory/master-data/location) — สถานที่ที่ balance กำลังถูกนับ
+- [master-data/adjustment-type](/th/inventory/master-data/adjustment-type) — reason code ที่ใช้ตอน post adjustment ของผลต่าง
+- [system-config/workflow](/th/inventory/system-config/workflow) — workflow อนุมัติสำหรับการเซ็นปิดการนับและการ post ผลต่าง
+- [system-config/period](/th/inventory/system-config/period) — ประตูงวดบัญชีสำหรับการ post การนับ
+- [access-control/user-location](/th/inventory/access-control/user-location) — จำกัดว่าผู้ใช้คนใดสามารถนับสถานที่ใดได้บ้าง
+- [reporting-audit/activity](/th/inventory/reporting-audit/activity) — log กิจกรรมการนับและการนับซ้ำสำหรับการตรวจสอบ
 
 ## 6. แหล่งอ้างอิง
 
@@ -74,15 +74,15 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 ## 7. หน้าในโมดูลนี้
 
-- [[physical-count/01-data-model]] — เอนทิตี ฟิลด์ ความสัมพันธ์ enum (`tb_physical_count_period`, `tb_physical_count`, `tb_physical_count_detail` รวมกับตาราง comment สามตาราง enum สี่ตัว)
-- [[physical-count/02-business-rules]] — การตรวจสอบความถูกต้อง การคำนวณ การกำหนดสิทธิ์ การ post กฎข้ามโมดูล (`PHC_VAL_*` / `PHC_CALC_*` / `PHC_AUTH_*` / `PHC_POST_*` / `PHC_XMOD_*`)
-- [[physical-count/03-user-flow]] — ภาพรวมวงจรชีวิตเอกสาร + สารบัญ persona
-  - [[physical-count/03-user-flow-count-lead]] — เส้นทาง Inventory Controller / Inventory Manager
-  - [[physical-count/03-user-flow-counter]] — เส้นทาง Counter / Store Keeper
-  - [[physical-count/03-user-flow-audit-config]] — เส้นทาง Approver / Finance + Auditor + Sysadmin
-- [[physical-count/04-test-scenarios]] — ภาพรวม test scenario + scenario การส่งต่อข้าม persona + เป้าหมาย mapping ไปยัง E2E
-  - [[physical-count/04-test-scenarios-count-lead]] — Scenario ของ Count Lead
-  - [[physical-count/04-test-scenarios-counter]] — Scenario ของ Counter
-  - [[physical-count/04-test-scenarios-audit-config]] — Scenario ของ Approver / Finance + Auditor + Sysadmin
+- [physical-count/01-data-model](/th/inventory/physical-count/01-data-model) — เอนทิตี ฟิลด์ ความสัมพันธ์ enum (`tb_physical_count_period`, `tb_physical_count`, `tb_physical_count_detail` รวมกับตาราง comment สามตาราง enum สี่ตัว)
+- [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) — การตรวจสอบความถูกต้อง การคำนวณ การกำหนดสิทธิ์ การ post กฎข้ามโมดูล (`PHC_VAL_*` / `PHC_CALC_*` / `PHC_AUTH_*` / `PHC_POST_*` / `PHC_XMOD_*`)
+- [physical-count/03-user-flow](/th/inventory/physical-count/03-user-flow) — ภาพรวมวงจรชีวิตเอกสาร + สารบัญ persona
+  - [physical-count/03-user-flow-count-lead](/th/inventory/physical-count/03-user-flow-count-lead) — เส้นทาง Inventory Controller / Inventory Manager
+  - [physical-count/03-user-flow-counter](/th/inventory/physical-count/03-user-flow-counter) — เส้นทาง Counter / Store Keeper
+  - [physical-count/03-user-flow-audit-config](/th/inventory/physical-count/03-user-flow-audit-config) — เส้นทาง Approver / Finance + Auditor + Sysadmin
+- [physical-count/04-test-scenarios](/th/inventory/physical-count/04-test-scenarios) — ภาพรวม test scenario + scenario การส่งต่อข้าม persona + เป้าหมาย mapping ไปยัง E2E
+  - [physical-count/04-test-scenarios-count-lead](/th/inventory/physical-count/04-test-scenarios-count-lead) — Scenario ของ Count Lead
+  - [physical-count/04-test-scenarios-counter](/th/inventory/physical-count/04-test-scenarios-counter) — Scenario ของ Counter
+  - [physical-count/04-test-scenarios-audit-config](/th/inventory/physical-count/04-test-scenarios-audit-config) — Scenario ของ Approver / Finance + Auditor + Sysadmin
 
 > **Status:** หน้าย่อยทั้งหมดอยู่ระดับ skeleton (~50-100 บรรทัดต่อหน้า) แต่ละหน้ามี TODO callout ชี้ไปยังแหล่งต้นน้ำที่ต้องใช้ตอนเติมเนื้อหา (`../carmen-inventory-frontend/` สำหรับ UI flow; `../carmen-inventory-frontend-e2e/tests/` สำหรับ E2E specs — ยังไม่มี spec ของ physical-count) ส่วน data-model อ้างอิงจาก Prisma schema และเป็นหน้าที่พัฒนามากที่สุด business-rules นำเสนอ catalogue ของ rule ID `PHC_*` ที่ต้องยืนยันกับ carmen/docs user-flow และ test-scenarios เป็น placeholder เชิงโครงสร้าง

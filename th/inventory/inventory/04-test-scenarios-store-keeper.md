@@ -2,7 +2,7 @@
 title: คลังสินค้า (Inventory) — Test Scenarios — Store Keeper
 description: Test cases ของ Store Keeper (happy path, permission, validation, edge cases) สำหรับ inventory
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: inventory, test-scenarios, store-keeper, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 # คลังสินค้า (Inventory) — Test Scenarios — Store Keeper
 
 > **At a Glance**
-> **Persona:** Store Keeper &nbsp;·&nbsp; **โมดูล:** [[inventory]] &nbsp;·&nbsp; **Scenarios:** ~29
+> **Persona:** Store Keeper &nbsp;·&nbsp; **โมดูล:** [inventory](/th/inventory/inventory) &nbsp;·&nbsp; **Scenarios:** ~29
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** map ไปยัง `501-grn.spec.ts`, `720-stock-issue.spec.ts` ใน `../carmen-inventory-frontend-e2e/`
 
@@ -72,8 +72,8 @@ dateCreated: 2026-05-15T12:00:00.000Z
 - User flow: [03-user-flow-store-keeper.md](./03-user-flow-store-keeper.md) — source happy-path สำหรับ Section 1 ด้านบน; อธิบาย flow หลัก 8 ขั้นตอน (stock-in สำหรับ found stock), variant stock-out และ variant count-execution; กิ่งการตัดสินใจ (new-lot route สำหรับ Controller ไม่คำนึงถึงต้นทุน, FIFO override สำหรับ expiry write-off, gate location-type) และการส่งต่อ exit (auto-approve post, queue Controller, เอกสาร count hand-off)
 - กฎทางธุรกิจที่ตรวจสอบ: [02-business-rules.md](./02-business-rules.md) Section 2 — `INV_VAL_001` (source doc resolves), `INV_VAL_002` (product / location จำเป็น), `INV_VAL_003` (location active), `INV_VAL_004` (qty sign ตรง type), `INV_VAL_005` (no negative balance), `INV_VAL_006` (lot identity), `INV_VAL_007` (cost non-negative), `INV_VAL_008` (period ไม่ closed / locked), `INV_VAL_009` (gate direct-cost location), `INV_VAL_010` (consignment ownership rule), `INV_AUTH_001` / `INV_AUTH_002` (สิทธิ์ create ของ Store Keeper), `INV_AUTH_010` (SoD), `INV_POST_001` / `INV_POST_002` (ผล posting inbound / outbound), `INV_CALC_007` (weighted-average recompute)
 - E2E specs: [`../carmen-inventory-frontend-e2e/tests/720-stock-issue.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/720-stock-issue.spec.ts) — เส้นทาง stock-issue / stock-out ที่เกี่ยวข้องกับ Store Keeper; [`501-grn.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts) Stock Movements describe block — ผลฝั่ง inventory ของ GRN commit ขนานกับ manual stock-in Happy-path fixture align กับ `purchase@blueledgers.com` (multi-role); permission-denial ใช้ `requestor@blueledgers.com`
-- Cross-link: [[good-receive-note]] — Store Keeper เป็นผู้ปฏิบัติทางกายภาพเดียวกันที่ dock; GRN commit post inventory transactions ขนานกับ manual stock-in Flow ฝั่ง GRN อาศัยอยู่ใน [[good-receive-note/04-test-scenarios-receiver]]
-- Cross-link: [[store-requisition]] — Store Keeper ที่ location issuing dispatch สต๊อก; ผล inventory outbound อาศัยอยู่ในไฟล์ persona ของโมดูล SR
-- Cross-link: [[physical-count]] / [[spot-check]] — การดำเนินการ count ที่ระดับ location; variance posting ผ่าน flow rollup
-- Cross-link: [[inventory-adjustment]] — ชื่อทั่วไปสำหรับ flow `tb_stock_in` / `tb_stock_out` ที่ทดสอบด้านบน
-- Cross-link: [[costing]] — FIFO และ weighted-average cost picking บน outbound (SK-HP-02, SK-HP-07) และ WA recompute บน inbound (SK-HP-05 FOC dilution)
+- Cross-link: [good-receive-note](/th/inventory/good-receive-note) — Store Keeper เป็นผู้ปฏิบัติทางกายภาพเดียวกันที่ dock; GRN commit post inventory transactions ขนานกับ manual stock-in Flow ฝั่ง GRN อาศัยอยู่ใน [good-receive-note/04-test-scenarios-receiver](/th/inventory/good-receive-note/04-test-scenarios-receiver)
+- Cross-link: [store-requisition](/th/inventory/store-requisition) — Store Keeper ที่ location issuing dispatch สต๊อก; ผล inventory outbound อาศัยอยู่ในไฟล์ persona ของโมดูล SR
+- Cross-link: [physical-count](/th/inventory/physical-count) / [spot-check](/th/inventory/spot-check) — การดำเนินการ count ที่ระดับ location; variance posting ผ่าน flow rollup
+- Cross-link: [inventory-adjustment](/th/inventory/inventory-adjustment) — ชื่อทั่วไปสำหรับ flow `tb_stock_in` / `tb_stock_out` ที่ทดสอบด้านบน
+- Cross-link: [costing](/th/inventory/costing) — FIFO และ weighted-average cost picking บน outbound (SK-HP-02, SK-HP-07) และ WA recompute บน inbound (SK-HP-05 FOC dilution)

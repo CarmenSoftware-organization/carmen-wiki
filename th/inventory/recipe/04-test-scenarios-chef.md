@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — Test Scenarios — Chef
 description: test case ของ Chef (happy path, permission, validation, edge case) สำหรับโมดูล recipe
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: recipe, test-scenarios, chef, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 # สูตรอาหาร (Recipe) — Test Scenarios — Chef
 
 > **At a Glance**
-> **Persona:** Chef (Chef / Kitchen Manager + Kitchen Staff read-only) &nbsp;·&nbsp; **โมดูล:** [[recipe]] &nbsp;·&nbsp; **scenario:** ~38
+> **Persona:** Chef (Chef / Kitchen Manager + Kitchen Staff read-only) &nbsp;·&nbsp; **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **scenario:** ~38
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **การครอบคลุม E2E:** ไม่มีในเวลานี้ — E2E ภายในสูตรเป็นช่องว่าง; การครอบคลุมใกล้เคียงที่สุดคือ `tests/701-sr.spec.ts` สำหรับ recipe-driven SR auto-create ใน `../carmen-inventory-frontend-e2e/`
 
@@ -81,5 +81,5 @@ dateCreated: 2026-05-15T16:00:00.000Z
 - User flow: [03-user-flow-chef.md](./03-user-flow-chef.md) — แหล่ง happy-path สำหรับ Section 1 ด้านบน; อธิบาย primary flow 12 ขั้นตอน (create → save → publish → ดูแล) และ decision branch
 - กฎทางธุรกิจที่ verify: [02-business-rules.md](./02-business-rules.md) Section 2 — กฎ validation `REC_VAL_001`–`REC_VAL_018`; Section 4 — `REC_AUTH_001`–`REC_AUTH_005` (scope อำนาจของ Chef), `REC_AUTH_014` (อำนาจ delete); Section 5 — `REC_POST_001`–`REC_POST_008` (ผลกระทบการเปลี่ยนสถานะ)
 - spec E2E: **ไม่มีในเวลาที่เขียน** — การครอบคลุม E2E ภายในสูตรเป็นช่องว่าง; การครอบคลุมใกล้เคียงที่สุดคือ `701-sr.spec.ts` สำหรับเส้นทาง recipe-driven SR auto-create (ดู [04-test-scenarios.md](./04-test-scenarios.md) Section 5)
-- Cross-link: [[product]] — `cost_per_unit` ของวัตถุดิบและ flag `is_used_in_recipe` หนุนทุก line entry ของ Chef
-- Cross-link: [[inventory]] — theoretical OUT movement fan out จากสูตร `PUBLISHED` บนการขายเมนู
+- Cross-link: [product](/th/inventory/product) — `cost_per_unit` ของวัตถุดิบและ flag `is_used_in_recipe` หนุนทุก line entry ของ Chef
+- Cross-link: [inventory](/th/inventory/inventory) — theoretical OUT movement fan out จากสูตร `PUBLISHED` บนการขายเมนู

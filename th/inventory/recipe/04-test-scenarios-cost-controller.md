@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — Test Scenarios — Cost Controller
 description: test case ของ Cost Controller (cost review, drift, co-approval, variance, pricing-history) สำหรับโมดูล recipe
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: recipe, test-scenarios, cost-controller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 # สูตรอาหาร (Recipe) — Test Scenarios — Cost Controller
 
 > **At a Glance**
-> **Persona:** Cost Controller (+ Cost Control Department) &nbsp;·&nbsp; **โมดูล:** [[recipe]] &nbsp;·&nbsp; **scenario:** ~26
+> **Persona:** Cost Controller (+ Cost Control Department) &nbsp;·&nbsp; **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **scenario:** ~26
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **การครอบคลุม E2E:** ไม่มีในเวลานี้ — E2E ภายใน Cost-Controller เป็นช่องว่าง; การครอบคลุมใกล้เคียงคือทางอ้อมผ่าน `tests/701-sr.spec.ts` ใน `../carmen-inventory-frontend-e2e/`
 
@@ -69,5 +69,5 @@ dateCreated: 2026-05-15T16:00:00.000Z
 - User flow: [03-user-flow-cost-controller.md](./03-user-flow-cost-controller.md) — แหล่ง happy-path สำหรับ Section 1 ด้านบน; อธิบาย primary flow 10 ขั้นตอน (drift dashboard → drill → action แก้ไข → variance → period close) และ decision branch
 - กฎทางธุรกิจที่ verify: [02-business-rules.md](./02-business-rules.md) Section 2 — validation `REC_VAL_008` (ขอบ % cost); Section 3 — กฎการคำนวณ `REC_CALC_001`–`REC_CALC_015` (math ที่ Cost Controller verify); Section 4 — `REC_AUTH_006`–`REC_AUTH_008` (scope อำนาจของ Cost Controller); Section 5 — `REC_POST_006` (sub-recipe cascade), `REC_POST_010` (การแก้ pricing-only); Section 6 — `REC_XMOD_005`–`REC_XMOD_006` (การ coupling โมดูล costing), `REC_XMOD_009` (audit / versioning)
 - spec E2E: **ไม่มีในเวลาที่เขียน** — การครอบคลุม E2E ภายใน Cost-Controller เป็นช่องว่าง; การครอบคลุมใกล้เคียงคือทางอ้อมผ่าน `701-sr.spec.ts` ของโมดูล SR (รายงาน variance ทางอ้อม)
-- Cross-link: [[costing]] — feed cost ต้นน้ำ; event cost-drift ยิงจากที่นั่น
-- Cross-link: [[inventory]] — dashboard variance ทฤษฎี-vs-จริง join recipe theoretical OUT กับ movement สต๊อกจริง
+- Cross-link: [costing](/th/inventory/costing) — feed cost ต้นน้ำ; event cost-drift ยิงจากที่นั่น
+- Cross-link: [inventory](/th/inventory/inventory) — dashboard variance ทฤษฎี-vs-จริง join recipe theoretical OUT กับ movement สต๊อกจริง

@@ -2,7 +2,7 @@
 title: Inventory Transaction Log
 description: Append-only ledger of every inventory-affecting event — GRN, SR, adjustment, wastage, count variance, period flip — and the source of truth for balance computation.
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: inventory, transaction, audit, ledger, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -118,13 +118,13 @@ Per-lot FIFO layer with `lot_no`, `lot_index`, `in_qty` / `out_qty`, `cost_per_u
 
 ## 7. Cross-References
 
-- [[inventory]] — current-state view (`InventoryStatus`) is the running sum of this ledger
-- [[costing]] — `COST_CALC_*` rules derive from cost-layer rows
-- [[good-receive-note]] &nbsp;·&nbsp; [[inventory-adjustment]] &nbsp;·&nbsp; [[inventory-adjustment/wastage-reporting]] &nbsp;·&nbsp; [[store-requisition]] &nbsp;·&nbsp; [[physical-count]] &nbsp;·&nbsp; [[purchase-order/credit-note]] — source documents
-- [[inventory/period-end]] — writes `close` / `open` rows and freezes the snapshot
+- [inventory](/en/inventory/inventory) — current-state view (`InventoryStatus`) is the running sum of this ledger
+- [costing](/en/inventory/costing) — `COST_CALC_*` rules derive from cost-layer rows
+- [good-receive-note](/en/inventory/good-receive-note) &nbsp;·&nbsp; [inventory-adjustment](/en/inventory/inventory-adjustment) &nbsp;·&nbsp; [inventory-adjustment/wastage-reporting](/en/inventory/inventory-adjustment/wastage-reporting) &nbsp;·&nbsp; [store-requisition](/en/inventory/store-requisition) &nbsp;·&nbsp; [physical-count](/en/inventory/physical-count) &nbsp;·&nbsp; [purchase-order/credit-note](/en/inventory/purchase-order/credit-note) — source documents
+- [inventory/period-end](/en/inventory/inventory/period-end) — writes `close` / `open` rows and freezes the snapshot
 
 ## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_inventory_transaction` (~1048-1073), `tb_inventory_transaction_detail` (~1075-1101), `tb_inventory_transaction_cost_layer` (~1123-1164), `enum_inventory_doc_type` (~208-216), `enum_transaction_type` (~1103-1121).
 - **Frontend:** `../carmen-inventory-frontend/app/(root)/inventory-management/transaction/`.
-- **Module landing:** [[inventory]] § 3 (Stock Movement key concept).
+- **Module landing:** [inventory](/en/inventory/inventory) § 3 (Stock Movement key concept).

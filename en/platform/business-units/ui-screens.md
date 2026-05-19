@@ -2,7 +2,7 @@
 title: Business Unit — UI Screens
 description: BusinessUnitManagement (list) and BusinessUnitEdit (9 always-expanded form sections, Users card, 3 dialogs) — layout, filters, actions, persisted state.
 published: true
-date: '2026-05-19T18:00:00.000Z'
+date: 2026-05-19T23:55:00.000Z'
 tags: book/platform, business-units, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -19,7 +19,7 @@ The business-unit surface follows the Platform SPA's standard two-screen pattern
 
 `BusinessUnitEdit` is the largest edit page in the Platform SPA at 1785 lines. The density comes from the `BusinessUnitFormData` interface covering 33 fields across identity, contact, locale, formatting, costing, connection, and config domains. Every section card uses the shared `CollapsibleSection` component, which has a clickable `CardHeader` that toggles an expand/collapse chevron. All 9 sections are initially rendered with `forceOpen` (they cannot be collapsed), keeping all fields in the DOM and visible on load — the `forceOpen` prop overrides whatever `defaultOpen` value was set. The Users card is outside the `<form>` element and has its own independent mutation lifecycle.
 
-Both screens access all three registered routes without `allowedRoles` — any authenticated platform user can reach the BU list and edit routes. Compare [[clusters]], whose three routes require `platform_admin`, `support_manager`, or `support_staff`.
+Both screens access all three registered routes without `allowedRoles` — any authenticated platform user can reach the BU list and edit routes. Compare [clusters](/en/platform/clusters), whose three routes require `platform_admin`, `support_manager`, or `support_staff`.
 
 Note: although `tb_business_unit_tb_module` exists in the Prisma schema as a M:N modules-activation join, the Platform admin SPA does not currently surface module activation — `BusinessUnitEdit` has exactly 9 form sections and no module-management dialog. The join is managed at the backend / DB level only.
 
@@ -75,7 +75,7 @@ In create mode (`isNew = true`) the page title is "Add Business Unit" and the su
 
 The form renders all 9 `CollapsibleSection` cards in the 2-column grid. All fields are editable. Required fields are marked with `*` in the label when `editing` is true.
 
-**`?cluster_id=<id>` query parameter:** the `initialFormData` reads `searchParams.get('cluster_id') || ''` and sets it as the initial value of `cluster_id` in `formData` (line 186). When `BusinessUnitEdit` is reached by clicking **Add** in the Cluster Details card of [[clusters]] (`/business-units/new?cluster_id=<id>`), the Cluster select in the Basic Information section is pre-selected to that cluster. The user can change it before saving.
+**`?cluster_id=<id>` query parameter:** the `initialFormData` reads `searchParams.get('cluster_id') || ''` and sets it as the initial value of `cluster_id` in `formData` (line 186). When `BusinessUnitEdit` is reached by clicking **Add** in the Cluster Details card of [clusters](/en/platform/clusters) (`/business-units/new?cluster_id=<id>`), the Cluster select in the Basic Information section is pre-selected to that cluster. The user can change it before saving.
 
 **License limit check on submit:** before calling `POST /api-system/business-unit`, the form fetches the selected cluster via `GET /api-system/cluster/:id` and counts existing BUs in that cluster. If `currentCount >= cluster.max_license_bu`, it blocks the submit with an inline error and does not call the create endpoint.
 
@@ -136,7 +136,7 @@ The `config` column stores an array of `BusinessUnitConfig` entries (`{ key: str
 - **Edit mode** — each existing row is shown as an inline 5-column row (Key\*, Label\*, Data Type select, Value, Delete button). Supported Data Type options: `string`, `number`, `boolean`, `date`, `json`. An **Add Config Entry** button appends a blank row. The Delete button (Trash icon, destructive colour) removes the row from `formData.config` immediately with no confirmation. On save, `buildPayload` filters out rows where both `key` and `label` are empty before sending.
 - **View mode** — rows are shown in a read-only `<table>` with columns Key, Label, Type, Value. If `config` is empty, a "No configuration entries." message is shown.
 
-There is no separate dialog for adding/editing config rows — all editing is in-place within the section. The inline-row pattern is unique among Platform admin pages — the equivalent BU-user assignment elsewhere uses a modal dialog (see [[users]] Add BU dialog). The Configuration table is the only inline-add surface in the BU edit page.
+There is no separate dialog for adding/editing config rows — all editing is in-place within the section. The inline-row pattern is unique among Platform admin pages — the equivalent BU-user assignment elsewhere uses a modal dialog (see [users](/en/platform/users) Add BU dialog). The Configuration table is the only inline-add surface in the BU edit page.
 
 ### 4.9 Database Connection
 
@@ -214,4 +214,4 @@ Note: there is no `role_filters_business_units` key because business units do no
 - `../carmen-platform/src/pages/BusinessUnitManagement.tsx` — list page: filters (Status + Deleted), header actions (Export, Add Business Unit), row actions (Edit / Delete soft), audit columns, 6 `localStorage` keys.
 - `../carmen-platform/src/pages/BusinessUnitEdit.tsx` — create/view/edit page: 9 `CollapsibleSection` form cards in a 2-column grid, Users card with Add/Edit/Remove user dialogs, `BU_ROLES` constant, `?cluster_id` query-param pre-select, license-limit pre-flight check on create.
 - `../carmen-platform/src/services/businessUnitService.ts` — API surface: `GET /api-system/business-unit`, `POST /api-system/business-unit`, `PUT /api-system/business-unit/:id`, `DELETE /api-system/business-unit/:id`, `PATCH /api-system/user/business-unit/:id`, `POST /api-system/user/business-unit`, `DELETE /api-system/user/business-unit/:id`.
-- Cross-links: [[business-units]] (module landing), [[clusters]] (parent cluster; source of `?cluster_id` navigate-to-new), [[users]] (other surface mutating `tb_user_tb_business_unit`), [Data Model](./data-model.md).
+- Cross-links: [business-units](/en/platform/business-units) (module landing), [clusters](/en/platform/clusters) (parent cluster; source of `?cluster_id` navigate-to-new), [users](/en/platform/users) (other surface mutating `tb_user_tb_business_unit`), [Data Model](./data-model.md).

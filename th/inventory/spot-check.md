@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check)
 description: การนับบางส่วนแบบเจาะจงของสินค้าหรือตำแหน่งที่เลือก — เป็นการตรวจที่เบากว่าการนับ physical count เต็ม
 published: true
-date: 2026-05-17T07:00:36.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: spot-check, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -50,17 +50,17 @@ dateCreated: 2026-05-15T07:48:00.000Z
 ## 5. โมดูลที่เกี่ยวข้อง
 
 **กระแสข้ามโมดูล:**
-- [[inventory]] — spot check ยืนยัน subset ของยอด inventory
-- [[inventory-adjustment]] — ผลต่างถูก post เป็น adjustment
-- [[physical-count]] — คู่เทียบการนับเต็ม
+- [inventory](/th/inventory/inventory) — spot check ยืนยัน subset ของยอด inventory
+- [inventory-adjustment](/th/inventory/inventory-adjustment) — ผลต่างถูก post เป็น adjustment
+- [physical-count](/th/inventory/physical-count) — คู่เทียบการนับเต็ม
 
 **การกำหนดค่าหลัก:**
-- [[master-data/unit]] — หน่วยนับสำหรับแต่ละบรรทัด spot-check
-- [[master-data/location]] — (sub-)ตำแหน่งใน scope สำหรับ spot check
-- [[master-data/adjustment-type]] — reason code ใช้เมื่อ post adjustment ผลต่าง
-- [[system-config/workflow]] — workflow การอนุมัติสำหรับ recount และการ post ผลต่าง
-- [[access-control/user-location]] — จำกัดตำแหน่งที่ผู้ใช้สามารถ spot-check ได้
-- [[reporting-audit/activity]] — log กิจกรรม spot-check และ recount สำหรับ audit
+- [master-data/unit](/th/inventory/master-data/unit) — หน่วยนับสำหรับแต่ละบรรทัด spot-check
+- [master-data/location](/th/inventory/master-data/location) — (sub-)ตำแหน่งใน scope สำหรับ spot check
+- [master-data/adjustment-type](/th/inventory/master-data/adjustment-type) — reason code ใช้เมื่อ post adjustment ผลต่าง
+- [system-config/workflow](/th/inventory/system-config/workflow) — workflow การอนุมัติสำหรับ recount และการ post ผลต่าง
+- [access-control/user-location](/th/inventory/access-control/user-location) — จำกัดตำแหน่งที่ผู้ใช้สามารถ spot-check ได้
+- [reporting-audit/activity](/th/inventory/reporting-audit/activity) — log กิจกรรม spot-check และ recount สำหรับ audit
 
 ## 6. แหล่งอ้างอิง
 
@@ -72,15 +72,15 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 ## 7. หน้าในโมดูลนี้
 
-- [[spot-check/01-data-model]] — เอนทิตี ฟิลด์ ความสัมพันธ์ enum (`tb_spot_check`, `tb_spot_check_detail` พร้อม comment สองตาราง; enum สองตัว `enum_spot_check_status` / `enum_spot_check_method`)
-- [[spot-check/02-business-rules]] — การตรวจสอบ การคำนวณ การกำหนดสิทธิ์ การ posting กฎข้ามโมดูล (`SPC_VAL_*` / `SPC_CALC_*` / `SPC_AUTH_*` / `SPC_POST_*` / `SPC_XMOD_*`)
-- [[spot-check/03-user-flow]] — ภาพรวมวงจรชีวิตเอกสาร + สารบัญ persona
-  - [[spot-check/03-user-flow-inventory-controller]] — เส้นทาง Inventory Controller
-  - [[spot-check/03-user-flow-counter]] — เส้นทาง Counter
-  - [[spot-check/03-user-flow-audit-config]] — เส้นทาง Auditor + (โดยปริยาย) Sysadmin
-- [[spot-check/04-test-scenarios]] — ภาพรวม test scenarios + scenario การส่งต่อข้าม persona + เป้าหมาย mapping E2E
-  - [[spot-check/04-test-scenarios-inventory-controller]] — scenarios Inventory Controller
-  - [[spot-check/04-test-scenarios-counter]] — scenarios Counter
-  - [[spot-check/04-test-scenarios-audit-config]] — scenarios Auditor + Sysadmin
+- [spot-check/01-data-model](/th/inventory/spot-check/01-data-model) — เอนทิตี ฟิลด์ ความสัมพันธ์ enum (`tb_spot_check`, `tb_spot_check_detail` พร้อม comment สองตาราง; enum สองตัว `enum_spot_check_status` / `enum_spot_check_method`)
+- [spot-check/02-business-rules](/th/inventory/spot-check/02-business-rules) — การตรวจสอบ การคำนวณ การกำหนดสิทธิ์ การ posting กฎข้ามโมดูล (`SPC_VAL_*` / `SPC_CALC_*` / `SPC_AUTH_*` / `SPC_POST_*` / `SPC_XMOD_*`)
+- [spot-check/03-user-flow](/th/inventory/spot-check/03-user-flow) — ภาพรวมวงจรชีวิตเอกสาร + สารบัญ persona
+  - [spot-check/03-user-flow-inventory-controller](/th/inventory/spot-check/03-user-flow-inventory-controller) — เส้นทาง Inventory Controller
+  - [spot-check/03-user-flow-counter](/th/inventory/spot-check/03-user-flow-counter) — เส้นทาง Counter
+  - [spot-check/03-user-flow-audit-config](/th/inventory/spot-check/03-user-flow-audit-config) — เส้นทาง Auditor + (โดยปริยาย) Sysadmin
+- [spot-check/04-test-scenarios](/th/inventory/spot-check/04-test-scenarios) — ภาพรวม test scenarios + scenario การส่งต่อข้าม persona + เป้าหมาย mapping E2E
+  - [spot-check/04-test-scenarios-inventory-controller](/th/inventory/spot-check/04-test-scenarios-inventory-controller) — scenarios Inventory Controller
+  - [spot-check/04-test-scenarios-counter](/th/inventory/spot-check/04-test-scenarios-counter) — scenarios Counter
+  - [spot-check/04-test-scenarios-audit-config](/th/inventory/spot-check/04-test-scenarios-audit-config) — scenarios Auditor + Sysadmin
 
-> **Status:** หน้าย่อยทั้งหมดอยู่ระดับ skeleton (~50-100 บรรทัดต่อหน้า) แต่ละหน้ามี TODO ชัดเจนชี้ไปที่ source ต้นน้ำที่ต้องใช้เมื่อเติม (`../carmen-inventory-frontend/` สำหรับ UI flow; `../carmen-inventory-frontend-e2e/tests/` สำหรับ E2E specs — ยังไม่มี spec spot-check) Data-model section อ้างอิงจาก Prisma schema (`tb_spot_check*` เป็น **table set ของตัวเอง** — เอนทิตี 4 ตัว enum 2 ตัว — *ไม่* แชร์กับ `tb_physical_count*`; ทั้งสองโมดูลเป็นลูกพี่ลูกน้องเชิงแนวคิดที่ทั้งคู่ roll up ไปยัง [[inventory-adjustment]] ไม่ใช่ infrastructure ที่แชร์); business-rules แนะนำ catalog `SPC_*` rule-ID ที่เสนอซึ่งต้องการการยืนยันจาก carmen/docs; user-flow และ test-scenarios เป็น placeholder เชิงโครงสร้าง
+> **Status:** หน้าย่อยทั้งหมดอยู่ระดับ skeleton (~50-100 บรรทัดต่อหน้า) แต่ละหน้ามี TODO ชัดเจนชี้ไปที่ source ต้นน้ำที่ต้องใช้เมื่อเติม (`../carmen-inventory-frontend/` สำหรับ UI flow; `../carmen-inventory-frontend-e2e/tests/` สำหรับ E2E specs — ยังไม่มี spec spot-check) Data-model section อ้างอิงจาก Prisma schema (`tb_spot_check*` เป็น **table set ของตัวเอง** — เอนทิตี 4 ตัว enum 2 ตัว — *ไม่* แชร์กับ `tb_physical_count*`; ทั้งสองโมดูลเป็นลูกพี่ลูกน้องเชิงแนวคิดที่ทั้งคู่ roll up ไปยัง [inventory-adjustment](/th/inventory/inventory-adjustment) ไม่ใช่ infrastructure ที่แชร์); business-rules แนะนำ catalog `SPC_*` rule-ID ที่เสนอซึ่งต้องการการยืนยันจาก carmen/docs; user-flow และ test-scenarios เป็น placeholder เชิงโครงสร้าง

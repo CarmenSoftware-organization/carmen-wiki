@@ -2,7 +2,7 @@
 title: ไฟล์แนบ (Attachment)
 description: เอนทิตีจัดเก็บไฟล์แบบ generic — metadata ของไบนารีที่อยู่บน S3 พร้อมการเชื่อมโยงแบบ polymorphic ไปยังเอกสารธุรกรรมใด ๆ
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: reporting-audit, attachment, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -82,10 +82,10 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 7. ความเชื่อมโยงข้ามโมดูล
 
-- [[purchase-request]], [[purchase-order]], [[good-receive-note]] — ใบเสนอราคา, การยืนยัน, docket
-- [[inventory-adjustment]], [[physical-count]], [[spot-check]] — เอกสารประกอบและหลักฐาน
-- [[store-requisition]], [[vendor-pricelist]], [[recipe]], [[product]] — attachment เฉพาะโมดูล
-- [[reporting-audit/activity]] — `upload` / `download` ถูก log ด้วย `entity_type = 'attachment'`
+- [purchase-request](/th/inventory/purchase-request), [purchase-order](/th/inventory/purchase-order), [good-receive-note](/th/inventory/good-receive-note) — ใบเสนอราคา, การยืนยัน, docket
+- [inventory-adjustment](/th/inventory/inventory-adjustment), [physical-count](/th/inventory/physical-count), [spot-check](/th/inventory/spot-check) — เอกสารประกอบและหลักฐาน
+- [store-requisition](/th/inventory/store-requisition), [vendor-pricelist](/th/inventory/vendor-pricelist), [recipe](/th/inventory/recipe), [product](/th/inventory/product) — attachment เฉพาะโมดูล
+- [reporting-audit/activity](/th/inventory/reporting-audit/activity) — `upload` / `download` ถูก log ด้วย `entity_type = 'attachment'`
 
 ## 8. แหล่งอ้างอิง
 

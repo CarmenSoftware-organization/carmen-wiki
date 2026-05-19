@@ -2,7 +2,7 @@
 title: Widget
 description: Dashboard composition entity — per-user / per-BU dashboards, default layouts, and personal saved workspace queries.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: reporting-audit, widget, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -39,7 +39,7 @@ The widget entity powers the **dashboards layer** — multi-table because dashbo
 | Symptom | Cause | Action |
 |---|---|---|
 | User does not see their personal dashboard | Wrong `created_by_id` | Personal dashboards filter by current user |
-| BU dashboard invisible to a user | User not a member of the BU | Grant via [[access-control/business-unit-user]] |
+| BU dashboard invisible to a user | User not a member of the BU | Grant via [access-control/business-unit-user](/en/inventory/access-control/business-unit-user) |
 | Workspace query rejected | Mis-shaped (not a structured filter doc) | Use the structured filter language; raw SQL not accepted |
 | New user sees old defaults | Default layout was edited post-seed | New users get current defaults; existing materialised dashboards untouched |
 
@@ -101,10 +101,10 @@ Source: tenant schema.
 
 ## 7. Cross-References
 
-- [[access-control/user]] — owner of personal dashboards and workspaces.
-- [[master-data/business-unit]] — bounds `bu`-scope visibility.
-- [[reporting-audit/report]] — tile `config` may embed `report_template_id`.
-- [[reporting-audit/activity]] — dashboard edits logged.
+- [access-control/user](/en/inventory/access-control/user) — owner of personal dashboards and workspaces.
+- [master-data/business-unit](/en/inventory/master-data/business-unit) — bounds `bu`-scope visibility.
+- [reporting-audit/report](/en/inventory/reporting-audit/report) — tile `config` may embed `report_template_id`.
+- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — dashboard edits logged.
 - All transactional modules — common data sources for tiles.
 
 ## 8. References

@@ -2,7 +2,7 @@
 title: Inventory — Test Scenarios — Finance
 description: Finance's test cases (cost-impact approval, inventory-to-GL reconciliation, period close / lock) for inventory.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: inventory, test-scenarios, finance, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 # Inventory — Test Scenarios — Finance
 
 > **At a Glance**
-> **Persona:** Finance (Officer / Inventory Accountant + Finance Manager) &nbsp;·&nbsp; **Module:** [[inventory]] &nbsp;·&nbsp; **Scenarios:** ~28
+> **Persona:** Finance (Officer / Inventory Accountant + Finance Manager) &nbsp;·&nbsp; **Module:** [inventory](/en/inventory/inventory) &nbsp;·&nbsp; **Scenarios:** ~28
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** maps to `900-period-end.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
@@ -74,7 +74,7 @@ This page captures the test scenarios that the Finance persona (Finance Officer 
 - Sibling: [04-test-scenarios-inventory-controller.md](./04-test-scenarios-inventory-controller.md) — upstream persona for the cost-impact approval chain (IC-PERM-04 escalation feeds FIN-HP-01); IC-HP-07 sign-off precedes FIN-HP-04 close.
 - Sibling: [04-test-scenarios-audit-config.md](./04-test-scenarios-audit-config.md) — Auditor who reviews the Finance reconciliation / close audit trail; Sysadmin who configures the reconciliation tolerance, the period cadence, the Finance approval ceiling, and the GL account map.
 - E2E specs: [`900-period-end.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/900-period-end.spec.ts) — canonical period-end E2E for FIN-HP-04 / FIN-HP-05 / FIN-HP-07 / FIN-VAL-03 / FIN-VAL-04. The Finance approval queue and reconciliation dashboard surfaces are partially covered by the stock-in / stock-out specs and partially planned manual coverage.
-- Cross-link: [[costing]] — the cost-layer ledger Finance reconciles; costing module reads the same data for COGS reporting.
-- Cross-link: [[good-receive-note]] — Finance's reconciliation drills into GRN-side AP-clearing journal gaps when investigation surfaces an integration issue; the GRN module's `04-test-scenarios-finance.md` covers the three-way-match path.
-- Cross-link: [[inventory-adjustment]] — the corrective stock-in / stock-out path Finance approves for sub-ledger gaps and audit corrections.
+- Cross-link: [costing](/en/inventory/costing) — the cost-layer ledger Finance reconciles; costing module reads the same data for COGS reporting.
+- Cross-link: [good-receive-note](/en/inventory/good-receive-note) — Finance's reconciliation drills into GRN-side AP-clearing journal gaps when investigation surfaces an integration issue; the GRN module's `04-test-scenarios-finance.md` covers the three-way-match path.
+- Cross-link: [inventory-adjustment](/en/inventory/inventory-adjustment) — the corrective stock-in / stock-out path Finance approves for sub-ledger gaps and audit corrections.
 - Cross-link: credit note — Finance books credit notes; the inventory-side effect (`credit_note_amount` / `credit_note_quantity`) appears in the reconciliation surface (FIN-HP-03 variance investigation).

@@ -2,7 +2,7 @@
 title: Recipe — Test Scenarios — Chef
 description: Chef's test cases (happy path, permission, validation, edge cases) for the recipe module.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: recipe, test-scenarios, chef, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 # Recipe — Test Scenarios — Chef
 
 > **At a Glance**
-> **Persona:** Chef (Chef / Kitchen Manager + Kitchen Staff read-only) &nbsp;·&nbsp; **Module:** [[recipe]] &nbsp;·&nbsp; **Scenarios:** ~38
+> **Persona:** Chef (Chef / Kitchen Manager + Kitchen Staff read-only) &nbsp;·&nbsp; **Module:** [recipe](/en/inventory/recipe) &nbsp;·&nbsp; **Scenarios:** ~38
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** none at this time — recipe-internal E2E is a gap; closest adjacent coverage is `tests/701-sr.spec.ts` for recipe-driven SR auto-create in `../carmen-inventory-frontend-e2e/`
 
@@ -81,5 +81,5 @@ This page captures the test scenarios that the Chef persona (Chef / Kitchen Mana
 - User flow: [03-user-flow-chef.md](./03-user-flow-chef.md) — happy-path source for Section 1 above; describes the 12-step primary flow (create → save → publish → maintain) and the decision branches.
 - Business rules being verified: [02-business-rules.md](./02-business-rules.md) Section 2 — validation rules `REC_VAL_001`–`REC_VAL_018`; Section 4 — `REC_AUTH_001`–`REC_AUTH_005` (Chef's authority scope), `REC_AUTH_014` (delete authority); Section 5 — `REC_POST_001`–`REC_POST_008` (state-transition effects).
 - E2E spec: **none at the time of writing** — recipe-internal E2E coverage is a gap; closest adjacent coverage is `701-sr.spec.ts` for the recipe-driven SR auto-create path (see [04-test-scenarios.md](./04-test-scenarios.md) Section 5).
-- Cross-link: [[product]] — ingredient `cost_per_unit` and `is_used_in_recipe` flag underpin every Chef line entry.
-- Cross-link: [[inventory]] — theoretical OUT movements fan out from `PUBLISHED` recipes on menu sale.
+- Cross-link: [product](/en/inventory/product) — ingredient `cost_per_unit` and `is_used_in_recipe` flag underpin every Chef line entry.
+- Cross-link: [inventory](/en/inventory/inventory) — theoretical OUT movements fan out from `PUBLISHED` recipes on menu sale.

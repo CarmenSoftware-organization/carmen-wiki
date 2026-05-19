@@ -2,7 +2,7 @@
 title: Purchase Request Template
 description: Reusable PR scaffold — frequently-purchased line bundles saved as templates so a Requestor can instantiate a PR with one click.
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: templates, purchase-request, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # Purchase Request Template
 
 > **At a Glance**
-> **Owner:** Procurement Manager / Product Admin &nbsp;·&nbsp; **Table:** `tb_purchase_request_template` (+ detail, comments) &nbsp;·&nbsp; **Workflow:** none (config artefact) &nbsp;·&nbsp; **Used by:** [[purchase-request]] **Create PR from Template** &nbsp;·&nbsp; Reusable line-bundle scaffold cloned into a new PR on demand.
+> **Owner:** Procurement Manager / Product Admin &nbsp;·&nbsp; **Table:** `tb_purchase_request_template` (+ detail, comments) &nbsp;·&nbsp; **Workflow:** none (config artefact) &nbsp;·&nbsp; **Used by:** [purchase-request](/en/inventory/purchase-request) **Create PR from Template** &nbsp;·&nbsp; Reusable line-bundle scaffold cloned into a new PR on demand.
 
 ![Purchase Request Template screen](/screenshots/templates/purchase-request.png)
 
@@ -39,7 +39,7 @@ A **Purchase Request Template** is a reusable scaffold capturing the line bundle
 | "Name must be unique within workflow" | Another non-deleted template has the same `(name, workflow_id)` | Pick a different name or workflow |
 | "At least one active detail row required" | All lines have `is_active = false` | Enable at least one line before publishing |
 | "Hard-delete blocked — template in use" | A PR was previously cloned from this template | Set `is_active = false` instead |
-| "Rate not in history" (on clone) | No `tb_exchange_rate` row on the cloned PR's `pr_date` | Add a rate (see [[master-data/exchange-rate]]) then retry clone |
+| "Rate not in history" (on clone) | No `tb_exchange_rate` row on the cloned PR's `pr_date` | Add a rate (see [master-data/exchange-rate](/en/inventory/master-data/exchange-rate)) then retry clone |
 | "Product / location reference inactive" | Master record soft-deleted after template was authored | Edit the line to swap in an active reference |
 | Cloned PR has wrong currency | Currency code is copied verbatim; only the rate re-resolves | Edit the cloned PR header; currency cannot change on the template post-clone |
 
@@ -47,7 +47,7 @@ A **Purchase Request Template** is a reusable scaffold capturing the line bundle
 
 - **Deep-copy clone semantics.** Clone inserts a fresh `tb_purchase_request` (new `pr_no`, `pr_status = draft`, current user as creator) and one `tb_purchase_request_detail` per `is_active = true` template line. Quantities, units, tax / discount snapshots, dimensions copied **verbatim**. Inactive lines are skipped.
 - **No workflow on template itself.** Template has no `workflow_current_stage`, no `user_action`, no `doc_status`. Edits go live immediately on save — intentional, since templates are configuration, not transactional.
-- **Currency / FX resolution at clone.** Currency code copied verbatim; `exchange_rate` and `exchange_rate_date` are **re-resolved** at clone time against [[master-data/exchange-rate]] using the new PR's `pr_date` — prevents stale FX.
+- **Currency / FX resolution at clone.** Currency code copied verbatim; `exchange_rate` and `exchange_rate_date` are **re-resolved** at clone time against [master-data/exchange-rate](/en/inventory/master-data/exchange-rate) using the new PR's `pr_date` — prevents stale FX.
 - **Seed-only persistence.** Template rows are never FK-referenced by transactional documents — the PR records a copy, not a reference. Editing a template after a PR has been cloned does **NOT** retroactively change that PR.
 - **Hard-delete guard.** Once a PR has been cloned from the template, hard-delete is blocked; soft retirement only.
 - **Per-line `is_active`.** A line can be temporarily disabled without removing it — useful for seasonal SKUs.
@@ -118,11 +118,11 @@ Template **does NOT** participate in the workflow engine. Three logical states d
 
 ## 7. Cross-References
 
-- [[purchase-request]] — sole consumer. **Create PR from Template** clones header + detail into a new `tb_purchase_request` + `tb_purchase_request_detail` at `pr_status = draft`.
-- [[purchase-request/03-user-flow-requestor]] — REQ-HP-06 happy-path scenario uses this flow.
-- [[system-config/workflow]] — the `workflow_id` is the workflow the cloned PR enters at submit.
-- [[product]], [[master-data/location]], [[master-data/currency]], [[master-data/tax-profile]] — every line snapshots from these at template-edit time; clone re-resolves currency/rate but leaves other refs as-is.
-- [[templates/price-list]] — sibling template under the [[templates]] umbrella.
+- [purchase-request](/en/inventory/purchase-request) — sole consumer. **Create PR from Template** clones header + detail into a new `tb_purchase_request` + `tb_purchase_request_detail` at `pr_status = draft`.
+- [purchase-request/03-user-flow-requestor](/en/inventory/purchase-request/03-user-flow-requestor) — REQ-HP-06 happy-path scenario uses this flow.
+- [system-config/workflow](/en/inventory/system-config/workflow) — the `workflow_id` is the workflow the cloned PR enters at submit.
+- [product](/en/inventory/product), [master-data/location](/en/inventory/master-data/location), [master-data/currency](/en/inventory/master-data/currency), [master-data/tax-profile](/en/inventory/master-data/tax-profile) — every line snapshots from these at template-edit time; clone re-resolves currency/rate but leaves other refs as-is.
+- [templates/price-list](/en/inventory/templates/price-list) — sibling template under the [templates](/en/inventory/templates) umbrella.
 
 ## 8. References
 

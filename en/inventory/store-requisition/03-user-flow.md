@@ -2,7 +2,7 @@
 title: Store Requisition — User Flow
 description: Document lifecycle and persona-specific flow files for store-requisition.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: store-requisition, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T13:30:00.000Z
 # Store Requisition — User Flow
 
 > **At a Glance**
-> **Module:** [[store-requisition]] &nbsp;·&nbsp; **Personas:** Requester &nbsp;·&nbsp; Approver &nbsp;·&nbsp; Fulfiller &nbsp;·&nbsp; Receiver &nbsp;·&nbsp; Audit / Config
+> **Module:** [store-requisition](/en/inventory/store-requisition) &nbsp;·&nbsp; **Personas:** Requester &nbsp;·&nbsp; Approver &nbsp;·&nbsp; Fulfiller &nbsp;·&nbsp; Receiver &nbsp;·&nbsp; Audit / Config
 > **Workflow lifecycle:** Draft → In Progress (approval + fulfilment sub-stages) → Completed (with Cancelled / Voided branches)
 > **Drill into per-persona views below for action-level detail**
 
@@ -56,7 +56,7 @@ stateDiagram-v2
 | From state | Action | To state | Allowed for | Pre-conditions |
 | ---------- | ------ | -------- | ----------- | -------------- |
 | `(none)` | create | `draft` | Requester | Requester is a member of `department_id`; permitted to act between `from_location_id` and `to_location_id`; `sr_no` assigned per tenant numbering policy. Header may be partially populated; lines may be empty. |
-| `(none)` | auto-create from recipe demand | `draft` | System (cross-ref [[recipe]]) | The recipe module computes ingredient quantities for a destination outlet's production / banquet event and posts an SR `draft` for the outlet's requester to review and submit. `info.recipe_id` carries the back-reference. |
+| `(none)` | auto-create from recipe demand | `draft` | System (cross-ref [recipe](/en/inventory/recipe)) | The recipe module computes ingredient quantities for a destination outlet's production / banquet event and posts an SR `draft` for the outlet's requester to review and submit. `info.recipe_id` carries the back-reference. |
 | `draft` | edit / save | `draft` | Requester (owner) | Header and line validation rules in [02-business-rules.md](./02-business-rules.md) Section 2 pass at save (warn-only for some) or block on submit; document remains editable. |
 | `draft` | submit | `in_progress` | Requester (owner) | All submit-time rules pass (`SR_VAL_001`–`SR_VAL_009`): source / destination locations set and compatible with `sr_type`, source-availability check passes (per tenant config: hard block or soft warn), at least one line with `requested_qty > 0`. Workflow engine routes to first approval stage and populates `user_action.execute`. |
 | `draft` | withdraw / cancel | `cancelled` | Requester (own draft) | Reason text required; no inventory or GL impact; document terminates. |
@@ -66,8 +66,8 @@ stateDiagram-v2
 | `in_progress` | requester retract at first approval stage | `cancelled` | Requester (own SR) | Allowed only while the workflow is still at the first approval stage and no approver has yet acted. Past that point, only an approver can reject the SR. Reason text required. |
 | `in_progress` | record `issued_qty` + commit | `completed` | Fulfiller at fulfilment stage | All commit-time rules pass (`SR_VAL_011`–`SR_VAL_014`): at least one line with `approved_qty > 0`, lot info present on inventory transactions for lot-controlled items, source on-hand covers every `issued_qty`, posting date in an open period. SoD check `approver ≠ fulfiller` per `SR_AUTH_012`. **Triggers source on-hand decrement, cost-layer consumption, destination on-hand increment (for `transfer`) or destination cost-centre debit (for `issue`), journal-entry write.** |
 | `in_progress` | void (admin) | `voided` | Inventory Controller, System Administrator | Reason text required; no inventory or GL impact (the SR never posted). Distinct from `cancelled` — `voided` is the audit / administrative path. |
-| `completed` | post-commit discrepancy flag (no status change) | `completed` | Receiver | Receiver appends a discrepancy comment ("received less than issued", "wrong lot"); the flag writes a system comment but does NOT move `doc_status`. Resolution is via `[[inventory-adjustment]]`. |
-| `completed` | (no further status transition) | `completed` | — | Terminal state for the fulfilment path. Corrections require a compensating adjustment in `[[inventory-adjustment]]`; the SR itself remains locked. |
+| `completed` | post-commit discrepancy flag (no status change) | `completed` | Receiver | Receiver appends a discrepancy comment ("received less than issued", "wrong lot"); the flag writes a system comment but does NOT move `doc_status`. Resolution is via `[inventory-adjustment](/en/inventory/inventory-adjustment)`. |
+| `completed` | (no further status transition) | `completed` | — | Terminal state for the fulfilment path. Corrections require a compensating adjustment in `[inventory-adjustment](/en/inventory/inventory-adjustment)`; the SR itself remains locked. |
 | `cancelled` | (no further action) | `cancelled` | — | Terminal state. The cancelled document is retained for audit; any subsequent request must be raised as a new SR. |
 | `voided` | (no further action) | `voided` | — | Terminal state. Retained for audit. |
 
@@ -93,7 +93,7 @@ The table below captures the moments where the SR moves from one persona's respo
 | Approver | All lines rejected (`Σ approved_qty = 0`) | (terminal — `cancelled`) | `cancelled` (automatic move via `SR_POST_004` tail) |
 | Fulfiller | Records `issued_qty` and commits | Receiver | `completed` (source on-hand decremented; destination on-hand incremented for `transfer` or destination cost-centre debited for `issue`; lot data written on linked inventory transaction) |
 | Fulfiller | Hits at-issue stock-out and commits partial | Receiver, Inventory Controller | `completed` (with `issued_qty < approved_qty` on one or more lines; `fulfilment_gap` recorded; system comment "could not fulfil — source stock-out") |
-| Receiver | Discrepancy flag raised after commit | Inventory Controller | `completed` (with discrepancy comment; resolution via `[[inventory-adjustment]]`) |
+| Receiver | Discrepancy flag raised after commit | Inventory Controller | `completed` (with discrepancy comment; resolution via `[inventory-adjustment](/en/inventory/inventory-adjustment)`) |
 | Inventory Controller | Period-end variance review | Audit / Config (Finance Team) | (no document state change; variance dashboard rolled up per outlet / per period) |
 | Inventory Controller / Sysadmin | Pre-commit void on audit grounds | (terminal — `voided`) | `voided` (administrative cancellation; no inventory or GL impact; document terminates) |
 | Recipe (auto-create) | Recipe demand computed for production / banquet | Requester | `draft` (pre-populated by the recipe module; `info.recipe_id` carries back-reference) |
@@ -105,4 +105,4 @@ The table below captures the moments where the SR moves from one persona's respo
 - `../carmen/docs/store-requisitions/Store Requisitions.md` — Use cases UC-64 (Approve), UC-65 (Deny), UC-66 (Modify), UC-67 (Monitor), UC-68 (Create and Manage), UC-69 (Approve and Record Stock as Issued); the Requester, Approver, and Fulfiller persona files draw their primary-flow steps from these.
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical `enum_doc_status`, `enum_sr_type`, and the three-quantity invariant (`requested_qty / approved_qty / issued_qty`) referenced throughout Section 2.
 - Sibling: [02-business-rules.md](./02-business-rules.md) Section 5 — posting effects and authorization gates referenced by each row of Section 2.
-- Related modules: [[inventory]] (downstream — on commit the source's on-hand falls and the destination's rises for `transfer`; lot, expiry, and cost-layer data live on the linked inventory transaction), [[costing]] (source-location FIFO / moving-average feeds the issued unit cost), [[recipe]] (auto-create path for recipe-driven ingredient pulls), [[good-receive-note]] (inter-location transfers may pair an SR-OUT at source with a GRN-IN at destination), [[inventory-adjustment]] (post-commit corrections).
+- Related modules: [inventory](/en/inventory/inventory) (downstream — on commit the source's on-hand falls and the destination's rises for `transfer`; lot, expiry, and cost-layer data live on the linked inventory transaction), [costing](/en/inventory/costing) (source-location FIFO / moving-average feeds the issued unit cost), [recipe](/en/inventory/recipe) (auto-create path for recipe-driven ingredient pulls), [good-receive-note](/en/inventory/good-receive-note) (inter-location transfers may pair an SR-OUT at source with a GRN-IN at destination), [inventory-adjustment](/en/inventory/inventory-adjustment) (post-commit corrections).

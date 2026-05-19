@@ -2,7 +2,7 @@
 title: จุดส่งของ (Delivery Point)
 description: จุดส่งของทางกายภาพสำหรับการจัดส่งของผู้ขาย — ถูกอ้างอิงโดย PO และ GRN และเชื่อมโยงกับ inventory location
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, delivery-point, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -27,7 +27,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 |---|---|---|
 | เพิ่มจุดส่งของ | Configuration → Master Data → Delivery Point → **New** | บังคับ: `name` |
 | ยกเลิกการใช้งาน | Toggle `is_active` | ซ่อนจาก picker PO/GRN; เอกสารย้อนหลังยัง resolve ได้ |
-| Tag default ของ location | รายละเอียดของ [[master-data/location]] | ตั้ง `tb_location.delivery_point_id` |
+| Tag default ของ location | รายละเอียดของ [master-data/location](/th/inventory/master-data/location) | ตั้ง `tb_location.delivery_point_id` |
 | Override บน GRN | ฟิลด์ header ของ GRN | GRN inherit จาก PO แต่อาจ override ตอนรับ |
 
 ## 3. การตรวจสอบและข้อผิดพลาด
@@ -73,10 +73,10 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 7. การอ้างอิงข้ามโมดูล
 
-- [[purchase-order]] — PO header บรรจุการอ้างอิงจุดส่งของ
-- [[good-receive-note]] — GRN inherit จาก PO, อาจ override
-- [[master-data/location]] — แต่ละ location tag จุดส่งของ default ได้
-- [[purchase-request]] — PR detail อาจมี hint จุดส่งของที่ propagate ไปยัง PO
+- [purchase-order](/th/inventory/purchase-order) — PO header บรรจุการอ้างอิงจุดส่งของ
+- [good-receive-note](/th/inventory/good-receive-note) — GRN inherit จาก PO, อาจ override
+- [master-data/location](/th/inventory/master-data/location) — แต่ละ location tag จุดส่งของ default ได้
+- [purchase-request](/th/inventory/purchase-request) — PR detail อาจมี hint จุดส่งของที่ propagate ไปยัง PO
 
 ## 8. แหล่งอ้างอิง
 

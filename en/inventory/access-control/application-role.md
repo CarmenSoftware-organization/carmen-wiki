@@ -2,7 +2,7 @@
 title: Application Role
 description: Per-business-unit role definitions plus the join tables that map roles to permissions and users to roles — the heart of tenant RBAC.
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: access-control, application-role, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -17,7 +17,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 1. What & Who
 
-Application roles are the **named bundles of [[access-control/permission]]s** assigned to users inside a [[master-data/business-unit]]. Where `platform_role` on `tb_user` is a coarse global switch, application roles are the fine-grained, tenant-side authorisation layer that controls *what each user can do in each BU*. Every transactional UI action — submitting a PR, approving a GRN, posting an adjustment — is gated by checking whether the active user holds an application role that includes the matching permission atom for the active BU.
+Application roles are the **named bundles of [access-control/permission](/en/inventory/access-control/permission)s** assigned to users inside a [master-data/business-unit](/en/inventory/master-data/business-unit). Where `platform_role` on `tb_user` is a coarse global switch, application roles are the fine-grained, tenant-side authorisation layer that controls *what each user can do in each BU*. Every transactional UI action — submitting a PR, approving a GRN, posting an adjustment — is gated by checking whether the active user holds an application role that includes the matching permission atom for the active BU.
 
 **Maintained by** Sysadmin (per BU). **Read by** every API endpoint at request time.
 
@@ -27,17 +27,17 @@ Application roles are the **named bundles of [[access-control/permission]]s** as
 |---|---|---|
 | Create a role for a BU | Configuration → Roles → **New** | Pick BU, name, description |
 | Add permissions to a role | Role edit → **Permissions** grid | Checkboxes over `tb_permission` grouped by `resource` |
-| Assign a user to a role | Role edit → **Users** tab | User must already be a BU member ([[access-control/business-unit-user]]) |
+| Assign a user to a role | Role edit → **Users** tab | User must already be a BU member ([access-control/business-unit-user](/en/inventory/access-control/business-unit-user)) |
 | Temporarily disable a permission link | Role edit → toggle row `is_active` | Removes from grants without unlinking |
 | Retire a role | Set `is_active = false` | Existing assignments persist; permissions stop granting on next eval |
-| Audit role changes | [[reporting-audit/activity]] log | Filter by `entity_type = application_role` |
+| Audit role changes | [reporting-audit/activity](/en/inventory/reporting-audit/activity) log | Filter by `entity_type = application_role` |
 
 ## 3. Validation & Errors
 
 | Symptom | Cause | Action |
 |---|---|---|
 | "Role name already exists in this BU" | Duplicate `(business_unit_id, name)` among non-deleted | Pick a different name or reactivate the existing role |
-| "User has no access to this BU" | Missing `tb_user_tb_business_unit` row | Grant BU access first via [[access-control/business-unit-user]] |
+| "User has no access to this BU" | Missing `tb_user_tb_business_unit` row | Grant BU access first via [access-control/business-unit-user](/en/inventory/access-control/business-unit-user) |
 | Cannot delete role | Active assignments exist | Soft-delete or set `is_active = false` instead |
 | User still sees old permissions | Cached session | Wait for refresh or force re-login |
 
@@ -100,10 +100,10 @@ Source: platform schema.
 
 ## 7. Cross-References
 
-- [[access-control/permission]] — atoms that roles aggregate.
-- [[access-control/user]] — accounts roles are assigned to.
-- [[master-data/business-unit]] — every role is BU-owned.
-- [[access-control/business-unit-user]] — prerequisite for any role assignment.
+- [access-control/permission](/en/inventory/access-control/permission) — atoms that roles aggregate.
+- [access-control/user](/en/inventory/access-control/user) — accounts roles are assigned to.
+- [master-data/business-unit](/en/inventory/master-data/business-unit) — every role is BU-owned.
+- [access-control/business-unit-user](/en/inventory/access-control/business-unit-user) — prerequisite for any role assignment.
 - All transactional modules — every auth check joins through these tables.
 
 ## 8. References

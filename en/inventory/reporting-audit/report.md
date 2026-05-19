@@ -2,7 +2,7 @@
 title: Report
 description: Report generation pipeline — tenant-side job and schedule rows backed by platform-side templates and document-type print mappings.
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: reporting-audit, report, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -113,11 +113,11 @@ Carries `name`, `description`, `report_group`, `kind` (`report` / `print`), `dia
 ## 7. Cross-References
 
 - All transactional modules — every "Print" button resolves through `tb_print_template_mapping`.
-- [[reporting-audit/widget]] — widget tiles can embed reports.
-- [[reporting-audit/notification]] — schedule completion may dispatch notifications.
-- [[reporting-audit/activity]] — `export` / `print` actions logged.
-- [[access-control/user]] — `requested_by_id` + recipients.
-- [[master-data/business-unit]] — BU scoping.
+- [reporting-audit/widget](/en/inventory/reporting-audit/widget) — widget tiles can embed reports.
+- [reporting-audit/notification](/en/inventory/reporting-audit/notification) — schedule completion may dispatch notifications.
+- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — `export` / `print` actions logged.
+- [access-control/user](/en/inventory/access-control/user) — `requested_by_id` + recipients.
+- [master-data/business-unit](/en/inventory/master-data/business-unit) — BU scoping.
 
 ## 8. References
 

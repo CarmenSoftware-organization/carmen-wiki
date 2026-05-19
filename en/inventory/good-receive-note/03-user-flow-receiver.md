@@ -2,7 +2,7 @@
 title: Good Receive Note (GRN) — User Flow — Receiver
 description: Receiver's flow within the good-receive-note module — dock receipt, GRN creation with lot/expiry capture, commit.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: good-receive-note, user-flow, receiver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T11:00:00.000Z
 # Good Receive Note (GRN) — User Flow — Receiver
 
 > **At a Glance**
-> **Persona:** Receiver (Store Keeper / Receiving Clerk + Store / Inventory Manager) &nbsp;·&nbsp; **Module:** [[good-receive-note]] &nbsp;·&nbsp; **Workflow stages:** `(none) → draft` (create against PO or manual) &nbsp;·&nbsp; `draft → saved` (line entry complete) &nbsp;·&nbsp; `saved → committed` (Inventory Manager — fires inventory increment + cost-layer write + PO advance + AP accrual) &nbsp;·&nbsp; `draft / saved → voided` &nbsp;·&nbsp; **Key permissions:** create / edit draft (Store Keeper); commit (Inventory Manager); SoD — cannot commit GRN against own upstream PO
+> **Persona:** Receiver (Store Keeper / Receiving Clerk + Store / Inventory Manager) &nbsp;·&nbsp; **Module:** [good-receive-note](/en/inventory/good-receive-note) &nbsp;·&nbsp; **Workflow stages:** `(none) → draft` (create against PO or manual) &nbsp;·&nbsp; `draft → saved` (line entry complete) &nbsp;·&nbsp; `saved → committed` (Inventory Manager — fires inventory increment + cost-layer write + PO advance + AP accrual) &nbsp;·&nbsp; `draft / saved → voided` &nbsp;·&nbsp; **Key permissions:** create / edit draft (Store Keeper); commit (Inventory Manager); SoD — cannot commit GRN against own upstream PO
 > **What this persona does:** Records dock receipt, captures lot / expiry, then commits the GRN that increments inventory and writes the cost layer.
 
 ## 1. Role in This Module
@@ -93,7 +93,7 @@ The Receiver persona covers two sub-roles: **Store Keeper / Receiving Clerk** (c
 
 The Receiver's involvement on a given GRN ends at one of four boundaries:
 
-- **Commit succeeds (`saved → committed`)** — handoff to **Finance** for the three-way match (PO ↔ GRN ↔ vendor invoice) and AP posting. The GRN is locked; any subsequent correction is via a credit note against the GRN or a compensating adjustment in `[[inventory-adjustment]]`. The Purchaser is also re-notified if any line carried a variance comment at commit time.
+- **Commit succeeds (`saved → committed`)** — handoff to **Finance** for the three-way match (PO ↔ GRN ↔ vendor invoice) and AP posting. The GRN is locked; any subsequent correction is via a credit note against the GRN or a compensating adjustment in `[inventory-adjustment](/en/inventory/inventory-adjustment)`. The Purchaser is also re-notified if any line carried a variance comment at commit time.
 - **Variance flagged on a saved or committed GRN** — handoff to the **Purchaser** for vendor follow-up (short-ship chase, return / credit-note negotiation, substitution, replacement). The Department Manager reviews cost-centre price variance on the same flagged lines in parallel. The GRN itself does not roll back — the resolution lives on the vendor's response document (credit note, replacement GRN).
 - **Quality reject of an entire delivery** — two paths. (1) If the GRN is still `draft` or `saved`, the Receiver / Inventory Manager voids it with a reason (`draft → voided` or `saved → voided`); no inventory or GL impact, document terminates. (2) If individual lines are rejected on quality but the rest of the delivery is accepted, `accepted_qty` is reduced on those lines and the GRN commits with the reject variance recorded for vendor return / credit note.
 - **Post-commit reversal needed** — out of scope for routine Receiver activity. Requires **elevated co-authorisation** by the Inventory Manager **and** Finance (or System Administrator on audit grounds); fires a compensating reversal of the inventory transaction, the cost layer, the PO line `received_qty` decrement, and the reversing AP entry, with the GRN transitioning to `voided`. The Receiver may then raise a replacement GRN if the underlying receipt is to be re-recorded.
@@ -108,6 +108,6 @@ The Receiver's involvement on a given GRN ends at one of four boundaries:
 - Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — System Administrator (lot-number format, RBAC for commit / void authority, scheduled auto-commit sweeps) and Auditor (read-only review of commit events and reversals).
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical `enum_good_received_note_status` and the inventory-transaction linkage (`tb_good_received_note_detail_item.inventory_transaction_id` → `tb_inventory_transaction_detail.lot_no / expiry_date`) used in steps 6 and 10.
 - Sibling: [02-business-rules.md](./02-business-rules.md) — validation rules `GRN_VAL_006`–`GRN_VAL_010` (save-time) and `GRN_VAL_011`–`GRN_VAL_014` (commit-time) referenced in the primary flow.
-- Related: [[purchase-order]] — upstream module; on commit the GRN advances `tb_purchase_order_detail.received_qty` and may flip `po_status` (`sent → partial → completed`); see the PO module's `03-user-flow-receiver.md` for the PO-side effects mirrored here.
-- Related: [[inventory]] — downstream module; on commit `tb_inventory_transaction` carries the lot, expiry, and cost-layer data, and `InventoryStatus.QuantityOnHand` is incremented by `accepted_qty`.
-- Related: [[costing]] — FIFO / average-cost layer creation on the `saved → committed` transition.
+- Related: [purchase-order](/en/inventory/purchase-order) — upstream module; on commit the GRN advances `tb_purchase_order_detail.received_qty` and may flip `po_status` (`sent → partial → completed`); see the PO module's `03-user-flow-receiver.md` for the PO-side effects mirrored here.
+- Related: [inventory](/en/inventory/inventory) — downstream module; on commit `tb_inventory_transaction` carries the lot, expiry, and cost-layer data, and `InventoryStatus.QuantityOnHand` is incremented by `accepted_qty`.
+- Related: [costing](/en/inventory/costing) — FIFO / average-cost layer creation on the `saved → committed` transition.

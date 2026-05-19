@@ -2,7 +2,7 @@
 title: เทมเพลตใบขอซื้อ (Purchase Request Template)
 description: scaffold PR ที่ใช้ซ้ำได้ — บันทึก bundle ของรายการที่ซื้อบ่อยเป็น template ให้ Requestor instantiate PR ได้ด้วยคลิกเดียว
 published: true
-date: 2026-05-17T07:00:36.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: templates, purchase-request, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # เทมเพลตใบขอซื้อ (Purchase Request Template)
 
 > **At a Glance**
-> **Owner:** Procurement Manager / Product Admin &nbsp;·&nbsp; **Table:** `tb_purchase_request_template` (+ detail, comments) &nbsp;·&nbsp; **Workflow:** ไม่มี (config artefact) &nbsp;·&nbsp; **ใช้โดย:** [[purchase-request]] **Create PR from Template** &nbsp;·&nbsp; scaffold bundle รายการที่ใช้ซ้ำได้ ถูก clone ไปยัง PR ใหม่ตามต้องการ
+> **Owner:** Procurement Manager / Product Admin &nbsp;·&nbsp; **Table:** `tb_purchase_request_template` (+ detail, comments) &nbsp;·&nbsp; **Workflow:** ไม่มี (config artefact) &nbsp;·&nbsp; **ใช้โดย:** [purchase-request](/th/inventory/purchase-request) **Create PR from Template** &nbsp;·&nbsp; scaffold bundle รายการที่ใช้ซ้ำได้ ถูก clone ไปยัง PR ใหม่ตามต้องการ
 
 ![เทมเพลตใบขอซื้อ (Purchase Request Template) screen](/screenshots/templates/purchase-request.png)
 
@@ -39,7 +39,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 | "Name must be unique within workflow" | template ที่ไม่ถูก delete อีกตัวมี `(name, workflow_id)` เดียวกัน | เลือกชื่อหรือ workflow อื่น |
 | "At least one active detail row required" | ทุกบรรทัดมี `is_active = false` | เปิดอย่างน้อย 1 บรรทัดก่อน publish |
 | "Hard-delete blocked — template in use" | PR เคยถูก clone จาก template นี้ | set `is_active = false` แทน |
-| "Rate not in history" (ตอน clone) | ไม่มี row `tb_exchange_rate` บน `pr_date` ของ PR ที่ clone | เพิ่ม rate (ดู [[master-data/exchange-rate]]) แล้วลอง clone อีกครั้ง |
+| "Rate not in history" (ตอน clone) | ไม่มี row `tb_exchange_rate` บน `pr_date` ของ PR ที่ clone | เพิ่ม rate (ดู [master-data/exchange-rate](/th/inventory/master-data/exchange-rate)) แล้วลอง clone อีกครั้ง |
 | "Product / location reference inactive" | master record ถูก soft-delete หลัง template ถูกเขียน | แก้บรรทัดให้ swap ไปยัง reference ที่ active |
 | PR ที่ clone มี currency ผิด | code ของ currency ถูกคัดลอกตามตัวอักษร; rate เท่านั้นที่ re-resolve | แก้ header ของ PR ที่ clone; currency เปลี่ยนบน template หลัง clone ไม่ได้ |
 
@@ -47,7 +47,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 - **Deep-copy clone semantics** Clone insert `tb_purchase_request` ใหม่ (`pr_no` ใหม่, `pr_status = draft`, ผู้ใช้ปัจจุบันเป็นผู้สร้าง) และหนึ่ง `tb_purchase_request_detail` ต่อบรรทัด template ที่ `is_active = true` จำนวน, หน่วย, snapshot ของ tax / discount, dimension ถูกคัดลอก **ตามตัวอักษร** บรรทัด inactive ถูกข้าม
 - **ไม่มี workflow บน template เอง** Template ไม่มี `workflow_current_stage`, `user_action`, `doc_status` การแก้ live ทันทีตอน save — ตั้งใจไว้ เพราะ template เป็น configuration ไม่ใช่ transactional
-- **Currency / FX resolution ตอน clone** Currency code ถูกคัดลอกตามตัวอักษร; `exchange_rate` และ `exchange_rate_date` **re-resolve** ตอน clone กับ [[master-data/exchange-rate]] โดยใช้ `pr_date` ของ PR ใหม่ — ป้องกัน FX เก่า
+- **Currency / FX resolution ตอน clone** Currency code ถูกคัดลอกตามตัวอักษร; `exchange_rate` และ `exchange_rate_date` **re-resolve** ตอน clone กับ [master-data/exchange-rate](/th/inventory/master-data/exchange-rate) โดยใช้ `pr_date` ของ PR ใหม่ — ป้องกัน FX เก่า
 - **Seed-only persistence** row ของ template ไม่เคยถูก FK-reference โดยเอกสาร transactional — PR บันทึก copy ไม่ใช่ reference การแก้ template หลังจาก PR ถูก clone **ไม่** ย้อนเปลี่ยน PR นั้น
 - **Hard-delete guard** เมื่อ PR ถูก clone จาก template แล้ว hard-delete ถูกบล็อก; ปลดประจำการแบบ soft เท่านั้น
 - **`is_active` ต่อบรรทัด** บรรทัดถูก disable ชั่วคราวได้โดยไม่ลบ — มีประโยชน์สำหรับ SKU ตามฤดูกาล
@@ -118,11 +118,11 @@ Template **ไม่** มีส่วนใน workflow engine 3 logical state 
 
 ## 7. การอ้างอิงข้าม
 
-- [[purchase-request]] — ผู้บริโภคเพียงรายเดียว **Create PR from Template** clone header + detail ลงใน `tb_purchase_request` + `tb_purchase_request_detail` ใหม่ที่ `pr_status = draft`
-- [[purchase-request/03-user-flow-requestor]] — scenario happy-path REQ-HP-06 ใช้ flow นี้
-- [[system-config/workflow]] — `workflow_id` คือ workflow ที่ PR ที่ clone จะเข้าตอน submit
-- [[product]], [[master-data/location]], [[master-data/currency]], [[master-data/tax-profile]] — ทุกบรรทัด snapshot จาก master เหล่านี้ตอนแก้ template; clone re-resolve currency/rate แต่คง ref อื่นไว้
-- [[templates/price-list]] — template พี่น้องภายใต้ร่ม [[templates]]
+- [purchase-request](/th/inventory/purchase-request) — ผู้บริโภคเพียงรายเดียว **Create PR from Template** clone header + detail ลงใน `tb_purchase_request` + `tb_purchase_request_detail` ใหม่ที่ `pr_status = draft`
+- [purchase-request/03-user-flow-requestor](/th/inventory/purchase-request/03-user-flow-requestor) — scenario happy-path REQ-HP-06 ใช้ flow นี้
+- [system-config/workflow](/th/inventory/system-config/workflow) — `workflow_id` คือ workflow ที่ PR ที่ clone จะเข้าตอน submit
+- [product](/th/inventory/product), [master-data/location](/th/inventory/master-data/location), [master-data/currency](/th/inventory/master-data/currency), [master-data/tax-profile](/th/inventory/master-data/tax-profile) — ทุกบรรทัด snapshot จาก master เหล่านี้ตอนแก้ template; clone re-resolve currency/rate แต่คง ref อื่นไว้
+- [templates/price-list](/th/inventory/templates/price-list) — template พี่น้องภายใต้ร่ม [templates](/th/inventory/templates)
 
 ## 8. การอ้างอิง
 

@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — User Flow — Approver
 description: เส้นทางการใช้งานของ Approver ในโมดูล purchase-request
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-request, user-flow, approver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 # ใบขอซื้อ (Purchase Request) — User Flow — Approver
 
 > **At a Glance**
-> **Persona:** Approver (Dept. Head / Budget Controller / Finance) &nbsp;·&nbsp; **โมดูล:** [[purchase-request]] &nbsp;·&nbsp; **Stage ของ workflow:** in_progress (Stage 1 → Stage 2 → Stage 3 → approved) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** approve / send-back / reject / split-reject, ปรับ approved_qty
+> **Persona:** Approver (Dept. Head / Budget Controller / Finance) &nbsp;·&nbsp; **โมดูล:** [purchase-request](/th/inventory/purchase-request) &nbsp;·&nbsp; **Stage ของ workflow:** in_progress (Stage 1 → Stage 2 → Stage 3 → approved) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** approve / send-back / reject / split-reject, ปรับ approved_qty
 > **persona นี้ทำอะไร:** review PR ที่ submit แล้วในแต่ละ stage อนุมัติและเดินหน้า, ส่งกลับ หรือยุติเอกสารผ่าน workflow
 
 ## 1. บทบาทในโมดูลนี้
@@ -67,14 +67,14 @@ graph LR
 
 1. จากคิว **My Approvals** (หรือ link notification) เลือก PR ที่รอตัดสิน คิวแสดง `pr_no`, requestor, แผนก, grand total ในสกุลเงินธุรกรรมและสกุลเงินฐาน, stage ปัจจุบันของ workflow และเวลาที่ PR รออยู่ คลิกเข้า PR เพื่อเปิดหน้า detail ใน read-mostly mode (header และบรรทัดแก้ไม่ได้สำหรับ Approver ยกเว้น `approved_qty` และ flag การตัดสินใจระดับบรรทัด)
 2. Review **header**: ประเภท PR (`General Purchase` / `Market List` / `Asset`), requestor และแผนก, `pr_date`, วันส่งของที่ต้องการ, สกุลเงินและอัตราแลกเปลี่ยน, `workflow_name`, คำอธิบาย / เหตุผล และ attachment ใช้ panel **Activity Log** อ่าน comment ก่อนหน้า (note ของ Requestor, comment ของ Approver stage ก่อนหน้า, system event)
-3. เปิดแท็บ **Items** และเดินทีละบรรทัด สำหรับแต่ละบรรทัดยืนยันสินค้า, store location, `requested_qty`, หน่วยนับ, ราคาต่อหน่วยประมาณ, จำนวน FOC, ส่วนลด, การจัดการภาษี, วันส่งของของบรรทัด และ note บรรทัด Approver ยังเห็นบริบท inventory (on-hand, on-order, reorder level, average monthly usage, ราคาซื้อล่าสุด) ที่ pull จาก [[inventory]] แบบ live และบริบท preferred-vendor / pricelist ที่ pull จาก [[vendor-pricelist]]
+3. เปิดแท็บ **Items** และเดินทีละบรรทัด สำหรับแต่ละบรรทัดยืนยันสินค้า, store location, `requested_qty`, หน่วยนับ, ราคาต่อหน่วยประมาณ, จำนวน FOC, ส่วนลด, การจัดการภาษี, วันส่งของของบรรทัด และ note บรรทัด Approver ยังเห็นบริบท inventory (on-hand, on-order, reorder level, average monthly usage, ราคาซื้อล่าสุด) ที่ pull จาก [inventory](/th/inventory/inventory) แบบ live และบริบท preferred-vendor / pricelist ที่ pull จาก [vendor-pricelist](/th/inventory/vendor-pricelist)
 4. เปิด panel **Budget Impact** ระบบแสดง availability ต่อแผนก / cost-centre / budget category สำหรับงวดที่เกี่ยวข้อง: total budget, soft commitment จาก PR นี้และ PR / PO อื่นที่เปิดอยู่, hard commitment และ `availableBudget` ผลลัพธ์ Budget Controller (Stage 2) ใส่ใจ panel นี้มากที่สุด แต่ Approver ทุกคนเห็นได้
 5. ถ้าจำนวนต้องลดลง (เช่น budget แน่น, จำนวนที่ขอเกินนโยบาย, ต้องการ fulfilment บางส่วน) แก้ **`approved_qty`** บนบรรทัดที่ได้รับผลกระทบ ตาม `PR_VAL_013` ค่าใหม่ต้อง `> 0` และ `≤ requested_qty` หลังแปลง UoM; `approved_unit_id` และ `approved_unit_conversion_factor` ถูก persist ไปด้วย ยอด roll-up ของ header (`base_sub_total_amount`, `base_total_amount` ฯลฯ) คำนวณใหม่เมื่อ save
 6. ตัดสิน **disposition ต่อบรรทัด** ถ้าต้องการ split-reject: mark บรรทัดเดี่ยวเป็น **accept** (default) หรือ **reject** บรรทัดที่ reject ต้องมีเหตุผล บรรทัดที่ accept ที่เหลือเดินต่อใน workflow; บรรทัดที่ reject ยังอยู่บนเอกสารด้วย `current_stage_status = rejected` และไม่ถึงการแปลงเป็น PO (`PR_AUTH_003`)
 7. เลือก **action ระดับ header** จาก action bar: **Approve**, **Send Back**, **Reject** หรือ (เมื่ออย่างน้อยหนึ่งบรรทัด mark reject และอื่น ๆ accept) ระบบถือ action Approve เป็น commit **Split-Reject** สำหรับ Send Back และ Reject ระบบ prompt เหตุผล mandatory; สำหรับ Approve comment เป็น optional
 8. ยืนยัน action ใน dialog ระบบรันเช็คการให้สิทธิ์ (`PR_AUTH_002` — ผู้ใช้ปัจจุบันต้องอยู่ใน `user_action.execute[]` ของ stage ปัจจุบัน; `PR_VAL_013` บน `approved_qty` ที่แก้)
 9. เมื่อกด **Approve** ที่ stage กลาง: ระบบใช้ `PR_POST_004` — append `workflow_history`, อัปเดต `workflow_previous_stage` / `workflow_current_stage` / `workflow_next_stage`, set `last_action = approved` และ `last_action_by_*` เป็นผู้ใช้ปัจจุบัน, คำนวณ `user_action.execute[]` ใหม่สำหรับ stage ถัดไปจากกฎ threshold และ routing ใน `tb_workflow` และแจ้งผู้อนุมัติ stage ถัดไป `pr_status` ยังคง `in_progress` Soft budget commitment ยังอยู่
-10. เมื่อกด **Approve** ที่ **stage สุดท้าย**: `PR_POST_005` พลิก `pr_status` จาก `in_progress` เป็น `approved`, stepper ของ workflow mark chain เสร็จ, notification ไปที่ Requestor ("Approved") และคิวของ Purchaser และ PR เข้าเกณฑ์การแปลงเป็น PO Soft commitment ยังอยู่จนกว่า Purchaser สร้าง PO ซึ่งจุดนั้นแปลงเป็น hard commitment (ดู [[purchase-order]])
+10. เมื่อกด **Approve** ที่ **stage สุดท้าย**: `PR_POST_005` พลิก `pr_status` จาก `in_progress` เป็น `approved`, stepper ของ workflow mark chain เสร็จ, notification ไปที่ Requestor ("Approved") และคิวของ Purchaser และ PR เข้าเกณฑ์การแปลงเป็น PO Soft commitment ยังอยู่จนกว่า Purchaser สร้าง PO ซึ่งจุดนั้นแปลงเป็น hard commitment (ดู [purchase-order](/th/inventory/purchase-order))
 11. Approver กลับไปคิว **My Approvals** ซึ่ง PR ที่เพิ่งตัดสินใจหายไป Action และ comment ใด ๆ ปรากฏใน log `tb_purchase_request_comment` ของ PR แบบ immutable (`PR_POST_008`)
 
 ## 3. แขนงการตัดสินใจ

@@ -2,7 +2,7 @@
 title: คำขอใบเสนอราคา (Request for Quotation)
 description: เอกสารคำขอราคา outbound (RFQ) ส่งไปยังผู้ขายหนึ่งรายหรือมากกว่า — เก็บการเสนอราคาก่อนเจรจาต่อรอง pricelist ใหม่
 published: true
-date: 2026-05-17T07:00:36.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: vendor-pricelist, rfq, procurement, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,13 +11,13 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # คำขอใบเสนอราคา (Request for Quotation)
 
 > **At a Glance**
-> **เจ้าของ:** Purchaser / Procurement Manager &nbsp;·&nbsp; **ตาราง:** `tb_request_for_pricing` (+ detail, comments) &nbsp;·&nbsp; **Workflow:** ไม่มี (ขับด้วย date-window) &nbsp;·&nbsp; **ต้นน้ำ:** [[templates/price-list]] &nbsp;·&nbsp; ขอใบเสนอราคาจากผู้ขายก่อนได้รับการมอบ `tb_pricelist`
+> **เจ้าของ:** Purchaser / Procurement Manager &nbsp;·&nbsp; **ตาราง:** `tb_request_for_pricing` (+ detail, comments) &nbsp;·&nbsp; **Workflow:** ไม่มี (ขับด้วย date-window) &nbsp;·&nbsp; **ต้นน้ำ:** [templates/price-list](/th/inventory/templates/price-list) &nbsp;·&nbsp; ขอใบเสนอราคาจากผู้ขายก่อนได้รับการมอบ `tb_pricelist`
 
 ![คำขอใบเสนอราคา (Request for Quotation) screen](/screenshots/vendor-pricelist/request-price-list.png)
 
 ## 1. ภาพรวมและผู้ใช้งาน
 
-**Request for Pricing (RFQ)** คือเอกสาร outbound ที่ procurement-initiate ขอใบเสนอราคาจากผู้ขายหนึ่งรายหรือมากกว่าก่อน [[vendor-pricelist]] ได้รับการมอบ ผู้ซื้อหยิบ [[templates/price-list]] (ซึ่ง carry สกุลเงิน, validity window, schedule reminder และแคตตาล็อกสินค้าที่อยู่ใต้การ quote), ตั้งชื่อผู้ขาย candidate และ dispatch คำขอ ผู้ขายที่เชิญแต่ละรายได้ **link ที่ tokenise** ไปยัง portal ที่พวกเขา submit ราคา; submission ลงเป็นแถว `tb_pricelist` draft keyed กลับไปยัง RFQ หลัง deadline ผู้ซื้อเปรียบเทียบการเสนอราคาและ *มอบ* หนึ่ง (หรือหลาย) โดย flip สถานะของมันเป็น `active`
+**Request for Pricing (RFQ)** คือเอกสาร outbound ที่ procurement-initiate ขอใบเสนอราคาจากผู้ขายหนึ่งรายหรือมากกว่าก่อน [vendor-pricelist](/th/inventory/vendor-pricelist) ได้รับการมอบ ผู้ซื้อหยิบ [templates/price-list](/th/inventory/templates/price-list) (ซึ่ง carry สกุลเงิน, validity window, schedule reminder และแคตตาล็อกสินค้าที่อยู่ใต้การ quote), ตั้งชื่อผู้ขาย candidate และ dispatch คำขอ ผู้ขายที่เชิญแต่ละรายได้ **link ที่ tokenise** ไปยัง portal ที่พวกเขา submit ราคา; submission ลงเป็นแถว `tb_pricelist` draft keyed กลับไปยัง RFQ หลัง deadline ผู้ซื้อเปรียบเทียบการเสนอราคาและ *มอบ* หนึ่ง (หรือหลาย) โดย flip สถานะของมันเป็น `active`
 
 **สร้างโดย** Purchaser / Procurement Manager &nbsp;·&nbsp; **ตอบกลับโดย** ผู้ขายที่เชิญ (ไม่มี login — portal scope ด้วย token) &nbsp;·&nbsp; **ไม่ผลิตผลกระทบ inventory หรือ AP**
 
@@ -29,7 +29,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 | เชิญผู้ขาย | Detail → **Add Vendor** | หนึ่งแถวต่อ (RFQ, vendor); unique constraint บังคับไม่ให้เชิญซ้ำ |
 | ส่ง / ส่งซ้ำ invitation email | Detail → **Send** | Idempotent — ใช้ `pricelist_url_token` ที่มีอยู่ซ้ำ |
 | ขยาย deadline | Header → แก้ `end_date` | บันทึก audit; ต้องการเพื่อรับการเสนอราคาสาย |
-| เปรียบเทียบการเสนอราคา | Detail → **Compare** | Normalise เป็นสกุลเงินฐาน BU ผ่าน [[master-data/exchange-rate]] |
+| เปรียบเทียบการเสนอราคา | Detail → **Compare** | Normalise เป็นสกุลเงินฐาน BU ผ่าน [master-data/exchange-rate](/th/inventory/master-data/exchange-rate) |
 | มอบ pricelist | แถว Pricelist → **Activate** | Flip `enum_pricelist_status` เป็น `active` — RFQ เองไม่มีสถานะ "awarded" |
 
 ## 3. ข้อผิดพลาดและการตรวจสอบ
@@ -40,7 +40,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 | "end_date must be after start_date" | Date window ไม่ถูกต้อง | re-pick deadline |
 | "Cannot change template — invitations sent" | `pricelist_template_id` immutable หลัง dispatch | Cancel RFQ และเริ่มใหม่ |
 | "Late submission rejected" | Portal POST หลัง `end_date` | ขยาย `end_date` ก่อน (บันทึก audit) ก่อน re-send |
-| "Vendor must be active" | `tb_vendor.is_active = false` | Reactivate ภายใต้ [[master-data/vendor]] |
+| "Vendor must be active" | `tb_vendor.is_active = false` | Reactivate ภายใต้ [master-data/vendor](/th/inventory/master-data/vendor) |
 | Invitation link 404 | `pricelist_url_token` rotate หรือแถว soft-delete | Re-issue invitation; token ใหม่ generate |
 
 ## 4. กรณีพิเศษ
@@ -65,7 +65,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 | --- | --- | --- | --- |
 | `id` | `String @db.Uuid` | No | Primary key |
 | `name` | `String @db.VarChar` | No | ชื่อแสดง RFQ (เช่น "Q2-2026 Beverage RFQ") |
-| `pricelist_template_id` | `String @db.Uuid` | No | FK ไป [[templates/price-list]] Carry สกุลเงิน, validity, reminder, แคตตาล็อก |
+| `pricelist_template_id` | `String @db.Uuid` | No | FK ไป [templates/price-list](/th/inventory/templates/price-list) Carry สกุลเงิน, validity, reminder, แคตตาล็อก |
 | `start_date` | `DateTime? @db.Timestamptz(6)` | Yes | วันที่ vendor อาจเริ่ม submit |
 | `end_date` | `DateTime? @db.Timestamptz(6)` | Yes | Deadline การ submission; ขับ reminder |
 | `custom_message` | `String? @db.Text` | Yes | ข้อความอิสระ render ในอีเมล invitation |
@@ -102,7 +102,7 @@ RFQ **ไม่** ใช้ generic workflow engine Lifecycle ขับด้ว
 - **Setup** — RFQ สร้างจาก template; เพิ่มแถว vendor detail ยังไม่ส่ง invitation
 - **Invitation sent** — แต่ละแถว detail ได้ `pricelist_url_token`; email dispatch ผ่าน `email_template_id`
 - **Open for response** (`start_date <= now < end_date`) — vendor submit ผ่าน portal; แต่ละ submission สร้าง `tb_pricelist` ใน `draft`
-- **Reminders / escalation** — ตาม [[templates/price-list]] `reminder_days[]` และ `escalation_after_days` job background ไล่ vendor ที่ไม่ตอบสนอง
+- **Reminders / escalation** — ตาม [templates/price-list](/th/inventory/templates/price-list) `reminder_days[]` และ `escalation_after_days` job background ไล่ vendor ที่ไม่ตอบสนอง
 - **Closed for response** (`now >= end_date`) — portal ล็อก; การ submission สาย reject
 - **Award** — ผู้ซื้อ flip `tb_pricelist` ที่เลือกเป็น `active`; ผู้แพ้คงที่ `draft` หรือ flip ไป `inactive`
 
@@ -110,12 +110,12 @@ RFQ **ไม่** ใช้ generic workflow engine Lifecycle ขับด้ว
 
 ## 7. ความเชื่อมโยงข้ามโมดูล
 
-- [[vendor-pricelist]] — การตอบสนองของ vendor materialise เป็นแถว `tb_pricelist`; ตัวที่ได้รับมอบกลายเป็นแคตตาล็อก active
-- [[templates/price-list]] — RFQ ต้องการ template (สกุลเงิน, validity, reminder, แคตตาล็อกสินค้า)
-- [[master-data/vendor]] — vendor ที่เชิญต้องอ้างอิงบันทึก vendor active
-- [[master-data/currency]] — สกุลเงิน cascade จาก template
-- [[purchase-request]] / [[purchase-order]] — ผู้บริโภคปลายน้ำของ pricelist ที่ได้รับมอบ
-- [[system-config/workflow]] — *ไม่ใช้* โดย RFQ; กล่าวเพื่อความตรงข้าม
+- [vendor-pricelist](/th/inventory/vendor-pricelist) — การตอบสนองของ vendor materialise เป็นแถว `tb_pricelist`; ตัวที่ได้รับมอบกลายเป็นแคตตาล็อก active
+- [templates/price-list](/th/inventory/templates/price-list) — RFQ ต้องการ template (สกุลเงิน, validity, reminder, แคตตาล็อกสินค้า)
+- [master-data/vendor](/th/inventory/master-data/vendor) — vendor ที่เชิญต้องอ้างอิงบันทึก vendor active
+- [master-data/currency](/th/inventory/master-data/currency) — สกุลเงิน cascade จาก template
+- [purchase-request](/th/inventory/purchase-request) / [purchase-order](/th/inventory/purchase-order) — ผู้บริโภคปลายน้ำของ pricelist ที่ได้รับมอบ
+- [system-config/workflow](/th/inventory/system-config/workflow) — *ไม่ใช้* โดย RFQ; กล่าวเพื่อความตรงข้าม
 
 ## 8. แหล่งอ้างอิง
 

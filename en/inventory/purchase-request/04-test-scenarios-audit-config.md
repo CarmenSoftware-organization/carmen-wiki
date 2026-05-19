@@ -2,7 +2,7 @@
 title: Purchase Request — Test Scenarios — Audit & Config
 description: Auditor (read-only audit trail) and System Administrator (workflow / threshold / delegation configuration) test cases for purchase-request.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-request, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 # Purchase Request — Test Scenarios — Audit & Config
 
 > **At a Glance**
-> **Persona:** Audit / Config (Auditor read-only + System Administrator config) &nbsp;·&nbsp; **Module:** [[purchase-request]] &nbsp;·&nbsp; **Scenarios:** ~30
+> **Persona:** Audit / Config (Auditor read-only + System Administrator config) &nbsp;·&nbsp; **Module:** [purchase-request](/en/inventory/purchase-request) &nbsp;·&nbsp; **Scenarios:** ~30
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** no dedicated `30X-pr-audit-config-journey.spec.ts` yet; audit-log read paths partly via `tests/301-pr.spec.ts` activity-log assertions in `../carmen-inventory-frontend-e2e/`
 
@@ -85,5 +85,5 @@ Section 4 covers boundary and concurrency cases unique to the audit / config per
 - Sibling: [04-test-scenarios-requestor.md](./04-test-scenarios-requestor.md) — upstream persona whose submissions feed the audit trail; new PRs submitted after a Sysadmin configuration change see the new behaviour automatically.
 - E2E: **TODO** — no dedicated `30X-pr-audit-config-journey.spec.ts` exists yet. Audit-log read paths are partly exercised through the activity-log assertions in `../carmen-inventory-frontend-e2e/tests/301-pr.spec.ts` (per-action transition audit verification). Configuration changes (workflow / threshold / delegation / master data) are out of scope for current PR-module specs and would live in a dedicated configuration test suite. Add a persona-journey spec once the Audit workspace UI and the Configuration workspace UI are wired into the frontend.
 - Source: `../carmen/docs/purchase-request-management/PR-Module-Structure.md` (configuration surface: workflow stages, thresholds, delegation, PR-type defaults, tax / currency / user-role configuration), `../carmen/docs/purchase-request-management/PR-User-Experience.md` (activity-log UX, audit-trail presentation, drill-down conventions), `../carmen/docs/purchase-request-management/PR-Overview.md` (Auditor and System Administrator stakeholder roles, governance integration points), `../carmen/docs/purchase-request-management/purchase-request-module-prd.md` (product requirements for the audit log, configuration surface, and elevated administrative actions), `../carmen/docs/purchase-request-management/testing.md` (testing levels — audit-trail completeness assertions, configuration-change regression patterns), `../carmen/docs/purchase-request-management/troubleshooting.md` (Section 2.2 workflow transition issues — frequently the diagnostic surface the Auditor brings to the Sysadmin; Section 2.3 master-data corruption — the route by which `AUD-VAL-08` arises).
-- Cross-link: [[inventory-adjustment]] — sibling audit-trail surface for inventory-side governance; same `PR_POST_008`-style immutable comment pattern.
-- Cross-link: [[purchase-order]] — downstream module whose conversion events are observed in the PR audit trail; configuration changes to PR-type defaults can affect PO bridge behaviour.
+- Cross-link: [inventory-adjustment](/en/inventory/inventory-adjustment) — sibling audit-trail surface for inventory-side governance; same `PR_POST_008`-style immutable comment pattern.
+- Cross-link: [purchase-order](/en/inventory/purchase-order) — downstream module whose conversion events are observed in the PR audit trail; configuration changes to PR-type defaults can affect PO bridge behaviour.

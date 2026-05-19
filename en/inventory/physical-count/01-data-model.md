@@ -2,7 +2,7 @@
 title: Physical Count — Data Model
 description: Entities, fields, relationships, and enums for the physical-count module.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: physical-count, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T14:00:00.000Z
 > **At a Glance**
 > **Tables:** `tb_physical_count_period` &nbsp;·&nbsp; `tb_physical_count` &nbsp;·&nbsp; `tb_physical_count_detail` &nbsp;·&nbsp; per-level `_comment` tables (three)
 > **Audience:** Developer / Auditor (dev reference)
-> **Key FKs:** period `→ tb_period`; count `→ tb_location` and `→ tb_physical_count_period`; detail `→ tb_product` and `→ tb_unit` (`inventory_unit_id`). Variance rollup link to [[inventory-adjustment]] is JSON-only (`tb_stock_in.info.countId` / `tb_stock_out.info.countId`) — no Prisma FK
+> **Key FKs:** period `→ tb_period`; count `→ tb_location` and `→ tb_physical_count_period`; detail `→ tb_product` and `→ tb_unit` (`inventory_unit_id`). Variance rollup link to [inventory-adjustment](/en/inventory/inventory-adjustment) is JSON-only (`tb_stock_in.info.countId` / `tb_stock_out.info.countId`) — no Prisma FK
 > **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*`; three-level hierarchy (period → document → detail) — count itself does **not** write to the inventory ledger; adjustment post is the integration anchor
 
 > **Source of truth:** Backend Prisma schema. Always read this first when writing or updating this page:
@@ -23,9 +23,9 @@ dateCreated: 2026-05-15T14:00:00.000Z
 
 ## 1. Overview
 
-The Physical Count module is the **document layer** for end-to-end counts of every item at a location — the scheduled, regulatory-baseline exercise described in [[physical-count]] § 1. The Prisma side persists a three-level document tree under the **`tb_physical_count_period` → `tb_physical_count` → `tb_physical_count_detail`** hierarchy: a period header groups every count document opened against the same fiscal period (`tb_period`), each count document represents one (period, location) pairing and carries the counting status / type / counters' progress, and each detail row is one product line on that count with `on_hand_qty` (book), `actual_qty` (counted), and `diff_qty` (variance). Comments and attachments hang off all three levels (`tb_physical_count_period_comment`, `tb_physical_count_comment`, `tb_physical_count_detail_comment`).
+The Physical Count module is the **document layer** for end-to-end counts of every item at a location — the scheduled, regulatory-baseline exercise described in [physical-count](/en/inventory/physical-count) § 1. The Prisma side persists a three-level document tree under the **`tb_physical_count_period` → `tb_physical_count` → `tb_physical_count_detail`** hierarchy: a period header groups every count document opened against the same fiscal period (`tb_period`), each count document represents one (period, location) pairing and carries the counting status / type / counters' progress, and each detail row is one product line on that count with `on_hand_qty` (book), `actual_qty` (counted), and `diff_qty` (variance). Comments and attachments hang off all three levels (`tb_physical_count_period_comment`, `tb_physical_count_comment`, `tb_physical_count_detail_comment`).
 
-The module sits **upstream of [[inventory-adjustment]]**: when a count document reaches `completed` and variance lines are accepted, the application layer rolls the variance into a `tb_stock_in` (overage) and/or `tb_stock_out` (shortage) document with reason codes `COUNT_OVERAGE` / `COUNT_SHORTAGE`, whose own posting writes the `tb_inventory_transaction` row that lands on the [[inventory]] ledger. The physical-count tables themselves do **not** write directly to the inventory ledger — the adjustment document is the integration anchor. Lot data on the count detail is sparse — `tb_physical_count_detail` carries only `on_hand_qty` / `actual_qty` per product at a location (no `lot_no` column); lot-level recounts are handled by the adjustment-side cost-layer pick at post time per [[inventory]] `INV_CALC_005` / `INV_CALC_006`.
+The module sits **upstream of [inventory-adjustment](/en/inventory/inventory-adjustment)**: when a count document reaches `completed` and variance lines are accepted, the application layer rolls the variance into a `tb_stock_in` (overage) and/or `tb_stock_out` (shortage) document with reason codes `COUNT_OVERAGE` / `COUNT_SHORTAGE`, whose own posting writes the `tb_inventory_transaction` row that lands on the [inventory](/en/inventory/inventory) ledger. The physical-count tables themselves do **not** write directly to the inventory ledger — the adjustment document is the integration anchor. Lot data on the count detail is sparse — `tb_physical_count_detail` carries only `on_hand_qty` / `actual_qty` per product at a location (no `lot_no` column); lot-level recounts are handled by the adjustment-side cost-layer pick at post time per [inventory](/en/inventory/inventory) `INV_CALC_005` / `INV_CALC_006`.
 
 > **TODO:** Source UI / interaction details from `../carmen-inventory-frontend/` and end-to-end behaviour from `../carmen-inventory-frontend-e2e/` once specs exist. No carmen/docs source folder exists for this module — divergences (Section 5) cannot be authored until either docs are added or the field is confirmed source-of-truth-only.
 
@@ -40,7 +40,7 @@ The canonical Prisma schema defines six tables (verified against `prisma-shared-
 - **`tb_physical_count_detail`** — the per-product count line. Carries `product_id`, snapshot `product_code` / `product_name` / `product_local_name` / `product_sku`, `inventory_unit_id` (FK to `tb_unit`), `on_hand_qty` (book snapshot at count time), `actual_qty` (the entered physical count), `diff_qty` (`actual_qty - on_hand_qty`), `counted_at` / `counted_by_id`, and `sequence_no` for sheet ordering.
 - **`tb_physical_count_detail_comment`** — line-level comments / attachments on a count detail row.
 
-> **TODO:** Expand each entity into a full field table once the carmen/docs source (or alternative authoritative spec) is available; cross-reference with the [[inventory-adjustment/01-data-model]] table-shape conventions for consistency.
+> **TODO:** Expand each entity into a full field table once the carmen/docs source (or alternative authoritative spec) is available; cross-reference with the [inventory-adjustment/01-data-model](/en/inventory/inventory-adjustment/01-data-model) table-shape conventions for consistency.
 
 ## 3. Relationships
 
@@ -99,4 +99,4 @@ Notes:
 - **Secondary (TODO):** carmen/docs source — does not exist for this module.
 - **Frontend (TODO):** `../carmen-inventory-frontend/` — no `physical-count` route currently visible at `app/` top level; locate under nested module folders when documenting UI flow.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists; document scenarios once added.
-- Related modules: [[inventory]] (ledger that count-variance adjustments write to), [[inventory-adjustment]] (variance rollup posts as `tb_stock_in` / `tb_stock_out`), [[costing]] (variance valuation via `enum_physical_count_costing_method`), [[spot-check]] (partial-count cousin using the same conceptual model).
+- Related modules: [inventory](/en/inventory/inventory) (ledger that count-variance adjustments write to), [inventory-adjustment](/en/inventory/inventory-adjustment) (variance rollup posts as `tb_stock_in` / `tb_stock_out`), [costing](/en/inventory/costing) (variance valuation via `enum_physical_count_costing_method`), [spot-check](/en/inventory/spot-check) (partial-count cousin using the same conceptual model).

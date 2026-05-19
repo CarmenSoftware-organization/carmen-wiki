@@ -2,7 +2,7 @@
 title: Vendor Pricelist
 description: Vendor catalogs of products with agreed prices, units, and validity periods — the reference for PR/PO pricing.
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: vendor-pricelist, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 # Vendor Pricelist
 
 > **At a Glance**
-> **Module purpose:** Vendor-specific, time-bound MOQ-tiered price catalogue collected via a 6-phase campaign / portal workflow — the reference for PR / PO / GRN pricing and variance &nbsp;·&nbsp; **Audience:** Purchaser, Purchasing Manager, Vendor (external portal), Finance, Auditor &nbsp;·&nbsp; **Key entities/tables:** `tb_pricelist`, `tb_pricelist_detail`, `tb_request_for_pricing`, `tb_pricelist_template`, [[vendor-pricelist/request-price-list]] &nbsp;·&nbsp; **Sub-pages:** 13
+> **Module purpose:** Vendor-specific, time-bound MOQ-tiered price catalogue collected via a 6-phase campaign / portal workflow — the reference for PR / PO / GRN pricing and variance &nbsp;·&nbsp; **Audience:** Purchaser, Purchasing Manager, Vendor (external portal), Finance, Auditor &nbsp;·&nbsp; **Key entities/tables:** `tb_pricelist`, `tb_pricelist_detail`, `tb_request_for_pricing`, `tb_pricelist_template`, [vendor-pricelist/request-price-list](/en/inventory/vendor-pricelist/request-price-list) &nbsp;·&nbsp; **Sub-pages:** 13
 
 ![Vendor Pricelist screen](/screenshots/vendor-pricelist/index.png)
 
@@ -66,19 +66,19 @@ Operationally, the module compresses a process that is otherwise email-and-sprea
 ## 5. Related Modules
 
 **Cross-module flow:**
-- [[product]] — pricelist entries reference products
-- [[purchase-request]] — PRs default to preferred vendor pricelists
-- [[purchase-order]] — POs validate prices against the active pricelist
-- [[good-receive-note]] — GRN price variance is calculated against pricelist
+- [product](/en/inventory/product) — pricelist entries reference products
+- [purchase-request](/en/inventory/purchase-request) — PRs default to preferred vendor pricelists
+- [purchase-order](/en/inventory/purchase-order) — POs validate prices against the active pricelist
+- [good-receive-note](/en/inventory/good-receive-note) — GRN price variance is calculated against pricelist
 
 **Master configuration:**
-- [[master-data/vendor]] — vendor master each pricelist is scoped to
-- [[master-data/currency]] — currency the vendor selects at submission
-- [[master-data/tax-profile]] — tax codes on each pricelist line
-- [[templates/price-list]] — reusable template defining what to ask vendors for in a campaign
-- [[master-data/unit]] — pricing unit (Box / Carton / Pack) plus conversion to base inventory unit
-- [[system-config/workflow]] — pricelist submission and approval workflow
-- [[reporting-audit/activity]] — pricelist submission, validation, and approval activity log for audit
+- [master-data/vendor](/en/inventory/master-data/vendor) — vendor master each pricelist is scoped to
+- [master-data/currency](/en/inventory/master-data/currency) — currency the vendor selects at submission
+- [master-data/tax-profile](/en/inventory/master-data/tax-profile) — tax codes on each pricelist line
+- [templates/price-list](/en/inventory/templates/price-list) — reusable template defining what to ask vendors for in a campaign
+- [master-data/unit](/en/inventory/master-data/unit) — pricing unit (Box / Carton / Pack) plus conversion to base inventory unit
+- [system-config/workflow](/en/inventory/system-config/workflow) — pricelist submission and approval workflow
+- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — pricelist submission, validation, and approval activity log for audit
 
 ## 6. Reference Sources
 
@@ -90,17 +90,17 @@ Operationally, the module compresses a process that is otherwise email-and-sprea
 
 ## 7. Pages in This Module
 
-- [[vendor-pricelist/01-data-model]] — entities, fields, relationships, enums for the ten tenant-schema models (`tb_pricelist_template`, `tb_pricelist_template_detail`, `tb_pricelist_template_comment`, `tb_pricelist_template_detail_comment`, `tb_request_for_pricing`, `tb_request_for_pricing_comment`, `tb_request_for_pricing_detail`, `tb_request_for_pricing_detail_comment`, `tb_pricelist`, `tb_pricelist_detail`, `tb_pricelist_comment`, `tb_pricelist_detail_comment`) and the three module-local enums (`enum_pricelist_template_status`, `enum_pricelist_status`, `pricelist_submission_method`) plus the divergence table for the 12 material differences between carmen/docs `design.md` and Prisma.
-- [[vendor-pricelist/02-business-rules]] — validation (`VPL_VAL_001`–`VPL_VAL_025`), calculation (`VPL_CALC_001`–`VPL_CALC_008`), authorization (`VPL_AUTH_001`–`VPL_AUTH_015`), status / posting (`VPL_POST_001`–`VPL_POST_022` across all three lifecycles + application-derived campaign / invitation statuses), and cross-module rules (`VPL_XMOD_001`–`VPL_XMOD_009` to PR / PO / GRN / product / vendor / currency / validation engine).
-- [[vendor-pricelist/03-user-flow]] — document-lifecycle overview + persona index.
-  - [[vendor-pricelist/03-user-flow-purchaser]] — Purchaser + Purchasing Manager (collapsed) path: template builder, campaign launcher, submission reviewer, preferred-vendor curator.
-  - [[vendor-pricelist/03-user-flow-vendor]] — Vendor (external, token-authenticated portal session) path. Shorter file — the only external persona in the Carmen suite with persistent in-system effect via the portal.
-  - [[vendor-pricelist/03-user-flow-finance]] — Finance Officer + Finance Manager (variance audit against GRN / invoice; multi-currency co-signoff for activation).
-  - [[vendor-pricelist/03-user-flow-audit-config]] — Auditor + System Administrator (read-only chain audit; numbering, RBAC, portal-token policy, email integration, validation rules, currency / FX sources, audit retention; per-invitation token revocation).
-- [[vendor-pricelist/04-test-scenarios]] — test-scenarios overview + 12 cross-persona handoff scenarios + E2E mapping target (roadmap item — no dedicated spec today).
-  - [[vendor-pricelist/04-test-scenarios-purchaser]] — Purchaser + Manager scenarios.
-  - [[vendor-pricelist/04-test-scenarios-vendor]] — Vendor scenarios; Permission section is N/A (single row) because the vendor has no Carmen RBAC matrix.
-  - [[vendor-pricelist/04-test-scenarios-finance]] — Finance Officer + Manager scenarios.
-  - [[vendor-pricelist/04-test-scenarios-audit-config]] — Auditor + Sysadmin scenarios.
+- [vendor-pricelist/01-data-model](/en/inventory/vendor-pricelist/01-data-model) — entities, fields, relationships, enums for the ten tenant-schema models (`tb_pricelist_template`, `tb_pricelist_template_detail`, `tb_pricelist_template_comment`, `tb_pricelist_template_detail_comment`, `tb_request_for_pricing`, `tb_request_for_pricing_comment`, `tb_request_for_pricing_detail`, `tb_request_for_pricing_detail_comment`, `tb_pricelist`, `tb_pricelist_detail`, `tb_pricelist_comment`, `tb_pricelist_detail_comment`) and the three module-local enums (`enum_pricelist_template_status`, `enum_pricelist_status`, `pricelist_submission_method`) plus the divergence table for the 12 material differences between carmen/docs `design.md` and Prisma.
+- [vendor-pricelist/02-business-rules](/en/inventory/vendor-pricelist/02-business-rules) — validation (`VPL_VAL_001`–`VPL_VAL_025`), calculation (`VPL_CALC_001`–`VPL_CALC_008`), authorization (`VPL_AUTH_001`–`VPL_AUTH_015`), status / posting (`VPL_POST_001`–`VPL_POST_022` across all three lifecycles + application-derived campaign / invitation statuses), and cross-module rules (`VPL_XMOD_001`–`VPL_XMOD_009` to PR / PO / GRN / product / vendor / currency / validation engine).
+- [vendor-pricelist/03-user-flow](/en/inventory/vendor-pricelist/03-user-flow) — document-lifecycle overview + persona index.
+  - [vendor-pricelist/03-user-flow-purchaser](/en/inventory/vendor-pricelist/03-user-flow-purchaser) — Purchaser + Purchasing Manager (collapsed) path: template builder, campaign launcher, submission reviewer, preferred-vendor curator.
+  - [vendor-pricelist/03-user-flow-vendor](/en/inventory/vendor-pricelist/03-user-flow-vendor) — Vendor (external, token-authenticated portal session) path. Shorter file — the only external persona in the Carmen suite with persistent in-system effect via the portal.
+  - [vendor-pricelist/03-user-flow-finance](/en/inventory/vendor-pricelist/03-user-flow-finance) — Finance Officer + Finance Manager (variance audit against GRN / invoice; multi-currency co-signoff for activation).
+  - [vendor-pricelist/03-user-flow-audit-config](/en/inventory/vendor-pricelist/03-user-flow-audit-config) — Auditor + System Administrator (read-only chain audit; numbering, RBAC, portal-token policy, email integration, validation rules, currency / FX sources, audit retention; per-invitation token revocation).
+- [vendor-pricelist/04-test-scenarios](/en/inventory/vendor-pricelist/04-test-scenarios) — test-scenarios overview + 12 cross-persona handoff scenarios + E2E mapping target (roadmap item — no dedicated spec today).
+  - [vendor-pricelist/04-test-scenarios-purchaser](/en/inventory/vendor-pricelist/04-test-scenarios-purchaser) — Purchaser + Manager scenarios.
+  - [vendor-pricelist/04-test-scenarios-vendor](/en/inventory/vendor-pricelist/04-test-scenarios-vendor) — Vendor scenarios; Permission section is N/A (single row) because the vendor has no Carmen RBAC matrix.
+  - [vendor-pricelist/04-test-scenarios-finance](/en/inventory/vendor-pricelist/04-test-scenarios-finance) — Finance Officer + Manager scenarios.
+  - [vendor-pricelist/04-test-scenarios-audit-config](/en/inventory/vendor-pricelist/04-test-scenarios-audit-config) — Auditor + Sysadmin scenarios.
 
 > **Status:** all sub-pages are full-detail and self-contained. Data-model section is grounded in the canonical Prisma schema (`tb_pricelist*` + `tb_request_for_pricing*` + `tb_pricelist_template*` — ten entities, three module-local enums); business-rules introduces the `VPL_*` rule-ID catalogue grounded in carmen/docs (`design.md`, `requirements.md`, `price-assignment-workflow-documentation.md`); user-flow and test-scenarios cover all four persona groups consolidated from the 8 personas in Section 4. The Receiver / Store Keeper from Section 4 is documented as an indirect consumer in cross-persona scenarios (no dedicated persona file). No E2E spec exists today — coverage runs at the API / integration level and through downstream-module E2E specs (`401-po.spec.ts`, `402-po-purchaser-journey.spec.ts`); a dedicated vendor-pricelist E2E spec is a roadmap item per `../carmen/docs/vendor-pricelist-management/tasks.md`.

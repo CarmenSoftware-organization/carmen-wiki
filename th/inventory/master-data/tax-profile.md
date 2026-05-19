@@ -2,7 +2,7 @@
 title: Profile ภาษี (Tax Profile)
 description: นิยามอัตราภาษีแบบมีชื่อที่ถูกอ้างอิงโดยผู้ขาย สินค้า และทุกบรรทัดเอกสารที่มีราคา
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, tax-profile, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -79,12 +79,12 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 7. การอ้างอิงข้ามโมดูล
 
-- [[master-data/vendor]] — ผู้ขายเก็บ default tax profile ที่ snapshot ณ เวลา link
-- [[product]] — ข้อมูลหลักสินค้าอ้างอิง default tax profile ต่อรายการ
-- [[purchase-request]] — บรรทัด detail ของ PR snapshot profile id + อัตรา
-- [[purchase-order]] — บรรทัด detail ของ PO snapshot; default จาก vendor/product
-- [[good-receive-note]] — บรรทัด detail ของ GRN snapshot จาก PO/ด้วยมือ
-- [[vendor-pricelist]] — บรรทัด detail ของ pricelist บรรจุการอ้างอิง tax profile
+- [master-data/vendor](/th/inventory/master-data/vendor) — ผู้ขายเก็บ default tax profile ที่ snapshot ณ เวลา link
+- [product](/th/inventory/product) — ข้อมูลหลักสินค้าอ้างอิง default tax profile ต่อรายการ
+- [purchase-request](/th/inventory/purchase-request) — บรรทัด detail ของ PR snapshot profile id + อัตรา
+- [purchase-order](/th/inventory/purchase-order) — บรรทัด detail ของ PO snapshot; default จาก vendor/product
+- [good-receive-note](/th/inventory/good-receive-note) — บรรทัด detail ของ GRN snapshot จาก PO/ด้วยมือ
+- [vendor-pricelist](/th/inventory/vendor-pricelist) — บรรทัด detail ของ pricelist บรรจุการอ้างอิง tax profile
 
 ## 8. แหล่งอ้างอิง
 

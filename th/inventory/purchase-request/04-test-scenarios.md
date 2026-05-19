@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — Test Scenarios
 description: Test case แยกตาม persona, scenario ข้าม persona และ mapping ไป Playwright สำหรับโมดูล purchase-request
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-request, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 # ใบขอซื้อ (Purchase Request) — Test Scenarios
 
 > **At a Glance**
-> **โมดูล:** [[purchase-request]] &nbsp;·&nbsp; **scenario รวม:** ~10 ข้าม persona + drill-down ต่อ persona ทุก persona &nbsp;·&nbsp; **Persona ที่ครอบคลุม:** Requestor, Approver, Purchaser, Procurement Manager, Audit / Config
+> **โมดูล:** [purchase-request](/th/inventory/purchase-request) &nbsp;·&nbsp; **scenario รวม:** ~10 ข้าม persona + drill-down ต่อ persona ทุก persona &nbsp;·&nbsp; **Persona ที่ครอบคลุม:** Requestor, Approver, Purchaser, Procurement Manager, Audit / Config
 > **ลำดับการรัน:** Audit / Config setup → happy path ของ persona หลัก → scenario ข้าม persona
 > **drill-down ของแต่ละ persona อยู่ที่ `04-test-scenarios-<role>.md`**
 

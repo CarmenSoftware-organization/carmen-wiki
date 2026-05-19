@@ -2,7 +2,7 @@
 title: Report Schedule
 description: Cron-driven schedule for recurring report generation — fires runs on a cadence and delivers output to configured recipients.
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: reporting-audit, schedule, automation, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,13 +11,13 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # Report Schedule
 
 > **At a Glance**
-> **Owner:** Sysadmin / schedule-admin &nbsp;·&nbsp; **Table:** `tb_report_schedule` &nbsp;·&nbsp; **Retention:** indefinite (soft-delete only); artefacts age out via [[reporting-audit/history]] &nbsp;·&nbsp; **Used by:** `micro-cronjobs` poller &nbsp;·&nbsp; **Pairs a report template with a cron expression, frozen filters, and a delivery list.**
+> **Owner:** Sysadmin / schedule-admin &nbsp;·&nbsp; **Table:** `tb_report_schedule` &nbsp;·&nbsp; **Retention:** indefinite (soft-delete only); artefacts age out via [reporting-audit/history](/en/inventory/reporting-audit/history) &nbsp;·&nbsp; **Used by:** `micro-cronjobs` poller &nbsp;·&nbsp; **Pairs a report template with a cron expression, frozen filters, and a delivery list.**
 
 ![Report Schedule screen](/screenshots/reporting-audit/schedule.png)
 
 ## 1. What & Who
 
-Report Schedule defines **when a report runs and where the output goes**. Each row binds a report template to a cron expression, a frozen filter set, and a recipient list. The cron service polls active schedules, locks the fire slot in Redis, and enqueues a [[reporting-audit/history]] job that `micro-report` executes. The history row is the artefact of record; the schedule row is the definition.
+Report Schedule defines **when a report runs and where the output goes**. Each row binds a report template to a cron expression, a frozen filter set, and a recipient list. The cron service polls active schedules, locks the fire slot in Redis, and enqueues a [reporting-audit/history](/en/inventory/reporting-audit/history) job that `micro-report` executes. The history row is the artefact of record; the schedule row is the definition.
 
 **Audience:** **Sysadmin** (create / edit / disable), **Operations** (recipient changes, cron tuning), **Auditor** (verify daily exports still fire).
 
@@ -29,7 +29,7 @@ Report Schedule defines **when a report runs and where the output goes**. Each r
 | Change cron expression | Detail screen → **Cron builder** | Recomputes `next_run_at` from now |
 | Update recipients | Detail screen → **Recipients picker** | Typed entries: `email` / `user` / `sftp` |
 | Test a schedule without waiting | Detail screen → **Test Run** | Enqueues a one-off job with same parameters |
-| See last fire result | List → **Last status** column | Mirrors latest [[reporting-audit/history]] row |
+| See last fire result | List → **Last status** column | Mirrors latest [reporting-audit/history](/en/inventory/reporting-audit/history) row |
 | See next fire time | List → **Next-run countdown** | Live from `next_run_at` |
 | Delete a schedule | Detail screen → **Delete** | Soft-delete via `deleted_at`; scheduler ignores |
 | Have two cadences off one template | Create a second schedule with same `report_type` | No uniqueness on `(report_type, cron_expression)` — intentional |
@@ -42,9 +42,9 @@ Report Schedule defines **when a report runs and where the output goes**. Each r
 | Two scheduler replicas — will it fire twice? | No — Redis lock on `(schedule_id, fire_timestamp)` guarantees exactly-one enqueue | — |
 | What happens if we were down for a missed slot? | `schedule_config.misfire_policy`: `fire_once` (default), `skip`, or `fire_all` | Long-stopped tenants should use `skip` |
 | Which timezone does cron run in? | `schedule_config.timezone` (typically `Asia/Bangkok`); falls back to UTC if absent | Set on creation |
-| Where does the output land? | History row's `file_url` + delivered to each entry in `recipients` | See [[reporting-audit/history]] |
+| Where does the output land? | History row's `file_url` + delivered to each entry in `recipients` | See [reporting-audit/history](/en/inventory/reporting-audit/history) |
 | Why was a recipient skipped? | Unknown `type` in the recipient object | Warning written to job row's `error_message` |
-| Who can create schedules? | Schedule-admin permission (Sysadmin holds implicitly) | Grant via [[access-control/permission]] |
+| Who can create schedules? | Schedule-admin permission (Sysadmin holds implicitly) | Grant via [access-control/permission](/en/inventory/access-control/permission) |
 
 ## 4. Edge Cases
 
@@ -88,15 +88,15 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 - **Active flag.** `is_active = false` suspends polling without deletion; toggling on recomputes `next_run_at` from now.
 - **Recipient resolution.** Typed objects — `{type:"email",value:...}`, `{type:"user",value:<uuid>}`, `{type:"sftp",value:<config_id>}`. Unknown types skipped with warning.
 - **RBAC on creation.** Only schedule-admin grant (Sysadmin implicit) can create / edit.
-- **Retention.** Schedule rows retained indefinitely (soft-delete only); artefacts age out per [[reporting-audit/history]] retention.
+- **Retention.** Schedule rows retained indefinitely (soft-delete only); artefacts age out per [reporting-audit/history](/en/inventory/reporting-audit/history) retention.
 
 ## 7. Cross-References
 
-- [[reporting-audit/report]] — parent module. `report_type` / `report_template_id` resolve `tb_report_template`.
-- [[reporting-audit/history]] — every fire writes one `tb_report_job` row; `last_run_at` mirrors it.
-- [[reporting-audit/notification]] — `user`-type recipients receive in-app notification; `email` receives the artefact via platform mailer.
-- [[reporting-audit/activity]] — create / update / delete / enable / disable logged with `entity_type = 'report_schedule'`.
-- [[access-control/user]], [[access-control/permission]] — owner + schedule-admin grants.
+- [reporting-audit/report](/en/inventory/reporting-audit/report) — parent module. `report_type` / `report_template_id` resolve `tb_report_template`.
+- [reporting-audit/history](/en/inventory/reporting-audit/history) — every fire writes one `tb_report_job` row; `last_run_at` mirrors it.
+- [reporting-audit/notification](/en/inventory/reporting-audit/notification) — `user`-type recipients receive in-app notification; `email` receives the artefact via platform mailer.
+- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — create / update / delete / enable / disable logged with `entity_type = 'report_schedule'`.
+- [access-control/user](/en/inventory/access-control/user), [access-control/permission](/en/inventory/access-control/permission) — owner + schedule-admin grants.
 
 ## 8. References
 

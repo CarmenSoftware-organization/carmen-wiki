@@ -2,7 +2,7 @@
 title: Vendor Pricelist — User Flow
 description: Document lifecycle and persona-specific flow files for vendor-pricelist.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: vendor-pricelist, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 # Vendor Pricelist — User Flow
 
 > **At a Glance**
-> **Module:** [[vendor-pricelist]] &nbsp;·&nbsp; **Personas:** Purchaser (+ Purchasing Manager) &nbsp;·&nbsp; Vendor &nbsp;·&nbsp; Finance &nbsp;·&nbsp; Audit / Config
+> **Module:** [vendor-pricelist](/en/inventory/vendor-pricelist) &nbsp;·&nbsp; **Personas:** Purchaser (+ Purchasing Manager) &nbsp;·&nbsp; Vendor &nbsp;·&nbsp; Finance &nbsp;·&nbsp; Audit / Config
 > **Workflow lifecycle:** Template (draft → active → inactive) &nbsp;·&nbsp; Campaign (draft → active → completed / cancelled) &nbsp;·&nbsp; Invitation (pending → in-progress → submitted → approved / expired) &nbsp;·&nbsp; Pricelist (draft → submitted → active / inactive / expired)
 > **Drill into per-persona views below for action-level detail**
 
@@ -118,4 +118,4 @@ The table below captures the moments where pricelist responsibility moves from o
 - `../carmen/docs/vendor-pricelist-management/VENDOR_PORTAL_ENHANCEMENT_SUMMARY.md` — vendor portal features behind the Vendor persona's primary surface.
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical entity / enum reference for the lifecycles in Section 2.
 - Sibling: [02-business-rules.md](./02-business-rules.md) — validation, calculation, authorization, posting (status-transition), and cross-module rules referenced by each row of Section 2 and each handoff in Section 4.
-- Related modules: [[purchase-request]] (PR defaults price from active pricelist), [[purchase-order]] (PO snapshots pricelist price + tracks deviation), [[good-receive-note]] (GRN price-variance check), [[product]] (pricelist entries reference products).
+- Related modules: [purchase-request](/en/inventory/purchase-request) (PR defaults price from active pricelist), [purchase-order](/en/inventory/purchase-order) (PO snapshots pricelist price + tracks deviation), [good-receive-note](/en/inventory/good-receive-note) (GRN price-variance check), [product](/en/inventory/product) (pricelist entries reference products).

@@ -2,7 +2,7 @@
 title: การนับสต๊อกประจำงวด (Physical Count) — User Flow — Counter
 description: เส้นทางของ Counter / Store Keeper ผ่านวงจรชีวิตการนับสต๊อกประจำงวด
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: physical-count, user-flow, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T14:00:00.000Z
 # การนับสต๊อกประจำงวด (Physical Count) — User Flow — Counter
 
 > **At a Glance**
-> **Persona:** Counter (Store Keeper) &nbsp;·&nbsp; **โมดูล:** [[physical-count]] &nbsp;·&nbsp; **ขั้นตอน workflow:** ป้อน `actual_qty` แรก (auto-transition `pending → in_progress`; stamp `start_counting_at` / `start_counting_by_id`) &nbsp;·&nbsp; แก้ไข `actual_qty` และเพิ่ม comment บรรทัดบน zone ของตน &nbsp;·&nbsp; เซ็นปิด sheet ที่เสร็จกลับ Count Lead &nbsp;·&nbsp; **สิทธิ์สำคัญ:** แก้ไขบรรทัดใน zone ของตน (`PHC_AUTH_002 / PHC_AUTH_004`); submit เอกสารเป็น `completed` ไม่ได้ (Count Lead เท่านั้น)
+> **Persona:** Counter (Store Keeper) &nbsp;·&nbsp; **โมดูล:** [physical-count](/th/inventory/physical-count) &nbsp;·&nbsp; **ขั้นตอน workflow:** ป้อน `actual_qty` แรก (auto-transition `pending → in_progress`; stamp `start_counting_at` / `start_counting_by_id`) &nbsp;·&nbsp; แก้ไข `actual_qty` และเพิ่ม comment บรรทัดบน zone ของตน &nbsp;·&nbsp; เซ็นปิด sheet ที่เสร็จกลับ Count Lead &nbsp;·&nbsp; **สิทธิ์สำคัญ:** แก้ไขบรรทัดใน zone ของตน (`PHC_AUTH_002 / PHC_AUTH_004`); submit เอกสารเป็น `completed` ไม่ได้ (Count Lead เท่านั้น)
 > **สิ่งที่ persona นี้ทำ:** เดินใน zone ที่ได้รับมอบหมาย บันทึกปริมาณ physical ทีละบรรทัด และ flag รายการเสียหาย / ไม่มีป้าย / ไม่คุ้นเคยให้ Count Lead
 
 ## 1. Persona
@@ -32,7 +32,7 @@ graph LR
 
 ### Permission Matrix — V1 Status × Action (Counter)
 
-Counter เป็น persona ป้อนข้อมูลที่จำกัดขอบเขตอยู่ที่ zone ที่ได้รับมอบหมาย อ่านและเขียน `actual_qty` บนบรรทัดของตนและเพิ่ม comment ได้ แต่ submit เอกสาร count หรือเปลี่ยน config ใด ๆ ไม่ได้ row มาจากหัวข้อ 3 (Primary Actions) ของไฟล์นี้; citation ของกฎอ้างอิง [[physical-count/02-business-rules]] § 4 / § 5
+Counter เป็น persona ป้อนข้อมูลที่จำกัดขอบเขตอยู่ที่ zone ที่ได้รับมอบหมาย อ่านและเขียน `actual_qty` บนบรรทัดของตนและเพิ่ม comment ได้ แต่ submit เอกสาร count หรือเปลี่ยน config ใด ๆ ไม่ได้ row มาจากหัวข้อ 3 (Primary Actions) ของไฟล์นี้; citation ของกฎอ้างอิง [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) § 4 / § 5
 
 | Action | เอกสาร count `pending` | เอกสาร count `in_progress` | เอกสาร count `completed` |
 |---|---|---|---|
@@ -84,4 +84,4 @@ Counter เป็น persona ป้อนข้อมูลที่จำกั
 - **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
 - **Frontend (TODO):** `../carmen-inventory-frontend/` — UI ของ Counter / mobile; ตรวจ cmobile (`../cmobile/`) สำหรับการ implement count sheet ฝั่ง PWA ถ้ามี
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count
-- ที่เกี่ยวข้อง: [[physical-count/03-user-flow]] (overview), [[physical-count/02-business-rules]] (`PHC_AUTH_002`, `PHC_VAL_004`–`PHC_VAL_005`), [[physical-count/03-user-flow-count-lead]] (คู่ handoff)
+- ที่เกี่ยวข้อง: [physical-count/03-user-flow](/th/inventory/physical-count/03-user-flow) (overview), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_AUTH_002`, `PHC_VAL_004`–`PHC_VAL_005`), [physical-count/03-user-flow-count-lead](/th/inventory/physical-count/03-user-flow-count-lead) (คู่ handoff)

@@ -2,7 +2,7 @@
 title: Physical Count — User Flow — Count Lead
 description: Inventory Controller / Inventory Manager path through the physical-count lifecycle.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: physical-count, user-flow, count-lead, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -11,12 +11,12 @@ dateCreated: 2026-05-15T14:00:00.000Z
 # Physical Count — User Flow — Count Lead
 
 > **At a Glance**
-> **Persona:** Count Lead (Inventory Controller / Manager) &nbsp;·&nbsp; **Module:** [[physical-count]] &nbsp;·&nbsp; **Workflow stages:** Create `tb_physical_count_period` (`draft`) &nbsp;·&nbsp; generate count sheets per `(period, location)` (`pending`) &nbsp;·&nbsp; assign counters / zones &nbsp;·&nbsp; flag variance for recount &nbsp;·&nbsp; submit to `completed` (fires variance rollup to [[inventory-adjustment]] per `PHC_POST_001`) &nbsp;·&nbsp; **Key permissions:** open period, generate count sheets, flag recount (`PHC_VAL_007`), submit count (`PHC_AUTH_001`)
+> **Persona:** Count Lead (Inventory Controller / Manager) &nbsp;·&nbsp; **Module:** [physical-count](/en/inventory/physical-count) &nbsp;·&nbsp; **Workflow stages:** Create `tb_physical_count_period` (`draft`) &nbsp;·&nbsp; generate count sheets per `(period, location)` (`pending`) &nbsp;·&nbsp; assign counters / zones &nbsp;·&nbsp; flag variance for recount &nbsp;·&nbsp; submit to `completed` (fires variance rollup to [inventory-adjustment](/en/inventory/inventory-adjustment) per `PHC_POST_001`) &nbsp;·&nbsp; **Key permissions:** open period, generate count sheets, flag recount (`PHC_VAL_007`), submit count (`PHC_AUTH_001`)
 > **What this persona does:** Single owner of the count exercise — schedules, scopes, monitors, resolves discrepancies, and triggers the variance rollup to inventory-adjustment.
 
 ## 1. Persona
 
-**Count Lead** — Inventory Controller / Inventory Manager. The single owner of the count exercise: schedules the period, configures scope (location, categories, mode — frozen vs live), assigns counters and zones, generates and distributes count sheets, monitors progress, resolves discrepancies via recounts, and triggers the variance rollup to [[inventory-adjustment]]. Authority anchor for `PHC_AUTH_001`.
+**Count Lead** — Inventory Controller / Inventory Manager. The single owner of the count exercise: schedules the period, configures scope (location, categories, mode — frozen vs live), assigns counters and zones, generates and distributes count sheets, monitors progress, resolves discrepancies via recounts, and triggers the variance rollup to [inventory-adjustment](/en/inventory/inventory-adjustment). Authority anchor for `PHC_AUTH_001`.
 
 ### Workflow position (Count Lead highlighted)
 
@@ -32,7 +32,7 @@ graph LR
 
 ### Permission Matrix — V1 Status × Action (Count Lead)
 
-The Count Lead is the single owner of the count exercise — the only persona who can open periods, generate sheets, assign counters, flag recounts, and submit. Rows are derived from Section 3 (Primary Actions) of this file; rule citations refer to [[physical-count/02-business-rules]] § 4 / § 5.
+The Count Lead is the single owner of the count exercise — the only persona who can open periods, generate sheets, assign counters, flag recounts, and submit. Rows are derived from Section 3 (Primary Actions) of this file; rule citations refer to [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) § 4 / § 5.
 
 | Action | Period `draft` | Count `pending` | Count `in_progress` | Count `completed` |
 |---|---|---|---|---|
@@ -44,7 +44,7 @@ The Count Lead is the single owner of the count exercise — the only persona wh
 | Flag variance line for recount (`PHC_VAL_007`) | — | — | ✅ (`PHC_AUTH_001`) | ❌ |
 | Override / accept variance (countersignature) | — | — | ✅ (`PHC_AUTH_001`) | ❌ |
 | Submit count (`in_progress → completed`) | — | — | ✅ (`PHC_AUTH_001`; `PHC_VAL_004` — all lines counted; `PHC_POST_001` rollup fires) | — |
-| Route rollup adjustment for approval | — | — | — | ✅ — to Approver / Finance via [[inventory-adjustment]] |
+| Route rollup adjustment for approval | — | — | — | ✅ — to Approver / Finance via [inventory-adjustment](/en/inventory/inventory-adjustment) |
 | Edit lines after completion | — | — | — | ❌ (`PHC_VAL_008` — immutable; raise manual adjustment) |
 
 ## 2. Entry Points
@@ -78,7 +78,7 @@ The Count Lead is the single owner of the count exercise — the only persona wh
 
 | Trigger | Handoff to | Artefact |
 | ------- | ---------- | -------- |
-| Submit count | System → [[inventory-adjustment]] rollup | `tb_physical_count.status = completed`; `tb_stock_in` / `tb_stock_out` created with `info.countId`. |
+| Submit count | System → [inventory-adjustment](/en/inventory/inventory-adjustment) rollup | `tb_physical_count.status = completed`; `tb_stock_in` / `tb_stock_out` created with `info.countId`. |
 | Route rollup adjustment for approval | Audit / Config (Approver / Finance) per `ADJ_AUTH_*` | Rollup `tb_stock_in` / `tb_stock_out` in `in_progress`. |
 | Period closes | Auditor (read-only) | All under-period documents in `completed`. |
 
@@ -87,4 +87,4 @@ The Count Lead is the single owner of the count exercise — the only persona wh
 - **Primary (TODO):** carmen/docs source — does not exist for this module.
 - **Frontend (TODO):** `../carmen-inventory-frontend/` — Count Lead UI screens.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists.
-- Related: [[physical-count/03-user-flow]] (overview), [[physical-count/02-business-rules]] (`PHC_AUTH_001`, `PHC_VAL_*`, `PHC_POST_*`), [[inventory-adjustment/03-user-flow-inventory-controller]] (rollup-side flow, same persona acting as adjustment owner).
+- Related: [physical-count/03-user-flow](/en/inventory/physical-count/03-user-flow) (overview), [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) (`PHC_AUTH_001`, `PHC_VAL_*`, `PHC_POST_*`), [inventory-adjustment/03-user-flow-inventory-controller](/en/inventory/inventory-adjustment/03-user-flow-inventory-controller) (rollup-side flow, same persona acting as adjustment owner).

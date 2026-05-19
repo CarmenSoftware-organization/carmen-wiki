@@ -2,7 +2,7 @@
 title: User
 description: Core user account with profile, password, and login-session tables — the identity behind every audit column in the system.
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: access-control, user, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -17,7 +17,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 1. What & Who
 
-The user entity is the **identity layer** for the entire platform. Every transactional row in every tenant carries `created_by_id` / `updated_by_id` / `deleted_by_id` referencing a row here, so this is the most-foreign-keyed entity in the system. It also feeds RBAC ([[access-control/application-role]]), per-BU access ([[access-control/business-unit-user]]), and per-location scoping ([[access-control/user-location]]).
+The user entity is the **identity layer** for the entire platform. Every transactional row in every tenant carries `created_by_id` / `updated_by_id` / `deleted_by_id` referencing a row here, so this is the most-foreign-keyed entity in the system. It also feeds RBAC ([access-control/application-role](/en/inventory/access-control/application-role)), per-BU access ([access-control/business-unit-user](/en/inventory/access-control/business-unit-user)), and per-location scoping ([access-control/user-location](/en/inventory/access-control/user-location)).
 
 The entity is split across four tables: `tb_user` (account), `tb_user_profile` (name/phone/bio), `tb_password` (bcrypt + expiry), `tb_user_login_session` (tokens). Splitting keeps the hot path narrow.
 
@@ -118,11 +118,11 @@ Source: platform schema.
 
 ## 7. Cross-References
 
-- [[access-control/application-role]] — RBAC join.
-- [[access-control/business-unit-user]] — per-BU access.
-- [[access-control/user-location]] — tenant-side per-location scope.
-- [[access-control/permission]] — granted transitively via roles.
-- [[master-data/business-unit]] — every BU is audited by `tb_user`.
+- [access-control/application-role](/en/inventory/access-control/application-role) — RBAC join.
+- [access-control/business-unit-user](/en/inventory/access-control/business-unit-user) — per-BU access.
+- [access-control/user-location](/en/inventory/access-control/user-location) — tenant-side per-location scope.
+- [access-control/permission](/en/inventory/access-control/permission) — granted transitively via roles.
+- [master-data/business-unit](/en/inventory/master-data/business-unit) — every BU is audited by `tb_user`.
 - All transactional modules — every `*_by_id` audit column.
 
 ## 8. References

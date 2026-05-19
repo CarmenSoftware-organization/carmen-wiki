@@ -2,7 +2,7 @@
 title: แดชบอร์ดใบรับสินค้า (GRN Dashboard)
 description: KPI ของใบรับสินค้า — จำนวน receiving-now / received-today / MTD / YTD, PO ค้างตามช่วงวันแบบ tab, PO ล่าช้าพร้อมไฮไลต์วิกฤต, ตาราง GRN ไม่ครบและรับเกิน รวมถึง top vendor และค่าใช้จ่ายตามหมวด
 published: true
-date: 2026-05-17T07:00:36.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: dashboard, good-receive-note, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -33,15 +33,15 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 | Tile | แสดงอะไร | Drill-down (เมื่อ live) |
 |---|---|---|
-| **Receiving Now** | จำนวน, ไอคอนลูกศร (สี primary) | → [[good-receive-note]] in-progress |
-| **Received Today** | จำนวน, ไอคอน check (สี success) | → [[good-receive-note]] วันนี้ |
-| **GRN รวม (MTD)** | จำนวน, ไอคอนปฏิทิน | → [[good-receive-note]] month-to-date |
-| **GRN รวม (YTD)** | ตัวเลข format, ไอคอนกล่อง | → [[good-receive-note]] year-to-date |
-| **ใบสั่งซื้อค้าง** | tab วันนี้ / สัปดาห์นี้ / สัปดาห์หน้า — PO, Supplier, Expected Date, Items, Total, Priority (`High` / `Medium` / `Low`) | → [[purchase-order]] |
-| **ใบสั่งซื้อล่าช้า** | PO, Supplier, Original Due Date, Days Overdue (badge แดง `OVERDUE` ถ้า ≥ 10 วัน), Items | → [[purchase-order]] |
-| **GRN ไม่ครบ (รับบางส่วน)** | GRN, PO, Supplier, Qty Ordered, Qty Received, Variance %, badge "Partially Received" | → [[good-receive-note]] |
-| **GRN รับเกิน** | GRN (AlertTriangle), PO, Supplier, PO Amount, GRN Amount, Excess, Variance % | → [[good-receive-note]] |
-| **5 ผู้ขายสูงสุดตามยอดซื้อ YTD** | bar แนวนอนพร้อม label มูลค่า `$NM` | → [[vendor-pricelist]] |
+| **Receiving Now** | จำนวน, ไอคอนลูกศร (สี primary) | → [good-receive-note](/th/inventory/good-receive-note) in-progress |
+| **Received Today** | จำนวน, ไอคอน check (สี success) | → [good-receive-note](/th/inventory/good-receive-note) วันนี้ |
+| **GRN รวม (MTD)** | จำนวน, ไอคอนปฏิทิน | → [good-receive-note](/th/inventory/good-receive-note) month-to-date |
+| **GRN รวม (YTD)** | ตัวเลข format, ไอคอนกล่อง | → [good-receive-note](/th/inventory/good-receive-note) year-to-date |
+| **ใบสั่งซื้อค้าง** | tab วันนี้ / สัปดาห์นี้ / สัปดาห์หน้า — PO, Supplier, Expected Date, Items, Total, Priority (`High` / `Medium` / `Low`) | → [purchase-order](/th/inventory/purchase-order) |
+| **ใบสั่งซื้อล่าช้า** | PO, Supplier, Original Due Date, Days Overdue (badge แดง `OVERDUE` ถ้า ≥ 10 วัน), Items | → [purchase-order](/th/inventory/purchase-order) |
+| **GRN ไม่ครบ (รับบางส่วน)** | GRN, PO, Supplier, Qty Ordered, Qty Received, Variance %, badge "Partially Received" | → [good-receive-note](/th/inventory/good-receive-note) |
+| **GRN รับเกิน** | GRN (AlertTriangle), PO, Supplier, PO Amount, GRN Amount, Excess, Variance % | → [good-receive-note](/th/inventory/good-receive-note) |
+| **5 ผู้ขายสูงสุดตามยอดซื้อ YTD** | bar แนวนอนพร้อม label มูลค่า `$NM` | → [vendor-pricelist](/th/inventory/vendor-pricelist) |
 | **ค่าใช้จ่ายในการซื้อตามหมวด** | bar แนวตั้งจัดกลุ่ม: เดือนปัจจุบัน vs YTD ต่อหมวด | — |
 
 เกณฑ์ 10 วัน (`OVERDUE_THRESHOLD`) ถูก hard-code ใน `dashboard-grn.tsx` — production ควรดึงจากการตั้งค่า SLA ที่ปรับได้
@@ -52,16 +52,16 @@ dateCreated: 2026-05-16T15:00:00.000Z
 |---|---|
 | ทำไม "Received Today" ไม่เพิ่มขึ้นหลัง commit GRN? | **ยังเป็น mock data** — ตัวเลขมาจาก `mock/grn.ts` wire จริงใช้ `CACHE_DYNAMIC` (1-min stale) พร้อม refetch-on-focus |
 | อะไรจัด PO เป็น "Overdue" vs "Critical OVERDUE"? | Overdue = `expected_delivery_date < CURRENT_DATE` AND ยังรับไม่ครบ Critical badge เด้งเมื่อ days-overdue ≥ `OVERDUE_THRESHOLD = 10` (ปัจจุบัน hard-code) |
-| Variance % คำนวณอย่างไรสำหรับรับบางส่วน / รับเกิน? | Frontend คำนวณจาก `received_qty` vs `ordered_qty` ของแต่ละแถว join กลับไป [[purchase-order]] line |
-| tab ช่วงวัน (วันนี้ / สัปดาห์นี้ / สัปดาห์หน้า) ดึงรายการจากไหน? | [[purchase-order]] line จัดกลุ่มตาม bucket ของ `expected_delivery_date` ที่ยังไม่มี [[good-receive-note]] line ถูก commit |
-| ทำไม YTD total แสดงเป็น USD ล้าน? | Mock fixture ใช้ `$M`; production localise ไปยังสกุลเงินฐานของ BU จาก [[master-data/exchange-rate]] |
+| Variance % คำนวณอย่างไรสำหรับรับบางส่วน / รับเกิน? | Frontend คำนวณจาก `received_qty` vs `ordered_qty` ของแต่ละแถว join กลับไป [purchase-order](/th/inventory/purchase-order) line |
+| tab ช่วงวัน (วันนี้ / สัปดาห์นี้ / สัปดาห์หน้า) ดึงรายการจากไหน? | [purchase-order](/th/inventory/purchase-order) line จัดกลุ่มตาม bucket ของ `expected_delivery_date` ที่ยังไม่มี [good-receive-note](/th/inventory/good-receive-note) line ถูก commit |
+| ทำไม YTD total แสดงเป็น USD ล้าน? | Mock fixture ใช้ `$M`; production localise ไปยังสกุลเงินฐานของ BU จาก [master-data/exchange-rate](/th/inventory/master-data/exchange-rate) |
 
 ## 4. การแก้ปัญหา
 
 | อาการ | สาเหตุ | การดำเนินการ |
 |---|---|---|
 | badge Receiving Now ค้างเลขเดิมทั้งวัน | mock ไม่มี real-time tick | wire จริงควร refetch on focus และ on commit-event hook |
-| เกณฑ์ Overdue ไม่ตรงกับนโยบาย SLA | `OVERDUE_THRESHOLD = 10` hard-code ใน component | เปิด ticket enhancement ดึงจาก config [[system-config/workflow]] |
+| เกณฑ์ Overdue ไม่ตรงกับนโยบาย SLA | `OVERDUE_THRESHOLD = 10` hard-code ใน component | เปิด ticket enhancement ดึงจาก config [system-config/workflow](/th/inventory/system-config/workflow) |
 | GRN ไม่ครบ vs รับเกิน แสดงแถวเดียวกัน | Mock fixture seed ไม่ consistent | live query เป็น mutually exclusive: `received_qty < ordered_qty` vs `received_qty > ordered_qty` |
 | สลับ tab (วันนี้/สัปดาห์นี้/สัปดาห์หน้า) ไม่เปลี่ยนข้อมูล | array mock ต่างกัน แต่ state binding อาจ regress | ตรวจสอบ `pendingPoToday` / `pendingPoThisWeek` / `pendingPoNextWeek` |
 
@@ -69,12 +69,12 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ## 5. แหล่งข้อมูล (Dev)
 
-- **การ์ด KPI** — count query บน [[good-receive-note]] กรองตาม `status` (`in progress` สำหรับ Receiving Now, `commit_date = today` สำหรับ Received Today ฯลฯ)
-- **tab Pending PO** — [[purchase-order]] line จัดกลุ่มตาม bucket ของ `expected_delivery_date` ที่ยังไม่มี [[good-receive-note]] line ถูก commit
-- **Overdue PO** — [[purchase-order]] ที่ `expected_delivery_date < CURRENT_DATE` AND ยังรับไม่ครบ; days overdue = `CURRENT_DATE - expected_delivery_date`
-- **GRN ไม่ครบ / รับเกิน** — join [[good-receive-note]] line ที่ commit กับ PO line; ไม่ครบ `received_qty < ordered_qty`, เกิน `received_qty > ordered_qty`; Variance % คำนวณ frontend
+- **การ์ด KPI** — count query บน [good-receive-note](/th/inventory/good-receive-note) กรองตาม `status` (`in progress` สำหรับ Receiving Now, `commit_date = today` สำหรับ Received Today ฯลฯ)
+- **tab Pending PO** — [purchase-order](/th/inventory/purchase-order) line จัดกลุ่มตาม bucket ของ `expected_delivery_date` ที่ยังไม่มี [good-receive-note](/th/inventory/good-receive-note) line ถูก commit
+- **Overdue PO** — [purchase-order](/th/inventory/purchase-order) ที่ `expected_delivery_date < CURRENT_DATE` AND ยังรับไม่ครบ; days overdue = `CURRENT_DATE - expected_delivery_date`
+- **GRN ไม่ครบ / รับเกิน** — join [good-receive-note](/th/inventory/good-receive-note) line ที่ commit กับ PO line; ไม่ครบ `received_qty < ordered_qty`, เกิน `received_qty > ordered_qty`; Variance % คำนวณ frontend
 - **Top Vendors YTD** — sum จำนวน GRN line จัดกลุ่มตาม `vendor_id` เลือก 5 อันดับแรก
-- **ค่าใช้จ่ายตามหมวด** — sum จำนวน GRN line จัดกลุ่มตาม [[product/category]] แยกเดือนปัจจุบัน vs YTD
+- **ค่าใช้จ่ายตามหมวด** — sum จำนวน GRN line จัดกลุ่มตาม [product/category](/th/inventory/product/category) แยกเดือนปัจจุบัน vs YTD
 
 ## 6. จังหวะการ Refresh
 
@@ -82,11 +82,11 @@ mock แบบ static ในปัจจุบัน เมื่อ wire แล
 
 ## 7. โมดูลที่เกี่ยวข้อง
 
-- [[good-receive-note]] — ระบบบันทึก transactional
-- [[purchase-order]] — การผูกพันต้นน้ำเบื้องหลังทุกแถว pending / overdue
-- [[inventory]] — ผลกระทบ stock ปลายน้ำเมื่อ GRN commit
-- [[vendor-pricelist]] — vendor master สำหรับกราฟ Top Vendors
-- [[costing]] — การจัดการ variance สำหรับจำนวนรับเกินตอน commit-time costing
+- [good-receive-note](/th/inventory/good-receive-note) — ระบบบันทึก transactional
+- [purchase-order](/th/inventory/purchase-order) — การผูกพันต้นน้ำเบื้องหลังทุกแถว pending / overdue
+- [inventory](/th/inventory/inventory) — ผลกระทบ stock ปลายน้ำเมื่อ GRN commit
+- [vendor-pricelist](/th/inventory/vendor-pricelist) — vendor master สำหรับกราฟ Top Vendors
+- [costing](/th/inventory/costing) — การจัดการ variance สำหรับจำนวนรับเกินตอน commit-time costing
 
 ## 8. แหล่งข้อมูลอ้างอิง
 

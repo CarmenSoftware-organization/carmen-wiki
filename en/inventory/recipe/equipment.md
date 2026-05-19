@@ -2,7 +2,7 @@
 title: Equipment
 description: Kitchen equipment master — referenced from recipe preparation steps that require specific tools (sous-vide bath, deep fryer, smoker, etc.).
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: recipe, equipment, master-data, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # Equipment
 
 > **At a Glance**
-> **Owner:** Chef / Product Admin &nbsp;·&nbsp; **Table:** `tb_recipe_equipment` &nbsp;·&nbsp; **Parent:** [[recipe/equipment-category]] via `category_id` &nbsp;·&nbsp; **Used by:** [[recipe]] preparation steps, fit-out checklists, maintenance dashboard &nbsp;·&nbsp; **Tracks:** specs, station, qty, usage, maintenance dates
+> **Owner:** Chef / Product Admin &nbsp;·&nbsp; **Table:** `tb_recipe_equipment` &nbsp;·&nbsp; **Parent:** [recipe/equipment-category](/en/inventory/recipe/equipment-category) via `category_id` &nbsp;·&nbsp; **Used by:** [recipe](/en/inventory/recipe) preparation steps, fit-out checklists, maintenance dashboard &nbsp;·&nbsp; **Tracks:** specs, station, qty, usage, maintenance dates
 
 ![Equipment screen](/screenshots/recipe/equipment.png)
 
@@ -40,15 +40,15 @@ Recipe **preparation steps** reference equipment so the kitchen workflow planner
 | "Code is required" / "Name is required" | Blank required field | Fill before save |
 | "available_qty cannot exceed total_qty" | App-enforced quantity rule | Adjust counters consistently |
 | "Next maintenance must be ≥ last maintenance" | App-enforced when both dates set | Fix the dates |
-| Category dropdown empty | No active rows in [[recipe/equipment-category]] | Seed categories first |
+| Category dropdown empty | No active rows in [recipe/equipment-category](/en/inventory/recipe/equipment-category) | Seed categories first |
 | Category renamed but old `category_name` still shown | Denormalised display copy not refreshed | Save category to trigger fan-out (or re-save equipment) |
 
 ## 4. Edge Cases
 
-- **Category FK is `onDelete: NoAction`.** The DB will not cascade or block — application layer must reject category delete while equipment references exist (see [[recipe/equipment-category]]).
+- **Category FK is `onDelete: NoAction`.** The DB will not cascade or block — application layer must reject category delete while equipment references exist (see [recipe/equipment-category](/en/inventory/recipe/equipment-category)).
 - **`category_name` is denormalised** for display. Treat the FK (`category_id`) as source of truth; the string is a cache.
 - **Checkout flow not implemented** — `available_qty` is schema-supported but no UI wired today.
-- **Equipment on preparation steps is denormalised** onto `tb_recipe_preparation_step.equipment` payload, not a join table (see [[recipe/01-data-model]]).
+- **Equipment on preparation steps is denormalised** onto `tb_recipe_preparation_step.equipment` payload, not a join table (see [recipe/01-data-model](/en/inventory/recipe/01-data-model)).
 - **Maintenance overdue badge** is purely visual; no automatic block on recipe usage.
 
 ---
@@ -94,10 +94,10 @@ Source: tenant schema.
 
 ## 7. Cross-References
 
-- [[recipe/equipment-category]] — parent taxonomy via `category_id`.
-- [[recipe]] — preparation steps reference equipment (denormalised onto the step).
-- [[recipe/01-data-model]] — integration point for equipment on steps.
-- [[recipe/03-user-flow-chef]], [[recipe/03-user-flow-outlet-manager]] — Chef tags steps; Outlet Manager validates fit-out.
+- [recipe/equipment-category](/en/inventory/recipe/equipment-category) — parent taxonomy via `category_id`.
+- [recipe](/en/inventory/recipe) — preparation steps reference equipment (denormalised onto the step).
+- [recipe/01-data-model](/en/inventory/recipe/01-data-model) — integration point for equipment on steps.
+- [recipe/03-user-flow-chef](/en/inventory/recipe/03-user-flow-chef), [recipe/03-user-flow-outlet-manager](/en/inventory/recipe/03-user-flow-outlet-manager) — Chef tags steps; Outlet Manager validates fit-out.
 
 ## 8. References
 

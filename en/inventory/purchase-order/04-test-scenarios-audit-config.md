@@ -2,7 +2,7 @@
 title: Purchase Order — Test Scenarios — Audit & Config
 description: Auditor (read-only audit log across PR/PO/GRN/invoice) and System Administrator (PO numbering, RBAC, integration config) test cases for purchase-order.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-order, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 # Purchase Order — Test Scenarios — Audit & Config
 
 > **At a Glance**
-> **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Scenarios:** ~30
+> **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [purchase-order](/en/inventory/purchase-order) &nbsp;·&nbsp; **Scenarios:** ~30
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** maps to `401-po.spec.ts` (transactional paths only) in `../carmen-inventory-frontend-e2e/`; audit-log query and config-management surfaces covered by API / integration tests
 
@@ -78,7 +78,7 @@ This page captures the test scenarios that the **Audit / Config** persona axis d
 - Sibling: [04-test-scenarios-receiver.md](./04-test-scenarios-receiver.md) — segregation-of-duties pair verified in chain audit (`PO_AUTH_010`: Purchaser ≠ Receiver).
 - Sibling: [04-test-scenarios-finance.md](./04-test-scenarios-finance.md) — three-way-match outcomes (`PO_POST_008` / `PO_POST_009`) close the forward-chain audit on the AP side.
 - Sibling: [04-test-scenarios-vendor.md](./04-test-scenarios-vendor.md) — external acknowledgement / invoice events feed the chain at the vendor boundary.
-- Cross-link: [[purchase-request]] — upstream module whose PR records and approval trail are walked in the back-chain audit via the PR→PO bridge.
-- Cross-link: [[good-receive-note]] — downstream module whose GRN postings drive the forward-chain audit of receipt under `PO_POST_006` / `PO_POST_007`.
-- Cross-link: [[vendor-pricelist]] — price-snapshot surface taken at PR-to-PO conversion and audited under the sensitive-field export gate.
+- Cross-link: [purchase-request](/en/inventory/purchase-request) — upstream module whose PR records and approval trail are walked in the back-chain audit via the PR→PO bridge.
+- Cross-link: [good-receive-note](/en/inventory/good-receive-note) — downstream module whose GRN postings drive the forward-chain audit of receipt under `PO_POST_006` / `PO_POST_007`.
+- Cross-link: [vendor-pricelist](/en/inventory/vendor-pricelist) — price-snapshot surface taken at PR-to-PO conversion and audited under the sensitive-field export gate.
 - E2E: `../carmen-inventory-frontend-e2e/tests/401-po.spec.ts` — shared / mixed-persona coverage of the transactional happy paths the Auditor walks read-only; **no dedicated audit-config E2E spec exists at this time**. Audit-log query and configuration-management surfaces are exercised at the API / integration level (cross-module audit and config services). The `SKIP_NOTE_BACKEND` annotation in `401-po.spec.ts` flags configuration-driven behaviour (sequence generation, RBAC enforcement, workflow stage routing, integration sync) as out-of-scope for UI E2E — these are validated via the audit logs the Auditor walks and the configuration audit log the Sysadmin writes.

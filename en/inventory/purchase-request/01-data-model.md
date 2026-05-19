@@ -2,7 +2,7 @@
 title: Purchase Request — Data Model
 description: Entities, fields, relationships, and enums for the purchase-request module.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-request, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -26,7 +26,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 
 The purchase-request module owns six tenant-schema entities: the document header (`tb_purchase_request`), its line items (`tb_purchase_request_detail`), workflow / activity-log comments at both header and line level (`tb_purchase_request_comment`, `tb_purchase_request_detail_comment`), and a reusable template pair (`tb_purchase_request_template`, `tb_purchase_request_template_detail`) for recurring requests such as monthly market-list orders. Workflow stage tracking is not a separate table — it lives inline on the header as JSON columns (`workflow_history`, `workflow_current_stage`, `stages_status`) plus a foreign key into the shared `tb_workflow` configuration table, while the persisted timeline of submit/approve/reject/send-back events is captured through the comment table.
 
-The PR sits upstream of [[purchase-order]] in the procure-to-pay chain. Approved PR lines are linked to the resulting PO line through the bridge table `tb_purchase_order_detail_tb_purchase_request_detail` (one PO line can fan in from many PR lines for consolidation; one PR line can fan out across multiple POs for partial conversion). PR detail rows also reference [[product]], [[vendor-pricelist]], `tb_tax_profile`, `tb_currency`, `tb_unit`, `tb_location`, `tb_delivery_point`, and `tb_vendor`, denormalising lookup fields (codes, names, snapshot prices) onto the line at submission time so historical PR data remains stable even when master records change. All PR entities live in the tenant Prisma schema; the platform schema contains no purchase-request models.
+The PR sits upstream of [purchase-order](/en/inventory/purchase-order) in the procure-to-pay chain. Approved PR lines are linked to the resulting PO line through the bridge table `tb_purchase_order_detail_tb_purchase_request_detail` (one PO line can fan in from many PR lines for consolidation; one PR line can fan out across multiple POs for partial conversion). PR detail rows also reference [product](/en/inventory/product), [vendor-pricelist](/en/inventory/vendor-pricelist), `tb_tax_profile`, `tb_currency`, `tb_unit`, `tb_location`, `tb_delivery_point`, and `tb_vendor`, denormalising lookup fields (codes, names, snapshot prices) onto the line at submission time so historical PR data remains stable even when master records change. All PR entities live in the tenant Prisma schema; the platform schema contains no purchase-request models.
 
 ## 2. Entities
 
@@ -345,7 +345,7 @@ Notes:
 - **`enum_purchase_order_type`**: `manual` (PO created directly by procurement without an upstream PR), `purchase_request` (PO sourced from one or more PRs via the conversion flow — also the default value on `tb_purchase_order.po_type`, which is why PR-sourced is the standard procure-to-pay path).
 - **`enum_last_action`**: `submitted`, `approved`, `reviewed`, `rejected` — used by `tb_purchase_request.last_action` to capture the most recent workflow action.
 - **`enum_comment_type`**: `user` (human-authored comment), `system` (auto-generated activity-log entry written by the workflow engine).
-- **`enum_pricelist_compare_type`**: referenced by `tb_purchase_request_detail.pricelist_type` to describe how the price snapshot was selected (default `automatic` — see [[vendor-pricelist]] for the full enum values).
+- **`enum_pricelist_compare_type`**: referenced by `tb_purchase_request_detail.pricelist_type` to describe how the price snapshot was selected (default `automatic` — see [vendor-pricelist](/en/inventory/vendor-pricelist) for the full enum values).
 - **`enum_stage_role`**: `create`, `approve`, `purchase`, `issue`, `view_only` — used by the shared `tb_workflow` configuration to label what each stage allows; surfaces on the PR through the `workflow_*` columns.
 
 ## 5. Divergences from carmen/docs
@@ -367,4 +367,4 @@ The legacy `data-models.md` document describes TypeScript front-end interfaces (
 
 - **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (all PR models) and `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (verified to contain no PR models).
 - **Secondary (concept cross-check):** `../carmen/docs/purchase-request-management/data-models.md` — TypeScript front-end interfaces; divergences captured in Section 5.
-- Related modules: [[purchase-order]] (conversion target), [[product]] (line product reference), [[vendor-pricelist]] (price + tax snapshot source), [[inventory]] (on-hand context for the requestor).
+- Related modules: [purchase-order](/en/inventory/purchase-order) (conversion target), [product](/en/inventory/product) (line product reference), [vendor-pricelist](/en/inventory/vendor-pricelist) (price + tax snapshot source), [inventory](/en/inventory/inventory) (on-hand context for the requestor).

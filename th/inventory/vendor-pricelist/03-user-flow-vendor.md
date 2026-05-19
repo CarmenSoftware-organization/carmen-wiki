@@ -2,7 +2,7 @@
 title: รายการราคาผู้ขาย (Vendor Pricelist) — User Flow — Vendor
 description: Flow ของ Vendor ภายในโมดูล vendor-pricelist — external party ที่มีการเข้าถึง portal-token (ไม่มี Carmen system login)
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: vendor-pricelist, user-flow, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -11,16 +11,16 @@ dateCreated: 2026-05-15T15:00:00.000Z
 # รายการราคาผู้ขาย (Vendor Pricelist) — User Flow — Vendor
 
 > **At a Glance**
-> **Persona:** Vendor (external — portal session ที่ authenticate ด้วย token, ไม่มี Carmen login) &nbsp;·&nbsp; **โมดูล:** [[vendor-pricelist]] &nbsp;·&nbsp; **Workflow stage:** pricelist (none) → draft → submitted (จากนั้น Purchaser approve / reject) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** การเข้า portal scope ด้วย token — ป้อน / upload ราคา, ตั้งสกุลเงิน / MOQ, save draft, submit
+> **Persona:** Vendor (external — portal session ที่ authenticate ด้วย token, ไม่มี Carmen login) &nbsp;·&nbsp; **โมดูล:** [vendor-pricelist](/th/inventory/vendor-pricelist) &nbsp;·&nbsp; **Workflow stage:** pricelist (none) → draft → submitted (จากนั้น Purchaser approve / reject) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** การเข้า portal scope ด้วย token — ป้อน / upload ราคา, ตั้งสกุลเงิน / MOQ, save draft, submit
 > **สิ่งที่ persona นี้ทำ:** เข้าถึง portal ต่อ vendor ผ่าน token cryptographic, ป้อนหรือ upload ราคาตาม template และ submit สำหรับ Purchaser review
 
 ## 1. Role ในโมดูลนี้
 
-**Vendor** เป็น **external party ที่ไม่มี Carmen system login** ไม่เหมือนกับ persona external ส่วนใหญ่ (เช่น vendor บนโมดูล [[purchase-order]] ที่ติดต่อทั้งหมดผ่าน email / EDI) โมดูล vendor-pricelist ให้ vendor มี **portal session ที่ authenticate ด้วย token** — ที่เดียวที่ external party ขับ system state โดยตรงภายในระบบ Carmen Vendor ได้รับ email invitation จาก campaign ที่ Purchaser launch, navigate ไปยัง URL portal ต่อ vendor ฝัง `tb_request_for_pricing_detail.pricelist_url_token` cryptographic ([[vendor-pricelist/01-data-model]] § 2.6), ป้อนหรือ upload ราคาสำหรับสินค้าที่ template ระบุ, เลือกสกุลเงินการ submission, จัด MOQ tier พร้อมหน่วย, save draft (auto-save ทุก ~30 วินาที) และสุดท้ายคลิก Submit — ที่จุดนั้น `tb_pricelist.submitted_at` ถูกเขียนและไฟล์ route ไปยัง Purchaser สำหรับ review Session ของ vendor gate โดย `VPL_AUTH_007` (token-validity, IP allowlist ถ้าตั้งค่า, session limit) และ `VPL_AUTH_008` (สกุลเงินต้องอยู่ในรายการสกุลเงินที่ tenant อนุญาต; conversion factor หน่วยอ่านจาก master data ไม่ใช่ vendor-supplied) Vendor ไม่เคยปฏิบัติการ `tb_pricelist.status` โดยตรงเกินกว่า implicit `(none) → draft` และ action submit; การ approve, reject, inactivation และ expiry ทั้งหมดขับโดย persona ภายในหรือ cron job เพราะ surface หลักของ vendor คือ portal session เดียวที่มีสาขาการตัดสินใจจำกัดและไม่มี matrix RBAC ใน-ระบบที่จะแจกแจง ไฟล์นี้สั้นกว่าไฟล์ Purchaser โดยตั้งใจ — เทียบขนาดได้กับไฟล์ Vendor external ใน [[purchase-order/03-user-flow-vendor]]
+**Vendor** เป็น **external party ที่ไม่มี Carmen system login** ไม่เหมือนกับ persona external ส่วนใหญ่ (เช่น vendor บนโมดูล [purchase-order](/th/inventory/purchase-order) ที่ติดต่อทั้งหมดผ่าน email / EDI) โมดูล vendor-pricelist ให้ vendor มี **portal session ที่ authenticate ด้วย token** — ที่เดียวที่ external party ขับ system state โดยตรงภายในระบบ Carmen Vendor ได้รับ email invitation จาก campaign ที่ Purchaser launch, navigate ไปยัง URL portal ต่อ vendor ฝัง `tb_request_for_pricing_detail.pricelist_url_token` cryptographic ([vendor-pricelist/01-data-model](/th/inventory/vendor-pricelist/01-data-model) § 2.6), ป้อนหรือ upload ราคาสำหรับสินค้าที่ template ระบุ, เลือกสกุลเงินการ submission, จัด MOQ tier พร้อมหน่วย, save draft (auto-save ทุก ~30 วินาที) และสุดท้ายคลิก Submit — ที่จุดนั้น `tb_pricelist.submitted_at` ถูกเขียนและไฟล์ route ไปยัง Purchaser สำหรับ review Session ของ vendor gate โดย `VPL_AUTH_007` (token-validity, IP allowlist ถ้าตั้งค่า, session limit) และ `VPL_AUTH_008` (สกุลเงินต้องอยู่ในรายการสกุลเงินที่ tenant อนุญาต; conversion factor หน่วยอ่านจาก master data ไม่ใช่ vendor-supplied) Vendor ไม่เคยปฏิบัติการ `tb_pricelist.status` โดยตรงเกินกว่า implicit `(none) → draft` และ action submit; การ approve, reject, inactivation และ expiry ทั้งหมดขับโดย persona ภายในหรือ cron job เพราะ surface หลักของ vendor คือ portal session เดียวที่มีสาขาการตัดสินใจจำกัดและไม่มี matrix RBAC ใน-ระบบที่จะแจกแจง ไฟล์นี้สั้นกว่าไฟล์ Purchaser โดยตั้งใจ — เทียบขนาดได้กับไฟล์ Vendor external ใน [purchase-order/03-user-flow-vendor](/th/inventory/purchase-order/03-user-flow-vendor)
 
 ## 2. จุดเข้าและ Primary Flow
 
-**จุดเข้า:** Vendor ได้รับ email invitation (หรือ reminder ครั้งเดียวตาม schedule reminder ของ campaign) Email carry URL portal ต่อ vendor ฝัง `pricelist_url_token`, วัน window ของ campaign และข้อความ custom การคลิก link เปิด portal; token แลกเป็น session cookie ที่อยู่ภายใต้ portal-token policy ของ tenant ([[vendor-pricelist/02-business-rules]] § `VPL_AUTH_007`)
+**จุดเข้า:** Vendor ได้รับ email invitation (หรือ reminder ครั้งเดียวตาม schedule reminder ของ campaign) Email carry URL portal ต่อ vendor ฝัง `pricelist_url_token`, วัน window ของ campaign และข้อความ custom การคลิก link เปิด portal; token แลกเป็น session cookie ที่อยู่ภายใต้ portal-token policy ของ tenant ([vendor-pricelist/02-business-rules](/th/inventory/vendor-pricelist/02-business-rules) § `VPL_AUTH_007`)
 
 **Primary flow (happy path — การป้อน online):**
 
@@ -63,4 +63,4 @@ dateCreated: 2026-05-15T15:00:00.000Z
 - `../carmen/docs/vendor-pricelist-management/VENDOR_PORTAL_ENHANCEMENT_SUMMARY.md` — แคตตาล็อก feature ของ portal ครอบคลุม auto-save, การ submission แบบ multi-format, การ validate แบบ real-time และการติดตามความคืบหน้า
 - Sibling: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — persona ภายในที่ launch campaign, review submission ของ vendor และ approve / reject
 - Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — System Administrator ที่ตั้งค่านโยบาย portal-token (`VPL_AUTH_007`) และอาจ revoke token ของ vendor (`VPL_AUTH_015`)
-- Cross-link: [[product]] — ทุกบรรทัดบน submission ของ vendor อ้างอิงสินค้าบน template
+- Cross-link: [product](/th/inventory/product) — ทุกบรรทัดบน submission ของ vendor อ้างอิงสินค้าบน template

@@ -2,7 +2,7 @@
 title: Spot Check — Data Model
 description: Entities, fields, relationships, and enums for the spot-check module.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: spot-check, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -13,8 +13,8 @@ dateCreated: 2026-05-15T14:30:00.000Z
 > **At a Glance**
 > **Tables:** `tb_spot_check` &nbsp;·&nbsp; `tb_spot_check_detail` &nbsp;·&nbsp; `tb_spot_check_comment` &nbsp;·&nbsp; `tb_spot_check_detail_comment`
 > **Audience:** Developer / Auditor (dev reference)
-> **Key FKs:** header `→ tb_location`; detail `→ tb_product` and `→ tb_unit` (`inventory_unit_id`). Variance rollup link to [[inventory-adjustment]] is JSON-only (`tb_stock_in.info.spotCheckId` / `tb_stock_out.info.spotCheckId`) — no Prisma FK
-> **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*`; **flat two-level tree** (no period parent — ad-hoc, not period-bound, unlike [[physical-count]]); spot-check itself does not write to the inventory ledger — adjustment post is the integration anchor
+> **Key FKs:** header `→ tb_location`; detail `→ tb_product` and `→ tb_unit` (`inventory_unit_id`). Variance rollup link to [inventory-adjustment](/en/inventory/inventory-adjustment) is JSON-only (`tb_stock_in.info.spotCheckId` / `tb_stock_out.info.spotCheckId`) — no Prisma FK
+> **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*`; **flat two-level tree** (no period parent — ad-hoc, not period-bound, unlike [physical-count](/en/inventory/physical-count)); spot-check itself does not write to the inventory ledger — adjustment post is the integration anchor
 
 > **Source of truth:** Backend Prisma schema. Always read this first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
@@ -23,11 +23,11 @@ dateCreated: 2026-05-15T14:30:00.000Z
 
 ## 1. Overview
 
-The Spot Check module is the **document layer** for a targeted, partial count of selected items or storage locations — the lighter-weight cousin of [[physical-count]] described in [[spot-check]] § 1. Unlike physical-count's three-level period / document / detail tree, spot-check persists a **flat two-level document tree** under `tb_spot_check` → `tb_spot_check_detail`: a single header carries the location, date window, `method` (random / high_value / manual), `size` (sample target), and `doc_status`; each detail row is one product line with `on_hand_qty` (book snapshot), `actual_qty` (counted), and `diff_qty` (variance). There is **no `tb_spot_check_period`** parent — spot checks are run ad-hoc, not bound to a fiscal-period header. Comments / attachments hang off both levels (`tb_spot_check_comment`, `tb_spot_check_detail_comment`).
+The Spot Check module is the **document layer** for a targeted, partial count of selected items or storage locations — the lighter-weight cousin of [physical-count](/en/inventory/physical-count) described in [spot-check](/en/inventory/spot-check) § 1. Unlike physical-count's three-level period / document / detail tree, spot-check persists a **flat two-level document tree** under `tb_spot_check` → `tb_spot_check_detail`: a single header carries the location, date window, `method` (random / high_value / manual), `size` (sample target), and `doc_status`; each detail row is one product line with `on_hand_qty` (book snapshot), `actual_qty` (counted), and `diff_qty` (variance). There is **no `tb_spot_check_period`** parent — spot checks are run ad-hoc, not bound to a fiscal-period header. Comments / attachments hang off both levels (`tb_spot_check_comment`, `tb_spot_check_detail_comment`).
 
-The module sits **upstream of [[inventory-adjustment]]** in the same way physical-count does: when a spot check reaches `completed` and variance lines are accepted, the application layer rolls the variance into a `tb_stock_in` (overage) and / or `tb_stock_out` (shortage) document with reason codes (typically `SPOT_CHECK_OVERAGE` / `SPOT_CHECK_SHORTAGE` or aliased to the same `COUNT_OVERAGE` / `COUNT_SHORTAGE` reasons used by physical-count — to be confirmed). The adjustment post is what writes the `tb_inventory_transaction` row that lands on the [[inventory]] ledger. The spot-check tables themselves do **not** write to the inventory ledger directly — the adjustment document is the integration anchor.
+The module sits **upstream of [inventory-adjustment](/en/inventory/inventory-adjustment)** in the same way physical-count does: when a spot check reaches `completed` and variance lines are accepted, the application layer rolls the variance into a `tb_stock_in` (overage) and / or `tb_stock_out` (shortage) document with reason codes (typically `SPOT_CHECK_OVERAGE` / `SPOT_CHECK_SHORTAGE` or aliased to the same `COUNT_OVERAGE` / `COUNT_SHORTAGE` reasons used by physical-count — to be confirmed). The adjustment post is what writes the `tb_inventory_transaction` row that lands on the [inventory](/en/inventory/inventory) ledger. The spot-check tables themselves do **not** write to the inventory ledger directly — the adjustment document is the integration anchor.
 
-> **TODO:** Confirm whether spot-check uses dedicated `SPOT_CHECK_*` reason codes or reuses physical-count's `COUNT_*` reasons. Source UI / interaction details from `../carmen-inventory-frontend/` and end-to-end behaviour from `../carmen-inventory-frontend-e2e/` once specs exist (no `spot-check` spec currently — verified by `ls .../tests/ | grep -i 'spot\|check'`). No carmen/docs source folder exists for this module — see [[physical-count/01-data-model]] for the shared infrastructure pattern.
+> **TODO:** Confirm whether spot-check uses dedicated `SPOT_CHECK_*` reason codes or reuses physical-count's `COUNT_*` reasons. Source UI / interaction details from `../carmen-inventory-frontend/` and end-to-end behaviour from `../carmen-inventory-frontend-e2e/` once specs exist (no `spot-check` spec currently — verified by `ls .../tests/ | grep -i 'spot\|check'`). No carmen/docs source folder exists for this module — see [physical-count/01-data-model](/en/inventory/physical-count/01-data-model) for the shared infrastructure pattern.
 
 ## 2. Entities
 
@@ -40,7 +40,7 @@ The canonical Prisma schema defines four tables (verified against `prisma-shared
 
 Note: spot-check is structurally **simpler** than physical-count — no `tb_spot_check_period`, no progress counters (`product_counted` / `product_total`) on the header, no `physical_count_type` (frozen vs live) flag. The `method` enum (random / high_value / manual) replaces the period-and-zone scoping with a sample-selection strategy.
 
-> **TODO:** Expand each entity into a full field table once the carmen/docs source (or alternative authoritative spec) is available; cross-reference with the [[physical-count/01-data-model]] and [[inventory-adjustment/01-data-model]] table-shape conventions for consistency.
+> **TODO:** Expand each entity into a full field table once the carmen/docs source (or alternative authoritative spec) is available; cross-reference with the [physical-count/01-data-model](/en/inventory/physical-count/01-data-model) and [inventory-adjustment/01-data-model](/en/inventory/inventory-adjustment/01-data-model) table-shape conventions for consistency.
 
 ## 3. Relationships
 
@@ -94,4 +94,4 @@ Notes:
 - **Secondary (TODO):** carmen/docs source — does not exist for this module.
 - **Frontend (TODO):** `../carmen-inventory-frontend/` — no `spot-check` route currently visible at `app/` top level; locate under nested module folders when documenting UI flow.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists; document scenarios once added.
-- Related modules: [[inventory]] (ledger that variance adjustments write to), [[inventory-adjustment]] (variance rollup posts as `tb_stock_in` / `tb_stock_out`), [[physical-count]] (full-count counterpart sharing the same rollup-to-adjustment integration pattern; see [[physical-count/01-data-model]] for the shared infrastructure), [[costing]] (variance valuation defaults inherited from adjustment-side costing).
+- Related modules: [inventory](/en/inventory/inventory) (ledger that variance adjustments write to), [inventory-adjustment](/en/inventory/inventory-adjustment) (variance rollup posts as `tb_stock_in` / `tb_stock_out`), [physical-count](/en/inventory/physical-count) (full-count counterpart sharing the same rollup-to-adjustment integration pattern; see [physical-count/01-data-model](/en/inventory/physical-count/01-data-model) for the shared infrastructure), [costing](/en/inventory/costing) (variance valuation defaults inherited from adjustment-side costing).

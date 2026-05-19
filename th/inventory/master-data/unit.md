@@ -2,7 +2,7 @@
 title: หน่วยนับ (Unit)
 description: หน่วยนับและการแปลงระหว่างหน่วยที่ใช้โดยเอกสารธุรกรรมและระเบียนสินค้าทุกใบ
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, unit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -102,15 +102,15 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 7. การอ้างอิงข้ามโมดูล
 
-- [[product]] — ทุกสินค้ามี order/ingredient/inventory unit refs และ conversion set ต่อสินค้า
-- [[recipe]] — บรรทัด recipe ใช้ ingredient unit; yield แปลงเป็น inventory unit
-- [[purchase-request]] — requested / approved / FOC qty บรรจุ unit FK
-- [[purchase-order]] — order_unit และ base_unit ต่อบรรทัด detail
-- [[good-receive-note]] — คอลัมน์ ordered / received / FOC unit; ใช้ conversion เพื่อ post inventory qty
-- [[store-requisition]] — บรรทัด requisition บรรจุ unit reference
-- [[inventory]] — ยอดคงเหลือเก็บใน inventory unit; conversion แปลงจาก receipt
-- [[inventory-adjustment]] — adjustment qty ใน inventory unit
-- [[costing]] — costing engine บริโภคยอดคงเหลือใน inventory unit
+- [product](/th/inventory/product) — ทุกสินค้ามี order/ingredient/inventory unit refs และ conversion set ต่อสินค้า
+- [recipe](/th/inventory/recipe) — บรรทัด recipe ใช้ ingredient unit; yield แปลงเป็น inventory unit
+- [purchase-request](/th/inventory/purchase-request) — requested / approved / FOC qty บรรจุ unit FK
+- [purchase-order](/th/inventory/purchase-order) — order_unit และ base_unit ต่อบรรทัด detail
+- [good-receive-note](/th/inventory/good-receive-note) — คอลัมน์ ordered / received / FOC unit; ใช้ conversion เพื่อ post inventory qty
+- [store-requisition](/th/inventory/store-requisition) — บรรทัด requisition บรรจุ unit reference
+- [inventory](/th/inventory/inventory) — ยอดคงเหลือเก็บใน inventory unit; conversion แปลงจาก receipt
+- [inventory-adjustment](/th/inventory/inventory-adjustment) — adjustment qty ใน inventory unit
+- [costing](/th/inventory/costing) — costing engine บริโภคยอดคงเหลือใน inventory unit
 
 ## 8. แหล่งอ้างอิง
 

@@ -2,7 +2,7 @@
 title: หน่วยธุรกิจ (Business Unit)
 description: หน่วยปฏิบัติการ / นิติบุคคล (property หรือ BU) ที่กำหนด scope ของทุกธุรกรรม — เป็นเจ้าของ calculation method, default currency และ module subscription
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, business-unit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -26,7 +26,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
 | สร้าง BU | Platform admin → BU listing → **New** | บังคับ: `cluster_id`, `code`, `name`, `calculation_method` |
-| ตั้ง default currency | BU detail → Identity tab | ต้องอ้างอิงแถว active ใน [[master-data/currency]] |
+| ตั้ง default currency | BU detail → Identity tab | ต้องอ้างอิงแถว active ใน [master-data/currency](/th/inventory/master-data/currency) |
 | สลับ costing method | BU detail → Costing tab | บล็อกกลางงวด; ต้อง snapshot สิ้นงวด + recost — ดู Edge Cases |
 | เปิด / ปิด module | BU detail → Modules tab | เขียนไปยัง `tb_business_unit_tb_module`; ซ่อน UI แต่รักษาข้อมูล |
 | Mark HQ | ตั้ง `is_hq = true` | หนึ่ง HQ ต่อ cluster (app invariant) |
@@ -103,11 +103,11 @@ enum enum_calculation_method {
 
 ## 7. การอ้างอิงข้ามโมดูล
 
-- [[costing]] — อ่าน `calculation_method` ต่อ BU
-- [[inventory]] — ยอดคงเหลือและ valuation scope ต่อ BU
-- [[purchase-request]], [[purchase-order]], [[good-receive-note]], [[store-requisition]], [[inventory-adjustment]], [[physical-count]], [[spot-check]], [[vendor-pricelist]] — เอกสารธุรกรรมทุกใบ BU-scoped
-- [[access-control]] — การ map user-to-BU ขับเคลื่อน header `x-app-id`
-- [[reporting-audit]] — รายงาน filter / roll up ตาม BU
+- [costing](/th/inventory/costing) — อ่าน `calculation_method` ต่อ BU
+- [inventory](/th/inventory/inventory) — ยอดคงเหลือและ valuation scope ต่อ BU
+- [purchase-request](/th/inventory/purchase-request), [purchase-order](/th/inventory/purchase-order), [good-receive-note](/th/inventory/good-receive-note), [store-requisition](/th/inventory/store-requisition), [inventory-adjustment](/th/inventory/inventory-adjustment), [physical-count](/th/inventory/physical-count), [spot-check](/th/inventory/spot-check), [vendor-pricelist](/th/inventory/vendor-pricelist) — เอกสารธุรกรรมทุกใบ BU-scoped
+- [access-control](/th/inventory/access-control) — การ map user-to-BU ขับเคลื่อน header `x-app-id`
+- [reporting-audit](/th/inventory/reporting-audit) — รายงาน filter / roll up ตาม BU
 
 ## 8. แหล่งอ้างอิง
 

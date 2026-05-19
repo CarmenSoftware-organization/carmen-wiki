@@ -2,7 +2,7 @@
 title: รายการราคาผู้ขาย (Vendor Pricelist) — Test Scenarios
 description: Test case ตาม persona, scenario ข้าม persona และ E2E mapping สำหรับ vendor-pricelist
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: vendor-pricelist, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 # รายการราคาผู้ขาย (Vendor Pricelist) — Test Scenarios
 
 > **At a Glance**
-> **โมดูล:** [[vendor-pricelist]] &nbsp;·&nbsp; **Scenario รวม:** ~12 ข้าม persona + drill-down ต่อ persona ข้ามทุก persona &nbsp;·&nbsp; **Persona ครอบคลุม:** Purchaser, Vendor, Finance, Audit / Config
+> **โมดูล:** [vendor-pricelist](/th/inventory/vendor-pricelist) &nbsp;·&nbsp; **Scenario รวม:** ~12 ข้าม persona + drill-down ต่อ persona ข้ามทุก persona &nbsp;·&nbsp; **Persona ครอบคลุม:** Purchaser, Vendor, Finance, Audit / Config
 > **ลำดับการรัน:** การตั้งค่า Audit / Config → happy path persona หลัก → scenario ข้าม persona
 > **Drill-down ของแต่ละ persona คือ `04-test-scenarios-<role>.md`**
 
@@ -19,13 +19,13 @@ dateCreated: 2026-05-15T15:00:00.000Z
 
 หน้านี้เป็น **จุดเข้า overview** สำหรับชุด test-scenario ของโมดูล `vendor-pricelist` Lifecycle ของ pricelist ครอบคลุมสี่ persona — Purchaser (รวบ Purchasing Staff + Purchasing Manager), Vendor (external), Finance (Officer + Manager) และ Audit / Config (Auditor + System Administrator) — และ test coverage แยกตามนั้น: แต่ละ persona มีไฟล์ dedicated (link ใน Section 3) ที่แจกแจง scenario functional, authorization (เมื่อมีผลใช้), validation, edge และ golden-journey ของ persona นั้น ไฟล์ overview นี้ให้ภาพรวม: ใครอยู่ใน scope, สิ่งที่ test ของแต่ละ persona ครอบคลุมที่ระดับ headline, scenario handoff ข้าม persona ที่เย็บการเดินทางรายตัวเป็น flow end-to-end สมบูรณ์ และ mapping จากแต่ละ scenario กลับไปยัง test E2E / API / integration ที่ exercise มัน
 
-Scope ของการ test บนโมดูล vendor-pricelist ครอบคลุมสี่พื้นที่กว้าง: **coverage functional** ของทุก action ข้ามสาม tier (template create / edit / activate, campaign launch / pause / cancel, vendor portal entry / submit / resubmit, pricelist review / approve / reject / inactivate), **RBAC / authorization** ของใครสามารถดำเนินการแต่ละ action (Purchaser create / edit / approve, Manager high-value approval, Vendor portal access ผ่าน token, Finance Manager multi-currency co-signoff, Sysadmin configuration + token revocation, Auditor read-only across the chain), **edge case** รอบกรณีขอบเขต MOQ-tier, การจัดการ multi-currency, vendor session พร้อมกัน, race การหมดอายุและ revoke token, optimistic-concurrency บนแถว pricelist และ registry กติกา-validation และ **พฤติกรรม three-way-match ปลายน้ำ** ที่การ post GRN / invoice เทียบกับ pricelist active (handoff กลับไปยัง Finance และ Purchaser ตาม [[purchase-order/02-business-rules]] § `PO_POST_008` / `PO_POST_009`)
+Scope ของการ test บนโมดูล vendor-pricelist ครอบคลุมสี่พื้นที่กว้าง: **coverage functional** ของทุก action ข้ามสาม tier (template create / edit / activate, campaign launch / pause / cancel, vendor portal entry / submit / resubmit, pricelist review / approve / reject / inactivate), **RBAC / authorization** ของใครสามารถดำเนินการแต่ละ action (Purchaser create / edit / approve, Manager high-value approval, Vendor portal access ผ่าน token, Finance Manager multi-currency co-signoff, Sysadmin configuration + token revocation, Auditor read-only across the chain), **edge case** รอบกรณีขอบเขต MOQ-tier, การจัดการ multi-currency, vendor session พร้อมกัน, race การหมดอายุและ revoke token, optimistic-concurrency บนแถว pricelist และ registry กติกา-validation และ **พฤติกรรม three-way-match ปลายน้ำ** ที่การ post GRN / invoice เทียบกับ pricelist active (handoff กลับไปยัง Finance และ Purchaser ตาม [purchase-order/02-business-rules](/th/inventory/purchase-order/02-business-rules) § `PO_POST_008` / `PO_POST_009`)
 
 ## 2. Persona ใน Scope
 
 - **Purchaser** — สร้าง template, รัน campaign (request-for-pricing), ส่ง invitation, review pricelist ที่ submit, approve / reject, จัดการ flag preferred-vendor, upload manually submission ที่ email scenario ของ Purchasing Manager บนไฟล์เดียวกันขยายด้วย high-value approval, การ toggle การตั้งค่า business-rule และ sign-off multi-currency เป็นเจ้าของ ~24+ scenario ข้าม template, campaign, pricelist review, golden journey
 - **Vendor** — External party Portal session ที่ authenticate ด้วย token เป็น surface **เดียว** ใน-ระบบสำหรับ external party ในโมดูลนี้ ขับ state ผ่านการเขียน `tb_pricelist.submitted_at` และการ insert `(none) → draft` implicit เป็นเจ้าของ scenario happy-path และ validation; section Permission / Authorization ลดลงเป็นแถว N/A เดียวเพราะ vendor ไม่มี Carmen login (นโยบาย portal-token เองถูก test เป็นข้อกังวลการตั้งค่าฝั่ง Sysadmin)
-- **Finance** — อ่านอย่างเดียวบน pricelist เอง (`VPL_AUTH_009`); เขียนเฉพาะผ่าน comment และผ่าน `system` co-signoff comment ของ Finance Manager สำหรับ pricelist multi-currency / high-value การสืบสวน variance ขับ scenario ส่วนใหญ่; coverage three-way-match ปลายน้ำอยู่ใน scenario Finance ของโมดูล [[purchase-order]] และอ้างอิงผ่าน handoff ข้าม persona
+- **Finance** — อ่านอย่างเดียวบน pricelist เอง (`VPL_AUTH_009`); เขียนเฉพาะผ่าน comment และผ่าน `system` co-signoff comment ของ Finance Manager สำหรับ pricelist multi-currency / high-value การสืบสวน variance ขับ scenario ส่วนใหญ่; coverage three-way-match ปลายน้ำอยู่ใน scenario Finance ของโมดูล [purchase-order](/th/inventory/purchase-order) และอ้างอิงผ่าน handoff ข้าม persona
 - **Audit / Config** — Auditor (อ่านอย่างเดียวข้าม chain — template, campaign, invitation, pricelist, ผล validate, activity log, การบริโภคปลายน้ำ) และ System Administrator (การตั้งค่าเท่านั้น — การกำหนดเลข, RBAC, นโยบาย portal-token, การเชื่อม email, กติกา validation, แหล่ง currency / FX, การเก็บ audit; บวกสิทธิ์ revoke token ต่อ invitation) พฤติกรรมส่วนใหญ่อยู่นอกเส้น happy path เชิงธุรกรรม; บันทึกแยกใน Section 3 เพื่อความครบถ้วน
 
 ## 3. ไฟล์ Test Persona

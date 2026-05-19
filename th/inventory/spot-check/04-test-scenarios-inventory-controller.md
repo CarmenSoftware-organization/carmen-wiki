@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check) — Test Scenarios — Inventory Controller
 description: Test case ของ Inventory Controller สำหรับโมดูลการสุ่มตรวจ
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: spot-check, test-scenarios, inventory-controller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -11,13 +11,13 @@ dateCreated: 2026-05-15T14:30:00.000Z
 # การสุ่มตรวจ (Spot Check) — Test Scenarios — Inventory Controller
 
 > **At a Glance**
-> **Persona:** Inventory Controller (เจ้าของการ spot-check) &nbsp;·&nbsp; **โมดูล:** [[spot-check]] &nbsp;·&nbsp; **Scenario:** ~29
+> **Persona:** Inventory Controller (เจ้าของการ spot-check) &nbsp;·&nbsp; **โมดูล:** [spot-check](/th/inventory/spot-check) &nbsp;·&nbsp; **Scenario:** ~29
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **ความครอบคลุม E2E:** ไม่มี — ยังไม่มี Playwright spec ของ spot-check ที่ `../carmen-inventory-frontend-e2e/tests/`
 
 ## 1. ขอบเขต Persona
 
-**Inventory Controller** — เจ้าของการ spot-check Scenario ด้านล่างใช้ action ที่ catalogue ใน [[spot-check/03-user-flow-inventory-controller]] หัวข้อ 3 — การสร้าง spot-check ข้ามค่า `method` ทั้งสาม, การมอบหมาย counter, การติดตามความคืบหน้า, การแก้ไข flag recount, การ override / accept variance, submit, void และการ route rollup Authority anchor `SPC_AUTH_001`
+**Inventory Controller** — เจ้าของการ spot-check Scenario ด้านล่างใช้ action ที่ catalogue ใน [spot-check/03-user-flow-inventory-controller](/th/inventory/spot-check/03-user-flow-inventory-controller) หัวข้อ 3 — การสร้าง spot-check ข้ามค่า `method` ทั้งสาม, การมอบหมาย counter, การติดตามความคืบหน้า, การแก้ไข flag recount, การ override / accept variance, submit, void และการ route rollup Authority anchor `SPC_AUTH_001`
 
 ## 2. Functional — Happy Path
 
@@ -80,4 +80,4 @@ dateCreated: 2026-05-15T14:30:00.000Z
 - **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
 - **Frontend (TODO):** `../carmen-inventory-frontend/` — source ของพฤติกรรม UI Inventory Controller
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check
-- ที่เกี่ยวข้อง: [[spot-check/03-user-flow-inventory-controller]], [[spot-check/02-business-rules]] (`SPC_AUTH_001`, `SPC_VAL_*`, `SPC_POST_*`), [[spot-check/04-test-scenarios]] (scenario handoff ข้าม persona), [[physical-count/04-test-scenarios-count-lead]] (scenario คู่เทียบการนับเต็ม)
+- ที่เกี่ยวข้อง: [spot-check/03-user-flow-inventory-controller](/th/inventory/spot-check/03-user-flow-inventory-controller), [spot-check/02-business-rules](/th/inventory/spot-check/02-business-rules) (`SPC_AUTH_001`, `SPC_VAL_*`, `SPC_POST_*`), [spot-check/04-test-scenarios](/th/inventory/spot-check/04-test-scenarios) (scenario handoff ข้าม persona), [physical-count/04-test-scenarios-count-lead](/th/inventory/physical-count/04-test-scenarios-count-lead) (scenario คู่เทียบการนับเต็ม)

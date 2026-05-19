@@ -2,7 +2,7 @@
 title: คลังสินค้า (Inventory) — Test Scenarios
 description: Test cases ตาม persona, scenarios ข้าม persona และการ map E2E สำหรับ inventory
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: inventory, test-scenarios, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 # คลังสินค้า (Inventory) — Test Scenarios
 
 > **At a Glance**
-> **โมดูล:** [[inventory]] &nbsp;·&nbsp; **Scenarios รวม:** ~17 cross-persona + ~115 per-persona &nbsp;·&nbsp; **Personas ครอบคลุม:** Store Keeper, Inventory Controller, Finance, Audit / Config
+> **โมดูล:** [inventory](/th/inventory/inventory) &nbsp;·&nbsp; **Scenarios รวม:** ~17 cross-persona + ~115 per-persona &nbsp;·&nbsp; **Personas ครอบคลุม:** Store Keeper, Inventory Controller, Finance, Audit / Config
 > **ลำดับการรัน:** Audit / Config setup → happy paths persona หลัก → scenarios ข้าม persona
 > **drill-down ของแต่ละ persona คือ `04-test-scenarios-<role>.md`**
 

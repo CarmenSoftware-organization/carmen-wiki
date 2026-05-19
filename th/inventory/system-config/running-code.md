@@ -2,7 +2,7 @@
 title: Running Code
 description: การตั้งค่า generator เลขที่เอกสาร — prefix, date token และรูปแบบ running counter ต่อประเภทเอกสาร (PR, PO, GRN, SR ฯลฯ)
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: system-config, running-code, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -96,13 +96,13 @@ Running code คือ **กฎ document-numbering** สำหรับทุก
 
 ## 7. การอ้างอิงข้าม
 
-- [[purchase-request]] — `pr_no`
-- [[purchase-order]] — `po_no`
-- [[good-receive-note]] — เลขที่อ้างอิง GRN
-- [[store-requisition]] — เลขที่อ้างอิง SR
-- [[inventory-adjustment]] — เลขที่อ้างอิง IA / SI / SO
-- [[physical-count]], [[spot-check]] — การกำหนดเลขเอกสาร count
-- [[vendor-pricelist]] — เลขที่อ้างอิง pricelist
+- [purchase-request](/th/inventory/purchase-request) — `pr_no`
+- [purchase-order](/th/inventory/purchase-order) — `po_no`
+- [good-receive-note](/th/inventory/good-receive-note) — เลขที่อ้างอิง GRN
+- [store-requisition](/th/inventory/store-requisition) — เลขที่อ้างอิง SR
+- [inventory-adjustment](/th/inventory/inventory-adjustment) — เลขที่อ้างอิง IA / SI / SO
+- [physical-count](/th/inventory/physical-count), [spot-check](/th/inventory/spot-check) — การกำหนดเลขเอกสาร count
+- [vendor-pricelist](/th/inventory/vendor-pricelist) — เลขที่อ้างอิง pricelist
 
 ## 8. แหล่งข้อมูลอ้างอิง
 

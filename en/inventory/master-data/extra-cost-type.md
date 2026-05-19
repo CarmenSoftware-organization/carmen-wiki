@@ -2,7 +2,7 @@
 title: Extra Cost Type
 description: Catalogue of GRN landed-cost categories (freight, duty, handling) with per-instance allocation modes (by value, by qty, manual).
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, extra-cost-type, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -96,8 +96,8 @@ Source: tenant schema.
 
 ## 7. Cross-References
 
-- [[good-receive-note]] — sole consumer. Each GRN can attach multiple `tb_extra_cost` instances; allocation runs at posting.
-- [[costing]] — landed unit cost flows from extra-cost allocation; misallocation distorts valuation.
+- [good-receive-note](/en/inventory/good-receive-note) — sole consumer. Each GRN can attach multiple `tb_extra_cost` instances; allocation runs at posting.
+- [costing](/en/inventory/costing) — landed unit cost flows from extra-cost allocation; misallocation distorts valuation.
 
 ## 8. References
 

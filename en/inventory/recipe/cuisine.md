@@ -2,7 +2,7 @@
 title: Cuisine
 description: Cuisine catalogue — regional / style label applied to recipes for menu segmentation (Thai, Italian, French, fusion, etc.).
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: recipe, cuisine, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # Cuisine
 
 > **At a Glance**
-> **Owner:** Chef / Product Admin &nbsp;·&nbsp; **Table:** `tb_recipe_cuisines` &nbsp;·&nbsp; **Shape:** Flat list, anchored to 6-value `region` enum &nbsp;·&nbsp; **Used by:** [[recipe]] header, library filter, menu engineering &nbsp;·&nbsp; **Carries:** curated `popular_dishes` + `key_ingredients`
+> **Owner:** Chef / Product Admin &nbsp;·&nbsp; **Table:** `tb_recipe_cuisines` &nbsp;·&nbsp; **Shape:** Flat list, anchored to 6-value `region` enum &nbsp;·&nbsp; **Used by:** [recipe](/en/inventory/recipe) header, library filter, menu engineering &nbsp;·&nbsp; **Carries:** curated `popular_dishes` + `key_ingredients`
 
 ![Cuisine screen](/screenshots/recipe/cuisine.png)
 
@@ -19,7 +19,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 Cuisine is the **flat catalogue** labelling each recipe with its regional / cultural origin (`Thai`, `Italian`, `Japanese`, `French`, etc.). Drives the menu-engineering filter — a Thai-themed outlet pulls only `Thai` and selected fusion entries from the central library.
 
-Distinct from [[recipe/category]] which is *functional* and *hierarchical*; cuisine is *geographical* and *flat*. Each row is anchored to a high-level **region** (`ASIA`, `EUROPE`, `AMERICAS`, `AFRICA`, `MIDDLE_EAST`, `OCEANIA`) for region-level rollups. **Maintained by Chef** (or **Product Admin**) under Operation Plan → Cuisine.
+Distinct from [recipe/category](/en/inventory/recipe/category) which is *functional* and *hierarchical*; cuisine is *geographical* and *flat*. Each row is anchored to a high-level **region** (`ASIA`, `EUROPE`, `AMERICAS`, `AFRICA`, `MIDDLE_EAST`, `OCEANIA`) for region-level rollups. **Maintained by Chef** (or **Product Admin**) under Operation Plan → Cuisine.
 
 ## 2. Common Tasks
 
@@ -85,10 +85,10 @@ Values: `ASIA`, `EUROPE`, `AMERICAS`, `AFRICA`, `MIDDLE_EAST`, `OCEANIA`.
 
 ## 7. Cross-References
 
-- [[recipe]] — every recipe carries `cuisine_id` (required); shown on header and drives library filter.
-- [[recipe/category]] — sibling taxonomy on a different (functional) axis.
-- [[recipe/01-data-model]] — recipe header fields including the cuisine FK.
-- [[recipe/03-user-flow-chef]], [[recipe/03-user-flow-procurement-fb-ops]] — Chef picks; F&B Ops uses cuisine + region rollups.
+- [recipe](/en/inventory/recipe) — every recipe carries `cuisine_id` (required); shown on header and drives library filter.
+- [recipe/category](/en/inventory/recipe/category) — sibling taxonomy on a different (functional) axis.
+- [recipe/01-data-model](/en/inventory/recipe/01-data-model) — recipe header fields including the cuisine FK.
+- [recipe/03-user-flow-chef](/en/inventory/recipe/03-user-flow-chef), [recipe/03-user-flow-procurement-fb-ops](/en/inventory/recipe/03-user-flow-procurement-fb-ops) — Chef picks; F&B Ops uses cuisine + region rollups.
 
 ## 8. References
 

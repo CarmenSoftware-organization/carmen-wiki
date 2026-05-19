@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — Test Scenarios — Approver
 description: Test case ของ Approver (happy path, permission, validation, edge case) สำหรับโมดูล purchase-request
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-request, test-scenarios, approver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 # ใบขอซื้อ (Purchase Request) — Test Scenarios — Approver
 
 > **At a Glance**
-> **Persona:** Approver (Department Head, Budget Controller, Finance Officer / Manager) &nbsp;·&nbsp; **โมดูล:** [[purchase-request]] &nbsp;·&nbsp; **Scenario:** ~33
+> **Persona:** Approver (Department Head, Budget Controller, Finance Officer / Manager) &nbsp;·&nbsp; **โมดูล:** [purchase-request](/th/inventory/purchase-request) &nbsp;·&nbsp; **Scenario:** ~33
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** map ไปยัง `tests/303-pr-approver-journey.spec.ts`, `tests/311-pr-returned-flow.spec.ts` และ `tests/301-pr.spec.ts` (fixture hodTest / fcTest / gmTest) ใน `../carmen-inventory-frontend-e2e/`
 

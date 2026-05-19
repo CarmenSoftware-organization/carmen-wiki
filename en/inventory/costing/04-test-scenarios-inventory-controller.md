@@ -2,7 +2,7 @@
 title: Costing — Test Scenarios — Inventory Controller
 description: Inventory Controller's test cases (cost-pick preview review, new-lot cost basis, variance investigation, cost-anomaly triage) for costing.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: costing, test-scenarios, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 # Costing — Test Scenarios — Inventory Controller
 
 > **At a Glance**
-> **Persona:** Inventory Controller &nbsp;·&nbsp; **Module:** [[costing]] &nbsp;·&nbsp; **Scenarios:** ~27
+> **Persona:** Inventory Controller &nbsp;·&nbsp; **Module:** [costing](/en/inventory/costing) &nbsp;·&nbsp; **Scenarios:** ~27
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** maps to `501-grn.spec.ts`, `701-sr.spec.ts`, `720-stock-issue.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
@@ -72,8 +72,8 @@ This page captures the test scenarios that the Inventory Controller persona dire
 - Sibling: [04-test-scenarios-finance.md](./04-test-scenarios-finance.md) — downstream persona for above-Controller-threshold cost-impact approvals (IC-PERM-08 escalation), variance resolution (IC-HP-05 may route to Finance for compensating adjustment approval), credit-note revaluation (cost-anomaly may suggest credit-note path; Finance approves).
 - Sibling: [04-test-scenarios-auditor.md](./04-test-scenarios-auditor.md) — downstream persona reviewing the Controller's approval and corrective-adjustment activity; Auditor's chain-of-custody traces walk through cost-layer rows Controller approved.
 - E2E specs: [`720-stock-issue.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/720-stock-issue.spec.ts) (stock-out approval surface — IC-HP-01 / IC-HP-04); [`701-sr.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/701-sr.spec.ts) (SR-driven outbound — IC-HP-01); [`501-grn.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts) (inbound cost-layer write — IC-HP-03 indirect). Cost-anomaly dashboard and new-lot review flows are likely manual / planned.
-- Cross-link: [[inventory/04-test-scenarios-inventory-controller]] — parallel inventory-side Controller flow; the adjustment approval and count-variance commit scenarios overlap (this page adds the cost dimension).
-- Cross-link: [[good-receive-note]] — upstream source of inbound cost-layer writes; new-lot cost basis IC-HP-03 mirrors the GRN landed-cost allocation.
-- Cross-link: [[vendor-pricelist]] — the reference price Controller cross-checks at new-lot approval.
-- Cross-link: [[physical-count]] / [[spot-check]] — count-variance posts whose cost-pick the Controller previews per `enum_physical_count_costing_method`.
-- Cross-link: [[inventory-adjustment]] — the `tb_stock_in` / `tb_stock_out` workflow; cost-pick preview is part of the Controller's approval surface.
+- Cross-link: [inventory/04-test-scenarios-inventory-controller](/en/inventory/inventory/04-test-scenarios-inventory-controller) — parallel inventory-side Controller flow; the adjustment approval and count-variance commit scenarios overlap (this page adds the cost dimension).
+- Cross-link: [good-receive-note](/en/inventory/good-receive-note) — upstream source of inbound cost-layer writes; new-lot cost basis IC-HP-03 mirrors the GRN landed-cost allocation.
+- Cross-link: [vendor-pricelist](/en/inventory/vendor-pricelist) — the reference price Controller cross-checks at new-lot approval.
+- Cross-link: [physical-count](/en/inventory/physical-count) / [spot-check](/en/inventory/spot-check) — count-variance posts whose cost-pick the Controller previews per `enum_physical_count_costing_method`.
+- Cross-link: [inventory-adjustment](/en/inventory/inventory-adjustment) — the `tb_stock_in` / `tb_stock_out` workflow; cost-pick preview is part of the Controller's approval surface.

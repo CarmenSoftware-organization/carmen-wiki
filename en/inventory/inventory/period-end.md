@@ -2,7 +2,7 @@
 title: Period End
 description: End-of-period close orchestrator — gates costing snapshot, GL handoff, and backdating lock once Physical Count and Spot Check requirements are met.
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: inventory, period-end, costing, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -38,7 +38,7 @@ Period End is the **run-the-close ceremony** — one button that says "this acco
 | Run prerequisite checklist (read-only) | Inventory Management → Period End → Prerequisites | Returns offending document IDs; Inventory Manager clears them |
 | Trigger close on the open period | Period End → **Close** (Finance only) | Cost Engine computes snapshot, status flips `open → closed` |
 | Verify snapshot wrote | Period End → Snapshot tab | One `tb_period_snapshot` row per `(location, product, lot)` with non-zero activity |
-| Confirm ledger event posted | Open [[inventory/transaction]] → filter `inventory_doc_type = 'close'` | Close itself appears on the ledger |
+| Confirm ledger event posted | Open [inventory/transaction](/en/inventory/inventory/transaction) → filter `inventory_doc_type = 'close'` | Close itself appears on the ledger |
 | Lock after audit sign-off | Period End → **Lock** (Finance) | Flips `closed → locked` — terminal |
 | Reopen a period (rare) | Period End → **Reopen** (Finance, audited) | Logged on `tb_period_comment`; only while `closed`, never `locked` |
 
@@ -47,8 +47,8 @@ Period End is the **run-the-close ceremony** — one button that says "this acco
 | Symptom / Message | Cause | Action |
 |---|---|---|
 | "Close blocked: documents in non-terminal state" | Any GRN / SR / adjustment / count still `draft` or `in_progress` | Open the listed IDs and complete / cancel them |
-| "Spot Check pending" | One or more spot checks for the period not `completed` | Finalise in [[spot-check]] |
-| "Physical Count pending" | Count not `finalised`, or variances not posted as adjustments | Finalise in [[physical-count]] |
+| "Spot Check pending" | One or more spot checks for the period not `completed` | Finalise in [spot-check](/en/inventory/spot-check) |
+| "Physical Count pending" | Count not `finalised`, or variances not posted as adjustments | Finalise in [physical-count](/en/inventory/physical-count) |
 | "Period is closed / locked" on submit of any doc | `document_date` falls inside a `closed` / `locked` period | Use a current-period date, or raise a manual JV |
 | "Snapshot row already exists" | Re-running close while `status = open` | Safe — snapshot is keyed `(period_id, snapshot_at)` and replaces |
 | Cannot lock | Period not yet `closed` | Close first, then lock after audit |
@@ -94,10 +94,10 @@ Status flips are logged on `tb_period_comment` with `created_by_id` and timestam
 
 ## 7. Cross-References
 
-- [[system-config/period]] &nbsp;·&nbsp; [[costing]] &nbsp;·&nbsp; [[physical-count]] &nbsp;·&nbsp; [[spot-check]]
-- [[good-receive-note]] &nbsp;·&nbsp; [[inventory-adjustment]] &nbsp;·&nbsp; [[store-requisition]]
-- [[inventory/transaction]] — the close writes a `close` ledger row
-- [[reporting-audit]] — close-out reports read `tb_period_snapshot`
+- [system-config/period](/en/inventory/system-config/period) &nbsp;·&nbsp; [costing](/en/inventory/costing) &nbsp;·&nbsp; [physical-count](/en/inventory/physical-count) &nbsp;·&nbsp; [spot-check](/en/inventory/spot-check)
+- [good-receive-note](/en/inventory/good-receive-note) &nbsp;·&nbsp; [inventory-adjustment](/en/inventory/inventory-adjustment) &nbsp;·&nbsp; [store-requisition](/en/inventory/store-requisition)
+- [inventory/transaction](/en/inventory/inventory/transaction) — the close writes a `close` ledger row
+- [reporting-audit](/en/inventory/reporting-audit) — close-out reports read `tb_period_snapshot`
 
 ## 8. References
 

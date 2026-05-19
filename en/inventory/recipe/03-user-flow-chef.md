@@ -2,7 +2,7 @@
 title: Recipe — User Flow — Chef
 description: Chef's flow within the recipe module — creates and revises recipes, maintains sub-recipes, publishes and archives.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: recipe, user-flow, chef, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 # Recipe — User Flow — Chef
 
 > **At a Glance**
-> **Persona:** Chef / Kitchen Manager (+ Kitchen Staff read-only) &nbsp;·&nbsp; **Module:** [[recipe]] &nbsp;·&nbsp; **Workflow stages:** DRAFT → PUBLISHED → ARCHIVED (+ un-publish round-trip) &nbsp;·&nbsp; **Key permissions:** create, edit, publish, archive, edit-published (with versioning), clone
+> **Persona:** Chef / Kitchen Manager (+ Kitchen Staff read-only) &nbsp;·&nbsp; **Module:** [recipe](/en/inventory/recipe) &nbsp;·&nbsp; **Workflow stages:** DRAFT → PUBLISHED → ARCHIVED (+ un-publish round-trip) &nbsp;·&nbsp; **Key permissions:** create, edit, publish, archive, edit-published (with versioning), clone
 > **What this persona does:** Authors and maintains the recipe library — ingredients, steps, yield variants, sub-recipes — and owns publish and archive authority.
 
 ## 1. Role in This Module
@@ -77,5 +77,5 @@ The Chef may also act as **read-only consumer** of recipes they did not author �
 - Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — Sysadmin sets the chef's category-scoped RBAC and the publish-gate tenant policy; Auditor reviews the chef's `tb_recipe_version` history.
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical `enum_recipe_status`, `tb_recipe_ingredient` discriminator (`enum_ingredient_type`), sub-recipe self-relation, yield-variant model.
 - Sibling: [02-business-rules.md](./02-business-rules.md) — `REC_VAL_001`–`REC_VAL_018` (validation gates), `REC_CALC_001`–`REC_CALC_015` (the cost math the Chef sees), `REC_AUTH_001`–`REC_AUTH_005` (Chef's authority scope), `REC_POST_001`–`REC_POST_008` (state-transition effects).
-- Related: [[product]] — ingredient `cost_per_unit` and `is_used_in_recipe` flag are upstream of every Chef line entry.
-- Related: [[inventory]] — the Chef's recipes drive theoretical OUT movements on menu sale; cost-drift events flow back through the inventory / costing layer.
+- Related: [product](/en/inventory/product) — ingredient `cost_per_unit` and `is_used_in_recipe` flag are upstream of every Chef line entry.
+- Related: [inventory](/en/inventory/inventory) — the Chef's recipes drive theoretical OUT movements on menu sale; cost-drift events flow back through the inventory / costing layer.

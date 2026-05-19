@@ -2,7 +2,7 @@
 title: Department
 description: Organisational departments and their user assignments — used as cost-centre and approval scope on requisition and PR documents.
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, department, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -91,10 +91,10 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 
 ## 7. Cross-References
 
-- [[purchase-request]] — PR header references requesting department; routing uses HOD from `tb_department_user`.
-- [[store-requisition]] — `from`/`to` location paired with department on every requisition.
-- [[access-control]] — department membership drives default RBAC scope.
-- [[reporting-audit]] — many reports group by department.
+- [purchase-request](/en/inventory/purchase-request) — PR header references requesting department; routing uses HOD from `tb_department_user`.
+- [store-requisition](/en/inventory/store-requisition) — `from`/`to` location paired with department on every requisition.
+- [access-control](/en/inventory/access-control) — department membership drives default RBAC scope.
+- [reporting-audit](/en/inventory/reporting-audit) — many reports group by department.
 
 ## 8. References
 

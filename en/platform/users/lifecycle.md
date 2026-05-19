@@ -2,7 +2,7 @@
 title: User — Lifecycle
 description: Create, disable, hard/soft delete, password reset.
 published: true
-date: '2026-05-19T15:00:00.000Z'
+date: 2026-05-19T23:55:00.000Z'
 tags: book/platform, users, lifecycle
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -115,7 +115,7 @@ The user's current password is **not** required — this is an admin override. I
 
 **Post-call behaviour:** On success, the dialog closes and `toast.success('Password changed successfully')` appears. The SPA does not re-fetch the user record, does not refresh `AuthContext`, and does not send any email notification to the user. On failure, `passwordError` is set to `'Failed to change password: ' + detail` and shown inside the dialog.
 
-For self-service password change by the user themselves, see [[profile]].
+For self-service password change by the user themselves, see [profile](/en/platform/profile).
 
 ## 7. Keycloak sync
 
@@ -146,6 +146,6 @@ For FK cascade behaviour affecting these joins on hard delete, see §5.2.
 - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — FK `onDelete: NoAction` on `tb_cluster_user.user_id` (line 212) and `tb_user_tb_business_unit.user_id`; `tb_user` model (line 368).
 
 **Cross-links:**
-- [[users]] — module landing: overview, key concepts, navigation map.
+- [users](/en/platform/users) — module landing: overview, key concepts, navigation map.
 - [Data Model](./data-model.md) — schema reference: field definitions, enums, constraints, SPA divergences.
-- [[profile]] — self-service password change by the signed-in user.
+- [profile](/en/platform/profile) — self-service password change by the signed-in user.

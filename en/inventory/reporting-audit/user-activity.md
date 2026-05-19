@@ -2,7 +2,7 @@
 title: User Activity
 description: Actor-centric forensic timeline — login, logout, session lifetime, sensitive-page views — distinct from entity-level activity.
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: reporting-audit, activity, security, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -19,7 +19,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ## 1. What & Who
 
-User Activity is the **actor-centric forensic timeline** — every login, logout, token refresh, password change, role change, and sensitive-page view per user. Distinct from [[reporting-audit/activity]] which is **entity-centric** (one row per business-row change); user-activity is one row per **user-action event**, whether or not a business row changed.
+User Activity is the **actor-centric forensic timeline** — every login, logout, token refresh, password change, role change, and sensitive-page view per user. Distinct from [reporting-audit/activity](/en/inventory/reporting-audit/activity) which is **entity-centric** (one row per business-row change); user-activity is one row per **user-action event**, whether or not a business row changed.
 
 **Audience:** **Auditor** (compliance trail), **Sysadmin** (account review), **Security Officer** (failed-login investigation, impersonation chain), **Compliance** (PII-aware exports to SIEM).
 
@@ -87,7 +87,7 @@ Filter on `action IN ('login', 'logout', 'view')` and group by `actor_id`.
 | `meta_data` | Extra | Failed-login reason, MFA flag, impersonation chain, `cause = 'expired'` for synthetic logouts. |
 | `created_at` | Event timestamp | UTC `Timestamptz(6)`. |
 
-See [[reporting-audit/activity]] for the full table definition.
+See [reporting-audit/activity](/en/inventory/reporting-audit/activity) for the full table definition.
 
 **Inferred — to be verified.** A future `tb_user_activity` table would carry `(user_id, event_type, event_at, ip_address, user_agent, target_type, target_id, meta_data)` with composite indexes on `(user_id, event_at DESC)` and `(event_type, event_at DESC)`.
 
@@ -102,9 +102,9 @@ See [[reporting-audit/activity]] for the full table definition.
 
 ## 7. Cross-References
 
-- [[reporting-audit/activity]] — underlying tenant table; user-activity is a filtered + joined projection over it plus session.
-- [[access-control/user]] — `actor_id` / session `user_id` resolve through platform `tb_user`.
-- [[access-control/permission]] — view-permission grants drive which sensitive-page opens emit `view` rows.
+- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — underlying tenant table; user-activity is a filtered + joined projection over it plus session.
+- [access-control/user](/en/inventory/access-control/user) — `actor_id` / session `user_id` resolve through platform `tb_user`.
+- [access-control/permission](/en/inventory/access-control/permission) — view-permission grants drive which sensitive-page opens emit `view` rows.
 
 ## 8. References
 

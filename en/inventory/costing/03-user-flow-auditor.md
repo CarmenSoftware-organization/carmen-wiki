@@ -2,7 +2,7 @@
 title: Costing — User Flow — Auditor
 description: Auditor's flow within the costing module — verify costed COGS and ending inventory tie back to source receipts; method-consistency audit across periods.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: costing, user-flow, auditor, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 # Costing — User Flow — Auditor
 
 > **At a Glance**
-> **Persona:** Auditor &nbsp;·&nbsp; **Module:** [[costing]] &nbsp;·&nbsp; **Workflow stages:** Post-lock observer — runs cost-flow chain-of-custody traces, period-snapshot verification, FIFO-vs-WA shadow drift audits, configuration-history audits &nbsp;·&nbsp; **Key permissions:** read-only (`COST_AUTH_008`); no edit, no approve, no period advance
+> **Persona:** Auditor &nbsp;·&nbsp; **Module:** [costing](/en/inventory/costing) &nbsp;·&nbsp; **Workflow stages:** Post-lock observer — runs cost-flow chain-of-custody traces, period-snapshot verification, FIFO-vs-WA shadow drift audits, configuration-history audits &nbsp;·&nbsp; **Key permissions:** read-only (`COST_AUTH_008`); no edit, no approve, no period advance
 > **What this persona does:** Verifies costed COGS and ending inventory tie back to source receipts, and that the costing method is applied consistently across periods.
 
 ## 1. Role in This Module
@@ -47,7 +47,7 @@ graph LR
 
 ### Permission Matrix — V6 Audit Action × Read Scope (Auditor)
 
-The Auditor is **strictly read-only** across the full costing surface. Costing has no doc-status enum; the Auditor verifies the cost-layer ledger's algorithmic invariants and the period-locked snapshot's integrity. Rows are derived from the audit thread actions in Sections 2.1–2.4 and the authorization rules at [[costing/02-business-rules]] § 4.
+The Auditor is **strictly read-only** across the full costing surface. Costing has no doc-status enum; the Auditor verifies the cost-layer ledger's algorithmic invariants and the period-locked snapshot's integrity. Rows are derived from the audit thread actions in Sections 2.1–2.4 and the authorization rules at [costing/02-business-rules](/en/inventory/costing/02-business-rules) § 4.
 
 | Action | Auditor |
 |---|---|
@@ -119,7 +119,7 @@ The Auditor is **strictly read-only** across the full costing surface. Costing h
 - **Snapshot verification clean vs drift.** Clean — snapshot reconciles to independent reconstruction; no follow-up. Drift — escalate; root causes typically a bug in the period-end rollforward, an unauthorised configuration change at period boundary, or a missed credit-note revaluation that should have landed in the closing period.
 - **Shadow-drift within tolerance vs above.** Within tolerance (rounding-only, e.g. ฿0.10 per location-product per period) — accept, document. Above tolerance — escalate to Sysadmin for shadow-maintenance bug investigation; escalate to Finance for the valuation implication.
 - **Configuration-history clean vs anomaly.** Clean — every change followed the documented pre-condition and post-effect; deliverable is the consistency report. Anomaly (e.g. a `calculation_method` change at a business unit that had non-zero on-hand at the save timestamp — would have failed `COST_VAL_009` if checked; if it slipped through, indicates a configuration-time bug) — escalate to Sysadmin + Finance for forensic investigation.
-- **Sensitive-field export — secondary approval required.** Cost-flow exports including vendor cost detail, per-product cost variance, or PII via joined tables (e.g. who created a cost-layer row) require Controller or DPO co-approval per the audit pattern in [[good-receive-note/03-user-flow-audit-config]]. Plain audit-log exports (aggregate movement counts, anonymised lot lists) bypass.
+- **Sensitive-field export — secondary approval required.** Cost-flow exports including vendor cost detail, per-product cost variance, or PII via joined tables (e.g. who created a cost-layer row) require Controller or DPO co-approval per the audit pattern in [good-receive-note/03-user-flow-audit-config](/en/inventory/good-receive-note/03-user-flow-audit-config). Plain audit-log exports (aggregate movement counts, anonymised lot lists) bypass.
 
 ## 4. Exit Point / Handoffs
 
@@ -137,8 +137,8 @@ The Auditor's involvement on a given costing audit thread ends at one of three b
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical `tb_inventory_transaction_cost_layer` (the Auditor's primary read target), `tb_period_snapshot` (the period-locked valuation target), `tb_business_unit.calculation_method` (the configuration-history target), `tb_product.standard_cost` (the reference-cost-history target), all costing-relevant enums.
 - Sibling: [02-business-rules.md](./02-business-rules.md) — calculation rules `COST_CALC_001`–`COST_CALC_010` (the algorithmic invariants the Auditor verifies); authorization rules `COST_AUTH_008` (Auditor read scope), `COST_AUTH_010` (no direct cost-edit — Auditor cannot fix anomalies, only flag); posting rules `COST_POST_001`–`COST_POST_010` (the events the Auditor traces); cross-module rules `COST_XMOD_009` (Finance / GL period-end reconciliation), `COST_XMOD_010` (single chokepoint for cost-flow — the audit-trail tamper-evident property).
 - Sibling: [calculation-methods.md](./calculation-methods.md) — Auditor reads to understand the FIFO consumption walk, the WA running-average recompute, the strategy-pattern resolution; the algorithmic invariants documented there are what the Auditor's traces verify at audit.
-- Related: [[inventory/03-user-flow-audit-config]] — the parallel inventory-side Audit / Config persona; the Auditor sub-persona there owns lot-recall traces and period-snapshot reconciliation queries on the inventory ledger, which overlap with the cost-flow chain-of-custody trace this page describes (the two are the same query viewed from different angles — qty + cost together).
-- Related: [[good-receive-note]] — the upstream origin of every cost-flow chain; the backward trace walks back through the GRN documents to the vendor / pricelist references.
-- Related: [[store-requisition]] — the downstream consumption of every cost-flow chain; the forward trace walks through SR issues / transfers.
+- Related: [inventory/03-user-flow-audit-config](/en/inventory/inventory/03-user-flow-audit-config) — the parallel inventory-side Audit / Config persona; the Auditor sub-persona there owns lot-recall traces and period-snapshot reconciliation queries on the inventory ledger, which overlap with the cost-flow chain-of-custody trace this page describes (the two are the same query viewed from different angles — qty + cost together).
+- Related: [good-receive-note](/en/inventory/good-receive-note) — the upstream origin of every cost-flow chain; the backward trace walks back through the GRN documents to the vendor / pricelist references.
+- Related: [store-requisition](/en/inventory/store-requisition) — the downstream consumption of every cost-flow chain; the forward trace walks through SR issues / transfers.
 - Related: credit-note — the cost-revaluation events the Auditor verifies in the chain.
-- Related: [[physical-count]] / [[spot-check]] — the count-variance valuation events the Auditor verifies for `enum_physical_count_costing_method` consistency.
+- Related: [physical-count](/en/inventory/physical-count) / [spot-check](/en/inventory/spot-check) — the count-variance valuation events the Auditor verifies for `enum_physical_count_costing_method` consistency.

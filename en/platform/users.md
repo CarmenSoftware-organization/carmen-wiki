@@ -2,7 +2,7 @@
 title: Users
 description: Platform-level user accounts — identity, the `platform_role` field that drives every role gate elsewhere, and the cluster/BU assignments that scope what the user can reach in the inventory app.
 published: true
-date: 2026-05-19T23:30:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: platform/users, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -96,7 +96,7 @@ menu).
   `support_staff`, `security_officer`) appear in `AuthContext.ALLOWED_ROLES`
   and can authenticate against the Platform admin SPA — `integration_developer`
   and `user` are valid data values but their holders cannot sign in. See
-  [[auth-roles]] for the login flow.
+  [auth-roles](/en/platform/auth-roles) for the login flow.
 - **Cluster assignments (`tb_cluster_user`)** — M:N join between user
   and cluster, carrying a per-cluster `role` of `admin` or `user`. The
   Users edit page shows this read-only as the Clusters card; mutation
@@ -153,20 +153,20 @@ templates) read the `platform_role` value written here.
 
 ## 5. Related Modules
 
-- [[business-units]] — supplies the BUs that show up in the user's
+- [business-units](/en/platform/business-units) — supplies the BUs that show up in the user's
   Business Units card; assignments created here appear on the BU's own
   Users card. Both pages mutate the same BU-user join with the same
   `BU_ROLES` (`admin`/`user`) and `is_default` flag.
-- [[clusters]] — supplies the clusters that show up in the user's
+- [clusters](/en/platform/clusters) — supplies the clusters that show up in the user's
   Clusters card (read-only here); the cluster edit page is the
   canonical place to add/remove `tb_cluster_user` rows. The Users
   module gates BU-assignment dropdowns by current cluster membership,
   so cluster membership must be granted from the cluster side first.
-- [[auth-roles]] — defines what each of the seven `platform_role`
+- [auth-roles](/en/platform/auth-roles) — defines what each of the seven `platform_role`
   values means and which `allowedRoles` arrays they appear in across
   the SPA. Changing `platform_role` here changes what modules the user
   reaches next sign-in.
-- [[profile]] — the user's own first-person view of the same user
+- [profile](/en/platform/profile) — the user's own first-person view of the same user
   record; the avatar menu's "Profile" link lands there. The Users
   module is the third-person admin view, the Profile module is the
   same row viewed by its owner.

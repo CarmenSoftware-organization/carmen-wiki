@@ -2,7 +2,7 @@
 title: Period
 description: Accounting period definitions and per-period inventory cost snapshots — open/closed/locked status drives back-dating guards and costing closes.
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: system-config, period, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -103,11 +103,11 @@ Source: tenant schema.
 
 ## 7. Cross-References
 
-- [[inventory]] — current-stock writes pass period-open guard.
-- [[costing]] — engine reads movement layers and writes snapshots at close.
-- [[good-receive-note]], [[inventory-adjustment]] — posting-date period check.
-- [[physical-count]] — count documents frozen against a period via `tb_physical_count_period`.
-- [[spot-check]] — variance posting period guard.
+- [inventory](/en/inventory/inventory) — current-stock writes pass period-open guard.
+- [costing](/en/inventory/costing) — engine reads movement layers and writes snapshots at close.
+- [good-receive-note](/en/inventory/good-receive-note), [inventory-adjustment](/en/inventory/inventory-adjustment) — posting-date period check.
+- [physical-count](/en/inventory/physical-count) — count documents frozen against a period via `tb_physical_count_period`.
+- [spot-check](/en/inventory/spot-check) — variance posting period guard.
 
 ## 8. References
 

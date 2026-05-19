@@ -2,7 +2,7 @@
 title: Tax Profile
 description: Named tax rate definitions referenced by vendors, products, and every priced document line.
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, tax-profile, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -79,12 +79,12 @@ Source: tenant schema.
 
 ## 7. Cross-References
 
-- [[master-data/vendor]] — vendors hold a default tax profile snapshotted at link time.
-- [[product]] — product master references a default tax profile per item.
-- [[purchase-request]] — PR detail lines snapshot profile id + rate.
-- [[purchase-order]] — PO detail snapshots; default from vendor/product.
-- [[good-receive-note]] — GRN detail snapshots from PO/manual.
-- [[vendor-pricelist]] — pricelist details carry tax-profile reference.
+- [master-data/vendor](/en/inventory/master-data/vendor) — vendors hold a default tax profile snapshotted at link time.
+- [product](/en/inventory/product) — product master references a default tax profile per item.
+- [purchase-request](/en/inventory/purchase-request) — PR detail lines snapshot profile id + rate.
+- [purchase-order](/en/inventory/purchase-order) — PO detail snapshots; default from vendor/product.
+- [good-receive-note](/en/inventory/good-receive-note) — GRN detail snapshots from PO/manual.
+- [vendor-pricelist](/en/inventory/vendor-pricelist) — pricelist details carry tax-profile reference.
 
 ## 8. References
 

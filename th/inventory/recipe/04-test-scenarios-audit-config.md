@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — Test Scenarios — Audit & Config
 description: test case ของ System Administrator และ Auditor (config, RBAC, audit versioning, audit pricing-history, สุขภาพ integration) สำหรับโมดูล recipe
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: recipe, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -11,11 +11,11 @@ dateCreated: 2026-05-15T16:00:00.000Z
 # สูตรอาหาร (Recipe) — Test Scenarios — Audit & Config
 
 > **At a Glance**
-> **Persona:** Audit / Config (System Administrator config + Auditor read-only) &nbsp;·&nbsp; **โมดูล:** [[recipe]] &nbsp;·&nbsp; **scenario:** ~31
+> **Persona:** Audit / Config (System Administrator config + Auditor read-only) &nbsp;·&nbsp; **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **scenario:** ~31
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **การครอบคลุม E2E:** ไม่มีสำหรับภายในสูตร; การตรวจสอบสุขภาพ integration แยกจาก E2E สูตรใน `../carmen-inventory-frontend-e2e/`
 
-หน้านี้บันทึก test scenario ที่ persona Audit / Config — ประกอบด้วย **System Administrator** (หมวดหมู่ cuisine equipment master, RBAC, นโยบาย tenant บน publish gate / un-publish / co-approval, การ wire integration กับ `[[product]]` / `[[inventory]]` / `[[store-requisition]]`) และ **Auditor** (versioning / pricing-history / signature trace อ่านอย่างเดียว; compliance review) — ขับเคลื่อนตรงในโมดูล `recipe` ต่างจาก 4 persona ปฏิบัติการ (Chef, Cost Controller, Outlet Manager, Procurement / F&B Ops) ที่ทำงานวงจรชีวิต happy-path sub-role Audit / Config ทำ action บน **periphery**: ก่อนสูตรใดอยู่ (config) ระหว่างวงจรชีวิต (การบังคับใช้ RBAC สุขภาพ integration) และหลัง publish (audit trace การ verify signature) Sysadmin มี read / write เต็มบนตาราง config และการ map RBAC; Auditor เป็น read-only บน `tb_recipe_version`, `tb_recipe_pricing_history` และคอลัมน์ audit ต่อแถว ไม่มีเส้นทาง "void" หรือ "admin-cancel" บนสูตร — สุขภาพข้อมูลบนสูตรที่ archive หลังช่วงเวลาการเก็บข้อมูลเป็นอำนาจ delete เดียว และอยู่กับ Sysadmin ตาม `REC_AUTH_014` scenario จัดกลุ่มเป็น **happy path** (master หมวดหมู่ / cuisine / อุปกรณ์; RBAC; นโยบาย tenant; สุขภาพ integration; auditor sample; auditor compliance review; soft-delete archived) **RBAC** (อำนาจ Sysadmin; auditor read-only) **validation** (negative test รอบ master ไม่ครบ orphan reference in-flight) และ **edge case** รอบ config multi-tenant soft-delete ที่ช่วงเวลาการเก็บข้อมูล การ reconstruct chain versioning handoff ข้าม persona ที่ pivot จาก persona นี้ (Scenario 10, 11 ใน parent overview) อยู่ใน [04-test-scenarios.md](./04-test-scenarios.md) ไม่ใช่ที่นี่
+หน้านี้บันทึก test scenario ที่ persona Audit / Config — ประกอบด้วย **System Administrator** (หมวดหมู่ cuisine equipment master, RBAC, นโยบาย tenant บน publish gate / un-publish / co-approval, การ wire integration กับ `[product](/th/inventory/product)` / `[inventory](/th/inventory/inventory)` / `[store-requisition](/th/inventory/store-requisition)`) และ **Auditor** (versioning / pricing-history / signature trace อ่านอย่างเดียว; compliance review) — ขับเคลื่อนตรงในโมดูล `recipe` ต่างจาก 4 persona ปฏิบัติการ (Chef, Cost Controller, Outlet Manager, Procurement / F&B Ops) ที่ทำงานวงจรชีวิต happy-path sub-role Audit / Config ทำ action บน **periphery**: ก่อนสูตรใดอยู่ (config) ระหว่างวงจรชีวิต (การบังคับใช้ RBAC สุขภาพ integration) และหลัง publish (audit trace การ verify signature) Sysadmin มี read / write เต็มบนตาราง config และการ map RBAC; Auditor เป็น read-only บน `tb_recipe_version`, `tb_recipe_pricing_history` และคอลัมน์ audit ต่อแถว ไม่มีเส้นทาง "void" หรือ "admin-cancel" บนสูตร — สุขภาพข้อมูลบนสูตรที่ archive หลังช่วงเวลาการเก็บข้อมูลเป็นอำนาจ delete เดียว และอยู่กับ Sysadmin ตาม `REC_AUTH_014` scenario จัดกลุ่มเป็น **happy path** (master หมวดหมู่ / cuisine / อุปกรณ์; RBAC; นโยบาย tenant; สุขภาพ integration; auditor sample; auditor compliance review; soft-delete archived) **RBAC** (อำนาจ Sysadmin; auditor read-only) **validation** (negative test รอบ master ไม่ครบ orphan reference in-flight) และ **edge case** รอบ config multi-tenant soft-delete ที่ช่วงเวลาการเก็บข้อมูล การ reconstruct chain versioning handoff ข้าม persona ที่ pivot จาก persona นี้ (Scenario 10, 11 ใน parent overview) อยู่ใน [04-test-scenarios.md](./04-test-scenarios.md) ไม่ใช่ที่นี่
 
 ## 1. Happy Path
 
@@ -66,7 +66,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 | AC-EDGE-05 | การ clean equipment master | Sysadmin ปลดประจำการอุปกรณ์เก่า (เช่น sous-vide rig ที่ปลดประจำการ); อ้างอิงใน JSON prep-step บน 12 สูตร | Sysadmin soft-delete แถวอุปกรณ์ (การอ้างอิง prep-step เป็น JSON ไม่ใช่ FK ดังนั้นไม่มีการบล็อกระดับ schema); Sysadmin ประสานกับ Chef เพื่อ update prep step ที่ได้รับผลกระทบ; หรือเหลือการอ้างอิงไว้เป็น record ประวัติ |
 | AC-EDGE-06 | การบังคับใช้นโยบายการเก็บข้อมูลที่ scale | การเก็บข้อมูล tenant: archive 2 ปี แล้ว soft-delete; 500 สูตร archive 2 ปีก่อน | operation bulk soft-delete ตาม `REC_POST_009`; UI อนุญาตการเลือก batch; แถว `tb_recipe_version` รักษา (ไม่ cascade-delete โดย soft-delete); สูตรหายจาก query default; ข้อมูล audit รักษา |
 | AC-EDGE-07 | Auditor cross-reference เวอร์ชันสูตรกับประวัติ menu-item linkage | Auditor ต้องการรู้ว่า menu item ไหน link กับสูตร X ที่วันที่ประวัติเฉพาะ | chain `tb_recipe_version` ของสูตรเป็น input หนึ่ง; ประวัติ linkage ของ POS-integration layer เป็นอีก (นอก schema สูตรตาม `REC_XMOD_008`); Auditor join ทั้งสองสำหรับการ reconstruct ประวัติ; ถ้า POS layer ไม่รักษาประวัติ linkage นั่นคือ audit gap ที่ escalate |
-| AC-EDGE-08 | Sysadmin สอบสวน alert integration — `[[store-requisition]]` auto-create failure | Recipe-driven SR auto-create ล้มเหลว 3 วัน; event ที่วางแผนไม่มี SR draft | Sysadmin สอบสวน integration: ยืนยันโมดูล recipe กำลังยิง event; ยืนยันโมดูล SR กำลังรับแต่ล้มเหลวที่ create (เช่น issue permission location ปลายทาง mis-config) Fix ใช้; backfill SR draft ที่หายด้วยมือถ้าต้องการ |
+| AC-EDGE-08 | Sysadmin สอบสวน alert integration — `[store-requisition](/th/inventory/store-requisition)` auto-create failure | Recipe-driven SR auto-create ล้มเหลว 3 วัน; event ที่วางแผนไม่มี SR draft | Sysadmin สอบสวน integration: ยืนยันโมดูล recipe กำลังยิง event; ยืนยันโมดูล SR กำลังรับแต่ล้มเหลวที่ create (เช่น issue permission location ปลายทาง mis-config) Fix ใช้; backfill SR draft ที่หายด้วยมือถ้าต้องการ |
 
 ## 5. แหล่งอ้างอิง
 
@@ -74,7 +74,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 - User flow: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — แหล่ง happy-path สำหรับ Section 1 ด้านบน; อธิบาย primary flow 10 ขั้นตอน (Sysadmin: config → RBAC → นโยบาย → integration → วงจรชีวิต master; Auditor: sample → review cascade → findings)
 - กฎทางธุรกิจที่ verify: [02-business-rules.md](./02-business-rules.md) Section 4 — `REC_AUTH_012` (อำนาจ Sysadmin), `REC_AUTH_013` (Auditor read-only), `REC_AUTH_014` (อำนาจ delete ผ่าน soft-delete); Section 5 — `REC_POST_009` (ผลกระทบ posting soft-delete); Section 6 — `REC_XMOD_009` (audit versioning), `REC_XMOD_010` (RBAC mapping)
 - spec E2E: **ไม่มีสำหรับภายในสูตร**; การตรวจสอบสุขภาพ integration โดยทั่วไปแยกจาก E2E สูตร
-- Cross-link: [[product]] — Sysadmin เป็นเจ้าของ flag `is_used_in_recipe` บนสินค้าที่ gate สิทธิ์สูตร
-- Cross-link: [[costing]] — Sysadmin ดูแล chain integration cost-drift
-- Cross-link: [[inventory]] — Sysadmin ดูแล chain integration theoretical-consumption
-- Cross-link: [[store-requisition]] — Sysadmin ดูแลการ wire recipe → SR auto-create
+- Cross-link: [product](/th/inventory/product) — Sysadmin เป็นเจ้าของ flag `is_used_in_recipe` บนสินค้าที่ gate สิทธิ์สูตร
+- Cross-link: [costing](/th/inventory/costing) — Sysadmin ดูแล chain integration cost-drift
+- Cross-link: [inventory](/th/inventory/inventory) — Sysadmin ดูแล chain integration theoretical-consumption
+- Cross-link: [store-requisition](/th/inventory/store-requisition) — Sysadmin ดูแลการ wire recipe → SR auto-create

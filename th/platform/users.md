@@ -2,7 +2,7 @@
 title: ผู้ใช้ (Users)
 description: บัญชีผู้ใช้ระดับแพลตฟอร์ม — identity, ฟิลด์ `platform_role` ที่ใช้ขับเคลื่อน role gate ทุกที่ และการ assign cluster/BU ที่กำหนดขอบเขตว่าผู้ใช้เข้าถึงอะไรได้ใน inventory app
 published: true
-date: 2026-05-19T23:30:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: platform/users, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -92,7 +92,7 @@ Keycloak) และ action **Hard Delete** (ยืนยันด้วยกา
   `support_staff`, `security_officer`) ที่ปรากฏใน `AuthContext.ALLOWED_ROLES`
   และสามารถ authenticate กับ Platform admin SPA ได้ — `integration_developer`
   และ `user` เป็นค่าข้อมูลที่ถูกต้องแต่ผู้ถือค่าเหล่านี้ไม่สามารถ login
-  ได้ ดู [[auth-roles]] สำหรับ login flow
+  ได้ ดู [auth-roles](/th/platform/auth-roles) สำหรับ login flow
 - **Cluster assignment (`tb_cluster_user`)** — M:N join ระหว่าง user
   กับ cluster พร้อม `role` ระดับ cluster เป็น `admin` หรือ `user` หน้า
   edit user แสดงข้อมูลนี้แบบ read-only เป็นการ์ด Clusters การแก้ไข
@@ -148,20 +148,20 @@ templates) ของแพลตฟอร์มอ่านค่า `platform_r
 
 ## 5. โมดูลที่เกี่ยวข้อง
 
-- [[business-units]] — supply BU ที่ปรากฏในการ์ด Business Units ของ
+- [business-units](/th/platform/business-units) — supply BU ที่ปรากฏในการ์ด Business Units ของ
   user; assignment ที่สร้างที่นี่จะปรากฏบนการ์ด Users ของ BU เอง ทั้ง
   สองหน้าแก้ไข BU-user join เดียวกันด้วย `BU_ROLES` (`admin`/`user`)
   และ flag `is_default` เดียวกัน
-- [[clusters]] — supply cluster ที่ปรากฏในการ์ด Clusters ของ user
+- [clusters](/th/platform/clusters) — supply cluster ที่ปรากฏในการ์ด Clusters ของ user
   (read-only ที่นี่) หน้า edit cluster คือจุดมาตรฐานในการเพิ่ม/ลบ row
   `tb_cluster_user` โมดูล Users ใช้สมาชิกภาพ cluster ปัจจุบันเพื่อจำกัด
   dropdown ในการ assign BU จึงต้องให้สิทธิ์ cluster จากฝั่ง cluster
   ก่อน
-- [[auth-roles]] — กำหนดความหมายของค่า `platform_role` ทั้ง 7 ค่าและ
+- [auth-roles](/th/platform/auth-roles) — กำหนดความหมายของค่า `platform_role` ทั้ง 7 ค่าและ
   array `allowedRoles` ที่ค่าแต่ละค่าปรากฏใน SPA การเปลี่ยน
   `platform_role` ที่นี่จะเปลี่ยนโมดูลที่ user เข้าถึงได้ตั้งแต่ login
   ครั้งถัดไป
-- [[profile]] — มุมมองบุคคลที่หนึ่งของ user record เดียวกัน — เมนู
+- [profile](/th/platform/profile) — มุมมองบุคคลที่หนึ่งของ user record เดียวกัน — เมนู
   avatar มีลิงก์ "Profile" ไปที่นั่น โมดูล Users คือมุมมอง admin
   มุมที่สาม โมดูล Profile คือ row เดียวกันที่เจ้าของดูเอง
 

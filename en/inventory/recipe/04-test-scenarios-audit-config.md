@@ -2,7 +2,7 @@
 title: Recipe — Test Scenarios — Audit & Config
 description: System Administrator and Auditor test cases (config, RBAC, versioning audit, pricing-history audit, integration health) for the recipe module.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: recipe, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -11,11 +11,11 @@ dateCreated: 2026-05-15T16:00:00.000Z
 # Recipe — Test Scenarios — Audit & Config
 
 > **At a Glance**
-> **Persona:** Audit / Config (System Administrator config + Auditor read-only) &nbsp;·&nbsp; **Module:** [[recipe]] &nbsp;·&nbsp; **Scenarios:** ~31
+> **Persona:** Audit / Config (System Administrator config + Auditor read-only) &nbsp;·&nbsp; **Module:** [recipe](/en/inventory/recipe) &nbsp;·&nbsp; **Scenarios:** ~31
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** none for recipe internals; integration-health checks separate from recipe E2E in `../carmen-inventory-frontend-e2e/`
 
-This page captures the test scenarios that the Audit / Config persona — comprising **System Administrator** (categories, cuisines, equipment masters, RBAC, tenant policy on publish gate / un-publish / co-approval, integration wiring with `[[product]]` / `[[inventory]]` / `[[store-requisition]]`) and **Auditor** (read-only versioning / pricing-history / signature trace; compliance review) — directly drives in the `recipe` module. Unlike the four operational personas (Chef, Cost Controller, Outlet Manager, Procurement / F&B Ops) who work the happy-path lifecycle, the Audit / Config sub-roles act on the **periphery**: before any recipe exists (config), during the lifecycle (RBAC enforcement, integration health), and after publish (audit trace, signature verification). The Sysadmin has full read / write on configuration tables and the RBAC mapping; the Auditor is read-only on `tb_recipe_version`, `tb_recipe_pricing_history`, and the per-row audit columns. There is no "void" or "admin-cancel" path on the recipe — data hygiene on archived recipes after retention period is the only delete authority, and it sits with the Sysadmin per `REC_AUTH_014`. Scenarios are grouped into **happy paths** (category / cuisine / equipment masters; RBAC; tenant policy; integration health; auditor sample; auditor compliance review; soft-delete archived), **RBAC** (Sysadmin authority; auditor read-only), **validation** (negative tests around incomplete masters, in-flight orphaned references), and **edge cases** around multi-tenant configs, retention-period soft-delete, versioning chain reconstruction. Cross-persona handoffs that pivot off this persona (Scenarios 10, 11 in the parent overview) live in [04-test-scenarios.md](./04-test-scenarios.md), not here.
+This page captures the test scenarios that the Audit / Config persona — comprising **System Administrator** (categories, cuisines, equipment masters, RBAC, tenant policy on publish gate / un-publish / co-approval, integration wiring with `[product](/en/inventory/product)` / `[inventory](/en/inventory/inventory)` / `[store-requisition](/en/inventory/store-requisition)`) and **Auditor** (read-only versioning / pricing-history / signature trace; compliance review) — directly drives in the `recipe` module. Unlike the four operational personas (Chef, Cost Controller, Outlet Manager, Procurement / F&B Ops) who work the happy-path lifecycle, the Audit / Config sub-roles act on the **periphery**: before any recipe exists (config), during the lifecycle (RBAC enforcement, integration health), and after publish (audit trace, signature verification). The Sysadmin has full read / write on configuration tables and the RBAC mapping; the Auditor is read-only on `tb_recipe_version`, `tb_recipe_pricing_history`, and the per-row audit columns. There is no "void" or "admin-cancel" path on the recipe — data hygiene on archived recipes after retention period is the only delete authority, and it sits with the Sysadmin per `REC_AUTH_014`. Scenarios are grouped into **happy paths** (category / cuisine / equipment masters; RBAC; tenant policy; integration health; auditor sample; auditor compliance review; soft-delete archived), **RBAC** (Sysadmin authority; auditor read-only), **validation** (negative tests around incomplete masters, in-flight orphaned references), and **edge cases** around multi-tenant configs, retention-period soft-delete, versioning chain reconstruction. Cross-persona handoffs that pivot off this persona (Scenarios 10, 11 in the parent overview) live in [04-test-scenarios.md](./04-test-scenarios.md), not here.
 
 ## 1. Happy Path
 
@@ -66,7 +66,7 @@ This page captures the test scenarios that the Audit / Config persona — compri
 | AC-EDGE-05 | Equipment master cleanup | Sysadmin retires old equipment (e.g. discontinued sous-vide rig); referenced in prep-step JSON on 12 recipes. | Sysadmin soft-deletes the equipment row (the prep-step references are JSON, not FK, so no schema-level block); Sysadmin coordinates with Chef to update the affected prep steps; or leaves the references in place as historical record. |
 | AC-EDGE-06 | Retention-policy enforcement at scale | Tenant retention: archive 2 years, then soft-delete; 500 recipes archived 2 years ago. | Bulk soft-delete operation per `REC_POST_009`; UI permits batch selection; `tb_recipe_version` rows preserved (not cascade-deleted by soft-delete); recipes disappear from default queries; audit data preserved. |
 | AC-EDGE-07 | Auditor cross-references recipe version with menu-item linkage history | Auditor wants to know which menu items were linked to recipe X at a specific historical date. | The recipe `tb_recipe_version` chain is one input; the POS-integration layer's linkage history is another (outside the recipe schema per `REC_XMOD_008`); Auditor joins the two for the historical reconstruction; if the POS layer doesn't preserve linkage history, that's an audit gap to escalate. |
-| AC-EDGE-08 | Sysadmin investigates integration alert — `[[store-requisition]]` auto-create failure | Recipe-driven SR auto-create has been failing for 3 days; planned events have no SR drafts. | Sysadmin investigates the integration: confirms recipe module is firing events; confirms SR module is receiving but failing on create (e.g. permission issue, mis-configured destination location). Fix applied; backfill the missed SR drafts manually if needed. |
+| AC-EDGE-08 | Sysadmin investigates integration alert — `[store-requisition](/en/inventory/store-requisition)` auto-create failure | Recipe-driven SR auto-create has been failing for 3 days; planned events have no SR drafts. | Sysadmin investigates the integration: confirms recipe module is firing events; confirms SR module is receiving but failing on create (e.g. permission issue, mis-configured destination location). Fix applied; backfill the missed SR drafts manually if needed. |
 
 ## 5. References
 
@@ -74,7 +74,7 @@ This page captures the test scenarios that the Audit / Config persona — compri
 - User flow: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — happy-path source for Section 1 above; describes the 10-step primary flow (Sysadmin: config → RBAC → policy → integration → master lifecycle; Auditor: sample → cascade review → findings).
 - Business rules being verified: [02-business-rules.md](./02-business-rules.md) Section 4 — `REC_AUTH_012` (Sysadmin authority), `REC_AUTH_013` (Auditor read-only), `REC_AUTH_014` (delete authority via soft-delete); Section 5 — `REC_POST_009` (soft-delete posting effects); Section 6 — `REC_XMOD_009` (versioning audit), `REC_XMOD_010` (RBAC mapping).
 - E2E spec: **none for recipe internals**; integration-health checks are typically separate from recipe E2E.
-- Cross-link: [[product]] — Sysadmin owns the `is_used_in_recipe` flag on products that gates recipe eligibility.
-- Cross-link: [[costing]] — Sysadmin maintains the cost-drift integration chain.
-- Cross-link: [[inventory]] — Sysadmin maintains the theoretical-consumption integration chain.
-- Cross-link: [[store-requisition]] — Sysadmin maintains the recipe → SR auto-create wiring.
+- Cross-link: [product](/en/inventory/product) — Sysadmin owns the `is_used_in_recipe` flag on products that gates recipe eligibility.
+- Cross-link: [costing](/en/inventory/costing) — Sysadmin maintains the cost-drift integration chain.
+- Cross-link: [inventory](/en/inventory/inventory) — Sysadmin maintains the theoretical-consumption integration chain.
+- Cross-link: [store-requisition](/en/inventory/store-requisition) — Sysadmin maintains the recipe → SR auto-create wiring.

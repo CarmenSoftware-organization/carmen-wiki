@@ -2,7 +2,7 @@
 title: Activity
 description: Tenant-wide activity log — every meaningful state change captured as a row with actor, entity, before/after snapshot, IP, and user agent.
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: reporting-audit, activity, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -85,10 +85,10 @@ Source: tenant schema.
 
 ## 7. Cross-References
 
-- All transactional modules — [[purchase-request]], [[purchase-order]], [[good-receive-note]], [[store-requisition]], [[inventory]], [[inventory-adjustment]], [[physical-count]], [[spot-check]], [[costing]], [[vendor-pricelist]], [[product]], [[recipe]].
-- [[access-control/user]] — `actor_id` resolution.
-- [[reporting-audit/notification]] — workflow events typically fan out to both.
-- [[reporting-audit/attachment]] — `upload` / `download` actions logged with `entity_type = 'attachment'`.
+- All transactional modules — [purchase-request](/en/inventory/purchase-request), [purchase-order](/en/inventory/purchase-order), [good-receive-note](/en/inventory/good-receive-note), [store-requisition](/en/inventory/store-requisition), [inventory](/en/inventory/inventory), [inventory-adjustment](/en/inventory/inventory-adjustment), [physical-count](/en/inventory/physical-count), [spot-check](/en/inventory/spot-check), [costing](/en/inventory/costing), [vendor-pricelist](/en/inventory/vendor-pricelist), [product](/en/inventory/product), [recipe](/en/inventory/recipe).
+- [access-control/user](/en/inventory/access-control/user) — `actor_id` resolution.
+- [reporting-audit/notification](/en/inventory/reporting-audit/notification) — workflow events typically fan out to both.
+- [reporting-audit/attachment](/en/inventory/reporting-audit/attachment) — `upload` / `download` actions logged with `entity_type = 'attachment'`.
 
 ## 8. References
 

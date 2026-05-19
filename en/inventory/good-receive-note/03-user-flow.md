@@ -2,7 +2,7 @@
 title: Good Receive Note (GRN) — User Flow
 description: Document lifecycle and persona-specific flow files for good-receive-note.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: good-receive-note, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T11:00:00.000Z
 # Good Receive Note (GRN) — User Flow
 
 > **At a Glance**
-> **Module:** [[good-receive-note]] &nbsp;·&nbsp; **Personas:** Receiver (Store Keeper + Inventory Manager) &nbsp;·&nbsp; Purchaser (review-only) &nbsp;·&nbsp; Finance (AP / Controller) &nbsp;·&nbsp; Audit / Config (Auditor + Sysadmin)
+> **Module:** [good-receive-note](/en/inventory/good-receive-note) &nbsp;·&nbsp; **Personas:** Receiver (Store Keeper + Inventory Manager) &nbsp;·&nbsp; Purchaser (review-only) &nbsp;·&nbsp; Finance (AP / Controller) &nbsp;·&nbsp; Audit / Config (Auditor + Sysadmin)
 > **Workflow lifecycle:** `draft → saved → committed → (voided)` per `enum_good_received_note_status`. The `saved → committed` posting event fires inventory increment, cost-layer write, PO line `received_qty` advance, and AP accrual.
 > **Drill into per-persona views below for action-level detail**
 
@@ -23,7 +23,7 @@ Section 2 below is the **global state machine** — the canonical list of legal 
 
 ## 2. Document Lifecycle
 
-The GRN document status is stored on `tb_good_received_note.doc_status` and constrained to the four values declared in `enum_good_received_note_status`: `draft` (initial editable state, no stock or GL impact), `saved` (line entry complete and saved for review, still editable, still no stock or GL impact), `committed` (single posting event has fired — inventory incremented, cost layers written, PO line advanced, document locked), and `voided` (administratively cancelled with no inventory or GL impact, or post-commit reversed via the elevated path). The transitions below cover the legal moves between them; everything else is rejected by the workflow engine. Receipt-driven downstream effects (`sent → partial → completed` on the source PO, FIFO / average-cost layer creation in [[costing]]) fire on the `saved → committed` transition only — see [02-business-rules.md](./02-business-rules.md) Section 5 for posting rules.
+The GRN document status is stored on `tb_good_received_note.doc_status` and constrained to the four values declared in `enum_good_received_note_status`: `draft` (initial editable state, no stock or GL impact), `saved` (line entry complete and saved for review, still editable, still no stock or GL impact), `committed` (single posting event has fired — inventory incremented, cost layers written, PO line advanced, document locked), and `voided` (administratively cancelled with no inventory or GL impact, or post-commit reversed via the elevated path). The transitions below cover the legal moves between them; everything else is rejected by the workflow engine. Receipt-driven downstream effects (`sent → partial → completed` on the source PO, FIFO / average-cost layer creation in [costing](/en/inventory/costing)) fire on the `saved → committed` transition only — see [02-business-rules.md](./02-business-rules.md) Section 5 for posting rules.
 
 ```mermaid
 stateDiagram-v2
@@ -55,7 +55,7 @@ stateDiagram-v2
 | `committed` | void (post-commit reversal) | `voided` | Inventory Manager + Finance (elevated co-authorisation), System Administrator | Reason text required; **must trigger compensating reversal of inventory transaction, cost-layer reversal, PO line `received_qty` decrement, and reversing AP entry**. Typically handled via a credit-note workflow against the GRN. |
 | `saved` | auto-commit (scheduled) | `committed` | System Administrator (scheduled job) | End-of-period sweep covers stale `saved` GRNs older than the tenant grace window; same commit-time rule set applies; failures are logged and routed to Inventory Manager for manual resolution. |
 | `voided` | (no further action) | `voided` | — | Terminal state. The voided document is retained for audit; any subsequent receipt must be raised as a new GRN. |
-| `committed` | (no further action) | `committed` | — | Terminal state for the receipt path. Corrections require a `tb_credit_note` against this GRN or a compensating adjustment in [[inventory-adjustment]]; the GRN itself remains locked. |
+| `committed` | (no further action) | `committed` | — | Terminal state for the receipt path. Corrections require a `tb_credit_note` against this GRN or a compensating adjustment in [inventory-adjustment](/en/inventory/inventory-adjustment); the GRN itself remains locked. |
 
 ## 3. Persona Index
 
@@ -88,4 +88,4 @@ The table below captures the moments where the GRN moves from one persona's resp
 - `../carmen/docs/good-recive-note-managment/GRN-Overview.md` — carmen/docs module overview: purpose, scope, audience, integration points.
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical `enum_good_received_note_status` (the four-state enum used in Section 2) and the carmen/docs divergences (Section 5 of the data model).
 - Sibling: [02-business-rules.md](./02-business-rules.md) Section 5 — posting effects and authorization gates referenced by each row of Section 2.
-- Related modules: [[purchase-order]] (upstream source; commit advances PO `received_qty` and may flip PO status `sent → partial → completed`), [[inventory]] (downstream — inventory transactions are where lot, expiry, and cost-layer data live), [[costing]] (FIFO / average-cost layer creation on commit), [[inventory-adjustment]] (post-commit corrections), [[vendor-pricelist]] (price-variance check against GRN unit price).
+- Related modules: [purchase-order](/en/inventory/purchase-order) (upstream source; commit advances PO `received_qty` and may flip PO status `sent → partial → completed`), [inventory](/en/inventory/inventory) (downstream — inventory transactions are where lot, expiry, and cost-layer data live), [costing](/en/inventory/costing) (FIFO / average-cost layer creation on commit), [inventory-adjustment](/en/inventory/inventory-adjustment) (post-commit corrections), [vendor-pricelist](/en/inventory/vendor-pricelist) (price-variance check against GRN unit price).

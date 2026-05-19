@@ -2,7 +2,7 @@
 title: Dimension
 description: User-defined custom fields (cost centre, project code, etc.) that can be attached to any document or master record, with per-entity display rules.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: system-config, dimension, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -30,7 +30,7 @@ The two-table split keeps the catalogue clean. `tb_dimension` is the *definition
 | Curate `lookup` allowed values | Dimension edit → `value` editor | Required for `lookup` / `lookup_dataset` |
 | Override default per place | Display-in row → `default_value` | Wins over top-level dimension default |
 | Retire a dimension | Set `is_active = false` | Hides from new forms; existing values remain |
-| Audit dimension changes | [[reporting-audit/activity]] log | `entity_type = dimension` |
+| Audit dimension changes | [reporting-audit/activity](/en/inventory/reporting-audit/activity) log | `entity_type = dimension` |
 
 ## 3. Validation & Errors
 
@@ -98,12 +98,12 @@ Source: tenant schema.
 
 ## 7. Cross-References
 
-- [[purchase-request]], [[purchase-order]] — header + detail tagging.
-- [[good-receive-note]] — carries cost-centre allocation forward.
-- [[store-requisition]] — issue dimensions drive cost allocation.
-- [[inventory-adjustment]] — stock-in / stock-out tagging.
-- [[inventory]] — transfer tagging.
-- [[master-data/vendor]], [[master-data/location]], [[master-data/currency]], [[product]] — master-record tagging cascades defaults to transactional docs.
+- [purchase-request](/en/inventory/purchase-request), [purchase-order](/en/inventory/purchase-order) — header + detail tagging.
+- [good-receive-note](/en/inventory/good-receive-note) — carries cost-centre allocation forward.
+- [store-requisition](/en/inventory/store-requisition) — issue dimensions drive cost allocation.
+- [inventory-adjustment](/en/inventory/inventory-adjustment) — stock-in / stock-out tagging.
+- [inventory](/en/inventory/inventory) — transfer tagging.
+- [master-data/vendor](/en/inventory/master-data/vendor), [master-data/location](/en/inventory/master-data/location), [master-data/currency](/en/inventory/master-data/currency), [product](/en/inventory/product) — master-record tagging cascades defaults to transactional docs.
 
 ## 8. References
 

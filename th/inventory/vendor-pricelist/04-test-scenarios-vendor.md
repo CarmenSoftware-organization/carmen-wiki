@@ -2,7 +2,7 @@
 title: รายการราคาผู้ขาย (Vendor Pricelist) — Test Scenarios — Vendor
 description: Test case ของ Vendor (happy path, validation, edge case) สำหรับ vendor-pricelist External party — section Permission / Authorization ลดลงเป็นแถว N/A เดียว
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: vendor-pricelist, test-scenarios, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 # รายการราคาผู้ขาย (Vendor Pricelist) — Test Scenarios — Vendor
 
 > **At a Glance**
-> **Persona:** Vendor (external party — portal ที่ authenticate ด้วย token เท่านั้น) &nbsp;·&nbsp; **โมดูล:** [[vendor-pricelist]] &nbsp;·&nbsp; **Scenario:** ~25
+> **Persona:** Vendor (external party — portal ที่ authenticate ด้วย token เท่านั้น) &nbsp;·&nbsp; **โมดูล:** [vendor-pricelist](/th/inventory/vendor-pricelist) &nbsp;·&nbsp; **Scenario:** ~25
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission (N/A) &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** ไม่มี — vendor portal เป็น surface สาธารณะแยก; coverage ที่ระดับ API / integration (token middleware, output validator, auto-save) รอ roadmap item ใน `../carmen-inventory-frontend-e2e/`
 
@@ -68,7 +68,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 - User flow: [03-user-flow-vendor.md](./03-user-flow-vendor.md) — แหล่ง happy-path สำหรับ Section 1 ข้างต้น; อธิบายจุดเข้า portal-token, สามวิธีการ submission, กลไก auto-save, action recall-and-edit และ loop การ reject-resubmit
 - กติกาทางธุรกิจที่ถูกตรวจสอบ: [02-business-rules.md](./02-business-rules.md) § 2 (`VPL_VAL_018`–`VPL_VAL_023` — การ validate ระดับบรรทัดที่ vendor trigger บน save และ submit; `VPL_VAL_020` MOQ-tier non-increasing check; `VPL_VAL_023` ขั้นต่ำ-หนึ่ง-แถว submit check), § 3 (`VPL_CALC_001`–`VPL_CALC_003` การแยกราคาบรรทัด; `VPL_CALC_007` countdown deadline), § 4 (`VPL_AUTH_007` การเข้า portal ผ่าน token; `VPL_AUTH_008` การเลือกสกุลเงิน / หน่วย; `VPL_AUTH_014` การแยกหน้าที่ — ตรวจสอบจากฝั่ง Sysadmin / Purchaser ไม่ใช่ฝั่ง Vendor), § 5 (`VPL_POST_010`–`VPL_POST_014` lifecycle invitation; `VPL_POST_015`–`VPL_POST_016` การเปลี่ยน pricelist ที่ vendor-driven)
 - โมเดลข้อมูล: [01-data-model.md](./01-data-model.md) — `tb_request_for_pricing_detail.pricelist_url_token` (token cryptographic ต่อ invitation); `tb_pricelist.url_token` (สำเนา denormalised); unique key multi-MOQ-per-product (`pricelist_detail_pricelist_id_product_id_unit_id_moqqty_u`) อ้างอิงใน VPL-VND-VAL-08
-- E2E: ไม่มี Carmen E2E spec dedicated สำหรับ vendor portal — portal เป็น surface สาธารณะแยกภายใต้ `app/(main)/vendor-portal/[token]/` พร้อมชั้น harness ที่ authenticate ด้วย token ของตน Coverage วันนี้อยู่ที่ระดับ API / integration (token middleware, output validation-engine, การ buffer auto-save) ติดตามใน `../carmen/docs/vendor-pricelist-management/tasks.md` การอ้างอิงข้างเคียง: Vendor external บน [[purchase-order]] ไม่มี Carmen surface เลยและบันทึกใน [[purchase-order/04-test-scenarios-vendor]] เป็น N/A ทั่วทั้งบอร์ด; Vendor ของโมดูลนี้ต่างเพราะ portal session **เป็น** surface ใน-ระบบ (อยู่ภายใต้นโยบาย token) แม้ว่าจะไม่อยู่ภายใต้ matrix RBAC หลักของ Carmen
+- E2E: ไม่มี Carmen E2E spec dedicated สำหรับ vendor portal — portal เป็น surface สาธารณะแยกภายใต้ `app/(main)/vendor-portal/[token]/` พร้อมชั้น harness ที่ authenticate ด้วย token ของตน Coverage วันนี้อยู่ที่ระดับ API / integration (token middleware, output validation-engine, การ buffer auto-save) ติดตามใน `../carmen/docs/vendor-pricelist-management/tasks.md` การอ้างอิงข้างเคียง: Vendor external บน [purchase-order](/th/inventory/purchase-order) ไม่มี Carmen surface เลยและบันทึกใน [purchase-order/04-test-scenarios-vendor](/th/inventory/purchase-order/04-test-scenarios-vendor) เป็น N/A ทั่วทั้งบอร์ด; Vendor ของโมดูลนี้ต่างเพราะ portal session **เป็น** surface ใน-ระบบ (อยู่ภายใต้นโยบาย token) แม้ว่าจะไม่อยู่ภายใต้ matrix RBAC หลักของ Carmen
 - Sibling: [04-test-scenarios-purchaser.md](./04-test-scenarios-purchaser.md) — persona ภายในที่ launch campaign, review submission ของ vendor และ approve / reject; loop การ reject-resubmit ใน VPL-VND-HP-08 ต้นกำเนิดที่นั่น
 - Sibling: [04-test-scenarios-audit-config.md](./04-test-scenarios-audit-config.md) — scenario Sysadmin ครอบคลุมการตั้งค่านโยบาย portal-token (การหมดอายุ, IP allowlist, ขีดจำกัด concurrent-session, suspicious activity) ที่ gate การเข้าของ Vendor ใน VPL-VND-VAL-01..VPL-VND-VAL-03 และ VPL-VND-EDGE-04
-- Cross-link: [[product]] — ทุกบรรทัดบน submission ของ vendor อ้างอิงสินค้าบน template; การจัดการ orphan exercise ทางอ้อมผ่าน VPL-VND-EDGE-07
+- Cross-link: [product](/th/inventory/product) — ทุกบรรทัดบน submission ของ vendor อ้างอิงสินค้าบน template; การจัดการ orphan exercise ทางอ้อมผ่าน VPL-VND-EDGE-07

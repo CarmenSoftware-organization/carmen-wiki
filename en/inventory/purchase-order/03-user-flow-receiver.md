@@ -2,7 +2,7 @@
 title: Purchase Order — User Flow — Receiver
 description: Receiver's flow within the purchase-order module — physically accepts goods, raises GRN against PO, triggers receipt state transition.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-order, user-flow, receiver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -11,12 +11,12 @@ dateCreated: 2026-05-15T10:00:00.000Z
 # Purchase Order — User Flow — Receiver
 
 > **At a Glance**
-> **Persona:** Receiver / Store Keeper (+ Inventory Manager) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Workflow stages:** sent → partial → completed (+ closed via early-close) &nbsp;·&nbsp; **Key permissions:** post GRN, set received/accepted qty, early-close (Inv Mgr)
+> **Persona:** Receiver / Store Keeper (+ Inventory Manager) &nbsp;·&nbsp; **Module:** [purchase-order](/en/inventory/purchase-order) &nbsp;·&nbsp; **Workflow stages:** sent → partial → completed (+ closed via early-close) &nbsp;·&nbsp; **Key permissions:** post GRN, set received/accepted qty, early-close (Inv Mgr)
 > **What this persona does:** Physically inspects vendor deliveries, posts GRN line by line, and flips PO status from sent to partial or completed.
 
 ## 1. Role in This Module
 
-The **Receiver** persona covers the **Receiver / Store Keeper** at the dock and the **Inventory Manager** who oversees receipt closure for the location. Together they own the physical-acceptance leg of the procure-to-pay chain: the Store Keeper inspects the vendor's delivery against the PO, raises the **Good Receive Note** (GRN) line by line, and records `received_qty` and `accepted_qty` on each PO line; the Inventory Manager supervises that posting and closes POs once receipt is complete or accepted as final. The PO status on entry to this flow is `sent` (or `partial` for follow-on deliveries). The GRN posting itself is performed in the downstream `[[good-receive-note]]` module — this page describes the **PO-side effects only**: how the Receiver's GRN flips `tb_purchase_order.po_status` from `sent → partial` (`PO_POST_006`) or `sent → completed` / `partial → completed` (`PO_POST_007`), how the Inventory Manager closes a `partial` PO with the remainder written to `cancelled_qty` (`PO_POST_011`), and how the PO line counters (`received_qty`, `cancelled_qty`) advance against `order_qty`. Inventory on-hand is incremented by the GRN module, not by the PO. Segregation of duties is enforced by `PO_AUTH_010` — the user who created or transmitted the PO MUST NOT be the same user who posts the GRN against it.
+The **Receiver** persona covers the **Receiver / Store Keeper** at the dock and the **Inventory Manager** who oversees receipt closure for the location. Together they own the physical-acceptance leg of the procure-to-pay chain: the Store Keeper inspects the vendor's delivery against the PO, raises the **Good Receive Note** (GRN) line by line, and records `received_qty` and `accepted_qty` on each PO line; the Inventory Manager supervises that posting and closes POs once receipt is complete or accepted as final. The PO status on entry to this flow is `sent` (or `partial` for follow-on deliveries). The GRN posting itself is performed in the downstream `[good-receive-note](/en/inventory/good-receive-note)` module — this page describes the **PO-side effects only**: how the Receiver's GRN flips `tb_purchase_order.po_status` from `sent → partial` (`PO_POST_006`) or `sent → completed` / `partial → completed` (`PO_POST_007`), how the Inventory Manager closes a `partial` PO with the remainder written to `cancelled_qty` (`PO_POST_011`), and how the PO line counters (`received_qty`, `cancelled_qty`) advance against `order_qty`. Inventory on-hand is incremented by the GRN module, not by the PO. Segregation of duties is enforced by `PO_AUTH_010` — the user who created or transmitted the PO MUST NOT be the same user who posts the GRN against it.
 
 ### Workflow position (Receiver highlighted)
 
@@ -100,7 +100,7 @@ In all three cases the next persona is **Finance** for invoice match (and for cl
 - Sibling: [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md) — holds the close / void override authority and reviews `partial → closed` decisions alongside the Inventory Manager.
 - Sibling: [03-user-flow-vendor.md](./03-user-flow-vendor.md) — external party whose physical delivery this persona accepts at the dock.
 - Sibling: [03-user-flow-finance.md](./03-user-flow-finance.md) — downstream persona that picks up the matched-but-unbilled position for three-way match after GRN post.
-- Related: [[good-receive-note]] — downstream module where the GRN is actually raised and posted; this page describes the PO-side effects only.
-- Related: [[inventory]] — on-hand increment from `accepted_qty` is owned by the inventory module on GRN post; the PO contributes only the on-order pipeline quantity (`order_qty − received_qty − cancelled_qty`) per `PO_XMOD_008`.
+- Related: [good-receive-note](/en/inventory/good-receive-note) — downstream module where the GRN is actually raised and posted; this page describes the PO-side effects only.
+- Related: [inventory](/en/inventory/inventory) — on-hand increment from `accepted_qty` is owned by the inventory module on GRN post; the PO contributes only the on-order pipeline quantity (`order_qty − received_qty − cancelled_qty`) per `PO_XMOD_008`.
 - Sibling: [02-business-rules.md](./02-business-rules.md) — `PO_POST_006`, `PO_POST_007`, `PO_POST_011`, `PO_AUTH_008`, and `PO_AUTH_010` for the receipt-side transitions and authorization referenced above.
 - `../carmen/docs/purchase-order-management/purchase-order-module.md` — primary carmen/docs source for the PO module business analysis, GRN integration, and the receipt-state transitions.

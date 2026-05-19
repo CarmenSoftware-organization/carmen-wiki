@@ -2,7 +2,7 @@
 title: Spot Check — User Flow — Inventory Controller
 description: Inventory Controller path through the spot-check lifecycle.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: spot-check, user-flow, inventory-controller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -11,12 +11,12 @@ dateCreated: 2026-05-15T14:30:00.000Z
 # Spot Check — User Flow — Inventory Controller
 
 > **At a Glance**
-> **Persona:** Inventory Controller &nbsp;·&nbsp; **Module:** [[spot-check]] &nbsp;·&nbsp; **Workflow stages:** create → pending → in_progress → completed (+ void) &nbsp;·&nbsp; **Key permissions:** create / assign / monitor, flag recount, override variance, submit (fires rollup), void
+> **Persona:** Inventory Controller &nbsp;·&nbsp; **Module:** [spot-check](/en/inventory/spot-check) &nbsp;·&nbsp; **Workflow stages:** create → pending → in_progress → completed (+ void) &nbsp;·&nbsp; **Key permissions:** create / assign / monitor, flag recount, override variance, submit (fires rollup), void
 > **What this persona does:** Owns the spot-check exercise end-to-end — defines sampling, assigns the Counter, reviews variance, and submits to fire the adjustment rollup.
 
 ## 1. Persona
 
-**Inventory Controller** — the single owner of the spot-check exercise: defines selection criteria (`method` = random / high_value / manual, `size` of the sample), schedules and launches the spot check, assigns the Counter, monitors progress, reviews variances, approves or rejects recount requests, and triggers the variance rollup to [[inventory-adjustment]]. Authority anchor for `SPC_AUTH_001`.
+**Inventory Controller** — the single owner of the spot-check exercise: defines selection criteria (`method` = random / high_value / manual, `size` of the sample), schedules and launches the spot check, assigns the Counter, monitors progress, reviews variances, approves or rejects recount requests, and triggers the variance rollup to [inventory-adjustment](/en/inventory/inventory-adjustment). Authority anchor for `SPC_AUTH_001`.
 
 ### Workflow position (Inventory Controller highlighted)
 
@@ -34,7 +34,7 @@ graph LR
 
 ### Permission Matrix — V1 Status × Action (Inventory Controller)
 
-The Inventory Controller is the single owner of the spot-check exercise — the only persona who can create spot checks, configure method and size, assign counters, flag recounts, submit, and void. Rows are derived from Section 3 (Primary Actions) of this file; rule citations refer to [[spot-check/02-business-rules]] § 4 / § 5.
+The Inventory Controller is the single owner of the spot-check exercise — the only persona who can create spot checks, configure method and size, assign counters, flag recounts, submit, and void. Rows are derived from Section 3 (Primary Actions) of this file; rule citations refer to [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) § 4 / § 5.
 
 | Action | `pending` | `in_progress` | `completed` | `void` |
 |---|---|---|---|---|
@@ -45,7 +45,7 @@ The Inventory Controller is the single owner of the spot-check exercise — the 
 | Override / accept variance (countersignature) | — | ✅ (`SPC_AUTH_001`) | ❌ | ❌ |
 | Submit spot check (`in_progress → completed`) | — | ✅ (`SPC_AUTH_001`; `SPC_VAL_004` — all lines counted; `SPC_POST_001` rollup fires) | — | — |
 | Void spot check | ✅ (`SPC_VAL_008`) | ✅ (`SPC_VAL_008`) | ❌ (`SPC_VAL_007` — terminal) | — |
-| Route rollup adjustment for approval | — | — | ✅ — to Approver / Finance via [[inventory-adjustment]] | — |
+| Route rollup adjustment for approval | — | — | ✅ — to Approver / Finance via [inventory-adjustment](/en/inventory/inventory-adjustment) | — |
 | Edit lines after completion | — | — | ❌ (`SPC_VAL_007` — immutable; raise manual adjustment per `SPC_POST_004`) | — |
 
 ## 2. Entry Points
@@ -81,7 +81,7 @@ The Inventory Controller is the single owner of the spot-check exercise — the 
 
 | Trigger | Handoff to | Artefact |
 | ------- | ---------- | -------- |
-| Submit spot check | System → [[inventory-adjustment]] rollup | `tb_spot_check.doc_status = completed`; `tb_stock_in` / `tb_stock_out` created with `info.spotCheckId`. |
+| Submit spot check | System → [inventory-adjustment](/en/inventory/inventory-adjustment) rollup | `tb_spot_check.doc_status = completed`; `tb_stock_in` / `tb_stock_out` created with `info.spotCheckId`. |
 | Route rollup adjustment for approval | Audit / Config (Approver / Finance) per `ADJ_AUTH_*` | Rollup `tb_stock_in` / `tb_stock_out` in `in_progress`. |
 | Void | (terminal) | `tb_spot_check.doc_status = void`. |
 
@@ -90,4 +90,4 @@ The Inventory Controller is the single owner of the spot-check exercise — the 
 - **Primary (TODO):** carmen/docs source — does not exist for this module.
 - **Frontend (TODO):** `../carmen-inventory-frontend/` — Inventory Controller UI screens.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists.
-- Related: [[spot-check/03-user-flow]] (overview), [[spot-check/02-business-rules]] (`SPC_AUTH_001`, `SPC_VAL_*`, `SPC_POST_*`), [[physical-count/03-user-flow-count-lead]] (full-count counterpart owner path — same persona acting with a wider scope), [[inventory-adjustment/03-user-flow-inventory-controller]] (rollup-side flow, same persona acting as adjustment owner).
+- Related: [spot-check/03-user-flow](/en/inventory/spot-check/03-user-flow) (overview), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_AUTH_001`, `SPC_VAL_*`, `SPC_POST_*`), [physical-count/03-user-flow-count-lead](/en/inventory/physical-count/03-user-flow-count-lead) (full-count counterpart owner path — same persona acting with a wider scope), [inventory-adjustment/03-user-flow-inventory-controller](/en/inventory/inventory-adjustment/03-user-flow-inventory-controller) (rollup-side flow, same persona acting as adjustment owner).

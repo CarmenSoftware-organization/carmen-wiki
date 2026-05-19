@@ -2,7 +2,7 @@
 title: รายการราคาผู้ขาย (Vendor Pricelist) — Test Scenarios — Audit & Config
 description: Test case ของ Auditor (อ่านอย่างเดียวข้าม template/campaign/invitation/pricelist/validation/activity-log) และ System Administrator (การกำหนดเลข, RBAC, นโยบาย portal-token, การเชื่อม email, กติกา validation, การ revoke token, การเก็บ audit)
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: vendor-pricelist, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 # รายการราคาผู้ขาย (Vendor Pricelist) — Test Scenarios — Audit & Config
 
 > **At a Glance**
-> **Persona:** Audit / Config (Auditor อ่านอย่างเดียว + System Administrator การตั้งค่า) &nbsp;·&nbsp; **โมดูล:** [[vendor-pricelist]] &nbsp;·&nbsp; **Scenario:** ~34
+> **Persona:** Audit / Config (Auditor อ่านอย่างเดียว + System Administrator การตั้งค่า) &nbsp;·&nbsp; **โมดูล:** [vendor-pricelist](/th/inventory/vendor-pricelist) &nbsp;·&nbsp; **Scenario:** ~34
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** ไม่มี — surface การ query audit-log และการตั้งค่า exercise ที่ระดับ API / integration รอ roadmap item; ไม่มี spec dedicated ใน `../carmen-inventory-frontend-e2e/`
 
@@ -83,8 +83,8 @@ dateCreated: 2026-05-15T15:00:00.000Z
 - Sibling: [04-test-scenarios-purchaser.md](./04-test-scenarios-purchaser.md) — persona ต้นน้ำที่ action template / campaign / pricelist populate activity log ที่ Auditor เดิน; ผู้บริโภคของ Sysadmin การกำหนดเลข, RBAC และการตั้งค่า validation
 - Sibling: [04-test-scenarios-vendor.md](./04-test-scenarios-vendor.md) — counterparty ภายนอกที่การเข้า portal ถูกกำกับโดยนโยบาย token ของ Sysadmin (VPL-AUD-HP-07) และอาจ terminate โดยการ revoke ของ Sysadmin (VPL-AUD-HP-08); telemetry ป้อน chain audit ของ Auditor (VPL-AUD-HP-02 / VPL-AUD-HP-03)
 - Sibling: [04-test-scenarios-finance.md](./04-test-scenarios-finance.md) — persona ภายในที่การสืบสวน variance และการบังคับใช้นโยบาย FX บริโภคการตั้งค่าแหล่ง currency / FX ของ Sysadmin (VPL-AUD-HP-10); ไฟล์เคสป้อน chain audit ปลายน้ำของ Auditor
-- Cross-link: [[purchase-request]] — โมดูลปลายน้ำที่บันทึก PR อ้างอิง pricelist active; Auditor เดิน back-chain ในการตัดสินใจการ default preferred-vendor ทุกครั้งตาม VPL-AUD-HP-03
-- Cross-link: [[purchase-order]] — โมดูลปลายน้ำที่บันทึก PO snapshot ราคา pricelist; chain audit ตรวจสอบความถูกต้อง snapshot ที่ PR-to-PO conversion
-- Cross-link: [[good-receive-note]] — โมดูลปลายน้ำที่การ post GRN ขับ entry variance เทียบกับ pricelist active; chain audit ตรวจสอบการจัดประเภท variance ที่ Finance บันทึก
-- Cross-link: [[product]] — ทุกแถว pricelist อ้างอิงสินค้า; Auditor บริโภครายงาน data-hygiene บนการอ้างอิงที่กลายเป็น orphan
+- Cross-link: [purchase-request](/th/inventory/purchase-request) — โมดูลปลายน้ำที่บันทึก PR อ้างอิง pricelist active; Auditor เดิน back-chain ในการตัดสินใจการ default preferred-vendor ทุกครั้งตาม VPL-AUD-HP-03
+- Cross-link: [purchase-order](/th/inventory/purchase-order) — โมดูลปลายน้ำที่บันทึก PO snapshot ราคา pricelist; chain audit ตรวจสอบความถูกต้อง snapshot ที่ PR-to-PO conversion
+- Cross-link: [good-receive-note](/th/inventory/good-receive-note) — โมดูลปลายน้ำที่การ post GRN ขับ entry variance เทียบกับ pricelist active; chain audit ตรวจสอบการจัดประเภท variance ที่ Finance บันทึก
+- Cross-link: [product](/th/inventory/product) — ทุกแถว pricelist อ้างอิงสินค้า; Auditor บริโภครายงาน data-hygiene บนการอ้างอิงที่กลายเป็น orphan
 - E2E: ไม่มี audit-config E2E spec dedicated; การ query audit-log และ surface การจัดการการตั้งค่า exercise ที่ระดับ API / integration (service audit และ config ข้ามโมดูล) Roadmap item ใน `../carmen/docs/vendor-pricelist-management/tasks.md` ครอบคลุม coverage dedicated ในอนาคต; pattern annotation `SKIP_NOTE_BACKEND` จากโมดูล PO (`401-po.spec.ts`) ใช้คล้ายกันที่นี่สำหรับพฤติกรรมที่ขับโดยการตั้งค่า (การ generate การกำหนดเลข, การบังคับใช้ RBAC, นโยบาย token, การ fire กติกา validation) ซึ่ง validate ผ่าน audit log ที่ Auditor เดินและ log audit การตั้งค่าที่ Sysadmin เขียน

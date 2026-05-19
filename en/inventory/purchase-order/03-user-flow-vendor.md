@@ -2,7 +2,7 @@
 title: Purchase Order — User Flow — Vendor
 description: Vendor's flow within the purchase-order module — external party (no system login); receives PO, acknowledges, fulfils, invoices.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-order, user-flow, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 # Purchase Order — User Flow — Vendor
 
 > **At a Glance**
-> **Persona:** Vendor (external — no Carmen login) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Workflow stages:** sent (touch points) → partial / completed / voided &nbsp;·&nbsp; **Key permissions:** none direct — events recorded by Purchaser / Receiver / Finance / PM on vendor's behalf
+> **Persona:** Vendor (external — no Carmen login) &nbsp;·&nbsp; **Module:** [purchase-order](/en/inventory/purchase-order) &nbsp;·&nbsp; **Workflow stages:** sent (touch points) → partial / completed / voided &nbsp;·&nbsp; **Key permissions:** none direct — events recorded by Purchaser / Receiver / Finance / PM on vendor's behalf
 > **What this persona does:** Receives the transmitted PO, acknowledges, fulfils delivery, and issues invoice — every system effect captured by an internal persona.
 
 ## 1. Role in This Module
@@ -58,7 +58,7 @@ The Vendor has **no direct write access** in Carmen. Each vendor-side event is r
 
 1. **Acknowledge receipt of the PO.** Vendor confirms acceptance of terms (price, quantity, delivery date, payment terms). **System effect:** Purchaser records the acknowledgement in `tb_purchase_order_comment` with the confirmation date and reference; if a vendor portal is in use, the portal callback writes the same comment automatically. `po_status` remains `sent`.
 2. **Prepare and ship the goods against the agreed delivery date.** Vendor allocates stock, picks, packs, and dispatches the shipment with the delivery note / packing list referencing the `po_no`. **System effect:** none — the physical movement is invisible to Carmen until the Receiver opens it at the dock.
-3. **Deliver the goods to the receiving location.** Vendor's logistics partner delivers against the PO and the agreed delivery point. **System effect:** none directly — the **Receiver** persona scans / counts and raises the GRN in the downstream [[good-receive-note]] module, which is what actually flips `po_status` (`sent → partial` or `sent → completed`).
+3. **Deliver the goods to the receiving location.** Vendor's logistics partner delivers against the PO and the agreed delivery point. **System effect:** none directly — the **Receiver** persona scans / counts and raises the GRN in the downstream [good-receive-note](/en/inventory/good-receive-note) module, which is what actually flips `po_status` (`sent → partial` or `sent → completed`).
 4. **Issue the invoice.** Vendor sends the AP invoice (paper, PDF, or EDI) referencing the `po_no` and the delivered quantities. **System effect:** the **Finance** persona captures the invoice, runs the three-way match (PO ↔ GRN ↔ invoice), and posts the AP liability on successful match; the PO itself is not status-updated by the invoice — three-way match is tracked on the linked invoice record.
 
 ## 3. Decision Branches
@@ -84,5 +84,5 @@ The **three-way match** (PO ↔ GRN ↔ invoice) is run by the **Finance** perso
 - Sibling: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — internal persona that transmits the PO, records vendor acknowledgement, and runs the amendment loop on vendor's behalf.
 - Sibling: [03-user-flow-receiver.md](./03-user-flow-receiver.md) — downstream internal persona that physically accepts the vendor's delivery and posts the GRN that drives `sent → partial → completed`.
 - Sibling: [03-user-flow-finance.md](./03-user-flow-finance.md) — internal persona that captures the vendor's invoice and runs the three-way match.
-- Related: [[good-receive-note]] — downstream module that records the vendor's physical delivery and drives the receipt-state transitions on the PO.
+- Related: [good-receive-note](/en/inventory/good-receive-note) — downstream module that records the vendor's physical delivery and drives the receipt-state transitions on the PO.
 - `../carmen/docs/purchase-order-management/purchase-order-module.md` — primary carmen/docs source for the PO module business analysis, transmission, and three-way-match flow.

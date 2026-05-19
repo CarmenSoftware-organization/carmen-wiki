@@ -2,7 +2,7 @@
 title: Report Templates
 description: XML-based report template catalogue with tabbed Dialog/Content/Preview editor, database source binding, and business-unit allow/deny scoping.
 published: true
-date: 2026-05-19T23:30:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: platform/report-templates, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -44,7 +44,7 @@ The `report_template` row therefore plays two roles. Operationally, it is the so
 
 ## 4. Roles and Personas
 
-The `/report-templates`, `/report-templates/new`, and `/report-templates/:id/edit` routes are gated by the same `allowedRoles` array — three Carmen-internal admin-tier roles. Any other authenticated role hitting these routes sees `<AccessDenied>` ([[auth-roles]] covers the guard mechanism).
+The `/report-templates`, `/report-templates/new`, and `/report-templates/:id/edit` routes are gated by the same `allowedRoles` array — three Carmen-internal admin-tier roles. Any other authenticated role hitting these routes sees `<AccessDenied>` ([auth-roles](/en/platform/auth-roles) covers the guard mechanism).
 
 | Role | Responsibility |
 |---|---|
@@ -56,10 +56,10 @@ End-customer roles (property managers, BU staff, end users) never reach this mod
 
 ## 5. Related Modules
 
-- [[auth-roles]] — owns the `PrivateRoute` + `hasRole()` mechanism that gates the three report-templates routes to admin-tier roles
-- [[business-units]] — supplies the BU codes used in the `allow_business_unit` / `deny_business_unit` chip inputs and the "Probe BU" picker's tenant-schema lookups
-- [[clusters]] — second admin-tier-gated surface in the same allow-list as report-templates; useful cross-reference for how the platform organises customer scope above the BU level
-- [[users]] — manages the `platform_role` field on each user account that ultimately decides whether someone passes the `allowedRoles` gate for this module
+- [auth-roles](/en/platform/auth-roles) — owns the `PrivateRoute` + `hasRole()` mechanism that gates the three report-templates routes to admin-tier roles
+- [business-units](/en/platform/business-units) — supplies the BU codes used in the `allow_business_unit` / `deny_business_unit` chip inputs and the "Probe BU" picker's tenant-schema lookups
+- [clusters](/en/platform/clusters) — second admin-tier-gated surface in the same allow-list as report-templates; useful cross-reference for how the platform organises customer scope above the BU level
+- [users](/en/platform/users) — manages the `platform_role` field on each user account that ultimately decides whether someone passes the `allowedRoles` gate for this module
 
 ## 6. Reference Sources
 

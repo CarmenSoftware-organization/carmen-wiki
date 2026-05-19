@@ -2,7 +2,7 @@
 title: Physical Count — User Flow — Counter
 description: Counter / Store Keeper path through the physical-count lifecycle.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: physical-count, user-flow, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T14:00:00.000Z
 # Physical Count — User Flow — Counter
 
 > **At a Glance**
-> **Persona:** Counter (Store Keeper) &nbsp;·&nbsp; **Module:** [[physical-count]] &nbsp;·&nbsp; **Workflow stages:** Enter first `actual_qty` (auto-transitions `pending → in_progress`; stamps `start_counting_at` / `start_counting_by_id`) &nbsp;·&nbsp; edit `actual_qty` and add line comments on own zone &nbsp;·&nbsp; sign off completed sheet back to Count Lead &nbsp;·&nbsp; **Key permissions:** edit own-zone lines (`PHC_AUTH_002 / PHC_AUTH_004`); cannot submit document to `completed` (Count Lead only)
+> **Persona:** Counter (Store Keeper) &nbsp;·&nbsp; **Module:** [physical-count](/en/inventory/physical-count) &nbsp;·&nbsp; **Workflow stages:** Enter first `actual_qty` (auto-transitions `pending → in_progress`; stamps `start_counting_at` / `start_counting_by_id`) &nbsp;·&nbsp; edit `actual_qty` and add line comments on own zone &nbsp;·&nbsp; sign off completed sheet back to Count Lead &nbsp;·&nbsp; **Key permissions:** edit own-zone lines (`PHC_AUTH_002 / PHC_AUTH_004`); cannot submit document to `completed` (Count Lead only)
 > **What this persona does:** Walks assigned zones, records physical quantities line by line, and flags damaged / unlabelled / unfamiliar items for the Count Lead.
 
 ## 1. Persona
@@ -32,7 +32,7 @@ graph LR
 
 ### Permission Matrix — V1 Status × Action (Counter)
 
-The Counter is a data-entry persona scoped to their assigned zone. They can read and write `actual_qty` on their lines and add comments, but cannot submit the count document or change any configuration. Rows are derived from Section 3 (Primary Actions) of this file; rule citations refer to [[physical-count/02-business-rules]] § 4 / § 5.
+The Counter is a data-entry persona scoped to their assigned zone. They can read and write `actual_qty` on their lines and add comments, but cannot submit the count document or change any configuration. Rows are derived from Section 3 (Primary Actions) of this file; rule citations refer to [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) § 4 / § 5.
 
 | Action | Count document `pending` | Count document `in_progress` | Count document `completed` |
 |---|---|---|---|
@@ -84,4 +84,4 @@ The Counter is a data-entry persona scoped to their assigned zone. They can read
 - **Primary (TODO):** carmen/docs source — does not exist for this module.
 - **Frontend (TODO):** `../carmen-inventory-frontend/` — Counter / mobile UI; check cmobile (`../cmobile/`) for the PWA-side count sheet implementation if applicable.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists.
-- Related: [[physical-count/03-user-flow]] (overview), [[physical-count/02-business-rules]] (`PHC_AUTH_002`, `PHC_VAL_004`–`PHC_VAL_005`), [[physical-count/03-user-flow-count-lead]] (the handoff partner).
+- Related: [physical-count/03-user-flow](/en/inventory/physical-count/03-user-flow) (overview), [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) (`PHC_AUTH_002`, `PHC_VAL_004`–`PHC_VAL_005`), [physical-count/03-user-flow-count-lead](/en/inventory/physical-count/03-user-flow-count-lead) (the handoff partner).

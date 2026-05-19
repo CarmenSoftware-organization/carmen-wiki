@@ -2,7 +2,7 @@
 title: ใบรับสินค้า (Goods Receive Note) — User Flow — Receiver
 description: Flow ของ Receiver ในโมดูล good-receive-note — การรับที่ dock การสร้าง GRN พร้อมจับ lot/expiry การ commit
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: good-receive-note, user-flow, receiver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T11:00:00.000Z
 # ใบรับสินค้า (Goods Receive Note) — User Flow — Receiver
 
 > **At a Glance**
-> **Persona:** Receiver (Store Keeper / Receiving Clerk + Store / Inventory Manager) &nbsp;·&nbsp; **โมดูล:** [[good-receive-note]] &nbsp;·&nbsp; **ขั้น workflow:** `(none) → draft` (สร้างกับ PO หรือ manual) &nbsp;·&nbsp; `draft → saved` (กรอกบรรทัดเสร็จ) &nbsp;·&nbsp; `saved → committed` (Inventory Manager — fire การเพิ่ม inventory + การเขียน cost-layer + การเลื่อน PO + AP accrual) &nbsp;·&nbsp; `draft / saved → voided` &nbsp;·&nbsp; **สิทธิ์สำคัญ:** สร้าง / แก้ draft (Store Keeper); commit (Inventory Manager); SoD — commit GRN กับ PO ของตัวเองไม่ได้
+> **Persona:** Receiver (Store Keeper / Receiving Clerk + Store / Inventory Manager) &nbsp;·&nbsp; **โมดูล:** [good-receive-note](/th/inventory/good-receive-note) &nbsp;·&nbsp; **ขั้น workflow:** `(none) → draft` (สร้างกับ PO หรือ manual) &nbsp;·&nbsp; `draft → saved` (กรอกบรรทัดเสร็จ) &nbsp;·&nbsp; `saved → committed` (Inventory Manager — fire การเพิ่ม inventory + การเขียน cost-layer + การเลื่อน PO + AP accrual) &nbsp;·&nbsp; `draft / saved → voided` &nbsp;·&nbsp; **สิทธิ์สำคัญ:** สร้าง / แก้ draft (Store Keeper); commit (Inventory Manager); SoD — commit GRN กับ PO ของตัวเองไม่ได้
 > **persona นี้ทำอะไร:** บันทึกการรับที่ dock จับ lot / expiry จากนั้น commit GRN ที่เพิ่ม inventory และเขียน cost layer
 
 ## 1. บทบาทในโมดูลนี้
@@ -93,7 +93,7 @@ Persona Receiver ครอบคลุมสอง sub-role: **Store Keeper / Re
 
 ความเกี่ยวข้องของ Receiver บน GRN ที่กำหนดจบที่หนึ่งในสี่ขอบเขต:
 
-- **Commit สำเร็จ (`saved → committed`)** — handoff ไปยัง **Finance** สำหรับ three-way match (PO ↔ GRN ↔ ใบกำกับ vendor) และ AP posting GRN ล็อก; การแก้ไขใด ๆ ตามมาผ่าน credit note กับ GRN หรือการปรับชดเชยใน `[[inventory-adjustment]]` Purchaser ก็ถูกแจ้งใหม่ถ้าบรรทัดใดมี variance comment ตอน commit
+- **Commit สำเร็จ (`saved → committed`)** — handoff ไปยัง **Finance** สำหรับ three-way match (PO ↔ GRN ↔ ใบกำกับ vendor) และ AP posting GRN ล็อก; การแก้ไขใด ๆ ตามมาผ่าน credit note กับ GRN หรือการปรับชดเชยใน `[inventory-adjustment](/th/inventory/inventory-adjustment)` Purchaser ก็ถูกแจ้งใหม่ถ้าบรรทัดใดมี variance comment ตอน commit
 - **Variance flag บน saved หรือ committed GRN** — handoff ไปยัง **Purchaser** สำหรับการตามฝั่ง vendor (ตาม short-ship, เจรจา credit / replacement, ขออนุญาตคืน, ทดแทน) Department Manager review cost-centre price variance บนบรรทัด flag เดียวกัน parallel GRN เองไม่ rollback — การแก้อยู่บนเอกสารตอบสนองของ vendor (credit note, replacement GRN)
 - **ปฏิเสธคุณภาพการส่งของทั้งหมด** — สองเส้นทาง (1) ถ้า GRN ยังเป็น `draft` หรือ `saved` Receiver / Inventory Manager void ด้วยเหตุผล (`draft → voided` หรือ `saved → voided`); ไม่มีผลกระทบ inventory หรือ GL เอกสารจบ (2) ถ้าบรรทัดเฉพาะปฏิเสธคุณภาพแต่ส่วนที่เหลือของการส่งของยอมรับ `accepted_qty` ลดบนบรรทัดเหล่านั้นและ GRN commit พร้อม variance การปฏิเสธบันทึกสำหรับการคืน vendor / credit note
 - **ต้องการ Reversal หลัง commit** — อยู่นอกขอบเขตของกิจกรรม Receiver ปกติ ต้องการ **co-authorisation ที่เลื่อน** โดย Inventory Manager **และ** Finance (หรือ System Administrator ตามฐาน audit); fire การกลับด้านชดเชยของ inventory transaction, cost layer, การลด `received_qty` ของ PO line และ AP entry ที่กลับด้าน พร้อม GRN transition เป็น `voided` Receiver อาจขึ้น GRN แทนถ้าจะบันทึกการรับใหม่
@@ -108,6 +108,6 @@ Persona Receiver ครอบคลุมสอง sub-role: **Store Keeper / Re
 - Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — System Administrator (รูปแบบหมายเลข lot, RBAC สำหรับ commit / void authority, sweep auto-commit ที่ schedule) และ Auditor (read-only review ของเหตุการณ์ commit และ reversal)
 - Sibling: [01-data-model.md](./01-data-model.md) — `enum_good_received_note_status` ทางการและ inventory-transaction linkage (`tb_good_received_note_detail_item.inventory_transaction_id` → `tb_inventory_transaction_detail.lot_no / expiry_date`) ใช้ในขั้นตอน 6 และ 10
 - Sibling: [02-business-rules.md](./02-business-rules.md) — กฎ validation `GRN_VAL_006`–`GRN_VAL_010` (save-time) และ `GRN_VAL_011`–`GRN_VAL_014` (commit-time) อ้างใน flow หลัก
-- Related: [[purchase-order]] — โมดูลต้นทาง; ตอน commit GRN เลื่อน `tb_purchase_order_detail.received_qty` และอาจพลิก `po_status` (`sent → partial → completed`); ดู `03-user-flow-receiver.md` ของโมดูล PO สำหรับผลกระทบฝั่ง PO ที่กระจกที่นี่
-- Related: [[inventory]] — โมดูลปลายทาง; ตอน commit `tb_inventory_transaction` บรรจุข้อมูล lot, expiry และ cost-layer และ `InventoryStatus.QuantityOnHand` เพิ่มด้วย `accepted_qty`
-- Related: [[costing]] — การสร้าง FIFO / average-cost layer บนการเปลี่ยน `saved → committed`
+- Related: [purchase-order](/th/inventory/purchase-order) — โมดูลต้นทาง; ตอน commit GRN เลื่อน `tb_purchase_order_detail.received_qty` และอาจพลิก `po_status` (`sent → partial → completed`); ดู `03-user-flow-receiver.md` ของโมดูล PO สำหรับผลกระทบฝั่ง PO ที่กระจกที่นี่
+- Related: [inventory](/th/inventory/inventory) — โมดูลปลายทาง; ตอน commit `tb_inventory_transaction` บรรจุข้อมูล lot, expiry และ cost-layer และ `InventoryStatus.QuantityOnHand` เพิ่มด้วย `accepted_qty`
+- Related: [costing](/th/inventory/costing) — การสร้าง FIFO / average-cost layer บนการเปลี่ยน `saved → committed`

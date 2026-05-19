@@ -2,7 +2,7 @@
 title: Document Management
 description: Tenant-scoped file storage registry — upload, list, download, presigned URLs, and delete for documents attached to transactional records.
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: system-config, document, attachment, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -40,7 +40,7 @@ Document Management is the **file-storage registry surface** at `/system-admin/d
 | `fileSizeLimit` toast on upload | File > 10 MB | Compress / split before upload |
 | File rejected by picker | MIME not in allow-list (`.pdf, .docx, .xls/.xlsx, .csv, .txt`) | Convert to an accepted format; `FILE_SERVICE` also sniffs server-side |
 | "Missing" attachment on a PR/PO/GRN | File was hard-deleted from this registry while still referenced | Re-upload and re-attach; clean up dangling `fileToken`s manually |
-| 403 on delete | User lacks `documents.delete` App ID | Grant via [[access-control/application-role]] |
+| 403 on delete | User lacks `documents.delete` App ID | Grant via [access-control/application-role](/en/inventory/access-control/application-role) |
 | File from BU `T01` invisible in BU `T02` | Expected — BU-scoped storage prefix | Each BU has its own partition; cross-BU access impossible |
 | Presigned URL expired | `expirySeconds` elapsed | Request a new one |
 
@@ -104,12 +104,12 @@ Every transactional table that supports attachments (`tb_purchase_request`, `tb_
 
 ## 7. Cross-References
 
-- [[purchase-request]] / [[purchase-order]] / [[good-receive-note]] / [[store-requisition]] / [[inventory-adjustment]] / [[physical-count]] / [[spot-check]] — carry `attachments` JSONB.
-- [[master-data/vendor]] / [[product]] — vendor and product master records carry their own `attachments` arrays.
-- [[reporting-audit/attachment]] — cross-module attachment policy and visibility rules.
-- [[reporting-audit/report]] — generated report artefacts land here via the same `fileToken` mechanism.
-- [[system-config/workflow]] — workflow comments embed `attachments` arrays for evidence files.
-- [[reporting-audit/activity]] — upload / delete / presigned-URL audit entries.
+- [purchase-request](/en/inventory/purchase-request) / [purchase-order](/en/inventory/purchase-order) / [good-receive-note](/en/inventory/good-receive-note) / [store-requisition](/en/inventory/store-requisition) / [inventory-adjustment](/en/inventory/inventory-adjustment) / [physical-count](/en/inventory/physical-count) / [spot-check](/en/inventory/spot-check) — carry `attachments` JSONB.
+- [master-data/vendor](/en/inventory/master-data/vendor) / [product](/en/inventory/product) — vendor and product master records carry their own `attachments` arrays.
+- [reporting-audit/attachment](/en/inventory/reporting-audit/attachment) — cross-module attachment policy and visibility rules.
+- [reporting-audit/report](/en/inventory/reporting-audit/report) — generated report artefacts land here via the same `fileToken` mechanism.
+- [system-config/workflow](/en/inventory/system-config/workflow) — workflow comments embed `attachments` arrays for evidence files.
+- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — upload / delete / presigned-URL audit entries.
 
 ## 8. References
 

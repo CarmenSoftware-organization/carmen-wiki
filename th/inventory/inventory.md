@@ -2,7 +2,7 @@
 title: คลังสินค้า (Inventory)
 description: ยอดคงเหลือสต๊อก ตำแหน่งจัดเก็บ และกระบวนการปิดงวด — แกนกลางของระบบ ERP ด้านคลังสินค้า
 published: true
-date: 2026-05-19T23:45:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -39,7 +39,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 - **Location Type**: จำแนกตำแหน่งจัดเก็บเป็น `INVENTORY` (สินทรัพย์สต๊อก post เข้าบัญชี GL คลัง), `DIRECT` (cost centre แบบตรง post ตรงเข้าค่าใช้จ่ายแผนก) หรือ transit/วัตถุประสงค์พิเศษ Location type กำหนด journal entry ที่การเคลื่อนไหวสร้าง และกำหนดว่าสินค้านั้นจะปรากฏเป็นสินทรัพย์บน balance sheet หรือไม่
 - **Stock Movement**: บันทึก post ที่ไม่สามารถแก้ได้ของการเปลี่ยนปริมาณ ระบุโดยประเภท (`RECEIPT`, `ISSUE`, `TRANSFER`, `ADJUSTMENT`, `RETURN`, `WRITE_OFF`) อ้างอิงเอกสารต้นทาง (GRN, store requisition, count, อนุมัติ write-off) และผลิตทั้งการอัปเดตยอดและ journal entry การเคลื่อนไหวคือหน่วยอะตอมที่ audit trail ถูกสร้างขึ้นมา
 - **Period-End Snapshot**: สถานะที่ถูก lock ของยอดคงเหลือสต๊อกทุกยอด ณ สิ้นงวดบัญชี สร้างขึ้นหลังจาก checklist ปิดงวด (นับสต๊อก → กระทบยอดผลต่าง → อนุมัติ adjustment → ตรวจสอบการตีมูลค่า → lock งวด) ธุรกรรมย้อนหลังที่ post เข้างวดที่ปิดแล้วจะถูก reject โดยระบบ
-- **Valuation Method**: สมมติฐาน cost-flow ที่ใช้กับสินค้า — `FIFO` หรือ `WEIGHTED_AVERAGE` — กำหนดต่อสินค้า (หรือกำหนดรวม) และใช้โดย costing engine เมื่อ movement บริโภคสต๊อก ดู [[costing]] สำหรับกฎการคำนวณ; โมดูลนี้เก็บ input (lot, วันที่, ต้นทุน) ที่ engine ต้องการ
+- **Valuation Method**: สมมติฐาน cost-flow ที่ใช้กับสินค้า — `FIFO` หรือ `WEIGHTED_AVERAGE` — กำหนดต่อสินค้า (หรือกำหนดรวม) และใช้โดย costing engine เมื่อ movement บริโภคสต๊อก ดู [costing](/th/inventory/costing) สำหรับกฎการคำนวณ; โมดูลนี้เก็บ input (lot, วันที่, ต้นทุน) ที่ engine ต้องการ
 
 ## 4. บทบาทและ Persona
 
@@ -52,21 +52,21 @@ dateCreated: 2026-05-15T07:48:00.000Z
 ## 5. โมดูลที่เกี่ยวข้อง
 
 **กระแสข้ามโมดูล:**
-- [[costing]] — คำนวณต้นทุนเทียบกับยอดสต๊อก; ทุก stock movement อัปเดตการตีมูลค่า
-- [[good-receive-note]] — GRN เป็นแหล่งต้นน้ำหลักของการรับสต๊อก
-- [[store-requisition]] — store requisitions เป็นผู้บริโภคปลายน้ำหลัก
-- [[inventory-adjustment]] — การปรับยอดด้วยมือ
-- [[physical-count]] — การนับเต็มเป็นงวด
-- [[spot-check]] — การนับยืนยันบางส่วน
+- [costing](/th/inventory/costing) — คำนวณต้นทุนเทียบกับยอดสต๊อก; ทุก stock movement อัปเดตการตีมูลค่า
+- [good-receive-note](/th/inventory/good-receive-note) — GRN เป็นแหล่งต้นน้ำหลักของการรับสต๊อก
+- [store-requisition](/th/inventory/store-requisition) — store requisitions เป็นผู้บริโภคปลายน้ำหลัก
+- [inventory-adjustment](/th/inventory/inventory-adjustment) — การปรับยอดด้วยมือ
+- [physical-count](/th/inventory/physical-count) — การนับเต็มเป็นงวด
+- [spot-check](/th/inventory/spot-check) — การนับยืนยันบางส่วน
 
 **การกำหนดค่าหลัก:**
-- [[master-data/unit]] — หน่วยฐาน หน่วยสั่ง และหน่วยสูตรของทุกยอดสต๊อก
-- [[master-data/location]] — คลังและตำแหน่งจัดเก็บที่ผูกกับทุกยอดสต๊อก
-- [[master-data/business-unit]] — ขอบเขต tenant/property ที่แยกยอดคงเหลือและ movement
-- [[system-config/period]] — งวดบัญชีที่ gate การ post และ lock snapshot
-- [[system-config/dimension]] — มิติเชิงวิเคราะห์ที่ประทับบนบรรทัด journal ของ movement
-- [[access-control/user-location]] — จำกัดว่าผู้ใช้สามารถทำธุรกรรมกับตำแหน่งใดได้บ้าง
-- [[reporting-audit/activity]] — log กิจกรรม movement และการเปลี่ยนยอดสำหรับ audit
+- [master-data/unit](/th/inventory/master-data/unit) — หน่วยฐาน หน่วยสั่ง และหน่วยสูตรของทุกยอดสต๊อก
+- [master-data/location](/th/inventory/master-data/location) — คลังและตำแหน่งจัดเก็บที่ผูกกับทุกยอดสต๊อก
+- [master-data/business-unit](/th/inventory/master-data/business-unit) — ขอบเขต tenant/property ที่แยกยอดคงเหลือและ movement
+- [system-config/period](/th/inventory/system-config/period) — งวดบัญชีที่ gate การ post และ lock snapshot
+- [system-config/dimension](/th/inventory/system-config/dimension) — มิติเชิงวิเคราะห์ที่ประทับบนบรรทัด journal ของ movement
+- [access-control/user-location](/th/inventory/access-control/user-location) — จำกัดว่าผู้ใช้สามารถทำธุรกรรมกับตำแหน่งใดได้บ้าง
+- [reporting-audit/activity](/th/inventory/reporting-audit/activity) — log กิจกรรม movement และการเปลี่ยนยอดสำหรับ audit
 
 ## 6. แหล่งอ้างอิง
 

@@ -2,7 +2,7 @@
 title: Vendor Pricelist — Test Scenarios
 description: Test cases by persona, cross-persona scenarios, and E2E mapping for vendor-pricelist.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: vendor-pricelist, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 # Vendor Pricelist — Test Scenarios
 
 > **At a Glance**
-> **Module:** [[vendor-pricelist]] &nbsp;·&nbsp; **Total scenarios:** ~12 cross-persona + per-persona drill-downs across all personas &nbsp;·&nbsp; **Personas covered:** Purchaser, Vendor, Finance, Audit / Config
+> **Module:** [vendor-pricelist](/en/inventory/vendor-pricelist) &nbsp;·&nbsp; **Total scenarios:** ~12 cross-persona + per-persona drill-downs across all personas &nbsp;·&nbsp; **Personas covered:** Purchaser, Vendor, Finance, Audit / Config
 > **Run order:** Audit / Config setup → primary persona happy paths → cross-persona scenarios
 > **Each persona's drill-down is `04-test-scenarios-<role>.md`**
 
@@ -19,13 +19,13 @@ dateCreated: 2026-05-15T15:00:00.000Z
 
 This page is the **overview entry point** for the test-scenario set of the `vendor-pricelist` module. The pricelist lifecycle spans four personas — Purchaser (collapsing Purchasing Staff + Purchasing Manager), Vendor (external), Finance (Officer + Manager), and Audit / Config (Auditor + System Administrator) — and test coverage is split accordingly: each persona has a dedicated file (linked in Section 3) that enumerates that persona's functional, authorization (where applicable), validation, edge, and golden-journey scenarios. This overview file gives the global picture: who is in scope, what each persona's tests cover at the headline level, the cross-persona handoff scenarios that stitch the individual journeys into a complete end-to-end flow, and the mapping from each scenario back to the E2E / API / integration tests that exercise it.
 
-Scope of testing on the vendor-pricelist module covers four broad areas: **functional coverage** of every action across the three tiers (template create / edit / activate, campaign launch / pause / cancel, vendor portal entry / submit / resubmit, pricelist review / approve / reject / inactivate), **RBAC / authorization** of who can perform each action (Purchaser create / edit / approve, Manager high-value approval, Vendor portal access via token, Finance Manager multi-currency co-signoff, Sysadmin configuration + token revocation, Auditor read-only across the chain), **edge cases** around MOQ-tier boundary cases, multi-currency handling, concurrent vendor sessions, token expiry and revocation races, optimistic-concurrency on the pricelist row, and the validation-rule registry, and **three-way-match downstream behaviour** at GRN / invoice posting against the active pricelist (handed back to Finance and to the Purchaser per [[purchase-order/02-business-rules]] § `PO_POST_008` / `PO_POST_009`).
+Scope of testing on the vendor-pricelist module covers four broad areas: **functional coverage** of every action across the three tiers (template create / edit / activate, campaign launch / pause / cancel, vendor portal entry / submit / resubmit, pricelist review / approve / reject / inactivate), **RBAC / authorization** of who can perform each action (Purchaser create / edit / approve, Manager high-value approval, Vendor portal access via token, Finance Manager multi-currency co-signoff, Sysadmin configuration + token revocation, Auditor read-only across the chain), **edge cases** around MOQ-tier boundary cases, multi-currency handling, concurrent vendor sessions, token expiry and revocation races, optimistic-concurrency on the pricelist row, and the validation-rule registry, and **three-way-match downstream behaviour** at GRN / invoice posting against the active pricelist (handed back to Finance and to the Purchaser per [purchase-order/02-business-rules](/en/inventory/purchase-order/02-business-rules) § `PO_POST_008` / `PO_POST_009`).
 
 ## 2. Personas in Scope
 
 - **Purchaser** — Builds templates, runs campaigns (request-for-pricing), sends invitations, reviews submitted pricelists, approves / rejects, manages preferred-vendor flags, manually uploads emailed submissions. The Purchasing Manager scenarios on the same file extend with high-value approval, business-rule configuration toggles, and multi-currency sign-off. Owns ~24+ scenarios across template, campaign, pricelist review, golden journey.
 - **Vendor** — External party. Token-authenticated portal session is the **only** in-system surface for an external party in this module. Drives state through `tb_pricelist.submitted_at` write and the implicit `(none) → draft` insert. Owns happy-path and validation scenarios; the Permission / Authorization section is reduced to a single N/A row because the vendor has no Carmen login (the portal-token policy itself is tested as a Sysadmin-side configuration concern).
-- **Finance** — Read-only on the pricelist itself (`VPL_AUTH_009`); writes only via comments and via the Finance Manager's co-signoff comment for multi-currency / high-value pricelists. Variance investigation drives most scenarios; downstream three-way-match coverage lives in the [[purchase-order]] module's Finance scenarios and is referenced through cross-persona handoffs.
+- **Finance** — Read-only on the pricelist itself (`VPL_AUTH_009`); writes only via comments and via the Finance Manager's co-signoff comment for multi-currency / high-value pricelists. Variance investigation drives most scenarios; downstream three-way-match coverage lives in the [purchase-order](/en/inventory/purchase-order) module's Finance scenarios and is referenced through cross-persona handoffs.
 - **Audit / Config** — Auditor (read-only across the chain — templates, campaigns, invitations, pricelists, validation results, activity logs, downstream consumption) and System Administrator (configuration only — numbering, RBAC, portal-token policy, email integration, validation rules, currency / FX sources, audit retention; plus the per-invitation token-revocation right). Behaviour is largely off the transactional happy path; documented separately in Section 3 for completeness.
 
 ## 3. Persona Test Files

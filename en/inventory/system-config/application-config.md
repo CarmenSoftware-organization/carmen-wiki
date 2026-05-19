@@ -2,7 +2,7 @@
 title: Application Config
 description: Generic key-value application settings — tenant-wide configuration and per-user preference overrides stored as JSONB.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: system-config, application-config, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -88,9 +88,9 @@ Source: tenant schema.
 ## 7. Cross-References
 
 - All modules — feature gates and per-user prefs.
-- [[purchase-request]], [[purchase-order]], [[good-receive-note]], [[store-requisition]], [[inventory-adjustment]], [[physical-count]], [[spot-check]] — list-view prefs.
-- [[access-control/user]] — `user_id` resolution.
-- [[reporting-audit/widget]] — alternative store for dashboard configs.
+- [purchase-request](/en/inventory/purchase-request), [purchase-order](/en/inventory/purchase-order), [good-receive-note](/en/inventory/good-receive-note), [store-requisition](/en/inventory/store-requisition), [inventory-adjustment](/en/inventory/inventory-adjustment), [physical-count](/en/inventory/physical-count), [spot-check](/en/inventory/spot-check) — list-view prefs.
+- [access-control/user](/en/inventory/access-control/user) — `user_id` resolution.
+- [reporting-audit/widget](/en/inventory/reporting-audit/widget) — alternative store for dashboard configs.
 
 ## 8. References
 

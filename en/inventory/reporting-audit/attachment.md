@@ -2,7 +2,7 @@
 title: Attachment
 description: Generic file-storage entity — S3-backed binary metadata with polymorphic linkage to any transactional document.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: reporting-audit, attachment, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -82,10 +82,10 @@ Source: tenant schema.
 
 ## 7. Cross-References
 
-- [[purchase-request]], [[purchase-order]], [[good-receive-note]] — quotations, confirmations, dockets.
-- [[inventory-adjustment]], [[physical-count]], [[spot-check]] — supporting paperwork and evidence.
-- [[store-requisition]], [[vendor-pricelist]], [[recipe]], [[product]] — module-specific attachments.
-- [[reporting-audit/activity]] — `upload` / `download` logged with `entity_type = 'attachment'`.
+- [purchase-request](/en/inventory/purchase-request), [purchase-order](/en/inventory/purchase-order), [good-receive-note](/en/inventory/good-receive-note) — quotations, confirmations, dockets.
+- [inventory-adjustment](/en/inventory/inventory-adjustment), [physical-count](/en/inventory/physical-count), [spot-check](/en/inventory/spot-check) — supporting paperwork and evidence.
+- [store-requisition](/en/inventory/store-requisition), [vendor-pricelist](/en/inventory/vendor-pricelist), [recipe](/en/inventory/recipe), [product](/en/inventory/product) — module-specific attachments.
+- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — `upload` / `download` logged with `entity_type = 'attachment'`.
 
 ## 8. References
 

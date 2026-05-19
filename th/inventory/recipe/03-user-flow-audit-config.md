@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — User Flow — Audit & Config
 description: flow ของ System Administrator + Auditor ในโมดูลสูตร — config (หมวดหมู่ ประเภทอาหาร RBAC integration) versioning audit compliance review
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: recipe, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -11,12 +11,12 @@ dateCreated: 2026-05-15T16:00:00.000Z
 # สูตรอาหาร (Recipe) — User Flow — Audit & Config
 
 > **At a Glance**
-> **Persona:** System Administrator + Auditor &nbsp;·&nbsp; **โมดูล:** [[recipe]] &nbsp;·&nbsp; **ขั้นตอน workflow:** off-path — ตั้งค่า (หมวดหมู่ / ประเภทอาหาร / อุปกรณ์ / RBAC / publish-gate / integration) และ audit (versioning, pricing history) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** เขียน config (Sysadmin), read-history (Auditor), soft-delete archived (Sysadmin)
+> **Persona:** System Administrator + Auditor &nbsp;·&nbsp; **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **ขั้นตอน workflow:** off-path — ตั้งค่า (หมวดหมู่ / ประเภทอาหาร / อุปกรณ์ / RBAC / publish-gate / integration) และ audit (versioning, pricing history) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** เขียน config (Sysadmin), read-history (Auditor), soft-delete archived (Sysadmin)
 > **persona นี้ทำอะไร:** Sysadmin เป็นเจ้าของข้อมูลหลัก RBAC และการ wire integration; Auditor review trail เวอร์ชันและ pricing-history สำหรับ compliance
 
 ## 1. บทบาทในโมดูลนี้
 
-persona **Audit / Config** ครอบคลุมสอง role ที่ควบคุมความถูกต้อง ความครบ และการตั้งค่าของโมดูล recipe: **System Administrator** (เป็นเจ้าของการตั้งค่าโมดูล recipe — ข้อมูลหลัก `tb_recipe_category` รวมลำดับชั้นและ `default_cost_settings` ข้อมูลหลัก `tb_recipe_cuisines` master `tb_recipe_equipment_category` และ `tb_recipe_equipment` การ map RBAC ของสูตร `recipe:create / edit / publish / archive / edit-published / edit-cost / approve-menu-link / read / read-history` นโยบาย tenant publish-gate ที่ตัดสินใจว่าการ publish margin off-target ต้องการ co-approval ของ Cost Controller หรือไม่ และการ wire integration กับ `[[product]]` / `[[inventory]]` / `[[store-requisition]]` สำหรับ theoretical-consumption fan-out และ SR auto-create) และ **Auditor** (review ประวัติสูตรอ่านอย่างเดียว — snapshot `tb_recipe_version` timeline `tb_recipe_pricing_history` คอลัมน์ audit ต่อแถว `created_by_id` / `updated_by_id` / `created_at` / `updated_at` timestamp การ publish / archive `published_at` / `archived_at` thread comment บนแต่ละ `tb_recipe_version.change_summary` — เพื่อยืนยันว่าการควบคุมทำงาน การ publish off-target ถูก co-approve และ chain ของการ revise กระทบยอดกับโมเดลอำนาจ) ทั้งสอง role ไม่ทำ action บน happy path ของสูตร; พวกเขาทำ action บน **periphery** — ก่อนสูตรใดอยู่ (config) ระหว่างวงจรชีวิต (การบังคับใช้ RBAC สุขภาพ integration) และหลัง publish (audit trace) Sysadmin ถือ read / write เต็มบนตาราง config และการ map RBAC; Auditor เป็น read-only บน recipe library (`recipe:read` + `recipe:read-history`) และบนประวัติการตั้งค่า ไม่มีเส้นทาง "void" หรือ "admin-cancel" บนสูตร — สูตรไม่ใช่เอกสารธุรกรรม; สุขภาพข้อมูลบนสูตรที่ archive เป็นอำนาจ delete เดียว และอยู่กับ Sysadmin ตาม `REC_AUTH_014`
+persona **Audit / Config** ครอบคลุมสอง role ที่ควบคุมความถูกต้อง ความครบ และการตั้งค่าของโมดูล recipe: **System Administrator** (เป็นเจ้าของการตั้งค่าโมดูล recipe — ข้อมูลหลัก `tb_recipe_category` รวมลำดับชั้นและ `default_cost_settings` ข้อมูลหลัก `tb_recipe_cuisines` master `tb_recipe_equipment_category` และ `tb_recipe_equipment` การ map RBAC ของสูตร `recipe:create / edit / publish / archive / edit-published / edit-cost / approve-menu-link / read / read-history` นโยบาย tenant publish-gate ที่ตัดสินใจว่าการ publish margin off-target ต้องการ co-approval ของ Cost Controller หรือไม่ และการ wire integration กับ `[product](/th/inventory/product)` / `[inventory](/th/inventory/inventory)` / `[store-requisition](/th/inventory/store-requisition)` สำหรับ theoretical-consumption fan-out และ SR auto-create) และ **Auditor** (review ประวัติสูตรอ่านอย่างเดียว — snapshot `tb_recipe_version` timeline `tb_recipe_pricing_history` คอลัมน์ audit ต่อแถว `created_by_id` / `updated_by_id` / `created_at` / `updated_at` timestamp การ publish / archive `published_at` / `archived_at` thread comment บนแต่ละ `tb_recipe_version.change_summary` — เพื่อยืนยันว่าการควบคุมทำงาน การ publish off-target ถูก co-approve และ chain ของการ revise กระทบยอดกับโมเดลอำนาจ) ทั้งสอง role ไม่ทำ action บน happy path ของสูตร; พวกเขาทำ action บน **periphery** — ก่อนสูตรใดอยู่ (config) ระหว่างวงจรชีวิต (การบังคับใช้ RBAC สุขภาพ integration) และหลัง publish (audit trace) Sysadmin ถือ read / write เต็มบนตาราง config และการ map RBAC; Auditor เป็น read-only บน recipe library (`recipe:read` + `recipe:read-history`) และบนประวัติการตั้งค่า ไม่มีเส้นทาง "void" หรือ "admin-cancel" บนสูตร — สูตรไม่ใช่เอกสารธุรกรรม; สุขภาพข้อมูลบนสูตรที่ archive เป็นอำนาจ delete เดียว และอยู่กับ Sysadmin ตาม `REC_AUTH_014`
 
 ## 2. Entry Point และ Primary Flow
 
@@ -76,7 +76,7 @@ persona Audit / Config คือ **safety net** ของโมดูล recipe 
 - Sibling: [03-user-flow-procurement-fb-ops.md](./03-user-flow-procurement-fb-ops.md) — Sysadmin เป็นเจ้าของ permission `recipe:approve-menu-link` ที่ F&B Ops ใช้; Sysadmin wire ช่อง substitution-request
 - Sibling: [01-data-model.md](./01-data-model.md) — `tb_recipe_version` (audit trail snapshot เต็ม), `tb_recipe_pricing_history` (timeline cost / ราคา), คอลัมน์ audit (`created_by_id`, `updated_by_id`, `published_at`, `archived_at`); ตารางข้อมูลหลัก (`tb_recipe_category`, `tb_recipe_cuisines`, `tb_recipe_equipment_category`, `tb_recipe_equipment`)
 - Sibling: [02-business-rules.md](./02-business-rules.md) — `REC_AUTH_007` (gate co-approval ของ Cost Controller), `REC_AUTH_011`–`REC_AUTH_014` (อำนาจ F&B Ops / Sysadmin / Auditor), `REC_POST_009` (soft-delete), `REC_XMOD_009`–`REC_XMOD_010` (audit / versioning RBAC)
-- ที่เกี่ยวข้อง: [[product]] — Sysadmin เป็นเจ้าของ flag `is_used_in_recipe` บนสินค้าที่ gate ว่าสินค้ามีสิทธิ์เป็นวัตถุดิบ recipe หรือไม่
-- ที่เกี่ยวข้อง: [[costing]] — chain integration cost-drift ที่ Sysadmin ดูแล
-- ที่เกี่ยวข้อง: [[inventory]] — chain integration theoretical-consumption ที่ Sysadmin ดูแล
-- ที่เกี่ยวข้อง: [[store-requisition]] — การ wire recipe → SR auto-create ที่ Sysadmin เป็นเจ้าของ
+- ที่เกี่ยวข้อง: [product](/th/inventory/product) — Sysadmin เป็นเจ้าของ flag `is_used_in_recipe` บนสินค้าที่ gate ว่าสินค้ามีสิทธิ์เป็นวัตถุดิบ recipe หรือไม่
+- ที่เกี่ยวข้อง: [costing](/th/inventory/costing) — chain integration cost-drift ที่ Sysadmin ดูแล
+- ที่เกี่ยวข้อง: [inventory](/th/inventory/inventory) — chain integration theoretical-consumption ที่ Sysadmin ดูแล
+- ที่เกี่ยวข้อง: [store-requisition](/th/inventory/store-requisition) — การ wire recipe → SR auto-create ที่ Sysadmin เป็นเจ้าของ

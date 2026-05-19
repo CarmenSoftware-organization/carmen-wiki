@@ -2,7 +2,7 @@
 title: ปิดงวด (Period End)
 description: orchestrator ปิดงวด — gate snapshot costing, GL handoff และ lock การ backdate เมื่อความต้องการของ Physical Count และ Spot Check ครบ
 published: true
-date: 2026-05-17T07:00:36.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: inventory, period-end, costing, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -38,7 +38,7 @@ Period End คือ **พิธีการ run-the-close** — ปุ่มเ
 | Run prerequisite checklist (read-only) | Inventory Management → Period End → Prerequisites | Return IDs เอกสารที่ขาด; Inventory Manager clear มัน |
 | Trigger close บนงวดที่เปิด | Period End → **Close** (Finance เท่านั้น) | Cost Engine คำนวณ snapshot, status flip `open → closed` |
 | Verify ว่า snapshot เขียน | Period End → tab Snapshot | หนึ่ง row `tb_period_snapshot` ต่อ `(location, product, lot)` ด้วยกิจกรรมไม่เป็นศูนย์ |
-| Confirm ว่า ledger event posted | เปิด [[inventory/transaction]] → filter `inventory_doc_type = 'close'` | Close เองปรากฏบน ledger |
+| Confirm ว่า ledger event posted | เปิด [inventory/transaction](/th/inventory/inventory/transaction) → filter `inventory_doc_type = 'close'` | Close เองปรากฏบน ledger |
 | Lock หลัง audit sign-off | Period End → **Lock** (Finance) | Flip `closed → locked` — terminal |
 | Reopen งวด (หายาก) | Period End → **Reopen** (Finance, audited) | Log บน `tb_period_comment`; เฉพาะขณะที่ `closed` ไม่เคย `locked` |
 
@@ -47,8 +47,8 @@ Period End คือ **พิธีการ run-the-close** — ปุ่มเ
 | อาการ / ข้อความ | สาเหตุ | การกระทำ |
 |---|---|---|
 | "Close blocked: documents in non-terminal state" | GRN / SR / adjustment / count ใดยัง `draft` หรือ `in_progress` | เปิด IDs ที่ระบุและ complete / cancel มัน |
-| "Spot Check pending" | spot checks หนึ่งหรือมากกว่าสำหรับงวดไม่ `completed` | Finalise ใน [[spot-check]] |
-| "Physical Count pending" | Count ไม่ `finalised` หรือ variances ไม่ post เป็น adjustments | Finalise ใน [[physical-count]] |
+| "Spot Check pending" | spot checks หนึ่งหรือมากกว่าสำหรับงวดไม่ `completed` | Finalise ใน [spot-check](/th/inventory/spot-check) |
+| "Physical Count pending" | Count ไม่ `finalised` หรือ variances ไม่ post เป็น adjustments | Finalise ใน [physical-count](/th/inventory/physical-count) |
 | "Period is closed / locked" บน submit ของ doc ใด | `document_date` falls ในงวด `closed` / `locked` | ใช้วันที่งวด-ปัจจุบัน หรือ raise manual JV |
 | "Snapshot row already exists" | Re-run close ขณะที่ `status = open` | ปลอดภัย — snapshot คือ keyed `(period_id, snapshot_at)` และ replace |
 | ไม่สามารถ lock | Period ยังไม่ `closed` | Close ก่อน แล้ว lock หลัง audit |
@@ -94,10 +94,10 @@ Status flips ถูก log บน `tb_period_comment` ด้วย `created_by_i
 
 ## 7. ความเชื่อมโยงข้ามโมดูล
 
-- [[system-config/period]] &nbsp;·&nbsp; [[costing]] &nbsp;·&nbsp; [[physical-count]] &nbsp;·&nbsp; [[spot-check]]
-- [[good-receive-note]] &nbsp;·&nbsp; [[inventory-adjustment]] &nbsp;·&nbsp; [[store-requisition]]
-- [[inventory/transaction]] — close เขียน `close` ledger row
-- [[reporting-audit]] — รายงาน close-out อ่าน `tb_period_snapshot`
+- [system-config/period](/th/inventory/system-config/period) &nbsp;·&nbsp; [costing](/th/inventory/costing) &nbsp;·&nbsp; [physical-count](/th/inventory/physical-count) &nbsp;·&nbsp; [spot-check](/th/inventory/spot-check)
+- [good-receive-note](/th/inventory/good-receive-note) &nbsp;·&nbsp; [inventory-adjustment](/th/inventory/inventory-adjustment) &nbsp;·&nbsp; [store-requisition](/th/inventory/store-requisition)
+- [inventory/transaction](/th/inventory/inventory/transaction) — close เขียน `close` ledger row
+- [reporting-audit](/th/inventory/reporting-audit) — รายงาน close-out อ่าน `tb_period_snapshot`
 
 ## 8. แหล่งอ้างอิง
 

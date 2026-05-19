@@ -2,7 +2,7 @@
 title: Product Category
 description: Three-level product taxonomy (category > sub-category > item group) that drives catalogue navigation, attribute inheritance, deviation tolerances, and category-scoped permission filters.
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: product, category, taxonomy, master-data, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -133,16 +133,16 @@ Each level also has a `*_comment` table for discussion and attachments.
 
 ## 7. Cross-References
 
-- [[product]] — every product carries a `(category, sub_category, item_group)` triple
-- [[product/03-user-flow-product-admin]] — Product Admin maintains the tree
-- [[purchase-request]] &nbsp;·&nbsp; [[purchase-order]] (`price_deviation_limit`) &nbsp;·&nbsp; [[good-receive-note]] (`qty_deviation_limit`)
-- [[recipe]] — `is_used_in_recipe` filter
-- [[access-control/permission]] — category-scoped filters for Purchaser / Store Keeper
-- [[master-data/tax-profile]] — `tax_profile_id` cascade
+- [product](/en/inventory/product) — every product carries a `(category, sub_category, item_group)` triple
+- [product/03-user-flow-product-admin](/en/inventory/product/03-user-flow-product-admin) — Product Admin maintains the tree
+- [purchase-request](/en/inventory/purchase-request) &nbsp;·&nbsp; [purchase-order](/en/inventory/purchase-order) (`price_deviation_limit`) &nbsp;·&nbsp; [good-receive-note](/en/inventory/good-receive-note) (`qty_deviation_limit`)
+- [recipe](/en/inventory/recipe) — `is_used_in_recipe` filter
+- [access-control/permission](/en/inventory/access-control/permission) — category-scoped filters for Purchaser / Store Keeper
+- [master-data/tax-profile](/en/inventory/master-data/tax-profile) — `tax_profile_id` cascade
 
 ## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_product_category` (~1566-1602), `tb_product_sub_category` (~1711-1748), `tb_product_item_group` (~1638-1675), `tb_product_category_comment` (~1604-1636).
 - **Frontend:** `../carmen-inventory-frontend/app/(root)/product-management/category/`.
 - **carmen/docs:** `../carmen/docs/product-management/PROD-API-Endpoints-Categories.md`; `../carmen/docs/product-management/PROD-Overview.md`.
-- **Module landing:** [[product]] § 3 (Product Category key concept).
+- **Module landing:** [product](/en/inventory/product) § 3 (Product Category key concept).

@@ -2,7 +2,7 @@
 title: คลัสเตอร์ (Clusters)
 description: ภาพรวมโมดูล Clusters — กลุ่ม tenant ระดับบนสุดที่เป็นเจ้าของ business unit และ user ตามไลเซนส์
 published: true
-date: 2026-05-19T23:30:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: platform/clusters, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -111,16 +111,16 @@ string ที่ใช้ gate ใน `src/App.tsx` คือ
 
 ## 5. โมดูลที่เกี่ยวข้อง
 
-- [[business-units]] — cluster เป็นเจ้าของ BU แบบ 1:N หน้า edit cluster
+- [business-units](/th/platform/business-units) — cluster เป็นเจ้าของ BU แบบ 1:N หน้า edit cluster
   คือจุดมาตรฐานในการสร้าง BU ที่ผูกกับ cluster ตั้งแต่ต้น (เรียก
   `navigate('/business-units/new?cluster_id=<id>')`)
-- [[users]] — cluster เพิ่ม user ผ่าน global user list ส่วนหน้า edit
+- [users](/th/platform/users) — cluster เพิ่ม user ผ่าน global user list ส่วนหน้า edit
   user คืออีกฝั่งของ join `tb_cluster_user` ที่ดู assignment เดียวกัน
   จากมุมของ user
-- [[auth-roles]] — กำหนดความหมายของ `platform_admin`, `support_manager`
+- [auth-roles](/th/platform/auth-roles) — กำหนดความหมายของ `platform_admin`, `support_manager`
   และ `support_staff` การ gate route ของ cluster เป็นเพียงการนำค่า role
   เหล่านี้ไปใช้ใน `PrivateRoute`
-- [[report-templates]] — ใช้รูปแบบ `allowedRoles` เดียวกันทุกประการ
+- [report-templates](/th/platform/report-templates) — ใช้รูปแบบ `allowedRoles` เดียวกันทุกประการ
   จึงโอนแบบจำลองสิทธิ์ที่ documented ที่นี่ไปใช้ได้ 1 ต่อ 1
 
 ## 6. แหล่งข้อมูลอ้างอิง

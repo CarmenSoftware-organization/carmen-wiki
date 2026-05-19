@@ -2,7 +2,7 @@
 title: แดชบอร์ด (Dashboard)
 description: หน้าแดชบอร์ดข้ามโมดูล — หน้าแรกหลังเข้าระบบและมุมมอง KPI แยกตามโดเมน (PR, PO, GRN, คลังสินค้า, SR) ที่สรุปจำนวนสด, aging และรายการผิดปกติโดยไม่ต้องเปิดทีละโมดูล
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: dashboard, kpi, reporting, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -28,21 +28,21 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 | Persona | เข้ามาที่ | เพราะอะไร |
 |---|---|---|
-| Requestor | [[dashboard/sr]], [[dashboard/pr]] | ใบขอของตัวเองที่ยัง pending และรายการที่ถูก send back |
-| Approver (HOD, Procurement Manager) | [[dashboard/pr]], [[dashboard/po]] | คิวอนุมัติ + คอขวดของ pipeline |
-| Purchaser | [[dashboard/po]] | PO ที่เปิดอยู่, การส่งของล่าช้า, ผลงานของผู้ขาย |
-| Receiver | [[dashboard/grn]] | PO ที่รอรับวันนี้/สัปดาห์นี้, การรับของบางส่วน |
-| Inventory Controller / Store Manager | [[dashboard/inventory]] | สต๊อกเคลื่อนไหวช้า, การเติมสต๊อก, สถานะ PST |
-| Executive | [[dashboard/main]] | ค่าใช้จ่ายข้ามโดเมน, การใช้งบประมาณ, top vendor |
+| Requestor | [dashboard/sr](/th/inventory/dashboard/sr), [dashboard/pr](/th/inventory/dashboard/pr) | ใบขอของตัวเองที่ยัง pending และรายการที่ถูก send back |
+| Approver (HOD, Procurement Manager) | [dashboard/pr](/th/inventory/dashboard/pr), [dashboard/po](/th/inventory/dashboard/po) | คิวอนุมัติ + คอขวดของ pipeline |
+| Purchaser | [dashboard/po](/th/inventory/dashboard/po) | PO ที่เปิดอยู่, การส่งของล่าช้า, ผลงานของผู้ขาย |
+| Receiver | [dashboard/grn](/th/inventory/dashboard/grn) | PO ที่รอรับวันนี้/สัปดาห์นี้, การรับของบางส่วน |
+| Inventory Controller / Store Manager | [dashboard/inventory](/th/inventory/dashboard/inventory) | สต๊อกเคลื่อนไหวช้า, การเติมสต๊อก, สถานะ PST |
+| Executive | [dashboard/main](/th/inventory/dashboard/main) | ค่าใช้จ่ายข้ามโดเมน, การใช้งบประมาณ, top vendor |
 
 ## 2. หน้าในโมดูลนี้
 
-- [[dashboard/main]] — แดชบอร์ดแรกพร้อม KPI ข้ามโมดูล (ค่าใช้จ่าย, PR ค้าง, PO เปิด, งบประมาณ)
-- [[dashboard/pr]] — pipeline ของใบขอซื้อ, รายการที่ถูก send-back/reject, คิวอนุมัติ
-- [[dashboard/po]] — pipeline ของใบสั่งซื้อ, การส่งของล่าช้า, มาตรวัด on-time / completeness
-- [[dashboard/grn]] — KPI ของใบรับสินค้า, PO ค้างตามช่วงวัน, GRN ไม่ครบ / รับเกิน
-- [[dashboard/inventory]] — pipeline ของสต๊อก, สต๊อกเคลื่อนไหวช้า, การเติมสต๊อก, สถานะ PST, สินค้าหมดอายุ
-- [[dashboard/sr]] — pipeline ใบเบิกสโตร์, รายการ send-back, รออนุมัติ, กราฟการบริโภค
+- [dashboard/main](/th/inventory/dashboard/main) — แดชบอร์ดแรกพร้อม KPI ข้ามโมดูล (ค่าใช้จ่าย, PR ค้าง, PO เปิด, งบประมาณ)
+- [dashboard/pr](/th/inventory/dashboard/pr) — pipeline ของใบขอซื้อ, รายการที่ถูก send-back/reject, คิวอนุมัติ
+- [dashboard/po](/th/inventory/dashboard/po) — pipeline ของใบสั่งซื้อ, การส่งของล่าช้า, มาตรวัด on-time / completeness
+- [dashboard/grn](/th/inventory/dashboard/grn) — KPI ของใบรับสินค้า, PO ค้างตามช่วงวัน, GRN ไม่ครบ / รับเกิน
+- [dashboard/inventory](/th/inventory/dashboard/inventory) — pipeline ของสต๊อก, สต๊อกเคลื่อนไหวช้า, การเติมสต๊อก, สถานะ PST, สินค้าหมดอายุ
+- [dashboard/sr](/th/inventory/dashboard/sr) — pipeline ใบเบิกสโตร์, รายการ send-back, รออนุมัติ, กราฟการบริโภค
 
 ---
 
@@ -52,14 +52,14 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 - **My-pending counts** — `GET /api/proxy/api/my-pending/{purchase-requests,purchase-orders,store-requisitions}/count` (ดู `constant/api-endpoints.ts`) คืนค่า `{ pending: number }` ต่อประเภทเอกสาร
 - **Approval queue** — `GET /api/proxy/api/approval/pending` และ `/summary` คืนค่า `ApprovalItem[]` จัดกลุ่มตาม `doc_type` (`pr` / `po` / `sr`) พร้อม `workflow_current_stage`, `doc_date`, `total_amount`
-- **Per-domain aggregates** — ตัวเลข pipeline / KPI (ปัจจุบันเป็น mock) จะ resolve ไปยังรายงาน query-dataset จาก [[reporting-audit]] ไม่ใช่การ scan ทีละ row ของตาราง transactional
+- **Per-domain aggregates** — ตัวเลข pipeline / KPI (ปัจจุบันเป็น mock) จะ resolve ไปยังรายงาน query-dataset จาก [reporting-audit](/th/inventory/reporting-audit) ไม่ใช่การ scan ทีละ row ของตาราง transactional
 
 ดูหน้าย่อยแต่ละหน้าสำหรับ tile-to-endpoint mapping
 
 ## 4. โมดูลที่เกี่ยวข้อง
 
-- [[purchase-request]], [[purchase-order]], [[good-receive-note]], [[store-requisition]], [[inventory]] — แหล่งข้อมูล transactional ที่อยู่เบื้องหลังทุก tile
-- [[reporting-audit]] — query dataset สำหรับ KPI aggregate
+- [purchase-request](/th/inventory/purchase-request), [purchase-order](/th/inventory/purchase-order), [good-receive-note](/th/inventory/good-receive-note), [store-requisition](/th/inventory/store-requisition), [inventory](/th/inventory/inventory) — แหล่งข้อมูล transactional ที่อยู่เบื้องหลังทุก tile
+- [reporting-audit](/th/inventory/reporting-audit) — query dataset สำหรับ KPI aggregate
 
 ## 5. แหล่งข้อมูลอ้างอิง
 

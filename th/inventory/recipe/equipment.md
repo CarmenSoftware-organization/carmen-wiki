@@ -2,7 +2,7 @@
 title: อุปกรณ์ (Equipment)
 description: ข้อมูลหลักของอุปกรณ์ครัว — อ้างอิงจากขั้นตอนการเตรียมในสูตรอาหารที่ต้องใช้เครื่องมือเฉพาะ (อ่าง sous-vide, deep fryer, smoker ฯลฯ)
 published: true
-date: 2026-05-17T07:00:36.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: recipe, equipment, master-data, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # อุปกรณ์ (Equipment)
 
 > **At a Glance**
-> **เจ้าของ:** Chef / Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_recipe_equipment` &nbsp;·&nbsp; **Parent:** [[recipe/equipment-category]] ผ่าน `category_id` &nbsp;·&nbsp; **ใช้โดย:** ขั้นตอนการเตรียมของ [[recipe]], checklist การ fit-out, dashboard maintenance &nbsp;·&nbsp; **ติดตาม:** สเปก สถานี ปริมาณ การใช้งาน วันที่ maintenance
+> **เจ้าของ:** Chef / Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_recipe_equipment` &nbsp;·&nbsp; **Parent:** [recipe/equipment-category](/th/inventory/recipe/equipment-category) ผ่าน `category_id` &nbsp;·&nbsp; **ใช้โดย:** ขั้นตอนการเตรียมของ [recipe](/th/inventory/recipe), checklist การ fit-out, dashboard maintenance &nbsp;·&nbsp; **ติดตาม:** สเปก สถานี ปริมาณ การใช้งาน วันที่ maintenance
 
 ![อุปกรณ์ (Equipment) screen](/screenshots/recipe/equipment.png)
 
@@ -40,15 +40,15 @@ dateCreated: 2026-05-16T15:00:00.000Z
 | "Code is required" / "Name is required" | ฟิลด์จำเป็นว่าง | กรอกก่อน save |
 | "available_qty cannot exceed total_qty" | กฎปริมาณบังคับใช้ที่ app | ปรับตัวนับให้สอดคล้อง |
 | "Next maintenance must be ≥ last maintenance" | บังคับใช้ที่ app เมื่อตั้งวันที่ทั้งสอง | แก้วันที่ |
-| dropdown หมวดหมู่ว่าง | ไม่มีแถว active ใน [[recipe/equipment-category]] | seed หมวดหมู่ก่อน |
+| dropdown หมวดหมู่ว่าง | ไม่มีแถว active ใน [recipe/equipment-category](/th/inventory/recipe/equipment-category) | seed หมวดหมู่ก่อน |
 | หมวดหมู่ถูกเปลี่ยนชื่อแต่ `category_name` เก่ายังแสดง | สำเนาแสดงผลที่ denormalise ไม่ได้รีเฟรช | save หมวดหมู่เพื่อ trigger fan-out (หรือ save อุปกรณ์ใหม่) |
 
 ## 4. Edge Cases
 
-- **FK หมวดหมู่เป็น `onDelete: NoAction`** DB จะไม่ cascade หรือบล็อก — application layer ต้องปฏิเสธการลบหมวดหมู่ในขณะที่มีอุปกรณ์อ้างอิง (ดู [[recipe/equipment-category]])
+- **FK หมวดหมู่เป็น `onDelete: NoAction`** DB จะไม่ cascade หรือบล็อก — application layer ต้องปฏิเสธการลบหมวดหมู่ในขณะที่มีอุปกรณ์อ้างอิง (ดู [recipe/equipment-category](/th/inventory/recipe/equipment-category))
 - **`category_name` ถูก denormalise** สำหรับแสดงผล ถือ FK (`category_id`) เป็นแหล่งความจริง string เป็น cache
 - **Flow checkout ยังไม่ได้ implement** — `available_qty` มีใน schema แต่ยังไม่มี UI wire วันนี้
-- **อุปกรณ์บนขั้นตอนการเตรียมถูก denormalise** ลงบน payload `tb_recipe_preparation_step.equipment` ไม่ใช่ตาราง join (ดู [[recipe/01-data-model]])
+- **อุปกรณ์บนขั้นตอนการเตรียมถูก denormalise** ลงบน payload `tb_recipe_preparation_step.equipment` ไม่ใช่ตาราง join (ดู [recipe/01-data-model](/th/inventory/recipe/01-data-model))
 - **badge maintenance overdue** เป็นภาพล้วน ๆ ไม่มีการบล็อกการใช้สูตรอัตโนมัติ
 
 ---
@@ -94,10 +94,10 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ## 7. Cross-References
 
-- [[recipe/equipment-category]] — taxonomy parent ผ่าน `category_id`
-- [[recipe]] — ขั้นตอนการเตรียมอ้างอิงอุปกรณ์ (denormalise ลงบนขั้นตอน)
-- [[recipe/01-data-model]] — จุดเชื่อมต่อของอุปกรณ์บนขั้นตอน
-- [[recipe/03-user-flow-chef]], [[recipe/03-user-flow-outlet-manager]] — Chef ติด tag ขั้นตอน Outlet Manager ตรวจสอบ fit-out
+- [recipe/equipment-category](/th/inventory/recipe/equipment-category) — taxonomy parent ผ่าน `category_id`
+- [recipe](/th/inventory/recipe) — ขั้นตอนการเตรียมอ้างอิงอุปกรณ์ (denormalise ลงบนขั้นตอน)
+- [recipe/01-data-model](/th/inventory/recipe/01-data-model) — จุดเชื่อมต่อของอุปกรณ์บนขั้นตอน
+- [recipe/03-user-flow-chef](/th/inventory/recipe/03-user-flow-chef), [recipe/03-user-flow-outlet-manager](/th/inventory/recipe/03-user-flow-outlet-manager) — Chef ติด tag ขั้นตอน Outlet Manager ตรวจสอบ fit-out
 
 ## 8. แหล่งอ้างอิง
 

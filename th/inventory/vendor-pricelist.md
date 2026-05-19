@@ -2,7 +2,7 @@
 title: รายการราคาผู้ขาย (Vendor Pricelist)
 description: แคตตาล็อกของผู้ขายที่เก็บสินค้าพร้อมราคาที่ตกลง, หน่วย และช่วงเวลาที่มีผลใช้ — แหล่งอ้างอิงราคาของ PR/PO
 published: true
-date: 2026-05-17T07:00:36.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: vendor-pricelist, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 # รายการราคาผู้ขาย (Vendor Pricelist)
 
 > **At a Glance**
-> **วัตถุประสงค์ของโมดูล:** แคตตาล็อกราคาตามผู้ขายแบบมีช่วงเวลาและมี MOQ tier ที่เก็บผ่าน workflow แบบ 6-phase campaign / portal — แหล่งอ้างอิงสำหรับราคา PR / PO / GRN และ variance &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Purchaser, Purchasing Manager, Vendor (portal ภายนอก), Finance, Auditor &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_pricelist`, `tb_pricelist_detail`, `tb_request_for_pricing`, `tb_pricelist_template`, [[vendor-pricelist/request-price-list]] &nbsp;·&nbsp; **หน้าย่อย:** 13
+> **วัตถุประสงค์ของโมดูล:** แคตตาล็อกราคาตามผู้ขายแบบมีช่วงเวลาและมี MOQ tier ที่เก็บผ่าน workflow แบบ 6-phase campaign / portal — แหล่งอ้างอิงสำหรับราคา PR / PO / GRN และ variance &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Purchaser, Purchasing Manager, Vendor (portal ภายนอก), Finance, Auditor &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_pricelist`, `tb_pricelist_detail`, `tb_request_for_pricing`, `tb_pricelist_template`, [vendor-pricelist/request-price-list](/th/inventory/vendor-pricelist/request-price-list) &nbsp;·&nbsp; **หน้าย่อย:** 13
 
 ![รายการราคาผู้ขาย (Vendor Pricelist) screen](/screenshots/vendor-pricelist/index.png)
 
@@ -66,19 +66,19 @@ Vendor pricelist คือกลไกที่องค์กรบังคั
 ## 5. โมดูลที่เกี่ยวข้อง
 
 **การไหลข้ามโมดูล:**
-- [[product]] — entry ของ pricelist อ้างอิงสินค้า
-- [[purchase-request]] — PR default จาก pricelist ของ preferred vendor
-- [[purchase-order]] — PO validate ราคากับ pricelist active
-- [[good-receive-note]] — Variance ราคา GRN ถูกคำนวณกับ pricelist
+- [product](/th/inventory/product) — entry ของ pricelist อ้างอิงสินค้า
+- [purchase-request](/th/inventory/purchase-request) — PR default จาก pricelist ของ preferred vendor
+- [purchase-order](/th/inventory/purchase-order) — PO validate ราคากับ pricelist active
+- [good-receive-note](/th/inventory/good-receive-note) — Variance ราคา GRN ถูกคำนวณกับ pricelist
 
 **Master configuration:**
-- [[master-data/vendor]] — master ของผู้ขายที่ pricelist แต่ละใบ scope ไป
-- [[master-data/currency]] — สกุลเงินที่ผู้ขายเลือกตอน submission
-- [[master-data/tax-profile]] — รหัสภาษีบนแต่ละบรรทัดของ pricelist
-- [[templates/price-list]] — template ที่ใช้ซ้ำได้ที่กำหนดสิ่งที่จะถามผู้ขายใน campaign
-- [[master-data/unit]] — หน่วยการตั้งราคา (Box / Carton / Pack) บวก conversion ไปยังหน่วย inventory ฐาน
-- [[system-config/workflow]] — workflow การ submission และอนุมัติ pricelist
-- [[reporting-audit/activity]] — activity log การ submission, validation และ approval ของ pricelist สำหรับ audit
+- [master-data/vendor](/th/inventory/master-data/vendor) — master ของผู้ขายที่ pricelist แต่ละใบ scope ไป
+- [master-data/currency](/th/inventory/master-data/currency) — สกุลเงินที่ผู้ขายเลือกตอน submission
+- [master-data/tax-profile](/th/inventory/master-data/tax-profile) — รหัสภาษีบนแต่ละบรรทัดของ pricelist
+- [templates/price-list](/th/inventory/templates/price-list) — template ที่ใช้ซ้ำได้ที่กำหนดสิ่งที่จะถามผู้ขายใน campaign
+- [master-data/unit](/th/inventory/master-data/unit) — หน่วยการตั้งราคา (Box / Carton / Pack) บวก conversion ไปยังหน่วย inventory ฐาน
+- [system-config/workflow](/th/inventory/system-config/workflow) — workflow การ submission และอนุมัติ pricelist
+- [reporting-audit/activity](/th/inventory/reporting-audit/activity) — activity log การ submission, validation และ approval ของ pricelist สำหรับ audit
 
 ## 6. แหล่งอ้างอิง
 
@@ -90,17 +90,17 @@ Vendor pricelist คือกลไกที่องค์กรบังคั
 
 ## 7. หน้าในโมดูลนี้
 
-- [[vendor-pricelist/01-data-model]] — เอนทิตี, ฟิลด์, ความสัมพันธ์, enum สำหรับ tenant-schema model สิบตัว (`tb_pricelist_template`, `tb_pricelist_template_detail`, `tb_pricelist_template_comment`, `tb_pricelist_template_detail_comment`, `tb_request_for_pricing`, `tb_request_for_pricing_comment`, `tb_request_for_pricing_detail`, `tb_request_for_pricing_detail_comment`, `tb_pricelist`, `tb_pricelist_detail`, `tb_pricelist_comment`, `tb_pricelist_detail_comment`) และ enum module-local สามตัว (`enum_pricelist_template_status`, `enum_pricelist_status`, `pricelist_submission_method`) บวกตาราง divergence สำหรับความแตกต่าง material 12 รายการระหว่าง carmen/docs `design.md` และ Prisma
-- [[vendor-pricelist/02-business-rules]] — การ validate (`VPL_VAL_001`–`VPL_VAL_025`), การคำนวณ (`VPL_CALC_001`–`VPL_CALC_008`), authorization (`VPL_AUTH_001`–`VPL_AUTH_015`), status / posting (`VPL_POST_001`–`VPL_POST_022` ข้ามทั้งสาม lifecycle + สถานะ campaign / invitation ที่ derive จากแอป) และกติกาข้ามโมดูล (`VPL_XMOD_001`–`VPL_XMOD_009` ไป PR / PO / GRN / product / vendor / currency / validation engine)
-- [[vendor-pricelist/03-user-flow]] — ภาพรวม lifecycle ของเอกสาร + index persona
-  - [[vendor-pricelist/03-user-flow-purchaser]] — เส้นทาง Purchaser + Purchasing Manager (รวบ): template builder, campaign launcher, submission reviewer, preferred-vendor curator
-  - [[vendor-pricelist/03-user-flow-vendor]] — เส้นทาง Vendor (ภายนอก, portal session ที่ authenticate ด้วย token) ไฟล์สั้นกว่า — persona ภายนอกตัวเดียวใน Carmen suite ที่มีผลคงทนใน-ระบบผ่าน portal
-  - [[vendor-pricelist/03-user-flow-finance]] — Finance Officer + Finance Manager (audit variance กับ GRN / invoice; co-signoff multi-currency สำหรับการ activate)
-  - [[vendor-pricelist/03-user-flow-audit-config]] — Auditor + System Administrator (chain audit อ่านอย่างเดียว; การกำหนดเลข, RBAC, นโยบาย portal-token, การเชื่อม email, กติกา validation, แหล่ง currency / FX, การเก็บ audit; การ revoke token ต่อ invitation)
-- [[vendor-pricelist/04-test-scenarios]] — ภาพรวม test-scenario + scenario handoff ข้าม persona 12 รายการ + เป้าหมายการ mapping E2E (roadmap item — ไม่มี spec dedicated วันนี้)
-  - [[vendor-pricelist/04-test-scenarios-purchaser]] — scenario Purchaser + Manager
-  - [[vendor-pricelist/04-test-scenarios-vendor]] — scenario Vendor; section Permission คือ N/A (แถวเดียว) เพราะ vendor ไม่มี Carmen RBAC matrix
-  - [[vendor-pricelist/04-test-scenarios-finance]] — scenario Finance Officer + Manager
-  - [[vendor-pricelist/04-test-scenarios-audit-config]] — scenario Auditor + Sysadmin
+- [vendor-pricelist/01-data-model](/th/inventory/vendor-pricelist/01-data-model) — เอนทิตี, ฟิลด์, ความสัมพันธ์, enum สำหรับ tenant-schema model สิบตัว (`tb_pricelist_template`, `tb_pricelist_template_detail`, `tb_pricelist_template_comment`, `tb_pricelist_template_detail_comment`, `tb_request_for_pricing`, `tb_request_for_pricing_comment`, `tb_request_for_pricing_detail`, `tb_request_for_pricing_detail_comment`, `tb_pricelist`, `tb_pricelist_detail`, `tb_pricelist_comment`, `tb_pricelist_detail_comment`) และ enum module-local สามตัว (`enum_pricelist_template_status`, `enum_pricelist_status`, `pricelist_submission_method`) บวกตาราง divergence สำหรับความแตกต่าง material 12 รายการระหว่าง carmen/docs `design.md` และ Prisma
+- [vendor-pricelist/02-business-rules](/th/inventory/vendor-pricelist/02-business-rules) — การ validate (`VPL_VAL_001`–`VPL_VAL_025`), การคำนวณ (`VPL_CALC_001`–`VPL_CALC_008`), authorization (`VPL_AUTH_001`–`VPL_AUTH_015`), status / posting (`VPL_POST_001`–`VPL_POST_022` ข้ามทั้งสาม lifecycle + สถานะ campaign / invitation ที่ derive จากแอป) และกติกาข้ามโมดูล (`VPL_XMOD_001`–`VPL_XMOD_009` ไป PR / PO / GRN / product / vendor / currency / validation engine)
+- [vendor-pricelist/03-user-flow](/th/inventory/vendor-pricelist/03-user-flow) — ภาพรวม lifecycle ของเอกสาร + index persona
+  - [vendor-pricelist/03-user-flow-purchaser](/th/inventory/vendor-pricelist/03-user-flow-purchaser) — เส้นทาง Purchaser + Purchasing Manager (รวบ): template builder, campaign launcher, submission reviewer, preferred-vendor curator
+  - [vendor-pricelist/03-user-flow-vendor](/th/inventory/vendor-pricelist/03-user-flow-vendor) — เส้นทาง Vendor (ภายนอก, portal session ที่ authenticate ด้วย token) ไฟล์สั้นกว่า — persona ภายนอกตัวเดียวใน Carmen suite ที่มีผลคงทนใน-ระบบผ่าน portal
+  - [vendor-pricelist/03-user-flow-finance](/th/inventory/vendor-pricelist/03-user-flow-finance) — Finance Officer + Finance Manager (audit variance กับ GRN / invoice; co-signoff multi-currency สำหรับการ activate)
+  - [vendor-pricelist/03-user-flow-audit-config](/th/inventory/vendor-pricelist/03-user-flow-audit-config) — Auditor + System Administrator (chain audit อ่านอย่างเดียว; การกำหนดเลข, RBAC, นโยบาย portal-token, การเชื่อม email, กติกา validation, แหล่ง currency / FX, การเก็บ audit; การ revoke token ต่อ invitation)
+- [vendor-pricelist/04-test-scenarios](/th/inventory/vendor-pricelist/04-test-scenarios) — ภาพรวม test-scenario + scenario handoff ข้าม persona 12 รายการ + เป้าหมายการ mapping E2E (roadmap item — ไม่มี spec dedicated วันนี้)
+  - [vendor-pricelist/04-test-scenarios-purchaser](/th/inventory/vendor-pricelist/04-test-scenarios-purchaser) — scenario Purchaser + Manager
+  - [vendor-pricelist/04-test-scenarios-vendor](/th/inventory/vendor-pricelist/04-test-scenarios-vendor) — scenario Vendor; section Permission คือ N/A (แถวเดียว) เพราะ vendor ไม่มี Carmen RBAC matrix
+  - [vendor-pricelist/04-test-scenarios-finance](/th/inventory/vendor-pricelist/04-test-scenarios-finance) — scenario Finance Officer + Manager
+  - [vendor-pricelist/04-test-scenarios-audit-config](/th/inventory/vendor-pricelist/04-test-scenarios-audit-config) — scenario Auditor + Sysadmin
 
 > **สถานะ:** หน้าย่อยทั้งหมดเป็นรายละเอียดเต็มและ self-contained section Data-model ยึดกับ Prisma schema canonical (`tb_pricelist*` + `tb_request_for_pricing*` + `tb_pricelist_template*` — สิบเอนทิตี, สาม enum module-local); business-rules แนะนำแคตตาล็อก rule-ID `VPL_*` ยึดกับ carmen/docs (`design.md`, `requirements.md`, `price-assignment-workflow-documentation.md`); user-flow และ test-scenarios ครอบคลุมกลุ่ม persona ทั้งสี่ที่รวบจาก 8 persona ใน Section 4 Receiver / Store Keeper จาก Section 4 ถูกบันทึกเป็นผู้บริโภคทางอ้อมใน scenario ข้าม persona (ไม่มีไฟล์ persona dedicated) ไม่มี E2E spec วันนี้ — coverage รันที่ระดับ API / integration และผ่าน E2E spec ของโมดูลปลายน้ำ (`401-po.spec.ts`, `402-po-purchaser-journey.spec.ts`); vendor-pricelist E2E spec dedicated เป็น roadmap item ตาม `../carmen/docs/vendor-pricelist-management/tasks.md`

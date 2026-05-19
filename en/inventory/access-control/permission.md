@@ -2,7 +2,7 @@
 title: Permission
 description: Atomic resource + action pairs — the building blocks bundled into application roles to authorise every UI and API operation.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: access-control, permission, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,11 +11,11 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # Permission
 
 > **At a Glance**
-> **Owner:** Seed-managed (release-time) &nbsp;·&nbsp; **Table:** `tb_permission` &nbsp;·&nbsp; **Used by:** [[access-control/application-role]] (only consumer) &nbsp;·&nbsp; Atomic `(resource, action)` pairs — the smallest unit of authorisation.
+> **Owner:** Seed-managed (release-time) &nbsp;·&nbsp; **Table:** `tb_permission` &nbsp;·&nbsp; **Used by:** [access-control/application-role](/en/inventory/access-control/application-role) (only consumer) &nbsp;·&nbsp; Atomic `(resource, action)` pairs — the smallest unit of authorisation.
 
 ## 1. What & Who
 
-A permission is the **smallest unit of authorisation**: a `(resource, action)` pair such as `(purchase_request, approve)` or `(inventory, view)`. Permissions are catalogued centrally and **never assigned directly** to users — they are aggregated into [[access-control/application-role]] rows via `tb_application_role_tb_permission`, and users get them transitively by being granted a role.
+A permission is the **smallest unit of authorisation**: a `(resource, action)` pair such as `(purchase_request, approve)` or `(inventory, view)`. Permissions are catalogued centrally and **never assigned directly** to users — they are aggregated into [access-control/application-role](/en/inventory/access-control/application-role) rows via `tb_application_role_tb_permission`, and users get them transitively by being granted a role.
 
 The runtime check "can user X perform action Y on resource Z in BU B" is a single join across `tb_user_tb_application_role`, `tb_application_role`, and `tb_application_role_tb_permission`.
 
@@ -26,7 +26,7 @@ The runtime check "can user X perform action Y on resource Z in BU B" is a singl
 | Task | Where | Notes |
 |---|---|---|
 | View the permission catalogue | Sysadmin → Platform → Permissions (read-only) | List grouped by `resource` |
-| Bundle permissions into a role | [[access-control/application-role]] edit screen | Checkbox grid; this is the normal path |
+| Bundle permissions into a role | [access-control/application-role](/en/inventory/access-control/application-role) edit screen | Checkbox grid; this is the normal path |
 | Add a new permission atom | Release migration / seed | `tb_permission` is seed-managed, not UI-editable |
 | Rename / retire a permission | Soft-delete + re-create | Constraint includes `deleted_at` so `(resource, action)` can be re-used |
 | Find which roles include a permission | Query `tb_application_role_tb_permission` by `permission_id` | Useful before retirement |
@@ -74,8 +74,8 @@ Source: platform schema.
 
 ## 7. Cross-References
 
-- [[access-control/application-role]] — sole consumer.
-- [[access-control/user]] — holds permissions transitively through roles.
+- [access-control/application-role](/en/inventory/access-control/application-role) — sole consumer.
+- [access-control/user](/en/inventory/access-control/user) — holds permissions transitively through roles.
 - All transactional modules — every guarded UI action / protected API endpoint resolves against a `(resource, action)`.
 
 ## 8. References

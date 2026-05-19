@@ -2,7 +2,7 @@
 title: Recipe — User Flow
 description: Recipe lifecycle and persona-specific flow files for the recipe module.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: recipe, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 # Recipe — User Flow
 
 > **At a Glance**
-> **Module:** [[recipe]] &nbsp;·&nbsp; **Personas:** Chef &nbsp;·&nbsp; Cost Controller &nbsp;·&nbsp; Outlet Manager &nbsp;·&nbsp; Procurement / F&B Ops &nbsp;·&nbsp; Audit / Config
+> **Module:** [recipe](/en/inventory/recipe) &nbsp;·&nbsp; **Personas:** Chef &nbsp;·&nbsp; Cost Controller &nbsp;·&nbsp; Outlet Manager &nbsp;·&nbsp; Procurement / F&B Ops &nbsp;·&nbsp; Audit / Config
 > **Workflow lifecycle:** DRAFT → PUBLISHED → ARCHIVED (RBAC-gated, direct transitions; versioning + pricing-history audit trail)
 > **Drill into per-persona views below for action-level detail**
 
@@ -67,7 +67,7 @@ The table below captures the moments where responsibility for a recipe (or for a
 | F&B Ops | Decides to retire a menu item | Chef | `PUBLISHED → ARCHIVED` (chef archives the recipe per `REC_POST_007`; menu linkages severed) |
 | Sysadmin | Changes category default cost settings or RBAC mapping | All personas (prospective) | Any state (new recipes in the category inherit; existing recipes unchanged unless explicitly re-applied) |
 | Auditor | Samples committed recipes for compliance review | (no handoff — read-only) | Any state (audit reads `tb_recipe_version` history, audit columns, pricing history) |
-| Recipe module | Auto-generates SR `draft` for planned production event | Outlet Manager (Requester role in [[store-requisition]]) | `PUBLISHED` (recipe is the source; the SR is created in the SR module with `info.recipe_id` back-reference) |
+| Recipe module | Auto-generates SR `draft` for planned production event | Outlet Manager (Requester role in [store-requisition](/en/inventory/store-requisition)) | `PUBLISHED` (recipe is the source; the SR is created in the SR module with `info.recipe_id` back-reference) |
 | Recipe module | Posts theoretical OUT movements on menu sale | Inventory module (downstream, automatic) | `PUBLISHED` (recipe is the formula source; the inventory layer writes the movement) |
 
 ## 5. References
@@ -79,4 +79,4 @@ The table below captures the moments where responsibility for a recipe (or for a
 - `../carmen/docs/recipe/recipe-management.md` — layout-level reference for the create / edit page, costing sheet, scaling calculator, preparation page, media gallery, and category management; informs the chef and cost controller flows.
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical `enum_recipe_status` and the three-state lifecycle referenced throughout Section 2.
 - Sibling: [02-business-rules.md](./02-business-rules.md) Section 5 — posting effects and authorization gates referenced by each row of Section 2.
-- Related modules: [[product]] (recipe ingredients reference products with `is_used_in_recipe = true`), [[inventory]] (recipe usage drives theoretical OUT movements on menu sale; sub-recipes recurse through to leaf-product OUTs), [[costing]] (per-ingredient `cost_per_unit` is sourced from the outlet's costing-method valuation), [[store-requisition]] (recipes may auto-generate SR drafts for planned production / banquet events via `info.recipe_id`).
+- Related modules: [product](/en/inventory/product) (recipe ingredients reference products with `is_used_in_recipe = true`), [inventory](/en/inventory/inventory) (recipe usage drives theoretical OUT movements on menu sale; sub-recipes recurse through to leaf-product OUTs), [costing](/en/inventory/costing) (per-ingredient `cost_per_unit` is sourced from the outlet's costing-method valuation), [store-requisition](/en/inventory/store-requisition) (recipes may auto-generate SR drafts for planned production / banquet events via `info.recipe_id`).

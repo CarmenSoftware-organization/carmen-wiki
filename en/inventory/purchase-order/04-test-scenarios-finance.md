@@ -2,7 +2,7 @@
 title: Purchase Order — Test Scenarios — Finance
 description: Finance's test cases (three-way match, AP posting, FX, discrepancy bounce-back) for purchase-order.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-order, test-scenarios, finance, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 # Purchase Order — Test Scenarios — Finance
 
 > **At a Glance**
-> **Persona:** Finance (Officer / AP Clerk + Finance Manager) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Scenarios:** ~25
+> **Persona:** Finance (Officer / AP Clerk + Finance Manager) &nbsp;·&nbsp; **Module:** [purchase-order](/en/inventory/purchase-order) &nbsp;·&nbsp; **Scenarios:** ~25
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** maps to `401-po.spec.ts`, `403-po-finance-ap-match.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
@@ -69,7 +69,7 @@ This page captures the test scenarios that the Finance persona (the **Finance Of
 - Sibling: [04-test-scenarios-receiver.md](./04-test-scenarios-receiver.md) — upstream persona that posts the GRN this flow matches against; the GRN drives `received_qty` and `accepted_qty` that the three-way match consumes.
 - Sibling: [04-test-scenarios-purchaser.md](./04-test-scenarios-purchaser.md) — bounce-back target on three-way-match failure (qty / price / currency discrepancy); owns the amendment / credit-note / void resolution loop.
 - Business rules being verified: [02-business-rules.md](./02-business-rules.md) Section 5 (`PO_POST_003` stage approval; `PO_POST_004` final approval → `in_progress → sent`; `PO_POST_005` reject → `in_progress → draft`; `PO_POST_008` three-way match success — AP clears GRN accrual + posts vendor invoice, PO not status-changed; `PO_POST_009` three-way match failure — invoice held in dispute, `system` comment + vendor-pricelist deviation, PO not auto-voided; `PO_POST_010` void — terminal; `PO_AUTH_009` Finance Officer read-only; `PO_AUTH_011` workflow-derived stage-gated approval), Section 6 (`PO_XMOD_007` AP / Three-way match — GRN posting raises inventory accrual, cleared only on `PO_POST_008` success; PO closure alone does not clear AP accrual).
-- Cross-link: [[good-receive-note]] — upstream module whose posting creates the matched-but-unbilled accrual that AP clears on match success; GRN owns `received_qty` / `accepted_qty` that drive the qty side of the match.
-- Cross-link: [[inventory]] — the inventory-receipt accrual cleared on match success is owned by the inventory / GL integration; the PO contributes only the on-order pipeline quantity per `PO_XMOD_008`.
-- Cross-link: [[vendor-pricelist]] — three-way-match failures on price open a deviation record on the vendor / vendor-pricelist side per `PO_POST_009`, feeding pricelist-deviation analytics.
+- Cross-link: [good-receive-note](/en/inventory/good-receive-note) — upstream module whose posting creates the matched-but-unbilled accrual that AP clears on match success; GRN owns `received_qty` / `accepted_qty` that drive the qty side of the match.
+- Cross-link: [inventory](/en/inventory/inventory) — the inventory-receipt accrual cleared on match success is owned by the inventory / GL integration; the PO contributes only the on-order pipeline quantity per `PO_XMOD_008`.
+- Cross-link: [vendor-pricelist](/en/inventory/vendor-pricelist) — three-way-match failures on price open a deviation record on the vendor / vendor-pricelist side per `PO_POST_009`, feeding pricelist-deviation analytics.
 - E2E: `../carmen-inventory-frontend-e2e/tests/401-po.spec.ts` — shared / mixed-persona coverage; no dedicated Finance E2E spec exists at this time. The three-way match, AP posting, and FX adjustment behaviours are exercised at the API / integration level (cross-module AP service) rather than through the PO UI; a dedicated `403-po-finance-ap-match.spec.ts` is a roadmap item. The `SKIP_NOTE_BACKEND` annotation in `401-po.spec.ts` explicitly flags GRN-sync and AP-integration behaviour as out-of-scope for UI E2E coverage.

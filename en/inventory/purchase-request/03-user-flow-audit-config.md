@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow — Audit & Config
 description: Auditor (read-only) and System Administrator (workflow / threshold / delegation configuration) flows for purchase-request.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-request, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 # Purchase Request — User Flow — Audit & Config
 
 > **At a Glance**
-> **Persona:** Auditor (read-only) + System Administrator (config) &nbsp;·&nbsp; **Module:** [[purchase-request]] &nbsp;·&nbsp; **Workflow stages:** off-path — observes all states; Sysadmin holds elevated void (PR_AUTH_007) &nbsp;·&nbsp; **Key permissions:** audit/read history, configure workflow / thresholds / delegation, elevated void
+> **Persona:** Auditor (read-only) + System Administrator (config) &nbsp;·&nbsp; **Module:** [purchase-request](/en/inventory/purchase-request) &nbsp;·&nbsp; **Workflow stages:** off-path — observes all states; Sysadmin holds elevated void (PR_AUTH_007) &nbsp;·&nbsp; **Key permissions:** audit/read history, configure workflow / thresholds / delegation, elevated void
 > **What this persona does:** Reviews the immutable audit trail (Auditor) and owns workflow, threshold, delegation, and policy configuration (Sysadmin).
 
 ## 1. Role in This Module
@@ -128,5 +128,5 @@ Document state across all Audit / Config exits is governed by `enum_purchase_req
 - Sibling: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — downstream persona whose PO-conversion handoff is audited
 - Sibling: [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md) — escalation and rule-set changes that the Sysadmin's threshold / workflow configuration enables
 - Sibling: [the module landing](/en/inventory/purchase-request) Section 4 — canonical Auditor and System Administrator role descriptions
-- Cross-link: [[inventory-adjustment]] — sibling audit-trail surface for inventory-side governance
-- Cross-link: [[purchase-order]] — downstream module whose conversion events are observed in the PR audit trail
+- Cross-link: [inventory-adjustment](/en/inventory/inventory-adjustment) — sibling audit-trail surface for inventory-side governance
+- Cross-link: [purchase-order](/en/inventory/purchase-order) — downstream module whose conversion events are observed in the PR audit trail

@@ -2,7 +2,7 @@
 title: Notification
 description: Cross-tenant notification fan-out — notification rows, reusable message templates, and platform-wide news posts.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: reporting-audit, notification, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -104,10 +104,10 @@ Source: platform schema.
 
 ## 7. Cross-References
 
-- All workflow modules — [[purchase-request]], [[purchase-order]], [[good-receive-note]], [[store-requisition]], [[inventory-adjustment]], [[physical-count]], [[spot-check]], [[vendor-pricelist]].
-- [[access-control/user]] — `from_user_id` / `to_user_id` resolution.
-- [[reporting-audit/activity]] — workflow events typically write both rows.
-- [[system-config/workflow]] — recipient resolution against stage role types.
+- All workflow modules — [purchase-request](/en/inventory/purchase-request), [purchase-order](/en/inventory/purchase-order), [good-receive-note](/en/inventory/good-receive-note), [store-requisition](/en/inventory/store-requisition), [inventory-adjustment](/en/inventory/inventory-adjustment), [physical-count](/en/inventory/physical-count), [spot-check](/en/inventory/spot-check), [vendor-pricelist](/en/inventory/vendor-pricelist).
+- [access-control/user](/en/inventory/access-control/user) — `from_user_id` / `to_user_id` resolution.
+- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — workflow events typically write both rows.
+- [system-config/workflow](/en/inventory/system-config/workflow) — recipient resolution against stage role types.
 
 ## 8. References
 

@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — User Flow
 description: วงจรชีวิตของเอกสารและไฟล์ flow แยกตาม persona สำหรับ purchase-order
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-order, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 # ใบสั่งซื้อ (Purchase Order) — User Flow
 
 > **At a Glance**
-> **Module:** [[purchase-order]] &nbsp;·&nbsp; **Personas:** Purchaser &nbsp;·&nbsp; Procurement Manager &nbsp;·&nbsp; Vendor &nbsp;·&nbsp; Receiver &nbsp;·&nbsp; Finance &nbsp;·&nbsp; Audit / Config
+> **Module:** [purchase-order](/th/inventory/purchase-order) &nbsp;·&nbsp; **Personas:** Purchaser &nbsp;·&nbsp; Procurement Manager &nbsp;·&nbsp; Vendor &nbsp;·&nbsp; Receiver &nbsp;·&nbsp; Finance &nbsp;·&nbsp; Audit / Config
 > **วงจรการทำงาน workflow:** Draft → In Progress → Sent → Partial → Completed / Closed (พร้อม branch Voided)
 > **ดูมุมมองแต่ละ persona ด้านล่างเพื่อรายละเอียดระดับ action**
 
@@ -23,7 +23,7 @@ Section 2 ด้านล่างคือ **global state machine** — list ca
 
 ## 2. วงจรชีวิตของเอกสาร
 
-PO document status เก็บใน `tb_purchase_order.po_status` และจำกัดให้เป็นค่าที่ประกาศใน `enum_purchase_order_doc_status`: `draft`, `in_progress`, `voided`, `sent`, `partial`, `closed`, `completed` Transitions ด้านล่างครอบคลุมการเคลื่อนไหวที่ถูกต้องระหว่างกัน; อย่างอื่นถูก reject โดย workflow engine หมายเหตุว่า transitions ที่ driven โดย receipt (`sent → partial → completed`) ถูก trigger โดย GRN postings ในโมดูลปลายน้ำ [[good-receive-note]] ไม่ใช่โดย action ผู้ใช้โดยตรงบน PO
+PO document status เก็บใน `tb_purchase_order.po_status` และจำกัดให้เป็นค่าที่ประกาศใน `enum_purchase_order_doc_status`: `draft`, `in_progress`, `voided`, `sent`, `partial`, `closed`, `completed` Transitions ด้านล่างครอบคลุมการเคลื่อนไหวที่ถูกต้องระหว่างกัน; อย่างอื่นถูก reject โดย workflow engine หมายเหตุว่า transitions ที่ driven โดย receipt (`sent → partial → completed`) ถูก trigger โดย GRN postings ในโมดูลปลายน้ำ [good-receive-note](/th/inventory/good-receive-note) ไม่ใช่โดย action ผู้ใช้โดยตรงบน PO
 
 ```mermaid
 stateDiagram-v2
@@ -97,4 +97,4 @@ stateDiagram-v2
 - `../carmen/docs/purchase-order-management/purchase-order-module.md` — แหล่ง carmen/docs หลักสำหรับ business analysis, state diagram, และ PO creation flows
 - Sibling: [01-data-model.md](./01-data-model.md) — ค่า `enum_purchase_order_doc_status` canonical ที่ใช้ใน Section 2 ข้างต้นและตาราง bridge ที่ carry PR→PO traceability
 - Sibling: [02-business-rules.md](./02-business-rules.md) — กฎ validation, authorization, posting, และ transition ที่อ้างอิงโดยแต่ละ row ของ Section 2
-- โมดูลที่เกี่ยวข้อง: [[purchase-request]] (ต้นทาง upstream ผ่าน PR→PO bridge), [[good-receive-note]] (fulfilment ปลายน้ำที่ขับเคลื่อน transitions `partial` / `completed`), [[vendor-pricelist]] (price snapshot ที่ PR-to-PO conversion time)
+- โมดูลที่เกี่ยวข้อง: [purchase-request](/th/inventory/purchase-request) (ต้นทาง upstream ผ่าน PR→PO bridge), [good-receive-note](/th/inventory/good-receive-note) (fulfilment ปลายน้ำที่ขับเคลื่อน transitions `partial` / `completed`), [vendor-pricelist](/th/inventory/vendor-pricelist) (price snapshot ที่ PR-to-PO conversion time)

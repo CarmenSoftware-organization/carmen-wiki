@@ -2,7 +2,7 @@
 title: Purchase Order — Business Rules
 description: Validation, calculation, authorization, posting, three-way-match, and cross-module rules for purchase-order.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-order, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -18,9 +18,9 @@ dateCreated: 2026-05-15T10:00:00.000Z
 
 ## 1. Overview
 
-This page captures the operational business rules that govern a Purchase Order (PO) document through its lifecycle: input validation at create / edit / submit time, monetary calculation (line and header), authorization gates by role and amount threshold, posting effects on each transition of `enum_purchase_order_doc_status`, three-way-match against the GRN and the vendor invoice, and cross-module rules with [[purchase-request]], [[good-receive-note]], [[vendor-pricelist]], and [[inventory]].
+This page captures the operational business rules that govern a Purchase Order (PO) document through its lifecycle: input validation at create / edit / submit time, monetary calculation (line and header), authorization gates by role and amount threshold, posting effects on each transition of `enum_purchase_order_doc_status`, three-way-match against the GRN and the vendor invoice, and cross-module rules with [purchase-request](/en/inventory/purchase-request), [good-receive-note](/en/inventory/good-receive-note), [vendor-pricelist](/en/inventory/vendor-pricelist), and [inventory](/en/inventory/inventory).
 
-The rules below are synthesised from the legacy carmen/docs PO business analysis, the corresponding PR business-rule catalogue (Section 3 of `purchase-request-ba.md` and `PR-Module-Structure.md`, since PO inherits the same calculation, rounding, and approval philosophy), and the canonical Prisma data model documented in [[purchase-order/01-data-model]]. Where the legacy carmen/docs and Prisma disagree, Prisma is canonical — in particular for status values (`draft`, `in_progress`, `voided`, `sent`, `partial`, `closed`, `completed`) and for the PR↔PO bridge linkage rather than a single FK on the PO line.
+The rules below are synthesised from the legacy carmen/docs PO business analysis, the corresponding PR business-rule catalogue (Section 3 of `purchase-request-ba.md` and `PR-Module-Structure.md`, since PO inherits the same calculation, rounding, and approval philosophy), and the canonical Prisma data model documented in [purchase-order/01-data-model](/en/inventory/purchase-order/01-data-model). Where the legacy carmen/docs and Prisma disagree, Prisma is canonical — in particular for status values (`draft`, `in_progress`, `voided`, `sent`, `partial`, `closed`, `completed`) and for the PR↔PO bridge linkage rather than a single FK on the PO line.
 
 ## 2. Validation Rules
 
@@ -107,7 +107,7 @@ Rule IDs follow `PO_AUTH_NNN`. Authorization is enforced by RBAC at the API laye
 
 ## 5. Posting Rules
 
-Status values are the literal members of `enum_purchase_order_doc_status` documented in [[purchase-order/01-data-model]] § 4: `draft`, `in_progress`, `voided`, `sent`, `partial`, `closed`, `completed`. There is no separate GL "posting" for the PO document itself; PO posting is the act of mutating the status, recording the audit trail (`history`, `workflow_history`), and triggering downstream side effects. Real GL posting happens at GRN (inventory accrual) and at three-way-match success (AP invoice).
+Status values are the literal members of `enum_purchase_order_doc_status` documented in [purchase-order/01-data-model](/en/inventory/purchase-order/01-data-model) § 4: `draft`, `in_progress`, `voided`, `sent`, `partial`, `closed`, `completed`. There is no separate GL "posting" for the PO document itself; PO posting is the act of mutating the status, recording the audit trail (`history`, `workflow_history`), and triggering downstream side effects. Real GL posting happens at GRN (inventory accrual) and at three-way-match success (AP invoice).
 
 Rule IDs follow `PO_POST_NNN`.
 
@@ -168,19 +168,19 @@ Rule IDs follow `PO_XMOD_NNN`.
 
 | Rule ID | Related module | Rule |
 | ------- | -------------- | ---- |
-| `PO_XMOD_001` | [[purchase-request]] | When `po_type = purchase_request`, the PO must be created via the PR-to-PO conversion flow, which groups selected approved PRs by `(vendor_id, currency_id)` and produces one PO per group. Each resulting PO line carries one or more bridge rows in `tb_purchase_order_detail_tb_purchase_request_detail` linking it back to the originating PR line(s) (`PO_VAL_014`). |
-| `PO_XMOD_002` | [[purchase-request]] | The bridge supports consolidation (many PR lines → one PO line) and partial conversion (one PR line → many PO lines). The PR line is considered fully converted only when `Σ bridge.pr_detail_qty` for that `pr_detail_id` equals the PR line's approved quantity. |
-| `PO_XMOD_003` | [[good-receive-note]] | A GRN may only be created against a PO whose `po_status ∈ {sent, partial}` (`PO_AUTH_008`). The GRN detail back-references `tb_purchase_order_detail.id`; the pending quantity available for receipt is `order_qty − received_qty − cancelled_qty` per `PO_POST_006`. |
-| `PO_XMOD_004` | [[good-receive-note]] | Receiving a quantity that would exceed the pending qty is rejected unless tenant configuration permits over-receipt within a tolerance; otherwise the GRN line is capped at the pending qty. |
-| `PO_XMOD_005` | [[vendor-pricelist]] | At PR-to-PO conversion, the system snapshots `price` from the active vendor pricelist for the `(vendor, product, currency)` tuple. If no active pricelist row exists, the PR's last-known price is used and a `system` comment is appended flagging the missing pricelist coverage. |
-| `PO_XMOD_006` | [[vendor-pricelist]] | When the buyer overrides a snapshot price, the delta against the pricelist is logged in `tb_purchase_order_detail_comment` as a deviation entry. Deviations above tenant tolerance route the PO to a high-value approval stage even if `total_amount` is below the threshold. |
+| `PO_XMOD_001` | [purchase-request](/en/inventory/purchase-request) | When `po_type = purchase_request`, the PO must be created via the PR-to-PO conversion flow, which groups selected approved PRs by `(vendor_id, currency_id)` and produces one PO per group. Each resulting PO line carries one or more bridge rows in `tb_purchase_order_detail_tb_purchase_request_detail` linking it back to the originating PR line(s) (`PO_VAL_014`). |
+| `PO_XMOD_002` | [purchase-request](/en/inventory/purchase-request) | The bridge supports consolidation (many PR lines → one PO line) and partial conversion (one PR line → many PO lines). The PR line is considered fully converted only when `Σ bridge.pr_detail_qty` for that `pr_detail_id` equals the PR line's approved quantity. |
+| `PO_XMOD_003` | [good-receive-note](/en/inventory/good-receive-note) | A GRN may only be created against a PO whose `po_status ∈ {sent, partial}` (`PO_AUTH_008`). The GRN detail back-references `tb_purchase_order_detail.id`; the pending quantity available for receipt is `order_qty − received_qty − cancelled_qty` per `PO_POST_006`. |
+| `PO_XMOD_004` | [good-receive-note](/en/inventory/good-receive-note) | Receiving a quantity that would exceed the pending qty is rejected unless tenant configuration permits over-receipt within a tolerance; otherwise the GRN line is capped at the pending qty. |
+| `PO_XMOD_005` | [vendor-pricelist](/en/inventory/vendor-pricelist) | At PR-to-PO conversion, the system snapshots `price` from the active vendor pricelist for the `(vendor, product, currency)` tuple. If no active pricelist row exists, the PR's last-known price is used and a `system` comment is appended flagging the missing pricelist coverage. |
+| `PO_XMOD_006` | [vendor-pricelist](/en/inventory/vendor-pricelist) | When the buyer overrides a snapshot price, the delta against the pricelist is logged in `tb_purchase_order_detail_comment` as a deviation entry. Deviations above tenant tolerance route the PO to a high-value approval stage even if `total_amount` is below the threshold. |
 | `PO_XMOD_007` | AP / Three-way match | On GRN posting the AP module raises an inventory-accrual liability. The accrual is cleared, and the vendor invoice is posted, only on three-way-match success per `PO_POST_008`. PO closure (`completed` or `closed`) does not by itself clear the accrual — that is AP's responsibility against the actual invoice. |
-| `PO_XMOD_008` | [[inventory]] | Inventory on-hand is **not** incremented by PO posting — it is incremented only when the GRN posts (which is in scope for the GRN module). The PO contributes the "on-order" pipeline quantity that inventory planning reads via `order_qty − received_qty − cancelled_qty` on active PO lines. |
-| `PO_XMOD_009` | [[inventory]] | The PO line's `base_qty` (computed in base UoM via `PO_CALC_011`) is the quantity that inventory reservations and projected-on-hand calculations read; the order UoM is for vendor-facing display only. |
+| `PO_XMOD_008` | [inventory](/en/inventory/inventory) | Inventory on-hand is **not** incremented by PO posting — it is incremented only when the GRN posts (which is in scope for the GRN module). The PO contributes the "on-order" pipeline quantity that inventory planning reads via `order_qty − received_qty − cancelled_qty` on active PO lines. |
+| `PO_XMOD_009` | [inventory](/en/inventory/inventory) | The PO line's `base_qty` (computed in base UoM via `PO_CALC_011`) is the quantity that inventory reservations and projected-on-hand calculations read; the order UoM is for vendor-facing display only. |
 
 ## 7. References
 
-- `../carmen/docs/purchase-order-management/purchase-order-module.md` — PO consolidated BA (Section 1.3 Business Rules, Section 1.4 System Calculation Rules, Section 6.1 State Diagram, Section 2.5 RBAC). State labels are reconciled to the Prisma enum values per [[purchase-order/01-data-model]] § 5.
+- `../carmen/docs/purchase-order-management/purchase-order-module.md` — PO consolidated BA (Section 1.3 Business Rules, Section 1.4 System Calculation Rules, Section 6.1 State Diagram, Section 2.5 RBAC). State labels are reconciled to the Prisma enum values per [purchase-order/01-data-model](/en/inventory/purchase-order/01-data-model) § 5.
 - `../carmen/docs/purchase-request-management/PR-Module-Structure.md` — validation, error-type, and workflow-state structures inherited by PO.
 - `../carmen/docs/purchase-request-management/purchase-request-ba.md` — Section 3 (Business Rules) and Section 3.6 (System Calculation Rules); PO's calculation rules (`PO_CALC_*`) are the direct PR-rule counterparts (`PR_036`–`PR_055`).
 - Sibling: `en/purchase-order/01-data-model.md` — canonical Prisma model, enum values, and the bridge-table linkage that Section 5 and Section 6 rely on.

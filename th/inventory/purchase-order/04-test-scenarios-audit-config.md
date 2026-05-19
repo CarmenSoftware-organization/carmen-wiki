@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — Test Scenarios — Audit & Config
 description: Test cases ของ Auditor (read-only audit log ข้าม PR/PO/GRN/invoice chain) และ System Administrator (PO numbering, RBAC, integration config) สำหรับ purchase-order
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-order, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 # ใบสั่งซื้อ (Purchase Order) — Test Scenarios — Audit & Config
 
 > **At a Glance**
-> **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Scenarios:** ~30
+> **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [purchase-order](/th/inventory/purchase-order) &nbsp;·&nbsp; **Scenarios:** ~30
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** map ไปยัง `401-po.spec.ts` (transactional paths เท่านั้น) ใน `../carmen-inventory-frontend-e2e/`; audit-log query และ config-management surfaces covered โดย API / integration tests
 
@@ -78,7 +78,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 - Sibling: [04-test-scenarios-receiver.md](./04-test-scenarios-receiver.md) — segregation-of-duties pair verified ใน chain audit (`PO_AUTH_010`: Purchaser ≠ Receiver)
 - Sibling: [04-test-scenarios-finance.md](./04-test-scenarios-finance.md) — three-way-match outcomes (`PO_POST_008` / `PO_POST_009`) ปิด forward-chain audit ฝั่ง AP
 - Sibling: [04-test-scenarios-vendor.md](./04-test-scenarios-vendor.md) — external acknowledgement / invoice events feed chain ที่ vendor boundary
-- Cross-link: [[purchase-request]] — โมดูล upstream ที่ PR records และ approval trail walk ใน back-chain audit ผ่าน PR→PO bridge
-- Cross-link: [[good-receive-note]] — โมดูลปลายน้ำที่ GRN postings ขับเคลื่อน forward-chain audit ของ receipt ภายใต้ `PO_POST_006` / `PO_POST_007`
-- Cross-link: [[vendor-pricelist]] — surface price-snapshot ที่ taken ที่ PR-to-PO conversion และ audited ภายใต้ sensitive-field export gate
+- Cross-link: [purchase-request](/th/inventory/purchase-request) — โมดูล upstream ที่ PR records และ approval trail walk ใน back-chain audit ผ่าน PR→PO bridge
+- Cross-link: [good-receive-note](/th/inventory/good-receive-note) — โมดูลปลายน้ำที่ GRN postings ขับเคลื่อน forward-chain audit ของ receipt ภายใต้ `PO_POST_006` / `PO_POST_007`
+- Cross-link: [vendor-pricelist](/th/inventory/vendor-pricelist) — surface price-snapshot ที่ taken ที่ PR-to-PO conversion และ audited ภายใต้ sensitive-field export gate
 - E2E: `../carmen-inventory-frontend-e2e/tests/401-po.spec.ts` — shared / mixed-persona coverage ของ transactional happy paths ที่ Auditor เดิน read-only; **ไม่มี audit-config E2E spec เฉพาะที่นี้** Audit-log query และ configuration-management surfaces exercised ที่ API / integration level (cross-module audit และ config services) Annotation `SKIP_NOTE_BACKEND` ใน `401-po.spec.ts` flag configuration-driven behaviour (sequence generation, RBAC enforcement, workflow stage routing, integration sync) เป็น out-of-scope สำหรับ UI E2E — เหล่านี้ validate ผ่าน audit logs ที่ Auditor เดินและ configuration audit log ที่ Sysadmin เขียน

@@ -2,7 +2,7 @@
 title: การคำนวณต้นทุน (Costing) — Test Scenarios
 description: Test cases ตาม persona, cross-persona scenarios, และ E2E mapping สำหรับ costing
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: costing, test-scenarios, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 # การคำนวณต้นทุน (Costing) — Test Scenarios
 
 > **At a Glance**
-> **Module:** [[costing]] &nbsp;·&nbsp; **Scenarios ทั้งหมด:** ~18 cross-persona + ~84 per-persona &nbsp;·&nbsp; **Personas ครอบคลุม:** Finance, Inventory Controller, Auditor
+> **Module:** [costing](/th/inventory/costing) &nbsp;·&nbsp; **Scenarios ทั้งหมด:** ~18 cross-persona + ~84 per-persona &nbsp;·&nbsp; **Personas ครอบคลุม:** Finance, Inventory Controller, Auditor
 > **ลำดับการรัน:** Audit / Config setup → primary persona happy paths → cross-persona scenarios
 > **Drill-down per-persona อยู่ที่ `04-test-scenarios-<role>.md`**
 

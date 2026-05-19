@@ -2,7 +2,7 @@
 title: Business Units
 description: Per-property/per-hotel entity with a multi-section form covering identity, contact, tax, formats, calculation, configuration, database connection, and BU-scoped user roster.
 published: true
-date: 2026-05-19T23:30:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: platform/business-units, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -55,10 +55,10 @@ Because there is no `allowedRoles` array, the responsibility for limiting who ca
 
 ## 5. Related Modules
 
-- [[clusters]] — every BU is owned by exactly one cluster via `cluster_id`; the cluster edit page launches the create-BU flow with the parent preselected through the `/business-units/new?cluster_id=<id>` query parameter
-- [[users]] — supplies the user accounts that get assigned to BUs through the Users card; new BU members are drawn from the parent cluster's user list, and clicking a name in the Users card jumps to the user edit page
-- [[auth-roles]] — explains the `PrivateRoute` mechanism that gates every platform route, and why the BU routes are reachable by any authenticated user given that no `allowedRoles` array is supplied
-- [[report-templates]] — `allow_business_unit` / `deny_business_unit` chip inputs there scope a report template by the BU `code` values defined here
+- [clusters](/en/platform/clusters) — every BU is owned by exactly one cluster via `cluster_id`; the cluster edit page launches the create-BU flow with the parent preselected through the `/business-units/new?cluster_id=<id>` query parameter
+- [users](/en/platform/users) — supplies the user accounts that get assigned to BUs through the Users card; new BU members are drawn from the parent cluster's user list, and clicking a name in the Users card jumps to the user edit page
+- [auth-roles](/en/platform/auth-roles) — explains the `PrivateRoute` mechanism that gates every platform route, and why the BU routes are reachable by any authenticated user given that no `allowedRoles` array is supplied
+- [report-templates](/en/platform/report-templates) — `allow_business_unit` / `deny_business_unit` chip inputs there scope a report template by the BU `code` values defined here
 
 ## 6. Reference Sources
 

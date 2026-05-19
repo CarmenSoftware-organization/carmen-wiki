@@ -2,7 +2,7 @@
 title: Cluster — Permissions
 description: Route guards, access matrix, bootstrap exception, and sidebar filter for all cluster operations.
 published: true
-date: '2026-05-19T17:00:00.000Z'
+date: 2026-05-19T23:55:00.000Z'
 tags: book/platform, clusters, permissions
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -19,7 +19,7 @@ Cluster management carries admin-tier responsibility: creating or editing a clus
 
 The gating mechanism is implemented in two layers. At the route level, `PrivateRoute` (in `src/components/PrivateRoute.tsx`) receives an `allowedRoles` prop and calls `hasRole()` from `AuthContext`; if the check fails, it renders `<AccessDenied>` inside the normal `<Layout>` shell instead of the requested component. At the navigation level, `Layout.tsx` filters the sidebar `NavItem[]` array through `hasRole()` before rendering, so users without the required role never see the Clusters entry in the sidebar at all — though they can still type the URL directly, where the route guard catches them.
 
-By contrast, `/business-units`, `/users`, and `/dashboard` are wrapped with `<PrivateRoute>` but without an `allowedRoles` prop; those routes are visible to any authenticated user whose `platform_role` is in the `ALLOWED_ROLES` (see [[auth-roles]]) allow-list, regardless of which specific role they hold. Clusters is one of only three navigation destinations (along with Report Templates and Print Template Mapping) that carry the additional route-level role restriction.
+By contrast, `/business-units`, `/users`, and `/dashboard` are wrapped with `<PrivateRoute>` but without an `allowedRoles` prop; those routes are visible to any authenticated user whose `platform_role` is in the `ALLOWED_ROLES` (see [auth-roles](/en/platform/auth-roles)) allow-list, regardless of which specific role they hold. Clusters is one of only three navigation destinations (along with Report Templates and Print Template Mapping) that carry the additional route-level role restriction.
 
 ## 2. Route guards
 
@@ -35,7 +35,7 @@ The `allowedRoles` array is hardcoded inline at each of the three `<PrivateRoute
 
 Read the table left-to-right: sign-in eligibility (`AuthContext.ALLOWED_ROLES`) is checked first at login; cluster-route eligibility (the `allowedRoles` array on each `PrivateRoute`) is checked only for roles that can sign in. The "Effective cluster access" column states the combined outcome.
 
-`enum_platform_role` (Prisma `schema.prisma` line 539) defines seven values. `AuthContext.ALLOWED_ROLES` (see [[auth-roles]], line 10) lists five values that are permitted to sign in to the SPA at all. Of those five, three are permitted to reach cluster routes.
+`enum_platform_role` (Prisma `schema.prisma` line 539) defines seven values. `AuthContext.ALLOWED_ROLES` (see [auth-roles](/en/platform/auth-roles), line 10) lists five values that are permitted to sign in to the SPA at all. Of those five, three are permitted to reach cluster routes.
 
 | `platform_role` value | Can sign in to SPA? | In cluster `allowedRoles`? | Effective cluster access |
 |---|---|---|---|
@@ -133,7 +133,7 @@ There is no "viewer" sub-role within the cluster surface. The `max_license_bu` c
 - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `enum_platform_role` (line 539) for the 7-value source list.
 
 **Cross-links:**
-- [[auth-roles]] — full role definitions and cross-SPA route map
-- [[users]] — where `platform_role` is assigned to a platform user
-- [[clusters]] — Clusters module landing
+- [auth-roles](/en/platform/auth-roles) — full role definitions and cross-SPA route map
+- [users](/en/platform/users) — where `platform_role` is assigned to a platform user
+- [clusters](/en/platform/clusters) — Clusters module landing
 - [Data Model](./data-model.md) &nbsp;·&nbsp; [UI Screens](./ui-screens.md) — sibling sub-pages

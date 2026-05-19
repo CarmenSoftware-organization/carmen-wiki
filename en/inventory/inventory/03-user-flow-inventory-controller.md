@@ -2,7 +2,7 @@
 title: Inventory — User Flow — Inventory Controller
 description: Inventory Controller's flow within the inventory module — balance accuracy, variance review, count coordination, stock policy.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: inventory, user-flow, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 # Inventory — User Flow — Inventory Controller
 
 > **At a Glance**
-> **Persona:** Inventory Controller &nbsp;·&nbsp; **Module:** [[inventory]] &nbsp;·&nbsp; **Workflow stages:** Approve adjustments above Store Keeper threshold (`draft → in_progress → completed`) &nbsp;·&nbsp; coordinate physical-count and spot-check programmes &nbsp;·&nbsp; tune per-product / per-location stock policy &nbsp;·&nbsp; pre-period-end variance sign-off &nbsp;·&nbsp; **Key permissions:** approve above threshold (`INV_AUTH_003`); stock-policy edits (`INV_AUTH_004`); count programme owner
+> **Persona:** Inventory Controller &nbsp;·&nbsp; **Module:** [inventory](/en/inventory/inventory) &nbsp;·&nbsp; **Workflow stages:** Approve adjustments above Store Keeper threshold (`draft → in_progress → completed`) &nbsp;·&nbsp; coordinate physical-count and spot-check programmes &nbsp;·&nbsp; tune per-product / per-location stock policy &nbsp;·&nbsp; pre-period-end variance sign-off &nbsp;·&nbsp; **Key permissions:** approve above threshold (`INV_AUTH_003`); stock-policy edits (`INV_AUTH_004`); count programme owner
 > **What this persona does:** Owns balance accuracy — approves above-threshold adjustments, coordinates counts, and signs off variance before Finance closes the period.
 
 ## 1. Role in This Module
@@ -24,7 +24,7 @@ The **Inventory Controller** persona owns **balance accuracy** across the proper
 
 - **Adjustment approval queue** — `tb_stock_in` and `tb_stock_out` documents at `doc_status = in_progress` awaiting Controller approval; ordered by submitted-at ascending. Drives the daily approval flow (Section 2.1 below).
 - **Count-variance dashboard** — count documents at `tb_count_stock.status = completed` with variance lines staged; drives the count-cycle approval flow (Section 2.2 below).
-- **Count calendar / schedule** — `tb_physical_count_period` upcoming events and ad-hoc spot-check launches; drives count initiation (handed off to Store Keeper at the location for execution; full flow in [[physical-count]] / [[spot-check]]).
+- **Count calendar / schedule** — `tb_physical_count_period` upcoming events and ad-hoc spot-check launches; drives count initiation (handed off to Store Keeper at the location for execution; full flow in [physical-count](/en/inventory/physical-count) / [spot-check](/en/inventory/spot-check)).
 - **Stock policy dashboard** — `tb_product_location` rows with replenishment alerts (on-hand below `min_qty`, above `max_qty`), and the Controller's policy-edit screen for par / min / max / reorder.
 - **Period-end pre-flight** — a dashboard rolled up from open variance documents, unposted count adjustments, and the Controller's variance-review-signoff checklist for the closing period.
 
@@ -54,7 +54,7 @@ The decision branches and the stock-policy / period-end pre-flight flows are sum
 - **Approve adjustment vs reject for re-evaluation.** Approve when the discrepancy is documented (photo, count sheet, RMA reference) and the reason code is appropriate. Reject and return to the Store Keeper if (a) the evidence is missing or insufficient, (b) the reason code is wrong (causing wrong GL classification — e.g. `BREAKAGE` vs `EXPIRY` route to different GL accounts), (c) the cost-per-unit on a stock-in (existing lot) doesn't match the lot's recorded cost.
 - **Below vs above Controller threshold.** Below — Controller approval is terminal; document posts on approval. Above — Controller approval moves the document to a Finance-pending sub-state; Finance is the role that fires the post per the threshold-routing chain in `INV_AUTH_005`. The threshold is configured by Sysadmin per `INV_AUTH_008`.
 - **Count variance: post / re-count / investigate.** **Post** when the variance is plausible (within normal shrinkage / overage range, or explained by a known event like recall write-off) and below the Controller's per-line threshold. **Re-count** when the variance is suspicious — significantly larger than historical shrinkage rate, or affecting a high-value product with no known event. **Investigate** when the variance is large enough to suggest systemic issues (large overage suggests missed inbound; large shortage suggests theft or large unrecorded breakage) — Finance is the next stop with a no-post flag.
-- **Stock-policy outlier vs normal.** Replenishment alerts surface when on-hand drops below `min_qty` (suggesting reorder) or rises above `max_qty` (suggesting overstock). The Controller may **act** on the alert (raise a `[[purchase-request]]` to replenish, or initiate a transfer to redistribute), **adjust the policy** (revise `min_qty` / `max_qty` / `re_order_qty` / `par_qty` on `tb_product_location` if the alert reveals a stale policy), or **dismiss** (one-off event, no policy change). Policy edits apply prospectively; existing on-hand is unaffected.
+- **Stock-policy outlier vs normal.** Replenishment alerts surface when on-hand drops below `min_qty` (suggesting reorder) or rises above `max_qty` (suggesting overstock). The Controller may **act** on the alert (raise a `[purchase-request](/en/inventory/purchase-request)` to replenish, or initiate a transfer to redistribute), **adjust the policy** (revise `min_qty` / `max_qty` / `re_order_qty` / `par_qty` on `tb_product_location` if the alert reveals a stale policy), or **dismiss** (one-off event, no policy change). Policy edits apply prospectively; existing on-hand is unaffected.
 - **Period-end variance signoff vs hold.** **Sign off** when (a) no `in_progress` adjustment documents remain in the closing period, (b) every count run for the period is `completed_posted`, (c) no `investigate`-flagged count variance is unresolved. **Hold** when any of those gates is open — the Controller communicates the hold to Finance with the open items and the expected resolution date. Period close cannot run without Controller sign-off per the cross-persona handoff in `[03-user-flow.md](./03-user-flow.md)` Section 4.
 
 ## 4. Exit Point / Handoffs
@@ -74,8 +74,8 @@ The Inventory Controller's involvement on a given movement / count / period ends
 - Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — System Administrator who configures the `tb_adjustment_type` reason-code list (which the Controller's rejection logic depends on for correct GL classification) and the Controller / Finance approval thresholds; Auditor who reviews the Controller's approval audit trail.
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical `tb_stock_in` / `tb_stock_out` shape, `tb_product_location` (the policy table the Controller maintains under `INV_AUTH_004`), `tb_count_stock` / `tb_physical_count_period` (the count documents the Controller reviews), `enum_inventory_doc_type` values (`stock_in`, `stock_out`).
 - Sibling: [02-business-rules.md](./02-business-rules.md) — authorization rules `INV_AUTH_003` (Controller approval right), `INV_AUTH_004` (stock policy edit), `INV_AUTH_010` (Controller cannot approve their own document), plus posting rules `INV_POST_001` (inbound post on Controller approval) / `INV_POST_002` (outbound post), and cross-module rules `INV_XMOD_003` / `INV_XMOD_004` (count-variance posting), `INV_XMOD_005` (manual adjustment routing).
-- Related: [[physical-count]] — the count programme the Controller coordinates; the count document's `tb_count_stock` lifecycle is owned by the physical-count module's persona files. This page covers only the inventory-side post arising from a completed count.
-- Related: [[spot-check]] — mid-period partial counts; same posting path as physical-count.
-- Related: [[inventory-adjustment]] — generic name for the manual `tb_stock_in` / `tb_stock_out` flow the Controller approves; reason code (`adjustment_type_id`) distinguishes the specific use case.
-- Related: [[costing]] — the cost-pick preview the Controller reviews on outbound (FIFO from oldest lot vs current weighted-average) reads from `tb_inventory_transaction_cost_layer` per the product's costing method.
-- Related: [[product]] — carries the `costing_method` field that drives the cost-pick preview. Sysadmin owns the configuration; the Controller's approval flow consumes it.
+- Related: [physical-count](/en/inventory/physical-count) — the count programme the Controller coordinates; the count document's `tb_count_stock` lifecycle is owned by the physical-count module's persona files. This page covers only the inventory-side post arising from a completed count.
+- Related: [spot-check](/en/inventory/spot-check) — mid-period partial counts; same posting path as physical-count.
+- Related: [inventory-adjustment](/en/inventory/inventory-adjustment) — generic name for the manual `tb_stock_in` / `tb_stock_out` flow the Controller approves; reason code (`adjustment_type_id`) distinguishes the specific use case.
+- Related: [costing](/en/inventory/costing) — the cost-pick preview the Controller reviews on outbound (FIFO from oldest lot vs current weighted-average) reads from `tb_inventory_transaction_cost_layer` per the product's costing method.
+- Related: [product](/en/inventory/product) — carries the `costing_method` field that drives the cost-pick preview. Sysadmin owns the configuration; the Controller's approval flow consumes it.

@@ -2,7 +2,7 @@
 title: Good Receive Note (GRN)
 description: The receiving document that records physical goods received against a purchase order and adds them to inventory.
 published: true
-date: 2026-05-19T23:30:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: good-receive-note, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -57,25 +57,25 @@ Food-safety and quality control sit on top of all this. Perishable goods carry l
 ## 5. Related Modules
 
 **Cross-module flow:**
-- [[purchase-order]] — GRN is created against a PO; matched on receipt
-- [[inventory]] — receiving a GRN posts a stock IN movement
-- [[costing]] — GRN unit costs feed FIFO lot records or update Weighted Average
-- [[vendor-pricelist]] — GRN price variance is checked against the vendor pricelist
+- [purchase-order](/en/inventory/purchase-order) — GRN is created against a PO; matched on receipt
+- [inventory](/en/inventory/inventory) — receiving a GRN posts a stock IN movement
+- [costing](/en/inventory/costing) — GRN unit costs feed FIFO lot records or update Weighted Average
+- [vendor-pricelist](/en/inventory/vendor-pricelist) — GRN price variance is checked against the vendor pricelist
 
 **Master configuration:**
-- [[master-data/vendor]] — vendor master referenced by GRN header
-- [[master-data/currency]] — transaction currency and exchange rate for dual-posted receipts
-- [[master-data/tax-profile]] — tax codes applied to GRN lines
-- [[master-data/credit-term]] — payment terms copied from vendor master onto the GRN
-- [[master-data/extra-cost-type]] — landed-cost components (freight, duties, handling) allocated across lines
-- [[master-data/delivery-point]] — receiving location where goods are physically accepted
-- [[master-data/unit]] — unit of measure for received quantities
-- [[master-data/location]] — store location each line writes its stock-IN movement against
-- [[system-config/workflow]] — approval / commit workflow for GRN authorization
-- [[system-config/period]] — accounting period gate for GRN posting
-- [[system-config/running-code]] — GRN document number sequencing
-- [[reporting-audit/activity]] — GRN status-transition and amendment log for audit
-- [[reporting-audit/attachment]] — packing slips, delivery notes, and quality evidence attached to each GRN
+- [master-data/vendor](/en/inventory/master-data/vendor) — vendor master referenced by GRN header
+- [master-data/currency](/en/inventory/master-data/currency) — transaction currency and exchange rate for dual-posted receipts
+- [master-data/tax-profile](/en/inventory/master-data/tax-profile) — tax codes applied to GRN lines
+- [master-data/credit-term](/en/inventory/master-data/credit-term) — payment terms copied from vendor master onto the GRN
+- [master-data/extra-cost-type](/en/inventory/master-data/extra-cost-type) — landed-cost components (freight, duties, handling) allocated across lines
+- [master-data/delivery-point](/en/inventory/master-data/delivery-point) — receiving location where goods are physically accepted
+- [master-data/unit](/en/inventory/master-data/unit) — unit of measure for received quantities
+- [master-data/location](/en/inventory/master-data/location) — store location each line writes its stock-IN movement against
+- [system-config/workflow](/en/inventory/system-config/workflow) — approval / commit workflow for GRN authorization
+- [system-config/period](/en/inventory/system-config/period) — accounting period gate for GRN posting
+- [system-config/running-code](/en/inventory/system-config/running-code) — GRN document number sequencing
+- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — GRN status-transition and amendment log for audit
+- [reporting-audit/attachment](/en/inventory/reporting-audit/attachment) — packing slips, delivery notes, and quality evidence attached to each GRN
 
 ## 6. Reference Sources
 
@@ -99,4 +99,4 @@ Food-safety and quality control sit on top of all this. Perishable goods carry l
   - [Purchaser](/en/inventory/good-receive-note/04-test-scenarios-purchaser)
   - [Finance](/en/inventory/good-receive-note/04-test-scenarios-finance)
   - [Audit / Config](/en/inventory/good-receive-note/04-test-scenarios-audit-config)
-- [Credit Note](/en/inventory/purchase-order/credit-note) — Vendor-issued credit against a prior GRN — reverses AP and either returns goods (`quantity_return`) or revalues cost (`amount_discount`). *(Cross-module: page lives under [[purchase-order]].)*
+- [Credit Note](/en/inventory/purchase-order/credit-note) — Vendor-issued credit against a prior GRN — reverses AP and either returns goods (`quantity_return`) or revalues cost (`amount_discount`). *(Cross-module: page lives under [purchase-order](/en/inventory/purchase-order).)*

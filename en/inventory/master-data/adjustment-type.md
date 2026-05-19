@@ -2,7 +2,7 @@
 title: Adjustment Type
 description: Coded reasons for stock-in / stock-out adjustments — used by inventory adjustments, physical count, and spot check to explain variance.
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, adjustment-type, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -78,9 +78,9 @@ Source: tenant schema.
 
 ## 7. Cross-References
 
-- [[inventory-adjustment]] — every adjustment line carries an adjustment-type FK.
-- [[physical-count]] — variance write-on / write-off posts against an adjustment type.
-- [[spot-check]] — spot-check variances follow the same posting path.
+- [inventory-adjustment](/en/inventory/inventory-adjustment) — every adjustment line carries an adjustment-type FK.
+- [physical-count](/en/inventory/physical-count) — variance write-on / write-off posts against an adjustment type.
+- [spot-check](/en/inventory/spot-check) — spot-check variances follow the same posting path.
 
 ## 8. References
 

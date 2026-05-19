@@ -2,7 +2,7 @@
 title: ประเภทค่าใช้จ่ายเพิ่ม (Extra Cost Type)
 description: แคตตาล็อกหมวด landed cost ของ GRN (ค่าขนส่ง อากร handling) พร้อมโหมดการจัดสรรต่อ instance (by value, by qty, manual)
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, extra-cost-type, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -96,8 +96,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 7. การอ้างอิงข้ามโมดูล
 
-- [[good-receive-note]] — ผู้บริโภคแต่เพียงผู้เดียว แต่ละ GRN สามารถ attach หลาย instance `tb_extra_cost`; การจัดสรรรันตอน posting
-- [[costing]] — landed unit cost ไหลจากการจัดสรร extra cost; allocation ผิดบิดเบือน valuation
+- [good-receive-note](/th/inventory/good-receive-note) — ผู้บริโภคแต่เพียงผู้เดียว แต่ละ GRN สามารถ attach หลาย instance `tb_extra_cost`; การจัดสรรรันตอน posting
+- [costing](/th/inventory/costing) — landed unit cost ไหลจากการจัดสรร extra cost; allocation ผิดบิดเบือน valuation
 
 ## 8. แหล่งอ้างอิง
 

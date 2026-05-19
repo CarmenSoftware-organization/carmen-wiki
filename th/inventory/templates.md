@@ -2,7 +2,7 @@
 title: เทมเพลต (Templates)
 description: นิยาม scaffold ที่ใช้ซ้ำได้สำหรับ PR และ Vendor Pricelist — กลไกร่วมของเอกสาร seed-only ที่ pre-fill record transactional ใหม่ตอน instantiate
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: templates, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T16:00:00.000Z
@@ -29,15 +29,15 @@ dateCreated: 2026-05-16T16:00:00.000Z
 
 ## 3. หน้าในโมดูลนี้
 
-- [[templates/purchase-request]] — scaffold PR ที่ clone ผ่าน "Create PR from Template" ใน UI procurement
-- [[templates/price-list]] — scaffold RFQ / pricelist ที่นิยาม currency, validity, ตารางการเตือน และกฎการ escalate
+- [templates/purchase-request](/th/inventory/templates/purchase-request) — scaffold PR ที่ clone ผ่าน "Create PR from Template" ใน UI procurement
+- [templates/price-list](/th/inventory/templates/price-list) — scaffold RFQ / pricelist ที่นิยาม currency, validity, ตารางการเตือน และกฎการ escalate
 
 ## 4. โมดูลที่เกี่ยวข้อง
 
-- [[purchase-request]] — ผู้บริโภคหลักของ PR template (Requestor persona, scenario REQ-HP-06)
-- [[vendor-pricelist]] — ผู้บริโภคหลักของ pricelist template (Purchaser เริ่มรอบ RFQ)
-- [[system-config/workflow]] — การ assign workflow ที่ติดมากับ PR template
-- [[master-data/currency]] — currency ที่ resolve บน pricelist template
+- [purchase-request](/th/inventory/purchase-request) — ผู้บริโภคหลักของ PR template (Requestor persona, scenario REQ-HP-06)
+- [vendor-pricelist](/th/inventory/vendor-pricelist) — ผู้บริโภคหลักของ pricelist template (Purchaser เริ่มรอบ RFQ)
+- [system-config/workflow](/th/inventory/system-config/workflow) — การ assign workflow ที่ติดมากับ PR template
+- [master-data/currency](/th/inventory/master-data/currency) — currency ที่ resolve บน pricelist template
 
 ## 5. แหล่งข้อมูลอ้างอิง
 

@@ -2,7 +2,7 @@
 title: หน่วยธุรกิจ (Business Units)
 description: เอนทิตีต่อ property/ต่อโรงแรม พร้อมฟอร์มหลายเซกชันที่ครอบคลุมข้อมูลระบุตัวตน ข้อมูลติดต่อ ภาษี รูปแบบ การคำนวณ การตั้งค่า การเชื่อมต่อฐานข้อมูล และรายชื่อผู้ใช้ที่ผูกกับ BU
 published: true
-date: 2026-05-19T23:30:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: platform/business-units, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -55,10 +55,10 @@ Route `/business-units`, `/business-units/new`, และ `/business-units/:id/e
 
 ## 5. โมดูลที่เกี่ยวข้อง
 
-- [[clusters]] — ทุก BU เป็นของ cluster หนึ่ง cluster ผ่าน `cluster_id` หน้าแก้ไข cluster เปิด flow สร้าง BU โดย preselect parent ผ่าน query parameter `/business-units/new?cluster_id=<id>`
-- [[users]] — เป็นแหล่งของบัญชีผู้ใช้ที่ถูก assign เข้า BU ผ่าน card Users สมาชิก BU ใหม่ถูกดึงจากรายชื่อผู้ใช้ของ cluster ที่เป็นแม่ และการคลิกชื่อใน card Users จะกระโดดไปหน้าแก้ไข user
-- [[auth-roles]] — อธิบายกลไก `PrivateRoute` ที่ gate ทุก route ของแพลตฟอร์ม และเหตุผลที่ route ของ BU เข้าได้โดยผู้ใช้ที่ล็อกอินแล้วทุกคนเนื่องจากไม่มี array `allowedRoles`
-- [[report-templates]] — chip input `allow_business_unit` / `deny_business_unit` ที่นั่นกำหนดขอบเขตเทมเพลตรายงานด้วยค่า `code` ของ BU ที่นิยามไว้ที่นี่
+- [clusters](/th/platform/clusters) — ทุก BU เป็นของ cluster หนึ่ง cluster ผ่าน `cluster_id` หน้าแก้ไข cluster เปิด flow สร้าง BU โดย preselect parent ผ่าน query parameter `/business-units/new?cluster_id=<id>`
+- [users](/th/platform/users) — เป็นแหล่งของบัญชีผู้ใช้ที่ถูก assign เข้า BU ผ่าน card Users สมาชิก BU ใหม่ถูกดึงจากรายชื่อผู้ใช้ของ cluster ที่เป็นแม่ และการคลิกชื่อใน card Users จะกระโดดไปหน้าแก้ไข user
+- [auth-roles](/th/platform/auth-roles) — อธิบายกลไก `PrivateRoute` ที่ gate ทุก route ของแพลตฟอร์ม และเหตุผลที่ route ของ BU เข้าได้โดยผู้ใช้ที่ล็อกอินแล้วทุกคนเนื่องจากไม่มี array `allowedRoles`
+- [report-templates](/th/platform/report-templates) — chip input `allow_business_unit` / `deny_business_unit` ที่นั่นกำหนดขอบเขตเทมเพลตรายงานด้วยค่า `code` ของ BU ที่นิยามไว้ที่นี่
 
 ## 6. แหล่งข้อมูลอ้างอิง
 

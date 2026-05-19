@@ -2,7 +2,7 @@
 title: รายการอนุมัติของฉัน (My Approval)
 description: คิวอนุมัติส่วนบุคคลที่รวมเอกสารทุกใบ (PR และเอกสารที่เกี่ยวข้อง) ที่ผู้ใช้ปัจจุบันต้องดำเนินการ — รวมไว้ในหน้าจอเดียวข้ามทุกโมดูล
 published: true
-date: 2026-05-17T07:00:36.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-request, approval, workflow, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # รายการอนุมัติของฉัน (My Approval)
 
 > **At a Glance**
-> **เจ้าของ:** ผู้อนุมัติของ workflow ใด ๆ &nbsp;·&nbsp; **ตาราง:** *ไม่มี — เป็น projection จากสถานะ workflow* &nbsp;·&nbsp; **Workflow:** กล่องขาเข้าแบบอ่านอย่างเดียว &nbsp;·&nbsp; **ต้นน้ำ:** [[purchase-request]], [[purchase-order]], [[purchase-order/credit-note]] &nbsp;·&nbsp; กล่องขาเข้าส่วนบุคคลที่รวมเอกสารทั้งหมดที่รอให้ผู้ใช้ลงนามจัดการ
+> **เจ้าของ:** ผู้อนุมัติของ workflow ใด ๆ &nbsp;·&nbsp; **ตาราง:** *ไม่มี — เป็น projection จากสถานะ workflow* &nbsp;·&nbsp; **Workflow:** กล่องขาเข้าแบบอ่านอย่างเดียว &nbsp;·&nbsp; **ต้นน้ำ:** [purchase-request](/th/inventory/purchase-request), [purchase-order](/th/inventory/purchase-order), [purchase-order/credit-note](/th/inventory/purchase-order/credit-note) &nbsp;·&nbsp; กล่องขาเข้าส่วนบุคคลที่รวมเอกสารทั้งหมดที่รอให้ผู้ใช้ลงนามจัดการ
 
 ![รายการอนุมัติของฉัน (My Approval) screen](/screenshots/purchase-request/my-approval.png)
 
@@ -36,7 +36,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 | อาการ / ข้อความ | สาเหตุ | การแก้ไข |
 |---|---|---|
-| ไม่พบแถวในกล่องขาเข้า | ผู้ใช้ที่ล็อกอินอยู่ไม่อยู่ใน `user_action.execute[]` ของ stage ปัจจุบันของเอกสาร | ตรวจสอบการตั้งค่า stage ใน [[system-config/workflow]] |
+| ไม่พบแถวในกล่องขาเข้า | ผู้ใช้ที่ล็อกอินอยู่ไม่อยู่ใน `user_action.execute[]` ของ stage ปัจจุบันของเอกสาร | ตรวจสอบการตั้งค่า stage ใน [system-config/workflow](/th/inventory/system-config/workflow) |
 | "409 Conflict" ตอนกด approve | เพื่อนใน `execute[]` เดียวกันลงมือทำไปแล้ว engine เลื่อน stage ไปแล้ว | UI จะ refresh อัตโนมัติ ลองเช็คกล่องขาเข้าใหม่ |
 | ปุ่ม action ถูก disable | งวดบัญชีของเอกสารต้นทางถูกปิดแล้ว | เปิดงวดใหม่หรือ void เอกสาร (ต้องเป็น finance) |
 | มีแถวขึ้นมาแต่ลงมือทำไม่ได้ | `deleted_at` ถูก set บนต้นทางจากที่อื่น | refresh แถวควรหายไป |
@@ -75,7 +75,7 @@ shape คอลัมน์เหมือนกันทั้งบน `tb_pur
 
 ### 5.2 Array `user_action.execute[]`
 
-ถูก populate โดย workflow engine ในการ transition แต่ละ stage โดยอ้างอิงการตั้งค่า stage ใน [[system-config/workflow]]:
+ถูก populate โดย workflow engine ในการ transition แต่ละ stage โดยอ้างอิงการตั้งค่า stage ใน [system-config/workflow](/th/inventory/system-config/workflow):
 
 - **Stage แบบ role-based** — ผู้ใช้ทุกคนที่มี role ที่กำหนดไว้จะถูกนับเข้า `execute[]`
 - **Stage แบบ named-approver** — ผู้ใช้ที่ระบุชื่อจะถูกเพิ่มเข้าตรง ๆ
@@ -95,12 +95,12 @@ Approve / reject / send-back ต่างก็เรียก backend endpoint 
 
 ## 7. ความเชื่อมโยงข้ามโมดูล
 
-- [[purchase-request]] — ประเภทเอกสารหลัก กล่องขาเข้าโดยทั่วไปจะแสดง PR ที่รอแต่ละ stage
-- [[purchase-order]] — PO ที่ต้องอนุมัติด้วยมือ (price-threshold, vendor-risk, budget-override)
-- [[purchase-order/credit-note]] — CRN ที่รออนุมัติภายใต้สัญญา workflow-state เดียวกัน
-- [[system-config/workflow]] — นิยาม stage, การ map role, กฎ threshold และกฎที่ populate `user_action.execute[]`
-- [[access-control/application-role]] — การ map role-to-permission สำหรับสิทธิ์การใช้งาน
-- [[purchase-request/03-user-flow-approver]] — flow walkthrough ของ persona ผู้อนุมัติ
+- [purchase-request](/th/inventory/purchase-request) — ประเภทเอกสารหลัก กล่องขาเข้าโดยทั่วไปจะแสดง PR ที่รอแต่ละ stage
+- [purchase-order](/th/inventory/purchase-order) — PO ที่ต้องอนุมัติด้วยมือ (price-threshold, vendor-risk, budget-override)
+- [purchase-order/credit-note](/th/inventory/purchase-order/credit-note) — CRN ที่รออนุมัติภายใต้สัญญา workflow-state เดียวกัน
+- [system-config/workflow](/th/inventory/system-config/workflow) — นิยาม stage, การ map role, กฎ threshold และกฎที่ populate `user_action.execute[]`
+- [access-control/application-role](/th/inventory/access-control/application-role) — การ map role-to-permission สำหรับสิทธิ์การใช้งาน
+- [purchase-request/03-user-flow-approver](/th/inventory/purchase-request/03-user-flow-approver) — flow walkthrough ของ persona ผู้อนุมัติ
 
 ## 8. แหล่งอ้างอิง
 

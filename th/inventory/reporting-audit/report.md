@@ -2,7 +2,7 @@
 title: รายงาน (Report)
 description: pipeline การสร้างรายงาน — แถว job และ schedule ฝั่ง tenant ที่อยู่เบื้องหลังของ template และ document-type print mapping ฝั่งแพลตฟอร์ม
 published: true
-date: 2026-05-17T07:00:36.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: reporting-audit, report, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -113,11 +113,11 @@ Carry `name`, `description`, `report_group`, `kind` (`report` / `print`), `dialo
 ## 7. ความเชื่อมโยงข้ามโมดูล
 
 - โมดูลธุรกรรมทั้งหมด — ทุกปุ่ม "Print" resolve ผ่าน `tb_print_template_mapping`
-- [[reporting-audit/widget]] — tile ของ widget สามารถฝัง report ได้
-- [[reporting-audit/notification]] — การ completion ของ schedule อาจ dispatch notification
-- [[reporting-audit/activity]] — action `export` / `print` ถูก log
-- [[access-control/user]] — `requested_by_id` + ผู้รับ
-- [[master-data/business-unit]] — BU scoping
+- [reporting-audit/widget](/th/inventory/reporting-audit/widget) — tile ของ widget สามารถฝัง report ได้
+- [reporting-audit/notification](/th/inventory/reporting-audit/notification) — การ completion ของ schedule อาจ dispatch notification
+- [reporting-audit/activity](/th/inventory/reporting-audit/activity) — action `export` / `print` ถูก log
+- [access-control/user](/th/inventory/access-control/user) — `requested_by_id` + ผู้รับ
+- [master-data/business-unit](/th/inventory/master-data/business-unit) — BU scoping
 
 ## 8. แหล่งอ้างอิง
 

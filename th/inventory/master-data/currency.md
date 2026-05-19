@@ -2,7 +2,7 @@
 title: สกุลเงิน (Currency)
 description: แคตตาล็อกสกุลเงินต่อ tenant, รายการอ้างอิง ISO และประวัติอัตราแลกเปลี่ยนแบบมีวันที่ — ขับเคลื่อนการแปลง FX ทั้งหมดบน PO, GRN, pricelist และ costing
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, currency, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -19,7 +19,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ข้อมูลหลักของ Currency ครอบคลุม **สามตารางใน schema สองชุด** ได้แก่ **platform ISO reference** (`tb_currency_iso`), **tenant enabled-currencies catalogue** (`tb_currency`) พร้อม cache อัตรา "ปัจจุบัน" และ **ประวัติอัตราที่มีวันที่ระดับ tenant** (`tb_exchange_rate`) เมื่อรวมกันแล้วทำให้เอกสารที่มีราคาทุกใบสามารถถูกแสดงเป็นสกุลเงินใดก็ได้ที่ tenant เปิดใช้งาน และทำให้ costing engine สามารถเลือกอัตราที่ถูกต้องสำหรับวันที่ของเอกสารได้
 
-แต่ละ tenant เลือก subset ของสกุลเงิน ISO ที่จะเปิดใช้งาน `default_currency_id` ของ BU (ดู [[master-data/business-unit]]) ชี้ไปยังหนึ่งในแถวที่เปิดใช้งานนี้ **บริหารจัดการโดย** Sysadmin (ISO seed) และ Product Admin (tenant catalogue); **อ่านโดย** developer ในเส้นทาง FX / costing และ tester ในการทดสอบเอกสารที่มี FX
+แต่ละ tenant เลือก subset ของสกุลเงิน ISO ที่จะเปิดใช้งาน `default_currency_id` ของ BU (ดู [master-data/business-unit](/th/inventory/master-data/business-unit)) ชี้ไปยังหนึ่งในแถวที่เปิดใช้งานนี้ **บริหารจัดการโดย** Sysadmin (ISO seed) และ Product Admin (tenant catalogue); **อ่านโดย** developer ในเส้นทาง FX / costing และ tester ในการทดสอบเอกสารที่มี FX
 
 ## 2. งานที่พบบ่อย
 
@@ -27,8 +27,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 |---|---|---|
 | เปิดใช้งานสกุลเงินสำหรับ tenant | Configuration → Master Data → Currency → **New** | เลือก `iso_code` จาก `tb_currency_iso`; ตั้ง `is_active = true` |
 | ทับศัพท์สัญลักษณ์หรือชื่อ | Edit dialog | สำเนา tenant ใน `tb_currency.symbol` / `name` ทับ ISO row |
-| ตั้ง default currency ของ BU | รายละเอียดของ [[master-data/business-unit]] | ต้องอ้างอิงแถว `tb_currency` ที่ active |
-| บริหารจัดการอัตรา | ดู [[master-data/exchange-rate]] | ประวัติแบบมีวันที่อยู่ที่นั่น ไม่ใช่บนเอนทิตีนี้ |
+| ตั้ง default currency ของ BU | รายละเอียดของ [master-data/business-unit](/th/inventory/master-data/business-unit) | ต้องอ้างอิงแถว `tb_currency` ที่ active |
+| บริหารจัดการอัตรา | ดู [master-data/exchange-rate](/th/inventory/master-data/exchange-rate) | ประวัติแบบมีวันที่อยู่ที่นั่น ไม่ใช่บนเอนทิตีนี้ |
 | ยกเลิกการใช้งานสกุลเงิน | Toggle `is_active` | ถูกบล็อกถ้าเป็น `default_currency_id` ของ BU ใดก็ตาม |
 | Seed รหัส ISO ใหม่ | Platform DB migration | tenant ไม่สามารถเขียน `tb_currency_iso` ได้ |
 
@@ -40,7 +40,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | "Exchange rate must be > 0" | ตั้งอัตรา cache เป็นศูนย์ / ค่าลบ | ใส่ค่าบวกใหม่ |
 | "Cannot inactivate — set as BU default" | สกุลเงินเป็น `default_currency_id` ของ BU อย่างน้อยหนึ่งราย | เปลี่ยน BU default ก่อน |
 | "Cannot delete — referenced by documents/pricelists" | Hard-delete ถูกบล็อกโดย FK | ใช้ inactivate แทน |
-| เอกสารแสดง warning "rate not in history" | ไม่มี `tb_exchange_rate` row ที่ / ก่อนวันที่ของเอกสาร | เพิ่ม backdated rate ใน [[master-data/exchange-rate]] |
+| เอกสารแสดง warning "rate not in history" | ไม่มี `tb_exchange_rate` row ที่ / ก่อนวันที่ของเอกสาร | เพิ่ม backdated rate ใน [master-data/exchange-rate](/th/inventory/master-data/exchange-rate) |
 
 ## 4. Edge Cases
 
@@ -87,7 +87,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ### 5.3 `tb_exchange_rate` (tenant)
 
-ดู [[master-data/exchange-rate]] สำหรับ schema เต็มและกฎการ resolution `@@unique([at_date, currency_id, deleted_at])`; FK ไปยัง `tb_currency` `onDelete: NoAction`
+ดู [master-data/exchange-rate](/th/inventory/master-data/exchange-rate) สำหรับ schema เต็มและกฎการ resolution `@@unique([at_date, currency_id, deleted_at])`; FK ไปยัง `tb_currency` `onDelete: NoAction`
 
 ## 6. กติกาทางธุรกิจ
 
@@ -100,11 +100,11 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 7. การอ้างอิงข้ามโมดูล
 
-- [[master-data/exchange-rate]] — ประวัติอัตราที่มีวันที่; กฎการ resolution
-- [[master-data/business-unit]] — `default_currency_id` ชี้มาที่นี่
-- [[purchase-order]], [[good-receive-note]], [[purchase-request]] — เอกสารบรรจุ currency + snapshot rate
-- [[vendor-pricelist]] — การเปรียบเทียบ normalise เป็น BU default ผ่านอัตราที่มีวันที่
-- [[costing]] — costing resolve อัตรา ณ วันรับของเป็น BU currency
+- [master-data/exchange-rate](/th/inventory/master-data/exchange-rate) — ประวัติอัตราที่มีวันที่; กฎการ resolution
+- [master-data/business-unit](/th/inventory/master-data/business-unit) — `default_currency_id` ชี้มาที่นี่
+- [purchase-order](/th/inventory/purchase-order), [good-receive-note](/th/inventory/good-receive-note), [purchase-request](/th/inventory/purchase-request) — เอกสารบรรจุ currency + snapshot rate
+- [vendor-pricelist](/th/inventory/vendor-pricelist) — การเปรียบเทียบ normalise เป็น BU default ผ่านอัตราที่มีวันที่
+- [costing](/th/inventory/costing) — costing resolve อัตรา ณ วันรับของเป็น BU currency
 
 ## 8. แหล่งอ้างอิง
 

@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — User Flow
 description: วงจรชีวิตของสูตรอาหารและไฟล์ flow เฉพาะ persona สำหรับโมดูล recipe
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: recipe, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 # สูตรอาหาร (Recipe) — User Flow
 
 > **At a Glance**
-> **โมดูล:** [[recipe]] &nbsp;·&nbsp; **Persona:** Chef &nbsp;·&nbsp; Cost Controller &nbsp;·&nbsp; Outlet Manager &nbsp;·&nbsp; Procurement / F&B Ops &nbsp;·&nbsp; Audit / Config
+> **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **Persona:** Chef &nbsp;·&nbsp; Cost Controller &nbsp;·&nbsp; Outlet Manager &nbsp;·&nbsp; Procurement / F&B Ops &nbsp;·&nbsp; Audit / Config
 > **วงจรชีวิตของ workflow:** DRAFT → PUBLISHED → ARCHIVED (RBAC-gated, การเปลี่ยนตรง; audit trail versioning + pricing-history)
 > **เจาะลงในมุมมองต่อ persona ด้านล่างสำหรับรายละเอียดระดับ action**
 
@@ -67,7 +67,7 @@ Section 2 ด้านล่างเป็น **state machine ระดับ g
 | F&B Ops | ตัดสินใจปลดประจำการ menu item | Chef | `PUBLISHED → ARCHIVED` (chef archive สูตรตาม `REC_POST_007`; linkage menu ถูกตัด) |
 | Sysadmin | เปลี่ยน default cost setting ของหมวดหมู่หรือ RBAC mapping | Persona ทั้งหมด (prospective) | สถานะใดก็ได้ (สูตรใหม่ในหมวดหมู่สืบทอด; สูตรเดิมไม่เปลี่ยนเว้นแต่ใช้ใหม่ชัดเจน) |
 | Auditor | Sample สูตรที่ commit สำหรับ compliance review | (ไม่มี handoff — read-only) | สถานะใดก็ได้ (audit อ่านประวัติ `tb_recipe_version` คอลัมน์ audit pricing history) |
-| โมดูล Recipe | สร้าง SR `draft` อัตโนมัติสำหรับ event การผลิตที่วางแผน | Outlet Manager (role Requester ใน [[store-requisition]]) | `PUBLISHED` (สูตรคือแหล่ง; SR ถูกสร้างในโมดูล SR ด้วย `info.recipe_id` back-reference) |
+| โมดูล Recipe | สร้าง SR `draft` อัตโนมัติสำหรับ event การผลิตที่วางแผน | Outlet Manager (role Requester ใน [store-requisition](/th/inventory/store-requisition)) | `PUBLISHED` (สูตรคือแหล่ง; SR ถูกสร้างในโมดูล SR ด้วย `info.recipe_id` back-reference) |
 | โมดูล Recipe | Post OUT movement เชิงทฤษฎีบนการขายเมนู | โมดูล Inventory (ปลายน้ำ อัตโนมัติ) | `PUBLISHED` (สูตรคือแหล่งสูตร; inventory layer เขียน movement) |
 
 ## 5. แหล่งอ้างอิง
@@ -79,4 +79,4 @@ Section 2 ด้านล่างเป็น **state machine ระดับ g
 - `../carmen/docs/recipe/recipe-management.md` — การอ้างอิงระดับ layout สำหรับหน้า create / edit, costing sheet, เครื่องคิดเลข scaling, หน้าการเตรียม, gallery สื่อ และการจัดการหมวดหมู่; แจ้ง flow ของ chef และ cost controller
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical `enum_recipe_status` และวงจรชีวิตสามสถานะอ้างทั่ว Section 2
 - Sibling: [02-business-rules.md](./02-business-rules.md) Section 5 — ผลกระทบ posting และ gate การกำหนดสิทธิ์ที่อ้างโดยแต่ละแถวของ Section 2
-- โมดูลที่เกี่ยวข้อง: [[product]] (วัตถุดิบสูตรอ้างอิงสินค้าที่ `is_used_in_recipe = true`), [[inventory]] (การใช้สูตรขับเคลื่อน OUT movement เชิงทฤษฎีบนการขายเมนู; sub-recipe ซ้อนถึง OUT สินค้าใบไม้), [[costing]] (`cost_per_unit` per-ingredient มาจาก valuation วิธีการคิดต้นทุนของ outlet), [[store-requisition]] (สูตรอาจสร้าง SR draft อัตโนมัติสำหรับ event การผลิต / banquet ที่วางแผนผ่าน `info.recipe_id`)
+- โมดูลที่เกี่ยวข้อง: [product](/th/inventory/product) (วัตถุดิบสูตรอ้างอิงสินค้าที่ `is_used_in_recipe = true`), [inventory](/th/inventory/inventory) (การใช้สูตรขับเคลื่อน OUT movement เชิงทฤษฎีบนการขายเมนู; sub-recipe ซ้อนถึง OUT สินค้าใบไม้), [costing](/th/inventory/costing) (`cost_per_unit` per-ingredient มาจาก valuation วิธีการคิดต้นทุนของ outlet), [store-requisition](/th/inventory/store-requisition) (สูตรอาจสร้าง SR draft อัตโนมัติสำหรับ event การผลิต / banquet ที่วางแผนผ่าน `info.recipe_id`)

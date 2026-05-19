@@ -2,7 +2,7 @@
 title: ประวัติรายงาน (Report History)
 description: คลังเก็บแบบ append-only ของทุกการรันรายงานที่ execute — วันที่, parameter, สถานะ, ลิงก์ไปยัง artefact ที่สร้างขึ้น
 published: true
-date: 2026-05-17T07:00:36.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: reporting-audit, history, archive, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -88,11 +88,11 @@ Report History คือ **บันทึกการ execute แบบ append-
 
 ## 7. ความเชื่อมโยงข้ามโมดูล
 
-- [[reporting-audit/report]] — โมดูลพ่อ; ทุก template `kind = report` ที่ทำงานสร้างแถวที่นี่
-- [[reporting-audit/schedule]] — การรันแบบเกิดซ้ำ enqueue job ที่นี่; `last_run_at` derive จาก job ล่าสุดที่ completed
-- [[reporting-audit/activity]] — action `export` และ `print` ก็ถูก log ด้วย `entity_type = 'report_job'`
-- [[purchase-request]], [[purchase-order]], [[good-receive-note]], [[store-requisition]], [[inventory-adjustment]], [[physical-count]], [[spot-check]], [[vendor-pricelist]] — การเรียก Print มาที่นี่
-- [[access-control/user]] — `requested_by_id` resolve ผ่าน `tb_user` ของแพลตฟอร์ม
+- [reporting-audit/report](/th/inventory/reporting-audit/report) — โมดูลพ่อ; ทุก template `kind = report` ที่ทำงานสร้างแถวที่นี่
+- [reporting-audit/schedule](/th/inventory/reporting-audit/schedule) — การรันแบบเกิดซ้ำ enqueue job ที่นี่; `last_run_at` derive จาก job ล่าสุดที่ completed
+- [reporting-audit/activity](/th/inventory/reporting-audit/activity) — action `export` และ `print` ก็ถูก log ด้วย `entity_type = 'report_job'`
+- [purchase-request](/th/inventory/purchase-request), [purchase-order](/th/inventory/purchase-order), [good-receive-note](/th/inventory/good-receive-note), [store-requisition](/th/inventory/store-requisition), [inventory-adjustment](/th/inventory/inventory-adjustment), [physical-count](/th/inventory/physical-count), [spot-check](/th/inventory/spot-check), [vendor-pricelist](/th/inventory/vendor-pricelist) — การเรียก Print มาที่นี่
+- [access-control/user](/th/inventory/access-control/user) — `requested_by_id` resolve ผ่าน `tb_user` ของแพลตฟอร์ม
 
 ## 8. แหล่งอ้างอิง
 

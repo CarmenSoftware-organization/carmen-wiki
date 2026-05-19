@@ -2,7 +2,7 @@
 title: การคำนวณต้นทุน (Costing) — Test Scenarios — Inventory Controller
 description: Test cases ของ Inventory Controller (ทบทวน cost-pick preview, new-lot cost basis, ตรวจสอบ variance, triage cost anomaly) สำหรับ costing
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: costing, test-scenarios, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 # การคำนวณต้นทุน (Costing) — Test Scenarios — Inventory Controller
 
 > **At a Glance**
-> **Persona:** Inventory Controller &nbsp;·&nbsp; **Module:** [[costing]] &nbsp;·&nbsp; **Scenarios:** ~27
+> **Persona:** Inventory Controller &nbsp;·&nbsp; **Module:** [costing](/th/inventory/costing) &nbsp;·&nbsp; **Scenarios:** ~27
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** map ไปยัง `501-grn.spec.ts`, `701-sr.spec.ts`, `720-stock-issue.spec.ts` ใน `../carmen-inventory-frontend-e2e/`
 
@@ -76,8 +76,8 @@ Scenarios group เป็น **happy paths**, **RBAC**, **validation** และ
 - Sibling: [04-test-scenarios-finance.md](./04-test-scenarios-finance.md)
 - Sibling: [04-test-scenarios-auditor.md](./04-test-scenarios-auditor.md)
 - E2E specs: [`720-stock-issue.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/720-stock-issue.spec.ts), [`701-sr.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/701-sr.spec.ts), [`501-grn.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts)
-- Cross-link: [[inventory/04-test-scenarios-inventory-controller]]
-- Cross-link: [[good-receive-note]]
-- Cross-link: [[vendor-pricelist]]
-- Cross-link: [[physical-count]] / [[spot-check]]
-- Cross-link: [[inventory-adjustment]]
+- Cross-link: [inventory/04-test-scenarios-inventory-controller](/th/inventory/inventory/04-test-scenarios-inventory-controller)
+- Cross-link: [good-receive-note](/th/inventory/good-receive-note)
+- Cross-link: [vendor-pricelist](/th/inventory/vendor-pricelist)
+- Cross-link: [physical-count](/th/inventory/physical-count) / [spot-check](/th/inventory/spot-check)
+- Cross-link: [inventory-adjustment](/th/inventory/inventory-adjustment)

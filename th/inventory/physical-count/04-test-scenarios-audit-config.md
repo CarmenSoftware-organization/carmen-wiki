@@ -2,7 +2,7 @@
 title: การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios — Audit & Config
 description: Test case ของ Approver / Finance Reviewer, Auditor และ Sysadmin สำหรับโมดูลการนับสต๊อกประจำงวด
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: physical-count, test-scenarios, audit, config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -11,26 +11,26 @@ dateCreated: 2026-05-15T14:00:00.000Z
 # การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios — Audit & Config
 
 > **At a Glance**
-> **Persona:** Audit / Config (Approver / Finance Reviewer + Auditor + Sysadmin) &nbsp;·&nbsp; **โมดูล:** [[physical-count]] &nbsp;·&nbsp; **Scenario:** ~30 (skeleton)
+> **Persona:** Audit / Config (Approver / Finance Reviewer + Auditor + Sysadmin) &nbsp;·&nbsp; **โมดูล:** [physical-count](/th/inventory/physical-count) &nbsp;·&nbsp; **Scenario:** ~30 (skeleton)
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **ความครอบคลุม E2E:** ไม่มี Playwright spec ของ `physical-count` ที่ `../carmen-inventory-frontend-e2e/`; scenario เป็น manual / planned scenario การอนุมัติ rollup cross-reference [[inventory-adjustment]] spec
+> **ความครอบคลุม E2E:** ไม่มี Playwright spec ของ `physical-count` ที่ `../carmen-inventory-frontend-e2e/`; scenario เป็น manual / planned scenario การอนุมัติ rollup cross-reference [inventory-adjustment](/th/inventory/inventory-adjustment) spec
 
 ## 1. ขอบเขต Persona
 
-กลุ่ม persona **Audit / Config** ยุบสาม role ที่การสัมผัสโมดูล physical-count คือการอนุมัติ การสังเกต หรือการ config Scenario ด้านล่างใช้ action ที่ catalogue ใน [[physical-count/03-user-flow-audit-config]] หัวข้อ 3 — การ review/อนุมัติ/reject rollup adjustment (Approver / Finance), การสังเกต in-progress และการตรวจ chain เต็ม (Auditor), การ config tolerance / costing-method / reason-code (Sysadmin) Authority anchor `PHC_AUTH_003` หมายเหตุ: **action การอนุมัติ rollup ลงจอดบนเอกสาร [[inventory-adjustment]] ไม่ใช่บน `tb_physical_count`** — scenario หลายข้อด้านล่าง cross-reference [[inventory-adjustment/04-test-scenarios-finance]] และ [[inventory-adjustment/04-test-scenarios-audit-config]]
+กลุ่ม persona **Audit / Config** ยุบสาม role ที่การสัมผัสโมดูล physical-count คือการอนุมัติ การสังเกต หรือการ config Scenario ด้านล่างใช้ action ที่ catalogue ใน [physical-count/03-user-flow-audit-config](/th/inventory/physical-count/03-user-flow-audit-config) หัวข้อ 3 — การ review/อนุมัติ/reject rollup adjustment (Approver / Finance), การสังเกต in-progress และการตรวจ chain เต็ม (Auditor), การ config tolerance / costing-method / reason-code (Sysadmin) Authority anchor `PHC_AUTH_003` หมายเหตุ: **action การอนุมัติ rollup ลงจอดบนเอกสาร [inventory-adjustment](/th/inventory/inventory-adjustment) ไม่ใช่บน `tb_physical_count`** — scenario หลายข้อด้านล่าง cross-reference [inventory-adjustment/04-test-scenarios-finance](/th/inventory/inventory-adjustment/04-test-scenarios-finance) และ [inventory-adjustment/04-test-scenarios-audit-config](/th/inventory/inventory-adjustment/04-test-scenarios-audit-config)
 
 ## 2. Functional — Happy Path
 
 | # | Scenario | Persona | Pre-condition | ผลที่คาดหวัง |
 | - | -------- | ------- | ------------- | ---------------- |
 | AC-F-01 | Review rollup variance adjustment | Approver / Finance | Rollup `tb_stock_in` / `tb_stock_out` ใน `in_progress`; `info.countId` เติม | Reviewer เห็นบรรทัด variance + drill-through ไปยัง `tb_physical_count` ต้นทาง |
-| AC-F-02 | อนุมัติ rollup adjustment | Approver / Finance | Variance อยู่ในเกณฑ์ในอดีต; ADJ-side validation ผ่าน | Adjustment `completed`; `tb_inventory_transaction` เขียน; journal entry ของ GL post ตาม path การอนุมัติ [[inventory-adjustment/02-business-rules]] |
+| AC-F-02 | อนุมัติ rollup adjustment | Approver / Finance | Variance อยู่ในเกณฑ์ในอดีต; ADJ-side validation ผ่าน | Adjustment `completed`; `tb_inventory_transaction` เขียน; journal entry ของ GL post ตาม path การอนุมัติ [inventory-adjustment/02-business-rules](/th/inventory/inventory-adjustment/02-business-rules) |
 | AC-F-03 | Reject rollup adjustment | Approver / Finance | Variance ผิดปกติ (เช่น 30% บนหมวดติดตาม) | Adjustment return ไป `draft`; Count Lead รับ notification; การสืบสวนอาจ trigger recount ใหม่ |
 | AC-F-04 | Auditor สังเกตการนับขณะ in-progress | Auditor | เอกสาร count อยู่ `in_progress` | มุมมอง read-only: การป้อน `actual_qty` สด, การมอบหมาย zone, flag recount Auditor อาจแนบ note สังเกตเป็น `tb_physical_count_comment` |
 | AC-F-05 | Auditor ตรวจ chain เต็ม | Auditor | Period `completed`; rollup adjustment `completed` | Trace read-only: count sheet → บันทึก recount → การอนุมัติ → adjustment ที่ post → inventory transaction → journal entry ไม่มี gap |
 | AC-F-06 | Sysadmin ตั้งค่า tolerance threshold | Sysadmin | นโยบาย tenant ใหม่ | Default tenant อัปเดต; การนับในอนาคตใช้ threshold ใหม่ตาม `PHC_VAL_007` |
 | AC-F-07 | Sysadmin ตั้งค่า costing-method default | Sysadmin | นโยบาย tenant เปลี่ยน (เช่น เปลี่ยนจาก `last` เป็น `average`) | Default tenant อัปเดต; rollup ในอนาคตตีมูลค่า variance ตาม `PHC_CALC_003` ด้วย method ใหม่ |
-| AC-F-08 | Sysadmin map reason code สำหรับ rollup | Sysadmin | การ onboard tenant ใหม่ | `tb_adjustment_type` row สำหรับ `COUNT_OVERAGE` (`type = STOCK_IN`) และ `COUNT_SHORTAGE` (`type = STOCK_OUT`) สร้างพร้อม `info.glAccount` ตาม [[inventory-adjustment/01-data-model]] § 2.1 |
+| AC-F-08 | Sysadmin map reason code สำหรับ rollup | Sysadmin | การ onboard tenant ใหม่ | `tb_adjustment_type` row สำหรับ `COUNT_OVERAGE` (`type = STOCK_IN`) และ `COUNT_SHORTAGE` (`type = STOCK_OUT`) สร้างพร้อม `info.glAccount` ตาม [inventory-adjustment/01-data-model](/th/inventory/inventory-adjustment/01-data-model) § 2.1 |
 
 ## 3. RBAC / Permission
 
@@ -46,7 +46,7 @@ dateCreated: 2026-05-15T14:00:00.000Z
 | # | กฎ | Scenario | Error ที่คาดหวัง |
 | - | ---- | -------- | -------------- |
 | AC-V-01 | `INV_VAL_008` (inherited) | Rollup adjustment submit เข้า period `closed` | `"Cannot post into period <YYMM>: period is closed."` Finance Manager ต้องเปิดใหม่ |
-| AC-V-02 | `ADJ_VAL_002` (downstream) | Sysadmin map `COUNT_OVERAGE` ผิดเป็น `type = STOCK_OUT` | บันทึก reason-code reject ที่ form ของ adjustment-type ตามการ validate ทิศทางใน [[inventory-adjustment/02-business-rules]] `ADJ_VAL_002` |
+| AC-V-02 | `ADJ_VAL_002` (downstream) | Sysadmin map `COUNT_OVERAGE` ผิดเป็น `type = STOCK_OUT` | บันทึก reason-code reject ที่ form ของ adjustment-type ตามการ validate ทิศทางใน [inventory-adjustment/02-business-rules](/th/inventory/inventory-adjustment/02-business-rules) `ADJ_VAL_002` |
 | AC-V-03 | `PHC_AUTH_003` | Auditor พยายามอนุมัติ rollup adjustment | Action reject; Auditor เป็น read-only บน path การอนุมัติ rollup |
 
 ## 5. Edge Case
@@ -64,7 +64,7 @@ dateCreated: 2026-05-15T14:00:00.000Z
 | # | Scenario | ผลที่คาดหวัง |
 | - | -------- | ---------------- |
 | AC-C-01 | Audit log จับทุกการตัดสินใจของ approver | Approver approve หรือ reject | `workflow_history` บน `tb_stock_in` / `tb_stock_out` บันทึก `last_action`, `last_action_by_id`, `last_action_at_date` |
-| AC-C-02 | Traceability การเปลี่ยน reason-code ของ Sysadmin | Sysadmin อัปเดต `info.glAccount` บน `COUNT_OVERAGE` | การเปลี่ยน audit-log; rollup-adjustment ที่ post ในประวัติเก็บบัญชี GL ที่ **snapshot** ใน inventory-transaction GL entry ของตนตาม [[inventory-adjustment/01-data-model]] § 5 item 6 |
+| AC-C-02 | Traceability การเปลี่ยน reason-code ของ Sysadmin | Sysadmin อัปเดต `info.glAccount` บน `COUNT_OVERAGE` | การเปลี่ยน audit-log; rollup-adjustment ที่ post ในประวัติเก็บบัญชี GL ที่ **snapshot** ใน inventory-transaction GL entry ของตนตาม [inventory-adjustment/01-data-model](/th/inventory/inventory-adjustment/01-data-model) § 5 item 6 |
 | AC-C-03 | Query chain เต็มของ Auditor | Auditor query การนับฉบับเดียว end-to-end | Return `tb_physical_count_period` → `tb_physical_count` → `tb_physical_count_detail` → rollup `tb_stock_in` / `tb_stock_out` (ผ่าน `info.countId`) → `tb_inventory_transaction` → journal entry ของ GL |
 | AC-C-04 | การ gate ปิด period บน completion ของการนับ | Finance Manager พยายามปิด period ด้วย `tb_physical_count_period.status != completed` | การปิด period ถูกบล็อก; Count Lead ต้อง complete เอกสาร count ที่เหลือก่อน |
 
@@ -75,4 +75,4 @@ dateCreated: 2026-05-15T14:00:00.000Z
 - **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
 - **Frontend (TODO):** `../carmen-inventory-frontend/` — source ของคิวอนุมัติ + UI config admin
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count
-- ที่เกี่ยวข้อง: [[physical-count/03-user-flow-audit-config]], [[physical-count/02-business-rules]] (`PHC_AUTH_003`, `PHC_POST_002`), [[inventory-adjustment/04-test-scenarios-finance]] (scenario approver ของ rollup), [[inventory-adjustment/04-test-scenarios-audit-config]] (scenario audit / config คู่ขนานฝั่ง adjustment), [[physical-count/04-test-scenarios]] (scenario handoff ข้าม persona)
+- ที่เกี่ยวข้อง: [physical-count/03-user-flow-audit-config](/th/inventory/physical-count/03-user-flow-audit-config), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_AUTH_003`, `PHC_POST_002`), [inventory-adjustment/04-test-scenarios-finance](/th/inventory/inventory-adjustment/04-test-scenarios-finance) (scenario approver ของ rollup), [inventory-adjustment/04-test-scenarios-audit-config](/th/inventory/inventory-adjustment/04-test-scenarios-audit-config) (scenario audit / config คู่ขนานฝั่ง adjustment), [physical-count/04-test-scenarios](/th/inventory/physical-count/04-test-scenarios) (scenario handoff ข้าม persona)

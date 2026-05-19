@@ -2,7 +2,7 @@
 title: การคำนวณต้นทุน (Costing) — User Flow — Auditor
 description: Flow ของ Auditor ในโมดูล costing — ตรวจสอบว่า costed COGS และ ending inventory tie กลับไปยัง source receipts; ตรวจสอบ method-consistency ข้ามงวด
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: costing, user-flow, auditor, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 # การคำนวณต้นทุน (Costing) — User Flow — Auditor
 
 > **At a Glance**
-> **Persona:** Auditor &nbsp;·&nbsp; **Module:** [[costing]] &nbsp;·&nbsp; **Workflow stages:** Post-lock observer — รัน cost-flow chain-of-custody traces, period-snapshot verification, FIFO-vs-WA shadow drift audits, configuration-history audits &nbsp;·&nbsp; **Key permissions:** read-only (`COST_AUTH_008`); no edit, no approve, no period advance
+> **Persona:** Auditor &nbsp;·&nbsp; **Module:** [costing](/th/inventory/costing) &nbsp;·&nbsp; **Workflow stages:** Post-lock observer — รัน cost-flow chain-of-custody traces, period-snapshot verification, FIFO-vs-WA shadow drift audits, configuration-history audits &nbsp;·&nbsp; **Key permissions:** read-only (`COST_AUTH_008`); no edit, no approve, no period advance
 > **ที่ persona นี้ทำ:** ตรวจสอบว่า costed COGS และ ending inventory tie กลับไปยัง source receipts และวิธี costing ถูกใช้อย่างสม่ำเสมอข้ามงวด
 
 ## 1. บทบาทในโมดูลนี้
@@ -145,7 +145,7 @@ Auditor **read-only แท้ ๆ** ข้าม full costing surface
 - Sibling: [01-data-model.md](./01-data-model.md)
 - Sibling: [02-business-rules.md](./02-business-rules.md)
 - Sibling: [calculation-methods.md](./calculation-methods.md)
-- Related: [[inventory/03-user-flow-audit-config]]
-- Related: [[good-receive-note]]
-- Related: [[store-requisition]]
-- Related: [[physical-count]] / [[spot-check]]
+- Related: [inventory/03-user-flow-audit-config](/th/inventory/inventory/03-user-flow-audit-config)
+- Related: [good-receive-note](/th/inventory/good-receive-note)
+- Related: [store-requisition](/th/inventory/store-requisition)
+- Related: [physical-count](/th/inventory/physical-count) / [spot-check](/th/inventory/spot-check)

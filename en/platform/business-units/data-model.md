@@ -2,7 +2,7 @@
 title: Business Unit — Data Model
 description: BU entity, formatting/locale block, DB connection, config array, module activation join, and license field.
 published: true
-date: '2026-05-19T18:00:00.000Z'
+date: 2026-05-19T23:55:00.000Z'
 tags: book/platform, business-units, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -11,7 +11,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 # Business Unit — Data Model
 
 > **At a Glance**
-> **Tables:** `tb_business_unit` (primary) &nbsp;·&nbsp; `tb_business_unit_tb_module` (M:N modules activation) &nbsp;·&nbsp; `tb_user_tb_business_unit` (M:N user-join, full doc in [[users]]) &nbsp;·&nbsp; `tb_module` (referenced, full catalog out of scope) &nbsp;·&nbsp; **Enums:** `enum_user_business_unit_role` (admin/user) &nbsp;·&nbsp; `enum_calculation_method` (average/fifo) &nbsp;·&nbsp; **Schema features:** formatting/locale block (date/time/currency/decimal/timezone) &nbsp;·&nbsp; DB connection block &nbsp;·&nbsp; `config` JSON column (key/value config pairs managed via SPA) &nbsp;·&nbsp; `info` JSON column (free-form metadata) &nbsp;·&nbsp; **License field:** `max_license_users` caps how many users may be assigned to this BU
+> **Tables:** `tb_business_unit` (primary) &nbsp;·&nbsp; `tb_business_unit_tb_module` (M:N modules activation) &nbsp;·&nbsp; `tb_user_tb_business_unit` (M:N user-join, full doc in [users](/en/platform/users)) &nbsp;·&nbsp; `tb_module` (referenced, full catalog out of scope) &nbsp;·&nbsp; **Enums:** `enum_user_business_unit_role` (admin/user) &nbsp;·&nbsp; `enum_calculation_method` (average/fifo) &nbsp;·&nbsp; **Schema features:** formatting/locale block (date/time/currency/decimal/timezone) &nbsp;·&nbsp; DB connection block &nbsp;·&nbsp; `config` JSON column (key/value config pairs managed via SPA) &nbsp;·&nbsp; `info` JSON column (free-form metadata) &nbsp;·&nbsp; **License field:** `max_license_users` caps how many users may be assigned to this BU
 
 > **Source of truth:** Backend Prisma platform schema. Always read this first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
@@ -20,7 +20,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 ## 1. Overview
 
-`tb_business_unit` is the operational tenant unit in the Carmen Platform — the level at which inventory operations, user assignments, and module activations take place. Every BU belongs to exactly one cluster (via `cluster_id`, a non-nullable FK to `tb_cluster.id`). The cluster is the licensable grouping and billing entity; the BU is the working unit that inventory users log into and that accumulates stock transactions, purchase requests, and store requisitions. The relationship to [[clusters]] is therefore M:1 — many BUs beneath one cluster.
+`tb_business_unit` is the operational tenant unit in the Carmen Platform — the level at which inventory operations, user assignments, and module activations take place. Every BU belongs to exactly one cluster (via `cluster_id`, a non-nullable FK to `tb_cluster.id`). The cluster is the licensable grouping and billing entity; the BU is the working unit that inventory users log into and that accumulates stock transactions, purchase requests, and store requisitions. The relationship to [clusters](/en/platform/clusters) is therefore M:1 — many BUs beneath one cluster.
 
 The schema is notably richer than `tb_cluster`. Three groups of optional fields extend the core identity beyond what any other Platform table carries:
 
@@ -30,7 +30,7 @@ The schema is notably richer than `tb_cluster`. Three groups of optional fields 
 
 3. **JSON config** — a `config` JSON column that stores an array of `BusinessUnitConfig` objects (shape: `{ id?, key, label, datatype?, value? }`). The SPA surfaces this as an editable list in `BusinessUnitEdit.tsx`, allowing operators to add, remove, and edit arbitrary key/value config pairs for the BU. These are not a fixed key namespace — they are open-ended operator-defined entries.
 
-Two M:N join tables extend the BU: `tb_business_unit_tb_module` activates which platform modules are enabled for a BU, and `tb_user_tb_business_unit` records which users are assigned to it (documented in full in [[users]]).
+Two M:N join tables extend the BU: `tb_business_unit_tb_module` activates which platform modules are enabled for a BU, and `tb_user_tb_business_unit` records which users are assigned to it (documented in full in [users](/en/platform/users)).
 
 ## 2. Entities
 
@@ -255,7 +255,7 @@ All core identity, hotel info, company info, format, locale, audit, and soft-del
 - `../carmen-platform/src/types/index.ts` — `BusinessUnit` interface (lines 53–103), `BusinessUnitConfig` interface (lines 45–51).
 
 **Cross-links:**
-- [[business-units]] — module landing page
-- [[clusters]] — parent entity (`tb_cluster`, `max_license_bu`)
-- [[users]] — full `tb_user_tb_business_unit` field table and `enum_user_business_unit_role` canonical doc
+- [business-units](/en/platform/business-units) — module landing page
+- [clusters](/en/platform/clusters) — parent entity (`tb_cluster`, `max_license_bu`)
+- [users](/en/platform/users) — full `tb_user_tb_business_unit` field table and `enum_user_business_unit_role` canonical doc
 - [UI Screens](./ui-screens.md) — SPA screens for BU management

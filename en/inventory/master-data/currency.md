@@ -2,7 +2,7 @@
 title: Currency
 description: Per-tenant currency catalogue, ISO reference list, and dated exchange-rate history — drives all FX conversion on POs, GRNs, pricelists, and costing.
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, currency, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -19,7 +19,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 Currency master data spans **three tables across two schemas**: a **platform ISO reference** (`tb_currency_iso`), a **tenant enabled-currencies catalogue** (`tb_currency`) with a "current" rate cache, and the **tenant dated rate history** (`tb_exchange_rate`). Together they let any priced document be expressed in any currency the tenant has enabled and let the costing engine pick the right rate for the document's date.
 
-Each tenant chooses a subset of ISO currencies to enable. The BU's `default_currency_id` (see [[master-data/business-unit]]) points to one of these enabled rows. **Maintained by** Sysadmin (ISO seed) and Product Admin (tenant catalogue); **read by** developers on the FX / costing paths and testers on document FX flows.
+Each tenant chooses a subset of ISO currencies to enable. The BU's `default_currency_id` (see [master-data/business-unit](/en/inventory/master-data/business-unit)) points to one of these enabled rows. **Maintained by** Sysadmin (ISO seed) and Product Admin (tenant catalogue); **read by** developers on the FX / costing paths and testers on document FX flows.
 
 ## 2. Common Tasks
 
@@ -27,8 +27,8 @@ Each tenant chooses a subset of ISO currencies to enable. The BU's `default_curr
 |---|---|---|
 | Enable a currency for the tenant | Configuration → Master Data → Currency → **New** | Pick `iso_code` from `tb_currency_iso`; sets `is_active = true` |
 | Override symbol or name | Edit dialog | Tenant copies in `tb_currency.symbol` / `name` override the ISO row |
-| Set BU default currency | [[master-data/business-unit]] detail | Must reference an active `tb_currency` row |
-| Maintain rates | See [[master-data/exchange-rate]] | Dated history lives there, not on this entity |
+| Set BU default currency | [master-data/business-unit](/en/inventory/master-data/business-unit) detail | Must reference an active `tb_currency` row |
+| Maintain rates | See [master-data/exchange-rate](/en/inventory/master-data/exchange-rate) | Dated history lives there, not on this entity |
 | Deactivate a currency | Toggle `is_active` | Blocked if it is any BU's `default_currency_id` |
 | Seed a new ISO code | Platform DB migration | Tenants cannot write `tb_currency_iso` |
 
@@ -40,7 +40,7 @@ Each tenant chooses a subset of ISO currencies to enable. The BU's `default_curr
 | "Exchange rate must be > 0" | Cache rate set to zero / negative | Re-enter a positive number |
 | "Cannot inactivate — set as BU default" | Currency is `default_currency_id` for at least one BU | Reassign the BU default first |
 | "Cannot delete — referenced by documents/pricelists" | Hard-delete blocked by FK | Inactivate instead |
-| Document shows "rate not in history" warning | No `tb_exchange_rate` row at/before document date | Add a backdated rate in [[master-data/exchange-rate]] |
+| Document shows "rate not in history" warning | No `tb_exchange_rate` row at/before document date | Add a backdated rate in [master-data/exchange-rate](/en/inventory/master-data/exchange-rate) |
 
 ## 4. Edge Cases
 
@@ -87,7 +87,7 @@ Mixed source: tenant + platform.
 
 ### 5.3 `tb_exchange_rate` (tenant)
 
-See [[master-data/exchange-rate]] for the full schema and resolution rules. `@@unique([at_date, currency_id, deleted_at])`; FK to `tb_currency` `onDelete: NoAction`.
+See [master-data/exchange-rate](/en/inventory/master-data/exchange-rate) for the full schema and resolution rules. `@@unique([at_date, currency_id, deleted_at])`; FK to `tb_currency` `onDelete: NoAction`.
 
 ## 6. Business Rules
 
@@ -100,11 +100,11 @@ See [[master-data/exchange-rate]] for the full schema and resolution rules. `@@u
 
 ## 7. Cross-References
 
-- [[master-data/exchange-rate]] — dated rate history; resolution rules.
-- [[master-data/business-unit]] — `default_currency_id` points here.
-- [[purchase-order]], [[good-receive-note]], [[purchase-request]] — documents carry currency + snapshot rate.
-- [[vendor-pricelist]] — comparison normalises to BU default via the dated rate.
-- [[costing]] — costing resolves receipt-date rate to BU currency.
+- [master-data/exchange-rate](/en/inventory/master-data/exchange-rate) — dated rate history; resolution rules.
+- [master-data/business-unit](/en/inventory/master-data/business-unit) — `default_currency_id` points here.
+- [purchase-order](/en/inventory/purchase-order), [good-receive-note](/en/inventory/good-receive-note), [purchase-request](/en/inventory/purchase-request) — documents carry currency + snapshot rate.
+- [vendor-pricelist](/en/inventory/vendor-pricelist) — comparison normalises to BU default via the dated rate.
+- [costing](/en/inventory/costing) — costing resolves receipt-date rate to BU currency.
 
 ## 8. References
 

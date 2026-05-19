@@ -2,7 +2,7 @@
 title: Clusters
 description: Cluster module overview — the top-level tenant grouping that owns business units and licensed users.
 published: true
-date: '2026-05-19T23:30:00.000Z'
+date: 2026-05-19T23:55:00.000Z'
 tags: platform/clusters, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -113,16 +113,16 @@ Templates module.
 
 ## 5. Related Modules
 
-- [[business-units]] — clusters own BUs 1:N; the cluster edit page is the
+- [business-units](/en/platform/business-units) — clusters own BUs 1:N; the cluster edit page is the
   canonical place to create a BU pre-bound to a cluster (it calls
   `navigate('/business-units/new?cluster_id=<id>')`).
-- [[users]] — clusters add users through the global user list; the user
+- [users](/en/platform/users) — clusters add users through the global user list; the user
   edit page is the other side of the join (`tb_cluster_user`), where
   the same assignment can be inspected per user.
-- [[auth-roles]] — defines what `platform_admin`, `support_manager`, and
+- [auth-roles](/en/platform/auth-roles) — defines what `platform_admin`, `support_manager`, and
   `support_staff` mean. Cluster route gating is just an application of
   those role values inside `PrivateRoute`.
-- [[report-templates]] — uses the identical `allowedRoles` shape, so the
+- [report-templates](/en/platform/report-templates) — uses the identical `allowedRoles` shape, so the
   permission model documented here transfers one-for-one.
 
 ## 6. Reference Sources

@@ -2,7 +2,7 @@
 title: Menu
 description: Application navigation entries — per-module menu items rendered in the app shell, with visibility, active, and lock flags.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: system-config, menu, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -76,13 +76,13 @@ Source: tenant schema.
 - **Visibility cascade.** All conditions must pass (active + visible + not deleted + RBAC).
 - **URL hygiene.** Stored verbatim; no validation.
 - **Module grouping.** `module_id` opaque to schema; ordering / icons in app metadata.
-- **Audit.** Edits to locked entries should write [[reporting-audit/activity]] rows.
+- **Audit.** Edits to locked entries should write [reporting-audit/activity](/en/inventory/reporting-audit/activity) rows.
 
 ## 7. Cross-References
 
 - All transactional modules — each typically has one or more menu entries.
-- [[access-control/permission]] — visibility intersected with per-user permissions.
-- [[system-config/application-config]] — feature flags can further hide entries.
+- [access-control/permission](/en/inventory/access-control/permission) — visibility intersected with per-user permissions.
+- [system-config/application-config](/en/inventory/system-config/application-config) — feature flags can further hide entries.
 
 ## 8. References
 

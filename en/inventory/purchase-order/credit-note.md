@@ -2,7 +2,7 @@
 title: Credit Note
 description: Vendor-issued credit document reversing all or part of a prior PO / GRN — adjusts AP liability and either cost-revalues the inventory layer or returns goods.
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-order, credit-note, accounting, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # Credit Note
 
 > **At a Glance**
-> **Owner:** Procurement / AP &nbsp;·&nbsp; **Table:** `tb_credit_note` (+ detail, comments) &nbsp;·&nbsp; **Workflow:** reuses PO-side definition &nbsp;·&nbsp; **Upstream:** [[good-receive-note]] &nbsp;·&nbsp; Post-receipt offset against a prior GRN — reverses AP and either returns goods or revalues cost.
+> **Owner:** Procurement / AP &nbsp;·&nbsp; **Table:** `tb_credit_note` (+ detail, comments) &nbsp;·&nbsp; **Workflow:** reuses PO-side definition &nbsp;·&nbsp; **Upstream:** [good-receive-note](/en/inventory/good-receive-note) &nbsp;·&nbsp; Post-receipt offset against a prior GRN — reverses AP and either returns goods or revalues cost.
 
 ![Credit Note screen](/screenshots/purchase-order/credit-note.png)
 
@@ -27,7 +27,7 @@ A **Credit Note (CRN)** is the post-receipt correction instrument in procure-to-
 |---|---|---|
 | Raise a CN against a GRN | Procurement → Credit Note → **New** | Pick the GRN; lines pre-fill from receipted quantities |
 | Pick `quantity_return` vs `amount_discount` | Header `credit_note_type` | Return moves stock; discount only revalues cost |
-| Set return-to-stock vs write-off | (Automatic) | Engine returns to the original FIFO lot; if lot is consumed, posts variance to write-off GL — see [[costing]] `COST_XMOD_006` |
+| Set return-to-stock vs write-off | (Automatic) | Engine returns to the original FIFO lot; if lot is consumed, posts variance to write-off GL — see [costing](/en/inventory/costing) `COST_XMOD_006` |
 | Apply CN to AP | Completes on `doc_status = completed` | Always emits an AP debit memo (`base_total_price`) |
 | Cite vendor's credit-invoice ref | Header `invoice_no` / `tax_invoice_no` | Required for AP three-way match |
 | Void a posted CN | Detail → **Void** | Only while the posting period is open; reverses every posting |
@@ -40,13 +40,13 @@ A **Credit Note (CRN)** is the post-receipt correction instrument in procure-to-
 | "Return qty exceeds receipted - already returned" | Cumulative returns would over-deplete the lot | Reduce qty or split across multiple lots |
 | "Tax rate must match GRN snapshot" | `is_tax_adjustment = true` was expected for retrospective tax | Toggle `is_tax_adjustment` on the line |
 | "Period is closed — cannot void" | Posting period for the CRN has closed | Raise a corrective journal voucher instead |
-| "Rate not in history" | No `tb_exchange_rate` row on `cn_date` for that currency | Add a rate then re-open the CRN (see [[master-data/exchange-rate]]) |
+| "Rate not in history" | No `tb_exchange_rate` row on `cn_date` for that currency | Add a rate then re-open the CRN (see [master-data/exchange-rate](/en/inventory/master-data/exchange-rate)) |
 | "User not authorised at this stage" | Signed-in user not in `user_action.execute[]` | Wait for the correct approver, or escalate |
 
 ## 4. Edge Cases
 
 - **Money rounding.** Line money fields stored at `Decimal(20,5)`; computed totals round half-up to **2 decimals** at line level, then sum into header (matches PO/GRN rounding).
-- **FX revaluation.** When `cn_date != grn_date` and currencies differ from BU base, engine resolves a fresh rate on `cn_date` and posts the delta to FX gain/loss per [[costing]] `COST_CALC_005`.
+- **FX revaluation.** When `cn_date != grn_date` and currencies differ from BU base, engine resolves a fresh rate on `cn_date` and posts the delta to FX gain/loss per [costing](/en/inventory/costing) `COST_CALC_005`.
 - **Return-to-stock vs write-off.** `quantity_return` reverses the FIFO lot if it still exists; if the lot is already consumed (issued via SR / stock-out), the variance lands on a configured **inventory write-off** GL account (no negative inventory).
 - **Snapshot semantics.** Vendor name, product, currency, FX rate, tax rate, and pricelist refs are snapshotted at draft. Master-record edits do NOT retroactively change the CRN.
 - **Voiding window.** A `completed` CRN may only be voided while its period is open. Once `tb_period.status = closed`, voiding is rejected.
@@ -101,14 +101,14 @@ Source: tenant schema (`tb_credit_note`, `tb_credit_note_detail`, `tb_credit_not
 
 ### 5.3 Comment tables
 
-`tb_credit_note_comment` and `tb_credit_note_detail_comment` follow the canonical comment shape — see [[purchase-request/01-data-model]].
+`tb_credit_note_comment` and `tb_credit_note_detail_comment` follow the canonical comment shape — see [purchase-request/01-data-model](/en/inventory/purchase-request/01-data-model).
 
 ## 6. Workflow / Business Rules
 
 `doc_status`: `draft` → `in_progress` → `completed` (terminal); `cancelled` and `voided` are terminal alternatives.
 
 - **`draft`** — editable; no GL, AP, inventory effect.
-- **`in_progress`** — locked except where the active stage permits; approvers from `user_action.execute[]` per [[system-config/workflow]].
+- **`in_progress`** — locked except where the active stage permits; approvers from `user_action.execute[]` per [system-config/workflow](/en/inventory/system-config/workflow).
 - **`completed`** — inventory posting fires for `quantity_return`; cost revaluation for `amount_discount`; AP debit memo for both.
 - **`cancelled`** — terminated before completion; no postings.
 - **`voided`** — reversal of a `completed` CRN within the open period; reverses every posting.
@@ -117,12 +117,12 @@ Stage routing, role mapping, and action gating reuse the **PO-side workflow defi
 
 ## 7. Cross-References
 
-- [[purchase-order]] — the PO behind the original GRN; CRN totals roll up into PO open/received reporting.
-- [[good-receive-note]] — anchor for every `quantity_return` line.
-- [[costing]] — `COST_POST_003` (amount revaluation), `COST_XMOD_006` (lot cost reversal), `COST_CALC_005` (FX revaluation).
-- [[master-data/credit-note-reason]] — reason taxonomy.
-- [[master-data/exchange-rate]] — dated rate resolution on `cn_date`.
-- [[master-data/vendor]] — vendor snapshot and AP debit-memo routing.
+- [purchase-order](/en/inventory/purchase-order) — the PO behind the original GRN; CRN totals roll up into PO open/received reporting.
+- [good-receive-note](/en/inventory/good-receive-note) — anchor for every `quantity_return` line.
+- [costing](/en/inventory/costing) — `COST_POST_003` (amount revaluation), `COST_XMOD_006` (lot cost reversal), `COST_CALC_005` (FX revaluation).
+- [master-data/credit-note-reason](/en/inventory/master-data/credit-note-reason) — reason taxonomy.
+- [master-data/exchange-rate](/en/inventory/master-data/exchange-rate) — dated rate resolution on `cn_date`.
+- [master-data/vendor](/en/inventory/master-data/vendor) — vendor snapshot and AP debit-memo routing.
 
 ## 8. References
 

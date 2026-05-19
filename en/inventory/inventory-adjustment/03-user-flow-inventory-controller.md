@@ -2,7 +2,7 @@
 title: Inventory Adjustment — User Flow — Inventory Controller
 description: Inventory Controller's flow within the inventory-adjustment module — review, variance monitoring, approval, posting, count-rollup commit.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: inventory-adjustment, user-flow, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 # Inventory Adjustment — User Flow — Inventory Controller
 
 > **At a Glance**
-> **Persona:** Inventory Controller &nbsp;·&nbsp; **Module:** [[inventory-adjustment]] &nbsp;·&nbsp; **Workflow stages:** Above-Store-Keeper-threshold queue — review at `in_progress`; approve to `completed` (below Finance threshold) or escalate to Finance; reject back to `draft`; cancel in `in_progress` (`ADJ_AUTH_007`); count-rollup commit; pre-period-end variance sign-off &nbsp;·&nbsp; **Key permissions:** approve below Finance threshold (`ADJ_AUTH_004`); new-lot stock-in approval (`ADJ_AUTH_003`); commit count-rollup
+> **Persona:** Inventory Controller &nbsp;·&nbsp; **Module:** [inventory-adjustment](/en/inventory/inventory-adjustment) &nbsp;·&nbsp; **Workflow stages:** Above-Store-Keeper-threshold queue — review at `in_progress`; approve to `completed` (below Finance threshold) or escalate to Finance; reject back to `draft`; cancel in `in_progress` (`ADJ_AUTH_007`); count-rollup commit; pre-period-end variance sign-off &nbsp;·&nbsp; **Key permissions:** approve below Finance threshold (`ADJ_AUTH_004`); new-lot stock-in approval (`ADJ_AUTH_003`); commit count-rollup
 > **What this persona does:** Reviews above-threshold adjustments and new-lot stock-ins, posts to ledger, and clears variance before Finance closes the period.
 
 ### Workflow position (Inventory Controller highlighted)
@@ -31,7 +31,7 @@ graph LR
 
 ### Permission Matrix — V2 Action × Stage Role (Inventory Controller)
 
-The Inventory Controller is the **approval authority between the auto-approve threshold and the Finance threshold**. The matrix below uses a two-stage axis (Controller-band approval and count-rollup commit) from the Controller's perspective. Rows are derived from Section 2 (Entry Point and Primary Flow) of this file; rule citations refer to [[inventory-adjustment/02-business-rules]] § 4 (Authorization Rules) and § 5 (Posting Rules).
+The Inventory Controller is the **approval authority between the auto-approve threshold and the Finance threshold**. The matrix below uses a two-stage axis (Controller-band approval and count-rollup commit) from the Controller's perspective. Rows are derived from Section 2 (Entry Point and Primary Flow) of this file; rule citations refer to [inventory-adjustment/02-business-rules](/en/inventory/inventory-adjustment/02-business-rules) § 4 (Authorization Rules) and § 5 (Posting Rules).
 
 | Action | Controller-band approval (`฿500–฿10,000`) | Count-rollup commit |
 |---|---|---|
@@ -58,13 +58,13 @@ The **Inventory Controller** persona (folded with Inventory Manager in the carme
 - **Approve / reject authority** on `in_progress` `tb_stock_in` / `tb_stock_out` documents within the Controller threshold band (`฿500–฿10,000` typical, between Store Keeper auto-approve and Finance) per `ADJ_AUTH_004`. Approval fires `in_progress → completed` which posts the inventory transaction and GL entry per `ADJ_POST_002`.
 - **Approval authority on new-lot stock-in** regardless of cost — Store Keeper-submitted new-lot adjustments always route to Controller per `ADJ_AUTH_003`, where the Controller validates lot identity and cost-per-unit defensibility.
 - **Variance-monitoring scope** — reviews adjustment patterns by reason, location, department, time of day, individual user; investigates oversize variances per `ADJ_CALC_008` variance-% calc and drives corrective process changes (training, recount, reason-code reconfiguration request to Sysadmin).
-- **Count-rollup commit authority** — commits variance lines from [[physical-count]] / [[spot-check]] runs which triggers the `ADJ_POST_006` auto-rollup `tb_stock_in` / `tb_stock_out` creation; cross-references [[inventory]] `INV_XMOD_003` / `INV_XMOD_004`.
+- **Count-rollup commit authority** — commits variance lines from [physical-count](/en/inventory/physical-count) / [spot-check](/en/inventory/spot-check) runs which triggers the `ADJ_POST_006` auto-rollup `tb_stock_in` / `tb_stock_out` creation; cross-references [inventory](/en/inventory/inventory) `INV_XMOD_003` / `INV_XMOD_004`.
 - **Direct create authority** — may raise `tb_stock_in` / `tb_stock_out` directly (e.g. when an investigation reveals a discrepancy that the Store Keeper hasn't yet reported, or when SoD per `ADJ_AUTH_010` blocks the Store Keeper from raising a write-off for a lot they received).
 - **Void authority** — initiates compensating reversal for posted documents per `ADJ_POST_004`, moves the original to `voided` after the compensating post.
 - **Cancel authority** on `in_progress` documents per `ADJ_AUTH_007` — when a recount or investigation concludes the adjustment isn't warranted.
 - **Department Manager review responsibility** (folded into this persona group) — read-only oversight of adjustments hitting their cost-centre (resolved via the document's `dimension` JSON), notification subscription, comment / flag capability for escalation to Finance.
 
-The Controller does **not** have above-Controller-threshold approval authority (Finance per `ADJ_AUTH_005`), does not configure reason codes / thresholds (Sysadmin per `ADJ_AUTH_008`), and does not run the period-end close (Finance Manager per [[inventory]] `INV_AUTH_006`).
+The Controller does **not** have above-Controller-threshold approval authority (Finance per `ADJ_AUTH_005`), does not configure reason codes / thresholds (Sysadmin per `ADJ_AUTH_008`), and does not run the period-end close (Finance Manager per [inventory](/en/inventory/inventory) `INV_AUTH_006`).
 
 The Controller's adjustment-module ownership begins when a document submits at or above threshold (or when a count commits) and ends at one of the boundaries enumerated in Section 4.
 
@@ -91,12 +91,12 @@ The Controller's adjustment-module ownership begins when a document submits at o
     - **Reject:** Click **Reject**, enter rejection reason. Document returns to `draft`; Store Keeper sees the rejection in their queue with the reason in `workflow_history`; can edit and re-submit or cancel.
     - **Request evidence:** Add a comment with an evidence request. Document stays `in_progress`; Store Keeper attaches the requested evidence via comment and re-submits to re-trigger approval review.
     - **Cancel:** If a recount or investigation concludes the adjustment isn't warranted, the Controller cancels the `in_progress` document per `ADJ_AUTH_007`. `doc_status = cancelled` with reason text; terminal; no inventory effect.
-8. **Post fires (on Approve).** Same fan-out as the Store Keeper's auto-approve flow per [[inventory]] `INV_POST_002`: `tb_inventory_transaction`, `tb_inventory_transaction_detail` (`qty < 0` for stock-out), one or more `tb_inventory_transaction_cost_layer` rows (FIFO multi-row or WA single per `ADJ_CALC_006` / `ADJ_CALC_007`), GL journal (`Dr Breakage Expense ฿2,500 / Cr Inventory ฿2,500`). The detail's `inventory_transaction_id` is stamped.
+8. **Post fires (on Approve).** Same fan-out as the Store Keeper's auto-approve flow per [inventory](/en/inventory/inventory) `INV_POST_002`: `tb_inventory_transaction`, `tb_inventory_transaction_detail` (`qty < 0` for stock-out), one or more `tb_inventory_transaction_cost_layer` rows (FIFO multi-row or WA single per `ADJ_CALC_006` / `ADJ_CALC_007`), GL journal (`Dr Breakage Expense ฿2,500 / Cr Inventory ฿2,500`). The detail's `inventory_transaction_id` is stamped.
 9. **Handoff to Finance for review** (period-end only). At period close, Finance reviews the period's adjustment-activity aggregate per the Finance flow. For day-to-day below-Finance-threshold adjustments, the Controller's approval is terminal — no further persona handoff.
 
 The **count-variance commit** flow follows a slightly different shape:
 
-1. Open the completed [[physical-count]] / [[spot-check]] document at `tb_count_stock.status = completed`. Variance lines are staged: per `(location, product, lot)`, the difference between physical and system qty.
+1. Open the completed [physical-count](/en/inventory/physical-count) / [spot-check](/en/inventory/spot-check) document at `tb_count_stock.status = completed`. Variance lines are staged: per `(location, product, lot)`, the difference between physical and system qty.
 2. Review each variance line — confirm the variance is real (not a counting error), classify (overage vs shortage), inspect supporting count-sheet attachments and counter signatures.
 3. Click **Commit Variances**. The system per `ADJ_POST_006`:
     - Creates one `tb_stock_in` with reason `COUNT_OVERAGE` for all overage lines.
@@ -111,8 +111,8 @@ The **direct-create** flow follows the Store Keeper's primary flow (Section 2 of
 ## 3. Decision Branches
 
 - **Approve vs reject vs request evidence.** Approve when the reason / evidence / cost / context all support the adjustment. Reject when the reason is wrong, the evidence is missing or inconsistent, or the recount resolves the discrepancy. Request evidence when the submitter's case is plausible but the supporting attachments are missing or ambiguous (e.g. damage photo unclear, vendor RMA reference missing).
-- **Variance threshold for investigation.** Adjustments above `ADJ_CALC_008` variance threshold (e.g. > 5% of on-hand at a product / location) trigger a deeper investigation: cross-check with [[physical-count]] last-count results, check the Store Keeper's recent variance history, walk the floor. Investigation may conclude with a comment-only "approved with note" or with a rejection and recount request.
-- **New-lot stock-in approval.** When approving a Store-Keeper-raised new-lot stock-in, the Controller specifically validates: (a) the lot identity is well-formed and unique per `ADJ_VAL_009`; (b) the cost-per-unit is defensible (typically read from [[vendor-pricelist]] last-price or set to zero with explanatory note); (c) the new lot creation is consistent with the reason (e.g. `VENDOR_FREE_REPLACEMENT` justifies a zero-cost new lot; bare `FOUND_STOCK` of an unknown-cost lot raises eyebrows). The default cost-per-unit for true-found-stock with no prior reference is typically zero with a `DATA_FIX` reason — to avoid inflating inventory valuation on guesswork.
+- **Variance threshold for investigation.** Adjustments above `ADJ_CALC_008` variance threshold (e.g. > 5% of on-hand at a product / location) trigger a deeper investigation: cross-check with [physical-count](/en/inventory/physical-count) last-count results, check the Store Keeper's recent variance history, walk the floor. Investigation may conclude with a comment-only "approved with note" or with a rejection and recount request.
+- **New-lot stock-in approval.** When approving a Store-Keeper-raised new-lot stock-in, the Controller specifically validates: (a) the lot identity is well-formed and unique per `ADJ_VAL_009`; (b) the cost-per-unit is defensible (typically read from [vendor-pricelist](/en/inventory/vendor-pricelist) last-price or set to zero with explanatory note); (c) the new lot creation is consistent with the reason (e.g. `VENDOR_FREE_REPLACEMENT` justifies a zero-cost new lot; bare `FOUND_STOCK` of an unknown-cost lot raises eyebrows). The default cost-per-unit for true-found-stock with no prior reference is typically zero with a `DATA_FIX` reason — to avoid inflating inventory valuation on guesswork.
 - **Above-Controller-threshold route to Finance.** Documents at or above the Controller threshold (typically `฿10,000` cost impact — large recall write-offs, large damage write-offs, large theft write-offs) cannot be approved by the Controller alone. The Controller reviews and either rejects, or **forwards to Finance** by re-submitting with a Finance approval annotation. Finance picks up from the Finance flow.
 - **Count-rollup commit vs individual line review.** Standard count-variance commits trigger the auto-rollup per `ADJ_POST_006`. For counts with oversize aggregate variance (e.g. > 10% net cost impact), the Controller may instead choose to **reject the count** and request a recount before committing — preventing the auto-rollup from posting an unjustifiably large adjustment.
 - **Department-Manager view escalation.** When the Controller (acting as Department Manager surrogate, or in liaison with one) sees a pattern of adjustments hitting a single cost-centre disproportionately, they may flag for Finance investigation and / or request a Sysadmin re-configuration of reason codes / thresholds for that cost-centre.
@@ -135,9 +135,9 @@ The Controller's involvement on a given adjustment ends at one of five boundarie
 - Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — System Administrator who configures `tb_adjustment_type`, thresholds, and integration; Auditor who reads the Controller's approval history and SoD compliance.
 - Sibling: [01-data-model.md](./01-data-model.md) — `tb_stock_in` / `tb_stock_out` workflow / `last_action` columns the Controller reads at approval; `tb_adjustment_type` reason and `info.glAccount` the Controller validates against.
 - Sibling: [02-business-rules.md](./02-business-rules.md) — `ADJ_AUTH_003` (new-lot Controller gate), `ADJ_AUTH_004` (Controller approval), `ADJ_AUTH_007` (cancel / void), `ADJ_POST_002` (post fan-out fired by Controller approve), `ADJ_POST_004` (void via compensating reversal), `ADJ_POST_006` (count-rollup auto-post), `ADJ_CALC_008` (variance %), `ADJ_CALC_010` (period impact); cross-module `ADJ_XMOD_002` / `ADJ_XMOD_003` (count rollup).
-- Related: [[inventory]] — every Controller approval posts to inventory; `INV_AUTH_003` (Controller as second signature in inventory hierarchy), `INV_POST_001` / `INV_POST_002` (post effects), `INV_XMOD_003` / `INV_XMOD_004` (count-variance posting path).
-- Related: [[physical-count]] — Controller commits count variances which auto-creates adjustment rollups.
-- Related: [[spot-check]] — partial count; same auto-rollup pattern.
-- Related: [[costing]] — Controller validates cost-per-unit defensibility on new-lot stock-in and on outlier FIFO / WA picks on stock-out.
-- Related: [[good-receive-note]] — Controller may inspect the originating GRN when reviewing a large recall write-off or vendor-replacement adjustment.
-- Related: [[vendor-pricelist]] — Controller cross-checks cost-per-unit on new-lot stock-in against the vendor pricelist last-price.
+- Related: [inventory](/en/inventory/inventory) — every Controller approval posts to inventory; `INV_AUTH_003` (Controller as second signature in inventory hierarchy), `INV_POST_001` / `INV_POST_002` (post effects), `INV_XMOD_003` / `INV_XMOD_004` (count-variance posting path).
+- Related: [physical-count](/en/inventory/physical-count) — Controller commits count variances which auto-creates adjustment rollups.
+- Related: [spot-check](/en/inventory/spot-check) — partial count; same auto-rollup pattern.
+- Related: [costing](/en/inventory/costing) — Controller validates cost-per-unit defensibility on new-lot stock-in and on outlier FIFO / WA picks on stock-out.
+- Related: [good-receive-note](/en/inventory/good-receive-note) — Controller may inspect the originating GRN when reviewing a large recall write-off or vendor-replacement adjustment.
+- Related: [vendor-pricelist](/en/inventory/vendor-pricelist) — Controller cross-checks cost-per-unit on new-lot stock-in against the vendor pricelist last-price.

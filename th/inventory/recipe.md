@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe)
 description: สูตรอาหาร (รายการวัตถุดิบพร้อม yield) — สะพานเชื่อมระหว่างเมนูและการใช้คลังสินค้า
 published: true
-date: 2026-05-19T23:45:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: recipe, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -68,17 +68,17 @@ dateCreated: 2026-05-15T07:48:00.000Z
 ## 5. โมดูลที่เกี่ยวข้อง
 
 **การไหลข้ามโมดูล:**
-- [[product]] — วัตถุดิบของสูตรอ้างอิงสินค้า
-- [[inventory]] — การใช้สูตรขับเคลื่อน inventory OUT movement (การใช้วัตถุดิบเชิงทฤษฎี)
-- [[costing]] — ต้นทุนสูตรคือผลรวมของปริมาณวัตถุดิบที่คิดต้นทุน
-- [[store-requisition]] — สูตรอาจสร้าง requisition อัตโนมัติ
+- [product](/th/inventory/product) — วัตถุดิบของสูตรอ้างอิงสินค้า
+- [inventory](/th/inventory/inventory) — การใช้สูตรขับเคลื่อน inventory OUT movement (การใช้วัตถุดิบเชิงทฤษฎี)
+- [costing](/th/inventory/costing) — ต้นทุนสูตรคือผลรวมของปริมาณวัตถุดิบที่คิดต้นทุน
+- [store-requisition](/th/inventory/store-requisition) — สูตรอาจสร้าง requisition อัตโนมัติ
 
 **Master configuration:**
-- [[master-data/unit]] — หน่วยสูตรและหน่วยสต๊อก พร้อม conversion factor ต่อวัตถุดิบ
-- [[master-data/currency]] — ต้นทุนสูตรและราคาขายแสดงในสกุลเงินฐานของ property
-- [[system-config/application-config]] — ค่า default ระดับ tenant (เปอร์เซ็นต์ food-cost เป้าหมาย การปัดเศษ นโยบายสถานะ)
-- [[reporting-audit/activity]] — log ประวัติเวอร์ชันสูตร การ publish และการเปลี่ยนแปลงต้นทุนสำหรับการตรวจสอบ
-- [[reporting-audit/attachment]] — รูปภาพสูตรและรูปขั้นตอนที่แนบกับแต่ละสูตร
+- [master-data/unit](/th/inventory/master-data/unit) — หน่วยสูตรและหน่วยสต๊อก พร้อม conversion factor ต่อวัตถุดิบ
+- [master-data/currency](/th/inventory/master-data/currency) — ต้นทุนสูตรและราคาขายแสดงในสกุลเงินฐานของ property
+- [system-config/application-config](/th/inventory/system-config/application-config) — ค่า default ระดับ tenant (เปอร์เซ็นต์ food-cost เป้าหมาย การปัดเศษ นโยบายสถานะ)
+- [reporting-audit/activity](/th/inventory/reporting-audit/activity) — log ประวัติเวอร์ชันสูตร การ publish และการเปลี่ยนแปลงต้นทุนสำหรับการตรวจสอบ
+- [reporting-audit/attachment](/th/inventory/reporting-audit/attachment) — รูปภาพสูตรและรูปขั้นตอนที่แนบกับแต่ละสูตร
 
 ## 6. แหล่งอ้างอิง
 

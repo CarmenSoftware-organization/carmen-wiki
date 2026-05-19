@@ -2,7 +2,7 @@
 title: location ของผู้ใช้ (User Location)
 description: Scope ของ location ต่อผู้ใช้ภายใน tenant — จำกัด user ให้อยู่ใน subset ของ location สต๊อกสำหรับการออก count และ adjustment
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: access-control, user-location, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,13 +11,13 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # location ของผู้ใช้ (User Location)
 
 > **At a Glance**
-> **เจ้าของ:** Sysadmin / BU Admin &nbsp;·&nbsp; **ตาราง:** `tb_user_location` &nbsp;·&nbsp; **ใช้โดย:** [[inventory]], [[store-requisition]], [[physical-count]], [[spot-check]] &nbsp;·&nbsp; Filter location ระดับ row — จำกัด row สต๊อกที่ user มองเห็น
+> **เจ้าของ:** Sysadmin / BU Admin &nbsp;·&nbsp; **ตาราง:** `tb_user_location` &nbsp;·&nbsp; **ใช้โดย:** [inventory](/th/inventory/inventory), [store-requisition](/th/inventory/store-requisition), [physical-count](/th/inventory/physical-count), [spot-check](/th/inventory/spot-check) &nbsp;·&nbsp; Filter location ระดับ row — จำกัด row สต๊อกที่ user มองเห็น
 
 ## 1. คืออะไรและใครใช้
 
-`user-location` ทำให้ effective scope ของ user แคบลงจาก "ทุก location" เป็น "subset นี้" Storekeeper ที่มอบหมายให้สอง storeroom ควรเห็นเฉพาะสองที่ใน location picker, เอกสาร count และหน้าจอ adjustment ของตน ตารางเป็น many-to-many ง่ายๆ ระหว่าง [[access-control/user]] และ [[master-data/location]] พร้อม pattern soft-delete แบบ active-only
+`user-location` ทำให้ effective scope ของ user แคบลงจาก "ทุก location" เป็น "subset นี้" Storekeeper ที่มอบหมายให้สอง storeroom ควรเห็นเฉพาะสองที่ใน location picker, เอกสาร count และหน้าจอ adjustment ของตน ตารางเป็น many-to-many ง่ายๆ ระหว่าง [access-control/user](/th/inventory/access-control/user) และ [master-data/location](/th/inventory/master-data/location) พร้อม pattern soft-delete แบบ active-only
 
-ไม่เหมือน [[access-control/application-role]] (ซึ่ง gate **action**) และ [[access-control/business-unit-user]] (ซึ่ง gate **การเข้า BU**) `user-location` เป็น **filter ข้อมูลระดับ row** — จำกัด row ที่มองเห็นโดยไม่เปลี่ยน role หรือ permission ชุดว่างถูกตีความตามข้อตกลงว่า "ไม่มีข้อจำกัด"
+ไม่เหมือน [access-control/application-role](/th/inventory/access-control/application-role) (ซึ่ง gate **action**) และ [access-control/business-unit-user](/th/inventory/access-control/business-unit-user) (ซึ่ง gate **การเข้า BU**) `user-location` เป็น **filter ข้อมูลระดับ row** — จำกัด row ที่มองเห็นโดยไม่เปลี่ยน role หรือ permission ชุดว่างถูกตีความตามข้อตกลงว่า "ไม่มีข้อจำกัด"
 
 **บำรุงรักษาโดย** Sysadmin และ BU admin **อ่านโดย** ทุก list/picker ในโมดูลที่มีสต๊อก
 
@@ -29,7 +29,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | Reassign storekeeper | Soft-delete row เก่า + insert ใหม่ | เอกสารที่เปิดยังทำงาน (FK target `tb_location`) |
 | ดู effective scope ของ user | User-edit → tab **Locations** | แสดงการมอบหมายที่ active ปัจจุบัน |
 | ลบ scope ทั้งหมด (full access) | Soft-delete ทุก row | ชุดว่าง = "ไม่มีข้อจำกัด" ตามข้อตกลง |
-| ตรวจสอบการเปลี่ยน scope | [[reporting-audit/activity]] log | Filter โดย `entity_type = user_location` |
+| ตรวจสอบการเปลี่ยน scope | [reporting-audit/activity](/th/inventory/reporting-audit/activity) log | Filter โดย `entity_type = user_location` |
 
 ## 3. การตรวจสอบและ Error
 
@@ -44,7 +44,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 - **Empty-set semantics** ตามข้อตกลง "ไม่มีข้อจำกัดระดับ row" — ยืนยันกับ service code ถ้าพึ่งพา default นี้สำหรับเส้นทาง sensitive
 - **Cross-schema integrity** `user_id` อ้างอิง platform `tb_user.id` แต่ **ไม่ใช่** Prisma FK — แอป validate ตอน insert
-- **การ override ต่อเอกสาร** ตารางนี้เป็น **scope default** สำหรับ picker; เวิร์กโฟลว์เฉพาะอาจขยาย (เช่น ผู้อนุมัติใน [[store-requisition]] ต้องการทั้งต้นทางและปลายทาง)
+- **การ override ต่อเอกสาร** ตารางนี้เป็น **scope default** สำหรับ picker; เวิร์กโฟลว์เฉพาะอาจขยาย (เช่น ผู้อนุมัติใน [store-requisition](/th/inventory/store-requisition) ต้องการทั้งต้นทางและปลายทาง)
 - **Reassignment เป็นสอง op** Soft-delete row A, insert row B — เอกสารที่เปิดยังทำงาน
 
 ---
@@ -77,11 +77,11 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 7. การอ้างอิงข้าม
 
-- [[inventory]] — หน้าจอ list และ movement filter โดยชุดของ user
-- [[store-requisition]] — location การออก/ขอ validate กับ scope
-- [[physical-count]], [[spot-check]] — เอกสาร count จำกัดที่ location ของ user
-- [[master-data/location]] — ฝั่ง location
-- [[access-control/user]] — ฝั่ง user
+- [inventory](/th/inventory/inventory) — หน้าจอ list และ movement filter โดยชุดของ user
+- [store-requisition](/th/inventory/store-requisition) — location การออก/ขอ validate กับ scope
+- [physical-count](/th/inventory/physical-count), [spot-check](/th/inventory/spot-check) — เอกสาร count จำกัดที่ location ของ user
+- [master-data/location](/th/inventory/master-data/location) — ฝั่ง location
+- [access-control/user](/th/inventory/access-control/user) — ฝั่ง user
 
 ## 8. แหล่งข้อมูลอ้างอิง
 

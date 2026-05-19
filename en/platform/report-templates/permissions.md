@@ -2,7 +2,7 @@
 title: Report Template — Permissions
 description: Three admin-tier-gated routes (same gate as clusters); access matrix; AccessDenied behaviour; sidebar filter.
 published: true
-date: '2026-05-19T18:30:00.000Z'
+date: 2026-05-19T23:55:00.000Z'
 tags: book/platform, report-templates, permissions
 editor: markdown
 dateCreated: '2026-05-19T18:30:00.000Z'
@@ -17,7 +17,7 @@ dateCreated: '2026-05-19T18:30:00.000Z'
 
 Report Templates is a Carmen-internal authoring surface for printable and exportable documents that ship as part of the platform's customisation contract. Templates are authored by Carmen support engineers — not customers — using a structured XML/FastReport editor with database-source binding against tenant schemas. Because authoring a template requires platform-level operational knowledge and carries direct implications for what customers can print or export from their business units, every report-templates route is gated to the same three admin-tier roles as Clusters: `platform_admin`, `support_manager`, and `support_staff`.
 
-Report Templates shares the **same role gate** as [[clusters]]. The detailed access mechanics — bootstrap exception, `<AccessDenied>` render path, and sidebar filter — work identically across the two modules. This page cross-links to [Clusters Permissions](../clusters/permissions.md) for the canonical implementation detail and documents only what is specific to the report-templates surface. By contrast, modules such as Business Units, Users, and Dashboard have no route-level `allowedRoles` restriction and are visible to any authenticated user in `ALLOWED_ROLES`.
+Report Templates shares the **same role gate** as [clusters](/en/platform/clusters). The detailed access mechanics — bootstrap exception, `<AccessDenied>` render path, and sidebar filter — work identically across the two modules. This page cross-links to [Clusters Permissions](../clusters/permissions.md) for the canonical implementation detail and documents only what is specific to the report-templates surface. By contrast, modules such as Business Units, Users, and Dashboard have no route-level `allowedRoles` restriction and are visible to any authenticated user in `ALLOWED_ROLES`.
 
 ## 2. Route guards
 
@@ -31,7 +31,7 @@ The `allowedRoles` array is hardcoded inline at each of the three `<PrivateRoute
 
 ## 3. Effective access matrix
 
-Read the table left-to-right: sign-in eligibility (`AuthContext.ALLOWED_ROLES`, see [[auth-roles]]) is checked first at login; report-templates route eligibility (the `allowedRoles` array on each `PrivateRoute`) is checked only for roles that can sign in. The "Effective access" column states the combined outcome.
+Read the table left-to-right: sign-in eligibility (`AuthContext.ALLOWED_ROLES`, see [auth-roles](/en/platform/auth-roles)) is checked first at login; report-templates route eligibility (the `allowedRoles` array on each `PrivateRoute`) is checked only for roles that can sign in. The "Effective access" column states the combined outcome.
 
 `enum_platform_role` (Prisma `schema.prisma` line 539) defines seven values. `AuthContext.ALLOWED_ROLES` (line 10) lists five values permitted to sign in to the SPA. Of those five, three are permitted to reach report-templates routes.
 
@@ -115,8 +115,8 @@ There is no "viewer" sub-role within the report-templates surface. Testers plann
 - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `enum_platform_role` (line 539) for the 7-value source list.
 
 **Cross-links:**
-- [[auth-roles]] — full role definitions and cross-SPA route map
-- [[users]] — where `platform_role` is assigned to a platform user
+- [auth-roles](/en/platform/auth-roles) — full role definitions and cross-SPA route map
+- [users](/en/platform/users) — where `platform_role` is assigned to a platform user
 - [Clusters Permissions](../clusters/permissions.md) — canonical permissions.md shape; same role gate; bootstrap exception detail (§4); AccessDenied detail (§5)
-- [[clusters]] — Clusters module landing
+- [clusters](/en/platform/clusters) — Clusters module landing
 - [Data Model](./data-model.md) &nbsp;·&nbsp; [UI Screens](./ui-screens.md) &nbsp;·&nbsp; [XML Spec](./xml-spec.md) — sibling sub-pages

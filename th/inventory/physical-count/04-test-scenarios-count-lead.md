@@ -2,7 +2,7 @@
 title: การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios — Count Lead
 description: Test case ของ Count Lead (Inventory Controller / Manager) สำหรับโมดูลการนับสต๊อกประจำงวด
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: physical-count, test-scenarios, count-lead, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -11,13 +11,13 @@ dateCreated: 2026-05-15T14:00:00.000Z
 # การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios — Count Lead
 
 > **At a Glance**
-> **Persona:** Count Lead (Inventory Controller / Inventory Manager) &nbsp;·&nbsp; **โมดูล:** [[physical-count]] &nbsp;·&nbsp; **Scenario:** ~30 (skeleton)
+> **Persona:** Count Lead (Inventory Controller / Inventory Manager) &nbsp;·&nbsp; **โมดูล:** [physical-count](/th/inventory/physical-count) &nbsp;·&nbsp; **Scenario:** ~30 (skeleton)
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **ความครอบคลุม E2E:** ไม่มี Playwright spec ของ `physical-count` ที่ `../carmen-inventory-frontend-e2e/`; scenario เป็น manual / planned
 
 ## 1. ขอบเขต Persona
 
-**Count Lead** = Inventory Controller / Inventory Manager เจ้าของการดำเนินการ scenario ด้านล่างใช้ action ที่ catalogue ใน [[physical-count/03-user-flow-count-lead]] หัวข้อ 3 — การสร้าง period และเอกสาร, การเลือกโหมด, การมอบหมาย counter, การติดตามความคืบหน้า, การแก้ไข flag recount, การ override / accept variance, submit และการ route rollup Authority anchor `PHC_AUTH_001`
+**Count Lead** = Inventory Controller / Inventory Manager เจ้าของการดำเนินการ scenario ด้านล่างใช้ action ที่ catalogue ใน [physical-count/03-user-flow-count-lead](/th/inventory/physical-count/03-user-flow-count-lead) หัวข้อ 3 — การสร้าง period และเอกสาร, การเลือกโหมด, การมอบหมาย counter, การติดตามความคืบหน้า, การแก้ไข flag recount, การ override / accept variance, submit และการ route rollup Authority anchor `PHC_AUTH_001`
 
 ## 2. Functional — Happy Path
 
@@ -77,4 +77,4 @@ dateCreated: 2026-05-15T14:00:00.000Z
 - **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
 - **Frontend (TODO):** `../carmen-inventory-frontend/` — source ของพฤติกรรม UI Count Lead
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count
-- ที่เกี่ยวข้อง: [[physical-count/03-user-flow-count-lead]], [[physical-count/02-business-rules]] (`PHC_AUTH_001`, `PHC_VAL_*`, `PHC_POST_*`), [[physical-count/04-test-scenarios]] (scenario handoff ข้าม persona)
+- ที่เกี่ยวข้อง: [physical-count/03-user-flow-count-lead](/th/inventory/physical-count/03-user-flow-count-lead), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_AUTH_001`, `PHC_VAL_*`, `PHC_POST_*`), [physical-count/04-test-scenarios](/th/inventory/physical-count/04-test-scenarios) (scenario handoff ข้าม persona)

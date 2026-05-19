@@ -2,7 +2,7 @@
 title: Physical Count — Test Scenarios — Count Lead
 description: Count Lead (Inventory Controller / Manager) test cases for the physical-count module.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: physical-count, test-scenarios, count-lead, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -11,13 +11,13 @@ dateCreated: 2026-05-15T14:00:00.000Z
 # Physical Count — Test Scenarios — Count Lead
 
 > **At a Glance**
-> **Persona:** Count Lead (Inventory Controller / Inventory Manager) &nbsp;·&nbsp; **Module:** [[physical-count]] &nbsp;·&nbsp; **Scenarios:** ~30 (skeleton)
+> **Persona:** Count Lead (Inventory Controller / Inventory Manager) &nbsp;·&nbsp; **Module:** [physical-count](/en/inventory/physical-count) &nbsp;·&nbsp; **Scenarios:** ~30 (skeleton)
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** no `physical-count` Playwright spec exists at `../carmen-inventory-frontend-e2e/`; scenarios are manual / planned coverage.
 
 ## 1. Persona Scope
 
-**Count Lead** = Inventory Controller / Inventory Manager. The owner of the count exercise. The scenarios below exercise the actions catalogued in [[physical-count/03-user-flow-count-lead]] Section 3 — period and document creation, mode selection, counter assignment, progress monitoring, recount-flag resolution, override / accept variance, submit, and rollup routing. Authority anchor `PHC_AUTH_001`.
+**Count Lead** = Inventory Controller / Inventory Manager. The owner of the count exercise. The scenarios below exercise the actions catalogued in [physical-count/03-user-flow-count-lead](/en/inventory/physical-count/03-user-flow-count-lead) Section 3 — period and document creation, mode selection, counter assignment, progress monitoring, recount-flag resolution, override / accept variance, submit, and rollup routing. Authority anchor `PHC_AUTH_001`.
 
 ## 2. Functional — Happy Paths
 
@@ -77,4 +77,4 @@ dateCreated: 2026-05-15T14:00:00.000Z
 - **Primary (TODO):** carmen/docs source — does not exist for this module.
 - **Frontend (TODO):** `../carmen-inventory-frontend/` — Count Lead UI behaviour source.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists.
-- Related: [[physical-count/03-user-flow-count-lead]], [[physical-count/02-business-rules]] (`PHC_AUTH_001`, `PHC_VAL_*`, `PHC_POST_*`), [[physical-count/04-test-scenarios]] (cross-persona handoff scenarios).
+- Related: [physical-count/03-user-flow-count-lead](/en/inventory/physical-count/03-user-flow-count-lead), [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) (`PHC_AUTH_001`, `PHC_VAL_*`, `PHC_POST_*`), [physical-count/04-test-scenarios](/en/inventory/physical-count/04-test-scenarios) (cross-persona handoff scenarios).

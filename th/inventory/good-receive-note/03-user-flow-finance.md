@@ -2,7 +2,7 @@
 title: ใบรับสินค้า (Goods Receive Note) — User Flow — Finance
 description: Flow ของ Finance ในโมดูล good-receive-note — three-way match (GRN ↔ PO ↔ invoice) จัดสรร extra-cost ทำ AP posting และปิดงวด
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: good-receive-note, user-flow, finance, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T11:00:00.000Z
 # ใบรับสินค้า (Goods Receive Note) — User Flow — Finance
 
 > **At a Glance**
-> **Persona:** Finance (Officer / AP Clerk + Manager / Controller) &nbsp;·&nbsp; **โมดูล:** [[good-receive-note]] &nbsp;·&nbsp; **ขั้น workflow:** หลัง `committed` — review การจัดสรร extra-cost &nbsp;·&nbsp; แก้รหัสภาษี &nbsp;·&nbsp; three-way match (PO ↔ GRN ↔ invoice) &nbsp;·&nbsp; AP posting &nbsp;·&nbsp; sign-off ปิดงวด &nbsp;·&nbsp; **สิทธิ์สำคัญ:** แก้วิธีจัดสรรหลัง commit (`GRN_AUTH_007`); post AP journal (`GRN_POST_008`); flag ความคลาดเคลื่อนของ match (`GRN_POST_009`); reconcile ปิดงวด
+> **Persona:** Finance (Officer / AP Clerk + Manager / Controller) &nbsp;·&nbsp; **โมดูล:** [good-receive-note](/th/inventory/good-receive-note) &nbsp;·&nbsp; **ขั้น workflow:** หลัง `committed` — review การจัดสรร extra-cost &nbsp;·&nbsp; แก้รหัสภาษี &nbsp;·&nbsp; three-way match (PO ↔ GRN ↔ invoice) &nbsp;·&nbsp; AP posting &nbsp;·&nbsp; sign-off ปิดงวด &nbsp;·&nbsp; **สิทธิ์สำคัญ:** แก้วิธีจัดสรรหลัง commit (`GRN_AUTH_007`); post AP journal (`GRN_POST_008`); flag ความคลาดเคลื่อนของ match (`GRN_POST_009`); reconcile ปิดงวด
 > **persona นี้ทำอะไร:** ปรับการเงินหลัง commit รัน three-way match post AP และ reconcile inventory-to-GL ปิดงวด
 
 ## 1. บทบาทในโมดูลนี้
@@ -52,7 +52,7 @@ Finance ดำเนินงานข้ามสอง touchpoint บน GRN `
 | Age ยอด GRN Clearing เปิด | ❌ | ✅ — Finance Manager |
 | Sign-off ปิดงวด | ❌ | ✅ — Finance Manager |
 | เปลี่ยน `doc_status` ของ GRN | ❌ | ❌ |
-| Void / reverse GRN (co-auth) | ❌ — `GRN_AUTH_008` จำกัด void เฉพาะ `{draft, saved}` เท่านั้น; การ void GRN `committed` ไม่อนุญาตโดยกฎ GRN ใด ๆ (การแก้หลัง commit ใช้ `tb_credit_note` หรือ [[inventory-adjustment]]) | ❌ |
+| Void / reverse GRN (co-auth) | ❌ — `GRN_AUTH_008` จำกัด void เฉพาะ `{draft, saved}` เท่านั้น; การ void GRN `committed` ไม่อนุญาตโดยกฎ GRN ใด ๆ (การแก้หลัง commit ใช้ `tb_credit_note` หรือ [inventory-adjustment](/th/inventory/inventory-adjustment)) | ❌ |
 
 > ℹ️ **สถานะ GRN immutable โดย Finance:** Finance ไม่เคย transition `doc_status` ผลลัพธ์ three-way match จับบน match flag แยก (`unmatched` → `matched` / `flagged` / `partially_matched`) `doc_status` คง `committed` ตลอด lifecycle ของ Finance — match สะอาด คลาดเคลื่อน credit note และปิดงวด
 
@@ -80,14 +80,14 @@ Finance ดำเนินงานข้ามสอง touchpoint บน GRN `
 4. **แก้ผลลัพธ์ match** **Match สะอาด** (qty และราคาภายใน tolerance ทุกบรรทัด): ไปขั้น 5 **คลาดเคลื่อน** (qty mismatch หรือ price gap นอก tolerance หรือ GRN ขาด หรือบรรทัด invoice ขาด): ไปขั้น 6
 5. **Post AP เมื่อสำเร็จ** สอง journal leg รัน atomically: (a) **Dr Inventory / Cr GRN Clearing** ถูก post แล้วโดย event การรับตอน commit (`GRN_POST_006`); match ตอนนี้ (b) post **Dr GRN Clearing / Cr AP-Trade** ที่ amount ที่ match clearing accrual กับหนี้ AP ของ vendor (`GRN_POST_008`) Tax accrual บนบัญชี input-tax control reconcile กับ tax ของ invoice Match flag ของ GRN flip `unmatched → matched`; invoice post ไปยัง AP สำหรับรอบการจ่าย Entry inventory sub-ledger ที่เขียนตอน commit ยังอยู่; ไม่ต้องปรับ inventory
 6. **Flag ความคลาดเคลื่อนเมื่อล้มเหลว** AP ถือ invoice ใน state `disputed` Comment `system` ถูก append บน GRN และ PO บันทึกประเภทคลาดเคลื่อน (qty / price / line-coverage) gap amount และ invoice reference Match flag flip เป็น `flagged` GRN เองคงอยู่ที่ `doc_status = committed` — ไม่มี enum transition เมื่อ match ล้มเหลว (`GRN_POST_009`); enum สี่สถานะไม่สะท้อนผลลัพธ์ match
-7. **Handoff ความคลาดเคลื่อน** Route GRN ที่ flag กลับไปยัง **Purchaser** สำหรับการแก้ฝั่ง vendor (เจรจา credit-note ขอแก้ invoice book replacement-shipment) Finance **ไม่** แก้ GRN เพื่อแก้ความคลาดเคลื่อน — การแก้อยู่บน `tb_credit_note` กับ GRN (สำหรับการผ่อนผันของ vendor) บน invoice vendor ที่แก้ใหม่ (re-key ใน AP) หรือบนการปรับ inventory ชดเชยใน `[[inventory-adjustment]]` สำหรับการแก้สต๊อกจริง
+7. **Handoff ความคลาดเคลื่อน** Route GRN ที่ flag กลับไปยัง **Purchaser** สำหรับการแก้ฝั่ง vendor (เจรจา credit-note ขอแก้ invoice book replacement-shipment) Finance **ไม่** แก้ GRN เพื่อแก้ความคลาดเคลื่อน — การแก้อยู่บน `tb_credit_note` กับ GRN (สำหรับการผ่อนผันของ vendor) บน invoice vendor ที่แก้ใหม่ (re-key ใน AP) หรือบนการปรับ inventory ชดเชยใน `[inventory-adjustment](/th/inventory/inventory-adjustment)` สำหรับการแก้สต๊อกจริง
 
 ## 3. Decision Branches
 
 - **Match สะอาด** (qty เท่ากัน ราคาภายใน tolerance ทุกบรรทัด GRN ครอบคลุม ทุกบรรทัด invoice ครอบคลุม): post AP ตามขั้น 5; flip match flag เป็น `matched` GL accrual ของ GRN ถูก clear เต็ม; หนี้ AP ถูก recognise สำหรับการจ่าย
 - **คลาดเคลื่อน qty** (qty invoice ≠ `received_qty` ของ GRN บนบรรทัดใด): flag กลับ Purchaser สอง sub-case: invoice เก็บเงินเกินการรับ — vendor ถูกขอให้ credit ส่วนเกิน; invoice เก็บเงินน้อยกว่าการรับ — vendor ถูกขอให้ออก invoice ส่วนเหลือ หรือ GRN นั่งที่ `partially_matched` จน invoice ใบที่สองมา `received_qty` ของ GRN คือแหล่งความจริง; AP ไม่ปรับ GRN
 - **คลาดเคลื่อนราคาภายใน tolerance** (gap ≤ tolerance ของ tenant ระบุเป็น percent หรือ absolute amount): auto-pass การ match; post AP ที่ราคา invoice price gap ถูกดูดเข้าบัญชี price-variance (หรือ capitalise เข้า inventory ตามนโยบาย tenant) โดย posting variance อยู่บน leg AP-clearing ไม่มี handoff Purchaser
-- **คลาดเคลื่อนราคานอก tolerance**: flag กลับ Purchaser Vendor ถูกขอให้ออก credit (gap ลง) หรือ invoice ใหม่ (gap ขึ้น); Purchaser อาจขอแก้ `[[vendor-pricelist]]` เพื่อให้ PO ในอนาคตกำหนดราคาถูก GRN ถือที่ `committed` พร้อม match flag ที่ `flagged`
+- **คลาดเคลื่อนราคานอก tolerance**: flag กลับ Purchaser Vendor ถูกขอให้ออก credit (gap ลง) หรือ invoice ใหม่ (gap ขึ้น); Purchaser อาจขอแก้ `[vendor-pricelist](/th/inventory/vendor-pricelist)` เพื่อให้ PO ในอนาคตกำหนดราคาถูก GRN ถือที่ `committed` พร้อม match flag ที่ `flagged`
 - **GRN ขาด** (invoice มาก่อนที่ GRN ใด ๆ สำหรับ PO commit): ถือ invoice ที่ AP ใน `awaiting_receipt`; ไม่รัน match Re-poll ทุก GRN commit กับ PO เดียวกัน โมดูล AP กวาด invoice awaiting-receipt ตาม schedule
 - **Match บางส่วนแล้วเต็มหลาย invoice** กับ GRN เดียวกัน: invoice แรกครอบคลุม subset ของบรรทัดหรือ qty ของ GRN — match flag flip เป็น `partially_matched` post AP-clearing บางส่วน (`Dr GRN Clearing / Cr AP-Trade` ที่ amount ที่ match เท่านั้น); ยอด GRN Clearing คงค้างเปิด Invoice ตามมา match ส่วนที่เหลือ; ที่ match สุดท้าย flag flip เป็น `matched` และส่วนค้าง clear
 - **Gate ปิดงวด** (Finance Manager): งวดปิดไม่ได้จนกว่า (a) ยอด inventory sub-ledger reconcile กับบัญชี GL inventory control (b) ทุกยอด GRN Clearing ทั้ง match ภายในงวด หรือ age ไปงวดถัดไปพร้อมเหตุผลที่เอกสาร (c) รายงาน GRN unmatched ถูก review และ sign off Exception เปิด roll ไปข้างหน้าและ feed Pending Match worklist ของงวดถัดไป
@@ -109,9 +109,9 @@ Finance ดำเนินงานข้ามสอง touchpoint บน GRN `
 - พี่น้อง: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — System Administrator (ตั้งค่า tax-profile, ตั้งค่า match tolerance, ควบคุม period-lock) และ Auditor (review read-only การ post AP, credit note และ sign-off ปิดงวด)
 - พี่น้อง: [01-data-model.md](./01-data-model.md) — `enum_good_received_note_status` canonical (สี่ค่า), `enum_allocate_extra_cost_type` (สามค่า: `manual`, `by_value`, `by_qty`), `tb_extra_cost` และ catalogue divergence ที่ชี้แจงว่า enum จัดสรรห้าโหมด legacy ไม่ได้ implement ที่ระดับ schema
 - พี่น้อง: [02-business-rules.md](./02-business-rules.md) — Section 5 Posting Rules (`GRN_POST_006` accrual ตอน commit, `GRN_POST_007` match anchor, `GRN_POST_008` match success, `GRN_POST_009` match failure) และ Section 6 Cross-Module Rules (`GRN_XMOD_007` Finance / three-way match) — การอ้างอิง canonical สำหรับ journal leg และการจัดการ match-failure ในขั้น 5 และ 6 ของ primary flow
-- เกี่ยวข้อง: [[purchase-order]] — leg ที่สามของ three-way match; `order_qty` และ `order_unit_price` ของ PO ถูก re-check ที่เวลา match เพื่อตรวจจับ drift ต้นน้ำ
-- เกี่ยวข้อง: [[inventory]] — inventory sub-ledger ที่ reconciliation ปิดงวด balance กับบัญชี GL inventory control; แถว `tb_inventory_transaction` ที่เขียนตอน GRN commit feed sub-ledger
-- เกี่ยวข้อง: [[costing]] — feed landed-cost (จัดสรร extra-cost ตาม `GRN_CALC_009`–`GRN_CALC_011`) ไหลเข้า FIFO / average-cost layer บน `tb_inventory_transaction_cost_layer.cost_per_unit`; การปรับ extra-cost ของ Finance ในขั้น 3–5 ของเส้นทาง pre-AP อัปเดต feed นี้ผ่าน journal entry ชดเชย
+- เกี่ยวข้อง: [purchase-order](/th/inventory/purchase-order) — leg ที่สามของ three-way match; `order_qty` และ `order_unit_price` ของ PO ถูก re-check ที่เวลา match เพื่อตรวจจับ drift ต้นน้ำ
+- เกี่ยวข้อง: [inventory](/th/inventory/inventory) — inventory sub-ledger ที่ reconciliation ปิดงวด balance กับบัญชี GL inventory control; แถว `tb_inventory_transaction` ที่เขียนตอน GRN commit feed sub-ledger
+- เกี่ยวข้อง: [costing](/th/inventory/costing) — feed landed-cost (จัดสรร extra-cost ตาม `GRN_CALC_009`–`GRN_CALC_011`) ไหลเข้า FIFO / average-cost layer บน `tb_inventory_transaction_cost_layer.cost_per_unit`; การปรับ extra-cost ของ Finance ในขั้น 3–5 ของเส้นทาง pre-AP อัปเดต feed นี้ผ่าน journal entry ชดเชย
 - เกี่ยวข้อง: credit note — เอกสารปลายทางที่ book การผ่อนผันของ vendor สำหรับความคลาดเคลื่อนที่ flag; เส้นทางแก้หลัง commit สำหรับทั้ง AP-pending (offset GRN Clearing) และ AP-posted (offset AP-Trade) GRN
 - `../carmen/docs/good-recive-note-managment/GRN-User-Experience.md` — ที่มา carmen/docs สำหรับ persona Finance Officer (เป้าหมาย: ensure บันทึกการเงินถูกต้อง ยืนยันการคำนวณ cost และ tax reconcile GRN กับ invoice vendor ดำเนินการจ่ายอย่างมีประสิทธิภาพ; pain point: บริหารอัตราแลกเปลี่ยน จัดสรร cost เพิ่ม จัดการความซับซ้อนของภาษี reconcile ความคลาดเคลื่อนราคา)
 - `../carmen/docs/good-recive-note-managment/GRN-Overview.md` — ภาพรวมโมดูล carmen/docs: integration การเงิน (journal entry, landed cost, การคำนวณภาษี, การแปลงสกุลเงิน), integration AP (matching invoice, การจ่าย) และบทบาทของ GRN เป็น leg การรับของ three-way match

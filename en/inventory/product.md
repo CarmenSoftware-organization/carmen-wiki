@@ -2,7 +2,7 @@
 title: Product
 description: Product master data — categories, units of measure, locations, and import/export — the catalog every inventory document references.
 published: true
-date: 2026-05-19T23:45:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: product, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -27,7 +27,7 @@ Bulk maintenance is a first-class concern. **Import/export** workflows accept Ex
 
 Product master is the foundation every other module reads from. A purchase request line, a PO line, a GRN line, a requisition line, a recipe ingredient, a stock balance, a costing record — none of them exist independently of a product. Bad master data corrupts everything downstream: the wrong base unit silently inflates or deflates valuation, a missing conversion factor blocks receiving, a stale category breaks reporting roll-ups, an inactive product still attached to an open recipe causes orders to fail. Hospitality groups operating across multiple properties feel this acutely — a single global product list with property-level location enablement is what keeps the chain consistent while local kitchens stay flexible.
 
-This module is therefore the system of record for the *definition* of an item, not its movements or balances. It feeds product identity and structure to [[inventory]], [[vendor-pricelist]], [[purchase-request]], [[purchase-order]], and [[recipe]], and consumes nothing back from them except usage flags (e.g., "in-use" prevents delete). Getting this layer right — codes, units, categories, locations, allergens — is the precondition for every other module functioning correctly.
+This module is therefore the system of record for the *definition* of an item, not its movements or balances. It feeds product identity and structure to [inventory](/en/inventory/inventory), [vendor-pricelist](/en/inventory/vendor-pricelist), [purchase-request](/en/inventory/purchase-request), [purchase-order](/en/inventory/purchase-order), and [recipe](/en/inventory/recipe), and consumes nothing back from them except usage flags (e.g., "in-use" prevents delete). Getting this layer right — codes, units, categories, locations, allergens — is the precondition for every other module functioning correctly.
 
 ## 3. Key Concepts
 
@@ -54,17 +54,17 @@ This module is therefore the system of record for the *definition* of an item, n
 ## 5. Related Modules
 
 **Cross-module flow:**
-- [[inventory]] — every inventory balance is keyed by product
-- [[vendor-pricelist]] — pricelists reference products
-- [[purchase-request]] — PR lines reference products
-- [[purchase-order]] — PO lines reference products
-- [[recipe]] — recipes reference products as ingredients
+- [inventory](/en/inventory/inventory) — every inventory balance is keyed by product
+- [vendor-pricelist](/en/inventory/vendor-pricelist) — pricelists reference products
+- [purchase-request](/en/inventory/purchase-request) — PR lines reference products
+- [purchase-order](/en/inventory/purchase-order) — PO lines reference products
+- [recipe](/en/inventory/recipe) — recipes reference products as ingredients
 
 **Master configuration:**
-- [[master-data/unit]] — base, order, and recipe units of measure plus conversion factors
-- [[system-config/application-config]] — tenant-level defaults (deviation tolerances, barcode policy, attribute schema)
-- [[reporting-audit/activity]] — product lifecycle and bulk-import activity log for audit
-- [[reporting-audit/attachment]] — product images, spec sheets, and certificates attached to each product
+- [master-data/unit](/en/inventory/master-data/unit) — base, order, and recipe units of measure plus conversion factors
+- [system-config/application-config](/en/inventory/system-config/application-config) — tenant-level defaults (deviation tolerances, barcode policy, attribute schema)
+- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — product lifecycle and bulk-import activity log for audit
+- [reporting-audit/attachment](/en/inventory/reporting-audit/attachment) — product images, spec sheets, and certificates attached to each product
 
 ## 6. Reference Sources
 

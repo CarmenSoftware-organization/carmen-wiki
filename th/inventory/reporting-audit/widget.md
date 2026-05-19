@@ -2,7 +2,7 @@
 title: Widget
 description: เอนทิตีประกอบ dashboard — dashboard ต่อผู้ใช้ / ต่อ BU, layout default และ workspace ส่วนตัวสำหรับ query ที่บันทึกไว้
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: reporting-audit, widget, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -39,7 +39,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | อาการ | สาเหตุ | การจัดการ |
 |---|---|---|
 | ผู้ใช้ไม่เห็น dashboard ส่วนตัว | `created_by_id` ผิด | dashboard ส่วนตัวกรองตามผู้ใช้ปัจจุบัน |
-| Dashboard BU มองไม่เห็นโดยผู้ใช้ | ผู้ใช้ไม่เป็นสมาชิก BU | grant ผ่าน [[access-control/business-unit-user]] |
+| Dashboard BU มองไม่เห็นโดยผู้ใช้ | ผู้ใช้ไม่เป็นสมาชิก BU | grant ผ่าน [access-control/business-unit-user](/th/inventory/access-control/business-unit-user) |
 | Workspace query ถูก reject | รูปแบบผิด (ไม่ใช่ structured filter doc) | ใช้ภาษา structured filter; ไม่รับ raw SQL |
 | ผู้ใช้ใหม่เห็น default เก่า | Default layout ถูกแก้หลัง seed | ผู้ใช้ใหม่ได้ default ปัจจุบัน; dashboard ที่ materialise แล้วไม่ถูกแตะ |
 
@@ -101,10 +101,10 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 7. ความเชื่อมโยงข้ามโมดูล
 
-- [[access-control/user]] — เจ้าของ dashboard ส่วนตัวและ workspace
-- [[master-data/business-unit]] — จำกัดการมองเห็น scope `bu`
-- [[reporting-audit/report]] — `config` ของ tile อาจฝัง `report_template_id`
-- [[reporting-audit/activity]] — การแก้ dashboard ถูก log
+- [access-control/user](/th/inventory/access-control/user) — เจ้าของ dashboard ส่วนตัวและ workspace
+- [master-data/business-unit](/th/inventory/master-data/business-unit) — จำกัดการมองเห็น scope `bu`
+- [reporting-audit/report](/th/inventory/reporting-audit/report) — `config` ของ tile อาจฝัง `report_template_id`
+- [reporting-audit/activity](/th/inventory/reporting-audit/activity) — การแก้ dashboard ถูก log
 - โมดูลธุรกรรมทั้งหมด — แหล่งข้อมูลทั่วไปของ tile
 
 ## 8. แหล่งอ้างอิง

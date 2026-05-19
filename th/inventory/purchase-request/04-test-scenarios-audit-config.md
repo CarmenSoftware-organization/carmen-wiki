@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — Test Scenarios — Audit & Config
 description: Test case ของ Auditor (audit trail read-only) และ System Administrator (ตั้งค่า workflow / threshold / delegation) สำหรับโมดูล purchase-request
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-request, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 # ใบขอซื้อ (Purchase Request) — Test Scenarios — Audit & Config
 
 > **At a Glance**
-> **Persona:** Audit / Config (Auditor read-only + System Administrator config) &nbsp;·&nbsp; **โมดูล:** [[purchase-request]] &nbsp;·&nbsp; **Scenario:** ~30
+> **Persona:** Audit / Config (Auditor read-only + System Administrator config) &nbsp;·&nbsp; **โมดูล:** [purchase-request](/th/inventory/purchase-request) &nbsp;·&nbsp; **Scenario:** ~30
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** ยังไม่มี `30X-pr-audit-config-journey.spec.ts` เฉพาะ; เส้นทางอ่าน audit-log บางส่วนผ่าน assertion activity-log ใน `tests/301-pr.spec.ts` ใน `../carmen-inventory-frontend-e2e/`
 
@@ -85,5 +85,5 @@ Section 4 ครอบคลุม boundary และ concurrency case ที่
 - หน้าพี่น้อง: [04-test-scenarios-requestor.md](./04-test-scenarios-requestor.md) — persona ต้นน้ำที่ submission feed audit trail; PR ใหม่ที่ submit หลังการเปลี่ยน configuration ของ Sysadmin เห็นพฤติกรรมใหม่อัตโนมัติ
 - E2E: **TODO** — ยังไม่มี `30X-pr-audit-config-journey.spec.ts` เฉพาะ เส้นทางอ่าน audit-log exercise บางส่วนผ่าน assertion activity-log ใน `../carmen-inventory-frontend-e2e/tests/301-pr.spec.ts` (verification audit per-action transition) การเปลี่ยน configuration (workflow / threshold / delegation / master data) อยู่นอก scope ของ spec โมดูล PR ปัจจุบันและจะอยู่ใน test suite configuration เฉพาะ เพิ่ม spec persona-journey เมื่อ UI workspace Audit และ UI workspace Configuration wired เข้า frontend
 - ที่มา: `../carmen/docs/purchase-request-management/PR-Module-Structure.md` (surface configuration: stage workflow, threshold, delegation, default ประเภท PR, configuration tax / currency / user-role), `../carmen/docs/purchase-request-management/PR-User-Experience.md` (UX activity-log, การนำเสนอ audit-trail, convention drill-down), `../carmen/docs/purchase-request-management/PR-Overview.md` (role stakeholder Auditor และ System Administrator, จุด integration governance), `../carmen/docs/purchase-request-management/purchase-request-module-prd.md` (product requirement สำหรับ audit log, surface configuration และ action ธุรการระดับสูง), `../carmen/docs/purchase-request-management/testing.md` (level testing — assertion ความสมบูรณ์ audit-trail, pattern regression การเปลี่ยน configuration), `../carmen/docs/purchase-request-management/troubleshooting.md` (Section 2.2 ปัญหา workflow transition — บ่อย ๆ surface diagnostic ที่ Auditor นำมาให้ Sysadmin; Section 2.3 master-data corruption — เส้นทางที่ `AUD-VAL-08` เกิด)
-- Cross-link: [[inventory-adjustment]] — surface audit-trail พี่น้องสำหรับ governance ฝั่ง inventory; pattern comment immutable แบบ `PR_POST_008` เดียวกัน
-- Cross-link: [[purchase-order]] — โมดูลปลายน้ำที่ event การแปลงถูกสังเกตใน audit trail ของ PR; การเปลี่ยน default ประเภท PR สามารถกระทบพฤติกรรม bridge PO
+- Cross-link: [inventory-adjustment](/th/inventory/inventory-adjustment) — surface audit-trail พี่น้องสำหรับ governance ฝั่ง inventory; pattern comment immutable แบบ `PR_POST_008` เดียวกัน
+- Cross-link: [purchase-order](/th/inventory/purchase-order) — โมดูลปลายน้ำที่ event การแปลงถูกสังเกตใน audit trail ของ PR; การเปลี่ยน default ประเภท PR สามารถกระทบพฤติกรรม bridge PO

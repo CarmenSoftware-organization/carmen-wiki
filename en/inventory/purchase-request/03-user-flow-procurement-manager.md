@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow — Procurement Manager
 description: Procurement Manager's flow within the purchase-request module — high-value approval, vendor ranking, and Allocate Vendor rule tuning.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-request, user-flow, procurement-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 # Purchase Request — User Flow — Procurement Manager
 
 > **At a Glance**
-> **Persona:** Procurement Manager &nbsp;·&nbsp; **Module:** [[purchase-request]] &nbsp;·&nbsp; **Workflow stages:** in_progress (escalated final approve) + configurational (Allocate Vendor rules) &nbsp;·&nbsp; **Key permissions:** high-value approve, override prior send-back, vendor-ranking config
+> **Persona:** Procurement Manager &nbsp;·&nbsp; **Module:** [purchase-request](/en/inventory/purchase-request) &nbsp;·&nbsp; **Workflow stages:** in_progress (escalated final approve) + configurational (Allocate Vendor rules) &nbsp;·&nbsp; **Key permissions:** high-value approve, override prior send-back, vendor-ranking config
 > **What this persona does:** Acts as the escalated final-approve authority for high-value PRs and owns the vendor allocation rule set that feeds the Purchaser.
 
 ## 1. Role in This Module
@@ -66,7 +66,7 @@ The Manager engages with the module across two surfaces. Transactional rights ar
 
 1. From the **Escalated PRs** queue (or notification link), pick the PR awaiting an escalated decision. The queue shows `pr_no`, requestor, department, `base_total_amount` in transaction and base currency, the originating stage that triggered the escalation, the threshold band that fired, and the time the PR has been waiting at this escalated stage. Click into the PR to open the detail page in read-mostly mode (header and lines are non-editable except for `approved_qty` and line-level decision flags, identical to the base Approver UI).
 2. Review the **full upstream context**: header (PR type, requestor, department, `pr_date`, required delivery date, currency, `exchange_rate`, `workflow_name`, justification, attachments), the prior Approver decisions in the **Activity Log** (Department Head note, Budget Controller budget commentary, Finance review), and any system events including threshold breach annotations. The Activity Log surfaces every prior stage's comment from `tb_purchase_request_comment` so the Procurement Manager has the same picture every prior decision-maker had, plus the escalation reason.
-3. Open the **Items** tab and walk each line, confirming product, store location, `requested_qty`, unit of measure, `approved_qty` (if Approvers reduced it earlier), unit price, FOC, discount, tax treatment, line delivery date, line notes, and the inventory context (on-hand, on-order, reorder level, average monthly usage, last purchase price) pulled live from [[inventory]] and the preferred-vendor / pricelist context pulled from [[vendor-pricelist]]. For high-value PRs, also confirm the consolidated vendor-impact view — which lines auto-allocated to which vendor under the current Allocate Vendor rules — so the Procurement Manager can sense-check the downstream vendor commitment they are about to authorise.
+3. Open the **Items** tab and walk each line, confirming product, store location, `requested_qty`, unit of measure, `approved_qty` (if Approvers reduced it earlier), unit price, FOC, discount, tax treatment, line delivery date, line notes, and the inventory context (on-hand, on-order, reorder level, average monthly usage, last purchase price) pulled live from [inventory](/en/inventory/inventory) and the preferred-vendor / pricelist context pulled from [vendor-pricelist](/en/inventory/vendor-pricelist). For high-value PRs, also confirm the consolidated vendor-impact view — which lines auto-allocated to which vendor under the current Allocate Vendor rules — so the Procurement Manager can sense-check the downstream vendor commitment they are about to authorise.
 4. Open the **Budget Impact** panel for the full PR-level budget footprint (total budget, soft commitments from this and other open PRs / POs, hard commitments, resulting `availableBudget`) — the Procurement Manager pays attention to portfolio-level budget headroom across departments, not just the originating cost-centre.
 5. If a quantity needs adjustment at this stage (rare at the escalated stage, but allowed), edit `approved_qty` on the affected line per `PR_VAL_013` — new value must be `> 0` and `≤ requested_qty` after UoM conversion; `approved_unit_id` and `approved_unit_conversion_factor` are persisted alongside. Header roll-ups (`base_sub_total_amount`, `base_total_amount`, etc.) recompute on save and may shift the line out of the high-value band on re-submit.
 6. Decide the **per-line disposition** if split-reject is needed: mark individual lines accept / reject with a reason on each rejected line. Per `PR_AUTH_003`, rejected lines stay on the document with `current_stage_status = rejected` and never reach PO conversion; accepted lines continue.
@@ -97,7 +97,7 @@ The Manager engages with the module across two surfaces. Transactional rights ar
 
 The Procurement Manager's involvement ends in one of the following ways, with the exit depending on which surface (transactional or configurational) the manager last acted on:
 
-- **Transactional — Escalated-stage Approve (final approve in the chain).** `pr_status` flips from `in_progress` to `approved` per `PR_POST_005`; handoff is to the **Purchaser** queue ([03-user-flow-purchaser.md](./03-user-flow-purchaser.md)) for vendor validation and PO conversion. The soft budget commitment persists until PO creation converts it to a hard commitment (see [[purchase-order]]). The PR remains in `approved` until every line is fully bridged or cancelled, at which point `pr_status` flips to `completed` (`PR_POST_007`).
+- **Transactional — Escalated-stage Approve (final approve in the chain).** `pr_status` flips from `in_progress` to `approved` per `PR_POST_005`; handoff is to the **Purchaser** queue ([03-user-flow-purchaser.md](./03-user-flow-purchaser.md)) for vendor validation and PO conversion. The soft budget commitment persists until PO creation converts it to a hard commitment (see [purchase-order](/en/inventory/purchase-order)). The PR remains in `approved` until every line is fully bridged or cancelled, at which point `pr_status` flips to `completed` (`PR_POST_007`).
 - **Transactional — Send Back.** `pr_status` stays `in_progress` but `workflow_current_stage` moves one step back; if the rollback reaches the Requestor's create stage, the document returns to `draft` and the **Requestor** picks it up again at [03-user-flow-requestor.md](./03-user-flow-requestor.md) Section 2 step 2. The soft budget commitment is released only when the rollback reaches the create stage; for shorter rollbacks the prior approver receives the handoff and the commitment remains in place.
 - **Transactional — Header Reject.** `pr_status` flips to `cancelled` (terminal, `PR_POST_006`); the soft budget commitment is released; the **Auditor** reviews post-hoc but no further user action is possible. The Requestor sees the cancellation in their **My PRs** dashboard.
 - **Configurational — Rule set saved.** No PR state change. The new rule set takes effect for future PRs created after the effective-from timestamp; existing PRs at `in_progress` retain their original snapshotted vendor allocations and pricelist references. The **Purchaser team** is notified that the Allocate Vendor configuration has changed; the next Convert-to-PO action they run on a brand-new approved PR will use the updated ranking.
@@ -119,5 +119,5 @@ Document state across all transitions is recorded by `enum_purchase_request_doc_
 - Sibling: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — downstream persona that consumes the vendor-allocation rules the Procurement Manager maintains
 - Sibling: [03-user-flow-requestor.md](./03-user-flow-requestor.md) — bounce-back target for send-back that reaches the create stage
 - Sibling: [the module landing](/en/inventory/purchase-request) Section 4 — canonical Procurement Manager role description
-- Cross-link: [[vendor-pricelist]] — pricelist data feeding the Allocate Vendor ranking
-- Cross-link: [[purchase-order]] — downstream module receiving the final-approved PR for conversion
+- Cross-link: [vendor-pricelist](/en/inventory/vendor-pricelist) — pricelist data feeding the Allocate Vendor ranking
+- Cross-link: [purchase-order](/en/inventory/purchase-order) — downstream module receiving the final-approved PR for conversion

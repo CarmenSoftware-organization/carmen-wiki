@@ -2,7 +2,7 @@
 title: การปรับสต๊อก (Inventory Adjustment) — User Flow — Finance
 description: Flow ของ Finance ภายในโมดูล inventory-adjustment — การตรวจสอบผลกระทบต้นทุน การ map GL การอนุมัติต้นทุนขนาดใหญ่ การ sign-off ปลายงวด
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: inventory-adjustment, user-flow, finance, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 # การปรับสต๊อก (Inventory Adjustment) — User Flow — Finance
 
 > **At a Glance**
-> **Persona:** Finance &nbsp;·&nbsp; **โมดูล:** [[inventory-adjustment]] &nbsp;·&nbsp; **ขั้น workflow:** queue เหนือ Controller-threshold — review ที่ `in_progress`; อนุมัติไปยัง `completed` (`ADJ_AUTH_005`), reject ไปยัง `draft`, ส่งกลับไปยัง Controller; การตรวจสอบ GL mapping; การ sign-off ปลายงวด &nbsp;·&nbsp; **สิทธิ์สำคัญ:** อนุมัติเหนือ Finance threshold (`ADJ_AUTH_005`); gate ปิดงวด
+> **Persona:** Finance &nbsp;·&nbsp; **โมดูล:** [inventory-adjustment](/th/inventory/inventory-adjustment) &nbsp;·&nbsp; **ขั้น workflow:** queue เหนือ Controller-threshold — review ที่ `in_progress`; อนุมัติไปยัง `completed` (`ADJ_AUTH_005`), reject ไปยัง `draft`, ส่งกลับไปยัง Controller; การตรวจสอบ GL mapping; การ sign-off ปลายงวด &nbsp;·&nbsp; **สิทธิ์สำคัญ:** อนุมัติเหนือ Finance threshold (`ADJ_AUTH_005`); gate ปิดงวด
 > **persona นี้ทำอะไร:** Review ผลกระทบต้นทุนของ adjustments เหนือ threshold, post ไปยัง `completed` และ sign-off การ reconcile inventory-to-GL ปลายงวดสำหรับโมดูล
 
 ### ตำแหน่ง Workflow (Finance เน้น)
@@ -30,7 +30,7 @@ graph LR
 
 ### Permission Matrix — V5 Touchpoint × Action (Finance)
 
-Finance ดำเนินงานข้ามสอง touchpoints ที่แตกต่าง: **การอนุมัติต้นทุนขนาดใหญ่** (เอกสารเหนือ Controller-threshold ใน Finance queue) และ **การ reconcile ปลายงวด** (ตรวจสอบว่ากิจกรรม adjustment roll up เข้า inventory sub-ledger และ GL อย่างถูกต้อง) Finance ไม่มีอำนาจเหนือเอกสารต่ำกว่า Controller-threshold แถวมาจาก Section 2 (Entry Point and Primary Flow) ของไฟล์นี้; การอ้างอิงกฎหมายถึง [[inventory-adjustment/02-business-rules]] § 4 (กฎ Authorization) และ § 5 (กฎ Posting)
+Finance ดำเนินงานข้ามสอง touchpoints ที่แตกต่าง: **การอนุมัติต้นทุนขนาดใหญ่** (เอกสารเหนือ Controller-threshold ใน Finance queue) และ **การ reconcile ปลายงวด** (ตรวจสอบว่ากิจกรรม adjustment roll up เข้า inventory sub-ledger และ GL อย่างถูกต้อง) Finance ไม่มีอำนาจเหนือเอกสารต่ำกว่า Controller-threshold แถวมาจาก Section 2 (Entry Point and Primary Flow) ของไฟล์นี้; การอ้างอิงกฎหมายถึง [inventory-adjustment/02-business-rules](/th/inventory/inventory-adjustment/02-business-rules) § 4 (กฎ Authorization) และ § 5 (กฎ Posting)
 
 | Action | การอนุมัติต้นทุนขนาดใหญ่ (Finance queue) | การ reconcile ปลายงวด |
 |---|---|---|
@@ -57,12 +57,12 @@ Persona **Finance** เป็นเจ้าของ **การตรวจส
 - **อำนาจ approve / reject** บนเอกสาร `in_progress` เหนือ Inventory Controller threshold (โดยทั่วไป `฿10,000` aggregate cost, tenant-configurable) ตาม `ADJ_AUTH_005` — recall write-offs ขนาดใหญ่, damage write-offs ขนาดใหญ่, theft write-offs ขนาดใหญ่, การแก้ไข data-fix ขนาดใหญ่
 - **Scope การตรวจสอบผลกระทบต้นทุน** — ตรวจสอบว่า `cost_per_unit` ที่เลือก (FIFO จาก layer เก่าที่สุด หรือ WA ปัจจุบัน) สอดคล้องกับ entries vendor-pricelist ล่าสุดและ baseline ของ costing engine ต้นทุน outlier ถูก flag สำหรับการสืบสวนเพิ่ม
 - **การตรวจสอบ GL-account mapping** — `info.glAccount` ที่ resolve จาก `tb_adjustment_type` ต้อง map ไปยังบัญชี GL ที่ valid, period-open ใน chart of accounts Reason codes ที่ map ผิด flag สำหรับ re-configure ของ Sysadmin
-- **อำนาจการ sign-off ปลายงวด** — ตรวจสอบว่ากิจกรรม adjustment ของงวด roll up เข้า inventory sub-ledger อย่างถูกต้องและ sub-ledger reconcile กับ GL Inventory control Sign-off เป็น pre-condition ต่อ period close ของ Finance Manager บน `tb_period.status` ตาม [[inventory]] `INV_AUTH_006`
+- **อำนาจการ sign-off ปลายงวด** — ตรวจสอบว่ากิจกรรม adjustment ของงวด roll up เข้า inventory sub-ledger อย่างถูกต้องและ sub-ledger reconcile กับ GL Inventory control Sign-off เป็น pre-condition ต่อ period close ของ Finance Manager บน `tb_period.status` ตาม [inventory](/th/inventory/inventory) `INV_AUTH_006`
 - **อำนาจ compensating-reversal** — ริเริ่ม void บนเอกสาร `completed` เมื่อ adjustment ของงวดก่อนพิสูจน์ว่าผิด (โดยทั่วไปข้อผิดพลาด cost-mapping หรือ duplicate-post ระบุหลังการกระทำ) ตาม `ADJ_POST_004`
 
 Finance **ไม่** แก้ไขเอกสาร `completed` โดยตรง (immutable ตาม `ADJ_VAL_013`), ไม่สร้าง adjustments สำหรับ reasons ที่ไม่ใช่การเงิน (โดเมน Store Keeper / Controller), ไม่อนุมัติเอกสารต่ำกว่า Controller-threshold (โดเมนของ Controller) และไม่กำหนดค่า reason-code masters หรือ thresholds (Sysadmin ตาม `ADJ_AUTH_008`)
 
-Persona group Finance ยังเป็นด่านหน้าของ workflow **Period Close** ใน [[inventory]] — ที่ปลายงวด Finance reconcile กิจกรรม inventory adjustment กับบัญชี GL Inventory control และ sign-off งวดว่าพร้อมปิด การเปลี่ยน `tb_period.status` จริง (`open → closed → locked`) เป็นเจ้าของโดย Finance Manager ตาม [[inventory]] `INV_AUTH_006`; หน้านี้มุ่งเน้นที่ review ฝั่ง adjustment ที่ป้อนการเปลี่ยนเหล่านั้น
+Persona group Finance ยังเป็นด่านหน้าของ workflow **Period Close** ใน [inventory](/th/inventory/inventory) — ที่ปลายงวด Finance reconcile กิจกรรม inventory adjustment กับบัญชี GL Inventory control และ sign-off งวดว่าพร้อมปิด การเปลี่ยน `tb_period.status` จริง (`open → closed → locked`) เป็นเจ้าของโดย Finance Manager ตาม [inventory](/th/inventory/inventory) `INV_AUTH_006`; หน้านี้มุ่งเน้นที่ review ฝั่ง adjustment ที่ป้อนการเปลี่ยนเหล่านั้น
 
 ความเป็นเจ้าของโมดูล adjustment ของ Finance เริ่มเมื่อเอกสารเหนือ Controller-threshold ชน Finance approval queue หรือที่ review ปลายงวดที่กำหนด และสิ้นสุดที่ขอบเขตหนึ่งที่ enumerate ใน Section 4
 
@@ -86,13 +86,13 @@ Persona group Finance ยังเป็นด่านหน้าของ wor
     - บัญชีอยู่ในประเภท cost-centre ที่ถูกต้อง (โดยทั่วไปบัญชี expense)
     - บัญชีตรงกับ chart-of-accounts policy สำหรับ recall losses (vs damage, vs expiry, vs theft — sub-classifications ที่แตกต่าง)
 6. **ตรวจสอบแผนก / cost-centre** จาก `dimension.department` ของเอกสาร ยืนยันว่าแผนกถือความรับผิดชอบงบประมาณสำหรับการ write-off recall สำหรับ recalls ที่กระทบหลายแผนก เอกสารอาจต้องแบ่งเป็น adjustments ต่อแผนก (ขอ Controller / Store Keeper เพื่อ submit ใหม่)
-7. **ตรวจสอบมุม insurance / vendor-recovery** การสูญเสีย recall ขนาดใหญ่มักจะ qualify สำหรับ vendor recovery ผ่าน credit note (channel ที่ต้องการตาม [[inventory]] `INV_XMOD_007`) หรือ insurance claim ตรวจสอบว่าการ recovery คู่ขนานอยู่ใน flight; ถ้าไม่ การ write-off ดำเนินการเต็มจำนวน แต่บันทึก recovery ที่ขาดใน comment สำหรับ follow-up
+7. **ตรวจสอบมุม insurance / vendor-recovery** การสูญเสีย recall ขนาดใหญ่มักจะ qualify สำหรับ vendor recovery ผ่าน credit note (channel ที่ต้องการตาม [inventory](/th/inventory/inventory) `INV_XMOD_007`) หรือ insurance claim ตรวจสอบว่าการ recovery คู่ขนานอยู่ใน flight; ถ้าไม่ การ write-off ดำเนินการเต็มจำนวน แต่บันทึก recovery ที่ขาดใน comment สำหรับ follow-up
 8. **Approve, reject หรือ send back**
     - **Approve:** คลิก **Approve** เอกสารเปลี่ยน `in_progress → completed` ตาม `ADJ_POST_002` Inventory transaction post; cost-layer rows เขียน; GL journal สร้าง (`Dr Product Recall Loss ฿85,000 / Cr Inventory ฿85,000`) `workflow_history` บันทึก `{stage: 'completed', action: 'finance_approved', by: <finance_id>}`
     - **Reject:** กรอกเหตุผล rejection — โดยทั่วไปปัญหา cost-mapping, recovery path ที่ขาด, scope-mismatch กับ vendor notice เอกสาร return ไปยัง `draft` สำหรับการแก้ไข Store Keeper + Controller re-forward
     - **Send back ไปยัง Controller:** Comment-only — ขอให้ Controller revisit aspects เฉพาะ (เช่น ยืนยันว่า lot เฉพาะได้รับผลกระทบจริง) เอกสารคงอยู่ `in_progress`; Controller สืบสวนใหม่
-9. **Post จุดชนวน (เมื่อ Approve)** Fan-out เดียวกับการ post ที่ Controller อนุมัติตาม [[inventory]] `INV_POST_002`: `tb_inventory_transaction`, detail, cost-layer rows, GL journal `inventory_transaction_id` ของ detail ประทับ
-10. **Optional: chain การสร้าง credit-note** สำหรับการ write-off vendor-recall ที่ vendor credit อยู่ใน flight Finance อาจสร้าง `tb_credit_note` ทันที (flow credit-note ของ [[good-receive-note]]) ต่อ GRN ต้นทางเพื่อ recover ต้นทุน นี่คือ workflow การเงินคู่ขนาน ไม่ใช่ส่วนของเอกสาร adjustment เอง
+9. **Post จุดชนวน (เมื่อ Approve)** Fan-out เดียวกับการ post ที่ Controller อนุมัติตาม [inventory](/th/inventory/inventory) `INV_POST_002`: `tb_inventory_transaction`, detail, cost-layer rows, GL journal `inventory_transaction_id` ของ detail ประทับ
+10. **Optional: chain การสร้าง credit-note** สำหรับการ write-off vendor-recall ที่ vendor credit อยู่ใน flight Finance อาจสร้าง `tb_credit_note` ทันที (flow credit-note ของ [good-receive-note](/th/inventory/good-receive-note)) ต่อ GRN ต้นทางเพื่อ recover ต้นทุน นี่คือ workflow การเงินคู่ขนาน ไม่ใช่ส่วนของเอกสาร adjustment เอง
 
 **Flow review ปลายงวด (5 ขั้น, เป็นตัวอย่าง):**
 
@@ -104,7 +104,7 @@ Persona group Finance ยังเป็นด่านหน้าของ wor
     - การ reconcile กับบัญชี GL Inventory control: `Σ adjustment_cost_impact` vs net adjustment debit / credit ของ GL Inventory สำหรับงวด
 2. **สืบสวน outliers ที่ flag** สำหรับแต่ละรายการที่ flag, drill เข้าเอกสารที่ contribute — ยืนยันว่าแต่ละตัวอนุมัติอย่างถูกต้อง, post อย่างถูกต้อง, จัดประเภทอย่างถูกต้อง
 3. **ตรวจสอบการ reconcile** ผลต่างระหว่าง inventory sub-ledger และบัญชี GL Inventory control ต้อง ≤ tenant tolerance (โดยทั่วไป zero) ผลต่างใด ๆ สาวไปยังเหตุการณ์ posting เฉพาะ; การแก้ไข post เป็น stock-in / stock-out ที่ Finance สร้างพร้อมเหตุผล `DATA_FIX` หรือเป็น entry GL journal ด้วยมือ (นอกโมดูล adjustment)
-4. **Sign-off** คลิก **Period Approve** Finance Manager (ที่อาจเป็นผู้ใช้คนเดียวกันหรือคนละคน) จากนั้นทำการเปลี่ยน `tb_period.status = open → closed` จริงตาม [[inventory]] `INV_AUTH_006`
+4. **Sign-off** คลิก **Period Approve** Finance Manager (ที่อาจเป็นผู้ใช้คนเดียวกันหรือคนละคน) จากนั้นทำการเปลี่ยน `tb_period.status = open → closed` จริงตาม [inventory](/th/inventory/inventory) `INV_AUTH_006`
 5. **Handoff ไปยัง external audit** หลัง period lock (`closed → locked`), adjustment trail ของงวดเป็น record ระดับ audit Auditor review trail ตาม Flow Auditor ของ [03-user-flow-audit-config.md](./03-user-flow-audit-config.md)
 
 ## 3. การตัดสินใจ
@@ -113,7 +113,7 @@ Persona group Finance ยังเป็นด่านหน้าของ wor
 - **ขอ override GL-account mapping** เมื่อ `info.glAccount` default ของ reason-code ผิดสำหรับ transaction เฉพาะ (เช่น เหตุการณ์ "BREAKAGE" ที่จริงเป็นขโมยที่สงสัยว่า insurance-claimable), Finance ไม่ override โดยตรง (Finance ไม่สามารถแก้ไขบรรทัดเอกสาร) แทนนั้น Finance reject และขอ submit ใหม่พร้อม reason ที่ถูกต้อง — หรือขอ Sysadmin เพิ่ม reason code ที่เฉพาะมากขึ้น จากนั้น re-process
 - **Routing channel การ recovery** เมื่อการ write-off adjustment มี vendor-credit หรือ insurance recovery คู่ขนาน Finance ตรวจสอบว่า recovery channel ริเริ่ม Adjustment ดำเนินการที่ต้นทุนเต็ม; recovery เป็น credit ที่ลดการสูญเสียสุทธิแยกต่างหาก กรณีที่ route ผิด (write-off ดำเนินการเมื่อ credit-note path เหมาะสม, การ double-count recovery) ต้องการ Finance ประสานกับ Controller / Store Keeper
 - **Period close: zero-tolerance vs allowance** Reconcile ปลายงวด default ไปยัง zero-tolerance (ผลต่าง sub-ledger / GL ใด ๆ block การปิด) Tenant config อาจผ่อนเป็น ± X% allowance สำหรับ reasons เฉพาะ (เช่น tolerance การปัดเศษเล็กบนสินค้า weighted-average) ผลต่างเหนือ tolerance จุดชนวนการสืบสวนของ Finance และ (อาจ) adjustment stock-in / stock-out แก้ไขก่อนปิด
-- **Re-open หลังปิด** เมื่อ external audit (หลัง period-lock) ระบุ adjustment ที่ขาดหรือผิด, path re-open ผ่าน Finance Manager ตาม [[inventory]] `INV_AUTH_006` (เฉพาะงวด closed ไม่ใช่ locked) สงวนสำหรับกรณีพิเศษ การพิสูจน์ระดับ audit ต้องการ; re-close ต้องตามก่อนการปิดงวดปกติถัดไป
+- **Re-open หลังปิด** เมื่อ external audit (หลัง period-lock) ระบุ adjustment ที่ขาดหรือผิด, path re-open ผ่าน Finance Manager ตาม [inventory](/th/inventory/inventory) `INV_AUTH_006` (เฉพาะงวด closed ไม่ใช่ locked) สงวนสำหรับกรณีพิเศษ การพิสูจน์ระดับ audit ต้องการ; re-close ต้องตามก่อนการปิดงวดปกติถัดไป
 
 ## 4. จุดออก / Handoffs
 
@@ -122,7 +122,7 @@ Persona group Finance ยังเป็นด่านหน้าของ wor
 - **Approval → post เสร็จ** เอกสารเหนือ Controller-threshold อนุมัติ; `doc_status = completed`; inventory transaction post; GL journal สร้าง ไม่มี handoff persona เพิ่มเติมสำหรับเอกสารนั้น
 - **Rejection → กลับไปยัง Store Keeper** เอกสาร return ไปยัง `draft` ด้วย comment rejection Store Keeper แก้ไขและ submit ใหม่ตาม [03-user-flow-store-keeper.md](./03-user-flow-store-keeper.md); Controller re-forward ถ้ายังเหนือ Controller-threshold
 - **Send-back → Controller re-review** เอกสารคงอยู่ `in_progress` ด้วย comment ขอ follow-up ของ Controller Controller re-engage
-- **Period-end approve → Finance Manager close** Finance sign-off กิจกรรม adjustment ของงวด; Finance Manager รัน `tb_period.status = open → closed` ตาม [[inventory]] `INV_AUTH_006` หลัง close + audit-window, Finance Manager รัน `closed → locked` งาน adjustment สำหรับงวดเป็นปลายทาง; งวดใหม่เริ่ม
+- **Period-end approve → Finance Manager close** Finance sign-off กิจกรรม adjustment ของงวด; Finance Manager รัน `tb_period.status = open → closed` ตาม [inventory](/th/inventory/inventory) `INV_AUTH_006` หลัง close + audit-window, Finance Manager รัน `closed → locked` งาน adjustment สำหรับงวดเป็นปลายทาง; งวดใหม่เริ่ม
 
 ## 5. แหล่งอ้างอิง
 
@@ -132,7 +132,7 @@ Persona group Finance ยังเป็นด่านหน้าของ wor
 - Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — Sysadmin ที่กำหนดค่า mappings `info.glAccount` ที่ Finance ตรวจสอบ; Auditor ที่ review trail adjustment ปลายงวดที่ Finance sign-off
 - Sibling: [01-data-model.md](./01-data-model.md) — `tb_adjustment_type.info.glAccount` ที่ Finance ตรวจสอบ; ฟิลด์ extension `tb_stock_in.info` / `tb_stock_out.info` ที่ Finance อ่าน (count source, void chain)
 - Sibling: [02-business-rules.md](./02-business-rules.md) — `ADJ_AUTH_005` (การอนุมัติ Finance), `ADJ_POST_002` (post fan-out), `ADJ_POST_004` (void ผ่าน compensating reversal), `ADJ_CALC_008` (variance %), `ADJ_CALC_010` (period impact), `ADJ_XMOD_007` (การ reconcile Finance / GL)
-- ที่เกี่ยวข้อง: [[inventory]] — `INV_AUTH_005` (scope การอนุมัติ Finance), `INV_AUTH_006` (Finance Manager period transitions), `INV_XMOD_008` (การ reconcile inventory-to-GL ที่ปิดงวด)
-- ที่เกี่ยวข้อง: [[good-receive-note]] — Finance อาจ chain flow credit-note สำหรับ vendor-recall recovery ต่อ GRN ต้นทาง
-- ที่เกี่ยวข้อง: [[vendor-pricelist]] — Finance cross-check cost-per-unit picks กับการตั้งราคา vendor ประวัติสำหรับการตรวจจับ outlier
-- ที่เกี่ยวข้อง: [[costing]] — Finance ตรวจสอบ FIFO / WA cost picks บน adjustments ขาออกสอดคล้องกับ baseline ของ costing-engine
+- ที่เกี่ยวข้อง: [inventory](/th/inventory/inventory) — `INV_AUTH_005` (scope การอนุมัติ Finance), `INV_AUTH_006` (Finance Manager period transitions), `INV_XMOD_008` (การ reconcile inventory-to-GL ที่ปิดงวด)
+- ที่เกี่ยวข้อง: [good-receive-note](/th/inventory/good-receive-note) — Finance อาจ chain flow credit-note สำหรับ vendor-recall recovery ต่อ GRN ต้นทาง
+- ที่เกี่ยวข้อง: [vendor-pricelist](/th/inventory/vendor-pricelist) — Finance cross-check cost-per-unit picks กับการตั้งราคา vendor ประวัติสำหรับการตรวจจับ outlier
+- ที่เกี่ยวข้อง: [costing](/th/inventory/costing) — Finance ตรวจสอบ FIFO / WA cost picks บน adjustments ขาออกสอดคล้องกับ baseline ของ costing-engine

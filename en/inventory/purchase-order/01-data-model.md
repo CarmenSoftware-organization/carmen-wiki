@@ -2,7 +2,7 @@
 title: Purchase Order — Data Model
 description: Entities, fields, relationships, and enums for the purchase-order module.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-order, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -26,7 +26,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 
 The purchase-order module owns five tenant-schema entities: the PO document header (`tb_purchase_order`), its line items (`tb_purchase_order_detail`), workflow / activity-log comments at both header and line level (`tb_purchase_order_comment`, `tb_purchase_order_detail_comment`), and the bridge table (`tb_purchase_order_detail_tb_purchase_request_detail`) that links PO lines back to one or more originating PR lines. As with PR, workflow stage tracking is not a dedicated table — it is stored inline on the header as JSON columns (`workflow_history`, `workflow_current_stage`, `stages_status`) plus a foreign key into the shared `tb_workflow` configuration, while the persisted timeline of stage-transition events is captured through the comment tables.
 
-The PO sits **downstream of [[purchase-request]]** and **upstream of [[good-receive-note]]** in the procure-to-pay chain. PR-to-PO linkage runs through the bridge table noted above; the same bridge captures per-PR-line received and FOC quantities, supporting both PR consolidation (many PR lines → one PO line) and partial conversion (one PR line → many PO lines). PO lines carry running `received_qty` and `cancelled_qty` columns so that the "pending qty" available for GRN is `order_qty − received_qty − cancelled_qty`; the relation from PO detail to GRN detail (`tb_good_received_note_detail`) is what closes the loop. PO detail rows also reference [[product]], `tb_tax_profile`, and `tb_unit` (twice — for order UoM and base UoM), and the header references `tb_vendor`, `tb_currency`, and `tb_credit_term`. All PO entities live in the tenant Prisma schema; the platform schema contains no purchase-order models.
+The PO sits **downstream of [purchase-request](/en/inventory/purchase-request)** and **upstream of [good-receive-note](/en/inventory/good-receive-note)** in the procure-to-pay chain. PR-to-PO linkage runs through the bridge table noted above; the same bridge captures per-PR-line received and FOC quantities, supporting both PR consolidation (many PR lines → one PO line) and partial conversion (one PR line → many PO lines). PO lines carry running `received_qty` and `cancelled_qty` columns so that the "pending qty" available for GRN is `order_qty − received_qty − cancelled_qty`; the relation from PO detail to GRN detail (`tb_good_received_note_detail`) is what closes the loop. PO detail rows also reference [product](/en/inventory/product), `tb_tax_profile`, and `tb_unit` (twice — for order UoM and base UoM), and the header references `tb_vendor`, `tb_currency`, and `tb_credit_term`. All PO entities live in the tenant Prisma schema; the platform schema contains no purchase-order models.
 
 The header carries vendor, currency, exchange-rate and credit-term context once for the whole PO — by design, every line on a PO shares the same vendor and currency, which is why the PR-to-PO conversion flow must group selected PRs by `(vendor, currency)` before fan-out. The default value of `tb_purchase_order.po_type` is `purchase_request`, which makes PR-sourced the standard creation path; `manual` is the alternative for procurement-only POs that have no upstream PR.
 
@@ -197,7 +197,7 @@ Line-level counterpart of `tb_purchase_order_comment`. Captures comments and sys
 
 ### 2.5 tb_purchase_order_detail_tb_purchase_request_detail
 
-Bridge table linking a PO detail row to one or more originating PR detail rows. The same row also denormalises the PR-side qty / unit / location snapshot and tracks per-PR-line received and FOC quantities, so the bridge is both the linkage table and the cursor for "how much of this PR line was already covered by this PO line". See [[purchase-request]] § 2 for the PR-side view.
+Bridge table linking a PO detail row to one or more originating PR detail rows. The same row also denormalises the PR-side qty / unit / location snapshot and tracks per-PR-line received and FOC quantities, so the bridge is both the linkage table and the cursor for "how much of this PR line was already covered by this PO line". See [purchase-request](/en/inventory/purchase-request) § 2 for the PR-side view.
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
@@ -303,4 +303,4 @@ The legacy `purchase-order-module.md` describes a high-level data dictionary (a 
 - **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (all PO models and both enums) and `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (verified to contain no PO models).
 - **Secondary (concept cross-check):** `../carmen/docs/purchase-order-management/purchase-order-module.md` — high-level business-analysis document; divergences captured in Section 5.
 - **Sibling reference:** `en/purchase-request/01-data-model.md` — describes the PR side of the PR↔PO bridge; do not duplicate that material here.
-- Related modules: [[purchase-request]] (upstream source), [[good-receive-note]] (downstream fulfilment via `received_qty`), [[product]] (line product reference), [[vendor-pricelist]] (price snapshot at PR-to-PO conversion time), [[inventory]] (on-hand context).
+- Related modules: [purchase-request](/en/inventory/purchase-request) (upstream source), [good-receive-note](/en/inventory/good-receive-note) (downstream fulfilment via `received_qty`), [product](/en/inventory/product) (line product reference), [vendor-pricelist](/en/inventory/vendor-pricelist) (price snapshot at PR-to-PO conversion time), [inventory](/en/inventory/inventory) (on-hand context).

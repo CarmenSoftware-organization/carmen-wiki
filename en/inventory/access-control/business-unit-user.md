@@ -2,7 +2,7 @@
 title: Business Unit User
 description: The per-business-unit membership pivot — declares which users may access which BUs, plus the temporary-invitation staging table.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: access-control, business-unit-user, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -15,7 +15,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 1. What & Who
 
-`business-unit-user` is the **multi-tenant access pivot**: it declares that a given [[access-control/user]] is allowed to operate inside a given [[master-data/business-unit]], and assigns a coarse BU-level role (`admin` or `user`). Without an active row here, a user cannot see the BU in their BU selector regardless of which [[access-control/application-role]]s exist for that BU. With a row, the user enters the BU, JWT `x-app-id` resolves, and tenant RBAC kicks in.
+`business-unit-user` is the **multi-tenant access pivot**: it declares that a given [access-control/user](/en/inventory/access-control/user) is allowed to operate inside a given [master-data/business-unit](/en/inventory/master-data/business-unit), and assigns a coarse BU-level role (`admin` or `user`). Without an active row here, a user cannot see the BU in their BU selector regardless of which [access-control/application-role](/en/inventory/access-control/application-role)s exist for that BU. With a row, the user enters the BU, JWT `x-app-id` resolves, and tenant RBAC kicks in.
 
 The companion `tb_temp_bu_user` stages **email-based invitations** before the recipient signs up: BU id, email, role — consumed when the user accepts and a real `tb_user` exists.
 
@@ -90,9 +90,9 @@ Source: platform schema.
 
 ## 7. Cross-References
 
-- [[access-control/user]] — the user side of the membership.
-- [[master-data/business-unit]] — the BU side.
-- [[access-control/application-role]] — BU-scoped; prerequisite check.
+- [access-control/user](/en/inventory/access-control/user) — the user side of the membership.
+- [master-data/business-unit](/en/inventory/master-data/business-unit) — the BU side.
+- [access-control/application-role](/en/inventory/access-control/application-role) — BU-scoped; prerequisite check.
 - All transactional modules — every request resolves the active BU through this table.
 
 ## 8. References

@@ -2,7 +2,7 @@
 title: Business Unit
 description: The legal/operating unit (property or BU) that scopes every transaction — owns calculation method, default currency, and module subscriptions.
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, business-unit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -26,7 +26,7 @@ A **Business Unit (BU)** is the top-level scope every document, user role, and r
 | Task | Where | Notes |
 |---|---|---|
 | Create a BU | Platform admin → BU listing → **New** | Required: `cluster_id`, `code`, `name`, `calculation_method` |
-| Set default currency | BU detail → Identity tab | Must reference an active row in [[master-data/currency]] |
+| Set default currency | BU detail → Identity tab | Must reference an active row in [master-data/currency](/en/inventory/master-data/currency) |
 | Switch costing method | BU detail → Costing tab | Blocked mid-period; requires period-end snapshot + recost — see Edge Cases |
 | Enable / disable a module | BU detail → Modules tab | Writes to `tb_business_unit_tb_module`; hides UI but preserves data |
 | Mark HQ | Set `is_hq = true` | Exactly one HQ per cluster (app invariant) |
@@ -103,11 +103,11 @@ Note: same enum name in tenant schema uses `FIFO` / `AVG`; the platform definiti
 
 ## 7. Cross-References
 
-- [[costing]] — reads `calculation_method` per BU.
-- [[inventory]] — balances and valuation scoped per BU.
-- [[purchase-request]], [[purchase-order]], [[good-receive-note]], [[store-requisition]], [[inventory-adjustment]], [[physical-count]], [[spot-check]], [[vendor-pricelist]] — every transactional document is BU-scoped.
-- [[access-control]] — user-to-BU mapping drives the `x-app-id` header.
-- [[reporting-audit]] — reports filter / roll up by BU.
+- [costing](/en/inventory/costing) — reads `calculation_method` per BU.
+- [inventory](/en/inventory/inventory) — balances and valuation scoped per BU.
+- [purchase-request](/en/inventory/purchase-request), [purchase-order](/en/inventory/purchase-order), [good-receive-note](/en/inventory/good-receive-note), [store-requisition](/en/inventory/store-requisition), [inventory-adjustment](/en/inventory/inventory-adjustment), [physical-count](/en/inventory/physical-count), [spot-check](/en/inventory/spot-check), [vendor-pricelist](/en/inventory/vendor-pricelist) — every transactional document is BU-scoped.
+- [access-control](/en/inventory/access-control) — user-to-BU mapping drives the `x-app-id` header.
+- [reporting-audit](/en/inventory/reporting-audit) — reports filter / roll up by BU.
 
 ## 8. References
 

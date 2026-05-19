@@ -2,7 +2,7 @@
 title: ผู้ใช้ (User)
 description: Account ผู้ใช้หลักพร้อมตาราง profile, password และ login-session — ตัวตนเบื้องหลังทุก audit column ในระบบ
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: access-control, user, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -17,7 +17,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 1. คืออะไรและใครใช้
 
-เอนทิตี user คือ **เลเยอร์ตัวตน** สำหรับทั้งแพลตฟอร์ม ทุก row ธุรกรรมในทุก tenant พกพา `created_by_id` / `updated_by_id` / `deleted_by_id` ที่อ้างอิง row ที่นี่ ดังนั้นนี่คือเอนทิตีที่ถูก foreign-key มากที่สุดในระบบ มันยัง feed RBAC ([[access-control/application-role]]), การเข้าถึงต่อ BU ([[access-control/business-unit-user]]) และ scope ต่อ location ([[access-control/user-location]])
+เอนทิตี user คือ **เลเยอร์ตัวตน** สำหรับทั้งแพลตฟอร์ม ทุก row ธุรกรรมในทุก tenant พกพา `created_by_id` / `updated_by_id` / `deleted_by_id` ที่อ้างอิง row ที่นี่ ดังนั้นนี่คือเอนทิตีที่ถูก foreign-key มากที่สุดในระบบ มันยัง feed RBAC ([access-control/application-role](/th/inventory/access-control/application-role)), การเข้าถึงต่อ BU ([access-control/business-unit-user](/th/inventory/access-control/business-unit-user)) และ scope ต่อ location ([access-control/user-location](/th/inventory/access-control/user-location))
 
 เอนทิตีแบ่งข้าม 4 ตาราง: `tb_user` (account), `tb_user_profile` (name/phone/bio), `tb_password` (bcrypt + expiry), `tb_user_login_session` (token) การแบ่งทำให้ hot path แคบ
 
@@ -118,11 +118,11 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 7. การอ้างอิงข้าม
 
-- [[access-control/application-role]] — RBAC join
-- [[access-control/business-unit-user]] — การเข้าถึงต่อ BU
-- [[access-control/user-location]] — scope ฝั่ง tenant ต่อ location
-- [[access-control/permission]] — grant โดยอ้อมผ่าน role
-- [[master-data/business-unit]] — ทุก BU audit โดย `tb_user`
+- [access-control/application-role](/th/inventory/access-control/application-role) — RBAC join
+- [access-control/business-unit-user](/th/inventory/access-control/business-unit-user) — การเข้าถึงต่อ BU
+- [access-control/user-location](/th/inventory/access-control/user-location) — scope ฝั่ง tenant ต่อ location
+- [access-control/permission](/th/inventory/access-control/permission) — grant โดยอ้อมผ่าน role
+- [master-data/business-unit](/th/inventory/master-data/business-unit) — ทุก BU audit โดย `tb_user`
 - ทุกโมดูลธุรกรรม — ทุก audit column `*_by_id`
 
 ## 8. แหล่งข้อมูลอ้างอิง

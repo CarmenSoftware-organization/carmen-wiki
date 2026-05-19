@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check) — Test Scenarios — Counter
 description: Test case ของ Counter สำหรับโมดูลการสุ่มตรวจ
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: spot-check, test-scenarios, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -11,13 +11,13 @@ dateCreated: 2026-05-15T14:30:00.000Z
 # การสุ่มตรวจ (Spot Check) — Test Scenarios — Counter
 
 > **At a Glance**
-> **Persona:** Counter (การป้อนข้อมูลพื้นที่) &nbsp;·&nbsp; **โมดูล:** [[spot-check]] &nbsp;·&nbsp; **Scenario:** ~26
+> **Persona:** Counter (การป้อนข้อมูลพื้นที่) &nbsp;·&nbsp; **โมดูล:** [spot-check](/th/inventory/spot-check) &nbsp;·&nbsp; **Scenario:** ~26
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **ความครอบคลุม E2E:** ไม่มี — ยังไม่มี Playwright spec ของ spot-check ที่ `../carmen-inventory-frontend-e2e/tests/`
 
 ## 1. ขอบเขต Persona
 
-**Counter** — พนักงานพื้นที่ที่ป้อน `actual_qty` ต่อบรรทัดบน spot check ที่ได้รับมอบหมาย flag รายการเสียหาย / ไม่มีป้าย และเซ็นปิด sheet ที่เสร็จ Scenario ด้านล่างใช้ action ที่ catalogue ใน [[spot-check/03-user-flow-counter]] หัวข้อ 3 — การเปิด sheet ที่ได้รับมอบหมาย, การป้อนการนับ, การ flag รายการ, การเพิ่ม comment, การเซ็นปิด completion Authority anchor `SPC_AUTH_002`
+**Counter** — พนักงานพื้นที่ที่ป้อน `actual_qty` ต่อบรรทัดบน spot check ที่ได้รับมอบหมาย flag รายการเสียหาย / ไม่มีป้าย และเซ็นปิด sheet ที่เสร็จ Scenario ด้านล่างใช้ action ที่ catalogue ใน [spot-check/03-user-flow-counter](/th/inventory/spot-check/03-user-flow-counter) หัวข้อ 3 — การเปิด sheet ที่ได้รับมอบหมาย, การป้อนการนับ, การ flag รายการ, การเพิ่ม comment, การเซ็นปิด completion Authority anchor `SPC_AUTH_002`
 
 ## 2. Functional — Happy Path
 
@@ -77,4 +77,4 @@ dateCreated: 2026-05-15T14:30:00.000Z
 - **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
 - **Frontend (TODO):** `../carmen-inventory-frontend/` — source ของพฤติกรรม UI Counter; ตรวจ `../cmobile/` สำหรับการ implement spot-check sheet ฝั่ง PWA ถ้ามี
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check
-- ที่เกี่ยวข้อง: [[spot-check/03-user-flow-counter]], [[spot-check/02-business-rules]] (`SPC_AUTH_002`, `SPC_AUTH_004`, `SPC_VAL_004`–`SPC_VAL_005`), [[spot-check/04-test-scenarios]] (scenario handoff ข้าม persona), [[physical-count/04-test-scenarios-counter]] (scenario คู่เทียบการนับเต็ม)
+- ที่เกี่ยวข้อง: [spot-check/03-user-flow-counter](/th/inventory/spot-check/03-user-flow-counter), [spot-check/02-business-rules](/th/inventory/spot-check/02-business-rules) (`SPC_AUTH_002`, `SPC_AUTH_004`, `SPC_VAL_004`–`SPC_VAL_005`), [spot-check/04-test-scenarios](/th/inventory/spot-check/04-test-scenarios) (scenario handoff ข้าม persona), [physical-count/04-test-scenarios-counter](/th/inventory/physical-count/04-test-scenarios-counter) (scenario คู่เทียบการนับเต็ม)

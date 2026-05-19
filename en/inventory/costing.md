@@ -2,7 +2,7 @@
 title: Costing
 description: Inventory valuation methods (FIFO, Weighted Average) and the costing engine that calculates COGS and ending inventory value.
 published: true
-date: 2026-05-19T23:45:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: costing, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 # Costing
 
 > **At a Glance**
-> **Module purpose:** Per-transaction valuation engine that computes COGS on outgoing stock and updates cost basis on incoming stock under FIFO or Weighted Average &nbsp;·&nbsp; **Audience:** Finance, Inventory Controller, Auditor &nbsp;·&nbsp; **Key entities/tables:** `tb_period_snapshot`, FIFO cost layers, `AverageCostTracking`, `JournalEntry`, [[costing/calculation-methods]] &nbsp;·&nbsp; **Sub-pages:** 11
+> **Module purpose:** Per-transaction valuation engine that computes COGS on outgoing stock and updates cost basis on incoming stock under FIFO or Weighted Average &nbsp;·&nbsp; **Audience:** Finance, Inventory Controller, Auditor &nbsp;·&nbsp; **Key entities/tables:** `tb_period_snapshot`, FIFO cost layers, `AverageCostTracking`, `JournalEntry`, [costing/calculation-methods](/en/inventory/costing/calculation-methods) &nbsp;·&nbsp; **Sub-pages:** 11
 
 ## 1. Overview
 
@@ -47,17 +47,17 @@ Operationally, costing is where **food cost control** lives. Plate cost, recipe 
 ## 5. Related Modules
 
 **Cross-module flow:**
-- [[inventory]] — costing operates on inventory movements; every IN/OUT triggers a costing calculation
-- [[good-receive-note]] — GRN receipts set unit costs (FIFO) or update averages (WAC)
-- [[recipe]] — recipe consumption uses costed quantities to derive food cost
-- [[inventory-adjustment]] — adjustments require a cost basis from the costing engine
+- [inventory](/en/inventory/inventory) — costing operates on inventory movements; every IN/OUT triggers a costing calculation
+- [good-receive-note](/en/inventory/good-receive-note) — GRN receipts set unit costs (FIFO) or update averages (WAC)
+- [recipe](/en/inventory/recipe) — recipe consumption uses costed quantities to derive food cost
+- [inventory-adjustment](/en/inventory/inventory-adjustment) — adjustments require a cost basis from the costing engine
 
 **Master configuration:**
-- [[master-data/business-unit]] — tenant/property scope for the valuation ledger
-- [[master-data/currency]] — transaction and base currencies plus FX rates for dual-posted COGS
-- [[master-data/unit]] — base unit conversion required to value any costed line
-- [[system-config/period]] — accounting period that gates costing posting and locks valuation
-- [[reporting-audit/activity]] — costing recalculation and posting activity log for audit
+- [master-data/business-unit](/en/inventory/master-data/business-unit) — tenant/property scope for the valuation ledger
+- [master-data/currency](/en/inventory/master-data/currency) — transaction and base currencies plus FX rates for dual-posted COGS
+- [master-data/unit](/en/inventory/master-data/unit) — base unit conversion required to value any costed line
+- [system-config/period](/en/inventory/system-config/period) — accounting period that gates costing posting and locks valuation
+- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — costing recalculation and posting activity log for audit
 
 ## 6. Reference Sources
 

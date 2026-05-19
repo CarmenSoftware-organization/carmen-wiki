@@ -2,7 +2,7 @@
 title: Costing — Test Scenarios
 description: Test cases by persona, cross-persona scenarios, and E2E mapping for costing.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: costing, test-scenarios, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 # Costing — Test Scenarios
 
 > **At a Glance**
-> **Module:** [[costing]] &nbsp;·&nbsp; **Total scenarios:** ~18 cross-persona + ~84 per-persona &nbsp;·&nbsp; **Personas covered:** Finance, Inventory Controller, Auditor
+> **Module:** [costing](/en/inventory/costing) &nbsp;·&nbsp; **Total scenarios:** ~18 cross-persona + ~84 per-persona &nbsp;·&nbsp; **Personas covered:** Finance, Inventory Controller, Auditor
 > **Run order:** Audit / Config setup → primary persona happy paths → cross-persona scenarios
 > **Each persona's drill-down is `04-test-scenarios-<role>.md`**
 

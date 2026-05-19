@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — User Flow — Finance
 description: เส้นทางผู้ใช้งานของ Finance ภายในโมดูล purchase-order — three-way match (PO ↔ GRN ↔ invoice), AP posting, การจัดการ currency/FX
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-order, user-flow, finance, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 # ใบสั่งซื้อ (Purchase Order) — User Flow — Finance
 
 > **At a Glance**
-> **Persona:** Finance (Officer / AP Clerk + Finance Manager) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Workflow stages:** Pre-transmission review ที่ `po_status = in_progress` (Finance Manager — currency / FX / tax / line totals ก่อน `PO_POST_004` send) &nbsp;·&nbsp; post-receipt three-way match (PO ↔ GRN ↔ invoice — `PO_POST_008` / `PO_POST_009`) &nbsp;·&nbsp; AP posting บน success &nbsp;·&nbsp; **สิทธิ์สำคัญ:** financial sign-off pre-transmission; three-way match; flag discrepancy ให้ Purchaser PO state ไม่ transition โดย match
+> **Persona:** Finance (Officer / AP Clerk + Finance Manager) &nbsp;·&nbsp; **Module:** [purchase-order](/th/inventory/purchase-order) &nbsp;·&nbsp; **Workflow stages:** Pre-transmission review ที่ `po_status = in_progress` (Finance Manager — currency / FX / tax / line totals ก่อน `PO_POST_004` send) &nbsp;·&nbsp; post-receipt three-way match (PO ↔ GRN ↔ invoice — `PO_POST_008` / `PO_POST_009`) &nbsp;·&nbsp; AP posting บน success &nbsp;·&nbsp; **สิทธิ์สำคัญ:** financial sign-off pre-transmission; three-way match; flag discrepancy ให้ Purchaser PO state ไม่ transition โดย match
 > **Persona นี้ทำอะไร:** Pre-transmission financial sign-off และ post-receipt three-way match; clear GRN accrual, post AP liability
 
 ## 1. บทบาทในโมดูลนี้
@@ -124,6 +124,6 @@ Persona handoffs คือ: Finance Manager ↔ Purchaser (pre-transmission send
 - Sibling: [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md) — ถือ void / close override authority ที่ความคลาดเคลื่อนสามารถ resolve โดย `PO_POST_010` / `PO_POST_011` เท่านั้น
 - Sibling: [03-user-flow-vendor.md](./03-user-flow-vendor.md) — ฝ่ายภายนอกที่ออก invoice ที่ flow นี้ capture และ match
 - Sibling: [02-business-rules.md](./02-business-rules.md) § 5 (Posting Rules) — `PO_POST_004` (final approval / transmission), `PO_POST_005` (send-back), `PO_POST_008` (three-way match success), `PO_POST_009` (three-way match failure), และ `PO_POST_011` (close with cancelled remainder) สำหรับกฎที่อ้างอิงข้างต้น
-- เกี่ยวข้อง: [[good-receive-note]] — โมดูล upstream ที่การ posting สร้าง matched-but-unbilled accrual ที่ AP clear บน match success
-- เกี่ยวข้อง: [[inventory]] — inventory accrual ที่ clear บน match success เป็นของ inventory / GL integration; PO มีส่วนร่วมเฉพาะ on-order pipeline quantity จนกว่า GRN
+- เกี่ยวข้อง: [good-receive-note](/th/inventory/good-receive-note) — โมดูล upstream ที่การ posting สร้าง matched-but-unbilled accrual ที่ AP clear บน match success
+- เกี่ยวข้อง: [inventory](/th/inventory/inventory) — inventory accrual ที่ clear บน match success เป็นของ inventory / GL integration; PO มีส่วนร่วมเฉพาะ on-order pipeline quantity จนกว่า GRN
 - `../carmen/docs/purchase-order-management/purchase-order-module.md` — แหล่ง carmen/docs หลักสำหรับ business analysis โมดูล PO, Finance integration, และ flow three-way-match

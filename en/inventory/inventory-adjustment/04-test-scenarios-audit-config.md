@@ -2,7 +2,7 @@
 title: Inventory Adjustment — Test Scenarios — Audit & Config
 description: Auditor and System Administrator test cases for inventory adjustments.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: inventory-adjustment, test-scenarios, audit, sysadmin, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 # Inventory Adjustment — Test Scenarios — Audit & Config
 
 > **At a Glance**
-> **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [[inventory-adjustment]] &nbsp;·&nbsp; **Scenarios:** ~38
+> **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [inventory-adjustment](/en/inventory/inventory-adjustment) &nbsp;·&nbsp; **Scenarios:** ~38
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** maps to `031-adjustment-type.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
@@ -58,7 +58,7 @@ This page captures the test scenarios that the **Audit / Config** persona group 
 | # | Scenario | Expected behaviour (allow/deny + reason) |
 | - | -------- | --------------------------------------- |
 | AC-PERM-07 | Auditor reads any `tb_stock_in` / `tb_stock_out` / detail / comment / attachment | **Allow per `ADJ_AUTH_009`.** Full read scope including soft-deleted and voided documents. |
-| AC-PERM-08 | Auditor reads `tb_inventory_transaction` / cost-layer ledger / GL journal entries | **Allow per [[inventory]] `INV_AUTH_009`** (same read pattern, joined). |
+| AC-PERM-08 | Auditor reads `tb_inventory_transaction` / cost-layer ledger / GL journal entries | **Allow per [inventory](/en/inventory/inventory) `INV_AUTH_009`** (same read pattern, joined). |
 | AC-PERM-09 | Auditor attempts to edit, approve, or void a document | **Deny — read-only.** Auditor role has no write authority on adjustment documents. |
 | AC-PERM-10 | Auditor exports non-sensitive aggregate (counts, totals by reason) | **Allow.** Standard read scope. |
 | AC-PERM-11 | Auditor exports sensitive fields (cost-per-unit, vendor terms) | **Allow with secondary-Auditor approval.** Per `ADJ_AUTH_009`. Single-Auditor export blocked. Maps to AC-HP-11. |
@@ -102,6 +102,6 @@ This page captures the test scenarios that the **Audit / Config** persona group 
 - User flow: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — Sysadmin primary 7-step CRUD flow for reason codes; Auditor primary 7-step trail-review flow and 4-step lot-recall flow; decision branches (soft-fail vs hard-fail audit findings, add vs modify reason, threshold scope).
 - Business rules: [02-business-rules.md](./02-business-rules.md) — `ADJ_AUTH_008` (Sysadmin scope), `ADJ_AUTH_009` (Auditor read scope), `ADJ_AUTH_010` (SoD), `ADJ_VAL_001` (doc number unique pattern shared with reason-code uniqueness), `ADJ_VAL_002` (reason direction), `ADJ_VAL_010` (requiresDocument flag), `ADJ_POST_004` (void chain).
 - E2E specs: [`../carmen-inventory-frontend-e2e/tests/031-adjustment-type.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/031-adjustment-type.spec.ts) — canonical Sysadmin CRUD spec (TC-AT-010001..n covering list / search / pagination / create / edit / activate-toggle / validation / security cases). Fixture user `admin@blueledgers.com`.
-- Cross-link: [[inventory]] — `INV_AUTH_008` (Sysadmin configuration spans location-type / costing-method / period definitions in addition to adjustment-type); `INV_AUTH_009` (Auditor read scope spanning all inventory data).
-- Cross-link: [[good-receive-note]] — Auditor lot-recall trace pattern mirrors [[good-receive-note/04-test-scenarios-audit-config]] approach.
-- Cross-link: [[physical-count]] / [[spot-check]] — variance-rollup adjustments cross-checked by Auditor for reasonableness and SoD compliance.
+- Cross-link: [inventory](/en/inventory/inventory) — `INV_AUTH_008` (Sysadmin configuration spans location-type / costing-method / period definitions in addition to adjustment-type); `INV_AUTH_009` (Auditor read scope spanning all inventory data).
+- Cross-link: [good-receive-note](/en/inventory/good-receive-note) — Auditor lot-recall trace pattern mirrors [good-receive-note/04-test-scenarios-audit-config](/en/inventory/good-receive-note/04-test-scenarios-audit-config) approach.
+- Cross-link: [physical-count](/en/inventory/physical-count) / [spot-check](/en/inventory/spot-check) — variance-rollup adjustments cross-checked by Auditor for reasonableness and SoD compliance.

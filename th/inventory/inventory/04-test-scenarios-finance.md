@@ -2,7 +2,7 @@
 title: คลังสินค้า (Inventory) — Test Scenarios — Finance
 description: Test cases ของ Finance (อนุมัติผลกระทบต้นทุน, inventory-to-GL reconciliation, ปิด/ล็อกงวด) สำหรับ inventory
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: inventory, test-scenarios, finance, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 # คลังสินค้า (Inventory) — Test Scenarios — Finance
 
 > **At a Glance**
-> **Persona:** Finance (Officer / Inventory Accountant + Finance Manager) &nbsp;·&nbsp; **โมดูล:** [[inventory]] &nbsp;·&nbsp; **Scenarios:** ~28
+> **Persona:** Finance (Officer / Inventory Accountant + Finance Manager) &nbsp;·&nbsp; **โมดูล:** [inventory](/th/inventory/inventory) &nbsp;·&nbsp; **Scenarios:** ~28
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** map ไปยัง `900-period-end.spec.ts` ใน `../carmen-inventory-frontend-e2e/`
 
@@ -74,7 +74,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 - Sibling: [04-test-scenarios-inventory-controller.md](./04-test-scenarios-inventory-controller.md) — persona ต้นน้ำสำหรับ chain อนุมัติผลกระทบต้นทุน (IC-PERM-04 escalation feed FIN-HP-01); IC-HP-07 sign-off ก่อน FIN-HP-04 close
 - Sibling: [04-test-scenarios-audit-config.md](./04-test-scenarios-audit-config.md) — Auditor ที่ review audit trail reconciliation / close ของ Finance; Sysadmin ที่ตั้งค่า tolerance reconciliation, period cadence, Finance approval ceiling และ map บัญชี GL
 - E2E specs: [`900-period-end.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/900-period-end.spec.ts) — period-end E2E แบบ canonical สำหรับ FIN-HP-04 / FIN-HP-05 / FIN-HP-07 / FIN-VAL-03 / FIN-VAL-04 พื้นผิว queue อนุมัติ Finance และ dashboard reconciliation ครอบคลุมบางส่วนโดย specs stock-in / stock-out และ planned manual coverage บางส่วน
-- Cross-link: [[costing]] — cost-layer ledger ที่ Finance reconcile; โมดูล costing อ่านข้อมูลเดียวกันสำหรับการรายงาน COGS
-- Cross-link: [[good-receive-note]] — reconciliation ของ Finance drill เข้า GRN-side AP-clearing journal gaps เมื่อ investigation surface ปัญหา integration; `04-test-scenarios-finance.md` ของโมดูล GRN ครอบคลุมเส้นทาง three-way-match
-- Cross-link: [[inventory-adjustment]] — เส้นทาง corrective stock-in / stock-out ที่ Finance approve สำหรับ sub-ledger gaps และ audit corrections
+- Cross-link: [costing](/th/inventory/costing) — cost-layer ledger ที่ Finance reconcile; โมดูล costing อ่านข้อมูลเดียวกันสำหรับการรายงาน COGS
+- Cross-link: [good-receive-note](/th/inventory/good-receive-note) — reconciliation ของ Finance drill เข้า GRN-side AP-clearing journal gaps เมื่อ investigation surface ปัญหา integration; `04-test-scenarios-finance.md` ของโมดูล GRN ครอบคลุมเส้นทาง three-way-match
+- Cross-link: [inventory-adjustment](/th/inventory/inventory-adjustment) — เส้นทาง corrective stock-in / stock-out ที่ Finance approve สำหรับ sub-ledger gaps และ audit corrections
 - Cross-link: credit note — Finance book credit notes; ผลฝั่ง inventory (`credit_note_amount` / `credit_note_quantity`) ปรากฏในพื้นผิว reconciliation (FIN-HP-03 variance investigation)

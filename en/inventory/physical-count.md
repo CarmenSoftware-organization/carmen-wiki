@@ -2,7 +2,7 @@
 title: Physical Count
 description: Periodic count of every item at a location to reconcile system balances against reality.
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: physical-count, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -51,18 +51,18 @@ The financial accuracy stakes are immediate. Hospitality operations run on thin 
 ## 5. Related Modules
 
 **Cross-module flow:**
-- [[inventory]] — physical count resets balances to counted quantities
-- [[inventory-adjustment]] — variances between count and book are posted as adjustments
-- [[spot-check]] — narrower partial count uses the same concept
+- [inventory](/en/inventory/inventory) — physical count resets balances to counted quantities
+- [inventory-adjustment](/en/inventory/inventory-adjustment) — variances between count and book are posted as adjustments
+- [spot-check](/en/inventory/spot-check) — narrower partial count uses the same concept
 
 **Master configuration:**
-- [[master-data/unit]] — unit of measure for each count line
-- [[master-data/location]] — the location whose balances are being counted
-- [[master-data/adjustment-type]] — reason codes used when posting variance adjustments
-- [[system-config/workflow]] — approval workflow for count sign-off and variance posting
-- [[system-config/period]] — accounting period gate for count posting
-- [[access-control/user-location]] — restricts which locations a user can count
-- [[reporting-audit/activity]] — count and recount activity log for audit
+- [master-data/unit](/en/inventory/master-data/unit) — unit of measure for each count line
+- [master-data/location](/en/inventory/master-data/location) — the location whose balances are being counted
+- [master-data/adjustment-type](/en/inventory/master-data/adjustment-type) — reason codes used when posting variance adjustments
+- [system-config/workflow](/en/inventory/system-config/workflow) — approval workflow for count sign-off and variance posting
+- [system-config/period](/en/inventory/system-config/period) — accounting period gate for count posting
+- [access-control/user-location](/en/inventory/access-control/user-location) — restricts which locations a user can count
+- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — count and recount activity log for audit
 
 ## 6. Reference Sources
 
@@ -74,15 +74,15 @@ The financial accuracy stakes are immediate. Hospitality operations run on thin 
 
 ## 7. Pages in This Module
 
-- [[physical-count/01-data-model]] — entities, fields, relationships, enums (`tb_physical_count_period`, `tb_physical_count`, `tb_physical_count_detail` plus three comment tables; four enums).
-- [[physical-count/02-business-rules]] — validation, calculation, authorization, posting, cross-module rules (`PHC_VAL_*` / `PHC_CALC_*` / `PHC_AUTH_*` / `PHC_POST_*` / `PHC_XMOD_*`).
-- [[physical-count/03-user-flow]] — document lifecycle overview + persona index.
-  - [[physical-count/03-user-flow-count-lead]] — Inventory Controller / Inventory Manager path.
-  - [[physical-count/03-user-flow-counter]] — Counter / Store Keeper path.
-  - [[physical-count/03-user-flow-audit-config]] — Approver / Finance + Auditor + Sysadmin path.
-- [[physical-count/04-test-scenarios]] — test scenarios overview + cross-persona handoff scenarios + E2E mapping target.
-  - [[physical-count/04-test-scenarios-count-lead]] — Count Lead scenarios.
-  - [[physical-count/04-test-scenarios-counter]] — Counter scenarios.
-  - [[physical-count/04-test-scenarios-audit-config]] — Approver / Finance + Auditor + Sysadmin scenarios.
+- [physical-count/01-data-model](/en/inventory/physical-count/01-data-model) — entities, fields, relationships, enums (`tb_physical_count_period`, `tb_physical_count`, `tb_physical_count_detail` plus three comment tables; four enums).
+- [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) — validation, calculation, authorization, posting, cross-module rules (`PHC_VAL_*` / `PHC_CALC_*` / `PHC_AUTH_*` / `PHC_POST_*` / `PHC_XMOD_*`).
+- [physical-count/03-user-flow](/en/inventory/physical-count/03-user-flow) — document lifecycle overview + persona index.
+  - [physical-count/03-user-flow-count-lead](/en/inventory/physical-count/03-user-flow-count-lead) — Inventory Controller / Inventory Manager path.
+  - [physical-count/03-user-flow-counter](/en/inventory/physical-count/03-user-flow-counter) — Counter / Store Keeper path.
+  - [physical-count/03-user-flow-audit-config](/en/inventory/physical-count/03-user-flow-audit-config) — Approver / Finance + Auditor + Sysadmin path.
+- [physical-count/04-test-scenarios](/en/inventory/physical-count/04-test-scenarios) — test scenarios overview + cross-persona handoff scenarios + E2E mapping target.
+  - [physical-count/04-test-scenarios-count-lead](/en/inventory/physical-count/04-test-scenarios-count-lead) — Count Lead scenarios.
+  - [physical-count/04-test-scenarios-counter](/en/inventory/physical-count/04-test-scenarios-counter) — Counter scenarios.
+  - [physical-count/04-test-scenarios-audit-config](/en/inventory/physical-count/04-test-scenarios-audit-config) — Approver / Finance + Auditor + Sysadmin scenarios.
 
 > **Status:** all sub-pages are skeleton-level (~50-100 lines each). Each carries explicit TODO callouts pointing at the upstream sources to use when filling in (`../carmen-inventory-frontend/` for UI flow; `../carmen-inventory-frontend-e2e/tests/` for E2E specs — no physical-count spec exists yet). Data-model section is grounded in the Prisma schema and is the most-developed page; business-rules introduces a proposed `PHC_*` rule-ID catalogue that needs carmen/docs confirmation; user-flow and test-scenarios are structural placeholders.

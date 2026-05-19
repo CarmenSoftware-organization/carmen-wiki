@@ -2,7 +2,7 @@
 title: Vendor Pricelist — User Flow — Vendor
 description: Vendor's flow within the vendor-pricelist module — external party with portal-token access (no Carmen system login).
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: vendor-pricelist, user-flow, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -11,16 +11,16 @@ dateCreated: 2026-05-15T15:00:00.000Z
 # Vendor Pricelist — User Flow — Vendor
 
 > **At a Glance**
-> **Persona:** Vendor (external — token-authenticated portal session, no Carmen login) &nbsp;·&nbsp; **Module:** [[vendor-pricelist]] &nbsp;·&nbsp; **Workflow stages:** pricelist (none) → draft → submitted (then Purchaser approve / reject) &nbsp;·&nbsp; **Key permissions:** token-scoped portal access — enter / upload pricing, set currency / MOQ, save draft, submit
+> **Persona:** Vendor (external — token-authenticated portal session, no Carmen login) &nbsp;·&nbsp; **Module:** [vendor-pricelist](/en/inventory/vendor-pricelist) &nbsp;·&nbsp; **Workflow stages:** pricelist (none) → draft → submitted (then Purchaser approve / reject) &nbsp;·&nbsp; **Key permissions:** token-scoped portal access — enter / upload pricing, set currency / MOQ, save draft, submit
 > **What this persona does:** Accesses the per-vendor portal via a cryptographic token, enters or uploads pricing per template, and submits for Purchaser review.
 
 ## 1. Role in This Module
 
-The **Vendor** is an **external party with no Carmen system login**. Unlike most external personas (e.g., the vendor on the [[purchase-order]] module who interacts entirely through email / EDI), the vendor-pricelist module gives the vendor a **token-authenticated portal session** — the only place an external party drives system state directly within the Carmen ecosystem. The vendor receives an invitation email from a Purchaser-launched campaign, navigates to the per-vendor portal URL embedding the cryptographic `tb_request_for_pricing_detail.pricelist_url_token` ([[vendor-pricelist/01-data-model]] § 2.6), enters or uploads pricing for the products specified by the template, selects a submission currency, supplies MOQ tiers with units, saves drafts (auto-save every ~30 s), and finally clicks Submit — at which point `tb_pricelist.submitted_at` is written and the file routes to the Purchaser for review. The vendor's session is gated by `VPL_AUTH_007` (token-validity, IP allowlist if configured, session limits) and `VPL_AUTH_008` (currency must be in the tenant's permitted-currency list; unit conversion factors are read from master data, not vendor-supplied). The vendor never operates `tb_pricelist.status` directly beyond the implicit `(none) → draft` and `submit` action; approval, rejection, inactivation, and expiry are all driven by internal personas or the cron job. Because the vendor's primary surface is a single portal session with limited decision branches and no in-system RBAC matrix to enumerate, this file is intentionally shorter than the Purchaser file — comparable in size to the external Vendor file in [[purchase-order/03-user-flow-vendor]].
+The **Vendor** is an **external party with no Carmen system login**. Unlike most external personas (e.g., the vendor on the [purchase-order](/en/inventory/purchase-order) module who interacts entirely through email / EDI), the vendor-pricelist module gives the vendor a **token-authenticated portal session** — the only place an external party drives system state directly within the Carmen ecosystem. The vendor receives an invitation email from a Purchaser-launched campaign, navigates to the per-vendor portal URL embedding the cryptographic `tb_request_for_pricing_detail.pricelist_url_token` ([vendor-pricelist/01-data-model](/en/inventory/vendor-pricelist/01-data-model) § 2.6), enters or uploads pricing for the products specified by the template, selects a submission currency, supplies MOQ tiers with units, saves drafts (auto-save every ~30 s), and finally clicks Submit — at which point `tb_pricelist.submitted_at` is written and the file routes to the Purchaser for review. The vendor's session is gated by `VPL_AUTH_007` (token-validity, IP allowlist if configured, session limits) and `VPL_AUTH_008` (currency must be in the tenant's permitted-currency list; unit conversion factors are read from master data, not vendor-supplied). The vendor never operates `tb_pricelist.status` directly beyond the implicit `(none) → draft` and `submit` action; approval, rejection, inactivation, and expiry are all driven by internal personas or the cron job. Because the vendor's primary surface is a single portal session with limited decision branches and no in-system RBAC matrix to enumerate, this file is intentionally shorter than the Purchaser file — comparable in size to the external Vendor file in [purchase-order/03-user-flow-vendor](/en/inventory/purchase-order/03-user-flow-vendor).
 
 ## 2. Entry Point and Primary Flow
 
-**Entry point:** Vendor receives the invitation email (or a one-off reminder per the campaign's reminder schedule). The email carries the per-vendor portal URL embedding the `pricelist_url_token`, the campaign window dates, and the custom message. Clicking the link opens the portal; the token is exchanged for a session cookie subject to the tenant's portal-token policy ([[vendor-pricelist/02-business-rules]] § `VPL_AUTH_007`).
+**Entry point:** Vendor receives the invitation email (or a one-off reminder per the campaign's reminder schedule). The email carries the per-vendor portal URL embedding the `pricelist_url_token`, the campaign window dates, and the custom message. Clicking the link opens the portal; the token is exchanged for a session cookie subject to the tenant's portal-token policy ([vendor-pricelist/02-business-rules](/en/inventory/vendor-pricelist/02-business-rules) § `VPL_AUTH_007`).
 
 **Primary flow (happy path — online entry):**
 
@@ -63,4 +63,4 @@ The vendor's involvement on a given invitation ends at one of three points; the 
 - `../carmen/docs/vendor-pricelist-management/VENDOR_PORTAL_ENHANCEMENT_SUMMARY.md` — portal feature catalogue covering auto-save, multi-format submission, real-time validation, and progress tracking.
 - Sibling: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — internal persona that launched the campaign, reviews the vendor's submission, and approves / rejects.
 - Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — System Administrator who configures the portal-token policy (`VPL_AUTH_007`) and may revoke the vendor's token (`VPL_AUTH_015`).
-- Cross-link: [[product]] — every line on the vendor's submission references a product on the template.
+- Cross-link: [product](/en/inventory/product) — every line on the vendor's submission references a product on the template.

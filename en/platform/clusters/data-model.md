@@ -2,7 +2,7 @@
 title: Cluster — Data Model
 description: Cluster entity, relationships to BUs and users, license fields.
 published: true
-date: '2026-05-19T17:30:00.000Z'
+date: 2026-05-19T23:55:00.000Z'
 tags: book/platform, clusters, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -11,7 +11,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 # Cluster — Data Model
 
 > **At a Glance**
-> **Tables:** `tb_cluster` (primary) &nbsp;·&nbsp; `tb_cluster_user` (M:N user-join, full doc in [[users]]) &nbsp;·&nbsp; `tb_business_unit` (`cluster_id` FK side, full doc in [[business-units]]) &nbsp;·&nbsp; **Enums:** `enum_cluster_user_role` (admin/user) &nbsp;·&nbsp; **Audit columns:** standard `created_*`/`updated_*`/`deleted_*` trio on `tb_cluster` &nbsp;·&nbsp; **License field:** `max_license_bu` caps how many BUs this cluster may have
+> **Tables:** `tb_cluster` (primary) &nbsp;·&nbsp; `tb_cluster_user` (M:N user-join, full doc in [users](/en/platform/users)) &nbsp;·&nbsp; `tb_business_unit` (`cluster_id` FK side, full doc in [business-units](/en/platform/business-units)) &nbsp;·&nbsp; **Enums:** `enum_cluster_user_role` (admin/user) &nbsp;·&nbsp; **Audit columns:** standard `created_*`/`updated_*`/`deleted_*` trio on `tb_cluster` &nbsp;·&nbsp; **License field:** `max_license_bu` caps how many BUs this cluster may have
 
 > **Source of truth:** Backend Prisma platform schema. Always read this first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
@@ -22,7 +22,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 `tb_cluster` is the top-level tenant container in the Carmen Platform. Every business unit and every cluster-scoped user membership hangs beneath a cluster row. Clusters represent a licensable grouping of business units — typically one hotel brand, hotel group, or company entity — and the `max_license_bu` field on the cluster enforces how many BUs may be provisioned within it; this cap is checked at the application layer (Platform SPA UI), not as a database constraint.
 
-The cluster entity participates in two principal one-to-many relationships that extend its scope into the rest of the platform. First, `tb_business_unit` carries a `cluster_id` foreign key, making each BU a child of exactly one cluster; this relationship is documented in full in the [[business-units]] module. Second, `tb_cluster_user` is the M:N join table that records which platform users belong to a cluster and at what per-cluster role; this table is documented in full in [[users]] — the present page covers only the cluster-side view of both relationships.
+The cluster entity participates in two principal one-to-many relationships that extend its scope into the rest of the platform. First, `tb_business_unit` carries a `cluster_id` foreign key, making each BU a child of exactly one cluster; this relationship is documented in full in the [business-units](/en/platform/business-units) module. Second, `tb_cluster_user` is the M:N join table that records which platform users belong to a cluster and at what per-cluster role; this table is documented in full in [users](/en/platform/users) — the present page covers only the cluster-side view of both relationships.
 
 All audit and soft-delete lifecycle fields follow the same `created_at`/`created_by_id`, `updated_at`/`updated_by_id`, `deleted_at`/`deleted_by_id` pattern used across every table in the platform schema. A cluster row with a non-null `deleted_at` is soft-deleted; its child BUs and cluster-user memberships are not automatically soft-deleted by a database cascade (all FK relations use `onDelete: NoAction`), so application-layer logic is responsible for cascading soft-deletes where required.
 
@@ -71,11 +71,11 @@ The full field table for `tb_cluster_user` is documented in [users data-model](.
 - **`is_active`** — `Boolean?` (default `true`). Soft-activity flag for the membership; a user may be deactivated within a cluster without soft-deleting the row.
 - **Unique constraint** — `@@unique([user_id, cluster_id, deleted_at])` — allows a user to be re-added to a cluster after the original membership is soft-deleted, without a unique-key collision.
 
-For the complete field table, all audit columns, and the user-side relationship view, see [[users]] and [users data-model](../users/data-model.md).
+For the complete field table, all audit columns, and the user-side relationship view, see [users](/en/platform/users) and [users data-model](../users/data-model.md).
 
 ### 2.3 `tb_business_unit` (cluster_id FK side)
 
-The full field table for `tb_business_unit` is documented in the [[business-units]] module (forthcoming). From the cluster perspective, the key points are:
+The full field table for `tb_business_unit` is documented in the [business-units](/en/platform/business-units) module (forthcoming). From the cluster perspective, the key points are:
 
 - **`cluster_id` FK** — `String @db.Uuid` (non-nullable), FK to `tb_cluster.id` with `onDelete: NoAction, onUpdate: NoAction`. This establishes the 1:M cluster→BU relationship. A BU belongs to exactly one cluster and cannot be moved between clusters without a data migration.
 - **`max_license_bu` interaction** — `tb_cluster.max_license_bu` is an `Int?` cap on the count of live (non-soft-deleted) BUs beneath this cluster. When `max_license_bu` is non-null, the Platform SPA enforces this cap at the UI layer on the cluster edit screen before allowing creation of a new BU. The Prisma schema does not enforce the cap as a database constraint — it is a business-rule check in the application layer.
@@ -105,7 +105,7 @@ Note: `deleted_by_id` on `tb_cluster` is **not** declared as a Prisma FK relatio
 
 ### `enum_cluster_user_role` — 2 values
 
-Carried on `tb_cluster_user.role`. Controls what a user can do within a specific cluster. This enum is also documented in [[users]] / [users data-model](../users/data-model.md) §4 — restated here because readers of the Clusters module may not have visited that page.
+Carried on `tb_cluster_user.role`. Controls what a user can do within a specific cluster. This enum is also documented in [users](/en/platform/users) / [users data-model](../users/data-model.md) §4 — restated here because readers of the Clusters module may not have visited that page.
 
 | Value | Meaning |
 | ----- | ------- |
@@ -143,8 +143,8 @@ All core identity and license fields (`id`, `code`, `name`, `alias_name`, `logo_
 - `../carmen-platform/src/pages/ClusterEdit.tsx` — `ClusterFormData` interface (lines 26–33).
 - `../carmen-platform/src/services/clusterService.ts` — REST client for cluster API calls.
 
-**Landing cross-link:** [[clusters]] for the module overview.
+**Landing cross-link:** [clusters](/en/platform/clusters) for the module overview.
 
 **Sibling cross-links:** [Permissions](./permissions.md) &nbsp;·&nbsp; [UI Screens](./ui-screens.md).
 
-**Related module cross-links:** [[users]] (full `tb_cluster_user` field table and enum docs) &nbsp;·&nbsp; [[business-units]] (full `tb_business_unit` field table).
+**Related module cross-links:** [users](/en/platform/users) (full `tb_cluster_user` field table and enum docs) &nbsp;·&nbsp; [business-units](/en/platform/business-units) (full `tb_business_unit` field table).

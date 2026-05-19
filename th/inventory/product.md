@@ -2,7 +2,7 @@
 title: สินค้า (Product)
 description: ข้อมูลหลักของสินค้า — หมวดหมู่ หน่วยนับ คลังจัดเก็บ และการนำเข้า/ส่งออก — แคตตาล็อกที่เอกสารคลังทุกใบอ้างอิง
 published: true
-date: 2026-05-19T23:45:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: product, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -27,7 +27,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 ข้อมูลหลักของสินค้าเป็นรากฐานที่โมดูลอื่นทุกโมดูลอ่านข้อมูลไป บรรทัดของใบขอซื้อ บรรทัด PO บรรทัด GRN บรรทัด requisition วัตถุดิบในสูตรอาหาร ยอดสต๊อก บันทึก costing — ไม่มีอะไรในนั้นที่ดำรงอยู่ได้โดยไม่อ้างอิงถึงสินค้า ข้อมูลหลักที่ผิดทำให้ทุกอย่างปลายน้ำพังตาม: หน่วยฐานผิดทำให้การประเมินมูลค่าพองหรือยุบเงียบ ๆ conversion factor ที่ขาดทำให้รับของไม่ได้ หมวดหมู่ที่เก่าทำให้ roll-up ในรายงานพัง สินค้าที่ inactive แต่ยังเชื่อมกับสูตรอาหารที่เปิดอยู่ทำให้คำสั่งล้มเหลว กลุ่มโรงแรมที่ดำเนินกิจการในหลาย property รู้สึกถึงสิ่งนี้อย่างเข้มข้น — รายการสินค้าระดับ global ตัวเดียวพร้อมการเปิดใช้คลังระดับ property คือสิ่งที่ทำให้เครือข่ายมีความสอดคล้องในขณะที่ครัวท้องถิ่นยังคงยืดหยุ่นได้
 
-โมดูลนี้จึงเป็น system of record สำหรับ *การนิยาม* ของรายการ ไม่ใช่การเคลื่อนไหวหรือยอดคงเหลือ มันป้อนเอกลักษณ์และโครงสร้างของสินค้าให้ [[inventory]], [[vendor-pricelist]], [[purchase-request]], [[purchase-order]] และ [[recipe]] และไม่ได้รับอะไรกลับมาจากพวกเขายกเว้น flag การใช้งาน (เช่น "in-use" ป้องกันการลบ) การจัดการชั้นนี้ให้ถูกต้อง — รหัส หน่วย หมวดหมู่ คลัง สารก่อภูมิแพ้ — คือเงื่อนไขเบื้องต้นที่ทำให้โมดูลอื่นทุกตัวทำงานได้ถูกต้อง
+โมดูลนี้จึงเป็น system of record สำหรับ *การนิยาม* ของรายการ ไม่ใช่การเคลื่อนไหวหรือยอดคงเหลือ มันป้อนเอกลักษณ์และโครงสร้างของสินค้าให้ [inventory](/th/inventory/inventory), [vendor-pricelist](/th/inventory/vendor-pricelist), [purchase-request](/th/inventory/purchase-request), [purchase-order](/th/inventory/purchase-order) และ [recipe](/th/inventory/recipe) และไม่ได้รับอะไรกลับมาจากพวกเขายกเว้น flag การใช้งาน (เช่น "in-use" ป้องกันการลบ) การจัดการชั้นนี้ให้ถูกต้อง — รหัส หน่วย หมวดหมู่ คลัง สารก่อภูมิแพ้ — คือเงื่อนไขเบื้องต้นที่ทำให้โมดูลอื่นทุกตัวทำงานได้ถูกต้อง
 
 ## 3. แนวคิดสำคัญ
 
@@ -54,17 +54,17 @@ dateCreated: 2026-05-15T07:48:00.000Z
 ## 5. โมดูลที่เกี่ยวข้อง
 
 **การไหลข้ามโมดูล:**
-- [[inventory]] — ยอดสต๊อกทุกรายการมีคีย์เป็นสินค้า
-- [[vendor-pricelist]] — pricelist อ้างอิงสินค้า
-- [[purchase-request]] — บรรทัด PR อ้างอิงสินค้า
-- [[purchase-order]] — บรรทัด PO อ้างอิงสินค้า
-- [[recipe]] — สูตรอาหารอ้างอิงสินค้าเป็นวัตถุดิบ
+- [inventory](/th/inventory/inventory) — ยอดสต๊อกทุกรายการมีคีย์เป็นสินค้า
+- [vendor-pricelist](/th/inventory/vendor-pricelist) — pricelist อ้างอิงสินค้า
+- [purchase-request](/th/inventory/purchase-request) — บรรทัด PR อ้างอิงสินค้า
+- [purchase-order](/th/inventory/purchase-order) — บรรทัด PO อ้างอิงสินค้า
+- [recipe](/th/inventory/recipe) — สูตรอาหารอ้างอิงสินค้าเป็นวัตถุดิบ
 
 **Master configuration:**
-- [[master-data/unit]] — หน่วยฐาน หน่วยสั่งซื้อ และหน่วยสูตรอาหาร พร้อม conversion factor
-- [[system-config/application-config]] — ค่า default ระดับ tenant (ค่าความคลาดเคลื่อน นโยบายบาร์โค้ด schema คุณสมบัติ)
-- [[reporting-audit/activity]] — log วงจรชีวิตของสินค้าและการนำเข้าเป็นชุดสำหรับการตรวจสอบ
-- [[reporting-audit/attachment]] — รูปภาพสินค้า เอกสารสเปก และใบรับรองที่แนบกับแต่ละสินค้า
+- [master-data/unit](/th/inventory/master-data/unit) — หน่วยฐาน หน่วยสั่งซื้อ และหน่วยสูตรอาหาร พร้อม conversion factor
+- [system-config/application-config](/th/inventory/system-config/application-config) — ค่า default ระดับ tenant (ค่าความคลาดเคลื่อน นโยบายบาร์โค้ด schema คุณสมบัติ)
+- [reporting-audit/activity](/th/inventory/reporting-audit/activity) — log วงจรชีวิตของสินค้าและการนำเข้าเป็นชุดสำหรับการตรวจสอบ
+- [reporting-audit/attachment](/th/inventory/reporting-audit/attachment) — รูปภาพสินค้า เอกสารสเปก และใบรับรองที่แนบกับแต่ละสินค้า
 
 ## 6. แหล่งอ้างอิง
 

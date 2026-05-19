@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — User Flow — Chef
 description: flow ของ Chef ในโมดูลสูตรอาหาร — สร้างและปรับปรุงสูตร ดูแล sub-recipe publish และ archive
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: recipe, user-flow, chef, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 # สูตรอาหาร (Recipe) — User Flow — Chef
 
 > **At a Glance**
-> **Persona:** Chef / Kitchen Manager (+ Kitchen Staff read-only) &nbsp;·&nbsp; **โมดูล:** [[recipe]] &nbsp;·&nbsp; **ขั้นตอน workflow:** DRAFT → PUBLISHED → ARCHIVED (+ un-publish round-trip) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** create, edit, publish, archive, edit-published (พร้อม versioning), clone
+> **Persona:** Chef / Kitchen Manager (+ Kitchen Staff read-only) &nbsp;·&nbsp; **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **ขั้นตอน workflow:** DRAFT → PUBLISHED → ARCHIVED (+ un-publish round-trip) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** create, edit, publish, archive, edit-published (พร้อม versioning), clone
 > **persona นี้ทำอะไร:** Author และดูแล recipe library — วัตถุดิบ ขั้นตอน yield variant sub-recipe — และเป็นเจ้าของอำนาจ publish และ archive
 
 ## 1. บทบาทในโมดูลนี้
@@ -77,5 +77,5 @@ Chef อาจทำหน้าที่เป็น **ผู้บริโภ
 - Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — Sysadmin ตั้ง RBAC category-scope ของ chef และนโยบาย tenant ของ publish-gate; Auditor review ประวัติ `tb_recipe_version` ของ chef
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical `enum_recipe_status`, discriminator `tb_recipe_ingredient` (`enum_ingredient_type`), sub-recipe self-relation, โมเดล yield-variant
 - Sibling: [02-business-rules.md](./02-business-rules.md) — `REC_VAL_001`–`REC_VAL_018` (gate validation), `REC_CALC_001`–`REC_CALC_015` (cost math ที่ Chef เห็น), `REC_AUTH_001`–`REC_AUTH_005` (scope อำนาจของ Chef), `REC_POST_001`–`REC_POST_008` (ผลกระทบการเปลี่ยนสถานะ)
-- ที่เกี่ยวข้อง: [[product]] — `cost_per_unit` และ flag `is_used_in_recipe` ของวัตถุดิบเป็นต้นน้ำของทุก line entry ของ Chef
-- ที่เกี่ยวข้อง: [[inventory]] — สูตรของ Chef ขับเคลื่อน OUT movement เชิงทฤษฎีบนการขายเมนู; event cost-drift ไหลกลับผ่าน inventory / costing layer
+- ที่เกี่ยวข้อง: [product](/th/inventory/product) — `cost_per_unit` และ flag `is_used_in_recipe` ของวัตถุดิบเป็นต้นน้ำของทุก line entry ของ Chef
+- ที่เกี่ยวข้อง: [inventory](/th/inventory/inventory) — สูตรของ Chef ขับเคลื่อน OUT movement เชิงทฤษฎีบนการขายเมนู; event cost-drift ไหลกลับผ่าน inventory / costing layer

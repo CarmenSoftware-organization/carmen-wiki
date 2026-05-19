@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — Test Scenarios — Procurement Manager
 description: Test case ของ Procurement Manager (อนุมัติมูลค่าสูง transactional + ตั้งค่ากฎ vendor allocation configurational) สำหรับโมดูล purchase-request
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-request, test-scenarios, procurement-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 # ใบขอซื้อ (Purchase Request) — Test Scenarios — Procurement Manager
 
 > **At a Glance**
-> **Persona:** Procurement Manager (อนุมัติมูลค่าสูง + ตั้งค่า Allocate Vendor) &nbsp;·&nbsp; **โมดูล:** [[purchase-request]] &nbsp;·&nbsp; **Scenario:** ~29
+> **Persona:** Procurement Manager (อนุมัติมูลค่าสูง + ตั้งค่า Allocate Vendor) &nbsp;·&nbsp; **โมดูล:** [purchase-request](/th/inventory/purchase-request) &nbsp;·&nbsp; **Scenario:** ~29
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** ยังไม่มี spec Procurement Manager เฉพาะ; เส้นทาง escalation exercise ผ่าน block `gmTest` ใน `tests/301-pr.spec.ts` ใน `../carmen-inventory-frontend-e2e/`
 
@@ -75,5 +75,5 @@ dateCreated: 2026-05-15T09:00:00.000Z
 - หน้าพี่น้อง: [04-test-scenarios-purchaser.md](./04-test-scenarios-purchaser.md) — persona ปลายน้ำที่ consume กฎ Allocate Vendor ที่ Procurement Manager ดูแล; PUR-HP-03 (แหล่งจัดอันดับ Allocate Vendor dialog) ถูกขับด้วยชุดกฎ configurational
 - E2E: **TODO** — ยังไม่มี `30X-pr-procurement-manager-journey.spec.ts` เฉพาะ เส้นทาง escalation (`X-PR-05`) และ override มูลค่าสูง exercise บางส่วนผ่าน block `gmTest` ใน `../carmen-inventory-frontend-e2e/tests/301-pr.spec.ts` (coverage permission ต่อ action × ต่อ role) เพิ่ม spec persona-journey เฉพาะเมื่อ surface admin Allocate Vendor Rules และ view Stuck PR Oversight ที่ stable wired เข้า frontend
 - ที่มา: `../carmen/docs/purchase-request-management/PR-Module-Structure.md` (surface โมดูล Allocate Vendor, shape การตั้งค่า vendor-allocation, การตั้งค่า threshold-routing), `../carmen/docs/purchase-request-management/PR-User-Experience.md` (UI review-and-decide ที่ใช้ร่วมกับ chain Approver พื้นฐาน, ขั้นตอน escalation), `../carmen/docs/purchase-request-management/PR-Overview.md` (role stakeholder Procurement Manager, integration ของ workflow engine, การจัดการ vendor), `../carmen/docs/purchase-request-management/purchase-request-module-prd.md` (product requirement สำหรับ routing ตาม threshold และการตั้งค่ากฎ Allocate Vendor), `../carmen/docs/purchase-request-management/testing.md` (level testing — pattern test escalation และ configuration), `../carmen/docs/purchase-request-management/troubleshooting.md` (Section 2.1 ปัญหา stage ค้าง, Section 2.2 ปัญหา workflow transition, misconfiguration ของ threshold-routing)
-- Cross-link: [[vendor-pricelist]] — ข้อมูล pricelist ที่ feed ranking Allocate Vendor
-- Cross-link: [[purchase-order]] — โมดูลปลายน้ำที่รับ PR ที่ final-approved สำหรับการแปลง
+- Cross-link: [vendor-pricelist](/th/inventory/vendor-pricelist) — ข้อมูล pricelist ที่ feed ranking Allocate Vendor
+- Cross-link: [purchase-order](/th/inventory/purchase-order) — โมดูลปลายน้ำที่รับ PR ที่ final-approved สำหรับการแปลง

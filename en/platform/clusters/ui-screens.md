@@ -2,7 +2,7 @@
 title: Cluster — UI Screens
 description: ClusterManagement (list) and ClusterEdit (create/view/edit) screens — layout, filters, dialogs, persisted state.
 published: true
-date: '2026-05-19T18:00:00.000Z'
+date: 2026-05-19T23:55:00.000Z'
 tags: book/platform, clusters, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -110,7 +110,7 @@ The card renders a plain `<table>` (not `DataTable`) with columns: **Code** (out
 
 Card header controls:
 - **Refresh** (icon button) — re-calls `fetchBusinessUnits()`.
-- **Add** button — navigates to `/business-units/new?cluster_id=<id>` ([[business-units]]). The `cluster_id` query parameter wires the new BU create form so it lands pre-linked to this cluster. The button is disabled and shows a "License limit reached" tooltip when `businessUnits.length >= max_license_bu`.
+- **Add** button — navigates to `/business-units/new?cluster_id=<id>` ([business-units](/en/platform/business-units)). The `cluster_id` query parameter wires the new BU create form so it lands pre-linked to this cluster. The button is disabled and shows a "License limit reached" tooltip when `businessUnits.length >= max_license_bu`.
 
 Row controls: the **Edit** icon button (Pencil) navigates to `/business-units/:buId/edit`. There is no Remove/Unlink button on BU rows — BU cluster membership is managed on the BU edit page. There is no in-place BU create dialog; the SPA always navigates away to the BU create route.
 
@@ -118,7 +118,7 @@ Row controls: the **Edit** icon button (Pencil) navigates to `/business-units/:b
 
 The Users card lists `tb_cluster_user` rows for this cluster, fetched from `GET /api-system/user/cluster/:id`. Rows are sorted by display name (first/middle/last name from `userInfo`, falling back to `email`), then by email. The card header shows an Active count badge and a total count; if any BU in the cluster has `max_license_users` set, it also shows a "N/M licensed" indicator in red when the count equals or exceeds the sum of BU license caps.
 
-The card renders a `<table>` with columns: **Name** (clickable link — opens the Edit Cluster User dialog, §5.2), **Email**, **Parent Business Unit** (outline badge showing `code - name` from the matched BU, or `-`), **Platform Role** (outline badge showing `platform_role` or, if absent, the cluster `role` — the `platform_role` shown here is the joined user's `tb_user.platform_role` denormalized into the API response; it does not live on the `tb_cluster_user` join row, which stores only `role`; it is distinct from the sign-in `platform_role` on the `tb_user` record documented in [[users]]; the fallback to `role` handles API responses where the user's platform role is not yet populated), **Status** (Active/Inactive badge), and a right-aligned **Remove** icon button (Trash, destructive colour).
+The card renders a `<table>` with columns: **Name** (clickable link — opens the Edit Cluster User dialog, §5.2), **Email**, **Parent Business Unit** (outline badge showing `code - name` from the matched BU, or `-`), **Platform Role** (outline badge showing `platform_role` or, if absent, the cluster `role` — the `platform_role` shown here is the joined user's `tb_user.platform_role` denormalized into the API response; it does not live on the `tb_cluster_user` join row, which stores only `role`; it is distinct from the sign-in `platform_role` on the `tb_user` record documented in [users](/en/platform/users); the fallback to `role` handles API responses where the user's platform role is not yet populated), **Status** (Active/Inactive badge), and a right-aligned **Remove** icon button (Trash, destructive colour).
 
 Card header controls:
 - **Refresh** (icon button) — re-calls `fetchClusterUsers()`.
@@ -130,7 +130,7 @@ Card header controls:
 
 Triggered by the **Add User** button in the Users card header on `/clusters/:id/edit`.
 
-The dialog searches the global user pool ([[users]], `GET /api-system/user` via `userService.getAll`) with a 400 ms debounced search input. Search fields: `username`, `email`, `firstname`, `lastname`. Results are paginated at 10 per page with infinite-scroll load-more (triggered by scrolling to within 40 px of the bottom of the results list). Users already in this cluster are excluded from the results (`availableUsers` filter). Selecting a user shows a confirmation card with `username`, `email`, and full name; clicking the X on that card deselects and returns to the search list.
+The dialog searches the global user pool ([users](/en/platform/users), `GET /api-system/user` via `userService.getAll`) with a 400 ms debounced search input. Search fields: `username`, `email`, `firstname`, `lastname`. Results are paginated at 10 per page with infinite-scroll load-more (triggered by scrolling to within 40 px of the bottom of the results list). Users already in this cluster are excluded from the results (`availableUsers` filter). Selecting a user shows a confirmation card with `username`, `email`, and full name; clicking the X on that card deselects and returns to the search list.
 
 Fields after a user is selected:
 - **Cluster Role** — select populated from `CLUSTER_ROLES = ['admin', 'user']`. Default: `user`.
@@ -191,4 +191,4 @@ Note: the clusters list does **not** persist a `role_filters_clusters` key becau
 - `../carmen-platform/src/pages/ClusterManagement.tsx` — list page: filters (Status + Deleted), header actions (Export, Add Cluster), row action menu (Edit / Delete soft), audit columns, 6 `localStorage` keys.
 - `../carmen-platform/src/pages/ClusterEdit.tsx` — create/view/edit page: 3-column grid layout, Cluster Details form (6 fields, `code` editable in edit mode), Business Units table (navigate-to-new flow), Users table (Add/Edit/Remove user dialogs), `CLUSTER_ROLES` constant.
 - `../carmen-platform/src/services/clusterService.ts` — API surface: `GET /api-system/cluster`, `POST /api-system/cluster`, `PUT /api-system/cluster/:id`, `DELETE /api-system/cluster/:id`, `GET /api-system/user/cluster/:clusterId`.
-- Cross-links: [[clusters]] (module landing), [[users]] (global user pool searched by Add User dialog; `tb_cluster_user` doc), [[business-units]] (Add BU navigate-to-new flow; `cluster_id` FK), [Data Model](./data-model.md), [Permissions](./permissions.md).
+- Cross-links: [clusters](/en/platform/clusters) (module landing), [users](/en/platform/users) (global user pool searched by Add User dialog; `tb_cluster_user` doc), [business-units](/en/platform/business-units) (Add BU navigate-to-new flow; `cluster_id` FK), [Data Model](./data-model.md), [Permissions](./permissions.md).

@@ -2,7 +2,7 @@
 title: ใบเบิกของสโตร์ (Store Requisition) — Test Scenarios — Approver
 description: test case ของ Approver (happy path, สิทธิ์, validation, edge case) สำหรับ store-requisition
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: store-requisition, test-scenarios, approver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T13:30:00.000Z
 # ใบเบิกของสโตร์ (Store Requisition) — Test Scenarios — Approver
 
 > **At a Glance**
-> **Persona:** Approver (Department Head + approver ระดับสูงขึ้น) &nbsp;·&nbsp; **โมดูล:** [[store-requisition]] &nbsp;·&nbsp; **Scenarios:** ~27
+> **Persona:** Approver (Department Head + approver ระดับสูงขึ้น) &nbsp;·&nbsp; **โมดูล:** [store-requisition](/th/inventory/store-requisition) &nbsp;·&nbsp; **Scenarios:** ~27
 > **หมวดหมู่:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** map ไปยัง `tests/701-sr.spec.ts` (TC-SR-060001..060005, 070001..070003, 080001..080002, 090001+, 100001+, 110001+) ใน `../carmen-inventory-frontend-e2e/`
 
@@ -70,5 +70,5 @@ dateCreated: 2026-05-15T13:30:00.000Z
 - User flow: [03-user-flow-approver.md](./03-user-flow-approver.md) — แหล่ง happy-path สำหรับส่วนที่ 1 ข้างบน; บรรยาย flow หลัก 8 ขั้น (เปิด / ยืนยัน / ตัดสินใจต่อบรรทัด / split / submit / เดิน / แจ้ง / audit) และ branch การตัดสินใจ (ตัดตามความพร้อม / par / budget; reject; send-back; multi-tier; delegation; SLA escalation)
 - Business rules ที่ถูกยืนยัน: [02-business-rules.md](./02-business-rules.md) Section 2 — validation rules `SR_VAL_008` (quantity invariant), `SR_VAL_010` (cap อนุมัติ + การมีอยู่ของ reject-message); Section 4 — authorization rules `SR_AUTH_005` (อำนาจ Approver), `SR_AUTH_006` (split & reject), `SR_AUTH_011` (SoD Requester ≠ Approver), `SR_AUTH_014` (workflow-stage gating); Section 5 — posting rules `SR_POST_003` (approve), `SR_POST_004` (reject / send-back), `SR_POST_009` (auto-cancel)
 - E2E spec: `../carmen-inventory-frontend-e2e/tests/701-sr.spec.ts` — Playwright spec canonical สำหรับโมดูล SR กลุ่ม test ที่เกี่ยวกับ Approver: **TC-SR-060001..060005** (Approver list actions — APR-HP-01 setup, APR-EDGE-07 bulk approve, delegation), **TC-SR-070001..070003** (Approve — APR-HP-01, APR-PERM-02, APR-VAL-06), **TC-SR-080001..080002** (Approve Item-level — APR-HP-05, ผลผสม; scenario APR-VAL-05 สต๊อกไม่พอ), **TC-SR-090001+** (Adjust approved quantity — APR-HP-02), **TC-SR-100001+** (Request Review — APR-HP-04), **TC-SR-110001+** (Reject — APR-HP-03, APR-EDGE-02) Coverage permission-denial ใช้ fixture `requestor@blueledgers.com`
-- Cross-link: [[recipe]] — SR ที่ขับโดย recipe มี `info.recipe_id`; Approver เห็น context recipe เป็นส่วนหนึ่งของการตัดสินใจต่อบรรทัด
-- Cross-link: [[inventory]] — context ความพร้อมต้นทาง surface ตอน approve (UI enrichment ไม่ persist บนบรรทัด SR)
+- Cross-link: [recipe](/th/inventory/recipe) — SR ที่ขับโดย recipe มี `info.recipe_id`; Approver เห็น context recipe เป็นส่วนหนึ่งของการตัดสินใจต่อบรรทัด
+- Cross-link: [inventory](/th/inventory/inventory) — context ความพร้อมต้นทาง surface ตอน approve (UI enrichment ไม่ persist บนบรรทัด SR)

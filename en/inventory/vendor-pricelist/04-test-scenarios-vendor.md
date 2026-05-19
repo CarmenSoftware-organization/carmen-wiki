@@ -2,7 +2,7 @@
 title: Vendor Pricelist — Test Scenarios — Vendor
 description: Vendor's test cases (happy path, validation, edge cases) for vendor-pricelist. External party — Permission / Authorization section is reduced to a single N/A row.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: vendor-pricelist, test-scenarios, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 # Vendor Pricelist — Test Scenarios — Vendor
 
 > **At a Glance**
-> **Persona:** Vendor (external party — token-authenticated portal only) &nbsp;·&nbsp; **Module:** [[vendor-pricelist]] &nbsp;·&nbsp; **Scenarios:** ~25
+> **Persona:** Vendor (external party — token-authenticated portal only) &nbsp;·&nbsp; **Module:** [vendor-pricelist](/en/inventory/vendor-pricelist) &nbsp;·&nbsp; **Scenarios:** ~25
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission (N/A) &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** none — vendor portal is a separate public surface; coverage at API / integration level (token middleware, validator output, auto-save) pending roadmap item in `../carmen-inventory-frontend-e2e/`
 
@@ -68,7 +68,7 @@ This page captures the test scenarios that exercise the **Vendor** persona's int
 - User flow: [03-user-flow-vendor.md](./03-user-flow-vendor.md) — happy-path source for Section 1 above; describes the portal-token entry point, the three submission methods, the auto-save mechanic, the recall-and-edit action, and the rejection-resubmit loop.
 - Business rules being verified: [02-business-rules.md](./02-business-rules.md) § 2 (`VPL_VAL_018`–`VPL_VAL_023` — line-level validations the vendor triggers on save and submit; `VPL_VAL_020` MOQ-tier non-increasing check; `VPL_VAL_023` minimum-one-row submit check), § 3 (`VPL_CALC_001`–`VPL_CALC_003` line-price decomposition; `VPL_CALC_007` deadline countdown), § 4 (`VPL_AUTH_007` portal access via token; `VPL_AUTH_008` currency / unit selection; `VPL_AUTH_014` segregation of duties — verified from the Sysadmin / Purchaser side, not the Vendor side), § 5 (`VPL_POST_010`–`VPL_POST_014` invitation lifecycle; `VPL_POST_015`–`VPL_POST_016` vendor-driven pricelist transitions).
 - Data model: [01-data-model.md](./01-data-model.md) — `tb_request_for_pricing_detail.pricelist_url_token` (per-invitation cryptographic token); `tb_pricelist.url_token` (denormalised copy); the multi-MOQ-per-product unique key (`pricelist_detail_pricelist_id_product_id_unit_id_moqqty_u`) referenced in VPL-VND-VAL-08.
-- E2E: No dedicated Carmen E2E spec exists for the vendor portal — the portal is a separate public surface under `app/(main)/vendor-portal/[token]/` with its own token-authenticated harness layer. Coverage today is at the API / integration level (token middleware, validation-engine output, auto-save buffering) tracked in `../carmen/docs/vendor-pricelist-management/tasks.md`. Sibling reference: the external Vendor on [[purchase-order]] has no Carmen surface at all and is documented in [[purchase-order/04-test-scenarios-vendor]] as N/A across the board; this module's Vendor differs because the portal session **is** an in-system surface (subject to token policy) even though it is not under Carmen's main RBAC matrix.
+- E2E: No dedicated Carmen E2E spec exists for the vendor portal — the portal is a separate public surface under `app/(main)/vendor-portal/[token]/` with its own token-authenticated harness layer. Coverage today is at the API / integration level (token middleware, validation-engine output, auto-save buffering) tracked in `../carmen/docs/vendor-pricelist-management/tasks.md`. Sibling reference: the external Vendor on [purchase-order](/en/inventory/purchase-order) has no Carmen surface at all and is documented in [purchase-order/04-test-scenarios-vendor](/en/inventory/purchase-order/04-test-scenarios-vendor) as N/A across the board; this module's Vendor differs because the portal session **is** an in-system surface (subject to token policy) even though it is not under Carmen's main RBAC matrix.
 - Sibling: [04-test-scenarios-purchaser.md](./04-test-scenarios-purchaser.md) — internal persona that launched the campaign, reviewed the vendor's submission, and approved / rejected; the rejection-resubmit loop in VPL-VND-HP-08 originates there.
 - Sibling: [04-test-scenarios-audit-config.md](./04-test-scenarios-audit-config.md) — Sysadmin scenarios cover the portal-token policy configuration (expiration, IP allowlist, concurrent-session limits, suspicious activity) that gates the Vendor's access in VPL-VND-VAL-01..VPL-VND-VAL-03 and VPL-VND-EDGE-04.
-- Cross-link: [[product]] — every line on the vendor's submission references a product on the template; orphan handling exercised indirectly via VPL-VND-EDGE-07.
+- Cross-link: [product](/en/inventory/product) — every line on the vendor's submission references a product on the template; orphan handling exercised indirectly via VPL-VND-EDGE-07.

@@ -2,7 +2,7 @@
 title: ใบลดหนี้ (Credit Note)
 description: เอกสารใบลดหนี้จากผู้ขายที่กลับรายการบางส่วนหรือทั้งหมดของ PO/GRN ก่อนหน้า — ปรับยอด AP และอาจคืนสินค้าหรือ revalue ต้นทุน inventory layer
 published: true
-date: 2026-05-17T07:00:36.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-order, credit-note, accounting, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # ใบลดหนี้ (Credit Note)
 
 > **At a Glance**
-> **เจ้าของ:** ฝ่ายจัดซื้อ / AP &nbsp;·&nbsp; **ตาราง:** `tb_credit_note` (+ detail, comments) &nbsp;·&nbsp; **Workflow:** ใช้นิยามเดียวกับฝั่ง PO &nbsp;·&nbsp; **เอกสารต้นทาง:** [[good-receive-note]] &nbsp;·&nbsp; การปรับยอดหลังรับของกับ GRN เดิม — กลับยอด AP และคืนสินค้าหรือ revalue ต้นทุน
+> **เจ้าของ:** ฝ่ายจัดซื้อ / AP &nbsp;·&nbsp; **ตาราง:** `tb_credit_note` (+ detail, comments) &nbsp;·&nbsp; **Workflow:** ใช้นิยามเดียวกับฝั่ง PO &nbsp;·&nbsp; **เอกสารต้นทาง:** [good-receive-note](/th/inventory/good-receive-note) &nbsp;·&nbsp; การปรับยอดหลังรับของกับ GRN เดิม — กลับยอด AP และคืนสินค้าหรือ revalue ต้นทุน
 
 ![ใบลดหนี้ (Credit Note) screen](/screenshots/purchase-order/credit-note.png)
 
@@ -27,7 +27,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 |---|---|---|
 | ตั้ง CN กับ GRN | จัดซื้อ → ใบลดหนี้ → **สร้างใหม่** | เลือก GRN; รายการจะ pre-fill จากปริมาณที่รับ |
 | เลือก `quantity_return` กับ `amount_discount` | Header field `credit_note_type` | Return จะย้ายสต๊อก; Discount แค่ revalue ต้นทุน |
-| ตั้งค่า return-to-stock vs write-off | (อัตโนมัติ) | Engine จะคืนเข้า FIFO lot เดิม; ถ้า lot ถูกใช้หมดแล้ว จะลง variance ที่บัญชี write-off — ดู [[costing]] `COST_XMOD_006` |
+| ตั้งค่า return-to-stock vs write-off | (อัตโนมัติ) | Engine จะคืนเข้า FIFO lot เดิม; ถ้า lot ถูกใช้หมดแล้ว จะลง variance ที่บัญชี write-off — ดู [costing](/th/inventory/costing) `COST_XMOD_006` |
 | โพสต์ CN ไปยัง AP | เมื่อ `doc_status = completed` | ออก AP debit memo เสมอ (มูลค่า `base_total_price`) |
 | ระบุเลขที่ credit invoice ของผู้ขาย | Header `invoice_no` / `tax_invoice_no` | จำเป็นสำหรับ AP three-way match |
 | Void CN ที่ posted แล้ว | Detail → **Void** | ทำได้เฉพาะตอนงวด posting ยังเปิด; จะกลับ posting ทุกรายการ |
@@ -40,13 +40,13 @@ dateCreated: 2026-05-16T15:00:00.000Z
 | "Return qty exceeds receipted - already returned" | ปริมาณคืนสะสมจะเกิน lot | ลดปริมาณ หรือแบ่งหลาย lot |
 | "Tax rate must match GRN snapshot" | ต้องตั้ง `is_tax_adjustment = true` สำหรับภาษีย้อนหลัง | toggle `is_tax_adjustment` บนบรรทัด |
 | "Period is closed — cannot void" | งวด posting ของ CRN ปิดแล้ว | ใช้ JV แก้แทน |
-| "Rate not in history" | ไม่มี `tb_exchange_rate` ของวัน `cn_date` สำหรับ currency | เพิ่ม rate แล้วเปิด CRN ใหม่ (ดู [[master-data/exchange-rate]]) |
+| "Rate not in history" | ไม่มี `tb_exchange_rate` ของวัน `cn_date` สำหรับ currency | เพิ่ม rate แล้วเปิด CRN ใหม่ (ดู [master-data/exchange-rate](/th/inventory/master-data/exchange-rate)) |
 | "User not authorised at this stage" | ผู้ใช้ที่ลงชื่ออยู่ไม่อยู่ใน `user_action.execute[]` | รอผู้อนุมัติที่ถูกต้อง หรือ escalate |
 
 ## 4. กรณีพิเศษ
 
 - **การปัดเศษเงิน.** Money fields เก็บที่ `Decimal(20,5)`; ยอดที่คำนวณ round half-up ที่ **2 ตำแหน่ง** ที่ระดับบรรทัด แล้ว sum ขึ้น header (ตรงกับ PO/GRN)
-- **FX revaluation.** เมื่อ `cn_date != grn_date` และ currency ต่างจาก BU base, engine resolve rate ใหม่ที่ `cn_date` และโพสต์ส่วนต่างเป็น FX gain/loss ตาม [[costing]] `COST_CALC_005`
+- **FX revaluation.** เมื่อ `cn_date != grn_date` และ currency ต่างจาก BU base, engine resolve rate ใหม่ที่ `cn_date` และโพสต์ส่วนต่างเป็น FX gain/loss ตาม [costing](/th/inventory/costing) `COST_CALC_005`
 - **Return-to-stock vs write-off.** `quantity_return` จะกลับ FIFO lot เดิมถ้ายังอยู่; ถ้า lot ถูก consume หมดแล้ว (issue ผ่าน SR / stock-out) variance ลงที่บัญชี **inventory write-off** ที่ตั้งไว้ (ไม่มี negative inventory)
 - **Snapshot semantics.** ชื่อผู้ขาย, สินค้า, currency, FX rate, tax rate, และ pricelist refs ถูก snapshot ตอน draft การแก้ไข master record ไม่มีผลย้อนหลังกับ CRN
 - **ช่วงเวลาที่ void ได้.** CRN ที่ `completed` แล้ว void ได้เฉพาะตอนงวดเปิด เมื่อ `tb_period.status = closed` การ void จะถูกปฏิเสธ
@@ -101,14 +101,14 @@ Source: tenant schema (`tb_credit_note`, `tb_credit_note_detail`, `tb_credit_not
 
 ### 5.3 ตาราง Comment
 
-`tb_credit_note_comment` และ `tb_credit_note_detail_comment` ใช้รูปแบบ comment มาตรฐาน — ดู [[purchase-request/01-data-model]]
+`tb_credit_note_comment` และ `tb_credit_note_detail_comment` ใช้รูปแบบ comment มาตรฐาน — ดู [purchase-request/01-data-model](/th/inventory/purchase-request/01-data-model)
 
 ## 6. วงจรการทำงาน / กติกาทางธุรกิจ
 
 `doc_status`: `draft` → `in_progress` → `completed` (terminal); `cancelled` และ `voided` เป็น terminal ทางเลือก
 
 - **`draft`** — แก้ไขได้; ยังไม่กระทบ GL, AP, inventory
-- **`in_progress`** — ล็อกยกเว้นที่ stage ปัจจุบันอนุญาต; ผู้อนุมัติมาจาก `user_action.execute[]` ตาม [[system-config/workflow]]
+- **`in_progress`** — ล็อกยกเว้นที่ stage ปัจจุบันอนุญาต; ผู้อนุมัติมาจาก `user_action.execute[]` ตาม [system-config/workflow](/th/inventory/system-config/workflow)
 - **`completed`** — โพสต์ inventory สำหรับ `quantity_return`; revalue ต้นทุนสำหรับ `amount_discount`; AP debit memo สำหรับทั้งคู่
 - **`cancelled`** — ยุติก่อน complete; ไม่มี posting
 - **`voided`** — กลับ CRN ที่ `completed` ภายในงวดที่เปิด; กลับ posting ทุกรายการ
@@ -117,12 +117,12 @@ Source: tenant schema (`tb_credit_note`, `tb_credit_note_detail`, `tb_credit_not
 
 ## 7. ความเชื่อมโยงข้ามโมดูล
 
-- [[purchase-order]] — PO ต้นทางของ GRN เดิม; ยอด CRN roll-up ใน PO open/received reporting
-- [[good-receive-note]] — เอกสารต้นทางของทุกบรรทัด `quantity_return`
-- [[costing]] — `COST_POST_003` (revalue ยอด), `COST_XMOD_006` (กลับต้นทุน lot), `COST_CALC_005` (FX revaluation)
-- [[master-data/credit-note-reason]] — taxonomy ของเหตุผล
-- [[master-data/exchange-rate]] — การ resolve rate ตาม `cn_date`
-- [[master-data/vendor]] — Snapshot ผู้ขายและการ route AP debit memo
+- [purchase-order](/th/inventory/purchase-order) — PO ต้นทางของ GRN เดิม; ยอด CRN roll-up ใน PO open/received reporting
+- [good-receive-note](/th/inventory/good-receive-note) — เอกสารต้นทางของทุกบรรทัด `quantity_return`
+- [costing](/th/inventory/costing) — `COST_POST_003` (revalue ยอด), `COST_XMOD_006` (กลับต้นทุน lot), `COST_CALC_005` (FX revaluation)
+- [master-data/credit-note-reason](/th/inventory/master-data/credit-note-reason) — taxonomy ของเหตุผล
+- [master-data/exchange-rate](/th/inventory/master-data/exchange-rate) — การ resolve rate ตาม `cn_date`
+- [master-data/vendor](/th/inventory/master-data/vendor) — Snapshot ผู้ขายและการ route AP debit memo
 
 ## 8. แหล่งอ้างอิง
 

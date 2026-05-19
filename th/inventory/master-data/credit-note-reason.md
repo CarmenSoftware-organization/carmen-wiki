@@ -2,7 +2,7 @@
 title: เหตุผลใบลดหนี้ (Credit Note Reason)
 description: รหัสเหตุผลสำหรับใบลดหนี้ที่ออกต่อ GRN — รองรับ flow การคืนสินค้าให้ผู้ขายและการแก้ราคา
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, credit-note-reason, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -45,7 +45,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 - **การ propagate การเปลี่ยนชื่อ** — การแสดงผล refresh อัตโนมัติเพราะ CN เก็บ FK ไม่ใช่ text
 - **แถวที่ soft-deleted ยัง resolve ได้** ผ่าน lookup ดังนั้น CN ประวัติยัง render ต่อ
 - **การแปล** เหตุผลมักแสดงให้ผู้ขายเห็น จนกว่าจะมีตาราง localisation การแปลอยู่ใน `info` JSON
-- **Adjustment-type vs. reason** ถ้า CN posts การปรับสต๊อก (write-off แทน return-to-stock) การปรับนั้นบรรจุ [[master-data/adjustment-type]] ของตัวเองในขณะที่ CN แม่เก็บเหตุผล
+- **Adjustment-type vs. reason** ถ้า CN posts การปรับสต๊อก (write-off แทน return-to-stock) การปรับนั้นบรรจุ [master-data/adjustment-type](/th/inventory/master-data/adjustment-type) ของตัวเองในขณะที่ CN แม่เก็บเหตุผล
 
 ---
 
@@ -76,8 +76,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 7. การอ้างอิงข้ามโมดูล
 
-- [[good-receive-note]] — ใบลดหนี้ออกในบริบท GRN FK ของเหตุผลบน `tb_credit_note`
-- [[inventory-adjustment]] — เมื่อ CN posts การปรับสต๊อก การปรับนั้นบรรจุ [[master-data/adjustment-type]] เพิ่มเติมจากเหตุผล CN
+- [good-receive-note](/th/inventory/good-receive-note) — ใบลดหนี้ออกในบริบท GRN FK ของเหตุผลบน `tb_credit_note`
+- [inventory-adjustment](/th/inventory/inventory-adjustment) — เมื่อ CN posts การปรับสต๊อก การปรับนั้นบรรจุ [master-data/adjustment-type](/th/inventory/master-data/adjustment-type) เพิ่มเติมจากเหตุผล CN
 
 ## 8. แหล่งอ้างอิง
 

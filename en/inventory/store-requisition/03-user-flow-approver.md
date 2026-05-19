@@ -2,7 +2,7 @@
 title: Store Requisition — User Flow — Approver
 description: Approver's flow within the store-requisition module — reviews, trims, rejects, splits, or sends back submitted SRs.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: store-requisition, user-flow, approver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T13:30:00.000Z
 # Store Requisition — User Flow — Approver
 
 > **At a Glance**
-> **Persona:** Approver (Department Head + later-stage Ops / Cost Controller) &nbsp;·&nbsp; **Module:** [[store-requisition]] &nbsp;·&nbsp; **Workflow stages:** in_progress (approval stage) → in_progress (fulfilment) / cancelled / draft (send-back) &nbsp;·&nbsp; **Key permissions:** approve, trim approved_qty, reject (line / header), split-reject, send-back
+> **Persona:** Approver (Department Head + later-stage Ops / Cost Controller) &nbsp;·&nbsp; **Module:** [store-requisition](/en/inventory/store-requisition) &nbsp;·&nbsp; **Workflow stages:** in_progress (approval stage) → in_progress (fulfilment) / cancelled / draft (send-back) &nbsp;·&nbsp; **Key permissions:** approve, trim approved_qty, reject (line / header), split-reject, send-back
 > **What this persona does:** Reviews submitted SR lines against need, par level, and budget; approves, trims, rejects, or sends back via workflow stage advance.
 
 ## 1. Role in This Module
@@ -93,7 +93,7 @@ The Approver's involvement on a given SR ends at one of four boundaries:
 - **Any line sent back for correction** — handoff back to the **Requester**. The SR re-enters the requester workflow stage; the already-approved lines remain approved (they do not revert to `submit`); the requester addresses the `review_message` and resubmits.
 - **All lines rejected** — `in_progress → cancelled` automatic per `SR_POST_004` tail; the document terminates; the requester is notified per-line.
 
-The Approver may also dispute a downstream issue post-commit (e.g. the fulfiller short-fulfilled an approved line); the resolution is via Inventory Controller variance review and `[[inventory-adjustment]]`, not via re-opening the SR.
+The Approver may also dispute a downstream issue post-commit (e.g. the fulfiller short-fulfilled an approved line); the resolution is via Inventory Controller variance review and `[inventory-adjustment](/en/inventory/inventory-adjustment)`, not via re-opening the SR.
 
 ## 5. References
 
@@ -106,5 +106,5 @@ The Approver may also dispute a downstream issue post-commit (e.g. the fulfiller
 - Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — Inventory Controller and Auditor monitor approval patterns (chronic over-approval, chronic rejection) and the Sysadmin configures the workflow stages / thresholds that bound the Approver's authority.
 - Sibling: [01-data-model.md](./01-data-model.md) — per-line approval / review / rejection signature columns on `tb_store_requisition_detail` (`approved_by_*`, `review_by_*`, `reject_by_*`), the `history` and `stages_status` JSON timelines.
 - Sibling: [02-business-rules.md](./02-business-rules.md) — `SR_VAL_010` (approval invariant: `approved_qty ≤ requested_qty`, reject-message mandatory), `SR_AUTH_005`–`SR_AUTH_006` (approve / trim / send-back authority), `SR_AUTH_011` (Requester ≠ Approver SoD), `SR_POST_003`–`SR_POST_004` (approve / reject posting effects within `in_progress`).
-- Related: [[recipe]] — recipe-driven SRs carry `info.recipe_id`; the Approver sees the recipe context as part of the per-line decision.
-- Related: [[inventory]] — source-availability context surfaced at approve time (UI enrichment); the Approver's trim decisions ripple into the fulfiller's pick.
+- Related: [recipe](/en/inventory/recipe) — recipe-driven SRs carry `info.recipe_id`; the Approver sees the recipe context as part of the per-line decision.
+- Related: [inventory](/en/inventory/inventory) — source-availability context surfaced at approve time (UI enrichment); the Approver's trim decisions ripple into the fulfiller's pick.

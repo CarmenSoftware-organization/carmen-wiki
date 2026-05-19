@@ -2,7 +2,7 @@
 title: Location
 description: Storage and consumption locations classified as inventory, direct, or consignment — drives stock posting and physical-count behaviour.
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, location, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -92,12 +92,12 @@ Source: tenant schema.
 
 ## 7. Cross-References
 
-- [[inventory]] — every stock balance keyed by location; type decides whether balance is tracked.
-- [[good-receive-note]] — GRN detail lines target a destination location; type drives the journal entry.
-- [[store-requisition]] — `from_location` / `to_location` on every issue/transfer.
-- [[physical-count]] — counts scoped to locations with `physical_count_type = yes`.
-- [[spot-check]] — sessions enumerate locations.
-- [[purchase-request]] and [[purchase-order]] — detail lines may carry destination location.
+- [inventory](/en/inventory/inventory) — every stock balance keyed by location; type decides whether balance is tracked.
+- [good-receive-note](/en/inventory/good-receive-note) — GRN detail lines target a destination location; type drives the journal entry.
+- [store-requisition](/en/inventory/store-requisition) — `from_location` / `to_location` on every issue/transfer.
+- [physical-count](/en/inventory/physical-count) — counts scoped to locations with `physical_count_type = yes`.
+- [spot-check](/en/inventory/spot-check) — sessions enumerate locations.
+- [purchase-request](/en/inventory/purchase-request) and [purchase-order](/en/inventory/purchase-order) — detail lines may carry destination location.
 
 ## 8. References
 

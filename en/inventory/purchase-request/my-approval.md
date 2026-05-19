@@ -2,7 +2,7 @@
 title: My Approval
 description: Personal approval queue surfacing every PR (and related document) the current user must act on — single pane across modules.
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-request, approval, workflow, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # My Approval
 
 > **At a Glance**
-> **Owner:** Any workflow approver &nbsp;·&nbsp; **Table:** *none — projection over workflow state* &nbsp;·&nbsp; **Workflow:** read-only inbox &nbsp;·&nbsp; **Upstream:** [[purchase-request]], [[purchase-order]], [[purchase-order/credit-note]] &nbsp;·&nbsp; Aggregated personal inbox of documents awaiting the signed-in user's action.
+> **Owner:** Any workflow approver &nbsp;·&nbsp; **Table:** *none — projection over workflow state* &nbsp;·&nbsp; **Workflow:** read-only inbox &nbsp;·&nbsp; **Upstream:** [purchase-request](/en/inventory/purchase-request), [purchase-order](/en/inventory/purchase-order), [purchase-order/credit-note](/en/inventory/purchase-order/credit-note) &nbsp;·&nbsp; Aggregated personal inbox of documents awaiting the signed-in user's action.
 
 ![My Approval screen](/screenshots/purchase-request/my-approval.png)
 
@@ -36,7 +36,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 | Symptom / Message | Cause | Action |
 |---|---|---|
-| Row missing from inbox | Signed-in user not in `user_action.execute[]` on the doc's current stage | Check stage configuration in [[system-config/workflow]] |
+| Row missing from inbox | Signed-in user not in `user_action.execute[]` on the doc's current stage | Check stage configuration in [system-config/workflow](/en/inventory/system-config/workflow) |
 | "409 Conflict" on approve | A peer in the same `execute[]` already acted; engine has advanced the stage | UI auto-refreshes — re-check the inbox |
 | Action buttons disabled | Source document's posting period has closed | Reopen the period or void the document (finance) |
 | Row appears but cannot act | `deleted_at` set on the source out-of-band | Refresh — the row should drop off |
@@ -75,7 +75,7 @@ Identical column shape on `tb_purchase_request`, `tb_purchase_order`, `tb_credit
 
 ### 5.2 The `user_action.execute[]` array
 
-Populated by the workflow engine on each stage transition based on stage configuration in [[system-config/workflow]]:
+Populated by the workflow engine on each stage transition based on stage configuration in [system-config/workflow](/en/inventory/system-config/workflow):
 
 - **Role-based stage** — every user holding the configured role is enumerated into `execute[]`.
 - **Named-approver stage** — the named user(s) added directly.
@@ -95,12 +95,12 @@ Approve / reject / send-back invoke the same backend endpoints as each module's 
 
 ## 7. Cross-References
 
-- [[purchase-request]] — primary document type; inbox typically renders PRs awaiting each stage.
-- [[purchase-order]] — POs requiring manual approval (price-threshold, vendor-risk, budget-override).
-- [[purchase-order/credit-note]] — CRNs awaiting approval under the same workflow-state contract.
-- [[system-config/workflow]] — stage definition, role mapping, threshold rules, and the rule populating `user_action.execute[]`.
-- [[access-control/application-role]] — role-to-permission mapping for eligibility.
-- [[purchase-request/03-user-flow-approver]] — approver persona walkthrough.
+- [purchase-request](/en/inventory/purchase-request) — primary document type; inbox typically renders PRs awaiting each stage.
+- [purchase-order](/en/inventory/purchase-order) — POs requiring manual approval (price-threshold, vendor-risk, budget-override).
+- [purchase-order/credit-note](/en/inventory/purchase-order/credit-note) — CRNs awaiting approval under the same workflow-state contract.
+- [system-config/workflow](/en/inventory/system-config/workflow) — stage definition, role mapping, threshold rules, and the rule populating `user_action.execute[]`.
+- [access-control/application-role](/en/inventory/access-control/application-role) — role-to-permission mapping for eligibility.
+- [purchase-request/03-user-flow-approver](/en/inventory/purchase-request/03-user-flow-approver) — approver persona walkthrough.
 
 ## 8. References
 

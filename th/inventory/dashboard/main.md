@@ -2,7 +2,7 @@
 title: แดชบอร์ดหลัก (Main Dashboard)
 description: หน้าแดชบอร์ดแรกที่แสดง KPI ระดับบนของ PR, PO, GRN, คลังสินค้า และ SR — หน้าเดียวที่แสดงทันทีหลังเข้าระบบ
 published: true
-date: 2026-05-17T07:00:36.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: dashboard, landing, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -32,13 +32,13 @@ dateCreated: 2026-05-16T15:00:00.000Z
 | Tile | แสดงอะไร | Drill-down (เมื่อ live) |
 |---|---|---|
 | **ค่าใช้จ่ายรวมเดือนนี้ (Total Spend This Month)** | จำนวน `฿`, ↑/↓ เทียบเดือนก่อน, % เปลี่ยนแปลง | (Inferred — ต้องยืนยัน) |
-| **จำนวน PR ค้าง (Pending PRs Count)** | จำนวน + "HOD Approved, Awaiting Purchase" | → [[purchase-request]] |
-| **จำนวน PO เปิด (Open POs Count)** | จำนวน + "Waiting for Delivery" | → [[purchase-order]] |
+| **จำนวน PR ค้าง (Pending PRs Count)** | จำนวน + "HOD Approved, Awaiting Purchase" | → [purchase-request](/th/inventory/purchase-request) |
+| **จำนวน PO เปิด (Open POs Count)** | จำนวน + "Waiting for Delivery" | → [purchase-order](/th/inventory/purchase-order) |
 | **ค่าใช้จ่ายจริงเทียบงบประมาณ (Actual Spend vs Budget)** | progress bar 0–100% | (Inferred) |
 | **ค่าใช้จ่ายตาม Material Group** | Donut: Food / Beverage / Supplies / Chemicals / Others | — |
 | **ค่าใช้จ่ายตามแผนก** | Bar: 5 แผนก, จำนวน `฿` | — |
-| **PR Pipeline — คอขวด** | 6 stage (Saved / Committed / Awaiting HOD / Awaiting Purchase / Approved / Rejected) พร้อมจำนวน, `฿`, badge คอขวด | → [[purchase-request]] |
-| **5 ผู้ขายสูงสุดตามค่าใช้จ่าย** | Vendor, ค่าใช้จ่ายรวม, จำนวน PO, จำนวนวันส่งของเฉลี่ย | → [[vendor-pricelist]] |
+| **PR Pipeline — คอขวด** | 6 stage (Saved / Committed / Awaiting HOD / Awaiting Purchase / Approved / Rejected) พร้อมจำนวน, `฿`, badge คอขวด | → [purchase-request](/th/inventory/purchase-request) |
+| **5 ผู้ขายสูงสุดตามค่าใช้จ่าย** | Vendor, ค่าใช้จ่ายรวม, จำนวน PO, จำนวนวันส่งของเฉลี่ย | → [vendor-pricelist](/th/inventory/vendor-pricelist) |
 
 สกุลเงินถูกฟอร์แมตผ่าน `formatCurrency` → `฿` + การจัดกลุ่ม locale ไทย (`th-TH`)
 
@@ -47,10 +47,10 @@ dateCreated: 2026-05-16T15:00:00.000Z
 | คำถาม | คำตอบ |
 |---|---|
 | ทำไม tile ของฉันไม่ refresh? | ทุก tile **เป็น mock data ในปัจจุบัน** Live hook มีอยู่แต่ยังไม่ถูก mount |
-| ตัวเลข PR Pipeline มาจากไหน? | จะเป็นการ group-count บน [[purchase-request]] โดย `workflow_current_stage` เมื่อ wire แล้ว |
+| ตัวเลข PR Pipeline มาจากไหน? | จะเป็นการ group-count บน [purchase-request](/th/inventory/purchase-request) โดย `workflow_current_stage` เมื่อ wire แล้ว |
 | Live data path อยู่ที่ไหน? | `hooks/use-dashboard.ts` (`useMyPendingPrCount` / `useMyPendingPoCount` / `useMyPendingSrCount`) และ `hooks/use-approval.ts` (`useApprovalPending`) — wire ไปยัง `/api/proxy/api/my-pending/*` และ `/api/proxy/api/approval/pending` แต่ **ยังไม่ถูก mount** บนหน้านี้ |
 | badge "Bottleneck" สีส้มหมายความว่าอะไร? | stage หนึ่งถือมูลค่า `฿` มากกว่าสัดส่วนที่คาดหวัง — flag ใน `mock/main.ts` ผ่าน `isBottleneck` ของแต่ละ stage |
-| Tile งบประมาณควรสะท้อนแค่เดือนนี้หรือ YTD? | ปัจจุบัน `mock/main.ts` แสดง % เฉพาะเดือน — โหมด production จะดึงจาก query dataset ของ [[reporting-audit]] |
+| Tile งบประมาณควรสะท้อนแค่เดือนนี้หรือ YTD? | ปัจจุบัน `mock/main.ts` แสดง % เฉพาะเดือน — โหมด production จะดึงจาก query dataset ของ [reporting-audit](/th/inventory/reporting-audit) |
 
 ## 4. การแก้ปัญหา
 
@@ -58,7 +58,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 |---|---|---|
 | Tile กดไม่ได้ / drill ไม่ไปไหน | drill-down route ยังไม่ wire ในบิลด์ปัจจุบัน | (Inferred — ต้องยืนยันกับ UI จริง) |
 | ตัวเลขไม่ตรงกับ sub-dashboard ของ PR/PO | แต่ละแดชบอร์ดอ่าน mock อิสระของตัวเองในปัจจุบัน | จะถูกแก้เมื่อทุก tile อ่าน endpoint จริง |
-| สกุลเงินขึ้นเป็น `$` แทน `฿` บางหน้า | Mock fixture quirk บน mock ของ PR / PO / Inventory | wire production ควร localise ไปยังสกุลเงินฐานของ BU จาก [[master-data/exchange-rate]] |
+| สกุลเงินขึ้นเป็น `$` แทน `฿` บางหน้า | Mock fixture quirk บน mock ของ PR / PO / Inventory | wire production ควร localise ไปยังสกุลเงินฐานของ BU จาก [master-data/exchange-rate](/th/inventory/master-data/exchange-rate) |
 | Tile แสดงศูนย์หรือว่างเปล่า | Mock fixture seed ค่านี้ไว้โดยตั้งใจ | ตรวจสอบ `app/(root)/dashboard/mock/main.ts` เพื่อยืนยัน |
 
 ---
@@ -67,19 +67,19 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 เมื่อมีการ wire ข้อมูลจริง การ mapping ที่คาดหวัง:
 
-- **การ์ด KPI** — query aggregate กับ [[purchase-request]], [[purchase-order]], ตาราง ledger รวมถึงรายงาน budget-vs-actual จาก [[reporting-audit]]
-- **ค่าใช้จ่ายตาม Material Group / แผนก** — sum แบบจัดกลุ่มบน PO/GRN line ที่ join กับ product-category และ [[master-data/department]]
-- **PR Pipeline** — group-count บน [[purchase-request]] โดย `workflow_current_stage`
-- **Top Vendors** — sum จำนวนรวม PO จัดกลุ่มตาม `vendor_id`, join กับ [[vendor-pricelist]]
+- **การ์ด KPI** — query aggregate กับ [purchase-request](/th/inventory/purchase-request), [purchase-order](/th/inventory/purchase-order), ตาราง ledger รวมถึงรายงาน budget-vs-actual จาก [reporting-audit](/th/inventory/reporting-audit)
+- **ค่าใช้จ่ายตาม Material Group / แผนก** — sum แบบจัดกลุ่มบน PO/GRN line ที่ join กับ product-category และ [master-data/department](/th/inventory/master-data/department)
+- **PR Pipeline** — group-count บน [purchase-request](/th/inventory/purchase-request) โดย `workflow_current_stage`
+- **Top Vendors** — sum จำนวนรวม PO จัดกลุ่มตาม `vendor_id`, join กับ [vendor-pricelist](/th/inventory/vendor-pricelist)
 
 **จังหวะการ refresh:** mock แบบ static ในปัจจุบัน เมื่อมี hook จริง: `CACHE_DYNAMIC` (1-min stale, 5-min gc), refetch on focus, ไม่ poll
 
 ## 6. โมดูลที่เกี่ยวข้อง
 
-- [[dashboard]] — สารบัญโมดูล + หน้าย่อยพี่น้อง
-- [[dashboard/pr]], [[dashboard/po]] — ปลายทาง drill ของบล็อก PR Pipeline และ Open POs / Top Vendors
-- [[purchase-request]], [[purchase-order]], [[good-receive-note]] — แหล่ง transactional ที่อยู่เบื้องหลังทุก aggregate ค่าใช้จ่าย
-- [[reporting-audit]] — query dataset ที่จะรองรับ tile spend-by-group และ budget
+- [dashboard](/th/inventory/dashboard) — สารบัญโมดูล + หน้าย่อยพี่น้อง
+- [dashboard/pr](/th/inventory/dashboard/pr), [dashboard/po](/th/inventory/dashboard/po) — ปลายทาง drill ของบล็อก PR Pipeline และ Open POs / Top Vendors
+- [purchase-request](/th/inventory/purchase-request), [purchase-order](/th/inventory/purchase-order), [good-receive-note](/th/inventory/good-receive-note) — แหล่ง transactional ที่อยู่เบื้องหลังทุก aggregate ค่าใช้จ่าย
+- [reporting-audit](/th/inventory/reporting-audit) — query dataset ที่จะรองรับ tile spend-by-group และ budget
 
 ## 7. แหล่งข้อมูลอ้างอิง
 

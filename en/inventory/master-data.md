@@ -2,7 +2,7 @@
 title: Master Data
 description: Business master data referenced by transactional documents — units, departments, vendors, currencies, tax profiles, and related catalogs.
 published: true
-date: 2026-05-19T23:45:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -47,23 +47,23 @@ Product Admin and Configurator manage these. Sysadmin oversees integration and R
 
 ## 4. Cross-Module Dependencies
 
-- [[purchase-request]] requires [[master-data/unit]], [[master-data/department]], [[master-data/location]], [[master-data/vendor]], [[master-data/tax-profile]], [[master-data/currency]], [[master-data/exchange-rate]].
-- [[purchase-order]] requires [[master-data/unit]], [[master-data/vendor]], [[master-data/currency]], [[master-data/exchange-rate]], [[master-data/tax-profile]], [[master-data/credit-term]], [[master-data/delivery-point]].
-- [[good-receive-note]] requires [[master-data/unit]], [[master-data/vendor]], [[master-data/currency]], [[master-data/exchange-rate]], [[master-data/tax-profile]], [[master-data/extra-cost-type]], [[master-data/credit-note-reason]], [[master-data/delivery-point]], [[master-data/location]].
-- [[store-requisition]] requires [[master-data/unit]], [[master-data/location]], [[master-data/department]].
-- [[inventory]] requires [[master-data/unit]], [[master-data/location]], [[master-data/business-unit]].
-- [[inventory-adjustment]] requires [[master-data/unit]], [[master-data/location]], [[master-data/adjustment-type]], [[master-data/credit-note-reason]].
-- [[physical-count]] requires [[master-data/location]], [[master-data/unit]], [[master-data/adjustment-type]].
-- [[spot-check]] requires [[master-data/location]], [[master-data/adjustment-type]].
-- [[costing]] requires [[master-data/business-unit]] (for `calculation_method`), [[master-data/currency]], and [[master-data/exchange-rate]] (for dated FX revaluation).
-- [[vendor-pricelist]] requires [[master-data/vendor]], [[master-data/currency]], [[master-data/tax-profile]], [[templates/price-list]].
-- [[product]] requires [[master-data/unit]], [[master-data/tax-profile]].
-- [[recipe]] requires [[master-data/unit]].
+- [purchase-request](/en/inventory/purchase-request) requires [master-data/unit](/en/inventory/master-data/unit), [master-data/department](/en/inventory/master-data/department), [master-data/location](/en/inventory/master-data/location), [master-data/vendor](/en/inventory/master-data/vendor), [master-data/tax-profile](/en/inventory/master-data/tax-profile), [master-data/currency](/en/inventory/master-data/currency), [master-data/exchange-rate](/en/inventory/master-data/exchange-rate).
+- [purchase-order](/en/inventory/purchase-order) requires [master-data/unit](/en/inventory/master-data/unit), [master-data/vendor](/en/inventory/master-data/vendor), [master-data/currency](/en/inventory/master-data/currency), [master-data/exchange-rate](/en/inventory/master-data/exchange-rate), [master-data/tax-profile](/en/inventory/master-data/tax-profile), [master-data/credit-term](/en/inventory/master-data/credit-term), [master-data/delivery-point](/en/inventory/master-data/delivery-point).
+- [good-receive-note](/en/inventory/good-receive-note) requires [master-data/unit](/en/inventory/master-data/unit), [master-data/vendor](/en/inventory/master-data/vendor), [master-data/currency](/en/inventory/master-data/currency), [master-data/exchange-rate](/en/inventory/master-data/exchange-rate), [master-data/tax-profile](/en/inventory/master-data/tax-profile), [master-data/extra-cost-type](/en/inventory/master-data/extra-cost-type), [master-data/credit-note-reason](/en/inventory/master-data/credit-note-reason), [master-data/delivery-point](/en/inventory/master-data/delivery-point), [master-data/location](/en/inventory/master-data/location).
+- [store-requisition](/en/inventory/store-requisition) requires [master-data/unit](/en/inventory/master-data/unit), [master-data/location](/en/inventory/master-data/location), [master-data/department](/en/inventory/master-data/department).
+- [inventory](/en/inventory/inventory) requires [master-data/unit](/en/inventory/master-data/unit), [master-data/location](/en/inventory/master-data/location), [master-data/business-unit](/en/inventory/master-data/business-unit).
+- [inventory-adjustment](/en/inventory/inventory-adjustment) requires [master-data/unit](/en/inventory/master-data/unit), [master-data/location](/en/inventory/master-data/location), [master-data/adjustment-type](/en/inventory/master-data/adjustment-type), [master-data/credit-note-reason](/en/inventory/master-data/credit-note-reason).
+- [physical-count](/en/inventory/physical-count) requires [master-data/location](/en/inventory/master-data/location), [master-data/unit](/en/inventory/master-data/unit), [master-data/adjustment-type](/en/inventory/master-data/adjustment-type).
+- [spot-check](/en/inventory/spot-check) requires [master-data/location](/en/inventory/master-data/location), [master-data/adjustment-type](/en/inventory/master-data/adjustment-type).
+- [costing](/en/inventory/costing) requires [master-data/business-unit](/en/inventory/master-data/business-unit) (for `calculation_method`), [master-data/currency](/en/inventory/master-data/currency), and [master-data/exchange-rate](/en/inventory/master-data/exchange-rate) (for dated FX revaluation).
+- [vendor-pricelist](/en/inventory/vendor-pricelist) requires [master-data/vendor](/en/inventory/master-data/vendor), [master-data/currency](/en/inventory/master-data/currency), [master-data/tax-profile](/en/inventory/master-data/tax-profile), [templates/price-list](/en/inventory/templates/price-list).
+- [product](/en/inventory/product) requires [master-data/unit](/en/inventory/master-data/unit), [master-data/tax-profile](/en/inventory/master-data/tax-profile).
+- [recipe](/en/inventory/recipe) requires [master-data/unit](/en/inventory/master-data/unit).
 
 ## 5. References
 
 - **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`.
 - **Prisma platform:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`.
-- **carmen/docs:** `../carmen/docs/settings/locations.md` (referenced by [[master-data/location]] only).
+- **carmen/docs:** `../carmen/docs/settings/locations.md` (referenced by [master-data/location](/en/inventory/master-data/location) only).
 - **Design spec:** `.specs/2026-05-16-master-config-design.md`.
 - **Plan:** `.specs/2026-05-16-master-config-plan.md`.

@@ -2,7 +2,7 @@
 title: หมวดหมู่สินค้า (Product Category)
 description: taxonomy สินค้าสามระดับ (หมวดหมู่ > หมวดหมู่ย่อย > กลุ่มสินค้า) ขับเคลื่อนการนำทางแคตตาล็อก การสืบทอดคุณสมบัติ ค่าความคลาดเคลื่อน และ permission filter ตามหมวดหมู่
 published: true
-date: 2026-05-17T07:00:36.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: product, category, taxonomy, master-data, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -133,16 +133,16 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ## 7. Cross-References
 
-- [[product]] — สินค้าทุกตัวมี triple `(category, sub_category, item_group)`
-- [[product/03-user-flow-product-admin]] — Product Admin ดูแลต้นไม้
-- [[purchase-request]] &nbsp;·&nbsp; [[purchase-order]] (`price_deviation_limit`) &nbsp;·&nbsp; [[good-receive-note]] (`qty_deviation_limit`)
-- [[recipe]] — filter `is_used_in_recipe`
-- [[access-control/permission]] — filter ตามหมวดหมู่สำหรับ Purchaser / Store Keeper
-- [[master-data/tax-profile]] — การ cascade `tax_profile_id`
+- [product](/th/inventory/product) — สินค้าทุกตัวมี triple `(category, sub_category, item_group)`
+- [product/03-user-flow-product-admin](/th/inventory/product/03-user-flow-product-admin) — Product Admin ดูแลต้นไม้
+- [purchase-request](/th/inventory/purchase-request) &nbsp;·&nbsp; [purchase-order](/th/inventory/purchase-order) (`price_deviation_limit`) &nbsp;·&nbsp; [good-receive-note](/th/inventory/good-receive-note) (`qty_deviation_limit`)
+- [recipe](/th/inventory/recipe) — filter `is_used_in_recipe`
+- [access-control/permission](/th/inventory/access-control/permission) — filter ตามหมวดหมู่สำหรับ Purchaser / Store Keeper
+- [master-data/tax-profile](/th/inventory/master-data/tax-profile) — การ cascade `tax_profile_id`
 
 ## 8. แหล่งอ้างอิง
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_product_category` (~1566-1602), `tb_product_sub_category` (~1711-1748), `tb_product_item_group` (~1638-1675), `tb_product_category_comment` (~1604-1636)
 - **Frontend:** `../carmen-inventory-frontend/app/(root)/product-management/category/`
 - **carmen/docs:** `../carmen/docs/product-management/PROD-API-Endpoints-Categories.md`; `../carmen/docs/product-management/PROD-Overview.md`
-- **Module landing:** [[product]] § 3 (แนวคิดสำคัญ Product Category)
+- **Module landing:** [product](/th/inventory/product) § 3 (แนวคิดสำคัญ Product Category)

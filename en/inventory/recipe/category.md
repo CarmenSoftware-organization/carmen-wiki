@@ -2,7 +2,7 @@
 title: Recipe Category
 description: Hierarchical category taxonomy for recipes — drives menu engineering, cost-band reporting, and recipe library navigation.
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: recipe, category, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # Recipe Category
 
 > **At a Glance**
-> **Owner:** Chef / Product Admin &nbsp;·&nbsp; **Table:** `tb_recipe_category` &nbsp;·&nbsp; **Shape:** Hierarchical tree (self-FK on `parent_id`) &nbsp;·&nbsp; **Used by:** [[recipe]] header, menu engineering, cost-band reports &nbsp;·&nbsp; **Seeds:** `default_cost_settings` + `default_margins` onto new recipes
+> **Owner:** Chef / Product Admin &nbsp;·&nbsp; **Table:** `tb_recipe_category` &nbsp;·&nbsp; **Shape:** Hierarchical tree (self-FK on `parent_id`) &nbsp;·&nbsp; **Used by:** [recipe](/en/inventory/recipe) header, menu engineering, cost-band reports &nbsp;·&nbsp; **Seeds:** `default_cost_settings` + `default_margins` onto new recipes
 
 ![Recipe Category screen](/screenshots/recipe/category.png)
 
@@ -19,7 +19,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 Recipe Category is the **functional classification** over the recipe master, arranged as a tree (e.g. `Food > Main Course > Pasta`). Each category carries **default cost settings** and **default margins** that new recipes inherit at creation — so a property says "all Main Course recipes target 30% food-cost" once, not per recipe.
 
-Distinct from [[recipe/cuisine]] (flat regional label) and `Course Type` (per-recipe enum). **Maintained by Chef** (or **Product Admin** in some tenants) under Operation Plan → Recipe Category.
+Distinct from [recipe/cuisine](/en/inventory/recipe/cuisine) (flat regional label) and `Course Type` (per-recipe enum). **Maintained by Chef** (or **Product Admin** in some tenants) under Operation Plan → Recipe Category.
 
 ## 2. Common Tasks
 
@@ -84,10 +84,10 @@ Source: tenant schema.
 
 ## 7. Cross-References
 
-- [[recipe]] — every recipe carries `category_id` (required); reads category defaults at create time.
-- [[recipe/cuisine]] — sibling taxonomy on the regional axis.
-- [[recipe/01-data-model]] — full data-model context.
-- [[recipe/03-user-flow-chef]], [[recipe/03-user-flow-cost-controller]] — Chef picks; Cost Controller sets category defaults.
+- [recipe](/en/inventory/recipe) — every recipe carries `category_id` (required); reads category defaults at create time.
+- [recipe/cuisine](/en/inventory/recipe/cuisine) — sibling taxonomy on the regional axis.
+- [recipe/01-data-model](/en/inventory/recipe/01-data-model) — full data-model context.
+- [recipe/03-user-flow-chef](/en/inventory/recipe/03-user-flow-chef), [recipe/03-user-flow-cost-controller](/en/inventory/recipe/03-user-flow-cost-controller) — Chef picks; Cost Controller sets category defaults.
 
 ## 8. References
 

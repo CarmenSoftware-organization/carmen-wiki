@@ -2,7 +2,7 @@
 title: การคำนวณต้นทุน (Costing) — Business Rules
 description: การตรวจสอบ การคำนวณ การกำหนดสิทธิ์ การ posting การปลายงวด และกฎข้ามโมดูลสำหรับ costing
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: costing, business-rules, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -18,9 +18,9 @@ dateCreated: 2026-05-15T12:30:00.000Z
 
 ## 1. ภาพรวม
 
-หน้านี้บันทึกกฎทางธุรกิจที่ดำเนินการกำกับ **โมดูล costing** — เอนจินที่เลือก `cost_per_unit` สำหรับทุก outbound stock movement, รีเฟรช `average_cost_per_unit` ทุก inbound, และเขียน period-locked `closing_cost_per_unit` ที่ปลายงวด เนื่องจาก costing **ไม่ใช่** โมดูล document แยก — เป็นชั้นพฤติกรรมเหนือ ledger ของ [[inventory]] — ชุดกฎตรงนี้ดูต่างจาก GRN / PR / SR catalogues: ไม่มี document lifecycle ของตัวเอง ไม่มี save / approve / commit progression ไม่มี `doc_status` แต่กฎข้างล่างอธิบาย **เอนจินอ่าน configuration อย่างไร เลือก cost อย่างไร ดำเนินการ arithmetic อย่างไร รีเฟรช average อย่างไร anchor ขอบเขตงวดอย่างไร และ gate Finance authorities เหนือ resulting valuation อย่างไร** ทุกกฎ **invoke จาก** inventory transaction post หรือ period-end run ที่อยู่ในโมดูล inventory; โมดูล costing เป็นเจ้าของ logic ของกฎ ไม่ใช่ trigger
+หน้านี้บันทึกกฎทางธุรกิจที่ดำเนินการกำกับ **โมดูล costing** — เอนจินที่เลือก `cost_per_unit` สำหรับทุก outbound stock movement, รีเฟรช `average_cost_per_unit` ทุก inbound, และเขียน period-locked `closing_cost_per_unit` ที่ปลายงวด เนื่องจาก costing **ไม่ใช่** โมดูล document แยก — เป็นชั้นพฤติกรรมเหนือ ledger ของ [inventory](/th/inventory/inventory) — ชุดกฎตรงนี้ดูต่างจาก GRN / PR / SR catalogues: ไม่มี document lifecycle ของตัวเอง ไม่มี save / approve / commit progression ไม่มี `doc_status` แต่กฎข้างล่างอธิบาย **เอนจินอ่าน configuration อย่างไร เลือก cost อย่างไร ดำเนินการ arithmetic อย่างไร รีเฟรช average อย่างไร anchor ขอบเขตงวดอย่างไร และ gate Finance authorities เหนือ resulting valuation อย่างไร** ทุกกฎ **invoke จาก** inventory transaction post หรือ period-end run ที่อยู่ในโมดูล inventory; โมดูล costing เป็นเจ้าของ logic ของกฎ ไม่ใช่ trigger
 
-โครงสร้างสองจุดให้สีแก่ทุกกฎข้างล่าง **ประการแรก** **วิธี costing ตั้งค่าที่ business unit ไม่ใช่ per product** (ตาม [[costing/01-data-model]] § 5 item 1) เอนจิน resolve วิธีผ่าน `tb_business_unit.calculation_method` (platform schema, default `average`) ครั้งเดียวต่อการเรียก — โดยปกติที่จุดเริ่มต้นของ inventory transaction post — และ apply กับทุก detail line ใน transaction ไม่มี per-product override; mixed FIFO / WA ข้าม products ที่ business unit เดียวกัน **ไม่ใช่** การตั้งค่าที่รองรับ **ประการที่สอง** ทุก cost ที่เลือกตอน post คือ **immutable on write** — เมื่อเขียนไป `tb_inventory_transaction_cost_layer.cost_per_unit` ค่าเป็นส่วนหนึ่งของ historical ledger และไม่สามารถแก้ไขได้แม้วิธีที่ตั้งค่าจะเปลี่ยน Cost revaluation เกิดขึ้นผ่าน (a) credit-note-amount adjustment เขียน `diff_amount` และคำนวณ `cost_per_unit` ของ lot ต้นทางใหม่ตาม `INV_CALC_011` หรือ (b) period-end EOP rollforward ที่ carry closing cost ไปข้างหน้าโดยไม่เปลี่ยน คุณสมบัติทั้งสอง — วิธีเดียวต่อ business unit, immutable cost บน layer row — คือสิ่งที่ทำให้ audit trail ของ costing ป้องกันได้ข้ามงวด
+โครงสร้างสองจุดให้สีแก่ทุกกฎข้างล่าง **ประการแรก** **วิธี costing ตั้งค่าที่ business unit ไม่ใช่ per product** (ตาม [costing/01-data-model](/th/inventory/costing/01-data-model) § 5 item 1) เอนจิน resolve วิธีผ่าน `tb_business_unit.calculation_method` (platform schema, default `average`) ครั้งเดียวต่อการเรียก — โดยปกติที่จุดเริ่มต้นของ inventory transaction post — และ apply กับทุก detail line ใน transaction ไม่มี per-product override; mixed FIFO / WA ข้าม products ที่ business unit เดียวกัน **ไม่ใช่** การตั้งค่าที่รองรับ **ประการที่สอง** ทุก cost ที่เลือกตอน post คือ **immutable on write** — เมื่อเขียนไป `tb_inventory_transaction_cost_layer.cost_per_unit` ค่าเป็นส่วนหนึ่งของ historical ledger และไม่สามารถแก้ไขได้แม้วิธีที่ตั้งค่าจะเปลี่ยน Cost revaluation เกิดขึ้นผ่าน (a) credit-note-amount adjustment เขียน `diff_amount` และคำนวณ `cost_per_unit` ของ lot ต้นทางใหม่ตาม `INV_CALC_011` หรือ (b) period-end EOP rollforward ที่ carry closing cost ไปข้างหน้าโดยไม่เปลี่ยน คุณสมบัติทั้งสอง — วิธีเดียวต่อ business unit, immutable cost บน layer row — คือสิ่งที่ทำให้ audit trail ของ costing ป้องกันได้ข้ามงวด
 
 ## 2. กฎการตรวจสอบ (Validation Rules)
 
@@ -185,14 +185,14 @@ Rule IDs ตาม `COST_XMOD_NNN`
 
 | Rule ID | โมดูลที่เกี่ยวข้อง | กฎ |
 | ------- | -------------- | ---- |
-| `COST_XMOD_001` | [[inventory]] | Cost-layer ledger `tb_inventory_transaction_cost_layer` เป็นของโมดูล inventory; costing engine คือ **ชั้นพฤติกรรม** ที่อ่านและเขียน ledger ทุก cost-pick ในโมดูลนี้ invoke จาก `INV_POST_001`–`INV_POST_010` event |
-| `COST_XMOD_002` | [[good-receive-note]] | GRN commit (`saved → committed`) invoke `COST_POST_001` `cost_per_unit` ที่เขียนคือ unit cost ของ GRN line **หลัง extra-cost allocation** |
-| `COST_XMOD_003` | [[store-requisition]] | SR issue ที่อนุมัติ invoke `COST_POST_002` สำหรับ outbound ที่ source location สำหรับ inter-location transfers, `COST_VAL_010` บังคับ `transfer_in.cost_per_unit = transfer_out.cost_per_unit` |
-| `COST_XMOD_004` | [[physical-count]] / [[spot-check]] | Count variance post ผ่าน `COST_POST_009` Source ของ valuation คือ `enum_physical_count_costing_method` ตาม `COST_CALC_008` |
-| `COST_XMOD_005` | [[inventory-adjustment]] | Manual `tb_stock_in` / `tb_stock_out` adjustments invoke `COST_POST_001` (inbound) หรือ `COST_POST_002` (outbound) |
+| `COST_XMOD_001` | [inventory](/th/inventory/inventory) | Cost-layer ledger `tb_inventory_transaction_cost_layer` เป็นของโมดูล inventory; costing engine คือ **ชั้นพฤติกรรม** ที่อ่านและเขียน ledger ทุก cost-pick ในโมดูลนี้ invoke จาก `INV_POST_001`–`INV_POST_010` event |
+| `COST_XMOD_002` | [good-receive-note](/th/inventory/good-receive-note) | GRN commit (`saved → committed`) invoke `COST_POST_001` `cost_per_unit` ที่เขียนคือ unit cost ของ GRN line **หลัง extra-cost allocation** |
+| `COST_XMOD_003` | [store-requisition](/th/inventory/store-requisition) | SR issue ที่อนุมัติ invoke `COST_POST_002` สำหรับ outbound ที่ source location สำหรับ inter-location transfers, `COST_VAL_010` บังคับ `transfer_in.cost_per_unit = transfer_out.cost_per_unit` |
+| `COST_XMOD_004` | [physical-count](/th/inventory/physical-count) / [spot-check](/th/inventory/spot-check) | Count variance post ผ่าน `COST_POST_009` Source ของ valuation คือ `enum_physical_count_costing_method` ตาม `COST_CALC_008` |
+| `COST_XMOD_005` | [inventory-adjustment](/th/inventory/inventory-adjustment) | Manual `tb_stock_in` / `tb_stock_out` adjustments invoke `COST_POST_001` (inbound) หรือ `COST_POST_002` (outbound) |
 | `COST_XMOD_006` | Credit note (vendor) | Vendor credit notes invoke `COST_POST_003` (amount-only — revaluation) หรือ `COST_POST_004` (quantity-only) เส้นทาง credit-note-amount คือ **กลไก cost-revaluation canonical** ในระบบ |
-| `COST_XMOD_007` | [[recipe]] | Recipe costing อ่าน `tb_inventory_transaction_cost_layer.average_cost_per_unit` (ล่าสุดที่ `(location, product)`) สำหรับ recipe's ingredient cost basis ภายใต้ WA |
-| `COST_XMOD_008` | [[product]] | `tb_product.standard_cost` คือ recipe baseline และ `standard` count-costing source ตาม `COST_CALC_009` การอัปเดต `standard_cost` เป็น prospective |
+| `COST_XMOD_007` | [recipe](/th/inventory/recipe) | Recipe costing อ่าน `tb_inventory_transaction_cost_layer.average_cost_per_unit` (ล่าสุดที่ `(location, product)`) สำหรับ recipe's ingredient cost basis ภายใต้ WA |
+| `COST_XMOD_008` | [product](/th/inventory/product) | `tb_product.standard_cost` คือ recipe baseline และ `standard` count-costing source ตาม `COST_CALC_009` การอัปเดต `standard_cost` เป็น prospective |
 | `COST_XMOD_009` | Finance / GL | Period-end valuation (`tb_period_snapshot.closing_total_cost` sum) คือตัวเลขสินทรัพย์ inventory ในงบดุลสำหรับ closed period Finance Manager ล็อกค่านี้ตาม `COST_AUTH_006` |
 | `COST_XMOD_010` | All movement-generating modules | Costing engine เป็น **chokepoint เดียว** สำหรับ cost-flow ทุก cost-layer row เขียนโดย engine; ทุกตัวเลข COGS ในระบบ trace กลับไปยัง engine-written row |
 
@@ -201,7 +201,7 @@ Rule IDs ตาม `COST_XMOD_NNN`
 - `../carmen/docs/costing/enhanced-costing-engine.md`
 - Sibling: [calculation-methods.md](./calculation-methods.md)
 - Sibling: [01-data-model.md](./01-data-model.md)
-- Related: [[inventory/02-business-rules]] — `INV_VAL_001`–`INV_VAL_013`, `INV_CALC_001`–`INV_CALC_012`, `INV_POST_001`–`INV_POST_012`, `INV_AUTH_001`–`INV_AUTH_010`, `INV_XMOD_001`–`INV_XMOD_010`
-- Related: [[good-receive-note/02-business-rules]] — extra-cost allocation rules
-- Related: [[product]]
+- Related: [inventory/02-business-rules](/th/inventory/inventory/02-business-rules) — `INV_VAL_001`–`INV_VAL_013`, `INV_CALC_001`–`INV_CALC_012`, `INV_POST_001`–`INV_POST_012`, `INV_AUTH_001`–`INV_AUTH_010`, `INV_XMOD_001`–`INV_XMOD_010`
+- Related: [good-receive-note/02-business-rules](/th/inventory/good-receive-note/02-business-rules) — extra-cost allocation rules
+- Related: [product](/th/inventory/product)
 - Backend rule implementation (เมื่อเพิ่ม): `../carmen-turborepo-backend-v2/apps/`

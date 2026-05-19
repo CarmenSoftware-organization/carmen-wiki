@@ -2,7 +2,7 @@
 title: Purchase Order — User Flow
 description: Document lifecycle and persona-specific flow files for purchase-order.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-order, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 # Purchase Order — User Flow
 
 > **At a Glance**
-> **Module:** [[purchase-order]] &nbsp;·&nbsp; **Personas:** Purchaser &nbsp;·&nbsp; Procurement Manager &nbsp;·&nbsp; Vendor &nbsp;·&nbsp; Receiver &nbsp;·&nbsp; Finance &nbsp;·&nbsp; Audit / Config
+> **Module:** [purchase-order](/en/inventory/purchase-order) &nbsp;·&nbsp; **Personas:** Purchaser &nbsp;·&nbsp; Procurement Manager &nbsp;·&nbsp; Vendor &nbsp;·&nbsp; Receiver &nbsp;·&nbsp; Finance &nbsp;·&nbsp; Audit / Config
 > **Workflow lifecycle:** Draft → In Progress → Sent → Partial → Completed / Closed (with Voided branch)
 > **Drill into per-persona views below for action-level detail**
 
@@ -23,7 +23,7 @@ Section 2 below is the **global state machine** — the canonical list of transi
 
 ## 2. Document Lifecycle
 
-The PO document status is stored on `tb_purchase_order.po_status` and constrained to the values declared in `enum_purchase_order_doc_status`: `draft`, `in_progress`, `voided`, `sent`, `partial`, `closed`, `completed`. The transitions below cover the legal moves between them; everything else is rejected by the workflow engine. Note that receipt-driven transitions (`sent → partial → completed`) are triggered by GRN postings in the downstream [[good-receive-note]] module, not by direct user action on the PO.
+The PO document status is stored on `tb_purchase_order.po_status` and constrained to the values declared in `enum_purchase_order_doc_status`: `draft`, `in_progress`, `voided`, `sent`, `partial`, `closed`, `completed`. The transitions below cover the legal moves between them; everything else is rejected by the workflow engine. Note that receipt-driven transitions (`sent → partial → completed`) are triggered by GRN postings in the downstream [good-receive-note](/en/inventory/good-receive-note) module, not by direct user action on the PO.
 
 ```mermaid
 stateDiagram-v2
@@ -97,4 +97,4 @@ The table below captures the moments where the PO moves from one persona's respo
 - `../carmen/docs/purchase-order-management/purchase-order-module.md` — primary carmen/docs source for the business analysis, state diagram, and PO creation flows.
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical `enum_purchase_order_doc_status` values used in Section 2 above and the bridge table that carries PR→PO traceability.
 - Sibling: [02-business-rules.md](./02-business-rules.md) — validation, authorization, posting, and transition rules referenced by each row of Section 2.
-- Related modules: [[purchase-request]] (upstream source via the PR→PO bridge), [[good-receive-note]] (downstream fulfilment that drives the `partial` / `completed` transitions), [[vendor-pricelist]] (price snapshot at PR-to-PO conversion time).
+- Related modules: [purchase-request](/en/inventory/purchase-request) (upstream source via the PR→PO bridge), [good-receive-note](/en/inventory/good-receive-note) (downstream fulfilment that drives the `partial` / `completed` transitions), [vendor-pricelist](/en/inventory/vendor-pricelist) (price snapshot at PR-to-PO conversion time).

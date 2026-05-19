@@ -2,7 +2,7 @@
 title: Inventory Adjustment — User Flow — Store Keeper
 description: Store Keeper's flow within the inventory-adjustment module — discrepancy identification, evidence capture, draft submission.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: inventory-adjustment, user-flow, store-keeper, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 # Inventory Adjustment — User Flow — Store Keeper
 
 > **At a Glance**
-> **Persona:** Store Keeper &nbsp;·&nbsp; **Module:** [[inventory-adjustment]] &nbsp;·&nbsp; **Workflow stages:** Create `tb_stock_in` / `tb_stock_out` `draft` &nbsp;·&nbsp; submit &nbsp;·&nbsp; auto-approve to `completed` (below threshold + existing lot) OR route to Controller queue (above threshold or new-lot stock-in) &nbsp;·&nbsp; cancel own draft &nbsp;·&nbsp; **Key permissions:** create / edit / submit / cancel own draft (`ADJ_AUTH_001`); auto-approve below threshold (`ADJ_AUTH_002`)
+> **Persona:** Store Keeper &nbsp;·&nbsp; **Module:** [inventory-adjustment](/en/inventory/inventory-adjustment) &nbsp;·&nbsp; **Workflow stages:** Create `tb_stock_in` / `tb_stock_out` `draft` &nbsp;·&nbsp; submit &nbsp;·&nbsp; auto-approve to `completed` (below threshold + existing lot) OR route to Controller queue (above threshold or new-lot stock-in) &nbsp;·&nbsp; cancel own draft &nbsp;·&nbsp; **Key permissions:** create / edit / submit / cancel own draft (`ADJ_AUTH_001`); auto-approve below threshold (`ADJ_AUTH_002`)
 > **What this persona does:** Identifies discrepancies (found stock / breakage / count variance), captures evidence, and submits the adjustment draft.
 
 ### Workflow position (Store Keeper highlighted)
@@ -33,7 +33,7 @@ graph LR
 
 ### Permission Matrix — V1 Status × Action (Store Keeper)
 
-The Store Keeper holds create and edit rights at `draft`, auto-approve authority for below-threshold existing-lot documents, and read-only visibility once `in_progress` or `completed`. Rows are derived from Section 2 (Entry Point and Primary Flow) of this file; rule citations refer to [[inventory-adjustment/02-business-rules]] § 4 (Authorization Rules) and § 5 (Posting Rules).
+The Store Keeper holds create and edit rights at `draft`, auto-approve authority for below-threshold existing-lot documents, and read-only visibility once `in_progress` or `completed`. Rows are derived from Section 2 (Entry Point and Primary Flow) of this file; rule citations refer to [inventory-adjustment/02-business-rules](/en/inventory/inventory-adjustment/02-business-rules) § 4 (Authorization Rules) and § 5 (Posting Rules).
 
 | Action | `draft` | `in_progress` | `completed` | `cancelled` / `voided` |
 |---|---|---|---|---|
@@ -72,7 +72,7 @@ The Store Keeper's inventory-adjustment ownership begins when a discrepancy is i
 - **Inventory Adjustment module → New Stock-In** — manual inbound for found-stock, count-overage (one-off, ad-hoc), vendor-replacement, data-fix. Creates `tb_stock_in` at `doc_status = draft`.
 - **Inventory Adjustment module → New Stock-Out** — manual outbound for breakage, expiry write-off, theft write-off, count-shortage (one-off, ad-hoc). Creates `tb_stock_out` at `doc_status = draft`.
 - **Quick-action from Inventory dashboard** — "Report damage" / "Report found stock" shortcuts that pre-fill the reason code and route to the same Stock-In / Stock-Out forms above.
-- *(Implicit)* **Physical Count / Spot Check run** — when the count completes with variances, the Inventory Controller's commit triggers auto-rollup `tb_stock_in` / `tb_stock_out` documents per `ADJ_POST_006`. The Store Keeper is the count executor (not the document creator on the auto-rollup), but their count work is the upstream input. The full count flow lives in [[physical-count]] / [[spot-check]] persona files.
+- *(Implicit)* **Physical Count / Spot Check run** — when the count completes with variances, the Inventory Controller's commit triggers auto-rollup `tb_stock_in` / `tb_stock_out` documents per `ADJ_POST_006`. The Store Keeper is the count executor (not the document creator on the auto-rollup), but their count work is the upstream input. The full count flow lives in [physical-count](/en/inventory/physical-count) / [spot-check](/en/inventory/spot-check) persona files.
 
 **Primary flow (manual stock-in for found stock, 9 steps — illustrative of the inbound pattern):**
 
@@ -86,7 +86,7 @@ The Store Keeper's inventory-adjustment ownership begins when a discrepancy is i
 8. **Submit.** Click **Submit**. The system runs all `ADJ_VAL_*` rules + the inventory-side pre-checks (no-negative-balance does not apply to stock-in; period-containment per `ADJ_VAL_011` does). Validation passes:
     - **Below auto-approve threshold + not new-lot:** `draft → in_progress → completed` cascades per `ADJ_POST_001` / `ADJ_POST_002`. Inventory transaction posts immediately. Activity log: `{action: 'auto_approve_post', threshold: <amount>}`. Skip to step 9.
     - **Above threshold OR new-lot stock-in:** `draft → in_progress`. Document appears in Inventory Controller's queue per `ADJ_AUTH_003` / `ADJ_AUTH_004`. Document is read-only to the Store Keeper while `in_progress` (they can comment but not edit lines). Wait for Controller approval / rejection.
-9. **Post fires.** Inventory write per [[inventory/02-business-rules]] `INV_POST_001`: `tb_inventory_transaction` (`inventory_doc_type = stock_in`, `inventory_doc_no = tb_stock_in.id`); `tb_inventory_transaction_detail` (`qty > 0`, `cost_per_unit`, `total_cost`, `current_lot_no`); `tb_inventory_transaction_cost_layer` (`in_qty > 0`, `transaction_type = adjustment_in`, `cost_per_unit`, `lot_no`, `lot_index`, `lot_seq_no`, `at_period`, `period_id`); weighted-average refresh per `ADJ_CALC_005` if the product is WA. GL journal: `Dr Inventory / Cr <FOUND_STOCK gain GL account>` at the document total. The detail's `inventory_transaction_id` is stamped. On-hand at `(location, product, lot)` is now the new derived value per `INV_CALC_004`. The Store Keeper's work on this document ends.
+9. **Post fires.** Inventory write per [inventory/02-business-rules](/en/inventory/inventory/02-business-rules) `INV_POST_001`: `tb_inventory_transaction` (`inventory_doc_type = stock_in`, `inventory_doc_no = tb_stock_in.id`); `tb_inventory_transaction_detail` (`qty > 0`, `cost_per_unit`, `total_cost`, `current_lot_no`); `tb_inventory_transaction_cost_layer` (`in_qty > 0`, `transaction_type = adjustment_in`, `cost_per_unit`, `lot_no`, `lot_index`, `lot_seq_no`, `at_period`, `period_id`); weighted-average refresh per `ADJ_CALC_005` if the product is WA. GL journal: `Dr Inventory / Cr <FOUND_STOCK gain GL account>` at the document total. The detail's `inventory_transaction_id` is stamped. On-hand at `(location, product, lot)` is now the new derived value per `INV_CALC_004`. The Store Keeper's work on this document ends.
 
 The **stock-out** flow follows the same shape with key differences:
 
@@ -97,7 +97,7 @@ The **stock-out** flow follows the same shape with key differences:
 - SoD constraint per `ADJ_AUTH_010`: large write-off of a lot the Store Keeper themselves received is rejected at submit; an independent adjuster is required.
 - Reason flags `info.requiresDocument` more often (breakage, theft, expiry-write-off typically require photo / sign-off evidence) — at least one attachment per `ADJ_VAL_010`.
 
-The **count-rollup** flow is owned by [[physical-count]] / [[spot-check]] persona files; the Store Keeper executes the count, the variance lines stage, and the Inventory Controller commits — which triggers auto-rollup `tb_stock_in` / `tb_stock_out` documents per `ADJ_POST_006`. The Store Keeper does not create or own the rollup documents themselves.
+The **count-rollup** flow is owned by [physical-count](/en/inventory/physical-count) / [spot-check](/en/inventory/spot-check) persona files; the Store Keeper executes the count, the variance lines stage, and the Inventory Controller commits — which triggers auto-rollup `tb_stock_in` / `tb_stock_out` documents per `ADJ_POST_006`. The Store Keeper does not create or own the rollup documents themselves.
 
 ## 3. Decision Branches
 
@@ -106,7 +106,7 @@ The **count-rollup** flow is owned by [[physical-count]] / [[spot-check]] person
 - **Stock-out cost-per-unit not user-entered.** For stock-out, the Store Keeper enters `qty` only. The cost preview shows FIFO ordering (or current WA); on submit, the engine picks the actual cost. The Store Keeper sees the picked cost in the activity log post-completion. Anomalous-cost concerns are escalated to Controller before submit, not after.
 - **Lot override for expiry write-off.** Default lot-pick is FIFO (`lot_seq_no` ascending). For `EXPIRY_WRITE_OFF`, the Store Keeper overrides the FIFO default with the specific expired lot — the system records `info.lotOverride = <lot_no>` for the audit trail. The override is justified by the reason code; non-`EXPIRY_WRITE_OFF` documents with a lot override may flag for Controller review.
 - **Negative-balance attempt rejected.** Stock-out submit rejects at the validation layer per `ADJ_VAL_012` / `INV_VAL_005` when `qty` would drive on-hand below zero at the picked lot. The Store Keeper reduces `qty`, splits across lots (multi-line document), or escalates to Controller to investigate (the discrepancy may indicate a missed inbound — e.g. unrecorded receipt — that warrants a separate stock-in to fix the balance first).
-- **Location-type gate.** The location picker filters to `enum_location_type ∈ {inventory, consignment}` per `ADJ_VAL_003` and [[inventory]] `INV_VAL_009`. Direct-cost locations carry no balance and are not adjustable. The Store Keeper sees a disabled option with tooltip if they try to switch.
+- **Location-type gate.** The location picker filters to `enum_location_type ∈ {inventory, consignment}` per `ADJ_VAL_003` and [inventory](/en/inventory/inventory) `INV_VAL_009`. Direct-cost locations carry no balance and are not adjustable. The Store Keeper sees a disabled option with tooltip if they try to switch.
 - **Multi-line consolidation.** A single stock-in or stock-out document can carry multiple product lines (typical for a count-variance rollup or a multi-product write-off). The auto-approve threshold is **aggregate across lines**, not per line — a multi-line document with total cost above threshold routes to Controller even if each line is below threshold.
 - **Reason flagged requires-quality-check.** For reasons where `info.requiresQualityCheck = true` (typically expiry-write-off, recall-write-off, large breakage), the auto-approve fast path is bypassed and the document **always routes to Controller** for human review regardless of cost impact.
 
@@ -117,7 +117,7 @@ The Store Keeper's involvement on a given adjustment ends at one of six boundari
 - **Auto-approve post complete.** Below-threshold, non-new-lot, non-requires-quality-check stock-in / stock-out posts immediately on submit. `doc_status = completed`; inventory transaction posted; GL entry generated. The Store Keeper's work is done; no handoff. Activity log records `auto_approve_post`.
 - **Above-threshold handoff to Inventory Controller.** Document at `tb_stock_in.doc_status = in_progress` (or `tb_stock_out.doc_status = in_progress`) routes to **Inventory Controller** ([03-user-flow-inventory-controller.md](./03-user-flow-inventory-controller.md)) for approval. The Store Keeper re-engages only if the Controller rejects (document returns to `draft`) or asks for additional evidence on the activity log.
 - **New-lot handoff to Inventory Controller.** Identical to above-threshold but triggered by the new-lot rule per `ADJ_AUTH_003`. The Controller specifically validates new-lot identity / cost-per-unit defensibility before approving.
-- **Count-execution handoff via count document.** When the Store Keeper's day-to-day work is executing a [[physical-count]] or [[spot-check]] run, the inventory-adjustment effect (variance rollup auto-post) is triggered by Inventory Controller's commit, not by the Store Keeper directly. The handoff anchor is `tb_count_stock.status = completed`.
+- **Count-execution handoff via count document.** When the Store Keeper's day-to-day work is executing a [physical-count](/en/inventory/physical-count) or [spot-check](/en/inventory/spot-check) run, the inventory-adjustment effect (variance rollup auto-post) is triggered by Inventory Controller's commit, not by the Store Keeper directly. The handoff anchor is `tb_count_stock.status = completed`.
 - **Document cancelled pre-post.** If the Store Keeper realises mid-draft that the discrepancy was a counting error or the document is wrong, they cancel — `doc_status = cancelled` with reason text. No inventory effect. The cancelled document remains in DB for audit. Terminal state from the Store Keeper's side.
 - **Document rejected by Controller.** If the Controller rejects the document, `doc_status` returns to `draft` with the rejection comment in `workflow_history`. The Store Keeper edits and re-submits, or cancels if the issue cannot be resolved (e.g. a recount confirmed there was no discrepancy after all).
 
@@ -129,8 +129,8 @@ The Store Keeper's involvement on a given adjustment ends at one of six boundari
 - Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — System Administrator who configures the `tb_adjustment_type` list the Store Keeper picks from, the auto-approve threshold the gate compares against, and the `tb_user_location` mapping that scopes their pickable locations.
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical `tb_stock_in` / `tb_stock_out` shape (referenced in steps 2–7 of the primary flow), `tb_inventory_transaction` shape (step 9), `enum_adjustment_type` values (`STOCK_IN` / `STOCK_OUT`), `enum_doc_status` lifecycle.
 - Sibling: [02-business-rules.md](./02-business-rules.md) — validation rules `ADJ_VAL_001` (doc number unique), `ADJ_VAL_002` (reason matches direction), `ADJ_VAL_003` (location active + non-direct), `ADJ_VAL_004` (description required), `ADJ_VAL_005` (department in dimension), `ADJ_VAL_006` (product active), `ADJ_VAL_007` (qty > 0), `ADJ_VAL_008` (non-negative cost), `ADJ_VAL_009` (lot identity), `ADJ_VAL_010` (attachment when required), `ADJ_VAL_011` (period gate), `ADJ_VAL_012` (no-negative-balance on stock-out); auth rules `ADJ_AUTH_001`–`ADJ_AUTH_003` (Store Keeper create / auto-approve / new-lot gates), `ADJ_AUTH_010` (SoD); posting rules `ADJ_POST_001` (submit), `ADJ_POST_002` (post fan-out).
-- Related: [[inventory]] — every adjustment posts to inventory; the inventory module's `INV_VAL_005` (no negative balance), `INV_VAL_008` (period gate), `INV_VAL_009` (direct-cost gate), `INV_CALC_005` / `INV_CALC_006` (cost picks), `INV_POST_001` / `INV_POST_002` (posting effects) are the canonical ledger-side rules.
-- Related: [[physical-count]] — count execution at the location level; variance rollup auto-creates adjustment documents via `ADJ_POST_006` / `ADJ_XMOD_002`. The Store Keeper executes the count, but does not create the rollup documents directly.
-- Related: [[spot-check]] — partial count; same auto-rollup pattern as physical-count per `ADJ_XMOD_003`.
-- Related: [[good-receive-note]] — the Store Keeper is the same physical operator at the dock; large damage-recall write-off may cross-link the originating GRN lot data via the inventory transaction's polymorphic source link.
-- Related: [[costing]] — FIFO and WA cost picking on outbound; the WA refresh on inbound that the post engine applies after the Store Keeper's submit.
+- Related: [inventory](/en/inventory/inventory) — every adjustment posts to inventory; the inventory module's `INV_VAL_005` (no negative balance), `INV_VAL_008` (period gate), `INV_VAL_009` (direct-cost gate), `INV_CALC_005` / `INV_CALC_006` (cost picks), `INV_POST_001` / `INV_POST_002` (posting effects) are the canonical ledger-side rules.
+- Related: [physical-count](/en/inventory/physical-count) — count execution at the location level; variance rollup auto-creates adjustment documents via `ADJ_POST_006` / `ADJ_XMOD_002`. The Store Keeper executes the count, but does not create the rollup documents directly.
+- Related: [spot-check](/en/inventory/spot-check) — partial count; same auto-rollup pattern as physical-count per `ADJ_XMOD_003`.
+- Related: [good-receive-note](/en/inventory/good-receive-note) — the Store Keeper is the same physical operator at the dock; large damage-recall write-off may cross-link the originating GRN lot data via the inventory transaction's polymorphic source link.
+- Related: [costing](/en/inventory/costing) — FIFO and WA cost picking on outbound; the WA refresh on inbound that the post engine applies after the Store Keeper's submit.

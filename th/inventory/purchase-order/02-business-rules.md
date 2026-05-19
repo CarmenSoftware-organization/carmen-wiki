@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — Business Rules
 description: กฎการ validation การคำนวณ การกำหนดสิทธิ์ การ posting การ three-way-match และกฎข้ามโมดูลสำหรับ purchase-order
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-order, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -18,9 +18,9 @@ dateCreated: 2026-05-15T10:00:00.000Z
 
 ## 1. ภาพรวม
 
-หน้านี้ capture กติกาทางธุรกิจเชิงปฏิบัติการที่ควบคุมเอกสาร Purchase Order (PO) ตลอดวงจรชีวิตของมัน: การ validate input ตอน create / edit / submit, การคำนวณเงิน (บรรทัดและส่วนหัว), gate การกำหนดสิทธิ์ตาม role และเกณฑ์มูลค่า, ผล posting บนแต่ละ transition ของ `enum_purchase_order_doc_status`, three-way-match กับ GRN และ vendor invoice และกฎข้ามโมดูลกับ [[purchase-request]], [[good-receive-note]], [[vendor-pricelist]], และ [[inventory]]
+หน้านี้ capture กติกาทางธุรกิจเชิงปฏิบัติการที่ควบคุมเอกสาร Purchase Order (PO) ตลอดวงจรชีวิตของมัน: การ validate input ตอน create / edit / submit, การคำนวณเงิน (บรรทัดและส่วนหัว), gate การกำหนดสิทธิ์ตาม role และเกณฑ์มูลค่า, ผล posting บนแต่ละ transition ของ `enum_purchase_order_doc_status`, three-way-match กับ GRN และ vendor invoice และกฎข้ามโมดูลกับ [purchase-request](/th/inventory/purchase-request), [good-receive-note](/th/inventory/good-receive-note), [vendor-pricelist](/th/inventory/vendor-pricelist), และ [inventory](/th/inventory/inventory)
 
-กติกาด้านล่างสังเคราะห์จาก business analysis PO ใน carmen/docs แบบเดิม catalogue กฎทางธุรกิจของ PR ที่ตรงกัน (Section 3 ของ `purchase-request-ba.md` และ `PR-Module-Structure.md` เนื่องจาก PO inherit ปรัชญาการคำนวณ การปัดเศษ และ approval เดียวกัน) และโมเดลข้อมูล canonical ของ Prisma ที่ documented ใน [[purchase-order/01-data-model]] เมื่อ carmen/docs แบบเดิมและ Prisma ไม่ตรงกัน Prisma เป็น canonical — โดยเฉพาะสำหรับค่า status (`draft`, `in_progress`, `voided`, `sent`, `partial`, `closed`, `completed`) และสำหรับ PR↔PO bridge linkage มากกว่า FK เดียวบน PO line
+กติกาด้านล่างสังเคราะห์จาก business analysis PO ใน carmen/docs แบบเดิม catalogue กฎทางธุรกิจของ PR ที่ตรงกัน (Section 3 ของ `purchase-request-ba.md` และ `PR-Module-Structure.md` เนื่องจาก PO inherit ปรัชญาการคำนวณ การปัดเศษ และ approval เดียวกัน) และโมเดลข้อมูล canonical ของ Prisma ที่ documented ใน [purchase-order/01-data-model](/th/inventory/purchase-order/01-data-model) เมื่อ carmen/docs แบบเดิมและ Prisma ไม่ตรงกัน Prisma เป็น canonical — โดยเฉพาะสำหรับค่า status (`draft`, `in_progress`, `voided`, `sent`, `partial`, `closed`, `completed`) และสำหรับ PR↔PO bridge linkage มากกว่า FK เดียวบน PO line
 
 ## 2. กฎ Validation
 
@@ -107,7 +107,7 @@ Rule IDs ตามรูปแบบ `PO_AUTH_NNN` Authorization บังคั
 
 ## 5. กฎ Posting
 
-ค่า status คือสมาชิก literal ของ `enum_purchase_order_doc_status` ที่ documented ใน [[purchase-order/01-data-model]] § 4: `draft`, `in_progress`, `voided`, `sent`, `partial`, `closed`, `completed` ไม่มี GL "posting" แยกต่างหากสำหรับเอกสาร PO เอง; PO posting คือการ mutate status บันทึก audit trail (`history`, `workflow_history`) และ trigger side effect ปลายน้ำ GL posting จริงเกิดที่ GRN (inventory accrual) และที่ three-way-match สำเร็จ (AP invoice)
+ค่า status คือสมาชิก literal ของ `enum_purchase_order_doc_status` ที่ documented ใน [purchase-order/01-data-model](/th/inventory/purchase-order/01-data-model) § 4: `draft`, `in_progress`, `voided`, `sent`, `partial`, `closed`, `completed` ไม่มี GL "posting" แยกต่างหากสำหรับเอกสาร PO เอง; PO posting คือการ mutate status บันทึก audit trail (`history`, `workflow_history`) และ trigger side effect ปลายน้ำ GL posting จริงเกิดที่ GRN (inventory accrual) และที่ three-way-match สำเร็จ (AP invoice)
 
 Rule IDs ตามรูปแบบ `PO_POST_NNN`
 
@@ -168,19 +168,19 @@ Rule IDs ตามรูปแบบ `PO_XMOD_NNN`
 
 | Rule ID | โมดูลที่เกี่ยวข้อง | กฎ |
 | ------- | -------------- | ---- |
-| `PO_XMOD_001` | [[purchase-request]] | เมื่อ `po_type = purchase_request` PO ต้องสร้างผ่าน flow การแปลง PR-to-PO ซึ่ง group PR ที่อนุมัติแล้วที่เลือกด้วย `(vendor_id, currency_id)` และผลิต PO หนึ่งใบต่อกลุ่ม แต่ละ PO line ที่ได้บรรจุ bridge rows หนึ่งหรือมากกว่าหนึ่ง row ใน `tb_purchase_order_detail_tb_purchase_request_detail` ที่ลิงก์กลับไปยัง PR line(s) ต้นทาง (`PO_VAL_014`) |
-| `PO_XMOD_002` | [[purchase-request]] | Bridge รองรับ consolidation (PR lines หลาย → PO line หนึ่ง) และ partial conversion (PR line หนึ่ง → PO lines หลาย) PR line ถือว่า converted เต็มที่เมื่อ `Σ bridge.pr_detail_qty` สำหรับ `pr_detail_id` นั้นเท่ากับ approved quantity ของ PR line |
-| `PO_XMOD_003` | [[good-receive-note]] | GRN สามารถสร้างเทียบกับ PO ที่ `po_status ∈ {sent, partial}` เท่านั้น (`PO_AUTH_008`) GRN detail back-reference `tb_purchase_order_detail.id`; pending quantity ที่ใช้ได้สำหรับ receipt คือ `order_qty − received_qty − cancelled_qty` ตาม `PO_POST_006` |
-| `PO_XMOD_004` | [[good-receive-note]] | การรับ quantity ที่จะเกิน pending qty ถูก reject เว้นแต่ tenant configuration อนุญาต over-receipt ภายใน tolerance; มิฉะนั้น GRN line ถูก cap ที่ pending qty |
-| `PO_XMOD_005` | [[vendor-pricelist]] | ที่ PR-to-PO conversion ระบบ snapshot `price` จาก active vendor pricelist สำหรับ tuple `(vendor, product, currency)` หากไม่มี active pricelist row ราคา last-known ของ PR ถูกใช้และ comment `system` ถูก append flag การ coverage pricelist ที่หายไป |
-| `PO_XMOD_006` | [[vendor-pricelist]] | เมื่อ buyer override snapshot price delta เทียบกับ pricelist ถูก log ใน `tb_purchase_order_detail_comment` เป็น entry deviation Deviations เหนือ tenant tolerance route PO ไปยัง stage approval high-value แม้ `total_amount` ต่ำกว่า threshold |
+| `PO_XMOD_001` | [purchase-request](/th/inventory/purchase-request) | เมื่อ `po_type = purchase_request` PO ต้องสร้างผ่าน flow การแปลง PR-to-PO ซึ่ง group PR ที่อนุมัติแล้วที่เลือกด้วย `(vendor_id, currency_id)` และผลิต PO หนึ่งใบต่อกลุ่ม แต่ละ PO line ที่ได้บรรจุ bridge rows หนึ่งหรือมากกว่าหนึ่ง row ใน `tb_purchase_order_detail_tb_purchase_request_detail` ที่ลิงก์กลับไปยัง PR line(s) ต้นทาง (`PO_VAL_014`) |
+| `PO_XMOD_002` | [purchase-request](/th/inventory/purchase-request) | Bridge รองรับ consolidation (PR lines หลาย → PO line หนึ่ง) และ partial conversion (PR line หนึ่ง → PO lines หลาย) PR line ถือว่า converted เต็มที่เมื่อ `Σ bridge.pr_detail_qty` สำหรับ `pr_detail_id` นั้นเท่ากับ approved quantity ของ PR line |
+| `PO_XMOD_003` | [good-receive-note](/th/inventory/good-receive-note) | GRN สามารถสร้างเทียบกับ PO ที่ `po_status ∈ {sent, partial}` เท่านั้น (`PO_AUTH_008`) GRN detail back-reference `tb_purchase_order_detail.id`; pending quantity ที่ใช้ได้สำหรับ receipt คือ `order_qty − received_qty − cancelled_qty` ตาม `PO_POST_006` |
+| `PO_XMOD_004` | [good-receive-note](/th/inventory/good-receive-note) | การรับ quantity ที่จะเกิน pending qty ถูก reject เว้นแต่ tenant configuration อนุญาต over-receipt ภายใน tolerance; มิฉะนั้น GRN line ถูก cap ที่ pending qty |
+| `PO_XMOD_005` | [vendor-pricelist](/th/inventory/vendor-pricelist) | ที่ PR-to-PO conversion ระบบ snapshot `price` จาก active vendor pricelist สำหรับ tuple `(vendor, product, currency)` หากไม่มี active pricelist row ราคา last-known ของ PR ถูกใช้และ comment `system` ถูก append flag การ coverage pricelist ที่หายไป |
+| `PO_XMOD_006` | [vendor-pricelist](/th/inventory/vendor-pricelist) | เมื่อ buyer override snapshot price delta เทียบกับ pricelist ถูก log ใน `tb_purchase_order_detail_comment` เป็น entry deviation Deviations เหนือ tenant tolerance route PO ไปยัง stage approval high-value แม้ `total_amount` ต่ำกว่า threshold |
 | `PO_XMOD_007` | AP / Three-way match | เมื่อ GRN post AP module raise liability inventory-accrual Accrual ถูก clear และ vendor invoice ถูก post เฉพาะเมื่อ three-way-match สำเร็จตาม `PO_POST_008` PO closure (`completed` หรือ `closed`) ไม่ clear accrual โดยตัวเอง — เป็นความรับผิดชอบของ AP เทียบกับ invoice จริง |
-| `PO_XMOD_008` | [[inventory]] | Inventory on-hand **ไม่** เพิ่มโดย PO posting — เพิ่มเฉพาะเมื่อ GRN post (ซึ่งอยู่ในขอบเขตของโมดูล GRN) PO มีส่วนร่วมปริมาณ "on-order" pipeline ที่ inventory planning อ่านผ่าน `order_qty − received_qty − cancelled_qty` บน PO lines ที่ active |
-| `PO_XMOD_009` | [[inventory]] | `base_qty` ของ PO line (คำนวณใน base UoM ผ่าน `PO_CALC_011`) คือ quantity ที่ inventory reservations และการคำนวณ projected-on-hand อ่าน; order UoM สำหรับการแสดงผลฝั่ง vendor เท่านั้น |
+| `PO_XMOD_008` | [inventory](/th/inventory/inventory) | Inventory on-hand **ไม่** เพิ่มโดย PO posting — เพิ่มเฉพาะเมื่อ GRN post (ซึ่งอยู่ในขอบเขตของโมดูล GRN) PO มีส่วนร่วมปริมาณ "on-order" pipeline ที่ inventory planning อ่านผ่าน `order_qty − received_qty − cancelled_qty` บน PO lines ที่ active |
+| `PO_XMOD_009` | [inventory](/th/inventory/inventory) | `base_qty` ของ PO line (คำนวณใน base UoM ผ่าน `PO_CALC_011`) คือ quantity ที่ inventory reservations และการคำนวณ projected-on-hand อ่าน; order UoM สำหรับการแสดงผลฝั่ง vendor เท่านั้น |
 
 ## 7. แหล่งอ้างอิง
 
-- `../carmen/docs/purchase-order-management/purchase-order-module.md` — PO consolidated BA (Section 1.3 Business Rules, Section 1.4 System Calculation Rules, Section 6.1 State Diagram, Section 2.5 RBAC) Labels ของ state ถูก reconcile กับค่า enum ของ Prisma ตาม [[purchase-order/01-data-model]] § 5
+- `../carmen/docs/purchase-order-management/purchase-order-module.md` — PO consolidated BA (Section 1.3 Business Rules, Section 1.4 System Calculation Rules, Section 6.1 State Diagram, Section 2.5 RBAC) Labels ของ state ถูก reconcile กับค่า enum ของ Prisma ตาม [purchase-order/01-data-model](/th/inventory/purchase-order/01-data-model) § 5
 - `../carmen/docs/purchase-request-management/PR-Module-Structure.md` — โครงสร้าง validation, error-type, และ workflow-state ที่ PO inherit
 - `../carmen/docs/purchase-request-management/purchase-request-ba.md` — Section 3 (Business Rules) และ Section 3.6 (System Calculation Rules); กฎการคำนวณของ PO (`PO_CALC_*`) เป็นคู่ของกฎ PR โดยตรง (`PR_036`–`PR_055`)
 - Sibling: `en/purchase-order/01-data-model.md` — Prisma model canonical, ค่า enum, และ bridge-table linkage ที่ Section 5 และ Section 6 พึ่งพา

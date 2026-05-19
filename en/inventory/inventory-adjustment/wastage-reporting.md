@@ -2,7 +2,7 @@
 title: Wastage Reporting
 description: Specialised stock-out flavour for spoilage, breakage, expiry, and theft — categorised so finance can analyse loss patterns by reason, outlet, and period.
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: inventory-adjustment, wastage, loss, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,13 +11,13 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # Wastage Reporting
 
 > **At a Glance**
-> **Owner:** Store Keeper (submit) &nbsp;·&nbsp; Inventory Controller (approve) &nbsp;·&nbsp; **Table:** `tb_stock_out` with `adjustment_type = 'wastage'` flavour (NOT a separate table) &nbsp;·&nbsp; **Trigger:** spoilage / breakage / expiry / theft / sample &nbsp;·&nbsp; **Writes to:** ledger as `stock_out` / `adjustment_out` &nbsp;·&nbsp; **1-liner:** OUT-only variant of [[inventory-adjustment]] with mandatory reason and wastage GL account.
+> **Owner:** Store Keeper (submit) &nbsp;·&nbsp; Inventory Controller (approve) &nbsp;·&nbsp; **Table:** `tb_stock_out` with `adjustment_type = 'wastage'` flavour (NOT a separate table) &nbsp;·&nbsp; **Trigger:** spoilage / breakage / expiry / theft / sample &nbsp;·&nbsp; **Writes to:** ledger as `stock_out` / `adjustment_out` &nbsp;·&nbsp; **1-liner:** OUT-only variant of [inventory-adjustment](/en/inventory/inventory-adjustment) with mandatory reason and wastage GL account.
 
 ![Wastage Reporting screen](/screenshots/inventory-adjustment/wastage-reporting.png)
 
 ## 1. What & Who
 
-Wastage Reporting is a **variant of [[inventory-adjustment]]** for stock that disappeared without a sale: spoilage, breakage, expiry, theft, sample / staff consumption, other-loss. **It is not a separate document type** — every wastage entry is a `tb_stock_out` row whose `adjustment_type_id` resolves to a wastage-flavoured reason. The variant exists so finance can break out loss by reason for cost-control reporting.
+Wastage Reporting is a **variant of [inventory-adjustment](/en/inventory/inventory-adjustment)** for stock that disappeared without a sale: spoilage, breakage, expiry, theft, sample / staff consumption, other-loss. **It is not a separate document type** — every wastage entry is a `tb_stock_out` row whose `adjustment_type_id` resolves to a wastage-flavoured reason. The variant exists so finance can break out loss by reason for cost-control reporting.
 
 How it differs from a generic adjustment:
 
@@ -35,7 +35,7 @@ How it differs from a generic adjustment:
 | Submit for approval | **Submit** action | Flips `draft → in_progress`, routes to Inventory Controller |
 | Approve and post | Inventory Controller → **Approve** | Posts `tb_inventory_transaction` (stock_out / adjustment_out), debits Wastage Expense, credits Inventory |
 | Reverse a wastage entry | New wastage with negative qty | Only correction path — never edit the original; reference original in `note` |
-| Run loss-by-reason report | [[reporting-audit]] | Per-outlet, per-period, per-reason aggregation |
+| Run loss-by-reason report | [reporting-audit](/en/inventory/reporting-audit) | Per-outlet, per-period, per-reason aggregation |
 
 ## 3. Validation & Errors
 
@@ -54,7 +54,7 @@ How it differs from a generic adjustment:
 - **Variant, not a separate table.** Same schema as stock-out — discriminator is `adjustment_type_id`. Test plans that look for a `tb_wastage` table will find none.
 - **Cost basis snapshot at submit.** `cost_per_unit` is picked from the active costing method (AVCO snapshot or oldest FIFO layer) and not editable.
 - **No edit after post.** Once `doc_status = completed`, no field is mutable. Correction is a new opposite-sign wastage referencing the original in `note`.
-- **Reversal is append-only.** The original row is never `UPDATE`d — the pair is the audit trail (matches [[inventory/transaction]] append-only semantics).
+- **Reversal is append-only.** The original row is never `UPDATE`d — the pair is the audit trail (matches [inventory/transaction](/en/inventory/inventory/transaction) append-only semantics).
 - **GL routing.** Credit side resolves from `tb_adjustment_type` GL mapping — a wastage expense account, NOT the generic adjustment expense.
 - **Period gate.** Same as every inventory document — backdating into a closed period is rejected.
 
@@ -92,7 +92,7 @@ Carries `product_id`, `qty`, `cost_per_unit`, `total_cost`, lot reference, and b
 | `type` | `enum_adjustment_type` | `STOCK_IN` or `STOCK_OUT` — wastage rows are always `STOCK_OUT`. |
 | `is_active` | `Boolean?` | Toggles availability in the picker. |
 
-See [[master-data/adjustment-type]] for the full reason catalogue.
+See [master-data/adjustment-type](/en/inventory/master-data/adjustment-type) for the full reason catalogue.
 
 ## 6. Lifecycle / Business Rules
 
@@ -115,9 +115,9 @@ See [[master-data/adjustment-type]] for the full reason catalogue.
 
 ## 7. Cross-References
 
-- [[inventory-adjustment]] — parent module; same business rules apply
-- [[master-data/adjustment-type]] — reason catalogue
-- [[inventory]] &nbsp;·&nbsp; [[inventory/transaction]] &nbsp;·&nbsp; [[costing]] &nbsp;·&nbsp; [[reporting-audit]]
+- [inventory-adjustment](/en/inventory/inventory-adjustment) — parent module; same business rules apply
+- [master-data/adjustment-type](/en/inventory/master-data/adjustment-type) — reason catalogue
+- [inventory](/en/inventory/inventory) &nbsp;·&nbsp; [inventory/transaction](/en/inventory/inventory/transaction) &nbsp;·&nbsp; [costing](/en/inventory/costing) &nbsp;·&nbsp; [reporting-audit](/en/inventory/reporting-audit)
 
 ## 8. References
 

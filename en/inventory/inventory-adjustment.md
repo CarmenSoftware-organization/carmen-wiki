@@ -2,7 +2,7 @@
 title: Inventory Adjustment
 description: Manual corrections to stock balances — write-offs, write-ons, reclassifications.
 published: true
-date: 2026-05-19T23:45:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: inventory-adjustment, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -54,20 +54,20 @@ Operationally, adjustments are also the formal landing point for variances detec
 ## 5. Related Modules
 
 **Cross-module flow:**
-- [[inventory]] — adjustments modify inventory balances directly
-- [[costing]] — adjustments require a cost basis (entered manually or from costing engine)
-- [[physical-count]] — count variances become adjustment documents
-- [[spot-check]] — partial count variances become adjustment documents
+- [inventory](/en/inventory/inventory) — adjustments modify inventory balances directly
+- [costing](/en/inventory/costing) — adjustments require a cost basis (entered manually or from costing engine)
+- [physical-count](/en/inventory/physical-count) — count variances become adjustment documents
+- [spot-check](/en/inventory/spot-check) — partial count variances become adjustment documents
 
 **Master configuration:**
-- [[master-data/adjustment-type]] — reason-code master with direction (IN/OUT/BOTH) and GL mapping per reason
-- [[master-data/unit]] — unit of measure for each adjustment line quantity
-- [[master-data/location]] — source location whose balance the adjustment moves
-- [[system-config/workflow]] — approval workflow definitions for adjustment authorization
-- [[system-config/period]] — accounting period gate; adjustments dated into a closed period are rejected
-- [[access-control/user-location]] — restricts which locations a user can adjust
-- [[reporting-audit/activity]] — adjustment status-transition log for audit
-- [[reporting-audit/attachment]] — required photos / damage reports / evidence stored against each adjustment
+- [master-data/adjustment-type](/en/inventory/master-data/adjustment-type) — reason-code master with direction (IN/OUT/BOTH) and GL mapping per reason
+- [master-data/unit](/en/inventory/master-data/unit) — unit of measure for each adjustment line quantity
+- [master-data/location](/en/inventory/master-data/location) — source location whose balance the adjustment moves
+- [system-config/workflow](/en/inventory/system-config/workflow) — approval workflow definitions for adjustment authorization
+- [system-config/period](/en/inventory/system-config/period) — accounting period gate; adjustments dated into a closed period are rejected
+- [access-control/user-location](/en/inventory/access-control/user-location) — restricts which locations a user can adjust
+- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — adjustment status-transition log for audit
+- [reporting-audit/attachment](/en/inventory/reporting-audit/attachment) — required photos / damage reports / evidence stored against each adjustment
 
 ## 6. Reference Sources
 

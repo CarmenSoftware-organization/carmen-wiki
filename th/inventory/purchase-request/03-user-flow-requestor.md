@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — User Flow — Requestor
 description: เส้นทางการใช้งานของ Requestor ในโมดูล purchase-request
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-request, user-flow, requestor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 # ใบขอซื้อ (Purchase Request) — User Flow — Requestor
 
 > **At a Glance**
-> **Persona:** Requestor (พนักงานโรงแรม / แผนก) &nbsp;·&nbsp; **โมดูล:** [[purchase-request]] &nbsp;·&nbsp; **Stage ของ workflow:** draft → submit → in_progress (+ การกลับเข้าจาก send-back, การ cancel จาก draft) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** create/edit draft, แนบไฟล์, submit, cancel draft ของตัวเอง, resubmit หลัง send-back
+> **Persona:** Requestor (พนักงานโรงแรม / แผนก) &nbsp;·&nbsp; **โมดูล:** [purchase-request](/th/inventory/purchase-request) &nbsp;·&nbsp; **Stage ของ workflow:** draft → submit → in_progress (+ การกลับเข้าจาก send-back, การ cancel จาก draft) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** create/edit draft, แนบไฟล์, submit, cancel draft ของตัวเอง, resubmit หลัง send-back
 > **persona นี้ทำอะไร:** ตั้ง PR — กรอก header และ list บรรทัด, แนบเอกสารประกอบ, submit ขออนุมัติ และแก้ไขเมื่อถูก send back
 
 ## 1. บทบาทในโมดูลนี้

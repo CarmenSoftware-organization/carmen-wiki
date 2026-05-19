@@ -2,7 +2,7 @@
 title: Inventory — User Flow — Finance
 description: Finance's flow within the inventory module — valuation verification, inventory-to-GL reconciliation, period close and lock.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: inventory, user-flow, finance, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 # Inventory — User Flow — Finance
 
 > **At a Glance**
-> **Persona:** Finance (Officer / Accountant + Manager / Controller) &nbsp;·&nbsp; **Module:** [[inventory]] &nbsp;·&nbsp; **Workflow stages:** Approve cost-impact adjustments above Controller threshold &nbsp;·&nbsp; sub-ledger ↔ GL reconciliation &nbsp;·&nbsp; period-end run (close + open next) &nbsp;·&nbsp; period-lock (`closed → locked`) &nbsp;·&nbsp; **Key permissions:** approve above Controller threshold (`INV_AUTH_005`); advance `tb_period.status` (`INV_AUTH_006`); fire `INV_POST_009 / INV_POST_010 / INV_POST_011`
+> **Persona:** Finance (Officer / Accountant + Manager / Controller) &nbsp;·&nbsp; **Module:** [inventory](/en/inventory/inventory) &nbsp;·&nbsp; **Workflow stages:** Approve cost-impact adjustments above Controller threshold &nbsp;·&nbsp; sub-ledger ↔ GL reconciliation &nbsp;·&nbsp; period-end run (close + open next) &nbsp;·&nbsp; period-lock (`closed → locked`) &nbsp;·&nbsp; **Key permissions:** approve above Controller threshold (`INV_AUTH_005`); advance `tb_period.status` (`INV_AUTH_006`); fire `INV_POST_009 / INV_POST_010 / INV_POST_011`
 > **What this persona does:** Owns valuation and GL reconciliation; signs off the period-end run and advances `tb_period.status` through to lock.
 
 ## 1. Role in This Module
@@ -85,7 +85,7 @@ Finance's involvement on a given inventory thread ends at one of four boundaries
 - Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — Auditor who reviews Finance's reconciliation activity and the period-close audit trail; Sysadmin who configures the GL account map, the costing method per product, the reconciliation tolerance, and the period definition.
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical `tb_inventory_transaction_cost_layer` (the sub-ledger Finance reconciles to GL), `tb_period` / `tb_period_snapshot` (the close / lock state and the snapshot rows the period-end job writes), `enum_period_status` (`open` / `closed` / `locked`), `enum_inventory_doc_type` (`close` / `open` for rollforward).
 - Sibling: [02-business-rules.md](./02-business-rules.md) — authorization rules `INV_AUTH_005` (Finance cost-impact approval), `INV_AUTH_006` (Finance Manager period lock / re-open), `INV_AUTH_007` (system context for `close` / `open` postings), plus posting rules `INV_POST_009` (close), `INV_POST_010` (open next), `INV_POST_011` (lock), and cross-module rules `INV_XMOD_008` (inventory-to-GL reconciliation).
-- Related: [[costing]] — the cost-layer ledger Finance reconciles is what costing reads for COGS; Finance's reconciliation activity is the audit anchor for the costing module's outputs.
-- Related: [[good-receive-note]] — Finance's reconciliation drills into GRN AP-clearing journal posts when variance investigation surfaces a GRN-side gap. The GRN module's `03-user-flow-finance.md` covers the three-way-match path that creates the AP-clearing entries.
-- Related: [[inventory-adjustment]] — the corrective stock-in / stock-out path Finance takes when the reconciliation surfaces a sub-ledger gap that cannot be resolved by a GL journal alone.
+- Related: [costing](/en/inventory/costing) — the cost-layer ledger Finance reconciles is what costing reads for COGS; Finance's reconciliation activity is the audit anchor for the costing module's outputs.
+- Related: [good-receive-note](/en/inventory/good-receive-note) — Finance's reconciliation drills into GRN AP-clearing journal posts when variance investigation surfaces a GRN-side gap. The GRN module's `03-user-flow-finance.md` covers the three-way-match path that creates the AP-clearing entries.
+- Related: [inventory-adjustment](/en/inventory/inventory-adjustment) — the corrective stock-in / stock-out path Finance takes when the reconciliation surfaces a sub-ledger gap that cannot be resolved by a GL journal alone.
 - Related: credit note — Finance books credit notes against GRNs; the credit-note's inventory-side effect (`credit_note_amount` / `credit_note_quantity`) is part of the reconciliation surface for the period the credit-note posts in.

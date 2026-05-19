@@ -2,7 +2,7 @@
 title: ใบรับสินค้า (Goods Receive Note) — User Flow
 description: วงจรชีวิตของเอกสารและไฟล์ flow ของแต่ละ persona สำหรับ good-receive-note
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: good-receive-note, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T11:00:00.000Z
 # ใบรับสินค้า (Goods Receive Note) — User Flow
 
 > **At a Glance**
-> **โมดูล:** [[good-receive-note]] &nbsp;·&nbsp; **Persona:** Receiver (Store Keeper + Inventory Manager) &nbsp;·&nbsp; Purchaser (review-only) &nbsp;·&nbsp; Finance (AP / Controller) &nbsp;·&nbsp; Audit / Config (Auditor + Sysadmin)
+> **โมดูล:** [good-receive-note](/th/inventory/good-receive-note) &nbsp;·&nbsp; **Persona:** Receiver (Store Keeper + Inventory Manager) &nbsp;·&nbsp; Purchaser (review-only) &nbsp;·&nbsp; Finance (AP / Controller) &nbsp;·&nbsp; Audit / Config (Auditor + Sysadmin)
 > **วงจรชีวิต workflow:** `draft → saved → committed → (voided)` ตาม `enum_good_received_note_status` เหตุการณ์ posting `saved → committed` fire การเพิ่ม inventory การเขียน cost-layer การเลื่อน `received_qty` ของบรรทัด PO และการขึ้น AP accrual
 > **เจาะลึก view ต่อ persona ด้านล่างสำหรับรายละเอียดระดับ action**
 
@@ -23,7 +23,7 @@ dateCreated: 2026-05-15T11:00:00.000Z
 
 ## 2. วงจรชีวิตของเอกสาร
 
-สถานะเอกสาร GRN เก็บใน `tb_good_received_note.doc_status` และจำกัดที่สี่ค่าที่ประกาศใน `enum_good_received_note_status`: `draft` (สถานะแก้ไขได้เริ่มต้น ไม่มีผลกระทบสต๊อกหรือ GL), `saved` (กรอกบรรทัดเสร็จและบันทึกเพื่อ review ยังแก้ไขได้ ยังไม่มีผลกระทบสต๊อกหรือ GL), `committed` (เหตุการณ์ posting เดียวเกิดขึ้น — inventory เพิ่ม cost layer เขียน PO line เลื่อน เอกสารล็อก) และ `voided` (ยกเลิกบริหารโดยไม่มีผลกระทบ inventory หรือ GL หรือกลับด้านหลัง commit ผ่านเส้นทางสิทธิ์เลื่อน) transition ด้านล่างครอบคลุมการเคลื่อนไหวที่ legal ระหว่างพวกมัน; อื่น ๆ ทั้งหมดถูกปฏิเสธโดย workflow engine ผลกระทบปลายทางที่ขับเคลื่อนการรับ (`sent → partial → completed` บน PO ต้นทาง การสร้าง FIFO / average-cost layer ใน [[costing]]) fire เฉพาะที่ transition `saved → committed` — ดู [02-business-rules.md](./02-business-rules.md) ส่วน 5 สำหรับกฎ posting
+สถานะเอกสาร GRN เก็บใน `tb_good_received_note.doc_status` และจำกัดที่สี่ค่าที่ประกาศใน `enum_good_received_note_status`: `draft` (สถานะแก้ไขได้เริ่มต้น ไม่มีผลกระทบสต๊อกหรือ GL), `saved` (กรอกบรรทัดเสร็จและบันทึกเพื่อ review ยังแก้ไขได้ ยังไม่มีผลกระทบสต๊อกหรือ GL), `committed` (เหตุการณ์ posting เดียวเกิดขึ้น — inventory เพิ่ม cost layer เขียน PO line เลื่อน เอกสารล็อก) และ `voided` (ยกเลิกบริหารโดยไม่มีผลกระทบ inventory หรือ GL หรือกลับด้านหลัง commit ผ่านเส้นทางสิทธิ์เลื่อน) transition ด้านล่างครอบคลุมการเคลื่อนไหวที่ legal ระหว่างพวกมัน; อื่น ๆ ทั้งหมดถูกปฏิเสธโดย workflow engine ผลกระทบปลายทางที่ขับเคลื่อนการรับ (`sent → partial → completed` บน PO ต้นทาง การสร้าง FIFO / average-cost layer ใน [costing](/th/inventory/costing)) fire เฉพาะที่ transition `saved → committed` — ดู [02-business-rules.md](./02-business-rules.md) ส่วน 5 สำหรับกฎ posting
 
 ```mermaid
 stateDiagram-v2
@@ -55,7 +55,7 @@ stateDiagram-v2
 | `committed` | void (กลับด้านหลัง commit) | `voided` | Inventory Manager + Finance (elevated co-authorisation), System Administrator | ต้องการ reason text; **ต้อง trigger การกลับด้านชดเชยของ inventory transaction การกลับด้าน cost-layer การลด `received_qty` ของ PO line และ AP entry ที่กลับด้าน** ปกติจัดการผ่าน workflow credit-note กับ GRN |
 | `saved` | auto-commit (schedule) | `committed` | System Administrator (scheduled job) | การ sweep สิ้นงวดครอบคลุม `saved` GRN ที่ค้างนานกว่า grace window ของ tenant; ชุดกฎ commit-time เดียวกันใช้; ความล้มเหลว log และ route ไปยัง Inventory Manager เพื่อแก้ด้วยมือ |
 | `voided` | (ไม่มี action ต่อ) | `voided` | — | สถานะ terminal เอกสารที่ void เก็บไว้สำหรับ audit; การรับต่อไปต้องขึ้นเป็น GRN ใหม่ |
-| `committed` | (ไม่มี action ต่อ) | `committed` | — | สถานะ terminal สำหรับเส้นทางการรับ การแก้ไขต้องการ `tb_credit_note` กับ GRN นี้หรือการปรับชดเชยใน [[inventory-adjustment]]; GRN เองยังล็อก |
+| `committed` | (ไม่มี action ต่อ) | `committed` | — | สถานะ terminal สำหรับเส้นทางการรับ การแก้ไขต้องการ `tb_credit_note` กับ GRN นี้หรือการปรับชดเชยใน [inventory-adjustment](/th/inventory/inventory-adjustment); GRN เองยังล็อก |
 
 ## 3. สารบัญ Persona
 
@@ -88,4 +88,4 @@ stateDiagram-v2
 - `../carmen/docs/good-recive-note-managment/GRN-Overview.md` — ภาพรวมโมดูล carmen/docs: วัตถุประสงค์ ขอบเขต ผู้ใช้ จุด integration
 - Sibling: [01-data-model.md](./01-data-model.md) — `enum_good_received_note_status` ทางการ (enum 4 สถานะที่ใช้ในส่วน 2) และความแตกต่างของ carmen/docs (ส่วน 5 ของ data model)
 - Sibling: [02-business-rules.md](./02-business-rules.md) ส่วน 5 — ผลกระทบ posting และประตู authorization ที่อ้างโดยแต่ละแถวของส่วน 2
-- โมดูลที่เกี่ยวข้อง: [[purchase-order]] (PO ต้นทาง; commit เลื่อน `received_qty` ของ PO และอาจพลิกสถานะ PO `sent → partial → completed`), [[inventory]] (ปลายทาง — inventory transaction คือที่ที่ข้อมูล lot, expiry และ cost-layer อยู่), [[costing]] (การสร้าง FIFO / average-cost layer ตอน commit), [[inventory-adjustment]] (การแก้ไขหลัง commit), [[vendor-pricelist]] (การตรวจ price-variance กับราคา GRN ต่อหน่วย)
+- โมดูลที่เกี่ยวข้อง: [purchase-order](/th/inventory/purchase-order) (PO ต้นทาง; commit เลื่อน `received_qty` ของ PO และอาจพลิกสถานะ PO `sent → partial → completed`), [inventory](/th/inventory/inventory) (ปลายทาง — inventory transaction คือที่ที่ข้อมูล lot, expiry และ cost-layer อยู่), [costing](/th/inventory/costing) (การสร้าง FIFO / average-cost layer ตอน commit), [inventory-adjustment](/th/inventory/inventory-adjustment) (การแก้ไขหลัง commit), [vendor-pricelist](/th/inventory/vendor-pricelist) (การตรวจ price-variance กับราคา GRN ต่อหน่วย)

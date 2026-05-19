@@ -2,7 +2,7 @@
 title: Costing — User Flow — Finance
 description: Finance's flow within the costing module — valuation policy, sub-ledger ↔ GL reconciliation, credit-note revaluation approval, period-end valuation lock.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: costing, user-flow, finance, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 # Costing — User Flow — Finance
 
 > **At a Glance**
-> **Persona:** Finance (Officer / Cost Controller / Finance Manager) &nbsp;·&nbsp; **Module:** [[costing]] &nbsp;·&nbsp; **Workflow stages:** Valuation policy &nbsp;·&nbsp; Sub-ledger ↔ GL reconciliation &nbsp;·&nbsp; Credit-note revaluation approval &nbsp;·&nbsp; Period-end valuation &nbsp;·&nbsp; Period lock (`closed → locked`) &nbsp;·&nbsp; **Key permissions:** configure method (`COST_AUTH_001`), approve credit-note revaluation (`COST_AUTH_005`), advance period status (`COST_AUTH_006`)
+> **Persona:** Finance (Officer / Cost Controller / Finance Manager) &nbsp;·&nbsp; **Module:** [costing](/en/inventory/costing) &nbsp;·&nbsp; **Workflow stages:** Valuation policy &nbsp;·&nbsp; Sub-ledger ↔ GL reconciliation &nbsp;·&nbsp; Credit-note revaluation approval &nbsp;·&nbsp; Period-end valuation &nbsp;·&nbsp; Period lock (`closed → locked`) &nbsp;·&nbsp; **Key permissions:** configure method (`COST_AUTH_001`), approve credit-note revaluation (`COST_AUTH_005`), advance period status (`COST_AUTH_006`)
 > **What this persona does:** Owns valuation policy, approves credit-note-amount revaluations, reconciles inventory sub-ledger to GL, and signs off period-end valuation through to lock.
 
 ## 1. Role in This Module
@@ -41,7 +41,7 @@ graph LR
 
 ### Permission Matrix — V5 Touchpoint × Action (Finance)
 
-Finance is the **valuation authority** in the costing module. Costing has no doc-status enum; there is no GRN-style `draft → saved → committed` lifecycle to gate. Instead, Finance operates across five costing touchpoints described in Sections 2.1–2.5. Rule citations refer to [[costing/02-business-rules]] §§ 4, 5.
+Finance is the **valuation authority** in the costing module. Costing has no doc-status enum; there is no GRN-style `draft → saved → committed` lifecycle to gate. Instead, Finance operates across five costing touchpoints described in Sections 2.1–2.5. Rule citations refer to [costing/02-business-rules](/en/inventory/costing/02-business-rules) §§ 4, 5.
 
 | Action | Valuation policy | Sub-ledger reconciliation | Credit-note revaluation | Period-end orchestration | Period-lock (Finance Manager) |
 |---|---|---|---|---|---|
@@ -97,7 +97,7 @@ Finance is the **valuation authority** in the costing module. Costing has no doc
 
 ### 2.4 Period-end valuation orchestration flow (close trigger, 7 steps)
 
-1. **Wait for Inventory Controller sign-off.** The dashboard lists the Controller's pre-period-end variance sign-off (from [[inventory/03-user-flow-inventory-controller]] Section 2 / 3). Period close cannot start without it. This is also the moment cost-layer-side variance hold ("a credit-note revaluation deferred from this period") is cleared.
+1. **Wait for Inventory Controller sign-off.** The dashboard lists the Controller's pre-period-end variance sign-off (from [inventory/03-user-flow-inventory-controller](/en/inventory/inventory/03-user-flow-inventory-controller) Section 2 / 3). Period close cannot start without it. This is also the moment cost-layer-side variance hold ("a credit-note revaluation deferred from this period") is cleared.
 2. **Verify pre-close checklist clear.** All open `tb_credit_note` / `tb_stock_in` / `tb_stock_out` / `tb_count_stock` / GRN / SR documents in the period are at terminal state. Any open credit-note in particular blocks because its revaluation effect on cost-layer cost should land in the closing period not the next.
 3. **Run final reconciliation.** Section 2.2 flow run as the final pass; reconciliation passes (variance below tolerance per cost-centre / location).
 4. **Verify cost-layer-to-snapshot rollup preview.** The dashboard renders the per-`(period, location, product, lot)` cost-layer rollup: opening from prior period's closing, period inbound / outbound / adjustment / `diff_amount` aggregates, computed closing per `COST_CALC_006`. Finance cross-checks: closing valuation matches the inventory-side closing-on-hand × `closing_cost_per_unit` arithmetic; no nulls in `closing_cost_per_unit` (would fail `COST_VAL_008`).
@@ -140,7 +140,7 @@ Finance's involvement on a given costing thread ends at one of five boundaries:
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical `tb_inventory_transaction_cost_layer`, `tb_period_snapshot`, `tb_business_unit.calculation_method` (the policy Finance owns), `tb_product.standard_cost` (the reference cost Finance maintains), `enum_calculation_method` / `enum_physical_count_costing_method` (the policy values).
 - Sibling: [02-business-rules.md](./02-business-rules.md) — authorization rules `COST_AUTH_001` (Sysadmin config — Finance is requester), `COST_AUTH_004` (Finance read cost-impact reports), `COST_AUTH_005` (Finance approves credit-note revaluation), `COST_AUTH_006` (Finance Manager period-valuation lock), `COST_AUTH_010` (no direct cost-edit); calculation rules `COST_CALC_005` (credit-note-amount revaluation), `COST_CALC_006` (period snapshot closing cost), `COST_CALC_007` (period rollforward opening cost); posting rules `COST_POST_003` (credit-note-amount), `COST_POST_007` / `COST_POST_008` (period close / open); cross-module rules `COST_XMOD_009` (Finance / GL period-end), `COST_XMOD_006` (credit-note revaluation chain).
 - Sibling: [calculation-methods.md](./calculation-methods.md) — Finance reads to understand FIFO vs WA trade-offs, the per-lot vs running-average cost-pick behaviour previewed at outbound approval, and the strategy-pattern resolution at the engine level.
-- Related: [[inventory/03-user-flow-finance]] — parallel Finance flow on the inventory module side; the period-close run, the inventory-to-GL reconciliation, and the Finance Manager period-lock are shared events between the two modules (one click runs both).
-- Related: [[good-receive-note]] — Finance's reconciliation drills into GRN-side AP-clearing journal posts when a credit-note revaluation gap surfaces; the GRN module's `03-user-flow-finance.md` covers the three-way-match path.
-- Related: [[inventory-adjustment]] — corrective stock-in / stock-out path Finance approves for cost-layer gaps that the credit-note path cannot resolve (e.g. clerical-error cost corrections).
+- Related: [inventory/03-user-flow-finance](/en/inventory/inventory/03-user-flow-finance) — parallel Finance flow on the inventory module side; the period-close run, the inventory-to-GL reconciliation, and the Finance Manager period-lock are shared events between the two modules (one click runs both).
+- Related: [good-receive-note](/en/inventory/good-receive-note) — Finance's reconciliation drills into GRN-side AP-clearing journal posts when a credit-note revaluation gap surfaces; the GRN module's `03-user-flow-finance.md` covers the three-way-match path.
+- Related: [inventory-adjustment](/en/inventory/inventory-adjustment) — corrective stock-in / stock-out path Finance approves for cost-layer gaps that the credit-note path cannot resolve (e.g. clerical-error cost corrections).
 - Related: credit note — Finance books credit-notes; the costing-side effect (`credit_note_amount` for revaluation, `credit_note_quantity` for return-from-lot) is part of the reconciliation surface for the period the credit-note posts in.

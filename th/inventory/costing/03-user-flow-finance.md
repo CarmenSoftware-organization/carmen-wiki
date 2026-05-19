@@ -2,7 +2,7 @@
 title: การคำนวณต้นทุน (Costing) — User Flow — Finance
 description: Flow ของ Finance ในโมดูล costing — นโยบาย valuation, sub-ledger ↔ GL reconciliation, อนุมัติ credit-note revaluation, period-end valuation lock
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: costing, user-flow, finance, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 # การคำนวณต้นทุน (Costing) — User Flow — Finance
 
 > **At a Glance**
-> **Persona:** Finance (Officer / Cost Controller / Finance Manager) &nbsp;·&nbsp; **Module:** [[costing]] &nbsp;·&nbsp; **Workflow stages:** นโยบาย Valuation &nbsp;·&nbsp; Sub-ledger ↔ GL reconciliation &nbsp;·&nbsp; อนุมัติ Credit-note revaluation &nbsp;·&nbsp; Period-end valuation &nbsp;·&nbsp; Period lock (`closed → locked`) &nbsp;·&nbsp; **Key permissions:** configure method (`COST_AUTH_001`), approve credit-note revaluation (`COST_AUTH_005`), advance period status (`COST_AUTH_006`)
+> **Persona:** Finance (Officer / Cost Controller / Finance Manager) &nbsp;·&nbsp; **Module:** [costing](/th/inventory/costing) &nbsp;·&nbsp; **Workflow stages:** นโยบาย Valuation &nbsp;·&nbsp; Sub-ledger ↔ GL reconciliation &nbsp;·&nbsp; อนุมัติ Credit-note revaluation &nbsp;·&nbsp; Period-end valuation &nbsp;·&nbsp; Period lock (`closed → locked`) &nbsp;·&nbsp; **Key permissions:** configure method (`COST_AUTH_001`), approve credit-note revaluation (`COST_AUTH_005`), advance period status (`COST_AUTH_006`)
 > **ที่ persona นี้ทำ:** เป็นเจ้าของนโยบาย valuation อนุมัติ credit-note-amount revaluations กระทบยอด inventory sub-ledger กับ GL และเซ็นรับรอง period-end valuation จนถึง lock
 
 ## 1. บทบาทในโมดูลนี้
@@ -53,7 +53,7 @@ graph LR
 
 ### Permission Matrix — V5 Touchpoint × Action (Finance)
 
-Finance คือ **valuation authority** ในโมดูล costing Costing ไม่มี doc-status enum; ไม่มี lifecycle GRN-style `draft → saved → committed` ให้ gate Rule citations อ้างถึง [[costing/02-business-rules]] §§ 4, 5
+Finance คือ **valuation authority** ในโมดูล costing Costing ไม่มี doc-status enum; ไม่มี lifecycle GRN-style `draft → saved → committed` ให้ gate Rule citations อ้างถึง [costing/02-business-rules](/th/inventory/costing/02-business-rules) §§ 4, 5
 
 | Action | นโยบาย Valuation | Sub-ledger reconciliation | Credit-note revaluation | Period-end orchestration | Period-lock (Finance Manager) |
 |---|---|---|---|---|---|
@@ -152,6 +152,6 @@ Finance คือ **valuation authority** ในโมดูล costing Costing 
 - Sibling: [01-data-model.md](./01-data-model.md)
 - Sibling: [02-business-rules.md](./02-business-rules.md)
 - Sibling: [calculation-methods.md](./calculation-methods.md)
-- Related: [[inventory/03-user-flow-finance]]
-- Related: [[good-receive-note]]
-- Related: [[inventory-adjustment]]
+- Related: [inventory/03-user-flow-finance](/th/inventory/inventory/03-user-flow-finance)
+- Related: [good-receive-note](/th/inventory/good-receive-note)
+- Related: [inventory-adjustment](/th/inventory/inventory-adjustment)

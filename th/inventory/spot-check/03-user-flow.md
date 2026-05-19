@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check) — User Flow
 description: วงจรชีวิตเอกสารและไฟล์ flow เฉพาะ persona ของการสุ่มตรวจ
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: spot-check, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -11,15 +11,15 @@ dateCreated: 2026-05-15T14:30:00.000Z
 # การสุ่มตรวจ (Spot Check) — User Flow
 
 > **At a Glance**
-> **โมดูล:** [[spot-check]] &nbsp;·&nbsp; **Persona:** Inventory Controller &nbsp;·&nbsp; Counter &nbsp;·&nbsp; Audit / Config
-> **วงจรชีวิต workflow:** Pending → In Progress → Completed (variance rollup ไปยัง [[inventory-adjustment]]) พร้อม branch Void
+> **โมดูล:** [spot-check](/th/inventory/spot-check) &nbsp;·&nbsp; **Persona:** Inventory Controller &nbsp;·&nbsp; Counter &nbsp;·&nbsp; Audit / Config
+> **วงจรชีวิต workflow:** Pending → In Progress → Completed (variance rollup ไปยัง [inventory-adjustment](/th/inventory/inventory-adjustment)) พร้อม branch Void
 > **ดูรายละเอียดระดับ action ในมุมมองต่อ persona ด้านล่าง**
 
 ## 1. ภาพรวม
 
-หน้านี้เป็น **จุดเริ่ม overview** สำหรับชุด user-flow ของโมดูล `spot-check` ไม่เหมือนการดำเนินงานสามชั้น period / document / detail ของ [[physical-count]], spot check เป็น **การตรวจ ad-hoc สองชั้น** — header `tb_spot_check` หนึ่งต่อคู่ (location, time-window) พร้อม `method` (random / high_value / manual) และ `size`, บวก row ของ `tb_spot_check_detail` ที่ถือ `on_hand_qty` (book snapshot) / `actual_qty` (counted) / `diff_qty` (variance) ต่อสินค้า งานเดินรวดเร็วตามลำดับชั้นนี้: Inventory Controller เปิด spot check, ระบบ (หรือ controller สำหรับ `method = manual`) สุ่ม `size` รายการ, มอบหมาย Counter; Counter เดินใน location และป้อนปริมาณ physical ทีละบรรทัด; Inventory Controller ตรวจสอบ variance, trigger recount, อนุมัติการ complete; rollup จะเขียน variance adjustment ไปยัง [[inventory-adjustment]] ซึ่งเป็น path ไปยัง ledger ของ [[inventory]]
+หน้านี้เป็น **จุดเริ่ม overview** สำหรับชุด user-flow ของโมดูล `spot-check` ไม่เหมือนการดำเนินงานสามชั้น period / document / detail ของ [physical-count](/th/inventory/physical-count), spot check เป็น **การตรวจ ad-hoc สองชั้น** — header `tb_spot_check` หนึ่งต่อคู่ (location, time-window) พร้อม `method` (random / high_value / manual) และ `size`, บวก row ของ `tb_spot_check_detail` ที่ถือ `on_hand_qty` (book snapshot) / `actual_qty` (counted) / `diff_qty` (variance) ต่อสินค้า งานเดินรวดเร็วตามลำดับชั้นนี้: Inventory Controller เปิด spot check, ระบบ (หรือ controller สำหรับ `method = manual`) สุ่ม `size` รายการ, มอบหมาย Counter; Counter เดินใน location และป้อนปริมาณ physical ทีละบรรทัด; Inventory Controller ตรวจสอบ variance, trigger recount, อนุมัติการ complete; rollup จะเขียน variance adjustment ไปยัง [inventory-adjustment](/th/inventory/inventory-adjustment) ซึ่งเป็น path ไปยัง ledger ของ [inventory](/th/inventory/inventory)
 
-หัวข้อ 2 ด้านล่างอธิบาย **state machine ของวงจรชีวิตเอกสาร** สำหรับ `tb_spot_check.doc_status` (`pending → in_progress → completed` บวก path การยกเลิก `void`) โดยไม่ขึ้นกับว่าใครทำ ไฟล์ต่อ persona (ลิงก์จากหัวข้อ 3) อธิบาย *เส้นทางผ่าน* state space นี้ของ persona — จุดเริ่ม action ที่ทำได้ branch ตัดสินใจ handoff ที่จบการมีส่วนร่วม หัวข้อ 4 สรุป handoff ข้าม persona ที่เย็บเส้นทางบุคคลเข้าด้วยกัน (Inventory Controller → Counter สำหรับการมอบหมาย; Counter → Inventory Controller สำหรับเซ็นรับ sheet ที่เสร็จ; Inventory Controller → Approver/Finance สำหรับอนุมัติ adjustment ของ variance ผ่าน [[inventory-adjustment]])
+หัวข้อ 2 ด้านล่างอธิบาย **state machine ของวงจรชีวิตเอกสาร** สำหรับ `tb_spot_check.doc_status` (`pending → in_progress → completed` บวก path การยกเลิก `void`) โดยไม่ขึ้นกับว่าใครทำ ไฟล์ต่อ persona (ลิงก์จากหัวข้อ 3) อธิบาย *เส้นทางผ่าน* state space นี้ของ persona — จุดเริ่ม action ที่ทำได้ branch ตัดสินใจ handoff ที่จบการมีส่วนร่วม หัวข้อ 4 สรุป handoff ข้าม persona ที่เย็บเส้นทางบุคคลเข้าด้วยกัน (Inventory Controller → Counter สำหรับการมอบหมาย; Counter → Inventory Controller สำหรับเซ็นรับ sheet ที่เสร็จ; Inventory Controller → Approver/Finance สำหรับอนุมัติ adjustment ของ variance ผ่าน [inventory-adjustment](/th/inventory/inventory-adjustment))
 
 > **TODO:** ดึงหน้าจอ UI / flow wizard canonical จาก `../carmen-inventory-frontend/` เมื่อ route `spot-check` ค้นพบได้; cross-reference E2E spec ที่ `../carmen-inventory-frontend-e2e/tests/` เมื่อเพิ่ม (ยังไม่มี spec `spot-check` ณ ขณะนี้) ไม่มี source folder carmen/docs สำหรับโมดูลนี้
 
@@ -74,17 +74,17 @@ stateDiagram-v2
 - บรรทัดที่ `diff_qty < 0` จัดกลุ่มเป็นเอกสาร `tb_stock_out` หนึ่งฉบับขึ้นไปภายใต้ reason `SPOT_CHECK_SHORTAGE` (หรือ alias `COUNT_SHORTAGE`)
 - บรรทัดที่ `diff_qty = 0` ไม่สร้าง rollup row
 - เอกสาร rollup แต่ละฉบับพกพา `info.spotCheckId = <tb_spot_check.id>` สำหรับการ join ย้อนกลับ
-- การ post adjustment (ตาม [[inventory-adjustment/03-user-flow]]) เขียน inventory transaction และ GL entry; spot check เองไม่เขียนลง ledger โดยตรง
+- การ post adjustment (ตาม [inventory-adjustment/03-user-flow](/th/inventory/inventory-adjustment/03-user-flow)) เขียน inventory transaction และ GL entry; spot check เองไม่เขียนลง ledger โดยตรง
 
 > **TODO:** เขียน convention การกำหนดหมายเลขเอกสาร rollup (ว่าหนึ่ง rollup ต่อ spot check, หนึ่งต่อ reason, หรือหนึ่งต่อบรรทัด) เมื่อยืนยัน logic frontend ยืนยันการตั้งชื่อ reason-code
 
 ## 3. ไฟล์ Persona
 
-แต่ละไฟล์อธิบายเส้นทางของหนึ่งกลุ่ม persona ผ่านวงจรชีวิตข้างต้น สามกลุ่มยุบจาก persona ต้นทางใน [[spot-check]] § 4:
+แต่ละไฟล์อธิบายเส้นทางของหนึ่งกลุ่ม persona ผ่านวงจรชีวิตข้างต้น สามกลุ่มยุบจาก persona ต้นทางใน [spot-check](/th/inventory/spot-check) § 4:
 
-- **[[spot-check/03-user-flow-inventory-controller|Inventory Controller]]** — กำหนด selection criteria (`method`, `size`), จัดตารางและเปิด spot check, มอบหมาย Counter, ติดตามความคืบหน้า, review variance, อนุมัติหรือ reject คำขอ recount, อนุมัติ adjustment สำหรับการ post
-- **[[spot-check/03-user-flow-counter|Counter]]** — ทำการนับ physical ของรายการหรือ location ใน scope และบันทึกปริมาณที่นับได้อย่างถูกต้องและทันเวลา
-- **[[spot-check/03-user-flow-audit-config|Audit / Config]]** — Auditor review ผล spot-check, หลักฐาน recount, และ adjustment ที่ post อย่างเป็นอิสระเพื่อยืนยันว่าการควบคุมทำงานและการสูญเสียได้รับการสืบสวน Sysadmin (โดยปริยาย) config default ของ tolerance / sampling / reason codes
+- **[Inventory Controller](/th/inventory/spot-check/03-user-flow-inventory-controller)** — กำหนด selection criteria (`method`, `size`), จัดตารางและเปิด spot check, มอบหมาย Counter, ติดตามความคืบหน้า, review variance, อนุมัติหรือ reject คำขอ recount, อนุมัติ adjustment สำหรับการ post
+- **[Counter](/th/inventory/spot-check/03-user-flow-counter)** — ทำการนับ physical ของรายการหรือ location ใน scope และบันทึกปริมาณที่นับได้อย่างถูกต้องและทันเวลา
+- **[Audit / Config](/th/inventory/spot-check/03-user-flow-audit-config)** — Auditor review ผล spot-check, หลักฐาน recount, และ adjustment ที่ post อย่างเป็นอิสระเพื่อยืนยันว่าการควบคุมทำงานและการสูญเสียได้รับการสืบสวน Sysadmin (โดยปริยาย) config default ของ tolerance / sampling / reason codes
 
 ## 4. Handoff ข้าม Persona
 
@@ -93,16 +93,16 @@ stateDiagram-v2
 | Inventory Controller | สร้าง spot check + มอบหมาย counter | Counter | `tb_spot_check` เป็น `pending`; counter location-grant |
 | Counter | ทำบรรทัดที่ได้รับมอบหมายเสร็จ | Inventory Controller | บรรทัด `tb_spot_check_detail` ทั้งหมดมี `actual_qty` ไม่เป็น null |
 | Inventory Controller | flag บรรทัด variance ให้ recount | Counter (ควรเป็นคนละคนกับคนนับเดิม) | Detail-comment พร้อม tag recount-required |
-| Inventory Controller | submit spot check | ระบบ → rollup → [[inventory-adjustment]] | `tb_spot_check.doc_status = completed`; rollup `tb_stock_in` / `tb_stock_out` สร้าง |
+| Inventory Controller | submit spot check | ระบบ → rollup → [inventory-adjustment](/th/inventory/inventory-adjustment) | `tb_spot_check.doc_status = completed`; rollup `tb_stock_in` / `tb_stock_out` สร้าง |
 | Inventory Controller | route rollup adjustment ไปอนุมัติ | Audit / Config (Approver / Finance ผ่านฝั่ง adjustment) | `tb_stock_in` / `tb_stock_out` เป็น `in_progress` |
-| Approver / Finance (ฝั่ง adjustment) | อนุมัติ rollup adjustment | ระบบ → ledger ของ [[inventory]] | `tb_stock_in` / `tb_stock_out` เป็น `completed`; เขียน `tb_inventory_transaction` |
+| Approver / Finance (ฝั่ง adjustment) | อนุมัติ rollup adjustment | ระบบ → ledger ของ [inventory](/th/inventory/inventory) | `tb_stock_in` / `tb_stock_out` เป็น `completed`; เขียน `tb_inventory_transaction` |
 | Auditor | review spot check ที่เสร็จ + adjustment ที่ post | (read-only — terminal) | chain ทั้งหมดอ่านได้: spot-check sheet, บันทึก recount, การอนุมัติ, adjustment ที่ post, journal entry |
 
-> **TODO:** วาด handoff นี้เป็น diagram เมื่อ convention Mermaid / sequence-diagram สำหรับวิกิถูกกำหนด Cross-link ไป [[inventory-adjustment/03-user-flow]] สำหรับ flow ฝั่ง rollup
+> **TODO:** วาด handoff นี้เป็น diagram เมื่อ convention Mermaid / sequence-diagram สำหรับวิกิถูกกำหนด Cross-link ไป [inventory-adjustment/03-user-flow](/th/inventory/inventory-adjustment/03-user-flow) สำหรับ flow ฝั่ง rollup
 
 ## 5. แหล่งอ้างอิง
 
 - **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
 - **Frontend (TODO):** `../carmen-inventory-frontend/` — source ของ UI flow
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check
-- หน้า flow ที่เกี่ยวข้อง: [[inventory-adjustment/03-user-flow]] (flow ฝั่ง rollup), [[physical-count/03-user-flow]] (flow คู่เทียบการนับเต็มที่มีโครงสร้างสามชั้น)
+- หน้า flow ที่เกี่ยวข้อง: [inventory-adjustment/03-user-flow](/th/inventory/inventory-adjustment/03-user-flow) (flow ฝั่ง rollup), [physical-count/03-user-flow](/th/inventory/physical-count/03-user-flow) (flow คู่เทียบการนับเต็มที่มีโครงสร้างสามชั้น)

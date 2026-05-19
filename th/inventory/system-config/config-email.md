@@ -2,7 +2,7 @@
 title: การตั้งค่าอีเมล (Email Configuration)
 description: การตั้งค่า SMTP / ผู้ส่ง / template สำหรับอีเมลขาออกของระบบ — การแจ้งเตือนเวิร์กโฟลว์ การส่งรายงานตามตารางเวลา การรีเซ็ตรหัสผ่าน
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: system-config, email, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -40,14 +40,14 @@ Email Configuration คือ **SMTP profile ต่อ BU** ที่ Carmen ใ
 | "Recipient is not a valid email" | Address แย่ใน `recipients` หรือ `cc` | แก้รายการที่แยกด้วย comma |
 | Test email สำเร็จในฟอร์มแต่ไม่มีเมลมา | Form draft ยังไม่บันทึก — Test ใช้ค่าที่บันทึกแล้ว | กด **Save** ก่อนแล้วค่อย **Test Email** |
 | Notification ทั้งหมดเงียบใน production | `smtp.enabled = false` ถูกตั้งทิ้งไว้โดยไม่ตั้งใจ | เปิดใหม่ในฟอร์มและบันทึก |
-| 403 ตอน save / load | User ไม่มี `app-config.upsert` (Sysadmin เท่านั้น) | Grant ผ่าน [[access-control/application-role]] |
+| 403 ตอน save / load | User ไม่มี `app-config.upsert` (Sysadmin เท่านั้น) | Grant ผ่าน [access-control/application-role](/th/inventory/access-control/application-role) |
 | ฟิลด์รหัสผ่านแสดง `***ENCRYPTED***` | คาดหวัง — mask ตอนอ่านเพื่อไม่ให้ ciphertext ถึง browser | คงไว้เพื่อเก็บรหัสผ่านปัจจุบัน; พิมพ์ใหม่เพื่อหมุนเวียน |
 
 ## 4. กรณีพิเศษ
 
 - **การเข้ารหัสรหัสผ่านตอนเก็บ** `smtp.password` ถูกเข้ารหัสด้วย `encryptSecret` ก่อน persist และแทนที่ด้วยตัวอักษร `***ENCRYPTED***` ตอน `GET` Idempotent — ค่าที่เข้ารหัสแล้วจะไม่ถูกเข้ารหัสซ้ำ
 - **เส้นทางการเข้าถึงแบบถอดรหัส** เฉพาะ `getReportEmailForSend(bu_code)` ภายใน (TCP-only เรียกโดย `micro-notification` / cron) เท่านั้นที่ถอดรหัส เส้นทาง HTTP สาธารณะไม่เคยส่งคืน plaintext
-- **ความปลอดภัยของ audit** ทุก upsert ถูกจับผ่าน `EnrichAuditUsers` ไปยัง [[reporting-audit/activity]] — แต่ค่าเองจะ *ไม่* ถูก log ป้องกันการเปิดเผย ciphertext โดยไม่ตั้งใจ
+- **ความปลอดภัยของ audit** ทุก upsert ถูกจับผ่าน `EnrichAuditUsers` ไปยัง [reporting-audit/activity](/th/inventory/reporting-audit/activity) — แต่ค่าเองจะ *ไม่* ถูก log ป้องกันการเปิดเผย ciphertext โดยไม่ตั้งใจ
 - **หนึ่ง row ต่อ BU** `tb_application_config` มี `@@unique([key, deleted_at])` การแยก cross-BU บังคับโดย route ที่ scope ตาม BU
 - **`enabled` คือ kill-switch ไม่ใช่ delete** การปิดหยุดอีเมลอย่างสะอาดโดยไม่สูญเสีย config
 
@@ -59,7 +59,7 @@ Email Configuration คือ **SMTP profile ต่อ BU** ที่ Carmen ใ
 
 ### 5.1 `tb_application_config` row (`key = "report_email"`)
 
-`tb_application_config` คือ KV store ระดับ tenant ทั่วไป (ดู [[system-config/application-config]]) Shape ที่ Zod-validated:
+`tb_application_config` คือ KV store ระดับ tenant ทั่วไป (ดู [system-config/application-config](/th/inventory/system-config/application-config)) Shape ที่ Zod-validated:
 
 ```jsonc
 {
@@ -95,12 +95,12 @@ Email Configuration คือ **SMTP profile ต่อ BU** ที่ Carmen ใ
 
 ## 7. การอ้างอิงข้าม
 
-- [[system-config/application-config]] — KV store แม่; `report_email` คือ key ที่สงวนไว้หนึ่งตัว
-- [[reporting-audit/notification]] — `micro-notification` คือ consumer ตอน runtime
-- [[reporting-audit/schedule]] / [[reporting-audit/report]] — การส่งรายงานตามตารางเวลาและตามคำขอ
-- [[access-control/user]] — การรีเซ็ตรหัสผ่าน การเชิญ การให้สิทธิ์
-- [[system-config/workflow]] — กฎเส้นทาง recipient (`requestor`, `current_approve`, `next_step`) resolve กับเวิร์กโฟลว์; transport คือ config นี้
-- [[reporting-audit/activity]] — upserts log ที่นี่
+- [system-config/application-config](/th/inventory/system-config/application-config) — KV store แม่; `report_email` คือ key ที่สงวนไว้หนึ่งตัว
+- [reporting-audit/notification](/th/inventory/reporting-audit/notification) — `micro-notification` คือ consumer ตอน runtime
+- [reporting-audit/schedule](/th/inventory/reporting-audit/schedule) / [reporting-audit/report](/th/inventory/reporting-audit/report) — การส่งรายงานตามตารางเวลาและตามคำขอ
+- [access-control/user](/th/inventory/access-control/user) — การรีเซ็ตรหัสผ่าน การเชิญ การให้สิทธิ์
+- [system-config/workflow](/th/inventory/system-config/workflow) — กฎเส้นทาง recipient (`requestor`, `current_approve`, `next_step`) resolve กับเวิร์กโฟลว์; transport คือ config นี้
+- [reporting-audit/activity](/th/inventory/reporting-audit/activity) — upserts log ที่นี่
 
 ## 8. แหล่งข้อมูลอ้างอิง
 

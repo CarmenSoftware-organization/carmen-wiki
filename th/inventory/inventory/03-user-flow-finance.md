@@ -2,7 +2,7 @@
 title: คลังสินค้า (Inventory) — User Flow — Finance
 description: Flow ของ Finance ในโมดูล inventory — การตรวจสอบการตีมูลค่า การกระทบยอด inventory-to-GL การปิดและล็อกงวด
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: inventory, user-flow, finance, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 # คลังสินค้า (Inventory) — User Flow — Finance
 
 > **At a Glance**
-> **Persona:** Finance (Officer / Accountant + Manager / Controller) &nbsp;·&nbsp; **โมดูล:** [[inventory]] &nbsp;·&nbsp; **ขั้นตอน workflow:** อนุมัติ adjustment ผลกระทบต้นทุนเหนือ threshold ของ Controller &nbsp;·&nbsp; sub-ledger ↔ GL reconciliation &nbsp;·&nbsp; run ปิดงวด (close + open next) &nbsp;·&nbsp; period-lock (`closed → locked`) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** อนุมัติเหนือ threshold ของ Controller (`INV_AUTH_005`); advance `tb_period.status` (`INV_AUTH_006`); fire `INV_POST_009 / INV_POST_010 / INV_POST_011`
+> **Persona:** Finance (Officer / Accountant + Manager / Controller) &nbsp;·&nbsp; **โมดูล:** [inventory](/th/inventory/inventory) &nbsp;·&nbsp; **ขั้นตอน workflow:** อนุมัติ adjustment ผลกระทบต้นทุนเหนือ threshold ของ Controller &nbsp;·&nbsp; sub-ledger ↔ GL reconciliation &nbsp;·&nbsp; run ปิดงวด (close + open next) &nbsp;·&nbsp; period-lock (`closed → locked`) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** อนุมัติเหนือ threshold ของ Controller (`INV_AUTH_005`); advance `tb_period.status` (`INV_AUTH_006`); fire `INV_POST_009 / INV_POST_010 / INV_POST_011`
 > **สิ่งที่ persona นี้ทำ:** เป็นเจ้าของการตีมูลค่าและ GL reconciliation; เซ็นรับรอง run ปิดงวดและ advance `tb_period.status` ไปยัง lock
 
 ## 1. บทบาทในโมดูลนี้
@@ -85,7 +85,7 @@ Persona **Finance** ครอบคลุม **Finance Officer / Inventory Accou
 - Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — Auditor ที่ review กิจกรรมการกระทบยอดของ Finance และ audit trail ปิดงวด; Sysadmin ที่ตั้งค่า map บัญชี GL, costing method ต่อสินค้า, tolerance การกระทบยอด และ period definition
 - Sibling: [01-data-model.md](./01-data-model.md) — `tb_inventory_transaction_cost_layer` แบบ canonical (sub-ledger ที่ Finance reconcile กับ GL), `tb_period` / `tb_period_snapshot` (สถานะ close / lock และ rows snapshot ที่ job ปิดงวดเขียน), `enum_period_status` (`open` / `closed` / `locked`), `enum_inventory_doc_type` (`close` / `open` สำหรับ rollforward)
 - Sibling: [02-business-rules.md](./02-business-rules.md) — กฎ authorization `INV_AUTH_005` (อนุมัติผลกระทบต้นทุนของ Finance), `INV_AUTH_006` (Finance Manager lock / re-open งวด), `INV_AUTH_007` (system context สำหรับ posting `close` / `open`), บวกกฎ posting `INV_POST_009` (close), `INV_POST_010` (open next), `INV_POST_011` (lock) และกฎข้ามโมดูล `INV_XMOD_008` (inventory-to-GL reconciliation)
-- ที่เกี่ยวข้อง: [[costing]] — cost-layer ledger ที่ Finance reconcile คือสิ่งที่ costing อ่านสำหรับ COGS; กิจกรรมการกระทบยอดของ Finance คือ audit anchor สำหรับ outputs ของโมดูล costing
-- ที่เกี่ยวข้อง: [[good-receive-note]] — การกระทบยอดของ Finance drill เข้า GRN AP-clearing journal posts เมื่อการ investigation variance พบ gap ฝั่ง GRN `03-user-flow-finance.md` ของโมดูล GRN ครอบคลุมเส้นทาง three-way-match ที่สร้าง entries AP-clearing
-- ที่เกี่ยวข้อง: [[inventory-adjustment]] — เส้นทาง corrective stock-in / stock-out ที่ Finance ใช้เมื่อ reconciliation พบ gap ของ sub-ledger ที่ไม่สามารถแก้ไขได้โดย GL journal คนเดียว
+- ที่เกี่ยวข้อง: [costing](/th/inventory/costing) — cost-layer ledger ที่ Finance reconcile คือสิ่งที่ costing อ่านสำหรับ COGS; กิจกรรมการกระทบยอดของ Finance คือ audit anchor สำหรับ outputs ของโมดูล costing
+- ที่เกี่ยวข้อง: [good-receive-note](/th/inventory/good-receive-note) — การกระทบยอดของ Finance drill เข้า GRN AP-clearing journal posts เมื่อการ investigation variance พบ gap ฝั่ง GRN `03-user-flow-finance.md` ของโมดูล GRN ครอบคลุมเส้นทาง three-way-match ที่สร้าง entries AP-clearing
+- ที่เกี่ยวข้อง: [inventory-adjustment](/th/inventory/inventory-adjustment) — เส้นทาง corrective stock-in / stock-out ที่ Finance ใช้เมื่อ reconciliation พบ gap ของ sub-ledger ที่ไม่สามารถแก้ไขได้โดย GL journal คนเดียว
 - ที่เกี่ยวข้อง: credit note — Finance book credit notes กับ GRNs; ผลฝั่ง inventory ของ credit-note (`credit_note_amount` / `credit_note_quantity`) เป็นส่วนของพื้นผิวการกระทบยอดสำหรับงวดที่ credit-note post

@@ -2,7 +2,7 @@
 title: Query Dataset
 description: SQL Workbench — execute ad-hoc SELECTs and create / browse / drop tenant views, stored procedures, and functions used as reusable data sources by reports and dashboards.
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: system-config, query, dataset, sql, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # Query Dataset
 
 > **At a Glance**
-> **Owner:** Sysadmin only (`sql-query.*` App IDs) &nbsp;·&nbsp; **Storage:** PostgreSQL catalog (`pg_class`, `pg_proc`) in the tenant schema — **no `tb_query_dataset`** &nbsp;·&nbsp; **Used by:** [[reporting-audit/report]], [[reporting-audit/widget]], [[reporting-audit/schedule]] &nbsp;·&nbsp; **Run is read-only; 30-second timeout.**
+> **Owner:** Sysadmin only (`sql-query.*` App IDs) &nbsp;·&nbsp; **Storage:** PostgreSQL catalog (`pg_class`, `pg_proc`) in the tenant schema — **no `tb_query_dataset`** &nbsp;·&nbsp; **Used by:** [reporting-audit/report](/en/inventory/reporting-audit/report), [reporting-audit/widget](/en/inventory/reporting-audit/widget), [reporting-audit/schedule](/en/inventory/reporting-audit/schedule) &nbsp;·&nbsp; **Run is read-only; 30-second timeout.**
 
 ![Query Dataset screen](/screenshots/system-config/query-dataset.png)
 
@@ -27,7 +27,7 @@ Query Dataset (rendered as **SQL Workbench** in the UI) is the Sysadmin-only scr
 |---|---|---|
 | Save a `SELECT` as a view | Editor → enter bare SELECT + name, **Type:** View → **Save** | Server auto-wraps as `CREATE OR REPLACE VIEW "<name>" AS …` |
 | Test a query before saving | Editor → **Run** | Read-only; only `SELECT`, `WITH`, `SHOW`, `EXPLAIN`, `DESCRIBE` allowed; 30 s timeout |
-| Promote a saved widget query to a report | Recreate the SQL here as a view, then bind from [[reporting-audit/report]] | Widgets store ad-hoc SQL in `tb_widget_workspace` (author-scoped); views are tenant-wide |
+| Promote a saved widget query to a report | Recreate the SQL here as a view, then bind from [reporting-audit/report](/en/inventory/reporting-audit/report) | Widgets store ad-hoc SQL in `tb_widget_workspace` (author-scoped); views are tenant-wide |
 | Browse existing objects | Left sidebar (`DbObjectTree`) → Tables / Views / Procedures / Functions | Click to load definition into editor |
 | Edit an existing view | Click in tree → loads `pg_get_viewdef` as `CREATE OR REPLACE VIEW …` | Edit + Save commits the new text |
 | Create a stored procedure / function | Editor → full DDL (`CREATE OR REPLACE PROCEDURE/FUNCTION …`) → **Type:** Stored Procedure / Function → **Save** | Bare bodies are rejected — full DDL required |
@@ -44,7 +44,7 @@ Query Dataset (rendered as **SQL Workbench** in the UI) is the Sysadmin-only scr
 | "Database is busy" | Connection pool exhausted; one retry already attempted after 500 ms | Retry later; investigate concurrent load |
 | `BigInt` column returns as string in result | Expected — JSON cannot natively carry `bigint` | Cast in SQL if numeric handling needed downstream |
 | Report errors after drop | Bound view / procedure removed from catalog | Re-create the object or update the report binding |
-| 403 / route invisible | User lacks `sql-query.execute` / `.save` / `.drop` App IDs | Grant via [[access-control/application-role]] |
+| 403 / route invisible | User lacks `sql-query.execute` / `.save` / `.drop` App IDs | Grant via [access-control/application-role](/en/inventory/access-control/application-role) |
 
 ## 4. Edge Cases
 
@@ -122,11 +122,11 @@ Click an existing view / procedure / function → fetch `pg_get_viewdef` or `pg_
 
 ## 7. Cross-References
 
-- [[reporting-audit/report]] — report templates bind to views created here.
-- [[reporting-audit/widget]] — dashboard widgets execute against views, or store ad-hoc SQL in `tb_widget_workspace`.
-- [[reporting-audit/schedule]] — scheduled reports consume the same views.
-- [[access-control/permission]] — `sql-query.execute` / `.save` / `.drop` App IDs gate the screen.
-- [[system-config/period]] — period-close objects (`sp_close_period`, `v_period_snapshot`) typically live here.
+- [reporting-audit/report](/en/inventory/reporting-audit/report) — report templates bind to views created here.
+- [reporting-audit/widget](/en/inventory/reporting-audit/widget) — dashboard widgets execute against views, or store ad-hoc SQL in `tb_widget_workspace`.
+- [reporting-audit/schedule](/en/inventory/reporting-audit/schedule) — scheduled reports consume the same views.
+- [access-control/permission](/en/inventory/access-control/permission) — `sql-query.execute` / `.save` / `.drop` App IDs gate the screen.
+- [system-config/period](/en/inventory/system-config/period) — period-close objects (`sp_close_period`, `v_period_snapshot`) typically live here.
 
 ## 8. References
 

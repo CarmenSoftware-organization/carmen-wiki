@@ -2,7 +2,7 @@
 title: Spot Check — Test Scenarios — Counter
 description: Counter test cases for the spot-check module.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: spot-check, test-scenarios, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -11,13 +11,13 @@ dateCreated: 2026-05-15T14:30:00.000Z
 # Spot Check — Test Scenarios — Counter
 
 > **At a Glance**
-> **Persona:** Counter (floor-level data entry) &nbsp;·&nbsp; **Module:** [[spot-check]] &nbsp;·&nbsp; **Scenarios:** ~26
+> **Persona:** Counter (floor-level data entry) &nbsp;·&nbsp; **Module:** [spot-check](/en/inventory/spot-check) &nbsp;·&nbsp; **Scenarios:** ~26
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** none — no spot-check Playwright spec exists yet in `../carmen-inventory-frontend-e2e/tests/`
 
 ## 1. Persona Scope
 
-**Counter** — the floor-level worker who enters `actual_qty` per line on assigned spot checks, flags damaged / unlabelled items, and signs off completed sheets. The scenarios below exercise the actions catalogued in [[spot-check/03-user-flow-counter]] Section 3 — opening assigned sheets, entering counts, flagging items, adding comments, completion signoff. Authority anchor `SPC_AUTH_002`.
+**Counter** — the floor-level worker who enters `actual_qty` per line on assigned spot checks, flags damaged / unlabelled items, and signs off completed sheets. The scenarios below exercise the actions catalogued in [spot-check/03-user-flow-counter](/en/inventory/spot-check/03-user-flow-counter) Section 3 — opening assigned sheets, entering counts, flagging items, adding comments, completion signoff. Authority anchor `SPC_AUTH_002`.
 
 ## 2. Functional — Happy Paths
 
@@ -77,4 +77,4 @@ dateCreated: 2026-05-15T14:30:00.000Z
 - **Primary (TODO):** carmen/docs source — does not exist for this module.
 - **Frontend (TODO):** `../carmen-inventory-frontend/` — Counter UI behaviour source; check `../cmobile/` for the PWA-side spot-check sheet implementation if applicable.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists.
-- Related: [[spot-check/03-user-flow-counter]], [[spot-check/02-business-rules]] (`SPC_AUTH_002`, `SPC_AUTH_004`, `SPC_VAL_004`–`SPC_VAL_005`), [[spot-check/04-test-scenarios]] (cross-persona handoff scenarios), [[physical-count/04-test-scenarios-counter]] (full-count counterpart scenarios).
+- Related: [spot-check/03-user-flow-counter](/en/inventory/spot-check/03-user-flow-counter), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_AUTH_002`, `SPC_AUTH_004`, `SPC_VAL_004`–`SPC_VAL_005`), [spot-check/04-test-scenarios](/en/inventory/spot-check/04-test-scenarios) (cross-persona handoff scenarios), [physical-count/04-test-scenarios-counter](/en/inventory/physical-count/04-test-scenarios-counter) (full-count counterpart scenarios).

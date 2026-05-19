@@ -2,7 +2,7 @@
 title: Spot Check — User Flow — Audit & Config
 description: Auditor and (implicit) Sysadmin paths through the spot-check lifecycle.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: spot-check, user-flow, audit, config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T14:30:00.000Z
 # Spot Check — User Flow — Audit & Config
 
 > **At a Glance**
-> **Persona:** Auditor + Sysadmin (implicit) &nbsp;·&nbsp; **Module:** [[spot-check]] &nbsp;·&nbsp; **Workflow stages:** off-path — observes pending → in_progress → completed (+ void); Sysadmin configures tenant defaults &nbsp;·&nbsp; **Key permissions:** read audit chain (Auditor), configure tolerances / sampling / reason codes (Sysadmin)
+> **Persona:** Auditor + Sysadmin (implicit) &nbsp;·&nbsp; **Module:** [spot-check](/en/inventory/spot-check) &nbsp;·&nbsp; **Workflow stages:** off-path — observes pending → in_progress → completed (+ void); Sysadmin configures tenant defaults &nbsp;·&nbsp; **Key permissions:** read audit chain (Auditor), configure tolerances / sampling / reason codes (Sysadmin)
 > **What this persona does:** Auditor reviews end-to-end spot-check evidence for compliance; Sysadmin configures variance tolerances and reason-code mapping.
 
 ## 1. Persona
@@ -19,9 +19,9 @@ dateCreated: 2026-05-15T14:30:00.000Z
 This persona group collapses two roles whose touch on the spot-check module is observation or configuration:
 
 - **Auditor** — independently reviews spot-check results, recount evidence, and posted adjustments to confirm controls are operating and shrinkage is being investigated. Observes a sample of spot checks in progress; inspects the full chain end-to-end (spot-check sheets, recount records, approvals, posted adjustments, journal entries) for compliance, segregation-of-duties, and policy adherence.
-- **Sysadmin** (implicit — not explicitly listed in [[spot-check]] § 4 personas but inferred from the configuration surface) — configures tenant defaults: tolerance thresholds for variance flagging (`SPC_VAL_006`), default sampling `size`, default `method`, and reason-code mapping for `SPOT_CHECK_OVERAGE` / `SPOT_CHECK_SHORTAGE` (or aliased `COUNT_*` codes) in [[inventory-adjustment]].
+- **Sysadmin** (implicit — not explicitly listed in [spot-check](/en/inventory/spot-check) § 4 personas but inferred from the configuration surface) — configures tenant defaults: tolerance thresholds for variance flagging (`SPC_VAL_006`), default sampling `size`, default `method`, and reason-code mapping for `SPOT_CHECK_OVERAGE` / `SPOT_CHECK_SHORTAGE` (or aliased `COUNT_*` codes) in [inventory-adjustment](/en/inventory/inventory-adjustment).
 
-> **Note:** Unlike physical-count, the spot-check module does **not** define an Approver / Finance Reviewer persona at this level — the rollup-adjustment approval lands on the [[inventory-adjustment]] document and is governed by `ADJ_AUTH_*`, not by spot-check rules. The Auditor / Sysadmin pair captures the audit-and-config surface specific to spot-check.
+> **Note:** Unlike physical-count, the spot-check module does **not** define an Approver / Finance Reviewer persona at this level — the rollup-adjustment approval lands on the [inventory-adjustment](/en/inventory/inventory-adjustment) document and is governed by `ADJ_AUTH_*`, not by spot-check rules. The Auditor / Sysadmin pair captures the audit-and-config surface specific to spot-check.
 
 Authority anchor for `SPC_AUTH_003`.
 
@@ -42,13 +42,13 @@ graph LR
 
 ### Permission Matrix — V6 Action × Sub-persona (Audit / Config)
 
-Both sub-personas are non-transactional within the spot-check module — neither creates, edits, submits, or voids spot-check documents. Note: unlike Physical Count, there is no Approver / Finance persona at the spot-check level — rollup-adjustment approval lands on [[inventory-adjustment]] per `ADJ_AUTH_*`. Rows are derived from Section 3 (Primary Actions) of this file; rule citations refer to [[spot-check/02-business-rules]] § 4 / § 5.
+Both sub-personas are non-transactional within the spot-check module — neither creates, edits, submits, or voids spot-check documents. Note: unlike Physical Count, there is no Approver / Finance persona at the spot-check level — rollup-adjustment approval lands on [inventory-adjustment](/en/inventory/inventory-adjustment) per `ADJ_AUTH_*`. Rows are derived from Section 3 (Primary Actions) of this file; rule citations refer to [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) § 4 / § 5.
 
 | Action | Auditor | Sysadmin |
 |---|---|---|
 | View spot-check header / detail / comment threads (read-only) | ✅ (`SPC_AUTH_003`) | ✅ |
 | View counter assignments (location-grants) and counted-by stamps | ✅ (`SPC_AUTH_003`) | ✅ |
-| View rollup adjustment (`tb_stock_in` / `tb_stock_out`) in [[inventory-adjustment]] | ✅ | ✅ |
+| View rollup adjustment (`tb_stock_in` / `tb_stock_out`) in [inventory-adjustment](/en/inventory/inventory-adjustment) | ✅ | ✅ |
 | Observe spot check in progress (sample-based; add observation comment) | ✅ (`SPC_AUTH_003`) | ❌ |
 | Inspect full chain (spot-check sheet → recount → approvals → posted adj → inventory tx) | ✅ (`SPC_AUTH_003`) | ❌ |
 | Verify SoD (submitter ≠ rollup approver) | ✅ (`SPC_AUTH_003`) | ❌ |
@@ -62,7 +62,7 @@ Both sub-personas are non-transactional within the spot-check module — neither
 
 - **Audit log** — Auditor: read-only view across spot-check documents, recount comment threads, rollup adjustments, journal entries.
 - **Configuration screens** — Sysadmin: tolerance / default-`size` / default-`method` / reason-code admin pages.
-- **Approval queue (cross-reference)** — Approval of the rollup adjustment itself happens on the [[inventory-adjustment/03-user-flow-finance]] flow; Audit / Config personas here read the upstream spot-check chain to back-validate that approval.
+- **Approval queue (cross-reference)** — Approval of the rollup adjustment itself happens on the [inventory-adjustment/03-user-flow-finance](/en/inventory/inventory-adjustment/03-user-flow-finance) flow; Audit / Config personas here read the upstream spot-check chain to back-validate that approval.
 
 ## 3. Primary Actions
 
@@ -74,7 +74,7 @@ Both sub-personas are non-transactional within the spot-check module — neither
 | Configure tolerance threshold | Sysadmin | (any) | New tenant default for `SPC_VAL_006` | Applied to future spot checks. |
 | Configure default `size` | Sysadmin | (any) | New tenant default for sample size | Applied at sheet generation when not overridden. |
 | Configure default `method` | Sysadmin | (any) | New tenant default for `enum_spot_check_method` | Applied at sheet generation when not overridden. |
-| Configure reason-code mapping | Sysadmin | (any) | `tb_adjustment_type` rows for `SPOT_CHECK_OVERAGE` / `SPOT_CHECK_SHORTAGE` (or aliased `COUNT_*`) with `info.glAccount` | Per [[inventory-adjustment/01-data-model]] § 2.1. |
+| Configure reason-code mapping | Sysadmin | (any) | `tb_adjustment_type` rows for `SPOT_CHECK_OVERAGE` / `SPOT_CHECK_SHORTAGE` (or aliased `COUNT_*`) with `info.glAccount` | Per [inventory-adjustment/01-data-model](/en/inventory/inventory-adjustment/01-data-model) § 2.1. |
 
 ## 4. Decision Points
 
@@ -97,4 +97,4 @@ Both sub-personas are non-transactional within the spot-check module — neither
 - **Primary (TODO):** carmen/docs source — does not exist for this module.
 - **Frontend (TODO):** `../carmen-inventory-frontend/` — audit query and admin configuration screens.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists.
-- Related: [[spot-check/03-user-flow]] (overview), [[spot-check/02-business-rules]] (`SPC_AUTH_003`, `SPC_VAL_006`, `SPC_POST_002`), [[physical-count/03-user-flow-audit-config]] (full-count counterpart audit/config flow with Approver/Finance also in scope), [[inventory-adjustment/03-user-flow-finance]] (rollup-side approver flow, where the variance adjustment actually gets approved), [[inventory-adjustment/03-user-flow-audit-config]] (parallel audit / config flow on the adjustment side).
+- Related: [spot-check/03-user-flow](/en/inventory/spot-check/03-user-flow) (overview), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_AUTH_003`, `SPC_VAL_006`, `SPC_POST_002`), [physical-count/03-user-flow-audit-config](/en/inventory/physical-count/03-user-flow-audit-config) (full-count counterpart audit/config flow with Approver/Finance also in scope), [inventory-adjustment/03-user-flow-finance](/en/inventory/inventory-adjustment/03-user-flow-finance) (rollup-side approver flow, where the variance adjustment actually gets approved), [inventory-adjustment/03-user-flow-audit-config](/en/inventory/inventory-adjustment/03-user-flow-audit-config) (parallel audit / config flow on the adjustment side).

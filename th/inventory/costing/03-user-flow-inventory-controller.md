@@ -2,7 +2,7 @@
 title: การคำนวณต้นทุน (Costing) — User Flow — Inventory Controller
 description: Flow ของ Inventory Controller ในโมดูล costing — ความสะอาดของ engine input, ทบทวน cost-pick preview, ตรวจสอบ valuation variance
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: costing, user-flow, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 # การคำนวณต้นทุน (Costing) — User Flow — Inventory Controller
 
 > **At a Glance**
-> **Persona:** Inventory Controller &nbsp;·&nbsp; **Module:** [[costing]] &nbsp;·&nbsp; **Workflow stages:** Upstream ของ Finance — ตรวจสอบ lot-date / receipt-cost / adjustment-cost-basis &nbsp;·&nbsp; ทบทวน Cost-pick preview ที่ stock-out approval &nbsp;·&nbsp; ตรวจสอบ Valuation variance &nbsp;·&nbsp; **Key permissions:** อนุมัติ adjustment post ต่ำกว่า Finance threshold; ไม่สามารถอนุมัติ credit-note revaluation (`COST_AUTH_005` Finance) หรือแก้ cost-layer rows (`COST_AUTH_010`)
+> **Persona:** Inventory Controller &nbsp;·&nbsp; **Module:** [costing](/th/inventory/costing) &nbsp;·&nbsp; **Workflow stages:** Upstream ของ Finance — ตรวจสอบ lot-date / receipt-cost / adjustment-cost-basis &nbsp;·&nbsp; ทบทวน Cost-pick preview ที่ stock-out approval &nbsp;·&nbsp; ตรวจสอบ Valuation variance &nbsp;·&nbsp; **Key permissions:** อนุมัติ adjustment post ต่ำกว่า Finance threshold; ไม่สามารถอนุมัติ credit-note revaluation (`COST_AUTH_005` Finance) หรือแก้ cost-layer rows (`COST_AUTH_010`)
 > **ที่ persona นี้ทำ:** มั่นใจว่า inputs ของ costing engine สะอาดและป้องกันได้ และตรวจสอบ variances ที่ Finance surface ระหว่าง reconciliation
 
 ## 1. บทบาทในโมดูลนี้
@@ -133,8 +133,8 @@ graph LR
 - Sibling: [01-data-model.md](./01-data-model.md)
 - Sibling: [02-business-rules.md](./02-business-rules.md)
 - Sibling: [calculation-methods.md](./calculation-methods.md)
-- Related: [[inventory/03-user-flow-inventory-controller]]
-- Related: [[good-receive-note]]
-- Related: [[physical-count]] / [[spot-check]]
-- Related: [[inventory-adjustment]]
-- Related: [[vendor-pricelist]]
+- Related: [inventory/03-user-flow-inventory-controller](/th/inventory/inventory/03-user-flow-inventory-controller)
+- Related: [good-receive-note](/th/inventory/good-receive-note)
+- Related: [physical-count](/th/inventory/physical-count) / [spot-check](/th/inventory/spot-check)
+- Related: [inventory-adjustment](/th/inventory/inventory-adjustment)
+- Related: [vendor-pricelist](/th/inventory/vendor-pricelist)

@@ -2,7 +2,7 @@
 title: การนับสต๊อกประจำงวด (Physical Count) — User Flow — Count Lead
 description: เส้นทางของ Inventory Controller / Inventory Manager ผ่านวงจรชีวิตการนับสต๊อกประจำงวด
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: physical-count, user-flow, count-lead, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -11,12 +11,12 @@ dateCreated: 2026-05-15T14:00:00.000Z
 # การนับสต๊อกประจำงวด (Physical Count) — User Flow — Count Lead
 
 > **At a Glance**
-> **Persona:** Count Lead (Inventory Controller / Manager) &nbsp;·&nbsp; **โมดูล:** [[physical-count]] &nbsp;·&nbsp; **ขั้นตอน workflow:** สร้าง `tb_physical_count_period` (`draft`) &nbsp;·&nbsp; สร้าง count sheet ต่อ `(period, location)` (`pending`) &nbsp;·&nbsp; มอบหมาย counter / zone &nbsp;·&nbsp; flag variance ให้ recount &nbsp;·&nbsp; submit เป็น `completed` (ยิง variance rollup ไปยัง [[inventory-adjustment]] ตาม `PHC_POST_001`) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** เปิด period, สร้าง count sheet, flag recount (`PHC_VAL_007`), submit count (`PHC_AUTH_001`)
+> **Persona:** Count Lead (Inventory Controller / Manager) &nbsp;·&nbsp; **โมดูล:** [physical-count](/th/inventory/physical-count) &nbsp;·&nbsp; **ขั้นตอน workflow:** สร้าง `tb_physical_count_period` (`draft`) &nbsp;·&nbsp; สร้าง count sheet ต่อ `(period, location)` (`pending`) &nbsp;·&nbsp; มอบหมาย counter / zone &nbsp;·&nbsp; flag variance ให้ recount &nbsp;·&nbsp; submit เป็น `completed` (ยิง variance rollup ไปยัง [inventory-adjustment](/th/inventory/inventory-adjustment) ตาม `PHC_POST_001`) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** เปิด period, สร้าง count sheet, flag recount (`PHC_VAL_007`), submit count (`PHC_AUTH_001`)
 > **สิ่งที่ persona นี้ทำ:** เจ้าของคนเดียวของการนับ — จัดตาราง กำหนดขอบเขต ติดตาม แก้ไขข้อขัดแย้ง และ trigger variance rollup ไปยัง inventory-adjustment
 
 ## 1. Persona
 
-**Count Lead** — Inventory Controller / Inventory Manager เจ้าของคนเดียวของการนับ: จัดตาราง period, ตั้งค่าขอบเขต (location, หมวด, โหมด — frozen vs live), มอบหมาย counter และ zone, สร้างและแจก count sheet, ติดตามความคืบหน้า, แก้ไขข้อขัดแย้งผ่าน recount, และ trigger variance rollup ไปยัง [[inventory-adjustment]] Authority anchor สำหรับ `PHC_AUTH_001`
+**Count Lead** — Inventory Controller / Inventory Manager เจ้าของคนเดียวของการนับ: จัดตาราง period, ตั้งค่าขอบเขต (location, หมวด, โหมด — frozen vs live), มอบหมาย counter และ zone, สร้างและแจก count sheet, ติดตามความคืบหน้า, แก้ไขข้อขัดแย้งผ่าน recount, และ trigger variance rollup ไปยัง [inventory-adjustment](/th/inventory/inventory-adjustment) Authority anchor สำหรับ `PHC_AUTH_001`
 
 ### ตำแหน่ง workflow (Count Lead เน้น)
 
@@ -32,7 +32,7 @@ graph LR
 
 ### Permission Matrix — V1 Status × Action (Count Lead)
 
-Count Lead เป็นเจ้าของคนเดียวของการนับ — persona เดียวที่เปิด period, สร้าง sheet, มอบหมาย counter, flag recount, และ submit ได้ row มาจากหัวข้อ 3 (Primary Actions) ของไฟล์นี้; citation ของกฎอ้างอิง [[physical-count/02-business-rules]] § 4 / § 5
+Count Lead เป็นเจ้าของคนเดียวของการนับ — persona เดียวที่เปิด period, สร้าง sheet, มอบหมาย counter, flag recount, และ submit ได้ row มาจากหัวข้อ 3 (Primary Actions) ของไฟล์นี้; citation ของกฎอ้างอิง [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) § 4 / § 5
 
 | Action | Period `draft` | Count `pending` | Count `in_progress` | Count `completed` |
 |---|---|---|---|---|
@@ -44,7 +44,7 @@ Count Lead เป็นเจ้าของคนเดียวของกา
 | Flag บรรทัด variance ให้ recount (`PHC_VAL_007`) | — | — | ✅ (`PHC_AUTH_001`) | ❌ |
 | Override / accept variance (countersignature) | — | — | ✅ (`PHC_AUTH_001`) | ❌ |
 | Submit count (`in_progress → completed`) | — | — | ✅ (`PHC_AUTH_001`; `PHC_VAL_004` — ทุกบรรทัดนับ; `PHC_POST_001` rollup ยิง) | — |
-| Route rollup adjustment ไปอนุมัติ | — | — | — | ✅ — ไปยัง Approver / Finance ผ่าน [[inventory-adjustment]] |
+| Route rollup adjustment ไปอนุมัติ | — | — | — | ✅ — ไปยัง Approver / Finance ผ่าน [inventory-adjustment](/th/inventory/inventory-adjustment) |
 | แก้ไขบรรทัดหลัง complete | — | — | — | ❌ (`PHC_VAL_008` — immutable; สร้าง adjustment ใหม่) |
 
 ## 2. จุดเริ่ม
@@ -78,7 +78,7 @@ Count Lead เป็นเจ้าของคนเดียวของกา
 
 | Trigger | Handoff to | Artefact |
 | ------- | ---------- | -------- |
-| Submit count | ระบบ → rollup ของ [[inventory-adjustment]] | `tb_physical_count.status = completed`; `tb_stock_in` / `tb_stock_out` สร้างพร้อม `info.countId` |
+| Submit count | ระบบ → rollup ของ [inventory-adjustment](/th/inventory/inventory-adjustment) | `tb_physical_count.status = completed`; `tb_stock_in` / `tb_stock_out` สร้างพร้อม `info.countId` |
 | Route rollup adjustment ไปอนุมัติ | Audit / Config (Approver / Finance) ตาม `ADJ_AUTH_*` | Rollup `tb_stock_in` / `tb_stock_out` เป็น `in_progress` |
 | Period ปิด | Auditor (read-only) | เอกสารใต้-period ทั้งหมดเป็น `completed` |
 
@@ -87,4 +87,4 @@ Count Lead เป็นเจ้าของคนเดียวของกา
 - **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
 - **Frontend (TODO):** `../carmen-inventory-frontend/` — หน้าจอ UI ของ Count Lead
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count
-- ที่เกี่ยวข้อง: [[physical-count/03-user-flow]] (overview), [[physical-count/02-business-rules]] (`PHC_AUTH_001`, `PHC_VAL_*`, `PHC_POST_*`), [[inventory-adjustment/03-user-flow-inventory-controller]] (flow ฝั่ง rollup, persona เดียวกันทำหน้าที่เป็นเจ้าของ adjustment)
+- ที่เกี่ยวข้อง: [physical-count/03-user-flow](/th/inventory/physical-count/03-user-flow) (overview), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_AUTH_001`, `PHC_VAL_*`, `PHC_POST_*`), [inventory-adjustment/03-user-flow-inventory-controller](/th/inventory/inventory-adjustment/03-user-flow-inventory-controller) (flow ฝั่ง rollup, persona เดียวกันทำหน้าที่เป็นเจ้าของ adjustment)

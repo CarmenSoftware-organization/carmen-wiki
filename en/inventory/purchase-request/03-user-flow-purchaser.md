@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow — Purchaser
 description: Purchaser's flow within the purchase-request module.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-request, user-flow, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 # Purchase Request — User Flow — Purchaser
 
 > **At a Glance**
-> **Persona:** Purchaser / Procurement Officer &nbsp;·&nbsp; **Module:** [[purchase-request]] &nbsp;·&nbsp; **Workflow stages:** approved → completed (Convert to PO) &nbsp;·&nbsp; **Key permissions:** vendor allocation, pricelist refresh, set convert qty, Convert to PO, bounce-back to Requestor
+> **Persona:** Purchaser / Procurement Officer &nbsp;·&nbsp; **Module:** [purchase-request](/en/inventory/purchase-request) &nbsp;·&nbsp; **Workflow stages:** approved → completed (Convert to PO) &nbsp;·&nbsp; **Key permissions:** vendor allocation, pricelist refresh, set convert qty, Convert to PO, bounce-back to Requestor
 > **What this persona does:** Takes approved PRs, validates vendor and pricing, groups by vendor + currency, and converts lines into one or more POs.
 
 ## 1. Role in This Module
@@ -59,14 +59,14 @@ The Purchaser sees PRs only after the approve chain is cleared. The two relevant
 
 1. From the **Approved PRs** queue, apply filters — vendor, currency, requested delivery date window, department, store location — to narrow the working set. The queue shows `pr_no`, requestor, department, line count, `base_total_amount`, vendor (if a single vendor covers all lines) or "multi-vendor", currency, and the time since the PR landed in `approved`. The number of unbridged lines vs total lines is visible per row so partially converted PRs surface clearly.
 2. Open a PR by clicking into it. The detail page is **read-mostly** for the Purchaser: header (PR type, requestor, department, `pr_date`, required delivery date, currency, `exchange_rate`, justification, attachments) is non-editable; only vendor allocation, pricelist selection, and the per-line conversion checkbox are interactive.
-3. Walk each **approved line**. For every line confirm the snapshotted `vendor_id` / `vendor_name`. If the Requestor or system auto-allocated a preferred vendor, the Purchaser validates it against current vendor-master data (active status, payment terms, credit limit, blacklist flags) pulled live alongside the [[vendor-pricelist]] for current price and deviation. If a line lacks a vendor allocation, the Purchaser picks one from the Allocate Vendor dialog — the dialog ranks candidate vendors by pricelist match against the line's product, location, and required date, and shows their current price, lead time, and historical performance.
+3. Walk each **approved line**. For every line confirm the snapshotted `vendor_id` / `vendor_name`. If the Requestor or system auto-allocated a preferred vendor, the Purchaser validates it against current vendor-master data (active status, payment terms, credit limit, blacklist flags) pulled live alongside the [vendor-pricelist](/en/inventory/vendor-pricelist) for current price and deviation. If a line lacks a vendor allocation, the Purchaser picks one from the Allocate Vendor dialog — the dialog ranks candidate vendors by pricelist match against the line's product, location, and required date, and shows their current price, lead time, and historical performance.
 4. Verify the **price and pricelist deviation** per line. The system compares the line's snapshotted `pricelist_price` against the **current** active pricelist row (resolved by `product_id`, vendor, location, and effective date). The deviation indicator highlights lines where the current price has moved beyond a configurable tolerance (e.g. `±5%`). On a deviation the Purchaser can (a) accept the snapshotted price and proceed, (b) refresh to the current pricelist price before conversion, or (c) raise a concern that routes the PR back to the Requestor for re-justification.
 5. Optionally adjust the **convert quantity** per line. By default each line is converted at its full open quantity (`approved_base_qty` minus already-bridged quantity from prior partial conversions). The Purchaser may convert less than the open quantity, leaving the remainder available for a future PO — the bridge table records the actual converted quantity per PO-PR-line link.
 6. Switch to the **Convert to PO** workbench view. The workbench pools all checked lines from the current PR and any other approved PRs the Purchaser has selected, then groups them automatically by `(vendor_id, currency_id)`. Each group becomes a draft PO; lines that share both vendor and currency consolidate into the same PO regardless of which PR they originated from. Each group preview shows: vendor name and code, currency, line count, subtotal, total tax, total discount, and grand total in both transaction and base currency.
 7. Review each draft-PO group. The Purchaser can move a line out of a group (e.g. defer to a later PO), edit a line's PO-side delivery date or PO-side discount within the limits set by `PR_AUTH_008` and the configured PO module policy, and add a PO-level note. Lines that fail vendor or pricelist validation are flagged in red and excluded from the conversion until resolved.
 8. Run **Convert to PO**. The system creates one `tb_purchase_order` per group, inserts the matching `tb_purchase_order_detail` rows with their snapshotted product / pricing / qty / UoM context, snapshots the FX rate at conversion time onto each PO line, and writes one row per (PO line, PR line) pair into the bridge `tb_purchase_order_detail_tb_purchase_request_detail` recording the converted quantity. Per `PR_POST_007`, if every line on a source PR is now fully bridged (sum of bridge-linked PO quantities equals `approved_base_qty`) or explicitly cancelled, the PR's `pr_status` flips from `approved` to `completed`; lines with remaining open quantity leave the PR in `approved` for future conversion.
 9. Confirm the conversion in the summary dialog (PO count, total PO value in base currency, source-PR count). On confirm the system writes `type = system` audit comments on each source PR (`PR_POST_008`), sends PO notifications to the named vendor contacts (where vendor portal integration is enabled), and notifies the Requestor that their PR is now linked to a PO.
-10. The Purchaser is returned to the **Approved PRs** queue. Fully bridged PRs disappear from the queue; partially bridged PRs remain with the unbridged-line count updated. The newly created POs are available in the [[purchase-order]] module for the Purchaser to track to receipt.
+10. The Purchaser is returned to the **Approved PRs** queue. Fully bridged PRs disappear from the queue; partially bridged PRs remain with the unbridged-line count updated. The newly created POs are available in the [purchase-order](/en/inventory/purchase-order) module for the Purchaser to track to receipt.
 
 ## 3. Decision Branches
 
@@ -82,7 +82,7 @@ The Purchaser sees PRs only after the approve chain is cleared. The two relevant
 
 The Purchaser's involvement on a given PR ends at one of three documented points:
 
-- **Full conversion** — every approved line is bridged in a single round (or across multiple rounds, with this round closing the last open quantity). `pr_status` flips from `approved` to `completed` (`PR_POST_007`); the soft budget commitment hardens into a PO commitment; handoff is to the **PO module** ([[purchase-order]]) for vendor commitment, tracking to receipt, and matching to GRN ([[good-receive-note]]). The Requestor sees the linked PO(s) on the PR detail page for traceability.
+- **Full conversion** — every approved line is bridged in a single round (or across multiple rounds, with this round closing the last open quantity). `pr_status` flips from `approved` to `completed` (`PR_POST_007`); the soft budget commitment hardens into a PO commitment; handoff is to the **PO module** ([purchase-order](/en/inventory/purchase-order)) for vendor commitment, tracking to receipt, and matching to GRN ([good-receive-note](/en/inventory/good-receive-note)). The Requestor sees the linked PO(s) on the PR detail page for traceability.
 - **Partial conversion** — some lines (or part of a line's quantity) are bridged, others remain open. `pr_status` stays `approved`; the bridge table records exactly which PR-line → PO-line linkages were created and with what quantity. The PR remains in the Approved PRs queue with its unbridged-line count visible, awaiting a future conversion round. Soft commitment for the still-open portion persists.
 - **Bounce-back to Requestor** — a vendor or spec issue is unrecoverable at the Purchaser level. The Purchaser triggers the standard send-back path: `pr_status` returns to `draft` (`PR_POST_003`), `workflow_current_stage` reopens to the Requestor's create stage, soft budget commitment is released, and handoff is to the **Requestor** at [03-user-flow-requestor.md](./03-user-flow-requestor.md) Section 2 step 2. The Requestor revises and resubmits; the PR re-enters the approver chain and eventually returns to the Purchaser's queue.
 
@@ -101,5 +101,5 @@ Document state across these transitions is recorded by `enum_purchase_request_do
 - Sibling: [03-user-flow-approver.md](./03-user-flow-approver.md) — upstream persona; final approver hands off to the Purchaser when `pr_status` flips to `approved`
 - Sibling: [03-user-flow-requestor.md](./03-user-flow-requestor.md) — bounce-back target when vendor / spec clarification is needed
 - Sibling: [the module landing](/en/inventory/purchase-request) Section 4 — canonical Purchaser role description
-- Cross-link: [[purchase-order]] — downstream module that receives the converted POs
-- Cross-link: [[vendor-pricelist]] — pricelist deviation reference and Allocate Vendor ranking source
+- Cross-link: [purchase-order](/en/inventory/purchase-order) — downstream module that receives the converted POs
+- Cross-link: [vendor-pricelist](/en/inventory/vendor-pricelist) — pricelist deviation reference and Allocate Vendor ranking source

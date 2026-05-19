@@ -2,7 +2,7 @@
 title: ผู้ใช้ของหน่วยธุรกิจ (Business Unit User)
 description: Pivot การเป็นสมาชิกต่อ business unit — ประกาศว่าผู้ใช้คนใดอาจเข้าถึง BU ใด พร้อมตาราง staging การเชิญชั่วคราว
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: access-control, business-unit-user, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -15,7 +15,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 1. คืออะไรและใครใช้
 
-`business-unit-user` คือ **pivot การเข้าถึง multi-tenant**: ประกาศว่า [[access-control/user]] ที่กำหนดได้รับอนุญาตให้ดำเนินงานภายใน [[master-data/business-unit]] ที่กำหนด และมอบ BU-level role แบบหยาบ (`admin` หรือ `user`) ถ้าไม่มี row ที่ active ที่นี่ user ไม่สามารถเห็น BU ใน BU selector ของตนเองไม่ว่าจะมี [[access-control/application-role]] อะไรอยู่ใน BU นั้น เมื่อมี row user เข้า BU, JWT `x-app-id` resolve และ tenant RBAC เริ่มทำงาน
+`business-unit-user` คือ **pivot การเข้าถึง multi-tenant**: ประกาศว่า [access-control/user](/th/inventory/access-control/user) ที่กำหนดได้รับอนุญาตให้ดำเนินงานภายใน [master-data/business-unit](/th/inventory/master-data/business-unit) ที่กำหนด และมอบ BU-level role แบบหยาบ (`admin` หรือ `user`) ถ้าไม่มี row ที่ active ที่นี่ user ไม่สามารถเห็น BU ใน BU selector ของตนเองไม่ว่าจะมี [access-control/application-role](/th/inventory/access-control/application-role) อะไรอยู่ใน BU นั้น เมื่อมี row user เข้า BU, JWT `x-app-id` resolve และ tenant RBAC เริ่มทำงาน
 
 คู่ `tb_temp_bu_user` stage **การเชิญตาม email** ก่อนผู้รับสมัคร: BU id, email, role — consume เมื่อ user ยอมรับและ `tb_user` จริงมีอยู่
 
@@ -90,9 +90,9 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 7. การอ้างอิงข้าม
 
-- [[access-control/user]] — ฝั่ง user ของ membership
-- [[master-data/business-unit]] — ฝั่ง BU
-- [[access-control/application-role]] — scope ตาม BU; การตรวจสอบเงื่อนไขเบื้องต้น
+- [access-control/user](/th/inventory/access-control/user) — ฝั่ง user ของ membership
+- [master-data/business-unit](/th/inventory/master-data/business-unit) — ฝั่ง BU
+- [access-control/application-role](/th/inventory/access-control/application-role) — scope ตาม BU; การตรวจสอบเงื่อนไขเบื้องต้น
 - ทุกโมดูลธุรกรรม — ทุก request resolve BU ที่ active ผ่านตารางนี้
 
 ## 8. แหล่งข้อมูลอ้างอิง

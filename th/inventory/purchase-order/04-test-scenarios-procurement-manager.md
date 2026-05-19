@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — Test Scenarios — Procurement Manager
 description: Test cases ของ Procurement Manager (transactional high-value approval + configuration) สำหรับ purchase-order
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-order, test-scenarios, procurement-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 # ใบสั่งซื้อ (Purchase Order) — Test Scenarios — Procurement Manager
 
 > **At a Glance**
-> **Persona:** Procurement Manager (อนุมัติมูลค่าสูง + การปรับ rule configuration) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Scenarios:** ~29
+> **Persona:** Procurement Manager (อนุมัติมูลค่าสูง + การปรับ rule configuration) &nbsp;·&nbsp; **Module:** [purchase-order](/th/inventory/purchase-order) &nbsp;·&nbsp; **Scenarios:** ~29
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** map ไปยัง `401-po.spec.ts`, `403-po-approver-journey.spec.ts` ใน `../carmen-inventory-frontend-e2e/`
 
@@ -74,6 +74,6 @@ dateCreated: 2026-05-15T10:00:00.000Z
 - กฎทางธุรกิจที่ verify: [02-business-rules.md](./02-business-rules.md) Section 4 — `PO_AUTH_004` (high-value approval threshold และ Purchaser self-approval), `PO_AUTH_005` (Manager-only soft-delete in draft), `PO_AUTH_006` (Purchaser หรือ Manager transmit), `PO_AUTH_007` (Manager-only void จาก non-terminal state ใด ๆ), `PO_AUTH_008` (Inventory Manager / shared early-close จาก `partial → closed`), `PO_AUTH_010` (segregation of duties), `PO_AUTH_011` (workflow-stage authorisation derived จาก `user_action.execute`); Section 5 — `PO_POST_002` (submit → `in_progress`), `PO_POST_003` (approve ภายใน `in_progress`), `PO_POST_004` (final approval `in_progress → sent` + transmit), `PO_POST_005` (send-back `in_progress → draft`), `PO_POST_010` (void จาก non-terminal state ใด ๆ), `PO_POST_011` (early-close `partial → closed`), `PO_POST_012` (soft-delete ใน draft)
 - กฎ Cross-module: [02-business-rules.md](./02-business-rules.md) Section 6 — `PO_XMOD_005` / `PO_XMOD_006` (vendor-pricelist snapshot และ deviation-driven routing ไปยัง stage มูลค่าสูง), `PO_XMOD_007` (three-way-match interaction บน void / early-close)
 - E2E: `../carmen-inventory-frontend-e2e/tests/403-po-approver-journey.spec.ts` — persona-journey spec สำหรับ FC / Procurement Manager ครอบคลุม TC-PO-070101..TC-PO-070103 (Step 1 — My Approval dashboard, PO filter tab, click pending PO row), TC-PO-070201..TC-PO-070203 (Step 2 — PO Detail ใน IN PROGRESS view, header read-only, ปุ่ม Edit + Comment มองเห็น), TC-PO-070301..TC-PO-070304 (Step 3 — item-level Approve / Review / Reject marking), TC-PO-070305..TC-PO-070307 (Document Approve flow พร้อม dialog และ `APPROVED/SENT` transition), TC-PO-070308..TC-PO-070309 (Document Send Back flow พร้อม reason และ `IN_PROGRESS → DRAFT` return), TC-PO-070310..TC-PO-070311 (Document Reject flow พร้อม `REJECTED` status), TC-PO-070312 (Edit-mode cancel โดยไม่ save), TC-PO-070901 (Golden Journey FC flow เต็ม) Shared / mixed-persona coverage ใน `../carmen-inventory-frontend-e2e/tests/401-po.spec.ts` รวม budget-gated approval scenarios (`approve PO ... งบประมาณไม่เพียงพอ`) และ three-way-match negatives ที่ interact กับ override paths ของ Manager
-- Cross-link: [[vendor-pricelist]] — vendor master, pricelist coverage, และ tolerance band ที่ Manager ปรับจาก configuration surface (PM-HP-07, PM-HP-08); กฎ deviation-routing `PO_XMOD_006` feed stage มูลค่าสูง
-- Cross-link: [[purchase-request]] — โมดูล upstream ที่ PR-to-PO conversion ถูก govern โดย `(vendor_id, currency_id)` grouping rule ที่ Manager ตั้งค่า (PM-HP-08)
-- Cross-link: [[good-receive-note]] — fulfilment ปลายน้ำที่ receipt postings ขับเคลื่อน `sent → partial → completed`; Manager สังเกต transitions เหล่านี้บน dashboard และ intervene เฉพาะผ่าน early-close (`PO_POST_011`) หรือ void (`PO_POST_010`)
+- Cross-link: [vendor-pricelist](/th/inventory/vendor-pricelist) — vendor master, pricelist coverage, และ tolerance band ที่ Manager ปรับจาก configuration surface (PM-HP-07, PM-HP-08); กฎ deviation-routing `PO_XMOD_006` feed stage มูลค่าสูง
+- Cross-link: [purchase-request](/th/inventory/purchase-request) — โมดูล upstream ที่ PR-to-PO conversion ถูก govern โดย `(vendor_id, currency_id)` grouping rule ที่ Manager ตั้งค่า (PM-HP-08)
+- Cross-link: [good-receive-note](/th/inventory/good-receive-note) — fulfilment ปลายน้ำที่ receipt postings ขับเคลื่อน `sent → partial → completed`; Manager สังเกต transitions เหล่านี้บน dashboard และ intervene เฉพาะผ่าน early-close (`PO_POST_011`) หรือ void (`PO_POST_010`)

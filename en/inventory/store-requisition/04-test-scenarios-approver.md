@@ -2,7 +2,7 @@
 title: Store Requisition — Test Scenarios — Approver
 description: Approver's test cases (happy path, permission, validation, edge cases) for store-requisition.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: store-requisition, test-scenarios, approver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T13:30:00.000Z
 # Store Requisition — Test Scenarios — Approver
 
 > **At a Glance**
-> **Persona:** Approver (Department Head + higher-tier approvers) &nbsp;·&nbsp; **Module:** [[store-requisition]] &nbsp;·&nbsp; **Scenarios:** ~27
+> **Persona:** Approver (Department Head + higher-tier approvers) &nbsp;·&nbsp; **Module:** [store-requisition](/en/inventory/store-requisition) &nbsp;·&nbsp; **Scenarios:** ~27
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** maps to `tests/701-sr.spec.ts` (TC-SR-060001..060005, 070001..070003, 080001..080002, 090001+, 100001+, 110001+) in `../carmen-inventory-frontend-e2e/`
 
@@ -70,5 +70,5 @@ This page captures the test scenarios that the Approver persona (the **Departmen
 - User flow: [03-user-flow-approver.md](./03-user-flow-approver.md) — happy-path source for Section 1 above; describes the 8-step primary flow (open / verify / per-line decision / split / submit / advance / notify / audit) and the decision branches (trim to availability / par / budget; reject; send-back; multi-tier; delegation; SLA escalation).
 - Business rules being verified: [02-business-rules.md](./02-business-rules.md) Section 2 — validation rules `SR_VAL_008` (quantity invariant), `SR_VAL_010` (approval cap + reject-message presence); Section 4 — authorization rules `SR_AUTH_005` (Approver authority), `SR_AUTH_006` (split & reject), `SR_AUTH_011` (Requester ≠ Approver SoD), `SR_AUTH_014` (workflow-stage gating); Section 5 — posting rules `SR_POST_003` (approve), `SR_POST_004` (reject / send-back), `SR_POST_009` (auto-cancel).
 - E2E spec: `../carmen-inventory-frontend-e2e/tests/701-sr.spec.ts` — canonical Playwright spec for the SR module. Approver-relevant test groups: **TC-SR-060001..060005** (Approver list actions — APR-HP-01 setup, APR-EDGE-07 bulk approve, delegation), **TC-SR-070001..070003** (Approve — APR-HP-01, APR-PERM-02, APR-VAL-06), **TC-SR-080001..080002** (Approve Item-level — APR-HP-05, mixed outcomes; APR-VAL-05 insufficient-stock scenario), **TC-SR-090001+** (Adjust approved quantity — APR-HP-02), **TC-SR-100001+** (Request Review — APR-HP-04), **TC-SR-110001+** (Reject — APR-HP-03, APR-EDGE-02). Permission-denial coverage uses the `requestor@blueledgers.com` fixture.
-- Cross-link: [[recipe]] — recipe-driven SRs carry `info.recipe_id`; the Approver sees the recipe context as part of the per-line decision.
-- Cross-link: [[inventory]] — source-availability context surfaced at approve time (UI enrichment, not persisted on the SR line).
+- Cross-link: [recipe](/en/inventory/recipe) — recipe-driven SRs carry `info.recipe_id`; the Approver sees the recipe context as part of the per-line decision.
+- Cross-link: [inventory](/en/inventory/inventory) — source-availability context surfaced at approve time (UI enrichment, not persisted on the SR line).

@@ -2,7 +2,7 @@
 title: Stock Replenishment
 description: Auto-generated SR proposal driven by min / max / par / reorder thresholds at each location — the policy-driven counterpart to the manual Store Requisition flow.
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: store-requisition, replenishment, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -17,7 +17,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ## 1. What & Who
 
-Stock Replenishment is the **policy-driven variant of [[store-requisition]]**. A scheduled job sweeps every `(product, location)` pair with thresholds configured and proposes an SR draft for every location below par. The Inventory Controller reviews, trims, and submits — from that point it is a regular SR running through the standard approval and fulfillment workflow.
+Stock Replenishment is the **policy-driven variant of [store-requisition](/en/inventory/store-requisition)**. A scheduled job sweeps every `(product, location)` pair with thresholds configured and proposes an SR draft for every location below par. The Inventory Controller reviews, trims, and submits — from that point it is a regular SR running through the standard approval and fulfillment workflow.
 
 - **Inventory Controller** — reviews the auto-generated draft and submits
 - **Cron service account** — inserts drafts only (cannot push past `draft`)
@@ -30,7 +30,7 @@ Stock Replenishment is the **policy-driven variant of [[store-requisition]]**. A
 | View today's generated draft | Store Operation → Stock Replenishment inbox | One draft per `(source_location, destination_location)` group |
 | Approve a replenishment SR | Open draft → trim lines if needed → **Submit** | Flips `draft → in_progress`, routes via standard SR approval chain |
 | Trigger ad-hoc sweep | Inventory Controller → **Run now** | Same idempotency as nightly run; safe to re-trigger |
-| Override par / max for a product | [[product]] → location tab → edit `tb_product_location` | Takes effect on next run |
+| Override par / max for a product | [product](/en/inventory/product) → location tab → edit `tb_product_location` | Takes effect on next run |
 | Configure source location for a destination | Per-BU configuration | Without a source, deficits flag for manual SR instead |
 | Investigate a missing replenishment | Check `tb_product_location` exists and `min_qty > 0` | Pairs with no policy or `min_qty = 0` are excluded |
 | Check cron run log | `../micro-cronjobs/` service logs | Run state lives in cron service, not the tenant DB |
@@ -39,7 +39,7 @@ Stock Replenishment is the **policy-driven variant of [[store-requisition]]**. A
 
 | Symptom / Message | Cause | Action |
 |---|---|---|
-| Product not appearing in draft | No `tb_product_location` row, or `min_qty = 0` | Add / update the policy row in [[product]] |
+| Product not appearing in draft | No `tb_product_location` row, or `min_qty = 0` | Add / update the policy row in [product](/en/inventory/product) |
 | Source location flagged for manual SR | No source configured for the destination | Configure source per BU, or raise SR manually |
 | Run skipped today | Period for today is `closed` / `locked` | Re-run after period flips; or use a current-period date |
 | Duplicate-looking drafts | None — idempotent per `(from, to, date)` | Re-running updates lines in place, not duplicates |
@@ -104,16 +104,16 @@ If a draft already exists for `(from, to, date)`, the cron updates lines in plac
 
 ## 7. Cross-References
 
-- [[store-requisition]] — produced document type; downstream lifecycle identical
-- [[inventory]] — `on_hand` source for the deficit calculation
-- [[product]] — `tb_product_location` policy lives under the product master
-- [[master-data/location]] — per-location min / max / par / reorder configuration
-- [[purchase-order]] — `on_order` includes open PO qty
-- [[inventory/transaction]] — once the SR posts, ledger writes `store_requisition` events
+- [store-requisition](/en/inventory/store-requisition) — produced document type; downstream lifecycle identical
+- [inventory](/en/inventory/inventory) — `on_hand` source for the deficit calculation
+- [product](/en/inventory/product) — `tb_product_location` policy lives under the product master
+- [master-data/location](/en/inventory/master-data/location) — per-location min / max / par / reorder configuration
+- [purchase-order](/en/inventory/purchase-order) — `on_order` includes open PO qty
+- [inventory/transaction](/en/inventory/inventory/transaction) — once the SR posts, ledger writes `store_requisition` events
 
 ## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_product_location` (~4364-4399), `tb_store_requisition` (~2922-2984), `enum_sr_type` (~224-227).
 - **Frontend:** `../carmen-inventory-frontend/app/(root)/store-operation/stock-replenishment/`.
 - **Cron job:** `../micro-cronjobs/` — Go service hosting the nightly sweep. Run state lives in the cron service (no tenant table).
-- **Module landing:** [[store-requisition]] § 3 (movement type, approval workflow).
+- **Module landing:** [store-requisition](/en/inventory/store-requisition) § 3 (movement type, approval workflow).

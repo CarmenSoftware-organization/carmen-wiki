@@ -2,7 +2,7 @@
 title: User — Data Model
 description: User entity, role, status, per-cluster BU assignments.
 published: true
-date: '2026-05-19T15:00:00.000Z'
+date: 2026-05-19T23:55:00.000Z'
 tags: book/platform, users, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -170,11 +170,11 @@ The single field on `tb_user` that drives every `allowedRoles` gate across the P
 
 | Value | Meaning | Can sign in to Platform SPA |
 | ----- | ------- | --------------------------- |
-| `super_admin` | Highest-privilege role in the Prisma enum; passes `ALLOWED_ROLES` authentication but is **not** listed in any route-level `allowedRoles` array in `App.tsx` — effective access matches the open-access route set (Dashboard, Business Units, Users, Profile). See [[auth-roles]] for the full per-role route matrix. | Yes |
+| `super_admin` | Highest-privilege role in the Prisma enum; passes `ALLOWED_ROLES` authentication but is **not** listed in any route-level `allowedRoles` array in `App.tsx` — effective access matches the open-access route set (Dashboard, Business Units, Users, Profile). See [auth-roles](/en/platform/auth-roles) for the full per-role route matrix. | Yes |
 | `platform_admin` | Platform-level administrator; same operational reach as super_admin in the SPA | Yes |
 | `support_manager` | Carmen support engineer with management authority; can access clusters and report templates | Yes |
 | `support_staff` | Carmen support engineer; read/edit access to operational modules | Yes |
-| `security_officer` | Security-focused role; can authenticate against the Platform admin SPA but holds no additional route-level privileges beyond the open-access routes (business-units, users, profile). See [[auth-roles]] for the complete route matrix. | Yes |
+| `security_officer` | Security-focused role; can authenticate against the Platform admin SPA but holds no additional route-level privileges beyond the open-access routes (business-units, users, profile). See [auth-roles](/en/platform/auth-roles) for the complete route matrix. | Yes |
 | `integration_developer` | Technical integration account; valid in Prisma data but **not** in `ALLOWED_ROLES` — holder cannot sign in to the Platform admin SPA | No |
 | `user` | Default role for new accounts; valid in Prisma data but **not** in `ALLOWED_ROLES` — holder cannot sign in to the Platform admin SPA | No |
 
@@ -232,4 +232,4 @@ No other divergences detected as of 2026-05-19.
 - `../carmen-platform/src/services/userService.ts` — REST client at `/api-system/user`.
 - `../carmen-platform/src/context/AuthContext.tsx` — `ALLOWED_ROLES` array (5 values) used as the sign-in gate.
 
-**Landing cross-link:** [[users]]
+**Landing cross-link:** [users](/en/platform/users)

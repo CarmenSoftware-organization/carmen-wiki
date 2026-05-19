@@ -2,7 +2,7 @@
 title: Report Template — Data Model
 description: tb_report_template entity, dialog/content XML payloads, source binding, BU scope.
 published: true
-date: 2026-05-19T18:30:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: book/platform, report-templates, data-model
 editor: markdown
 dateCreated: 2026-05-19T18:30:00.000Z
@@ -22,7 +22,7 @@ dateCreated: 2026-05-19T18:30:00.000Z
 
 `tb_report_template` is the catalogue entry for one printable or exportable document in the Carmen Platform. Each row encodes the complete definition of a report: its identity (`name`, `report_group`, `kind`), two XML payload columns (`dialog` and `content`) consumed by the report runtime, the runtime source binding (`source_type`, `source_name`, `source_params`), a BU-scope allow/deny pair, and the standard lifecycle flags and audit trio.
 
-Report templates are tenant-global — they are not cluster-scoped and carry no FK to `tb_cluster`. The BU-scope columns (`allow_business_unit`, `deny_business_unit`) are opt-in filtering lists that restrict which business units a template is visible to; they do not bind the row to any particular cluster. This distinguishes the report-templates surface from the [[clusters]] and [[business-units]] pages, which document the cluster/BU hierarchy. BU codes referenced in the chip lists correspond to `tb_business_unit.code` values, but there is no FK constraint — the reference is an application-layer convention.
+Report templates are tenant-global — they are not cluster-scoped and carry no FK to `tb_cluster`. The BU-scope columns (`allow_business_unit`, `deny_business_unit`) are opt-in filtering lists that restrict which business units a template is visible to; they do not bind the row to any particular cluster. This distinguishes the report-templates surface from the [clusters](/en/platform/clusters) and [business-units](/en/platform/business-units) pages, which document the cluster/BU hierarchy. BU codes referenced in the chip lists correspond to `tb_business_unit.code` values, but there is no FK constraint — the reference is an application-layer convention.
 
 The `kind` column distinguishes the two uses of this table: `"report"` rows are user-facing analytical reports; `"print"` rows are printable document layouts consumed by `tb_print_template_mapping`. That sibling join table (Prisma model `tb_print_template_mapping`) maps document types (PO, GRN, SR, …) to a `tb_report_template` row. It is not documented here — this page covers `tb_report_template` only.
 
@@ -206,9 +206,9 @@ All core identity fields (`id`, `name`, `description`, `report_group`), XML payl
 - `../carmen-platform/src/types/index.ts` — no `ReportTemplate` type defined here; the type lives in the service file.
 
 **Cross-links:**
-- [[report-templates]] — module landing page
-- [[business-units]] — BU codes referenced in the allow/deny chip lists correspond to `tb_business_unit.code`
-- [[clusters]] — sibling admin-tier-gated surface; report templates are tenant-global and not cluster-scoped
+- [report-templates](/en/platform/report-templates) — module landing page
+- [business-units](/en/platform/business-units) — BU codes referenced in the allow/deny chip lists correspond to `tb_business_unit.code`
+- [clusters](/en/platform/clusters) — sibling admin-tier-gated surface; report templates are tenant-global and not cluster-scoped
 - [Permissions](./permissions.md) — access control for the report-templates admin surface
 - [UI Screens](./ui-screens.md) — SPA screens for report template management and editing
 - [XML Spec](./xml-spec.md) — detailed structure of the `dialog` and `content` XML payloads

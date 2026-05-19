@@ -2,7 +2,7 @@
 title: ใบรับสินค้า (Goods Receive Note) — Test Scenarios
 description: เคสทดสอบตาม persona scenario ข้าม persona และการ map Playwright ของ good-receive-note
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: good-receive-note, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T11:00:00.000Z
 # ใบรับสินค้า (Goods Receive Note) — Test Scenarios
 
 > **At a Glance**
-> **โมดูล:** [[good-receive-note]] &nbsp;·&nbsp; **Scenario รวม:** ~10 ข้าม persona + ~110 ต่อ persona &nbsp;·&nbsp; **Persona ที่ครอบคลุม:** Receiver, Purchaser, Finance, Audit / Config
+> **โมดูล:** [good-receive-note](/th/inventory/good-receive-note) &nbsp;·&nbsp; **Scenario รวม:** ~10 ข้าม persona + ~110 ต่อ persona &nbsp;·&nbsp; **Persona ที่ครอบคลุม:** Receiver, Purchaser, Finance, Audit / Config
 > **ลำดับการรัน:** ตั้งค่า Audit / Config → happy path ของ persona หลัก → scenario ข้าม persona
 > **การเจาะลึกของแต่ละ persona อยู่ที่ `04-test-scenarios-<role>.md`**
 

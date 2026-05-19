@@ -2,7 +2,7 @@
 title: ประเภทการปรับสต๊อก (Adjustment Type)
 description: รหัสเหตุผลสำหรับการปรับสต๊อก stock-in / stock-out — ใช้โดย inventory adjustment, physical count และ spot check เพื่ออธิบาย variance
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, adjustment-type, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -78,9 +78,9 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 7. การอ้างอิงข้ามโมดูล
 
-- [[inventory-adjustment]] — ทุกบรรทัด adjustment บรรจุ FK ของ adjustment type
-- [[physical-count]] — variance write-on / write-off post กับ adjustment type
-- [[spot-check]] — variance ของ spot check ใช้เส้นทาง posting เดียวกัน
+- [inventory-adjustment](/th/inventory/inventory-adjustment) — ทุกบรรทัด adjustment บรรจุ FK ของ adjustment type
+- [physical-count](/th/inventory/physical-count) — variance write-on / write-off post กับ adjustment type
+- [spot-check](/th/inventory/spot-check) — variance ของ spot check ใช้เส้นทาง posting เดียวกัน
 
 ## 8. แหล่งอ้างอิง
 

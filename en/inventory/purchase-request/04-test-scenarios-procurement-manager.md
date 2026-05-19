@@ -2,7 +2,7 @@
 title: Purchase Request — Test Scenarios — Procurement Manager
 description: Procurement Manager's test cases (transactional high-value approval + configuration of vendor allocation rules) for purchase-request.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-request, test-scenarios, procurement-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 # Purchase Request — Test Scenarios — Procurement Manager
 
 > **At a Glance**
-> **Persona:** Procurement Manager (high-value approval + Allocate Vendor configuration) &nbsp;·&nbsp; **Module:** [[purchase-request]] &nbsp;·&nbsp; **Scenarios:** ~29
+> **Persona:** Procurement Manager (high-value approval + Allocate Vendor configuration) &nbsp;·&nbsp; **Module:** [purchase-request](/en/inventory/purchase-request) &nbsp;·&nbsp; **Scenarios:** ~29
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** no dedicated Procurement Manager spec yet; escalation paths exercised via `gmTest` blocks in `tests/301-pr.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
@@ -75,5 +75,5 @@ This page captures the test scenarios that the Procurement Manager persona direc
 - Sibling: [04-test-scenarios-purchaser.md](./04-test-scenarios-purchaser.md) — downstream persona that consumes the Allocate Vendor rules the Procurement Manager maintains; PUR-HP-03 (Allocate Vendor dialog ranking source) is driven by the configurational rule set.
 - E2E: **TODO** — no dedicated `30X-pr-procurement-manager-journey.spec.ts` exists yet. Escalation paths (`X-PR-05`) and high-value override are partly exercised via `gmTest` blocks in `../carmen-inventory-frontend-e2e/tests/301-pr.spec.ts` (per-action × per-role permission coverage). Add a dedicated persona-journey spec once a stable Allocate Vendor Rules admin surface and Stuck PR Oversight view are wired into the frontend.
 - Source: `../carmen/docs/purchase-request-management/PR-Module-Structure.md` (Allocate Vendor module surface, vendor-allocation configuration shape, threshold-routing configuration), `../carmen/docs/purchase-request-management/PR-User-Experience.md` (review-and-decide UI shared with the base Approver chain, escalation procedures), `../carmen/docs/purchase-request-management/PR-Overview.md` (Procurement Manager stakeholder role, workflow engine integration, vendor management), `../carmen/docs/purchase-request-management/purchase-request-module-prd.md` (product requirements for threshold-based routing and Allocate Vendor rule configuration), `../carmen/docs/purchase-request-management/testing.md` (testing levels — escalation and configuration test patterns), `../carmen/docs/purchase-request-management/troubleshooting.md` (Section 2.1 stuck-stage problems, Section 2.2 workflow transition issues, threshold-routing misconfigurations).
-- Cross-link: [[vendor-pricelist]] — pricelist data feeding the Allocate Vendor ranking.
-- Cross-link: [[purchase-order]] — downstream module receiving the final-approved PR for conversion.
+- Cross-link: [vendor-pricelist](/en/inventory/vendor-pricelist) — pricelist data feeding the Allocate Vendor ranking.
+- Cross-link: [purchase-order](/en/inventory/purchase-order) — downstream module receiving the final-approved PR for conversion.

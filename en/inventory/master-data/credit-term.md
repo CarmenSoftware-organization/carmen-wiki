@@ -2,7 +2,7 @@
 title: Credit Term
 description: Vendor payment terms (NET 30, COD, etc.) selected on purchase orders to drive due-date and accounts-payable schedules.
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, credit-term, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -28,7 +28,7 @@ The entity is intentionally minimal — `name`, `value` (days), and an `is_activ
 | Add a new term | Configuration → Master Data → Credit Term → **New** | Required: `name`; `value` defaults `0` (COD) |
 | Deactivate a term | Toggle `is_active` | Hidden from new-PO pickers; historical POs keep their term |
 | Change day-count | Edit `value` | New POs default to new value; historical POs already have the due date stored |
-| Set default per vendor | [[master-data/vendor]] detail | App-layer; not on this record |
+| Set default per vendor | [master-data/vendor](/en/inventory/master-data/vendor) detail | App-layer; not on this record |
 
 ## 3. Validation & Errors
 
@@ -77,8 +77,8 @@ Source: tenant schema.
 
 ## 7. Cross-References
 
-- [[purchase-order]] — PO header carries `credit_term_id`; due date = `po_date + value` days.
-- [[master-data/vendor]] — vendors pre-assign a default credit term in app logic; defaulted onto new POs.
+- [purchase-order](/en/inventory/purchase-order) — PO header carries `credit_term_id`; due date = `po_date + value` days.
+- [master-data/vendor](/en/inventory/master-data/vendor) — vendors pre-assign a default credit term in app logic; defaulted onto new POs.
 
 ## 8. References
 

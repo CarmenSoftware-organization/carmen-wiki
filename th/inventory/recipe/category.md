@@ -2,7 +2,7 @@
 title: หมวดหมู่สูตรอาหาร (Recipe Category)
 description: taxonomy หมวดหมู่เชิงลำดับชั้นสำหรับสูตรอาหาร — ขับเคลื่อน menu engineering, รายงาน cost-band และการนำทาง recipe library
 published: true
-date: 2026-05-17T07:00:36.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: recipe, category, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # หมวดหมู่สูตรอาหาร (Recipe Category)
 
 > **At a Glance**
-> **เจ้าของ:** Chef / Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_recipe_category` &nbsp;·&nbsp; **รูปทรง:** ต้นไม้เชิงลำดับชั้น (self-FK บน `parent_id`) &nbsp;·&nbsp; **ใช้โดย:** ส่วนหัวของ [[recipe]], menu engineering, รายงาน cost-band &nbsp;·&nbsp; **Seed:** `default_cost_settings` + `default_margins` ลงในสูตรใหม่
+> **เจ้าของ:** Chef / Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_recipe_category` &nbsp;·&nbsp; **รูปทรง:** ต้นไม้เชิงลำดับชั้น (self-FK บน `parent_id`) &nbsp;·&nbsp; **ใช้โดย:** ส่วนหัวของ [recipe](/th/inventory/recipe), menu engineering, รายงาน cost-band &nbsp;·&nbsp; **Seed:** `default_cost_settings` + `default_margins` ลงในสูตรใหม่
 
 ![หมวดหมู่สูตรอาหาร (Recipe Category) screen](/screenshots/recipe/category.png)
 
@@ -19,7 +19,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 หมวดหมู่สูตรอาหารคือ **การจำแนกประเภทตามฟังก์ชัน** เหนือข้อมูลหลักของสูตรอาหาร จัดเรียงเป็นต้นไม้ (เช่น `Food > Main Course > Pasta`) แต่ละหมวดหมู่มี **การตั้งค่าต้นทุน default** และ **margin default** ที่สูตรใหม่สืบทอดตอนสร้าง — ดังนั้น property บอกว่า "สูตร Main Course ทุกตัวเป้าหมาย food-cost 30%" ครั้งเดียว ไม่ใช่ต่อสูตร
 
-แตกต่างจาก [[recipe/cuisine]] (label ตามภูมิภาคแบน) และ `Course Type` (enum ต่อสูตร) **ดูแลโดย Chef** (หรือ **Product Admin** ใน tenant บางตัว) ภายใต้ Operation Plan → Recipe Category
+แตกต่างจาก [recipe/cuisine](/th/inventory/recipe/cuisine) (label ตามภูมิภาคแบน) และ `Course Type` (enum ต่อสูตร) **ดูแลโดย Chef** (หรือ **Product Admin** ใน tenant บางตัว) ภายใต้ Operation Plan → Recipe Category
 
 ## 2. งานที่พบบ่อย
 
@@ -84,10 +84,10 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ## 7. Cross-References
 
-- [[recipe]] — สูตรทุกตัวมี `category_id` (จำเป็น) อ่าน default ของหมวดหมู่ตอนสร้าง
-- [[recipe/cuisine]] — taxonomy พี่น้องบนแกนภูมิภาค
-- [[recipe/01-data-model]] — บริบทโมเดลข้อมูลเต็ม
-- [[recipe/03-user-flow-chef]], [[recipe/03-user-flow-cost-controller]] — Chef หยิบ Cost Controller ตั้ง default หมวดหมู่
+- [recipe](/th/inventory/recipe) — สูตรทุกตัวมี `category_id` (จำเป็น) อ่าน default ของหมวดหมู่ตอนสร้าง
+- [recipe/cuisine](/th/inventory/recipe/cuisine) — taxonomy พี่น้องบนแกนภูมิภาค
+- [recipe/01-data-model](/th/inventory/recipe/01-data-model) — บริบทโมเดลข้อมูลเต็ม
+- [recipe/03-user-flow-chef](/th/inventory/recipe/03-user-flow-chef), [recipe/03-user-flow-cost-controller](/th/inventory/recipe/03-user-flow-cost-controller) — Chef หยิบ Cost Controller ตั้ง default หมวดหมู่
 
 ## 8. แหล่งอ้างอิง
 

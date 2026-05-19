@@ -2,7 +2,7 @@
 title: ใบเบิกของสโตร์ (Store Requisition) — User Flow
 description: วงจรชีวิตเอกสารและไฟล์ flow ตาม persona สำหรับ store-requisition
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: store-requisition, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T13:30:00.000Z
 # ใบเบิกของสโตร์ (Store Requisition) — User Flow
 
 > **At a Glance**
-> **โมดูล:** [[store-requisition]] &nbsp;·&nbsp; **Persona:** Requester &nbsp;·&nbsp; Approver &nbsp;·&nbsp; Fulfiller &nbsp;·&nbsp; Receiver &nbsp;·&nbsp; Audit / Config
+> **โมดูล:** [store-requisition](/th/inventory/store-requisition) &nbsp;·&nbsp; **Persona:** Requester &nbsp;·&nbsp; Approver &nbsp;·&nbsp; Fulfiller &nbsp;·&nbsp; Receiver &nbsp;·&nbsp; Audit / Config
 > **วงจรชีวิต workflow:** Draft → In Progress (ขั้นย่อยอนุมัติ + fulfillment) → Completed (พร้อม branch Cancelled / Voided)
 > **เจาะลึก view ต่อ persona ด้านล่างสำหรับรายละเอียดระดับ action**
 
@@ -56,7 +56,7 @@ stateDiagram-v2
 | จากสถานะ | Action | ไปสถานะ | อนุญาตให้ | เงื่อนไขล่วงหน้า |
 | -------- | ------ | -------- | --------- | ----------------- |
 | `(none)` | สร้าง | `draft` | Requester | Requester เป็นสมาชิก `department_id`; อนุญาตให้ทำธุรกรรมระหว่าง `from_location_id` และ `to_location_id`; `sr_no` กำหนดตามนโยบายเลขของ tenant ส่วนหัวอาจป้อนบางส่วน; บรรทัดอาจว่าง |
-| `(none)` | auto-create จาก recipe demand | `draft` | System (cross-ref [[recipe]]) | โมดูล recipe คำนวณปริมาณวัตถุดิบสำหรับ event production / banquet ของเอาท์เลตปลายทางและ post SR `draft` ให้ requester ของเอาท์เลต review และ submit `info.recipe_id` มี back-reference |
+| `(none)` | auto-create จาก recipe demand | `draft` | System (cross-ref [recipe](/th/inventory/recipe)) | โมดูล recipe คำนวณปริมาณวัตถุดิบสำหรับ event production / banquet ของเอาท์เลตปลายทางและ post SR `draft` ให้ requester ของเอาท์เลต review และ submit `info.recipe_id` มี back-reference |
 | `draft` | แก้ไข / save | `draft` | Requester (เจ้าของ) | กฎ validation ส่วนหัวและบรรทัดใน [02-business-rules.md](./02-business-rules.md) Section 2 ผ่านตอน save (warn-only บางส่วน) หรือ block ตอน submit; เอกสารยังแก้ไขได้ |
 | `draft` | submit | `in_progress` | Requester (เจ้าของ) | กฎตอน submit ทั้งหมดผ่าน (`SR_VAL_001`–`SR_VAL_009`): สถานที่ต้นทาง / ปลายทางตั้งและเข้ากันกับ `sr_type`, source-availability check ผ่าน (ตาม tenant config: hard block หรือ soft warn), อย่างน้อยหนึ่งบรรทัดที่ `requested_qty > 0` Workflow engine จัดเส้นทางไปยังขั้นอนุมัติแรกและบรรจุ `user_action.execute` |
 | `draft` | ถอน / ยกเลิก | `cancelled` | Requester (draft ของตน) | ต้องการเหตุผล; ไม่กระทบสต๊อกหรือ GL; เอกสารจบ |
@@ -66,8 +66,8 @@ stateDiagram-v2
 | `in_progress` | requester ถอนที่ขั้นอนุมัติแรก | `cancelled` | Requester (SR ของตน) | อนุญาตเฉพาะเมื่อ workflow ยังอยู่ที่ขั้นอนุมัติแรกและยังไม่มีผู้อนุมัติกระทำ เกินจุดนั้น เฉพาะผู้อนุมัติเท่านั้นที่ reject SR ได้ ต้องการเหตุผล |
 | `in_progress` | บันทึก `issued_qty` + commit | `completed` | Fulfiller ที่ขั้น fulfillment | กฎตอน commit ทั้งหมดผ่าน (`SR_VAL_011`–`SR_VAL_014`): อย่างน้อยหนึ่งบรรทัดที่ `approved_qty > 0`, ข้อมูล lot บน inventory transactions สำหรับสินค้าควบคุม lot, on-hand ต้นทางครอบคลุมทุก `issued_qty`, วันที่ post อยู่ในงวดเปิด SoD check `approver ≠ fulfiller` ตาม `SR_AUTH_012` **Trigger การลด on-hand ต้นทาง, การ consume cost-layer, การเพิ่ม on-hand ปลายทาง (สำหรับ `transfer`) หรือ debit cost-centre ปลายทาง (สำหรับ `issue`), เขียน journal-entry** |
 | `in_progress` | void (เชิงบริหาร) | `voided` | Inventory Controller, System Administrator | ต้องการเหตุผล; ไม่กระทบสต๊อกหรือ GL (SR ไม่เคย post) ต่างจาก `cancelled` — `voided` เป็นเส้นทาง audit / เชิงบริหาร |
-| `completed` | flag ความคลาดเคลื่อนหลัง commit (ไม่เปลี่ยนสถานะ) | `completed` | Receiver | Receiver เพิ่ม comment ความคลาดเคลื่อน ("received less than issued", "wrong lot"); flag เขียน system comment แต่ **ไม่** ย้าย `doc_status` Resolution ผ่าน `[[inventory-adjustment]]` |
-| `completed` | (ไม่มี transition สถานะต่อ) | `completed` | — | จุดสิ้นสุดของเส้นทาง fulfillment การแก้ไขต้องผ่าน compensating adjustment ใน `[[inventory-adjustment]]`; SR เองยังคงล็อก |
+| `completed` | flag ความคลาดเคลื่อนหลัง commit (ไม่เปลี่ยนสถานะ) | `completed` | Receiver | Receiver เพิ่ม comment ความคลาดเคลื่อน ("received less than issued", "wrong lot"); flag เขียน system comment แต่ **ไม่** ย้าย `doc_status` Resolution ผ่าน `[inventory-adjustment](/th/inventory/inventory-adjustment)` |
+| `completed` | (ไม่มี transition สถานะต่อ) | `completed` | — | จุดสิ้นสุดของเส้นทาง fulfillment การแก้ไขต้องผ่าน compensating adjustment ใน `[inventory-adjustment](/th/inventory/inventory-adjustment)`; SR เองยังคงล็อก |
 | `cancelled` | (ไม่มี action ต่อ) | `cancelled` | — | จุดสิ้นสุด เอกสารที่ยกเลิกถูกเก็บไว้สำหรับ audit; คำขอถัดไปต้องตั้งเป็น SR ใหม่ |
 | `voided` | (ไม่มี action ต่อ) | `voided` | — | จุดสิ้นสุด เก็บไว้สำหรับ audit |
 
@@ -93,7 +93,7 @@ stateDiagram-v2
 | Approver | บรรทัดทั้งหมดถูก reject (`Σ approved_qty = 0`) | (จุดสิ้นสุด — `cancelled`) | `cancelled` (การย้ายอัตโนมัติผ่าน `SR_POST_004` tail) |
 | Fulfiller | บันทึก `issued_qty` และ commit | Receiver | `completed` (on-hand ต้นทางลด; on-hand ปลายทางเพิ่มสำหรับ `transfer` หรือ cost-centre ปลายทาง debit สำหรับ `issue`; ข้อมูล lot เขียนบน inventory transaction ที่ลิงก์) |
 | Fulfiller | เจอ stock-out ตอน issue และ commit บางส่วน | Receiver, Inventory Controller | `completed` (พร้อม `issued_qty < approved_qty` ในหนึ่งบรรทัดขึ้นไป; `fulfilment_gap` บันทึก; system comment "could not fulfil — source stock-out") |
-| Receiver | ยก flag ความคลาดเคลื่อนหลัง commit | Inventory Controller | `completed` (พร้อม comment ความคลาดเคลื่อน; resolution ผ่าน `[[inventory-adjustment]]`) |
+| Receiver | ยก flag ความคลาดเคลื่อนหลัง commit | Inventory Controller | `completed` (พร้อม comment ความคลาดเคลื่อน; resolution ผ่าน `[inventory-adjustment](/th/inventory/inventory-adjustment)`) |
 | Inventory Controller | period-end variance review | Audit / Config (Finance Team) | (ไม่เปลี่ยนสถานะเอกสาร; variance dashboard roll up ต่อเอาท์เลต / ต่องวด) |
 | Inventory Controller / Sysadmin | void ก่อน commit ด้วยเหตุผล audit | (จุดสิ้นสุด — `voided`) | `voided` (การยกเลิกเชิงบริหาร; ไม่กระทบสต๊อกหรือ GL; เอกสารจบ) |
 | Recipe (auto-create) | คำนวณ recipe demand สำหรับ production / banquet | Requester | `draft` (pre-populate โดยโมดูล recipe; `info.recipe_id` มี back-reference) |
@@ -105,4 +105,4 @@ stateDiagram-v2
 - `../carmen/docs/store-requisitions/Store Requisitions.md` — Use cases UC-64 (Approve), UC-65 (Deny), UC-66 (Modify), UC-67 (Monitor), UC-68 (Create and Manage), UC-69 (Approve and Record Stock as Issued); ไฟล์ persona Requester, Approver และ Fulfiller ดึง flow หลักจากนี้
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical `enum_doc_status`, `enum_sr_type` และ three-quantity invariant (`requested_qty / approved_qty / issued_qty`) ที่อ้างถึงตลอดส่วนที่ 2
 - Sibling: [02-business-rules.md](./02-business-rules.md) Section 5 — ผลกระทบ posting และ gate authorization ที่อ้างถึงโดยทุกแถวของส่วนที่ 2
-- โมดูลที่เกี่ยวข้อง: [[inventory]] (ปลายน้ำ — ตอน commit on-hand ต้นทางลดและปลายทางเพิ่มสำหรับ `transfer`; ข้อมูล lot, expiry และ cost-layer อยู่บน inventory transaction ที่ลิงก์), [[costing]] (FIFO / moving-average ของสถานที่ต้นทาง feed unit cost ที่ issue), [[recipe]] (เส้นทาง auto-create สำหรับการเบิกวัตถุดิบที่ขับโดย recipe), [[good-receive-note]] (การโอนระหว่างสถานที่อาจจับคู่ SR-OUT ที่ต้นทางกับ GRN-IN ที่ปลายทาง), [[inventory-adjustment]] (การแก้ไขหลัง commit)
+- โมดูลที่เกี่ยวข้อง: [inventory](/th/inventory/inventory) (ปลายน้ำ — ตอน commit on-hand ต้นทางลดและปลายทางเพิ่มสำหรับ `transfer`; ข้อมูล lot, expiry และ cost-layer อยู่บน inventory transaction ที่ลิงก์), [costing](/th/inventory/costing) (FIFO / moving-average ของสถานที่ต้นทาง feed unit cost ที่ issue), [recipe](/th/inventory/recipe) (เส้นทาง auto-create สำหรับการเบิกวัตถุดิบที่ขับโดย recipe), [good-receive-note](/th/inventory/good-receive-note) (การโอนระหว่างสถานที่อาจจับคู่ SR-OUT ที่ต้นทางกับ GRN-IN ที่ปลายทาง), [inventory-adjustment](/th/inventory/inventory-adjustment) (การแก้ไขหลัง commit)

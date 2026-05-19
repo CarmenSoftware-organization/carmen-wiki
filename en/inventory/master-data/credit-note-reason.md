@@ -2,7 +2,7 @@
 title: Credit Note Reason
 description: Coded reasons for credit notes raised against GRN — supports the return-to-vendor and price-correction flows.
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, credit-note-reason, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -45,7 +45,7 @@ The entity is a **flat lookup** — reason logic (return-to-stock vs. write-off)
 - **Rename propagation** — display refreshes automatically because CNs hold the FK, not the text.
 - **Soft-deleted rows still resolvable** by lookup, so historical CNs continue to render.
 - **Translation.** Reasons are often shown to vendors. Until a localisation table exists, translations live in `info` JSON.
-- **Adjustment-type vs. reason.** If a CN posts a stock adjustment (write-off rather than return-to-stock), the adjustment carries its own [[master-data/adjustment-type]] while the parent CN keeps the reason.
+- **Adjustment-type vs. reason.** If a CN posts a stock adjustment (write-off rather than return-to-stock), the adjustment carries its own [master-data/adjustment-type](/en/inventory/master-data/adjustment-type) while the parent CN keeps the reason.
 
 ---
 
@@ -76,8 +76,8 @@ Source: tenant schema.
 
 ## 7. Cross-References
 
-- [[good-receive-note]] — credit notes are raised in the GRN context. Reason FK on `tb_credit_note`.
-- [[inventory-adjustment]] — when a CN posts a stock adjustment, the adjustment carries an [[master-data/adjustment-type]] in addition to the CN reason.
+- [good-receive-note](/en/inventory/good-receive-note) — credit notes are raised in the GRN context. Reason FK on `tb_credit_note`.
+- [inventory-adjustment](/en/inventory/inventory-adjustment) — when a CN posts a stock adjustment, the adjustment carries an [master-data/adjustment-type](/en/inventory/master-data/adjustment-type) in addition to the CN reason.
 
 ## 8. References
 

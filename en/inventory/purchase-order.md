@@ -2,7 +2,7 @@
 title: Purchase Order
 description: Formal commitment to a vendor to purchase goods at agreed prices, quantities, and delivery terms.
 published: true
-date: 2026-05-19T23:45:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-order, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 # Purchase Order
 
 > **At a Glance**
-> **Module purpose:** External vendor commitment document (`Draft` → `Sent` → `Partial`/`Fully Received` → `Closed`/`Voided`) that anchors the three-way match with GRN and invoice &nbsp;·&nbsp; **Audience:** Purchaser, Procurement Manager, Vendor, Receiver, Finance / AP, Auditor &nbsp;·&nbsp; **Key entities/tables:** `tb_purchase_order`, `tb_purchase_order_detail`, PR→PO trace fields (`prItemId`, `prNumber`), amendment activity log, [[purchase-order/credit-note]] &nbsp;·&nbsp; **Sub-pages:** 17
+> **Module purpose:** External vendor commitment document (`Draft` → `Sent` → `Partial`/`Fully Received` → `Closed`/`Voided`) that anchors the three-way match with GRN and invoice &nbsp;·&nbsp; **Audience:** Purchaser, Procurement Manager, Vendor, Receiver, Finance / AP, Auditor &nbsp;·&nbsp; **Key entities/tables:** `tb_purchase_order`, `tb_purchase_order_detail`, PR→PO trace fields (`prItemId`, `prNumber`), amendment activity log, [purchase-order/credit-note](/en/inventory/purchase-order/credit-note) &nbsp;·&nbsp; **Sub-pages:** 17
 
 ![Purchase Order screen](/screenshots/purchase-order/index.png)
 
@@ -63,22 +63,22 @@ Financial accuracy is enforced at the calculation layer. Item subtotal, discount
 ## 5. Related Modules
 
 **Cross-module flow:**
-- [[purchase-request]] — POs are generated from approved PRs
-- [[good-receive-note]] — GRN is created against a PO on receipt
-- [[vendor-pricelist]] — PO prices are validated against vendor pricelists
-- [[product]] — PO lines reference products from the catalog
+- [purchase-request](/en/inventory/purchase-request) — POs are generated from approved PRs
+- [good-receive-note](/en/inventory/good-receive-note) — GRN is created against a PO on receipt
+- [vendor-pricelist](/en/inventory/vendor-pricelist) — PO prices are validated against vendor pricelists
+- [product](/en/inventory/product) — PO lines reference products from the catalog
 
 **Master configuration:**
-- [[master-data/vendor]] — vendor master (header + addresses + contacts) referenced by PO header
-- [[master-data/currency]] — currency and exchange rate for multi-currency POs
-- [[master-data/tax-profile]] — tax codes applied to PO lines
-- [[master-data/credit-term]] — payment terms copied from vendor master onto the PO header
-- [[master-data/delivery-point]] — agreed delivery point for the commitment
-- [[master-data/unit]] — unit of measure for PO line quantities
-- [[system-config/workflow]] — approval workflow definitions for PO authorization and amendments
-- [[system-config/running-code]] — PO document number sequencing
-- [[reporting-audit/activity]] — PO status-transition, amendment, and three-way-match log for audit
-- [[reporting-audit/attachment]] — vendor acknowledgements and contract documents attached to the PO
+- [master-data/vendor](/en/inventory/master-data/vendor) — vendor master (header + addresses + contacts) referenced by PO header
+- [master-data/currency](/en/inventory/master-data/currency) — currency and exchange rate for multi-currency POs
+- [master-data/tax-profile](/en/inventory/master-data/tax-profile) — tax codes applied to PO lines
+- [master-data/credit-term](/en/inventory/master-data/credit-term) — payment terms copied from vendor master onto the PO header
+- [master-data/delivery-point](/en/inventory/master-data/delivery-point) — agreed delivery point for the commitment
+- [master-data/unit](/en/inventory/master-data/unit) — unit of measure for PO line quantities
+- [system-config/workflow](/en/inventory/system-config/workflow) — approval workflow definitions for PO authorization and amendments
+- [system-config/running-code](/en/inventory/system-config/running-code) — PO document number sequencing
+- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — PO status-transition, amendment, and three-way-match log for audit
+- [reporting-audit/attachment](/en/inventory/reporting-audit/attachment) — vendor acknowledgements and contract documents attached to the PO
 
 ## 6. Reference Sources
 

@@ -2,7 +2,7 @@
 title: Product — Test Scenarios
 description: Test cases by persona, cross-persona scenarios, and E2E mapping for product.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: product, test-scenarios, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T15:30:00.000Z
 # Product — Test Scenarios
 
 > **At a Glance**
-> **Module:** [[product]] &nbsp;·&nbsp; **Total scenarios:** ~17 cross-persona + ~127 per-persona &nbsp;·&nbsp; **Personas covered:** Product Administrator, Purchaser, Store Keeper
+> **Module:** [product](/en/inventory/product) &nbsp;·&nbsp; **Total scenarios:** ~17 cross-persona + ~127 per-persona &nbsp;·&nbsp; **Personas covered:** Product Administrator, Purchaser, Store Keeper
 > **Run order:** Audit / Config setup → primary persona happy paths → cross-persona scenarios
 > **Each persona's drill-down is `04-test-scenarios-<role>.md`**
 
@@ -92,4 +92,4 @@ The gap is structural: the **product module is a master-data backbone** with a C
 - Sibling: [02-business-rules.md](./02-business-rules.md) — validation (`PRD_VAL_*`), calculation (`PRD_CALC_*`), authorization (`PRD_AUTH_*`), lifecycle (`PRD_LIFE_*`), and cross-module (`PRD_XMOD_*`) rules invoked by every scenario above.
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical entities (`tb_product`, classification chain, `tb_unit`, `tb_unit_conversion`, `tb_product_location`, `tb_product_tb_vendor`) and enums (`enum_product_status_type`, `enum_unit_type`) referenced throughout.
 - Per-persona detail: [Product Administrator](./04-test-scenarios-product-admin.md), [Purchaser](./04-test-scenarios-purchaser.md), [Store Keeper](./04-test-scenarios-store-keeper.md).
-- Related: [[purchase-request]] / [[purchase-order]] / [[good-receive-note]] / [[store-requisition]] / [[recipe]] / [[vendor-pricelist]] — every transactional module's E2E suite indirectly exercises product master read paths.
+- Related: [purchase-request](/en/inventory/purchase-request) / [purchase-order](/en/inventory/purchase-order) / [good-receive-note](/en/inventory/good-receive-note) / [store-requisition](/en/inventory/store-requisition) / [recipe](/en/inventory/recipe) / [vendor-pricelist](/en/inventory/vendor-pricelist) — every transactional module's E2E suite indirectly exercises product master read paths.

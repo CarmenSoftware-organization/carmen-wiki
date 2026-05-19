@@ -2,7 +2,7 @@
 title: สินค้า (Product) — Test Scenarios
 description: test case ตาม persona, scenario ข้าม persona และ mapping ไปยัง E2E สำหรับ product
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: product, test-scenarios, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T15:30:00.000Z
 # สินค้า (Product) — Test Scenarios
 
 > **At a Glance**
-> **โมดูล:** [[product]] &nbsp;·&nbsp; **scenario รวม:** ~17 ข้าม persona + ~127 ต่อ persona &nbsp;·&nbsp; **Persona ที่ครอบคลุม:** Product Administrator, Purchaser, Store Keeper
+> **โมดูล:** [product](/th/inventory/product) &nbsp;·&nbsp; **scenario รวม:** ~17 ข้าม persona + ~127 ต่อ persona &nbsp;·&nbsp; **Persona ที่ครอบคลุม:** Product Administrator, Purchaser, Store Keeper
 > **ลำดับการรัน:** การตั้งค่า Audit / Config → happy path ของ persona หลัก → scenario ข้าม persona
 > **drill-down ของแต่ละ persona อยู่ที่ `04-test-scenarios-<role>.md`**
 
@@ -92,4 +92,4 @@ scenario ข้าม persona ใน Section 4 เป็นชั้น integrat
 - Sibling: [02-business-rules.md](./02-business-rules.md) — กฎ validation (`PRD_VAL_*`), calculation (`PRD_CALC_*`), authorization (`PRD_AUTH_*`), lifecycle (`PRD_LIFE_*`) และข้ามโมดูล (`PRD_XMOD_*`) ที่อ้างโดยทุก scenario ด้านบน
 - Sibling: [01-data-model.md](./01-data-model.md) — เอนทิตี canonical (`tb_product`, ห่วงโซ่การจำแนก, `tb_unit`, `tb_unit_conversion`, `tb_product_location`, `tb_product_tb_vendor`) และ enum (`enum_product_status_type`, `enum_unit_type`) อ้างทั่วทั้ง
 - รายละเอียดต่อ persona: [Product Administrator](./04-test-scenarios-product-admin.md), [Purchaser](./04-test-scenarios-purchaser.md), [Store Keeper](./04-test-scenarios-store-keeper.md)
-- ที่เกี่ยวข้อง: [[purchase-request]] / [[purchase-order]] / [[good-receive-note]] / [[store-requisition]] / [[recipe]] / [[vendor-pricelist]] — suite E2E ของโมดูลธุรกรรมทุกตัว exercise เส้นทางการอ่าน product master ทางอ้อม
+- ที่เกี่ยวข้อง: [purchase-request](/th/inventory/purchase-request) / [purchase-order](/th/inventory/purchase-order) / [good-receive-note](/th/inventory/good-receive-note) / [store-requisition](/th/inventory/store-requisition) / [recipe](/th/inventory/recipe) / [vendor-pricelist](/th/inventory/vendor-pricelist) — suite E2E ของโมดูลธุรกรรมทุกตัว exercise เส้นทางการอ่าน product master ทางอ้อม

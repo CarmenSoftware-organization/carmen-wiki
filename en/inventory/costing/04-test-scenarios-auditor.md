@@ -2,7 +2,7 @@
 title: Costing — Test Scenarios — Auditor
 description: Auditor's test cases (chain-of-custody trace, period-snapshot verification, FIFO-WA shadow drift, configuration history audit) for costing.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: costing, test-scenarios, auditor, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 # Costing — Test Scenarios — Auditor
 
 > **At a Glance**
-> **Persona:** Auditor &nbsp;·&nbsp; **Module:** [[costing]] &nbsp;·&nbsp; **Scenarios:** ~23
+> **Persona:** Auditor &nbsp;·&nbsp; **Module:** [costing](/en/inventory/costing) &nbsp;·&nbsp; **Scenarios:** ~23
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** maps to `900-period-end.spec.ts` in `../carmen-inventory-frontend-e2e/` (chain-of-custody / shadow-drift / configuration-history audits are typically planned manual coverage)
 
@@ -70,8 +70,8 @@ This page captures the test scenarios that the Auditor persona drives in the `co
 - Sibling: [01-data-model.md](./01-data-model.md) — `tb_inventory_transaction_cost_layer` (Auditor's primary read target), `tb_period_snapshot` (snapshot verification target), `tb_business_unit.calculation_method` (configuration history target), `tb_product.standard_cost` (reference cost history), all enums.
 - Sibling: [calculation-methods.md](./calculation-methods.md) — algorithm invariants the Auditor verifies at audit (FIFO consumption walk, WA running average recompute, the strategy-pattern resolution).
 - E2E specs: most Auditor queries are read-only and not covered by a single canonical spec. [`900-period-end.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/900-period-end.spec.ts) indirectly exercises snapshot writes that the Auditor verifies in AUD-HP-02. Chain-of-custody, shadow drift, and configuration history audits are typically planned manual coverage.
-- Cross-link: [[inventory/04-test-scenarios-audit-config]] — parallel inventory-side Audit / Config persona; the lot-recall trace and period-snapshot reconciliation cells overlap heavily (this page focuses on the cost dimension; the inventory page on the qty + provenance dimensions).
-- Cross-link: [[good-receive-note]] — upstream origin of every cost-flow chain; backward trace walks through GRN → vendor.
-- Cross-link: [[store-requisition]] — downstream consumption of every cost-flow chain; forward trace walks through SR → cost-of-issue.
+- Cross-link: [inventory/04-test-scenarios-audit-config](/en/inventory/inventory/04-test-scenarios-audit-config) — parallel inventory-side Audit / Config persona; the lot-recall trace and period-snapshot reconciliation cells overlap heavily (this page focuses on the cost dimension; the inventory page on the qty + provenance dimensions).
+- Cross-link: [good-receive-note](/en/inventory/good-receive-note) — upstream origin of every cost-flow chain; backward trace walks through GRN → vendor.
+- Cross-link: [store-requisition](/en/inventory/store-requisition) — downstream consumption of every cost-flow chain; forward trace walks through SR → cost-of-issue.
 - Cross-link: credit-note — the cost-revaluation events Auditor verifies in the trace.
-- Cross-link: [[physical-count]] / [[spot-check]] — count-variance posts whose `enum_physical_count_costing_method` resolution Auditor verifies for consistency.
+- Cross-link: [physical-count](/en/inventory/physical-count) / [spot-check](/en/inventory/spot-check) — count-variance posts whose `enum_physical_count_costing_method` resolution Auditor verifies for consistency.

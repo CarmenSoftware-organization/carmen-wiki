@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — Test Scenarios — Purchaser
 description: Test case ของ Purchaser (happy path, permission, validation, edge case) สำหรับโมดูล purchase-request
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-request, test-scenarios, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 # ใบขอซื้อ (Purchase Request) — Test Scenarios — Purchaser
 
 > **At a Glance**
-> **Persona:** Purchaser (Procurement Officer — สะพาน PR-to-PO) &nbsp;·&nbsp; **โมดูล:** [[purchase-request]] &nbsp;·&nbsp; **Scenario:** ~33
+> **Persona:** Purchaser (Procurement Officer — สะพาน PR-to-PO) &nbsp;·&nbsp; **โมดูล:** [purchase-request](/th/inventory/purchase-request) &nbsp;·&nbsp; **Scenario:** ~33
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** map ไปยัง `tests/304-pr-purchaser-journey.spec.ts`, `tests/310-pr-template.spec.ts` และ `tests/301-pr.spec.ts` (fixture purchaseTest) ใน `../carmen-inventory-frontend-e2e/`
 
@@ -36,7 +36,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 | # | Scenario | พฤติกรรมที่คาด (allow/deny + เหตุผล) |
 | - | -------- | --------------------------------------- |
 | PUR-PERM-01 | Purchaser เปิด PR `approved` (ผู้ใช้ปัจจุบันมี `enum_stage_role = purchase` และอยู่ใน `user_action.execute[]` สำหรับ stage `purchase`) | **Allow** read และ action conversion / vendor-allocation (Allocate Vendor / Convert to PO / Send Back to Requestor) `PR_AUTH_002` ผ่านสำหรับ stage `purchase`; `PR_AUTH_008` ให้สิทธิ์การแปลง |
-| PUR-PERM-02 | Purchaser รัน **Convert to PO** บน PR `approved` | **Allow.** `PR_AUTH_008` (`enum_stage_role = purchase` เป็นเจ้าของ vendor allocation และการแปลง PO); `PR_POST_007` รัน bridge writes และ transition `pr_status` โมดูล PO ([[purchase-order]]) สร้างแถว `tb_purchase_order` ใหม่ |
+| PUR-PERM-02 | Purchaser รัน **Convert to PO** บน PR `approved` | **Allow.** `PR_AUTH_008` (`enum_stage_role = purchase` เป็นเจ้าของ vendor allocation และการแปลง PO); `PR_POST_007` รัน bridge writes และ transition `pr_status` โมดูล PO ([purchase-order](/th/inventory/purchase-order)) สร้างแถว `tb_purchase_order` ใหม่ |
 | PUR-PERM-03 | Purchaser พยายามแปลง PR ที่ `pr_status = in_progress` ปัจจุบัน (ยังกลาง chain อนุมัติ) | **Deny — สถานะผิด.** `PR_AUTH_008` และ `PR_POST_007` ต่างต้องการ PR ต้นทางอยู่ใน `approved` (หรือ `approved` ที่แปลงบางส่วนพร้อมบรรทัดเปิด) Endpoint Convert-to-PO reject PR `in_progress` ต้นทางด้วย `"This PR has not completed approval and cannot be converted to a PO"` Workbench filter PR ดังกล่าวออกจาก pool การเลือก |
 | PUR-PERM-04 | Purchaser พยายามแก้ header PR (เช่น `delivery_date`, `description`, `currency_id`) | **Deny — edit สงวน.** Edit header scope สำหรับ Requestor ที่ `draft` (`PR_AUTH_001`) และผู้อนุมัติที่ `in_progress` สำหรับฟิลด์ `approved_qty` แคบเท่านั้น (`PR_AUTH_003`) หน้า detail ของ Purchaser เป็น read-mostly: input header ถูก disable; API call ตรงเพื่ออัปเดตคอลัมน์ header `tb_purchase_request` ถูก reject ด้วย `"This PR is in approved status and only conversion-related fields may be modified"` |
 | PUR-PERM-05 | Purchaser พยายามแก้เนื้อหาบรรทัด PR (`requested_qty`, `approved_qty`, `description`, `product_id`) | **Deny — edit สงวน.** `approved_qty` บรรทัดถูก set โดย chain Approver (`PR_AUTH_003` + `PR_VAL_013`) และ freeze ที่ `approved` Purchaser อาจอัปเดตเฉพาะ snapshot vendor / pricelist บนบรรทัดและเขียน converted-qty เข้าตาราง bridge — ไม่แก้บรรทัดต้นทางเอง API call ตรงถูก reject ด้วย `"This field is read-only for the purchase stage role"` |
@@ -78,5 +78,5 @@ dateCreated: 2026-05-15T09:00:00.000Z
 - โมเดลข้อมูล: [01-data-model.md](./01-data-model.md) Section 2 — ตาราง bridge `tb_purchase_order_detail_tb_purchase_request_detail` (link many-to-many ระหว่างบรรทัด PR↔PO รองรับ consolidation และ partial conversion); คอลัมน์ snapshot ของ `tb_purchase_request_detail` (`vendor_id`, `vendor_name`, `pricelist_detail_id`, `pricelist_no`, `pricelist_unit`, `pricelist_price`, `pricelist_type`)
 - E2E: `../carmen-inventory-frontend-e2e/tests/304-pr-purchaser-journey.spec.ts` — spec persona-journey สำหรับ Purchaser ครอบคลุม list scoping ไปยัง stage `Purchase`, edit-mode permission (vendor / unit-price / discount / tax-profile แก้ได้, approved-qty read-only), **Auto Allocate** vendor, bulk approve / reject / send-for-review / split และ scenario golden full-flow `TC-PR-070901` (PR `approved` → Convert to PO → PR `completed`) Coverage permission ต่อ action × ต่อ role อยู่ใน `../carmen-inventory-frontend-e2e/tests/301-pr.spec.ts` (fixture `purchaseTest`) Coverage การสร้าง / edit PR Template ที่ใกล้กับ Purchaser อยู่ใน `../carmen-inventory-frontend-e2e/tests/310-pr-template.spec.ts`
 - ที่มา: `../carmen/docs/purchase-request-management/PR-User-Experience.md` (Allocate Vendor dialog, UX workbench Convert-to-PO, panel pricelist-deviation), `../carmen/docs/purchase-request-management/purchase-request-module-prd.md` (consolidation grouping ตาม vendor + currency, พฤติกรรม partial-conversion), `../carmen/docs/purchase-request-management/testing.md` (level testing — pattern spec convert-to-po และ allocate-vendor), `../carmen/docs/purchase-request-management/troubleshooting.md` (Section 2.3 — ปัญหาการแปลง PO: ขาดการจัดสรร vendor, pricelist deviation, error ความสมบูรณ์ bridge ของ partial-conversion, mismatch snapshot FX rate)
-- Cross-link: [[purchase-order]] — โมดูลปลายน้ำที่รับ PO ที่แปลงแล้ว; hard budget commitment อยู่ที่นั่นหลัง `PR_POST_007`
-- Cross-link: [[vendor-pricelist]] — reference pricelist deviation และแหล่งจัดอันดับ Allocate Vendor
+- Cross-link: [purchase-order](/th/inventory/purchase-order) — โมดูลปลายน้ำที่รับ PO ที่แปลงแล้ว; hard budget commitment อยู่ที่นั่นหลัง `PR_POST_007`
+- Cross-link: [vendor-pricelist](/th/inventory/vendor-pricelist) — reference pricelist deviation และแหล่งจัดอันดับ Allocate Vendor

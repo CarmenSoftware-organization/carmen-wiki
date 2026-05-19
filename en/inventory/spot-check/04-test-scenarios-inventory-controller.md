@@ -2,7 +2,7 @@
 title: Spot Check — Test Scenarios — Inventory Controller
 description: Inventory Controller test cases for the spot-check module.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: spot-check, test-scenarios, inventory-controller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -11,13 +11,13 @@ dateCreated: 2026-05-15T14:30:00.000Z
 # Spot Check — Test Scenarios — Inventory Controller
 
 > **At a Glance**
-> **Persona:** Inventory Controller (owner of the spot-check exercise) &nbsp;·&nbsp; **Module:** [[spot-check]] &nbsp;·&nbsp; **Scenarios:** ~29
+> **Persona:** Inventory Controller (owner of the spot-check exercise) &nbsp;·&nbsp; **Module:** [spot-check](/en/inventory/spot-check) &nbsp;·&nbsp; **Scenarios:** ~29
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** none — no spot-check Playwright spec exists yet in `../carmen-inventory-frontend-e2e/tests/`
 
 ## 1. Persona Scope
 
-**Inventory Controller** — the owner of the spot-check exercise. The scenarios below exercise the actions catalogued in [[spot-check/03-user-flow-inventory-controller]] Section 3 — spot-check creation across all three `method` values, counter assignment, progress monitoring, recount-flag resolution, override / accept variance, submit, void, and rollup routing. Authority anchor `SPC_AUTH_001`.
+**Inventory Controller** — the owner of the spot-check exercise. The scenarios below exercise the actions catalogued in [spot-check/03-user-flow-inventory-controller](/en/inventory/spot-check/03-user-flow-inventory-controller) Section 3 — spot-check creation across all three `method` values, counter assignment, progress monitoring, recount-flag resolution, override / accept variance, submit, void, and rollup routing. Authority anchor `SPC_AUTH_001`.
 
 ## 2. Functional — Happy Paths
 
@@ -80,4 +80,4 @@ dateCreated: 2026-05-15T14:30:00.000Z
 - **Primary (TODO):** carmen/docs source — does not exist for this module.
 - **Frontend (TODO):** `../carmen-inventory-frontend/` — Inventory Controller UI behaviour source.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists.
-- Related: [[spot-check/03-user-flow-inventory-controller]], [[spot-check/02-business-rules]] (`SPC_AUTH_001`, `SPC_VAL_*`, `SPC_POST_*`), [[spot-check/04-test-scenarios]] (cross-persona handoff scenarios), [[physical-count/04-test-scenarios-count-lead]] (full-count counterpart scenarios).
+- Related: [spot-check/03-user-flow-inventory-controller](/en/inventory/spot-check/03-user-flow-inventory-controller), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_AUTH_001`, `SPC_VAL_*`, `SPC_POST_*`), [spot-check/04-test-scenarios](/en/inventory/spot-check/04-test-scenarios) (cross-persona handoff scenarios), [physical-count/04-test-scenarios-count-lead](/en/inventory/physical-count/04-test-scenarios-count-lead) (full-count counterpart scenarios).

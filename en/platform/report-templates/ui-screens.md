@@ -2,7 +2,7 @@
 title: Report Template — UI Screens
 description: ReportTemplateManagement list (Status + Source Type filters, CSV export) and ReportTemplateEdit 2-pane form (left — identity + source + BU scope; right — 3-tab CodeMirror Dialog XML / Content XML / Preview) — layout, filters, Browse-in-BU probe, sticky action bar, persisted state.
 published: true
-date: '2026-05-19T18:30:00.000Z'
+date: 2026-05-19T23:55:00.000Z'
 tags: book/platform, report-templates, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -244,4 +244,4 @@ There is no Standard/Custom filter and therefore no `filters_report_templates_st
 - `../carmen-platform/src/pages/ReportTemplateManagement.tsx` — list page: filters (Status + Source Type), header actions (Export, Add Template), row actions (Edit / Delete soft), DataTable columns, 6 `localStorage` keys.
 - `../carmen-platform/src/pages/ReportTemplateEdit.tsx` — create/view/edit page: 2-pane layout, Template Info card (5 visible fields + `kind` absent), Business Unit Scope card (ChipInput, `toCsv()` normalisation), Metadata card, Data Source card (source binding, Browse-in-BU probe, source params table, builder key), 3-tab CodeMirror right pane, sticky action bar, `useUnsavedChanges` hook.
 - `../carmen-platform/src/services/reportTemplateService.ts` — API surface: `GET /api-system/report-template`, `POST /api-system/report-template`, `PUT /api-system/report-template/:id`, `DELETE /api-system/report-template/:id`, `GET /api-system/report-template/db-objects?bu_code=<buCode>` (`listDbObjects`).
-- Cross-links: [[report-templates]] (module landing), [[business-units]] (BU chip context and `cluster_id` FK), [Data Model](./data-model.md) (storage types for `allow_business_unit`, `deny_business_unit`, `source_params`; `kind` field), [Permissions](./permissions.md), [XML Spec](./xml-spec.md) (Dialog XML schema §2, Content XML schema §3).
+- Cross-links: [report-templates](/en/platform/report-templates) (module landing), [business-units](/en/platform/business-units) (BU chip context and `cluster_id` FK), [Data Model](./data-model.md) (storage types for `allow_business_unit`, `deny_business_unit`, `source_params`; `kind` field), [Permissions](./permissions.md), [XML Spec](./xml-spec.md) (Dialog XML schema §2, Content XML schema §3).

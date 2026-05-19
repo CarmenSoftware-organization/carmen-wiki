@@ -2,7 +2,7 @@
 title: Access Control
 description: Users, roles, permissions, and multi-business-unit access.
 published: true
-date: 2026-05-19T23:45:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: access-control, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -15,7 +15,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 1. Overview
 
-Access Control is the umbrella for **who can do what, where**. It binds five entities into a single authorisation pipeline. [[access-control/user]] is the identity (account, profile, password, sessions). [[access-control/business-unit-user]] declares which business units a user may enter at all. [[access-control/application-role]] is the named bundle of [[access-control/permission]] atoms assigned to a user within a BU. [[access-control/user-location]] then narrows the user's row-level scope inside the tenant to specific [[master-data/location]]s.
+Access Control is the umbrella for **who can do what, where**. It binds five entities into a single authorisation pipeline. [access-control/user](/en/inventory/access-control/user) is the identity (account, profile, password, sessions). [access-control/business-unit-user](/en/inventory/access-control/business-unit-user) declares which business units a user may enter at all. [access-control/application-role](/en/inventory/access-control/application-role) is the named bundle of [access-control/permission](/en/inventory/access-control/permission) atoms assigned to a user within a BU. [access-control/user-location](/en/inventory/access-control/user-location) then narrows the user's row-level scope inside the tenant to specific [master-data/location](/en/inventory/master-data/location)s.
 
 Every transactional action in the system — submitting a PR, approving a GRN, posting an inventory adjustment, running a count — resolves through this pipeline. The runtime question "may user X perform action Y on resource Z" decomposes to: does X have an active `tb_user_tb_business_unit` row for the active BU; does X hold an `tb_application_role` in that BU whose `tb_application_role_tb_permission` set includes `(Z, Y)`; and (for location-scoped resources) is the target row inside X's `tb_user_location` set.
 
@@ -37,14 +37,14 @@ Sysadmin owns the configuration end-to-end. Security Officer audits credentials,
 
 ## 4. Cross-Module Dependencies
 
-- **All transactional modules** depend on [[access-control/user]], [[access-control/application-role]], [[access-control/permission]], and [[access-control/business-unit-user]] — every authenticated request resolves through this chain before any module-specific logic runs. Listing each module here would just repeat the same four entities, so the rule is: every action in [[purchase-request]], [[purchase-order]], [[good-receive-note]], [[store-requisition]], [[inventory]], [[inventory-adjustment]], [[physical-count]], [[spot-check]], [[costing]], [[vendor-pricelist]], [[product]], and [[recipe]] is RBAC-gated.
-- [[inventory]] additionally consults [[access-control/user-location]] for row-level filtering of inventory listings and movement screens.
-- [[store-requisition]] additionally consults [[access-control/user-location]] for location-bound issuing.
-- [[physical-count]] additionally consults [[access-control/user-location]] so storekeepers only see and count their own areas.
-- [[spot-check]] additionally consults [[access-control/user-location]] for the same scoping reason as physical-count.
-- [[master-data/business-unit]] is the scope-anchor for [[access-control/application-role]] (every role is owned by a BU) and for [[access-control/business-unit-user]] (every membership references a BU).
-- [[master-data/location]] is the scope target for [[access-control/user-location]].
-- [[reporting-audit]] consumes the audit columns and role / membership change events surfaced by every entity in this umbrella.
+- **All transactional modules** depend on [access-control/user](/en/inventory/access-control/user), [access-control/application-role](/en/inventory/access-control/application-role), [access-control/permission](/en/inventory/access-control/permission), and [access-control/business-unit-user](/en/inventory/access-control/business-unit-user) — every authenticated request resolves through this chain before any module-specific logic runs. Listing each module here would just repeat the same four entities, so the rule is: every action in [purchase-request](/en/inventory/purchase-request), [purchase-order](/en/inventory/purchase-order), [good-receive-note](/en/inventory/good-receive-note), [store-requisition](/en/inventory/store-requisition), [inventory](/en/inventory/inventory), [inventory-adjustment](/en/inventory/inventory-adjustment), [physical-count](/en/inventory/physical-count), [spot-check](/en/inventory/spot-check), [costing](/en/inventory/costing), [vendor-pricelist](/en/inventory/vendor-pricelist), [product](/en/inventory/product), and [recipe](/en/inventory/recipe) is RBAC-gated.
+- [inventory](/en/inventory/inventory) additionally consults [access-control/user-location](/en/inventory/access-control/user-location) for row-level filtering of inventory listings and movement screens.
+- [store-requisition](/en/inventory/store-requisition) additionally consults [access-control/user-location](/en/inventory/access-control/user-location) for location-bound issuing.
+- [physical-count](/en/inventory/physical-count) additionally consults [access-control/user-location](/en/inventory/access-control/user-location) so storekeepers only see and count their own areas.
+- [spot-check](/en/inventory/spot-check) additionally consults [access-control/user-location](/en/inventory/access-control/user-location) for the same scoping reason as physical-count.
+- [master-data/business-unit](/en/inventory/master-data/business-unit) is the scope-anchor for [access-control/application-role](/en/inventory/access-control/application-role) (every role is owned by a BU) and for [access-control/business-unit-user](/en/inventory/access-control/business-unit-user) (every membership references a BU).
+- [master-data/location](/en/inventory/master-data/location) is the scope target for [access-control/user-location](/en/inventory/access-control/user-location).
+- [reporting-audit](/en/inventory/reporting-audit) consumes the audit columns and role / membership change events surfaced by every entity in this umbrella.
 
 ## 5. References
 

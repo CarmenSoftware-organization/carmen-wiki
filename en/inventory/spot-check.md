@@ -2,7 +2,7 @@
 title: Spot Check
 description: Targeted partial count of selected items or locations — a lighter-weight check than a full physical count.
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: spot-check, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -50,17 +50,17 @@ The control serves two complementary purposes. First, it is a **loss-prevention*
 ## 5. Related Modules
 
 **Cross-module flow:**
-- [[inventory]] — spot check verifies a subset of inventory balances
-- [[inventory-adjustment]] — variances are posted as adjustments
-- [[physical-count]] — full count counterpart
+- [inventory](/en/inventory/inventory) — spot check verifies a subset of inventory balances
+- [inventory-adjustment](/en/inventory/inventory-adjustment) — variances are posted as adjustments
+- [physical-count](/en/inventory/physical-count) — full count counterpart
 
 **Master configuration:**
-- [[master-data/unit]] — unit of measure for each spot-check line
-- [[master-data/location]] — the (sub-)location in scope for the spot check
-- [[master-data/adjustment-type]] — reason codes used when posting variance adjustments
-- [[system-config/workflow]] — approval workflow for recount and variance posting
-- [[access-control/user-location]] — restricts which locations a user can spot-check
-- [[reporting-audit/activity]] — spot-check and recount activity log for audit
+- [master-data/unit](/en/inventory/master-data/unit) — unit of measure for each spot-check line
+- [master-data/location](/en/inventory/master-data/location) — the (sub-)location in scope for the spot check
+- [master-data/adjustment-type](/en/inventory/master-data/adjustment-type) — reason codes used when posting variance adjustments
+- [system-config/workflow](/en/inventory/system-config/workflow) — approval workflow for recount and variance posting
+- [access-control/user-location](/en/inventory/access-control/user-location) — restricts which locations a user can spot-check
+- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — spot-check and recount activity log for audit
 
 ## 6. Reference Sources
 
@@ -72,15 +72,15 @@ The control serves two complementary purposes. First, it is a **loss-prevention*
 
 ## 7. Pages in This Module
 
-- [[spot-check/01-data-model]] — entities, fields, relationships, enums (`tb_spot_check`, `tb_spot_check_detail` plus two comment tables; two enums `enum_spot_check_status` / `enum_spot_check_method`).
-- [[spot-check/02-business-rules]] — validation, calculation, authorization, posting, cross-module rules (`SPC_VAL_*` / `SPC_CALC_*` / `SPC_AUTH_*` / `SPC_POST_*` / `SPC_XMOD_*`).
-- [[spot-check/03-user-flow]] — document lifecycle overview + persona index.
-  - [[spot-check/03-user-flow-inventory-controller]] — Inventory Controller path.
-  - [[spot-check/03-user-flow-counter]] — Counter path.
-  - [[spot-check/03-user-flow-audit-config]] — Auditor + (implicit) Sysadmin path.
-- [[spot-check/04-test-scenarios]] — test scenarios overview + cross-persona handoff scenarios + E2E mapping target.
-  - [[spot-check/04-test-scenarios-inventory-controller]] — Inventory Controller scenarios.
-  - [[spot-check/04-test-scenarios-counter]] — Counter scenarios.
-  - [[spot-check/04-test-scenarios-audit-config]] — Auditor + Sysadmin scenarios.
+- [spot-check/01-data-model](/en/inventory/spot-check/01-data-model) — entities, fields, relationships, enums (`tb_spot_check`, `tb_spot_check_detail` plus two comment tables; two enums `enum_spot_check_status` / `enum_spot_check_method`).
+- [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) — validation, calculation, authorization, posting, cross-module rules (`SPC_VAL_*` / `SPC_CALC_*` / `SPC_AUTH_*` / `SPC_POST_*` / `SPC_XMOD_*`).
+- [spot-check/03-user-flow](/en/inventory/spot-check/03-user-flow) — document lifecycle overview + persona index.
+  - [spot-check/03-user-flow-inventory-controller](/en/inventory/spot-check/03-user-flow-inventory-controller) — Inventory Controller path.
+  - [spot-check/03-user-flow-counter](/en/inventory/spot-check/03-user-flow-counter) — Counter path.
+  - [spot-check/03-user-flow-audit-config](/en/inventory/spot-check/03-user-flow-audit-config) — Auditor + (implicit) Sysadmin path.
+- [spot-check/04-test-scenarios](/en/inventory/spot-check/04-test-scenarios) — test scenarios overview + cross-persona handoff scenarios + E2E mapping target.
+  - [spot-check/04-test-scenarios-inventory-controller](/en/inventory/spot-check/04-test-scenarios-inventory-controller) — Inventory Controller scenarios.
+  - [spot-check/04-test-scenarios-counter](/en/inventory/spot-check/04-test-scenarios-counter) — Counter scenarios.
+  - [spot-check/04-test-scenarios-audit-config](/en/inventory/spot-check/04-test-scenarios-audit-config) — Auditor + Sysadmin scenarios.
 
-> **Status:** all sub-pages are skeleton-level (~50-100 lines each). Each carries explicit TODO callouts pointing at the upstream sources to use when filling in (`../carmen-inventory-frontend/` for UI flow; `../carmen-inventory-frontend-e2e/tests/` for E2E specs — no spot-check spec exists yet). Data-model section is grounded in the Prisma schema (`tb_spot_check*` is **its own table set** — four entities, two enums — *not* shared with `tb_physical_count*`; the two modules are conceptual cousins that both roll up to [[inventory-adjustment]], not shared infrastructure); business-rules introduces a proposed `SPC_*` rule-ID catalogue that needs carmen/docs confirmation; user-flow and test-scenarios are structural placeholders.
+> **Status:** all sub-pages are skeleton-level (~50-100 lines each). Each carries explicit TODO callouts pointing at the upstream sources to use when filling in (`../carmen-inventory-frontend/` for UI flow; `../carmen-inventory-frontend-e2e/tests/` for E2E specs — no spot-check spec exists yet). Data-model section is grounded in the Prisma schema (`tb_spot_check*` is **its own table set** — four entities, two enums — *not* shared with `tb_physical_count*`; the two modules are conceptual cousins that both roll up to [inventory-adjustment](/en/inventory/inventory-adjustment), not shared infrastructure); business-rules introduces a proposed `SPC_*` rule-ID catalogue that needs carmen/docs confirmation; user-flow and test-scenarios are structural placeholders.

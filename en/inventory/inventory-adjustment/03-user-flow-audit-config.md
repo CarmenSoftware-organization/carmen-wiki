@@ -2,7 +2,7 @@
 title: Inventory Adjustment — User Flow — Audit & Config
 description: Auditor and System Administrator flows within the inventory-adjustment module — audit trail inspection and configuration maintenance.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: inventory-adjustment, user-flow, audit, sysadmin, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 # Inventory Adjustment — User Flow — Audit & Config
 
 > **At a Glance**
-> **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [[inventory-adjustment]] &nbsp;·&nbsp; **Workflow stages:** Off-path observers — Sysadmin owns reason-code list (`tb_adjustment_type`), thresholds, RBAC, period config; Auditor reads the full adjustment dataset including soft-deleted compensating reversals &nbsp;·&nbsp; **Key permissions:** Sysadmin configures rules and thresholds; Auditor read-only (no document state writes)
+> **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [inventory-adjustment](/en/inventory/inventory-adjustment) &nbsp;·&nbsp; **Workflow stages:** Off-path observers — Sysadmin owns reason-code list (`tb_adjustment_type`), thresholds, RBAC, period config; Auditor reads the full adjustment dataset including soft-deleted compensating reversals &nbsp;·&nbsp; **Key permissions:** Sysadmin configures rules and thresholds; Auditor read-only (no document state writes)
 > **What this persona does:** Configures adjustment-module rules / thresholds / reason codes (Sysadmin); audits document trails and compensating-reversal chains (Auditor).
 
 ### Position relative to the transactional flow (off-path observers)
@@ -32,7 +32,7 @@ graph LR
 
 ### Permission Matrix — V6 Action × Sub-persona (Audit / Config)
 
-Both sub-personas are non-transactional — they do not raise, approve, edit, post, or void adjustment documents. Their work is on the boundaries: configuration (System Administrator) and read-only inspection (Auditor). Rows are derived from Section 2 (Entry Point and Primary Flow) of this file; rule citations refer to [[inventory-adjustment/02-business-rules]] § 4 (Authorization Rules) and § 5 (Posting Rules).
+Both sub-personas are non-transactional — they do not raise, approve, edit, post, or void adjustment documents. Their work is on the boundaries: configuration (System Administrator) and read-only inspection (Auditor). Rows are derived from Section 2 (Entry Point and Primary Flow) of this file; rule citations refer to [inventory-adjustment/02-business-rules](/en/inventory/inventory-adjustment/02-business-rules) § 4 (Authorization Rules) and § 5 (Posting Rules).
 
 | Action | System Administrator | Auditor |
 |---|---|---|
@@ -51,7 +51,7 @@ Both sub-personas are non-transactional — they do not raise, approve, edit, po
 | Lot-recall trace (receipt → consumption → adjustment → void chain) | ❌ | ✅ — via shared `tb_inventory_transaction` join |
 | Raise / approve / void adjustment documents | ❌ (`ADJ_AUTH_008` — config only) | ❌ |
 
-> ℹ️ **Configuration scope:** System Administrator changes apply **prospectively** — new and future draft documents inherit the updated reason codes, thresholds, and workflow stages. Existing `draft` / `in_progress` documents retain the config active at their submit time. `completed` documents are immutable and retain their reason-code snapshot per [[inventory-adjustment/01-data-model]] § 3.
+> ℹ️ **Configuration scope:** System Administrator changes apply **prospectively** — new and future draft documents inherit the updated reason codes, thresholds, and workflow stages. Existing `draft` / `in_progress` documents retain the config active at their submit time. `completed` documents are immutable and retain their reason-code snapshot per [inventory-adjustment/01-data-model](/en/inventory/inventory-adjustment/01-data-model) § 3.
 
 > ℹ️ **Sensitive-field export:** Single-Auditor export of cost-per-unit and joined vendor-pricelist data requires a secondary-approval step per the audit pattern. This is enforced at the platform layer, not within the adjustment module itself.
 
@@ -64,7 +64,7 @@ The **Audit / Config** persona group folds two carmen/docs roles — **Auditor**
 - Read-only access to all `tb_stock_in` / `tb_stock_out` documents across the property, including soft-deleted (`deleted_at` non-null), `cancelled`, and `voided` documents per `ADJ_AUTH_009`.
 - End-to-end inspection of the adjustment trail: reason codes (and their `info.glAccount` mappings at the time of post — via cost-layer snapshot), attachments (photos, vendor RMAs, recall notices, supervisor sign-offs), approval signatures (`workflow_history`, `last_action_by_id`, `last_action_at_date`), journal entries (resolved via the inventory transaction → cost-layer ledger join → Finance subsystem), and **void chains** (compensating-reversal sequences per `ADJ_POST_004`).
 - SoD compliance checks per `ADJ_AUTH_010` — flag cases where the same user appears as both receiver and adjuster for the same lot above the SoD threshold.
-- Lot-recall trace combining adjustment documents with [[good-receive-note]] receipts and [[store-requisition]] / [[physical-count]] consumption / variance data via the shared `tb_inventory_transaction` join.
+- Lot-recall trace combining adjustment documents with [good-receive-note](/en/inventory/good-receive-note) receipts and [store-requisition](/en/inventory/store-requisition) / [physical-count](/en/inventory/physical-count) consumption / variance data via the shared `tb_inventory_transaction` join.
 - Export of sensitive-field data (cost-per-unit, vendor terms via joined source documents) under secondary-approval audit pattern.
 
 **System Administrator responsibilities:**
@@ -108,7 +108,7 @@ Neither role can post / approve / void / edit adjustment documents directly. Con
 **Auditor secondary flow — Lot Recall Trace (4 steps):**
 
 1. **Open the Lot Recall Trace screen.** Enter `lot_no` and `product_id`.
-2. **Forward trace.** All movements consuming from the lot: SR issues (per [[store-requisition]] join), stock-out write-offs (`tb_stock_out_detail` join via `current_lot_no` on the inventory-side), credit-note quantity adjustments, transfer-outs.
+2. **Forward trace.** All movements consuming from the lot: SR issues (per [store-requisition](/en/inventory/store-requisition) join), stock-out write-offs (`tb_stock_out_detail` join via `current_lot_no` on the inventory-side), credit-note quantity adjustments, transfer-outs.
 3. **Backward trace.** The originating GRN (or compensating reversal for a stock-in-introduced lot) — the receipt that created the lot's first cost-layer row.
 4. **Render chain-of-custody.** Both directions in a single report — receipt date, recipient, all downstream movements with dates / actors / qtys / cost impacts. No write operations; read-only.
 
@@ -169,7 +169,7 @@ The Audit / Config persona's involvement on a given adjustment / configuration e
 - Sibling: [03-user-flow-finance.md](./03-user-flow-finance.md) — Sysadmin configures the Finance threshold and the `info.glAccount` mappings Finance verifies; Auditor reviews the period-end adjustment trail Finance signs off.
 - Sibling: [01-data-model.md](./01-data-model.md) — `tb_adjustment_type` shape (Sysadmin CRUD target), `tb_user_location` (Sysadmin scoping target), `tb_workflow` reference, `workflow_history` JSON (Auditor primary read target).
 - Sibling: [02-business-rules.md](./02-business-rules.md) — `ADJ_AUTH_008` (Sysadmin configuration scope), `ADJ_AUTH_009` (Auditor read scope), `ADJ_AUTH_010` (SoD — Auditor primary verification target), `ADJ_VAL_002` (reason-direction match — Sysadmin design constraint), `ADJ_VAL_010` (requiresDocument flag), `ADJ_POST_004` (void chain — Auditor primary verification target).
-- Related: [[inventory]] — `INV_AUTH_008` (Sysadmin configuration scope spanning location-type / costing-method / period definitions in addition to adjustment-type), `INV_AUTH_009` (Auditor read scope spanning all inventory data).
-- Related: [[good-receive-note]] — Auditor's lot-recall trace joins adjustments with GRN receipts via the shared inventory transaction; the Auditor flow pattern mirrors [[good-receive-note/03-user-flow-audit-config]].
-- Related: [[physical-count]] / [[spot-check]] — Auditor reviews variance-rollup auto-posts (initiated by `ADJ_POST_006` on count commit) for reasonableness and SoD compliance.
+- Related: [inventory](/en/inventory/inventory) — `INV_AUTH_008` (Sysadmin configuration scope spanning location-type / costing-method / period definitions in addition to adjustment-type), `INV_AUTH_009` (Auditor read scope spanning all inventory data).
+- Related: [good-receive-note](/en/inventory/good-receive-note) — Auditor's lot-recall trace joins adjustments with GRN receipts via the shared inventory transaction; the Auditor flow pattern mirrors [good-receive-note/03-user-flow-audit-config](/en/inventory/good-receive-note/03-user-flow-audit-config).
+- Related: [physical-count](/en/inventory/physical-count) / [spot-check](/en/inventory/spot-check) — Auditor reviews variance-rollup auto-posts (initiated by `ADJ_POST_006` on count commit) for reasonableness and SoD compliance.
 - E2E: [`../carmen-inventory-frontend-e2e/tests/031-adjustment-type.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/031-adjustment-type.spec.ts) — the canonical Sysadmin CRUD spec for `tb_adjustment_type`; covers reason-code uniqueness, code-and-name validation, list / search / pagination, security cases.

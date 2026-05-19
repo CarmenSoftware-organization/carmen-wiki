@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — Test Scenarios — Finance
 description: Test cases ของ Finance (three-way match, AP posting, FX, discrepancy bounce-back) สำหรับ purchase-order
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-order, test-scenarios, finance, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 # ใบสั่งซื้อ (Purchase Order) — Test Scenarios — Finance
 
 > **At a Glance**
-> **Persona:** Finance (Officer / AP Clerk + Finance Manager) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Scenarios:** ~25
+> **Persona:** Finance (Officer / AP Clerk + Finance Manager) &nbsp;·&nbsp; **Module:** [purchase-order](/th/inventory/purchase-order) &nbsp;·&nbsp; **Scenarios:** ~25
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** map ไปยัง `401-po.spec.ts`, `403-po-finance-ap-match.spec.ts` ใน `../carmen-inventory-frontend-e2e/`
 
@@ -69,7 +69,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 - Sibling: [04-test-scenarios-receiver.md](./04-test-scenarios-receiver.md) — persona ต้นน้ำที่ post GRN ที่ flow นี้ match เทียบกัน; GRN ขับเคลื่อน `received_qty` และ `accepted_qty` ที่ three-way match consume
 - Sibling: [04-test-scenarios-purchaser.md](./04-test-scenarios-purchaser.md) — bounce-back target บน three-way-match failure (qty / price / currency discrepancy); เป็นเจ้าของ amendment / credit-note / void resolution loop
 - กฎทางธุรกิจที่ verify: [02-business-rules.md](./02-business-rules.md) Section 5 (`PO_POST_003` stage approval; `PO_POST_004` final approval → `in_progress → sent`; `PO_POST_005` reject → `in_progress → draft`; `PO_POST_008` three-way match success — AP clear GRN accrual + post vendor invoice, PO ไม่ status-changed; `PO_POST_009` three-way match failure — invoice hold ใน dispute, `system` comment + vendor-pricelist deviation, PO ไม่ auto-voided; `PO_POST_010` void — terminal; `PO_AUTH_009` Finance Officer read-only; `PO_AUTH_011` workflow-derived stage-gated approval), Section 6 (`PO_XMOD_007` AP / Three-way match — GRN posting raise inventory accrual, cleared เฉพาะบน `PO_POST_008` success; PO closure เพียงอย่างเดียวไม่ clear AP accrual)
-- Cross-link: [[good-receive-note]] — โมดูล upstream ที่การ posting สร้าง matched-but-unbilled accrual ที่ AP clear บน match success; GRN เป็นเจ้าของ `received_qty` / `accepted_qty` ที่ขับเคลื่อน qty side ของ match
-- Cross-link: [[inventory]] — inventory-receipt accrual ที่ clear บน match success เป็นของ inventory / GL integration; PO มีส่วนร่วมเฉพาะ on-order pipeline quantity ตาม `PO_XMOD_008`
-- Cross-link: [[vendor-pricelist]] — three-way-match failures บน price เปิด deviation record บน vendor / vendor-pricelist side ตาม `PO_POST_009` feed pricelist-deviation analytics
+- Cross-link: [good-receive-note](/th/inventory/good-receive-note) — โมดูล upstream ที่การ posting สร้าง matched-but-unbilled accrual ที่ AP clear บน match success; GRN เป็นเจ้าของ `received_qty` / `accepted_qty` ที่ขับเคลื่อน qty side ของ match
+- Cross-link: [inventory](/th/inventory/inventory) — inventory-receipt accrual ที่ clear บน match success เป็นของ inventory / GL integration; PO มีส่วนร่วมเฉพาะ on-order pipeline quantity ตาม `PO_XMOD_008`
+- Cross-link: [vendor-pricelist](/th/inventory/vendor-pricelist) — three-way-match failures บน price เปิด deviation record บน vendor / vendor-pricelist side ตาม `PO_POST_009` feed pricelist-deviation analytics
 - E2E: `../carmen-inventory-frontend-e2e/tests/401-po.spec.ts` — shared / mixed-persona coverage; ไม่มี E2E spec Finance เฉพาะที่นี้ Three-way match, AP posting, และ FX adjustment behaviours exercised ที่ API / integration level (cross-module AP service) แทนผ่าน PO UI; `403-po-finance-ap-match.spec.ts` เฉพาะเป็น roadmap item Annotation `SKIP_NOTE_BACKEND` ใน `401-po.spec.ts` flag GRN-sync และ AP-integration behaviour อย่างชัดเจนเป็น out-of-scope สำหรับ UI E2E coverage

@@ -2,7 +2,7 @@
 title: Delivery Point
 description: Physical drop-off points for vendor deliveries — referenced by purchase orders and GRNs and joined to inventory locations.
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, delivery-point, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -27,7 +27,7 @@ A property typically has a handful of delivery points (Main Dock, Banquet Dock, 
 |---|---|---|
 | Add a delivery point | Configuration → Master Data → Delivery Point → **New** | Required: `name` |
 | Deactivate | Toggle `is_active` | Hidden from PO/GRN pickers; historical docs still resolve |
-| Tag a location's default | [[master-data/location]] detail | Sets `tb_location.delivery_point_id` |
+| Tag a location's default | [master-data/location](/en/inventory/master-data/location) detail | Sets `tb_location.delivery_point_id` |
 | Override on GRN | GRN header field | GRN inherits from PO but may override on receipt |
 
 ## 3. Validation & Errors
@@ -73,10 +73,10 @@ Source: tenant schema.
 
 ## 7. Cross-References
 
-- [[purchase-order]] — PO header carries delivery-point reference.
-- [[good-receive-note]] — GRN inherits from PO, may override.
-- [[master-data/location]] — each location can tag a default delivery point.
-- [[purchase-request]] — PR detail may hold a delivery-point hint that propagates to PO.
+- [purchase-order](/en/inventory/purchase-order) — PO header carries delivery-point reference.
+- [good-receive-note](/en/inventory/good-receive-note) — GRN inherits from PO, may override.
+- [master-data/location](/en/inventory/master-data/location) — each location can tag a default delivery point.
+- [purchase-request](/en/inventory/purchase-request) — PR detail may hold a delivery-point hint that propagates to PO.
 
 ## 8. References
 

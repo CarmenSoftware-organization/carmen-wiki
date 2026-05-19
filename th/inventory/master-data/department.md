@@ -2,7 +2,7 @@
 title: แผนก (Department)
 description: แผนกขององค์กรและการกำหนดผู้ใช้ — ใช้เป็น cost-centre และ scope การอนุมัติบนเอกสาร requisition และ PR
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: master-data, department, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -91,10 +91,10 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 7. การอ้างอิงข้ามโมดูล
 
-- [[purchase-request]] — PR header อ้างอิงแผนกที่ขอ; routing ใช้ HOD จาก `tb_department_user`
-- [[store-requisition]] — `from`/`to` location จับคู่กับแผนกบนทุก requisition
-- [[access-control]] — การเป็นสมาชิกแผนกขับเคลื่อน RBAC scope default
-- [[reporting-audit]] — รายงานหลายตัวจัดกลุ่มตามแผนก
+- [purchase-request](/th/inventory/purchase-request) — PR header อ้างอิงแผนกที่ขอ; routing ใช้ HOD จาก `tb_department_user`
+- [store-requisition](/th/inventory/store-requisition) — `from`/`to` location จับคู่กับแผนกบนทุก requisition
+- [access-control](/th/inventory/access-control) — การเป็นสมาชิกแผนกขับเคลื่อน RBAC scope default
+- [reporting-audit](/th/inventory/reporting-audit) — รายงานหลายตัวจัดกลุ่มตามแผนก
 
 ## 8. แหล่งอ้างอิง
 

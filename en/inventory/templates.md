@@ -2,7 +2,7 @@
 title: Templates
 description: Reusable scaffold definitions consumed by PR and Vendor Pricelist — shared mechanics for seed-only documents that prefill a new transactional record on instantiation.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: templates, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T16:00:00.000Z
@@ -29,15 +29,15 @@ The behaviours below apply to every template variant in the system:
 
 ## 3. Pages in This Module
 
-- [[templates/purchase-request]] — PR scaffold cloned via "Create PR from Template" in the procurement UI.
-- [[templates/price-list]] — RFQ / pricelist scaffold defining currency, validity, reminder schedule, and escalation rules.
+- [templates/purchase-request](/en/inventory/templates/purchase-request) — PR scaffold cloned via "Create PR from Template" in the procurement UI.
+- [templates/price-list](/en/inventory/templates/price-list) — RFQ / pricelist scaffold defining currency, validity, reminder schedule, and escalation rules.
 
 ## 4. Related Modules
 
-- [[purchase-request]] — primary consumer of PR templates (Requestor persona, REQ-HP-06 scenario).
-- [[vendor-pricelist]] — primary consumer of pricelist templates (Purchaser starting an RFQ round).
-- [[system-config/workflow]] — workflow assignment carried on PR templates.
-- [[master-data/currency]] — currency resolved on pricelist templates.
+- [purchase-request](/en/inventory/purchase-request) — primary consumer of PR templates (Requestor persona, REQ-HP-06 scenario).
+- [vendor-pricelist](/en/inventory/vendor-pricelist) — primary consumer of pricelist templates (Purchaser starting an RFQ round).
+- [system-config/workflow](/en/inventory/system-config/workflow) — workflow assignment carried on PR templates.
+- [master-data/currency](/en/inventory/master-data/currency) — currency resolved on pricelist templates.
 
 ## 5. Reference Sources
 

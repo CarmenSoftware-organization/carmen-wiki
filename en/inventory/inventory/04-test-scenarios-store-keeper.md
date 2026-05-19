@@ -2,7 +2,7 @@
 title: Inventory — Test Scenarios — Store Keeper
 description: Store Keeper's test cases (happy path, permission, validation, edge cases) for inventory.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: inventory, test-scenarios, store-keeper, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 # Inventory — Test Scenarios — Store Keeper
 
 > **At a Glance**
-> **Persona:** Store Keeper &nbsp;·&nbsp; **Module:** [[inventory]] &nbsp;·&nbsp; **Scenarios:** ~29
+> **Persona:** Store Keeper &nbsp;·&nbsp; **Module:** [inventory](/en/inventory/inventory) &nbsp;·&nbsp; **Scenarios:** ~29
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** maps to `501-grn.spec.ts`, `720-stock-issue.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
@@ -72,8 +72,8 @@ This page captures the test scenarios that the Store Keeper persona directly dri
 - User flow: [03-user-flow-store-keeper.md](./03-user-flow-store-keeper.md) — happy-path source for Section 1 above; describes the 8-step primary flow (stock-in for found stock), the stock-out variant, and the count-execution variant; the decision branches (new-lot routes for Controller regardless of cost, FIFO override for expiry write-off, location-type gate); and the exit handoffs (auto-approve post, Controller queue, count document hand-off).
 - Business rules being verified: [02-business-rules.md](./02-business-rules.md) Section 2 — `INV_VAL_001` (source doc resolves), `INV_VAL_002` (product / location required), `INV_VAL_003` (location active), `INV_VAL_004` (qty sign matches type), `INV_VAL_005` (no negative balance), `INV_VAL_006` (lot identity), `INV_VAL_007` (non-negative cost), `INV_VAL_008` (period not closed / locked), `INV_VAL_009` (direct-cost location gate), `INV_VAL_010` (consignment ownership rule), `INV_AUTH_001` / `INV_AUTH_002` (Store Keeper create authority), `INV_AUTH_010` (SoD), `INV_POST_001` / `INV_POST_002` (inbound / outbound posting effects), `INV_CALC_007` (weighted-average recompute).
 - E2E specs: [`../carmen-inventory-frontend-e2e/tests/720-stock-issue.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/720-stock-issue.spec.ts) — Store-Keeper-relevant stock-issue / stock-out paths; [`501-grn.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts) Stock Movements describe block — inventory-side effect of GRN commit, parallel to manual stock-in. Happy-path fixture aligns with `purchase@blueledgers.com` (multi-role); permission-denial uses `requestor@blueledgers.com`.
-- Cross-link: [[good-receive-note]] — Store Keeper is the same physical operator at the dock; GRN commit posts inventory transactions parallel to manual stock-in. The GRN-side flow lives in [[good-receive-note/04-test-scenarios-receiver]].
-- Cross-link: [[store-requisition]] — Store Keeper at the issuing location dispatches stock; outbound inventory effect lives in the SR module's persona file.
-- Cross-link: [[physical-count]] / [[spot-check]] — count execution at the location level; variance posting through the rollup flow.
-- Cross-link: [[inventory-adjustment]] — generic name for the `tb_stock_in` / `tb_stock_out` flow tested above.
-- Cross-link: [[costing]] — FIFO and weighted-average cost picking on outbound (SK-HP-02, SK-HP-07) and the WA recompute on inbound (SK-HP-05 FOC dilution).
+- Cross-link: [good-receive-note](/en/inventory/good-receive-note) — Store Keeper is the same physical operator at the dock; GRN commit posts inventory transactions parallel to manual stock-in. The GRN-side flow lives in [good-receive-note/04-test-scenarios-receiver](/en/inventory/good-receive-note/04-test-scenarios-receiver).
+- Cross-link: [store-requisition](/en/inventory/store-requisition) — Store Keeper at the issuing location dispatches stock; outbound inventory effect lives in the SR module's persona file.
+- Cross-link: [physical-count](/en/inventory/physical-count) / [spot-check](/en/inventory/spot-check) — count execution at the location level; variance posting through the rollup flow.
+- Cross-link: [inventory-adjustment](/en/inventory/inventory-adjustment) — generic name for the `tb_stock_in` / `tb_stock_out` flow tested above.
+- Cross-link: [costing](/en/inventory/costing) — FIFO and weighted-average cost picking on outbound (SK-HP-02, SK-HP-07) and the WA recompute on inbound (SK-HP-05 FOC dilution).

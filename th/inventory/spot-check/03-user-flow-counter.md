@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check) — User Flow — Counter
 description: เส้นทางของ Counter ผ่านวงจรชีวิตการสุ่มตรวจ
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: spot-check, user-flow, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T14:30:00.000Z
 # การสุ่มตรวจ (Spot Check) — User Flow — Counter
 
 > **At a Glance**
-> **Persona:** Counter (counter พื้นที่) &nbsp;·&nbsp; **โมดูล:** [[spot-check]] &nbsp;·&nbsp; **ขั้นตอน workflow:** pending → in_progress (การป้อน actual_qty แรก; แก้ไขบรรทัดที่ได้รับมอบหมาย; แจ้ง IC) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** ป้อน / แก้ไข actual_qty บนบรรทัดที่ได้รับมอบหมาย, comment ระดับบรรทัด, เซ็นปิดกลับ IC
+> **Persona:** Counter (counter พื้นที่) &nbsp;·&nbsp; **โมดูล:** [spot-check](/th/inventory/spot-check) &nbsp;·&nbsp; **ขั้นตอน workflow:** pending → in_progress (การป้อน actual_qty แรก; แก้ไขบรรทัดที่ได้รับมอบหมาย; แจ้ง IC) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** ป้อน / แก้ไข actual_qty บนบรรทัดที่ได้รับมอบหมาย, comment ระดับบรรทัด, เซ็นปิดกลับ IC
 > **สิ่งที่ persona นี้ทำ:** เดินใน location นับรายการใน scope และบันทึก actual_qty เทียบกับ spot-check sheet ที่ได้รับมอบหมาย
 
 ## 1. Persona
@@ -33,7 +33,7 @@ graph LR
 
 ### Permission Matrix — V1 Status × Action (Counter)
 
-Counter เป็น persona ป้อนข้อมูลที่จำกัดขอบเขตอยู่ที่ location ที่ได้รับมอบหมาย อ่านและเขียน `actual_qty` บนบรรทัดของตนและเพิ่ม comment ได้ แต่ submit เอกสาร spot-check หรือเปลี่ยน config ใด ๆ ไม่ได้ row มาจากหัวข้อ 3 (Primary Actions) ของไฟล์นี้; citation ของกฎอ้างอิง [[spot-check/02-business-rules]] § 4 / § 5
+Counter เป็น persona ป้อนข้อมูลที่จำกัดขอบเขตอยู่ที่ location ที่ได้รับมอบหมาย อ่านและเขียน `actual_qty` บนบรรทัดของตนและเพิ่ม comment ได้ แต่ submit เอกสาร spot-check หรือเปลี่ยน config ใด ๆ ไม่ได้ row มาจากหัวข้อ 3 (Primary Actions) ของไฟล์นี้; citation ของกฎอ้างอิง [spot-check/02-business-rules](/th/inventory/spot-check/02-business-rules) § 4 / § 5
 
 | Action | Spot check `pending` | Spot check `in_progress` | Spot check `completed` |
 |---|---|---|---|
@@ -85,4 +85,4 @@ Counter เป็น persona ป้อนข้อมูลที่จำกั
 - **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
 - **Frontend (TODO):** `../carmen-inventory-frontend/` — UI ของ Counter / mobile; ตรวจ cmobile (`../cmobile/`) สำหรับการ implement spot-check sheet ฝั่ง PWA ถ้ามี
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check
-- ที่เกี่ยวข้อง: [[spot-check/03-user-flow]] (overview), [[spot-check/02-business-rules]] (`SPC_AUTH_002`, `SPC_VAL_004`–`SPC_VAL_005`), [[spot-check/03-user-flow-inventory-controller]] (คู่ handoff), [[physical-count/03-user-flow-counter]] (flow counter คู่เทียบการนับเต็ม)
+- ที่เกี่ยวข้อง: [spot-check/03-user-flow](/th/inventory/spot-check/03-user-flow) (overview), [spot-check/02-business-rules](/th/inventory/spot-check/02-business-rules) (`SPC_AUTH_002`, `SPC_VAL_004`–`SPC_VAL_005`), [spot-check/03-user-flow-inventory-controller](/th/inventory/spot-check/03-user-flow-inventory-controller) (คู่ handoff), [physical-count/03-user-flow-counter](/th/inventory/physical-count/03-user-flow-counter) (flow counter คู่เทียบการนับเต็ม)

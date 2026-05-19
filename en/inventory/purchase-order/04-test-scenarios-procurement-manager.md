@@ -2,7 +2,7 @@
 title: Purchase Order — Test Scenarios — Procurement Manager
 description: Procurement Manager's test cases (transactional high-value approval + configuration) for purchase-order.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: purchase-order, test-scenarios, procurement-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 # Purchase Order — Test Scenarios — Procurement Manager
 
 > **At a Glance**
-> **Persona:** Procurement Manager (high-value approval + configurational rule-tuning) &nbsp;·&nbsp; **Module:** [[purchase-order]] &nbsp;·&nbsp; **Scenarios:** ~29
+> **Persona:** Procurement Manager (high-value approval + configurational rule-tuning) &nbsp;·&nbsp; **Module:** [purchase-order](/en/inventory/purchase-order) &nbsp;·&nbsp; **Scenarios:** ~29
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** maps to `401-po.spec.ts`, `403-po-approver-journey.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
@@ -74,6 +74,6 @@ This page captures the test scenarios that the Procurement Manager persona drive
 - Business rules being verified: [02-business-rules.md](./02-business-rules.md) Section 4 — `PO_AUTH_004` (high-value approval threshold and Purchaser self-approval), `PO_AUTH_005` (Manager-only soft-delete in draft), `PO_AUTH_006` (Purchaser or Manager transmit), `PO_AUTH_007` (Manager-only void from any non-terminal state), `PO_AUTH_008` (Inventory Manager / shared early-close from `partial → closed`), `PO_AUTH_010` (segregation of duties), `PO_AUTH_011` (workflow-stage authorisation derived from `user_action.execute`); Section 5 — `PO_POST_002` (submit → `in_progress`), `PO_POST_003` (approve within `in_progress`), `PO_POST_004` (final approval `in_progress → sent` + transmit), `PO_POST_005` (send-back `in_progress → draft`), `PO_POST_010` (void from any non-terminal state), `PO_POST_011` (early-close `partial → closed`), `PO_POST_012` (soft-delete in draft).
 - Cross-module rules: [02-business-rules.md](./02-business-rules.md) Section 6 — `PO_XMOD_005` / `PO_XMOD_006` (vendor-pricelist snapshot and deviation-driven routing to the high-value stage), `PO_XMOD_007` (three-way-match interaction on void / early-close).
 - E2E: `../carmen-inventory-frontend-e2e/tests/403-po-approver-journey.spec.ts` — persona-journey spec for the FC / Procurement Manager. Covers TC-PO-070101..TC-PO-070103 (Step 1 — My Approval dashboard, PO filter tab, click pending PO row), TC-PO-070201..TC-PO-070203 (Step 2 — PO Detail in IN PROGRESS view, header read-only, Edit + Comment buttons visible), TC-PO-070301..TC-PO-070304 (Step 3 — item-level Approve / Review / Reject marking), TC-PO-070305..TC-PO-070307 (Document Approve flow with dialog and `APPROVED/SENT` transition), TC-PO-070308..TC-PO-070309 (Document Send Back flow with reason and `IN_PROGRESS → DRAFT` return), TC-PO-070310..TC-PO-070311 (Document Reject flow with `REJECTED` status), TC-PO-070312 (Edit-mode cancel without saving), TC-PO-070901 (Golden Journey full FC flow). Shared / mixed-persona coverage in `../carmen-inventory-frontend-e2e/tests/401-po.spec.ts` includes budget-gated approval scenarios (`approve PO ... งบประมาณไม่เพียงพอ`) and three-way-match negatives that interact with the Manager's void / close override paths.
-- Cross-link: [[vendor-pricelist]] — vendor master, pricelist coverage, and tolerance band that the Manager tunes from the configuration surface (PM-HP-07, PM-HP-08); the deviation-routing rule `PO_XMOD_006` feeds the high-value stage.
-- Cross-link: [[purchase-request]] — upstream module whose PR-to-PO conversion is governed by the `(vendor_id, currency_id)` grouping rule the Manager configures (PM-HP-08).
-- Cross-link: [[good-receive-note]] — downstream fulfilment whose receipt postings drive `sent → partial → completed`; the Manager observes these transitions on the dashboard and intervenes only via early-close (`PO_POST_011`) or void (`PO_POST_010`).
+- Cross-link: [vendor-pricelist](/en/inventory/vendor-pricelist) — vendor master, pricelist coverage, and tolerance band that the Manager tunes from the configuration surface (PM-HP-07, PM-HP-08); the deviation-routing rule `PO_XMOD_006` feeds the high-value stage.
+- Cross-link: [purchase-request](/en/inventory/purchase-request) — upstream module whose PR-to-PO conversion is governed by the `(vendor_id, currency_id)` grouping rule the Manager configures (PM-HP-08).
+- Cross-link: [good-receive-note](/en/inventory/good-receive-note) — downstream fulfilment whose receipt postings drive `sent → partial → completed`; the Manager observes these transitions on the dashboard and intervenes only via early-close (`PO_POST_011`) or void (`PO_POST_010`).

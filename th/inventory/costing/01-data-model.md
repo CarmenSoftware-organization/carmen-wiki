@@ -2,7 +2,7 @@
 title: การคำนวณต้นทุน (Costing) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum สำหรับโมดูล costing
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-05-19T23:55:00.000Z
 tags: costing, data-model, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -36,7 +36,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 
 **Cost-flow ledger row** — แหล่งความจริงเดียวสำหรับ "หน่วยนี้ราคาเท่าไหร่?" ณ ทุกจุดเวลา หนึ่งแถวต่อ layer event ต่อ movement: inbound rows สร้าง layer ใหม่ด้วย `in_qty > 0`, `cost_per_unit`, `lot_no`, `lot_index`, `lot_seq_no`; outbound rows บริโภค layer ด้วย `out_qty > 0`, `from_lot_no` resolve โดย FIFO ordering บน `lot_seq_no`, และ `cost_per_unit` เลือกจาก layer ที่บริโภค (FIFO) หรือจาก current moving average (WA) แถวยังเก็บ `average_cost_per_unit` เพื่อให้ผู้บริโภค weighted-average อ่าน post-movement moving average โดยไม่ต้อง re-aggregate ประวัติทั้งหมด `at_period` (`YYMM`) และ `period_id` ผูก layer เข้ากับงวดบัญชีเพื่อให้ period-end rollup สามารถ sum activity ต่องวดได้
 
-เอนทิตีนี้เป็นของโมดูล [[inventory]] — สารบัญฟิลด์เต็มที่ [[inventory/01-data-model]] § 2.3 จากมุมมองของโมดูล costing: นี่คือตารางที่เอนจินอ่านทุก outbound (เพื่อเลือก `cost_per_unit`) และเขียนทุก inbound (เพื่อตั้ง `cost_per_unit` และคำนวณ `average_cost_per_unit` ใหม่)
+เอนทิตีนี้เป็นของโมดูล [inventory](/th/inventory/inventory) — สารบัญฟิลด์เต็มที่ [inventory/01-data-model](/th/inventory/inventory/01-data-model) § 2.3 จากมุมมองของโมดูล costing: นี่คือตารางที่เอนจินอ่านทุก outbound (เพื่อเลือก `cost_per_unit`) และเขียนทุก inbound (เพื่อตั้ง `cost_per_unit` และคำนวณ `average_cost_per_unit` ใหม่)
 
 **ฟิลด์ที่เกี่ยวข้องกับ costing:**
 
@@ -52,7 +52,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 | `at_period` | `String @db.VarChar` | Yes | งวดในรูป `YYMM` (denormalised จาก `tb_period.period`) Costing aggregations group ตามคอลัมน์นี้เพื่อสร้าง COGS / valuation totals แบบ period-bounded |
 | `period_id` | `String @db.Uuid` | Yes | FK ไป `tb_period.id` — งวดบัญชีที่บรรจุ layer event นี้ |
 
-ฟิลด์อื่น (`lot_no`, `lot_index`, `parent_lot_no`, `location_id`, `product_id`, audit columns) แสดงเต็มที่ [[inventory/01-data-model]] § 2.3
+ฟิลด์อื่น (`lot_no`, `lot_index`, `parent_lot_no`, `location_id`, `product_id`, audit columns) แสดงเต็มที่ [inventory/01-data-model](/th/inventory/inventory/01-data-model) § 2.3
 
 **Constraints ที่เกี่ยวข้องกับ costing:** `@@unique([lot_no, lot_index])` บังคับ lot identity; อัลกอริทึม cost-pick อาศัย `(location_id, product_id, lot_seq_no)` ordering สำหรับ FIFO และ row ล่าสุดที่ `(location_id, product_id)` สำหรับ WA current average `cost_per_unit` และ `average_cost_per_unit` ไม่ติดลบตาม `INV_VAL_007`
 
@@ -70,7 +70,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 | `from_lot_no` | `String @db.VarChar` | Yes | Source lot consumed (outbound) ตั้งโดย FIFO pick — ชี้ไป lot ที่ `lot_seq_no` ต่ำสุดมี remaining balance |
 | `current_lot_no` | `String @db.VarChar` | Yes | Lot ที่สร้างใหม่หรือได้รับผลกระทบ (inbound) Carry lot identity ของ layer ใหม่เข้า `lot_no` ของ cost-layer |
 
-ฟิลด์อื่นและ constraints แสดงเต็มที่ [[inventory/01-data-model]] § 2.2
+ฟิลด์อื่นและ constraints แสดงเต็มที่ [inventory/01-data-model](/th/inventory/inventory/01-data-model) § 2.2
 
 ### 2.3 tb_period_snapshot (period-locked unit cost)
 
@@ -89,7 +89,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 | `closing_total_cost` | `Decimal @db.Decimal(20, 5)` | Yes | `closing_qty × closing_cost_per_unit` Locked balance-sheet valuation; เขียนครั้งเดียวและไม่แก้ |
 | `diff_amount` | `Decimal @db.Decimal(20, 5)` | Yes | Variance bucket (โดยทั่วไปจาก physical-count adjustments ใน period); summed เข้า `adjustment_total_cost` |
 
-ฟิลด์อื่นแสดงที่ [[inventory/01-data-model]] § 2.7
+ฟิลด์อื่นแสดงที่ [inventory/01-data-model](/th/inventory/inventory/01-data-model) § 2.7
 
 ### 2.4 tb_business_unit.calculation_method (costing-method configuration — platform)
 
@@ -111,7 +111,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 | `price_deviation_limit` | `Decimal @db.Decimal(20, 5)` | Yes | Tolerance band — เปอร์เซ็นต์หรือ absolute — ใช้โดยกฎ procurement / receiving เพื่อ flag ราคา vendor ที่เกิน standard cost ไม่ใช้โดย costing-engine โดยตรง; ข้อมูลสำหรับ variance reporting |
 | `qty_deviation_limit` | `Decimal @db.Decimal(20, 5)` | Yes | Tolerance band บนปริมาณรับเทียบกับสั่ง ข้อมูล |
 
-`tb_product` documented เต็มภายใต้โมดูล [[product]]; entry นี้ครอบคลุม subset ที่เกี่ยวข้องกับ costing
+`tb_product` documented เต็มภายใต้โมดูล [product](/th/inventory/product); entry นี้ครอบคลุม subset ที่เกี่ยวข้องกับ costing
 
 ### 2.6 enum_physical_count_costing_method (count-variance valuation source)
 
@@ -202,7 +202,7 @@ tb_period ──1──*──► tb_period_snapshot  (locked period × location
   - `last` — ที่ cost-layer `cost_per_unit` ล่าสุด ที่ key `(location, product)` โดยไม่คำนึงถึงทิศทาง
   - `average` — ที่ `average_cost_per_unit` ล่าสุด (running WA)
   - `last_receiving` — ที่ inbound layer ล่าสุดของ `cost_per_unit`
-- **`enum_transaction_type`** (tenant schema): cost-flow effect บน `tb_inventory_transaction_cost_layer.transaction_type` มี 12 ค่าตาม [[inventory/01-data-model]] § 4 subset ที่ engine-relevant:
+- **`enum_transaction_type`** (tenant schema): cost-flow effect บน `tb_inventory_transaction_cost_layer.transaction_type` มี 12 ค่าตาม [inventory/01-data-model](/th/inventory/inventory/01-data-model) § 4 subset ที่ engine-relevant:
   - `good_received_note` / `transfer_in` / `adjustment_in` — inbound layer events ที่ engine เขียน `cost_per_unit` สด (และคำนวณ `average_cost_per_unit` ใหม่สำหรับ WA)
   - `issue` / `transfer_out` / `adjustment_out` — outbound events ที่ engine เลือก cost (FIFO หรือ WA)
   - `credit_note_amount` — vendor concession ปรับ `cost_per_unit` บน lot ที่มีอยู่ผ่าน `diff_amount` (ตาม `INV_CALC_011`)
@@ -219,7 +219,7 @@ Carmen/docs costing reference (`../carmen/docs/costing/enhanced-costing-engine.m
 | 1 | Costing-method configuration scope | `calculation-methods.md` § 6.1 ระบุการตั้งค่า "ที่ระดับ **organization or product category**" — หมายถึงวิธี costing per-product หรือ per-category พร้อมคอลัมน์ `product_category.costing_method` และ `organization_settings.costing_method` | **Per business unit เท่านั้น** `tb_business_unit.calculation_method ∈ {average, fifo}` (platform schema, default `average`) — ค่าเดียวใช้กับทุก product ที่ business unit นั้น **ไม่มีคอลัมน์ per-product หรือ per-category** บน `tb_product`, `tb_product_category`, `tb_product_sub_category` หรือ `tb_product_item_group` | ถือ Prisma เป็น canonical: platform รองรับ **วิธี costing หนึ่งวิธีต่อ business unit (property / hotel)** ไม่ใช่ต่อ product หรือ category อัปเดต `calculation-methods.md` § 6.1 และ framing per-product ใด ๆ ให้ระบุว่า mixed methods ข้าม products ที่ business unit เดียวกัน **ไม่รองรับ** โดย schema |
 | 2 | Separate `inventory_lot` schema | `calculation-methods.md` § 2.3 อธิบายตาราง `inventory_lot` พร้อม `lot_id`, `product_id`, `warehouse_id`, `purchase_date`, `quantity`, `unit_cost` เป็น entity dedicated lot-tracking | **ไม่มี `tb_inventory_lot` model** Lot identity อยู่บน `tb_inventory_transaction_cost_layer.(lot_no, lot_index)` (ด้วย `@@unique([lot_no, lot_index])`) และ lot quantity คือ derived เป็น `Σ (in_qty − out_qty)` สำหรับ lot ตั้งแต่ period snapshot ล่าสุด | อัปเดต `calculation-methods.md` § 2.3 เพื่อสะท้อนว่า lots แสดงเป็น logical grouping ของ cost-layer rows โดย `(lot_no, lot_index)` ไม่ใช่ entity แยก |
 | 3 | Separate `inventory_balance` schema (WA path) | `calculation-methods.md` § 3.3 อธิบายตาราง `inventory_balance` พร้อม `product_id`, `warehouse_id`, `quantity`, `average_cost`, `total_value` เป็น per-product / per-location running balance สำหรับ WA | **ไม่มี `tb_inventory_balance` model** Running average อยู่บน `tb_inventory_transaction_cost_layer.average_cost_per_unit` บน layer event **ล่าสุด** ที่ key `(location_id, product_id)` | อัปเดต `calculation-methods.md` § 3.3 ให้ document ว่า WA running state อยู่บน cost-layer ledger |
-| 4 | Per-product `costing_method` column on `tb_product` | `inventory/01-data-model.md` § 5 item 4 ระบุ: "Costing method per product อยู่บน model **product** (`tb_product`) — ไม่ใช่ inventory" | **ไม่มีคอลัมน์ `costing_method` บน `tb_product`** Costing method อยู่บน `tb_business_unit.calculation_method` (item 1 ข้างต้น) | อัปเดต [[inventory/01-data-model]] § 5 item 4 เพื่อแก้ไข — costing method เป็น per business unit ไม่ใช่ per product |
+| 4 | Per-product `costing_method` column on `tb_product` | `inventory/01-data-model.md` § 5 item 4 ระบุ: "Costing method per product อยู่บน model **product** (`tb_product`) — ไม่ใช่ inventory" | **ไม่มีคอลัมน์ `costing_method` บน `tb_product`** Costing method อยู่บน `tb_business_unit.calculation_method` (item 1 ข้างต้น) | อัปเดต [inventory/01-data-model](/th/inventory/inventory/01-data-model) § 5 item 4 เพื่อแก้ไข — costing method เป็น per business unit ไม่ใช่ per product |
 | 5 | Strategy-pattern architecture | `calculation-methods.md` § 6.2 อธิบาย `InventoryCostingStrategy` interface พร้อม `FIFOStrategy` และ `AverageCostStrategy` implementations | สถาปัตยกรรมตรงกับ strategy pattern แต่ **strategy resolve per business unit ไม่ใช่ per product** | อัปเดต `calculation-methods.md` § 6.2 ให้ document resolution scope (business unit ไม่ใช่ product) |
 | 6 | `physical_count_costing_method` (count-variance source) | ไม่ระบุใน `calculation-methods.md` หรือ `enhanced-costing-engine.md` | `enum_physical_count_costing_method ∈ {standard, last, average, last_receiving}` เป็น costing-relevant enum (Section 2.6 ข้างต้น) | เพิ่ม §6.x หรือ §7 ใน `calculation-methods.md` covering count-variance valuation source |
 | 7 | `diff_amount` (credit-note variance) | ไม่ระบุใน carmen/docs costing reference | `tb_inventory_transaction_cost_layer.diff_amount` carry cost-only variance สำหรับ credit-note-amount adjustments และ end-of-period revaluation | เพิ่มใน `calculation-methods.md` |
@@ -235,4 +235,4 @@ Carmen/docs costing reference (`../carmen/docs/costing/enhanced-costing-engine.m
 - **Secondary (concept cross-check):**
   - `../carmen/docs/costing/enhanced-costing-engine.md`
   - Sibling: [calculation-methods.md](./calculation-methods.md)
-- Related modules: [[inventory]], [[good-receive-note]], [[store-requisition]], [[physical-count]] / [[spot-check]], [[inventory-adjustment]], [[recipe]], [[product]]
+- Related modules: [inventory](/th/inventory/inventory), [good-receive-note](/th/inventory/good-receive-note), [store-requisition](/th/inventory/store-requisition), [physical-count](/th/inventory/physical-count) / [spot-check](/th/inventory/spot-check), [inventory-adjustment](/th/inventory/inventory-adjustment), [recipe](/th/inventory/recipe), [product](/th/inventory/product)
