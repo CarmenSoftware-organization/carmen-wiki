@@ -2,7 +2,7 @@
 title: Report Templates
 description: XML-based report template catalogue with tabbed Dialog/Content/Preview editor, database source binding, and business-unit allow/deny scoping.
 published: true
-date: 2026-05-19T19:00:00.000Z
+date: 2026-05-19T22:00:00.000Z
 tags: platform/report-templates, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -67,7 +67,7 @@ End-customer roles (property managers, BU staff, end users) never reach this mod
 
 ## 7. Pages in This Module
 
-- [Data Model](./data-model.md) — `tb_report_template` entity, JSON payloads (Dialog/Content XML are `String @db.Text`; `source_params`, `signature_config`, BU scope are JsonB), divergence check against SPA `ReportTemplate` type.
-- [Permissions](./permissions.md) — three admin-tier-gated routes (same gate as clusters); access matrix across all `platform_role` values; bootstrap exception via cross-link to clusters/permissions.
-- [UI Screens](./ui-screens.md) — `ReportTemplateManagement` list with Status + Source Type filters, 2-pane `ReportTemplateEdit` (left: Template Info + Business Unit Scope + Metadata + Data Source cards; right: 3-tab CodeMirror — Dialog XML / Content XML / Preview), inline Browse-in-BU panel, sticky action bar.
-- [XML Spec](./xml-spec.md) — Dialog XML element catalogue (`<Dialog>`/`<Label>`/`<Date>`/`<Lookup>`), positional Label/control pairing, opaque Content XML, source_params binding, validation scope (well-formedness only), worked example.
+- [[report-templates/data-model|Data Model]] — `tb_report_template` entity, JSON payloads (Dialog/Content XML are `String @db.Text`; `source_params`, `signature_config`, BU scope are JsonB), divergence check against SPA `ReportTemplate` type.
+- [[report-templates/permissions|Permissions]] — three admin-tier-gated routes (same gate as clusters); access matrix across all `platform_role` values; bootstrap exception via cross-link to clusters/permissions.
+- [[report-templates/ui-screens|UI Screens]] — `ReportTemplateManagement` list with Status + Source Type filters, 2-pane `ReportTemplateEdit` (left: Template Info + Business Unit Scope + Metadata + Data Source cards; right: 3-tab CodeMirror — Dialog XML / Content XML / Preview), inline Browse-in-BU panel, sticky action bar.
+- [[report-templates/xml-spec|XML Spec]] — Dialog XML element catalogue (`<Dialog>`/`<Label>`/`<Date>`/`<Lookup>`), positional Label/control pairing, opaque Content XML, source_params binding, validation scope (well-formedness only), worked example.

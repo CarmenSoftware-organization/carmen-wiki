@@ -2,7 +2,7 @@
 title: ผู้ใช้ (Users)
 description: บัญชีผู้ใช้ระดับแพลตฟอร์ม — identity, ฟิลด์ `platform_role` ที่ใช้ขับเคลื่อน role gate ทุกที่ และการ assign cluster/BU ที่กำหนดขอบเขตว่าผู้ใช้เข้าถึงอะไรได้ใน inventory app
 published: true
-date: 2026-05-19T12:00:00.000Z
+date: 2026-05-19T22:00:00.000Z
 tags: platform/users, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -184,13 +184,13 @@ templates) ของแพลตฟอร์มอ่านค่า `platform_r
 
 ## 7. หน้าในโมดูลนี้
 
-- [Data Model](./data-model.md) — field ของ entity user, enum
+- [[users/data-model|Data Model]] — field ของ entity user, enum
   `platform_role`, join `tb_cluster_user` และ BU-user join พร้อม role
   ระดับ BU และ flag `is_default` (stub — ยังไม่สมบูรณ์)
-- [Lifecycle](./lifecycle.md) — flow การ create, activate/deactivate
+- [[users/lifecycle|Lifecycle]] — flow การ create, activate/deactivate
   ผ่าน `is_active`, soft vs. hard delete, password reset ที่ admin
   เป็นผู้ทำ, sync จาก Keycloak (stub — ยังไม่สมบูรณ์)
-- [UI Screens](./ui-screens.md) — หน้า list `UserManagement` พร้อม
+- [[users/ui-screens|UI Screens]] — หน้า list `UserManagement` พร้อม
   filter และปุ่ม sync Keycloak และเลย์เอาต์สามการ์ดของ `UserEdit`
   รวมถึง dialog Add BU และ dialog Change Password
   (stub — ยังไม่สมบูรณ์)

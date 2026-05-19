@@ -2,7 +2,7 @@
 title: Purchase Request
 description: Internal request to procure goods — the upstream demand signal that becomes a purchase order after approval.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T20:00:00.000Z
 tags: purchase-request, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -89,17 +89,17 @@ Financial accuracy is enforced at the calculation layer rather than left to the 
 
 ## 7. Pages in This Module
 
-- [01 — Data Model](./01-data-model.md) — Entities, fields, relationships, and enums (Prisma-derived).
-- [02 — Business Rules](./02-business-rules.md) — Validation, calculation, authorization, and posting rules.
-- [03 — User Flow](./03-user-flow.md) — Document lifecycle and persona index.
-  - [Requestor](./03-user-flow-requestor.md)
-  - [Approver](./03-user-flow-approver.md)
-  - [Purchaser](./03-user-flow-purchaser.md)
-  - [Procurement Manager](./03-user-flow-procurement-manager.md)
-  - [Audit / Config](./03-user-flow-audit-config.md)
-- [04 — Test Scenarios](./04-test-scenarios.md) — Persona scope, cross-persona scenarios, E2E mapping.
-  - [Requestor](./04-test-scenarios-requestor.md)
-  - [Approver](./04-test-scenarios-approver.md)
-  - [Purchaser](./04-test-scenarios-purchaser.md)
-  - [Procurement Manager](./04-test-scenarios-procurement-manager.md)
-  - [Audit / Config](./04-test-scenarios-audit-config.md)
+- [[purchase-request/01-data-model|01 — Data Model]] — Entities, fields, relationships, and enums (Prisma-derived).
+- [[purchase-request/02-business-rules|02 — Business Rules]] — Validation, calculation, authorization, and posting rules.
+- [[purchase-request/03-user-flow|03 — User Flow]] — Document lifecycle and persona index.
+  - [[purchase-request/03-user-flow-requestor|Requestor]]
+  - [[purchase-request/03-user-flow-approver|Approver]]
+  - [[purchase-request/03-user-flow-purchaser|Purchaser]]
+  - [[purchase-request/03-user-flow-procurement-manager|Procurement Manager]]
+  - [[purchase-request/03-user-flow-audit-config|Audit / Config]]
+- [[purchase-request/04-test-scenarios|04 — Test Scenarios]] — Persona scope, cross-persona scenarios, E2E mapping.
+  - [[purchase-request/04-test-scenarios-requestor|Requestor]]
+  - [[purchase-request/04-test-scenarios-approver|Approver]]
+  - [[purchase-request/04-test-scenarios-purchaser|Purchaser]]
+  - [[purchase-request/04-test-scenarios-procurement-manager|Procurement Manager]]
+  - [[purchase-request/04-test-scenarios-audit-config|Audit / Config]]
