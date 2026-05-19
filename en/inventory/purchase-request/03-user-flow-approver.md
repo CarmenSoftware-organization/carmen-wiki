@@ -109,4 +109,4 @@ Document state on every transition is recorded by `enum_purchase_request_doc_sta
 - `../carmen/docs/purchase-request-management/purchase-request-module-prd.md` — product requirements driving the multi-stage approval chain and threshold-based routing
 - Sibling: [01-data-model.md](./01-data-model.md) — `tb_purchase_request.workflow_current_stage`, `stages_status`, `user_action`, `workflow_history`, `enum_purchase_request_doc_status`
 - Sibling: [03-user-flow-requestor.md](./03-user-flow-requestor.md) — upstream persona; receives PRs returned via Send Back
-- Sibling: [index.md](./index.md) Section 4 — canonical Approver role description and stage chain
+- Sibling: [the module landing](/en/inventory/purchase-request) Section 4 — canonical Approver role description and stage chain

@@ -66,4 +66,4 @@ All five roles can reach `Dashboard`, `Business Units`, `Users`, and `Profile` b
 
 ## 7. Pages in This Module
 
-This module is a single page; see the parent [Platform book index](../index.md).
+This module is a single page; see the parent [Platform book index](/en/platform).

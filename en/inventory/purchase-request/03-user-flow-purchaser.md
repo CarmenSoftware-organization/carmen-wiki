@@ -100,6 +100,6 @@ Document state across these transitions is recorded by `enum_purchase_request_do
 - `../carmen/docs/purchase-request-management/purchase-request-module-prd.md` — product requirements driving the consolidation grouping (vendor + currency) and partial-conversion behaviour
 - Sibling: [03-user-flow-approver.md](./03-user-flow-approver.md) — upstream persona; final approver hands off to the Purchaser when `pr_status` flips to `approved`
 - Sibling: [03-user-flow-requestor.md](./03-user-flow-requestor.md) — bounce-back target when vendor / spec clarification is needed
-- Sibling: [index.md](./index.md) Section 4 — canonical Purchaser role description
+- Sibling: [the module landing](/en/inventory/purchase-request) Section 4 — canonical Purchaser role description
 - Cross-link: [[purchase-order]] — downstream module that receives the converted POs
 - Cross-link: [[vendor-pricelist]] — pricelist deviation reference and Allocate Vendor ranking source

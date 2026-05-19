@@ -16,13 +16,13 @@ dateCreated: 2026-05-16T14:00:00.000Z
 
 ระบบ ERP สำหรับธุรกิจโรงแรม — costing, GRN, physical count, spot check, valuation และโมดูลที่เกี่ยวข้อง
 
-[เปิด Inventory book →](/th/inventory/index)
+[เปิด Inventory book →](/th/inventory)
 
 ## 2. Carmen Platform
 
 Platform admin — clusters, business units, users และ report templates ที่เป็นรากฐานของทุก Carmen deployment
 
-[เปิด Platform book →](/th/platform/index)
+[เปิด Platform book →](/th/platform)
 
 ---
 
