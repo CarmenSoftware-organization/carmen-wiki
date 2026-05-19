@@ -16,13 +16,13 @@ Internal reference for developers and testers across the Carmen product family.
 
 Inventory ERP for hospitality — costing, GRN, physical count, spot check, valuation, and related modules.
 
-[Open the Inventory book →](/en/inventory/index)
+[Open the Inventory book →](/en/inventory)
 
 ## 2. Carmen Platform
 
 Platform admin — clusters, business units, users, and report templates that underlie every Carmen deployment.
 
-[Open the Platform book →](/en/platform/index)
+[Open the Platform book →](/en/platform)
 
 ---
 
