@@ -429,7 +429,7 @@ def test_run_sync_full_pipeline(tmp_path: Path):
 # ===== Build-mode tree builder tests =====
 
 
-def test_build_tree_one_book_one_module(tmp_path):
+def test_build_tree_one_book_one_group_one_module():
     from scripts.sync_nav import build_tree_from_config
     config = {
         "books": {
@@ -437,20 +437,28 @@ def test_build_tree_one_book_one_module(tmp_path):
                 "label_en": "Carmen Inventory",
                 "label_th": "Carmen Inventory",
                 "home_slug": "home",
-                "modules": [
-                    {"slug": "costing", "label_en": "Costing", "label_th": "Costing"},
+                "groups": [
+                    {
+                        "label_en": "Costing & Reporting",
+                        "label_th": "Costing & Reporting",
+                        "modules": [
+                            {"slug": "costing", "label_en": "Costing", "label_th": "Costing"},
+                        ],
+                    },
                 ],
             },
         },
     }
     items_en = build_tree_from_config(config, locale="en")
-    # Expected items: header, link-home, link-costing
+    # Expected: book-header, home-link, group-header, costing-link
     kinds = [i["kind"] for i in items_en]
-    assert kinds == ["header", "link", "link"]
+    assert kinds == ["header", "link", "header", "link"]
     assert items_en[0]["label"] == "Carmen Inventory"
     assert items_en[1]["target"] == "/en/inventory/home"
-    assert items_en[2]["target"] == "/en/inventory/costing/home"
-    assert items_en[2]["label"] == "Costing"
+    assert items_en[2]["label"] == "Costing & Reporting"
+    assert items_en[2]["kind"] == "header"
+    assert items_en[3]["target"] == "/en/inventory/costing/home"
+    assert items_en[3]["label"] == "Costing"
 
 
 def test_build_tree_two_books_inserts_divider_between():
@@ -461,22 +469,38 @@ def test_build_tree_two_books_inserts_divider_between():
                 "label_en": "Carmen Inventory",
                 "label_th": "Carmen Inventory",
                 "home_slug": "home",
-                "modules": [{"slug": "costing", "label_en": "Costing", "label_th": "Costing"}],
+                "groups": [
+                    {
+                        "label_en": "Costing & Reporting",
+                        "label_th": "Costing & Reporting",
+                        "modules": [
+                            {"slug": "costing", "label_en": "Costing", "label_th": "Costing"},
+                        ],
+                    },
+                ],
             },
             "platform": {
                 "label_en": "Carmen Platform",
                 "label_th": "Carmen Platform",
                 "home_slug": "home",
-                "modules": [{"slug": "clusters", "label_en": "Clusters", "label_th": "Clusters"}],
+                "groups": [
+                    {
+                        "label_en": "Tenancy",
+                        "label_th": "Tenancy",
+                        "modules": [
+                            {"slug": "clusters", "label_en": "Clusters", "label_th": "Clusters"},
+                        ],
+                    },
+                ],
             },
         },
     }
     items = build_tree_from_config(config, locale="en")
     kinds = [i["kind"] for i in items]
     assert kinds == [
-        "header", "link", "link",       # inventory
-        "divider",                      # separator
-        "header", "link", "link",       # platform
+        "header", "link", "header", "link",       # inventory: book hdr, home, group hdr, module
+        "divider",                                  # separator
+        "header", "link", "header", "link",       # platform: book hdr, home, group hdr, module
     ]
 
 
@@ -488,8 +512,14 @@ def test_build_tree_th_uses_th_labels_and_paths():
                 "label_en": "Carmen Inventory",
                 "label_th": "Carmen Inventory TH",
                 "home_slug": "home",
-                "modules": [
-                    {"slug": "costing", "label_en": "Costing", "label_th": "การคิดต้นทุน"},
+                "groups": [
+                    {
+                        "label_en": "Costing & Reporting",
+                        "label_th": "ต้นทุนและรายงาน",
+                        "modules": [
+                            {"slug": "costing", "label_en": "Costing", "label_th": "การคิดต้นทุน"},
+                        ],
+                    },
                 ],
             },
         },
@@ -497,8 +527,9 @@ def test_build_tree_th_uses_th_labels_and_paths():
     items_th = build_tree_from_config(config, locale="th")
     assert items_th[0]["label"] == "Carmen Inventory TH"
     assert items_th[1]["target"] == "/th/inventory/home"
-    assert items_th[2]["target"] == "/th/inventory/costing/home"
-    assert items_th[2]["label"] == "การคิดต้นทุน"
+    assert items_th[2]["label"] == "ต้นทุนและรายงาน"
+    assert items_th[3]["target"] == "/th/inventory/costing/home"
+    assert items_th[3]["label"] == "การคิดต้นทุน"
 
 
 def test_build_tree_link_items_have_uuid_ids():
@@ -509,8 +540,14 @@ def test_build_tree_link_items_have_uuid_ids():
                 "label_en": "Carmen Inventory",
                 "label_th": "Carmen Inventory",
                 "home_slug": "home",
-                "modules": [
-                    {"slug": "costing", "label_en": "Costing", "label_th": "Costing"},
+                "groups": [
+                    {
+                        "label_en": "Costing & Reporting",
+                        "label_th": "Costing & Reporting",
+                        "modules": [
+                            {"slug": "costing", "label_en": "Costing", "label_th": "Costing"},
+                        ],
+                    },
                 ],
             },
         },
@@ -519,3 +556,90 @@ def test_build_tree_link_items_have_uuid_ids():
     ids = [i["id"] for i in items]
     assert all(len(i) == 36 for i in ids)  # UUID4 string length
     assert len(set(ids)) == len(ids)        # all unique
+
+
+def test_build_tree_multiple_groups_emits_header_per_group():
+    """Two groups in one book → group header precedes each module run."""
+    from scripts.sync_nav import build_tree_from_config
+    config = {
+        "books": {
+            "inventory": {
+                "label_en": "Carmen Inventory",
+                "label_th": "Carmen Inventory",
+                "home_slug": "home",
+                "groups": [
+                    {
+                        "label_en": "Procurement",
+                        "label_th": "Procurement",
+                        "modules": [
+                            {"slug": "purchase-request", "label_en": "PR", "label_th": "PR"},
+                            {"slug": "purchase-order", "label_en": "PO", "label_th": "PO"},
+                        ],
+                    },
+                    {
+                        "label_en": "Administration",
+                        "label_th": "Administration",
+                        "modules": [
+                            {"slug": "access-control", "label_en": "Access Control", "label_th": "Access Control"},
+                        ],
+                    },
+                ],
+            },
+        },
+    }
+    items = build_tree_from_config(config, locale="en")
+    # book header, home link, group1 header, 2 module links, group2 header, 1 module link = 7
+    assert len(items) == 7
+    kinds = [i["kind"] for i in items]
+    assert kinds == ["header", "link", "header", "link", "link", "header", "link"]
+    labels = [i["label"] for i in items]
+    assert labels == [
+        "Carmen Inventory",
+        "Home",
+        "Procurement",
+        "PR",
+        "PO",
+        "Administration",
+        "Access Control",
+    ]
+
+
+def test_build_tree_empty_groups_list_emits_book_header_and_home_only():
+    """A book with `groups: []` still emits its book header and Home link."""
+    from scripts.sync_nav import build_tree_from_config
+    config = {
+        "books": {
+            "inventory": {
+                "label_en": "Carmen Inventory",
+                "label_th": "Carmen Inventory",
+                "home_slug": "home",
+                "groups": [],
+            },
+        },
+    }
+    items = build_tree_from_config(config, locale="en")
+    kinds = [i["kind"] for i in items]
+    assert kinds == ["header", "link"]
+    assert items[0]["label"] == "Carmen Inventory"
+    assert items[1]["target"] == "/en/inventory/home"
+
+
+def test_build_tree_group_with_no_modules_still_emits_header():
+    """A group with no `modules:` key (or empty list) still emits its header. Degenerate but valid."""
+    from scripts.sync_nav import build_tree_from_config
+    config = {
+        "books": {
+            "inventory": {
+                "label_en": "Carmen Inventory",
+                "label_th": "Carmen Inventory",
+                "home_slug": "home",
+                "groups": [
+                    {"label_en": "Empty Group", "label_th": "Empty Group", "modules": []},
+                ],
+            },
+        },
+    }
+    items = build_tree_from_config(config, locale="en")
+    kinds = [i["kind"] for i in items]
+    assert kinds == ["header", "link", "header"]  # book hdr, home, group hdr (no module links)
+    assert items[2]["label"] == "Empty Group"

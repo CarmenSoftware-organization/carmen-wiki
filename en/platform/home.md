@@ -2,7 +2,7 @@
 title: Carmen Platform
 description: Overview of the Carmen Platform admin product — entry point for the book.
 published: true
-date: '2026-05-19T00:00:00.000Z'
+date: 2026-05-19T00:00:00.000Z
 tags: book/platform, home
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -10,19 +10,31 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 # Carmen Platform
 
-## 1. At a Glance
+Reference manual for developers and support engineers working on the Carmen Platform admin product — cluster, business unit, user, and report-template management.
 
-- Audience and scope
-- Modules and how they connect
-- Quick links to each module's home page
+## 1. Tenancy
 
-## 2. References
+| Module | What it covers |
+|---|---|
+| [Clusters](/en/platform/clusters/home) | Tenant cluster hierarchy and ownership |
+| [Business Units](/en/platform/business-units/home) | Property / BU management within a cluster |
 
-- ../carmen-platform/README.md
-- ../carmen-platform/SITEMAP.md
-- ../carmen-platform/docs/OVERVIEW.md
+## 2. Identity & Access
 
-## 3. TODO
+| Module | What it covers |
+|---|---|
+| [Users](/en/platform/users/home) | User accounts and BU membership |
+| [Authentication & Roles](/en/platform/auth-roles/home) | Sign-in flows and role assignment |
+| [Profile](/en/platform/profile/home) | The signed-in user's own profile |
 
-- [ ] Replace this skeleton with an introduction matching the existing Inventory book home page
-- [ ] Add a table of modules with one-line descriptions
+## 3. Reporting
+
+| Module | What it covers |
+|---|---|
+| [Report Templates](/en/platform/report-templates/home) | Print / export template definitions |
+
+## 4. How to use this book
+
+- Start with the module home page for an overview
+- Drill into sub-pages for data models, UI flows, and edge cases
+- See the [global wiki landing](/en/home) for the Inventory book

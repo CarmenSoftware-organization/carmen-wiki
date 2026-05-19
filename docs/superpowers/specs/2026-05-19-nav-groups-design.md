@@ -6,11 +6,11 @@
 
 ## Goal
 
-Group the modules inside each book's Wiki.js sidebar into named categories instead of one flat list. Today the Inventory book renders 19 modules in a single sequence; readers must scroll past unrelated areas to find the page they want. Categories mirror the mental model already established by `carmen-inventory-frontend` (procurement / inventory ops / product / etc).
+Group the modules inside each book's Wiki.js sidebar into named categories instead of one flat list. Today the Inventory book renders 18 modules in a single sequence; readers must scroll past unrelated areas to find the page they want. Categories mirror the mental model already established by `carmen-inventory-frontend` (procurement / inventory ops / product / etc).
 
 ## Why
 
-- Inventory book has 19 modules — too many for a flat sidebar to be scannable
+- Inventory book has 18 modules — too many for a flat sidebar to be scannable
 - The frontend already groups these concepts; the wiki should match the developers' mental model so navigation is predictable
 - Adding Platform book (6 modules) makes the asymmetry worse if we group one and not the other
 
@@ -34,7 +34,7 @@ Group the modules inside each book's Wiki.js sidebar into named categories inste
 
 ## Inventory book grouping
 
-19 modules organized into 6 groups, derived from `carmen-inventory-frontend/constant/module-list.ts`:
+18 modules organized into 6 groups, derived from `carmen-inventory-frontend/constant/module-list.ts`:
 
 | # | Group (`label_en` / `label_th`) | Modules |
 |---|---|---|
@@ -117,7 +117,7 @@ Between books, a single `_new_divider()` is emitted (unchanged behavior).
 
 ## `home.md` TOC update
 
-Both `en/inventory/home.md` and `th/inventory/home.md` currently have a single `## 1. Modules` section listing all 19 modules in one table. Replace with one numbered section per group, each containing a table of just that group's modules. The `## N. <Group>` headings give mirror mode (`parse_home_headings`) the data it would need if we ever fell back to home.md-based labels.
+Both `en/inventory/home.md` and `th/inventory/home.md` currently have a single `## 1. Modules` section listing all 18 modules in one table. Replace with one numbered section per group, each containing a table of just that group's modules. The `## N. <Group>` headings give mirror mode (`parse_home_headings`) the data it would need if we ever fell back to home.md-based labels.
 
 The Platform book's `home.md` files get the same treatment.
 

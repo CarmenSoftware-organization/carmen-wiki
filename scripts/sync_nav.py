@@ -649,9 +649,10 @@ def build_tree_from_config(
 ) -> list[dict[str, Any]]:
     """Build a Wiki.js nav tree for one locale from the books: config block.
 
-    For each book: emit a header, a link to /<locale>/<book>/<home_slug>,
-    then a link per module pointing to /<locale>/<book>/<module>/<home_slug>.
-    A divider separates consecutive books.
+    For each book: emit a book header, a link to /<locale>/<book>/<home_slug>,
+    then for each group: emit a group header followed by a link per module
+    pointing to /<locale>/<book>/<module>/<home_slug>. A divider separates
+    consecutive books.
     """
     label_key = f"label_{locale}"
     items: list[dict[str, Any]] = []
@@ -667,13 +668,15 @@ def build_tree_from_config(
                 f"/{locale}/{book_slug}/{home_slug}",
             )
         )
-        for module in book.get("modules") or []:
-            items.append(
-                _new_link(
-                    module[label_key],
-                    f"/{locale}/{book_slug}/{module['slug']}/{home_slug}",
+        for group in book.get("groups") or []:
+            items.append(_new_header(group[label_key]))
+            for module in group.get("modules") or []:
+                items.append(
+                    _new_link(
+                        module[label_key],
+                        f"/{locale}/{book_slug}/{module['slug']}/{home_slug}",
+                    )
                 )
-            )
     return items
 
 
