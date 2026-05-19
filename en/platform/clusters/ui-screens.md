@@ -2,7 +2,7 @@
 title: Cluster — UI Screens
 description: ClusterManagement (list) and ClusterEdit (create/view/edit) screens — layout, filters, dialogs, persisted state.
 published: true
-date: '2026-05-19T16:30:00.000Z'
+date: '2026-05-19T18:00:00.000Z'
 tags: book/platform, clusters, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -86,13 +86,13 @@ The form contains six fields from `ClusterFormData`:
 | `logo_url` | url | No | When a valid URL is entered, a 40×40 px logo preview is shown below the input |
 | `is_active` | checkbox | — | Defaults to `true` |
 
-Submit button label: **Create Cluster**. On submit, calls `POST /api-system/cluster`. On success, if the response includes an `id`, navigates to `/clusters/:id` with `{ replace: true }` (so Back goes to the list, not the create form). If no `id` is returned, navigates to `/clusters`. **Cancel** navigates to `/clusters` without an API call.
+Submit button label: **Create Cluster**. On submit, calls `POST /api-system/cluster`. On success, if the response includes an `id`, navigates to `/clusters/:id` with `{ replace: true }` (so Back goes to the list, not the create form) — note the absence of the `/edit` suffix; this is a source divergence vs. the user create flow, which navigates to `/users/:id/edit` (the view/edit route `/clusters/:id/edit` is reached separately, see §4). If no `id` is returned, navigates to `/clusters`. **Cancel** navigates to `/clusters` without an API call.
 
 ## 4. `ClusterEdit` — view/edit mode (`/clusters/:id/edit`)
 
 The page starts in **view mode** (`editing = false`). The title is "Cluster Details" and the subtitle is "View cluster information". A single **Edit** button appears in the header. Clicking **Edit** saves the current form state to `savedFormData`, sets `editing = true`, changes the title to "Edit Cluster" / "Update cluster information", and hides the Edit header button (Save Changes and Cancel buttons appear inside the Cluster Details form instead).
 
-The layout is a responsive `grid-cols-1 lg:grid-cols-3` grid — on large screens the left column (1 unit) holds the Cluster Details card, and the right column (2 units, `lg:col-span-2`) holds the Business Units card and Users card stacked vertically. On smaller screens all three cards stack into a single column.
+The layout is a 1:2 responsive grid (`grid-cols-1 lg:grid-cols-3` with the right column set to `lg:col-span-2`) — the Cluster Details card spans 1 column on the left, and the Business Units + Users cards stack vertically in the 2-column-wide right region. On smaller screens all three cards stack into a single column.
 
 ### 4.1 Cluster Details card (left column)
 
@@ -110,7 +110,7 @@ The card renders a plain `<table>` (not `DataTable`) with columns: **Code** (out
 
 Card header controls:
 - **Refresh** (icon button) — re-calls `fetchBusinessUnits()`.
-- **Add** button — navigates to `/business-units/new?cluster_id=<id>`. The `cluster_id` query parameter wires the new BU create form so it lands pre-linked to this cluster. The button is disabled and shows a "License limit reached" tooltip when `businessUnits.length >= max_license_bu`.
+- **Add** button — navigates to `/business-units/new?cluster_id=<id>` ([[business-units]]). The `cluster_id` query parameter wires the new BU create form so it lands pre-linked to this cluster. The button is disabled and shows a "License limit reached" tooltip when `businessUnits.length >= max_license_bu`.
 
 Row controls: the **Edit** icon button (Pencil) navigates to `/business-units/:buId/edit`. There is no Remove/Unlink button on BU rows — BU cluster membership is managed on the BU edit page. There is no in-place BU create dialog; the SPA always navigates away to the BU create route.
 
@@ -118,7 +118,7 @@ Row controls: the **Edit** icon button (Pencil) navigates to `/business-units/:b
 
 The Users card lists `tb_cluster_user` rows for this cluster, fetched from `GET /api-system/user/cluster/:id`. Rows are sorted by display name (first/middle/last name from `userInfo`, falling back to `email`), then by email. The card header shows an Active count badge and a total count; if any BU in the cluster has `max_license_users` set, it also shows a "N/M licensed" indicator in red when the count equals or exceeds the sum of BU license caps.
 
-The card renders a `<table>` with columns: **Name** (clickable link — opens the Edit Cluster User dialog, §5.2), **Email**, **Parent Business Unit** (outline badge showing `code - name` from the matched BU, or `-`), **Platform Role** (outline badge showing `platform_role` or, if absent, the cluster `role`), **Status** (Active/Inactive badge), and a right-aligned **Remove** icon button (Trash, destructive colour).
+The card renders a `<table>` with columns: **Name** (clickable link — opens the Edit Cluster User dialog, §5.2), **Email**, **Parent Business Unit** (outline badge showing `code - name` from the matched BU, or `-`), **Platform Role** (outline badge showing `platform_role` or, if absent, the cluster `role` — the `platform_role` shown here is the joined user's `tb_user.platform_role` denormalized into the API response; it does not live on the `tb_cluster_user` join row, which stores only `role`; it is distinct from the sign-in `platform_role` on the `tb_user` record documented in [[users]]; the fallback to `role` handles API responses where the user's platform role is not yet populated), **Status** (Active/Inactive badge), and a right-aligned **Remove** icon button (Trash, destructive colour).
 
 Card header controls:
 - **Refresh** (icon button) — re-calls `fetchClusterUsers()`.
@@ -130,7 +130,7 @@ Card header controls:
 
 Triggered by the **Add User** button in the Users card header on `/clusters/:id/edit`.
 
-The dialog searches the global user pool (`GET /api-system/user` via `userService.getAll`) with a 400 ms debounced search input. Search fields: `username`, `email`, `firstname`, `lastname`. Results are paginated at 10 per page with infinite-scroll load-more (triggered by scrolling to within 40 px of the bottom of the results list). Users already in this cluster are excluded from the results (`availableUsers` filter). Selecting a user shows a confirmation card with `username`, `email`, and full name; clicking the X on that card deselects and returns to the search list.
+The dialog searches the global user pool ([[users]], `GET /api-system/user` via `userService.getAll`) with a 400 ms debounced search input. Search fields: `username`, `email`, `firstname`, `lastname`. Results are paginated at 10 per page with infinite-scroll load-more (triggered by scrolling to within 40 px of the bottom of the results list). Users already in this cluster are excluded from the results (`availableUsers` filter). Selecting a user shows a confirmation card with `username`, `email`, and full name; clicking the X on that card deselects and returns to the search list.
 
 Fields after a user is selected:
 - **Cluster Role** — select populated from `CLUSTER_ROLES = ['admin', 'user']`. Default: `user`.
@@ -154,7 +154,7 @@ On submit, calls `PUT /api-system/user/cluster/:clusterUserId` with body `{ role
 
 Triggered by the **Trash** icon button on a Users card row.
 
-Uses the shared `ConfirmDialog` component — a simple Yes/No confirm (no typed confirmation required). Title: "Remove User from Cluster". Description: `Are you sure you want to remove "<display name>" from this cluster?` where the display name is resolved from `userInfo` first/middle/last, falling back to `username` then `email`.
+Uses the shared `ConfirmDialog` component — a simple Yes/No confirm (no typed confirmation required). Title: "Remove User from Cluster". Description: `Are you sure you want to remove "<display name>" from this cluster?` where the display name is resolved from `userInfo` first/middle/last, falling back to `username` then `email`. Note: the Remove confirm uses `username` as an intermediate fallback before `email`; this differs from the Edit Cluster User dialog (§5.2), which goes directly from `userInfo` to `email` with no `username` step.
 
 On confirm, calls `DELETE /api-system/user/cluster/:clusterUserId` using the `tb_cluster_user.id` field returned by the cluster users endpoint. On success, toast confirms and `fetchClusterUsers()` re-fetches.
 
