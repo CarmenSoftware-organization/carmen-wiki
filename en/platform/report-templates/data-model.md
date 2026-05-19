@@ -108,7 +108,7 @@ Similarly, `kind` and `orientation` are plain String columns. Their valid values
 
 ## 5. The JSON columns
 
-Four JSON columns on `tb_report_template` carry structured payloads. The database stores them as `JsonB` but cannot enforce their internal shape — the application layer owns that contract.
+Four columns on `tb_report_template` carry structured payloads that the database cannot validate internally — the application layer owns those contracts. Two of them (`source_params`, `signature_config`) are `Json @db.JsonB` columns; the other two (`dialog`, `content`) are `String @db.Text` columns that hold XML strings. The per-subsection detail below covers each column's shape.
 
 ### 5.1 `dialog` (XML payload)
 
@@ -180,7 +180,7 @@ Each block defines one signature line on the printed document. The `key` field c
 
 ## 6. Divergences from carmen-platform SPA shape
 
-The `ReportTemplate` interface in `../carmen-platform/src/services/reportTemplateService.ts` (lines 17–37) and the `ReportTemplateFormData` interface in `../carmen-platform/src/pages/ReportTemplateEdit.tsx` (lines 36–50) were compared against the Prisma `tb_report_template` model.
+The `ReportTemplate` interface in `../carmen-platform/src/services/reportTemplateService.ts` (lines 17–37) and the `ReportTemplateFormData` interface in `../carmen-platform/src/pages/ReportTemplateEdit.tsx` (lines 36–50) were compared against the Prisma `tb_report_template` model. Notably, the `ReportTemplate` TS interface lives in `src/services/reportTemplateService.ts` (line 17), not `src/types/index.ts` where the other Platform-module interfaces (`Cluster`, `BusinessUnit`, `User`) reside — developers searching for the canonical TS shape should look in the service file.
 
 | # | Item | Prisma has | SPA expects | Notes |
 | - | ---- | ---------- | ----------- | ----- |
