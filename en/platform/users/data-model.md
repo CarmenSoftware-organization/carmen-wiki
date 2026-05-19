@@ -14,17 +14,17 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 > **Tables:** `tb_user` &nbsp;·&nbsp; `tb_cluster_user` &nbsp;·&nbsp; `tb_user_tb_business_unit` &nbsp;·&nbsp; `tb_user_profile` (profile extension) &nbsp;·&nbsp; **Enums:** `enum_platform_role` (7 values) &nbsp;·&nbsp; `enum_cluster_user_role` (admin/user) &nbsp;·&nbsp; `enum_user_business_unit_role` (admin/user) &nbsp;·&nbsp; **Audit columns:** standard `created_*`/`updated_*`/`deleted_*` trio on every table &nbsp;·&nbsp; **Sign-in gate:** only 5 of the 7 `enum_platform_role` values pass `AuthContext.ALLOWED_ROLES`
 
 > **Source of truth:** Backend Prisma platform schema. Always read this first when writing or updating this page:
-> `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > The `generated/client/schema.prisma` file is an auto-generated copy and not authoritative.
 
 ## 1. Overview
 
-The Users module is backed by four tables. `tb_user` is the identity anchor: one row per person, holding the fields required for sign-in (`username`, `email`), the `platform_role` enum that every other module's `allowedRoles` array reads, and the `is_active` / `is_consent` flags that gate access. Name parts (`firstname`, `middlename`, `lastname`) and supplementary contact fields live in the companion table `tb_user_profile`, which has a 1:M relation to `tb_user` via `user_id` — in practice each user has exactly one active profile row.
+The Users module is backed by four tables. `tb_user` is the identity anchor: one row per person, holding the fields required for sign-in (`username`, `email`), the `platform_role` enum that every other module's `allowedRoles` array reads, and the `is_active` / `is_consent` flags that gate access. Name parts (`firstname`, `middlename`, `lastname`) and supplementary contact fields live in the companion table `tb_user_profile`, which has a 1:M relation to `tb_user` via `user_id` — the Prisma relation is 1:M at the schema level, but the application treats it as a 1:1 extension of `tb_user` — see §2.4 for the constraint detail.
 
 The two many-to-many join tables extend the user into organisational scope. `tb_cluster_user` records which clusters a user belongs to and at what per-cluster role (`admin` or `user`); this table is authoritatively mutated from the cluster edit page, not from the Users module. `tb_user_tb_business_unit` records which business units a user is assigned to within those clusters, carrying its own per-BU role and an `is_default` flag that marks the BU the inventory application should land on at login; this table is mutated from the Add BU dialog on the user edit screen.
 
-All three write-path tables carry the full audit trio — `created_at`/`created_by_id`, `updated_at`/`updated_by_id`, `deleted_at`/`deleted_by_id` — enabling soft-delete and full audit trails. The `deleted_at`-based unique constraints on all join tables mean a user-cluster or user-BU relationship can be logically deleted and then re-created without a unique-key collision.
+All four tables carry the full audit trio — `created_at`/`created_by_id`, `updated_at`/`updated_by_id`, `deleted_at`/`deleted_by_id` — enabling soft-delete and full audit trails. The `deleted_at`-based unique constraints on all join tables mean a user-cluster or user-BU relationship can be logically deleted and then re-created without a unique-key collision.
 
 ## 2. Entities
 
@@ -54,6 +54,8 @@ The identity row. One row per platform user, driving sign-in and carrying the `p
 **Constraints:**
 - `@id` on `id`
 - `@@unique([username, deleted_at])` — map `"user_username_deleted_at_u"` — allows username re-use after soft delete
+- FK: `created_by_id` → `tb_user.id` (NoAction / NoAction)
+- FK: `updated_by_id` → `tb_user.id` (NoAction / NoAction)
 
 **Indexes:**
 - `@@index([email])` — map `"user_email_idx"`
@@ -168,11 +170,11 @@ The single field on `tb_user` that drives every `allowedRoles` gate across the P
 
 | Value | Meaning | Can sign in to Platform SPA |
 | ----- | ------- | --------------------------- |
-| `super_admin` | Full platform authority, can manage all clusters, BUs, users, and report templates | Yes |
+| `super_admin` | Highest-privilege role in the Prisma enum; passes `ALLOWED_ROLES` authentication but is **not** listed in any route-level `allowedRoles` array in `App.tsx` — effective access matches the open-access route set (Dashboard, Business Units, Users, Profile). See [[auth-roles]] for the full per-role route matrix. | Yes |
 | `platform_admin` | Platform-level administrator; same operational reach as super_admin in the SPA | Yes |
 | `support_manager` | Carmen support engineer with management authority; can access clusters and report templates | Yes |
 | `support_staff` | Carmen support engineer; read/edit access to operational modules | Yes |
-| `security_officer` | Security-focused role; present in `ALLOWED_ROLES` and can authenticate | Yes |
+| `security_officer` | Security-focused role; can authenticate against the Platform admin SPA but holds no additional route-level privileges beyond the open-access routes (business-units, users, profile). See [[auth-roles]] for the complete route matrix. | Yes |
 | `integration_developer` | Technical integration account; valid in Prisma data but **not** in `ALLOWED_ROLES` — holder cannot sign in to the Platform admin SPA | No |
 | `user` | Default role for new accounts; valid in Prisma data but **not** in `ALLOWED_ROLES` — holder cannot sign in to the Platform admin SPA | No |
 
@@ -204,6 +206,8 @@ The Prisma-level divergence is that `firstname`, `middlename`, and `lastname` do
 
 The `User` interface in `src/types/index.ts` also carries `firstname`, `middlename`, `lastname` directly (not nested under a `user_profile` key), which is the flattened API response shape rather than the Prisma storage shape.
 
+The load function additionally reads `profile.alias_name || user.alias_name`; since `alias_name` has never lived on `tb_user_profile`, the profile leg always resolves to undefined and `user.alias_name` is the effective value — a defensive fallback the SPA carries but does not depend on.
+
 No other divergences detected as of 2026-05-19.
 
 | SPA field | SPA source | Prisma table | Notes |
@@ -211,7 +215,7 @@ No other divergences detected as of 2026-05-19.
 | `username` | `UserFormData` | `tb_user.username` | Aligned |
 | `email` | `UserFormData` | `tb_user.email` | Aligned |
 | `platform_role` | `UserFormData` | `tb_user.platform_role` | Aligned |
-| `alias_name` | `UserFormData` | `tb_user.alias_name` | Aligned |
+| `alias_name` | `UserFormData` | `tb_user.alias_name` | Loaded via `profile.alias_name \|\| user.alias_name`; profile leg is always undefined — effectively aligned. |
 | `is_active` | `UserFormData` | `tb_user.is_active` | Aligned |
 | `firstname` | `UserFormData` | `tb_user_profile.firstname` | SPA flattens profile into user form |
 | `middlename` | `UserFormData` | `tb_user_profile.middlename` | SPA flattens profile into user form |
