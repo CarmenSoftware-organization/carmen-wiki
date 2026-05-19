@@ -1,15 +1,96 @@
-# Manual TH label overrides for Wiki.js navigation sync.
+# Configuration for the Wiki.js multi-book navigation tree.
 #
-# Used only when the primary sources cannot resolve a label:
-#   - headers/: when EN heading text has no match in th/home.md
-#   - links/:   for kind=link items with targetType=url (external URLs)
+# Two sections:
+#   - books:    declarative tree used in --mode=build (full rebuild)
+#   - headers/links: legacy overrides used in --mode=mirror (legacy default)
 #
-# Keys must match EXACTLY (case-sensitive, whitespace-preserved).
+# Keys must match EXACTLY (case-sensitive).
 
+books:
+  inventory:
+    label_en: "Carmen Inventory"
+    label_th: "Carmen Inventory"
+    home_slug: home
+    modules:
+      - slug: access-control
+        label_en: "Access Control"
+        label_th: "Access Control"
+      - slug: costing
+        label_en: "Costing"
+        label_th: "Costing"
+      - slug: dashboard
+        label_en: "Dashboard"
+        label_th: "Dashboard"
+      - slug: good-receive-note
+        label_en: "Good Receive Note"
+        label_th: "Good Receive Note"
+      - slug: inventory
+        label_en: "Inventory"
+        label_th: "Inventory"
+      - slug: inventory-adjustment
+        label_en: "Inventory Adjustment"
+        label_th: "Inventory Adjustment"
+      - slug: master-data
+        label_en: "Master Data"
+        label_th: "Master Data"
+      - slug: physical-count
+        label_en: "Physical Count"
+        label_th: "Physical Count"
+      - slug: product
+        label_en: "Product"
+        label_th: "Product"
+      - slug: purchase-order
+        label_en: "Purchase Order"
+        label_th: "Purchase Order"
+      - slug: purchase-request
+        label_en: "Purchase Request"
+        label_th: "Purchase Request"
+      - slug: recipe
+        label_en: "Recipe"
+        label_th: "Recipe"
+      - slug: reporting-audit
+        label_en: "Reporting & Audit"
+        label_th: "Reporting & Audit"
+      - slug: spot-check
+        label_en: "Spot Check"
+        label_th: "Spot Check"
+      - slug: store-requisition
+        label_en: "Store Requisition"
+        label_th: "Store Requisition"
+      - slug: system-config
+        label_en: "System Config"
+        label_th: "System Config"
+      - slug: templates
+        label_en: "Templates"
+        label_th: "Templates"
+      - slug: vendor-pricelist
+        label_en: "Vendor Pricelist"
+        label_th: "Vendor Pricelist"
+
+  platform:
+    label_en: "Carmen Platform"
+    label_th: "Carmen Platform"
+    home_slug: home
+    modules:
+      - slug: clusters
+        label_en: "Clusters"
+        label_th: "Clusters"
+      - slug: business-units
+        label_en: "Business Units"
+        label_th: "Business Units"
+      - slug: users
+        label_en: "Users"
+        label_th: "Users"
+      - slug: report-templates
+        label_en: "Report Templates"
+        label_th: "Report Templates"
+      - slug: profile
+        label_en: "Profile"
+        label_th: "Profile"
+      - slug: auth-roles
+        label_en: "Authentication & Roles"
+        label_th: "Authentication & Roles"
+
+# Legacy overrides — only consulted in --mode=mirror.
 headers: {}
-  # Example:
-  # "Procure-to-Pay": "จัดซื้อจัดจ้าง (Procure-to-Pay)"
-
 links: {}
-  # Example:
-  # "https://github.com/CarmenSoftware-organization/carmen-wiki": "GitHub repository"
