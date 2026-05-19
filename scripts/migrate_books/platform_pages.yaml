@@ -1,0 +1,264 @@
+# Platform book skeleton page definitions.
+# Generator: scaffold_platform.py
+# Each page produces both en/platform/... and th/platform/... versions.
+
+book: platform
+
+pages:
+  - path: home.md
+    title_en: Carmen Platform
+    title_th: Carmen Platform
+    description: Overview of the Carmen Platform admin product — entry point for the book.
+    tags: [book/platform, home]
+    at_a_glance:
+      - Audience and scope
+      - Modules and how they connect
+      - Quick links to each module's home page
+    references:
+      - "../carmen-platform/README.md"
+      - "../carmen-platform/SITEMAP.md"
+      - "../carmen-platform/docs/OVERVIEW.md"
+    todo:
+      - Replace this skeleton with an introduction matching the existing Inventory book home page
+      - Add a table of modules with one-line descriptions
+
+  - path: clusters/home.md
+    title_en: Clusters
+    title_th: Clusters
+    description: Cluster management — CRUD, user/BU assignment, license limits.
+    tags: [book/platform, clusters]
+    at_a_glance:
+      - What a cluster is and which entities it groups
+      - License limits enforced at cluster level
+      - Workflows for adding users and business units
+    references:
+      - "../carmen-platform/SITEMAP.md (Clusters routes)"
+      - "../carmen-platform/src/pages/ClusterManagement.tsx"
+      - "../carmen-platform/src/pages/ClusterEdit.tsx"
+    todo:
+      - Document the data model
+      - Document the UI screens
+      - Document permissions
+
+  - path: clusters/data-model.md
+    title_en: Cluster — Data Model
+    title_th: Cluster — Data Model
+    description: Cluster entity, relationships to BUs and users, license fields.
+    tags: [book/platform, clusters, data-model]
+    at_a_glance:
+      - Cluster entity fields
+      - One-to-many with Business Units
+      - License limit fields
+    references:
+      - "../carmen-platform/docs/OVERVIEW.md (Entities)"
+    todo:
+      - Document each field
+      - Add an entity diagram
+
+  - path: clusters/ui-screens.md
+    title_en: Cluster — UI Screens
+    title_th: Cluster — UI Screens
+    description: ClusterManagement (list) and ClusterEdit (view/edit) screens.
+    tags: [book/platform, clusters, ui]
+    at_a_glance:
+      - ClusterManagement — DataTable, filters, CSV export
+      - ClusterEdit — view/edit modes, BU and user assignment panels
+    references:
+      - "../carmen-platform/src/pages/ClusterManagement.tsx"
+      - "../carmen-platform/src/pages/ClusterEdit.tsx"
+    todo:
+      - Capture screenshots into assets/screenshots/platform/clusters/
+      - Document each tab and action
+
+  - path: clusters/permissions.md
+    title_en: Cluster — Permissions
+    title_th: Cluster — Permissions
+    description: Role gates for cluster operations.
+    tags: [book/platform, clusters, permissions]
+    at_a_glance:
+      - "platform_admin: full"
+      - "support_manager: full"
+      - "support_staff: full"
+      - "other roles: AccessDenied"
+    references:
+      - "../carmen-platform/SITEMAP.md (Access column)"
+    todo:
+      - Cross-link to auth-roles/home.md for role definitions
+
+  - path: business-units/home.md
+    title_en: Business Units
+    title_th: Business Units
+    description: Hotel/company entity with multi-section form (info, formats, timezone, DB connection, config array).
+    tags: [book/platform, business-units]
+    at_a_glance:
+      - What a BU represents
+      - Form sections and their purpose
+      - Relationship to clusters
+    references:
+      - "../carmen-platform/src/pages/BusinessUnitManagement.tsx"
+      - "../carmen-platform/src/pages/BusinessUnitEdit.tsx"
+    todo:
+      - Document each form section
+      - Note which fields are editable by which roles
+
+  - path: business-units/data-model.md
+    title_en: Business Unit — Data Model
+    title_th: Business Unit — Data Model
+    description: BU entity, config array semantics, DB connection storage.
+    tags: [book/platform, business-units, data-model]
+    at_a_glance:
+      - Identity fields (hotel name, code)
+      - Formatting fields (date, currency, decimal)
+      - Timezone
+      - DB connection block
+      - Config array (key/value pairs)
+    references:
+      - "../carmen-platform/docs/OVERVIEW.md"
+    todo:
+      - Document the config array key namespaces
+
+  - path: business-units/ui-screens.md
+    title_en: Business Unit — UI Screens
+    title_th: Business Unit — UI Screens
+    description: BusinessUnitManagement (list) and BusinessUnitEdit (form sections).
+    tags: [book/platform, business-units, ui]
+    at_a_glance:
+      - List page conventions
+      - Collapsible form sections in the Edit page
+    references:
+      - "../carmen-platform/src/pages/BusinessUnitEdit.tsx"
+    todo:
+      - Screenshot each form section
+
+  - path: users/home.md
+    title_en: Users
+    title_th: Users
+    description: User accounts, role assignment, BU assignment, lifecycle.
+    tags: [book/platform, users]
+    at_a_glance:
+      - User identity vs role vs BU assignment
+      - Role + status filters on the list page
+      - Lifecycle operations
+    references:
+      - "../carmen-platform/src/pages/UserManagement.tsx"
+      - "../carmen-platform/src/pages/UserEdit.tsx"
+    todo:
+      - Document role assignment rules
+
+  - path: users/data-model.md
+    title_en: User — Data Model
+    title_th: User — Data Model
+    description: User entity, role, status, per-cluster BU assignments.
+    tags: [book/platform, users, data-model]
+    at_a_glance:
+      - Identity fields
+      - Role (single, from a known list)
+      - Status (active, disabled, deleted)
+      - Per-cluster BU assignments
+    references:
+      - "../carmen-platform/docs/OVERVIEW.md"
+    todo:
+      - Document the BU-assignment shape
+
+  - path: users/ui-screens.md
+    title_en: User — UI Screens
+    title_th: User — UI Screens
+    description: UserManagement (list) and UserEdit (BU assignment matrix).
+    tags: [book/platform, users, ui]
+    at_a_glance:
+      - List page filters
+      - Edit page BU assignment matrix
+    references:
+      - "../carmen-platform/src/pages/UserEdit.tsx"
+    todo:
+      - Screenshot BU assignment workflow
+
+  - path: users/lifecycle.md
+    title_en: User — Lifecycle
+    title_th: User — Lifecycle
+    description: Create, disable, hard/soft delete, password reset.
+    tags: [book/platform, users, lifecycle]
+    at_a_glance:
+      - Create flow
+      - Disable vs delete (soft vs hard)
+      - Password reset (admin-initiated)
+    references:
+      - "../carmen-platform/src/pages/UserEdit.tsx"
+    todo:
+      - Document the password reset email flow if any
+
+  - path: report-templates/home.md
+    title_en: Report Templates
+    title_th: Report Templates
+    description: XML-based report definitions; tabbed editor with live validation and preview.
+    tags: [book/platform, report-templates]
+    at_a_glance:
+      - What a report template is
+      - Dialog XML vs Content XML
+      - Allow/deny BU lists
+    references:
+      - "../carmen-platform/src/pages/ReportTemplateManagement.tsx"
+      - "../carmen-platform/src/pages/ReportTemplateEdit.tsx"
+    todo:
+      - Document the XML schema
+
+  - path: report-templates/xml-spec.md
+    title_en: Report Template — XML Spec
+    title_th: Report Template — XML Spec
+    description: Dialog and Content XML structures; Label/Date/Lookup pairs.
+    tags: [book/platform, report-templates, xml]
+    at_a_glance:
+      - Dialog root element and child structure
+      - Content root element and child structure
+      - "<Label> + <Date> / <Lookup> pairing"
+    references:
+      - "../carmen-platform/src/pages/ReportTemplateEdit.tsx"
+    todo:
+      - Add a fully-valid example template
+      - List validation error categories
+
+  - path: report-templates/ui-screens.md
+    title_en: Report Template — UI Screens
+    title_th: Report Template — UI Screens
+    description: CodeMirror XML editors, preview tab, chip inputs, sticky action bar.
+    tags: [book/platform, report-templates, ui]
+    at_a_glance:
+      - Two CodeMirror editors (Dialog, Content) with syntax highlighting + folding + search
+      - Live validation with line/col markers
+      - Dialog Preview tab rendering disabled form
+      - BU allow/deny chip inputs
+      - Sticky bottom action bar with unsaved-changes indicator
+    references:
+      - "../carmen-platform/src/pages/ReportTemplateEdit.tsx"
+    todo:
+      - Screenshot each tab
+
+  - path: profile/home.md
+    title_en: Profile
+    title_th: Profile
+    description: View/edit own profile; change password.
+    tags: [book/platform, profile]
+    at_a_glance:
+      - View/edit fields
+      - Change password workflow
+    references:
+      - "../carmen-platform/src/pages/Profile.tsx"
+    todo:
+      - Document avatar menu entry point (not a sidebar item)
+
+  - path: auth-roles/home.md
+    title_en: Authentication and Roles
+    title_th: Authentication and Roles
+    description: JWT auth, role gates, role catalog.
+    tags: [book/platform, auth, cross-cutting]
+    at_a_glance:
+      - JWT lifecycle (login, refresh, expiry)
+      - Role catalog and gates
+      - "Roles: platform_admin, super_admin, support_manager, support_staff, security_officer"
+    references:
+      - "../carmen-platform/README.md (Auth section)"
+      - "../carmen-platform/SITEMAP.md (Access column)"
+      - "../carmen-platform/CLAUDE.md"
+    todo:
+      - Build the role × route gate matrix
+      - Cross-link from each module's permissions doc
