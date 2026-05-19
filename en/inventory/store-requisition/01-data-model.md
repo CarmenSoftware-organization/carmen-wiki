@@ -78,29 +78,9 @@ SR document header. Carries reference number, dates, source / destination locati
 **Constraints:** `@id` on `id`. FKs: `from_location_id → tb_location.id` (`NoAction`, named relation `store_requisition_from_location`); `to_location_id → tb_location.id` (`NoAction`, named relation `store_requisition_to_location`); `workflow_id → tb_workflow.id` (`NoAction`). Note: `requestor_id` and `department_id` are stored as UUIDs but have no Prisma `@relation` on this model — they are application-resolved. Back-relations: many `tb_store_requisition_detail`, many `tb_store_requisition_comment`.
 **Indexes:** `@@unique([sr_no, deleted_at])` as `sr_no_u`; `@@index([sr_no])` as `sr_no_idx`; `@@index([sr_type])` as `sr_type_idx`. Unlike GRN's `grn_no` (nullable), `sr_no` is `NOT NULL`.
 
-### 2.2 tb_store_requisition_comment
+Comment / attachment tables for this module are documented separately — see [01a — Data Model: Comment Tables](/en/inventory/store-requisition/01a-data-model-comments).
 
-Workflow / activity-log entries attached to an SR header. There is no dedicated `tb_store_requisition_workflow` table — this comment table, combined with the JSON workflow columns on the header, is the persistent record of the workflow timeline. Each row is either a user comment (`type = user`) or a system event (`type = system`) such as a stage transition.
-
-| Field | Prisma Type | Nullable | Description |
-| ----- | ----------- | -------- | ----------- |
-| `id` | `String @db.Uuid` | No | Primary key. |
-| `store_requisition_id` | `String @db.Uuid` | No | FK to `tb_store_requisition.id`. |
-| `type` | `enum_comment_type` | No | `user` or `system`; default `user`. |
-| `user_id` | `String @db.Uuid` | Yes | Author user id (null for `system` entries). |
-| `message` | `String` | Yes | Free-text comment body. |
-| `attachments` | `Json @db.JsonB` | Yes | Array of `{ originalName, fileToken, contentType }`; default `[]`. |
-| `created_at` | `DateTime @db.Timestamptz(6)` | Yes | Creation timestamp. |
-| `created_by_id` | `String @db.Uuid` | Yes | Creator id. |
-| `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | Last-update timestamp. |
-| `updated_by_id` | `String @db.Uuid` | Yes | Updater id. |
-| `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | Soft-delete timestamp. |
-| `deleted_by_id` | `String @db.Uuid` | Yes | Soft-delete actor id. |
-
-**Constraints:** `@id` on `id`. FK `store_requisition_id → tb_store_requisition.id` (`NoAction` on delete/update).
-**Indexes:** None declared beyond the primary key.
-
-### 2.3 tb_store_requisition_detail
+### 2.2 tb_store_requisition_detail
 
 SR line item. Identifies the product being requisitioned and carries the three-quantity story (`requested_qty / approved_qty / issued_qty`) plus per-line approval / review / rejection signatures, a per-line `history` JSON timeline, and the link to the inventory transaction that records the actual stock movement on commit. Note: unlike GRN, an SR line is a **single row** for the whole lifecycle — there is no `detail_item` event-row split; the row's columns mutate as the document moves from `draft → in_progress → completed`.
 
@@ -148,28 +128,6 @@ SR line item. Identifies the product being requisitioned and carries the three-q
 
 **Constraints:** `@id` on `id`. FKs: `store_requisition_id → tb_store_requisition.id` (`NoAction`); `product_id → tb_product.id` (`NoAction`); `inventory_transaction_id → tb_inventory_transaction.id` (`NoAction`, nullable). Back-relations: many `tb_store_requisition_detail_comment`.
 **Indexes:** `@@unique([store_requisition_id, product_id, dimension, deleted_at])` as `SRT1_store_requisition_product_location_dimension_u` — a single product+cost-dimension can only appear once on a non-soft-deleted SR; soft-deleted rows free the slot. `@@index([store_requisition_id, product_id])` as `SRT2_store_requisition_product_location_idx`.
-
-### 2.4 tb_store_requisition_detail_comment
-
-Line-level counterpart of `tb_store_requisition_comment`. Captures comments and system events attached to a single SR line — typically used during approval to record per-line decisions (with `approved_message` / `review_message` / `reject_message` carrying the formal signature on the line itself) and during issue to log fulfilment decisions.
-
-| Field | Prisma Type | Nullable | Description |
-| ----- | ----------- | -------- | ----------- |
-| `id` | `String @db.Uuid` | No | Primary key. |
-| `store_requisition_detail_id` | `String @db.Uuid` | No | FK to `tb_store_requisition_detail.id`. |
-| `type` | `enum_comment_type` | No | `user` or `system`; default `user`. |
-| `user_id` | `String @db.Uuid` | Yes | Author user id (null for `system` entries). |
-| `message` | `String` | Yes | Free-text comment body. |
-| `attachments` | `Json @db.JsonB` | Yes | Array of attachments; default `[]`. |
-| `created_at` | `DateTime @db.Timestamptz(6)` | Yes | Creation timestamp. |
-| `created_by_id` | `String @db.Uuid` | Yes | Creator id. |
-| `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | Last-update timestamp. |
-| `updated_by_id` | `String @db.Uuid` | Yes | Updater id. |
-| `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | Soft-delete timestamp. |
-| `deleted_by_id` | `String @db.Uuid` | Yes | Soft-delete actor id. |
-
-**Constraints:** `@id` on `id`. FK `store_requisition_detail_id → tb_store_requisition_detail.id` (`NoAction` on delete/update).
-**Indexes:** None declared beyond the primary key.
 
 ## 3. Relationships
 

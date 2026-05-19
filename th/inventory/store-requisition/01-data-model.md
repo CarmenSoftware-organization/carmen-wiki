@@ -78,29 +78,9 @@ SR วางตัว **ระหว่าง [inventory](/th/inventory/inventor
 **Constraints:** `@id` บน `id` FKs: `from_location_id → tb_location.id` (`NoAction`, named relation `store_requisition_from_location`); `to_location_id → tb_location.id` (`NoAction`, named relation `store_requisition_to_location`); `workflow_id → tb_workflow.id` (`NoAction`) หมายเหตุ: `requestor_id` และ `department_id` ถูกเก็บเป็น UUID แต่ไม่มี Prisma `@relation` บนโมเดลนี้ — resolve ในชั้น application Back-relations: many `tb_store_requisition_detail`, many `tb_store_requisition_comment`
 **Indexes:** `@@unique([sr_no, deleted_at])` ในชื่อ `sr_no_u`; `@@index([sr_no])` ในชื่อ `sr_no_idx`; `@@index([sr_type])` ในชื่อ `sr_type_idx` ต่างจาก `grn_no` (nullable) ของ GRN `sr_no` เป็น `NOT NULL`
 
-### 2.2 tb_store_requisition_comment
+ตารางคอมเมนต์ / ไฟล์แนบของโมดูลนี้ถูกแยกไปอีกหน้า — ดู [01a — โมเดลข้อมูล: ตารางคอมเมนต์](/th/inventory/store-requisition/01a-data-model-comments)
 
-รายการ workflow / activity-log ที่ผูกกับส่วนหัว SR ไม่มีตาราง `tb_store_requisition_workflow` เฉพาะ — ตาราง comment นี้ รวมกับคอลัมน์ JSON ของ workflow บนส่วนหัว คือบันทึกถาวรของ timeline ของ workflow แต่ละแถวคือ user comment (`type = user`) หรือ system event (`type = system`) เช่นการเปลี่ยนขั้น
-
-| ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
-| ----- | ----------- | -------- | -------- |
-| `id` | `String @db.Uuid` | No | Primary key |
-| `store_requisition_id` | `String @db.Uuid` | No | FK ไปยัง `tb_store_requisition.id` |
-| `type` | `enum_comment_type` | No | `user` หรือ `system`; default `user` |
-| `user_id` | `String @db.Uuid` | Yes | user id ผู้เขียน (null สำหรับ entry แบบ `system`) |
-| `message` | `String` | Yes | เนื้อหา comment แบบอิสระ |
-| `attachments` | `Json @db.JsonB` | Yes | Array ของ `{ originalName, fileToken, contentType }`; default `[]` |
-| `created_at` | `DateTime @db.Timestamptz(6)` | Yes | Timestamp สร้าง |
-| `created_by_id` | `String @db.Uuid` | Yes | id ผู้สร้าง |
-| `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | Timestamp อัปเดตล่าสุด |
-| `updated_by_id` | `String @db.Uuid` | Yes | id ผู้อัปเดต |
-| `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | Timestamp soft-delete |
-| `deleted_by_id` | `String @db.Uuid` | Yes | id ผู้ soft-delete |
-
-**Constraints:** `@id` บน `id` FK `store_requisition_id → tb_store_requisition.id` (`NoAction` on delete/update)
-**Indexes:** ไม่มีประกาศนอกเหนือจาก primary key
-
-### 2.3 tb_store_requisition_detail
+### 2.2 tb_store_requisition_detail
 
 รายการของ SR ระบุสินค้าที่ขอเบิกและบรรจุเรื่องราวของปริมาณสามค่า (`requested_qty / approved_qty / issued_qty`) บวกลายเซ็น approval / review / rejection ต่อบรรทัด JSON timeline `history` ต่อบรรทัด และลิงก์ไปยัง inventory transaction ที่บันทึก stock movement จริงตอน commit หมายเหตุ: ต่างจาก GRN บรรทัดของ SR เป็น **แถวเดียว** ตลอดวงจรชีวิต — ไม่มีการแยก event-row แบบ `detail_item`; คอลัมน์ของแถวเปลี่ยนค่าตามที่เอกสารดำเนินจาก `draft → in_progress → completed`
 
@@ -148,28 +128,6 @@ SR วางตัว **ระหว่าง [inventory](/th/inventory/inventor
 
 **Constraints:** `@id` บน `id` FKs: `store_requisition_id → tb_store_requisition.id` (`NoAction`); `product_id → tb_product.id` (`NoAction`); `inventory_transaction_id → tb_inventory_transaction.id` (`NoAction`, nullable) Back-relations: many `tb_store_requisition_detail_comment`
 **Indexes:** `@@unique([store_requisition_id, product_id, dimension, deleted_at])` ในชื่อ `SRT1_store_requisition_product_location_dimension_u` — product+cost-dimension เดียวสามารถปรากฏได้ครั้งเดียวบน SR ที่ยังไม่ถูก soft-delete; แถวที่ถูก soft-delete ปล่อย slot ออก `@@index([store_requisition_id, product_id])` ในชื่อ `SRT2_store_requisition_product_location_idx`
-
-### 2.4 tb_store_requisition_detail_comment
-
-ตาราง counterpart ระดับบรรทัดของ `tb_store_requisition_comment` เก็บ comment และ system events ที่ผูกกับบรรทัด SR เดียว — โดยทั่วไปใช้ระหว่างการอนุมัติเพื่อบันทึกการตัดสินใจต่อบรรทัด (โดย `approved_message` / `review_message` / `reject_message` บรรจุลายเซ็นเป็นทางการบนตัวบรรทัดเอง) และระหว่าง issue เพื่อ log การตัดสินใจ fulfillment
-
-| ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
-| ----- | ----------- | -------- | -------- |
-| `id` | `String @db.Uuid` | No | Primary key |
-| `store_requisition_detail_id` | `String @db.Uuid` | No | FK ไปยัง `tb_store_requisition_detail.id` |
-| `type` | `enum_comment_type` | No | `user` หรือ `system`; default `user` |
-| `user_id` | `String @db.Uuid` | Yes | user id ผู้เขียน (null สำหรับ entry แบบ `system`) |
-| `message` | `String` | Yes | เนื้อหา comment แบบอิสระ |
-| `attachments` | `Json @db.JsonB` | Yes | Array ของไฟล์แนบ; default `[]` |
-| `created_at` | `DateTime @db.Timestamptz(6)` | Yes | Timestamp สร้าง |
-| `created_by_id` | `String @db.Uuid` | Yes | id ผู้สร้าง |
-| `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | Timestamp อัปเดตล่าสุด |
-| `updated_by_id` | `String @db.Uuid` | Yes | id ผู้อัปเดต |
-| `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | Timestamp soft-delete |
-| `deleted_by_id` | `String @db.Uuid` | Yes | id ผู้ soft-delete |
-
-**Constraints:** `@id` บน `id` FK `store_requisition_detail_id → tb_store_requisition_detail.id` (`NoAction` on delete/update)
-**Indexes:** ไม่มีประกาศนอกเหนือจาก primary key
 
 ## 3. ความสัมพันธ์
 
