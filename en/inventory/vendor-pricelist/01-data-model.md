@@ -2,7 +2,7 @@
 title: Vendor Pricelist — Data Model
 description: Entities, fields, relationships, and enums for the vendor-pricelist module.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: vendor-pricelist, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -95,45 +95,9 @@ Per-product row inside a template. Carries the product reference, the inventory 
 **Constraints:** `@id` on `id`. FKs: `pricelist_template_id → tb_pricelist_template.id` (`NoAction`); `product_id → tb_product.id` (`NoAction`, required). Back-relation to `tb_pricelist_template_detail_comment`.
 **Indexes:** `@@unique([pricelist_template_id, product_id, deleted_at])` as `pricelist_template_detail_pricelist_template_id_product_id_u`; `@@index([pricelist_template_id, product_id])` and `@@index([product_id])`.
 
-### 2.3 tb_pricelist_template_comment
+Comment / attachment tables for this module are documented separately — see [01a — Data Model: Comment Tables](/en/inventory/vendor-pricelist/01a-data-model-comments).
 
-Activity-log entries attached to a template header. Holds user comments and `system` events (status transitions, vendor-instruction edits).
-
-| Field | Prisma Type | Nullable | Description |
-| ----- | ----------- | -------- | ----------- |
-| `id` | `String @db.Uuid` | No | Primary key. |
-| `pricelist_template_id` | `String @db.Uuid` | No | FK to `tb_pricelist_template.id`. |
-| `type` | `enum_comment_type` | No | `user` or `system`; default `user`. |
-| `user_id` | `String @db.Uuid` | Yes | Author user id (null for `system`). |
-| `message` | `String` | Yes | Free-text comment body. |
-| `attachments` | `Json @db.JsonB` | Yes | Array of `{ originalName, fileToken, contentType }`; default `[]`. |
-| `created_at` | `DateTime @db.Timestamptz(6)` | Yes | Creation timestamp. |
-| `created_by_id` | `String @db.Uuid` | Yes | Creator id. |
-| `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | Last-update timestamp. |
-| `updated_by_id` | `String @db.Uuid` | Yes | Updater id. |
-| `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | Soft-delete timestamp. |
-| `deleted_by_id` | `String @db.Uuid` | Yes | Soft-delete actor id. |
-
-**Constraints:** `@id` on `id`. FK `pricelist_template_id → tb_pricelist_template.id` (`NoAction`).
-**Indexes:** None declared beyond the primary key.
-
-### 2.4 tb_pricelist_template_detail_comment
-
-Row-level counterpart of `tb_pricelist_template_comment`. Captures comments and system events attached to a single template detail row.
-
-| Field | Prisma Type | Nullable | Description |
-| ----- | ----------- | -------- | ----------- |
-| `id` | `String @db.Uuid` | No | Primary key. |
-| `pricelist_template_detail_id` | `String @db.Uuid` | No | FK to `tb_pricelist_template_detail.id`. |
-| `type` | `enum_comment_type` | No | `user` or `system`; default `user`. |
-| `user_id` | `String @db.Uuid` | Yes | Author user id (null for `system`). |
-| `message` | `String` | Yes | Free-text body. |
-| `attachments` | `Json @db.JsonB` | Yes | Array of attachments; default `[]`. |
-| `created_at`, `created_by_id`, `updated_at`, `updated_by_id`, `deleted_at`, `deleted_by_id` | (standard audit) | Yes | Standard audit columns. |
-
-**Constraints:** `@id` on `id`. FK `pricelist_template_detail_id → tb_pricelist_template_detail.id` (`NoAction`).
-
-### 2.5 tb_request_for_pricing
+### 2.3 tb_request_for_pricing
 
 The "campaign" object in carmen/docs language. Pins one template to a vendor cohort with start / end dates, a custom message, and an email-template reference; the per-vendor invitations are written to `tb_request_for_pricing_detail`. Has **no Prisma status column** — the application derives `draft` / `active` / `paused` / `completed` / `cancelled` from `start_date`, `end_date`, and the submitted-pricelist counts on its detail rows.
 
@@ -159,7 +123,7 @@ The "campaign" object in carmen/docs language. Pins one template to a vendor coh
 **Constraints:** `@id` on `id`. FK `pricelist_template_id → tb_pricelist_template.id` (`NoAction`). Back-relations to `tb_request_for_pricing_detail` and `tb_request_for_pricing_comment`.
 **Indexes:** `@@unique([name, deleted_at])` as `request_for_pricing_name_u`; `@@index([pricelist_template_id])`; `@@index([name])`.
 
-### 2.6 tb_request_for_pricing_detail
+### 2.4 tb_request_for_pricing_detail
 
 The per-vendor invitation row. Carries the invited vendor reference, the contact triplet (person / phone / email), the optional pricelist link (populated when the vendor first saves a draft), and — most importantly — the `pricelist_url_token` that grants the vendor portal access. There is no separate "invitation status" column: the application infers `pending` / `in-progress` / `submitted` / `approved` / `expired` from the linked `tb_pricelist.status`, `tb_pricelist.submitted_at`, and the campaign's `end_date`.
 
@@ -185,16 +149,7 @@ The per-vendor invitation row. Carries the invited vendor reference, the contact
 **Constraints:** `@id` on `id`. FKs: `request_for_pricing_id → tb_request_for_pricing.id` (`NoAction`); `vendor_id → tb_vendor.id` (`NoAction`, required); `pricelist_id → tb_pricelist.id` (`NoAction`, optional). Back-relation to `tb_request_for_pricing_detail_comment`.
 **Indexes:** `@@unique([request_for_pricing_id, vendor_id, deleted_at])` as `request_for_pricing_detail_request_for_pricing_id_vendor_id_u`; `@@index([request_for_pricing_id, vendor_id])`.
 
-### 2.7 tb_request_for_pricing_comment / tb_request_for_pricing_detail_comment
-
-Activity-log surfaces on the campaign header and per-vendor invitation. Same shape as the template comment tables — `id`, FK to parent, `type` enum (`user` / `system`), `user_id`, `message`, `attachments`, and the standard audit columns.
-
-| Table | Parent FK | Purpose |
-| ----- | --------- | ------- |
-| `tb_request_for_pricing_comment` | `request_for_pricing_id → tb_request_for_pricing.id` | Campaign-level activity log: campaign created, vendors selected, emails dispatched, reminders fired, campaign closed. |
-| `tb_request_for_pricing_detail_comment` | `request_for_pricing_detail_id → tb_request_for_pricing_detail.id` | Per-vendor invitation activity log: email sent / opened / clicked, portal first-access, draft saved, submission completed. The fine-grained email and portal telemetry (delivered, opened, clicked, IP addresses, session count) described in carmen/docs lives in `attachments` / `message` JSON in the application layer; there are no dedicated Prisma columns for it. |
-
-### 2.8 tb_pricelist
+### 2.5 tb_pricelist
 
 The vendor's submitted pricelist header. Carries the pricelist reference number, status, vendor reference, validity window, currency, submission method, and the portal `url_token` (a denormalised snapshot of the invitation token for direct portal navigation after token rotation). One header has many `tb_pricelist_detail` rows; the pricelist may be linked back to the originating `tb_request_for_pricing_detail` row, but the FK lives on the invitation side (`tb_request_for_pricing_detail.pricelist_id`).
 
@@ -223,7 +178,7 @@ The vendor's submitted pricelist header. Carries the pricelist reference number,
 **Constraints:** `@id` on `id`. FKs: `vendor_id → tb_vendor.id` (`NoAction`); `currency_id → tb_currency.id` (`NoAction`). Back-relations to `tb_pricelist_detail`, `tb_pricelist_comment`, and `tb_request_for_pricing_detail`.
 **Indexes:** `@@unique([pricelist_no, deleted_at])` as `pricelist_pricelist_no_u`; `@@index([name])`; `@@index([pricelist_no])`.
 
-### 2.9 tb_pricelist_detail
+### 2.6 tb_pricelist_detail
 
 The product row on a submitted pricelist. Carries product reference, unit, MOQ qty, price-without-tax / tax / price, lead time, the `is_preferred` flag (the per-row preferred-vendor designation), and the rating field. The MOQ structure is **one row per MOQ tier** — the unique key `(pricelist_id, product_id, unit_id, moq_qty)` allows multiple rows per product so a vendor can quote different prices at MOQ 1 / 50 / 100.
 
@@ -260,15 +215,6 @@ The product row on a submitted pricelist. Carries product reference, unit, MOQ q
 
 **Constraints:** `@id` on `id`. FKs: `pricelist_id → tb_pricelist.id` (`NoAction`); `product_id → tb_product.id` (`NoAction`, required); `unit_id → tb_unit.id` (`NoAction`); `tax_profile_id → tb_tax_profile.id` (`NoAction`). Back-relations to `tb_purchase_request_detail` (PR detail can reference a specific pricelist row as the price source) and `tb_pricelist_detail_comment`.
 **Indexes:** `@@unique([pricelist_id, product_id, unit_id, moq_qty, deleted_at])` as `pricelist_detail_pricelist_id_product_id_unit_id_moqqty_u` — note `moq_qty` is part of the uniqueness, supporting the multi-MOQ-tier-per-product pattern; `@@index([pricelist_id, product_id])`.
-
-### 2.10 tb_pricelist_comment / tb_pricelist_detail_comment
-
-Activity-log surfaces on the pricelist header and per-row. Same shape as the template comment tables — `id`, FK to parent, `type` enum (`user` / `system`), `user_id`, `message`, `attachments`, and the standard audit columns.
-
-| Table | Parent FK | Purpose |
-| ----- | --------- | ------- |
-| `tb_pricelist_comment` | `pricelist_id → tb_pricelist.id` | Pricelist-header activity log: created, vendor saved draft, vendor submitted, validation result, purchaser approved / rejected, status transitions. |
-| `tb_pricelist_detail_comment` | `pricelist_detail_id → tb_pricelist_detail.id` | Per-row activity log: row edited by purchaser, validation warning attached, preferred-vendor flag toggled, deviation against historical price logged. |
 
 ## 3. Relationships
 
