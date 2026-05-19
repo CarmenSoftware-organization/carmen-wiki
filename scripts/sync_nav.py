@@ -521,5 +521,82 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
+# ===== Section 10b: Declarative tree builder (build mode) =====
+
+
+def _new_link(label: str, target: str) -> dict[str, Any]:
+    return {
+        "id": str(uuid.uuid4()),
+        "kind": "link",
+        "label": label,
+        "icon": "",
+        "targetType": "page",
+        "target": target,
+        "visibilityMode": "all",
+        "visibilityGroups": [],
+    }
+
+
+def _new_header(label: str) -> dict[str, Any]:
+    return {
+        "id": str(uuid.uuid4()),
+        "kind": "header",
+        "label": label,
+        "icon": "",
+        "targetType": "none",
+        "target": "",
+        "visibilityMode": "all",
+        "visibilityGroups": [],
+    }
+
+
+def _new_divider() -> dict[str, Any]:
+    return {
+        "id": str(uuid.uuid4()),
+        "kind": "divider",
+        "label": "",
+        "icon": "",
+        "targetType": "none",
+        "target": "",
+        "visibilityMode": "all",
+        "visibilityGroups": [],
+    }
+
+
+def build_tree_from_config(
+    config: dict[str, Any],
+    *,
+    locale: str,
+) -> list[dict[str, Any]]:
+    """Build a Wiki.js nav tree for one locale from the books: config block.
+
+    For each book: emit a header, a link to /<locale>/<book>/<home_slug>,
+    then a link per module pointing to /<locale>/<book>/<module>/<home_slug>.
+    A divider separates consecutive books.
+    """
+    label_key = f"label_{locale}"
+    items: list[dict[str, Any]] = []
+    books = config.get("books") or {}
+    for idx, (book_slug, book) in enumerate(books.items()):
+        if idx > 0:
+            items.append(_new_divider())
+        items.append(_new_header(book[label_key]))
+        home_slug = book.get("home_slug", "home")
+        items.append(
+            _new_link(
+                "Home",
+                f"/{locale}/{book_slug}/{home_slug}",
+            )
+        )
+        for module in book.get("modules") or []:
+            items.append(
+                _new_link(
+                    module[label_key],
+                    f"/{locale}/{book_slug}/{module['slug']}/{home_slug}",
+                )
+            )
+    return items
+
+
 if __name__ == "__main__":
     sys.exit(main())

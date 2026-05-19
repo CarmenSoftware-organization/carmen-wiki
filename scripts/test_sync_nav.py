@@ -424,3 +424,98 @@ def test_run_sync_full_pipeline(tmp_path: Path):
     assert th_items[1]["label"] == "คำขอซื้อ"
     assert counts["frontmatter"] == 1
     assert counts["home.md"] == 1
+
+
+# ===== Build-mode tree builder tests =====
+
+
+def test_build_tree_one_book_one_module(tmp_path):
+    from scripts.sync_nav import build_tree_from_config
+    config = {
+        "books": {
+            "inventory": {
+                "label_en": "Carmen Inventory",
+                "label_th": "Carmen Inventory",
+                "home_slug": "home",
+                "modules": [
+                    {"slug": "costing", "label_en": "Costing", "label_th": "Costing"},
+                ],
+            },
+        },
+    }
+    items_en = build_tree_from_config(config, locale="en")
+    # Expected items: header, link-home, link-costing
+    kinds = [i["kind"] for i in items_en]
+    assert kinds == ["header", "link", "link"]
+    assert items_en[0]["label"] == "Carmen Inventory"
+    assert items_en[1]["target"] == "/en/inventory/home"
+    assert items_en[2]["target"] == "/en/inventory/costing/home"
+    assert items_en[2]["label"] == "Costing"
+
+
+def test_build_tree_two_books_inserts_divider_between():
+    from scripts.sync_nav import build_tree_from_config
+    config = {
+        "books": {
+            "inventory": {
+                "label_en": "Carmen Inventory",
+                "label_th": "Carmen Inventory",
+                "home_slug": "home",
+                "modules": [{"slug": "costing", "label_en": "Costing", "label_th": "Costing"}],
+            },
+            "platform": {
+                "label_en": "Carmen Platform",
+                "label_th": "Carmen Platform",
+                "home_slug": "home",
+                "modules": [{"slug": "clusters", "label_en": "Clusters", "label_th": "Clusters"}],
+            },
+        },
+    }
+    items = build_tree_from_config(config, locale="en")
+    kinds = [i["kind"] for i in items]
+    assert kinds == [
+        "header", "link", "link",       # inventory
+        "divider",                      # separator
+        "header", "link", "link",       # platform
+    ]
+
+
+def test_build_tree_th_uses_th_labels_and_paths():
+    from scripts.sync_nav import build_tree_from_config
+    config = {
+        "books": {
+            "inventory": {
+                "label_en": "Carmen Inventory",
+                "label_th": "Carmen Inventory TH",
+                "home_slug": "home",
+                "modules": [
+                    {"slug": "costing", "label_en": "Costing", "label_th": "การคิดต้นทุน"},
+                ],
+            },
+        },
+    }
+    items_th = build_tree_from_config(config, locale="th")
+    assert items_th[0]["label"] == "Carmen Inventory TH"
+    assert items_th[1]["target"] == "/th/inventory/home"
+    assert items_th[2]["target"] == "/th/inventory/costing/home"
+    assert items_th[2]["label"] == "การคิดต้นทุน"
+
+
+def test_build_tree_link_items_have_uuid_ids():
+    from scripts.sync_nav import build_tree_from_config
+    config = {
+        "books": {
+            "inventory": {
+                "label_en": "Carmen Inventory",
+                "label_th": "Carmen Inventory",
+                "home_slug": "home",
+                "modules": [
+                    {"slug": "costing", "label_en": "Costing", "label_th": "Costing"},
+                ],
+            },
+        },
+    }
+    items = build_tree_from_config(config, locale="en")
+    ids = [i["id"] for i in items]
+    assert all(len(i) == 36 for i in ids)  # UUID4 string length
+    assert len(set(ids)) == len(ids)        # all unique
