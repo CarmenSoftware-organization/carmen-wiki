@@ -417,37 +417,16 @@ def _setup_logging(verbose: bool) -> None:
     )
 
 
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
-        description="Sync Wiki.js TH navigation from EN.",
-    )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Fetch + transform + print diff; do not push.",
-    )
-    parser.add_argument(
-        "--verbose",
-        action="store_true",
-        help="Print per-item label resolution lines.",
-    )
-    args = parser.parse_args(argv)
-
-    _setup_logging(args.verbose)
-
-    api_url = os.environ.get("WIKI_API_URL")
-    api_token = os.environ.get("WIKI_API_TOKEN")
-    if not api_url or not api_token:
-        print(
-            "ERROR: WIKI_API_URL and WIKI_API_TOKEN must be set "
-            "(see .env.example). Source your .env first.",
-            file=sys.stderr,
-        )
-        return 2
-
-    repo_root = Path(__file__).resolve().parent.parent
-    overrides_path = Path(__file__).resolve().parent / "nav-overrides.yaml"
-
+def _run_mirror_mode(
+    *,
+    api_url: str,
+    api_token: str,
+    repo_root: Path,
+    overrides_path: Path,
+    dry_run: bool,
+    verbose: bool,
+) -> int:
+    """Fetch EN nav from Wiki.js, derive TH, push TH (existing behavior)."""
     # 1. fetch
     print(f"[FETCH]  api={api_url}", file=sys.stderr)
     nav = fetch_navigation(api_url, api_token)
@@ -476,7 +455,7 @@ def main(argv: list[str] | None = None) -> int:
         overrides_path=overrides_path,
     )
 
-    if args.verbose:
+    if verbose:
         for en_item, th_item in zip(en["items"], th_new_items):
             _label, source = resolve_label(
                 # Use rewritten /th/ target so per-item source matches counts
@@ -500,7 +479,7 @@ def main(argv: list[str] | None = None) -> int:
         file=sys.stderr,
     )
 
-    if args.dry_run:
+    if dry_run:
         print("[DRY-RUN] no mutation sent.", file=sys.stderr)
         print(format_summary(len(th_new_items), counts), file=sys.stderr)
         return 0
@@ -519,6 +498,183 @@ def main(argv: list[str] | None = None) -> int:
     print("[PUSH]   updateTree succeeded.", file=sys.stderr)
     print(format_summary(len(th_new_items), counts), file=sys.stderr)
     return 0
+
+
+def _run_build_mode(
+    *,
+    api_url: str,
+    api_token: str,
+    overrides_path: Path,
+    dry_run: bool,
+) -> int:
+    config = yaml.safe_load(overrides_path.read_text(encoding="utf-8")) or {}
+    if not config.get("books"):
+        print(
+            "ERROR: nav-overrides.yaml has no `books:` block; cannot build.",
+            file=sys.stderr,
+        )
+        return 5
+
+    en_items = build_tree_from_config(config, locale="en")
+    th_items = build_tree_from_config(config, locale="th")
+    print(
+        f"[BUILD]  en: {len(en_items)} items, th: {len(th_items)} items",
+        file=sys.stderr,
+    )
+
+    new_tree = [
+        {"locale": "en", "items": en_items},
+        {"locale": "th", "items": th_items},
+    ]
+
+    if dry_run:
+        print("[DRY-RUN] tree preview:", file=sys.stderr)
+        for locale_tree in new_tree:
+            print(f"  {locale_tree['locale']}:", file=sys.stderr)
+            for item in locale_tree["items"]:
+                print(f"    {item['kind']:<8} {item.get('label', ''):<40} {item.get('target', '')}", file=sys.stderr)
+        print("[DRY-RUN] no mutation sent.", file=sys.stderr)
+        return 0
+
+    # In build mode, we don't preserve other locales — Wiki.js currently
+    # only has en + th, and build mode is the source of truth.
+    push_navigation(api_url, api_token, new_tree)
+    print("[PUSH]   updateTree succeeded.", file=sys.stderr)
+    return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        description="Manage Wiki.js navigation tree.",
+    )
+    parser.add_argument(
+        "--mode",
+        choices=["mirror", "build"],
+        default="mirror",
+        help=(
+            "mirror (default): fetch EN from Wiki.js, derive and push TH only. "
+            "build: rebuild EN + TH from nav-overrides.yaml books: block."
+        ),
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Compute + print; do not push.",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Print per-item resolution lines (mirror mode only).",
+    )
+    args = parser.parse_args(argv)
+
+    _setup_logging(args.verbose)
+
+    api_url = os.environ.get("WIKI_API_URL")
+    api_token = os.environ.get("WIKI_API_TOKEN")
+    if not api_url or not api_token:
+        print(
+            "ERROR: WIKI_API_URL and WIKI_API_TOKEN must be set "
+            "(see .env.example). Source your .env first.",
+            file=sys.stderr,
+        )
+        return 2
+
+    repo_root = Path(__file__).resolve().parent.parent
+    overrides_path = Path(__file__).resolve().parent / "nav-overrides.yaml"
+
+    if args.mode == "build":
+        return _run_build_mode(
+            api_url=api_url,
+            api_token=api_token,
+            overrides_path=overrides_path,
+            dry_run=args.dry_run,
+        )
+    return _run_mirror_mode(
+        api_url=api_url,
+        api_token=api_token,
+        repo_root=repo_root,
+        overrides_path=overrides_path,
+        dry_run=args.dry_run,
+        verbose=args.verbose,
+    )
+
+
+# ===== Section 10b: Declarative tree builder (build mode) =====
+
+
+def _new_link(label: str, target: str) -> dict[str, Any]:
+    return {
+        "id": str(uuid.uuid4()),
+        "kind": "link",
+        "label": label,
+        "icon": "",
+        "targetType": "page",
+        "target": target,
+        "visibilityMode": "all",
+        "visibilityGroups": [],
+    }
+
+
+def _new_header(label: str) -> dict[str, Any]:
+    return {
+        "id": str(uuid.uuid4()),
+        "kind": "header",
+        "label": label,
+        "icon": "",
+        "targetType": "none",
+        "target": "",
+        "visibilityMode": "all",
+        "visibilityGroups": [],
+    }
+
+
+def _new_divider() -> dict[str, Any]:
+    return {
+        "id": str(uuid.uuid4()),
+        "kind": "divider",
+        "label": "",
+        "icon": "",
+        "targetType": "none",
+        "target": "",
+        "visibilityMode": "all",
+        "visibilityGroups": [],
+    }
+
+
+def build_tree_from_config(
+    config: dict[str, Any],
+    *,
+    locale: str,
+) -> list[dict[str, Any]]:
+    """Build a Wiki.js nav tree for one locale from the books: config block.
+
+    For each book: emit a header, a link to /<locale>/<book>/<home_slug>,
+    then a link per module pointing to /<locale>/<book>/<module>/<home_slug>.
+    A divider separates consecutive books.
+    """
+    label_key = f"label_{locale}"
+    items: list[dict[str, Any]] = []
+    books = config.get("books") or {}
+    for idx, (book_slug, book) in enumerate(books.items()):
+        if idx > 0:
+            items.append(_new_divider())
+        items.append(_new_header(book[label_key]))
+        home_slug = book.get("home_slug", "home")
+        items.append(
+            _new_link(
+                "Home",
+                f"/{locale}/{book_slug}/{home_slug}",
+            )
+        )
+        for module in book.get("modules") or []:
+            items.append(
+                _new_link(
+                    module[label_key],
+                    f"/{locale}/{book_slug}/{module['slug']}/{home_slug}",
+                )
+            )
+    return items
 
 
 if __name__ == "__main__":

@@ -12,7 +12,18 @@ Audience and scope:
 - Other Carmen modules (PR Approval, vendor catalogs, business unit management) are out of scope **unless** they directly interact with inventory.
 - Useful page shapes: developer how-tos, test scenarios, expected behaviors, edge-case matrices, algorithm pseudo-code, data-model references.
 
-Work is organized under top-level locale directories `en/` and `th/`, each containing topic subdirectories (e.g. `en/inventory/`, `th/purchase-request/`). Each `.md` file is a standalone wiki page. Wiki.js handles the language toggle natively across the locale trees, so individual pages should not include inline cross-locale links. The `.specs/` directory is hidden meta and stays at the repo root.
+Work is organized as `<locale>/<book>/<module>/`. Two books are defined: **Carmen Inventory** (existing content — costing, GRN, physical count, etc.) and **Carmen Platform** (admin product — clusters, business units, users, report templates). The repo root `home.md` is a two-card landing; each book has its own `<book>/home.md` index. Each `.md` file is a standalone wiki page. Wiki.js handles the language toggle natively across the locale trees, so individual pages should not include inline cross-locale links. The `.specs/` directory is hidden meta and stays at the repo root.
+
+## Multi-book layout
+
+| Book | Location | Audience |
+|------|----------|----------|
+| Inventory | `en/inventory/`, `th/inventory/` | Developers and QA working on Carmen Inventory ERP |
+| Platform | `en/platform/`, `th/platform/` | Developers and support working on the platform admin product |
+
+Screenshots live under `assets/screenshots/<book>/<module>/<slug>.png`.
+
+When adding a new page, place it under the correct book. Cross-book content (e.g. how Inventory interacts with cluster-scoped permissions) goes in the most-affected book and links across.
 
 ## Wiki.js Page Format
 
@@ -54,6 +65,7 @@ Sibling directories under `/Users/samutpra/GitHub/carmensoftware-organize/`. Bef
 |------|------|---------|
 | **Concepts / design docs** | `../carmen/docs/` | Canonical concept reference. Topic folders for inventory-management, costing, recipe, purchase-request/order-management, GRN, store-requisitions, vendor-pricelist, product-management, workflow-permissions, business-rules, API/technical specs, prd, use-cases, mobile-app, prisma-schema, etc. Carmen-wiki pages should synthesize from here. |
 | **Frontend** | `../carmen-inventory-frontend/` | Next.js inventory UI — App Router, TypeScript, Tailwind, Bun, Vitest, Playwright. Source of truth for screen/component behavior. Has its own `CLAUDE.md` and `DESIGN.md`. |
+| **Platform admin** | `../carmen-platform/` | React/TypeScript SPA for cluster/BU/user/report-template management — source of truth for the Platform book |
 | **Backend (main)** | `../carmen-turborepo-backend-v2/` | Turborepo monorepo (`apps/`, `packages/`, Bun, Docker, k8s). REST API surface. |
 | **Backend (reports)** | `../micro-report/` | Go microservice for reporting (controllers, services, queues, migrations). |
 | **Backend (cron)** | `../micro-cronjobs/` | Go microservice for scheduled inventory jobs. |
