@@ -7,14 +7,14 @@ This repo is the **source of truth** for the Wiki.js content; the rendered site 
 | Surface | URL |
 | --- | --- |
 | Source repo | <https://github.com/CarmenSoftware-organization/carmen-wiki> |
-| Rendered wiki (dev) | <http://dev.blueledgers.com:3987/> — landing at `/en/index` |
+| Rendered wiki (dev) | <http://dev.blueledgers.com:3987/> — landing at `/en/home` |
 
 ## Repository Layout
 
 ```
 carmen-wiki/
-├── en.md                  # Locale landing (sibling of en/)
 ├── en/                    # Canonical English content (rendered by Wiki.js)
+│   ├── home.md            # Locale landing (URL: /en/home)
 │   ├── inventory.md       # Book landing (sibling of inventory/)
 │   ├── inventory/         # One folder per book (inventory, platform, etc.)
 │   │   ├── costing.md     # Module landing (sibling of costing/)
@@ -27,8 +27,8 @@ carmen-wiki/
 │   │   │   └── 04-test-scenarios-<role>.md
 │   │   └── ...
 │   └── ...
-├── th.md                  # Thai locale landing (sibling of th/)
 ├── th/                    # Thai translation tracking (Wiki.js language toggle)
+│   ├── home.md            # Locale landing (URL: /th/home)
 ├── docs/                  # Meta documentation (specs, plans) — not wiki content
 ├── .specs/                # Hidden meta (templates, frontmatter validator)
 ├── CLAUDE.md              # Project instructions for Claude Code

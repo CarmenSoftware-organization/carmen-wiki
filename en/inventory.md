@@ -64,4 +64,4 @@ Reference manual for developers and QA engineers working on the Carmen Inventory
 
 - Start with the module home page for an overview
 - Drill into sub-pages for data models, UI flows, and edge cases
-- See the [global wiki landing](/en) for the Platform book
+- See the [global wiki landing](/en/home) for the Platform book
