@@ -31,3 +31,22 @@ def test_finds_multiple_in_one_text():
     result = find_stale_paths(src, patterns)
     assert "/en/costing/x" in result
     assert "/th/good-receive-note/y" in result
+
+
+def test_collision_when_module_name_equals_book_name():
+    # "inventory" is both a module slug and the book name. A naive pattern
+    # /en/(?:inventory|costing|...)/.+ would falsely match the migrated
+    # path /en/inventory/costing/page. The collision branch with a negative
+    # lookahead on known module slugs must exclude migrated paths.
+    modules = ["inventory", "costing", "good-receive-note"]
+    patterns = build_stale_patterns(modules=modules, book="inventory")
+    # Migrated paths must NOT be flagged
+    assert find_stale_paths("[a](/en/inventory/costing/page)", patterns) == []
+    assert find_stale_paths("[a](/en/inventory/inventory/page)", patterns) == []
+    assert find_stale_paths("[a](/en/inventory/good-receive-note/page)", patterns) == []
+    # Stale leftover under /en/inventory/ must still be flagged
+    assert find_stale_paths(
+        "[a](/en/inventory/some-old-page)", patterns
+    ) == ["/en/inventory/some-old-page"]
+    # And stale costing/grn under /en/ still flag
+    assert find_stale_paths("[a](/en/costing/page)", patterns) == ["/en/costing/page"]
