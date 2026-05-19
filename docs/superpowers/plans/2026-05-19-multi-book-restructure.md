@@ -512,6 +512,8 @@ git commit -m "scripts(migrate_books): markdown link/image rewriter"
 - Create: `scripts/migrate_books/verify.py`
 - Create: `scripts/migrate_books/test_verify.py`
 
+**Bug-fix note added during implementation:** the `inventory` module slug collides with the new book name `inventory`. A naive pattern `/en/(?:inventory|...)/...` would falsely match the migrated path `/en/inventory/costing/page`. The implementation must use a negative lookahead for the collision case: `/en/inventory/(?!(?:<known-modules>)/)...`. The 4-test set below covers the basic cases; the implementation in Step 3 is updated to handle the collision properly.
+
 - [ ] **Step 1: Write the failing test**
 
 Create `scripts/migrate_books/test_verify.py`:
