@@ -105,18 +105,21 @@ Section structure (mandatory):
 
 ### 2.5 Module-specific: `xml-spec.md` (data-format view)
 
-When a module has a non-trivial data-format that the SPA edits (e.g. `report-templates` carries XML schemas in Dialog and Content fields), document the format here. This shape is not yet validated by a real implementation — the `report-templates` round will refine it.
+When a module has a non-trivial data-format that the SPA edits (e.g. `report-templates` carries XML schemas in Dialog and Content fields), document the format here. This shape was validated by the `report-templates` round — treat it as stable.
 
-Provisional structure (subject to revision when first implemented):
+**Asymmetric framing:** one format may be opaque to the SPA. In `report-templates`, Dialog XML has a rich element catalogue (root element, child elements, attribute conventions) that the SPA understands enough to validate and preview. Content XML is opaque — the SPA stores raw text in `String @db.Text`; the Go runtime (micro-report) owns the schema and rendering. Do not force a symmetric structure; document each format at the level of detail the SPA actually exposes.
 
-1. **Overview** — what data formats this module owns, where they are stored, how the SPA edits them.
-2. **Format A** (e.g. Dialog XML) — root element, child structure, attribute conventions.
-3. **Format B** (e.g. Content XML) — same shape.
-4. **Editor surface** — the SPA editor component (CodeMirror config, syntax highlighting, validation hooks).
-5. **Validation** — what the SPA enforces vs what the backend enforces.
-6. **References** — SPA editor source, backend parser source (if applicable), example documents.
+Mandatory section structure (7 sections):
 
-When `report-templates/xml-spec.md` is written, revise this section based on what works.
+1. **Overview** — what data formats this module owns, where they are stored (column name and Prisma type), how the SPA edits them (editor component, upload accept lists).
+2. **Format A** (e.g. Dialog XML) — root element, child element catalogue with attributes (table or definition list), any positional or pairing conventions (e.g. Label must immediately precede its control sibling).
+3. **Format B** (e.g. Content XML) — when opaque to the SPA, state that explicitly: "The SPA stores Content XML as raw text; the schema is owned by the Go report runtime (micro-report) and is out of scope for this page." Do not fabricate an element catalogue for an opaque format.
+4. **Editor surface** — the SPA editor component (CodeMirror 6 config, XML mode, folding, search, parse-error markers), tab layout, and upload accept lists for each format.
+5. **Validation** — what the SPA enforces (e.g. browser `DOMParser` for well-formedness only; inline parse error with line/column markers) vs what the backend enforces (if anything beyond persistence). State explicitly when SPA validation is well-formedness only and no XSD/schema validation occurs.
+6. **source_params binding** (or equivalent parameter binding section) — when the module links data-format fields to data-source parameters (e.g. Dialog XML filter names → `source_params` positional args), document the binding convention here rather than embedding it in Format A.
+7. **Worked example** — a minimal complete pair of Format A + Format B (or just Format A if Format B is opaque) that demonstrates all element types, the positional pairing, and the source_params binding. This section is mandatory: it is the primary debugging reference for engineers who encounter a malformed template.
+
+**References** cite specific file paths with line ranges where available. Prioritise the Preview renderer and validation utility (e.g. `src/components/DialogPreview.tsx:12-80`, `src/utils/xmlValidator.ts:1-45`) rather than generic component names. Cross-link to [Data Model](./data-model.md) for column types and [UI Screens](./ui-screens.md) for the editor tab layout.
 
 ## 3. Frontmatter
 
@@ -164,7 +167,7 @@ Recurring segment labels by sub-page type:
 | `ui-screens` | Screens · Edit layout · Dialogs · Access · Persisted UI state |
 | `lifecycle` | Operations covered · Not in this product · Endpoints · Cross-entity effects |
 | `permissions` | Gate · Bootstrap exception · On role failure · Sidebar filter · Within-surface gates |
-| `xml-spec` | (TBD when first implemented) |
+| `xml-spec` | Two payloads · Storage (column types) · Editor component · Upload accept lists · Validation scope · Preview scope |
 
 ## 5. Cross-link conventions
 
@@ -253,7 +256,7 @@ When writing a new per-module spec, copy and fill this checklist:
 
 ## 11. Open questions
 
-- **`xml-spec.md` shape** — provisional in §2.5; refine when `report-templates/xml-spec.md` is written.
+- **`xml-spec.md` shape** — resolved in §2.5 after the `report-templates` round (2026-05-19). The 7-section mandatory structure and asymmetric-format framing are now stable.
 - **Whether a `master-config` umbrella eventually needs sub-pages** — currently the Inventory book's master-config spec treats those entities lightly (single reference page each). If the Platform book ever grows a master-config umbrella, decide then whether sub-pages apply.
 
 This template is the source of truth for Platform-book sub-page conventions. Future modules adopt it without re-deriving. Revisions to this template require user approval and should be documented as a new dated spec that supersedes (or amends) the relevant section here.
