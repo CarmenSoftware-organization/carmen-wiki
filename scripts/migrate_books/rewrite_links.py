@@ -34,7 +34,11 @@ def build_mapping(*, modules: list[str], book: str) -> dict[str, str]:
 
 
 def _rewrite_path(path: str, mapping: dict[str, str]) -> str:
-    """Apply the longest matching prefix; preserve fragment/query."""
+    """Apply the first matching prefix; preserve fragment/query.
+
+    The current mapping has no shadowing (no prefix is a prefix of another),
+    so first-match and longest-match are equivalent.
+    """
     for src_prefix, dst_prefix in mapping.items():
         if path.startswith(src_prefix):
             return dst_prefix + path[len(src_prefix):]
@@ -119,7 +123,8 @@ def main() -> None:
             if rewrite_file(md, mapping):
                 changed += 1
                 print(f"REWROTE: {md.relative_to(repo_root)}")
-    print(f"\n{changed} of {scanned} markdown files {'would be' if args.dry_run else ''} changed.")
+    verb = "would be changed" if args.dry_run else "changed"
+    print(f"\n{changed} of {scanned} markdown files {verb}.")
 
 
 if __name__ == "__main__":
