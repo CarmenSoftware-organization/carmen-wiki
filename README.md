@@ -13,17 +13,21 @@ This repo is the **source of truth** for the Wiki.js content; the rendered site 
 
 ```
 carmen-wiki/
+├── en.md                  # Locale landing (sibling of en/)
 ├── en/                    # Canonical English content (rendered by Wiki.js)
-│   ├── index.md           # Wiki landing page (book index)
-│   ├── <module>/          # One folder per module (16 modules)
-│   │   ├── index.md       # Module landing page
-│   │   ├── 01-data-model.md
-│   │   ├── 02-business-rules.md
-│   │   ├── 03-user-flow.md
-│   │   ├── 03-user-flow-<role>.md   # One per persona
-│   │   ├── 04-test-scenarios.md
-│   │   └── 04-test-scenarios-<role>.md
+│   ├── inventory.md       # Book landing (sibling of inventory/)
+│   ├── inventory/         # One folder per book (inventory, platform, etc.)
+│   │   ├── costing.md     # Module landing (sibling of costing/)
+│   │   ├── costing/       # One folder per module
+│   │   │   ├── 01-data-model.md
+│   │   │   ├── 02-business-rules.md
+│   │   │   ├── 03-user-flow.md
+│   │   │   ├── 03-user-flow-<role>.md   # One per persona
+│   │   │   ├── 04-test-scenarios.md
+│   │   │   └── 04-test-scenarios-<role>.md
+│   │   └── ...
 │   └── ...
+├── th.md                  # Thai locale landing (sibling of th/)
 ├── th/                    # Thai translation tracking (Wiki.js language toggle)
 ├── docs/                  # Meta documentation (specs, plans) — not wiki content
 ├── .specs/                # Hidden meta (templates, frontmatter validator)
@@ -40,7 +44,7 @@ Every module folder follows the same shape so readers know exactly where to find
 
 | File | Content |
 | --- | --- |
-| `index.md` | Module overview, business context, key concepts, roles, related modules, reference sources, pages-in-this-module |
+| `<module>.md` | Module landing (sibling of `<module>/`): overview, business context, key concepts, roles, related modules, reference sources, pages-in-this-module |
 | `01-data-model.md` | Prisma entities, enums, relationships, rounding precision |
 | `02-business-rules.md` | Validation, calculation, authorization, posting, and cross-module rules with stable rule IDs (`<MOD>_VAL_NNN`, `<MOD>_AUTH_NNN`, etc.). Includes **Section 5.1 Status Lifecycle — Live UI vs BRD Mapping** for transactional modules. |
 | `03-user-flow.md` | Module-wide state-machine Mermaid + persona index |
