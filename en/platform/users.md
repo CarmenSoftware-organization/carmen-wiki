@@ -2,7 +2,7 @@
 title: Users
 description: Platform-level user accounts — identity, the `platform_role` field that drives every role gate elsewhere, and the cluster/BU assignments that scope what the user can reach in the inventory app.
 published: true
-date: 2026-05-19T12:00:00.000Z
+date: 2026-05-19T16:00:00.000Z
 tags: platform/users, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -192,11 +192,10 @@ templates) read the `platform_role` value written here.
 
 - [Data Model](./data-model.md) — user entity fields, the
   `platform_role` enum, the `tb_cluster_user` join, the BU-user join
-  with its per-BU role and `is_default` flag (stub — in progress).
+  with its per-BU role and `is_default` flag.
 - [Lifecycle](./lifecycle.md) — create flow, activate/deactivate via
   `is_active`, soft vs. hard delete, admin-initiated password reset,
-  Keycloak sync (stub — in progress).
+  Keycloak sync.
 - [UI Screens](./ui-screens.md) — `UserManagement` list screen with
   its filters and Keycloak sync button, and the three-card `UserEdit`
-  layout including the Add BU dialog and Change Password dialog
-  (stub — in progress).
+  layout including the Add BU dialog and Change Password dialog.
