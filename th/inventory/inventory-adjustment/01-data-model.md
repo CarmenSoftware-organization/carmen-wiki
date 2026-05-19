@@ -132,49 +132,9 @@ dateCreated: 2026-05-15T13:00:00.000Z
 **Constraints:** `@id` บน `id` FKs: `inventory_transaction_id → tb_inventory_transaction.id` (`NoAction`); `product_id → tb_product.id` (`NoAction`); `stock_in_id → tb_stock_in.id` (`NoAction`) Back-relations: many `tb_stock_in_detail_comment`
 **Indexes:** `@@unique([stock_in_id, product_id, dimension, deleted_at])` เป็น `SIT1_stock_in_product_dimension_u`; `@@index([stock_in_id, product_id])` เป็น `SIT2_stock_in_product_idx`; `@@index([stock_in_id])` เป็น `SIT2_stock_in_idx`
 
-### 2.4 tb_stock_in_comment
+ตารางคอมเมนต์ / ไฟล์แนบของโมดูลนี้ถูกแยกไปอีกหน้า — ดู [01a — โมเดลข้อมูล: ตารางคอมเมนต์](/th/inventory/inventory-adjustment/01a-data-model-comments)
 
-**Comment / attachment ระดับเอกสาร** บน stock-in ถือ `message` ข้อความอิสระและ array JSON `attachments` ของ S3-token records (รูปความเสียหาย, vendor RMA, สแกน count sheet) ติด tag user-vs-system ผ่าน `enum_comment_type`
-
-| ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
-| ----- | ----------- | -------- | -------- |
-| `id` | `String @db.Uuid` | No | Primary key |
-| `stock_in_id` | `String @db.Uuid` | No | FK ไป `tb_stock_in.id` |
-| `type` | `enum_comment_type` | No | `user` (default) หรือ `system` |
-| `user_id` | `String @db.Uuid` | Yes | ผู้ใช้ที่เขียน comment |
-| `message` | `String` | Yes | เนื้อหา comment ข้อความอิสระ |
-| `attachments` | `Json @db.JsonB` | Yes | Array ของ `{originalName, fileToken, contentType}`; default `[]` |
-| `created_at` | `DateTime @db.Timestamptz(6)` | Yes | Timestamp การสร้าง |
-| `created_by_id` | `String @db.Uuid` | Yes | ID ของผู้สร้าง |
-| `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | Timestamp การอัปเดตล่าสุด |
-| `updated_by_id` | `String @db.Uuid` | Yes | ID ของผู้อัปเดต |
-| `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | Timestamp soft-delete |
-| `deleted_by_id` | `String @db.Uuid` | Yes | ID ของผู้ทำ soft-delete |
-
-**Constraints:** `@id` บน `id` FK `stock_in_id → tb_stock_in.id` (`NoAction`)
-
-### 2.5 tb_stock_in_detail_comment
-
-**Comment / attachment ระดับบรรทัด** บนแถว detail ของ stock-in รูปทรงเดียวกับ `tb_stock_in_comment` แต่ผูกกับบรรทัดเฉพาะ — ใช้สำหรับ "รูปความเสียหายเฉพาะของสินค้านี้" หรือ "vendor RMA สำหรับสินค้านี้"
-
-| ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
-| ----- | ----------- | -------- | -------- |
-| `id` | `String @db.Uuid` | No | Primary key |
-| `stock_in_detail_id` | `String @db.Uuid` | No | FK ไป `tb_stock_in_detail.id` |
-| `type` | `enum_comment_type` | No | `user` (default) หรือ `system` |
-| `user_id` | `String @db.Uuid` | Yes | ผู้ใช้ |
-| `message` | `String` | Yes | ข้อความอิสระ |
-| `attachments` | `Json @db.JsonB` | Yes | Array ของ attachment records; default `[]` |
-| `created_at` | `DateTime @db.Timestamptz(6)` | Yes | Timestamp การสร้าง |
-| `created_by_id` | `String @db.Uuid` | Yes | ID ของผู้สร้าง |
-| `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | Timestamp การอัปเดตล่าสุด |
-| `updated_by_id` | `String @db.Uuid` | Yes | ID ของผู้อัปเดต |
-| `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | Timestamp soft-delete |
-| `deleted_by_id` | `String @db.Uuid` | Yes | ID ของผู้ทำ soft-delete |
-
-**Constraints:** `@id` บน `id` FK `stock_in_detail_id → tb_stock_in_detail.id` (`NoAction`)
-
-### 2.6 tb_stock_out
+### 2.4 tb_stock_out
 
 **Header เอกสาร adjustment ขาออก** เป็นภาพสะท้อนของ `tb_stock_in` ด้วย `so_no` / `so_date` และ `adjustment_type_id` ที่จำกัดที่ application layer ให้แถว `type = stock_out` ฟิลด์ workflow / status / audit เหมือนกัน; ลูกตาราง comment / detail / detail-comment ก็เหมือนกัน
 
@@ -215,7 +175,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 **Constraints:** `@id` บน `id` FKs: `adjustment_type_id → tb_adjustment_type.id` (`NoAction`); `location_id → tb_location.id` (`NoAction`) Back-relations: many `tb_stock_out_detail`, many `tb_stock_out_comment`
 **Indexes:** `@@unique([so_no, deleted_at])` เป็น `SO1_so_no_u`; `@@index([so_no])` เป็น `SO0_so_no_idx`
 
-### 2.7 tb_stock_out_detail
+### 2.5 tb_stock_out_detail
 
 **บรรทัด detail ต่อ product บนเอกสาร stock-out** ภาพสะท้อนของ `tb_stock_in_detail` โดยที่ semantic ของ cost-per-unit กลับด้าน: ที่ stock-out, `cost_per_unit` มักจะถูก **เลือกตอน post โดย costing engine** (FIFO จาก layer เก่าที่สุด หรือ weighted-average ปัจจุบัน) ตาม [inventory](/th/inventory/inventory) `INV_CALC_005` / `INV_CALC_006` — ต้นทุนที่ผู้ใช้กรอกบน draft เป็น preview ไม่ใช่ต้นทุนสุดท้ายที่มีอำนาจ (ซึ่ง resolve บน cost-layer ledger)
 
@@ -248,10 +208,6 @@ dateCreated: 2026-05-15T13:00:00.000Z
 
 **Constraints:** `@id` บน `id` FKs: `inventory_transaction_id → tb_inventory_transaction.id` (`NoAction`); `product_id → tb_product.id` (`NoAction`); `stock_out_id → tb_stock_out.id` (`NoAction`) Back-relations: many `tb_stock_out_detail_comment`
 **Indexes:** `@@unique([stock_out_id, product_id, dimension, deleted_at])` เป็น `SOT1_stock_out_product_dimension_u`; `@@index([stock_out_id, product_id])` เป็น `SOT2_stock_out_product_idx`; `@@index([stock_out_id])` เป็น `SOT2_stock_out_idx`
-
-### 2.8 tb_stock_out_comment, tb_stock_out_detail_comment
-
-ภาพสะท้อนของ `tb_stock_in_comment` / `tb_stock_in_detail_comment` สำหรับเอกสารขาออก รูปทรงคอลัมน์เหมือนกัน; FKs ไปยัง `tb_stock_out.id` / `tb_stock_out_detail.id` ตามลำดับ ใช้สำหรับการแนบรูปความเสียหายบนบรรทัด write-off, references ของ recall-RMA, บันทึก sign-off ของ count-shortage
 
 ## 3. ความสัมพันธ์
 

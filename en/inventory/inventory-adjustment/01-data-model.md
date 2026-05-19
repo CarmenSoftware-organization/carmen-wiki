@@ -132,49 +132,9 @@ The **per-product detail line on a stock-in document**. One row per affected pro
 **Constraints:** `@id` on `id`. FKs: `inventory_transaction_id → tb_inventory_transaction.id` (`NoAction`); `product_id → tb_product.id` (`NoAction`); `stock_in_id → tb_stock_in.id` (`NoAction`). Back-relations: many `tb_stock_in_detail_comment`.
 **Indexes:** `@@unique([stock_in_id, product_id, dimension, deleted_at])` as `SIT1_stock_in_product_dimension_u`; `@@index([stock_in_id, product_id])` as `SIT2_stock_in_product_idx`; `@@index([stock_in_id])` as `SIT2_stock_in_idx`.
 
-### 2.4 tb_stock_in_comment
+Comment / attachment tables for this module are documented separately — see [01a — Data Model: Comment Tables](/en/inventory/inventory-adjustment/01a-data-model-comments).
 
-The **document-level comment / attachment** on a stock-in. Carries free-text `message` and an `attachments` JSON array of S3-token records (photo of damage, vendor RMA, count sheet scan). User-vs-system tagging via `enum_comment_type`.
-
-| Field | Prisma Type | Nullable | Description |
-| ----- | ----------- | -------- | ----------- |
-| `id` | `String @db.Uuid` | No | Primary key. |
-| `stock_in_id` | `String @db.Uuid` | No | FK to `tb_stock_in.id`. |
-| `type` | `enum_comment_type` | No | `user` (default) or `system`. |
-| `user_id` | `String @db.Uuid` | Yes | User who left the comment. |
-| `message` | `String` | Yes | Free-text comment body. |
-| `attachments` | `Json @db.JsonB` | Yes | Array of `{originalName, fileToken, contentType}`; default `[]`. |
-| `created_at` | `DateTime @db.Timestamptz(6)` | Yes | Creation timestamp. |
-| `created_by_id` | `String @db.Uuid` | Yes | Creator id. |
-| `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | Last-update timestamp. |
-| `updated_by_id` | `String @db.Uuid` | Yes | Updater id. |
-| `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | Soft-delete timestamp. |
-| `deleted_by_id` | `String @db.Uuid` | Yes | Soft-delete actor id. |
-
-**Constraints:** `@id` on `id`. FK `stock_in_id → tb_stock_in.id` (`NoAction`).
-
-### 2.5 tb_stock_in_detail_comment
-
-The **line-level comment / attachment** on a stock-in detail row. Same shape as `tb_stock_in_comment` but anchored to a specific line — used for "photo of this specific item's damage" or "vendor RMA for this product".
-
-| Field | Prisma Type | Nullable | Description |
-| ----- | ----------- | -------- | ----------- |
-| `id` | `String @db.Uuid` | No | Primary key. |
-| `stock_in_detail_id` | `String @db.Uuid` | No | FK to `tb_stock_in_detail.id`. |
-| `type` | `enum_comment_type` | No | `user` (default) or `system`. |
-| `user_id` | `String @db.Uuid` | Yes | User. |
-| `message` | `String` | Yes | Free-text. |
-| `attachments` | `Json @db.JsonB` | Yes | Array of attachment records; default `[]`. |
-| `created_at` | `DateTime @db.Timestamptz(6)` | Yes | Creation timestamp. |
-| `created_by_id` | `String @db.Uuid` | Yes | Creator id. |
-| `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | Last-update timestamp. |
-| `updated_by_id` | `String @db.Uuid` | Yes | Updater id. |
-| `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | Soft-delete timestamp. |
-| `deleted_by_id` | `String @db.Uuid` | Yes | Soft-delete actor id. |
-
-**Constraints:** `@id` on `id`. FK `stock_in_detail_id → tb_stock_in_detail.id` (`NoAction`).
-
-### 2.6 tb_stock_out
+### 2.4 tb_stock_out
 
 The **outbound adjustment document header**. Mirror-image of `tb_stock_in` with `so_no` / `so_date` and `adjustment_type_id` restricted at the application layer to rows with `type = stock_out`. Identical workflow / status / audit fields; same comment / detail / detail-comment children.
 
@@ -215,7 +175,7 @@ The **outbound adjustment document header**. Mirror-image of `tb_stock_in` with 
 **Constraints:** `@id` on `id`. FKs: `adjustment_type_id → tb_adjustment_type.id` (`NoAction`); `location_id → tb_location.id` (`NoAction`). Back-relations: many `tb_stock_out_detail`, many `tb_stock_out_comment`.
 **Indexes:** `@@unique([so_no, deleted_at])` as `SO1_so_no_u`; `@@index([so_no])` as `SO0_so_no_idx`.
 
-### 2.7 tb_stock_out_detail
+### 2.5 tb_stock_out_detail
 
 The **per-product detail line on a stock-out document**. Mirror of `tb_stock_in_detail` with the cost-per-unit semantics inverted: on stock-out, `cost_per_unit` is typically **picked at post time by the costing engine** (FIFO from the oldest layer, or current weighted-average) per [inventory](/en/inventory/inventory) `INV_CALC_005` / `INV_CALC_006` — the user-entered cost on the draft is a preview, not the authoritative final cost (which is resolved on the cost-layer ledger).
 
@@ -248,10 +208,6 @@ The **per-product detail line on a stock-out document**. Mirror of `tb_stock_in_
 
 **Constraints:** `@id` on `id`. FKs: `inventory_transaction_id → tb_inventory_transaction.id` (`NoAction`); `product_id → tb_product.id` (`NoAction`); `stock_out_id → tb_stock_out.id` (`NoAction`). Back-relations: many `tb_stock_out_detail_comment`.
 **Indexes:** `@@unique([stock_out_id, product_id, dimension, deleted_at])` as `SOT1_stock_out_product_dimension_u`; `@@index([stock_out_id, product_id])` as `SOT2_stock_out_product_idx`; `@@index([stock_out_id])` as `SOT2_stock_out_idx`.
-
-### 2.8 tb_stock_out_comment, tb_stock_out_detail_comment
-
-Mirror of `tb_stock_in_comment` / `tb_stock_in_detail_comment` for the outbound document. Same column shape; FKs to `tb_stock_out.id` / `tb_stock_out_detail.id` respectively. Used for damage-photo attachment on write-off lines, recall-RMA references, count-shortage sign-off notes.
 
 ## 3. Relationships
 
