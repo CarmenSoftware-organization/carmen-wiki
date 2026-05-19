@@ -64,4 +64,4 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 - เริ่มจากหน้า home ของแต่ละโมดูลเพื่อภาพรวม
 - เจาะลึก sub-pages สำหรับ data model, UI flow, edge cases
-- ดู [global wiki landing](/th/index) สำหรับ Platform book
+- ดู [global wiki landing](/th) สำหรับ Platform book

@@ -37,4 +37,4 @@ Reference manual for developers and support engineers working on the Carmen Plat
 
 - Start with the module home page for an overview
 - Drill into sub-pages for data models, UI flows, and edge cases
-- See the [global wiki landing](/en/index) for the Inventory book
+- See the [global wiki landing](/en) for the Inventory book
