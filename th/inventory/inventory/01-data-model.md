@@ -2,7 +2,7 @@
 title: คลังสินค้า (Inventory) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูล inventory
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T02:00:00.000Z
 tags: inventory, data-model, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -29,6 +29,8 @@ dateCreated: 2026-05-15T12:00:00.000Z
 โมดูลตั้งอยู่ **ที่ศูนย์กลางของห่วงโซ่ procure-to-pay / requisition-to-consume** เป็นปลายน้ำของ [good-receive-note](/th/inventory/good-receive-note) (การรับ post `enum_inventory_doc_type = good_received_note` transactions), [store-requisition](/th/inventory/store-requisition) (การเบิก post `store_requisition` transactions), [physical-count](/th/inventory/physical-count) และ [spot-check](/th/inventory/spot-check) (การนับ post adjustment_in / adjustment_out transactions) และ [inventory-adjustment](/th/inventory/inventory-adjustment) (manual stock-in / stock-out transactions) เป็นต้นน้ำของ [costing](/th/inventory/costing) ซึ่งอ่าน cost-layer ledger เพื่อคำนวณ COGS และ unit-cost ป้อนกลับไปยังโมดูล source การออกแบบ single-table-as-ledger เป็นเจตนา: ทุก movement ของสต๊อกที่เป็นเจ้าของ ไม่ว่าจะมาจากโมดูล source ใด จะลงใน `tb_inventory_transaction` เพื่อให้ trace ทั้งไปและกลับ (movement → cost layer → period snapshot → on-hand) เดียวรองรับทั้ง audit และ recall
 
 จุดโครงสร้างที่น่าสังเกต: **ไม่มี `tb_stock_balance` model ใน canonical Prisma schema** ยอด on-hand ถูก derive — ณ จุดเวลาใด ๆ ยอดปัจจุบันสำหรับ `(location_id, product_id, lot_no)` คือผลรวมเชิงพีชคณิตของ `tb_inventory_transaction_cost_layer.in_qty` ที่ไม่ถูก soft-delete ทั้งหมด ลบ `out_qty` สำหรับ lot นั้นตั้งแต่ `closing_qty` ของ snapshot งวดล่าสุด `closing_qty` ของ period snapshot คือ anchor ที่ lock; movement หลัง snapshot คือ delta เทียบกับมัน `inventory-management-prd.md` และเอกสารอนุพันธ์อ้างถึงเอนทิตี `InventoryStatus` / `StockBalance` ที่มี column `QuantityOnHand`, `LastUnitCost`, `TotalCost` — interface นั้นเป็น application-layer-derived ไม่ใช่ row ใน schema ดู Section 5 สำหรับความแตกต่างนี้
+
+จุดโครงสร้างประการที่สอง: **GL posting ที่ผลิตโดย movement ของ inventory ลงที่คู่ `tb_jv_header` / `tb_jv_detail`** (tenant schema, enum สถานะ `enum_jv_status = { draft, posted }`) JV header carry `jv_no`, `jv_date`, `jv_type`, `currency_id` / `exchange_rate` / `base_currency_id` และแถว detail carry บรรทัด `debit` / `credit` ต่อบัญชีที่ผูกกับ inventory transaction ที่มันสรุป JV คือ bridge ที่ consume โดยโมดูล finance / GL; entry แก้ไขที่ wiki inventory อ้างว่า "ออก manual journal voucher" (ดู [purchase-order/credit-note](/th/inventory/purchase-order/credit-note) และ [master-data/exchange-rate](/th/inventory/master-data/exchange-rate)) เขียนเข้าคู่นี้ JV **ไม่ได้** ถูก model เป็นลูกของ `tb_inventory_transaction` — การเชื่อมโยงเป็น `jv_no` / `jv_type` โดย convention ที่ posting engine บันทึก ไม่ใช่ Prisma `@relation`
 
 ## 2. เอนทิตี
 

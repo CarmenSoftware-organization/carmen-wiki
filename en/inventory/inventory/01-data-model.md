@@ -2,7 +2,7 @@
 title: Inventory — Data Model
 description: Entities, fields, relationships, and enums for the inventory module.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T02:00:00.000Z
 tags: inventory, data-model, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -29,6 +29,8 @@ The Inventory module is the **system of record for stock movement and on-hand va
 The module sits **at the centre of the procure-to-pay / requisition-to-consume chain**. It is downstream of [good-receive-note](/en/inventory/good-receive-note) (receipts post `enum_inventory_doc_type = good_received_note` transactions), [store-requisition](/en/inventory/store-requisition) (issues post `store_requisition` transactions), [physical-count](/en/inventory/physical-count) and [spot-check](/en/inventory/spot-check) (counts post adjustment_in / adjustment_out transactions), and [inventory-adjustment](/en/inventory/inventory-adjustment) (manual stock-in / stock-out transactions). It is upstream of [costing](/en/inventory/costing), which reads the cost-layer ledger to compute COGS and unit-cost feeds back into the source modules. The single-table-as-ledger design is deliberate: every owned-stock movement, regardless of source module, lands in `tb_inventory_transaction` so that a single forward-and-backward trace (movement → cost layer → period snapshot → on-hand) underpins both audit and recall.
 
 A noteworthy structural point: **there is no `tb_stock_balance` model in the canonical Prisma schema**. On-hand balance is derived — at any point in time, the current balance for `(location_id, product_id, lot_no)` is the algebraic sum of all non-soft-deleted `tb_inventory_transaction_cost_layer.in_qty` minus `out_qty` for that lot since the last period snapshot's `closing_qty`. The period snapshot's `closing_qty` is the locked anchor; movements after the snapshot are deltas against it. The `inventory-management-prd.md` and several derivative docs reference an `InventoryStatus` / `StockBalance` entity with `QuantityOnHand`, `LastUnitCost`, `TotalCost` columns — that interface is application-layer-derived, not a schema row. See Section 5 for this divergence.
+
+A second structural point: **GL postings produced by inventory movements land in the `tb_jv_header` / `tb_jv_detail` pair** (tenant schema, status enum `enum_jv_status = { draft, posted }`). The JV header carries `jv_no`, `jv_date`, `jv_type`, `currency_id` / `exchange_rate` / `base_currency_id`, and the detail row carries per-account `debit` / `credit` lines tied to the inventory transaction it summarises. JV is the bridge consumed by the finance / GL module; corrective entries that the inventory wiki refers to as "raise a manual journal voucher" (see [purchase-order/credit-note](/en/inventory/purchase-order/credit-note) and [master-data/exchange-rate](/en/inventory/master-data/exchange-rate)) write into this pair. JV is **not** modelled as a child of `tb_inventory_transaction` — the linkage is by `jv_no` / `jv_type` convention recorded by the posting engine, not a Prisma `@relation`.
 
 ## 2. Entities
 
