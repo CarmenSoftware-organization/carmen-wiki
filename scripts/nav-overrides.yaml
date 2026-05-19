@@ -11,85 +11,112 @@ books:
     label_en: "Carmen Inventory"
     label_th: "Carmen Inventory"
     home_slug: home
-    modules:
-      - slug: access-control
-        label_en: "Access Control"
-        label_th: "Access Control"
-      - slug: costing
-        label_en: "Costing"
-        label_th: "Costing"
-      - slug: dashboard
-        label_en: "Dashboard"
-        label_th: "Dashboard"
-      - slug: good-receive-note
-        label_en: "Good Receive Note"
-        label_th: "Good Receive Note"
-      - slug: inventory
-        label_en: "Inventory"
-        label_th: "Inventory"
-      - slug: inventory-adjustment
-        label_en: "Inventory Adjustment"
-        label_th: "Inventory Adjustment"
-      - slug: master-data
-        label_en: "Master Data"
-        label_th: "Master Data"
-      - slug: physical-count
-        label_en: "Physical Count"
-        label_th: "Physical Count"
-      - slug: product
-        label_en: "Product"
-        label_th: "Product"
-      - slug: purchase-order
-        label_en: "Purchase Order"
-        label_th: "Purchase Order"
-      - slug: purchase-request
-        label_en: "Purchase Request"
-        label_th: "Purchase Request"
-      - slug: recipe
-        label_en: "Recipe"
-        label_th: "Recipe"
-      - slug: reporting-audit
-        label_en: "Reporting & Audit"
-        label_th: "Reporting & Audit"
-      - slug: spot-check
-        label_en: "Spot Check"
-        label_th: "Spot Check"
-      - slug: store-requisition
-        label_en: "Store Requisition"
-        label_th: "Store Requisition"
-      - slug: system-config
-        label_en: "System Config"
-        label_th: "System Config"
-      - slug: templates
-        label_en: "Templates"
-        label_th: "Templates"
-      - slug: vendor-pricelist
-        label_en: "Vendor Pricelist"
-        label_th: "Vendor Pricelist"
+    groups:
+      - label_en: "Overview"
+        label_th: "ภาพรวม"
+        modules:
+          - slug: dashboard
+            label_en: "Dashboard"
+            label_th: "Dashboard"
+      - label_en: "Procurement"
+        label_th: "การจัดซื้อ"
+        modules:
+          - slug: purchase-request
+            label_en: "Purchase Request"
+            label_th: "Purchase Request"
+          - slug: purchase-order
+            label_en: "Purchase Order"
+            label_th: "Purchase Order"
+          - slug: good-receive-note
+            label_en: "Good Receive Note"
+            label_th: "Good Receive Note"
+          - slug: vendor-pricelist
+            label_en: "Vendor Pricelist"
+            label_th: "Vendor Pricelist"
+      - label_en: "Inventory Operations"
+        label_th: "การดำเนินงานคลัง"
+        modules:
+          - slug: inventory
+            label_en: "Inventory"
+            label_th: "Inventory"
+          - slug: inventory-adjustment
+            label_en: "Inventory Adjustment"
+            label_th: "Inventory Adjustment"
+          - slug: physical-count
+            label_en: "Physical Count"
+            label_th: "Physical Count"
+          - slug: spot-check
+            label_en: "Spot Check"
+            label_th: "Spot Check"
+          - slug: store-requisition
+            label_en: "Store Requisition"
+            label_th: "Store Requisition"
+      - label_en: "Product & Recipe"
+        label_th: "สินค้าและสูตร"
+        modules:
+          - slug: product
+            label_en: "Product"
+            label_th: "Product"
+          - slug: master-data
+            label_en: "Master Data"
+            label_th: "Master Data"
+          - slug: recipe
+            label_en: "Recipe"
+            label_th: "Recipe"
+      - label_en: "Costing & Reporting"
+        label_th: "ต้นทุนและรายงาน"
+        modules:
+          - slug: costing
+            label_en: "Costing"
+            label_th: "Costing"
+          - slug: reporting-audit
+            label_en: "Reporting & Audit"
+            label_th: "Reporting & Audit"
+      - label_en: "Administration"
+        label_th: "การดูแลระบบ"
+        modules:
+          - slug: access-control
+            label_en: "Access Control"
+            label_th: "Access Control"
+          - slug: system-config
+            label_en: "System Config"
+            label_th: "System Config"
+          - slug: templates
+            label_en: "Templates"
+            label_th: "Templates"
 
   platform:
     label_en: "Carmen Platform"
     label_th: "Carmen Platform"
     home_slug: home
-    modules:
-      - slug: clusters
-        label_en: "Clusters"
-        label_th: "Clusters"
-      - slug: business-units
-        label_en: "Business Units"
-        label_th: "Business Units"
-      - slug: users
-        label_en: "Users"
-        label_th: "Users"
-      - slug: report-templates
-        label_en: "Report Templates"
-        label_th: "Report Templates"
-      - slug: profile
-        label_en: "Profile"
-        label_th: "Profile"
-      - slug: auth-roles
-        label_en: "Authentication & Roles"
-        label_th: "Authentication & Roles"
+    groups:
+      - label_en: "Tenancy"
+        label_th: "Tenancy"
+        modules:
+          - slug: clusters
+            label_en: "Clusters"
+            label_th: "Clusters"
+          - slug: business-units
+            label_en: "Business Units"
+            label_th: "Business Units"
+      - label_en: "Identity & Access"
+        label_th: "Identity & Access"
+        modules:
+          - slug: users
+            label_en: "Users"
+            label_th: "Users"
+          - slug: auth-roles
+            label_en: "Authentication & Roles"
+            label_th: "Authentication & Roles"
+          - slug: profile
+            label_en: "Profile"
+            label_th: "Profile"
+      - label_en: "Reporting"
+        label_th: "Reporting"
+        modules:
+          - slug: report-templates
+            label_en: "Report Templates"
+            label_th: "Report Templates"
 
 # Legacy overrides — only consulted in --mode=mirror.
 headers: {}
