@@ -7,14 +7,14 @@ This repo is the **source of truth** for the Wiki.js content; the rendered site 
 | Surface | URL |
 | --- | --- |
 | Source repo | <https://github.com/CarmenSoftware-organization/carmen-wiki> |
-| Rendered wiki (dev) | <http://dev.blueledgers.com:3987/> — landing at `/en/home` |
+| Rendered wiki (dev) | <http://dev.blueledgers.com:3987/> — landing at `/en/index` |
 
 ## Repository Layout
 
 ```
 carmen-wiki/
 ├── en/                    # Canonical English content (rendered by Wiki.js)
-│   ├── home.md            # Wiki landing page (16-module index)
+│   ├── index.md           # Wiki landing page (book index)
 │   ├── <module>/          # One folder per module (16 modules)
 │   │   ├── index.md       # Module landing page
 │   │   ├── 01-data-model.md

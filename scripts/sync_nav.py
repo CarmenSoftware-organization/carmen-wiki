@@ -27,15 +27,15 @@ log = logging.getLogger("sync_nav")
 _H2_NUMBERED_RE = re.compile(r"^##\s+\d+\.\s+(.+?)\s*$")
 
 
-def parse_home_headings(home_md: Path) -> list[str]:
-    """Parse `## N. <text>` headings from a home.md file, in document order.
+def parse_index_headings(index_md: Path) -> list[str]:
+    """Parse `## N. <text>` headings from an index.md file, in document order.
 
     Returns the heading text with the `N. ` numbering prefix stripped.
     Only h2 headings (`## `) that begin with a numbering prefix are
     included; the h1 title and h3+ subheadings are ignored.
     """
     out: list[str] = []
-    for line in home_md.read_text(encoding="utf-8").splitlines():
+    for line in index_md.read_text(encoding="utf-8").splitlines():
         m = _H2_NUMBERED_RE.match(line)
         if m:
             out.append(m.group(1).strip())
@@ -43,7 +43,7 @@ def parse_home_headings(home_md: Path) -> list[str]:
 
 
 def build_header_label_map(en_headings: list[str], th_headings: list[str]) -> dict[str, str]:
-    """Pair EN and TH home.md headings by index → {en_text: th_text}.
+    """Pair EN and TH index.md headings by index → {en_text: th_text}.
 
     If the two lists differ in length, pairs up to the shorter list and
     logs a WARNING. Mismatching indices fall back to override / EN label
@@ -51,7 +51,7 @@ def build_header_label_map(en_headings: list[str], th_headings: list[str]) -> di
     """
     if len(en_headings) != len(th_headings):
         log.warning(
-            "home.md heading count mismatch: en=%d th=%d — pairing up to min",
+            "index.md heading count mismatch: en=%d th=%d — pairing up to min",
             len(en_headings),
             len(th_headings),
         )
@@ -99,7 +99,7 @@ def resolve_th_page_title(repo_root: Path, target: str) -> str | None:
 class LabelSource(str, Enum):
     """Where a TH label was sourced from. Used in --verbose output."""
     FRONTMATTER = "frontmatter"
-    HOME_MD = "home.md"
+    INDEX_MD = "index.md"
     OVERRIDE = "override"
     FALLBACK = "fallback"
     NONE = "none"  # divider items have no label
@@ -130,7 +130,7 @@ def resolve_label(
 
     if kind == "header":
         if item["label"] in header_map:
-            return header_map[item["label"]], LabelSource.HOME_MD
+            return header_map[item["label"]], LabelSource.INDEX_MD
         if item["label"] in overrides["headers"]:
             return overrides["headers"][item["label"]], LabelSource.OVERRIDE
         return item["label"], LabelSource.FALLBACK
@@ -374,7 +374,7 @@ def format_summary(total: int, counts: dict[str, int]) -> str:
     return (
         f"Summary: {total} items  "
         f"·  {counts.get('frontmatter', 0)} frontmatter  "
-        f"·  {counts.get('home.md', 0)} home.md  "
+        f"·  {counts.get('index.md', 0)} index.md  "
         f"·  {counts.get('override', 0)} override  "
         f"·  {counts.get('fallback', 0)} fallback"
     )
@@ -394,9 +394,9 @@ def run_sync(
     No GraphQL I/O; called by main() after fetch_navigation and before
     push_navigation. Tested directly in unit tests.
     """
-    en_home = parse_home_headings(repo_root / "en" / "home.md")
-    th_home = parse_home_headings(repo_root / "th" / "home.md")
-    header_map = build_header_label_map(en_home, th_home)
+    en_index = parse_index_headings(repo_root / "en" / "index.md")
+    th_index = parse_index_headings(repo_root / "th" / "index.md")
+    header_map = build_header_label_map(en_index, th_index)
     overrides = load_overrides(overrides_path)
     return transform_items(
         en_items,
@@ -464,8 +464,8 @@ def _run_mirror_mode(
                 else en_item,
                 repo_root=repo_root,
                 header_map=build_header_label_map(
-                    parse_home_headings(repo_root / "en" / "home.md"),
-                    parse_home_headings(repo_root / "th" / "home.md"),
+                    parse_index_headings(repo_root / "en" / "index.md"),
+                    parse_index_headings(repo_root / "th" / "index.md"),
                 ),
                 overrides=load_overrides(overrides_path),
             )
@@ -661,7 +661,7 @@ def build_tree_from_config(
         if idx > 0:
             items.append(_new_divider())
         items.append(_new_header(book[label_key]))
-        home_slug = book.get("home_slug", "home")
+        home_slug = book.get("home_slug", "index")
         items.append(
             _new_link(
                 "Home",

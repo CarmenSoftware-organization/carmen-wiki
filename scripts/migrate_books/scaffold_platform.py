@@ -17,7 +17,7 @@ import yaml
 
 @dataclass
 class PageSpec:
-    path: str            # relative to <locale>/<book>/  e.g. "clusters/home.md"
+    path: str            # relative to <locale>/<book>/  e.g. "clusters/index.md"
     title_en: str
     title_th: str
     description: str

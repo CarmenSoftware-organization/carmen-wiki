@@ -11,7 +11,7 @@ from scripts.migrate_books.scaffold_platform import (
 
 
 SAMPLE_SPEC = PageSpec(
-    path="clusters/home.md",
+    path="clusters/index.md",
     title_en="Clusters",
     title_th="Clusters",
     description="Cluster mgmt.",
