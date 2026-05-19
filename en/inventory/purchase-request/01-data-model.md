@@ -155,51 +155,9 @@ PR line item. Carries product reference, qty / unit triples (requested, approved
 **Constraints:** `@id` on `id`. FKs: `purchase_request_id → tb_purchase_request.id`; `product_id → tb_product.id` (required); `vendor_id → tb_vendor.id`; `pricelist_detail_id → tb_pricelist_detail.id`; `tax_profile_id → tb_tax_profile.id`; `currency_id → tb_currency.id`; `location_id → tb_location.id`; `delivery_point_id → tb_delivery_point.id`; three named `@relation` FKs into `tb_unit` for requested / approved / FOC unit.
 **Indexes:** `@@unique([purchase_request_id, product_id, location_id, dimension, deleted_at])` as `PR1_purchase_request_product_location_dimension_u`; `@@index([product_id])` as `PRD1_product_id_idx`; `@@index([location_id])` as `PRD1_location_id_idx`; `@@index([location_id, product_id])` as `PRD1_location_product_idx`; `@@index([purchase_request_id])` as `PRD1_purchase_request_id_idx`.
 
-### 2.3 tb_purchase_request_comment
+Comment / attachment tables for this module are documented separately — see [01a — Data Model: Comment Tables](/en/inventory/purchase-request/01a-data-model-comments).
 
-Workflow / activity-log entries attached to a PR header. The Prisma schema has no dedicated `tb_purchase_request_workflow` table — this comment table, combined with the JSON workflow columns on the header, is the persistent record of the workflow timeline. Each row is either a user comment (`type = user`) or a system event (`type = system`) such as a stage transition.
-
-| Field | Prisma Type | Nullable | Description |
-| ----- | ----------- | -------- | ----------- |
-| `id` | `String @db.Uuid` | No | Primary key. |
-| `purchase_request_id` | `String @db.Uuid` | No | FK to `tb_purchase_request.id`. |
-| `type` | `enum_comment_type` | No | `user` or `system`; default `user`. |
-| `user_id` | `String @db.Uuid` | Yes | Author user id (null for `system` entries). |
-| `message` | `String` | Yes | Free-text comment body. |
-| `attachments` | `Json @db.JsonB` | Yes | Array of `{ originalName, fileToken, contentType }`; default `[]`. |
-| `created_at` | `DateTime @db.Timestamptz(6)` | Yes | Creation timestamp. |
-| `created_by_id` | `String @db.Uuid` | Yes | Creator id. |
-| `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | Last-update timestamp. |
-| `updated_by_id` | `String @db.Uuid` | Yes | Updater id. |
-| `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | Soft-delete timestamp. |
-| `deleted_by_id` | `String @db.Uuid` | Yes | Soft-delete actor id. |
-
-**Constraints:** `@id` on `id`. FK `purchase_request_id → tb_purchase_request.id` (`NoAction` on delete/update).
-**Indexes:** None declared beyond the primary key.
-
-### 2.4 tb_purchase_request_detail_comment
-
-Line-level counterpart of `tb_purchase_request_comment`. Captures comments and system events attached to a single PR line — typically used during approval to record stage-level decisions and rejection reasons per line.
-
-| Field | Prisma Type | Nullable | Description |
-| ----- | ----------- | -------- | ----------- |
-| `id` | `String @db.Uuid` | No | Primary key. |
-| `purchase_request_detail_id` | `String @db.Uuid` | No | FK to `tb_purchase_request_detail.id`. |
-| `type` | `enum_comment_type` | No | `user` or `system`; default `user`. |
-| `user_id` | `String @db.Uuid` | Yes | Author user id. |
-| `message` | `String` | Yes | Free-text comment body. |
-| `attachments` | `Json @db.JsonB` | Yes | Array of attachments; default `[]`. |
-| `created_at` | `DateTime @db.Timestamptz(6)` | Yes | Creation timestamp. |
-| `created_by_id` | `String @db.Uuid` | Yes | Creator id. |
-| `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | Last-update timestamp. |
-| `updated_by_id` | `String @db.Uuid` | Yes | Updater id. |
-| `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | Soft-delete timestamp. |
-| `deleted_by_id` | `String @db.Uuid` | Yes | Soft-delete actor id. |
-
-**Constraints:** `@id` on `id`. FK `purchase_request_detail_id → tb_purchase_request_detail.id`.
-**Indexes:** None declared beyond the primary key.
-
-### 2.5 tb_purchase_request_template
+### 2.3 tb_purchase_request_template
 
 Header for a reusable PR template (e.g. a weekly market-list set). Templates do not themselves enter a workflow — they seed new PRs.
 
@@ -224,7 +182,7 @@ Header for a reusable PR template (e.g. a weekly market-list set). Templates do 
 **Constraints:** `@id` on `id`. FK `workflow_id → tb_workflow.id`.
 **Indexes:** `@@unique([name, workflow_id, deleted_at])` as `PRT1_name_workflow_id_u`; `@@index([workflow_id])` as `PRT1_workflow_id_idx`; `@@index([name])` as `PRT1_name_idx`.
 
-### 2.6 tb_purchase_request_template_detail
+### 2.4 tb_purchase_request_template_detail
 
 Line item belonging to a PR template. Schema mirrors `tb_purchase_request_detail` for the fields a template needs to seed — product, location, requested qty / unit, FOC, tax, discount, currency — but deliberately omits approval-side fields (`approved_qty`, `approved_unit_*`, workflow `history`, `stages_status`) and the `vendor_id` / `pricelist_detail_id` columns; those are set at PR creation time, not stored on the template.
 

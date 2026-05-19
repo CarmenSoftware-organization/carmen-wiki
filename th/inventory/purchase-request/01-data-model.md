@@ -155,51 +155,9 @@ PR อยู่ต้นน้ำของ [purchase-order](/th/inventory/purcha
 **Constraints:** `@id` บน `id` FK: `purchase_request_id → tb_purchase_request.id`; `product_id → tb_product.id` (required); `vendor_id → tb_vendor.id`; `pricelist_detail_id → tb_pricelist_detail.id`; `tax_profile_id → tb_tax_profile.id`; `currency_id → tb_currency.id`; `location_id → tb_location.id`; `delivery_point_id → tb_delivery_point.id`; FK ที่ตั้งชื่อด้วย `@relation` สาม FK ไปยัง `tb_unit` สำหรับหน่วย requested / approved / FOC
 **Indexes:** `@@unique([purchase_request_id, product_id, location_id, dimension, deleted_at])` ชื่อ `PR1_purchase_request_product_location_dimension_u`; `@@index([product_id])` ชื่อ `PRD1_product_id_idx`; `@@index([location_id])` ชื่อ `PRD1_location_id_idx`; `@@index([location_id, product_id])` ชื่อ `PRD1_location_product_idx`; `@@index([purchase_request_id])` ชื่อ `PRD1_purchase_request_id_idx`
 
-### 2.3 tb_purchase_request_comment
+ตารางคอมเมนต์ / ไฟล์แนบของโมดูลนี้ถูกแยกไปอีกหน้า — ดู [01a — โมเดลข้อมูล: ตารางคอมเมนต์](/th/inventory/purchase-request/01a-data-model-comments)
 
-รายการของ workflow / activity-log ที่ผูกกับ header ของ PR Prisma schema ไม่มีตาราง `tb_purchase_request_workflow` โดยเฉพาะ — ตาราง comment นี้ผสมกับคอลัมน์ JSON ของ workflow บน header คือ record persist ของ timeline ของ workflow แต่ละแถวเป็น user comment (`type = user`) หรือ system event (`type = system`) เช่นการ transition stage
-
-| ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
-| ----- | ----------- | -------- | ----------- |
-| `id` | `String @db.Uuid` | No | Primary key |
-| `purchase_request_id` | `String @db.Uuid` | No | FK ไปยัง `tb_purchase_request.id` |
-| `type` | `enum_comment_type` | No | `user` หรือ `system`; default `user` |
-| `user_id` | `String @db.Uuid` | Yes | user id ผู้เขียน (null สำหรับ entry แบบ `system`) |
-| `message` | `String` | Yes | เนื้อ comment แบบ free-text |
-| `attachments` | `Json @db.JsonB` | Yes | array ของ `{ originalName, fileToken, contentType }`; default `[]` |
-| `created_at` | `DateTime @db.Timestamptz(6)` | Yes | timestamp การสร้าง |
-| `created_by_id` | `String @db.Uuid` | Yes | id ผู้สร้าง |
-| `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | timestamp การอัปเดตล่าสุด |
-| `updated_by_id` | `String @db.Uuid` | Yes | id ผู้อัปเดต |
-| `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | timestamp การ soft-delete |
-| `deleted_by_id` | `String @db.Uuid` | Yes | id ผู้ soft-delete |
-
-**Constraints:** `@id` บน `id` FK `purchase_request_id → tb_purchase_request.id` (`NoAction` ตอน delete/update)
-**Indexes:** ไม่มีประกาศนอกเหนือจาก primary key
-
-### 2.4 tb_purchase_request_detail_comment
-
-ตารางคู่ขนานระดับบรรทัดของ `tb_purchase_request_comment` จับ comment และ system event ที่ผูกกับบรรทัด PR เพียงบรรทัดเดียว — โดยทั่วไปใช้ระหว่างการอนุมัติเพื่อบันทึกการตัดสินใจระดับ stage และเหตุผลการ reject ต่อบรรทัด
-
-| ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
-| ----- | ----------- | -------- | ----------- |
-| `id` | `String @db.Uuid` | No | Primary key |
-| `purchase_request_detail_id` | `String @db.Uuid` | No | FK ไปยัง `tb_purchase_request_detail.id` |
-| `type` | `enum_comment_type` | No | `user` หรือ `system`; default `user` |
-| `user_id` | `String @db.Uuid` | Yes | user id ผู้เขียน |
-| `message` | `String` | Yes | เนื้อ comment แบบ free-text |
-| `attachments` | `Json @db.JsonB` | Yes | array ของ attachment; default `[]` |
-| `created_at` | `DateTime @db.Timestamptz(6)` | Yes | timestamp การสร้าง |
-| `created_by_id` | `String @db.Uuid` | Yes | id ผู้สร้าง |
-| `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | timestamp การอัปเดตล่าสุด |
-| `updated_by_id` | `String @db.Uuid` | Yes | id ผู้อัปเดต |
-| `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | timestamp การ soft-delete |
-| `deleted_by_id` | `String @db.Uuid` | Yes | id ผู้ soft-delete |
-
-**Constraints:** `@id` บน `id` FK `purchase_request_detail_id → tb_purchase_request_detail.id`
-**Indexes:** ไม่มีประกาศนอกเหนือจาก primary key
-
-### 2.5 tb_purchase_request_template
+### 2.3 tb_purchase_request_template
 
 ส่วนหัวของ PR template ที่นำกลับมาใช้ใหม่ได้ (เช่นชุด market-list รายสัปดาห์) Template เองไม่เข้าสู่ workflow — มัน seed PR ใบใหม่
 
@@ -224,7 +182,7 @@ PR อยู่ต้นน้ำของ [purchase-order](/th/inventory/purcha
 **Constraints:** `@id` บน `id` FK `workflow_id → tb_workflow.id`
 **Indexes:** `@@unique([name, workflow_id, deleted_at])` ชื่อ `PRT1_name_workflow_id_u`; `@@index([workflow_id])` ชื่อ `PRT1_workflow_id_idx`; `@@index([name])` ชื่อ `PRT1_name_idx`
 
-### 2.6 tb_purchase_request_template_detail
+### 2.4 tb_purchase_request_template_detail
 
 รายการสินค้าที่เป็นของ PR template Schema เลียนแบบ `tb_purchase_request_detail` ในส่วนของฟิลด์ที่ template ต้องใช้ในการ seed — product, location, requested qty / unit, FOC, tax, discount, currency — แต่ตั้งใจตัดฟิลด์ฝั่งอนุมัติออก (`approved_qty`, `approved_unit_*`, workflow `history`, `stages_status`) และตัดคอลัมน์ `vendor_id` / `pricelist_detail_id` ออก ฟิลด์เหล่านั้นถูก set ตอนสร้าง PR ไม่ใช่เก็บไว้ใน template
 
