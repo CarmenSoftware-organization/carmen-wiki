@@ -2,7 +2,7 @@
 title: คลัสเตอร์ (Clusters)
 description: ภาพรวมโมดูล Clusters — กลุ่ม tenant ระดับบนสุดที่เป็นเจ้าของ business unit และ user ตามไลเซนส์
 published: true
-date: 2026-05-19T00:00:00.000Z
+date: 2026-05-19T12:00:00.000Z
 tags: platform/clusters, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -141,11 +141,11 @@ string ที่ใช้ gate ใน `src/App.tsx` คือ
 
 ## 7. หน้าในโมดูลนี้
 
-- [[clusters/data-model]] — field ของ entity cluster, ความสัมพันธ์ 1:N
+- [Data Model](./data-model.md) — field ของ entity cluster, ความสัมพันธ์ 1:N
   กับ BU, การ join ผ่าน `tb_cluster_user` และสอง field สำหรับ
   license-cap (stub — ยังไม่สมบูรณ์)
-- [[clusters/permissions]] — gate `allowedRoles` แต่ละ route และสิ่งที่
+- [Permissions](./permissions.md) — gate `allowedRoles` แต่ละ route และสิ่งที่
   แต่ละบทบาทระดับ admin ทำได้บนหน้าจอ (stub — ยังไม่สมบูรณ์)
-- [[clusters/ui-screens]] — หน้า list `ClusterManagement` และเลย์เอาต์
+- [UI Screens](./ui-screens.md) — หน้า list `ClusterManagement` และเลย์เอาต์
   สามการ์ดของ `ClusterEdit` รวมถึง flow ของ dialog เพิ่ม user
   (stub — ยังไม่สมบูรณ์)

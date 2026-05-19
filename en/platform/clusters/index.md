@@ -2,7 +2,7 @@
 title: Clusters
 description: Cluster module overview — the top-level tenant grouping that owns business units and licensed users.
 published: true
-date: 2026-05-19T00:00:00.000Z
+date: 2026-05-19T12:00:00.000Z
 tags: platform/clusters, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -125,7 +125,7 @@ Templates module.
 - [[report-templates]] — uses the identical `allowedRoles` shape, so the
   permission model documented here transfers one-for-one.
 
-## 6. Source References
+## 6. Reference Sources
 
 - `../carmen-platform/SITEMAP.md` — the route table is the source of
   truth for the three cluster routes and their access lists.
@@ -141,13 +141,13 @@ Templates module.
 - `../carmen-platform/src/types/` — the `Cluster` and `BusinessUnit`
   TypeScript interfaces consumed by both screens.
 
-## 7. Pages in this module
+## 7. Pages in This Module
 
-- [[clusters/data-model]] — cluster entity fields, the 1:N link to BUs,
+- [Data Model](./data-model.md) — cluster entity fields, the 1:N link to BUs,
   the join through `tb_cluster_user`, and the two license-cap fields
   (stub — in progress).
-- [[clusters/permissions]] — exact `allowedRoles` gates per route and
+- [Permissions](./permissions.md) — exact `allowedRoles` gates per route and
   what each admin-tier role can do on the screen (stub — in progress).
-- [[clusters/ui-screens]] — `ClusterManagement` list screen and the
+- [UI Screens](./ui-screens.md) — `ClusterManagement` list screen and the
   three-card `ClusterEdit` layout, including the add-user dialog flow
   (stub — in progress).

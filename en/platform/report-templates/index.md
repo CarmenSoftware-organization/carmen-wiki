@@ -67,5 +67,5 @@ End-customer roles (property managers, BU staff, end users) never reach this mod
 
 ## 7. Pages in This Module
 
-- [UI Screens](./ui-screens.md) — Tour of the tabbed CodeMirror XML editors, live validation markers, Dialog Preview tab, BU chip inputs, and the sticky action bar with unsaved-changes indicator.
-- [XML Spec](./xml-spec.md) — Reference for the Dialog and Content XML schemas — root element, child structure, and the Label + Date/Lookup pairing pattern used in the filter form.
+- [UI Screens](./ui-screens.md) — Tour of the tabbed CodeMirror XML editors (stub — in progress), live validation markers, Dialog Preview tab, BU chip inputs, and the sticky action bar with unsaved-changes indicator.
+- [XML Spec](./xml-spec.md) — Reference for the Dialog and Content XML schemas (stub — in progress) — root element, child structure, and the Label + Date/Lookup pairing pattern used in the filter form.
