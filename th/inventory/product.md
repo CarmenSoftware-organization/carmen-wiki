@@ -2,7 +2,7 @@
 title: สินค้า (Product)
 description: ข้อมูลหลักของสินค้า — หมวดหมู่ หน่วยนับ คลังจัดเก็บ และการนำเข้า/ส่งออก — แคตตาล็อกที่เอกสารคลังทุกใบอ้างอิง
 published: true
-date: 2026-05-17T07:00:36.000Z
+date: 2026-05-19T23:45:00.000Z
 tags: product, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -76,13 +76,13 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 ## 7. หน้าในโมดูลนี้
 
-- [01 — โมเดลข้อมูล](./01-data-model.md) — เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum (อิงจาก Prisma)
-- [02 — กติกาทางธุรกิจ](./02-business-rules.md) — การตรวจสอบความถูกต้อง การคำนวณ/การสืบทอด การกำหนดสิทธิ์ วงจรชีวิต และกฎข้ามโมดูล
-- [03 — User Flow](./03-user-flow.md) — วงจรชีวิตของ record สินค้า พร้อมสารบัญ persona
-  - [Product Administrator](./03-user-flow-product-admin.md)
-  - [Purchaser](./03-user-flow-purchaser.md)
-  - [Store Keeper](./03-user-flow-store-keeper.md)
-- [04 — Test Scenarios](./04-test-scenarios.md) — ขอบเขตของแต่ละ persona, scenario ข้าม persona และ mapping ไปยัง E2E
-  - [Product Administrator](./04-test-scenarios-product-admin.md)
-  - [Purchaser](./04-test-scenarios-purchaser.md)
-  - [Store Keeper](./04-test-scenarios-store-keeper.md)
+- [01 — โมเดลข้อมูล](/th/inventory/product/01-data-model) — เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum (อิงจาก Prisma)
+- [02 — กติกาทางธุรกิจ](/th/inventory/product/02-business-rules) — การตรวจสอบความถูกต้อง การคำนวณ/การสืบทอด การกำหนดสิทธิ์ วงจรชีวิต และกฎข้ามโมดูล
+- [03 — User Flow](/th/inventory/product/03-user-flow) — วงจรชีวิตของ record สินค้า พร้อมสารบัญ persona
+  - [Product Administrator](/th/inventory/product/03-user-flow-product-admin)
+  - [Purchaser](/th/inventory/product/03-user-flow-purchaser)
+  - [Store Keeper](/th/inventory/product/03-user-flow-store-keeper)
+- [04 — Test Scenarios](/th/inventory/product/04-test-scenarios) — ขอบเขตของแต่ละ persona, scenario ข้าม persona และ mapping ไปยัง E2E
+  - [Product Administrator](/th/inventory/product/04-test-scenarios-product-admin)
+  - [Purchaser](/th/inventory/product/04-test-scenarios-purchaser)
+  - [Store Keeper](/th/inventory/product/04-test-scenarios-store-keeper)

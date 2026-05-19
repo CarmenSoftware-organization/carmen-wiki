@@ -2,7 +2,7 @@
 title: Master Data
 description: Business master data referenced by transactional documents — units, departments, vendors, currencies, tax profiles, and related catalogs.
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:45:00.000Z
 tags: master-data, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -31,19 +31,19 @@ Product Admin and Configurator manage these. Sysadmin oversees integration and R
 
 | Entity | Purpose | Managed by |
 | ------ | ------- | ---------- |
-| [unit](./unit.md) | Units of measure plus per-product conversions | Product Admin |
-| [department](./department.md) | Organisational departments and user-to-department mappings | Product Admin / Sysadmin |
-| [location](./location.md) | Inventory, direct, and consignment locations with count behaviour | Product Admin |
-| [delivery-point](./delivery-point.md) | Physical drop-off points for vendor deliveries | Product Admin |
-| [business-unit](./business-unit.md) | The operating unit — owns calculation method and default currency | Sysadmin |
-| [currency](./currency.md) | Enabled currencies, ISO reference, and dated exchange-rate history | Product Admin / Sysadmin |
-| [exchange-rate](./exchange-rate.md) | Dated FX rate history feeding document snapshots and costing FX revaluation | Product Admin |
-| [vendor](./vendor.md) | Suppliers with addresses, contacts, and business-type taxonomy | Product Admin |
-| [tax-profile](./tax-profile.md) | Named tax rate definitions | Product Admin |
-| [credit-term](./credit-term.md) | Vendor payment terms (NET 30, COD, etc.) | Product Admin |
-| [extra-cost-type](./extra-cost-type.md) | GRN landed-cost categories with allocation modes | Product Admin |
-| [adjustment-type](./adjustment-type.md) | Coded reasons for stock-in / stock-out adjustments | Product Admin |
-| [credit-note-reason](./credit-note-reason.md) | Coded reasons for credit notes raised against GRN | Product Admin |
+| [unit](/en/inventory/master-data/unit) | Units of measure plus per-product conversions | Product Admin |
+| [department](/en/inventory/master-data/department) | Organisational departments and user-to-department mappings | Product Admin / Sysadmin |
+| [location](/en/inventory/master-data/location) | Inventory, direct, and consignment locations with count behaviour | Product Admin |
+| [delivery-point](/en/inventory/master-data/delivery-point) | Physical drop-off points for vendor deliveries | Product Admin |
+| [business-unit](/en/inventory/master-data/business-unit) | The operating unit — owns calculation method and default currency | Sysadmin |
+| [currency](/en/inventory/master-data/currency) | Enabled currencies, ISO reference, and dated exchange-rate history | Product Admin / Sysadmin |
+| [exchange-rate](/en/inventory/master-data/exchange-rate) | Dated FX rate history feeding document snapshots and costing FX revaluation | Product Admin |
+| [vendor](/en/inventory/master-data/vendor) | Suppliers with addresses, contacts, and business-type taxonomy | Product Admin |
+| [tax-profile](/en/inventory/master-data/tax-profile) | Named tax rate definitions | Product Admin |
+| [credit-term](/en/inventory/master-data/credit-term) | Vendor payment terms (NET 30, COD, etc.) | Product Admin |
+| [extra-cost-type](/en/inventory/master-data/extra-cost-type) | GRN landed-cost categories with allocation modes | Product Admin |
+| [adjustment-type](/en/inventory/master-data/adjustment-type) | Coded reasons for stock-in / stock-out adjustments | Product Admin |
+| [credit-note-reason](/en/inventory/master-data/credit-note-reason) | Coded reasons for credit notes raised against GRN | Product Admin |
 
 ## 4. Cross-Module Dependencies
 

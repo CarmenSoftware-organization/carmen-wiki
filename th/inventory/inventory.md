@@ -2,7 +2,7 @@
 title: คลังสินค้า (Inventory)
 description: ยอดคงเหลือสต๊อก ตำแหน่งจัดเก็บ และกระบวนการปิดงวด — แกนกลางของระบบ ERP ด้านคลังสินค้า
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:45:00.000Z
 tags: inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -79,15 +79,15 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 ## 7. หน้าในโมดูลนี้
 
-- [01 — แบบจำลองข้อมูล](./01-data-model.md) — เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum (อิงจาก Prisma)
-- [02 — กฎทางธุรกิจ](./02-business-rules.md) — การตรวจสอบ การคำนวณ การกำหนดสิทธิ์ การ posting และกฎข้ามโมดูล
-- [03 — User Flow](./03-user-flow.md) — วงจรชีวิตของ movement และงวด พร้อมสารบัญ persona
-  - [Store Keeper](./03-user-flow-store-keeper.md)
-  - [Inventory Controller](./03-user-flow-inventory-controller.md)
-  - [Finance](./03-user-flow-finance.md)
-  - [Audit / Config](./03-user-flow-audit-config.md)
-- [04 — Test Scenarios](./04-test-scenarios.md) — ขอบเขต persona, scenario ข้าม persona, การ map E2E
-  - [Store Keeper](./04-test-scenarios-store-keeper.md)
-  - [Inventory Controller](./04-test-scenarios-inventory-controller.md)
-  - [Finance](./04-test-scenarios-finance.md)
-  - [Audit / Config](./04-test-scenarios-audit-config.md)
+- [01 — แบบจำลองข้อมูล](/th/inventory/inventory/01-data-model) — เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum (อิงจาก Prisma)
+- [02 — กฎทางธุรกิจ](/th/inventory/inventory/02-business-rules) — การตรวจสอบ การคำนวณ การกำหนดสิทธิ์ การ posting และกฎข้ามโมดูล
+- [03 — User Flow](/th/inventory/inventory/03-user-flow) — วงจรชีวิตของ movement และงวด พร้อมสารบัญ persona
+  - [Store Keeper](/th/inventory/inventory/03-user-flow-store-keeper)
+  - [Inventory Controller](/th/inventory/inventory/03-user-flow-inventory-controller)
+  - [Finance](/th/inventory/inventory/03-user-flow-finance)
+  - [Audit / Config](/th/inventory/inventory/03-user-flow-audit-config)
+- [04 — Test Scenarios](/th/inventory/inventory/04-test-scenarios) — ขอบเขต persona, scenario ข้าม persona, การ map E2E
+  - [Store Keeper](/th/inventory/inventory/04-test-scenarios-store-keeper)
+  - [Inventory Controller](/th/inventory/inventory/04-test-scenarios-inventory-controller)
+  - [Finance](/th/inventory/inventory/04-test-scenarios-finance)
+  - [Audit / Config](/th/inventory/inventory/04-test-scenarios-audit-config)

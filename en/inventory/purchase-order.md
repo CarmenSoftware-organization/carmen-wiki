@@ -2,7 +2,7 @@
 title: Purchase Order
 description: Formal commitment to a vendor to purchase goods at agreed prices, quantities, and delivery terms.
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:45:00.000Z
 tags: purchase-order, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -90,19 +90,19 @@ Financial accuracy is enforced at the calculation layer. Item subtotal, discount
 
 ## 7. Pages in This Module
 
-- [01 — Data Model](./01-data-model.md) — Entities, fields, relationships, and enums (Prisma-derived).
-- [02 — Business Rules](./02-business-rules.md) — Validation, calculation, authorization, posting, and three-way-match rules.
-- [03 — User Flow](./03-user-flow.md) — Document lifecycle and persona index.
-  - [Purchaser](./03-user-flow-purchaser.md)
-  - [Procurement Manager](./03-user-flow-procurement-manager.md)
-  - [Vendor](./03-user-flow-vendor.md)
-  - [Receiver](./03-user-flow-receiver.md)
-  - [Finance](./03-user-flow-finance.md)
-  - [Audit / Config](./03-user-flow-audit-config.md)
-- [04 — Test Scenarios](./04-test-scenarios.md) — Persona scope, cross-persona scenarios, E2E mapping.
-  - [Purchaser](./04-test-scenarios-purchaser.md)
-  - [Procurement Manager](./04-test-scenarios-procurement-manager.md)
-  - [Vendor](./04-test-scenarios-vendor.md)
-  - [Receiver](./04-test-scenarios-receiver.md)
-  - [Finance](./04-test-scenarios-finance.md)
-  - [Audit / Config](./04-test-scenarios-audit-config.md)
+- [01 — Data Model](/en/inventory/purchase-order/01-data-model) — Entities, fields, relationships, and enums (Prisma-derived).
+- [02 — Business Rules](/en/inventory/purchase-order/02-business-rules) — Validation, calculation, authorization, posting, and three-way-match rules.
+- [03 — User Flow](/en/inventory/purchase-order/03-user-flow) — Document lifecycle and persona index.
+  - [Purchaser](/en/inventory/purchase-order/03-user-flow-purchaser)
+  - [Procurement Manager](/en/inventory/purchase-order/03-user-flow-procurement-manager)
+  - [Vendor](/en/inventory/purchase-order/03-user-flow-vendor)
+  - [Receiver](/en/inventory/purchase-order/03-user-flow-receiver)
+  - [Finance](/en/inventory/purchase-order/03-user-flow-finance)
+  - [Audit / Config](/en/inventory/purchase-order/03-user-flow-audit-config)
+- [04 — Test Scenarios](/en/inventory/purchase-order/04-test-scenarios) — Persona scope, cross-persona scenarios, E2E mapping.
+  - [Purchaser](/en/inventory/purchase-order/04-test-scenarios-purchaser)
+  - [Procurement Manager](/en/inventory/purchase-order/04-test-scenarios-procurement-manager)
+  - [Vendor](/en/inventory/purchase-order/04-test-scenarios-vendor)
+  - [Receiver](/en/inventory/purchase-order/04-test-scenarios-receiver)
+  - [Finance](/en/inventory/purchase-order/04-test-scenarios-finance)
+  - [Audit / Config](/en/inventory/purchase-order/04-test-scenarios-audit-config)

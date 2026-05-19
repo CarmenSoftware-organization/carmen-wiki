@@ -2,7 +2,7 @@
 title: Product
 description: Product master data — categories, units of measure, locations, and import/export — the catalog every inventory document references.
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:45:00.000Z
 tags: product, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -76,13 +76,13 @@ This module is therefore the system of record for the *definition* of an item, n
 
 ## 7. Pages in This Module
 
-- [01 — Data Model](./01-data-model.md) — Entities, fields, relationships, and enums (Prisma-derived).
-- [02 — Business Rules](./02-business-rules.md) — Validation, calculation / inheritance, authorization, lifecycle, and cross-module rules.
-- [03 — User Flow](./03-user-flow.md) — Product record lifecycle, plus persona index.
-  - [Product Administrator](./03-user-flow-product-admin.md)
-  - [Purchaser](./03-user-flow-purchaser.md)
-  - [Store Keeper](./03-user-flow-store-keeper.md)
-- [04 — Test Scenarios](./04-test-scenarios.md) — Persona scope, cross-persona scenarios, E2E mapping.
-  - [Product Administrator](./04-test-scenarios-product-admin.md)
-  - [Purchaser](./04-test-scenarios-purchaser.md)
-  - [Store Keeper](./04-test-scenarios-store-keeper.md)
+- [01 — Data Model](/en/inventory/product/01-data-model) — Entities, fields, relationships, and enums (Prisma-derived).
+- [02 — Business Rules](/en/inventory/product/02-business-rules) — Validation, calculation / inheritance, authorization, lifecycle, and cross-module rules.
+- [03 — User Flow](/en/inventory/product/03-user-flow) — Product record lifecycle, plus persona index.
+  - [Product Administrator](/en/inventory/product/03-user-flow-product-admin)
+  - [Purchaser](/en/inventory/product/03-user-flow-purchaser)
+  - [Store Keeper](/en/inventory/product/03-user-flow-store-keeper)
+- [04 — Test Scenarios](/en/inventory/product/04-test-scenarios) — Persona scope, cross-persona scenarios, E2E mapping.
+  - [Product Administrator](/en/inventory/product/04-test-scenarios-product-admin)
+  - [Purchaser](/en/inventory/product/04-test-scenarios-purchaser)
+  - [Store Keeper](/en/inventory/product/04-test-scenarios-store-keeper)

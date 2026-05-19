@@ -2,7 +2,7 @@
 title: Reporting and Audit
 description: Activity log, attachments, notifications, reporting, dashboards.
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:45:00.000Z
 tags: reporting-audit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -29,11 +29,11 @@ The five entities are intentionally generic / polymorphic. Activity links to its
 
 | Entity | Purpose | Managed by |
 | ------ | ------- | ---------- |
-| [activity](./activity.md) | Append-only audit log — every state change with actor, snapshots, IP, user agent | Auditor (read) / system (write) |
-| [attachment](./attachment.md) | Generic file storage linked to owning documents through polymorphic application FKs | Owning-module users |
-| [notification](./notification.md) | Per-user inbox + reusable message templates + platform news bulletins | Sysadmin / Platform Admin |
-| [report](./report.md) | Tenant jobs and schedules backed by platform templates and document-type print mappings | Sysadmin / Platform Admin |
-| [widget](./widget.md) | Personal / BU dashboards, default seed layouts, saved data-explorer workspaces | User / BU Admin / Sysadmin |
+| [activity](/en/inventory/reporting-audit/activity) | Append-only audit log — every state change with actor, snapshots, IP, user agent | Auditor (read) / system (write) |
+| [attachment](/en/inventory/reporting-audit/attachment) | Generic file storage linked to owning documents through polymorphic application FKs | Owning-module users |
+| [notification](/en/inventory/reporting-audit/notification) | Per-user inbox + reusable message templates + platform news bulletins | Sysadmin / Platform Admin |
+| [report](/en/inventory/reporting-audit/report) | Tenant jobs and schedules backed by platform templates and document-type print mappings | Sysadmin / Platform Admin |
+| [widget](/en/inventory/reporting-audit/widget) | Personal / BU dashboards, default seed layouts, saved data-explorer workspaces | User / BU Admin / Sysadmin |
 
 ## 4. Cross-Module Dependencies
 

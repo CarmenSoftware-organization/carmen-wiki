@@ -2,7 +2,7 @@
 title: Access Control
 description: Users, roles, permissions, and multi-business-unit access.
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-05-19T23:45:00.000Z
 tags: access-control, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -29,11 +29,11 @@ Sysadmin owns the configuration end-to-end. Security Officer audits credentials,
 
 | Entity | Purpose | Managed by |
 | ------ | ------- | ---------- |
-| [user](./user.md) | Account, profile, password, and login session — the identity layer | Sysadmin / Security Officer |
-| [application-role](./application-role.md) | BU-scoped named role + role-permission and user-role joins | Sysadmin |
-| [permission](./permission.md) | Atomic `(resource, action)` permission catalogue | Sysadmin (seed-managed) |
-| [business-unit-user](./business-unit-user.md) | Per-BU access membership + email-invitation staging | Sysadmin / BU Admin |
-| [user-location](./user-location.md) | Tenant-side per-user location scope | Sysadmin / BU Admin |
+| [user](/en/inventory/access-control/user) | Account, profile, password, and login session — the identity layer | Sysadmin / Security Officer |
+| [application-role](/en/inventory/access-control/application-role) | BU-scoped named role + role-permission and user-role joins | Sysadmin |
+| [permission](/en/inventory/access-control/permission) | Atomic `(resource, action)` permission catalogue | Sysadmin (seed-managed) |
+| [business-unit-user](/en/inventory/access-control/business-unit-user) | Per-BU access membership + email-invitation staging | Sysadmin / BU Admin |
+| [user-location](/en/inventory/access-control/user-location) | Tenant-side per-user location scope | Sysadmin / BU Admin |
 
 ## 4. Cross-Module Dependencies
 

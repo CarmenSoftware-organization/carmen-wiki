@@ -2,7 +2,7 @@
 title: Store Requisition
 description: Internal request to draw stock from a warehouse or central store to a consuming location (kitchen, bar, outlet).
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:45:00.000Z
 tags: store-requisition, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -83,17 +83,17 @@ Financially, every posted issuance generates journal entries that credit the sou
 
 ## 7. Pages in This Module
 
-- [01 — Data Model](./01-data-model.md) — Prisma entities (`tb_store_requisition`, `tb_store_requisition_detail`, comment tables), enums (`enum_doc_status`, `enum_sr_type`), relationships, and divergences from carmen/docs.
-- [02 — Business Rules](./02-business-rules.md) — Validation (`SR_VAL_*`), calculation (`SR_CALC_*`, quantity invariant), authorization (`SR_AUTH_*`, SoD), posting (`SR_POST_*`, single posting event at `in_progress → completed`), and cross-module rules (`SR_XMOD_*`).
-- [03 — User Flow](./03-user-flow.md) — Document lifecycle overview and persona-specific flow files:
-  - [Requester](./03-user-flow-requester.md) — Outlet Manager: identifies needs, creates SR, submits.
-  - [Approver](./03-user-flow-approver.md) — Department Head: reviews, trims, rejects, sends back.
-  - [Fulfiller](./03-user-flow-fulfiller.md) — Store Keeper: picks, records `issued_qty`, selects lots, commits.
-  - [Receiver](./03-user-flow-receiver.md) — Destination representative: acknowledges receipt, flags discrepancies.
-  - [Audit / Config](./03-user-flow-audit-config.md) — Inventory Controller, Finance, Sysadmin, Auditor oversight.
-- [04 — Test Scenarios](./04-test-scenarios.md) — Cross-persona scenarios + Playwright mapping, with per-persona drill-downs:
-  - [Requester scenarios](./04-test-scenarios-requester.md)
-  - [Approver scenarios](./04-test-scenarios-approver.md)
-  - [Fulfiller scenarios](./04-test-scenarios-fulfiller.md)
-  - [Receiver scenarios](./04-test-scenarios-receiver.md)
-  - [Audit / Config scenarios](./04-test-scenarios-audit-config.md)
+- [01 — Data Model](/en/inventory/store-requisition/01-data-model) — Prisma entities (`tb_store_requisition`, `tb_store_requisition_detail`, comment tables), enums (`enum_doc_status`, `enum_sr_type`), relationships, and divergences from carmen/docs.
+- [02 — Business Rules](/en/inventory/store-requisition/02-business-rules) — Validation (`SR_VAL_*`), calculation (`SR_CALC_*`, quantity invariant), authorization (`SR_AUTH_*`, SoD), posting (`SR_POST_*`, single posting event at `in_progress → completed`), and cross-module rules (`SR_XMOD_*`).
+- [03 — User Flow](/en/inventory/store-requisition/03-user-flow) — Document lifecycle overview and persona-specific flow files:
+  - [Requester](/en/inventory/store-requisition/03-user-flow-requester) — Outlet Manager: identifies needs, creates SR, submits.
+  - [Approver](/en/inventory/store-requisition/03-user-flow-approver) — Department Head: reviews, trims, rejects, sends back.
+  - [Fulfiller](/en/inventory/store-requisition/03-user-flow-fulfiller) — Store Keeper: picks, records `issued_qty`, selects lots, commits.
+  - [Receiver](/en/inventory/store-requisition/03-user-flow-receiver) — Destination representative: acknowledges receipt, flags discrepancies.
+  - [Audit / Config](/en/inventory/store-requisition/03-user-flow-audit-config) — Inventory Controller, Finance, Sysadmin, Auditor oversight.
+- [04 — Test Scenarios](/en/inventory/store-requisition/04-test-scenarios) — Cross-persona scenarios + Playwright mapping, with per-persona drill-downs:
+  - [Requester scenarios](/en/inventory/store-requisition/04-test-scenarios-requester)
+  - [Approver scenarios](/en/inventory/store-requisition/04-test-scenarios-approver)
+  - [Fulfiller scenarios](/en/inventory/store-requisition/04-test-scenarios-fulfiller)
+  - [Receiver scenarios](/en/inventory/store-requisition/04-test-scenarios-receiver)
+  - [Audit / Config scenarios](/en/inventory/store-requisition/04-test-scenarios-audit-config)

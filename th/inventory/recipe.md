@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe)
 description: สูตรอาหาร (รายการวัตถุดิบพร้อม yield) — สะพานเชื่อมระหว่างเมนูและการใช้คลังสินค้า
 published: true
-date: 2026-05-17T07:00:36.000Z
+date: 2026-05-19T23:45:00.000Z
 tags: recipe, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -91,17 +91,17 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 ## 7. หน้าในโมดูลนี้
 
-- [01 — โมเดลข้อมูล](./01-data-model.md) — เอนทิตี Prisma (`tb_recipe`, `tb_recipe_ingredient`, `tb_recipe_preparation_step`, `tb_recipe_yield_variant`, `tb_recipe_version`, `tb_recipe_pricing_history`, `tb_recipe_category`, `tb_recipe_cuisines`, master ของอุปกรณ์), enum (`enum_recipe_status`, `enum_recipe_difficulty`, `enum_ingredient_type`, `enum_temperature_unit`, `enum_cuisine_region`), ความสัมพันธ์ (self-relation ของ sub-recipe โมเดลวัตถุดิบสองหน่วย) และจุดที่ต่างจาก carmen/docs
-- [02 — กติกาทางธุรกิจ](./02-business-rules.md) — การตรวจสอบความถูกต้อง (`REC_VAL_*`), การคำนวณ (`REC_CALC_*`, ห่วงโซ่ line → recipe → portion → price → margin, การ cascade ของ sub-recipe), การกำหนดสิทธิ์ (`REC_AUTH_*`), การ posting (`REC_POST_*`, event การ publish / edit-published / cascade / archive) และกฎข้ามโมดูล (`REC_XMOD_*`)
-- [03 — User Flow](./03-user-flow.md) — ภาพรวมวงจรชีวิตของสูตรและไฟล์ flow เฉพาะ persona:
-  - [Chef](./03-user-flow-chef.md) — Chef / Kitchen Manager (+ Kitchen Staff อ่านอย่างเดียว): สร้าง ปรับปรุง publish archive
-  - [Cost Controller](./03-user-flow-cost-controller.md) — Cost Controller (+ Cost Control Department): review ต้นทุน เซ็นอนุมัติ ติดตามการเลื่อน รันความแปรปรวน
-  - [Outlet Manager](./03-user-flow-outlet-manager.md) — Outlet Manager: ผู้บริโภคด้าน demand ตั้ง SR จาก demand ของสูตร feedback ปัญหา
-  - [Procurement / F&B Ops](./03-user-flow-procurement-fb-ops.md) — Procurement (การกำหนดขนาด PO การทดแทน) + F&B Ops (การอนุมัติ menu item linkage, menu engineering)
-  - [Audit / Config](./03-user-flow-audit-config.md) — Sysadmin (config, RBAC, tenant policy, integration) + Auditor (อ่านอย่างเดียวสำหรับ versioning trace)
-- [04 — Test Scenarios](./04-test-scenarios.md) — scenario ข้าม persona + สถานะการครอบคลุม E2E (ยังไม่มี `recipe.spec.ts` เฉพาะ) พร้อมการเจาะลึกต่อ persona:
-  - [Chef scenarios](./04-test-scenarios-chef.md)
-  - [Cost Controller scenarios](./04-test-scenarios-cost-controller.md)
-  - [Outlet Manager scenarios](./04-test-scenarios-outlet-manager.md)
-  - [Procurement / F&B Ops scenarios](./04-test-scenarios-procurement-fb-ops.md)
-  - [Audit / Config scenarios](./04-test-scenarios-audit-config.md)
+- [01 — โมเดลข้อมูล](/th/inventory/recipe/01-data-model) — เอนทิตี Prisma (`tb_recipe`, `tb_recipe_ingredient`, `tb_recipe_preparation_step`, `tb_recipe_yield_variant`, `tb_recipe_version`, `tb_recipe_pricing_history`, `tb_recipe_category`, `tb_recipe_cuisines`, master ของอุปกรณ์), enum (`enum_recipe_status`, `enum_recipe_difficulty`, `enum_ingredient_type`, `enum_temperature_unit`, `enum_cuisine_region`), ความสัมพันธ์ (self-relation ของ sub-recipe โมเดลวัตถุดิบสองหน่วย) และจุดที่ต่างจาก carmen/docs
+- [02 — กติกาทางธุรกิจ](/th/inventory/recipe/02-business-rules) — การตรวจสอบความถูกต้อง (`REC_VAL_*`), การคำนวณ (`REC_CALC_*`, ห่วงโซ่ line → recipe → portion → price → margin, การ cascade ของ sub-recipe), การกำหนดสิทธิ์ (`REC_AUTH_*`), การ posting (`REC_POST_*`, event การ publish / edit-published / cascade / archive) และกฎข้ามโมดูล (`REC_XMOD_*`)
+- [03 — User Flow](/th/inventory/recipe/03-user-flow) — ภาพรวมวงจรชีวิตของสูตรและไฟล์ flow เฉพาะ persona:
+  - [Chef](/th/inventory/recipe/03-user-flow-chef) — Chef / Kitchen Manager (+ Kitchen Staff อ่านอย่างเดียว): สร้าง ปรับปรุง publish archive
+  - [Cost Controller](/th/inventory/recipe/03-user-flow-cost-controller) — Cost Controller (+ Cost Control Department): review ต้นทุน เซ็นอนุมัติ ติดตามการเลื่อน รันความแปรปรวน
+  - [Outlet Manager](/th/inventory/recipe/03-user-flow-outlet-manager) — Outlet Manager: ผู้บริโภคด้าน demand ตั้ง SR จาก demand ของสูตร feedback ปัญหา
+  - [Procurement / F&B Ops](/th/inventory/recipe/03-user-flow-procurement-fb-ops) — Procurement (การกำหนดขนาด PO การทดแทน) + F&B Ops (การอนุมัติ menu item linkage, menu engineering)
+  - [Audit / Config](/th/inventory/recipe/03-user-flow-audit-config) — Sysadmin (config, RBAC, tenant policy, integration) + Auditor (อ่านอย่างเดียวสำหรับ versioning trace)
+- [04 — Test Scenarios](/th/inventory/recipe/04-test-scenarios) — scenario ข้าม persona + สถานะการครอบคลุม E2E (ยังไม่มี `recipe.spec.ts` เฉพาะ) พร้อมการเจาะลึกต่อ persona:
+  - [Chef scenarios](/th/inventory/recipe/04-test-scenarios-chef)
+  - [Cost Controller scenarios](/th/inventory/recipe/04-test-scenarios-cost-controller)
+  - [Outlet Manager scenarios](/th/inventory/recipe/04-test-scenarios-outlet-manager)
+  - [Procurement / F&B Ops scenarios](/th/inventory/recipe/04-test-scenarios-procurement-fb-ops)
+  - [Audit / Config scenarios](/th/inventory/recipe/04-test-scenarios-audit-config)

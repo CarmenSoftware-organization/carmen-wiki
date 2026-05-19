@@ -2,7 +2,7 @@
 title: รายงานและการตรวจสอบ (Reporting & Audit)
 description: บันทึกกิจกรรม, ไฟล์แนบ, การแจ้งเตือน, การสร้างรายงาน และ dashboard widgets
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:45:00.000Z
 tags: reporting-audit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -29,11 +29,11 @@ Reporting and Audit คือร่มของระบบที่ครอบ
 
 | เอนทิตี | วัตถุประสงค์ | ดูแลโดย |
 | ------ | ------- | ---------- |
-| [activity](./activity.md) | Audit log แบบ append-only — บันทึกทุกการเปลี่ยนสถานะพร้อม actor, snapshot, IP, user agent | Auditor (อ่าน) / system (เขียน) |
-| [attachment](./attachment.md) | ที่จัดเก็บไฟล์แบบ generic เชื่อมไปยังเอกสารเจ้าของผ่าน polymorphic application FK | ผู้ใช้ของโมดูลเจ้าของ |
-| [notification](./notification.md) | inbox ต่อผู้ใช้ + message template ที่ใช้ซ้ำได้ + ข่าวประกาศของแพลตฟอร์ม | Sysadmin / Platform Admin |
-| [report](./report.md) | tenant jobs และ schedules ที่อยู่เบื้องหลังของ platform template และ document-type print mapping | Sysadmin / Platform Admin |
-| [widget](./widget.md) | Dashboard ส่วนตัว / BU, seed layout เริ่มต้น, workspace สำหรับ data-explorer ที่บันทึกไว้ | ผู้ใช้ / BU Admin / Sysadmin |
+| [activity](/th/inventory/reporting-audit/activity) | Audit log แบบ append-only — บันทึกทุกการเปลี่ยนสถานะพร้อม actor, snapshot, IP, user agent | Auditor (อ่าน) / system (เขียน) |
+| [attachment](/th/inventory/reporting-audit/attachment) | ที่จัดเก็บไฟล์แบบ generic เชื่อมไปยังเอกสารเจ้าของผ่าน polymorphic application FK | ผู้ใช้ของโมดูลเจ้าของ |
+| [notification](/th/inventory/reporting-audit/notification) | inbox ต่อผู้ใช้ + message template ที่ใช้ซ้ำได้ + ข่าวประกาศของแพลตฟอร์ม | Sysadmin / Platform Admin |
+| [report](/th/inventory/reporting-audit/report) | tenant jobs และ schedules ที่อยู่เบื้องหลังของ platform template และ document-type print mapping | Sysadmin / Platform Admin |
+| [widget](/th/inventory/reporting-audit/widget) | Dashboard ส่วนตัว / BU, seed layout เริ่มต้น, workspace สำหรับ data-explorer ที่บันทึกไว้ | ผู้ใช้ / BU Admin / Sysadmin |
 
 ## 4. ความเชื่อมโยงข้ามโมดูล
 

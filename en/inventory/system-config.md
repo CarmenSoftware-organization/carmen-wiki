@@ -2,7 +2,7 @@
 title: System Configuration
 description: Document-flow and accounting-period system configuration — workflow, period, dimensions, numbering.
 published: true
-date: 2026-05-17T07:28:28.000Z
+date: 2026-05-19T23:45:00.000Z
 tags: system-config, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -31,12 +31,12 @@ Sysadmin. Workflow definition may be delegated to a Workflow Administrator perso
 
 | Entity | Purpose | Managed by |
 | ------ | ------- | ---------- |
-| [workflow](./workflow.md) | Multi-stage approval workflows with per-stage actions, recipients, field visibility | Sysadmin / Workflow Admin |
-| [period](./period.md) | Accounting periods (open/closed/locked) and per-period inventory snapshots | Sysadmin / Finance |
-| [dimension](./dimension.md) | User-defined custom fields with per-place display matrix | Sysadmin |
-| [running-code](./running-code.md) | Document-number patterns per document type | Sysadmin |
-| [application-config](./application-config.md) | Tenant-wide key-value settings + per-user preference overrides | Sysadmin |
-| [menu](./menu.md) | Navigation registry rendered by the app shell | Sysadmin |
+| [workflow](/en/inventory/system-config/workflow) | Multi-stage approval workflows with per-stage actions, recipients, field visibility | Sysadmin / Workflow Admin |
+| [period](/en/inventory/system-config/period) | Accounting periods (open/closed/locked) and per-period inventory snapshots | Sysadmin / Finance |
+| [dimension](/en/inventory/system-config/dimension) | User-defined custom fields with per-place display matrix | Sysadmin |
+| [running-code](/en/inventory/system-config/running-code) | Document-number patterns per document type | Sysadmin |
+| [application-config](/en/inventory/system-config/application-config) | Tenant-wide key-value settings + per-user preference overrides | Sysadmin |
+| [menu](/en/inventory/system-config/menu) | Navigation registry rendered by the app shell | Sysadmin |
 
 ## 4. Cross-Module Dependencies
 
