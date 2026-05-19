@@ -2,7 +2,7 @@
 title: รายงานของเสีย (Wastage Reporting)
 description: Variant เฉพาะของ stock-out สำหรับ spoilage, breakage, expiry และ theft — จัดประเภทเพื่อให้ finance วิเคราะห์รูปแบบการสูญเสียตาม reason, outlet และงวด
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: inventory-adjustment, wastage, loss, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -30,7 +30,7 @@ Wastage Reporting คือ **variant ของ [inventory-adjustment](/th/inven
 | งาน | ที่ไหน | Notes |
 |---|---|---|
 | บันทึก entry wastage | Store Operation → Wastage Reporting → **New** | เลือก location, reason, product, qty, lot |
-| เลือก reason code | ฟิลด์ Reason บน header | Filter `tb_adjustment_type` ไปยังแถว flavour wastage `STOCK_OUT`: `SPOIL`, `BREAK`, `EXPIRY`, `THEFT`, `SAMPLE`, `OTHER` |
+| เลือก reason code | ฟิลด์ Reason บน header | Filter `tb_adjustment_type` ไปยังแถว flavour wastage `stock_out`: `SPOIL`, `BREAK`, `EXPIRY`, `THEFT`, `SAMPLE`, `OTHER` |
 | แนบหลักฐาน | Tab Comments บนเอกสาร | รูปขวดแตก / ป้ายหมดอายุ (บังคับสำหรับ reason codes high-loss) |
 | Submit เพื่ออนุมัติ | Action **Submit** | Flip `draft → in_progress`, route ไปยัง Inventory Controller |
 | อนุมัติและ post | Inventory Controller → **Approve** | Post `tb_inventory_transaction` (stock_out / adjustment_out), debit Wastage Expense, credit Inventory |
@@ -42,7 +42,7 @@ Wastage Reporting คือ **variant ของ [inventory-adjustment](/th/inven
 | อาการ / Message | สาเหตุ | Action |
 |---|---|---|
 | "Reason required" | `adjustment_type_id` null ที่ submit | เลือก wastage reason จาก catalogue |
-| "Invalid reason for this surface" | Reason `STOCK_IN` หรือ `STOCK_OUT` ที่ไม่ใช่ wastage ถูกเลือก | เลือก reason `STOCK_OUT` flavour wastage เท่านั้น |
+| "Invalid reason for this surface" | Reason `stock_in` หรือ `stock_out` ที่ไม่ใช่ wastage ถูกเลือก | เลือก reason `stock_out` flavour wastage เท่านั้น |
 | "Evidence required for THEFT / EXPIRY" | High-loss reason โดยไม่มี attachment | Upload รูปถ่าย / รายงานความเสียหายไปยัง `tb_stock_out_comment` |
 | "Lot has zero balance" | Lot-tracked product ที่ source location ว่าง | เลือก lot อื่นหรือแก้ไข on-hand ก่อน |
 | "Period is closed" | `so_date` ภายในงวดที่ปิด | ใช้วันที่วันนี้ หรือสร้าง JV ด้วยมือ |
@@ -89,7 +89,7 @@ Wastage แชร์ schema กับ stock-out แหล่ง: tenant schema
 | ฟิลด์ | Type | คำอธิบาย |
 |---|---|---|
 | `code`, `name` | `String` | เช่น `SPOIL` / "Spoilage" |
-| `type` | `enum_adjustment_type` | `STOCK_IN` หรือ `STOCK_OUT` — แถว wastage เป็น `STOCK_OUT` เสมอ |
+| `type` | `enum_adjustment_type` | `stock_in` หรือ `stock_out` — แถว wastage เป็น `stock_out` เสมอ |
 | `is_active` | `Boolean?` | Toggle ความพร้อมใน picker |
 
 ดู [master-data/adjustment-type](/th/inventory/master-data/adjustment-type) สำหรับ catalogue reason เต็ม
@@ -109,7 +109,7 @@ Wastage แชร์ schema กับ stock-out แหล่ง: tenant schema
 6. Reversal (path correction เท่านั้น): tb_stock_out ใหม่ด้วย qty ลบ, note link ไปยังต้นฉบับ
 ```
 
-- **Reason บังคับ**, **direction STOCK_OUT เท่านั้น**, **submit ≠ approve** (segregation of duties)
+- **Reason บังคับ**, **direction stock_out เท่านั้น**, **submit ≠ approve** (segregation of duties)
 - **ไม่มีการแก้ไขหลัง post** — append-only correction
 - **Flag การรายงาน** การ post แต่ละครั้ง contribute ไปยัง aggregation loss ต่อ outlet, ต่องวด, ต่อ reason
 

@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูล purchase-request
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: purchase-request, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -141,7 +141,7 @@ PR อยู่ต้นน้ำของ [purchase-order](/th/inventory/purcha
 | `base_total_price` | `Decimal @db.Decimal(20, 5)` | Yes | `base_net_amount + base_tax_amount` |
 | `history` | `Json @db.JsonB` | Yes | timeline stage ต่อบรรทัด (`seq`, `name`, `status`, `to_stage`, `message`, `by_id`, `by_name`, `at_date`); default `[]` |
 | `stages_status` | `Json @db.JsonB` | Yes | cursor stage ต่อบรรทัด — array ของ `{ seq, name, status }`; default `{}` |
-| `current_stage_status` | `String @db.VarChar` | Yes | สำเนาที่ใช้งานของ stage status ปัจจุบัน |
+| `current_stage_status` | `String @db.VarChar` | Yes | สำเนาที่ใช้งานของ stage status ปัจจุบัน Prisma schema ประกาศ `enum_stage_action { submit, approve, reject, review, pending }` (pass enum-cleanup พฤษภาคม 2026) ที่เจตนาใช้ type คอลัมน์นี้; ตัวคอลัมน์ยังเป็น `String?` จนกว่า migration ที่วางแผนไว้จะ validate ค่าประวัติและ retype ถือว่าค่านอก `enum_stage_action` เป็นข้อมูล legacy ที่ migration จะ normalise |
 | `info` | `Json @db.JsonB` | Yes | extension bag; default `{}` |
 | `dimension` | `Json @db.JsonB` | Yes | cost dimension ต่อบรรทัด; default `[]` |
 | `doc_version` | `Int @db.Integer` | No | version สำหรับ optimistic-concurrency; default `0` |
@@ -341,7 +341,7 @@ tb_purchase_request_template_detail
 
 ## 4. Enum
 
-- **`enum_purchase_request_doc_status`**: `draft` (`ร่าง` — สถานะแก้ไขได้เริ่มต้น ไม่มี commitment), `in_progress` (`กำลังดำเนินการ` — submit แล้วและกำลังเดิน chain อนุมัติ), `voided` (`โมฆะ` — ถูก void เชิงธุรการหลัง submit), `approved` (`อนุมัติ` — chain เสร็จ พร้อมแปลงเป็น procurement), `completed` (`เสร็จสิ้น` — แปลงเป็น PO ครบและปิด), `cancelled` (`ยกเลิก` — ถูกยุติโดยผู้ใช้หรือระบบก่อนอนุมัติ)
+- **`enum_purchase_request_doc_status`**: `draft` (`ร่าง` — สถานะแก้ไขได้เริ่มต้น ไม่มี commitment), `in_progress` (`กำลังดำเนินการ` — submit แล้วและกำลังเดิน chain อนุมัติ), `voided` (`โมฆะ` / `ยกเลิก` — สถานะปลายทางที่ยุติ ครอบคลุม Requestor cancel draft ที่ยังไม่ submit, approver reject กลาง chain และ Sysadmin void หลัง submit — ดู [03-user-flow](./03-user-flow) § 2), `approved` (`อนุมัติ` — chain เสร็จ พร้อมแปลงเป็น procurement), `completed` (`เสร็จสิ้น` — แปลงเป็น PO ครบและปิด) ค่า `cancelled` ที่เคยมีถูกตัดออกใน pass enum-cleanup พฤษภาคม 2026; เส้นทาง termination ทั้งหมดตอนนี้ converge ที่ `voided`
 - **`enum_purchase_order_type`**: `manual` (PO สร้างโดย procurement โดยตรงไม่มี PR ต้นน้ำ), `purchase_request` (PO ที่มาจาก PR หนึ่งใบหรือมากกว่าผ่าน flow การแปลง — และยังเป็นค่า default ของ `tb_purchase_order.po_type` ซึ่งเป็นเหตุผลที่ PR-sourced คือเส้นทาง procure-to-pay มาตรฐาน)
 - **`enum_last_action`**: `submitted`, `approved`, `reviewed`, `rejected` — ใช้โดย `tb_purchase_request.last_action` เพื่อจับ action ของ workflow ล่าสุด
 - **`enum_comment_type`**: `user` (comment ที่มนุษย์เขียน), `system` (entry ของ activity-log ที่ workflow engine สร้างอัตโนมัติ)
@@ -354,7 +354,7 @@ tb_purchase_request_template_detail
 
 | # | รายการ | carmen/docs บอกว่า | Prisma มี | Action |
 |---|------|------------------|------------|--------|
-| 1 | ค่า status ของเอกสาร | `enum DocumentStatus { Draft, Submitted, InProgress, Completed, Rejected }` | `enum_purchase_request_doc_status { draft, in_progress, voided, approved, completed, cancelled }` | ถือ Prisma เป็นตามมาตรฐาน `Submitted` ใน UI map ไปยัง `in_progress`; `Rejected` ไม่ใช่ status ที่เก็บ (การ reject ยุติ chain และ PR กลายเป็น `cancelled` หรือ `voided`); `approved` มีใน Prisma แต่ไม่มีใน enum ของ carmen/docs; `voided` และ `cancelled` ไม่มีคู่ใน carmen/docs ปรับ `02-business-rules` และ enum สถานะของ front-end ตาม |
+| 1 | ค่า status ของเอกสาร | `enum DocumentStatus { Draft, Submitted, InProgress, Completed, Rejected }` | `enum_purchase_request_doc_status { draft, in_progress, voided, approved, completed }` | ถือ Prisma เป็นตามมาตรฐาน `Submitted` ใน UI map ไปยัง `in_progress`; `Rejected` ไม่ใช่ status ที่เก็บ (การ reject ยุติ chain และ PR กลายเป็น `voided`); `approved` มีใน Prisma แต่ไม่มีใน enum ของ carmen/docs; `voided` ไม่มีคู่ใน carmen/docs ค่า `cancelled` เคยปรากฏใน wiki revision เก่าและ schema iteration ก่อน แต่ถูกตัดออกใน pass enum-cleanup พฤษภาคม 2026 — เส้นทาง termination ทั้งหมดตอนนี้ converge ที่ `voided` ปรับ `02-business-rules` และ enum สถานะของ front-end ตาม |
 | 2 | ประเภท PR | TypeScript `enum PRType { GeneralPurchase, MarketList, AssetPurchase, ServiceRequest }` | ไม่มีคอลัมน์ `pr_type` / `type` บน `tb_purchase_request`; schema ไม่มีประเภท PR ที่เป็น enum พฤติกรรมประเภท PR ปัจจุบันถูกตั้งค่าทางอ้อมผ่านการเลือก workflow และฟิลด์ extension `info`/`dimension` | เพิ่มคอลัมน์ `pr_type` ใน Prisma + enum (แนะนำ ต้อง migrate) หรือบันทึก workaround ว่าประเภท PR ถูก encode ใต้ `info.pr_type` ยังไม่ตัดสินใจ; flag ให้ backend architecture review |
 | 3 | Stage ของ workflow | TypeScript `enum WorkflowStage { requester, departmentHeadApproval, purchaseCoordinatorReview, financeManagerApproval, generalManagerApproval, completed }` | ไม่มี enum stage ตายตัว Stage เป็นแถวที่ผู้ใช้ตั้งค่าได้ใน `tb_workflow` ที่อ้างผ่าน `tb_purchase_request.workflow_id`; slug ของ stage ปัจจุบันเก็บเป็น `workflow_current_stage` (string) และ label role-per-stage ใช้ `enum_stage_role` (`create / approve / purchase / issue / view_only`) | บันทึก workflow ที่ตั้งค่าได้เป็นตามมาตรฐาน enum ของ carmen/docs แสดงเพียงหนึ่งใน default configuration |
 | 4 | สถานะของ workflow | TypeScript `enum WorkflowStatus { pending, approved, rejected }` แยกจาก document status | ไม่มีคอลัมน์ workflow-status แยกต่างหาก `tb_purchase_request.last_action` (`submitted / approved / reviewed / rejected`) ครอบคลุม intent เดียวกัน | เลิกใช้ enum `WorkflowStatus` ฝั่ง front-end แล้วใช้ `last_action` + `workflow_current_stage` แทน |

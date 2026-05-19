@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow — Purchaser
 description: Purchaser's flow within the purchase-request module.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: purchase-request, user-flow, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -86,7 +86,7 @@ The Purchaser's involvement on a given PR ends at one of three documented points
 - **Partial conversion** — some lines (or part of a line's quantity) are bridged, others remain open. `pr_status` stays `approved`; the bridge table records exactly which PR-line → PO-line linkages were created and with what quantity. The PR remains in the Approved PRs queue with its unbridged-line count visible, awaiting a future conversion round. Soft commitment for the still-open portion persists.
 - **Bounce-back to Requestor** — a vendor or spec issue is unrecoverable at the Purchaser level. The Purchaser triggers the standard send-back path: `pr_status` returns to `draft` (`PR_POST_003`), `workflow_current_stage` reopens to the Requestor's create stage, soft budget commitment is released, and handoff is to the **Requestor** at [03-user-flow-requestor.md](./03-user-flow-requestor.md) Section 2 step 2. The Requestor revises and resubmits; the PR re-enters the approver chain and eventually returns to the Purchaser's queue.
 
-Document state across these transitions is recorded by `enum_purchase_request_doc_status = { draft, in_progress, voided, approved, completed, cancelled }`. The Purchaser only sees PRs in `approved` (active conversion candidates) or `completed` (historical, read-only). Voiding (`pr_status → voided`) is reserved for Finance / system-admin per `PR_AUTH_007` and is not part of the standard Purchaser flow.
+Document state across these transitions is recorded by `enum_purchase_request_doc_status = { draft, in_progress, voided, approved, completed }`. The Purchaser only sees PRs in `approved` (active conversion candidates) or `completed` (historical, read-only). Voiding (`pr_status → voided`) is reserved for Finance / system-admin per `PR_AUTH_007` and is not part of the standard Purchaser flow.
 
 ## 5. References
 

@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — User Flow — Audit & Config
 description: เส้นทางการใช้งานของ Auditor (read-only) และ System Administrator (ตั้งค่า workflow / threshold / delegation) ในโมดูล purchase-request
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: purchase-request, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -26,13 +26,13 @@ graph LR
         draft(("draft")) --> inprog(("in_progress"))
         inprog --> approved(("approved"))
         approved --> completed(("completed"))
-        inprog --> cancelled(("cancelled"))
+        inprog --> voided(("voided"))
     end
     auditor["Auditor<br/>(read-only)"]:::audit -.->|"Reads"| draft
     auditor -.->|"Reads"| inprog
     auditor -.->|"Reads"| approved
     auditor -.->|"Reads"| completed
-    auditor -.->|"Reads"| cancelled
+    auditor -.->|"Reads"| voided
     sysadmin["System Administrator<br/>(config + elevated void)"]:::cfg -.->|"Configures workflow / threshold"| transactional
     sysadmin -.->|"Void (PR_AUTH_007)"| voided(("voided"))
     classDef audit fill:#eab308,color:#000,stroke:#eab308;
@@ -111,7 +111,7 @@ graph LR
 - **Sysadmin — void บน PR กลาง flow (`PR_AUTH_007`).** ต่างจาก configuration save: เมื่อ Sysadmin ใช้สิทธิ์ `void` ระดับสูงเพื่อถอน PR เดี่ยว (โดยทั่วไปตาม case file ของ Auditor) `pr_status` พลิกจาก `in_progress` (หรือ `approved`) เป็น `voided` (terminal); commitment soft (หรือ hard) ถูกปล่อย; เหตุผล mandatory ถูกจับใน `tb_purchase_request_comment` (`PR_POST_006`); และ `workflow_history` บันทึก void Handoff ไปยัง **Auditor** สำหรับ review หลังเหตุการณ์และไปยัง **Requestor** ที่เห็นสถานะ voided บน dashboard **My PRs** ของพวกเขา ไม่มี action ของผู้ใช้บน PR เพิ่มเติม
 - **Sysadmin — configuration ที่ roll back** ถ้า verification ใน step 6 ของ flow หลักพบ regression Sysadmin revert ไป version configuration ก่อนหน้า การ rollback เองเป็น configuration save ของตัวเองพร้อม `effective_from` ของตัวเอง; PR ที่สร้างระหว่างการเปลี่ยนต้นฉบับและการ rollback ไม่ถูก re-evaluate ย้อนหลัง (semantic snapshot) แต่ PR ใหม่หลัง rollback ใช้ configuration ที่ revert Configuration audit log จับทั้งการเปลี่ยน forward และ rollback รักษา trail ที่สะอาด
 
-สถานะเอกสารข้ามทุกจุดออก Audit / Config ถูก govern โดย `enum_purchase_request_doc_status = { draft, in_progress, voided, approved, completed, cancelled }` Flow ของ Auditor ไม่เคยย้าย PR ข้าม enum นี้; flow configuration ของ Sysadmin ก็ไม่เคยย้าย PR ข้าม enum (PR อนาคตเท่านั้นที่ได้รับผลกระทบ) Action เดียวของ Sysadmin ที่เปลี่ยนสถานะ PR คือ void ระดับสูงภายใต้ `PR_AUTH_007` และถือเป็น operation พิเศษที่ trigger โดย audit แทนที่จะเป็น step configuration ประจำ
+สถานะเอกสารข้ามทุกจุดออก Audit / Config ถูก govern โดย `enum_purchase_request_doc_status = { draft, in_progress, voided, approved, completed }` Flow ของ Auditor ไม่เคยย้าย PR ข้าม enum นี้; flow configuration ของ Sysadmin ก็ไม่เคยย้าย PR ข้าม enum (PR อนาคตเท่านั้นที่ได้รับผลกระทบ) Action เดียวของ Sysadmin ที่เปลี่ยนสถานะ PR คือ void ระดับสูงภายใต้ `PR_AUTH_007` และถือเป็น operation พิเศษที่ trigger โดย audit แทนที่จะเป็น step configuration ประจำ
 
 ## 5. แหล่งอ้างอิง
 

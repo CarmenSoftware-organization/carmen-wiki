@@ -2,7 +2,7 @@
 title: รายการอนุมัติของฉัน (My Approval)
 description: คิวอนุมัติส่วนบุคคลที่รวมเอกสารทุกใบ (PR และเอกสารที่เกี่ยวข้อง) ที่ผู้ใช้ปัจจุบันต้องดำเนินการ — รวมไว้ในหน้าจอเดียวข้ามทุกโมดูล
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: purchase-request, approval, workflow, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z

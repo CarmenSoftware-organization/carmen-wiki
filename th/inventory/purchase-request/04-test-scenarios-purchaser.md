@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — Test Scenarios — Purchaser
 description: Test case ของ Purchaser (happy path, permission, validation, edge case) สำหรับโมดูล purchase-request
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: purchase-request, test-scenarios, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z

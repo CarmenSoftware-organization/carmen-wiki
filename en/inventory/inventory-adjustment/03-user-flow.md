@@ -2,7 +2,7 @@
 title: Inventory Adjustment — User Flow
 description: Document lifecycle and persona-specific flow files for inventory adjustments.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: inventory-adjustment, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -25,7 +25,7 @@ Section 2 below describes the **document lifecycle state machine** — the canon
 
 The document follows the five-state Prisma lifecycle on `enum_doc_status`. The carmen/docs framing of "Draft → Posted → Void" collapses the explicit workflow stage (`in_progress`) and the pre-post cancel state (`cancelled`); the table below uses the five-state Prisma reality per [inventory-adjustment/01-data-model](/en/inventory/inventory-adjustment/01-data-model) § 5 item 4.
 
-The adjustment module uses **two parallel document trees** — `tb_stock_in` (direction IN / stock-in adjustment) and `tb_stock_out` (direction OUT / stock-out adjustment) — both governed by the same five-state `enum_doc_status`. The diagrams below show the legal `doc_status` transitions for each document tree. The `enum_adjustment_type` classifier (`STOCK_IN` / `STOCK_OUT`) on the reason-code master (`tb_adjustment_type`) gates which tree a given reason can be used on.
+The adjustment module uses **two parallel document trees** — `tb_stock_in` (direction IN / stock-in adjustment) and `tb_stock_out` (direction OUT / stock-out adjustment) — both governed by the same five-state `enum_doc_status`. The diagrams below show the legal `doc_status` transitions for each document tree. The `enum_adjustment_type` classifier (`stock_in` / `stock_out`) on the reason-code master (`tb_adjustment_type`) gates which tree a given reason can be used on.
 
 **Stock-in adjustment (`tb_stock_in`) — direction IN (green badge):**
 

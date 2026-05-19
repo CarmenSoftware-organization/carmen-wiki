@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — User Flow — Approver
 description: เส้นทางการใช้งานของ Approver ในโมดูล purchase-request
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: purchase-request, user-flow, approver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -29,9 +29,9 @@ graph LR
     s1 -->|"Send-back"| draft
     s2 -->|"Send-back"| draft
     s3 -->|"Send-back"| draft
-    s1 -->|"Reject"| cancelled(("cancelled"))
-    s2 -->|"Reject"| cancelled
-    s3 -->|"Reject"| cancelled
+    s1 -->|"Reject"| voided(("voided"))
+    s2 -->|"Reject"| voided
+    s3 -->|"Reject"| voided
     s3 -.->|"Escalate ≥ threshold"| pm["PM<br/>(escalated)"]:::escalated
     pm -->|"Approve final"| approved
     classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
@@ -48,7 +48,7 @@ graph LR
 | ดู Items / Budget Impact / Activity Log | ✅ | ✅ | ✅ |
 | Approve (เลื่อน stage) | ✅ | ✅ | ✅ |
 | Send-back (พร้อมเหตุผล) | ✅ | ✅ | ✅ |
-| Reject — ระดับ header (ยุติเป็น `cancelled`) | ✅ | ✅ | ✅ |
+| Reject — ระดับ header (ยุติเป็น `voided`) | ✅ | ✅ | ✅ |
 | Split-Reject — ระดับบรรทัด | ✅ | ✅ | ✅ |
 | ปรับ `approved_qty` / `approved_unit` (ต่อ `PR_VAL_013`) | ✅ | ✅ | ✅ |
 | Add Comment | ✅ | ✅ | ✅ |
@@ -80,7 +80,7 @@ graph LR
 ## 3. แขนงการตัดสินใจ
 
 - **ถ้า Approver เลือก Send Back** แทน Approve: dialog ต้องการเหตุผล เมื่อยืนยัน ระบบใช้ `PR_POST_003` และย้าย `workflow_current_stage` ก่อนหน้าหนึ่ง stage; เนื่องจาก Stage 1 เป็น requestor-create stage send-back จาก Stage 1 จริง ๆ แล้วส่ง PR กลับไป `draft` ให้ Requestor แก้และ resubmit ปล่อย soft budget commitment Send-back จาก Stage 2 หรือ Stage 3 อาจส่ง PR กลับไป stage อนุมัติก่อนหน้าหรือกลับไปถึง Requestor ทั้งหมดขึ้นกับ workflow configuration Notification ถูก fire ไปยังผู้ใช้ที่ stage ใหม่ (ก่อนหน้า) การมีส่วนร่วมของ Approver จบที่นี่
-- **ถ้า Approver เลือก Reject ระดับ header** (PR ทั้งใบไม่สมเหตุผล, duplicate หรือไม่ยอมรับด้วยเหตุอื่น): dialog ต้องการเหตุผล เมื่อยืนยัน `PR_AUTH_004` + `PR_POST_006` ใช้: `pr_status` ย้ายเป็น `cancelled` (terminal), soft budget commitment ถูกปล่อย, `workflow_history` ถูก append และ comment `type = system` จับการ reject Requestor ได้รับแจ้งและ chain จบ — ไม่มี stage ถัดไปทำงาน
+- **ถ้า Approver เลือก Reject ระดับ header** (PR ทั้งใบไม่สมเหตุผล, duplicate หรือไม่ยอมรับด้วยเหตุอื่น): dialog ต้องการเหตุผล เมื่อยืนยัน `PR_AUTH_004` + `PR_POST_006` ใช้: `pr_status` ย้ายเป็น `voided` (terminal), soft budget commitment ถูกปล่อย, `workflow_history` ถูก append และ comment `type = system` จับการ reject Requestor ได้รับแจ้งและ chain จบ — ไม่มี stage ถัดไปทำงาน
 - **ถ้า Approver ต้องการ accept บางบรรทัดและ reject บรรทัดอื่น (Split-Reject)**: แก้ disposition ต่อบรรทัดใน Step 6 ด้านบน, mark บรรทัดที่ได้รับผลกระทบเป็น reject พร้อมเหตุผล แล้ว commit Approve ที่ header ระบบบันทึก `current_stage_status = rejected` บนแต่ละบรรทัดที่ reject (`PR_AUTH_003`) และเลื่อน PR ไป stage ถัดไปด้วยบรรทัดที่ accept เท่านั้นที่นับเข้า budget และยอดรวมของการอนุมัติถัดไป บรรทัดที่ reject ยังเห็นได้บนเอกสารสำหรับ audit และไม่แปลงเป็น PO เลย
 - **ถ้า Approver ปรับ `approved_qty` ลง**: roll-up ของ header คำนวณใหม่, `base_total_amount` ใหม่คือสิ่งที่ stage ถัดไปและ budget check เห็น และ soft budget commitment ถูก rebalance ถ้ายอดใหม่ข้าม threshold ที่ตั้งใน `tb_workflow` การ routing สำหรับ stage *ถัดไป* อาจเปลี่ยน (เช่น PR จำนวนเงินน้อยอาจข้าม Stage 4 ตาม `PR_AUTH_005`)
 - **ถ้า `base_total_amount` ของ PR เกิน threshold escalation ที่ตั้งไว้**: ตาม `PR_AUTH_005` อาจมีการเพิ่ม stage หรือเส้นทาง escalation ไปยัง **Procurement Manager** Approver ยังทำ stage ของตัวเองตามปกติ; logic threshold ทำงานอัตโนมัติบนการ transition stage และ reroute notification ถัดไป Approver ไม่เห็น threshold breach เป็น error — workflow engine จัดการเอง
@@ -94,10 +94,10 @@ graph LR
 - **Approve ของ stage กลาง** (Stage 1 หรือ Stage 2 หรือ Stage 3 เมื่อ Stage 4 ยังทำงาน): `pr_status` ยังคง `in_progress`; `workflow_current_stage` เลื่อนไป; handoff ไปยัง **Approver stage ถัดไป** (Budget Controller, Finance หรือ Procurement Manager ตามลำดับ) Soft budget commitment ยังอยู่
 - **Approve ของ stage สุดท้าย** (stage `approve` สุดท้ายผ่าน ก่อน stage `purchase`): `pr_status` พลิกเป็น `approved` (`PR_POST_005`); handoff ไปยังคิว **Purchaser / Procurement Manager** สำหรับ vendor allocation และการแปลงเป็น PO PR ยังคงเป็น `approved` จนกว่าทุกบรรทัดจะถูก bridge เต็มกับ PO หรือยกเลิก ซึ่งจุดนั้น `pr_status` พลิกเป็น `completed` (`PR_POST_007`) Soft commitment ยังอยู่จนกว่าการสร้าง PO จะแปลงเป็น hard commitment
 - **Send Back** (stage ใดก็ตาม): `pr_status` ยังคง `in_progress` แต่ `workflow_current_stage` ย้ายไปก่อนหน้าหนึ่ง stage; ถ้า stage นั้นเป็น create stage ของ Requestor เอกสารกลับเป็น `draft` และ **Requestor** เป็นคนรับต่อที่ [03-user-flow-requestor.md](./03-user-flow-requestor.md) Section 2 step 2 Soft budget commitment ถูกปล่อยจนกว่าจะ submit ใหม่
-- **Header Reject** (stage ใดก็ตาม): `pr_status` พลิกเป็น `cancelled` (terminal, `PR_POST_006`); soft budget commitment ถูกปล่อย; **Auditor** review หลังเหตุการณ์แต่ไม่มี action ของผู้ใช้เพิ่มเติม Requestor เห็นการยกเลิกใน dashboard **My PRs**
+- **Header Reject** (stage ใดก็ตาม): `pr_status` พลิกเป็น `voided` (terminal, `PR_POST_006`); soft budget commitment ถูกปล่อย; **Auditor** review หลังเหตุการณ์แต่ไม่มี action ของผู้ใช้เพิ่มเติม Requestor เห็นการยกเลิกใน dashboard **My PRs**
 - **Escalation ตาม threshold**: `pr_status` ยังคง `in_progress`; workflow engine แทรก (หรือ re-route ไปยัง) stage เพิ่มที่ **Procurement Manager** เป็นเจ้าของ Approver ปัจจุบันออกแล้ว; Procurement Manager รับต่อจากคิว My Approvals ของตัวเองด้วย flow Section 2 เดียวกัน
 
-สถานะเอกสารบนการ transition ทุกครั้งบันทึกโดย `enum_purchase_request_doc_status = { draft, in_progress, voided, approved, completed, cancelled }` และ workflow timeline ใน `workflow_history` การ void (`pr_status → voided`) สงวนสำหรับ Finance หรือ system-admin ต่อ `PR_AUTH_007` และไม่ใช่ส่วนของ flow Approver มาตรฐาน
+สถานะเอกสารบนการ transition ทุกครั้งบันทึกโดย `enum_purchase_request_doc_status = { draft, in_progress, voided, approved, completed }` และ workflow timeline ใน `workflow_history` การ void (`pr_status → voided`) สงวนสำหรับ Finance หรือ system-admin ต่อ `PR_AUTH_007` และไม่ใช่ส่วนของ flow Approver มาตรฐาน
 
 ## 5. แหล่งอ้างอิง
 

@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — User Flow — Requestor
 description: เส้นทางการใช้งานของ Requestor ในโมดูล purchase-request
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: purchase-request, user-flow, requestor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -24,19 +24,19 @@ dateCreated: 2026-05-15T09:00:00.000Z
 graph LR
     create["Create PR<br/>(Requestor)"]:::current --> draft(("draft")):::current
     draft -->|"Submit"| inprog(("in_progress"))
-    draft -->|"Cancel"| cancelled(("cancelled"))
+    draft -->|"Cancel"| voided(("voided"))
     inprog -->|"Send-back"| draft
     inprog -->|"Approve final"| approved(("approved"))
-    inprog -->|"Reject"| cancelled
+    inprog -->|"Reject"| voided
     approved -->|"Convert to PO"| completed(("completed"))
     classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
 ```
 
 ### ตารางสิทธิ์ — Status × Action (Requestor)
 
-Requestor เป็น **เจ้าของ** PR เฉพาะตอน `draft` เท่านั้น เมื่อออกจาก `draft` (`in_progress`, `approved`, `completed`) หรือสิ้นสุด (`cancelled`, `voided`) Requestor ยังมีสิทธิ์ดูเท่านั้น Action availability ถูกบังคับฝั่ง server โดย `PR_AUTH_001` และ guard ของ state-machine
+Requestor เป็น **เจ้าของ** PR เฉพาะตอน `draft` เท่านั้น เมื่อออกจาก `draft` (`in_progress`, `approved`, `completed`) หรือสิ้นสุด (`voided`) Requestor ยังมีสิทธิ์ดูเท่านั้น Action availability ถูกบังคับฝั่ง server โดย `PR_AUTH_001` และ guard ของ state-machine
 
-| Action | draft (ของตัวเอง) | in_progress | approved | completed | cancelled / voided |
+| Action | draft (ของตัวเอง) | in_progress | approved | completed | voided |
 |---|---|---|---|---|---|
 | ดู PR | ✅ | ✅ | ✅ | ✅ | ✅ |
 | แก้ header / บรรทัด | ✅ | ❌ | ❌ | ❌ | ❌ |
@@ -71,19 +71,19 @@ Requestor เป็น **เจ้าของ** PR เฉพาะตอน `dr
 - **ถ้า PR ไม่มีบรรทัดที่ไม่ลบตอน submit** (กฎ `PR_VAL_006`): submit ถูกปฏิเสธด้วยข้อความ "At least one line is required" PR ยังเป็น `draft` เพิ่มอย่างน้อยหนึ่งบรรทัดและ submit ใหม่
 - **ถ้า budget validation รายงาน `Warning` หรือ `Exceeded`**: ระบบแสดงผลกระทบ budget แต่ **ไม่** บล็อก submit (budget check เป็น informational ตอน submit) Requestor ตัดสินว่าจะ (a) ลดจำนวนหรือราคาประมาณแล้ว validate ใหม่, (b) แบ่ง request เป็น PR ย่อย หรือ (c) ดำเนินต่อและให้ Budget Controller อนุมัติหรือ reject ปลายน้ำ
 - **ถ้าผู้อนุมัติเลือก Send Back** บน PR ที่ submit แล้ว (stage ใดก็ตาม): PR transition จาก `in_progress` กลับเป็น `draft`, soft budget commitment ถูกปล่อยจนกว่าจะ submit ใหม่, เหตุผลของผู้อนุมัติแนบกับ activity log และ Requestor ได้รับแจ้ง Requestor กลับเข้า Section 2 step 2 (แก้ header หรือบรรทัดตาม comment) และ resubmit ที่ step 9 ประวัติการแก้ไขถูกเก็บไว้
-- **ถ้า Requestor ต้องการยกเลิก PR ที่ยังไม่ submit**: จากหน้า PR detail หรือ list view เลือก **Cancel** ขณะที่ PR ยังเป็น `draft` ระบบ transition เป็น `cancelled`, ทิ้งการแก้ไขที่ค้างอยู่ และยุติเอกสาร PR ที่ submit แล้ว (`in_progress`, `approved`) ไม่สามารถถูกยกเลิกโดย Requestor — workflow เท่านั้นที่ reject ได้ (transition เป็น `cancelled`) หรือ administrator void ได้ (transition เป็น `voided`)
-- **ถ้า Requestor พยายามแก้ PR หลัง submit** (`in_progress`, `approved`, `completed`, `voided`, `cancelled`): ปุ่มควบคุมการแก้ไขทั้งหมดเป็น read-only วิธีเดียวที่จะเปลี่ยนเนื้อหาคือขอให้ผู้อนุมัติปัจจุบันส่ง PR กลับเป็น `draft` เมื่อกลับเป็น `draft`, Requestor ได้สิทธิ์แก้ไขคืนและ flow ดำเนินต่อที่ Section 2 step 2
+- **ถ้า Requestor ต้องการยกเลิก PR ที่ยังไม่ submit**: จากหน้า PR detail หรือ list view เลือก **Cancel** ขณะที่ PR ยังเป็น `draft` ระบบ transition เป็น `voided`, ทิ้งการแก้ไขที่ค้างอยู่ และยุติเอกสาร PR ที่ submit แล้ว (`in_progress`, `approved`) ไม่สามารถถูกยกเลิกโดย Requestor — workflow เท่านั้นที่ reject ได้ (transition เป็น `voided`) หรือ administrator void ได้ (transition เป็น `voided`)
+- **ถ้า Requestor พยายามแก้ PR หลัง submit** (`in_progress`, `approved`, `completed`, `voided`): ปุ่มควบคุมการแก้ไขทั้งหมดเป็น read-only วิธีเดียวที่จะเปลี่ยนเนื้อหาคือขอให้ผู้อนุมัติปัจจุบันส่ง PR กลับเป็น `draft` เมื่อกลับเป็น `draft`, Requestor ได้สิทธิ์แก้ไขคืนและ flow ดำเนินต่อที่ Section 2 step 2
 
 ## 4. จุดออก / Handoff
 
 การมีส่วนร่วมหลักของ Requestor จบเมื่อ PR transition จาก `draft` เป็น `in_progress` ที่ step 9 ของ Section 2 ณ จุดนั้นเอกสารออกจากความรับผิดชอบของ Requestor และถูก pick up โดยผู้อนุมัติ stage แรกใน workflow ที่ตั้งค่าไว้ (ปกติคือ Department Head; ดู [03-user-flow-approver.md](./03-user-flow-approver.md) เมื่อ publish) สถานะเอกสารตอน handoff คือ `in_progress` พร้อม `workflow_current_stage` ชี้ที่ stage อนุมัติแรกและ soft budget commitment ลงทะเบียนกับแผนกของ requestor
 
-ทิศทาง handoff ที่สองคือ **กลับมาที่ Requestor ตอน send-back**: ผู้อนุมัติคนใดบน chain อาจส่ง PR กลับเป็น `draft` พร้อมเหตุผล ปล่อย soft commitment นี่ไม่ใช่จุดออกจริง — Requestor กลับเข้าที่ Section 2 step 2 เพื่อแก้ PR และ resubmit Cycle ทำซ้ำจนกว่า PR จะ approved (stage สุดท้าย), rejected (`cancelled`) หรือ voided (`voided`)
+ทิศทาง handoff ที่สองคือ **กลับมาที่ Requestor ตอน send-back**: ผู้อนุมัติคนใดบน chain อาจส่ง PR กลับเป็น `draft` พร้อมเหตุผล ปล่อย soft commitment นี่ไม่ใช่จุดออกจริง — Requestor กลับเข้าที่ Section 2 step 2 เพื่อแก้ PR และ resubmit Cycle ทำซ้ำจนกว่า PR จะ approved (stage สุดท้าย), rejected หรือ voided (`voided`)
 
 จุดออก terminal สำหรับ Requestor (ไม่มี action เพิ่มเติมโดยพวกเขา) ได้แก่:
 
-- **ยกเลิกโดย Requestor ใน draft** — `pr_status = cancelled`, terminal
-- **ปฏิเสธโดยผู้อนุมัติ** — `pr_status = cancelled`, terminal Auditor review หลังเหตุการณ์
+- **ยกเลิกโดย Requestor ใน draft** — `pr_status = voided`, terminal
+- **ปฏิเสธโดยผู้อนุมัติ** — `pr_status = voided`, terminal Auditor review หลังเหตุการณ์
 - **Void โดย System Administrator** — `pr_status = voided`, terminal Auditor review หลังเหตุการณ์
 - **Approved และแปลงเป็น PO** — `pr_status = completed`, terminal Purchaser เป็นเจ้าของการแปลง; Requestor เห็น PO ที่ link บนหน้า PR detail สำหรับ traceability
 

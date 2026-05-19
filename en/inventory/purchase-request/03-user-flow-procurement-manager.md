@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow — Procurement Manager
 description: Procurement Manager's flow within the purchase-request module — high-value approval, vendor ranking, and Allocate Vendor rule tuning.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: purchase-request, user-flow, procurement-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -25,7 +25,7 @@ graph LR
     inprog(("in_progress")) -->|"Threshold breach<br/>(PR_AUTH_005)"| pm["PM Escalated Review"]:::current
     pm -->|"Approve (final)"| approved(("approved"))
     pm -->|"Send-back"| draft(("draft"))
-    pm -->|"Reject"| cancelled(("cancelled"))
+    pm -->|"Reject"| voided(("voided"))
     approved -->|"Convert to PO<br/>(Purchaser)"| completed(("completed"))
     pm -.->|"Override prior send-back"| approved
     cfg["Vendor Allocation Rules<br/>(configurational)"]:::current2 -.->|"Feeds Purchaser ranking"| approved
@@ -42,7 +42,7 @@ The Manager engages with the module across two surfaces. Transactional rights ar
 | View PR (escalated) | ✅ | — |
 | Approve (final stage, → `approved`) | ✅ | — |
 | Send-back (with reason) | ✅ | — |
-| Reject (terminate → `cancelled`) | ✅ | — |
+| Reject (terminate → `voided`) | ✅ | — |
 | Split-Reject — line level | ✅ | — |
 | Adjust `approved_qty` (`PR_VAL_013`) | ✅ | — |
 | Override prior-stage Approver send-back | ✅ | — |
@@ -88,7 +88,7 @@ The Manager engages with the module across two surfaces. Transactional rights ar
 - **If the escalated PR is so large or strategically sensitive that further executive sign-off is needed** (beyond the PR module's configured chain): the Procurement Manager records the executive approval out-of-band (email, board minutes), attaches the evidence to the PR, then commits Approve in the system. The PR module itself does not model an above-procurement stage — anything beyond `enum_stage_role = approve` ends at `purchase`. The Procurement Manager's Approve is the system's final word.
 - **If the Procurement Manager chooses to override a prior Approver send-back**: the Activity Log shows the prior send-back reason. The Procurement Manager can either (a) confirm the send-back (PR remains in `draft` or at the prior stage) or (b) override by issuing **Approve** directly from the escalated stage — bypassing the resend-back loop. The override is recorded in `workflow_history` with the Procurement Manager's user id and a mandatory justification comment captured in `tb_purchase_request_comment`.
 - **If the Procurement Manager chooses Send Back** instead of Approve at the escalated stage: dialog requires a reason. On confirm, `PR_POST_003` applies — `workflow_current_stage` moves one step back; depending on workflow configuration this may be Finance (Stage 3), Budget Controller (Stage 2), or all the way back to the Requestor at `draft`. The soft budget commitment is released only if the rollback reaches the Requestor's create stage. The Procurement Manager's involvement ends here.
-- **If the Procurement Manager chooses header-level Reject**: dialog requires a reason. On confirm, `PR_AUTH_004` + `PR_POST_006` apply — `pr_status` moves to `cancelled` (terminal), the soft budget commitment is released, `workflow_history` is appended, and a `type = system` comment captures the rejection. The chain ends with no further stages.
+- **If the Procurement Manager chooses header-level Reject**: dialog requires a reason. On confirm, `PR_AUTH_004` + `PR_POST_006` apply — `pr_status` moves to `voided` (terminal), the soft budget commitment is released, `workflow_history` is appended, and a `type = system` comment captures the rejection. The chain ends with no further stages.
 - **If a rule-set change is attempted while a PR is mid-flow (`in_progress`) and that PR depends on the rules being changed**: the configuration surface allows the save (vendor rules are not locked by individual in-flight PRs), but the change does **not** retroactively re-rank existing in-flight PRs. Each in-flight PR keeps its snapshotted vendor allocation; the new rules only apply to: (a) brand-new PRs created after the effective-from timestamp, (b) PRs returned to `draft` via send-back that get re-allocated on re-submit, and (c) PRs explicitly run through the one-off bulk re-allocation from Stuck PR Oversight. This snapshot-preservation behaviour mirrors `PR_CALC_006` exchange-rate semantics.
 - **If a bulk action targets a PR the Procurement Manager is not authorised on** (e.g. a different business unit's PR scoped out of their `user_action.execute[]`): that PR is silently excluded from the bulk result with an explanatory line in the bulk-action audit log. Authorised PRs proceed; unauthorised ones don't, and the manager is shown the count of each in the result dialog.
 - **If the Procurement Manager is temporarily unavailable** and has delegated their stage: per `PR_AUTH_006` the delegate inherits the same transactional rights (approve, send back, reject, split-reject) for the delegation window. Configurational rights (rule maintenance) are **not** delegable by default — rule edits remain reserved for the Procurement Manager role per `PR_AUTH_008`.
@@ -99,11 +99,11 @@ The Procurement Manager's involvement ends in one of the following ways, with th
 
 - **Transactional — Escalated-stage Approve (final approve in the chain).** `pr_status` flips from `in_progress` to `approved` per `PR_POST_005`; handoff is to the **Purchaser** queue ([03-user-flow-purchaser.md](./03-user-flow-purchaser.md)) for vendor validation and PO conversion. The soft budget commitment persists until PO creation converts it to a hard commitment (see [purchase-order](/en/inventory/purchase-order)). The PR remains in `approved` until every line is fully bridged or cancelled, at which point `pr_status` flips to `completed` (`PR_POST_007`).
 - **Transactional — Send Back.** `pr_status` stays `in_progress` but `workflow_current_stage` moves one step back; if the rollback reaches the Requestor's create stage, the document returns to `draft` and the **Requestor** picks it up again at [03-user-flow-requestor.md](./03-user-flow-requestor.md) Section 2 step 2. The soft budget commitment is released only when the rollback reaches the create stage; for shorter rollbacks the prior approver receives the handoff and the commitment remains in place.
-- **Transactional — Header Reject.** `pr_status` flips to `cancelled` (terminal, `PR_POST_006`); the soft budget commitment is released; the **Auditor** reviews post-hoc but no further user action is possible. The Requestor sees the cancellation in their **My PRs** dashboard.
+- **Transactional — Header Reject.** `pr_status` flips to `voided` (terminal, `PR_POST_006`); the soft budget commitment is released; the **Auditor** reviews post-hoc but no further user action is possible. The Requestor sees the cancellation in their **My PRs** dashboard.
 - **Configurational — Rule set saved.** No PR state change. The new rule set takes effect for future PRs created after the effective-from timestamp; existing PRs at `in_progress` retain their original snapshotted vendor allocations and pricelist references. The **Purchaser team** is notified that the Allocate Vendor configuration has changed; the next Convert-to-PO action they run on a brand-new approved PR will use the updated ranking.
 - **Configurational — Bulk action committed.** Targeted PRs experience the per-action effect (send-back to `draft` per `PR_POST_003`, escalation ping with no state change, or one-off re-allocation that updates `vendor_id` / `pricelist_*` snapshots on PR detail rows). Each affected PR receives a `type = system` comment (`PR_POST_008`) recording the bulk action and its origin. Subsequent flow for each PR proceeds per its new state (Requestor picks up `draft`, next-stage approver picks up after a ping, etc.).
 
-Document state across all transitions is recorded by `enum_purchase_request_doc_status = { draft, in_progress, voided, approved, completed, cancelled }` and the workflow timeline in `workflow_history`. Voiding (`pr_status → voided`) is reserved for Finance or system-admin per `PR_AUTH_007` and is not part of the standard Procurement Manager flow.
+Document state across all transitions is recorded by `enum_purchase_request_doc_status = { draft, in_progress, voided, approved, completed }` and the workflow timeline in `workflow_history`. Voiding (`pr_status → voided`) is reserved for Finance or system-admin per `PR_AUTH_007` and is not part of the standard Procurement Manager flow.
 
 ## 5. References
 

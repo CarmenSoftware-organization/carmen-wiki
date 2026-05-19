@@ -2,7 +2,7 @@
 title: Inventory Adjustment — User Flow — Audit & Config
 description: Auditor and System Administrator flows within the inventory-adjustment module — audit trail inspection and configuration maintenance.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: inventory-adjustment, user-flow, audit, sysadmin, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -71,7 +71,7 @@ The **Audit / Config** persona group folds two carmen/docs roles — **Auditor**
 
 - Master data CRUD on `tb_adjustment_type` (reason codes) per `ADJ_AUTH_008`:
     - `code`, `name`, `description`
-    - `type` (`STOCK_IN` or `STOCK_OUT`) — the direction filter
+    - `type` (`stock_in` or `stock_out`) — the direction filter
     - `is_active` flag
     - `info.glAccount` — GL account mapping that drives the post's journal entry
     - `info.requiresDocument` — flag forcing attachment requirement per `ADJ_VAL_010`
@@ -124,7 +124,7 @@ Neither role can post / approve / void / edit adjustment documents directly. Con
 **Sysadmin primary flow (add a new adjustment-type reason code, 7 steps):**
 
 1. **Open the Adjustment Types admin screen.** Admin module → Master Data → Adjustment Types → New.
-2. **Enter the reason code data.** `code` (e.g. `INSURANCE_WRITE_OFF`), `name` (display name), `description`, `type` (`STOCK_OUT` for write-offs), `is_active = true`.
+2. **Enter the reason code data.** `code` (e.g. `INSURANCE_WRITE_OFF`), `name` (display name), `description`, `type` (`stock_out` for write-offs), `is_active = true`.
 3. **Set the `info` JSON.** Critical fields:
     - `glAccount`: the GL expense / loss account for the reason (e.g. `6535 — Insurance-claimable Losses`).
     - `requiresDocument`: typically `true` for insurance-claimable losses (need the claim reference / photos).

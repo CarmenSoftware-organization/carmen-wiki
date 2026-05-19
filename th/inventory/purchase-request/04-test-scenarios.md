@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — Test Scenarios
 description: Test case แยกตาม persona, scenario ข้าม persona และ mapping ไป Playwright สำหรับโมดูล purchase-request
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: purchase-request, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -46,10 +46,10 @@ Scenario ต่อ persona — Happy Path, Permission / Authorization, Validatio
 | X-PR-03 | Split-reject: ผู้อนุมัติ reject บางบรรทัด, approve ที่เหลือ, PR ดำเนินต่อกับ subset ที่รอด | Requestor → Approver (stage N) → Approver stage ถัดไป | PR มีอย่างน้อยสองบรรทัด; ผู้อนุมัติที่ reject ให้ข้อความเหตุผลต่อบรรทัด | PR ยังคง `in_progress` พร้อมบรรทัดที่ถูก reject flagged; บรรทัดที่รอดเลื่อนไป stage ถัดไป; บรรทัดที่ reject ถูกตัดจากการแปลง PO ใด ๆ ภายหลัง |
 | X-PR-04 | Partial conversion: purchaser แปลงเฉพาะบางบรรทัดที่ approved, ทิ้งที่เหลือไว้ | Requestor → chain Approver เต็ม → Purchaser | PR เป็น `approved` ที่มีหลายบรรทัด; ต้องการเฉพาะ subset ตอนนี้ (เช่น vendor ที่ต้องการไม่พร้อมสำหรับบางบรรทัด) | สร้าง `tb_purchase_order` อย่างน้อยหนึ่งใบสำหรับบรรทัดที่เลือก; header PR ยังคง `approved` สำหรับบรรทัดที่เหลือจนกว่าจะแปลงหรือ aged out |
 | X-PR-05 | Escalation: ยอด header เกิน threshold มูลค่าสูงและ route ไปยัง Procurement Manager | Requestor → Department Head → Budget Controller → (escalation) → Procurement Manager | Header `base_total_amount` เกิน threshold ที่ตั้งสำหรับ workflow | PR `approved` เฉพาะหลัง Procurement Manager เซ็น stage escalated; cursor stage บันทึก escalation hop |
-| X-PR-06 | เส้นทาง reject: ผู้อนุมัติ reject PR ทันที; workflow ยุติ | Requestor → Approver (stage ใด ๆ) | ผู้อนุมัติที่ reject ให้ข้อความเหตุผล | PR `cancelled`, soft budget commitment ปล่อย, ไม่มี action เพิ่มเติม, comment audit เขียน |
+| X-PR-06 | เส้นทาง reject: ผู้อนุมัติ reject PR ทันที; workflow ยุติ | Requestor → Approver (stage ใด ๆ) | ผู้อนุมัติที่ reject ให้ข้อความเหตุผล | PR `voided`, soft budget commitment ปล่อย, ไม่มี action เพิ่มเติม, comment audit เขียน |
 | X-PR-07 | Bounce-back จาก Purchaser: Purchaser ส่ง PR กลับเพื่อ clarification vendor / scope | Requestor → chain Approver เต็ม → Purchaser → Approver (stage N หรือ Requestor) | PR `approved`; Purchaser ไม่สามารถ satisfy vendor หรือ pricing ใน scope | PR กลับเข้า chain (หรือไปยัง Requestor เป็น PR ที่ส่งกลับ) พร้อม comment ของ Purchaser; ขึ้นกับ workflow config สถานะย้ายกลับเป็น `in_progress` หรือ `draft` |
 | X-PR-08 | Void ธุรการโดย System Administrator บน PR กลาง flow | Requestor → Approver (stage N) → System Administrator | PR เป็น `in_progress`; admin มีข้อความเหตุผล (เช่น duplicate, compliance) | PR `voided`, soft budget commitment ปล่อย, workflow ยุติ; Auditor อ่านเหตุผล void หลังเหตุการณ์ได้ |
-| X-PR-09 | Cancel-own-draft: Requestor ทิ้ง draft ก่อน submit | Requestor เท่านั้น | PR เป็น `draft` และไม่เคย submit | PR `cancelled`; ไม่มีการเลื่อน stage workflow; ไม่มี audit chain นอกเหนือจาก cancel event |
+| X-PR-09 | Cancel-own-draft: Requestor ทิ้ง draft ก่อน submit | Requestor เท่านั้น | PR เป็น `draft` และไม่เคย submit | PR `voided`; ไม่มีการเลื่อน stage workflow; ไม่มี audit chain นอกเหนือจาก cancel event |
 | X-PR-10 | Returned-PR round trip บน golden path Playwright | Requestor → HOD (Department Head) → Requestor → HOD → … | Seed ผ่าน helper `submitPRAsRequestor` + `sendForReviewAsHOD` ใน E2E suite | PR ย้าย Returned → In Progress หลัง Requestor resubmit; badge สถานะและ Workflow History สะท้อน loop เต็ม |
 
 ## 5. การ Map E2E Test

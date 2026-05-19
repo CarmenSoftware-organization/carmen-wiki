@@ -2,7 +2,7 @@
 title: Workflow
 description: Named multi-stage approval workflows attached to transactional documents — defines stages, actions, recipients, SLA, and field visibility per stage.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: system-config, workflow, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -64,7 +64,7 @@ Source: tenant schema.
 | --- | --- | --- | --- |
 | `id` | `String @db.Uuid` | No | Primary key (`gen_random_uuid()`). |
 | `name` | `String @db.VarChar` | No | Display name. |
-| `workflow_type` | `enum_workflow_type` | No | `purchase_request_workflow`, `store_requisition_workflow`, `purchase_order_workflow`. |
+| `workflow_type` | `enum_workflow_type` | No | `purchase_request`, `store_requisition`, `purchase_order`. |
 | `data` | `Json? @db.JsonB` | Yes | Full stage definition. Default `{}`. |
 | `is_active` | `Boolean?` | Yes | Default `true`. |
 | `description` / `note` | `String? @db.VarChar` | Yes | Free text. |
@@ -111,9 +111,9 @@ Per-stage keys: `name`, `description`; `sla` + `sla_unit` (`hours`/`days`); `ava
 
 ## 7. Cross-References
 
-- [purchase-request](/en/inventory/purchase-request) — primary consumer (`purchase_request_workflow`).
-- [store-requisition](/en/inventory/store-requisition) — canonical multi-stage user (`store_requisition_workflow`).
-- [purchase-order](/en/inventory/purchase-order) — high-value approval (`purchase_order_workflow`).
+- [purchase-request](/en/inventory/purchase-request) — primary consumer (`purchase_request`).
+- [store-requisition](/en/inventory/store-requisition) — canonical multi-stage user (`store_requisition`).
+- [purchase-order](/en/inventory/purchase-order) — high-value approval (`purchase_order`).
 - [good-receive-note](/en/inventory/good-receive-note), [inventory-adjustment](/en/inventory/inventory-adjustment), [vendor-pricelist](/en/inventory/vendor-pricelist), [physical-count](/en/inventory/physical-count), [spot-check](/en/inventory/spot-check) — optional workflow gating.
 - [access-control/application-role](/en/inventory/access-control/application-role) — role descriptors in `assigned_users`.
 - [master-data/department](/en/inventory/master-data/department) — HoD resolution.

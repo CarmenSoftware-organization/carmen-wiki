@@ -2,7 +2,7 @@
 title: Wastage Reporting
 description: Specialised stock-out flavour for spoilage, breakage, expiry, and theft — categorised so finance can analyse loss patterns by reason, outlet, and period.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: inventory-adjustment, wastage, loss, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -30,7 +30,7 @@ How it differs from a generic adjustment:
 | Task | Where | Notes |
 |---|---|---|
 | Record a wastage entry | Store Operation → Wastage Reporting → **New** | Pick location, reason, product, qty, lot |
-| Pick a reason code | Reason field on header | Filters `tb_adjustment_type` to `STOCK_OUT` wastage-flavoured rows: `SPOIL`, `BREAK`, `EXPIRY`, `THEFT`, `SAMPLE`, `OTHER` |
+| Pick a reason code | Reason field on header | Filters `tb_adjustment_type` to `stock_out` wastage-flavoured rows: `SPOIL`, `BREAK`, `EXPIRY`, `THEFT`, `SAMPLE`, `OTHER` |
 | Attach evidence | Comments tab on the document | Photos of broken bottles / expiry labels (mandatory for high-loss reason codes) |
 | Submit for approval | **Submit** action | Flips `draft → in_progress`, routes to Inventory Controller |
 | Approve and post | Inventory Controller → **Approve** | Posts `tb_inventory_transaction` (stock_out / adjustment_out), debits Wastage Expense, credits Inventory |
@@ -42,7 +42,7 @@ How it differs from a generic adjustment:
 | Symptom / Message | Cause | Action |
 |---|---|---|
 | "Reason required" | `adjustment_type_id` null at submit | Pick a wastage reason from the catalogue |
-| "Invalid reason for this surface" | A `STOCK_IN` or non-wastage `STOCK_OUT` reason chosen | Pick a wastage-flavoured `STOCK_OUT` reason only |
+| "Invalid reason for this surface" | A `stock_in` or non-wastage `stock_out` reason chosen | Pick a wastage-flavoured `stock_out` reason only |
 | "Evidence required for THEFT / EXPIRY" | High-loss reason without an attachment | Upload photo / damage report to `tb_stock_out_comment` |
 | "Lot has zero balance" | Lot-tracked product at the source location is empty | Choose a different lot or correct on-hand first |
 | "Period is closed" | `so_date` inside a closed period | Use today's date, or raise a manual JV |
@@ -89,7 +89,7 @@ Carries `product_id`, `qty`, `cost_per_unit`, `total_cost`, lot reference, and b
 | Field | Type | Description |
 |---|---|---|
 | `code`, `name` | `String` | e.g. `SPOIL` / "Spoilage". |
-| `type` | `enum_adjustment_type` | `STOCK_IN` or `STOCK_OUT` — wastage rows are always `STOCK_OUT`. |
+| `type` | `enum_adjustment_type` | `stock_in` or `stock_out` — wastage rows are always `stock_out`. |
 | `is_active` | `Boolean?` | Toggles availability in the picker. |
 
 See [master-data/adjustment-type](/en/inventory/master-data/adjustment-type) for the full reason catalogue.
@@ -109,7 +109,7 @@ See [master-data/adjustment-type](/en/inventory/master-data/adjustment-type) for
 6. Reversal (only correction path): new tb_stock_out with negative qty, note links to original
 ```
 
-- **Reason required**, **direction STOCK_OUT only**, **submit ≠ approve** (segregation of duties)
+- **Reason required**, **direction stock_out only**, **submit ≠ approve** (segregation of duties)
 - **No edit after post** — append-only correction
 - **Reporting flag.** Each posting contributes to the per-outlet, per-period, per-reason loss aggregation
 

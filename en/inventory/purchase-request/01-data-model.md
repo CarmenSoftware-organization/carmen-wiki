@@ -2,7 +2,7 @@
 title: Purchase Request — Data Model
 description: Entities, fields, relationships, and enums for the purchase-request module.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: purchase-request, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -141,7 +141,7 @@ PR line item. Carries product reference, qty / unit triples (requested, approved
 | `base_total_price` | `Decimal @db.Decimal(20, 5)` | Yes | `base_net_amount + base_tax_amount`. |
 | `history` | `Json @db.JsonB` | Yes | Per-line stage timeline (`seq`, `name`, `status`, `to_stage`, `message`, `by_id`, `by_name`, `at_date`); default `[]`. |
 | `stages_status` | `Json @db.JsonB` | Yes | Per-line stage cursor — array of `{ seq, name, status }`; default `{}`. |
-| `current_stage_status` | `String @db.VarChar` | Yes | Working copy of the current stage status. |
+| `current_stage_status` | `String @db.VarChar` | Yes | Working copy of the current stage status. The Prisma schema declares `enum_stage_action { submit, approve, reject, review, pending }` (May 2026 enum-cleanup pass) intended to type this column; the column itself remains `String?` until a planned migration validates historical values and retypes it. Treat values outside `enum_stage_action` as legacy data that the migration will normalise. |
 | `info` | `Json @db.JsonB` | Yes | Extension bag; default `{}`. |
 | `dimension` | `Json @db.JsonB` | Yes | Per-line cost dimensions; default `[]`. |
 | `doc_version` | `Int @db.Integer` | No | Optimistic-concurrency version; default `0`. |
@@ -341,7 +341,7 @@ Notes:
 
 ## 4. Enums
 
-- **`enum_purchase_request_doc_status`**: `draft` (`ร่าง` — initial editable state, no commitment), `in_progress` (`กำลังดำเนินการ` — submitted and traversing the approval chain), `voided` (`โมฆะ` — administratively voided after submission), `approved` (`อนุมัติ` — chain complete, ready for procurement conversion), `completed` (`เสร็จสิ้น` — fully converted to PO and closed), `cancelled` (`ยกเลิก` — terminated by user or system before approval).
+- **`enum_purchase_request_doc_status`**: `draft` (`ร่าง` — initial editable state, no commitment), `in_progress` (`กำลังดำเนินการ` — submitted and traversing the approval chain), `voided` (`โมฆะ` / `ยกเลิก` — terminal terminated state; covers Requestor cancel on an unsubmitted draft, approver reject mid-chain, and Sysadmin void after submission — see [03-user-flow](./03-user-flow) § 2), `approved` (`อนุมัติ` — chain complete, ready for procurement conversion), `completed` (`เสร็จสิ้น` — fully converted to PO and closed). The previously-separate `cancelled` value was dropped in the May 2026 enum-cleanup pass; all termination paths now converge on `voided`.
 - **`enum_purchase_order_type`**: `manual` (PO created directly by procurement without an upstream PR), `purchase_request` (PO sourced from one or more PRs via the conversion flow — also the default value on `tb_purchase_order.po_type`, which is why PR-sourced is the standard procure-to-pay path).
 - **`enum_last_action`**: `submitted`, `approved`, `reviewed`, `rejected` — used by `tb_purchase_request.last_action` to capture the most recent workflow action.
 - **`enum_comment_type`**: `user` (human-authored comment), `system` (auto-generated activity-log entry written by the workflow engine).
@@ -354,7 +354,7 @@ The legacy `data-models.md` document describes TypeScript front-end interfaces (
 
 | # | Item | carmen/docs says | Prisma has | Action |
 |---|------|------------------|------------|--------|
-| 1 | Document status values | `enum DocumentStatus { Draft, Submitted, InProgress, Completed, Rejected }` | `enum_purchase_request_doc_status { draft, in_progress, voided, approved, completed, cancelled }` | Treat Prisma as canonical. `Submitted` in the UI maps to `in_progress`; `Rejected` is not a stored status (rejection terminates the chain and the PR is `cancelled` or `voided`); `approved` exists in Prisma but not in the carmen/docs enum; `voided` and `cancelled` have no carmen/docs counterpart. Update `02-business-rules` and the front-end status enum accordingly. |
+| 1 | Document status values | `enum DocumentStatus { Draft, Submitted, InProgress, Completed, Rejected }` | `enum_purchase_request_doc_status { draft, in_progress, voided, approved, completed }` | Treat Prisma as canonical. `Submitted` in the UI maps to `in_progress`; `Rejected` is not a stored status (rejection terminates the chain and the PR is `voided`); `approved` exists in Prisma but not in the carmen/docs enum; `voided` has no carmen/docs counterpart. The `cancelled` value was present in earlier revisions of this wiki and earlier schema iterations but was dropped in the May 2026 enum-cleanup pass — all termination paths now converge on `voided`. Update `02-business-rules` and the front-end status enum accordingly. |
 | 2 | PR type | TypeScript `enum PRType { GeneralPurchase, MarketList, AssetPurchase, ServiceRequest }` | No `pr_type` / `type` column on `tb_purchase_request`; the schema carries no enumerated PR type. PR-type behaviour is currently configured indirectly via workflow selection and `info`/`dimension` extension fields. | Either add a Prisma `pr_type` column + enum (preferred, requires migration), or document the workaround that PR type is encoded under `info.pr_type`. Decision pending; flag for backend architecture review. |
 | 3 | Workflow stages | TypeScript `enum WorkflowStage { requester, departmentHeadApproval, purchaseCoordinatorReview, financeManagerApproval, generalManagerApproval, completed }` | No fixed stage enum. Stages are user-configurable rows in `tb_workflow` referenced through `tb_purchase_request.workflow_id`; the current stage slug is stored as `workflow_current_stage` (string), and the role-per-stage label uses `enum_stage_role` (`create / approve / purchase / issue / view_only`). | Document the configurable workflow as canonical; the carmen/docs enum represents only one default configuration. |
 | 4 | Workflow status | TypeScript `enum WorkflowStatus { pending, approved, rejected }` distinct from document status | No separate workflow-status column. `tb_purchase_request.last_action` (`submitted / approved / reviewed / rejected`) covers the same intent. | Drop the front-end `WorkflowStatus` enum in favour of `last_action` + `workflow_current_stage`. |

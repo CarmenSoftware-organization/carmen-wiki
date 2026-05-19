@@ -2,7 +2,7 @@
 title: Adjustment Type
 description: Coded reasons for stock-in / stock-out adjustments — used by inventory adjustments, physical count, and spot check to explain variance.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: master-data, adjustment-type, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -17,7 +17,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 1. What & Who
 
-Adjustment types classify *why* a stock balance moves up or down — write-off, write-on, spoilage, theft, count variance, transfer error, etc. Every `tb_stock_in` and `tb_stock_out` record carries one, and downstream variance reports group by reason so the controller can spot patterns. The `type` discriminator (`STOCK_IN` / `STOCK_OUT`) lets the catalogue be filtered by direction.
+Adjustment types classify *why* a stock balance moves up or down — write-off, write-on, spoilage, theft, count variance, transfer error, etc. Every `tb_stock_in` and `tb_stock_out` record carries one, and downstream variance reports group by reason so the controller can spot patterns. The `type` discriminator (`stock_in` / `stock_out`) lets the catalogue be filtered by direction.
 
 **Maintained by** Product Admin. **Read by** any developer or tester working on adjustments, physical count, or spot check posting paths.
 
@@ -25,7 +25,7 @@ Adjustment types classify *why* a stock balance moves up or down — write-off, 
 
 | Task | Where | Notes |
 |---|---|---|
-| Add a new reason | Configuration → Master Data → Adjustment Type → **New** | Set `code`, `name`, and `type` (`STOCK_IN` or `STOCK_OUT`) |
+| Add a new reason | Configuration → Master Data → Adjustment Type → **New** | Set `code`, `name`, and `type` (`stock_in` or `stock_out`) |
 | Deactivate a reason | Same screen → toggle `is_active` | Historical rows still resolve the name; hidden from new pickers |
 | Edit description | Edit dialog | `code`, `name`, `type` should not change after first use |
 | Check which reason a posting used | Open the stock-in/out record, look at the reason field | Snapshot via FK |
@@ -35,15 +35,15 @@ Adjustment types classify *why* a stock balance moves up or down — write-off, 
 | Symptom / Message | Cause | Action |
 |---|---|---|
 | "Code already in use" | Duplicate `code` on a non-deleted row | Pick a different code or reactivate the existing row |
-| "Type required" | Form submitted without `STOCK_IN` / `STOCK_OUT` | Pick the direction — the UI filters by it |
+| "Type required" | Form submitted without `stock_in` / `stock_out` | Pick the direction — the UI filters by it |
 | "Cannot delete — referenced by postings" | At least one stock-in/out record points to this reason | Inactivate instead |
-| "Type cannot be changed" | Attempt to flip `STOCK_IN` ↔ `STOCK_OUT` after use | Create a new reason in the correct direction |
+| "Type cannot be changed" | Attempt to flip `stock_in` ↔ `stock_out` after use | Create a new reason in the correct direction |
 
 ## 4. Edge Cases
 
 - **Direction flip after use** corrupts historical reporting — the system rejects it.
 - **Deletion of a referenced reason** is blocked; soft-delete also leaves historical rows resolvable.
-- **Direction filtering** is at the picker — stock-in screens never see `STOCK_OUT` rows and vice versa.
+- **Direction filtering** is at the picker — stock-in screens never see `stock_out` rows and vice versa.
 
 ---
 
@@ -58,7 +58,7 @@ Source: tenant schema.
 | `id` | `String @db.Uuid` | No | Primary key. |
 | `code` | `String @db.VarChar` | No | Short code (e.g. `SPOIL`, `THEFT`, `WO`). |
 | `name` | `String @db.VarChar` | No | Display name. |
-| `type` | `enum_adjustment_type` | No | `STOCK_IN` or `STOCK_OUT`. |
+| `type` | `enum_adjustment_type` | No | `stock_in` or `stock_out`. |
 | `description` | `String? @db.VarChar` | Yes | Free text. |
 | `is_active` | `Boolean?` | Yes | Active flag. |
 | `note`, `info`, `dimension` | — | Yes | Standard metadata. |
@@ -66,7 +66,7 @@ Source: tenant schema.
 
 **Constraints:** `@@unique([code, deleted_at])` map `AT1_code_u`. Index on `code`. Reverse relations to `tb_stock_in` and `tb_stock_out`.
 
-`enum_adjustment_type` values: `STOCK_IN`, `STOCK_OUT`.
+`enum_adjustment_type` values: `stock_in`, `stock_out` (user-facing — appear in this picker), plus `eop_in`, `eop_out` (system-reserved for the period-end rollforward engine — not surfaced here). See [inventory-adjustment/01-data-model](/en/inventory/inventory-adjustment/01-data-model) § 4 for the full enum.
 
 ## 6. Business Rules
 

@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check) — Test Scenarios — Audit & Config
 description: Test case ของ Auditor และ Sysadmin สำหรับโมดูลการสุ่มตรวจ
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: spot-check, test-scenarios, audit, config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -29,7 +29,7 @@ dateCreated: 2026-05-15T14:30:00.000Z
 | AC-F-04 | Sysadmin ตั้งค่า tolerance threshold | Sysadmin | นโยบาย tenant ใหม่ | Default tenant อัปเดต; spot check ในอนาคตใช้ threshold ใหม่ตาม `SPC_VAL_006` |
 | AC-F-05 | Sysadmin ตั้งค่า default sampling size | Sysadmin | นโยบาย tenant เปลี่ยน | Default tenant อัปเดต; spot check ในอนาคต default เป็น `size` ใหม่ยกเว้น override |
 | AC-F-06 | Sysadmin ตั้งค่า default sampling method | Sysadmin | นโยบาย tenant เปลี่ยน (เช่น เปลี่ยนจาก `random` เป็น `high_value`) | Default tenant อัปเดต; spot check ในอนาคต default เป็น `method` ใหม่ |
-| AC-F-07 | Sysadmin map reason code สำหรับ rollup | Sysadmin | การ onboard tenant ใหม่ | `tb_adjustment_type` row สำหรับ `SPOT_CHECK_OVERAGE` (`type = STOCK_IN`) และ `SPOT_CHECK_SHORTAGE` (`type = STOCK_OUT`) สร้างพร้อม `info.glAccount` — หรือ alias เป็น `COUNT_*` ที่มีอยู่ตาม convention ของ tenant ตาม [inventory-adjustment/01-data-model](/th/inventory/inventory-adjustment/01-data-model) § 2.1 |
+| AC-F-07 | Sysadmin map reason code สำหรับ rollup | Sysadmin | การ onboard tenant ใหม่ | `tb_adjustment_type` row สำหรับ `SPOT_CHECK_OVERAGE` (`type = stock_in`) และ `SPOT_CHECK_SHORTAGE` (`type = stock_out`) สร้างพร้อม `info.glAccount` — หรือ alias เป็น `COUNT_*` ที่มีอยู่ตาม convention ของ tenant ตาม [inventory-adjustment/01-data-model](/th/inventory/inventory-adjustment/01-data-model) § 2.1 |
 
 ## 3. RBAC / Permission
 
@@ -45,7 +45,7 @@ dateCreated: 2026-05-15T14:30:00.000Z
 | # | กฎ | Scenario | Error ที่คาดหวัง |
 | - | ---- | -------- | -------------- |
 | AC-V-01 | `INV_VAL_008` (inherited) | Rollup adjustment submit เข้า period `closed` | `"Cannot post into period <YYMM>: period is closed."` Finance Manager ต้องเปิดใหม่ |
-| AC-V-02 | `ADJ_VAL_002` (downstream) | Sysadmin map `SPOT_CHECK_OVERAGE` ผิดเป็น `type = STOCK_OUT` | บันทึก reason-code reject ที่ form ของ adjustment-type ตามการ validate ทิศทางใน [inventory-adjustment/02-business-rules](/th/inventory/inventory-adjustment/02-business-rules) `ADJ_VAL_002` |
+| AC-V-02 | `ADJ_VAL_002` (downstream) | Sysadmin map `SPOT_CHECK_OVERAGE` ผิดเป็น `type = stock_out` | บันทึก reason-code reject ที่ form ของ adjustment-type ตามการ validate ทิศทางใน [inventory-adjustment/02-business-rules](/th/inventory/inventory-adjustment/02-business-rules) `ADJ_VAL_002` |
 | AC-V-03 | `SPC_AUTH_003` | Auditor พยายามอนุมัติ rollup adjustment | Action reject; Auditor เป็น read-only บน path การอนุมัติ rollup |
 
 ## 5. Edge Case

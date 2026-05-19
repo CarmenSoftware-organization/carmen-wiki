@@ -2,7 +2,7 @@
 title: การปรับสต๊อก (Inventory Adjustment) — User Flow — Store Keeper
 description: Flow ของ Store Keeper ภายในโมดูล inventory-adjustment — การระบุความไม่ตรง การบันทึกหลักฐาน การ submit draft
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: inventory-adjustment, user-flow, store-keeper, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -78,7 +78,7 @@ Segregation of duties ภายใต้ `ADJ_AUTH_010` เพิ่มข้อ
 
 1. **ระบุความไม่ตรง** ระหว่างการตรวจสอบ bin-stock ตามปกติหรือการเติม shelf, Store Keeper เห็นสต๊อกทางกายภาพมากกว่าที่ระบบแสดง พวกเขานับใหม่เพื่อยืนยัน, ตรวจสอบป้าย lot (ถ้าติดตาม lot), ถ่ายภาพป้าย lot / หลักฐานทางกายภาพ และบันทึกการอ้างอิง supplier / batch
 2. **เปิดหน้าจอ Stock-In** โมดูล Inventory Adjustment → New Stock-In หน้าจอสร้าง `tb_stock_in` ที่ `doc_status = draft` ด้วย Store Keeper เป็น `created_by_id`, วันที่ / เวลาปัจจุบันเป็น `si_date` และ location ที่ pre-fill จาก mapping `tb_user_location` หลักของผู้ใช้ (override ได้ไปยัง location อื่นใน scope) Auto-numbering สร้าง `si_no` ตาม `ADJ_VAL_001`
-3. **เลือก adjustment reason** บังคับ: `adjustment_type_id` อ้างอิง `tb_adjustment_type` ที่ filter โดย `type = STOCK_IN` ตาม `ADJ_VAL_002` เหตุผลทั่วไป: `FOUND_STOCK`, `COUNT_OVERAGE`, `RECALL_REPLACEMENT`, `VENDOR_FREE_REPLACEMENT`, `DATA_FIX` Reason code ขับเคลื่อนการจัดประเภท GL ปลายน้ำ (`info.glAccount`) และอาจ flag `requiresDocument` / `requiresQualityCheck`
+3. **เลือก adjustment reason** บังคับ: `adjustment_type_id` อ้างอิง `tb_adjustment_type` ที่ filter โดย `type = stock_in` ตาม `ADJ_VAL_002` เหตุผลทั่วไป: `FOUND_STOCK`, `COUNT_OVERAGE`, `RECALL_REPLACEMENT`, `VENDOR_FREE_REPLACEMENT`, `DATA_FIX` Reason code ขับเคลื่อนการจัดประเภท GL ปลายน้ำ (`info.glAccount`) และอาจ flag `requiresDocument` / `requiresQualityCheck`
 4. **กรอก description** ข้อความอิสระระดับ header ที่บังคับตาม `ADJ_VAL_004` — อธิบายทำไมและเมื่อใด (เช่น "Bin check 2026-05-15 14:00; พบ 5 หน่วยของ P-1 บนชั้นล่าง ไม่บันทึกไว้ก่อนหน้า; ป้าย batch LOT-1 ตรงกับ system lot ที่มีอยู่") Soft-fail ตอน save; hard-fail ตอน submit
 5. **เพิ่มบรรทัด** ต่อ product: `product_id` (auto-complete จาก product catalogue), `qty` (จำนวนเต็มบวกหรือทศนิยมสูงสุด 5dp), `lot_no` ของ lot (lot ที่มีอยู่ถ้าสต๊อกตรงกับป้ายที่รู้จัก; lot ใหม่ถ้า true found-stock โดยไม่มีบันทึกก่อนหน้า) สำหรับ lot ที่มีอยู่ `cost_per_unit` auto-fill จาก cost-layer ล่าสุดของ lot และ read-only สำหรับ lot ใหม่ `cost_per_unit` แก้ไขได้แต่เอกสาร route สำหรับ Controller approval ไม่ว่า threshold ตาม `ADJ_AUTH_003` สำหรับสินค้าเน่าเสียง่ายบน lot ใหม่ `expiryDate` ต้องการตาม `ADJ_VAL_009`
 6. **แนบหลักฐานประกอบ** Drag-and-drop รูปถ่าย / เอกสารที่สแกนเข้าพื้นที่ comment / attachment เมื่อ `info.requiresDocument = true` ของ reason (ทั่วไปสำหรับ `RECALL_REPLACEMENT`, `FOUND_STOCK` ขนาดใหญ่) ต้องมี attachment อย่างน้อยหนึ่งตัวตาม `ADJ_VAL_010` — submit-side hard-fail มิฉะนั้น Attachments persist บน array JSON `tb_stock_in_comment.attachments` เป็น `{originalName, fileToken, contentType}`
@@ -90,7 +90,7 @@ Segregation of duties ภายใต้ `ADJ_AUTH_010` เพิ่มข้อ
 
 Flow **stock-out** ดำเนินตามรูปทรงเดียวกันด้วยความแตกต่างหลัก:
 
-- Reason picker filter ไปยัง `type = STOCK_OUT` (`BREAKAGE`, `EXPIRY_WRITE_OFF`, `THEFT_WRITE_OFF`, `COUNT_SHORTAGE`, `RECALL_WRITE_OFF`)
+- Reason picker filter ไปยัง `type = stock_out` (`BREAKAGE`, `EXPIRY_WRITE_OFF`, `THEFT_WRITE_OFF`, `COUNT_SHORTAGE`, `RECALL_WRITE_OFF`)
 - `cost_per_unit` บนบรรทัด **ไม่ใช่ที่ผู้ใช้กรอก** — engine เลือกตอน post ตาม `ADJ_CALC_006` (FIFO) หรือ `ADJ_CALC_007` (WA) หน้าจอ render preview ("FIFO จะบริโภคจาก LOT-1 ที่ ฿10.00 ก่อน จากนั้น LOT-2 ที่ ฿12.00") เพื่อให้ Store Keeper flag การเลือกผิดปกติ
 - Lot picker default ไปยังลำดับ FIFO แต่ override ได้สำหรับ `EXPIRY_WRITE_OFF` (write off lot ที่หมดอายุ ไม่ใช่ lot เก่าที่สุด); การ override บันทึกใน `info.lotOverride`
 - การตรวจสอบ no-negative-balance จุดชนวนตอน submit ตาม `ADJ_VAL_012` / `INV_VAL_005` ถ้า `qty` เกิน on-hand ที่มีที่ lot ที่เลือก submit reject ด้วย `"Outbound movement would drive on-hand below zero."` — Store Keeper ลด `qty`, เลือก lot อื่น หรือ escalate ไปยัง Controller
@@ -127,7 +127,7 @@ Flow **count-rollup** เป็นเจ้าของโดยไฟล์ per
 - Sibling: [03-user-flow-inventory-controller.md](./03-user-flow-inventory-controller.md) — persona ปลายน้ำที่รับเอกสาร above-threshold, new-lot และ requires-quality-check เพื่ออนุมัติ; commit rollups ผลต่างนับ
 - Sibling: [03-user-flow-finance.md](./03-user-flow-finance.md) — persona ที่ปลายน้ำต่อสำหรับการอนุมัติเหนือ Controller threshold (recall write-offs ขนาดใหญ่, damage write-offs ขนาดใหญ่)
 - Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — System Administrator ที่กำหนดค่ารายการ `tb_adjustment_type` ที่ Store Keeper เลือกจาก, threshold auto-approve ที่ gate เปรียบเทียบ และ mapping `tb_user_location` ที่ scope locations ที่เลือกได้
-- Sibling: [01-data-model.md](./01-data-model.md) — รูปทรง `tb_stock_in` / `tb_stock_out` canonical (อ้างอิงในขั้น 2–7 ของ primary flow), รูปทรง `tb_inventory_transaction` (ขั้น 9), ค่า `enum_adjustment_type` (`STOCK_IN` / `STOCK_OUT`), วงจรชีวิต `enum_doc_status`
+- Sibling: [01-data-model.md](./01-data-model.md) — รูปทรง `tb_stock_in` / `tb_stock_out` canonical (อ้างอิงในขั้น 2–7 ของ primary flow), รูปทรง `tb_inventory_transaction` (ขั้น 9), ค่า `enum_adjustment_type` (`stock_in` / `stock_out`), วงจรชีวิต `enum_doc_status`
 - Sibling: [02-business-rules.md](./02-business-rules.md) — กฎ validation `ADJ_VAL_001` (เลขที่เอกสาร unique), `ADJ_VAL_002` (reason ตรงกับทิศทาง), `ADJ_VAL_003` (location active + ไม่ใช่ direct), `ADJ_VAL_004` (description บังคับ), `ADJ_VAL_005` (department ใน dimension), `ADJ_VAL_006` (product active), `ADJ_VAL_007` (qty > 0), `ADJ_VAL_008` (ต้นทุน non-negative), `ADJ_VAL_009` (lot identity), `ADJ_VAL_010` (attachment เมื่อต้องการ), `ADJ_VAL_011` (period gate), `ADJ_VAL_012` (no-negative-balance บน stock-out); กฎ auth `ADJ_AUTH_001`–`ADJ_AUTH_003` (Store Keeper create / auto-approve / new-lot gates), `ADJ_AUTH_010` (SoD); กฎ posting `ADJ_POST_001` (submit), `ADJ_POST_002` (post fan-out)
 - ที่เกี่ยวข้อง: [inventory](/th/inventory/inventory) — ทุก adjustment post ไปยัง inventory; กฎ `INV_VAL_005` (no negative balance), `INV_VAL_008` (period gate), `INV_VAL_009` (direct-cost gate), `INV_CALC_005` / `INV_CALC_006` (cost picks), `INV_POST_001` / `INV_POST_002` (posting effects) คือกฎฝั่ง ledger canonical
 - ที่เกี่ยวข้อง: [physical-count](/th/inventory/physical-count) — การ execute การนับที่ระดับ location; rollup ผลต่าง auto-create เอกสาร adjustment ผ่าน `ADJ_POST_006` / `ADJ_XMOD_002` Store Keeper execute การนับ แต่ไม่สร้างเอกสาร rollup โดยตรง

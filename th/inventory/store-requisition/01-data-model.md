@@ -2,7 +2,7 @@
 title: ใบเบิกของสโตร์ (Store Requisition) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูล store-requisition
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: store-requisition, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -135,7 +135,7 @@ SR วางตัว **ระหว่าง [inventory](/th/inventory/inventor
 | `reject_date_at` | `DateTime @db.Timestamptz(6)` | Yes | Timestamp reject |
 | `history` | `Json @db.JsonB` | Yes | Log การกระทำต่อบรรทัดแบบ append-only ทีละขั้น; default `[]` แต่ละ entry: `{ seq, name, status, message, to_stage?, by_id, by_name, at_date }` |
 | `stages_status` | `Json @db.JsonB` | Yes | Snapshot สถานะต่อขั้น; default `{}` แต่ละ entry: `{ seq, name, status }` |
-| `current_stage_status` | `String @db.VarChar` | Yes | ฟิลด์ชั่วคราวเก็บสตริงสถานะขั้นปัจจุบัน |
+| `current_stage_status` | `String @db.VarChar` | Yes | ฟิลด์ชั่วคราวเก็บสตริงสถานะขั้นปัจจุบัน Prisma schema ประกาศ `enum_stage_action { submit, approve, reject, review, pending }` (pass enum-cleanup พฤษภาคม 2026) ที่เจตนาใช้ type คอลัมน์นี้; ตัวคอลัมน์ยังเป็น `String?` จนกว่า migration ที่วางแผนไว้จะ validate ค่าประวัติและ retype ถือว่าค่านอก `enum_stage_action` เป็นข้อมูล legacy ที่ migration จะ normalise |
 | `info` | `Json @db.JsonB` | Yes | Extension bag สำหรับ attribute บรรทัดเฉพาะ tenant; default `{}` |
 | `dimension` | `Json @db.JsonB` | Yes | Cost-dimension array (project, cost-centre, job code); default `[]` ใช้ใน unique index |
 | `doc_version` | `Int @db.Integer` | No | Optimistic-concurrency version counter; default `0` |

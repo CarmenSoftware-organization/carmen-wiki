@@ -2,7 +2,7 @@
 title: การปรับสต๊อก (Inventory Adjustment) — User Flow — Audit & Config
 description: Flow ของ Auditor และ System Administrator ภายในโมดูล inventory-adjustment — การ inspect audit trail และการบำรุงรักษาการกำหนดค่า
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: inventory-adjustment, user-flow, audit, sysadmin, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -71,7 +71,7 @@ Persona group **Audit / Config** พับสองบทบาทของ carm
 
 - Master data CRUD บน `tb_adjustment_type` (reason codes) ตาม `ADJ_AUTH_008`:
     - `code`, `name`, `description`
-    - `type` (`STOCK_IN` หรือ `STOCK_OUT`) — ตัวกรองทิศทาง
+    - `type` (`stock_in` หรือ `stock_out`) — ตัวกรองทิศทาง
     - flag `is_active`
     - `info.glAccount` — การ map บัญชี GL ที่ขับเคลื่อน journal entry ของ post
     - `info.requiresDocument` — flag บังคับการ require attachment ตาม `ADJ_VAL_010`
@@ -124,7 +124,7 @@ Persona group **Audit / Config** พับสองบทบาทของ carm
 **Primary flow ของ Sysadmin (เพิ่ม reason code adjustment-type ใหม่, 7 ขั้น):**
 
 1. **เปิดหน้าจอ admin Adjustment Types** โมดูล Admin → Master Data → Adjustment Types → New
-2. **กรอกข้อมูล reason code** `code` (เช่น `INSURANCE_WRITE_OFF`), `name` (ชื่อแสดง), `description`, `type` (`STOCK_OUT` สำหรับ write-offs), `is_active = true`
+2. **กรอกข้อมูล reason code** `code` (เช่น `INSURANCE_WRITE_OFF`), `name` (ชื่อแสดง), `description`, `type` (`stock_out` สำหรับ write-offs), `is_active = true`
 3. **Set JSON `info`** ฟิลด์สำคัญ:
     - `glAccount`: บัญชี GL expense / loss สำหรับ reason (เช่น `6535 — Insurance-claimable Losses`)
     - `requiresDocument`: โดยทั่วไป `true` สำหรับ insurance-claimable losses (ต้องการการอ้างอิง claim / รูปถ่าย)

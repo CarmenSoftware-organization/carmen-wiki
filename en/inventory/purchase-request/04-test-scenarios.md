@@ -2,7 +2,7 @@
 title: Purchase Request — Test Scenarios
 description: Test cases by persona, cross-persona scenarios, and Playwright mapping for purchase-request.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: purchase-request, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -46,10 +46,10 @@ Per-persona scenarios — Happy Path, Permission / Authorization, Validation / E
 | X-PR-03 | Split-reject: approver rejects some lines, approves the remainder, PR continues with the surviving subset | Requestor → Approver (stage N) → next-stage Approver | PR has at least two lines; rejecting approver provides per-line reason text | PR stays `in_progress` with rejected lines flagged; surviving lines advance to the next stage; rejected lines excluded from any later PO conversion |
 | X-PR-04 | Partial conversion: purchaser converts only some approved lines, leaving the rest available | Requestor → full Approver chain → Purchaser | PR is `approved` with multiple lines; only a subset is needed now (e.g. preferred vendor unavailable for some lines) | At least one `tb_purchase_order` is created for the selected lines; PR header stays `approved` for the remaining lines until they are converted or aged out |
 | X-PR-05 | Escalation: header amount breaches the high-value threshold and routes to the Procurement Manager | Requestor → Department Head → Budget Controller → (escalation) → Procurement Manager | Header `base_total_amount` exceeds the configured threshold for the workflow | PR is `approved` only after the Procurement Manager signs the escalated stage; stage cursor records the escalation hop |
-| X-PR-06 | Reject path: approver rejects the PR outright; workflow terminates | Requestor → Approver (any stage) | Rejecting approver provides reason text | PR `cancelled`, soft budget commitment released, no further actions allowed, audit comment written |
+| X-PR-06 | Reject path: approver rejects the PR outright; workflow terminates | Requestor → Approver (any stage) | Rejecting approver provides reason text | PR `voided`, soft budget commitment released, no further actions allowed, audit comment written |
 | X-PR-07 | Bounce-back from Purchaser: Purchaser sends the PR back for vendor / scope clarification | Requestor → full Approver chain → Purchaser → Approver (stage N or Requestor) | PR is `approved`; Purchaser cannot satisfy vendor or pricing within scope | PR returns to the chain (or to the Requestor as a returned PR) with Purchaser's comment; depending on workflow config, status moves back to `in_progress` or `draft` |
 | X-PR-08 | Administrative void by System Administrator on an in-flight PR | Requestor → Approver (stage N) → System Administrator | PR is `in_progress`; admin has reason text (e.g. duplicate, compliance) | PR `voided`, soft budget commitment released, workflow terminates; Auditor can read the void reason post-hoc |
-| X-PR-09 | Cancel-own-draft: Requestor abandons a draft before submitting | Requestor only | PR is `draft` and has never been submitted | PR `cancelled`; no workflow stage advanced; no audit chain produced beyond the cancel event |
+| X-PR-09 | Cancel-own-draft: Requestor abandons a draft before submitting | Requestor only | PR is `draft` and has never been submitted | PR `voided`; no workflow stage advanced; no audit chain produced beyond the cancel event |
 | X-PR-10 | Returned-PR round trip on the canonical Playwright golden path | Requestor → HOD (Department Head) → Requestor → HOD → … | Seeded via `submitPRAsRequestor` + `sendForReviewAsHOD` helpers in the E2E suite | PR moves Returned → In Progress after Requestor resubmits; status badge and Workflow History reflect the full loop |
 
 ## 5. E2E Test Mapping

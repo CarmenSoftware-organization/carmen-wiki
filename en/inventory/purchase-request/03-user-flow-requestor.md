@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow — Requestor
 description: Requestor's flow within the purchase-request module.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: purchase-request, user-flow, requestor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -24,19 +24,19 @@ The **Requestor** is the hotel or department staff member who originates a Purch
 graph LR
     create["Create PR<br/>(Requestor)"]:::current --> draft(("draft")):::current
     draft -->|"Submit"| inprog(("in_progress"))
-    draft -->|"Cancel"| cancelled(("cancelled"))
+    draft -->|"Cancel"| voided(("voided"))
     inprog -->|"Send-back"| draft
     inprog -->|"Approve final"| approved(("approved"))
-    inprog -->|"Reject"| cancelled
+    inprog -->|"Reject"| voided
     approved -->|"Convert to PO"| completed(("completed"))
     classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
 ```
 
 ### Permission Matrix — Status × Action (Requestor)
 
-The Requestor is **the owner** of a PR only while it is in `draft`. Once it leaves `draft` (`in_progress`, `approved`, `completed`) or terminates (`cancelled`, `voided`) the Requestor retains view-only access. Action availability is enforced server-side by `PR_AUTH_001` and the state-machine guards.
+The Requestor is **the owner** of a PR only while it is in `draft`. Once it leaves `draft` (`in_progress`, `approved`, `completed`) or terminates (`voided`) the Requestor retains view-only access. Action availability is enforced server-side by `PR_AUTH_001` and the state-machine guards.
 
-| Action | draft (own) | in_progress | approved | completed | cancelled / voided |
+| Action | draft (own) | in_progress | approved | completed | voided |
 |---|---|---|---|---|---|
 | View PR | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Edit header / lines | ✅ | ❌ | ❌ | ❌ | ❌ |
@@ -71,19 +71,19 @@ The Requestor is **the owner** of a PR only while it is in `draft`. Once it leav
 - **If the PR has no non-deleted lines at submit** (rule `PR_VAL_006`): submit is rejected with the message "At least one line is required". The PR remains in `draft`. Add at least one line and retry.
 - **If budget validation reports `Warning` or `Exceeded`**: the system surfaces the budget impact but does **not** block submit (the budget check is informational at submission). The Requestor decides whether to (a) reduce quantities or estimated prices and re-validate, (b) split the request into a smaller PR, or (c) proceed and let the Budget Controller approve or reject downstream.
 - **If an approver chooses Send Back** on a submitted PR (any stage): the PR transitions from `in_progress` back to `draft`, the soft budget commitment is released until re-submission, the approver's reason is attached to the activity log, and the Requestor is notified. The Requestor re-enters at Section 2 step 2 (revise header or lines per the comment) and resubmits at step 9. Revision history is preserved.
-- **If the Requestor wants to cancel a PR they have not yet submitted**: from the PR detail page or list view, choose **Cancel** while the PR is still `draft`. The system transitions to `cancelled`, releases any in-progress edits, and terminates the document. Submitted PRs (`in_progress`, `approved`) cannot be cancelled by the Requestor — only the workflow can reject them (transitions to `cancelled`) or an administrator can void them (transitions to `voided`).
-- **If the Requestor tries to edit a PR after submit** (`in_progress`, `approved`, `completed`, `voided`, `cancelled`): all edit controls are read-only. The only way to change the content is to ask the current approver to send the PR back to `draft`. Once back in `draft`, the Requestor regains edit rights and the flow resumes at Section 2 step 2.
+- **If the Requestor wants to cancel a PR they have not yet submitted**: from the PR detail page or list view, choose **Cancel** while the PR is still `draft`. The system transitions to `voided`, releases any in-progress edits, and terminates the document. Submitted PRs (`in_progress`, `approved`) cannot be cancelled by the Requestor — only the workflow can reject them (transitions to `voided`) or an administrator can void them (transitions to `voided`).
+- **If the Requestor tries to edit a PR after submit** (`in_progress`, `approved`, `completed`, `voided`): all edit controls are read-only. The only way to change the content is to ask the current approver to send the PR back to `draft`. Once back in `draft`, the Requestor regains edit rights and the flow resumes at Section 2 step 2.
 
 ## 4. Exit Point / Handoffs
 
 The Requestor's primary involvement ends when the PR transitions from `draft` to `in_progress` at step 9 of Section 2. At that point the document leaves the Requestor's responsibility and is picked up by the first-stage approver in the configured workflow (typically Department Head; see [03-user-flow-approver.md](./03-user-flow-approver.md) when published). The document state at handoff is `in_progress` with `workflow_current_stage` pointing at the first approval stage and a soft budget commitment registered against the requestor's department.
 
-A second handoff direction is **back to the Requestor on send-back**: any approver in the chain may return the PR to `draft` with a reason, releasing the soft commitment. This is not a true exit — the Requestor re-enters at Section 2 step 2 to revise the PR and resubmits. Cycles repeat until the PR is either approved (final stage), rejected (`cancelled`), or voided (`voided`).
+A second handoff direction is **back to the Requestor on send-back**: any approver in the chain may return the PR to `draft` with a reason, releasing the soft commitment. This is not a true exit — the Requestor re-enters at Section 2 step 2 to revise the PR and resubmits. Cycles repeat until the PR is either approved (final stage), rejected or voided (`voided`).
 
 Terminal exits for the Requestor (no further action possible by them) are:
 
-- **Cancelled by Requestor in draft** — `pr_status = cancelled`, terminal.
-- **Rejected by an approver** — `pr_status = cancelled`, terminal. Auditor reviews post-hoc.
+- **Cancelled by Requestor in draft** — `pr_status = voided`, terminal.
+- **Rejected by an approver** — `pr_status = voided`, terminal. Auditor reviews post-hoc.
 - **Voided by System Administrator** — `pr_status = voided`, terminal. Auditor reviews post-hoc.
 - **Approved and converted to PO** — `pr_status = completed`, terminal. The Purchaser owns the conversion; the Requestor sees the linked PO in the PR detail page for traceability.
 

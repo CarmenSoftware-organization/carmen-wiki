@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow — Approver
 description: Approver's flow within the purchase-request module.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: purchase-request, user-flow, approver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -29,9 +29,9 @@ graph LR
     s1 -->|"Send-back"| draft
     s2 -->|"Send-back"| draft
     s3 -->|"Send-back"| draft
-    s1 -->|"Reject"| cancelled(("cancelled"))
-    s2 -->|"Reject"| cancelled
-    s3 -->|"Reject"| cancelled
+    s1 -->|"Reject"| voided(("voided"))
+    s2 -->|"Reject"| voided
+    s3 -->|"Reject"| voided
     s3 -.->|"Escalate ≥ threshold"| pm["PM<br/>(escalated)"]:::escalated
     pm -->|"Approve final"| approved
     classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
@@ -48,7 +48,7 @@ All three sub-roles share the same review-and-decide UI and the same action set.
 | View Items / Budget Impact / Activity Log | ✅ | ✅ | ✅ |
 | Approve (advance stage) | ✅ | ✅ | ✅ |
 | Send-back (with reason) | ✅ | ✅ | ✅ |
-| Reject — header level (terminate to `cancelled`) | ✅ | ✅ | ✅ |
+| Reject — header level (terminate to `voided`) | ✅ | ✅ | ✅ |
 | Split-Reject — line level | ✅ | ✅ | ✅ |
 | Adjust `approved_qty` / `approved_unit` (per `PR_VAL_013`) | ✅ | ✅ | ✅ |
 | Add Comments | ✅ | ✅ | ✅ |
@@ -80,7 +80,7 @@ All three sub-roles share the same review-and-decide UI and the same action set.
 ## 3. Decision Branches
 
 - **If the Approver chooses Send Back** instead of Approve: the dialog requires a reason. On confirm the system applies `PR_POST_003` and moves `workflow_current_stage` one step back; because Stage 1 is the requestor-create stage, send-back from Stage 1 effectively returns the PR to `draft` for the Requestor to edit and resubmit, releasing the soft budget commitment. Send-back from Stage 2 or Stage 3 may return the PR to the prior approval stage or all the way to the Requestor depending on workflow configuration. A notification is fired to the user at the new (previous) stage. The Approver's involvement ends here.
-- **If the Approver chooses Reject at header level** (entire PR is unjustified, duplicate, or otherwise unacceptable): the dialog requires a reason. On confirm `PR_AUTH_004` + `PR_POST_006` apply: `pr_status` moves to `cancelled` (terminal), the soft budget commitment is released, `workflow_history` is appended, and a `type = system` comment captures the rejection. The Requestor is notified and the chain ends — no further stages run.
+- **If the Approver chooses Reject at header level** (entire PR is unjustified, duplicate, or otherwise unacceptable): the dialog requires a reason. On confirm `PR_AUTH_004` + `PR_POST_006` apply: `pr_status` moves to `voided` (terminal), the soft budget commitment is released, `workflow_history` is appended, and a `type = system` comment captures the rejection. The Requestor is notified and the chain ends — no further stages run.
 - **If the Approver wants to accept some lines and reject others (Split-Reject)**: edit per-line disposition in Step 6 above, mark the affected lines as reject with a reason, then commit Approve at the header. The system records `current_stage_status = rejected` on each rejected line (`PR_AUTH_003`) and advances the PR to the next stage with only the accepted lines counting toward the next approval's budget and totals. Rejected lines stay visible on the document for audit and never convert to PO.
 - **If the Approver adjusts `approved_qty` downward**: header roll-ups recompute, the new `base_total_amount` is what subsequent stages and the budget check see, and the soft budget commitment is rebalanced. If the new total crosses a threshold boundary defined in `tb_workflow`, the routing for the *next* stage may change (e.g. small-amount PRs may skip Stage 4 per `PR_AUTH_005`).
 - **If the PR's `base_total_amount` exceeds a configured escalation threshold**: per `PR_AUTH_005`, additional stages or an escalation path to the **Procurement Manager** may be inserted. The Approver still completes their stage normally; the threshold logic fires automatically on the stage transition and reroutes the next notification. The Approver does not see threshold breaches as an error — the workflow engine handles them.
@@ -94,10 +94,10 @@ The Approver's involvement ends at the moment they commit a header-level decisio
 - **Intermediate-stage Approve** (Stage 1 or Stage 2, or Stage 3 when Stage 4 still runs): `pr_status` stays `in_progress`; `workflow_current_stage` advances; handoff is to the **next-stage Approver** (Budget Controller, Finance, or Procurement Manager respectively). The soft budget commitment remains.
 - **Final-stage Approve** (last `approve` stage clears, before the `purchase` stage): `pr_status` flips to `approved` (`PR_POST_005`); handoff is to the **Purchaser / Procurement Manager** queue for vendor allocation and PO conversion. The PR remains in `approved` until every line is fully bridged to a PO or cancelled, at which point `pr_status` flips to `completed` (`PR_POST_007`). Soft commitment persists until PO creation converts it to a hard commitment.
 - **Send Back** (any stage): `pr_status` stays `in_progress` but `workflow_current_stage` moves one step back; if that step is the Requestor's create stage, the document effectively returns to `draft` and the **Requestor** picks it up again at [03-user-flow-requestor.md](./03-user-flow-requestor.md) Section 2 step 2. The soft budget commitment is released until re-submission.
-- **Header Reject** (any stage): `pr_status` flips to `cancelled` (terminal, `PR_POST_006`); the soft budget commitment is released; the **Auditor** reviews post-hoc but no further user action is possible. The Requestor sees the cancellation in their **My PRs** dashboard.
+- **Header Reject** (any stage): `pr_status` flips to `voided` (terminal, `PR_POST_006`); the soft budget commitment is released; the **Auditor** reviews post-hoc but no further user action is possible. The Requestor sees the cancellation in their **My PRs** dashboard.
 - **Threshold-driven escalation**: `pr_status` stays `in_progress`; the workflow engine inserts (or re-routes to) an additional stage owned by the **Procurement Manager**. The current Approver has already exited; the Procurement Manager picks up from their own My Approvals queue with the same Section 2 flow.
 
-Document state on every transition is recorded by `enum_purchase_request_doc_status = { draft, in_progress, voided, approved, completed, cancelled }` and the workflow timeline in `workflow_history`. Voiding (`pr_status → voided`) is reserved for Finance or system-admin per `PR_AUTH_007` and is not part of the standard Approver flow.
+Document state on every transition is recorded by `enum_purchase_request_doc_status = { draft, in_progress, voided, approved, completed }` and the workflow timeline in `workflow_history`. Voiding (`pr_status → voided`) is reserved for Finance or system-admin per `PR_AUTH_007` and is not part of the standard Approver flow.
 
 ## 5. References
 

@@ -2,7 +2,7 @@
 title: Store Requisition — Data Model
 description: Entities, fields, relationships, and enums for the store-requisition module.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: store-requisition, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -135,7 +135,7 @@ SR line item. Identifies the product being requisitioned and carries the three-q
 | `reject_date_at` | `DateTime @db.Timestamptz(6)` | Yes | Rejection timestamp. |
 | `history` | `Json @db.JsonB` | Yes | Append-only per-line stage-by-stage action log; default `[]`. Each entry: `{ seq, name, status, message, to_stage?, by_id, by_name, at_date }`. |
 | `stages_status` | `Json @db.JsonB` | Yes | Per-stage status snapshot; default `{}`. Each entry: `{ seq, name, status }`. |
-| `current_stage_status` | `String @db.VarChar` | Yes | Temp field storing current stage status string. |
+| `current_stage_status` | `String @db.VarChar` | Yes | Temp field storing current stage status string. The Prisma schema declares `enum_stage_action { submit, approve, reject, review, pending }` (May 2026 enum-cleanup pass) intended to type this column; the column itself remains `String?` until a planned migration validates historical values and retypes it. Treat values outside `enum_stage_action` as legacy data that the migration will normalise. |
 | `info` | `Json @db.JsonB` | Yes | Extension bag for tenant-specific line attributes; default `{}`. |
 | `dimension` | `Json @db.JsonB` | Yes | Cost-dimension array (project, cost-centre, job code); default `[]`. Used in the unique index. |
 | `doc_version` | `Int @db.Integer` | No | Optimistic-concurrency version counter; default `0`. |

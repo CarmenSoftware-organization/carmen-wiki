@@ -2,7 +2,7 @@
 title: Purchase Order — Data Model
 description: Entities, fields, relationships, and enums for the purchase-order module.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: purchase-order, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -158,7 +158,7 @@ PO line item. Carries product reference, order-qty and base-qty pair (single qty
 | `cancelled_qty` | `Decimal @db.Decimal(20, 5)` | Yes | Qty cancelled / written off from this line; default `0`. |
 | `history` | `Json @db.JsonB` | Yes | Per-line stage timeline (`seq`, `name`, `status`, `to_stage`, `message`, `by_id`, `by_name`, `at_date`); default `[]`. |
 | `stages_status` | `Json @db.JsonB` | Yes | Per-line stage cursor — array of `{ seq, name, status }`; default `{}`. |
-| `current_stage_status` | `String @db.VarChar` | Yes | Working copy of the current stage status. |
+| `current_stage_status` | `String @db.VarChar` | Yes | Working copy of the current stage status. The Prisma schema declares `enum_stage_action { submit, approve, reject, review, pending }` (May 2026 enum-cleanup pass) intended to type this column; the column itself remains `String?` until a planned migration validates historical values and retypes it. Treat values outside `enum_stage_action` as legacy data that the migration will normalise. |
 | `note` | `String @db.VarChar` | Yes | Free-text note attached to the line. |
 | `info` | `Json @db.JsonB` | Yes | Extension bag; default `{}`. |
 | `dimension` | `Json @db.JsonB` | Yes | Per-line cost dimensions; default `[]`. |

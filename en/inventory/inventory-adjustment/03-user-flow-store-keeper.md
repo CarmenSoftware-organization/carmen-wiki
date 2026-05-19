@@ -2,7 +2,7 @@
 title: Inventory Adjustment — User Flow — Store Keeper
 description: Store Keeper's flow within the inventory-adjustment module — discrepancy identification, evidence capture, draft submission.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: inventory-adjustment, user-flow, store-keeper, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -78,7 +78,7 @@ The Store Keeper's inventory-adjustment ownership begins when a discrepancy is i
 
 1. **Identify the discrepancy.** During a routine bin-stock check or shelf restocking, the Store Keeper sees more physical stock than the system shows. They recount to confirm, check the lot label (if lot-tracked), photograph the lot tag / physical evidence, and note the supplier / batch reference.
 2. **Open the Stock-In screen.** Inventory Adjustment module → New Stock-In. The screen creates `tb_stock_in` at `doc_status = draft` with the Store Keeper as `created_by_id`, current date / time as `si_date`, and the assigned location pre-filled from the user's primary `tb_user_location` mapping (overridable to any other in-scope location). Auto-numbering generates `si_no` per `ADJ_VAL_001`.
-3. **Pick the adjustment reason.** Required: `adjustment_type_id` references `tb_adjustment_type` filtered by `type = STOCK_IN` per `ADJ_VAL_002`. Typical reasons: `FOUND_STOCK`, `COUNT_OVERAGE`, `RECALL_REPLACEMENT`, `VENDOR_FREE_REPLACEMENT`, `DATA_FIX`. The reason code drives downstream GL classification (`info.glAccount`) and may flag `requiresDocument` / `requiresQualityCheck`.
+3. **Pick the adjustment reason.** Required: `adjustment_type_id` references `tb_adjustment_type` filtered by `type = stock_in` per `ADJ_VAL_002`. Typical reasons: `FOUND_STOCK`, `COUNT_OVERAGE`, `RECALL_REPLACEMENT`, `VENDOR_FREE_REPLACEMENT`, `DATA_FIX`. The reason code drives downstream GL classification (`info.glAccount`) and may flag `requiresDocument` / `requiresQualityCheck`.
 4. **Enter the description.** Required header-level free-text per `ADJ_VAL_004` — explains the why and when (e.g. "Bin check 2026-05-15 14:00; 5 units of P-1 found on lower shelf, not previously recorded; batch label LOT-1 matches existing system lot"). Soft-fail at save; hard-fail at submit.
 5. **Add lines.** Per product: `product_id` (auto-completes from product catalogue), `qty` (positive integer or decimal up to 5dp), the lot's `lot_no` (existing lot if the stock matches a known label; new lot if true found-stock with no prior record). For existing lots, `cost_per_unit` auto-fills from the lot's most recent cost-layer and is read-only. For new lots, `cost_per_unit` is editable but the document then routes for Controller approval regardless of threshold per `ADJ_AUTH_003`. For perishable products on new lots, `expiryDate` is required per `ADJ_VAL_009`.
 6. **Attach supporting evidence.** Drag-and-drop photos / scanned documents into the comment / attachment area. When the reason's `info.requiresDocument = true` (typical for `RECALL_REPLACEMENT`, large `FOUND_STOCK`), at least one attachment is required per `ADJ_VAL_010` — submit-side hard-fail otherwise. Attachments persist on `tb_stock_in_comment.attachments` JSON array as `{originalName, fileToken, contentType}`.
@@ -90,7 +90,7 @@ The Store Keeper's inventory-adjustment ownership begins when a discrepancy is i
 
 The **stock-out** flow follows the same shape with key differences:
 
-- Reason picker filtered to `type = STOCK_OUT` (`BREAKAGE`, `EXPIRY_WRITE_OFF`, `THEFT_WRITE_OFF`, `COUNT_SHORTAGE`, `RECALL_WRITE_OFF`).
+- Reason picker filtered to `type = stock_out` (`BREAKAGE`, `EXPIRY_WRITE_OFF`, `THEFT_WRITE_OFF`, `COUNT_SHORTAGE`, `RECALL_WRITE_OFF`).
 - `cost_per_unit` on the line is **not user-entered** — the engine picks at post time per `ADJ_CALC_006` (FIFO) or `ADJ_CALC_007` (WA). The screen renders a preview ("FIFO would consume from LOT-1 at ฿10.00 first, then LOT-2 at ฿12.00") so the Store Keeper can flag anomalous picks.
 - Lot picker defaults to FIFO order but can be overridden for `EXPIRY_WRITE_OFF` (write off the expired lot, not the oldest); the override is recorded in `info.lotOverride`.
 - No-negative-balance check fires at submit per `ADJ_VAL_012` / `INV_VAL_005`. If `qty` exceeds available on-hand at the picked lot, submit rejects with `"Outbound movement would drive on-hand below zero."` — the Store Keeper reduces `qty`, picks a different lot, or escalates to Controller.
@@ -127,7 +127,7 @@ The Store Keeper's involvement on a given adjustment ends at one of six boundari
 - Sibling: [03-user-flow-inventory-controller.md](./03-user-flow-inventory-controller.md) — downstream persona that picks up above-threshold, new-lot, and requires-quality-check documents for approval; commits count-variance rollups.
 - Sibling: [03-user-flow-finance.md](./03-user-flow-finance.md) — further downstream persona for above-Controller-threshold approvals (large recall write-offs, large damage write-offs).
 - Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — System Administrator who configures the `tb_adjustment_type` list the Store Keeper picks from, the auto-approve threshold the gate compares against, and the `tb_user_location` mapping that scopes their pickable locations.
-- Sibling: [01-data-model.md](./01-data-model.md) — canonical `tb_stock_in` / `tb_stock_out` shape (referenced in steps 2–7 of the primary flow), `tb_inventory_transaction` shape (step 9), `enum_adjustment_type` values (`STOCK_IN` / `STOCK_OUT`), `enum_doc_status` lifecycle.
+- Sibling: [01-data-model.md](./01-data-model.md) — canonical `tb_stock_in` / `tb_stock_out` shape (referenced in steps 2–7 of the primary flow), `tb_inventory_transaction` shape (step 9), `enum_adjustment_type` values (`stock_in` / `stock_out`), `enum_doc_status` lifecycle.
 - Sibling: [02-business-rules.md](./02-business-rules.md) — validation rules `ADJ_VAL_001` (doc number unique), `ADJ_VAL_002` (reason matches direction), `ADJ_VAL_003` (location active + non-direct), `ADJ_VAL_004` (description required), `ADJ_VAL_005` (department in dimension), `ADJ_VAL_006` (product active), `ADJ_VAL_007` (qty > 0), `ADJ_VAL_008` (non-negative cost), `ADJ_VAL_009` (lot identity), `ADJ_VAL_010` (attachment when required), `ADJ_VAL_011` (period gate), `ADJ_VAL_012` (no-negative-balance on stock-out); auth rules `ADJ_AUTH_001`–`ADJ_AUTH_003` (Store Keeper create / auto-approve / new-lot gates), `ADJ_AUTH_010` (SoD); posting rules `ADJ_POST_001` (submit), `ADJ_POST_002` (post fan-out).
 - Related: [inventory](/en/inventory/inventory) — every adjustment posts to inventory; the inventory module's `INV_VAL_005` (no negative balance), `INV_VAL_008` (period gate), `INV_VAL_009` (direct-cost gate), `INV_CALC_005` / `INV_CALC_006` (cost picks), `INV_POST_001` / `INV_POST_002` (posting effects) are the canonical ledger-side rules.
 - Related: [physical-count](/en/inventory/physical-count) — count execution at the location level; variance rollup auto-creates adjustment documents via `ADJ_POST_006` / `ADJ_XMOD_002`. The Store Keeper executes the count, but does not create the rollup documents directly.

@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow — Audit & Config
 description: Auditor (read-only) and System Administrator (workflow / threshold / delegation configuration) flows for purchase-request.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: purchase-request, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -26,13 +26,13 @@ graph LR
         draft(("draft")) --> inprog(("in_progress"))
         inprog --> approved(("approved"))
         approved --> completed(("completed"))
-        inprog --> cancelled(("cancelled"))
+        inprog --> voided(("voided"))
     end
     auditor["Auditor<br/>(read-only)"]:::audit -.->|"Reads"| draft
     auditor -.->|"Reads"| inprog
     auditor -.->|"Reads"| approved
     auditor -.->|"Reads"| completed
-    auditor -.->|"Reads"| cancelled
+    auditor -.->|"Reads"| voided
     sysadmin["System Administrator<br/>(config + elevated void)"]:::cfg -.->|"Configures workflow / threshold"| transactional
     sysadmin -.->|"Void (PR_AUTH_007)"| voided(("voided"))
     classDef audit fill:#eab308,color:#000,stroke:#eab308;
@@ -111,7 +111,7 @@ The Audit / Config persona axis exits in one of the following ways, depending on
 - **Sysadmin — void on an in-flight PR (`PR_AUTH_007`).** Distinct from configuration save: when the Sysadmin uses their elevated `void` right to retract a single PR (typically following an Auditor case file), `pr_status` flips from `in_progress` (or `approved`) to `voided` (terminal); the soft (or hard) commitment is released; a mandatory reason is captured in `tb_purchase_request_comment` (`PR_POST_006`); and `workflow_history` records the void. Handoff is to the **Auditor** for post-hoc review and to the **Requestor** who sees the voided status on their **My PRs** dashboard. No further user action on the PR is possible.
 - **Sysadmin — configuration rolled back.** If verification in step 6 of the primary flow finds a regression, the Sysadmin reverts to the prior configuration version. The rollback is itself a configuration save with its own `effective_from`; PRs created between the original change and the rollback are not retroactively re-evaluated (snapshot semantics), but new PRs created after the rollback use the reverted configuration. The configuration audit log captures both the forward change and the rollback, preserving a clean trail.
 
-Document state across all Audit / Config exits is governed by `enum_purchase_request_doc_status = { draft, in_progress, voided, approved, completed, cancelled }`. The Auditor flow never moves a PR across this enum; the Sysadmin's configuration flow also never moves a PR across the enum (only future PRs are affected). The only Sysadmin action that does change a PR's state is the elevated void under `PR_AUTH_007`, and that is treated as an exceptional, audit-triggered operation rather than a routine configuration step.
+Document state across all Audit / Config exits is governed by `enum_purchase_request_doc_status = { draft, in_progress, voided, approved, completed }`. The Auditor flow never moves a PR across this enum; the Sysadmin's configuration flow also never moves a PR across the enum (only future PRs are affected). The only Sysadmin action that does change a PR's state is the elevated void under `PR_AUTH_007`, and that is treated as an exceptional, audit-triggered operation rather than a routine configuration step.
 
 ## 5. References
 

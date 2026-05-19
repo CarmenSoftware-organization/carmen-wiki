@@ -2,7 +2,7 @@
 title: Physical Count — Test Scenarios — Audit & Config
 description: Approver / Finance Reviewer, Auditor, and Sysadmin test cases for the physical-count module.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: physical-count, test-scenarios, audit, config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -30,7 +30,7 @@ The **Audit / Config** persona group collapses three roles whose touch on the ph
 | AC-F-05 | Auditor inspects full chain | Auditor | Period `completed`; rollup adjustments `completed`. | Read-only trace: count sheet → recount records → approvals → posted adjustments → inventory transactions → journal entries. No gaps. |
 | AC-F-06 | Sysadmin configures tolerance threshold | Sysadmin | New tenant policy. | Tenant default updated; future counts use new threshold per `PHC_VAL_007`. |
 | AC-F-07 | Sysadmin configures default costing-method | Sysadmin | Tenant policy change (e.g. switch from `last` to `average`). | Tenant default updated; future rollups value variance per `PHC_CALC_003` with new method. |
-| AC-F-08 | Sysadmin maps reason codes for rollup | Sysadmin | New tenant onboarding. | `tb_adjustment_type` rows for `COUNT_OVERAGE` (`type = STOCK_IN`) and `COUNT_SHORTAGE` (`type = STOCK_OUT`) created with `info.glAccount`. Per [inventory-adjustment/01-data-model](/en/inventory/inventory-adjustment/01-data-model) § 2.1. |
+| AC-F-08 | Sysadmin maps reason codes for rollup | Sysadmin | New tenant onboarding. | `tb_adjustment_type` rows for `COUNT_OVERAGE` (`type = stock_in`) and `COUNT_SHORTAGE` (`type = stock_out`) created with `info.glAccount`. Per [inventory-adjustment/01-data-model](/en/inventory/inventory-adjustment/01-data-model) § 2.1. |
 
 ## 3. RBAC / Permission
 
@@ -46,7 +46,7 @@ The **Audit / Config** persona group collapses three roles whose touch on the ph
 | # | Rule | Scenario | Expected error |
 | - | ---- | -------- | -------------- |
 | AC-V-01 | `INV_VAL_008` (inherited) | Rollup adjustment submit into `closed` period. | `"Cannot post into period <YYMM>: period is closed."` Finance Manager must re-open. |
-| AC-V-02 | `ADJ_VAL_002` (downstream) | Sysadmin mis-maps `COUNT_OVERAGE` to `type = STOCK_OUT`. | Reason-code save rejected at adjustment-type form per direction validation in [inventory-adjustment/02-business-rules](/en/inventory/inventory-adjustment/02-business-rules) `ADJ_VAL_002`. |
+| AC-V-02 | `ADJ_VAL_002` (downstream) | Sysadmin mis-maps `COUNT_OVERAGE` to `type = stock_out`. | Reason-code save rejected at adjustment-type form per direction validation in [inventory-adjustment/02-business-rules](/en/inventory/inventory-adjustment/02-business-rules) `ADJ_VAL_002`. |
 | AC-V-03 | `PHC_AUTH_003` | Auditor attempts to approve rollup adjustment. | Action rejected; Auditor is read-only on the rollup approval path. |
 
 ## 5. Edge Cases

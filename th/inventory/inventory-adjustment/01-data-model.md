@@ -2,7 +2,7 @@
 title: การปรับสต๊อก (Inventory Adjustment) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูล inventory-adjustment
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: inventory-adjustment, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -14,7 +14,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 > **ตาราง:** `tb_adjustment_type` (ตัวจำแนก reason) &nbsp;·&nbsp; `tb_stock_in` / `tb_stock_in_detail` (ขาเข้า) &nbsp;·&nbsp; `tb_stock_out` / `tb_stock_out_detail` (ขาออก) &nbsp;·&nbsp; ตาราง `_comment` แยกตามระดับ
 > **กลุ่มผู้ใช้:** Developer / Auditor (เอกสารอ้างอิงสำหรับ dev)
 > **FK สำคัญ:** `stock_in_detail.inventory_transaction_id` / `stock_out_detail.inventory_transaction_id → tb_inventory_transaction` (เติมตอน post); detail `→ tb_product`; header `→ tb_location` / `tb_adjustment_type` ลิงก์ rollup ผลต่างจาก [physical-count](/th/inventory/physical-count) / [spot-check](/th/inventory/spot-check) เป็น JSON เท่านั้น (`info.countId`) ไม่มี FK
-> **รูปแบบ audit:** มาตรฐาน `created_*` / `updated_*` / `deleted_*`; **สองต้นเอกสารคู่ขนาน ไม่มี parent `tb_inventory_adjustment` ร่วม** — ทิศทางถูก gate ด้วย `tb_adjustment_type.type ∈ {STOCK_IN, STOCK_OUT}`
+> **รูปแบบ audit:** มาตรฐาน `created_*` / `updated_*` / `deleted_*`; **สองต้นเอกสารคู่ขนาน ไม่มี parent `tb_inventory_adjustment` ร่วม** — ทิศทางถูก gate ด้วย `tb_adjustment_type.type ∈ {stock_in, stock_out}`
 
 > **แหล่งความจริง:** Prisma schema ของ backend อ่านไฟล์เหล่านี้ก่อนเสมอเมื่อเขียนหรืออัปเดตหน้านี้:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
@@ -24,7 +24,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 
 ## 1. ภาพรวม
 
-โมดูล Inventory Adjustment คือ **เลเยอร์เอกสาร** สำหรับการแก้ไข stock-in / stock-out ด้วยมือ — write-offs, write-ons, ของพบใหม่, การปรับจากการหมดอายุ / เสียหาย / แตกหัก, การ rollup ผลต่างจากการนับ และการเปลี่ยนปริมาณ / มูลค่าใด ๆ ที่ไม่ไหลผ่านเอกสาร procurement (GRN), บริโภค (Store Requisition) หรือเอกสารนับด้วยตัวเอง ต่างจากโมดูลเอกสารอื่น ๆ โมดูล adjustment **ไม่ได้เป็นเจ้าของโมเดล `tb_inventory_adjustment` เดี่ยว** ใน Prisma schema canonical: รูปแบบที่ persist คือ **สองต้นเอกสารคู่ขนาน** — `tb_stock_in` (ขาเข้า / ทิศทาง write-on) และ `tb_stock_out` (ขาออก / ทิศทาง write-off) — เชื่อมด้วยตารางจำแนกร่วม `tb_adjustment_type` ที่แยกเหตุผลของ adjustment (เช่น `FOUND_STOCK`, `COUNT_OVERAGE`, `BREAKAGE`, `EXPIRY_WRITE_OFF`) และมี key เป็น `enum_adjustment_type` (`STOCK_IN` / `STOCK_OUT`)
+โมดูล Inventory Adjustment คือ **เลเยอร์เอกสาร** สำหรับการแก้ไข stock-in / stock-out ด้วยมือ — write-offs, write-ons, ของพบใหม่, การปรับจากการหมดอายุ / เสียหาย / แตกหัก, การ rollup ผลต่างจากการนับ และการเปลี่ยนปริมาณ / มูลค่าใด ๆ ที่ไม่ไหลผ่านเอกสาร procurement (GRN), บริโภค (Store Requisition) หรือเอกสารนับด้วยตัวเอง ต่างจากโมดูลเอกสารอื่น ๆ โมดูล adjustment **ไม่ได้เป็นเจ้าของโมเดล `tb_inventory_adjustment` เดี่ยว** ใน Prisma schema canonical: รูปแบบที่ persist คือ **สองต้นเอกสารคู่ขนาน** — `tb_stock_in` (ขาเข้า / ทิศทาง write-on) และ `tb_stock_out` (ขาออก / ทิศทาง write-off) — เชื่อมด้วยตารางจำแนกร่วม `tb_adjustment_type` ที่แยกเหตุผลของ adjustment (เช่น `FOUND_STOCK`, `COUNT_OVERAGE`, `BREAKAGE`, `EXPIRY_WRITE_OFF`) และมี key เป็น `enum_adjustment_type` (`stock_in` / `stock_out`)
 
 ทั้ง `tb_stock_in` และ `tb_stock_out` ดำเนินตามโครงสร้างหลักของเอกสาร — header (`si_no` / `so_no`, `si_date` / `so_date`, location, adjustment-type, `doc_status`, workflow, comments, attachments) บวกแถวรายละเอียดลูก (ต่อ product พร้อม `qty`, `cost_per_unit`, `total_cost` และ back-reference `inventory_transaction_id` ไปยัง ledger ของ [inventory](/th/inventory/inventory)) Enum `doc_status` ของ header (`draft` → `in_progress` → `completed` → `cancelled` / `voided`) ถือสถานะ workflow; การ post จุดชนวนที่การเปลี่ยนผ่าน `in_progress → completed` และเขียนแถว `tb_inventory_transaction` ที่มี `inventory_doc_type = stock_in` / `stock_out` พร้อม `inventory_transaction_id` ของ detail ถูกประทับลงไป ข้อมูล lot อยู่ที่ฝั่ง inventory transaction (`current_lot_no` / `from_lot_no` บน `tb_inventory_transaction_detail`, `lot_no` / `lot_index` บน `tb_inventory_transaction_cost_layer`) **ไม่ใช่** บนแถว detail ของ stock-in / stock-out — รูปแบบที่แตกต่างนี้แชร์กับ [good-receive-note](/th/inventory/good-receive-note) (`GRN_*` data-model § 5 ข้อ 3)
 
@@ -34,14 +34,14 @@ dateCreated: 2026-05-15T13:00:00.000Z
 
 ### 2.1 tb_adjustment_type
 
-**ตัวจำแนก reason-code** สำหรับทั้งเอกสาร `tb_stock_in` และ `tb_stock_out` แถว reason-code มี `code` (เช่น `BREAKAGE`, `FOUND_STOCK`), `name` ที่อ่านได้, ทิศทางที่ถูกจำกัดผ่าน `enum_adjustment_type` (`STOCK_IN` หรือ `STOCK_OUT` — สังเกตว่า enum ของ Prisma มีเพียงสองค่าทิศทาง; "BOTH" เป็นความสะดวกของ application layer ไม่ใช่ค่าใน schema) และ `description` ที่เป็นข้อความอิสระ Reason code เป็น master data ที่ดูแลโดย System Administrator ภายใต้ [inventory](/th/inventory/inventory)-`INV_AUTH_008` และใช้ตอนสร้างเอกสาร adjustment เพื่อขับเคลื่อน (i) การกรองรายการ reason ตามทิศทาง, (ii) การ map บัญชี GL สำหรับ journal entry ที่จะเกิดขึ้น (resolve ฝั่ง application ผ่าน JSON `info` / `dimension`, ไม่มีคอลัมน์ Prisma สำหรับ `gl_account`) และ (iii) การจัดประเภทเพื่อการรายงาน
+**ตัวจำแนก reason-code** สำหรับทั้งเอกสาร `tb_stock_in` และ `tb_stock_out` แถว reason-code มี `code` (เช่น `BREAKAGE`, `FOUND_STOCK`), `name` ที่อ่านได้, ทิศทางที่ถูกจำกัดผ่าน `enum_adjustment_type` (`stock_in` หรือ `stock_out` — สังเกตว่า enum ของ Prisma มีเพียงสองค่าทิศทาง; "BOTH" เป็นความสะดวกของ application layer ไม่ใช่ค่าใน schema) และ `description` ที่เป็นข้อความอิสระ Reason code เป็น master data ที่ดูแลโดย System Administrator ภายใต้ [inventory](/th/inventory/inventory)-`INV_AUTH_008` และใช้ตอนสร้างเอกสาร adjustment เพื่อขับเคลื่อน (i) การกรองรายการ reason ตามทิศทาง, (ii) การ map บัญชี GL สำหรับ journal entry ที่จะเกิดขึ้น (resolve ฝั่ง application ผ่าน JSON `info` / `dimension`, ไม่มีคอลัมน์ Prisma สำหรับ `gl_account`) และ (iii) การจัดประเภทเพื่อการรายงาน
 
 | ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | -------- |
 | `id` | `String @db.Uuid` | No | Primary key; `gen_random_uuid()` |
 | `code` | `String @db.VarChar` | No | Reason-code mnemonic เช่น `BREAKAGE`, `EXPIRY_WRITE_OFF`, `FOUND_STOCK`, `COUNT_OVERAGE`, `COUNT_SHORTAGE`, `RECALL_REPLACEMENT`, `VENDOR_FREE_REPLACEMENT`, `DATA_FIX` Unique ภายใน `deleted_at` |
 | `name` | `String @db.VarChar` | No | ชื่อแสดงสำหรับ UI picker |
-| `type` | `enum_adjustment_type` | No | ตัวจำแนกทิศทาง: `STOCK_IN` หรือ `STOCK_OUT` กรองรายการ reason ที่แสดงบนเอกสารที่สอดคล้อง |
+| `type` | `enum_adjustment_type` | No | ตัวจำแนกทิศทาง: `stock_in` หรือ `stock_out` สำหรับ adjustment ที่ผู้ใช้สร้าง (กรองรายการ reason ที่แสดงบนเอกสารที่สอดคล้อง); `eop_in` หรือ `eop_out` เป็น system-reserved สำหรับ engine period-end rollforward ดู Section 4 สำหรับ enum เต็ม |
 | `description` | `String @db.VarChar` | Yes | คำอธิบายแบบข้อความอิสระ |
 | `is_active` | `Boolean` | Yes | Default `true` Reason ที่ inactive ถูกซ่อนจาก picker ของเอกสารใหม่ แต่ยังอ่านได้บนเอกสารประวัติ |
 | `note` | `String @db.VarChar` | Yes | บันทึกแบบข้อความอิสระ |
@@ -59,7 +59,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 
 ### 2.2 tb_stock_in
 
-**Header เอกสาร adjustment ขาเข้า** หนึ่งแถวต่อหนึ่งเหตุการณ์ stock-in ถือเลขที่เอกสาร (`si_no`), วันที่เอกสาร (`si_date`), location (ปลายทางของขาเข้า), `adjustment_type` ที่เลือก (แถวใน `tb_adjustment_type` ที่ `type = STOCK_IN`), วงจรชีวิต `doc_status`, สถานะ workflow (current / previous / next stage, history, executor list) และคอลัมน์ audit-trail มาตรฐาน Comments และ attachments แขวนอยู่กับ `tb_stock_in_comment`; แถว detail ต่อ product แขวนอยู่กับ `tb_stock_in_detail`
+**Header เอกสาร adjustment ขาเข้า** หนึ่งแถวต่อหนึ่งเหตุการณ์ stock-in ถือเลขที่เอกสาร (`si_no`), วันที่เอกสาร (`si_date`), location (ปลายทางของขาเข้า), `adjustment_type` ที่เลือก (แถวใน `tb_adjustment_type` ที่ `type = stock_in`), วงจรชีวิต `doc_status`, สถานะ workflow (current / previous / next stage, history, executor list) และคอลัมน์ audit-trail มาตรฐาน Comments และ attachments แขวนอยู่กับ `tb_stock_in_comment`; แถว detail ต่อ product แขวนอยู่กับ `tb_stock_in_detail`
 
 | ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | -------- |
@@ -67,7 +67,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 | `si_date` | `DateTime @db.Timestamptz(6)` | Yes | วันที่เอกสาร ขับเคลื่อนการตรวจสอบ period containment ตอน post ตาม [inventory](/th/inventory/inventory) `INV_VAL_008` |
 | `si_no` | `String @db.VarChar` | Yes | เลขที่ stock-in ที่อ่านได้; unique ภายใน `deleted_at` |
 | `description` | `String @db.VarChar` | Yes | คำอธิบายข้อความอิสระระดับ header ว่าทำไม adjustment กำลังเกิดขึ้น |
-| `adjustment_type_id` | `String @db.Uuid` | Yes | FK ไป `tb_adjustment_type.id` (`onDelete: NoAction`) จำกัดที่ application layer ให้แถว `type = STOCK_IN` |
+| `adjustment_type_id` | `String @db.Uuid` | Yes | FK ไป `tb_adjustment_type.id` (`onDelete: NoAction`) จำกัดที่ application layer ให้แถว `type = stock_in` |
 | `adjustment_type_code` | `String @db.VarChar` | Yes | Snapshot ของ reason code ที่เลือก |
 | `doc_status` | `enum_doc_status` | No | `draft` (default), `in_progress`, `completed`, `cancelled`, `voided` การ post จุดชนวนที่ `in_progress → completed` |
 | `location_id` | `String @db.Uuid` | Yes | FK ไป `tb_location.id` — location ปลายทางสำหรับขาเข้า |
@@ -176,7 +176,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 
 ### 2.6 tb_stock_out
 
-**Header เอกสาร adjustment ขาออก** เป็นภาพสะท้อนของ `tb_stock_in` ด้วย `so_no` / `so_date` และ `adjustment_type_id` ที่จำกัดที่ application layer ให้แถว `type = STOCK_OUT` ฟิลด์ workflow / status / audit เหมือนกัน; ลูกตาราง comment / detail / detail-comment ก็เหมือนกัน
+**Header เอกสาร adjustment ขาออก** เป็นภาพสะท้อนของ `tb_stock_in` ด้วย `so_no` / `so_date` และ `adjustment_type_id` ที่จำกัดที่ application layer ให้แถว `type = stock_out` ฟิลด์ workflow / status / audit เหมือนกัน; ลูกตาราง comment / detail / detail-comment ก็เหมือนกัน
 
 | ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | -------- |
@@ -184,7 +184,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 | `so_date` | `DateTime @db.Timestamptz(6)` | Yes | วันที่เอกสาร |
 | `so_no` | `String @db.VarChar` | Yes | เลขที่ stock-out ที่อ่านได้; unique ภายใน `deleted_at` |
 | `description` | `String @db.VarChar` | Yes | คำอธิบายระดับ header |
-| `adjustment_type_id` | `String @db.Uuid` | Yes | FK ไป `tb_adjustment_type.id` (`onDelete: NoAction`) จำกัดที่ application layer ให้แถว `type = STOCK_OUT` |
+| `adjustment_type_id` | `String @db.Uuid` | Yes | FK ไป `tb_adjustment_type.id` (`onDelete: NoAction`) จำกัดที่ application layer ให้แถว `type = stock_out` |
 | `adjustment_type_code` | `String @db.VarChar` | Yes | Snapshot |
 | `doc_status` | `enum_doc_status` | No | `draft` default; วงจรชีวิตเหมือนกับ stock-in |
 | `location_id` | `String @db.Uuid` | Yes | FK ไป `tb_location.id` — location ต้นทางสำหรับขาออก |
@@ -256,8 +256,8 @@ dateCreated: 2026-05-15T13:00:00.000Z
 ## 3. ความสัมพันธ์
 
 ```
-tb_adjustment_type  (master ของ reason-code — ทิศทาง STOCK_IN หรือ STOCK_OUT)
-    │  enum_adjustment_type ∈ {STOCK_IN, STOCK_OUT}
+tb_adjustment_type  (master ของ reason-code — ทิศทาง stock_in หรือ stock_out)
+    │  enum_adjustment_type ∈ {stock_in, stock_out}
     │
     ├─1──*──► tb_stock_in   (เอกสาร adjustment ขาเข้า, วงจรชีวิต doc_status)
     │           │
@@ -303,15 +303,17 @@ tb_inventory_transaction  (header: inventory_doc_type ∈ {stock_in, stock_out},
 - **สองต้นเอกสารคู่ขนาน หนึ่งตัวจำแนก** `tb_stock_in` และ `tb_stock_out` เป็นโมเดล Prisma อิสระที่มีรูปทรงเหมือนกัน; คอลัมน์ `type` ของแถว `tb_adjustment_type` gate ว่าต้นเอกสารใดที่ reason-code นั้นใช้ได้ ไม่มี parent `tb_inventory_adjustment` ร่วม — การ join กิจกรรมขาเข้าและขาออกสำหรับการรายงานคือ `UNION` ที่ application / read-model layer (โดยทั่วไปจากแถว `tb_inventory_transaction` ที่แชร์)
 - **back-reference ของ inventory transaction เป็น anchor ของการ integration** แต่ละแถว detail ถือ `inventory_transaction_id` เป็น FK **nullable** ที่เติมเฉพาะตอน post (สถานะ `completed`) ขณะ `draft` / `in_progress` คอลัมน์เป็น null และไม่มีผลกระทบ inventory นี่สะท้อนรูปแบบ `tb_good_received_note_detail_item.inventory_transaction_id` ใน [good-receive-note](/th/inventory/good-receive-note) และรูปแบบเดียวกันใน [store-requisition](/th/inventory/store-requisition) detail
 - **ข้อมูล lot ไม่อยู่บน adjustment detail** JSON `info` ของแถว detail มักจะถือ `{lotNo, expiryDate}` สำหรับ draft / view ที่ผู้ใช้เห็น แต่ identity lot canonical persist ที่ฝั่ง inventory (`tb_inventory_transaction_detail.current_lot_no` / `from_lot_no` และ `tb_inventory_transaction_cost_layer.lot_no` / `lot_index`) นี่คือรูปแบบที่แตกต่างเดียวกันที่กล่าวถึงใน data-model ของ [good-receive-note](/th/inventory/good-receive-note) § 5 ข้อ 3 และ data-model ของ [inventory](/th/inventory/inventory) § 5 ข้อ 11
-- **Adjustment type ถูกจำกัดตามทิศทาง** ในขณะที่โมเดล Prisma `tb_stock_in.adjustment_type_id` และ `tb_stock_out.adjustment_type_id` เป็น FK ที่ไม่ได้พิมพ์ไปยัง `tb_adjustment_type` ทั้งคู่ application layer กรอง picker เพื่อให้เอกสาร `tb_stock_in` สามารถอ้างอิงแถว `adjustment_type` ที่ `type = STOCK_IN` เท่านั้น (และในทางกลับกัน) นี่คือที่มาของ interface `AdjustmentReason.type: 'IN' | 'OUT' | 'BOTH'` ของ carmen/docs — ดู Section 5 ข้อ 1
+- **Adjustment type ถูกจำกัดตามทิศทาง** ในขณะที่โมเดล Prisma `tb_stock_in.adjustment_type_id` และ `tb_stock_out.adjustment_type_id` เป็น FK ที่ไม่ได้พิมพ์ไปยัง `tb_adjustment_type` ทั้งคู่ application layer กรอง picker เพื่อให้เอกสาร `tb_stock_in` สามารถอ้างอิงแถว `adjustment_type` ที่ `type = stock_in` เท่านั้น (และในทางกลับกัน) นี่คือที่มาของ interface `AdjustmentReason.type: 'IN' | 'OUT' | 'BOTH'` ของ carmen/docs — ดู Section 5 ข้อ 1
 - **`adjustment_type_code` คือ snapshot ไม่ใช่ live join** เอกสารทั้งสอง persist รหัส snapshot บน header เพื่อ performance และ audit; การลบ / เปลี่ยนชื่อ reason code หลัง post ไม่เปลี่ยนเอกสารประวัติย้อนหลัง
 - **การประกาศ `@relation` FK ทั้งหมดที่ระบุชัดเจนใช้ `onDelete: NoAction, onUpdate: NoAction`** — ความถูกต้องของการอ้างอิงรักษาโดย soft-delete ระดับ application (`deleted_at`) และโดย guard ของ doc-status / posting ไม่ใช่ cascade
 
 ## 4. Enums
 
-- **`enum_adjustment_type`**: ตัวจำแนกทิศทางบน `tb_adjustment_type.type` สองค่า ไม่มี default ประกาศ (ทุก reason code ต้องระบุทิศทาง):
-  - `STOCK_IN` — เหตุผลขาเข้า / write-on กรองเข้า reason-picker ของ `tb_stock_in` รหัสทั่วไป: `FOUND_STOCK`, `COUNT_OVERAGE`, `RECALL_REPLACEMENT`, `VENDOR_FREE_REPLACEMENT`, `DATA_FIX`
-  - `STOCK_OUT` — เหตุผลขาออก / write-off กรองเข้า reason-picker ของ `tb_stock_out` รหัสทั่วไป: `BREAKAGE`, `EXPIRY_WRITE_OFF`, `THEFT_WRITE_OFF`, `COUNT_SHORTAGE`, `RECALL_WRITE_OFF`
+- **`enum_adjustment_type`**: ตัวจำแนกทิศทางบน `tb_adjustment_type.type` สี่ค่า ไม่มี default ประกาศ (ทุก reason code ต้องระบุทิศทาง) สองค่าที่ผู้ใช้เห็น (`stock_in` / `stock_out`) gate picker ของเอกสาร manual adjustment; อีกสองค่าสำหรับ end-of-period (`eop_in` / `eop_out`) เป็น **system-reserved** สำหรับ engine rollforward ของ period-end และไม่สามารถเลือกได้บนเอกสาร `tb_stock_in` / `tb_stock_out` ที่ผู้ใช้สร้าง:
+  - `stock_in` — เหตุผลขาเข้า / write-on กรองเข้า reason-picker ของ `tb_stock_in` รหัสทั่วไป: `FOUND_STOCK`, `COUNT_OVERAGE`, `RECALL_REPLACEMENT`, `VENDOR_FREE_REPLACEMENT`, `DATA_FIX`
+  - `stock_out` — เหตุผลขาออก / write-off กรองเข้า reason-picker ของ `tb_stock_out` รหัสทั่วไป: `BREAKAGE`, `EXPIRY_WRITE_OFF`, `THEFT_WRITE_OFF`, `COUNT_SHORTAGE`, `RECALL_WRITE_OFF`
+  - `eop_in` — rollforward ขาเข้าตอน end-of-period ใช้โดย job period-end ตอนเปิด lot เข้างวดถัดไป (จับคู่กับ `enum_transaction_type = open_period` ฝั่ง inventory ตาม [inventory](/th/inventory/inventory) `INV_POST_010`) ไม่แสดงใน reason picker ที่ผู้ใช้เห็น
+  - `eop_out` — rollforward ขาออกตอน end-of-period ใช้โดย job period-end ตอนปิด lot ออกจากงวดปัจจุบัน (จับคู่กับ `enum_transaction_type = close_period` ตาม [inventory](/th/inventory/inventory) `INV_POST_009`) ไม่แสดงใน reason picker ที่ผู้ใช้เห็น
 - **`enum_doc_status`**: วงจรชีวิตเอกสารบน `tb_stock_in.doc_status` / `tb_stock_out.doc_status` Default `draft` ห้าค่า:
   - `draft` — แก้ไขได้ ไม่มีผลกระทบ inventory; เอกสารลบได้
   - `in_progress` — submit เพื่ออนุมัติ; อยู่ใน queue ของ Inventory Controller (เหนือ threshold) หรือ auto-advance (ต่ำกว่า threshold)
@@ -328,7 +330,7 @@ tb_inventory_transaction  (header: inventory_doc_type ∈ {stock_in, stock_out},
 | # | รายการ | carmen/docs บอกว่า | Prisma มี | Action |
 |---|------|------------------|------------|--------|
 | 1 | เอนทิตี `InventoryAdjustment` เดี่ยว | `interface InventoryAdjustment { id, date, type: 'IN' | 'OUT', status: 'Draft' | 'Posted' | 'Void', location, reason, items: StockMovementItem[], totals: {inQty, outQty, totalCost}, ... }` — โมเดลตารางเดี่ยวพร้อม discriminator `type` | **สองตารางคู่ขนาน** — `tb_stock_in` (ขาเข้า) และ `tb_stock_out` (ขาออก) — รูปทรงคอลัมน์เดียวกัน แต่ไม่มี parent `tb_inventory_adjustment` ร่วม Discriminator `type` อยู่บน `tb_adjustment_type` (ผ่าน `enum_adjustment_type`) ไม่ใช่บน header เอกสาร | ถือ Prisma เป็น canonical อัปเดต carmen/docs ให้บรรยายโมเดลสองตาราง; interface `InventoryAdjustment` คือ read-model union ของแถว stock-in และ stock-out `totals.inQty / outQty / totalCost` เป็น roll-up ที่ application derive (sum ของ `tb_stock_in_detail.qty × cost_per_unit` และ sum คู่ขนานของ `tb_stock_out_detail`) ไม่ใช่คอลัมน์ header ที่ persist |
-| 2 | `AdjustmentReason.type: 'IN' | 'OUT' | 'BOTH'` | `interface AdjustmentReason { id, code, description, type: 'IN' | 'OUT' | 'BOTH', requiresDocument, requiresQualityCheck, glAccount, isActive, ... }` — สามค่าสำหรับตัวกรองทิศทาง, บวก `requiresDocument`, `requiresQualityCheck`, `glAccount` เป็นฟิลด์ first-class | `tb_adjustment_type.type` คือ enum `enum_adjustment_type` ที่มี **เพียงสองค่า**: `STOCK_IN` และ `STOCK_OUT` `BOTH` ไม่ใช่ค่าใน schema — reason code ที่ใช้ได้ทั้งสองทิศทางต้องนิยามสองครั้ง (หนึ่งแถวต่อทิศทาง) `requiresDocument`, `requiresQualityCheck`, `glAccount` **ไม่ใช่คอลัมน์ Prisma**; ถ้าใช้ อยู่ใน JSON `info` (ชื่อ key ทั่วไป `requiresDocument: boolean`, `requiresQualityCheck: boolean`, `glAccount: string`) | บรรยายความจริง enum สองค่า ทิศทาง `BOTH` ต้องการรูปแบบลงทะเบียนสองแถวใน seed data ย้าย `glAccount` และฟิลด์ flag เข้าสัญญา `info`-JSON ที่บรรยายไว้ (หรือเสนอเปลี่ยน schema ให้โปรโมตเป็นคอลัมน์) |
+| 2 | `AdjustmentReason.type: 'IN' | 'OUT' | 'BOTH'` | `interface AdjustmentReason { id, code, description, type: 'IN' | 'OUT' | 'BOTH', requiresDocument, requiresQualityCheck, glAccount, isActive, ... }` — สามค่าสำหรับตัวกรองทิศทาง, บวก `requiresDocument`, `requiresQualityCheck`, `glAccount` เป็นฟิลด์ first-class | `tb_adjustment_type.type` คือ enum `enum_adjustment_type` ที่มี **สี่ค่า**: `stock_in`, `stock_out`, `eop_in`, `eop_out` `BOTH` ไม่ใช่ค่าใน schema — reason code ที่ใช้ได้ทั้งสองทิศทางต้องนิยามสองครั้ง (หนึ่งแถวต่อทิศทาง) คู่ `eop_in` / `eop_out` สงวนไว้สำหรับ engine rollforward ของ period-end และไม่เปิดให้ picker ที่ผู้ใช้เห็น `requiresDocument`, `requiresQualityCheck`, `glAccount` **ไม่ใช่คอลัมน์ Prisma**; ถ้าใช้ อยู่ใน JSON `info` (ชื่อ key ทั่วไป `requiresDocument: boolean`, `requiresQualityCheck: boolean`, `glAccount: string`) | บรรยายความจริง enum สองค่า ทิศทาง `BOTH` ต้องการรูปแบบลงทะเบียนสองแถวใน seed data ย้าย `glAccount` และฟิลด์ flag เข้าสัญญา `info`-JSON ที่บรรยายไว้ (หรือเสนอเปลี่ยน schema ให้โปรโมตเป็นคอลัมน์) |
 | 3 | `AdjustmentItem` พร้อม array `lots: Lot[]` ที่ embed | `interface StockMovementItem { id, productName, sku, location, lots: Lot[], uom, unitCost, totalCost, currentStock, adjustedStock }`; `interface Lot { lotNo, quantity, uom, expiryDate? }` — array lot ที่ embed ต่อ item พร้อม preview `currentStock` / `adjustedStock` | `tb_stock_in_detail` / `tb_stock_out_detail` **ไม่มี array `lots` ที่ embed** ข้อมูล lot persist ที่ฝั่ง inventory-transaction: `current_lot_no` / `from_lot_no` บน `tb_inventory_transaction_detail` (หนึ่งบรรทัดต่อผลกระทบ inventory; หลาย lot ⇒ แถว cost-layer หลายแถวภายใต้หนึ่ง detail) และ `lot_no` / `lot_index` บน `tb_inventory_transaction_cost_layer` view draft / ที่ผู้ใช้เห็นมักจะถือข้อมูล lot ใน JSON `info` บน detail; persistence canonical อยู่ที่ฝั่ง inventory `currentStock` / `adjustedStock` เป็น derived (ไม่ persist) | ถือ array lot เป็นเรื่อง draft / UI; identity lot canonical อยู่ที่ฝั่ง inventory บรรยายรูปทรง JSON `info` สำหรับการป้อน lot ใน draft `currentStock` / `adjustedStock` เป็นค่าของ read-model ที่คำนวณกับ `tb_inventory_transaction_cost_layer` สะท้อนกรอบของ [good-receive-note](/th/inventory/good-receive-note) § 5 ข้อ 3 |
 | 4 | วงจรชีวิตสามสถานะ `Draft → Posted → Void` | `interface InventoryAdjustment.status: 'Draft' | 'Posted' | 'Void'` — สามสถานะไม่ต่อเนื่อง โดยที่ `Draft` แก้ไขได้, `Posted` เป็น immutable ปลายทาง, `Void` กลับรายการ adjustment ที่ post แล้ว | `tb_stock_in.doc_status` / `tb_stock_out.doc_status` คือ **ห้าค่า**: `draft`, `in_progress`, `completed`, `cancelled`, `voided` (`enum_doc_status` ร่วม) `completed` คือเทียบเท่า "posted" (ปลายทาง active, inventory transaction เขียนแล้ว); `voided` คือสถานะ void หลังการ post; `cancelled` คือสถานะเพิ่มเติมสำหรับเอกสารที่ยกเลิกก่อน post `in_progress` คือสถานะ workflow ที่ระบุชัดเจนระหว่าง `draft` และ `completed` ที่ carmen/docs ยุบเข้ากับ `Draft` | อัปเดต carmen/docs ให้บรรยายวงจรชีวิตห้าสถานะ การเปลี่ยนผ่าน `Draft → Posted` ใน carmen/docs ความจริงคือ `draft → in_progress → completed`; การเปลี่ยน `Posted → Void` คือ `completed → voided` พร้อมข้อจำกัดว่าต้อง post inventory transaction ชดเชยก่อนตาม [inventory](/th/inventory/inventory) `INV_POST_012` / `INV_VAL_013` สถานะ `cancelled` ก่อน post เทียบเท่า "ละทิ้ง draft" และไม่มี counterpart ใน carmen/docs |
 | 5 | `journalEntries: JournalEntry[]` ที่ embed บน adjustment | `interface JournalEntry { id, account, accountName, debit, credit, department, reference }` — array journal-entry ที่ embed บน interface `InventoryAdjustment` | ไม่มีโมเดล `tb_journal_entry` ใน Prisma schema canonical สำหรับ tenant Journal entries สร้างตอน post โดย application-layer GL-mapping engine อ่านจาก `info.glAccount` ของ adjustment-type และ cost-centre ของ location ที่ได้รับผลกระทบ และ **emit ไปยัง GL ledger** (Finance subsystem) — ไม่ persist บนแถว adjustment Audit trail ฝั่ง adjustment ของผลกระทบ journal-entry สร้างใหม่จาก `tb_inventory_transaction_cost_layer.total_cost` + `diff_amount` สำหรับ `inventory_doc_type = stock_in / stock_out` ที่ตรงกัน | บรรยาย journal entries เป็น artefact ปลายน้ำ ไม่ใช่ array ที่ embed Read-model ของ Finance join inventory transaction → cost-layer ledger ไปยังตาราง GL journal-entry (นอก schema นี้) Interface `JournalEntry` เป็นเรื่องของโมดูล Finance ไม่ใช่คอลัมน์ของ Inventory Adjustment |
