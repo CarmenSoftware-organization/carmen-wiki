@@ -1,13 +1,13 @@
 """Unit tests for sync_nav."""
 from pathlib import Path
 
-from scripts.sync_nav import parse_home_headings
+from scripts.sync_nav import parse_index_headings
 
 
-def test_parse_home_headings_returns_index_keyed_dict(tmp_path: Path):
+def test_parse_index_headings_returns_index_keyed_dict(tmp_path: Path):
     """Headings are returned in index order as a list of strings."""
-    home = tmp_path / "home.md"
-    home.write_text(
+    index_md = tmp_path / "index.md"
+    index_md.write_text(
         "---\ntitle: Home\n---\n\n"
         "# Title\n\n"
         "## 1. First\n\nbody\n\n"
@@ -15,24 +15,24 @@ def test_parse_home_headings_returns_index_keyed_dict(tmp_path: Path):
         "## 3. Third\n",
         encoding="utf-8",
     )
-    assert parse_home_headings(home) == ["First", "Second", "Third"]
+    assert parse_index_headings(index_md) == ["First", "Second", "Third"]
 
 
-def test_parse_home_headings_strips_leading_number(tmp_path: Path):
+def test_parse_index_headings_strips_leading_number(tmp_path: Path):
     """Numbering prefix `N. ` is stripped from each heading."""
-    home = tmp_path / "home.md"
-    home.write_text("## 1. Procure-to-Pay\n## 2. Inventory\n", encoding="utf-8")
-    assert parse_home_headings(home) == ["Procure-to-Pay", "Inventory"]
+    index_md = tmp_path / "index.md"
+    index_md.write_text("## 1. Procure-to-Pay\n## 2. Inventory\n", encoding="utf-8")
+    assert parse_index_headings(index_md) == ["Procure-to-Pay", "Inventory"]
 
 
-def test_parse_home_headings_ignores_h1_and_h3(tmp_path: Path):
+def test_parse_index_headings_ignores_h1_and_h3(tmp_path: Path):
     """Only ## (h2) headings count."""
-    home = tmp_path / "home.md"
-    home.write_text(
+    index_md = tmp_path / "index.md"
+    index_md.write_text(
         "# Top\n## 1. A\n### 1.1 A-sub\n## 2. B\n",
         encoding="utf-8",
     )
-    assert parse_home_headings(home) == ["A", "B"]
+    assert parse_index_headings(index_md) == ["A", "B"]
 
 
 from scripts.sync_nav import build_header_label_map
@@ -55,7 +55,7 @@ def test_build_header_label_map_mismatch_returns_partial_and_warns(caplog):
     with caplog.at_level("WARNING"):
         out = build_header_label_map(en, th)
     assert out == {"A": "ก", "B": "ข"}
-    assert any("home.md heading count" in r.message for r in caplog.records)
+    assert any("index.md heading count" in r.message for r in caplog.records)
 
 
 from scripts.sync_nav import load_overrides
@@ -175,7 +175,7 @@ def test_resolve_label_link_page_missing_falls_back_to_en(tmp_path: Path):
     assert source == LabelSource.FALLBACK
 
 
-def test_resolve_label_header_uses_home_md(tmp_path: Path):
+def test_resolve_label_header_uses_index_md(tmp_path: Path):
     label, source = resolve_label(
         _item(kind="header", label="Procure-to-Pay", target=""),
         repo_root=tmp_path,
@@ -183,11 +183,11 @@ def test_resolve_label_header_uses_home_md(tmp_path: Path):
         overrides={"headers": {}, "links": {}},
     )
     assert label == "จัดซื้อจัดจ้าง"
-    assert source == LabelSource.HOME_MD
+    assert source == LabelSource.INDEX_MD
 
 
 def test_resolve_label_header_falls_back_to_override(tmp_path: Path):
-    """home.md doesn't have it → overrides.headers wins."""
+    """index.md doesn't have it → overrides.headers wins."""
     label, source = resolve_label(
         _item(kind="header", label="X", target=""),
         repo_root=tmp_path,
@@ -199,7 +199,7 @@ def test_resolve_label_header_falls_back_to_override(tmp_path: Path):
 
 
 def test_resolve_label_header_falls_back_to_en(tmp_path: Path):
-    """No home.md match, no override → EN label."""
+    """No index.md match, no override → EN label."""
     label, source = resolve_label(
         _item(kind="header", label="Unknown", target=""),
         repo_root=tmp_path,
@@ -331,7 +331,7 @@ from scripts.sync_nav import transform_items
 def test_transform_items_counts_sources(tmp_path: Path):
     _write_md(tmp_path / "th" / "a.md", "หน้า A")
     en_items = [
-        _item(kind="header", label="Procure-to-Pay", target=""),       # home.md
+        _item(kind="header", label="Procure-to-Pay", target=""),       # index.md
         _item(target="/en/a", label="A"),                              # frontmatter
         _item(target="/en/missing", label="Missing"),                  # fallback
         _item(targetType="url", target="https://x", label="X"),        # override
@@ -346,7 +346,7 @@ def test_transform_items_counts_sources(tmp_path: Path):
     assert len(new_items) == 5
     assert counts == {
         "frontmatter": 1,
-        "home.md": 1,
+        "index.md": 1,
         "override": 1,
         "fallback": 1,
         "none": 1,
@@ -378,7 +378,7 @@ def test_format_item_line_fallback_has_warning_marker():
 def test_format_summary_one_line():
     counts = {
         "frontmatter": 29,
-        "home.md": 6,
+        "index.md": 6,
         "override": 4,
         "fallback": 3,
         "none": 0,
@@ -386,7 +386,7 @@ def test_format_summary_one_line():
     s = format_summary(42, counts)
     assert "42 items" in s
     assert "29 frontmatter" in s
-    assert "6 home.md" in s
+    assert "6 index.md" in s
     assert "4 override" in s
     assert "3 fallback" in s
 
@@ -398,11 +398,11 @@ def test_run_sync_full_pipeline(tmp_path: Path):
     """Pure orchestration: given EN items + repo root, produce TH items + counts."""
     # repo layout
     (tmp_path / "th").mkdir()
-    (tmp_path / "th" / "home.md").write_text(
+    (tmp_path / "th" / "index.md").write_text(
         "# Carmen Wiki TH\n\n## 1. Procure-to-Pay\n", encoding="utf-8"
     )
     (tmp_path / "en").mkdir()
-    (tmp_path / "en" / "home.md").write_text(
+    (tmp_path / "en" / "index.md").write_text(
         "# Carmen Wiki EN\n\n## 1. Procure-to-Pay\n", encoding="utf-8"
     )
     _write_md(tmp_path / "th" / "pr.md", "คำขอซื้อ")
@@ -419,11 +419,11 @@ def test_run_sync_full_pipeline(tmp_path: Path):
         repo_root=tmp_path,
         overrides_path=overrides_path,
     )
-    assert th_items[0]["label"] == "Procure-to-Pay"  # home.md exact-match self-pair
+    assert th_items[0]["label"] == "Procure-to-Pay"  # index.md exact-match self-pair
     assert th_items[1]["target"] == "/th/pr"
     assert th_items[1]["label"] == "คำขอซื้อ"
     assert counts["frontmatter"] == 1
-    assert counts["home.md"] == 1
+    assert counts["index.md"] == 1
 
 
 # ===== Build-mode tree builder tests =====
@@ -436,7 +436,7 @@ def test_build_tree_one_book_one_group_one_module():
             "inventory": {
                 "label_en": "Carmen Inventory",
                 "label_th": "Carmen Inventory",
-                "home_slug": "home",
+                "home_slug": "index",
                 "groups": [
                     {
                         "label_en": "Costing & Reporting",
@@ -454,10 +454,10 @@ def test_build_tree_one_book_one_group_one_module():
     kinds = [i["kind"] for i in items_en]
     assert kinds == ["header", "link", "header", "link"]
     assert items_en[0]["label"] == "Carmen Inventory"
-    assert items_en[1]["target"] == "/en/inventory/home"
+    assert items_en[1]["target"] == "/en/inventory/index"
     assert items_en[2]["label"] == "Costing & Reporting"
     assert items_en[2]["kind"] == "header"
-    assert items_en[3]["target"] == "/en/inventory/costing/home"
+    assert items_en[3]["target"] == "/en/inventory/costing/index"
     assert items_en[3]["label"] == "Costing"
 
 
@@ -468,7 +468,7 @@ def test_build_tree_two_books_inserts_divider_between():
             "inventory": {
                 "label_en": "Carmen Inventory",
                 "label_th": "Carmen Inventory",
-                "home_slug": "home",
+                "home_slug": "index",
                 "groups": [
                     {
                         "label_en": "Costing & Reporting",
@@ -482,7 +482,7 @@ def test_build_tree_two_books_inserts_divider_between():
             "platform": {
                 "label_en": "Carmen Platform",
                 "label_th": "Carmen Platform",
-                "home_slug": "home",
+                "home_slug": "index",
                 "groups": [
                     {
                         "label_en": "Tenancy",
@@ -511,7 +511,7 @@ def test_build_tree_th_uses_th_labels_and_paths():
             "inventory": {
                 "label_en": "Carmen Inventory",
                 "label_th": "Carmen Inventory TH",
-                "home_slug": "home",
+                "home_slug": "index",
                 "groups": [
                     {
                         "label_en": "Costing & Reporting",
@@ -526,9 +526,9 @@ def test_build_tree_th_uses_th_labels_and_paths():
     }
     items_th = build_tree_from_config(config, locale="th")
     assert items_th[0]["label"] == "Carmen Inventory TH"
-    assert items_th[1]["target"] == "/th/inventory/home"
+    assert items_th[1]["target"] == "/th/inventory/index"
     assert items_th[2]["label"] == "ต้นทุนและรายงาน"
-    assert items_th[3]["target"] == "/th/inventory/costing/home"
+    assert items_th[3]["target"] == "/th/inventory/costing/index"
     assert items_th[3]["label"] == "การคิดต้นทุน"
 
 
@@ -539,7 +539,7 @@ def test_build_tree_link_items_have_uuid_ids():
             "inventory": {
                 "label_en": "Carmen Inventory",
                 "label_th": "Carmen Inventory",
-                "home_slug": "home",
+                "home_slug": "index",
                 "groups": [
                     {
                         "label_en": "Costing & Reporting",
@@ -566,7 +566,7 @@ def test_build_tree_multiple_groups_emits_header_per_group():
             "inventory": {
                 "label_en": "Carmen Inventory",
                 "label_th": "Carmen Inventory",
-                "home_slug": "home",
+                "home_slug": "index",
                 "groups": [
                     {
                         "label_en": "Procurement",
@@ -612,7 +612,7 @@ def test_build_tree_empty_groups_list_emits_book_header_and_home_only():
             "inventory": {
                 "label_en": "Carmen Inventory",
                 "label_th": "Carmen Inventory",
-                "home_slug": "home",
+                "home_slug": "index",
                 "groups": [],
             },
         },
@@ -621,7 +621,7 @@ def test_build_tree_empty_groups_list_emits_book_header_and_home_only():
     kinds = [i["kind"] for i in items]
     assert kinds == ["header", "link"]
     assert items[0]["label"] == "Carmen Inventory"
-    assert items[1]["target"] == "/en/inventory/home"
+    assert items[1]["target"] == "/en/inventory/index"
 
 
 def test_build_tree_group_with_no_modules_still_emits_header():
@@ -632,7 +632,7 @@ def test_build_tree_group_with_no_modules_still_emits_header():
             "inventory": {
                 "label_en": "Carmen Inventory",
                 "label_th": "Carmen Inventory",
-                "home_slug": "home",
+                "home_slug": "index",
                 "groups": [
                     {"label_en": "Empty Group", "label_th": "Empty Group", "modules": []},
                 ],

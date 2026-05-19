@@ -10,7 +10,7 @@ books:
   inventory:
     label_en: "Carmen Inventory"
     label_th: "Carmen Inventory"
-    home_slug: home
+    home_slug: index
     groups:
       - label_en: "Overview"
         label_th: "ภาพรวม"
@@ -88,7 +88,7 @@ books:
   platform:
     label_en: "Carmen Platform"
     label_th: "Carmen Platform"
-    home_slug: home
+    home_slug: index
     groups:
       - label_en: "Tenancy"
         label_th: "Tenancy"

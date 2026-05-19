@@ -38,9 +38,9 @@ python3 scripts/sync_nav.py --dry-run --verbose
 ```
 
 Read the per-item lines and the summary. Any `⚠ … [fallback]` line means
-the TH label could not be resolved from frontmatter, home.md, or
+the TH label could not be resolved from frontmatter, index.md, or
 overrides — fix the cause (write the TH page, add a heading to
-`th/home.md`, or add an entry to `nav-overrides.yaml`) before pushing.
+`th/index.md`, or add an entry to `nav-overrides.yaml`) before pushing.
 
 Live push:
 
@@ -73,8 +73,8 @@ For each EN nav item, the TH label is resolved in this order:
 
 1. **Frontmatter** (`link` + `targetType: page`):
    read `title:` from `th/<target>.md` or `th/<target>/index.md`.
-2. **home.md** (`header`):
-   pair `## N. …` headings between `en/home.md` and `th/home.md` by index.
+2. **index.md** (`header`):
+   pair `## N. …` headings between `en/index.md` and `th/index.md` by index.
 3. **Override** (`nav-overrides.yaml`):
    manual map for headers and external URLs.
 4. **Fallback:** EN label as-is (logged with ⚠ marker).
@@ -86,7 +86,7 @@ For each EN nav item, the TH label is resolved in this order:
 | Exit 4: `Wiki.js navigation mode is 'TREE', not STATIC.` | Wiki.js mode is auto-tree | Admin → Navigation → Mode: Static |
 | Exit 2: `WIKI_API_URL and WIKI_API_TOKEN must be set` | `.env` not sourced or empty | `set -a; source .env; set +a` and verify token |
 | `updateTree failed: code=Unauthorized` | Token lacks scopes or expired | Generate a new token with navigation: manage |
-| Many `⚠ [fallback]` lines | TH translations missing / home.md headings drifted | Translate the TH pages or sync home.md; add entries to `nav-overrides.yaml` if needed |
+| Many `⚠ [fallback]` lines | TH translations missing / index.md headings drifted | Translate the TH pages or sync index.md; add entries to `nav-overrides.yaml` if needed |
 
 ### Files
 

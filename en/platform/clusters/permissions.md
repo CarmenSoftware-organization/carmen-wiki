@@ -23,4 +23,4 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 ## 3. TODO
 
-- [ ] Cross-link to auth-roles/home.md for role definitions
+- [ ] Cross-link to auth-roles/index.md for role definitions
