@@ -2,7 +2,7 @@
 title: Cluster — Data Model
 description: Cluster entity, relationships to BUs and users, license fields.
 published: true
-date: '2026-05-19T16:30:00.000Z'
+date: '2026-05-19T17:30:00.000Z'
 tags: book/platform, clusters, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -20,7 +20,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 ## 1. Overview
 
-`tb_cluster` is the top-level tenant container in the Carmen Platform. Every business unit and every cluster-scoped user membership hangs beneath a cluster row. Clusters represent a licensable grouping of business units — typically one hotel brand, hotel group, or company entity — and the `max_license_bu` field on the cluster enforces how many BUs may be provisioned within it.
+`tb_cluster` is the top-level tenant container in the Carmen Platform. Every business unit and every cluster-scoped user membership hangs beneath a cluster row. Clusters represent a licensable grouping of business units — typically one hotel brand, hotel group, or company entity — and the `max_license_bu` field on the cluster enforces how many BUs may be provisioned within it; this cap is checked at the application layer (Platform SPA UI), not as a database constraint.
 
 The cluster entity participates in two principal one-to-many relationships that extend its scope into the rest of the platform. First, `tb_business_unit` carries a `cluster_id` foreign key, making each BU a child of exactly one cluster; this relationship is documented in full in the [[business-units]] module. Second, `tb_cluster_user` is the M:N join table that records which platform users belong to a cluster and at what per-cluster role; this table is documented in full in [[users]] — the present page covers only the cluster-side view of both relationships.
 
@@ -39,9 +39,9 @@ The primary cluster record. One row per tenant cluster, holding the identity fie
 | `id` | `String @db.Uuid` | No | `gen_random_uuid()` | Primary key, UUID v4 |
 | `code` | `String @db.VarChar(30)` | No | — | Short identifier for the cluster; unique with `name` and `deleted_at` |
 | `name` | `String @db.VarChar` | No | — | Full display name of the cluster |
-| `alias_name` | `String? @db.VarChar(3)` | Yes | — | Short alias (3-char max) used in compact UI contexts |
+| `alias_name` | `String? @db.VarChar(3)` | Yes | — | 3-character maximum alias (unusually tight `VarChar(3)` cap — tighter than any other varchar in this schema). Shown in compact cluster-selector UI surfaces where the full `name` does not fit, e.g. the cluster list table "Alias" column and CSV export |
 | `logo_url` | `String? @db.VarChar` | Yes | — | URL of the cluster's logo image |
-| `max_license_bu` | `Int?` | Yes | — | Maximum number of business units this cluster is licensed to create; `NULL` means no cap enforced |
+| `max_license_bu` | `Int?` | Yes | — | Cap on the number of live (non-soft-deleted) `tb_business_unit` rows in this cluster. `NULL` means no cap enforced. Enforcement is at the application layer (Platform SPA UI); the database does NOT enforce this constraint |
 | `is_active` | `Boolean?` | Yes | `true` | When `false`, the cluster and its BUs are considered inactive |
 | `info` | `Json? @db.Json` | Yes | — | Free-form metadata blob; reserved for future extensibility |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: row creation time |
@@ -125,9 +125,9 @@ The `Cluster` interface in `../carmen-platform/src/types/index.ts` (lines 24–4
 | # | Item | Prisma has | SPA expects | Notes |
 | - | ---- | ---------- | ----------- | ----- |
 | 1 | `description` | Not present on `tb_cluster` | `description?: string` on `Cluster` interface | The `Cluster` TS interface carries a `description` field that has no corresponding column on `tb_cluster` in Prisma. This is likely an API-layer annotation or a carry-over from an earlier schema version. The `ClusterFormData` interface does **not** include `description`, so no edit path writes this field. |
-| 2 | `bu_count` | Not present on `tb_cluster` | `bu_count?: number` on `Cluster` interface | Computed/aggregated field returned by the API (count of live child BUs); not stored in the Prisma model. |
-| 3 | `users_count` | Not present on `tb_cluster` | `users_count?: number` on `Cluster` interface | Computed/aggregated field returned by the API (count of active cluster-user memberships); not stored in the Prisma model. |
-| 4 | `total_max_license_users` | Not present on `tb_cluster` | `total_max_license_users?: number` on `Cluster` interface | Computed field — sum of `tb_business_unit.max_license_users` across all BUs in the cluster; not stored in the Prisma model. |
+| 2 | `bu_count` | Not present on `tb_cluster` | `bu_count?: number` on `Cluster` interface | Count of `tb_business_unit` rows where `cluster_id = this cluster` and `deleted_at IS NULL` (live BUs only). Computed server-side (Prisma `_count` include on `tb_business_unit`); returned on list and detail endpoints. SPA falls back to `item._count?.tb_business_unit` when the pre-aggregated field is absent. |
+| 3 | `users_count` | Not present on `tb_cluster` | `users_count?: number` on `Cluster` interface | Count of `tb_cluster_user` rows where `cluster_id = this cluster` and `deleted_at IS NULL` (active cluster-user assignments). Computed server-side (Prisma `_count` include on `tb_cluster_user`); SPA falls back to `item._count?.tb_cluster_user` when the pre-aggregated field is absent. |
+| 4 | `total_max_license_users` | Not present on `tb_cluster` | `total_max_license_users?: number` on `Cluster` interface | Sum of `tb_business_unit.max_license_users` across non-soft-deleted BUs in this cluster. Computed server-side; `NULL` BU values treated per API implementation — verify against the backend service before relying on the precise null-handling. |
 | 5 | `created_by_id` / `updated_by_id` / `deleted_by_id` | `String? @db.Uuid` (raw IDs) | `created_by_name`, `updated_by_name`, `deleted_by_name` (name strings) | API resolves the `_id` FKs to display names before returning the response. The raw IDs are not exposed in the `Cluster` TS interface. |
 | 6 | `max_license_bu` | `Int?` | `max_license_bu: string` in `ClusterFormData` | The form holds the value as a string (HTML input), converted to a number before the API call. The `Cluster` read interface correctly types it as `max_license_bu?: number`. |
 
