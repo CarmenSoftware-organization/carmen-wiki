@@ -2,7 +2,7 @@
 title: Good Receive Note (GRN) — Data Model
 description: Entities, fields, relationships, and enums for the good-receive-note module.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T00:00:00.000Z
 tags: good-receive-note, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
@@ -92,31 +92,11 @@ GRN document header. Carries reference number, vendor / currency / credit-term c
 **Constraints:** `@id` on `id`. FKs: `currency_id → tb_currency.id` (`NoAction`); `vendor_id → tb_vendor.id` (`NoAction`). Note: `credit_term_id` and `workflow_id` are stored as UUIDs but have no Prisma `@relation` on this model — they are application-resolved. Back-relations: many `tb_good_received_note_detail`, many `tb_good_received_note_comment`, many `tb_extra_cost`, many `tb_credit_note`.
 **Indexes:** `@@unique([grn_no, deleted_at])` as `goodreceivednote_grn_no_u`; `@@index([grn_no])` as `goodreceivednote_grn_no_idx`.
 
-### 2.2 tb_good_received_note_comment
+Comment / attachment tables for this module are documented separately — see [01a — Data Model: Comment Tables](/en/inventory/good-receive-note/01a-data-model-comments).
 
-Workflow / activity-log entries attached to a GRN header. There is no dedicated `tb_good_received_note_workflow` table — this comment table, combined with the JSON workflow columns on the header, is the persistent record of the workflow timeline. Each row is either a user comment (`type = user`) or a system event (`type = system`) such as a stage transition.
+### 2.2 tb_good_received_note_detail
 
-| Field | Prisma Type | Nullable | Description |
-| ----- | ----------- | -------- | ----------- |
-| `id` | `String @db.Uuid` | No | Primary key. |
-| `good_received_note_id` | `String @db.Uuid` | No | FK to `tb_good_received_note.id`. |
-| `type` | `enum_comment_type` | No | `user` or `system`; default `user`. |
-| `user_id` | `String @db.Uuid` | Yes | Author user id (null for `system` entries). |
-| `message` | `String` | Yes | Free-text comment body. |
-| `attachments` | `Json @db.JsonB` | Yes | Array of `{ originalName, fileToken, contentType }`; default `[]`. |
-| `created_at` | `DateTime @db.Timestamptz(6)` | Yes | Creation timestamp. |
-| `created_by_id` | `String @db.Uuid` | Yes | Creator id. |
-| `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | Last-update timestamp. |
-| `updated_by_id` | `String @db.Uuid` | Yes | Updater id. |
-| `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | Soft-delete timestamp. |
-| `deleted_by_id` | `String @db.Uuid` | Yes | Soft-delete actor id. |
-
-**Constraints:** `@id` on `id`. FK `good_received_note_id → tb_good_received_note.id` (`NoAction` on delete/update).
-**Indexes:** None declared beyond the primary key.
-
-### 2.3 tb_good_received_note_detail
-
-GRN line item. Identifies the receiving location, the product being received, and the upstream PO line (when PO-sourced). Notably, this table holds **only identifying / locating information** — the actual quantities, prices, taxes, and per-receipt-event detail live on the child `tb_good_received_note_detail_item` rows (Section 2.4). One detail can have many detail-item rows to represent split deliveries, mixed lots, or paid-plus-FOC events posted onto the same line.
+GRN line item. Identifies the receiving location, the product being received, and the upstream PO line (when PO-sourced). Notably, this table holds **only identifying / locating information** — the actual quantities, prices, taxes, and per-receipt-event detail live on the child `tb_good_received_note_detail_item` rows (Section 2.3). One detail can have many detail-item rows to represent split deliveries, mixed lots, or paid-plus-FOC events posted onto the same line.
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
@@ -137,31 +117,9 @@ GRN line item. Identifies the receiving location, the product being received, an
 **Constraints:** `@id` on `id`. FKs: `good_received_note_id → tb_good_received_note.id`; `location_id → tb_location.id` (required); `product_id → tb_product.id` (required); `purchase_order_detail_id → tb_purchase_order_detail.id` (nullable). Note: `purchase_order_id` is stored on the row but has no Prisma `@relation` — the PO link is reached through `purchase_order_detail_id`'s relation. Back-relations: many `tb_good_received_note_detail_item`, many `tb_good_received_note_detail_comment`.
 **Indexes:** `@@unique([good_received_note_id, sequence_no])` as `goodreceivednotedetail_good_received_note_id_sequence_no_u`; `@@index([good_received_note_id, sequence_no])` as `goodreceivednotedetail_good_received_note_id_sequence_no_idx`. Note: the unique constraint here does **not** include `deleted_at` (unlike the PR / PO equivalents), so soft-deleted lines still occupy a `sequence_no` slot.
 
-### 2.4 tb_good_received_note_detail_comment
+### 2.3 tb_good_received_note_detail_item
 
-Line-level counterpart of `tb_good_received_note_comment`. Captures comments and system events attached to a single GRN line — typically used during inspection to record acceptance / rejection notes and during commit to log per-line posting decisions.
-
-| Field | Prisma Type | Nullable | Description |
-| ----- | ----------- | -------- | ----------- |
-| `id` | `String @db.Uuid` | No | Primary key. |
-| `good_received_note_detail_id` | `String @db.Uuid` | No | FK to `tb_good_received_note_detail.id`. |
-| `type` | `enum_comment_type` | No | `user` or `system`; default `user`. |
-| `user_id` | `String @db.Uuid` | Yes | Author user id (null for `system` entries). |
-| `message` | `String` | Yes | Free-text comment body. |
-| `attachments` | `Json @db.JsonB` | Yes | Array of attachments; default `[]`. |
-| `created_at` | `DateTime @db.Timestamptz(6)` | Yes | Creation timestamp. |
-| `created_by_id` | `String @db.Uuid` | Yes | Creator id. |
-| `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | Last-update timestamp. |
-| `updated_by_id` | `String @db.Uuid` | Yes | Updater id. |
-| `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | Soft-delete timestamp. |
-| `deleted_by_id` | `String @db.Uuid` | Yes | Soft-delete actor id. |
-
-**Constraints:** `@id` on `id`. FK `good_received_note_detail_id → tb_good_received_note_detail.id` (`NoAction` on delete/update).
-**Indexes:** None declared beyond the primary key.
-
-### 2.5 tb_good_received_note_detail_item
-
-**GRN-specific receipt-event row — no equivalent in PR or PO.** A single GRN detail (Section 2.3) can spawn multiple `detail_item` rows to record split deliveries (one line, two cartons that arrived on different trucks), mixed-lot landings (one line, two different lots placed onto the same product / location), or paid-plus-FOC bundles posted against the same line. Each row carries three parallel qty / unit / conversion-factor triples — `order_*`, `received_*`, and `foc_*` — plus the full price-tax-discount-totals snapshot **in both transaction and base currency** computed at the moment of receipt. The row's `inventory_transaction_id` is the link to the inventory side of the world; that linked transaction (and its `tb_inventory_transaction_detail` children) is where the actual lot number, expiry date, and FIFO / average-cost layer data persist. So the `detail_item` row is **not itself the lot store** — it is the GRN-side cursor for the receiving event, and the inventory transaction is the lot store.
+**GRN-specific receipt-event row — no equivalent in PR or PO.** A single GRN detail (Section 2.2) can spawn multiple `detail_item` rows to record split deliveries (one line, two cartons that arrived on different trucks), mixed-lot landings (one line, two different lots placed onto the same product / location), or paid-plus-FOC bundles posted against the same line. Each row carries three parallel qty / unit / conversion-factor triples — `order_*`, `received_*`, and `foc_*` — plus the full price-tax-discount-totals snapshot **in both transaction and base currency** computed at the moment of receipt. The row's `inventory_transaction_id` is the link to the inventory side of the world; that linked transaction (and its `tb_inventory_transaction_detail` children) is where the actual lot number, expiry date, and FIFO / average-cost layer data persist. So the `detail_item` row is **not itself the lot store** — it is the GRN-side cursor for the receiving event, and the inventory transaction is the lot store.
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
