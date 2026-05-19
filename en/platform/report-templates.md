@@ -11,7 +11,7 @@ dateCreated: 2026-05-19T00:00:00.000Z
 # Report Templates
 
 > **At a Glance**
-> **Module purpose:** Authoring surface where Carmen-internal admins create and maintain the XML-based report templates that drive every printable document in the platform &nbsp;·&nbsp; **Audience:** Platform admin and Carmen support engineers &nbsp;·&nbsp; **Key entities/tables:** `report_template` (fields: `name`, `description`, `report_group`, `dialog`, `content`, `source_type`, `source_name`, `source_params`, `allow_business_unit`, `deny_business_unit`, `is_standard`, `is_active`, `builder_key`) &nbsp;·&nbsp; **Sub-pages:** 2
+> **Module purpose:** Authoring surface where Carmen-internal admins create and maintain the XML-based report templates that drive every printable document in the platform &nbsp;·&nbsp; **Audience:** Platform admin and Carmen support engineers &nbsp;·&nbsp; **Key entities/tables:** `report_template` (fields: `name`, `description`, `report_group`, `dialog`, `content`, `source_type`, `source_name`, `source_params`, `allow_business_unit`, `deny_business_unit`, `is_standard`, `is_active`, `builder_key`) &nbsp;·&nbsp; **Sub-pages:** 4
 
 ## 1. Overview
 
