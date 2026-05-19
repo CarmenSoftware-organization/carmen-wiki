@@ -2,7 +2,7 @@
 title: Business Unit — Data Model
 description: BU entity, formatting/locale block, DB connection, config array, module activation join, and license field.
 published: true
-date: 2026-05-19T23:55:00.000Z'
+date: 2026-05-20T01:00:00.000Z
 tags: book/platform, business-units, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -73,6 +73,7 @@ The primary business unit record. One row per operational BU, holding the identi
 | `hotel_email` | `String?` | Yes | — | Property email address |
 | `hotel_tel` | `String?` | Yes | — | Property telephone number |
 | `hotel_zip_code` | `String?` | Yes | — | Property postal code |
+| `logo_file_token` | `String?` | Yes | — | Reference to the property's logo image in the platform file service. Resolves to a CDN/S3 URL via the application layer (same `file_token` pattern as `tb_product_image.file_token` and the `attachments` JSON on comment tables). Added 2026-05-20. |
 | **— Formatting & Locale —** | | | | |
 | `date_format` | `String?` | Yes | `"yyyy-MM-dd"` | Date display format string used in the inventory UI |
 | `date_time_format` | `String?` | Yes | `"yyyy-MM-dd HH:mm:ss"` | Date-time display format string |

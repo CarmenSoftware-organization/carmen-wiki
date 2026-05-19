@@ -2,7 +2,7 @@
 title: User — Data Model
 description: User entity, role, status, per-cluster BU assignments.
 published: true
-date: 2026-05-19T23:55:00.000Z'
+date: 2026-05-20T01:00:00.000Z
 tags: book/platform, users, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -128,6 +128,7 @@ Profile extension for `tb_user`. Holds the name parts and supplementary contact 
 | `lastname` | `String? @db.VarChar(100)` | Yes | `""` | Family name |
 | `telephone` | `String? @db.VarChar(20)` | Yes | — | Contact telephone number |
 | `bio` | `Json? @db.Json` | Yes | `{}` | Free-form biography/notes as JSON |
+| `avatar_file_token` | `String? @db.VarChar` | Yes | — | Reference to the user's avatar image in the platform file service. Resolves to a CDN/S3 URL via the application layer (same `file_token` pattern as `tb_business_unit.logo_file_token` and `tb_product_image.file_token`). Added 2026-05-20. |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: row creation time |
 | `created_by_id` | `String? @db.Uuid` | Yes | — | Audit: FK to `tb_user.id` of the creator |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: last update time |

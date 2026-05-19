@@ -2,7 +2,7 @@
 title: Access Control
 description: Users, roles, permissions, and multi-business-unit access.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-05-20T01:00:00.000Z
 tags: access-control, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -15,11 +15,11 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 1. Overview
 
-Access Control is the umbrella for **who can do what, where**. It binds five entities into a single authorisation pipeline. [access-control/user](/en/inventory/access-control/user) is the identity (account, profile, password, sessions). [access-control/business-unit-user](/en/inventory/access-control/business-unit-user) declares which business units a user may enter at all. [access-control/application-role](/en/inventory/access-control/application-role) is the named bundle of [access-control/permission](/en/inventory/access-control/permission) atoms assigned to a user within a BU. [access-control/user-location](/en/inventory/access-control/user-location) then narrows the user's row-level scope inside the tenant to specific [master-data/location](/en/inventory/master-data/location)s.
+Access Control is the umbrella for **who can do what, where**. It binds five entities into a single authorisation pipeline. [access-control/user](/en/inventory/access-control/user) is the identity (account, profile, sessions — passwords are externalized). [access-control/business-unit-user](/en/inventory/access-control/business-unit-user) declares which business units a user may enter at all. [access-control/application-role](/en/inventory/access-control/application-role) is the named bundle of [access-control/permission](/en/inventory/access-control/permission) atoms assigned to a user within a BU. [access-control/user-location](/en/inventory/access-control/user-location) then narrows the user's row-level scope inside the tenant to specific [master-data/location](/en/inventory/master-data/location)s.
 
 Every transactional action in the system — submitting a PR, approving a GRN, posting an inventory adjustment, running a count — resolves through this pipeline. The runtime question "may user X perform action Y on resource Z" decomposes to: does X have an active `tb_user_tb_business_unit` row for the active BU; does X hold an `tb_application_role` in that BU whose `tb_application_role_tb_permission` set includes `(Z, Y)`; and (for location-scoped resources) is the target row inside X's `tb_user_location` set.
 
-Four of the five entities live in the **platform schema** (shared across tenants — `tb_user`, `tb_user_profile`, `tb_password`, `tb_user_login_session`, `tb_application_role`, `tb_application_role_tb_permission`, `tb_user_tb_application_role`, `tb_permission`, `tb_user_tb_business_unit`, `tb_temp_bu_user`, `enum_user_business_unit_role`). The fifth — `tb_user_location` — lives in the **tenant schema** because it joins users to tenant-side locations.
+Four of the five entity groups live in the **platform schema** (shared across tenants — `tb_user`, `tb_user_profile`, `tb_user_login_session`, `tb_application_role`, `tb_application_role_tb_permission`, `tb_user_tb_application_role`, `tb_permission`, `tb_user_tb_business_unit`, `tb_temp_bu_user`, `enum_user_business_unit_role`). The fifth — `tb_user_location` — lives in the **tenant schema** because it joins users to tenant-side locations.
 
 ## 2. Audience
 
@@ -29,7 +29,7 @@ Sysadmin owns the configuration end-to-end. Security Officer audits credentials,
 
 | Entity | Purpose | Managed by |
 | ------ | ------- | ---------- |
-| [user](/en/inventory/access-control/user) | Account, profile, password, and login session — the identity layer | Sysadmin / Security Officer |
+| [user](/en/inventory/access-control/user) | Account, profile, and login session — the identity layer (passwords externalized) | Sysadmin / Security Officer |
 | [application-role](/en/inventory/access-control/application-role) | BU-scoped named role + role-permission and user-role joins | Sysadmin |
 | [permission](/en/inventory/access-control/permission) | Atomic `(resource, action)` permission catalogue | Sysadmin (seed-managed) |
 | [business-unit-user](/en/inventory/access-control/business-unit-user) | Per-BU access membership + email-invitation staging | Sysadmin / BU Admin |
@@ -48,7 +48,7 @@ Sysadmin owns the configuration end-to-end. Security Officer audits credentials,
 
 ## 5. References
 
-- **Prisma platform:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_user`, `tb_user_profile`, `tb_password`, `tb_user_login_session`, `tb_application_role`, `tb_application_role_tb_permission`, `tb_user_tb_application_role`, `tb_permission`, `tb_user_tb_business_unit`, `tb_temp_bu_user`, and the supporting `enum_platform_role`, `enum_token_type`, `enum_user_business_unit_role`.
+- **Prisma platform:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_user`, `tb_user_profile`, `tb_user_login_session`, `tb_application_role`, `tb_application_role_tb_permission`, `tb_user_tb_application_role`, `tb_permission`, `tb_user_tb_business_unit`, `tb_temp_bu_user`, and the supporting `enum_platform_role`, `enum_token_type`, `enum_user_business_unit_role`.
 - **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_user_location`.
 - **carmen/docs:** `../carmen/docs/workflow-permissions-system.md` — describes how workflow-stage role types (requester / purchaser / approver / reviewer) layer on top of the application-role permission grants documented here.
 - **Design spec:** `.specs/2026-05-16-master-config-design.md`.
