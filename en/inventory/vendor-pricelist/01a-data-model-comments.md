@@ -1,5 +1,5 @@
 ---
-title: Vendor Price List — Data Model: Comment Tables
+title: Vendor Price List — Data Model — Comment Tables
 description: Document-level and line-level comment / attachment tables for the Vendor Price List module across the pricelist-template, request-for-pricing, and pricelist sub-entity families.
 published: true
 date: 2026-05-20T00:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
 ---
 
-# Vendor Price List — Data Model: Comment Tables
+# Vendor Price List — Data Model — Comment Tables
 
 ## 1. At a Glance
 

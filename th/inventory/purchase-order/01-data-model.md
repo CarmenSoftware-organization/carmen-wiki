@@ -89,7 +89,7 @@ PO อยู่ **ปลายน้ำของ [purchase-request](/th/inventor
 **Constraints:** `@id` บน `id` FKs: `credit_term_id → tb_credit_term.id` (`NoAction`); `currency_id → tb_currency.id` ผ่าน named relation `tb_purchase_order_currency_idTotb_currency` (`NoAction`); `vendor_id → tb_vendor.id` (`NoAction`) หมายเหตุ: `workflow_id` เก็บเป็น UUID แต่ไม่มี Prisma `@relation` บน model นี้
 **Indexes:** `@@unique([po_no, deleted_at])` ชื่อ `PO_po_no_u`; `@@index([po_no])` ชื่อ `PO_po_no_idx`; `@@index([vendor_id])` ชื่อ `PO_vendor_id_idx`
 
-ตารางคอมเมนต์ / ไฟล์แนบของโมดูลนี้ถูกแยกไปอีกหน้า — ดู [01a — โมเดลข้อมูล: ตารางคอมเมนต์](/th/inventory/purchase-order/01a-data-model-comments)
+ตารางคอมเมนต์ / ไฟล์แนบของโมดูลนี้ถูกแยกไปอีกหน้า — ดู [01a — โมเดลข้อมูล — ตารางคอมเมนต์](/th/inventory/purchase-order/01a-data-model-comments)
 
 ### 2.2 tb_purchase_order_detail
 

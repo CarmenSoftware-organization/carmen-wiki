@@ -1,5 +1,5 @@
 ---
-title: Inventory Adjustment — Data Model: Comment Tables
+title: Inventory Adjustment — Data Model — Comment Tables
 description: Document-level and line-level comment / attachment tables for the Inventory Adjustment module — message text, attachments JSON, and the user/system comment-type enum.
 published: true
 date: 2026-05-20T00:00:00.000Z
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
 ---
 
-# Inventory Adjustment — Data Model: Comment Tables
+# Inventory Adjustment — Data Model — Comment Tables
 
 ## 1. At a Glance
 

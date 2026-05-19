@@ -90,7 +90,7 @@ Financial accuracy is enforced at the calculation layer rather than left to the 
 ## 7. Pages in This Module
 
 - [01 — Data Model](/en/inventory/purchase-request/01-data-model) — Entities, fields, relationships, and enums (Prisma-derived).
-- [01a — Data Model: Comment Tables](/en/inventory/purchase-request/01a-data-model-comments) — Document-level and line-level comment / attachment tables and the `enum_comment_type` user/system tagging.
+- [01a — Data Model — Comment Tables](/en/inventory/purchase-request/01a-data-model-comments) — Document-level and line-level comment / attachment tables and the `enum_comment_type` user/system tagging.
 - [02 — Business Rules](/en/inventory/purchase-request/02-business-rules) — Validation, calculation, authorization, and posting rules.
 - [03 — User Flow](/en/inventory/purchase-request/03-user-flow) — Document lifecycle and persona index.
   - [Requestor](/en/inventory/purchase-request/03-user-flow-requestor)

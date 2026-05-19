@@ -84,7 +84,7 @@ Financially, every posted issuance generates journal entries that credit the sou
 ## 7. Pages in This Module
 
 - [01 — Data Model](/en/inventory/store-requisition/01-data-model) — Prisma entities (`tb_store_requisition`, `tb_store_requisition_detail`, comment tables), enums (`enum_doc_status`, `enum_sr_type`), relationships, and divergences from carmen/docs.
-- [01a — Data Model: Comment Tables](/en/inventory/store-requisition/01a-data-model-comments) — Document-level and line-level comment / attachment tables and the `enum_comment_type` user/system tagging.
+- [01a — Data Model — Comment Tables](/en/inventory/store-requisition/01a-data-model-comments) — Document-level and line-level comment / attachment tables and the `enum_comment_type` user/system tagging.
 - [02 — Business Rules](/en/inventory/store-requisition/02-business-rules) — Validation (`SR_VAL_*`), calculation (`SR_CALC_*`, quantity invariant), authorization (`SR_AUTH_*`, SoD), posting (`SR_POST_*`, single posting event at `in_progress → completed`), and cross-module rules (`SR_XMOD_*`).
 - [03 — User Flow](/en/inventory/store-requisition/03-user-flow) — Document lifecycle overview and persona-specific flow files:
   - [Requester](/en/inventory/store-requisition/03-user-flow-requester) — Outlet Manager: identifies needs, creates SR, submits.

@@ -132,7 +132,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 **Constraints:** `@id` บน `id` FKs: `inventory_transaction_id → tb_inventory_transaction.id` (`NoAction`); `product_id → tb_product.id` (`NoAction`); `stock_in_id → tb_stock_in.id` (`NoAction`) Back-relations: many `tb_stock_in_detail_comment`
 **Indexes:** `@@unique([stock_in_id, product_id, dimension, deleted_at])` เป็น `SIT1_stock_in_product_dimension_u`; `@@index([stock_in_id, product_id])` เป็น `SIT2_stock_in_product_idx`; `@@index([stock_in_id])` เป็น `SIT2_stock_in_idx`
 
-ตารางคอมเมนต์ / ไฟล์แนบของโมดูลนี้ถูกแยกไปอีกหน้า — ดู [01a — โมเดลข้อมูล: ตารางคอมเมนต์](/th/inventory/inventory-adjustment/01a-data-model-comments)
+ตารางคอมเมนต์ / ไฟล์แนบของโมดูลนี้ถูกแยกไปอีกหน้า — ดู [01a — โมเดลข้อมูล — ตารางคอมเมนต์](/th/inventory/inventory-adjustment/01a-data-model-comments)
 
 ### 2.4 tb_stock_out
 

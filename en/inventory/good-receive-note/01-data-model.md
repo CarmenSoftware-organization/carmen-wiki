@@ -92,7 +92,7 @@ GRN document header. Carries reference number, vendor / currency / credit-term c
 **Constraints:** `@id` on `id`. FKs: `currency_id → tb_currency.id` (`NoAction`); `vendor_id → tb_vendor.id` (`NoAction`). Note: `credit_term_id` and `workflow_id` are stored as UUIDs but have no Prisma `@relation` on this model — they are application-resolved. Back-relations: many `tb_good_received_note_detail`, many `tb_good_received_note_comment`, many `tb_extra_cost`, many `tb_credit_note`.
 **Indexes:** `@@unique([grn_no, deleted_at])` as `goodreceivednote_grn_no_u`; `@@index([grn_no])` as `goodreceivednote_grn_no_idx`.
 
-Comment / attachment tables for this module are documented separately — see [01a — Data Model: Comment Tables](/en/inventory/good-receive-note/01a-data-model-comments).
+Comment / attachment tables for this module are documented separately — see [01a — Data Model — Comment Tables](/en/inventory/good-receive-note/01a-data-model-comments).
 
 ### 2.2 tb_good_received_note_detail
 

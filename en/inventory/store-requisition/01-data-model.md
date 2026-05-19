@@ -78,7 +78,7 @@ SR document header. Carries reference number, dates, source / destination locati
 **Constraints:** `@id` on `id`. FKs: `from_location_id → tb_location.id` (`NoAction`, named relation `store_requisition_from_location`); `to_location_id → tb_location.id` (`NoAction`, named relation `store_requisition_to_location`); `workflow_id → tb_workflow.id` (`NoAction`). Note: `requestor_id` and `department_id` are stored as UUIDs but have no Prisma `@relation` on this model — they are application-resolved. Back-relations: many `tb_store_requisition_detail`, many `tb_store_requisition_comment`.
 **Indexes:** `@@unique([sr_no, deleted_at])` as `sr_no_u`; `@@index([sr_no])` as `sr_no_idx`; `@@index([sr_type])` as `sr_type_idx`. Unlike GRN's `grn_no` (nullable), `sr_no` is `NOT NULL`.
 
-Comment / attachment tables for this module are documented separately — see [01a — Data Model: Comment Tables](/en/inventory/store-requisition/01a-data-model-comments).
+Comment / attachment tables for this module are documented separately — see [01a — Data Model — Comment Tables](/en/inventory/store-requisition/01a-data-model-comments).
 
 ### 2.2 tb_store_requisition_detail
 

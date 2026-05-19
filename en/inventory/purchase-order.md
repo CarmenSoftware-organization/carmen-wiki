@@ -91,7 +91,7 @@ Financial accuracy is enforced at the calculation layer. Item subtotal, discount
 ## 7. Pages in This Module
 
 - [01 — Data Model](/en/inventory/purchase-order/01-data-model) — Entities, fields, relationships, and enums (Prisma-derived).
-- [01a — Data Model: Comment Tables](/en/inventory/purchase-order/01a-data-model-comments) — Document-level and line-level comment / attachment tables and the `enum_comment_type` user/system tagging.
+- [01a — Data Model — Comment Tables](/en/inventory/purchase-order/01a-data-model-comments) — Document-level and line-level comment / attachment tables and the `enum_comment_type` user/system tagging.
 - [02 — Business Rules](/en/inventory/purchase-order/02-business-rules) — Validation, calculation, authorization, posting, and three-way-match rules.
 - [03 — User Flow](/en/inventory/purchase-order/03-user-flow) — Document lifecycle and persona index.
   - [Purchaser](/en/inventory/purchase-order/03-user-flow-purchaser)

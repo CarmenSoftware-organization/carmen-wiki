@@ -155,7 +155,7 @@ PR อยู่ต้นน้ำของ [purchase-order](/th/inventory/purcha
 **Constraints:** `@id` บน `id` FK: `purchase_request_id → tb_purchase_request.id`; `product_id → tb_product.id` (required); `vendor_id → tb_vendor.id`; `pricelist_detail_id → tb_pricelist_detail.id`; `tax_profile_id → tb_tax_profile.id`; `currency_id → tb_currency.id`; `location_id → tb_location.id`; `delivery_point_id → tb_delivery_point.id`; FK ที่ตั้งชื่อด้วย `@relation` สาม FK ไปยัง `tb_unit` สำหรับหน่วย requested / approved / FOC
 **Indexes:** `@@unique([purchase_request_id, product_id, location_id, dimension, deleted_at])` ชื่อ `PR1_purchase_request_product_location_dimension_u`; `@@index([product_id])` ชื่อ `PRD1_product_id_idx`; `@@index([location_id])` ชื่อ `PRD1_location_id_idx`; `@@index([location_id, product_id])` ชื่อ `PRD1_location_product_idx`; `@@index([purchase_request_id])` ชื่อ `PRD1_purchase_request_id_idx`
 
-ตารางคอมเมนต์ / ไฟล์แนบของโมดูลนี้ถูกแยกไปอีกหน้า — ดู [01a — โมเดลข้อมูล: ตารางคอมเมนต์](/th/inventory/purchase-request/01a-data-model-comments)
+ตารางคอมเมนต์ / ไฟล์แนบของโมดูลนี้ถูกแยกไปอีกหน้า — ดู [01a — โมเดลข้อมูล — ตารางคอมเมนต์](/th/inventory/purchase-request/01a-data-model-comments)
 
 ### 2.3 tb_purchase_request_template
 

@@ -90,7 +90,7 @@ Food-safety and quality control sit on top of all this. Perishable goods carry l
 
 ## 7. Pages in This Module
 - [01 — Data Model](/en/inventory/good-receive-note/01-data-model) — Entities, fields, relationships, and enums (Prisma-derived).
-- [01a — Data Model: Comment Tables](/en/inventory/good-receive-note/01a-data-model-comments) — Document-level and line-level comment / attachment tables and the `enum_comment_type` user/system tagging.
+- [01a — Data Model — Comment Tables](/en/inventory/good-receive-note/01a-data-model-comments) — Document-level and line-level comment / attachment tables and the `enum_comment_type` user/system tagging.
 - [02 — Business Rules](/en/inventory/good-receive-note/02-business-rules) — Validation, calculation, authorization, posting, and three-way-match rules.
 - [03 — User Flow](/en/inventory/good-receive-note/03-user-flow) — Document lifecycle and persona index.
   - [Receiver](/en/inventory/good-receive-note/03-user-flow-receiver)

@@ -89,7 +89,7 @@ PO document header. Carries reference number, vendor / currency / credit-term co
 **Constraints:** `@id` on `id`. FKs: `credit_term_id → tb_credit_term.id` (`NoAction`); `currency_id → tb_currency.id` via named relation `tb_purchase_order_currency_idTotb_currency` (`NoAction`); `vendor_id → tb_vendor.id` (`NoAction`). Note: `workflow_id` is stored as a UUID but has no Prisma `@relation` on this model.
 **Indexes:** `@@unique([po_no, deleted_at])` as `PO_po_no_u`; `@@index([po_no])` as `PO_po_no_idx`; `@@index([vendor_id])` as `PO_vendor_id_idx`.
 
-Comment / attachment tables for this module are documented separately — see [01a — Data Model: Comment Tables](/en/inventory/purchase-order/01a-data-model-comments).
+Comment / attachment tables for this module are documented separately — see [01a — Data Model — Comment Tables](/en/inventory/purchase-order/01a-data-model-comments).
 
 ### 2.2 tb_purchase_order_detail
 

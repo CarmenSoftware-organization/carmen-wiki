@@ -78,7 +78,7 @@ SR วางตัว **ระหว่าง [inventory](/th/inventory/inventor
 **Constraints:** `@id` บน `id` FKs: `from_location_id → tb_location.id` (`NoAction`, named relation `store_requisition_from_location`); `to_location_id → tb_location.id` (`NoAction`, named relation `store_requisition_to_location`); `workflow_id → tb_workflow.id` (`NoAction`) หมายเหตุ: `requestor_id` และ `department_id` ถูกเก็บเป็น UUID แต่ไม่มี Prisma `@relation` บนโมเดลนี้ — resolve ในชั้น application Back-relations: many `tb_store_requisition_detail`, many `tb_store_requisition_comment`
 **Indexes:** `@@unique([sr_no, deleted_at])` ในชื่อ `sr_no_u`; `@@index([sr_no])` ในชื่อ `sr_no_idx`; `@@index([sr_type])` ในชื่อ `sr_type_idx` ต่างจาก `grn_no` (nullable) ของ GRN `sr_no` เป็น `NOT NULL`
 
-ตารางคอมเมนต์ / ไฟล์แนบของโมดูลนี้ถูกแยกไปอีกหน้า — ดู [01a — โมเดลข้อมูล: ตารางคอมเมนต์](/th/inventory/store-requisition/01a-data-model-comments)
+ตารางคอมเมนต์ / ไฟล์แนบของโมดูลนี้ถูกแยกไปอีกหน้า — ดู [01a — โมเดลข้อมูล — ตารางคอมเมนต์](/th/inventory/store-requisition/01a-data-model-comments)
 
 ### 2.2 tb_store_requisition_detail
 

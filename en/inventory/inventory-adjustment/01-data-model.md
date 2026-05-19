@@ -132,7 +132,7 @@ The **per-product detail line on a stock-in document**. One row per affected pro
 **Constraints:** `@id` on `id`. FKs: `inventory_transaction_id → tb_inventory_transaction.id` (`NoAction`); `product_id → tb_product.id` (`NoAction`); `stock_in_id → tb_stock_in.id` (`NoAction`). Back-relations: many `tb_stock_in_detail_comment`.
 **Indexes:** `@@unique([stock_in_id, product_id, dimension, deleted_at])` as `SIT1_stock_in_product_dimension_u`; `@@index([stock_in_id, product_id])` as `SIT2_stock_in_product_idx`; `@@index([stock_in_id])` as `SIT2_stock_in_idx`.
 
-Comment / attachment tables for this module are documented separately — see [01a — Data Model: Comment Tables](/en/inventory/inventory-adjustment/01a-data-model-comments).
+Comment / attachment tables for this module are documented separately — see [01a — Data Model — Comment Tables](/en/inventory/inventory-adjustment/01a-data-model-comments).
 
 ### 2.4 tb_stock_out
 

@@ -80,7 +80,7 @@ Operationally, adjustments are also the formal landing point for variances detec
 ## 7. Pages in This Module
 
 - [01 — Data Model](/en/inventory/inventory-adjustment/01-data-model) — Entities, fields, relationships, and enums (Prisma-derived).
-- [01a — Data Model: Comment Tables](/en/inventory/inventory-adjustment/01a-data-model-comments) — Document-level and line-level comment / attachment tables and the `enum_comment_type` user/system tagging.
+- [01a — Data Model — Comment Tables](/en/inventory/inventory-adjustment/01a-data-model-comments) — Document-level and line-level comment / attachment tables and the `enum_comment_type` user/system tagging.
 - [02 — Business Rules](/en/inventory/inventory-adjustment/02-business-rules) — Validation, calculation, authorization, posting, and cross-module rules.
 - [03 — User Flow](/en/inventory/inventory-adjustment/03-user-flow) — Document lifecycle, plus persona index.
   - [Store Keeper](/en/inventory/inventory-adjustment/03-user-flow-store-keeper)

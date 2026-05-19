@@ -95,7 +95,7 @@ Per-product row inside a template. Carries the product reference, the inventory 
 **Constraints:** `@id` on `id`. FKs: `pricelist_template_id → tb_pricelist_template.id` (`NoAction`); `product_id → tb_product.id` (`NoAction`, required). Back-relation to `tb_pricelist_template_detail_comment`.
 **Indexes:** `@@unique([pricelist_template_id, product_id, deleted_at])` as `pricelist_template_detail_pricelist_template_id_product_id_u`; `@@index([pricelist_template_id, product_id])` and `@@index([product_id])`.
 
-Comment / attachment tables for this module are documented separately — see [01a — Data Model: Comment Tables](/en/inventory/vendor-pricelist/01a-data-model-comments).
+Comment / attachment tables for this module are documented separately — see [01a — Data Model — Comment Tables](/en/inventory/vendor-pricelist/01a-data-model-comments).
 
 ### 2.3 tb_request_for_pricing
 
