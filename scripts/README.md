@@ -48,6 +48,25 @@ Live push:
 python3 scripts/sync_nav.py
 ```
 
+### Build mode (declarative)
+
+To rebuild the entire nav tree (EN + TH) from `nav-overrides.yaml`:
+
+```bash
+python3 scripts/sync_nav.py --mode=build --dry-run    # preview
+python3 scripts/sync_nav.py --mode=build              # apply
+```
+
+Build mode reads the `books:` block in `nav-overrides.yaml`. Each book
+becomes a header followed by a link to its home page and one link per
+module. A divider separates books. Both EN and TH locales are rebuilt
+from the same config, with per-item TH labels resolved from
+`label_th:`.
+
+Use mirror mode (the default) when you maintain EN nav in Wiki.js admin
+and only want TH to follow. Use build mode after a structural change
+(adding a book, renaming a module).
+
 ### Label resolution
 
 For each EN nav item, the TH label is resolved in this order:
