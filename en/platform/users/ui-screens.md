@@ -23,7 +23,7 @@ Users carry two additions not found on simpler entities. First, the list page ex
 
 ### 2.1 Layout
 
-The page renders inside `Layout`, under a two-row header: a title/subtitle row and an actions row. Below the header, active filter badges are shown as a chip strip when any filter is set. The main content area is a `DataTable` component operating in server-side mode, with built-in pagination controls.
+The page renders inside `Layout`, under a two-row header: a title/subtitle row and an actions row. Below the action buttons sits a search-and-filters row: debounced search input on the left, Filters button (opens a Sheet) on the right. Active filter badges are shown as a chip strip when any filter is set. The main content area is a `DataTable` component operating in server-side mode, with built-in pagination controls.
 
 Columns in order: `username` (clickable — navigates to edit), `name` (computed from `firstname + middlename + lastname`, falls back to `name`), `email`, `platform_role` (badge), `BU` (active/total count), `is_active` (Active/Inactive badge), `created_at` + `created_by_name`, `updated_at` + `updated_by_name`, and conditionally `deleted_at` + `deleted_by_name` (see §2.5). The final column is an icon-button row action menu.
 
@@ -32,7 +32,7 @@ Columns in order: `username` (clickable — navigates to edit), `name` (computed
 Clicking **Filters** opens a right-side Sheet. Three filter groups are available:
 
 - **Role** — toggle buttons for each of the seven `PLATFORM_ROLES` values (`super_admin`, `platform_admin`, `support_manager`, `support_staff`, `security_officer`, `integration_developer`, `user`). Multiple values can be active simultaneously; the query uses an `{ in: [...] }` operator. A **Clear** link appears when any role is selected.
-- **Status** — two toggle buttons: **Active** (`is_active = true`) and **Inactive** (`is_active = false`). No tri-state "all" option; clearing both buttons removes the filter entirely.
+- **Status** — two toggle buttons: **Active** (`is_active = true`) and **Inactive** (`is_active = false`). No tri-state "all" option; clearing both buttons removes the filter entirely — both off is equivalent to no status constraint (all rows shown).
 - **Deleted** — a checkbox labelled "Show soft-deleted users". When off (default), the query appends `deleted_at: null`; when on, soft-deleted rows surface in the table with a red `Deleted` badge beside the user's name.
 
 When any filter is active, a **Clear All Filters** button appears at the bottom of the Sheet, and active filter chips appear in the strip below the header.
@@ -44,8 +44,6 @@ Three buttons appear in the header actions row, left to right:
 - **Fetch Keycloak** — calls `userService.fetchKeycloakUsers()` → `POST /api-system/fetch-user`. A spinner replaces the icon while the request is in flight; on success a toast confirms the sync and the table reloads via a paginate-state bump.
 - **Export** — client-side CSV export (uses `generateCSV` / `downloadCSV` utilities). Exports the currently loaded page of rows with columns: `username`, `email`, `platform_role`, `is_active`, `created_at`. The button is disabled while loading or when the table is empty. File name: `users-<YYYY-MM-DD>.csv`.
 - **Add User** — navigates to `/users/new`.
-
-The search input (debounced via `setTimeout` at ~300 ms) and the **Filters** Sheet trigger are in a second row below the header buttons. Active filter chip badges with per-chip remove buttons appear below that row when any filter is set.
 
 ### 2.4 Row actions
 
@@ -102,7 +100,7 @@ Three cards are stacked vertically (Clusters and Business Units cards are hidden
 ### 4.1 User Details card
 
 - **View mode**: all eight fields rendered as read-only styled `div` containers.
-- **Edit mode**: inputs become editable. The `username` field is **disabled** (`disabled={!isNew}`, which is `false` for edit mode), so `username` cannot be changed after creation.
+- **Edit mode**: inputs become editable. `username` is always `disabled={!isNew}` and cannot be changed after creation.
 - **Save Changes** → `PUT /api-system/user/:id`; on success, `fetchUser()` re-fetches and `setEditing(false)` returns to view mode.
 - **Cancel** → restores `formData` from `savedFormData`, calls `setEditing(false)`. No API call.
 
@@ -130,7 +128,7 @@ Fields in the dialog:
 2. **Business Unit** — select populated from the cluster's BUs, filtered to exclude BUs the user is already assigned to (`availableBUs`). Shown only after a cluster is selected.
 3. **BU Role** — select with values `Admin` and `User`.
 
-There is no `is_default` checkbox in this dialog. The `is_default` field is shown on existing BU assignment cards but is not set during the Add BU flow.
+There is no `is_default` checkbox in this dialog. The `is_default` field is shown on existing BU assignment cards but is not set during the Add BU flow. No Platform admin SPA surface currently sets `is_default`; the flag is writable only at the backend API or DB level.
 
 Submit: `businessUnitService.createUserBusinessUnit({ user_id, business_unit_id, role })`. On success, dialog closes, a toast confirms, and `fetchUser()` re-fetches. The **Add** button is disabled while the request is in flight or if no BU has been selected.
 
@@ -169,7 +167,7 @@ Submit: `DELETE /api-system/user/:id/hard`. The dialog cannot be closed while th
 
 The list page writes 7 keys to `localStorage` so the filter and pagination state survives page reloads. The edit page writes no `localStorage` keys.
 
-| Key | Type | Persists |
+| Key | Stored type | Persists |
 |---|---|---|
 | `search_users` | string | Current search term |
 | `page_users` | number (string) | Current page number (reset to `1` on filter changes) |
