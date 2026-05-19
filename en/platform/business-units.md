@@ -2,7 +2,7 @@
 title: Business Units
 description: Per-property/per-hotel entity with a multi-section form covering identity, contact, tax, formats, calculation, configuration, database connection, and BU-scoped user roster.
 published: true
-date: 2026-05-19T12:00:00.000Z
+date: 2026-05-19T21:00:00.000Z
 tags: platform/business-units, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -66,5 +66,5 @@ Because there is no `allowedRoles` array, the responsibility for limiting who ca
 
 ## 7. Pages in This Module
 
-- [Data Model](./data-model.md) — BU entity reference (stub — in progress): identity fields, hotel/company contact blocks, date/time/number format fields, calculation settings, the `config[]` key/value array, the `db_connection` JSON block, and the BU-user join schema.
-- [UI Screens](./ui-screens.md) — Tour of the list view (`BusinessUnitManagement`) and the edit page (`BusinessUnitEdit`) form sections (stub — in progress), plus the Users card with its BU-role select and add-from-cluster dialog.
+- [Data Model](./data-model.md) — BU entity reference: identity fields, hotel/company contact blocks, date/time/number format fields, calculation settings, the `config[]` key/value array, the `db_connection` JSON block, and the BU-user join schema.
+- [UI Screens](./ui-screens.md) — Tour of the list view (`BusinessUnitManagement`) and the edit page (`BusinessUnitEdit`) form sections, plus the Users card with its BU-role select and add-from-cluster dialog.
