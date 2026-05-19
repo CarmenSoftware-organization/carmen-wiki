@@ -89,29 +89,9 @@ PO document header. Carries reference number, vendor / currency / credit-term co
 **Constraints:** `@id` on `id`. FKs: `credit_term_id → tb_credit_term.id` (`NoAction`); `currency_id → tb_currency.id` via named relation `tb_purchase_order_currency_idTotb_currency` (`NoAction`); `vendor_id → tb_vendor.id` (`NoAction`). Note: `workflow_id` is stored as a UUID but has no Prisma `@relation` on this model.
 **Indexes:** `@@unique([po_no, deleted_at])` as `PO_po_no_u`; `@@index([po_no])` as `PO_po_no_idx`; `@@index([vendor_id])` as `PO_vendor_id_idx`.
 
-### 2.2 tb_purchase_order_comment
+Comment / attachment tables for this module are documented separately — see [01a — Data Model: Comment Tables](/en/inventory/purchase-order/01a-data-model-comments).
 
-Workflow / activity-log entries attached to a PO header. As with PR, there is no dedicated `tb_purchase_order_workflow` table — this comment table, combined with the JSON workflow columns on the header, is the persistent record of the workflow timeline. Each row is either a user comment (`type = user`) or a system event (`type = system`) such as a stage transition.
-
-| Field | Prisma Type | Nullable | Description |
-| ----- | ----------- | -------- | ----------- |
-| `id` | `String @db.Uuid` | No | Primary key. |
-| `purchase_order_id` | `String @db.Uuid` | No | FK to `tb_purchase_order.id`. |
-| `type` | `enum_comment_type` | No | `user` or `system`; default `user`. |
-| `user_id` | `String @db.Uuid` | Yes | Author user id (null for `system` entries). |
-| `message` | `String` | Yes | Free-text comment body. |
-| `attachments` | `Json @db.JsonB` | Yes | Array of `{ originalName, fileToken, contentType }`; default `[]`. |
-| `created_at` | `DateTime @db.Timestamptz(6)` | Yes | Creation timestamp. |
-| `created_by_id` | `String @db.Uuid` | Yes | Creator id. |
-| `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | Last-update timestamp. |
-| `updated_by_id` | `String @db.Uuid` | Yes | Updater id. |
-| `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | Soft-delete timestamp. |
-| `deleted_by_id` | `String @db.Uuid` | Yes | Soft-delete actor id. |
-
-**Constraints:** `@id` on `id`. FK `purchase_order_id → tb_purchase_order.id` (`NoAction` on delete/update).
-**Indexes:** None declared beyond the primary key.
-
-### 2.3 tb_purchase_order_detail
+### 2.2 tb_purchase_order_detail
 
 PO line item. Carries product reference, order-qty and base-qty pair (single qty/UoM unlike PR which carries requested/approved/FOC triples — FOC on PO is a per-line boolean), tax and discount, line totals in transaction and base currency, running received / cancelled qty, and per-line workflow stage history.
 
@@ -173,29 +153,7 @@ PO line item. Carries product reference, order-qty and base-qty pair (single qty
 **Constraints:** `@id` on `id`. FKs: `purchase_order_id → tb_purchase_order.id`; `product_id → tb_product.id` (required); `tax_profile_id → tb_tax_profile.id`; two named `@relation` FKs into `tb_unit` — `tb_purchase_order_detail_order_unit_idTotb_unit` for `order_unit_id` and `tb_purchase_order_detail_base_unit_idTotb_unit` for `base_unit_id`. Back-relations to `tb_good_received_note_detail`, `tb_purchase_order_detail_comment`, and `tb_purchase_order_detail_tb_purchase_request_detail`.
 **Indexes:** `@@unique([purchase_order_id, sequence_no, deleted_at])` as `PO1_purchase_order_detail_sequence_no_u`; `@@index([purchase_order_id])` as `PO1_purchase_order_detail_idx`.
 
-### 2.4 tb_purchase_order_detail_comment
-
-Line-level counterpart of `tb_purchase_order_comment`. Captures comments and system events attached to a single PO line — typically used during approval to record stage-level decisions and during fulfilment to log per-line vendor exchanges.
-
-| Field | Prisma Type | Nullable | Description |
-| ----- | ----------- | -------- | ----------- |
-| `id` | `String @db.Uuid` | No | Primary key. |
-| `purchase_order_detail_id` | `String @db.Uuid` | No | FK to `tb_purchase_order_detail.id`. |
-| `type` | `enum_comment_type` | No | `user` or `system`; default `user`. |
-| `user_id` | `String @db.Uuid` | Yes | Author user id (null for `system` entries). |
-| `message` | `String` | Yes | Free-text comment body. |
-| `attachments` | `Json @db.JsonB` | Yes | Array of attachments; default `[]`. |
-| `created_at` | `DateTime @db.Timestamptz(6)` | Yes | Creation timestamp. |
-| `created_by_id` | `String @db.Uuid` | Yes | Creator id. |
-| `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | Last-update timestamp. |
-| `updated_by_id` | `String @db.Uuid` | Yes | Updater id. |
-| `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | Soft-delete timestamp. |
-| `deleted_by_id` | `String @db.Uuid` | Yes | Soft-delete actor id. |
-
-**Constraints:** `@id` on `id`. FK `purchase_order_detail_id → tb_purchase_order_detail.id` (`NoAction` on delete/update).
-**Indexes:** None declared beyond the primary key.
-
-### 2.5 tb_purchase_order_detail_tb_purchase_request_detail
+### 2.3 tb_purchase_order_detail_tb_purchase_request_detail
 
 Bridge table linking a PO detail row to one or more originating PR detail rows. The same row also denormalises the PR-side qty / unit / location snapshot and tracks per-PR-line received and FOC quantities, so the bridge is both the linkage table and the cursor for "how much of this PR line was already covered by this PO line". See [purchase-request](/en/inventory/purchase-request) § 2 for the PR-side view.
 
@@ -293,7 +251,7 @@ The legacy `purchase-order-module.md` describes a high-level data dictionary (a 
 | 1 | PO status values | State diagram uses `Draft → Sent → Partial / FullyReceived → Closed`, plus `Voided` and `Deleted` branches. | `enum_purchase_order_doc_status { draft, in_progress, voided, sent, partial, closed, completed }` — adds `in_progress` (approval-chain state, absent from the state diagram) and uses `completed` rather than `FullyReceived`. | Treat Prisma as canonical. Update the state diagram to insert `in_progress` between `draft` and `sent`, and rename `FullyReceived` → `completed`. `Deleted` in the diagram is the soft-delete (`deleted_at`) flag, not a status value. |
 | 2 | Reference number column | `purchase_orders.number VARCHAR(20)` | `tb_purchase_order.po_no VARCHAR` (no length cap declared) | Rename `number` → `po_no` in the carmen/docs data dictionary, drop the 20-char cap claim. |
 | 3 | PO header data dictionary | Lists `id, number, vendor_id, order_date, status, currency_code, exchange_rate, total_amount, created_by` only (8 columns). | `tb_purchase_order` has ~45 columns including workflow JSON, credit-term snapshot, buyer, history, multiple totals (`total_qty`, `total_price`, `total_tax`, `total_amount`), `is_active`, `info`, `dimension`, `doc_version`, and the full audit set. | The carmen/docs dictionary is illustrative only; do not treat it as a field-complete spec. Cross-reference Section 2.1 of this page instead. |
-| 4 | PO line data dictionary | Lists `id, purchase_order_id, item_id, ordered_quantity, unit_price, total_amount, pr_item_id` (7 columns). | `tb_purchase_order_detail` has ~50 columns including separate `order_*` / `base_*` UoM pairs, FOC boolean, full tax + discount columns, transaction- and base-currency totals, `received_qty`, `cancelled_qty`, per-line workflow JSON. Also: there is no `pr_item_id` on the detail row — PR linkage lives on the bridge table `tb_purchase_order_detail_tb_purchase_request_detail`. | Drop `pr_item_id` from the carmen/docs claim; document the bridge table as the canonical PR linkage. Cross-reference Section 2.3 / 2.5 of this page. |
+| 4 | PO line data dictionary | Lists `id, purchase_order_id, item_id, ordered_quantity, unit_price, total_amount, pr_item_id` (7 columns). | `tb_purchase_order_detail` has ~50 columns including separate `order_*` / `base_*` UoM pairs, FOC boolean, full tax + discount columns, transaction- and base-currency totals, `received_qty`, `cancelled_qty`, per-line workflow JSON. Also: there is no `pr_item_id` on the detail row — PR linkage lives on the bridge table `tb_purchase_order_detail_tb_purchase_request_detail`. | Drop `pr_item_id` from the carmen/docs claim; document the bridge table as the canonical PR linkage. Cross-reference Section 2.2 / 2.3 of this page. |
 | 5 | PR→PO traceability mechanism | "Each PO item maintains references to its originating PR" (implies a column on the PO line). | Linkage is a many-to-many bridge (`tb_purchase_order_detail_tb_purchase_request_detail`), not a single FK column on the PO line. This is required to support consolidation (many PR → one PO) and partial conversion (one PR → many PO). | Update carmen/docs prose to describe the bridge; the single-FK model would not support the documented vendor+currency grouping behaviour. |
 | 6 | Status field name | `purchase_orders.status` | `tb_purchase_order.po_status` (column is `po_status`, not `status`). | Rename in carmen/docs data dictionary. |
 | 7 | Reference number format | Not specified in carmen/docs. | `po_no` is `VarChar` with no format constraint at the DB level; format is enforced by the application. | Note in carmen/docs that the format is application-policy, not schema-enforced — parallel to PR. |

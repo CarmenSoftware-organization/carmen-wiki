@@ -1,0 +1,87 @@
+---
+title: Purchase Order — Data Model: Comment Tables
+description: Document-level and line-level comment / attachment tables for the Purchase Order module — message text, attachments JSON, and the user/system comment-type enum.
+published: true
+date: 2026-05-20T00:00:00.000Z
+tags: purchase-order, data-model, inventory, carmen-software, comments, attachments
+editor: markdown
+dateCreated: 2026-05-20T00:00:00.000Z
+---
+
+# Purchase Order — Data Model: Comment Tables
+
+## 1. At a Glance
+
+The Purchase Order module persists user-authored and system-generated notes plus file attachments on dedicated `*_comment` tables, separate from the lifecycle-bearing header / detail tables documented in [01 — Data Model](/en/inventory/purchase-order/01-data-model). Every comment row carries a free-text `message`, an `attachments` JSON array of S3-token records (`{originalName, fileToken, contentType}`), and a `type` discriminator (`enum_comment_type`) that distinguishes user-authored entries from system-generated transition notes such as "return to buyer" reasons, void reasons, close-early reasons, and three-way-match exception notes. Document-level comments anchor to the PO header (`tb_purchase_order_comment`); detail-level comments anchor to a specific PO line (`tb_purchase_order_detail_comment`), supporting per-line deviation notes and per-line three-way-match commentary.
+
+## 2. Shared Shape
+
+Every `*_comment` row in this module follows the same column layout:
+
+```
+id                  uuid / PK
+<parent>_id         uuid / FK to header or detail row
+message             text (free-form, nullable)
+attachments         json — array of `{originalName, fileToken, contentType}` (nullable)
+type                enum_comment_type — `user` (default) | `system`
+created_at          timestamp
+created_by_id       uuid / FK to tb_user
+updated_at          timestamp
+updated_by_id       uuid / FK to tb_user
+```
+
+The same shape applies to header-level comments and detail-level comments; only the parent FK differs.
+
+## 3. Tables
+
+### 3.1 tb_purchase_order_comment
+
+Workflow / activity-log entries attached to a PO header. As with PR, there is no dedicated `tb_purchase_order_workflow` table — this comment table, combined with the JSON workflow columns on the header, is the persistent record of the workflow timeline. Each row is either a user comment (`type = user`) or a system event (`type = system`) such as a stage transition.
+
+| Field | Prisma Type | Nullable | Description |
+| ----- | ----------- | -------- | ----------- |
+| `id` | `String @db.Uuid` | No | Primary key. |
+| `purchase_order_id` | `String @db.Uuid` | No | FK to `tb_purchase_order.id`. |
+| `type` | `enum_comment_type` | No | `user` or `system`; default `user`. |
+| `user_id` | `String @db.Uuid` | Yes | Author user id (null for `system` entries). |
+| `message` | `String` | Yes | Free-text comment body. |
+| `attachments` | `Json @db.JsonB` | Yes | Array of `{ originalName, fileToken, contentType }`; default `[]`. |
+| `created_at` | `DateTime @db.Timestamptz(6)` | Yes | Creation timestamp. |
+| `created_by_id` | `String @db.Uuid` | Yes | Creator id. |
+| `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | Last-update timestamp. |
+| `updated_by_id` | `String @db.Uuid` | Yes | Updater id. |
+| `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | Soft-delete timestamp. |
+| `deleted_by_id` | `String @db.Uuid` | Yes | Soft-delete actor id. |
+
+**Constraints:** `@id` on `id`. FK `purchase_order_id → tb_purchase_order.id` (`NoAction` on delete/update).
+**Indexes:** None declared beyond the primary key.
+
+### 3.2 tb_purchase_order_detail_comment
+
+Line-level counterpart of `tb_purchase_order_comment`. Captures comments and system events attached to a single PO line — typically used during approval to record stage-level decisions and during fulfilment to log per-line vendor exchanges.
+
+| Field | Prisma Type | Nullable | Description |
+| ----- | ----------- | -------- | ----------- |
+| `id` | `String @db.Uuid` | No | Primary key. |
+| `purchase_order_detail_id` | `String @db.Uuid` | No | FK to `tb_purchase_order_detail.id`. |
+| `type` | `enum_comment_type` | No | `user` or `system`; default `user`. |
+| `user_id` | `String @db.Uuid` | Yes | Author user id (null for `system` entries). |
+| `message` | `String` | Yes | Free-text comment body. |
+| `attachments` | `Json @db.JsonB` | Yes | Array of attachments; default `[]`. |
+| `created_at` | `DateTime @db.Timestamptz(6)` | Yes | Creation timestamp. |
+| `created_by_id` | `String @db.Uuid` | Yes | Creator id. |
+| `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | Last-update timestamp. |
+| `updated_by_id` | `String @db.Uuid` | Yes | Updater id. |
+| `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | Soft-delete timestamp. |
+| `deleted_by_id` | `String @db.Uuid` | Yes | Soft-delete actor id. |
+
+**Constraints:** `@id` on `id`. FK `purchase_order_detail_id → tb_purchase_order_detail.id` (`NoAction` on delete/update).
+**Indexes:** None declared beyond the primary key.
+
+## 4. Cross-References
+
+- Sibling: [01 — Data Model](/en/inventory/purchase-order/01-data-model) — `tb_purchase_order` and `tb_purchase_order_detail` (header / line tables), enum definitions, the workflow / history JSON columns, and the cross-document bridges to PR and GRN.
+- Sibling: [02 — Business Rules](/en/inventory/purchase-order/02-business-rules) — `PO_POST_005` (return-to-buyer reason text), `PO_POST_009` (three-way-match exception comments), `PO_POST_010` (void reason text), `PO_POST_011` (close-early reason text), and `PO_AUTH_011` (workflow-stage approval comments) all persist to `tb_purchase_order_comment`.
+- Upstream: [03 — User Flow: Procurement Manager](/en/inventory/purchase-order/03-user-flow-procurement-manager) — documents Manager review of the Attachments / Comments tabs and the recording of approver decisions.
+- Upstream: [03 — User Flow: Audit & Config](/en/inventory/purchase-order/03-user-flow-audit-config) — documents auditor read-only consumption of `tb_purchase_order_comment` for case-file evidence.
+- Upstream: [Purchase Order Module Overview](/en/inventory/purchase-order) — module landing page.
