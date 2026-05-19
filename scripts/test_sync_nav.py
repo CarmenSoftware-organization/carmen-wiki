@@ -397,12 +397,10 @@ from scripts.sync_nav import run_sync
 def test_run_sync_full_pipeline(tmp_path: Path):
     """Pure orchestration: given EN items + repo root, produce TH items + counts."""
     # repo layout
-    (tmp_path / "th").mkdir()
-    (tmp_path / "th" / "index.md").write_text(
+    (tmp_path / "th.md").write_text(
         "# Carmen Wiki TH\n\n## 1. Procure-to-Pay\n", encoding="utf-8"
     )
-    (tmp_path / "en").mkdir()
-    (tmp_path / "en" / "index.md").write_text(
+    (tmp_path / "en.md").write_text(
         "# Carmen Wiki EN\n\n## 1. Procure-to-Pay\n", encoding="utf-8"
     )
     _write_md(tmp_path / "th" / "pr.md", "คำขอซื้อ")
@@ -436,7 +434,6 @@ def test_build_tree_one_book_one_group_one_module():
             "inventory": {
                 "label_en": "Carmen Inventory",
                 "label_th": "Carmen Inventory",
-                "home_slug": "index",
                 "groups": [
                     {
                         "label_en": "Costing & Reporting",
@@ -454,10 +451,10 @@ def test_build_tree_one_book_one_group_one_module():
     kinds = [i["kind"] for i in items_en]
     assert kinds == ["header", "link", "header", "link"]
     assert items_en[0]["label"] == "Carmen Inventory"
-    assert items_en[1]["target"] == "/en/inventory/index"
+    assert items_en[1]["target"] == "/en/inventory"
     assert items_en[2]["label"] == "Costing & Reporting"
     assert items_en[2]["kind"] == "header"
-    assert items_en[3]["target"] == "/en/inventory/costing/index"
+    assert items_en[3]["target"] == "/en/inventory/costing"
     assert items_en[3]["label"] == "Costing"
 
 
@@ -468,7 +465,6 @@ def test_build_tree_two_books_inserts_divider_between():
             "inventory": {
                 "label_en": "Carmen Inventory",
                 "label_th": "Carmen Inventory",
-                "home_slug": "index",
                 "groups": [
                     {
                         "label_en": "Costing & Reporting",
@@ -482,7 +478,6 @@ def test_build_tree_two_books_inserts_divider_between():
             "platform": {
                 "label_en": "Carmen Platform",
                 "label_th": "Carmen Platform",
-                "home_slug": "index",
                 "groups": [
                     {
                         "label_en": "Tenancy",
@@ -511,7 +506,6 @@ def test_build_tree_th_uses_th_labels_and_paths():
             "inventory": {
                 "label_en": "Carmen Inventory",
                 "label_th": "Carmen Inventory TH",
-                "home_slug": "index",
                 "groups": [
                     {
                         "label_en": "Costing & Reporting",
@@ -526,9 +520,9 @@ def test_build_tree_th_uses_th_labels_and_paths():
     }
     items_th = build_tree_from_config(config, locale="th")
     assert items_th[0]["label"] == "Carmen Inventory TH"
-    assert items_th[1]["target"] == "/th/inventory/index"
+    assert items_th[1]["target"] == "/th/inventory"
     assert items_th[2]["label"] == "ต้นทุนและรายงาน"
-    assert items_th[3]["target"] == "/th/inventory/costing/index"
+    assert items_th[3]["target"] == "/th/inventory/costing"
     assert items_th[3]["label"] == "การคิดต้นทุน"
 
 
@@ -539,7 +533,6 @@ def test_build_tree_link_items_have_uuid_ids():
             "inventory": {
                 "label_en": "Carmen Inventory",
                 "label_th": "Carmen Inventory",
-                "home_slug": "index",
                 "groups": [
                     {
                         "label_en": "Costing & Reporting",
@@ -566,7 +559,6 @@ def test_build_tree_multiple_groups_emits_header_per_group():
             "inventory": {
                 "label_en": "Carmen Inventory",
                 "label_th": "Carmen Inventory",
-                "home_slug": "index",
                 "groups": [
                     {
                         "label_en": "Procurement",
@@ -612,7 +604,6 @@ def test_build_tree_empty_groups_list_emits_book_header_and_home_only():
             "inventory": {
                 "label_en": "Carmen Inventory",
                 "label_th": "Carmen Inventory",
-                "home_slug": "index",
                 "groups": [],
             },
         },
@@ -621,7 +612,7 @@ def test_build_tree_empty_groups_list_emits_book_header_and_home_only():
     kinds = [i["kind"] for i in items]
     assert kinds == ["header", "link"]
     assert items[0]["label"] == "Carmen Inventory"
-    assert items[1]["target"] == "/en/inventory/index"
+    assert items[1]["target"] == "/en/inventory"
 
 
 def test_build_tree_group_with_no_modules_still_emits_header():
@@ -632,7 +623,6 @@ def test_build_tree_group_with_no_modules_still_emits_header():
             "inventory": {
                 "label_en": "Carmen Inventory",
                 "label_th": "Carmen Inventory",
-                "home_slug": "index",
                 "groups": [
                     {"label_en": "Empty Group", "label_th": "Empty Group", "modules": []},
                 ],
