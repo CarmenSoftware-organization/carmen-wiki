@@ -127,6 +127,6 @@ Document state across all Audit / Config exits is governed by `enum_purchase_req
 - Sibling: [03-user-flow-approver.md](./03-user-flow-approver.md) — approval-chain decisions captured in `workflow_history` for audit review
 - Sibling: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — downstream persona whose PO-conversion handoff is audited
 - Sibling: [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md) — escalation and rule-set changes that the Sysadmin's threshold / workflow configuration enables
-- Sibling: [index.md](./index.md) Section 4 — canonical Auditor and System Administrator role descriptions
+- Sibling: [the module landing](/en/inventory/purchase-request) Section 4 — canonical Auditor and System Administrator role descriptions
 - Cross-link: [[inventory-adjustment]] — sibling audit-trail surface for inventory-side governance
 - Cross-link: [[purchase-order]] — downstream module whose conversion events are observed in the PR audit trail

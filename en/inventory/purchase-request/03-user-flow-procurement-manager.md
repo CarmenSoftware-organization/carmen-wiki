@@ -118,6 +118,6 @@ Document state across all transitions is recorded by `enum_purchase_request_doc_
 - Sibling: [03-user-flow-approver.md](./03-user-flow-approver.md) — base approval flow this extends; the review-and-decide UI and split-reject mechanics are inherited
 - Sibling: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — downstream persona that consumes the vendor-allocation rules the Procurement Manager maintains
 - Sibling: [03-user-flow-requestor.md](./03-user-flow-requestor.md) — bounce-back target for send-back that reaches the create stage
-- Sibling: [index.md](./index.md) Section 4 — canonical Procurement Manager role description
+- Sibling: [the module landing](/en/inventory/purchase-request) Section 4 — canonical Procurement Manager role description
 - Cross-link: [[vendor-pricelist]] — pricelist data feeding the Allocate Vendor ranking
 - Cross-link: [[purchase-order]] — downstream module receiving the final-approved PR for conversion

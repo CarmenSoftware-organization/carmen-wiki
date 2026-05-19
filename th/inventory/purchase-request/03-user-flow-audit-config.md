@@ -127,6 +127,6 @@ graph LR
 - หน้าพี่น้อง: [03-user-flow-approver.md](./03-user-flow-approver.md) — การตัดสินใจของ chain อนุมัติที่จับใน `workflow_history` สำหรับ audit review
 - หน้าพี่น้อง: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — persona ปลายน้ำที่ handoff การแปลง PO ถูก audit
 - หน้าพี่น้อง: [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md) — การเปลี่ยน escalation และชุดกฎที่ configuration threshold / workflow ของ Sysadmin enable
-- หน้าพี่น้อง: [index.md](./index.md) Section 4 — คำอธิบาย role ของ Auditor และ System Administrator ตามมาตรฐาน
+- หน้าพี่น้อง: [หน้าหลักโมดูล](/th/inventory/purchase-request) Section 4 — คำอธิบาย role ของ Auditor และ System Administrator ตามมาตรฐาน
 - Cross-link: [[inventory-adjustment]] — surface audit-trail พี่น้องสำหรับ governance ฝั่ง inventory
 - Cross-link: [[purchase-order]] — โมดูลปลายน้ำที่ event การแปลงถูกสังเกตใน audit trail ของ PR

@@ -109,4 +109,4 @@ graph LR
 - `../carmen/docs/purchase-request-management/purchase-request-module-prd.md` — product requirement ที่ขับเคลื่อน chain อนุมัติหลายระดับและการ routing ตาม threshold
 - หน้าพี่น้อง: [01-data-model.md](./01-data-model.md) — `tb_purchase_request.workflow_current_stage`, `stages_status`, `user_action`, `workflow_history`, `enum_purchase_request_doc_status`
 - หน้าพี่น้อง: [03-user-flow-requestor.md](./03-user-flow-requestor.md) — persona ต้นน้ำ; รับ PR ที่ส่งกลับผ่าน Send Back
-- หน้าพี่น้อง: [index.md](./index.md) Section 4 — คำอธิบาย role ของ Approver ตามมาตรฐานและ stage chain
+- หน้าพี่น้อง: [หน้าหลักโมดูล](/th/inventory/purchase-request) Section 4 — คำอธิบาย role ของ Approver ตามมาตรฐานและ stage chain

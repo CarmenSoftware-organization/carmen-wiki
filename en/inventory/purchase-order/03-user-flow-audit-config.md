@@ -131,7 +131,7 @@ Document state across all Audit / Config exits is governed by `enum_purchase_ord
 - Sibling: [03-user-flow-vendor.md](./03-user-flow-vendor.md) — external counterparty whose acknowledgement and invoice events are observed via the chain audit
 - Sibling: [03-user-flow-receiver.md](./03-user-flow-receiver.md) — GRN-posting persona whose actions drive the `sent → partial → completed` transitions audited under `PO_POST_006` / `PO_POST_007`
 - Sibling: [03-user-flow-finance.md](./03-user-flow-finance.md) — three-way-match persona whose `PO_POST_008` / `PO_POST_009` records close the audit chain on the AP side
-- Sibling: [index.md](./index.md) Section 4 — canonical Auditor and System Administrator role descriptions
+- Sibling: [the module landing](/en/inventory/purchase-order) Section 4 — canonical Auditor and System Administrator role descriptions
 - Cross-link: [[purchase-request]] — upstream module whose PR records and approval trail are walked in the back-chain audit via the PR→PO bridge
 - Cross-link: [[good-receive-note]] — downstream module whose GRN postings drive the forward-chain audit of receipt under `PO_POST_006` / `PO_POST_007`
 - Cross-link: [[vendor-pricelist]] — price-snapshot surface taken at PR-to-PO conversion and verified during financial audit of the PO

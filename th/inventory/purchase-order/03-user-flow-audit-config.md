@@ -131,7 +131,7 @@ Document state ข้าม Audit / Config exits ทั้งหมด governed 
 - Sibling: [03-user-flow-vendor.md](./03-user-flow-vendor.md) — counterparty ภายนอกที่ acknowledgement และ invoice events สังเกตผ่าน chain audit
 - Sibling: [03-user-flow-receiver.md](./03-user-flow-receiver.md) — persona ที่ post GRN ที่ actions ขับเคลื่อน transitions `sent → partial → completed` ที่ audited ภายใต้ `PO_POST_006` / `PO_POST_007`
 - Sibling: [03-user-flow-finance.md](./03-user-flow-finance.md) — persona three-way-match ที่ records `PO_POST_008` / `PO_POST_009` ปิด audit chain ฝั่ง AP
-- Sibling: [index.md](./index.md) Section 4 — คำอธิบาย role canonical ของ Auditor และ System Administrator
+- หน้าพี่น้อง: [หน้าหลักโมดูล](/th/inventory/purchase-order) Section 4 — คำอธิบาย role canonical ของ Auditor และ System Administrator
 - Cross-link: [[purchase-request]] — โมดูล upstream ที่ PR records และ approval trail walk ใน back-chain audit ผ่าน PR→PO bridge
 - Cross-link: [[good-receive-note]] — โมดูลปลายน้ำที่ GRN postings ขับเคลื่อน forward-chain audit ของ receipt ภายใต้ `PO_POST_006` / `PO_POST_007`
 - Cross-link: [[vendor-pricelist]] — surface price-snapshot ที่ taken ที่ PR-to-PO conversion และ verified ระหว่าง financial audit ของ PO
