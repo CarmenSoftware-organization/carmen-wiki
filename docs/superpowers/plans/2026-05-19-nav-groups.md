@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Render each Wiki.js book's sidebar as named groups of modules (Inventory: 6 groups / 19 modules; Platform: 3 groups / 6 modules) instead of one flat list per book.
+**Goal:** Render each Wiki.js book's sidebar as named groups of modules (Inventory: 6 groups / 18 modules; Platform: 3 groups / 6 modules) instead of one flat list per book.
 
 **Architecture:** Extend `nav-overrides.yaml` with a `groups:` block per book that replaces the legacy flat `modules:` key. `sync_nav.py:build_tree_from_config()` walks groups → modules and emits a Wiki.js `header` item between module link runs to render the visual grouping. Both books' `home.md` TOCs are rewritten to mirror the group structure.
 
@@ -504,7 +504,7 @@ links: {}
 ```
 
 Notes on the conversion:
-- All 19 Inventory modules and 6 Platform modules are preserved — only their container key changed from `modules:` to `groups[N].modules:`
+- All 18 Inventory modules and 6 Platform modules are preserved — only their container key changed from `modules:` to `groups[N].modules:`
 - Module slugs and `label_en` are byte-identical to the previous file (so URLs and EN sidebar labels do not change)
 - Group labels are introduced for the first time; TH group labels are translated where natural (เช่น "Procurement" → "การจัดซื้อ"); Platform group labels left in EN initially (see spec § Risks)
 
@@ -520,14 +520,14 @@ source .env  # to set WIKI_API_URL and WIKI_API_TOKEN — sync_nav.py refuses to
 
 Expected output (first ~80 lines): the `[BUILD]` summary line showing item counts and a `[DRY-RUN] tree preview:` block listing all items per locale. The EN tree should contain (in order):
 - 1 book header `Carmen Inventory`, 1 link `Home`
-- 6 group headers + 19 module links for Inventory
+- 6 group headers + 18 module links for Inventory
 - 1 divider
 - 1 book header `Carmen Platform`, 1 link `Home`
 - 3 group headers + 6 module links for Platform
-- Total EN items: 1 + 1 + (6 + 19) + 1 + 1 + 1 + (3 + 6) = **39 items**
-- Same shape for TH: 39 items
+- Total EN items: 1 + 1 + (6 + 18) + 1 + 1 + 1 + (3 + 6) = **38 items**
+- Same shape for TH: 38 items
 
-The headline line should read `[BUILD]  en: 39 items, th: 39 items`.
+The headline line should read `[BUILD]  en: 38 items, th: 38 items`.
 
 If you do not have a `.env` with `WIKI_API_URL` / `WIKI_API_TOKEN` set, the script exits with code 2 before reaching the YAML parse. In that case, export placeholder values so the script proceeds to dry-run:
 ```bash
@@ -542,7 +542,7 @@ git add scripts/nav-overrides.yaml
 git commit -m "$(cat <<'EOF'
 scripts(nav-overrides): migrate both books from flat modules: to groups:
 
-Group Inventory's 19 modules into 6 categories (Overview, Procurement,
+Group Inventory's 18 modules into 6 categories (Overview, Procurement,
 Inventory Operations, Product & Recipe, Costing & Reporting,
 Administration) and Platform's 6 modules into 3 categories (Tenancy,
 Identity & Access, Reporting). Module slugs and EN labels unchanged;
@@ -849,7 +849,7 @@ source .env
 .venv/bin/python scripts/sync_nav.py --mode=build --dry-run
 ```
 
-Expected: `[BUILD]  en: 39 items, th: 39 items` followed by a `[DRY-RUN] tree preview:` block. Scan the preview and confirm:
+Expected: `[BUILD]  en: 38 items, th: 38 items` followed by a `[DRY-RUN] tree preview:` block. Scan the preview and confirm:
 - Inventory book block: book header `Carmen Inventory` → `Home` link → 6 group headers (`Overview`, `Procurement`, `Inventory Operations`, `Product & Recipe`, `Costing & Reporting`, `Administration`), each followed by its module links
 - One `divider` row between the two books
 - Platform book block: book header `Carmen Platform` → `Home` link → 3 group headers (`Tenancy`, `Identity & Access`, `Reporting`), each followed by its module links
@@ -871,7 +871,7 @@ source .env
 .venv/bin/python scripts/sync_nav.py --mode=build
 ```
 
-Expected: `[BUILD]  en: 39 items, th: 39 items` then `[PUSH]   updateTree succeeded.`
+Expected: `[BUILD]  en: 38 items, th: 38 items` then `[PUSH]   updateTree succeeded.`
 
 If `updateTree` fails: `sync_nav.py` raises `SystemExit` with the GraphQL error code and message. Report the error to the user, do **not** retry blindly — the most likely cause is that Wiki.js navigation mode is not `STATIC`, in which case the user must switch it in the Wiki.js admin UI (Administration → Navigation → Mode = Static).
 
