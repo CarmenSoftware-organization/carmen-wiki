@@ -394,8 +394,8 @@ def run_sync(
     No GraphQL I/O; called by main() after fetch_navigation and before
     push_navigation. Tested directly in unit tests.
     """
-    en_index = parse_index_headings(repo_root / "en" / "index.md")
-    th_index = parse_index_headings(repo_root / "th" / "index.md")
+    en_index = parse_index_headings(repo_root / "en.md")
+    th_index = parse_index_headings(repo_root / "th.md")
     header_map = build_header_label_map(en_index, th_index)
     overrides = load_overrides(overrides_path)
     return transform_items(
@@ -464,8 +464,8 @@ def _run_mirror_mode(
                 else en_item,
                 repo_root=repo_root,
                 header_map=build_header_label_map(
-                    parse_index_headings(repo_root / "en" / "index.md"),
-                    parse_index_headings(repo_root / "th" / "index.md"),
+                    parse_index_headings(repo_root / "en.md"),
+                    parse_index_headings(repo_root / "th.md"),
                 ),
                 overrides=load_overrides(overrides_path),
             )
@@ -649,9 +649,9 @@ def build_tree_from_config(
 ) -> list[dict[str, Any]]:
     """Build a Wiki.js nav tree for one locale from the books: config block.
 
-    For each book: emit a book header, a link to /<locale>/<book>/<home_slug>,
+    For each book: emit a book header, a link to /<locale>/<book>,
     then for each group: emit a group header followed by a link per module
-    pointing to /<locale>/<book>/<module>/<home_slug>. A divider separates
+    pointing to /<locale>/<book>/<module>. A divider separates
     consecutive books.
     """
     label_key = f"label_{locale}"
@@ -661,11 +661,10 @@ def build_tree_from_config(
         if idx > 0:
             items.append(_new_divider())
         items.append(_new_header(book[label_key]))
-        home_slug = book.get("home_slug", "index")
         items.append(
             _new_link(
                 "Home",
-                f"/{locale}/{book_slug}/{home_slug}",
+                f"/{locale}/{book_slug}",
             )
         )
         for group in book.get("groups") or []:
@@ -674,7 +673,7 @@ def build_tree_from_config(
                 items.append(
                     _new_link(
                         module[label_key],
-                        f"/{locale}/{book_slug}/{module['slug']}/{home_slug}",
+                        f"/{locale}/{book_slug}/{module['slug']}",
                     )
                 )
     return items
