@@ -2,7 +2,7 @@
 title: Good Receive Note (GRN)
 description: The receiving document that records physical goods received against a purchase order and adds them to inventory.
 published: true
-date: 2026-05-17T07:00:16.000Z
+date: 2026-05-19T23:00:00.000Z
 tags: good-receive-note, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -87,15 +87,16 @@ Food-safety and quality control sit on top of all this. Perishable goods carry l
 
 ## 7. Pages in This Module
 
-- [01 — Data Model](./01-data-model.md) — Entities, fields, relationships, and enums (Prisma-derived).
-- [02 — Business Rules](./02-business-rules.md) — Validation, calculation, authorization, posting, and three-way-match rules.
-- [03 — User Flow](./03-user-flow.md) — Document lifecycle and persona index.
-  - [Receiver](./03-user-flow-receiver.md)
-  - [Purchaser](./03-user-flow-purchaser.md)
-  - [Finance](./03-user-flow-finance.md)
-  - [Audit / Config](./03-user-flow-audit-config.md)
-- [04 — Test Scenarios](./04-test-scenarios.md) — Persona scope, cross-persona scenarios, E2E mapping.
-  - [Receiver](./04-test-scenarios-receiver.md)
-  - [Purchaser](./04-test-scenarios-purchaser.md)
-  - [Finance](./04-test-scenarios-finance.md)
-  - [Audit / Config](./04-test-scenarios-audit-config.md)
+- [[good-receive-note/01-data-model|01 — Data Model]] — Entities, fields, relationships, and enums (Prisma-derived).
+- [[good-receive-note/02-business-rules|02 — Business Rules]] — Validation, calculation, authorization, posting, and three-way-match rules.
+- [[good-receive-note/03-user-flow|03 — User Flow]] — Document lifecycle and persona index.
+  - [[good-receive-note/03-user-flow-receiver|Receiver]]
+  - [[good-receive-note/03-user-flow-purchaser|Purchaser]]
+  - [[good-receive-note/03-user-flow-finance|Finance]]
+  - [[good-receive-note/03-user-flow-audit-config|Audit / Config]]
+- [[good-receive-note/04-test-scenarios|04 — Test Scenarios]] — Persona scope, cross-persona scenarios, E2E mapping.
+  - [[good-receive-note/04-test-scenarios-receiver|Receiver]]
+  - [[good-receive-note/04-test-scenarios-purchaser|Purchaser]]
+  - [[good-receive-note/04-test-scenarios-finance|Finance]]
+  - [[good-receive-note/04-test-scenarios-audit-config|Audit / Config]]
+- [[purchase-order/credit-note|Credit Note]] — Vendor-issued credit against a prior GRN — reverses AP and either returns goods (`quantity_return`) or revalues cost (`amount_discount`). *(Cross-module: page lives under [[purchase-order]].)*

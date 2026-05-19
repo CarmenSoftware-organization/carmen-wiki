@@ -2,7 +2,7 @@
 title: Carmen Inventory
 description: Carmen Inventory ERP — เอกสารอ้างอิงโมดูลสำหรับนักพัฒนาและทีมทดสอบ
 published: true
-date: 2026-05-19T00:00:00.000Z
+date: 2026-05-19T23:00:00.000Z
 tags: book/inventory, home
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -25,6 +25,7 @@ dateCreated: 2026-05-19T00:00:00.000Z
 | [Purchase Request](/th/inventory/purchase-request) | กระบวนการอนุมัติ PR |
 | [Purchase Order](/th/inventory/purchase-order) | วงจรชีวิตของ PO |
 | [Good Receive Note](/th/inventory/good-receive-note) | กระบวนการรับสินค้า |
+| [Credit Note](/th/inventory/purchase-order/credit-note) | ใบลดหนี้จากผู้ขายต่อ GRN ที่รับมาแล้ว — กลับยอด AP คืนของ หรือปรับมูลค่าต้นทุนคลัง |
 | [Vendor Pricelist](/th/inventory/vendor-pricelist) | แค็ตตาล็อกและราคาผู้ขาย |
 
 ## 3. การดำเนินงานคลัง
