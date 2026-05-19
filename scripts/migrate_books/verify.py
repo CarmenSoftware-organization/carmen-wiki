@@ -46,18 +46,16 @@ def build_stale_patterns(*, modules: list[str], book: str) -> list[re.Pattern[st
         patterns.append(re.compile(rf"/assets/screenshots/(?:{alt})/[^\s)#]*"))
 
     for mod in book_conflicts:
-        # /en/<mod>/<segment>/... where <segment> is a known module slug
-        # means the path has already been migrated — skip it.
+        # Under /en/<mod>/, the post-migration legitimate targets are:
+        #   - /en/<mod>/home              (the book index page)
+        #   - /en/<mod>/<module-slug>/... (a migrated module page)
+        # Anything else under /en/<mod>/ is a stale leftover. The
+        # negative lookahead excludes both legitimate forms.
+        skip = rf"(?:home(?![\w-])|(?:{all_alt})/)"
+        patterns.append(re.compile(rf"/en/{re.escape(mod)}/(?!{skip})[^\s)#]*"))
+        patterns.append(re.compile(rf"/th/{re.escape(mod)}/(?!{skip})[^\s)#]*"))
         patterns.append(
-            re.compile(rf"/en/{re.escape(mod)}/(?!(?:{all_alt})/)[^\s)#]*")
-        )
-        patterns.append(
-            re.compile(rf"/th/{re.escape(mod)}/(?!(?:{all_alt})/)[^\s)#]*")
-        )
-        patterns.append(
-            re.compile(
-                rf"/assets/screenshots/{re.escape(mod)}/(?!(?:{all_alt})/)[^\s)#]*"
-            )
+            re.compile(rf"/assets/screenshots/{re.escape(mod)}/(?!{skip})[^\s)#]*")
         )
 
     return patterns

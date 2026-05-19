@@ -50,3 +50,15 @@ def test_collision_when_module_name_equals_book_name():
     ) == ["/en/inventory/some-old-page"]
     # And stale costing/grn under /en/ still flag
     assert find_stale_paths("[a](/en/costing/page)", patterns) == ["/en/costing/page"]
+
+
+def test_book_home_link_not_flagged_as_stale():
+    # /en/inventory/home is the book index page — legitimate post-migration target.
+    modules = ["inventory", "costing", "good-receive-note"]
+    patterns = build_stale_patterns(modules=modules, book="inventory")
+    assert find_stale_paths("[a](/en/inventory/home)", patterns) == []
+    assert find_stale_paths("[a](/th/inventory/home)", patterns) == []
+    # But a stale leftover that happens to start with "home" should still flag.
+    assert find_stale_paths(
+        "[a](/en/inventory/home-old-page)", patterns
+    ) == ["/en/inventory/home-old-page"]
