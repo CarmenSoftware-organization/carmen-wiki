@@ -2,7 +2,7 @@
 title: แดชบอร์ด (Dashboard)
 description: หน้าแดชบอร์ดข้ามโมดูล — หน้าแรกหลังเข้าระบบและมุมมอง KPI แยกตามโดเมน (PR, PO, GRN, คลังสินค้า, SR) ที่สรุปจำนวนสด, aging และรายการผิดปกติโดยไม่ต้องเปิดทีละโมดูล
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-04T00:00:00.000Z
 tags: dashboard, kpi, reporting, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -19,9 +19,12 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 โมดูลแดชบอร์ดคือหน้าจอแรกที่ผู้ปฏิบัติงานส่วนใหญ่เห็นหลังเข้าระบบ กลุ่มในแถบ sidebar เปิด 6 หน้าพี่น้อง — หนึ่งหน้าต่อโดเมนการทำงาน — แต่ละหน้าเป็นภาพรวมแบบ read-only ของ tile, ตาราง และกราฟ ที่ตอบคำถาม *"วันนี้มีอะไรต้องการความสนใจของฉันบ้าง?"* โดยไม่ต้องเปิดโมดูล transactional ที่อยู่ข้างใต้
 
-ข้อสังเกตด้านการออกแบบ 2 ข้อที่นักพัฒนาและทดสอบควรรู้:
+**Production vs. mock แดชบอร์ด:** route `/dashboard` หลักโหลด **[widget-workspace](/th/inventory/dashboard/widget-workspace) แบบ live** — กริด widget ส่วนตัวแบบ drag-and-drop ที่ขับเคลื่อนด้วย API จริง หกหน้าย่อยแบบมีชื่อ (`/dashboard/pr`, `/dashboard/po` ฯลฯ) คือ **หน้า mock-data แยกตามโดเมน** ที่ยังคงอยู่สำหรับ developer reference และ QA testing แต่ไม่ใช่แดชบอร์ดหลักสำหรับผู้ปฏิบัติงาน
 
-- ทั้ง 6 หน้า **ขับเคลื่อนด้วย mock data** ในปัจจุบันผ่าน `app/(root)/dashboard/mock/*.ts` Live count hooks (`useMyPendingPrCount`, `useMyPendingPoCount`, `useMyPendingSrCount`, `useApprovalPending`) มีอยู่แล้วแต่ **ยังไม่ถูก mount**
+ข้อสังเกตด้านการออกแบบ 3 ข้อที่นักพัฒนาและทดสอบควรรู้:
+
+- **หกหน้าแบบมีชื่อ** **ขับเคลื่อนด้วย mock data** ในปัจจุบันผ่าน `app/(root)/dashboard/mock/*.ts` Live count hooks (`useMyPendingPrCount`, `useMyPendingPoCount`, `useMyPendingSrCount`, `useApprovalPending`) มีอยู่แล้วแต่ **ยังไม่ถูก mount** บนหน้าเหล่านี้
+- **widget-workspace** (`/dashboard`) และ section เพิ่มเติม **my-pending** และ **my-approval** เป็น **live** — hook mount แล้วและ endpoint เชื่อมต่อแล้ว
 - แถบสีของ tile ถูก resolve ผ่านการ match prefix ที่ยาวที่สุดใน `constant/module-color-map.ts` (`--sub-pr`, `--sub-po`, `--sub-grn`, `--sub-store-requisition`, `--module-inventory`)
 
 **กลุ่มผู้ใช้**
@@ -36,6 +39,14 @@ dateCreated: 2026-05-16T15:00:00.000Z
 | Executive | [dashboard/main](/th/inventory/dashboard/main) | ค่าใช้จ่ายข้ามโดเมน, การใช้งบประมาณ, top vendor |
 
 ## 2. หน้าในโมดูลนี้
+
+**แดชบอร์ด production จริง**
+
+- [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) — route `/dashboard`; กริด widget ส่วนตัวแบบ drag-and-drop ที่ขับเคลื่อนด้วย dataset จริง; ผู้ใช้แต่ละคนสร้าง layout ของตัวเอง
+- [dashboard/my-pending](/th/inventory/dashboard/my-pending) — widget นับ pending ส่วนตัว (PR / PO / SR) แสดงเอกสารที่รอการดำเนินการของผู้ใช้เอง
+- [dashboard/my-approval](/th/inventory/dashboard/my-approval) — widget คิวงานอนุมัติส่วนตัว แสดงเอกสารที่รอการอนุมัติของผู้ใช้ จัดกลุ่มตามประเภท
+
+**แดชบอร์ด mock แยกตามโดเมน (สำหรับ dev/QA reference)**
 
 - [dashboard/main](/th/inventory/dashboard/main) — แดชบอร์ดแรกพร้อม KPI ข้ามโมดูล (ค่าใช้จ่าย, PR ค้าง, PO เปิด, งบประมาณ)
 - [dashboard/pr](/th/inventory/dashboard/pr) — pipeline ของใบขอซื้อ, รายการที่ถูก send-back/reject, คิวอนุมัติ

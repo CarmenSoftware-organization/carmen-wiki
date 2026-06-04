@@ -2,7 +2,7 @@
 title: Dashboard
 description: Cross-module dashboard surface — landing screen plus per-domain KPI views (PR, PO, GRN, Inventory, SR) that summarise live counts, aging, and exception buckets without opening each module.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-04T00:00:00.000Z
 tags: dashboard, kpi, reporting, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -19,9 +19,12 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 The Dashboard module is the first screen most operators see after login. A sidebar group exposes six sibling pages — one per operational domain — each a read-only collage of tiles, tables, and charts that answers *"what needs my attention today?"* without opening the underlying transactional module.
 
-Two design notes that matter to developers and testers:
+**Production vs. mock dashboards:** The root `/dashboard` route loads the **live [widget-workspace](/en/inventory/dashboard/widget-workspace)** — a drag-and-drop personalised widget grid backed by real API endpoints. The six named sub-pages (`/dashboard/pr`, `/dashboard/po`, etc.) are **domain-specific mock-data pages** that remain for developer reference and QA testing but are not the primary operator-facing dashboard.
 
-- All six pages are **mock-data-driven** today via `app/(root)/dashboard/mock/*.ts`. Live count hooks (`useMyPendingPrCount`, `useMyPendingPoCount`, `useMyPendingSrCount`, `useApprovalPending`) exist but are **not yet mounted**.
+Three design notes that matter to developers and testers:
+
+- The **six named pages** are **mock-data-driven** today via `app/(root)/dashboard/mock/*.ts`. Live count hooks (`useMyPendingPrCount`, `useMyPendingPoCount`, `useMyPendingSrCount`, `useApprovalPending`) exist but are **not yet mounted** on these pages.
+- The **widget-workspace** (`/dashboard`) and its companion sections **my-pending** and **my-approval** are **live** — hooks are mounted and endpoints are wired.
 - Tile colour stripes resolve via longest-prefix match in `constant/module-color-map.ts` (`--sub-pr`, `--sub-po`, `--sub-grn`, `--sub-store-requisition`, `--module-inventory`).
 
 **Audience**
@@ -36,6 +39,14 @@ Two design notes that matter to developers and testers:
 | Executive | [dashboard/main](/en/inventory/dashboard/main) | Cross-domain spend, budget utilisation, top vendors |
 
 ## 2. Pages in This Module
+
+**Live production dashboard**
+
+- [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) — the `/dashboard` route; personalised drag-and-drop widget grid backed by live datasets; each user builds their own layout
+- [dashboard/my-pending](/en/inventory/dashboard/my-pending) — personal pending-count widget (PR / PO / SR) showing documents awaiting the current user's own action
+- [dashboard/my-approval](/en/inventory/dashboard/my-approval) — personal approval task-queue widget listing documents awaiting the current user's approval, grouped by type
+
+**Domain-specific mock dashboards (dev/QA reference)**
 
 - [dashboard/main](/en/inventory/dashboard/main) — landing dashboard with cross-module KPIs (spend, pending PRs, open POs, budget)
 - [dashboard/pr](/en/inventory/dashboard/pr) — Purchase Request pipeline, sent-back/rejected, approval queue
