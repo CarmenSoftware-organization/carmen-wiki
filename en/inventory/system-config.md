@@ -2,7 +2,7 @@
 title: System Configuration
 description: Document-flow and accounting-period system configuration — workflow, period, dimensions, numbering.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-04T00:00:00.000Z
 tags: system-config, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # System Configuration
 
 > **At a Glance**
-> **Module purpose:** Document-flow and accounting-period machinery — approval workflows, accounting periods, dimensions, document numbering, app config, menu &nbsp;·&nbsp; **Audience:** Sysadmin, Workflow Administrator, Finance (period close) &nbsp;·&nbsp; **Key entities/tables:** `tb_workflow`, `tb_period`, `tb_dimension`, `tb_config_running_code`, `tb_application_config`, `tb_menu` &nbsp;·&nbsp; **Sub-pages:** 9
+> **Module purpose:** Document-flow and accounting-period machinery — approval workflows, accounting periods, dimensions, document numbering, app config, menu &nbsp;·&nbsp; **Audience:** Sysadmin, Workflow Administrator, Finance (period close) &nbsp;·&nbsp; **Key entities/tables:** `tb_workflow`, `tb_period`, `tb_dimension`, `tb_config_running_code`, `tb_application_config`, `tb_menu` &nbsp;·&nbsp; **Sub-pages:** 10
 
 ![System Configuration screen](/screenshots/system-config/index.png)
 
@@ -37,6 +37,8 @@ Sysadmin. Workflow definition may be delegated to a Workflow Administrator perso
 | [running-code](/en/inventory/system-config/running-code) | Document-number patterns per document type | Sysadmin |
 | [application-config](/en/inventory/system-config/application-config) | Tenant-wide key-value settings + per-user preference overrides | Sysadmin |
 | [menu](/en/inventory/system-config/menu) | Navigation registry rendered by the app shell | Sysadmin |
+| [query-dataset](/en/inventory/system-config/query-dataset) | SQL Workbench — author tenant views, stored procedures, and functions as reusable data sources | Sysadmin |
+| [dashboard-dataset](/en/inventory/system-config/dashboard-dataset) | Read-only catalog of code-registered data feeds available to dashboard widgets | Sysadmin |
 
 ## 4. Cross-Module Dependencies
 
