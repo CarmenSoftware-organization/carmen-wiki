@@ -2,7 +2,7 @@
 title: Access Control
 description: Users, roles, permissions, and multi-business-unit access.
 published: true
-date: 2026-05-20T01:00:00.000Z
+date: 2026-06-04T00:00:00.000Z
 tags: access-control, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # Access Control
 
 > **At a Glance**
-> **Module purpose:** Resolves "may user X perform action Y on resource Z" for every transactional request &nbsp;·&nbsp; **Audience:** Sysadmin, Security Officer, BU Admin &nbsp;·&nbsp; **Key entities/tables:** `tb_user`, `tb_application_role`, `tb_permission`, `tb_user_tb_business_unit`, `tb_user_location` &nbsp;·&nbsp; **Sub-pages:** 5
+> **Module purpose:** Resolves "may user X perform action Y on resource Z" for every transactional request &nbsp;·&nbsp; **Audience:** Sysadmin, Security Officer, BU Admin &nbsp;·&nbsp; **Key entities/tables:** `tb_user`, `tb_application_role`, `tb_permission`, `tb_user_tb_business_unit`, `tb_department_user`, `tb_user_location` &nbsp;·&nbsp; **Sub-pages:** 6
 
 ## 1. Overview
 
@@ -33,6 +33,7 @@ Sysadmin owns the configuration end-to-end. Security Officer audits credentials,
 | [application-role](/en/inventory/access-control/application-role) | BU-scoped named role + role-permission and user-role joins | Sysadmin |
 | [permission](/en/inventory/access-control/permission) | Atomic `(resource, action)` permission catalogue | Sysadmin (seed-managed) |
 | [business-unit-user](/en/inventory/access-control/business-unit-user) | Per-BU access membership + email-invitation staging | Sysadmin / BU Admin |
+| [department-user](/en/inventory/access-control/department-user) | User↔department membership + Head of Department (HOD) designation for approval routing | Sysadmin / Product Admin |
 | [user-location](/en/inventory/access-control/user-location) | Tenant-side per-user location scope | Sysadmin / BU Admin |
 
 ## 4. Cross-Module Dependencies
