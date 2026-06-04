@@ -135,6 +135,37 @@ Source: `../carmen/docs/purchase-order-management/`
 | 23 | Segregation of duties (PO buyer ≠ GRN poster, PO_AUTH_010) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 PO_AUTH_010](/en/inventory/purchase-order/02-business-rules) |
 | 24 | Status lifecycle (draft → in_progress → sent → partial → completed / closed / voided) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 + §5.1 status mapping](/en/inventory/purchase-order/02-business-rules) |
 
+### 4. Store Requisition
+Source: `../carmen/docs/store-requisitions/`
+
+| # | Sub-process | BR | UF | TS | Status | Doc link |
+|---|-------------|----|----|----|--------|----------|
+| 1 | Create SR — manual blank (header + lines, `sr_type` pick, location pair) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 SR_AUTH_001–002](/en/inventory/store-requisition/02-business-rules) |
+| 2 | Auto-create SR from recipe demand (`info.recipe_id` back-reference) | ✅ | ✅ | 🟡 | 🟡 Partial | [BR §6 SR_XMOD_006](/en/inventory/store-requisition/02-business-rules) |
+| 3 | Submit SR (`draft → in_progress`, source-availability check SR_VAL_009) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 SR_AUTH_003](/en/inventory/store-requisition/02-business-rules) |
+| 4 | Multi-stage approval routing (workflow stage advance, per-line `user_action.execute`) | ✅ | ✅ | ✅ | ✅ Done | [BR §6 SR_XMOD_008](/en/inventory/store-requisition/02-business-rules) |
+| 5 | Approve SR lines in full (`approved_qty = requested_qty`) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 SR_AUTH_005](/en/inventory/store-requisition/02-business-rules) |
+| 6 | Trim `approved_qty` below `requested_qty` (partial-approval per line) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 SR_VAL_010](/en/inventory/store-requisition/02-business-rules) |
+| 7 | Reject SR lines (mandatory `reject_message`, SR_VAL_010 second clause) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 SR_POST_004](/en/inventory/store-requisition/02-business-rules) |
+| 8 | Send back for correction (Approver → Requester stage, `review_message`) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 SR_POST_004](/en/inventory/store-requisition/02-business-rules) |
+| 9 | Split-reject (mixed per-line outcomes — some approved, some rejected, SR_AUTH_006) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 SR_AUTH_006](/en/inventory/store-requisition/02-business-rules) |
+| 10 | Approval delegation (deputy acts via `tb_workflow` config) | ✅ | ✅ | ✅ | ✅ Done | [BR §6 SR_XMOD_008](/en/inventory/store-requisition/02-business-rules) |
+| 11 | Fulfil / issue stock — `sr_type = issue` (OUT at source, expense Dr at cost-centre) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 SR_POST_006–007](/en/inventory/store-requisition/02-business-rules) |
+| 12 | Fulfil / stock transfer — `sr_type = transfer` (paired OUT + IN, destination on-hand increment) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 SR_POST_006–007](/en/inventory/store-requisition/02-business-rules) |
+| 13 | Partial fulfilment — at-issue stock-out short-fulfilment (`SR_VAL_013`, `SR_POST_012`) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 SR_POST_012](/en/inventory/store-requisition/02-business-rules) |
+| 14 | Lot-controlled item pick (multi-lot selection, `SR_VAL_012`, `SR_XMOD_002`) | ✅ | ✅ | ✅ | ✅ Done | [BR §6 SR_XMOD_002](/en/inventory/store-requisition/02-business-rules) |
+| 15 | Commit SR (`in_progress → completed` — the single posting event, inventory tx + GL) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 SR_POST_005](/en/inventory/store-requisition/02-business-rules) |
+| 16 | Receiver acknowledgement (post-commit, no `doc_status` change, `SR_POST_013`) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 SR_AUTH_008](/en/inventory/store-requisition/02-business-rules) |
+| 17 | Receiver discrepancy flag (post-commit; resolution via inventory-adjustment) | ✅ | ✅ | ✅ | ✅ Done | [TS — Receiver](/en/inventory/store-requisition/04-test-scenarios-receiver) |
+| 18 | Stock replenishment trigger (cron auto-generates SR draft; Inventory Controller reviews) | 🟡 | ✅ | ⬜ | 🟡 Partial | [stock-replenishment.md](/en/inventory/store-requisition/stock-replenishment) |
+| 19 | Cancel SR (requester withdrawal / all-lines-rejected automatic, `SR_POST_009`) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 SR_POST_009](/en/inventory/store-requisition/02-business-rules) |
+| 20 | Void SR (admin — Inventory Controller / Sysadmin, pre-commit only, `SR_POST_010`) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 SR_POST_010](/en/inventory/store-requisition/02-business-rules) |
+| 21 | Segregation of duties (Requester ≠ Approver `SR_AUTH_011`; Approver ≠ Fulfiller `SR_AUTH_012`) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 SR_AUTH_011–012](/en/inventory/store-requisition/02-business-rules) |
+| 22 | Closed-period commit block (`SR_VAL_014`; Finance reopen or admin void) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 SR_VAL_014](/en/inventory/store-requisition/02-business-rules) |
+| 23 | Journal entry generation and GL posting (Dr/Cr per `sr_type` and cost-centre dimension) | ✅ | ✅ | 🟡 | 🟡 Partial | [BR §5 SR_POST_007](/en/inventory/store-requisition/02-business-rules) |
+| 24 | Source costing-method feed (FIFO / moving-average cost-per-unit at issue, `SR_CALC_004`) | ✅ | ✅ | 🟡 | 🟡 Partial | [BR §3 SR_CALC_004](/en/inventory/store-requisition/02-business-rules) |
+| 25 | Status lifecycle (`draft → in_progress → completed / cancelled / voided` + §5.1 UI-vs-BRD mapping) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 + §5.1](/en/inventory/store-requisition/02-business-rules) |
+
 ## Table B — Config / reference modules
 
 _Reference/admin modules. One `###` section per module, added by Tasks 13–18._
