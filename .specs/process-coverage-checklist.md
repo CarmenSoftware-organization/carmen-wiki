@@ -24,13 +24,13 @@ Symbols: ✅ complete · 🟡 partial/stub · ⬜ missing. See "How status is ju
 | Vendor Pricelist | 14 | 12 | 2 | 0 | 86% |
 | Physical Count | 14 | 0 | 14 | 0 | 0% |
 | Spot Check | 13 | 0 | 13 | 0 | 0% |
-| Master Data | 14 | 13 | 0 | 1 | 93% |
-| System Config | 10 | 9 | 0 | 1 | 90% |
-| Dashboard | 9 | 6 | 0 | 3 | 67% |
-| Access Control | 6 | 5 | 0 | 1 | 83% |
+| Master Data | 14 | 14 | 0 | 0 | 100% |
+| System Config | 10 | 10 | 0 | 0 | 100% |
+| Dashboard | 9 | 9 | 0 | 0 | 100% |
+| Access Control | 6 | 6 | 0 | 0 | 100% |
 | Reporting & Audit | 8 | 8 | 0 | 0 | 100% |
 | Templates | 2 | 2 | 0 | 0 | 100% |
-| **Project total** | 278 | 214 | 58 | 6 | 77% |
+| **Project total** | 278 | 220 | 58 | 0 | 79% |
 
 ## How status is judged
 
@@ -402,7 +402,7 @@ Source: `../carmen/docs/settings/` , `../carmen/docs/prisma-schema/`
 | 11 | Tax Profile | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/tax-profile) |
 | 12 | Unit | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/unit) |
 | 13 | Vendor | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/vendor) |
-| 14 | Vendor Business Type (`tb_vendor_business_type`) | ⬜ | ⬜ | ⬜ Not yet | — |
+| 14 | Vendor Business Type (`tb_vendor_business_type`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/vendor-business-type) |
 
 ### 14. System Config
 Source: `../carmen/docs/settings/` , `../carmen/docs/app/system-administration/`
@@ -418,7 +418,7 @@ Source: `../carmen/docs/settings/` , `../carmen/docs/app/system-administration/`
 | 7 | Query Dataset (SQL Workbench) | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/query-dataset) |
 | 8 | Running Code | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/running-code) |
 | 9 | Workflow | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/workflow) |
-| 10 | Dashboard Dataset (`tb_widget_workspace`) | ⬜ | ⬜ | ⬜ Not yet | — |
+| 10 | Dashboard Dataset (`tb_widget_workspace`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/dashboard-dataset) |
 
 ### 15. Dashboard
 Source: `../carmen/docs/features/` , `../carmen/docs/pages/`
@@ -431,9 +431,9 @@ Source: `../carmen/docs/features/` , `../carmen/docs/pages/`
 | 4 | PO dashboard | ✅ | ✅ | ✅ Done | [link](/en/inventory/dashboard/po) |
 | 5 | PR dashboard | ✅ | ✅ | ✅ Done | [link](/en/inventory/dashboard/pr) |
 | 6 | SR dashboard | ✅ | ✅ | ✅ Done | [link](/en/inventory/dashboard/sr) |
-| 7 | Widget workspace dashboard (current `/dashboard` route — drag-and-drop `tb_widget_workspace` tiles, add/remove/reorder KPI/pie/bar widgets from Dataset catalogue) | ⬜ | ⬜ | ⬜ Not yet | — |
-| 8 | My Pending widget (PR / PO / SR pending-count tiles for the signed-in user — `dashboard-my-pending.tsx`) | ⬜ | ⬜ | ⬜ Not yet | — |
-| 9 | My Approval widget (approval task queue by doc type across PR / PO / SR — `dashboard-my-approval.tsx`) | ⬜ | ⬜ | ⬜ Not yet | — |
+| 7 | Widget workspace dashboard (current `/dashboard` route — drag-and-drop `tb_widget_workspace` tiles, add/remove/reorder KPI/pie/bar widgets from Dataset catalogue) | ✅ | ✅ | ✅ Done | [link](/en/inventory/dashboard/widget-workspace) |
+| 8 | My Pending widget (PR / PO / SR pending-count tiles for the signed-in user — `dashboard-my-pending.tsx`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/dashboard/my-pending) |
+| 9 | My Approval widget (approval task queue by doc type across PR / PO / SR — `dashboard-my-approval.tsx`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/dashboard/my-approval) |
 
 ### 16. Access Control
 Source: `../carmen/docs/security/` , `../carmen/docs/app/system-administration/permission-management/` , `../carmen/docs/app/system-administration/user-management/` , `../carmen/docs/prisma-schema/schema.prisma`
@@ -445,7 +445,7 @@ Source: `../carmen/docs/security/` , `../carmen/docs/app/system-administration/p
 | 3 | Permission (`tb_permission`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/access-control/permission) |
 | 4 | Business Unit User (`tb_user_tb_business_unit`, `tb_temp_bu_user`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/access-control/business-unit-user) |
 | 5 | User Location (`tb_user_location`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/access-control/user-location) |
-| 6 | Department User (`tb_department_user` — user ↔ department pivot with `is_hod` HOD flag; exists in `schema.prisma` and referenced in `DD-permission-management.md` / `DD-user-management.md`) | ⬜ | ⬜ | ⬜ Not yet | — |
+| 6 | Department User (`tb_department_user` — user ↔ department pivot with `is_hod` HOD flag; exists in `schema.prisma` and referenced in `DD-permission-management.md` / `DD-user-management.md`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/access-control/department-user) |
 
 ### 17. Reporting & Audit
 Source: `../carmen/docs/reports/` , `../carmen/docs/app/system-administration/notification-preferences/` , `../carmen/docs/app/system-administration/monitoring/`
