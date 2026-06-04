@@ -405,6 +405,21 @@ Source: `../carmen/docs/settings/` , `../carmen/docs/app/system-administration/`
 | 9 | Workflow | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/workflow) |
 | 10 | Dashboard Dataset (`tb_widget_workspace`) | ⬜ | ⬜ | ⬜ Not yet | — |
 
+### 15. Dashboard
+Source: `../carmen/docs/features/` , `../carmen/docs/pages/`
+
+| # | Page / entity | Page exists? | Content complete? | Status | Link |
+|---|---------------|--------------|-------------------|--------|------|
+| 1 | Main dashboard (cross-module KPI overview) | ✅ | ✅ | ✅ Done | [link](/en/inventory/dashboard/main) |
+| 2 | GRN dashboard | ✅ | ✅ | ✅ Done | [link](/en/inventory/dashboard/grn) |
+| 3 | Inventory dashboard | ✅ | ✅ | ✅ Done | [link](/en/inventory/dashboard/inventory) |
+| 4 | PO dashboard | ✅ | ✅ | ✅ Done | [link](/en/inventory/dashboard/po) |
+| 5 | PR dashboard | ✅ | ✅ | ✅ Done | [link](/en/inventory/dashboard/pr) |
+| 6 | SR dashboard | ✅ | ✅ | ✅ Done | [link](/en/inventory/dashboard/sr) |
+| 7 | Widget workspace dashboard (current `/dashboard` route — drag-and-drop `tb_widget_workspace` tiles, add/remove/reorder KPI/pie/bar widgets from Dataset catalogue) | ⬜ | ⬜ | ⬜ Not yet | — |
+| 8 | My Pending widget (PR / PO / SR pending-count tiles for the signed-in user — `dashboard-my-pending.tsx`) | ⬜ | ⬜ | ⬜ Not yet | — |
+| 9 | My Approval widget (approval task queue by doc type across PR / PO / SR — `dashboard-my-approval.tsx`) | ⬜ | ⬜ | ⬜ Not yet | — |
+
 ## Maintenance notes
 
 - Living doc — update by hand when wiki pages are added/expanded.
