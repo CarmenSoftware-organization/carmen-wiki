@@ -252,6 +252,26 @@ Source: `../carmen/docs/inventory-management/`
 | 34 | Multi-source channel convergence — all modules post via same `tb_inventory_transaction` API (`INV_XMOD_010`) | ✅ | ✅ | 🟡 | 🟡 Partial | [BR §6 INV_XMOD_010; transaction.md §6](/en/inventory/inventory/transaction) |
 | 35 | Inventory transaction log query / audit trail (read-only ledger view, balance derivation check) | ✅ | ✅ | ✅ | ✅ Done | [transaction.md §2–4; AUD-HP-01](/en/inventory/inventory/transaction) |
 
+### 8. Product
+Source: `../carmen/docs/product-management/`
+
+> **Note:** Product is master-data — there is no document `doc_status` workflow, no posting event, and no period lock. The sub-processes below cover the CRUD + lifecycle surface owned by the Product Administrator, plus the read-side lookup / scan surface owned by Purchaser and Store Keeper. BR coverage is via `02-business-rules.md` rule families `PRD_VAL_*` / `PRD_CALC_*` / `PRD_AUTH_*` / `PRD_LIFE_*` / `PRD_XMOD_*`. UF coverage is across `03-user-flow.md` (lifecycle + persona index) and the three role-specific flow pages. TS coverage is across `04-test-scenarios.md` (cross-persona scenarios) and the three role-specific scenario pages (`product-admin`, `purchaser`, `store-keeper`). One additional reference page exists: `category.md` (taxonomy CRUD, attribute inheritance, edge-case matrix).
+
+| # | Sub-process | BR | UF | TS | Status | Doc link |
+|---|-------------|----|----|----|--------|----------|
+| 1 | Create / edit product — single form (code, name, classification, base unit, flags, cost, deviation tolerances) | ✅ | ✅ | ✅ | ✅ Done | [BR §2–§3 PRD_VAL_001–007; PA-HP-01](/en/inventory/product/02-business-rules) |
+| 2 | Product categorisation — 3-level hierarchy CRUD (category → sub-category → item-group, codes, cascade-default preview, delete guards) | ✅ | ✅ | ✅ | ✅ Done | [category.md](/en/inventory/product/category) |
+| 3 | Unit management — create / edit units, in-use deletion guard (`PRD_VAL_017`) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 PRD_VAL_017; PA-HP-06; PA-VAL-15](/en/inventory/product/02-business-rules) |
+| 4 | Unit conversions — define order-unit / ingredient-unit factors, bidirectional consistency, multi-hop resolution (`PRD_VAL_010/011`, `PRD_CALC_005/006`) | ✅ | ✅ | ✅ | ✅ Done | [BR §2–§3 PRD_VAL_010/011; PA-HP-02; PA-VAL-08/09; PA-EDGE-04/05](/en/inventory/product/02-business-rules) |
+| 5 | Product lifecycle / status — active → inactive → discontinued → soft-delete → restore, with in-use guards (`PRD_LIFE_001–010`) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PRD_LIFE_*; UF §2 state table; PA-LIFE-01–13](/en/inventory/product/02-business-rules) |
+| 6 | Product–location assignment — enable product at location, set min / max / par / reorder policy (`PRD_VAL_012`) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 PRD_VAL_012; PA-HP-03; PA-VAL-10](/en/inventory/product/02-business-rules) |
+| 7 | Vendor mapping — product–vendor join, vendor-product-code cross-reference (`PRD_VAL_013`) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 PRD_VAL_013; PA-HP-04; PA-VAL-11](/en/inventory/product/02-business-rules) |
+| 8 | Barcode / SKU management — assign barcode, uniqueness guard, barcode-scan lookup by Store Keeper, mismatch comment flow | ✅ | ✅ | ✅ | ✅ Done | [TS — Store Keeper](/en/inventory/product/04-test-scenarios-store-keeper) |
+| 9 | Bulk import / export — dry-run preview, partial-success mode, strict-commit, row-level error report (`PRD_LIFE_006/007`) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PRD_LIFE_006/007; PA-HP-07/08; cross-persona TS #2/3](/en/inventory/product/02-business-rules) |
+| 10 | Tax-profile and deviation-tolerance inheritance cascade — item-group → sub-category → category fallback (`PRD_CALC_002/003`) | ✅ | ✅ | 🟡 | 🟡 Partial | [BR §3 PRD_CALC_002/003; UF product-admin §2 step 5; PA-EDGE-02/03](/en/inventory/product/02-business-rules) |
+| 11 | Standard-cost management and SoD approval gate — edit, above-threshold routing to Cost Controller / Finance, activity-log record (`PRD_AUTH_012`, `PRD_CALC_008`) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 PRD_AUTH_012; UF product-admin §3; PA-HP-09; cross-persona TS #4](/en/inventory/product/02-business-rules) |
+| 12 | Audit trail / activity log — every product-master change logged (create, edit, status transition, soft-delete, restore, comment threads) (`PRD_XMOD_011`) | ✅ | ✅ | ✅ | ✅ Done | [BR §6 PRD_XMOD_011; cross-persona TS #15; PA-PERM-08/10](/en/inventory/product/04-test-scenarios) |
+
 ## Table B — Config / reference modules
 
 _Reference/admin modules. One `###` section per module, added by Tasks 13–18._
