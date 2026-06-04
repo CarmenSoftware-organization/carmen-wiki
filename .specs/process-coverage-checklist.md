@@ -432,6 +432,20 @@ Source: `../carmen/docs/security/` , `../carmen/docs/app/system-administration/p
 | 5 | User Location (`tb_user_location`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/access-control/user-location) |
 | 6 | Department User (`tb_department_user` — user ↔ department pivot with `is_hod` HOD flag; exists in `schema.prisma` and referenced in `DD-permission-management.md` / `DD-user-management.md`) | ⬜ | ⬜ | ⬜ Not yet | — |
 
+### 17. Reporting & Audit
+Source: `../carmen/docs/reports/` , `../carmen/docs/app/system-administration/notification-preferences/` , `../carmen/docs/app/system-administration/monitoring/`
+
+| # | Page / entity | Page exists? | Content complete? | Status | Link |
+|---|---------------|--------------|-------------------|--------|------|
+| 1 | Activity (`tb_activity`, `enum_activity_action`) — tenant-wide append-only audit log | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/activity) |
+| 2 | Attachment (`tb_attachment`) — S3-backed binary metadata, polymorphic linkage | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/attachment) |
+| 3 | Report History (`tb_report_job`) — append-only execution log for every report run | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/history) |
+| 4 | Notification (`tb_notification`, `tb_message_format`, `tb_news`) — inbound message pipe, templates, platform bulletins | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/notification) |
+| 5 | Report (`tb_report_job`, `tb_report_schedule`, `tb_report_template`, `tb_print_template_mapping`) — full report generation pipeline | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/report) |
+| 6 | Report Schedule (`tb_report_schedule`) — cron-driven recurring report runs | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/schedule) |
+| 7 | User Activity (`tb_user_login_session` + `tb_activity` projection) — actor-centric forensic login/logout timeline | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/user-activity) |
+| 8 | Widget (`tb_widget_dashboard`, `tb_widget_default_layout`, `tb_widget_workspace`) — dashboard tiles, seed layouts, saved queries | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/widget) |
+
 ## Maintenance notes
 
 - Living doc — update by hand when wiki pages are added/expanded.
