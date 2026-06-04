@@ -10,12 +10,27 @@ Symbols: ✅ complete · 🟡 partial/stub · ⬜ missing. See "How status is ju
 
 ## Summary (as of 2026-06-04)
 
-_Filled in Task 19 after all modules are audited._
-
 | Module | Sub-processes | Done | Partial | Not yet | % complete |
 |--------|--------------:|-----:|--------:|--------:|-----------:|
-| _pending_ | | | | | |
-| **Project total** | | | | | |
+| Good Receive Note | 18 | 12 | 6 | 0 | 67% |
+| Purchase Request | 25 | 22 | 3 | 0 | 88% |
+| Purchase Order | 24 | 23 | 1 | 0 | 96% |
+| Store Requisition | 25 | 21 | 4 | 0 | 84% |
+| Inventory Adjustment | 16 | 12 | 4 | 0 | 75% |
+| Costing | 13 | 10 | 3 | 0 | 77% |
+| Inventory | 35 | 32 | 3 | 0 | 91% |
+| Product | 12 | 11 | 1 | 0 | 92% |
+| Recipe | 20 | 16 | 4 | 0 | 80% |
+| Vendor Pricelist | 14 | 12 | 2 | 0 | 86% |
+| Physical Count | 14 | 0 | 14 | 0 | 0% |
+| Spot Check | 13 | 0 | 13 | 0 | 0% |
+| Master Data | 14 | 13 | 0 | 1 | 93% |
+| System Config | 10 | 9 | 0 | 1 | 90% |
+| Dashboard | 9 | 6 | 0 | 3 | 67% |
+| Access Control | 6 | 5 | 0 | 1 | 83% |
+| Reporting & Audit | 8 | 8 | 0 | 0 | 100% |
+| Templates | 2 | 2 | 0 | 0 | 100% |
+| **Project total** | 278 | 214 | 58 | 6 | 77% |
 
 ## How status is judged
 
