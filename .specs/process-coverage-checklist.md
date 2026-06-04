@@ -105,6 +105,36 @@ Source: `../carmen/docs/purchase-request-management/`
 | 24 | Multi-currency / FX rate snapshot | ✅ | ✅ | ✅ | ✅ Done | [BR §3 PR_CALC_006](/en/inventory/purchase-request/02-business-rules) |
 | 25 | Status lifecycle (draft → in_progress → approved → completed / voided) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PR_POST_001–007](/en/inventory/purchase-request/02-business-rules) |
 
+### 3. Purchase Order
+Source: `../carmen/docs/purchase-order-management/`
+
+| # | Sub-process | BR | UF | TS | Status | Doc link |
+|---|-------------|----|----|----|--------|----------|
+| 1 | Create PO — manual blank (no PR linkage) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 PO_AUTH_001](/en/inventory/purchase-order/02-business-rules) |
+| 2 | Create PO from PR (vendor+currency grouping, bridge table written) | ✅ | ✅ | ✅ | ✅ Done | [BR §6 PO_XMOD_001–002](/en/inventory/purchase-order/02-business-rules) |
+| 3 | Multi-PR consolidation into one PO (same vendor + currency) | ✅ | ✅ | ✅ | ✅ Done | [UF — Purchaser §2](/en/inventory/purchase-order/03-user-flow-purchaser) |
+| 4 | Partial PR conversion (selected lines / qty only) | ✅ | ✅ | ✅ | ✅ Done | [UF — Purchaser §3](/en/inventory/purchase-order/03-user-flow-purchaser) |
+| 5 | Financial calculations (subtotal / discount / FOC / tax / base-currency roll-up) | ✅ | ✅ | ✅ | ✅ Done | [BR §3 PO_CALC_001–012](/en/inventory/purchase-order/02-business-rules) |
+| 6 | Multi-currency / FX rate snapshot | ✅ | ✅ | ✅ | ✅ Done | [BR §3 PO_CALC_006](/en/inventory/purchase-order/02-business-rules) |
+| 7 | Submit PO for approval (draft → in_progress) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PO_POST_002](/en/inventory/purchase-order/02-business-rules) |
+| 8 | High-value approval gate (in_progress, FC Procurement Manager) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 PO_AUTH_004](/en/inventory/purchase-order/02-business-rules) |
+| 9 | Send-back / return to buyer during approval (in_progress → draft) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PO_POST_005](/en/inventory/purchase-order/02-business-rules) |
+| 10 | Reject PO at approval stage (in_progress → voided) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PO_POST_010](/en/inventory/purchase-order/02-business-rules) |
+| 11 | Final approval + transmit PO to vendor (in_progress → sent, auto-transmit) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PO_POST_004](/en/inventory/purchase-order/02-business-rules) |
+| 12 | Vendor acknowledgement (recorded by Purchaser as comment — no status change) | ✅ | ✅ | ✅ | ✅ Done | [UF — Vendor §2](/en/inventory/purchase-order/03-user-flow-vendor) |
+| 13 | Pricelist price snapshot and deviation check at PR-to-PO conversion | ✅ | ✅ | ✅ | ✅ Done | [BR §6 PO_XMOD_005–006](/en/inventory/purchase-order/02-business-rules) |
+| 14 | Post-sent amendment (cancelled_qty + per-line note only — PO_VAL_016) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 PO_VAL_016](/en/inventory/purchase-order/02-business-rules) |
+| 15 | Partial receipt via GRN (sent → partial, line received_qty update) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PO_POST_006](/en/inventory/purchase-order/02-business-rules) |
+| 16 | Full receipt via GRN (sent/partial → completed) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PO_POST_007](/en/inventory/purchase-order/02-business-rules) |
+| 17 | Early-close partial PO (partial → closed, remainder written to cancelled_qty) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PO_POST_011](/en/inventory/purchase-order/02-business-rules) |
+| 18 | Void PO from any non-terminal state (Manager override, PO_AUTH_007) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 PO_AUTH_007](/en/inventory/purchase-order/02-business-rules) |
+| 19 | Soft-delete draft PO (Manager-only, PO_AUTH_005) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 PO_AUTH_005](/en/inventory/purchase-order/02-business-rules) |
+| 20 | Three-way match (PO ↔ GRN ↔ invoice) success → AP liability posted | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PO_POST_008](/en/inventory/purchase-order/02-business-rules) |
+| 21 | Three-way match failure (qty / price discrepancy → invoice held in dispute) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PO_POST_009](/en/inventory/purchase-order/02-business-rules) |
+| 22 | Credit note (post-receipt quantity return or amount discount against GRN) | 🟡 | 🟡 | ⬜ | 🟡 Partial | [credit-note.md](/en/inventory/purchase-order/credit-note) |
+| 23 | Segregation of duties (PO buyer ≠ GRN poster, PO_AUTH_010) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 PO_AUTH_010](/en/inventory/purchase-order/02-business-rules) |
+| 24 | Status lifecycle (draft → in_progress → sent → partial → completed / closed / voided) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 + §5.1 status mapping](/en/inventory/purchase-order/02-business-rules) |
+
 ## Table B — Config / reference modules
 
 _Reference/admin modules. One `###` section per module, added by Tasks 13–18._
