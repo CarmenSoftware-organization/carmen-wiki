@@ -23,7 +23,7 @@ Dashboard Dataset is the **read-only admin catalog screen** at `/system-admin/da
 |---|---|---|---|
 | **Dashboard Dataset** (this page) | Named data feed catalog — query runs against tenant DB and returns typed data | Read-only; updated by code deployment | `micro-business` registry (code) |
 | [system-config/query-dataset](/en/inventory/system-config/query-dataset) | SQL Workbench — admin authors tenant views / stored procedures / functions | Sysadmin creates/drops catalog objects | PostgreSQL catalog (`pg_class`, `pg_proc`) |
-| [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) | Per-user saved dashboard layout — which datasets are shown, in what size, in what order | Each user edits their own layout | `tb_widget_workspace` (tenant DB, author-scoped) |
+| [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) | Per-user saved dashboard layout — which datasets are shown, in what size, in what order | Each user edits their own layout | `tb_widget_dashboard` + `tb_widget_dashboard_item`, seeded by `tb_widget_default_layout` (tenant DB) |
 
 **Maintained by** Engineering (code releases). **Browsed by** Sysadmin to audit available feeds. **Consumed by** the widget picker inside the dashboard `Add widget` dialog.
 
@@ -104,13 +104,13 @@ Both require `Authorization: Bearer <token>` and `X-App-Id` header. The `list` r
 - **Tenant-scoped queries.** Every `fetch()` receives a `DatasetContext` with `bu_code`, `user_id`, and a lazy `getTenantClient()` factory — all data is read from the calling tenant's schema.
 - **Shape contract is rigid.** Frontend widget renderers switch on `meta.shape`; adding a new shape requires frontend and backend changes in lockstep.
 - **No CRUD permissions needed to browse.** The screen is visible to Sysadmin by navigation access; no per-dataset permission granularity exists — all registered datasets are readable by any authenticated user who can load the dashboard.
-- **`id` is stable per entry.** The dot-namespaced id (e.g. `workflow.pr-pending-approval`) is stored as the `dataset_id` in widget configurations in `tb_widget_workspace`. Renaming or removing a registry entry breaks existing widget configs.
+- **`id` is stable per entry.** The dot-namespaced id (e.g. `workflow.pr-pending-approval`) is stored as the `dataset_id` in widget tile configurations in `tb_widget_dashboard_item`. Renaming or removing a registry entry breaks existing widget configs.
 
 ## 7. Cross-References
 
 - [reporting-audit/widget](/en/inventory/reporting-audit/widget) — dashboard widgets select their data source from this catalog; the `dataset_id` field on each widget row references a catalog `id`.
 - [system-config/query-dataset](/en/inventory/system-config/query-dataset) — complementary admin tool: sysadmin authors tenant views / stored procedures / functions in SQL; those objects can back report templates. Dashboard Dataset feeds are code-authored, not SQL-authored.
-- [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) — the per-user saved layout stored in `tb_widget_workspace`; each workspace row references a `dataset_id` from this catalog.
+- [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) — the per-user saved dashboard layout stored in `tb_widget_dashboard` + `tb_widget_dashboard_item`; each tile row references a `dataset_id` from this catalog. (Note: `tb_widget_workspace` is a separate table for per-user saved data-explorer queries — see [reporting-audit/widget](/en/inventory/reporting-audit/widget).)
 - [access-control/application-role](/en/inventory/access-control/application-role) — navigation and route access to `/system-admin/dashboard-dataset`.
 
 ## 8. References

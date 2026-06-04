@@ -39,6 +39,8 @@ Sysadmin. Workflow definition may be delegated to a Workflow Administrator perso
 | [menu](/en/inventory/system-config/menu) | Navigation registry rendered by the app shell | Sysadmin |
 | [query-dataset](/en/inventory/system-config/query-dataset) | SQL Workbench — author tenant views, stored procedures, and functions as reusable data sources | Sysadmin |
 | [dashboard-dataset](/en/inventory/system-config/dashboard-dataset) | Read-only catalog of code-registered data feeds available to dashboard widgets | Sysadmin |
+| [config-email](/en/inventory/system-config/config-email) | Per-BU SMTP profile for outbound system email — workflow notifications, scheduled reports, password reset | Sysadmin |
+| [document](/en/inventory/system-config/document) | Tenant-scoped file-storage registry — upload, list, download, and delete for documents attached to transactional records | Sysadmin |
 
 ## 4. Cross-Module Dependencies
 

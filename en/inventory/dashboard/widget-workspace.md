@@ -17,6 +17,8 @@ dateCreated: 2026-06-04T00:00:00.000Z
 
 The Widget Workspace is the **actual production dashboard** that loads when a user navigates to `/dashboard`. It replaces the static mock-data pages (`/dashboard/pr`, `/dashboard/po`, etc., which remain as standalone domain views). The page renders a personalised, drag-and-drop grid of widgets, each bound to a dataset from the system catalog.
 
+> **Naming note:** This page documents the dashboard **layout** tables — `tb_widget_dashboard` (dashboard header) + `tb_widget_dashboard_item` (per-tile rows), seeded from `tb_widget_default_layout`. The similarly-named backend table `tb_widget_workspace` is a **different concept**: per-user saved data-explorer queries that surface in the data-explorer panel (not the dashboard grid) — see [reporting-audit/widget](/en/inventory/reporting-audit/widget) for the full multi-table data model.
+
 **Layout:**
 - Greeting header (time-of-day + user full name) rendered from user profile.
 - "Saved Widgets" section: a responsive grid (1 col → 2 col → 4 col) of user-selected widget cards, sorted by `order_index`.

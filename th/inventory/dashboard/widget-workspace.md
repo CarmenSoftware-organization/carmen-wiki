@@ -17,6 +17,8 @@ dateCreated: 2026-06-04T00:00:00.000Z
 
 Widget Workspace คือ **แดชบอร์ด production จริง** ที่โหลดขึ้นมาเมื่อผู้ใช้ navigate ไปยัง `/dashboard` เป็นตัวแทนของหน้า mock-data แบบ static (เช่น `/dashboard/pr`, `/dashboard/po` ฯลฯ ซึ่งยังคงอยู่เป็น domain view แยกต่างหาก) หน้านี้ render กริด widget แบบ drag-and-drop ส่วนตัว โดยแต่ละ widget ผูกกับ dataset จาก system catalog
 
+> **หมายเหตุเรื่องชื่อ:** หน้านี้ document ตาราง **layout** ของแดชบอร์ด — `tb_widget_dashboard` (header ของแดชบอร์ด) + `tb_widget_dashboard_item` (row ต่อ tile), seed มาจาก `tb_widget_default_layout` ตาราง backend ที่ชื่อคล้ายกันคือ `tb_widget_workspace` เป็น **คนละแนวคิด**: query ที่บันทึกไว้ใน data explorer ต่อผู้ใช้ ซึ่งปรากฏในแผง data explorer (ไม่ใช่กริดแดชบอร์ด) — ดู [reporting-audit/widget](/th/inventory/reporting-audit/widget) สำหรับ data model แบบ multi-table ฉบับสมบูรณ์
+
 **Layout:**
 - Header ทักทาย (ตามช่วงเวลาของวัน + ชื่อเต็มของผู้ใช้) render จาก user profile
 - Section "Saved Widgets": กริด responsive (1 col → 2 col → 4 col) ของ widget card ที่ผู้ใช้เลือกไว้ เรียงตาม `order_index`

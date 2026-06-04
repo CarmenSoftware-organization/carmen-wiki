@@ -23,7 +23,7 @@ Dashboard Dataset คือ **หน้าจอแคตตาล็อก admi
 |---|---|---|---|
 | **Dashboard Dataset** (หน้านี้) | แคตตาล็อก data feed ที่มีชื่อ — query รันกับ tenant DB และคืนข้อมูลแบบ typed | Read-only; อัปเดตโดย code deployment | Registry ของ `micro-business` (โค้ด) |
 | [system-config/query-dataset](/th/inventory/system-config/query-dataset) | SQL Workbench — admin เขียน tenant view / stored procedure / function | Sysadmin สร้าง/drop catalog object | PostgreSQL catalog (`pg_class`, `pg_proc`) |
-| [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) | Layout แดชบอร์ดที่บันทึกต่อผู้ใช้ — dataset ใดแสดง, ขนาดเท่าไร, ลำดับใด | ผู้ใช้แต่ละคนแก้ layout ของตัวเอง | `tb_widget_workspace` (tenant DB, scope ตาม author) |
+| [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) | Layout แดชบอร์ดที่บันทึกต่อผู้ใช้ — dataset ใดแสดง, ขนาดเท่าไร, ลำดับใด | ผู้ใช้แต่ละคนแก้ layout ของตัวเอง | `tb_widget_dashboard` + `tb_widget_dashboard_item`, seed ด้วย `tb_widget_default_layout` (tenant DB) |
 
 **บำรุงรักษาโดย** Engineering (code release) **เรียกดูโดย** Sysadmin เพื่อตรวจสอบ feed ที่มี **บริโภคโดย** widget picker ภายใน dialog "Add widget" ของแดชบอร์ด
 
@@ -104,13 +104,13 @@ GET  /api/:bu_code/datasets/:dataset_id  → { meta: DatasetMeta, data: DatasetD
 - **Query scope ตาม tenant** ทุก `fetch()` ได้รับ `DatasetContext` พร้อม `bu_code`, `user_id` และ factory `getTenantClient()` แบบ lazy — ข้อมูลทั้งหมดอ่านจาก schema ของ tenant ที่เรียกใช้
 - **Shape contract เข้มงวด** frontend widget renderer switch ตาม `meta.shape`; การเพิ่ม shape ใหม่ต้องมีการเปลี่ยนแปลง frontend และ backend พร้อมกัน
 - **ไม่ต้องมีสิทธิ์ CRUD เพื่อเรียกดู** หน้าจอมองเห็นได้สำหรับ Sysadmin โดยการเข้าถึงผ่าน navigation; ไม่มี granularity สิทธิ์ต่อ dataset — dataset ที่ลงทะเบียนทั้งหมดอ่านได้โดยผู้ใช้ที่ยืนยันตัวตนแล้วซึ่งสามารถโหลดแดชบอร์ดได้
-- **`id` มีความเสถียร** dot-namespaced id (เช่น `workflow.pr-pending-approval`) ถูกเก็บเป็น `dataset_id` ในการตั้งค่า widget ใน `tb_widget_workspace` การเปลี่ยนชื่อหรือลบ registry entry ทำลาย widget config ที่มีอยู่
+- **`id` มีความเสถียร** dot-namespaced id (เช่น `workflow.pr-pending-approval`) ถูกเก็บเป็น `dataset_id` ในการตั้งค่า widget tile ใน `tb_widget_dashboard_item` การเปลี่ยนชื่อหรือลบ registry entry ทำลาย widget config ที่มีอยู่
 
 ## 7. การอ้างอิงข้าม
 
 - [reporting-audit/widget](/th/inventory/reporting-audit/widget) — widget บนแดชบอร์ดเลือกแหล่งข้อมูลจากแคตตาล็อกนี้; ฟิลด์ `dataset_id` บนแต่ละ widget row อ้างอิง `id` ในแคตตาล็อก
 - [system-config/query-dataset](/th/inventory/system-config/query-dataset) — เครื่องมือ admin เสริม: sysadmin เขียน tenant view / stored procedure / function ด้วย SQL; object เหล่านั้นสามารถรองรับ report template ได้ feed ของ Dashboard Dataset เขียนด้วยโค้ด ไม่ใช่ SQL
-- [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) — layout ที่บันทึกต่อผู้ใช้ที่เก็บใน `tb_widget_workspace`; แต่ละ workspace row อ้างอิง `dataset_id` จากแคตตาล็อกนี้
+- [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) — layout แดชบอร์ดที่บันทึกต่อผู้ใช้ที่เก็บใน `tb_widget_dashboard` + `tb_widget_dashboard_item`; แต่ละ tile row อ้างอิง `dataset_id` จากแคตตาล็อกนี้ (หมายเหตุ: `tb_widget_workspace` คือตารางแยกต่างหากสำหรับ query ที่บันทึกไว้ใน data explorer ต่อผู้ใช้ — ดู [reporting-audit/widget](/th/inventory/reporting-audit/widget))
 - [access-control/application-role](/th/inventory/access-control/application-role) — การเข้าถึง navigation และ route ไปยัง `/system-admin/dashboard-dataset`
 
 ## 8. แหล่งข้อมูลอ้างอิง
