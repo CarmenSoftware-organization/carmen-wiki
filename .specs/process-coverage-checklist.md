@@ -209,6 +209,49 @@ Source: `../carmen/docs/costing/` · Wiki: `en/inventory/costing/`
 | 12 | Direct-cost location receipt — engine skipped, no cost-layer row written; GL expensed at receipt (`COST_VAL_011`, `COST_POST_005`) | ✅ | 🟡 | ✅ | 🟡 Partial | [cross-persona TS #17; BR §5 COST_POST_005](/en/inventory/costing/04-test-scenarios) |
 | 13 | Consignment location receipt — memo cost-layer row flagged; AP and Inventory journal deferred to consumption (`COST_VAL_012`, `COST_POST_006`) | ✅ | 🟡 | ✅ | 🟡 Partial | [cross-persona TS #18; BR §5 COST_POST_006](/en/inventory/costing/04-test-scenarios) |
 
+### 7. Inventory
+Source: `../carmen/docs/inventory-management/`
+
+> **Note:** Inventory is the stock-ledger / on-hand engine module — it has no document lifecycle of its own. Every sub-process is either a movement posted via an upstream source module (GRN, SR, adjustment, count, credit note) or a period-level lifecycle action. BR coverage is via `02-business-rules.md` rule families `INV_VAL_*` / `INV_CALC_*` / `INV_AUTH_*` / `INV_POST_*` / `INV_XMOD_*`. UF coverage is across the four role-specific flow pages (Store Keeper, Inventory Controller, Finance, Audit/Config) plus the overview `03-user-flow.md`. TS coverage is across `04-test-scenarios.md` (cross-persona scenarios) and the four role-specific scenario pages. Two non-`02-business-rules` reference pages exist: `transaction.md` (ledger view / edge-cases) and `period-end.md` (close ceremony).
+
+| # | Sub-process | BR | UF | TS | Status | Doc link |
+|---|-------------|----|----|----|--------|----------|
+| 1 | Inbound post to inventory-type location — cost-layer insert (`INV_POST_001`; GRN / transfer-in / adjustment-in) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 INV_POST_001](/en/inventory/inventory/02-business-rules) |
+| 2 | Outbound post from inventory-type location — FIFO / WA cost pick (`INV_POST_002`; issue / transfer-out / adjustment-out) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 INV_POST_002; cross-persona TS #7](/en/inventory/inventory/04-test-scenarios) |
+| 3 | Derived on-hand calculation (no `tb_stock_balance` row — `INV_CALC_004` sum from cost-layer since last snapshot) | ✅ | ✅ | ✅ | ✅ Done | [BR §3 INV_CALC_004; SK-HP-01](/en/inventory/inventory/04-test-scenarios-store-keeper) |
+| 4 | FIFO outbound spanning multiple lots (oldest-lot-first, `INV_CALC_005`) | ✅ | ✅ | ✅ | ✅ Done | [BR §3 INV_CALC_005; cross-persona TS #7](/en/inventory/inventory/04-test-scenarios) |
+| 5 | Weighted-average inbound recompute (`INV_CALC_007` new average on every inbound) | ✅ | ✅ | ✅ | ✅ Done | [BR §3 INV_CALC_007; cross-persona TS #8](/en/inventory/inventory/04-test-scenarios) |
+| 6 | No-negative-balance guard (`INV_VAL_005`) — reject outbound exceeding on-hand | ✅ | ✅ | ✅ | ✅ Done | [BR §2 INV_VAL_005; cross-persona TS #10; SK-VAL-04](/en/inventory/inventory/04-test-scenarios-store-keeper) |
+| 7 | Lot identity validation — new-lot uniqueness / existing-lot availability (`INV_VAL_006`) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 INV_VAL_006; SK-VAL-05](/en/inventory/inventory/04-test-scenarios-store-keeper) |
+| 8 | Period-lock guard — reject post into closed / locked period (`INV_VAL_008`) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 INV_VAL_008; cross-persona TS #11; SK-VAL-07](/en/inventory/inventory/04-test-scenarios-store-keeper) |
+| 9 | Direct-cost location receipt — no cost-layer row, immediate expense GL (`INV_POST_003`, `INV_VAL_009`) | ✅ | ✅ | ✅ | ✅ Done | [BR §3 §5 INV_POST_003; cross-persona TS #14](/en/inventory/inventory/04-test-scenarios) |
+| 10 | Consignment location receipt (memo cost-layer, no AP / Inventory debit at receipt — `INV_POST_004`, `INV_VAL_010`) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 INV_POST_004; cross-persona TS #15](/en/inventory/inventory/04-test-scenarios) |
+| 11 | Consignment consumption (simultaneous COGS + AP post at issue — `INV_POST_005`) | ✅ | 🟡 | 🟡 | 🟡 Partial | [BR §5 INV_POST_005](/en/inventory/inventory/02-business-rules) |
+| 12 | Inter-location transfer (paired transfer-out + transfer-in cost-layer rows — `INV_POST_006`) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 INV_POST_006; cross-persona TS #1 / #7](/en/inventory/inventory/04-test-scenarios) |
+| 13 | Credit-note amount adjustment — lot cost rebase, `diff_amount` (`INV_POST_007`, `INV_CALC_011`) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 INV_POST_007; cross-persona TS #12](/en/inventory/inventory/04-test-scenarios) |
+| 14 | Credit-note quantity reversal — outbound from originating GRN lot (`INV_POST_008`) | ✅ | 🟡 | 🟡 | 🟡 Partial | [BR §5 INV_POST_008](/en/inventory/inventory/02-business-rules) |
+| 15 | Compensating reversal — new opposite-sign transaction; original marked `deleted_at` (`INV_POST_012`, `INV_VAL_013`) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 INV_POST_012; SK-PERM-03; IC-PERM-06](/en/inventory/inventory/04-test-scenarios-store-keeper) |
+| 16 | Below-threshold stock-in / stock-out auto-approve (Store Keeper auto-post path — `INV_AUTH_001`, `INV_AUTH_002`) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 INV_AUTH_001–002; SK-HP-01–02; cross-persona TS #1](/en/inventory/inventory/04-test-scenarios-store-keeper) |
+| 17 | Above-threshold approval routing: Store Keeper → Inventory Controller (`INV_AUTH_003`) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 INV_AUTH_003; IC-HP-01; cross-persona TS #2](/en/inventory/inventory/04-test-scenarios-inventory-controller) |
+| 18 | Above-Finance-threshold routing: Inventory Controller → Finance (`INV_AUTH_005`) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 INV_AUTH_005; FIN-HP-01; cross-persona TS #3](/en/inventory/inventory/04-test-scenarios-finance) |
+| 19 | New-lot stock-in always routes for Controller approval (regardless of cost — new-lot rule) | ✅ | ✅ | ✅ | ✅ Done | [SK-HP-03; IC-HP-03](/en/inventory/inventory/04-test-scenarios-store-keeper) |
+| 20 | Segregation of duties — write-off of a lot by the user who received it (`INV_AUTH_010`) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 INV_AUTH_010; SK-PERM-06](/en/inventory/inventory/04-test-scenarios-store-keeper) |
+| 21 | Stock-policy maintenance (min / max / par / reorder on `tb_product_location` — `INV_AUTH_004`) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 INV_AUTH_004; IC-HP-06; IC-VAL-05](/en/inventory/inventory/04-test-scenarios-inventory-controller) |
+| 22 | Count-variance rollup post (physical / spot count variance → auto-staged stock-in / stock-out — `INV_XMOD_003/004`) | ✅ | ✅ | ✅ | ✅ Done | [BR §6 INV_XMOD_003–004; IC-HP-04; cross-persona TS #4](/en/inventory/inventory/04-test-scenarios-inventory-controller) |
+| 23 | Inventory-to-GL reconciliation (sub-ledger sum vs GL Inventory control account — `INV_XMOD_008`) | ✅ | ✅ | ✅ | ✅ Done | [BR §6 INV_XMOD_008; FIN-HP-02–03; FIN-VAL-02](/en/inventory/inventory/04-test-scenarios-finance) |
+| 24 | Period close (snapshot write, cost-layer close rows, `tb_period.status open → closed` — `INV_POST_009`) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 INV_POST_009; FIN-HP-04; cross-persona TS #5](/en/inventory/inventory/04-test-scenarios-finance) |
+| 25 | Period open / rollforward (next-period opening rows, FIFO `lot_seq_no` preserved — `INV_POST_010`) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 INV_POST_010; FIN-HP-04; period-end.md §6](/en/inventory/inventory/period-end) |
+| 26 | Period lock (`closed → locked` — terminal; Finance Manager only — `INV_POST_011`, `INV_AUTH_006`) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 INV_POST_011; FIN-HP-06; IC-PERM-05](/en/inventory/inventory/04-test-scenarios-finance) |
+| 27 | Period re-open within audit window (exceptional — audit-logged, Finance Manager only — `INV_AUTH_006`) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 INV_AUTH_006; FIN-HP-07; cross-persona TS #17](/en/inventory/inventory/04-test-scenarios-finance) |
+| 28 | Period close blocked by prerequisite hold (in-flight documents / missing Controller sign-off) | ✅ | ✅ | ✅ | ✅ Done | [period-end.md §3; FIN-HP-05; FIN-VAL-03–04; cross-persona TS #6](/en/inventory/inventory/period-end) |
+| 29 | Lot-recall chain-of-custody trace (backward GRN + forward consumption — Auditor read-only) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 INV_AUTH_009; AUD-HP-02; cross-persona TS #13](/en/inventory/inventory/04-test-scenarios-audit-config) |
+| 30 | Period-snapshot reconciliation audit query (Auditor verifies ledger sum vs snapshot delta) | ✅ | ✅ | ✅ | ✅ Done | [AUD-HP-03; transaction.md §2](/en/inventory/inventory/04-test-scenarios-audit-config) |
+| 31 | Location-type change blocked by non-zero on-hand (`INV_AUTH_008` drain requirement) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 INV_AUTH_008; AUD-VAL-01; cross-persona TS #16](/en/inventory/inventory/04-test-scenarios-audit-config) |
+| 32 | Costing-method change blocked by non-zero on-hand (`INV_XMOD_009`) | ✅ | ✅ | ✅ | ✅ Done | [BR §6 INV_XMOD_009; AUD-HP-06; AUD-VAL-02](/en/inventory/inventory/04-test-scenarios-audit-config) |
+| 33 | Concurrent inbound posts to same lot — append-only, no race condition (`INV_CALC_004`, `INV_CALC_007`) | ✅ | ✅ | ✅ | ✅ Done | [BR §3 INV_CALC_004; cross-persona TS #9; SK-EDGE-03](/en/inventory/inventory/04-test-scenarios-store-keeper) |
+| 34 | Multi-source channel convergence — all modules post via same `tb_inventory_transaction` API (`INV_XMOD_010`) | ✅ | ✅ | 🟡 | 🟡 Partial | [BR §6 INV_XMOD_010; transaction.md §6](/en/inventory/inventory/transaction) |
+| 35 | Inventory transaction log query / audit trail (read-only ledger view, balance derivation check) | ✅ | ✅ | ✅ | ✅ Done | [transaction.md §2–4; AUD-HP-01](/en/inventory/inventory/transaction) |
+
 ## Table B — Config / reference modules
 
 _Reference/admin modules. One `###` section per module, added by Tasks 13–18._
