@@ -389,6 +389,22 @@ Source: `../carmen/docs/settings/` , `../carmen/docs/prisma-schema/`
 | 13 | Vendor | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/vendor) |
 | 14 | Vendor Business Type (`tb_vendor_business_type`) | ⬜ | ⬜ | ⬜ Not yet | — |
 
+### 14. System Config
+Source: `../carmen/docs/settings/` , `../carmen/docs/app/system-administration/`
+
+| # | Page / entity | Page exists? | Content complete? | Status | Link |
+|---|---------------|--------------|-------------------|--------|------|
+| 1 | Application Config | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/application-config) |
+| 2 | Email Configuration | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/config-email) |
+| 3 | Dimension | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/dimension) |
+| 4 | Document Management | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/document) |
+| 5 | Menu | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/menu) |
+| 6 | Period | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/period) |
+| 7 | Query Dataset (SQL Workbench) | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/query-dataset) |
+| 8 | Running Code | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/running-code) |
+| 9 | Workflow | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/workflow) |
+| 10 | Dashboard Dataset (`tb_widget_workspace`) | ⬜ | ⬜ | ⬜ Not yet | — |
+
 ## Maintenance notes
 
 - Living doc — update by hand when wiki pages are added/expanded.
