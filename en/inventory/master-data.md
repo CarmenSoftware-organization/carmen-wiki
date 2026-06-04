@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # Master Data
 
 > **At a Glance**
-> **Module purpose:** Catalogue of named records (units, vendors, currencies, locations, tax profiles, reason codes) that transactional documents reference via FK + denormalised snapshot &nbsp;·&nbsp; **Audience:** Product Admin, Configurator, Sysadmin &nbsp;·&nbsp; **Key entities/tables:** `tb_unit`, `tb_vendor`, `tb_currency` + `tb_exchange_rate`, `tb_tax_profile`, `tb_location` &nbsp;·&nbsp; **Sub-pages:** 13
+> **Module purpose:** Catalogue of named records (units, vendors, currencies, locations, tax profiles, reason codes) that transactional documents reference via FK + denormalised snapshot &nbsp;·&nbsp; **Audience:** Product Admin, Configurator, Sysadmin &nbsp;·&nbsp; **Key entities/tables:** `tb_unit`, `tb_vendor`, `tb_currency` + `tb_exchange_rate`, `tb_tax_profile`, `tb_location` &nbsp;·&nbsp; **Sub-pages:** 14
 
 ![Master Data screen](/screenshots/master-data/index.png)
 
@@ -39,6 +39,7 @@ Product Admin and Configurator manage these. Sysadmin oversees integration and R
 | [currency](/en/inventory/master-data/currency) | Enabled currencies, ISO reference, and dated exchange-rate history | Product Admin / Sysadmin |
 | [exchange-rate](/en/inventory/master-data/exchange-rate) | Dated FX rate history feeding document snapshots and costing FX revaluation | Product Admin |
 | [vendor](/en/inventory/master-data/vendor) | Suppliers with addresses, contacts, and business-type taxonomy | Product Admin |
+| [vendor-business-type](/en/inventory/master-data/vendor-business-type) | Classifies vendors by business type (manufacturer, distributor, service, …) | Product Admin |
 | [tax-profile](/en/inventory/master-data/tax-profile) | Named tax rate definitions | Product Admin |
 | [credit-term](/en/inventory/master-data/credit-term) | Vendor payment terms (NET 30, COD, etc.) | Product Admin |
 | [extra-cost-type](/en/inventory/master-data/extra-cost-type) | GRN landed-cost categories with allocation modes | Product Admin |
