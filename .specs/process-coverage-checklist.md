@@ -446,6 +446,14 @@ Source: `../carmen/docs/reports/` , `../carmen/docs/app/system-administration/no
 | 7 | User Activity (`tb_user_login_session` + `tb_activity` projection) — actor-centric forensic login/logout timeline | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/user-activity) |
 | 8 | Widget (`tb_widget_dashboard`, `tb_widget_default_layout`, `tb_widget_workspace`) — dashboard tiles, seed layouts, saved queries | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/widget) |
 
+### 18. Templates
+Source: `../carmen/docs/app/vendor-management/pricelist-templates/` , `../carmen/docs/purchase-request-management/`
+
+| # | Page / entity | Page exists? | Content complete? | Status | Link |
+|---|---------------|--------------|-------------------|--------|------|
+| 1 | Price List Template (`tb_pricelist_template`) — RFQ-round scaffold: currency, validity, reminder schedule, escalation | ✅ | ✅ | ✅ Done | [link](/en/inventory/templates/price-list) |
+| 2 | Purchase Request Template (`tb_purchase_request_template` + detail + comment) — reusable PR line-bundle cloned into new PRs | ✅ | ✅ | ✅ Done | [link](/en/inventory/templates/purchase-request) |
+
 ## Maintenance notes
 
 - Living doc — update by hand when wiki pages are added/expanded.
