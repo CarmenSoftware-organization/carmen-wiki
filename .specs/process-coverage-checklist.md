@@ -188,6 +188,27 @@ Source: `../carmen/docs/inventory-adjustment/`
 | 15 | Reason-code / adjustment-type configuration (Sysadmin CRUD, GL mapping, `requiresDocument` / `requiresQualityCheck` flags, thresholds, `ADJ_AUTH_008`) | ✅ | ✅ | ✅ | ✅ Done | [TS Audit/Config](/en/inventory/inventory-adjustment/04-test-scenarios-audit-config) |
 | 16 | Status lifecycle (`draft → in_progress → completed → cancelled / voided` + §5.1 live-UI vs BRD mapping) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 + §5.1](/en/inventory/inventory-adjustment/02-business-rules) |
 
+### 6. Costing
+Source: `../carmen/docs/costing/` · Wiki: `en/inventory/costing/`
+
+> **Note:** Costing is an engine/concept module — it has no document lifecycle of its own. Every sub-process is triggered by an upstream inventory transaction post or a period-end run. BR coverage is via `02-business-rules.md` rule families `COST_VAL_*` / `COST_CALC_*` / `COST_AUTH_*` / `COST_POST_*` / `COST_XMOD_*`. UF coverage is across the three role-specific flow pages (Finance, Controller, Auditor). TS coverage is across `04-test-scenarios.md` (cross-persona) and the three role-specific scenario pages.
+
+| # | Sub-process | BR | UF | TS | Status | Doc link |
+|---|-------------|----|----|----|--------|----------|
+| 1 | FIFO inbound — new lot creation (`lot_no`, `lot_index`, `lot_seq_no` assignment) on every inbound at a FIFO business unit (`COST_CALC_004`, `COST_POST_001`) | ✅ | ✅ | ✅ | ✅ Done | [BR §3 COST_CALC_004](/en/inventory/costing/02-business-rules) |
+| 2 | FIFO outbound — oldest-lot-first cost pick; single or multi-lot spanning consumption (`COST_CALC_001`, `COST_POST_002`; `COST_VAL_002` guards no-layer case) | ✅ | ✅ | ✅ | ✅ Done | [cross-persona TS #1; IC-HP-01](/en/inventory/costing/04-test-scenarios) |
+| 3 | Weighted Average inbound — running average recompute on every inbound (`COST_CALC_003`, `COST_POST_001`; `COST_VAL_005` guards inputs) | ✅ | ✅ | ✅ | ✅ Done | [cross-persona TS #2; calc-methods §3](/en/inventory/costing/calculation-methods) |
+| 4 | Weighted Average outbound — cost pick at current running average; average not updated on issue (`COST_CALC_002`, `COST_POST_002`; `COST_VAL_003` guards no-average case) | ✅ | ✅ | ✅ | ✅ Done | [IC-HP-02; BR §3 COST_CALC_002](/en/inventory/costing/04-test-scenarios-inventory-controller) |
+| 5 | Credit-note-amount revaluation — post-receipt lot cost rebase via `diff_amount`; downstream FIFO picks revalued cost; already-consumed portions not retroactively adjusted (`COST_CALC_005`, `COST_POST_003`; `COST_VAL_006`) | ✅ | ✅ | ✅ | ✅ Done | [cross-persona TS #3; FIN-HP-01](/en/inventory/costing/04-test-scenarios) |
+| 6 | Credit-note-quantity reversal — outbound bound to originating GRN lot at that lot's `cost_per_unit` (not a free FIFO pick) (`COST_POST_004`) | ✅ | 🟡 | 🟡 | 🟡 Partial | [BR §5 COST_POST_004](/en/inventory/costing/02-business-rules) |
+| 7 | Count-variance valuation by configured method (`enum_physical_count_costing_method`: `standard` / `last` / `average` / `last_receiving`) — cost resolved at count-rollup post time (`COST_CALC_008`, `COST_POST_009`; `COST_VAL_007`) | ✅ | ✅ | ✅ | ✅ Done | [cross-persona TS #4; BR §3 COST_CALC_008](/en/inventory/costing/04-test-scenarios) |
+| 8 | Period close — `tb_period_snapshot` rows written with `closing_qty / closing_cost_per_unit / closing_total_cost`; cost locked for the period (`COST_CALC_006`, `COST_POST_007`; `COST_VAL_008`) | ✅ | ✅ | ✅ | ✅ Done | [cross-persona TS #5–6; FIN-HP-04–05](/en/inventory/costing/04-test-scenarios) |
+| 9 | Period open — rollforward carries per-lot `cost_per_unit` (FIFO `lot_seq_no` preserved) or single WA anchor row into next period (`COST_CALC_007`, `COST_POST_008`) | ✅ | ✅ | ✅ | ✅ Done | [cross-persona TS #5–6; FIN-HP-04–05](/en/inventory/costing/04-test-scenarios) |
+| 10 | Costing method configuration — BU-level FIFO↔WA; blocked on non-zero on-hand (`COST_VAL_009`); change after drain happy path (`COST_AUTH_001`) | ✅ | ✅ | ✅ | ✅ Done | [cross-persona TS #7–8; FIN-HP-09](/en/inventory/costing/04-test-scenarios) |
+| 11 | Standard-cost management — `tb_product.standard_cost` update; prospective only, no cost-layer effect (`COST_CALC_009`, `COST_POST_010`; `COST_AUTH_003`) | ✅ | ✅ | ✅ | ✅ Done | [cross-persona TS #9; FIN-HP-08](/en/inventory/costing/04-test-scenarios) |
+| 12 | Direct-cost location receipt — engine skipped, no cost-layer row written; GL expensed at receipt (`COST_VAL_011`, `COST_POST_005`) | ✅ | 🟡 | ✅ | 🟡 Partial | [cross-persona TS #17; BR §5 COST_POST_005](/en/inventory/costing/04-test-scenarios) |
+| 13 | Consignment location receipt — memo cost-layer row flagged; AP and Inventory journal deferred to consumption (`COST_VAL_012`, `COST_POST_006`) | ✅ | 🟡 | ✅ | 🟡 Partial | [cross-persona TS #18; BR §5 COST_POST_006](/en/inventory/costing/04-test-scenarios) |
+
 ## Table B — Config / reference modules
 
 _Reference/admin modules. One `###` section per module, added by Tasks 13–18._
