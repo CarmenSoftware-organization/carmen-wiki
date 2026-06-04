@@ -369,6 +369,26 @@ Source: `../carmen/docs/inventory-management/period-end-process.md` (passing ref
 
 _Reference/admin modules. One `###` section per module, added by Tasks 13–18._
 
+### 13. Master Data
+Source: `../carmen/docs/settings/` , `../carmen/docs/prisma-schema/`
+
+| # | Page / entity | Page exists? | Content complete? | Status | Link |
+|---|---------------|--------------|-------------------|--------|------|
+| 1 | Adjustment Type | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/adjustment-type) |
+| 2 | Business Unit | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/business-unit) |
+| 3 | Credit Note Reason | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/credit-note-reason) |
+| 4 | Credit Term | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/credit-term) |
+| 5 | Currency | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/currency) |
+| 6 | Delivery Point | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/delivery-point) |
+| 7 | Department | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/department) |
+| 8 | Exchange Rate | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/exchange-rate) |
+| 9 | Extra Cost Type | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/extra-cost-type) |
+| 10 | Location | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/location) |
+| 11 | Tax Profile | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/tax-profile) |
+| 12 | Unit | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/unit) |
+| 13 | Vendor | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/vendor) |
+| 14 | Vendor Business Type (`tb_vendor_business_type`) | ⬜ | ⬜ | ⬜ Not yet | — |
+
 ## Maintenance notes
 
 - Living doc — update by hand when wiki pages are added/expanded.
