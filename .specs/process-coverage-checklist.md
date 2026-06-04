@@ -420,6 +420,18 @@ Source: `../carmen/docs/features/` , `../carmen/docs/pages/`
 | 8 | My Pending widget (PR / PO / SR pending-count tiles for the signed-in user — `dashboard-my-pending.tsx`) | ⬜ | ⬜ | ⬜ Not yet | — |
 | 9 | My Approval widget (approval task queue by doc type across PR / PO / SR — `dashboard-my-approval.tsx`) | ⬜ | ⬜ | ⬜ Not yet | — |
 
+### 16. Access Control
+Source: `../carmen/docs/security/` , `../carmen/docs/app/system-administration/permission-management/` , `../carmen/docs/app/system-administration/user-management/` , `../carmen/docs/prisma-schema/schema.prisma`
+
+| # | Page / entity | Page exists? | Content complete? | Status | Link |
+|---|---------------|--------------|-------------------|--------|------|
+| 1 | User (`tb_user`, `tb_user_profile`, `tb_user_login_session`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/access-control/user) |
+| 2 | Application Role (`tb_application_role`, `tb_application_role_tb_permission`, `tb_user_tb_application_role`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/access-control/application-role) |
+| 3 | Permission (`tb_permission`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/access-control/permission) |
+| 4 | Business Unit User (`tb_user_tb_business_unit`, `tb_temp_bu_user`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/access-control/business-unit-user) |
+| 5 | User Location (`tb_user_location`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/access-control/user-location) |
+| 6 | Department User (`tb_department_user` — user ↔ department pivot with `is_hod` HOD flag; exists in `schema.prisma` and referenced in `DD-permission-management.md` / `DD-user-management.md`) | ⬜ | ⬜ | ⬜ Not yet | — |
+
 ## Maintenance notes
 
 - Living doc — update by hand when wiki pages are added/expanded.
