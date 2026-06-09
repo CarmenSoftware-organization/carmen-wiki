@@ -54,7 +54,7 @@ Each dataset executes inside a **read-only transaction** with `SET LOCAL search_
 
 - **No database backing for the catalog.** The list endpoint reads from a compile-time registry — there is no `tb_dashboard_dataset` table to query or migrate. Adding feeds requires a code release.
 - **Shape contract is strict.** Each dataset declares one of six shapes (`scalar`, `scalar_delta`, `time_series`, `categorical`, `ranked`, `matrix`). The frontend widget renderer narrows on `meta.shape`; a shape mismatch between registry and frontend code causes a render error.
-- **Tenant-scoped execution.** When a widget fetches data, `micro-business` creates a tenant Prisma client via `prismaTenantInstance(bu_code, user_id)` — every query runs inside the correct tenant schema; cross-tenant data access is impossible.
+- **Tenant-scoped execution.** When a widget fetches data, **micro-data** runs the query inside a read-only transaction with `SET LOCAL search_path` pinned to the caller's tenant schema (`bu_code`) — every query is confined to the correct tenant schema; cross-tenant data access is impossible.
 - **Categories are soft.** `category` is a free string on the registry entry (common values: `inventory`, `workflow`, `movement`, `spend`, `variance`). The UI groups cards alphabetically by category; unknown future categories appear automatically.
 - **Cache split.** The catalog list is `CACHE_STATIC` (long-lived); individual dataset payloads use `CACHE_DYNAMIC` (1-minute). Stale catalog entries survive until the next hard-refresh.
 - **`unit` is display-only.** The `unit` field (e.g. `items`, `฿`, `%`, `days`) is a hint for the widget tile label — it does not affect data computation.
@@ -63,7 +63,7 @@ Each dataset executes inside a **read-only transaction** with `SET LOCAL search_
 
 ## 5. Data Shape (Dev)
 
-**No bespoke tenant table.** The catalog is a compile-time registry; the data model is the `DatasetMeta` / `DatasetDefinition` TypeScript contract.
+**No bespoke tenant table.** The catalog is code-registered in micro-data (Go); the field tables below describe the wire contract returned to the gateway and frontend.
 
 ### 5.1 `DatasetMeta` — catalog entry shape
 
@@ -94,16 +94,16 @@ GET  /api/:bu_code/datasets              → { items: DatasetMeta[], count: numb
 GET  /api/:bu_code/datasets/:dataset_id  → { meta: DatasetMeta, data: DatasetData<shape> }
 ```
 
-Both require `Authorization: Bearer <token>` and `X-App-Id` header. The `list` response is used by the widget picker; the `get` response feeds the live widget tile.
+Both require `Authorization: Bearer <token>` and `X-App-Id` header. The `list` response is used by the widget picker; the `get` response feeds the live widget tile. Internally the gateway no longer runs the query itself — it proxies over HTTP to the micro-data service (`GET /api/dashboard/datasets` and `GET /api/dashboard/datasets/:id?bu_code=&user_id=`), which executes the dataset and returns the result.
 
 ### 5.4 Registry location
 
-`micro-business/src/dashboard-dataset/registry/index.ts` — static array of `DatasetDefinition` objects, each with a `meta` object and an async `fetch(ctx)` function. At the time of writing the registry contains **70+ definitions** across inventory, procurement, product, vendor, recipe, equipment, and config categories.
+The dataset catalog is code-registered in the **micro-data** service (Go): handlers in `../micro-data/controller/dashboard_controller.go`, dataset/widget logic in `../micro-data/service/dashboard/` and `../micro-data/service/widget_service.go`, and models in `../micro-data/model/dashboard.go`. At the time of writing the catalog contains **68** shaped datasets across inventory, procurement, product, vendor, recipe, equipment, and config categories.
 
 ## 6. Business Rules
 
 - **Read-only catalog.** Sysadmins cannot create, edit, or delete catalog entries through the UI — the catalog is code-managed.
-- **Tenant-scoped queries.** Every `fetch()` receives a `DatasetContext` with `bu_code`, `user_id`, and a lazy `getTenantClient()` factory — all data is read from the calling tenant's schema.
+- **Tenant-scoped queries.** Every dataset query runs in micro-data inside a read-only transaction with `SET LOCAL search_path` pinned to the caller's `bu_code` schema — all data is read from the calling tenant's schema.
 - **Shape contract is rigid.** Frontend widget renderers switch on `meta.shape`; adding a new shape requires frontend and backend changes in lockstep.
 - **No CRUD permissions needed to browse.** The screen is visible to Sysadmin by navigation access; no per-dataset permission granularity exists — all registered datasets are readable by any authenticated user who can load the dashboard.
 - **`id` is stable per entry.** The dot-namespaced id (e.g. `workflow.pr-pending-approval`) is stored as the `dataset_id` in widget tile configurations in `tb_widget_dashboard_item`. Renaming or removing a registry entry breaks existing widget configs.
@@ -117,10 +117,8 @@ Both require `Authorization: Bearer <token>` and `X-App-Id` header. The `list` r
 
 ## 8. References
 
-- **Registry (micro-business):** `../carmen-turborepo-backend-v2/apps/micro-business/src/dashboard-dataset/registry/index.ts` — master list of `DatasetDefinition` entries.
-- **Types:** `../carmen-turborepo-backend-v2/apps/micro-business/src/dashboard-dataset/types/dataset.types.ts` — `DatasetMeta`, `DatasetDefinition`, `DatasetData`, `DatasetContext`, `DatasetResponse`.
-- **Backend service:** `../carmen-turborepo-backend-v2/apps/micro-business/src/dashboard-dataset/dashboard-dataset.service.ts` — `list()` and `get()` methods.
-- **Backend gateway controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-datasets/dashboard-datasets.controller.ts` — `GET /api/:bu_code/datasets` and `GET /api/:bu_code/datasets/:dataset_id`.
+- **micro-data service (Go):** `../micro-data/` — dashboard datasets + widget CRUD. Handlers: `controller/dashboard_controller.go`; logic: `service/dashboard/`, `service/widget_service.go`; models: `model/dashboard.go`; routes: `routes/routes.go`; overview: `README.md`.
+- **Gateway proxy:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-datasets/dashboard-datasets.service.ts` — HTTP proxy to micro-data; controller `dashboard-datasets.controller.ts` exposes `GET /api/:bu_code/datasets` and `GET /api/:bu_code/datasets/:dataset_id`.
 - **Swagger response DTOs:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-datasets/swagger/response.ts` — `DatasetMetaDto`, `DatasetListResponseDto`, `DatasetResponseDto`.
 - **Platform enum:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `enum_dataset_shape` (line ~815).
 - **Frontend route:** `../carmen-inventory-frontend/app/(root)/system-admin/dashboard-dataset/page.tsx` and `_components/dashboard-dataset-component.tsx`.

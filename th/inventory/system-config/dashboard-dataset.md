@@ -54,7 +54,7 @@ dataset แต่ละตัว execute ภายใน **read-only transaction
 
 - **ไม่มีฐานข้อมูลรองรับแคตตาล็อก** endpoint รายการอ่านจาก registry ที่ compile ตอน build — ไม่มีตาราง `tb_dashboard_dataset` ที่จะ query หรือ migrate การเพิ่ม feed ต้องใช้ code release
 - **Shape contract เข้มงวด** dataset แต่ละตัวประกาศหนึ่งใน six shapes (`scalar`, `scalar_delta`, `time_series`, `categorical`, `ranked`, `matrix`) frontend widget renderer narrow ตาม `meta.shape`; ความไม่ตรงกันของ shape ระหว่าง registry กับโค้ด frontend ทำให้เกิด render error
-- **การ execute scope ตาม tenant** เมื่อ widget ดึงข้อมูล `micro-business` สร้าง tenant Prisma client ผ่าน `prismaTenantInstance(bu_code, user_id)` — ทุก query รันภายใน tenant schema ที่ถูกต้อง; การเข้าถึงข้อมูล cross-tenant เป็นไปไม่ได้
+- **การ execute scope ตาม tenant** เมื่อ widget ดึงข้อมูล **micro-data** จะรัน query ภายใน read-only transaction โดย `SET LOCAL search_path` ถูกตรึงไว้กับ tenant schema (`bu_code`) ของผู้เรียก — ทุก query ถูกจำกัดอยู่ใน tenant schema ที่ถูกต้อง; การเข้าถึงข้อมูล cross-tenant เป็นไปไม่ได้
 - **Category เป็น soft field** `category` คือ string อิสระบน registry entry (ค่าทั่วไป: `inventory`, `workflow`, `movement`, `spend`, `variance`) UI จัดกลุ่ม card ตามตัวอักษรของ category; category ใหม่ในอนาคตจะปรากฏโดยอัตโนมัติ
 - **Cache แยกกัน** รายการแคตตาล็อกใช้ `CACHE_STATIC` (อยู่นาน); payload ของ dataset รายตัวใช้ `CACHE_DYNAMIC` (1 นาที) รายการแคตตาล็อกที่ล้าสมัยจะคงอยู่จนกว่าจะมีการ hard-refresh ครั้งถัดไป
 - **`unit` เป็น display เท่านั้น** ฟิลด์ `unit` (เช่น `items`, `฿`, `%`, `วัน`) คือ hint สำหรับ label ของ widget tile — ไม่ส่งผลต่อการคำนวณข้อมูล
@@ -63,7 +63,7 @@ dataset แต่ละตัว execute ภายใน **read-only transaction
 
 ## 5. รูปแบบข้อมูล (Dev)
 
-**ไม่มีตาราง tenant เฉพาะ** แคตตาล็อกคือ registry ที่ compile ตอน build; data model คือ contract TypeScript `DatasetMeta` / `DatasetDefinition`
+**ไม่มีตาราง tenant เฉพาะ** แคตตาล็อกลงทะเบียนไว้ในโค้ดของ micro-data (Go); ตารางฟิลด์ด้านล่างอธิบาย wire contract ที่ส่งคืนไปยัง gateway และ frontend
 
 ### 5.1 `DatasetMeta` — shape ของรายการแคตตาล็อก
 
@@ -94,16 +94,16 @@ GET  /api/:bu_code/datasets              → { items: DatasetMeta[], count: numb
 GET  /api/:bu_code/datasets/:dataset_id  → { meta: DatasetMeta, data: DatasetData<shape> }
 ```
 
-ทั้งคู่ต้องการ `Authorization: Bearer <token>` และ header `X-App-Id` response รายการใช้สำหรับ widget picker; response รายตัวป้อน widget tile ที่ live
+ทั้งคู่ต้องการ `Authorization: Bearer <token>` และ header `X-App-Id` response รายการใช้สำหรับ widget picker; response รายตัวป้อน widget tile ที่ live ภายในนั้น gateway ไม่ได้รัน query เอง — มันส่งต่อผ่าน HTTP ไปยังบริการ micro-data (`GET /api/dashboard/datasets` และ `GET /api/dashboard/datasets/:id?bu_code=&user_id=`) ซึ่งจะ execute dataset และส่งคืนผลลัพธ์
 
 ### 5.4 ที่ตั้งของ registry
 
-`micro-business/src/dashboard-dataset/registry/index.ts` — array static ของ object `DatasetDefinition` แต่ละตัวมี object `meta` และฟังก์ชัน async `fetch(ctx)` ณ เวลาที่เขียนนี้ registry มี **definition 70+ รายการ** ครอบคลุม inventory, procurement, product, vendor, recipe, equipment และ config
+แคตตาล็อก dataset ลงทะเบียนไว้ในโค้ดของบริการ **micro-data** (Go): handler อยู่ใน `../micro-data/controller/dashboard_controller.go`, logic ของ dataset/widget อยู่ใน `../micro-data/service/dashboard/` และ `../micro-data/service/widget_service.go`, และ model อยู่ใน `../micro-data/model/dashboard.go` ณ เวลาที่เขียนนี้ แคตตาล็อกมี **68** dataset แบบมี shape ครอบคลุม inventory, procurement, product, vendor, recipe, equipment และ config
 
 ## 6. กฎทางธุรกิจ
 
 - **แคตตาล็อก read-only** Sysadmin ไม่สามารถสร้าง แก้ไข หรือลบรายการแคตตาล็อกผ่าน UI — แคตตาล็อกถูกจัดการด้วยโค้ด
-- **Query scope ตาม tenant** ทุก `fetch()` ได้รับ `DatasetContext` พร้อม `bu_code`, `user_id` และ factory `getTenantClient()` แบบ lazy — ข้อมูลทั้งหมดอ่านจาก schema ของ tenant ที่เรียกใช้
+- **Query scope ตาม tenant** ทุก dataset query รันใน micro-data ภายใน read-only transaction โดย `SET LOCAL search_path` ถูกตรึงไว้กับ schema ของ `bu_code` ของผู้เรียก — ข้อมูลทั้งหมดอ่านจาก schema ของ tenant ที่เรียกใช้
 - **Shape contract เข้มงวด** frontend widget renderer switch ตาม `meta.shape`; การเพิ่ม shape ใหม่ต้องมีการเปลี่ยนแปลง frontend และ backend พร้อมกัน
 - **ไม่ต้องมีสิทธิ์ CRUD เพื่อเรียกดู** หน้าจอมองเห็นได้สำหรับ Sysadmin โดยการเข้าถึงผ่าน navigation; ไม่มี granularity สิทธิ์ต่อ dataset — dataset ที่ลงทะเบียนทั้งหมดอ่านได้โดยผู้ใช้ที่ยืนยันตัวตนแล้วซึ่งสามารถโหลดแดชบอร์ดได้
 - **`id` มีความเสถียร** dot-namespaced id (เช่น `workflow.pr-pending-approval`) ถูกเก็บเป็น `dataset_id` ในการตั้งค่า widget tile ใน `tb_widget_dashboard_item` การเปลี่ยนชื่อหรือลบ registry entry ทำลาย widget config ที่มีอยู่
@@ -117,10 +117,8 @@ GET  /api/:bu_code/datasets/:dataset_id  → { meta: DatasetMeta, data: DatasetD
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Registry (micro-business):** `../carmen-turborepo-backend-v2/apps/micro-business/src/dashboard-dataset/registry/index.ts` — รายการหลักของ entry `DatasetDefinition`
-- **Types:** `../carmen-turborepo-backend-v2/apps/micro-business/src/dashboard-dataset/types/dataset.types.ts` — `DatasetMeta`, `DatasetDefinition`, `DatasetData`, `DatasetContext`, `DatasetResponse`
-- **Backend service:** `../carmen-turborepo-backend-v2/apps/micro-business/src/dashboard-dataset/dashboard-dataset.service.ts` — method `list()` และ `get()`
-- **Backend gateway controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-datasets/dashboard-datasets.controller.ts` — `GET /api/:bu_code/datasets` และ `GET /api/:bu_code/datasets/:dataset_id`
+- **micro-data service (Go):** `../micro-data/` — dashboard datasets + widget CRUD. Handlers: `controller/dashboard_controller.go`; logic: `service/dashboard/`, `service/widget_service.go`; models: `model/dashboard.go`; routes: `routes/routes.go`; overview: `README.md`
+- **Gateway proxy:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-datasets/dashboard-datasets.service.ts` — HTTP proxy ไปยัง micro-data; controller `dashboard-datasets.controller.ts` เปิดเผย `GET /api/:bu_code/datasets` และ `GET /api/:bu_code/datasets/:dataset_id`
 - **Swagger response DTOs:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-datasets/swagger/response.ts` — `DatasetMetaDto`, `DatasetListResponseDto`, `DatasetResponseDto`
 - **Platform enum:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `enum_dataset_shape` (บรรทัด ~815)
 - **Frontend route:** `../carmen-inventory-frontend/app/(root)/system-admin/dashboard-dataset/page.tsx` และ `_components/dashboard-dataset-component.tsx`
