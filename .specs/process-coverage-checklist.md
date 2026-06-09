@@ -8,7 +8,7 @@ How to read: each row is a sub-process. **BR/UF/TS** = covered in the module's
 `02-business-rules` / `03-user-flow*` / `04-test-scenarios*` page(s).
 Symbols: ✅ complete · 🟡 partial/stub · ⬜ missing. See "How status is judged".
 
-## Summary (as of 2026-06-04)
+## Summary (as of 2026-06-09)
 
 | Module | Sub-processes | Done | Partial | Not yet | % complete |
 |--------|--------------:|-----:|--------:|--------:|-----------:|
@@ -25,12 +25,12 @@ Symbols: ✅ complete · 🟡 partial/stub · ⬜ missing. See "How status is ju
 | Physical Count | 14 | 0 | 14 | 0 | 0% |
 | Spot Check | 13 | 0 | 13 | 0 | 0% |
 | Master Data | 14 | 14 | 0 | 0 | 100% |
-| System Config | 10 | 10 | 0 | 0 | 100% |
+| System Config | 11 | 11 | 0 | 0 | 100% |
 | Dashboard | 9 | 9 | 0 | 0 | 100% |
 | Access Control | 6 | 6 | 0 | 0 | 100% |
 | Reporting & Audit | 8 | 8 | 0 | 0 | 100% |
 | Templates | 2 | 2 | 0 | 0 | 100% |
-| **Project total** | 278 | 220 | 58 | 0 | 79% |
+| **Project total** | 279 | 221 | 58 | 0 | 79% |
 
 ## How status is judged
 
@@ -418,7 +418,8 @@ Source: `../carmen/docs/settings/` , `../carmen/docs/app/system-administration/`
 | 7 | Query Dataset (SQL Workbench) | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/query-dataset) |
 | 8 | Running Code | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/running-code) |
 | 9 | Workflow | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/workflow) |
-| 10 | Dashboard Dataset (`tb_widget_workspace`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/dashboard-dataset) |
+| 10 | Dashboard Dataset (code-registered in **micro-data** Go service; no tenant table — gateway proxies `/api/dashboard/datasets`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/dashboard-dataset) |
+| 11 | Document Version — optimistic-concurrency `doc_version` guard (409 Conflict on stale save); cross-cutting across ~20 transactional/config entities | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/doc-version) |
 
 ### 15. Dashboard
 Source: `../carmen/docs/features/` , `../carmen/docs/pages/`
@@ -442,7 +443,7 @@ Source: `../carmen/docs/security/` , `../carmen/docs/app/system-administration/p
 |---|---------------|--------------|-------------------|--------|------|
 | 1 | User (`tb_user`, `tb_user_profile`, `tb_user_login_session`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/access-control/user) |
 | 2 | Application Role (`tb_application_role`, `tb_application_role_tb_permission`, `tb_user_tb_application_role`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/access-control/application-role) |
-| 3 | Permission (`tb_permission`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/access-control/permission) |
+| 3 | Permission (`tb_permission`) — incl. comment + approval-workflow App IDs for PR/PO/SR (`*Comment.*`, `storeRequisition.{approve,reject,review,save}`, `my-approve.findAll`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/access-control/permission) |
 | 4 | Business Unit User (`tb_user_tb_business_unit`, `tb_temp_bu_user`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/access-control/business-unit-user) |
 | 5 | User Location (`tb_user_location`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/access-control/user-location) |
 | 6 | Department User (`tb_department_user` — user ↔ department pivot with `is_hod` HOD flag; exists in `schema.prisma` and referenced in `DD-permission-management.md` / `DD-user-management.md`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/access-control/department-user) |
@@ -453,13 +454,13 @@ Source: `../carmen/docs/reports/` , `../carmen/docs/app/system-administration/no
 | # | Page / entity | Page exists? | Content complete? | Status | Link |
 |---|---------------|--------------|-------------------|--------|------|
 | 1 | Activity (`tb_activity`, `enum_activity_action`) — tenant-wide append-only audit log | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/activity) |
-| 2 | Attachment (`tb_attachment`) — S3-backed binary metadata, polymorphic linkage | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/attachment) |
+| 2 | Attachment (`tb_attachment`) — S3-backed binary metadata, polymorphic linkage; presigned-URL re-resolution on read + comment-attachment DTO | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/attachment) |
 | 3 | Report History (`tb_report_job`) — append-only execution log for every report run | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/history) |
 | 4 | Notification (`tb_notification`, `tb_message_format`, `tb_news`) — inbound message pipe, templates, platform bulletins | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/notification) |
-| 5 | Report (`tb_report_job`, `tb_report_schedule`, `tb_report_template`, `tb_print_template_mapping`) — full report generation pipeline | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/report) |
+| 5 | Report (`tb_report_job`, `tb_report_schedule`, `tb_report_template`, `tb_print_template_mapping`) — full report generation pipeline; micro-data/micro-report split (dataset resolve vs render) | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/report) |
 | 6 | Report Schedule (`tb_report_schedule`) — cron-driven recurring report runs | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/schedule) |
 | 7 | User Activity (`tb_user_login_session` + `tb_activity` projection) — actor-centric forensic login/logout timeline | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/user-activity) |
-| 8 | Widget (`tb_widget_dashboard`, `tb_widget_default_layout`, `tb_widget_workspace`) — dashboard tiles, seed layouts, saved queries | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/widget) |
+| 8 | Widget (`tb_widget_dashboard`, `tb_widget_default_layout`, `tb_widget_workspace`) — dashboard tiles, seed layouts, saved queries; CRUD hosted in **micro-data** (gateway-proxied) | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/widget) |
 
 ### 18. Templates
 Source: `../carmen/docs/app/vendor-management/pricelist-templates/` , `../carmen/docs/purchase-request-management/`
@@ -473,4 +474,5 @@ Source: `../carmen/docs/app/vendor-management/pricelist-templates/` , `../carmen
 
 - Living doc — update by hand when wiki pages are added/expanded.
 - Bump the `(as of …)` date in the Summary heading whenever rows change.
+- 2026-06-09 backend/platform/micro-data docs sync: added System Config #11 Document Version (`doc_version` optimistic concurrency); enriched Access Control #3 Permission (comment + approval-workflow App IDs), Reporting & Audit #2/#5/#8 (attachment presigned-URL/DTO, micro-data↔micro-report split, widget CRUD in micro-data), System Config #10 Dashboard Dataset (micro-data backing). Process-module BR/UF/TS rows unchanged — these are reference/Table-B entities, all already ✅.
 - Re-run Task 19's count when any row status changes.
