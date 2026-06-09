@@ -2,7 +2,7 @@
 title: ไฟล์แนบ (Attachment)
 description: เอนทิตีจัดเก็บไฟล์แบบ generic — metadata ของไบนารีที่อยู่บน S3 พร้อมการเชื่อมโยงแบบ polymorphic ไปยังเอกสารธุรกรรมใด ๆ
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: reporting-audit, attachment, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -21,12 +21,29 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 **ดูแลโดย** flow การอัปโหลดของโมดูลเจ้าของ **อ่านโดย** หน้ารายละเอียดของโมดูลเจ้าของ
 
+### 1.1 การดึงไฟล์และโครงสร้าง comment-attachment
+
+**เมื่ออ่านข้อมูล URL ที่บันทึกไว้จะไม่ถูกใช้โดยตรง — ต้อง resolve ใหม่ทุกครั้ง** สำหรับ attachment ที่ส่งกลับทุกรายการ gateway จะ resolve **presigned MinIO URL** ใหม่ (TTL 1 ชั่วโมง) จาก `fileToken` ภายใน หากการ resolve ล้มเหลวจะ fallback ไปที่เส้นทาง gateway สัมพัทธ์ `/api/{bu_code}/documents/{fileToken}/download` จากนั้น `fileToken` ภายในจะถูก **ลบออก** จาก response — ผู้เรียกเห็นเพียง `fileUrl` เท่านั้น
+
+รูปร่างของ attachment ที่เปิดเผยใน comment responses:
+
+| ฟิลด์ | ประเภท | หมายเหตุ |
+|---|---|---|
+| `fileName` | string | ชื่อไฟล์ต้นฉบับ |
+| `fileUrl` | string (optional) | Presigned URL หรือ fallback route สัมพัทธ์; เติมใหม่ทุก request |
+| `contentType` | string | MIME type (`image/jpeg`, `image/png`, `image/webp`, `image/gif`, `application/pdf`) |
+| `size` | number (optional) | ไบต์ |
+
+ขีดจำกัดการอัปโหลดสำหรับ `POST :id/attachment`: **1–10 ไฟล์, ≤ 10 MB ต่อไฟล์**, จำกัด MIME เฉพาะห้าประเภทข้างต้น Comment responses ยังจะ **ลบฟิลด์ผู้แต่งภายใน** (`user_id`, `username`, `firstname`, `middlename`, `lastname`) ออกด้วย — ผู้แต่งที่ resolve แล้วจะเปิดเผยผ่าน object `audit` ที่มีข้อมูลเพิ่มเติมแทน
+
+> **หมายเหตุ — ฟิลด์ `doc_version` สองฟิลด์ที่ไม่เกี่ยวข้องกัน** `tb_attachment.doc_version` คือ **ตัวนับการ re-render** สำหรับเอกสารที่สร้างใหม่ (เช่น PDF ที่พิมพ์ซ้ำ); *ไม่ใช่* `doc_version` สำหรับ optimistic concurrency ที่ใช้ในเอกสารธุรกรรม ดูเพิ่มเติมที่ [system-config/doc-version](/th/inventory/system-config/doc-version)
+
 ## 2. งานที่พบบ่อย
 
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
 | แนบไฟล์กับเอกสาร | รายละเอียดเอกสาร → tab **Attachments** → Upload | เขียนแถว `tb_attachment` + FK บนตารางเจ้าของ |
-| ดาวน์โหลด attachment | คลิกชื่อไฟล์ | resolve ผ่าน S3 service อีกครั้ง (URL อาจเป็นแบบ signed/อายุสั้น) |
+| ดาวน์โหลด attachment | คลิกชื่อไฟล์ | gateway re-resolves presigned URL (TTL 1 ชั่วโมง) จาก file token ทุก request; fallback ที่ `/api/{bu_code}/documents/{fileToken}/download` |
 | ลบ attachment | tab Attachments → Delete | soft-delete แถว; S3 blob ถูก GC เก็บไป |
 | Re-render PDF เอกสาร | action print ของโมดูลเจ้าของ | เพิ่ม `doc_version`; เวอร์ชันเก่าคงไว้สำหรับ audit |
 | แทนที่ไฟล์ที่อัปโหลด | soft-delete เก่า + อัปโหลดใหม่ | `s3_token` unique ในแถวที่ไม่ถูกลบ |

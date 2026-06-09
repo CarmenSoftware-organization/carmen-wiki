@@ -2,7 +2,7 @@
 title: Attachment
 description: Generic file-storage entity — S3-backed binary metadata with polymorphic linkage to any transactional document.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: reporting-audit, attachment, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -21,12 +21,29 @@ The entity is intentionally generic — no `document_type` discriminator. The co
 
 **Maintained by** the owning module's upload flow. **Read by** the owning module's detail screens.
 
+### 1.1 File retrieval & the comment-attachment shape
+
+**On read, the stored URL is not trusted — it is re-resolved.** For every attachment returned, the gateway resolves a fresh **presigned MinIO URL** (1-hour TTL) from the internal `fileToken`; if resolution fails it falls back to a relative gateway route `/api/{bu_code}/documents/{fileToken}/download`. The internal `fileToken` is then **stripped** from the response — callers only ever see `fileUrl`.
+
+The attachment shape exposed in comment responses:
+
+| Field | Type | Notes |
+|---|---|---|
+| `fileName` | string | Original file name |
+| `fileUrl` | string (optional) | Presigned URL, or relative fallback route; refilled per request |
+| `contentType` | string | MIME type (`image/jpeg`, `image/png`, `image/webp`, `image/gif`, `application/pdf`) |
+| `size` | number (optional) | Bytes |
+
+Upload limits on `POST :id/attachment`: **1–10 files, ≤ 10 MB each**, MIME restricted to the five types above. Comment responses additionally **strip internal author fields** (`user_id`, `username`, `firstname`, `middlename`, `lastname`) — the resolved author is exposed via the enriched `audit` object instead.
+
+> **Note — two unrelated `doc_version` fields.** `tb_attachment.doc_version` is a **re-render counter** for regenerated documents (e.g. a re-printed PDF); it is *not* the optimistic-concurrency `doc_version` carried by transactional documents. See [system-config/doc-version](/en/inventory/system-config/doc-version).
+
 ## 2. Common Tasks
 
 | Task | Where | Notes |
 |---|---|---|
 | Attach a file to a document | Document detail → **Attachments** tab → Upload | Writes `tb_attachment` row + FK on owning table |
-| Download attachment | Click filename | Re-resolves through S3 service (URLs may be signed/short-lived) |
+| Download attachment | Click filename | Gateway re-resolves a presigned URL (1-hour TTL) from the file token each request; falls back to `/api/{bu_code}/documents/{fileToken}/download` |
 | Remove an attachment | Attachments tab → Delete | Soft-deletes the row; S3 blob reaped by GC job |
 | Re-render a document PDF | Owning module print action | Increments `doc_version`; older versions retained for audit |
 | Replace an uploaded file | Soft-delete old + upload new | `s3_token` unique among non-deleted rows |
