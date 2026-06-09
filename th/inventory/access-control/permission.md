@@ -37,7 +37,10 @@ Approval-workflow atom:
 
 | App ID | วัตถุประสงค์ |
 |---|---|
-| `storeRequisition.approve` | อนุมัติ / ดำเนินการขั้นตอนการอนุมัติ store requisition |
+| `storeRequisition.approve` | อนุมัติขั้นตอนการอนุมัติ store requisition |
+| `storeRequisition.reject` | ปฏิเสธ store requisition ในขั้นตอนการอนุมัติ |
+| `storeRequisition.review` | ทำเครื่องหมาย store requisition ว่าผ่านการตรวจสอบ (การกระทำเวิร์กโฟลว์ระดับกลาง) |
+| `storeRequisition.save` | บันทึก / ส่งการเปลี่ยนแปลงเวิร์กโฟลว์ของ store requisition |
 | `my-approve.findAll` | แสดงรายการเอกสารทุกชนิดที่รอการอนุมัติ**ของผู้ใช้ปัจจุบัน** ข้ามประเภทเอกสาร — รองรับ approval inbox ข้ามโมดูล ([dashboard/my-approval](/th/inventory/dashboard/my-approval)) |
 
 สิทธิ์เหล่านี้เป็น atom ที่จัดการโดย seed เหมือนกับสิทธิ์อื่น ๆ ในหน้านี้ และรวมเข้า role ผ่าน [access-control/application-role](/th/inventory/access-control/application-role)

@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # ระบบและการตั้งค่า (System Configuration)
 
 > **At a Glance**
-> **วัตถุประสงค์โมดูล:** กลไกสำหรับการไหลของเอกสารและช่วงงวดบัญชี — เวิร์กโฟลว์การอนุมัติ ช่วงงวดบัญชี มิติ การกำหนดเลขที่เอกสาร การตั้งค่าแอป เมนู &nbsp;·&nbsp; **กลุ่มเป้าหมาย:** Sysadmin, Workflow Administrator, Finance (ปิดงวด) &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_workflow`, `tb_period`, `tb_dimension`, `tb_config_running_code`, `tb_application_config`, `tb_menu` &nbsp;·&nbsp; **หน้าย่อย:** 10
+> **วัตถุประสงค์โมดูล:** กลไกสำหรับการไหลของเอกสารและช่วงงวดบัญชี — เวิร์กโฟลว์การอนุมัติ ช่วงงวดบัญชี มิติ การกำหนดเลขที่เอกสาร การตั้งค่าแอป เมนู &nbsp;·&nbsp; **กลุ่มเป้าหมาย:** Sysadmin, Workflow Administrator, Finance (ปิดงวด) &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_workflow`, `tb_period`, `tb_dimension`, `tb_config_running_code`, `tb_application_config`, `tb_menu` &nbsp;·&nbsp; **หน้าย่อย:** 11
 
 ![ระบบและการตั้งค่า (System Configuration) screen](/screenshots/system-config/index.png)
 

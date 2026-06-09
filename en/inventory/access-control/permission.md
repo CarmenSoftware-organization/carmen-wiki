@@ -37,7 +37,10 @@ Approval-workflow atoms:
 
 | App ID | Purpose |
 |---|---|
-| `storeRequisition.approve` | Approve / act on a store-requisition approval step |
+| `storeRequisition.approve` | Approve a store-requisition approval step |
+| `storeRequisition.reject` | Reject a store-requisition at an approval step |
+| `storeRequisition.review` | Mark a store-requisition reviewed (intermediate workflow action) |
+| `storeRequisition.save` | Save / submit store-requisition workflow changes |
 | `my-approve.findAll` | List every document awaiting **the current user's** approval, across document types — backs the cross-module approval inbox ([dashboard/my-approval](/en/inventory/dashboard/my-approval)) |
 
 These are seed-managed atoms like all others on this page; they are bundled into roles via [access-control/application-role](/en/inventory/access-control/application-role).
