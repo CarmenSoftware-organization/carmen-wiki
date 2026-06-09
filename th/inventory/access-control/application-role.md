@@ -2,7 +2,7 @@
 title: บทบาท (Application Role)
 description: นิยาม role ต่อ business unit บวกตาราง join ที่ map role กับ permission และ user กับ role — หัวใจของ tenant RBAC
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T16:28:56.000Z
 tags: access-control, application-role, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **เจ้าของ:** Sysadmin (ต่อ BU) &nbsp;·&nbsp; **ตาราง:** `tb_application_role` (+ `tb_application_role_tb_permission`, `tb_user_tb_application_role`) &nbsp;·&nbsp; **ใช้โดย:** การตรวจสอบ permission ของทุกโมดูลธุรกรรม &nbsp;·&nbsp; Bundle ที่ตั้งชื่อแล้วของ permission ที่มอบให้ผู้ใช้ภายใน BU
 
 ![บทบาท (Application Role) screen](/screenshots/access-control/application-role.png)
+
+![บทบาท (Application Role) detail screen](/screenshots/access-control/application-role-detail.png)
 
 ## 1. คืออะไรและใครใช้
 

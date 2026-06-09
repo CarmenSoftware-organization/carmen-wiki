@@ -2,7 +2,7 @@
 title: Location
 description: Storage and consumption locations classified as inventory, direct, or consignment — drives stock posting and physical-count behaviour.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T16:28:56.000Z
 tags: master-data, location, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **Owner:** Product Admin &nbsp;·&nbsp; **Table:** `tb_location` &nbsp;·&nbsp; **Used by:** inventory, GRN, SR, physical count, spot check, PR/PO &nbsp;·&nbsp; `location_type` (`inventory` / `direct` / `consignment`) decides posting behaviour.
 
 ![Location screen](/screenshots/master-data/location.png)
+
+![Location detail screen](/screenshots/master-data/location-detail.png)
 
 ## 1. What & Who
 

@@ -2,7 +2,7 @@
 title: ประเภทอาหาร (Cuisine Type)
 description: แคตตาล็อกประเภทอาหาร — label ตามภูมิภาค/สไตล์ที่ใช้กับสูตรอาหารสำหรับการแบ่งกลุ่มเมนู (ไทย อิตาเลียน ฝรั่งเศส ฟิวชัน ฯลฯ)
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T16:28:56.000Z
 tags: recipe, cuisine, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **เจ้าของ:** Chef / Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_recipe_cuisines` &nbsp;·&nbsp; **รูปทรง:** list แบน ผูกกับ enum `region` 6 ค่า &nbsp;·&nbsp; **ใช้โดย:** ส่วนหัวของ [recipe](/th/inventory/recipe), filter ของ library, menu engineering &nbsp;·&nbsp; **มี:** `popular_dishes` + `key_ingredients` ที่ดูแลคัดสรร
 
 ![ประเภทอาหาร (Cuisine Type) screen](/screenshots/recipe/cuisine.png)
+
+![ประเภทอาหาร (Cuisine Type) detail screen](/screenshots/recipe/cuisine-detail.png)
 
 ## 1. คืออะไรและใครใช้
 

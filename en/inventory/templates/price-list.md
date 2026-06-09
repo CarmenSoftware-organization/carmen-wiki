@@ -2,7 +2,7 @@
 title: Price List Template
 description: Reusable RFQ / pricelist template defining currency, validity, reminders, and escalation — the parent of vendor pricelists.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T16:28:56.000Z
 tags: templates, price-list, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **Owner:** Product Admin / Procurement Lead &nbsp;·&nbsp; **Table:** `tb_pricelist_template` &nbsp;·&nbsp; **Used by:** [vendor-pricelist](/en/inventory/vendor-pricelist) (RFQ rounds spawn from a template) &nbsp;·&nbsp; The shape of a pricelist round — currency, validity, reminders, escalation.
 
 ![Price List Template screen](/screenshots/templates/price-list.png)
+
+![Price List Template detail screen](/screenshots/templates/price-list-detail.png)
 
 ## 1. What & Who
 

@@ -2,7 +2,7 @@
 title: Cuisine
 description: Cuisine catalogue — regional / style label applied to recipes for menu segmentation (Thai, Italian, French, fusion, etc.).
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T16:28:56.000Z
 tags: recipe, cuisine, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **Owner:** Chef / Product Admin &nbsp;·&nbsp; **Table:** `tb_recipe_cuisines` &nbsp;·&nbsp; **Shape:** Flat list, anchored to 6-value `region` enum &nbsp;·&nbsp; **Used by:** [recipe](/en/inventory/recipe) header, library filter, menu engineering &nbsp;·&nbsp; **Carries:** curated `popular_dishes` + `key_ingredients`
 
 ![Cuisine screen](/screenshots/recipe/cuisine.png)
+
+![Cuisine detail screen](/screenshots/recipe/cuisine-detail.png)
 
 ## 1. What & Who
 

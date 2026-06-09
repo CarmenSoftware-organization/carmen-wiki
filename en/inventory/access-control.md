@@ -2,7 +2,7 @@
 title: Access Control
 description: Users, roles, permissions, and multi-business-unit access.
 published: true
-date: 2026-06-09T16:26:48.000Z
+date: 2026-06-09T16:28:56.000Z
 tags: access-control, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **Module purpose:** Resolves "may user X perform action Y on resource Z" for every transactional request &nbsp;·&nbsp; **Audience:** Sysadmin, Security Officer, BU Admin &nbsp;·&nbsp; **Key entities/tables:** `tb_user`, `tb_application_role`, `tb_permission`, `tb_user_tb_business_unit`, `tb_department_user`, `tb_user_location` &nbsp;·&nbsp; **Sub-pages:** 6
 
 ![Access Control screen](/screenshots/access-control/application-role.png)
+
+![Access Control detail screen](/screenshots/access-control/application-role-detail.png)
 
 ## 1. Overview
 

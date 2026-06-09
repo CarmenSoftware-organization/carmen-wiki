@@ -2,7 +2,7 @@
 title: แผนก (Department)
 description: แผนกขององค์กรและการกำหนดผู้ใช้ — ใช้เป็น cost-centre และ scope การอนุมัติบนเอกสาร requisition และ PR
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T16:28:56.000Z
 tags: master-data, department, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **เจ้าของ:** Product Admin (รายการ) / Sysadmin (user mapping) &nbsp;·&nbsp; **ตาราง:** `tb_department`, `tb_department_user` &nbsp;·&nbsp; **ใช้โดย:** PR, SR, approval workflows, RBAC, รายงาน &nbsp;·&nbsp; มิติ cost-centre + requesting-unit; resolve ผู้ review ระดับ Head-of-Department
 
 ![แผนก (Department) screen](/screenshots/master-data/department.png)
+
+![แผนก (Department) detail screen](/screenshots/master-data/department-detail.png)
 
 ## 1. คืออะไร / ใครใช้
 

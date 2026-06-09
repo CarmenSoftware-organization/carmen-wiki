@@ -2,7 +2,7 @@
 title: ผู้ใช้ (User)
 description: Account ผู้ใช้หลักพร้อมตาราง profile และ login-session — ตัวตนเบื้องหลังทุก audit column ในระบบ รหัสผ่านถูก externalize (ไม่มีตาราง tb_password)
 published: true
-date: 2026-05-20T01:00:00.000Z
+date: 2026-06-09T16:28:56.000Z
 tags: access-control, user, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **เจ้าของ:** Sysadmin (+ Security Officer สำหรับ sessions) &nbsp;·&nbsp; **ตาราง:** `tb_user` (+ `tb_user_profile`, `tb_user_login_session`) &nbsp;·&nbsp; **ใช้โดย:** ทุก audit column `*_by_id` ในระบบ &nbsp;·&nbsp; เลเยอร์ตัวตน — เอนทิตีที่ถูก FK มากที่สุดในแพลตฟอร์ม **รหัสผ่านถูก externalize** (ตาราง `tb_password` ถูกตัดออก 2026-05-17)
 
 ![ผู้ใช้ (User) screen](/screenshots/access-control/user.png)
+
+![ผู้ใช้ (User) detail screen](/screenshots/access-control/user-detail.png)
 
 ## 1. คืออะไรและใครใช้
 

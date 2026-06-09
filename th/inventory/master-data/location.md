@@ -2,7 +2,7 @@
 title: ที่ตั้ง / สถานที่ (Location)
 description: สถานที่จัดเก็บและบริโภคที่จำแนกเป็น inventory, direct หรือ consignment — ขับเคลื่อนการ post สต๊อกและพฤติกรรมการ physical count
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T16:28:56.000Z
 tags: master-data, location, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_location` &nbsp;·&nbsp; **ใช้โดย:** inventory, GRN, SR, physical count, spot check, PR/PO &nbsp;·&nbsp; `location_type` (`inventory` / `direct` / `consignment`) ตัดสินพฤติกรรมการ posting
 
 ![ที่ตั้ง / สถานที่ (Location) screen](/screenshots/master-data/location.png)
+
+![ที่ตั้ง / สถานที่ (Location) detail screen](/screenshots/master-data/location-detail.png)
 
 ## 1. คืออะไร / ใครใช้
 

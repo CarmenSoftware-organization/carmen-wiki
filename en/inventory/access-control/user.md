@@ -2,7 +2,7 @@
 title: User
 description: Core user account with profile and login-session tables — the identity behind every audit column in the system. Passwords are externalized (no tb_password table).
 published: true
-date: 2026-05-20T01:00:00.000Z
+date: 2026-06-09T16:28:56.000Z
 tags: access-control, user, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **Owner:** Sysadmin (+ Security Officer for sessions) &nbsp;·&nbsp; **Table:** `tb_user` (+ `tb_user_profile`, `tb_user_login_session`) &nbsp;·&nbsp; **Used by:** every `*_by_id` audit column in the system &nbsp;·&nbsp; Identity layer — the most-FK'd entity in the platform. **Passwords are externalized** (the `tb_password` table was dropped 2026-05-17).
 
 ![User screen](/screenshots/access-control/user.png)
+
+![User detail screen](/screenshots/access-control/user-detail.png)
 
 ## 1. What & Who
 

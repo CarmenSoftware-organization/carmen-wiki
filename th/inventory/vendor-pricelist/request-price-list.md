@@ -2,7 +2,7 @@
 title: คำขอใบเสนอราคา (Request for Quotation)
 description: เอกสารคำขอราคา outbound (RFQ) ส่งไปยังผู้ขายหนึ่งรายหรือมากกว่า — เก็บการเสนอราคาก่อนเจรจาต่อรอง pricelist ใหม่
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T16:28:56.000Z
 tags: vendor-pricelist, rfq, procurement, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **เจ้าของ:** Purchaser / Procurement Manager &nbsp;·&nbsp; **ตาราง:** `tb_request_for_pricing` (+ detail, comments) &nbsp;·&nbsp; **Workflow:** ไม่มี (ขับด้วย date-window) &nbsp;·&nbsp; **ต้นน้ำ:** [templates/price-list](/th/inventory/templates/price-list) &nbsp;·&nbsp; ขอใบเสนอราคาจากผู้ขายก่อนได้รับการมอบ `tb_pricelist`
 
 ![คำขอใบเสนอราคา (Request for Quotation) screen](/screenshots/vendor-pricelist/request-price-list.png)
+
+![คำขอใบเสนอราคา (Request for Quotation) detail screen](/screenshots/vendor-pricelist/request-price-list-detail.png)
 
 ## 1. ภาพรวมและผู้ใช้งาน
 

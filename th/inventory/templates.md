@@ -2,7 +2,7 @@
 title: เทมเพลต (Templates)
 description: นิยาม scaffold ที่ใช้ซ้ำได้สำหรับ PR และ Vendor Pricelist — กลไกร่วมของเอกสาร seed-only ที่ pre-fill record transactional ใหม่ตอน instantiate
 published: true
-date: 2026-06-09T16:26:48.000Z
+date: 2026-06-09T16:28:56.000Z
 tags: templates, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T16:00:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-05-16T16:00:00.000Z
 > **จุดประสงค์ของโมดูล:** scaffold แบบ seed-only (PR draft, รอบ RFQ / pricelist) ที่ deep-copy header และ detail row ลงใน record transactional ใหม่ตอน instantiate &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Requestor (PR), Purchaser (pricelist), Sysadmin &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_purchase_request_template`, `tb_pricelist_template` &nbsp;·&nbsp; **หน้าย่อย:** 2
 
 ![เทมเพลต (Templates) screen](/screenshots/templates/purchase-request.png)
+
+![เทมเพลต (Templates) detail screen](/screenshots/templates/purchase-request-detail.png)
 
 ## 1. ภาพรวม
 

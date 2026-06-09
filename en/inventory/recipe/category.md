@@ -2,7 +2,7 @@
 title: Recipe Category
 description: Hierarchical category taxonomy for recipes — drives menu engineering, cost-band reporting, and recipe library navigation.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T16:28:56.000Z
 tags: recipe, category, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **Owner:** Chef / Product Admin &nbsp;·&nbsp; **Table:** `tb_recipe_category` &nbsp;·&nbsp; **Shape:** Hierarchical tree (self-FK on `parent_id`) &nbsp;·&nbsp; **Used by:** [recipe](/en/inventory/recipe) header, menu engineering, cost-band reports &nbsp;·&nbsp; **Seeds:** `default_cost_settings` + `default_margins` onto new recipes
 
 ![Recipe Category screen](/screenshots/recipe/category.png)
+
+![Recipe Category detail screen](/screenshots/recipe/category-detail.png)
 
 ## 1. What & Who
 

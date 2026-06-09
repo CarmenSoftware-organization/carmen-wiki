@@ -2,7 +2,7 @@
 title: อุปกรณ์ (Equipment)
 description: ข้อมูลหลักของอุปกรณ์ครัว — อ้างอิงจากขั้นตอนการเตรียมในสูตรอาหารที่ต้องใช้เครื่องมือเฉพาะ (อ่าง sous-vide, deep fryer, smoker ฯลฯ)
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T16:28:56.000Z
 tags: recipe, equipment, master-data, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **เจ้าของ:** Chef / Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_recipe_equipment` &nbsp;·&nbsp; **Parent:** [recipe/equipment-category](/th/inventory/recipe/equipment-category) ผ่าน `category_id` &nbsp;·&nbsp; **ใช้โดย:** ขั้นตอนการเตรียมของ [recipe](/th/inventory/recipe), checklist การ fit-out, dashboard maintenance &nbsp;·&nbsp; **ติดตาม:** สเปก สถานี ปริมาณ การใช้งาน วันที่ maintenance
 
 ![อุปกรณ์ (Equipment) screen](/screenshots/recipe/equipment.png)
+
+![อุปกรณ์ (Equipment) detail screen](/screenshots/recipe/equipment-detail.png)
 
 ## 1. คืออะไรและใครใช้
 
