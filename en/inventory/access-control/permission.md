@@ -2,7 +2,7 @@
 title: Permission
 description: Atomic resource + action pairs — the building blocks bundled into application roles to authorise every UI and API operation.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: access-control, permission, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -20,6 +20,27 @@ A permission is the **smallest unit of authorisation**: a `(resource, action)` p
 The runtime check "can user X perform action Y on resource Z in BU B" is a single join across `tb_user_tb_application_role`, `tb_application_role`, and `tb_application_role_tb_permission`.
 
 **Maintained by** release migrations (seed). **Read by** the role-edit UI for bundling and by every API request for permission checks.
+
+### 1.1 Comment & approval-workflow permissions
+
+Per-document **comment threads** and **approval actions** are gated by their own permission atoms (App IDs). Comment permissions follow a uniform verb set per document type:
+
+| Document type | Comment App ID prefix | Actions |
+|---|---|---|
+| Purchase Request | `purchaseRequestComment` | `findAll`, `create`, `update`, `delete`, `addAttachment`, `removeAttachment`, `createWithFiles` |
+| Purchase Order | `purchaseOrderComment` | `findAll`, `create`, `update`, `delete`, `addAttachment`, `removeAttachment`, `createWithFiles` |
+| Store Requisition | `storeRequisitionComment` | `findAll`, `create`, `update`, `delete`, `addAttachment`, `removeAttachment`, `createWithFiles` |
+
+`createWithFiles` is the single-call create that posts a comment with attachments in one multipart request (vs. `create` then `addAttachment`).
+
+Approval-workflow atoms:
+
+| App ID | Purpose |
+|---|---|
+| `storeRequisition.approve` | Approve / act on a store-requisition approval step |
+| `my-approve.findAll` | List every document awaiting **the current user's** approval, across document types — backs the cross-module approval inbox ([dashboard/my-approval](/en/inventory/dashboard/my-approval)) |
+
+These are seed-managed atoms like all others on this page; they are bundled into roles via [access-control/application-role](/en/inventory/access-control/application-role).
 
 ## 2. Common Tasks
 

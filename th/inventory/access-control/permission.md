@@ -2,7 +2,7 @@
 title: สิทธิ์ (Permission)
 description: คู่ resource + action แบบ atomic — บล็อกสร้างที่รวมเข้าใน application role เพื่ออนุญาตทุก UI และ API operation
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: access-control, permission, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -20,6 +20,27 @@ Permission คือ **หน่วยเล็กที่สุดของก
 การตรวจสอบ runtime "user X ทำ action Y บน resource Z ใน BU B ได้ไหม" คือ join เดียวข้าม `tb_user_tb_application_role`, `tb_application_role` และ `tb_application_role_tb_permission`
 
 **บำรุงรักษาโดย** release migration (seed) **อ่านโดย** UI role-edit สำหรับการ bundle และโดยทุก API request สำหรับการตรวจสอบ permission
+
+### 1.1 สิทธิ์ comment และ approval workflow
+
+**comment thread** แต่ละเอกสารและ **action การอนุมัติ** ถูก gate ด้วย permission atom (App ID) ของตนเอง สิทธิ์ comment ใช้ชุด verb เดียวกันในแต่ละประเภทเอกสาร:
+
+| ประเภทเอกสาร | App ID prefix ของ comment | Actions |
+|---|---|---|
+| Purchase Request | `purchaseRequestComment` | `findAll`, `create`, `update`, `delete`, `addAttachment`, `removeAttachment`, `createWithFiles` |
+| Purchase Order | `purchaseOrderComment` | `findAll`, `create`, `update`, `delete`, `addAttachment`, `removeAttachment`, `createWithFiles` |
+| Store Requisition | `storeRequisitionComment` | `findAll`, `create`, `update`, `delete`, `addAttachment`, `removeAttachment`, `createWithFiles` |
+
+`createWithFiles` คือ create แบบ single-call ที่ post comment พร้อม attachment ในคำขอ multipart เดียว (เทียบกับการใช้ `create` แล้วตามด้วย `addAttachment`)
+
+Approval-workflow atom:
+
+| App ID | วัตถุประสงค์ |
+|---|---|
+| `storeRequisition.approve` | อนุมัติ / ดำเนินการขั้นตอนการอนุมัติ store requisition |
+| `my-approve.findAll` | แสดงรายการเอกสารทุกชนิดที่รอการอนุมัติ**ของผู้ใช้ปัจจุบัน** ข้ามประเภทเอกสาร — รองรับ approval inbox ข้ามโมดูล ([dashboard/my-approval](/th/inventory/dashboard/my-approval)) |
+
+สิทธิ์เหล่านี้เป็น atom ที่จัดการโดย seed เหมือนกับสิทธิ์อื่น ๆ ในหน้านี้ และรวมเข้า role ผ่าน [access-control/application-role](/th/inventory/access-control/application-role)
 
 ## 2. งานทั่วไป
 
