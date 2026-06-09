@@ -2,7 +2,7 @@
 title: ชุดข้อมูลแดชบอร์ด (Dashboard Dataset)
 description: แคตตาล็อก read-only ของ admin สำหรับ data feed ที่ลงทะเบียนไว้ในโค้ด — แหล่งข้อมูลแบบมีชื่อและมี type ที่ widget บนแดชบอร์ดดึงข้อมูลจาก แยกออกจาก widget workspace layout ของผู้ใช้ และจาก view ที่เขียนด้วย SQL ใน query-dataset
 published: true
-date: 2026-06-04T00:00:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: system-config, dashboard, dataset, widget, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -11,21 +11,23 @@ dateCreated: 2026-06-04T00:00:00.000Z
 # ชุดข้อมูลแดชบอร์ด (Dashboard Dataset)
 
 > **At a Glance**
-> **เจ้าของ:** Sysadmin (แคตตาล็อก read-only) &nbsp;·&nbsp; **Backing:** Registry ในหน่วยความจำที่ลงทะเบียนไว้ในโค้ด (`micro-business/dashboard-dataset/registry/`) — **ไม่มีตาราง tenant เฉพาะ** &nbsp;·&nbsp; **ใช้โดย:** [reporting-audit/widget](/th/inventory/reporting-audit/widget) (widget picker), dashboard tile &nbsp;·&nbsp; **70+ feed** ที่สร้างไว้ล่วงหน้าครอบคลุม inventory, workflow, procurement, product, vendor, recipe และ equipment
+> **เจ้าของ:** Sysadmin (แคตตาล็อก read-only) &nbsp;·&nbsp; **Backing:** ลงทะเบียนไว้ในโค้ดบริการ **micro-data** (`GET /api/dashboard/datasets`) โดย backend-gateway เป็น proxy ผ่าน HTTP — **ไม่มีตาราง tenant เฉพาะ** &nbsp;·&nbsp; **ใช้โดย:** [reporting-audit/widget](/th/inventory/reporting-audit/widget) (widget picker), dashboard tile &nbsp;·&nbsp; **68 feed แบบมี shape** (`scalar`, `scalar_delta`, `time_series`, `categorical`, `ranked`, `matrix`) ครอบคลุม inventory, workflow, procurement, product, vendor, recipe และ equipment
 
 ## 1. คืออะไรและใครใช้
 
-Dashboard Dataset คือ **หน้าจอแคตตาล็อก admin แบบ read-only** ที่ `/system-admin/dashboard-dataset` แสดง data feed ทุกตัวที่มีชื่อซึ่ง widget บนแดชบอร์ดสามารถสมัครใช้ได้ แต่ละรายการในแคตตาล็อกคือ **definition ที่ลงทะเบียนไว้ในโค้ด** บน microservice `micro-business` — ไม่ใช่ row ในฐานข้อมูลที่ sysadmin แก้ไขได้ แคตตาล็อกถูกกำหนดตายตัวต่อเวอร์ชันของแอปพลิเคชัน; sysadmin เรียกดูและค้นหาเพื่อทำความเข้าใจว่ามี feed ใดบ้างก่อนที่จะวางหรือตั้งค่า widget
+Dashboard Dataset คือ **หน้าจอแคตตาล็อก admin แบบ read-only** ที่ `/system-admin/dashboard-dataset` แสดง data feed ทุกตัวที่มีชื่อซึ่ง widget บนแดชบอร์ดสามารถสมัครใช้ได้ แต่ละรายการในแคตตาล็อกคือ **definition ที่ลงทะเบียนไว้ในโค้ด** ใน microservice **micro-data** (Go) ซึ่ง execute กับฐานข้อมูล tenant และส่งผ่าน gateway ผ่าน HTTP — ไม่ใช่ row ในฐานข้อมูลที่ sysadmin แก้ไขได้ แคตตาล็อกถูกกำหนดตายตัวต่อเวอร์ชันของแอปพลิเคชัน; sysadmin เรียกดูและค้นหาเพื่อทำความเข้าใจว่ามี feed ใดบ้างก่อนที่จะวางหรือตั้งค่า widget
 
 **ความแตกต่างจากสองแนวคิดที่เกี่ยวข้อง:**
 
 | แนวคิด | ลักษณะ | แก้ไขได้? | เก็บใน |
 |---|---|---|---|
-| **Dashboard Dataset** (หน้านี้) | แคตตาล็อก data feed ที่มีชื่อ — query รันกับ tenant DB และคืนข้อมูลแบบ typed | Read-only; อัปเดตโดย code deployment | Registry ของ `micro-business` (โค้ด) |
+| **Dashboard Dataset** (หน้านี้) | แคตตาล็อก data feed ที่มีชื่อ — query รันกับ tenant DB และคืนข้อมูลแบบ typed | Read-only; อัปเดตโดย code deployment | บริการ **micro-data** (Go) ให้บริการที่ `/api/dashboard/datasets` |
 | [system-config/query-dataset](/th/inventory/system-config/query-dataset) | SQL Workbench — admin เขียน tenant view / stored procedure / function | Sysadmin สร้าง/drop catalog object | PostgreSQL catalog (`pg_class`, `pg_proc`) |
 | [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) | Layout แดชบอร์ดที่บันทึกต่อผู้ใช้ — dataset ใดแสดง, ขนาดเท่าไร, ลำดับใด | ผู้ใช้แต่ละคนแก้ layout ของตัวเอง | `tb_widget_dashboard` + `tb_widget_dashboard_item`, seed ด้วย `tb_widget_default_layout` (tenant DB) |
 
 **บำรุงรักษาโดย** Engineering (code release) **เรียกดูโดย** Sysadmin เพื่อตรวจสอบ feed ที่มี **บริโภคโดย** widget picker ภายใน dialog "Add widget" ของแดชบอร์ด
+
+dataset แต่ละตัว execute ภายใน **read-only transaction** โดย `SET LOCAL search_path` ถูกตรึงไว้กับ tenant schema ของผู้เรียก ทำให้แคตตาล็อกที่ deploy ชุดเดียวให้บริการ tenant ทุกรายได้อย่างปลอดภัย backend-gateway ทำหน้าที่เป็น thin proxy: `GET /api/dashboard/datasets` รายการแคตตาล็อก (`{items,count}`) และ `GET /api/dashboard/datasets/:id?bu_code=&user_id=` execute feed เดียว (`{meta,data}`)
 
 ## 2. งานทั่วไป
 
@@ -36,7 +38,7 @@ Dashboard Dataset คือ **หน้าจอแคตตาล็อก admi
 | ระบุ shape ของ dataset | badge `shape` บนแต่ละ card | ดู §5.1 สำหรับความหมายของ shape |
 | เพิ่ม dataset ลงใน widget | Dashboard → Add widget → dataset picker | เปิด popover ที่รองรับโดยแคตตาล็อกนี้ |
 | ดูค่า live ของ dataset | Preview widget บนแดชบอร์ด | เรียก `GET /api/:bu_code/datasets/:dataset_id` |
-| เพิ่ม data feed ใหม่ | แก้ไขโค้ดใน `micro-business/dashboard-dataset/registry/` | งานของ Engineering — ต้องมีการ deploy |
+| เพิ่ม data feed ใหม่ | แก้ไขโค้ดในบริการ **micro-data** | งานของ Engineering — ต้องมีการ deploy |
 
 ## 3. การตรวจสอบและ Error
 

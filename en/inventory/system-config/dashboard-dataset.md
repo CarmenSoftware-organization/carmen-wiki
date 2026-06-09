@@ -2,7 +2,7 @@
 title: Dashboard Dataset
 description: Read-only admin catalog of code-registered data feeds — the named, typed data sources that dashboard widgets pull from, distinct from the user widget workspace layout and from SQL-authored query-dataset views.
 published: true
-date: 2026-06-04T00:00:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: system-config, dashboard, dataset, widget, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -11,21 +11,23 @@ dateCreated: 2026-06-04T00:00:00.000Z
 # Dashboard Dataset
 
 > **At a Glance**
-> **Owner:** Sysadmin (read-only catalog) &nbsp;·&nbsp; **Backing:** Code-registered in-memory registry (`micro-business/dashboard-dataset/registry/`) — **no dedicated tenant table** &nbsp;·&nbsp; **Used by:** [reporting-audit/widget](/en/inventory/reporting-audit/widget) (widget picker), dashboard tiles &nbsp;·&nbsp; **50+ pre-built feeds** across inventory, workflow, procurement, product, vendor, recipe, and equipment categories.
+> **Owner:** Sysadmin (read-only catalog) &nbsp;·&nbsp; **Backing:** Code-registered in the **micro-data** service (`GET /api/dashboard/datasets`), proxied by backend-gateway over HTTP — **no dedicated tenant table** &nbsp;·&nbsp; **Used by:** [reporting-audit/widget](/en/inventory/reporting-audit/widget) (widget picker), dashboard tiles &nbsp;·&nbsp; **68 shaped feeds** (`scalar`, `scalar_delta`, `time_series`, `categorical`, `ranked`, `matrix`) across inventory, workflow, procurement, product, vendor, recipe, and equipment categories.
 
 ## 1. What & Who
 
-Dashboard Dataset is the **read-only admin catalog screen** at `/system-admin/dashboard-dataset`. It exposes every named data feed that dashboard widgets can subscribe to. Each dataset entry is a **code-registered definition** on the `micro-business` microservice — not a sysadmin-editable database row. The catalog is fixed per application version; sysadmins browse and search it to understand what feeds are available before placing or configuring widgets.
+Dashboard Dataset is the **read-only admin catalog screen** at `/system-admin/dashboard-dataset`. It exposes every named data feed that dashboard widgets can subscribe to. Each dataset entry is a **code-registered definition** in the **micro-data** microservice (Go), executed against the tenant database and proxied to the gateway over HTTP — not a sysadmin-editable database row. The catalog is fixed per application version; sysadmins browse and search it to understand what feeds are available before placing or configuring widgets.
 
 **How it differs from the other two related concepts:**
 
 | Concept | Nature | Editable? | Stored in |
 |---|---|---|---|
-| **Dashboard Dataset** (this page) | Named data feed catalog — query runs against tenant DB and returns typed data | Read-only; updated by code deployment | `micro-business` registry (code) |
+| **Dashboard Dataset** (this page) | Named data feed catalog — query runs against tenant DB and returns typed data | Read-only; updated by code deployment | **micro-data** service (Go), served at `/api/dashboard/datasets` |
 | [system-config/query-dataset](/en/inventory/system-config/query-dataset) | SQL Workbench — admin authors tenant views / stored procedures / functions | Sysadmin creates/drops catalog objects | PostgreSQL catalog (`pg_class`, `pg_proc`) |
 | [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) | Per-user saved dashboard layout — which datasets are shown, in what size, in what order | Each user edits their own layout | `tb_widget_dashboard` + `tb_widget_dashboard_item`, seeded by `tb_widget_default_layout` (tenant DB) |
 
 **Maintained by** Engineering (code releases). **Browsed by** Sysadmin to audit available feeds. **Consumed by** the widget picker inside the dashboard `Add widget` dialog.
+
+Each dataset executes inside a **read-only transaction** with `SET LOCAL search_path` pinned to the caller's tenant schema, so a single deployed catalog serves every tenant safely. The backend-gateway is a thin proxy: `GET /api/dashboard/datasets` lists the catalogue (`{items,count}`) and `GET /api/dashboard/datasets/:id?bu_code=&user_id=` executes one feed (`{meta,data}`).
 
 ## 2. Common Tasks
 
@@ -36,7 +38,7 @@ Dashboard Dataset is the **read-only admin catalog screen** at `/system-admin/da
 | Identify the shape of a dataset | `shape` badge on each card | See §5.1 for shape meanings |
 | Add a dataset to a widget | Dashboard → Add widget → dataset picker | Opens a popover backed by this catalog |
 | Preview a dataset's live value | Dashboard widget preview | Calls `GET /api/:bu_code/datasets/:dataset_id` |
-| Add a new dataset feed | Code change in `micro-business/dashboard-dataset/registry/` | Engineering task — requires deployment |
+| Add a new dataset feed | Code change in **micro-data** service | Engineering task — requires deployment |
 
 ## 3. Validation & Errors
 
