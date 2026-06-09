@@ -2,7 +2,7 @@
 title: Purchase Request
 description: Internal request to procure goods — the upstream demand signal that becomes a purchase order after approval.
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-06-09T16:25:48.000Z
 tags: purchase-request, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-05-15T07:48:00.000Z
 > **Module purpose:** Multi-level, budget-aware internal demand workflow (`Draft` → `Submitted` → `Under Review` → `Approved`/`Rejected`/`Sent Back`) that hands a vendor-allocated requirement to procurement &nbsp;·&nbsp; **Audience:** Requestor, Department Head, Budget Controller, Finance, Purchaser, Procurement Manager, Auditor &nbsp;·&nbsp; **Key entities/tables:** `tb_purchase_request`, `tb_purchase_request_detail`, approval history, pricelist allocation, [purchase-request/my-approval](/en/inventory/purchase-request/my-approval) &nbsp;·&nbsp; **Sub-pages:** 15
 
 ![Purchase Request module screen](/screenshots/purchase-request/index.png)
+
+![Purchase Request module detail screen](/screenshots/purchase-request/detail.png)
 
 ## 1. Overview
 

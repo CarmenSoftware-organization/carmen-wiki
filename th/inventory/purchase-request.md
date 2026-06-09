@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request)
 description: เอกสารคำขอภายในเพื่อจัดซื้อสินค้า — สัญญาณความต้องการต้นน้ำที่จะถูกแปลงเป็นใบสั่งซื้อหลังได้รับอนุมัติ
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-06-09T16:25:48.000Z
 tags: purchase-request, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-05-15T07:48:00.000Z
 > **วัตถุประสงค์ของโมดูล:** workflow ความต้องการภายในแบบหลายระดับที่รับรู้งบประมาณ (`Draft` → `Submitted` → `Under Review` → `Approved`/`Rejected`/`Sent Back`) ส่งความต้องการที่จัดสรรผู้ขายแล้วต่อให้ฝ่ายจัดซื้อ &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Requestor, Department Head, Budget Controller, Finance, Purchaser, Procurement Manager, Auditor &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_purchase_request`, `tb_purchase_request_detail`, approval history, pricelist allocation, [purchase-request/my-approval](/th/inventory/purchase-request/my-approval) &nbsp;·&nbsp; **หน้าย่อย:** 15
 
 ![Purchase Request module screen](/screenshots/purchase-request/index.png)
+
+![Purchase Request module detail screen](/screenshots/purchase-request/detail.png)
 
 ## 1. ภาพรวม
 

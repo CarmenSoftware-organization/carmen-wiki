@@ -5,7 +5,7 @@ description: The receiving document that records physical goods received against
 
 published: true
 
-date: 2026-05-20T00:00:00.000Z
+date: 2026-06-09T16:26:48.000Z
 
 tags: good-receive-note, inventory, carmen-software
 
@@ -22,6 +22,8 @@ dateCreated: 2026-05-15T07:48:00.000Z
 > **Module purpose:** Records physical receipt of goods against a PO, posts stock-IN movements, updates costing, and creates AP entries (`Received` → `Committed` → `Voided`)  ·  **Audience:** Store Keeper / Receiver, Inventory Manager, Purchaser, Finance / AP  ·  **Key entities/tables:** `tb_good_receive_note`, `tb_good_receive_note_detail`, `InventoryStatus`, `JournalEntry`, FIFO lot layers  ·  **Sub-pages:** 12
 
 ![Good Receive Note (GRN) screen](/screenshots/good-receive-note/index.png)
+
+![Good Receive Note (GRN) detail screen](/screenshots/good-receive-note/detail.png)
 
 ## 1. Overview
 A **Good Receive Note (GRN)** is the document that formally records the physical receipt of goods from a vendor and writes them into inventory. Each GRN has a header — reference number, receipt date, vendor, delivery point, invoice number and date, currency and exchange rate, optional consignment/cash flags, and an extra-cost indicator — and one or more item lines. Each line carries the product, store location, ordered quantity (when sourced from a PO), received quantity, free-of-charge (FOC) quantity, unit price, discount, tax, lot information for traceable items, and a computed line total; the header rolls these into subtotal, discount, tax, extra costs, and grand-total figures in both transaction and base currencies.

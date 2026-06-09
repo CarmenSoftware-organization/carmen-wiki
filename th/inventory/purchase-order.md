@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order)
 description: เอกสารผูกพันอย่างเป็นทางการกับผู้ขายเพื่อจัดซื้อสินค้าตามราคา ปริมาณ และเงื่อนไขการส่งมอบที่ตกลงกัน
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-06-09T16:25:48.000Z
 tags: purchase-order, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-05-15T07:48:00.000Z
 > **วัตถุประสงค์ของโมดูล:** เอกสารผูกพันกับผู้ขายภายนอก (`Draft` → `Sent` → `Partial`/`Fully Received` → `Closed`/`Voided`) ที่ยึดโยง three-way match กับ GRN และใบแจ้งหนี้ &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Purchaser, Procurement Manager, Vendor, Receiver, Finance / AP, Auditor &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_purchase_order`, `tb_purchase_order_detail`, ฟิลด์ trace จาก PR→PO (`prItemId`, `prNumber`), activity log การแก้ไข, [purchase-order/credit-note](/th/inventory/purchase-order/credit-note) &nbsp;·&nbsp; **หน้าย่อย:** 17
 
 ![ใบสั่งซื้อ (Purchase Order) screen](/screenshots/purchase-order/index.png)
+
+![ใบสั่งซื้อ (Purchase Order) detail screen](/screenshots/purchase-order/detail.png)
 
 ## 1. ภาพรวม
 

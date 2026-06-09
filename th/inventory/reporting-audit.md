@@ -2,7 +2,7 @@
 title: รายงานและการตรวจสอบ (Reporting & Audit)
 description: บันทึกกิจกรรม, ไฟล์แนบ, การแจ้งเตือน, การสร้างรายงาน และ dashboard widgets
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T16:26:48.000Z
 tags: reporting-audit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** ระบบโครงสร้างพื้นฐานที่ใช้ร่วมกันสำหรับ activity audit log, ไฟล์แนบแบบ polymorphic, การแจ้งเตือนใน inbox, pipeline ของ report job / template และ widget สำหรับ dashboard &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Auditor (อ่าน), Sysadmin (ตั้งค่า), Platform Admin (ข้าม tenant), ทุกโมดูล (เขียน) &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_activity`, `tb_attachment`, `tb_notification`, `tb_report_template` + `tb_report_job`, `tb_widget_dashboard` &nbsp;·&nbsp; **หน้าย่อย:** 8
+
+![รายงานและการตรวจสอบ (Reporting & Audit) screen](/screenshots/reporting-audit/activity.png)
 
 ## 1. ภาพรวม
 

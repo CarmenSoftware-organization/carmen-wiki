@@ -2,7 +2,7 @@
 title: ใบรับสินค้า (Goods Receive Note)
 description: เอกสารรับสินค้าที่บันทึกการรับของจริงตามใบสั่งซื้อและเพิ่มสินค้าเข้าคลัง
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-06-09T16:26:48.000Z
 tags: good-receive-note, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-05-15T07:48:00.000Z
 > **วัตถุประสงค์ของโมดูล:** บันทึกการรับสินค้าจริงตามใบ PO โพสต์การเคลื่อนไหวสต๊อกเข้า อัปเดต costing และสร้างรายการ AP (`Received` → `Committed` → `Voided`) &nbsp;·&nbsp; **ผู้ใช้:** Store Keeper / Receiver, Inventory Manager, Purchaser, Finance / AP &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_good_receive_note`, `tb_good_receive_note_detail`, `InventoryStatus`, `JournalEntry`, FIFO lot layers &nbsp;·&nbsp; **หน้าย่อย:** 12
 
 ![ใบรับสินค้า (Goods Receive Note) screen](/screenshots/good-receive-note/index.png)
+
+![ใบรับสินค้า (Goods Receive Note) detail screen](/screenshots/good-receive-note/detail.png)
 
 ## 1. ภาพรวม
 

@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check)
 description: การนับบางส่วนแบบเจาะจงของสินค้าหรือตำแหน่งที่เลือก — เป็นการตรวจที่เบากว่าการนับ physical count เต็ม
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T16:25:48.000Z
 tags: spot-check, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-05-15T07:48:00.000Z
 > **วัตถุประสงค์ของโมดูล:** การนับบางส่วนแบบเจาะจง scope แคบ (สุ่ม / risk-based / event-driven) พร้อม recount และการ post ผลต่างไปสู่ adjustment &nbsp;·&nbsp; **ผู้ใช้งาน:** Inventory Controller, Counter, Auditor &nbsp;·&nbsp; **เอนทิตี/ตารางสำคัญ:** `tb_spot_check`, `tb_spot_check_detail`, ตาราง comment สองตาราง, `enum_spot_check_status`, `enum_spot_check_method` &nbsp;·&nbsp; **หน้าย่อย:** 10
 
 ![การสุ่มตรวจ (Spot Check) screen](/screenshots/spot-check/index.png)
+
+![การสุ่มตรวจ (Spot Check) review screen](/screenshots/spot-check/review.png)
 
 ## 1. ภาพรวม
 

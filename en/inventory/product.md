@@ -2,7 +2,7 @@
 title: Product
 description: Product master data — categories, units of measure, locations, and import/export — the catalog every inventory document references.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T16:25:48.000Z
 tags: product, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-05-15T07:48:00.000Z
 > **Module purpose:** Product catalogue master — codes, categories, base/order/recipe units with conversions, location mapping, allergens, variants, and bulk import/export &nbsp;·&nbsp; **Audience:** Product Administrator, Purchaser, Store Keeper &nbsp;·&nbsp; **Key entities/tables:** `tb_product`, `tb_product_category`, `tb_product_unit_conversion`, `tb_product_location`, `tb_product_variant` &nbsp;·&nbsp; **Sub-pages:** 11
 
 ![Product screen](/screenshots/product/index.png)
+
+![Product detail screen](/screenshots/product/detail.png)
 
 ## 1. Overview
 

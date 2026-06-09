@@ -2,7 +2,7 @@
 title: ใบเบิกของสโตร์ (Store Requisition)
 description: เอกสารคำขอภายในเพื่อเบิกสต๊อกจากคลังหรือสโตร์กลางไปยังจุดที่บริโภค (ครัว บาร์ เอาท์เลต)
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-06-09T16:25:48.000Z
 tags: store-requisition, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-05-15T07:48:00.000Z
 > **วัตถุประสงค์ของโมดูล:** เอกสารเคลื่อนย้ายสต๊อกภายใน — `Issue` (ไปยังปลายทางแบบลงค่าใช้จ่ายตรง) หรือ `Transfer` (เคลื่อนย้ายระหว่างสถานที่) พร้อม workflow อนุมัติและการติดตามปริมาณสามค่า (ขอ / อนุมัติ / จ่ายจริง) &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Outlet Manager / Requester, Approver, Store Keeper / Fulfiller, Receiver, Inventory Controller, Finance &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_store_requisition`, `tb_store_requisition_detail`, `StockMovement`, `JournalEntry`, `enum_doc_status`, `enum_sr_type` &nbsp;·&nbsp; **หน้าย่อย:** 15
 
 ![ใบเบิกของสโตร์ (Store Requisition) screen](/screenshots/store-requisition/index.png)
+
+![ใบเบิกของสโตร์ (Store Requisition) detail screen](/screenshots/store-requisition/detail.png)
 
 ## 1. ภาพรวม
 

@@ -2,7 +2,7 @@
 title: สิทธิ์การเข้าถึง (Access Control)
 description: ผู้ใช้ บทบาท สิทธิ์ และการเข้าถึงหน่วยธุรกิจหลายหน่วย
 published: true
-date: 2026-06-04T00:00:00.000Z
+date: 2026-06-09T16:26:48.000Z
 tags: access-control, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **วัตถุประสงค์โมดูล:** Resolve "ผู้ใช้ X สามารถทำ action Y บน resource Z" สำหรับทุก request ธุรกรรม &nbsp;·&nbsp; **กลุ่มเป้าหมาย:** Sysadmin, Security Officer, BU Admin &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_user`, `tb_application_role`, `tb_permission`, `tb_user_tb_business_unit`, `tb_department_user`, `tb_user_location` &nbsp;·&nbsp; **หน้าย่อย:** 6
+
+![สิทธิ์การเข้าถึง (Access Control) screen](/screenshots/access-control/application-role.png)
 
 ## 1. ภาพรวม
 
