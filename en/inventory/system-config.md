@@ -2,7 +2,7 @@
 title: System Configuration
 description: Document-flow and accounting-period system configuration — workflow, period, dimensions, numbering.
 published: true
-date: 2026-06-04T00:00:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: system-config, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -41,6 +41,7 @@ Sysadmin. Workflow definition may be delegated to a Workflow Administrator perso
 | [dashboard-dataset](/en/inventory/system-config/dashboard-dataset) | Read-only catalog of code-registered data feeds available to dashboard widgets | Sysadmin |
 | [config-email](/en/inventory/system-config/config-email) | Per-BU SMTP profile for outbound system email — workflow notifications, scheduled reports, password reset | Sysadmin |
 | [document](/en/inventory/system-config/document) | Tenant-scoped file-storage registry — upload, list, download, and delete for documents attached to transactional records | Sysadmin |
+| [doc-version](/en/inventory/system-config/doc-version) | Optimistic-concurrency `doc_version` guard — clients echo the version on save or get a 409 | Engineering |
 
 ## 4. Cross-Module Dependencies
 

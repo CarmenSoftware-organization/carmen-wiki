@@ -2,7 +2,7 @@
 title: Store Requisition — Data Model
 description: Entities, fields, relationships, and enums for the store-requisition module.
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: store-requisition, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -29,6 +29,8 @@ The store-requisition module owns four tenant-schema entities: the SR document h
 The SR sits **between [inventory](/en/inventory/inventory) and the consuming-cost-centre side of the world**. The source location (`from_location_id` → `tb_location`) is typically a central store or warehouse; the destination location (`to_location_id` → `tb_location`) is the consuming outlet (kitchen, bar, banquet) — its `tb_location.location_type` (`direct` for cost-centre consumption, `inventory` for an onward inventory holding) is what gates the allowed `sr_type`: `enum_sr_type.issue` requires a direct-cost destination, `enum_sr_type.transfer` requires an inventory destination. On commit (`in_progress → completed`), the SR's downstream effects fan out: every line writes — through `tb_store_requisition_detail.inventory_transaction_id` — into `tb_inventory_transaction` / `tb_inventory_transaction_detail`, which is where the actual stock-OUT (and, for `transfer`, the paired stock-IN at destination) is recorded along with lot, expiry, and cost-layer data; the `[costing](/en/inventory/costing)` module is responsible for the per-line unit cost (source location's weighted-average or FIFO); and the SR header transitions `draft → in_progress → completed` (with `cancelled` and `voided` as the two terminal cancellation paths).
 
 A noteworthy structural point: the SR line model carries **three quantities per row** — `requested_qty`, `approved_qty`, `issued_qty` (all `Decimal(20, 5)`) — which together tell the whole story across the four-state lifecycle. `requested_qty` is what the requester asked for; `approved_qty` is what the approver authorised (`≤ requested_qty`); `issued_qty` is what the store keeper actually released at fulfilment (`≤ approved_qty`). Unlike GRN's `detail_item` event-row split, an SR line is a single row whose three columns mutate as the document moves through its lifecycle — there is no nested event table. Per-line approval / review / rejection signatures (`approved_by_id`, `review_by_id`, `reject_by_id` and matching name / date / message columns) are persisted directly on the line for audit, alongside a `history` JSON array of stage-by-stage actor + decision entries and a `stages_status` JSON object summarising current per-stage status. The carmen/docs PRD describes a 6-state lifecycle (`Draft → Submitted → UnderReview → Approved/PartiallyApproved → InProcess → Fulfilled → Completed`) and a `RequisitionItem.approvalStatus` enum (`Accept / Reject / Review`) — both differ from the canonical Prisma 5-state `enum_doc_status` and the absence of a per-line status enum. See Section 5.
+
+**Concurrency:** updates to this document use [system-config/doc-version](/en/inventory/system-config/doc-version) optimistic locking — the client must echo the current `doc_version` on save or receive a `409 Conflict`.
 
 ## 2. Entities
 

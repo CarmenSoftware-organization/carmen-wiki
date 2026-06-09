@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum สำหรับโมดูล purchase-order
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: purchase-order, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -29,6 +29,8 @@ dateCreated: 2026-05-15T10:00:00.000Z
 PO อยู่ **ปลายน้ำของ [purchase-request](/th/inventory/purchase-request)** และ **ต้นน้ำของ [good-receive-note](/th/inventory/good-receive-note)** ในห่วงโซ่ procure-to-pay ลิงก์ PR-to-PO ทำผ่านตาราง bridge ที่กล่าวข้างต้น; bridge เดียวกันนี้ capture ปริมาณที่รับและ FOC ต่อ PR-line รองรับทั้งการรวม PR (หลาย PR lines → หนึ่ง PO line) และการแปลงบางส่วน (หนึ่ง PR line → หลาย PO lines) บรรทัด PO มี column `received_qty` และ `cancelled_qty` แบบ running เพื่อให้ "pending qty" ที่ใช้ได้สำหรับ GRN คือ `order_qty − received_qty − cancelled_qty`; ความสัมพันธ์จาก PO detail ไปยัง GRN detail (`tb_good_received_note_detail`) คือสิ่งที่ปิดวงจร แถวของ PO detail ยังอ้างอิงถึง [product](/th/inventory/product), `tb_tax_profile`, และ `tb_unit` (สองครั้ง — สำหรับ order UoM และ base UoM), และ header อ้างอิง `tb_vendor`, `tb_currency`, และ `tb_credit_term` เอนทิตี PO ทั้งหมดอยู่ใน tenant Prisma schema; platform schema ไม่มี model purchase-order
 
 ส่วนหัวบรรจุ context ของผู้ขาย สกุลเงิน อัตราแลกเปลี่ยน และ credit-term ครั้งเดียวสำหรับทั้ง PO — โดยการออกแบบ ทุกบรรทัดบน PO หนึ่งใบใช้ผู้ขายและสกุลเงินเดียวกัน ซึ่งเป็นเหตุผลที่ flow การแปลง PR-to-PO ต้อง group PR ที่เลือกด้วย `(vendor, currency)` ก่อน fan-out ค่า default ของ `tb_purchase_order.po_type` คือ `purchase_request` ซึ่งทำให้การสร้างผ่าน PR-sourced เป็นเส้นทางมาตรฐาน; `manual` เป็นทางเลือกสำหรับ PO ที่สร้างโดย procurement เท่านั้นโดยไม่มี PR ต้นน้ำ
+
+**Concurrency:** การแก้ไขเอกสารนี้ใช้ optimistic locking ผ่าน [system-config/doc-version](/th/inventory/system-config/doc-version) — client ต้องส่ง `doc_version` ปัจจุบันตอนบันทึก ไม่งั้นจะได้ `409 Conflict`
 
 ## 2. เอนทิตี
 

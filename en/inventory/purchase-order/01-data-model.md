@@ -2,7 +2,7 @@
 title: Purchase Order — Data Model
 description: Entities, fields, relationships, and enums for the purchase-order module.
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: purchase-order, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -29,6 +29,8 @@ The purchase-order module owns five tenant-schema entities: the PO document head
 The PO sits **downstream of [purchase-request](/en/inventory/purchase-request)** and **upstream of [good-receive-note](/en/inventory/good-receive-note)** in the procure-to-pay chain. PR-to-PO linkage runs through the bridge table noted above; the same bridge captures per-PR-line received and FOC quantities, supporting both PR consolidation (many PR lines → one PO line) and partial conversion (one PR line → many PO lines). PO lines carry running `received_qty` and `cancelled_qty` columns so that the "pending qty" available for GRN is `order_qty − received_qty − cancelled_qty`; the relation from PO detail to GRN detail (`tb_good_received_note_detail`) is what closes the loop. PO detail rows also reference [product](/en/inventory/product), `tb_tax_profile`, and `tb_unit` (twice — for order UoM and base UoM), and the header references `tb_vendor`, `tb_currency`, and `tb_credit_term`. All PO entities live in the tenant Prisma schema; the platform schema contains no purchase-order models.
 
 The header carries vendor, currency, exchange-rate and credit-term context once for the whole PO — by design, every line on a PO shares the same vendor and currency, which is why the PR-to-PO conversion flow must group selected PRs by `(vendor, currency)` before fan-out. The default value of `tb_purchase_order.po_type` is `purchase_request`, which makes PR-sourced the standard creation path; `manual` is the alternative for procurement-only POs that have no upstream PR.
+
+**Concurrency:** updates to this document use [system-config/doc-version](/en/inventory/system-config/doc-version) optimistic locking — the client must echo the current `doc_version` on save or receive a `409 Conflict`.
 
 ## 2. Entities
 

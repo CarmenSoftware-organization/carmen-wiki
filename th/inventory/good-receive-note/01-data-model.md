@@ -2,7 +2,7 @@
 title: ใบรับสินค้า (Goods Receive Note) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูล good-receive-note
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: good-receive-note, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
@@ -29,6 +29,8 @@ dateCreated: 2026-05-15T11:00:00.000Z
 GRN อยู่ **ปลายน้ำของ [purchase-order](/th/inventory/purchase-order)** และ **ต้นน้ำของ [inventory](/th/inventory/inventory)** ในห่วงโซ่ procure-to-pay การเชื่อมโยงกับ PO ผ่านสองคอลัมน์บน `tb_good_received_note_detail` — `purchase_order_id` และ `purchase_order_detail_id` — โดย `purchase_order_detail_id` เป็นตัวที่มี Prisma `@relation` ชัดเจนกลับไปยัง `tb_purchase_order_detail` ทั้งสองคอลัมน์เป็น nullable เพื่อให้ตารางบรรทัดเดียวกันสามารถแทน GRN แบบ manual ที่ไม่มี PO ต้นทาง (กำหนดโดย enum `doc_type`) เมื่อ commit ผลปลายทางของ GRN จะกระจาย: ทุกบรรทัด resolve เป็นหนึ่งหรือหลายแถวใน `tb_inventory_transaction` / `tb_inventory_transaction_detail` (ผ่าน `tb_good_received_note_detail_item.inventory_transaction_id`) ซึ่งเป็นที่ที่การเพิ่มของคงคลัง cost layer และข้อมูล lot/expiry อยู่จริง `received_qty` ของบรรทัด PO เลื่อนไปข้างหน้า และ GRN เองเปลี่ยน `draft` → `saved` → `committed` GRN ยังเป็นหลักสำคัญของ **three-way match** (PO ↔ GRN ↔ ใบกำกับจากผู้ขาย) — leg ที่จับคู่แล้วคือสิ่งที่ปลดล็อกการ posting AP ปลายทาง
 
 ประเด็นโครงสร้างที่น่าสังเกต: เอนทิตี `tb_good_received_note_detail_item` ไม่มีเทียบเท่าใน PR หรือ PO ในขณะที่บรรทัด PO เป็น triple ของ qty/unit/price เดียว บรรทัดของ GRN สามารถครอบคลุม **หลายเหตุการณ์รับของ** (การส่งของแบบแยก สต๊อกที่ผสม lot ลงในบรรทัดเดียวกัน FOC bundle ที่รับพร้อมสต๊อกที่จ่ายเงิน) แต่ละเหตุการณ์เป็นแถว `detail_item` ที่บรรจุ triple `order_qty` / `received_qty` / `foc_qty` ของตนเองและภาพถ่ายการเงิน (tax, discount, price, สกุลเงินฐาน) ที่คำนวณ ณ ขณะรับ — และแต่ละเหตุการณ์ยังบรรจุ `inventory_transaction_id` ซึ่งเป็น link ไปยังฝั่ง inventory ที่ข้อมูล lot number, expiry date และ cost-layer อยู่ ดังนั้นในขณะที่ PRD ของ carmen/docs อธิบาย lot/expiry เป็นฟิลด์ **บนบรรทัด GRN เอง** ความเป็นจริงใน Prisma คือมันอยู่บน inventory transaction ที่ link มา แถว `detail_item` คือ cursor เหตุการณ์รับและสะพาน ดูส่วน 5 สำหรับความแตกต่างนี้
+
+**Concurrency:** การแก้ไขเอกสารนี้ใช้ optimistic locking ผ่าน [system-config/doc-version](/th/inventory/system-config/doc-version) — client ต้องส่ง `doc_version` ปัจจุบันตอนบันทึก ไม่งั้นจะได้ `409 Conflict`
 
 ## 2. เอนทิตี
 

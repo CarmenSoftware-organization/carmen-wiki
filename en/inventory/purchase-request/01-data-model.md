@@ -2,7 +2,7 @@
 title: Purchase Request — Data Model
 description: Entities, fields, relationships, and enums for the purchase-request module.
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: purchase-request, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -25,6 +25,8 @@ dateCreated: 2026-05-15T09:00:00.000Z
 ## 1. Overview
 
 The purchase-request module owns six tenant-schema entities: the document header (`tb_purchase_request`), its line items (`tb_purchase_request_detail`), workflow / activity-log comments at both header and line level (`tb_purchase_request_comment`, `tb_purchase_request_detail_comment`), and a reusable template pair (`tb_purchase_request_template`, `tb_purchase_request_template_detail`) for recurring requests such as monthly market-list orders. Workflow stage tracking is not a separate table — it lives inline on the header as JSON columns (`workflow_history`, `workflow_current_stage`, `stages_status`) plus a foreign key into the shared `tb_workflow` configuration table, while the persisted timeline of submit/approve/reject/send-back events is captured through the comment table.
+
+**Concurrency:** updates to this document use [system-config/doc-version](/en/inventory/system-config/doc-version) optimistic locking — the client must echo the current `doc_version` on save or receive a `409 Conflict`.
 
 The PR sits upstream of [purchase-order](/en/inventory/purchase-order) in the procure-to-pay chain. Approved PR lines are linked to the resulting PO line through the bridge table `tb_purchase_order_detail_tb_purchase_request_detail` (one PO line can fan in from many PR lines for consolidation; one PR line can fan out across multiple POs for partial conversion). PR detail rows also reference [product](/en/inventory/product), [vendor-pricelist](/en/inventory/vendor-pricelist), `tb_tax_profile`, `tb_currency`, `tb_unit`, `tb_location`, `tb_delivery_point`, and `tb_vendor`, denormalising lookup fields (codes, names, snapshot prices) onto the line at submission time so historical PR data remains stable even when master records change. All PR entities live in the tenant Prisma schema; the platform schema contains no purchase-request models.
 

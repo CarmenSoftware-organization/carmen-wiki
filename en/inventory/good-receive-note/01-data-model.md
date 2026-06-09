@@ -2,7 +2,7 @@
 title: Good Receive Note (GRN) — Data Model
 description: Entities, fields, relationships, and enums for the good-receive-note module.
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: good-receive-note, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
@@ -29,6 +29,8 @@ The good-receive-note module owns five tenant-schema entities: the GRN document 
 The GRN sits **downstream of [purchase-order](/en/inventory/purchase-order)** and **upstream of [inventory](/en/inventory/inventory)** in the procure-to-pay chain. Linkage to PO runs through two columns on `tb_good_received_note_detail` — `purchase_order_id` and `purchase_order_detail_id` — with `purchase_order_detail_id` carrying the explicit Prisma `@relation` back to `tb_purchase_order_detail`. Both columns are nullable so the same line table can also represent a manual GRN with no upstream PO (governed by the `doc_type` enum). On commit, the GRN's downstream effects fan out: every line resolves to one or more rows in `tb_inventory_transaction` / `tb_inventory_transaction_detail` (via `tb_good_received_note_detail_item.inventory_transaction_id`), which is where the actual on-hand increment, cost layer, and lot / expiry data live; the PO line's `received_qty` advances; and the GRN itself transitions from `draft` → `saved` → `committed`. The GRN is also the central anchor for the **three-way match** (PO ↔ GRN ↔ vendor invoice) — the matched leg is what unlocks AP posting downstream.
 
 A noteworthy structural point: the `tb_good_received_note_detail_item` entity has no equivalent in PR or PO. Where a PO line is a single qty/unit/price triple, a GRN line can span **multiple receipt events** (split deliveries, mixed-lot stock landed on the same line, FOC bundles received alongside paid stock). Each event is a `detail_item` row carrying its own `order_qty` / `received_qty` / `foc_qty` triple and the financial snapshot (tax, discount, price, base-currency equivalents) computed at the moment of receipt — and each event also carries `inventory_transaction_id`, which is the link to the inventory side of the world where lot number, expiry date, and cost-layer data are persisted. So while the carmen/docs PRD describes lot / expiry as fields **on the GRN line itself**, the Prisma reality is that they live on the linked inventory transaction; the `detail_item` row is the receipt-event cursor and the bridge. See Section 5 for this divergence.
+
+**Concurrency:** updates to this document use [system-config/doc-version](/en/inventory/system-config/doc-version) optimistic locking — the client must echo the current `doc_version` on save or receive a `409 Conflict`.
 
 ## 2. Entities
 

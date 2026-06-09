@@ -2,7 +2,7 @@
 title: Spot Check — Data Model
 description: Entities, fields, relationships, and enums for the spot-check module.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: spot-check, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -28,6 +28,8 @@ The Spot Check module is the **document layer** for a targeted, partial count of
 The module sits **upstream of [inventory-adjustment](/en/inventory/inventory-adjustment)** in the same way physical-count does: when a spot check reaches `completed` and variance lines are accepted, the application layer rolls the variance into a `tb_stock_in` (overage) and / or `tb_stock_out` (shortage) document with reason codes (typically `SPOT_CHECK_OVERAGE` / `SPOT_CHECK_SHORTAGE` or aliased to the same `COUNT_OVERAGE` / `COUNT_SHORTAGE` reasons used by physical-count — to be confirmed). The adjustment post is what writes the `tb_inventory_transaction` row that lands on the [inventory](/en/inventory/inventory) ledger. The spot-check tables themselves do **not** write to the inventory ledger directly — the adjustment document is the integration anchor.
 
 > **TODO:** Confirm whether spot-check uses dedicated `SPOT_CHECK_*` reason codes or reuses physical-count's `COUNT_*` reasons. Source UI / interaction details from `../carmen-inventory-frontend/` and end-to-end behaviour from `../carmen-inventory-frontend-e2e/` once specs exist (no `spot-check` spec currently — verified by `ls .../tests/ | grep -i 'spot\|check'`). No carmen/docs source folder exists for this module — see [physical-count/01-data-model](/en/inventory/physical-count/01-data-model) for the shared infrastructure pattern.
+
+**Concurrency:** updates to this document use [system-config/doc-version](/en/inventory/system-config/doc-version) optimistic locking — the client must echo the current `doc_version` on save or receive a `409 Conflict`.
 
 ## 2. Entities
 

@@ -2,7 +2,7 @@
 title: ใบเบิกของสโตร์ (Store Requisition) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูล store-requisition
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: store-requisition, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -29,6 +29,8 @@ dateCreated: 2026-05-15T13:30:00.000Z
 SR วางตัว **ระหว่าง [inventory](/th/inventory/inventory) และฝั่ง cost-centre ที่บริโภค** สถานที่ต้นทาง (`from_location_id` → `tb_location`) โดยทั่วไปคือสโตร์กลางหรือคลัง; สถานที่ปลายทาง (`to_location_id` → `tb_location`) คือเอาท์เลตที่บริโภค (ครัว บาร์ แบงเควต) — ค่า `tb_location.location_type` (`direct` สำหรับการบริโภคที่ cost-centre, `inventory` สำหรับการเก็บสต๊อกต่อ) คือสิ่งที่ควบคุม `sr_type` ที่อนุญาต: `enum_sr_type.issue` ต้องการปลายทางแบบ direct-cost, `enum_sr_type.transfer` ต้องการปลายทางแบบ inventory ตอน commit (`in_progress → completed`) ผลกระทบปลายน้ำของ SR กระจายออก: ทุกบรรทัดเขียน — ผ่าน `tb_store_requisition_detail.inventory_transaction_id` — ลงใน `tb_inventory_transaction` / `tb_inventory_transaction_detail` ซึ่งเป็นที่ที่ stock-OUT จริง (และในกรณี `transfer` คือ stock-IN ที่ปลายทางคู่กัน) ถูกบันทึกพร้อมข้อมูล lot, expiry และ cost-layer; โมดูล `[costing](/th/inventory/costing)` รับผิดชอบราคาต้นทุนต่อหน่วยของแต่ละบรรทัด (weighted-average หรือ FIFO ของสถานที่ต้นทาง); และส่วนหัว SR เปลี่ยนสถานะ `draft → in_progress → completed` (พร้อม `cancelled` และ `voided` เป็นเส้นทางยกเลิกที่จุดสิ้นสุดสองทาง)
 
 จุดทางโครงสร้างที่น่าสังเกต: โมเดลบรรทัดของ SR มี **ปริมาณสามค่าต่อแถว** — `requested_qty`, `approved_qty`, `issued_qty` (ทั้งหมดเป็น `Decimal(20, 5)`) — ซึ่งร่วมกันเล่าเรื่องราวทั้งหมดข้ามวงจรชีวิตสี่สถานะ `requested_qty` คือสิ่งที่ผู้ขอขอ; `approved_qty` คือสิ่งที่ผู้อนุมัติอนุญาต (`≤ requested_qty`); `issued_qty` คือสิ่งที่ store keeper ปล่อยจริงตอน fulfillment (`≤ approved_qty`) ต่างจาก `detail_item` ที่แยกเป็น event-row ของ GRN บรรทัดของ SR เป็นแถวเดียวที่คอลัมน์ของมันเปลี่ยนค่าตามที่เอกสารดำเนินไปในวงจรชีวิต — ไม่มี nested event table ลายเซ็น approval / review / rejection ต่อบรรทัด (`approved_by_id`, `review_by_id`, `reject_by_id` และคอลัมน์ name / date / message ที่ตรงกัน) ถูกเก็บโดยตรงบนบรรทัดสำหรับการตรวจสอบ ควบคู่กับ JSON array `history` ของรายการ actor + decision ทีละขั้น และ JSON object `stages_status` ที่สรุปสถานะปัจจุบันต่อขั้น PRD ของ carmen/docs อธิบายวงจรชีวิตหกสถานะ (`Draft → Submitted → UnderReview → Approved/PartiallyApproved → InProcess → Fulfilled → Completed`) และ enum `RequisitionItem.approvalStatus` (`Accept / Reject / Review`) — ทั้งคู่ต่างจาก `enum_doc_status` ห้าสถานะ canonical บน Prisma และการไม่มี enum สถานะต่อบรรทัด ดูส่วนที่ 5
+
+**Concurrency:** การแก้ไขเอกสารนี้ใช้ optimistic locking ผ่าน [system-config/doc-version](/th/inventory/system-config/doc-version) — client ต้องส่ง `doc_version` ปัจจุบันตอนบันทึก ไม่งั้นจะได้ `409 Conflict`
 
 ## 2. เอนทิตี
 

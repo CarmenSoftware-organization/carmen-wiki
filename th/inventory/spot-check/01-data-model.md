@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูลการสุ่มตรวจ
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: spot-check, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -28,6 +28,8 @@ dateCreated: 2026-05-15T14:30:00.000Z
 โมดูลอยู่ **เหนือ [inventory-adjustment](/th/inventory/inventory-adjustment)** ในแบบเดียวกับที่ physical-count ทำ: เมื่อ spot check ถึง `completed` และบรรทัด variance ได้รับการยอมรับ ชั้น application จะ roll up variance เข้าสู่เอกสาร `tb_stock_in` (overage) และ/หรือ `tb_stock_out` (shortage) ด้วย reason code (โดยทั่วไปคือ `SPOT_CHECK_OVERAGE` / `SPOT_CHECK_SHORTAGE` หรือ alias เข้า reason `COUNT_OVERAGE` / `COUNT_SHORTAGE` ที่ใช้โดย physical-count — รอยืนยัน) การ post adjustment คือสิ่งที่เขียน row `tb_inventory_transaction` ที่ลงจอดบน ledger ของ [inventory](/th/inventory/inventory) ตารางของ spot-check เอง **ไม่** เขียนลง inventory ledger โดยตรง — เอกสาร adjustment คือจุดเชื่อมต่อ
 
 > **TODO:** ยืนยันว่า spot-check ใช้ reason code `SPOT_CHECK_*` เฉพาะหรือใช้ reason `COUNT_*` ของ physical-count ซ้ำ ดึงรายละเอียด UI / interaction จาก `../carmen-inventory-frontend/` และพฤติกรรม end-to-end จาก `../carmen-inventory-frontend-e2e/` เมื่อ spec มี (ยังไม่มี spec `spot-check` — ตรวจสอบโดย `ls .../tests/ | grep -i 'spot\|check'`) ไม่มีโฟลเดอร์ source ใน carmen/docs สำหรับโมดูลนี้ — ดู [physical-count/01-data-model](/th/inventory/physical-count/01-data-model) สำหรับ pattern infrastructure ที่แชร์
+
+**Concurrency:** การแก้ไขเอกสารนี้ใช้ optimistic locking ผ่าน [system-config/doc-version](/th/inventory/system-config/doc-version) — client ต้องส่ง `doc_version` ปัจจุบันตอนบันทึก ไม่งั้นจะได้ `409 Conflict`
 
 ## 2. เอนทิตี
 

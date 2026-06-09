@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูล purchase-request
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: purchase-request, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -25,6 +25,8 @@ dateCreated: 2026-05-15T09:00:00.000Z
 ## 1. ภาพรวม
 
 โมดูล purchase-request เป็นเจ้าของหก entity ใน tenant schema ได้แก่ ส่วนหัวของเอกสาร (`tb_purchase_request`), รายการสินค้า (`tb_purchase_request_detail`), comment ของ workflow / activity-log ทั้งระดับ header และระดับบรรทัด (`tb_purchase_request_comment`, `tb_purchase_request_detail_comment`), และคู่ template ที่นำกลับมาใช้ใหม่ได้ (`tb_purchase_request_template`, `tb_purchase_request_template_detail`) สำหรับคำขอที่ทำซ้ำเป็นประจำ เช่น order market-list รายเดือน การติดตาม stage ของ workflow ไม่ได้แยกเป็นตารางต่างหาก — มันอยู่ inline บน header เป็นคอลัมน์ JSON (`workflow_history`, `workflow_current_stage`, `stages_status`) บวกกับ FK ไปยังตารางตั้งค่า `tb_workflow` ที่ใช้ร่วมกัน ส่วน timeline ของ event submit/approve/reject/send-back ที่ persist ไว้จะถูกบันทึกผ่านตาราง comment
+
+**Concurrency:** การแก้ไขเอกสารนี้ใช้ optimistic locking ผ่าน [system-config/doc-version](/th/inventory/system-config/doc-version) — client ต้องส่ง `doc_version` ปัจจุบันตอนบันทึก ไม่งั้นจะได้ `409 Conflict`
 
 PR อยู่ต้นน้ำของ [purchase-order](/th/inventory/purchase-order) ในห่วงโซ่ procure-to-pay บรรทัดของ PR ที่อนุมัติแล้วจะถูก link ไปยังบรรทัด PO ที่เกิดขึ้นผ่านตาราง bridge `tb_purchase_order_detail_tb_purchase_request_detail` (PO line หนึ่งสามารถรวมจาก PR line หลายบรรทัดเพื่อ consolidate, PR line หนึ่งสามารถกระจายไปหลาย PO สำหรับการแปลงบางส่วน) แถวรายละเอียดของ PR ยังอ้างอิงถึง [product](/th/inventory/product), [vendor-pricelist](/th/inventory/vendor-pricelist), `tb_tax_profile`, `tb_currency`, `tb_unit`, `tb_location`, `tb_delivery_point`, และ `tb_vendor` โดย denormalize ฟิลด์ lookup (รหัส, ชื่อ, snapshot ของราคา) ลงบนบรรทัดตอน submit เพื่อให้ข้อมูล PR ในอดีตคงที่แม้ master record จะเปลี่ยน entity ของ PR ทั้งหมดอยู่ใน tenant Prisma schema ส่วน platform schema ไม่มี model ของ purchase-request
 
