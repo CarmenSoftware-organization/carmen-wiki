@@ -2,7 +2,7 @@
 title: Query Dataset
 description: SQL Workbench — รัน SELECT แบบ ad-hoc และสร้าง / browse / drop view, stored procedure และ function ของ tenant ที่ใช้เป็นแหล่งข้อมูลใช้ซ้ำได้สำหรับรายงานและ dashboard
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: system-config, query, dataset, sql, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -20,6 +20,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 Query Dataset (แสดงเป็น **SQL Workbench** ใน UI) คือหน้าจอเฉพาะ Sysadmin ที่ `/system-admin/query-dataset` สำหรับการรัน query แบบ ad-hoc read-only และการสร้าง / browse / drop object ฐานข้อมูลที่ใช้ซ้ำได้ — **view**, **stored procedure** และ **function** — โดยตรงภายในฐานข้อมูล tenant ผลลัพธ์กลายเป็นแหล่งข้อมูลสำหรับ template รายงานและ tile dashboard
 
 **กลุ่มเป้าหมาย:** Sysadmin เท่านั้น — role ที่ไม่ใช่ admin ไม่เห็นรายการ navigation ไม่เหมือนตาราง Carmen ส่วนใหญ่ **ไม่มี row `tb_query_dataset`** สำหรับแต่ละ object ที่บันทึก — registry คือ PostgreSQL catalog ที่ live scope ตาม tenant schema Workbench เองไม่มี state; การแก้ไข commit ตรงไปยัง catalog และ reload-from-catalog คือเส้นทาง recovery
+
+view, stored procedure และ function ที่สร้างที่นี่คือแหล่งข้อมูลที่ service **micro-data** เรียกใช้งานจริง ณ run time: รายงานหรือ dashboard ระบุชื่อ object นั้น (ผ่าน `builder_key` หรือ template `name`) และ micro-data จะ resolve ผ่าน `POST /api/datasets/execute`, ประกอบ WHERE clause จาก filter ที่ส่งมา, กระจาย query ไปยัง business unit ที่ร้องขอ, และส่งคืน `Dataset` (columns + rows + totals + summary) ดู [reporting-audit/report](/th/inventory/reporting-audit/report) สำหรับฝั่งการแสดงผล
 
 ## 2. งานทั่วไป
 

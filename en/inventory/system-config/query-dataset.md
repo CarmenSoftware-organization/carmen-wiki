@@ -2,7 +2,7 @@
 title: Query Dataset
 description: SQL Workbench — execute ad-hoc SELECTs and create / browse / drop tenant views, stored procedures, and functions used as reusable data sources by reports and dashboards.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: system-config, query, dataset, sql, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -20,6 +20,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 Query Dataset (rendered as **SQL Workbench** in the UI) is the Sysadmin-only screen at `/system-admin/query-dataset` for running ad-hoc read-only queries and creating / browsing / dropping reusable database objects — **views**, **stored procedures**, and **functions** — directly inside the tenant database. Outputs become the data source for report templates and dashboard tiles.
 
 **Audience:** Sysadmin only — non-admin roles never see the navigation entry. Unlike most Carmen tables, **there is no `tb_query_dataset` row** for each saved object — the registry is the live PostgreSQL catalog scoped to the tenant schema. The Workbench itself is stateless; edits are committed straight to the catalog, and reload-from-catalog is the recovery path.
+
+The views, stored procedures, and functions authored here are the data sources the **micro-data** service executes at run time: a report or dashboard names one (by `builder_key` or template `name`), and micro-data resolves it via `POST /api/datasets/execute`, composes the WHERE clause from the supplied filters, fans the query across the requested business units, and returns a `Dataset` (columns + rows + totals + summary). See [reporting-audit/report](/en/inventory/reporting-audit/report) for the render side.
 
 ## 2. Common Tasks
 
