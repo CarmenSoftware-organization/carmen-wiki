@@ -2,7 +2,7 @@
 title: Report
 description: Report generation pipeline — tenant-side job and schedule rows backed by platform-side templates and document-type print mappings.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: reporting-audit, report, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -25,6 +25,17 @@ The report entity is the full **report generation pipeline** — ad-hoc on-deman
 Mixed schemas reflect deployment: templates + mappings are curated centrally; jobs + schedules are tenant data.
 
 **Maintained by** Platform Admin (templates, mappings), Sysadmin (schedules). **Read by** the report list, "Print as…" menu, dashboard widgets.
+
+### 1.1 Dataset vs render — the micro-data split
+
+Report generation is split across two Go services, with the **`Dataset`** object (columns + rows + totals + summary) as the boundary contract:
+
+| Concern | Columns on `tb_report_template` | Owner | Does |
+|---|---|---|---|
+| **Dataset** | `source_type`, `source_name`, `source_params`, `dialog`, `view_name`, `builder_key` | **micro-data** | Resolves the view / function / procedure, composes the WHERE clause from filters, fans out across tenant BUs, returns `Dataset`. Renders nothing. |
+| **Report** | `content`, `kind`, `report_group`, format / orientation / signatures | **micro-report** | Owns output format (PDF / Excel / CSV / JSON), template layout, `kind`, print mappings, and job tracking. |
+
+micro-report no longer runs the query in-process — it calls micro-data's `POST /api/datasets/execute` (passing the source's `builder_key` or `name`, `bu_codes`, and `filters`) and renders the returned `Dataset`. The `tb_report_template` row still physically holds both column sets; micro-data reads only the dataset columns (mapped onto `model.DatasetSource`). Extracting them into a `tb_dataset_source` table is a noted future migration, not yet in effect.
 
 ## 2. Common Tasks
 
@@ -95,6 +106,8 @@ Source: **mixed** — tenant for jobs/schedules, platform for templates/mappings
 ### 5.3 `tb_report_template` (platform)
 
 Carries `name`, `description`, `report_group`, `kind` (`report` / `print`), `dialog`, `content`, optional `builder_key`, `source_type` (`view` / `function` / `procedure`), `source_name`, `source_params`, `orientation`, `signature_config`, `is_standard`, `allow_business_unit` / `deny_business_unit`, `is_active`. `@@unique([name, deleted_at])`.
+
+> **Service ownership note:** the dataset columns (`source_type`, `source_name`, `source_params`, `dialog`, `view_name`, `builder_key`) are read by **micro-data** (mapped onto `model.DatasetSource`); the remaining columns are read by **micro-report**. See [§1.1](#) for the split rationale.
 
 ### 5.4 `tb_print_template_mapping` (platform)
 

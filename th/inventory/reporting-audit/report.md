@@ -2,7 +2,7 @@
 title: รายงาน (Report)
 description: pipeline การสร้างรายงาน — แถว job และ schedule ฝั่ง tenant ที่อยู่เบื้องหลังของ template และ document-type print mapping ฝั่งแพลตฟอร์ม
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: reporting-audit, report, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -25,6 +25,17 @@ dateCreated: 2026-05-16T08:00:00.000Z
 Schema ผสมสะท้อนการ deploy: template + mapping ถูก curate รวมศูนย์; job + schedule เป็นข้อมูล tenant
 
 **ดูแลโดย** Platform Admin (template, mapping), Sysadmin (schedule) **อ่านโดย** รายการรายงาน, เมนู "Print as…", widget บน dashboard
+
+### 1.1 Dataset เทียบกับการ render — การแยก micro-data
+
+การสร้างรายงานแบ่งออกเป็นสอง Go service โดยมีออบเจกต์ **`Dataset`** (columns + rows + totals + summary) เป็นสัญญาขอบเขต:
+
+| ความรับผิดชอบ | Columns บน `tb_report_template` | เจ้าของ | หน้าที่ |
+|---|---|---|---|
+| **Dataset** | `source_type`, `source_name`, `source_params`, `dialog`, `view_name`, `builder_key` | **micro-data** | แก้ไข view / function / procedure, ประกอบ WHERE clause จาก filter, กระจายไปยัง BU ของ tenant, คืน `Dataset` ไม่ render อะไรทั้งนั้น |
+| **Report** | `content`, `kind`, `report_group`, format / orientation / signatures | **micro-report** | รับผิดชอบรูปแบบ output (PDF / Excel / CSV / JSON), layout ของ template, `kind`, print mapping และการติดตาม job |
+
+micro-report ไม่รันคำสั่ง query ใน process ของตัวเองอีกต่อไป — แต่เรียก `POST /api/datasets/execute` ของ micro-data (ส่ง `builder_key` หรือ `name`, `bu_codes`, และ `filters` ของ source) แล้ว render `Dataset` ที่ได้รับกลับมา แถว `tb_report_template` ยังคงเก็บทั้งสองชุด column ไว้จริง; micro-data อ่านเฉพาะ dataset columns (map ไปยัง `model.DatasetSource`) การแยก column เหล่านั้นออกเป็นตาราง `tb_dataset_source` เป็น future migration ที่กล่าวถึงไว้ แต่ยังไม่ได้ดำเนินการ
 
 ## 2. งานที่พบบ่อย
 
@@ -95,6 +106,8 @@ Schema ผสมสะท้อนการ deploy: template + mapping ถูก
 ### 5.3 `tb_report_template` (platform)
 
 Carry `name`, `description`, `report_group`, `kind` (`report` / `print`), `dialog`, `content`, `builder_key` แบบเลือกได้, `source_type` (`view` / `function` / `procedure`), `source_name`, `source_params`, `orientation`, `signature_config`, `is_standard`, `allow_business_unit` / `deny_business_unit`, `is_active` `@@unique([name, deleted_at])`
+
+> **หมายเหตุเจ้าของ service:** dataset columns (`source_type`, `source_name`, `source_params`, `dialog`, `view_name`, `builder_key`) ถูกอ่านโดย **micro-data** (map ไปยัง `model.DatasetSource`); columns ที่เหลือถูกอ่านโดย **micro-report** ดู [§1.1](#) สำหรับเหตุผลการแยก
 
 ### 5.4 `tb_print_template_mapping` (platform)
 
