@@ -2,7 +2,7 @@
 title: Widget
 description: Dashboard composition entity — per-user / per-BU dashboards, default layouts, and personal saved workspace queries.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: reporting-audit, widget, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -22,6 +22,17 @@ The widget entity powers the **dashboards layer** — multi-table because dashbo
 - `tb_widget_workspace` — per-user saved queries; surfaces in the data-explorer panel and may be referenced from dashboard tiles.
 
 **Maintained by** end users (their personal dashboards + workspaces), BU admins (BU dashboards), Sysadmin (defaults). **Read by** the dashboard layer and data-explorer.
+
+### 1.1 Where widget CRUD runs (micro-data)
+
+Widget create / read / update / delete is hosted by the **micro-data** service (Go) and proxied by the backend-gateway over HTTP — ported from `micro-business` / `micro-cluster`. The tenant tables (`tb_widget_dashboard`, `tb_widget_default_layout`, `tb_widget_workspace`) are unchanged. Two scopes:
+
+| Scope | Endpoints (gateway → micro-data) |
+|---|---|
+| **BU widgets** | `GET/POST /api/dashboard/bu-widgets?bu_code=` · `GET/PATCH/DELETE /api/dashboard/bu-widgets/:id?bu_code=&user_id=` |
+| **Personal widgets** | `GET/POST /api/dashboard/personal-widgets?user_id=` · `GET/PATCH/DELETE /api/dashboard/personal-widgets/:id?user_id=` · `POST /api/dashboard/personal-widgets/reorder?user_id=` (bulk reorder) |
+
+The feeds these widgets display come from [system-config/dashboard-dataset](/en/inventory/system-config/dashboard-dataset), also hosted in micro-data.
 
 ## 2. Common Tasks
 
@@ -111,3 +122,4 @@ Source: tenant schema.
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_widget_dashboard` (lines ~5727-5744), `tb_widget_workspace` (lines ~5787-5801), `tb_widget_default_layout` (lines ~5803-5809), enums (lines ~5713-5725).
 - **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/dashboard/`; data-explorer panel for workspaces.
+- **micro-data service (Go):** `../micro-data/` — hosts dashboard datasets + widget CRUD; widget logic in `service/widget_service.go`, handlers in `controller/dashboard_controller.go`. Proxied by the gateway.

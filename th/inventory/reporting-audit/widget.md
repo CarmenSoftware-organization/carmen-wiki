@@ -2,7 +2,7 @@
 title: Widget
 description: เอนทิตีประกอบ dashboard — dashboard ต่อผู้ใช้ / ต่อ BU, layout default และ workspace ส่วนตัวสำหรับ query ที่บันทึกไว้
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: reporting-audit, widget, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -22,6 +22,17 @@ dateCreated: 2026-05-16T08:00:00.000Z
 - `tb_widget_workspace` — query ที่บันทึกต่อผู้ใช้; surface ใน panel data-explorer และอาจถูกอ้างอิงจาก tile ของ dashboard
 
 **ดูแลโดย** ผู้ใช้ปลายทาง (dashboard ส่วนตัว + workspace), BU admin (dashboard BU), Sysadmin (default) **อ่านโดย** ชั้น dashboard และ data-explorer
+
+### 1.1 Widget CRUD ทำงานที่ไหน (micro-data)
+
+การสร้าง / อ่าน / แก้ไข / ลบ widget ถูก host โดย service **micro-data** (Go) และ proxy ผ่าน backend-gateway ด้วย HTTP — ย้ายมาจาก `micro-business` / `micro-cluster` ตาราง tenant (`tb_widget_dashboard`, `tb_widget_default_layout`, `tb_widget_workspace`) ไม่เปลี่ยนแปลง มีสอง scope:
+
+| Scope | Endpoints (gateway → micro-data) |
+|---|---|
+| **BU widgets** | `GET/POST /api/dashboard/bu-widgets?bu_code=` · `GET/PATCH/DELETE /api/dashboard/bu-widgets/:id?bu_code=&user_id=` |
+| **Personal widgets** | `GET/POST /api/dashboard/personal-widgets?user_id=` · `GET/PATCH/DELETE /api/dashboard/personal-widgets/:id?user_id=` · `POST /api/dashboard/personal-widgets/reorder?user_id=` (bulk reorder) |
+
+ข้อมูล feed ที่ widget เหล่านี้แสดงมาจาก [system-config/dashboard-dataset](/th/inventory/system-config/dashboard-dataset) ซึ่ง host อยู่ใน micro-data เช่นกัน
 
 ## 2. งานที่พบบ่อย
 
@@ -111,3 +122,4 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_widget_dashboard` (lines ~5727-5744), `tb_widget_workspace` (lines ~5787-5801), `tb_widget_default_layout` (lines ~5803-5809), enums (lines ~5713-5725)
 - **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/dashboard/`; panel data-explorer สำหรับ workspace
+- **micro-data service (Go):** `../micro-data/` — host dashboard dataset + widget CRUD; logic ของ widget อยู่ใน `service/widget_service.go`, handler อยู่ใน `controller/dashboard_controller.go` Proxy ผ่าน gateway
