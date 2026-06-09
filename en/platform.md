@@ -2,7 +2,7 @@
 title: Carmen Platform
 description: Overview of the Carmen Platform admin product — entry point for the book.
 published: true
-date: 2026-05-19T00:00:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: book/platform, home
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -33,7 +33,13 @@ Reference manual for developers and support engineers working on the Carmen Plat
 |---|---|
 | [Report Templates](/en/platform/report-templates) | Print / export template definitions |
 
-## 4. How to use this book
+## 4. Product
+
+| Module | What it covers |
+|---|---|
+| [Changelog](/en/platform/changelog) | Versioned, public release history + version badge |
+
+## 5. How to use this book
 
 - Start with the module home page for an overview
 - Drill into sub-pages for data models, UI flows, and edge cases

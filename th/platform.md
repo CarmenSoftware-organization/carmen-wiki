@@ -2,7 +2,7 @@
 title: Carmen Platform
 description: Overview of the Carmen Platform admin product — entry point for the book.
 published: true
-date: 2026-05-19T00:00:00.000Z
+date: 2026-06-09T00:00:00.000Z
 tags: book/platform, home
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -33,7 +33,13 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 |---|---|
 | [Report Templates](/th/platform/report-templates) | นิยามเทมเพลตสำหรับพิมพ์ / export |
 
-## 4. การใช้งาน book นี้
+## 4. ผลิตภัณฑ์
+
+| โมดูล | ครอบคลุมเรื่อง |
+|---|---|
+| [Changelog](/th/platform/changelog) | ประวัติการเปลี่ยนแปลงเวอร์ชัน (สาธารณะ) + version badge |
+
+## 5. การใช้งาน book นี้
 
 - เริ่มจากหน้า home ของแต่ละโมดูลเพื่อภาพรวม
 - เจาะลึก sub-pages สำหรับ data model, UI flow, edge cases
