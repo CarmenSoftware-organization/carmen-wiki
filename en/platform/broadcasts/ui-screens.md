@@ -33,7 +33,7 @@ The two system tabs render only when the session holds `broadcast.send` (`canSen
 
 A `UserMultiSelect` — a badge-input combo box backed by the Users API:
 
-- Typing (400 ms debounce, dropdown opens on focus) searches `userService.getAll({ page: 1, perpage: 20, search })` — top 20 matches by name or email, each rendered as name over muted email. Display name is `firstname middlename lastname`, falling back to `name`, `email`, then the raw id.
+- Typing (400 ms debounce, dropdown opens on focus — the debounce also fires an empty-query search on open, so the first 20 users typically populate before any keystroke) searches `userService.getAll({ page: 1, perpage: 20, search })` — top 20 matches by name or email, each rendered as name over muted email. Display name is `firstname middlename lastname`, falling back to `name`, `email`, then the raw id.
 - Clicking a result adds a removable badge (already-selected rows are disabled and tagged "Selected"); Backspace with an empty query removes the last badge; Escape closes the dropdown. Empty states: "Type to search users" / `No users match "<query>"`; search failures render the parsed API error inline in the dropdown.
 - Validation: at least one recipient ("Pick at least one recipient"), enforced pre-submit and cleared as soon as one is added.
 

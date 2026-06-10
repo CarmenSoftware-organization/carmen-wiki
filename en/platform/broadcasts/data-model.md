@@ -24,7 +24,7 @@ The module owns two tables. `tb_broadcast_notification` is the schema comment's 
 
 That legacy pattern is still live on one path: a system send with an explicit `userIds` list bypasses both broadcast tables and fans out into `tb_notification` (§2.3) — micro-notification's code calls this "legacy behavior — small N, fanout is fine".
 
-The persistence path is backend-gateway (`api/notifications/broadcasts/*`, KeycloakGuard) → TCP `notifications.create` → micro-notification, which owns all writes, the `bu_code → scope_id` resolution, the live Socket.io emit for unscheduled sends, and an email fan-out side-effect when SMTP is configured. There are no admin read/update/delete endpoints — the only readers are the recipient-side list/unread/mark-read endpoints documented in §6.
+The persistence path is backend-gateway (`api/notifications/broadcasts/*`, KeycloakGuard) → TCP `notifications.create` → micro-notification, which owns all writes, the `bu_code → scope_id` resolution, the live Socket.io emit for unscheduled sends, and an email fan-out side-effect when SMTP is configured. There are no admin read/update/delete endpoints — the only readers are recipient-side endpoints such as the list/unread/mark-read set documented in §6 (plus `GET /api/notifications/:notification_id` and `PUT /api/notifications/mark-all-read`, which apply the same scope and `scheduled_at` filters).
 
 ## 2. Entities
 
