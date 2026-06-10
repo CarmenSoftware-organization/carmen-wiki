@@ -51,7 +51,7 @@ permission key ตัวเดียว gate ทุก surface ผ่าน [Pla
 
 ## 5. โมดูลที่เกี่ยวข้อง
 
-- [News](/th/platform/news) — sibling ฝั่ง **pull**: เนื้อหาที่ถูกเขียนพร้อม lifecycle และ public feed เทียบกับ push แบบ one-shot ทันทีของ Broadcasts ใช้ Broadcasts เพื่อขัดจังหวะ ใช้ News เพื่อแจ้งข้อมูล
+- [News](/th/platform/news) — sibling ฝั่ง pull: เนื้อหาที่ถูกเขียนพร้อม lifecycle และ public feed เทียบกับ push แบบ one-shot ทันทีของ Broadcasts ใช้ Broadcasts เพื่อขัดจังหวะ ใช้ News เพื่อแจ้งข้อมูล
 - [Business Units](/th/platform/business-units) — โหมด BU กำหนดเป้าหมายหนึ่ง unit ด้วย `code`; หน้าจอเขียนโหลดตัวเลือก select ของมันจาก API ของโมดูลนั้น (เฉพาะ BU ที่ active) และ micro-notification resolve ตัว code กับ row ของ `tb_business_unit` ที่ live อยู่ ณ เวลาส่ง
 - [Users](/th/platform/users) — โหมด *specific users* ค้นหา user registry ผ่าน `UserMultiSelect`; ผู้รับถูกส่งเป็น UUID ของ `tb_user.id`
 - [Platform RBAC](/th/platform/rbac) — กำหนดและ resolve key `broadcast.send` ที่ gate surface ของ SPA
