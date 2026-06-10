@@ -2,8 +2,8 @@
 title: Platform RBAC — UI Screens
 description: RoleManagement/RoleEdit with the PermissionPicker, the read-only Permission Catalog, the Super Admins list, and the User Platform assignment screens.
 published: true
-date: 2026-06-10T12:00:00.000Z
-tags: book/platform, rbac, ui-screens
+date: 2026-06-10T12:15:00.000Z
+tags: book/platform, rbac, ui
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z
 ---

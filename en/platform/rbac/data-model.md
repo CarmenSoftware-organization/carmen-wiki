@@ -2,7 +2,7 @@
 title: Platform RBAC — Data Model
 description: The five RBAC tables — permission catalog, roles, role-permission join, scoped user assignments, super-admin flag — and divergences from the SPA shapes.
 published: true
-date: 2026-06-10T12:00:00.000Z
+date: 2026-06-10T12:15:00.000Z
 tags: book/platform, rbac, data-model
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z
@@ -109,7 +109,7 @@ The assignment table: binds a user to a role at a scope. This is the row the Use
 | `id` | `String @db.Uuid` | No | Primary key, default `gen_random_uuid()`; the `assignmentId` used by the delete endpoint |
 | `user_id` | `String @db.Uuid` | No | Target user id — plain column, **no Prisma `@relation` to `tb_user`** |
 | `platform_role_id` | `String @db.Uuid` | No | FK to `tb_platform_role.id` |
-| `cluster_id` | `String? @db.Uuid` | Yes | Scope: `null` = platform-wide; set = scoped to this cluster (schema comment verbatim). Plain column, no `@relation` to `tb_cluster` |
+| `cluster_id` | `String? @db.Uuid` | Yes | Scope: `null` = platform-wide scope; set = scoped to this cluster (schema comment verbatim). Plain column, no `@relation` to `tb_cluster` |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: row creation time, default `now()` |
 | `created_by_id` | `String? @db.Uuid` | Yes | Audit: creator user id |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: last update time, default `now()` |

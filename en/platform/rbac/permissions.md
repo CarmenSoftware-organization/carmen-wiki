@@ -2,7 +2,7 @@
 title: Platform RBAC — Permissions
 description: Route-guard matrix for the whole SPA, how route/sidebar/in-page gates compose, the permission-resolution algorithm, and edge cases for testers.
 published: true
-date: 2026-06-10T12:00:00.000Z
+date: 2026-06-10T12:15:00.000Z
 tags: book/platform, rbac, permissions
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z
@@ -11,13 +11,13 @@ dateCreated: 2026-06-10T12:00:00.000Z
 # Platform RBAC — Permissions
 
 > **At a Glance**
-> **Gate:** every guarded route carries `requiredPermission="resource.action"` (or `requireSuperAdmin`) on `PrivateRoute` &nbsp;·&nbsp; **Resolution order:** bootstrap → super-admin → platform keys → cluster keys &nbsp;·&nbsp; **Bootstrap exception:** total user count 0 or 1 ⇒ login skips the ≥1-permission gate and `hasPermission` returns `true` &nbsp;·&nbsp; **On failure:** `<AccessDenied>` inside `<Layout>` (sidebar stays visible) &nbsp;·&nbsp; **In-page gates:** `<Can>` — currently only `user_platform.manage` on the User Platform detail page
+> **Gate:** every guarded route carries `requiredPermission="resource.action"` (or `requireSuperAdmin`) on `PrivateRoute` &nbsp;·&nbsp; **Resolution order:** bootstrap → super-admin → platform keys → cluster keys &nbsp;·&nbsp; **Bootstrap exception:** total user count 0 or 1 ⇒ login skips the ≥1-permission gate and `hasPermission` returns `true` &nbsp;·&nbsp; **On failure:** `<AccessDenied>` inside `<Layout>` (sidebar stays visible) &nbsp;·&nbsp; **In-page gates:** `<Can>` wraps Add/Edit/Delete on most management list and edit pages (`.create`/`.update`/`.delete` keys, cluster-scoped for Clusters/Business Units); within the RBAC module's own screens only the User Platform detail page uses it (`user_platform.manage`)
 
 ## 1. Overview
 
 This page is the canonical map of how permission keys gate the Platform SPA. Authorization happens at three layers that share one resolver: the **route guard** (`PrivateRoute`'s `requiredPermission` / `requireSuperAdmin` props), the **sidebar filter** (`Layout.tsx` hides nav items whose `permission` the session lacks), and **in-page gates** (`<Can permission="...">` wrapping individual buttons and forms). All three call `AuthContext.hasPermission`, which delegates to the pure `checkPermission` function over the session's `EffectivePermissions` snapshot.
 
-Two routes are authenticated-only with no key requirement: `/dashboard` and `/profile`. Any session that passes login reaches them. Everything else carries a key — and because the login gate itself requires the account to hold at least one permission (or the super-admin flag, or the bootstrap exception), there is no such thing as a signed-in session with zero permissions outside bootstrap.
+Two routes are authenticated-only with no key requirement: `/dashboard` and `/profile`. Any session that passes login reaches them. Everything else carries a key — and because the login gate itself requires the account to hold at least one permission (or the super-admin flag, or the bootstrap exception), a session cannot be admitted with zero permissions at login time outside bootstrap. The ≥1-permission gate runs only inside `login()`, though: a session whose grants are revoked mid-session stays signed in even after the snapshot refetch — it just fails every subsequent permission check.
 
 ## 2. Gate matrix
 
@@ -33,7 +33,7 @@ Two routes are authenticated-only with no key requirement: `/dashboard` and `/pr
 | `/platform/user-platform` | `UserPlatformManagement` | `user_platform.read` | None |
 | `/platform/user-platform/:userId` | `UserPlatformEdit` | `user_platform.read` | `<Can permission="user_platform.manage">` on Add Role, the add-role form, and per-row Remove |
 
-Note that the Roles list's **Delete** action is not separately gated — `role.read` suffices to see and click it. Whether the delete succeeds is up to the backend's enforcement of `role.delete` (see §5).
+Note that the Roles list's **Delete** action is not separately gated — `role.read` suffices to see and click it, unlike the other management lists, which wrap Delete in `<Can permission="*.delete">` (§3). Whether the role delete succeeds is up to the backend's enforcement of `role.delete` (see §5).
 
 ### 2.2 Rest of the SPA
 
@@ -49,7 +49,7 @@ Note that the Roles list's **Delete** action is not separately gated — `role.r
 | `/news` | `news.read` / `news.create` / `news.update` | |
 | `/broadcasts/new` | `broadcast.send` | Single route; no list page |
 
-Three routes are fully public (no `PrivateRoute` at all): `/` (landing), `/login`, and `/changelog`. Source: `../carmen-platform/src/App.tsx` (the full `<Routes>` block, lines 48–301). No route anywhere in the SPA passes a `.delete` key as `requiredPermission` — delete actions live inside list pages whose guard is the `.read` key.
+Three routes are fully public (no `PrivateRoute` at all): `/` (landing), `/login`, and `/changelog`. Source: `../carmen-platform/src/App.tsx` (the full `<Routes>` block, lines 48–301). No route anywhere in the SPA passes a `.delete` key as `requiredPermission` — delete actions live inside list pages, where every management list except Roles gates them in-page with `<Can permission="*.delete">` (§3). Only the Roles list still exposes Delete to anyone holding its `.read` guard (§2.1).
 
 ## 3. How guards compose
 
@@ -57,7 +57,7 @@ A user's path to any action passes up to three gates, outermost first:
 
 1. **Route guard** — `PrivateRoute` (`src/components/PrivateRoute.tsx`). If the session is unauthenticated it renders `<Navigate to="/login" replace />`. If `requiredPermission` is set and `hasPermission(requiredPermission)` is false — or `requireSuperAdmin` is set and `isSuperAdmin` is false — it renders `<AccessDenied />`, a card inside the normal `<Layout>` shell (shield icon, "Access Denied", "You don't have permission to access this page.", a Back-to-Dashboard button). The sidebar stays visible and the session stays valid.
 2. **Sidebar filter** — `Layout.tsx` declares `allNavItems` where each entry may carry `permission: '<key>'` or `superAdminOnly: true`, then filters: an item survives only when `(!item.permission || hasPermission(item.permission)) && (!item.superAdminOnly || isSuperAdmin)`. Hidden items are still directly addressable by URL — the route guard is the real barrier; the sidebar is UX. The sidebar keys match the route keys one-for-one for the list routes (`role.read`, `user_platform.read`, `cluster.read`, etc.), so there is no divergence where a visible entry leads to `AccessDenied`. The Permission Catalog has no sidebar entry at all.
-3. **In-page gate** — `<Can permission="..." clusterId?>` (`src/components/Can.tsx`) renders its children only when `hasPermission` passes, with an optional `fallback` (default: nothing). Currently the only production use is `user_platform.manage` on the User Platform detail page; every other screen exposes all of its actions to anyone who passes the route guard.
+3. **In-page gate** — `<Can permission="..." clusterId?>` (`src/components/Can.tsx`) renders its children only when `hasPermission` passes, with an optional `fallback` (default: nothing). `<Can>` gates Add/Edit/Delete across most of the SPA's management pages: the list pages (Clusters, Business Units, Users, Applications, Report Templates, Print Template Mapping, News) wrap their Add button in the `.create` key, row Edit in `.update`, and row Delete in `.delete`; the corresponding edit pages wrap their save/toggle/delete actions in `.update`; and BroadcastCompose wraps Send in `broadcast.send`. The Clusters and Business Units gates pass a `clusterId` (e.g. `<Can permission="cluster.update" clusterId={row.original.id}>`), taking the cluster-specific resolution branch (§4) — the only call sites that do. Within the RBAC module's own screens, only the User Platform detail page uses `<Can>` (`user_platform.manage` on Add Role, the add-role form, and per-row Remove); the Roles list, Role editor, Permission Catalog, Super Admins, and User Platform list expose all of their actions to anyone who passes the route guard.
 
 All three layers call the same `hasPermission(key, opts?)` from `AuthContext` — there is exactly one resolution algorithm (§4), so route, sidebar, and in-page outcomes can never disagree for the same key. Note that route guards never pass a `clusterId`, so they take the broad "any cluster grants it" branch: a role scoped to a single cluster still opens the corresponding screens platform-wide in the current SPA, and the cluster-scoped narrowing matters for `<Can clusterId>` call sites and backend enforcement.
 
