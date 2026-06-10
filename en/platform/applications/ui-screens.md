@@ -50,7 +50,7 @@ The actions dropdown carries **Edit** (navigate to the edit route) wrapped in `<
 
 ### 2.5 Empty state and persisted UI state
 
-An empty result renders an `EmptyState` card (AppWindow icon): "No applications yet" with an inline **Add Application** CTA when no search term is active (note: this CTA is *not* `<Can>`-wrapped — see [Permissions](./permissions.md)), or `No applications matching "<term>"` when one is.
+An empty result renders an `EmptyState` card (AppWindow icon) whose title is always "No applications yet"; only the description beneath it varies — `No applications matching "<term>"` when a search term is active, or "Get started by creating your first application." with an inline **Add Application** CTA when none is (note: this CTA is *not* `<Can>`-wrapped — see [Permissions](./permissions.md)).
 
 | `localStorage` key | Stored type | Persists |
 |---|---|---|
