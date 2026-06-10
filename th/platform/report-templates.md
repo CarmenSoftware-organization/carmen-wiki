@@ -62,7 +62,7 @@ dateCreated: 2026-05-19T00:00:00.000Z
 - [rbac](/th/platform/rbac) — โมเดล permission เบื้องหลัง key `report_template.*`: catalog, role, scoped assignment, bypass ของ super-admin; กลไกของ gate อยู่ใน [rbac permissions](/th/platform/rbac/permissions)
 - [print-template-mapping](/th/platform/print-template-mapping) — ตาราง routing ที่ตัดสินว่าเทมเพลต `kind="print"` ตัวไหน render เอกสารแต่ละประเภทตอนพิมพ์: mapping เลือกแถวแบบ print ต่อประเภทเอกสาร (ฟอร์ม edit ลอยเทมเพลตที่ match `kind = "print"` และ `report_group = <ประเภทเอกสาร>` ขึ้นด้านบน) มี `is_default` หนึ่งตัวต่อประเภท และ allow/deny ขอบเขตต่อ BU โมดูล Report Templates *เขียน* layout; Print Template Mapping ตัดสินว่า *จะใช้ตัวไหน*
 - [business-units](/th/platform/business-units) — เป็นแหล่งของรหัส BU ที่ใช้ใน chip input `allow_business_unit` / `deny_business_unit` และการค้นหา schema ของ tenant ของ "Probe BU" picker
-- [clusters](/th/platform/clusters) — documented ลำดับชั้น cluster/BU เหนือระดับ BU; เทมเพลตรายงานเป็น tenant-global และไม่มี FK ไปยัง cluster
+- [clusters](/th/platform/clusters) — อธิบายลำดับชั้น cluster/BU เหนือระดับ BU; เทมเพลตรายงานเป็น tenant-global และไม่มี FK ไปยัง cluster
 - [users](/th/platform/users) — row identity ของ user ที่ role assignment ของ RBAC ชี้ไป; การมอบสิทธิ์ report-template หมายถึงการ assign role ที่รวม key `report_template.*`
 
 ## 6. แหล่งข้อมูลอ้างอิง

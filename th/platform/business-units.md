@@ -66,7 +66,7 @@ gate แบบ scoped (`clusterId`) จะ resolve กับ **cluster แม่
 
 ## 5. โมดูลที่เกี่ยวข้อง
 
-- [clusters](/th/platform/clusters) — ทุก BU เป็นของ cluster หนึ่ง cluster ผ่าน `cluster_id` หน้าแก้ไข cluster เปิด flow สร้าง BU โดย preselect parent ผ่าน query parameter `/business-units/new?cluster_id=<id>` และ key `cluster.*` ที่ gate โมดูลนี้ถูก documented จากฝั่ง cluster ใน [clusters permissions](/th/platform/clusters/permissions)
+- [clusters](/th/platform/clusters) — ทุก BU เป็นของ cluster หนึ่ง cluster ผ่าน `cluster_id` หน้าแก้ไข cluster เปิด flow สร้าง BU โดย preselect parent ผ่าน query parameter `/business-units/new?cluster_id=<id>` และ key `cluster.*` ที่ gate โมดูลนี้ถูกอธิบายไว้จากฝั่ง cluster ใน [clusters permissions](/th/platform/clusters/permissions)
 - [users](/th/platform/users) — เป็นแหล่งของบัญชีผู้ใช้ที่ถูก assign เข้า BU ผ่าน card Users สมาชิก BU ใหม่ถูกดึงจากรายชื่อผู้ใช้ของ cluster ที่เป็นแม่ และการคลิกชื่อใน card Users จะกระโดดไปหน้าแก้ไข user
 - [rbac](/th/platform/rbac) — โมเดล permission เบื้องหลังทุก gate ใน §4: catalog, role, scoped assignment, bypass ของ super-admin และ (§5 ของหน้านั้น) โมเดล role-enum รุ่นเก่าที่เคย gate โมดูลนี้จนถึง 2026-06
 - [report-templates](/th/platform/report-templates) — chip input `allow_business_unit` / `deny_business_unit` ที่นั่นกำหนดขอบเขตเทมเพลตรายงานด้วยค่า `code` ของ BU ที่นิยามไว้ที่นี่

@@ -13,7 +13,7 @@ dateCreated: 2026-05-19T00:00:00.000Z
 โมดูล **Clusters** เป็นจุดเริ่มต้นของ container ระดับองค์กรที่ใหญ่ที่สุด ใน Carmen Platform โดย cluster หนึ่ง ๆ จะรวม business unit (BU) และ user ที่ผูกกับ BU เหล่านั้นเข้าด้วยกัน นอกจากนี้ cluster ยังเป็นที่เก็บข้อมูล **ไลเซนส์** — ทั้งจำนวน BU สูงสุดที่ cluster นี้มีได้ และ (ผ่านการรวมยอด จากทุก BU) จำนวน user ทั้งหมดที่ครอบคลุม route และ action ที่แก้ไขข้อมูลในโมดูลนี้ถูก gate ด้วย permission key `cluster.*` (ดู [Platform RBAC](/th/platform/rbac))
 
 > **At a Glance**
-> **วัตถุประสงค์ของโมดูล:** ตู้คอนเทนเนอร์ของ tenant ที่รวม business unit (BU) และ user ที่ผูกกับ BU เหล่านั้น และเป็นที่เก็บไลเซนส์ ("จำนวน BU สูงสุดต่อ cluster" และจำนวน user รวมจากทุก BU) &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับ Platform admin SPA; การเข้าถึงของ operator ต้องได้รับ grant permission `cluster.*` ([rbac](/th/platform/rbac)) &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_cluster` (ฟิลด์: `code`, `name`, `alias_name`, `logo_file_token`, `avatar_file_token`, `max_license_bu`, `is_active`, soft-delete trio), `tb_business_unit` (1:N), `tb_cluster_user` (M:N join ที่ถือ role per-cluster เป็น `admin`/`user`) &nbsp;·&nbsp; **หน้าย่อย:** 3
+> **วัตถุประสงค์ของโมดูล:** container ของ tenant ที่รวม business unit (BU) และ user ที่ผูกกับ BU เหล่านั้น และเป็นที่เก็บไลเซนส์ ("จำนวน BU สูงสุดต่อ cluster" และจำนวน user รวมจากทุก BU) &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับ Platform admin SPA; การเข้าถึงของ operator ต้องได้รับ grant permission `cluster.*` ([rbac](/th/platform/rbac)) &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_cluster` (ฟิลด์: `code`, `name`, `alias_name`, `logo_file_token`, `avatar_file_token`, `max_license_bu`, `is_active`, soft-delete trio), `tb_business_unit` (1:N), `tb_cluster_user` (M:N join ที่ถือ role per-cluster เป็น `admin`/`user`) &nbsp;·&nbsp; **หน้าย่อย:** 3
 
 ## 1. ภาพรวม
 
@@ -21,7 +21,7 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 - **`/clusters` → `ClusterManagement`** — `DataTable` แบบ server-side พร้อมการค้นหาแบบ debounce, แผง filter แบบ Sheet (active/inactive และ ตัวเลือก "show soft-deleted"), ส่งออก CSV และจดจำสถานะ UI ใน `localStorage` (search, page, perpage, sort, filters)
 - **`/clusters/new` → `ClusterEdit` (โหมด create)** — แสดงการ์ด "Cluster Details" การ์ดเดียว เมื่อสร้างสำเร็จ หน้าจะ navigate ไป `/clusters/:id` ซึ่ง **ไม่ใช่ route ที่ลงทะเบียนไว้** — catch-all ของ SPA จะพา operator ไปลงที่ Dashboard ในปัจจุบัน (ดู [UI Screens](/th/platform/clusters/ui-screens) §3)
-- **`/clusters/:id/edit` → `ClusterEdit` (โหมด view/edit)** — เลย์เอาต์ สามคอลัมน์ คอลัมน์ซ้ายคือการ์ด Cluster Details (เริ่มต้นแบบดูอย่างเดียว เปลี่ยนเป็นแก้ไขผ่านปุ่ม Edit — ซึ่ง render เฉพาะภายใน `<Can permission="cluster.update" clusterId={id}>` เท่านั้น) คอลัมน์ขวาขยายกว้าง 2 คอลัมน์ และมี การ์ดวางซ้อนกันสามใบคือ **Branding** (อัปโหลด logo + avatar), **Business Units** ใน cluster นี้ และ **Users** ใน cluster นี้ การ์ดเหล่านี้แสดงเคียงข้างกันใน grid เสมอ ผู้ใช้พับเก็บเองไม่ได้
+- **`/clusters/:id/edit` → `ClusterEdit` (โหมด view/edit)** — เลย์เอาต์สามคอลัมน์ คอลัมน์ซ้ายคือการ์ด Cluster Details (เริ่มต้นแบบดูอย่างเดียว เปลี่ยนเป็นแก้ไขผ่านปุ่ม Edit — ซึ่ง render เฉพาะภายใน `<Can permission="cluster.update" clusterId={id}>` เท่านั้น) คอลัมน์ขวาขยายกว้าง 2 คอลัมน์ และมีการ์ดวางซ้อนกันสามใบคือ **Branding** (อัปโหลด logo + avatar), **Business Units** ใน cluster นี้ และ **Users** ใน cluster นี้ การ์ดเหล่านี้แสดงเคียงข้างกันใน grid เสมอ ผู้ใช้พับเก็บเองไม่ได้
 
 การ์ด Business Units แสดงรายการ BU ทุกตัวที่ `cluster_id` ตรงกับ cluster ปัจจุบัน พร้อมปุ่ม **Add** ที่นำทางไป `/business-units/new?cluster_id=<id>` เพื่อให้ BU ใหม่ผูกกับ cluster ตั้งแต่เริ่ม ส่วนการ์ด Users แสดงข้อมูล จาก `tb_cluster_user` (กรองตาม cluster_id) และรองรับ add / edit / remove ผ่าน dialog — dialog เพิ่ม user จะค้นหา user จาก pool ทั่วระบบ และให้ ผู้ใช้เลือก cluster role (`admin` หรือ `user`) พร้อม parent BU ของ assignment นั้น
 
@@ -66,8 +66,8 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 - [business-units](/th/platform/business-units) — cluster เป็นเจ้าของ BU แบบ 1:N หน้า edit cluster คือจุดมาตรฐานในการสร้าง BU ที่ผูกกับ cluster ตั้งแต่ต้น (เรียก `navigate('/business-units/new?cluster_id=<id>')`) **Gotcha:** route `/business-units*` ใช้ key `cluster.read`/`cluster.create`/`cluster.update` ซ้ำ — ไม่มี key `business_unit.*` ดังนั้นการ grant สิทธิ์เข้าถึง cluster จะมอบ Business Units ไปด้วย
 - [users](/th/platform/users) — cluster เพิ่ม user ผ่าน global user list ส่วนหน้า edit user คืออีกฝั่งของ join `tb_cluster_user` ที่ดู assignment เดียวกัน จากมุมของ user
-- [rbac](/th/platform/rbac) — กำหนด catalog ของ permission, role และ scoped assignment ที่อยู่เบื้องหลังทุก gate `cluster.*` ใน §4 รวมถึง bypass ของ super-admin และข้อยกเว้น bootstrap ส่วน §5 ของหน้านั้น documented โมเดล role-enum รุ่นเก่าที่เคย gate โมดูลนี้จนถึง 2026-06
-- [report-templates](/th/platform/report-templates) — ใช้ pattern route-guard เดียวกันแต่มี key `report_template.*` ของตัวเอง จึงโอนแบบจำลองการ gate ที่ documented ที่นี่ไปใช้ได้ 1 ต่อ 1
+- [rbac](/th/platform/rbac) — กำหนด catalog ของ permission, role และ scoped assignment ที่อยู่เบื้องหลังทุก gate `cluster.*` ใน §4 รวมถึง bypass ของ super-admin และข้อยกเว้น bootstrap ส่วน §5 ของหน้านั้นอธิบายโมเดล role-enum รุ่นเก่าที่เคย gate โมดูลนี้จนถึง 2026-06
+- [report-templates](/th/platform/report-templates) — ใช้ pattern route-guard เดียวกันแต่มี key `report_template.*` ของตัวเอง จึงโอนแบบจำลองการ gate ที่อธิบายไว้ที่นี่ไปใช้ได้ 1 ต่อ 1
 
 ## 6. แหล่งข้อมูลอ้างอิง
 
