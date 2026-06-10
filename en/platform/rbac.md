@@ -2,7 +2,7 @@
 title: Platform RBAC
 description: Permission-based access control for the Platform admin SPA — permission catalog, roles, scoped user assignments, and the super-admin bypass.
 published: true
-date: 2026-06-10T12:00:00.000Z
+date: 2026-06-10T12:30:00.000Z
 tags: platform/rbac, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z
@@ -100,7 +100,7 @@ This module supersedes the legacy `auth-roles` page; pages written against the o
 ## 6. Related Modules
 
 - [users](/en/platform/users) — owns the `tb_user` identity rows that assignments and the super-admin flag point at. User creation/lifecycle stays in the Users module; the User Platform screen only manages role assignments.
-- **Applications** — the machine-client counterpart: grants `api_name` keys (same `resource.action` shape) to API clients. Useful contrast when reasoning about whether a caller is gated by RBAC (human session) or application grants (machine token).
+- [applications](/en/platform/applications) — the machine-client counterpart: grants `api_name` keys (same `resource.action` shape) to API clients. Useful contrast when reasoning about whether a caller is gated by RBAC (human session) or application grants (machine token).
 - [clusters](/en/platform/clusters) — cluster-scoped assignments reference `tb_cluster` ids; the add-role form's cluster dropdown is fed by the cluster list. Cluster screens are guarded by `cluster.read/create/update`.
 - [business-units](/en/platform/business-units) — **gotcha:** the `/business-units`, `/business-units/new`, and `/business-units/:id/edit` routes reuse the `cluster.read` / `cluster.create` / `cluster.update` keys. There are no `business_unit.*` keys — granting cluster access also grants Business Units, and you cannot grant one without the other.
 
