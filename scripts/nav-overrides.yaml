@@ -103,18 +103,42 @@ books:
           - slug: users
             label_en: "Users"
             label_th: "Users"
-          - slug: auth-roles
-            label_en: "Authentication & Roles"
-            label_th: "Authentication & Roles"
+          - slug: rbac
+            label_en: "Platform RBAC"
+            label_th: "Platform RBAC"
           - slug: profile
             label_en: "Profile"
             label_th: "Profile"
+      - label_en: "Content"
+        label_th: "Content"
+        modules:
+          - slug: news
+            label_en: "News"
+            label_th: "News"
+          - slug: broadcasts
+            label_en: "Broadcasts"
+            label_th: "Broadcasts"
+      - label_en: "Platform"
+        label_th: "Platform"
+        modules:
+          - slug: applications
+            label_en: "Applications"
+            label_th: "Applications"
       - label_en: "Reporting"
         label_th: "Reporting"
         modules:
           - slug: report-templates
             label_en: "Report Templates"
             label_th: "Report Templates"
+          - slug: print-template-mapping
+            label_en: "Print Template Mapping"
+            label_th: "Print Template Mapping"
+      - label_en: "Product"
+        label_th: "Product"
+        modules:
+          - slug: changelog
+            label_en: "Changelog"
+            label_th: "Changelog"
 
 # Legacy overrides — only consulted in --mode=mirror.
 headers: {}
