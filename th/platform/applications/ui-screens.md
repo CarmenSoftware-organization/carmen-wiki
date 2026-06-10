@@ -87,7 +87,7 @@ toggle Edit จะ snapshot ฟอร์มปัจจุบัน แล้ว
 | Allow all APIs | Checkbox | render เป็น badge API Access ในโหมด view; การติ๊กมันซ่อนบล็อก API Names ทั้งหมด |
 | API Names | selector แบบ accordion จัดกลุ่ม (§3.4) | เฉพาะเมื่อ "Allow all APIs" ไม่ถูกติ๊ก |
 
-**Save** (`Save Changes` / `Create Application` พร้อม spinner ขณะกำลังบันทึก) submit ฟอร์ม; **Cancel** คืนค่า snapshot ก่อนแก้ไขและออกจากโหมด edit (ในโหมด create จะนำทางกลับไปหน้า list) การเปลี่ยนแปลงที่ยังไม่บันทึก (diff ใด ๆ เทียบกับ snapshot ขณะแก้ไข) จะติดอาวุธ navigation guard `useUnsavedChanges` และ global keyboard shortcuts สั่ง save และ cancel ได้ เมื่ออัพเดทสำเร็จ หน้าจะ **refetch application แล้วถอยกลับสู่โหมด view**
+**Save** (`Save Changes` / `Create Application` พร้อม spinner ขณะกำลังบันทึก) submit ฟอร์ม; **Cancel** คืนค่า snapshot ก่อนแก้ไขและออกจากโหมด edit (ในโหมด create จะนำทางกลับไปหน้า list) การเปลี่ยนแปลงที่ยังไม่บันทึก (diff ใด ๆ เทียบกับ snapshot ขณะแก้ไข) จะเปิดใช้งาน navigation guard `useUnsavedChanges` และ global keyboard shortcuts สั่ง save และ cancel ได้ เมื่ออัพเดทสำเร็จ หน้าจะ **refetch application แล้วถอยกลับสู่โหมด view**
 
 ### 3.4 API Names selector
 
