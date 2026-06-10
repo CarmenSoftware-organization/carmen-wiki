@@ -71,7 +71,8 @@ tb_report_template  1 ─── M  tb_print_template_mapping
 
 tb_print_template_mapping.created_by_id / updated_by_id / deleted_by_id
     ──> tb_user.id  (audit actors by convention — bare UUIDs, no FK;
-         micro-report joins tb_user_profile on these ids for display names)
+         micro-report joins tb_user_profile on created_by_id and
+         updated_by_id only — deleted_by_id gets no display-name join)
 ```
 
 There is no relation to clusters or business units: BU scoping is carried as JSONB code arrays, not join rows, so nothing in the schema prevents a list from naming a BU code that does not exist.
@@ -80,7 +81,7 @@ There is no relation to clusters or business units: BU scoping is carried as JSO
 
 No Prisma enums. Two columns carry constrained vocabularies enforced outside the schema:
 
-- **`document_type`** — validated on create/update by the micro-report Go service against `model.SupportedDocumentTypes` (a hard-coded Go slice, also served by `GET .../document-types`): `PR` Purchase Request · `PO` Purchase Order · `GRN` Good Received Note · `SR` Store Requisition · `CN` Credit Note · `IA` Inventory Adjustment · `PC` Physical Count · `SC` Spot Check · `RFQ` Request For Quotation · `INV` Invoice. An unlisted code is a 400 ("unsupported document_type — see GET /document-types"). Extending the list is a Go code change and redeploy.
+- **`document_type`** — validated on create/update by the micro-report Go service against `model.SupportedDocumentTypes` (a hard-coded Go slice, also served by `GET .../document-types`): `PR` Purchase Request · `PO` Purchase Order · `GRN` Good Received Note · `SR` Store Requisition · `CN` Credit Note · `IA` Inventory Adjustment · `PC` Physical Count · `SC` Spot Check · `RFQ` Request For Quotation · `INV` Invoice. An unlisted code is a 400 ("unsupported document_type — see GET /document-types"; the update path omits the "— see GET /document-types" suffix). Extending the list is a Go code change and redeploy.
 - **`allow_business_unit` / `deny_business_unit`** — by convention JSON arrays of BU code strings; the Go reader tolerates `[]string` or `[]any`-of-strings and silently drops non-string elements.
 
 ## 5. Divergences from carmen-platform SPA shape
@@ -107,8 +108,8 @@ REST surface (backend-gateway `api-system/print-template-mappings`, proxied 1:1 
 | `GET /api-system/print-template-mappings/document-types` | Canonical document-type list | `{ document_types: [{ code, label }] }` from the hard-coded Go slice |
 | `GET /api-system/print-template-mappings/resolve?document_type=X&bu_code=Y` | Runtime resolution | `document_type` required (400 if blank); 404 when no active mapping permits the BU |
 | `GET /api-system/print-template-mappings/:id` | Detail | Gateway validates the id as UUID v4 |
-| `POST /api-system/print-template-mappings` | Create | `document_type` + `report_template_id` required; `document_type` validated; `EnsureSingleDefault` runs after save |
-| `PUT /api-system/print-template-mappings/:id` | Update | **Partial merge**; JSON `null` = leave unchanged (§5 rows 2, 4); `EnsureSingleDefault` runs after save |
+| `POST /api-system/print-template-mappings` | Create | `document_type` + `report_template_id` required; `document_type` validated; `EnsureSingleDefault` runs after save when the saved row has `is_default = true` |
+| `PUT /api-system/print-template-mappings/:id` | Update | **Partial merge**; JSON `null` = leave unchanged (§5 rows 2, 4); `EnsureSingleDefault` runs after save when the saved row has `is_default = true` |
 | `DELETE /api-system/print-template-mappings/:id` | Soft delete | Sets `deleted_at` / `deleted_by_id` |
 
 **Primary (source of truth):**

@@ -53,7 +53,7 @@ Within a group, rows keep the server's order: `display_order` ascending, `is_def
 
 ### 2.4 Row actions and delete dialog
 
-Unlike the standard pattern's `⋯` dropdown, actions are two **inline ghost icon buttons**: a pencil (navigate to the edit route) wrapped in `<Can permission="print_template_mapping.update">` and a destructive trash wrapped in `<Can permission="print_template_mapping.delete">`. Delete opens a `ConfirmDialog` — title "Delete Print Template Mapping", description `Delete mapping "<DOC> → <template name>"? This cannot be undone (soft delete).` — and on confirm calls `DELETE .../print-template-mappings/:id`, toasts, and refetches. There is no delete affordance on the edit page.
+Unlike the standard pattern's `⋯` dropdown, actions are two **inline ghost icon buttons**: a pencil (navigate to the edit route) wrapped in `<Can permission="print_template_mapping.update">` and a destructive trash wrapped in `<Can permission="print_template_mapping.delete">`. Delete opens a `ConfirmDialog` — title "Delete Print Template Mapping", description `Delete mapping "<DOC> → <template name, or the raw report_template_id UUID when the joined template is missing>"? This cannot be undone (soft delete).` — and on confirm calls `DELETE .../print-template-mappings/:id`, toasts, and refetches. There is no delete affordance on the edit page.
 
 ### 2.5 States, and what the missing furniture costs
 
