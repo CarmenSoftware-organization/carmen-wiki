@@ -2,7 +2,7 @@
 title: News
 description: News module overview — markdown announcements with optional image, a draft → published → archived lifecycle, and global or per-BU targeting, authored in the admin SPA and delivered through anonymous public endpoints.
 published: true
-date: 2026-06-10T13:00:00.000Z
+date: 2026-06-10T13:15:00.000Z
 tags: platform/news, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T13:00:00.000Z
@@ -63,7 +63,7 @@ As in Applications and Print Template Mapping, `news.delete` exists **only as an
 ## 5. Related Modules
 
 - [Business Units](/en/platform/business-units) — targeting references `tb_business_unit.id` values: validated as live BUs at write time, stored FK-free in JSONB. The targeting multi-select loads the full BU list from that module's API.
-- **Broadcasts** (SPA route `/broadcasts/new`, sidebar "Send Broadcast", `broadcast.send`; not yet a page in this book) — the **push** counterpart to News's **pull**: a broadcast fans out notification rows to users (optionally scheduled), while a news article sits in `tb_news` waiting to be fetched from the public feed. Use Broadcasts to interrupt, News to inform.
+- [Broadcasts](/en/platform/broadcasts) — the **push** counterpart to News's **pull**: a broadcast pushes a notification to all users, chosen users, or one business unit (immediately or scheduled), while a news article sits in `tb_news` waiting to be fetched from the public feed. Use Broadcasts to interrupt, News to inform.
 - [Platform RBAC](/en/platform/rbac) — defines and resolves the four `news.*` permission keys gating the SPA surfaces.
 - [Applications](/en/platform/applications) — the `x-app-id` axis: every `/api/news` call must come from an application granted the corresponding `news.*` `api_name` (or `allow_all`). The anonymous `/api/public/news` controller checks neither tokens nor app ids.
 
