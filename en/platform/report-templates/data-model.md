@@ -2,7 +2,7 @@
 title: Report Template — Data Model
 description: tb_report_template entity, dialog/content XML payloads, source binding, BU scope.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-10T14:15:00.000Z
 tags: book/platform, report-templates, data-model
 editor: markdown
 dateCreated: 2026-05-19T18:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-19T18:30:00.000Z
 # Report Template — Data Model
 
 > **At a Glance**
-> **Tables:** `tb_report_template` (primary) &nbsp;·&nbsp; **Out of scope:** `tb_print_template_mapping` (sibling feature pair, separate documentation) &nbsp;·&nbsp; **JSON payloads:** `dialog` (XML, non-nullable), `content` (XML, non-nullable), `source_params` (`{ params: [...] }`), `signature_config` (`{ blocks: [...] }`) &nbsp;·&nbsp; **Source binding:** `source_type` (plain String: `view` / `function` / `procedure`) + `source_name` + `source_params` &nbsp;·&nbsp; **BU scope:** `allow_business_unit` / `deny_business_unit` stored as `Json?`; serialised to CSV strings in the SPA form &nbsp;·&nbsp; **Lifecycle flags:** `is_standard`, `is_active`
+> **Tables:** `tb_report_template` (primary) &nbsp;·&nbsp; **Sibling table:** `tb_print_template_mapping` — documented in [Print Template Mapping](/en/platform/print-template-mapping) &nbsp;·&nbsp; **JSON payloads:** `dialog` (XML, non-nullable), `content` (XML, non-nullable), `source_params` (`{ params: [...] }`), `signature_config` (`{ blocks: [...] }`) &nbsp;·&nbsp; **Source binding:** `source_type` (plain String: `view` / `function` / `procedure`) + `source_name` + `source_params` &nbsp;·&nbsp; **BU scope:** `allow_business_unit` / `deny_business_unit` stored as `Json?`; serialised to CSV strings in the SPA form &nbsp;·&nbsp; **Lifecycle flags:** `is_standard`, `is_active`
 
 > **Source of truth:** Backend Prisma platform schema. Always read this first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
@@ -24,7 +24,7 @@ dateCreated: 2026-05-19T18:30:00.000Z
 
 Report templates are tenant-global — they are not cluster-scoped and carry no FK to `tb_cluster`. The BU-scope columns (`allow_business_unit`, `deny_business_unit`) are opt-in filtering lists that restrict which business units a template is visible to; they do not bind the row to any particular cluster. This distinguishes the report-templates surface from the [clusters](/en/platform/clusters) and [business-units](/en/platform/business-units) pages, which document the cluster/BU hierarchy. BU codes referenced in the chip lists correspond to `tb_business_unit.code` values, but there is no FK constraint — the reference is an application-layer convention.
 
-The `kind` column distinguishes the two uses of this table: `"report"` rows are user-facing analytical reports; `"print"` rows are printable document layouts consumed by `tb_print_template_mapping`. That sibling join table (Prisma model `tb_print_template_mapping`) maps document types (PO, GRN, SR, …) to a `tb_report_template` row. It is not documented here — this page covers `tb_report_template` only.
+The `kind` column distinguishes the two uses of this table: `"report"` rows are user-facing analytical reports; `"print"` rows are printable document layouts consumed by `tb_print_template_mapping`. That sibling join table (Prisma model `tb_print_template_mapping`) maps document types (PO, GRN, SR, …) to a `tb_report_template` row; it now has its own SPA surface and is documented in the [Print Template Mapping](/en/platform/print-template-mapping) module ([Data Model](/en/platform/print-template-mapping/data-model)) — this page covers `tb_report_template` only.
 
 ## 2. Entities
 
@@ -82,7 +82,7 @@ One row per report or print template. The field table below follows the Prisma d
 tb_report_template  self-FK  created_by_id  → tb_user.id  (audit; no Prisma @relation)
 tb_report_template  self-FK  updated_by_id  → tb_user.id  (audit; no Prisma @relation)
 tb_report_template  self-FK  deleted_by_id  → tb_user.id  (audit; no Prisma @relation)
-tb_report_template  1 ─── M  tb_print_template_mapping      (via tb_print_template_mapping.report_template_id; out of scope for this page)
+tb_report_template  1 ─── M  tb_print_template_mapping      (via tb_print_template_mapping.report_template_id; see Print Template Mapping module)
 ```
 
 Notable absences:
@@ -197,7 +197,7 @@ All core identity fields (`id`, `name`, `description`, `report_group`), XML payl
 ## 7. References
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `model tb_report_template` (line 567).
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `model tb_report_template` (line 701); `model tb_print_template_mapping` (line 776).
 
 **Secondary (consumer shape):**
 - `../carmen-platform/src/pages/ReportTemplateEdit.tsx` — `ReportTemplateFormData` interface (lines 36–50); `SourceParamRow` interface (lines 30–34); `toCsv` helper and load path (lines 180–204); save path `source_params` construction (lines 278–285).
@@ -207,8 +207,9 @@ All core identity fields (`id`, `name`, `description`, `report_group`), XML payl
 
 **Cross-links:**
 - [report-templates](/en/platform/report-templates) — module landing page
+- [print-template-mapping](/en/platform/print-template-mapping) — the module that owns `tb_print_template_mapping`, the join table consuming this table's `kind="print"` rows per document type
 - [business-units](/en/platform/business-units) — BU codes referenced in the allow/deny chip lists correspond to `tb_business_unit.code`
-- [clusters](/en/platform/clusters) — sibling admin-tier-gated surface; report templates are tenant-global and not cluster-scoped
+- [clusters](/en/platform/clusters) — sibling Platform surface; report templates are tenant-global and not cluster-scoped
 - [Permissions](./permissions.md) — access control for the report-templates admin surface
 - [UI Screens](./ui-screens.md) — SPA screens for report template management and editing
 - [XML Spec](./xml-spec.md) — detailed structure of the `dialog` and `content` XML payloads
