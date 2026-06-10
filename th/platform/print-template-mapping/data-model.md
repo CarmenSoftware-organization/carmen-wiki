@@ -13,7 +13,7 @@ dateCreated: 2026-06-10T15:30:00.000Z
 > **At a Glance**
 > **ตาราง:** `tb_print_template_mapping` (เป็นเจ้าของ) &nbsp;·&nbsp; `tb_report_template` (ถูกอ้างอิง — doc ฉบับเต็มอยู่ใน Report Templates) &nbsp;·&nbsp; **Enum:** ไม่มี — `document_type` เป็น VarChar ที่ validate กับรายการ Go แบบ hard-code จำนวน 10 code &nbsp;·&nbsp; **Constraint:** มีเพียง `@id` — **ไม่มี `@@unique`, ไม่มี `@relation` ของ Prisma/FK ของ DB**; การเชื่อมโยงเทมเพลตและกฎ single-default อยู่ที่ชั้น application &nbsp;·&nbsp; **Shape การอ่าน:** LEFT JOIN ของ Go ทำการ denormalize `template_name` / `template_group` / ชื่อ audit ลงบนแต่ละ row &nbsp;·&nbsp; **Quirk การเขียน:** `PUT` เป็น partial merge และ JSON `null` หมายถึง "คงเดิมไม่เปลี่ยน" — SPA เคลียร์รายการ BU ไม่ได้
 
-> **Source of truth:** Prisma platform schema ฝั่ง backend อ่านไฟล์นี้ก่อนเสมอเมื่อเขียนหรืออัพเดทหน้านี้:
+> **Source of truth:** Prisma platform schema ฝั่ง backend — อ่านไฟล์นี้ก่อนเสมอเมื่อเขียนหรืออัพเดทหน้านี้:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > ไฟล์ `generated/client/schema.prisma` เป็นสำเนาที่ generate อัตโนมัติ ไม่ใช่ไฟล์อ้างอิงหลัก
@@ -30,7 +30,7 @@ dateCreated: 2026-06-10T15:30:00.000Z
 
 ### 2.1 `tb_print_template_mapping`
 
-หนึ่ง row ของการ route ชนิดเอกสาร → เทมเพลต Schema บรรทัด 776
+หนึ่ง row ของการ route ชนิดเอกสาร → เทมเพลต (schema บรรทัด 776)
 
 | Field | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | ----------- |
