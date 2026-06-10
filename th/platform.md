@@ -2,7 +2,7 @@
 title: Carmen Platform
 description: Overview of the Carmen Platform admin product — entry point for the book.
 published: true
-date: 2026-06-09T00:00:00.000Z
+date: 2026-06-10T17:15:00.000Z
 tags: book/platform, home
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -10,7 +10,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 # Carmen Platform
 
-คู่มืออ้างอิงสำหรับนักพัฒนาและทีม support ที่ทำงานกับ Carmen Platform admin — การจัดการ cluster, business unit, ผู้ใช้ และ report template
+คู่มืออ้างอิงสำหรับนักพัฒนาและทีม support ที่ทำงานกับ Carmen Platform admin — tenancy (cluster และ business unit), identity และการเข้าถึง, การส่งมอบเนื้อหา (news และ broadcast), API client, เทมเพลตรายงานและการพิมพ์ และ changelog ของผลิตภัณฑ์
 
 ## 1. Tenancy
 
@@ -23,23 +23,37 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 | โมดูล | ครอบคลุมเรื่อง |
 |---|---|
-| [Users](/th/platform/users) | บัญชีผู้ใช้และการอยู่ใน BU |
-| [Authentication & Roles](/th/platform/auth-roles) | กระบวนการ sign-in และการกำหนด role |
-| [Profile](/th/platform/profile) | โปรไฟล์ของผู้ใช้ที่ล็อกอินอยู่ |
+| [Users](/th/platform/users) | บัญชีผู้ใช้ avatar และการ assign cluster/BU |
+| [Platform RBAC](/th/platform/rbac) | permission catalog, role, การ assign ผู้ใช้แบบมี scope และ super-admin bypass |
+| [Profile](/th/platform/profile) | โปรไฟล์ของผู้ใช้ที่ล็อกอินอยู่และการเปลี่ยนรหัสผ่าน |
 
-## 3. Reporting
+## 3. Content
 
 | โมดูล | ครอบคลุมเรื่อง |
 |---|---|
-| [Report Templates](/th/platform/report-templates) | นิยามเทมเพลตสำหรับพิมพ์ / export |
+| [News](/th/platform/news) | ประกาศแบบ markdown พร้อม lifecycle draft → published → archived และการกำหนดเป้าหมายแบบ global หรือราย BU |
+| [Broadcasts](/th/platform/broadcasts) | หน้าจอเขียน push notification พร้อม target mode สามแบบ และการส่งทันทีหรือตามกำหนดเวลา |
 
-## 4. ผลิตภัณฑ์
+## 4. Platform
+
+| โมดูล | ครอบคลุมเรื่อง |
+|---|---|
+| [Applications](/th/platform/applications) | API client ที่ลงทะเบียน, identity แบบ `x-app-id` และการมอบสิทธิ์เข้าถึงตาม `api_name` |
+
+## 5. Reporting
+
+| โมดูล | ครอบคลุมเรื่อง |
+|---|---|
+| [Report Templates](/th/platform/report-templates) | แคตตาล็อกเทมเพลตรายงานแบบ XML พร้อม editor แบบแท็บ และการกำหนดขอบเขตราย BU |
+| [Print Template Mapping](/th/platform/print-template-mapping) | การ route ชนิดเอกสาร (PR, PO, GRN, …) ไปยังเทมเพลตพิมพ์ FastReport |
+
+## 6. ผลิตภัณฑ์
 
 | โมดูล | ครอบคลุมเรื่อง |
 |---|---|
 | [Changelog](/th/platform/changelog) | ประวัติการเปลี่ยนแปลงเวอร์ชัน (สาธารณะ) + version badge |
 
-## 5. การใช้งาน book นี้
+## 7. การใช้งาน book นี้
 
 - เริ่มจากหน้า home ของแต่ละโมดูลเพื่อภาพรวม
 - เจาะลึก sub-pages สำหรับ data model, UI flow, edge cases
