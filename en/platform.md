@@ -2,7 +2,7 @@
 title: Carmen Platform
 description: Overview of the Carmen Platform admin product — entry point for the book.
 published: true
-date: 2026-06-09T00:00:00.000Z
+date: 2026-06-10T14:30:00.000Z
 tags: book/platform, home
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -10,7 +10,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 # Carmen Platform
 
-Reference manual for developers and support engineers working on the Carmen Platform admin product — cluster, business unit, user, and report-template management.
+Reference manual for developers and support engineers working on the Carmen Platform admin product — tenancy (clusters and business units), identity and access, content delivery (news and broadcasts), API clients, report and print templates, and the product changelog.
 
 ## 1. Tenancy
 
@@ -23,23 +23,37 @@ Reference manual for developers and support engineers working on the Carmen Plat
 
 | Module | What it covers |
 |---|---|
-| [Users](/en/platform/users) | User accounts and BU membership |
-| [Authentication & Roles](/en/platform/auth-roles) | Sign-in flows and role assignment |
-| [Profile](/en/platform/profile) | The signed-in user's own profile |
+| [Users](/en/platform/users) | User accounts, avatars, and cluster/BU assignments |
+| [Platform RBAC](/en/platform/rbac) | Permission catalog, roles, scoped user assignments, super-admin bypass |
+| [Profile](/en/platform/profile) | The signed-in user's own profile and password change |
 
-## 3. Reporting
+## 3. Content
 
 | Module | What it covers |
 |---|---|
-| [Report Templates](/en/platform/report-templates) | Print / export template definitions |
+| [News](/en/platform/news) | Markdown announcements with draft → published → archived lifecycle and global or per-BU targeting |
+| [Broadcasts](/en/platform/broadcasts) | Push-notification compose with three target modes and immediate or scheduled delivery |
 
-## 4. Product
+## 4. Platform
+
+| Module | What it covers |
+|---|---|
+| [Applications](/en/platform/applications) | Registered API clients, their `x-app-id` identity, and `api_name` access grants |
+
+## 5. Reporting
+
+| Module | What it covers |
+|---|---|
+| [Report Templates](/en/platform/report-templates) | XML report template catalogue with tabbed editor and per-BU scoping |
+| [Print Template Mapping](/en/platform/print-template-mapping) | Routing document types (PR, PO, GRN, …) to FastReport print templates |
+
+## 6. Product
 
 | Module | What it covers |
 |---|---|
 | [Changelog](/en/platform/changelog) | Versioned, public release history + version badge |
 
-## 5. How to use this book
+## 7. How to use this book
 
 - Start with the module home page for an overview
 - Drill into sub-pages for data models, UI flows, and edge cases

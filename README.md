@@ -3,7 +3,7 @@
 User manual for developers and QA engineers working on the **Carmen Software** hospitality supply chain platform. Content is organised into two books:
 
 - **Carmen Inventory** — the inventory ERP slice (costing, GRN, physical count, requisitions, etc.). Pages document the data model, business rules, user flows by persona, and test scenarios at a level useful for building features and verifying them against the BRD and the live UI.
-- **Carmen Platform** — the platform admin product (clusters, business units, users, report templates, auth/roles). Pages document the SPA's data model, UI screens, lifecycle, and permission model.
+- **Carmen Platform** — the platform admin product (clusters, business units, users, RBAC, news, broadcasts, applications, report/print templates). Pages document the SPA's data model, UI screens, lifecycle, and permission model.
 
 This repo is the **source of truth** for the Wiki.js content; the rendered site is what users actually read.
 
@@ -37,7 +37,9 @@ carmen-wiki/
 │       │   ├── ui-screens.md
 │       │   ├── lifecycle.md
 │       │   └── permissions.md
-│       └── ...                    # business-units, users, report-templates, etc.
+│       └── ...                    # business-units, users, rbac, profile, news,
+│                                  # broadcasts, applications, report-templates,
+│                                  # print-template-mapping, changelog
 ├── th/                            # Thai translation tracking (mirrors en/ shape)
 │   ├── home.md                    # Locale landing (URL: /th/home)
 │   ├── inventory.md, inventory/
@@ -84,7 +86,7 @@ Platform modules describe an admin SPA without per-persona workflows, so sub-pag
 | `lifecycle.md` | Module-specific. State transitions for modules with non-trivial lifecycles (e.g. users, report templates) |
 | `permissions.md` | Module-specific. Role-gating matrix for modules whose surface is permission-sensitive (e.g. clusters) |
 
-Single-page modules (e.g. `auth-roles`, `profile`) skip sub-pages entirely; their landing's Section 7 links back to the book index.
+Single-page modules (e.g. `profile`, `changelog`) skip sub-pages entirely; their landing's Section 7 links back to the book index.
 
 ## Wiki.js Page Format
 

@@ -2,7 +2,7 @@
 title: Platform RBAC
 description: Permission-based access control for the Platform admin SPA — permission catalog, roles, scoped user assignments, and the super-admin bypass.
 published: true
-date: 2026-06-10T12:30:00.000Z
+date: 2026-06-10T14:30:00.000Z
 tags: platform/rbac, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z
@@ -95,7 +95,7 @@ Until 2026-06-10 the SPA gated access by a single `platform_role` enum on the us
 | `super_admin` enum value | `tb_platform_super_admin` flag table → `is_super_admin` bypass | A flag with real bypass semantics, unlike the old enum value which carried no extra routes |
 | AccessDenied message quoting the failing role name | Generic "You don't have permission to access this page." | The SPA no longer has a single role value to display |
 
-This module supersedes the legacy `auth-roles` page; pages written against the old model (role names such as `support_manager`/`support_staff`, `allowedRoles` tables) describe behaviour that no longer exists in the SPA.
+This module supersedes the legacy Authentication & Roles page (removed from this wiki); anything written against the old model (role names such as `support_manager`/`support_staff`, `allowedRoles` tables) describes behaviour that no longer exists in the SPA.
 
 ## 6. Related Modules
 
