@@ -187,7 +187,7 @@ Right side, left to right:
 - **Cancel** (outline button, shown only when `!isNew`) — calls `handleCancelEdit()`: restores `formData` from `savedFormData`, sets `editing = false`, clears `fieldErrors` and `error`. No API call.
 - **Create Template** / **Save Changes** (primary button) — calls `formRef.current?.requestSubmit()`. Label is "Create Template" in create mode, "Save Changes" in edit mode. Disabled when saving or (in edit mode) when `!hasChanges`. Shows a `Loader2` spinner while `saving = true`.
 
-**Keyboard shortcuts**: the `useGlobalShortcuts` hook wires Ctrl/Cmd+S to `formRef.current?.requestSubmit()` and Ctrl/Cmd+Escape to `handleCancelEdit()` (`ReportTemplateEdit.tsx:153-163`).
+**Keyboard shortcuts**: the `useGlobalShortcuts` hook wires Ctrl/Cmd+S to `formRef.current?.requestSubmit()` and plain Escape (no modifier) to `handleCancelEdit()` (`ReportTemplateEdit.tsx:153-163`).
 
 **Unsaved-changes guard**: `useUnsavedChanges(hasChanges)` fires a browser `beforeunload` warning when the user attempts to navigate away or close the tab while `hasChanges = true` (`ReportTemplateEdit.tsx:144`).
 
@@ -209,9 +209,9 @@ If `probeBuCode` is present on mount (restored from `localStorage`), `loadDbObje
 
 ### 5.2 Soft Delete confirm
 
-Triggered by the **Delete** row action in `ReportTemplateManagement` (`ReportTemplateManagement.tsx:307`).
+Triggered by the **Delete** row action in `ReportTemplateManagement` (`ReportTemplateManagement.tsx:310-315`).
 
-Uses the shared `ConfirmDialog` component — a simple Yes/No confirm, no typed confirmation required (`ReportTemplateManagement.tsx:493-501`). Properties:
+Uses the shared `ConfirmDialog` component — a simple Yes/No confirm, no typed confirmation required (`ReportTemplateManagement.tsx:508-516`). Properties:
 - **Title:** "Delete Report Template"
 - **Description:** "Are you sure you want to delete this report template? This action cannot be undone."
 - **Confirm button label:** "Delete" (destructive variant)
@@ -242,7 +242,7 @@ There is no Standard/Custom filter and therefore no `filters_report_templates_st
 
 ## 8. References
 
-- `../carmen-platform/SITEMAP.md` — route table confirming the three report-template routes and their `requiredPermission` keys.
+- `../carmen-platform/SITEMAP.md` — route table for the three report-template routes; note it still shows the legacy `allowedRoles` lists — `src/App.tsx` is authoritative for the `requiredPermission` keys.
 - `../carmen-platform/src/pages/ReportTemplateManagement.tsx` — list page: filters (Status + Source Type), header actions (Export, Add Template behind `<Can permission="report_template.create">`), row actions (Edit / Delete soft, behind `<Can>` gates), DataTable columns, 6 `localStorage` keys.
 - `../carmen-platform/src/pages/ReportTemplateEdit.tsx` — create/view/edit page: 2-pane layout, Template Info card (5 visible fields + `kind` absent), Business Unit Scope card (ChipInput, `toCsv()` normalisation), Metadata card, Data Source card (source binding, Browse-in-BU probe, source params table, builder key), 3-tab CodeMirror right pane, sticky action bar, `useUnsavedChanges` hook.
 - `../carmen-platform/src/services/reportTemplateService.ts` — API surface (paths pluralised 2026-06): `GET /api-system/report-templates`, `GET /api-system/report-templates/:id`, `POST /api-system/report-templates`, `PUT /api-system/report-templates/:id`, `DELETE /api-system/report-templates/:id`, `GET /api-system/report-templates/db-objects?bu_code=<buCode>` (`listDbObjects`).

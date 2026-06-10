@@ -39,7 +39,7 @@ One row per report or print template. The field table below follows the Prisma d
 | `name` | `String @db.VarChar(255)` | No | — | Human-readable template name; unique among live rows (with `deleted_at`) |
 | `description` | `String?` | Yes | — | Optional free-text description of the template's purpose |
 | `report_group` | `String @db.VarChar(100)` | No | — | Grouping key used to organise templates in the management list (e.g. `"Receiving"`, `"Inventory"`) |
-| `kind` | `String @db.VarChar(20)` | No | `"report"` | Template category: `"report"` (analytical report visible to users) or `"print"` (document layout consumed by `tb_print_template_mapping`) |
+| `kind` | `String @default("report") @db.Text` | No | `"report"` | Template category: `"report"` (analytical report visible to users) or `"print"` (document layout consumed by `tb_print_template_mapping`) |
 | **— XML Payloads —** | | | | |
 | `dialog` | `String @db.Text` | No | — | XML string defining the parameter form rendered by the report runtime. Not nullable — an empty string `""` is the valid "no dialog" value. Detailed XML structure documented in [XML Spec §2](./xml-spec.md) |
 | `content` | `String @db.Text` | No | — | XML string defining the report output layout rendered by the report runtime. Not nullable — `""` is valid for a new template. The Content tab in the editor also accepts `.frx` / `.xml` / `.txt` file uploads (legacy FastReport migration). Detailed structure in [XML Spec §3](./xml-spec.md) |
@@ -184,7 +184,7 @@ The `ReportTemplate` interface in `../carmen-platform/src/services/reportTemplat
 
 | # | Item | Prisma has | SPA expects | Notes |
 | - | ---- | ---------- | ----------- | ----- |
-| 1 | `kind` | `String @db.VarChar(20)` | `kind: 'report' \| 'print'` on `ReportTemplate` service interface | Present in the service type but absent from `ReportTemplateFormData` — the SPA edit form does not expose a `kind` field. Templates are presumably assigned `kind` server-side or on creation |
+| 1 | `kind` | `String @default("report") @db.Text` | `kind: 'report' \| 'print'` on `ReportTemplate` service interface | Present in the service type but absent from `ReportTemplateFormData` — the SPA edit form does not expose a `kind` field. Templates are presumably assigned `kind` server-side or on creation |
 | 2 | `orientation` | `String @db.VarChar(20)` | Not present in `ReportTemplate` or `ReportTemplateFormData` | New Prisma column not yet surfaced in the SPA. Defaults to `"portrait"` at the database level |
 | 3 | `signature_config` | `Json @db.JsonB` | Not present in `ReportTemplate` or `ReportTemplateFormData` | Not yet surfaced in the SPA edit form |
 | 4 | `view_name` | `String? @db.VarChar` | Not in `ReportTemplate` service interface | Legacy column; accessed only implicitly in the Edit form load path (`template.source_name \|\| template.view_name`) as a fallback |
