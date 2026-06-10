@@ -56,7 +56,7 @@ A session whose grants cover neither key for a given cluster sees an empty dropd
 
 ### 2.5 Audit columns
 
-The API returns audit data as a nested `audit` object (`audit.created/updated/deleted`, each `{ at, id, name, avatar }`). `fetchClusters` flattens this into `created_at`/`created_by_name` etc. before rendering, tolerating the older flat fields as a fallback when `audit` is absent. Two audit columns are always shown:
+The API returns audit data as a nested `audit` object (`audit.created/updated/deleted`, each `{ at, id, name, avatar }`). `fetchClusters` flattens this into `created_at`/`created_by_name` etc. before rendering, tolerating the older flat shape, which wins when present (`item.created_at ?? item.audit?.created?.at`). Two audit columns are always shown:
 
 | Column header | Fields rendered |
 |---|---|

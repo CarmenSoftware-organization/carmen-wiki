@@ -35,7 +35,7 @@ Three things to note:
 
 - **Route guards check without a `clusterId`.** `PrivateRoute` calls `hasPermission(requiredPermission)` with no options, taking the broad "any cluster grants it" branch — a role assignment scoped to a single cluster still opens `/clusters` and `/clusters/:id/edit` for *every* cluster. The scoped narrowing happens at the in-page `<Can clusterId>` gates (§3) and in backend enforcement.
 - **No route requires `cluster.delete`.** Deletion is reachable only through the list page's row action, gated in-page (§7).
-- **Key-reuse gotcha:** the `/business-units`, `/business-units/new`, and `/business-units/:id/edit` routes reuse the same `cluster.read` / `cluster.create` / `cluster.update` keys — there are no `business_unit.*` keys, so any grant that opens cluster routes also opens the Business Units module, and the two cannot be separated.
+- **Key-reuse gotcha:** the `/business-units`, `/business-units/new`, and `/business-units/:id/edit` routes reuse the same `cluster.read` / `cluster.create` / `cluster.update` keys — there are no `business_unit.*` keys, so any grant that opens cluster routes also opens the Business Units module, and the two cannot be separated. The reuse extends beyond the three route keys to the in-page `cluster.delete` gate: the Business Units list wraps its row Delete in `<Can permission="cluster.delete" clusterId={row.original.cluster_id}>`.
 
 ## 3. Effective access matrix
 
@@ -48,7 +48,7 @@ Read the table as "what a session holding exactly this grant can do on the clust
 | + `cluster.create` (platform scope) | — | Visible and functional | — | — | Create form only; post-create navigation quirk in [UI Screens](./ui-screens.md) §3 |
 | + `cluster.update` (platform scope) | — | — | Row Edit on every row; edit route opens; Edit toggle renders | — | Unlocks the full edit page incl. Branding uploads and cluster-user management (§7) |
 | + `cluster.update` scoped to cluster A | — | — | Edit route opens for *any* cluster (broad route check), but row Edit and the Edit toggle render only for cluster A | — | The scoped-vs-broad asymmetry testers should target |
-| + `cluster.delete` (platform or scoped) | — | — | — | Row Delete renders (per matching cluster when scoped) | The only surface anywhere in the SPA that consumes `cluster.delete` |
+| + `cluster.delete` (platform or scoped) | — | — | — | Row Delete renders (per matching cluster when scoped) | Consumed by the cluster row Delete and — via the key-reuse gotcha (§2) — the Business Units row Delete; no other surface |
 
 ## 4. Bootstrap exception
 
@@ -56,7 +56,7 @@ Read the table as "what a session holding exactly this grant can do on the clust
 
 ```
 const hasPermission = (key: string, opts?: { clusterId?: string }): boolean => {
-  // Allow all access when there are 0 or 1 users (initial setup)
+  // Bootstrap escape hatch: 0–1 users => allow everything.
   if (userCount !== null && userCount <= 1) return true;
   return checkPermission(effectivePermissions, key, opts);
 };
@@ -64,7 +64,7 @@ const hasPermission = (key: string, opts?: { clusterId?: string }): boolean => {
 
 When `userCount !== null && userCount <= 1`, the function returns `true` unconditionally — every route guard, sidebar filter, and `<Can>` gate passes, including all cluster gates. This allows the first administrator of a fresh installation to reach `/clusters` (and everything else) before any catalog roles have been assigned.
 
-**How `userCount` is populated.** On `AuthProvider` mount and on every successful login, `fetchUserCount()` (line 103) calls `userService.getAll({ page: 1, perpage: 1 })` and reads the total from `paginate.total`. The value lives in React state (line 20), initialised to `null`.
+**How `userCount` is populated.** On `AuthProvider` mount and on every successful login, `fetchUserCount()` (line 103) calls `userService.getAll({ page: 1, perpage: 1 })` and reads the total via the fallback chain `response.paginate?.total ?? response.total ?? response.data?.length ?? 0`. The value lives in React state (line 20), initialised to `null`.
 
 **The `userCount === null` case.** While the count fetch is pending (or if it failed), the condition is `false` and checks run strictly against the permission snapshot — the exception fails closed, not open.
 
@@ -100,7 +100,7 @@ const navItems = allNavItems.filter(
 );
 ```
 
-The sidebar `permission` value (`cluster.read`) matches the `/clusters` route guard exactly, so there is no divergence where a visible entry leads to `AccessDenied`. The neighbouring **Business Units** entry (line 53) also filters on `cluster.read` — the sidebar half of the key-reuse gotcha from §2. Any future change to which key gates Clusters must be applied in BOTH `src/App.tsx` (the route guard) AND `src/components/Layout.tsx` (the sidebar `permission` field); pulling one and not the other would expose the entry while blocking the route, or vice versa.
+The sidebar `permission` value (`cluster.read`) matches the `/clusters` route guard exactly, so there is no divergence where a visible entry leads to `AccessDenied`. The neighbouring **Business Units** entry (line 53) also filters on `cluster.read` — the sidebar half of the key-reuse gotcha from §2, which also extends to the in-page `cluster.delete` gate on the BU row Delete, not just the three route keys. Any future change to which key gates Clusters must be applied in BOTH `src/App.tsx` (the route guard) AND `src/components/Layout.tsx` (the sidebar `permission` field); pulling one and not the other would expose the entry while blocking the route, or vice versa.
 
 A user without `cluster.read` simply does not see the Clusters entry. They can still reach `/clusters` by typing the URL directly, but the route guard renders `<AccessDenied>` before any cluster data is loaded.
 
