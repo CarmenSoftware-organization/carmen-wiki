@@ -16,7 +16,7 @@ dateCreated: 2026-06-10T15:00:00.000Z
 > **Source of truth:** Prisma platform schema ฝั่ง backend อ่านไฟล์นี้ก่อนเสมอเมื่อเขียนหรืออัพเดทหน้านี้:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
-> ไฟล์ `generated/client/schema.prisma` เป็นสำเนาที่ generate อัตโนมัติและไม่ใช่ตัวยืนยัน
+> ไฟล์ `generated/client/schema.prisma` เป็นสำเนาที่ generate อัตโนมัติ ไม่ใช่ไฟล์อ้างอิงหลัก
 
 ## 1. ภาพรวม
 

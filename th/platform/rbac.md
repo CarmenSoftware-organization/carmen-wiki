@@ -53,7 +53,7 @@ dateCreated: 2026-06-10T15:00:00.000Z
 - **Assignment และ Scope** — row ใน `tb_user_tb_platform_role` ที่ผูก user + role + scope ใน SPA `Scope` เป็น union `{ type: 'platform' } | { type: 'cluster', cluster_id }`; ใน Prisma เป็นคอลัมน์ `cluster_id` ที่เป็น nullable คอลัมน์เดียว (`null` = ทั้งแพลตฟอร์ม)
 - **EffectivePermissions** — `{ platform: string[], clusters: Record<clusterId, string[]>, is_super_admin?: boolean }` ดึงหลัง login และทุกครั้งที่ `AuthProvider` mount ผ่าน `GET /api/user/permission/platform` cache ใน `localStorage` ภายใต้ key `effectivePermissions`
 - **ลำดับของ `checkPermission`** (`src/utils/permissions.ts`) — super-admin bypass มาก่อน; จากนั้น array `platform` (สิทธิ์ระดับแพลตฟอร์มใช้ได้ทุกที่); จากนั้น ถ้ามี `clusterId` ดูเฉพาะ array ของ cluster นั้น; ถ้าไม่มี ดู array ของ cluster ใดก็ได้ (การตรวจสอบแบบกว้าง "แสดง nav/หน้านี้ไหม")
-- **ข้อยกเว้น bootstrap** — เมื่อจำนวนผู้ใช้รวมเป็น 0 หรือ 1 `login()` จะข้าม gate ที่ต้องมีอย่างน้อย 1 permission และ `hasPermission()` คืน `true` โดยไม่มีเงื่อนไข สงบลงทันทีที่มีผู้ใช้คนที่สอง
+- **ข้อยกเว้น bootstrap** — เมื่อจำนวนผู้ใช้รวมเป็น 0 หรือ 1 `login()` จะข้าม gate ที่ต้องมีอย่างน้อย 1 permission และ `hasPermission()` คืน `true` โดยไม่มีเงื่อนไข — ข้อยกเว้นนี้หยุดมีผลทันทีที่มีผู้ใช้คนที่สอง
 - **Flag super-admin ≠ role** — `tb_platform_super_admin` คือตาราง flag ต่อผู้ใช้ ไม่ใช่ role ใน `tb_platform_role` ปรากฏเป็น `is_super_admin` ใน payload ของ effective-permissions และ short-circuit ทุกการตรวจสอบก่อนที่จะดู key ใด ๆ
 
 ## 4. บทบาทและ Persona
