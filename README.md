@@ -86,7 +86,7 @@ Platform modules describe an admin SPA without per-persona workflows, so sub-pag
 | `lifecycle.md` | Module-specific. State transitions for modules with non-trivial lifecycles (e.g. users, report templates) |
 | `permissions.md` | Module-specific. Role-gating matrix for modules whose surface is permission-sensitive (e.g. clusters) |
 
-Single-page modules (e.g. `profile`, `changelog`) skip sub-pages entirely; their landing's Section 7 links back to the book index.
+Single-page modules (e.g. `profile`, `changelog`) skip sub-pages entirely.
 
 ## Wiki.js Page Format
 
