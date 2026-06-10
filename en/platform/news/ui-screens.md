@@ -91,7 +91,7 @@ Two server-side caveats QA should know: the backend additionally rejects **GIF**
 ### 3.4 Publishing card
 
 - **Status** — native select with Draft / Published / Archived (free transition in any direction); renders as the colored badge in view mode.
-- **Published At** — always read-only, with helper text "Set automatically by the server when status becomes 'Published'." The SPA never sends the field; the server stamps it on first publish and keeps it thereafter ([Data Model](./data-model.md) §2.2).
+- **Published At** — always read-only, with helper text: Set automatically by the server when status becomes "Published". The SPA never sends the field; the server stamps it on first publish and keeps it thereafter ([Data Model](./data-model.md) §2.2).
 
 ### 3.5 Targeting card
 

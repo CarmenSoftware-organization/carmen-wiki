@@ -88,7 +88,7 @@ Consequences for testers:
 
 - **Test the two stories separately.** Verify author gating with sessions holding exactly one `news.*` key at a time; verify delivery with raw anonymous calls to `/api/public/news` — a passing SPA save says nothing about who can read the article.
 - **Probe the lifecycle × feed matrix.** For one article, walk draft → published → archived → published and confirm feed membership and the constant `published_at` at each step (cases 2–3 above).
-- **Targeting QA needs three calls per article:** public feed without `bu_id`, with a targeted BU's id, and with a non-targeted id — plus the single-item endpoint to confirm it skips the BU check (§3.3).
+- **Targeting QA needs three calls per article:** public feed without `bu_id`, with a targeted BU's id, and with a non-targeted id — plus the single-item endpoint to confirm it skips the BU check (§3, item 3).
 - **Exercise the machine axis once.** Hit `/api/news` with a valid bearer but an application lacking the `news.*` grants to confirm the `AppIdGuard` rejection is independent of the user's RBAC keys.
 - **Treat the ungated empty-state CTA and the ignored list sort as known issues** — verify behaviour matches this page rather than filing duplicates; both are affordance/UX gaps with server-side enforcement intact.
 
