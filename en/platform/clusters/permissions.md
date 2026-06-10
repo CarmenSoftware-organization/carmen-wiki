@@ -1,8 +1,8 @@
 ---
 title: Cluster — Permissions
-description: Route guards, access matrix, bootstrap exception, and sidebar filter for all cluster operations.
+description: Permission-key route guards, in-page Can gates, bootstrap exception, and sidebar filter for all cluster operations.
 published: true
-date: 2026-05-19T23:55:00.000Z'
+date: 2026-06-10T13:30:00.000Z
 tags: book/platform, clusters, permissions
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -11,129 +11,133 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 # Cluster — Permissions
 
 > **At a Glance**
-> **Gate:** all three cluster routes carry `allowedRoles={["platform_admin", "support_manager", "support_staff"]}` &nbsp;·&nbsp; **Bootstrap exception:** `hasRole` returns `true` unconditionally when `userCount !== null && userCount <= 1` (first-admin setup) &nbsp;·&nbsp; **On role failure:** `<AccessDenied>` renders inside `<Layout>` (sidebar stays visible) &nbsp;·&nbsp; **Sidebar filter:** Clusters entry hidden from users who fail `hasRole()` &nbsp;·&nbsp; **No per-button role gates** within the cluster surface — pass the route guard and you see every action
+> **Gate:** the three cluster routes carry `requiredPermission="cluster.read"` / `"cluster.create"` / `"cluster.update"` on `PrivateRoute` &nbsp;·&nbsp; **In-page gates:** `<Can>` wraps Add Cluster (`cluster.create`), row Edit (`cluster.update`), row Delete (`cluster.delete`), and the edit-page Edit toggle (`cluster.update`) — the row and edit-page gates are **cluster-scoped** via `clusterId` &nbsp;·&nbsp; **`cluster.delete` is in-page only** — no route requires it &nbsp;·&nbsp; **Bootstrap exception:** `hasPermission` returns `true` unconditionally when `userCount !== null && userCount <= 1` (first-admin setup) &nbsp;·&nbsp; **On failure:** `<AccessDenied>` renders inside `<Layout>` (sidebar stays visible) &nbsp;·&nbsp; **Canonical model doc:** [rbac permissions](/en/platform/rbac/permissions)
 
 ## 1. Overview
 
-Cluster management carries admin-tier responsibility: creating or editing a cluster affects license capacity (`max_license_bu`), defines the top-level tenant container that all business units and users belong to, and can have cross-tenant data implications if the wrong roles are permitted. Because of this, every cluster route is gated to the three highest operational roles in the platform — `platform_admin`, `support_manager`, and `support_staff` — while modules such as Business Units, Users, and Dashboard have no route-level `allowedRoles` restriction.
+Cluster management carries admin-tier responsibility: creating or editing a cluster affects license capacity (`max_license_bu`), defines the top-level tenant container that all business units and users belong to, and can have cross-tenant data implications if the wrong sessions are permitted. Access is governed by the platform's permission-based RBAC model ([rbac](/en/platform/rbac)): the backend catalog defines `cluster.read`, `cluster.create`, `cluster.update`, and `cluster.delete` keys; roles bundle those keys; and assignments bind roles to users either platform-wide or scoped to a single cluster.
 
-The gating mechanism is implemented in two layers. At the route level, `PrivateRoute` (in `src/components/PrivateRoute.tsx`) receives an `allowedRoles` prop and calls `hasRole()` from `AuthContext`; if the check fails, it renders `<AccessDenied>` inside the normal `<Layout>` shell instead of the requested component. At the navigation level, `Layout.tsx` filters the sidebar `NavItem[]` array through `hasRole()` before rendering, so users without the required role never see the Clusters entry in the sidebar at all — though they can still type the URL directly, where the route guard catches them.
+The gating mechanism has three layers, all resolving through the same `AuthContext.hasPermission` → `checkPermission` path (algorithm walkthrough in [rbac permissions](/en/platform/rbac/permissions) §4). At the route level, `PrivateRoute` receives a `requiredPermission` prop and renders `<AccessDenied>` inside the normal `<Layout>` shell when the check fails. At the navigation level, `Layout.tsx` filters the sidebar so users without `cluster.read` never see the Clusters entry. At the action level, `<Can permission="..." clusterId?>` wraps the mutating buttons on both cluster screens — and the cluster gates are the SPA's only `<Can>` call sites (alongside Business Units) that pass a `clusterId`, activating the cluster-scoped resolution branch.
 
-By contrast, `/business-units`, `/users`, and `/dashboard` are wrapped with `<PrivateRoute>` but without an `allowedRoles` prop; those routes are visible to any authenticated user whose `platform_role` is in the `ALLOWED_ROLES` (see [auth-roles](/en/platform/auth-roles)) allow-list, regardless of which specific role they hold. Clusters is one of only three navigation destinations (along with Report Templates and Print Template Mapping) that carry the additional route-level role restriction.
+Until 2026-06 these routes were instead gated by hardcoded role-enum arrays on each route; that model has been fully removed from the SPA, the login gate, and the Prisma schema — the migration mapping is documented in [rbac](/en/platform/rbac) §5 and is not repeated here.
 
 ## 2. Route guards
 
-| Route | Component rendered | `allowedRoles` | Source |
+| Route | Component rendered | `requiredPermission` | Source |
 |---|---|---|---|
-| `/clusters` | `ClusterManagement` | `platform_admin`, `support_manager`, `support_staff` | `src/App.tsx` line 42 |
-| `/clusters/new` | `ClusterEdit` | `platform_admin`, `support_manager`, `support_staff` | `src/App.tsx` line 50 |
-| `/clusters/:id/edit` | `ClusterEdit` | `platform_admin`, `support_manager`, `support_staff` | `src/App.tsx` line 58 |
+| `/clusters` | `ClusterManagement` | `cluster.read` | `src/App.tsx` (cluster route block, lines 60–83) |
+| `/clusters/new` | `ClusterEdit` | `cluster.create` | `src/App.tsx` |
+| `/clusters/:id/edit` | `ClusterEdit` | `cluster.update` | `src/App.tsx` |
 
-The `allowedRoles` array is hardcoded inline at each of the three `<PrivateRoute>` call sites (`App.tsx` lines 42, 50, 58). There is no shared constant — the identical array is duplicated three times. Any change to which roles may access cluster routes must therefore be applied at all three call sites; forgetting one will create an inconsistent state where a role can reach the list page but not the edit page (or vice versa).
+Each route carries exactly one key — there is no shared constant, but unlike the legacy duplicated role arrays, the three keys are intentionally different per route, so the list/create/edit surfaces can be granted independently.
+
+Three things to note:
+
+- **Route guards check without a `clusterId`.** `PrivateRoute` calls `hasPermission(requiredPermission)` with no options, taking the broad "any cluster grants it" branch — a role assignment scoped to a single cluster still opens `/clusters` and `/clusters/:id/edit` for *every* cluster. The scoped narrowing happens at the in-page `<Can clusterId>` gates (§3) and in backend enforcement.
+- **No route requires `cluster.delete`.** Deletion is reachable only through the list page's row action, gated in-page (§7).
+- **Key-reuse gotcha:** the `/business-units`, `/business-units/new`, and `/business-units/:id/edit` routes reuse the same `cluster.read` / `cluster.create` / `cluster.update` keys — there are no `business_unit.*` keys, so any grant that opens cluster routes also opens the Business Units module, and the two cannot be separated.
 
 ## 3. Effective access matrix
 
-Read the table left-to-right: sign-in eligibility (`AuthContext.ALLOWED_ROLES`) is checked first at login; cluster-route eligibility (the `allowedRoles` array on each `PrivateRoute`) is checked only for roles that can sign in. The "Effective cluster access" column states the combined outcome.
+Read the table as "what a session holding exactly this grant can do on the cluster surfaces". Grants combine additively; a **super-admin** session (`is_super_admin` flag) bypasses every row and can do everything. Remember that SPA gates are advisory — the backend's own permission enforcement is the real security boundary.
 
-`enum_platform_role` (Prisma `schema.prisma` line 539) defines seven values. `AuthContext.ALLOWED_ROLES` (see [auth-roles](/en/platform/auth-roles), line 10) lists five values that are permitted to sign in to the SPA at all. Of those five, three are permitted to reach cluster routes.
-
-| `platform_role` value | Can sign in to SPA? | In cluster `allowedRoles`? | Effective cluster access |
-|---|---|---|---|
-| `super_admin` | Yes (in `ALLOWED_ROLES`) | No | Blocked — sees `<AccessDenied>` inside `<Layout>` |
-| `platform_admin` | Yes | Yes | Full access to list, create, and edit |
-| `support_manager` | Yes | Yes | Full access to list, create, and edit |
-| `support_staff` | Yes | Yes | Full access to list, create, and edit |
-| `security_officer` | Yes (in `ALLOWED_ROLES`) | No | Blocked — sees `<AccessDenied>` inside `<Layout>` |
-| `integration_developer` | No (not in `ALLOWED_ROLES`) | n/a | Cannot sign in to the SPA at all |
-| `user` | No (not in `ALLOWED_ROLES`) | n/a | Cannot sign in to the SPA at all |
-
-`integration_developer` and `user` are rejected at login time: `AuthContext.login()` (lines 104–112) checks `ALLOWED_ROLES` before storing a token and returns an "Access Denied" result immediately. They never obtain a session and so the route guard is never reached for them.
-
-`super_admin` and `security_officer` can sign in and hold a valid session, but when they navigate to `/clusters`, `/clusters/new`, or `/clusters/:id/edit`, `PrivateRoute` calls `hasRole(["platform_admin", "support_manager", "support_staff"])`, which returns `false`, and renders `<AccessDenied>` instead of the cluster component.
-
-The bootstrap exception (see §4) can override the "Effective cluster access" column above for any session while `userCount <= 1` (i.e. during initial platform setup) — but it does NOT override the "Can sign in to SPA?" column; login-time `ALLOWED_ROLES` checking is not bypassed by the bootstrap exception.
+| Grant held | `/clusters` list | Add Cluster | Row Edit / edit page | Row Delete | Notes |
+|---|---|---|---|---|---|
+| None of `cluster.*` | `AccessDenied`; sidebar entry hidden | — | — | — | Can still type the URL; route guard catches |
+| `cluster.read` (platform scope) | Full list, search, filters, CSV export | Hidden (header); empty-state Add still visible but leads to `AccessDenied` | Row Edit hidden; `/clusters/:id/edit` route blocked | Hidden | Read-only persona; row-action menu renders empty |
+| + `cluster.create` (platform scope) | — | Visible and functional | — | — | Create form only; post-create navigation quirk in [UI Screens](./ui-screens.md) §3 |
+| + `cluster.update` (platform scope) | — | — | Row Edit on every row; edit route opens; Edit toggle renders | — | Unlocks the full edit page incl. Branding uploads and cluster-user management (§7) |
+| + `cluster.update` scoped to cluster A | — | — | Edit route opens for *any* cluster (broad route check), but row Edit and the Edit toggle render only for cluster A | — | The scoped-vs-broad asymmetry testers should target |
+| + `cluster.delete` (platform or scoped) | — | — | — | Row Delete renders (per matching cluster when scoped) | The only surface anywhere in the SPA that consumes `cluster.delete` |
 
 ## 4. Bootstrap exception
 
-`hasRole()` in `AuthContext.tsx` (lines 180–185) implements a first-admin shortcut:
+`hasPermission()` in `AuthContext.tsx` (lines 210–214) carries the first-admin shortcut forward from the legacy model:
 
 ```
-const hasRole = (roles: string[]): boolean => {
+const hasPermission = (key: string, opts?: { clusterId?: string }): boolean => {
   // Allow all access when there are 0 or 1 users (initial setup)
   if (userCount !== null && userCount <= 1) return true;
-  if (!platformRole) return false;
-  return roles.includes(platformRole);
+  return checkPermission(effectivePermissions, key, opts);
 };
 ```
 
-When `userCount !== null && userCount <= 1`, the function returns `true` unconditionally, bypassing the `roles.includes(platformRole)` check. This allows the first administrator who sets up the platform to reach `/clusters` — and all other role-gated routes — without necessarily holding one of the three permitted roles.
+When `userCount !== null && userCount <= 1`, the function returns `true` unconditionally — every route guard, sidebar filter, and `<Can>` gate passes, including all cluster gates. This allows the first administrator of a fresh installation to reach `/clusters` (and everything else) before any catalog roles have been assigned.
 
-**How `userCount` is populated.** On every mount of `AuthProvider` (and on every successful login), `fetchUserCount()` (lines 81–89) calls `userService.getAll({ page: 1, perpage: 1 })`, which hits `GET /api-system/user?page=1&perpage=1`. The total count is read from `response.paginate?.total ?? response.total ?? response.data?.length ?? 0` and stored in the `userCount` state variable.
+**How `userCount` is populated.** On `AuthProvider` mount and on every successful login, `fetchUserCount()` (line 103) calls `userService.getAll({ page: 1, perpage: 1 })` and reads the total from `paginate.total`. The value lives in React state (line 20), initialised to `null`.
 
-**The `userCount === null` case.** `userCount` is initialised to `null` (line 26) and stays `null` until `fetchUserCount()` resolves. The condition `userCount !== null && userCount <= 1` is `false` when `userCount` is `null`, so the bootstrap exception does NOT fire during the loading window. A user with a non-cluster-permitted role who visits `/clusters` before `fetchUserCount()` completes will see `<AccessDenied>` — they may see the cluster content only once the count resolves to `<= 1` and `PrivateRoute` re-renders.
+**The `userCount === null` case.** While the count fetch is pending (or if it failed), the condition is `false` and checks run strictly against the permission snapshot — the exception fails closed, not open.
 
-**The `userCount > 1` case.** Once the platform has two or more users, `userCount > 1` and the exception is dormant. `fetchUserCount()` is called only on mount and on login — it does not subscribe to real-time changes. If a platform operator deletes all but one user while an existing session is active, the in-memory `userCount` will not update until the next page refresh or login, so the exception will not automatically re-fire mid-session. A fresh session after the count drops to `<= 1` will pick up the new count and the exception will fire again.
+**The `userCount > 1` case.** Once a second user exists the exception is dormant. The count refreshes only on mount and login, so deleting users mid-session does not re-arm it until the next refresh.
 
-**Scope of the exception.** The bootstrap exception applies only to `hasRole()` route-time checks inside `PrivateRoute`. The login-time `ALLOWED_ROLES` check in `login()` (line 105) is a separate code path and is not affected — a user with `platform_role = integration_developer` cannot sign in regardless of `userCount`.
+**Scope of the exception.** Unlike the legacy model, the bootstrap branch also reaches the **login gate**: `login()` requires the account to hold at least one permission (or the super-admin flag) before admitting a session, and skips that requirement when the user count is 0 or 1. Full login pseudo-code in [rbac permissions](/en/platform/rbac/permissions) §4.
 
 ## 5. AccessDenied behaviour
 
 `PrivateRoute` (`src/components/PrivateRoute.tsx`) implements two distinct rejection paths:
 
-**Auth-fail (no session, lines 52–54):** if `isAuthenticated` is `false`, the component renders `<Navigate to="/login" replace />` — a hard redirect that replaces the current history entry. The user ends up on the login page with no visible error in the current view.
+**Auth-fail (no session):** if `isAuthenticated` is `false`, the component renders `<Navigate to="/login" replace />` — a hard redirect that replaces the current history entry. The user ends up on the login page with no visible error in the current view.
 
-**Role-fail (authenticated but wrong role, lines 56–58):** if `allowedRoles` is provided and `hasRole(allowedRoles)` returns `false`, the component renders `<AccessDenied />`. `AccessDenied` is defined in the same file (lines 9–38) and is wrapped in `<Layout>`, so the full sidebar and header remain visible. Inside the content area, a card displays a shield-X icon, the heading "Access Denied" in red, the message `Your role "<platformRole>" does not have permission to access this page.`, and a "Back to Dashboard" button (`onClick={() => navigate('/dashboard')}`).
+**Permission-fail (authenticated but missing the key):** if `requiredPermission` is set and `hasPermission(requiredPermission)` returns `false`, the component renders `<AccessDenied />` (defined in the same file, lines 9–37), which is wrapped in `<Layout>` so the full sidebar and header remain visible. Inside the content area, a centred card displays a shield-X icon, the heading "Access Denied" in red, the generic message "You don't have permission to access this page.", and a "Back to Dashboard" button. Unlike the legacy version, the message no longer quotes the failing role — there is no single role value to display under the permission model. (`PrivateRoute` also supports a `requireSuperAdmin` prop with the same failure rendering, but no cluster route uses it.)
 
-The consequence for role-fail users is that they remain inside the SPA shell, can still use the sidebar to navigate to permitted pages, and receive a clear statement of their current role. They are not logged out and their session is not invalidated.
+The consequence for permission-fail users is that they remain inside the SPA shell, can still use the sidebar to navigate to permitted pages, and are not logged out — their session stays valid.
 
 ## 6. Sidebar filter
 
-`Layout.tsx` (line 51) defines the Clusters nav item as:
+`Layout.tsx` (line 52) defines the Clusters nav item in the "Organization" group as:
 
 ```
-{ path: '/clusters', label: 'Clusters', icon: Network, roles: ['platform_admin', 'support_manager', 'support_staff'] }
+{ path: '/clusters', label: 'Clusters', icon: Network, permission: 'cluster.read', group: 'Organization' }
 ```
 
-Line 58 filters the full `allNavItems` array before rendering:
+The full `allNavItems` array is filtered before rendering:
 
 ```
-const navItems = allNavItems.filter(item => !item.roles || hasRole(item.roles));
+const navItems = allNavItems.filter(
+  (item) =>
+    (!item.permission || hasPermission(item.permission)) &&
+    (!item.superAdminOnly || isSuperAdmin),
+);
 ```
 
-Items with no `roles` field (Dashboard, Business Units, Users) pass the filter for all authenticated users. Items with a `roles` field (Clusters, Report Templates, Print Template Mapping) are kept only when `hasRole(item.roles)` returns `true`. The Clusters `roles` field is `['platform_admin', 'support_manager', 'support_staff']` — the identical set used in `App.tsx` route guards. Route guard and sidebar filter are consistent; there is no divergence that would expose the Clusters entry in the sidebar while blocking the route (or vice versa). Any future change to which roles may access Clusters must therefore be applied in BOTH `src/App.tsx` (the three route guards at lines 42, 50, 58 — see §2) AND `src/components/Layout.tsx` (the sidebar `NavItem` `roles` field at line 51). The duplication is intentional and load-bearing — pulling one and not the other would expose the Clusters entry in the sidebar while blocking the route (or vice versa).
+The sidebar `permission` value (`cluster.read`) matches the `/clusters` route guard exactly, so there is no divergence where a visible entry leads to `AccessDenied`. The neighbouring **Business Units** entry (line 53) also filters on `cluster.read` — the sidebar half of the key-reuse gotcha from §2. Any future change to which key gates Clusters must be applied in BOTH `src/App.tsx` (the route guard) AND `src/components/Layout.tsx` (the sidebar `permission` field); pulling one and not the other would expose the entry while blocking the route, or vice versa.
 
-A user without the required role simply does not see the Clusters entry in the sidebar. They can still reach `/clusters` by typing the URL directly, but the route guard renders `<AccessDenied>` before any cluster data is loaded.
+A user without `cluster.read` simply does not see the Clusters entry. They can still reach `/clusters` by typing the URL directly, but the route guard renders `<AccessDenied>` before any cluster data is loaded.
 
 ## 7. Within the cluster surface
 
-Once a user passes the route guard, the SPA does NOT additionally gate individual UI elements by `platform_role`. Every button and action on the cluster list and edit screens is visible and functional to all three permitted roles equally:
+Unlike the legacy model, passing the route guard no longer unlocks every button — the mutating actions carry their own `<Can>` gates, and the cluster gates pass a `clusterId`, so they resolve against that specific cluster's grants (a platform-scoped grant passes everywhere; a cluster-scoped grant passes only on its own cluster):
 
-| Action | Visible to all three permitted roles? |
-|---|---|
-| View cluster list (pagination, search, CSV export) | Yes |
-| Export cluster list as CSV | Yes |
-| Create new cluster (navigate to `/clusters/new`) | Yes |
-| Edit an existing cluster (`/clusters/:id/edit`) | Yes |
-| Save / Cancel on edit form | Yes |
-| Soft-delete a cluster | Yes |
-| Add a user to the cluster | Yes |
-| Edit a cluster user's role (`admin` / `user`) | Yes |
-| Remove a user from the cluster | Yes |
-| Add Business Unit link (navigate-to-new) | Yes — subject only to `max_license_bu` cap check, not role |
+| Action | In-page gate | Cluster-scoped? |
+|---|---|---|
+| View list (pagination, search, filters) | None — route key (`cluster.read`) suffices | — |
+| Export cluster list as CSV | None — any `cluster.read` holder can export | — |
+| Add Cluster (header button) | `<Can permission="cluster.create">` | No |
+| Add Cluster (empty-state button) | **Ungated** — renders for any `cluster.read` holder; the `cluster.create` route guard on `/clusters/new` catches | No |
+| Row Edit (list dropdown) | `<Can permission="cluster.update" clusterId={row.original.id}>` | Yes |
+| Row Delete (list dropdown) | `<Can permission="cluster.delete" clusterId={row.original.id}>` | Yes |
+| Edit toggle (edit page header) | `<Can permission="cluster.update" clusterId={id}>` | Yes |
+| Save / Cancel on edit form | None — unreachable without the gated Edit toggle | — |
+| Branding logo/avatar upload | None — but `disabled={!editing}`, so effectively behind the Edit toggle's `cluster.update` gate | Indirectly |
+| Add BU (navigate-to-new) / BU row Edit | None in-page — the target `/business-units*` routes reuse `cluster.create` / `cluster.update` | No |
+| Add / Edit / Remove cluster user | **None** — visible and clickable for anyone who reaches the edit page | — |
 
-There is no "viewer" sub-role within the cluster surface. The `max_license_bu` cap on the Add Business Unit action is a business-rule constraint, not a role gate — all three permitted roles see the same enabled/disabled state of that control depending on the current BU count. Testers planning role-based test scenarios should focus on testing the route guard (§2) and the bootstrap exception (§4), not per-button differentiation within the cluster surface.
+Two tester-relevant consequences. First, the cluster-user management actions (Add User, Edit Cluster User, Remove) carry no key gate of their own — reaching the edit route (broad `cluster.update` check) is enough to see them, so backend enforcement is the only boundary on those mutations. Second, the `max_license_bu` / `max_license_users` caps that disable the Add BU button and BU options are business-rule constraints, not permission gates — all permitted sessions see the same enabled/disabled state. Test plans should cover the scoped gates (§3, scoped-grant row) per cluster, not per persona.
 
 ## 8. References
 
 **Primary sources (read these before updating this page):**
-- `../carmen-platform/src/App.tsx` — route wiring with `allowedRoles` props (lines 42, 50, 58).
-- `../carmen-platform/src/context/AuthContext.tsx` — `ALLOWED_ROLES` (line 10), `hasRole` (line 180), `userCount` state (line 26), `fetchUserCount` (line 81), bootstrap exception condition (line 182).
-- `../carmen-platform/src/components/PrivateRoute.tsx` — gate logic: auth-fail redirect (lines 52–54), role-fail `<AccessDenied>` render (lines 56–58), `AccessDenied` component definition (lines 9–38).
-- `../carmen-platform/src/components/Layout.tsx` — sidebar `NavItem[]` filter via `hasRole()` (lines 51, 58).
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `enum_platform_role` (line 539) for the 7-value source list.
+- `../carmen-platform/src/App.tsx` — the three cluster routes with `requiredPermission` props (route block lines 60–83).
+- `../carmen-platform/src/context/AuthContext.tsx` — `hasPermission` (lines 210–214), `userCount` state (line 20), `fetchUserCount` (line 103), login permission gate (`login`, line 115).
+- `../carmen-platform/src/utils/permissions.ts` — pure `checkPermission` resolution (super-admin → platform keys → cluster keys), `DEV_MOCK_EFFECTIVE_PERMISSIONS`.
+- `../carmen-platform/src/components/PrivateRoute.tsx` — auth-fail redirect, permission-fail `<AccessDenied>` render (component at lines 9–37).
+- `../carmen-platform/src/components/Can.tsx` — the in-page gate component (`permission`, optional `clusterId`, optional `fallback`).
+- `../carmen-platform/src/components/Layout.tsx` — sidebar `NavItem[]` with `permission` fields and the filter expression (lines 49–71).
+- `../carmen-platform/src/pages/ClusterManagement.tsx` / `ClusterEdit.tsx` — the `<Can>` call sites listed in §7.
 
 **Cross-links:**
-- [auth-roles](/en/platform/auth-roles) — full role definitions and cross-SPA route map
-- [users](/en/platform/users) — where `platform_role` is assigned to a platform user
+- [rbac](/en/platform/rbac) — the permission model: catalog, roles, scoped assignments, super-admin flag, and the legacy-model migration table (§5)
+- [rbac permissions](/en/platform/rbac/permissions) — SPA-wide gate matrix and the full permission-resolution algorithm
+- [users](/en/platform/users) — user identity rows that role assignments point at
 - [clusters](/en/platform/clusters) — Clusters module landing
 - [Data Model](./data-model.md) &nbsp;·&nbsp; [UI Screens](./ui-screens.md) — sibling sub-pages
