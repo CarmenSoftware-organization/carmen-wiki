@@ -1,8 +1,8 @@
 ---
 title: User — Data Model
-description: User entity, role, status, per-cluster BU assignments.
+description: User entity, profile extension, status, per-cluster BU assignments.
 published: true
-date: 2026-05-20T01:00:00.000Z
+date: 2026-06-10T14:00:00.000Z
 tags: book/platform, users, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -11,7 +11,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 # User — Data Model
 
 > **At a Glance**
-> **Tables:** `tb_user` &nbsp;·&nbsp; `tb_cluster_user` &nbsp;·&nbsp; `tb_user_tb_business_unit` &nbsp;·&nbsp; `tb_user_profile` (profile extension) &nbsp;·&nbsp; **Enums:** `enum_platform_role` (7 values) &nbsp;·&nbsp; `enum_cluster_user_role` (admin/user) &nbsp;·&nbsp; `enum_user_business_unit_role` (admin/user) &nbsp;·&nbsp; **Audit columns:** standard `created_*`/`updated_*`/`deleted_*` trio on every table &nbsp;·&nbsp; **Sign-in gate:** only 5 of the 7 `enum_platform_role` values pass `AuthContext.ALLOWED_ROLES`
+> **Tables:** `tb_user` &nbsp;·&nbsp; `tb_cluster_user` &nbsp;·&nbsp; `tb_user_tb_business_unit` &nbsp;·&nbsp; `tb_user_profile` (profile extension, incl. `avatar_file_token`) &nbsp;·&nbsp; **Enums:** `enum_cluster_user_role` (admin/user) &nbsp;·&nbsp; `enum_user_business_unit_role` (admin/user) &nbsp;·&nbsp; **Audit columns:** standard `created_*`/`updated_*`/`deleted_*` trio on every table, surfaced as a nested `audit` object by the API &nbsp;·&nbsp; **Platform access:** not stored on these tables — RBAC role assignments own it (see [Platform RBAC](/en/platform/rbac))
 
 > **Source of truth:** Backend Prisma platform schema. Always read this first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
@@ -20,7 +20,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 ## 1. Overview
 
-The Users module is backed by four tables. `tb_user` is the identity anchor: one row per person, holding the fields required for sign-in (`username`, `email`), the `platform_role` enum that every other module's `allowedRoles` array reads, and the `is_active` / `is_consent` flags that gate access. Name parts (`firstname`, `middlename`, `lastname`) and supplementary contact fields live in the companion table `tb_user_profile`, which has a 1:M relation to `tb_user` via `user_id` — the Prisma relation is 1:M at the schema level, but the application treats it as a 1:1 extension of `tb_user` — see §2.4 for the constraint detail.
+The Users module is backed by four tables. `tb_user` is the identity anchor: one row per person, holding the fields required for sign-in (`username`, `email`) and the `is_active` / `is_consent` flags that gate access. What the account may do in the Platform admin SPA is **not** stored here — the legacy `platform_role` column was removed along with `enum_platform_role` (see §4 historical note); platform access now lives in the RBAC assignment tables (`tb_user_tb_platform_role` and friends), documented in the [Platform RBAC data model](/en/platform/rbac/data-model). Name parts (`firstname`, `middlename`, `lastname`), the avatar (`avatar_file_token`), and supplementary contact fields live in the companion table `tb_user_profile`, which has a 1:M relation to `tb_user` via `user_id` — the Prisma relation is 1:M at the schema level, but the application treats it as a 1:1 extension of `tb_user` — see §2.4 for the constraint detail.
 
 The two many-to-many join tables extend the user into organisational scope. `tb_cluster_user` records which clusters a user belongs to and at what per-cluster role (`admin` or `user`); this table is authoritatively mutated from the cluster edit page, not from the Users module. `tb_user_tb_business_unit` records which business units a user is assigned to within those clusters, carrying its own per-BU role and an `is_default` flag that marks the BU the inventory application should land on at login; this table is mutated from the Add BU dialog on the user edit screen.
 
@@ -30,7 +30,7 @@ All four tables carry the full audit trio — `created_at`/`created_by_id`, `upd
 
 ### 2.1 `tb_user`
 
-The identity row. One row per platform user, driving sign-in and carrying the `platform_role` value that every other module's `allowedRoles` array tests. This table does not store a password hash directly — credential management is delegated to Keycloak; the `fetchKeycloakUsers` API call synchronises user records from Keycloak into this table. Online-presence fields (`socket_id`, `is_online`) track real-time WebSocket state.
+The identity row. One row per platform user, driving sign-in. This table does not store a password hash directly — credential management is delegated to Keycloak; the `fetchKeycloakUsers` API call synchronises user records from Keycloak into this table. Online-presence fields (`socket_id`, `is_online`) track real-time WebSocket state. **Historical note:** until 2026-06-10 this table carried a `platform_role` enum column (`enum_platform_role`, 7 values) that drove every access gate in the SPA; both the column and the enum are gone from the schema, replaced by RBAC role assignments — see [Platform RBAC §5](/en/platform/rbac) for the legacy→replacement mapping.
 
 | Field | Prisma Type | Nullable | Default | Description |
 | ----- | ----------- | -------- | ------- | ----------- |
@@ -38,7 +38,6 @@ The identity row. One row per platform user, driving sign-in and carrying the `p
 | `username` | `String @db.VarChar` | No | — | Sign-in handle; unique (with `deleted_at`); set once at create and disabled in the edit form |
 | `email` | `String @db.VarChar` | No | — | Email address; indexed |
 | `alias_name` | `String? @db.VarChar` | Yes | — | Display alias, shown in place of full name when set |
-| `platform_role` | `enum_platform_role` | No | `user` | Single role value that drives every `allowedRoles` gate across the Platform SPA and downstream applications |
 | `is_active` | `Boolean?` | Yes | `false` | When `false`, sign-in is blocked regardless of Keycloak state |
 | `is_consent` | `Boolean?` | Yes | `false` | Tracks whether the user has accepted the terms/consent flow |
 | `consent_at` | `DateTime? @db.Timestamptz(6)` | Yes | — | Timestamp of consent acceptance |
@@ -97,7 +96,7 @@ Many-to-many join between `tb_user` and `tb_business_unit`. Each row records tha
 | `id` | `String @db.Uuid` | No | `gen_random_uuid()` | Primary key |
 | `user_id` | `String? @db.Uuid` | Yes | — | FK to `tb_user.id` |
 | `business_unit_id` | `String? @db.Uuid` | Yes | — | FK to `tb_business_unit.id` |
-| `role` | `enum_user_business_unit_role` | No | `user` | Per-BU role: `admin` or `user`; orthogonal to `platform_role` |
+| `role` | `enum_user_business_unit_role` | No | `user` | Per-BU role: `admin` or `user`; orthogonal to the platform RBAC assignments |
 | `is_default` | `Boolean?` | Yes | `false` | Marks the BU the inventory app lands on at login |
 | `is_active` | `Boolean?` | Yes | `true` | Assignment active flag |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: row creation time |
@@ -128,7 +127,7 @@ Profile extension for `tb_user`. Holds the name parts and supplementary contact 
 | `lastname` | `String? @db.VarChar(100)` | Yes | `""` | Family name |
 | `telephone` | `String? @db.VarChar(20)` | Yes | — | Contact telephone number |
 | `bio` | `Json? @db.Json` | Yes | `{}` | Free-form biography/notes as JSON |
-| `avatar_file_token` | `String? @db.VarChar` | Yes | — | Reference to the user's avatar image in the platform file service. Resolves to a CDN/S3 URL via the application layer (same `file_token` pattern as `tb_business_unit.logo_file_token` and `tb_product_image.file_token`). Added 2026-05-20. |
+| `avatar_file_token` | `String? @db.VarChar` | Yes | — | Reference to the user's avatar image in the platform file service. The API resolves it to a presigned `avatar_url` string on user list and detail responses — the raw token is not exposed to the SPA (same `file_token` storage pattern as `tb_cluster.avatar_file_token` and `tb_business_unit.logo_file_token`; see §5). Added 2026-05-20. |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: row creation time |
 | `created_by_id` | `String? @db.Uuid` | Yes | — | Audit: FK to `tb_user.id` of the creator |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: last update time |
@@ -165,25 +164,13 @@ Note: `tb_user_tb_business_unit` does **not** carry a `cluster_id` column in the
 
 ## 4. Enums
 
-### `enum_platform_role` — 7 values
+### `enum_platform_role` — removed (historical)
 
-The single field on `tb_user` that drives every `allowedRoles` gate across the Platform SPA. Assigned at user creation; changing it takes effect at the user's next sign-in.
-
-| Value | Meaning | Can sign in to Platform SPA |
-| ----- | ------- | --------------------------- |
-| `super_admin` | Highest-privilege role in the Prisma enum; passes `ALLOWED_ROLES` authentication but is **not** listed in any route-level `allowedRoles` array in `App.tsx` — effective access matches the open-access route set (Dashboard, Business Units, Users, Profile). See [auth-roles](/en/platform/auth-roles) for the full per-role route matrix. | Yes |
-| `platform_admin` | Platform-level administrator; same operational reach as super_admin in the SPA | Yes |
-| `support_manager` | Carmen support engineer with management authority; can access clusters and report templates | Yes |
-| `support_staff` | Carmen support engineer; read/edit access to operational modules | Yes |
-| `security_officer` | Security-focused role; can authenticate against the Platform admin SPA but holds no additional route-level privileges beyond the open-access routes (business-units, users, profile). See [auth-roles](/en/platform/auth-roles) for the complete route matrix. | Yes |
-| `integration_developer` | Technical integration account; valid in Prisma data but **not** in `ALLOWED_ROLES` — holder cannot sign in to the Platform admin SPA | No |
-| `user` | Default role for new accounts; valid in Prisma data but **not** in `ALLOWED_ROLES` — holder cannot sign in to the Platform admin SPA | No |
-
-The five sign-in-permitted values are defined in `AuthContext.ALLOWED_ROLES` in `../carmen-platform/src/context/AuthContext.tsx`. A user row carrying `integration_developer` or `user` is legitimate data (e.g. a customer-side user synced from Keycloak) but their holders will see an access-denied screen when they attempt to authenticate against the Platform admin SPA.
+Until 2026-06-10 the schema defined a 7-value `enum_platform_role` (`super_admin`, `platform_admin`, `support_manager`, `support_staff`, `security_officer`, `integration_developer`, `user`) carried on `tb_user.platform_role`, and the SPA's login gate checked the value against an `ALLOWED_ROLES` allow-list. Both the enum and the column are gone from the Prisma platform schema, and the frontend dropped every reference (commits `6091ffc`, `5f629f2` in `carmen-platform`). Platform access is now expressed as permission-key role assignments in `tb_platform_role` / `tb_user_tb_platform_role` (with a separate `tb_platform_super_admin` flag table) — see the [Platform RBAC data model](/en/platform/rbac/data-model) for those tables and [Platform RBAC §5](/en/platform/rbac) for the full legacy→replacement mapping.
 
 ### `enum_cluster_user_role` — 2 values
 
-Carried on `tb_cluster_user.role`. Controls what the user can do within a specific cluster. Independent from `platform_role` — a `support_staff` platform user could have cluster `admin` rights on one cluster and cluster `user` rights on another.
+Carried on `tb_cluster_user.role`. Controls what the user can do within a specific cluster. Independent from the platform-level RBAC assignments — a Carmen support engineer could have cluster `admin` rights on one cluster and cluster `user` rights on another.
 
 | Value | Meaning |
 | ----- | ------- |
@@ -192,7 +179,7 @@ Carried on `tb_cluster_user.role`. Controls what the user can do within a specif
 
 ### `enum_user_business_unit_role` — 2 values
 
-Carried on `tb_user_tb_business_unit.role`. Controls what the user can do within a specific business unit. Independent from both `platform_role` and `enum_cluster_user_role`.
+Carried on `tb_user_tb_business_unit.role`. Controls what the user can do within a specific business unit. Independent from both the platform-level RBAC assignments and `enum_cluster_user_role`.
 
 | Value | Meaning |
 | ----- | ------- |
@@ -201,7 +188,7 @@ Carried on `tb_user_tb_business_unit.role`. Controls what the user can do within
 
 ## 5. Divergences from carmen-platform SPA shape
 
-The `UserFormData` interface in `UserEdit.tsx` (lines 67–75) declares 8 editable fields: `username`, `email`, `platform_role`, `alias_name`, `firstname`, `middlename`, `lastname`, `is_active`.
+The `UserFormData` interface in `UserEdit.tsx` (lines 59–67) declares 7 editable fields: `username`, `email`, `alias_name`, `firstname`, `middlename`, `lastname`, `is_active`. (Historical: `platform_role` was the 8th field until the RBAC migration removed it from the form and the schema — commit `6091ffc`.)
 
 The Prisma-level divergence is that `firstname`, `middlename`, and `lastname` do **not** live in `tb_user`. They live in `tb_user_profile`. The SPA flattens both tables into a single `UserFormData` object and splits writes between `tb_user` (core fields) and `tb_user_profile` (name fields) transparently. The `UserEdit.tsx` load function confirms this: it merges `profile.firstname || user.firstname` when populating the form, reflecting that some older records may have had name fields on the user row before the profile extension table was introduced.
 
@@ -209,28 +196,35 @@ The `User` interface in `src/types/index.ts` also carries `firstname`, `middlena
 
 The load function additionally reads `profile.alias_name || user.alias_name`; since `alias_name` has never lived on `tb_user_profile`, the profile leg always resolves to undefined and `user.alias_name` is the effective value — a defensive fallback the SPA carries but does not depend on.
 
-No other divergences detected as of 2026-05-19.
+Three further read-shape divergences:
+
+- **Audit columns** — Prisma stores the flat trio (`created_at`/`created_by_id`, `updated_at`/`updated_by_id`, `deleted_at`/`deleted_by_id`, raw IDs); the API resolves the `_id` FKs to actor names and groups everything under a nested `audit` object (`audit.created/updated/deleted`, each `{ at, id, name, avatar }`). The SPA list page flattens this back into `created_at`/`created_by_name` etc. for its date columns, tolerating the older flat shape, which wins when present (`item.created_at ?? item.audit?.created?.at` — commits `f9b61cb`, `30b5bd6` in `carmen-platform`).
+- **Avatar** — Prisma stores `avatar_file_token` on `tb_user_profile`; the API returns a presigned **`avatar_url` string** on list and detail responses, and the SPA reads `user.avatar_url || profile.avatar_url`. Note the contrast with clusters/business units, where the same token pattern resolves to an embedded `PresignedImage` *object* (`{ url, expires_at }`) on a `logo`/`avatar` key — users get a plain string.
+- **Nested assignment arrays** — the detail response (`GET /api-system/user/:id`) embeds the user's `clusters` (the `tb_cluster_user` rows with a nested `cluster` object) and `business_units` (the `tb_user_tb_business_unit` rows with a nested `business_unit` object); the list response embeds a `business_unit` array used for the BU active/total count column.
+
+No other divergences detected as of 2026-06-10.
 
 | SPA field | SPA source | Prisma table | Notes |
 | --------- | ---------- | ------------ | ----- |
 | `username` | `UserFormData` | `tb_user.username` | Aligned |
 | `email` | `UserFormData` | `tb_user.email` | Aligned |
-| `platform_role` | `UserFormData` | `tb_user.platform_role` | Aligned |
 | `alias_name` | `UserFormData` | `tb_user.alias_name` | Loaded via `profile.alias_name \|\| user.alias_name`; profile leg is always undefined — effectively aligned. |
 | `is_active` | `UserFormData` | `tb_user.is_active` | Aligned |
 | `firstname` | `UserFormData` | `tb_user_profile.firstname` | SPA flattens profile into user form |
 | `middlename` | `UserFormData` | `tb_user_profile.middlename` | SPA flattens profile into user form |
 | `lastname` | `UserFormData` | `tb_user_profile.lastname` | SPA flattens profile into user form |
+| `avatar_url` | `UserRecord` / detail read shape (read-only) | `tb_user_profile.avatar_file_token` | Presigned-URL resolution server-side; not part of the form |
 
 ## 6. References
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — models `tb_user` (line 368), `tb_cluster_user` (line 194), `tb_user_tb_business_unit` (line 489), `tb_user_profile` (line 445); enums `enum_platform_role` (line 539), `enum_cluster_user_role` (line 534), `enum_user_business_unit_role` (line 560).
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — models `tb_user` (line 472), `tb_cluster_user` (line 243), `tb_user_tb_business_unit` (line 600), `tb_user_profile` (line 555); enums `enum_cluster_user_role` (line 645), `enum_user_business_unit_role` (line 661). Line numbers as of 2026-06-10. (`enum_platform_role` and `tb_user.platform_role` no longer exist — see §4.)
 
 **Secondary (consumer shape):**
-- `../carmen-platform/src/pages/UserEdit.tsx` — `UserFormData` interface; `PLATFORM_ROLES` and `BU_ROLES` constants; load logic merging `tb_user` + `tb_user_profile` fields.
-- `../carmen-platform/src/types/index.ts` — `User` interface (flattened API response shape), `UserInfo` interface.
+- `../carmen-platform/src/pages/UserEdit.tsx` — `UserFormData` interface (lines 59–67); `BU_ROLES` constant; load logic merging `tb_user` + `tb_user_profile` fields and resolving `avatar_url`.
+- `../carmen-platform/src/pages/UserManagement.tsx` — `UserRecord` list shape (incl. `avatar_url` and the nested-`audit` flattening).
+- `../carmen-platform/src/types/index.ts` — `User` interface (flattened API response shape), `UserInfo` interface, `Audit`/`AuditEntry`.
 - `../carmen-platform/src/services/userService.ts` — REST client at `/api-system/user`.
-- `../carmen-platform/src/context/AuthContext.tsx` — `ALLOWED_ROLES` array (5 values) used as the sign-in gate.
+- `../carmen-platform/src/context/AuthContext.tsx` — permission-based login gate (effective permissions, not a role allow-list); see [Platform RBAC](/en/platform/rbac).
 
 **Landing cross-link:** [users](/en/platform/users)
