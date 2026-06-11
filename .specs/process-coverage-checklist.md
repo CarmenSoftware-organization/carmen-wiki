@@ -3,6 +3,7 @@
 Internal tracker (not a published Wiki.js page). Enumerates every Carmen Inventory
 process by module — sourced from `../carmen/docs/` — and records whether the wiki
 documents it. Answers: "is the Inventory documentation project finished?".
+The Platform book has its own sibling tracker: `.specs/platform-coverage-checklist.md`.
 
 How to read: each row is a sub-process. **BR/UF/TS** = covered in the module's
 `02-business-rules` / `03-user-flow*` / `04-test-scenarios*` page(s).
