@@ -85,7 +85,7 @@ Financial accuracy is enforced at the calculation layer. Item subtotal, discount
 ## 6. Reference Sources
 
 - Concepts: `../carmen/docs/purchase-order-management/`
-- Frontend: `../carmen-inventory-frontend/`
+- Frontend: `../carmen-inventory-frontend-react/`
 - Backend: `../carmen-turborepo-backend-v2/`
 - API contracts: `../carmen-turborepo-backend-bruno/`
 - E2E tests: `../carmen-inventory-frontend-e2e/`

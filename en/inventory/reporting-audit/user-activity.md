@@ -110,5 +110,5 @@ See [reporting-audit/activity](/en/inventory/reporting-audit/activity) for the f
 
 - **Prisma platform:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_user_login_session` (lines 456-465), `enum_token_type` (577-580), `tb_user` (~360-454).
 - **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_activity` (~277-297), `enum_activity_action` (~67-89).
-- **Frontend route:** `../carmen-inventory-frontend/app/(root)/system-admin/user-activity/`.
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/user-activity/`.
 - **Authentication middleware:** `../carmen-turborepo-backend-v2/apps/` — login / logout handlers write paired session + activity rows.

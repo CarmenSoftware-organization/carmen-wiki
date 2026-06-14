@@ -21,7 +21,7 @@ dateCreated: 2026-05-15T14:00:00.000Z
 
 หัวข้อ 2 ด้านล่างอธิบาย **state machine ของวงจรชีวิตเอกสาร** ทั้ง `tb_physical_count_period.status` (`draft → counting → completed`) และ `tb_physical_count.status` (`pending → in_progress → completed`) โดยไม่ขึ้นกับว่าใครทำ ไฟล์ต่อ persona (ลิงก์จากหัวข้อ 3) อธิบาย *เส้นทางผ่าน* state space นี้ของ persona — จุดเริ่ม action ที่ทำได้ branch ตัดสินใจ handoff ที่จบการมีส่วนร่วม หัวข้อ 4 สรุป handoff ข้าม persona ที่เย็บเส้นทางบุคคลเข้าด้วยกัน (Count Lead → Counter สำหรับการมอบหมาย zone; Counter → Count Lead สำหรับเซ็นรับ sheet ที่เสร็จ; Count Lead → Approver/Finance สำหรับอนุมัติ adjustment ของ variance ผ่าน [inventory-adjustment](/th/inventory/inventory-adjustment))
 
-> **TODO:** ดึงหน้าจอ UI / flow wizard canonical จาก `../carmen-inventory-frontend/` เมื่อ route `physical-count` ค้นพบได้; cross-reference E2E spec ที่ `../carmen-inventory-frontend-e2e/tests/` เมื่อเพิ่ม ไม่มี source folder carmen/docs สำหรับโมดูลนี้
+> **TODO:** ดึงหน้าจอ UI / flow wizard canonical จาก `../carmen-inventory-frontend-react/` เมื่อ route `physical-count` ค้นพบได้; cross-reference E2E spec ที่ `../carmen-inventory-frontend-e2e/tests/` เมื่อเพิ่ม ไม่มี source folder carmen/docs สำหรับโมดูลนี้
 
 ## 2. วงจรชีวิตเอกสาร
 
@@ -117,6 +117,6 @@ stateDiagram-v2
 ## 5. แหล่งอ้างอิง
 
 - **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — source ของ UI flow
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — source ของ UI flow
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count
 - หน้า flow ที่เกี่ยวข้อง: [inventory-adjustment/03-user-flow](/th/inventory/inventory-adjustment/03-user-flow) (flow ฝั่ง rollup), [spot-check](/th/inventory/spot-check) (flow ลูกพี่ลูกน้องการนับบางส่วน)

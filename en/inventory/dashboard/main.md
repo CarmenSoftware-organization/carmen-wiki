@@ -83,7 +83,7 @@ When live wiring arrives, expected mapping:
 
 ## 7. Reference Sources
 
-- **Page shell:** `../carmen-inventory-frontend/app/(root)/dashboard/main/page.tsx`
-- **Composition:** `../carmen-inventory-frontend/app/(root)/dashboard/_components/dashboard-main.tsx`
-- **Mock data:** `../carmen-inventory-frontend/app/(root)/dashboard/mock/main.ts`
+- **Page shell:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-main.tsx`
+- **Composition:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-main.tsx`
+- **Mock data:** `../carmen-inventory-frontend-react/routes/dashboard/mock/main.ts`
 - **i18n:** `messages/en.json` → `dashboard.main.title` = "Dashboard"

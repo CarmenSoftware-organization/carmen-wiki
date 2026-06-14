@@ -70,7 +70,7 @@ The Counter is a data-entry persona scoped to their assigned location. They can 
 - **Zero-on-shelf vs zero-counted.** If the sheet shows `on_hand_qty > 0` but the counter sees nothing, `actual_qty = 0` is entered explicitly (not left blank). Blank `actual_qty` blocks submit per `SPC_VAL_004`; entered-zero proceeds to variance flag.
 - **Recount lines.** When a line is flagged for recount, the recount is ideally performed by a **different counter** to remove individual counting bias — convention rather than hard schema constraint.
 
-> **TODO:** Source the exact mobile / scanner UI screens and any blind-count (book qty hidden) toggle from `../carmen-inventory-frontend/`. Confirm whether the same blind-count tenant policy used in physical-count applies here.
+> **TODO:** Source the exact mobile / scanner UI screens and any blind-count (book qty hidden) toggle from `../carmen-inventory-frontend-react/`. Confirm whether the same blind-count tenant policy used in physical-count applies here.
 
 ## 5. Exit / Handoff
 
@@ -83,6 +83,6 @@ The Counter is a data-entry persona scoped to their assigned location. They can 
 ## 6. References
 
 - **Primary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — Counter / mobile UI; check cmobile (`../cmobile/`) for the PWA-side spot-check sheet implementation if applicable.
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — Counter / mobile UI; check cmobile (`../cmobile/`) for the PWA-side spot-check sheet implementation if applicable.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists.
 - Related: [spot-check/03-user-flow](/en/inventory/spot-check/03-user-flow) (overview), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_AUTH_002`, `SPC_VAL_004`–`SPC_VAL_005`), [spot-check/03-user-flow-inventory-controller](/en/inventory/spot-check/03-user-flow-inventory-controller) (the handoff partner), [physical-count/03-user-flow-counter](/en/inventory/physical-count/03-user-flow-counter) (full-count counterpart counter flow).

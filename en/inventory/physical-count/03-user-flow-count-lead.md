@@ -72,7 +72,7 @@ The Count Lead is the single owner of the count exercise — the only persona wh
 - **Tolerance breach response.** When `|diff_qty| / on_hand_qty` exceeds threshold, the Count Lead can (a) trigger recount (different counter), (b) override / accept the variance with countersignature, (c) hold the line pending investigation.
 - **Submit vs hold.** Once all lines counted, Count Lead chooses to submit (firing the rollup) or hold pending operational reconciliation (e.g. expected receipts not yet posted).
 
-> **TODO:** Source the exact UI for recount flagging, override countersignature, and rollup-trigger button from `../carmen-inventory-frontend/`.
+> **TODO:** Source the exact UI for recount flagging, override countersignature, and rollup-trigger button from `../carmen-inventory-frontend-react/`.
 
 ## 5. Exit / Handoff
 
@@ -85,6 +85,6 @@ The Count Lead is the single owner of the count exercise — the only persona wh
 ## 6. References
 
 - **Primary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — Count Lead UI screens.
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — Count Lead UI screens.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists.
 - Related: [physical-count/03-user-flow](/en/inventory/physical-count/03-user-flow) (overview), [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) (`PHC_AUTH_001`, `PHC_VAL_*`, `PHC_POST_*`), [inventory-adjustment/03-user-flow-inventory-controller](/en/inventory/inventory-adjustment/03-user-flow-inventory-controller) (rollup-side flow, same persona acting as adjustment owner).

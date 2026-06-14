@@ -129,5 +129,5 @@ Template **ไม่** มีส่วนใน workflow engine 3 logical state 
 ## 8. การอ้างอิง
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_purchase_request_template` (บรรทัด 2402-2430), `tb_purchase_request_template_detail` (บรรทัด 2466-2562), `tb_purchase_request_template_comment` (บรรทัด 2432-2464)
-- **Frontend route:** `../carmen-inventory-frontend/app/(root)/procurement/purchase-request-template/`
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/procurement/purchase-request-template/`
 - **Carmen docs:** `../carmen/docs/purchase-request-management/purchase-request-template-ba.md`; `../carmen/docs/purchase-request-management/PR-User-Experience.md` (flow การสร้างจาก template)

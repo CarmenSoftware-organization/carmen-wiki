@@ -18,7 +18,7 @@
 - Existing facts the code depends on:
   - `tests/test-users.ts` exports `TEST_USERS` (`{ role, email, password }[]`), all password `12345678`; `Admin` is `admin@blueledgers.com`.
   - `tests/fixtures/auth.paths.ts` exports `authFile(email): string` → `<cwd>/.auth/<email>.json`.
-  - `playwright.config.ts` has projects `setup`, `login`, `chromium`; `webServer` auto-runs `bun dev` on `../carmen-inventory-frontend` at `http://localhost:3000`.
+  - `playwright.config.ts` has projects `setup`, `login`, `chromium`; `webServer` auto-runs `bun dev` on `../carmen-inventory-frontend-react` at `http://localhost:3000`.
   - Frontend resolves locale from the `NEXT_LOCALE` cookie (next-intl, no URL prefix).
 
 ---
@@ -376,7 +376,7 @@ export function renderReport(rows: CoverageRow[]): string {
 
 /** CLI entry: discover routes, diff against SHOTS, write the report into the wiki. */
 function main(): void {
-  const frontendDir = process.env.E2E_FRONTEND_DIR ?? "../carmen-inventory-frontend";
+  const frontendDir = process.env.E2E_FRONTEND_DIR ?? "../carmen-inventory-frontend-react";
   const specsDir = process.env.WIKI_SPECS_DIR ?? "../carmen-wiki/.specs";
   const resultsPath = join(process.cwd(), "tests/wiki-screenshots/last-run.json");
 
@@ -558,7 +558,7 @@ export function generateManifestSource(routes: string[]): string {
 }
 
 function main(): void {
-  const frontendDir = process.env.E2E_FRONTEND_DIR ?? "../carmen-inventory-frontend";
+  const frontendDir = process.env.E2E_FRONTEND_DIR ?? "../carmen-inventory-frontend-react";
   const routes = discoverRoutes(join(frontendDir, "app"));
   const out = join(process.cwd(), "tests/wiki-screenshots/manifest.ts");
   writeFileSync(out, generateManifestSource(routes));

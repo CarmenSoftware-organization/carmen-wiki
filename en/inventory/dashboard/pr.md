@@ -82,8 +82,8 @@ Static mock today. Once wired through `useApprovalPending`, TanStack Query defau
 
 ## 8. Reference Sources
 
-- **Page shell:** `../carmen-inventory-frontend/app/(root)/dashboard/pr/page.tsx`
-- **Composition:** `../carmen-inventory-frontend/app/(root)/dashboard/_components/dashboard-pr.tsx`
-- **Mock data:** `../carmen-inventory-frontend/app/(root)/dashboard/mock/pr.ts`
+- **Page shell:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-pr.tsx`
+- **Composition:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-pr.tsx`
+- **Mock data:** `../carmen-inventory-frontend-react/routes/dashboard/mock/pr.ts`
 - **i18n:** `messages/en.json` → `dashboard.pr.title` = "Purchase Request Dashboard"
-- **Live hook (not mounted):** `../carmen-inventory-frontend/hooks/use-approval.ts` → `useApprovalPending`
+- **Live hook (not mounted):** `../carmen-inventory-frontend-react/hooks/use-approval.ts` → `useApprovalPending`

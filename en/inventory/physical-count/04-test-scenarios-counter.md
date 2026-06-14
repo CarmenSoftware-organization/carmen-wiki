@@ -75,6 +75,6 @@ dateCreated: 2026-05-15T14:00:00.000Z
 ## 7. References
 
 - **Primary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — Counter UI behaviour source; check `../cmobile/` for the PWA-side count sheet implementation if applicable.
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — Counter UI behaviour source; check `../cmobile/` for the PWA-side count sheet implementation if applicable.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists.
 - Related: [physical-count/03-user-flow-counter](/en/inventory/physical-count/03-user-flow-counter), [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) (`PHC_AUTH_002`, `PHC_AUTH_004`, `PHC_VAL_004`–`PHC_VAL_005`), [physical-count/04-test-scenarios](/en/inventory/physical-count/04-test-scenarios) (cross-persona handoff scenarios).

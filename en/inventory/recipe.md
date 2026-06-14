@@ -86,7 +86,7 @@ The other major business function the module supports is **theoretical vs. actua
 
 - Concepts (PRD/requirements): `../carmen/docs/recipe-module/`
 - Concepts (UI/page specs): `../carmen/docs/recipe/`
-- Frontend: `../carmen-inventory-frontend/`
+- Frontend: `../carmen-inventory-frontend-react/`
 - Backend: `../carmen-turborepo-backend-v2/`
 - API contracts: `../carmen-turborepo-backend-bruno/`
 - E2E tests: `../carmen-inventory-frontend-e2e/`

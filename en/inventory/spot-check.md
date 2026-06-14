@@ -25,7 +25,7 @@ Spot checks are typically **triggered** by one of three patterns: *random sampli
 
 Because spot checks are quick to launch and easy to repeat, they are a core control in any inventory program — catching shrinkage, miscounts, and process errors early, between the longer cycles of the formal physical count.
 
-> **TODO:** Source content from `../carmen-inventory-frontend/` (UI flow) and `../carmen-inventory-frontend-e2e/` (test scenarios). No carmen/docs source folder exists for this module.
+> **TODO:** Source content from `../carmen-inventory-frontend-react/` (UI flow) and `../carmen-inventory-frontend-e2e/` (test scenarios). No carmen/docs source folder exists for this module.
 
 ## 2. Business Context
 
@@ -67,7 +67,7 @@ The control serves two complementary purposes. First, it is a **loss-prevention*
 ## 6. Reference Sources
 
 - Concepts: (no source — see TODO in section 1)
-- Frontend: `../carmen-inventory-frontend/`
+- Frontend: `../carmen-inventory-frontend-react/`
 - Backend: `../carmen-turborepo-backend-v2/`
 - API contracts: `../carmen-turborepo-backend-bruno/`
 - E2E tests: `../carmen-inventory-frontend-e2e/`
@@ -85,4 +85,4 @@ The control serves two complementary purposes. First, it is a **loss-prevention*
   - [spot-check/04-test-scenarios-counter](/en/inventory/spot-check/04-test-scenarios-counter) — Counter scenarios.
   - [spot-check/04-test-scenarios-audit-config](/en/inventory/spot-check/04-test-scenarios-audit-config) — Auditor + Sysadmin scenarios.
 
-> **Status:** all sub-pages are skeleton-level (~50-100 lines each). Each carries explicit TODO callouts pointing at the upstream sources to use when filling in (`../carmen-inventory-frontend/` for UI flow; `../carmen-inventory-frontend-e2e/tests/` for E2E specs — no spot-check spec exists yet). Data-model section is grounded in the Prisma schema (`tb_spot_check*` is **its own table set** — four entities, two enums — *not* shared with `tb_physical_count*`; the two modules are conceptual cousins that both roll up to [inventory-adjustment](/en/inventory/inventory-adjustment), not shared infrastructure); business-rules introduces a proposed `SPC_*` rule-ID catalogue that needs carmen/docs confirmation; user-flow and test-scenarios are structural placeholders.
+> **Status:** all sub-pages are skeleton-level (~50-100 lines each). Each carries explicit TODO callouts pointing at the upstream sources to use when filling in (`../carmen-inventory-frontend-react/` for UI flow; `../carmen-inventory-frontend-e2e/tests/` for E2E specs — no spot-check spec exists yet). Data-model section is grounded in the Prisma schema (`tb_spot_check*` is **its own table set** — four entities, two enums — *not* shared with `tb_physical_count*`; the two modules are conceptual cousins that both roll up to [inventory-adjustment](/en/inventory/inventory-adjustment), not shared infrastructure); business-rules introduces a proposed `SPC_*` rule-ID catalogue that needs carmen/docs confirmation; user-flow and test-scenarios are structural placeholders.

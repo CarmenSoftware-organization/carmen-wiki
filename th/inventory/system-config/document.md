@@ -116,6 +116,6 @@ Tenant schema ไม่มีตาราง `tb_document` File ถูก track 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_attachment` (lines ~4427-4449); คอลัมน์ `attachments` JSONB ต่อเอกสารกระจายอยู่
 - **Backend controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/document-management/document-management.controller.ts`
 - **Backend service:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/document-management/document-management.service.ts` — forward ไปยัง `FILE_SERVICE` ผ่าน microservice command `files.*`
-- **Frontend route:** `../carmen-inventory-frontend/app/(root)/system-admin/document/page.tsx` และ `_components/document-component.tsx`
-- **Frontend hook:** `../carmen-inventory-frontend/hooks/use-document.ts` — `useDocument`, `useUploadDocument`, `useDeleteDocument`
-- **Frontend type:** `../carmen-inventory-frontend/types/document.ts` — `DocumentFile`
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/document/page.tsx` และ `_components/document-component.tsx`
+- **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-document.ts` — `useDocument`, `useUploadDocument`, `useDeleteDocument`
+- **Frontend type:** `../carmen-inventory-frontend-react/types/document.ts` — `DocumentFile`

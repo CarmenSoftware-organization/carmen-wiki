@@ -129,5 +129,5 @@ Source: tenant schema (`tb_credit_note`, `tb_credit_note_detail`, `tb_credit_not
 ## 8. แหล่งอ้างอิง
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_credit_note` (บรรทัด 321-397), `tb_credit_note_detail` (บรรทัด 434-508), `tb_credit_note_comment` (บรรทัด 399-432), `tb_credit_note_detail_comment` (บรรทัด 510-543), enums `enum_credit_note_type` และ `enum_credit_note_doc_status` (บรรทัด 195-206)
-- **Frontend route:** `../carmen-inventory-frontend/app/(root)/procurement/credit-note/`
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/procurement/credit-note/`
 - **Carmen docs:** `../carmen/docs/cn/` — CN-PRD, CN-Business-Requirements, CN-API-Specification, CN-Page-Flow, CN-User-Flow-Diagram

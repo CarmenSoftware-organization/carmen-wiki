@@ -78,6 +78,6 @@ Until coverage exists, treat every scenario in Sections 4 and per-persona files 
 ## 6. References
 
 - **Primary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — UI behaviour source for scenario assertions.
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — UI behaviour source for scenario assertions.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists.
 - Related: [physical-count/03-user-flow](/en/inventory/physical-count/03-user-flow) (the handoff matrix this page exercises), [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) (`PHC_VAL_*` / `PHC_AUTH_*` / `PHC_POST_*`), [inventory-adjustment/04-test-scenarios](/en/inventory/inventory-adjustment/04-test-scenarios) (rollup-side scenarios, scenarios 5–6 there overlap with rows 1–9 here).

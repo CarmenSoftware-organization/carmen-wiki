@@ -90,7 +90,7 @@ List per-module cross-links are specified in each task.>
 ## 6. Reference Sources
 
 - Concepts: `../carmen/docs/<source-folder>/`
-- Frontend: `../carmen-inventory-frontend/`
+- Frontend: `../carmen-inventory-frontend-react/`
 - Backend: `../carmen-turborepo-backend-v2/`
 - API contracts: `../carmen-turborepo-backend-bruno/`
 - E2E tests: `../carmen-inventory-frontend-e2e/`
@@ -492,7 +492,7 @@ to singular per spec."
 **Files:**
 - Create: `stock-take/index.md`
 - Source: none in carmen/docs. Inspect frontend and E2E for screen/feature naming only:
-  - `../carmen-inventory-frontend/app/` — look for stock-take routes
+  - `../carmen-inventory-frontend-react/routes/` — look for stock-take routes
   - `../carmen-inventory-frontend-e2e/tests/` — look for stock-take scenarios
 
 **Substitutions:**
@@ -510,7 +510,7 @@ to singular per spec."
 - [ ] **Step 1: Quick inspection of implementation (for naming only)**
 
 ```bash
-ls ../carmen-inventory-frontend/app 2>/dev/null | grep -i 'stock\|take' || echo "no frontend stock-take route"
+ls ../carmen-inventory-frontend-react/routes 2>/dev/null | grep -i 'stock\|take' || echo "no frontend stock-take route"
 ls ../carmen-inventory-frontend-e2e/tests 2>/dev/null | grep -i 'stock\|take' || echo "no e2e stock-take tests"
 ```
 
@@ -521,7 +521,7 @@ This step gathers naming hints. If nothing is found, that's fine — the page wi
 Use the Common Template. Fill frontmatter normally. For sections 1-3 (Overview, Business Context, Key Concepts), write what is known generically about stock takes (definition, periodicity, sheet → count → recount → variance → posting flow, frozen-stock vs. live-count), and add this callout near the end of section 1:
 
 ```markdown
-> **TODO:** Source content from `../carmen-inventory-frontend/` (UI flow) and `../carmen-inventory-frontend-e2e/` (test scenarios). No carmen/docs source folder exists for this module.
+> **TODO:** Source content from `../carmen-inventory-frontend-react/` (UI flow) and `../carmen-inventory-frontend-e2e/` (test scenarios). No carmen/docs source folder exists for this module.
 ```
 
 Section 4: Inventory Controller (leads), Counter (counts), Approver, Auditor. Section 5: cross-links above. Section 7: "No sub-pages yet."
@@ -573,7 +573,7 @@ spec section 2."
 - [ ] **Step 1: Quick inspection of implementation**
 
 ```bash
-ls ../carmen-inventory-frontend/app 2>/dev/null | grep -i 'spot\|check' || echo "no frontend spot-check route"
+ls ../carmen-inventory-frontend-react/routes 2>/dev/null | grep -i 'spot\|check' || echo "no frontend spot-check route"
 ls ../carmen-inventory-frontend-e2e/tests 2>/dev/null | grep -i 'spot\|check' || echo "no e2e spot-check tests"
 ```
 
@@ -582,7 +582,7 @@ ls ../carmen-inventory-frontend-e2e/tests 2>/dev/null | grep -i 'spot\|check' ||
 Use the Common Template. Sections 1-3 generic: definition (partial vs. full count), trigger (random, risk-based, post-incident), workflow (select items → count → variance → action). Add this callout near the end of section 1:
 
 ```markdown
-> **TODO:** Source content from `../carmen-inventory-frontend/` (UI flow) and `../carmen-inventory-frontend-e2e/` (test scenarios). No carmen/docs source folder exists for this module.
+> **TODO:** Source content from `../carmen-inventory-frontend-react/` (UI flow) and `../carmen-inventory-frontend-e2e/` (test scenarios). No carmen/docs source folder exists for this module.
 ```
 
 Section 4: Inventory Controller, Counter, Auditor. Section 5: cross-links above. Section 7: "No sub-pages yet."

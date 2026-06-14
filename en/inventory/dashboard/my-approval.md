@@ -89,8 +89,8 @@ Items are sorted by `doc_date` descending from the API. The widget shows up to `
 
 ## 8. Reference Sources
 
-- **Component:** `../carmen-inventory-frontend/app/(root)/dashboard/_components/dashboard-my-approval.tsx`
-- **Hooks:** `../carmen-inventory-frontend/hooks/use-approval.ts` — `useApprovalPending`, `useApprovalPendingSummary`
-- **Types:** `../carmen-inventory-frontend/types/approval.ts` — `ApprovalItem`, `ApprovalPendingSummary`, `RawApprovalPR`, `RawApprovalPO`, `RawApprovalSR`
-- **API constants:** `../carmen-inventory-frontend/constant/api-endpoints.ts` → `APPROVAL_PENDING`, `APPROVAL_PENDING_SUMMARY`
-- **Colour mapping:** `../carmen-inventory-frontend/constant/module-color-map.ts` → `getModuleColor`
+- **Component:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-my-approval.tsx`
+- **Hooks:** `../carmen-inventory-frontend-react/hooks/use-approval.ts` — `useApprovalPending`, `useApprovalPendingSummary`
+- **Types:** `../carmen-inventory-frontend-react/types/approval.ts` — `ApprovalItem`, `ApprovalPendingSummary`, `RawApprovalPR`, `RawApprovalPO`, `RawApprovalSR`
+- **API constants:** `../carmen-inventory-frontend-react/constant/api-endpoints.ts` → `APPROVAL_PENDING`, `APPROVAL_PENDING_SUMMARY`
+- **Colour mapping:** `../carmen-inventory-frontend-react/constant/module-color-map.ts` → `getModuleColor`

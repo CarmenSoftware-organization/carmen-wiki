@@ -84,8 +84,8 @@ Note: these same endpoint paths are used in the sidebar badge counts — the sam
 
 ## 8. Reference Sources
 
-- **Component:** `../carmen-inventory-frontend/app/(root)/dashboard/_components/dashboard-my-pending.tsx`
-- **Hooks:** `../carmen-inventory-frontend/hooks/use-dashboard.ts` — `useMyPendingPrCount`, `useMyPendingPoCount`, `useMyPendingSrCount`
-- **API constants:** `../carmen-inventory-frontend/constant/api-endpoints.ts` → `MY_PENDING_PURCHASE_REQUESTS_COUNT`, `MY_PENDING_PURCHASE_ORDERS_COUNT`, `MY_PENDING_STORE_REQUISITIONS_COUNT`
-- **Colour mapping:** `../carmen-inventory-frontend/constant/module-color-map.ts` → `getModuleColor`
-- **Cache config:** `../carmen-inventory-frontend/lib/cache-config.ts` → `CACHE_DYNAMIC`
+- **Component:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-my-pending.tsx`
+- **Hooks:** `../carmen-inventory-frontend-react/hooks/use-dashboard.ts` — `useMyPendingPrCount`, `useMyPendingPoCount`, `useMyPendingSrCount`
+- **API constants:** `../carmen-inventory-frontend-react/constant/api-endpoints.ts` → `MY_PENDING_PURCHASE_REQUESTS_COUNT`, `MY_PENDING_PURCHASE_ORDERS_COUNT`, `MY_PENDING_STORE_REQUISITIONS_COUNT`
+- **Colour mapping:** `../carmen-inventory-frontend-react/constant/module-color-map.ts` → `getModuleColor`
+- **Cache config:** `../carmen-inventory-frontend-react/lib/cache-config.ts` → `CACHE_DYNAMIC`

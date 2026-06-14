@@ -94,5 +94,5 @@ Source: tenant schema.
 ## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_recipe_category` (lines ~5314-5350).
-- **Frontend route:** `../carmen-inventory-frontend/app/(root)/operation-plan/category/`.
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/operation-plan/category/`.
 - **Concept docs:** `../carmen/docs/recipe/setup-pages-spec.md`.

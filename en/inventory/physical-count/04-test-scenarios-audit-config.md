@@ -73,6 +73,6 @@ The **Audit / Config** persona group collapses three roles whose touch on the ph
 ## 7. References
 
 - **Primary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — approval queue + admin configuration UI source.
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — approval queue + admin configuration UI source.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists.
 - Related: [physical-count/03-user-flow-audit-config](/en/inventory/physical-count/03-user-flow-audit-config), [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) (`PHC_AUTH_003`, `PHC_POST_002`), [inventory-adjustment/04-test-scenarios-finance](/en/inventory/inventory-adjustment/04-test-scenarios-finance) (rollup approver scenarios), [inventory-adjustment/04-test-scenarios-audit-config](/en/inventory/inventory-adjustment/04-test-scenarios-audit-config) (parallel audit / config scenarios on the adjustment side), [physical-count/04-test-scenarios](/en/inventory/physical-count/04-test-scenarios) (cross-persona handoff scenarios).

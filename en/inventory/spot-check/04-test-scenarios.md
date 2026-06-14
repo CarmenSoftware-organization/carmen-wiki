@@ -78,6 +78,6 @@ Until coverage exists, treat every scenario in Sections 4 and per-persona files 
 ## 6. References
 
 - **Primary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — UI behaviour source for scenario assertions.
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — UI behaviour source for scenario assertions.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists.
 - Related: [spot-check/03-user-flow](/en/inventory/spot-check/03-user-flow) (the handoff matrix this page exercises), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_VAL_*` / `SPC_AUTH_*` / `SPC_POST_*`), [physical-count/04-test-scenarios](/en/inventory/physical-count/04-test-scenarios) (full-count counterpart scenarios with three-tier period structure), [inventory-adjustment/04-test-scenarios](/en/inventory/inventory-adjustment/04-test-scenarios) (rollup-side scenarios).

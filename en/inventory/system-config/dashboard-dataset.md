@@ -121,6 +121,6 @@ The dataset catalog is code-registered in the **micro-data** service (Go): handl
 - **Gateway proxy:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-datasets/dashboard-datasets.service.ts` — HTTP proxy to micro-data; controller `dashboard-datasets.controller.ts` exposes `GET /api/:bu_code/datasets` and `GET /api/:bu_code/datasets/:dataset_id`.
 - **Swagger response DTOs:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-datasets/swagger/response.ts` — `DatasetMetaDto`, `DatasetListResponseDto`, `DatasetResponseDto`.
 - **Platform enum:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `enum_dataset_shape` (line ~815).
-- **Frontend route:** `../carmen-inventory-frontend/app/(root)/system-admin/dashboard-dataset/page.tsx` and `_components/dashboard-dataset-component.tsx`.
-- **Frontend hook:** `../carmen-inventory-frontend/hooks/use-dashboard-dataset.ts` — `useDashboardDatasets()`, `useDashboardDatasetDetail(id)`.
-- **Frontend type:** `../carmen-inventory-frontend/types/dashboard-dataset.ts` — `DashboardDataset`, `DashboardDatasetShape`, `DashboardDatasetCategory`.
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/dashboard-dataset/page.tsx` and `_components/dashboard-dataset-component.tsx`.
+- **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-dashboard-dataset.ts` — `useDashboardDatasets()`, `useDashboardDatasetDetail(id)`.
+- **Frontend type:** `../carmen-inventory-frontend-react/types/dashboard-dataset.ts` — `DashboardDataset`, `DashboardDatasetShape`, `DashboardDatasetCategory`.

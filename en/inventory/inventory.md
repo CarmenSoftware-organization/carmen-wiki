@@ -72,7 +72,7 @@ This module sits between **Procurement** (receipts in) and **Operations** (requi
 
 - Concepts: `../carmen/docs/inventory-management/`
 - Concepts: `../carmen/docs/Inventory/`
-- Frontend: `../carmen-inventory-frontend/`
+- Frontend: `../carmen-inventory-frontend-react/`
 - Backend: `../carmen-turborepo-backend-v2/`
 - API contracts: `../carmen-turborepo-backend-bruno/`
 - E2E tests: `../carmen-inventory-frontend-e2e/`

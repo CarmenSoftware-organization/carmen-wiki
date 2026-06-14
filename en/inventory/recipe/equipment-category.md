@@ -86,5 +86,5 @@ Source: tenant schema.
 ## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_recipe_equipment_category` (lines ~5226-5247).
-- **Frontend routes:** `../carmen-inventory-frontend/app/(root)/operation-plan/equipment-category/` (canonical); `../carmen-inventory-frontend/app/(root)/operation-plan/recipe-equipment-category/` (legacy — verify wiring).
+- **Frontend routes:** `../carmen-inventory-frontend-react/routes/operation-plan/equipment-category/` (canonical); `../carmen-inventory-frontend-react/routes/operation-plan/recipe-equipment-category/` (legacy — verify wiring).
 - **Concept docs:** `../carmen/docs/recipe/setup-pages-spec.md`.

@@ -122,5 +122,5 @@ See [master-data/adjustment-type](/en/inventory/master-data/adjustment-type) for
 ## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_stock_out` (~2759-2812), `tb_stock_out_detail` (~2848-2886), `tb_adjustment_type` (~2569-2594), `enum_adjustment_type` (~2564-2567), `enum_doc_status` (~187-193).
-- **Frontend:** `../carmen-inventory-frontend/app/(root)/store-operation/wastage-reporting/` — `wr-form.tsx`, `wr-form-schema.ts`, `wr-item-fields.tsx`.
+- **Frontend:** `../carmen-inventory-frontend-react/routes/store-operation/wastage-reporting/` — `wr-form.tsx`, `wr-form-schema.ts`, `wr-item-fields.tsx`.
 - **carmen/docs:** `../carmen/docs/inventory-management/period-end-process.md` (wastage as a pre-close prerequisite).

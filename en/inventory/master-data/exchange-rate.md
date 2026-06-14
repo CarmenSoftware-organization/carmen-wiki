@@ -94,5 +94,5 @@ Source: tenant schema.
 ## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_exchange_rate` (lines ~744-768).
-- **Frontend:** `../carmen-inventory-frontend/app/(root)/config/exchange-rate/`.
+- **Frontend:** `../carmen-inventory-frontend-react/routes/config/exchange-rate/`.
 - **Cron job:** `../micro-cronjobs/` — daily FX feed.

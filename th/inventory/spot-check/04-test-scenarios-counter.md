@@ -75,6 +75,6 @@ dateCreated: 2026-05-15T14:30:00.000Z
 ## 7. แหล่งอ้างอิง
 
 - **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — source ของพฤติกรรม UI Counter; ตรวจ `../cmobile/` สำหรับการ implement spot-check sheet ฝั่ง PWA ถ้ามี
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — source ของพฤติกรรม UI Counter; ตรวจ `../cmobile/` สำหรับการ implement spot-check sheet ฝั่ง PWA ถ้ามี
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check
 - ที่เกี่ยวข้อง: [spot-check/03-user-flow-counter](/th/inventory/spot-check/03-user-flow-counter), [spot-check/02-business-rules](/th/inventory/spot-check/02-business-rules) (`SPC_AUTH_002`, `SPC_AUTH_004`, `SPC_VAL_004`–`SPC_VAL_005`), [spot-check/04-test-scenarios](/th/inventory/spot-check/04-test-scenarios) (scenario handoff ข้าม persona), [physical-count/04-test-scenarios-counter](/th/inventory/physical-count/04-test-scenarios-counter) (scenario คู่เทียบการนับเต็ม)

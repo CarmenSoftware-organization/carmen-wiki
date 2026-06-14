@@ -97,5 +97,5 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 ## 8. References
 
 - **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_report_job` (lines 5652-5683), `enum_report_job_status` (5644-5650), `enum_report_format` (~5628-5633), `enum_report_category` (~5635-5642).
-- **Frontend route:** `../carmen-inventory-frontend/app/(root)/report/history/`.
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/report/history/`.
 - **Reports microservice:** `../micro-report/controller/report_controller.go`, `../micro-report/db/report_job_repo.go`.

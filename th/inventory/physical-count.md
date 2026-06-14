@@ -25,7 +25,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 ความถี่ในการนับแตกต่างกันตามรูปแบบดำเนินงานและระดับความเสี่ยง สต๊อกมูลค่าสูงหรือหมุนเร็ว (สุรา เนื้อพรีเมียม ยาควบคุม) มักนับเดือนละครั้ง สินค้าแห้งจำนวนมากนับไตรมาสละครั้ง การนับแบบ wall-to-wall เต็มทุกซอกทุกมุมมักทำที่สิ้นงวดบัญชี (รายปีหรือครึ่งปี) เพื่อให้ผู้ตรวจสอบเซ็นรับรอง เมื่อการนับซ้ำเสร็จและผลต่างได้รับการยอมรับแล้ว การนับสต๊อกประจำงวดจะ post: book balance ถูกตั้งใหม่เป็นปริมาณที่นับได้ และบรรทัดผลต่างถูกเขียนออกเป็น inventory adjustment ผ่าน workflow การ post ปกติ ดังนั้นการแก้ไขจากการนับทุกรายการลงในเส้นทางการตรวจสอบเดียวกันกับการเคลื่อนสต๊อกอื่น ๆ
 
-> **TODO:** ดึงเนื้อหาจาก `../carmen-inventory-frontend/` (UI flow) และ `../carmen-inventory-frontend-e2e/` (test scenarios) ยังไม่มีโฟลเดอร์ source ใน carmen/docs สำหรับโมดูลนี้
+> **TODO:** ดึงเนื้อหาจาก `../carmen-inventory-frontend-react/` (UI flow) และ `../carmen-inventory-frontend-e2e/` (test scenarios) ยังไม่มีโฟลเดอร์ source ใน carmen/docs สำหรับโมดูลนี้
 
 ## 2. บริบททางธุรกิจ
 
@@ -69,7 +69,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 ## 6. แหล่งอ้างอิง
 
 - Concepts: (ไม่มีแหล่ง — ดู TODO ในหัวข้อ 1)
-- Frontend: `../carmen-inventory-frontend/`
+- Frontend: `../carmen-inventory-frontend-react/`
 - Backend: `../carmen-turborepo-backend-v2/`
 - API contracts: `../carmen-turborepo-backend-bruno/`
 - E2E tests: `../carmen-inventory-frontend-e2e/`
@@ -87,4 +87,4 @@ dateCreated: 2026-05-15T07:48:00.000Z
   - [physical-count/04-test-scenarios-counter](/th/inventory/physical-count/04-test-scenarios-counter) — Scenario ของ Counter
   - [physical-count/04-test-scenarios-audit-config](/th/inventory/physical-count/04-test-scenarios-audit-config) — Scenario ของ Approver / Finance + Auditor + Sysadmin
 
-> **Status:** หน้าย่อยทั้งหมดอยู่ระดับ skeleton (~50-100 บรรทัดต่อหน้า) แต่ละหน้ามี TODO callout ชี้ไปยังแหล่งต้นน้ำที่ต้องใช้ตอนเติมเนื้อหา (`../carmen-inventory-frontend/` สำหรับ UI flow; `../carmen-inventory-frontend-e2e/tests/` สำหรับ E2E specs — ยังไม่มี spec ของ physical-count) ส่วน data-model อ้างอิงจาก Prisma schema และเป็นหน้าที่พัฒนามากที่สุด business-rules นำเสนอ catalogue ของ rule ID `PHC_*` ที่ต้องยืนยันกับ carmen/docs user-flow และ test-scenarios เป็น placeholder เชิงโครงสร้าง
+> **Status:** หน้าย่อยทั้งหมดอยู่ระดับ skeleton (~50-100 บรรทัดต่อหน้า) แต่ละหน้ามี TODO callout ชี้ไปยังแหล่งต้นน้ำที่ต้องใช้ตอนเติมเนื้อหา (`../carmen-inventory-frontend-react/` สำหรับ UI flow; `../carmen-inventory-frontend-e2e/tests/` สำหรับ E2E specs — ยังไม่มี spec ของ physical-count) ส่วน data-model อ้างอิงจาก Prisma schema และเป็นหน้าที่พัฒนามากที่สุด business-rules นำเสนอ catalogue ของ rule ID `PHC_*` ที่ต้องยืนยันกับ carmen/docs user-flow และ test-scenarios เป็น placeholder เชิงโครงสร้าง

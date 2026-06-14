@@ -21,7 +21,7 @@ This page is the **overview entry point** for the user-flow set of the `spot-che
 
 Section 2 below describes the **document lifecycle state machine** for `tb_spot_check.doc_status` (`pending → in_progress → completed`, plus the `void` cancel path), independent of who acts. Each per-persona file (linked from Section 3) describes that persona's *path through* this state space — entry point, available actions, decision branches, handoff that ends their involvement. Section 4 then summarises the cross-persona handoffs that stitch the individual paths together (Inventory Controller → Counter for assignment; Counter → Inventory Controller for completed-sheet sign-off; Inventory Controller → Approver/Finance for variance-adjustment approval via [inventory-adjustment](/en/inventory/inventory-adjustment)).
 
-> **TODO:** Source the canonical UI screens / wizard flows from `../carmen-inventory-frontend/` once a `spot-check` route is discoverable; cross-reference E2E specs at `../carmen-inventory-frontend-e2e/tests/` once added (no `spot-check` spec exists as of this writing). No carmen/docs source folder exists for this module.
+> **TODO:** Source the canonical UI screens / wizard flows from `../carmen-inventory-frontend-react/` once a `spot-check` route is discoverable; cross-reference E2E specs at `../carmen-inventory-frontend-e2e/tests/` once added (no `spot-check` spec exists as of this writing). No carmen/docs source folder exists for this module.
 
 ## 2. Document Lifecycle
 
@@ -103,6 +103,6 @@ Each file describes one persona group's path through the lifecycle above. The th
 ## 5. References
 
 - **Primary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — UI flow source.
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — UI flow source.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists.
 - Related flow pages: [inventory-adjustment/03-user-flow](/en/inventory/inventory-adjustment/03-user-flow) (rollup-side flow), [physical-count/03-user-flow](/en/inventory/physical-count/03-user-flow) (full-count counterpart flow with three-tier structure).

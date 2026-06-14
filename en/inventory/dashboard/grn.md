@@ -90,7 +90,7 @@ Static mock today. Once wired: KPI cards and Receiving Now should refetch freque
 
 ## 8. Reference Sources
 
-- **Page shell:** `../carmen-inventory-frontend/app/(root)/dashboard/grn/page.tsx`
-- **Composition:** `../carmen-inventory-frontend/app/(root)/dashboard/_components/dashboard-grn.tsx`
-- **Mock data:** `../carmen-inventory-frontend/app/(root)/dashboard/mock/grn.ts`
+- **Page shell:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-grn.tsx`
+- **Composition:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-grn.tsx`
+- **Mock data:** `../carmen-inventory-frontend-react/routes/dashboard/mock/grn.ts`
 - **i18n:** `messages/en.json` → `dashboard.grn.title` = "Goods Receive Note Dashboard"

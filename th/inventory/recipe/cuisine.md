@@ -95,5 +95,5 @@ dateCreated: 2026-05-16T15:00:00.000Z
 ## 8. แหล่งอ้างอิง
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_recipe_cuisines` (lines ~5192-5224), enum `enum_cuisine_region` (lines ~5157-5164)
-- **Frontend route:** `../carmen-inventory-frontend/app/(root)/operation-plan/cuisine/`
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/operation-plan/cuisine/`
 - **Concept docs:** `../carmen/docs/recipe/setup-pages-spec.md`

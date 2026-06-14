@@ -143,6 +143,6 @@ Each level also has a `*_comment` table for discussion and attachments.
 ## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_product_category` (~1566-1602), `tb_product_sub_category` (~1711-1748), `tb_product_item_group` (~1638-1675), `tb_product_category_comment` (~1604-1636).
-- **Frontend:** `../carmen-inventory-frontend/app/(root)/product-management/category/`.
+- **Frontend:** `../carmen-inventory-frontend-react/routes/product-management/category/`.
 - **carmen/docs:** `../carmen/docs/product-management/PROD-API-Endpoints-Categories.md`; `../carmen/docs/product-management/PROD-Overview.md`.
 - **Module landing:** [product](/en/inventory/product) § 3 (Product Category key concept).
