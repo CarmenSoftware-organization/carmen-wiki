@@ -75,7 +75,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 ## 5. แหล่งข้อมูลอ้างอิง
 
 - `../carmen-inventory-frontend-react/routes/dashboard/page.tsx` — `/dashboard` redirect ไปยัง `/dashboard/main`
-- `../carmen-inventory-frontend-react/routes/dashboard/{main,pr,po,grn,inventory,sr}/page.tsx` — page shell แยกตามโดเมน
+- `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-{main,pr,po,grn,inventory,sr}.tsx` — page shell แยกตามโดเมน
 - `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-{main,pr,po,grn,inventory,sr}.tsx` — การวาง tile
 - `../carmen-inventory-frontend-react/routes/dashboard/mock/{main,pr,po,grn,inventory,sr}.ts` — mock data ปัจจุบัน
 - `../carmen-inventory-frontend-react/constant/module-list.ts` — การลงทะเบียน 6 หน้าย่อยใน sidebar

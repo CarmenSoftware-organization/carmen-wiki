@@ -90,7 +90,7 @@ mock แบบ static ในปัจจุบัน เมื่อ wire แล
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Page shell:** `../carmen-inventory-frontend-react/routes/dashboard/grn/page.tsx`
+- **Page shell:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-grn.tsx`
 - **Composition:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-grn.tsx`
 - **Mock data:** `../carmen-inventory-frontend-react/routes/dashboard/mock/grn.ts`
 - **i18n:** `messages/en.json` → `dashboard.grn.title` = "Goods Receive Note Dashboard"

@@ -75,7 +75,7 @@ See each sub-page for tile-to-endpoint mapping.
 ## 5. Reference Sources
 
 - `../carmen-inventory-frontend-react/routes/dashboard/page.tsx` — `/dashboard` redirect to `/dashboard/main`
-- `../carmen-inventory-frontend-react/routes/dashboard/{main,pr,po,grn,inventory,sr}/page.tsx` — per-domain page shells
+- `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-{main,pr,po,grn,inventory,sr}.tsx` — per-domain page shells
 - `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-{main,pr,po,grn,inventory,sr}.tsx` — tile compositions
 - `../carmen-inventory-frontend-react/routes/dashboard/mock/{main,pr,po,grn,inventory,sr}.ts` — current mock data
 - `../carmen-inventory-frontend-react/constant/module-list.ts` — sidebar registration of the six sub-pages

@@ -82,7 +82,7 @@ mock แบบ static ในปัจจุบัน เมื่อ wire ผ่
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Page shell:** `../carmen-inventory-frontend-react/routes/dashboard/pr/page.tsx`
+- **Page shell:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-pr.tsx`
 - **Composition:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-pr.tsx`
 - **Mock data:** `../carmen-inventory-frontend-react/routes/dashboard/mock/pr.ts`
 - **i18n:** `messages/en.json` → `dashboard.pr.title` = "Purchase Request Dashboard"

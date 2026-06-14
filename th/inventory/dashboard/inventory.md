@@ -94,7 +94,7 @@ mock แบบ static ในปัจจุบัน เมื่อ wire แล
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Page shell:** `../carmen-inventory-frontend-react/routes/dashboard/inventory/page.tsx`
+- **Page shell:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-inventory.tsx`
 - **Composition:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-inventory.tsx`
 - **Mock data:** `../carmen-inventory-frontend-react/routes/dashboard/mock/inventory.ts` (รวม `INVENTORY_LOCATIONS`)
 - **i18n:** `messages/en.json` → `dashboard.inventory.title` = "Inventory Dashboard"

@@ -94,7 +94,7 @@ Static mock today. Once wired: Status Pipeline and value rollups → `CACHE_NORM
 
 ## 8. Reference Sources
 
-- **Page shell:** `../carmen-inventory-frontend-react/routes/dashboard/inventory/page.tsx`
+- **Page shell:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-inventory.tsx`
 - **Composition:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-inventory.tsx`
 - **Mock data:** `../carmen-inventory-frontend-react/routes/dashboard/mock/inventory.ts` (includes `INVENTORY_LOCATIONS`)
 - **i18n:** `messages/en.json` → `dashboard.inventory.title` = "Inventory Dashboard"
