@@ -106,4 +106,4 @@ Drill-down จาก widget card ขึ้นอยู่กับ dataset defin
 - **Types:** `../carmen-inventory-frontend-react/types/dashboard-widget.ts` — `WidgetConfig`, `WidgetConfigListResponse`, `DatasetShape`, `WidgetType`
 - **API constants:** `../carmen-inventory-frontend-react/constant/api-endpoints.ts` → `MY_DASHBOARD_WIDGETS`, `MY_DASHBOARD_WIDGET_BY_ID`
 - **Backend design:** `../carmen-turborepo-backend-v2/docs/superpowers/archive/widget/2026-05-12-widget-backend-design.md`
-- **Widget rewrite spec:** `../carmen-inventory-frontend-react/docs/superpowers/specs/2026-05-22-widget-rewrite-design.md`
+- **Widget rewrite spec:** `../carmen-inventory-frontend-react/docs/superpowers/specs/2026-05-22-widget-rewrite-design.md` _(historical; this spec lived in the legacy Next.js frontend repo and was not carried over to -react)_
