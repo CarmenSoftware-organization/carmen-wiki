@@ -48,15 +48,19 @@ find en th docs .specs -type f -name '*.md' ! -path '*2026-06-15-update-wiki-fro
   s{carmen-inventory-frontend/app/}{carmen-inventory-frontend-react/routes/}g;
   s{carmen-inventory-frontend(?!-)}{carmen-inventory-frontend-react}g;
 '
+# Second pass: bare top-level `app` dir with no trailing slash (e.g. `ls ../carmen-inventory-frontend/app`
+# or prose "from `…/app`") — the new repo has no top-level app/, so map it to routes too.
+find en th docs .specs -type f -name '*.md' ! -path '*2026-06-15-update-wiki-frontend-reference*' -print0 \
+  | xargs -0 perl -pi -e 's{carmen-inventory-frontend-react/app\b}{carmen-inventory-frontend-react/routes}g;'
 ```
 
 - [ ] **Step 3: Verify the mechanical pass**
 
 ```bash
 cd /Users/samutpra/GitHub/carmensoftware-organize/carmen-wiki
-# No app/ or route-group prefixes survived:
-grep -rn "carmen-inventory-frontend-react/app" en th docs .specs        # expect: no output
-grep -rn "carmen-inventory-frontend-react/routes/(protected)" en th docs .specs  # expect: no output
+# No app/ or route-group prefixes survived (exclude this plan/spec, which quote the token literally):
+grep -rn --exclude='2026-06-15-update-wiki-frontend-reference*' "carmen-inventory-frontend-react/app" en th docs .specs        # expect: no output
+grep -rn --exclude='2026-06-15-update-wiki-frontend-reference*' "carmen-inventory-frontend-react/routes/(protected)" en th docs .specs  # expect: no output
 # e2e refs untouched:
 echo -n "e2e en: "; grep -rho "carmen-inventory-frontend-e2e" en | wc -l   # expect: 256
 echo -n "e2e th: "; grep -rho "carmen-inventory-frontend-e2e" th | wc -l   # expect: 251
@@ -137,7 +141,7 @@ Replace:
 ```
 with:
 ```
-- **Widget rewrite spec:** `../carmen-inventory-frontend-react/docs/superpowers/specs/2026-05-22-widget-rewrite-design.md` _(historical; this spec lived in the carmen-inventory-frontend Next.js repo)_
+- **Widget rewrite spec:** `../carmen-inventory-frontend-react/docs/superpowers/specs/2026-05-22-widget-rewrite-design.md` _(historical; this spec lived in the legacy Next.js frontend repo and was not carried over to -react)_
 ```
 
 - [ ] **Step 2: Edit `th/inventory/dashboard/widget-workspace.md`**
@@ -148,14 +152,14 @@ Replace:
 ```
 with:
 ```
-- **Widget rewrite spec:** `../carmen-inventory-frontend-react/docs/superpowers/specs/2026-05-22-widget-rewrite-design.md` _(historical; this spec lived in the carmen-inventory-frontend Next.js repo)_
+- **Widget rewrite spec:** `../carmen-inventory-frontend-react/docs/superpowers/specs/2026-05-22-widget-rewrite-design.md` _(historical; this spec lived in the legacy Next.js frontend repo and was not carried over to -react)_
 ```
 
 - [ ] **Step 3: Verify**
 
 ```bash
 cd /Users/samutpra/GitHub/carmensoftware-organize/carmen-wiki
-grep -rc "_(historical; this spec lived in the carmen-inventory-frontend Next.js repo)_" \
+grep -rc "_(historical; this spec lived in the legacy Next.js frontend repo and was not carried over to -react)_" \
   en/inventory/dashboard/widget-workspace.md th/inventory/dashboard/widget-workspace.md
 ```
 Expected: each file prints `1`.
