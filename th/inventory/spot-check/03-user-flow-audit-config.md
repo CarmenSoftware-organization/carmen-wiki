@@ -82,7 +82,7 @@ graph LR
 - **Auditor — ความหนาแน่นของตัวอย่าง** spot check เองคือตัวอย่าง; auditor re-sample อิสระเท่าไรขึ้นกับ risk appetite และ findings ของ period ก่อน
 - **Sysadmin — ความเข้มงวด vs operational friction** Tolerance ที่แน่นกว่า (% ต่ำ) จับ variance มากกว่าแต่สร้าง overhead recount มากกว่า; tolerance หลวมกว่าทำให้ spot check เร็วแต่อาจ mask shrinkage Default `size` และ `method` เปลี่ยนการเน้นความครอบคลุม (random สำหรับการหมุน, high_value สำหรับการเน้น risk)
 
-> **TODO:** ดึง UI ที่แน่นอนสำหรับ admin tolerance / default-size / default-method จาก `../carmen-inventory-frontend/`; ยืนยันว่า tolerance เป็น per-tenant, per-location หรือ per-category
+> **TODO:** ดึง UI ที่แน่นอนสำหรับ admin tolerance / default-size / default-method จาก `../carmen-inventory-frontend-react/`; ยืนยันว่า tolerance เป็น per-tenant, per-location หรือ per-category
 
 ## 5. Exit / Handoff
 
@@ -95,6 +95,6 @@ graph LR
 ## 6. แหล่งอ้างอิง
 
 - **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — audit query และหน้าจอ config admin
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — audit query และหน้าจอ config admin
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check
 - ที่เกี่ยวข้อง: [spot-check/03-user-flow](/th/inventory/spot-check/03-user-flow) (overview), [spot-check/02-business-rules](/th/inventory/spot-check/02-business-rules) (`SPC_AUTH_003`, `SPC_VAL_006`, `SPC_POST_002`), [physical-count/03-user-flow-audit-config](/th/inventory/physical-count/03-user-flow-audit-config) (flow audit/config คู่เทียบการนับเต็มที่มี Approver/Finance อยู่ใน scope), [inventory-adjustment/03-user-flow-finance](/th/inventory/inventory-adjustment/03-user-flow-finance) (flow approver ฝั่ง rollup ที่ variance adjustment ถูกอนุมัติจริง), [inventory-adjustment/03-user-flow-audit-config](/th/inventory/inventory-adjustment/03-user-flow-audit-config) (flow audit / config คู่ขนานฝั่ง adjustment)

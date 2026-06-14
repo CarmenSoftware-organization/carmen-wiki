@@ -101,6 +101,6 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 ## 8. References
 
 - **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_report_schedule` (lines 5685-5709), `enum_report_format` (~5628-5633).
-- **Frontend route:** `../carmen-inventory-frontend/app/(root)/report/schedules/`.
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/report/schedules/`.
 - **Cron microservice:** `../micro-cronjobs/internal/scheduler/scheduler.go` (poll + dispatch), `../micro-cronjobs/internal/scheduler/redis_locker.go` (idempotency), `../micro-cronjobs/internal/repository/cronjob_repo.go` (reads).
 - **Reports microservice:** `../micro-report/` — consumes the enqueued job.

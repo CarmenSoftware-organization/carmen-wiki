@@ -126,5 +126,5 @@ Per-lot FIFO layer with `lot_no`, `lot_index`, `in_qty` / `out_qty`, `cost_per_u
 ## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_inventory_transaction` (~1048-1073), `tb_inventory_transaction_detail` (~1075-1101), `tb_inventory_transaction_cost_layer` (~1123-1164), `enum_inventory_doc_type` (~208-216), `enum_transaction_type` (~1103-1121).
-- **Frontend:** `../carmen-inventory-frontend/app/(root)/inventory-management/transaction/`.
+- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/transaction/`.
 - **Module landing:** [inventory](/en/inventory/inventory) § 3 (Stock Movement key concept).

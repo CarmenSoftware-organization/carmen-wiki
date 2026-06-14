@@ -75,6 +75,6 @@ dateCreated: 2026-05-15T14:30:00.000Z
 ## 7. References
 
 - **Primary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — Counter UI behaviour source; check `../cmobile/` for the PWA-side spot-check sheet implementation if applicable.
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — Counter UI behaviour source; check `../cmobile/` for the PWA-side spot-check sheet implementation if applicable.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists.
 - Related: [spot-check/03-user-flow-counter](/en/inventory/spot-check/03-user-flow-counter), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_AUTH_002`, `SPC_AUTH_004`, `SPC_VAL_004`–`SPC_VAL_005`), [spot-check/04-test-scenarios](/en/inventory/spot-check/04-test-scenarios) (cross-persona handoff scenarios), [physical-count/04-test-scenarios-counter](/en/inventory/physical-count/04-test-scenarios-counter) (full-count counterpart scenarios).

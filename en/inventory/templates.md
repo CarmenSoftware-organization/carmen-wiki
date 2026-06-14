@@ -45,7 +45,7 @@ The behaviours below apply to every template variant in the system:
 
 ## 5. Reference Sources
 
-- `../carmen-inventory-frontend/app/(root)/(protected)/procurement/purchase-request-template/` — PR template frontend page.
-- `../carmen-inventory-frontend/app/(root)/(protected)/vendor-management/price-list-template/` — Pricelist template frontend page.
+- `../carmen-inventory-frontend-react/routes/procurement/purchase-request-template/` — PR template frontend page.
+- `../carmen-inventory-frontend-react/routes/vendor-management/price-list-template/` — Pricelist template frontend page.
 - `../carmen/docs/purchase-request-management/PR-User-Experience.md` — template-based PR creation flow.
 - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_purchase_request_template`, `tb_pricelist_template`.

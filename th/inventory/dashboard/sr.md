@@ -89,8 +89,8 @@ mock แบบ static ในปัจจุบัน "Awaiting Approval" tab แ
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Page shell:** `../carmen-inventory-frontend/app/(root)/dashboard/sr/page.tsx`
-- **Composition:** `../carmen-inventory-frontend/app/(root)/dashboard/_components/dashboard-sr.tsx`
-- **Mock data:** `../carmen-inventory-frontend/app/(root)/dashboard/mock/sr.ts` (รวม type `AwaitingTab`)
+- **Page shell:** `../carmen-inventory-frontend-react/routes/dashboard/sr/page.tsx`
+- **Composition:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-sr.tsx`
+- **Mock data:** `../carmen-inventory-frontend-react/routes/dashboard/mock/sr.ts` (รวม type `AwaitingTab`)
 - **i18n:** `messages/en.json` → `dashboard.sr.title` = "Store Requisition Dashboard"
-- **Live hook (ยังไม่ mount):** `../carmen-inventory-frontend/hooks/use-approval.ts` → `useApprovalPending`
+- **Live hook (ยังไม่ mount):** `../carmen-inventory-frontend-react/hooks/use-approval.ts` → `useApprovalPending`

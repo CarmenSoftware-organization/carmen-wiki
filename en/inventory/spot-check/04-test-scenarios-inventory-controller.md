@@ -78,6 +78,6 @@ dateCreated: 2026-05-15T14:30:00.000Z
 ## 7. References
 
 - **Primary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — Inventory Controller UI behaviour source.
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — Inventory Controller UI behaviour source.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists.
 - Related: [spot-check/03-user-flow-inventory-controller](/en/inventory/spot-check/03-user-flow-inventory-controller), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_AUTH_001`, `SPC_VAL_*`, `SPC_POST_*`), [spot-check/04-test-scenarios](/en/inventory/spot-check/04-test-scenarios) (cross-persona handoff scenarios), [physical-count/04-test-scenarios-count-lead](/en/inventory/physical-count/04-test-scenarios-count-lead) (full-count counterpart scenarios).

@@ -105,5 +105,5 @@ Approve / reject / send-back ต่างก็เรียก backend endpoint 
 ## 8. แหล่งอ้างอิง
 
 - **Prisma (ไม่มีตารางของตัวเอง):** คอลัมน์สถานะ workflow บน `tb_purchase_request`, `tb_purchase_order`, `tb_credit_note` ฯลฯ — `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (block `workflow_*` และ `user_action` ทำซ้ำบนทุก model ที่อนุมัติได้ ตัวอย่าง CN ที่บรรทัด 358-376)
-- **Frontend route:** `../carmen-inventory-frontend/app/(root)/procurement/approval/`
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/procurement/approval/`
 - **Carmen docs:** `../carmen/docs/business-analysis/my-approvals-ba.md`; ประสบการณ์ผู้อนุมัติใน `../carmen/docs/purchase-request-management/PR-User-Experience.md`

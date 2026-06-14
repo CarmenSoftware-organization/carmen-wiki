@@ -75,6 +75,6 @@ dateCreated: 2026-05-15T14:00:00.000Z
 ## 7. References
 
 - **Primary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — Count Lead UI behaviour source.
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — Count Lead UI behaviour source.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists.
 - Related: [physical-count/03-user-flow-count-lead](/en/inventory/physical-count/03-user-flow-count-lead), [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) (`PHC_AUTH_001`, `PHC_VAL_*`, `PHC_POST_*`), [physical-count/04-test-scenarios](/en/inventory/physical-count/04-test-scenarios) (cross-persona handoff scenarios).

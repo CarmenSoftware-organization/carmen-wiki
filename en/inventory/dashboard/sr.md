@@ -89,8 +89,8 @@ Static mock today. "Awaiting Approval" tabs and "Sent Back" / "Reject List" shou
 
 ## 8. Reference Sources
 
-- **Page shell:** `../carmen-inventory-frontend/app/(root)/dashboard/sr/page.tsx`
-- **Composition:** `../carmen-inventory-frontend/app/(root)/dashboard/_components/dashboard-sr.tsx`
-- **Mock data:** `../carmen-inventory-frontend/app/(root)/dashboard/mock/sr.ts` (includes `AwaitingTab` type)
+- **Page shell:** `../carmen-inventory-frontend-react/routes/dashboard/sr/page.tsx`
+- **Composition:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-sr.tsx`
+- **Mock data:** `../carmen-inventory-frontend-react/routes/dashboard/mock/sr.ts` (includes `AwaitingTab` type)
 - **i18n:** `messages/en.json` → `dashboard.sr.title` = "Store Requisition Dashboard"
-- **Live hook (not mounted):** `../carmen-inventory-frontend/hooks/use-approval.ts` → `useApprovalPending`
+- **Live hook (not mounted):** `../carmen-inventory-frontend-react/hooks/use-approval.ts` → `useApprovalPending`

@@ -74,10 +74,10 @@ See each sub-page for tile-to-endpoint mapping.
 
 ## 5. Reference Sources
 
-- `../carmen-inventory-frontend/app/(root)/dashboard/page.tsx` — `/dashboard` redirect to `/dashboard/main`
-- `../carmen-inventory-frontend/app/(root)/dashboard/{main,pr,po,grn,inventory,sr}/page.tsx` — per-domain page shells
-- `../carmen-inventory-frontend/app/(root)/dashboard/_components/dashboard-{main,pr,po,grn,inventory,sr}.tsx` — tile compositions
-- `../carmen-inventory-frontend/app/(root)/dashboard/mock/{main,pr,po,grn,inventory,sr}.ts` — current mock data
-- `../carmen-inventory-frontend/constant/module-list.ts` — sidebar registration of the six sub-pages
-- `../carmen-inventory-frontend/constant/module-color-map.ts` — colour-stripe assignment per route
-- `../carmen-inventory-frontend/hooks/use-dashboard.ts`, `hooks/use-approval.ts` — live count + approval hooks (not yet wired)
+- `../carmen-inventory-frontend-react/routes/dashboard/page.tsx` — `/dashboard` redirect to `/dashboard/main`
+- `../carmen-inventory-frontend-react/routes/dashboard/{main,pr,po,grn,inventory,sr}/page.tsx` — per-domain page shells
+- `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-{main,pr,po,grn,inventory,sr}.tsx` — tile compositions
+- `../carmen-inventory-frontend-react/routes/dashboard/mock/{main,pr,po,grn,inventory,sr}.ts` — current mock data
+- `../carmen-inventory-frontend-react/constant/module-list.ts` — sidebar registration of the six sub-pages
+- `../carmen-inventory-frontend-react/constant/module-color-map.ts` — colour-stripe assignment per route
+- `../carmen-inventory-frontend-react/hooks/use-dashboard.ts`, `hooks/use-approval.ts` — live count + approval hooks (not yet wired)

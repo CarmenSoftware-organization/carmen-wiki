@@ -129,5 +129,5 @@ Template **does NOT** participate in the workflow engine. Three logical states d
 ## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_purchase_request_template` (lines 2402-2430), `tb_purchase_request_template_detail` (lines 2466-2562), `tb_purchase_request_template_comment` (lines 2432-2464).
-- **Frontend route:** `../carmen-inventory-frontend/app/(root)/procurement/purchase-request-template/`.
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/procurement/purchase-request-template/`.
 - **Carmen docs:** `../carmen/docs/purchase-request-management/purchase-request-template-ba.md`; `../carmen/docs/purchase-request-management/PR-User-Experience.md` (template-based creation flow).

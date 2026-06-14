@@ -72,7 +72,7 @@ Count Lead เป็นเจ้าของคนเดียวของกา
 - **การตอบสนองต่อ tolerance breach** เมื่อ `|diff_qty| / on_hand_qty` เกิน threshold, Count Lead สามารถ (a) trigger recount (counter คนละคน), (b) override / accept variance พร้อม countersignature, (c) hold บรรทัดเพื่อสืบสวน
 - **Submit vs hold** เมื่อทุกบรรทัดนับแล้ว Count Lead เลือก submit (ยิง rollup) หรือ hold เพื่อ operational reconciliation (เช่น การรับที่คาดหวังยังไม่ post)
 
-> **TODO:** ดึง UI ที่แน่นอนสำหรับการ flag recount, countersignature override, และปุ่ม rollup-trigger จาก `../carmen-inventory-frontend/`
+> **TODO:** ดึง UI ที่แน่นอนสำหรับการ flag recount, countersignature override, และปุ่ม rollup-trigger จาก `../carmen-inventory-frontend-react/`
 
 ## 5. Exit / Handoff
 
@@ -85,6 +85,6 @@ Count Lead เป็นเจ้าของคนเดียวของกา
 ## 6. แหล่งอ้างอิง
 
 - **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — หน้าจอ UI ของ Count Lead
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — หน้าจอ UI ของ Count Lead
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count
 - ที่เกี่ยวข้อง: [physical-count/03-user-flow](/th/inventory/physical-count/03-user-flow) (overview), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_AUTH_001`, `PHC_VAL_*`, `PHC_POST_*`), [inventory-adjustment/03-user-flow-inventory-controller](/th/inventory/inventory-adjustment/03-user-flow-inventory-controller) (flow ฝั่ง rollup, persona เดียวกันทำหน้าที่เป็นเจ้าของ adjustment)

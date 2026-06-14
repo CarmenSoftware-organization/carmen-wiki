@@ -87,7 +87,7 @@ graph LR
 - **Auditor — สังเกตเร็วหรือ inspect ช้า** การสังเกตขณะ `in_progress` จับปัญหาวินัยของกระบวนการ; การ inspect ช้าหลัง `completed` ของ count + chain ของ adjustment ยืนยันว่าเอกสารครบสมบูรณ์สำหรับ external audit
 - **Sysadmin — ความเข้มงวด vs operational friction** Tolerance ที่แน่นกว่า (% ต่ำ) จับ variance มากกว่าแต่สร้าง overhead recount มากกว่า; tolerance หลวมกว่าทำให้การนับเร็วแต่อาจ mask shrinkage การเลือก costing-method (`standard` vs `last` vs `average`) เปลี่ยนวิธีการคำนวณมูลค่า variance
 
-> **TODO:** ดึง UI ที่แน่นอนสำหรับ admin tolerance / costing-method จาก `../carmen-inventory-frontend/`; ยืนยันว่า tolerance เป็น per-tenant, per-location หรือ per-category
+> **TODO:** ดึง UI ที่แน่นอนสำหรับ admin tolerance / costing-method จาก `../carmen-inventory-frontend-react/`; ยืนยันว่า tolerance เป็น per-tenant, per-location หรือ per-category
 
 ## 5. Exit / Handoff
 
@@ -101,6 +101,6 @@ graph LR
 ## 6. แหล่งอ้างอิง
 
 - **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — คิวอนุมัติและหน้าจอ config admin
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — คิวอนุมัติและหน้าจอ config admin
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count
 - ที่เกี่ยวข้อง: [physical-count/03-user-flow](/th/inventory/physical-count/03-user-flow) (overview), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_AUTH_003`, `PHC_VAL_007`, `PHC_POST_002`), [inventory-adjustment/03-user-flow-finance](/th/inventory/inventory-adjustment/03-user-flow-finance) (flow approver ฝั่ง rollup), [inventory-adjustment/03-user-flow-audit-config](/th/inventory/inventory-adjustment/03-user-flow-audit-config) (flow audit / config คู่ขนานฝั่ง adjustment)

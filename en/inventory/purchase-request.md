@@ -84,7 +84,7 @@ Financial accuracy is enforced at the calculation layer rather than left to the 
 ## 6. Reference Sources
 
 - Concepts: `../carmen/docs/purchase-request-management/`
-- Frontend: `../carmen-inventory-frontend/`
+- Frontend: `../carmen-inventory-frontend-react/`
 - Backend: `../carmen-turborepo-backend-v2/`
 - API contracts: `../carmen-turborepo-backend-bruno/`
 - E2E tests: `../carmen-inventory-frontend-e2e/`

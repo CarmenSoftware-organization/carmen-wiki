@@ -45,7 +45,7 @@ dateCreated: 2026-05-16T16:00:00.000Z
 
 ## 5. แหล่งข้อมูลอ้างอิง
 
-- `../carmen-inventory-frontend/app/(root)/(protected)/procurement/purchase-request-template/` — หน้า frontend ของ PR template
-- `../carmen-inventory-frontend/app/(root)/(protected)/vendor-management/price-list-template/` — หน้า frontend ของ Pricelist template
+- `../carmen-inventory-frontend-react/routes/procurement/purchase-request-template/` — หน้า frontend ของ PR template
+- `../carmen-inventory-frontend-react/routes/vendor-management/price-list-template/` — หน้า frontend ของ Pricelist template
 - `../carmen/docs/purchase-request-management/PR-User-Experience.md` — flow การสร้าง PR จาก template
 - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_purchase_request_template`, `tb_pricelist_template`

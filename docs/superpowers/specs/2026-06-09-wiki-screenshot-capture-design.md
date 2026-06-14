@@ -6,7 +6,7 @@
 
 ## 1. Purpose
 
-Produce a complete, repeatable screenshot set of the `carmen-inventory-frontend`
+Produce a complete, repeatable screenshot set of the `carmen-inventory-frontend-react`
 app and store it in the wiki's shared screenshot tree
 (`assets/screenshots/inventory/<module>/<slug>.png`). The images serve two goals
 at once:
@@ -22,7 +22,7 @@ The capture must be **manifest-driven and rerunnable**, not a one-off manual pas
 
 | Decision | Choice |
 |----------|--------|
-| Apps in scope | Inventory frontend only (`carmen-inventory-frontend`, ~134 `page.tsx`) |
+| Apps in scope | Inventory frontend only (`carmen-inventory-frontend-react`, ~134 `page.tsx`) |
 | Platform admin | Out of scope |
 | Route depth | Static routes + detail (`[id]`) routes via a manifest-supplied `seedId` |
 | Locale | **EN only** — reused for both EN and TH wiki pages |
@@ -81,7 +81,7 @@ Scans the frontend's `app/**/page.tsx`, derives canonical URL paths (stripping
 route groups like `(root)`/`(external)`, mapping `[id]` → `:id`), and diffs
 against the manifest. Emits a Markdown report.
 
-- **Input:** `E2E_FRONTEND_DIR` (default `../carmen-inventory-frontend`), `manifest.ts`.
+- **Input:** `E2E_FRONTEND_DIR` (default `../carmen-inventory-frontend-react`), `manifest.ts`.
 - **Output:** `<WIKI_SPECS_DIR>/screenshot-coverage.md` (default
   `../carmen-wiki/.specs/screenshot-coverage.md`).
 - **Report rows:** route → status one of `covered`, `missing` (route exists, no
@@ -156,7 +156,7 @@ auth.setup.ts ──► .auth/<role>.json   │
 | Var | Default | Purpose |
 |-----|---------|---------|
 | `E2E_BASE_URL` | `http://localhost:3000` | Frontend URL (existing). |
-| `E2E_FRONTEND_DIR` | `../carmen-inventory-frontend` | For webServer + route discovery (existing). |
+| `E2E_FRONTEND_DIR` | `../carmen-inventory-frontend-react` | For webServer + route discovery (existing). |
 | `WIKI_ASSETS_DIR` | `../carmen-wiki/assets/screenshots/inventory` | Screenshot output root. |
 | `WIKI_SPECS_DIR` | `../carmen-wiki/.specs` | Coverage report output. |
 

@@ -191,7 +191,7 @@ dateCreated: <ISO 8601 timestamp>
 
 ## 5. References
 - `../carmen/docs/<source-folder>/` — specific files describing flow/UX.
-- Frontend screens: `../carmen-inventory-frontend/app/<route>/` (if relevant).
+- Frontend screens: `../carmen-inventory-frontend-react/routes/<route>/` (if relevant).
 ```
 
 ### 3.4 `04-test-scenarios.md`

@@ -85,7 +85,7 @@ Food-safety and quality control sit on top of all this. Perishable goods carry l
 
 ## 6. Reference Sources
 - Concepts: `../carmen/docs/good-recive-note-managment/`
-- Frontend: `../carmen-inventory-frontend/`
+- Frontend: `../carmen-inventory-frontend-react/`
 - Backend: `../carmen-turborepo-backend-v2/`
 - API contracts: `../carmen-turborepo-backend-bruno/`
 - E2E tests: `../carmen-inventory-frontend-e2e/`

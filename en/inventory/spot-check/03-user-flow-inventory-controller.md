@@ -75,7 +75,7 @@ The Inventory Controller is the single owner of the spot-check exercise — the 
 - **Tolerance breach response.** When `|diff_qty| / on_hand_qty` exceeds threshold, the controller can (a) trigger recount (different counter), (b) override / accept the variance with countersignature, (c) hold the line pending investigation.
 - **Submit vs hold vs void.** Once all lines counted, controller chooses to submit (firing the rollup), hold pending operational reconciliation (e.g. expected receipts not yet posted), or void if the spot check itself was mis-scoped.
 
-> **TODO:** Source the exact UI for sampling method selection, recount flagging, override countersignature, and rollup-trigger button from `../carmen-inventory-frontend/`.
+> **TODO:** Source the exact UI for sampling method selection, recount flagging, override countersignature, and rollup-trigger button from `../carmen-inventory-frontend-react/`.
 
 ## 5. Exit / Handoff
 
@@ -88,6 +88,6 @@ The Inventory Controller is the single owner of the spot-check exercise — the 
 ## 6. References
 
 - **Primary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — Inventory Controller UI screens.
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — Inventory Controller UI screens.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists.
 - Related: [spot-check/03-user-flow](/en/inventory/spot-check/03-user-flow) (overview), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_AUTH_001`, `SPC_VAL_*`, `SPC_POST_*`), [physical-count/03-user-flow-count-lead](/en/inventory/physical-count/03-user-flow-count-lead) (full-count counterpart owner path — same persona acting with a wider scope), [inventory-adjustment/03-user-flow-inventory-controller](/en/inventory/inventory-adjustment/03-user-flow-inventory-controller) (rollup-side flow, same persona acting as adjustment owner).

@@ -69,7 +69,7 @@ Counter เป็น persona ป้อนข้อมูลที่จำกั
 - **ศูนย์-บนชั้น vs ศูนย์-นับ** ถ้า sheet แสดง `on_hand_qty > 0` แต่ counter ไม่เห็นอะไรบนชั้น `actual_qty = 0` ถูกป้อนชัดเจน (ไม่ปล่อยว่าง) `actual_qty` ว่างบล็อก submit ตาม `PHC_VAL_004`; ป้อนศูนย์ดำเนินไปสู่ variance flag
 - **บรรทัด recount** เมื่อบรรทัดถูก flag ให้ recount, recount ต้องทำโดย counter **คนละคน** เพื่อกำจัด bias ในการนับของบุคคล — counter เดิมไม่ป้อนบรรทัดของตนใหม่
 
-> **TODO:** ดึงหน้าจอ UI mobile / scanner ที่แน่นอนและ toggle blind-count (book qty ซ่อน) จาก `../carmen-inventory-frontend/`
+> **TODO:** ดึงหน้าจอ UI mobile / scanner ที่แน่นอนและ toggle blind-count (book qty ซ่อน) จาก `../carmen-inventory-frontend-react/`
 
 ## 5. Exit / Handoff
 
@@ -82,6 +82,6 @@ Counter เป็น persona ป้อนข้อมูลที่จำกั
 ## 6. แหล่งอ้างอิง
 
 - **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — UI ของ Counter / mobile; ตรวจ cmobile (`../cmobile/`) สำหรับการ implement count sheet ฝั่ง PWA ถ้ามี
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — UI ของ Counter / mobile; ตรวจ cmobile (`../cmobile/`) สำหรับการ implement count sheet ฝั่ง PWA ถ้ามี
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count
 - ที่เกี่ยวข้อง: [physical-count/03-user-flow](/th/inventory/physical-count/03-user-flow) (overview), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_AUTH_002`, `PHC_VAL_004`–`PHC_VAL_005`), [physical-count/03-user-flow-count-lead](/th/inventory/physical-count/03-user-flow-count-lead) (คู่ handoff)

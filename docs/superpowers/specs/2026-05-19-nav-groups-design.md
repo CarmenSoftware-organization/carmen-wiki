@@ -6,7 +6,7 @@
 
 ## Goal
 
-Group the modules inside each book's Wiki.js sidebar into named categories instead of one flat list. Today the Inventory book renders 18 modules in a single sequence; readers must scroll past unrelated areas to find the page they want. Categories mirror the mental model already established by `carmen-inventory-frontend` (procurement / inventory ops / product / etc).
+Group the modules inside each book's Wiki.js sidebar into named categories instead of one flat list. Today the Inventory book renders 18 modules in a single sequence; readers must scroll past unrelated areas to find the page they want. Categories mirror the mental model already established by `carmen-inventory-frontend-react` (procurement / inventory ops / product / etc).
 
 ## Why
 
@@ -34,7 +34,7 @@ Group the modules inside each book's Wiki.js sidebar into named categories inste
 
 ## Inventory book grouping
 
-18 modules organized into 6 groups, derived from `carmen-inventory-frontend/constant/module-list.ts`:
+18 modules organized into 6 groups, derived from `carmen-inventory-frontend-react/constant/module-list.ts`:
 
 | # | Group (`label_en` / `label_th`) | Modules |
 |---|---|---|

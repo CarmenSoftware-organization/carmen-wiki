@@ -83,7 +83,7 @@ Operationally, the module compresses a process that is otherwise email-and-sprea
 ## 6. Reference Sources
 
 - Concepts: `../carmen/docs/vendor-pricelist-management/`
-- Frontend: `../carmen-inventory-frontend/`
+- Frontend: `../carmen-inventory-frontend-react/`
 - Backend: `../carmen-turborepo-backend-v2/`
 - API contracts: `../carmen-turborepo-backend-bruno/`
 - E2E tests: `../carmen-inventory-frontend-e2e/`

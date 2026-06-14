@@ -27,7 +27,7 @@ The Physical Count module is the **document layer** for end-to-end counts of eve
 
 The module sits **upstream of [inventory-adjustment](/en/inventory/inventory-adjustment)**: when a count document reaches `completed` and variance lines are accepted, the application layer rolls the variance into a `tb_stock_in` (overage) and/or `tb_stock_out` (shortage) document with reason codes `COUNT_OVERAGE` / `COUNT_SHORTAGE`, whose own posting writes the `tb_inventory_transaction` row that lands on the [inventory](/en/inventory/inventory) ledger. The physical-count tables themselves do **not** write directly to the inventory ledger — the adjustment document is the integration anchor. Lot data on the count detail is sparse — `tb_physical_count_detail` carries only `on_hand_qty` / `actual_qty` per product at a location (no `lot_no` column); lot-level recounts are handled by the adjustment-side cost-layer pick at post time per [inventory](/en/inventory/inventory) `INV_CALC_005` / `INV_CALC_006`.
 
-> **TODO:** Source UI / interaction details from `../carmen-inventory-frontend/` and end-to-end behaviour from `../carmen-inventory-frontend-e2e/` once specs exist. No carmen/docs source folder exists for this module — divergences (Section 5) cannot be authored until either docs are added or the field is confirmed source-of-truth-only.
+> **TODO:** Source UI / interaction details from `../carmen-inventory-frontend-react/` and end-to-end behaviour from `../carmen-inventory-frontend-e2e/` once specs exist. No carmen/docs source folder exists for this module — divergences (Section 5) cannot be authored until either docs are added or the field is confirmed source-of-truth-only.
 
 ## 2. Entities
 
@@ -91,12 +91,12 @@ Notes:
 
 ## 5. Divergences from carmen/docs
 
-> **TODO:** No carmen/docs source folder exists for the physical-count module — divergences cannot be authored from a carmen/docs baseline. Source comparison candidates: (a) `../carmen-inventory-frontend/` UI flow and form definitions, (b) `../carmen-inventory-frontend-e2e/` E2E test specs (none currently exist for physical-count — verified by `ls .../tests/ | grep -i 'physical\|count'`), (c) any future carmen/docs authoring of `PHC-*` interfaces. Until at least one of these is in place, treat the Prisma schema as sole source of truth.
+> **TODO:** No carmen/docs source folder exists for the physical-count module — divergences cannot be authored from a carmen/docs baseline. Source comparison candidates: (a) `../carmen-inventory-frontend-react/` UI flow and form definitions, (b) `../carmen-inventory-frontend-e2e/` E2E test specs (none currently exist for physical-count — verified by `ls .../tests/ | grep -i 'physical\|count'`), (c) any future carmen/docs authoring of `PHC-*` interfaces. Until at least one of these is in place, treat the Prisma schema as sole source of truth.
 
 ## 6. References
 
 - **Primary (source of truth):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — six entities (`tb_physical_count_period`, `tb_physical_count_period_comment`, `tb_physical_count`, `tb_physical_count_comment`, `tb_physical_count_detail`, `tb_physical_count_detail_comment`); four enums (`enum_physical_count_period_status`, `enum_physical_count_status`, `enum_physical_count_type`, `enum_physical_count_costing_method`).
 - **Secondary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — no `physical-count` route currently visible at `app/` top level; locate under nested module folders when documenting UI flow.
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — no `physical-count` route currently visible at `app/` top level; locate under nested module folders when documenting UI flow.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists; document scenarios once added.
 - Related modules: [inventory](/en/inventory/inventory) (ledger that count-variance adjustments write to), [inventory-adjustment](/en/inventory/inventory-adjustment) (variance rollup posts as `tb_stock_in` / `tb_stock_out`), [costing](/en/inventory/costing) (variance valuation via `enum_physical_count_costing_method`), [spot-check](/en/inventory/spot-check) (partial-count cousin using the same conceptual model).

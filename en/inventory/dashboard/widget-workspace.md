@@ -99,11 +99,11 @@ Drill-downs from widget cards depend on the dataset definition and are not fixed
 
 ## 8. Reference Sources
 
-- **Page shell:** `../carmen-inventory-frontend/app/(root)/dashboard/page.tsx`
-- **Composition:** `../carmen-inventory-frontend/app/(root)/dashboard/_components/dashboard-component.tsx`
-- **Sortable item:** `../carmen-inventory-frontend/app/(root)/dashboard/_components/sortable-widget-item.tsx`
-- **Hooks:** `../carmen-inventory-frontend/hooks/use-my-dashboard-widgets.ts` — `useMyDashboardWidgets`, `useCreateMyDashboardWidget`, `useUpdateMyDashboardWidget`, `useDeleteMyDashboardWidget`
-- **Types:** `../carmen-inventory-frontend/types/dashboard-widget.ts` — `WidgetConfig`, `WidgetConfigListResponse`, `DatasetShape`, `WidgetType`
-- **API constants:** `../carmen-inventory-frontend/constant/api-endpoints.ts` → `MY_DASHBOARD_WIDGETS`, `MY_DASHBOARD_WIDGET_BY_ID`
+- **Page shell:** `../carmen-inventory-frontend-react/routes/dashboard/page.tsx`
+- **Composition:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-component.tsx`
+- **Sortable item:** `../carmen-inventory-frontend-react/routes/dashboard/_components/sortable-widget-item.tsx`
+- **Hooks:** `../carmen-inventory-frontend-react/hooks/use-my-dashboard-widgets.ts` — `useMyDashboardWidgets`, `useCreateMyDashboardWidget`, `useUpdateMyDashboardWidget`, `useDeleteMyDashboardWidget`
+- **Types:** `../carmen-inventory-frontend-react/types/dashboard-widget.ts` — `WidgetConfig`, `WidgetConfigListResponse`, `DatasetShape`, `WidgetType`
+- **API constants:** `../carmen-inventory-frontend-react/constant/api-endpoints.ts` → `MY_DASHBOARD_WIDGETS`, `MY_DASHBOARD_WIDGET_BY_ID`
 - **Backend design:** `../carmen-turborepo-backend-v2/docs/superpowers/archive/widget/2026-05-12-widget-backend-design.md`
-- **Widget rewrite spec:** `../carmen-inventory-frontend/docs/superpowers/specs/2026-05-22-widget-rewrite-design.md`
+- **Widget rewrite spec:** `../carmen-inventory-frontend-react/docs/superpowers/specs/2026-05-22-widget-rewrite-design.md`

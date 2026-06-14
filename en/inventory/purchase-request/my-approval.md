@@ -105,5 +105,5 @@ Approve / reject / send-back invoke the same backend endpoints as each module's 
 ## 8. References
 
 - **Prisma (no own table):** workflow-state columns on `tb_purchase_request`, `tb_purchase_order`, `tb_credit_note`, etc. — `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (workflow_* and user_action block replicated on each approvable model; CN example at lines 358-376).
-- **Frontend route:** `../carmen-inventory-frontend/app/(root)/procurement/approval/`.
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/procurement/approval/`.
 - **Carmen docs:** `../carmen/docs/business-analysis/my-approvals-ba.md`; approver experience in `../carmen/docs/purchase-request-management/PR-User-Experience.md`.

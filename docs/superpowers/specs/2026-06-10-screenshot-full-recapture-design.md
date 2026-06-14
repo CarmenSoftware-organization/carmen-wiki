@@ -7,7 +7,7 @@
 
 | Decision | Choice |
 |----------|--------|
-| Route scope | **Re-discover routes** from `carmen-inventory-frontend/app` first, then capture (Inventory book only; Platform book out of scope) |
+| Route scope | **Re-discover routes** from `carmen-inventory-frontend-react/routes` first, then capture (Inventory book only; Platform book out of scope) |
 | Seed IDs | **Re-discover all seedIds** fresh against the tenant the frontend (`:3000`) is logged into — do not reuse possibly-stale `seed-ids.json` |
 | Locale | **EN only** — capture EN, images shared by both EN + TH pages (current convention) |
 | Publish | **Commit + push** — commit PNGs to `carmen-wiki`, commit manifest/seed changes to e2e repo, upload assets to Wiki.js, sync any changed pages |

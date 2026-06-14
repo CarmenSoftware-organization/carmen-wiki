@@ -99,4 +99,4 @@ Source: tenant schema.
 ## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_pricelist_template` (lines ~3869-3911), `enum_pricelist_template_status` (lines ~3863-3867).
-- **Frontend:** `../carmen-inventory-frontend/app/(root)/(protected)/vendor-management/price-list-template/`.
+- **Frontend:** `../carmen-inventory-frontend-react/routes/vendor-management/price-list-template/`.

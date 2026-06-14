@@ -50,7 +50,7 @@ Rule IDs follow `PHC_CALC_NNN`. All quantity fields are `Decimal(20, 5)` per `tb
 | `PHC_CALC_003` (variance value) | `variance_value = diff_qty × cost_per_unit`, where `cost_per_unit` is picked by the tenant's `enum_physical_count_costing_method`: `standard` (product master), `last` (last receipt cost), `average` (current weighted average), `last_receiving` (alias for last). |
 | `PHC_CALC_004` (progress) | `progress_% = product_counted / product_total × 100` at document level; the counters are auto-updated as each detail's `actual_qty` is saved. |
 
-> **TODO:** Confirm exact precedence of `enum_physical_count_costing_method` values against frontend logic once carmen-inventory-frontend code path is documented. Cross-link to [costing](/en/inventory/costing) for the WA / FIFO valuation behaviour.
+> **TODO:** Confirm exact precedence of `enum_physical_count_costing_method` values against frontend logic once carmen-inventory-frontend-react code path is documented. Cross-link to [costing](/en/inventory/costing) for the WA / FIFO valuation behaviour.
 
 ## 4. Authorization Rules
 
@@ -116,12 +116,12 @@ Rule IDs follow `PHC_XMOD_NNN`.
 | `PHC_XMOD_003` | **→ [costing](/en/inventory/costing)**: the costing-method selection on the rollup follows `enum_physical_count_costing_method`; FIFO consumption (for shortage) and WA refresh (for overage) follow `INV_CALC_005` / `INV_CALC_007` once the adjustment posts. |
 | `PHC_XMOD_004` | **→ [spot-check](/en/inventory/spot-check)**: spot-check is a narrower partial count that uses the same conceptual model and the same variance-rollup hook into [inventory-adjustment](/en/inventory/inventory-adjustment); it is **not** a child of `tb_physical_count_period`. |
 
-> **TODO:** Verify rule IDs above against carmen/docs `PHC-*` catalogue when authored; confirm tolerance / threshold default values from production tenant config; cross-validate posting fan-out with frontend implementation in `../carmen-inventory-frontend/`.
+> **TODO:** Verify rule IDs above against carmen/docs `PHC-*` catalogue when authored; confirm tolerance / threshold default values from production tenant config; cross-validate posting fan-out with frontend implementation in `../carmen-inventory-frontend-react/`.
 
 ## 7. References
 
 - **Primary (Prisma):** see [physical-count/01-data-model](/en/inventory/physical-count/01-data-model) for entity / enum source citations.
 - **Secondary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — naming hint search returned no top-level `physical-count` route; check nested module folders when documenting.
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — naming hint search returned no top-level `physical-count` route; check nested module folders when documenting.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists; document rule traceability once added.
 - Related rule sets: [inventory-adjustment/02-business-rules](/en/inventory/inventory-adjustment/02-business-rules) (`ADJ_*` — variance rollup lives there), [inventory/02-business-rules](/en/inventory/inventory/02-business-rules) (`INV_VAL_*` / `INV_CALC_*` / `INV_POST_*` — ledger semantics inherited at adjustment post), [costing](/en/inventory/costing) (FIFO / WA refresh behaviour on rollup post).

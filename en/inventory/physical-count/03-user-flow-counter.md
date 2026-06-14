@@ -69,7 +69,7 @@ The Counter is a data-entry persona scoped to their assigned zone. They can read
 - **Zero-on-shelf vs zero-counted.** If the sheet shows `on_hand_qty > 0` but the counter sees nothing on the shelf, `actual_qty = 0` is entered explicitly (not left blank). Blank `actual_qty` blocks submit per `PHC_VAL_004`; entered-zero proceeds to variance flag.
 - **Recount lines.** When a line is flagged for recount, the recount is performed by a **different counter** to remove individual counting bias — the original counter does not re-enter their own line.
 
-> **TODO:** Source the exact mobile / scanner UI screens and the blind-count (book qty hidden) toggle from `../carmen-inventory-frontend/`.
+> **TODO:** Source the exact mobile / scanner UI screens and the blind-count (book qty hidden) toggle from `../carmen-inventory-frontend-react/`.
 
 ## 5. Exit / Handoff
 
@@ -82,6 +82,6 @@ The Counter is a data-entry persona scoped to their assigned zone. They can read
 ## 6. References
 
 - **Primary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — Counter / mobile UI; check cmobile (`../cmobile/`) for the PWA-side count sheet implementation if applicable.
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — Counter / mobile UI; check cmobile (`../cmobile/`) for the PWA-side count sheet implementation if applicable.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists.
 - Related: [physical-count/03-user-flow](/en/inventory/physical-count/03-user-flow) (overview), [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) (`PHC_AUTH_002`, `PHC_VAL_004`–`PHC_VAL_005`), [physical-count/03-user-flow-count-lead](/en/inventory/physical-count/03-user-flow-count-lead) (the handoff partner).

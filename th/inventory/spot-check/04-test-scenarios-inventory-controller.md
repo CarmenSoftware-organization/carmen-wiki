@@ -78,6 +78,6 @@ dateCreated: 2026-05-15T14:30:00.000Z
 ## 7. แหล่งอ้างอิง
 
 - **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — source ของพฤติกรรม UI Inventory Controller
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — source ของพฤติกรรม UI Inventory Controller
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check
 - ที่เกี่ยวข้อง: [spot-check/03-user-flow-inventory-controller](/th/inventory/spot-check/03-user-flow-inventory-controller), [spot-check/02-business-rules](/th/inventory/spot-check/02-business-rules) (`SPC_AUTH_001`, `SPC_VAL_*`, `SPC_POST_*`), [spot-check/04-test-scenarios](/th/inventory/spot-check/04-test-scenarios) (scenario handoff ข้าม persona), [physical-count/04-test-scenarios-count-lead](/th/inventory/physical-count/04-test-scenarios-count-lead) (scenario คู่เทียบการนับเต็ม)

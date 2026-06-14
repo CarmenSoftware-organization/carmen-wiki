@@ -83,7 +83,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ## 7. แหล่งข้อมูลอ้างอิง
 
-- **Page shell:** `../carmen-inventory-frontend/app/(root)/dashboard/main/page.tsx`
-- **Composition:** `../carmen-inventory-frontend/app/(root)/dashboard/_components/dashboard-main.tsx`
-- **Mock data:** `../carmen-inventory-frontend/app/(root)/dashboard/mock/main.ts`
+- **Page shell:** `../carmen-inventory-frontend-react/routes/dashboard/main/page.tsx`
+- **Composition:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-main.tsx`
+- **Mock data:** `../carmen-inventory-frontend-react/routes/dashboard/mock/main.ts`
 - **i18n:** `messages/en.json` → `dashboard.main.title` = "Dashboard"

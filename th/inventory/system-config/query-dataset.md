@@ -134,8 +134,8 @@ Shape `DbObjectsResponse`:
 
 - **Backend service:** `../carmen-turborepo-backend-v2/apps/micro-business/src/sql-query/sql-query.service.ts` — `execute`, `saveDdl`, `listDbObjects`, `getDbObjectDefinition`, `dropDbObject`
 - **Backend gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_sql-query/config_sql-query.controller.ts`
-- **SQL safety validator:** `../carmen-turborepo-backend-v2/apps/micro-business/src/sql-query/sql-validator.ts` (frontend mirror: `../carmen-inventory-frontend/lib/sql-validator.ts`)
-- **Frontend route:** `../carmen-inventory-frontend/app/(root)/system-admin/query-dataset/page.tsx` และ `_components/query-dataset-component.tsx`
+- **SQL safety validator:** `../carmen-turborepo-backend-v2/apps/micro-business/src/sql-query/sql-validator.ts` (frontend mirror: `../carmen-inventory-frontend-react/lib/sql-validator.ts`)
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/query-dataset/page.tsx` และ `_components/query-dataset-component.tsx`
 - **Frontend supporting components:** `_components/db-object-tree.tsx`, `_components/sql-editor.tsx`, `_components/result-panel.tsx`
-- **Frontend hook:** `../carmen-inventory-frontend/hooks/use-sql-query.ts` — `useDbObjects`, `useDbObjectDefinition`, `useSqlQueryExecute`, `useSqlQuerySave`, `useSqlQueryDrop`
+- **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-sql-query.ts` — `useDbObjects`, `useDbObjectDefinition`, `useSqlQueryExecute`, `useSqlQuerySave`, `useSqlQueryDrop`
 - **Prisma ที่เกี่ยวข้อง:** `tb_widget_workspace` (lines ~5787-5801), `tb_report_schedule` (lines ~5685-5709), `tb_report_job` (lines ~5652-5683)
