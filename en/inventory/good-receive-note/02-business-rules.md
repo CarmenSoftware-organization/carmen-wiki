@@ -2,7 +2,7 @@
 title: Good Receive Note (GRN) — Business Rules
 description: Validation, calculation, authorization, posting, three-way-match, and cross-module rules for good-receive-note.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: good-receive-note, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
@@ -155,6 +155,8 @@ The Prisma enum `enum_good_received_note_status` documented above is what the li
 > ⚠️ **Discrepancy — two creation paths:** `Test_case/System_Process/tx-01-grn.md` BR-01 documents both PO-linked and standalone (manual) GRN creation, consistent with `enum_good_received_note_type { purchase_order, manual }`. The PRD and Technical Spec only describe the PO-sourced path. Testers must cover both paths; the standalone path sets `doc_type = manual` and writes no `purchase_order_detail_id` on any line. Source: `Test_case/System_Process/tx-01-grn.md` (capture date 2026-04-27).
 
 > ℹ️ **Note — no BRD FR-XXX identifier:** Unlike the PO module (`FR-PO-005`), no formal BRD requirement ID has been assigned to the GRN status specification in available source documents. The column heading above references `grn-master-prd.md` prose rather than a versioned BRD identifier.
+
+> ⚙️ **Server-side rule — mobile list is `draft`-only:** The GRN list endpoint applies a device-gated view filter, `applyMobileGrnDocStatusFilter(paginate, appId)`, where the calling device is resolved from the `x-app-id` request header against the app allowlist. When the device is `mobile`, the list is forced to `doc_status = draft` only — any other `doc_status` filter on the request is stripped and replaced with `doc_status|enum = draft`. On non-mobile (desktop) devices the list is unchanged: all statuses (`draft`, `saved`, `committed`, `voided` as applicable) are returned. This is a **VIEW restriction, not a document-status rule** — a non-`draft` GRN still exists in the database and is reachable directly; it is simply not surfaced in mobile list views. Enforced server-side at the backend gateway (`carmen-turborepo-backend-v2`, helper `apps/backend-gateway/src/common/helpers/mobile-grn-doc-status-filter.ts`); **not present in the original PRD or Technical Spec.**
 
 ## 6. Cross-Module Rules
 

@@ -96,4 +96,4 @@ The FK column (`business_type_id`) pins one authoritative type; the JSON column 
 ## 8. References
 
 - **Prisma:** `../carmen/docs/prisma-schema/schema.prisma` — `tb_vendor_business_type` (lines ~2646-2667); used by `tb_vendor` (`business_type_id` FK at line ~1862, `business_type` JSON at line ~1868).
-- **Frontend:** `../carmen-inventory-frontend/` — Vendor Business Type list under Configuration → Master Data.
+- **Frontend:** `../carmen-inventory-frontend-react/` — Vendor Business Type list under Configuration → Master Data.

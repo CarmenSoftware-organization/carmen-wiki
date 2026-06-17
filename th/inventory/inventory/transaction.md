@@ -2,7 +2,7 @@
 title: บันทึกธุรกรรมคลังสินค้า (Inventory Transaction Log)
 description: Ledger append-only ของทุก event ที่กระทบ inventory — GRN, SR, adjustment, wastage, count variance, period flip — และเป็น source of truth สำหรับการคำนวณ balance
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: inventory, transaction, audit, ledger, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -66,6 +66,7 @@ Source: tenant schema สองตารางหลัก (header + detail) บ
 | `id` | `String @db.Uuid` | No | Primary key |
 | `inventory_doc_type` | `enum_inventory_doc_type` | No | Discriminator: `good_received_note`, `credit_note`, `store_requisition`, `stock_in`, `stock_out`, `close`, `open` |
 | `inventory_doc_no` | `String @db.Uuid` | No | FK-by-id ไปยังเอกสาร source ของ type ที่ตรง |
+| `doc_version` | `Int` | No | ตัวนับ optimistic-concurrency; ค่าเริ่มต้น `0` ถูก expose ใน GET responses (findOne + findAll) สำหรับ audit/versioning แต่ไม่ได้ใช้สำหรับ locking — ledger เป็น append-only ไม่มี update endpoint |
 | `note`, `info`, `dimension` | — | Yes | Metadata มาตรฐาน |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*` (deleted เฉพาะสำหรับ soft-purge) |
 
@@ -126,5 +127,5 @@ FIFO layer ต่อ lot ด้วย `lot_no`, `lot_index`, `in_qty` / `out_qty
 ## 8. แหล่งอ้างอิง
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_inventory_transaction` (~1048-1073), `tb_inventory_transaction_detail` (~1075-1101), `tb_inventory_transaction_cost_layer` (~1123-1164), `enum_inventory_doc_type` (~208-216), `enum_transaction_type` (~1103-1121)
-- **Frontend:** `../carmen-inventory-frontend/app/(root)/inventory-management/transaction/`
+- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/transaction/`
 - **Module landing:** [inventory](/th/inventory/inventory) § 3 (แนวคิด Stock Movement)

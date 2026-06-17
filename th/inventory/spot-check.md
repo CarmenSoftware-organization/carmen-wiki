@@ -25,7 +25,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 เนื่องจาก Spot check เร็วในการเริ่มและทำซ้ำง่าย จึงเป็นการควบคุมหลักในโปรแกรม inventory ใด ๆ — จับการสูญเสีย ความผิดพลาดการนับ และความผิดพลาดของกระบวนการตั้งแต่เนิ่น ๆ ระหว่าง cycle ที่ยาวกว่าของ physical count แบบเป็นทางการ
 
-> **TODO:** ดึงเนื้อหาจาก `../carmen-inventory-frontend/` (UI flow) และ `../carmen-inventory-frontend-e2e/` (test scenarios) ไม่มี source folder carmen/docs สำหรับโมดูลนี้
+> **TODO:** ดึงเนื้อหาจาก `../carmen-inventory-frontend-react/` (UI flow) และ `../carmen-inventory-frontend-e2e/` (test scenarios) ไม่มี source folder carmen/docs สำหรับโมดูลนี้
 
 ## 2. บริบททางธุรกิจ
 
@@ -67,7 +67,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 ## 6. แหล่งอ้างอิง
 
 - Concepts: (ไม่มี source — ดู TODO ใน section 1)
-- Frontend: `../carmen-inventory-frontend/`
+- Frontend: `../carmen-inventory-frontend-react/`
 - Backend: `../carmen-turborepo-backend-v2/`
 - API contracts: `../carmen-turborepo-backend-bruno/`
 - E2E tests: `../carmen-inventory-frontend-e2e/`
@@ -85,4 +85,4 @@ dateCreated: 2026-05-15T07:48:00.000Z
   - [spot-check/04-test-scenarios-counter](/th/inventory/spot-check/04-test-scenarios-counter) — scenarios Counter
   - [spot-check/04-test-scenarios-audit-config](/th/inventory/spot-check/04-test-scenarios-audit-config) — scenarios Auditor + Sysadmin
 
-> **Status:** หน้าย่อยทั้งหมดอยู่ระดับ skeleton (~50-100 บรรทัดต่อหน้า) แต่ละหน้ามี TODO ชัดเจนชี้ไปที่ source ต้นน้ำที่ต้องใช้เมื่อเติม (`../carmen-inventory-frontend/` สำหรับ UI flow; `../carmen-inventory-frontend-e2e/tests/` สำหรับ E2E specs — ยังไม่มี spec spot-check) Data-model section อ้างอิงจาก Prisma schema (`tb_spot_check*` เป็น **table set ของตัวเอง** — เอนทิตี 4 ตัว enum 2 ตัว — *ไม่* แชร์กับ `tb_physical_count*`; ทั้งสองโมดูลเป็นลูกพี่ลูกน้องเชิงแนวคิดที่ทั้งคู่ roll up ไปยัง [inventory-adjustment](/th/inventory/inventory-adjustment) ไม่ใช่ infrastructure ที่แชร์); business-rules แนะนำ catalog `SPC_*` rule-ID ที่เสนอซึ่งต้องการการยืนยันจาก carmen/docs; user-flow และ test-scenarios เป็น placeholder เชิงโครงสร้าง
+> **Status:** หน้าย่อยทั้งหมดอยู่ระดับ skeleton (~50-100 บรรทัดต่อหน้า) แต่ละหน้ามี TODO ชัดเจนชี้ไปที่ source ต้นน้ำที่ต้องใช้เมื่อเติม (`../carmen-inventory-frontend-react/` สำหรับ UI flow; `../carmen-inventory-frontend-e2e/tests/` สำหรับ E2E specs — ยังไม่มี spec spot-check) Data-model section อ้างอิงจาก Prisma schema (`tb_spot_check*` เป็น **table set ของตัวเอง** — เอนทิตี 4 ตัว enum 2 ตัว — *ไม่* แชร์กับ `tb_physical_count*`; ทั้งสองโมดูลเป็นลูกพี่ลูกน้องเชิงแนวคิดที่ทั้งคู่ roll up ไปยัง [inventory-adjustment](/th/inventory/inventory-adjustment) ไม่ใช่ infrastructure ที่แชร์); business-rules แนะนำ catalog `SPC_*` rule-ID ที่เสนอซึ่งต้องการการยืนยันจาก carmen/docs; user-flow และ test-scenarios เป็น placeholder เชิงโครงสร้าง

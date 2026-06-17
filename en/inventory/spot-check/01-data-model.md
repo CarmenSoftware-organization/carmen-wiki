@@ -2,7 +2,7 @@
 title: Spot Check — Data Model
 description: Entities, fields, relationships, and enums for the spot-check module.
 published: true
-date: 2026-06-09T00:00:00.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: spot-check, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -27,7 +27,7 @@ The Spot Check module is the **document layer** for a targeted, partial count of
 
 The module sits **upstream of [inventory-adjustment](/en/inventory/inventory-adjustment)** in the same way physical-count does: when a spot check reaches `completed` and variance lines are accepted, the application layer rolls the variance into a `tb_stock_in` (overage) and / or `tb_stock_out` (shortage) document with reason codes (typically `SPOT_CHECK_OVERAGE` / `SPOT_CHECK_SHORTAGE` or aliased to the same `COUNT_OVERAGE` / `COUNT_SHORTAGE` reasons used by physical-count — to be confirmed). The adjustment post is what writes the `tb_inventory_transaction` row that lands on the [inventory](/en/inventory/inventory) ledger. The spot-check tables themselves do **not** write to the inventory ledger directly — the adjustment document is the integration anchor.
 
-> **TODO:** Confirm whether spot-check uses dedicated `SPOT_CHECK_*` reason codes or reuses physical-count's `COUNT_*` reasons. Source UI / interaction details from `../carmen-inventory-frontend/` and end-to-end behaviour from `../carmen-inventory-frontend-e2e/` once specs exist (no `spot-check` spec currently — verified by `ls .../tests/ | grep -i 'spot\|check'`). No carmen/docs source folder exists for this module — see [physical-count/01-data-model](/en/inventory/physical-count/01-data-model) for the shared infrastructure pattern.
+> **TODO:** Confirm whether spot-check uses dedicated `SPOT_CHECK_*` reason codes or reuses physical-count's `COUNT_*` reasons. Source UI / interaction details from `../carmen-inventory-frontend-react/` and end-to-end behaviour from `../carmen-inventory-frontend-e2e/` once specs exist (no `spot-check` spec currently — verified by `ls .../tests/ | grep -i 'spot\|check'`). No carmen/docs source folder exists for this module — see [physical-count/01-data-model](/en/inventory/physical-count/01-data-model) for the shared infrastructure pattern.
 
 **Concurrency:** updates to this document use [system-config/doc-version](/en/inventory/system-config/doc-version) optimistic locking — the client must echo the current `doc_version` on save or receive a `409 Conflict`.
 
@@ -35,7 +35,7 @@ The module sits **upstream of [inventory-adjustment](/en/inventory/inventory-adj
 
 The canonical Prisma schema defines four tables (verified against `prisma-shared-schema-tenant/prisma/schema.prisma` lines 3615–3765):
 
-- **`tb_spot_check`** — the spot-check header. Carries `spot_check_no` (document number), `start_date` (default `now()`) / `end_date` (nullable), `location_id → tb_location` with snapshot `location_code` / `location_name`, `doc_status` on `enum_spot_check_status` (`pending`, `in_progress`, `void`, `completed`), `method` on `enum_spot_check_method` (`random` / `high_value` / `manual`), `size` (sample target count, default 10), `description`, `note`, and `info` / `dimension` JSON blobs. Unique within `(spot_check_no, deleted_at)`.
+- **`tb_spot_check`** — the spot-check header. Carries `spot_check_no` (document number), `start_date` (default `now()`) / `end_date` (nullable), `location_id → tb_location` with snapshot `location_code` / `location_name`, `doc_status` on `enum_spot_check_status` (`pending`, `in_progress`, `void`, `completed`), `method` on `enum_spot_check_method` (`random` / `high_value` / `manual`), `size` (sample target count, default 10), `description`, `note`, `doc_version` (`Int @db.Integer`, not nullable — optimistic-concurrency version counter; default `0`. Incremented on each update; the client must echo it on save or receive a `409 Conflict`.), and `info` / `dimension` JSON blobs. Unique within `(spot_check_no, deleted_at)`.
 - **`tb_spot_check_comment`** — header-level comments / attachments. Carries `message`, `attachments` JSON array, and `enum_comment_type` (`user` / `system`).
 - **`tb_spot_check_detail`** — the per-product spot-check line. Carries `product_id`, snapshot `product_code` / `product_name` / `product_local_name` / `product_sku`, `inventory_unit_id` (FK to `tb_unit`), `on_hand_qty` (book snapshot at check time, `Decimal(20,5)`), `actual_qty` (the entered physical count, nullable until counted), `diff_qty` (`actual_qty - on_hand_qty`, `Decimal(20,5)`), `counted_at` / `counted_by_id`, and `sequence_no` for sheet ordering. Unique within `(spot_check_id, product_id, dimension, deleted_at)`.
 - **`tb_spot_check_detail_comment`** — line-level comments / attachments on a spot-check detail row.
@@ -88,12 +88,12 @@ Notes:
 
 ## 5. Divergences from carmen/docs
 
-> **TODO:** No carmen/docs source folder exists for the spot-check module — divergences cannot be authored from a carmen/docs baseline. Source comparison candidates: (a) `../carmen-inventory-frontend/` UI flow and form definitions, (b) `../carmen-inventory-frontend-e2e/` E2E test specs (none currently exist for spot-check — verified by `ls .../tests/ | grep -i 'spot\|check'`), (c) any future carmen/docs authoring of `SPC-*` interfaces. Until at least one of these is in place, treat the Prisma schema as sole source of truth.
+> **TODO:** No carmen/docs source folder exists for the spot-check module — divergences cannot be authored from a carmen/docs baseline. Source comparison candidates: (a) `../carmen-inventory-frontend-react/` UI flow and form definitions, (b) `../carmen-inventory-frontend-e2e/` E2E test specs (none currently exist for spot-check — verified by `ls .../tests/ | grep -i 'spot\|check'`), (c) any future carmen/docs authoring of `SPC-*` interfaces. Until at least one of these is in place, treat the Prisma schema as sole source of truth.
 
 ## 6. References
 
 - **Primary (source of truth):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — four entities (`tb_spot_check`, `tb_spot_check_comment`, `tb_spot_check_detail`, `tb_spot_check_detail_comment`); two enums (`enum_spot_check_status`, `enum_spot_check_method`).
 - **Secondary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — no `spot-check` route currently visible at `app/` top level; locate under nested module folders when documenting UI flow.
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — no `spot-check` route currently visible at `app/` top level; locate under nested module folders when documenting UI flow.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists; document scenarios once added.
 - Related modules: [inventory](/en/inventory/inventory) (ledger that variance adjustments write to), [inventory-adjustment](/en/inventory/inventory-adjustment) (variance rollup posts as `tb_stock_in` / `tb_stock_out`), [physical-count](/en/inventory/physical-count) (full-count counterpart sharing the same rollup-to-adjustment integration pattern; see [physical-count/01-data-model](/en/inventory/physical-count/01-data-model) for the shared infrastructure), [costing](/en/inventory/costing) (variance valuation defaults inherited from adjustment-side costing).

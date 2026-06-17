@@ -134,7 +134,7 @@ Content is synthesised from these sibling repos under the Carmen Software organi
 | Path (sibling to this repo) | Use for |
 | --- | --- |
 | `../carmen/docs/` | Primary concept and design references for every Inventory module |
-| `../carmen-inventory-frontend/` | Next.js inventory UI — source of truth for Inventory screen behaviour |
+| `../carmen-inventory-frontend-react/` | Vite + React SPA inventory UI — source of truth for Inventory screen behaviour |
 | `../carmen-platform/` | React/TypeScript SPA — source of truth for the Platform book |
 | `../carmen-turborepo-backend-v2/` | Turborepo monorepo, REST API surface. Platform Prisma schema lives at `packages/prisma-shared-schema-platform/`. |
 | `../micro-report/`, `../micro-cronjobs/` | Go microservices for reporting and scheduled jobs |

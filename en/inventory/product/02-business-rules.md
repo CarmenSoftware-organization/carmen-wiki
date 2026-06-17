@@ -2,7 +2,7 @@
 title: Product — Business Rules
 description: Validation, calculation, authorization, lifecycle, and cross-module rules for the product master.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: product, business-rules, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -82,6 +82,7 @@ Rule IDs follow `PRD_AUTH_NNN`. The product module's authorization is RBAC-drive
 | `PRD_AUTH_010` | System Administrator | Configure RBAC roles for product-module access; manage integration endpoints (e-commerce sync, vendor catalog feed, sustainability database) | System-level configuration. Cannot directly edit product master (separation of duties — Sysadmin configures, Product Administrator operates). Audit log records every RBAC change. |
 | `PRD_AUTH_011` | Auditor | Read-only access to all product-master tables and audit log (including soft-deleted rows) | Read scope across `tb_product`, classification chain, unit, conversion, location-mapping, vendor-mapping, and comments. Sees soft-deleted rows for historical traceability. Export of sensitive fields (`standard_cost`, vendor mapping) requires secondary approval per the parent-module audit pattern. |
 | `PRD_AUTH_012` | Segregation of duties — Approver of price change ≠ creator | The user who **approves** a `standard_cost` change above the tenant SoD threshold MUST NOT be the same user who **submitted** the change. Approval is captured in the activity log; for installations without a hard approval workflow, the audit log + Finance review is the soft control. | Enforced at the change-approval action when threshold-driven workflow is enabled. |
+| `PRD_AUTH_013` | Optimistic lock on product update (`doc_version`) | Every product PATCH must carry `doc_version`, and the client must echo the current persisted `doc_version` on save or receive a `409 Conflict`; on success the version increments. The gateway DTO / Swagger require `doc_version` on PATCH. **Scope:** enforced on the `tb_product` header only — child tables (`tb_product_location`, `tb_unit_conversion`) and soft-delete are unguarded. | Enforced on every `tb_product` PATCH. Mismatch returns `409 Conflict`. |
 
 ## 5. Lifecycle Rules
 

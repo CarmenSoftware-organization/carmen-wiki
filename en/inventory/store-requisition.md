@@ -78,7 +78,7 @@ Financially, every posted issuance generates journal entries that credit the sou
 ## 6. Reference Sources
 
 - Concepts: `../carmen/docs/store-requisitions/`
-- Frontend: `../carmen-inventory-frontend/`
+- Frontend: `../carmen-inventory-frontend-react/`
 - Backend: `../carmen-turborepo-backend-v2/`
 - API contracts: `../carmen-turborepo-backend-bruno/`
 - E2E tests: `../carmen-inventory-frontend-e2e/`

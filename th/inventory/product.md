@@ -71,7 +71,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 ## 6. แหล่งอ้างอิง
 
 - Concepts: `../carmen/docs/product-management/`
-- Frontend: `../carmen-inventory-frontend/`
+- Frontend: `../carmen-inventory-frontend-react/`
 - Backend: `../carmen-turborepo-backend-v2/`
 - API contracts: `../carmen-turborepo-backend-bruno/`
 - E2E tests: `../carmen-inventory-frontend-e2e/`

@@ -70,7 +70,7 @@ Counter เป็น persona ป้อนข้อมูลที่จำกั
 - **ศูนย์-บนชั้น vs ศูนย์-นับ** ถ้า sheet แสดง `on_hand_qty > 0` แต่ counter ไม่เห็นอะไร `actual_qty = 0` ถูกป้อนชัดเจน (ไม่ปล่อยว่าง) `actual_qty` ว่างบล็อก submit ตาม `SPC_VAL_004`; ป้อนศูนย์ดำเนินไปสู่ variance flag
 - **บรรทัด recount** เมื่อบรรทัดถูก flag ให้ recount, recount ควรทำโดย counter **คนละคน** เพื่อกำจัด bias ในการนับของบุคคล — convention มากกว่า constraint hard ใน schema
 
-> **TODO:** ดึงหน้าจอ UI mobile / scanner ที่แน่นอนและ toggle blind-count (book qty ซ่อน) จาก `../carmen-inventory-frontend/` ยืนยันว่านโยบาย blind-count tenant เดียวกันที่ใช้ใน physical-count ใช้ที่นี่หรือไม่
+> **TODO:** ดึงหน้าจอ UI mobile / scanner ที่แน่นอนและ toggle blind-count (book qty ซ่อน) จาก `../carmen-inventory-frontend-react/` ยืนยันว่านโยบาย blind-count tenant เดียวกันที่ใช้ใน physical-count ใช้ที่นี่หรือไม่
 
 ## 5. Exit / Handoff
 
@@ -83,6 +83,6 @@ Counter เป็น persona ป้อนข้อมูลที่จำกั
 ## 6. แหล่งอ้างอิง
 
 - **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — UI ของ Counter / mobile; ตรวจ cmobile (`../cmobile/`) สำหรับการ implement spot-check sheet ฝั่ง PWA ถ้ามี
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — UI ของ Counter / mobile; ตรวจ cmobile (`../cmobile/`) สำหรับการ implement spot-check sheet ฝั่ง PWA ถ้ามี
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check
 - ที่เกี่ยวข้อง: [spot-check/03-user-flow](/th/inventory/spot-check/03-user-flow) (overview), [spot-check/02-business-rules](/th/inventory/spot-check/02-business-rules) (`SPC_AUTH_002`, `SPC_VAL_004`–`SPC_VAL_005`), [spot-check/03-user-flow-inventory-controller](/th/inventory/spot-check/03-user-flow-inventory-controller) (คู่ handoff), [physical-count/03-user-flow-counter](/th/inventory/physical-count/03-user-flow-counter) (flow counter คู่เทียบการนับเต็ม)

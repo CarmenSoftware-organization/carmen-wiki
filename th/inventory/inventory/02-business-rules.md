@@ -2,7 +2,7 @@
 title: คลังสินค้า (Inventory) — Business Rules
 description: การตรวจสอบ การคำนวณ การกำหนดสิทธิ์ การ posting ปิดงวด และกฎข้ามโมดูลของ inventory
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: inventory, business-rules, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -62,6 +62,7 @@ Rule ID ตาม `INV_CALC_NNN`
 | `INV_CALC_010` (Period snapshot — closing) | `closing_qty = opening_qty + receipt_qty − issue_qty + adjustment_qty`; `closing_cost_per_unit = closing_total_cost / closing_qty` (set เป็น weighted average ปลายงวด; สำหรับ FIFO คือ `cost_per_unit` ของ lot ที่เหลือ); `closing_total_cost = opening_total_cost + receipt_total_cost − issue_total_cost + adjustment_total_cost + diff_amount` bucket `diff_amount` จับ effects ของ price-revaluation (credit-note-amount adjustments) |
 | `INV_CALC_011` (Credit-note amount adjustment) | สำหรับ `enum_transaction_type = credit_note_amount`: เขียน cost-layer row ด้วย `in_qty = out_qty = 0`, `diff_amount = vendor_credit_amount` (signed; ลบสำหรับ vendor concession ลดต้นทุน), `transaction_type = credit_note_amount` Cost บน lot ดั้งเดิมถูกคำนวณใหม่: `new_lot_cost_per_unit = (original_lot_total_cost + diff_amount) / original_lot_qty` Consumption ต่อมาจาก lot เดียวกันรับ cost ที่ revalued; ส่วนที่บริโภคไปแล้วไม่ปรับย้อนหลัง (price variance ไหลผ่าน `diff_amount`) |
 | `INV_CALC_012` (การปัดเศษ) | การปัดเศษทั้งหมดเป็น half-up ค่าที่เก็บใช้ precision ของ column; การคำนวณกลางถือ 5dp; การ aggregation on-the-fly อ่านค่าที่ปัดเศษซ้ำจากแต่ละขั้น |
+| `INV_CALC_013` (การตีมูลค่าของ balance-view — signed) | View `v_inventory_inventory_balance` ตีมูลค่าด้วย **signed quantity × unit cost** ไม่ใช่ unsigned `total_cost` ก่อนหน้านี้ sum unsigned `total_cost` ซึ่งทำให้มูลค่า overstate เมื่อมี outbound layers แก้ไขโดย migration `063_v_inventory_inventory_balance_costfix` (แก้ไข 2026-06-17) สูตร: `net_qty = SUM(itd.qty)` (signed: + inbound, − outbound); `amount = SUM(itd.qty × itd.cost_per_unit)`; `unit_cost = amount / net_qty` (เป็น 0 เมื่อ `net_qty = 0`) |
 
 ### 3.1 ตัวอย่างใช้งาน (สินค้า Weighted-average, ฿ THB)
 
@@ -89,6 +90,22 @@ Receipt ของสินค้าไปยัง location `direct` `INV_VAL_00
   - **ไม่มี cost-layer row เขียน** (ไม่มี asset ledger entry)
   - GL: `Dr Department Expense ฿240.00 / Cr AP ฿240.00` ตาม [good-receive-note/02-business-rules](/th/inventory/good-receive-note/02-business-rules) `GRN_POST_006` direct-variant
   - On-hand ที่ `(direct_location, product, *)` คงที่ 0 (direct locations ไม่ถือ balance)
+
+### 3.3 ตัวอย่างใช้งาน (การตีมูลค่าของ balance-view, signed — `INV_CALC_013`)
+
+View `v_inventory_inventory_balance` ต้องตีมูลค่าตำแหน่ง **net** ไม่ใช่ inflow รวม สามการเคลื่อนไหวบน key `(location, product, lot)` เดียว:
+
+- **Receive 10 @ ฿100** → `qty = +10`, `cost_per_unit = ฿100`
+- **Receive 10 @ ฿120** → `qty = +10`, `cost_per_unit = ฿120`
+- **Issue 5** → `qty = −5`
+
+```
+net_qty   = SUM(itd.qty)                 = +10 + 10 − 5            = 15
+amount    = SUM(itd.qty × cost_per_unit) = 10×100 + 10×120 − 5×110 = ฿1,650
+unit_cost = amount / net_qty             = 1,650 / 15              = ฿110
+```
+
+View ที่แก้ไขแล้วส่งคืน `net_qty = 15`, `amount = ฿1,650`, `unit_cost = ฿110` สูตร **เก่า** sum unsigned `total_cost` (`1,000 + 1,200 + 550 = ฿2,750`) — ทำให้มูลค่าของตำแหน่งที่ถูก issue ลง overstate แก้ไขโดย migration `063_v_inventory_inventory_balance_costfix` (แก้ไข 2026-06-17)
 
 ## 4. กฎการกำหนดสิทธิ์ (Authorization Rules)
 

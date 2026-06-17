@@ -72,6 +72,6 @@ The **Audit / Config** persona group collapses two roles whose touch on the spot
 ## 7. References
 
 - **Primary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — audit query + admin configuration UI source.
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — audit query + admin configuration UI source.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists.
 - Related: [spot-check/03-user-flow-audit-config](/en/inventory/spot-check/03-user-flow-audit-config), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_AUTH_003`, `SPC_POST_002`), [inventory-adjustment/04-test-scenarios-finance](/en/inventory/inventory-adjustment/04-test-scenarios-finance) (rollup approver scenarios), [inventory-adjustment/04-test-scenarios-audit-config](/en/inventory/inventory-adjustment/04-test-scenarios-audit-config) (parallel audit / config scenarios on the adjustment side), [spot-check/04-test-scenarios](/en/inventory/spot-check/04-test-scenarios) (cross-persona handoff scenarios), [physical-count/04-test-scenarios-audit-config](/en/inventory/physical-count/04-test-scenarios-audit-config) (full-count counterpart scenarios including Approver/Finance flow).

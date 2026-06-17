@@ -87,7 +87,7 @@ All three sub-personas are non-transactional within the physical-count module �
 - **Auditor — observe early or inspect late.** Observation during `in_progress` catches process-discipline issues; late inspection of `completed` count + adjustment chain verifies that documentation is intact for external audit.
 - **Sysadmin — strictness vs operational friction.** Tighter tolerance (low %) catches more variance but creates more recount overhead; looser tolerance speeds counts but may mask shrinkage. Costing-method choice (`standard` vs `last` vs `average`) shifts how variance value is computed.
 
-> **TODO:** Source the exact configuration UI for tolerance / costing-method admin from `../carmen-inventory-frontend/`; confirm whether tolerance is per-tenant, per-location, or per-category.
+> **TODO:** Source the exact configuration UI for tolerance / costing-method admin from `../carmen-inventory-frontend-react/`; confirm whether tolerance is per-tenant, per-location, or per-category.
 
 ## 5. Exit / Handoff
 
@@ -101,6 +101,6 @@ All three sub-personas are non-transactional within the physical-count module �
 ## 6. References
 
 - **Primary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — approval queue and admin configuration screens.
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — approval queue and admin configuration screens.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists.
 - Related: [physical-count/03-user-flow](/en/inventory/physical-count/03-user-flow) (overview), [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) (`PHC_AUTH_003`, `PHC_VAL_007`, `PHC_POST_002`), [inventory-adjustment/03-user-flow-finance](/en/inventory/inventory-adjustment/03-user-flow-finance) (rollup-side approver flow), [inventory-adjustment/03-user-flow-audit-config](/en/inventory/inventory-adjustment/03-user-flow-audit-config) (parallel audit / config flow on the adjustment side).

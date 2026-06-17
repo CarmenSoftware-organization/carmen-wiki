@@ -156,7 +156,7 @@ dateCreated: <ISO 8601 timestamp>
 - `../carmen/docs/purchase-request-management/PR-User-Experience.md`
 - `../carmen/docs/purchase-request-management/PR-Overview.md`
 - `../carmen/docs/purchase-request-management/purchase-request-module-prd.md`
-- Frontend screens: `../carmen-inventory-frontend/app/` (PR routes if applicable)
+- Frontend screens: `../carmen-inventory-frontend-react/routes/` (PR routes if applicable)
 ```
 
 ### 6.2 `03-user-flow-<persona>.md`

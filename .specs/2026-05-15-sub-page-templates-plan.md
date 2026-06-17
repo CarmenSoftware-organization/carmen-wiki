@@ -217,7 +217,7 @@ dateCreated: <ISO 8601 timestamp>
 
 ## 5. References
 - `../carmen/docs/<source-folder>/` — specific files describing flow/UX.
-- Frontend screens: `../carmen-inventory-frontend/app/<route>/` (if relevant).
+- Frontend screens: `../carmen-inventory-frontend-react/routes/<route>/` (if relevant).
 ````
 
 - [ ] **Step 2: Verify**
@@ -342,7 +342,7 @@ When implementing sub-pages for a module `<m>`:
 3. Read the relevant source for the page type:
    - **Data Model:** Read both Prisma schemas first, then cross-check `../carmen/docs/<source>/`.
    - **Business Rules:** Read `../carmen/docs/<source>/` PRD and business-requirements files.
-   - **User Flow:** Read `../carmen/docs/<source>/` flow/UX docs, supplement with `../carmen-inventory-frontend/app/`.
+   - **User Flow:** Read `../carmen/docs/<source>/` flow/UX docs, supplement with `../carmen-inventory-frontend-react/routes/`.
    - **Test Scenarios:** Read `../carmen-inventory-frontend-e2e/tests/` for executable spec, supplement with `../carmen/docs/<source>/testing.md`.
 
 4. Fill in the content section by section. Keep the section numbering exactly as the template.

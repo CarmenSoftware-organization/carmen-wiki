@@ -2,7 +2,7 @@
 title: ที่ตั้ง / สถานที่ (Location)
 description: สถานที่จัดเก็บและบริโภคที่จำแนกเป็น inventory, direct หรือ consignment — ขับเคลื่อนการ post สต๊อกและพฤติกรรมการ physical count
 published: true
-date: 2026-06-09T16:28:56.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: master-data, location, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -91,6 +91,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 - **Lifecycle** `is_active = false` ซ่อนจาก picker; รักษาการ post ประวัติ
 - **ยกเว้นการนับ** `physical_count_type = no` ข้าม period count ไม่ใช่ spot check
 - **การจับคู่กับจุดส่งของ** Refresh snapshot `delivery_point_name` เมื่อมีการเปลี่ยนชื่อ
+- **Optimistic lock** PATCH location ต้องส่ง `doc_version`; client ต้อง echo `doc_version` ปัจจุบันตอน save มิฉะนั้นจะได้ `409 Conflict` และ version จะเพิ่มขึ้นเมื่อสำเร็จ ขอบเขตคือ header `tb_location` เท่านั้น — ตาราง junction sub-tables (`tb_user_location`, `tb_product_location`) ไม่ถูก guard
 
 ## 7. การอ้างอิงข้ามโมดูล
 

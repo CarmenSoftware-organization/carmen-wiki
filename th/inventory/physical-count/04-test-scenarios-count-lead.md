@@ -75,6 +75,6 @@ dateCreated: 2026-05-15T14:00:00.000Z
 ## 7. แหล่งอ้างอิง
 
 - **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — source ของพฤติกรรม UI Count Lead
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — source ของพฤติกรรม UI Count Lead
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count
 - ที่เกี่ยวข้อง: [physical-count/03-user-flow-count-lead](/th/inventory/physical-count/03-user-flow-count-lead), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_AUTH_001`, `PHC_VAL_*`, `PHC_POST_*`), [physical-count/04-test-scenarios](/th/inventory/physical-count/04-test-scenarios) (scenario handoff ข้าม persona)

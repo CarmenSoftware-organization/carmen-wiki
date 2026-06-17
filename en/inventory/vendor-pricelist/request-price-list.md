@@ -122,5 +122,5 @@ RFQ does **not** use the generic workflow engine. Lifecycle is driven by date wi
 ## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_request_for_pricing` (lines 4039-4070), `tb_request_for_pricing_detail` (lines 4106-4142), `tb_request_for_pricing_comment` (lines 4072-4104), `tb_request_for_pricing_detail_comment` (lines 4144-4176).
-- **Frontend route:** `../carmen-inventory-frontend/app/(root)/vendor-management/request-price-list/`.
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/vendor-management/request-price-list/`.
 - **Carmen docs:** `../carmen/docs/business-analysis/price-list-ba.md`; `../carmen/docs/business-analysis/procurement-ba.md` (RFQ section).

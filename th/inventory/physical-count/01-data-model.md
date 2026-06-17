@@ -2,7 +2,7 @@
 title: การนับสต๊อกประจำงวด (Physical Count) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูลการนับสต๊อกประจำงวด
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: physical-count, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -27,7 +27,7 @@ dateCreated: 2026-05-15T14:00:00.000Z
 
 โมดูลอยู่ **เหนือ [inventory-adjustment](/th/inventory/inventory-adjustment)**: เมื่อเอกสารการนับถึง `completed` และบรรทัดผลต่างได้รับการยอมรับ ชั้น application จะ roll up ผลต่างเข้าสู่เอกสาร `tb_stock_in` (overage) และ/หรือ `tb_stock_out` (shortage) ด้วย reason code `COUNT_OVERAGE` / `COUNT_SHORTAGE` ซึ่งการ post ของเอกสารนั้นจะเขียน row `tb_inventory_transaction` ที่ลงจอดบน ledger ของ [inventory](/th/inventory/inventory) ตารางของ physical-count เอง **ไม่** เขียนลง inventory ledger โดยตรง — เอกสาร adjustment คือจุดเชื่อมต่อ ข้อมูล lot บน count detail บางเบา — `tb_physical_count_detail` พกพาเพียง `on_hand_qty` / `actual_qty` ต่อสินค้าต่อสถานที่ (ไม่มีคอลัมน์ `lot_no`); การ recount ระดับ lot จัดการที่ฝั่ง adjustment ผ่านการเลือก cost-layer ตอน post ตาม [inventory](/th/inventory/inventory) `INV_CALC_005` / `INV_CALC_006`
 
-> **TODO:** ดึงรายละเอียด UI / interaction จาก `../carmen-inventory-frontend/` และพฤติกรรม end-to-end จาก `../carmen-inventory-frontend-e2e/` เมื่อ spec มี ไม่มีโฟลเดอร์ source ใน carmen/docs สำหรับโมดูลนี้ — divergence (หัวข้อ 5) จะเขียนไม่ได้จนกว่าจะมีเอกสารเพิ่มหรือยืนยันว่าฟิลด์เป็น source-of-truth-only
+> **TODO:** ดึงรายละเอียด UI / interaction จาก `../carmen-inventory-frontend-react/` และพฤติกรรม end-to-end จาก `../carmen-inventory-frontend-e2e/` เมื่อ spec มี ไม่มีโฟลเดอร์ source ใน carmen/docs สำหรับโมดูลนี้ — divergence (หัวข้อ 5) จะเขียนไม่ได้จนกว่าจะมีเอกสารเพิ่มหรือยืนยันว่าฟิลด์เป็น source-of-truth-only
 
 ## 2. เอนทิตี
 
@@ -35,7 +35,7 @@ Prisma schema canonical กำหนดหกตาราง (ตรวจสอ
 
 - **`tb_physical_count_period`** — header ระดับ period จัดกลุ่มเอกสารการนับทั้งหมดสำหรับหนึ่งงวดบัญชี (`period_id → tb_period`) พกพา `status` บน `enum_physical_count_period_status` (`draft`, `counting`, `completed`)
 - **`tb_physical_count_period_comment`** — comment / attachment ระดับ period พกพา `message`, JSON array ของ `attachments` และ `enum_comment_type` (`user` / `system`)
-- **`tb_physical_count`** — เอกสารการนับสำหรับหนึ่งคู่ `(period, location)` พกพา `location_id → tb_location`, snapshot `location_code` / `location_name`, `physical_count_type` (`yes` / `no` — flag frozen-vs-live ตาม `enum_physical_count_type`), `description`, `status` บน `enum_physical_count_status` (`pending`, `in_progress`, `completed`), `start_counting_at` / `start_counting_by_id`, `completed_at` / `completed_by_id` และตัวนับความคืบหน้า `product_counted` / `product_total` Unique ภายใน `(period, location, deleted_at)`
+- **`tb_physical_count`** — เอกสารการนับสำหรับหนึ่งคู่ `(period, location)` พกพา `location_id → tb_location`, snapshot `location_code` / `location_name`, `physical_count_type` (`yes` / `no` — flag frozen-vs-live ตาม `enum_physical_count_type`), `description`, `status` บน `enum_physical_count_status` (`pending`, `in_progress`, `completed`), `start_counting_at` / `start_counting_by_id`, `completed_at` / `completed_by_id`, ตัวนับความคืบหน้า `product_counted` / `product_total` และ `doc_version` (`Int @db.Integer`, คอลัมน์ nullable = No, default `0`) — ตัวนับเวอร์ชันสำหรับ optimistic-concurrency ที่เพิ่มค่าทุกครั้งที่ save/review/submit; client ต้อง echo ค่านี้กลับตอน update มิฉะนั้นจะได้รับ `409 Conflict` (ดู [system-config/doc-version](/th/inventory/system-config/doc-version)) Unique ภายใน `(period, location, deleted_at)`
 - **`tb_physical_count_comment`** — comment / attachment ระดับเอกสารบน count
 - **`tb_physical_count_detail`** — บรรทัดการนับต่อสินค้า พกพา `product_id`, snapshot `product_code` / `product_name` / `product_local_name` / `product_sku`, `inventory_unit_id` (FK ไปยัง `tb_unit`), `on_hand_qty` (snapshot ของ book ขณะนับ), `actual_qty` (ปริมาณ physical ที่ป้อน), `diff_qty` (`actual_qty - on_hand_qty`), `counted_at` / `counted_by_id` และ `sequence_no` สำหรับลำดับบน sheet
 - **`tb_physical_count_detail_comment`** — comment / attachment ระดับบรรทัดบน row ของ count detail
@@ -91,12 +91,12 @@ tb_stock_out (reason_code = COUNT_SHORTAGE)  สำหรับ diff_qty < 0
 
 ## 5. ความแตกต่างจาก carmen/docs
 
-> **TODO:** ไม่มีโฟลเดอร์ source ใน carmen/docs สำหรับโมดูล physical-count — divergence เขียนจาก baseline ของ carmen/docs ไม่ได้ ตัวเลือกในการเปรียบเทียบ source: (a) `../carmen-inventory-frontend/` UI flow และ form definition (b) `../carmen-inventory-frontend-e2e/` E2E test spec (ยังไม่มีสำหรับ physical-count — ตรวจสอบโดย `ls .../tests/ | grep -i 'physical\|count'`) (c) interface `PHC-*` ใน carmen/docs ที่อาจมีในอนาคต จนกว่าอย่างน้อยหนึ่งจะมี ให้ถือ Prisma schema เป็น source of truth เดียว
+> **TODO:** ไม่มีโฟลเดอร์ source ใน carmen/docs สำหรับโมดูล physical-count — divergence เขียนจาก baseline ของ carmen/docs ไม่ได้ ตัวเลือกในการเปรียบเทียบ source: (a) `../carmen-inventory-frontend-react/` UI flow และ form definition (b) `../carmen-inventory-frontend-e2e/` E2E test spec (ยังไม่มีสำหรับ physical-count — ตรวจสอบโดย `ls .../tests/ | grep -i 'physical\|count'`) (c) interface `PHC-*` ใน carmen/docs ที่อาจมีในอนาคต จนกว่าอย่างน้อยหนึ่งจะมี ให้ถือ Prisma schema เป็น source of truth เดียว
 
 ## 6. แหล่งอ้างอิง
 
 - **Primary (source of truth):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — เอนทิตีหกตัว (`tb_physical_count_period`, `tb_physical_count_period_comment`, `tb_physical_count`, `tb_physical_count_comment`, `tb_physical_count_detail`, `tb_physical_count_detail_comment`); enum สี่ตัว (`enum_physical_count_period_status`, `enum_physical_count_status`, `enum_physical_count_type`, `enum_physical_count_costing_method`)
 - **Secondary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — ยังไม่เห็น route `physical-count` ที่ระดับบนสุด `app/` ค้นใต้โฟลเดอร์โมดูลย่อยเมื่อเขียน UI flow
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — ยังไม่เห็น route `physical-count` ที่ระดับบนสุด `app/` ค้นใต้โฟลเดอร์โมดูลย่อยเมื่อเขียน UI flow
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count; เขียน scenario เมื่อมี
 - โมดูลที่เกี่ยวข้อง: [inventory](/th/inventory/inventory) (ledger ที่ adjustment ของผลต่างเขียนลง), [inventory-adjustment](/th/inventory/inventory-adjustment) (variance rollup post เป็น `tb_stock_in` / `tb_stock_out`), [costing](/th/inventory/costing) (การตีมูลค่าผลต่างผ่าน `enum_physical_count_costing_method`), [spot-check](/th/inventory/spot-check) (ลูกพี่ลูกน้องการนับบางส่วนที่ใช้โมเดลแนวคิดเดียวกัน)

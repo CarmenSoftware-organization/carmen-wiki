@@ -143,6 +143,6 @@ dateCreated: 2026-05-16T15:00:00.000Z
 ## 8. แหล่งอ้างอิง
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_product_category` (~1566-1602), `tb_product_sub_category` (~1711-1748), `tb_product_item_group` (~1638-1675), `tb_product_category_comment` (~1604-1636)
-- **Frontend:** `../carmen-inventory-frontend/app/(root)/product-management/category/`
+- **Frontend:** `../carmen-inventory-frontend-react/routes/product-management/category/`
 - **carmen/docs:** `../carmen/docs/product-management/PROD-API-Endpoints-Categories.md`; `../carmen/docs/product-management/PROD-Overview.md`
 - **Module landing:** [product](/th/inventory/product) § 3 (แนวคิดสำคัญ Product Category)

@@ -25,7 +25,7 @@ Physical counts are typically run in one of two operating modes. A **frozen-stoc
 
 Cadence varies by operation and risk profile. High-value or high-velocity stock (spirits, premium proteins, controlled drugs) is often counted monthly; bulk dry goods quarterly; full-house wall-to-wall counts typically run at fiscal period-end (annual or semi-annual) for audit sign-off. Once recounts are complete and variances are accepted, the physical count posts: book balances are reset to the counted quantities and the variance lines are written out as inventory adjustments through the normal posting workflow, so every count correction lands in the same audit trail as any other stock movement.
 
-> **TODO:** Source content from `../carmen-inventory-frontend/` (UI flow) and `../carmen-inventory-frontend-e2e/` (test scenarios). No carmen/docs source folder exists for this module.
+> **TODO:** Source content from `../carmen-inventory-frontend-react/` (UI flow) and `../carmen-inventory-frontend-e2e/` (test scenarios). No carmen/docs source folder exists for this module.
 
 ## 2. Business Context
 
@@ -69,7 +69,7 @@ The financial accuracy stakes are immediate. Hospitality operations run on thin 
 ## 6. Reference Sources
 
 - Concepts: (no source — see TODO in section 1)
-- Frontend: `../carmen-inventory-frontend/`
+- Frontend: `../carmen-inventory-frontend-react/`
 - Backend: `../carmen-turborepo-backend-v2/`
 - API contracts: `../carmen-turborepo-backend-bruno/`
 - E2E tests: `../carmen-inventory-frontend-e2e/`
@@ -87,4 +87,4 @@ The financial accuracy stakes are immediate. Hospitality operations run on thin 
   - [physical-count/04-test-scenarios-counter](/en/inventory/physical-count/04-test-scenarios-counter) — Counter scenarios.
   - [physical-count/04-test-scenarios-audit-config](/en/inventory/physical-count/04-test-scenarios-audit-config) — Approver / Finance + Auditor + Sysadmin scenarios.
 
-> **Status:** all sub-pages are skeleton-level (~50-100 lines each). Each carries explicit TODO callouts pointing at the upstream sources to use when filling in (`../carmen-inventory-frontend/` for UI flow; `../carmen-inventory-frontend-e2e/tests/` for E2E specs — no physical-count spec exists yet). Data-model section is grounded in the Prisma schema and is the most-developed page; business-rules introduces a proposed `PHC_*` rule-ID catalogue that needs carmen/docs confirmation; user-flow and test-scenarios are structural placeholders.
+> **Status:** all sub-pages are skeleton-level (~50-100 lines each). Each carries explicit TODO callouts pointing at the upstream sources to use when filling in (`../carmen-inventory-frontend-react/` for UI flow; `../carmen-inventory-frontend-e2e/tests/` for E2E specs — no physical-count spec exists yet). Data-model section is grounded in the Prisma schema and is the most-developed page; business-rules introduces a proposed `PHC_*` rule-ID catalogue that needs carmen/docs confirmation; user-flow and test-scenarios are structural placeholders.

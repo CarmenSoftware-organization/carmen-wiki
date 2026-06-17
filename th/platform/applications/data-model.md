@@ -2,7 +2,7 @@
 title: Applications — แบบจำลองข้อมูล (Data Model)
 description: ตาราง tb_application และ tb_application_api, shape read/write ที่ไม่สมมาตร, semantics แบบ replace ของ PUT, api-catalog ที่ generate ขึ้น และตระกูล tb_application_role ที่มีเฉพาะใน schema
 published: true
-date: 2026-06-10T15:15:00.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: book/platform, applications, data-model
 editor: markdown
 dateCreated: 2026-06-10T15:15:00.000Z
@@ -39,6 +39,7 @@ API client ที่ลงทะเบียน Schema บรรทัด 75
 | `description` | `String?` | Yes | คำอธิบาย free-text แบบ optional |
 | `is_active` | `Boolean?` | Yes | Default `true`; badge Active/Inactive ใน SPA |
 | `allow_all` | `Boolean?` | Yes | Default `false`; `true` มอบทุก endpoint ที่ถูก guard และทำให้ row ของ `tb_application_api` ไม่มีความหมาย |
+| `device` | `String @db.VarChar` | No | Default `"web"`; คลาสของอุปกรณ์ที่ application นี้ระบุตัวตนเป็น รูปแบบอิสระที่ระดับ DB; SPA จำกัดค่าไว้ที่ `mobile` / `web` / `desktop` / `pos` (`DeviceType` / `DEVICE_OPTIONS`) อ่านโดย app-allowlist ของ backend-gateway (`getDevice(appId)`) เพื่อใช้พฤติกรรมเฉพาะอุปกรณ์ — เช่น [filter รายการ draft-only ของ GRN บน mobile](/th/inventory/good-receive-note/02-business-rules) |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: เวลาสร้าง row, default `now()` |
 | `created_by_id` | `String? @db.Uuid` | Yes | Audit: user id ของผู้สร้าง (FK ไป `tb_user`) |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: เวลาอัพเดทล่าสุด, default `now()` |
@@ -91,7 +92,7 @@ tb_application_api.created_by_id / updated_by_id  ──>  tb_user.id  (audit ac
 
 ## 4. Enum
 
-โมดูลนี้ **ไม่กำหนด enum ใด ๆ** `api_name` เป็น `VarChar` รูปแบบอิสระ: คลังศัพท์ที่ valid เป็นข้อมูลปลายเปิด ขยายทุกครั้งที่การเรียก `AppIdGuard('...')` ตัวใหม่ลงใน backend gateway และ catalog ถูก regenerate — ไม่มีการเปลี่ยน schema เข้ามาเกี่ยวข้อง โหมดของ grant เป็น boolean ธรรมดา `allow_all` ไม่ใช่ enum ของโหมด
+โมดูลนี้ **ไม่กำหนด enum ใด ๆ** `api_name` เป็น `VarChar` รูปแบบอิสระ: คลังศัพท์ที่ valid เป็นข้อมูลปลายเปิด ขยายทุกครั้งที่การเรียก `AppIdGuard('...')` ตัวใหม่ลงใน backend gateway และ catalog ถูก regenerate — ไม่มีการเปลี่ยน schema เข้ามาเกี่ยวข้อง โหมดของ grant เป็น boolean ธรรมดา `allow_all` ไม่ใช่ enum ของโหมด คอลัมน์ `device` ก็เป็น `VarChar` รูปแบบอิสระเช่นกัน (default `"web"`) **ไม่ใช่** enum ของ DB: ฐานข้อมูลรับ string ใด ๆ ก็ได้ ขณะที่ SPA จำกัดค่าไว้ที่ชุดคงที่ `mobile` / `web` / `desktop` / `pos` ผ่าน union `DeviceType` และ `DEVICE_OPTIONS`
 
 ## 5. ความแตกต่างจาก shape ของ carmen-platform SPA
 

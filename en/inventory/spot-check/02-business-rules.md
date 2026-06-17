@@ -107,12 +107,12 @@ Rule IDs follow `SPC_XMOD_NNN`.
 | `SPC_XMOD_003` | **→ [costing](/en/inventory/costing)**: the costing-method selection on the rollup inherits the adjustment-side default (no dedicated `enum_spot_check_costing_method` exists in schema); FIFO consumption (for shortage) and WA refresh (for overage) follow `INV_CALC_005` / `INV_CALC_007` once the adjustment posts. |
 | `SPC_XMOD_004` | **→ [physical-count](/en/inventory/physical-count)**: spot check is the **partial-count counterpart** of [physical-count](/en/inventory/physical-count) — narrower scope (a sample, not all items at all locations), no fiscal-period parent, ad-hoc cadence. It uses the same conceptual variance-rollup hook into [inventory-adjustment](/en/inventory/inventory-adjustment); it is **not** a child of `tb_physical_count_period`. |
 
-> **TODO:** Verify rule IDs above against carmen/docs `SPC-*` catalogue when authored; confirm tolerance / threshold default values from production tenant config; cross-validate posting fan-out with frontend implementation in `../carmen-inventory-frontend/`; confirm reason-code naming (`SPOT_CHECK_*` vs reused `COUNT_*`).
+> **TODO:** Verify rule IDs above against carmen/docs `SPC-*` catalogue when authored; confirm tolerance / threshold default values from production tenant config; cross-validate posting fan-out with frontend implementation in `../carmen-inventory-frontend-react/`; confirm reason-code naming (`SPOT_CHECK_*` vs reused `COUNT_*`).
 
 ## 7. References
 
 - **Primary (Prisma):** see [spot-check/01-data-model](/en/inventory/spot-check/01-data-model) for entity / enum source citations.
 - **Secondary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — naming hint search returned no top-level `spot-check` route; check nested module folders when documenting.
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — naming hint search returned no top-level `spot-check` route; check nested module folders when documenting.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists; document rule traceability once added.
 - Related rule sets: [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) (`PHC_*` — full-count counterpart with three-level period structure; spot-check is the simpler two-level cousin), [inventory-adjustment/02-business-rules](/en/inventory/inventory-adjustment/02-business-rules) (`ADJ_*` — variance rollup lives there), [inventory/02-business-rules](/en/inventory/inventory/02-business-rules) (`INV_VAL_*` / `INV_CALC_*` / `INV_POST_*` — ledger semantics inherited at adjustment post), [costing](/en/inventory/costing) (FIFO / WA refresh behaviour on rollup post).

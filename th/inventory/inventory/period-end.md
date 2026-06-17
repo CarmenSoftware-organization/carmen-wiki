@@ -102,6 +102,6 @@ Status flips ถูก log บน `tb_period_comment` ด้วย `created_by_i
 ## 8. แหล่งอ้างอิง
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_period` (~1172-1203), `tb_period_snapshot` (~1239-1292), `tb_period_comment` (~1205-1237), `enum_period_status` (~1166-1170), `enum_inventory_doc_type` (~208-216), `tb_inventory_transaction_cost_layer` (~1123-1164)
-- **Frontend:** `../carmen-inventory-frontend/app/(root)/inventory-management/period-end/`
+- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/period-end/`
 - **carmen/docs:** `../carmen/docs/inventory-management/period-end-process.md`
 - **Test cases:** `Test_case/System_Process/tx-09-end-period-close.md`; `Test_case/System_Process/INDEX.md` § Process Execution Swim Lane

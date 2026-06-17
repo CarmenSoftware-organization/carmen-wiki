@@ -2,7 +2,7 @@
 title: ใบขอซื้อ — โมเดลข้อมูล — ตารางคอมเมนต์
 description: ตารางคอมเมนต์ / ไฟล์แนบระดับเอกสารและระดับบรรทัดสำหรับโมดูลใบขอซื้อ — ข้อความ, JSON ไฟล์แนบ, และ enum ประเภทคอมเมนต์ (user/system)
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: purchase-request, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -24,6 +24,7 @@ id                  uuid / PK
 message             text (free-form, nullable)
 attachments         json — array ของ `{originalName, fileToken, contentType}` (nullable)
 type                enum_comment_type — `user` (default) | `system`
+doc_version         Int — ตัวนับเวอร์ชันสำหรับ optimistic-concurrency (default 0)
 created_at          timestamp
 created_by_id       uuid / FK ไปยัง tb_user
 updated_at          timestamp
@@ -46,6 +47,7 @@ updated_by_id       uuid / FK ไปยัง tb_user
 | `user_id` | `String @db.Uuid` | Yes | user id ผู้เขียน (null สำหรับ entry แบบ `system`) |
 | `message` | `String` | Yes | เนื้อ comment แบบ free-text |
 | `attachments` | `Json @db.JsonB` | Yes | array ของ `{ originalName, fileToken, contentType }`; default `[]` |
+| `doc_version` | `Int @db.Integer` | No | ตัวนับเวอร์ชันสำหรับ optimistic-concurrency; default 0 |
 | `created_at` | `DateTime @db.Timestamptz(6)` | Yes | timestamp การสร้าง |
 | `created_by_id` | `String @db.Uuid` | Yes | id ผู้สร้าง |
 | `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | timestamp การอัปเดตล่าสุด |
@@ -68,6 +70,7 @@ updated_by_id       uuid / FK ไปยัง tb_user
 | `user_id` | `String @db.Uuid` | Yes | user id ผู้เขียน |
 | `message` | `String` | Yes | เนื้อ comment แบบ free-text |
 | `attachments` | `Json @db.JsonB` | Yes | array ของ attachment; default `[]` |
+| `doc_version` | `Int @db.Integer` | No | ตัวนับเวอร์ชันสำหรับ optimistic-concurrency; default 0 |
 | `created_at` | `DateTime @db.Timestamptz(6)` | Yes | timestamp การสร้าง |
 | `created_by_id` | `String @db.Uuid` | Yes | id ผู้สร้าง |
 | `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | timestamp การอัปเดตล่าสุด |

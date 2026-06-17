@@ -123,7 +123,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 6. References
 - **Prisma:** specific file path + line numbers
-- **Frontend route (if known):** `../carmen-inventory-frontend/app/<route>/`
+- **Frontend route (if known):** `../carmen-inventory-frontend-react/routes/<route>/`
 - **carmen/docs (if applicable):** specific file path
 - **Cross-module:** the modules in Section 3 that depend on this entity
 ```

@@ -82,7 +82,7 @@ Both sub-personas are non-transactional within the spot-check module — neither
 - **Auditor — sample density.** Spot checks themselves are samples; how many spot checks the auditor independently re-samples is a function of risk appetite and prior-period findings.
 - **Sysadmin — strictness vs operational friction.** Tighter tolerance (low %) catches more variance but creates more recount overhead; looser tolerance speeds spot checks but may mask shrinkage. Default `size` and `method` shift coverage emphasis (random for rotation, high_value for risk concentration).
 
-> **TODO:** Source the exact configuration UI for tolerance / default-size / default-method admin from `../carmen-inventory-frontend/`; confirm whether tolerance is per-tenant, per-location, or per-category.
+> **TODO:** Source the exact configuration UI for tolerance / default-size / default-method admin from `../carmen-inventory-frontend-react/`; confirm whether tolerance is per-tenant, per-location, or per-category.
 
 ## 5. Exit / Handoff
 
@@ -95,6 +95,6 @@ Both sub-personas are non-transactional within the spot-check module — neither
 ## 6. References
 
 - **Primary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — audit query and admin configuration screens.
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — audit query and admin configuration screens.
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists.
 - Related: [spot-check/03-user-flow](/en/inventory/spot-check/03-user-flow) (overview), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_AUTH_003`, `SPC_VAL_006`, `SPC_POST_002`), [physical-count/03-user-flow-audit-config](/en/inventory/physical-count/03-user-flow-audit-config) (full-count counterpart audit/config flow with Approver/Finance also in scope), [inventory-adjustment/03-user-flow-finance](/en/inventory/inventory-adjustment/03-user-flow-finance) (rollup-side approver flow, where the variance adjustment actually gets approved), [inventory-adjustment/03-user-flow-audit-config](/en/inventory/inventory-adjustment/03-user-flow-audit-config) (parallel audit / config flow on the adjustment side).

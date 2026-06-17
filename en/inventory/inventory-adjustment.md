@@ -72,7 +72,7 @@ Operationally, adjustments are also the formal landing point for variances detec
 ## 6. Reference Sources
 
 - Concepts: `../carmen/docs/inventory-adjustment/`
-- Frontend: `../carmen-inventory-frontend/`
+- Frontend: `../carmen-inventory-frontend-react/`
 - Backend: `../carmen-turborepo-backend-v2/`
 - API contracts: `../carmen-turborepo-backend-bruno/`
 - E2E tests: `../carmen-inventory-frontend-e2e/`

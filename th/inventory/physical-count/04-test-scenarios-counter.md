@@ -75,6 +75,6 @@ dateCreated: 2026-05-15T14:00:00.000Z
 ## 7. แหล่งอ้างอิง
 
 - **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — source ของพฤติกรรม UI Counter; ตรวจ `../cmobile/` สำหรับการ implement count sheet ฝั่ง PWA ถ้ามี
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — source ของพฤติกรรม UI Counter; ตรวจ `../cmobile/` สำหรับการ implement count sheet ฝั่ง PWA ถ้ามี
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count
 - ที่เกี่ยวข้อง: [physical-count/03-user-flow-counter](/th/inventory/physical-count/03-user-flow-counter), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_AUTH_002`, `PHC_AUTH_004`, `PHC_VAL_004`–`PHC_VAL_005`), [physical-count/04-test-scenarios](/th/inventory/physical-count/04-test-scenarios) (scenario handoff ข้าม persona)

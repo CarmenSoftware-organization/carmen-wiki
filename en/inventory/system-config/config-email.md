@@ -107,6 +107,6 @@ Source: tenant schema. **No dedicated `tb_email_config`** — the entire profile
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_application_config` (lines ~4910-4924).
 - **Backend service:** `../carmen-turborepo-backend-v2/apps/micro-business/src/app-config/app-config.service.ts` — `ReportEmailSchema`, `encryptSensitiveFields`, `maskSensitiveFields`, `getReportEmailForSend`, `testEmail`.
 - **Backend gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_app-config/config_app-config.controller.ts`.
-- **Frontend route:** `../carmen-inventory-frontend/app/(root)/system-admin/config-email/page.tsx` and `_components/config-email-component.tsx`.
-- **Frontend hook:** `../carmen-inventory-frontend/hooks/use-app-config.ts` — `useAppConfigByKey('report_email')`, `useUpsertAppConfig`, `useTestEmail`.
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/config-email/page.tsx` and `_components/config-email-component.tsx`.
+- **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-app-config.ts` — `useAppConfigByKey('report_email')`, `useUpsertAppConfig`, `useTestEmail`.
 - **Notification consumer:** `micro-notification` reads via TCP from `getReportEmailForSend`.

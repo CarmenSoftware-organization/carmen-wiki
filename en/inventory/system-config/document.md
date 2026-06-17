@@ -116,6 +116,6 @@ Every transactional table that supports attachments (`tb_purchase_request`, `tb_
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_attachment` (lines ~4427-4449); per-document `attachments` JSONB columns throughout.
 - **Backend controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/document-management/document-management.controller.ts`.
 - **Backend service:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/document-management/document-management.service.ts` — forwards to `FILE_SERVICE` over `files.*` microservice commands.
-- **Frontend route:** `../carmen-inventory-frontend/app/(root)/system-admin/document/page.tsx` and `_components/document-component.tsx`.
-- **Frontend hook:** `../carmen-inventory-frontend/hooks/use-document.ts` — `useDocument`, `useUploadDocument`, `useDeleteDocument`.
-- **Frontend type:** `../carmen-inventory-frontend/types/document.ts` — `DocumentFile`.
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/document/page.tsx` and `_components/document-component.tsx`.
+- **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-document.ts` — `useDocument`, `useUploadDocument`, `useDeleteDocument`.
+- **Frontend type:** `../carmen-inventory-frontend-react/types/document.ts` — `DocumentFile`.

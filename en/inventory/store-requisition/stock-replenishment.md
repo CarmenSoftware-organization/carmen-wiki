@@ -114,6 +114,6 @@ If a draft already exists for `(from, to, date)`, the cron updates lines in plac
 ## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_product_location` (~4364-4399), `tb_store_requisition` (~2922-2984), `enum_sr_type` (~224-227).
-- **Frontend:** `../carmen-inventory-frontend/app/(root)/store-operation/stock-replenishment/`.
+- **Frontend:** `../carmen-inventory-frontend-react/routes/store-operation/stock-replenishment/`.
 - **Cron job:** `../micro-cronjobs/` — Go service hosting the nightly sweep. Run state lives in the cron service (no tenant table).
 - **Module landing:** [store-requisition](/en/inventory/store-requisition) § 3 (movement type, approval workflow).

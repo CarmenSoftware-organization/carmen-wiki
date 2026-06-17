@@ -2,7 +2,7 @@
 title: Applications — UI Screens
 description: The ApplicationManagement list and the ApplicationEdit form, including the grouped-accordion API Names selector and its ChipInput fallback.
 published: true
-date: 2026-06-10T12:30:00.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: book/platform, applications, ui
 editor: markdown
 dateCreated: 2026-06-10T12:30:00.000Z
@@ -27,7 +27,7 @@ Header: title "Application Management" / subtitle "Manage applications and their
 
 ### 2.2 Search and filters
 
-A debounced (400 ms) search input over `name`/`description` (server-side via the `search` param; the input highlights yellow while a term is active and offers an inline clear button), plus a **Filters** Sheet with a single Status group — Active/Inactive toggle buttons that translate to the `advance` query `{ where: { is_active } }` when exactly one is selected. Active filter chips render under the search row with per-chip remove and a "Clear all" link.
+A debounced (400 ms) search input over `name`/`description` (server-side via the `search` param; the input highlights yellow while a term is active and offers an inline clear button), plus a **Filters** Sheet (description "Filter applications by status and device") with two groups: a **Status** group — Active/Inactive toggle buttons that translate to the `advance` query `{ where: { is_active } }` when exactly one is selected — and a **Device** dropdown whose options are "All devices" (clears the filter) plus `mobile` / `web` / `desktop` / `pos` (`DEVICE_OPTIONS`); a chosen device adds `{ where: { device } }` to the same `advance` clause. Each active filter (status and device) counts toward the filter badge and renders as a chip under the search row with per-chip remove and a "Clear all" link.
 
 ### 2.3 Columns
 
@@ -38,11 +38,12 @@ A debounced (400 ms) search input over `name`/`description` (server-side via the
 | Description | Muted text, `-` when empty; not sortable |
 | Access | Right-aligned outline badge: **All APIs** when `allow_all`, else **N APIs** from `api_names.length` (0 when absent); not sortable |
 | Status | Active (success) / Inactive (secondary) badge from `is_active` |
+| Device | Secondary badge from `device`, falling back to `web` when absent |
 | Created | `created_at` (`YYYY-MM-DD HH:mm:ss`, browser-local) with `created_by_name` on the next line — flattened from the nested `audit.created` `{ at, name }` shape when the API nests it |
 | Updated | Same shape from `audit.updated`; renders `-` when `updated_at === created_at` |
 | Actions | `⋯` dropdown — see §2.4 |
 
-Default sort is `name:asc`. First load renders a 7-column `TableSkeleton`; subsequent loads overlay a "Loading applications..." scrim on the existing table.
+Default sort is `name:asc`. First load renders an 8-column `TableSkeleton`; subsequent loads overlay a "Loading applications..." scrim on the existing table.
 
 ### 2.4 Row actions and delete dialog
 
@@ -56,6 +57,7 @@ An empty result renders an `EmptyState` card (AppWindow icon) whose title is alw
 |---|---|---|
 | `search_applications` | string | Search term |
 | `filters_applications` | JSON string array | Status filter selections |
+| `devicefilter_applications` | string | Device filter selection (empty = all devices) |
 | `page_applications` | number string | Current page |
 | `perpage_applications` | number string | Page size |
 | `sort_applications` | string | Sort (`column:dir`, default `name:asc`) |
@@ -83,6 +85,7 @@ The Edit toggle snapshots the current form, then switches the card to editable:
 | Name * | Text input | Required; blur + pre-submit validation |
 | App ID | — | Always a read-only monospace box showing the record UUID (truncated when narrow); server-generated, never editable |
 | Description | Text input | Optional |
+| Device | `<select>` of `mobile` / `web` / `desktop` / `pos` (`DEVICE_OPTIONS`) | Defaults to `web` (also the fallback when a loaded value is outside the option set); renders as a secondary Badge in view mode |
 | Active | Checkbox | Renders as the Status badge in view mode |
 | Allow all APIs | Checkbox | Renders as the API Access badge in view mode; checking it hides the API Names block entirely |
 | API Names | Grouped accordion selector (§3.4) | Only when "Allow all APIs" is unchecked |

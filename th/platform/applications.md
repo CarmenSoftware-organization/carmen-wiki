@@ -2,7 +2,7 @@
 title: แอปพลิเคชัน (Applications)
 description: ภาพรวมโมดูล Applications — API client ที่ลงทะเบียนของแพลตฟอร์ม, identity แบบ x-app-id และการมอบสิทธิ์เข้าถึงแบบ allow-all เทียบกับรายการ api_name แบบระบุชัด
 published: true
-date: 2026-06-10T15:15:00.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: platform/applications, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T15:15:00.000Z
@@ -40,6 +40,7 @@ catalog ที่เลือกได้นั้น **derive มาจาก g
 - **`allow_all` กับรายการแบบระบุชัด** ทางแยกแบบ boolean: `allow_all = true` มอบทุก endpoint ที่ถูก guard และทำให้ row ใด ๆ ใน `tb_application_api` ไม่มีความหมาย; `allow_all = false` มอบเฉพาะ row `api_name` ที่ live อยู่เท่านั้น SPA ซ่อน API Names selector ทั้งหมดขณะที่ `allow_all` ถูกติ๊ก และ payload ของการเขียนละเว้น names ในกรณีนั้น
 - **ไวยากรณ์ของ `api_name`** key เป็น string รูปแบบ `resource.action` — shape เดียวกับ permission key ของ RBAC แต่เป็น **คลังศัพท์แยกต่างหากจากแหล่งที่มาแยกต่างหาก**: `api_name` มาจากการสแกน `AppIdGuard` ส่วน key ของ RBAC มาจาก `tb_platform_permission` segment ฝั่ง action ทำตาม method ของ backend controller ไม่ใช่ชุด verb ของ RBAC — `cluster.findAll`, `cluster.findOne`, `cluster.uploadLogo` แทนที่จะเป็น `cluster.read` — สอง catalog จึงใช้ไวยากรณ์ร่วมกันแต่ key string ไม่เหมือนกัน catalog ที่ generate ขึ้นมี 777 key ใน 124 กลุ่มโมดูล ณ 2026-06-10 โมดูลของ `api_name` คือ prefix ก่อน `.` ตัวแรก; ชื่อที่ไม่มีจุดเป็นโมดูลของตัวเอง (`src/utils/apiCatalog.ts` สะท้อนกฎการแบ่งของ generator ฝั่ง backend แบบเป๊ะ ๆ)
 - **Replace ไม่ใช่ delta** `PUT /api-system/applications/:id` ส่ง **ชุดที่ต้องการแบบเต็ม** เป็น `details: { add: [{ api_name }] }` — semantics แบบ replace ตรงข้ามกับการเขียน role ของ RBAC ซึ่งส่ง delta `{ add, remove }`; นักพัฒนาที่ port โค้ดข้ามไปมาระหว่างสองโมดูลนี้ต้องไม่ assume ว่าใช้ convention เดียวกัน
+- **`device` จำแนกชนิดของ client** `tb_application.device` (default `"web"`; ชุดค่าของ SPA คือ `mobile` / `web` / `desktop` / `pos`) บันทึกว่า client เป็นชนิดใด backend gateway resolve มันจาก header `x-app-id` (`getDevice(appId)`) เพื่อขับเคลื่อนพฤติกรรมเฉพาะอุปกรณ์ที่ปลายทาง — เช่น application แบบ `mobile` จะเห็นเฉพาะ GRN แบบ `draft` ในมุมมอง list (ดู [good-receive-note/02-business-rules](/th/inventory/good-receive-note/02-business-rules))
 - **สุขอนามัยมาตรฐานของแพลตฟอร์ม** `tb_application` มี `is_active`, audit trio และ unique name ที่รองรับ soft-delete (`@@unique([name, deleted_at])`) ชื่อของ application ที่ถูกลบแล้วจึงนำกลับมาใช้ใหม่ได้
 
 ## 4. บทบาทและ Persona

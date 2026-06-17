@@ -72,6 +72,6 @@ dateCreated: 2026-05-15T14:30:00.000Z
 ## 7. แหล่งอ้างอิง
 
 - **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — source ของ audit query + UI config admin
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — source ของ audit query + UI config admin
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check
 - ที่เกี่ยวข้อง: [spot-check/03-user-flow-audit-config](/th/inventory/spot-check/03-user-flow-audit-config), [spot-check/02-business-rules](/th/inventory/spot-check/02-business-rules) (`SPC_AUTH_003`, `SPC_POST_002`), [inventory-adjustment/04-test-scenarios-finance](/th/inventory/inventory-adjustment/04-test-scenarios-finance) (scenario approver ของ rollup), [inventory-adjustment/04-test-scenarios-audit-config](/th/inventory/inventory-adjustment/04-test-scenarios-audit-config) (scenario audit / config คู่ขนานฝั่ง adjustment), [spot-check/04-test-scenarios](/th/inventory/spot-check/04-test-scenarios) (scenario handoff ข้าม persona), [physical-count/04-test-scenarios-audit-config](/th/inventory/physical-count/04-test-scenarios-audit-config) (scenario คู่เทียบการนับเต็มรวม flow Approver/Finance)

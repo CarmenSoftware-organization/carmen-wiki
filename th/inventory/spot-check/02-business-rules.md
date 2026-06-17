@@ -107,12 +107,12 @@ Rule ID ใช้รูปแบบ `SPC_XMOD_NNN`
 | `SPC_XMOD_003` | **→ [costing](/th/inventory/costing)**: การเลือก costing-method บน rollup สืบทอด default ฝั่ง adjustment (ไม่มี `enum_spot_check_costing_method` เฉพาะใน schema); การบริโภค FIFO (สำหรับ shortage) และการ refresh WA (สำหรับ overage) ตาม `INV_CALC_005` / `INV_CALC_007` เมื่อ adjustment post |
 | `SPC_XMOD_004` | **→ [physical-count](/th/inventory/physical-count)**: spot check เป็น **คู่เทียบการนับบางส่วน** ของ [physical-count](/th/inventory/physical-count) — scope แคบกว่า (ตัวอย่าง ไม่ใช่ทุกรายการที่ทุก location), ไม่มี parent งวดบัญชี, cadence ad-hoc ใช้ hook variance-rollup แบบแนวคิดเดียวกันเข้า [inventory-adjustment](/th/inventory/inventory-adjustment); **ไม่ใช่** child ของ `tb_physical_count_period` |
 
-> **TODO:** ตรวจสอบ rule ID ข้างต้นกับ catalogue `SPC-*` ใน carmen/docs เมื่อเขียน ยืนยันค่า default ของ tolerance / threshold จาก tenant config ของ production cross-validate posting fan-out กับการ implement ของ frontend ใน `../carmen-inventory-frontend/`; ยืนยันการตั้งชื่อ reason-code (`SPOT_CHECK_*` vs `COUNT_*` ที่ใช้ซ้ำ)
+> **TODO:** ตรวจสอบ rule ID ข้างต้นกับ catalogue `SPC-*` ใน carmen/docs เมื่อเขียน ยืนยันค่า default ของ tolerance / threshold จาก tenant config ของ production cross-validate posting fan-out กับการ implement ของ frontend ใน `../carmen-inventory-frontend-react/`; ยืนยันการตั้งชื่อ reason-code (`SPOT_CHECK_*` vs `COUNT_*` ที่ใช้ซ้ำ)
 
 ## 7. แหล่งอ้างอิง
 
 - **Primary (Prisma):** ดู [spot-check/01-data-model](/th/inventory/spot-check/01-data-model) สำหรับ citation ของ entity / enum source
 - **Secondary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
-- **Frontend (TODO):** `../carmen-inventory-frontend/` — การค้นชื่อ hint ไม่พบ route `spot-check` ระดับบนสุด; ตรวจสอบโฟลเดอร์โมดูลย่อยเมื่อเขียน
+- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — การค้นชื่อ hint ไม่พบ route `spot-check` ระดับบนสุด; ตรวจสอบโฟลเดอร์โมดูลย่อยเมื่อเขียน
 - **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check; เขียน traceability ของกฎเมื่อมี
 - ชุดกฎที่เกี่ยวข้อง: [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_*` — คู่เทียบการนับเต็มที่มีโครงสร้าง period สามระดับ; spot-check เป็นลูกพี่ลูกน้องสองระดับที่เรียบง่ายกว่า), [inventory-adjustment/02-business-rules](/th/inventory/inventory-adjustment/02-business-rules) (`ADJ_*` — variance rollup อยู่ที่นั่น), [inventory/02-business-rules](/th/inventory/inventory/02-business-rules) (`INV_VAL_*` / `INV_CALC_*` / `INV_POST_*` — semantics ของ ledger สืบทอดที่ adjustment post), [costing](/th/inventory/costing) (พฤติกรรม FIFO / WA refresh เมื่อ rollup post)
