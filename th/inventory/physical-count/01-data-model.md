@@ -2,7 +2,7 @@
 title: การนับสต๊อกประจำงวด (Physical Count) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูลการนับสต๊อกประจำงวด
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: physical-count, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -35,7 +35,7 @@ Prisma schema canonical กำหนดหกตาราง (ตรวจสอ
 
 - **`tb_physical_count_period`** — header ระดับ period จัดกลุ่มเอกสารการนับทั้งหมดสำหรับหนึ่งงวดบัญชี (`period_id → tb_period`) พกพา `status` บน `enum_physical_count_period_status` (`draft`, `counting`, `completed`)
 - **`tb_physical_count_period_comment`** — comment / attachment ระดับ period พกพา `message`, JSON array ของ `attachments` และ `enum_comment_type` (`user` / `system`)
-- **`tb_physical_count`** — เอกสารการนับสำหรับหนึ่งคู่ `(period, location)` พกพา `location_id → tb_location`, snapshot `location_code` / `location_name`, `physical_count_type` (`yes` / `no` — flag frozen-vs-live ตาม `enum_physical_count_type`), `description`, `status` บน `enum_physical_count_status` (`pending`, `in_progress`, `completed`), `start_counting_at` / `start_counting_by_id`, `completed_at` / `completed_by_id` และตัวนับความคืบหน้า `product_counted` / `product_total` Unique ภายใน `(period, location, deleted_at)`
+- **`tb_physical_count`** — เอกสารการนับสำหรับหนึ่งคู่ `(period, location)` พกพา `location_id → tb_location`, snapshot `location_code` / `location_name`, `physical_count_type` (`yes` / `no` — flag frozen-vs-live ตาม `enum_physical_count_type`), `description`, `status` บน `enum_physical_count_status` (`pending`, `in_progress`, `completed`), `start_counting_at` / `start_counting_by_id`, `completed_at` / `completed_by_id`, ตัวนับความคืบหน้า `product_counted` / `product_total` และ `doc_version` (`Int @db.Integer`, คอลัมน์ nullable = No, default `0`) — ตัวนับเวอร์ชันสำหรับ optimistic-concurrency ที่เพิ่มค่าทุกครั้งที่ save/review/submit; client ต้อง echo ค่านี้กลับตอน update มิฉะนั้นจะได้รับ `409 Conflict` (ดู [system-config/doc-version](/th/inventory/system-config/doc-version)) Unique ภายใน `(period, location, deleted_at)`
 - **`tb_physical_count_comment`** — comment / attachment ระดับเอกสารบน count
 - **`tb_physical_count_detail`** — บรรทัดการนับต่อสินค้า พกพา `product_id`, snapshot `product_code` / `product_name` / `product_local_name` / `product_sku`, `inventory_unit_id` (FK ไปยัง `tb_unit`), `on_hand_qty` (snapshot ของ book ขณะนับ), `actual_qty` (ปริมาณ physical ที่ป้อน), `diff_qty` (`actual_qty - on_hand_qty`), `counted_at` / `counted_by_id` และ `sequence_no` สำหรับลำดับบน sheet
 - **`tb_physical_count_detail_comment`** — comment / attachment ระดับบรรทัดบน row ของ count detail

@@ -2,7 +2,7 @@
 title: Physical Count — Business Rules
 description: Validation, calculation, authorization, posting, and cross-module rules for physical counts.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: physical-count, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -36,6 +36,7 @@ Rule IDs follow `PHC_VAL_NNN`. Validation runs at three boundaries: **at count-d
 | `PHC_VAL_006` | When `physical_count_type = yes` (frozen), no `tb_inventory_transaction` writes are accepted at `(period, location)` between `status = in_progress` and `status = completed`. Frontend pre-check on GRN / SR / adjustment posting screens. | At any inventory-write attempt during the count window | Reject submission with `"Location is locked for physical count — wait for count completion or use the live-count mode."` |
 | `PHC_VAL_007` | A line whose `|diff_qty| / on_hand_qty` exceeds the tenant tolerance threshold (typical 5% or absolute 1 unit, whichever is greater) is flagged for recount; the document cannot be submitted until the line is either recounted-and-reconciled or explicitly marked "accept variance" by an Inventory Controller. | Submit | Block submit until flagged lines are resolved. |
 | `PHC_VAL_008` | A completed `tb_physical_count` cannot be re-opened — corrections require a new period or a manual `tb_stock_in` / `tb_stock_out` adjustment against the same location per `PHC_POST_004`. | Edit completed | Reject with `"Cannot edit a completed count. Raise a manual inventory adjustment."` |
+| `PHC_VAL_009` | Every update to a `tb_physical_count` must supply the current `doc_version`; updates use [system-config/doc-version](/en/inventory/system-config/doc-version) optimistic locking — the client must echo the current `doc_version` on save or receive a `409 Conflict`. The server compares the supplied value against the stored value, rejects a mismatch with `409 Conflict`, and increments the version by 1 on success — preventing lost updates from concurrent edits. | Save / Review / Submit / Description edit | Reject with `409 Conflict` on `doc_version` mismatch; increment by 1 on success. |
 
 > **TODO:** Confirm exact tolerance threshold formula and default values from tenant config when carmen/docs catalogue is authored. Cross-reference with E2E specs for the recount flow once they exist.
 
