@@ -2,7 +2,7 @@
 title: Inventory Transaction Log
 description: Append-only ledger of every inventory-affecting event — GRN, SR, adjustment, wastage, count variance, period flip — and the source of truth for balance computation.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: inventory, transaction, audit, ledger, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -66,6 +66,7 @@ Source: tenant schema. Two main tables (header + detail) plus a cost-layer table
 | `id` | `String @db.Uuid` | No | Primary key. |
 | `inventory_doc_type` | `enum_inventory_doc_type` | No | Discriminator: `good_received_note`, `credit_note`, `store_requisition`, `stock_in`, `stock_out`, `close`, `open`. |
 | `inventory_doc_no` | `String @db.Uuid` | No | FK-by-id to the source document of matching type. |
+| `doc_version` | `Int` | No | Optimistic-concurrency counter; default `0`. Exposed in GET responses (findOne + findAll) for audit/versioning, but not used for locking — the ledger is append-only with no update endpoint. |
 | `note`, `info`, `dimension` | — | Yes | Standard metadata. |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*` (deleted only for soft-purge). |
 

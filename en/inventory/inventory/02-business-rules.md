@@ -2,7 +2,7 @@
 title: Inventory — Business Rules
 description: Validation, calculation, authorization, posting, period-end, and cross-module rules for inventory.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: inventory, business-rules, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -62,6 +62,7 @@ Rule IDs follow `INV_CALC_NNN`.
 | `INV_CALC_010` (Period snapshot — closing) | `closing_qty = opening_qty + receipt_qty − issue_qty + adjustment_qty`; `closing_cost_per_unit = closing_total_cost / closing_qty` (set to the period-end weighted average; for FIFO, this is the residual lot's `cost_per_unit`); `closing_total_cost = opening_total_cost + receipt_total_cost − issue_total_cost + adjustment_total_cost + diff_amount`. The `diff_amount` bucket captures price-revaluation effects (credit-note-amount adjustments). |
 | `INV_CALC_011` (Credit-note amount adjustment) | For `enum_transaction_type = credit_note_amount`: write a cost-layer row with `in_qty = out_qty = 0`, `diff_amount = vendor_credit_amount` (signed; negative for vendor concession reducing cost), `transaction_type = credit_note_amount`. The cost on the originating lot is recalculated: `new_lot_cost_per_unit = (original_lot_total_cost + diff_amount) / original_lot_qty`. Downstream consumption from the same lot picks up the revalued cost; already-consumed portions are not retroactively adjusted (the price variance flows through `diff_amount`). |
 | `INV_CALC_012` (Rounding) | All rounding is half-up. Stored values use the column precision; intermediate computations carry 5dp; on-the-fly aggregations re-read rounded values from each step. |
+| `INV_CALC_013` (Balance-view valuation — signed) | The `v_inventory_inventory_balance` view values **signed quantity × unit cost**, not unsigned `total_cost`. Previously it summed unsigned `total_cost`, which overstated value when outbound layers were present; corrected by migration `063_v_inventory_inventory_balance_costfix` (fixed 2026-06-17). Formula: `net_qty = SUM(itd.qty)` (signed: + inbound, − outbound); `amount = SUM(itd.qty × itd.cost_per_unit)`; `unit_cost = amount / net_qty` (0 when `net_qty = 0`). |
 
 ### 3.1 Worked example (Weighted-average product, ฿ THB)
 
@@ -89,6 +90,22 @@ A product receipt to a `direct` location. `INV_VAL_009` permits inbound. The GRN
   - **No cost-layer row written** (no asset ledger entry).
   - GL: `Dr Department Expense ฿240.00 / Cr AP ฿240.00` per [good-receive-note/02-business-rules](/en/inventory/good-receive-note/02-business-rules) `GRN_POST_006` direct-variant.
   - On-hand at `(direct_location, product, *)` remains 0 (direct locations carry no balance).
+
+### 3.3 Worked example (Balance-view valuation, signed — `INV_CALC_013`)
+
+The `v_inventory_inventory_balance` view must value the **net** position, not the gross inflow. Three movements on one `(location, product, lot)` key:
+
+- **Receive 10 @ ฿100** → `qty = +10`, `cost_per_unit = ฿100`.
+- **Receive 10 @ ฿120** → `qty = +10`, `cost_per_unit = ฿120`.
+- **Issue 5** → `qty = −5`.
+
+```
+net_qty   = SUM(itd.qty)                 = +10 + 10 − 5            = 15
+amount    = SUM(itd.qty × cost_per_unit) = 10×100 + 10×120 − 5×110 = ฿1,650
+unit_cost = amount / net_qty             = 1,650 / 15              = ฿110
+```
+
+The corrected view returns `net_qty = 15`, `amount = ฿1,650`, `unit_cost = ฿110`. The **old** formula summed unsigned `total_cost` (`1,000 + 1,200 + 550 = ฿2,750`) — overstating the value of an issued-down position. Corrected by migration `063_v_inventory_inventory_balance_costfix` (fixed 2026-06-17).
 
 ## 4. Authorization Rules
 
