@@ -2,7 +2,7 @@
 title: Applications — Data Model
 description: The tb_application and tb_application_api tables, asymmetric read/write shapes, PUT replace semantics, the generated api-catalog, and the schema-only tb_application_role family.
 published: true
-date: 2026-06-10T12:30:00.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: book/platform, applications, data-model
 editor: markdown
 dateCreated: 2026-06-10T12:30:00.000Z
@@ -39,6 +39,7 @@ The registered API client. Schema line 75.
 | `description` | `String?` | Yes | Optional free-text description |
 | `is_active` | `Boolean?` | Yes | Default `true`; Active/Inactive badge in the SPA |
 | `allow_all` | `Boolean?` | Yes | Default `false`; `true` grants every guarded endpoint and makes `tb_application_api` rows irrelevant |
+| `device` | `String @db.VarChar` | No | Default `"web"`; the device class this application identifies as. Free-form at the DB level; the SPA constrains it to `mobile` / `web` / `desktop` / `pos` (`DeviceType` / `DEVICE_OPTIONS`). Read by the backend-gateway app-allowlist (`getDevice(appId)`) to apply device-specific behaviour — e.g. the [GRN mobile draft-only list filter](/en/inventory/good-receive-note/02-business-rules) |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: row creation time, default `now()` |
 | `created_by_id` | `String? @db.Uuid` | Yes | Audit: creator user id (FK to `tb_user`) |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: last update time, default `now()` |
@@ -91,7 +92,7 @@ That is the entire graph: an application links to nothing but its grant rows and
 
 ## 4. Enums
 
-This module defines **no enums**. `api_name` is a free-form `VarChar`: the valid vocabulary is open-ended, extended whenever a new `AppIdGuard('...')` call lands in the backend gateway and the catalog is regenerated — no schema change involved. The grant mode is the plain boolean `allow_all`, not a mode enum.
+This module defines **no enums**. `api_name` is a free-form `VarChar`: the valid vocabulary is open-ended, extended whenever a new `AppIdGuard('...')` call lands in the backend gateway and the catalog is regenerated — no schema change involved. The grant mode is the plain boolean `allow_all`, not a mode enum. The `device` column is likewise a free-form `VarChar` (default `"web"`), **not** a DB enum: the database accepts any string, while the SPA constrains the value to the fixed set `mobile` / `web` / `desktop` / `pos` via the `DeviceType` union and `DEVICE_OPTIONS`.
 
 ## 5. Divergences from carmen-platform SPA shape
 

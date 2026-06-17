@@ -2,7 +2,7 @@
 title: Applications
 description: Application module overview — registered API clients of the platform, their x-app-id identity, and allow-all vs explicit api_name access grants.
 published: true
-date: 2026-06-10T12:30:00.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: platform/applications, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T12:30:00.000Z
@@ -40,6 +40,7 @@ The selectable catalog is **derived from those guards, not hand-maintained**: `s
 - **`allow_all` vs explicit list.** A boolean fork: `allow_all = true` grants every guarded endpoint and makes any `tb_application_api` rows irrelevant; `allow_all = false` grants exactly the live `api_name` rows. The SPA hides the API Names selector entirely while `allow_all` is checked, and the write payload omits the names in that case.
 - **`api_name` grammar.** Keys are `resource.action` strings — the same shape as RBAC permission keys, but a **separate vocabulary from a separate source**: `api_name`s come from the `AppIdGuard` scan, RBAC keys from `tb_platform_permission`. The action segments follow the backend controller methods, not the RBAC verb set — `cluster.findAll`, `cluster.findOne`, `cluster.uploadLogo` rather than `cluster.read` — so the two catalogs share grammar but not key strings. The generated catalog holds 777 keys across 124 module groups as of 2026-06-10. The module of an `api_name` is the prefix before the first `.`; a dotless name is its own module (`src/utils/apiCatalog.ts` mirrors the backend generator's split rule exactly).
 - **Replace, not delta.** `PUT /api-system/applications/:id` sends the **full desired set** as `details: { add: [{ api_name }] }` — replace semantics. This is the opposite of RBAC role writes, which send `{ add, remove }` deltas; a developer porting code between the two modules must not assume one convention.
+- **`device` classifies the client.** `tb_application.device` (default `"web"`; SPA value set `mobile` / `web` / `desktop` / `pos`) records what kind of client the app is. The backend gateway resolves it from the `x-app-id` header (`getDevice(appId)`) to drive device-specific behaviour downstream — e.g. a `mobile` app sees only `draft` GRNs in list views (see [good-receive-note/02-business-rules](/en/inventory/good-receive-note/02-business-rules)).
 - **Standard platform hygiene.** `tb_application` carries `is_active`, the audit trio, and a soft-delete-aware unique name (`@@unique([name, deleted_at])`), so a deleted application's name can be reused.
 
 ## 4. Roles and Personas

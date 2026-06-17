@@ -2,7 +2,7 @@
 title: Applications — หน้าจอ UI (UI Screens)
 description: list ApplicationManagement และฟอร์ม ApplicationEdit รวมถึง API Names selector แบบ accordion จัดกลุ่มและ fallback แบบ ChipInput ของมัน
 published: true
-date: 2026-06-10T15:15:00.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: book/platform, applications, ui
 editor: markdown
 dateCreated: 2026-06-10T15:15:00.000Z
@@ -27,7 +27,7 @@ Header: title "Application Management" / subtitle "Manage applications and their
 
 ### 2.2 การค้นหาและ filter
 
-ช่องค้นหาแบบ debounce (400 ms) เหนือ `name`/`description` (ฝั่ง server ผ่านพารามิเตอร์ `search`; ช่อง input ไฮไลต์เป็นสีเหลืองขณะมี term ทำงานอยู่และมีปุ่ม clear แบบ inline) บวก Sheet **Filters** ที่มีกลุ่ม Status เดียว — ปุ่ม toggle Active/Inactive ที่แปลเป็น query `advance` `{ where: { is_active } }` เมื่อมีการเลือกเพียงตัวเดียวพอดี chip ของ filter ที่ทำงานอยู่ render ใต้แถวค้นหา พร้อมปุ่มลบต่อ chip และลิงก์ "Clear all"
+ช่องค้นหาแบบ debounce (400 ms) เหนือ `name`/`description` (ฝั่ง server ผ่านพารามิเตอร์ `search`; ช่อง input ไฮไลต์เป็นสีเหลืองขณะมี term ทำงานอยู่และมีปุ่ม clear แบบ inline) บวก Sheet **Filters** (description "Filter applications by status and device") ที่มีสองกลุ่ม: กลุ่ม **Status** — ปุ่ม toggle Active/Inactive ที่แปลเป็น query `advance` `{ where: { is_active } }` เมื่อมีการเลือกเพียงตัวเดียวพอดี — และ dropdown **Device** ที่มีตัวเลือก "All devices" (ล้าง filter) บวก `mobile` / `web` / `desktop` / `pos` (`DEVICE_OPTIONS`); device ที่เลือกจะเพิ่ม `{ where: { device } }` เข้าไปใน clause `advance` เดียวกัน filter ที่ทำงานอยู่แต่ละตัว (ทั้ง status และ device) นับรวมเข้า badge ของ filter และ render เป็น chip ใต้แถวค้นหา พร้อมปุ่มลบต่อ chip และลิงก์ "Clear all"
 
 ### 2.3 คอลัมน์
 
@@ -38,11 +38,12 @@ Header: title "Application Management" / subtitle "Manage applications and their
 | Description | ข้อความสีจาง, `-` เมื่อว่าง; sort ไม่ได้ |
 | Access | badge แบบ outline ชิดขวา: **All APIs** เมื่อ `allow_all` ไม่เช่นนั้น **N APIs** จาก `api_names.length` (0 เมื่อไม่มี); sort ไม่ได้ |
 | Status | badge Active (success) / Inactive (secondary) จาก `is_active` |
+| Device | badge แบบ secondary จาก `device`, fallback เป็น `web` เมื่อไม่มี |
 | Created | `created_at` (`YYYY-MM-DD HH:mm:ss`, เวลาท้องถิ่นของเบราว์เซอร์) พร้อม `created_by_name` บนบรรทัดถัดไป — flatten จาก shape ซ้อน `audit.created` `{ at, name }` เมื่อ API ซ้อนมา |
 | Updated | shape เดียวกันจาก `audit.updated`; render `-` เมื่อ `updated_at === created_at` |
 | Actions | dropdown `⋯` — ดู §2.4 |
 
-ค่าเริ่มต้นของการ sort คือ `name:asc` การโหลดครั้งแรก render `TableSkeleton` แบบ 7 คอลัมน์; การโหลดครั้งถัด ๆ ไปวาง scrim "Loading applications..." ทับตารางเดิม
+ค่าเริ่มต้นของการ sort คือ `name:asc` การโหลดครั้งแรก render `TableSkeleton` แบบ 8 คอลัมน์; การโหลดครั้งถัด ๆ ไปวาง scrim "Loading applications..." ทับตารางเดิม
 
 ### 2.4 action ของ row และ dialog ลบ
 
@@ -56,6 +57,7 @@ dropdown ของ action มี **Edit** (นำทางไป route edit) ห
 |---|---|---|
 | `search_applications` | string | term การค้นหา |
 | `filters_applications` | JSON string array | การเลือก filter ของ Status |
+| `devicefilter_applications` | string | การเลือก filter ของ Device (ว่าง = ทุกอุปกรณ์) |
 | `page_applications` | number string | หน้าปัจจุบัน |
 | `perpage_applications` | number string | ขนาดหน้า |
 | `sort_applications` | string | การ sort (`column:dir`, ค่าเริ่มต้น `name:asc`) |
@@ -83,6 +85,7 @@ toggle Edit จะ snapshot ฟอร์มปัจจุบัน แล้ว
 | Name * | Text input | Required; validate ตอน blur + ก่อน submit |
 | App ID | — | เป็นกล่อง monospace แบบ read-only แสดง UUID ของเรคคอร์ดเสมอ (ถูกตัดเมื่อจอแคบ); server เป็นผู้ generate แก้ไขไม่ได้เลย |
 | Description | Text input | Optional |
+| Device | `<select>` ของ `mobile` / `web` / `desktop` / `pos` (`DEVICE_OPTIONS`) | ค่าเริ่มต้นเป็น `web` (และเป็น fallback เมื่อค่าที่โหลดมาอยู่นอกชุดตัวเลือก); render เป็น Badge แบบ secondary ในโหมด view |
 | Active | Checkbox | render เป็น badge Status ในโหมด view |
 | Allow all APIs | Checkbox | render เป็น badge API Access ในโหมด view; การติ๊กมันซ่อนบล็อก API Names ทั้งหมด |
 | API Names | selector แบบ accordion จัดกลุ่ม (§3.4) | เฉพาะเมื่อ "Allow all APIs" ไม่ถูกติ๊ก |
