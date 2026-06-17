@@ -2,7 +2,7 @@
 title: Vendor Price List — Data Model — Comment Tables
 description: Document-level and line-level comment / attachment tables for the Vendor Price List module across the pricelist-template, request-for-pricing, and pricelist sub-entity families.
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: vendor-pricelist, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -24,6 +24,7 @@ id                  uuid / PK
 message             text (free-form, nullable)
 attachments         json — array of `{originalName, fileToken, contentType}` (nullable)
 type                enum_comment_type — `user` (default) | `system`
+doc_version         int — optimistic-concurrency version counter (default 0)
 created_at          timestamp
 created_by_id       uuid / FK to tb_user
 updated_at          timestamp
@@ -46,6 +47,7 @@ Activity-log entries attached to a template header. Holds user comments and `sys
 | `user_id` | `String @db.Uuid` | Yes | Author user id (null for `system`). |
 | `message` | `String` | Yes | Free-text comment body. |
 | `attachments` | `Json @db.JsonB` | Yes | Array of `{ originalName, fileToken, contentType }`; default `[]`. |
+| `doc_version` | `Int` | No | Optimistic-concurrency version counter; default 0. |
 | `created_at` | `DateTime @db.Timestamptz(6)` | Yes | Creation timestamp. |
 | `created_by_id` | `String @db.Uuid` | Yes | Creator id. |
 | `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | Last-update timestamp. |
@@ -68,13 +70,14 @@ Row-level counterpart of `tb_pricelist_template_comment`. Captures comments and 
 | `user_id` | `String @db.Uuid` | Yes | Author user id (null for `system`). |
 | `message` | `String` | Yes | Free-text body. |
 | `attachments` | `Json @db.JsonB` | Yes | Array of attachments; default `[]`. |
+| `doc_version` | `Int` | No | Optimistic-concurrency version counter; default 0. |
 | `created_at`, `created_by_id`, `updated_at`, `updated_by_id`, `deleted_at`, `deleted_by_id` | (standard audit) | Yes | Standard audit columns. |
 
 **Constraints:** `@id` on `id`. FK `pricelist_template_detail_id → tb_pricelist_template_detail.id` (`NoAction`).
 
 ### 3.3 tb_request_for_pricing_comment / tb_request_for_pricing_detail_comment
 
-Activity-log surfaces on the campaign header and per-vendor invitation. Same shape as the template comment tables — `id`, FK to parent, `type` enum (`user` / `system`), `user_id`, `message`, `attachments`, and the standard audit columns.
+Activity-log surfaces on the campaign header and per-vendor invitation. Same shape as the template comment tables — `id`, FK to parent, `type` enum (`user` / `system`), `user_id`, `message`, `attachments`, `doc_version`, and the standard audit columns.
 
 | Table | Parent FK | Purpose |
 | ----- | --------- | ------- |
@@ -83,7 +86,7 @@ Activity-log surfaces on the campaign header and per-vendor invitation. Same sha
 
 ### 3.4 tb_pricelist_comment / tb_pricelist_detail_comment
 
-Activity-log surfaces on the pricelist header and per-row. Same shape as the template comment tables — `id`, FK to parent, `type` enum (`user` / `system`), `user_id`, `message`, `attachments`, and the standard audit columns.
+Activity-log surfaces on the pricelist header and per-row. Same shape as the template comment tables — `id`, FK to parent, `type` enum (`user` / `system`), `user_id`, `message`, `attachments`, `doc_version`, and the standard audit columns.
 
 | Table | Parent FK | Purpose |
 | ----- | --------- | ------- |
