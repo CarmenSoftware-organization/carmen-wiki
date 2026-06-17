@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูลการสุ่มตรวจ
 published: true
-date: 2026-06-09T00:00:00.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: spot-check, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -35,7 +35,7 @@ dateCreated: 2026-05-15T14:30:00.000Z
 
 Prisma schema canonical กำหนดสี่ตาราง (ตรวจสอบกับ `prisma-shared-schema-tenant/prisma/schema.prisma` บรรทัด 3615–3765):
 
-- **`tb_spot_check`** — header ของ spot-check พกพา `spot_check_no` (หมายเลขเอกสาร), `start_date` (default `now()`) / `end_date` (nullable), `location_id → tb_location` พร้อม snapshot `location_code` / `location_name`, `doc_status` บน `enum_spot_check_status` (`pending`, `in_progress`, `void`, `completed`), `method` บน `enum_spot_check_method` (`random` / `high_value` / `manual`), `size` (จำนวนเป้าหมายตัวอย่าง default 10), `description`, `note` และ JSON blob `info` / `dimension` Unique ภายใน `(spot_check_no, deleted_at)`
+- **`tb_spot_check`** — header ของ spot-check พกพา `spot_check_no` (หมายเลขเอกสาร), `start_date` (default `now()`) / `end_date` (nullable), `location_id → tb_location` พร้อม snapshot `location_code` / `location_name`, `doc_status` บน `enum_spot_check_status` (`pending`, `in_progress`, `void`, `completed`), `method` บน `enum_spot_check_method` (`random` / `high_value` / `manual`), `size` (จำนวนเป้าหมายตัวอย่าง default 10), `description`, `note`, `doc_version` (`Int @db.Integer`, ไม่ nullable — ตัวนับเวอร์ชันสำหรับ optimistic concurrency; default `0` เพิ่มค่าทุกครั้งที่อัปเดต; client ต้องส่งค่านี้กลับมาตอนบันทึก ไม่งั้นจะได้ `409 Conflict`) และ JSON blob `info` / `dimension` Unique ภายใน `(spot_check_no, deleted_at)`
 - **`tb_spot_check_comment`** — comment / attachment ระดับ header พกพา `message`, JSON array ของ `attachments` และ `enum_comment_type` (`user` / `system`)
 - **`tb_spot_check_detail`** — บรรทัด spot-check ต่อสินค้า พกพา `product_id`, snapshot `product_code` / `product_name` / `product_local_name` / `product_sku`, `inventory_unit_id` (FK ไปยัง `tb_unit`), `on_hand_qty` (snapshot ของ book ขณะตรวจ, `Decimal(20,5)`), `actual_qty` (ปริมาณ physical ที่ป้อน nullable จนกว่าจะนับ), `diff_qty` (`actual_qty - on_hand_qty`, `Decimal(20,5)`), `counted_at` / `counted_by_id` และ `sequence_no` สำหรับลำดับบน sheet Unique ภายใน `(spot_check_id, product_id, dimension, deleted_at)`
 - **`tb_spot_check_detail_comment`** — comment / attachment ระดับบรรทัดบน row ของ spot-check detail

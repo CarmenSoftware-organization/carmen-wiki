@@ -2,7 +2,7 @@
 title: Spot Check — Data Model
 description: Entities, fields, relationships, and enums for the spot-check module.
 published: true
-date: 2026-06-09T00:00:00.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: spot-check, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -35,7 +35,7 @@ The module sits **upstream of [inventory-adjustment](/en/inventory/inventory-adj
 
 The canonical Prisma schema defines four tables (verified against `prisma-shared-schema-tenant/prisma/schema.prisma` lines 3615–3765):
 
-- **`tb_spot_check`** — the spot-check header. Carries `spot_check_no` (document number), `start_date` (default `now()`) / `end_date` (nullable), `location_id → tb_location` with snapshot `location_code` / `location_name`, `doc_status` on `enum_spot_check_status` (`pending`, `in_progress`, `void`, `completed`), `method` on `enum_spot_check_method` (`random` / `high_value` / `manual`), `size` (sample target count, default 10), `description`, `note`, and `info` / `dimension` JSON blobs. Unique within `(spot_check_no, deleted_at)`.
+- **`tb_spot_check`** — the spot-check header. Carries `spot_check_no` (document number), `start_date` (default `now()`) / `end_date` (nullable), `location_id → tb_location` with snapshot `location_code` / `location_name`, `doc_status` on `enum_spot_check_status` (`pending`, `in_progress`, `void`, `completed`), `method` on `enum_spot_check_method` (`random` / `high_value` / `manual`), `size` (sample target count, default 10), `description`, `note`, `doc_version` (`Int @db.Integer`, not nullable — optimistic-concurrency version counter; default `0`. Incremented on each update; the client must echo it on save or receive a `409 Conflict`.), and `info` / `dimension` JSON blobs. Unique within `(spot_check_no, deleted_at)`.
 - **`tb_spot_check_comment`** — header-level comments / attachments. Carries `message`, `attachments` JSON array, and `enum_comment_type` (`user` / `system`).
 - **`tb_spot_check_detail`** — the per-product spot-check line. Carries `product_id`, snapshot `product_code` / `product_name` / `product_local_name` / `product_sku`, `inventory_unit_id` (FK to `tb_unit`), `on_hand_qty` (book snapshot at check time, `Decimal(20,5)`), `actual_qty` (the entered physical count, nullable until counted), `diff_qty` (`actual_qty - on_hand_qty`, `Decimal(20,5)`), `counted_at` / `counted_by_id`, and `sequence_no` for sheet ordering. Unique within `(spot_check_id, product_id, dimension, deleted_at)`.
 - **`tb_spot_check_detail_comment`** — line-level comments / attachments on a spot-check detail row.
