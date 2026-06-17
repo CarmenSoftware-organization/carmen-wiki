@@ -39,9 +39,13 @@ Since last sync **2026-06-11**: backend-v2 (330 commits), frontend-react (109), 
 
 **Deliberately SKIPPED (bug fixes aligning to already-documented behavior, not divergences):** PO from-price-list recompute/exchange_rate/submit-after-save; vendor-pricelist multi-tier label + foreign-currency exchange_rate; SR infinite-scroll resetKey.
 
+## PLATFORM BOOK (done — user said "update all module")
+carmen-platform had 7 commits since 2026-06-11, all ONE feature: the **Application `device` field**.
+- **applications** — EDIT (EN+TH): `tb_application.device` (`String @db.VarChar` default `"web"`; SPA set mobile/web/desktop/pos) added to data-model §2.1 + §4 enum note; ui-screens Device column (skeleton 7→8) + Filters Sheet device dropdown + `devicefilter_applications` persisted state + ApplicationEdit Device select; landing §3 Key Concept. Cross-linked to the GRN mobile filter that reads this device. cf da94b11, 65cc4e0, 2bfb055, e2d1f4d.
+- **All other Platform modules IN SYNC** (no source change since 2026-06-11): clusters, business-units, rbac, users, broadcasts, news, report-templates, print-template-mapping, profile, changelog.
+
 ## NEXT (awaiting user)
-- Review branch `docs/resync-inventory-2026-06-17`; merge to main if approved. **Not pushed / no PR** (no explicit ask).
-- **Platform book re-sync** (carmen-platform, 7 commits) — deferred, separate pass.
+- Review branch `docs/resync-inventory-2026-06-17` (11 commits: spec + 8 inventory modules + progress log + platform applications); merge to main if approved. **Not pushed / no PR** (no explicit ask).
 - Optional: render-check edited pages on dev Wiki.js.
 
 ## Decisions / conservatism rules
