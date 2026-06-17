@@ -2,7 +2,7 @@
 title: Location
 description: Storage and consumption locations classified as inventory, direct, or consignment — drives stock posting and physical-count behaviour.
 published: true
-date: 2026-06-09T16:28:56.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: master-data, location, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -91,6 +91,7 @@ Source: tenant schema.
 - **Lifecycle.** `is_active = false` hides from pickers; preserves historical postings.
 - **Count exemption.** `physical_count_type = no` excludes period count, not spot check.
 - **Delivery-point coupling.** Refresh `delivery_point_name` snapshot on rename.
+- **Optimistic lock.** Location PATCH carries a `doc_version`; the client must echo the current `doc_version` on save or receive a `409 Conflict`, and the version increments on success. Scope is the `tb_location` header only — junction sub-tables (`tb_user_location`, `tb_product_location`) are not guarded.
 
 ## 7. Cross-References
 

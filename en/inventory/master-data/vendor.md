@@ -2,7 +2,7 @@
 title: Vendor
 description: Suppliers and their addresses, contacts, and business-type taxonomy — the counterparty on every procurement document.
 published: true
-date: 2026-06-09T16:28:56.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: master-data, vendor, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -129,6 +129,7 @@ Flat lookup — `id`, `name`, `description`, `note`, `is_active`, standard metad
 - **Primary contact invariant.** At most one `is_primary = true` per vendor (app invariant).
 - **Tax-profile change propagation.** Does not retro-edit documents; snapshots stay as posted.
 - **Business-type rename** requires a maintenance job to refresh JSON snapshots on vendors.
+- **Optimistic lock.** Vendor header PATCH carries a `doc_version`; the client must echo the current `doc_version` on save or receive a `409 Conflict`, and the version increments on success. Scope is the `tb_vendor` header only — child tables (`tb_vendor_address`, `tb_vendor_contact`) and soft-delete are not guarded.
 
 ## 7. Cross-References
 
