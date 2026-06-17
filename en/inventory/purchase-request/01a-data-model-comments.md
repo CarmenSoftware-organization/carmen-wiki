@@ -2,7 +2,7 @@
 title: Purchase Request — Data Model — Comment Tables
 description: Document-level and line-level comment / attachment tables for the Purchase Request module — message text, attachments JSON, and the user/system comment-type enum.
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-06-17T08:00:00.000Z
 tags: purchase-request, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -24,6 +24,7 @@ id                  uuid / PK
 message             text (free-form, nullable)
 attachments         json — array of `{originalName, fileToken, contentType}` (nullable)
 type                enum_comment_type — `user` (default) | `system`
+doc_version         Int — optimistic-concurrency version counter (default 0)
 created_at          timestamp
 created_by_id       uuid / FK to tb_user
 updated_at          timestamp
@@ -46,6 +47,7 @@ Workflow / activity-log entries attached to a PR header. The Prisma schema has n
 | `user_id` | `String @db.Uuid` | Yes | Author user id (null for `system` entries). |
 | `message` | `String` | Yes | Free-text comment body. |
 | `attachments` | `Json @db.JsonB` | Yes | Array of `{ originalName, fileToken, contentType }`; default `[]`. |
+| `doc_version` | `Int @db.Integer` | No | Optimistic-concurrency version counter; default 0. |
 | `created_at` | `DateTime @db.Timestamptz(6)` | Yes | Creation timestamp. |
 | `created_by_id` | `String @db.Uuid` | Yes | Creator id. |
 | `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | Last-update timestamp. |
@@ -68,6 +70,7 @@ Line-level counterpart of `tb_purchase_request_comment`. Captures comments and s
 | `user_id` | `String @db.Uuid` | Yes | Author user id. |
 | `message` | `String` | Yes | Free-text comment body. |
 | `attachments` | `Json @db.JsonB` | Yes | Array of attachments; default `[]`. |
+| `doc_version` | `Int @db.Integer` | No | Optimistic-concurrency version counter; default 0. |
 | `created_at` | `DateTime @db.Timestamptz(6)` | Yes | Creation timestamp. |
 | `created_by_id` | `String @db.Uuid` | Yes | Creator id. |
 | `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | Last-update timestamp. |
