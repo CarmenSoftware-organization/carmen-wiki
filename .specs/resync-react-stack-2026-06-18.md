@@ -4,16 +4,16 @@ Source of truth: `../carmen-inventory-frontend-react`. Scope: inventory book onl
 
 | Module | Pass1 routes-fixed | Pass2 arch-deltas | Pass3 behavior | Notes |
 |--------|--------------------|-------------------|----------------|-------|
-| config | no stale routes found | | | |
-| procurement (PR/PO/GRN/credit-note) | no stale routes found | | | |
-| inventory-management (adjustment/physical-count/spot-check/period-end/transaction) | no stale routes found (period-end-process refs are carmen/docs file paths, not app routes) | | | |
-| vendor-management (vendor/price-list/request-price-list) | no stale routes found | | | |
-| store-operation (store-requisition/wastage/stock-replenishment) | `/store-operations/store-requisitions` → `/store-operation/store-requisition` (EN+TH, REQ-HP-01 test step) | | | |
-| operation-plan (recipe/category/cuisine/equipment) | no stale routes found | | | |
-| product-management | no stale routes found | | | |
-| system-admin (user-activity/period/workflow/etc.) | no stale routes found | | | |
-| report | no stale routes found | | | |
-| dashboard | no stale routes found (dashboard/main etc. are justified mock-section docs, not router entries) | | | |
+| config | no stale routes found | no infra prose found | | |
+| procurement (PR/PO/GRN/credit-note) | no stale routes found | no infra prose found | | |
+| inventory-management (adjustment/physical-count/spot-check/period-end/transaction) | no stale routes found (period-end-process refs are carmen/docs file paths, not app routes) | no infra prose found | | |
+| vendor-management (vendor/price-list/request-price-list) | no stale routes found | no infra prose found | | |
+| store-operation (store-requisition/wastage/stock-replenishment) | `/store-operations/store-requisitions` → `/store-operation/store-requisition` (EN+TH, REQ-HP-01 test step) | no infra prose found | | |
+| operation-plan (recipe/category/cuisine/equipment) | no stale routes found | no infra prose found | | |
+| product-management | no stale routes found | no infra prose found | | |
+| system-admin (user-activity/period/workflow/etc.) | no stale routes found | no infra prose found | | |
+| report | no stale routes found | no infra prose found | | |
+| dashboard | no stale routes found (dashboard/main etc. are justified mock-section docs, not router entries) | no infra prose found; only Next.js ref is intentional historical annotation in widget-workspace.md | | |
 
 ## Route gaps (app route with no wiki page) — log only, do not author
 
