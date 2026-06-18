@@ -46,7 +46,7 @@ The same record configures period-end count behaviour (`physical_count_type` = `
 | "Cannot delete — non-zero balance" | Location still holds stock | Issue out or transfer first |
 | "Cannot delete — referenced by open SR/GRN" | FK references in open docs | Close documents first |
 | "Cannot change location_type" | Edit attempted after first movement | Create a new location and migrate manually |
-| Delivery-point name stale | `delivery_point_name` snapshot wasn't refreshed | Re-save the location or run a backfill |
+| Delivery-point name in reports | `delivery_point_name` snapshot may differ if not kept in sync | Query `delivery_point.name` via join for authoritative value |
 
 ## 4. Edge Cases
 
@@ -90,7 +90,7 @@ Source: tenant schema.
 - **Validation.** `location_type` cannot change after first movement.
 - **Lifecycle.** `is_active = false` hides from pickers; preserves historical postings. An already-assigned delivery point that is later deactivated continues to display its name in the location view and edit form (the form reads `delivery_point.name` from the nested object, not the snapshot field).
 - **Count exemption.** `physical_count_type = no` excludes period count, not spot check.
-- **Delivery-point coupling.** Refresh `delivery_point_name` snapshot on rename.
+- **Delivery-point coupling.** The location form shows the live name from `delivery_point.name` (nested object), so the displayed label is always current. The `delivery_point_name` column is a legacy snapshot field that the UI no longer depends on for display.
 - **Optimistic lock.** Location PATCH carries a `doc_version`; the client must echo the current `doc_version` on save or receive a `409 Conflict`, and the version increments on success. Scope is the `tb_location` header only — junction sub-tables (`tb_user_location`, `tb_product_location`) are not guarded.
 
 ## 7. Cross-References

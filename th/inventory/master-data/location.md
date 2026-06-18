@@ -46,7 +46,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | "Cannot delete — non-zero balance" | location ยังมีสต๊อก | จ่ายออกหรือโอนก่อน |
 | "Cannot delete — referenced by open SR/GRN" | FK references ในเอกสารเปิด | ปิดเอกสารก่อน |
 | "Cannot change location_type" | พยายามแก้หลังการเคลื่อนไหวครั้งแรก | สร้าง location ใหม่และย้ายด้วยมือ |
-| ชื่อจุดส่งของล้าสมัย | snapshot `delivery_point_name` ไม่ได้ refresh | Save location ใหม่ หรือ run backfill |
+| ชื่อจุดส่งของในรายงาน | snapshot `delivery_point_name` อาจไม่ตรงหากไม่ได้ sync | Query `delivery_point.name` ผ่าน join สำหรับค่าที่ถูกต้อง |
 
 ## 4. Edge Cases
 
@@ -90,7 +90,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 - **Validation** `location_type` ไม่สามารถเปลี่ยนได้หลังการเคลื่อนไหวครั้งแรก
 - **Lifecycle** `is_active = false` ซ่อนจาก picker; รักษาการ post ประวัติ จุดส่งของที่ผูกไว้แล้วและถูก deactivate ในภายหลัง ยังคงแสดงชื่อในฟอร์มดู/แก้ไข location (ฟอร์มอ่าน `delivery_point.name` จาก nested object ไม่ใช่ snapshot field)
 - **ยกเว้นการนับ** `physical_count_type = no` ข้าม period count ไม่ใช่ spot check
-- **การจับคู่กับจุดส่งของ** Refresh snapshot `delivery_point_name` เมื่อมีการเปลี่ยนชื่อ
+- **การจับคู่กับจุดส่งของ** ฟอร์ม location แสดงชื่อ live จาก `delivery_point.name` (nested object) ดังนั้น label ที่แสดงจึงเป็นปัจจุบันเสมอ คอลัมน์ `delivery_point_name` เป็น legacy snapshot field ที่ UI ไม่ได้ใช้สำหรับการแสดงผลอีกต่อไป
 - **Optimistic lock** PATCH location ต้องส่ง `doc_version`; client ต้อง echo `doc_version` ปัจจุบันตอน save มิฉะนั้นจะได้ `409 Conflict` และ version จะเพิ่มขึ้นเมื่อสำเร็จ ขอบเขตคือ header `tb_location` เท่านั้น — ตาราง junction sub-tables (`tb_user_location`, `tb_product_location`) ไม่ถูก guard
 
 ## 7. การอ้างอิงข้ามโมดูล
