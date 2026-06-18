@@ -4,16 +4,16 @@ Source of truth: `../carmen-inventory-frontend-react`. Scope: inventory book onl
 
 | Module | Pass1 routes-fixed | Pass2 arch-deltas | Pass3 behavior | Notes |
 |--------|--------------------|-------------------|----------------|-------|
-| config | no stale routes found | no infra prose found | | |
-| procurement (PR/PO/GRN/credit-note) | no stale routes found | no infra prose found | | |
-| inventory-management (adjustment/physical-count/spot-check/period-end/transaction) | no stale routes found (period-end-process refs are carmen/docs file paths, not app routes) | no infra prose found | | |
-| vendor-management (vendor/price-list/request-price-list) | no stale routes found | no infra prose found | | |
+| config | no stale routes found | no infra prose found | verified — no change (config/page.tsx → config-dashboard.tsx; KPI/bar/pie widget grid with location, business-type, CN-reason, tax-profile, exchange-rate tiles; sub-module list pages follow list+filter+new pattern; matches wiki config module description) | |
+| procurement (PR/PO/GRN/credit-note) | no stale routes found | no infra prose found | verified — no change (procurement/page.tsx → procurement-dashboard.tsx; PR/PO/GRN/CN sub-modules each render list component + new/detail routes; approval queue at /procurement/approval; wiki lifecycle flows and screen shapes (list, detail, new) match) | |
+| inventory-management (adjustment/physical-count/spot-check/period-end/transaction) | no stale routes found (period-end-process refs are carmen/docs file paths, not app routes) | no infra prose found | verified — no change (inventory-management/page.tsx → inventory-dashboard.tsx; each sub-module renders dedicated _component (ia-component, pc-component, sc-component, pe-component, transaction-component); list+detail+new shape matches wiki; adjustment doc notes Stock-In/Stock-Out tabs which match ia-component JSDoc) | |
+| vendor-management (vendor/price-list/request-price-list) | no stale routes found | no infra prose found | verified — no change (vendor-management/page.tsx → vendor-dashboard.tsx; vendor/price-list/price-list-template/request-price-list sub-modules each have page.tsx → list component + [id]/new routes; matches wiki screen shape) | |
 | store-operation (store-requisition/wastage/stock-replenishment) | `/store-operations/store-requisitions` → `/store-operation/store-requisition` (EN+TH, REQ-HP-01 test step) | no infra prose found | verified — no change (list/grid, my-pending/all-document, filters, export, print, delete all match sr-component.tsx) | |
-| operation-plan (recipe/category/cuisine/equipment) | no stale routes found | no infra prose found | | |
-| product-management | no stale routes found | no infra prose found | | |
-| system-admin (user-activity/period/workflow/etc.) | no stale routes found | no infra prose found | | |
-| report | no stale routes found | no infra prose found | | |
-| dashboard | no stale routes found (dashboard/main etc. are justified mock-section docs, not router entries) | no infra prose found; only Next.js ref is intentional historical annotation in widget-workspace.md | | |
+| operation-plan (recipe/category/cuisine/equipment) | no stale routes found | no infra prose found | verified — no change (operation-plan/page.tsx → operation-dashboard.tsx; recipe/category/cuisine/equipment each have page.tsx → list component + [id]/new routes; matches wiki screen shape) | |
+| product-management | no stale routes found | no infra prose found | verified — no change (product-management/page.tsx → product-dashboard.tsx; product/category sub-modules have page.tsx → pd-component/list component + [id]/new routes; matches wiki product and category screen shape) | |
+| system-admin (user-activity/period/workflow/etc.) | no stale routes found | no infra prose found | verified — no change (system-admin/page.tsx → system-admin-landing with LandingHero/LandingChapter tiles; sub-modules (user, role, workflow, period, running-code, activity-log, notification-template, etc.) each have page.tsx → list component + [id]/new routes; matches wiki system-admin module structure) | |
+| report | no stale routes found | no infra prose found | verified — no change (report/page.tsx → report-landing.tsx with 3-chapter marketing landing (list → /report/list, schedules → /report/schedules, history → /report/history); report/list/page.tsx → report-component; matches wiki reporting-audit module description of report job pipeline and export) | |
+| dashboard | no stale routes found (dashboard/main etc. are justified mock-section docs, not router entries) | no infra prose found; only Next.js ref is intentional historical annotation in widget-workspace.md | verified — no change (dashboard/page.tsx → dashboard-component.tsx; personalised greeting + saved-widgets section with drag-and-drop KPI/pie/bar cards, LookupDataset add-widget picker; matches wiki dashboard/widget-workspace description) | |
 
 ## Route gaps (app route with no wiki page) — log only, do not author
 
