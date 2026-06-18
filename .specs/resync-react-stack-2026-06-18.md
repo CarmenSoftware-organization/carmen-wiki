@@ -8,7 +8,7 @@ Source of truth: `../carmen-inventory-frontend-react`. Scope: inventory book onl
 | procurement (PR/PO/GRN/credit-note) | no stale routes found | no infra prose found | | |
 | inventory-management (adjustment/physical-count/spot-check/period-end/transaction) | no stale routes found (period-end-process refs are carmen/docs file paths, not app routes) | no infra prose found | | |
 | vendor-management (vendor/price-list/request-price-list) | no stale routes found | no infra prose found | | |
-| store-operation (store-requisition/wastage/stock-replenishment) | `/store-operations/store-requisitions` → `/store-operation/store-requisition` (EN+TH, REQ-HP-01 test step) | no infra prose found | | |
+| store-operation (store-requisition/wastage/stock-replenishment) | `/store-operations/store-requisitions` → `/store-operation/store-requisition` (EN+TH, REQ-HP-01 test step) | no infra prose found | verified — no change (list/grid, my-pending/all-document, filters, export, print, delete all match sr-component.tsx) | |
 | operation-plan (recipe/category/cuisine/equipment) | no stale routes found | no infra prose found | | |
 | product-management | no stale routes found | no infra prose found | | |
 | system-admin (user-activity/period/workflow/etc.) | no stale routes found | no infra prose found | | |
@@ -100,9 +100,9 @@ Routes in routes.txt with no explicit wiki page reference (GAP — log only, no 
 
 ### Actionable modules for Pass 3b (Task 5)
 
-| Module | Reason |
-|--------|--------|
-| `store-operation/store-requisition` | `route-changed` — route fix in Task 2; behavior re-read needed to confirm flow docs still accurate |
-| `master-data/location` | `git:4ac7b62 display delivery point even when inactive` — location form/view now shows inactive delivery point label (reads `delivery_point.name` from nested object, not stale `delivery_point_name`; edit form passes `defaultLabel` so inactive value resolves). Behavior not yet documented in `en/inventory/master-data/location.md`. |
+| Module | Reason | Pass3 result |
+|--------|--------|--------------|
+| `store-operation/store-requisition` | `route-changed` — route fix in Task 2; behavior re-read needed to confirm flow docs still accurate | verified — no change (read sr-component.tsx; list/grid views, my-pending/all-document toggle, status/from-location/to-location/sr-type filters, export, print, delete all match wiki) |
+| `master-data/location` | `git:4ac7b62 display delivery point even when inactive` — location form/view now shows inactive delivery point label (reads `delivery_point.name` from nested object, not stale `delivery_point_name`; edit form passes `defaultLabel` so inactive value resolves). Behavior not yet documented in `en/inventory/master-data/location.md`. | fixed: added sentence to §6 Lifecycle bullet (inactive delivery point label still displays, reads nested `delivery_point.name`) and rewrote §4 Delivery-point coupling edge case to reflect nested-object read + `defaultLabel` pattern — EN+TH |
 
 **Total ACTIONABLE: 2 modules. Dropped: 17 commits (8 already-synced, 6 infra/build, 3 out-of-scope).**

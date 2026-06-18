@@ -2,7 +2,7 @@
 title: Location
 description: Storage and consumption locations classified as inventory, direct, or consignment — drives stock posting and physical-count behaviour.
 published: true
-date: 2026-06-17T08:00:00.000Z
+date: 2026-06-18T00:00:00.000Z
 tags: master-data, location, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -53,7 +53,7 @@ The same record configures period-end count behaviour (`physical_count_type` = `
 - **`location_type` is sticky once used** — switching `inventory` → `direct` retro-actively corrupts journal entries.
 - **Count exemption** — `physical_count_type = no` excludes from period count but **not** from spot checks.
 - **Consignment balances** are supplier-owned; recognised on consumption rather than receipt.
-- **Delivery-point coupling** — `delivery_point_name` is denormalised, needs refresh on rename.
+- **Delivery-point coupling** — The form reads `delivery_point.name` from the nested API object, so an inactive delivery point assigned to a location still shows its name in both view and edit mode (the edit form passes it as `defaultLabel` to the lookup widget, which only lists active delivery points). The `delivery_point_name` snapshot field remains on the record for legacy references.
 - **Code uniqueness is app-enforced** (no DB unique constraint).
 
 ---
@@ -88,7 +88,7 @@ Source: tenant schema.
 - **Uniqueness.** `code` unique among active rows (app-enforced).
 - **Deletion guards.** Non-zero balance or open SR/GRN references block deletion.
 - **Validation.** `location_type` cannot change after first movement.
-- **Lifecycle.** `is_active = false` hides from pickers; preserves historical postings.
+- **Lifecycle.** `is_active = false` hides from pickers; preserves historical postings. An already-assigned delivery point that is later deactivated continues to display its name in the location view and edit form (the form reads `delivery_point.name` from the nested object, not the snapshot field).
 - **Count exemption.** `physical_count_type = no` excludes period count, not spot check.
 - **Delivery-point coupling.** Refresh `delivery_point_name` snapshot on rename.
 - **Optimistic lock.** Location PATCH carries a `doc_version`; the client must echo the current `doc_version` on save or receive a `409 Conflict`, and the version increments on success. Scope is the `tb_location` header only — junction sub-tables (`tb_user_location`, `tb_product_location`) are not guarded.

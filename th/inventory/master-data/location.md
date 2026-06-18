@@ -2,7 +2,7 @@
 title: ที่ตั้ง / สถานที่ (Location)
 description: สถานที่จัดเก็บและบริโภคที่จำแนกเป็น inventory, direct หรือ consignment — ขับเคลื่อนการ post สต๊อกและพฤติกรรมการ physical count
 published: true
-date: 2026-06-17T08:00:00.000Z
+date: 2026-06-18T00:00:00.000Z
 tags: master-data, location, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -53,7 +53,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 - **`location_type` ติดเมื่อใช้แล้ว** — การสลับ `inventory` → `direct` ทำให้ journal entry เสียหายย้อนหลัง
 - **ยกเว้นการนับ** — `physical_count_type = no` ข้าม period count แต่ **ไม่** ข้าม spot check
 - **ยอดคงเหลือ consignment** เป็นของ supplier; recognise ตอนบริโภค ไม่ใช่ตอนรับ
-- **การจับคู่กับจุดส่งของ** — `delivery_point_name` เป็น denormalised, ต้อง refresh เมื่อมีการเปลี่ยนชื่อ
+- **การจับคู่กับจุดส่งของ** — ฟอร์มอ่าน `delivery_point.name` จาก nested API object ดังนั้นจุดส่งของที่ inactive ที่ผูกไว้กับ location จะยังแสดงชื่อทั้งในโหมดดูและแก้ไข (ฟอร์มแก้ไขส่งชื่อนั้นเป็น `defaultLabel` ให้ lookup widget ซึ่ง list เฉพาะจุดส่งของที่ active เท่านั้น) ฟิลด์ snapshot `delivery_point_name` ยังคงอยู่ในระเบียนสำหรับการอ้างอิง legacy
 - **Code uniqueness บังคับใช้ระดับ app** (ไม่มี DB unique constraint)
 
 ---
@@ -88,7 +88,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 - **Uniqueness** `code` unique ในแถว active (app-enforced)
 - **Deletion guards** ยอด non-zero หรือการอ้างอิง SR/GRN ที่เปิดอยู่บล็อกการลบ
 - **Validation** `location_type` ไม่สามารถเปลี่ยนได้หลังการเคลื่อนไหวครั้งแรก
-- **Lifecycle** `is_active = false` ซ่อนจาก picker; รักษาการ post ประวัติ
+- **Lifecycle** `is_active = false` ซ่อนจาก picker; รักษาการ post ประวัติ จุดส่งของที่ผูกไว้แล้วและถูก deactivate ในภายหลัง ยังคงแสดงชื่อในฟอร์มดู/แก้ไข location (ฟอร์มอ่าน `delivery_point.name` จาก nested object ไม่ใช่ snapshot field)
 - **ยกเว้นการนับ** `physical_count_type = no` ข้าม period count ไม่ใช่ spot check
 - **การจับคู่กับจุดส่งของ** Refresh snapshot `delivery_point_name` เมื่อมีการเปลี่ยนชื่อ
 - **Optimistic lock** PATCH location ต้องส่ง `doc_version`; client ต้อง echo `doc_version` ปัจจุบันตอน save มิฉะนั้นจะได้ `409 Conflict` และ version จะเพิ่มขึ้นเมื่อสำเร็จ ขอบเขตคือ header `tb_location` เท่านั้น — ตาราง junction sub-tables (`tb_user_location`, `tb_product_location`) ไม่ถูก guard
