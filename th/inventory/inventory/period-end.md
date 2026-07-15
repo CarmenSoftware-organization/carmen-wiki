@@ -2,7 +2,7 @@
 title: ปิดงวด (Period End)
 description: การปิดสิ้นงวด — checklist review เหนือเอกสารที่ค้างและ physical count และการปิดคลิกเดียว (one-click close) ที่ยกยอด lot balance ไปยังงวดถัดไป
 published: true
-date: 2026-07-15T09:00:00.000Z
+date: 2026-07-15T10:30:00.000Z
 tags: inventory, period-end, costing, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -82,19 +82,19 @@ Period End **ไม่ใช่ Prisma table เดียว** — เป็น�
 ## 6. Lifecycle
 
 ```
-1. Operator opens /inventory-management/period-end (current period card)
+1. Operator เปิด /inventory-management/period-end (การ์ดงวดปัจจุบัน)
 2. Start close -> /period-end/review (GET /period-ends/review):
-   - per-module blocking-document cards (pr / po / grn / cn / sr)
-   - per-location physical-count progress
-3. Close period (POST /period-ends) -> inside ONE transaction:
-   - SELECT ... FOR UPDATE on tb_period; re-validate blocking documents
+   - การ์ดเอกสารที่ block ต่อโมดูล (pr / po / grn / cn / sr)
+   - progress การนับ physical-count ต่อ location
+3. Close period (POST /period-ends) -> ภายใน transaction เดียว:
+   - SELECT ... FOR UPDATE บน tb_period; re-validate เอกสารที่ block
    - fifo BU:  findAllRemainingLots -> writeCloseTransaction (close)
-               -> writeOpenTransaction (open, next period)
-     average BU: processAverageClose (restate issues at final average,
-               close/open transactions, tb_period_snapshot rows)
-   - tb_period.status = closed; tb_physical_count_period rows -> completed
-   - next tb_period ensured (status = open)
-4. New movements now stamp into the new open period automatically
+               -> writeOpenTransaction (open, งวดถัดไป)
+     average BU: processAverageClose (restate issues ที่ final average,
+               close/open transactions, rows ของ tb_period_snapshot)
+   - tb_period.status = closed; rows ของ tb_physical_count_period -> completed
+   - งวด tb_period ถัดไปถูก ensure (status = open)
+4. Movement ใหม่จากนี้ stamp เข้างวดเปิดใหม่โดยอัตโนมัติ
 ```
 
 ## 7. ความเชื่อมโยงข้ามโมดูล
