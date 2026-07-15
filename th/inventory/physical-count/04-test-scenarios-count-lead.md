@@ -1,80 +1,60 @@
 ---
-title: การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios — Count Lead
-description: Test case ของ Count Lead (Inventory Controller / Manager) สำหรับโมดูลการนับสต๊อกประจำงวด
+title: การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios — หน้ารายการ
+description: Test case ของหน้ารายการสำหรับโมดูลการนับสต๊อกประจำงวด
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T17:56:09.000Z
 tags: physical-count, test-scenarios, count-lead, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
 ---
 
-# การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios — Count Lead
+# การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios — หน้ารายการ
 
 > **At a Glance**
-> **Persona:** Count Lead (Inventory Controller / Inventory Manager) &nbsp;·&nbsp; **โมดูล:** [physical-count](/th/inventory/physical-count) &nbsp;·&nbsp; **Scenario:** ~30 (skeleton)
+> **หน้าจอ:** `physical-count` (`pc-component.tsx`) &nbsp;·&nbsp; **โมดูล:** [physical-count](/th/inventory/physical-count) &nbsp;·&nbsp; **Role:** ผู้ใช้ใดก็ตามที่ถือ `inventory_management.physical_count` (role เดียวกับ [04-test-scenarios-counter.md](/th/inventory/physical-count/04-test-scenarios-counter))
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **ความครอบคลุม E2E:** ไม่มี Playwright spec ของ `physical-count` ที่ `../carmen-inventory-frontend-e2e/`; scenario เป็น manual / planned
+> **ความครอบคลุม E2E:** ไม่มี Playwright spec ของ `physical-count`; scenario เป็น manual/planned
 
-## 1. ขอบเขต Persona
+## 1. ขอบเขต
 
-**Count Lead** = Inventory Controller / Inventory Manager เจ้าของการดำเนินการ scenario ด้านล่างใช้ action ที่ catalogue ใน [physical-count/03-user-flow-count-lead](/th/inventory/physical-count/03-user-flow-count-lead) หัวข้อ 3 — การสร้าง period และเอกสาร, การเลือกโหมด, การมอบหมาย counter, การติดตามความคืบหน้า, การแก้ไข flag recount, การ override / accept variance, submit และการ route rollup Authority anchor `PHC_AUTH_001`
+Scenario ด้านล่างใช้ action ของหน้ารายการที่ catalogue ใน [physical-count/03-user-flow-count-lead](/th/inventory/physical-count/03-user-flow-count-lead) § 3 — การ auto-provision period, การ filter, และการเริ่ม/ทำต่อการนับ
 
 ## 2. Functional — Happy Path
 
 | # | Scenario | Pre-condition | ผลที่คาดหวัง |
 | - | -------- | ------------- | ---------------- |
-| CL-F-01 | เปิด count period | `tb_period` เป็น `open` ตาม `INV_VAL_008`; ไม่มี `tb_physical_count_period` สำหรับ period นี้ | `tb_physical_count_period` ใหม่ใน `draft`; มองเห็นใน period scheduler |
-| CL-F-02 | สร้าง count sheet สำหรับ location เดียว (โหมด frozen) | Period อยู่ `draft` หรือ `counting`; location เป้าหมายเป็น inventory-type | `tb_physical_count` ใหม่ใน `pending`; `physical_count_type = yes`; จับ on-hand snapshot ต่อสินค้า; `product_total > 0` |
-| CL-F-03 | สร้าง count sheet (โหมด live) | เหมือน CL-F-02 | `tb_physical_count` ที่ `physical_count_type = no`; อนุญาตการเขียน inventory ขนานตาม `PHC_VAL_006` |
-| CL-F-04 | มอบหมาย counter ให้ zone | เอกสาร count อยู่ `pending`; counter มีอยู่ | บันทึก counter zone-grant; counter เห็นการมอบหมายใน "การมอบหมายการนับของฉัน" |
-| CL-F-05 | ติดตามความคืบหน้าสด | เอกสาร count อยู่ `in_progress` | `product_counted` / `product_total` มองเห็นและอัปเดต; `PHC_CALC_004` ถูกต้อง |
-| CL-F-06 | Flag บรรทัด variance ให้ recount | บรรทัดที่ `|diff_qty| / on_hand_qty` เกิน threshold ตาม `PHC_VAL_007` | Detail-comment พร้อม tag recount; submit ถูกบล็อกจนกว่า flag recount จะถูกแก้ไข |
-| CL-F-07 | Override / accept variance พร้อม countersignature | Recount ยืนยันการนับเดิม; ไม่สามารถสืบสวน variance เพิ่ม | Flag ถูกเคลียร์; บรรทัด eligible สำหรับ rollup; thread comment พกพา countersignature ของ override stamp ด้วย `created_by_id` |
-| CL-F-08 | Submit count — ทุกบรรทัดนับ ไม่มี flag เปิด | `product_counted == product_total`; ไม่มี flag `PHC_VAL_007` เปิด | `tb_physical_count.status = completed`; rollup `tb_stock_in` (overage) และ/หรือ `tb_stock_out` (shortage) สร้างพร้อม `info.countId` |
-| CL-F-09 | Route rollup adjustment ไปอนุมัติ | Rollup adjustment ใน `draft` (หรือ `in_progress` ถ้า auto-approve) | Adjustment มองเห็นในคิว Approver / Finance ตาม `ADJ_AUTH_*` |
+| L-F-01 | โหลดหน้ารายการสำหรับงวดบัญชีใหม่เอี่ยม | ยังไม่มี `tb_physical_count_period` สำหรับ `tb_period` ที่เปิดอยู่ปัจจุบัน | `GET /physical-count-periods/current` auto-create ที่ `status: draft`; รายการสถานที่ render |
+| L-F-02 | เริ่มการนับสำหรับสถานที่ที่ยังไม่เริ่มและจำเป็น | สถานที่มี `location_type ∈ {inventory, consignment}`, `physical_count_type = yes`, `is_active = true`; ไม่มี `tb_physical_count` สำหรับ period นี้; period ของ physical-count เป็น `counting` แล้ว | `POST /physical-counts` สำเร็จ; เอกสารสร้างที่ `in_progress`; navigate ไป `/:id/entry` |
+| L-F-03 | ทำต่อสถานที่ที่ in-progress | สถานที่มี `tb_physical_count` ที่ `in_progress` อยู่แล้ว | Navigate ตรงไป `/:id/entry`; ไม่มีเอกสารใหม่สร้าง |
+| L-F-04 | Filter ด้วย KPI tile | คลิก tile "In Progress" | เหลือเฉพาะการ์ดสถานที่ที่ in-progress ที่มองเห็น |
+| L-F-05 | Search ด้วยชื่อหรือรหัส | พิมพ์ชื่อ/รหัสสถานที่บางส่วน | รายการแคบลงตามที่ตรงกัน ฝั่ง client |
+| L-F-06 | รวมสถานที่ที่ไม่นับ | เช็ค "Include not-counted locations" | สถานที่ที่ flag `physical_count_type = no` ถูกเพิ่มเข้ารายการ ยังคงจำกัดที่สถานที่ inventory/consignment ที่ active |
+| L-F-07 | สลับไป period ก่อนหน้า | เลือก period ที่ปิดแล้วจาก dropdown period | ป้ายแสดง "Previous Period"; สถานที่ของ period นั้น render โดยผลจริงคืออ่านอย่างเดียว (การเริ่มการนับ *ใหม่* กับชุดเอกสารของ period ที่ปิดแล้วไม่ใช่ส่วนของ flow ปกติของหน้านี้) |
 
 ## 3. RBAC / Permission
 
 | # | Scenario | Pre-condition | ผลที่คาดหวัง |
 | - | -------- | ------------- | ---------------- |
-| CL-R-01 | ผู้ใช้ที่ไม่ใช่ Count Lead พยายามเปิด period | User ไม่มี role Count Lead พยายามสร้าง `tb_physical_count_period` | Reject ตาม `PHC_AUTH_001` |
-| CL-R-02 | Count Lead ไม่มีขอบเขตที่ location | Role Count Lead กำหนดแต่ไม่มี `tb_user_location` สำหรับ location เป้าหมาย | การสร้าง sheet ถูก reject พร้อม error ขอบเขต |
-| CL-R-03 | พยายามข้าม tenant | Count Lead จาก tenant A พยายามดำเนินการบน period ของ tenant B | Reject ที่ชั้น API auth (multi-tenancy guard) |
+| L-R-01 | ผู้ใช้ที่ไม่มี `inventory_management.physical_count` เปิดหน้ารายการ | Permission ไม่ได้รับ | การเข้าถึงถูก reject ตามกลไก permission-gate ทั่วไปที่ใช้ร่วมกันทั่วผลิตภัณฑ์; ไม่มี override เฉพาะโมดูล |
 
 ## 4. Validation — Negative Test
 
 | # | กฎ | Scenario | Error ที่คาดหวัง |
 | - | ---- | -------- | -------------- |
-| CL-V-01 | `PHC_VAL_001` | สร้าง `tb_physical_count` สำหรับ period ที่เป็น `completed` | `"Cannot add count to a completed period."` |
-| CL-V-02 | `PHC_VAL_002` | พยายามเปลี่ยน `physical_count_type` เมื่อเอกสารเป็น `in_progress` | `"Cannot change mode on a started count."` |
-| CL-V-03 | `PHC_VAL_003` | เป้าหมาย location ประเภท direct-cost สำหรับการสร้าง count sheet | `"Direct-cost locations cannot be physically counted."` |
-| CL-V-04 | `PHC_VAL_004` | Submit ด้วยบรรทัดที่ยังไม่นับ | `"Cannot submit count — <N> of <M> lines remain uncounted."` |
-| CL-V-05 | `PHC_VAL_007` | Submit ด้วยบรรทัดที่ flag recount เปิดอยู่ | `"Cannot submit — <K> variance line(s) await recount resolution."` |
-| CL-V-06 | `PHC_VAL_008` | พยายามแก้ไขเอกสาร count ที่เป็น `completed` | `"Cannot edit a completed count. Raise a manual inventory adjustment."` |
+| L-V-01 | `PHC_VAL_001` | เริ่มการนับขณะ period ของ physical-count ยังเป็น `draft` (สถานะที่ถูก auto-provision ไว้) | `POST /physical-counts` reject ด้วย `"Physical Count Period is not in counting status"` — ดูช่องว่างที่ยืนยันแล้วใน [03-user-flow.md](./03-user-flow.md) § 2 (ไม่พบ code path ที่เปลี่ยน period จาก `draft` เป็น `counting`) |
+| L-V-02 | `PHC_VAL_002` | เริ่มการนับสำหรับสถานที่ที่ถูก soft-delete ไปแล้ว | Reject ด้วย error location-not-found |
 
 ## 5. Edge Case
 
 | # | Scenario | ผลที่คาดหวัง |
 | - | -------- | ---------------- |
-| CL-E-01 | Counter มอบหมายระหว่างการนับให้ zone ที่นับไปแล้วบางส่วน | Counter เห็นบรรทัดที่นับแล้วของ zone ตน (read-only) บวกบรรทัดที่ยังไม่นับ (editable) |
-| CL-E-02 | Tolerance threshold แน่นขึ้นระหว่างการนับ | การนับที่กำลังดำเนินใช้ threshold ที่ snapshot ที่ sheet-gen; การนับใหม่ใช้ threshold ใหม่ |
-| CL-E-03 | พยายาม submit ขนาน (Count Lead คลิก submit สองครั้ง) | Submit ครั้งที่สอง no-op (idempotent); rollup สร้างครั้งเดียว; audit log แสดง submit ครั้งเดียว |
-| CL-E-04 | บรรทัด variance ทั้งหมด reconcile ภายใน tolerance | ไม่สร้าง rollup adjustment (ทุก `diff_qty = 0` หรือต่ำกว่า tolerance + ภายในศูนย์); เอกสาร `completed` ไม่มี downstream effect |
-| CL-E-05 | การนับข้ามเที่ยงคืน / ขอบ period | `start_counting_at` และ `completed_at` คร่อมวันที่; การตรวจ period-containment ใช้วันที่ complete การนับ |
+| L-E-01 | คลิกการ์ดสถานที่ที่ completed | ไม่มี action ทำงาน — การ์ด render เป็นป้ายธรรมดา ไม่ใช่ปุ่ม เมื่อ `physical_count_status = completed`; ปัจจุบันไม่มี route จากหน้านี้เข้าไปดู detail ของการนับที่ completed |
+| L-E-02 | เริ่มการนับสองครั้งติดกันสำหรับสถานที่เดียวกัน (double-click) | Path resume แบบ idempotent ของ `create()` (`PHC_VAL_003`) หมายความว่า call ที่สองคืน `id`/`doc_version` ของเอกสารเดียวกันแทนที่จะสร้างซ้ำ |
+| L-E-03 | สถานที่ที่ไม่มีสินค้าเข้าเงื่อนไขเลย | `product_total = 0` ตอนสร้าง; การนับยังถึง `completed` ได้ทันทีเพราะไม่มีอะไรต้องนับและไม่มีบรรทัดใดบล็อก `PHC_VAL_004` |
 
-## 6. Configuration / Audit-Trail
+## 6. แหล่งอ้างอิง
 
-| # | Scenario | ผลที่คาดหวัง |
-| - | -------- | ---------------- |
-| CL-C-01 | Count Lead เปลี่ยนการมอบหมาย counter ระหว่างการนับ | Counter ใหม่เห็น zone; counter ก่อนสูญสิทธิ์แก้ไขบน zone (read-only audit) |
-| CL-C-02 | Audit log จับทุก state transition + comment | ประวัติ `tb_physical_count.status` + thread `tb_physical_count_comment` อ่านได้ครบ; `created_by_id` / `counted_by_id` เติม |
-| CL-C-03 | การ verify การ link rollup | `tb_stock_in.info.countId` และ `tb_stock_out.info.countId` อ้างอิง `tb_physical_count.id` ต้นทาง |
-
-> **TODO:** ขยายทุก row ด้วย assertion ฟิลด์ `tb_*` ชัดเจนและข้อความ error ที่คาดหวังเมื่อ source frontend / E2E ถูกเขียน Cross-link ไป spec E2E เมื่อ `physical-count.spec.ts` ถูกเพิ่มที่ `../carmen-inventory-frontend-e2e/tests/`
-
-## 7. แหล่งอ้างอิง
-
-- **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
-- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — source ของพฤติกรรม UI Count Lead
-- **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count
-- ที่เกี่ยวข้อง: [physical-count/03-user-flow-count-lead](/th/inventory/physical-count/03-user-flow-count-lead), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_AUTH_001`, `PHC_VAL_*`, `PHC_POST_*`), [physical-count/04-test-scenarios](/th/inventory/physical-count/04-test-scenarios) (scenario handoff ข้าม persona)
+- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/physical-count/pc-component.tsx`
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (`create`), `.../physical-count-period/physical-count-period.service.ts` (`findCurrent`)
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count
+- ที่เกี่ยวข้อง: [physical-count/03-user-flow-count-lead](/th/inventory/physical-count/03-user-flow-count-lead), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_VAL_001`–`003`, `PHC_AUTH_001`), [physical-count/04-test-scenarios](/th/inventory/physical-count/04-test-scenarios) (scenario end-to-end)

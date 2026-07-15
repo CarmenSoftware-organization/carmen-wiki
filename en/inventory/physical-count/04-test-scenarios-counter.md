@@ -1,80 +1,68 @@
 ---
-title: Physical Count — Test Scenarios — Counter
-description: Counter / Store Keeper test cases for the physical-count module.
+title: Physical Count — Test Scenarios — Entry & Review Screens
+description: Entry- and review-screen test cases for the physical-count module.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T17:56:09.000Z
 tags: physical-count, test-scenarios, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
 ---
 
-# Physical Count — Test Scenarios — Counter
+# Physical Count — Test Scenarios — Entry & Review Screens
 
 > **At a Glance**
-> **Persona:** Counter (Counter / Store Keeper) &nbsp;·&nbsp; **Module:** [physical-count](/en/inventory/physical-count) &nbsp;·&nbsp; **Scenarios:** ~30 (skeleton)
+> **Screens:** `physical-count/:id/entry` (`pc-entry-component.tsx`), `physical-count/:id/review` (`pc-review-component.tsx`) &nbsp;·&nbsp; **Module:** [physical-count](/en/inventory/physical-count) &nbsp;·&nbsp; **Role:** same role as [04-test-scenarios-count-lead.md](/en/inventory/physical-count/04-test-scenarios-count-lead)
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **E2E coverage:** no `physical-count` Playwright spec exists at `../carmen-inventory-frontend-e2e/`; scenarios are manual / planned coverage.
+> **E2E coverage:** no `physical-count` Playwright spec exists; scenarios are manual/planned coverage.
 
-## 1. Persona Scope
+## 1. Scope
 
-**Counter** = Counter / Store Keeper. The floor-level worker who enters `actual_qty` per line in their assigned zone, flags damaged / unlabelled items, and signs off completed zones. The scenarios below exercise the actions catalogued in [physical-count/03-user-flow-counter](/en/inventory/physical-count/03-user-flow-counter) Section 3 — opening assigned sheets, entering counts, flagging items, adding comments, zone-completion signoff. Authority anchor `PHC_AUTH_002`.
+The scenarios below exercise the actions catalogued in [physical-count/03-user-flow-counter](/en/inventory/physical-count/03-user-flow-counter) § 3 — line entry, notes, import/export, Save, Submit for Review, and the final Submit.
 
 ## 2. Functional — Happy Paths
 
 | # | Scenario | Pre-condition | Expected outcome |
 | - | -------- | ------------- | ---------------- |
-| C-F-01 | Open assigned count sheet | Counter has zone-grant; count document in `pending`. | Zone-scoped lines visible; `on_hand_qty` (book) hidden if blind-count tenant policy is on. |
-| C-F-02 | Enter first `actual_qty` on a line | Count document in `pending`; counter has zone-grant. | Count document advances to `in_progress`; `start_counting_at` / `start_counting_by_id` stamped on `tb_physical_count`. |
-| C-F-03 | Enter `actual_qty` matching `on_hand_qty` | Line in counter's zone. | `actual_qty` saved; `diff_qty = 0`; `counted_at` / `counted_by_id` stamped on `tb_physical_count_detail`. |
-| C-F-04 | Enter `actual_qty` > `on_hand_qty` (overage) | Line in counter's zone. | `actual_qty` saved; `diff_qty > 0`; line within tolerance bands if applicable. |
-| C-F-05 | Enter `actual_qty` < `on_hand_qty` (shortage) | Line in counter's zone. | `actual_qty` saved; `diff_qty < 0`; line eligible for tolerance check at Count Lead level. |
-| C-F-06 | Enter `actual_qty = 0` (zero on shelf) | Line with `on_hand_qty > 0`. | `actual_qty = 0` saved; `diff_qty = -on_hand_qty` (full shortage); line flagged at Count Lead level if exceeds threshold. |
-| C-F-07 | Flag damaged / unlabelled / unfamiliar item | Line in counter's zone. | `tb_physical_count_detail_comment` row created with photo attachment; Count Lead is notified. |
-| C-F-08 | Add count-level comment | Document in `in_progress`. | `tb_physical_count_comment` row created (e.g. `"zone B fully counted, awaiting bin re-stock check"`). |
-| C-F-09 | Edit own line before submit | Counter previously entered `actual_qty`. | `actual_qty` updated; `counted_at` re-stamped; audit log retains previous-value via comment-thread. |
-| C-F-10 | Sign off completed zone | All zone lines have non-null `actual_qty`. | Notification fires to Count Lead; counter cannot submit the document. |
+| E-F-01 | Enter `actual_qty` on a line | Document `in_progress`. | Value committed to local state on blur; "counted" badge appears once a value is present. |
+| E-F-02 | Save a partial set of lines | Some lines have values, some do not. | `PATCH .../save` stamps `counted_at`/`counted_by_id` on the submitted lines; `product_counted` updates. |
+| E-F-03 | Attach a note and photo to a line | Any time. | `POST /physical-count-detail-comments/:detailId` creates a `tb_physical_count_detail_comment` row with the message and attachment. |
+| E-F-04 | Use the calculator to compute a total | Product has a case/unit conversion the counter wants to compute. | `CalculatorDialog` returns a total that is written into the line's `actual_qty`. |
+| E-F-05 | Export the current counts | Any time. | An `.xlsx` file downloads with id, product code/name/local name/SKU, unit, and current effective `actual_qty` per row. |
+| E-F-06 | Import counts from a spreadsheet | A previously-exported (or externally-prepared) file with matching SKUs. | Matched rows populate their lines' local values; a toast reports matched/total/skipped counts. |
+| E-F-07 | Refresh products mid-count | A product newly qualifies for the location (assigned, or now has stock). | `PATCH .../refresh` appends the new line to the sheet; existing lines are unaffected. |
+| E-F-08 | Submit for Review once every line has a value | `uncountedCount === 0`. | `PATCH .../review` recomputes `on_hand_qty`/`diff_qty` for every line from the live ledger balance; navigates to `/review`. |
+| E-F-09 | Review screen shows correct summary counts | Some lines match, some are overages, some are shortages. | Matches/variances/overages/shortages counts on the review screen agree with each line's `diff_qty`. |
+| E-F-10 | Final Submit with mixed variance | Every line's `counted_at != null`. | `PATCH .../submit` sets `status = completed`, creates one `tb_stock_in` (overage lines) and/or one `tb_stock_out` (shortage lines), both already `doc_status = completed`; navigates back to the list screen. |
 
 ## 3. RBAC / Permission
 
 | # | Scenario | Pre-condition | Expected outcome |
 | - | -------- | ------------- | ---------------- |
-| C-R-01 | Counter attempts to enter line outside zone | Counter has zone-grant for zone A; tries to edit zone B line. | Rejected per `PHC_AUTH_004` with zone-scope error. |
-| C-R-02 | Counter attempts to submit count document | All zone lines counted; Counter clicks submit. | Submit action not available to Counter per `PHC_AUTH_002`; UI guides counter to "complete zone" sign-off only. |
-| C-R-03 | Counter attempts to edit a `completed` document | Document in `completed`. | Edit rejected per `PHC_VAL_008` (immutable). |
-| C-R-04 | Counter without zone-grant attempts to view sheet | Counter has Counter role but no zone-grant at the location. | Document not visible in "My count assignments"; direct URL access rejected. |
+| E-R-01 | User without `inventory_management.physical_count` opens `:id/entry` directly | Permission not granted. | Access denied per the generic permission-gate mechanism; no module-specific zone or assignment restriction exists to test beyond this. |
 
 ## 4. Validation — Negative Tests
 
 | # | Rule | Scenario | Expected error |
 | - | ---- | -------- | -------------- |
-| C-V-01 | `PHC_VAL_005` | Counter enters negative `actual_qty`. | `"Counted quantity must be zero or positive."` |
-| C-V-02 | `PHC_VAL_005` | Counter enters non-numeric `actual_qty`. | Input rejected at form level with type error. |
-| C-V-03 | `PHC_VAL_004` (Count Lead facing) | Counter leaves line blank (never enters `actual_qty`). | At Count Lead submit, the document blocks with `"Cannot submit count — <N> of <M> lines remain uncounted."` Counter must enter the value. |
+| V-01 | `PHC_VAL_006` | Attempt Save, Submit for Review, or Submit on a `completed` document. | `"Physical Count is already completed"`. |
+| V-02 | `PHC_VAL_004` | Click Submit (final) while at least one line's `counted_at` is still null. | `"<N> products have not been counted yet"` — see the Save-vs-Submit-for-Review caveat below. |
+| V-03 | `PHC_VAL_007` | Save/Review/Submit with a stale `doc_version` (e.g. a second tab that has not refetched after another save). | `409`-style conflict; client must reload and retry. |
+| V-04 | `PHC_VAL_006` | Attempt to delete a `completed` document. | `"Cannot delete completed Physical Count"`. |
 
 ## 5. Edge Cases
 
 | # | Scenario | Expected outcome |
 | - | -------- | ---------------- |
-| C-E-01 | Recount of own line — rejected | Original counter A tries to enter recount on a flagged line. | Recount must be performed by a different counter; UI prevents re-entry by same `counted_by_id`. |
-| C-E-02 | Mobile / handheld scanner barcode mismatch | Counter scans barcode that doesn't match the line's `product_code`. | Scanner UI rejects; counter must locate correct line or flag as unfamiliar. |
-| C-E-03 | Network drop mid-count | Counter loses connection while entering `actual_qty`. | Local cache retains entry; sync resumes on reconnect; idempotent retry. |
-| C-E-04 | Two counters on same zone (concurrent) | Two counters share zone-grant on the same `tb_physical_count`. | Last-write-wins on per-line basis; comment-thread shows both counters' actions in audit log. |
-| C-E-05 | Counter assigned to multiple zones | Same counter, two zone-grants on the same document. | Counter sees both zones; can enter freely across them. |
-| C-E-06 | Frozen-mode count — counter sees blocked transactions | Live attempt to receive at counted location is blocked per `PHC_VAL_006`; counter aware but not blocked from continuing count. | Counter continues normally; receiving area shows lock until count completes. |
+| E-E-01 | Every line is typed and immediately Submitted for Review, with no intervening Save | Since Save is the only action that stamps `counted_at`, and Submit for Review does not, the final Submit on the review screen may then reject with `"<N> products have not been counted yet"` even though every line visibly has a value — a direct reading of `save()` vs. `reviewItems()` in `physical-count.service.ts`; not independently confirmed by an automated test. |
+| E-E-02 | Zero on shelf | Counter enters `actual_qty = 0` explicitly (not left blank); counts as a real, complete entry — a full negative variance against whatever `on_hand_qty` the review step computes. |
+| E-E-03 | Set uncounted to zero, then Submit for Review | Every previously-blank line becomes `0` locally; Submit for Review is then available and recomputes real variance for those lines against the live ledger balance. |
+| E-E-04 | Import partially matches | Some spreadsheet rows do not match any line's SKU. | Toast reports the skipped count; unmatched lines are left exactly as they were. |
+| E-E-05 | Mixed overage and shortage in the same submit | At least one positive- and one negative-`diff_qty` line. | Both a `tb_stock_in` and a `tb_stock_out` are created by the same final Submit call. |
+| E-E-06 | All lines reconcile to zero variance | Every `diff_qty = 0`. | Final Submit succeeds; no `tb_stock_in`/`tb_stock_out` is created at all. |
 
-## 6. Configuration / Audit-Trail
+## 6. References
 
-| # | Scenario | Expected outcome |
-| - | -------- | ---------------- |
-| C-C-01 | Blind-count tenant policy | `on_hand_qty` hidden from counter view; only product, UoM, and blank `actual_qty` shown. | Counter cannot bias entry against book; Count Lead view retains `on_hand_qty`. |
-| C-C-02 | Audit log per-line counted-by stamp | Every line entered. | `tb_physical_count_detail.counted_by_id` and `counted_at` populated; audit trail intact. |
-| C-C-03 | Comment thread with photo attachment | Counter flags damaged item with phone photo. | `tb_physical_count_detail_comment.attachments` carries `[{originalName, fileToken, contentType}]`. |
-
-> **TODO:** Expand every row with explicit error messages and UI behaviour assertions once frontend / E2E sources are authored. Cross-link to cmobile-side scenarios if the PWA owns the counter UI.
-
-## 7. References
-
-- **Primary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — Counter UI behaviour source; check `../cmobile/` for the PWA-side count sheet implementation if applicable.
-- **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists.
-- Related: [physical-count/03-user-flow-counter](/en/inventory/physical-count/03-user-flow-counter), [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) (`PHC_AUTH_002`, `PHC_AUTH_004`, `PHC_VAL_004`–`PHC_VAL_005`), [physical-count/04-test-scenarios](/en/inventory/physical-count/04-test-scenarios) (cross-persona handoff scenarios).
+- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/physical-count/pc-entry-component.tsx`, `pc-review-component.tsx`.
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (`save`, `reviewItems`, `submit`, `refresh`, `delete`).
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists.
+- Related: [physical-count/03-user-flow-counter](/en/inventory/physical-count/03-user-flow-counter), [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) (`PHC_VAL_004`–`007`, `PHC_POST_001`–`004`), [physical-count/04-test-scenarios](/en/inventory/physical-count/04-test-scenarios) (end-to-end scenarios).
