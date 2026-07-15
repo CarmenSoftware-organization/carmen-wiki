@@ -2,7 +2,7 @@
 title: Query Dataset
 description: SQL Workbench — a real backend admin-SQL-console service, but with no confirmed frontend screen, and whose execute endpoint runs any SQL (including DROP/ALTER/multi-statement) rather than the read-only surface previously documented here.
 published: true
-date: 2026-07-16T00:00:00.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: system-config, query, dataset, sql, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -148,5 +148,4 @@ Click an existing view / procedure / function → fetch `pg_get_viewdef` or `pg_
 - **Backend gateway controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_sql-query/config_sql-query.controller.ts` — confirmed `PlatformPermissionGuard` + `RequirePlatformPermission('sql_workbench.manage')` only on `POST .../execute`; no guard on the other four routes.
 - **SQL safety validator:** `../carmen-turborepo-backend-v2/apps/micro-business/src/sql-query/sql-validator.ts` — `FORBIDDEN_LEADING` blocklist, `allowDangerous` bypass flag.
 - **Frontend:** none found. No `query-dataset` or `sql-query` file exists anywhere in `../carmen-inventory-frontend-react` (confirmed by repo-wide search); no route in `routes/router.tsx`.
-- **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-sql-query.ts` — `useDbObjects`, `useDbObjectDefinition`, `useSqlQueryExecute`, `useSqlQuerySave`, `useSqlQueryDrop`.
 - **Related Prisma:** `tb_widget_workspace` (lines ~5787-5801), `tb_report_schedule` (lines ~5685-5709), `tb_report_job` (lines ~5652-5683).

@@ -2,7 +2,7 @@
 title: Query Dataset
 description: SQL Workbench — backend admin-SQL-console service ที่มีจริง แต่ไม่มีหน้าจอ frontend ที่ยืนยันได้ และ endpoint execute รัน SQL อะไรก็ได้ (รวมถึง DROP/ALTER/multi-statement) แทนที่จะเป็นพื้นผิว read-only ที่เอกสารเดิมเคยระบุไว้
 published: true
-date: 2026-07-16T00:00:00.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: system-config, query, dataset, sql, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -148,3 +148,4 @@ Shape `DbObjectsResponse`:
 - **Backend gateway controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_sql-query/config_sql-query.controller.ts` — ยืนยัน `PlatformPermissionGuard` + `RequirePlatformPermission('sql_workbench.manage')` เฉพาะ `POST .../execute` เท่านั้น; ไม่มี guard บนอีก 4 route
 - **SQL safety validator:** `../carmen-turborepo-backend-v2/apps/micro-business/src/sql-query/sql-validator.ts` — blocklist `FORBIDDEN_LEADING`, flag `allowDangerous` สำหรับ bypass
 - **Frontend:** ไม่พบเลย ไม่มีไฟล์ `query-dataset` หรือ `sql-query` ที่ไหนใน `../carmen-inventory-frontend-react` (ยืนยันด้วยการค้นทั่ว repo); ไม่มี route ใน `routes/router.tsx`
+- **Prisma ที่เกี่ยวข้อง:** `tb_widget_workspace` (lines ~5787-5801), `tb_report_schedule` (lines ~5685-5709), `tb_report_job` (lines ~5652-5683)

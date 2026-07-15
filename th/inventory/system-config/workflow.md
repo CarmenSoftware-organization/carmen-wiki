@@ -2,7 +2,7 @@
 title: เวิร์กโฟลว์ (Workflow)
 description: เวิร์กโฟลว์การอนุมัติแบบหลายขั้นที่ตั้งชื่อแล้วผูกกับเอกสารธุรกรรม — นิยาม stage, action, ผู้รับ, SLA และฟิลด์ที่ซ่อนต่อ stage
 published: true
-date: 2026-07-16T00:00:00.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: system-config, workflow, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -116,7 +116,7 @@ Key ต่อ stage: `name`, `description`; `sla` + `sla_unit` (`hours`/`days`);
 - [purchase-request](/th/inventory/purchase-request) — consumer หลัก (`purchase_request`)
 - [store-requisition](/th/inventory/store-requisition) — ผู้ใช้หลายขั้นแบบมาตรฐาน (`store_requisition`)
 - [purchase-order](/th/inventory/purchase-order) — การอนุมัติมูลค่าสูง (`purchase_order`)
-- [good-receive-note](/th/inventory/good-receive-note), [inventory-adjustment](/th/inventory/inventory-adjustment), [vendor-pricelist](/th/inventory/vendor-pricelist), [physical-count](/th/inventory/physical-count), [spot-check](/th/inventory/spot-check) — การ gate ด้วยเวิร์กโฟลว์แบบ optional
+- **สามโมดูลนี้คือโมดูลเดียวที่ผูกเวิร์กโฟลว์ได้** `enum_workflow_type` มี member เพียงสามค่า (schema.prisma lines ~268-272) — [good-receive-note](/th/inventory/good-receive-note), [inventory-adjustment](/th/inventory/inventory-adjustment), [vendor-pricelist](/th/inventory/vendor-pricelist), [physical-count](/th/inventory/physical-count) และ [spot-check](/th/inventory/spot-check) ไม่มี enum member และ **ไม่สามารถ** ผูก row `tb_workflow` ได้ (เวอร์ชันก่อนหน้าของรายการนี้ระบุ "การ gate ด้วยเวิร์กโฟลว์แบบ optional" สำหรับโมดูลเหล่านั้นไว้ผิด)
 - [access-control/application-role](/th/inventory/access-control/application-role) — Role descriptor ใน `assigned_users`
 - [master-data/department](/th/inventory/master-data/department) — HoD resolution
 
