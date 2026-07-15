@@ -58,6 +58,8 @@ Approach B: snapshot-verify every page against current source. Last sync: 2026-0
 
 (source routes with no wiki page — carried decisions in Task 5)
 
+- carmen-platform: `/sql-workbench` (App.tsx:312) and `*` catch-all exist in App.tsx but are absent from SITEMAP.md — SITEMAP drift; route is captured in routes-platform.txt
+
 ## Deferred
 
 (anything postponed, with reason — e.g. backend down for screenshots)
