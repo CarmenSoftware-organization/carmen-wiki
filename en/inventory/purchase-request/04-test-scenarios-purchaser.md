@@ -2,7 +2,7 @@
 title: Purchase Request — Test Scenarios — Purchaser
 description: Purchaser's test cases (happy path, permission, validation, edge cases) for purchase-request.
 published: true
-date: 2026-07-15T10:20:00.000Z
+date: 2026-07-15T10:50:00.000Z
 tags: purchase-request, test-scenarios, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -39,7 +39,7 @@ This page captures the test scenarios the Purchaser persona directly drives in t
 | PUR-PERM-01 | Purchaser opens a PR currently at a stage assigned to them | **Allow** view + Edit Mode + bulk toolbar actions. `PR_AUTH_002` is satisfied because the signed-in user is in `user_action.execute[]` for the current stage. |
 | PUR-PERM-02 | Purchaser opens a PR at a non-Purchase stage (e.g. still at HOD) | **Deny edit.** No Edit button is shown, or Edit Mode's vendor field stays disabled (`TC-PR-070405`) — the Purchaser is not the current stage's assigned user. |
 | PUR-PERM-03 | Purchaser attempts to edit `approved_qty` | **Deny.** The field is read-only for the `purchase`-role stage; it was set by the Approver chain per `PR_VAL_013`. |
-| PUR-PERM-04 | Non-purchase user (Requestor / HOD) attempts the Convert-to-PO dialog | **Deny.** The dialog is scoped to purchase-order create permissions; a Requestor cannot open it (see the parallel "Convert to PO — Permission denial" block in `301-pr.spec.ts`). |
+| PUR-PERM-04 | Non-purchase user (Requestor / HOD) attempts the Convert-to-PO dialog | **No enforcement found in current source.** The Bruno docs for `group-pr` / `confirm-pr` both list `Permissions: None`, the backend controllers have no role guard, and the dialog chain (`po-create-dialog.tsx` → `po-from-pr-dialog.tsx`) has no `hasPermission` check — the `PERMISSIONS` catalog defines `procurement.purchase_order` as view-only with no create key, unreferenced by the dialog. Access is gated only by reaching the Purchase Order module UI. `TC-PR-410004` ("No Permission to Convert PR") exists in `301-pr.spec.ts` but does not assert denial — an absent button passes trivially. Flagged in the resync discrepancy log; treat any denial expectation as unimplemented until a guard lands. |
 | PUR-PERM-05 | Purchaser attempts to convert a PR still `in_progress` | **Deny — wrong status.** The PR-for-PO list only returns PRs at `pr_status = approved`; an in-progress PR does not appear as a selectable candidate. |
 
 ## 3. Validation / Error

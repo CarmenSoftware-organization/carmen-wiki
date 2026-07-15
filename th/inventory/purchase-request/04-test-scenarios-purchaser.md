@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — Test Scenarios — Purchaser
 description: Test case ของ Purchaser (happy path, permission, validation, edge case) สำหรับโมดูล purchase-request
 published: true
-date: 2026-07-15T10:20:00.000Z
+date: 2026-07-15T10:50:00.000Z
 tags: purchase-request, test-scenarios, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -39,7 +39,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 | PUR-PERM-01 | Purchaser เปิด PR ที่อยู่ที่ stage ซึ่งมอบหมายให้ตน | **Allow** view + Edit Mode + bulk toolbar action `PR_AUTH_002` ผ่านเพราะผู้ใช้ที่ล็อกอินอยู่ใน `user_action.execute[]` ของ stage ปัจจุบัน |
 | PUR-PERM-02 | Purchaser เปิด PR ที่ stage ไม่ใช่ Purchase (เช่นยังอยู่ที่ HOD) | **Deny edit** ไม่มีปุ่ม Edit หรือฟิลด์ vendor ใน Edit Mode ยังคง disabled (`TC-PR-070405`) — Purchaser ไม่ใช่ผู้ใช้ที่มอบหมายของ stage ปัจจุบัน |
 | PUR-PERM-03 | Purchaser พยายามแก้ `approved_qty` | **Deny.** ฟิลด์ read-only สำหรับ stage role `purchase`; ถูกตั้งโดย chain Approver ตาม `PR_VAL_013` |
-| PUR-PERM-04 | ผู้ใช้ non-purchase (Requestor / HOD) พยายามเปิด dialog Convert-to-PO | **Deny.** Dialog scope อยู่ที่สิทธิ์สร้างใบสั่งซื้อ; Requestor เปิดไม่ได้ (ดู block คู่ขนาน "Convert to PO — Permission denial" ใน `301-pr.spec.ts`) |
+| PUR-PERM-04 | ผู้ใช้ non-purchase (Requestor / HOD) พยายามเปิด dialog Convert-to-PO | **ไม่พบการบังคับสิทธิ์ใน source ปัจจุบัน** เอกสาร Bruno ของ `group-pr` / `confirm-pr` ระบุ `Permissions: None` ทั้งคู่, controller ฝั่ง backend ไม่มี role guard และสาย dialog (`po-create-dialog.tsx` → `po-from-pr-dialog.tsx`) ไม่มีการตรวจ `hasPermission` — catalog `PERMISSIONS` นิยาม `procurement.purchase_order` เป็น view-only โดยไม่มี key create และไม่ถูกอ้างอิงโดย dialog การเข้าถึงถูกจำกัดเพียงด้วยการเข้าถึง UI ของโมดูล Purchase Order เท่านั้น `TC-PR-410004` ("No Permission to Convert PR") มีอยู่ใน `301-pr.spec.ts` แต่ไม่ assert การ deny — ปุ่มที่ไม่มีอยู่ทำให้ test ผ่านโดยอัตโนมัติ บันทึกใน discrepancy log ของการ resync แล้ว; ให้ถือว่าความคาดหวังเรื่องการ deny ยังไม่ถูก implement จนกว่าจะมี guard จริง |
 | PUR-PERM-05 | Purchaser พยายามแปลง PR ที่ยัง `in_progress` | **Deny — สถานะผิด.** รายการ PR-for-PO คืนเฉพาะ PR ที่ `pr_status = approved`; PR ที่ยังกลาง flow ไม่ปรากฏเป็น candidate ที่เลือกได้ |
 
 ## 3. Validation / Error
