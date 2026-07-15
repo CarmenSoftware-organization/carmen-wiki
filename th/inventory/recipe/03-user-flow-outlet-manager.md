@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — User Flow — Outlet Manager
 description: flow ของ Outlet Manager ในโมดูลสูตร — บริโภคสูตรสำหรับการวางแผน demand ติดตาม variance food-cost ของ outlet ส่ง feedback ปัญหาความถูกต้อง / การควบคุม portion
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: recipe, user-flow, outlet-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -11,8 +11,10 @@ dateCreated: 2026-05-15T16:00:00.000Z
 # สูตรอาหาร (Recipe) — User Flow — Outlet Manager
 
 > **At a Glance**
-> **Persona:** Outlet Manager &nbsp;·&nbsp; **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **ขั้นตอน workflow:** off-path — บริโภคสูตร PUBLISHED สำหรับการวางแผน demand และการติดตาม variance &nbsp;·&nbsp; **สิทธิ์สำคัญ:** อ่านสูตร; author / submit SR ปลายน้ำ; ยก feedback ไปยัง Chef
+> **Persona:** Outlet Manager &nbsp;·&nbsp; **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **ขั้นตอน workflow:** off-path — บริโภคสูตร PUBLISHED สำหรับการวางแผน demand และการติดตาม variance &nbsp;·&nbsp; **สิทธิ์สำคัญ (เป้าหมายการออกแบบ — ดูหมายเหตุสถานะ):** อ่านสูตร; author / submit SR ปลายน้ำ; ยก feedback ไปยัง Chef
 > **persona นี้ทำอะไร:** อ่านสูตรเพื่อวางแผนการผลิตและยก SR; ติดตาม variance food-cost ของ outlet และส่ง feedback ปัญหาความถูกต้องไปยัง Chef
+
+> **สถานะการติดตั้งใช้งานจริง (ตรวจสอบกับซอร์ส 2026-07-15).** ไม่มี permission อ่านสูตรแบบ read-only (placeholder `operation_plan.view` gate ทั้งกลุ่มไว้เฉพาะ admin — Outlet Manager ที่ไม่มีสิทธิ์ admin จะไม่เห็นหน้าจอสูตรใดเลย), ไม่มีการสร้าง SR อัตโนมัติจากสูตร (ไม่มีการอ้างอิง `recipe_id` ที่ใดเลยใน service ของ SR) และไม่มีการคำนวณ variance food-cost ของ outlet ใน service ใด store requisition เองมีจริง ([store-requisition](/th/inventory/store-requisition)) แต่ถูก author ด้วยมือ ไม่เชื่อมโยงกับสูตร flow ด้านล่างคือ operating model เป้าหมายของ carmen/docs
 
 ## 1. บทบาทในโมดูลนี้
 

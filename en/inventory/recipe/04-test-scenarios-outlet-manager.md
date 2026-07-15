@@ -2,7 +2,7 @@
 title: Recipe — Test Scenarios — Outlet Manager
 description: Outlet Manager's test cases (read-only consumption, demand explosion, variance, feedback) for the recipe module.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: recipe, test-scenarios, outlet-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -13,7 +13,9 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **At a Glance**
 > **Persona:** Outlet Manager (read-only on recipe library) &nbsp;·&nbsp; **Module:** [recipe](/en/inventory/recipe) &nbsp;·&nbsp; **Scenarios:** ~23
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **E2E coverage:** none for recipe internals; `tests/701-sr.spec.ts` covers the SR-side of recipe-driven auto-create in `../carmen-inventory-frontend-e2e/`
+> **E2E coverage:** none for recipe internals; the module's only automated spec is `tests/121-recipe-equipment-category.spec.ts`. (`701-sr.spec.ts` covers ordinary SRs only — no recipe-driven auto-create path exists in code.)
+
+> **Implementation status (verified 2026-07-15).** The Outlet Manager surface these scenarios test does not exist: no read-only recipe permission (the group is admin-only via the `operation_plan.view` placeholder), no outlet-scoped recipe view, no recipe explosion, no recipe→SR auto-create (no `recipe_id` anywhere in SR code), and no variance dashboard. Store requisitions themselves are real but manual. Treat the scenarios below as the design acceptance plan.
 
 This page captures the test scenarios that the Outlet Manager persona directly drives in the `recipe` module. The Outlet Manager is **read-only on the recipe library** (`recipe:read` per `REC_AUTH_009`); the persona's interaction with the recipe is downstream — using recipe explosions to plan ingredient pulls, monitoring outlet variance driven in part by recipe accuracy, and feeding back portion-control / accuracy issues for the Chef to revise. Scenarios are grouped into **happy paths** (read recipe detail in outlet view; planned-production explosion; auto-create SR from recipe demand; outlet variance review; recipe-feedback submission), **RBAC** (Outlet Manager attempting any write; cross-outlet read scope), **validation** (negative tests around forecast accuracy, demand-zero recipes), and **edge cases** around banquet-event demand, par-level top-up patterns, multi-outlet recipe usage. Cross-persona handoffs that pivot off the Outlet Manager (Scenarios 5, 6 in the parent overview) live in [04-test-scenarios.md](./04-test-scenarios.md), not here.
 
@@ -65,7 +67,7 @@ This page captures the test scenarios that the Outlet Manager persona directly d
 - Parent overview: [04-test-scenarios.md](./04-test-scenarios.md) — cross-persona handoffs that pivot off the Outlet Manager: Scenario 5 (feedback on portion-control), Scenario 6 (recipe-driven SR auto-create for banquet).
 - User flow: [03-user-flow-outlet-manager.md](./03-user-flow-outlet-manager.md) — happy-path source for Section 1 above; describes the 8-step primary flow (planning → demand explosion → SR → service → variance → feedback).
 - Business rules being verified: [02-business-rules.md](./02-business-rules.md) Section 3 — `REC_CALC_014` (theoretical-consumption / demand-explosion formula); Section 4 — `REC_AUTH_009` (Outlet Manager's read-only scope); Section 6 — `REC_XMOD_003` (theoretical OUT fan-out triggered by menu sale), `REC_XMOD_004` (sub-recipe recursion), `REC_XMOD_007` (auto-create SR from recipe demand).
-- E2E spec: **none for recipe internals**; `701-sr.spec.ts` covers the SR-side of the recipe-driven auto-create path (the trigger from recipe → SR is at the test boundary).
+- E2E spec: **none for recipe internals**; `701-sr.spec.ts` covers ordinary manually-authored SRs only — no recipe-driven auto-create path exists in code.
 - Cross-link: [store-requisition](/en/inventory/store-requisition) — the primary downstream document the Outlet Manager authors from recipe demand.
 - Cross-link: [inventory](/en/inventory/inventory) — outlet on-hand reconciliation against recipe-driven theoretical consumption is the food-cost-variance computation.
 - Cross-link: [inventory-adjustment](/en/inventory/inventory-adjustment) — corrective movements for shrinkage / spoilage flagged by variance investigation.

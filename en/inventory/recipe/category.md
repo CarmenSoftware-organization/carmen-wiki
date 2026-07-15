@@ -2,7 +2,7 @@
 title: Recipe Category
 description: Hierarchical category taxonomy for recipes — drives menu engineering, cost-band reporting, and recipe library navigation.
 published: true
-date: 2026-06-09T16:28:56.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: recipe, category, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -27,29 +27,30 @@ Distinct from [recipe/cuisine](/en/inventory/recipe/cuisine) (flat regional labe
 
 | Task | Where | Notes |
 |---|---|---|
-| Add a new sub-category | Operation Plan → Recipe Category → tree → **+ Child** | Inherits parent's defaults; can override |
-| Reparent a sub-category | Drag node onto new parent in tree view | Recomputes `level` for moved node + all descendants |
-| Edit target food-cost % for a category | Edit dialog → **Default Cost Settings** | Affects *new* recipes only — does NOT update existing |
-| Retire a category | Edit dialog → set `is_active = false` | Keeps historical recipes readable; hides from picker |
+| Add a new sub-category | Operation Plan → Recipe Category → **+ Add** → pick **Parent Category** from a dropdown | List/grid is a flat `DataGrid` (`recipe-category-component.tsx`) — there is no tree widget; `level` is computed server-side from the chosen parent's `level + 1` |
+| Reparent a category | Edit form → change the **Parent Category** dropdown | Recomputes `level` for the edited row only (`recipe-category.service.ts` `update()`); descendants' `level` is not touched |
+| Edit target food-cost % for a category | Edit page (`/operation-plan/category/:id`) → **Default Cost Settings** | Affects *new* recipes only — does NOT update existing (no code path reads category defaults back into an existing `tb_recipe` row) |
+| Retire a category | Edit page → set `is_active = false` | Keeps historical recipes readable; hides from picker |
 | Hard-delete a category | Not allowed if it has children or recipes | Use soft-delete + inactive instead |
 
 ## 3. Validation & Errors
 
 | Symptom / Message | Cause | Action |
 |---|---|---|
-| "Code already in use" | `code` collides tenant-wide (app-enforced) | Pick a unique code |
-| "Name already exists under this parent" | Sibling-name collision (app-enforced) | Rename or pick a different parent |
-| "Cannot delete: category has children" | `parent_id` FK `onDelete: Restrict` | Reparent or soft-delete children first |
-| "Cannot delete: recipes still reference this category" | `tb_recipe.category_id` FK `onDelete: Restrict` | Reassign recipes, then retire |
-| "Cycle detected on reparent" | Move would make node its own ancestor | Choose a different parent |
-| "Parent must be active" | `parent_id` references deleted/inactive row | Pick an active parent |
+| "Recipe category code already exists" (`RECIPE_CATEGORY_CODE_ALREADY_EXISTS`) | `code` collides tenant-wide, case-insensitive, among non-deleted rows (`recipe-category.service.ts`) | Pick a unique code |
+| "Cannot delete: category has children" (`RECIPE_CATEGORY_HAS_SUBCATEGORIES`) | Application-level count of non-deleted `parent_id` children before delete | Reparent or soft-delete children first |
+| "Cannot delete: recipes still reference this category" (`RECIPE_CATEGORY_IN_USE`) | Application-level count of non-deleted `tb_recipe.category_id` references before delete | Reassign recipes, then retire |
+| "Category cannot be its own parent" (`RECIPE_CATEGORY_CANNOT_BE_OWN_PARENT`) | Direct self-reference only (`parent_id === id`) | Choose a different parent — this is the only cycle check; a multi-level cycle (reparenting a category under its own grandchild) is **not** detected |
+| "Parent category not found" (`RECIPE_CATEGORY_PARENT_NOT_FOUND`) | `parent_id` does not resolve to a non-soft-deleted row | Pick an existing parent — the check does **not** require the parent to be `is_active = true`, only non-deleted |
 
 ## 4. Edge Cases
 
-- **Hierarchy depth.** No DB cap, but UI typically caps at 3 levels (root → group → leaf) for menu-engineering legibility. `level` is materialised on insert/move.
-- **Defaults propagation.** Updating `default_cost_settings` / `default_margins` does NOT retroactively touch existing recipes — they carry their own snapshot from create time.
+- **No tree UI.** The list/detail screens are the same flat `DataGrid` + form pattern as every other config screen in this module; hierarchy is expressed only through the `parent_id` dropdown and the derived `level` number, not a visual tree.
+- **Cycle detection is shallow.** Only direct self-parenting is rejected (`RECIPE_CATEGORY_CANNOT_BE_OWN_PARENT`). Reparenting a category under one of its own descendants is not checked anywhere in `recipe-category.service.ts` and would silently create a cycle.
+- **Defaults propagation.** Updating `default_cost_settings` / `default_margins` does NOT retroactively touch existing recipes — they carry their own snapshot from create time (there is no fan-out job in `recipe-category.service.ts` or `recipe.service.ts`).
+- **Reparenting does not cascade `level`.** Moving a category only recomputes that category's own `level`; any subcategories under it keep their old `level` value until each is individually re-saved.
 - **Inactive categories** stay readable on historical recipes but are hidden from the recipe-create picker.
-- **No DB unique constraint** on `name` or `code` — uniqueness is application-enforced, so direct SQL inserts can bypass it.
+- **No DB unique constraint** on `name` or `code` — uniqueness is application-enforced (case-insensitive on `code` only; `name` has no uniqueness check at all, sibling or tenant-wide), so direct SQL inserts can bypass it.
 
 ---
 
@@ -78,11 +79,11 @@ Source: tenant schema.
 
 ## 6. Business Rules
 
-- **Uniqueness (app).** Unique `name` per parent (siblings cannot collide); unique `code` tenant-wide.
-- **Reparenting.** Re-computes `level` for moved node + descendants; cycle detection rejects self-ancestor moves.
-- **Deletion guards.** Both self-FK and `tb_recipe.category_id` use `onDelete: Restrict` — hard-delete blocked while children or recipes exist.
+- **Uniqueness (app).** Unique `code` tenant-wide, case-insensitive, among non-deleted rows. There is **no** `name` uniqueness check — same-named categories (siblings or unrelated) are permitted.
+- **Reparenting.** Re-computes `level` for the moved row only (`parent.level + 1`); does not cascade to descendants. Cycle rejection only covers direct self-parenting, not deeper cycles.
+- **Deletion guards.** Application-level counts (`RECIPE_CATEGORY_HAS_SUBCATEGORIES`, `RECIPE_CATEGORY_IN_USE`) block delete while children or recipes exist — not a database-level `Restrict` cascade failure.
 - **Defaults seed at create only** — never retroactive on update.
-- **Validation.** `code`, `name` required; `level >= 1`; `parent_id` (if set) must reference a non-deleted active category.
+- **Validation.** `code`, `name` required; `parent_id` (if set) must reference a non-soft-deleted category — `is_active` is not checked on the parent.
 
 ## 7. Cross-References
 

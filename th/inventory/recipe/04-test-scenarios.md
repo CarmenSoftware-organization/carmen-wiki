@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — Test Scenarios
 description: test case ตาม persona, scenario ข้าม persona และ mapping Playwright สำหรับโมดูล recipe
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: recipe, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -15,11 +15,13 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **ลำดับการรัน:** การตั้งค่า Audit / Config → happy path ของ persona หลัก → scenario ข้าม persona
 > **drill-down ของแต่ละ persona อยู่ที่ `04-test-scenarios-<role>.md`**
 
+> **สถานะการ implement (ตรวจสอบแล้ว 2026-07-15)** scenario ส่วนใหญ่ในหน้านี้และใน drill-down ต่อ persona ทดสอบฟีเจอร์ที่ยังไม่มีอยู่จริง (publish gate, versioning, pricing history, RBAC ต่อ role, การ persist วัตถุดิบ, menu linkage, theoretical consumption, recipe→SR auto-create, cost cascade) — ให้ถือเป็นแผน acceptance-test สำหรับดีไซน์ carmen/docs ไม่ใช่ regression test ที่รันได้จริง **ชุดที่รันได้จริงวันนี้**: CRUD header ของสูตรพร้อม optimistic locking ด้วย `doc_version`, การเปลี่ยนสถานะผ่าน dropdown พร้อมการ stamp `published_at`/`archived_at`, ความ unique ของ code (`RECIPE_ALREADY_EXISTS`), การตรวจ reference หมวดหมู่/cuisine, guard การลบ sub-recipe (`RECIPE_USED_AS_SUB_RECIPE`), CRUD/reorder ขั้นตอนการเตรียมผ่าน API, image gallery และหน้าจอ master-data ทั้งสี่ การครอบคลุม E2E อัตโนมัติมีเฉพาะหน้าจอ dialog equipment-category (`121-recipe-equipment-category.spec.ts`) เท่านั้น
+
 ## 1. ภาพรวม
 
 หน้านี้เป็น **จุดเข้าภาพรวม** สำหรับชุด test-scenario ของโมดูล `recipe` รวบรวมการครอบคลุม recipe ตาม 5 persona ที่โต้ตอบกับ recipe library ข้ามวงจรชีวิตของมัน (Chef, Cost Controller, Outlet Manager, Procurement / F&B Ops, Audit / Config) จัดทำคลังไฟล์ test ต่อ persona จับ scenario handoff ข้าม persona ที่เย็บเส้นทางบุคคลเข้าด้วยกัน และระบุสถานะการครอบคลุม E2E ขอบเขตจงใจกว้างกว่า functional pass บริสุทธิ์: ไฟล์แต่ละ persona รวม **happy path เชิงฟังก์ชัน** (create / save / publish / archive; การแก้ cost-only; flow การทดแทน; การอนุมัติ menu-item linkage; config admin) **RBAC / กรณีปฏิเสธ permission** (chef ที่ไม่มี `recipe:publish`; cost controller พยายามแก้วัตถุดิบ; outlet manager พยายามเขียน; auditor พยายามเขียน) **edge case** (recipe ใหญ่ — วัตถุดิบและขั้นตอนมาก; sub-recipe ซ้อนลึก; yield variant ด้วยปริมาณขั้น; การแก้พร้อมกัน; กรณีมุมความแม่นยำทศนิยม) และ **trace versioning / pricing-history** (ทุกการเปลี่ยนต่อ recipe ที่ `PUBLISHED` เขียนแถว `tb_recipe_version`; การแก้ cost-only เขียนแถว `tb_recipe_pricing_history`; chain audit verify ได้จากตารางเหล่านั้น)
 
-scenario ข้าม persona ใน Section 4 เป็นชั้น integration เหนือ suite ต่อ persona พวกเขาอธิบาย journey end-to-end ที่ข้าม boundary ของ handoff ที่บันทึกใน [03-user-flow.md](./03-user-flow.md) Section 4 — เช่น *Chef สร้าง → Cost Controller co-approve การ publish off-target → Chef publish → F&B Ops อนุมัติ menu-item linkage → สูตรขับเคลื่อน theoretical consumption* Section 5 ระบุ **สถานะการครอบคลุมอัตโนมัติ** — ในเวลาที่เขียน **ไม่มีไฟล์ `recipe.spec.ts` Playwright เฉพาะใน suite carmen-inventory-frontend-e2e** (verify โดย `ls ../carmen-inventory-frontend-e2e/tests/ | grep -i 'recipe\|menu'` return ว่าง) ดังนั้นไฟล์ test ต่อ persona อธิบาย scenario ที่ปัจจุบันเป็น **manual / planned** สำหรับการ automate E2E การ automate ที่อยู่ใกล้เคียงมีอยู่ใน `[store-requisition](/th/inventory/store-requisition)` (`701-sr.spec.ts`) ซึ่งครอบคลุมเส้นทาง recipe-driven SR auto-create ทางอ้อม (`info.recipe_id` back-reference) แต่การครอบคลุม E2E ภายในสูตรเป็นช่องว่าง
+scenario ข้าม persona ใน Section 4 เป็นชั้น integration เหนือ suite ต่อ persona พวกเขาอธิบาย journey end-to-end ที่ข้าม boundary ของ handoff ที่บันทึกใน [03-user-flow.md](./03-user-flow.md) Section 4 — เช่น *Chef สร้าง → Cost Controller co-approve การ publish off-target → Chef publish → F&B Ops อนุมัติ menu-item linkage → สูตรขับเคลื่อน theoretical consumption* Section 5 ระบุ **สถานะการครอบคลุมอัตโนมัติ** — **ไม่มีไฟล์ `recipe.spec.ts` Playwright** สำหรับหน้าจอสูตรเอง; spec อัตโนมัติเดียวของโมดูลคือ `121-recipe-equipment-category.spec.ts` (smoke + CRUD ผ่าน dialog + กรณี security สำหรับ `/operation-plan/recipe-equipment-category`, ตรวจสอบแล้ว 2026-07-15) ไฟล์ test ต่อ persona จึงอธิบาย scenario ที่ปัจจุบันเป็น **manual / planned** สำหรับการ automate E2E (คำกล่าวก่อนหน้านี้ที่ว่า `701-sr.spec.ts` ครอบคลุมเส้นทาง recipe-driven SR auto-create ทางอ้อมผ่าน `info.recipe_id` นั้นผิด — ไม่มีการอ้างอิง `recipe_id` อยู่ที่ใดเลยในโค้ด SR)
 
 ## 2. Persona ในขอบเขต
 
@@ -56,23 +58,23 @@ scenario ข้าม persona ใน Section 4 เป็นชั้น integrat
 | 11 | Audit sample — verify chain versioning | Auditor | Sample 30 สูตร `PUBLISHED` ข้าม period สำหรับ compliance review | แต่ละสูตรมี chain `tb_recipe_version` จาก v1 (publication) ผ่านแต่ละการแก้; `published_at` match timestamp v1; การ publish off-target มี co-approval บันทึกใน `change_summary`; การเปลี่ยน cost / ราคามีแถว `tb_recipe_pricing_history` ที่สอดคล้องด้วย `change_reason` populate; คอลัมน์ audit (`created_by_id` / `updated_by_id`) สอดคล้องกัน Audit findings log |
 | 12 | Sub-recipe ซ้อนลึก (3 ระดับ) | Chef | Recipe `Composite Plate` ใช้ sub-recipe `Sauce Au Poivre` ซึ่งเองใช้ sub-recipe `Brown Stock` ซึ่งใช้สินค้าใบไม้ `Beef Bones` | Theoretical-consumption fan-out บนการขายเมนูซ้อน 3 ระดับลึกตาม `REC_XMOD_004`: สูตร parent → sub-recipe Sauce Au Poivre → sub-recipe Brown Stock → สินค้า `Beef Bones`; OUT movement post เทียบกับ `Beef Bones` ที่ outlet การ cascade cost ก็ซ้อน: การเปลี่ยน cost บน `Beef Bones` ไหลขึ้นผ่าน `Brown Stock` → `Sauce Au Poivre` → `Composite Plate`; แต่ละระดับได้แถว `tb_recipe_pricing_history` |
 | 13 | Cost-drift cascade บนวัตถุดิบ high-fanout | Cost Controller | สินค้าเดียว `Premium Olive Oil` ใช้ใน 25 สูตร; cost เพิ่ม 18%; tolerance ของ tenant สำหรับ trigger cost-drift คือ ±5% | โมดูล Costing emit event cost-drift ตาม `REC_XMOD_006`; โมดูล recipe refresh `cost_per_unit` บนทุกบรรทัดที่อ้างอิงสินค้า (ข้ามทั้ง 25 สูตร); เขียนแถว `tb_recipe_pricing_history` ต่อสูตรที่ได้รับผลกระทบด้วย `change_reason = "cost-drift update from costing module"`; 8 สูตรที่ `actual_food_cost_percentage` ใหม่เกิน target+tolerance flag สำหรับการ review ของ Cost Controller |
-| 14 | การแก้พร้อมกันโดยสอง chef บน `DRAFT` เดียวกัน | Chef + deputy | สอง chef (Executive Chef + Sous Chef เป็น deputy) แก้สูตร `DRAFT` เดียวกันพร้อมกัน; ทั้งคู่พยายาม save | Optimistic-concurrency: save แรกชนะ (เขียน `updated_at` / `updated_by_id`); save ที่สองถูกปฏิเสธบนการตรวจจับ conflict (server return 409); chef ที่สอง refresh เห็นการแก้ของ save แรก ตัดสินใจว่าจะ merge หรือ override Schema สูตรไม่มีคอลัมน์ `doc_version` บน `tb_recipe` โดยตรงแต่นโยบาย tenant อาจใช้ timestamp `updated_at` สำหรับการตรวจสอบ concurrency |
+| 14 | การแก้พร้อมกันโดยสอง chef บน `DRAFT` เดียวกัน *(implement แล้ว — test ได้วันนี้)* | Chef + deputy | สอง chef (Executive Chef + Sous Chef เป็น deputy) แก้สูตร `DRAFT` เดียวกันพร้อมกัน; ทั้งคู่พยายาม save | Optimistic-concurrency ผ่าน `tb_recipe.doc_version`: DTO ของ update/patch ต้องการ `doc_version` ที่ client อ่านครั้งล่าสุด และ service ทำการ update ด้วย `where: { id, doc_version }` — save แรกชนะและเพิ่มเลขเวอร์ชัน; save ที่สองล้มเหลวบน version mismatch; chef ที่สอง refresh เห็นการแก้ของ save แรก ตัดสินใจว่าจะ merge หรือ override |
 
 ## 5. การ Map Test E2E
 
-ในเวลาที่เขียน **ไม่มีไฟล์ `recipe.spec.ts` Playwright เฉพาะใน `../carmen-inventory-frontend-e2e/tests/`** (verify โดย `ls ../carmen-inventory-frontend-e2e/tests/ | grep -i 'recipe\|menu'` return ว่าง) scenario ภายในสูตรในหน้านี้และไฟล์ test ต่อ persona จึงเป็น **manual / planned** สำหรับการ automate E2E; การครอบคลุมที่ automate ใกล้เคียงที่สุดคือ:
+**ไม่มีไฟล์ `recipe.spec.ts` Playwright** สำหรับหน้าจอสูตรใน `../carmen-inventory-frontend-e2e/tests/`; spec อัตโนมัติเดียวของโมดูล (ตรวจสอบแล้ว 2026-07-15) คือ:
 
-| spec E2E ใกล้เคียง | การครอบคลุมที่เกี่ยวข้องกับสูตร |
+| spec E2E | การครอบคลุมโมดูล recipe |
 | ----------------- | ----------------------- |
-| `701-sr.spec.ts` (store-requisition) | Scenario 6 (recipe-driven SR auto-create) ครอบคลุมบางส่วน — ด้าน SR ของ flow (`info.recipe_id` back-reference วงจรชีวิต SR ปกติ) ถูก exercise; trigger ด้านสูตร (โมดูล recipe post SR draft) ถูก mock หรือข้ามที่ boundary ของ test |
-| (None) | Scenario 1–5, 7–14 document เป็น manual / planned |
+| `121-recipe-equipment-category.spec.ts` | `/operation-plan/recipe-equipment-category` — smoke ของ list, การค้นหา, CRUD ผ่าน dialog (field id `rec-eq-cat-*`), การปฏิเสธชื่อซ้ำ, กรณี security หมายเหตุ: spec นี้ชี้ไปที่หน้าจอซ้ำที่ไม่ได้ link ใน nav (ดู [equipment-category](/th/inventory/recipe/equipment-category) §2) |
+| (None) | Scenario 1–13 ด้านบน document เป็น manual / planned; scenario 14 (conflict `doc_version`) implement ได้วันนี้แต่ยังไม่ได้ automate |
 
-ช่องว่างเทียบกับ Section 4: ทั้ง 14 scenario ข้าม persona เป็นช่องว่างสำหรับการ automate E2E เต็ม ไฟล์ test ระดับ persona document scenario ด้วยรายละเอียดเพียงพอสำหรับการ execute manual หรือการพัฒนา spec Playwright ในอนาคต Priority สำหรับการ automate อนาคต: Scenario 1 (happy path เต็ม), Scenario 2 (co-approval off-target), Scenario 7 (การแก้ in-place ด้วย versioning), Scenario 3 (sub-recipe cascade), Scenario 9 (archive)
+ช่องว่างเทียบกับ Section 4: scenario 1–13 ขึ้นกับฟีเจอร์ที่ยังไม่ได้ implement (ดู callout สถานะด้านบน) และ automate ไม่ได้จนกว่าฟีเจอร์เหล่านั้นจะมาถึง; scenario 14 บวก smoke CRUD ของสูตร (filter ของ list, ฟอร์ม create/edit, dropdown สถานะ, guard การลบ) automate ได้ตอนนี้และเป็น candidate ลำดับความสำคัญสำหรับ `recipe.spec.ts`
 
 ## 6. แหล่งอ้างอิง
 
 - Sibling: [03-user-flow.md](./03-user-flow.md) Section 4 — handoff ข้าม persona ที่ขับเคลื่อน scenario integration ด้านบน
 - Sibling: [02-business-rules.md](./02-business-rules.md) Section 5 — กฎ posting ที่อ้างที่ทุกการเปลี่ยนสถานะและผลกระทบปลายน้ำ (publish, edit-published, cost cascade, archive)
 - รายละเอียดต่อ persona: [Chef](./04-test-scenarios-chef.md), [Cost Controller](./04-test-scenarios-cost-controller.md), [Outlet Manager](./04-test-scenarios-outlet-manager.md), [Procurement / F&B Ops](./04-test-scenarios-procurement-fb-ops.md), [Audit / Config](./04-test-scenarios-audit-config.md)
-- การครอบคลุม E2E ใกล้เคียง: `../carmen-inventory-frontend-e2e/tests/701-sr.spec.ts` (ครอบคลุมด้าน SR ของ recipe-driven auto-create ทางอ้อมผ่าน `info.recipe_id`)
+- การครอบคลุม E2E: `../carmen-inventory-frontend-e2e/tests/121-recipe-equipment-category.spec.ts` (spec อัตโนมัติเดียวของโมดูล)
 - โมดูลที่เกี่ยวข้อง: [product](/th/inventory/product) (feed วัตถุดิบ), [inventory](/th/inventory/inventory) (เป้าหมาย theoretical-consumption fan-out), [costing](/th/inventory/costing) (cost-drift ต้นน้ำ), [store-requisition](/th/inventory/store-requisition) (auto-create ปลายน้ำ)

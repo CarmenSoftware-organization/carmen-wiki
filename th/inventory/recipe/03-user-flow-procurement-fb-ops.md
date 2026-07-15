@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — User Flow — Procurement F&B Ops
 description: flow ของ Procurement และ F&B Operations Manager ในโมดูลสูตร — ขนาด PO จาก demand สูตร ตรวจสอบการมีอยู่ของวัตถุดิบ อนุมัติ menu-item linkage เซ็นอนุมัติ menu engineering
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: recipe, user-flow, procurement-fb-ops, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -11,8 +11,10 @@ dateCreated: 2026-05-15T16:00:00.000Z
 # สูตรอาหาร (Recipe) — User Flow — Procurement F&B Ops
 
 > **At a Glance**
-> **Persona:** Procurement Department + F&B Operations Manager &nbsp;·&nbsp; **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **ขั้นตอน workflow:** off-path — กลยุทธ์ต้นน้ำ (approve menu-item linkage) + การซื้อปลายน้ำ (ขนาด PO) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** อ่านสูตร, approve-menu-link (F&B Ops), ยกคำขอทดแทน (Procurement)
+> **Persona:** Procurement Department + F&B Operations Manager &nbsp;·&nbsp; **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **ขั้นตอน workflow:** off-path — กลยุทธ์ต้นน้ำ (approve menu-item linkage) + การซื้อปลายน้ำ (ขนาด PO) &nbsp;·&nbsp; **สิทธิ์สำคัญ (เป้าหมายการออกแบบ — ดูหมายเหตุสถานะ):** อ่านสูตร, approve-menu-link (F&B Ops), ยกคำขอทดแทน (Procurement)
 > **persona นี้ทำอะไร:** Procurement ขนาด PO จาก demand สูตรและแสดงคำขอทดแทน; F&B Ops อนุมัติ menu-item linkage และรัน menu engineering
+
+> **สถานะการติดตั้งใช้งานจริง (ตรวจสอบกับซอร์ส 2026-07-15).** ไม่มี permission `recipe:read` / `recipe:approve-menu-link` (มีเพียง placeholder `operation_plan.view` แบบ admin-only), ไม่มีการคำนวณ recipe-explosion หรือการขนาด PO อยู่ที่ใดเลย (และบรรทัดวัตถุดิบไม่ถูก persist ด้วยซ้ำ ดังนั้น explosion ไม่มีอะไรให้ explode), ไม่มีช่องคำขอทดแทนในระบบ และไม่มี entity menu-item ให้ link purchase order เองมีจริง ([purchase-order](/th/inventory/purchase-order)) แต่ถูกขนาดจาก PR ไม่ใช่จากสูตร flow ด้านล่างคือ operating model เป้าหมายของ carmen/docs
 
 ## 1. บทบาทในโมดูลนี้
 

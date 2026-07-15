@@ -2,7 +2,7 @@
 title: Recipe — Test Scenarios — Procurement F&B Ops
 description: Procurement and F&B Ops test cases (PO sizing, substitution, menu-item linkage approval, menu engineering) for the recipe module.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: recipe, test-scenarios, procurement-fb-ops, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -13,7 +13,9 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **At a Glance**
 > **Persona:** Procurement / F&B Ops (Procurement Department + F&B Operations Manager) &nbsp;·&nbsp; **Module:** [recipe](/en/inventory/recipe) &nbsp;·&nbsp; **Scenarios:** ~25
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **E2E coverage:** none for recipe internals; adjacent automation in [purchase-order](/en/inventory/purchase-order) covers the PO-side of the PF-HP-02 flow in `../carmen-inventory-frontend-e2e/`
+> **E2E coverage:** none for recipe internals; the module's only automated spec is `tests/121-recipe-equipment-category.spec.ts`. PO E2E specs cover the PR→PO flow, which has no recipe input.
+
+> **Implementation status (verified 2026-07-15).** The feature set these scenarios test does not exist: no recipe explosion or PO sizing from recipes (ingredient lines are not even persisted), no substitution-request channel, no menu-item entity or `recipe:approve-menu-link` permission, and no menu-engineering view. Treat the scenarios below as the design acceptance plan.
 
 This page captures the test scenarios that the Procurement / F&B Ops persona directly drives in the `recipe` module. Procurement is read-only on the recipe (`recipe:read` per `REC_AUTH_010`) — they consume recipe demand to size POs and surface substitution requests, but do not write to the recipe. F&B Ops additionally holds `recipe:approve-menu-link` per `REC_AUTH_011` — they approve menu-item linkages on recipes the Chef has published, and own menu engineering decisions. Scenarios are grouped into **happy paths** (Procurement aggregates portfolio recipe demand → sizes PO; substitution request channel; F&B Ops menu-item linkage approval; menu engineering quarterly review), **RBAC** (Procurement attempting recipe edits; F&B Ops attempting ingredient edits), **validation** (negative tests around incomplete recipe pricing at menu-link approval, missing ingredients at PO sizing), and **edge cases** around portfolio-wide cost drift, multi-recipe menu items, seasonal menu cycle. Cross-persona handoffs that pivot off this persona (Scenarios 1, 4 in the parent overview) live in [04-test-scenarios.md](./04-test-scenarios.md), not here.
 

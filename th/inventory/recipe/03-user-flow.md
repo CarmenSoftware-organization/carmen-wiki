@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — User Flow
 description: วงจรชีวิตของสูตรอาหารและไฟล์ flow เฉพาะ persona สำหรับโมดูล recipe
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: recipe, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -12,12 +12,14 @@ dateCreated: 2026-05-15T16:00:00.000Z
 
 > **At a Glance**
 > **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **Persona:** Chef &nbsp;·&nbsp; Cost Controller &nbsp;·&nbsp; Outlet Manager &nbsp;·&nbsp; Procurement / F&B Ops &nbsp;·&nbsp; Audit / Config
-> **วงจรชีวิตของ workflow:** DRAFT → PUBLISHED → ARCHIVED (RBAC-gated, การเปลี่ยนตรง; audit trail versioning + pricing-history)
+> **วงจรชีวิตของ workflow:** DRAFT ⇄ PUBLISHED ⇄ ARCHIVED — ในแอปปัจจุบันการเปลี่ยนสถานะทั้งหมดเป็น dropdown สถานะแบบอิสระที่มีผลข้างเคียงเพียง timestamp เท่านั้น; RBAC gate / audit trail versioning ที่อธิบายด้านล่างเป็นเป้าหมายการออกแบบ
 > **เจาะลงในมุมมองต่อ persona ด้านล่างสำหรับรายละเอียดระดับ action**
+
+> **สถานะการติดตั้งใช้งานจริง (ตรวจสอบกับซอร์ส 2026-07-15).** flow ที่มีอยู่จริงวันนี้คือ CRUD journey เดียวที่ gate ด้วยสิทธิ์ admin: recipe list (`/operation-plan/recipe`, ค้นหา + filter สถานะ/ประเภทอาหาร/หมวดหมู่/ความยาก, สลับ list/grid) → form รายละเอียด/แก้ไขหรือสร้างใหม่ (field ส่วน header, grid วัตถุดิบแบบ preview เท่านั้น, gallery รูปภาพ, เครื่องคำนวณต้นทุนฝั่ง client) → save พร้อม optimistic locking ด้วย `doc_version` → ลบได้ตามต้องการ (ถูก block เฉพาะเมื่อถูกใช้เป็น sub-recipe) สถานะเป็น dropdown บน toolbar ที่ไม่มี gate ไม่มี permission ต่อ persona (placeholder `operation_plan.view` gate ทั้งกลุ่ม) ไม่มีกลไก publish/co-approval ไม่มีการเขียน versioning หรือ pricing-history และไม่มี integration กับ menu/POS/SR/variance ไฟล์ persona ที่ link ด้านล่างอธิบาย operating model เป้าหมาย; แต่ละไฟล์มี caveat เดียวกันนี้
 
 ## 1. ภาพรวม
 
-หน้านี้เป็น **จุดเข้าภาพรวม** สำหรับชุด user-flow ของโมดูล `recipe` สูตรคือสูตรที่มาตรฐานและคิดต้นทุนสำหรับการผลิตหนึ่งเอาท์พุตของจานหรือเครื่องดื่ม — แถว header ใน `tb_recipe` ร่วมกับบรรทัดวัตถุดิบใน `tb_recipe_ingredient` ขั้นตอนการเตรียมใน `tb_recipe_preparation_step` และ (ทางเลือก) yield variant หนึ่งหรือหลายตัวใน `tb_recipe_yield_variant` ต่างจากเอกสารที่ขับเคลื่อนด้วย workflow (PR, PO, GRN, SR) ที่ทุกการเปลี่ยนสถานะถูก gate โดย workflow stage และเซ็นต่อบรรทัด วงจรชีวิตของสูตรเป็น **ตรง** — สามสถานะ (`DRAFT`, `PUBLISHED`, `ARCHIVED`) ควบคุมโดย RBAC ระดับ application และกฎความครบ พร้อม versioning (`tb_recipe_version`) และ pricing-history (`tb_recipe_pricing_history`) เป็นกลไก audit สูตรคือ **แหล่งความจริงสำหรับสิ่งที่ควรถูกบริโภคเมื่อมีการขาย**: เมื่อสูตรที่ `PUBLISHED` ถูก link กับ menu item ที่ขาย inventory layer อ่านบรรทัดวัตถุดิบและ post OUT movement เชิงทฤษฎีตาม [02-business-rules.md](./02-business-rules.md) `REC_XMOD_003` โมดูล recipe จึงอยู่ต้นน้ำของทุกการคำนวณ variance food-cost และทุก store requisition ที่ recipe-driven
+หน้านี้เป็น **จุดเข้าภาพรวม** สำหรับชุด user-flow ของโมดูล `recipe` สูตรคือสูตรที่มาตรฐานและคิดต้นทุนสำหรับการผลิตหนึ่งเอาท์พุตของจานหรือเครื่องดื่ม — แถว header ใน `tb_recipe` ร่วมกับบรรทัดวัตถุดิบใน `tb_recipe_ingredient` (วันนี้มีเฉพาะระดับ schema) ขั้นตอนการเตรียมใน `tb_recipe_preparation_step` (วันนี้มีเฉพาะระดับ API) และ (ทางเลือก) yield variant หนึ่งหรือหลายตัวใน `tb_recipe_yield_variant` (วันนี้ read-only) ต่างจากเอกสารที่ขับเคลื่อนด้วย workflow (PR, PO, GRN, SR) ที่ทุกการเปลี่ยนสถานะถูก gate โดย workflow stage และเซ็นต่อบรรทัด วงจรชีวิตของสูตรเป็น **ตรง** — สามสถานะ (`DRAFT`, `PUBLISHED`, `ARCHIVED`) โดยตามดีไซน์มี RBAC ระดับ application และกฎความครบ พร้อม versioning (`tb_recipe_version`) และ pricing-history (`tb_recipe_pricing_history`) เป็นกลไก audit; gate และตัวเขียน audit เหล่านี้ยังไม่มีตัวใดถูก implement ในดีไซน์เป้าหมายสูตรคือ **แหล่งความจริงสำหรับสิ่งที่ควรถูกบริโภคเมื่อมีการขาย** (OUT movement เชิงทฤษฎีตาม [02-business-rules.md](./02-business-rules.md) `REC_XMOD_003`) — pipeline การบริโภคนั้นยังไม่มีโค้ดในวันนี้
 
 Section 2 ด้านล่างเป็น **state machine ระดับ global** — list canonical ของการเปลี่ยนที่ถูกกฎหมายข้ามค่าสามของ `enum_recipe_status` โดยไม่ขึ้นกับใครเป็นคนทำ แต่ละไฟล์ต่อ persona (link จาก Section 3) อธิบาย *เส้นทาง* ของ persona ผ่าน state machine — entry point, action ที่มี, decision branch ที่เผชิญ, handoff ที่จบการมีส่วนร่วม Section 4 สรุป handoff ข้าม persona ที่เย็บเส้นทางบุคคลเข้าด้วยกัน การ group persona รวบ 8 persona ดิบของ carmen/docs (Chef / Kitchen Manager, Kitchen Staff, Cost Controller, Cost Control Department, Outlet Manager, Procurement Department, F&B Operations Manager, System Administrator + Auditor implicit) เป็น **role เชิงปฏิบัติการห้าตัว**: Chef, Cost Controller, Outlet Manager, Procurement / F&B Ops, Audit / Config อ่าน overview นี้ก่อนเพื่อ anchor วงจรชีวิต แล้วเจาะลงในไฟล์ persona ที่ match role ของคุณ
 
@@ -25,7 +27,7 @@ Section 2 ด้านล่างเป็น **state machine ระดับ g
 
 ## 2. วงจรชีวิตของสูตร
 
-สถานะของสูตรเก็บบน `tb_recipe.status` และถูก constraint เป็นค่าสามที่ประกาศใน `enum_recipe_status`: `DRAFT` (สถานะแก้ได้เริ่มต้น — chef กำลัง author; วัตถุดิบ ขั้นตอน และ costing อาจไม่ครบ; ไม่มีสิทธิ์สำหรับ linkage menu-item หรือ theoretical consumption), `PUBLISHED` (สูตร live — กฎความครบทั้งหมดผ่าน มีสิทธิ์สำหรับ linkage menu-item ขับเคลื่อน theoretical consumption บนการขายเมนู) และ `ARCHIVED` (สูตรเลิกใช้ — อ่านได้สำหรับ audit ไม่รวมในการค้นหา default ไม่ขับเคลื่อน theoretical consumption บนการขายใหม่) การเปลี่ยนด้านล่างครอบคลุมการย้ายที่ถูกกฎหมายระหว่างพวกเขา; ทุกอย่างอื่นถูกปฏิเสธโดย recipe service ผลกระทบปลายน้ำ (theoretical-consumption fan-out ตาม `REC_CALC_014` / `REC_XMOD_003`, การ cascade cost ของ sub-recipe ตาม `REC_POST_006`, snapshot pricing-history ตาม `REC_POST_010`) ยิงบนการแก้และที่การ publish — ดู [02-business-rules.md](./02-business-rules.md) Section 5 สำหรับกฎ posting
+สถานะของสูตรเก็บบน `tb_recipe.status` และถูก constraint เป็นค่าสามที่ประกาศใน `enum_recipe_status`: `DRAFT` (ค่า default ฝั่ง backend สำหรับสูตรใหม่), `PUBLISHED` และ `ARCHIVED` **ตามที่ implement จริง "state machine" เป็นเพียง dropdown ธรรมดา** (`recipe-toolbar.tsx`): สถานะใดก็ save จากสถานะใดก็ได้ backend ไม่ปฏิเสธอะไรเลย และผลข้างเคียงเดียวของการเปลี่ยนสถานะคือ timestamp `published_at` / `archived_at` (`recipe.service.ts`) ตารางด้านล่างคือ state machine ตาม**ดีไซน์**ของ carmen/docs — permission ต่อการเปลี่ยน, gate, การเขียน versioning และผลกระทบปลายน้ำ (theoretical-consumption fan-out ตาม `REC_CALC_014` / `REC_XMOD_003`, การ cascade cost ของ sub-recipe ตาม `REC_POST_006`, snapshot pricing-history ตาม `REC_POST_010`) ทั้งหมดยังไม่ถูก implement; ดู [02-business-rules.md](./02-business-rules.md) §1.1 สำหรับ subset ที่บังคับใช้จริง
 
 | จากสถานะ | Action | ไปสถานะ | อนุญาตให้ | เงื่อนไขเบื้องต้น |
 | ---------- | ------ | -------- | ----------- | -------------- |
@@ -54,7 +56,7 @@ Section 2 ด้านล่างเป็น **state machine ระดับ g
 
 ## 4. Handoff ข้าม Persona
 
-ตารางด้านล่างจับช่วงเวลาที่ความรับผิดชอบสำหรับสูตร (หรือสำหรับการตัดสินใจที่เกี่ยวกับสูตร) ย้ายจาก persona หนึ่งไปยังอีกตัว แต่ละ handoff ถูก anchor กับสถานะของสูตรที่จุดการถ่ายโอนหรือกับ event ที่ trigger handoff
+ตารางด้านล่างจับช่วงเวลาที่ ใน operating model เป้าหมาย ความรับผิดชอบสำหรับสูตร (หรือการตัดสินใจที่เกี่ยวกับสูตร) ย้ายจาก persona หนึ่งไปยังอีกตัว **วันนี้ไม่มี handoff ใดในตารางนี้ที่ระบบเป็นตัวกลาง** — ไม่มี flag co-approval, alert cost drift, คำขอทดแทนวัตถุดิบ, SR ที่สร้างอัตโนมัติ หรือการ post theoretical-consumption ในโค้ด; ถ้าเกิดขึ้นจริงก็เกิดนอก Carmen แต่ละ handoff ถูก anchor กับสถานะของสูตรที่จุดการถ่ายโอนหรือกับ event ที่ trigger handoff
 
 | จาก persona | Trigger | ไป persona | สถานะของสูตรที่ handoff |
 | ------------ | ------- | ---------- | ----------------------- |
@@ -79,4 +81,5 @@ Section 2 ด้านล่างเป็น **state machine ระดับ g
 - `../carmen/docs/recipe/recipe-management.md` — การอ้างอิงระดับ layout สำหรับหน้า create / edit, costing sheet, เครื่องคิดเลข scaling, หน้าการเตรียม, gallery สื่อ และการจัดการหมวดหมู่; แจ้ง flow ของ chef และ cost controller
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical `enum_recipe_status` และวงจรชีวิตสามสถานะอ้างทั่ว Section 2
 - Sibling: [02-business-rules.md](./02-business-rules.md) Section 5 — ผลกระทบ posting และ gate การกำหนดสิทธิ์ที่อ้างโดยแต่ละแถวของ Section 2
-- โมดูลที่เกี่ยวข้อง: [product](/th/inventory/product) (วัตถุดิบสูตรอ้างอิงสินค้าที่ `is_used_in_recipe = true`), [inventory](/th/inventory/inventory) (การใช้สูตรขับเคลื่อน OUT movement เชิงทฤษฎีบนการขายเมนู; sub-recipe ซ้อนถึง OUT สินค้าใบไม้), [costing](/th/inventory/costing) (`cost_per_unit` per-ingredient มาจาก valuation วิธีการคิดต้นทุนของ outlet), [store-requisition](/th/inventory/store-requisition) (สูตรอาจสร้าง SR draft อัตโนมัติสำหรับ event การผลิต / banquet ที่วางแผนผ่าน `info.recipe_id`)
+- โมดูลที่เกี่ยวข้อง: [product](/th/inventory/product) (วัตถุดิบสูตรอ้างอิงสินค้าที่ `is_used_in_recipe = true` — ระดับ schema), [inventory](/th/inventory/inventory), [costing](/th/inventory/costing), [store-requisition](/th/inventory/store-requisition) — integration theoretical-OUT, costing จาก valuation และ recipe→SR ที่ระบุในดีไซน์ยังไม่มีโค้ดที่ implement (ตรวจสอบกับซอร์ส 2026-07-15)
+- Frontend implementation: `../carmen-inventory-frontend-react/routes/operation-plan/recipe/` — `recipe-component.tsx` (list), `recipe-form.tsx` + section component (detail/new), `recipe-toolbar.tsx` (dropdown สถานะ), `use-recipe-cost-calc.ts` (เครื่องคำนวณ pricing ฝั่ง client)

@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — User Flow — Cost Controller
 description: flow ของ Cost Controller ในโมดูลสูตร — review ต้นทุนสูตร margin เป้าหมาย ราคาขาย gross margin; ติดตาม drift; เซ็นอนุมัติการเปลี่ยนแปลง
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: recipe, user-flow, cost-controller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -11,8 +11,10 @@ dateCreated: 2026-05-15T16:00:00.000Z
 # สูตรอาหาร (Recipe) — User Flow — Cost Controller
 
 > **At a Glance**
-> **Persona:** Cost Controller (+ Cost Control Department) &nbsp;·&nbsp; **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **ขั้นตอน workflow:** DRAFT / PUBLISHED (การแก้ cost-only + co-approve การ publish off-target) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** edit-cost (% เป้าหมาย, labor / overhead, ราคาขาย), co-approve publish (off-target), อ่านข้าม library
+> **Persona:** Cost Controller (+ Cost Control Department) &nbsp;·&nbsp; **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **ขั้นตอน workflow:** DRAFT / PUBLISHED (การแก้ cost-only + co-approve การ publish off-target) &nbsp;·&nbsp; **สิทธิ์สำคัญ (เป้าหมายการออกแบบ — ดูหมายเหตุสถานะ):** edit-cost (% เป้าหมาย, labor / overhead, ราคาขาย), co-approve publish (off-target), อ่านข้าม library
 > **persona นี้ทำอะไร:** Review rollup cost และ margin ของสูตร แก้คอลัมน์ cost / pricing ติดตาม drift และ co-approve การ publish off-target
+
+> **สถานะการติดตั้งใช้งานจริง (ตรวจสอบกับซอร์ส 2026-07-15).** ไม่มี permission `recipe:edit-cost` หรือ co-approval ใด ๆ — ทั้งกลุ่ม `/operation-plan/*` ถูก gate ด้วยสิทธิ์ admin ผ่าน placeholder `operation_plan.view` ที่มีเฉพาะฝั่ง frontend และผู้ใช้ใดที่เปิด form ได้ก็แก้ field ได้**ทั้งหมด** (ไม่มีโหมดแก้เฉพาะคอลัมน์ cost) ไม่มี dashboard cost-drift, ไม่มี dashboard variance ทฤษฎี-vs-จริง, ไม่มีการเขียน `tb_recipe_pricing_history` และไม่มี gate การ publish off-target อยู่ในโค้ด surface ด้าน cost ที่มีจริงวันนี้คือ sidebar cost ของ form: `total_ingredient_cost` / `labor_cost` / `overhead_cost` ที่กรอกด้วยมือ บวก `cost_per_portion`, `suggested_price`, margin และ `actual_food_cost_percentage` ที่คำนวณฝั่ง client (คำนวณเป็น ingredient cost / ราคาขาย — `use-recipe-cost-calc.ts`) flow ด้านล่างคือ operating model เป้าหมายของ carmen/docs
 
 ## 1. บทบาทในโมดูลนี้
 

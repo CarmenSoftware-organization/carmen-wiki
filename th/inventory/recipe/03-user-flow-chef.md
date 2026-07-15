@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — User Flow — Chef
 description: flow ของ Chef ในโมดูลสูตรอาหาร — สร้างและปรับปรุงสูตร ดูแล sub-recipe publish และ archive
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: recipe, user-flow, chef, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -11,8 +11,10 @@ dateCreated: 2026-05-15T16:00:00.000Z
 # สูตรอาหาร (Recipe) — User Flow — Chef
 
 > **At a Glance**
-> **Persona:** Chef / Kitchen Manager (+ Kitchen Staff read-only) &nbsp;·&nbsp; **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **ขั้นตอน workflow:** DRAFT → PUBLISHED → ARCHIVED (+ un-publish round-trip) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** create, edit, publish, archive, edit-published (พร้อม versioning), clone
+> **Persona:** Chef / Kitchen Manager (+ Kitchen Staff read-only) &nbsp;·&nbsp; **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **ขั้นตอน workflow:** DRAFT → PUBLISHED → ARCHIVED (+ un-publish round-trip) &nbsp;·&nbsp; **สิทธิ์สำคัญ (เป้าหมายการออกแบบ — ดูหมายเหตุสถานะ):** create, edit, publish, archive, edit-published (พร้อม versioning), clone
 > **persona นี้ทำอะไร:** Author และดูแล recipe library — วัตถุดิบ ขั้นตอน yield variant sub-recipe — และเป็นเจ้าของอำนาจ publish และ archive
+
+> **สถานะการติดตั้งใช้งานจริง (ตรวจสอบกับซอร์ส 2026-07-15).** ไม่มี permission `recipe:*` ใด ๆ — ทั้งกลุ่ม `/operation-plan/*` ถูก gate ด้วยสิทธิ์ admin ผ่าน placeholder `operation_plan.view` ที่มีเฉพาะฝั่ง frontend ดังนั้นวันนี้ไม่มี role Chef แยกต่างหากในระบบ ใน journey ด้านล่างสิ่งที่มีจริง: create/edit ผ่าน recipe form เดียว (`recipe-form.tsx` — field ส่วน header, `total_ingredient_cost` / `labor_cost` / `overhead_cost` ที่กรอกด้วยมือ, pricing ที่คำนวณฝั่ง client, gallery รูปภาพแบบ multipart) และการลบ (ถูก block เฉพาะเมื่อถูกใช้เป็น sub-recipe) สิ่งที่ยังไม่ implement: clone, picker สินค้า/sub-recipe (grid วัตถุดิบเป็น preview เท่านั้นและไม่เคยถูก save), UI ขั้นตอนการเตรียม (มี REST endpoint แต่ไม่มีหน้าจอ), editor ของ yield variant, publish gate (`Publish` เป็นเพียง dropdown สถานะ; ไม่มี check `REC_VAL_015`–`018` ยิง), co-approval ของ Cost Controller, versioning (`tb_recipe_version` ไม่มีตัวเขียน) และการเขียน pricing-history ขั้นตอนที่อ้างถึง feature เหล่านั้นคือ flow เป้าหมายของ carmen/docs
 
 ## 1. บทบาทในโมดูลนี้
 
@@ -20,24 +22,24 @@ persona **Chef** คือ **Chef / Kitchen Manager** (พร้อม subset **
 
 ## 2. Entry Point และ Primary Flow
 
-**Entry point:** สามเส้นทางสู่หน้าจอ recipe-create / edit
+**Entry point:** เส้นทางสู่หน้าจอ recipe-create / edit
 
-- **โมดูล Recipe → New Recipe** — Chef navigate ไป recipe library คลิก **New Recipe** เลือกหมวดหมู่และประเภทอาหาร และเริ่ม authoring ระบบเขียน `tb_recipe` ที่ `status = DRAFT`; `code` กำหนดตามนโยบายการเลขของ tenant; `created_by_id` = chef
-- **Clone สูตรที่มีอยู่** — Chef เลือกสูตรที่มีอยู่ (สถานะใดก็ได้) และ clone เป็น `DRAFT` ใหม่ Clone copy header / วัตถุดิบ / ขั้นตอน / variant; `code` และ `name` ถูกล้างให้ chef ตั้ง; `status = DRAFT`, ล้าง `published_at` และ `archived_at`
-- **แก้ `DRAFT` ที่มีอยู่หรือ revise `PUBLISHED`** — Chef เปิดสูตรที่มีอยู่ `DRAFT` แก้ได้เต็ม `PUBLISHED` แก้ได้อย่างใดอย่างหนึ่งของ in-place (พร้อม versioning ตาม `REC_POST_004`) หรือผ่าน un-publish round-trip (`PUBLISHED → DRAFT → PUBLISHED` ตาม `REC_POST_005`) ขึ้นอยู่กับนโยบาย tenant
+- **โมดูล Recipe → Add** *(implement แล้ว)* — Chef navigate ไป `/operation-plan/recipe` คลิก **Add** (`/operation-plan/recipe/new`) กรอก form รวมทั้งหมวดหมู่และประเภทอาหาร แล้ว save `code` ถูกพิมพ์โดยผู้ใช้เอง (field บังคับ — ไม่มี auto-numbering ของ tenant สำหรับสูตร); `status` default เป็น `DRAFT`; `created_by_id` = chef
+- **Clone สูตรที่มีอยู่** *(ยังไม่ implement — ไม่มี action clone อยู่ที่ใดเลยใน recipe UI)* — เจตนาของดีไซน์: copy header / วัตถุดิบ / ขั้นตอน / variant เป็น `DRAFT` ใหม่
+- **แก้สูตรที่มีอยู่** *(implement แล้ว, สถานะใดก็ได้)* — Chef เปิด `/operation-plan/recipe/:id` และคลิก **Edit** ทุกสถานะแก้ได้เท่ากัน; ความแตกต่างระหว่าง in-place versioning กับ un-publish round-trip (`REC_POST_004`/`005`) ไม่มีอยู่จริงเพราะไม่มีอะไร version เลย
 
-**Primary flow (happy path 12 ขั้นตอน):**
+**Primary flow (journey ตามดีไซน์ carmen/docs 12 ขั้นตอน — ดู callout สถานะด้านบนว่าขั้นตอนใดมีจริง):**
 
 1. **ตัดสินใจเรื่องจาน** Chef มี menu item ใหม่ที่จะเพิ่ม การ refresh ตามฤดูกาล หรือการปรับปรุงที่ขับเคลื่อนด้วย cost ระบุหมวดหมู่ (Appetiser, Main, Dessert, Beverage ฯลฯ) และประเภทอาหาร (ไทย อิตาเลียน ฝรั่งเศส ฯลฯ); สิ่งเหล่านี้ขับเคลื่อน default หมวดหมู่ (% food-cost เป้าหมาย % labor / overhead) ที่สูตรจะสืบทอด
 2. **เปิด Recipe → New Recipe** เลือกหมวดหมู่ (ซึ่งกำหนด `tb_recipe_category.default_cost_settings` ที่จะสืบทอด) และประเภทอาหาร ระบบเขียน `tb_recipe` ที่ `status = DRAFT`; `code` กำหนด; default populate (`target_food_cost_percentage`, `labor_cost_percentage`, `overhead_percentage` สืบทอดจากการตั้งค่าหมวดหมู่)
-3. **กรอก header สูตร** `name` (เช่น "House Burger"), `description` (rich text), `difficulty` (`EASY` / `MEDIUM` / `HARD`), `base_yield` (เช่น 1) และ `base_yield_unit` (เช่น "portion"), `prep_time` (นาที), `cook_time` (นาที), `allergens` (flag gluten / dairy / nuts / shellfish), `tags` (อิสระ — "vegan", "halal", "summer-menu", "house-special") เพิ่มรูปหลักและ gallery (`images` JSON)
+3. **กรอก header สูตร** `name` (เช่น "House Burger"), `description` (rich text), `difficulty` (`EASY` / `MEDIUM` / `HARD`), `base_yield` (เช่น 1) และ `base_yield_unit` (เช่น "portion"), `prep_time` (นาที), `cook_time` (นาที), `allergens` (flag gluten / dairy / nuts / shellfish), `tags` (อิสระ — "vegan", "halal", "summer-menu", "house-special") เพิ่มรูปหลักและ gallery (persist เป็นแถว `tb_recipe_image` ผ่าน payload gallery แบบ multipart)
 4. **เพิ่มบรรทัดวัตถุดิบ** สำหรับแต่ละวัตถุดิบ: เลือก `ingredient_type` (`product` หรือ `recipe`); ค้นหา product catalog (สำหรับ `product`) หรือ recipe library ที่ publish (สำหรับ `recipe`); กรอก `qty` และหน่วยสูตร; ถ้าหน่วยคลังต่าง กรอก `conversion_factor`; กรอก `wastage_percentage` (ต่อบรรทัด — วัตถุดิบต่างกันมี profile เสียต่างกันมาก เช่น 5% สำหรับหัวหอมหั่น 60% peeling loss สำหรับปลาแซลมอนตัวเต็ม 0% สำหรับแป้ง); ระบบคำนวณ `net_cost` และ `wastage_cost` ตาม `REC_CALC_001`–`REC_CALC_002` และเขียนแถว ทำซ้ำสำหรับแต่ละวัตถุดิบ
 5. **เพิ่ม sub-recipe เป็นวัตถุดิบ** สำหรับจานซับซ้อนที่ใช้ mother sauce / สต็อก / ส่วนผสมเครื่องเทศ เลือก `ingredient_type = recipe` และเลือก sub-recipe จาก library `PUBLISHED` `cost_per_portion` ของ sub-recipe ป้อน `cost_per_unit` บนบรรทัด (แปลเป็นพื้นฐาน per-`ingredient_unit_id`); `net_cost` per-line roll up วิธีเดียวกัน sub-recipe ต้อง `PUBLISHED` เพื่อถูกอ้างอิง (`REC_VAL_010` และ `REC_VAL_014`); กฎ no-cycle ป้องกัน loop A→B→A (`REC_VAL_011`)
 6. **เพิ่มขั้นตอนการเตรียม** สำหรับแต่ละขั้นตอน: `sequence_no`, `title`, `description` (คำสั่งเต็ม), `duration` (นาที), `temperature` และ `temperature_unit` ถ้าเกี่ยวข้อง, `equipment` (reference ไปยัง `tb_recipe_equipment` master ผ่าน JSON ref), `techniques` (sous-vide / flambé ฯลฯ), `chef_notes` และ `safety_warnings` สำหรับจุดควบคุมสำคัญ HACCP จัดลำดับใหม่ผ่าน drag-and-drop; application เขียน `sequence_no` ใหม่บนแถวที่ถูกแตะ
 7. **เพิ่ม yield variant (ทางเลือก)** สำหรับสูตรที่ผลิตหลายขนาดที่ขายได้จากสูตรเดียวกัน (Small / Medium / Large; Half-Tray / Full-Tray): เพิ่มแถว `tb_recipe_yield_variant` ด้วย `variant_name`, `variant_unit`, `variant_quantity`, `conversion_rate` (multiplier บนปริมาณวัตถุดิบฐาน — หรือใช้บรรทัดวัตถุดิบ variant-scope ผ่าน `tb_recipe_ingredient.tb_recipe_yield_variantId` สำหรับวัตถุดิบปริมาณขั้น), `cost_per_unit`, `selling_price` Mark variant หนึ่งเป็น default ผ่าน `tb_recipe.default_variant_id`
-8. **Review rollup cost** หน้าจอแสดง `total_ingredient_cost` (Σ `net_cost` ของบรรทัด active), `labor_cost` (คำนวณจาก `prep_time + cook_time` และ labor rate), `overhead_cost` (% ของ ingredient cost), `cost_per_portion` (ผลรวมหารด้วย `base_yield`), `suggested_price` (cost / (1 − target%)) และ — ถ้า `selling_price` ตั้ง — `actual_food_cost_percentage`, `gross_margin`, `gross_margin_percentage` ปรับวัตถุดิบ wastage หรือ input pricing เพื่อให้บรรลุเป้าหมาย margin
+8. **Review rollup cost** ใน form ที่ implement จริง Chef **พิมพ์** `total_ingredient_cost`, `labor_cost` และ `overhead_cost` โดยตรง (ไม่มี rollup จากบรรทัดวัตถุดิบ ไม่มีการ derive จาก labor rate) และ sidebar คำนวณสด: `cost_per_portion` (ผลรวมหารด้วย `base_yield`), `suggested_price` (cost / (1 − target%)) และ — ถ้า `selling_price` ตั้ง — `actual_food_cost_percentage` (ingredient cost / ราคา), `gross_margin`, `gross_margin_percentage` (`use-recipe-cost-calc.ts`) ปรับ input เพื่อให้บรรลุเป้าหมาย margin
 9. **ประสานกับ Cost Controller (เส้นทาง margin off-target)** ถ้า `actual_food_cost_percentage` เกิน `target_food_cost_percentage` เกิน tolerance ของ tenant (โดยทั่วไป 2 percentage points) การ publish ถูก gate บน co-approval ของ Cost Controller ตาม `REC_AUTH_007` Chef แชร์การวิเคราะห์ cost กับ Cost Controller; Cost Controller อย่างใดอย่างหนึ่ง co-approve publish (สูตรเป็น loss leader โดยจงใจ หรือ strategic-priced) หรือขอการปรับปรุง (ลด cost วัตถุดิบ เปลี่ยน vendor ลดขนาด portion)
-10. **Publish** คลิก **Publish**; ระบบยิง `REC_VAL_015`–`REC_VAL_018` (วัตถุดิบอย่างน้อยหนึ่ง prep step อย่างน้อยหนึ่ง rollup cost valid `selling_price > cost_per_portion` ถ้าตั้ง) และ `REC_AUTH_003` ในความสำเร็จ: `status = DRAFT → PUBLISHED`, `published_at = now()`; แถว `tb_recipe_version` เขียนด้วย `version_number = 1`, `published = true`; แถว `tb_recipe_pricing_history` เขียนที่ snapshot การ publish สูตรมีสิทธิ์สำหรับ linkage menu-item และการขับเคลื่อน theoretical-consumption แล้ว
+10. **Publish** ในแอปที่ implement จริง: สลับ dropdown สถานะบน toolbar เป็น `PUBLISHED` แล้ว save — backend ประทับ `published_at = now()` เท่านั้นและไม่ทำอะไรอื่น; ไม่มี check ความครบยิงและไม่มีแถว version/pricing-history ถูกเขียน (ดีไซน์: gate `REC_VAL_015`–`018` + `tb_recipe_version` v1 + snapshot pricing ตาม `REC_POST_003`)
 11. **ประสาน linkage menu-item (กับ F&B Ops)** สูตร `PUBLISHED` ใหม่โดยทั่วไปนำเสนอต่อ F&B Ops สำหรับการอนุมัติ menu-item ตาม `REC_AUTH_011` Linkage เองอยู่นอก schema สูตร (POS-integration layer หรือ application mapping ตาม `REC_XMOD_008`); Chef ยืนยันว่าสูตรพร้อมสำหรับการขาย
 12. **ดูแลตลอดเวลา** เมื่อต้นทุนวัตถุดิบ drift (การ update pricelist vendor ไหลผ่านไปยัง cost สูตรตาม `REC_XMOD_005`) Cost Controller อาจ flag สูตรที่ margin drift; Chef แก้ (in-place ด้วย versioning ตาม `REC_POST_004` หรือผ่าน un-publish round-trip ตาม `REC_POST_005`); แต่ละการแก้เขียน `tb_recipe_version` ใหม่และ (ถ้า cost เปลี่ยน) แถว `tb_recipe_pricing_history` ใหม่ การเปลี่ยน cost ของ sub-recipe cascade อัตโนมัติ (`REC_POST_006`)
 

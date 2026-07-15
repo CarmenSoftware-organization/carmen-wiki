@@ -2,7 +2,7 @@
 title: ประเภทอาหาร (Cuisine Type)
 description: แคตตาล็อกประเภทอาหาร — label ตามภูมิภาค/สไตล์ที่ใช้กับสูตรอาหารสำหรับการแบ่งกลุ่มเมนู (ไทย อิตาเลียน ฝรั่งเศส ฟิวชัน ฯลฯ)
 published: true
-date: 2026-06-09T16:28:56.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: recipe, cuisine, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -27,20 +27,20 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
-| เพิ่ม cuisine ใหม่ | Operation Plan → Cuisine → **+ New** | จำเป็นต้องมี Name + region (dropdown 6 ค่า) |
-| ดูแล popular dishes / key ingredients | edit dialog → tag editor | string อิสระ ไม่มีการ validate FK ไปยัง product/recipe |
-| เปลี่ยนชื่อ cuisine | edit dialog → `name` | สูตรเก็บ ID ดังนั้นการแสดงผลรีเฟรชอัตโนมัติ |
-| ปลดประจำการ cuisine | edit dialog → `is_active = false` | สูตรในประวัติยังแสดง ซ่อนจาก picker |
-| ย้าย cuisine ไปยัง region อื่น | edit dialog → `region` | region อยู่บนแถว cuisine เท่านั้น — ไม่ cascade |
+| เพิ่ม cuisine ใหม่ | Operation Plan → Cuisine → **+ Add** (ฟอร์มเต็มหน้าที่ `/operation-plan/cuisine/new`) | จำเป็นต้องมี Name + region (dropdown 6 ค่า) |
+| ดูแล popular dishes / key ingredients | หน้า edit → tag editor | string อิสระ ไม่มีการ validate FK ไปยัง product/recipe |
+| เปลี่ยนชื่อ cuisine | หน้า edit (`/operation-plan/cuisine/:id`) → `name` | สูตรเก็บ ID ดังนั้นการแสดงผลรีเฟรชอัตโนมัติ |
+| ปลดประจำการ cuisine | หน้า edit → `is_active = false` | สูตรในประวัติยังแสดง ซ่อนจาก picker |
+| ย้าย cuisine ไปยัง region อื่น | หน้า edit → `region` | region อยู่บนแถว cuisine เท่านั้น — ไม่ cascade |
 
 ## 3. การตรวจสอบและ Error
 
 | อาการ / ข้อความ | สาเหตุ | การแก้ไข |
 |---|---|---|
-| "Name already exists" | `@@unique([name, deleted_at])` ละเมิด | เลือกชื่ออื่น (หรือ restore แถวที่ลบ) |
+| "Recipe cuisine already exists" (`RECIPE_CUISINE_ALREADY_EXISTS`) | การตรวจชื่อซ้ำระดับ app บวก `@@unique([name, deleted_at])` | เลือกชื่ออื่น (หรือ restore แถวที่ลบ) |
 | "Region is required" | `region` เว้นว่าง — ไม่มี fallback NULL | เลือกหนึ่งใน 6 ค่า enum |
 | "Region value not allowed" | พยายามตั้ง region ที่ไม่รู้จัก | region ใหม่ต้องมีการ migrate schema |
-| "Cannot delete: recipes still reference this cuisine" | `tb_recipe.cuisine_id` FK `onDelete: Restrict` | reassign สูตรแล้ว soft-delete |
+| "Recipe cuisine is in use by recipes" (`RECIPE_CUISINE_IN_USE`) | การนับการอ้างอิง `tb_recipe.cuisine_id` ที่ไม่ถูกลบที่ระดับ app บล็อกการลบ (`recipe-cuisine.service.ts`) FK `Restrict` เป็น backstop | reassign สูตรแล้ว soft-delete |
 | Recipe library แสดง cuisine ว่างบนสูตรเก่า | cuisine ถูก soft-delete แต่แถวยังถูกเก็บ | การอ่านยังทำงาน — restore หรือ reassign ตามต้องการ |
 
 ## 4. Edge Cases
@@ -67,6 +67,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 | `region` | `enum_cuisine_region` | No | `ASIA` / `EUROPE` / `AMERICAS` / `AFRICA` / `MIDDLE_EAST` / `OCEANIA` |
 | `popular_dishes` | `Json @db.JsonB` | No | เมนูคลาสสิกที่คัดสรร (default `[]`) |
 | `key_ingredients` | `Json @db.JsonB` | No | วัตถุดิบเอกลักษณ์ที่คัดสรร (default `[]`) |
+| `image_file_token` | `String? @db.VarChar` | Yes | รูปของ cuisine ตั้งค่าผ่าน flow multipart `recipe-cuisines.set-image` |
 | `info`, `dimension` | `Json?` | Yes | metadata มาตรฐาน |
 | `doc_version` | `Int` | No | เวอร์ชัน optimistic-lock |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*` |
@@ -81,7 +82,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 - **ความไม่ซ้ำ** `name` ไม่ซ้ำในแถวที่ไม่ถูกลบ (บังคับใช้ที่ DB)
 - **region จำเป็น** ไม่มี `NULL` / `OTHER` fallback region ใหม่ต้องมีการ migrate schema
-- **Deletion guards** `onDelete: Restrict` บน `tb_recipe.cuisine_id` บล็อก hard-delete ของ cuisine ที่ถูกอ้างอิง ใช้ soft-delete + inactive
+- **Deletion guards** endpoint การลบตรวจนับสูตรที่อ้างอิงที่ไม่ถูกลบก่อนและคืน `RECIPE_CUISINE_IN_USE` (`recipe-cuisine.service.ts`) FK `onDelete: Restrict` บน `tb_recipe.cuisine_id` เป็น backstop ระดับ DB ป้องกัน hard delete soft-delete + inactive คือการปลดประจำการที่รองรับ
 - **การ validate** `name` และ `region` จำเป็น `popular_dishes` / `key_ingredients` เป็น array string อิสระ (ไม่มีการ validate FK)
 - **การกระจายการเปลี่ยนชื่อ** สูตรเก็บ ID ดังนั้นการเปลี่ยนชื่อรีเฟรชอัตโนมัติบนการแสดงผล
 

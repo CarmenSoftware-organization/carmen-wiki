@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — Test Scenarios — Audit & Config
 description: test case ของ System Administrator และ Auditor (config, RBAC, audit versioning, audit pricing-history, สุขภาพ integration) สำหรับโมดูล recipe
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: recipe, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -13,7 +13,9 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **At a Glance**
 > **Persona:** Audit / Config (System Administrator config + Auditor read-only) &nbsp;·&nbsp; **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **scenario:** ~31
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **การครอบคลุม E2E:** ไม่มีสำหรับภายในสูตร; การตรวจสอบสุขภาพ integration แยกจาก E2E สูตรใน `../carmen-inventory-frontend-e2e/`
+> **การครอบคลุม E2E:** ครึ่ง master-data ของ persona นี้เป็นส่วน **เดียว** ของโมดูล recipe ที่มีการครอบคลุมอัตโนมัติ — `tests/121-recipe-equipment-category.spec.ts` (smoke + CRUD ผ่าน dialog + กรณี security บน `/operation-plan/recipe-equipment-category`)
+
+> **สถานะการ implement (ตรวจสอบแล้ว 2026-07-15)** ผลตัดสินแบ่งเป็นสองส่วน **มีจริงและ test ได้:** หน้าจอ master-data ทั้งสี่ (category, cuisine, equipment, equipment-category) พร้อม guard ฝั่ง backend — ความ unique ของ code แบบ case-insensitive / `RECIPE_CATEGORY_CODE_ALREADY_EXISTS`, ความ unique ของชื่อ / `RECIPE_CUISINE_ALREADY_EXISTS` + `RECIPE_EQUIPMENT_CATEGORY_ALREADY_EXISTS`, การบล็อกลบเมื่อถูกใช้งาน (`RECIPE_CATEGORY_IN_USE`, `RECIPE_CATEGORY_HAS_SUBCATEGORIES`, `RECIPE_CUISINE_IN_USE`), การ validate parent + การคำนวณ `level`, การ lock ด้วย `doc_version` และ flow การ set-image **ไม่มีจริง:** การบริหาร RBAC `recipe:*` (ไม่มี permission เหล่านั้นอยู่), นโยบาย tenant สำหรับ publish-gate / un-publish / co-approval, การ wire integration (ไม่มี theoretical consumption หรือ SR auto-create) และทุก scenario ของ Auditor ที่อ่าน `tb_recipe_version` / `tb_recipe_pricing_history` (ไม่มีตัวเขียน — ตารางเหล่านั้นว่างเสมอ) นโยบาย soft-delete ตามช่วงเวลาการเก็บข้อมูลก็ยังไม่ได้ implement เช่นกัน (การลบทำได้ทุกสถานะ โดย guard ด้วยการถูกใช้เป็น sub-recipe เท่านั้น)
 
 หน้านี้บันทึก test scenario ที่ persona Audit / Config — ประกอบด้วย **System Administrator** (หมวดหมู่ cuisine equipment master, RBAC, นโยบาย tenant บน publish gate / un-publish / co-approval, การ wire integration กับ `[product](/th/inventory/product)` / `[inventory](/th/inventory/inventory)` / `[store-requisition](/th/inventory/store-requisition)`) และ **Auditor** (versioning / pricing-history / signature trace อ่านอย่างเดียว; compliance review) — ขับเคลื่อนตรงในโมดูล `recipe` ต่างจาก 4 persona ปฏิบัติการ (Chef, Cost Controller, Outlet Manager, Procurement / F&B Ops) ที่ทำงานวงจรชีวิต happy-path sub-role Audit / Config ทำ action บน **periphery**: ก่อนสูตรใดอยู่ (config) ระหว่างวงจรชีวิต (การบังคับใช้ RBAC สุขภาพ integration) และหลัง publish (audit trace การ verify signature) Sysadmin มี read / write เต็มบนตาราง config และการ map RBAC; Auditor เป็น read-only บน `tb_recipe_version`, `tb_recipe_pricing_history` และคอลัมน์ audit ต่อแถว ไม่มีเส้นทาง "void" หรือ "admin-cancel" บนสูตร — สุขภาพข้อมูลบนสูตรที่ archive หลังช่วงเวลาการเก็บข้อมูลเป็นอำนาจ delete เดียว และอยู่กับ Sysadmin ตาม `REC_AUTH_014` scenario จัดกลุ่มเป็น **happy path** (master หมวดหมู่ / cuisine / อุปกรณ์; RBAC; นโยบาย tenant; สุขภาพ integration; auditor sample; auditor compliance review; soft-delete archived) **RBAC** (อำนาจ Sysadmin; auditor read-only) **validation** (negative test รอบ master ไม่ครบ orphan reference in-flight) และ **edge case** รอบ config multi-tenant soft-delete ที่ช่วงเวลาการเก็บข้อมูล การ reconstruct chain versioning handoff ข้าม persona ที่ pivot จาก persona นี้ (Scenario 10, 11 ใน parent overview) อยู่ใน [04-test-scenarios.md](./04-test-scenarios.md) ไม่ใช่ที่นี่
 

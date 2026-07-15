@@ -2,7 +2,7 @@
 title: Recipe — User Flow — Outlet Manager
 description: Outlet Manager's flow within the recipe module — consumes recipes for demand planning, monitors outlet food-cost variance, feeds back accuracy / portion-control issues.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: recipe, user-flow, outlet-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -11,8 +11,10 @@ dateCreated: 2026-05-15T16:00:00.000Z
 # Recipe — User Flow — Outlet Manager
 
 > **At a Glance**
-> **Persona:** Outlet Manager &nbsp;·&nbsp; **Module:** [recipe](/en/inventory/recipe) &nbsp;·&nbsp; **Workflow stages:** off-path — consumes PUBLISHED recipes for demand planning and variance monitoring &nbsp;·&nbsp; **Key permissions:** read recipes; author / submit downstream SRs; raise feedback to Chef
+> **Persona:** Outlet Manager &nbsp;·&nbsp; **Module:** [recipe](/en/inventory/recipe) &nbsp;·&nbsp; **Workflow stages:** off-path — consumes PUBLISHED recipes for demand planning and variance monitoring &nbsp;·&nbsp; **Key permissions (design-target — see status note):** read recipes; author / submit downstream SRs; raise feedback to Chef
 > **What this persona does:** Reads recipes to plan production and raise SRs; monitors outlet food-cost variance and feeds back accuracy issues to the Chef.
+
+> **Implementation status (verified 2026-07-15).** No read-only recipe permission exists (`operation_plan.view` placeholder gates the whole group admin-only — an Outlet Manager without admin access sees no recipe screens at all), no recipe→SR auto-generation exists (no `recipe_id` reference anywhere in the SR services), and no outlet food-cost variance computation exists in any service. Store requisitions themselves are real ([store-requisition](/en/inventory/store-requisition)) but are authored manually, unconnected to recipes. The flow below is the carmen/docs target operating model.
 
 ## 1. Role in This Module
 

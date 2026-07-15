@@ -2,7 +2,7 @@
 title: Recipe — Business Rules
 description: Validation, calculation, authorization, posting, and cross-module rules for the recipe module.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: recipe, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -12,19 +12,38 @@ dateCreated: 2026-05-15T16:00:00.000Z
 
 > **At a Glance**
 > **Rule families:** `REC_VAL_*` validation &nbsp;·&nbsp; `REC_AUTH_*` permission &nbsp;·&nbsp; `REC_CALC_*` calc &nbsp;·&nbsp; `REC_POST_*` posting &nbsp;·&nbsp; `REC_XMOD_*` cross-module
-> **Rule count:** approximately 69 rules
-> **Audience:** Test author + developer — every rule ID is anchored from `04-test-scenarios*` pages
-> **Status lifecycle:** Section 5.1 (where present) carries the Live UI vs BRD discrepancy callouts
+> **Rule count:** approximately 69 rules — **most are design targets from carmen/docs, not implemented behaviour**; §1.1 lists the small enforced subset with source citations
+> **Audience:** Test author + developer — treat unenforced rules as candidate requirements, not expected system behaviour
 
 ## 1. Overview
 
-This page captures the operational business rules that govern a recipe through its lifecycle: input validation at create / edit / publish / archive time, the cost-engineering calculation rules (ingredient → line → recipe → portion → price → margin), authorization gates by role and status, posting effects on each transition of `enum_recipe_status`, and cross-module rules with [product](/en/inventory/product), [inventory](/en/inventory/inventory), [costing](/en/inventory/costing), and [store-requisition](/en/inventory/store-requisition). Unlike workflow-driven documents (PR, PO, GRN, SR), the recipe is **not** a workflow document — there is no `workflow_id`, no per-line approval signatures, no comment threads. The publication gate is a single transition guarded by application-level RBAC and a checklist of completeness rules; the audit mechanism is `tb_recipe_version` (full snapshots) plus `tb_recipe_pricing_history` (cost / price timeline). The recipe is the **source of truth for what should be consumed when something is sold** — when a `PUBLISHED` recipe is linked to a sold menu item, exploding the recipe by sold quantity drives the theoretical inventory consumption used in food-cost variance reporting.
+This page catalogues the business rules the carmen/docs design assigns to the recipe module: input validation, the cost-engineering calculation chain (ingredient → line → recipe → portion → price → margin), role-based authorization, posting effects per `enum_recipe_status` transition, and cross-module rules with [product](/en/inventory/product), [inventory](/en/inventory/inventory), [costing](/en/inventory/costing), and [store-requisition](/en/inventory/store-requisition). Unlike workflow-driven documents (PR, PO, GRN, SR), the recipe is **not** a workflow document — there is no `workflow_id`, no per-line approval signatures, no comment threads.
 
-Two structural points colour every rule below and are worth restating up front. **First**, the recipe lifecycle has three states (`DRAFT`, `PUBLISHED`, `ARCHIVED`) and a strict directional flow: `DRAFT → PUBLISHED → ARCHIVED` is the canonical path, with `PUBLISHED → DRAFT` allowed only when tenant policy requires re-approval after edits (otherwise edits to a `PUBLISHED` recipe apply directly with a new `tb_recipe_version` row). `ARCHIVED → PUBLISHED` is **not** allowed by default — archived recipes are retired; the path back is to clone the archived recipe into a new `DRAFT` and re-publish. **Second**, every change to a `PUBLISHED` recipe (ingredient quantity, sub-recipe swap, wastage %, prep / cook time, cost rate) writes a new `tb_recipe_version` row capturing the full snapshot of header / ingredients / steps / variants — this is the recipe module's audit trail and the rollback mechanism. Pricing-relevant changes additionally write a `tb_recipe_pricing_history` row with the cost / price / food-cost % / gross-margin snapshot at the new effective date.
+### 1.1 What is actually enforced today (verified 2026-07-15)
+
+The current implementation enforces a much smaller rule set than the catalogue below. Verified against `recipe.service.ts`, `preparation-steps.service.ts`, the gateway DTOs (`recipe.create.dto.ts` / `recipe.update.dto.ts`), the error catalog (`@repo/error-catalog`), and the frontend form (`recipe-form-schema.ts`, `use-recipe-cost-calc.ts`):
+
+| Enforced rule | Where | Error / behaviour |
+|---|---|---|
+| `code` must be unique among non-deleted recipes (exact match on `code` alone; the DB unique is `(code, name, deleted_at)`) | `recipe.service.ts create()` | `RECIPE_ALREADY_EXISTS` (409) |
+| `code`, `name`, `category_id` (uuid), `cuisine_id` (uuid), `base_yield`, `base_yield_unit` required on create | gateway `RecipeCreateSchema` (zod) | 400 validation error |
+| `category_id` / `cuisine_id` must reference a **non-soft-deleted** row (`is_active` is *not* checked) | `recipe.logic.ts validateCategory()/validateCuisine()` | `RECIPE_CATEGORY_NOT_FOUND` / `RECIPE_CUISINE_NOT_FOUND` |
+| `doc_version` required on update/patch; optimistic-lock `where: { id, doc_version }` | `RecipeUpdateSchema` + `recipe.service.ts` | Update fails on version mismatch |
+| Status-transition side effects: `published_at = now()` on `→ PUBLISHED`, `archived_at = now()` on `→ ARCHIVED`; **no gate of any kind** on the transition itself | `recipe.service.ts update()/patch()` | Timestamps only |
+| Delete blocked while the recipe is referenced as a sub-recipe | `recipe.service.ts delete()` | `RECIPE_USED_AS_SUB_RECIPE` (400) |
+| Preparation steps: `description` required; add is bulk with auto `sequence_no`; reorder must list every active step exactly once; step patch requires `doc_version` | `preparation-steps.service.ts` | `RECIPE_PREPARATION_STEPS_REQUIRED`, `INVALID_ARGUMENT` |
+| Frontend form: `code`, `name`, `status`, `difficulty`, `cuisine_id`, `category_id`, `base_yield_unit` required; numeric fields `≥ 0` | `recipe-form-schema.ts` (zod, client-side only) | Inline field errors |
+| Derived pricing figures computed client-side and stored: `cost_per_portion`, `gross_margin(_percentage)`, `actual_food_cost_percentage`, `labor_cost_percentage`, `overhead_percentage`, `suggested_price` | `use-recipe-cost-calc.ts` | See §3 for the actual formulas |
+
+Everything else on this page — publish completeness gates, ingredient-line validation, sub-recipe cycle detection, cost cascades, versioning writes, pricing-history snapshots, per-role permissions, theoretical consumption — has **no implementing code**: ingredient lines have no write path at all, `tb_recipe_version` / `tb_recipe_pricing_history` have no writers, and the only permission gate is the frontend-only `operation_plan.view` placeholder (admin-only) covering the whole route group.
+
+Two further structural corrections to the narrative below. **First**, the lifecycle is *not* directional in practice: `DRAFT ⇄ PUBLISHED ⇄ ARCHIVED` in any direction via the toolbar status dropdown, including `ARCHIVED → PUBLISHED` and `ARCHIVED → DRAFT`. **Second**, no `tb_recipe_version` row is written on any edit — the versioning/rollback mechanism described in the original rules is schema-only design.
 
 ## 2. Validation Rules
 
-Rule IDs follow `REC_VAL_NNN`. Header rules (001–008) run on every save and on publish; line rules (009–014) run per line on save and on publish; aggregate / at-publish rules (015–018) run only at the `DRAFT → PUBLISHED` transition.
+> **Status: design catalogue.** Of the rules below, only fragments of `REC_VAL_001`–`REC_VAL_004` are enforced today (see §1.1 — code uniqueness is on `code` alone, and the category/cuisine reference check does not require `is_active`). The line rules (009–014) cannot fire because ingredient lines have no write path, and the at-publish rules (015–018) have no publish gate to run in. Rule IDs are retained as the requirement catalogue that `04-test-scenarios*` reference.
+
+Rule IDs follow `REC_VAL_NNN`. As designed: header rules (001–008) run on every save and on publish; line rules (009–014) run per line on save and on publish; aggregate / at-publish rules (015–018) run only at the `DRAFT → PUBLISHED` transition.
 
 | Rule ID | Condition | When enforced | Error / behaviour |
 | ------- | --------- | ------------- | ----------------- |
@@ -49,7 +68,16 @@ Rule IDs follow `REC_VAL_NNN`. Header rules (001–008) run on every save and on
 
 ## 3. Calculation Rules
 
-The recipe is a **cost-engineering document**: the calculation surface is rich. All cost / quantity columns are stored as `Decimal(20, 5)` at the row level; display rounding is half-up to 2 decimals for currency, 3 decimals for quantities. The calculation chain is line → recipe → portion → price → margin, with sub-recipe costs flowing in recursively.
+The recipe is a **cost-engineering document**: the calculation surface is rich. All cost / quantity columns are stored as `Decimal(20, 5)` at the row level. The designed calculation chain is line → recipe → portion → price → margin, with sub-recipe costs flowing in recursively.
+
+> **Status: the only implemented calculator is client-side** (`use-recipe-cost-calc.ts` in the recipe form), and it computes from the three **manually-entered** header inputs (`total_ingredient_cost`, `labor_cost`, `overhead_cost`) plus `base_yield`, `selling_price`, `target_food_cost_percentage`. Its actual formulas (all rounded half-up to 2 dp via `round2`):
+> - `cost_per_portion = (total_ingredient_cost + labor_cost + overhead_cost) / base_yield` (0 when yield ≤ 0) — matches `REC_CALC_006`–`007`.
+> - `suggested_price = cost_per_portion / (1 − target/100)` when `0 < target < 100` — matches `REC_CALC_008`.
+> - `gross_margin = selling_price − cost_per_portion`; `gross_margin_percentage = gross_margin / selling_price × 100` — matches `REC_CALC_010`.
+> - `actual_food_cost_percentage = total_ingredient_cost / selling_price × 100` — **differs from `REC_CALC_009`** (which specifies `cost_per_portion / selling_price`): the implemented figure excludes labor/overhead and ignores yield division.
+> - `labor_cost_percentage = labor_cost / selling_price × 100`; `overhead_percentage = overhead_cost / selling_price × 100` — **differs from the schema-default semantics** (30%/20% "share of cost" defaults); the hook overwrites the stored values with price-relative percentages.
+>
+> Line-level rules (`REC_CALC_001`–`003`, `011`–`014`) have no implementation because ingredient lines are not persisted; there is no `labor_rate` config for `REC_CALC_004`, and `REC_CALC_005`'s overhead derivation is not computed anywhere (overhead is typed in by the user).
 
 Rule IDs follow `REC_CALC_NNN`.
 
@@ -58,7 +86,7 @@ Rule IDs follow `REC_CALC_NNN`.
 | `REC_CALC_001` (line wastage component) | `wastage_cost = qty × cost_per_unit × (wastage_percentage / 100)`. Persisted on the ingredient row. Used by reporting to separate "raw cost" from "wastage allowance". |
 | `REC_CALC_002` (line net cost) | `net_cost = qty × cost_per_unit × (1 + wastage_percentage / 100) = qty × cost_per_unit + wastage_cost`. Persisted on the ingredient row. Rolls up to `tb_recipe.total_ingredient_cost`. |
 | `REC_CALC_003` (recipe total ingredient cost) | `total_ingredient_cost = Σ tb_recipe_ingredient.net_cost` across active (non-soft-deleted) lines. Persisted on the header. Re-computed on any ingredient-line change. |
-| `REC_CALC_004` (labor cost) | `labor_cost = (prep_time + cook_time) × labor_rate × labor_cost_percentage / 100`. The `labor_rate` comes from tenant config (typically $/minute or ฿/minute); `labor_cost_percentage` is the share of the labor rate attributable to this recipe's category (default 30%, configurable per-category via `tb_recipe_category.default_cost_settings`). Persisted on the header. |
+| `REC_CALC_004` (labor cost) | *Design:* `labor_cost = (prep_time + cook_time) × labor_rate × labor_cost_percentage / 100`, with `labor_rate` from tenant config and per-category defaults via `tb_recipe_category.default_cost_settings`. *Implemented:* no `labor_rate` config exists anywhere; `labor_cost` is a manually-entered form field persisted on the header. |
 | `REC_CALC_005` (overhead cost) | `overhead_cost = total_ingredient_cost × overhead_percentage / 100`. Default overhead percentage is 20%, configurable per-category. Persisted on the header. |
 | `REC_CALC_006` (recipe total cost) | `total_recipe_cost = total_ingredient_cost + labor_cost + overhead_cost`. Computed for display and the per-portion division; **not** persisted as a separate column on `tb_recipe` (it is the sum of the three persisted components). |
 | `REC_CALC_007` (cost per portion) | `cost_per_portion = total_recipe_cost / base_yield`. For variants, `cost_per_unit = total_recipe_cost × (variant.conversion_rate / base_yield) × variant.variant_quantity`, but the persisted variant `cost_per_unit` is computed at variant-write time. Persisted on the header for the base recipe and on each `tb_recipe_yield_variant` row. |
@@ -73,7 +101,9 @@ Rule IDs follow `REC_CALC_NNN`.
 
 ### 3.1 Worked example (1 recipe, 4 ingredients including 1 sub-recipe, 1 variant)
 
-Recipe *House Burger* with `base_yield = 1 portion`, `base_yield_unit = portions`, `prep_time = 8 min`, `cook_time = 12 min`, `target_food_cost_percentage = 32.00`, `labor_rate = ฿2.50/min`, `labor_cost_percentage = 30.00`, `overhead_percentage = 20.00`. Four ingredient lines.
+> This example exercises the **design** formulas (including the unimplemented line-level chain and the fictional `labor_rate` tenant config); only the roll-up steps marked with §1.1-verified rules behave this way in the current app, where the three cost inputs would be typed directly into the form.
+
+Recipe *House Burger* with `base_yield = 1 portion`, `base_yield_unit = portions`, `prep_time = 8 min`, `cook_time = 12 min`, `target_food_cost_percentage = 32.00`, `labor_rate = ฿2.50/min` (design-only config), `labor_cost_percentage = 30.00`, `overhead_percentage = 20.00`. Four ingredient lines.
 
 - **Line 1** (Beef Patty, `product`): `qty = 1`, `ingredient_unit = piece`, `cost_per_unit = ฿45.00`, `wastage_percentage = 5%`.
   - `wastage_cost = 1 × 45.00 × 0.05 = ฿2.25`.
@@ -98,7 +128,7 @@ Roll-up:
 
 If the chef chooses `selling_price = ฿150.00`:
 
-- `actual_food_cost_percentage = 99.23 / 150.00 × 100 = 66.15% ... wait, this is wrong` — let me redo: `actual_food_cost_percentage = cost_per_portion / selling_price × 100 = 99.23 / 150.00 × 100 = 66.15%`. **That's too high — the recipe is over-costed for a ฿150 menu price.** This is the expected output: the screen shows the actual food-cost % is **above** the 32% target, flagging the recipe for cost review or price adjustment. The chef would either reduce ingredient cost (negotiate beef pricing, swap to cheaper bun), reduce labor / overhead allocation, or raise the selling price toward ฿310 (which is what 32% target on ฿99 cost would require).
+- Design formula (`REC_CALC_009`): `actual_food_cost_percentage = cost_per_portion / selling_price × 100 = 99.23 / 150.00 × 100 = 66.15%`. **That is far above the 32% target — the recipe is over-costed for a ฿150 menu price**, flagging it for cost review or price adjustment. (The implemented client-side figure would instead be `total_ingredient_cost / selling_price × 100 = 70.19 / 150.00 × 100 = 46.79%` — see the §3 status note.) The chef would either reduce ingredient cost (negotiate beef pricing, swap to cheaper bun), reduce labor / overhead allocation, or raise the selling price toward ฿310 (which is what a 32% target on ฿99 cost would require).
 - `gross_margin = 150.00 − 99.23 = ฿50.77` (per `REC_CALC_010`).
 - `gross_margin_percentage = 50.77 / 150.00 × 100 = 33.85%`.
 
@@ -107,6 +137,8 @@ The example illustrates that the calculation flow is mechanical, but the resulti
 **Variant scaling**: a "Double Burger" variant with `conversion_rate = 1.8` (1.8x base) — the ingredient quantities scale: Line 1 patty becomes `qty = 2` (often configured discretely per variant rather than by pure factor for stepped ingredients like whole patties); Line 3 cheese becomes 54g; etc. Variant cost = scaled `total_recipe_cost / variant_quantity`; variant pricing follows separately.
 
 ### 3.2 Worked example (sub-recipe cost change cascading)
+
+> This cascade (`REC_CALC_011` / `REC_POST_006`) is entirely design-stage — no re-cost propagation code exists.
 
 Sub-recipe *Burger Sauce* (used as Line 4 above) has its mayonnaise ingredient's `cost_per_unit` rise from ฿0.10/g to ฿0.14/g due to a vendor pricelist update.
 
@@ -123,7 +155,9 @@ This cascade is what makes sub-recipes valuable — change one ingredient cost o
 
 ## 4. Authorization Rules
 
-Rule IDs follow `REC_AUTH_NNN`. Authorization is enforced by RBAC at the API layer; the recipe module is **not** workflow-driven, so authorization is direct (role-on-object) rather than stage-gated. Role names map to the five-persona grouping from the wiki index: Chef, Cost Controller, Outlet Manager, Procurement / F&B Ops, Audit / Config.
+> **Status: none of these role-scoped permissions exist.** There is no `recipe:*` permission anywhere in the frontend permission catalog or backend; the entire `/operation-plan/*` route group is gated by the frontend-only placeholder `operation_plan.view` (`constant/permissions.ts`), which denies the whole group to non-admins. Every rule below is the carmen/docs target RBAC model, retained for future implementation and test planning.
+
+Rule IDs follow `REC_AUTH_NNN`. As designed, authorization is enforced by RBAC at the API layer; the recipe module is **not** workflow-driven, so authorization is direct (role-on-object) rather than stage-gated. Role names map to the five-persona grouping from the wiki index: Chef, Cost Controller, Outlet Manager, Procurement / F&B Ops, Audit / Config.
 
 | Rule ID | Subject | Right | Constraint |
 | ------- | ------- | ----- | ---------- |
@@ -144,7 +178,9 @@ Rule IDs follow `REC_AUTH_NNN`. Authorization is enforced by RBAC at the API lay
 
 ## 5. Posting Rules
 
-Status values are the literal members of `enum_recipe_status` documented in [recipe/01-data-model.md](./01-data-model.md) § 4: **`DRAFT`**, **`PUBLISHED`**, **`ARCHIVED`**. The lifecycle is `DRAFT → PUBLISHED → ARCHIVED`, with `PUBLISHED → DRAFT` as an optional un-publish path. There is no commit-and-fan-out event in the GRN / SR sense — the recipe is not a transactional document. Instead, **publication** is the event that makes the recipe eligible for menu-item linkage and theoretical consumption; **ingredient edits on a published recipe** are the events that trigger pricing-history snapshots and downstream re-costing; **archive** is the event that retires the recipe.
+Status values are the literal members of `enum_recipe_status` documented in [recipe/01-data-model.md](./01-data-model.md) § 4: **`DRAFT`**, **`PUBLISHED`**, **`ARCHIVED`**. There is no commit-and-fan-out event in the GRN / SR sense — the recipe is not a transactional document.
+
+> **Status: implemented transition behaviour is minimal.** The verified reality (`recipe.service.ts`): any status can be set from any status via a plain field update; the service stamps `published_at` on `→ PUBLISHED` and `archived_at` on `→ ARCHIVED`, and nothing else happens — no validation gate, no `tb_recipe_version` write, no `tb_recipe_pricing_history` write, no menu-item/consumption effects. Soft delete (`deleted_at`/`deleted_by_id`) is permitted at **any** status (the only guard is sub-recipe usage), not restricted to `DRAFT`. The event catalogue below is the design model.
 
 Rule IDs follow `REC_POST_NNN`.
 
@@ -162,18 +198,20 @@ Rule IDs follow `REC_POST_NNN`.
 | `REC_POST_010` | Pricing-only edit (no ingredient / step change) | When Cost Controller updates `target_food_cost_percentage` or `selling_price` only (per `REC_AUTH_006`): re-compute `suggested_price`, `actual_food_cost_percentage`, `gross_margin`, `gross_margin_percentage` per `REC_CALC_008`–`REC_CALC_010`. Write a `tb_recipe_pricing_history` row with `change_reason = "pricing-only update"`. Recipe stays in the current status (`DRAFT` or `PUBLISHED`); no new `tb_recipe_version` is required (pricing changes are tracked via the pricing-history table, not the full versioning table — tenant choice). |
 | `REC_POST_011` | Theoretical-consumption fan-out (downstream, not a recipe-status transition) | When a menu item linked to a `PUBLISHED` recipe is sold by the POS, the inventory / POS-integration layer reads the recipe's ingredient lines and posts theoretical OUT movements per `REC_CALC_014`. This is a **downstream effect** of the recipe being `PUBLISHED`; the recipe module itself does not write to `tb_inventory_transaction` — it is the formula source. |
 
-State diagram (Prisma-canonical):
+State diagram (as implemented — every transition is a free dropdown change):
 
 ```
-[*] → DRAFT ⇄ PUBLISHED → ARCHIVED → (terminal)
-              (un-publish optional per tenant policy;
-               edits to PUBLISHED apply in-place with versioning
-               or via un-publish round-trip)
+[*] → DRAFT ⇄ PUBLISHED ⇄ ARCHIVED
+        ▲__________________│
+   (all directions possible; the only side effects are
+    published_at / archived_at timestamps on entry)
 ```
 
-`ARCHIVED` is terminal in normal operation. `DRAFT` accepts soft-delete; `ARCHIVED` accepts soft-delete by Sysadmin.
+Soft-delete is available at any status; the only delete guard is `RECIPE_USED_AS_SUB_RECIPE`. The design intent (`ARCHIVED` terminal, delete only from `DRAFT`) is not enforced.
 
 ## 6. Cross-Module Rules
+
+> **Status: design catalogue.** None of these integrations is implemented: no re-cost service, no theoretical-consumption write, no cost-drift events, no recipe→SR generation, no menu-item layer, and no `recipe:*` RBAC mapping. The two grains of implemented truth: the `tb_recipe_ingredient.product_id → tb_product` FK exists with `Restrict` (the reference half of `REC_XMOD_001`), and the sub-recipe delete guard (`RECIPE_USED_AS_SUB_RECIPE`).
 
 Rule IDs follow `REC_XMOD_NNN`.
 
@@ -200,4 +238,5 @@ Rule IDs follow `REC_XMOD_NNN`.
 - `../carmen/docs/recipe/recipe-create-edit-page.md` — Page-spec source for the recipe form.
 - Sibling: `en/recipe/01-data-model.md` — canonical Prisma model, recipe-specific enums (`enum_recipe_status`, `enum_recipe_difficulty`, `enum_ingredient_type`, `enum_temperature_unit`, `enum_cuisine_region`), and the divergence catalogue that Section 1, Section 2, and Section 6 rely on.
 - Sibling: `en/recipe/03-user-flow.md` — lifecycle overview and persona drill-downs; this rules page is the formal complement to the lifecycle narrative.
-- Backend rule implementation (when added): `../carmen-turborepo-backend-v2/apps/` — the recipe service module is the implementation hook for these rules (publish-time completeness gate, cost-rollup recomputation, sub-recipe cascade, theoretical-consumption fan-out trigger, pricing-history snapshot).
+- Backend rule implementation (current): `../carmen-turborepo-backend-v2/apps/micro-business/src/master/recipe/` (`recipe.service.ts`, `recipe.logic.ts`, `preparation-steps/`) — implements only the §1.1 subset today; the publish-time completeness gate, cost-rollup recomputation, sub-recipe cascade, theoretical-consumption fan-out, and pricing-history snapshots remain unimplemented hooks.
+- Frontend calculation implementation: `../carmen-inventory-frontend-react/routes/operation-plan/recipe/use-recipe-cost-calc.ts` — the client-side pricing calculator whose formulas are quoted in the §3 status note.
