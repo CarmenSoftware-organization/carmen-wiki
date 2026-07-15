@@ -2,7 +2,7 @@
 title: Document Version (Optimistic Concurrency)
 description: The doc_version integer that guards transactional documents against lost updates — clients must echo the current version on save or get a 409 Conflict.
 published: true
-date: 2026-06-09T00:00:00.000Z
+date: 2026-07-16T00:00:00.000Z
 tags: system-config, concurrency, doc-version, optimistic-lock, carmen-software
 editor: markdown
 dateCreated: 2026-06-09T00:00:00.000Z
@@ -58,4 +58,4 @@ The client must send the `doc_version` it received on its last read. After a suc
 
 ## 5. Not to be confused with
 
-`tb_attachment.doc_version` is a **different field with a different meaning** — it is a *re-render counter* for regenerated documents (e.g. a re-printed PDF), incremented each time the owning module re-renders the file, and it retains older versions for audit. It is **not** a concurrency guard. See [reporting-audit/attachment](/en/inventory/reporting-audit/attachment).
+`tb_attachment.doc_version` (tenant schema) carries the same `Int @default(0)` shape as every other `doc_version` column, but **it is not an active re-render counter** — a repo-wide search found zero code that increments, reads, or otherwise touches it. In fact `tb_attachment` itself has zero non-schema references anywhere: it is a dead table. The real file-metadata registry is `tb_file_tag`, in a separate file-service database, which has no `doc_version` column at all. See [system-config/document](/en/inventory/system-config/document) §5 for the corrected data model. Treat `tb_attachment.doc_version` as inert schema, not a working concurrency guard *or* a working re-render counter.

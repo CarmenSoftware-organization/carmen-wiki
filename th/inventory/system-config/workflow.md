@@ -2,7 +2,7 @@
 title: เวิร์กโฟลว์ (Workflow)
 description: เวิร์กโฟลว์การอนุมัติแบบหลายขั้นที่ตั้งชื่อแล้วผูกกับเอกสารธุรกรรม — นิยาม stage, action, ผู้รับ, SLA และฟิลด์ที่ซ่อนต่อ stage
 published: true
-date: 2026-06-09T16:28:56.000Z
+date: 2026-07-16T00:00:00.000Z
 tags: system-config, workflow, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -122,7 +122,7 @@ Key ต่อ stage: `name`, `description`; `sla` + `sla_unit` (`hours`/`days`);
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_workflow` (lines ~3398-3425), `enum_workflow_type` (lines ~265-269)
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_workflow` (lines ~3734-3763), `enum_workflow_type` (lines ~268-272)
 - **Seed:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/seed-data-a01/tb_workflow.json`
 - **carmen/docs:** `../carmen/docs/workflow-permissions-system.md` — semantics ของ role-type
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/workflow/`
+- **Frontend:** `../carmen-inventory-frontend-react/routes/system-admin/workflow/` — `wf-component.tsx` (list), `wf-new-form.tsx` / `edit-workflow-content.tsx` (stage editor), `wf-validate.ts` (ตรวจสอบกฎฝั่ง client เช่น `submit_only_on_first`)

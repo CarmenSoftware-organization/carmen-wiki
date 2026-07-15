@@ -2,7 +2,7 @@
 title: ชุดข้อมูลแดชบอร์ด (Dashboard Dataset)
 description: แคตตาล็อก read-only ของ admin สำหรับ data feed ที่ลงทะเบียนไว้ในโค้ด — แหล่งข้อมูลแบบมีชื่อและมี type ที่ widget บนแดชบอร์ดดึงข้อมูลจาก แยกออกจาก widget workspace layout ของผู้ใช้ และจาก view ที่เขียนด้วย SQL ใน query-dataset
 published: true
-date: 2026-06-09T00:00:00.000Z
+date: 2026-07-16T00:00:00.000Z
 tags: system-config, dashboard, dataset, widget, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -121,6 +121,6 @@ GET  /api/:bu_code/datasets/:dataset_id  → { meta: DatasetMeta, data: DatasetD
 - **Gateway proxy:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-datasets/dashboard-datasets.service.ts` — HTTP proxy ไปยัง micro-data; controller `dashboard-datasets.controller.ts` เปิดเผย `GET /api/:bu_code/datasets` และ `GET /api/:bu_code/datasets/:dataset_id`
 - **Swagger response DTOs:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-datasets/swagger/response.ts` — `DatasetMetaDto`, `DatasetListResponseDto`, `DatasetResponseDto`
 - **Platform enum:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `enum_dataset_shape` (บรรทัด ~815)
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/dashboard-dataset/page.tsx` และ `_components/dashboard-dataset-component.tsx`
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/dashboard-dataset/dashboard-dataset.route.tsx` + `dashboard-dataset-component.tsx`
 - **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-dashboard-dataset.ts` — `useDashboardDatasets()`, `useDashboardDatasetDetail(id)`
 - **Frontend type:** `../carmen-inventory-frontend-react/types/dashboard-dataset.ts` — `DashboardDataset`, `DashboardDatasetShape`, `DashboardDatasetCategory`
