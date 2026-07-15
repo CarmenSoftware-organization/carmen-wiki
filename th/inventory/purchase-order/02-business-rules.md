@@ -1,8 +1,8 @@
 ---
 title: ใบสั่งซื้อ (Purchase Order) — Business Rules
-description: กฎการ validation การคำนวณ การกำหนดสิทธิ์ การ posting การ three-way-match และกฎข้ามโมดูลสำหรับ purchase-order
+description: กฎการ validation การคำนวณ การกำหนดสิทธิ์ การ posting และกฎข้ามโมดูลสำหรับ purchase-order
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-15T13:30:00.000Z
 tags: purchase-order, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -109,7 +109,7 @@ Rule IDs ตามรูปแบบ `PO_AUTH_NNN` Authorization บังคั
 
 ## 5. กฎ Posting
 
-ค่า status คือสมาชิก literal ของ `enum_purchase_order_doc_status` ที่ documented ใน [purchase-order/01-data-model](/th/inventory/purchase-order/01-data-model) § 4: `draft`, `in_progress`, `voided`, `sent`, `partial`, `closed`, `completed` ไม่มี GL "posting" แยกต่างหากสำหรับเอกสาร PO เอง; PO posting คือการ mutate status บันทึก audit trail (`history`, `workflow_history`) และ trigger side effect ปลายน้ำ GL posting จริงเกิดที่ GRN (inventory accrual) และที่ three-way-match สำเร็จ (AP invoice)
+ค่า status คือสมาชิก literal ของ `enum_purchase_order_doc_status` ที่ documented ใน [purchase-order/01-data-model](/th/inventory/purchase-order/01-data-model) § 4: `draft`, `in_progress`, `voided`, `sent`, `partial`, `closed`, `completed` ไม่มี GL "posting" แยกต่างหากสำหรับเอกสาร PO เอง; PO posting คือการ mutate status บันทึก audit trail (`history`, `workflow_history`) และ trigger side effect ปลายน้ำ ผลกระทบฝั่ง inventory เกิดตอน GRN post (เป็นความรับผิดชอบของโมดูล GRN/inventory); ประโยครุ่นก่อนหน้าของย่อหน้านี้เคยยืนยันว่ามี GL posting "ตอน three-way-match สำเร็จ (AP invoice)" ด้วย — ฟีเจอร์นั้นยังไม่ implement (ดู `PO_POST_008`/`PO_POST_009` ด้านล่าง)
 
 Rule IDs ตามรูปแบบ `PO_POST_NNN`
 
@@ -175,4 +175,4 @@ Rule IDs ตามรูปแบบ `PO_XMOD_NNN`
 - `../carmen/docs/purchase-request-management/PR-Module-Structure.md` — โครงสร้าง validation, error-type, และ workflow-state ที่ PO inherit
 - `../carmen/docs/purchase-request-management/purchase-request-ba.md` — Section 3 (Business Rules) และ Section 3.6 (System Calculation Rules); กฎการคำนวณของ PO (`PO_CALC_*`) เป็นคู่ของกฎ PR โดยตรง (`PR_036`–`PR_055`)
 - Sibling: `en/purchase-order/01-data-model.md` — Prisma model canonical, ค่า enum, และ bridge-table linkage ที่ Section 5 และ Section 6 พึ่งพา
-- Backend rule implementation (เมื่อเพิ่ม): `../carmen-turborepo-backend-v2/apps/` — purchase-order service module คือ hook implementation สำหรับกฎเหล่านี้ (status guards, calculation utilities, GRN posting back-references, three-way-match orchestration)
+- Backend rule implementation: `../carmen-turborepo-backend-v2/apps/micro-business/src/procurement/purchase-order/` — `purchase-order.service.ts` และ `purchase-order.logic.ts` implement status guards, workflow transitions, และ GRN-facing queries ที่ verify แล้วใน pass นี้ ไม่มี three-way-match orchestration อยู่ในนั้น (ดู § 5 / § 6)

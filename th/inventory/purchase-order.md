@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order)
 description: เอกสารผูกพันอย่างเป็นทางการกับผู้ขายเพื่อจัดซื้อสินค้าตามราคา ปริมาณ และเงื่อนไขการส่งมอบที่ตกลงกัน
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-15T13:30:00.000Z
 tags: purchase-order, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -77,7 +77,7 @@ PO คือจุดที่คำขอภายในกลายเป็�
 - [master-data/unit](/th/inventory/master-data/unit) — หน่วยนับสำหรับปริมาณบรรทัด PO
 - [system-config/workflow](/th/inventory/system-config/workflow) — นิยาม workflow อนุมัติสำหรับการอนุญาต PO และ amendments
 - [system-config/running-code](/th/inventory/system-config/running-code) — การเรียงลำดับเลขเอกสาร PO
-- [reporting-audit/activity](/th/inventory/reporting-audit/activity) — log การเปลี่ยนสถานะ PO การ amendment และ three-way-match สำหรับ audit
+- [reporting-audit/activity](/th/inventory/reporting-audit/activity) — log การเปลี่ยนสถานะ PO และการ amendment สำหรับ audit
 - [reporting-audit/attachment](/th/inventory/reporting-audit/attachment) — vendor acknowledgements และเอกสาร contract ที่แนบกับ PO
 
 ## 6. แหล่งอ้างอิง
@@ -92,7 +92,7 @@ PO คือจุดที่คำขอภายในกลายเป็�
 
 - [01 — โมเดลข้อมูล](/th/inventory/purchase-order/01-data-model) — เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum (อิงจาก Prisma)
 - [01a — โมเดลข้อมูล — ตารางคอมเมนต์](/th/inventory/purchase-order/01a-data-model-comments) — ตารางคอมเมนต์ / ไฟล์แนบระดับเอกสารและระดับบรรทัด พร้อมการแยก user/system ผ่าน `enum_comment_type`
-- [02 — กติกาทางธุรกิจ](/th/inventory/purchase-order/02-business-rules) — การตรวจสอบความถูกต้อง การคำนวณ การกำหนดสิทธิ์ การ posting และกฎ three-way-match
+- [02 — กติกาทางธุรกิจ](/th/inventory/purchase-order/02-business-rules) — การตรวจสอบความถูกต้อง การคำนวณ การกำหนดสิทธิ์ การ posting และกฎข้ามโมดูล
 - [03 — User Flow](/th/inventory/purchase-order/03-user-flow) — วงจรชีวิตของเอกสารและสารบัญ persona
   - [Purchaser](/th/inventory/purchase-order/03-user-flow-purchaser)
   - [Procurement Manager](/th/inventory/purchase-order/03-user-flow-procurement-manager)

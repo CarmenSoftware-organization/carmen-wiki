@@ -2,7 +2,7 @@
 title: Purchase Order — Data Model
 description: Entities, fields, relationships, and enums for the purchase-order module.
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-15T13:30:00.000Z
 tags: purchase-order, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -227,7 +227,7 @@ Notes:
 - **Header → comment** and **detail → comment** are both 1-to-many. The comment tables are the persistent record of workflow activity; the JSON columns on the header (`workflow_history`, `stages_status`) are the in-place cursor.
 - **PR ↔ PO** is many-to-many via `tb_purchase_order_detail_tb_purchase_request_detail` to support PR consolidation (multiple PR lines → one PO line) and partial conversion (one PR line → multiple PO lines). The bridge is also the per-allocation cursor for received and FOC qty.
 - **PO → GRN** is 1-to-many via `tb_purchase_order_detail.tb_good_received_note_detail` (back-relation). The PO line's `received_qty` is updated by GRN posting; `received_qty < order_qty − cancelled_qty` means the PO line still has pending fulfilment.
-- **Vendor / currency invariant**: vendor, currency, exchange-rate and credit-term live on the header, not the line. This implies every PO line on a given PO shares the same vendor and currency, which is why PR-to-PO conversion must pre-group PRs by `(vendor, currency)`.
+- **Vendor / currency invariant**: vendor, currency, exchange-rate and credit-term live on the header, not the line. This implies every PO line on a given PO shares the same vendor and currency, which is why PR-to-PO conversion must pre-group PR lines by `(vendor_id, delivery_date, currency_id)` (`buildPoGroupKey`) — the delivery-date dimension additionally splits same-vendor, same-currency lines with different delivery dates into separate POs.
 - All `@relation` FK declarations use `onDelete: NoAction, onUpdate: NoAction`, so referential integrity is preserved by application-level soft-delete (`deleted_at`) rather than cascade.
 
 ## 4. Enums
@@ -254,7 +254,7 @@ The legacy `purchase-order-module.md` describes a high-level data dictionary (a 
 | 2 | Reference number column | `purchase_orders.number VARCHAR(20)` | `tb_purchase_order.po_no VARCHAR` (no length cap declared) | Rename `number` → `po_no` in the carmen/docs data dictionary, drop the 20-char cap claim. |
 | 3 | PO header data dictionary | Lists `id, number, vendor_id, order_date, status, currency_code, exchange_rate, total_amount, created_by` only (8 columns). | `tb_purchase_order` has ~45 columns including workflow JSON, credit-term snapshot, buyer, history, multiple totals (`total_qty`, `total_price`, `total_tax`, `total_amount`), `is_active`, `info`, `dimension`, `doc_version`, and the full audit set. | The carmen/docs dictionary is illustrative only; do not treat it as a field-complete spec. Cross-reference Section 2.1 of this page instead. |
 | 4 | PO line data dictionary | Lists `id, purchase_order_id, item_id, ordered_quantity, unit_price, total_amount, pr_item_id` (7 columns). | `tb_purchase_order_detail` has ~50 columns including separate `order_*` / `base_*` UoM pairs, FOC boolean, full tax + discount columns, transaction- and base-currency totals, `received_qty`, `cancelled_qty`, per-line workflow JSON. Also: there is no `pr_item_id` on the detail row — PR linkage lives on the bridge table `tb_purchase_order_detail_tb_purchase_request_detail`. | Drop `pr_item_id` from the carmen/docs claim; document the bridge table as the canonical PR linkage. Cross-reference Section 2.2 / 2.3 of this page. |
-| 5 | PR→PO traceability mechanism | "Each PO item maintains references to its originating PR" (implies a column on the PO line). | Linkage is a many-to-many bridge (`tb_purchase_order_detail_tb_purchase_request_detail`), not a single FK column on the PO line. This is required to support consolidation (many PR → one PO) and partial conversion (one PR → many PO). | Update carmen/docs prose to describe the bridge; the single-FK model would not support the documented vendor+currency grouping behaviour. |
+| 5 | PR→PO traceability mechanism | "Each PO item maintains references to its originating PR" (implies a column on the PO line). | Linkage is a many-to-many bridge (`tb_purchase_order_detail_tb_purchase_request_detail`), not a single FK column on the PO line. This is required to support consolidation (many PR → one PO) and partial conversion (one PR → many PO). | Update carmen/docs prose to describe the bridge; the single-FK model would not support the documented `(vendor, delivery_date, currency)` grouping behaviour. |
 | 6 | Status field name | `purchase_orders.status` | `tb_purchase_order.po_status` (column is `po_status`, not `status`). | Rename in carmen/docs data dictionary. |
 | 7 | Reference number format | Not specified in carmen/docs. | `po_no` is `VarChar` with no format constraint at the DB level; format is enforced by the application. | Note in carmen/docs that the format is application-policy, not schema-enforced — parallel to PR. |
 

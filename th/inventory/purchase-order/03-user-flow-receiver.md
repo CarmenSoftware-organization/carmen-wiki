@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — User Flow — Receiver
 description: เส้นทางผู้ใช้งานของ Receiver ภายในโมดูล purchase-order — รับสินค้าจริง สร้าง GRN เทียบกับ PO และ trigger receipt state transition
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-15T13:30:00.000Z
 tags: purchase-order, user-flow, receiver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -27,7 +27,6 @@ graph LR
     grn -->|"received ครอบคลุมทุกบรรทัด"| completed(("completed")):::current
     partial -->|"Next shipment<br/>(GRN ซ้ำ)"| grn
     partial -->|"Early-close<br/>(Inv Mgr; PO_AUTH_008)"| closed(("closed")):::current
-    completed -.->|"Finance three-way match"| ap[["AP liability"]]
     classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
 ```
 

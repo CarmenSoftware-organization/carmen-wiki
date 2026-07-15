@@ -1,8 +1,8 @@
 ---
 title: Purchase Order — Business Rules
-description: Validation, calculation, authorization, posting, three-way-match, and cross-module rules for purchase-order.
+description: Validation, calculation, authorization, posting, and cross-module rules for purchase-order.
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-15T13:30:00.000Z
 tags: purchase-order, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -109,7 +109,7 @@ Rule IDs follow `PO_AUTH_NNN`. Authorization is enforced by RBAC at the API laye
 
 ## 5. Posting Rules
 
-Status values are the literal members of `enum_purchase_order_doc_status` documented in [purchase-order/01-data-model](/en/inventory/purchase-order/01-data-model) § 4: `draft`, `in_progress`, `voided`, `sent`, `partial`, `closed`, `completed`. There is no separate GL "posting" for the PO document itself; PO posting is the act of mutating the status, recording the audit trail (`history`, `workflow_history`), and triggering downstream side effects. Real GL posting happens at GRN (inventory accrual) and at three-way-match success (AP invoice).
+Status values are the literal members of `enum_purchase_order_doc_status` documented in [purchase-order/01-data-model](/en/inventory/purchase-order/01-data-model) § 4: `draft`, `in_progress`, `voided`, `sent`, `partial`, `closed`, `completed`. There is no separate GL "posting" for the PO document itself; PO posting is the act of mutating the status, recording the audit trail (`history`, `workflow_history`), and triggering downstream side effects. Inventory-side effects happen at GRN posting (owned by the GRN/inventory modules); a prior version of this sentence also asserted GL posting "at three-way-match success (AP invoice)" — that feature is not implemented (see `PO_POST_008`/`PO_POST_009` below).
 
 Rule IDs follow `PO_POST_NNN`.
 
@@ -175,4 +175,4 @@ Rule IDs follow `PO_XMOD_NNN`.
 - `../carmen/docs/purchase-request-management/PR-Module-Structure.md` — validation, error-type, and workflow-state structures inherited by PO.
 - `../carmen/docs/purchase-request-management/purchase-request-ba.md` — Section 3 (Business Rules) and Section 3.6 (System Calculation Rules); PO's calculation rules (`PO_CALC_*`) are the direct PR-rule counterparts (`PR_036`–`PR_055`).
 - Sibling: `en/purchase-order/01-data-model.md` — canonical Prisma model, enum values, and the bridge-table linkage that Section 5 and Section 6 rely on.
-- Backend rule implementation (when added): `../carmen-turborepo-backend-v2/apps/` — the purchase-order service module is the implementation hook for these rules (status guards, calculation utilities, GRN posting back-references, three-way-match orchestration).
+- Backend rule implementation: `../carmen-turborepo-backend-v2/apps/micro-business/src/procurement/purchase-order/` — `purchase-order.service.ts` and `purchase-order.logic.ts` implement the status guards, workflow transitions, and GRN-facing queries verified in this pass. No three-way-match orchestration exists there (see § 5 / § 6).

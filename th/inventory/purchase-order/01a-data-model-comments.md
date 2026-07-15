@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ — โมเดลข้อมูล — ตารางคอมเมนต์
 description: ตารางคอมเมนต์ / ไฟล์แนบระดับเอกสารและระดับบรรทัดสำหรับโมดูลใบสั่งซื้อ — ข้อความ, JSON ไฟล์แนบ, และ enum ประเภทคอมเมนต์ (user/system)
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-15T13:30:00.000Z
 tags: purchase-order, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -12,7 +12,7 @@ dateCreated: 2026-05-20T00:00:00.000Z
 
 ## 1. ภาพรวม
 
-โมดูลใบสั่งซื้อบันทึก note ที่ผู้ใช้เขียนและที่ระบบสร้าง พร้อมไฟล์แนบ บนตาราง `*_comment` เฉพาะ ซึ่งแยกจากตาราง header / detail ที่เป็นตัวขับเคลื่อนวงจรชีวิตของเอกสาร ดูได้ที่ [01 — โมเดลข้อมูล](/th/inventory/purchase-order/01-data-model) ทุกแถวคอมเมนต์มี `message` แบบ free-text, `attachments` ที่เป็น JSON array ของ S3-token records (`{originalName, fileToken, contentType}`) และ `type` discriminator (`enum_comment_type`) ที่แยก entry ที่ผู้ใช้เขียนออกจากบันทึก transition ที่ระบบสร้าง เช่นเหตุผล "return to buyer", เหตุผล void, เหตุผล close-early, และ note ของ three-way-match exception คอมเมนต์ระดับเอกสารผูกกับ header ของ PO (`tb_purchase_order_comment`); คอมเมนต์ระดับบรรทัดผูกกับ PO line รายการเดียว (`tb_purchase_order_detail_comment`) รองรับ note ความเบี่ยงเบนต่อบรรทัดและคอมเมนต์ three-way-match ต่อบรรทัด
+โมดูลใบสั่งซื้อบันทึก note ที่ผู้ใช้เขียนและที่ระบบสร้าง พร้อมไฟล์แนบ บนตาราง `*_comment` เฉพาะ ซึ่งแยกจากตาราง header / detail ที่เป็นตัวขับเคลื่อนวงจรชีวิตของเอกสาร ดูได้ที่ [01 — โมเดลข้อมูล](/th/inventory/purchase-order/01-data-model) ทุกแถวคอมเมนต์มี `message` แบบ free-text, `attachments` ที่เป็น JSON array ของ S3-token records (`{originalName, fileToken, contentType}`) และ `type` discriminator (`enum_comment_type`) ที่แยก entry ที่ผู้ใช้เขียนออกจากบันทึก transition ที่ระบบสร้าง เช่นเหตุผล send-back, เหตุผล reject, และเหตุผล close-early คอมเมนต์ระดับเอกสารผูกกับ header ของ PO (`tb_purchase_order_comment`); คอมเมนต์ระดับบรรทัดผูกกับ PO line รายการเดียว (`tb_purchase_order_detail_comment`) รองรับ note ต่อบรรทัดระหว่างการอนุมัติและการรับของ (Overview รุ่นก่อนหน้าเคยระบุ "three-way-match exception notes" และ "คอมเมนต์ three-way-match ต่อบรรทัด" เป็นการใช้งานคอมเมนต์ด้วย — ไม่มีฟีเจอร์ three-way-match ใน source ปัจจุบัน ดู [02 — กฎเชิงธุรกิจ](/th/inventory/purchase-order/02-business-rules) § 5)
 
 ## 2. รูปแบบที่ใช้ร่วมกัน
 

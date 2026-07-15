@@ -2,7 +2,7 @@
 title: Purchase Order
 description: Formal commitment to a vendor to purchase goods at agreed prices, quantities, and delivery terms.
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-15T13:30:00.000Z
 tags: purchase-order, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -77,7 +77,7 @@ Financial accuracy is enforced at the calculation layer. Item subtotal, discount
 - [master-data/unit](/en/inventory/master-data/unit) — unit of measure for PO line quantities
 - [system-config/workflow](/en/inventory/system-config/workflow) — approval workflow definitions for PO authorization and amendments
 - [system-config/running-code](/en/inventory/system-config/running-code) — PO document number sequencing
-- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — PO status-transition, amendment, and three-way-match log for audit
+- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — PO status-transition and amendment log for audit
 - [reporting-audit/attachment](/en/inventory/reporting-audit/attachment) — vendor acknowledgements and contract documents attached to the PO
 
 ## 6. Reference Sources
@@ -92,7 +92,7 @@ Financial accuracy is enforced at the calculation layer. Item subtotal, discount
 
 - [01 — Data Model](/en/inventory/purchase-order/01-data-model) — Entities, fields, relationships, and enums (Prisma-derived).
 - [01a — Data Model — Comment Tables](/en/inventory/purchase-order/01a-data-model-comments) — Document-level and line-level comment / attachment tables and the `enum_comment_type` user/system tagging.
-- [02 — Business Rules](/en/inventory/purchase-order/02-business-rules) — Validation, calculation, authorization, posting, and three-way-match rules.
+- [02 — Business Rules](/en/inventory/purchase-order/02-business-rules) — Validation, calculation, authorization, posting, and cross-module rules.
 - [03 — User Flow](/en/inventory/purchase-order/03-user-flow) — Document lifecycle and persona index.
   - [Purchaser](/en/inventory/purchase-order/03-user-flow-purchaser)
   - [Procurement Manager](/en/inventory/purchase-order/03-user-flow-procurement-manager)

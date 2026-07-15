@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum สำหรับโมดูล purchase-order
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-15T13:30:00.000Z
 tags: purchase-order, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -227,7 +227,7 @@ tb_purchase_order_detail ──1──*──► tb_good_received_note_detail
 - **Header → comment** และ **detail → comment** ทั้งคู่เป็น 1-to-many ตาราง comment เป็นบันทึก persistent ของกิจกรรม workflow; JSON columns บน header (`workflow_history`, `stages_status`) คือ in-place cursor
 - **PR ↔ PO** เป็น many-to-many ผ่าน `tb_purchase_order_detail_tb_purchase_request_detail` เพื่อรองรับ PR consolidation (PR lines หลาย → PO line หนึ่ง) และ partial conversion (PR line หนึ่ง → PO lines หลาย) Bridge ยังเป็น cursor ต่อ allocation สำหรับ received และ FOC qty
 - **PO → GRN** เป็น 1-to-many ผ่าน `tb_purchase_order_detail.tb_good_received_note_detail` (back-relation) `received_qty` ของ PO line update โดยการ post GRN; `received_qty < order_qty − cancelled_qty` หมายถึง PO line ยังมี fulfilment ค้างอยู่
-- **Vendor / currency invariant**: vendor, currency, exchange-rate และ credit-term อยู่บน header ไม่ใช่บรรทัด นี่หมายความว่าทุก PO line บน PO หนึ่ง ๆ ใช้ vendor และ currency เดียวกัน ซึ่งเป็นเหตุผลที่การแปลง PR-to-PO ต้อง pre-group PRs ด้วย `(vendor, currency)`
+- **Vendor / currency invariant**: vendor, currency, exchange-rate และ credit-term อยู่บน header ไม่ใช่บรรทัด นี่หมายความว่าทุก PO line บน PO หนึ่ง ๆ ใช้ vendor และ currency เดียวกัน ซึ่งเป็นเหตุผลที่การแปลง PR-to-PO ต้อง pre-group บรรทัดของ PR ด้วย `(vendor_id, delivery_date, currency_id)` (`buildPoGroupKey`) — มิติ delivery-date จะแยกบรรทัดที่ vendor และ currency เดียวกันแต่วันที่ส่งต่างกันออกเป็นคนละ PO เพิ่มเติมด้วย
 - ประกาศ FK `@relation` ทั้งหมดใช้ `onDelete: NoAction, onUpdate: NoAction` ดังนั้น referential integrity จึงรักษาโดย soft-delete ระดับ application (`deleted_at`) แทน cascade
 
 ## 4. Enums
@@ -254,7 +254,7 @@ tb_purchase_order_detail ──1──*──► tb_good_received_note_detail
 | 2 | Column หมายเลขอ้างอิง | `purchase_orders.number VARCHAR(20)` | `tb_purchase_order.po_no VARCHAR` (ไม่มี cap ความยาวประกาศ) | เปลี่ยนชื่อ `number` → `po_no` ใน data dictionary ของ carmen/docs ตัด claim 20-char cap |
 | 3 | Data dictionary ของ PO header | List `id, number, vendor_id, order_date, status, currency_code, exchange_rate, total_amount, created_by` เท่านั้น (8 columns) | `tb_purchase_order` มี ~45 columns รวมถึง workflow JSON, credit-term snapshot, buyer, history, ยอดรวมหลายตัว (`total_qty`, `total_price`, `total_tax`, `total_amount`), `is_active`, `info`, `dimension`, `doc_version` และชุด audit ครบ | Dictionary ของ carmen/docs เป็นเพียงตัวอย่าง อย่าถือเป็น spec field-complete cross-reference Section 2.1 ของหน้านี้แทน |
 | 4 | Data dictionary ของ PO line | List `id, purchase_order_id, item_id, ordered_quantity, unit_price, total_amount, pr_item_id` (7 columns) | `tb_purchase_order_detail` มี ~50 columns รวมถึงคู่ `order_*` / `base_*` UoM แยก, FOC boolean, ภาษีและส่วนลดเต็ม columns, ยอดรวมสกุลเงิน transaction และ base, `received_qty`, `cancelled_qty`, workflow JSON ต่อบรรทัด นอกจากนี้: ไม่มี `pr_item_id` บน detail row — PR linkage อยู่บนตาราง bridge `tb_purchase_order_detail_tb_purchase_request_detail` | ตัด `pr_item_id` จาก claim ของ carmen/docs document ตาราง bridge เป็น PR linkage แบบ canonical Cross-reference Section 2.2 / 2.3 ของหน้านี้ |
-| 5 | กลไก PR→PO traceability | "Each PO item maintains references to its originating PR" (implies column บน PO line) | Linkage คือ many-to-many bridge (`tb_purchase_order_detail_tb_purchase_request_detail`) ไม่ใช่ column FK เดียวบน PO line ที่จำเป็นเพื่อรองรับ consolidation (PR หลาย → PO หนึ่ง) และ partial conversion (PR หนึ่ง → PO หลาย) | Update prose ของ carmen/docs ให้อธิบาย bridge; model FK เดียวไม่รองรับพฤติกรรม vendor+currency grouping ที่ documented |
+| 5 | กลไก PR→PO traceability | "Each PO item maintains references to its originating PR" (implies column บน PO line) | Linkage คือ many-to-many bridge (`tb_purchase_order_detail_tb_purchase_request_detail`) ไม่ใช่ column FK เดียวบน PO line ที่จำเป็นเพื่อรองรับ consolidation (PR หลาย → PO หนึ่ง) และ partial conversion (PR หนึ่ง → PO หลาย) | Update prose ของ carmen/docs ให้อธิบาย bridge; model FK เดียวไม่รองรับพฤติกรรม `(vendor, delivery_date, currency)` grouping ที่ documented |
 | 6 | ชื่อฟิลด์ status | `purchase_orders.status` | `tb_purchase_order.po_status` (column คือ `po_status` ไม่ใช่ `status`) | เปลี่ยนชื่อใน data dictionary ของ carmen/docs |
 | 7 | Format หมายเลขอ้างอิง | ไม่ระบุใน carmen/docs | `po_no` เป็น `VarChar` โดยไม่มี constraint รูปแบบที่ระดับ DB; รูปแบบถูกบังคับโดย application | หมายเหตุใน carmen/docs ว่า format เป็นนโยบาย application ไม่ใช่ schema-enforced — ขนานกับ PR |
 

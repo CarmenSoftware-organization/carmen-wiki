@@ -2,7 +2,7 @@
 title: Purchase Order — Data Model — Comment Tables
 description: Document-level and line-level comment / attachment tables for the Purchase Order module — message text, attachments JSON, and the user/system comment-type enum.
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-15T13:30:00.000Z
 tags: purchase-order, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -12,7 +12,7 @@ dateCreated: 2026-05-20T00:00:00.000Z
 
 ## 1. At a Glance
 
-The Purchase Order module persists user-authored and system-generated notes plus file attachments on dedicated `*_comment` tables, separate from the lifecycle-bearing header / detail tables documented in [01 — Data Model](/en/inventory/purchase-order/01-data-model). Every comment row carries a free-text `message`, an `attachments` JSON array of S3-token records (`{originalName, fileToken, contentType}`), and a `type` discriminator (`enum_comment_type`) that distinguishes user-authored entries from system-generated transition notes such as "return to buyer" reasons, void reasons, close-early reasons, and three-way-match exception notes. Document-level comments anchor to the PO header (`tb_purchase_order_comment`); detail-level comments anchor to a specific PO line (`tb_purchase_order_detail_comment`), supporting per-line deviation notes and per-line three-way-match commentary.
+The Purchase Order module persists user-authored and system-generated notes plus file attachments on dedicated `*_comment` tables, separate from the lifecycle-bearing header / detail tables documented in [01 — Data Model](/en/inventory/purchase-order/01-data-model). Every comment row carries a free-text `message`, an `attachments` JSON array of S3-token records (`{originalName, fileToken, contentType}`), and a `type` discriminator (`enum_comment_type`) that distinguishes user-authored entries from system-generated transition notes such as send-back reasons, reject reasons, and close-early reasons. Document-level comments anchor to the PO header (`tb_purchase_order_comment`); detail-level comments anchor to a specific PO line (`tb_purchase_order_detail_comment`), supporting per-line notes during approval and fulfilment. (A prior version of this overview also listed "three-way-match exception notes" and "per-line three-way-match commentary" as comment uses — no three-way-match feature exists in current source; see [02 — Business Rules](/en/inventory/purchase-order/02-business-rules) § 5.)
 
 ## 2. Shared Shape
 
