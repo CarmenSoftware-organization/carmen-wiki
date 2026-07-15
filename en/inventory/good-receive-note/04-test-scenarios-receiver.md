@@ -3,7 +3,7 @@ title: Good Receive Note (GRN) — Test Scenarios — Receiver
 description: Receiver's test cases (happy path, permission, validation, edge cases) for good-receive-note.
 published: true
 date: 2026-07-15T00:00:00.000Z
-dateCreated: 2026-05-19T23:55:00.000Z
+dateCreated: 2026-05-15T11:00:00.000Z
 tags: good-receive-note, test-scenarios, receiver, inventory, carmen-software
 editor: markdown
 ---

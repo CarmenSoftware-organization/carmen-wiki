@@ -3,7 +3,7 @@ title: ใบรับสินค้า (Goods Receive Note) — Test Scenarios
 description: เคสทดสอบของ Receiver (happy path, permission, validation, edge case) สำหรับ good-receive-note
 published: true
 date: 2026-07-15T00:00:00.000Z
-dateCreated: 2026-05-19T23:55:00.000Z
+dateCreated: 2026-05-15T11:00:00.000Z
 tags: good-receive-note, test-scenarios, receiver, inventory, carmen-software
 editor: markdown
 ---
