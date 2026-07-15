@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check) — Business Rules
 description: กฎการตรวจสอบ การคำนวณ การกำหนดสิทธิ์ การ post และกฎข้ามโมดูลของการสุ่มตรวจ
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T18:38:42.000Z
 tags: spot-check, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -12,89 +12,81 @@ dateCreated: 2026-05-15T14:30:00.000Z
 
 > **At a Glance**
 > **กลุ่มกฎ:** `SPC_VAL_*` validation &nbsp;·&nbsp; `SPC_AUTH_*` permission &nbsp;·&nbsp; `SPC_CALC_*` calc &nbsp;·&nbsp; `SPC_POST_*` posting &nbsp;·&nbsp; `SPC_XMOD_*` cross-module
-> **จำนวนกฎ:** ประมาณ 30 กฎ
+> **จำนวนกฎ:** 14 กฎ ยืนยันใหม่กับ `spot-check.service.ts` / `spot-check.logic.ts`
 > **กลุ่มผู้ใช้:** ผู้เขียน test + นักพัฒนา — ทุก rule ID ถูก anchor จากหน้า `04-test-scenarios*`
-> **วงจรชีวิตสถานะ:** หัวข้อ 5.1 (ถ้ามี) มี callout ความแตกต่างระหว่าง Live UI กับ BRD
+> **วงจรชีวิตสถานะ:** § 5.1 มีการเปรียบเทียบ Live Code vs เอกสารวางแผนทีละจุด
 
 ## 1. ภาพรวม
 
-หน้านี้รวบรวมกฎการดำเนินงานที่กำกับ **โมดูล spot-check** — ต้นไม้เอกสารสองระดับ (`tb_spot_check` → `tb_spot_check_detail`) ที่บันทึกการนับบางส่วนแบบเจาะจงของสินค้าหรือสถานที่จัดเก็บที่เลือก กฎด้านล่างนี้อยู่ **เหนือ** [inventory-adjustment/02-business-rules](/th/inventory/inventory-adjustment/02-business-rules) (variance rollup post ที่นั่น) และ **เหนือ** กฎระดับ ledger ใน [inventory/02-business-rules](/th/inventory/inventory/02-business-rules) (ผลกระทบขั้นสุดท้ายต่อ inventory ลงจอดที่นั่น) — กฎเหล่านี้กำกับวงจรชีวิตของเอกสาร (`pending → in_progress → completed` บวก path การยกเลิก `void`), การเลือก `method` (random / high_value / manual), `size` ของตัวอย่าง, การมอบหมาย Counter, การ escalate ไป recount เมื่อ variance ทะลุ tolerance และจุดเชื่อมต่อข้ามโมดูลเข้า [inventory-adjustment](/th/inventory/inventory-adjustment) / [inventory](/th/inventory/inventory) / [costing](/th/inventory/costing) Rule ID ใช้ `SPC_VAL_*` (validation), `SPC_CALC_*` (calculation), `SPC_AUTH_*` (authorization), `SPC_POST_*` (posting), `SPC_XMOD_*` (cross-module)
+หน้านี้รวบรวมกฎการดำเนินงานที่บังคับใช้จริงโดย **โมดูล spot-check** — ต้นไม้เอกสารแบนสองระดับ (`tb_spot_check` → `tb_spot_check_detail`) และ flow แบบตระกูลหน้าจอเดียว (list → create → entry → review → submit) ที่บรรยายใน [spot-check/03-user-flow](/th/inventory/spot-check/03-user-flow) ทุกกฎด้านล่างถูกตรวจสอบกับ `spot-check.service.ts`, `spot-check.logic.ts` และ component ฝั่ง frontend ใน `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/`; กฎที่เคยปรากฏในดราฟต์ก่อนหน้าของหน้านี้แต่ไม่มีโค้ดรองรับ (recount, variance-tolerance threshold, rollup เข้า `tb_stock_in`/`tb_stock_out`, GL posting, surface Approver/Auditor/Sysadmin แยกต่างหาก) ถูกลบออกแทนที่จะเก็บไว้เป็น scaffolding ที่ยังไม่ยืนยัน เพราะการค้นทั้ง repo ไม่พบโค้ดรองรับสำหรับสิ่งใดเลย Rule ID ใช้ `SPC_VAL_*` (validation), `SPC_CALC_*` (calculation), `SPC_AUTH_*` (authorization), `SPC_POST_*` (posting), `SPC_XMOD_*` (cross-module)
 
-มีข้อสังเกตเชิงโครงสร้างสองข้อจาก [spot-check/01-data-model](/th/inventory/spot-check/01-data-model) ที่ผลต่อทุกกฎด้านล่าง: **ข้อแรก** spot-check **แบน (ไม่มี period parent)** — ไม่เหมือน physical-count ไม่มี `tb_spot_check_period` ดังนั้นกฎระดับ period ของ `PHC_VAL_001` ไม่มี analog; แทนที่ การ containment ของ period บังคับใช้ตอน rollup ฝั่ง [inventory-adjustment](/th/inventory/inventory-adjustment) ตาม `INV_VAL_008` **ข้อที่สอง** ตารางของ spot-check ไม่เขียนลง inventory ledger โดยตรง — variance post ผ่าน rollup `tb_stock_in` / `tb_stock_out` และการ post adjustment เขียน `tb_inventory_transaction` ความหมายของ ledger สืบทอดจาก `INV_VAL_*` / `INV_CALC_*` / `INV_POST_*` **ข้อที่สาม** ปัจจุบันยังไม่มี source ใน carmen/docs สำหรับกฎ `SPC_*` — rule ID ด้านล่างเป็น scaffolding ที่เสนอเพื่อยืนยันเมื่อ catalogue ใน carmen/docs ถูกเขียน
+มีข้อสังเกตเชิงโครงสร้างสองข้อที่ผลต่อทุกกฎด้านล่าง **ข้อแรก** ต่างจาก [physical-count](/th/inventory/physical-count) — ซึ่ง rollup ของตัวเองอย่างน้อยยังสร้างแถว `tb_stock_in`/`tb_stock_out` ดิบที่ไม่ post — การ submit ขั้นสุดท้ายของ spot check ไม่เขียนอะไรที่ไหนเลยนอกจาก `doc_status`/`end_date` ของตัวมันเอง **ข้อที่สอง** ไม่มี source ใน `carmen/docs` สำหรับกฎ `SPC_*`; § 5.1 ด้านล่างเปรียบเทียบโค้ดจริงกับเอกสารระดับวางแผนหนึ่งฉบับจาก E2E repo ที่ข้อกล่าวอ้างหลัก "posting is pending" ตรงกับโค้ดจริง แต่รายละเอียด status lifecycle ไม่ตรง
 
 ## 2. กฎ Validation
 
-Rule ID ใช้รูปแบบ `SPC_VAL_NNN` Validation ทำงานที่สามขอบเขต: **ตอนสร้าง spot-check** (สร้าง sheet), **ตอนป้อนบรรทัด** (counter พิมพ์ `actual_qty`) และ **ตอน submit** (`in_progress → completed`)
+Rule ID ใช้รูปแบบ `SPC_VAL_NNN`
 
 | Rule ID | เงื่อนไข | บังคับใช้เมื่อ | Error / พฤติกรรม |
 | ------- | --------- | ------------- | ----------------- |
-| `SPC_VAL_001` | `location_id` อ้างอิงสถานที่ประเภท inventory หรือ consignment ที่ active ตาม [inventory](/th/inventory/inventory) `INV_VAL_009` สถานที่ direct-cost ไม่สามารถ spot-check ได้ | สร้าง spot check | Reject ด้วย `"Direct-cost locations cannot be spot-checked."` |
-| `SPC_VAL_002` | `method` คือ `random` / `high_value` / `manual`; `size > 0` เมื่อ `method ∈ {random, high_value}`; method `manual` ต้องเพิ่มบรรทัด `tb_spot_check_detail` อย่างน้อยหนึ่งบรรทัดอย่างชัดเจนก่อน submit | สร้าง / แก้ไข spot check | Reject ด้วยข้อความ error เฉพาะ method |
-| `SPC_VAL_003` | เมื่อ `method = random`, ระบบสุ่ม `size` สินค้าที่แตกต่างจาก inventory ใน scope ที่ `location_id`; เมื่อ `method = high_value`, top-`size` ตามมูลค่า on-hand หรือ velocity (tenant-configurable) ถูกเลือก | สร้าง sheet | ตัวอย่างสร้าง `size` row `tb_spot_check_detail`; ถ้า `size` เกินสินค้าที่แตกต่างที่มี ตัวอย่างถูกตัดและบันทึก log ส่วนต่าง |
-| `SPC_VAL_004` | ทุก `tb_spot_check_detail` บรรทัดมี `actual_qty` ไม่เป็น null ก่อนเอกสารจะ submit ได้ | Submit | Reject ด้วย `"Cannot submit spot check — <N> of <M> lines remain uncounted."` |
-| `SPC_VAL_005` | `actual_qty ≥ 0` บนทุก detail การนับ physical ติดลบไม่มีความหมาย | ป้อนบรรทัด | Reject ด้วย `"Counted quantity must be zero or positive."` |
-| `SPC_VAL_006` | บรรทัดที่ `|diff_qty| / on_hand_qty` เกิน tolerance threshold ของ tenant (ทั่วไป 5% หรือสัมบูรณ์ 1 หน่วย แล้วแต่ค่าใดสูงกว่า) ถูก flag ให้ recount; เอกสาร submit ไม่ได้จนกว่าบรรทัดจะถูก recount-and-reconcile หรือถูกระบุชัดเจนว่า "accept variance" โดย Inventory Controller | Submit | บล็อก submit จนกว่าบรรทัดที่ flag จะถูกแก้ไข |
-| `SPC_VAL_007` | `tb_spot_check` ที่ completed แล้วเปิดใหม่ไม่ได้ — การแก้ไขต้องใช้ spot check ใหม่หรือ `tb_stock_in` / `tb_stock_out` adjustment แบบ manual เทียบกับสถานที่เดียวกันตาม `SPC_POST_004` | แก้ไข completed | Reject ด้วย `"Cannot edit a completed spot check. Raise a manual inventory adjustment."` |
-| `SPC_VAL_008` | spot check ที่ `pending` หรือ `in_progress` สามารถย้ายไป `void` ได้ (ยกเลิกก่อน completion); spot check ที่ `completed` แล้ว void ไม่ได้ — rollup adjustment (ถ้ามี) คือ path การ reverse ผ่าน [inventory-adjustment](/th/inventory/inventory-adjustment) | Void | Reject void บน completed; อนุญาต pending / in_progress |
+| `SPC_VAL_001` | `location_id` ต้องอ้างอิง `tb_location` ที่มีอยู่จริงและไม่ถูกลบ | สร้าง (`POST /spot-checks`) | Reject ด้วย `COMMON_LOCATION_NOT_FOUND` ไม่มีการตรวจ `location_type` หรือ `is_active` แยกภายใน `create()` เอง — หน้ารายการเสนอเฉพาะ location ที่กรองแล้วโดย `findCurrentByLocation()` (`location_type ∈ {inventory, consignment}`, `is_active = true`, และ — เว้นแต่ติ๊ก "Include Not Count" — `physical_count_type = yes`) |
+| `SPC_VAL_002` | eligible product pool (union ของ `tb_product_location` assignment กับสินค้าใดที่มีสต๊อกสุทธิไม่เป็นศูนย์ที่ location) ต้องไม่ว่างเปล่า | สร้าง | Reject ด้วย `"No products found at this location"` |
+| `SPC_VAL_003` | `method = manual` ต้องมี array `product_id[]` ไม่ว่างเปล่า หลังกรองให้เหลือเฉพาะสินค้าใน eligible pool จริง ต้องเหลืออย่างน้อยหนึ่งตัว | สร้าง | Reject ด้วย `"product_id is required for manual selection"` (array ว่าง/ไม่มี) หรือ `"None of the selected products were found at this location"` (กรองแล้วเหลือศูนย์) |
+| `SPC_VAL_004` | `method = high_value` ต้องมี `tb_period` อย่างน้อยหนึ่งแถวที่ `status ∈ {open, locked}` | สร้าง | Reject ด้วย `SPOT_CHECK_NO_ACTIVE_PERIOD` ("No active period found") ถ้าไม่มี |
+| `SPC_VAL_005` | เอกสารที่ `doc_status = pending` เท่านั้นที่ update ได้ (`description`/`note` เท่านั้น — ไม่มีฟิลด์อื่นแก้ไขได้ผ่าน `update()`) | Update | Reject ด้วย `"Only pending spot checks can be updated"` **ไม่สามารถเข้าถึงได้ผ่านหน้าจอที่ shipped ใด ๆ** — ดู [spot-check](/th/inventory/spot-check) § 1; มีแค่การเรียก Bruno/API โดยตรงเท่านั้นที่ใช้ path นี้ |
+| `SPC_VAL_006` | `doc_status = void` หรือ `= completed` บล็อก Reset (`"Spot check is already void"` / `"Completed spot check cannot be reset"`) `pending`/`in_progress` เป็นสถานะเดียวที่ reset ได้ | Reset | Reject ด้วยข้อความที่ยกมาบน `void`/`completed`; อนุญาตนอกเหนือจากนั้น |
+| `SPC_VAL_007` | Save (`saveItems()`) ต้องมี array `items[]` ไม่ว่างเปล่า และเอกสารต้องเป็น `pending` หรือ `in_progress` | Save | Reject ด้วย `SPOT_CHECK_NO_ITEMS` ("No items to save") บน array ว่าง หรือ `"Cannot save items when spot check is <status>"` นอก `{pending, in_progress}` |
+| `SPC_VAL_008` | `submit()` (ขั้นสุดท้าย) reject เฉพาะเมื่อ `doc_status = completed` หรือ `= void` **ไม่มีการตรวจความครบถ้วน** — เอกสารที่บางบรรทัดยังคง `actual_qty = 0` ที่ seed ไว้สามารถ submit ไปเป็น `completed` ได้โดยไม่ error | Submit | Reject ด้วย `"Spot check is already completed"` / `"Void spot check cannot be submitted"`; นอกเหนือจากนั้นสำเร็จเสมอ |
 
-> **TODO:** ยืนยันสูตร tolerance threshold และค่า default ที่แน่นอนจาก tenant config เมื่อ catalogue carmen/docs ถูกเขียน ยืนยันว่า spot-check มีกฎ frozen-stock window แยกที่ analog กับ `PHC_VAL_006` หรือไม่ — ไม่พบใน schema (ไม่มี `enum_spot_check_type`) Cross-reference กับ E2E spec สำหรับ flow recount เมื่อมี
+> **ไม่พบในโค้ด (ลบออกจาก catalogue นี้):** การตรวจ tolerance-threshold แบบเปอร์เซ็นต์หรือปริมาณสัมบูรณ์ที่ขับเคลื่อนสถานะ "flag for recount"; action recount แยกต่างหากที่ทำโดย counter คนละคน; location-level transaction lock ที่บล็อก GRN/SR/posting อื่นระหว่าง spot check เปิดอยู่; toggle "blind count" (หน้า entry เพียงแค่ไม่ render `on_hand_qty` ให้ counter เห็นเลย โดยการออกแบบหน้า ไม่ใช่ toggle ที่ config ได้); gate ความครบถ้วนที่ API layer (มีแค่ button visibility ฝั่ง client เท่านั้นที่บังคับ "นับครบทุกบรรทัด")
 
 ## 3. กฎการคำนวณ
 
-Rule ID ใช้รูปแบบ `SPC_CALC_NNN` ทุกฟิลด์ปริมาณเป็น `Decimal(20, 5)` ตาม `tb_spot_check_detail.on_hand_qty` / `actual_qty` / `diff_qty`
+Rule ID ใช้รูปแบบ `SPC_CALC_NNN` ฟิลด์ปริมาณเป็น `Decimal(20, 5)` บน `tb_spot_check_detail.on_hand_qty` / `actual_qty` / `diff_qty`
 
 | Rule ID | สูตร |
 | ------- | ------- |
-| `SPC_CALC_001` (variance qty) | `diff_qty = actual_qty - on_hand_qty` ต่อบรรทัด บวก = overage (write-on); ลบ = shortage (write-off) เก็บใน `tb_spot_check_detail.diff_qty` |
-| `SPC_CALC_002` (variance %) | `variance_% = (diff_qty / on_hand_qty) × 100` เมื่อ `on_hand_qty > 0`; เมื่อ `on_hand_qty = 0` และ `actual_qty > 0` ให้ถือเป็น new-discovery (100% บวก) ขับเคลื่อนการ flag tolerance-breach ตาม `SPC_VAL_006` ไม่ persist; derive ตอนอ่าน |
-| `SPC_CALC_003` (variance value) | `variance_value = diff_qty × cost_per_unit` โดย `cost_per_unit` ตาม costing method ฝั่ง adjustment ของ tenant (ไม่มี enum costing-method เฉพาะของ spot-check ใน schema — สืบทอดจาก default `enum_physical_count_costing_method` หรือ basis ต้นทุนที่ configured ของ adjustment-type, รอยืนยันตาม `SPC_XMOD_003`) |
-| `SPC_CALC_004` (sample size verification) | `actual_sampled_count == tb_spot_check.size` (หรือถูกตัดพร้อมเหตุผล log ตาม `SPC_VAL_003`) Derive ตอนอ่าน; ไม่ persist บน header (ไม่มีคอลัมน์ `product_counted` / `product_total` บน `tb_spot_check`) |
-
-> **TODO:** ยืนยันลำดับความสำคัญของ costing-method ของ spot-check vs `enum_physical_count_costing_method` ของ physical-count เมื่อ logic frontend ถูกเขียน Cross-link ไป [costing](/th/inventory/costing) สำหรับพฤติกรรมการตีมูลค่า WA / FIFO
+| `SPC_CALC_001` (variance qty) | `diff_qty = actual_qty − on_hand_qty` ต่อบรรทัด คำนวณฝั่ง server โดยทั้ง `saveItems()` (เทียบกับ `on_hand_qty` ที่เก็บอยู่ปัจจุบัน) และ `reviewItems()` (เทียบกับ `on_hand_qty` ที่คำนวณสดใหม่) |
+| `SPC_CALC_002` (การคำนวณ on-hand ใหม่ตอน review) | `reviewItems()` คำนวณ `on_hand_qty` ทุกบรรทัดเป็น `Σ tb_inventory_transaction_detail.qty` ที่ `location_id` ของ spot check จัดกลุ่มตาม `product_id` โดยไม่มี date cut-off — ยอด ledger สดตอนกด "Submit for Review" ซึ่งอาจต่างจากยอดที่จับตอนสร้าง |
+| `SPC_CALC_003` (สรุป review) | `getReview()`/payload review คำนวณ `matched = count(diff_qty === 0)`, `variant = total − matched`; หน้า review คำนวณเพิ่ม `overages = count(diff_qty > 0)` และ `shortages = count(diff_qty < 0)` ฝั่ง client จาก `diff_qty` เดียวกัน **ไม่มีการคำนวณมูลค่าผลต่างเป็นตัวเงินที่ใดเลย** — `diff_qty × cost_per_unit` ไม่มีอยู่ในโมดูลนี้; cost ปรากฏเฉพาะเป็น *input การจัดอันดับตอนเลือกตัวอย่าง* สำหรับ method `high_value` (§ 4 ด้านล่าง) ไม่เคยเป็นการตีมูลค่าของ variance ที่นับได้ |
+| `SPC_CALC_004` (การจัดอันดับ high-value) | สำหรับ `method = high_value`: จัดอันดับสินค้าแต่ละตัวใน pool ด้วย `on_hand_qty × max(cost_per_unit)` โดย max cost อ่านจากแถว `tb_inventory_transaction_cost_layer` ที่ location นั้นด้วย `in_qty > 0` และ `lot_at_date` อยู่ในช่วง `[start_at, end_at]` ของงวดที่ active; สินค้าต่ำกว่า `minimum_cost` floor (ถ้ามี) ถูกคัดออก; สินค้าที่ไม่พบ cost ถูกต่อท้ายกลุ่มที่มี cost (เฉพาะเมื่อไม่ได้ตั้ง `minimum_cost`) เรียงตามที่ถูก assign ให้ location ล่าสุดก่อน; `size` ตัวแรก (หรือน้อยกว่าถ้า pool เล็กกว่า) ถูกเก็บไว้ |
 
 ## 4. กฎ Authorization
 
-Rule ID ใช้รูปแบบ `SPC_AUTH_NNN` Persona ตาม [spot-check](/th/inventory/spot-check) § 4 และการจัดกลุ่มสามกลุ่มในหน้าย่อยของโมดูลนี้ (inventory-controller / counter / audit-config)
+Rule ID ใช้รูปแบบ `SPC_AUTH_NNN`
 
 | Rule ID | กฎ |
 | ------- | ---- |
-| `SPC_AUTH_001` | **Inventory Controller** สร้างและจัดตารางเอกสาร `tb_spot_check` ตั้งค่า `method` (random / high_value / manual) และ `size` มอบหมาย counter review variance อนุมัติหรือ reject คำขอ recount และอนุมัติ adjustment สำหรับการ post หนึ่งที่นั่งต่อ spot check ตามนโยบาย tenant |
-| `SPC_AUTH_002` | **Counter** ป้อน `actual_qty` บนบรรทัด `tb_spot_check_detail` ที่ได้รับมอบหมายภายใน location/zone ของตน flag รายการเสียหาย / ไม่มีป้ายผ่าน `tb_spot_check_detail_comment` แต่ submit เอกสารไม่ได้ — เฉพาะ Inventory Controller เท่านั้นที่ submit ได้ |
-| `SPC_AUTH_003` | กลุ่ม **Audit / Config**: Auditor มีสิทธิ์อ่านอย่างเดียวต่อทุกระดับ (header / detail) รวมถึง thread comment และ stamp counted-by เพื่อ review ผล spot-check, หลักฐาน recount, และ adjustment ที่ post อย่างเป็นอิสระ — ยืนยันว่าการควบคุมทำงานและการสูญเสียได้รับการสืบสวน Sysadmin (โดยปริยาย) config tolerance threshold, default `size`, default `method` และการ map reason-code |
-| `SPC_AUTH_004` | การมอบหมาย counter ผูกกับ location — counter เห็นเฉพาะเอกสาร spot-check สำหรับ location ที่ตนมี `tb_user_location` (หรือ location-grant ที่เทียบเท่า) การมองเห็นข้าม location ต้องใช้ role Inventory Controller |
+| `SPC_AUTH_001` | ทุก action list, create, save, review, submit, reset, delete และ comment ในโมดูลนี้ถูกกำหนดสิทธิ์ด้วย permission key CRUD เดียว: `inventory_management.spot_check` (`constant/permissions.ts`) ไม่พบ permission variant แยกสำหรับ create-only, approve-only หรือ read-only |
+| `SPC_AUTH_002` | ไม่พบข้อจำกัดแบบ zone-based, location-scoped-to-user หรือ "assigned counter" ใน `spot-check.service.ts` — ผู้ใช้ใดที่มี permission ของโมดูลสามารถเปิด นับ และ submit spot check ที่ location ใดก็ได้ มีตาราง `tb_user_location` ทั่วไปอยู่ที่อื่นใน schema สำหรับ location-level access grant แต่ไม่พบการอ้างอิงถึงมันใน service code ของโมดูลนี้เอง |
+| `SPC_AUTH_003` | ไม่มี permission, route หรือ workflow stage ของ Approver/Finance Reviewer, Auditor หรือ Sysadmin สำหรับโมดูลนี้ — ไม่มีอะไรให้ review หรืออนุมัติ เพราะการ submit ขั้นสุดท้ายไม่มีเอกสารหรือผล ledger ปลายทางให้ gate |
 
 ## 5. กฎการ Posting
 
-Rule ID ใช้รูปแบบ `SPC_POST_NNN` Posting ในโมดูลนี้หมายถึง variance-rollup transition (spot-check-completion → การสร้าง adjustment) ไม่ใช่การเขียน ledger โดยตรง
+Rule ID ใช้รูปแบบ `SPC_POST_NNN` "Posting" สำหรับโมดูลนี้หมายถึงเฉพาะการเปลี่ยนสถานะที่ทำโดย `submit()` — ไม่มี rollup ไม่มีเอกสาร adjustment ไม่มีการเขียน ledger
 
 | Rule ID | กฎ |
 | ------- | ---- |
-| `SPC_POST_001` | เมื่อ `tb_spot_check.doc_status = completed`, ชั้น application iterate `tb_spot_check_detail` และจัดกลุ่มบรรทัดด้วย `sign(diff_qty)`: บวก → `tb_stock_in` หนึ่งบรรทัดขึ้นไปภายใต้ reason `SPOT_CHECK_OVERAGE` (หรือ `COUNT_OVERAGE` ถ้า alias); ลบ → `tb_stock_out` หนึ่งบรรทัดขึ้นไปภายใต้ reason `SPOT_CHECK_SHORTAGE` (หรือ `COUNT_SHORTAGE`); ศูนย์ → ไม่มี rollup |
-| `SPC_POST_002` | Header ของ rollup adjustment พกพา `info.spotCheckId = <tb_spot_check.id>` (และ/หรือ `info.countId` ถ้า reason ถูก alias) สำหรับ join ฝั่ง audit ย้อนกลับไปยังแหล่งที่มาของ spot-check Reason-code บน `tb_adjustment_type` ต้องมีอยู่พร้อมทิศทางที่เหมาะสม (ตาม [inventory-adjustment/01-data-model](/th/inventory/inventory-adjustment/01-data-model) § 2.1) |
-| `SPC_POST_003` | cost-per-unit บนแต่ละบรรทัด rollup ตั้งตาม `SPC_CALC_003` (costing method ที่สืบทอด) การลงนามรับรองของ Inventory Controller ในการ submit adjustment ตอบสนอง [inventory-adjustment/02-business-rules](/th/inventory/inventory-adjustment/02-business-rules) approval ตาม rollup-fast-path (อำนาจ counter pre-approved ที่จุด submit ของ spot check) |
-| `SPC_POST_004` | เมื่อ rollup adjustment เป็น `completed` แล้ว เอกสาร spot-check จะ **immutable** — การแก้ไขใด ๆ ในภายหลังที่สถานที่เดียวกันต้องใช้ `tb_stock_in` / `tb_stock_out` ใหม่ที่สร้างเอง (หรือ spot check ใหม่) ไม่ใช่การเปิดใหม่ |
+| `SPC_POST_001` | `submit()` ตั้ง `doc_status = completed` และ stamp `end_date = now()` นั่นคือผลทั้งหมดของการ submit ขั้นสุดท้าย |
+| `SPC_POST_002` | ไม่มีเอกสาร `tb_stock_in`/`tb_stock_out` ถูกสร้าง และไม่มี row `tb_inventory_transaction` ถูกเขียน โดย `submit()` — ยืนยันทั้งจากการไม่มี import/call ที่ตรงกันใน `spot-check.service.ts` และ doc-comment ของ method เอง: *"Does not create stock-in/stock-out — any follow-up adjustments are user-driven."* นี่เป็นกลไกที่ง่ายกว่า (และ automate น้อยกว่า) มากกว่าการ submit ขั้นสุดท้ายของ [physical-count](/th/inventory/physical-count) เอง (ซึ่งอย่างน้อยยังสร้างแถว stock-in/out ดิบโดยไม่ post ไปยัง ledger) |
+| `SPC_POST_003` | การแก้ไขผลต่างที่ยืนยันแล้วจึงต้องให้ผู้ใช้สร้างเอกสาร Stock In/Out ธรรมดาแยกต่างหากใน [inventory-adjustment](/th/inventory/inventory-adjustment) เอง ไม่มีฟิลด์ convention JSON หรือ description string ใด ๆ เชื่อมเอกสารนั้นย้อนกลับไปยัง spot check ที่พบผลต่าง — audit trail ถ้าจำเป็นต้องสร้างขึ้นมาต้องทำ manual (เช่น จับคู่ location และวันที่) |
+| `SPC_POST_004` | เมื่อ `submit()` สำเร็จแล้ว การเรียก Save/Submit-for-Review เพิ่มเติมต่อเอกสารเดียวกันถูก reject โดย `SPC_VAL_007` (guard สถานะของ `saveItems()` เอง) **`reviewItems()` ไม่มี guard ที่เทียบเท่า** — มันจะคำนวณและเขียนทับ `on_hand_qty`/`actual_qty`/`diff_qty`/`counted_at` บนทุกแถว detail ของเอกสารที่ `completed` (หรือ `void`) แล้ว หาก endpoint นั้นถูกเรียกอีก เช่น เปิด spot check ที่ completed แล้วจาก tab History ของหน้ารายการ (ซึ่ง click handler routing ไปหน้า entry เดียวกันไม่ว่างสถานะใด) แล้วกด "Submit for Review" อีกครั้ง มีเพียง call `submit()` ขั้นสุดท้ายเท่านั้นที่ถูก guard (`SPC_VAL_008`) นี่เป็นช่องว่างที่ยืนยันแล้วในโค้ด ไม่ได้ถูกทดสอบด้วย automated test แยกต่างหาก |
 
-### 5.1 วงจรชีวิตสถานะ — Live UI vs BRD Mapping
+## 5.1 การเปรียบเทียบ Live Code vs เอกสารวางแผน
 
-Prisma enum `enum_spot_check_status` ที่บันทึกใน [spot-check/01-data-model](/th/inventory/spot-check/01-data-model) § 4 คือสิ่งที่ live schema ใช้ `tx-10-spot-check.md` (BR-spot-check.md v2.2.0) อธิบายชุดสถานะที่ตั้งใจ Source: `Test_case/System_Process/tx-10-spot-check.md` (capture date 2026-04-27)
+ไม่มี catalogue `SPC-*` ใน `carmen/docs` สำหรับโมดูลนี้ เอกสารอ้างอิงที่ใกล้เคียงที่สุดคือเอกสารระดับวางแผนใน E2E repo, `docs/persona-doc/System Process/tx-10-spot-check.md` (v1.0.0, 2026-04-27) — เอกสารออกแบบสไตล์ BRD ไม่ใช่ automated test หรือพฤติกรรมที่ยืนยันว่า shipped แล้ว
 
-> Diff legend: ✅ ตรงกัน · 🟡 เปลี่ยนชื่อ/เปลี่ยน semantic · 🔴 ใหม่ใน live schema (ไม่มีใน BRD)
+> Diff legend: ✅ ตรงกับโค้ดจริง · 🟡 เปลี่ยนชื่อ/ยุบใน live schema · 🔴 มีแค่ในเอกสารวางแผน (ไม่มีโค้ดรองรับ)
 
-| Live schema status (`enum_spot_check_status`) | BRD (`tx-10-spot-check.md`) equivalent | Diff | Notes |
+| หัวข้อ | เอกสารวางแผน (`tx-10-spot-check.md`) | Live Code | Diff |
 |---|---|---|---|
-| `pending` | `draft` / `pending` | 🟡 | BRD ใช้ `draft` (สร้าง ไม่ submit) → `pending` (submit รอเริ่ม) เป็นสองสถานะที่แตกต่าง Live schema ยุบทั้งสองเป็น `pending` Counter ป้อน qty แรก trigger `pending → in_progress` |
-| `in_progress` | `in-progress` | ✅ ตรงกัน | ตรงโดยตรง การนับกำลังดำเนิน |
-| `completed` | `completed` | ✅ ตรงกัน | ตรงโดยตรง Terminal; ตอบสนอง End Period Close Stage 2 (BR-PE-006) |
-| `void` | `cancelled` | 🟡 | BRD ใช้ `cancelled` พร้อม note ว่าข้อมูลที่ป้อนทั้งหมดถูกเก็บไว้และไม่มีการเปลี่ยนแปลง inventory ที่ post (BR-SC-007) Live schema ใช้ `void` |
-| — | `on-hold` | 🔴 | BRD กำหนด `on-hold` (พัก; → `in-progress`, `cancelled`) ไม่มีค่า `on_hold` ใน `enum_spot_check_status` ใน Prisma schema — การพัก/resume อาจจัดการผ่าน UI state หรือ migration ในอนาคต |
+| การ post variance ไปยัง inventory | "Real-time variance posting to inventory is listed as **Pending** — not yet implemented... does not post variance adjustments to inventory, lots, or cost." | ยืนยันตรงเป๊ะ: `submit()` ไม่มีผลการ posting ใด ๆ เลย และ doc-comment ของตัวมันเองก็ระบุไว้ตรง ๆ | ✅ |
+| ชุดสถานะ | หกค่า: `draft`, `pending`, `in-progress`, `on-hold`, `completed`, `cancelled` | `enum_spot_check_status` มีสี่ค่า: `pending`, `in_progress`, `void`, `completed` ความแตกต่างระหว่าง `draft`/`pending` ก่อนนับ และสถานะ pause `on-hold` ของเอกสารไม่มี schema เทียบเท่า; `cancelled` แม็พไปที่ `void` จริง | 🟡 |
+| ประเภทการตรวจ | ห้า: `random`, `targeted`, `high-value`, `variance-based`, `cycle-count` | `enum_spot_check_method` มีสาม: `random`, `high_value`, `manual` `targeted`/`variance-based`/`cycle-count` ไม่มี schema เทียบเท่า; analog ที่ใกล้เคียงที่สุดของ "targeted" ในโค้ดคือ `manual` (เลือกสินค้าเอง) | 🟡 |
+| รูปแบบหมายเลขอ้างอิง | `SC-YYMMDD-XXXX` | running-code service สร้าง `spot_check_no` จาก pattern วันที่ + ลำดับที่ tenant config ได้ ประเภท `SPOT-CHECK` — รูปแบบที่แท้จริง config โดย tenant ผ่านหน้า running-code ที่แชร์ ไม่ได้ hardcode เป็น `SC-YYMMDD-XXXX` | 🟡 |
+| Gate End Period Close | "All Spot Checks must be `completed` before End Period Close Stage 2" | การค้นทั้ง repo ใน `period-end.validate.ts` สำหรับการอ้างอิง `spot` ใด ๆ ไม่พบผลลัพธ์เลย — spot check **ไม่ใช่** period-end gate ชนิดใดเลย สอดคล้องกับข้อค้นพบเดียวกันที่ยืนยันแล้วในการ re-sync ของโมดูล [inventory](/th/inventory/inventory) เอง | 🔴 |
+| Pause/resume | `in-progress → on-hold → in-progress` สำหรับ "staff/items unavailable" | ไม่มีสถานะ `on_hold`/pause — ผู้ใช้แค่ออกจากหน้า entry แล้วกลับมาใหม่ทีหลังได้ (เอกสารยังคง `in_progress` หรือ `pending` พร้อมสิ่งที่ยังไม่ได้ save ในเครื่องหายไป — มีเพียง call Save เท่านั้นที่ persist ความคืบหน้า) | 🔴 |
 
-> ⚠️ **Discrepancy — การยุบ `draft` vs `pending`:** BRD `tx-10-spot-check.md` กำหนดสองสถานะก่อนนับที่แตกต่าง: `draft` (สร้าง ไม่ submit → `pending`) และ `pending` (submit รอเริ่ม → `in-progress`) `enum_spot_check_status` ใน live มีเพียง `pending` — ความแตกต่างระหว่าง create/submit ไม่ persist เป็นค่า enum แยก Source: `Test_case/System_Process/tx-10-spot-check.md` (capture date 2026-04-27)
-
-> ⚠️ **Discrepancy — สถานะ `on-hold` ไม่อยู่ใน schema:** BRD กำหนด `on-hold` เป็นสถานะ pause ที่ valid (`in-progress → on-hold → in-progress`) `enum_spot_check_status` ใน live ไม่รวมค่า `on_hold` — พฤติกรรม pause/resume (เช่น "staff unavailable") อาจจัดการที่ชั้น UI โดยไม่ persist สถานะ enum แยก หรืออาจถูกเลื่อนออก Source: `Test_case/System_Process/tx-10-spot-check.md` (capture date 2026-04-27)
-
-> ⚠️ **Discrepancy — Gate End Period Close Stage 2 ไม่ได้สร้างใน BRD posting rules:** INDEX ของ test-case ระบุว่า Spot Check ทั้งหมดต้องเป็น `completed` ก่อน End Period Close Stage 2 จะผ่าน (BR-PE-006) BRD (BR-spot-check.md v2.2.0) ไม่รวมกฎที่สอดคล้องใน spot-check posting rules — gate การปิด period กำหนดที่ฝั่ง End Period Close (tx-09) วิกิ cross-reference นี้ใน `SPC_POST_001` ผ่านสถานะ terminal `completed` แต่ live UI บังคับใช้เป็น gate ภายนอก ไม่ใช่ constraint ภายใน spot-check Source: `Test_case/System_Process/tx-10-spot-check.md` (capture date 2026-04-27)
-
-> ⚠️ **Discrepancy — การ post variance ไปยัง inventory PENDING:** BRD (BR-spot-check.md v2.2.0) บอกใบ้ว่า variance post ไปยัง QOH / lots / cost เมื่อ completion (pattern rollup เดียวกับ Physical Count) การ implement ที่ live ถึงสถานะ `completed` และตอบสนอง End Period Close Stage 2 แต่ **ไม่** ได้ post variance adjustment ไปยัง inventory, lots หรือ cost ในปัจจุบัน ผลกระทบ lot และผลกระทบต้นทุนทั้งคู่ mark เป็น TBC Source: `Test_case/System_Process/tx-10-spot-check.md` (capture date 2026-04-27)
+**คำแนะนำสำหรับผู้เขียน test:** ถือกรอบ "posting is pending" ของ `tx-10-spot-check.md` ว่ายืนยันแล้วและยั่งยืน — ไม่มีหลักฐานว่าฟีเจอร์ posting กำลังจะมาในเร็ว ๆ นี้ — แต่เขียน assertion ของ status lifecycle ตาม `enum_spot_check_status` สี่ค่าจริง ไม่ใช่คำบรรยายหกค่าของเอกสารวางแผน
 
 ## 6. กฎข้ามโมดูล
 
@@ -102,17 +94,15 @@ Rule ID ใช้รูปแบบ `SPC_XMOD_NNN`
 
 | Rule ID | กฎ |
 | ------- | ---- |
-| `SPC_XMOD_001` | **→ [inventory-adjustment](/th/inventory/inventory-adjustment)**: variance ของ spot-check post ผ่านต้นไม้เอกสาร `tb_stock_in` / `tb_stock_out` ด้วย reason code `SPOT_CHECK_OVERAGE` / `SPOT_CHECK_SHORTAGE` (หรือ alias เป็น `COUNT_*`) Rollup เป็น path เดียวจาก spot check ไปยัง ledger |
-| `SPC_XMOD_002` | **→ [inventory](/th/inventory/inventory)**: ทุก rollup adjustment เขียน `tb_inventory_transaction` ด้วย `enum_transaction_type = adjustment_in` / `adjustment_out` ไม่มีค่า `spot_check` โดยตรงบน `enum_transaction_type` |
-| `SPC_XMOD_003` | **→ [costing](/th/inventory/costing)**: การเลือก costing-method บน rollup สืบทอด default ฝั่ง adjustment (ไม่มี `enum_spot_check_costing_method` เฉพาะใน schema); การบริโภค FIFO (สำหรับ shortage) และการ refresh WA (สำหรับ overage) ตาม `INV_CALC_005` / `INV_CALC_007` เมื่อ adjustment post |
-| `SPC_XMOD_004` | **→ [physical-count](/th/inventory/physical-count)**: spot check เป็น **คู่เทียบการนับบางส่วน** ของ [physical-count](/th/inventory/physical-count) — scope แคบกว่า (ตัวอย่าง ไม่ใช่ทุกรายการที่ทุก location), ไม่มี parent งวดบัญชี, cadence ad-hoc ใช้ hook variance-rollup แบบแนวคิดเดียวกันเข้า [inventory-adjustment](/th/inventory/inventory-adjustment); **ไม่ใช่** child ของ `tb_physical_count_period` |
-
-> **TODO:** ตรวจสอบ rule ID ข้างต้นกับ catalogue `SPC-*` ใน carmen/docs เมื่อเขียน ยืนยันค่า default ของ tolerance / threshold จาก tenant config ของ production cross-validate posting fan-out กับการ implement ของ frontend ใน `../carmen-inventory-frontend-react/`; ยืนยันการตั้งชื่อ reason-code (`SPOT_CHECK_*` vs `COUNT_*` ที่ใช้ซ้ำ)
+| `SPC_XMOD_001` | **→ [inventory-adjustment](/th/inventory/inventory-adjustment)**: ไม่มีลิงก์อัตโนมัติใด ๆ ผลต่างที่ยืนยันแล้วถูกแก้ไขได้ก็แต่โดยผู้ใช้สร้างเอกสาร Stock In/Out แยกต่างหากที่นั่นด้วยตัวเอง — ไม่มีสิ่งใดใน spot check เองที่อ้างอิง trigger หรือ pre-fill action นั้น |
+| `SPC_XMOD_002` | **→ [inventory](/th/inventory/inventory)**: spot check อ่าน ledger (`tb_inventory_transaction_detail`) สองครั้ง — ครั้งแรกเพื่อสร้าง eligible product pool และ seed `on_hand_qty` ตอนสร้าง อีกครั้งตอน Submit-for-Review เพื่อ refresh `on_hand_qty` — แต่ไม่เคยเขียนลงไป |
+| `SPC_XMOD_003` | **→ [master-data/location](/th/inventory/master-data/location)**: filter default ของหน้ารายการ (ซ่อน location ที่ flag `physical_count_type = no` เว้นแต่ติ๊ก "Include Not Count") ใช้ admin flag ระดับ location ตัวเดียวกับที่ [physical-count](/th/inventory/physical-count) ใช้สำหรับ period-end gate ของตัวเอง — แต่ spot check เองไม่ใช่ period-end gate |
+| `SPC_XMOD_004` | **→ [physical-count](/th/inventory/physical-count)**: spot check เป็นลูกพี่ลูกน้อง ad-hoc ที่แคบกว่าของการนับบางส่วน — document tree ที่แยกกันโดยสิ้นเชิง (ไม่มีตารางหรือ enum ที่แชร์) ซึ่งบังเอิญใช้ union logic ของ product-pool เดียวกันและ generic notes-dialog UI component เดียวกัน |
 
 ## 7. แหล่งอ้างอิง
 
-- **Primary (Prisma):** ดู [spot-check/01-data-model](/th/inventory/spot-check/01-data-model) สำหรับ citation ของ entity / enum source
-- **Secondary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
-- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — การค้นชื่อ hint ไม่พบ route `spot-check` ระดับบนสุด; ตรวจสอบโฟลเดอร์โมดูลย่อยเมื่อเขียน
-- **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check; เขียน traceability ของกฎเมื่อมี
-- ชุดกฎที่เกี่ยวข้อง: [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_*` — คู่เทียบการนับเต็มที่มีโครงสร้าง period สามระดับ; spot-check เป็นลูกพี่ลูกน้องสองระดับที่เรียบง่ายกว่า), [inventory-adjustment/02-business-rules](/th/inventory/inventory-adjustment/02-business-rules) (`ADJ_*` — variance rollup อยู่ที่นั่น), [inventory/02-business-rules](/th/inventory/inventory/02-business-rules) (`INV_VAL_*` / `INV_CALC_*` / `INV_POST_*` — semantics ของ ledger สืบทอดที่ adjustment post), [costing](/th/inventory/costing) (พฤติกรรม FIFO / WA refresh เมื่อ rollup post)
+- **Primary:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts` (create/update/delete/reset/saveItems/reviewItems/getReview/submit), `spot-check.logic.ts` (sampling strategies)
+- **Secondary (ระดับวางแผน ยืนยันบางส่วน):** `../carmen-inventory-frontend-e2e/docs/persona-doc/System Process/tx-10-spot-check.md`
+- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/` (`sc-component.tsx`, `sc-form.tsx`, `sc-entry-component.tsx`, `sc-review-component.tsx`); `constant/permissions.ts`
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check; manual test-case catalog ที่ `docs/test-cases/760-spot-check.md`
+- ชุดกฎที่เกี่ยวข้อง: [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_*` — คู่เทียบการนับเต็มที่อย่างน้อยยังสร้างแถว stock-in/out ที่ไม่ post ตอน submit), [inventory-adjustment/02-business-rules](/th/inventory/inventory-adjustment/02-business-rules) (`ADJ_*` — จุดที่ต้อง manual แก้ไขผลต่างที่ยืนยันแล้ว), [inventory/02-business-rules](/th/inventory/inventory/02-business-rules) (semantics ของ ledger — โมดูลนี้ไม่เคยไปถึงเลย)

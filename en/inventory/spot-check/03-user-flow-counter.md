@@ -1,88 +1,83 @@
 ---
-title: Spot Check — User Flow — Counter
-description: Counter path through the spot-check lifecycle.
+title: Spot Check — User Flow — Entry & Review Screens
+description: The line-entry and variance-review screens where a spot check is actually counted and submitted.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T18:38:42.000Z
 tags: spot-check, user-flow, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
 ---
 
-# Spot Check — User Flow — Counter
+# Spot Check — User Flow — Entry & Review Screens
 
 > **At a Glance**
-> **Persona:** Counter (floor-level counter) &nbsp;·&nbsp; **Module:** [spot-check](/en/inventory/spot-check) &nbsp;·&nbsp; **Workflow stages:** pending → in_progress (first actual_qty entry; edit assigned lines; notify IC) &nbsp;·&nbsp; **Key permissions:** enter / edit actual_qty on assigned lines, line-level comments, sign-off back to IC
-> **What this persona does:** Walks the location, counts in-scope items, and records actual_qty against the assigned spot-check sheet.
+> **Screens:** `spot-check/:id` (`sc-entry-component.tsx`) and `spot-check/:id/review` (`sc-review-component.tsx`) &nbsp;·&nbsp; **Module:** [spot-check](/en/inventory/spot-check) &nbsp;·&nbsp; **Role:** the same single `inventory_management.spot_check`-gated user documented in [03-user-flow-inventory-controller.md](/en/inventory/spot-check/03-user-flow-inventory-controller)
+> **What this persona does:** enters `actual_qty` per sampled product, optionally attaches a note/photo per line, saves progress, submits for review, and confirms the final submit.
 
-## 1. Persona
+## 1. Screen Scope
 
-**Counter** — the floor-level worker who performs the physical count of in-scope items or locations on assigned spot checks, records counted quantities on the detail sheet (`tb_spot_check_detail.actual_qty`) accurately and on time, flags items that are damaged, unlabelled, or unfamiliar via line-level comments, and signs off completed sheets back to the Inventory Controller. Authority anchor for `SPC_AUTH_002`.
+This page — carried over from an earlier draft's "Counter" persona name — documents the real entry and review screens. There is no zone assignment, no counter-to-location grant, and no restriction limiting which lines a given user can edit: any user holding the module permission can edit any line on any spot check.
 
-### Workflow position (Counter highlighted)
+### Entry screen actions (`sc-entry-component.tsx`)
 
 ```mermaid
 graph LR
-    lead_create["Inventory Controller\ncreates spot check"] --> pending(("pending\n— counter\nassigned"))
-    pending -->|"counter enters\nfirst actual_qty"| in_progress(("in_progress\n— counting")):::current
-    in_progress -->|"enter / edit actual_qty\non assigned lines"| in_progress:::current
-    in_progress -->|"all assigned lines\ncompleted — notify IC"| lead_submit["Inventory Controller\nreviews + submits"]
-    lead_submit --> completed(("completed\n— rollup fires"))
-    completed --> adj["Inventory Adjustment\n(rollup: tb_stock_in /\ntb_stock_out)"]
+    entry[["Entry screen\n(:id)"]]:::current
+    entry -->|"type actual_qty\n(commits on change)"| commit["Local state\n(not yet saved)"]
+    commit -->|"Save For Resume\n(uncounted > 0)"| save["PATCH .../save\nstamps counted_at"]
+    commit -->|"Submit For Review\n(uncounted == 0)"| review["PATCH .../review\nrecomputes on_hand_qty live"]
+    review --> reviewScreen[["Review screen\n(:id/review)"]]:::current
+    reviewScreen -->|"Submit Spot Check"| submit["PATCH .../submit\n→ doc_status: completed\n(no other effect)"]
     classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
 ```
 
-### Permission Matrix — V1 Status × Action (Counter)
+### What the entry screen shows
 
-The Counter is a data-entry persona scoped to their assigned location. They can read and write `actual_qty` on their lines and add comments, but cannot submit the spot-check document or change any configuration. Rows are derived from Section 3 (Primary Actions) of this file; rule citations refer to [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) § 4 / § 5.
+- **Header** (`sc-entry-header.tsx`) — location name/code, method badge, status badge, `counted/total` count, percent complete, a progress bar, and the spot check's `start_date`.
+- **Search + status filter pills** — All / Counted / Uncounted, filtering the visible product rows client-side; search matches product name/code/SKU/local name.
+- **Refresh button** — re-fetches the spot check (does not re-run the sampling logic or add new lines — a spot check's product set is fixed at creation, unlike physical-count's Refresh).
+- **Import / Export** — Export writes an `.xlsx` of the current effective counts (id, product code/name/local name/SKU, unit, `actual_qty`); Import reads a spreadsheet back and matches rows by SKU, reporting matched/skipped counts.
+- **Product rows** (`EntryItemRow`, virtualized) — product name/code/local name/SKU, an `actual_qty` number input, a calculator button (for computing a total from case/unit quantities), a unit-of-measure label, and an "Add Notes" link opening a shared notes dialog (free text + photo attachments, backed by `tb_spot_check_detail_comment`). Book quantity (`on_hand_qty`) is never shown on this screen.
+- **"Set X Empty to Zero"** — bulk-fills every still-uncounted line's local value to `0` (does not save by itself).
+- **Save For Resume vs. Submit For Review** — the footer shows **Save For Resume** whenever any line is still uncounted; once every line has a value (from local edits or a prior save), Save disappears and only **Submit For Review** remains. This is a client-side gate only — the backend enforces no completeness check on either call.
 
-| Action | Spot check `pending` | Spot check `in_progress` | Spot check `completed` |
-|---|---|---|---|
-| View assigned spot-check sheet (location-scoped lines) | ✅ (`SPC_AUTH_004`) | ✅ (`SPC_AUTH_004`) | ✅ (read-only) |
-| Enter first `actual_qty` (triggers `pending → in_progress`) | ✅ (`SPC_AUTH_002`) | — | ❌ |
-| Enter / edit `actual_qty` on assigned location lines | — | ✅ (`SPC_VAL_005` — qty ≥ 0) | ❌ (`SPC_VAL_007` — immutable) |
-| Flag damaged / unlabelled / unfamiliar item (comment + photo) | — | ✅ (`SPC_AUTH_002`) | ❌ |
-| Add free-text comment to spot check | — | ✅ (`SPC_AUTH_002`) | ❌ |
-| Sign off completed sheet (notify Inventory Controller) | — | ✅ (notification; no status change) | — |
-| Submit spot check (`in_progress → completed`) | ❌ (`SPC_AUTH_002` — Inventory Controller only) | ❌ (`SPC_AUTH_002` — Inventory Controller only) | — |
-| View lines outside assigned location | ❌ (`SPC_AUTH_004` — location-scoped) | ❌ (`SPC_AUTH_004` — location-scoped) | ❌ |
-| Re-enter a recount line flagged by Inventory Controller | — | ✅ (ideally a different counter to remove bias) | ❌ |
+### What the review screen shows (`sc-review-component.tsx` via the shared `ReviewComponent`)
+
+- Location name/code, and four summary counts from the review payload: **matches** (`diff_qty === 0`), **variances**, **overages** (`diff_qty > 0`), **shortages** (`diff_qty < 0`).
+- A list of variance-only lines, each showing system quantity (`on_hand_qty` — recomputed live by the preceding Submit-for-Review call), actual quantity, variance (`diff_qty`), and unit.
+- A single **Submit Spot Check** button — the final, terminal action for the whole document. Its only effect is `doc_status → completed` and an `end_date` stamp; no other document is created and nothing is written to the inventory ledger.
 
 ## 2. Entry Points
 
-- **My spot-check assignments** — list of `tb_spot_check` documents with `pending` or `in_progress` status where the counter has a location-grant.
-- **Spot-check sheet view** — drill into one spot check and see the detail lines for the assigned location.
-- **Mobile / handheld scanner** — typical floor device for scanning product barcodes and entering `actual_qty` line by line; spot checks tend to be even more mobile-friendly than full physical counts because the scope is small.
+- **From the list screen** — Start (new) or Resume navigates directly to `spot-check/:id` (see [03-user-flow-inventory-controller.md](/en/inventory/spot-check/03-user-flow-inventory-controller)).
+- **From the History tab** — clicking any historical spot check, regardless of `doc_status`, also routes to `spot-check/:id`; there is no separate read-only detail view (see the caveat below).
 
 ## 3. Primary Actions
 
 | Action | State precondition | State effect | Notes |
 | ------ | ------------------ | ------------ | ----- |
-| Open assigned spot-check sheet | Spot check in `pending` or `in_progress`; counter has location-grant | (read) detail lines visible | Per `SPC_AUTH_004`. |
-| Enter first `actual_qty` | Spot check in `pending` | Spot check advances to `in_progress` | First line entry triggers transition. |
-| Enter / edit `actual_qty` on a line | Line within assigned location | `actual_qty` saved; `counted_at` / `counted_by_id` stamped | `actual_qty ≥ 0` per `SPC_VAL_005`. |
-| Flag damaged / unlabelled / unfamiliar item | Line on assigned spot check | `tb_spot_check_detail_comment` row created with attachment (photo) | Soft-flag; Inventory Controller reviews. |
-| Add comment to spot check | Spot check in `in_progress` | `tb_spot_check_comment` row created | Free-text notes (e.g. "shelf restock in progress, recommend recount line 4"). |
-| Sign off completed sheet | All assigned lines have non-null `actual_qty` | Notification fires to Inventory Controller | Counter does not submit the document — Inventory Controller does, per `SPC_AUTH_002`. |
+| Enter/edit `actual_qty` on a line | Any status | Local state only, until Save or Submit for Review | No client-side minimum was found (unlike physical-count's `≥ 0` clamp on the entry row). |
+| Attach a note/photo to a line | Any time | `POST /spot-check-detail-comment/:detailId` (multipart: `message`, `type`, `files`) | Backed by `tb_spot_check_detail_comment`; the same shared notes-dialog component physical-count uses. |
+| Save For Resume | At least one line has a value; document `pending` or `in_progress` | `PATCH .../save` — stamps `counted_at`/`counted_by_id` and recomputes `diff_qty` on the submitted lines against whatever `on_hand_qty` is currently stored; first call also flips `pending → in_progress`; requires `doc_version` | Rejected outside `{pending, in_progress}` (`SPC_VAL_007`). |
+| Submit For Review | Every line has a locally-entered value (`uncountedCount === 0`, client gate only) | `PATCH .../review` — recomputes `on_hand_qty`/`diff_qty` for every line from the live ledger balance; stamps `counted_at`/`counted_by_id`; navigates to `/review` | Does **not** change `doc_status`; has **no** status guard at all — will run against a `completed`/`void` document too if triggered (e.g. via the History tab). |
+| Submit (final, from `/review`) | Document not already `completed`/`void` | `PATCH .../submit` — `doc_status → completed`; stamps `end_date` | No completeness check (`SPC_VAL_008`). Terminal; no rollup, no ledger effect. |
 
 ## 4. Decision Points
 
-- **Damaged / unfamiliar items.** When a counter finds an item that doesn't match the sheet (unlabelled, damaged, miscategorised), the line is flagged with a comment + photo; the variance handling decision is the Inventory Controller's.
-- **Zero-on-shelf vs zero-counted.** If the sheet shows `on_hand_qty > 0` but the counter sees nothing, `actual_qty = 0` is entered explicitly (not left blank). Blank `actual_qty` blocks submit per `SPC_VAL_004`; entered-zero proceeds to variance flag.
-- **Recount lines.** When a line is flagged for recount, the recount is ideally performed by a **different counter** to remove individual counting bias — convention rather than hard schema constraint.
-
-> **TODO:** Source the exact mobile / scanner UI screens and any blind-count (book qty hidden) toggle from `../carmen-inventory-frontend-react/`. Confirm whether the same blind-count tenant policy used in physical-count applies here.
+- **Save now vs. keep typing.** Saving mid-count is the only action that flips `doc_status` from `pending` to `in_progress` — relying solely on Submit for Review to finish the sheet means the document may reach `completed` having never passed through `in_progress` at all. This has no functional consequence (both paths reach the same terminal state) but is worth knowing when reading `doc_status` in a report or dashboard.
+- **Reopening from History.** Because the History tab's click handler routes to the entry screen for any status, opening a `completed` spot check and clicking through to Submit for Review will silently overwrite its detail rows' `on_hand_qty`/`actual_qty`/`diff_qty`/`counted_at` — only the very last step, the terminal Submit, is actually blocked on a second attempt.
+- **Import vs. manual entry.** Import matches rows to lines by product SKU and reports a matched/skipped count — useful for bulk-loading a handheld scanner export; it does not validate quantities against any tolerance, since none exists.
 
 ## 5. Exit / Handoff
 
 | Trigger | Handoff to | Artefact |
 | ------- | ---------- | -------- |
-| Complete all assigned lines | Inventory Controller | Notification + completion tag in comment thread. |
-| Flag line for further inspection | Inventory Controller | `tb_spot_check_detail_comment` with damaged / unlabelled tag. |
-| (no submit action) | Inventory Controller | Counter cannot submit; only Inventory Controller per `SPC_AUTH_002`. |
+| Submit (final) | (terminal — no handoff) | `tb_spot_check.doc_status = completed`; `end_date` stamped. No other document created. |
+| Navigate back | [List screen](/en/inventory/spot-check/03-user-flow-inventory-controller) | No state change (unless a Save or Submit for Review call already fired). |
 
 ## 6. References
 
-- **Primary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — Counter / mobile UI; check cmobile (`../cmobile/`) for the PWA-side spot-check sheet implementation if applicable.
-- **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists.
-- Related: [spot-check/03-user-flow](/en/inventory/spot-check/03-user-flow) (overview), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_AUTH_002`, `SPC_VAL_004`–`SPC_VAL_005`), [spot-check/03-user-flow-inventory-controller](/en/inventory/spot-check/03-user-flow-inventory-controller) (the handoff partner), [physical-count/03-user-flow-counter](/en/inventory/physical-count/03-user-flow-counter) (full-count counterpart counter flow).
+- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/sc-entry-component.tsx`, `sc-review-component.tsx`, `sc-entry-header.tsx`, `sc-entry-notes-dialog.tsx`.
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts` (`saveItems`, `reviewItems`, `getReview`, `submit`).
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists; manual test-case catalog at `docs/test-cases/760-spot-check.md`.
+- Related: [spot-check/03-user-flow](/en/inventory/spot-check/03-user-flow) (overview), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_VAL_007`–`008`, `SPC_POST_001`–`004`), [spot-check/03-user-flow-inventory-controller](/en/inventory/spot-check/03-user-flow-inventory-controller) (the same role's list/create-screen journey).

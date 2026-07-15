@@ -1,80 +1,69 @@
 ---
-title: การสุ่มตรวจ (Spot Check) — Test Scenarios — Counter
-description: Test case ของ Counter สำหรับโมดูลการสุ่มตรวจ
+title: การสุ่มตรวจ (Spot Check) — Test Scenarios — หน้า Entry & Review
+description: Test case หน้า entry และ review สำหรับโมดูลการสุ่มตรวจ
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T18:38:42.000Z
 tags: spot-check, test-scenarios, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
 ---
 
-# การสุ่มตรวจ (Spot Check) — Test Scenarios — Counter
+# การสุ่มตรวจ (Spot Check) — Test Scenarios — หน้า Entry & Review
 
 > **At a Glance**
-> **Persona:** Counter (การป้อนข้อมูลพื้นที่) &nbsp;·&nbsp; **โมดูล:** [spot-check](/th/inventory/spot-check) &nbsp;·&nbsp; **Scenario:** ~26
+> **หน้าจอ:** `spot-check/:id` (`sc-entry-component.tsx`), `spot-check/:id/review` (`sc-review-component.tsx`) &nbsp;·&nbsp; **โมดูล:** [spot-check](/th/inventory/spot-check) &nbsp;·&nbsp; **Role:** role เดียวกับ [04-test-scenarios-inventory-controller.md](/th/inventory/spot-check/04-test-scenarios-inventory-controller)
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **ความครอบคลุม E2E:** ไม่มี — ยังไม่มี Playwright spec ของ spot-check ที่ `../carmen-inventory-frontend-e2e/tests/`
+> **ความครอบคลุม E2E:** ไม่มี Playwright spec ของ `spot-check`; scenario เป็นการครอบคลุม manual/planned cross-reference กับ row `TC-SPC-06*`/`TC-SPC-07*` ของ `docs/test-cases/760-spot-check.md`
 
-## 1. ขอบเขต Persona
+## 1. ขอบเขต
 
-**Counter** — พนักงานพื้นที่ที่ป้อน `actual_qty` ต่อบรรทัดบน spot check ที่ได้รับมอบหมาย flag รายการเสียหาย / ไม่มีป้าย และเซ็นปิด sheet ที่เสร็จ Scenario ด้านล่างใช้ action ที่ catalogue ใน [spot-check/03-user-flow-counter](/th/inventory/spot-check/03-user-flow-counter) หัวข้อ 3 — การเปิด sheet ที่ได้รับมอบหมาย, การป้อนการนับ, การ flag รายการ, การเพิ่ม comment, การเซ็นปิด completion Authority anchor `SPC_AUTH_002`
+Scenario ด้านล่างใช้ action ที่ catalogue ใน [spot-check/03-user-flow-counter](/th/inventory/spot-check/03-user-flow-counter) § 3 — การป้อนบรรทัด notes import/export Save For Resume, Submit For Review และ Submit ขั้นสุดท้าย
 
 ## 2. Functional — Happy Path
 
 | # | Scenario | Pre-condition | ผลที่คาดหวัง |
 | - | -------- | ------------- | ---------------- |
-| C-F-01 | เปิด spot-check sheet ที่ได้รับมอบหมาย | Counter มี location-grant; spot check อยู่ `pending` | บรรทัด detail มองเห็น; `on_hand_qty` (book) ซ่อนถ้านโยบาย blind-count ของ tenant เปิด (TODO ยืนยัน) |
-| C-F-02 | ป้อน `actual_qty` แรกบนบรรทัด | Spot check อยู่ `pending`; counter มี location-grant | Spot check เลื่อนไป `in_progress` |
-| C-F-03 | ป้อน `actual_qty` ตรงกับ `on_hand_qty` | บรรทัดบน spot check ที่ได้รับมอบหมาย | `actual_qty` บันทึก; `diff_qty = 0`; stamp `counted_at` / `counted_by_id` บน `tb_spot_check_detail` |
-| C-F-04 | ป้อน `actual_qty` > `on_hand_qty` (overage) | บรรทัดบน spot check ที่ได้รับมอบหมาย | `actual_qty` บันทึก; `diff_qty > 0`; บรรทัดภายใน tolerance band ถ้ามี |
-| C-F-05 | ป้อน `actual_qty` < `on_hand_qty` (shortage) | บรรทัดบน spot check ที่ได้รับมอบหมาย | `actual_qty` บันทึก; `diff_qty < 0`; บรรทัด eligible สำหรับการตรวจ tolerance ระดับ controller |
-| C-F-06 | ป้อน `actual_qty = 0` (ศูนย์บนชั้น) | บรรทัดที่ `on_hand_qty > 0` | `actual_qty = 0` บันทึก; `diff_qty = -on_hand_qty` (shortage เต็ม); บรรทัด flag ระดับ controller ถ้าเกิน threshold |
-| C-F-07 | Flag รายการเสียหาย / ไม่มีป้าย / ไม่คุ้นเคย | บรรทัดบน spot check ที่ได้รับมอบหมาย | สร้าง `tb_spot_check_detail_comment` row พร้อม attachment photo; แจ้ง Inventory Controller |
-| C-F-08 | เพิ่ม comment ระดับ spot-check | Spot check อยู่ `in_progress` | สร้าง `tb_spot_check_comment` row (เช่น `"shelf restock กำลังดำเนิน แนะนำให้ recount บรรทัด 4"`) |
-| C-F-09 | แก้ไขบรรทัดของตนก่อน submit | Counter ป้อน `actual_qty` ไว้ก่อนหน้า | `actual_qty` อัปเดต; `counted_at` re-stamp; audit log เก็บค่าก่อนหน้าผ่าน thread comment |
-| C-F-10 | เซ็นปิด sheet ที่เสร็จ | ทุกบรรทัดมี `actual_qty` ไม่เป็น null | Notification ยิงไปยัง Inventory Controller; counter submit เอกสารไม่ได้ |
+| E-F-01 | ป้อน `actual_qty` บนบรรทัด | สถานะใดก็ได้ | ค่า commit เข้า local state; ตัวชี้วัด "counted" ปรากฏ ตรงกับ `TC-SPC-060001` |
+| E-F-02 | Filter pill All/Counted/Uncounted | มีบรรทัดที่นับแล้วและยังไม่นับผสมกัน | รายการแคบลงตาม filter ที่เลือก; ตัวนับบน pill ตรงกัน ตรงกับ `TC-SPC-060002` |
+| E-F-03 | แนบ note และ photo ให้บรรทัด | เวลาใดก็ได้ | `POST /spot-check-detail-comment/:detailId` สร้าง `tb_spot_check_detail_comment` row พร้อมข้อความและ attachment ตรงกับ `TC-SPC-060003` |
+| E-F-04 | ใช้ calculator คำนวณ total | สินค้ามี case/unit conversion | Calculator return total เขียนเข้า `actual_qty` ของบรรทัด ตรงกับ `TC-SPC-060003` |
+| E-F-05 | "Set X Empty to Zero" | มีบรรทัดยังไม่นับอยู่ | ทุกบรรทัดที่ยังไม่นับกลายเป็น `0` ในเครื่องและนับเป็น counted; footer สลับเป็น Submit For Review เมื่อ `uncountedCount = 0` ตรงกับ `TC-SPC-060004` |
+| E-F-06 | Save For Resume ด้วยการนับบางส่วน | บางบรรทัดมีค่า บางบรรทัดไม่มี | `PATCH .../save` stamp `counted_at`/`counted_by_id` บนบรรทัดที่ส่ง; call แรกยังพลิก `pending → in_progress`; navigate กลับหน้ารายการ ตรงกับ `TC-SPC-060001` |
+| E-F-07 | Submit For Review เมื่อทุกบรรทัดมีค่าแล้ว | `uncountedCount === 0` | `PATCH .../review` คำนวณ `on_hand_qty`/`diff_qty` ใหม่ทุกบรรทัดจากยอด ledger สด; navigate ไป `/review` ตรงกับ `TC-SPC-070001` |
+| E-F-08 | หน้า review แสดง tile สรุปถูกต้อง | บางบรรทัด match บางบรรทัด overage บางบรรทัด shortage | Tile Matches/Variances/Overages/Shortages ตรงกับ `diff_qty` แต่ละบรรทัด; variance ลบแสดงสีเตือน บวกแสดงสีสำเร็จ ตรงกับ `TC-SPC-070002` |
+| E-F-09 | Submit Spot Check (ขั้นสุดท้าย) | อยู่บนหน้า review | `PATCH .../submit` ตั้ง `doc_status = completed`; navigate กลับหน้ารายการ; ไม่มีเอกสารอื่นถูกสร้าง ตรงกับ `TC-SPC-070003` |
+| E-F-10 | Export ยอดนับปัจจุบัน | เวลาใดก็ได้ | ไฟล์ `.xlsx` ดาวน์โหลดพร้อม id, รหัส/ชื่อ/ชื่อท้องถิ่น/SKU สินค้า, หน่วย, และ `actual_qty` ปัจจุบันต่อแถว |
+| E-F-11 | Import ยอดนับจาก spreadsheet | ไฟล์ที่มี SKU ตรงกัน | แถวที่ match เติมค่าในเครื่องของบรรทัดนั้น; toast รายงานจำนวน matched/total/skipped |
 
 ## 3. RBAC / Permission
 
 | # | Scenario | Pre-condition | ผลที่คาดหวัง |
 | - | -------- | ------------- | ---------------- |
-| C-R-01 | Counter พยายามป้อนบรรทัดนอก location | Counter มี location-grant สำหรับ Location A; พยายามแก้ไข spot check ของ Location B | Reject ตาม `SPC_AUTH_004` พร้อม error location-scope |
-| C-R-02 | Counter พยายาม submit spot check | ทุกบรรทัดนับแล้ว; Counter คลิก submit | Action submit ไม่มีให้ Counter ตาม `SPC_AUTH_002`; UI ชี้แนะ counter ให้ "เซ็นปิด sheet" เท่านั้น |
-| C-R-03 | Counter พยายามแก้ไข spot check ที่ `completed` | Spot check อยู่ `completed` | แก้ไข reject ตาม `SPC_VAL_007` (immutable) |
-| C-R-04 | Counter ไม่มี location-grant พยายามดู sheet | Counter มี role Counter แต่ไม่มี location-grant | เอกสารไม่มองเห็นใน "การมอบหมาย spot-check ของฉัน"; การเข้าถึง URL ตรงถูก reject |
-| C-R-05 | Counter พยายาม void spot check | Counter คลิก void | Action ไม่มี; เฉพาะ Inventory Controller ที่ void ได้ ตาม `SPC_AUTH_001` |
+| E-R-01 | ผู้ใช้ที่ไม่มี `inventory_management.spot_check` เปิด `:id` โดยตรง | ไม่มี permission | ถูกปฏิเสธการเข้าถึงตามกลไก permission-gate ทั่วไป; ไม่มีข้อจำกัด location หรือการมอบหมายเฉพาะโมดูลให้ทดสอบเพิ่ม |
 
 ## 4. Validation — Negative Test
 
 | # | กฎ | Scenario | Error ที่คาดหวัง |
 | - | ---- | -------- | -------------- |
-| C-V-01 | `SPC_VAL_005` | Counter ป้อน `actual_qty` ติดลบ | `"Counted quantity must be zero or positive."` |
-| C-V-02 | `SPC_VAL_005` | Counter ป้อน `actual_qty` ไม่ใช่ตัวเลข | Input ถูก reject ที่ระดับ form ด้วย type error |
-| C-V-03 | `SPC_VAL_004` (controller-facing) | Counter ปล่อยบรรทัดว่าง (ไม่ป้อน `actual_qty` เลย) | ตอน Inventory Controller submit เอกสารบล็อกด้วย `"Cannot submit spot check — <N> of <M> lines remain uncounted."` Counter ต้องป้อนค่า |
+| V-01 | `SPC_VAL_007` | พยายาม Save บนเอกสารที่ `completed` หรือ `void` | `"Cannot save items when spot check is <status>"` |
+| V-02 | `SPC_VAL_007` | Save ด้วย array `items[]` ว่างเปล่า (เช่น เรียก API ตรงโดยไม่มี payload) | `SPOT_CHECK_NO_ITEMS` ("No items to save") |
+| V-03 | `SPC_VAL_008` | คลิก Submit Spot Check สองครั้งติดกัน (ครั้งที่สองหลังครั้งแรกสำเร็จแล้ว) | Call ที่สองถูก reject ด้วย `"Spot check is already completed"` |
+| V-04 | (doc_version) | Save/Review ด้วย `doc_version` ที่ stale (เช่น tab ที่สองที่ยังไม่ fetch ใหม่หลัง save อื่น) | Update ไม่ match และถูก reject; client ต้อง reload และ retry |
 
 ## 5. Edge Case
 
 | # | Scenario | ผลที่คาดหวัง |
 | - | -------- | ---------------- |
-| C-E-01 | Recount บรรทัดของตน — ไม่แนะนำ | Counter A ต้นฉบับพยายามป้อน recount บนบรรทัดที่ flag | Convention: recount โดย counter คนละคน; UI อาจเตือนแต่ไม่ hard-block (TODO ยืนยัน) |
-| C-E-02 | Mobile / handheld scanner barcode ไม่ตรง | Counter scan barcode ที่ไม่ตรงกับ `product_code` ของบรรทัด | Scanner UI reject; counter ต้องหาบรรทัดที่ถูกหรือ flag เป็นไม่คุ้นเคย |
-| C-E-03 | เครือข่ายหลุดระหว่างการนับ | Counter เสียการเชื่อมต่อขณะป้อน `actual_qty` | Local cache เก็บการป้อน; sync resume เมื่อ reconnect; idempotent retry |
-| C-E-04 | Counter สองคนบน spot check เดียวกัน (ขนาน) | Counter สองคนแชร์ location-grant บน `tb_spot_check` เดียวกัน | Last-write-wins ต่อบรรทัด; thread comment แสดง action ของ counter ทั้งสองคนใน audit log |
-| C-E-05 | Spot check ถูก void ขณะ counter กำลังป้อน | Inventory Controller void; counter มีการป้อนที่ยังไม่บันทึก | การบันทึกต่อมา reject ด้วย `"Spot check is voided."`; การป้อนบางส่วนของ counter เก็บไว้จนถึงเวลา void |
+| E-E-01 | Submit ทั้งที่มีบรรทัดยังไม่นับ | ทั้ง Submit For Review และ Submit ขั้นสุดท้ายสำเร็จเสมอ — ไม่มีการตรวจความครบถ้วนฝั่ง server (`SPC_VAL_008`); บรรทัดที่ยังไม่นับแค่พก `diff_qty` แบบ shortage เต็มเข้าสู่ review |
+| E-E-02 | เปิด spot check ที่ `completed` แล้วจาก tab History แล้วกดต่อไป Submit For Review อีกครั้ง | `reviewItems()` ไม่มี guard สถานะและจะเขียนทับ `on_hand_qty`/`actual_qty`/`diff_qty`/`counted_at` บนทุกแถว detail; มีเพียง call Submit ขั้นสุดท้ายถัดไปเท่านั้นที่ถูกบล็อก (`"Spot check is already completed"`) |
+| E-E-03 | เปิด spot check ที่ `void` จาก tab History | เหมือนข้างต้น — `reviewItems()` ดำเนินไปโดยไม่มี error แม้เอกสารจะ void แล้ว; Submit ขั้นสุดท้ายถูกบล็อกแยกต่างหากด้วย `"Void spot check cannot be submitted"` |
+| E-E-04 | Counter สองคนแก้ไข spot check เดียวกันพร้อมกัน | ผู้ใช้ใดก็ตามที่มี permission ของโมดูลแก้ไขบรรทัดใดบน spot check ใดก็ได้ (ไม่มี location-scoping) — last-write-wins ต่อบรรทัดตอน Save ไม่มี conflict อื่นนอกจาก `doc_version` ที่ stale บนระดับ header |
+| E-E-05 | ทุกบรรทัด reconcile เป็น variance ศูนย์ | Submit ขั้นสุดท้ายสำเร็จ; ไม่มีเอกสารใด ๆ ถูกสร้างไม่ว่าผล variance จะเป็นอย่างไร — โมดูลนี้ไม่เคย post ไปที่ไหนเลย ไม่ว่า match หรือไม่ |
+| E-E-06 | Import match ได้บางส่วน | Toast รายงานจำนวนที่ skip; บรรทัดที่ไม่ match คงเดิมทุกอย่าง |
 
-## 6. Configuration / Audit-Trail
+## 6. แหล่งอ้างอิง
 
-| # | Scenario | ผลที่คาดหวัง |
-| - | -------- | ---------------- |
-| C-C-01 | นโยบาย blind-count ของ tenant (ถ้ามี) | `on_hand_qty` ซ่อนจากมุมมอง counter; แสดงเฉพาะสินค้า UoM และ `actual_qty` ว่าง | Counter ไม่สามารถ bias การป้อนกับ book; มุมมอง Inventory Controller เก็บ `on_hand_qty` (TODO ยืนยันว่านโยบาย tenant ใช้กับ spot-check) |
-| C-C-02 | Audit log per-line counted-by stamp | ทุกบรรทัดป้อน | `tb_spot_check_detail.counted_by_id` และ `counted_at` เติม; audit trail ครบ |
-| C-C-03 | Thread comment พร้อม attachment photo | Counter flag รายการเสียหายด้วย photo จากโทรศัพท์ | `tb_spot_check_detail_comment.attachments` พกพา `[{originalName, fileToken, contentType}]` |
-
-> **TODO:** ขยายทุก row ด้วยข้อความ error และ assertion พฤติกรรม UI เมื่อ source frontend / E2E ถูกเขียน Cross-link ไป scenario ฝั่ง cmobile ถ้า PWA เป็นเจ้าของ UI counter ยืนยันการใช้นโยบาย blind-count สำหรับ spot-check
-
-## 7. แหล่งอ้างอิง
-
-- **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
-- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — source ของพฤติกรรม UI Counter; ตรวจ `../cmobile/` สำหรับการ implement spot-check sheet ฝั่ง PWA ถ้ามี
-- **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check
-- ที่เกี่ยวข้อง: [spot-check/03-user-flow-counter](/th/inventory/spot-check/03-user-flow-counter), [spot-check/02-business-rules](/th/inventory/spot-check/02-business-rules) (`SPC_AUTH_002`, `SPC_AUTH_004`, `SPC_VAL_004`–`SPC_VAL_005`), [spot-check/04-test-scenarios](/th/inventory/spot-check/04-test-scenarios) (scenario handoff ข้าม persona), [physical-count/04-test-scenarios-counter](/th/inventory/physical-count/04-test-scenarios-counter) (scenario คู่เทียบการนับเต็ม)
+- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/sc-entry-component.tsx`, `sc-review-component.tsx`
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts` (`saveItems`, `reviewItems`, `getReview`, `submit`)
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check; manual test-case catalog ที่ `docs/test-cases/760-spot-check.md` (`TC-SPC-06*`/`TC-SPC-07*`)
+- ที่เกี่ยวข้อง: [spot-check/03-user-flow-counter](/th/inventory/spot-check/03-user-flow-counter), [spot-check/02-business-rules](/th/inventory/spot-check/02-business-rules) (`SPC_VAL_007`–`008`, `SPC_POST_001`–`004`), [spot-check/04-test-scenarios](/th/inventory/spot-check/04-test-scenarios) (scenario end-to-end)

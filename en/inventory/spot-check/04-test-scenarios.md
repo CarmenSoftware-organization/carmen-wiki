@@ -1,8 +1,8 @@
 ---
 title: Spot Check — Test Scenarios
-description: Test cases by persona, cross-persona scenarios, and E2E mapping for spot checks.
+description: Test cases by screen, end-to-end scenarios, and the manual test-case catalog mapping for spot checks.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T18:38:42.000Z
 tags: spot-check, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -11,73 +11,54 @@ dateCreated: 2026-05-15T14:30:00.000Z
 # Spot Check — Test Scenarios
 
 > **At a Glance**
-> **Module:** [spot-check](/en/inventory/spot-check) &nbsp;·&nbsp; **Total scenarios:** per-persona drill-downs across all personas &nbsp;·&nbsp; **Personas covered:** Inventory Controller, Counter, Audit / Config
-> **Run order:** Audit / Config setup → primary persona happy paths → cross-persona scenarios
-> **Each persona's drill-down is `04-test-scenarios-<role>.md`**
+> **Module:** [spot-check](/en/inventory/spot-check) &nbsp;·&nbsp; **Scope:** one real permission-gated role split across two screen files (list/create; entry/review), plus a confirmed-absent third group
+> **Run order:** list/create-screen scenarios → entry/review-screen scenarios → end-to-end scenarios below
+> **E2E coverage:** no `spot-check` Playwright spec exists at `../carmen-inventory-frontend-e2e/tests/`; a manual test-case catalog exists at `docs/test-cases/760-spot-check.md` (32 cases, authored from the live component) — see § 5 for how it maps to, and diverges from, the real routing
 
 ## 1. Overview
 
-This page is the **overview entry point** for the test-scenarios set of the `spot-check` module. It groups coverage by the three persona groups that interact with the spot-check lifecycle (Inventory Controller, Counter, Audit / Config — per [spot-check](/en/inventory/spot-check) § 4 plus implicit Sysadmin), inventories the per-persona test files, captures the cross-persona handoff scenarios that stitch the individual paths together, and frames the E2E mapping target — currently empty because **no `spot-check` Playwright spec exists** at `../carmen-inventory-frontend-e2e/tests/` as of this writing (verified by `ls tests/ | grep -i 'spot\|check'`).
+This page is the overview entry point for the test-scenarios set of the `spot-check` module. Coverage is organised around the module's one real permission-gated role, viewed from its two screen pairs — the location list and create form (`04-test-scenarios-inventory-controller.md`) and the entry/review flow (`04-test-scenarios-counter.md`) — plus a correction page (`04-test-scenarios-audit-config.md`) documenting a confirmed-absent third persona group. Section 4 below covers end-to-end scenarios crossing all four screens in one document's lifecycle.
 
-The scope is intentionally broad even at skeleton level: each persona file is meant to grow to cover **functional happy paths** (open spot check with each `method`, enter counts, recount-and-resolve, submit, rollup post, void path), **RBAC / permission cases** (Counter attempts submit, Inventory Controller attempts cross-location operation, Auditor attempts edit), **validation** (negative tests against `SPC_VAL_001`–`SPC_VAL_008` at creation, at line entry, at submit, at recount-flagging time, at void time), **edge cases** (zero on-shelf, tolerance-boundary lines, `method = manual` with empty selection, sample size larger than available products), and **configuration / audit-trail cases** (tolerance threshold change effect, default sampling size / method change effect, audit chain inspection).
+## 2. Scope
 
-The cross-persona scenarios in Section 4 describe end-to-end journeys that cross a handoff boundary recorded in [03-user-flow.md](./03-user-flow.md) Section 4 — for example, *Inventory Controller opens random spot check → Counter performs count → Inventory Controller submits → Approver / Finance approves rollup adjustment on the [inventory-adjustment](/en/inventory/inventory-adjustment) side*; *Inventory Controller flags variance → different Counter recounts → variance reconciled → submit*; *Inventory Controller submits with overage and shortage → two rollup adjustments created*; *Auditor inspects full chain from spot-check sheet to journal entry*; *Spot check voided mid-count → no ledger effect*. Section 5 is the E2E spec map — currently a TODO target waiting for the first spot-check spec to be authored.
-
-> **TODO:** Replace this overview's E2E framing with concrete `ls`-verified spec citations once `../carmen-inventory-frontend-e2e/tests/` adds spot-check coverage. Until then, the test scenarios catalogued in the persona files are manual / planned coverage.
-
-## 2. Personas in Scope
-
-- **Inventory Controller** — Owner of the exercise; per [spot-check/03-user-flow-inventory-controller](/en/inventory/spot-check/03-user-flow-inventory-controller).
-- **Counter** — Floor-level data entry; per [spot-check/03-user-flow-counter](/en/inventory/spot-check/03-user-flow-counter).
-- **Audit / Config** — Auditor + Sysadmin (implicit). Observation, configuration; per [spot-check/03-user-flow-audit-config](/en/inventory/spot-check/03-user-flow-audit-config). Note: rollup-adjustment approval (Approver / Finance) lands on the [inventory-adjustment](/en/inventory/inventory-adjustment) side, not directly on spot-check.
+- **List / Create screens** — starting a spot check for a location, choosing a sampling method and scope; per [spot-check/03-user-flow-inventory-controller](/en/inventory/spot-check/03-user-flow-inventory-controller).
+- **Entry / Review screens** — line entry, notes, import/export, Submit for Review, and the final Submit; per [spot-check/03-user-flow-counter](/en/inventory/spot-check/03-user-flow-counter).
+- **Confirmed-absent** — an Approver/Finance, Auditor, or Sysadmin surface; per [spot-check/03-user-flow-audit-config](/en/inventory/spot-check/03-user-flow-audit-config).
 
 ## 3. Persona Test Files
 
-- [Inventory Controller scenarios](./04-test-scenarios-inventory-controller.md)
-- [Counter scenarios](./04-test-scenarios-counter.md)
-- [Audit / Config scenarios](./04-test-scenarios-audit-config.md)
+- [List/Create-screen scenarios](./04-test-scenarios-inventory-controller.md)
+- [Entry/Review-screen scenarios](./04-test-scenarios-counter.md)
+- [Confirmed-absent group (correction page)](./04-test-scenarios-audit-config.md)
 
-## 4. Cross-Persona / Handoff Scenarios
+## 4. End-to-End Scenarios
 
-The table below is the integration layer. Each row spans at least one handoff from [03-user-flow.md](./03-user-flow.md) Section 4 and ends with the system in a terminal or steady state. "Personas in order" lists the actors in execution sequence; "Pre-condition" captures the system state required to begin; "Expected end state" anchors `tb_spot_check.doc_status`, the rollup adjustment effect (`tb_stock_in` / `tb_stock_out` written via `info.spotCheckId` linkage to [inventory-adjustment](/en/inventory/inventory-adjustment)), and any cross-module side effects.
+Each row below is a full document lifecycle, anchored to the real state machine in [03-user-flow.md](./03-user-flow.md) § 2.
 
-| # | Scenario | Personas in order | Pre-condition | Expected end state |
-| - | -------- | ----------------- | ------------- | ------------------ |
-| 1 | Random-sample spot check — happy path | Inventory Controller → Counter → Inventory Controller → Approver / Finance (on adjustment) | Inventory-type location; no in-flight spot check. | `tb_spot_check.doc_status = completed`; rollup `tb_stock_in` / `tb_stock_out` documents posted; `tb_inventory_transaction` rows written. |
-| 2 | High-value sampling — premium spirits | Inventory Controller → Counter → Inventory Controller | High-value bar location; `method = high_value`; `size = 10`. | Top-10 by value sampled; counted; variance lines within tolerance; submit fires rollup. |
-| 3 | Manual selection — triggered by incident | Inventory Controller → Counter → Inventory Controller | Suspected pilferage report; `method = manual`; controller adds 3 specific products. | Three lines created on detail; counted; variance posted as rollup adjustment with `info.spotCheckId`. |
-| 4 | Recount escalation — different counter | Inventory Controller → Counter (A) → Inventory Controller → Counter (B) → Inventory Controller | Counter A enters `actual_qty` triggering tolerance breach per `SPC_VAL_006`. | Recount line resolved by Counter B; variance reconciled within tolerance; submit fires rollup. |
-| 5 | Recount confirms variance — accept and post | Inventory Controller → Counter (A) → Counter (B) → Inventory Controller | Recount confirms original count. | Inventory Controller overrides with countersignature; rollup posts variance line. Comment thread carries override justification. |
-| 6 | Zero on-shelf vs zero counted | Counter → Inventory Controller | Line with `on_hand_qty = 5`, counter sees nothing. | Counter enters `actual_qty = 0`; `diff_qty = -5`; line flagged for recount per `SPC_VAL_006`; recount confirms; rollup as shortage. |
-| 7 | Overage line | Counter → Inventory Controller | Line with `on_hand_qty = 10`, counter finds 12. | `diff_qty = +2`; rollup as overage via `tb_stock_in`. |
-| 8 | Mixed overage + shortage in same spot check | Inventory Controller → Counter → Inventory Controller | Spot check with multiple positive and negative variances. | **Two** rollup documents: one `tb_stock_in` (overage lines), one `tb_stock_out` (shortage lines). Both carry `info.spotCheckId`. |
-| 9 | Damaged-item flag bypasses normal count | Counter → Inventory Controller | Counter encounters damaged item on the sheet. | Detail-comment flagged with photo attachment; Inventory Controller reviews; may add line manually or refer to write-off via [inventory-adjustment](/en/inventory/inventory-adjustment) directly. |
-| 10 | Counter attempts submit — rejected (RBAC) | Counter | Counter has location-grant; all lines counted. | Submit action not available to Counter per `SPC_AUTH_002`; Inventory Controller receives completion notification. |
-| 11 | Counter attempts to enter count outside location — rejected | Counter | Counter has location-grant for Location A; attempts to edit a Location B spot check. | Save rejected per `SPC_AUTH_004` with location-scope error. |
-| 12 | Tolerance threshold change mid-exercise | Sysadmin → Inventory Controller → Counter | Sysadmin tightens threshold from 5% to 2%. | New spot checks after change use 2%; in-flight spot check retains 5% (snapshotted at sheet-gen). Verified via tolerance-test spot check. |
-| 13 | Backdated rollup posting — rejected | Inventory Controller | Period containing the rollup adjustment is `closed` per [inventory](/en/inventory/inventory) `INV_VAL_008`. | Rollup adjustment submit rejected; Inventory Controller must escalate to Finance Manager to re-open period or wait. |
-| 14 | Approver / Finance rejects rollup adjustment | Inventory Controller → Approver / Finance → Inventory Controller | Variance unusually large (e.g. 50% on a tracked SKU). | Rollup `tb_stock_in` / `tb_stock_out` returned to `draft`; Inventory Controller investigates (potential mis-count, mis-categorisation); may trigger fresh spot check. |
-| 15 | Auditor inspects full chain | Auditor | Spot check `completed`; rollup adjustment `completed`. | Auditor traces `tb_spot_check` → `tb_spot_check_detail` → rollup adjustment (`info.spotCheckId`) → `tb_inventory_transaction` → GL journal entry. No gaps; SoD verified (Inventory Controller ≠ rollup approver). |
-| 16 | Sysadmin changes default sampling size | Sysadmin → Inventory Controller | Default `size` raised from 10 to 25. | Future random / high_value spot checks generate 25 lines by default; existing spot checks unchanged. |
-| 17 | Sysadmin changes default sampling method | Sysadmin → Inventory Controller | Default `method` switched from `random` to `high_value`. | Future spot checks default to `high_value` unless explicitly overridden by controller. |
-| 18 | Void spot check mid-count | Inventory Controller | Spot check in `in_progress` with partial entries. | `doc_status = void`; no rollup; partial entries preserved in audit log; `tb_inventory_transaction` untouched. |
-| 19 | Concurrent counter sessions on same spot check | Counter (A) + Counter (B) — same spot check | Two counters with overlapping location-grants on the same `tb_spot_check`. | Both write to detail lines simultaneously; last-write-wins per line; audit log retains both authors. |
-| 20 | `method = manual` with empty detail at submit | Inventory Controller | Controller forgot to add detail lines. | Submit rejected per `SPC_VAL_002` / `SPC_VAL_004` ("Cannot submit — 0 lines counted."). |
+| # | Scenario | Steps | Expected end state |
+| - | -------- | ----- | ------------------- |
+| 1 | Random sample, no variance | Start (Random, `items = 10`) → count every line to match whatever `reviewItems()` computes → Save For Resume → Submit For Review → Submit Spot Check. | `tb_spot_check.doc_status = completed`; no other document created; every `diff_qty = 0`. |
+| 2 | High-value sample, mixed overage and shortage | Start (High Value, `items = 10`, no `minimum_cost`) with an open/locked fiscal period → count producing both positive and negative variance → Submit For Review → Submit. | `doc_status = completed`; review screen showed both overage and shortage tiles; no rollup document exists anywhere for either. |
+| 3 | Manual sample, triggered by a suspected discrepancy | Start (Manual) → pick 3 specific products via the transfer picker → count → Submit For Review → Submit. | Exactly 3 detail rows created and counted; `doc_status = completed`. |
+| 4 | High-value sample with no open fiscal period | Attempt Start (High Value) when no `tb_period` has `status ∈ {open, locked}`. | `POST /spot-checks` rejected with `SPOT_CHECK_NO_ACTIVE_PERIOD` (`SPC_VAL_004`); document not created. |
+| 5 | Skip Save, go straight to Submit for Review | Start → count every line without ever clicking Save For Resume → Submit For Review (button available since `uncountedCount === 0`) → Submit. | `doc_status` never passes through `in_progress` — it goes `pending → completed` directly, since only Save performs that transition; the document still completes normally. |
+| 6 | Submit with uncounted lines | Start → leave several lines at their seeded `actual_qty = 0` → Submit For Review → Submit. | Both calls succeed — there is no server-side completeness check (`SPC_VAL_008`); the uncounted lines simply show `diff_qty = -on_hand_qty` (a full shortage) on the review screen. |
+| 7 | Reset an in-progress spot check | Start → Save a partial count → return to the list screen → click Reset → confirm. | `doc_status = void`; `tb_spot_check_detail` rows are **not** cleared (they still hold whatever was typed); the location falls back to the Not Started bucket. |
+| 8 | Reopen a completed spot check from History | Complete a spot check → open it again from the History tab → click through to Submit For Review a second time. | `reviewItems()` succeeds (no status guard) and overwrites `on_hand_qty`/`actual_qty`/`diff_qty`/`counted_at` on every detail row; a subsequent attempt at the terminal Submit is rejected with `"Spot check is already completed"` (`SPC_VAL_008`). |
+| 9 | `doc_version` conflict | Two browser tabs open the same spot check; Tab A saves; Tab B then saves using its now-stale `doc_version`. | Tab B's save fails to match the `where` clause and is rejected; client must reload and retry. |
+| 10 | No products at the location | Start a spot check for a location with an empty eligible product pool (no `tb_product_location` assignment and no non-zero stock). | `POST /spot-checks` rejected with `"No products found at this location"` (`SPC_VAL_002`); document not created. |
+| 11 | Manual sample with a product outside the location's pool | Start (Manual) → select a product that has never been assigned to or stocked at this location. | If it is the only product selected, creation is rejected with `"None of the selected products were found at this location"` (`SPC_VAL_003`); if selected alongside valid products, it is silently dropped and the rest proceed. |
+| 12 | Variance never reaches the ledger | Complete a spot check with several confirmed shortages. | `tb_spot_check.doc_status = completed`; no `tb_stock_in`/`tb_stock_out`, no `tb_inventory_transaction` row, and no field anywhere referencing this spot check exists outside its own tables — a user must separately create an [inventory-adjustment](/en/inventory/inventory-adjustment) document to correct the ledger, with no system-provided link back to this spot check. |
 
-> **TODO:** Each row should grow to include explicit assertions on `tb_*` field values, expected error messages, and (once specs exist) E2E spec line references. Currently the rows are framing for manual / planned coverage.
+## 5. Manual Test-Case Catalog Mapping
 
-## 5. E2E Spec Map
+No `spot-check` Playwright spec exists at `../carmen-inventory-frontend-e2e/tests/` (verified by `ls tests/ | grep -i 'spot\|check'`). A manual, documentation-only test-case catalog exists instead at `docs/test-cases/760-spot-check.md` — 32 cases (`TC-SPC-*`), explicitly authored by reading the live component, the closest thing to an executable spec this module has. Most of its scenarios match the routing and mechanics confirmed in this pass (locations/history toggle, KPI tiles, the three creation methods, entry-screen filters/notes/calculator, Submit For Review, the review screen's stat tiles, and the final Submit renaming `doc_status` to `completed`).
 
-> **TODO:** No spot-check Playwright spec exists at `../carmen-inventory-frontend-e2e/tests/` as of `2026-05-15`. When the first spec is authored (target file name guess: `7XX-spot-check.spec.ts` following the stock-issue / stock-take numbering convention, or similar), populate this section with:
-> - Spec file path + brief description.
-> - Mapping table: cross-persona scenario number (Section 4) → spec test name.
-> - Coverage gap report (which scenarios remain manual vs automated).
-
-Until coverage exists, treat every scenario in Sections 4 and per-persona files as **manual or planned**.
+**Two scenarios in that catalog describe a screen this app's routing does not actually reach.** `TC-SPC-040001` ("edit a saved spot check: open detail in view mode, click Edit, edit description, Save") and `TC-SPC-050001` ("delete a saved spot check: open detail, click Edit, click Delete") both presuppose a view/edit detail screen distinct from the counting screen. Direct reading of `router.tsx` shows `spot-check/:id` always renders `sc-entry-component.tsx` (the counting UI) — never `sc-form.tsx` in view or edit mode. `ScForm`'s `isView`/`isEdit` branches, and the `useUpdateSpotCheck`/`useDeleteSpotCheck` hooks its Save/Delete buttons call, are only ever instantiated from the create screen (`spot-check-by-location-content.tsx`), always without an entity — so those branches are unreachable dead code from any real navigation path. Treat `TC-SPC-040001`/`TC-SPC-050001` as describing intended-but-unwired functionality rather than a confirmed, testable flow; the underlying `update()`/`delete()` backend endpoints are real and would work if exercised directly (e.g. via Bruno), just not from any button in the shipped UI.
 
 ## 6. References
 
-- **Primary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — UI behaviour source for scenario assertions.
-- **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists.
-- Related: [spot-check/03-user-flow](/en/inventory/spot-check/03-user-flow) (the handoff matrix this page exercises), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_VAL_*` / `SPC_AUTH_*` / `SPC_POST_*`), [physical-count/04-test-scenarios](/en/inventory/physical-count/04-test-scenarios) (full-count counterpart scenarios with three-tier period structure), [inventory-adjustment/04-test-scenarios](/en/inventory/inventory-adjustment/04-test-scenarios) (rollup-side scenarios).
+- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/`.
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts`, `spot-check.logic.ts`.
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists; manual test-case catalog at `docs/test-cases/760-spot-check.md` (32 cases; two — `TC-SPC-040001`, `TC-SPC-050001` — describe an unreachable view/edit screen, see § 5).
+- Related: [spot-check/03-user-flow](/en/inventory/spot-check/03-user-flow) (the state machine this page exercises), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_VAL_*` / `SPC_AUTH_*` / `SPC_POST_*`), [inventory-adjustment/04-test-scenarios](/en/inventory/inventory-adjustment/04-test-scenarios) (where a confirmed variance must be manually corrected).

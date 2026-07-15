@@ -1,93 +1,88 @@
 ---
-title: Spot Check — User Flow — Inventory Controller
-description: Inventory Controller path through the spot-check lifecycle.
+title: Spot Check — User Flow — List & Create Screens
+description: The location-list and create screens where a spot check is started, scoped, and sampled.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T18:38:42.000Z
 tags: spot-check, user-flow, inventory-controller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
 ---
 
-# Spot Check — User Flow — Inventory Controller
+# Spot Check — User Flow — List & Create Screens
 
 > **At a Glance**
-> **Persona:** Inventory Controller &nbsp;·&nbsp; **Module:** [spot-check](/en/inventory/spot-check) &nbsp;·&nbsp; **Workflow stages:** create → pending → in_progress → completed (+ void) &nbsp;·&nbsp; **Key permissions:** create / assign / monitor, flag recount, override variance, submit (fires rollup), void
-> **What this persona does:** Owns the spot-check exercise end-to-end — defines sampling, assigns the Counter, reviews variance, and submits to fire the adjustment rollup.
+> **Screens:** `spot-check` (`sc-component.tsx`) and `spot-check/location/:location_id` (`sc-form.tsx` via `spot-check-by-location-content.tsx`) &nbsp;·&nbsp; **Module:** [spot-check](/en/inventory/spot-check) &nbsp;·&nbsp; **Role:** any user holding `inventory_management.spot_check` — the same single role documented in [03-user-flow-counter.md](/en/inventory/spot-check/03-user-flow-counter), viewed from the list/create screens rather than the entry/review screens
+> **What these screens do:** show every location's spot-check status (grouped into Resume / Not Started, plus a full History tab), and start a new spot check for a not-yet-checked location.
 
-## 1. Persona
+## 1. Screen Scope
 
-**Inventory Controller** — the single owner of the spot-check exercise: defines selection criteria (`method` = random / high_value / manual, `size` of the sample), schedules and launches the spot check, assigns the Counter, monitors progress, reviews variances, approves or rejects recount requests, and triggers the variance rollup to [inventory-adjustment](/en/inventory/inventory-adjustment). Authority anchor for `SPC_AUTH_001`.
+This page — carried over from an earlier draft's "Inventory Controller" persona name — documents the `spot-check` list screen and the `spot-check/location/:location_id` create screen. There is no code-level distinction between an "Inventory Controller" and a "Counter": both this pair of screens and the entry/review screens in [03-user-flow-counter.md](/en/inventory/spot-check/03-user-flow-counter) are gated by the identical `inventory_management.spot_check` permission, and the same user typically moves through all four screens in one session.
 
-### Workflow position (Inventory Controller highlighted)
+### Screen layout (`sc-component.tsx`)
 
 ```mermaid
 graph LR
-    create(("create\n— tb_spot_check\npending")):::current -->|"assign counter\n+ location-grant"| pending(("pending\n— counter\nassigned")):::current
-    pending -->|"counter enters\nfirst actual_qty"| in_progress(("in_progress\n— counting")):::current
-    in_progress -->|"monitor; flag recount;\noverride variance"| in_progress
-    in_progress -->|"submit\n(all lines counted)"| completed(("completed\n— rollup fires")):::current
-    completed -->|"route rollup\nfor approval"| adj["Inventory Adjustment\n(Approver / Finance)"]:::current
-    pending -->|"void\n(cancel before counting)"| void_st(("void")):::current
-    in_progress -->|"void\n(cancel mid-count)"| void_st
+    list["Location list\n(spot-check)\nLocations / History toggle"] -->|"Start\n(not started)"| create["Create screen\n(location/:location_id)"]
+    list -->|"Resume\n(pending / in_progress)"| entry["Entry screen\n(:id)"]
+    list -->|"Reset\n(pending / in_progress)"| voidSc["POST .../reset\n→ void; drops to Not Started"]
+    list -->|"click History row (any status)"| entry
+    create -->|"Create\n(POST /spot-checks)"| entry
     classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
+    class list,create,entry current
 ```
 
-### Permission Matrix — V1 Status × Action (Inventory Controller)
+### What the list screen shows
 
-The Inventory Controller is the single owner of the spot-check exercise — the only persona who can create spot checks, configure method and size, assign counters, flag recounts, submit, and void. Rows are derived from Section 3 (Primary Actions) of this file; rule citations refer to [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) § 4 / § 5.
+- **Locations / History toggle** — **Locations** view (`GET /spot-check/current`) buckets every eligible location into **Resume** (has a `pending`/`in_progress` spot check) or **Not Started** (none); **History** view (`GET /spot-checks`, paginated) lists every spot check ever created, any status, with location/status/method filters.
+- **KPI tiles** (Locations view only) — All / Resume / Not Started counts, each clickable as a filter.
+- **"Include Not Count" checkbox** — toggles `include_not_count` on the `/current` call; unchecked (default), only locations with `physical_count_type = yes` appear (the same per-location flag [physical-count](/en/inventory/physical-count) uses for its own period-end gate — spot check itself is not a period-end gate); checked, locations flagged `no` are added too.
+- **Search bar** — filters visible location/history cards by name/code (Locations) or spot-check number/location (History), client-side.
+- **Location cards** (`ScLocationCard`) — one per location; "Not Started" locations show a **Start** button; locations with an in-flight spot check show a resume-info panel (spot-check number, method badge, counted/total progress, status badge) plus **Resume** and **Reset** buttons.
+- **History cards** (`ScHistoryCard`) — one per historical spot check, clickable to open it (routes to the same entry screen documented in [03-user-flow-counter.md](/en/inventory/spot-check/03-user-flow-counter), regardless of the spot check's status).
 
-| Action | `pending` | `in_progress` | `completed` | `void` |
-|---|---|---|---|---|
-| Create spot check (random / high_value / manual) | ✅ (`SPC_VAL_001`–`SPC_VAL_003`) | — | — | — |
-| Assign counter to spot check | ✅ (`SPC_AUTH_001`) | ✅ | ❌ | ❌ |
-| Monitor progress (lines counted vs total) | ✅ | ✅ (`SPC_CALC_004`) | ✅ (read-only) | ✅ (read-only) |
-| Flag line for recount (variance breach) | — | ✅ (`SPC_VAL_006`) | ❌ | ❌ |
-| Override / accept variance (countersignature) | — | ✅ (`SPC_AUTH_001`) | ❌ | ❌ |
-| Submit spot check (`in_progress → completed`) | — | ✅ (`SPC_AUTH_001`; `SPC_VAL_004` — all lines counted; `SPC_POST_001` rollup fires) | — | — |
-| Void spot check | ✅ (`SPC_VAL_008`) | ✅ (`SPC_VAL_008`) | ❌ (`SPC_VAL_007` — terminal) | — |
-| Route rollup adjustment for approval | — | — | ✅ — to Approver / Finance via [inventory-adjustment](/en/inventory/inventory-adjustment) | — |
-| Edit lines after completion | — | — | ❌ (`SPC_VAL_007` — immutable; raise manual adjustment per `SPC_POST_004`) | — |
+### What the create screen shows (`sc-form.tsx`, always in "add" mode here)
+
+- **Method picker** (`ScMethodPicker`) — three cards: **Random** (system samples N products), **High Value** (system samples the N highest-value products), **Manual** (pick specific products).
+- **Location** — locked to the `location_id` from the URL; not editable on this screen.
+- **Items** field — shown for Random and High Value; the sample size (`size`).
+- **Min Value** field — shown only for High Value; an optional cost floor (`minimum_cost`) excluding cheaper products from the ranking.
+- **Product transfer** (manual method only) — a two-column picker moving products between "Available" and "Selected."
+- **Description** / **Note** — free-text, optional.
+- **Create** button — `POST /spot-checks`; on success, navigates straight to the entry screen (`spot-check/:id`).
 
 ## 2. Entry Points
 
-- **Spot-check scheduler / launcher** — open a new `tb_spot_check` for an inventory or consignment location.
-- **My spot checks** — list of in-flight `tb_spot_check` documents owned by the controller (`pending` / `in_progress`).
-- **My queue** — recount-flagged lines and pending submissions awaiting controller action.
-- **Notifications** — counter completion alerts, variance-breach alerts.
+- **Location list** (`spot-check`) — the only entry point; there is no separate scheduler or calendar screen.
+- **History tab** — reopens any previously-created spot check (any status) at the same entry screen.
 
 ## 3. Primary Actions
 
 | Action | State precondition | State effect | Notes |
 | ------ | ------------------ | ------------ | ----- |
-| Open spot check (random sampling) | Location is inventory- or consignment-type per `SPC_VAL_001` | New `tb_spot_check` in `pending`; `method = random`; system samples `size` distinct products | Per `SPC_VAL_002`–`SPC_VAL_003`. |
-| Open spot check (high-value sampling) | Same | New `tb_spot_check` in `pending`; `method = high_value`; top-`size` products by value / velocity sampled | Per `SPC_VAL_003`. |
-| Open spot check (manual selection) | Same | New `tb_spot_check` in `pending`; `method = manual`; controller adds `tb_spot_check_detail` rows explicitly | Manual is the event-driven path (suspected discrepancy, incident). |
-| Assign counter | Spot check in `pending` | Counter location-grant recorded | Per `SPC_AUTH_001`. |
-| Monitor progress | Spot check in `in_progress` | (read) lines with `actual_qty` populated vs total | No persisted progress counters on `tb_spot_check` — derived per `SPC_CALC_004`. |
-| Flag line for recount | Variance breaches tolerance per `SPC_VAL_006` | Detail-comment with recount tag | Recount ideally by a different counter to remove bias. |
-| Override / accept variance | `SPC_VAL_006` flag exists | Flag cleared; line eligible for rollup | Controller countersignature recorded in detail-comment thread. |
-| Submit spot check | All detail lines have `actual_qty`; no open recount flags | `doc_status = completed`; rollup adjustment created | Per `SPC_POST_001`–`SPC_POST_002`. |
-| Void spot check | Status is `pending` or `in_progress` | `doc_status = void`; no rollup | Per `SPC_VAL_008`; partial entries preserved. |
+| Start a spot check (Random) | Location has no in-flight spot check | `POST /spot-checks` with `method: "random"`, `items: N`; new document at `pending`; navigates to `/:id` | Per `SPC_VAL_001`–`002`. |
+| Start a spot check (High Value) | Same, plus an open/locked `tb_period` must exist | `POST /spot-checks` with `method: "high_value"`, `items: N`, optional `minimum_cost`; new document at `pending` | Rejects with `SPOT_CHECK_NO_ACTIVE_PERIOD` if no period is open/locked (`SPC_VAL_004`). |
+| Start a spot check (Manual) | Same | `POST /spot-checks` with `method: "manual"`, `product_id: [...]`; new document at `pending` | At least one selected product must be in the eligible pool (`SPC_VAL_003`). |
+| Resume an in-progress check | Location has a `pending`/`in_progress` spot check | Navigates directly to `/:id` — no new document created | Pure client-side route change. |
+| Reset a spot check | Location has a `pending`/`in_progress` spot check | `POST /spot-checks/:id/reset` — `doc_status → void`; location falls back to Not Started | Rejected on `void`/`completed` (`SPC_VAL_006`); does **not** clear `tb_spot_check_detail` rows. |
+| Open a history row | Any spot check, any status | Navigates to `/:id` — the entry screen, regardless of `doc_status` | See the caveat in [03-user-flow.md](/en/inventory/spot-check/03-user-flow) § 2.1 about `reviewItems()` having no completed/void guard. |
+| Filter by location count-required flag | Check/uncheck "Include Not Count" | List includes/excludes `physical_count_type = no` locations | Does not affect any period-end gate — spot check is not one. |
 
 ## 4. Decision Points
 
-- **Method choice.** *Random* maintains rotating coverage of inventory. *High_value* concentrates effort on theft-prone or pilferage-prone categories. *Manual* responds to a specific trigger (discrepancy, incident, dispute). Drive by risk profile and operational signal.
-- **Tolerance breach response.** When `|diff_qty| / on_hand_qty` exceeds threshold, the controller can (a) trigger recount (different counter), (b) override / accept the variance with countersignature, (c) hold the line pending investigation.
-- **Submit vs hold vs void.** Once all lines counted, controller chooses to submit (firing the rollup), hold pending operational reconciliation (e.g. expected receipts not yet posted), or void if the spot check itself was mis-scoped.
-
-> **TODO:** Source the exact UI for sampling method selection, recount flagging, override countersignature, and rollup-trigger button from `../carmen-inventory-frontend-react/`.
+- **Random vs. High Value vs. Manual.** Random maintains general coverage; High Value concentrates the sample on the products with the highest recent receipt cost at that location (subject to an active fiscal period existing); Manual is the deliberate, event-driven choice — a specific suspected discrepancy or incident.
+- **Include Not Count or not.** Unchecked (default) limits the list to the same locations [physical-count](/en/inventory/physical-count)'s period-end gate cares about — but since spot check is not itself a gate, this toggle only affects which locations are convenient to reach from this screen, not any downstream requirement.
+- **Reset vs. let it sit.** Resetting voids the current in-flight document outright (no way to recover it) rather than pausing it — there is no "cancel and keep for later" option; a genuinely paused count is better left as `pending`/`in_progress` and resumed later than reset.
 
 ## 5. Exit / Handoff
 
 | Trigger | Handoff to | Artefact |
 | ------- | ---------- | -------- |
-| Submit spot check | System → [inventory-adjustment](/en/inventory/inventory-adjustment) rollup | `tb_spot_check.doc_status = completed`; `tb_stock_in` / `tb_stock_out` created with `info.spotCheckId`. |
-| Route rollup adjustment for approval | Audit / Config (Approver / Finance) per `ADJ_AUTH_*` | Rollup `tb_stock_in` / `tb_stock_out` in `in_progress`. |
-| Void | (terminal) | `tb_spot_check.doc_status = void`. |
+| Create / Start / Resume | [Entry screen](/en/inventory/spot-check/03-user-flow-counter) — same user, same session | `tb_spot_check` in `pending` (new) or `pending`/`in_progress` (resumed). |
+| Reset | (terminal for that document) | `tb_spot_check.doc_status = void`; location shows as Not Started again. |
 
 ## 6. References
 
-- **Primary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — Inventory Controller UI screens.
-- **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists.
-- Related: [spot-check/03-user-flow](/en/inventory/spot-check/03-user-flow) (overview), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_AUTH_001`, `SPC_VAL_*`, `SPC_POST_*`), [physical-count/03-user-flow-count-lead](/en/inventory/physical-count/03-user-flow-count-lead) (full-count counterpart owner path — same persona acting with a wider scope), [inventory-adjustment/03-user-flow-inventory-controller](/en/inventory/inventory-adjustment/03-user-flow-inventory-controller) (rollup-side flow, same persona acting as adjustment owner).
+- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/sc-component.tsx`, `sc-form.tsx`, `sc-location-card.tsx`, `sc-history-card.tsx`, `sc-method-picker.tsx`, `sc-reset-dialog.tsx`.
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts` (`create`, `reset`, `findCurrentByLocation`), `spot-check.logic.ts` (sampling).
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists; manual test-case catalog at `docs/test-cases/760-spot-check.md`.
+- Related: [spot-check/03-user-flow](/en/inventory/spot-check/03-user-flow) (overview), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_VAL_001`–`004`, `SPC_VAL_006`, `SPC_AUTH_001`), [spot-check/03-user-flow-counter](/en/inventory/spot-check/03-user-flow-counter) (the same role's entry/review journey).
