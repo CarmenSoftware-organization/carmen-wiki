@@ -2,7 +2,7 @@
 title: Dashboard Dataset
 description: Read-only admin catalog of code-registered data feeds — the named, typed data sources that dashboard widgets pull from, distinct from the user widget workspace layout and from SQL-authored query-dataset views.
 published: true
-date: 2026-07-16T00:00:00.000Z
+date: 2026-07-16T05:00:00.000Z
 tags: system-config, dashboard, dataset, widget, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -23,7 +23,7 @@ Dashboard Dataset is the **read-only admin catalog screen** at `/system-admin/da
 |---|---|---|---|
 | **Dashboard Dataset** (this page) | Named data feed catalog — query runs against tenant DB and returns typed data | Read-only; updated by code deployment | **micro-data** service (Go), served at `/api/dashboard/datasets` |
 | [system-config/query-dataset](/en/inventory/system-config/query-dataset) | SQL Workbench — admin authors tenant views / stored procedures / functions | Sysadmin creates/drops catalog objects | PostgreSQL catalog (`pg_class`, `pg_proc`) |
-| [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) | Per-user saved dashboard layout — which datasets are shown, in what size, in what order | Each user edits their own layout | `tb_widget_dashboard` + `tb_widget_dashboard_item`, seeded by `tb_widget_default_layout` (tenant DB) |
+| [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) | Saved dashboard widget tiles — which datasets are shown, in what order | BU admins (BU tiles) + each user (personal tiles) | `tb_dashboard_bu_widget` + `tb_dashboard_personal_widget` (tenant DB, lines ~6185/~6205 — a prior version cited `tb_widget_dashboard`/`tb_widget_dashboard_item`/`tb_widget_default_layout`, none of which exist in any Prisma schema) |
 
 **Maintained by** Engineering (code releases). **Browsed by** Sysadmin to audit available feeds. **Consumed by** the widget picker inside the dashboard `Add widget` dialog.
 
@@ -106,13 +106,13 @@ The dataset catalog is code-registered in the **micro-data** service (Go): handl
 - **Tenant-scoped queries.** Every dataset query runs in micro-data inside a read-only transaction with `SET LOCAL search_path` pinned to the caller's `bu_code` schema — all data is read from the calling tenant's schema.
 - **Shape contract is rigid.** Frontend widget renderers switch on `meta.shape`; adding a new shape requires frontend and backend changes in lockstep.
 - **No CRUD permissions needed to browse.** The screen is visible to Sysadmin by navigation access; no per-dataset permission granularity exists — all registered datasets are readable by any authenticated user who can load the dashboard.
-- **`id` is stable per entry.** The dot-namespaced id (e.g. `workflow.pr-pending-approval`) is stored as the `dataset_id` in widget tile configurations in `tb_widget_dashboard_item`. Renaming or removing a registry entry breaks existing widget configs.
+- **`id` is stable per entry.** The dot-namespaced id (e.g. `workflow.pr-pending-approval`) is stored as the `dataset_id` in widget tile rows (`tb_dashboard_bu_widget` / `tb_dashboard_personal_widget`). Renaming or removing a registry entry breaks existing widget configs.
 
 ## 7. Cross-References
 
 - [reporting-audit/widget](/en/inventory/reporting-audit/widget) — dashboard widgets select their data source from this catalog; the `dataset_id` field on each widget row references a catalog `id`.
 - [system-config/query-dataset](/en/inventory/system-config/query-dataset) — complementary admin tool: sysadmin authors tenant views / stored procedures / functions in SQL; those objects can back report templates. Dashboard Dataset feeds are code-authored, not SQL-authored.
-- [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) — the per-user saved dashboard layout stored in `tb_widget_dashboard` + `tb_widget_dashboard_item`; each tile row references a `dataset_id` from this catalog. (Note: `tb_widget_workspace` is a separate table for per-user saved data-explorer queries — see [reporting-audit/widget](/en/inventory/reporting-audit/widget).)
+- [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) — saved dashboard widget tiles stored in `tb_dashboard_bu_widget` (BU-scoped) + `tb_dashboard_personal_widget` (per-user); each tile row references a `dataset_id` from this catalog. (A prior version cited `tb_widget_dashboard`/`tb_widget_dashboard_item` and a separate `tb_widget_workspace` saved-queries table — none of these models exist in any Prisma schema; see [reporting-audit/widget](/en/inventory/reporting-audit/widget), flagged for correction in its own iteration.)
 - [access-control/application-role](/en/inventory/access-control/application-role) — navigation and route access to `/system-admin/dashboard-dataset`.
 
 ## 8. References

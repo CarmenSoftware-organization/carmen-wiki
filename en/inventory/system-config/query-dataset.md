@@ -2,7 +2,7 @@
 title: Query Dataset
 description: SQL Workbench — a real backend admin-SQL-console service, but with no confirmed frontend screen, and whose execute endpoint runs any SQL (including DROP/ALTER/multi-statement) rather than the read-only surface previously documented here.
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: 2026-07-16T05:00:00.000Z
 tags: system-config, query, dataset, sql, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -118,7 +118,7 @@ Click an existing view / procedure / function → fetch `pg_get_viewdef` or `pg_
 
 ### 5.4 Related (not the same)
 
-- `tb_widget_workspace` — author-scoped saved dashboard queries (`{ name, query }`); separate from catalog objects.
+- `tb_dashboard_bu_widget` / `tb_dashboard_personal_widget` — dashboard widget tiles (BU-scoped / per-user); each row stores a `dataset_id` reference into the code-registered [system-config/dashboard-dataset](/en/inventory/system-config/dashboard-dataset) catalog, **not** SQL text — separate from catalog objects. (A prior version cited a `tb_widget_workspace` table storing per-user ad-hoc SQL; no such model exists in any Prisma schema.)
 - `tb_report_job.report_type` / `tb_report_schedule.report_type` — string keys mapped to report definitions that may *consume* a view, but the mapping lives in the reports module.
 
 ## 6. Business Rules
@@ -138,7 +138,7 @@ Click an existing view / procedure / function → fetch `pg_get_viewdef` or `pg_
 ## 7. Cross-References
 
 - [reporting-audit/report](/en/inventory/reporting-audit/report) — report templates are intended to bind to views created here; linkage not independently re-verified this pass.
-- [reporting-audit/widget](/en/inventory/reporting-audit/widget) — dashboard widgets execute against views, or store ad-hoc SQL in `tb_widget_workspace`.
+- [reporting-audit/widget](/en/inventory/reporting-audit/widget) — dashboard widgets reference code-registered `dataset_id`s (`tb_dashboard_bu_widget` / `tb_dashboard_personal_widget`), not ad-hoc SQL; a prior version's `tb_widget_workspace` claim was unbacked (no such table exists).
 - [reporting-audit/schedule](/en/inventory/reporting-audit/schedule) — scheduled reports consume the same views (unconfirmed this pass).
 - [system-config/period](/en/inventory/system-config/period) — period-close objects (`sp_close_period`, `v_period_snapshot`) typically live here (unconfirmed this pass).
 
@@ -148,4 +148,4 @@ Click an existing view / procedure / function → fetch `pg_get_viewdef` or `pg_
 - **Backend gateway controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_sql-query/config_sql-query.controller.ts` — confirmed `PlatformPermissionGuard` + `RequirePlatformPermission('sql_workbench.manage')` only on `POST .../execute`; no guard on the other four routes.
 - **SQL safety validator:** `../carmen-turborepo-backend-v2/apps/micro-business/src/sql-query/sql-validator.ts` — `FORBIDDEN_LEADING` blocklist, `allowDangerous` bypass flag.
 - **Frontend:** none found. No `query-dataset` or `sql-query` file exists anywhere in `../carmen-inventory-frontend-react` (confirmed by repo-wide search); no route in `routes/router.tsx`.
-- **Related Prisma:** `tb_widget_workspace` (lines ~5787-5801), `tb_report_schedule` (lines ~5685-5709), `tb_report_job` (lines ~5652-5683).
+- **Related Prisma:** `tb_report_job` (line ~6101), `tb_report_schedule` (line ~6135), `tb_dashboard_bu_widget` (line ~6185), `tb_dashboard_personal_widget` (line ~6205).

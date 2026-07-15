@@ -2,7 +2,7 @@
 title: Query Dataset
 description: SQL Workbench — backend admin-SQL-console service ที่มีจริง แต่ไม่มีหน้าจอ frontend ที่ยืนยันได้ และ endpoint execute รัน SQL อะไรก็ได้ (รวมถึง DROP/ALTER/multi-statement) แทนที่จะเป็นพื้นผิว read-only ที่เอกสารเดิมเคยระบุไว้
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: 2026-07-16T05:00:00.000Z
 tags: system-config, query, dataset, sql, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -118,7 +118,7 @@ Shape `DbObjectsResponse`:
 
 ### 5.4 ที่เกี่ยวข้อง (ไม่ใช่อันเดียวกัน)
 
-- `tb_widget_workspace` — query dashboard ที่บันทึกแบบ scope ตาม author (`{ name, query }`); แยกจาก catalog object
+- `tb_dashboard_bu_widget` / `tb_dashboard_personal_widget` — widget tile ของแดชบอร์ด (scope ระดับ BU / ต่อผู้ใช้); แต่ละ row เก็บการอ้างอิง `dataset_id` ไปยัง catalog ที่ลงทะเบียนในโค้ดของ [system-config/dashboard-dataset](/th/inventory/system-config/dashboard-dataset) **ไม่ใช่** SQL text — แยกจาก catalog object (เวอร์ชันก่อนหน้าอ้างถึงตาราง `tb_widget_workspace` ที่เก็บ SQL ad-hoc ต่อผู้ใช้; ไม่มี model แบบนั้นใน Prisma schema ใดเลย)
 - `tb_report_job.report_type` / `tb_report_schedule.report_type` — string key map ไปยังนิยามรายงานที่อาจ *consume* view แต่ mapping อยู่ในโมดูล reports
 
 ## 6. กฎทางธุรกิจ
@@ -138,7 +138,7 @@ Shape `DbObjectsResponse`:
 ## 7. การอ้างอิงข้าม
 
 - [reporting-audit/report](/th/inventory/reporting-audit/report) — template รายงานมีเจตนา bind กับ view ที่สร้างที่นี่; ความเชื่อมโยงยังไม่ได้ re-verify แยกในรอบนี้
-- [reporting-audit/widget](/th/inventory/reporting-audit/widget) — Widget dashboard execute กับ view หรือเก็บ SQL แบบ ad-hoc ใน `tb_widget_workspace`
+- [reporting-audit/widget](/th/inventory/reporting-audit/widget) — Widget dashboard อ้างอิง `dataset_id` ที่ลงทะเบียนในโค้ด (`tb_dashboard_bu_widget` / `tb_dashboard_personal_widget`) ไม่ใช่ SQL ad-hoc; claim `tb_widget_workspace` ของเวอร์ชันก่อนหน้าไม่มีแหล่งรองรับ (ไม่มีตารางนั้นอยู่จริง)
 - [reporting-audit/schedule](/th/inventory/reporting-audit/schedule) — รายงานตามตารางเวลา consume view ตัวเดียวกัน (ยังไม่ยืนยันในรอบนี้)
 - [system-config/period](/th/inventory/system-config/period) — object การปิดงวด (`sp_close_period`, `v_period_snapshot`) โดยทั่วไปอยู่ที่นี่ (ยังไม่ยืนยันในรอบนี้)
 
@@ -148,4 +148,4 @@ Shape `DbObjectsResponse`:
 - **Backend gateway controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_sql-query/config_sql-query.controller.ts` — ยืนยัน `PlatformPermissionGuard` + `RequirePlatformPermission('sql_workbench.manage')` เฉพาะ `POST .../execute` เท่านั้น; ไม่มี guard บนอีก 4 route
 - **SQL safety validator:** `../carmen-turborepo-backend-v2/apps/micro-business/src/sql-query/sql-validator.ts` — blocklist `FORBIDDEN_LEADING`, flag `allowDangerous` สำหรับ bypass
 - **Frontend:** ไม่พบเลย ไม่มีไฟล์ `query-dataset` หรือ `sql-query` ที่ไหนใน `../carmen-inventory-frontend-react` (ยืนยันด้วยการค้นทั่ว repo); ไม่มี route ใน `routes/router.tsx`
-- **Prisma ที่เกี่ยวข้อง:** `tb_widget_workspace` (lines ~5787-5801), `tb_report_schedule` (lines ~5685-5709), `tb_report_job` (lines ~5652-5683)
+- **Prisma ที่เกี่ยวข้อง:** `tb_report_job` (line ~6101), `tb_report_schedule` (line ~6135), `tb_dashboard_bu_widget` (line ~6185), `tb_dashboard_personal_widget` (line ~6205)
