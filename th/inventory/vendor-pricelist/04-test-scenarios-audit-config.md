@@ -1,14 +1,14 @@
 ---
-title: รายการราคาผู้ขาย (Vendor Pricelist) — Test Scenarios — Audit & Config (Correction)
+title: รายการราคาผู้ขาย (Vendor Pricelist) — Test Scenarios — Audit & Config (แก้ไข)
 description: หน้า correction — ไม่มี Audit workspace หรือ Configuration console แยกต่างหากในโมดูล vendor-pricelist; ไม่มี test scenario ใดที่เกี่ยวข้อง
 published: true
-date: 2026-07-16T00:00:00.000Z
+date: 2026-07-16T02:00:00.000Z
 tags: vendor-pricelist, test-scenarios, audit-config, inventory, carmen-software, correction
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
 ---
 
-# รายการราคาผู้ขาย (Vendor Pricelist) — Test Scenarios — Audit & Config (Correction)
+# รายการราคาผู้ขาย (Vendor Pricelist) — Test Scenarios — Audit & Config (แก้ไข)
 
 > หน้านี้เคยทำแคตตาล็อก scenario สำหรับ workspace query-builder ของ Auditor และ configuration console ของ System Administrator (การกำหนดเลข, RBAC, นโยบาย portal-token, การเชื่อม email, registry กติกา validation, การตั้งค่าแหล่ง FX, การ revoke token) ดู [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) สำหรับ correction ฉบับเต็ม — ไม่มีอะไรในนี้ที่มี code ตรงกัน
 

@@ -2,7 +2,7 @@
 title: รายการราคาผู้ขาย (Vendor Pricelist)
 description: แคตตาล็อกของผู้ขายที่เก็บสินค้าพร้อมราคาที่ตกลง, หน่วย และช่วงเวลาที่มีผลใช้ — แหล่งอ้างอิงราคาของ PR/PO
 published: true
-date: 2026-07-16T00:00:00.000Z
+date: 2026-07-16T02:00:00.000Z
 tags: vendor-pricelist, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 # รายการราคาผู้ขาย (Vendor Pricelist)
 
 > **At a Glance**
-> **วัตถุประสงค์ของโมดูล:** แคตตาล็อกราคาแบบเฉพาะผู้ขายและมีกำหนดเวลา พร้อม MOQ tier — Vendor master data, Price List, Price List Template และ Request-for-Pricing (RFQ) เป็นสี่หน้าจอ CRUD อิสระภายใต้ Vendor Management บวก external vendor portal ที่ไม่ต้อง authenticate — แหล่งอ้างอิงสำหรับราคา PR / PO และ variance ของ GRN &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Purchaser, Vendor (portal ภายนอก) &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_pricelist`, `tb_pricelist_detail`, `tb_request_for_pricing`, `tb_pricelist_template`, [vendor-pricelist/request-price-list](/th/inventory/vendor-pricelist/request-price-list) &nbsp;·&nbsp; **หน้าย่อย:** 13
+> **วัตถุประสงค์ของโมดูล:** แคตตาล็อกราคาแบบเฉพาะผู้ขายและมีกำหนดเวลา พร้อม MOQ tier — Vendor master data, Price List, Price List Template และ Request-for-Pricing (RFQ) เป็นสี่หน้าจอ CRUD อิสระภายใต้ Vendor Management บวก external vendor portal ที่ไม่ต้อง authenticate — แหล่งอ้างอิงสำหรับราคา PR / PO และ variance ของ GRN &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Purchaser, Vendor (portal ภายนอก) &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_pricelist`, `tb_pricelist_detail`, `tb_request_for_pricing`, `tb_pricelist_template`, [vendor-pricelist/request-price-list](/th/inventory/vendor-pricelist/request-price-list) &nbsp;·&nbsp; **หน้าย่อย:** 14
 >
 > **ตรวจสอบแล้ว 2026-07-16 เทียบกับ source ปัจจุบัน:** โมดูลนี้**ไม่มี workflow engine** (ไม่มีคอลัมน์ `workflow_*` ต่างจาก PR/PO/GRN/SR) และ**ไม่มี endpoint approve/reject แยกต่างหาก** — `tb_pricelist.status` และ `tb_pricelist_template.status` เป็นฟิลด์ enum ธรรมดาที่ใครก็ตามที่มีสิทธิ์แก้ไขสามารถเปลี่ยนได้ผ่าน update call ปกติ ไม่มีคะแนนคุณภาพ (quality score), ไม่มี validation engine เกินกว่าการตรวจสอบระดับฟิลด์, ไม่มีเกณฑ์อนุมัติ Manager สำหรับมูลค่าสูง/multi-currency, ไม่มี IP allowlist หรือ session limit ของ portal token, ไม่มี action การ revoke token และไม่มีการบันทึกคอมเมนต์ "system" อัตโนมัติในทุก transition — ไม่มีข้อใดในรายการนี้ที่มีโค้ดรองรับ Finance และ Audit/Config **ไม่ใช่** persona ที่แยกต่างหากในโมดูลนี้ ดู [02-business-rules](/th/inventory/vendor-pricelist/02-business-rules), [03-user-flow-finance](/th/inventory/vendor-pricelist/03-user-flow-finance) และ [03-user-flow-audit-config](/th/inventory/vendor-pricelist/03-user-flow-audit-config) สำหรับรายละเอียดที่แก้ไขแล้ว
 
@@ -92,5 +92,6 @@ Vendor pricelist ให้ procurement มี system-of-record สำหรั�
   - [vendor-pricelist/04-test-scenarios-vendor](/th/inventory/vendor-pricelist/04-test-scenarios-vendor) — scenario Vendor; section Permission เป็น N/A เพราะ vendor ไม่มี Carmen RBAC matrix
   - [vendor-pricelist/04-test-scenarios-finance](/th/inventory/vendor-pricelist/04-test-scenarios-finance) — หน้า correction
   - [vendor-pricelist/04-test-scenarios-audit-config](/th/inventory/vendor-pricelist/04-test-scenarios-audit-config) — หน้า correction
+- [Request Price List](/th/inventory/vendor-pricelist/request-price-list) — เอกสาร RFQ ขาออก (`tb_request_for_pricing` + แถว invitation ต่อผู้ขายพร้อม `pricelist_url_token`) รวมถึง gap ของ Save/Submit บน portal ที่ยืนยันแล้ว และข้อค้นพบที่แก้ไขแล้วเรื่องไม่มีสถานะ/ไม่มี reminder
 
 > **สถานะ (ตรวจสอบแล้ว 2026-07-16):** ส่วน data-model ยึดกับ Prisma schema canonical (`tb_pricelist*` + `tb_request_for_pricing*` + `tb_pricelist_template*` — สิบเอนทิตี, สาม enum module-local) และยังคงถูกต้อง Business-rules, user-flow และ test-scenarios ถูกเขียนใหม่อย่างมีนัยสำคัญในรอบนี้ — draft ก่อนหน้าอธิบาย workflow campaign แบบ 6-phase, quality scoring, validation engine, เกณฑ์อนุมัติ Manager/Finance-Manager, นโยบาย IP/session ของ portal-token และการ revoke token และการเขียน activity-log อัตโนมัติ ซึ่งไม่มีข้อใดมีโค้ดรองรับ; Finance และ Audit/Config ถูกบันทึกเป็นหน้า correction ตาม pattern ที่ตั้งไว้แล้วสำหรับโมดูล inventory อื่นที่มี persona axis ที่แต่งขึ้น **มี E2E coverage อยู่จริง** — `150-vendor.spec.ts`, `159-pl.spec.ts` และ `160-pl-template.spec.ts` ใน `../carmen-inventory-frontend-e2e/tests/` (คำกล่าวก่อนหน้านี้ที่ว่า "ไม่มี spec dedicated" ผิด); ยังไม่มี spec dedicated สำหรับ Request for Pricing

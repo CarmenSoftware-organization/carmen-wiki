@@ -2,7 +2,7 @@
 title: Vendor Pricelist
 description: Vendor catalogs of products with agreed prices, units, and validity periods — the reference for PR/PO pricing.
 published: true
-date: 2026-07-16T00:00:00.000Z
+date: 2026-07-16T02:00:00.000Z
 tags: vendor-pricelist, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 # Vendor Pricelist
 
 > **At a Glance**
-> **Module purpose:** Vendor-specific, time-bound MOQ-tiered price catalogue — Vendor master data, Price List, Price List Template, and Request-for-Pricing (RFQ) are four independent CRUD screens under Vendor Management, plus an unauthenticated external vendor portal — the reference for PR / PO pricing and GRN variance &nbsp;·&nbsp; **Audience:** Purchaser, Vendor (external portal) &nbsp;·&nbsp; **Key entities/tables:** `tb_pricelist`, `tb_pricelist_detail`, `tb_request_for_pricing`, `tb_pricelist_template`, [vendor-pricelist/request-price-list](/en/inventory/vendor-pricelist/request-price-list) &nbsp;·&nbsp; **Sub-pages:** 13
+> **Module purpose:** Vendor-specific, time-bound MOQ-tiered price catalogue — Vendor master data, Price List, Price List Template, and Request-for-Pricing (RFQ) are four independent CRUD screens under Vendor Management, plus an unauthenticated external vendor portal — the reference for PR / PO pricing and GRN variance &nbsp;·&nbsp; **Audience:** Purchaser, Vendor (external portal) &nbsp;·&nbsp; **Key entities/tables:** `tb_pricelist`, `tb_pricelist_detail`, `tb_request_for_pricing`, `tb_pricelist_template`, [vendor-pricelist/request-price-list](/en/inventory/vendor-pricelist/request-price-list) &nbsp;·&nbsp; **Sub-pages:** 14
 >
 > **Verified 2026-07-16 against current source:** this module has **no workflow engine** (no `workflow_*` columns, unlike PR/PO/GRN/SR) and **no distinct approve/reject endpoints** — `tb_pricelist.status` and `tb_pricelist_template.status` are plain enum fields flipped by whoever has edit rights via the ordinary update call. There is no quality score, no validation engine beyond field-level checks, no high-value/multi-currency Manager threshold, no portal-token IP allowlist or session limit, no token-revocation action, and no automatic "system" comment logging on any transition — none of these have any matching code. Finance and Audit/Config are **not** distinct personas in this module. See [02-business-rules](/en/inventory/vendor-pricelist/02-business-rules), [03-user-flow-finance](/en/inventory/vendor-pricelist/03-user-flow-finance), and [03-user-flow-audit-config](/en/inventory/vendor-pricelist/03-user-flow-audit-config) for the corrected detail.
 
@@ -92,5 +92,6 @@ Note: this module has **no workflow engine** — `status` on `tb_pricelist` / `t
   - [vendor-pricelist/04-test-scenarios-vendor](/en/inventory/vendor-pricelist/04-test-scenarios-vendor) — Vendor scenarios; Permission section is N/A because the vendor has no Carmen RBAC matrix.
   - [vendor-pricelist/04-test-scenarios-finance](/en/inventory/vendor-pricelist/04-test-scenarios-finance) — correction page.
   - [vendor-pricelist/04-test-scenarios-audit-config](/en/inventory/vendor-pricelist/04-test-scenarios-audit-config) — correction page.
+- [Request Price List](/en/inventory/vendor-pricelist/request-price-list) — the outbound RFQ document (`tb_request_for_pricing` + per-vendor invitation rows with `pricelist_url_token`s), including the confirmed portal Save/Submit gap and the corrected no-status/no-reminder findings.
 
 > **Status (verified 2026-07-16):** data-model section is grounded in the canonical Prisma schema (`tb_pricelist*` + `tb_request_for_pricing*` + `tb_pricelist_template*` — ten entities, three module-local enums) and remains accurate. Business-rules, user-flow, and test-scenarios were substantially rewritten this pass — the previous draft described a 6-phase campaign workflow, quality scoring, a validation engine, Manager/Finance-Manager approval thresholds, portal-token IP/session policy, token revocation, and automatic activity-log writes, none of which have matching code; Finance and Audit/Config are documented as correction pages, matching the pattern already established for other inventory modules with fabricated persona axes. **E2E coverage exists** — `150-vendor.spec.ts`, `159-pl.spec.ts`, and `160-pl-template.spec.ts` in `../carmen-inventory-frontend-e2e/tests/` (the previous claim of "no dedicated spec" was wrong); no dedicated spec exists yet for Request for Pricing.
