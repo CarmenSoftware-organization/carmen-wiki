@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request)
 description: เอกสารคำขอภายในเพื่อจัดซื้อสินค้า — สัญญาณความต้องการต้นน้ำที่จะถูกแปลงเป็นใบสั่งซื้อหลังได้รับอนุมัติ
 published: true
-date: 2026-06-09T16:25:48.000Z
+date: 2026-07-15T10:20:00.000Z
 tags: purchase-request, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 # ใบขอซื้อ (Purchase Request)
 
 > **At a Glance**
-> **วัตถุประสงค์ของโมดูล:** workflow ความต้องการภายในแบบหลายระดับที่รับรู้งบประมาณ (`Draft` → `Submitted` → `Under Review` → `Approved`/`Rejected`/`Sent Back`) ส่งความต้องการที่จัดสรรผู้ขายแล้วต่อให้ฝ่ายจัดซื้อ &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Requestor, Department Head, Budget Controller, Finance, Purchaser, Procurement Manager, Auditor &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_purchase_request`, `tb_purchase_request_detail`, approval history, pricelist allocation, [purchase-request/my-approval](/th/inventory/purchase-request/my-approval) &nbsp;·&nbsp; **หน้าย่อย:** 15
+> **วัตถุประสงค์ของโมดูล:** workflow ความต้องการภายในแบบหลายระดับที่รับรู้งบประมาณ (`Draft` → `In Progress` (สายอนุมัติหลายขั้นตอน พร้อมเส้นทางแยก Send-Back / Reject) → `Approved` → `Completed`, หรือ `Voided` ได้ทุกจุด) ส่งความต้องการที่จัดสรรผู้ขายแล้วต่อให้ฝ่ายจัดซื้อ &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Requestor, Department Head, Budget Controller, Finance, Purchaser, Procurement Manager, Auditor &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_purchase_request`, `tb_purchase_request_detail`, approval history, pricelist allocation, [purchase-request/my-approval](/th/inventory/purchase-request/my-approval) &nbsp;·&nbsp; **หน้าย่อย:** 15
 
 ![Purchase Request module screen](/screenshots/purchase-request/index.png)
 
@@ -21,7 +21,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 **ใบขอซื้อ (Purchase Request — PR)** คือเอกสารคำขอภายในที่หน่วยงานปฏิบัติการสร้างขึ้นเพื่อขออนุมัติการจัดซื้อสินค้าหรือบริการ ก่อนที่จะมีการผูกพันใด ๆ กับผู้ขายภายนอก แต่ละ PR ประกอบด้วยส่วนหัว — หมายเลขอ้างอิงที่ระบบสร้างให้อัตโนมัติ วันที่ขอและวันที่ต้องการรับของ ประเภท PR (General Purchase, Market List, Asset) ผู้ขอและแผนก รหัสงาน/รหัสต้นทุน จุดส่งของ คำอธิบายและเหตุผลประกอบ สกุลเงินและอัตราแลกเปลี่ยน — และรายการสินค้าหนึ่งรายการขึ้นไปที่บรรจุข้อมูลสินค้าจากแคตตาล็อกหรือคำอธิบายแบบอิสระ คลังจัดเก็บ ปริมาณที่ขอและปริมาณที่อนุมัติ ปริมาณ FOC หน่วยนับ ราคาต่อหน่วยโดยประมาณ ส่วนลด การจัดการภาษี ยอดรวมต่อบรรทัดที่ระบบคำนวณให้ และลิงก์ไปยังคลังสินค้าและประวัติ PO ส่วนหัวจะรวบยอดจากรายการต่าง ๆ เป็น subtotal, total discount, total tax และ grand total ทั้งในสกุลเงินที่ใช้บันทึกธุรกรรมและสกุลเงินฐาน
 
-วงจรชีวิตของ PR ขับเคลื่อนด้วย workflow: `Draft` (ผู้ขอแก้ไขได้ ยังไม่กระทบงบประมาณหรือสต๊อก) → `Submitted` (เข้าสายอนุมัติ พร้อมสร้าง soft commitment กับงบประมาณ) → `Under Review` (อยู่ในมือของผู้อนุมัติหนึ่งคนหรือมากกว่า) → `Approved` (พร้อมจัดซื้อและพร้อมแปลงเป็นใบสั่งซื้อ) หรือ `Rejected` / `Sent Back` (ส่งกลับให้ผู้ขอพร้อมความคิดเห็น) การอนุมัติเป็นแบบ **หลายระดับ** และอ้างอิงตามมูลค่า — โดยทั่วไปคือ หัวหน้าแผนกก่อน จากนั้น budget controller จากนั้น finance review สำหรับ PR มูลค่าสูง และสุดท้ายคือการเซ็นอนุมัติจาก procurement — พร้อมกติกา delegation of authority เพื่อให้สายอนุมัติเดินหน้าได้แม้ผู้อนุมัติไม่อยู่ PR ที่ submit แล้วจะไม่สามารถ void ได้ การยกเลิกทำได้ผ่านเส้นทาง reject ของ workflow เท่านั้น เพื่อรักษา audit trail ไว้ครบถ้วน
+สถานะเอกสารของ PR (`tb_purchase_request.pr_status`, `enum_purchase_request_doc_status`) ขับเคลื่อนด้วย workflow: `draft` (ผู้ขอแก้ไขได้ ยังไม่กระทบงบประมาณหรือสต๊อก) → `in_progress` เมื่อ submit (สร้าง soft commitment กับงบประมาณ; PR จะคงอยู่ที่ `in_progress` ตลอดที่ถูกส่งผ่านทุกขั้นตอนกลางของสายอนุมัติ รวมถึงกรณีถูก Send-Back กลับไปที่ `draft` แล้ว submit ใหม่) → `approved` เมื่อขั้นตอนอนุมัติสุดท้ายผ่าน (พร้อมจัดซื้อและพร้อมแปลงเป็นใบสั่งซื้อ) → `completed` เมื่อทุกบรรทัดถูกแปลงเป็นใบสั่งซื้อครบแล้ว การ **Reject** ระดับเอกสารจากผู้อนุมัติคนใดก็ตาม หรือการ **Void** โดยผู้ดูแลระบบ จะยุติสายอนุมัติทันทีและย้าย PR ไปที่สถานะปลายทาง `voided` — ไม่มีสถานะ `rejected` แยกต่างหาก การ reject และ void ลงเอยที่สถานะปลายทางเดียวกัน การอนุมัติเป็นแบบ **หลายระดับ** และอ้างอิงตามมูลค่า — โดยทั่วไปคือ หัวหน้าแผนกก่อน จากนั้น budget controller จากนั้น finance review สำหรับ PR มูลค่าสูง และสุดท้ายคือการเซ็นอนุมัติจาก procurement — พร้อมกติกา delegation of authority เพื่อให้สายอนุมัติเดินหน้าได้แม้ผู้อนุมัติไม่อยู่ เมื่อ submit แล้ว ผู้ขอไม่สามารถยกเลิก PR ได้โดยตรงอีกต่อไป การยุติทำได้ผ่านเส้นทาง reject / void ของ workflow เท่านั้น เพื่อรักษา audit trail ไว้ครบถ้วน
 
 PR เป็นสัญญาณความต้องการต้นน้ำในห่วงโซ่ procure-to-pay มันบันทึก *อะไร* ที่ต้องการ *เพื่อใคร* *เมื่อไหร่* และ *ราคาประมาณเท่าไหร่* แล้วส่งความต้องการที่ผ่านการอนุมัติ มีต้นทุนกำกับ และถูกจัดสรรผู้ขายแล้วต่อให้ฝ่ายจัดซื้อ ฟังก์ชัน Allocate Vendor จะเลือกผู้ขายที่ต้องการจาก pricelist โดยใช้กฎที่จัดลำดับความสำคัญไว้ (vendor rank ก่อน ตามด้วยราคาต่ำสุด ตามด้วยประวัติการรับของล่าสุด) ดึงอัตราภาษีและราคาต่อหน่วยจาก pricelist และ PR ที่ผ่านการอนุมัติ — พร้อมปริมาณที่อนุมัติและผู้ขายที่เลือก — จะถูกแปลงเป็นใบสั่งซื้อเพื่อผูกพันภายนอก งบประมาณจะถูกบันทึกเป็น soft commitment ตอน submit และเปลี่ยนเป็น commitment จริงก็ต่อเมื่อมีการออก PO
 
