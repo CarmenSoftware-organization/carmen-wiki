@@ -2,7 +2,7 @@
 title: สินค้า (Product) — Test Scenarios — Purchaser
 description: test case ของ Purchaser (happy-path lookup, RBAC scope, validation ด้าน read, comment / feedback, edge case) สำหรับโมดูลสินค้า
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T09:00:00.000Z
 tags: product, test-scenarios, purchaser, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -40,7 +40,7 @@ dateCreated: 2026-05-15T15:30:00.000Z
 | PR-PERM-03 | Purchaser พยายามสร้างสินค้าใหม่ | **Deny — ต้องการ Product Administrator** ตาม `PRD_AUTH_001` create authority อยู่บน Product Administrator Picker ไม่มี affordance "create new" สำหรับ Purchaser การส่ง API ตรง return `"Product creation requires the Product Administrator role."` `403 Forbidden` เส้นทางของ Purchaser คือ post comment คำขอสินค้าใหม่ตาม parent Scenario 8 |
 | PR-PERM-04 | Purchaser พยายามแก้ฟิลด์ `tb_product` (เช่น update standard cost จาก supplier feed velocity สูง) | **Deny** เหมือนข้างบน — write authority เป็นของ Product Administrator API ตรง `PATCH /product/<id>` return `403 Forbidden` |
 | PR-PERM-05 | Purchaser พยายามเพิ่มแถว `tb_unit_conversion` | **Deny — ต้องการ Product Administrator** Conversion-factor authority เป็น Product Administrator ตาม `PRD_AUTH_002` เส้นทางของ Purchaser คือ post comment ขอให้เพิ่ม conversion ตาม parent Scenario 10 |
-| PR-PERM-06 | Purchaser พยายามแก้นโยบายตัวเลข `tb_product_location` | **Deny** ตาม `PRD_AUTH_004` / `INV_AUTH_004` การแก้นโยบายเป็นอำนาจ Inventory Controller เส้นทางของ Purchaser คือ escalate ผ่านช่อง feedback ของ Store Keeper (หายาก — โดยทั่วไปไม่ใช่ความกังวลของ Purchaser) |
+| PR-PERM-06 | Purchaser พยายามแก้นโยบายตัวเลข `tb_product_location` | **Deny** ตาม `PRD_AUTH_008` การแก้นโยบายเป็นอำนาจ Product Administrator (แก้ไขในรอบนี้ — ไม่ใช่ธรรมเนียม Inventory-Controller แยกต่างหาก; ดู [product/02-business-rules](/th/inventory/product/02-business-rules) `PRD_AUTH_008`) เส้นทางของ Purchaser คือ post comment เพื่อขอการเปลี่ยนแปลง (หายาก — โดยทั่วไปไม่ใช่ความกังวลของ Purchaser) |
 | PR-PERM-07 | Purchaser post comment บนสินค้า | **Allow** ตาม `PRD_XMOD_011` role ทั้งหมดสามารถ post comment Comment route ไปยัง Product Administrator สำหรับ review และตอบ |
 | PR-PERM-08 | Purchaser ดู activity log บนสินค้า | **Allow read-only** ตาม `PRD_XMOD_011` เห็นการสร้าง การแก้ การเปลี่ยนสถานะ soft-delete (เมื่อใช้ได้) บน product master |
 | PR-PERM-09 | Purchaser ดูสินค้าที่ soft-deleted | **Allow read** ถ้า filter "show inactive / deleted" toggle — แต่ **ไม่สามารถเลือก** สำหรับบรรทัดใหม่ตาม `PRD_XMOD_001` ใช้สำหรับการอ้างอิงประวัติ / research เท่านั้น |

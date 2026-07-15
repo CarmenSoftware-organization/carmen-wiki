@@ -2,7 +2,7 @@
 title: Product — Test Scenarios — Purchaser
 description: Purchaser's test cases (happy-path lookup, RBAC scope, validation read-side, comment / feedback, edge cases) for the product module.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T09:00:00.000Z
 tags: product, test-scenarios, purchaser, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -40,7 +40,7 @@ This page captures the test scenarios the Purchaser persona drives in the `produ
 | PR-PERM-03 | Purchaser attempts to create a new product | **Deny — Product Administrator required.** Per `PRD_AUTH_001`, create authority is on Product Administrator. Picker has no "create new" affordance for Purchaser. Direct API submission returns `"Product creation requires the Product Administrator role."` `403 Forbidden`. The Purchaser's path is to post a new-product-request comment per parent Scenario 8. |
 | PR-PERM-04 | Purchaser attempts to edit `tb_product` fields (e.g. update standard cost from a high-velocity supplier feed) | **Deny.** Same as above — write authority belongs to Product Administrator. Direct API `PATCH /product/<id>` returns `403 Forbidden`. |
 | PR-PERM-05 | Purchaser attempts to add a `tb_unit_conversion` row | **Deny — Product Administrator required.** Conversion-factor authority is Product Administrator per `PRD_AUTH_002`. The Purchaser's path is to post a comment requesting the conversion be added per parent Scenario 10. |
-| PR-PERM-06 | Purchaser attempts to edit `tb_product_location` numeric policy | **Deny.** Per `PRD_AUTH_004` / `INV_AUTH_004`, policy edits are Inventory Controller authority. The Purchaser's path is to escalate via Store Keeper feedback channel (rare — typically not a Purchaser concern). |
+| PR-PERM-06 | Purchaser attempts to edit `tb_product_location` numeric policy | **Deny.** Per `PRD_AUTH_008`, policy edits are Product Administrator authority (corrected this pass — not a separate Inventory-Controller convention; see [product/02-business-rules](/en/inventory/product/02-business-rules) `PRD_AUTH_008`). The Purchaser's path is to post a comment requesting the change (rare — typically not a Purchaser concern). |
 | PR-PERM-07 | Purchaser posts a comment on a product | **Allow.** Per `PRD_XMOD_011`, all roles can post comments. Comment routes to Product Administrator for review and response. |
 | PR-PERM-08 | Purchaser views activity log on a product | **Allow read-only** per `PRD_XMOD_011`. Sees creates, edits, status transitions, soft-deletes (where applicable) on the product master. |
 | PR-PERM-09 | Purchaser views soft-deleted products | **Allow read** if "show inactive / deleted" filter is toggled — but **cannot select** them on a new line per `PRD_XMOD_001`. Used for historical reference / research only. |

@@ -2,7 +2,7 @@
 title: Product Category
 description: Three-level product taxonomy (category > sub-category > item group) that drives catalogue navigation, attribute inheritance, deviation tolerances, and category-scoped permission filters.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T09:00:00.000Z
 tags: product, category, taxonomy, master-data, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -30,9 +30,9 @@ Maintained by the **Product Admin** persona. Referenced by `category_id` on ever
 
 | Task | Where | Notes |
 |---|---|---|
-| Add a top-level category | Product Management → Category → **New** | `code` must be unique among non-deleted rows |
-| Add a sub-category | Open category → **Add sub-category** | FK `product_category_id` set to parent |
-| Add an item group (leaf) | Open sub-category → **Add item group** | FK `product_subcategory_id` set to parent |
+| Add a top-level category | Product Management → Category → **Add Category** | `code` is **server-generated** (running-number) — corrected this pass (2026-07-13 frontend change): the dialog's Code field is always disabled with an "auto-generated" placeholder and is stripped from the create payload; the API itself still accepts a client-supplied code (e.g. bulk import). |
+| Add a sub-category | Hover the parent category row → click the **Add child** (+) icon that appears | FK `product_category_id` set to parent; child inherits the parent's tax profile / deviation defaults. There is no separate "Add sub-category" button — the same hover "Add child" action is used at every non-leaf level. |
+| Add an item group (leaf) | Hover the sub-category row → click **Add child** (+) | FK `product_subcategory_id` set to parent; item groups are the leaf level and have no "Add child" action of their own. |
 | Set price deviation tolerance | Edit any level → `price_deviation_limit` | % cap on PO unit price vs master/last-receiving; finest level wins |
 | Set qty deviation tolerance | Edit any level → `qty_deviation_limit` | % cap on GRN qty vs PO qty; finest level wins |
 | Override tax profile | Edit any level → `tax_profile_id` / `tax_rate` | Affects NEW products only — existing products keep snapshotted setup |
@@ -44,7 +44,7 @@ Maintained by the **Product Admin** persona. Referenced by `category_id` on ever
 
 | Symptom / Message | Cause | Action |
 |---|---|---|
-| "Code already exists" on category | `tb_product_category.code` unique among non-deleted rows | Pick a different code, or restore the soft-deleted row |
+| "Code already exists" on category | `tb_product_category.code` unique among non-deleted rows | Server-side rule, still enforced — but since the UI no longer accepts a typed code (corrected this pass), this error path is now reachable only via bulk import or direct API, not the interactive Add-Category dialog |
 | "Cannot delete — products still reference this" | Active `tb_product` rows point here | Reassign products first, then retry |
 | "Cannot re-parent sub-category" | FK on `product_subcategory_id` is `NoAction`; products reference its item groups | Manual data migration required — not a UI action |
 | Tax change not reflected on existing products | Tax profile snapshot at product save | Re-save the product to pick up the new default |

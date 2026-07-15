@@ -2,7 +2,7 @@
 title: สินค้า (Product) — User Flow
 description: วงจรชีวิตของข้อมูลหลักของสินค้าและไฟล์ flow เฉพาะ persona
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T09:00:00.000Z
 tags: product, user-flow, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -63,7 +63,7 @@ State machine เดียวควบคุม record สินค้า:
 | Product Administrator | สินค้าถูกปิดใช้ | Purchaser, Store Keeper | Picker filter สินค้าออกจาก default เอกสารใหม่ บรรทัดที่มีอยู่บนเอกสาร active ยังคงถูกต้อง การอ้างอิงของสูตร (ถ้ามี) ได้รับ recipe-review flag ถ้าการปิดใช้ถูก override ตาม `PRD_LIFE_002` |
 | Purchaser | พบ entry แคตตาล็อกที่เก่าหรือขาดขณะจัดทำ PR / PO | Product Administrator | Purchaser post comment (`tb_product_comment`) บนสินค้าที่ได้รับผลกระทบ (หรือสำหรับสินค้าที่ขาด post "ขอสินค้าใหม่" ผ่าน comment บนสินค้าที่ใกล้ที่สุดที่มีอยู่หรือผ่านช่องคำขอแยก) Product Administrator หยิบ comment ตรวจสอบ update master หรือสร้างสินค้าใหม่ ตอบบน thread comment |
 | Store Keeper | Barcode ไม่ตรงระหว่างการรับหรือการนับ (บาร์โค้ดที่สแกน resolve เป็นสินค้าผิด หรือ resolve ไม่ได้เลย) | Product Administrator | Store Keeper post comment บนสินค้าที่ได้รับผลกระทบด้วยบาร์โค้ดที่สแกนและฉลากสินค้าทางกายภาพ Product Administrator validate รายงาน (โดยทั่วไปโดยตรวจสอบ pricelist ของผู้ขายหรือ GRN) และ update `tb_product.barcode` Store Keeper สแกนใหม่เพื่อยืนยัน |
-| Store Keeper | นโยบายสต๊อกต่อ location ต้องปรับ (min / max / par / reorder รู้สึกผิดสำหรับ location) | Inventory Controller (ตาม [inventory/02-business-rules](/th/inventory/inventory/02-business-rules) `INV_AUTH_004`) | Store Keeper post comment บนสินค้าหรือบน `tb_product_location` (ผ่าน tab location-policy ของสินค้า) Inventory Controller — **ไม่ใช่** Product Administrator — เป็นเจ้าของการแก้ไขนโยบายเติมสต๊อก ดังนั้น routing ไปที่ inventory Product Administrator อาจมีส่วนร่วมถ้าต้องการการเปลี่ยนเชิงโครงสร้างใน location-mapping เอง (เช่นการเพิ่ม location ใหม่ให้สินค้า) |
+| Store Keeper | นโยบายสต๊อกต่อ location ต้องปรับ (min / max / par / reorder รู้สึกผิดสำหรับ location) | Product Administrator | Store Keeper post comment บนสินค้าหรือบน `tb_product_location` (ผ่าน tab Locations ของสินค้า) **แก้ไขในรอบนี้:** ฉบับร่างก่อนหน้าของหน้านี้ route handoff ไปยัง "Inventory Controller" แยกต่างหากตาม `INV_AUTH_004` — ไม่มี edit surface เช่นนั้นอยู่จริง; ฟิลด์ตัวเลขของ `tb_product_location` ถูกแก้ไขโดยตรงบนฟอร์มแก้ไขของโมดูล Product เอง (tab Locations, `pd-location-tab.tsx`) ซึ่งเป็น surface เดียวกับที่ Product Administrator ใช้กับฟิลด์อื่นทุกฟิลด์ `INV_AUTH_004` ของโมดูล inventory เองก็ถูกทำเครื่องหมายเป็น *(unconfirmed)* ด้วยเหตุผลนี้ |
 | Product Administrator | งาน bulk import เสร็จ | Product Administrator (ตัวเอง — review error report) | `created_by_id` ของ import job คือ Product Administrator; error report ดาวน์โหลดได้ ไม่มี handoff ภายนอก — Administrator iterate import จนสำเร็จ |
 | System Administrator | การตั้งค่า RBAC role สำหรับโมดูล product ถูกเปลี่ยน | Persona ทั้งหมด | ขอบเขต persona อาจเลื่อน (เช่น approver role เพิ่มเติมเพิ่มเข้ากับเกณฑ์ SoD ตาม `PRD_AUTH_012`) ไม่มีการเปลี่ยนสถานะธุรกรรม; กฎใหม่ใช้ prospectively |
 | Auditor | การ query audit เสร็จ | (ไม่มี action ปลายน้ำ) | Read-only handoff — Auditor บริโภคสถานะ product master ประวัติ comment และ activity log โดยไม่เขียนกลับ |

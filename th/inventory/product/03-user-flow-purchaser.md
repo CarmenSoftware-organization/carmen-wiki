@@ -2,7 +2,7 @@
 title: สินค้า (Product) — User Flow — Purchaser
 description: flow ของ Purchaser ในโมดูลสินค้า — การ lookup อ่านอย่างเดียว การอ้างอิง และเส้นทาง feedback
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T09:00:00.000Z
 tags: product, user-flow, purchaser, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -16,7 +16,7 @@ dateCreated: 2026-05-15T15:30:00.000Z
 
 ## 1. บทบาทในโมดูลนี้
 
-persona **Purchaser** เป็น **ผู้บริโภค read-only** ของแคตตาล็อกสินค้า ในโมดูล product อำนาจของพวกเขาคือ **lookup เท่านั้น**: ค้นหาและ filter แคตตาล็อก live ดูรายละเอียดสินค้า (รวม standard cost ต้นทุนรับล่าสุดตาม `PRD_CALC_008` การแปลงหน่วย vendor mapping การจำแนก tax profile) อ้างอิง conversion factor หน่วยสั่งซื้อเมื่อจัดทำบรรทัด PR / PO และ post comment (`tb_product_comment`) บนสินค้าที่พบเก่าหรือผิดหรือเพื่อขอให้สร้างสินค้าใหม่ พวกเขา **ไม่** สร้างสินค้า **ไม่** แก้ฟิลด์ข้อมูลหลักใด ๆ **ไม่** แก้การแปลงหน่วยหรือการจำแนก **ไม่** อนุมัติการเปลี่ยน standard cost (role ของ Cost Controller / Finance) **ไม่** แก้นโยบายสต๊อกต่อ location (role ของ Inventory Controller) และ **ไม่** มีส่วนร่วมในการเปลี่ยนวงจรชีวิตของสินค้า กิจกรรมด้านคลังของพวกเขา (การจัดทำ PR และ PO) เป็นธุรกรรมเต็มและอยู่ในไฟล์ persona ของ [purchase-request](/th/inventory/purchase-request) และ [purchase-order](/th/inventory/purchase-order) — หน้านี้ครอบคลุมเฉพาะ surface **product-catalogue lookup** ที่พวกเขาแตะเพื่อสนับสนุนงานนั้น
+persona **Purchaser** เป็น **ผู้บริโภค read-only** ของแคตตาล็อกสินค้า ในโมดูล product อำนาจของพวกเขาคือ **lookup เท่านั้น**: ค้นหาและ filter แคตตาล็อก live ดูรายละเอียดสินค้า (รวม standard cost ต้นทุนรับล่าสุดตาม `PRD_CALC_008` การแปลงหน่วย vendor mapping การจำแนก tax profile) อ้างอิง conversion factor หน่วยสั่งซื้อเมื่อจัดทำบรรทัด PR / PO และ post comment (`tb_product_comment`) บนสินค้าที่พบเก่าหรือผิดหรือเพื่อขอให้สร้างสินค้าใหม่ พวกเขา **ไม่** สร้างสินค้า **ไม่** แก้ฟิลด์ข้อมูลหลักใด ๆ **ไม่** แก้การแปลงหน่วยหรือการจำแนก **ไม่** อนุมัติการเปลี่ยน standard cost (role ของ Cost Controller / Finance) **ไม่** แก้นโยบายสต๊อกต่อ location (อำนาจของ Product Administrator — ดู [03-user-flow-product-admin.md](./03-user-flow-product-admin.md) Section 1) และ **ไม่** มีส่วนร่วมในการเปลี่ยนวงจรชีวิตของสินค้า กิจกรรมด้านคลังของพวกเขา (การจัดทำ PR และ PO) เป็นธุรกรรมเต็มและอยู่ในไฟล์ persona ของ [purchase-request](/th/inventory/purchase-request) และ [purchase-order](/th/inventory/purchase-order) — หน้านี้ครอบคลุมเฉพาะ surface **product-catalogue lookup** ที่พวกเขาแตะเพื่อสนับสนุนงานนั้น
 
 ## 2. Entry Point และ Primary Flow
 
