@@ -2,7 +2,7 @@
 title: Store Requisition — User Flow — Requester
 description: Requester's flow within the store-requisition module — identifies stock needs, raises and submits the SR.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T12:00:00.000Z
 tags: store-requisition, user-flow, requester, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -11,12 +11,13 @@ dateCreated: 2026-05-15T13:30:00.000Z
 # Store Requisition — User Flow — Requester
 
 > **At a Glance**
-> **Persona:** Outlet Manager (consuming location) &nbsp;·&nbsp; **Module:** [store-requisition](/en/inventory/store-requisition) &nbsp;·&nbsp; **Workflow stages:** draft → in_progress (first approval stage; retract / amend on send-back) &nbsp;·&nbsp; **Key permissions:** create / edit / submit draft, withdraw draft, retract at first stage, amend after send-back
+> **Persona:** Outlet Manager (consuming location) &nbsp;·&nbsp; **Module:** [store-requisition](/en/inventory/store-requisition) &nbsp;·&nbsp; **Workflow stages:** draft → in_progress (amend on send-back) &nbsp;·&nbsp; **Key permissions:** create / edit / submit draft, soft-delete own draft, amend after send-back
+> ⚠️ **Corrected this pass:** "retract at first approval stage" and the SoD claim below are not backed by current source — see the callout in Section 1.
 > **What this persona does:** Raises the SR — picks source/destination + sr_type, adds lines with requested_qty, submits for approval, and amends on send-back.
 
 ## 1. Role in This Module
 
-The **Requester** persona is the **Outlet Manager** (kitchen, bar, banquet, restaurant) — the person at the consuming location who identifies stock needs and raises the requisition against a source warehouse or central store. The Requester owns the editable `draft`: they pick the source location and destination outlet, choose the movement type (`sr_type = issue` for direct-cost consumption pulls, `sr_type = transfer` for moves into another inventory-holding location), add product lines with `requested_qty` and a required date (`expected_date`), attach supporting notes (recipe demand snapshot, banquet event detail, par-level rationale), and submit the document for approval. On entry the requester is logged in with create-SR permission and is a member of `tb_store_requisition.department_id`; the requester is permitted to act between the chosen `from_location_id` and `to_location_id`. The SR states owned by this persona are `draft` (full edit rights) and a sliver of `in_progress` — the requester can retract their own SR while the workflow is still at the first approval stage and no approver has yet acted (`SR_AUTH_004`), and can amend / resubmit when an approver sends the document back for correction (the requester stage is re-entered via the workflow). Segregation of duties forbids the requester from approving their own SR (`SR_AUTH_011`) — the SR module enforces this at the approve action.
+The **Requester** persona is the **Outlet Manager** (kitchen, bar, banquet, restaurant) — the person at the consuming location who identifies stock needs and raises the requisition against a source warehouse or central store. The Requester owns the editable `draft`: they pick the source location and destination outlet, choose the movement type (`sr_type = issue` for direct-cost consumption pulls, `sr_type = transfer` for moves into another inventory-holding location), add product lines with `requested_qty` and a required date (`expected_date`), attach supporting notes (recipe demand snapshot, banquet event detail, par-level rationale), and submit the document for approval. On entry the requester is logged in with create-SR permission and is a member of `tb_store_requisition.department_id`; the requester is permitted to act between the chosen `from_location_id` and `to_location_id`. The SR states owned by this persona are `draft` (full edit rights, including soft-delete/withdrawal — confirmed restricted to `draft` only) and a sliver of `in_progress` — the requester can amend / resubmit when the current-stage actor sends the document back for correction (the requester stage is re-entered via the workflow). **Corrected this pass:** no confirmed action lets the requester retract an already-submitted (`in_progress`) SR — `store-requisition.service.ts` has no `cancel`/`withdraw` endpoint, only a `draft`-only soft-delete. The claim that "segregation of duties forbids the requester from approving their own SR" (`SR_AUTH_011`) is also unconfirmed — no `requestor_id` cross-check was found at the approve action in current source.
 
 ### Workflow position (Requester highlighted)
 
@@ -25,20 +26,20 @@ graph LR
     create["Create SR (draft)"]:::current -->|"submit"| approval(("in_progress\n— approval stage"))
     approval -->|"send back"| amend["Amend & resubmit"]:::current
     amend -->|"resubmit"| approval
-    approval -->|"all lines approved"| fulfil(("in_progress\n— fulfilment stage"))
-    fulfil -->|"commit"| completed(("completed"))
-    approval -->|"all lines rejected\nor requester retract"| cancelled(("cancelled"))
-    draft_cancel["Withdraw own draft"]:::current --> cancelled
-    create --> draft_cancel
-    completed -.->|"monitor / observe"| observer["Requester monitors\nreceipt"]:::current
+    approval -->|"all lines approved"| fulfil(("in_progress\n— issue stage"))
+    fulfil -->|"final stage advance"| completed(("completed"))
+    approval -->|"whole-document reject (any current-stage actor)"| voided(("voided"))
+    draft_delete["Soft-delete own draft (draft only)"]:::current --> deleted[("(deleted)")]
+    create --> draft_delete
+    completed -.->|"monitor / observe"| observer["Requester monitors\nissuance"]:::current
     classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
 ```
 
 ### Permission Matrix — V1 Status × Action (Requester)
 
-The Requester holds full edit rights at `draft` and re-enters `in_progress` only when an approver sends the document back for correction. Segregation of duties (`SR_AUTH_011`) forbids the Requester from approving their own SR — the module enforces this at the approve action.
+The Requester holds full edit rights at `draft` and re-enters `in_progress` only when the current-stage actor sends the document back for correction. The claim that segregation of duties forbids the Requester from approving their own SR (`SR_AUTH_011`) is **unconfirmed** — no such check was found in `store-requisition.service.ts`.
 
-| Action | `draft` | `in_progress` (send-back only) | `completed` | `cancelled` / `voided` |
+| Action | `draft` | `in_progress` (send-back only) | `completed` | `voided` |
 |---|---|---|---|---|
 | Create SR | ✅ (`SR_AUTH_001`) | — | — | — |
 | Edit header (locations, dates, description, dimension) | ✅ (`SR_AUTH_002`) | ✅ send-back only | ❌ | ❌ |
@@ -46,9 +47,9 @@ The Requester holds full edit rights at `draft` and re-enters `in_progress` only
 | Attach supporting evidence (comments / attachments) | ✅ | ✅ | ❌ | ❌ |
 | Submit for approval (`draft → in_progress`) | ✅ (`SR_AUTH_003`) | — | — | — |
 | Resubmit after send-back | — | ✅ (`SR_AUTH_003`) | — | — |
-| Withdraw / cancel own draft | ✅ (`SR_AUTH_004`) | ✅ at first approval stage only (`SR_AUTH_004`) | ❌ | — |
+| Soft-delete own draft (only confirmed withdrawal path) | ✅ (`SR_AUTH_004`) | ❌ — no confirmed `in_progress` withdrawal action | ❌ | — |
 | View SR (read-only) | ✅ | ✅ | ✅ | ✅ |
-| Approve own SR | ❌ (SOD: Requester ≠ Approver per `SR_AUTH_011`) | ❌ | — | — |
+| Approve own SR | Unconfirmed whether blocked — no SoD check found in code | Unconfirmed | — | — |
 
 > ℹ️ **Send-back loop:** When an Approver sends the SR back for correction, the SR remains at `doc_status = in_progress` but the `workflow_current_stage` returns to the requester stage. The Requester amends and resubmits; already-approved lines are not reversed.
 
@@ -81,30 +82,29 @@ The Requester holds full edit rights at `draft` and re-enters `in_progress` only
 - **Emergency / out-of-cycle SR**: the outlet has an immediate need outside the normal weekly replenishment cycle. The requester raises the SR with `description` flagged as emergency, sets `expected_date` to today / tomorrow, and may attach an emergency rationale memo; the approver and fulfiller see the urgency flag in their queues. There is no separate `emergency_flag` column on the schema — urgency is conveyed via `description` and `info` extension; the workflow may have an emergency-stage routing in tenant config.
 - **Recipe-driven SR**: the recipe module pre-populates the SR with computed ingredient quantities. The requester reviews and may adjust quantities (downward only — upward changes invalidate the recipe assumption; the requester should instead amend the production plan and re-trigger recipe demand). On submit the SR carries `info.recipe_id` as the back-reference.
 - **Send-back from approver**: the approver routes the SR back to the requester stage with `review_message` per affected line. The requester sees the document in their queue at `doc_status = in_progress` but at the requester workflow stage; they may edit `requested_qty` or `description`, address the reviewer's note, and resubmit (which re-routes the document to the approval stage). Note: the requester cannot bypass an active send-back — they must respond.
-- **Withdraw own SR**: while the workflow is still at the first approval stage and no approver has yet acted, the requester may cancel their own SR (`in_progress → cancelled` per `SR_AUTH_004`) with a reason. Past that point, the requester must ask the approver to reject the document.
+- **Withdraw own SR** — **corrected this pass:** there is no confirmed action to retract an already-submitted (`in_progress`) SR. The only confirmed pre-submit withdrawal is soft-deleting the `draft`. Once submitted, the requester must ask the current-stage actor to reject the whole document (which sets `voided`, not `cancelled`).
 
 ## 4. Exit Point / Handoffs
 
-The Requester's involvement on a given SR ends at one of four boundaries:
+The Requester's involvement on a given SR ends at one of three confirmed boundaries:
 
-- **Submit succeeds** — handoff to the **Approver** (Department Head) at the first approval stage. The document is now `in_progress` and held in the approver's queue; the requester is in monitor-only mode until either a send-back routes the document back or the approver's decision moves the workflow forward.
-- **Send-back received** — temporary handoff **back to the Requester** at the requester workflow stage. The requester addresses the approver's `review_message`, edits as needed, and re-submits. This is a loop within `in_progress`, not a status change.
-- **Cancellation (own withdrawal at first approval stage)** — `in_progress → cancelled` per `SR_AUTH_004`; document terminates; the requester may raise a new SR if the need persists.
-- **All-lines-rejected at approval** — `in_progress → cancelled` automatic per `SR_POST_004`; the requester sees the document in `cancelled` with per-line `reject_message` explaining why; the requester may raise a revised SR with tighter quantities, different source, or additional justification.
+- **Submit succeeds** — handoff to whoever holds the first workflow stage. The document is now `in_progress`; the requester is in monitor-only mode until either a send-back routes the document back or the workflow advances.
+- **Send-back received** — temporary handoff **back to the Requester** at the requester workflow stage. The requester addresses the `review_message`, edits as needed, and re-submits. This is a loop within `in_progress`, not a status change.
+- **Whole-document reject** — `in_progress → voided` (not `cancelled` — see the Section 1 correction note); document terminates; the requester may raise a new SR if the need persists.
 
-After successful commit by the fulfiller, the Requester is in **observer / receiver-coordination mode**: they may monitor the destination Receiver's acknowledgement and flag any discrepancy back to the Receiver. In small outlets the Requester and Receiver are often the same person wearing two hats; in larger operations the Requester focuses on demand planning while the Receiver handles physical receipt at the dock.
+After the final workflow-stage advance completes the SR, the Requester's role is to monitor for the goods arriving — there is no confirmed "Receiver" persona or discrepancy-flag mechanism in current source (see [03-user-flow-receiver.md](./03-user-flow-receiver.md)), so any post-commit acknowledgement is informal today.
 
 ## 5. References
 
-- Parent overview: [03-user-flow.md](./03-user-flow.md) — the canonical five-value lifecycle (`draft / in_progress / completed / cancelled / voided`) on `enum_doc_status`, the global state machine that this persona's path traverses, and the cross-persona handoff table.
+- Parent overview: [03-user-flow.md](./03-user-flow.md) — the corrected lifecycle on `enum_doc_status` (`draft / in_progress / completed`, plus `voided` as the one reachable cancellation path — `cancelled` is enum-defined but unreachable), the global state machine that this persona's path traverses, and the cross-persona handoff table.
 - `../carmen/docs/store-requisitions/SR-User-Experience.md` § Creating a Store Requisition — carmen/docs source for the requester (named "Alex Chen, Store Manager" in the persona narrative); journey steps map onto Section 2 above.
 - `../carmen/docs/store-requisitions/SR-Overview.md` § User Roles → Requester row — carmen/docs source for the persona's responsibility scope.
 - `../carmen/docs/store-requisitions/Store Requisitions.md` § UC-68 (Create and Manage Store Requisition) — use-case main success scenario for create / submit.
 - Sibling: [03-user-flow-approver.md](./03-user-flow-approver.md) — downstream persona that picks up the SR after submit; handles the approve / trim / reject / send-back decisions.
-- Sibling: [03-user-flow-fulfiller.md](./03-user-flow-fulfiller.md) — fulfilment persona; the Requester's outcome on the goods depends on the Fulfiller's `issued_qty` per line.
-- Sibling: [03-user-flow-receiver.md](./03-user-flow-receiver.md) — destination acknowledgement; in small outlets often the same physical user as the Requester.
-- Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — Inventory Controller / Finance / Sysadmin oversight of the SR flow; variance review and config that bounds the requester's choices.
+- Sibling: [03-user-flow-fulfiller.md](./03-user-flow-fulfiller.md) — issuance persona; the Requester's outcome on the goods depends on the `issued_qty` recorded there.
+- Sibling: [03-user-flow-receiver.md](./03-user-flow-receiver.md) — corrected this pass to document that no distinct Receiver persona was found in current source.
+- Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — corrected this pass; most of the oversight/config workspace it previously described was not found in current source.
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical `enum_doc_status`, `enum_sr_type`, and the `tb_store_requisition_detail` columns the requester writes (`product_id`, `requested_qty`, `dimension`).
-- Sibling: [02-business-rules.md](./02-business-rules.md) — `SR_VAL_001`–`SR_VAL_009` (submit-time gates the requester encounters), `SR_AUTH_001`–`SR_AUTH_004` (the requester's authority scope), `SR_AUTH_011` (Requester ≠ Approver SoD).
+- Sibling: [02-business-rules.md](./02-business-rules.md) — `SR_VAL_001`–`SR_VAL_009` (submit-time gates the requester encounters), `SR_AUTH_001`–`SR_AUTH_003` (the requester's confirmed authority scope), `SR_POST_011` (draft-only soft-delete).
 - Related: [recipe](/en/inventory/recipe) — the auto-create path; recipe demand pre-populates an SR `draft` for the requester to review and submit.
 - Related: [inventory](/en/inventory/inventory) — source on-hand visibility at line-entry time (UI-only enrichment, not persisted on the SR line) and the downstream inventory-transaction write the SR triggers on commit.

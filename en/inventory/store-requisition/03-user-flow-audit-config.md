@@ -1,8 +1,8 @@
 ---
 title: Store Requisition — User Flow — Audit & Config
-description: Inventory Controller, Finance, Sysadmin, and Auditor flow within the store-requisition module — oversight, configuration, period close, and post-commit signoff.
+description: Inventory Controller, Finance, Sysadmin, and Auditor flow within the store-requisition module — largely unconfirmed persona; documents what is and is not verified in current source.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T12:00:00.000Z
 tags: store-requisition, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -11,114 +11,40 @@ dateCreated: 2026-05-15T13:30:00.000Z
 # Store Requisition — User Flow — Audit & Config
 
 > **At a Glance**
-> **Persona:** Inventory Controller + Finance + Sysadmin + Auditor &nbsp;·&nbsp; **Module:** [store-requisition](/en/inventory/store-requisition) &nbsp;·&nbsp; **Workflow stages:** off-path — oversight, GL verification, RBAC / workflow config, pre-commit void &nbsp;·&nbsp; **Key permissions:** read audit chain, configure workflow / RBAC / thresholds, admin-void of draft / in_progress, period-close signoff
-> **What this persona does:** Configures and oversees the SR lifecycle — variance monitoring, GL reconciliation, period close, RBAC, and pre-commit administrative void.
+> **Persona:** Inventory Controller + Finance + Sysadmin + Auditor — **largely unconfirmed as distinct SR-module personas in current source** &nbsp;·&nbsp; **Module:** [store-requisition](/en/inventory/store-requisition)
+> **What this page documents:** why the previously-described oversight/configuration workspace (variance dashboard, admin-void console, GL-verification queue, RBAC/workflow console, SoD-relaxation thresholds) does not match current source, and what is actually confirmed.
 
-## 1. Role in This Module
+> ⚠️ **Major correction this pass.** The previous version of this page described four sub-roles with dedicated screens: an Inventory Controller variance dashboard and pre-commit admin-void console, a Finance GL-reconciliation queue and closed-period gate, a Sysadmin workflow/RBAC/SoD-relaxation-threshold configuration console, and an Auditor read-only signature-trace tool. A repo-wide check against current source confirmed almost none of it:
+> - **No admin-void console.** `store-requisition.service.ts` has no `void`/`admin-void` method at all. The only way `doc_status` reaches `voided` is `StoreRequisitionService.reject()` — the same whole-document reject action available to whoever holds the current workflow stage, not an Inventory-Controller-exclusive path. See [03-user-flow-approver.md](./03-user-flow-approver.md) and [02-business-rules.md](./02-business-rules.md) § 5.
+> - **No GL/journal-entry code at all.** A repo-wide search of `carmen-turborepo-backend-v2` for `journal` / `ledger` against this module and its `inventory-transaction` dependency returned zero hits. There is nothing for a "Finance" role to verify or reconcile.
+> - **No closed-period gate.** A search for `period` in `store-requisition.service.ts`, `store-requisition.logic.ts`, and the SR DTOs returned zero hits. The inventory-transaction layer resolves a current period only to *stamp* `at_period` on the transaction row (for lot-sequencing) — it does not block anything.
+> - **No RBAC/workflow console, threshold editor, or SoD-relaxation config specific to SR.** `tb_workflow` is a real, shared configuration table (also used by PR/PO/GRN), but no `threshold` or `delegat` hits were found anywhere in this module or the workflow orchestrator, and `enum_stage_role` has no `finance` member.
+> - **No variance-dashboard route or component** was found in `routes/store-operation/store-requisition/`.
+> - **No Auditor-specific read-only role or route** was found; any audit trail available is the same `workflow_history` / per-line `history` JSON any user with read access to the SR can already see.
+>
+> This page is kept (rather than deleted) because the module's persona set names these roles in the landing page's legacy role table and the parent [03-user-flow.md](./03-user-flow.md) cross-persona table. The content below documents the correction rather than repeating the fabricated workspace. See the module progress-log Discrepancy entry for the full source-check trail.
 
-The **Audit / Config** persona covers four overlapping operational roles that together govern the SR module's correctness, completeness, and configuration: the **Inventory Controller** (oversees the SR flow end-to-end, monitors variance and partial-fulfilment patterns, reconciles inventory sub-ledger against GL postings, manages approval thresholds, signs off on period-end activity, and is the administrative-void authority for `draft` / `in_progress` SRs), the **Finance Team** (verifies cost-centre mapping and journal entries on `completed` SRs, reconciles outlet food-cost reports against SR postings, ensures cost allocation between departments is accurate at period close, and blocks closed-period commits via `SR_VAL_014`), the **System Administrator** (owns RBAC for create / approve / fulfil authority, the workflow stage configuration in `tb_workflow`, approval value thresholds, segregation-of-duties relaxations for low-value SRs, and the auto-create wiring from `[recipe](/en/inventory/recipe)`), and the **Auditor** (read-only review of SR history — per-line signatures, `history` JSON timelines, comment threads, linked inventory transactions, journal entries — to confirm controls are operating, variance is being investigated, and SoD is enforced). None of these roles act on the SR happy path; they act on the **periphery** — before any SR exists (config), during the flow (variance monitoring), and after commit (signoff, period close, audit trace). Two of them — Inventory Controller and System Administrator — hold the administrative-void authority (`SR_AUTH_013`) for pre-commit SRs; none can void a `completed` SR (corrections after commit flow through `[inventory-adjustment](/en/inventory/inventory-adjustment)`).
+## 1. What Is and Isn't Confirmed
 
-### Position relative to the transactional flow (off-path observers)
+| Claim from the prior version | Status |
+|---|---|
+| A dedicated "Admin Void" action, restricted to Inventory Controller / System Administrator | **Not implemented as described.** The real mechanism is the whole-document `reject` action, available to whoever holds the current workflow stage; it sets `voided`, not a separately-gated administrative action. |
+| Finance GL-reconciliation queue, journal-entry verification, closed-period commit block | **Not implemented.** No journal/ledger code and no period-closed check exist anywhere in this module. |
+| Sysadmin RBAC / workflow-config console, approval value-thresholds, SoD-relaxation thresholds | **Unconfirmed / not found.** `tb_workflow` configuration is real and shared across modules, but no threshold or SoD-relaxation fields were found for SR specifically. |
+| Auditor read-only signature-trace tool | **Unconfirmed as a distinct route.** The underlying data (`workflow_history`, per-line `history` JSON, comment threads) is real and readable by any user with SR read access — there is no confirmed Auditor-exclusive screen. |
+| Recipe auto-create wiring (`[recipe](/en/inventory/recipe)` → SR draft) | **Plausible but not re-verified this pass** — carried over from an earlier version of this page; the SR side of this (an SR arriving in `draft` with `info.recipe_id` populated) is consistent with the data model, but the recipe-module trigger itself belongs to that module's own resync pass. |
+| Period-end reconciliation / signoff as a distinct workflow | **Not implemented** — depends on the non-existent closed-period gate and journal-entry feature above. |
 
-```mermaid
-graph LR
-    subgraph transactional["Transactional Happy Path"]
-        draft(("draft")) -->|"submit"| inprog(("in_progress"))
-        inprog -->|"commit"| completed(("completed"))
-        inprog -->|"cancelled"| cancelled(("cancelled"))
-    end
-    ic["Inventory Controller\n(variance review, pre-commit void)"]:::audit -.-> transactional
-    finance["Finance Team\n(GL verification, period close)"]:::audit -.-> transactional
-    sysadmin["System Administrator\n(RBAC, workflow config)"]:::cfg -.-> transactional
-    auditor["Auditor\n(read-only signature trace)"]:::audit -.-> transactional
-    classDef audit fill:#eab308,color:#000,stroke:#eab308;
-    classDef cfg fill:#7c3aed,color:#fff,stroke:#7c3aed;
-```
+## 2. What To Do With This Page
 
-### Permission Matrix — V6 Action × Sub-persona (Audit / Config)
+Until an admin-void endpoint, a GL/journal-posting feature, a period-close gate, or an RBAC/workflow-config console specific to this module are confirmed to exist, do not treat any "Inventory Controller admin-voids," "Finance blocks a closed-period commit," "Sysadmin configures SoD-relaxation thresholds," or "Auditor traces signatures" claim elsewhere in this module's pages as live behavior.
 
-These roles act on the periphery of the SR lifecycle — before any SR exists (Sysadmin config), during the flow (Inventory Controller variance monitoring), and after commit (Finance signoff, Auditor trace). None advance the happy-path lifecycle; two hold administrative-void authority for pre-commit SRs.
+The closest existing analogues today are: (a) whoever holds the current workflow stage can reject the whole document (`voided`, not a separate admin path); (b) `tb_workflow` is configurable per tenant, the same generic mechanism PR/PO/GRN use, with no confirmed SR-specific threshold or SoD fields; (c) `workflow_history` and per-line `history` JSON are readable by anyone with SR access, which is the closest thing to an audit trail. Building dedicated variance-dashboard, GL-verification, or RBAC-console screens would be new functionality, not a documentation gap.
 
-| Action | Inventory Controller | Finance Team | System Administrator | Auditor |
-|---|---|---|---|---|
-| View SR at any status | ✅ (`SR_AUTH_009`) | ✅ (`SR_AUTH_010`) | ✅ | ✅ (read-only) |
-| View per-line signature chain and `history` JSON | ✅ | ✅ | ✅ | ✅ |
-| Monitor variance dashboard (`requested − issued`) | ✅ (`SR_AUTH_009`) | ✅ | — | ❌ |
-| Pre-commit administrative void (`draft` / `in_progress → voided`) | ✅ (`SR_AUTH_013`) | ❌ | ✅ (`SR_AUTH_013`) | ❌ |
-| Void `completed` SR | ❌ (`SR_POST_010` — not allowed; use inventory-adjustment) | ❌ | ❌ | ❌ |
-| Investigate and resolve Receiver discrepancy | ✅ | ✅ (GL side) | — | ❌ |
-| Co-author inventory adjustment for post-commit correction | ✅ (`SR_XMOD_009`) | ✅ (verify GL balance) | — | ❌ |
-| Block closed-period commits (`SR_VAL_014`) | — | ✅ (`SR_AUTH_010`) | — | ❌ |
-| Configure workflow stages (`tb_workflow`) | — | — | ✅ (`SR_AUTH_014`) | ❌ |
-| Manage RBAC (assign / revoke roles per location) | — | — | ✅ | ❌ |
-| Configure SoD-relaxation thresholds | — | — | ✅ | ❌ |
-| Wire recipe auto-create (`[recipe](/en/inventory/recipe)` → SR draft) | — | — | ✅ | ❌ |
-| Edit SR header / lines | ❌ | ❌ | ❌ | ❌ |
-| Approve lines | ❌ | ❌ | ❌ | ❌ |
-| Commit / issue goods | ❌ | ❌ | ❌ | ❌ |
+## 3. References
 
-> ℹ️ **Void scope:** Administrative void (`SR_AUTH_013`) is pre-commit only. A `completed` SR cannot be voided by any sub-role here — corrections flow through `[inventory-adjustment](/en/inventory/inventory-adjustment)` with the SR `id` as back-reference (`SR_XMOD_009`).
-
-## 2. Entry Point and Primary Flow
-
-**Entry points (one per sub-role):**
-
-- **Inventory Controller — Variance dashboard** — list view across all `completed` SRs in a period with computed `requested_qty − issued_qty` (Section 3.2 of [02-business-rules.md](./02-business-rules.md)), filterable by outlet, source location, requester, approver, and date range. Also: pre-commit SR queue (`draft` / `in_progress` SRs that look stale or anomalous).
-- **Finance — GL reconciliation queue** — list view across `completed` SRs in the current period, surfacing each SR's linked inventory transactions and the journal entries they generated; filterable by cost-centre, outlet, and date range. Also: period-close dashboard.
-- **Sysadmin — Workflow / RBAC console** — `tb_workflow` configuration screen, approval-stage editor, RBAC matrix per location / department, SoD-relaxation thresholds, auto-create wiring (recipe → SR).
-- **Auditor — Read-only audit trail** — SR detail in read-only mode; comment threads, `workflow_history`, per-line `history` JSON, inventory transactions, journal entries; signature trace by user / date / action.
-
-**Primary flow (oversight / configuration, 10 steps — runs continuously across periods, not per-SR):**
-
-1. **(Sysadmin) Configure the workflow at tenant onboarding.** Define approval stages in `tb_workflow` (e.g. Stage 1 = Department Head, Stage 2 = Operations Manager above value threshold); set `user_action.execute` defaults per stage; configure SoD-relaxation thresholds (e.g. "Approver = Fulfiller allowed for SRs < ฿5,000"); wire the auto-create source from `[recipe](/en/inventory/recipe)`. Set per-location costing methods (the source's FIFO vs moving-average choice — owned by `[costing](/en/inventory/costing)` but referenced here).
-2. **(Sysadmin) Manage RBAC.** Assign users to roles (Requester / Approver / Fulfiller / Receiver) per location and department; manage delegation chains (Department Head on leave → deputy); revoke access when users change roles or leave.
-3. **(Inventory Controller) Monitor in-flight SRs.** Watch the `in_progress` queue for: stale SRs (no action for > tenant SLA), anomalous patterns (chronic over-requesting from a specific outlet, chronic rejection from a specific approver), source-availability cascades (one outlet's SR blocking another's). Intervene by escalating to the workflow's next stage manually, or by administratively voiding a stuck SR (`SR_POST_010`).
-4. **(Inventory Controller) Investigate variance.** On the variance dashboard, drill into SRs with large `requested_qty − issued_qty` gaps. Trace the cause: approver trim (look for the per-line `approved_message`), at-issue stock-out (look for the per-line system comment from the fulfiller), receiver discrepancy (look for the receiver's discrepancy comments). Decide whether the variance is a controlled outcome (chronic over-requesting that the outlet needs to address) or a system gap (source stock-out that needs supply-chain attention).
-5. **(Inventory Controller) Pre-commit administrative void.** For SRs that should not have been raised (audit hold on the requester, mistaken duplicate of another SR, supplier-side cancellation), administratively void per `SR_AUTH_013`: `draft → voided` or `in_progress → voided` with a mandatory reason. No inventory or GL impact. Terminal.
-6. **(Finance) Verify journal entries on committed SRs.** Every `completed` SR has linked inventory transactions and the journal entries they generated through the finance posting layer. Finance verifies: debit-side accounts (destination cost-centre expense for `sr_type = issue`, destination inventory for `sr_type = transfer`), credit-side accounts (source inventory), amounts (source `cost_per_unit × issued_qty`), and that `Σ Dr = Σ Cr` per `SR_POST_007`. Mismatches are escalated to the inventory controller and the source costing module.
-7. **(Finance) Block closed-period commits.** When a period is closed, `SR_VAL_014` automatically blocks new commits with a posting date in the closed period; Finance handles the operational case where a fulfiller needs to issue today against a closed-period date (escalation: either reopen the period, or shift the posting date forward).
-8. **(Finance) Period-end reconciliation.** At period close, Finance reconciles outlet food-cost reports against the sum of `completed` SRs in the period (per outlet, per cost-centre). Any unreconciled gap is investigated: the gap may be a missed adjustment, a mis-allocated dimension, an FX issue (if multi-currency tenants), or a timing issue (SR committed in one period with goods physically arriving in the next).
-9. **(Auditor) Independent review.** Sample committed SRs across the period; verify the per-line signature chain (Requester via `created_by_id`, Approver via `approved_by_id` per line, Fulfiller via `last_action_by_id` at the commit transition) shows SoD was enforced (`Requester ≠ Approver` per `SR_AUTH_011`, `Approver ≠ Fulfiller` per `SR_AUTH_012`); verify the per-line `history` JSON timeline matches the `workflow_history` and the comment threads; verify variance was investigated where material.
-10. **(All sub-roles) Post-commit reversal coordination.** When a `completed` SR is found to be wrong (post-commit), the correction flows through `[inventory-adjustment](/en/inventory/inventory-adjustment)`, NOT through SR editing or void. The adjustment is co-authored: the Inventory Controller raises the adjustment with the corrective movement, Finance verifies the reversing journal entries balance, the Sysadmin may need to enable adjustment posting if the controlling thresholds block it. The original SR stays `completed`; the adjustment document carries a back-reference to the SR `id`.
-
-## 3. Decision Branches
-
-- **Variance is acceptable (within tolerance)** — `requested_qty − issued_qty` is within the outlet's historical band. Inventory Controller closes the variance review with no action; logged for trend analysis.
-- **Variance is material (chronic over-requesting)** — the outlet consistently requests more than the approver authorises. Inventory Controller raises a coaching action with the outlet manager; may tighten the approval-stage workflow (add a pre-approval review) or tighten the par-level discipline.
-- **Variance is material (chronic at-issue stock-out)** — the source consistently cannot fulfil approved quantities. Inventory Controller raises a supply-planning action with the source warehouse; may flag a re-order point adjustment via the inventory module or escalate to procurement to raise more frequent purchase orders.
-- **Discrepancy at destination flagged by Receiver** (`SR_POST_013`) — Receiver posted a comment that physical receipt differs from `issued_qty`. Inventory Controller investigates source vs destination counts, decides on the corrective adjustment, and posts via `[inventory-adjustment](/en/inventory/inventory-adjustment)` with the SR `id` back-reference.
-- **Period-close exception — uncommitted in_progress SR** — at period close, an SR is stuck at `in_progress` past the SLA. Inventory Controller decides: (a) push the fulfiller to commit if the goods are physically issued but the system action was missed; (b) administratively void (`SR_POST_010`) if the SR is obsolete; (c) leave it and re-evaluate next period if the destination still needs the goods.
-- **Closed-period commit attempt** — Fulfiller tries to commit an SR with a posting date in a closed period; `SR_VAL_014` blocks. Finance decides: (a) reopen the period briefly (rare, requires CFO sign-off); (b) ask the Fulfiller to advance the posting date to the current period; (c) void the SR and raise a fresh one with a current-period date if the underlying transaction is no longer correct.
-- **SoD breach detected at audit** — Auditor finds an SR where the same user appears as both Requester and Approver (or Approver and Fulfiller) on the same SR. The breach indicates either a workflow misconfiguration (Sysadmin to investigate) or a SoD-relaxation threshold being exploited (Inventory Controller + Finance to review whether the threshold is appropriate). Documented in the audit findings; corrective action ranges from policy reinforcement to system-config tightening.
-- **Recipe-driven SR fails to auto-create** — `[recipe](/en/inventory/recipe)` module fails to generate a draft SR for a planned production event. Sysadmin investigates the wiring (recipe-product mapping, source-location resolution, requester-default user, location-permission check); ad-hoc fix posts the SR draft manually with `info.recipe_id` carried over.
-- **Approval threshold review** — Inventory Controller and Sysadmin co-review the approval-stage value thresholds and SoD-relaxation thresholds at least annually. Tightening them increases control friction; loosening them speeds the flow but raises SoD risk.
-
-## 4. Exit Point / Handoffs
-
-The Audit / Config persona's involvement does not "end" per SR — it is ongoing oversight. However, individual oversight actions have well-defined handoffs:
-
-- **Pre-commit void (`SR_AUTH_013` → `SR_POST_010`)** — Inventory Controller / Sysadmin moves a `draft` or `in_progress` SR to `voided`; document terminates; the original requester is notified and may raise a replacement SR.
-- **Variance review action item** — Inventory Controller raises a coaching / planning action with the affected outlet manager or source warehouse; tracked outside the SR module (operational dashboards, supply-planning reviews).
-- **Post-commit adjustment co-authored** — Inventory Controller + Finance co-author an inventory-adjustment to correct a discrepancy or mis-posted SR; the adjustment lives in `[inventory-adjustment](/en/inventory/inventory-adjustment)` with a back-reference to the SR; the SR itself stays `completed`.
-- **Period-close signoff** — Finance issues period-close signoff confirming that all `completed` SRs in the period have valid journal entries and reconcile to outlet food-cost reports; Auditor reviews the signoff against the SR sample. No SR state changes; the period is locked, blocking further commits with posting dates in that period (`SR_VAL_014`).
-- **Workflow / RBAC config change applied** — Sysadmin commits a `tb_workflow` or RBAC change; new rules apply prospectively to subsequent SRs; existing in-flight SRs may need to be re-routed (the Sysadmin coordinates with Inventory Controller on the re-routing).
-- **Audit findings published** — Auditor issues findings on a sample period; corrective actions are tracked by Inventory Controller / Sysadmin / Finance; no SR state changes from the audit itself.
-
-The Audit / Config persona is the **safety net** of the SR module — they do not advance the happy-path lifecycle, but they intervene when the lifecycle goes wrong, configure the rails the other personas run on, and verify that the rails were followed at audit time.
-
-## 5. References
-
-- Parent overview: [03-user-flow.md](./03-user-flow.md) — the canonical lifecycle and the cross-persona handoff table; Section 4 rows "Receiver → Inventory Controller (discrepancy)", "Inventory Controller → Audit / Config (variance review)", "Inventory Controller / Sysadmin → terminal `voided` (admin void)" anchor this persona's exits.
-- `../carmen/docs/store-requisitions/SR-Overview.md` § User Roles → Manager row (which collapses Inventory Controller / Finance Manager / Sysadmin into a single "Manager" role with "View all SRs; access reports; manage settings"); this page disaggregates that role.
-- `../carmen/docs/store-requisitions/SR-User-Experience.md` § Persona 4 (Finance Manager — Sarah Johnson) — carmen/docs source for the finance sub-role's cost-centre / journal-entry concerns.
-- `../carmen/docs/store-requisitions/Store Requisitions.md` § UC-67 (Monitor Requisition Processing) — use-case source for the Inventory Controller's monitoring view.
-- Sibling: [03-user-flow-requester.md](./03-user-flow-requester.md) — Sysadmin's RBAC config bounds who can be a requester at which outlet.
-- Sibling: [03-user-flow-approver.md](./03-user-flow-approver.md) — Sysadmin's workflow config defines the approval stages and value thresholds the approver acts within; Auditor verifies SoD against the approver's signature.
-- Sibling: [03-user-flow-fulfiller.md](./03-user-flow-fulfiller.md) — Finance's closed-period block (`SR_VAL_014`) gates the fulfiller's commit; Auditor verifies SoD between Approver and Fulfiller (`SR_AUTH_012`).
-- Sibling: [03-user-flow-receiver.md](./03-user-flow-receiver.md) — Receiver's discrepancy flags route to Inventory Controller for resolution via `[inventory-adjustment](/en/inventory/inventory-adjustment)`.
-- Sibling: [01-data-model.md](./01-data-model.md) — `tb_store_requisition.workflow_id` (Sysadmin config), per-line signature columns (Auditor trace), `dimension` JSON for cost-centre allocation (Finance), `enum_doc_status.voided` (Inventory Controller / Sysadmin admin path).
-- Sibling: [02-business-rules.md](./02-business-rules.md) — `SR_VAL_014` (closed-period block — Finance owns), `SR_AUTH_009`–`SR_AUTH_010` (Inventory Controller and Finance authority), `SR_AUTH_011`–`SR_AUTH_012` (SoD rules — Auditor verifies), `SR_AUTH_013` (admin void), `SR_AUTH_014` (workflow-derived authorization — Sysadmin owns), `SR_POST_010` (void posting effects), `SR_POST_013` (Receiver discrepancy flag → Inventory Controller).
-- Related: [inventory-adjustment](/en/inventory/inventory-adjustment) — the post-commit correction path; the Audit / Config persona is the primary author of adjustments that reconcile SR variance.
-- Related: [costing](/en/inventory/costing) — period-end reconciliation depends on costing valuations being correct; Finance and the costing module coordinate on period close.
-- Related: [recipe](/en/inventory/recipe) — Sysadmin owns the auto-create wiring; failure paths surface in the audit-config persona.
-- Related: [good-receive-note](/en/inventory/good-receive-note) — when SR-OUT is paired with GRN-IN on inter-warehouse transfers, the Audit / Config persona reconciles the two documents at period close.
+- Parent overview: [03-user-flow.md](./03-user-flow.md) — global SR state machine; this persona set is listed there as largely unconfirmed.
+- Sibling: [03-user-flow-approver.md](./03-user-flow-approver.md) + [03-user-flow-fulfiller.md](./03-user-flow-fulfiller.md) — the real generic `/approve` / `/reject` mechanics any workflow-stage holder (including a tenant-titled "Inventory Controller") would use today.
+- Sibling: [03-user-flow-receiver.md](./03-user-flow-receiver.md) — the discrepancy-escalation target this page's prior version described; itself unconfirmed.
+- Business rules: [02-business-rules.md](./02-business-rules.md) § 2 (`SR_VAL_014`, marked unconfirmed), § 4 (`SR_AUTH_009`–`SR_AUTH_013`, corrected), § 5 (`SR_POST_007`, `SR_POST_009`, `SR_POST_010`, `SR_POST_013`, corrected), § 6 (`SR_XMOD_008`, marked unconfirmed).
+- `../carmen/docs/store-requisitions/SR-Overview.md` § User Roles → Manager row — legacy design source for the collapsed Inventory Controller / Finance Manager / Sysadmin "Manager" role; treat as design intent, not verified current behavior.

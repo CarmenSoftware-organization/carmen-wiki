@@ -2,7 +2,7 @@
 title: ใบเบิกของสโตร์ (Store Requisition) — User Flow — Requester
 description: flow ของ Requester ในโมดูล store-requisition — ระบุความต้องการสต๊อก ตั้งและ submit SR
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T12:00:00.000Z
 tags: store-requisition, user-flow, requester, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -11,12 +11,13 @@ dateCreated: 2026-05-15T13:30:00.000Z
 # ใบเบิกของสโตร์ (Store Requisition) — User Flow — Requester
 
 > **At a Glance**
-> **Persona:** Outlet Manager (สถานที่บริโภค) &nbsp;·&nbsp; **โมดูล:** [store-requisition](/th/inventory/store-requisition) &nbsp;·&nbsp; **ขั้น workflow:** draft → in_progress (ขั้นอนุมัติแรก; ถอน / แก้ตอน send-back) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** สร้าง / แก้ / submit draft, ถอน draft, ถอนที่ขั้นแรก, แก้หลัง send-back
+> **Persona:** Outlet Manager (สถานที่บริโภค) &nbsp;·&nbsp; **โมดูล:** [store-requisition](/th/inventory/store-requisition) &nbsp;·&nbsp; **ขั้น workflow:** draft → in_progress (แก้เมื่อ send-back) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** สร้าง / แก้ / submit draft, soft-delete draft ของตน, แก้หลัง send-back
+> ⚠️ **แก้ไขรอบนี้:** "ถอนที่ขั้นอนุมัติแรก" และข้อความเรื่อง SoD ด้านล่างไม่มีหลักฐานรองรับใน source ปัจจุบัน — ดู callout ในส่วนที่ 1
 > **persona นี้ทำอะไร:** ตั้ง SR — เลือกต้นทาง/ปลายทาง + sr_type, เพิ่มบรรทัดพร้อม requested_qty, submit เพื่อขออนุมัติ และแก้ตอน send-back
 
 ## 1. บทบาทในโมดูลนี้
 
-Persona **Requester** คือ **Outlet Manager** (ครัว บาร์ แบงเควต ภัตตาคาร) — คนที่สถานที่บริโภคที่ระบุความต้องการสต๊อกและตั้ง requisition กับคลังต้นทางหรือสโตร์กลาง Requester เป็นเจ้าของ `draft` ที่แก้ไขได้: เลือกสถานที่ต้นทางและเอาท์เลตปลายทาง เลือกประเภทการเคลื่อนย้าย (`sr_type = issue` สำหรับการดึงเพื่อบริโภคแบบ direct-cost, `sr_type = transfer` สำหรับการย้ายเข้าสถานที่ที่ถือ inventory อีกแห่ง) เพิ่มบรรทัดสินค้าพร้อม `requested_qty` และวันที่ต้องการ (`expected_date`) แนบโน้ตประกอบ (snapshot recipe demand, รายละเอียด banquet event, เหตุผล par-level) และ submit เอกสารเพื่อขออนุมัติ ตอน entry requester ล็อกอินด้วยสิทธิ์ create-SR และเป็นสมาชิก `tb_store_requisition.department_id`; requester อนุญาตให้ทำธุรกรรมระหว่าง `from_location_id` และ `to_location_id` ที่เลือก สถานะ SR ที่ persona นี้เป็นเจ้าของคือ `draft` (สิทธิ์แก้เต็ม) และส่วนเล็ก ๆ ของ `in_progress` — requester สามารถถอน SR ของตนขณะที่ workflow ยังอยู่ที่ขั้นอนุมัติแรกและยังไม่มีผู้อนุมัติกระทำ (`SR_AUTH_004`) และสามารถแก้ / resubmit เมื่อผู้อนุมัติส่งเอกสารกลับมาแก้ไข (ขั้น requester ถูกเข้าใหม่ผ่าน workflow) Segregation of duties ห้าม requester อนุมัติ SR ของตน (`SR_AUTH_011`) — โมดูล SR บังคับใช้ที่ approve action
+Persona **Requester** คือ **Outlet Manager** (ครัว บาร์ แบงเควต ภัตตาคาร) — คนที่สถานที่บริโภคที่ระบุความต้องการสต๊อกและตั้ง requisition กับคลังต้นทางหรือสโตร์กลาง Requester เป็นเจ้าของ `draft` ที่แก้ไขได้: เลือกสถานที่ต้นทางและเอาท์เลตปลายทาง เลือกประเภทการเคลื่อนย้าย (`sr_type = issue` สำหรับการดึงเพื่อบริโภคแบบ direct-cost, `sr_type = transfer` สำหรับการย้ายเข้าสถานที่ที่ถือ inventory อีกแห่ง) เพิ่มบรรทัดสินค้าพร้อม `requested_qty` และวันที่ต้องการ (`expected_date`) แนบโน้ตประกอบ (snapshot recipe demand, รายละเอียด banquet event, เหตุผล par-level) และ submit เอกสารเพื่อขออนุมัติ ตอน entry requester ล็อกอินด้วยสิทธิ์ create-SR และเป็นสมาชิก `tb_store_requisition.department_id`; requester อนุญาตให้ทำธุรกรรมระหว่าง `from_location_id` และ `to_location_id` ที่เลือก สถานะ SR ที่ persona นี้เป็นเจ้าของคือ `draft` (สิทธิ์แก้เต็ม รวมถึง soft-delete/ถอน — ยืนยันว่าจำกัดเฉพาะ `draft` เท่านั้น) และส่วนเล็ก ๆ ของ `in_progress` — requester สามารถแก้ / resubmit เมื่อผู้ถือขั้น workflow ปัจจุบันส่งเอกสารกลับมาแก้ไข (ขั้น requester ถูกเข้าใหม่ผ่าน workflow) **แก้ไขรอบนี้:** ไม่มี action ที่ยืนยันได้ให้ requester ถอน SR ที่ submit แล้ว (`in_progress`) — `store-requisition.service.ts` ไม่มี endpoint `cancel`/`withdraw` เลย มีแต่ soft-delete เฉพาะ `draft` เท่านั้น ข้อความที่ว่า "segregation of duties ห้าม requester อนุมัติ SR ของตนเอง" (`SR_AUTH_011`) ก็ยังไม่ยืนยันเช่นกัน — ไม่พบการ cross-check `requestor_id` ที่ approve action ใน source ปัจจุบัน
 
 ### ตำแหน่งใน workflow (Requester เน้นสี)
 
@@ -25,20 +26,20 @@ graph LR
     create["สร้าง SR (draft)"]:::current -->|"submit"| approval(("in_progress\n— ขั้นอนุมัติ"))
     approval -->|"ส่งกลับ"| amend["แก้ไข & resubmit"]:::current
     amend -->|"resubmit"| approval
-    approval -->|"บรรทัดทั้งหมดอนุมัติ"| fulfil(("in_progress\n— ขั้น fulfillment"))
-    fulfil -->|"commit"| completed(("completed"))
-    approval -->|"บรรทัดทั้งหมดถูก reject\nหรือ requester ถอน"| cancelled(("cancelled"))
-    draft_cancel["ถอน draft ของตน"]:::current --> cancelled
-    create --> draft_cancel
-    completed -.->|"monitor / observe"| observer["Requester ติดตาม\nการรับ"]:::current
+    approval -->|"บรรทัดทั้งหมดอนุมัติ"| fulfil(("in_progress\n— ขั้น issue"))
+    fulfil -->|"เดินขั้นสุดท้าย"| completed(("completed"))
+    approval -->|"reject ทั้งเอกสาร (ผู้ถือขั้นปัจจุบันคนใดก็ได้)"| voided(("voided"))
+    draft_delete["Soft-delete draft ของตน (เฉพาะ draft)"]:::current --> deleted[("(ถูกลบ)")]
+    create --> draft_delete
+    completed -.->|"monitor / observe"| observer["Requester ติดตาม\nการ issue"]:::current
     classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
 ```
 
 ### ตารางสิทธิ์ — V1 Status × Action (Requester)
 
-Requester มีสิทธิ์แก้เต็มที่ `draft` และเข้า `in_progress` อีกครั้งเฉพาะเมื่อผู้อนุมัติส่งเอกสารกลับมาแก้ไข Segregation of duties (`SR_AUTH_011`) ห้าม Requester อนุมัติ SR ของตน — โมดูลบังคับใช้ที่ approve action
+Requester มีสิทธิ์แก้เต็มที่ `draft` และเข้า `in_progress` อีกครั้งเฉพาะเมื่อผู้ถือขั้น workflow ปัจจุบันส่งเอกสารกลับมาแก้ไข ข้อความที่ว่า segregation of duties ห้าม Requester อนุมัติ SR ของตน (`SR_AUTH_011`) ยังคง **ไม่ยืนยัน** — ไม่พบ check ดังกล่าวใน `store-requisition.service.ts`
 
-| Action | `draft` | `in_progress` (เฉพาะ send-back) | `completed` | `cancelled` / `voided` |
+| Action | `draft` | `in_progress` (เฉพาะ send-back) | `completed` | `voided` |
 |---|---|---|---|---|
 | สร้าง SR | ✅ (`SR_AUTH_001`) | — | — | — |
 | แก้ส่วนหัว (สถานที่, วันที่, description, dimension) | ✅ (`SR_AUTH_002`) | ✅ เฉพาะ send-back | ❌ | ❌ |
@@ -46,9 +47,9 @@ Requester มีสิทธิ์แก้เต็มที่ `draft` แล�
 | แนบหลักฐานประกอบ (comment / attachments) | ✅ | ✅ | ❌ | ❌ |
 | Submit เพื่อขออนุมัติ (`draft → in_progress`) | ✅ (`SR_AUTH_003`) | — | — | — |
 | Resubmit หลัง send-back | — | ✅ (`SR_AUTH_003`) | — | — |
-| ถอน / ยกเลิก draft ของตน | ✅ (`SR_AUTH_004`) | ✅ เฉพาะที่ขั้นอนุมัติแรก (`SR_AUTH_004`) | ❌ | — |
+| Soft-delete draft ของตน (เส้นทางถอนที่ยืนยันได้เพียงเส้นทางเดียว) | ✅ (`SR_AUTH_004`) | ❌ — ไม่มี action ถอนที่ `in_progress` ที่ยืนยันได้ | ❌ | — |
 | ดู SR (อ่านอย่างเดียว) | ✅ | ✅ | ✅ | ✅ |
-| อนุมัติ SR ของตน | ❌ (SOD: Requester ≠ Approver ตาม `SR_AUTH_011`) | ❌ | — | — |
+| อนุมัติ SR ของตน | ไม่ยืนยันว่าถูก block — ไม่พบ SoD check ในโค้ด | ไม่ยืนยัน | — | — |
 
 > ℹ️ **Loop ของ send-back:** เมื่อ Approver ส่ง SR กลับเพื่อแก้ไข SR ยังคงที่ `doc_status = in_progress` แต่ `workflow_current_stage` กลับไปขั้น requester Requester แก้และ resubmit; บรรทัดที่อนุมัติแล้วไม่ถูก reverse
 
@@ -57,7 +58,7 @@ Requester มีสิทธิ์แก้เต็มที่ `draft` แล�
 **จุดเข้า:** สามเส้นทางในการสร้าง draft
 
 - **โมดูล SR → Create SR** — เลือกเอาท์เลตปลายทาง (default เป็นเอาท์เลตของ requester) จากนั้นเลือกสถานที่ต้นทาง; เลือก `sr_type` (`issue` หรือ `transfer`); เริ่มเพิ่มรายการ
-- **Auto-create จาก recipe demand** — โมดูล `[recipe](/th/inventory/recipe)` คำนวณปริมาณวัตถุดิบสำหรับ event production / banquet ที่จะถึงที่เอาท์เลตและ post SR `draft` ให้ requester review; `info.recipe_id` มี back-reference Requester เปิด draft ที่ pre-populate แล้ว ปรับปริมาณถ้าจำเป็น และดำเนินต่อจาก step 4 ด้านล่าง
+- **Auto-create จาก recipe demand** — โมดูล [recipe](/th/inventory/recipe) คำนวณปริมาณวัตถุดิบสำหรับ event production / banquet ที่จะถึงที่เอาท์เลตและ post SR `draft` ให้ requester review; `info.recipe_id` มี back-reference Requester เปิด draft ที่ pre-populate แล้ว ปรับปริมาณถ้าจำเป็น และดำเนินต่อจาก step 4 ด้านล่าง
 - **แก้ SR ที่ถูกส่งกลับ (send-back จาก approver)** — approver route เอกสารกลับมาขั้น requester พร้อม `review_message` ต่อบรรทัด; requester เข้าขั้น workflow เดียวกับที่ตนเริ่ม แก้ปริมาณ / โน้ต และ resubmit
 
 **Flow หลัก (เส้นทาง happy path, 10 ขั้น):**
@@ -71,7 +72,7 @@ Requester มีสิทธิ์แก้เต็มที่ `draft` แล�
 7. **แนบหลักฐานประกอบ** Snapshot recipe demand, ใบ event, รูป, การวิเคราะห์ par-level, เมโม pre-clearance อนุมัติ Attachments scope กับส่วนหัว SR (ผ่าน `tb_store_requisition_comment.attachments`) หรือกับบรรทัดเฉพาะ (ผ่าน `tb_store_requisition_detail_comment.attachments`)
 8. **review validation ก่อน submit** หน้าจอแสดง check source-availability `SR_VAL_009` (ตาม tenant config: hard block หรือ soft warn) — สำหรับแต่ละบรรทัด on-hand ต้นทางปัจจุบันหักการจองจาก SR เปิดอื่นถูกแสดง; บรรทัดที่เกิน cap ถูก flag Requester ปรับ `requested_qty` หรือยอมรับ soft warning
 9. **Submit เพื่อขออนุมัติ** คลิก **Submit**; ระบบ fire `SR_VAL_001`–`SR_VAL_009`, ตั้ง `doc_status = draft → in_progress`, ก้าว workflow ไปขั้นอนุมัติแรก, บรรจุ `user_action.execute` จาก permitted users ของขั้นนั้น (โดยทั่วไปคือ Department Head ของ requester), เขียน entry `submitted` ลงใน `last_action` / `workflow_history` และ append entry `submit` ลงใน JSON `history` ของแต่ละบรรทัด Requester ถูกแจ้งว่า SR อยู่ภายใต้การอนุมัติแล้ว; เอกสารไม่สามารถแก้จากมือ requester ได้อีก (ยกเว้นผ่าน send-back)
-10. **ติดตามสถานะจนกระทั่งรับ** Requester ตรวจสอบความคืบหน้า: การตัดสินใจของ approver กลับมาเป็น send-back (กลับไปขั้น requester) หรือเดินต่อ (workflow ก้าวไปขั้น fulfilment); ตอน commit requester ถูกแจ้งว่าสินค้าถูก issue และอยู่ระหว่างทาง; Receiver ที่ปลายทาง log การรับ; ความคลาดเคลื่อนใด ๆ ถูก flag เพื่อ inventory-controller ติดตาม Requester **ไม่** รับที่ปลายทางโดยตรง — นั่นเป็นบทบาทของ Receiver (ซึ่งในเอาท์เลตเล็ก ๆ อาจเป็นผู้ใช้คนเดียวกันที่สวมหมวกสองใบ)
+10. **ติดตามสถานะจนกระทั่งรับ** Requester ตรวจสอบความคืบหน้า: การตัดสินใจของ approver กลับมาเป็น send-back (กลับไปขั้น requester) หรือเดินต่อ (workflow ก้าวไปขั้น fulfilment); ตอน commit requester ถูกแจ้งว่าสินค้าถูก issue และอยู่ระหว่างทาง Requester **ไม่** รับที่ปลายทางโดยตรง — ปัจจุบันไม่มี persona "Receiver" หรือกลไก flag ความคลาดเคลื่อนที่ยืนยันได้ใน source (ดู [03-user-flow-receiver.md](./03-user-flow-receiver.md)) ดังนั้นการติดตามหลัง commit ในวันนี้จึงเป็นแบบไม่เป็นทางการ
 
 ## 3. Branch การตัดสินใจ
 
@@ -81,30 +82,29 @@ Requester มีสิทธิ์แก้เต็มที่ `draft` แล�
 - **SR ฉุกเฉิน / นอกรอบ**: เอาท์เลตมีความต้องการทันทีนอกรอบ replenishment รายสัปดาห์ Requester ตั้ง SR ด้วย `description` flag เป็น emergency, ตั้ง `expected_date` เป็นวันนี้ / พรุ่งนี้ และอาจแนบเมโมเหตุผลฉุกเฉิน; approver และ fulfiller เห็น flag เร่งด่วนใน queue ของตน ไม่มีคอลัมน์ `emergency_flag` แยกบน schema — ความเร่งด่วนสื่อสารผ่าน `description` และ extension `info`; workflow อาจมี routing ขั้นฉุกเฉินใน config ของ tenant
 - **SR ที่ขับโดย recipe**: โมดูล recipe pre-populate SR ด้วยปริมาณวัตถุดิบที่คำนวณ Requester review และอาจปรับปริมาณ (ลดเท่านั้น — การเพิ่ม invalidate สมมติฐานของ recipe; requester ควรแก้แผนผลิตและ trigger recipe demand ใหม่แทน) ตอน submit SR มี `info.recipe_id` เป็น back-reference
 - **Send-back จาก approver**: Approver route SR กลับขั้น requester พร้อม `review_message` ต่อบรรทัดที่กระทบ Requester เห็นเอกสารใน queue ของตนที่ `doc_status = in_progress` แต่ที่ขั้น workflow requester; อาจแก้ `requested_qty` หรือ `description`, ตอบโน้ตของ reviewer และ resubmit (ซึ่ง re-route เอกสารไปขั้นอนุมัติ) หมายเหตุ: requester ไม่สามารถข้าม send-back ที่ active — ต้องตอบ
-- **ถอน SR ของตน**: ขณะ workflow ยังอยู่ที่ขั้นอนุมัติแรกและยังไม่มีผู้อนุมัติกระทำ Requester อาจยกเลิก SR ของตน (`in_progress → cancelled` ตาม `SR_AUTH_004`) พร้อมเหตุผล เกินจุดนั้น Requester ต้องขอ approver ให้ reject เอกสาร
+- **ถอน SR ของตน** — **แก้ไขรอบนี้:** ไม่มี action ที่ยืนยันได้ให้ถอน SR ที่ submit แล้ว (`in_progress`) เส้นทางถอนก่อน submit ที่ยืนยันได้มีเพียง soft-delete ของ `draft` เท่านั้น เมื่อ submit แล้ว requester ต้องขอให้ผู้ถือขั้นปัจจุบัน reject ทั้งเอกสาร (ซึ่งตั้งเป็น `voided` ไม่ใช่ `cancelled`)
 
 ## 4. จุดออก / Handoff
 
-การมีส่วนร่วมของ Requester บน SR ที่กำหนดจบที่ขอบเขตหนึ่งในสี่:
+การมีส่วนร่วมของ Requester บน SR ที่กำหนดจบที่ขอบเขตที่ยืนยันได้หนึ่งในสาม:
 
-- **Submit สำเร็จ** — handoff ไปยัง **Approver** (Department Head) ที่ขั้นอนุมัติแรก เอกสารเป็น `in_progress` แล้วและถือใน queue ของ approver; requester อยู่ในโหมด monitor-only จนกว่า send-back จะ route เอกสารกลับหรือการตัดสินใจของ approver จะย้าย workflow ไปข้างหน้า
-- **ได้รับ send-back** — handoff ชั่วคราว **กลับมา Requester** ที่ขั้น workflow requester Requester ตอบ `review_message` ของ approver แก้ตามต้องการ และ resubmit นี่เป็น loop ภายใน `in_progress` ไม่ใช่การเปลี่ยนสถานะ
-- **ยกเลิก (ถอนที่ขั้นอนุมัติแรก)** — `in_progress → cancelled` ตาม `SR_AUTH_004`; เอกสารจบ; requester อาจตั้ง SR ใหม่ถ้าความต้องการยังคงอยู่
-- **บรรทัดทั้งหมดถูก reject ตอนอนุมัติ** — `in_progress → cancelled` อัตโนมัติตาม `SR_POST_004`; requester เห็นเอกสารใน `cancelled` พร้อม `reject_message` ต่อบรรทัดอธิบายเหตุผล; requester อาจตั้ง SR ที่แก้ไขด้วยปริมาณที่กระชับขึ้น ต้นทางอื่น หรือ justification เพิ่ม
+- **Submit สำเร็จ** — handoff ไปยังผู้ถือขั้น workflow แรก เอกสารเป็น `in_progress` แล้ว; requester อยู่ในโหมด monitor-only จนกว่า send-back จะ route เอกสารกลับหรือ workflow จะเดินต่อ
+- **ได้รับ send-back** — handoff ชั่วคราว **กลับมา Requester** ที่ขั้น workflow requester Requester ตอบ `review_message` แก้ตามต้องการ และ resubmit นี่เป็น loop ภายใน `in_progress` ไม่ใช่การเปลี่ยนสถานะ
+- **Reject ทั้งเอกสาร** — `in_progress → voided` (ไม่ใช่ `cancelled` — ดู note แก้ไขในส่วนที่ 1); เอกสารจบ; requester อาจตั้ง SR ใหม่ถ้าความต้องการยังคงอยู่
 
-หลัง commit สำเร็จโดย fulfiller Requester อยู่ในโหมด **observer / receiver-coordination**: อาจติดตามการยืนยันของ Receiver ปลายทางและ flag ความคลาดเคลื่อนใด ๆ กลับไปยัง Receiver ในเอาท์เลตเล็ก ๆ Requester และ Receiver มักเป็นคนเดียวกันที่สวมหมวกสองใบ; ในการดำเนินงานใหญ่ Requester มุ่งเน้น demand planning ในขณะที่ Receiver จัดการรับสินค้าจริงที่จุดส่ง
+หลังการเดินขั้น workflow สุดท้ายเสร็จสิ้นและ SR เป็น `completed` บทบาทของ Requester คือติดตามให้สินค้ามาถึง — ปัจจุบันไม่มี persona "Receiver" หรือกลไก flag ความคลาดเคลื่อนที่ยืนยันได้ใน source (ดู [03-user-flow-receiver.md](./03-user-flow-receiver.md)) ดังนั้นการยืนยันหลัง commit ในวันนี้จึงเป็นแบบไม่เป็นทางการ
 
 ## 5. แหล่งอ้างอิง
 
-- ภาพรวมแม่: [03-user-flow.md](./03-user-flow.md) — วงจรชีวิตห้าค่า canonical (`draft / in_progress / completed / cancelled / voided`) บน `enum_doc_status`, state machine ส่วนกลางที่เส้นทางของ persona นี้ผ่าน และตาราง handoff ข้าม persona
+- ภาพรวมแม่: [03-user-flow.md](./03-user-flow.md) — วงจรชีวิตที่แก้ไขแล้วบน `enum_doc_status` (`draft / in_progress / completed` บวก `voided` เป็นเส้นทางยกเลิกเดียวที่ยืนยันได้ — `cancelled` นิยามใน enum แต่ไม่มีทางไปถึง), state machine ส่วนกลางที่เส้นทางของ persona นี้ผ่าน และตาราง handoff ข้าม persona
 - `../carmen/docs/store-requisitions/SR-User-Experience.md` § Creating a Store Requisition — แหล่ง carmen/docs สำหรับ requester (ชื่อ "Alex Chen, Store Manager" ในเรื่องเล่า persona); ขั้น journey map ไปยังส่วนที่ 2 ข้างบน
 - `../carmen/docs/store-requisitions/SR-Overview.md` § User Roles → แถว Requester — แหล่ง carmen/docs สำหรับขอบเขตความรับผิดชอบของ persona
 - `../carmen/docs/store-requisitions/Store Requisitions.md` § UC-68 (Create and Manage Store Requisition) — scenario สำเร็จหลักของ use-case create / submit
 - Sibling: [03-user-flow-approver.md](./03-user-flow-approver.md) — persona ปลายน้ำที่รับ SR หลัง submit; จัดการการตัดสินใจ approve / trim / reject / send-back
-- Sibling: [03-user-flow-fulfiller.md](./03-user-flow-fulfiller.md) — persona fulfilment; ผลของ Requester ต่อสินค้าขึ้นกับ `issued_qty` ต่อบรรทัดของ Fulfiller
-- Sibling: [03-user-flow-receiver.md](./03-user-flow-receiver.md) — การยืนยันที่ปลายทาง; ในเอาท์เลตเล็ก ๆ มักเป็นผู้ใช้คนเดียวกับ Requester
-- Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — การกำกับดูแล flow SR โดย Inventory Controller / Finance / Sysadmin; variance review และ config ที่ bound ตัวเลือกของ requester
+- Sibling: [03-user-flow-fulfiller.md](./03-user-flow-fulfiller.md) — persona issuance; ผลของ Requester ต่อสินค้าขึ้นกับ `issued_qty` ที่บันทึกที่นั่น
+- Sibling: [03-user-flow-receiver.md](./03-user-flow-receiver.md) — แก้ไขรอบนี้เพื่อบันทึกว่าไม่พบ persona Receiver แยกใน source ปัจจุบัน
+- Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — แก้ไขรอบนี้; ส่วนใหญ่ของ workspace การกำกับดูแล/config ที่เคยบรรยายไว้ไม่พบใน source ปัจจุบัน
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical `enum_doc_status`, `enum_sr_type` และคอลัมน์ `tb_store_requisition_detail` ที่ requester เขียน (`product_id`, `requested_qty`, `dimension`)
-- Sibling: [02-business-rules.md](./02-business-rules.md) — `SR_VAL_001`–`SR_VAL_009` (gate ตอน submit ที่ requester เผชิญ), `SR_AUTH_001`–`SR_AUTH_004` (ขอบเขตอำนาจของ requester), `SR_AUTH_011` (SoD Requester ≠ Approver)
+- Sibling: [02-business-rules.md](./02-business-rules.md) — `SR_VAL_001`–`SR_VAL_009` (gate ตอน submit ที่ requester เผชิญ), `SR_AUTH_001`–`SR_AUTH_003` (ขอบเขตอำนาจที่ยืนยันได้ของ requester), `SR_POST_011` (soft-delete เฉพาะ draft)
 - Related: [recipe](/th/inventory/recipe) — เส้นทาง auto-create; recipe demand pre-populate SR `draft` ให้ requester review และ submit
 - Related: [inventory](/th/inventory/inventory) — การมองเห็น on-hand ต้นทางตอนป้อนบรรทัด (enrichment เฉพาะ UI ไม่ persist บนบรรทัด SR) และการเขียน inventory-transaction ปลายน้ำที่ SR trigger ตอน commit

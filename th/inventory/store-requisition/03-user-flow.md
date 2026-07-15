@@ -2,7 +2,7 @@
 title: ใบเบิกของสโตร์ (Store Requisition) — User Flow
 description: วงจรชีวิตเอกสารและไฟล์ flow ตาม persona สำหรับ store-requisition
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T12:00:00.000Z
 tags: store-requisition, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -25,33 +25,31 @@ dateCreated: 2026-05-15T13:30:00.000Z
 
 ## 2. วงจรชีวิตเอกสาร
 
-สถานะเอกสาร SR ถูกเก็บบน `tb_store_requisition.doc_status` และจำกัดที่ห้าค่าที่ประกาศใน `enum_doc_status` ร่วม: `draft` (สถานะเริ่มต้นที่แก้ไขได้ ไม่กระทบสต๊อกหรือ GL ป้อนบรรทัดโดย requester), `in_progress` (submit แล้วและอยู่ภายใต้ workflow control — ช่วง approval + fulfillment อยู่ที่นี่; ยังไม่กระทบสต๊อกหรือ GL จนกว่าจะ commit), `completed` (posting event ครั้งเดียวได้ fire แล้ว — inventory ลดที่ต้นทาง, cost-layer consume, ปลายทางรับสต๊อกหรือ expense, เอกสารล็อก), `cancelled` (การถอนที่ user เริ่ม หรือการย้ายอัตโนมัติเมื่อทุกบรรทัดถูก reject; ไม่กระทบสต๊อกหรือ GL) และ `voided` (การยกเลิกเชิงบริหารโดยไม่กระทบสต๊อกหรือ GL) Transitions ด้านล่างครอบคลุมการย้ายที่ถูกกฎหมายระหว่างกัน; อย่างอื่นถูก reject โดย workflow engine ผลกระทบปลายน้ำ (ลด on-hand ต้นทาง, เพิ่ม on-hand ปลายทางสำหรับ `transfer`, เขียน journal-entry) fire บน transition `in_progress → completed` เท่านั้น — ดู [02-business-rules.md](./02-business-rules.md) Section 5 สำหรับกฎ posting
+> ⚠️ **แก้ไขในรอบนี้** เวอร์ชันก่อนหน้าของ section นี้บรรยาย `cancelled` ว่าเป็นสถานะจริงที่เข้าถึงได้ (requester ถอนเอง, all-lines-rejected auto-cancel) และ `voided` ว่าเป็นเส้นทางเชิงบริหารแยกที่สงวนสำหรับ Inventory Controller/Sysadmin เท่านั้น การอ่านโค้ด `store-requisition.service.ts` โดยตรงแสดงว่าทั้งสองไม่ถูกต้อง: `cancelled` ไม่เคยถูก assign โดย service method ใดในปัจจุบัน และ `voided` ถูกตั้งแบบไม่มีเงื่อนไขโดย whole-document reject action เดียวกันที่ผู้ถือขั้น workflow ปัจจุบันคนใดก็เรียกได้ ดู [01-data-model.md](./01-data-model.md) §5 ข้อ 11 และ [02-business-rules.md](./02-business-rules.md) §5 สำหรับการแก้ไขฉบับเต็ม
+
+สถานะเอกสาร SR ถูกเก็บบน `tb_store_requisition.doc_status` และจำกัดที่ห้าค่าที่ประกาศใน `enum_doc_status` ร่วม: `draft` (สถานะเริ่มต้นที่แก้ไขได้ ไม่กระทบสต๊อก ป้อนบรรทัดโดย requester), `in_progress` (submit แล้วและอยู่ภายใต้ workflow control; ยังไม่กระทบสต๊อกจนกว่าจะถึงขั้นสุดท้าย), `completed` (posting event ครั้งเดียวได้ fire แล้ว — inventory ลดที่ต้นทาง, cost-layer consume, ปลายทางรับสต๊อกหรือ expense ที่ยังไม่ post, เอกสารล็อก), `cancelled` (ประกาศไว้ใน enum แต่ไม่มี code path ปัจจุบันใดเข้าถึงได้) และ `voided` (ปลายทางที่ยืนยันแล้วของ whole-document reject; ไม่กระทบ inventory) Transitions ด้านล่างครอบคลุมการย้ายที่ถูกกฎหมายระหว่างกัน; อย่างอื่นถูก reject โดย workflow engine ผลกระทบปลายน้ำ (ลด on-hand ต้นทาง, เพิ่ม on-hand ปลายทางสำหรับ `transfer`) fire บน final workflow-stage advance เท่านั้น — ดู [02-business-rules.md](./02-business-rules.md) Section 5 สำหรับกฎ posting การ post journal-entry / GL ยังไม่ยืนยันในซอร์สปัจจุบัน
 
 ```mermaid
 stateDiagram-v2
     [*] --> draft: สร้าง (Requester — manual หรือ auto-create จาก recipe)
-    draft --> in_progress: submit (Requester — SR_VAL_001–009 ผ่าน)
-    draft --> cancelled: ถอน / ยกเลิก (Requester — draft ของตน)
-    draft --> voided: void เชิงบริหาร (Inventory Controller / Sysadmin)
-    in_progress --> in_progress: approve / ตัด / reject บรรทัด (Approver — workflow-internal)
-    in_progress --> in_progress: ส่งกลับเพื่อแก้ไข (Approver → ขั้น Requester)
-    in_progress --> completed: commit issued_qty (Fulfiller — Variant A auto-complete · Variants B/C ระบุ)
-    in_progress --> cancelled: ทุกบรรทัดถูก reject / requester ถอนที่ขั้นแรก
-    in_progress --> voided: void เชิงบริหาร (Inventory Controller / Sysadmin)
-    completed --> completed: flag ความคลาดเคลื่อน (Receiver — ไม่เปลี่ยนสถานะ; SR_POST_013)
+    draft --> in_progress: submit (Requester — SR_VAL_001-009 ผ่าน)
+    draft --> [*]: soft-delete (Requester — เฉพาะ draft ของตน)
+    in_progress --> in_progress: approve / ตัด / reject บรรทัด (ผู้ถือขั้นปัจจุบัน)
+    in_progress --> in_progress: ส่งกลับเพื่อแก้ไข (ขั้นปัจจุบัน → ขั้นก่อนหน้า)
+    in_progress --> completed: final stage advance บันทึก issued_qty (approve action ทั่วไปเดียวกัน)
+    in_progress --> voided: whole-document reject (ผู้ถือขั้นปัจจุบัน)
     completed --> [*]
-    cancelled --> [*]
     voided --> [*]
 
     note right of in_progress
-        Variant A (INV→INV / sr_type=transfer): Issue = Complete, auto-complete
-        Variant B (INV→DIR / sr_type=issue): Fulfiller ระบุ Complete
-        Variant C (INV→CONS / sr_type=issue): Fulfiller ระบุ Complete
+        Approve และ "issue" ทั้งคู่เรียก endpoint POST .../approve เดียวกัน;
+        เอกสารเสร็จสมบูรณ์เมื่อ workflow_next_stage ที่ได้เป็น '-'
         Sub-stage ติดตามผ่าน workflow_current_stage ไม่ใช่ doc_status
+        ไม่มี UI เลือก lot -- lot ถูก assign แบบ FIFO อัตโนมัติ
     end note
 ```
 
-> ℹ️ **หมายเหตุ — ขั้น intra-`in_progress`:** self-loop ของ `in_progress` ครอบคลุม sub-stage ของ workflow สองขั้นที่ต่างกัน — ช่วงอนุมัติและช่วง fulfillment — ทั้งคู่ใช้ `doc_status` เดียวกัน sub-stage จริงติดตามผ่าน `tb_store_requisition.workflow_current_stage` สำหรับ Variant A (โอน INV → INV) ขั้น fulfillment (Issue) และ completion ถูกยุบเป็น transition เดียวอัตโนมัติ; Variant B และ C ต้องการ action Complete ที่ระบุชัดโดย Fulfiller
+> ℹ️ **หมายเหตุ — ขั้น intra-`in_progress`:** self-loop ของ `in_progress` ครอบคลุมจำนวนขั้นเท่าที่ config `tb_workflow` ของ tenant กำหนดไว้ ทั้งหมดใช้ `doc_status` เดียวกัน sub-stage จริงติดตามผ่าน `tb_store_requisition.workflow_current_stage` ไม่มีการแยกที่ยืนยันได้ใน backend ระหว่างขั้น "อนุมัติ" กับขั้น "fulfillment" นอกเหนือจาก tag `enum_stage_role` ที่ขั้นปัจจุบันถืออยู่ (`approve` เทียบกับ `issue`) — ทั้งคู่กระทำผ่าน endpoint `/approve` เดียวกัน
 
 | จากสถานะ | Action | ไปสถานะ | อนุญาตให้ | เงื่อนไขล่วงหน้า |
 | -------- | ------ | -------- | --------- | ----------------- |
@@ -59,27 +57,23 @@ stateDiagram-v2
 | `(none)` | auto-create จาก recipe demand | `draft` | System (cross-ref [recipe](/th/inventory/recipe)) | โมดูล recipe คำนวณปริมาณวัตถุดิบสำหรับ event production / banquet ของเอาท์เลตปลายทางและ post SR `draft` ให้ requester ของเอาท์เลต review และ submit `info.recipe_id` มี back-reference |
 | `draft` | แก้ไข / save | `draft` | Requester (เจ้าของ) | กฎ validation ส่วนหัวและบรรทัดใน [02-business-rules.md](./02-business-rules.md) Section 2 ผ่านตอน save (warn-only บางส่วน) หรือ block ตอน submit; เอกสารยังแก้ไขได้ |
 | `draft` | submit | `in_progress` | Requester (เจ้าของ) | กฎตอน submit ทั้งหมดผ่าน (`SR_VAL_001`–`SR_VAL_009`): สถานที่ต้นทาง / ปลายทางตั้งและเข้ากันกับ `sr_type`, source-availability check ผ่าน (ตาม tenant config: hard block หรือ soft warn), อย่างน้อยหนึ่งบรรทัดที่ `requested_qty > 0` Workflow engine จัดเส้นทางไปยังขั้นอนุมัติแรกและบรรจุ `user_action.execute` |
-| `draft` | ถอน / ยกเลิก | `cancelled` | Requester (draft ของตน) | ต้องการเหตุผล; ไม่กระทบสต๊อกหรือ GL; เอกสารจบ |
-| `draft` | void (เชิงบริหาร) | `voided` | Inventory Controller, System Administrator | ต้องการเหตุผล; ไม่กระทบสต๊อกหรือ GL; เอกสารจบ |
-| `in_progress` | approve บรรทัด (workflow-internal) | `in_progress` | Approver ที่ขั้นปัจจุบัน | Approver อยู่ใน `user_action.execute` สำหรับ `workflow_current_stage`; `approved_qty ≤ requested_qty` ตาม `SR_VAL_010`; SoD check `requester ≠ approver` ตาม `SR_AUTH_011` `workflow_current_stage` เดินต่อเมื่อบรรทัดทั้งหมดที่ขั้นปัจจุบันถูก action |
-| `in_progress` | reject บรรทัด / send back (workflow-internal) | `in_progress` | Approver ที่ขั้นปัจจุบัน | Reject ต่อบรรทัดตั้ง `approved_qty = 0` และต้องการ `reject_message`; send-back ส่งเอกสารกลับขั้นก่อนหน้า (โดยทั่วไปคือ requester) พร้อม `review_message` ถ้าบรรทัด active ทั้งหมดถูก reject (`Σ approved_qty = 0`) เอกสารย้ายอัตโนมัติเป็น `cancelled` |
-| `in_progress` | requester ถอนที่ขั้นอนุมัติแรก | `cancelled` | Requester (SR ของตน) | อนุญาตเฉพาะเมื่อ workflow ยังอยู่ที่ขั้นอนุมัติแรกและยังไม่มีผู้อนุมัติกระทำ เกินจุดนั้น เฉพาะผู้อนุมัติเท่านั้นที่ reject SR ได้ ต้องการเหตุผล |
-| `in_progress` | บันทึก `issued_qty` + commit | `completed` | Fulfiller ที่ขั้น fulfillment | กฎตอน commit ทั้งหมดผ่าน (`SR_VAL_011`–`SR_VAL_014`): อย่างน้อยหนึ่งบรรทัดที่ `approved_qty > 0`, ข้อมูล lot บน inventory transactions สำหรับสินค้าควบคุม lot, on-hand ต้นทางครอบคลุมทุก `issued_qty`, วันที่ post อยู่ในงวดเปิด SoD check `approver ≠ fulfiller` ตาม `SR_AUTH_012` **Trigger การลด on-hand ต้นทาง, การ consume cost-layer, การเพิ่ม on-hand ปลายทาง (สำหรับ `transfer`) หรือ debit cost-centre ปลายทาง (สำหรับ `issue`), เขียน journal-entry** |
-| `in_progress` | void (เชิงบริหาร) | `voided` | Inventory Controller, System Administrator | ต้องการเหตุผล; ไม่กระทบสต๊อกหรือ GL (SR ไม่เคย post) ต่างจาก `cancelled` — `voided` เป็นเส้นทาง audit / เชิงบริหาร |
-| `completed` | flag ความคลาดเคลื่อนหลัง commit (ไม่เปลี่ยนสถานะ) | `completed` | Receiver | Receiver เพิ่ม comment ความคลาดเคลื่อน ("received less than issued", "wrong lot"); flag เขียน system comment แต่ **ไม่** ย้าย `doc_status` Resolution ผ่าน `[inventory-adjustment](/th/inventory/inventory-adjustment)` |
-| `completed` | (ไม่มี transition สถานะต่อ) | `completed` | — | จุดสิ้นสุดของเส้นทาง fulfillment การแก้ไขต้องผ่าน compensating adjustment ใน `[inventory-adjustment](/th/inventory/inventory-adjustment)`; SR เองยังคงล็อก |
-| `cancelled` | (ไม่มี action ต่อ) | `cancelled` | — | จุดสิ้นสุด เอกสารที่ยกเลิกถูกเก็บไว้สำหรับ audit; คำขอถัดไปต้องตั้งเป็น SR ใหม่ |
+| `draft` | soft-delete (กลไกถอนก่อน submit เดียวที่ยืนยันได้) | `(deleted)` | Requester (draft ของตนเท่านั้น) | ยืนยันว่าจำกัดเฉพาะ `doc_status = draft`; ไม่มี action ถอนที่ `in_progress` ที่ยืนยันได้ |
+| `in_progress` | approve / ตัด / reject บรรทัด (ผสม approve+reject ในการเรียกเดียว; ผสมกับ review ไม่ได้) | `in_progress` | ผู้อยู่ใน `user_action.execute` สำหรับขั้นปัจจุบัน | `approved_qty ≤ requested_qty` ตาม `SR_VAL_010` `workflow_current_stage` เดินต่อเมื่อบรรทัดทั้งหมดที่ขั้นปัจจุบันถูก action การตรวจ segregation-of-duties (`requester ≠ approver`, `approver ≠ issuer`) ยังไม่ยืนยัน — ไม่พบโค้ดลักษณะนี้ |
+| `in_progress` | ส่งกลับ (`/review`, action ระดับทั้งการเรียก) | `in_progress` | ผู้อยู่ใน `user_action.execute` สำหรับขั้นปัจจุบัน | ส่งเอกสารกลับขั้นก่อนหน้า (โดยทั่วไปคือ requester) พร้อม `review_message`; `doc_status` ไม่เปลี่ยน |
+| `in_progress` | final stage advance บันทึก `issued_qty` | `completed` | ผู้อยู่ใน `user_action.execute` สำหรับขั้นที่ tag `enum_stage_role.issue` | endpoint `/approve` เดียวกับขั้นอื่น; เสร็จสมบูรณ์เมื่อ `workflow_next_stage === '-'` Trigger การลด on-hand ต้นทางและ (สำหรับ `sr_type = transfer`) การเพิ่ม on-hand ปลายทาง ผ่าน `executeTransferOnComplete` การเลือก lot เป็น FIFO อัตโนมัติ |
+| `in_progress` | whole-document reject | `voided` | ผู้อยู่ใน `user_action.execute` สำหรับขั้นปัจจุบัน | ไม่จำกัดเฉพาะ role "admin" — reject action เดียวกันพร้อมใช้สำหรับผู้ถือขั้นปัจจุบันคนใดก็ได้ ข้อความเหตุผลเป็นทางเลือกตาม reject dialog (maxLength 256 ไม่มี minimum) ไม่กระทบ inventory (SR ไม่เคย post) |
+| `completed` | (ไม่มี transition สถานะต่อ) | `completed` | — | สถานะจุดสิ้นสุด การแก้ไขต้องผ่าน compensating adjustment ใน `[inventory-adjustment](/th/inventory/inventory-adjustment)`; SR เองยังคงล็อก ไม่มี action ยืนยันการรับของ Receiver หรือ flag ความคลาดเคลื่อนที่ยืนยันได้กับ SR ที่ `completed` — ดู [03-user-flow-receiver.md](./03-user-flow-receiver.md) |
 | `voided` | (ไม่มี action ต่อ) | `voided` | — | จุดสิ้นสุด เก็บไว้สำหรับ audit |
 
 ## 3. ดัชนี Persona
 
 แต่ละ persona ด้านล่างมีไฟล์เจาะลึกแยกที่บรรยายจุดเข้า flow หลัก branch การตัดสินใจ และจุดออก slug ตรงกับ role ของ persona; การคลิก link เปิด view ต่อ persona การจัดกลุ่มห้า persona ยุบหก persona ของ carmen/docs (Store Manager, Warehouse Supervisor, Department Head, Finance Manager, Inventory Controller, System Administrator + Auditor) เป็นห้า role เชิงปฏิบัติการ
 
-- [Requester](./03-user-flow-requester.md) — Outlet Manager ที่ระบุความต้องการสต๊อกที่สถานที่บริโภค สร้าง SR เพิ่มรายการพร้อม `requested_qty` และวันที่ต้องการ แนบโน้ตประกอบ submit เอกสารเพื่อขออนุมัติ และติดตามสถานะจนถึงการรับที่เอาท์เลต
-- [Approver](./03-user-flow-approver.md) — Department Head ที่ review คำขอที่ submit แล้วเทียบกับความจำเป็นเชิงปฏิบัติการ par level และความพร้อมต้นทาง; อนุมัติ ตัด `approved_qty` ลงจาก `requested_qty` reject บรรทัดพร้อมเหตุผล split คำขอ หรือส่งกลับเพื่อแก้ไข ลายเซ็นอนุมัติต่อบรรทัด persist โดยตรงบน `tb_store_requisition_detail`
-- [Fulfiller](./03-user-flow-fulfiller.md) — Store Keeper ที่สถานที่ต้นทางที่รับคำขอที่อนุมัติแล้ว หยิบสินค้า บันทึก `issued_qty` ต่อบรรทัด (ซึ่งอาจน้อยกว่า `approved_qty` ถ้าสต๊อกขาดตอน issue) เลือก lot สำหรับสินค้าควบคุม lot commit การเคลื่อนย้ายสต๊อก และปล่อยสินค้า
-- [Receiver](./03-user-flow-receiver.md) — ผู้แทนเอาท์เลตปลายทางที่ยืนยันการรับสินค้าที่ issue ออก flag ความคลาดเคลื่อนระหว่างปริมาณที่ issue กับที่รับ และปิด requisition จากมุมมองเอาท์เลต ไม่เปลี่ยน `doc_status` โดยตรงแต่ยก event ความคลาดเคลื่อนที่อาจ escalate ไปยัง inventory-adjustment
-- [Audit / Config](./03-user-flow-audit-config.md) — Inventory Controller (variance review, period-end signoff, สิทธิ์ void เชิงบริหาร), Finance Team (ตรวจสอบการ map cost-centre / journal-entry, period close, การ reconcile food-cost) และ System Administrator + Auditor (RBAC, threshold อนุมัติ, การตั้งค่า workflow, การติดตามลายเซ็น / variance)
+- [Requester](./03-user-flow-requester.md) — Outlet Manager ที่ระบุความต้องการสต๊อกที่สถานที่บริโภค สร้าง SR เพิ่มรายการพร้อม `requested_qty` และวันที่ต้องการ แนบโน้ตประกอบ submit เอกสารเพื่อขออนุมัติ และติดตามสถานะ
+- [Approver](./03-user-flow-approver.md) — Department Head ที่ review คำขอที่ submit แล้วเทียบกับความจำเป็นเชิงปฏิบัติการและความพร้อมต้นทาง; อนุมัติ ตัด `approved_qty` ลงจาก `requested_qty`, reject บรรทัด หรือส่งกลับเพื่อแก้ไข ลายเซ็นอนุมัติต่อบรรทัด persist โดยตรงบน `tb_store_requisition_detail`
+- [Fulfiller](./03-user-flow-fulfiller.md) — ผู้ถือขั้น workflow ที่ tag `enum_stage_role.issue` (Store Keeper) ที่บันทึก `issued_qty` ต่อบรรทัดผ่าน approve action ทั่วไปเดียวกับที่ Approver ใช้ Lot ถูก assign แบบ FIFO อัตโนมัติ; ไม่มี UI เลือก lot
+- [Receiver](./03-user-flow-receiver.md) — **แก้ไขในรอบนี้: ยังไม่ยืนยันว่าเป็น persona แยก** ไม่พบ route, permission key หรือกลไก flag ความคลาดเคลื่อนของ receiver ในซอร์สปัจจุบัน ดูในหน้านั้นว่าอะไรยืนยันได้และอะไรยังไม่ได้
+- [Audit / Config](./03-user-flow-audit-config.md) — **แก้ไขในรอบนี้: ส่วนใหญ่ยังไม่ยืนยัน** พื้นที่ทำงาน "Inventory Controller / Finance / Sysadmin / Auditor" ที่หน้านี้เคยบรรยายไว้ (คอนโซล RBAC, การตรวจสอบ GL, threshold ผ่อนคลาย SoD) ไม่มี route หรือโค้ดรองรับ ดูในหน้านั้นว่าอะไรยืนยันได้และอะไรยังไม่ได้
 
 ## 4. การ Handoff ข้าม Persona
 
@@ -87,16 +81,15 @@ stateDiagram-v2
 
 | จาก persona | Trigger | ไป persona | สถานะเอกสารตอน handoff |
 | ----------- | ------- | ---------- | ---------------------- |
-| Requester | submit เพื่ออนุมัติ | Approver | `in_progress` (ขั้นอนุมัติแรก; `user_action.execute` บรรจุด้วย approver ขั้นแรก) |
+| Requester | submit เพื่ออนุมัติ | Approver | `in_progress` (ขั้นแรก; `user_action.execute` บรรจุด้วยผู้ใช้ของขั้นแรก) |
 | Approver | ส่งกลับเพื่อแก้ไข | Requester | `in_progress` (workflow route กลับไปขั้น requester; `review_message` ต่อบรรทัดเขียน) |
-| Approver | บรรทัดทั้งหมดอนุมัติที่ขั้นอนุมัติสุดท้าย | Fulfiller | `in_progress` (workflow ก้าวไปขั้น fulfillment; `user_action.execute` บรรจุด้วย fulfiller ที่สถานที่ต้นทาง) |
-| Approver | บรรทัดทั้งหมดถูก reject (`Σ approved_qty = 0`) | (จุดสิ้นสุด — `cancelled`) | `cancelled` (การย้ายอัตโนมัติผ่าน `SR_POST_004` tail) |
-| Fulfiller | บันทึก `issued_qty` และ commit | Receiver | `completed` (on-hand ต้นทางลด; on-hand ปลายทางเพิ่มสำหรับ `transfer` หรือ cost-centre ปลายทาง debit สำหรับ `issue`; ข้อมูล lot เขียนบน inventory transaction ที่ลิงก์) |
-| Fulfiller | เจอ stock-out ตอน issue และ commit บางส่วน | Receiver, Inventory Controller | `completed` (พร้อม `issued_qty < approved_qty` ในหนึ่งบรรทัดขึ้นไป; `fulfilment_gap` บันทึก; system comment "could not fulfil — source stock-out") |
-| Receiver | ยก flag ความคลาดเคลื่อนหลัง commit | Inventory Controller | `completed` (พร้อม comment ความคลาดเคลื่อน; resolution ผ่าน `[inventory-adjustment](/th/inventory/inventory-adjustment)`) |
-| Inventory Controller | period-end variance review | Audit / Config (Finance Team) | (ไม่เปลี่ยนสถานะเอกสาร; variance dashboard roll up ต่อเอาท์เลต / ต่องวด) |
-| Inventory Controller / Sysadmin | void ก่อน commit ด้วยเหตุผล audit | (จุดสิ้นสุด — `voided`) | `voided` (การยกเลิกเชิงบริหาร; ไม่กระทบสต๊อกหรือ GL; เอกสารจบ) |
+| Approver | บรรทัดทั้งหมดอนุมัติที่ขั้นอนุมัติสุดท้าย | Fulfiller (ผู้ใช้ขั้นถัดไป กลไก `/approve` เดียวกัน) | `in_progress` (workflow ก้าวต่อ; `user_action.execute` บรรจุด้วยผู้ใช้ที่ขั้นถัดไป) |
+| Approver / Fulfiller | whole-document reject | (จุดสิ้นสุด — `voided`) | `voided` ไม่ใช่ `cancelled` — ดูหมายเหตุการแก้ไขใน Section 2 ไม่กระทบ inventory |
+| Fulfiller | บันทึก `issued_qty`, final stage เสร็จสมบูรณ์ | (ไม่มี persona ปลายทางที่ยืนยันได้) | `completed` (on-hand ต้นทางลด; on-hand ปลายทางเพิ่มสำหรับ `transfer` หรือไม่เปลี่ยน on-hand ปลายทางสำหรับ `issue`; ข้อมูล lot auto-assign บน inventory transaction ที่ลิงก์) ไม่มี handoff ไปยัง "Receiver" ที่ยืนยันได้ — ดู [03-user-flow-receiver.md](./03-user-flow-receiver.md) |
+| Fulfiller | เจอ stock-out ตอน issue และบันทึกบางส่วน | — | `completed` (พร้อม `issued_qty < approved_qty` ในหนึ่งบรรทัดขึ้นไป) ไม่พบกลไก alert/notification ที่ยืนยันได้เฉพาะกรณีนี้ |
 | Recipe (auto-create) | คำนวณ recipe demand สำหรับ production / banquet | Requester | `draft` (pre-populate โดยโมดูล recipe; `info.recipe_id` มี back-reference) |
+
+แถวที่บรรยาย persona "Receiver" หรือ "Inventory Controller / Sysadmin / Finance" ที่กระทำต่อ SR หลัง commit ถูกถอดออกในรอบนี้ — ดู [03-user-flow-receiver.md](./03-user-flow-receiver.md) และ [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) สำหรับสิ่งที่ตรวจสอบแล้วและสิ่งที่ยังไม่ยืนยัน
 
 ## 5. แหล่งอ้างอิง
 
