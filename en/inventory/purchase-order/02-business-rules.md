@@ -2,7 +2,7 @@
 title: Purchase Order — Business Rules
 description: Validation, calculation, authorization, posting, three-way-match, and cross-module rules for purchase-order.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T12:00:00.000Z
 tags: purchase-order, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -18,7 +18,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 
 ## 1. Overview
 
-This page captures the operational business rules that govern a Purchase Order (PO) document through its lifecycle: input validation at create / edit / submit time, monetary calculation (line and header), authorization gates by role and amount threshold, posting effects on each transition of `enum_purchase_order_doc_status`, three-way-match against the GRN and the vendor invoice, and cross-module rules with [purchase-request](/en/inventory/purchase-request), [good-receive-note](/en/inventory/good-receive-note), [vendor-pricelist](/en/inventory/vendor-pricelist), and [inventory](/en/inventory/inventory).
+This page captures the operational business rules that govern a Purchase Order (PO) document through its lifecycle: input validation at create / edit / submit time, monetary calculation (line and header), authorization gates by workflow stage role, posting effects on each transition of `enum_purchase_order_doc_status`, and cross-module rules with [purchase-request](/en/inventory/purchase-request), [good-receive-note](/en/inventory/good-receive-note), [vendor-pricelist](/en/inventory/vendor-pricelist), and [inventory](/en/inventory/inventory). A prior version of this page also described an amount-threshold approval gate and a three-way-match against a vendor invoice; neither was found in current source — see § 4 and § 5 for the corrected rules and the Discrepancy log for detail.
 
 The rules below are synthesised from the legacy carmen/docs PO business analysis, the corresponding PR business-rule catalogue (Section 3 of `purchase-request-ba.md` and `PR-Module-Structure.md`, since PO inherits the same calculation, rounding, and approval philosophy), and the canonical Prisma data model documented in [purchase-order/01-data-model](/en/inventory/purchase-order/01-data-model). Where the legacy carmen/docs and Prisma disagree, Prisma is canonical — in particular for status values (`draft`, `in_progress`, `voided`, `sent`, `partial`, `closed`, `completed`) and for the PR↔PO bridge linkage rather than a single FK on the PO line.
 
@@ -31,7 +31,7 @@ Rule IDs follow `PO_VAL_NNN`. Header rules (001–006) run on every save and on 
 | `PO_VAL_001` | `tb_purchase_order.po_no` is non-empty and unique among non-soft-deleted rows (`@@unique([po_no, deleted_at])`). | Create, edit, submit | Reject with "PO reference number is required and must be unique." DB-level fallback via the unique index. |
 | `PO_VAL_002` | `vendor_id` references an active, non-soft-deleted `tb_vendor` row. | Create, edit, submit | Reject with "Vendor is required and must be from the approved vendor list." |
 | `PO_VAL_003` | `currency_id` references a non-soft-deleted `tb_currency` row; `exchange_rate > 0`. | Create, edit, submit | Reject with "Transaction currency and a positive exchange rate are required." |
-| `PO_VAL_004` | `po_type` is one of `enum_purchase_order_type` (`manual`, `purchase_request`); default `purchase_request`. | Create | Reject with "PO type must be `manual` or `purchase_request`." |
+| `PO_VAL_004` | `po_type` is one of `enum_purchase_order_type` (`manual`, `purchase_request`, `pricelist`); default `purchase_request`. | Create | Reject with "PO type must be `manual`, `purchase_request`, or `pricelist`." |
 | `PO_VAL_005` | `credit_term_id` references a non-soft-deleted `tb_credit_term` row when the vendor requires it. | Submit | Reject with "Credit term is required for this vendor." |
 | `PO_VAL_006` | `order_date` is not null and `delivery_date >= order_date`. | Edit, submit | Reject with "Delivery date must be on or after the order date." |
 | `PO_VAL_007` | Each `tb_purchase_order_detail` row has a non-null `product_id` referencing an active, non-soft-deleted `tb_product`. | Save line, submit | Reject the line with "Product is required." |
@@ -89,20 +89,22 @@ If a third FOC line is added (`order_qty = 1.000`, `price = 0`, `is_foc = true`)
 
 ## 4. Authorization Rules
 
-Rule IDs follow `PO_AUTH_NNN`. Authorization is enforced by RBAC at the API layer; the rules below identify the policy, not the implementation. Role names mirror the carmen/docs RBAC table; "high-value" threshold is tenant-configurable and defaults to the procurement-manager escalation level in the workflow definition referenced by `tb_purchase_order.workflow_id`.
+Rule IDs follow `PO_AUTH_NNN`. Authorization is enforced by RBAC at the API layer; the rules below identify the policy, not the implementation. Role names mirror the carmen/docs RBAC table.
+
+> ⚠️ **Correction (this pass, verified against current source):** the previous version of this table described a tenant-configurable "high-value threshold" that routed approval to the Procurement Manager, a Procurement-Manager-only "Void" action reachable from any non-terminal status, and a segregation-of-duties check (buyer ≠ GRN poster) enforced at GRN creation. None of these were found in current source: a repo-wide search of `carmen-turborepo-backend-v2` and `carmen-inventory-frontend-react` for `threshold`, `segregation`, and `SoD` returned zero relevant hits, and `enum_stage_role` (`create`, `approve`, `purchase`, `issue`, `view_only`) has no amount- or deviation-aware member. `PO_AUTH_004`, `PO_AUTH_007`, and `PO_AUTH_010` below are corrected accordingly; see the Discrepancy log for detail.
 
 | Rule ID | Subject | Right | Constraint |
 | ------- | ------- | ----- | ---------- |
-| `PO_AUTH_001` | Procurement Officer | Create PO (`po_status = draft`) | Both `manual` and `purchase_request` `po_type`. |
+| `PO_AUTH_001` | Procurement Officer | Create PO (`po_status = draft`) | Any of `manual`, `purchase_request`, or `pricelist` `po_type`. |
 | `PO_AUTH_002` | Procurement Officer | Edit PO | Only while `po_status ∈ {draft, in_progress}` and the user is the assigned buyer or holds the current `workflow_current_stage`. |
 | `PO_AUTH_003` | Procurement Officer | Submit PO (`draft → in_progress`) | At least one line; passes Section 2 validation. |
-| `PO_AUTH_004` | Procurement Manager | Approve PO at high-value stage (`in_progress → sent` for amounts above threshold) | `tb_purchase_order.total_amount` exceeds the tenant high-value threshold defined in the workflow. Below the threshold, Procurement Officer can self-approve to `sent` if the workflow allows. |
+| `PO_AUTH_004` | Whichever stage role is assigned to the workflow's final stage (commonly Procurement Manager, but purely a workflow-configuration choice) | Approve PO at the final workflow stage (`in_progress → sent`) | Gated only by `isFinalApproval = (workflow_next_stage === '-')` in `purchase-order.logic.ts` — there is no amount threshold or pricelist-deviation percentage that routes the transition. A single-stage workflow lets the same user who holds that one stage both create and finally approve. |
 | `PO_AUTH_005` | Procurement Manager | Delete PO | Only while `po_status = draft` (soft-delete via `deleted_at`). |
-| `PO_AUTH_006` | Procurement Officer or Procurement Manager | Transmit PO to vendor (`sent`) | After approval; sets `tb_purchase_order.email` and `approval_date`. |
-| `PO_AUTH_007` | Procurement Manager | Void PO (`* → voided`) | Allowed from any non-terminal status (`draft`, `in_progress`, `sent`, `partial`). Once at `voided`, no further transitions allowed. |
-| `PO_AUTH_008` | Inventory Manager (Receiver) | Create GRN against PO; close PO (`partial → closed` early termination) | Allowed only when `po_status ∈ {sent, partial}`. |
-| `PO_AUTH_009` | Finance Officer | View, export reports | Read-only across all statuses. |
-| `PO_AUTH_010` | Segregation of duties | Purchaser ≠ Receiver | The user who created or transmitted a PO (`tb_purchase_order.buyer_id` or `last_action_by_id` on a `sent` transition) MUST NOT be the same user who posts the GRN against that PO. Enforced at GRN creation time. |
+| `PO_AUTH_006` | Whichever user holds the final workflow stage | Transmit PO to vendor (`sent`) | Bundled into the same final-stage approve call — sets `tb_purchase_order.email` and `approval_date` on the same transition; there is no separate manual "Send to Vendor" step in the approval flow itself. |
+| `PO_AUTH_007` | Any approver at the current stage | Reject PO (`in_progress → voided`, direct and terminal) | Only reachable from `in_progress`, via the `/reject` endpoint. There is no distinct "void" action and no path to `voided` from `draft`, `sent`, or `partial` — ending a PO from those statuses uses **Cancel** (`draft`/`in_progress`/`sent → closed`) or **Close** (`sent`/`partial`/`in_progress → closed`) instead, both of which write the remainder to `cancelled_qty`. |
+| `PO_AUTH_008` | Inventory Manager (Receiver) | Create GRN against PO; close PO (`{sent, partial, in_progress} → closed` early termination) | GRN creation requires `po_status ∈ {sent, partial}` (`findOnePoForGrn`); the Close endpoint additionally allows `in_progress` (`closePO` in `purchase-order.service.ts`). |
+| `PO_AUTH_009` | Read-only role(s) with PO view/export access | View, export reports | Read-only across all statuses. No distinct "Finance Officer" role or permission key was confirmed in current source. |
+| `PO_AUTH_010` | — | — (unconfirmed) | **Unverified / likely not implemented.** No code path in the GRN or PO services checks `buyer_id` / `last_action_by_id` against the GRN-posting user; a repo-wide search for `segregation` found no matches. Treat any "Purchaser ≠ Receiver enforced at GRN creation" claim elsewhere in this module as design intent, not live behavior. |
 | `PO_AUTH_011` | Workflow-derived authorization | Stage-gated approval | The set of users in `tb_purchase_order.user_action.execute` at the current `workflow_current_stage` is the only set permitted to advance the document; all other approval attempts are rejected. |
 
 ## 5. Posting Rules
@@ -116,51 +118,40 @@ Rule IDs follow `PO_POST_NNN`.
 | `PO_POST_001` | Create (→ `draft`) | Insert `tb_purchase_order` with `po_status = draft`, `doc_version = 0`, `total_qty = total_price = total_tax = total_amount = 0`. Append to `history`: `{ po_status: 'draft', action: 'created', by, at }`. |
 | `PO_POST_002` | Submit (`draft → in_progress`) | Recompute all roll-ups (`PO_CALC_008`–`PO_CALC_011`). Set `last_action = submitted`, `last_action_at_date = now()`, `last_action_by_id = user`. Initialise `workflow_history`, `workflow_current_stage = <first stage>`, `stages_status = [...]`, and populate `user_action.execute` from the workflow stage definition. Append `history` entry. Soft commitment on budget/inventory is created downstream by the workflow. |
 | `PO_POST_003` | Approve (within `in_progress`) | Append `workflow_history` entry; advance `workflow_current_stage`. Update `user_action.execute` for the next stage. `last_action = approved`. No status change yet — the PO stays `in_progress` until the final approval stage. |
-| `PO_POST_004` | Final approval (`in_progress → sent`) | Set `po_status = sent`, `approval_date = now()`, `last_action = approved`. Append `history`. Send PO to vendor via the application's email/transmit layer **on the same transition** — there is no separate manual "Send to Vendor" action in the live UI (the `APPROVED → SENT` step is auto). From this point on, the PO is a vendor-facing commitment. |
-| `PO_POST_005` | Reject (`in_progress → draft`) | Set `po_status = draft`, `last_action = rejected`, reset `workflow_current_stage` to start. Append rejection comment in `tb_purchase_order_comment` (type `system`). Lines remain editable. |
+| `PO_POST_004` | Final approval (`in_progress → sent`) | Set `po_status = sent`, `approval_date = now()`, `last_action = approved`. Append `history`. Send PO to vendor via the application's email/transmit layer **on the same transition** — there is no separate manual "Send to Vendor" action in the live UI (the `APPROVED → SENT` step is auto). From this point on, the PO is a vendor-facing commitment. Confirmed in `purchase-order.logic.ts` `approve()`: `po_status: isFinalApproval ? sent : in_progress`. |
+| `PO_POST_005` | Send-back / Review (`in_progress` stays `in_progress`) | **Corrected this pass** — the `/review` endpoint does **not** change `po_status`. It only resets `workflow_current_stage` / `workflow_previous_stage` to an earlier stage (typically the creator/"purchase" stage — `buildReviewWorkflow` in `workflow-orchestrator.service.ts` navigates back via `workflows.navigate-back-to-stage` and returns no `po_status` field), sets `last_action = reviewed`, and appends `workflow_history`. When the destination is the creator-only stage, only the original buyer/creator can act next (functionally similar to editing a draft, but the persisted `po_status` remains `in_progress`, not `draft`). Optional reason text is appended to `tb_purchase_order_comment`. |
 | `PO_POST_006` | GRN partial receipt (`sent → partial` or `partial → partial`) | For each affected PO line, the GRN posting increments `tb_purchase_order_detail.received_qty` by the GRN quantity (in order UoM). If `received_qty < order_qty − cancelled_qty` for at least one line, set `po_status = partial`. Bridge rows `tb_purchase_order_detail_tb_purchase_request_detail.received_qty` are updated proportionally to retain PR-side allocation visibility. |
 | `PO_POST_007` | GRN full receipt (`sent → completed` or `partial → completed`) | When every active line satisfies `received_qty = order_qty − cancelled_qty`, set `po_status = completed`. Append `history`. PO is closed normally — no further GRNs accepted. |
-| `PO_POST_008` | Three-way match success | Verify (a) PO line, (b) GRN line, (c) vendor invoice (AP) for the same product agree on quantity (within tolerance) and price (within tolerance). On success, the AP module clears the GRN accrual and posts the vendor invoice for payment. PO itself is not transitioned by this event — it remains at whichever status reflects fulfilment (`partial` or `completed`). |
-| `PO_POST_009` | Three-way match failure | AP invoice is held in dispute. A `system` comment is appended on the PO and a deviation record is opened on the vendor / vendor-pricelist side. The PO is not auto-voided; resolution is manual via amendment, credit note, or void. |
-| `PO_POST_010` | Void (`* → voided` from any of `draft`, `in_progress`, `sent`, `partial`) | Set `po_status = voided`, `is_active = false`, `last_action_at_date = now()`. Reverse any soft commitments downstream (budget, vendor-side notification). If voiding from `partial`, GRNs already posted remain valid — only the unfulfilled remainder is voided. `voided` is terminal. |
-| `PO_POST_011` | Close (`partial → closed` early-termination) | Set `po_status = closed`. For each line still pending fulfilment, the application writes back the remainder to `cancelled_qty` so that `received_qty + cancelled_qty = order_qty`. Used when the vendor cannot supply the remaining quantity. Distinct from `completed` (full receipt). `closed` is terminal. |
+| `PO_POST_008` | ~~Three-way match success~~ — **not implemented** | **Unverified / likely fabricated.** A repo-wide search of the frontend and backend for `three-way`, `threeWay`, `vendor_invoice`, `VendorInvoice`, and `tb_invoice` returned zero hits. No vendor-invoice-capture screen, AP-posting endpoint, or match algorithm exists in current source. Do not treat this rule as live behavior; see the Discrepancy log. |
+| `PO_POST_009` | ~~Three-way match failure~~ — **not implemented** | Same finding as `PO_POST_008` — no invoice/AP module exists to hold a match in dispute. |
+| `PO_POST_010` | Cancel (`{draft, in_progress, sent} → closed`) | `cancel()` in `purchase-order.service.ts`: sets `po_status = closed`; for each line, writes `cancelled_qty = order_qty − received_qty`. No `is_active` field is touched. This is the withdraw-the-commitment action, distinct from Close below only in its allowed source-status set. |
+| `PO_POST_010b` | Reject (`in_progress → voided`, direct, terminal) | `reject()` in `purchase-order.service.ts`: sets `po_status = voided` directly (does **not** set `is_active = false` — that claim in an earlier version of this rule was not confirmed in code). Only reachable from `in_progress`; there is no path to `voided` from `draft`, `sent`, or `partial`. `voided` is terminal. |
+| `PO_POST_011` | Close (`{sent, partial, in_progress} → closed` early-termination) | `closePO()` in `purchase-order.service.ts`: sets `po_status = closed`; for each line with `cancelledQty = orderQty − receivedQty > 0`, writes it to `cancelled_qty` so `received_qty + cancelled_qty = order_qty`. Used when the vendor cannot supply the outstanding quantity. Distinct from `completed` (full receipt). `closed` is terminal. |
 | `PO_POST_012` | Soft delete | `deleted_at = now()`, `deleted_by_id = user`. Only allowed at `draft` per `PO_AUTH_005`. Row remains in the database; all unique indexes include `deleted_at` so a new PO can reuse the same `po_no`. |
 
-State diagram (Prisma-canonical):
+State diagram (Prisma-canonical, corrected this pass):
 
 ```
 [*] → draft → in_progress → sent → partial → completed
-                ↑    ↓        ↓       ↓         ↑
-              (reject)        ↓       ↓     (full receipt)
-                              ↓       └→ closed (early term.)
-                              ↓
-        any non-terminal → voided  (admin)
+       ↓ ↑        ↓  ↑        ↓       ↓         ↑
+   (soft-  (send-back:      (cancel)  ↓     (full receipt)
+    delete) stage resets,     ↓       ↓
+             stays              ↓       └→ closed (early term./close/cancel)
+             in_progress)        ↓
+                          (reject) → voided  (in_progress only, direct & terminal)
 ```
 
-`completed`, `closed`, and `voided` are terminal. `draft` accepts soft-delete.
+`completed`, `closed`, and `voided` are terminal. `draft` accepts soft-delete. `closed` is reachable from `draft`/`in_progress`/`sent` (cancel) or `sent`/`partial`/`in_progress` (close) — there is no separate "void" action outside the in-workflow `reject`.
 
-### 5.1 Status Lifecycle — Live UI vs BRD Mapping
+### 5.1 Status Lifecycle — Correction Notes
 
-The Prisma enum `enum_purchase_order_doc_status` documented above is what the live UI uses. BRD `FR-PO-005` describes a different, slightly thinner set of statuses. The table below maps every observable live-UI status to its BRD equivalent so testers and developers can reconcile the two without ambiguity. Source: `Test_case/Purchase_Order/Purchaser/INDEX.md` § Status Lifecycle (capture date 2026-04-26).
+> ⚠️ **This section previously presented a "Live UI vs BRD" mapping sourced from a historical BA test-case document (`Test_case/Purchase_Order/Purchaser/INDEX.md`, capture date 2026-04-26) that asserted a distinct `APPROVED` status and a `REJECTED` status returning the PO to the Purchaser. Neither is a real Prisma enum member, and re-verifying against current source this pass turned up a different, simpler reality — corrected below.**
 
-| Live UI status | BRD `FR-PO-005` equivalent | Diff | Notes |
-|---|---|---|---|
-| `DRAFT` | `Draft` | ✅ match | — |
-| `IN PROGRESS` | _(not in BRD)_ | 🔴 new in live UI | PO submitted by Purchaser, pending FC approval. Not modelled by BRD. |
-| `APPROVED` | _(not in BRD)_ | 🔴 new in live UI | FC approved; PO auto-sent to vendor immediately on this transition. |
-| `SENT` | `Sent` | ✅ match | Auto-set after FC approval. No manual "Send" step in live UI. |
-| `PARTIAL` | `Partial Received` | 🟡 renamed | BRD label is `Partial Received`. |
-| `COMPLETED` | `Fully Received` | 🟡 renamed | BRD label is `Fully Received`. |
-| `CLOSED` | `Closed` | ✅ match | — |
-| `VOIDED` | `Cancelled` | 🟡 renamed | BRD label is `Cancelled`; `VOIDED` is used in live UI for "Close with no items received". |
-| `REJECTED` | _(not in BRD)_ | 🔴 new in live UI | FC rejects PO outright. PO returned to Purchaser. |
-| _(absent)_ | `Acknowledged` | 🔵 BRD only | BRD defines a vendor-confirmation status that is not present in live UI. |
+The Prisma enum `enum_purchase_order_doc_status` (`draft`, `in_progress`, `voided`, `sent`, `partial`, `closed`, `completed`) is exhaustive — there is no `approved` or `rejected` member. What was previously labelled "`APPROVED`" is not a persisted status: final-stage approval and transmission happen in the same `approve()` call and land directly on `sent` (`PO_POST_004`). What was previously labelled "`REJECTED`" is the direct, terminal `in_progress → voided` transition (`PO_POST_010b`) — there is no intermediate state and no return to `draft`. A UI badge reading "Rejected" (seen in `403-po-approver-journey.spec.ts` `TC-PO-070311`) is consistent with a `voided` PO whose `last_action = rejected`, not with a distinct persisted status.
 
-> ⚠️ **Discrepancy — FC-approval phase not in BRD:** BRD `FR-PO-005` defines a linear flow `Draft → Sent → Acknowledged → Partial Received → Fully Received → Closed/Cancelled`. The live UI inserts an FC-approval phase (`DRAFT → IN PROGRESS → APPROVED → SENT`) with the `APPROVED` status auto-transitioning to `SENT` immediately. `IN PROGRESS`, `APPROVED`, and `REJECTED` are not in the BRD.
+Separately, **"send-back"** (the `/review` action) does not move `po_status` at all — see `PO_POST_005` above. A prior version of this page conflated "send-back" and "reject" as the same `in_progress → draft` transition; they are two different endpoints with two different effects, and neither actually reaches `draft` from `in_progress`.
 
-> ⚠️ **Discrepancy — no `ACKNOWLEDGED` status in live UI:** BRD models vendor confirmation as a distinct status. The live UI does not capture an acknowledgement transition — vendor acknowledgement, when received, is logged in `tb_purchase_order_comment` only. `po_status` stays at `sent`.
-
-> ⚠️ **Discrepancy — `VOIDED` semantics:** BRD `Cancelled` covers any termination of an open PO. Live UI `VOIDED` is narrower — it specifically means "Close approved PO with no items received". Voiding from `sent` or `partial` after some GRNs have posted leaves the GRNs intact and only voids the unfulfilled remainder (per `PO_POST_010`).
+No vendor-acknowledgement status (`ACKNOWLEDGED`) exists in current source; where a vendor's acceptance is recorded at all, it would be a `tb_purchase_order_comment` entry, not a status value — this specific claim was not directly verified this pass and should be treated as unconfirmed rather than corrected.
 
 ## 6. Cross-Module Rules
 
@@ -168,13 +159,13 @@ Rule IDs follow `PO_XMOD_NNN`.
 
 | Rule ID | Related module | Rule |
 | ------- | -------------- | ---- |
-| `PO_XMOD_001` | [purchase-request](/en/inventory/purchase-request) | When `po_type = purchase_request`, the PO must be created via the PR-to-PO conversion flow, which groups selected approved PRs by `(vendor_id, currency_id)` and produces one PO per group. Each resulting PO line carries one or more bridge rows in `tb_purchase_order_detail_tb_purchase_request_detail` linking it back to the originating PR line(s) (`PO_VAL_014`). |
+| `PO_XMOD_001` | [purchase-request](/en/inventory/purchase-request) | When `po_type = purchase_request`, the PO must be created via the PR-to-PO conversion flow (a 2-step dialog, `po-from-pr-dialog.tsx`: select whole PRs → review the grouped PO(s)), which groups selected approved PR lines by `(vendor_id, delivery_date, currency_id)` — confirmed via `buildPoGroupKey` in `purchase-order.service.ts` — and produces one PO per group. Each resulting PO line carries one or more bridge rows in `tb_purchase_order_detail_tb_purchase_request_detail` linking it back to the originating PR line(s) (`PO_VAL_014`). Both endpoints (`POST .../purchase-orders/group-pr`, `POST .../purchase-orders/confirm-pr`) list `Permissions: None` in Bruno; the frontend dialog chain has no `hasPermission` check. |
 | `PO_XMOD_002` | [purchase-request](/en/inventory/purchase-request) | The bridge supports consolidation (many PR lines → one PO line) and partial conversion (one PR line → many PO lines). The PR line is considered fully converted only when `Σ bridge.pr_detail_qty` for that `pr_detail_id` equals the PR line's approved quantity. |
 | `PO_XMOD_003` | [good-receive-note](/en/inventory/good-receive-note) | A GRN may only be created against a PO whose `po_status ∈ {sent, partial}` (`PO_AUTH_008`). The GRN detail back-references `tb_purchase_order_detail.id`; the pending quantity available for receipt is `order_qty − received_qty − cancelled_qty` per `PO_POST_006`. |
 | `PO_XMOD_004` | [good-receive-note](/en/inventory/good-receive-note) | Receiving a quantity that would exceed the pending qty is rejected unless tenant configuration permits over-receipt within a tolerance; otherwise the GRN line is capped at the pending qty. |
 | `PO_XMOD_005` | [vendor-pricelist](/en/inventory/vendor-pricelist) | At PR-to-PO conversion, the system snapshots `price` from the active vendor pricelist for the `(vendor, product, currency)` tuple. If no active pricelist row exists, the PR's last-known price is used and a `system` comment is appended flagging the missing pricelist coverage. |
-| `PO_XMOD_006` | [vendor-pricelist](/en/inventory/vendor-pricelist) | When the buyer overrides a snapshot price, the delta against the pricelist is logged in `tb_purchase_order_detail_comment` as a deviation entry. Deviations above tenant tolerance route the PO to a high-value approval stage even if `total_amount` is below the threshold. |
-| `PO_XMOD_007` | AP / Three-way match | On GRN posting the AP module raises an inventory-accrual liability. The accrual is cleared, and the vendor invoice is posted, only on three-way-match success per `PO_POST_008`. PO closure (`completed` or `closed`) does not by itself clear the accrual — that is AP's responsibility against the actual invoice. |
+| `PO_XMOD_006` | [vendor-pricelist](/en/inventory/vendor-pricelist) | **Partially unverified.** Whether a buyer's price override against the pricelist snapshot is logged as a distinct "deviation entry" was not directly confirmed this pass. The second half of the original claim — that deviations above a tolerance band force-route the PO to a "high-value approval stage" — is **not implemented**: no threshold/tolerance-based routing exists anywhere in current source (see § 4 note). Approval stage count and assignment come only from the workflow definition. |
+| `PO_XMOD_007` | ~~AP / Three-way match~~ — **not implemented** | **Unverified / likely fabricated**, same finding as `PO_POST_008`/`PO_POST_009`: no invoice, AP-posting, or three-way-match code exists in `carmen-turborepo-backend-v2` or `carmen-inventory-frontend-react`. GRN posting's accrual/GL effects, if any, live entirely in the GRN/inventory/costing modules — not verified as part of this PO-module pass. |
 | `PO_XMOD_008` | [inventory](/en/inventory/inventory) | Inventory on-hand is **not** incremented by PO posting — it is incremented only when the GRN posts (which is in scope for the GRN module). The PO contributes the "on-order" pipeline quantity that inventory planning reads via `order_qty − received_qty − cancelled_qty` on active PO lines. |
 | `PO_XMOD_009` | [inventory](/en/inventory/inventory) | The PO line's `base_qty` (computed in base UoM via `PO_CALC_011`) is the quantity that inventory reservations and projected-on-hand calculations read; the order UoM is for vendor-facing display only. |
 

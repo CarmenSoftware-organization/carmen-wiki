@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — User Flow — Receiver
 description: เส้นทางผู้ใช้งานของ Receiver ภายในโมดูล purchase-order — รับสินค้าจริง สร้าง GRN เทียบกับ PO และ trigger receipt state transition
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T12:00:00.000Z
 tags: purchase-order, user-flow, receiver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -16,7 +16,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 
 ## 1. บทบาทในโมดูลนี้
 
-Persona **Receiver** ครอบคลุม **Receiver / Store Keeper** ที่ dock บวก **Inventory Manager** ที่กำกับการปิด receipt สำหรับ location ทั้งคู่เป็นเจ้าของขาการรับสินค้าจริงของห่วงโซ่ procure-to-pay: Store Keeper ตรวจสอบการส่งของของ vendor เทียบกับ PO, raise **Good Receive Note** (GRN) ทีละบรรทัด และบันทึก `received_qty` และ `accepted_qty` บนแต่ละ PO line; Inventory Manager กำกับการ post นั้นและปิด POs เมื่อรับครบหรือยอมรับเป็นการสิ้นสุด PO status ใน entry ไปยัง flow นี้คือ `sent` (หรือ `partial` สำหรับ deliveries ติดตามผล) การ post GRN เองดำเนินใน `[good-receive-note](/th/inventory/good-receive-note)` ปลายน้ำ — หน้านี้อธิบาย **PO-side effects เท่านั้น**: วิธีที่ GRN ของ Receiver flip `tb_purchase_order.po_status` จาก `sent → partial` (`PO_POST_006`) หรือ `sent → completed` / `partial → completed` (`PO_POST_007`), วิธีที่ Inventory Manager ปิด `partial` PO ด้วย remainder เขียนเป็น `cancelled_qty` (`PO_POST_011`), และวิธีที่ PO line counters (`received_qty`, `cancelled_qty`) advance เทียบกับ `order_qty` Inventory on-hand เพิ่มโดยโมดูล GRN ไม่ใช่โดย PO Segregation of duties บังคับใช้โดย `PO_AUTH_010` — ผู้ใช้ที่สร้างหรือส่ง PO ต้องไม่เป็นผู้ใช้คนเดียวกันที่ post GRN เทียบกับมัน
+Persona **Receiver** ครอบคลุม **Receiver / Store Keeper** ที่ dock บวก **Inventory Manager** ที่กำกับการปิด receipt สำหรับ location ทั้งคู่เป็นเจ้าของขาการรับสินค้าจริงของห่วงโซ่ procure-to-pay: Store Keeper ตรวจสอบการส่งของของ vendor เทียบกับ PO, raise **Good Receive Note** (GRN) ทีละบรรทัด และบันทึก `received_qty` และ `accepted_qty` บนแต่ละ PO line; Inventory Manager กำกับการ post นั้นและปิด POs เมื่อรับครบหรือยอมรับเป็นการสิ้นสุด PO status ใน entry ไปยัง flow นี้คือ `sent` (หรือ `partial` สำหรับ deliveries ติดตามผล) การ post GRN เองดำเนินใน `[good-receive-note](/th/inventory/good-receive-note)` ปลายน้ำ — หน้านี้อธิบาย **PO-side effects เท่านั้น**: วิธีที่ GRN ของ Receiver flip `tb_purchase_order.po_status` จาก `sent → partial` (`PO_POST_006`) หรือ `sent → completed` / `partial → completed` (`PO_POST_007`), วิธีที่ Inventory Manager ปิด `partial` PO ด้วย remainder เขียนเป็น `cancelled_qty` (`PO_POST_011`), และวิธีที่ PO line counters (`received_qty`, `cancelled_qty`) advance เทียบกับ `order_qty` Inventory on-hand เพิ่มโดยโมดูล GRN ไม่ใช่โดย PO **ยังไม่ยืนยัน:** เวอร์ชันก่อนหน้าของหน้านี้อ้างว่า segregation of duties (buyer ≠ ผู้ post GRN) ถูกบังคับใช้ที่การสร้าง GRN — การค้นหาทั่ว repo ทั้งใน backend service ของ GRN และ PO สำหรับ `segregation` / การตรวจสอบ buyer-vs-poster ไม่พบ code ที่ตรงกัน ถือว่านี่เป็น design intent ไม่ใช่ guard ที่ใช้งานจริง จนกว่าจะยืนยันได้ในรอบ resync ของโมดูล good-receive-note เอง
 
 ### ตำแหน่งใน Workflow (เน้น Receiver)
 
@@ -33,7 +33,7 @@ graph LR
 
 ### ตารางสิทธิ์ — Status × Action (Receiver sub-roles)
 
-Store Keeper ขับเคลื่อน GRN ต่อ shipment; Inventory Manager จัดการ override early-close Segregation of duties (`PO_AUTH_010`) ห้ามผู้ post GRN เป็นผู้ใช้คนเดียวกันที่สร้างหรือส่ง PO Inventory on-hand effects เป็นของโมดูล GRN / inventory ไม่ใช่ของ PO
+Store Keeper ขับเคลื่อน GRN ต่อ shipment; Inventory Manager จัดการ override early-close Inventory on-hand effects เป็นของโมดูล GRN / inventory ไม่ใช่ของ PO
 
 | Action | sent | partial | completed | closed |
 |---|---|---|---|---|
@@ -48,7 +48,7 @@ Store Keeper ขับเคลื่อน GRN ต่อ shipment; Inventory Ma
 | ปฏิเสธการส่งของที่ dock (ไม่มี GRN, ไม่มี system effect) | ✅ | ✅ | — | — |
 | Edit PO header / lines | ❌ | ❌ | ❌ | ❌ |
 | Approve / Transmit / Void | ❌ | ❌ | ❌ | ❌ |
-| Post GRN เทียบกับ PO ของ buyer ตัวเอง | ❌ (`PO_AUTH_010` — segregation of duties) | ❌ | — | — |
+| Post GRN เทียบกับ PO ของ buyer ตัวเอง | ยังไม่ยืนยัน — ไม่พบ segregation-of-duties check ใน source ปัจจุบัน | — | — | — |
 
 > ℹ️ **`accepted_qty` vs `received_qty`:** inventory on-hand เพิ่มโดย `accepted_qty` เท่านั้น; gap (`received_qty − accepted_qty`) คือ variance quality-rejection ที่ carry โดย GRN สำหรับการติดตาม vendor return / credit-note PO ไม่ auto-correct สำหรับ variance นี้ — การ resolve log ใน `tb_purchase_order_comment` และ write-off ที่ตกลงไปที่ `cancelled_qty`
 
@@ -63,7 +63,7 @@ Store Keeper ขับเคลื่อน GRN ต่อ shipment; Inventory Ma
 
 **Primary flow (8 ขั้นตอน):**
 
-1. **เปิด PO** ที่ dock เทียบกับการส่งของจริง Screen แสดงแต่ละบรรทัดของ `order_qty`, running `received_qty`, `cancelled_qty`, และ pending balance (`order_qty − received_qty − cancelled_qty`) Authorization check ภายใต้ `PO_AUTH_008` (Inventory Manager / Receiver สามารถดำเนินการเมื่อ `po_status ∈ {sent, partial}`) และ `PO_AUTH_010` (ผู้ post GRN ต้องไม่ใช่ buyer / transmitter ของ PO)
+1. **เปิด PO** ที่ dock เทียบกับการส่งของจริง Screen แสดงแต่ละบรรทัดของ `order_qty`, running `received_qty`, `cancelled_qty`, และ pending balance (`order_qty − received_qty − cancelled_qty`) Authorization check ภายใต้ `PO_AUTH_008` (Inventory Manager / Receiver สามารถดำเนินการเมื่อ `po_status ∈ {sent, partial}`); ไม่พบ segregation-of-duties check ที่จำกัดผู้ post GRN ที่ยืนยันได้ใน source ปัจจุบัน
 2. **ตรวจสอบการส่งของจริงเทียบกับ PO** — match delivery note / packing list กับ PO lines, นับ carton, และระบุ short delivery, over delivery, ผิดสินค้า, หรือปัญหาคุณภาพก่อนเปิด GRN
 3. **เริ่ม GRN ใหม่** อ้างอิง PO Header GRN inherit `vendor_id`, `currency_id`, และ delivery location จาก PO; rows GRN detail pre-populate จาก `tb_purchase_order_detail` ด้วย `pending_qty` เป็น default editable quantity
 4. **ใส่ `received_qty` ต่อบรรทัด** — สิ่งที่มาถึงจริงใน order UoM อาจเท่ากับ น้อยกว่า หรือ (ภายใต้ over-delivery policy) เกิน pending balance
@@ -88,10 +88,8 @@ Store Keeper ขับเคลื่อน GRN ต่อ shipment; Inventory Ma
 การ involve ของ Receiver บน PO ที่กำหนดจบที่ **GRN post** จากจุดนั้น document state บน Carmen เป็นหนึ่งใน:
 
 - `partial` — อย่างน้อย PO line หนึ่งยังมี open balance; Receiver อาจ re-enter flow เมื่อ shipment ถัดไปมาถึง
-- `completed` — ทุกบรรทัดรับครบ; PO อยู่ที่ terminal receipt state และเป็น read-only สำหรับวัตถุประสงค์ inventory ตำแหน่ง matched-but-unbilled ถูกส่งต่อให้ **Finance** สำหรับ three-way match (PO ↔ GRN ↔ invoice) เมื่อ invoice ของ vendor มาถึง; AP liability จากนั้น post ภายใต้ `PO_POST_008`
-- `closed` — **Inventory Manager** ปิด `partial` PO ด้วย remainder เขียนเป็น `cancelled_qty` ภายใต้ `PO_POST_011`; close-out review โดย Finance สำหรับ GRNs ที่ post แล้วเทียบกับ closed lines
-
-ในทั้งสามกรณี persona ถัดไปคือ **Finance** สำหรับ invoice match (และสำหรับ closed POs, close-out reconciliation) PO เองไม่ status-changed โดย three-way match — match outcome อยู่บนเร็คคอร์ด invoice ที่ link และ AP posting; PO เก็บสถานะ fulfilment ที่ถึง (`partial`, `completed`, หรือ `closed`) ดู finance persona file สำหรับฝั่งรับของ invoice handoff
+- `completed` — ทุกบรรทัดรับครบ; PO อยู่ที่ terminal receipt state และเป็น read-only สำหรับวัตถุประสงค์ inventory **ยังไม่ยืนยัน:** ไม่พบ feature vendor-invoice-match หรือ AP-posting downstream ใด ๆ ใน source ปัจจุบัน — ดู [03-user-flow-finance.md](./03-user-flow-finance.md) สำหรับการแก้ไข
+- `closed` — **Inventory Manager** ปิด `partial` PO ด้วย remainder เขียนเป็น `cancelled_qty` ภายใต้ `PO_POST_011`
 
 ## 5. แหล่งอ้างอิง
 
@@ -99,7 +97,7 @@ Store Keeper ขับเคลื่อน GRN ต่อ shipment; Inventory Ma
 - Sibling: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — internal persona ต้นน้ำที่ส่ง PO และแจ้งเตือนเรื่องความคลาดเคลื่อนที่ dock สำหรับ amendment / return / credit-note follow-up
 - Sibling: [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md) — ถือ close / void override authority และ review การตัดสินใจ `partial → closed` ร่วมกับ Inventory Manager
 - Sibling: [03-user-flow-vendor.md](./03-user-flow-vendor.md) — ฝ่ายภายนอกที่ persona นี้รับการส่งของจริงที่ dock
-- Sibling: [03-user-flow-finance.md](./03-user-flow-finance.md) — persona ปลายน้ำที่หยิบตำแหน่ง matched-but-unbilled สำหรับ three-way match หลัง GRN post
+- Sibling: [03-user-flow-finance.md](./03-user-flow-finance.md) — บันทึกเหตุผลที่ไม่พบ three-way-match / invoice handoff ที่ยืนยันได้หลัง GRN post
 - เกี่ยวข้อง: [good-receive-note](/th/inventory/good-receive-note) — โมดูลปลายน้ำที่ GRN จริง ๆ raise และ post; หน้านี้อธิบาย PO-side effects เท่านั้น
 - เกี่ยวข้อง: [inventory](/th/inventory/inventory) — การเพิ่ม on-hand จาก `accepted_qty` เป็นของโมดูล inventory บน GRN post; PO มีส่วนร่วมเฉพาะ on-order pipeline quantity (`order_qty − received_qty − cancelled_qty`) ตาม `PO_XMOD_008`
 - Sibling: [02-business-rules.md](./02-business-rules.md) — `PO_POST_006`, `PO_POST_007`, `PO_POST_011`, `PO_AUTH_008`, และ `PO_AUTH_010` สำหรับ receipt-side transitions และ authorization ที่อ้างอิงข้างต้น

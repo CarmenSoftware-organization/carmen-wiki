@@ -2,7 +2,7 @@
 title: Purchase Order — Data Model — Comment Tables
 description: Document-level and line-level comment / attachment tables for the Purchase Order module — message text, attachments JSON, and the user/system comment-type enum.
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-07-15T12:00:00.000Z
 tags: purchase-order, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -81,7 +81,7 @@ Line-level counterpart of `tb_purchase_order_comment`. Captures comments and sys
 ## 4. Cross-References
 
 - Sibling: [01 — Data Model](/en/inventory/purchase-order/01-data-model) — `tb_purchase_order` and `tb_purchase_order_detail` (header / line tables), enum definitions, the workflow / history JSON columns, and the cross-document bridges to PR and GRN.
-- Sibling: [02 — Business Rules](/en/inventory/purchase-order/02-business-rules) — `PO_POST_005` (return-to-buyer reason text), `PO_POST_009` (three-way-match exception comments), `PO_POST_010` (void reason text), `PO_POST_011` (close-early reason text), and `PO_AUTH_011` (workflow-stage approval comments) all persist to `tb_purchase_order_comment`.
+- Sibling: [02 — Business Rules](/en/inventory/purchase-order/02-business-rules) — `PO_POST_005` (send-back / review reason text, corrected this pass — stage resets, `po_status` unchanged), `PO_POST_010b` (reject reason text, corrected — direct terminal void from `in_progress`), `PO_POST_011` (close-early reason text), and `PO_AUTH_011` (workflow-stage approval comments) all persist to `tb_purchase_order_comment`. `PO_POST_009` (three-way-match exception comments) is removed — no invoice/AP-matching feature was found in current source.
 - Upstream: [03 — User Flow: Procurement Manager](/en/inventory/purchase-order/03-user-flow-procurement-manager) — documents Manager review of the Attachments / Comments tabs and the recording of approver decisions.
 - Upstream: [03 — User Flow: Audit & Config](/en/inventory/purchase-order/03-user-flow-audit-config) — documents auditor read-only consumption of `tb_purchase_order_comment` for case-file evidence.
 - Upstream: [Purchase Order Module Overview](/en/inventory/purchase-order) — module landing page.

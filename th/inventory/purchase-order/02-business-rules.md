@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — Business Rules
 description: กฎการ validation การคำนวณ การกำหนดสิทธิ์ การ posting การ three-way-match และกฎข้ามโมดูลสำหรับ purchase-order
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T12:00:00.000Z
 tags: purchase-order, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -18,7 +18,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 
 ## 1. ภาพรวม
 
-หน้านี้ capture กติกาทางธุรกิจเชิงปฏิบัติการที่ควบคุมเอกสาร Purchase Order (PO) ตลอดวงจรชีวิตของมัน: การ validate input ตอน create / edit / submit, การคำนวณเงิน (บรรทัดและส่วนหัว), gate การกำหนดสิทธิ์ตาม role และเกณฑ์มูลค่า, ผล posting บนแต่ละ transition ของ `enum_purchase_order_doc_status`, three-way-match กับ GRN และ vendor invoice และกฎข้ามโมดูลกับ [purchase-request](/th/inventory/purchase-request), [good-receive-note](/th/inventory/good-receive-note), [vendor-pricelist](/th/inventory/vendor-pricelist), และ [inventory](/th/inventory/inventory)
+หน้านี้ capture กติกาทางธุรกิจเชิงปฏิบัติการที่ควบคุมเอกสาร Purchase Order (PO) ตลอดวงจรชีวิตของมัน: การ validate input ตอน create / edit / submit, การคำนวณเงิน (บรรทัดและส่วนหัว), gate การกำหนดสิทธิ์ตาม workflow stage role, ผล posting บนแต่ละ transition ของ `enum_purchase_order_doc_status`, และกฎข้ามโมดูลกับ [purchase-request](/th/inventory/purchase-request), [good-receive-note](/th/inventory/good-receive-note), [vendor-pricelist](/th/inventory/vendor-pricelist), และ [inventory](/th/inventory/inventory) เอกสารรุ่นก่อนหน้าของหน้านี้เคยอธิบาย amount-threshold approval gate และ three-way-match กับ vendor invoice ด้วย แต่ทั้งสองอย่างไม่พบใน source ปัจจุบัน — ดู § 4 และ § 5 สำหรับกฎที่แก้ไขแล้ว และดู Discrepancy log สำหรับรายละเอียด
 
 กติกาด้านล่างสังเคราะห์จาก business analysis PO ใน carmen/docs แบบเดิม catalogue กฎทางธุรกิจของ PR ที่ตรงกัน (Section 3 ของ `purchase-request-ba.md` และ `PR-Module-Structure.md` เนื่องจาก PO inherit ปรัชญาการคำนวณ การปัดเศษ และ approval เดียวกัน) และโมเดลข้อมูล canonical ของ Prisma ที่ documented ใน [purchase-order/01-data-model](/th/inventory/purchase-order/01-data-model) เมื่อ carmen/docs แบบเดิมและ Prisma ไม่ตรงกัน Prisma เป็น canonical — โดยเฉพาะสำหรับค่า status (`draft`, `in_progress`, `voided`, `sent`, `partial`, `closed`, `completed`) และสำหรับ PR↔PO bridge linkage มากกว่า FK เดียวบน PO line
 
@@ -31,7 +31,7 @@ Rule IDs ตามรูปแบบ `PO_VAL_NNN` Header rules (001–006) ท�
 | `PO_VAL_001` | `tb_purchase_order.po_no` ไม่ว่างและไม่ซ้ำในหมู่ rows ที่ไม่ soft-delete (`@@unique([po_no, deleted_at])`) | Create, edit, submit | Reject ด้วย "PO reference number is required and must be unique." DB-level fallback ผ่าน unique index |
 | `PO_VAL_002` | `vendor_id` อ้างอิง row `tb_vendor` ที่ active และไม่ soft-deleted | Create, edit, submit | Reject ด้วย "Vendor is required and must be from the approved vendor list." |
 | `PO_VAL_003` | `currency_id` อ้างอิง row `tb_currency` ที่ไม่ soft-deleted; `exchange_rate > 0` | Create, edit, submit | Reject ด้วย "Transaction currency and a positive exchange rate are required." |
-| `PO_VAL_004` | `po_type` เป็นหนึ่งใน `enum_purchase_order_type` (`manual`, `purchase_request`); default `purchase_request` | Create | Reject ด้วย "PO type must be `manual` or `purchase_request`." |
+| `PO_VAL_004` | `po_type` เป็นหนึ่งใน `enum_purchase_order_type` (`manual`, `purchase_request`, `pricelist`); default `purchase_request` | Create | Reject ด้วย "PO type must be `manual`, `purchase_request`, or `pricelist`." |
 | `PO_VAL_005` | `credit_term_id` อ้างอิง row `tb_credit_term` ที่ไม่ soft-deleted เมื่อ vendor ต้องการ | Submit | Reject ด้วย "Credit term is required for this vendor." |
 | `PO_VAL_006` | `order_date` ไม่เป็น null และ `delivery_date >= order_date` | Edit, submit | Reject ด้วย "Delivery date must be on or after the order date." |
 | `PO_VAL_007` | แต่ละ `tb_purchase_order_detail` row มี `product_id` ที่ไม่เป็น null อ้างอิง `tb_product` ที่ active และไม่ soft-deleted | Save line, submit | Reject บรรทัดด้วย "Product is required." |
@@ -89,20 +89,22 @@ Rule IDs ตามรูปแบบ `PO_CALC_NNN`
 
 ## 4. กฎ Authorization
 
-Rule IDs ตามรูปแบบ `PO_AUTH_NNN` Authorization บังคับใช้โดย RBAC ที่ชั้น API; กฎด้านล่างระบุนโยบาย ไม่ใช่ implementation ชื่อ role mirror ตาราง RBAC ของ carmen/docs; เกณฑ์ "high-value" ตั้งค่าได้ที่ระดับ tenant และ default เป็น escalation level ของ procurement-manager ในนิยาม workflow ที่ `tb_purchase_order.workflow_id` อ้างอิง
+Rule IDs ตามรูปแบบ `PO_AUTH_NNN` Authorization บังคับใช้โดย RBAC ที่ชั้น API; กฎด้านล่างระบุนโยบาย ไม่ใช่ implementation ชื่อ role mirror ตาราง RBAC ของ carmen/docs
+
+> ⚠️ **การแก้ไข (รอบนี้ ตรวจสอบกับ source ปัจจุบันแล้ว):** ตารางรุ่นก่อนหน้าเคยอธิบาย "high-value threshold" ที่ตั้งค่าได้ระดับ tenant ซึ่ง route การอนุมัติไปยัง Procurement Manager, action "Void" ที่เฉพาะ Procurement Manager เข้าถึงได้จาก status ที่ไม่ terminal ใด ๆ, และการตรวจสอบ segregation-of-duties (buyer ≠ ผู้ post GRN) ที่บังคับใช้ตอนสร้าง GRN ไม่พบสิ่งเหล่านี้เลยใน source ปัจจุบัน: การค้นหาทั่ว `carmen-turborepo-backend-v2` และ `carmen-inventory-frontend-react` สำหรับ `threshold`, `segregation`, และ `SoD` ไม่พบผลลัพธ์ที่เกี่ยวข้องเลย และ `enum_stage_role` (`create`, `approve`, `purchase`, `issue`, `view_only`) ไม่มี member ใดที่รับรู้ amount หรือ deviation `PO_AUTH_004`, `PO_AUTH_007`, และ `PO_AUTH_010` ด้านล่างถูกแก้ไขตามนี้ — ดู Discrepancy log สำหรับรายละเอียด
 
 | Rule ID | Subject | สิทธิ์ | ข้อจำกัด |
 | ------- | ------- | ----- | ---------- |
-| `PO_AUTH_001` | Procurement Officer | สร้าง PO (`po_status = draft`) | ทั้ง `manual` และ `purchase_request` `po_type` |
+| `PO_AUTH_001` | Procurement Officer | สร้าง PO (`po_status = draft`) | ทั้ง `manual`, `purchase_request`, หรือ `pricelist` `po_type` |
 | `PO_AUTH_002` | Procurement Officer | แก้ไข PO | เฉพาะตอน `po_status ∈ {draft, in_progress}` และผู้ใช้คือ buyer ที่ assigned หรือถือ `workflow_current_stage` ปัจจุบัน |
 | `PO_AUTH_003` | Procurement Officer | Submit PO (`draft → in_progress`) | อย่างน้อยหนึ่งบรรทัด; ผ่าน validation Section 2 |
-| `PO_AUTH_004` | Procurement Manager | อนุมัติ PO ที่ stage high-value (`in_progress → sent` สำหรับมูลค่าเหนือ threshold) | `tb_purchase_order.total_amount` เกิน tenant high-value threshold ที่ define ใน workflow ต่ำกว่า threshold Procurement Officer สามารถ self-approve เป็น `sent` ได้ถ้า workflow อนุญาต |
+| `PO_AUTH_004` | ผู้ที่ถือ stage role ที่ถูก assign ให้กับ stage สุดท้ายของ workflow (โดยทั่วไปคือ Procurement Manager แต่เป็นเพียงทางเลือกการตั้งค่า workflow เท่านั้น) | อนุมัติ PO ที่ workflow stage สุดท้าย (`in_progress → sent`) | ถูก gate ด้วย `isFinalApproval = (workflow_next_stage === '-')` ใน `purchase-order.logic.ts` เท่านั้น — ไม่มี amount threshold หรือ pricelist-deviation percentage ใดที่ route transition นี้ workflow แบบ single-stage ทำให้ผู้ใช้คนเดียวที่ถือ stage นั้นสามารถทั้งสร้างและอนุมัติขั้นสุดท้ายได้ |
 | `PO_AUTH_005` | Procurement Manager | ลบ PO | เฉพาะตอน `po_status = draft` (soft-delete ผ่าน `deleted_at`) |
-| `PO_AUTH_006` | Procurement Officer หรือ Procurement Manager | ส่ง PO ให้ vendor (`sent`) | หลังอนุมัติ; ตั้ง `tb_purchase_order.email` และ `approval_date` |
-| `PO_AUTH_007` | Procurement Manager | Void PO (`* → voided`) | อนุญาตจาก status ที่ไม่ terminal ใด ๆ (`draft`, `in_progress`, `sent`, `partial`) เมื่ออยู่ที่ `voided` แล้ว ไม่อนุญาต transition เพิ่ม |
-| `PO_AUTH_008` | Inventory Manager (Receiver) | สร้าง GRN เทียบกับ PO; ปิด PO (`partial → closed` early termination) | อนุญาตเฉพาะเมื่อ `po_status ∈ {sent, partial}` |
-| `PO_AUTH_009` | Finance Officer | View, export reports | Read-only ข้าม status ทั้งหมด |
-| `PO_AUTH_010` | Segregation of duties | Purchaser ≠ Receiver | ผู้ใช้ที่สร้างหรือส่ง PO (`tb_purchase_order.buyer_id` หรือ `last_action_by_id` บน transition `sent`) ต้อง **ไม่** เป็นผู้ใช้คนเดียวกันที่ post GRN เทียบกับ PO นั้น บังคับใช้ตอน GRN creation |
+| `PO_AUTH_006` | ผู้ใช้ที่ถือ workflow stage สุดท้าย | ส่ง PO ให้ vendor (`sent`) | รวมอยู่ใน call approve ของ stage สุดท้ายเดียวกัน — ตั้ง `tb_purchase_order.email` และ `approval_date` บน transition เดียวกัน; ไม่มีขั้นตอน "Send to Vendor" แยกด้วยมือใน approval flow เอง |
+| `PO_AUTH_007` | ผู้อนุมัติใด ๆ ที่ stage ปัจจุบัน | Reject PO (`in_progress → voided` แบบตรงและสิ้นสุด) | เข้าถึงได้เฉพาะจาก `in_progress` ผ่าน endpoint `/reject` เท่านั้น ไม่มี action "void" แยกต่างหาก และไม่มีเส้นทางไปยัง `voided` จาก `draft`, `sent`, หรือ `partial` — การจบ PO จาก status เหล่านั้นใช้ **Cancel** (`draft`/`in_progress`/`sent → closed`) หรือ **Close** (`sent`/`partial`/`in_progress → closed`) แทน ซึ่งทั้งคู่เขียนส่วนที่เหลือลงใน `cancelled_qty` |
+| `PO_AUTH_008` | Inventory Manager (Receiver) | สร้าง GRN เทียบกับ PO; ปิด PO (`{sent, partial, in_progress} → closed` early termination) | การสร้าง GRN ต้องการ `po_status ∈ {sent, partial}` (`findOnePoForGrn`); endpoint Close อนุญาต `in_progress` เพิ่มด้วย (`closePO` ใน `purchase-order.service.ts`) |
+| `PO_AUTH_009` | Role read-only ที่มีสิทธิ์ดู/export PO | View, export reports | Read-only ข้าม status ทั้งหมด ไม่พบ role หรือ permission key "Finance Officer" แยกต่างหากที่ยืนยันได้ใน source ปัจจุบัน |
+| `PO_AUTH_010` | — | — (ยังไม่ยืนยัน) | **ยังไม่ยืนยัน / น่าจะยังไม่ implement** ไม่มี code path ใดใน GRN หรือ PO service ที่ตรวจสอบ `buyer_id` / `last_action_by_id` เทียบกับผู้ post GRN; การค้นหาทั่ว repo สำหรับ `segregation` ไม่พบผลลัพธ์ ให้ถือว่าข้อความอ้างอิง "Purchaser ≠ Receiver บังคับใช้ตอนสร้าง GRN" ในที่อื่นของโมดูลนี้เป็นเพียงเจตนาการออกแบบ ไม่ใช่พฤติกรรมจริงที่ใช้งานอยู่ |
 | `PO_AUTH_011` | Workflow-derived authorization | Stage-gated approval | ชุดผู้ใช้ใน `tb_purchase_order.user_action.execute` ที่ `workflow_current_stage` ปัจจุบันคือชุดเดียวที่อนุญาตให้ advance เอกสาร; ความพยายาม approve อื่น ๆ ถูก reject |
 
 ## 5. กฎ Posting
@@ -117,50 +119,39 @@ Rule IDs ตามรูปแบบ `PO_POST_NNN`
 | `PO_POST_002` | Submit (`draft → in_progress`) | คำนวณ roll-ups ใหม่ทั้งหมด (`PO_CALC_008`–`PO_CALC_011`) ตั้ง `last_action = submitted`, `last_action_at_date = now()`, `last_action_by_id = user` Initialise `workflow_history`, `workflow_current_stage = <first stage>`, `stages_status = [...]`, และ populate `user_action.execute` จาก workflow stage definition Append `history` entry Soft commitment ต่องบประมาณ/inventory สร้างปลายน้ำโดย workflow |
 | `PO_POST_003` | Approve (ภายใน `in_progress`) | Append entry `workflow_history`; advance `workflow_current_stage` Update `user_action.execute` สำหรับ stage ถัดไป `last_action = approved` ยังไม่มี status change — PO ยังคงเป็น `in_progress` จนกว่าจะถึง stage approval สุดท้าย |
 | `PO_POST_004` | Final approval (`in_progress → sent`) | ตั้ง `po_status = sent`, `approval_date = now()`, `last_action = approved` Append `history` ส่ง PO ให้ vendor ผ่าน email/transmit layer ของ application **บน transition เดียวกัน** — ไม่มี action "Send to Vendor" แยกใน live UI (ขั้นตอน `APPROVED → SENT` เป็น auto) จากจุดนี้ไป PO เป็น vendor-facing commitment |
-| `PO_POST_005` | Reject (`in_progress → draft`) | ตั้ง `po_status = draft`, `last_action = rejected`, reset `workflow_current_stage` เป็นจุดเริ่ม Append comment rejection ใน `tb_purchase_order_comment` (type `system`) บรรทัดยังแก้ไขได้ |
+| `PO_POST_005` | Send-back / Review (`in_progress` ยังคงเป็น `in_progress`) | **แก้ไขในรอบนี้** — endpoint `/review` **ไม่** เปลี่ยน `po_status` มันเพียงรีเซ็ต `workflow_current_stage` / `workflow_previous_stage` กลับไปยัง stage ก่อนหน้า (โดยทั่วไปคือ stage ผู้สร้าง/"purchase" — `buildReviewWorkflow` ใน `workflow-orchestrator.service.ts` navigate กลับผ่าน `workflows.navigate-back-to-stage` และไม่คืนค่า field `po_status` เลย), ตั้ง `last_action = reviewed`, และ append `workflow_history` เมื่อปลายทางคือ stage ที่เฉพาะผู้สร้างเท่านั้น มีเพียง buyer/ผู้สร้างเดิมที่ดำเนินการต่อได้ (คล้ายกับการแก้ไข draft ในทางปฏิบัติ แต่ `po_status` ที่ persist ยังคงเป็น `in_progress` ไม่ใช่ `draft`) ข้อความเหตุผล (ถ้ามี) จะถูก append ลง `tb_purchase_order_comment` |
 | `PO_POST_006` | GRN partial receipt (`sent → partial` หรือ `partial → partial`) | สำหรับแต่ละ PO line ที่ได้รับผลกระทบ การ post GRN เพิ่ม `tb_purchase_order_detail.received_qty` ตามปริมาณ GRN (ใน order UoM) หาก `received_qty < order_qty − cancelled_qty` สำหรับอย่างน้อยหนึ่งบรรทัด ตั้ง `po_status = partial` Bridge rows `tb_purchase_order_detail_tb_purchase_request_detail.received_qty` ถูก update สัดส่วนเพื่อรักษา visibility ของ PR-side allocation |
 | `PO_POST_007` | GRN full receipt (`sent → completed` หรือ `partial → completed`) | เมื่อทุกบรรทัด active เป็นไปตาม `received_qty = order_qty − cancelled_qty` ตั้ง `po_status = completed` Append `history` PO ปิดปกติ — ไม่รับ GRN เพิ่ม |
-| `PO_POST_008` | Three-way match สำเร็จ | Verify (a) PO line, (b) GRN line, (c) vendor invoice (AP) สำหรับสินค้าเดียวกันว่าตรงกันบน quantity (ภายใน tolerance) และ price (ภายใน tolerance) เมื่อสำเร็จ AP module clear GRN accrual และ post vendor invoice สำหรับชำระเงิน PO เองไม่ transition ด้วย event นี้ — ยังคงอยู่ที่ status ใดก็ตามที่สะท้อน fulfilment (`partial` หรือ `completed`) |
-| `PO_POST_009` | Three-way match ล้มเหลว | AP invoice ถูก hold ใน dispute Comment `system` ถูก append บน PO และ deviation record เปิดบนฝั่ง vendor / vendor-pricelist PO ไม่ถูก auto-voided; การแก้ไขทำด้วยมือผ่าน amendment, credit note หรือ void |
-| `PO_POST_010` | Void (`* → voided` จาก `draft`, `in_progress`, `sent`, `partial` ใด ๆ) | ตั้ง `po_status = voided`, `is_active = false`, `last_action_at_date = now()` Reverse soft commitments ปลายน้ำใด ๆ (budget, vendor-side notification) หาก void จาก `partial`, GRN ที่ post แล้วยังคงใช้ได้ — เฉพาะส่วนที่ยังไม่ fulfilled เท่านั้นที่ถูก void `voided` เป็น terminal |
-| `PO_POST_011` | Close (`partial → closed` early-termination) | ตั้ง `po_status = closed` สำหรับแต่ละบรรทัดที่ยังค้าง fulfilment application เขียน remainder กลับเป็น `cancelled_qty` เพื่อให้ `received_qty + cancelled_qty = order_qty` ใช้เมื่อ vendor ไม่สามารถ supply ปริมาณที่เหลือ แตกต่างจาก `completed` (รับครบ) `closed` เป็น terminal |
+| `PO_POST_008` | ~~Three-way match สำเร็จ~~ — **ยังไม่ implement** | **ยังไม่ยืนยัน / น่าจะเป็นข้อมูลที่แต่งขึ้น** การค้นหาทั่ว frontend และ backend สำหรับ `three-way`, `threeWay`, `vendor_invoice`, `VendorInvoice`, และ `tb_invoice` ไม่พบผลลัพธ์เลย ไม่มีหน้าจอบันทึก vendor-invoice, endpoint AP-posting, หรือ algorithm การจับคู่ใด ๆ อยู่ใน source ปัจจุบัน อย่าถือว่ากฎนี้เป็นพฤติกรรมจริงที่ใช้งานอยู่ — ดู Discrepancy log |
+| `PO_POST_009` | ~~Three-way match ล้มเหลว~~ — **ยังไม่ implement** | ข้อค้นพบเดียวกับ `PO_POST_008` — ไม่มีโมดูล invoice/AP ที่จะ hold การจับคู่ที่อยู่ใน dispute |
+| `PO_POST_010` | Cancel (`{draft, in_progress, sent} → closed`) | `cancel()` ใน `purchase-order.service.ts`: ตั้ง `po_status = closed`; สำหรับแต่ละบรรทัด เขียน `cancelled_qty = order_qty − received_qty` ไม่แตะ field `is_active` เลย นี่คือ action การถอน commitment ซึ่งต่างจาก Close ด้านล่างเพียงแค่ชุด source-status ที่อนุญาต |
+| `PO_POST_010b` | Reject (`in_progress → voided` แบบตรงและสิ้นสุด) | `reject()` ใน `purchase-order.service.ts`: ตั้ง `po_status = voided` โดยตรง (ไม่ตั้ง `is_active = false` — claim นี้ในรุ่นก่อนหน้าของกฎนี้ไม่ได้รับการยืนยันในโค้ด) เข้าถึงได้เฉพาะจาก `in_progress`; ไม่มีเส้นทางไปยัง `voided` จาก `draft`, `sent`, หรือ `partial` `voided` เป็น terminal |
+| `PO_POST_011` | Close (`{sent, partial, in_progress} → closed` early-termination) | `closePO()` ใน `purchase-order.service.ts`: ตั้ง `po_status = closed`; สำหรับแต่ละบรรทัดที่ `cancelledQty = orderQty − receivedQty > 0`, เขียนค่าลงใน `cancelled_qty` เพื่อให้ `received_qty + cancelled_qty = order_qty` ใช้เมื่อ vendor ไม่สามารถ supply ปริมาณที่เหลือ แตกต่างจาก `completed` (รับครบ) `closed` เป็น terminal |
 | `PO_POST_012` | Soft delete | `deleted_at = now()`, `deleted_by_id = user` อนุญาตเฉพาะที่ `draft` ตาม `PO_AUTH_005` Row ยังอยู่ในฐานข้อมูล; unique indexes ทั้งหมดรวม `deleted_at` ดังนั้น PO ใหม่สามารถใช้ `po_no` เดียวกันได้ |
 
-State diagram (Prisma-canonical):
+State diagram (Prisma-canonical, แก้ไขในรอบนี้):
 
 ```
 [*] → draft → in_progress → sent → partial → completed
-                ↑    ↓        ↓       ↓         ↑
-              (reject)        ↓       ↓     (full receipt)
-                              ↓       └→ closed (early term.)
-                              ↓
-        any non-terminal → voided  (admin)
+       ↓ ↑        ↓  ↑        ↓       ↓         ↑
+   (soft-  (send-back:      (cancel)  ↓     (full receipt)
+    delete) stage resets,     ↓       ↓
+             stays              ↓       └→ closed (early term./close/cancel)
+             in_progress)        ↓
+                          (reject) → voided  (in_progress only, direct & terminal)
 ```
 
-`completed`, `closed`, และ `voided` เป็น terminal `draft` รับ soft-delete
+`completed`, `closed`, และ `voided` เป็น terminal `draft` รับ soft-delete `closed` เข้าถึงได้จาก `draft`/`in_progress`/`sent` (cancel) หรือ `sent`/`partial`/`in_progress` (close) — ไม่มี action "void" แยกต่างหากนอกเหนือจาก `reject` ภายใน workflow
 
-### 5.1 Status Lifecycle — การ Mapping Live UI กับ BRD
+### 5.1 Status Lifecycle — บันทึกการแก้ไข
 
-Enum Prisma `enum_purchase_order_doc_status` ที่ documented ข้างต้นคือสิ่งที่ live UI ใช้ BRD `FR-PO-005` อธิบายชุด status ที่ต่างออกไปและบางกว่าเล็กน้อย ตารางด้านล่าง map ทุก live-UI status ที่สังเกตได้กับ BRD equivalent เพื่อให้ tester และ developer reconcile ทั้งสองได้โดยไม่มีความคลุมเครือ Source: `Test_case/Purchase_Order/Purchaser/INDEX.md` § Status Lifecycle (วันที่ capture 2026-04-26)
+> ⚠️ **Section นี้เคยนำเสนอ mapping "Live UI vs BRD" ที่มาจากเอกสาร BA test-case รุ่นเก่า (`Test_case/Purchase_Order/Purchaser/INDEX.md`, capture วันที่ 2026-04-26) ซึ่งอ้างว่ามีสถานะ `APPROVED` แยกต่างหาก และสถานะ `REJECTED` ที่ส่ง PO กลับไปยัง Purchaser ทั้งสองอย่างไม่ใช่ Prisma enum member จริง และเมื่อ re-verify กับ source ปัจจุบันในรอบนี้ พบความจริงที่ต่างออกไปและง่ายกว่า — แก้ไขไว้ด้านล่าง**
 
-| Live UI status | BRD `FR-PO-005` equivalent | Diff | Notes |
-|---|---|---|---|
-| `DRAFT` | `Draft` | ✅ ตรงกัน | — |
-| `IN PROGRESS` | _(ไม่อยู่ใน BRD)_ | 🔴 ใหม่ใน live UI | PO submit โดย Purchaser รอ FC อนุมัติ BRD ไม่ได้ model ไว้ |
-| `APPROVED` | _(ไม่อยู่ใน BRD)_ | 🔴 ใหม่ใน live UI | FC อนุมัติ; PO auto-sent ไปยัง vendor ทันทีบน transition นี้ |
-| `SENT` | `Sent` | ✅ ตรงกัน | Auto-set หลัง FC อนุมัติ ไม่มีขั้นตอน "Send" ด้วยมือใน live UI |
-| `PARTIAL` | `Partial Received` | 🟡 เปลี่ยนชื่อ | Label BRD คือ `Partial Received` |
-| `COMPLETED` | `Fully Received` | 🟡 เปลี่ยนชื่อ | Label BRD คือ `Fully Received` |
-| `CLOSED` | `Closed` | ✅ ตรงกัน | — |
-| `VOIDED` | `Cancelled` | 🟡 เปลี่ยนชื่อ | Label BRD คือ `Cancelled`; `VOIDED` ใช้ใน live UI สำหรับ "Close with no items received" |
-| `REJECTED` | _(ไม่อยู่ใน BRD)_ | 🔴 ใหม่ใน live UI | FC reject PO โดยตรง PO ส่งกลับไปยัง Purchaser |
-| _(ไม่มี)_ | `Acknowledged` | 🔵 BRD เท่านั้น | BRD นิยาม status vendor-confirmation ที่ไม่มีใน live UI |
+Prisma enum `enum_purchase_order_doc_status` (`draft`, `in_progress`, `voided`, `sent`, `partial`, `closed`, `completed`) ครบถ้วนสมบูรณ์ — ไม่มี member `approved` หรือ `rejected` สิ่งที่เคยถูกเรียกว่า "`APPROVED`" ไม่ใช่ status ที่ persist: การอนุมัติ stage สุดท้ายและการส่งเกิดขึ้นใน call `approve()` เดียวกัน และลงเอยที่ `sent` โดยตรง (`PO_POST_004`) สิ่งที่เคยถูกเรียกว่า "`REJECTED`" คือ transition `in_progress → voided` แบบตรงและสิ้นสุด (`PO_POST_010b`) — ไม่มี state ระหว่างทางและไม่มีการกลับไป `draft` UI badge ที่แสดง "Rejected" (พบใน `403-po-approver-journey.spec.ts` `TC-PO-070311`) สอดคล้องกับ PO ที่เป็น `voided` ซึ่งมี `last_action = rejected` ไม่ใช่ status ที่ persist แยกต่างหาก
 
-> ⚠️ **ความแตกต่าง — เฟส FC-approval ไม่อยู่ใน BRD:** BRD `FR-PO-005` นิยาม flow เชิงเส้น `Draft → Sent → Acknowledged → Partial Received → Fully Received → Closed/Cancelled` Live UI แทรกเฟส FC-approval (`DRAFT → IN PROGRESS → APPROVED → SENT`) โดย `APPROVED` status auto-transition ไปยัง `SENT` ทันที `IN PROGRESS`, `APPROVED`, และ `REJECTED` ไม่อยู่ใน BRD
+แยกจากกัน **"send-back"** (action `/review`) ไม่ย้าย `po_status` เลย — ดู `PO_POST_005` ด้านบน เอกสารรุ่นก่อนหน้าของหน้านี้เคยปนกันระหว่าง "send-back" และ "reject" ว่าเป็น transition `in_progress → draft` เดียวกัน ทั้งสองเป็น endpoint คนละตัวที่มีผลต่างกัน และไม่มีอันไหนเลยที่ไปถึง `draft` จริง ๆ จาก `in_progress`
 
-> ⚠️ **ความแตกต่าง — ไม่มี status `ACKNOWLEDGED` ใน live UI:** BRD model vendor confirmation เป็น status แยก Live UI ไม่ capture transition acknowledgement — vendor acknowledgement เมื่อได้รับ log ใน `tb_purchase_order_comment` เท่านั้น `po_status` ยังอยู่ที่ `sent`
-
-> ⚠️ **ความแตกต่าง — semantics ของ `VOIDED`:** BRD `Cancelled` ครอบคลุมการ terminate ของ PO ที่เปิดอยู่ใด ๆ Live UI `VOIDED` แคบกว่า — หมายถึงเฉพาะ "Close approved PO with no items received" การ void จาก `sent` หรือ `partial` หลังจาก GRN ถูก post ทิ้ง GRN ไว้และเฉพาะส่วนที่ยังไม่ fulfilled เท่านั้นที่ถูก void (ตาม `PO_POST_010`)
+ไม่มี status การรับทราบของ vendor (`ACKNOWLEDGED`) อยู่ใน source ปัจจุบัน; หากมีการบันทึกการตอบรับของ vendor เลย มันจะเป็น entry ใน `tb_purchase_order_comment` ไม่ใช่ค่า status — claim นี้ไม่ได้ถูก verify โดยตรงในรอบนี้ และควรถือว่ายังไม่ยืนยัน ไม่ใช่ถูกแก้ไข
 
 ## 6. กฎ Cross-Module
 
@@ -168,13 +159,13 @@ Rule IDs ตามรูปแบบ `PO_XMOD_NNN`
 
 | Rule ID | โมดูลที่เกี่ยวข้อง | กฎ |
 | ------- | -------------- | ---- |
-| `PO_XMOD_001` | [purchase-request](/th/inventory/purchase-request) | เมื่อ `po_type = purchase_request` PO ต้องสร้างผ่าน flow การแปลง PR-to-PO ซึ่ง group PR ที่อนุมัติแล้วที่เลือกด้วย `(vendor_id, currency_id)` และผลิต PO หนึ่งใบต่อกลุ่ม แต่ละ PO line ที่ได้บรรจุ bridge rows หนึ่งหรือมากกว่าหนึ่ง row ใน `tb_purchase_order_detail_tb_purchase_request_detail` ที่ลิงก์กลับไปยัง PR line(s) ต้นทาง (`PO_VAL_014`) |
+| `PO_XMOD_001` | [purchase-request](/th/inventory/purchase-request) | เมื่อ `po_type = purchase_request` PO ต้องถูกสร้างผ่าน flow การแปลง PR-to-PO (dialog 2 ขั้นตอน, `po-from-pr-dialog.tsx`: เลือก PR ทั้งใบ → ตรวจสอบ PO ที่ group แล้ว) ซึ่ง group บรรทัด PR ที่อนุมัติแล้วที่เลือกด้วย `(vendor_id, delivery_date, currency_id)` — ยืนยันผ่าน `buildPoGroupKey` ใน `purchase-order.service.ts` — และผลิต PO หนึ่งใบต่อกลุ่ม แต่ละ PO line ที่ได้บรรจุ bridge row หนึ่งหรือมากกว่าหนึ่ง row ใน `tb_purchase_order_detail_tb_purchase_request_detail` ที่ลิงก์กลับไปยัง PR line(s) ต้นทาง (`PO_VAL_014`) ทั้งสอง endpoint (`POST .../purchase-orders/group-pr`, `POST .../purchase-orders/confirm-pr`) list `Permissions: None` ใน Bruno; frontend dialog chain ไม่มีการตรวจสอบ `hasPermission` |
 | `PO_XMOD_002` | [purchase-request](/th/inventory/purchase-request) | Bridge รองรับ consolidation (PR lines หลาย → PO line หนึ่ง) และ partial conversion (PR line หนึ่ง → PO lines หลาย) PR line ถือว่า converted เต็มที่เมื่อ `Σ bridge.pr_detail_qty` สำหรับ `pr_detail_id` นั้นเท่ากับ approved quantity ของ PR line |
 | `PO_XMOD_003` | [good-receive-note](/th/inventory/good-receive-note) | GRN สามารถสร้างเทียบกับ PO ที่ `po_status ∈ {sent, partial}` เท่านั้น (`PO_AUTH_008`) GRN detail back-reference `tb_purchase_order_detail.id`; pending quantity ที่ใช้ได้สำหรับ receipt คือ `order_qty − received_qty − cancelled_qty` ตาม `PO_POST_006` |
 | `PO_XMOD_004` | [good-receive-note](/th/inventory/good-receive-note) | การรับ quantity ที่จะเกิน pending qty ถูก reject เว้นแต่ tenant configuration อนุญาต over-receipt ภายใน tolerance; มิฉะนั้น GRN line ถูก cap ที่ pending qty |
 | `PO_XMOD_005` | [vendor-pricelist](/th/inventory/vendor-pricelist) | ที่ PR-to-PO conversion ระบบ snapshot `price` จาก active vendor pricelist สำหรับ tuple `(vendor, product, currency)` หากไม่มี active pricelist row ราคา last-known ของ PR ถูกใช้และ comment `system` ถูก append flag การ coverage pricelist ที่หายไป |
-| `PO_XMOD_006` | [vendor-pricelist](/th/inventory/vendor-pricelist) | เมื่อ buyer override snapshot price delta เทียบกับ pricelist ถูก log ใน `tb_purchase_order_detail_comment` เป็น entry deviation Deviations เหนือ tenant tolerance route PO ไปยัง stage approval high-value แม้ `total_amount` ต่ำกว่า threshold |
-| `PO_XMOD_007` | AP / Three-way match | เมื่อ GRN post AP module raise liability inventory-accrual Accrual ถูก clear และ vendor invoice ถูก post เฉพาะเมื่อ three-way-match สำเร็จตาม `PO_POST_008` PO closure (`completed` หรือ `closed`) ไม่ clear accrual โดยตัวเอง — เป็นความรับผิดชอบของ AP เทียบกับ invoice จริง |
+| `PO_XMOD_006` | [vendor-pricelist](/th/inventory/vendor-pricelist) | **ยังไม่ยืนยันบางส่วน** ว่าการ override ราคาของ buyer เทียบกับ snapshot pricelist ถูก log เป็น "deviation entry" แยกต่างหากหรือไม่ ยังไม่ได้รับการยืนยันโดยตรงในรอบนี้ ส่วนที่สองของ claim เดิม — ว่า deviation ที่เกิน tolerance band บังคับ route PO ไปยัง "high-value approval stage" — **ยังไม่ implement**: ไม่มี routing แบบ threshold/tolerance ใด ๆ อยู่ใน source ปัจจุบัน (ดูหมายเหตุ § 4) จำนวนและการกำหนด approval stage มาจากนิยาม workflow เท่านั้น |
+| `PO_XMOD_007` | ~~AP / Three-way match~~ — **ยังไม่ implement** | **ยังไม่ยืนยัน / น่าจะเป็นข้อมูลที่แต่งขึ้น** ข้อค้นพบเดียวกับ `PO_POST_008`/`PO_POST_009`: ไม่มีโค้ด invoice, AP-posting, หรือ three-way-match ใน `carmen-turborepo-backend-v2` หรือ `carmen-inventory-frontend-react` ผล accrual/GL ของการ post GRN (ถ้ามี) อยู่ทั้งหมดในโมดูล GRN/inventory/costing — ไม่ได้ verify เป็นส่วนหนึ่งของ pass โมดูล PO นี้ |
 | `PO_XMOD_008` | [inventory](/th/inventory/inventory) | Inventory on-hand **ไม่** เพิ่มโดย PO posting — เพิ่มเฉพาะเมื่อ GRN post (ซึ่งอยู่ในขอบเขตของโมดูล GRN) PO มีส่วนร่วมปริมาณ "on-order" pipeline ที่ inventory planning อ่านผ่าน `order_qty − received_qty − cancelled_qty` บน PO lines ที่ active |
 | `PO_XMOD_009` | [inventory](/th/inventory/inventory) | `base_qty` ของ PO line (คำนวณใน base UoM ผ่าน `PO_CALC_011`) คือ quantity ที่ inventory reservations และการคำนวณ projected-on-hand อ่าน; order UoM สำหรับการแสดงผลฝั่ง vendor เท่านั้น |
 

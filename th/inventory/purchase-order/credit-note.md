@@ -2,7 +2,7 @@
 title: ใบลดหนี้ (Credit Note)
 description: เอกสารใบลดหนี้จากผู้ขายที่กลับรายการบางส่วนหรือทั้งหมดของ PO/GRN ก่อนหน้า — ปรับยอด AP และอาจคืนสินค้าหรือ revalue ต้นทุน inventory layer
 published: true
-date: 2026-06-09T16:28:56.000Z
+date: 2026-07-15T12:00:00.000Z
 tags: purchase-order, credit-note, accounting, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -31,7 +31,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 | เลือก `quantity_return` กับ `amount_discount` | Header field `credit_note_type` | Return จะย้ายสต๊อก; Discount แค่ revalue ต้นทุน |
 | ตั้งค่า return-to-stock vs write-off | (อัตโนมัติ) | Engine จะคืนเข้า FIFO lot เดิม; ถ้า lot ถูกใช้หมดแล้ว จะลง variance ที่บัญชี write-off — ดู [costing](/th/inventory/costing) `COST_XMOD_006` |
 | โพสต์ CN ไปยัง AP | เมื่อ `doc_status = completed` | ออก AP debit memo เสมอ (มูลค่า `base_total_price`) |
-| ระบุเลขที่ credit invoice ของผู้ขาย | Header `invoice_no` / `tax_invoice_no` | จำเป็นสำหรับ AP three-way match |
+| ระบุเลขที่ credit invoice ของผู้ขาย | Header `invoice_no` / `tax_invoice_no` | ฟิลด์อ้างอิงฝั่งผู้ขายสำหรับกระทบยอด AP **ยังไม่ยืนยันในรอบนี้:** ฟิลด์เหล่านี้จะป้อนเข้า three-way-match ปลายน้ำหรือไม่ — ไม่พบฟีเจอร์ match ลักษณะนี้ในส่วนอื่นของซอร์สโค้ดปัจจุบันของโมดูล `purchase-order` (ดู [03-user-flow-finance.md](/th/inventory/purchase-order/03-user-flow-finance)) |
 | Void CN ที่ posted แล้ว | Detail → **Void** | ทำได้เฉพาะตอนงวด posting ยังเปิด; จะกลับ posting ทุกรายการ |
 
 ## 3. ข้อผิดพลาดและการตรวจสอบ

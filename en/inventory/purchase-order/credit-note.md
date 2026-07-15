@@ -2,7 +2,7 @@
 title: Credit Note
 description: Vendor-issued credit document reversing all or part of a prior PO / GRN — adjusts AP liability and either cost-revalues the inventory layer or returns goods.
 published: true
-date: 2026-06-09T16:28:56.000Z
+date: 2026-07-15T12:00:00.000Z
 tags: purchase-order, credit-note, accounting, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -31,7 +31,7 @@ A **Credit Note (CRN)** is the post-receipt correction instrument in procure-to-
 | Pick `quantity_return` vs `amount_discount` | Header `credit_note_type` | Return moves stock; discount only revalues cost |
 | Set return-to-stock vs write-off | (Automatic) | Engine returns to the original FIFO lot; if lot is consumed, posts variance to write-off GL — see [costing](/en/inventory/costing) `COST_XMOD_006` |
 | Apply CN to AP | Completes on `doc_status = completed` | Always emits an AP debit memo (`base_total_price`) |
-| Cite vendor's credit-invoice ref | Header `invoice_no` / `tax_invoice_no` | Required for AP three-way match |
+| Cite vendor's credit-invoice ref | Header `invoice_no` / `tax_invoice_no` | Vendor-side reference fields for AP reconciliation. **Unverified this pass:** whether these fields feed a downstream three-way-match — no such match feature was found elsewhere in the `purchase-order` module's current source (see [03-user-flow-finance.md](/en/inventory/purchase-order/03-user-flow-finance)). |
 | Void a posted CN | Detail → **Void** | Only while the posting period is open; reverses every posting |
 
 ## 3. Validation & Errors

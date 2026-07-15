@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum สำหรับโมดูล purchase-order
 published: true
-date: 2026-06-09T00:00:00.000Z
+date: 2026-07-15T12:00:00.000Z
 tags: purchase-order, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -28,7 +28,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 
 PO อยู่ **ปลายน้ำของ [purchase-request](/th/inventory/purchase-request)** และ **ต้นน้ำของ [good-receive-note](/th/inventory/good-receive-note)** ในห่วงโซ่ procure-to-pay ลิงก์ PR-to-PO ทำผ่านตาราง bridge ที่กล่าวข้างต้น; bridge เดียวกันนี้ capture ปริมาณที่รับและ FOC ต่อ PR-line รองรับทั้งการรวม PR (หลาย PR lines → หนึ่ง PO line) และการแปลงบางส่วน (หนึ่ง PR line → หลาย PO lines) บรรทัด PO มี column `received_qty` และ `cancelled_qty` แบบ running เพื่อให้ "pending qty" ที่ใช้ได้สำหรับ GRN คือ `order_qty − received_qty − cancelled_qty`; ความสัมพันธ์จาก PO detail ไปยัง GRN detail (`tb_good_received_note_detail`) คือสิ่งที่ปิดวงจร แถวของ PO detail ยังอ้างอิงถึง [product](/th/inventory/product), `tb_tax_profile`, และ `tb_unit` (สองครั้ง — สำหรับ order UoM และ base UoM), และ header อ้างอิง `tb_vendor`, `tb_currency`, และ `tb_credit_term` เอนทิตี PO ทั้งหมดอยู่ใน tenant Prisma schema; platform schema ไม่มี model purchase-order
 
-ส่วนหัวบรรจุ context ของผู้ขาย สกุลเงิน อัตราแลกเปลี่ยน และ credit-term ครั้งเดียวสำหรับทั้ง PO — โดยการออกแบบ ทุกบรรทัดบน PO หนึ่งใบใช้ผู้ขายและสกุลเงินเดียวกัน ซึ่งเป็นเหตุผลที่ flow การแปลง PR-to-PO ต้อง group PR ที่เลือกด้วย `(vendor, currency)` ก่อน fan-out ค่า default ของ `tb_purchase_order.po_type` คือ `purchase_request` ซึ่งทำให้การสร้างผ่าน PR-sourced เป็นเส้นทางมาตรฐาน; `manual` เป็นทางเลือกสำหรับ PO ที่สร้างโดย procurement เท่านั้นโดยไม่มี PR ต้นน้ำ
+ส่วนหัวบรรจุ context ของผู้ขาย สกุลเงิน อัตราแลกเปลี่ยน และ credit-term ครั้งเดียวสำหรับทั้ง PO — โดยการออกแบบ ทุกบรรทัดบน PO หนึ่งใบใช้ผู้ขายและสกุลเงินเดียวกัน ซึ่งเป็นเหตุผลที่ flow การแปลง PR-to-PO ต้อง group PR ที่เลือกด้วย `(vendor_id, delivery_date, currency_id)` ก่อน fan-out (ยืนยันใน `purchase-order.service.ts` `buildPoGroupKey` / `groupPrForPo` / `confirmPrToPo` — comment: "Group by vendor_id -> delivery_date -> currency_id") ค่า default ของ `tb_purchase_order.po_type` คือ `purchase_request` ซึ่งทำให้การสร้างผ่าน PR-sourced เป็นเส้นทางมาตรฐาน; `manual` เป็นทางเลือกสำหรับ PO ที่สร้างโดย procurement เท่านั้นโดยไม่มี PR ต้นน้ำ; `pricelist` คือช่องทางที่สาม — PO ที่สร้างโดยตรงจาก vendor price list ผ่าน wizard 4 ขั้นตอน (`routes/procurement/purchase-order/from-price-list/`) โดยข้ามขั้นตอน PR ไปทั้งหมด
 
 **Concurrency:** การแก้ไขเอกสารนี้ใช้ optimistic locking ผ่าน [system-config/doc-version](/th/inventory/system-config/doc-version) — client ต้องส่ง `doc_version` ปัจจุบันตอนบันทึก ไม่งั้นจะได้ `409 Conflict`
 
@@ -232,7 +232,7 @@ tb_purchase_order_detail ──1──*──► tb_good_received_note_detail
 
 ## 4. Enums
 
-- **`enum_purchase_order_type`**: `manual` (PO ที่สร้างโดย procurement โดยตรงโดยไม่มี PR ต้นน้ำ), `purchase_request` (PO ที่มีต้นทางจาก PR หนึ่งหรือมากกว่าหนึ่งใบผ่าน flow การแปลง) นี่ **ยังเป็นค่า default บน `tb_purchase_order.po_type`** — หมายถึง PR-sourced เป็นเส้นทาง procure-to-pay มาตรฐาน และ `manual` คือการ opt-out ที่ชัดเจนสำหรับ PO ที่ทำโดย procurement เท่านั้น Enum เดียวกันใช้ร่วมกันระหว่าง PR และ PO documentation เพราะมันอยู่ใน namespace ของ tenant schema เพียงครั้งเดียว
+- **`enum_purchase_order_type`**: `manual` (PO ที่สร้างโดย procurement โดยตรงโดยไม่มี PR ต้นน้ำ), `purchase_request` (PO ที่มีต้นทางจาก PR หนึ่งหรือมากกว่าหนึ่งใบผ่าน flow การแปลง), `pricelist` (PO ที่สร้างโดยตรงจาก vendor price list ผ่าน wizard 4 ขั้นตอน from-price-list ไม่มี PR ต้นน้ำ) `purchase_request` **ยังเป็นค่า default บน `tb_purchase_order.po_type`** — หมายถึง PR-sourced เป็นเส้นทาง procure-to-pay มาตรฐาน; `manual` และ `pricelist` คือสอง opt-out ที่ชัดเจนสำหรับ PO ที่ทำโดย procurement เท่านั้น หรือขับเคลื่อนโดย catalog เท่านั้น Enum เดียวกันใช้ร่วมกันระหว่าง PR และ PO documentation เพราะมันอยู่ใน namespace ของ tenant schema เพียงครั้งเดียว
 - **`enum_purchase_order_doc_status`**: enum สถานะเอกสารสำหรับ `tb_purchase_order.po_status`
   - `draft` (`ร่าง`) — สถานะแก้ไขได้เริ่มต้น; PO สามารถแก้ไขได้อย่างอิสระ ไม่มี commitment กับผู้ขาย
   - `in_progress` (`กำลังดำเนินการ`) — submit แล้วและกำลังเดินผ่านห่วงโซ่ approval
