@@ -2,7 +2,7 @@
 title: Store Requisition — User Flow — Requester
 description: Requester's flow within the store-requisition module — identifies stock needs, raises and submits the SR.
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-15T15:45:00.000Z
 tags: store-requisition, user-flow, requester, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -72,7 +72,7 @@ The Requester holds full edit rights at `draft` and re-enters `in_progress` only
 7. **Attach supporting evidence.** Recipe demand snapshot, event sheet, photos, par-level analysis, approval pre-clearance memo. Attachments are scoped to the SR header (via `tb_store_requisition_comment.attachments`) or to individual lines (via `tb_store_requisition_detail_comment.attachments`).
 8. **Pre-submit validation review.** The screen surfaces the `SR_VAL_009` source-availability check (per tenant config: hard block or soft warn) — for each line, current source on-hand minus reservations from other open SRs is shown; lines breaching the cap are flagged. The requester adjusts `requested_qty` or accepts the soft warning.
 9. **Submit for approval.** Click **Submit**; the system fires `SR_VAL_001`–`SR_VAL_009`, sets `doc_status = draft → in_progress`, advances the workflow to the first approval stage, populates `user_action.execute` from that stage's permitted users (typically the requester's Department Head), writes the `submitted` entry into `last_action` / `workflow_history`, and appends a `submit` entry to each line's `history` JSON. The requester is notified that the SR is now under approval; the document is no longer editable from the requester's hands (except via send-back).
-10. **Track status until receipt.** The requester monitors progress: approver decisions land back as send-backs (returns to the requester stage) or advances (workflow moves on to the fulfilment stage); on commit, the requester is notified that the goods are issued and on their way; the Receiver at the destination logs receipt; any discrepancy is flagged for inventory-controller follow-up. The requester does NOT directly receive at the destination — that is the Receiver's role (which, in small outlets, may be the same physical user wearing two hats).
+10. **Track status until issuance.** The requester monitors progress: approver decisions land back as send-backs (returns to the requester stage) or advances (workflow moves on to the issue-tagged stage); on the final stage advance, the requester is notified that the goods are issued and on their way. There is no confirmed post-issuance "Receiver" acknowledgement or discrepancy-flag mechanism in current source (see [03-user-flow-receiver.md](./03-user-flow-receiver.md)) — any physical-receipt check at the destination is informal today; the closest system surface is a generic comment on the `completed` SR.
 
 ## 3. Decision Branches
 

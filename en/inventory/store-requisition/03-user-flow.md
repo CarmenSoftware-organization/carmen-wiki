@@ -2,7 +2,7 @@
 title: Store Requisition — User Flow
 description: Document lifecycle and persona-specific flow files for store-requisition.
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-15T15:45:00.000Z
 tags: store-requisition, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -11,8 +11,8 @@ dateCreated: 2026-05-15T13:30:00.000Z
 # Store Requisition — User Flow
 
 > **At a Glance**
-> **Module:** [store-requisition](/en/inventory/store-requisition) &nbsp;·&nbsp; **Personas:** Requester &nbsp;·&nbsp; Approver &nbsp;·&nbsp; Fulfiller &nbsp;·&nbsp; Receiver &nbsp;·&nbsp; Audit / Config
-> **Workflow lifecycle:** Draft → In Progress (approval + fulfilment sub-stages) → Completed (with Cancelled / Voided branches)
+> **Module:** [store-requisition](/en/inventory/store-requisition) &nbsp;·&nbsp; **Personas:** Requester &nbsp;·&nbsp; Approver &nbsp;·&nbsp; Fulfiller (confirmed) &nbsp;·&nbsp; Receiver + Audit / Config (unconfirmed — correction pages)
+> **Workflow lifecycle:** draft → in_progress (approval + issuance sub-stages) → completed, with voided as the one reachable cancellation (whole-document reject); `cancelled` is enum-defined but not reachable by any current code path
 > **Drill into per-persona views below for action-level detail**
 
 ## 1. Overview
@@ -21,7 +21,7 @@ This page is the **overview entry point** for the user-flow set of the `store-re
 
 Section 2 below is the **global state machine** — the canonical list of legal transitions across the five values of `enum_doc_status` (`draft`, `in_progress`, `completed`, `cancelled`, `voided`), independent of who acts. Each per-persona file (linked from Section 3) describes that persona's *path through* the state machine — their entry point, the actions available to them, the decision branches they face, and the handoff that ends their involvement. Section 4 then summarises the cross-persona handoffs that stitch the individual paths together. Read this overview first to anchor the lifecycle, then drill into the persona file that matches your role.
 
-A note on workflow stages: unlike GRN where approval and fulfilment are separate header statuses, the SR collapses both phases under the single `in_progress` value. The `workflow_current_stage` field is what distinguishes "awaiting approver" from "awaiting fulfiller" from "awaiting receiver acknowledgement". So the state machine in Section 2 lists only the legal `doc_status` moves; intra-`in_progress` stage advances (approve, send-back, route to fulfiller) are workflow-internal and do not change `doc_status`.
+A note on workflow stages: unlike GRN where approval and fulfilment are separate header statuses, the SR collapses both phases under the single `in_progress` value. The `workflow_current_stage` field is what distinguishes "awaiting approver" from "awaiting issuer". So the state machine in Section 2 lists only the legal `doc_status` moves; intra-`in_progress` stage advances (approve, send-back, route to the issue-tagged stage) are workflow-internal and do not change `doc_status`.
 
 ## 2. Document Lifecycle
 

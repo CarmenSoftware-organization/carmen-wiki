@@ -2,7 +2,7 @@
 title: ใบเบิกของสโตร์ (Store Requisition) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูล store-requisition
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-15T15:45:00.000Z
 tags: store-requisition, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -177,7 +177,7 @@ tb_store_requisition_detail ──1──*──► tb_inventory_transaction_det
 - **`enum_doc_status`** (ใช้ร่วมกับโมดูลอื่น — ไม่ใช่เฉพาะ SR): ห้าค่าที่ใช้โดย `tb_store_requisition.doc_status` default `draft`
   - `draft` — สถานะเริ่มต้นที่แก้ไขได้; ผู้ขอยังคงป้อนข้อมูลบรรทัด; ยังไม่กระทบสต๊อกหรือ GL
   - `in_progress` — submit เพื่อขออนุมัติและ/หรือ fulfillment; อยู่ภายใต้การควบคุมของ workflow SR ออกจากมือผู้ขอแล้วแต่ยังไม่ถูก issue ทั้ง action approve-line และ fulfil-line เกิดขึ้นในขณะที่เอกสารเป็น `in_progress`; ขั้น workflow (`workflow_current_stage`) คือสิ่งที่แยก "รออนุมัติ" กับ "รอ issue"
-  - `completed` — fulfillment ถูก post: stock-OUT ที่ต้นทาง (และในกรณี `transfer` คือ stock-IN ที่ปลายทาง) ถูกเขียนผ่าน `tb_store_requisition_detail.inventory_transaction_id`; on-hand ที่ต้นทางถูกลด; cost-layer ถูกใช้; journal entries ถูกเขียน เอกสารถูกล็อก; การแก้ไขต้องทำผ่าน compensating adjustment ใน `[inventory-adjustment](/th/inventory/inventory-adjustment)`
+  - `completed` — fulfillment ถูก post: stock-OUT ที่ต้นทาง (และในกรณี `transfer` คือ stock-IN ที่ปลายทาง) ถูกเขียนผ่าน `tb_store_requisition_detail.inventory_transaction_id`; on-hand ที่ต้นทางถูกลด; cost-layer ถูกใช้ (การ post GL/journal-entry จาก event นี้ยังไม่ยืนยัน — ดูส่วนที่ 5 ข้อ 7) เอกสารถูกล็อก; การแก้ไขต้องทำผ่าน compensating adjustment ใน `[inventory-adjustment](/th/inventory/inventory-adjustment)`
   - `cancelled` — นิยามไว้ใน enum ที่ใช้ร่วมกัน แต่**ไม่พบ method ใดใน `store-requisition.service.ts` ที่ตั้งค่านี้**; ให้ถือว่าเข้าถึงไม่ได้ในปัจจุบัน ไม่ใช่ user path ที่มีการบันทึกไว้ (หน้านี้ในเวอร์ชันก่อนหน้าเคยอธิบาย path การถอนคำขอโดยผู้ขอและ path การ auto-cancel เมื่อทุกบรรทัดถูก reject ว่าจบที่สถานะนี้ — ยังไม่ได้รับการยืนยัน ดูส่วนที่ 5 ข้อ 11)
   - `voided` — คือปลายทางที่แท้จริงของ `StoreRequisitionService.reject()` ซึ่งตั้ง `doc_status = voided` โดยไม่มีเงื่อนไขในทุก whole-document reject call กระทำโดยผู้ที่ถือขั้น workflow ปัจจุบัน (ไม่ได้จำกัดเฉพาะ role "Inventory Controller / Sysadmin admin-void" — ไม่พบข้อจำกัดเช่นนั้นใน code) ไม่กระทบสต๊อกหรือ GL จุดสิ้นสุด
 - **`enum_sr_type`**: ประเภทการเคลื่อนย้าย SR สำหรับ `tb_store_requisition.sr_type` default `transfer` สองค่า:

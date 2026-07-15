@@ -2,7 +2,7 @@
 title: ใบเบิกของสโตร์ (Store Requisition) — Business Rules
 description: กฎ validation, calculation, authorization, posting และข้ามโมดูลของ store-requisition
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-15T15:45:00.000Z
 tags: store-requisition, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -155,11 +155,11 @@ State diagram (ยืนยันแล้วกับ `store-requisition.servic
 | — | `PartiallyApproved` | 🔵 BRD only | ไม่ใช่สถานะ Prisma แยก; แทนด้วยผลการอนุมัติต่อบรรทัดที่ผสมขณะ `doc_status = in_progress` |
 | — | `cancelled` (ค่า enum ของ Prisma) | 🔵 enum only | ประกาศไว้ใน `enum_doc_status` แต่ไม่ถูก assign โดย SR service method ใดในปัจจุบัน — ตายในโค้ดปัจจุบัน ไม่ใช่ความต่างระหว่าง BRD กับ live ในความหมายปกติ |
 
-> ⚠️ **ความไม่ตรงกัน — ลักษณะ 3 variant ไม่สะท้อนใน `enum_doc_status`:** Live UI รองรับ destination variant สามแบบ (INV → INV / INV → DIR / INV → CONS) ที่ให้ผล GL ต่างกัน แต่ทั้งสามใช้เส้นสถานะ `draft → in_progress → completed` เหมือนกัน enum `sr_type` (`issue` / `transfer`) แยก variant สองแบบใน live (DIR และ CONS ทั้งคู่เป็น `sr_type = issue`; INV → INV เป็น `sr_type = transfer`) BRD `BR-store-requisitions v1.5.0` และ `Test_case/System_Process/tx-03-sr.md` อธิบายสาม variant; ระบบ live ยุบ DIR และ CONS ภายใต้ค่า `sr_type = issue` เดียวโดยแยกด้วย `tb_location.location_type` ของปลายทางเท่านั้น Source: `Test_case/System_Process/tx-03-sr.md` (capture date 2026-04-27)
+> ⚠️ **ความไม่ตรงกัน — ลักษณะ 3 variant ไม่สะท้อนใน `enum_doc_status`:** Live UI รองรับ destination variant สามแบบ (INV → INV / INV → DIR / INV → CONS) ที่ให้ผลด้าน inventory ต่างกัน (on-hand ปลายทางเพิ่มสำหรับ INV → INV; คงเป็น 0 สำหรับอีกสองแบบ — ผลด้าน GL ยังไม่ยืนยัน ดู `SR_POST_007`) แต่ทั้งสามใช้เส้นสถานะ `draft → in_progress → completed` เหมือนกัน enum `sr_type` (`issue` / `transfer`) แยก variant สองแบบใน live (DIR และ CONS ทั้งคู่เป็น `sr_type = issue`; INV → INV เป็น `sr_type = transfer`) BRD `BR-store-requisitions v1.5.0` และ `Test_case/System_Process/tx-03-sr.md` อธิบายสาม variant; ระบบ live ยุบ DIR และ CONS ภายใต้ค่า `sr_type = issue` เดียวโดยแยกด้วย `tb_location.location_type` ของปลายทางเท่านั้น Source: `Test_case/System_Process/tx-03-sr.md` (capture date 2026-04-27)
 
 > ⚠️ **ความไม่ตรงกัน — view Stock Transfer vs transaction code TRF แยก:** BRD `BR-period-end v2.0.0` ระบุ `TRF` เป็น transaction code คู่กันกับ `SR` ใน Stage 1 ของ period-close validation gate การ implement (`BR-stock-transfers.md`) ยืนยันว่า Stock Transfers **ไม่ใช่** เอนทิตีแยก — เป็น SR ที่มีปลายทาง INVENTORY (`sr_type = transfer`) สำหรับ period-close Stage 1 validation, SR records ที่มี INV → INV destinations satisfy ทั้ง bucket `SR` และ `TRF` หน้า Stock Transfer เป็น view กรองอ่านอย่างเดียวของ SR records ไม่ใช่เอกสารแยก Source: `Test_case/System_Process/tx-03-sr.md` (capture date 2026-04-27)
 
-> ℹ️ **หมายเหตุ — Auto-complete ของ Variant A:** สำหรับ `sr_type = transfer` (INV → INV) ขั้น Issue และ Complete ถือเป็นขั้นเดียวกัน — auto-complete โดยไม่มีขั้นยืนยัน receiver แยก สำหรับ Variant B และ C (`sr_type = issue`) Fulfiller ระบุปิดเอกสารหลัง issue อย่างชัดแจ้ง
+> ℹ️ **หมายเหตุ — ไม่มีกลไก completion แยกต่อ variant (แก้ไขรอบนี้):** เอกสาร BRD อธิบาย `sr_type = transfer` ว่าเป็น "Issue = Complete auto-collapse" และ `sr_type = issue` ว่าต้องมี action Complete แยกอย่างชัดแจ้ง source ปัจจุบันไม่พบความแตกต่างเช่นนั้น: `sr_type` **ทั้งสองค่า** complete ผ่านการเรียก `/approve` เดียวกันเมื่อยิงที่ขั้น workflow สุดท้าย (`workflow_next_stage === '-'`, `StoreRequisitionLogic.approve()`); ไม่มี action "Complete" แยกสำหรับ variant ใด และไม่มีขั้นยืนยัน receiver สำหรับ variant ใดทั้งสิ้น ความแตกต่างเชิงพฤติกรรมเดียวระหว่าง variant อยู่ภายใน `executeTransfer()` (on-hand ปลายทางเพิ่มสำหรับ `transfer`; transfer-in ถูกลง expense ทันทีสำหรับ `issue` เข้าปลายทาง `direct`)
 
 ## 6. กฎข้ามโมดูล
 

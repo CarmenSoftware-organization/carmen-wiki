@@ -2,7 +2,7 @@
 title: การเติมสต๊อก (Stock Replenishment)
 description: ข้อเสนอ SR ที่ generate อัตโนมัติขับโดย threshold min / max / par / reorder ที่แต่ละสถานที่ — คู่ขับโดยนโยบายของ flow Store Requisition ที่ทำด้วยมือ
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-15T15:45:00.000Z
 tags: store-requisition, replenishment, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -111,7 +111,7 @@ Cron run กลางคืน (หรือ on-demand):
 - [product](/th/inventory/product) — นโยบาย `tb_product_location` อยู่ใต้ master สินค้า
 - [master-data/location](/th/inventory/master-data/location) — การตั้งค่า min / max / par / reorder ต่อ-location
 - [purchase-order](/th/inventory/purchase-order) — `on_order` รวม qty PO เปิด
-- [inventory/transaction](/th/inventory/inventory/transaction) — เมื่อ SR post, ledger เขียน events `store_requisition`
+- [inventory/transaction](/th/inventory/inventory/transaction) — เมื่อ SR post, log ธุรกรรมสต๊อก (`tb_inventory_transaction`, `inventory_doc_type = store_requisition`) บันทึกการเคลื่อนย้าย
 
 ## 8. แหล่งอ้างอิง
 

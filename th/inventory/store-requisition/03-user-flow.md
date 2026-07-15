@@ -2,7 +2,7 @@
 title: ใบเบิกของสโตร์ (Store Requisition) — User Flow
 description: วงจรชีวิตเอกสารและไฟล์ flow ตาม persona สำหรับ store-requisition
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-15T15:45:00.000Z
 tags: store-requisition, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -11,8 +11,8 @@ dateCreated: 2026-05-15T13:30:00.000Z
 # ใบเบิกของสโตร์ (Store Requisition) — User Flow
 
 > **At a Glance**
-> **โมดูล:** [store-requisition](/th/inventory/store-requisition) &nbsp;·&nbsp; **Persona:** Requester &nbsp;·&nbsp; Approver &nbsp;·&nbsp; Fulfiller &nbsp;·&nbsp; Receiver &nbsp;·&nbsp; Audit / Config
-> **วงจรชีวิต workflow:** Draft → In Progress (ขั้นย่อยอนุมัติ + fulfillment) → Completed (พร้อม branch Cancelled / Voided)
+> **โมดูล:** [store-requisition](/th/inventory/store-requisition) &nbsp;·&nbsp; **Persona:** Requester &nbsp;·&nbsp; Approver &nbsp;·&nbsp; Fulfiller (ยืนยันแล้ว) &nbsp;·&nbsp; Receiver + Audit / Config (ยังไม่ยืนยัน — หน้า correction)
+> **วงจรชีวิต workflow:** draft → in_progress (ขั้นย่อยอนุมัติ + issuance) → completed โดยมี voided เป็นทางยกเลิกทางเดียวที่ไปถึงได้จริง (reject ทั้งเอกสาร); `cancelled` มีนิยามใน enum แต่ไม่มี code path ปัจจุบันไปถึง
 > **เจาะลึก view ต่อ persona ด้านล่างสำหรับรายละเอียดระดับ action**
 
 ## 1. ภาพรวม
@@ -21,7 +21,7 @@ dateCreated: 2026-05-15T13:30:00.000Z
 
 ส่วนที่ 2 ด้านล่างคือ **state machine ส่วนกลาง** — รายการ canonical ของ transition ที่ถูกกฎหมายข้ามห้าค่าของ `enum_doc_status` (`draft`, `in_progress`, `completed`, `cancelled`, `voided`) โดยไม่ขึ้นกับว่าใครเป็นผู้กระทำ ไฟล์ต่อ persona แต่ละไฟล์ (ลิงก์จากส่วนที่ 3) บรรยายเส้นทางของ persona นั้น *ผ่าน* state machine — จุดเข้า, action ที่พร้อมใช้, branch การตัดสินใจที่เผชิญ และ handoff ที่จบบทบาท ส่วนที่ 4 สรุป handoff ข้าม persona ที่ร้อยเส้นทางแต่ละเส้นเข้าด้วยกัน อ่านภาพรวมนี้ก่อนเพื่อยึดวงจรชีวิต จากนั้นเจาะลึกไปยังไฟล์ persona ที่ตรงกับ role ของคุณ
 
-หมายเหตุเรื่องขั้น workflow: ต่างจาก GRN ที่ approval และ fulfillment เป็นสถานะส่วนหัวแยก SR ยุบทั้งสองช่วงภายใต้ค่า `in_progress` เดียว ฟิลด์ `workflow_current_stage` คือสิ่งที่แยก "รอผู้อนุมัติ" "รอ fulfiller" และ "รอ receiver ยืนยัน" ดังนั้น state machine ในส่วนที่ 2 ระบุเฉพาะการย้าย `doc_status` ที่ถูกกฎหมาย; การเดินขั้น intra-`in_progress` (approve, send-back, route ไปยัง fulfiller) เป็น workflow-internal และไม่เปลี่ยน `doc_status`
+หมายเหตุเรื่องขั้น workflow: ต่างจาก GRN ที่ approval และ fulfillment เป็นสถานะส่วนหัวแยก SR ยุบทั้งสองช่วงภายใต้ค่า `in_progress` เดียว ฟิลด์ `workflow_current_stage` คือสิ่งที่แยก "รอผู้อนุมัติ" จาก "รอผู้ issue" ดังนั้น state machine ในส่วนที่ 2 ระบุเฉพาะการย้าย `doc_status` ที่ถูกกฎหมาย; การเดินขั้น intra-`in_progress` (approve, send-back, route ไปยังขั้นที่ tag issue) เป็น workflow-internal และไม่เปลี่ยน `doc_status`
 
 ## 2. วงจรชีวิตเอกสาร
 

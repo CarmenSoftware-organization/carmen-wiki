@@ -2,7 +2,7 @@
 title: Store Requisition — Data Model
 description: Entities, fields, relationships, and enums for the store-requisition module.
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-15T15:45:00.000Z
 tags: store-requisition, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -177,7 +177,7 @@ Notes:
 - **`enum_doc_status`** (shared with several other modules — not SR-specific): five values used by `tb_store_requisition.doc_status`. Default `draft`.
   - `draft` — initial editable state; the requester is still entering line data; no stock or GL impact.
   - `in_progress` — submitted for approval and / or fulfilment; under workflow control. The SR has left the requester's hands but has not yet been issued. Both approve-line and fulfil-line actions happen while the document is `in_progress`; the workflow stage (`workflow_current_stage`) is what distinguishes "awaiting approval" from "awaiting issue".
-  - `completed` — fulfilment posted: the stock-OUT at source (and, for `transfer`, the stock-IN at destination) has been written through `tb_store_requisition_detail.inventory_transaction_id`; on-hand at source decremented; cost-layer consumed; journal entries written. The document is locked; corrections require a compensating adjustment in `[inventory-adjustment](/en/inventory/inventory-adjustment)`.
+  - `completed` — fulfilment posted: the stock-OUT at source (and, for `transfer`, the stock-IN at destination) has been written through `tb_store_requisition_detail.inventory_transaction_id`; on-hand at source decremented; cost-layer consumed. (GL/journal-entry posting from this event is unconfirmed — see Section 5 item 7.) The document is locked; corrections require a compensating adjustment in `[inventory-adjustment](/en/inventory/inventory-adjustment)`.
   - `cancelled` — defined in the shared enum, but **no method in `store-requisition.service.ts` was found that assigns it**; treat as currently unreachable rather than a documented user path. (Prior versions of this page described requester-withdrawal and all-lines-rejected paths landing here — unconfirmed; see Section 5 item 11.)
   - `voided` — the actual destination of `StoreRequisitionService.reject()`, which sets `doc_status = voided` unconditionally on any whole-document reject call, performed by whoever holds the current workflow stage (not restricted to an "Inventory Controller / Sysadmin admin-void" role — no such restriction was found in code). No inventory or GL impact. Terminal.
 - **`enum_sr_type`**: SR movement type for `tb_store_requisition.sr_type`. Default `transfer`. Two values:

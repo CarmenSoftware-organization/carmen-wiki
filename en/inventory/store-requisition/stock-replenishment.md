@@ -2,7 +2,7 @@
 title: Stock Replenishment
 description: Auto-generated SR proposal driven by min / max / par / reorder thresholds at each location — the policy-driven counterpart to the manual Store Requisition flow.
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-15T15:45:00.000Z
 tags: store-requisition, replenishment, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -111,7 +111,7 @@ If a draft already exists for `(from, to, date)`, the cron updates lines in plac
 - [product](/en/inventory/product) — `tb_product_location` policy lives under the product master
 - [master-data/location](/en/inventory/master-data/location) — per-location min / max / par / reorder configuration
 - [purchase-order](/en/inventory/purchase-order) — `on_order` includes open PO qty
-- [inventory/transaction](/en/inventory/inventory/transaction) — once the SR posts, ledger writes `store_requisition` events
+- [inventory/transaction](/en/inventory/inventory/transaction) — once the SR posts, the inventory transaction log (`tb_inventory_transaction`, `inventory_doc_type = store_requisition`) records the movement
 
 ## 8. References
 

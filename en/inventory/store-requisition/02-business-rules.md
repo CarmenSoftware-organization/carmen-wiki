@@ -2,7 +2,7 @@
 title: Store Requisition — Business Rules
 description: Validation, calculation, authorization, posting, and cross-module rules for store-requisition.
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-15T15:45:00.000Z
 tags: store-requisition, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -155,11 +155,11 @@ The Prisma enum `enum_doc_status` documented above is what the live UI uses. The
 | — | `PartiallyApproved` | 🔵 BRD only | Not a separate Prisma status; represented by mixed per-line approval outcomes while `doc_status = in_progress`. |
 | — | `cancelled` (Prisma enum value) | 🔵 enum only | Defined in `enum_doc_status` but not assigned by any current SR service method — dead in current code, not a BRD-vs-live divergence in the usual sense. |
 
-> ⚠️ **Discrepancy — 3-variant nature not reflected in `enum_doc_status`:** The live UI supports three destination variants (INV → INV / INV → DIR / INV → CONS) that produce different GL effects, but all three share the same `draft → in_progress → completed` status path. The `sr_type` enum (`issue` / `transfer`) distinguishes the two live variants (DIR and CONS are both `sr_type = issue`; INV → INV is `sr_type = transfer`). BRD `BR-store-requisitions v1.5.0` and `Test_case/System_Process/tx-03-sr.md` describe three variants; the live system collapses DIR and CONS under a single `sr_type = issue` value, differentiating them only by the destination `tb_location.location_type`. Source: `Test_case/System_Process/tx-03-sr.md` (capture date 2026-04-27).
+> ⚠️ **Discrepancy — 3-variant nature not reflected in `enum_doc_status`:** The live UI supports three destination variants (INV → INV / INV → DIR / INV → CONS) that produce different inventory effects (destination on-hand increments for INV → INV; stays 0 for the other two — GL effects are unconfirmed, see `SR_POST_007`), but all three share the same `draft → in_progress → completed` status path. The `sr_type` enum (`issue` / `transfer`) distinguishes the two live variants (DIR and CONS are both `sr_type = issue`; INV → INV is `sr_type = transfer`). BRD `BR-store-requisitions v1.5.0` and `Test_case/System_Process/tx-03-sr.md` describe three variants; the live system collapses DIR and CONS under a single `sr_type = issue` value, differentiating them only by the destination `tb_location.location_type`. Source: `Test_case/System_Process/tx-03-sr.md` (capture date 2026-04-27).
 
 > ⚠️ **Discrepancy — Stock Transfer view vs separate TRF transaction code:** BRD `BR-period-end v2.0.0` lists `TRF` as a peer transaction code alongside `SR` in Stage 1 of the period-close validation gate. The implementation (`BR-stock-transfers.md`) confirms that Stock Transfers are **not** a separate entity — they are SRs with INVENTORY destinations (`sr_type = transfer`). For period-close Stage 1 validation, SR records with INV → INV destinations satisfy both the `SR` and `TRF` buckets. The Stock Transfer page is a read-only filtered view of SR records, not a separate document. Source: `Test_case/System_Process/tx-03-sr.md` (capture date 2026-04-27).
 
-> ℹ️ **Note — Variant A auto-complete:** For `sr_type = transfer` (INV → INV), the Issue and Complete stages are treated as the same stage — auto-complete with no separate receiver confirmation step. For Variants B and C (`sr_type = issue`), the Fulfiller explicitly completes the document after issue.
+> ℹ️ **Note — no per-variant completion mechanism (corrected this pass):** BRD material described `sr_type = transfer` as "Issue = Complete auto-collapse" and `sr_type = issue` as requiring an explicit separate Complete action. Current source shows no such distinction: **both** `sr_type` values complete through the identical `/approve` call when it fires at the final workflow stage (`workflow_next_stage === '-'`, `StoreRequisitionLogic.approve()`); there is no separate "Complete" action for either variant, and no receiver confirmation step exists for any variant. The only behavioral difference between variants is inside `executeTransfer()` (destination on-hand increments for `transfer`; the transfer-in is expensed immediately for `issue` into a `direct` destination).
 
 ## 6. Cross-Module Rules
 
