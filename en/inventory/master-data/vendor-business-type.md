@@ -2,7 +2,7 @@
 title: Vendor Business Type
 description: Flat lookup that classifies vendors by business type (manufacturer, distributor, service, etc.) — referenced by the vendor record for reporting and filtering.
 published: true
-date: 2026-06-04T00:00:00.000Z
+date: 2026-07-15T21:47:09.000Z
 tags: master-data, vendor-business-type, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -35,7 +35,7 @@ The entity is a **flat lookup** — no hierarchy, no workflow logic. Classificat
 |---|---|---|
 | "Name already in use" | Duplicate `name` on a non-deleted row | Pick a different name or restore the existing row |
 | "Name required" | Empty `name` | Add a display name |
-| "Cannot delete — referenced by vendors" | At least one vendor embeds this type in its `business_type` JSON | Deactivate instead of deleting; or clean up vendor references first |
+| **Unconfirmed** — no delete guard found | `vendor_business_type.service.ts`'s `delete()` is an unconditional soft-delete with no check for vendor references — and since there is no DB-level FK from `tb_vendor` to this table at all (see § 5.2), there is nothing for such a check to query against beyond scanning every vendor's JSON | A prior version of this page asserted "cannot delete — referenced by vendors" as an enforced error; treat it as **not enforced** |
 | Type shows stale name on vendor | Vendor JSON snapshot not refreshed after rename | Run a maintenance job to refresh `tb_vendor.business_type` JSON across all vendors |
 
 ## 4. Edge Cases
@@ -62,38 +62,38 @@ Source: tenant schema.
 | `note` | `String? @db.VarChar` | Yes | Internal note. |
 | `is_active` | `Boolean?` | Yes | Active flag (default `true`). |
 | `info`, `dimension` | `Json?` | Yes | Standard metadata. |
-| `doc_version` | `Decimal @db.Decimal` | No | Optimistic-lock version (default `0`). |
+| `doc_version` | `Int` | No | Optimistic-lock version (default `0`). |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |
 
-**Constraints:** `@@unique([name])` (DB-level unique). `@@index([name], map: "vendor_business_type_name_u")`. Reverse relation: `tb_vendor[]` (via `business_type_id` FK on `tb_vendor`).
+**Constraints:** `@@unique([name, deleted_at])` map `vendor_business_type_name_u`. Index on `name`. **No reverse relation to `tb_vendor` exists in the schema** — see § 5.2.
 
-### 5.2 How `tb_vendor` references this entity
+### 5.2 How `tb_vendor` references this entity — confirmed: no FK, JSON only
 
-`tb_vendor` holds **two** references:
+A prior version of this page described `tb_vendor` holding a `business_type_id` FK column (a single "primary" type) alongside the `business_type` JSON array. A direct read of the current tenant schema (`tb_vendor` model) found **no `business_type_id` column at all** — the model has no field or `@relation` pointing at `tb_vendor_business_type`. The only link is:
 
 | Column | Type | Purpose |
 |---|---|---|
-| `business_type_id` | `String? @db.Uuid` | FK to `tb_vendor_business_type` (single primary type, `onDelete: NoAction`). |
-| `business_type` | `Json? @db.JsonB` | Denormalised JSON array `[{id, name}]` for display across all assigned types. |
+| `business_type` | `Json? @db.JsonB` (default `[]`) | Array of `{id, name}` snapshots, one per assigned type. |
 
-The FK column (`business_type_id`) pins one authoritative type; the JSON column captures the full multi-type selection for reporting.
+This is a **loose, app-enforced reference only** — there is no foreign key, so the database does not enforce that a `business_type` JSON entry's `id` still exists on (or ever existed on) a real `tb_vendor_business_type` row, and no `onDelete` behavior applies when a type is deleted. Referential integrity here is entirely the frontend's responsibility (the vendor form's business-type picker, `vendor-form-schema.ts`).
 
 ## 6. Business Rules
 
-- **Uniqueness.** `name` is DB-unique (`@unique`) across all rows, including soft-deleted. No two types may share the same name.
-- **Deletion guards.** A type referenced by any vendor should not be hard-deleted. Deactivate (`is_active = false`) or soft-delete when the type is no longer needed; vendors retain their JSON snapshot.
+- **Uniqueness.** `@@unique([name, deleted_at])` — unique among non-deleted rows only (the standard soft-delete-compound-unique pattern used throughout this module), not across all rows regardless of deletion.
+- **Deletion guards — unconfirmed.** No reference check was found in `delete()`; soft-delete succeeds unconditionally. Since there is no FK from `tb_vendor` (only a loose JSON snapshot, § 5.2), there is also no DB-level mechanism that could enforce such a guard even if the service checked for it.
 - **Validation.** `name` required and unique.
-- **Lifecycle.** `is_active = false` hides the type from pickers while preserving referential integrity. Soft-delete is the final retirement step.
+- **Lifecycle.** `is_active = false` hides the type from pickers; vendors retain their JSON snapshot regardless.
 - **Rename propagation.** Renaming a type does not auto-update the `business_type` JSON on vendors — run a maintenance refresh after a rename.
 - **Translation.** Keep translations in `info` JSON until a localisation table is introduced.
 
 ## 7. Cross-References
 
-- [master-data/vendor](/en/inventory/master-data/vendor) — the vendor record that embeds `business_type` JSON and holds the `business_type_id` FK.
+- [master-data/vendor](/en/inventory/master-data/vendor) — the vendor record that embeds a `business_type` JSON array; there is no FK, so this is a naming-only link.
 - [vendor-pricelist](/en/inventory/vendor-pricelist) — pricelist sourcing rounds may filter by vendor business type.
 - [purchase-request](/en/inventory/purchase-request) — PR preferred-vendor selection may surface business type for filtering.
 
 ## 8. References
 
-- **Prisma:** `../carmen/docs/prisma-schema/schema.prisma` — `tb_vendor_business_type` (lines ~2646-2667); used by `tb_vendor` (`business_type_id` FK at line ~1862, `business_type` JSON at line ~1868).
-- **Frontend:** `../carmen-inventory-frontend-react/` — Vendor Business Type list under Configuration → Master Data.
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_vendor_business_type` (lines ~5229-5250); `tb_vendor`'s `business_type` JSON field (lines ~3500-3552, no `business_type_id` column exists).
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/vendor_business_type/vendor_business_type.service.ts`.
+- **Frontend:** `../carmen-inventory-frontend-react/routes/config/business-type/`.

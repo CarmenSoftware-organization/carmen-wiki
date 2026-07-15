@@ -2,7 +2,7 @@
 title: จุดส่งของ (Delivery Point)
 description: จุดส่งของทางกายภาพสำหรับการจัดส่งของผู้ขาย — ถูกอ้างอิงโดย PO และ GRN และเชื่อมโยงกับ inventory location
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T21:47:09.000Z
 tags: master-data, delivery-point, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -36,7 +36,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 |---|---|---|
 | "Name already in use" | `name` ซ้ำบนแถว non-deleted | เลือกชื่ออื่น |
 | "Name required" | `name` ว่าง | เพิ่มชื่อแสดงผล |
-| "Cannot delete — referenced by POs / GRNs / locations" | มี FK references | ใช้ inactivate แทน |
+| **ยังไม่ยืนยัน** — ไม่พบ delete guard | `delivery-point.service.ts`'s `delete()` เป็น soft-delete แบบไม่มีเงื่อนไข (`is_active: false` + `deleted_at`) โดยไม่มีการเช็ค PO/GRN/location ที่อ้างอิง | เดิมหน้านี้ระบุว่า "cannot delete — referenced by POs / GRNs / locations" เป็น error ที่บังคับใช้จริง; ให้ถือว่า**ยังไม่ถูกบังคับใช้**จนกว่าจะตรวจสอบซ้ำ |
 | Location แสดงชื่อจุดส่งของล้าสมัย | snapshot `tb_location.delivery_point_name` ไม่ได้ refresh หลังเปลี่ยนชื่อ | Backfill ผ่าน maintenance job |
 
 ## 4. Edge Cases
@@ -59,6 +59,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | `name` | `String @db.VarChar` | No | ชื่อแสดงผล (เช่น `Main Dock`) |
 | `is_active` | `Boolean?` | Yes | Active flag, default `true` |
 | `note`, `info`, `dimension` | — | Yes | Metadata มาตรฐาน |
+| `doc_version` | `Int` | No | เวอร์ชัน optimistic-lock (default `0`) |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*` |
 
 **Constraints:** `@@unique([name, deleted_at])` map `deliverypoint_name_u` Index บน `name` Reverse relations ไปยัง `tb_location`, `tb_purchase_request_detail` และตาราง PO-PR linkage
@@ -66,7 +67,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 ## 6. กติกาทางธุรกิจ
 
 - **Uniqueness** `name` unique ในแถว non-deleted (DB-enforced)
-- **Deletion guards** การอ้างอิงจาก PO, GRN ที่เปิดอยู่ หรือ location ที่ active บล็อก hard-delete
+- **Deletion guards — ยังไม่ยืนยัน** ไม่พบการเช็ค FK ใน `delete()`; soft-delete สำเร็จโดยไม่มีเงื่อนไขแม้มี PO/GRN/location ที่เปิดอยู่อ้างอิง
 - **Validation** `name` บังคับ
 - **Lifecycle** จุดส่งของ inactive ยังอ่านได้บนเอกสารย้อนหลัง; ซ่อนจาก picker
 - **การ propagate การเปลี่ยนชื่อ** เอกสาร resolve ผ่าน FK; snapshot ชื่อบน `tb_location` ต้อง backfill
@@ -80,5 +81,5 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_delivery_point` (lines ~623-646)
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/delivery-point/`
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_delivery_point` (lines ~633-657)
+- **Frontend:** `../carmen-inventory-frontend-react/routes/config/delivery-point/`

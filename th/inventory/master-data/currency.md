@@ -2,7 +2,7 @@
 title: สกุลเงิน (Currency)
 description: แคตตาล็อกสกุลเงินต่อ tenant, รายการอ้างอิง ISO และประวัติอัตราแลกเปลี่ยนแบบมีวันที่ — ขับเคลื่อนการแปลง FX ทั้งหมดบน PO, GRN, pricelist และ costing
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T21:47:09.000Z
 tags: master-data, currency, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -36,18 +36,17 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 | อาการ / ข้อความ | สาเหตุ | การจัดการ |
 |---|---|---|
-| "ISO code not found" | `tb_currency.code` ไม่ตรงกับ `tb_currency_iso.iso_code` ใดเลย | ให้ Sysadmin seed ISO row ก่อน |
-| "Exchange rate must be > 0" | ตั้งอัตรา cache เป็นศูนย์ / ค่าลบ | ใส่ค่าบวกใหม่ |
-| "Cannot inactivate — set as BU default" | สกุลเงินเป็น `default_currency_id` ของ BU อย่างน้อยหนึ่งราย | เปลี่ยน BU default ก่อน |
-| "Cannot delete — referenced by documents/pricelists" | Hard-delete ถูกบล็อกโดย FK | ใช้ inactivate แทน |
+| "Currency already exists" | `code` ซ้ำ (case-insensitive) ในแถว non-deleted | เลือก code อื่นหรือ reactivate แถวที่มี |
 | เอกสารแสดง warning "rate not in history" | ไม่มี `tb_exchange_rate` row ที่ / ก่อนวันที่ของเอกสาร | เพิ่ม backdated rate ใน [master-data/exchange-rate](/th/inventory/master-data/exchange-rate) |
+| **ยังไม่ยืนยัน** — ไม่พบ guard ข้าม-schema, ค่า หรือ BU-default | `CurrencyCreateSchema`/`CurrencyUpdateSchema` (`currency.dto.ts`) เช็คแค่ type ของ `code`/`exchange_rate`; `currency.service.ts`'s `create()`/`update()`/`delete()` ไม่เช็ค `tb_currency_iso` หารหัส ISO ที่ตรงกัน ไม่บังคับ `exchange_rate > 0` ไม่เช็คว่าสกุลเงินเป็น `default_currency_id` ของ BU ก่อน inactivate และไม่เช็คการอ้างอิงเอกสาร/pricelist ก่อน soft-delete | เดิมหน้านี้ระบุว่า "ISO code not found", "exchange rate must be > 0", "cannot inactivate — set as BU default" และ "cannot delete — referenced by documents/pricelists" เป็น error ที่บังคับใช้จริง — ไม่พบทั้งสี่ในรอบนี้; ให้ถือว่า**ยังไม่ถูกบังคับใช้**จนกว่าจะตรวจสอบซ้ำ |
 
 ## 4. Edge Cases
 
 - **"Current" cache vs. history** `tb_currency.exchange_rate` เป็น *cache* ของ `tb_exchange_rate` ล่าสุด เอกสารใหม่ resolve ผ่านประวัติที่มีวันที่ก่อน; cache เป็น fallback (พร้อม warning)
 - **การ inactivate ไม่ลบประวัติ** — เอกสารย้อนหลังยังคง render ตามอัตรา snapshot
-- **BU default invariant** — สกุลเงินที่เป็น `default_currency_id` ของ BU ใดก็ตามไม่สามารถ inactivate ได้
+- **BU default invariant — ยังไม่ยืนยัน** ไม่พบโค้ดที่บล็อกการ inactivate สกุลเงินที่เป็น `default_currency_id` ของ BU; ถือเป็น design intent ไม่ใช่ guard ที่ทำงานจริง
 - **Override ระดับ tenant** — `tb_currency.name` / `symbol` ทับสำเนา ISO สำหรับการแสดงผล
+- **ไม่มีการเช็คข้าม ISO** `tb_currency.code` เป็น string ที่พิมพ์เองได้อย่างอิสระตอนสร้าง — ไม่มีอะไรบังคับให้ตรงกับแถว `tb_currency_iso.iso_code`
 - **Decimal places** `tb_currency.decimal_places` ควบคุมการ render เท่านั้น — storage เป็น `Decimal(15, 5)` สำหรับอัตรา และเงินปัดเศษเป็น 2 dp
 
 ---
@@ -81,6 +80,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | `exchange_rate` | `Decimal? @db.Decimal(15, 5)` | Yes | Cache อัตราปัจจุบันเทียบ BU default (default `1`) |
 | `exchange_rate_at` | `DateTime? @db.Timestamptz(6)` | Yes | Cache timestamp |
 | `note`, `info`, `dimension` | — | Yes | Metadata มาตรฐาน |
+| `doc_version` | `Int` | No | เวอร์ชัน optimistic-lock (default `0`) |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*` |
 
 **Constraints:** primary key บน `id`; uniqueness บน `code` บังคับใช้ที่ application layer มี reverse relations ไปยัง GRN, JV, PO, PR, pricelist, credit note และประวัติ exchange rate
@@ -91,12 +91,12 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 6. กติกาทางธุรกิจ
 
-- **Uniqueness** `tb_currency.code` unique ในแถว active; `tb_currency_iso.iso_code` DB-unique หนึ่ง `tb_exchange_rate` ต่อ `(at_date, currency_id)`
-- **Deletion guards** การอ้างอิงจากเอกสารหรือ pricelist บล็อก hard-delete — ใช้ inactivate แทน
-- **Validation** `exchange_rate > 0`; `code` ต้องตรงกับ `tb_currency_iso` row
+- **Uniqueness** `tb_currency.code` unique (case-insensitive) ในแถว non-deleted, เช็คระดับ app ใน `create()`/`update()`; `tb_currency_iso.iso_code` DB-unique หนึ่ง `tb_exchange_rate` ต่อ `(at_date, currency_id)`
+- **Deletion guards — ยังไม่ยืนยัน** ไม่พบการเช็ค FK ใน `delete()`; soft-delete สำเร็จโดยไม่มีเงื่อนไขแม้มีการอ้างอิงจากเอกสาร/pricelist
+- **Validation — ยังไม่ยืนยัน** ไม่พบการเช็คค่าบวกบน `exchange_rate` และไม่พบการเช็คข้ามกับ `tb_currency_iso` ใน `currency.service.ts` หรือ Zod DTO ของมัน
 - **Lifecycle** สกุลเงิน inactive ซ่อนจาก picker ของเอกสารใหม่; เอกสารย้อนหลัง render จาก snapshot
 - **Rate resolution** Engine เลือก `at_date <= document_date` ที่ใหญ่ที่สุดสำหรับ `currency_id`; fall back ไปที่ cache `tb_currency.exchange_rate` และ flag เอกสาร
-- **BU default invariant** ไม่สามารถ inactivate สกุลเงินที่เป็น `default_currency_id` ของ BU ใดก็ตาม
+- **BU default invariant — ยังไม่ยืนยัน** ไม่พบโค้ดที่บล็อกการ inactivate สกุลเงินที่เป็น `default_currency_id` ของ BU ใดก็ตาม
 
 ## 7. การอ้างอิงข้ามโมดูล
 
@@ -108,6 +108,6 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma (tenant):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_currency` (lines ~545-621), `tb_exchange_rate` (lines ~744-768)
-- **Prisma (platform):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_currency_iso` (lines ~217-224)
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/currency/`
+- **Prisma (tenant):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_currency` (lines ~553-596), `tb_exchange_rate` (lines ~760-785)
+- **Prisma (platform):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_currency_iso` (lines ~279-287)
+- **Frontend:** `../carmen-inventory-frontend-react/routes/config/currency/`

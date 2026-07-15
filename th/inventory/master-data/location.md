@@ -2,7 +2,7 @@
 title: ที่ตั้ง / สถานที่ (Location)
 description: สถานที่จัดเก็บและบริโภคที่จำแนกเป็น inventory, direct หรือ consignment — ขับเคลื่อนการ post สต๊อกและพฤติกรรมการ physical count
 published: true
-date: 2026-06-18T00:00:00.000Z
+date: 2026-07-15T21:47:09.000Z
 tags: master-data, location, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -19,11 +19,11 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 1. คืออะไร / ใครใช้
 
-**สถานที่** เป็นที่อยู่ทางกายภาพหรือทางตรรกะที่สต๊อกอยู่หรือถูกบริโภค — main warehouse, kitchen pass, bar, housekeeping cart, ชั้น consignment ที่ supplier เป็นเจ้าของ ฟิลด์ `location_type` ตัดสินพฤติกรรมการ posting:
+**สถานที่** เป็นที่อยู่ทางกายภาพหรือทางตรรกะที่สต๊อกอยู่หรือถูกบริโภค — main warehouse, kitchen pass, bar, housekeeping cart, ชั้น consignment ที่ supplier เป็นเจ้าของ ฟิลด์ `location_type` ตัดสินพฤติกรรมการ posting (ยืนยันจาก `inventory-transaction.service.ts` โดยรอบ resync ของโมดูล [inventory](/th/inventory/inventory) เอง — ไม่มีโค้ด GL/journal-posting อยู่เลยในโค้ดเบส ดังนั้นภาษาแบบ "post ไป GL" ด้านล่างอธิบายชั้น inventory-transaction ไม่ใช่รายการบัญชี):
 
-- **`inventory`** — มียอดสต๊อก, post ไป inventory asset GL
-- **`direct`** — ข้าม balance, post ตรงไป department expense
-- **`consignment`** — ถือสินค้าที่ supplier เป็นเจ้าของ, recognise เมื่อบริโภคเท่านั้น
+- **`inventory`** — มียอดสต๊อก; receipt และ issue เขียนแถว cost-layer in/out ตามปกติ
+- **`direct`** — receipt เขียน layer ขาเข้าตามปกติ **บวก** layer ขาออกที่หักล้างกันโดยอัตโนมัติในต้นทุนเดียวกัน (net zero, ไม่รวมใน average) — ไม่ใช่ "ไม่มีแถว cost-layer" ตามที่ draft ก่อนหน้าบอกไว้
+- **`consignment`** — ถือสินค้าที่ supplier เป็นเจ้าของ; ไม่มี code path แยกจาก `inventory` ใน filter การทำธุรกรรม/period-end/นับสต๊อกที่ตรวจสอบ
 
 ระเบียนเดียวกันตั้งค่าพฤติกรรมการนับสิ้นงวด (`physical_count_type` = `yes` / `no`) และจุดส่งของ default ที่ส่งเข้ามายัง location นี้ **บริหารจัดการโดย** Product Admin **อ่านโดย** ทุกเส้นทางการ post inventory
 
@@ -35,7 +35,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | Tag จุดส่งของ default | Location detail | ตั้ง `delivery_point_id` + denormalised `delivery_point_name` |
 | ตั้งพฤติกรรมการนับ | Toggle `physical_count_type` | `no` ข้าม period-end count; spot check ยังบังคับใช้ |
 | ยกเลิกการใช้งาน | Toggle `is_active` | ซ่อนจาก picker; การ post ประวัติยังเก็บไว้ |
-| เปลี่ยน `location_type` | Edit dialog | **บล็อกหลังการเคลื่อนไหวครั้งแรก** — จะทำให้ประวัติ journal เสียหาย |
+| เปลี่ยน `location_type` | Edit dialog | **ไม่ได้ถูกบล็อกจริง** — `update()` ยอมรับค่าใหม่โดยไม่พบการเช็คการเคลื่อนไหวก่อนหน้า (guard ยังไม่ยืนยัน ดู Edge Cases); การเปลี่ยนหลังมี posting แล้วยังจะทำให้ความหมายของรายงานประวัติเสียหาย |
 | กำหนด inventory tree | หน้า location detail | จำกัดว่าสินค้าใดที่มองเห็นได้ที่ location นี้ |
 
 ## 3. การตรวจสอบและข้อผิดพลาด
@@ -43,18 +43,17 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | อาการ / ข้อความ | สาเหตุ | การจัดการ |
 |---|---|---|
 | "Code already in use" | `code` ซ้ำในแถว active | เลือก code อื่น |
-| "Cannot delete — non-zero balance" | location ยังมีสต๊อก | จ่ายออกหรือโอนก่อน |
-| "Cannot delete — referenced by open SR/GRN" | FK references ในเอกสารเปิด | ปิดเอกสารก่อน |
-| "Cannot change location_type" | พยายามแก้หลังการเคลื่อนไหวครั้งแรก | สร้าง location ใหม่และย้ายด้วยมือ |
+| **ยังไม่ยืนยัน** — ไม่พบ guard สำหรับการลบหรือเปลี่ยน location_type | `locations.service.ts`'s `delete()` เป็น soft-delete แบบไม่มีเงื่อนไข ไม่มีการเช็คยอด non-zero หรือ SR/GRN ที่เปิดอยู่; `update()` ยอมรับ `location_type` ใหม่โดยไม่เช็คการเคลื่อนไหวก่อนหน้า | เดิมหน้านี้ระบุว่า "cannot delete — non-zero balance", "cannot delete — referenced by open SR/GRN" และ "cannot change location_type after first movement" เป็น error ที่บังคับใช้จริง — ไม่พบทั้งสามในรอบนี้; ให้ถือว่า**ยังไม่ถูกบังคับใช้**จนกว่าจะตรวจสอบซ้ำ |
 | ชื่อจุดส่งของในรายงาน | snapshot `delivery_point_name` อาจไม่ตรงหากไม่ได้ sync | Query `delivery_point.name` ผ่าน join สำหรับค่าที่ถูกต้อง |
 
 ## 4. Edge Cases
 
-- **`location_type` ติดเมื่อใช้แล้ว** — การสลับ `inventory` → `direct` ทำให้ journal entry เสียหายย้อนหลัง
+- **การเปลี่ยน `location_type` ไม่ถูกบล็อกในปัจจุบัน** ไม่มีโค้ดใน `locations.service.ts` เช็คการเคลื่อนไหวก่อนหน้าก่อนยอมรับ `location_type` ใหม่ใน `update()` การสลับ `inventory` → `direct` หลังมี posting แล้วยังจะทำให้ความหมายของรายงาน inventory-transaction ประวัติเสียหาย — ถือว่าข้ออ้างเดิม "ระบบปฏิเสธ" ยังไม่ยืนยัน/เป็นแค่ design intent
 - **ยกเว้นการนับ** — `physical_count_type = no` ข้าม period count แต่ **ไม่** ข้าม spot check
-- **ยอดคงเหลือ consignment** เป็นของ supplier; recognise ตอนบริโภค ไม่ใช่ตอนรับ
+- **Consignment ไม่มี code path แยก (ยืนยันโดยรอบ resync ของโมดูล inventory เอง)** ถูกจัดกลุ่มกับ `inventory` ใน filter ทุกตัวที่ตรวจสอบ (transaction, period-end validate/review, physical-count-period, spot-check, SR from-location) — ถือว่าข้ออ้างเดิม "recognise ตอนบริโภค ไม่ใช่ตอนรับ" ยังไม่ยืนยัน ไม่ใช่พฤติกรรมจริง
 - **การจับคู่กับจุดส่งของ** — ฟอร์มอ่าน `delivery_point.name` จาก nested API object ดังนั้นจุดส่งของที่ inactive ที่ผูกไว้กับ location จะยังแสดงชื่อทั้งในโหมดดูและแก้ไข (ฟอร์มแก้ไขส่งชื่อนั้นเป็น `defaultLabel` ให้ lookup widget ซึ่ง list เฉพาะจุดส่งของที่ active เท่านั้น) ฟิลด์ snapshot `delivery_point_name` ยังคงอยู่ในระเบียนสำหรับการอ้างอิง legacy
 - **Code uniqueness บังคับใช้ระดับ app** (ไม่มี DB unique constraint)
+- **การลบยังไม่ยืนยันว่าถูก guard** `delete()` ตั้ง `is_active: false` + `deleted_at` แบบไม่มีเงื่อนไข — ไม่พบการเช็คยอด on-hand ที่ไม่เป็นศูนย์ หรือการอ้างอิง SR/GRN ที่เปิดอยู่
 
 ---
 
@@ -76,6 +75,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | `physical_count_type` | `enum_physical_count_type` | No | `no` (default) — ข้าม; `yes` — รวม |
 | `is_active` | `Boolean?` | Yes | Active flag |
 | `note`, `info`, `dimension` | — | Yes | Metadata มาตรฐาน |
+| `doc_version` | `Int` | No | เวอร์ชัน optimistic-lock (default `0`) |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*` |
 
 **Constraints:** primary key บน `id` FK บน `delivery_point_id` → `tb_delivery_point` `onDelete: NoAction` Uniqueness บน `code` บังคับใช้ที่ app layer
@@ -86,8 +86,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 ## 6. กติกาทางธุรกิจ
 
 - **Uniqueness** `code` unique ในแถว active (app-enforced)
-- **Deletion guards** ยอด non-zero หรือการอ้างอิง SR/GRN ที่เปิดอยู่บล็อกการลบ
-- **Validation** `location_type` ไม่สามารถเปลี่ยนได้หลังการเคลื่อนไหวครั้งแรก
+- **Deletion guards — ยังไม่ยืนยัน** ไม่พบการเช็ค FK ใน `delete()`; soft-delete สำเร็จโดยไม่มีเงื่อนไขแม้ยอด on-hand ไม่เป็นศูนย์หรือมีการอ้างอิง SR/GRN ที่เปิดอยู่
+- **Validation — ยังไม่ยืนยัน** ไม่พบโค้ดที่บล็อกการเปลี่ยน `location_type` หลังการเคลื่อนไหวครั้งแรก; `update()` ยอมรับได้อย่างอิสระ
 - **Lifecycle** `is_active = false` ซ่อนจาก picker; รักษาการ post ประวัติ จุดส่งของที่ผูกไว้แล้วและถูก deactivate ในภายหลัง ยังคงแสดงชื่อในฟอร์มดู/แก้ไข location (ฟอร์มอ่าน `delivery_point.name` จาก nested object ไม่ใช่ snapshot field)
 - **ยกเว้นการนับ** `physical_count_type = no` ข้าม period count ไม่ใช่ spot check
 - **การจับคู่กับจุดส่งของ** ฟอร์ม location แสดงชื่อ live จาก `delivery_point.name` (nested object) ดังนั้น label ที่แสดงจึงเป็นปัจจุบันเสมอ คอลัมน์ `delivery_point_name` เป็น legacy snapshot field ที่ UI ไม่ได้ใช้สำหรับการแสดงผลอีกต่อไป
@@ -96,7 +96,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 ## 7. การอ้างอิงข้ามโมดูล
 
 - [inventory](/th/inventory/inventory) — ทุกยอดสต๊อก keyed ด้วย location; type ตัดสินว่าจะ track balance หรือไม่
-- [good-receive-note](/th/inventory/good-receive-note) — บรรทัด detail ของ GRN เป้าหมาย location ปลายทาง; type ขับเคลื่อน journal entry
+- [good-receive-note](/th/inventory/good-receive-note) — บรรทัด detail ของ GRN เป้าหมาย location ปลายทาง; `location_type` ตัดสินพฤติกรรมการ post ของ inventory-transaction (ไม่มีโค้ด GL/journal-posting อยู่เลยในโค้ดเบส — ยืนยันโดยรอบ resync ของโมดูล [inventory](/th/inventory/inventory) เอง)
 - [store-requisition](/th/inventory/store-requisition) — `from_location` / `to_location` ในทุก issue/transfer
 - [physical-count](/th/inventory/physical-count) — การนับ scope ไปยัง location ที่ `physical_count_type = yes`
 - [spot-check](/th/inventory/spot-check) — เซสชัน enumerate location
@@ -104,6 +104,6 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_location` (lines ~1294-1393), `enum_location_type` (lines ~218-222), `enum_physical_count_type` (lines ~62-65)
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/location/`
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_location` (lines ~1328-1375), `enum_location_type` (lines ~222-226), `enum_physical_count_type` (lines ~51-54)
+- **Frontend:** `../carmen-inventory-frontend-react/routes/config/location/`
 - **carmen/docs:** `../carmen/docs/settings/locations.md` — wireframes

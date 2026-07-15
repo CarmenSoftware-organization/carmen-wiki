@@ -2,7 +2,7 @@
 title: ประเภทธุรกิจผู้ขาย (Vendor Business Type)
 description: Flat lookup สำหรับจัดประเภทผู้ขายตามลักษณะธุรกิจ (ผู้ผลิต, ผู้จัดจำหน่าย, บริการ ฯลฯ) — อ้างอิงโดยระเบียนผู้ขายเพื่อรายงานและกรองข้อมูล
 published: true
-date: 2026-06-04T00:00:00.000Z
+date: 2026-07-15T21:47:09.000Z
 tags: master-data, vendor-business-type, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -35,7 +35,7 @@ dateCreated: 2026-06-04T00:00:00.000Z
 |---|---|---|
 | "Name already in use" | `name` ซ้ำบนแถว non-deleted | เลือกชื่ออื่นหรือ restore แถวที่มี |
 | "Name required" | `name` ว่าง | เพิ่มชื่อแสดงผล |
-| "Cannot delete — referenced by vendors" | มีผู้ขายอย่างน้อยหนึ่งรายที่ฝังประเภทนี้ใน JSON `business_type` | Deactivate แทนการลบ; หรือทำความสะอาด reference ของผู้ขายก่อน |
+| **ยังไม่ยืนยัน** — ไม่พบ delete guard | `vendor_business_type.service.ts`'s `delete()` เป็น soft-delete แบบไม่มีเงื่อนไข ไม่มีการเช็คการอ้างอิงของผู้ขาย — และเนื่องจากไม่มี FK จาก `tb_vendor` เลย (มีแค่ JSON snapshot แบบหลวม ๆ ดู § 5.2) จึงไม่มีกลไกระดับ DB ที่จะบังคับ guard แบบนี้ได้แม้ service จะเช็ค | เดิมหน้านี้ระบุว่า "cannot delete — referenced by vendors" เป็น error ที่บังคับใช้จริง; ให้ถือว่า**ยังไม่ถูกบังคับใช้** |
 | ประเภทแสดงชื่อเก่าบนผู้ขาย | JSON snapshot บนผู้ขายยังไม่ได้ refresh หลังการเปลี่ยนชื่อ | รัน maintenance job เพื่อ refresh `tb_vendor.business_type` JSON ทั่วทุกผู้ขาย |
 
 ## 4. Edge Cases
@@ -62,38 +62,38 @@ dateCreated: 2026-06-04T00:00:00.000Z
 | `note` | `String? @db.VarChar` | Yes | Internal note |
 | `is_active` | `Boolean?` | Yes | Active flag (default `true`) |
 | `info`, `dimension` | `Json?` | Yes | Metadata มาตรฐาน |
-| `doc_version` | `Decimal @db.Decimal` | No | Optimistic-lock version (default `0`) |
+| `doc_version` | `Int` | No | เวอร์ชัน optimistic-lock (default `0`) |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*` |
 
-**Constraints:** `@@unique([name])` (DB-level unique) `@@index([name], map: "vendor_business_type_name_u")` Reverse relation: `tb_vendor[]` (ผ่าน FK `business_type_id` บน `tb_vendor`)
+**Constraints:** `@@unique([name, deleted_at])` map `vendor_business_type_name_u` Index บน `name` **ไม่มี reverse relation ไปยัง `tb_vendor` ใน schema เลย** — ดู § 5.2
 
-### 5.2 วิธีที่ `tb_vendor` อ้างอิงเอนทิตีนี้
+### 5.2 วิธีที่ `tb_vendor` อ้างอิงเอนทิตีนี้ — ยืนยันแล้ว: ไม่มี FK มีแค่ JSON
 
-`tb_vendor` เก็บ **สอง** การอ้างอิง:
+Draft ก่อนหน้าของหน้านี้อธิบายว่า `tb_vendor` มีคอลัมน์ FK `business_type_id` (ประเภท "หลัก" เดียว) นอกเหนือจาก JSON array `business_type` การอ่าน tenant schema ปัจจุบันโดยตรง (model `tb_vendor`) พบว่า**ไม่มีคอลัมน์ `business_type_id` เลย** — model ไม่มีฟิลด์หรือ `@relation` ที่ชี้ไปยัง `tb_vendor_business_type` เลย จุดเชื่อมเดียวคือ:
 
 | Column | Type | วัตถุประสงค์ |
 |---|---|---|
-| `business_type_id` | `String? @db.Uuid` | FK ไปยัง `tb_vendor_business_type` (ประเภทหลักเดียว, `onDelete: NoAction`) |
-| `business_type` | `Json? @db.JsonB` | JSON array แบบ denormalised `[{id, name}]` สำหรับแสดงผลทุกประเภทที่กำหนด |
+| `business_type` | `Json? @db.JsonB` (default `[]`) | Array ของ snapshot `{id, name}` หนึ่งต่อแต่ละประเภทที่กำหนด |
 
-FK column (`business_type_id`) กำหนดประเภทหลักหนึ่งประเภทที่มีอำนาจ; JSON column จับการเลือกหลายประเภทเพื่อการรายงาน
+นี่คือ **การอ้างอิงแบบหลวม ๆ ที่บังคับใช้ระดับ app เท่านั้น** — ไม่มี foreign key ดังนั้นฐานข้อมูลไม่ได้บังคับว่า `id` ใน entry ของ JSON `business_type` ยังมีอยู่จริง (หรือเคยมีอยู่) บนแถว `tb_vendor_business_type` และไม่มี `onDelete` behavior ใด ๆ เมื่อประเภทถูกลบ Referential integrity ที่นี่เป็นความรับผิดชอบของ frontend ทั้งหมด (picker ประเภทธุรกิจของฟอร์มผู้ขาย, `vendor-form-schema.ts`)
 
 ## 6. กติกาทางธุรกิจ
 
-- **Uniqueness** `name` เป็น DB-unique (`@unique`) ทุกแถว รวมถึงที่ soft-deleted ไม่มีสองประเภทที่ใช้ชื่อเดียวกัน
-- **Deletion guards** ประเภทที่ถูกอ้างอิงโดยผู้ขายรายใดก็ตามไม่ควร hard-delete Deactivate (`is_active = false`) หรือ soft-delete เมื่อประเภทนั้นไม่จำเป็นอีกต่อไป; ผู้ขายยังคง JSON snapshot ไว้
+- **Uniqueness** `@@unique([name, deleted_at])` — unique เฉพาะในแถว non-deleted (รูปแบบ soft-delete-compound-unique มาตรฐานที่ใช้ทั่วโมดูลนี้) ไม่ใช่ทุกแถวไม่ว่าจะถูกลบหรือไม่
+- **Deletion guards — ยังไม่ยืนยัน** ไม่พบการเช็คการอ้างอิงใน `delete()`; soft-delete สำเร็จโดยไม่มีเงื่อนไข เนื่องจากไม่มี FK จาก `tb_vendor` (มีแค่ JSON snapshot แบบหลวม ๆ, § 5.2) จึงไม่มีกลไกระดับ DB ที่จะบังคับ guard แบบนี้ได้แม้ service จะเช็คก็ตาม
 - **Validation** `name` บังคับและ unique
-- **Lifecycle** `is_active = false` ซ่อนประเภทจาก picker ในขณะที่รักษา referential integrity Soft-delete คือขั้นตอนสุดท้ายในการปลดระวาง
+- **Lifecycle** `is_active = false` ซ่อนประเภทจาก picker; ผู้ขายยังคง JSON snapshot ไว้ไม่ว่ากรณีใด
 - **Rename propagation** การเปลี่ยนชื่อประเภทไม่ auto-update JSON `business_type` บนผู้ขาย — รัน maintenance refresh หลังการเปลี่ยนชื่อ
 - **การแปล** เก็บการแปลใน `info` JSON จนกว่าจะมีการ introduce ตาราง localisation
 
 ## 7. การอ้างอิงข้ามโมดูล
 
-- [master-data/vendor](/th/inventory/master-data/vendor) — ระเบียนผู้ขายที่ฝัง JSON `business_type` และเก็บ FK `business_type_id`
+- [master-data/vendor](/th/inventory/master-data/vendor) — ระเบียนผู้ขายที่ฝัง JSON array `business_type`; ไม่มี FK ดังนั้นนี่เป็นการเชื่อมโยงผ่านชื่อเท่านั้น
 - [vendor-pricelist](/th/inventory/vendor-pricelist) — รอบ sourcing ของ pricelist อาจกรองตามประเภทธุรกิจผู้ขาย
 - [purchase-request](/th/inventory/purchase-request) — การเลือก preferred vendor ใน PR อาจแสดงประเภทธุรกิจเพื่อกรอง
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen/docs/prisma-schema/schema.prisma` — `tb_vendor_business_type` (lines ~2646-2667); ใช้โดย `tb_vendor` (FK `business_type_id` ที่ line ~1862, JSON `business_type` ที่ line ~1868)
-- **Frontend:** `../carmen-inventory-frontend-react/` — Vendor Business Type list ใต้ Configuration → Master Data
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_vendor_business_type` (lines ~5229-5250); ฟิลด์ JSON `business_type` ของ `tb_vendor` (lines ~3500-3552, ไม่มีคอลัมน์ `business_type_id` เลย)
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/vendor_business_type/vendor_business_type.service.ts`
+- **Frontend:** `../carmen-inventory-frontend-react/routes/config/business-type/`

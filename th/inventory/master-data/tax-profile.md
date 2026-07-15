@@ -2,7 +2,7 @@
 title: Profile ภาษี (Tax Profile)
 description: นิยามอัตราภาษีแบบมีชื่อที่ถูกอ้างอิงโดยผู้ขาย สินค้า และทุกบรรทัดเอกสารที่มีราคา
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T21:47:09.000Z
 tags: master-data, tax-profile, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -36,8 +36,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | อาการ / ข้อความ | สาเหตุ | การจัดการ |
 |---|---|---|
 | "Name already in use" | `name` ซ้ำบนแถว non-deleted | เลือกชื่ออื่นหรือ reactivate แถวที่มี |
-| "Rate must be >= 0" | `tax_rate` ติดลบ | ใส่ค่าเป็นศูนย์หรือ decimal บวก |
-| "Cannot delete — referenced by documents/vendors/products" | มี FK references | ใช้ inactivate แทน |
+| **ยังไม่ยืนยัน** — ไม่พบ guard สำหรับอัตราหรือการลบ | `TaxProfileCreateSchema`/`TaxProfileUpdateSchema` (`tax-profile.dto.ts`) ประกาศ `tax_rate` เป็น `z.number()` เฉย ๆ ไม่มีขั้นต่ำ และ `tax_profile.service.ts`'s `delete()` เป็น soft-delete แบบไม่มีเงื่อนไข ไม่มีการเช็คการอ้างอิง | เดิมหน้านี้ระบุว่า "rate must be >= 0" และ "cannot delete — referenced by documents/vendors/products" เป็น error ที่บังคับใช้จริง; ให้ถือว่าทั้งคู่**ยังไม่ถูกบังคับใช้**จนกว่าจะตรวจสอบซ้ำ |
 | บรรทัดแสดงอัตราเก่าหลังแก้ profile | บรรทัด snapshot อัตราต้นทาง | คาดหวัง — snapshot คือ contract |
 
 ## 4. Edge Cases
@@ -64,6 +63,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | `is_active` | `Boolean?` | Yes | Active flag |
 | `description` | `String? @db.VarChar` | Yes | Free text |
 | `note`, `info`, `dimension` | — | Yes | Metadata มาตรฐาน |
+| `doc_version` | `Int` | No | เวอร์ชัน optimistic-lock (default `0`) |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*` |
 
 **Constraints:** `@@unique([name, deleted_at])` map `taxprofile_name_deletedat_u` Index บน `name` Reverse relation ที่กว้างไปยัง PR / PO / GRN / pricelist / vendor / product / credit-note / extra-cost-detail
@@ -71,8 +71,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 ## 6. กติกาทางธุรกิจ
 
 - **Uniqueness** `name` unique ในแถว non-deleted (DB-enforced)
-- **Deletion guards** การอ้างอิงเอกสาร/master ใดก็ตามบล็อก hard-delete — ใช้ inactivate
-- **Validation** `tax_rate >= 0`; storage เป็นรูป decimal (`0.07` = 7%)
+- **Deletion guards — ยังไม่ยืนยัน** ไม่พบการเช็ค FK ใน `delete()`; soft-delete สำเร็จโดยไม่มีเงื่อนไขแม้มีการอ้างอิงเอกสาร/vendor/product
+- **Validation — ยังไม่ยืนยัน** ไม่พบการเช็คค่าบวกบน `tax_rate` ฝั่ง server; storage เป็นรูป decimal (`0.07` = 7%)
 - **Lifecycle** profile ที่ inactive ซ่อนจาก picker ใหม่; อ่านได้บนบรรทัดประวัติ
 - **Snapshot semantics** บรรทัดเอกสาร snapshot อัตรา; การแก้ที่นี่ไม่ retro-edit เอกสารประวัติ
 - **วินัยการเปลี่ยนอัตรา** สร้าง profile ใหม่เสมอเมื่อ headline rate เปลี่ยน
@@ -88,5 +88,5 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_tax_profile` (lines ~1395-1429), `enum_tax_type` (lines ~96-100) — หมายเหตุ `enum_tax_type` อยู่บนแต่ละบรรทัดเอกสาร ไม่ใช่บนเอนทิตีนี้
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/tax-profile/`
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_tax_profile` (lines ~1433-1468), `enum_tax_type` (lines ~92-96) — หมายเหตุ `enum_tax_type` อยู่บนแต่ละบรรทัดเอกสาร ไม่ใช่บนเอนทิตีนี้
+- **Frontend:** `../carmen-inventory-frontend-react/routes/config/tax-profile/`

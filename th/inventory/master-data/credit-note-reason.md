@@ -2,7 +2,7 @@
 title: เหตุผลใบลดหนี้ (Credit Note Reason)
 description: รหัสเหตุผลสำหรับใบลดหนี้ที่ออกต่อ GRN — รองรับ flow การคืนสินค้าให้ผู้ขายและการแก้ราคา
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T21:47:09.000Z
 tags: master-data, credit-note-reason, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -36,7 +36,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 |---|---|---|
 | "Name already in use" | `name` ซ้ำบนแถว non-deleted | เลือกชื่ออื่นหรือ restore แถวที่มี |
 | "Name required" | `name` ว่าง | เพิ่มชื่อแสดงผล |
-| "Cannot delete — referenced by credit notes" | มี CN อย่างน้อยหนึ่งชี้ไปยังเหตุผลนี้ | Soft-delete เฉพาะถ้ายอมรับการแสดงผล "Unknown reason"; มิฉะนั้นเก็บไว้ |
+| **ยังไม่ยืนยัน** — ไม่พบ delete guard | `credit-note-reason.service.ts`'s `delete()` เป็น soft-delete แบบไม่มีเงื่อนไข ไม่มีการเช็คการอ้างอิงจากใบลดหนี้ | เดิมหน้านี้ระบุว่า "cannot delete — referenced by credit notes" เป็น error ที่บังคับใช้จริง; ให้ถือว่า**ยังไม่ถูกบังคับใช้**จนกว่าจะตรวจสอบซ้ำ — การ soft-delete เหตุผลที่ยังใช้อยู่จะสำเร็จในปัจจุบัน และเนื่องจากเหตุผลไม่มี flag `is_active` นี่จึงเป็นเส้นทาง "ปลดระวาง" เดียวด้วย |
 | เหตุผลแสดงเป็นว่างบน CN | Hard-delete สำเร็จด้วยเหตุผลใดเหตุผลหนึ่ง (data fix เท่านั้น) | Restore หรือ backfill ผ่าน lookup |
 
 ## 4. Edge Cases
@@ -62,6 +62,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | `description` | `String? @db.VarChar` | Yes | Free text |
 | `note` | `String? @db.VarChar` | Yes | Internal note |
 | `info`, `dimension` | `Json?` | Yes | Metadata มาตรฐาน |
+| `doc_version` | `Int` | No | เวอร์ชัน optimistic-lock (default `0`) |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*` |
 
 **Constraints:** `@@unique([name, deleted_at])` map `creditnotereason_name_u` Index บน `name` Reverse relation ไปยัง `tb_credit_note` หมายเหตุ: ไม่มีคอลัมน์ `is_active`
@@ -69,7 +70,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 ## 6. กติกาทางธุรกิจ
 
 - **Uniqueness** `name` unique ในแถว non-deleted (DB-enforced)
-- **Deletion guards** เหตุผลที่ถูกอ้างอิงโดยใบลดหนี้ใด ๆ ไม่สามารถ hard-delete Soft-delete ถ้าไม่มี CN ประวัติอ้างอิง
+- **Deletion guards — ยังไม่ยืนยัน** ไม่พบการเช็ค FK ใน `delete()`; soft-delete สำเร็จโดยไม่มีเงื่อนไขแม้มีการอ้างอิงจากใบลดหนี้
 - **Validation** `name` บังคับ
 - **Lifecycle** ไม่มี `is_active`; soft-delete คือเส้นทาง retirement CN ประวัติเก็บ FK และ resolve ชื่อแม้บนแถวที่ soft-deleted
 - **การแปล** เหตุผลอาจหันหน้าหาผู้ขาย — เก็บการแปลใน `info` จนกว่าจะมีการ introduce ตาราง localisation
@@ -81,5 +82,6 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_credit_note_reason` (lines ~299-319); ใช้โดย `tb_credit_note` (lines ~321-…)
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/credit-note-reason/`
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_credit_note_reason` (lines ~303-324)
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/procurement/credit-note-reason/credit-note-reason.service.ts` (อยู่ใต้ `procurement` ไม่ใช่ `master` ใน layout ของโมดูล backend เอง)
+- **Frontend:** `../carmen-inventory-frontend-react/routes/config/credit-note-reason/`

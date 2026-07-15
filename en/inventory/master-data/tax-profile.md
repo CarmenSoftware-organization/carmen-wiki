@@ -2,7 +2,7 @@
 title: Tax Profile
 description: Named tax rate definitions referenced by vendors, products, and every priced document line.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T21:47:09.000Z
 tags: master-data, tax-profile, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -36,8 +36,7 @@ Document-line tax computation reads three things: the **chosen tax profile**, th
 | Symptom / Message | Cause | Action |
 |---|---|---|
 | "Name already in use" | Duplicate `name` on a non-deleted row | Pick a different name or reactivate the existing row |
-| "Rate must be >= 0" | Negative `tax_rate` | Enter zero or positive decimal |
-| "Cannot delete — referenced by documents/vendors/products" | FK references exist | Inactivate instead |
+| **Unconfirmed** — no rate or delete guard found | `TaxProfileCreateSchema`/`TaxProfileUpdateSchema` (`tax-profile.dto.ts`) declare `tax_rate` as a plain optional `z.number()` with no minimum, and `tax_profile.service.ts`'s `delete()` is an unconditional soft-delete with no reference check | A prior version of this page asserted "rate must be >= 0" and "cannot delete — referenced by documents/vendors/products" as enforced errors; treat both as **not enforced** until re-verified |
 | Line shows old rate after profile edit | Line snapshotted the original rate | Expected — snapshot is the contract |
 
 ## 4. Edge Cases
@@ -64,6 +63,7 @@ Source: tenant schema.
 | `is_active` | `Boolean?` | Yes | Active flag. |
 | `description` | `String? @db.VarChar` | Yes | Free text. |
 | `note`, `info`, `dimension` | — | Yes | Standard metadata. |
+| `doc_version` | `Int` | No | Optimistic-lock version (default `0`). |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |
 
 **Constraints:** `@@unique([name, deleted_at])` map `taxprofile_name_deletedat_u`. Index on `name`. Wide reverse relations into PR / PO / GRN / pricelist / vendor / product / credit-note / extra-cost-detail.
@@ -71,8 +71,8 @@ Source: tenant schema.
 ## 6. Business Rules
 
 - **Uniqueness.** `name` unique among non-deleted rows (DB-enforced).
-- **Deletion guards.** Any document/master reference blocks hard-delete — inactivate.
-- **Validation.** `tax_rate >= 0`; storage is decimal form (`0.07` = 7%).
+- **Deletion guards — unconfirmed.** No reference check was found in `delete()`; soft-delete succeeds unconditionally even with document/vendor/product references.
+- **Validation — unconfirmed.** No positive-value check on `tax_rate` was found server-side; storage is decimal form (`0.07` = 7%).
 - **Lifecycle.** Inactive profiles hidden from new pickers; readable on historical lines.
 - **Snapshot semantics.** Document lines snapshot the rate; editing here does not retro-edit historical documents.
 - **Rate-change discipline.** Always create a new profile when the headline rate changes.
@@ -88,5 +88,5 @@ Source: tenant schema.
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_tax_profile` (lines ~1395-1429), `enum_tax_type` (lines ~96-100) — note that `enum_tax_type` lives on each document line, not on this entity.
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/tax-profile/`.
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_tax_profile` (lines ~1433-1468), `enum_tax_type` (lines ~92-96) — note that `enum_tax_type` lives on each document line, not on this entity.
+- **Frontend:** `../carmen-inventory-frontend-react/routes/config/tax-profile/`.

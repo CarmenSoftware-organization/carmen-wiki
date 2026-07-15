@@ -2,7 +2,7 @@
 title: Vendor
 description: Suppliers and their addresses, contacts, and business-type taxonomy — the counterparty on every procurement document.
 published: true
-date: 2026-06-17T08:00:00.000Z
+date: 2026-07-15T21:47:09.000Z
 tags: master-data, vendor, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -39,8 +39,8 @@ The vendor record snapshots the **tax profile** at the vendor level so documents
 | Symptom / Message | Cause | Action |
 |---|---|---|
 | "Code/name already in use" | Duplicate `(code, name)` on a non-deleted row | Pick different identifiers |
-| "Address type already exists for this vendor" | Second address of same `address_type` attempted | Edit the existing one instead |
-| "Cannot delete — referenced by documents" | FK references from PR/PO/GRN/pricelist | Inactivate instead |
+| "Address type already exists for this vendor" | Second address of same `address_type` attempted (DB-unique on `(vendor_id, address_type, deleted_at)`) | Edit the existing one instead |
+| **Unconfirmed** — no delete guard found | `vendors.service.ts`'s `delete()` is an unconditional soft-delete (wrapped in a transaction whose vendor-contact/address cascade-delete lines are commented out) with no check for PR/PO/GRN/pricelist references | A prior version of this page asserted "cannot delete — referenced by documents" as an enforced error; treat it as **not enforced** until re-verified |
 | "Vendor has no active contact" warning | All contacts inactive or deleted | Add or reactivate at least one contact |
 | "Cannot have two primary contacts" | Two rows with `is_primary = true` | Toggle off the old primary first |
 
@@ -72,7 +72,9 @@ Source: tenant schema.
 | `tax_profile_name` | `String? @db.VarChar` | Yes | Denormalised display copy. |
 | `tax_rate` | `Decimal? @db.Decimal(15, 5)` | Yes | Snapshotted rate at link time (default `0`). |
 | `is_active` | `Boolean?` | Yes | Active flag. |
+| `latitude` / `longitude` | `Decimal? @db.Decimal(10,7)` / `Decimal? @db.Decimal(11,7)` | Yes | Vendor site coordinates; no frontend field found that reads or writes them this pass. |
 | `info`, `dimension` | `Json?` | Yes | Standard metadata. |
+| `doc_version` | `Int` | No | Optimistic-lock version (default `0`). |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |
 
 **Constraints:** `@@unique([code, name, deleted_at])` map `vendor_code_name_u`. Indexes on `code`, `name`, `(code, name)`. FK to `tb_tax_profile` `onDelete: NoAction`.
@@ -122,8 +124,8 @@ Flat lookup — `id`, `name`, `description`, `note`, `is_active`, standard metad
 
 ## 6. Business Rules
 
-- **Uniqueness.** `(code, name)` unique among non-deleted vendors. At most one of each `address_type` per vendor. Contact `name` unique within a vendor.
-- **Deletion guards.** Open PR/PO/GRN/pricelist references block hard-delete — inactivate.
+- **Uniqueness.** `(code, name)` unique among non-deleted vendors. At most one of each `address_type` per vendor (DB-unique). Contact `name` unique within a vendor (DB-unique).
+- **Deletion guards — unconfirmed.** `vendors.service.ts`'s `delete()` is an unconditional soft-delete (its cascade-delete calls against `tb_vendor_contact`/`tb_vendor_address` are commented out, so child rows are simply left behind); no check for open PR/PO/GRN/pricelist references was found.
 - **Validation.** `code` and `name` required. `tax_rate` snapshots `tb_tax_profile` at link time.
 - **Lifecycle.** `is_active = false` hides from new pickers; existing documents keep working. Active vendor without active contacts should warn in UI.
 - **Primary contact invariant.** At most one `is_primary = true` per vendor (app invariant).
@@ -142,5 +144,5 @@ Flat lookup — `id`, `name`, `description`, `note`, `is_active`, standard metad
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_vendor` (lines ~3249-3296), `tb_vendor_address` (lines ~3332-3365), `tb_vendor_contact` (lines ~3367-3396), `tb_vendor_business_type` (lines ~4853-…), `enum_vendor_address_type` (lines ~259-263).
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/vendor-management/vendor/`.
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_vendor` (lines ~3500-3552), `tb_vendor_address` (lines ~3589-3626), `tb_vendor_contact` (lines ~3628-3658), `tb_vendor_business_type` (lines ~5229-5250), `enum_vendor_address_type` (lines ~262-266).
+- **Frontend:** `../carmen-inventory-frontend-react/routes/vendor-management/vendor/`.
