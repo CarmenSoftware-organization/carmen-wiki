@@ -1,8 +1,8 @@
 ---
 title: การปรับสต๊อก (Inventory Adjustment)
-description: การแก้ไขยอดสต๊อกด้วยมือ — write-off, write-on, การจัดประเภทใหม่
+description: การแก้ไข stock-in / stock-out ด้วยมือ นอกเหนือจากการจัดซื้อและการเบิกใช้ — write-off, write-on และ count-variance rollup
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-07-15T17:02:22.000Z
 tags: inventory-adjustment, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -11,77 +11,69 @@ dateCreated: 2026-05-15T07:48:00.000Z
 # การปรับสต๊อก (Inventory Adjustment)
 
 > **At a Glance**
-> **วัตถุประสงค์ของโมดูล:** การแก้ไขสต๊อกแบบควบคุม (IN / OUT) นอกเหนือจากการจัดซื้อและการบริโภค — write-off, write-on, ผลต่างการนับ, การจัดประเภทใหม่ (`Draft` → `Posted` → `Void`) &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Store Keeper, Inventory Controller, Finance, Auditor &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_inventory_adjustment`, `tb_inventory_adjustment_detail`, `InventoryStatus`, `JournalEntry`, master ของ reason-code &nbsp;·&nbsp; **หน้าย่อย:** 13
+> **วัตถุประสงค์ของโมดูล:** การแก้ไขสต๊อกด้วยมือ นอกเหนือจากการจัดซื้อ (GRN) และการเบิกใช้ (Store Requisition) — เอกสารสองสายที่เป็นอิสระต่อกัน คือ Stock-In (`tb_stock_in`) และ Stock-Out (`tb_stock_out`) จัดประเภทโดย master ของ reason code ร่วมกัน (`tb_adjustment_type`) &nbsp;·&nbsp; **กลุ่มผู้ใช้:** ผู้ใช้ใดก็ตามที่มีสิทธิ์ `inventory_management.view` (ไม่มี role อนุมัติแยกต่างหากในโค้ด) &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_stock_in`, `tb_stock_in_detail`, `tb_stock_out`, `tb_stock_out_detail`, `tb_adjustment_type` &nbsp;·&nbsp; **หน้าย่อย:** 14
 
 ![การปรับสต๊อก (Inventory Adjustment) screen](/screenshots/inventory-adjustment/index.png)
 
 ## 1. ภาพรวม
 
-**Inventory Adjustment (การปรับสต๊อก)** คือการแก้ไขปริมาณและ/หรือมูลค่าสต๊อกแบบควบคุม นอกเหนือจากกระแสจัดซื้อและบริโภคปกติ การปรับสต๊อกแต่ละครั้งเป็นเอกสารที่มีส่วนหัว — เลขที่อ้างอิง, วันที่, ประเภท (`IN` หรือ `OUT`), ตำแหน่ง, แผนก, reason code, คำอธิบาย, หลักฐานแนบ — และรายการสินค้าหนึ่งบรรทัดหรือมากกว่า แต่ละบรรทัดประกอบด้วยสินค้า รายละเอียด lot (เมื่อสินค้าติดตาม lot) ต้นทุนต่อหน่วย ปริมาณ และยอดรวมต่อบรรทัดที่ระบบคำนวณให้; ส่วนหัวจะ roll up สิ่งเหล่านี้เป็น `inQty`, `outQty` และ `totalCost`
+**Inventory Adjustment** ครอบคลุมสองหน้าจอภายใต้ `/inventory-management/inventory-adjustment`: **Stock-In** (การแก้ไขเพิ่ม — ของพบใหม่ ส่วนเกินจากการนับ) และ **Stock-Out** (การแก้ไขลด — ของเสียหาย หมดอายุ ขาดจากการนับ) ทั้งสองเป็นเอกสารอิสระต่อกัน คือ `tb_stock_in` และ `tb_stock_out` ไม่ใช่ variant ของ entity `tb_inventory_adjustment` ร่วมกันแต่อย่างใด ทั้งคู่มีโครงสร้าง header เหมือนกัน — เลขที่เอกสาร (`si_no` / `so_no`), วันที่, เหตุผล (`adjustment_type_id`, แสดงผลต่อผู้ใช้เป็นฟิลด์ **Reason**), ตำแหน่ง, คำอธิบาย และบรรทัดสินค้าหนึ่งรายการขึ้นไปพร้อม `qty`, `cost_per_unit`, `total_cost` — และทั้งคู่เชื่อมกับ ledger ของ [inventory](/th/inventory/inventory) ผ่าน `inventory_transaction_id` ที่ nullable บนแต่ละบรรทัด
 
-Adjustment ดำเนินตามวงจรชีวิตที่จำกัดอย่างเข้มงวด: `Draft` (แก้ไขได้ ยังไม่กระทบสต๊อก) → `Posted` (immutable, สต๊อกและ GL อัปเดตแล้ว) → `Void` (กลับรายการ adjustment ที่ post แล้วผ่านธุรกรรมแยกต่างหาก) Draft แก้ไขได้อย่างอิสระ แต่เมื่อ post แล้วเอกสารถูก lock — การแก้ไขต้อง void และทำ adjustment ใหม่ การ post ยังกระตุ้นการสร้าง stock-movement การคำนวณ FIFO layer หรือต้นทุนเฉลี่ยถ่วงน้ำหนักใหม่ตาม costing method ของสินค้า และการสร้าง journal entry อัตโนมัติเข้าบัญชี GL ที่ map จาก reason code
+**ตัวเอกสาร *คือ* เหตุการณ์ posting เอง** ต่างจาก GRN หรือ Store Requisition ตรงที่ไม่มีขั้นตอน submit-แล้ว-approve แยกต่างหาก: `StockInService.create()` / `StockOutService.create()` เขียน header ที่ `doc_status = completed` และเรียก ledger ของ [inventory](/th/inventory/inventory) (`executeAdjustmentIn` / `executeAdjustmentOut`) ใน database transaction เดียวกัน โดยไม่มีเงื่อนไข — เกิดขึ้นไม่ว่าผู้ใช้จะกดปุ่มไหนก็ตาม ปุ่ม **Save** ของฟอร์มตั้งค่า `doc_status: "draft"` และ **Submit** ตั้งค่า `doc_status: "completed"` ก่อนเรียก mutation สร้างเอกสารเดียวกัน แต่ backend ไม่สนใจค่าที่ client ส่งมาและเขียน `completed` เสมอ ในทางปฏิบัติจึงไม่มีสถานะ draft ที่เข้าถึงได้จริงสำหรับ adjustment ที่สร้างใหม่ — ทุก stock-in/stock-out ที่มีอยู่ในระบบถูก post เข้า ledger ตั้งแต่วินาทีที่ถูกสร้างขึ้น
 
-Adjustments ถูกใช้เมื่อใดก็ตามที่สต๊อกเปลี่ยนนอกเหนือจากเอกสารปกติ: ของเสียหายที่พบในห้องเก็บ, ของหมดอายุที่ถูก write-off, การ write-off จากขโมยหรือการสูญเสีย, ของที่พบคืนจากการตรวจสอบ, ผลต่างจาก physical count หรือ spot check ที่ post เป็น adjustment แบบโครงสร้าง, และการจัดประเภทใหม่ระหว่างตำแหน่งหรือหน่วยนับ โมดูลรองรับทั้งทิศทางบวก (`IN` — write-on) และลบ (`OUT` — write-off) พร้อมความละเอียดระดับ lot สำหรับสินค้าที่ติดตามแบบ batch
+ผลที่ตามมาข้อหนึ่งส่งผลต่อทั้งหน้าจอ: `isReadOnly` บนหน้ารายละเอียดคือ `doc_status === 'voided' || doc_status === 'completed'` และเนื่องจากทุกเอกสารที่ persist แล้วเป็น `completed` เสมอ `isReadOnly` จึงเป็น true เสมอ ปุ่ม **Edit** (`isView && !isReadOnly`) จึงไม่แสดงผลสำหรับเอกสารจริงเลย ทำให้โหมดแก้ไขของฟอร์มไม่ถูกเข้าถึง — และปุ่ม **Void** ซึ่งต้องอาศัย `isEdit` จึงเข้าไม่ถึงตามไปด้วย แม้ backend จะมี void endpoint ที่ใช้งานได้จริง (ดู [02 — กติกาทางธุรกิจ](/th/inventory/inventory-adjustment/02-business-rules) § 5) ปุ่ม **Delete** ในเมนูแถวของหน้ารายการยังคงแสดงผลโดยไม่มีเงื่อนไข แต่ backend จะปฏิเสธด้วยข้อความ `"Cannot delete a completed Stock In — inventory has already been adjusted"` สำหรับทุกแถวที่มีอยู่ เนื่องจาก `delete()` สำเร็จได้เฉพาะเมื่อ `doc_status = draft` เท่านั้น เมื่อสร้างแล้ว เอกสาร Stock-In หรือ Stock-Out จึงเป็น**อ่านอย่างเดียว**ผ่าน UI ปัจจุบัน (ดูได้และพิมพ์ได้เท่านั้น)
 
 ## 2. บริบททางธุรกิจ
 
-Adjustments เป็นช่องทางเดียวที่ปล่อยให้สต๊อกเปลี่ยนโดยไม่มีเอกสาร procurement ต้นน้ำหรือเอกสารบริโภคปลายน้ำที่จับคู่กัน จึงอยู่ภายใต้การตรวจสอบ audit โดยปริยาย กลุ่มธุรกิจโรงแรมดำเนินงานบน margin ต้นทุนอาหารที่บางเฉียบ; adjustment ที่อธิบายไม่ได้หรือไม่ได้รับอนุมัติสามารถซ่อนการสูญเสีย ขโมย หรือความล้มเหลวของกระบวนการ และยอดที่ไม่สมดุล ณ ปิดงวดไม่สามารถปกป้องได้ต่อ external auditor การควบคุมของโมดูล — reason code ที่บังคับ, เอกสารหลักฐานแนบ, การอนุมัติแบบแยกบทบาท, ผลกระทบต่อสต๊อกเฉพาะเมื่อ post และสถานะ post ที่ immutable — มีอยู่เพื่อทำให้ทุกการแก้ไขสามารถอธิบายได้
+การดำเนินงานโรงแรมต้องการช่องทางแก้ไขสต๊อกที่เปลี่ยนแปลงนอกเหนือจากการซื้อหรือการเบิก: ของเสียหายที่พบในคลัง ของหมดอายุที่ถูก write-off ของที่พบคืนระหว่างตรวจชั้นวาง หรือบรรทัดส่วนเกิน/ขาดที่เหลือจาก [physical-count](/th/inventory/physical-count) ที่เสร็จสิ้นแล้ว `PhysicalCountService.submit()` สร้างแถว `tb_stock_in` (ส่วนเกิน) / `tb_stock_out` (ขาด) โดยตรง — ที่ `doc_status = completed` โดยไม่ตั้งค่า `adjustment_type_id` เลย (แถวที่มาจากการนับไม่มี reason code) — เป็นบันทึก audit ของผลต่างจากการนับ ส่วนที่ว่าการเขียนนี้ขับเคลื่อน cost layer ของ ledger แบบเดียวกับ Stock-In/Stock-Out ที่สร้างด้วยมือหรือไม่นั้น ยังไม่ได้รับการยืนยันในรอบนี้ และควรตรวจสอบซ้ำในรอบ resync ของโมดูล physical-count เอง
 
-ด้านการเงินสะท้อนแบบเดียวกัน Adjustment ที่ post แล้วทุกอันสร้าง journal entry: write-off (`OUT`) debit บัญชีค่าใช้จ่ายหรือการสูญเสียที่ map จาก reason code และ credit inventory ลดมูลค่าสต๊อกบน balance sheet; รายการ found-stock (`IN`) debit inventory และ credit บัญชีกำไร/การคืน Reason code กำหนดตามทิศทาง (`IN`, `OUT` หรือ `BOTH`) และมี GL mapping ของตัวเอง ดังนั้นเหตุการณ์ทางกายภาพเดียวกัน (เช่น write-off จากความเสียหาย vs. write-off จากการหมดอายุ) จะลงในบัญชีที่แตกต่างกันเพื่อการวิเคราะห์ต้นทุน การตรวจสอบสิ้นงวด reject adjustment ใด ๆ ที่ลงวันที่เข้างวดที่ปิดแล้ว เพื่อปกป้องการตีมูลค่าที่ lock ไว้
-
-ในเชิงปฏิบัติการ adjustments ยังเป็นจุดลงเชิงระเบียบของผลต่างที่ตรวจพบโดย **physical-count** (นับเต็ม) และ **spot-check** (การตรวจยืนยันบางส่วน) เมื่อผลต่างการนับได้รับการยืนยัน ระบบจะสร้างเอกสาร adjustment สำหรับบรรทัดผลต่างและจัดเส้นทางผ่าน flow การอนุมัติและ posting เดียวกับ adjustment ที่สร้างเอง เพื่อให้การแก้ไขสต๊อกทั้งหมดแชร์ audit trail เดียวกัน
+เนื่องจาก master ของ reason code (`tb_adjustment_type`) มีเพียง `code`, `name`, `type` (ทิศทาง), `description`, `is_active` — ไม่มีฟิลด์บัญชี GL ไม่มี flag บังคับแนบเอกสาร ไม่มี flag ตรวจสอบคุณภาพ — จึงไม่มีการเชื่อมต่อบัญชีในโมดูลนี้: การค้นหาทั่วทั้งทั้ง frontend และ backend `carmen-turborepo-backend-v2` ไม่พบการอ้างอิงถึง `journal`, `ledger` หรือ engine การลงบัญชี GL ใด ๆ ใน code path ของ stock-in/stock-out เลย ทุก adjustment เป็นการเคลื่อนไหวปริมาณ/มูลค่าสต๊อกล้วน ๆ ไม่สร้าง journal entry
 
 ## 3. แนวคิดสำคัญ
 
-- **Adjustment Type**: ทิศทางของการแก้ไข `IN` เพิ่มปริมาณ on-hand (write-on — ของพบใหม่, ส่วนเกินจากการนับ, ของที่คืนได้รับคืน) และ post เป็น stock movement แบบ `RECEIPT` `OUT` ลดปริมาณ on-hand (write-off — เสียหาย, หมดอายุ, ขโมย, ขาดจากการนับ) และ post แบบ `ISSUE` เก็บบน header เป็น `type: 'IN' | 'OUT'` แต่ละบรรทัดต้องสอดคล้องกับประเภทของ header
-- **Reason Code**: รหัสที่จำเป็นต้องระบุเหตุผล *ทำไม* adjustment กำลังเกิดขึ้น (เช่น เสียหาย, หมดอายุ, ขโมย, ผลต่างนับ, จัดประเภทใหม่) พ่วง `type: 'IN' | 'OUT' | 'BOTH'` เพื่อให้เฉพาะเหตุผลที่ valid ปรากฏสำหรับทิศทางที่เลือก พร้อม `requiresDocument`, `requiresQualityCheck` และ `glAccount` ที่กำหนดบัญชีค่าใช้จ่าย/กำไรที่ journal การ post จะลง Reason code เป็นบังคับ (`ADJ_CRT_004`) และตรวจสอบกับประเภท adjustment (`ADJ_VAL_006`)
-- **Cost Basis**: ต้นทุนต่อหน่วยที่ใช้กับแต่ละบรรทัดของ adjustment สำหรับ `OUT` ภายใต้ weighted-average costing บรรทัดใช้ต้นทุนเฉลี่ยปัจจุบัน; สำหรับ `OUT` ภายใต้ FIFO บรรทัดบริโภคต้นทุนจาก layer เก่าที่สุดก่อน สำหรับ `IN` ภายใต้ weighted-average การ post คำนวณค่าเฉลี่ยใหม่ — `New Average Cost = ((Old Qty × Old Cost) + (Adj Qty × Adj Cost)) / (Old Qty + Adj Qty)` (`ADJ_CALC_005`); ภายใต้ FIFO สร้าง cost layer ใหม่ ต้องระบุต้นทุนสำหรับทุกสินค้า (`ADJ_VAL_003`) และยอดต่อบรรทัด `Item Cost = Unit Cost × Quantity` (`ADJ_CALC_001`) ต้องเท่ากับ `totalCost` ของ header (`ADJ_VAL_005`)
-- **Lot Tracking**: สำหรับสินค้าที่ควบคุมด้วย lot adjustment ต้องอ้างอิงหมายเลข lot เจาะจง (`ADJ_CRT_007`) แต่ละบรรทัดถือ array ของ `Lot { lotNo, quantity, uom, expiryDate? }` สำหรับ `OUT` ปริมาณ lot ห้ามเกินยอดคงเหลือต่อ lot (`ADJ_VAL_004`); สำหรับ `IN` สามารถสร้าง lot ใหม่ได้ ประวัติ lot ถูกรักษาตลอด end-to-end เพื่อให้ write-off จากหมดอายุและเหตุการณ์เรียกคืนสามารถสาวกลับได้
-- **Approval Workflow / Status**: Adjustments เคลื่อนผ่าน `Draft` → `Posted` → `Void` (สามสถานะเดียวที่เก็บบน header) `Draft` คือสถานะทำงาน; adjustment แก้ไขได้ ยังไม่กระทบสต๊อกหรือ GL และเอกสารสามารถลบได้ `Posted` คือสถานะ active ปลายทาง — ยอดสต๊อกถูกอัปเดต, journal entry ถูกเขียน และเอกสารกลายเป็น immutable (`ADJ_PRC_007`) `Void` กลับรายการ adjustment ที่ post แล้ว แต่สร้างเป็นธุรกรรม *แยก* (`ADJ_PRC_008`) เพื่อให้การ post ต้นฉบับยังอยู่ใน audit trail การเปลี่ยนสถานะ ผู้ใช้ที่ทำ และ timestamp ถูก log ทั้งหมด
-- **Posting (ผลกระทบสต๊อก + GL)**: การ post คือเหตุการณ์เดียวที่เปลี่ยนแปลงโลก — สต๊อกไม่ถูกอัปเดตจนกว่าจะ post (`ADJ_PRC_001`) เมื่อ post ระบบจะ: (1) เขียน stock-movement record ต่อบรรทัด, (2) อัปเดต `InventoryStatus.QuantityOnHand`, `LastUnitCost` และ `TotalCost`, (3) สร้าง/อัปเดต FIFO layers หรือ `AverageCostTracking` ตาม costing method ของสินค้า, (4) สร้าง `JournalEntry` rows ที่ map จาก `glAccount` ของ reason code และ cost-centre ของบรรทัด และ (5) ตรวจสอบว่าวันที่อยู่ในงวดบัญชีที่เปิดอยู่ (`ADJ_CRT_010`, `ADJ_PRC_009`) การตรวจสอบสต๊อกเรียลไทม์ (`ADJ_PRC_010`) ป้องกันยอดติดลบ (`ADJ_VAL_001`)
+- **เอกสารสองสายคู่ขนาน จัดประเภทร่วมกันหนึ่งตัว** `tb_stock_in` (ขาเข้า) และ `tb_stock_out` (ขาออก) เป็น Prisma model อิสระต่อกันที่มีโครงสร้าง header/detail เหมือนกัน `tb_adjustment_type.type` (`enum_adjustment_type`: `stock_in` | `stock_out` | `eop_in` | `eop_out`) กำหนดว่า reason ตัวไหนใช้กับสายเอกสารไหน — `eop_in`/`eop_out` สงวนไว้สำหรับ engine ปิดงวด และไม่ปรากฏใน reason picker ของ Stock-In/Stock-Out ตัว picker กรองตามทิศทางฝั่ง client เท่านั้น; การตรวจสอบ header ฝั่ง backend ยืนยันเพียงว่าแถว `tb_adjustment_type` ที่อ้างอิงมีอยู่จริง แต่**ไม่**ตรวจซ้ำว่า `type` ตรงกับทิศทางของเอกสาร — การเรียก API โดยตรงจึงอาจแนบ reason ประเภท `stock_out` เข้ากับเอกสาร `tb_stock_in` ได้
+- **Reason ("Adjustment Type")** ฟิลด์ **Reason** ใน UI คือ foreign key `adjustment_type_id` ตัวเดียวกับที่บันทึกใน [01 — โมเดลข้อมูล](/th/inventory/inventory-adjustment/01-data-model) — ไม่มีแนวคิด "reason code" แยกต่างหากซ้อนอยู่ด้านบน แถว reason ถูกดูแลบนหน้าจอ master data แยกต่างหาก (`/config/adjustment-type`) ซึ่งอยู่นอกขอบเขตของโมดูลนี้
+- **การกรอกต้นทุนต่างกันตามทิศทาง** สำหรับ **Stock-In** ฟิลด์ `cost_per_unit` ให้ผู้ใช้แก้ไขได้ในแต่ละบรรทัด (เติมค่าเริ่มต้นจาก `useProductCostByLocationQty` ซึ่งเป็นต้นทุนเฉลี่ยปัจจุบันของตำแหน่งนั้น); ค่าที่ผู้ใช้ส่งจะถูก persist บน `tb_stock_in_detail` และส่งตรงไปยัง `executeAdjustmentIn` ของ ledger ซึ่งใช้สร้าง cost layer FIFO ใหม่ หรือคำนวณค่าเฉลี่ยถ่วงน้ำหนักทั้ง BU ใหม่ สำหรับ **Stock-Out** คอลัมน์ `cost_per_unit` ถูกซ่อนออกจาก grid รายการทั้งหมด — `create()` ของ backend ไม่เคยเขียน `cost_per_unit`/`total_cost` ลง `tb_stock_out_detail` เลย (ทั้งสองค่าคงเป็น `0` ตาม default ของ schema); ต้นทุนจริงถูกเลือกอัตโนมัติโดย ledger ในเวลาที่เขียน (FIFO: layer เก่าสุดก่อน; Average: ค่าเฉลี่ยปัจจุบันของ BU) โดยไม่ขึ้นกับค่าใดที่ client ส่งมา
+- **ไม่มี UI สำหรับเลือก lot** ทั้งหน้าจอ Stock-In และ Stock-Out ไม่มีฟิลด์เลขที่ lot วันหมดอายุ หรือตัวเลือก lot ใด ๆ ในฟอร์มเลย identity ของ lot ถูกสร้างขึ้นเชิงกลไกโดย ledger — lot ขาเข้าเป็น `ADI-YYYY-MM-NNNN`, lot การบริโภคขาออกเป็น `ADO-YYYY-MM-NNNN` — รูปแบบที่สร้างโดยระบบเดียวกับที่ใช้ในทุกโมดูลที่เขียน inventory-transaction
+- **ขอบเขตตำแหน่ง** ตัวเลือกตำแหน่ง (`LookupUserLocation`) กรองฝั่ง client ให้เหลือเฉพาะประเภทตำแหน่ง `INVENTORY_TYPE.INVENTORY` และ `INVENTORY_TYPE.CONSIGNMENT` การตรวจสอบ header ฝั่ง backend (`StockInLogic.validateAndEnrichHeader` / `StockOutLogic.validateAndEnrichHeader`) ยืนยันเพียงว่า `location_id` มีอยู่จริง — ไม่ตรวจซ้ำประเภทของตำแหน่ง — ข้อจำกัดนี้จึงบังคับใช้โดย UI ไม่ใช่ server
+- **วันที่ต้องอยู่ในงวด** ฟิลด์วันที่ถูกตรวจสอบฝั่ง client (Zod) เทียบกับช่วง `start_at`/`end_at` ของงวดปัจจุบันจาก `useProfile()` ไม่พบการตรวจสอบเทียบเท่าใน `StockInService.create()` / `update()` ฝั่ง backend ในรอบตรวจสอบนี้
+- **Optimistic concurrency** ทั้ง `doc_version` ของ header และของแต่ละบรรทัดถูกตรวจสอบตอน update — clause `where` ของ Prisma รวม `doc_version` ไว้ด้วย จึงทำให้การเขียนที่ล้าสมัย fail แทนที่จะเขียนทับการแก้ไขที่เกิดขึ้นพร้อมกันโดยเงียบ ๆ
 
 ## 4. บทบาทและ Persona
 
-| Role | ความรับผิดชอบ |
+โค้ดไม่ได้แยก Store Keeper ออกจาก Inventory Controller สำหรับโมดูลนี้: nav entry, หน้าจอสร้าง/แก้ไข และหน้ารายการทั้งหมด gate ด้วยสิทธิ์ทั่วไปตัวเดียว `inventory_management.view` และไม่มี workflow stage, approval queue หรือการกำหนด `enum_stage_role` ใด ๆ ใน `stock-in.service.ts` / `stock-out.service.ts` เลย wiki ยังคงหน้า persona สองหน้าไว้เพื่อความอ่านง่าย แต่ทั้งคู่บรรยายหน้าจอเดียวกันที่ไม่มีความแตกต่าง:
+
+| Role | ขอบเขตตามจริง |
 |------|----------------|
-| Store Keeper / Warehouse Staff | ระบุความไม่ตรงในพื้นที่ ริเริ่ม adjustment ใน `Draft` แนบหลักฐานประกอบ (รูปถ่าย รายงานความเสียหาย ป้ายหมดอายุ) และระบุเหตุผล |
-| Inventory Controller / Inventory Manager | review adjustment ที่ส่งเข้ามาเพื่อความถูกต้องและสมเหตุสมผล ติดตามรูปแบบผลต่างตาม reason และตำแหน่ง อนุมัติหรือปฏิเสธ และ post เอกสารให้มีผลกระทบต่อสต๊อกและ GL |
-| Finance Team | ตรวจสอบผลกระทบทางต้นทุนและ GL account mapping ตาม reason code, กระทบยอด sub-ledger inventory กับ GL และเซ็นรับรองกิจกรรม adjustment ณ ปิดงวด |
-| Department Manager | review adjustments ที่กระทบ cost-centre ของแผนก สืบสวนรูปแบบผิดปกติหรือผลต่างขนาดใหญ่ และผลักดันการเปลี่ยนแปลงเชิงกระบวนการแก้ไข |
-| Auditor | ตรวจสอบ adjustment trail end-to-end — reason codes, เอกสารแนบ, ลายเซ็นอนุมัติ, journal entries และห่วง void — สำหรับ compliance และ segregation-of-duties |
-| System Administrator | บำรุงรักษา master ของ reason code (codes, type, GL mapping, document-required flag) กำหนดสิทธิ์ผู้ใช้และเกณฑ์การอนุมัติ และจัดการการตั้งค่า integration |
+| Store Keeper / ผู้กรอกเอกสาร | เปิด **Add Stock-In** / **Add Stock-Out** เลือก reason + ตำแหน่ง กรอกบรรทัด กด Save หรือ Submit — ปุ่มไหนก็ post เข้า ledger ทันที |
+| Inventory Controller | หน้าจอสร้างเดียวกัน บวกหน้าจอย้อนหลังแบบอ่านอย่างเดียว (รายการ, รายละเอียด, พิมพ์) — เนื่องจาก Edit/Void เข้าไม่ถึงใน UI สำหรับเอกสารที่ persist แล้ว (§ 1) การ "review" ประจำวันในที่นี้จึงหมายถึงการอ่านหน้ารายการ/ผลพิมพ์ ไม่ใช่การอนุมัติอะไรใน app |
+
+Persona Finance แบบเจาะจง, workbench การตั้งค่าของ System Administrator และ scope อ่านของ Auditor เคยถูกบันทึกไว้สำหรับโมดูลนี้ — ไม่พบ route, component, permission key หรือ backend endpoint ที่ตรงกันเลยสำหรับทั้งสามบทบาท (`enum_stage_role` = `{create, approve, purchase, issue, view_only}` ไม่มีสมาชิก `finance` และไม่มีการเรียก workflow orchestrator ใด ๆ ใน service code ของโมดูลนี้) ดู [03 — User Flow — Finance](/th/inventory/inventory-adjustment/03-user-flow-finance) และ [03 — User Flow — Audit / Config](/th/inventory/inventory-adjustment/03-user-flow-audit-config) สำหรับประกาศแก้ไข
 
 ## 5. โมดูลที่เกี่ยวข้อง
 
 **กระแสข้ามโมดูล:**
-- [inventory](/th/inventory/inventory) — adjustments แก้ไขยอดสต๊อกโดยตรง
-- [costing](/th/inventory/costing) — adjustments ต้องการ cost basis (ใส่ด้วยมือหรือจาก costing engine)
-- [physical-count](/th/inventory/physical-count) — ผลต่างการนับกลายเป็นเอกสาร adjustment
-- [spot-check](/th/inventory/spot-check) — ผลต่างจากการนับบางส่วนกลายเป็นเอกสาร adjustment
+- [inventory](/th/inventory/inventory) — ทุกการเขียน stock-in/stock-out เรียก `InventoryTransactionService` ตัวเดียวกับที่ GRN, SR และ period-end ใช้
+- [physical-count](/th/inventory/physical-count) — เมื่อการนับเสร็จสิ้น สร้างแถว `tb_stock_in` (ส่วนเกิน) / `tb_stock_out` (ขาด) โดยตรงที่สถานะ `completed` โดยไม่มี reason code — ตรวจสอบข้อกล่าวอ้างเรื่องการเชื่อม ledger ซ้ำในรอบของโมดูลนั้นเอง
+- [costing](/th/inventory/costing) — การสร้าง FIFO layer บน Stock-In, การบริโภค FIFO / คำนวณค่าเฉลี่ยถ่วงน้ำหนักใหม่บน Stock-Out
 
 **การกำหนดค่า master:**
-- [master-data/adjustment-type](/th/inventory/master-data/adjustment-type) — master ของ reason code พร้อมทิศทาง (IN/OUT/BOTH) และ GL mapping ต่อเหตุผล
-- [master-data/unit](/th/inventory/master-data/unit) — หน่วยนับสำหรับปริมาณแต่ละบรรทัด
-- [master-data/location](/th/inventory/master-data/location) — ตำแหน่งต้นทางที่ adjustment ขยับยอด
-- [system-config/workflow](/th/inventory/system-config/workflow) — นิยาม workflow การอนุมัติสำหรับการอนุญาต adjustment
-- [system-config/period](/th/inventory/system-config/period) — gate งวดบัญชี; adjustments ที่ลงวันที่ในงวดที่ปิดถูก reject
-- [access-control/user-location](/th/inventory/access-control/user-location) — จำกัดตำแหน่งที่ผู้ใช้สามารถปรับได้
-- [reporting-audit/activity](/th/inventory/reporting-audit/activity) — log การเปลี่ยนสถานะ adjustment สำหรับ audit
-- [reporting-audit/attachment](/th/inventory/reporting-audit/attachment) — รูปถ่ายที่จำเป็น / รายงานความเสียหาย / หลักฐาน เก็บกับ adjustment
+- [master-data/adjustment-type](/th/inventory/master-data/adjustment-type) — master ของ reason code (`code`, `name`, ทิศทาง, `is_active`) ที่ `adjustment_type_id` อ้างอิง
+- [master-data/location](/th/inventory/master-data/location) — ตำแหน่งที่ adjustment ขยับยอด
 
 ## 6. แหล่งอ้างอิง
 
 - Concepts: `../carmen/docs/inventory-adjustment/`
-- Frontend: `../carmen-inventory-frontend-react/`
-- Backend: `../carmen-turborepo-backend-v2/`
-- API contracts: `../carmen-turborepo-backend-bruno/`
-- E2E tests: `../carmen-inventory-frontend-e2e/`
+- Frontend: `../carmen-inventory-frontend-react/routes/inventory-management/inventory-adjustment/`
+- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/stock-in/`, `.../stock-out/`, `.../inventory-transaction/`
+- API contracts: ไม่มี collection `../carmen-turborepo-backend-bruno/` สำหรับ `stock-in`/`stock-out`/`inventory-adjustment` — ตรวจสอบโดยตรงกับ backend controller แทน
+- E2E tests: ไม่มี spec `inventory-adjustment` เฉพาะใน `../carmen-inventory-frontend-e2e/`; `031-adjustment-type.spec.ts` ครอบคลุมเฉพาะหน้าจอ master data ของ reason code
 
 ## 7. หน้าในโมดูลนี้
 
 - [01 — โมเดลข้อมูล](/th/inventory/inventory-adjustment/01-data-model) — เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum (อิงจาก Prisma)
 - [01a — โมเดลข้อมูล — ตารางคอมเมนต์](/th/inventory/inventory-adjustment/01a-data-model-comments) — ตารางคอมเมนต์ / ไฟล์แนบระดับเอกสารและระดับบรรทัด พร้อมการแยก user/system ผ่าน `enum_comment_type`
-- [02 — กติกาทางธุรกิจ](/th/inventory/inventory-adjustment/02-business-rules) — การตรวจสอบ การคำนวณ การกำหนดสิทธิ์ การ posting และกฎข้ามโมดูล
+- [02 — กติกาทางธุรกิจ](/th/inventory/inventory-adjustment/02-business-rules) — การตรวจสอบ การคำนวณ และการ posting
 - [03 — User Flow](/th/inventory/inventory-adjustment/03-user-flow) — วงจรชีวิตเอกสาร พร้อมสารบัญ persona
   - [Store Keeper](/th/inventory/inventory-adjustment/03-user-flow-store-keeper)
   - [Inventory Controller](/th/inventory/inventory-adjustment/03-user-flow-inventory-controller)
@@ -92,3 +84,4 @@ Adjustments เป็นช่องทางเดียวที่ปล่�
   - [Inventory Controller](/th/inventory/inventory-adjustment/04-test-scenarios-inventory-controller)
   - [Finance](/th/inventory/inventory-adjustment/04-test-scenarios-finance)
   - [Audit / Config](/th/inventory/inventory-adjustment/04-test-scenarios-audit-config)
+- [Wastage Reporting](/th/inventory/inventory-adjustment/wastage-reporting) — หน้าจอแยกที่ขับเคลื่อนด้วย mock data เท่านั้น ภายใต้ Store Operations; อ้างอิงไขว้ไว้ที่นี่ ไม่ใช่ variant ของ Stock-Out

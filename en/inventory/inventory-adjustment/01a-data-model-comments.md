@@ -2,7 +2,7 @@
 title: Inventory Adjustment — Data Model — Comment Tables
 description: Document-level and line-level comment / attachment tables for the Inventory Adjustment module — message text, attachments JSON, and the user/system comment-type enum.
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-07-15T17:02:22.000Z
 tags: inventory-adjustment, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -12,7 +12,7 @@ dateCreated: 2026-05-20T00:00:00.000Z
 
 ## 1. At a Glance
 
-The Inventory Adjustment module persists user-authored and system-generated notes plus file attachments on dedicated `*_comment` tables, separate from the lifecycle-bearing header / detail tables documented in [01 — Data Model](/en/inventory/inventory-adjustment/01-data-model). Every comment row carries a free-text `message`, an `attachments` JSON array of S3-token records (`{originalName, fileToken, contentType}`), and a `type` discriminator (`enum_comment_type`) that distinguishes user-authored entries from system-generated transition notes. Document-level comment tables anchor to the document header (`tb_stock_in_comment`, `tb_stock_out_comment`); detail-level comment tables anchor to a specific line (`tb_stock_in_detail_comment`, `tb_stock_out_detail_comment`), enabling per-line evidence such as photos of the specific item's damage or vendor-RMA references.
+The Inventory Adjustment module persists user-authored and system-generated notes plus file attachments on dedicated `*_comment` tables, separate from the header / detail tables documented in [01 — Data Model](/en/inventory/inventory-adjustment/01-data-model). Every comment row carries a free-text `message`, an `attachments` JSON array of S3-token records (`{originalName, fileToken, contentType}`), and a `type` discriminator (`enum_comment_type`) that distinguishes user-authored entries from system-generated ones. Document-level comment tables anchor to the document header (`tb_stock_in_comment`, `tb_stock_out_comment`); detail-level comment tables anchor to a specific line (`tb_stock_in_detail_comment`, `tb_stock_out_detail_comment`), enabling per-line evidence such as photos of the specific item's damage. Attachments are freely usable but purely optional — no validation rule in this module requires a comment or attachment on any document or reason code (see [02 — Business Rules](/en/inventory/inventory-adjustment/02-business-rules)).
 
 ## 2. Shared Shape
 
@@ -82,8 +82,7 @@ Mirror of `tb_stock_in_comment` / `tb_stock_in_detail_comment` for the outbound 
 
 ## 4. Cross-References
 
-- Sibling: [01 — Data Model](/en/inventory/inventory-adjustment/01-data-model) — header and detail tables, the `tb_adjustment_type` reason classifier, enum definitions (`enum_adjustment_type`, `enum_doc_status`, `enum_last_action`, `enum_comment_type`), ERD, and the divergence-from-design catalogue.
-- Sibling: [02 — Business Rules](/en/inventory/inventory-adjustment/02-business-rules) — `ADJ_VAL_010` consumes `tb_stock_in_comment.attachments` / `tb_stock_out_comment.attachments` to enforce the supporting-document requirement when an adjustment type's `info.requiresDocument = true`.
-- Upstream: [03 — User Flow: Store Keeper](/en/inventory/inventory-adjustment/03-user-flow-store-keeper) — documents drag-and-drop attachment of evidence onto comment rows during adjustment creation.
-- Upstream: [04 — Test Scenarios: Inventory Controller](/en/inventory/inventory-adjustment/04-test-scenarios-inventory-controller) — IC-EDGE-08 covers comment-based escalation flagging by Department Manager.
+- Sibling: [01 — Data Model](/en/inventory/inventory-adjustment/01-data-model) — header and detail tables, the `tb_adjustment_type` reason classifier, enum definitions (`enum_adjustment_type`, `enum_doc_status`, `enum_last_action`, `enum_comment_type`), and the notes-on-carmen/docs catalogue.
+- Sibling: [02 — Business Rules](/en/inventory/inventory-adjustment/02-business-rules) — the module's real validation rules; no rule ties a comment/attachment to a required-document flag (see § 1 above).
+- Upstream: [03 — User Flow](/en/inventory/inventory-adjustment/03-user-flow) — document lifecycle; comments are optional evidence, not a submit gate.
 - Upstream: [Inventory Adjustment Module Overview](/en/inventory/inventory-adjustment) — module landing page.
