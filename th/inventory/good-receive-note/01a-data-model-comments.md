@@ -2,7 +2,7 @@
 title: ใบรับสินค้า — โมเดลข้อมูล — ตารางคอมเมนต์
 description: ตารางคอมเมนต์ / ไฟล์แนบระดับเอกสารและระดับบรรทัดสำหรับโมดูลใบรับสินค้า — ข้อความ, JSON ไฟล์แนบ, และ enum ประเภทคอมเมนต์ (user/system)
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-07-15T00:00:00.000Z
 tags: good-receive-note, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -58,7 +58,7 @@ updated_by_id       uuid / FK to tb_user
 
 ### 3.2 tb_good_received_note_detail_comment
 
-คู่ขนานระดับบรรทัดของ `tb_good_received_note_comment` จับ comment และ system event ที่แนบกับบรรทัด GRN เดียว — ปกติใช้ในระหว่างการตรวจสอบเพื่อบันทึก note การรับ/ปฏิเสธ และในช่วง commit เพื่อ log การตัดสินใจ posting ต่อบรรทัด
+คู่ขนานระดับบรรทัดของ `tb_good_received_note_comment` จับ comment และ system event ที่แนบกับบรรทัด GRN เดียว **แก้ไขในรอบนี้:** โมดูลนี้ไม่มีประตู "การตรวจสอบ" (inspection) หรือฟิลด์ `accepted_qty` แบบเป็นทางการ (ดู [01-data-model.md](/th/inventory/good-receive-note/01-data-model) §1 และ §5) — comment แบบ free-text เป็นกลไกเดียวที่มีสำหรับบันทึก note ความคลาดเคลื่อนในการรับของบนบรรทัด ให้ถือว่า "ใช้ในระหว่างการตรวจสอบเพื่อบันทึก acceptance/rejection" เป็นเพียงการใช้งาน free-text แบบหนึ่ง ไม่ใช่ขั้นตอน workflow ที่มีโครงสร้าง
 
 | Field | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | ----------- |
