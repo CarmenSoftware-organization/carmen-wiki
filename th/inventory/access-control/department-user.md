@@ -2,7 +2,7 @@
 title: ผู้ใช้ระดับแผนก (Department User)
 description: Pivot การเป็นสมาชิกของผู้ใช้กับแผนก — ประกาศว่าผู้ใช้คนใดอยู่ในแผนกใด และระบุ Head of Department (HOD) ที่ขับเคลื่อน approval routing บน PR และ SR
 published: true
-date: 2026-07-15T23:46:09.000Z
+date: 2026-07-16T01:26:05.000Z
 tags: access-control, department-user, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -68,7 +68,7 @@ Flag HOD ขับเคลื่อน logic workflow ปลายน้ำ: �
 | `doc_version` | `Int` | No | Default `0` Token สำหรับ optimistic concurrency |
 | Audit columns | — | Yes | `created_at`, `created_by_id`, `updated_at`, `updated_by_id`, `deleted_at`, `deleted_by_id` |
 
-**Constraints:** `@@unique([department_id, user_id])` map `department_user_u` FK `tb_department_user.department_id → tb_department.id` `onDelete: NoAction, onUpdate: NoAction` Index บน `user_id`, `department_id` และ partial index บน `(department_id, is_hod) WHERE deleted_at IS NULL AND is_hod = true`
+**Constraints:** `@@unique([department_id, user_id, deleted_at])` map `department_user_u` FK `tb_department_user.department_id → tb_department.id` `onDelete: NoAction, onUpdate: NoAction` Index แบบธรรมดาสามตัว: `(department_id, user_id)`, `(user_id)`, `(department_id)` — **ไม่มี** index ที่เกี่ยวกับ `is_hod` เลยไม่ว่าจะเป็น partial หรือแบบใด ซึ่งสอดคล้องกับข้อค้นพบในกรณีพิเศษด้านบนว่าไม่มีอะไรใน schema บังคับว่าแต่ละแผนกมี HOD ได้มากที่สุดหนึ่งคน
 
 ## 6. กฎทางธุรกิจ
 

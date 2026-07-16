@@ -2,7 +2,7 @@
 title: Department User
 description: The user↔department membership pivot — declares which users belong to which departments, and marks the Head of Department (HOD) who drives approval routing on PRs and SRs.
 published: true
-date: 2026-07-15T23:46:09.000Z
+date: 2026-07-16T01:26:05.000Z
 tags: access-control, department-user, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -68,7 +68,7 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 | `doc_version` | `Int` | No | Default `0`. Optimistic concurrency token. |
 | Audit columns | — | Yes | `created_at`, `created_by_id`, `updated_at`, `updated_by_id`, `deleted_at`, `deleted_by_id`. |
 
-**Constraints:** `@@unique([department_id, user_id])` map `department_user_u`. FK `tb_department_user.department_id → tb_department.id` `onDelete: NoAction, onUpdate: NoAction`. Indexes on `user_id`, `department_id`, and a partial index on `(department_id, is_hod) WHERE deleted_at IS NULL AND is_hod = true`.
+**Constraints:** `@@unique([department_id, user_id, deleted_at])` map `department_user_u`. FK `tb_department_user.department_id → tb_department.id` `onDelete: NoAction, onUpdate: NoAction`. Three plain indexes: `(department_id, user_id)`, `(user_id)`, `(department_id)` — **no** `is_hod`-related index of any kind, partial or otherwise, which is consistent with the Edge Cases finding above that nothing in the schema enforces at most one HOD per department.
 
 ## 6. Business Rules
 
