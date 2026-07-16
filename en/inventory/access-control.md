@@ -2,7 +2,7 @@
 title: Access Control
 description: Users, roles, permissions, and multi-business-unit access.
 published: true
-date: 2026-06-09T16:28:56.000Z
+date: 2026-07-15T23:46:09.000Z
 tags: access-control, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -53,7 +53,7 @@ Sysadmin owns the configuration end-to-end. Security Officer audits credentials,
 
 ## 5. References
 
-- **Prisma platform:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_user`, `tb_user_profile`, `tb_user_login_session`, `tb_application_role`, `tb_application_role_tb_permission`, `tb_user_tb_application_role`, `tb_permission`, `tb_user_tb_business_unit`, `tb_temp_bu_user`, and the supporting `enum_platform_role`, `enum_token_type`, `enum_user_business_unit_role`.
+- **Prisma platform:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_user`, `tb_user_profile`, `tb_user_login_session`, `tb_application_role`, `tb_application_role_tb_permission`, `tb_user_tb_application_role`, `tb_permission`, `tb_user_tb_business_unit`, `tb_temp_bu_user` (schema-only, unused — see [access-control/business-unit-user](/en/inventory/access-control/business-unit-user)), and the supporting `enum_token_type`, `enum_user_business_unit_role`. There is no `enum_platform_role` — it was dropped 2026-06-10 in favor of the relational `tb_platform_role` system (Carmen Platform admin scope; see [access-control/user](/en/inventory/access-control/user) Edge Cases).
 - **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_user_location`.
 - **carmen/docs:** `../carmen/docs/workflow-permissions-system.md` — describes how workflow-stage role types (requester / purchaser / approver / reviewer) layer on top of the application-role permission grants documented here.
 - **Design spec:** `.specs/2026-05-16-master-config-design.md`.
