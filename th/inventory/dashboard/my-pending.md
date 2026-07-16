@@ -2,7 +2,7 @@
 title: Widget My Pending แดชบอร์ด (My Pending Dashboard Widget)
 description: "ถูกลบแล้ว เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น — ไม่เคยถูก render บน /dashboard จริง: widget นับจำนวนเอกสาร pending ส่วนตัวที่เสนอไว้ แสดงจำนวนร่างหรือเอกสารที่อยู่ระหว่างดำเนินการที่รอการทำงานของผู้ใช้ที่ล็อกอิน ครอบคลุม PR, PO และ SR"
 published: true
-date: 2026-07-16T01:35:43.000Z
+date: 2026-07-16T02:01:42.000Z
 tags: dashboard, my-pending, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -74,7 +74,7 @@ Pending หมายถึงเอกสารที่ยังไม่ถึ
 
 ทั้งสาม hook ใช้ `CACHE_DYNAMIC` (staleTime 1 นาที) path endpoint ลงทะเบียนใน `constant/api-endpoints.ts`
 
-หมายเหตุ: path endpoint เดียวกันนี้ใช้ใน sidebar badge count — hook เดียวกันถูก reuse ข้าม widget และ sidebar โดยไม่มีการ fetch แยก
+~~หมายเหตุ: path endpoint เดียวกันนี้ใช้ใน sidebar badge count — hook เดียวกันถูก reuse ข้าม widget และ sidebar โดยไม่มีการ fetch แยก~~ **ขีดฆ่าเมื่อ 2026-07-16 — เท็จ ขัดแย้งกับ callout สถานะการ implement ด้านบน** การค้นหาทั่วทั้ง repo ที่พบว่า `useMyPendingPrCount`/`useMyPendingPoCount`/`useMyPendingSrCount` ไม่มี call site เลยนั้นครอบคลุม sidebar ด้วย — ไม่มี sidebar badge (หรือที่ใดเลย) เรียก hook หรือ endpoint เหล่านี้ ประโยคนี้อธิบาย design intent จากหน้า mock-era เดิม ไม่ใช่ข้อเท็จจริงที่สังเกตได้
 
 ## 6. จังหวะการ Refresh
 

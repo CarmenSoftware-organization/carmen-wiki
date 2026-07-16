@@ -2,7 +2,7 @@
 title: My Pending Dashboard Widget
 description: "REMOVED, historical reference only — never actually rendered on /dashboard: a proposed personal pending-count widget showing the number of draft or in-progress documents awaiting the signed-in user's action across PR, PO, and SR."
 published: true
-date: 2026-07-16T01:35:43.000Z
+date: 2026-07-16T02:01:42.000Z
 tags: dashboard, my-pending, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -74,7 +74,7 @@ Pending means the document exists and has not yet reached a terminal state (rece
 
 All three hooks use `CACHE_DYNAMIC` (staleTime 1 min). Endpoint paths are registered in `constant/api-endpoints.ts`.
 
-Note: these same endpoint paths are used in the sidebar badge counts — the same hooks are reused across widgets and sidebar without separate fetches.
+~~Note: these same endpoint paths are used in the sidebar badge counts — the same hooks are reused across widgets and sidebar without separate fetches.~~ **Struck 2026-07-16 — false, contradicts the Implementation status callout above.** The repo-wide search that found zero call sites for `useMyPendingPrCount`/`useMyPendingPoCount`/`useMyPendingSrCount` covered the sidebar too; no sidebar badge (or anything else) calls these hooks or endpoints. This sentence described a design intent from the original mock-era page, not an observed fact.
 
 ## 6. Refresh Cadence
 
