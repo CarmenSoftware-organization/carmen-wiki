@@ -1,8 +1,8 @@
 ---
 title: แดชบอร์ดคลังสินค้า (Inventory Dashboard)
-description: ห้องนักบินของฝ่ายปฏิบัติการคลังสินค้า — pipeline สถานะ, ตารางสต๊อกเคลื่อนไหวช้า / เติมสต๊อก / PST กรองตาม location, มูลค่าตาม material group, การแจ้งเตือนของหมดอายุ และกราฟการบริโภคตาม location และหมวด
+description: "ถูกลบแล้วเมื่อ 2026-06-27 เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น: ห้องนักบินของฝ่ายปฏิบัติการคลังสินค้า — pipeline สถานะ, ตารางสต๊อกเคลื่อนไหวช้า / เติมสต๊อก / PST กรองตาม location, มูลค่าตาม material group, การแจ้งเตือนของหมดอายุ และกราฟการบริโภคตาม location และหมวด"
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T01:35:43.000Z
 tags: dashboard, inventory, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,11 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # แดชบอร์ดคลังสินค้า (Inventory Dashboard)
 
 > **At a Glance**
-> **Route:** `/dashboard/inventory` &nbsp;·&nbsp; **สำหรับ:** Inventory Controller &nbsp;·&nbsp; Store Manager &nbsp;·&nbsp; Finance &nbsp;·&nbsp; QA &nbsp;·&nbsp; **สถานะ:** **ยังเป็น mock data ในปัจจุบัน**; การ wire จริงรอ
+> **Route:** ไม่มี — `/dashboard/inventory` ไม่เคยมีอยู่จริงในฐานะ route &nbsp;·&nbsp; **สถานะ:** **ถูกลบแล้วเมื่อ 2026-06-27** — เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น component นี้ถูกลบทิ้งในฐานะ dead code และไม่เคยอยู่หลัง router entry ใดๆ
+
+## สถานะการ implement (ตรวจสอบเมื่อ 2026-07-16)
+
+หน้านี้ document `dashboard-inventory.tsx` (เดิมคือ `routes/dashboard/_components/dashboard-inventory.tsx`) และ fixture `mock/inventory.ts` ของมัน `/dashboard/inventory` ไม่เคยมีอยู่ใน `routes/router.tsx` — sidebar entry ของ Dashboard resolve ไปยัง component เดียวเท่านั้นเสมอมา คือหน้า [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) ในปัจจุบัน ไฟล์ demo นี้ถูกลบพร้อมไฟล์พี่น้องอีก 7 ไฟล์ใน commit `03891e3d` ("refactor(dashboard): convert to idiomatic structure, drop dead demo code", `carmen-inventory-frontend-react`, 2026-06-27) ซึ่ง commit message ระบุว่ามันและ mock fixture ของมัน "no importers anywhere" เนื้อหาด้านล่างทั้งหมดอธิบายหน้าจอ demo ที่ถูกลบและไม่เคยมี route จริงนี้ — เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น ถือว่าทุกข้อความ "ยังเป็น mock data ในปัจจุบัน", "เมื่อ live" และการอ้าง route ในส่วนที่เหลือของหน้านี้เป็นโมฆะ — จะไม่มีวัน live ภายใต้หน้านี้
 
 ![แดชบอร์ดคลังสินค้า (Inventory Dashboard) screen](/screenshots/dashboard/inventory.png)
 
@@ -94,7 +98,7 @@ mock แบบ static ในปัจจุบัน เมื่อ wire แล
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Page shell:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-inventory.tsx`
-- **Composition:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-inventory.tsx`
-- **Mock data:** `../carmen-inventory-frontend-react/routes/dashboard/mock/inventory.ts` (รวม `INVENTORY_LOCATIONS`)
-- **i18n:** `messages/en.json` → `dashboard.inventory.title` = "Inventory Dashboard"
+- **Page shell / composition (ถูกลบเมื่อ 2026-06-27):** `routes/dashboard/_components/dashboard-inventory.tsx` ใน `../carmen-inventory-frontend-react`
+- **Mock data (ถูกลบเมื่อ 2026-06-27):** `routes/dashboard/mock/inventory.ts` ใน `../carmen-inventory-frontend-react` (รวม `INVENTORY_LOCATIONS`)
+- **Commit ที่ลบ:** `03891e3d` — "refactor(dashboard): convert to idiomatic structure, drop dead demo code"
+- **i18n key ที่ยังอยู่แต่ไม่ถูกใช้:** `messages/en.json` → `dashboard.inventory.title` = "Inventory Dashboard"

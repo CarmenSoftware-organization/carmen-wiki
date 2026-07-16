@@ -1,8 +1,8 @@
 ---
 title: แดชบอร์ดใบสั่งซื้อ (PO Dashboard)
-description: tile สรุปใบสั่งซื้อ — pipeline หก stage, PR ค้างและการส่งของล่าช้า, มาตรวัด on-time / completeness, ค่าใช้จ่ายตามหมวด, top vendor และการ flag variance รับเกิน
+description: "ถูกลบแล้วเมื่อ 2026-06-27 เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น: tile สรุปใบสั่งซื้อ — pipeline หก stage, PR ค้างและการส่งของล่าช้า, มาตรวัด on-time / completeness, ค่าใช้จ่ายตามหมวด, top vendor และการ flag variance รับเกิน"
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T01:35:43.000Z
 tags: dashboard, purchase-order, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,11 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # แดชบอร์ดใบสั่งซื้อ (PO Dashboard)
 
 > **At a Glance**
-> **Route:** `/dashboard/po` &nbsp;·&nbsp; **สำหรับ:** Purchaser &nbsp;·&nbsp; Procurement Manager &nbsp;·&nbsp; Receiver &nbsp;·&nbsp; **สถานะ:** **ยังเป็น mock data ในปัจจุบัน**; การ wire จริงรอ
+> **Route:** ไม่มี — `/dashboard/po` ไม่เคยมีอยู่จริงในฐานะ route &nbsp;·&nbsp; **สถานะ:** **ถูกลบแล้วเมื่อ 2026-06-27** — เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น component นี้ถูกลบทิ้งในฐานะ dead code และไม่เคยอยู่หลัง router entry ใดๆ
+
+## สถานะการ implement (ตรวจสอบเมื่อ 2026-07-16)
+
+หน้านี้ document `dashboard-po.tsx` (เดิมคือ `routes/dashboard/_components/dashboard-po.tsx`) และ fixture `mock/po.ts` ของมัน `/dashboard/po` ไม่เคยมีอยู่ใน `routes/router.tsx` — sidebar entry ของ Dashboard resolve ไปยัง component เดียวเท่านั้นเสมอมา คือหน้า [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) ในปัจจุบัน ไฟล์ demo นี้ถูกลบพร้อมไฟล์พี่น้องอีก 7 ไฟล์ใน commit `03891e3d` ("refactor(dashboard): convert to idiomatic structure, drop dead demo code", `carmen-inventory-frontend-react`, 2026-06-27) ซึ่ง commit message ระบุว่ามันและ mock fixture ของมัน "no importers anywhere" เนื้อหาด้านล่างทั้งหมดอธิบายหน้าจอ demo ที่ถูกลบและไม่เคยมี route จริงนี้ — เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น ถือว่าทุกข้อความ "ยังเป็น mock data ในปัจจุบัน", "เมื่อ live" และการอ้าง route ในส่วนที่เหลือของหน้านี้เป็นโมฆะ — จะไม่มีวัน live ภายใต้หน้านี้
 
 ![แดชบอร์ดใบสั่งซื้อ (PO Dashboard) screen](/screenshots/dashboard/po.png)
 
@@ -92,7 +96,7 @@ mock แบบ static ในปัจจุบัน wire จริงรับ 
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Page shell:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-po.tsx`
-- **Composition:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-po.tsx`
-- **Mock data:** `../carmen-inventory-frontend-react/routes/dashboard/mock/po.ts`
-- **i18n:** `messages/en.json` → `dashboard.po.title` = "Purchase Order Dashboard"
+- **Page shell / composition (ถูกลบเมื่อ 2026-06-27):** `routes/dashboard/_components/dashboard-po.tsx` ใน `../carmen-inventory-frontend-react`
+- **Mock data (ถูกลบเมื่อ 2026-06-27):** `routes/dashboard/mock/po.ts` ใน `../carmen-inventory-frontend-react`
+- **Commit ที่ลบ:** `03891e3d` — "refactor(dashboard): convert to idiomatic structure, drop dead demo code"
+- **i18n key ที่ยังอยู่แต่ไม่ถูกใช้:** `messages/en.json` → `dashboard.po.title` = "Purchase Order Dashboard"

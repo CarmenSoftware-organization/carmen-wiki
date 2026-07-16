@@ -1,8 +1,8 @@
 ---
 title: แดชบอร์ดใบขอซื้อ (PR Dashboard)
-description: tile สรุปใบขอซื้อ — pipeline ตาม stage, รายการที่ถูก send-back/reject, ค่าใช้จ่ายส่วนตัวเทียบกับแผนก และคิวงานของผู้อนุมัติ
+description: "ถูกลบแล้วเมื่อ 2026-06-27 เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น: tile สรุปใบขอซื้อ — pipeline ตาม stage, รายการที่ถูก send-back/reject, ค่าใช้จ่ายส่วนตัวเทียบกับแผนก และคิวงานของผู้อนุมัติ"
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T01:35:43.000Z
 tags: dashboard, purchase-request, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,11 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # แดชบอร์ดใบขอซื้อ (PR Dashboard)
 
 > **At a Glance**
-> **Route:** `/dashboard/pr` &nbsp;·&nbsp; **สำหรับ:** Requester &nbsp;·&nbsp; HOD / Approver &nbsp;·&nbsp; Procurement &nbsp;·&nbsp; **สถานะ:** **ยังเป็น mock data ในปัจจุบัน**; live hook ถูกนิยามแล้วแต่ยังไม่ mount &nbsp;·&nbsp; **ขอบเขต:** ส่วนบุคคล — PR ของผู้ใช้ที่ลงชื่อเข้าใช้
+> **Route:** ไม่มี — `/dashboard/pr` ไม่เคยมีอยู่จริงในฐานะ route &nbsp;·&nbsp; **สถานะ:** **ถูกลบแล้วเมื่อ 2026-06-27** — เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น component นี้ถูกลบทิ้งในฐานะ dead code และไม่เคยอยู่หลัง router entry ใดๆ
+
+## สถานะการ implement (ตรวจสอบเมื่อ 2026-07-16)
+
+หน้านี้ document `dashboard-pr.tsx` (เดิมคือ `routes/dashboard/_components/dashboard-pr.tsx`) และ fixture `mock/pr.ts` ของมัน `/dashboard/pr` ไม่เคยมีอยู่ใน `routes/router.tsx` — sidebar entry ของ Dashboard resolve ไปยัง component เดียวเท่านั้นเสมอมา คือหน้า [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) ในปัจจุบัน ไฟล์ demo นี้ถูกลบพร้อมไฟล์พี่น้องอีก 7 ไฟล์ใน commit `03891e3d` ("refactor(dashboard): convert to idiomatic structure, drop dead demo code", `carmen-inventory-frontend-react`, 2026-06-27) ซึ่ง commit message ระบุว่ามันและ mock fixture ของมัน "no importers anywhere" เนื้อหาด้านล่างทั้งหมดอธิบายหน้าจอ demo ที่ถูกลบและไม่เคยมี route จริงนี้ — เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น ถือว่าทุกข้อความ "ยังเป็น mock data ในปัจจุบัน", "เมื่อ live" และการอ้าง route ในส่วนที่เหลือของหน้านี้เป็นโมฆะ — จะไม่มีวัน live ภายใต้หน้านี้
 
 ![แดชบอร์ดใบขอซื้อ (PR Dashboard) screen](/screenshots/dashboard/pr.png)
 
@@ -82,8 +86,8 @@ mock แบบ static ในปัจจุบัน เมื่อ wire ผ่
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Page shell:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-pr.tsx`
-- **Composition:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-pr.tsx`
-- **Mock data:** `../carmen-inventory-frontend-react/routes/dashboard/mock/pr.ts`
-- **i18n:** `messages/en.json` → `dashboard.pr.title` = "Purchase Request Dashboard"
-- **Live hook (ยังไม่ mount):** `../carmen-inventory-frontend-react/hooks/use-approval.ts` → `useApprovalPending`
+- **Page shell / composition (ถูกลบเมื่อ 2026-06-27):** `routes/dashboard/_components/dashboard-pr.tsx` ใน `../carmen-inventory-frontend-react`
+- **Mock data (ถูกลบเมื่อ 2026-06-27):** `routes/dashboard/mock/pr.ts` ใน `../carmen-inventory-frontend-react`
+- **Commit ที่ลบ:** `03891e3d` — "refactor(dashboard): convert to idiomatic structure, drop dead demo code"
+- **i18n key ที่ยังอยู่แต่ไม่ถูกใช้:** `messages/en.json` → `dashboard.pr.title` = "Purchase Request Dashboard"
+- **hook `useApprovalPending`** (`hooks/use-approval.ts`) เป็นของจริงและ live แต่ขับเคลื่อน `/procurement/approval` — ดู [purchase-request/my-approval](/th/inventory/purchase-request/my-approval) — ไม่ใช่หน้านี้ที่ถูกลบไปแล้ว

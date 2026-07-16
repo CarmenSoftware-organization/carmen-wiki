@@ -1,8 +1,8 @@
 ---
 title: SR Dashboard
-description: Store Requisition cockpit — four-stage pipeline, sent-back / reject lists, time-bucketed awaiting-approval table, personal vs department consumption charts, SR awaiting receipt, and template shortcuts.
+description: "REMOVED 2026-06-27, historical reference only: Store Requisition cockpit — four-stage pipeline, sent-back / reject lists, time-bucketed awaiting-approval table, personal vs department consumption charts, SR awaiting receipt, and template shortcuts."
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T01:35:43.000Z
 tags: dashboard, store-requisition, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,11 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # SR Dashboard
 
 > **At a Glance**
-> **Route:** `/dashboard/sr` &nbsp;·&nbsp; **For:** Requester / Store Staff &nbsp;·&nbsp; HOD / Approver &nbsp;·&nbsp; Dept Manager &nbsp;·&nbsp; **Status:** **Mock-data today**; live wiring pending
+> **Route:** none — `/dashboard/sr` never existed as a route &nbsp;·&nbsp; **Status:** **Removed 2026-06-27** — historical reference only; the demo component was deleted as dead code and never appeared behind any router entry
+
+## Implementation status (verified 2026-07-16)
+
+This page documents `dashboard-sr.tsx` (formerly `routes/dashboard/_components/dashboard-sr.tsx`) and its `mock/sr.ts` fixture. `/dashboard/sr` never existed in `routes/router.tsx` — the Dashboard sidebar entry has only ever resolved to one component, today's [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace). The demo file was deleted, with 7 siblings, in commit `03891e3d` ("refactor(dashboard): convert to idiomatic structure, drop dead demo code", `carmen-inventory-frontend-react`, 2026-06-27), whose message states it and its mock fixture had "no importers anywhere." Everything below describes that deleted, never-routed demo screen — kept only as historical reference. Treat every "mock-data today," "when live," and route claim in the rest of this page as void; none of it will go live under this page.
 
 ![SR Dashboard screen](/screenshots/dashboard/sr.png)
 
@@ -89,8 +93,8 @@ Static mock today. "Awaiting Approval" tabs and "Sent Back" / "Reject List" shou
 
 ## 8. Reference Sources
 
-- **Page shell:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-sr.tsx`
-- **Composition:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-sr.tsx`
-- **Mock data:** `../carmen-inventory-frontend-react/routes/dashboard/mock/sr.ts` (includes `AwaitingTab` type)
-- **i18n:** `messages/en.json` → `dashboard.sr.title` = "Store Requisition Dashboard"
-- **Live hook (not mounted):** `../carmen-inventory-frontend-react/hooks/use-approval.ts` → `useApprovalPending`
+- **Page shell / composition (deleted 2026-06-27):** `routes/dashboard/_components/dashboard-sr.tsx` in `../carmen-inventory-frontend-react`
+- **Mock data (deleted 2026-06-27):** `routes/dashboard/mock/sr.ts` in `../carmen-inventory-frontend-react` (included `AwaitingTab` type)
+- **Deletion commit:** `03891e3d` — "refactor(dashboard): convert to idiomatic structure, drop dead demo code"
+- **i18n key still present but unused:** `messages/en.json` → `dashboard.sr.title` = "Store Requisition Dashboard"
+- **`useApprovalPending` hook** (`hooks/use-approval.ts`) is real and live, but powers `/procurement/approval` — see [purchase-request/my-approval](/en/inventory/purchase-request/my-approval) — not this deleted page

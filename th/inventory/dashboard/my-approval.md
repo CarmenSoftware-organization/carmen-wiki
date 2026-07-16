@@ -1,8 +1,8 @@
 ---
 title: Widget My Approval แดชบอร์ด (My Approval Dashboard Widget)
-description: widget คิวงานอนุมัติส่วนตัวบน /dashboard แสดงรายการเอกสาร PR/PO/SR ที่รอการอนุมัติของผู้ใช้ที่ล็อกอิน จัดกลุ่มตามประเภทเอกสารพร้อม count สด
+description: "ถูกลบแล้ว เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น — ไม่เคยถูก render บน /dashboard จริง: widget คิวงานอนุมัติส่วนตัวที่เสนอไว้ แสดงรายการเอกสาร PR/PO/SR ที่รอการอนุมัติของผู้ใช้ที่ล็อกอิน หน้าจริงที่ live คือหน้า My Approval ของโมดูล Procurement (/procurement/approval)"
 published: true
-date: 2026-06-04T00:00:00.000Z
+date: 2026-07-16T01:35:43.000Z
 tags: dashboard, my-approval, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -11,7 +11,15 @@ dateCreated: 2026-06-04T00:00:00.000Z
 # Widget My Approval แดชบอร์ด (My Approval Dashboard Widget)
 
 > **At a Glance**
-> **Route:** `/dashboard` (widget — ไม่ใช่ route แบบ standalone) &nbsp;·&nbsp; **สำหรับ:** HOD / Approver &nbsp;·&nbsp; Procurement Manager &nbsp;·&nbsp; **สถานะ:** **Live** — hook mount แล้วและเรียก API endpoint จริง &nbsp;·&nbsp; **ขอบเขต:** ส่วนบุคคล — เฉพาะเอกสารที่ผู้ใช้ที่ล็อกอินเป็นผู้อนุมัติต่อไป
+> **Route:** ไม่มี — ไม่เคยถูก render ที่ไหนเลย &nbsp;·&nbsp; **สถานะ:** **ถูกลบเมื่อ 2026-06-27; เป็น dead code อยู่แล้วตั้งแต่ก่อนหน้านั้น** — widget นี้ไม่เคยถูก mount บนหน้า `/dashboard` จริง แม้หน้านี้จะเคยอ้างสถานะ "Live" ไว้ก่อนหน้านี้ก็ตาม คิว approval ส่วนตัวที่ live จริงคือ**คนละหน้า**: [purchase-request/my-approval](/th/inventory/purchase-request/my-approval) (`/procurement/approval`)
+
+## สถานะการ implement (ตรวจสอบเมื่อ 2026-07-16)
+
+**การอ้างสถานะ "Live" ของหน้านี้ก่อนหน้านี้ผิด** หน้านี้ document `dashboard-my-approval.tsx` (เดิมคือ `routes/dashboard/_components/dashboard-my-approval.tsx`) ซึ่ง render ตาราง approval ของ PR/PO/SR ที่จัดกลุ่มไว้ตามที่อธิบายด้านล่าง ฝังอยู่ภายใน `/dashboard` เมื่อตรวจสอบ `dashboard-component.tsx` (ทั้งเวอร์ชันปัจจุบันและเวอร์ชันก่อน cleanup 2026-06-27) พบว่าหน้า `/dashboard` จริงมี render แค่ header ทักทายกับกริด "Saved Widgets" เท่านั้นมาโดยตลอด — ไม่เคย import หรือ mount `dashboard-my-approval.tsx` เลย ไฟล์ component ถูกลบพร้อมไฟล์พี่น้องอีก 7 ไฟล์ใน commit `03891e3d` ("refactor(dashboard): convert to idiomatic structure, drop dead demo code", 2026-06-27) ซึ่ง commit message ยืนยันว่าเป็น dead code ที่ "no importers anywhere"
+
+hook `useApprovalPending` / `useApprovalPendingSummary` ที่หน้านี้ document (`hooks/use-approval.ts`) **เป็นของจริงและ live** — แต่มันขับเคลื่อนหน้า **My Approval** ของโมดูล Procurement ที่ `/procurement/approval` (หน้าจริงที่มี route; ดู [purchase-request/my-approval](/th/inventory/purchase-request/my-approval)) ไม่ใช่ส่วนใดของ `/dashboard` ลิงก์ "View All →" ของ widget ที่ถูกลบนี้ (อธิบายด้านล่าง) ชี้ไปยังหน้าจริงหน้าเดียวกันนี้ ซึ่งเป็นที่เดียวที่จะดูและดำเนินการ approval ที่รออยู่ได้จริง
+
+เนื้อหาอื่นๆ ด้านล่างทั้งหมดอธิบาย widget แดชบอร์ดที่ไม่เคยถูก mount และถูกลบไปแล้วนี้ — เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น ถือว่าทุกข้อความ "Live" / "mount แล้ว" / การอ้าง route ในส่วนที่เหลือของหน้านี้เป็นโมฆะ
 
 ## 1. คืออะไรและสำหรับใคร
 
@@ -79,18 +87,17 @@ widget นี้คือ summary ระดับแดชบอร์ดขอ�
 
 ## 7. โมดูลที่เกี่ยวข้อง
 
-- [purchase-request/my-approval](/th/inventory/purchase-request/my-approval) — คิว approval เต็มรูปแบบพร้อม pagination, search และ approval action สำหรับ PR
-- [purchase-request](/th/inventory/purchase-request) — แหล่ง transactional สำหรับ PR item
-- [purchase-order](/th/inventory/purchase-order) — แหล่ง transactional สำหรับ PO item
-- [store-requisition](/th/inventory/store-requisition) — แหล่ง transactional สำหรับ SR item
+- [purchase-request/my-approval](/th/inventory/purchase-request/my-approval) — **หน้าจริงที่ live** (`/procurement/approval`) — คิว approval เต็มรูปแบบพร้อม pagination, search และ approval action ครอบคลุม PR/PO/SR
+- [purchase-request](/th/inventory/purchase-request), [purchase-order](/th/inventory/purchase-order), [store-requisition](/th/inventory/store-requisition) — แหล่ง transactional ที่หน้า approval จริงดึงข้อมูลมา
 - [system-config/workflow](/th/inventory/system-config/workflow) — นิยาม workflow stage และ approver-role
-- [dashboard/my-pending](/th/inventory/dashboard/my-pending) — widget เพิ่มเติมแสดงจำนวนเอกสาร pending ของผู้ใช้
-- [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) — หน้า `/dashboard` ที่ host widget นี้
+- [dashboard/my-pending](/th/inventory/dashboard/my-pending) — widget พี่น้องที่มีชะตากรรมเดียวกัน (ไม่เคยถูก mount ตอนนี้ถูกลบแล้ว)
+- [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) — หน้า `/dashboard` จริงที่ live; หน้านี้**ไม่ได้** host widget นี้ และไม่เคย host เลย
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Component:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-my-approval.tsx`
-- **Hooks:** `../carmen-inventory-frontend-react/hooks/use-approval.ts` — `useApprovalPending`, `useApprovalPendingSummary`
+- **Component (ถูกลบเมื่อ 2026-06-27):** `routes/dashboard/_components/dashboard-my-approval.tsx` ใน `../carmen-inventory-frontend-react`
+- **Commit ที่ลบ:** `03891e3d` — "refactor(dashboard): convert to idiomatic structure, drop dead demo code"
+- **Hooks (ของจริงและ live แต่ขับเคลื่อน `/procurement/approval` — ไม่ใช่ `/dashboard`):** `../carmen-inventory-frontend-react/hooks/use-approval.ts` — `useApprovalPending`, `useApprovalPendingSummary`
 - **Types:** `../carmen-inventory-frontend-react/types/approval.ts` — `ApprovalItem`, `ApprovalPendingSummary`, `RawApprovalPR`, `RawApprovalPO`, `RawApprovalSR`
 - **API constants:** `../carmen-inventory-frontend-react/constant/api-endpoints.ts` → `APPROVAL_PENDING`, `APPROVAL_PENDING_SUMMARY`
 - **Colour mapping:** `../carmen-inventory-frontend-react/constant/module-color-map.ts` → `getModuleColor`
