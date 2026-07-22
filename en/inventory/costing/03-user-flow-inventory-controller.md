@@ -2,7 +2,7 @@
 title: Costing — User Flow — Inventory Controller (correction)
 description: Correction page — no cost-pick-preview adjustment-approval queue exists in the costing module; stock-in/stock-out post unconditionally on creation.
 published: true
-date: 2026-07-22T10:00:00.000Z
+date: 2026-07-22T11:30:00.000Z
 tags: costing, user-flow, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -36,7 +36,7 @@ This mirrors the identical finding already confirmed in [inventory-adjustment/03
 
 ## 3. References
 
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/inventory-adjustment/` (`stock-in.service.ts`, `stock-out.service.ts` — `create()` posts unconditionally), `.../period-end/`.
+- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/stock-in/stock-in.service.ts`, `.../stock-out/stock-out.service.ts` (`create()` posts unconditionally), `.../period-end/`.
 - Frontend: `../carmen-inventory-frontend-react/routes/inventory-management/inventory-adjustment/`, `.../period-end/`.
 - Parent overview: [03-user-flow](./03-user-flow.md).
 - Cross-link: [inventory-adjustment](/en/inventory/inventory-adjustment) — the module that actually owns the `tb_stock_in`/`tb_stock_out` documents this page's earlier draft mis-described.

@@ -1,8 +1,8 @@
 ---
 title: การคำนวณต้นทุน (Costing) — Test Scenarios
-description: Test cases ตาม persona, cross-persona scenarios, และ E2E mapping สำหรับ costing
+description: 11 scenario ระดับ cost-pick engine ที่ตัดข้ามและ E2E mapping สำหรับ costing — ไม่มีการแบ่ง persona ดูสามหน้าแก้ไขสำหรับสิ่งที่ถูกลบ
 published: true
-date: 2026-07-22T10:00:00.000Z
+date: 2026-07-22T11:30:00.000Z
 tags: costing, test-scenarios, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z

@@ -1,8 +1,8 @@
 ---
 title: Costing — Test Scenarios
-description: Test cases by persona, cross-persona scenarios, and E2E mapping for costing.
+description: 11 cross-cutting cost-pick engine scenarios and E2E mapping for costing — no persona split, see the three correction pages for what was removed.
 published: true
-date: 2026-07-22T10:00:00.000Z
+date: 2026-07-22T11:30:00.000Z
 tags: costing, test-scenarios, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z

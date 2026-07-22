@@ -2,7 +2,7 @@
 title: Costing
 description: Inventory valuation methods (FIFO, Weighted Average) and the costing engine that calculates COGS and ending inventory value.
 published: true
-date: 2026-07-22T10:00:00.000Z
+date: 2026-07-22T11:30:00.000Z
 tags: costing, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -73,12 +73,12 @@ Operationally, costing is where **food cost control** lives. Plate cost, recipe 
 
 - [01 — Data Model](/en/inventory/costing/01-data-model) — Entities, fields, relationships, and enums (Prisma-derived).
 - [02 — Business Rules](/en/inventory/costing/02-business-rules) — Validation, calculation, authorization, posting, and cross-module rules.
-- [03 — User Flow](/en/inventory/costing/03-user-flow) — Document lifecycle and persona index.
-  - [Finance](/en/inventory/costing/03-user-flow-finance)
-  - [Inventory Controller](/en/inventory/costing/03-user-flow-inventory-controller)
-  - [Auditor](/en/inventory/costing/03-user-flow-auditor)
-- [04 — Test Scenarios](/en/inventory/costing/04-test-scenarios) — Persona scope, cross-persona scenarios, E2E mapping.
-  - [Finance](/en/inventory/costing/04-test-scenarios-finance)
-  - [Inventory Controller](/en/inventory/costing/04-test-scenarios-inventory-controller)
-  - [Auditor](/en/inventory/costing/04-test-scenarios-auditor)
+- [03 — User Flow](/en/inventory/costing/03-user-flow) — Cost-flow lifecycle; no distinct persona exists (see correction pages below).
+  - [Finance (correction)](/en/inventory/costing/03-user-flow-finance)
+  - [Inventory Controller (correction)](/en/inventory/costing/03-user-flow-inventory-controller)
+  - [Auditor (correction)](/en/inventory/costing/03-user-flow-auditor)
+- [04 — Test Scenarios](/en/inventory/costing/04-test-scenarios) — 11 cross-cutting engine scenarios + E2E mapping.
+  - [Finance (correction)](/en/inventory/costing/04-test-scenarios-finance)
+  - [Inventory Controller (correction)](/en/inventory/costing/04-test-scenarios-inventory-controller)
+  - [Auditor (correction)](/en/inventory/costing/04-test-scenarios-auditor)
 - [Inventory Costing Methods: FIFO vs. Weighted Average](/en/inventory/costing/calculation-methods) — Method comparison and algorithms.

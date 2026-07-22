@@ -2,7 +2,7 @@
 title: การคำนวณต้นทุน (Costing) — Test Scenarios — Inventory Controller (แก้ไข)
 description: หน้าแก้ไข — ชุด test ของ Inventory Controller ที่เคยเอกสารไว้ที่นี่เล็งไปที่ cost-pick-preview adjustment-approval queue ที่ไม่มีอยู่จริง
 published: true
-date: 2026-07-22T10:00:00.000Z
+date: 2026-07-22T11:30:00.000Z
 tags: costing, test-scenarios, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -32,5 +32,5 @@ dateCreated: 2026-05-15T12:30:00.000Z
 
 ## 3. References
 
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/inventory-adjustment/` (`stock-in.service.ts`, `stock-out.service.ts`)
+- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/stock-in/stock-in.service.ts`, `.../stock-out/stock-out.service.ts`
 - Parent overview: [04-test-scenarios](./04-test-scenarios.md); คู่กัน user-flow: [03-user-flow-inventory-controller](./03-user-flow-inventory-controller.md)

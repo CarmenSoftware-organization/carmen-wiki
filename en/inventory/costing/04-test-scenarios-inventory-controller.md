@@ -2,7 +2,7 @@
 title: Costing — Test Scenarios — Inventory Controller (correction)
 description: Correction page — the Inventory Controller test suite previously documented here targeted a cost-pick-preview adjustment-approval queue that does not exist.
 published: true
-date: 2026-07-22T10:00:00.000Z
+date: 2026-07-22T11:30:00.000Z
 tags: costing, test-scenarios, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -32,5 +32,5 @@ This mirrors the confirmed-fabricated approval-queue findings on [inventory-adju
 
 ## 3. References
 
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/inventory-adjustment/` (`stock-in.service.ts`, `stock-out.service.ts`).
+- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/stock-in/stock-in.service.ts`, `.../stock-out/stock-out.service.ts`.
 - Parent overview: [04-test-scenarios](./04-test-scenarios.md); user-flow counterpart: [03-user-flow-inventory-controller](./03-user-flow-inventory-controller.md).

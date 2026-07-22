@@ -2,7 +2,7 @@
 title: การคำนวณต้นทุน (Costing)
 description: วิธีตีมูลค่าสินค้าคงคลัง (FIFO, Weighted Average) และเอนจินคำนวณต้นทุนสำหรับคิด COGS และมูลค่าสินค้าคงเหลือปลายงวด
 published: true
-date: 2026-07-22T10:00:00.000Z
+date: 2026-07-22T11:30:00.000Z
 tags: costing, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -73,12 +73,12 @@ Output ลงที่สองที่: ตัวแถว cost-layer เอ�
 
 - [01 — แบบจำลองข้อมูล](/th/inventory/costing/01-data-model) — เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum (อิงจาก Prisma)
 - [02 — กฎทางธุรกิจ](/th/inventory/costing/02-business-rules) — การตรวจสอบ การคำนวณ การกำหนดสิทธิ์ การ posting และกฎข้ามโมดูล
-- [03 — User Flow](/th/inventory/costing/03-user-flow) — วงจรชีวิตของเอกสารและสารบัญ persona
-  - [Finance](/th/inventory/costing/03-user-flow-finance)
-  - [Inventory Controller](/th/inventory/costing/03-user-flow-inventory-controller)
-  - [Auditor](/th/inventory/costing/03-user-flow-auditor)
-- [04 — Test Scenarios](/th/inventory/costing/04-test-scenarios) — ขอบเขตของแต่ละ persona, scenario ข้าม persona และ mapping ไปยัง E2E
-  - [Finance](/th/inventory/costing/04-test-scenarios-finance)
-  - [Inventory Controller](/th/inventory/costing/04-test-scenarios-inventory-controller)
-  - [Auditor](/th/inventory/costing/04-test-scenarios-auditor)
+- [03 — User Flow](/th/inventory/costing/03-user-flow) — วงจรชีวิต cost-flow; ไม่มี persona แยกจริง (ดูหน้าแก้ไขด้านล่าง)
+  - [Finance (แก้ไข)](/th/inventory/costing/03-user-flow-finance)
+  - [Inventory Controller (แก้ไข)](/th/inventory/costing/03-user-flow-inventory-controller)
+  - [Auditor (แก้ไข)](/th/inventory/costing/03-user-flow-auditor)
+- [04 — Test Scenarios](/th/inventory/costing/04-test-scenarios) — 11 scenario ระดับ engine ที่ตัดข้าม + mapping ไปยัง E2E
+  - [Finance (แก้ไข)](/th/inventory/costing/04-test-scenarios-finance)
+  - [Inventory Controller (แก้ไข)](/th/inventory/costing/04-test-scenarios-inventory-controller)
+  - [Auditor (แก้ไข)](/th/inventory/costing/04-test-scenarios-auditor)
 - [วิธีคำนวณต้นทุนสินค้าคงคลัง: FIFO vs. Weighted Average](/th/inventory/costing/calculation-methods) — เปรียบเทียบวิธีและอัลกอริทึม
