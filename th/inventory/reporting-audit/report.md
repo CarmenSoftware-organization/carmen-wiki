@@ -1,8 +1,8 @@
 ---
 title: รายงาน (Report)
-description: pipeline การสร้างรายงาน — แถว job และ schedule ฝั่ง tenant ที่อยู่เบื้องหลังของ template และ document-type print mapping ฝั่งแพลตฟอร์ม
+description: pipeline การสร้างรายงาน — แคตตาล็อก report-template และ print-type mapping (platform), การ render ผ่าน viewer แบบ on-demand และตาราง job/history ที่มีอยู่จริงแต่ปัจจุบันไม่มีข้อมูล (ไม่มีเส้นทาง UI ใดเขียนเข้าไปเลย)
 published: true
-date: 2026-06-09T00:00:00.000Z
+date: 2026-07-22T00:00:00.000Z
 tags: reporting-audit, report, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,18 +11,21 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # รายงาน (Report)
 
 > **At a Glance**
-> **เจ้าของ:** Sysadmin (schedule) + Platform Admin (template, mapping) &nbsp;·&nbsp; **ตาราง:** `tb_report_job` + `tb_report_schedule` (tenant), `tb_report_template` + `tb_print_template_mapping` (platform) &nbsp;·&nbsp; **ใช้โดย:** ทุกปุ่ม "Print" + dashboard / scheduled export &nbsp;·&nbsp; Pipeline เต็มของรายงานและ print layout
+> **เจ้าของ:** Platform Admin (template, mapping) &nbsp;·&nbsp; **ตาราง:** `tb_report_job` (tenant — มีอยู่จริงแต่ปัจจุบันไม่มีข้อมูล) — schedule **ไม่ได้** อยู่ใน `tb_report_schedule` (ตายแล้ว ดู [reporting-audit/schedule](/th/inventory/reporting-audit/schedule)), `tb_report_template` + `tb_print_template_mapping` (platform, มีอยู่จริง) &nbsp;·&nbsp; **ใช้โดย:** รายการรายงาน ("Run"), ทุกปุ่ม "Print" และการ fire ตามเวลา — ทั้งสามเส้นทาง render ผ่าน viewer endpoint ไม่มีเส้นทางใดเขียนแถว job เลย
+
+## สถานะการทำงานจริง (ตรวจสอบเมื่อ 2026-07-22)
+
+flow "Run" แบบ on-demand บนรายการรายงาน (`report-component.tsx` → `useRunReportMutation` → `POST .../reports/viewer`) และปุ่ม "Print" ของทุกโมดูล (`lib/print-document.ts`) ทั้งคู่ resolve ตรงไปยัง viewer URL ที่ render แล้ว — ไม่มีเส้นทางใดเรียก async job endpoint (`generate-async`) เลย จึงไม่มีเส้นทางใดเขียนแถว `tb_report_job` การค้นหาทั่ว frontend พบว่าไม่มีผู้เรียก `generate-async`/`job-status` เลยแม้แต่ที่เดียว ดู [reporting-audit/history](/th/inventory/reporting-audit/history) สำหรับข้อค้นพบแบบเต็มและผลกระทบต่อหน้าจอ history และ [reporting-audit/schedule](/th/inventory/reporting-audit/schedule) สำหรับตาราง `tb_report_schedule` ที่ยืนยันแล้วว่าตายแล้ว (ที่เก็บ schedule จริงคือตาราง `Cronjob` แบบ generic ใน service micro-cronjobs แยกต่างหาก)
 
 ## 1. ภาพรวมและผู้ใช้งาน
 
-เอนทิตี report คือ **pipeline เต็มของการสร้างรายงาน** — การ export แบบ ad-hoc on-demand + การ export แบบเกิดซ้ำตามเวลา + print layout เบื้องหลังทุกปุ่ม "Print" สี่ตารางข้ามสอง schema:
+เอนทิตี report คือ **pipeline การสร้างรายงาน** — การ render แบบ ad-hoc on-demand, print layout เบื้องหลังทุกปุ่ม "Print" และ (ในเชิงโครงสร้าง แม้จะยังไม่มีข้อมูลจริง) การ export แบบเกิดซ้ำตามเวลา มีสามตารางที่เกี่ยวข้อง กระจายอยู่ในสอง schema บวกฐานข้อมูล scheduler ภายนอกอีกหนึ่งแห่ง:
 
-- `tb_report_template` (platform) — แคตตาล็อก template (`report` แบบ analytical หรือ `print` layout); เก็บ layout (`dialog`, `content`), data binding (`source_type` + `source_name` + `source_params`), orientation, signatures
-- `tb_print_template_mapping` (platform) — map `document_type` (`PO`, `PR`, `SR`, `GRN`, `CN`, `IA`, …) ไปยังหนึ่งหรือหลาย template; `is_default = true` หนึ่งตัวต่อประเภท
-- `tb_report_job` (tenant) — ประวัติการ execute (queued / processing / completed / failed / cancelled); filter, รูปแบบ, metadata ของ output
-- `tb_report_schedule` (tenant) — การรันแบบเกิดซ้ำขับด้วย cron; enqueue job
+- `tb_report_template` (platform) — แคตตาล็อก template (`report` แบบ analytical หรือ `print` layout); เก็บ layout (`dialog`, `content`), data binding (`source_type` + `source_name` + `source_params`), orientation, signatures อ่านอย่างเดียวจากรายการรายงานของ `carmen-inventory-frontend-react` — ไม่พบ UI สำหรับสร้าง/แก้ template ใน repo นี้ (`POST`/`PUT`/`DELETE` ของ template มีอยู่บน backend แต่เปิดผ่าน gateway module ใน `platform/` ซึ่งอยู่นอกขอบเขตของ repo นี้)
+- `tb_print_template_mapping` (platform) — map `document_type` (`PO`, `PR`, `SR`, `GRN`, `CN`, `IA`, …) ไปยังหนึ่งหรือหลาย template; `is_default = true` หนึ่งตัวต่อประเภท มีอยู่จริงและถูก resolve ใช้งานจริงโดยทุกปุ่ม "Print" ผ่าน `GET .../report/print-template?document_type=`
+- `tb_report_job` (tenant) — ตาราง job/history มีอยู่จริงและเชื่อมกับ `/report/history` ถูกต้อง แต่ยืนยันแล้วว่าไม่มีการเขียนจากเส้นทาง UI ที่เข้าถึงได้เลยในปัจจุบัน — ดูสถานะการทำงานจริงด้านบน
 
-Schema ผสมสะท้อนการ deploy: template + mapping ถูก curate รวมศูนย์; job + schedule เป็นข้อมูล tenant
+**Schedule** ของรายงานไม่ใช่ตาราง tenant ตัวที่สี่ในที่นี้ — ดู [reporting-audit/schedule](/th/inventory/reporting-audit/schedule) สำหรับโมเดลที่แก้ไขแล้ว (แถว `Cronjob` แบบ generic ใน service micro-cronjobs แยกต่างหาก)
 
 **ดูแลโดย** Platform Admin (template, mapping), Sysadmin (schedule) **อ่านโดย** รายการรายงาน, เมนู "Print as…", widget บน dashboard
 
@@ -41,37 +44,36 @@ micro-report ไม่รันคำสั่ง query ใน process ของ
 
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
-| รันรายงาน on demand | เมนู Reports → เลือกรายงาน → Run | Insert แถว `tb_report_job` |
-| ดาวน์โหลด job ที่เสร็จ | Reports → Jobs → คลิกชื่อไฟล์ | resolve `file_url`; เคารพ `expires_at` |
-| ตั้งเวลา export เกิดซ้ำ | Reports → Schedules → New | cron expression + filter + ผู้รับ |
-| เพิ่ม print layout สำหรับประเภทเอกสาร | Platform Admin → Print Templates | toggle `is_default` เพื่อสลับ default |
+| รันรายงาน on demand | รายการรายงาน → เลือกรายงาน → Run | `POST .../reports/viewer` — render viewer URL โดยตรง; **ไม่มีการเขียนแถว `tb_report_job`** |
+| Print เอกสาร | action Print ของเอกสารใดก็ได้ | resolve `tb_print_template_mapping` แล้วใช้ viewer endpoint เดียวกัน — พฤติกรรม "ไม่มีแถว job" เหมือนกัน |
+| กรองรายการรายงาน | ช่องค้นหา + filter กลุ่มรายงาน | ค้นหาแบบ server-side; filter กลุ่มเป็น client-side บนหน้าปัจจุบัน |
+| เพิ่ม print layout สำหรับประเภทเอกสาร | Platform Admin (นอก UI ของ repo นี้ — ดูด้านล่าง) | toggle `is_default` เพื่อสลับ default; endpoint backend มีอยู่จริง แต่ไม่พบหน้าจอแก้ไขใน `carmen-inventory-frontend-react` |
 | BU-scope template | แก้ `allow_business_unit` / `deny_business_unit` ของ template | Null allow-list = ทุก BU |
-| รัน job ที่ล้มเหลวซ้ำ | Reports → Jobs → Re-run | สร้าง `tb_report_job` ใหม่ |
+| ตั้งเวลา export เกิดซ้ำ | ดู [reporting-audit/schedule](/th/inventory/reporting-audit/schedule) | ไม่ได้เก็บในตาราง tenant ของโมดูลนี้ — ที่เก็บจริงคือ service scheduler แยกต่างหาก |
 
 ## 3. ข้อผิดพลาดและการตรวจสอบ
 
 | อาการ | สาเหตุ | การจัดการ |
 |---|---|---|
-| Job ค้างที่ `queued` | Executor ไม่หยิบ | เช็คสุขภาพ executor และ `idx_report_job_status` |
-| Job ล้มเหลวด้วย "view not found" | `source_type` / `source_name` drift | จัด template binding ให้ตรงกับ DB object |
+| หน้าจอ history ไม่แสดงอะไรเลยสำหรับ run ที่เพิ่งทำ | ตามที่คาดไว้ — ดูสถานะการทำงานจริงด้านบน; ไม่มีเส้นทางที่เข้าถึงได้เขียน `tb_report_job` | ไม่ใช่ bug ในเส้นทางการอ่าน |
+| Job ล้มเหลวด้วย "view not found" (เมื่อเส้นทาง async *ถูกใช้งานจริง*) | `source_type` / `source_name` drift | จัด template binding ให้ตรงกับ DB object |
 | มี default หลายตัวต่อประเภทเอกสาร | invariant ของแอปถูกละเมิด | ซ่อม: ให้มี `is_default = true` หนึ่งตัว; ที่เหลือเป็น false |
-| ดาวน์โหลด 404 | output ถูก reap ตาม `expires_at` | รัน job ซ้ำ |
 | Template ไม่เห็นใน BU | `allow_business_unit` exclude; หรือ `deny_business_unit` include | แก้ BU scoping |
 
 ## 4. กรณีพิเศษ
 
-- **Source binding drift** เป็นสาเหตุใหญ่สุดของ job ที่ล้มเหลว — รักษา `source_type` / `source_name` ให้สอดคล้องกับ DB object จริง
-- **Template มาตรฐาน vs ที่ผู้ใช้กำหนด** UI ของ `is_standard = true` มักป้องกันการลบและเตือนเมื่อแก้
-- **Lifecycle ของ job** `queued → processing → (completed | failed | cancelled)` Executor ตั้ง `started_at` / `completed_at` / `duration_ms`
-- **Retention ของ output** `expires_at` คือสัญญาของ reaper ของที่จัดเก็บ
+- **การรัน on-demand และ Print เป็นการ render แบบ synchronous ผ่าน viewer ไม่ใช่ job แบบ queue** ไม่มีแถว `tb_report_job`, ไม่มี entry ใน history, ไม่มี retention `expires_at` ใด ๆ ใช้กับทั้งสอง
+- **Source binding drift** เป็นสาเหตุที่เป็นไปได้มากที่สุดของความล้มเหลวบนเส้นทาง viewer (ความไม่ตรงกันของ `source_type`/`source_name`) — รักษา template binding ให้สอดคล้องกับ DB object จริง
+- **Template มาตรฐาน vs ที่ผู้ใช้กำหนด** `is_standard = true` มีการจัดการพิเศษโดย handler `delete`/`update` ของ backend (ยังไม่ยืนยันพฤติกรรม UI ที่แน่ชัดในรอบนี้ — ไม่มีหน้าจอแก้ไข template ใน `carmen-inventory-frontend-react`)
+- **Lifecycle ของ job แบบ async มีอยู่จริงแต่ไม่ถูกใช้งาน** `queued → processing → (completed | failed | cancelled)` ยังเป็นสัญญาของโมเดล; executor เดินหน้าผ่าน `generate-async` เท่านั้น ซึ่งไม่มี frontend ปัจจุบันเรียกใช้เลย
 
 ---
 
 ## 5. โมเดลข้อมูล (Dev)
 
-แหล่ง: **ผสม** — tenant สำหรับ jobs/schedules, platform สำหรับ templates/mappings
+แหล่ง: **ผสม** — tenant สำหรับตาราง job/history, platform สำหรับ templates/mappings Schedule **ไม่ใช่** ตาราง tenant ในที่นี้ — ดู [reporting-audit/schedule](/th/inventory/reporting-audit/schedule) §5 สำหรับโมเดล `Cronjob` จริงใน service micro-cronjobs แยกต่างหาก
 
-### 5.1 `tb_report_job` (tenant)
+### 5.1 `tb_report_job` (tenant — มีอยู่จริง ปัจจุบันไม่มีข้อมูล; ดู [reporting-audit/history](/th/inventory/reporting-audit/history))
 
 | ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
 | --- | --- | --- | --- |
@@ -90,18 +92,9 @@ micro-report ไม่รันคำสั่ง query ใน process ของ
 
 **Indexes:** `status`, `report_type`, `requested_by_id`, `created_at DESC`
 
-### 5.2 `tb_report_schedule` (tenant)
+### 5.2 Schedule — ไม่ใช่ตาราง tenant (แก้ไขแล้ว)
 
-| ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
-| --- | --- | --- | --- |
-| `id` / `name` | `String` | No | คีย์ |
-| `report_type` / `report_template_id` | `String` | Mixed | id เชิง logical + template binding แบบเลือกได้ |
-| `format` | `enum_report_format` | No | รูปแบบ output |
-| `cron_expression` | `String @db.VarChar(100)` | No | cron มาตรฐาน |
-| `schedule_config` / `filters` / `options` / `recipients` | `Json?` | Yes | Scheduler + ตัวเลือกการรัน + email/user IDs |
-| `is_active` | `Boolean` | No | Default `true` |
-| `last_run_at` / `next_run_at` | `DateTime?` | Yes | bookkeeping ของ scheduler |
-| คอลัมน์ audit | — | Yes | `created_*`, `updated_*`, `deleted_*` |
+tenant schema ประกาศ model `tb_report_schedule` ไว้จริง แต่การค้นหาโค้ดทั่ว repo พบว่า **ไม่มีการอ้างอิงถึงมันเลย** นอกเหนือจากการประกาศ Prisma ของมันเอง — ตายแล้ว รูปแบบเดียวกับที่ยืนยันแล้วสำหรับ `tb_attachment` และตระกูล `tb_widget_*` เดิม ที่เก็บ schedule จริงคือตาราง `Cronjob` แบบ generic (แถว `job_type = "report"`) ใน Postgres schema ของ service micro-cronjobs เอง ดู [reporting-audit/schedule](/th/inventory/reporting-audit/schedule) §5 สำหรับโมเดลที่แก้ไขแบบเต็ม
 
 ### 5.3 `tb_report_template` (platform)
 
@@ -117,24 +110,25 @@ Carry `name`, `description`, `report_group`, `kind` (`report` / `print`), `dialo
 
 - **Print template default หนึ่งตัวต่อประเภทเอกสาร** บังคับโดยแอป; การแก้ flip default เดิมเป็น off ใน transaction เดียวกัน
 - **BU scoping** กติกาที่ใช้: *อนุญาตถ้าอยู่ใน allow-list AND ไม่อยู่ใน deny-list*; allow-list ว่าง = ทุก BU
-- **Kind ของ template** `report` สำหรับเมนู analytical; `print` สำหรับ pipeline print (ซ่อนจากเมนู reports)
+- **Kind ของ template** `report` สำหรับรายการรายงานแบบ analytical; `print` สำหรับ pipeline print
 - **ความถูกต้องของ source binding** `source_type` ต้องตรงกับธรรมชาติของ DB object; positional args ประกาศใน `source_params`
-- **Lifecycle ของ job** `queued → processing → (completed | failed | cancelled)`
-- **Retention ของ output** `expires_at` ควบคุม reaper
-- **Template มาตรฐาน** UI มักป้องกันการลบ
+- **การรัน on-demand และ Print ไม่เคย queue job** ทั้งคู่เรียก viewer endpoint แบบ synchronous — lifecycle `queued → processing → (completed | failed | cancelled)` ของ `tb_report_job` มีอยู่จริงแต่ไม่มี frontend code path ใดเข้าถึงในปัจจุบัน
+- **Template มาตรฐาน** — backend มีการจัดการที่แยกออกมาสำหรับ `is_standard = true` (ตามโค้ด handler ของ Go); ไม่มี UI แก้ไขให้สังเกตพฤติกรรมที่เกิดขึ้นจริงใน repo นี้
 
 ## 7. ความเชื่อมโยงข้ามโมดูล
 
-- โมดูลธุรกรรมทั้งหมด — ทุกปุ่ม "Print" resolve ผ่าน `tb_print_template_mapping`
-- [reporting-audit/widget](/th/inventory/reporting-audit/widget) — tile ของ widget สามารถฝัง report ได้
-- [reporting-audit/notification](/th/inventory/reporting-audit/notification) — การ completion ของ schedule อาจ dispatch notification
-- [reporting-audit/activity](/th/inventory/reporting-audit/activity) — action `export` / `print` ถูก log
+- โมดูลธุรกรรมทั้งหมด — ทุกปุ่ม "Print" resolve ผ่าน `tb_print_template_mapping` แล้ว render ผ่าน viewer endpoint (ไม่มีแถว job)
+- [reporting-audit/widget](/th/inventory/reporting-audit/widget) — tile ของ dashboard widget ดึงจากแคตตาล็อก [system-config/dashboard-dataset](/th/inventory/system-config/dashboard-dataset) ซึ่งเป็นคนละ mechanism กับแคตตาล็อก report-template นี้
+- [reporting-audit/schedule](/th/inventory/reporting-audit/schedule) — การ fire แบบเกิดซ้ำ; ไม่ได้อยู่เบื้องหลังด้วยตาราง tenant ในโมดูลนี้
+- [reporting-audit/history](/th/inventory/reporting-audit/history) — หน้าจออ่าน `tb_report_job`; ยืนยันแล้วว่าไม่มีข้อมูลในเชิงโครงสร้าง
+- [reporting-audit/notification](/th/inventory/reporting-audit/notification) — การ fire ของ schedule dispatch notification แบบลิงก์ viewer ต่อผู้รับหนึ่งคน
+- [reporting-audit/activity](/th/inventory/reporting-audit/activity) — action `export` / `print` ถูก log (ยังไม่ยืนยันเทียบกับเส้นทาง viewer โดยเฉพาะในรอบนี้)
 - [access-control/user](/th/inventory/access-control/user) — `requested_by_id` + ผู้รับ
 - [master-data/business-unit](/th/inventory/master-data/business-unit) — BU scoping
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_report_job` (lines ~5652-5683), `tb_report_schedule` (lines ~5685-5709)
-- **Prisma platform:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_report_template` (lines ~589-656), `tb_print_template_mapping` (lines ~663-688)
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/reporting/` (tenant reports/jobs/schedules); template admin ในแอป platform
-- **Microservice:** `../micro-report/` — worker การ execute รายงาน
+- **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_report_job` (บรรทัด ~6094), `enum_report_job_status` (บรรทัด ~6086), `enum_report_format` (บรรทัด ~6070), `enum_report_category` (บรรทัด ~6077)
+- **Prisma platform:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_report_template` (บรรทัด ~731), `tb_print_template_mapping` (บรรทัด ~806)
+- **Frontend:** `../carmen-inventory-frontend-react/routes/report/` (`list/`, `schedules/`, `history/`); `lib/print-document.ts` (การเชื่อมต่อ Print ที่ใช้โดยทุกโมดูลธุรกรรม)
+- **Microservice:** `../micro-report/` — `controller/report_controller.go` (`viewReport`, `generateAsync`, `history`), `controller/template_controller.go`, `controller/print_template_mapping_controller.go`

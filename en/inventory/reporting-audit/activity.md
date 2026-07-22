@@ -1,8 +1,8 @@
 ---
 title: Activity
-description: Tenant-wide activity log — every meaningful state change captured as a row with actor, entity, before/after snapshot, IP, and user agent.
+description: Tenant-wide activity log — every meaningful state change captured as a row with actor, entity, before/after snapshot, IP, and user agent. Surfaced only through the platform-wide /system-admin/activity-log screen — no embedded per-document drawer exists.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-22T00:00:00.000Z
 tags: reporting-audit, activity, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -21,17 +21,19 @@ The activity table is the **tenant audit log** — one row per meaningful state 
 
 The table is intentionally generic and write-heavy. `entity_type` is a free-form string discriminator; `entity_id` is the target UUID; `action` enum covers lifecycle verbs.
 
-**Maintained by** the audit service (writes only). **Read by** the activity drawer on each document and the platform-wide audit log.
+**Maintained by** the audit service (writes only). **Read by** exactly one screen — `/system-admin/activity-log`. No embedded per-document "Activity drawer" was found anywhere in `carmen-inventory-frontend-react`; `useActivityLog`/the `ACTIVITY_LOGS` endpoint is referenced only by `activity-log-component.tsx` and its own table hook.
 
 ## 2. Common Tasks
 
 | Task | Where | Notes |
 |---|---|---|
-| View history of a document | Document detail → **Activity** drawer | Filtered by `entity_type` + `entity_id` |
-| Search audit log by user | Sysadmin → Audit Log | Filter by `actor_id` + date range |
-| Compliance export | Audit Log → Export | Same query path; ships rows to long-term storage |
-| Diff old vs new | Open the activity row | `old_data` / `new_data` JSONB snapshots; render-side diff |
-| Investigate a deletion | Search by `entity_id` + `action = delete` | Stale rows still valuable (deleted entity history) |
+| Browse the activity log | `/system-admin/activity-log` | List or grid display; filters for **action**, **entity type**, and **user** (actor), plus free-text search |
+| Filter by action | Action multi-select | Curated to 5 options in the UI (`create`, `update`, `delete`, `login`, `logout`) — the enum has 20 values total; other actions are written but not offered as a quick filter |
+| Filter by entity type | Entity Type multi-select | Curated ~13-value list (`purchase_request`, `purchase_order`, `good_received_note`, `credit_note`, `store_requisition`, `inventory_transaction`, `product`, `vendor`, `location`, `department`, `currency`, `period`, `auth`) — `entity_type` itself is free-form, so other values can exist in the data without a matching filter chip |
+| Export the current filtered view | **Export** button | Client-side XLSX export (`useExportActivityLog`), same query params as the list |
+| Print | **Print** button | Browser print of the current page |
+| Inspect one row | Click a row | Opens `ActivityLogDetailSheet` — the closest equivalent to a "diff old vs new" view; renders `old_data`/`new_data` JSONB |
+| **Not available anywhere** | — | A per-document "Activity" drawer/tab embedded on PR/PO/GRN/etc. detail pages does not exist — the platform-wide list screen is the only surface, filterable by `entity_type` + a manually-copied `entity_id` if needed via URL params |
 
 ## 3. Validation & Errors
 
@@ -68,6 +70,7 @@ Source: tenant schema.
 | `old_data` | `Json? @db.JsonB` | Yes | Default `{}`. Snapshot before. |
 | `new_data` | `Json? @db.JsonB` | Yes | Snapshot after. |
 | `ip_address` / `user_agent` / `description` | `String?` | Yes | Request metadata + optional summary. |
+| `doc_version` | `Int @db.Integer` | No | Default `0`. Added 2026-06-12 across 103 tenant tables; not independently confirmed as read/written for this append-only table. |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |
 
 **Constraints:** `@@index([entity_type, entity_id])` map `activity_entitytype_entityid_idx` — supports "history of row X in table Y". `actor_id` has no DB relation (cross-schema).
@@ -92,5 +95,7 @@ Source: tenant schema.
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_activity` (lines ~277-297), `enum_activity_action` (lines ~67-89).
-- **Frontend:** Activity drawer embedded on each document detail page; platform-wide audit log under Sysadmin tooling.
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_activity` (line ~280), `enum_activity_action` (line ~56).
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/activity-log/activity-log.route.tsx`, `activity-log-component.tsx`, `activity-log-detail-sheet.tsx`.
+- **Frontend hook/type:** `../carmen-inventory-frontend-react/hooks/use-activity-log.ts` (`useActivityLog`, `useExportActivityLog`), `types/activity-log.ts`.
+- **Writer (example):** `../carmen-turborepo-backend-v2/apps/micro-business/src/authen/auth/auth.service.ts` — `logAuthActivity()` writes `login`/`logout` rows to the user's default business unit only.

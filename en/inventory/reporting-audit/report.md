@@ -1,8 +1,8 @@
 ---
 title: Report
-description: Report generation pipeline — tenant-side job and schedule rows backed by platform-side templates and document-type print mappings.
+description: Report generation pipeline — a report-template catalogue and print-type mapping (platform), on-demand viewer rendering, and a job/history table that is real but currently orphaned (nothing writes to it through any reachable UI path).
 published: true
-date: 2026-06-09T00:00:00.000Z
+date: 2026-07-22T00:00:00.000Z
 tags: reporting-audit, report, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,18 +11,21 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # Report
 
 > **At a Glance**
-> **Owner:** Sysadmin (schedules) + Platform Admin (templates, mappings) &nbsp;·&nbsp; **Table:** `tb_report_job` + `tb_report_schedule` (tenant), `tb_report_template` + `tb_print_template_mapping` (platform) &nbsp;·&nbsp; **Used by:** every "Print" button + dashboard / scheduled exports &nbsp;·&nbsp; Full report and print-layout pipeline.
+> **Owner:** Platform Admin (templates, mappings) &nbsp;·&nbsp; **Table:** `tb_report_job` (tenant — real but currently orphaned) — schedules are **not** in `tb_report_schedule` (dead, see [reporting-audit/schedule](/en/inventory/reporting-audit/schedule)), `tb_report_template` + `tb_print_template_mapping` (platform, real) &nbsp;·&nbsp; **Used by:** the report list ("Run"), every "Print" button, and scheduled fires — all three render via a viewer-URL endpoint, none of the three write a job row.
+
+## Implementation status (verified 2026-07-22)
+
+The on-demand "Run" flow on the report list (`report-component.tsx` → `useRunReportMutation` → `POST .../reports/viewer`) and every module's "Print" button (`lib/print-document.ts`) both resolve straight to a rendered viewer URL — neither calls the async job endpoint (`generate-async`), so neither writes a `tb_report_job` row. A repo-wide frontend search found zero callers of `generate-async`/`job-status` anywhere. See [reporting-audit/history](/en/inventory/reporting-audit/history) for the full finding and its consequences for the history screen, and [reporting-audit/schedule](/en/inventory/reporting-audit/schedule) for the confirmed-dead `tb_report_schedule` table (the real schedule store is a generic `Cronjob` table in the separate micro-cronjobs service).
 
 ## 1. What & Who
 
-The report entity is the full **report generation pipeline** — ad-hoc on-demand exports + scheduled recurring exports + the print layout behind every "Print" button. Four tables across two schemas:
+The report entity is the **report generation pipeline** — ad-hoc on-demand rendering, the print layout behind every "Print" button, and (structurally, though not currently populated) scheduled recurring exports. Three tables are relevant, spanning two schemas plus a third external scheduler database:
 
-- `tb_report_template` (platform) — template catalogue (analytical `report` or `print` layout); holds layout (`dialog`, `content`), data binding (`source_type` + `source_name` + `source_params`), orientation, signatures.
-- `tb_print_template_mapping` (platform) — maps `document_type` (`PO`, `PR`, `SR`, `GRN`, `CN`, `IA`, …) to one or more templates; exactly one `is_default = true` per type.
-- `tb_report_job` (tenant) — execution history (queued / processing / completed / failed / cancelled); filters, format, output metadata.
-- `tb_report_schedule` (tenant) — cron-driven recurring runs; enqueues jobs.
+- `tb_report_template` (platform) — template catalogue (analytical `report` or `print` layout); holds layout (`dialog`, `content`), data binding (`source_type` + `source_name` + `source_params`), orientation, signatures. Read-only from `carmen-inventory-frontend-react`'s report list — no template-authoring UI was found in this repo (template `POST`/`PUT`/`DELETE` exist on the backend but are exposed under a `platform/` gateway module, outside this repo's scope).
+- `tb_print_template_mapping` (platform) — maps `document_type` (`PO`, `PR`, `SR`, `GRN`, `CN`, `IA`, …) to one or more templates; exactly one `is_default = true` per type. Real and actively resolved by every "Print" button via `GET .../report/print-template?document_type=`.
+- `tb_report_job` (tenant) — job/history table. Real and correctly wired to `/report/history`, but confirmed to receive zero writes from any currently-reachable UI path — see Implementation status above.
 
-Mixed schemas reflect deployment: templates + mappings are curated centrally; jobs + schedules are tenant data.
+Report **schedules** are not a fourth tenant table here — see [reporting-audit/schedule](/en/inventory/reporting-audit/schedule) for the corrected model (a generic `Cronjob` row in the separate micro-cronjobs service).
 
 **Maintained by** Platform Admin (templates, mappings), Sysadmin (schedules). **Read by** the report list, "Print as…" menu, dashboard widgets.
 
@@ -41,37 +44,36 @@ micro-report no longer runs the query in-process — it calls micro-data's `POST
 
 | Task | Where | Notes |
 |---|---|---|
-| Run a report on demand | Reports menu → pick report → Run | Inserts a `tb_report_job` row |
-| Download a finished job | Reports → Jobs → click filename | Resolves `file_url`; respects `expires_at` |
-| Schedule a recurring export | Reports → Schedules → New | Cron expression + filters + recipients |
-| Add a print layout for a document type | Platform Admin → Print Templates | Toggle `is_default` to switch default |
+| Run a report on demand | Report list → pick report → Run | `POST .../reports/viewer` — renders a viewer URL directly; **no `tb_report_job` row written** |
+| Print a document | Any document's Print action | Resolves `tb_print_template_mapping`, then the same viewer endpoint — same "no job row" behavior |
+| Filter the report list | Search box + report-group filter | Server-side search; group filter is client-side over the current page |
+| Add a print layout for a document type | Platform Admin (outside this repo's UI — see below) | Toggle `is_default` to switch default; real backend endpoint, no editing screen found in `carmen-inventory-frontend-react` |
 | BU-scope a template | Edit template `allow_business_unit` / `deny_business_unit` | Null allow-list = all BUs |
-| Re-run a failed job | Reports → Jobs → Re-run | Creates new `tb_report_job` |
+| Schedule a recurring export | See [reporting-audit/schedule](/en/inventory/reporting-audit/schedule) | Not stored in this module's tenant tables — real backing is a separate scheduler service |
 
 ## 3. Validation & Errors
 
 | Symptom | Cause | Action |
 |---|---|---|
-| Job stuck `queued` | Executor not picking up | Check executor health and `idx_report_job_status` |
-| Job fails with "view not found" | `source_type` / `source_name` drift | Realign template binding with DB object |
+| History screen shows nothing for a run I just did | Expected — see Implementation status above; no reachable path writes `tb_report_job` | Not a bug in the read path |
+| Job fails with "view not found" (when the async path *is* exercised) | `source_type` / `source_name` drift | Realign template binding with DB object |
 | Multiple defaults per document type | App invariant violated | Repair: keep one `is_default = true`; others false |
-| Download 404 | Output reaped per `expires_at` | Re-run the job |
 | Template not visible in BU | `allow_business_unit` excludes; or `deny_business_unit` includes | Edit BU scoping |
 
 ## 4. Edge Cases
 
-- **Source binding drift** is the single largest cause of failed jobs — keep `source_type` / `source_name` aligned with the actual DB object.
-- **Standard vs user-defined templates.** `is_standard = true` UIs typically prevent deletion and warn on edit.
-- **Job lifecycle.** `queued → processing → (completed | failed | cancelled)`. Executor sets `started_at` / `completed_at` / `duration_ms`.
-- **Output retention.** `expires_at` is the storage reaper contract.
+- **On-demand runs and Print are synchronous viewer renders, not queued jobs.** No `tb_report_job` row, no history entry, no `expires_at` retention applies to them.
+- **Source binding drift** is the largest plausible cause of failure on the viewer path (a `source_type`/`source_name` mismatch) — keep template binding aligned with the actual DB object.
+- **Standard vs user-defined templates.** `is_standard = true` templates are handled specially by the backend `delete`/`update` handlers (unconfirmed exact UI behavior in this pass — no template-editing screen exists in `carmen-inventory-frontend-react`).
+- **Async job lifecycle exists but is unreached.** `queued → processing → (completed | failed | cancelled)` remains the model's contract; the executor only advances it via `generate-async`, which nothing in the current frontend calls.
 
 ---
 
 ## 5. Data Model (Dev)
 
-Source: **mixed** — tenant for jobs/schedules, platform for templates/mappings.
+Source: **mixed** — tenant for the job/history table, platform for templates/mappings. Schedules are **not** a tenant table here — see [reporting-audit/schedule](/en/inventory/reporting-audit/schedule) §5 for the real `Cronjob` model in the separate micro-cronjobs service.
 
-### 5.1 `tb_report_job` (tenant)
+### 5.1 `tb_report_job` (tenant — real, currently orphaned; see [reporting-audit/history](/en/inventory/reporting-audit/history))
 
 | Field | Prisma Type | Nullable | Description |
 | --- | --- | --- | --- |
@@ -90,18 +92,9 @@ Source: **mixed** — tenant for jobs/schedules, platform for templates/mappings
 
 **Indexes:** `status`, `report_type`, `requested_by_id`, `created_at DESC`.
 
-### 5.2 `tb_report_schedule` (tenant)
+### 5.2 Schedules — not a tenant table (corrected)
 
-| Field | Prisma Type | Nullable | Description |
-| --- | --- | --- | --- |
-| `id` / `name` | `String` | No | Keys. |
-| `report_type` / `report_template_id` | `String` | Mixed | Logical id + optional template binding. |
-| `format` | `enum_report_format` | No | Output format. |
-| `cron_expression` | `String @db.VarChar(100)` | No | Standard cron. |
-| `schedule_config` / `filters` / `options` / `recipients` | `Json?` | Yes | Scheduler + run options + email/user IDs. |
-| `is_active` | `Boolean` | No | Default `true`. |
-| `last_run_at` / `next_run_at` | `DateTime?` | Yes | Scheduler bookkeeping. |
-| Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |
+The tenant schema does declare a `tb_report_schedule` model, but a repo-wide code search found **zero references to it anywhere** outside its own Prisma declaration — it is dead, the same pattern confirmed for `tb_attachment` and the old `tb_widget_*` family. The real schedule store is a generic `Cronjob` table (`job_type = "report"` rows) in the separate micro-cronjobs service's own Postgres schema. See [reporting-audit/schedule](/en/inventory/reporting-audit/schedule) §5 for the full corrected model.
 
 ### 5.3 `tb_report_template` (platform)
 
@@ -117,25 +110,26 @@ Carries `name`, `description`, `report_group`, `kind` (`report` / `print`), `dia
 
 - **One default print template per document type.** App-enforced; editing flips existing default off in the same transaction.
 - **BU scoping.** Effective rule: *allow if in allow-list AND not in deny-list*; empty allow-list = all BUs.
-- **Template kind.** `report` for analytical menu; `print` for the print pipeline (hidden from reports menu).
+- **Template kind.** `report` for the analytical report list; `print` for the print pipeline.
 - **Source binding integrity.** `source_type` must match the DB object's nature; positional args declared in `source_params`.
-- **Job lifecycle.** `queued → processing → (completed | failed | cancelled)`.
-- **Output retention.** `expires_at` governs reaper.
-- **Standard templates** UIs typically prevent deletion.
+- **On-demand runs and Print never queue a job.** Both call the synchronous viewer endpoint — `tb_report_job`'s `queued → processing → (completed | failed | cancelled)` lifecycle is real but currently unreached by any frontend code path.
+- **Standard templates** — backend has distinct handling for `is_standard = true` (per the Go handler code); no editing UI to observe the resulting behavior in this repo.
 
 ## 7. Cross-References
 
-- All transactional modules — every "Print" button resolves through `tb_print_template_mapping`.
-- [reporting-audit/widget](/en/inventory/reporting-audit/widget) — widget tiles can embed reports.
-- [reporting-audit/notification](/en/inventory/reporting-audit/notification) — schedule completion may dispatch notifications.
-- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — `export` / `print` actions logged.
+- All transactional modules — every "Print" button resolves through `tb_print_template_mapping`, then renders via the viewer endpoint (no job row).
+- [reporting-audit/widget](/en/inventory/reporting-audit/widget) — dashboard widget tiles pull from the [system-config/dashboard-dataset](/en/inventory/system-config/dashboard-dataset) catalog, a separate mechanism from this report-template catalogue.
+- [reporting-audit/schedule](/en/inventory/reporting-audit/schedule) — recurring fires; not backed by a tenant table in this module.
+- [reporting-audit/history](/en/inventory/reporting-audit/history) — the `tb_report_job` read screen; confirmed structurally orphaned.
+- [reporting-audit/notification](/en/inventory/reporting-audit/notification) — schedule fires dispatch a viewer-link notification per recipient.
+- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — `export` / `print` actions logged (unconfirmed against the viewer path specifically in this pass).
 - [access-control/user](/en/inventory/access-control/user) — `requested_by_id` + recipients.
 - [master-data/business-unit](/en/inventory/master-data/business-unit) — BU scoping.
 
 ## 8. References
 
-- **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_report_job` (lines ~5652-5683), `tb_report_schedule` (lines ~5685-5709).
-- **Prisma platform:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_report_template` (lines ~589-656), `tb_print_template_mapping` (lines ~663-688).
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/reporting/` (tenant reports/jobs/schedules); template admin in platform app.
-- **Microservice:** `../micro-report/` — report execution worker.
+- **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_report_job` (line ~6094), `enum_report_job_status` (line ~6086), `enum_report_format` (line ~6070), `enum_report_category` (line ~6077).
+- **Prisma platform:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_report_template` (line ~731), `tb_print_template_mapping` (line ~806).
+- **Frontend:** `../carmen-inventory-frontend-react/routes/report/` (`list/`, `schedules/`, `history/`); `lib/print-document.ts` (Print integration used by every transactional module).
+- **Microservice:** `../micro-report/` — `controller/report_controller.go` (`viewReport`, `generateAsync`, `history`), `controller/template_controller.go`, `controller/print_template_mapping_controller.go`.
 

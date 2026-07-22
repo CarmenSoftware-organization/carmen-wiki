@@ -1,8 +1,8 @@
 ---
 title: บันทึกกิจกรรม (Activity)
-description: บันทึก activity ระดับ tenant — ทุกการเปลี่ยนสถานะที่มีความหมายถูกเก็บเป็นหนึ่งแถวพร้อม actor, entity, snapshot ก่อน/หลัง, IP และ user agent
+description: บันทึก activity ระดับ tenant — ทุกการเปลี่ยนสถานะที่มีความหมายถูกเก็บเป็นหนึ่งแถวพร้อม actor, entity, snapshot ก่อน/หลัง, IP และ user agent แสดงผลผ่านหน้าจอ /system-admin/activity-log ทั่วแพลตฟอร์มเท่านั้น — ไม่มี drawer ต่อเอกสารฝังอยู่เลย
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-22T00:00:00.000Z
 tags: reporting-audit, activity, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -21,17 +21,19 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ตารางออกแบบให้เป็น generic และ write-heavy โดยตั้งใจ `entity_type` เป็น discriminator ที่เป็น string แบบอิสระ; `entity_id` คือ UUID ของเป้าหมาย; enum `action` ครอบคลุมคำกริยา lifecycle
 
-**ดูแลโดย** audit service (เขียนอย่างเดียว) **อ่านโดย** drawer activity บนเอกสารแต่ละใบและ audit log ทั่วทั้งแพลตฟอร์ม
+**ดูแลโดย** audit service (เขียนอย่างเดียว) **อ่านโดย** หน้าจอเดียวเท่านั้น — `/system-admin/activity-log` ไม่พบ "Activity drawer" ต่อเอกสารที่ฝังอยู่ที่ไหนใน `carmen-inventory-frontend-react` เลย — `useActivityLog`/endpoint `ACTIVITY_LOGS` ถูกอ้างอิงเฉพาะโดย `activity-log-component.tsx` และ table hook ของมันเอง
 
 ## 2. งานที่พบบ่อย
 
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
-| ดูประวัติของเอกสาร | รายละเอียดเอกสาร → drawer **Activity** | กรองโดย `entity_type` + `entity_id` |
-| ค้นหา audit log ตามผู้ใช้ | Sysadmin → Audit Log | กรองโดย `actor_id` + ช่วงวันที่ |
-| Compliance export | Audit Log → Export | เส้นทาง query เดียวกัน ส่งแถวไปยังที่จัดเก็บระยะยาว |
-| Diff เก่า vs ใหม่ | เปิดแถว activity | snapshot JSONB `old_data` / `new_data`; diff ที่ฝั่ง render |
-| ตรวจสอบการลบ | ค้นด้วย `entity_id` + `action = delete` | แถวเก่ายังมีค่า (ประวัติ entity ที่ถูกลบ) |
+| ดูรายการ activity log | `/system-admin/activity-log` | มุมมองรายการหรือ grid; filter สำหรับ **action**, **entity type** และ **ผู้ใช้** (actor) บวกค้นหาแบบข้อความอิสระ |
+| กรองตาม action | Multi-select Action | จำกัดเหลือ 5 ตัวเลือกใน UI (`create`, `update`, `delete`, `login`, `logout`) — enum มี 20 ค่าทั้งหมด; action อื่นถูกเขียนแต่ไม่มีเป็น filter ด่วน |
+| กรองตามประเภท entity | Multi-select Entity Type | รายการคัดสรร ~13 ค่า (`purchase_request`, `purchase_order`, `good_received_note`, `credit_note`, `store_requisition`, `inventory_transaction`, `product`, `vendor`, `location`, `department`, `currency`, `period`, `auth`) — `entity_type` เองเป็น free-form ดังนั้นค่าอื่นอาจมีอยู่ในข้อมูลโดยไม่มี filter chip ที่ตรงกัน |
+| Export มุมมองที่กรองปัจจุบัน | ปุ่ม **Export** | export XLSX แบบ client-side (`useExportActivityLog`) ใช้ query params เดียวกับรายการ |
+| Print | ปุ่ม **Print** | Print หน้าปัจจุบันของ browser |
+| ตรวจดูหนึ่งแถว | คลิกแถว | เปิด `ActivityLogDetailSheet` — ใกล้เคียงที่สุดกับมุมมอง "diff เก่า vs ใหม่"; render `old_data`/`new_data` JSONB |
+| **ไม่มีที่ไหนเลย** | — | "Activity" drawer/tab ต่อเอกสารที่ฝังบนหน้ารายละเอียด PR/PO/GRN/ฯลฯ ไม่มีอยู่จริง — หน้าจอรายการทั่วแพลตฟอร์มเป็น surface เดียว กรองด้วย `entity_type` + `entity_id` ที่คัดลอกด้วยมือผ่าน URL params ได้ถ้าจำเป็น |
 
 ## 3. ข้อผิดพลาดและการตรวจสอบ
 
@@ -68,6 +70,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | `old_data` | `Json? @db.JsonB` | Yes | Default `{}` Snapshot ก่อน |
 | `new_data` | `Json? @db.JsonB` | Yes | Snapshot หลัง |
 | `ip_address` / `user_agent` / `description` | `String?` | Yes | metadata ของ request + สรุปแบบเลือกได้ |
+| `doc_version` | `Int @db.Integer` | No | Default `0` เพิ่มเมื่อ 2026-06-12 ทั่ว 103 ตาราง tenant; ยังไม่ยืนยันว่าถูกอ่าน/เขียนสำหรับตาราง append-only นี้โดยเฉพาะ |
 | คอลัมน์ audit | — | Yes | `created_*`, `updated_*`, `deleted_*` |
 
 **Constraints:** `@@index([entity_type, entity_id])` map `activity_entitytype_entityid_idx` — รองรับ "ประวัติของแถว X ในตาราง Y" `actor_id` ไม่มี relation DB (ข้าม schema)
@@ -92,5 +95,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_activity` (lines ~277-297), `enum_activity_action` (lines ~67-89)
-- **Frontend:** Activity drawer ฝังในหน้ารายละเอียดของเอกสารแต่ละใบ; audit log ทั่วทั้งแพลตฟอร์มใน Sysadmin tooling
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_activity` (บรรทัด ~280), `enum_activity_action` (บรรทัด ~56)
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/activity-log/activity-log.route.tsx`, `activity-log-component.tsx`, `activity-log-detail-sheet.tsx`
+- **Frontend hook/type:** `../carmen-inventory-frontend-react/hooks/use-activity-log.ts` (`useActivityLog`, `useExportActivityLog`), `types/activity-log.ts`
+- **ผู้เขียน (ตัวอย่าง):** `../carmen-turborepo-backend-v2/apps/micro-business/src/authen/auth/auth.service.ts` — `logAuthActivity()` เขียนแถว `login`/`logout` ไปยัง business unit เริ่มต้นของผู้ใช้เท่านั้น
