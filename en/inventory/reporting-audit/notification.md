@@ -2,7 +2,7 @@
 title: Notification
 description: Cross-tenant notification fan-out — personal notification rows plus a newer, separate broadcast mechanism (tb_broadcast_notification + tb_user_broadcast_action), reusable message templates, and platform-wide news posts with real BU scoping and a draft/published/archived lifecycle.
 published: true
-date: 2026-07-22T00:00:00.000Z
+date: 2026-07-22T03:05:28.000Z
 tags: reporting-audit, notification, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -17,7 +17,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 Two corrections to the previous version of this page:
 
-1. **A separate broadcast mechanism exists and was undocumented.** `tb_broadcast_notification` (one row per broadcast, `category` = `'system-to-user'` or `'bu-to-user'`, `scope_id` = the `business_unit.id` for BU-scoped broadcasts) + `tb_user_broadcast_action` (per-user read/dismiss state, created lazily on first action) is confirmed **live** — actively read/written in `micro-notification/src/notification/notification.service.ts` and exposed through `backend-gateway/src/notification/notification.controller.ts`. Its own code comment states it explicitly: *"This replaces the previous fan-out-on-write pattern that inserted one `tb_notification` row per recipient for the same broadcast message."* `tb_notification` remains real and live for **personal**, per-recipient notifications (workflow events, scheduled-report delivery — see [reporting-audit/schedule](/en/inventory/reporting-audit/schedule)); the unified inbox list merges both sources (`source: 'personal' | 'broadcast'`) into one response shape for the frontend.
+1. **A separate broadcast mechanism exists and was undocumented.** `tb_broadcast_notification` (one row per broadcast, `category` = `'system-to-user'` or `'bu-to-user'`, `scope_id` = the `business_unit.id` for BU-scoped broadcasts) + `tb_user_broadcast_action` (per-user read/dismiss state, created lazily on first action) is confirmed **live** — actively read/written in `micro-notification/src/notification/notification.service.ts` and exposed through `backend-gateway/src/notification/notification.controller.ts`. Its own Prisma doc-comment (on `model tb_broadcast_notification`, `prisma-shared-schema-platform/schema.prisma` line ~372) states it explicitly: *"This replaces the previous fan-out-on-write pattern that inserted one `tb_notification` row per recipient for the same broadcast message."* `tb_notification` remains real and live for **personal**, per-recipient notifications (workflow events, scheduled-report delivery — see [reporting-audit/schedule](/en/inventory/reporting-audit/schedule)); the unified inbox list merges both sources (`source: 'personal' | 'broadcast'`) into one response shape for the frontend.
 2. **`tb_news` has real BU scoping and a draft/published/archived lifecycle** — the opposite of what this page previously claimed. `business_unit_ids` (JSONB array; empty = global, non-empty = scoped to those BUs) and `status enum_news_status` (`draft` default, `published`, `archived`) both exist and are enforced by `news.service.ts`: a freshly-created post defaults to `draft` and is invisible to `findPublicAll()`/`findPublicOne()` (which both hard-filter `status: published`) until explicitly published.
 
 ## 1. What & Who

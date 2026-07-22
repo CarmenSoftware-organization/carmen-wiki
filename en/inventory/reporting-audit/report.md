@@ -2,7 +2,7 @@
 title: Report
 description: Report generation pipeline — a report-template catalogue and print-type mapping (platform), on-demand viewer rendering, and a job/history table that is real but currently orphaned (nothing writes to it through any reachable UI path).
 published: true
-date: 2026-07-22T00:00:00.000Z
+date: 2026-07-22T03:05:28.000Z
 tags: reporting-audit, report, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -27,7 +27,7 @@ The report entity is the **report generation pipeline** — ad-hoc on-demand ren
 
 Report **schedules** are not a fourth tenant table here — see [reporting-audit/schedule](/en/inventory/reporting-audit/schedule) for the corrected model (a generic `Cronjob` row in the separate micro-cronjobs service).
 
-**Maintained by** Platform Admin (templates, mappings), Sysadmin (schedules). **Read by** the report list, "Print as…" menu, dashboard widgets.
+**Maintained by** Platform Admin (templates, mappings) — schedules are not a Sysadmin-gated concern here; see [reporting-audit/schedule](/en/inventory/reporting-audit/schedule) (any authenticated user with BU context, no schedule-admin gate found). **Read by** the report list, "Print as…" menu, dashboard widgets.
 
 ### 1.1 Dataset vs render — the micro-data split
 

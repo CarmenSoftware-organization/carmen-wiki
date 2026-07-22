@@ -2,7 +2,7 @@
 title: กิจกรรมผู้ใช้ (User Activity)
 description: Timeline login/logout ที่เน้น actor สร้างขึ้นทั้งหมดจากแถว tb_activity tb_user_login_session (ที่เคยบันทึกไว้ว่าเป็นครึ่งหนึ่งของโมเดลข้อมูล) เป็นตารางที่ตายแล้ว ไม่มีการอ้างอิงจากโค้ดนอกเหนือจาก schema เลย — JWT ที่ Keycloak ออกให้คือ mechanism session ที่แท้จริง ไม่มีตาราง session ในเครื่องรองรับ
 published: true
-date: 2026-07-22T00:00:00.000Z
+date: 2026-07-22T03:05:28.000Z
 tags: reporting-audit, activity, security, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -97,7 +97,7 @@ User Activity คือ **timeline login/logout ต่อผู้ใช้** �
 ## 8. แหล่งอ้างอิง
 
 - **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_activity` (บรรทัด ~280), `enum_activity_action` (บรรทัด ~56)
-- **Prisma platform (ตารางที่ตายแล้ว เพื่อเปรียบเทียบ):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_user_login_session` (บรรทัด ~567), `enum_token_type` (บรรทัด ~577)
+- **Prisma platform (ตารางที่ตายแล้ว เพื่อเปรียบเทียบ):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_user_login_session` (บรรทัด ~567), `enum_token_type` (บรรทัด ~686)
 - **ผู้เขียนที่ยืนยันแล้ว:** `../carmen-turborepo-backend-v2/apps/micro-business/src/authen/auth/auth.service.ts` — `logAuthActivity()` (private method) เรียกจาก `login()` และ `logout()`
 - **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/user-activity/user-activity.route.tsx`, `user-activity-component.tsx` (ตั้งค่าคงที่ `entity_type = "auth"` ทุก query), `use-user-activity-table.tsx`
 - **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-user-activity.ts` — เรียก endpoint `API_ENDPOINTS.ACTIVITY_LOGS(buCode)` เดียวกับหน้าจอของ [reporting-audit/activity](/th/inventory/reporting-audit/activity)

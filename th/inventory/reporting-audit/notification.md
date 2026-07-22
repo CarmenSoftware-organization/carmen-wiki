@@ -2,7 +2,7 @@
 title: การแจ้งเตือน (Notification)
 description: Fan-out การแจ้งเตือนข้าม tenant — แถว notification ส่วนตัว บวก mechanism broadcast แยกต่างหากที่ใหม่กว่า (tb_broadcast_notification + tb_user_broadcast_action), message template ที่ใช้ซ้ำได้ และข่าวประกาศแพลตฟอร์มที่มี BU scoping จริงและ lifecycle draft/published/archived
 published: true
-date: 2026-07-22T00:00:00.000Z
+date: 2026-07-22T03:05:28.000Z
 tags: reporting-audit, notification, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -17,7 +17,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 หน้านี้ฉบับก่อนหน้ามีสองจุดที่ต้องแก้ไข:
 
-1. **มี mechanism broadcast แยกต่างหากที่ยังไม่เคยบันทึกไว้** `tb_broadcast_notification` (หนึ่งแถวต่อ broadcast, `category` = `'system-to-user'` หรือ `'bu-to-user'`, `scope_id` = `business_unit.id` สำหรับ broadcast ที่ scope ด้วย BU) + `tb_user_broadcast_action` (สถานะอ่าน/dismiss ต่อผู้ใช้ สร้างแบบ lazy ตอน action ครั้งแรก) ยืนยันแล้วว่า **มีอยู่จริงและใช้งานอยู่** — ถูกอ่าน/เขียนใช้งานจริงใน `micro-notification/src/notification/notification.service.ts` และเปิดผ่าน `backend-gateway/src/notification/notification.controller.ts` คอมเมนต์ในโค้ดของมันเองระบุไว้ชัดเจน: *"This replaces the previous fan-out-on-write pattern that inserted one `tb_notification` row per recipient for the same broadcast message."* `tb_notification` ยังคงมีอยู่จริงและใช้งานอยู่สำหรับการแจ้งเตือน**ส่วนตัว**ต่อผู้รับ (event ของ workflow, การส่งมอบรายงานตามเวลา — ดู [reporting-audit/schedule](/th/inventory/reporting-audit/schedule)); รายการ inbox แบบรวมจะ merge ทั้งสองแหล่ง (`source: 'personal' | 'broadcast'`) เป็น response shape เดียวสำหรับ frontend
+1. **มี mechanism broadcast แยกต่างหากที่ยังไม่เคยบันทึกไว้** `tb_broadcast_notification` (หนึ่งแถวต่อ broadcast, `category` = `'system-to-user'` หรือ `'bu-to-user'`, `scope_id` = `business_unit.id` สำหรับ broadcast ที่ scope ด้วย BU) + `tb_user_broadcast_action` (สถานะอ่าน/dismiss ต่อผู้ใช้ สร้างแบบ lazy ตอน action ครั้งแรก) ยืนยันแล้วว่า **มีอยู่จริงและใช้งานอยู่** — ถูกอ่าน/เขียนใช้งานจริงใน `micro-notification/src/notification/notification.service.ts` และเปิดผ่าน `backend-gateway/src/notification/notification.controller.ts` Prisma doc-comment ของมันเอง (บน `model tb_broadcast_notification`, `prisma-shared-schema-platform/schema.prisma` บรรทัด ~372) ระบุไว้ชัดเจน: *"This replaces the previous fan-out-on-write pattern that inserted one `tb_notification` row per recipient for the same broadcast message."* `tb_notification` ยังคงมีอยู่จริงและใช้งานอยู่สำหรับการแจ้งเตือน**ส่วนตัว**ต่อผู้รับ (event ของ workflow, การส่งมอบรายงานตามเวลา — ดู [reporting-audit/schedule](/th/inventory/reporting-audit/schedule)); รายการ inbox แบบรวมจะ merge ทั้งสองแหล่ง (`source: 'personal' | 'broadcast'`) เป็น response shape เดียวสำหรับ frontend
 2. **`tb_news` มี BU scoping จริงและมี lifecycle draft/published/archived** — ตรงข้ามกับที่หน้านี้เคยระบุไว้ `business_unit_ids` (JSONB array; ว่าง = global, ไม่ว่าง = scope เฉพาะ BU เหล่านั้น) และ `status enum_news_status` (default `draft`, `published`, `archived`) มีอยู่จริงทั้งคู่และถูกบังคับใช้โดย `news.service.ts`: โพสต์ที่เพิ่งสร้างจะ default เป็น `draft` และมองไม่เห็นจาก `findPublicAll()`/`findPublicOne()` (ทั้งคู่กรอง `status: published` แบบ hard filter) จนกว่าจะ publish อย่างชัดเจน
 
 ## 1. ภาพรวมและผู้ใช้งาน

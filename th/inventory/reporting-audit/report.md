@@ -2,7 +2,7 @@
 title: รายงาน (Report)
 description: pipeline การสร้างรายงาน — แคตตาล็อก report-template และ print-type mapping (platform), การ render ผ่าน viewer แบบ on-demand และตาราง job/history ที่มีอยู่จริงแต่ปัจจุบันไม่มีข้อมูล (ไม่มีเส้นทาง UI ใดเขียนเข้าไปเลย)
 published: true
-date: 2026-07-22T00:00:00.000Z
+date: 2026-07-22T03:05:28.000Z
 tags: reporting-audit, report, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -27,7 +27,7 @@ flow "Run" แบบ on-demand บนรายการรายงาน (`repo
 
 **Schedule** ของรายงานไม่ใช่ตาราง tenant ตัวที่สี่ในที่นี้ — ดู [reporting-audit/schedule](/th/inventory/reporting-audit/schedule) สำหรับโมเดลที่แก้ไขแล้ว (แถว `Cronjob` แบบ generic ใน service micro-cronjobs แยกต่างหาก)
 
-**ดูแลโดย** Platform Admin (template, mapping), Sysadmin (schedule) **อ่านโดย** รายการรายงาน, เมนู "Print as…", widget บน dashboard
+**ดูแลโดย** Platform Admin (template, mapping) — schedule ไม่ใช่เรื่องที่ Sysadmin เป็น gate ในที่นี้; ดู [reporting-audit/schedule](/th/inventory/reporting-audit/schedule) (ผู้ใช้ที่ authenticate แล้วและมี BU context คนใดก็ได้ ไม่พบ gate schedule-admin) **อ่านโดย** รายการรายงาน, เมนู "Print as…", widget บน dashboard
 
 ### 1.1 Dataset เทียบกับการ render — การแยก micro-data
 

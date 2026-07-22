@@ -2,7 +2,7 @@
 title: User Activity
 description: Actor-centric login/logout timeline reconstructed entirely from tb_activity rows. tb_user_login_session (previously documented as half the data model) is a dead table with zero non-schema code references — Keycloak-issued JWTs are the real session mechanism, with no local session-table backing.
 published: true
-date: 2026-07-22T00:00:00.000Z
+date: 2026-07-22T03:05:28.000Z
 tags: reporting-audit, activity, security, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -97,7 +97,7 @@ See [reporting-audit/activity](/en/inventory/reporting-audit/activity) §5.1 for
 ## 8. References
 
 - **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_activity` (line ~280), `enum_activity_action` (line ~56).
-- **Prisma platform (dead table, for contrast):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_user_login_session` (line ~567), `enum_token_type` (line ~577).
+- **Prisma platform (dead table, for contrast):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_user_login_session` (line ~567), `enum_token_type` (line ~686).
 - **Confirmed writer:** `../carmen-turborepo-backend-v2/apps/micro-business/src/authen/auth/auth.service.ts` — `logAuthActivity()` (private method), called from `login()` and `logout()`.
 - **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/user-activity/user-activity.route.tsx`, `user-activity-component.tsx` (hard-sets `entity_type = "auth"` on every query), `use-user-activity-table.tsx`.
 - **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-user-activity.ts` — calls the same `API_ENDPOINTS.ACTIVITY_LOGS(buCode)` endpoint as [reporting-audit/activity](/en/inventory/reporting-audit/activity)'s screen.
