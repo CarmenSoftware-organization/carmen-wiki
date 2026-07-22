@@ -2,7 +2,7 @@
 title: วิธีคำนวณต้นทุนสินค้าคงคลัง: FIFO vs. Weighted Average (Inventory Costing Methods)
 description: การวิเคราะห์วิธีคำนวณต้นทุนสินค้าคงคลัง FIFO vs. Weighted Average สำหรับแพลตฟอร์ม Carmen Software
 published: true
-date: 2026-05-17T12:00:00.000Z
+date: 2026-07-22T10:00:00.000Z
 tags: inventory, costing, fifo, weighted-average, carmen-software
 editor: markdown
 dateCreated: 2026-02-16T11:19:18.975Z
@@ -11,7 +11,9 @@ dateCreated: 2026-02-16T11:19:18.975Z
 # วิธีคำนวณต้นทุนสินค้าคงคลัง: FIFO vs. Weighted Average
 
 > **At a Glance**
-> **กลุ่มผู้ใช้:** นักพัฒนา & QA ฝั่ง Inventory &nbsp;·&nbsp; **ขอบเขต:** FIFO vs. Weighted Average — แนวคิด สูตร ผลกระทบ COGS trade-off &nbsp;·&nbsp; วิธี costing ล็อกที่ตอนตั้งค่า BU; หน้านี้เป็นเอกสารอ้างอิงในการตัดสินใจ
+> **กลุ่มผู้ใช้:** นักพัฒนา & QA ฝั่ง Inventory &nbsp;·&nbsp; **ขอบเขต:** FIFO vs. Weighted Average — แนวคิด สูตร ผลกระทบ COGS trade-off &nbsp;·&nbsp; วิธี costing ถูกตั้งค่าครั้งเดียวต่อ business unit ตอนตั้งค่า; การตรวจ code เมื่อ 2026-07-22 พบว่า **ไม่มี guard ป้องกันการเปลี่ยนภายหลัง** แม้มี on-hand ไม่เท่ากับศูนย์ — ดู [01-data-model](/th/inventory/costing/01-data-model) § 5 item 1 และ [02-business-rules](/th/inventory/costing/02-business-rules) § 2
+
+> **หมายเหตุเกี่ยวกับเนื้อหาหน้านี้:** หน้านี้เป็น **เอกสารอ้างอิงรูปแบบอุตสาหกรรมทั่วไป** (แนวคิด FIFO vs. Weighted Average, สูตร, และข้อพิจารณาการออกแบบแพลตฟอร์ม) ไม่ใช่คำอธิบาย schema ของ Carmen เอง — หน้านี้มีมาก่อนส่วนที่เหลือของโมดูลนี้และใช้ชื่อ table/field ทั่วไป (`inventory_lot`, `warehouse_id`, `organization_settings`) แทนชื่อ Prisma model จริง ตรงจุดที่มันต่างจาก implementation จริง — โดยเฉพาะขอบเขตการตั้งค่าต่อสินค้า/หมวดใน § 6.1 ซึ่งไม่มีอยู่จริง costing เป็นค่าเดียวต่อ business unit — [01-data-model](/th/inventory/costing/01-data-model) § 5 เอกสารความต่างทุกจุดไว้แล้ว อ่าน section นั้นควบคู่ไปกับหน้านี้ แทนที่จะถือ pseudocode ของหน้านี้เป็น schema จริงของ Carmen
 
 ## 1. ภาพรวม
 
@@ -435,6 +437,3 @@ function recalculate(productId, warehouseId, fromDate):
 4. **ความได้เปรียบในการแข่งขัน** - ดึงดูดตลาดที่กว้างกว่าแพลตฟอร์มที่มีวิธีเดียว
 
 เริ่มด้วย **Weighted Average** เป็น default (พัฒนาและ test ง่ายกว่า) แล้วเพิ่มการรองรับ **FIFO** ทั้งสองวิธีใช้โครงสร้างตาราง transaction เดียวกัน ต่างกันเพียงวิธีคำนวณและเก็บต้นทุน
-
-
-TEST

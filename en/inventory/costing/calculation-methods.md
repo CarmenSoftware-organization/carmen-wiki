@@ -2,7 +2,7 @@
 title: Inventory Costing Methods: FIFO vs. Weighted Average
 description: Analysis of inventory costing methods: FIFO vs. Weighted Average for the Carmen Software platform
 published: true
-date: 2026-05-17T11:00:00.000Z
+date: 2026-07-22T10:00:00.000Z
 tags: inventory, costing, fifo, weighted-average, carmen-software
 editor: markdown
 dateCreated: 2026-02-16T11:19:18.975Z
@@ -11,7 +11,9 @@ dateCreated: 2026-02-16T11:19:18.975Z
 # Inventory Costing Methods: FIFO vs. Weighted Average
 
 > **At a Glance**
-> **Audience:** Inventory devs & QA &nbsp;·&nbsp; **Scope:** FIFO vs. Weighted Average — concept, formulas, COGS impact, trade-offs &nbsp;·&nbsp; Costing method is locked at BU setup; this page is the decision reference.
+> **Audience:** Inventory devs & QA &nbsp;·&nbsp; **Scope:** FIFO vs. Weighted Average — concept, formulas, COGS impact, trade-offs &nbsp;·&nbsp; Costing method is set once per business unit at setup; a 2026-07-22 code check found **no guard preventing a later change** even with non-zero on-hand — see [01-data-model](/en/inventory/costing/01-data-model) § 5 item 1 and [02-business-rules](/en/inventory/costing/02-business-rules) § 2.
+
+> **Note on this page's content:** this page is a **generic industry-pattern reference** (FIFO vs. Weighted Average concepts, formulas, and platform-design considerations), not a description of Carmen's own schema — it predates the rest of this module and uses generic table/field names (`inventory_lot`, `warehouse_id`, `organization_settings`) rather than the real Prisma model names. Where it diverges from the actual implementation — most notably § 6.1's per-product/per-category configuration scope, which does not exist; costing is a single value per business unit — [01-data-model](/en/inventory/costing/01-data-model) § 5 documents every divergence point-by-point. Read that section alongside this page rather than treating this page's pseudocode as Carmen's live schema.
 
 ## 1. Overview
 
@@ -435,6 +437,3 @@ Every transaction must record:
 4. **Competitive advantage** - Attracts a broader market than single-method platforms
 
 Start with **Weighted Average** as the default (simpler to develop and test), then add **FIFO** support. Both methods use the same transaction table structure, differing only in how costs are calculated and stored.
-
-
-TEST
