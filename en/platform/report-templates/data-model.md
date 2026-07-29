@@ -1,8 +1,8 @@
 ---
 title: Report Template — Data Model
-description: tb_report_template entity, dialog/content XML payloads, source binding, BU scope.
+description: tb_report_template entity, dialog/content XML payloads, source binding, BU scope, and the 2026-07-23 kind→template_type rename plus is_default/doc_version columns.
 published: true
-date: 2026-06-10T14:15:00.000Z
+date: 2026-07-29T00:00:00.000Z
 tags: book/platform, report-templates, data-model
 editor: markdown
 dateCreated: 2026-05-19T18:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-19T18:30:00.000Z
 # Report Template — Data Model
 
 > **At a Glance**
-> **Tables:** `tb_report_template` (primary) &nbsp;·&nbsp; **Sibling table:** `tb_print_template_mapping` — documented in [Print Template Mapping](/en/platform/print-template-mapping) &nbsp;·&nbsp; **JSON payloads:** `dialog` (XML, non-nullable), `content` (XML, non-nullable), `source_params` (`{ params: [...] }`), `signature_config` (`{ blocks: [...] }`) &nbsp;·&nbsp; **Source binding:** `source_type` (plain String: `view` / `function` / `procedure`) + `source_name` + `source_params` &nbsp;·&nbsp; **BU scope:** `allow_business_unit` / `deny_business_unit` stored as `Json?`; serialised to CSV strings in the SPA form &nbsp;·&nbsp; **Lifecycle flags:** `is_standard`, `is_active`
+> **Tables:** `tb_report_template` (primary) &nbsp;·&nbsp; **Former sibling table:** `tb_print_template_mapping` — **dropped 2026-07-23**, its `is_default` role absorbed onto this table; see [Print Template Mapping](/en/platform/print-template-mapping) (historical) &nbsp;·&nbsp; **JSON payloads:** `dialog` (XML, non-nullable), `content` (XML, non-nullable), `source_params` (`{ params: [...] }`), `signature_config` (`{ blocks: [...] }`) &nbsp;·&nbsp; **Source binding:** `source_type` (plain String: `view` / `function` / `procedure`) + `source_name` + `source_params` &nbsp;·&nbsp; **BU scope:** `allow_business_unit` / `deny_business_unit` stored as `Json?`; serialised to CSV strings in the SPA form &nbsp;·&nbsp; **Lifecycle flags:** `is_standard`, `is_default` (form templates only, new 2026-07-23), `is_active`, `doc_version`
 
 > **Source of truth:** Backend Prisma platform schema. Always read this first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
@@ -20,11 +20,11 @@ dateCreated: 2026-05-19T18:30:00.000Z
 
 ## 1. Overview
 
-`tb_report_template` is the catalogue entry for one printable or exportable document in the Carmen Platform. Each row encodes the complete definition of a report: its identity (`name`, `report_group`, `kind`), two XML payload columns (`dialog` and `content`) consumed by the report runtime, the runtime source binding (`source_type`, `source_name`, `source_params`), a BU-scope allow/deny pair, and the standard lifecycle flags and audit trio.
+`tb_report_template` is the catalogue entry for one printable or exportable document in the Carmen Platform. Each row encodes the complete definition of a report: its identity (`name`, `report_group`, `template_type`), two XML payload columns (`dialog` and `content`) consumed by the report runtime, the runtime source binding (`source_type`, `source_name`, `source_params`), print-layout fields (`orientation`, `signature_config`), a BU-scope allow/deny pair, and the standard lifecycle flags and audit trio (including `doc_version`, the platform-wide optimistic-lock column added 2026-07-16).
 
 Report templates are tenant-global — they are not cluster-scoped and carry no FK to `tb_cluster`. The BU-scope columns (`allow_business_unit`, `deny_business_unit`) are opt-in filtering lists that restrict which business units a template is visible to; they do not bind the row to any particular cluster. This distinguishes the report-templates surface from the [clusters](/en/platform/clusters) and [business-units](/en/platform/business-units) pages, which document the cluster/BU hierarchy. BU codes referenced in the chip lists correspond to `tb_business_unit.code` values, but there is no FK constraint — the reference is an application-layer convention.
 
-The `kind` column distinguishes the two uses of this table: `"report"` rows are user-facing analytical reports; `"print"` rows are printable document layouts consumed by `tb_print_template_mapping`. That sibling join table (Prisma model `tb_print_template_mapping`) maps document types (PO, GRN, SR, …) to a `tb_report_template` row; it now has its own SPA surface and is documented in the [Print Template Mapping](/en/platform/print-template-mapping) module ([Data Model](/en/platform/print-template-mapping/data-model)) — this page covers `tb_report_template` only.
+The `template_type` column (renamed from `kind` by migration `20260723120000_print_form_default`, 2026-07-23) distinguishes the two uses of this table: `"list"` rows (was `"report"`) are user-facing tabular analytical reports; `"form"` rows (was `"print"`) are single-record document layouts. Until 2026-07-23, a separate `tb_print_template_mapping` table mapped document types (PO, GRN, SR, …) to a `kind="print"` row here; that table has been **dropped**. Its job — picking the one default template a business unit gets for a given group — is now done by this table's own `is_default` column, scoped to `report_group` and enforced by a partial unique index (§2.1). See [Print Template Mapping](/en/platform/print-template-mapping) for the removal timeline; this page covers `tb_report_template` only.
 
 ## 2. Entities
 
@@ -39,7 +39,7 @@ One row per report or print template. The field table below follows the Prisma d
 | `name` | `String @db.VarChar(255)` | No | — | Human-readable template name; unique among live rows (with `deleted_at`) |
 | `description` | `String?` | Yes | — | Optional free-text description of the template's purpose |
 | `report_group` | `String @db.VarChar(100)` | No | — | Grouping key used to organise templates in the management list (e.g. `"Receiving"`, `"Inventory"`) |
-| `kind` | `String @default("report") @db.Text` | No | `"report"` | Template category: `"report"` (analytical report visible to users) or `"print"` (document layout consumed by `tb_print_template_mapping`) |
+| `template_type` | `String @default("list") @db.Text` | No | `"list"` | Template category: `"list"` (tabular analytical report, was `"report"`) or `"form"` (single-record document layout, was `"print"`). Renamed from `kind` by migration `20260723120000_print_form_default` (2026-07-23); values changed at the same time |
 | **— XML Payloads —** | | | | |
 | `dialog` | `String @db.Text` | No | — | XML string defining the parameter form rendered by the report runtime. Not nullable — an empty string `""` is the valid "no dialog" value. Detailed XML structure documented in [XML Spec §2](./xml-spec.md) |
 | `content` | `String @db.Text` | No | — | XML string defining the report output layout rendered by the report runtime. Not nullable — `""` is valid for a new template. The Content tab in the editor also accepts `.frx` / `.xml` / `.txt` file uploads (legacy FastReport migration). Detailed structure in [XML Spec §3](./xml-spec.md) |
@@ -56,11 +56,13 @@ One row per report or print template. The field table below follows the Prisma d
 | `signature_config` | `Json @db.JsonB` | No | `{"blocks":[]}` | Signature block definitions rendered on the print layout. Shape: `{ "blocks": [{ "key": "Sig1Name", "label": "Requestor", "required": true }, ...] }`. Replaces the previous behaviour of pulling `Sig1Name`…`Sig5Name` from active workflow stages |
 | **— Lifecycle —** | | | | |
 | `is_standard` | `Boolean` | No | `true` | Marks the template as a standard (system-provided) template. Standard templates are typically read-only for end operators |
+| `is_default` | `Boolean` | No | `false` | **New 2026-07-23.** Meaningful only for `template_type = "form"`: the one live template per `report_group` used when a business unit hasn't chosen one. Enforced by the partial unique index below, not just application logic — this is the column that absorbed `tb_print_template_mapping.is_default` when that table was dropped |
 | **— BU Scope —** | | | | |
 | `allow_business_unit` | `Json? @db.JsonB` | Yes | — | Optional list of BU codes that may see this template. `NULL` = visible to all BUs. The SPA reads this as an array (or scalar) and normalises it to a comma-separated string for the chip-input field via `toCsv()` |
 | `deny_business_unit` | `Json? @db.JsonB` | Yes | — | Optional list of BU codes explicitly excluded from seeing this template. `NULL` = no denials. Same `toCsv()` normalisation as `allow_business_unit` |
 | `is_active` | `Boolean` | No | `true` | When `false`, the template is inactive and hidden from selection lists |
 | **— Audit —** | | | | |
+| `doc_version` | `Int @default(0) @db.Integer` | No | `0` | Optimistic-lock token, part of the platform-wide `doc_version` rollout (2026-07-16, all 35 platform tables). The SPA sends it on every `PUT` and shows a conflict toast + reload on a version mismatch |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: row creation time |
 | `created_by_id` | `String? @db.Uuid` | Yes | — | Audit: FK to `tb_user.id` of the creator (application-layer convention; no Prisma `@relation` declared) |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: last update time |
@@ -72,6 +74,7 @@ One row per report or print template. The field table below follows the Prisma d
 **Constraints:**
 - `@id` on `id`
 - `@@unique([name, deleted_at])` — map `"report_template_name_deleted_at_u"` — template names are unique among live rows; allows name reuse after soft delete
+- **New 2026-07-23:** a partial unique index `idx_report_template_default_per_group` on `(report_group)` `WHERE is_default AND template_type = 'form' AND deleted_at IS NULL` — enforces "at most one live default form template per group" at the database level. This index is SQL-only (added directly in the migration, not expressible in the Prisma schema DSL) — `prisma migrate diff` will not see it, so it must not be dropped by a future auto-generated migration
 
 **Indexes:**
 - `@@index([report_group])` — map `"idx_report_template_report_group"` — supports listing templates filtered or sorted by group
@@ -82,8 +85,9 @@ One row per report or print template. The field table below follows the Prisma d
 tb_report_template  self-FK  created_by_id  → tb_user.id  (audit; no Prisma @relation)
 tb_report_template  self-FK  updated_by_id  → tb_user.id  (audit; no Prisma @relation)
 tb_report_template  self-FK  deleted_by_id  → tb_user.id  (audit; no Prisma @relation)
-tb_report_template  1 ─── M  tb_print_template_mapping      (via tb_print_template_mapping.report_template_id; see Print Template Mapping module)
 ```
+
+**Removed 2026-07-23:** `tb_report_template 1 ─── M tb_print_template_mapping` no longer exists — the mapping table was dropped outright, not merely disconnected. See [Print Template Mapping](/en/platform/print-template-mapping) for the removal.
 
 Notable absences:
 
@@ -101,9 +105,9 @@ Notable absences:
 | `"function"` | The executor runs `SELECT * FROM <source_name>($1, $2, …)` where the function returns a TABLE or SETOF. Arguments are positional, mapped by `source_params.params` in declaration order |
 | `"procedure"` | The executor runs `CALL <source_name>($1, …, 'rs'::refcursor)` and fetches from the cursor named `rs`. Arguments are positional from `source_params.params`; the trailing refcursor is a runtime convention not represented in `source_params` |
 
-Similarly, `kind` and `orientation` are plain String columns. Their valid values are enforced only at the application layer:
+Similarly, `template_type` and `orientation` are plain String columns. Their valid values are enforced only at the application layer:
 
-- `kind`: `"report"` (default) or `"print"`
+- `template_type`: `"list"` (default) or `"form"` — renamed from `kind` (`"report"`/`"print"`) by migration `20260723120000_print_form_default`
 - `orientation`: `"portrait"` (default) or `"landscape"`
 
 ## 5. The JSON columns
@@ -180,34 +184,38 @@ Each block defines one signature line on the printed document. The `key` field c
 
 ## 6. Divergences from carmen-platform SPA shape
 
-The `ReportTemplate` interface in `../carmen-platform/src/services/reportTemplateService.ts` (lines 17–37) and the `ReportTemplateFormData` interface in `../carmen-platform/src/pages/ReportTemplateEdit.tsx` (lines 36–50) were compared against the Prisma `tb_report_template` model. Notably, the `ReportTemplate` TS interface lives in `src/services/reportTemplateService.ts` (line 17), not `src/types/index.ts` where the other Platform-module interfaces (`Cluster`, `BusinessUnit`, `User`) reside — developers searching for the canonical TS shape should look in the service file.
+The `ReportTemplate` interface in `../carmen-platform/src/services/reportTemplateService.ts` (lines 19–44) and the `ReportTemplateFormData` interface in `../carmen-platform/src/pages/ReportTemplateEdit.tsx` (lines 44–60) were compared against the Prisma `tb_report_template` model. Notably, the `ReportTemplate` TS interface lives in `src/services/reportTemplateService.ts`, not `src/types/index.ts` where the other Platform-module interfaces (`Cluster`, `BusinessUnit`, `User`) reside — developers searching for the canonical TS shape should look in the service file.
+
+**Resolved 2026-07-23 (no longer a divergence):** `kind`/`template_type` and `is_default` now match on both sides. `ReportTemplateFormData` carries `template_type: '' | 'form' | 'list'` (required, exposed as a select) and `is_default: boolean` — the previous sync's item 1 ("`kind` absent from the form") is stale; the field is not only present but required at submit.
 
 | # | Item | Prisma has | SPA expects | Notes |
 | - | ---- | ---------- | ----------- | ----- |
-| 1 | `kind` | `String @default("report") @db.Text` | `kind: 'report' \| 'print'` on `ReportTemplate` service interface | Present in the service type but absent from `ReportTemplateFormData` — the SPA edit form does not expose a `kind` field. Templates are presumably assigned `kind` server-side or on creation |
-| 2 | `orientation` | `String @db.VarChar(20)` | Not present in `ReportTemplate` or `ReportTemplateFormData` | New Prisma column not yet surfaced in the SPA. Defaults to `"portrait"` at the database level |
-| 3 | `signature_config` | `Json @db.JsonB` | Not present in `ReportTemplate` or `ReportTemplateFormData` | Not yet surfaced in the SPA edit form |
-| 4 | `view_name` | `String? @db.VarChar` | Not in `ReportTemplate` service interface | Legacy column; accessed only implicitly in the Edit form load path (`template.source_name \|\| template.view_name`) as a fallback |
-| 5 | `allow_business_unit` / `deny_business_unit` | `Json? @db.JsonB` | `unknown` on `ReportTemplate` service interface; `string` in `ReportTemplateFormData` | The Edit form normalises the JSON value (array or scalar) to a comma-separated string via `toCsv()` for the chip-input field. The service interface types these as `unknown` to accommodate both the raw JSON from the API and the serialised form value |
-| 6 | `created_by_id` / `updated_by_id` | `String? @db.Uuid` (raw IDs) | `created_by_id?: string` / `updated_by_id?: string` on `ReportTemplate` | Raw IDs are present in the service interface. The SPA also reads `created_by_name` / `updated_by_name` from the API response (resolved by the backend), but these are held in a separate `MetadataFields` state variable, not in the `ReportTemplate` type |
-| 7 | `source_params` | `Json @db.JsonB` (non-nullable) | `source_params?: ReportSourceParams` (optional) on service interface | The service interface marks it optional to handle partial API responses; the Prisma default ensures the DB column always has a value |
+| 1 | `orientation` | `String @db.VarChar(20)` | Not present in `ReportTemplate` or `ReportTemplateFormData` | Still not surfaced in the SPA as of 2026-07-29. Defaults to `"portrait"` at the database level |
+| 2 | `signature_config` | `Json @db.JsonB` | Not present in `ReportTemplate` or `ReportTemplateFormData` | Still not surfaced in the SPA edit form |
+| 3 | `view_name` | `String? @db.VarChar` | Not in `ReportTemplate` service interface | Legacy column; accessed only implicitly in the Edit form load path (`template.source_name \|\| template.view_name`) as a fallback |
+| 4 | `allow_business_unit` / `deny_business_unit` | `Json? @db.JsonB` | `unknown` on `ReportTemplate` service interface; `string` in `ReportTemplateFormData` | The Edit form normalises the JSON value (array or scalar) to a comma-separated string via `toCsv()` for the chip-input field. Disabled and cleared client-side when `template_type = 'form'` — form templates are not BU-scoped this way |
+| 5 | `created_by_id` / `updated_by_id` | `String? @db.Uuid` (raw IDs) | `created_by_id?: string` / `updated_by_id?: string` on `ReportTemplate` | Raw IDs are present in the service interface. The SPA also reads `created_by_name` / `updated_by_name` from the API response (resolved by the backend), but these are held in a separate `MetadataFields` state variable, not in the `ReportTemplate` type |
+| 6 | `source_params` | `Json @db.JsonB` (non-nullable) | `source_params?: ReportSourceParams` (optional) on service interface | The service interface marks it optional to handle partial API responses; the Prisma default ensures the DB column always has a value |
 
-All core identity fields (`id`, `name`, `description`, `report_group`), XML payload fields (`dialog`, `content`), source binding fields (`source_type`, `source_name`), lifecycle flags (`is_standard`, `is_active`), and audit timestamps (`created_at`, `updated_at`) align between Prisma and the SPA shape. Divergences are primarily new Prisma columns not yet surfaced in the edit form (items 2–4) or form-layer type coercions for JSON columns (items 5, 7).
+All core identity fields (`id`, `name`, `description`, `report_group`, `template_type`), XML payload fields (`dialog`, `content`), source binding fields (`source_type`, `source_name`), lifecycle flags (`is_standard`, `is_default`, `is_active`), `doc_version`, and audit timestamps (`created_at`, `updated_at`) align between Prisma and the SPA shape. Remaining divergences are new Prisma columns not yet surfaced in the edit form (items 1–3) or form-layer type coercions for JSON columns (items 4, 6).
 
 ## 7. References
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `model tb_report_template` (line 701); `model tb_print_template_mapping` (line 776).
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `model tb_report_template` (line 734).
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260723120000_print_form_default/migration.sql` — the `kind`→`template_type` rename's accompanying data migration, `is_default` addition, unique index, and `tb_print_template_mapping` drop.
 
 **Secondary (consumer shape):**
-- `../carmen-platform/src/pages/ReportTemplateEdit.tsx` — `ReportTemplateFormData` interface (lines 36–50); `SourceParamRow` interface (lines 30–34); `toCsv` helper and load path (lines 180–204); save path `source_params` construction (lines 278–285).
+- `../carmen-platform/src/pages/ReportTemplateEdit.tsx` — `ReportTemplateFormData` interface (lines 44–60); `SourceParamRow` interface (lines 38–42); load path incl. `toCsv` (lines 196–262); save path incl. `source_params`/`template_type` payload construction (lines 302–368).
 - `../carmen-platform/src/pages/ReportTemplateManagement.tsx` — report template list view.
-- `../carmen-platform/src/services/reportTemplateService.ts` — `ReportTemplate` interface (lines 17–37); `ReportSourceType`, `ReportSourceParam`, `ReportSourceParams` types (lines 5–15).
+- `../carmen-platform/src/pages/ReportFormGroupManagement.tsx` — the Form Groups screen that edits `is_default` per `report_group`.
+- `../carmen-platform/src/constants/reportGroups.ts` — `FORM_REPORT_GROUPS`, the fixed 12-code list the SPA constrains `report_group` to for form templates.
+- `../carmen-platform/src/services/reportTemplateService.ts` — `ReportTemplate` interface (lines 19–44); `ReportSourceType`, `ReportSourceParam`, `ReportSourceParams` types (lines 5–17); `setGroupDefault` (lines 89–107).
 - `../carmen-platform/src/types/index.ts` — no `ReportTemplate` type defined here; the type lives in the service file.
 
 **Cross-links:**
 - [report-templates](/en/platform/report-templates) — module landing page
-- [print-template-mapping](/en/platform/print-template-mapping) — the module that owns `tb_print_template_mapping`, the join table consuming this table's `kind="print"` rows per document type
+- [print-template-mapping](/en/platform/print-template-mapping) — **removed 2026-07-23/24** (historical page); used to own `tb_print_template_mapping`, dropped by the same migration that added `is_default` here
 - [business-units](/en/platform/business-units) — BU codes referenced in the allow/deny chip lists correspond to `tb_business_unit.code`
 - [clusters](/en/platform/clusters) — sibling Platform surface; report templates are tenant-global and not cluster-scoped
 - [Permissions](./permissions.md) — access control for the report-templates admin surface
