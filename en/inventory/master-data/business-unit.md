@@ -2,7 +2,7 @@
 title: Business Unit
 description: The legal/operating unit (property or BU) that scopes every transaction — owns calculation method, default currency, and module subscriptions.
 published: true
-date: 2026-07-29T04:45:21.000Z
+date: 2026-07-29T05:09:51.000Z
 tags: master-data, business-unit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -98,7 +98,7 @@ Note: same enum name in tenant schema uses `FIFO` / `AVG`; the platform definiti
 - **Deletion guards — unconfirmed.** The gateway's `deleteBusinessUnit` is a thin proxy to a `business-units.delete` microservice command; whether active users, open documents, or non-zero balances actually block deletion was not traced this pass.
 - **Validation.** `cluster_id`, `code`, `name`, `calculation_method` required.
 - **Lifecycle.** `is_active = false` blocks logins, preserves data.
-- **Calculation method change** — **design intent, unconfirmed guard.** Flipping `average` ↔ `fifo` should in principle follow period-close + recost discipline, but as noted in Section 5, `carmen-platform`'s edit form imposes no disabled state or mid-period restriction on this field, and whether the backend microservice enforces one was not traced this pass — treat "must follow period-close + recost discipline" as design intent, not a confirmed guard.
+- **Calculation method change** — **design intent, unconfirmed guard.** Flipping `average` ↔ `fifo` should in principle follow period-close + recost discipline, but as noted in Section 4 (Edge Cases; also Section 3 Validation & Errors), `carmen-platform`'s edit form imposes no disabled state or mid-period restriction on this field, and whether the backend microservice enforces one was not traced this pass — treat "must follow period-close + recost discipline" as design intent, not a confirmed guard.
 - **`is_hq` invariant.** Exactly one HQ per cluster.
 
 ## 7. Cross-References

@@ -2,7 +2,7 @@
 title: หน่วยธุรกิจ (Business Unit)
 description: หน่วยปฏิบัติการ / นิติบุคคล (property หรือ BU) ที่กำหนด scope ของทุกธุรกรรม — เป็นเจ้าของ calculation method, default currency และ module subscription
 published: true
-date: 2026-07-29T04:45:21.000Z
+date: 2026-07-29T05:09:51.000Z
 tags: master-data, business-unit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -98,7 +98,7 @@ enum enum_calculation_method {
 - **Deletion guards — ยังไม่ยืนยัน** `deleteBusinessUnit` ของ gateway เป็น proxy บาง ๆ ไปยัง microservice command `business-units.delete`; ยังไม่ได้ตรวจสอบว่าผู้ใช้ที่ active, เอกสารที่เปิดอยู่ หรือยอด non-zero บล็อกการลบจริงหรือไม่ในรอบนี้
 - **Validation** `cluster_id`, `code`, `name`, `calculation_method` บังคับ
 - **Lifecycle** `is_active = false` บล็อก login, รักษาข้อมูล
-- **การเปลี่ยน calculation method** — **design intent, guard ยังไม่ยืนยัน** การพลิก `average` ↔ `fifo` ตามหลักการควรตามวินัย period-close + recost แต่ตามที่ระบุใน Section 5 ฟอร์มแก้ไขของ `carmen-platform` ไม่มี disabled state หรือข้อจำกัดกลางงวดบนฟิลด์นี้เลย และยังไม่ได้ตรวจสอบว่า backend microservice บังคับใช้หรือไม่ในรอบนี้ — ให้ถือว่า "ต้องตามวินัย period-close + recost" เป็น design intent ไม่ใช่ guard ที่ยืนยันแล้ว
+- **การเปลี่ยน calculation method** — **design intent, guard ยังไม่ยืนยัน** การพลิก `average` ↔ `fifo` ตามหลักการควรตามวินัย period-close + recost แต่ตามที่ระบุใน Section 4 (Edge Cases; และ Section 3 การตรวจสอบและข้อผิดพลาด) ฟอร์มแก้ไขของ `carmen-platform` ไม่มี disabled state หรือข้อจำกัดกลางงวดบนฟิลด์นี้เลย และยังไม่ได้ตรวจสอบว่า backend microservice บังคับใช้หรือไม่ในรอบนี้ — ให้ถือว่า "ต้องตามวินัย period-close + recost" เป็น design intent ไม่ใช่ guard ที่ยืนยันแล้ว
 - **`is_hq` invariant** หนึ่ง HQ ต่อ cluster
 
 ## 7. การอ้างอิงข้ามโมดูล
