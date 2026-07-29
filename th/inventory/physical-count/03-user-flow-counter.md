@@ -2,7 +2,7 @@
 title: การนับสต๊อกประจำงวด (Physical Count) — User Flow — หน้า Entry & Review
 description: หน้าป้อนบรรทัดและหน้า review variance ที่ใช้ทำและ submit การนับสต๊อกประจำงวดจริง
 published: true
-date: 2026-07-15T17:56:09.000Z
+date: 2026-07-29T04:45:21.000Z
 tags: physical-count, user-flow, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -63,7 +63,7 @@ graph LR
 | Submit (สุดท้าย จาก `/review`) | `counted_at != null` ของทุกบรรทัด | `PATCH .../submit` — `status → completed`; ยิง variance rollup เข้า `tb_stock_in`/`tb_stock_out` | Terminal; ตาม `PHC_POST_001`–`004` ต้องการ `doc_version` |
 | Refresh สินค้า | เอกสารไม่ `completed` | `PATCH .../refresh` — เพิ่มสินค้าที่เข้าเงื่อนไขใหม่เข้า sheet | ไม่ลบหรือตีราคาบรรทัดที่มีอยู่ใหม่ |
 
-## 4. Decision Points
+## 4. จุดตัดสินใจ
 
 - **Save ทันทีหรือพิมพ์ต่อไป** การ save เร็วเป็นวิธีเดียวที่ทำให้ `counted_at` ถูก stamp บนบรรทัดก่อนที่การตรวจสอบความครบถ้วนของ Submit สุดท้าย (`PHC_VAL_004`) จะรัน; การพึ่ง Submit for Review เพียงอย่างเดียวเพื่อเติมบรรทัดสุดท้ายมีความเสี่ยงตาม edge case ที่ระบุใน [02-business-rules.md](/th/inventory/physical-count/02-business-rules) `PHC_VAL_004` ที่ `actual_qty` ของบรรทัดถูกตั้งค่าแล้วแต่ `counted_at` ยังเป็น null
 - **ศูนย์บนชั้น vs ปล่อยบรรทัดว่าง** บรรทัดว่างไม่มีค่า effective และนับเป็น "uncounted"; การป้อน `0` ชัดเจนเป็นการนับจริงที่แยกต่างหาก

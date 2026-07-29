@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check) — Business Rules
 description: กฎการตรวจสอบ การคำนวณ การกำหนดสิทธิ์ การ post และกฎข้ามโมดูลของการสุ่มตรวจ
 published: true
-date: 2026-07-15T18:38:42.000Z
+date: 2026-07-29T04:45:21.000Z
 tags: spot-check, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -12,7 +12,7 @@ dateCreated: 2026-05-15T14:30:00.000Z
 
 > **At a Glance**
 > **กลุ่มกฎ:** `SPC_VAL_*` validation &nbsp;·&nbsp; `SPC_AUTH_*` permission &nbsp;·&nbsp; `SPC_CALC_*` calc &nbsp;·&nbsp; `SPC_POST_*` posting &nbsp;·&nbsp; `SPC_XMOD_*` cross-module
-> **จำนวนกฎ:** 14 กฎ ยืนยันใหม่กับ `spot-check.service.ts` / `spot-check.logic.ts`
+> **จำนวนกฎ:** 23 กฎ ยืนยันใหม่กับ `spot-check.service.ts` / `spot-check.logic.ts`
 > **กลุ่มผู้ใช้:** ผู้เขียน test + นักพัฒนา — ทุก rule ID ถูก anchor จากหน้า `04-test-scenarios*`
 > **วงจรชีวิตสถานะ:** § 5.1 มีการเปรียบเทียบ Live Code vs เอกสารวางแผนทีละจุด
 

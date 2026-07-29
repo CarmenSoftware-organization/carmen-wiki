@@ -2,7 +2,7 @@
 title: Recipe — User Flow — Chef
 description: Chef's flow within the recipe module — creates and revises recipes, maintains sub-recipes, publishes and archives.
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: 2026-07-29T04:45:21.000Z
 tags: recipe, user-flow, chef, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -24,7 +24,7 @@ The **Chef** persona is the **Chef / Kitchen Manager** (with the **Kitchen Staff
 
 **Entry point:** Paths into the recipe-create / edit screen.
 
-- **Recipe module → Add** *(implemented)* — the Chef navigates to `/operation-plan/recipe`, clicks **Add** (`/operation-plan/recipe/new`), fills the form including category and cuisine, and saves. The `code` is typed by the user (required field — no tenant auto-numbering exists for recipes); `status` defaults to `DRAFT`; `created_by_id` = the chef.
+- **Recipe module → Add Recipe** *(implemented)* — the Chef navigates to `/operation-plan/recipe`, clicks **Add Recipe** (`/operation-plan/recipe/new`; label from `messages/en.json` `recipe.add`), fills the form including category and cuisine, and saves. The `code` is typed by the user (required field — no tenant auto-numbering exists for recipes); `status` defaults to `DRAFT`; `created_by_id` = the chef.
 - **Clone existing recipe** *(not implemented — no clone action exists anywhere in the recipe UI)* — design intent: copy header / ingredients / steps / variants into a new `DRAFT`.
 - **Edit existing recipe** *(implemented, any status)* — the Chef opens `/operation-plan/recipe/:id` and clicks **Edit**. Any status is equally editable; the in-place-versioning vs un-publish-round-trip distinction (`REC_POST_004`/`005`) does not exist because nothing versions.
 

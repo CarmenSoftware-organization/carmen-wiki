@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — User Flow — Chef
 description: flow ของ Chef ในโมดูลสูตรอาหาร — สร้างและปรับปรุงสูตร ดูแล sub-recipe publish และ archive
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: 2026-07-29T04:45:21.000Z
 tags: recipe, user-flow, chef, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -24,7 +24,7 @@ persona **Chef** คือ **Chef / Kitchen Manager** (พร้อม subset **
 
 **Entry point:** เส้นทางสู่หน้าจอ recipe-create / edit
 
-- **โมดูล Recipe → Add** *(implement แล้ว)* — Chef navigate ไป `/operation-plan/recipe` คลิก **Add** (`/operation-plan/recipe/new`) กรอก form รวมทั้งหมวดหมู่และประเภทอาหาร แล้ว save `code` ถูกพิมพ์โดยผู้ใช้เอง (field บังคับ — ไม่มี auto-numbering ของ tenant สำหรับสูตร); `status` default เป็น `DRAFT`; `created_by_id` = chef
+- **โมดูล Recipe → Add Recipe** *(implement แล้ว)* — Chef navigate ไป `/operation-plan/recipe` คลิก **Add Recipe** (`/operation-plan/recipe/new`; label จาก `messages/en.json` `recipe.add`) กรอก form รวมทั้งหมวดหมู่และประเภทอาหาร แล้ว save `code` ถูกพิมพ์โดยผู้ใช้เอง (field บังคับ — ไม่มี auto-numbering ของ tenant สำหรับสูตร); `status` default เป็น `DRAFT`; `created_by_id` = chef
 - **Clone สูตรที่มีอยู่** *(ยังไม่ implement — ไม่มี action clone อยู่ที่ใดเลยใน recipe UI)* — เจตนาของดีไซน์: copy header / วัตถุดิบ / ขั้นตอน / variant เป็น `DRAFT` ใหม่
 - **แก้สูตรที่มีอยู่** *(implement แล้ว, สถานะใดก็ได้)* — Chef เปิด `/operation-plan/recipe/:id` และคลิก **Edit** ทุกสถานะแก้ได้เท่ากัน; ความแตกต่างระหว่าง in-place versioning กับ un-publish round-trip (`REC_POST_004`/`005`) ไม่มีอยู่จริงเพราะไม่มีอะไร version เลย
 

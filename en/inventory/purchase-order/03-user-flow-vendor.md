@@ -2,7 +2,7 @@
 title: Purchase Order — User Flow — Vendor
 description: Vendor's flow within the purchase-order module — external party (no system login); receives PO, acknowledges, fulfils, invoices.
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-29T04:45:21.000Z
 tags: purchase-order, user-flow, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -43,7 +43,7 @@ The Vendor has **no direct write access** in Carmen. The table below maps each v
 | Ships full / final balance | Receiver's GRN posting | `sent → completed` or `partial → completed` (`PO_POST_007`) |
 | Declines / vendor can no longer fulfil | **Cancel** (`{draft, in_progress, sent} → closed`) or **Close** (`{sent, partial, in_progress} → closed`) | `→ closed`, remainder written to `cancelled_qty` — **not** `voided`; there is no path from `sent` to `voided` in current source |
 | Delivers wrong item / over qty | Receiver (refuses at dock) | none — escalates via comment |
-| Delivers quality-failed goods | GRN with `accepted_qty < received_qty` (GRN-module field; not verified on the PO side) | per `PO_POST_006` / `PO_POST_007` |
+| Delivers quality-failed goods | Receiver records a lower `received_qty` than ordered and notes the rejection in a free-text GRN comment — there is no separate acceptance-quantity field anywhere in the GRN or PO schema (confirmed absent repo-wide) | per `PO_POST_006` / `PO_POST_007` |
 | Issues invoice | **Not implemented** — no invoice-capture screen or AP-posting code exists in current source | none |
 
 ## 2. Entry Point and Primary Flow

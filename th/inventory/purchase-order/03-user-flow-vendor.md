@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — User Flow — Vendor
 description: เส้นทางผู้ใช้งานของ Vendor ภายในโมดูล purchase-order — ฝ่ายภายนอก (ไม่มี system login); รับ PO ตอบรับ ส่งของ และออก invoice
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-29T04:45:21.000Z
 tags: purchase-order, user-flow, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -43,7 +43,7 @@ Vendor มี **สิทธิ์เขียนโดยตรงไม่ม�
 | ส่งของเต็ม / final balance | GRN posting ของ Receiver | `sent → completed` หรือ `partial → completed` (`PO_POST_007`) |
 | ปฏิเสธ / vendor ไม่สามารถ fulfil ได้อีกต่อไป | **Cancel** (`{draft, in_progress, sent} → closed`) หรือ **Close** (`{sent, partial, in_progress} → closed`) | `→ closed`, remainder เขียนเป็น `cancelled_qty` — **ไม่ใช่** `voided`; ไม่มีเส้นทางจาก `sent` ไปยัง `voided` ใน source ปัจจุบัน |
 | ส่งของผิด / qty เกิน | Receiver (ปฏิเสธที่ dock) | ไม่มี — escalate ผ่าน comment |
-| ส่งของที่ failed คุณภาพ | GRN with `accepted_qty < received_qty` (field ของโมดูล GRN; ยังไม่ verified ฝั่ง PO) | ตาม `PO_POST_006` / `PO_POST_007` |
+| ส่งของที่ failed คุณภาพ | Receiver บันทึก `received_qty` ให้น้อยกว่าที่สั่งและบันทึกการปฏิเสธไว้ใน comment แบบ free-text บน GRN — ไม่มีฟิลด์ acceptance quantity แยกต่างหากอยู่ทั้งใน schema ของ GRN หรือ PO (ยืนยันว่าไม่มีอยู่ทั่ว repo) | ตาม `PO_POST_006` / `PO_POST_007` |
 | ออก invoice | **ไม่ได้ implement** — ไม่มีหน้า capture invoice หรือ code AP-posting ใน source ปัจจุบัน | ไม่มี |
 
 ## 2. Entry Point และ Primary Flow

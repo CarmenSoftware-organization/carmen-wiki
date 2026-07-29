@@ -2,7 +2,7 @@
 title: Spot Check — Business Rules
 description: Validation, calculation, authorization, posting, and cross-module rules for spot checks.
 published: true
-date: 2026-07-15T18:38:42.000Z
+date: 2026-07-29T04:45:21.000Z
 tags: spot-check, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -12,7 +12,7 @@ dateCreated: 2026-05-15T14:30:00.000Z
 
 > **At a Glance**
 > **Rule families:** `SPC_VAL_*` validation &nbsp;·&nbsp; `SPC_AUTH_*` permission &nbsp;·&nbsp; `SPC_CALC_*` calc &nbsp;·&nbsp; `SPC_POST_*` posting &nbsp;·&nbsp; `SPC_XMOD_*` cross-module
-> **Rule count:** 14 rules, re-verified against `spot-check.service.ts` / `spot-check.logic.ts`
+> **Rule count:** 23 rules, re-verified against `spot-check.service.ts` / `spot-check.logic.ts`
 > **Audience:** Test author + developer — every rule ID is anchored from `04-test-scenarios*` pages
 > **Status lifecycle:** § 5.1 carries a point-by-point Live Code vs planning-document comparison
 
