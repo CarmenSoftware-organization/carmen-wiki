@@ -2,7 +2,7 @@
 title: Business Unit — Data Model
 description: BU entity, formatting/locale block, DB connection, config array, branding tokens, module activation join, and license field.
 published: true
-date: 2026-06-10T13:45:00.000Z
+date: 2026-07-29T06:50:54.000Z
 tags: book/platform, business-units, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -11,7 +11,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 # Business Unit — Data Model
 
 > **At a Glance**
-> **Tables:** `tb_business_unit` (primary) &nbsp;·&nbsp; `tb_business_unit_tb_module` (M:N modules activation) &nbsp;·&nbsp; `tb_user_tb_business_unit` (M:N user-join, full doc in [users](/en/platform/users)) &nbsp;·&nbsp; `tb_module` (referenced, full catalog out of scope) &nbsp;·&nbsp; **Enums:** `enum_user_business_unit_role` (admin/user) &nbsp;·&nbsp; `enum_calculation_method` (average/fifo) &nbsp;·&nbsp; **Schema features:** formatting/locale block (date/time/currency/decimal/timezone) &nbsp;·&nbsp; DB connection block &nbsp;·&nbsp; `config` JSON column (key/value config pairs managed via SPA) &nbsp;·&nbsp; `info` JSON column (free-form metadata) &nbsp;·&nbsp; **Branding:** `logo_file_token` / `avatar_file_token` columns, resolved to embedded presigned `logo`/`avatar` objects in API responses &nbsp;·&nbsp; **License field:** `max_license_users` caps how many users may be assigned to this BU
+> **Tables:** `tb_business_unit` (primary) &nbsp;·&nbsp; `tb_business_unit_tb_module` (M:N modules activation) &nbsp;·&nbsp; `tb_user_tb_business_unit` (M:N user-join, full doc in [users](/en/platform/users)) &nbsp;·&nbsp; `tb_module` (referenced, full catalog out of scope) &nbsp;·&nbsp; **Enums:** `enum_user_business_unit_role` (admin/user) &nbsp;·&nbsp; `enum_calculation_method` (average/fifo) &nbsp;·&nbsp; **Schema features:** formatting/locale block (date/time/currency/decimal/timezone) &nbsp;·&nbsp; DB connection block (now edited as structured key/value fields in the SPA, not a read-only blob) &nbsp;·&nbsp; `config` JSON column (key/value config pairs managed via SPA) &nbsp;·&nbsp; `info` JSON column (free-form metadata) &nbsp;·&nbsp; structured hotel/company address columns (10 fields each: line1/line2/sub_district/district/city/province/postal_code/country/latitude/longitude) &nbsp;·&nbsp; **Branding:** `logo_file_token` / `avatar_file_token` columns, resolved to embedded presigned `logo`/`avatar` objects in API responses &nbsp;·&nbsp; **License field:** `max_license_users` caps how many users may be assigned to this BU &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` (added 2026-07-16), enforced as an optimistic lock on `PUT`
 
 > **Source of truth:** Backend Prisma platform schema. Always read this first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
@@ -26,7 +26,7 @@ The schema is notably richer than `tb_cluster`. Four groups of optional fields e
 
 1. **Formatting/locale block** — nine columns (`date_format`, `date_time_format`, `time_format`, `short_time_format`, `long_time_format`, `timezone`, `amount_format`, `quantity_format`, `recipe_format`, `perpage_format`) that define how dates, times, and numbers are rendered in the inventory UI for this BU. All have application-level defaults pre-populated by the SPA (`BusinessUnitEdit.tsx`, `initialFormData`). The amount/quantity/recipe formats are stored as JSON objects (`{"locales":"th-TH","minimumIntegerDigits":2}`); the date/time formats are plain strings (`"yyyy-MM-dd"`).
 
-2. **DB connection block** — a `db_connection` JSON column that stores the connection parameters for the BU's operational database. This field is handled as an opaque JSON blob by the SPA (serialised to a string in form state, parsed back to JSON on save; the current UI renders it read-only — see [UI Screens](./ui-screens.md) §4.9). The internal key structure of `db_connection` is not enumerated in the SPA type definitions.
+2. **DB connection block** — a `db_connection` JSON column that stores the connection parameters for the BU's operational database. **Corrected since the last sync:** the SPA no longer treats this as an opaque read-only blob — it is held as an editable array of `{ key, value }` fields (`objectToDbFields()`/`dbFieldsToObject()`, `utils/dbConnection.ts`), rendered as seven known typed controls (`host`, `port`, `database`, `schema`, `user`, `password`, `ssl`) plus free additional key/value rows, with the password masked and revealable only through a dedicated guarded endpoint — see [UI Screens](./ui-screens.md) §4.12. The internal key structure beyond those seven known fields is still not enumerated anywhere in the SPA type definitions.
 
 3. **JSON config** — a `config` JSON column that stores an array of `BusinessUnitConfig` objects (shape: `{ id?, key, label, datatype?, value? }`). The SPA surfaces this as an editable list in `BusinessUnitEdit.tsx`, allowing operators to add, remove, and edit arbitrary key/value config pairs for the BU. These are not a fixed key namespace — they are open-ended operator-defined entries.
 
@@ -64,17 +64,35 @@ The primary business unit record. One row per operational BU, holding the identi
 | **— Company —** | | | | |
 | `branch_no` | `String?` | Yes | — | Thai tax branch number (สาขา) for the BU's company entity |
 | `company_name` | `String?` | Yes | — | Legal company name for the BU |
-| `company_address` | `String?` | Yes | — | Company street/postal address |
+| `company_address_line1` | `String?` | Yes | — | Company address line 1 |
+| `company_address_line2` | `String?` | Yes | — | Company address line 2 |
+| `company_sub_district` | `String?` | Yes | — | Company sub-district (ตำบล/แขวง) |
+| `company_district` | `String?` | Yes | — | Company district (อำเภอ/เขต) |
+| `company_city` | `String?` | Yes | — | Company city |
+| `company_province` | `String?` | Yes | — | Company province |
+| `company_postal_code` | `String?` | Yes | — | Company postal code |
+| `company_country` | `String?` | Yes | — | Company country |
+| `company_latitude` | `String?` | Yes | — | Company address latitude (stored as text, not a numeric/geo type) |
+| `company_longitude` | `String?` | Yes | — | Company address longitude (stored as text, not a numeric/geo type) |
 | `company_email` | `String?` | Yes | — | Company email address |
 | `company_tel` | `String?` | Yes | — | Company telephone number |
-| `company_zip_code` | `String?` | Yes | — | Company postal code |
 | `tax_no` | `String?` | Yes | — | Thai tax identification number (เลขภาษี) |
 | **— Hotel —** | | | | |
 | `hotel_name` | `String?` | Yes | — | Property/hotel name (may differ from company name) |
-| `hotel_address` | `String?` | Yes | — | Property street/postal address |
-| `hotel_email` | `String?` | Yes | — | Property email address |
-| `hotel_tel` | `String?` | Yes | — | Property telephone number |
-| `hotel_zip_code` | `String?` | Yes | — | Property postal code |
+| `hotel_address_line1` | `String?` | Yes | — | Hotel/property address line 1 |
+| `hotel_address_line2` | `String?` | Yes | — | Hotel/property address line 2 |
+| `hotel_sub_district` | `String?` | Yes | — | Hotel/property sub-district (ตำบล/แขวง) |
+| `hotel_district` | `String?` | Yes | — | Hotel/property district (อำเภอ/เขต) |
+| `hotel_city` | `String?` | Yes | — | Hotel/property city |
+| `hotel_province` | `String?` | Yes | — | Hotel/property province |
+| `hotel_postal_code` | `String?` | Yes | — | Hotel/property postal code |
+| `hotel_country` | `String?` | Yes | — | Hotel/property country |
+| `hotel_latitude` | `String?` | Yes | — | Hotel/property address latitude (stored as text, not a numeric/geo type) |
+| `hotel_longitude` | `String?` | Yes | — | Hotel/property address longitude (stored as text, not a numeric/geo type) |
+| `hotel_email` | `String?` | Yes | — | Hotel/property email address |
+| `hotel_tel` | `String?` | Yes | — | Hotel/property telephone number |
+| **— Concurrency —** | | | | |
+| `doc_version` | `Int` | No | `0` | Optimistic-concurrency token, added platform-wide (35 tables) on 2026-07-16. The edit page resends it with every `PUT`; a stale write is rejected with `409` and the SPA reloads the record with a conflict toast instead of overwriting silently |
 | **— Branding —** | | | | |
 | `logo_file_token` | `String? @db.VarChar` | Yes | — | File-storage token for the BU's rectangular logo. Never exposed raw to the SPA — the API resolves it to an embedded presigned `logo` object `{ url, expires_at }` (see §6 item 8). `tb_cluster` carries the identical token pair |
 | `avatar_file_token` | `String? @db.VarChar` | Yes | — | File-storage token for the BU's square avatar. Same resolution path as the logo (embedded presigned `avatar` object) |
@@ -212,7 +230,7 @@ These two JSON columns differ in both structure and editability: `config` carrie
 
 ### `config` — operator-defined key/value pairs
 
-`config` is stored as `Json?` in Prisma and is typed as `BusinessUnitConfig[] | null` in the SPA (`src/types/index.ts`, line 134). The `BusinessUnitConfig` interface (`src/types/index.ts`, lines 77–83) has the shape:
+`config` is stored as `Json?` in Prisma and is typed as `BusinessUnitConfig[] | null` in the SPA (`src/types/index.ts`, line 158). The `BusinessUnitConfig` interface (`src/types/index.ts`, lines 85–91) has the shape:
 
 ```
 BusinessUnitConfig {
@@ -230,11 +248,11 @@ Because the keys are operator-defined, this page cannot enumerate them. If your 
 
 ### `info` — free-form metadata blob
 
-`info` is stored as `Json?` in Prisma but has **no representation in the SPA at all** as of 2026-06-10: the field has been dropped from the `BusinessUnit` TS interface (it previously appeared as `info?: unknown`), and there is no edit path for it in `BusinessUnitEdit.tsx` — the SPA does not read or write any key under `info` for the BU. The column appears to be reserved for future extensibility, analogous to the `info Json? @db.Json` column on `tb_cluster` which is also documented as a free-form metadata blob with no currently documented key structure.
+`info` is stored as `Json?` in Prisma but has **no representation in the SPA at all** (re-confirmed 2026-07-29): the field has been dropped from the `BusinessUnit` TS interface (it previously appeared as `info?: unknown`), and there is no edit path for it in `BusinessUnitEdit.tsx` or its extracted sections — the SPA does not read or write any key under `info` for the BU. The column appears to be reserved for future extensibility, analogous to the `info Json? @db.Json` column on `tb_cluster` which is also documented as a free-form metadata blob with no currently documented key structure.
 
 ## 6. Divergences from carmen-platform SPA shape
 
-The `BusinessUnit` interface in `../carmen-platform/src/types/index.ts` (lines 90–142) and the `BusinessUnitFormData` interface in `../carmen-platform/src/pages/BusinessUnitEdit.tsx` (lines 63–105) were compared against the Prisma `tb_business_unit` model (as of 2026-06-10).
+The `BusinessUnit` interface in `../carmen-platform/src/types/index.ts` (lines 98–166) and the `BusinessUnitFormData` interface in `../carmen-platform/src/pages/businessUnitEdit/types.ts` (moved out of `BusinessUnitEdit.tsx` in the one-document rewrite) were compared against the Prisma `tb_business_unit` model (re-verified 2026-07-29).
 
 | # | Item | Prisma has | SPA expects | Notes |
 | - | ---- | ---------- | ----------- | ----- |
@@ -242,23 +260,26 @@ The `BusinessUnit` interface in `../carmen-platform/src/types/index.ts` (lines 9
 | 2 | Audit columns | `created_at`/`created_by_id`, `updated_at`/`updated_by_id`, `deleted_at`/`deleted_by_id` (flat columns, raw IDs) | Nested `audit` object — `audit.created`, `audit.updated`, `audit.deleted`, each an `AuditEntry` `{ at, id, name, avatar }` | The API resolves the `_id` FKs to actor names and groups everything under `audit`. The SPA list page flattens this back into `created_at`/`created_by_name` etc. for its date columns, tolerating the older flat shape, which wins when present (`item.created_at ?? item.audit?.created?.at`). The `BusinessUnit` TS interface keeps the flat optional fields as the post-mapping shape; raw IDs are not in the interface. |
 | 3 | `max_license_users` | `Int?` | `max_license_users?: number` on `BusinessUnit`; `max_license_users: string` in `BusinessUnitFormData` | Form holds the value as a string (HTML input coercion: `String(bu.max_license_users)`); converted back to number before the API call. Read interface correctly types it as `number`. |
 | 4 | `amount_format` / `quantity_format` / `recipe_format` / `perpage_format` | `Json?` (JSON objects) | Typed as `string?` on `BusinessUnit` interface; `string` in `BusinessUnitFormData` | The SPA serialises these JSON objects to strings for plain text inputs (`toJsonString()` helper) and parses them back before the API call. The `BusinessUnit` read interface types them as `string?` rather than `Json`, which reflects the serialised wire shape rather than the Prisma storage shape. |
-| 5 | `db_connection` | `Json?` | `db_connection?: unknown` on `BusinessUnit`; `db_connection: string` in `BusinessUnitFormData` | Same string-serialisation pattern as the format JSON fields, but the current UI renders it as a read-only `<pre>` — there is no editable input ([UI Screens](./ui-screens.md) §4.9). |
-| 6 | `config` | `Json?` | `config?: BusinessUnitConfig[] | null` on `BusinessUnit`; `config: BusinessUnitConfig[]` in `BusinessUnitFormData` | The only JSON column with a structured TS type; programmatic reads and writes should use `BusinessUnitConfig[]` from `src/types/index.ts` rather than raw `Json` or `unknown`. |
+| 5 | `db_connection` | `Json?` | `db_connection?: unknown` on `BusinessUnit`; `db_connection: DbConnectionField[]` (array of `{ key, value }`) in `BusinessUnitFormData` | **Corrected since the last sync:** `db_connection` is no longer held as a single serialised string — `objectToDbFields()`/`dbFieldsToObject()` (`utils/dbConnection.ts`) convert between the Prisma JSON object and an editable array of key/value fields. The edit page now renders it as a structured, editable form (known fields + free extras, password masked with a guarded reveal) rather than a read-only `<pre>` ([UI Screens](./ui-screens.md) §4.12). |
+| 6 | `config` | `Json?` | `config?: BusinessUnitConfig[] | null` on `BusinessUnit`; `config: BusinessUnitConfig[]` in `BusinessUnitFormData` | The only JSON column with a structured TS type; programmatic reads and writes should use `BusinessUnitConfig[]` from `src/types/index.ts` rather than raw `Json` or `unknown`. The SPA's Data Type selector now also offers `enum` alongside `string`/`number`/`boolean`/`date`/`json` — not itself a distinct Prisma-level constraint, just a UI hint stored in `datatype`. |
 | 7 | `info` | `Json?` | Not present | Dropped from the `BusinessUnit` read interface (previously `info?: unknown`); never in `BusinessUnitFormData`. Prisma-only column with no SPA path — see §5. |
 | 8 | Branding | `logo_file_token`, `avatar_file_token` (`String? @db.VarChar` storage tokens) | `logo?: PresignedImage \| null`, `avatar?: PresignedImage \| null` — embedded objects `{ url, expires_at }` on list and detail responses | Read responses never carry the raw tokens. Images are written through dedicated multipart endpoints (`POST /api-system/business-units/:id/logo` with form field `logo`, `POST /api-system/business-units/:id/avatar` with form field `avatar`), each returning `{ file_token, url, expires_at }`; the regular `PUT` update payload does not carry branding fields. |
+| 9 | `doc_version` | `Int @default(0)` | `doc_version?: number` on `BusinessUnit` | Aligned, not a divergence — both sides carry the optimistic-lock counter (added 2026-07-16). Listed here for completeness since it postdates the original comparison pass. |
 
-All core identity, hotel info, company info, format, locale, and soft-delete fields align between Prisma and the SPA shapes. Divergences are API-resolved display names and audit regrouping (items 1–2), form-layer string coercions for JSON fields (items 3–5), a Prisma-only column (item 7), or token→presigned-object resolution (item 8).
+All core identity, hotel info, company info, format, locale, and soft-delete fields align between Prisma and the SPA shapes, as does the newer `doc_version` counter (item 9 — no divergence). Divergences are API-resolved display names and audit regrouping (items 1–2), form-layer string coercions for JSON fields (items 3–4), a structured-array serialisation for `db_connection` (item 5), a UI-only `enum` datatype hint on `config` (item 6), a Prisma-only column (item 7), or token→presigned-object resolution (item 8).
 
 ## 7. References
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `model tb_business_unit` (line 124), `model tb_business_unit_tb_module` (line 194), `model tb_user_tb_business_unit` (line 600), `model tb_module` (line 296), `enum enum_user_business_unit_role` (line 661), `enum enum_calculation_method` (line 119). Line numbers as of 2026-06-10.
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `enum enum_calculation_method` (line 112), `model tb_business_unit` (line 117), `model tb_business_unit_tb_module` (line 204), `model tb_module` (line 311), `model tb_user_tb_business_unit` (line 627), `enum enum_user_business_unit_role` (line 691). Line numbers as of 2026-07-29; `doc_version` added to all 35 platform tables on 2026-07-16 (`8e53bbe`).
 
 **Secondary (consumer shape):**
-- `../carmen-platform/src/pages/BusinessUnitEdit.tsx` — `BusinessUnitFormData` interface (lines 63–105); `initialFormData` defaults (lines 107–142); config array add/remove/edit handlers; logo/avatar upload handlers.
-- `../carmen-platform/src/pages/BusinessUnitManagement.tsx` — BU list view; nested-audit flattening; logo thumbnail column.
-- `../carmen-platform/src/services/businessUnitService.ts` — REST client for BU API calls (`/api-system/business-units`, plus the `/logo` and `/avatar` upload endpoints).
-- `../carmen-platform/src/types/index.ts` — `BusinessUnit` interface (lines 90–142), `BusinessUnitConfig` interface (lines 77–83), `PresignedImage` (lines 85–88), `Audit`/`AuditEntry` (lines 254–265).
+- `../carmen-platform/src/pages/BusinessUnitEdit.tsx` — one-document orchestrator: `buildPayload`, config/db_connection handlers, `doc_version` wiring, logo/avatar upload handlers.
+- `../carmen-platform/src/pages/businessUnitEdit/types.ts` — `BusinessUnitFormData` interface and `initialFormData` defaults (moved here from `BusinessUnitEdit.tsx` in the one-document rewrite).
+- `../carmen-platform/src/pages/BusinessUnitManagement.tsx` and `businessUnitManagement/BuSummary.tsx` — BU list view; nested-audit flattening; Overview summary strip (no logo thumbnail column any more).
+- `../carmen-platform/src/services/businessUnitService.ts` — REST client for BU API calls (`/api-system/business-units`, plus the `/logo`/`/avatar` upload endpoints and `revealDbPassword`).
+- `../carmen-platform/src/utils/dbConnection.ts` — `objectToDbFields`/`dbFieldsToObject`/`parseDbConnection` conversions backing item 5's corrected divergence entry.
+- `../carmen-platform/src/types/index.ts` — `BusinessUnit` interface (lines 98–166, incl. `doc_version?: number`), `BusinessUnitConfig` interface (lines 85–91), `PresignedImage`, `Audit`/`AuditEntry`.
 
 **Cross-links:**
 - [business-units](/en/platform/business-units) — module landing page

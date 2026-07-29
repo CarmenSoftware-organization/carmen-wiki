@@ -2,7 +2,7 @@
 title: Business Unit — UI Screens
 description: BusinessUnitManagement (list) and BusinessUnitEdit (9 always-expanded form sections, Branding card, Users card, dialogs) — layout, filters, actions, persisted state.
 published: true
-date: 2026-06-10T13:45:00.000Z
+date: 2026-07-29T06:50:54.000Z
 tags: book/platform, business-units, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -11,23 +11,27 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 # Business Unit — UI Screens
 
 > **At a Glance**
-> **Screens:** `BusinessUnitManagement` (list, `/business-units`) &nbsp;·&nbsp; `BusinessUnitEdit` create (`/business-units/new`) &nbsp;·&nbsp; `BusinessUnitEdit` view/edit (`/business-units/:id/edit`) &nbsp;·&nbsp; **Edit layout:** 9 form sections (always expanded) via `CollapsibleSection` cards in a 2-column grid (Basic Information · Hotel Information · Company Information · Tax Information · Date/Time Formats · Number Formats · Calculation Settings · Configuration · Database Connection) plus full-width Branding and Users cards below the form &nbsp;·&nbsp; **Dialogs:** Add User to BU · Edit BU User · Remove BU User confirm · Soft Delete BU confirm &nbsp;·&nbsp; **Access:** route guards reuse `cluster.read` / `cluster.create` / `cluster.update`; Add/Edit/Delete buttons behind `<Can>` gates (see [business-units](/en/platform/business-units) §4) &nbsp;·&nbsp; **Persisted UI state:** 6 `localStorage` keys
+> **Screens:** `BusinessUnitManagement` (list, `/business-units`) &nbsp;·&nbsp; `BusinessUnitEdit` create (`/business-units/new`) &nbsp;·&nbsp; `BusinessUnitEdit` one-document edit (`/business-units/:id/edit`) &nbsp;·&nbsp; **Edit layout:** rewritten from 9 `CollapsibleSection` cards in a 2-column grid into a single continuous "one-document" scroll — hero card, 6 inline field groups (Details/Location/Contact/Company/Tax/Date & time), 4 complex sections (Calculation Settings/Number Formats/Branding/Configuration/Database Connection), 3 super-admin advanced cards (Tenant Migrations/Tenant Seed/Interface Entitlement, existing BUs only), then Users — **no read/edit toggle**, one `canEdit` boolean gates everything &nbsp;·&nbsp; **Dialogs:** Add User to BU · Edit BU User · Remove BU User confirm · Soft Delete BU confirm &nbsp;·&nbsp; **Access:** route guards reuse `cluster.read` / `cluster.create` / `cluster.update`; Add/Edit/Delete buttons behind `<Can>` gates (see [business-units](/en/platform/business-units) §4) &nbsp;·&nbsp; **Persisted UI state:** 6 `localStorage` keys &nbsp;·&nbsp; **Concurrency:** `doc_version` optimistic lock on save
 
 ## 1. Overview
 
-The business-unit surface follows the Platform SPA's standard two-screen pattern: a server-side `DataTable` list page (`BusinessUnitManagement`) and a shared create/view/edit page (`BusinessUnitEdit`). Unlike the cluster edit page — which uses a 3-column grid with Branding, Business Units, and Users as sibling cards — the BU edit page stacks all content vertically: a 2-column `grid-cols-1 lg:grid-cols-2` form area containing 9 always-expanded section cards, followed by full-width Branding and Users cards that only render in view/edit mode (hidden in create mode).
+The business-unit surface follows the Platform SPA's standard two-screen pattern: a server-side `DataTable` list page (`BusinessUnitManagement`) and a shared create/edit page (`BusinessUnitEdit`). The edit page was rewritten (the "one-document rewrite") from 9 always-expanded `CollapsibleSection` cards in a 2-column grid into a single continuous scrolling document: a `PageHeader` with an inline-editable name (`HeroName`, rendered as the page's `<h1>`), then `BusinessUnitDocument` — a hero identity card followed by six inline field `Group`s (Details, Location, Contact, Company, Tax, Date & time, each rendered via a shared `InlineField` click-to-edit control), then the four remaining complex sections (Calculation Settings, Number Formats, Branding, Configuration, Database Connection — still `CollapsibleSection`-wrapped internally with `forceOpen`, but no longer arranged in a 2-column grid), then — for existing BUs only — three super-admin "advanced" cards and the Users card.
 
-`BusinessUnitEdit` is the largest edit page in the Platform SPA at 1825 lines. The density comes from the `BusinessUnitFormData` interface covering 34 fields across identity, contact, locale, formatting, costing, connection, and config domains. Every section card uses the shared `CollapsibleSection` component, which has a clickable `CardHeader` that toggles an expand/collapse chevron. All 9 sections are initially rendered with `forceOpen` (they cannot be collapsed), keeping all fields in the DOM and visible on load — the `forceOpen` prop overrides whatever `defaultOpen` value was set. The Branding and Users cards are outside the `<form>` element and have their own independent mutation lifecycles.
+There is **no read/edit mode split any more**. A single `canEdit` boolean (`isNew ? hasPermission('cluster.create') : hasPermission('cluster.update', { clusterId: formData.cluster_id || UNRESOLVED_CLUSTER_ID })`) is computed once and passed down; every field, toggle, and section renders its editable form when `canEdit` is true and a read-only rendering otherwise — there is no separate "Edit" button anywhere on this page. A sticky bottom bar (Cancel / Save Changes, or just Create Business Unit + Cancel in create mode) appears whenever the document is dirty; `Ctrl/⌘+S` saves and `Escape` cancels via the shared keyboard-shortcut hook — the shortcut still checks `canEdit` itself, since a disabled Save button alone isn't a defense against a keyboard shortcut bypassing it.
 
-The three registered routes are guarded by `requiredPermission` keys **reused from the Clusters module** — `cluster.read` (list), `cluster.create` (create), `cluster.update` (edit); there are no `business_unit.*` keys. Mutating buttons inside the pages carry additional `<Can>` gates, most of them cluster-scoped via `clusterId` props that resolve against the BU's parent cluster. The full gate matrix and the key-reuse gotcha live in [business-units](/en/platform/business-units) §4 and [clusters permissions](/en/platform/clusters/permissions) §2.
+The three registered routes are guarded by `requiredPermission` keys **reused from the Clusters module** — `cluster.read` (list), `cluster.create` (create), `cluster.update` (edit); there are no `business_unit.*` keys. The full gate matrix and the key-reuse gotcha live in [business-units](/en/platform/business-units) §4 and [clusters permissions](/en/platform/clusters/permissions) §2.
 
-Note: although `tb_business_unit_tb_module` exists in the Prisma schema as a M:N modules-activation join, the Platform admin SPA does not currently surface module activation — `BusinessUnitEdit` has exactly 9 form sections and no module-management dialog. The join is managed at the backend / DB level only.
+Note: although `tb_business_unit_tb_module` exists in the Prisma schema as a M:N modules-activation join, the Platform admin SPA does not currently surface module activation on this page — `BusinessUnitEdit` has no module-management dialog. The join is managed at the backend / DB level only. (The Interface Entitlement card, §4.9, is a related-sounding but distinct concept — it licenses *interface/brand* access via a separate service, not platform module activation.)
 
 ## 2. `BusinessUnitManagement` — list page (`/business-units`)
 
 ### 2.1 Layout
 
-The page renders inside `Layout` with a two-row header: a title/subtitle row ("Business Unit Management" / "Manage business units and departments") and an actions row with **Export** and **Add Business Unit** buttons (the button label shortens to "Add BU" on small screens via responsive visibility classes). Below the header sits a search-and-filters row inside a `Card`. The `DataTable` renders in server-side mode with pagination.
+The page renders inside `Layout` with a two-row header: a title/subtitle row ("Business Unit Management" / "Manage business units and departments") and an actions row with **Export** and **Add Business Unit** buttons (the button label shortens to "Add BU" on small screens via responsive visibility classes). Below the header sits an **Overview** summary card (§2.1a), then a search-and-filters row inside a `Card`. The `DataTable` renders in server-side mode with pagination.
+
+### 2.1a Overview strip
+
+A `BuSummary` card summarises **every non-deleted BU** (a separate unpaginated `perpage: -1` fetch, plus a second lightweight count-only fetch for soft-deleted rows) — not just the current page. It shows a large total count and "across N cluster(s)" note on the left, and a stacked Active/Inactive proportion bar with a legend (Active, Inactive, and — only when non-zero — Archived, i.e. soft-deleted) on the right. On a failed fetch it renders an inline error with a Retry button rather than blocking the rest of the page.
 
 ### 2.2 Filters (Sheet panel)
 
@@ -43,16 +47,16 @@ There is no cluster filter group on the list page; filtering by cluster requires
 Two buttons appear in the header actions row:
 
 - **Export** — client-side CSV export using `generateCSV` / `downloadCSV` utilities (no server call). Exports the currently loaded page of rows with columns: `Code`, `Name`, `Alias Name`, `Cluster`, `Status` (`is_active`), `Max Licensed Users`, `Created` (`created_at`). File name: `business-units-<YYYY-MM-DD>.csv`. The button is disabled while loading or when the table is empty.
-- **Add Business Unit** — navigates to `/business-units/new`. Wrapped in `<Can permission="cluster.create">`, so it renders only for sessions holding that key. Note: the **empty-state** Add Business Unit button (shown when the table has no rows and no search term) is *not* `<Can>`-gated — a `cluster.read`-only session can click it, and the `cluster.create` route guard on `/business-units/new` then renders `AccessDenied`.
+- **Add Business Unit** — navigates to `/business-units/new`. Wrapped in `<Can permission="cluster.create">`, so it renders only for sessions holding that key. Note: the **empty-state** Add Business Unit button (shown when the table has no rows and no search term) is *not* `<Can>`-gated — a `cluster.read`-only session can click it, and the `cluster.create` route guard on `/business-units/new` then renders the `Forbidden` (403) page.
 
 There is no Fetch Keycloak button (that affordance exists only on the Users list) and no Hard Delete action anywhere in business-unit management.
 
 ### 2.4 Row actions
 
-Columns in order: a **logo thumbnail** (renders `logo?.url`, falling back to `avatar?.url`, as a 40 px-high bordered image; a muted Building2-icon placeholder when neither URL exists; the `<img>` hides itself on load error), `code` (clickable link — navigates to `/business-units/:id/edit`), `name` (clickable link — also navigates to edit; a red `Deleted` badge is appended when `deleted_at` is non-null; the badge's tooltip reads "Deleted by &lt;name&gt;" when `deleted_by_name` is present), `alias_name` (muted text, header "Alias"), `cluster_name` (sortable server-side via the `tb_cluster.name` column id), `is_active` (Active/Inactive badge), `created_at` + `created_by_name`, `updated_at` + `updated_by_name` (suppressed when equal to `created_at`), and conditionally `deleted_at` + `deleted_by_name` in destructive red (only when "Show soft-deleted" filter is on). The final column is a `DropdownMenu` icon button (⋯) with two items, each behind a **cluster-scoped `<Can>` gate** — note the `clusterId` is the BU's *parent cluster* id, not the BU id:
+Columns in order: `code` (clickable link — navigates to `/business-units/:id/edit`), `name` (clickable link — also navigates to edit; a red `Deleted` badge is appended when `deleted_at` is non-null; the badge's tooltip reads "Deleted by &lt;name&gt;" when `deleted_by_name` is present), `alias_name` (muted text, header "Alias"), `cluster_name` (sortable server-side via the `tb_cluster.name` column id), `is_active` (Active/Inactive badge), `created_at` + `created_by_name`, `updated_at` + `updated_by_name` (suppressed when equal to `created_at`), and conditionally `deleted_at` + `deleted_by_name` in destructive red (only when "Show soft-deleted" filter is on). The final column is a `DropdownMenu` icon button (⋯) with two items, each behind a **cluster-scoped `<Can>` gate** — note the `clusterId` is the BU's *parent cluster* id, not the BU id. **There is no logo thumbnail column** — like the cluster list, a per-row logo/avatar image used to lead this column set and was removed, not relocated; a BU's logo/avatar is now visible only on its own edit page's hero and Branding section.
 
 - **Edit** — inside `<Can permission="cluster.update" clusterId={row.original.cluster_id}>`; navigates to `/business-units/:id/edit`.
-- **Delete** — inside `<Can permission="cluster.delete" clusterId={row.original.cluster_id}>`; sets `deleteId` state and opens the Soft Delete BU `ConfirmDialog` (§5.4).
+- **Delete** — inside `<Can permission="cluster.delete" clusterId={row.original.cluster_id}>`; sets `deleteId` state and opens the Soft Delete BU `ConfirmDialog` (§5.4). Unlike the cluster list's row Delete, there is **no** client-side dependency guard here — a BU can be deleted regardless of what it owns (module activations, subscription details, application roles), all handled application-side, not by this SPA.
 
 A session whose grants cover neither key for a given BU's parent cluster sees an empty dropdown for that row. There is no Hard Delete option in the row action menu. The `BusinessUnitManagement` page calls only `DELETE /api-system/business-units/:id` (soft delete — sets `deleted_at`).
 
@@ -73,92 +77,97 @@ When "Show soft-deleted" is on, a third audit column is appended:
 
 ## 3. `BusinessUnitEdit` — create mode (`/business-units/new`)
 
-In create mode (`isNew = true`) the page title is "Add Business Unit" and the subtitle is "Create a new business unit". The form is immediately editable — no Edit header button appears. The Branding and Users cards are hidden (rendered only when `!isNew`).
+In create mode (`isNew = true`) the page title is the inline-editable `HeroName` (empty, showing the "(unnamed business unit)" placeholder text) and the subtitle is "Create a new business unit". The document is immediately editable — no Edit header button, no Branding/advanced/Users content (`brandingSlot`/`advancedExtraSlot`/`usersSlot` are all `null` while `isNew`).
 
-The form renders all 9 `CollapsibleSection` cards in the 2-column grid. All fields are editable. Required fields are marked with `*` in the label when `editing` is true.
-
-**`?cluster_id=<id>` query parameter:** the initial form state reads `searchParams.get('cluster_id') || ''` and sets it as the initial value of `cluster_id` in `formData` (line 187). When `BusinessUnitEdit` is reached by clicking **Add** in the Business Units card of [clusters](/en/platform/clusters) (`/business-units/new?cluster_id=<id>`), the Cluster select in the Basic Information section is pre-selected to that cluster. The user can change it before saving.
+**`?cluster_id=<id>` query parameter:** the initial form state reads `searchParams.get('cluster_id') || ''` and sets it as the initial value of `cluster_id` in `formData`. When `BusinessUnitEdit` is reached by clicking **Add** in the Business Units section of [clusters](/en/platform/clusters) (`/business-units/new?cluster_id=<id>`), the Cluster select in the Details group is pre-selected to that cluster. The user can change it before saving.
 
 **License limit check on submit:** before calling `POST /api-system/business-units`, the form fetches the selected cluster via `GET /api-system/clusters/:id`; if `max_license_bu` is non-null it counts the cluster's existing BUs via `GET /api-system/business-units?perpage=-1` with an `advance` filter on `cluster_id`. If `currentCount >= cluster.max_license_bu`, it blocks the submit with an inline error ("Cannot create business unit: cluster has reached its license limit (N/M)") and does not call the create endpoint.
 
-Submit button label: **Create Business Unit**. **Post-create navigation:** on success, if the response includes an `id`, navigates to `/business-units/:id` with `{ replace: true }` — note the absence of the `/edit` suffix. `/business-units/:id` is **not a registered route**: the SPA's catch-all (`path="*"`) redirects it to `/`, and the Landing page bounces authenticated sessions on to `/dashboard`, so a successful create currently lands the operator on the Dashboard rather than the new BU's edit page (the same quirk exists on cluster create — see [clusters ui-screens](/en/platform/clusters/ui-screens) §3). If no `id` is returned, navigates to `/business-units`. **Cancel** navigates to `/business-units` without an API call.
+Submit button label: **Create Business Unit** (sticky bottom bar, always visible in create mode). **Post-create navigation:** on success, if the response includes an `id`, navigates to `/business-units/:id/edit` with `{ replace: true }` — a registered route, so a successful create now lands the operator directly on the new BU's edit page rather than bouncing through the catch-all to the Dashboard (that quirk, previously documented here and still relevant history on the cluster side — see [clusters ui-screens](/en/platform/clusters/ui-screens) §3 — has been fixed on both pages). If no `id` is returned, navigates to `/business-units`. **Cancel** navigates to `/business-units` without an API call.
 
-## 4. `BusinessUnitEdit` — view/edit mode (`/business-units/:id/edit`)
+## 4. `BusinessUnitEdit` — one-document edit (`/business-units/:id/edit`)
 
-All 9 section cards are rendered identically in view and edit mode. Each section uses the `CollapsibleSection` component with the `forceOpen` prop set, so the expand/collapse chevron is visible but non-functional — the cards are always open.
+There is no view/edit mode split. `canEdit` (`hasPermission('cluster.update', { clusterId: formData.cluster_id || UNRESOLVED_CLUSTER_ID })` for an existing BU) is computed once and threaded through every section; each control renders editable when `canEdit` is true and a read-only presentation otherwise — there is no header Edit button and no `editing` state toggle anywhere on this page.
 
-The page starts in **view mode** (`editing = false`, `isNew = false`). Title: "Business Unit Details" / "View business unit information". A single **Edit** button appears in the header — wrapped in `<Can permission="cluster.update" clusterId={formData.cluster_id || undefined}>`, so a session without a `cluster.update` grant covering this BU's parent cluster never sees it and the page stays permanently read-only (the form's Save button is not separately gated; it is simply unreachable without the toggle). Clicking **Edit** saves `formData` to `savedFormData` and sets `editing = true`. In edit mode the title changes to "Edit Business Unit" / "Update business unit information"; Save Changes and Cancel buttons appear in a full-width row spanning both grid columns (`lg:col-span-2`). **Cancel** restores `formData` from `savedFormData` without an API call. **Save Changes** → `PUT /api-system/business-units/:id`; on success, `fetchBusinessUnit()` re-fetches and `setEditing(false)` returns to view mode. The `useUnsavedChanges` hook fires if the user attempts to navigate away while `editing = true` and `formData !== savedFormData`.
+### 4.1 Hero card
 
-All 9 section cards are rendered identically in view and edit mode. In view mode the `CollapsibleSection` renders fields using `ReadOnlyText` (styled `div` with `bg-muted/50`) or `ReadOnlyTextarea` for multi-line fields. In edit mode the same positions render `Input`, `textarea`, or `select` elements.
+A `Card` at the top of `BusinessUnitDocument` shows the logo (or a code-initials placeholder) and avatar (or a name-initial placeholder) side by side, the `code` chip, the resolved cluster name, and two **clickable status badges** — Active/Inactive and HQ — that toggle `is_active`/`is_hq` directly on click (`disabled={!canEdit}`), with no separate checkbox anywhere in the document. The BU's name itself is edited via `HeroName` in the page's `PageHeader` title slot (§3), not inside this card.
 
-### 4.1 Basic Information
+### 4.2 Details group
 
-Fields: **Cluster** (required, `select` from all clusters via `GET /api-system/clusters?perpage=-1`), **Code** (required, text, inline validation on blur), **Name** (required, text), **Alias Name** (optional text), **Description** (optional, 3-row `textarea`), **Max Licensed Users** (optional number input — displays "Unlimited" in read-only mode when blank), **Headquarters (HQ)** checkbox, **Active** checkbox.
+Inline `InlineField` rows: **Code** (required, max 20 chars, mono, validated), **Alias** (max 3 chars, validated), **Cluster** (required `select` from all clusters via `GET /api-system/clusters?perpage=-1`), **Max users** (number, mono, validated), **Description** (`textarea`, max 500 chars). `code`, `name` (in the hero title), and `cluster_id` are the only three fields `validateRequired()` enforces before submit. There is no `disabled` guard beyond the page-wide `canEdit` — `code` and `cluster_id` remain editable after creation the same as every other field.
 
-Both checkboxes are editable in both create and edit mode. There is no `disabled` guard on any field — `code`, `cluster_id`, `is_hq`, and `is_active` are all editable after creation. Note: `is_hq` uniqueness is enforced at the application layer only (no DB constraint); the UI allows setting multiple BUs as HQ without a warning. See [Data Model](./data-model.md) for schema details.
+### 4.3 Location group (hotel address)
 
-In view mode, `is_hq` and `is_active` are shown as success/secondary badges rather than checkboxes.
+Eleven `InlineField` rows: **Hotel name** (max 100 chars), **Address line 1**, **Address line 2**, **Sub-district**, **District**, **City**, **Province**, **Postal code** (mono), **Country**, **Latitude** (mono), **Longitude** (mono). This replaces the former single free-text "Address" `textarea` + "Zip Code" pair with ten structured columns (`hotel_address_line1`…`hotel_longitude`) — see [Data Model](./data-model.md) §2.1 for the schema-level rename.
 
-### 4.2 Hotel Information
+### 4.4 Contact group
 
-Fields: **Hotel Name** (text), **Telephone** (text, validated on blur), **Email** (text, validated on blur), **Address** (3-row `textarea`), **Zip Code** (text). All optional. No required markers.
+Two `InlineField` rows: **Phone** (mono) and **Email** (`type="email"`) — both map to `hotel_tel`/`hotel_email`. Both optional, no required markers.
 
-Telephone and email fields use `onBlur` / `onFocus` handlers for inline validation error display via `fieldErrors` state (same `validateField` utility used in the cluster and user forms).
+### 4.5 Company group
 
-### 4.3 Company Information
+The same eleven-field structured-address pattern as Location (§4.3), prefixed `company_*`, plus **Company phone** and **Company email**. A **Copy from hotel address** button (visible only when `canEdit`) in the group header one-way-copies all ten hotel address fields (not phone/email) into their company counterparts via a single `setFormData` call — this goes through the same edit-in-place path as any manual edit, so it marks the document dirty and is included in the next Save, and is reverted by Cancel like any other change.
 
-Fields: **Company Name** (text), **Telephone** (text, validated on blur), **Email** (text, validated on blur), **Address** (3-row `textarea`), **Zip Code** (text). All optional. Structure mirrors Hotel Information.
+### 4.6 Tax group
 
-### 4.4 Tax Information
+Two `InlineField` rows: **Tax ID** (mono, `tax_no`) and **Branch** (mono, `branch_no`). Both free-text, no format validation, both nullable in the schema — surfaced on printed documents but not enforced at any data layer.
 
-Fields (2-column grid): **Tax No.** (text), **Branch No.** (text). Both optional.
+### 4.7 Date & time group
 
-Both fields are free-text inputs (no format validation, no country-specific tax-ID checking) and both are nullable in the schema. They are surfaced in printed documents and receipts but not enforced at any data layer.
+Six `InlineField` rows: **Timezone**, **Date format**, **Date-time format**, **Time format**, **Long time format**, **Short time format** (all mono, free-text with no dropdown or IANA picker) — merged into one inline group; this replaces the former standalone "Date/Time Formats" section.
 
-### 4.5 Date/Time Formats
+### 4.8 Calculation Settings section
 
-Fields (2-column grid, 3 rows): **Date Format** (e.g. `YYYY-MM-DD`), **Date/Time Format** (e.g. `YYYY-MM-DD HH:mm:ss`), **Time Format** (e.g. `HH:mm:ss`), **Long Time Format** (e.g. `HH:mm:ss.SSS`), **Short Time Format** (e.g. `HH:mm`), **Timezone** (e.g. `Asia/Bangkok`). All are free-text inputs with placeholder hints. No dropdown or IANA picker.
+Still a `CollapsibleSection` (`forceOpen`), now always rendered with the page's document-wide `editing = canEdit`: **Calculation Method** (`select`, `average`/`fifo`, matching `enum_calculation_method`) and **Default Currency ID** — no longer a free-text UUID input. It is now a `<select>` populated from the BU's own tenant currency list (`GET /api/config/:buCode/currencies`, lazy-loaded once `formData.code` is known and only for an existing BU), showing `code - name` per option (inactive currencies suffixed `(inactive)`) and falling back silently to the old free-text UUID input if the currency fetch fails or hasn't started (`currenciesFailed` / not yet an array) — a saved id absent from the fetched list is still shown as an extra option so the value is never dropped. In read-only mode, when `defaultCurrency` data is present (fetched inline with the BU record), the same read-only currency detail panel (Code/Name/Symbol/Decimal Places/Description/Active badge) still renders below.
 
-### 4.6 Number Formats
+### 4.9 Number Formats section
 
-Fields (2-column grid): **Per Page Format**, **Amount Format**, **Quantity Format**, **Recipe Format**. All stored as JSON strings in `formData` (typed `string` in `BusinessUnitFormData`) and edited as plain text inputs. Default values are the JSON object `{"locales":"th-TH","minimumIntegerDigits":2}` for amount/quantity/recipe, and `{"default":10}` for perpage. On save, `buildPayload` parses these strings back to objects before sending — a parse failure passes the raw string to the API. See [Data Model](./data-model.md) for the column types.
+Unchanged in shape from the prior sync: **Per Page Format**, **Amount Format**, **Quantity Format**, **Recipe Format**, all JSON strings edited as plain text inputs, parsed back to objects on save by `buildPayload` (a parse failure passes the raw string through). Still gated on the page-wide `canEdit` rather than its own toggle.
 
-In view (read-only) mode these fields display via `ReadOnlyText` — the raw JSON string as stored, with no pretty-printing.
+### 4.10 Branding section
 
-### 4.7 Calculation Settings
+Renders (existing BUs only — `brandingSlot` is `null` in create mode) two `BrandingImageUpload` controls side by side: **Logo** (`shape="rect"`) and **Avatar** (`shape="square"`), each `disabled={!canEdit}`, labelled **Upload**/**Replace** per control (replace semantics — no remove/clear affordance). Client-side validation: JPEG/PNG/WebP, max 5 MB. On file selection the page calls `POST /api-system/business-units/:id/logo` (field `logo`) or `POST /api-system/business-units/:id/avatar` (field `avatar`) and sets the preview from the returned presigned `url` directly — deliberately not re-fetching the BU, so unsaved Details/Location/etc. edits are not clobbered; an uploaded image persists immediately even if the operator then cancels the rest of the document. The cluster edit page carries the equivalent section — see [clusters ui-screens](/en/platform/clusters/ui-screens) §4.3.
 
-Fields (2-column grid): **Calculation Method** (`select` with options `average` / `fifo`, matching the `enum_calculation_method` values documented in [Data Model](./data-model.md)), **Default Currency ID** (free-text input accepting a UUID).
+### 4.11 Configuration section
 
-In view mode, when `defaultCurrency` data is present (fetched inline with the BU record), a read-only currency detail panel is shown below the two fields with sub-fields: Code, Name, Symbol, Decimal Places, Description, and an Active/Inactive badge. This panel is hidden in edit mode (the currency ID input is shown instead).
+The `config` column stores an array of `BusinessUnitConfig` entries (`{ key, label, datatype?, value }`). Gated on the page-wide `canEdit`, not its own toggle:
 
-### 4.8 Configuration
+- **Editable** — each existing row is shown as an inline 5-column row (Key\*, Label\*, Data Type select, Value, Delete button). Data Type options: `string`, `number`, `boolean`, `date`, **`enum`** (new since the last sync), `json`. An **Add Config Entry** button appends a blank row; Delete removes the row from `formData.config` immediately with no confirmation. On save, `buildPayload` keeps only rows where both `key` and `label` are non-empty.
+- **Read-only** — rows shown in a plain `<table>` (Key/Label/Type/Value); "No configuration entries." when empty.
 
-The `config` column stores an array of `BusinessUnitConfig` entries (`{ key: string; label: string; datatype: string; value: unknown }`). This section renders the array differently depending on mode:
+There is no separate dialog for adding/editing config rows — editing is in-place within the section, the only inline-add surface on this page (the BU-user assignment elsewhere still uses modal dialogs — see [users](/en/platform/users) Add BU dialog and §5 below).
 
-- **Edit mode** — each existing row is shown as an inline 5-column row (Key\*, Label\*, Data Type select, Value, Delete button). Supported Data Type options: `string`, `number`, `boolean`, `date`, `json`. An **Add Config Entry** button appends a blank row. The Delete button (Trash icon, destructive colour) removes the row from `formData.config` immediately with no confirmation. On save, `buildPayload` keeps only rows where both `key` and `label` are non-empty (`config.filter(c => c.key && c.label)`) — a row missing either field is dropped before sending.
-- **View mode** — rows are shown in a read-only `<table>` with columns Key, Label, Type, Value. If `config` is empty, a "No configuration entries." message is shown.
+### 4.12 Database Connection section
 
-There is no separate dialog for adding/editing config rows — all editing is in-place within the section. The inline-row pattern is unique among Platform admin pages — the equivalent BU-user assignment elsewhere uses a modal dialog (see [users](/en/platform/users) Add BU dialog). The Configuration table is the only inline-add surface in the BU edit page.
+**No longer a read-only `<pre>` blob** — `db_connection` is now a hybrid editable form, held in `formData` as an array of `{ key, value }` fields (`objectToDbFields`/`dbFieldsToObject` in `utils/dbConnection.ts`) rather than a JSON string:
 
-### 4.9 Database Connection
+- **Seven known fields**, each a typed control: `host`, `port` (number, with a client-side "Port must be a number" check), `database`, `schema`, `user` (all text), `password` (masked `<Input type="password">` with a show/hide eye-icon toggle), and `ssl` (checkbox). All render regardless of whether the underlying key is present in the stored JSON.
+- **Additional fields** — any other keys in the stored `db_connection` object render as free Key/Value row pairs below a divider, each removable, with an **Add field** button to append a blank pair.
+- **Password write-only, with a guarded reveal:** the backend always redacts `password` to an empty string on every list/detail read, so a blank field on save does *not* clear the stored password (`dbFieldsToObject` omits blank values from the payload entirely) — the placeholder text says so explicitly. A **Reveal current password** button, gated behind `<Can permission="cluster.update" clusterId={...}>` (defense-in-depth; the real boundary is the backend endpoint itself), calls a dedicated on-demand endpoint (`businessUnitService.revealDbPassword`, never fetched on mount) and displays the real value inline; the revealed value is cleared from local state the moment `canEdit` goes false (component `useEffect`), so it never lingers past the edit session.
+- **Read-only rendering** uses `DbConnectionView`, which masks sensitive keys — everything **not** in a small safe allowlist (`host`/`hostname`/`port`/`schema`/`database`/`db`/`dialect`/`type`/`ssl`/`sslmode`) is masked, default-deny.
 
-Field: **Connection Config** — a single `<pre>` element that shows the `db_connection` JSON string, pretty-printed (`JSON.stringify(JSON.parse(...), null, 2)`) when the string is valid JSON, or raw if not. Maximum height is 240 px with overflow scroll.
+This is a substantial behavior change from the prior sync's documented "opaque read-only `<pre>` block, editable only via direct API access" — the field is now a first-class editable, masked form on this page.
 
-In view mode the background is `bg-muted/50`; in edit mode the background is `bg-transparent`. The field is rendered as a `<pre>` in both modes — there is no `<textarea>` or `Input` for `db_connection` in the current source. The value is editable only indirectly: `db_connection` is included in `formData` and in `buildPayload`, but the current UI does not render an editable input for it. The field can be populated from the initial `fetchBusinessUnit()` response and is submitted back as-is. Developers intending to update `db_connection` must currently use the API directly or a `textarea` field may need to be added.
+### 4.13 Advanced cards (existing BUs only, super-admin only)
 
-### 4.10 Branding card (below the form)
+Three cards render after Database Connection, all gated on `isSuperAdmin` (a separate check from `canEdit` — a non-super-admin `cluster.update` holder never sees these regardless of edit rights) and rendered only when `!isNew`:
 
-A full-width **Branding** card ("Logo and avatar shown across the platform") renders below the form, outside the `<form>` element, only when `!isNew` — the upload endpoints need a BU id, so branding is not part of the create flow. It contains two `BrandingImageUpload` controls side by side: **Logo** with `shape="rect"` (preview box 80 px high, up to 160 px wide, rounded corners, `object-contain`) and **Avatar** with `shape="square"` (80×80 px circle, `object-cover`). Each control shows the current image from its presigned URL (`bu.logo?.url` / `bu.avatar?.url`, loaded by `fetchBusinessUnit`), or an ImageOff placeholder icon when none is set.
+- **Tenant Migrations** (`TenantMigrationCard`) — checks pending database schema migrations for this BU's own tenant database (`GET`-style status check) and applies them via a streamed deploy action with a live applied/total progress readout and a running log of migration names, behind a confirm dialog. Disabled with a tooltip when not super-admin or when the BU has no `db_connection` configured yet.
+- **Tenant Seed** (`TenantSeedCard`) — the same status-check/confirm/streamed-progress pattern, but for seed scripts instead of migrations; supports selecting a subset of seed keys before running.
+- **Interface Entitlement** (`InterfaceEntitlementCard`) — controls which named interface/brand this BU is licensed to show, loaded and saved by `buCode` independently of the rest of the document (its own Save button, not part of the page's sticky bar). An empty selection means "unrestricted" — every interface shows, matching the gateway's own show-all default. Disabled until the BU has been saved at least once (needs a `buCode`).
 
-Both controls receive `disabled={!editing}` — in view mode only the previews render; entering edit mode (behind the `<Can>`-gated Edit toggle, so effectively behind `cluster.update`) reveals an upload button per control, labelled **Upload logo/avatar** when empty or **Replace logo/avatar** when an image exists (replace semantics: a new upload overwrites the previous image; there is no remove/clear affordance). The component validates client-side before uploading: accepted types JPEG/PNG/WebP, max 5 MB — failures surface as an error toast without an API call.
+None of these three cards existed in the prior sync — they are wholly new surfaces added to the BU edit page (commits `8fc1124`, `88ae453`, `ccb0754`), operating through their own dedicated service modules (`tenantMigrationService`, `tenantSeedService`, `interfaceEntitlementService`), not `businessUnitService`.
 
-On file selection the page calls the dedicated multipart endpoint — `POST /api-system/business-units/:id/logo` (form field `logo`) or `POST /api-system/business-units/:id/avatar` (form field `avatar`) — and sets the preview from the returned presigned `url` directly, deliberately *not* re-fetching the BU so unsaved form edits are not clobbered. Uploads are independent of the form's Save button: an uploaded image is persisted immediately even if the operator then cancels the form edit. The cluster edit page carries the identical card — see [clusters ui-screens](/en/platform/clusters/ui-screens) §4.2.
+### 4.14 Users card
+
+Unchanged in shape from the prior sync — still a full-width `Card` below the advanced cards (existing BUs only), with dialogs for Add/Edit/Remove rather than the inline-edit pattern the [clusters](/en/platform/clusters) Users section adopted. The only change is *how* it's gated: the card now takes a single `canEdit` prop from the page (§4.1) instead of each action carrying its own `<Can>` — see §5 for the dialog details, which remain accurate against current source.
 
 ## 5. Dialogs
 
 ### 5.1 Add User to BU dialog
 
-**Trigger:** the **Add User** button (`UserPlus` icon) in the Users card header. Only available in view/edit mode (`!isNew`).
+**Trigger:** the **Add User** button (`UserPlus` icon) in the Users card header (§4.14). Only available for an existing BU (`!isNew`), and only rendered when `canEdit`.
 
 The dialog (`sm:max-w-lg`) loads the cluster's user list when `formData.cluster_id` is set and the response is not yet cached (`GET /api-system/user/clusters/:clusterId` via `clusterService.getClusterUsers`). It shows a scrollable list of cluster users not already in this BU (`availableClusterUsers` filter). An inline search input filters the already-loaded list client-side (no debounce, no server call) by `username`, `email`, and full name (first/middle/last from `userInfo`); a "N available of M cluster users" count renders below the list.
 
@@ -173,7 +182,7 @@ On submit (clicking **Add User**, disabled until a user is selected and the requ
 
 ### 5.2 Edit BU User dialog
 
-**Trigger:** the **Edit** (Pencil) icon button on a user row in the Users table.
+**Trigger:** the **Edit** (Pencil) icon button on a user row in the Users table — column rendered only when `canEdit`.
 
 The dialog (`sm:max-w-md`) title is "Edit User in Business Unit". The description shows the user's `username` and display name (first/middle/last joined, falling back to `email`).
 
@@ -185,7 +194,7 @@ On submit, calls `PATCH /api-system/user/business-units/:id` with body `{ role, 
 
 ### 5.3 Remove BU User confirm
 
-**Trigger:** the **Delete** (Trash, destructive colour) icon button on a user row in the Users table.
+**Trigger:** the **Delete** (Trash, destructive colour) icon button on a user row in the Users table — column rendered only when `canEdit`.
 
 Uses the shared `ConfirmDialog`. Title: "Remove User". Description: `Are you sure you want to remove "<display name>" from this business unit?` where display name resolves first/middle/last, then `username`, then `email`. Confirm button label: "Remove" (destructive variant). No typed confirmation required.
 
@@ -216,13 +225,19 @@ Note: the BU list persists no filter keys beyond the status array and the delete
 
 ## 7. Screenshots
 
-> **TODO:** Screenshots deferred to the upcoming Platform screenshots batch. See `.specs/2026-05-17-screenshots-coverage-checklist.md` for the cross-module coverage plan.
+> **TODO:** Screenshots deferred to the upcoming Platform screenshots batch. See `.specs/2026-05-17-screenshots-coverage-checklist.md` for the cross-module coverage plan. **Note (2026-07-29):** the edit page's layout changed from a 9-card 2-column grid to a single-column one-document scroll since this page was last captured-for — any future capture should target the new hero/inline-group/advanced-cards layout described in §4.
 
 ## 8. References
 
-- `../carmen-platform/src/App.tsx` — three BU routes with `requiredPermission` keys (`cluster.read`/`cluster.create`/`cluster.update`) and the catch-all redirect behind the post-create navigation quirk (§3). (`SITEMAP.md` still shows the legacy role lists and is stale on access columns.)
-- `../carmen-platform/src/pages/BusinessUnitManagement.tsx` — list page: logo thumbnail column, filters (Status + Deleted), header actions (Export, `<Can>`-gated Add Business Unit), `<Can>`-gated row action menu (Edit / Delete soft), nested-audit column mapping, 6 `localStorage` keys.
-- `../carmen-platform/src/pages/BusinessUnitEdit.tsx` — create/view/edit page: 9 `CollapsibleSection` form cards in a 2-column grid, `<Can>`-gated Edit toggle, Branding card wiring, Users card with Add/Edit/Remove user dialogs, `BU_ROLES` constant, `?cluster_id` query-param pre-select, license-limit pre-flight check on create.
+- `../carmen-platform/src/App.tsx` — three BU routes with `requiredPermission` keys (`cluster.read`/`cluster.create`/`cluster.update`); the create-navigation quirk previously documented here has been fixed — the catch-all now serves a dedicated 404 page rather than silently redirecting to Landing. (`SITEMAP.md` still shows the legacy role lists and is stale on access columns.)
+- `../carmen-platform/src/pages/BusinessUnitManagement.tsx` and `businessUnitManagement/BuSummary.tsx` — list page: Overview summary strip, filters (Status + Deleted), header actions (Export, `<Can>`-gated Add Business Unit), `<Can>`-gated row action menu (Edit / Delete soft, no client-side deletion guard), nested-audit column mapping, 6 `localStorage` keys.
+- `../carmen-platform/src/pages/BusinessUnitEdit.tsx` — one-document orchestrator page: `canEdit` gating (no view/edit toggle), `doc_version` optimistic locking, license-limit pre-flight check on create, `?cluster_id` query-param pre-select.
+- `../carmen-platform/src/pages/businessUnitEdit/{BusinessUnitDocument,HeroName,shared,types}.ts(x)` — hero card, inline field groups (Details/Location/Contact/Company/Tax/Date & time), `InlineField`, `BU_ROLES` constant, `BusinessUnitFormData`/`initialFormData`.
+- `../carmen-platform/src/pages/businessUnitEdit/sections/{CalculationSettingsSection,NumberFormatsSection,ConfigurationSection,DatabaseConnectionSection}.tsx` — the four remaining complex sections; `DatabaseConnectionSection` now a structured editable form (known fields + extras + masked/revealable password), not a read-only `<pre>`.
+- `../carmen-platform/src/components/{TenantMigrationCard,TenantSeedCard,InterfaceEntitlementCard}.tsx` — the three new super-admin-only advanced cards (§4.13).
+- `../carmen-platform/src/utils/dbConnection.ts` — `objectToDbFields`/`dbFieldsToObject`/`parseDbConnection`/`SAFE_DB_CONNECTION_KEYS`; `../carmen-platform/src/components/DbConnectionView.tsx` — the read-only masked renderer.
+- `../carmen-platform/src/services/currencyService.ts` — `GET /api/config/:buCode/currencies`, backing the Calculation Settings currency dropdown (§4.8).
+- `../carmen-platform/src/pages/businessUnitEdit/{BusinessUnitUsersCard,useBusinessUnitUsers}.ts(x)` — Users card and its Add/Edit/Remove dialog logic (unchanged in shape; now `canEdit`-gated as a whole rather than per-action).
 - `../carmen-platform/src/components/BrandingImageUpload.tsx` — shared upload control: type/size validation, rect/square preview shapes, Upload/Replace button states.
-- `../carmen-platform/src/services/businessUnitService.ts` — API surface: `GET/POST /api-system/business-units`, `PUT/DELETE /api-system/business-units/:id`, `POST /api-system/business-units/:id/logo`, `POST /api-system/business-units/:id/avatar`, `PATCH /api-system/user/business-units/:id`, `POST /api-system/user/business-units`, `DELETE /api-system/user/business-units/:id`.
+- `../carmen-platform/src/services/businessUnitService.ts` — API surface: `GET/POST /api-system/business-units`, `PUT/DELETE /api-system/business-units/:id`, `POST /api-system/business-units/:id/logo`, `POST /api-system/business-units/:id/avatar`, `revealDbPassword`, `PATCH /api-system/user/business-units/:id`, `POST /api-system/user/business-units`, `DELETE /api-system/user/business-units/:id`.
 - Cross-links: [business-units](/en/platform/business-units) (module landing; §4 gate matrix), [clusters](/en/platform/clusters) (parent cluster; source of `?cluster_id` navigate-to-new), [clusters permissions](/en/platform/clusters/permissions) (key-reuse gotcha from the cluster side), [users](/en/platform/users) (other surface mutating `tb_user_tb_business_unit`), [Data Model](./data-model.md).
