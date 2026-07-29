@@ -1,8 +1,8 @@
 ---
 title: บรอดแคสต์ (Broadcasts)
-description: ภาพรวมโมดูล Broadcasts — หน้าจอเขียน push notification หน้าเดียว พร้อม target mode สามแบบ (ผู้ใช้ทั้งหมด ผู้ใช้ที่ระบุ business unit หนึ่งแห่ง), type preset แบบ SYS_/BU_ และการส่งทันทีหรือตามกำหนดเวลา แบบ fire-and-forget จาก SPA
+description: ภาพรวมโมดูล Broadcasts — หน้าจอเขียน push notification (พร้อมแผง preview แบบ live) พร้อม target mode สามแบบ (ผู้ใช้ทั้งหมด ผู้ใช้ที่ระบุ business unit หนึ่งแห่ง), type preset แบบ SYS_/BU_ และการส่งทันทีหรือตามกำหนดเวลา ตอนนี้ถูกบังคับใช้ฝั่ง server แล้ว
 published: true
-date: 2026-06-10T16:00:00.000Z
+date: 2026-07-29T00:00:00.000Z
 tags: platform/broadcasts, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T16:00:00.000Z
@@ -17,9 +17,9 @@ dateCreated: 2026-06-10T16:00:00.000Z
 
 ## 1. ภาพรวม
 
-Broadcasts เป็นโมดูล Platform ตัวเดียวที่ surface ฝั่ง SPA เป็น**หน้าจอเดียว**: `/broadcasts/new` → `BroadcastCompose`, การ์ด Compose หนึ่งใบ ไม่มี route ของ list `/broadcasts`, ไม่มี route ของ edit, ไม่มี detail view — เป็นการเบี่ยงเบนโดยเจตนาจากรูปแบบสองหน้าจอ Management/Edit มาตรฐานของ SPA เพราะหน้าที่ของโมดูลคือ action แบบ one-shot ไม่ใช่การจัดการเรคคอร์ด อย่างไรก็ตามหน้านี้ยังคงมีองค์ประกอบมาตรฐานครบ: guard `useUnsavedChanges`, คีย์ลัด global (Ctrl/Cmd+S ส่ง, Escape รีเซ็ต), toast feedback และ Debug Sheet เฉพาะ dev ที่แสดง response ล่าสุดของ API
+Broadcasts เป็นโมดูล Platform ตัวเดียวที่ surface ฝั่ง SPA เป็น**หน้าจอเดียว**: `/broadcasts/new` → `BroadcastCompose`, การ์ด Compose คู่กับการ์ด **Preview** แบบ sticky ไม่มี route ของ list `/broadcasts`, ไม่มี route ของ edit, ไม่มี detail view — เป็นการเบี่ยงเบนโดยเจตนาจากรูปแบบสองหน้าจอ Management/Edit มาตรฐานของ SPA เพราะหน้าที่ของโมดูลคือ action แบบ one-shot ไม่ใช่การจัดการเรคคอร์ด อย่างไรก็ตามหน้านี้ยังคงมีองค์ประกอบมาตรฐานครบ: `PageHeader` (ไอคอน Megaphone, ไม่มีลิงก์ย้อนกลับ — เข้าถึงได้จาก sidebar เท่านั้น), guard `useUnsavedChanges`, คีย์ลัด global (Ctrl/Cmd+S ส่ง, Escape รีเซ็ต), toast feedback, Debug Sheet เฉพาะ dev ที่แสดง response ล่าสุดของ API และ sticky action bar ด้านล่าง (Reset/Send) พร้อมตัวบ่งชี้ "Unsaved changes"
 
-ฟอร์มเป็นการ์ดเดียวจากบนลงล่าง: แถบแท็บ **Target** (All users / Specific users / Business Unit), ตัวเลือกผู้รับแบบมีเงื่อนไข (`UserMultiSelect`) หรือ select ของ BU, **Title** (≤200 ตัวอักษร, ตัวนับแบบ live) และ **Message** (≤2000 ตัวอักษร, ตัวนับแบบ live), select ของ **Type** preset (Info / Warning / Critical / Maintenance / Other…) และแถบแท็บ **Send time** (Send immediately / Schedule for later พร้อม input แบบ `datetime-local`) การส่งต้องผ่าน dialog ยืนยันเสมอ โดยหัวข้อและสไตล์ของ dialog แตกต่างกันตาม target mode ดู [UI Screens](/th/platform/broadcasts/ui-screens) สำหรับ walkthrough ฉบับเต็ม
+การ์ด Compose จากบนลงล่าง: แถบแท็บ **Target** (All users / Specific users / Business Unit), ตัวเลือกผู้รับแบบมีเงื่อนไข (`UserMultiSelect`) หรือ select ของ BU, **Title** (≤200 ตัวอักษร, ตัวนับแบบ live) และ **Message** (≤2000 ตัวอักษร, ตัวนับแบบ live), select ของ **Type** preset (Info / Warning / Critical / Maintenance / Other…) และแถบแท็บ **Send time** (Send immediately / Schedule for later พร้อม input แบบ `datetime-local`) ข้าง ๆ กัน การ์ด `BroadcastPreview` render การแจ้งเตือนตามที่ผู้รับจะเห็น (badge ประเภท, หัวข้อ, ข้อความ), บรรทัด "Reaches" (สรุปกลุ่มผู้ชม พร้อมโทนสีเตือนสำหรับการยิงแบบ system-wide) และบรรทัด "Delivery" (ทันทีเทียบกับเวลาที่กำหนดไว้ที่ format แล้ว) — ทั้งหมดคำนวณใหม่แบบ live จาก state ของฟอร์ม การส่งต้องผ่าน dialog ยืนยันเสมอ โดยหัวข้อและสไตล์ของ dialog แตกต่างกันตาม target mode ดู [UI Screens](/th/platform/broadcasts/ui-screens) สำหรับ walkthrough ฉบับเต็ม
 
 เบื้องหลัง SPA, controller ของ backend-gateway (`api/notifications/broadcasts/*`) forward ผ่าน TCP (`notifications.create`) ไปยัง **micro-notification** ซึ่งเป็นผู้เขียน row และ push แบบ live ผ่าน Socket.io ไปยังผู้ใช้ in-scope ที่ออนไลน์ การจัดเก็บคือ row ของ `tb_broadcast_notification` หนึ่งตัวต่อการส่งหนึ่งครั้ง พร้อม read state รายผู้ใช้แบบ lazy ใน `tb_user_broadcast_action` — ยกเว้นโหมด *specific users* ซึ่ง fan out เป็น row ของ `tb_notification` หนึ่งตัวต่อผู้รับแทน ดู [Data Model](/th/platform/broadcasts/data-model)
 
@@ -46,8 +46,9 @@ permission key ตัวเดียว gate ทุก surface ผ่าน [Pla
 | route `/broadcasts/new` | `PrivateRoute` | `broadcast.send` |
 | sidebar "Send Broadcast" (กลุ่ม Content, ไอคอน Megaphone) | nav filter ของ `Layout.tsx` | `broadcast.send` |
 | ปุ่ม Send (footer ของฟอร์ม) | `<Can>` | `broadcast.send` |
+| `POST /api/notifications/broadcasts/system` / `/bu` | `KeycloakGuard` + `PlatformPermissionGuard` | `broadcast.send` |
 
-ต่างจากโมดูลแบบ CRUD ตรงที่ไม่มีการแบ่ง read/create/update/delete — การส่งเป็นการดำเนินการเดียวของโมดูล สังเกตว่า backend บังคับใช้**เฉพาะ authentication** (Keycloak bearer) บนสอง endpoint นี้; key `broadcast.send` ไม่ถูกตรวจสอบที่ไหนเลยฝั่ง server เมทริกซ์ฉบับเต็ม, quirk ของการ gate แท็บภายใน component และ semantics การส่งมอบราย target mode อยู่ใน [Permissions](/th/platform/broadcasts/permissions)
+ต่างจากโมดูลแบบ CRUD ตรงที่ไม่มีการแบ่ง read/create/update/delete — การส่งเป็นการดำเนินการเดียวของโมดูล **ยืนยันว่าแก้แล้วนับจาก sync ครั้งก่อน:** สอง endpoint ของ gateway ตอนนี้บังคับใช้ `broadcast.send` ฝั่ง server ด้วยแล้ว (backend PR #239, `PlatformPermissionGuard` + `@RequirePlatformPermission('broadcast.send')`) — ก่อนหน้านี้ gate ของ SPA เองเป็นขอบเขตเดียว การบังคับใช้นี้จงใจทำแบบ**หยาบ (coarse)**: ผ่านได้ด้วย grant ระดับแพลตฟอร์ม **หรือ** grant ใน cluster ใดก็ได้หนึ่งตัว ตรงกับ (ไม่ได้เข้มกว่า) การตรวจสอบแบบไม่มี scope ของ SPA เอง; การ scope ราย cluster แบบจริงจังยังคงเป็นช่องว่างที่ทราบและถูกเลื่อนออกไปอย่างชัดเจน เมทริกซ์ฉบับเต็ม, quirk ของการ gate แท็บภายใน component และ semantics การส่งมอบราย target mode อยู่ใน [Permissions](/th/platform/broadcasts/permissions)
 
 ## 5. โมดูลที่เกี่ยวข้อง
 
@@ -60,15 +61,17 @@ permission key ตัวเดียว gate ทุก surface ผ่าน [Pla
 
 - `../carmen-platform/src/App.tsx` — route guard ของ `/broadcasts/new` (`broadcast.send`)
 - `../carmen-platform/src/components/Layout.tsx` — รายการ sidebar "Send Broadcast" (กลุ่ม Content)
-- `../carmen-platform/src/pages/BroadcastCompose.tsx` — หน้าจอเขียน: แท็บ, การ validate, ตัวสร้าง payload, dialog ยืนยัน, คีย์ลัด
+- `../carmen-platform/src/pages/BroadcastCompose.tsx`, `src/pages/broadcastCompose/BroadcastPreview.tsx` — หน้าจอเขียน: แท็บ, การ validate, ตัวสร้าง payload, preview แบบ live, dialog ยืนยัน, คีย์ลัด
 - `../carmen-platform/src/components/UserMultiSelect.tsx` — การค้นหาผู้ใช้แบบ debounce พร้อมการเลือกแบบ badge
 - `../carmen-platform/src/services/broadcastService.ts` — การเรียก POST สองตัว; `src/types/index.ts` — `BroadcastTargetMode`, `BroadcastTypePreset`, payload type สองตัว, `UserOption`
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_broadcast_notification` (บรรทัด 357), `tb_user_broadcast_action` (บรรทัด 388), `tb_notification` (บรรทัด 316)
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/notification/notification.controller.ts` — `pushSystemBroadcast` / `pushBuBroadcast` (KeycloakGuard, การ forward ผ่าน TCP)
+- `../carmen-platform/src/utils/permissions.ts` — ค่าคงที่ `PERMISSIONS.BROADCAST.SEND`
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_notification` (บรรทัด 332), `tb_broadcast_notification` (บรรทัด 374), `tb_user_broadcast_action` (บรรทัด 406)
+- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/notification/notification.controller.ts` — `pushSystemBroadcast` / `pushBuBroadcast` (`KeycloakGuard` + `PlatformPermissionGuard`, การ forward ผ่าน TCP)
+- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/auth/guards/platform-permission.guard.ts`, `src/auth/services/platform-permission.service.ts` — การตรวจสอบแบบหยาบ platform-wide-หรือ-cluster-ใดก็ได้ (backend PR #239, commit `1fa15ec02`)
 - `../carmen-turborepo-backend-v2/apps/micro-notification/src/notification/` — `notification.controller.ts` (dispatch ของ create, live emit), `notification.service.ts` (การเขียน row, การ resolve scope, filter ตอนอ่าน, การ fan-out อีเมล)
 
 ## 7. หน้าในโมดูลนี้
 
 - [Data Model](/th/platform/broadcasts/data-model) — ตาราง field ของ `tb_broadcast_notification` และ `tb_user_broadcast_action`, ทางแยกของการส่งแบบกำหนดเป้าหมายลง `tb_notification`, คลังศัพท์ของ type และความแตกต่างจาก payload type ของ SPA
-- [UI Screens](/th/platform/broadcasts/ui-screens) — หน้าจอเขียนหน้าเดียว: แท็บ target, ตัวเลือกผู้รับ, ตัวนับ, flow ส่ง/กำหนดเวลา, dialog ยืนยัน และคีย์ลัด
-- [Permissions](/th/platform/broadcasts/permissions) — เมทริกซ์ gate แบบ key เดียว, ข้อพึงระวังการบังคับใช้ฝั่ง client เท่านั้น, semantics การส่งมอบราย target mode และเมทริกซ์กรณีพิเศษสำหรับผู้ทดสอบ
+- [UI Screens](/th/platform/broadcasts/ui-screens) — หน้าจอเขียนและแผง preview แบบ live: แท็บ target, ตัวเลือกผู้รับ, ตัวนับ, flow ส่ง/กำหนดเวลา, dialog ยืนยัน และคีย์ลัด
+- [Permissions](/th/platform/broadcasts/permissions) — เมทริกซ์ gate แบบ key เดียว, การบังคับใช้ฝั่ง server ที่ยืนยันว่าแก้แล้ว (พร้อมความหยาบที่ทราบ), semantics การส่งมอบราย target mode และเมทริกซ์กรณีพิเศษสำหรับผู้ทดสอบ

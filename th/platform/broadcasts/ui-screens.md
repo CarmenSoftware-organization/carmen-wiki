@@ -1,8 +1,8 @@
 ---
 title: Broadcasts — หน้าจอ UI (UI Screens)
-description: หน้าจอ BroadcastCompose หน้าเดียว — แท็บ target, UserMultiSelect และ select ของ BU, ตัวนับ title/message, type preset พร้อม input แบบ custom, ส่งทันทีเทียบกับกำหนดเวลา และ dialog ยืนยันราย target mode
+description: หน้าจอ BroadcastCompose และแผง BroadcastPreview แบบ live — แท็บ target, UserMultiSelect และ select ของ BU, ตัวนับ title/message, type preset พร้อม input แบบ custom, ส่งทันทีเทียบกับกำหนดเวลา และ dialog ยืนยันราย target mode
 published: true
-date: 2026-06-10T16:00:00.000Z
+date: 2026-07-29T00:00:00.000Z
 tags: book/platform, broadcasts, ui
 editor: markdown
 dateCreated: 2026-06-10T16:00:00.000Z
@@ -11,13 +11,13 @@ dateCreated: 2026-06-10T16:00:00.000Z
 # Broadcasts — หน้าจอ UI (UI Screens)
 
 > **At a Glance**
-> **หน้าจอ:** `BroadcastCompose` (`/broadcasts/new`) — หน้าจอเดียวของโมดูล; ไม่มี route ของ list/edit &nbsp;·&nbsp; **ฟอร์ม:** การ์ด Compose ใบเดียว — แท็บ Target · ตัวเลือกผู้รับแบบมีเงื่อนไข · Title (≤200) · Message (≤2000) · Type preset · แท็บ Send time &nbsp;·&nbsp; **Dialog:** ConfirmDialog ตัวเดียว หัวข้อและสไตล์แตกต่างกันตาม target mode &nbsp;·&nbsp; **คีย์ลัด:** Ctrl/Cmd+S ส่ง · Escape รีเซ็ต &nbsp;·&nbsp; **สถานะ UI ที่จดจำ:** ไม่มี
+> **หน้าจอ:** `BroadcastCompose` (`/broadcasts/new`) — หน้าจอเดียวของโมดูล; ไม่มี route ของ list/edit &nbsp;·&nbsp; **Layout:** การ์ด Compose (แท็บ Target · ตัวเลือกผู้รับแบบมีเงื่อนไข · Title (≤200) · Message (≤2000) · Type preset · แท็บ Send time) คู่กับการ์ด **Preview** แบบ sticky &nbsp;·&nbsp; **Dialog:** ConfirmDialog ตัวเดียว หัวข้อและสไตล์แตกต่างกันตาม target mode &nbsp;·&nbsp; **คีย์ลัด:** Ctrl/Cmd+S ส่ง · Escape รีเซ็ต &nbsp;·&nbsp; **สถานะ UI ที่จดจำ:** ไม่มี
 
 ## 1. ภาพรวม
 
-Broadcasts เป็นโมดูลแบบหน้าจอเดียว: `/broadcasts/new` → `BroadcastCompose`, การ์ด Compose ใบเดียวใต้ header ที่มีไอคอน Megaphone ("Send Broadcast" / "Push a notification to all users, specific users, or a business unit.") ไม่มี list แบบ Management, ไม่มี toggle view/edit, ไม่มีเรคคอร์ดให้กลับมาดู — เป็นด้านกลับโดยเจตนาของโมดูล Platform อื่นทุกตัว เนื่องจากไม่มีอะไรถูกโหลด (นอกจากตัวเลือกของ BU) หน้านี้จึงไม่มี skeleton state และไม่จดจำสถานะ UI ใด ๆ ใน `localStorage`
+Broadcasts เป็นโมดูลแบบหน้าจอเดียว: `/broadcasts/new` → `BroadcastCompose`, `PageHeader` (ไอคอน Megaphone, "Send Broadcast" / "Push a notification to all users, specific users, or a business unit.", ไม่มีลิงก์ย้อนกลับ — เข้าถึงหน้านี้ได้จาก sidebar เท่านั้น) เหนือ grid สองคอลัมน์: การ์ด Compose ฝั่งซ้าย, การ์ด `BroadcastPreview` แบบ sticky ฝั่งขวา (§2.7) ไม่มี list แบบ Management, ไม่มี toggle view/edit, ไม่มีเรคคอร์ดให้กลับมาดู — เป็นด้านกลับโดยเจตนาของโมดูล Platform อื่นทุกตัว เนื่องจากไม่มีอะไรถูกโหลด (นอกจากตัวเลือกของ BU) หน้านี้จึงไม่มี skeleton state และไม่จดจำสถานะ UI ใด ๆ ใน `localStorage`
 
-องค์ประกอบมาตรฐานยังคง apply: `useUnsavedChanges` ติดอาวุธ navigation guard ทันทีที่ field ใดเบี่ยงจากค่า default ของมัน (รวมถึงผู้รับที่เลือกไว้), Ctrl/Cmd+S trigger การส่งและ Escape trigger การรีเซ็ต (ทั้งคู่ถูกระงับขณะการส่งกำลังดำเนินอยู่หรือ dialog ยืนยันเปิดอยู่), error ปรากฏเป็นข้อความสีแดงราย field บวก toast และ Debug Sheet เฉพาะ dev (ปุ่มลอยสีเหลืองอำพัน, `NODE_ENV === 'development'`) แสดง response ล่าสุดของ API พร้อมปุ่ม Copy JSON
+องค์ประกอบมาตรฐานยังคง apply: `useUnsavedChanges` ติดอาวุธ navigation guard ทันทีที่ field ใดเบี่ยงจากค่า default ของมัน (รวมถึงผู้รับที่เลือกไว้), Ctrl/Cmd+S trigger การส่งและ Escape trigger การรีเซ็ต (ทั้งคู่ถูกระงับขณะการส่งกำลังดำเนินอยู่หรือ dialog ยืนยันเปิดอยู่), error ปรากฏเป็นข้อความสีแดงราย field บวก toast และ Debug Sheet เฉพาะ dev (ปุ่มลอยสีเหลืองอำพัน, `import.meta.env.DEV`) แสดง response ล่าสุดของ API พร้อมปุ่ม Copy JSON sticky action bar ด้านล่าง (§3.3) มีปุ่ม Reset และ Send พร้อมตัวบ่งชี้ "Unsaved changes" ตรงกับหน้า edit ที่ redesign แล้วในที่อื่น ๆ ของ Platform book
 
 ## 2. ฟอร์ม Compose
 
@@ -58,11 +58,19 @@ native select ที่มีห้า preset — Info (ค่าเริ่ม
 
 แถบ `Tabs` แถบที่สอง — **Send immediately** (ไอคอน Send, ค่าเริ่มต้น) เทียบกับ **Schedule for later** (ไอคอน Calendar) โหมด schedule เผย input แบบ native `datetime-local`; การ validate ต้องการค่า ("Pick a date and time"), ค่าที่ parse ได้ ("Invalid date/time") และเวลาที่เป็น**อนาคต** ("Scheduled time must be in the future" — ตรวจสอบกับ `Date.now()` ณ เวลา validate) ค่าถูกแปลงเป็น UTC ISO string (`new Date(v).toISOString()`) ใน payload
 
+### 2.7 `BroadcastPreview`
+
+การ์ดแบบ sticky ข้างฟอร์ม Compose คำนวณใหม่ทุกครั้งที่พิมพ์ — การแจ้งเตือนตามที่ผู้รับจะเห็น บวกว่ามันเข้าถึงใครและเมื่อไหร่:
+
+- **การ์ดแจ้งเตือน** — แถบสีข้างซ้ายตามความรุนแรง (`severityStyle`: Info → info, Warning → warning, Critical → destructive, Maintenance → secondary/muted, Other… → default/primary), type ที่ resolve แล้วเป็น badge, หัวข้อ (placeholder แบบ italic "Your title appears here" จนกว่าจะพิมพ์) และข้อความ (placeholder "Your message appears here.", จำกัด 6 บรรทัด)
+- **Reaches** — สรุปกลุ่มผู้ชมหนึ่งบรรทัด (`reachSummary`): "Every user in the system" (`system_all`, render ด้วยโทนสีเตือนและไอคอน `AlertTriangle` แทนไอคอนปกติของโหมด), "N selected user(s)" หรือ "No recipients picked yet" (`system_users`), หรือ label ของ BU ที่เลือก / "No business unit picked yet" (`bu`)
+- **Delivery** — "Sends immediately" หรือ "Scheduled for `<local datetime>`" / "Pick a date and time" ขึ้นอยู่กับแท็บ Send time และว่ามีการตั้งวันที่ที่ valid หรือไม่
+
 ## 3. flow การส่ง
 
 ### 3.1 การ validate → การยืนยัน
 
-ปุ่ม **Send** (footer, `<Can permission="broadcast.send">`; label พลิกเป็น **Schedule** ในโหมด schedule, spinner ขณะกำลังส่ง) รันการ validate ก่อน — ความล้มเหลว mark ตัว field และ toast "Please fix the highlighted fields" เมื่อสำเร็จ `ConfirmDialog` จะเปิด:
+ปุ่ม **Send** (sticky action bar ด้านล่าง, `<Can permission="broadcast.send">`; label พลิกเป็น **Schedule** ในโหมด schedule, spinner ขณะกำลังส่ง) รันการ validate ก่อน — ความล้มเหลว mark ตัว field และ toast "Please fix the highlighted fields" เมื่อสำเร็จ `ConfirmDialog` จะเปิด:
 
 | Target mode | หัวข้อ dialog | ปุ่มยืนยัน |
 |---|---|---|
@@ -78,14 +86,15 @@ native select ที่มีห้า preset — Info (ค่าเริ่ม
 
 ### 3.3 รีเซ็ต, คีย์ลัด, guard ของการเปลี่ยนแปลงที่ยังไม่ save
 
-**Reset** (ปุ่ม outline ข้าง Send, หรือ Escape) เคลียร์ฟอร์ม, ผู้รับ และ field error โดยไม่มีการยืนยัน — การปกป้องแบบ confirm-before-discard มีอยู่เฉพาะกับ*การนำทาง*เท่านั้น ผ่าน `useUnsavedChanges` ซึ่งติดอาวุธเมื่อ field ใดต่างจากค่า default ของมัน Ctrl/Cmd+S เทียบเท่ากับการคลิก Send (validate ก่อน แล้วจึง dialog)
+sticky bar ด้านล่าง (แสดงตลอดเวลาบนหน้าจอนี้ ต่างจากหน้า edit ที่ redesign แล้วซึ่งแสดงเฉพาะขณะแก้ไข) มีตัวบ่งชี้จุด "Unsaved changes" (หรือ "No changes") บวก **Reset** และ **Send** **Reset** (trigger ได้ด้วย Escape เช่นกัน) เคลียร์ฟอร์ม, ผู้รับ และ field error โดยไม่มีการยืนยัน — การปกป้องแบบ confirm-before-discard มีอยู่เฉพาะกับ*การนำทาง*เท่านั้น ผ่าน `useUnsavedChanges` ซึ่งติดอาวุธเมื่อ field ใดต่างจากค่า default ของมัน Ctrl/Cmd+S เทียบเท่ากับการคลิก Send (validate ก่อน แล้วจึง dialog)
 
 ## 4. แหล่งข้อมูลอ้างอิง
 
-- `../carmen-platform/src/pages/BroadcastCompose.tsx` — หน้าจอทั้งหมด: ค่าคงที่ (`TITLE_MAX`, `MESSAGE_MAX`, `TYPE_CUSTOM_RE`), `resolveType`, ตัวสร้าง payload, `validate`, หัวข้อ/คำอธิบายของ dialog ยืนยัน, Debug Sheet
+- `../carmen-platform/src/pages/BroadcastCompose.tsx`, `src/pages/broadcastCompose/BroadcastPreview.tsx` — หน้าจอทั้งหมด: ค่าคงที่ (`TITLE_MAX`, `MESSAGE_MAX`, `TYPE_CUSTOM_RE`), `resolveType`, ตัวสร้าง payload, `validate`, หัวข้อ/คำอธิบายของ dialog ยืนยัน, preview แบบ live, Debug Sheet
 - `../carmen-platform/src/components/UserMultiSelect.tsx` — debounce, ขนาดหน้า, fallback ของชื่อสำหรับแสดง, การโต้ตอบแบบ badge/คีย์บอร์ด
 - `../carmen-platform/src/services/broadcastService.ts` — `sendSystem` / `sendBu`
 - `../carmen-platform/src/components/KeyboardShortcuts.tsx`, `src/hooks/useUnsavedChanges.ts` — คีย์ลัดและ navigation guard
+- `../carmen-platform/src/components/PageHeader.tsx` — header ที่ใช้ร่วมกัน (ไอคอน/title/subtitle, ไม่มี `backTo` ในหน้านี้)
 - `../carmen-platform/src/App.tsx` (route), `src/components/Layout.tsx` ("Send Broadcast", กลุ่ม Content)
 
 **Cross-link:** [หน้า landing ของ Broadcasts](/th/platform/broadcasts) &nbsp;·&nbsp; [Data Model](./data-model.md) &nbsp;·&nbsp; [Permissions](./permissions.md)

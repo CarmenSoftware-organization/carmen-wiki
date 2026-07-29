@@ -1,8 +1,8 @@
 ---
 title: Broadcasts — แบบจำลองข้อมูล (Data Model)
-description: ตาราง field ของ tb_broadcast_notification และ tb_user_broadcast_action, ทางแยกของการส่งแบบกำหนดเป้าหมายลง tb_notification, การ resolve scope_id จาก bu_code และความแตกต่างจาก payload type แบบ write-only ของ SPA
+description: ตาราง field ของ tb_broadcast_notification และ tb_user_broadcast_action, ทางแยกของการส่งแบบกำหนดเป้าหมายลง tb_notification, การ resolve scope_id จาก bu_code, คอลัมน์ doc_version ที่มีเฉพาะใน schema และความแตกต่างจาก payload type แบบ write-only ของ SPA
 published: true
-date: 2026-06-10T16:00:00.000Z
+date: 2026-07-29T00:00:00.000Z
 tags: book/platform, broadcasts, data-model
 editor: markdown
 dateCreated: 2026-06-10T16:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-06-10T16:00:00.000Z
 # Broadcasts — แบบจำลองข้อมูล (Data Model)
 
 > **At a Glance**
-> **ตาราง:** `tb_broadcast_notification` (หนึ่ง row ต่อหนึ่ง broadcast) + `tb_user_broadcast_action` (read state รายผู้ใช้แบบ lazy, unique ต่อ broadcast×user) &nbsp;·&nbsp; **ทางแยกของการกำหนดเป้าหมาย:** การส่งแบบ `userIds` ข้ามทั้งสองตารางและ fan out ลง `tb_notification` (row ส่วนบุคคลหนึ่งตัวต่อผู้รับ) &nbsp;·&nbsp; **Scope:** `scope_id` = UUID ของ `tb_business_unit.id` สำหรับ `bu-to-user`, null สำหรับ `system-to-user` — API รับ **code** ของ BU แล้ว resolve มัน &nbsp;·&nbsp; **ไม่มี enum:** `category` และ `type` เป็น varchar ธรรมดา &nbsp;·&nbsp; **Endpoint:** `POST /api/notifications/broadcasts/system` / `/bu` — `/api` **ไม่ใช่** `/api-system`
+> **ตาราง:** `tb_broadcast_notification` (หนึ่ง row ต่อหนึ่ง broadcast) + `tb_user_broadcast_action` (read state รายผู้ใช้แบบ lazy, unique ต่อ broadcast×user) &nbsp;·&nbsp; **ทางแยกของการกำหนดเป้าหมาย:** การส่งแบบ `userIds` ข้ามทั้งสองตารางและ fan out ลง `tb_notification` (row ส่วนบุคคลหนึ่งตัวต่อผู้รับ) &nbsp;·&nbsp; **Scope:** `scope_id` = UUID ของ `tb_business_unit.id` สำหรับ `bu-to-user`, null สำหรับ `system-to-user` — API รับ **code** ของ BU แล้ว resolve มัน &nbsp;·&nbsp; **ไม่มี enum:** `category` และ `type` เป็น varchar ธรรมดา &nbsp;·&nbsp; **`doc_version`:** มีอยู่ในทั้งสามตาราง (rollout ทั่วแพลตฟอร์ม 2026-07-16) แต่มีเฉพาะใน schema เท่านั้น — ไม่มี update endpoint ให้ lock &nbsp;·&nbsp; **Endpoint:** `POST /api/notifications/broadcasts/system` / `/bu` — `/api` **ไม่ใช่** `/api-system`, ตอนนี้ถูกบังคับใช้ฝั่ง server ด้วย `broadcast.send`
 
 > **Source of truth:** Prisma platform schema ฝั่ง backend อ่านไฟล์นี้ก่อนเสมอเมื่อเขียนหรืออัพเดทหน้านี้:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
@@ -30,7 +30,7 @@ dateCreated: 2026-06-10T16:00:00.000Z
 
 ### 2.1 `tb_broadcast_notification`
 
-หนึ่งข้อความ broadcast Schema บรรทัด 357
+หนึ่งข้อความ broadcast Schema บรรทัด 374 (เดิม 357 ณ sync ครั้งก่อน — เลื่อนเพราะมีการเพิ่ม field ก่อนหน้าในไฟล์)
 
 | Field | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | ----------- |
@@ -42,7 +42,8 @@ dateCreated: 2026-06-10T16:00:00.000Z
 | `message` | `String?` | Yes | เนื้อหา notification (เช่นเดียวกัน — บังคับโดย SPA เท่านั้น) |
 | `metadata` | `Json? @db.JsonB` | Yes | รูปแบบอิสระ SPA ไม่เคยส่งมัน; การส่งแบบ BU ได้ `bu_code` ถูก merge เข้ามาฝั่ง server |
 | `scheduled_at` | `DateTime?` | Yes | cutoff การมองเห็น: list query ซ่อน row จนกว่า `scheduled_at <= NOW()` ไม่มี annotation ของ timezone (ต่างจากคอลัมน์ audit) |
-| `end_at` | `DateTime?` | Yes | **ประกาศไว้แต่ตาย** — ไม่เคยถูกเขียนหรืออ่านโดย code path ใด ณ 2026-06-10 |
+| `end_at` | `DateTime?` | Yes | **ประกาศไว้แต่ตาย** — ไม่เคยถูกเขียนหรืออ่านโดย code path ใด |
+| `doc_version` | `Int @default(0) @db.Integer` | No | **มีเฉพาะใน schema** เพิ่มมาทั่วแพลตฟอร์มวันที่ 2026-07-16 (ทั้ง 35 ตารางของ platform, migration `8e53bbe`) แต่ไม่มีอะไรอ่านหรือเขียนมันที่นี่ — ไม่มี update endpoint ให้ broadcast optimistically lock ตั้งแต่แรก (§2.3, "Fire-and-forget") |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: การสร้าง row, default `now()`; เป็น sort key ของ list ด้วย |
 | `created_by_id` | `String? @db.Uuid` | Yes | Audit/ผู้ส่ง: FK → `tb_user` ถูกตั้งเป็น user ของ token สำหรับการส่งแบบ **BU**; **ถูกปล่อยเป็น `null` สำหรับการส่งแบบ system** (§5) |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: default `now()`; ไม่เคยถูก update (ไม่มี update path อยู่เลย) |
@@ -59,7 +60,7 @@ dateCreated: 2026-06-10T16:00:00.000Z
 
 ### 2.2 `tb_user_broadcast_action`
 
-state รายผู้ใช้แบบ lazy สำหรับ broadcast หนึ่งตัว Schema บรรทัด 388
+state รายผู้ใช้แบบ lazy สำหรับ broadcast หนึ่งตัว Schema บรรทัด 406 (เดิม 388)
 
 | Field | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | ----------- |
@@ -68,7 +69,8 @@ state รายผู้ใช้แบบ lazy สำหรับ broadcast ห
 | `user_id` | `String @db.Uuid` | No | FK → `tb_user.id`, **`onDelete: Cascade`** |
 | `is_read` | `Boolean? @default(false)` | Yes | flag การอ่าน; query ของ unread ปฏิบัติกับ row ที่ไม่มีและ `is_read = false` เหมือนกันทุกประการ (`COALESCE(a.is_read, false)`) |
 | `read_at` | `DateTime?` | Yes | ถูกประทับโดย upsert ของ mark-as-read |
-| `dismissed_at` | `DateTime?` | Yes | **ประกาศไว้แต่ตาย** — comment ของ schema คาดการณ์ action แบบ dismiss ไว้ แต่ไม่มี code ใดเขียนมัน ณ 2026-06-10 |
+| `dismissed_at` | `DateTime?` | Yes | **ประกาศไว้แต่ตาย** — comment ของ schema คาดการณ์ action แบบ dismiss ไว้ แต่ไม่มี code ใดเขียนมัน |
+| `doc_version` | `Int @default(0) @db.Integer` | No | **มีเฉพาะใน schema** จาก rollout วันที่ 2026-07-16 เดียวกัน — upsert ของ mark-read เขียนเพียง `is_read`/`read_at`/`updated_at` ไม่เคยตรวจสอบหรือเพิ่มคอลัมน์นี้ |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | Default `now()` |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | Default `now()`; ถูกแตะโดย upsert ของ mark-read |
 
@@ -82,7 +84,7 @@ row ถูกเขียนโดยเส้นทางใน micro-notificat
 
 ### 2.3 `tb_notification` (ถูกอ้างอิง)
 
-ตาราง notification ส่วนบุคคล (schema บรรทัด 316; FK ของ `to_user_id`/`from_user_id`, `type` default `SYS_INFO`, `category` default `'system'`, flag `is_read`/`is_sent`, `scheduled_at` ของตัวเอง, คอลัมน์ audit ครบชุด) Broadcasts แตะมันบนเส้นทางเดียวเท่านั้น: การส่งแบบ system ที่ถือ `userIds` สร้างหนึ่ง row **ต่อ id ผู้รับที่มีอยู่จริง** (`category = 'system'`, `from_user_id = null`) จากนั้น emit แบบ live แล้วประทับ `is_sent = true` เมื่อไม่กำหนดเวลา id ที่ไม่ match กับ row ของ `tb_user` ใดถูกทิ้งอย่างเงียบ ๆ — ไม่มี error, ไม่มีรายงาน partial-failure lifecycle ที่กว้างกว่าของตารางนี้ (ข้อความ user-to-user, workflow notification) เป็นของ feature ด้าน notification โดยรวม ไม่ใช่ของโมดูลนี้
+ตาราง notification ส่วนบุคคล (schema บรรทัด 332, เดิม 316; FK ของ `to_user_id`/`from_user_id`, `type` default `SYS_INFO`, `category` default `'system'`, flag `is_read`/`is_sent`, `scheduled_at` ของตัวเอง, `doc_version` ที่มีเฉพาะใน schema จาก rollout 2026-07-16 เดียวกัน, คอลัมน์ audit ครบชุด) Broadcasts แตะมันบนเส้นทางเดียวเท่านั้น: การส่งแบบ system ที่ถือ `userIds` สร้างหนึ่ง row **ต่อ id ผู้รับที่มีอยู่จริง** (`category = 'system'`, `from_user_id = null`) จากนั้น emit แบบ live แล้วประทับ `is_sent = true` เมื่อไม่กำหนดเวลา id ที่ไม่ match กับ row ของ `tb_user` ใดถูกทิ้งอย่างเงียบ ๆ — ไม่มี error, ไม่มีรายงาน partial-failure lifecycle ที่กว้างกว่าของตารางนี้ (ข้อความ user-to-user, workflow notification) เป็นของ feature ด้าน notification โดยรวม ไม่ใช่ของโมดูลนี้
 
 ## 3. ความสัมพันธ์
 
@@ -121,23 +123,24 @@ type ของ SPA (`src/types/index.ts`) เป็น **DTO แบบ write-onl
 
 ## 6. แหล่งข้อมูลอ้างอิง
 
-REST surface (backend-gateway) **สังเกต prefix: `/api/notifications/...` ไม่ใช่ `/api-system/...`** — เดิม SPA เรียก `/api-system` และถูกแก้ใน commit `579b3f7` ของ carmen-platform ทั้งสอง route ถือ `KeycloakGuard` (bearer auth) เท่านั้น; ไม่มี guard ของ RBAC หรือ app-id — ดู [Permissions](./permissions.md) §2
+REST surface (backend-gateway) **สังเกต prefix: `/api/notifications/...` ไม่ใช่ `/api-system/...`** — เดิม SPA เรียก `/api-system` และถูกแก้ใน commit `579b3f7` ของ carmen-platform **ยืนยันว่าแก้แล้วนับจาก sync ครั้งก่อน:** สอง route การส่งตอนนี้ถือ `KeycloakGuard` **และ** `PlatformPermissionGuard` (`@RequirePlatformPermission('broadcast.send')`, backend PR #239/`1fa15ec02`) — ก่อนหน้านี้ bearer auth เป็นการตรวจสอบเดียว ยังคงไม่มี `x-app-id`/`AppIdGuard` บนสอง route นี้ (ต่างจาก CRUD แบบ authenticated ของ News) — ดู [Permissions](./permissions.md) §2
 
 | Method + Path | Auth | วัตถุประสงค์ | หมายเหตุ |
 |---|---|---|---|
-| `POST /api/notifications/broadcasts/system` | Bearer | ส่งแบบ system-wide หรือแบบกำหนดเป้าหมาย | Body `{ title, message, type?, metadata?, scheduled_at?, userIds? }` ไม่มี `userIds`: row ของ broadcast หนึ่งตัว (`system-to-user`), live emit ไปยังผู้ใช้ active ทุกคนเมื่อไม่กำหนดเวลา มี `userIds`: fan-out ลง `tb_notification` รายผู้ใช้ 201 `{ notifications, count }` |
-| `POST /api/notifications/broadcasts/bu` | Bearer | ส่งแบบ scope ราย BU | Body `{ bu_code, title, message, type?, metadata?, scheduled_at? }` row ของ broadcast หนึ่งตัว (`bu-to-user`, `scope_id` = id ของ BU ที่ resolve แล้ว), live emit ไปยังสมาชิก BU เมื่อไม่กำหนดเวลา 201 เพิ่ม `bu_code` เข้าไปใน response |
+| `POST /api/notifications/broadcasts/system` | Bearer + `broadcast.send` (`PlatformPermissionGuard`, หยาบ: platform-wide หรือ cluster ใดก็ได้) | ส่งแบบ system-wide หรือแบบกำหนดเป้าหมาย | Body `{ title, message, type?, metadata?, scheduled_at?, userIds? }` ไม่มี `userIds`: row ของ broadcast หนึ่งตัว (`system-to-user`), live emit ไปยังผู้ใช้ active ทุกคนเมื่อไม่กำหนดเวลา มี `userIds`: fan-out ลง `tb_notification` รายผู้ใช้ 201 `{ notifications, count }` |
+| `POST /api/notifications/broadcasts/bu` | Bearer + `broadcast.send` (`PlatformPermissionGuard` การตรวจสอบแบบหยาบเดียวกัน) | ส่งแบบ scope ราย BU | Body `{ bu_code, title, message, type?, metadata?, scheduled_at? }` row ของ broadcast หนึ่งตัว (`bu-to-user`, `scope_id` = id ของ BU ที่ resolve แล้ว), live emit ไปยังสมาชิก BU เมื่อไม่กำหนดเวลา 201 เพิ่ม `bu_code` เข้าไปใน response |
 | `GET /api/notifications` / `/recent` / `/unread` | Bearer | list ฝั่งผู้รับ | merge row ส่วนบุคคล + row ของ broadcast ที่ in-scope; broadcast ถูก filter ด้วย `deleted_at IS NULL` และ `scheduled_at IS NULL OR <= NOW()` |
 | `PUT /api/notifications/:id/read` | Bearer | mark ว่าอ่านแล้ว | FE ส่ง `category` ของ row มาด้วย; `system-to-user`/`bu-to-user` route ไปยัง upsert ของ `tb_user_broadcast_action` ค่าอื่นใดไปยัง `tb_notification` |
 
-ไม่มี Bruno collection สำหรับ endpoint ของ broadcast ณ 2026-06-10; annotation แบบ Swagger บน controller ของ gateway เป็นเอกสารสัญญาที่ใกล้เคียงที่สุด
+ไม่มี Bruno collection สำหรับ endpoint ของ broadcast (ยืนยันว่ายังไม่มี); annotation แบบ Swagger บน controller ของ gateway เป็นเอกสารสัญญาที่ใกล้เคียงที่สุด
 
 **หลัก (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_broadcast_notification` (บรรทัด 357), `tb_user_broadcast_action` (บรรทัด 388), `tb_notification` (บรรทัด 316)
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_notification` (บรรทัด 332), `tb_broadcast_notification` (บรรทัด 374), `tb_user_broadcast_action` (บรรทัด 406)
 - `../carmen-turborepo-backend-v2/apps/micro-notification/src/notification/notification.service.ts` — `createSystemNotification` (ทางแยก fan-out), `createBusinessUnitNotification` (การ resolve `bu_code`), `createBroadcastNotification`, `markBroadcastAsRead`/`markAllBroadcastsAsRead`, list query แบบ scope
 
 **รอง (gateway + shape ฝั่ง consumer):**
 - `../carmen-turborepo-backend-v2/apps/backend-gateway/src/notification/notification.controller.ts` — route POST สองตัว, interface ของ payload, การ forward ผ่าน TCP, ค่า default ของ type
+- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/auth/guards/platform-permission.guard.ts`, `src/auth/services/platform-permission.service.ts` — การบังคับใช้ `broadcast.send` ฝั่ง server และการตรวจสอบแบบหยาบ platform-หรือ-cluster-ใดก็ได้
 - `../carmen-turborepo-backend-v2/apps/micro-notification/src/notification/notification.controller.ts` — dispatch ของ create, ตัวจำแนก broadcast-vs-fanout, live emit + การประทับ `is_sent`
 - `../carmen-platform/src/types/index.ts` — `BroadcastTargetMode`, `BroadcastTypePreset`, `BroadcastSystemPayload`, `BroadcastBuPayload`; `src/services/broadcastService.ts` — การเรียกสองตัว
 
