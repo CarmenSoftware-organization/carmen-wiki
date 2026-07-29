@@ -2,7 +2,7 @@
 title: เทมเพลตรายการราคา (Price List Template)
 description: scaffold RFQ / pricelist ที่ใช้ซ้ำได้ นิยาม currency, validity, คำแนะนำ vendor, และรายการสินค้า/MOQ — template ต้นทางที่รอบ Request for Pricing ถูกออกจากมัน
 published: true
-date: 2026-07-29T04:21:35.000Z
+date: 2026-07-29T04:41:24.000Z
 tags: templates, price-list, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -55,7 +55,7 @@ Claim ที่ **ไม่มี** โค้ดรองรับในรอ�
 - **การเปลี่ยน currency บน template ที่มีอยู่** มีผลแค่ไปข้างหน้าเท่านั้น — `tb_request_for_pricing` ไม่ denormalize อะไรจาก template นอกจาก FK ดังนั้นหน้านี้ยืนยันจาก frontend อย่างเดียวไม่ได้ว่า RFQ ที่กำลังดำเนินอยู่จะอ่าน currency ปัจจุบันของ template ใหม่หรือไม่ — ถือว่ายังไม่ยืนยัน
 - **`reminder_days` / `send_reminders` / `escalation_after_days` เป็นของที่ตายแล้วผ่าน UI** พวกมันเป็นคอลัมน์จริง `create()`/`update()` รับไว้ถ้า post มาตรง (ยืนยันจากการอ่าน `price-list-template.service.ts`) แต่ฟอร์มสร้าง/แก้ไม่มีฟิลด์ให้เลยสักตัว และไม่มี background job อ่านมัน — คำอธิบาย step ของ test ตัวหนึ่งใน `../carmen-inventory-frontend-e2e/tests/160-pl-template.spec.ts` (`TC-PT-030001`) ยังบรรยายว่า "toggle switch send-reminders… เลือก checkbox เตือน 14 และ 7 วัน… กรอก escalation days" แต่ตัว test body ที่มันแนบอยู่กรอกแค่ฟิลด์ Name แล้ว save เท่านั้น — annotation นั้นเก่า/ตกยุคเทียบกับโค้ดที่มันควรจะบรรยาย
 - **Clone ยืนยันแล้วว่าถูกถอดออก ไม่ใช่แค่ไม่มีเอกสาร** suite "Pricelist Template — Clone (removed)" ใน `160-pl-template.spec.ts` assert ตรง ๆ ว่า `cloneButton()`/`cloneMenuItem()` มี 0 match ใน list, detail view, และ edit mode สำหรับทุก role ที่ทดสอบ
-- **Delete เป็น soft ไม่มีเงื่อนไข และเกิดทันที** `remove()` set `status = inactive` บน header, ประทับ `deleted_at`/`deleted_by_id` ทั้งบน header และทุก detail row แล้วคืนค่าสำเร็จ — ไม่มี hard-delete action แยกที่ไหนเลย และไม่มีการเช็คว่ารอบ RFQ (`tb_request_for_pricing.pricelist_template_id`) ยังชี้มาที่ template นี้อยู่หรือไม่
+- **Delete เป็น soft ไม่มีเงื่อนไข และเกิดทันที — แต่ soft-delete ของ detail row ไม่ครบ** `remove()` set `status = inactive`, `deleted_at`, และ `deleted_by_id` บน row **header** แต่ `updateMany` ของ detail row (`price-list-template.service.ts:741-746`) set **แค่ `deleted_by_id`** เท่านั้น — `deleted_at` ไม่เคยถูกเขียนบน `tb_pricelist_template_detail` เลย query ที่ filter detail row ด้วย `deleted_at IS NULL` จะตรวจไม่พบว่ารายการของ template ที่ถูกลบแล้วถูกลบ — มีแค่ `deleted_at`/`status` ของ header เท่านั้นที่บอกสถานะ deletion ได้แน่นอน ไม่มี hard-delete action แยกที่ไหนเลย และไม่มีการเช็คว่ารอบ RFQ (`tb_request_for_pricing.pricelist_template_id`) ยังชี้มาที่ template นี้อยู่หรือไม่
 - **Status เป็น enum 3 ค่าจริง** (`draft`/`active`/`inactive`, DB default `draft`) แก้ผ่าน `<Select>` ธรรมดาในฟอร์มเดียวกับฟิลด์อื่นทุกตัว — ไม่มี workflow แยก ไม่มี gate ที่ผูกกับความครบถ้วนของรายการสินค้า
 
 ---
@@ -111,7 +111,7 @@ comment บน template เอง ตามรูป comment มาตรฐา�
 ## 6. กฎทางธุรกิจ
 
 - **Uniqueness** `name` unique ในกลุ่มที่ไม่ถูก delete — บังคับใช้ **ทั้งสองระดับ**: ระดับ DB (`@@unique([name, deleted_at])`) และตรวจซ้ำในโค้ดแอป (`create()` ทำ `findFirst` ก่อน insert อย่างชัดเจน; `superRefine` ของ Zod ใน `update()` ทำ `findFirst` อีกครั้ง)
-- **ไม่มี deletion guard เลย** `remove()` สำเร็จเสมอและ soft-delete เสมอ (`status = inactive` + `deleted_at` บน header และทุก detail row) — ไม่มี hard-delete path ที่จะถูกบล็อก และไม่มีการเช็ครอบ RFQ ที่ยังอ้างถึง template
+- **ไม่มี deletion guard เลย** `remove()` สำเร็จเสมอและ soft-delete เสมอ — `status = inactive` + `deleted_at` บน **header** เท่านั้น; ทุก detail row ได้แค่ `deleted_by_id` **ไม่ได้** `deleted_at` (ดู note ใน Edge Cases ด้านบน) — ไม่มี hard-delete path ที่จะถูกบล็อก และไม่มีการเช็ครอบ RFQ ที่ยังอ้างถึง template
 - **Validation ที่บังคับใช้จริง:** name uniqueness (ข้างต้น); `currency_id` ต้องอ้าง currency ที่ *มีอยู่จริง* (แค่ตรวจมีอยู่ ไม่ตรวจ `is_active`); `product_id` ของแต่ละ detail สินค้าต้องมีอยู่จริง และ `unit_id` ของแต่ละ MOQ tier ต้องมีอยู่จริง **ไม่บังคับใช้ที่ไหนในโค้ด:** ความไม่ติดลบของ `validity_period` (มีแค่ native `min=1` ฝั่ง client บน input ของ stepper), ความไม่ติดลบของ `escalation_after_days`, ลำดับ sort หรือความเป็นค่าบวกของ `reminder_days`
 - **Status ไม่ใช่ workflow** `draft`/`active`/`inactive` แก้ผ่าน `<Select>` เดียวกับฟิลด์ header อื่นทุกตัวใน flow edit-and-save มาตรฐาน backend ยังมี `updateStatus()` (`PATCH :id/status` แบบ bare write ไม่มีเงื่อนไข ไม่มี validation) แต่ไม่มีโค้ด frontend เรียกมัน
 - **Reminder/escalation ไม่มีใครอ่าน** `send_reminders`, `reminder_days`, `escalation_after_days` ถูกรับและบันทึกโดย `create()`/`update()` ถ้ามีอยู่ใน request body แต่ไม่มีอะไรใน repo นี้หรือใน `micro-cronjobs` (ค้นทั้ง repo แบบไม่สนตัวพิมพ์เล็กใหญ่หา "reminder"/"escalat" ไม่เจอเลยที่นั่น) อ่านมันกลับออกมา

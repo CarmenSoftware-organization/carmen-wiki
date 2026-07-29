@@ -2,7 +2,7 @@
 title: Price List Template
 description: Reusable RFQ / pricelist scaffold defining currency, validity, vendor instructions, and a per-product MOQ list — the source template Request for Pricing rounds are issued from.
 published: true
-date: 2026-07-29T04:21:35.000Z
+date: 2026-07-29T04:41:24.000Z
 tags: templates, price-list, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -55,7 +55,7 @@ Claims **not** backed by any code found in this pass, previously documented as i
 - **Currency change on an existing template** only matters going forward — `tb_request_for_pricing` denormalizes nothing from the template beyond the FK, so this page cannot confirm from the frontend alone whether an in-flight RFQ re-reads the template's current currency or not; treat as unconfirmed.
 - **`reminder_days` / `send_reminders` / `escalation_after_days` are dead weight through the UI.** They're real columns, accepted by `create()`/`update()` if posted directly (confirmed by reading `price-list-template.service.ts`), but the create/edit form has no field for any of them, and no background job reads them — a `../carmen-inventory-frontend-e2e/tests/160-pl-template.spec.ts` test's own step-by-step description (`TC-PT-030001`) still narrates "toggle send-reminders switch… select 14 and 7 day reminder checkboxes… enter escalation days," but the test body it's attached to only fills the Name field and saves — the annotation is stale/aspirational relative to the code it's supposed to describe.
 - **Clone is confirmed removed, not merely undocumented.** `160-pl-template.spec.ts`'s "Pricelist Template — Clone (removed)" suite explicitly asserts `cloneButton()`/`cloneMenuItem()` have zero matches in the list, the detail view, and edit mode, for every role tested.
-- **Delete is soft, unconditional, and immediate.** `remove()` sets `status = inactive` on the header, stamps `deleted_at`/`deleted_by_id` on both the header and every detail row, and returns success — there is no distinct hard-delete action anywhere, and no check for whether an RFQ round (`tb_request_for_pricing.pricelist_template_id`) still points at this template.
+- **Delete is soft, unconditional, and immediate — but the detail-row soft-delete is incomplete.** `remove()` sets `status = inactive`, `deleted_at`, and `deleted_by_id` on the **header** row, but the detail-row `updateMany` (`price-list-template.service.ts:741-746`) sets **only `deleted_by_id`** — `deleted_at` is never written on `tb_pricelist_template_detail`. A query filtering detail rows on `deleted_at IS NULL` would not detect a deleted template's lines at all; only the header's `deleted_at`/`status` reliably signal deletion. There is no distinct hard-delete action anywhere, and no check for whether an RFQ round (`tb_request_for_pricing.pricelist_template_id`) still points at this template.
 - **Status is a real 3-value enum** (`draft`/`active`/`inactive`, DB default `draft`) edited through an ordinary `<Select>` in the same form as every other field — no distinct workflow, no gate tied to product-list completeness.
 
 ---
@@ -111,7 +111,7 @@ Comments on the template itself, following the canonical comment shape. No front
 ## 6. Business Rules
 
 - **Uniqueness.** `name` unique among non-deleted — enforced **both** at the DB level (`@@unique([name, deleted_at])`) and redundantly re-checked in application code (`create()` does an explicit `findFirst` before insert; `update()`'s Zod `superRefine` does another `findFirst`).
-- **No deletion guard of any kind.** `remove()` always succeeds and always soft-deletes (`status = inactive` + `deleted_at` on the header and every detail row) — there is no hard-delete path to be blocked, and no check for RFQ rounds still referencing the template.
+- **No deletion guard of any kind.** `remove()` always succeeds and always soft-deletes — `status = inactive` + `deleted_at` on the **header** only; every detail row gets `deleted_by_id` but **not** `deleted_at` (see the Edge Cases note above) — there is no hard-delete path to be blocked, and no check for RFQ rounds still referencing the template.
 - **Validation actually enforced:** `name` uniqueness (above); `currency_id` must reference an *existing* currency (existence only, not `is_active`); each product detail's `product_id` must exist and each MOQ tier's `unit_id` must exist. **Not enforced anywhere in code:** `validity_period` non-negativity (only a client-side native `min=1` on the stepper input), `escalation_after_days` non-negativity, `reminder_days` sort order or positivity.
 - **Status is not a workflow.** `draft`/`active`/`inactive` is edited through the same `<Select>` as every other header field in the standard edit-and-save flow. The backend additionally exposes `updateStatus()` (`PATCH :id/status`, a bare unconditional write with no validation), but no frontend code calls it.
 - **Reminders/escalation are unread.** `send_reminders`, `reminder_days`, `escalation_after_days` are accepted and persisted by `create()`/`update()` if present in the request body, but nothing in this repo or in `micro-cronjobs` (a repo-wide, case-insensitive search for "reminder"/"escalat" returned no matches there) reads them back out.
