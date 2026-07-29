@@ -2,7 +2,7 @@
 title: Operation Plan Dashboard
 description: The /operation-plan landing screen — 10 hardcoded KPI/chart tiles (recipe + equipment) sourced from a code-registered dataset catalog, not a user-configurable widget board.
 published: true
-date: 2026-07-29T10:00:00.000Z
+date: 2026-07-29T10:52:30.000Z
 tags: recipe, operation-plan, dashboard, widget, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T10:00:00.000Z
@@ -74,12 +74,12 @@ Titles are hardcoded strings on the config entry (in Thai in the current source)
 
 | | This screen (`operation-plan`) | [reporting-audit/widget](/en/inventory/reporting-audit/widget) |
 |---|---|---|
-| Backend route | `GET api/:bu_code/dashboard-widgets/operation-plan` — a fixed, per-module endpoint on `DashboardSystemWidgetsController` | `GET api/:bu_code/dashboard-widgets/bu` (BU) or `api/:bu_code/dashboard-widgets/me` (personal) — served by `DashboardBuWidgetsController` / `DashboardPersonalWidgetsController` |
+| Backend route | `GET api/:bu_code/dashboard-widgets/operation-plan` — a fixed, per-module endpoint on `DashboardSystemWidgetsController` | `GET api/:bu_code/dashboard-widgets/bu` (BU, on the separate `DashboardBuWidgetsController`) or `GET api/me/dashboard-widgets` (personal, on the separate `DashboardPersonalWidgetsController` — a distinct root path, not nested under `:bu_code/dashboard-widgets/` at all) |
 | Storage | None — a hardcoded array in gateway source (`system-widgets.config.ts`) | `tb_dashboard_bu_widget` / `tb_dashboard_personal_widget` (tenant DB rows) |
 | Add / remove / reorder | Code change + deploy only | Real CRUD (`POST`/`PATCH`/`DELETE`) — BU widgets from each module's own landing dashboard, personal widgets from `/dashboard` |
 | Frontend component | `operation-dashboard.tsx` — bespoke layout, 4 named sections (Metrics/Trends/Comparison/Distribution) | `DashboardWidgetGrid` (shared component, also used by [vendor-dashboard](/en/inventory/vendor-pricelist/vendor-dashboard)) — one flat grid, sorted by widget-type render-group then `order_index` |
 
-**Correction to a prior citation:** [reporting-audit/widget](/en/inventory/reporting-audit/widget) §1 cites `procurement-dashboard.tsx → useProcurementWidgets → GET api/:bu_code/dashboard-widgets/bu` as an example BU-widget consumer. Reading `system-widgets.controller.ts` directly shows the actual route hit by `useProcurementWidgets`/`useOperationPlanWidgets`/`useVendorWidgets`/`useInventoryWidgets`/`useProductWidgets`/`useConfigWidgets` is `api/:bu_code/dashboard-widgets/{module}` on `DashboardSystemWidgetsController` (this page's mechanism, not the BU-widget one) — the `/bu` and `/me` routes exist on a separate controller and are never called by any per-module dashboard component. This page and [vendor-dashboard](/en/inventory/vendor-pricelist/vendor-dashboard) are the first two wiki pages to trace this distinction to source; a follow-up correction to `reporting-audit/widget.md` itself is recommended but out of scope here.
+**Correction to a prior citation:** [reporting-audit/widget](/en/inventory/reporting-audit/widget) §1 cites `procurement-dashboard.tsx → useProcurementWidgets → GET api/:bu_code/dashboard-widgets/bu` as an example BU-widget consumer. Reading `system-widgets.controller.ts` directly shows the actual route hit by `useProcurementWidgets`/`useOperationPlanWidgets`/`useVendorWidgets`/`useInventoryWidgets`/`useProductWidgets`/`useConfigWidgets` is `api/:bu_code/dashboard-widgets/{module}` on `DashboardSystemWidgetsController` (this page's mechanism, not the BU-widget one) — `DashboardBuWidgetsController`'s real `/bu` route lives on a genuinely separate controller, and the real personal-widget listing path the frontend actually calls (`api/me/dashboard-widgets`, via `hooks/use-my-dashboard-widgets.ts` → `MY_DASHBOARD_WIDGETS`, correctly documented at [reporting-audit/widget](/en/inventory/reporting-audit/widget) §1.1) is served by `DashboardPersonalWidgetsController` at that distinct root — not nested under `:bu_code/dashboard-widgets/` at all. `DashboardSystemWidgetsController` does carry its own `@Get('me')` handler (`api/:bu_code/dashboard-widgets/me`), which composes the same personal-widget list with live dataset values bundled in, but no frontend caller of that particular composite route was found (`useDashboardWidgets()` in `use-dashboard-widgets.ts` is only ever invoked with `procurement`/`inventory`/`product`/`config`/`vendor-management`/`operation-plan`, never `me`). This page and [vendor-dashboard](/en/inventory/vendor-pricelist/vendor-dashboard) are the first two wiki pages to trace this distinction to source; a follow-up correction to `reporting-audit/widget.md` itself is recommended but out of scope here.
 
 ## 7. Cross-References
 

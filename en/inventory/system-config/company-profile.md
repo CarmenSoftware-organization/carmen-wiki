@@ -2,7 +2,7 @@
 title: Company Profile & Default Setting
 description: Two system-admin screens that edit disjoint field groups of the same tb_business_unit row — Company Profile (identity, address, branding, date/time/number formats) and Default Setting (PR/SI/PO operational config + print-form template selection). /system-admin/business-setting is a dead redirect to Company Profile.
 published: true
-date: 2026-07-29T10:30:00.000Z
+date: 2026-07-29T10:52:30.000Z
 tags: system-config, business-unit, company-profile, default-setting, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T10:30:00.000Z
@@ -108,5 +108,5 @@ Each print-form key is built as `printFormConfigKey(type)` (e.g. resolving to so
 - **Frontend hooks:** `../carmen-inventory-frontend-react/hooks/use-business-unit.ts` — `useBusinessUnit()`, `useUpdateBusinessUnit()`.
 - **Frontend types:** `../carmen-inventory-frontend-react/types/business-unit.ts` — `BusinessUnitDetail`, `BusinessUnitEditable`, `BusinessUnitConfigItem`.
 - **API endpoint:** `../carmen-inventory-frontend-react/constant/api-endpoints.ts` — `BUSINESS_UNIT: "/api/proxy/api/business-units"`.
-- **Design history:** `../carmen-inventory-frontend-react/docs/superpowers/specs/2026-07-10-default-setting-page-split-design.md`, `.../plans/2026-07-09-business-setting-{pr,si,po}-config-section-design.md` — the split from a single "Business Setting" page into these two screens.
+- **Design history:** `../carmen-inventory-frontend-react/docs/superpowers/specs/2026-07-10-default-setting-page-split-design.md` + `.../plans/2026-07-10-default-setting-page-split.md`, `.../specs/2026-07-09-business-setting-{pr,si,po}-config-section-design.md` + `.../plans/2026-07-09-business-setting-{pr,si,po}-config-section.md` — the split from a single "Business Setting" page into these two screens (the `-design` suffix is a `specs/`-only convention; sibling `plans/` files carry the same basename without it).
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_business_unit` (line ~117); see [master-data/business-unit](/en/inventory/master-data/business-unit) §8 for the full citation.

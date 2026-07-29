@@ -2,7 +2,7 @@
 title: Company Profile & Default Setting
 description: สองหน้าจอ system-admin ที่แก้ไขกลุ่มฟิลด์ที่แยกกันของแถว tb_business_unit เดียวกัน — Company Profile (identity, address, branding, date/time/number format) และ Default Setting (config การทำงาน PR/SI/PO + การเลือก print-form template) /system-admin/business-setting คือ redirect ที่ตายแล้วไปยัง Company Profile
 published: true
-date: 2026-07-29T10:30:00.000Z
+date: 2026-07-29T10:52:30.000Z
 tags: system-config, business-unit, company-profile, default-setting, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T10:30:00.000Z
@@ -108,5 +108,5 @@ Print-form key แต่ละตัวสร้างจาก `printFormConfig
 - **Frontend hooks:** `../carmen-inventory-frontend-react/hooks/use-business-unit.ts` — `useBusinessUnit()`, `useUpdateBusinessUnit()`
 - **Frontend types:** `../carmen-inventory-frontend-react/types/business-unit.ts` — `BusinessUnitDetail`, `BusinessUnitEditable`, `BusinessUnitConfigItem`
 - **API endpoint:** `../carmen-inventory-frontend-react/constant/api-endpoints.ts` — `BUSINESS_UNIT: "/api/proxy/api/business-units"`
-- **ประวัติการออกแบบ:** `../carmen-inventory-frontend-react/docs/superpowers/specs/2026-07-10-default-setting-page-split-design.md`, `.../plans/2026-07-09-business-setting-{pr,si,po}-config-section-design.md` — การแยกจากหน้า "Business Setting" เดียวมาเป็นสองหน้าจอนี้
+- **ประวัติการออกแบบ:** `../carmen-inventory-frontend-react/docs/superpowers/specs/2026-07-10-default-setting-page-split-design.md` + `.../plans/2026-07-10-default-setting-page-split.md`, `.../specs/2026-07-09-business-setting-{pr,si,po}-config-section-design.md` + `.../plans/2026-07-09-business-setting-{pr,si,po}-config-section.md` — การแยกจากหน้า "Business Setting" เดียวมาเป็นสองหน้าจอนี้ (suffix `-design` เป็น convention เฉพาะของ `specs/` เท่านั้น; ไฟล์ `plans/` คู่กันใช้ basename เดียวกันแต่ไม่มี suffix นี้)
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_business_unit` (บรรทัด ~117); ดู [master-data/business-unit](/th/inventory/master-data/business-unit) §8 สำหรับการอ้างอิงเต็ม

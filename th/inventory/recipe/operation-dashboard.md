@@ -2,7 +2,7 @@
 title: Operation Plan Dashboard
 description: หน้าจอ /operation-plan — 10 tile KPI/chart ที่ hardcode ไว้ (recipe + equipment) มาจาก dataset catalog ที่ลงทะเบียนในโค้ด ไม่ใช่ widget board ที่ผู้ใช้ปรับแต่งได้
 published: true
-date: 2026-07-29T10:00:00.000Z
+date: 2026-07-29T10:52:30.000Z
 tags: recipe, operation-plan, dashboard, widget, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T10:00:00.000Z
@@ -74,12 +74,12 @@ Source: `apps/backend-gateway/src/application/dashboard-widgets/system-widgets.c
 
 | | หน้าจอนี้ (`operation-plan`) | [reporting-audit/widget](/th/inventory/reporting-audit/widget) |
 |---|---|---|
-| Backend route | `GET api/:bu_code/dashboard-widgets/operation-plan` — endpoint คงที่เฉพาะ module บน `DashboardSystemWidgetsController` | `GET api/:bu_code/dashboard-widgets/bu` (BU) หรือ `api/:bu_code/dashboard-widgets/me` (personal) — ให้บริการโดย `DashboardBuWidgetsController` / `DashboardPersonalWidgetsController` |
+| Backend route | `GET api/:bu_code/dashboard-widgets/operation-plan` — endpoint คงที่เฉพาะ module บน `DashboardSystemWidgetsController` | `GET api/:bu_code/dashboard-widgets/bu` (BU, บน `DashboardBuWidgetsController` ที่แยกต่างหาก) หรือ `GET api/me/dashboard-widgets` (personal, บน `DashboardPersonalWidgetsController` ที่แยกต่างหาก — คนละ root path เลย ไม่ได้อยู่ใต้ `:bu_code/dashboard-widgets/`) |
 | Storage | ไม่มี — array hardcode ใน source ของ gateway (`system-widgets.config.ts`) | `tb_dashboard_bu_widget` / `tb_dashboard_personal_widget` (แถว tenant DB) |
 | เพิ่ม / ลบ / จัดเรียง | ต้องแก้โค้ด + deploy เท่านั้น | CRUD จริง (`POST`/`PATCH`/`DELETE`) — BU widget จาก landing dashboard ของแต่ละ module เอง, personal widget จาก `/dashboard` |
 | Frontend component | `operation-dashboard.tsx` — layout เฉพาะตัว, 4 section ตั้งชื่อ (Metrics/Trends/Comparison/Distribution) | `DashboardWidgetGrid` (component ที่ใช้ร่วมกัน ใช้โดย [vendor-dashboard](/th/inventory/vendor-pricelist/vendor-dashboard) ด้วย) — grid แบนเดียว เรียงตาม render-group ของ widget-type แล้วตาม `order_index` |
 
-**การแก้ไขต่อการอ้างอิงก่อนหน้า:** [reporting-audit/widget](/th/inventory/reporting-audit/widget) §1 อ้าง `procurement-dashboard.tsx → useProcurementWidgets → GET api/:bu_code/dashboard-widgets/bu` เป็นตัวอย่างผู้บริโภค BU-widget การอ่าน `system-widgets.controller.ts` โดยตรงแสดงว่า route จริงที่ `useProcurementWidgets`/`useOperationPlanWidgets`/`useVendorWidgets`/`useInventoryWidgets`/`useProductWidgets`/`useConfigWidgets` เรียกคือ `api/:bu_code/dashboard-widgets/{module}` บน `DashboardSystemWidgetsController` (กลไกของหน้านี้ ไม่ใช่ของ BU-widget) — route `/bu` และ `/me` อยู่บน controller แยกต่างหากและไม่เคยถูกเรียกโดย per-module dashboard component ตัวใดเลย หน้านี้และ [vendor-dashboard](/th/inventory/vendor-pricelist/vendor-dashboard) เป็นหน้า wiki สองหน้าแรกที่ตาม trace ความต่างนี้ถึง source แนะนำให้แก้ไข `reporting-audit/widget.md` เองในรอบถัดไป แต่อยู่นอกขอบเขตของงานนี้
+**การแก้ไขต่อการอ้างอิงก่อนหน้า:** [reporting-audit/widget](/th/inventory/reporting-audit/widget) §1 อ้าง `procurement-dashboard.tsx → useProcurementWidgets → GET api/:bu_code/dashboard-widgets/bu` เป็นตัวอย่างผู้บริโภค BU-widget การอ่าน `system-widgets.controller.ts` โดยตรงแสดงว่า route จริงที่ `useProcurementWidgets`/`useOperationPlanWidgets`/`useVendorWidgets`/`useInventoryWidgets`/`useProductWidgets`/`useConfigWidgets` เรียกคือ `api/:bu_code/dashboard-widgets/{module}` บน `DashboardSystemWidgetsController` (กลไกของหน้านี้ ไม่ใช่ของ BU-widget) — route `/bu` จริงของ `DashboardBuWidgetsController` อยู่บน controller ที่แยกต่างหากจริง ๆ และ path การดึง personal widget ที่ frontend เรียกจริง (`api/me/dashboard-widgets` ผ่าน `hooks/use-my-dashboard-widgets.ts` → `MY_DASHBOARD_WIDGETS` ซึ่งบันทึกไว้ถูกต้องแล้วที่ [reporting-audit/widget](/th/inventory/reporting-audit/widget) §1.1) ให้บริการโดย `DashboardPersonalWidgetsController` ที่ root แยกต่างหากนั้น — ไม่ได้อยู่ใต้ `:bu_code/dashboard-widgets/` เลย ตัว `DashboardSystemWidgetsController` เองก็มี handler `@Get('me')` ของตัวเอง (`api/:bu_code/dashboard-widgets/me`) ที่ประกอบ personal-widget list เดียวกันพร้อม live dataset values แต่ไม่พบผู้เรียก frontend ใดสำหรับ composite route ตัวนี้โดยเฉพาะ (`useDashboardWidgets()` ใน `use-dashboard-widgets.ts` ถูกเรียกด้วย `procurement`/`inventory`/`product`/`config`/`vendor-management`/`operation-plan` เท่านั้น ไม่เคยเรียกด้วย `me`) หน้านี้และ [vendor-dashboard](/th/inventory/vendor-pricelist/vendor-dashboard) เป็นหน้า wiki สองหน้าแรกที่ตาม trace ความต่างนี้ถึง source แนะนำให้แก้ไข `reporting-audit/widget.md` เองในรอบถัดไป แต่อยู่นอกขอบเขตของงานนี้
 
 ## 7. ความเชื่อมโยงข้ามโมดูล
 
