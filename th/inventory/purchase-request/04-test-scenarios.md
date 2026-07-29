@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — Test Scenarios
 description: Test case แยกตาม persona, scenario ข้าม persona และ mapping ไป Playwright สำหรับโมดูล purchase-request
 published: true
-date: 2026-07-15T10:20:00.000Z
+date: 2026-07-29T05:18:05.000Z
 tags: purchase-request, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -27,7 +27,7 @@ Scenario ต่อ persona — Happy Path, Permission / Authorization, Validatio
 - **Approver**: chain อนุมัติหลายระดับ (Department Head, Budget Controller, Finance Officer / Manager); approve / reject / send-back / split-reject ต่อ stage
 - **Purchaser**: ถือ stage role `purchase` ในสายอนุมัติของ PR เอง (แก้ vendor / pricing แล้วตัดสินใจแบบ bulk เหมือน stage อื่น); แยกต่างหาก เมื่อ PR เป็น `approved` แล้ว รัน dialog Convert-to-PO ในโมดูล Purchase Order
 - **Procurement Manager**: stage `approve`-role แบบ escalated / มูลค่าสูงใน chain เดียวกัน โดยใช้ UI Approver แบบเดียวกัน — ไม่มีหน้าจอตั้งค่าแยกต่างหากใน source ปัจจุบัน
-- **Audit / Config**: Auditor (review PR และ activity log แบบอ่านอย่างเดียว); System Administrator (ตั้งค่า stage workflow, threshold, กฎ delegation, void ธุรการ)
+- **Audit / Config**: Auditor (review PR และ activity log แบบอ่านอย่างเดียว); System Administrator (ตั้งค่า stage workflow, ตั้งค่า routing ตาม amount threshold, void ธุรการ) *(กฎ delegation เคยถูกระบุในเอกสารรุ่นก่อนหน้า — ยังไม่ยืนยัน ไม่พบกลไกที่ตรงกัน ดู `02-business-rules.md` `PR_AUTH_006`)*
 
 ## 3. ไฟล์ test ต่อ persona
 

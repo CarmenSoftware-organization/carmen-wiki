@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — User Flow — Approver
 description: เส้นทางการใช้งานของ Approver ในโมดูล purchase-request
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-07-29T05:18:05.000Z
 tags: purchase-request, user-flow, approver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -84,7 +84,7 @@ graph LR
 - **ถ้า Approver ต้องการ accept บางบรรทัดและ reject บรรทัดอื่น (Split-Reject)**: แก้ disposition ต่อบรรทัดใน Step 6 ด้านบน, mark บรรทัดที่ได้รับผลกระทบเป็น reject พร้อมเหตุผล แล้ว commit Approve ที่ header ระบบบันทึก `current_stage_status = rejected` บนแต่ละบรรทัดที่ reject (`PR_AUTH_003`) และเลื่อน PR ไป stage ถัดไปด้วยบรรทัดที่ accept เท่านั้นที่นับเข้า budget และยอดรวมของการอนุมัติถัดไป บรรทัดที่ reject ยังเห็นได้บนเอกสารสำหรับ audit และไม่แปลงเป็น PO เลย
 - **ถ้า Approver ปรับ `approved_qty` ลง**: roll-up ของ header คำนวณใหม่, `base_total_amount` ใหม่คือสิ่งที่ stage ถัดไปและ budget check เห็น และ soft budget commitment ถูก rebalance ถ้ายอดใหม่ข้าม threshold ที่ตั้งใน `tb_workflow` การ routing สำหรับ stage *ถัดไป* อาจเปลี่ยน (เช่น PR จำนวนเงินน้อยอาจข้าม Stage 4 ตาม `PR_AUTH_005`)
 - **ถ้า `base_total_amount` ของ PR เกิน threshold escalation ที่ตั้งไว้**: ตาม `PR_AUTH_005` อาจมีการเพิ่ม stage หรือเส้นทาง escalation ไปยัง **Procurement Manager** Approver ยังทำ stage ของตัวเองตามปกติ; logic threshold ทำงานอัตโนมัติบนการ transition stage และ reroute notification ถัดไป Approver ไม่เห็น threshold breach เป็น error — workflow engine จัดการเอง
-- **ถ้า Approver ไม่อยู่ชั่วคราว** และ delegate stage ของตน: ตาม `PR_AUTH_006` ผู้ใช้ delegate สืบทอดสิทธิ์ approve / send-back / reject / split-reject เดียวกันเฉพาะช่วง delegation `last_action_by_id` สะท้อน delegate ขณะที่ audit comment จับแหล่งที่มาของ delegation จากมุมมอง UI ของ delegate flow เหมือนกับ Section 2
+- **ถ้า Approver ไม่อยู่ชั่วคราว**: **(ยังไม่ยืนยัน — ไม่พบโค้ด delegation)** เอกสารรุ่นก่อนหน้าระบุว่า Approver delegate stage ของตนได้ตาม `PR_AUTH_006` โดย delegate สืบทอดสิทธิ์ approve / send-back / reject / split-reject เฉพาะช่วง delegation window, `last_action_by_id` สะท้อน delegate, และ audit comment จับแหล่งที่มาของ delegation การค้นหาทั่ว repo ทั้ง workflow admin ฝั่ง frontend และ backend workflow orchestrator ไม่พบกลไก delegation, reassignment, proxy หรือ substitute-approver เลย วิธีเดียวที่ยืนยันได้ว่าทำให้ chain เดินต่อได้เมื่อ Approver หลักไม่อยู่คือให้ผู้ใช้อีกคนที่อยู่ใน `user_action.execute[]` ของ stage นั้นอยู่แล้ว (เช่น `assigned_users` รายที่สองที่ตั้งไว้บน stage) ลงมือแทน หรือให้ System Administrator แก้ assigned users ของ stage ผ่าน `/system-admin/workflow`
 - **ถ้า Approver พยายามลงมือกับ PR ที่ตนไม่มีสิทธิ์** (ไม่อยู่ใน `user_action.execute[]` ของ stage ปัจจุบัน หรือ PR อยู่ stage หลังกว่าแล้ว): ปุ่ม action ถูก disable และข้อความ inline อธิบาย `PR_AUTH_002` บังคับใช้ฝั่ง server ด้วย
 
 ## 4. จุดออก / Handoff
@@ -102,7 +102,7 @@ graph LR
 ## 5. แหล่งอ้างอิง
 
 - ภาพรวมหลัก: [03-user-flow.md](./03-user-flow.md)
-- กฎการให้สิทธิ์: [02-business-rules.md](./02-business-rules.md) Section 4 — `PR_AUTH_001`–`PR_AUTH_008`, stage chain, delegation, threshold routing
+- กฎการให้สิทธิ์: [02-business-rules.md](./02-business-rules.md) Section 4 — `PR_AUTH_001`–`PR_AUTH_008`, stage chain, threshold routing (ยืนยันแล้ว); delegation (`PR_AUTH_006`, ยังไม่ยืนยัน)
 - กฎการ posting: [02-business-rules.md](./02-business-rules.md) Section 5 — `PR_POST_003` (send-back), `PR_POST_004` (intermediate approve), `PR_POST_005` (final approve), `PR_POST_006` (reject / void / cancel)
 - `../carmen/docs/purchase-request-management/PR-User-Experience.md` — แหล่งหลักของ sequence กระบวนการอนุมัติ, flow UI ของ Approver และตารางสิทธิ์ต่อ stage
 - `../carmen/docs/purchase-request-management/PR-Overview.md` — ภาพรวมโมดูล, นิยาม role ผู้อนุมัติ (Department Head, Budget Controller, Finance) และจุด integration

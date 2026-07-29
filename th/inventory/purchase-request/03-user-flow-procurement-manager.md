@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — User Flow — Procurement Manager
 description: เส้นทางการใช้งานของ Procurement Manager ในโมดูล purchase-request — stage อนุมัติแบบ escalated / มูลค่าสูง
 published: true
-date: 2026-07-15T10:20:00.000Z
+date: 2026-07-29T05:18:05.000Z
 tags: purchase-request, user-flow, procurement-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -55,7 +55,7 @@ graph LR
 
 ## 3. แขนงการตัดสินใจ
 
-แขนงการตัดสินใจสะท้อน chain Approver พื้นฐาน (ดู [03-user-flow-approver.md](./03-user-flow-approver.md) Section 3): Send for Review พร้อมเหตุผล, Reject ระดับ header พร้อมเหตุผล, Split-Reject ต่อบรรทัด, delegation ขณะไม่อยู่ (`PR_AUTH_006`) ไม่มีแขนงการตัดสินใจเฉพาะสำหรับ configuration surface ใน build ปัจจุบัน
+แขนงการตัดสินใจสะท้อน chain Approver พื้นฐาน (ดู [03-user-flow-approver.md](./03-user-flow-approver.md) Section 3): Send for Review พร้อมเหตุผล, Reject ระดับ header พร้อมเหตุผล, Split-Reject ต่อบรรทัด *(เอกสารรุ่นก่อนหน้ายังระบุ "delegation ขณะไม่อยู่" ตาม `PR_AUTH_006` — ยังไม่ยืนยัน ไม่พบกลไก delegation ดู [02-business-rules.md](./02-business-rules.md))* ไม่มีแขนงการตัดสินใจเฉพาะสำหรับ configuration surface ใน build ปัจจุบัน
 
 ## 4. จุดออก / Handoff
 
@@ -68,7 +68,7 @@ graph LR
 ## 5. แหล่งอ้างอิง
 
 - ภาพรวมหลัก: [03-user-flow.md](./03-user-flow.md)
-- กฎการให้สิทธิ์: [02-business-rules.md](./02-business-rules.md) Section 4 — `PR_AUTH_002`, `PR_AUTH_005` (routing ตาม threshold), `PR_AUTH_006` (delegation)
+- กฎการให้สิทธิ์: [02-business-rules.md](./02-business-rules.md) Section 4 — `PR_AUTH_002`, `PR_AUTH_005` (routing ตาม threshold, ยืนยันแล้ว), `PR_AUTH_006` (delegation, ยังไม่ยืนยัน)
 - กฎการ posting: [02-business-rules.md](./02-business-rules.md) Section 5 — `PR_POST_003` (send-back), `PR_POST_005` (final approve → `approved`), `PR_POST_006` (reject / void)
 - E2E: ยังไม่มี persona-journey spec เฉพาะของ Procurement Manager; เส้นทาง escalated / มูลค่าสูงถูกทดสอบผ่าน fixture `gmTest` ใน `../carmen-inventory-frontend-e2e/tests/301-pr.spec.ts` (เช่น `TC-PR-060005` — reject PR มูลค่าสูงมาก)
 - หน้าพี่น้อง: [03-user-flow-approver.md](./03-user-flow-approver.md) — flow อนุมัติพื้นฐานที่นี่ใช้ซ้ำทุกประการ

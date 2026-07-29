@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow
 description: Document lifecycle and persona-specific flow files for purchase-request.
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-07-29T05:18:05.000Z
 tags: purchase-request, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -66,7 +66,7 @@ Each persona below has a dedicated drill-down file describing their entry point,
 - [Approver](./03-user-flow-approver.md) — Multi-stage approval chain (Department Head, Budget Controller, Finance Officer / Manager), with approve / send-back / reject / split-reject actions per stage.
 - [Purchaser](./03-user-flow-purchaser.md) — Picks up approved PRs, validates vendor allocation and pricing, and converts them to purchase orders.
 - [Procurement Manager](./03-user-flow-procurement-manager.md) — Oversees the procurement function, approves high-value or escalated PRs, tunes vendor ranking and Allocate Vendor rules.
-- [Audit / Config](./03-user-flow-audit-config.md) — Auditor (read-only review of PRs and activity log) and System Administrator (workflow stage configuration, threshold setup, delegation rules).
+- [Audit / Config](./03-user-flow-audit-config.md) — Auditor (read-only review of PRs and activity log) and System Administrator (workflow stage configuration, amount-threshold routing rules; delegation rules unconfirmed — no matching mechanism found, see `PR_AUTH_006`).
 
 ## 4. Cross-Persona Handoffs
 

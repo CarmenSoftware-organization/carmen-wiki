@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow — Approver
 description: Approver's flow within the purchase-request module.
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-07-29T05:18:05.000Z
 tags: purchase-request, user-flow, approver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -84,7 +84,7 @@ All three sub-roles share the same review-and-decide UI and the same action set.
 - **If the Approver wants to accept some lines and reject others (Split-Reject)**: edit per-line disposition in Step 6 above, mark the affected lines as reject with a reason, then commit Approve at the header. The system records `current_stage_status = rejected` on each rejected line (`PR_AUTH_003`) and advances the PR to the next stage with only the accepted lines counting toward the next approval's budget and totals. Rejected lines stay visible on the document for audit and never convert to PO.
 - **If the Approver adjusts `approved_qty` downward**: header roll-ups recompute, the new `base_total_amount` is what subsequent stages and the budget check see, and the soft budget commitment is rebalanced. If the new total crosses a threshold boundary defined in `tb_workflow`, the routing for the *next* stage may change (e.g. small-amount PRs may skip Stage 4 per `PR_AUTH_005`).
 - **If the PR's `base_total_amount` exceeds a configured escalation threshold**: per `PR_AUTH_005`, additional stages or an escalation path to the **Procurement Manager** may be inserted. The Approver still completes their stage normally; the threshold logic fires automatically on the stage transition and reroutes the next notification. The Approver does not see threshold breaches as an error — the workflow engine handles them.
-- **If the Approver is temporarily unavailable** and has delegated their stage: per `PR_AUTH_006` the delegate user inherits the same approve / send-back / reject / split-reject rights for the delegation window. `last_action_by_id` reflects the delegate while the audit comment captures the delegation source. From the delegate's UI perspective the flow is identical to Section 2.
+- **If the Approver is temporarily unavailable**: **(unconfirmed — no delegation code found).** An earlier revision of this page asserted that the Approver could delegate their stage per `PR_AUTH_006`, with the delegate inheriting approve / send-back / reject / split-reject rights for a delegation window, `last_action_by_id` reflecting the delegate, and the audit comment capturing the delegation source. A repo-wide search of the frontend workflow admin and the backend workflow orchestrator found no delegation, reassignment, proxy, or substitute-approver mechanism anywhere. The only confirmed way to keep the chain moving with the primary Approver absent is for another user already named in `user_action.execute[]` for that stage (e.g. a second `assigned_users` entry configured on the stage) to act instead, or for a System Administrator to edit the stage's assigned users via `/system-admin/workflow`.
 - **If the Approver tries to act on a PR they are not authorised for** (not in `user_action.execute[]` for the current stage, or PR is already at a later stage): the action buttons are disabled and an inline message explains. `PR_AUTH_002` enforces this server-side as well.
 
 ## 4. Exit Point / Handoffs
@@ -102,7 +102,7 @@ Document state on every transition is recorded by `enum_purchase_request_doc_sta
 ## 5. References
 
 - Parent overview: [03-user-flow.md](./03-user-flow.md)
-- Authorization rules: [02-business-rules.md](./02-business-rules.md) Section 4 — `PR_AUTH_001`–`PR_AUTH_008`, stage chain, delegation, threshold routing
+- Authorization rules: [02-business-rules.md](./02-business-rules.md) Section 4 — `PR_AUTH_001`–`PR_AUTH_008`, stage chain, threshold routing (confirmed); delegation (`PR_AUTH_006`, unconfirmed)
 - Posting rules: [02-business-rules.md](./02-business-rules.md) Section 5 — `PR_POST_003` (send-back), `PR_POST_004` (intermediate approve), `PR_POST_005` (final approve), `PR_POST_006` (reject / void / cancel)
 - `../carmen/docs/purchase-request-management/PR-User-Experience.md` — primary source for the approval-process sequence, Approver UI flow, and per-stage permission matrix
 - `../carmen/docs/purchase-request-management/PR-Overview.md` — module overview, approver role definitions (Department Head, Budget Controller, Finance), and integration points

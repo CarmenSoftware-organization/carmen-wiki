@@ -2,7 +2,7 @@
 title: Purchase Request — Test Scenarios
 description: Test cases by persona, cross-persona scenarios, and Playwright mapping for purchase-request.
 published: true
-date: 2026-07-15T10:20:00.000Z
+date: 2026-07-29T05:18:05.000Z
 tags: purchase-request, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -27,7 +27,7 @@ Per-persona scenarios — Happy Path, Permission / Authorization, Validation / E
 - **Approver**: Multi-stage approval chain (Department Head, Budget Controller, Finance Officer / Manager); approve / reject / send-back / split-reject per stage.
 - **Purchaser**: Holds the `purchase`-role stage in the PR's own approval chain (edits vendor / pricing, then bulk-decides like any other stage); separately, once a PR is `approved`, runs the Convert-to-PO dialog in the Purchase Order module.
 - **Procurement Manager**: Escalated / high-value `approve`-role stage in the same chain, using the identical Approver UI — no distinct configuration screen exists in current source.
-- **Audit / Config**: Auditor (read-only review of PRs and activity log); System Administrator (workflow stage configuration, threshold setup, delegation rules, administrative voids).
+- **Audit / Config**: Auditor (read-only review of PRs and activity log); System Administrator (workflow stage configuration, amount-threshold routing setup, administrative voids). *(Delegation rules were asserted in an earlier revision — unconfirmed, no matching mechanism found; see `02-business-rules.md` `PR_AUTH_006`.)*
 
 ## 3. Persona Test Files
 

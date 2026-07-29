@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow — Procurement Manager
 description: Procurement Manager's flow within the purchase-request module — the escalated / high-value approval stage.
 published: true
-date: 2026-07-15T10:20:00.000Z
+date: 2026-07-29T05:18:05.000Z
 tags: purchase-request, user-flow, procurement-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -55,7 +55,7 @@ Identical rights and UI to the base Approver chain (see [03-user-flow-approver.m
 
 ## 3. Decision Branches
 
-Decision branches mirror the base Approver chain (see [03-user-flow-approver.md](./03-user-flow-approver.md) Section 3): Send for Review with reason, header Reject with reason, Split-Reject per line, delegation while unavailable (`PR_AUTH_006`). No decision branch specific to a configuration surface exists in the current build.
+Decision branches mirror the base Approver chain (see [03-user-flow-approver.md](./03-user-flow-approver.md) Section 3): Send for Review with reason, header Reject with reason, Split-Reject per line. *(An earlier revision also listed "delegation while unavailable" per `PR_AUTH_006` — unconfirmed, no delegation mechanism found; see [02-business-rules.md](./02-business-rules.md).)* No decision branch specific to a configuration surface exists in the current build.
 
 ## 4. Exit Point / Handoffs
 
@@ -68,7 +68,7 @@ Document state across all transitions is recorded by `enum_purchase_request_doc_
 ## 5. References
 
 - Parent overview: [03-user-flow.md](./03-user-flow.md)
-- Authorization rules: [02-business-rules.md](./02-business-rules.md) Section 4 — `PR_AUTH_002`, `PR_AUTH_005` (threshold routing), `PR_AUTH_006` (delegation)
+- Authorization rules: [02-business-rules.md](./02-business-rules.md) Section 4 — `PR_AUTH_002`, `PR_AUTH_005` (threshold routing, confirmed), `PR_AUTH_006` (delegation, unconfirmed)
 - Posting rules: [02-business-rules.md](./02-business-rules.md) Section 5 — `PR_POST_003` (send-back), `PR_POST_005` (final approve → `approved`), `PR_POST_006` (reject / void)
 - E2E: no dedicated Procurement Manager persona-journey spec exists yet; the escalated / high-value path is exercised via the `gmTest` fixture in `../carmen-inventory-frontend-e2e/tests/301-pr.spec.ts` (e.g. `TC-PR-060005` — reject a very-high-value PR).
 - Sibling: [03-user-flow-approver.md](./03-user-flow-approver.md) — base approval flow this reuses verbatim

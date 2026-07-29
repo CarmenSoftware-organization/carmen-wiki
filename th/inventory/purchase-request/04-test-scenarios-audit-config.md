@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — Test Scenarios — Audit & Config
 description: เหตุผลที่ไม่มี audit-workspace หรือ test scenarios การตั้งค่าเฉพาะ PR สำหรับ purchase-request ในซอร์สปัจจุบัน และสิ่งที่ยืนยันได้แทน
 published: true
-date: 2026-07-29T04:45:21.000Z
+date: 2026-07-29T05:18:05.000Z
 tags: purchase-request, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -21,7 +21,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 | กลุ่ม scenario ที่ถูกตัด | เหตุผล |
 |---|---|
 | `AUD-HP-01` – `AUD-HP-04` (Auditor query-workspace, drill-down trail, export-approval, การ flag case file) | ไม่พบ route "Audit workspace," "PR Activity Queries," หรือหน้า drill-down ที่ scope เฉพาะ PR อยู่เลยใน `carmen-inventory-frontend-react` |
-| `AUD-HP-05` – `AUD-HP-09` (Sysadmin workflow-threshold, delegation, PR-type-default, tax/currency-master config พร้อม preview panel และ versioning `effective_from`) | ไม่พบ configuration workbench เฉพาะ PR การตั้งค่า workflow-stage และ RBAC เป็น screen system-config แบบ generic (`/system-admin/workflow`, `/system-admin/user`, `/system-admin/role`); การตั้งค่า tax และ currency เป็น screen master-data แบบ generic (`/config/tax-profile`, `/config/currency`, `/config/exchange-rate`) — ไม่มีตัวใดเฉพาะ PR และไม่มีตัวใดมี panel preview/forecast หรือ versioning ด้วย `effective_from` Amount-threshold routing และ delegation window **ไม่มี equivalent อยู่เลย** ในซอร์สปัจจุบัน ทั้ง generic และเฉพาะ PR |
+| `AUD-HP-05` – `AUD-HP-09` (Sysadmin workflow-threshold, delegation, PR-type-default, tax/currency-master config พร้อม preview panel และ versioning `effective_from`) | ไม่พบ configuration workbench เฉพาะ PR การตั้งค่า workflow-stage และ RBAC เป็น screen system-config แบบ generic (`/system-admin/workflow`, `/system-admin/user`, `/system-admin/role`); การตั้งค่า tax และ currency เป็น screen master-data แบบ generic (`/config/tax-profile`, `/config/currency`, `/config/exchange-rate`) — ไม่มีตัวใดเฉพาะ PR และไม่มีตัวใดมี panel preview/forecast หรือ versioning ด้วย `effective_from` **แก้ไข (2026-07-29):** amount-threshold routing *ไม่ได้* ไม่มีอยู่จริง — แท็บ **Routing** ของหน้า `/system-admin/workflow` คือกลไก generic ที่ live จริง (`tb_workflow.data.routing_rules` ประเมินโดย workflow orchestrator ตอน submit/approve) เพียงแต่ไม่มี panel preview และไม่มี versioning ด้วย `effective_from` ส่วน delegation window ยัง **ไม่มี equivalent อยู่เลย** ในซอร์สปัจจุบัน ทั้ง generic และเฉพาะ PR |
 | `AUD-PERM-01` – `AUD-PERM-07`, `AUD-VAL-01` – `AUD-VAL-08`, `AUD-EDGE-01` – `AUD-EDGE-06` | ทั้งหมดขึ้นกับ workspace และ configuration surface ที่ไม่มีอยู่จริงข้างต้น |
 
 ## สิ่งที่ยืนยันได้แทน
@@ -29,7 +29,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 - หน้า **`/system-admin/activity-log`** แบบ generic list event `action` / `entity_type` / `user` ข้ามทุกประเภทเอกสาร filter ได้แต่ไม่ใช่ query-template-driven; filter scope `purchase_request` เป็น equivalent ที่ใกล้ที่สุดของ "PR Activity Queries" ผู้ใช้ที่มีสิทธิ์อ่าน PR ยังเห็น `tb_purchase_request_comment` history ได้โดยตรงบนหน้า detail PR (แถว `type = system` immutable ตาม `PR_POST_008`) ยังไม่ยืนยันว่า role Auditor ที่แยกต่างหาก gate surface ใดต่างจากผู้อ่านคนอื่นหรือไม่
 - Workflow-stage definition (`stage_role`, `user_action.execute[]`), tax rate, currency และ exchange-rate master, และ RBAC user/role assignment แต่ละตัวตั้งค่าผ่าน screen generic ของตัวเอง — `/system-admin/workflow`, `/config/tax-profile`, `/config/currency` + `/config/exchange-rate`, `/system-admin/user` + `/system-admin/role` — ใช้ร่วมกันข้าม PR, PO, GRN และประเภทเอกสารอื่น ไม่ใช่ผ่าน screen เฉพาะ PR
 - Action เดียวที่เปลี่ยนสถานะ PR ที่ยืนยันได้ในแกน persona นี้คือ **void** ระดับสูงของ System Administrator (`PR_AUTH_007` → `PR_POST_006`): `pr_status` flip เป็น `voided`, budget soft-commitment ปล่อย และ comment เหตุผลบังคับ append สิ่งนี้ถูก exercise โดยบังเอิญในตาราง scenario ของ persona อื่น (เช่น [04-test-scenarios-approver.md](./04-test-scenarios-approver.md) `APP-VAL-10`, [04-test-scenarios-requestor.md](./04-test-scenarios-requestor.md) `REQ-PERM-06`) ไม่ใช่ใน audit-config scenario เฉพาะที่นี่
-- การค้นหาทั่ว repo สำหรับ `threshold` และ `delegat` ทั้งฝั่ง frontend และ backend ไม่พบกลไก amount-threshold routing หรือ approval-delegation เลย นี่หมายความว่า `PR_AUTH_005` และ `PR_AUTH_006` ใน [02-business-rules.md](./02-business-rules.md) บรรยาย design intent ที่ยังไม่ยืนยัน flag ไว้ที่นี่สำหรับการแก้ไขระดับ business-rules ใน follow-up นอกขอบเขตของหน้านี้
+- การค้นหาทั่ว repo รอบแรกสำหรับคำ `threshold` และ `delegat` ทั้งฝั่ง frontend และ backend ไม่พบคำตรงกันสำหรับกลไกทั้งสอง การค้นหารอบตรวจสอบติดตาม (2026-07-29) ด้วยคำที่ implementation ใช้จริง (`routing_rules`, `total_amount`, component `WfRouting`, `evaluateCondition` ใน workflow orchestrator) พบว่า amount-threshold routing **เป็นจริงและ live** — `PR_AUTH_005` ใน [02-business-rules.md](./02-business-rules.md) ยืนยันแล้ว ในทางกลับกัน approval-delegation ไม่พบจากการค้นหาทั้งสองรอบ — `PR_AUTH_006` ยังคงเป็น design intent ที่ยังไม่ยืนยัน ทั้งรายการ business-rules และทุกหน้าอื่นในโมดูลนี้ที่อ้างถึงถูกแก้ไขในรอบตรวจสอบติดตามเดียวกันนี้แล้ว
 
 ## แหล่งอ้างอิง
 

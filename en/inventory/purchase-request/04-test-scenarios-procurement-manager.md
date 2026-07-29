@@ -2,7 +2,7 @@
 title: Purchase Request — Test Scenarios — Procurement Manager
 description: Procurement Manager's test cases (escalated / high-value approval) for purchase-request.
 published: true
-date: 2026-07-15T10:20:00.000Z
+date: 2026-07-29T05:18:05.000Z
 tags: purchase-request, test-scenarios, procurement-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -15,7 +15,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation
 > **E2E coverage:** no dedicated Procurement Manager persona-journey spec exists yet; escalation / high-value paths are exercised via the `gmTest` fixture in `tests/301-pr.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
-This page captures the test scenarios that the Procurement Manager persona drives in the `purchase-request` module. As documented in [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md), the current source has no dedicated Procurement Manager screen — the persona is an `approve`-role stage in the **same** workflow as the base Approver chain, reached either through threshold-based escalation (`PR_AUTH_005`) or direct workflow routing. Scenarios below are the escalated-stage subset of the base Approver scenarios in [04-test-scenarios-approver.md](./04-test-scenarios-approver.md); that page's line-level, delegation, and threshold-boundary scenarios apply verbatim here.
+This page captures the test scenarios that the Procurement Manager persona drives in the `purchase-request` module. As documented in [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md), the current source has no dedicated Procurement Manager screen — the persona is an `approve`-role stage in the **same** workflow as the base Approver chain, reached either through threshold-based escalation (`PR_AUTH_005`, confirmed) or direct workflow routing. Scenarios below are the escalated-stage subset of the base Approver scenarios in [04-test-scenarios-approver.md](./04-test-scenarios-approver.md); that page's line-level and threshold-boundary scenarios apply verbatim here. *(That page's delegation scenarios do not — `PR_AUTH_006` is unconfirmed, see the correction note there.)*
 
 > ⚠️ **Discrepancy note:** an earlier revision of this page described a "configurational surface" (Vendor Allocation Rules scoring weights, per-vendor priority overrides, Stuck PR Oversight bulk actions) with ~20 additional scenarios. No matching screen, route, or endpoint was found in `../carmen-inventory-frontend-react/` or `../carmen-turborepo-backend-v2/` during this pass — see the discrepancy log entry in the resync progress log. Those scenarios have been removed rather than carried forward as fiction.
 
@@ -47,7 +47,7 @@ This page captures the test scenarios that the Procurement Manager persona drive
 
 - Parent overview: [04-test-scenarios.md](./04-test-scenarios.md) — cross-persona handoff `X-PR-05` (threshold escalation)
 - User flow: [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md)
-- Business rules: [02-business-rules.md](./02-business-rules.md) Section 4 (`PR_AUTH_005` threshold routing, `PR_AUTH_006` delegation), Section 5 (`PR_POST_003`, `PR_POST_005`, `PR_POST_006`)
-- Sibling: [04-test-scenarios-approver.md](./04-test-scenarios-approver.md) — base Approver scenarios this set extends verbatim (line-level validation, delegation, threshold-boundary edge cases)
+- Business rules: [02-business-rules.md](./02-business-rules.md) Section 4 (`PR_AUTH_005` threshold routing, confirmed; `PR_AUTH_006` delegation, unconfirmed), Section 5 (`PR_POST_003`, `PR_POST_005`, `PR_POST_006`)
+- Sibling: [04-test-scenarios-approver.md](./04-test-scenarios-approver.md) — base Approver scenarios this set extends verbatim (line-level validation, threshold-boundary edge cases; that page's delegation scenarios are flagged unconfirmed)
 - E2E: **Gap** — no dedicated `30X-pr-procurement-manager-journey.spec.ts` exists. Escalation / high-value scenarios are exercised via the `gmTest` fixture in `../carmen-inventory-frontend-e2e/tests/301-pr.spec.ts` (e.g. `TC-PR-060005`).
 - Cross-link: [purchase-order](/en/inventory/purchase-order) — downstream module receiving the final-approved PR for conversion

@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — Business Rules
 description: กฎการตรวจสอบ การคำนวณ การให้สิทธิ์ และการ posting ของโมดูล purchase-request
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-07-29T05:18:05.000Z
 tags: purchase-request, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -28,7 +28,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 | ------- | --------- | ------------- | ----------------- |
 | `PR_VAL_001` | `tb_purchase_request.pr_no` ต้องมีและไม่ซ้ำในเซตที่ active (`deleted_at IS NULL`) สร้างฝั่ง server; format เป็น application-policy (เช่น `PR-YYYYMM-NNNN`) | ตอน create (insert header) | ปฏิเสธด้วย `"PR reference number is required and must be unique"` รองรับโดย unique index `PR0_pr_no_u` บน `(pr_no, deleted_at)` |
 | `PR_VAL_002` | `requestor_id` ต้องอ้างถึงผู้ใช้ที่ active; snapshot `requestor_name` ต้องถูก populate ไปด้วยกัน | ตอน create / ตอน submit | ปฏิเสธด้วย `"Requestor is required"` |
-| `PR_VAL_003` | `department_id` ต้องถูก set และ requestor ต้องสังกัดแผนกนั้น (หรือมีอำนาจ delegated สำหรับแผนกนั้น) | ตอน create / ตอน submit | ปฏิเสธด้วย `"Department is required and must match requestor membership"` |
+| `PR_VAL_003` | `department_id` ต้องถูก set และ requestor ต้องสังกัดแผนกนั้น *(เอกสารรุ่นก่อนหน้าเพิ่ม "หรือมีอำนาจ delegated สำหรับแผนกนั้น" — ยังไม่ยืนยัน ไม่พบกลไก delegation ดู `PR_AUTH_006`)* | ตอน create / ตอน submit | ปฏิเสธด้วย `"Department is required and must match requestor membership"` |
 | `PR_VAL_004` | `workflow_id` ต้องอ้างถึงแถวที่ active ใน `tb_workflow` ที่ document scope เป็น `purchase-request` | ตอน submit | ปฏิเสธด้วย `"A valid PR workflow must be selected"` `workflow_name` ที่เลือกถูก snapshot ลงบน header |
 | `PR_VAL_005` | `pr_date` ต้องมี, อยู่ในรูป ISO-8601 ที่ถูกต้อง และไม่อยู่หลังวันนี้ (ห้ามเอกสารวันในอนาคต) | ตอน submit | ปฏิเสธด้วย `"PR date cannot be in the future"` |
 | `PR_VAL_006` | ต้องมีแถว `tb_purchase_request_detail` ที่ไม่ถูกลบอย่างน้อยหนึ่งแถวแนบอยู่ | ตอน submit | ปฏิเสธด้วย `"A PR must contain at least one line item"` |
@@ -151,12 +151,12 @@ Label ของ stage role มาจาก `enum_stage_role = { create, approve,
 
 Stage จริงตั้งค่าได้ต่อองค์กรใน `tb_workflow`; chain ที่ PR ใบหนึ่งใช้ตัดสินโดยแถวที่อ้างผ่าน `tb_purchase_request.workflow_id`
 
-- **`PR_AUTH_001`** — เฉพาะ requestor (`requestor_id == auth.user.id`) หรือผู้ที่ requestor delegated ให้เท่านั้นที่แก้ไข PR ได้ขณะ `pr_status = draft` ผู้ใช้อื่นมีสิทธิ์อ่านเท่านั้น
+- **`PR_AUTH_001`** — เฉพาะ requestor (`requestor_id == auth.user.id`) เท่านั้นที่แก้ไข PR ได้ขณะ `pr_status = draft` ผู้ใช้อื่นมีสิทธิ์อ่านเท่านั้น *(เอกสารรุ่นก่อนหน้าให้สิทธิ์แก้ไขแก่ "ผู้ที่ requestor delegated ให้" ด้วย — ยังไม่ยืนยัน ดู `PR_AUTH_006`)*
 - **`PR_AUTH_002`** — ในแต่ละ stage เฉพาะผู้ใช้ที่อยู่ใน `tb_purchase_request.user_action.execute[]` เท่านั้นที่ลงมือทำได้ list จะถูกคำนวณใหม่ทุกการ transition stage จากกฎ role / department / amount-threshold ของ stage
 - **`PR_AUTH_003`** — ผู้อนุมัติทุกคนมี action ระดับบรรทัดสามอย่าง: **approve**, **reject**, และ **send-back** `send-back` ส่ง PR กลับไป stage ก่อนหน้าด้วย `last_action = reviewed`; **split-reject** ให้ผู้อนุมัติ reject บรรทัดเฉพาะในขณะที่ส่วนที่เหลือเดินต่อ (บรรทัดที่ถูก reject ยังอยู่บนเอกสารด้วย `current_stage_status = rejected`)
 - **`PR_AUTH_004`** — **Reject** ระดับ header ยุติ chain ทันทีและย้าย `pr_status` เป็น `voided`; soft-commitment กับ budget ถูกปล่อย (ดู `PR_POST_006`)
-- **`PR_AUTH_005`** — Amount threshold ขับว่า stage ใดทำงาน (เช่น `Stage 4` อาจข้ามถ้าต่ำกว่า threshold ที่ตั้งไว้) Threshold ตั้งค่าได้ต่อองค์กร ดูการตั้งค่า workflow ใน `tb_workflow` เอกสารต้นทางไม่ได้กำหนดตัวเลขเฉพาะ
-- **`PR_AUTH_006`** — Delegation: ผู้อนุมัติสามารถ delegate stage ของตนให้ผู้ใช้คนอื่นชั่วคราวผ่าน workflow engine ผู้ใช้ที่ได้รับ delegated สืบทอดสิทธิ์ approve / reject / send-back เดียวกันเฉพาะช่วง delegation; `last_action_by_id` สะท้อน delegate ขณะที่ audit comment จับแหล่งที่มาของ delegation
+- **`PR_AUTH_005`** — **ยืนยันแล้ว** Amount threshold ขับว่า stage ใดทำงาน Workflow ที่ผูกกับ PR (`tb_workflow.data.routing_rules`) สามารถมีกฎ routing ต่อ stage ที่เทียบ condition field (`total_amount` — ผลรวม `total_price` ของบรรทัด PR; หรือ `department` หรือ `category`) กับค่าที่ตั้งไว้ด้วย operator (`eq`, `gt`, `lt`, `gte`, `lte`, `between`) แล้วเมื่อตรงเงื่อนไข จะข้ามหรือกระโดดไป stage เป้าหมายที่ระบุ — ประเมินโดย workflow engine ทั้งตอน submit และทุกครั้งที่ approve ดังนั้นถ้าการแก้ `approved_qty` กลาง review ทำให้ข้าม threshold routing ของ stage *ถัดไป* จะเปลี่ยนก่อนถึง stage นั้น ตั้งค่าได้จาก panel **Routing** ของ workflow ใน `/system-admin/workflow` (แบบ generic — ใช้ร่วมกันระหว่าง workflow ของ PR, PO, และ SR ไม่ใช่หน้าจอเฉพาะ PR) Threshold และ stage เป้าหมายเฉพาะตั้งค่าได้ต่อองค์กร/workflow เอกสารต้นทางไม่ได้กำหนดตัวเลขเฉพาะ
+- **`PR_AUTH_006`** — **(ยังไม่ยืนยัน — ไม่พบโค้ด delegation)** กฎนี้เคยระบุว่าผู้อนุมัติสามารถ delegate stage ของตนให้ผู้ใช้คนอื่นชั่วคราวผ่าน workflow engine โดย delegate สืบทอดสิทธิ์ approve / reject / send-back เฉพาะช่วง delegation window, `last_action_by_id` สะท้อน delegate, และ audit comment จับแหล่งที่มาของ delegation การค้นหาทั่ว repo ทั้งฝั่ง frontend (รวมถึง panel **Routing** ของ workflow ที่ยืนยัน `PR_AUTH_005` ตัวเดียวกัน) และฝั่ง backend workflow orchestrator ไม่พบกลไก delegation, reassignment, proxy, หรือ substitute-approver เลย ทั้ง generic และเฉพาะ PR — `routing_rules` ทำหน้าที่ route ตัว *เอกสาร* ระหว่าง stage ตาม amount/department/category เท่านั้น ไม่ได้ส่งต่อ stage ให้ *ผู้ใช้* คนอื่น ถือว่า delegation เป็น design intent ที่ยังไม่ยืนยัน ไม่ใช่ live behavior ที่ verified
 - **`PR_AUTH_007`** — สิทธิ์ **Void** เป็นของ role Finance หรือ system-admin และใช้ได้ทุก stage หลัง submit Void ทำให้ `pr_status = voided`, freeze เอกสารจาก action เพิ่ม และปล่อย soft-commitment ที่เปิดอยู่
 - **`PR_AUTH_008`** — การแปลงเป็น PO ถูกจำกัดเฉพาะ role ที่มี `enum_stage_role = purchase` PR ที่ approved อาจค้างที่ status `approved` จนกว่าผู้ใช้ procurement จะสร้าง PO ผ่าน bridge `tb_purchase_order_detail_tb_purchase_request_detail`
 
