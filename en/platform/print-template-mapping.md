@@ -1,8 +1,8 @@
 ---
 title: Print Template Mapping
-description: Print Template Mapping module overview — routing document types (PR, PO, GRN, …) to FastReport print templates with a default flag, display ordering, and per-BU allow/deny scoping.
+description: Removed module — document-type-to-print-template routing was deleted from carmen-platform on 2026-07-23/24 and merged into Report Templates' Form Groups (report_group + is_default).
 published: true
-date: 2026-06-10T12:45:00.000Z
+date: 2026-07-29T00:00:00.000Z
 tags: platform/print-template-mapping, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T12:45:00.000Z
@@ -10,76 +10,59 @@ dateCreated: 2026-06-10T12:45:00.000Z
 
 # Print Template Mapping
 
-The **Print Template Mapping** module is the routing table between document types and print layouts: each row says "when a document of type X prints, render it with this `tb_report_template`." Where [Report Templates](/en/platform/report-templates) *authors* the FastReport layouts (`kind = "print"` rows), this module decides *which one is used* — per document type, optionally per business unit, with one default per type for the legacy Print button and ordered alternates for the "Print as…" menu. The intended runtime contract is `GET .../resolve?document_type=X&bu_code=Y`, returning exactly one mapping — though today's micro-business print path queries the table directly without BU scoping (see [Permissions](/en/platform/print-template-mapping/permissions) §3).
+> **Implementation status (verified 2026-07-29): this module has been removed.** Every screen, route, backend proxy, and database table described below was deleted between 2026-07-23 and 2026-07-24. The document-type → template selection problem this module solved still exists, but it is now solved **inside** [Report Templates](/en/platform/report-templates) via a `report_group` + `is_default` column pair and a new **Form Groups** screen (`/report-form-groups`, not yet documented as its own wiki unit — see the parent Task 5 backlog). This page is kept as a historical record so old cross-links and search hits resolve to an explanation rather than a 404; do not use it as a guide to current behaviour.
+
+Historically, the **Print Template Mapping** module was the routing table between document types and print layouts: each row said "when a document of type X prints, render it with this `tb_report_template`." Where [Report Templates](/en/platform/report-templates) *authored* the FastReport layouts, this module decided *which one was used* — per document type, optionally per business unit, with one default per type for the legacy Print button and ordered alternates for a "Print as…" menu.
 
 > **At a Glance**
-> **Module purpose:** Map document types (PR, PO, GRN, SR, CN, IA, PC, SC, RFQ, INV) to `kind="print"` report templates, with `is_default` for the legacy Print button, `display_label`/`display_order` for the "Print as…" menu, and per-BU allow/deny scoping &nbsp;·&nbsp; **Audience:** Developers and QA working on the Platform admin SPA, the micro-report Go service, and document-print flows in micro-business &nbsp;·&nbsp; **Key entities/tables:** `tb_print_template_mapping` (owned), `tb_report_template` (referenced — see Report Templates) &nbsp;·&nbsp; **Runtime contract:** `GET /api-system/print-template-mappings/resolve` — first active mapping permitting the BU, ordered `is_default DESC, display_order ASC` &nbsp;·&nbsp; **Sub-pages:** 3
+> **Status:** REMOVED (confirmed 2026-07-23/24) &nbsp;·&nbsp; **Removed by:** carmen-platform commit `de11377` (SPA pages, routes, sidebar entry, permission keys), carmen-turborepo-backend-v2 commit `c135bb21e` (backend-gateway proxy controller/service + permission-seed rows), migration `20260723120000_print_form_default` (`DROP TABLE tb_print_template_mapping`) &nbsp;·&nbsp; **Replaced by:** `tb_report_template.report_group` (fixed 12-code list, `FORM_REPORT_GROUPS`) + new `tb_report_template.is_default` column, edited from the Report Templates module's new **Form Groups** screen &nbsp;·&nbsp; **Sub-pages:** 3 (kept for historical reference)
 
-## 1. Overview
+## 1. What existed, and when it stopped
 
-The SPA exposes the module through two screens:
+The module surfaced as two screens: `/print-template-mapping` (a grouped-card list, one bordered sub-table per document type) and `/print-template-mapping/new` + `/print-template-mapping/:id/edit` (a single-card create/view/edit form whose signature element was a Report Template select that floated `kind="print"` + matching `report_group` templates to the top). Behind the SPA, a backend-gateway controller (`api-system/print-template-mappings`) proxied every call to the micro-report Go service, which owned the CRUD, the canonical ten-code document-type list (`PR, PO, GRN, SR, CN, IA, PC, SC, RFQ, INV`), and the `resolve(document_type, bu_code)` logic. The routing rows lived in the platform Postgres schema as `tb_print_template_mapping`.
 
-- **`/print-template-mapping` → `PrintTemplateMappingManagement`** — a **deliberate deviation** from the SPA's standard server-side `DataTable` Management pattern: a single card with grouped sub-tables, one group per document type (Badge code + label + "N mapping(s)" count), filtered only by a document-type select and an "Active only" checkbox. No debounced search, no CSV export, no pagination controls, no persisted `localStorage` state — the dataset is small and static enough that the heavyweight furniture would be noise. See [UI Screens](/en/platform/print-template-mapping/ui-screens) §1 for the full rationale.
-- **`/print-template-mapping/new` and `/print-template-mapping/:id/edit` → `PrintTemplateMappingEdit`** — the standard single-card form. Create mode is immediately editable; the edit route opens read-only behind an Edit toggle (the same view/edit pattern as Applications). Its signature element is the **Report Template select**, which floats templates matching `kind = "print"` and `report_group = <chosen document type>` to the top with an "N match / M total" count in the placeholder.
+That entire stack was deleted in a same-week pair of commits:
 
-Behind the SPA, the backend-gateway controller (`api-system/print-template-mappings`) is a thin authenticated proxy: every call is forwarded over plain HTTP to the **micro-report Go service** (`/api/print-template-mappings/*`), which owns the CRUD, the canonical document-type list, and the `resolve` logic. The mapping rows themselves live in the platform Postgres schema (`tb_print_template_mapping`), read by Go through a LEFT JOIN that denormalizes the template name and group onto each row.
+- **carmen-platform, commit `de11377`** ("remove the print template mapping pages", 2026-07-24): deleted `PrintTemplateMappingManagement.tsx`, `PrintTemplateMappingEdit.tsx`, `printTemplateMappingService.ts`, their tests, the three `/print-template-mapping*` routes and `requiredPermission` guards in `App.tsx`, the sidebar "Print Mapping" entry in `Layout.tsx`, and the breadcrumb entry — 1,476 deletions, 1 insertion, across 10 files.
+- **carmen-turborepo-backend-v2, commit `c135bb21e`** ("delete the print-template-mapping module and its reports proxy", 2026-07-23): deleted the backend-gateway `platform_print-template-mappings` controller/service/module (and their specs) and the `reports.controller.ts`/`reports.service.ts` pair that exposed the resolve proxy; removed the four `print_template_mapping.*` rows from `seed.platform-permission.data.ts` and every reference to them from `seed.platform-role-permission.data.ts`'s role bundles (`platform_admin`, `support_manager`, `support_staff`) — the permission catalog itself no longer defines these keys.
+- **Migration `20260723120000_print_form_default`** (same backend repo): added `tb_report_template.is_default BOOLEAN NOT NULL DEFAULT false`; backfilled it from every active `tb_print_template_mapping` row; created a partial unique index `idx_report_template_default_per_group` on `tb_report_template(report_group)` (`WHERE is_default AND template_type = 'form' AND deleted_at IS NULL`) to enforce "one default form template per group"; renamed the `RFQ` report group to `RFP` for form-type templates; and finished with `DROP TABLE "tb_print_template_mapping"`. The table is gone at the schema level, not just unused.
 
-## 2. Business Context
+Bruno's `platform/print-template-mapping/` collection folder is likewise empty on the current branch — every request file was moved to `_archived/2026-07-29/platform/print-template-mapping/` by the API-contract maintainers the same week this wiki pass ran.
 
-Carmen documents print through FastReport: when a user clicks **Print** on a PO, GRN, or store requisition, the backend builds the document's data payload and needs to know *which template row* renders it. Historically that was a naming convention (`"<Type> Document"`); this module replaces the convention with explicit data:
+## 2. What replaced it
 
-- The **legacy Print button** prints with the mapping flagged `is_default` for the document type — one click, no menu.
-- The **"Print as…" menu** lists every active mapping for the type, sorted by `display_order` and labelled with `display_label` (e.g. "Standard PR (A4 Portrait)") — so a property can offer a portrait original plus a landscape or branded variant.
-- **Per-BU allow/deny lists** exist because layouts diverge per property: a hotel group's flagship may demand its own branded GRN slip while sister properties keep the standard one. A blank allow list means "all business units"; the deny list always wins. This is the same scoping convention `tb_report_template` itself carries.
+The same document-type-to-template decision is now made on `tb_report_template` itself:
 
-The platform seed (`seed.print-templates.ts`) ships a portrait and a landscape `kind="print"` template per document type and registers the portrait as that type's default mapping (`display_order 0`), so a fresh environment can print every document type out of the box.
+- `report_group` is a fixed code from `FORM_REPORT_GROUPS` (`carmen-platform/src/constants/reportGroups.ts`): `PR, PO, GRN, SR, CN, SI, SO, IA, PC, SC, RFP, EOP` — 12 codes, not the old module's 10 (gained `SI`, `SO`, `EOP`; lost `INV`; `RFQ` renamed `RFP`).
+- `template_type = 'form'` marks a template as a single-record document layout (the old `kind = 'print'`); `template_type = 'list'` is the old `kind = 'report'` (tabular analytical reports). `kind` itself no longer exists as a column name — see [Report Templates — Data Model](/en/platform/report-templates/data-model) for the rename.
+- `is_default` (new boolean column, described above) marks the one form template a business unit gets for a `report_group` when it has not chosen one — the exact role `tb_print_template_mapping.is_default` used to play, just moved one table over and with the plurality enforced by a real unique index instead of a Go best-effort demotion.
+- The new **Form Groups** screen (`/report-form-groups`, `ReportFormGroupManagement.tsx`, sidebar entry in the "Content" group) replaces `PrintTemplateMappingManagement`'s grouped-card list: one card per `report_group`, listing every `template_type = 'form'` template in it, with a "Set as default" action per row (`reportTemplateService.setGroupDefault`) instead of a `is_default` checkbox on a separate mapping row.
+- There is no BU-scoped equivalent of the old `allow_business_unit` / `deny_business_unit` mapping-row lists or the `resolve(document_type, bu_code)` endpoint. `tb_report_template` still carries its own `allow_business_unit` / `deny_business_unit` columns (BU visibility of the template row itself), but nothing in the new mechanism replicates the old per-BU "different default template per business unit" routing — this is a real capability gap versus the removed module, not something this pass can resolve; noted for Task 5.
 
-## 3. Key Concepts
+`/report-form-groups` is not one of this book's 11 named Platform units and is not yet a wiki page of its own — see the Route gaps entry in the resync progress log.
 
-- **Mapping row** — `(document_type, report_template_id)` plus presentation (`display_label`, `display_order`), the `is_default` flag, BU scoping (`allow_business_unit` / `deny_business_unit`), and `is_active`. Multiple rows may share a document type.
-- **Document types** — a **hard-coded list in the micro-report Go service** (`model.SupportedDocumentTypes`): PR, PO, GRN, SR, CN, IA, PC, SC, RFQ, INV. Served by `GET .../document-types` (which populates every dropdown in the SPA) and **validated server-side** — create/update with an unlisted code is rejected with 400. Adding a document type is a Go code change, not a data change.
-- **Default flag** — "use this template when the user clicks the legacy Print button." The UI does not stop you from saving two defaults, but the Go service runs a best-effort `EnsureSingleDefault` after every create/update that saves `is_default = true`, demoting any other default for the same document type. Note the column *defaults to true* — schema, Go, and SPA all agree, so an operator must consciously untick it for alternates.
-- **Display label and order** — pure presentation for the "Print as…" menu. `display_order` doubles as the resolve tie-breaker among rows with the same `is_default` value.
-- **Allow/deny BU lists** — JSONB arrays of BU codes, edited as comma-separated text in the SPA. Blank allow = all BUs; blank deny = none; a code in both lists is denied (deny is checked first). Full precedence rules and pseudo-code are in [Permissions](/en/platform/print-template-mapping/permissions) §3.
-- **Relation to Report Templates** — a mapping points at one `tb_report_template` row; the intended pairing is `kind = "print"` with `report_group` equal to the document-type code, which is why the edit form's template select floats those matches to the top. The pairing is a convention, not a constraint: the select still offers every template, and the database enforces no FK (see [Data Model](/en/platform/print-template-mapping/data-model)).
-- **Resolution** — `resolve(document_type, bu_code)` filters to active, non-deleted rows for the type, orders by `is_default DESC, display_order ASC`, and returns the **first row whose BU lists permit the `bu_code`** — so a default that denies the BU silently falls through to the next permitted alternate. No match is a 404 — though today's micro-business print path queries the table directly and skips the BU checks (see [Permissions](/en/platform/print-template-mapping/permissions) §3).
+## 3. Where the old content still applies
 
-## 4. Roles and Personas
+Nothing in this module's former business rules, permission keys, or schema is live. Do not cite `print_template_mapping.*` permission keys, the `/print-template-mapping*` routes, or `tb_print_template_mapping` in new pages — all three are gone. The sub-pages below are kept only as an archive of what the removed screens did, for anyone trying to understand a stale reference elsewhere in the codebase or docs.
 
-Access is permission-gated through [Platform RBAC](/en/platform/rbac), with route guards and in-page `<Can>` gates:
+## 4. Related Modules
 
-| Surface | Gate | Key |
-|---|---|---|
-| `/print-template-mapping` route + "Print Mapping" sidebar entry (Content group, Printer icon) | `PrivateRoute` / sidebar filter | `print_template_mapping.read` |
-| `/print-template-mapping/new` route | `PrivateRoute` | `print_template_mapping.create` |
-| `/print-template-mapping/:id/edit` route | `PrivateRoute` | `print_template_mapping.update` |
-| New Mapping button (list header) | `<Can>` | `print_template_mapping.create` |
-| Row Edit (pencil icon button) | `<Can>` | `print_template_mapping.update` |
-| Row Delete (trash icon button) | `<Can>` | `print_template_mapping.delete` |
-| Edit toggle (edit-page header) | `<Can>` | `print_template_mapping.update` |
+- [Report Templates](/en/platform/report-templates) — owns the replacement mechanism (`report_group`, `is_default`, the Form Groups screen) and the `tb_report_template` table this module used to point at.
+- [Platform RBAC](/en/platform/rbac) — the `print_template_mapping.*` keys this module used are no longer in the permission catalog at all (removed from the seed, not merely unassigned).
+- [Business Units](/en/platform/business-units) — the removed module's allow/deny lists held BU codes; that per-mapping BU scoping has no replacement (see §2).
 
-As in Applications, `print_template_mapping.delete` exists only as an in-page gate (no route requires it, and the edit page has no delete action), and the edit page's Save button is unwrapped but unreachable without the gated Edit toggle. The full matrix plus the resolve-time BU rules — a second, independent authorization story — is in [Permissions](/en/platform/print-template-mapping/permissions).
+## 5. Reference Sources
 
-## 5. Related Modules
+- carmen-platform commit `de11377` — deletion of the SPA pages, routes, sidebar entry, and permission references.
+- carmen-turborepo-backend-v2 commit `c135bb21e` — deletion of the backend-gateway proxy and permission-seed rows.
+- carmen-turborepo-backend-v2 migration `packages/prisma-shared-schema-platform/prisma/migrations/20260723120000_print_form_default/migration.sql` — `is_default` added to `tb_report_template`, unique index, `DROP TABLE tb_print_template_mapping`.
+- `../carmen-platform/src/pages/ReportFormGroupManagement.tsx`, `../carmen-platform/src/constants/reportGroups.ts` — the replacement screen and the current `FORM_REPORT_GROUPS` list.
+- `../carmen-turborepo-backend-bruno/collections/carmen-inventory/_archived/2026-07-29/platform/print-template-mapping/` — the archived Bruno requests for the removed endpoints.
 
-- [Report Templates](/en/platform/report-templates) — the other half of the feature pair: it owns `tb_report_template` (the layouts, their Dialog/Content XML, source binding, and `kind`/`report_group` fields this module selects on). That module's data-model page explicitly scopes `tb_print_template_mapping` out; this module documents it.
-- [Business Units](/en/platform/business-units) — the allow/deny lists hold BU *codes* (`tb_business_unit.code`), entered as free text with no validation against the BU registry; a typo simply never matches at resolve time.
-- [Platform RBAC](/en/platform/rbac) — defines and resolves the four `print_template_mapping.*` keys (seeded in `seed.platform-permission.ts`).
+## 6. Pages in This Module
 
-## 6. Reference Sources
+These sub-pages describe the removed screens as they existed through 2026-06-10 (last verified sync before removal). Each carries the same removal notice.
 
-- `../carmen-platform/src/App.tsx` — the three `print_template_mapping.*` route guards.
-- `../carmen-platform/src/components/Layout.tsx` — "Print Mapping" sidebar entry (Content group, `print_template_mapping.read`).
-- `../carmen-platform/src/pages/PrintTemplateMappingManagement.tsx` — grouped-card list, filters, `<Can>` gates, delete dialog.
-- `../carmen-platform/src/pages/PrintTemplateMappingEdit.tsx` — create/view/edit form, template-select float logic, CSV BU inputs.
-- `../carmen-platform/src/services/printTemplateMappingService.ts` — REST client and the `PrintTemplateMapping` / `DocumentType` types.
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_print_template_mapping` (line 776), `tb_report_template` (line 701).
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_print-template-mappings/` — the proxy controller/service.
-- `../micro-report/controller/print_template_mapping_controller.go`, `../micro-report/db/print_template_mapping_repo.go`, `../micro-report/model/print_template_mapping.go` — CRUD, `SupportedDocumentTypes`, `Resolve`, `EnsureSingleDefault`.
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/common/print-report.helper.ts` — the document-print consumer.
-
-## 7. Pages in This Module
-
-- [Data Model](/en/platform/print-template-mapping/data-model) — the `tb_print_template_mapping` field table (no unique constraints, no DB-level FK), the FK-side view of `tb_report_template`, and the divergences between Prisma, the SPA types, and the Go service.
-- [UI Screens](/en/platform/print-template-mapping/ui-screens) — the grouped-card list (and why it deviates from the DataTable pattern) and the view/edit-toggle form with the match-floating template select.
-- [Permissions](/en/platform/print-template-mapping/permissions) — the `print_template_mapping.*` gate matrix, the resolve-time allow/deny precedence rules, and the edge-case matrix for testers.
+- [Data Model](/en/platform/print-template-mapping/data-model) — the former `tb_print_template_mapping` field table (now dropped).
+- [UI Screens](/en/platform/print-template-mapping/ui-screens) — the former grouped-card list and view/edit-toggle form (now deleted).
+- [Permissions](/en/platform/print-template-mapping/permissions) — the former `print_template_mapping.*` gate matrix and resolve-time BU rules (keys now removed from the catalog).
