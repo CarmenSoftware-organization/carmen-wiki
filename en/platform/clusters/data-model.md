@@ -2,7 +2,7 @@
 title: Cluster — Data Model
 description: Cluster entity, relationships to BUs and users, license fields.
 published: true
-date: 2026-06-10T13:30:00.000Z
+date: 2026-07-29T06:35:38.000Z
 tags: book/platform, clusters, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -11,7 +11,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 # Cluster — Data Model
 
 > **At a Glance**
-> **Tables:** `tb_cluster` (primary) &nbsp;·&nbsp; `tb_cluster_user` (M:N user-join, full doc in [users](/en/platform/users)) &nbsp;·&nbsp; `tb_business_unit` (`cluster_id` FK side, full doc in [business-units](/en/platform/business-units)) &nbsp;·&nbsp; **Enums:** `enum_cluster_user_role` (admin/user) &nbsp;·&nbsp; **Branding:** `logo_file_token` / `avatar_file_token` columns, resolved to embedded presigned `logo`/`avatar` objects in API responses &nbsp;·&nbsp; **Audit columns:** standard `created_*`/`updated_*`/`deleted_*` trio on `tb_cluster`, surfaced as a nested `audit` object by the API &nbsp;·&nbsp; **License field:** `max_license_bu` caps how many BUs this cluster may have
+> **Tables:** `tb_cluster` (primary) &nbsp;·&nbsp; `tb_cluster_user` (M:N user-join, full doc in [users](/en/platform/users)) &nbsp;·&nbsp; `tb_business_unit` (`cluster_id` FK side, full doc in [business-units](/en/platform/business-units)) &nbsp;·&nbsp; **Enums:** `enum_cluster_user_role` (admin/user) &nbsp;·&nbsp; **Branding:** `logo_file_token` / `avatar_file_token` columns, resolved to embedded presigned `logo`/`avatar` objects in API responses &nbsp;·&nbsp; **Audit columns:** standard `created_*`/`updated_*`/`deleted_*` trio on `tb_cluster`, surfaced as a nested `audit` object by the API &nbsp;·&nbsp; **License field:** `max_license_bu` caps how many BUs this cluster may have &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` on both `tb_cluster` and `tb_cluster_user` (added 2026-07-16), enforced as an optimistic lock on `PUT`
 
 > **Source of truth:** Backend Prisma platform schema. Always read this first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
@@ -45,6 +45,7 @@ The primary cluster record. One row per tenant cluster, holding the identity fie
 | `max_license_bu` | `Int?` | Yes | — | Cap on the number of live (non-soft-deleted) `tb_business_unit` rows in this cluster. `NULL` means no cap enforced. Enforcement is at the application layer (Platform SPA UI); the database does NOT enforce this constraint |
 | `is_active` | `Boolean?` | Yes | `true` | When `false`, the cluster and its BUs are considered inactive |
 | `info` | `Json? @db.Json` | Yes | — | Free-form metadata blob; reserved for future extensibility |
+| `doc_version` | `Int` | No | `0` | Optimistic-concurrency token, added platform-wide (35 tables, incl. `tb_cluster` and `tb_cluster_user`) on 2026-07-16. The SPA reads it on load and resends it with every `PUT /api-system/clusters/:id`; a stale write is rejected with `409` (`DOC_VERSION_CONFLICT`, though the backend's error mapper may surface it as `ALREADY_EXISTS` — the SPA matches on the response message text, not just the code) and the edit page reloads the record and shows a "changed by someone else" toast instead of overwriting silently |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: row creation time |
 | `created_by_id` | `String? @db.Uuid` | Yes | — | Audit: FK to `tb_user.id` of the creator |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: last update time |
@@ -71,6 +72,7 @@ The full field table for `tb_cluster_user` is documented in [users data-model](.
 - **`parent_bu_id`** — `String? @db.Uuid` (nullable). Identifies the billing-owner BU for this user within the cluster. The Prisma comment reads: "เพื่อบอกว่าใคร BU ใหนเป็นเจ้าของ User คนนี้ เอาไว้ทำ invoice เก็บตังค์" (to track which BU owns this user for invoicing purposes). This field does **not** carry a FK constraint in Prisma — it is a logical reference to `tb_business_unit.id` enforced at the application layer.
 - **`is_active`** — `Boolean?` (default `true`). Soft-activity flag for the membership; a user may be deactivated within a cluster without soft-deleting the row.
 - **Unique constraint** — `@@unique([user_id, cluster_id, deleted_at])` — allows a user to be re-added to a cluster after the original membership is soft-deleted, without a unique-key collision.
+- **`doc_version`** — `Int @default(0)`, same optimistic-lock counter as `tb_cluster` (§2.1). The Users section's inline Role/Parent-BU edits (`PUT /api-system/user/clusters/:clusterUserId`) do not currently send it — only the cluster-level `PUT` on `ClusterEdit`'s Save Changes bar attaches `doc_version`.
 
 For the complete field table, all audit columns, and the user-side relationship view, see [users](/en/platform/users) and [users data-model](../users/data-model.md).
 
@@ -121,7 +123,7 @@ There are no `tb_cluster`-local enums. `tb_cluster` itself does not carry a stat
 
 ## 5. Divergences from carmen-platform SPA shape
 
-The `Cluster` interface in `../carmen-platform/src/types/index.ts` (lines 24–44) and the `ClusterFormData` interface in `../carmen-platform/src/pages/ClusterEdit.tsx` (lines 28–34) were compared against the Prisma `tb_cluster` model (verified 2026-06-10).
+The `Cluster` interface in `../carmen-platform/src/types/index.ts` (lines 24–45) and the `ClusterFormData` interface (moved since the last check to `../carmen-platform/src/pages/clusterManagement/ClusterIdentityFields.tsx`, lines 6–12) were compared against the Prisma `tb_cluster` model (re-verified 2026-07-29).
 
 | # | Item | Prisma has | SPA expects | Notes |
 | - | ---- | ---------- | ----------- | ----- |
@@ -133,16 +135,17 @@ The `Cluster` interface in `../carmen-platform/src/types/index.ts` (lines 24–4
 | 6 | `max_license_bu` | `Int?` | `max_license_bu: string` in `ClusterFormData` | The form holds the value as a string (HTML input), converted to a number before the API call. The `Cluster` read interface correctly types it as `max_license_bu?: number`. |
 | 7 | Branding | `logo_file_token`, `avatar_file_token` (`String? @db.VarChar` storage tokens) | `logo?: PresignedImage \| null`, `avatar?: PresignedImage \| null` — embedded objects `{ url, expires_at }` on list and detail responses | The raw tokens are never exposed. Images are written through dedicated multipart endpoints (`POST /api-system/clusters/:id/logo` with form field `logo`, `POST /api-system/clusters/:id/avatar` with form field `avatar`), each returning `{ file_token, url, expires_at }`; the regular `PUT` update payload does not carry branding fields. |
 
-All core identity and license fields (`id`, `code`, `name`, `alias_name`, `max_license_bu`, `is_active`, `info`, `deleted_at`) align between Prisma and the SPA read shape. Divergences are computed API annotations (items 2–4), audit regrouping and ID→name resolution (item 5), a form-layer string coercion (item 6), or token→presigned-object resolution (item 7).
+All core identity and license fields (`id`, `code`, `name`, `alias_name`, `max_license_bu`, `is_active`, `info`, `deleted_at`) align between Prisma and the SPA read shape, as does the newer `doc_version` optimistic-lock counter (both carry it — no divergence there). Divergences are computed API annotations (items 2–4), audit regrouping and ID→name resolution (item 5), a form-layer string coercion (item 6), or token→presigned-object resolution (item 7).
 
 ## 6. References
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `model tb_cluster` (line 214), `model tb_cluster_user` (line 243), `model tb_business_unit` (line 124), `enum enum_cluster_user_role` (line 645). Line numbers as of 2026-06-10.
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `model tb_business_unit` (line 117), `model tb_cluster` (line 225), `model tb_cluster_user` (line 255), `enum enum_cluster_user_role` (line 675). Line numbers as of 2026-07-29; `doc_version` added to all 35 platform tables on 2026-07-16 (`8e53bbe`).
 
 **Secondary (consumer shape):**
-- `../carmen-platform/src/types/index.ts` — `Cluster` interface (lines 24–44), `PresignedImage` (lines 85–88), `Audit`/`AuditEntry` (lines 254–265).
-- `../carmen-platform/src/pages/ClusterEdit.tsx` — `ClusterFormData` interface (lines 28–34).
+- `../carmen-platform/src/types/index.ts` — `Cluster` interface (lines 24–45, incl. `doc_version?: number`), `PresignedImage` (lines 93–96), `AuditEntry` (lines 362–367), `Audit` (lines 369–373).
+- `../carmen-platform/src/pages/clusterManagement/ClusterIdentityFields.tsx` — `ClusterFormData` interface (lines 6–12; moved out of `ClusterEdit.tsx` when the edit page was rewritten as a scrollspy document, see [UI Screens](./ui-screens.md)).
+- `../carmen-platform/src/utils/docVersion.ts` — `getDocVersion`/`isVersionConflict`/`notifyVersionConflict` optimistic-lock helpers used by `ClusterEdit.tsx`.
 - `../carmen-platform/src/services/clusterService.ts` — REST client for cluster API calls (`/api-system/clusters`, plus the `/logo` and `/avatar` multipart upload endpoints).
 
 **Landing cross-link:** [clusters](/en/platform/clusters) for the module overview.
