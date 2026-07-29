@@ -2,7 +2,7 @@
 title: Applications — สิทธิ์ (Permissions)
 description: เมทริกซ์ของ gate application.*, การเข้าถึงของ machine-client (x-app-id + api_names) ต่างจาก RBAC ของผู้ใช้อย่างไร และกรณีพิเศษสำหรับผู้ทดสอบ
 published: true
-date: 2026-06-10T15:15:00.000Z
+date: 2026-07-29T07:21:27.000Z
 tags: book/platform, applications, permissions
 editor: markdown
 dateCreated: 2026-06-10T15:15:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-06-10T15:15:00.000Z
 # Applications — สิทธิ์ (Permissions)
 
 > **At a Glance**
-> **Gate:** route ถือ `application.read` / `application.create` / `application.update` บน `PrivateRoute`; รายการ sidebar บน `application.read` &nbsp;·&nbsp; **Gate `<Can>` ภายในหน้า:** Add (`application.create`), Edit ของ row (`application.update`), Delete ของ row (`application.delete` — ภายในหน้าเท่านั้น ไม่มี route), toggle Edit (`application.update`) &nbsp;·&nbsp; **สองระบบการเข้าถึงมาบรรจบกันที่นี่:** key ของ RBAC gate ว่า *ใครจัดการ* application ได้; grant `api_name` ตัดสินว่า *application เรียกอะไรได้* &nbsp;·&nbsp; **ช่องว่างที่ทราบกัน:** CTA "Add Application" ของ empty-state ไม่ถูกห่อด้วย `<Can>`
+> **Gate:** route ถือ `application.read` / `application.create` / `application.update` บน `PrivateRoute`; รายการ sidebar บน `application.read` &nbsp;·&nbsp; **Gate `<Can>` ภายในหน้า:** Add (`application.create`, ทั้ง header **และ** empty-state — ช่องว่างของ empty-state ที่เคยพบใน sync ก่อนหน้าปิดแล้ว), Edit ของ row (`application.update`), Delete ของ row (`application.delete` — ภายในหน้าเท่านั้น ไม่มี route), toggle Edit (`application.update`, ตอนนี้อยู่ใน actions slot ของ `ApplicationIdentityHero`) &nbsp;·&nbsp; **สองระบบการเข้าถึงมาบรรจบกันที่นี่:** key ของ RBAC gate ว่า *ใครจัดการ* application ได้; grant `api_name` ตัดสินว่า *application เรียกอะไรได้* &nbsp;·&nbsp; **Concurrency:** optimistic lock ด้วย `doc_version` ตอน save
 
 ## 1. ภาพรวม
 
@@ -19,7 +19,7 @@ dateCreated: 2026-06-10T15:15:00.000Z
 
 ## 2. เมทริกซ์ของ gate
 
-gate ทุกตัว resolve ผ่าน resolver `hasPermission` ตัวเดียวที่ document ไว้ใน [Platform RBAC — Permissions](../rbac/permissions.md); route guard ที่ไม่ผ่าน render `<AccessDenied>` ภายใน shell `<Layout>` ปกติ
+gate ทุกตัว resolve ผ่าน resolver `hasPermission` ตัวเดียวที่ document ไว้ใน [Platform RBAC — Permissions](../rbac/permissions.md); route guard ที่ไม่ผ่าน render `<Forbidden>` (หน้า 403) ภายใน shell `<Layout>` ปกติ
 
 | Surface | กลไก | Key | แหล่งที่มา |
 |---|---|---|---|
@@ -27,20 +27,21 @@ gate ทุกตัว resolve ผ่าน resolver `hasPermission` ตัว�
 | `/applications/new` | `PrivateRoute requiredPermission` | `application.create` | `src/App.tsx` |
 | `/applications/:id/edit` | `PrivateRoute requiredPermission` | `application.update` | `src/App.tsx` |
 | sidebar "Applications" (กลุ่ม Platform) | nav filter ของ `Layout.tsx` | `application.read` | `src/components/Layout.tsx` |
-| Add Application (header ของหน้า list) | `<Can>` | `application.create` | `ApplicationManagement.tsx` |
+| Add Application (header ของหน้า list **และ** empty state) | `<Can>` | `application.create` | `ApplicationManagement.tsx` |
 | Edit ของ row (dropdown action) | `<Can>` | `application.update` | `ApplicationManagement.tsx` |
 | Delete ของ row (dropdown action) | `<Can>` | `application.delete` | `ApplicationManagement.tsx` |
-| toggle Edit (header ของหน้า edit) | `<Can>` | `application.update` | `ApplicationEdit.tsx` |
+| toggle Edit (actions slot ของ hero) | `<Can>` | `application.update` | `ApplicationEdit.tsx` (ปุ่ม render โดย `ApplicationIdentityHero.tsx` แล้ว) |
 
-ความไม่สมมาตรสามข้อที่ผู้ทดสอบควรใส่ใจ:
+ความไม่สมมาตรสองข้อที่ผู้ทดสอบควรใส่ใจ (ข้อที่สาม เชิงประวัติ — ช่องว่างของ gate ที่ empty-state — ได้รับการแก้ไขแล้ว ดูข้างล่าง):
 
 - **`application.delete` อยู่ภายในหน้าเท่านั้น** ไม่มี route ใดต้องการมัน และหน้า edit ไม่มี action ลบ — surface ทั้งหมดของ key นี้คือ item Delete ใน row ของหน้า list session ที่ถือเฉพาะ `application.read` เห็นหน้า list แต่ไม่เห็นทั้ง Edit และ Delete ใน dropdown
-- **Save ไม่ถูก gate แยกต่างหาก** บนหน้า edit มีเพียง *toggle* Edit ที่ถูกห่อด้วย `<Can>`; ปุ่ม Save เป็นปุ่มธรรมดาแต่เข้าถึงไม่ได้โดยไม่เข้าโหมด edit (และ Save ของ route create อยู่หลัง `application.create` ของ route) ฝั่ง client เรื่องนี้สมเหตุสมผล; การบังคับใช้ของ backend บน `PUT` ยังคงเป็นขอบเขตที่แท้จริง
-- **CTA ของ empty-state ไม่ถูก gate** เมื่อ list ว่างโดยไม่มี search term ปุ่ม "Add Application" บนการ์ด `EmptyState` **ไม่ได้**ถูกห่อด้วย `<Can permission="application.create">` (ต่างจากปุ่มใน header) session แบบ read-only คลิกมันได้และไปจบที่ `<AccessDenied>` ที่ `/applications/new` — route guard จับมันไว้ได้ แต่ affordance รั่ว ถ้าเรื่องนี้โผล่ขึ้นมาใน QA ให้ปฏิบัติกับการมองเห็นของปุ่ม ไม่ใช่ผลลัพธ์ของมัน ว่าเป็น defect
+- **Save ไม่ถูก gate แยกต่างหาก** บนหน้า edit มีเพียง *toggle* Edit ที่ถูกห่อด้วย `<Can>`; ปุ่ม Save (ตอนนี้อยู่ในแถบ sticky ด้านล่าง ไม่ใช่ inline ในการ์ดแล้ว) เป็นปุ่มธรรมดาแต่เข้าถึงไม่ได้โดยไม่เข้าโหมด edit (และ Save ของ route create อยู่หลัง `application.create` ของ route) ฝั่ง client เรื่องนี้สมเหตุสมผล; การบังคับใช้ของ backend บน `PUT`/`POST` ยังคงเป็นขอบเขตที่แท้จริง
+
+**แก้ไขแล้วตั้งแต่ sync ก่อนหน้า — ช่องว่างของ gate ที่ empty-state ปิดแล้ว** เมื่อ list ว่างโดยไม่มี search term ปุ่ม "Add Application" บนการ์ด `EmptyState` ตอนนี้ถูกห่อด้วย `<Can permission="application.create">` แล้ว ยืนยันด้วยการอ่าน source ของ `ApplicationManagement.tsx` โดยตรง — ตรงกับปุ่มใน header ข้อค้นพบเดิม ("ไม่ได้ถูกห่อด้วย `<Can>`... ปฏิบัติกับการมองเห็นของปุ่ม... ว่าเป็น defect") ไม่เป็นจริงอีกต่อไป ผู้ทดสอบควรคาดหวังว่า CTA ของ empty-state จะหายไปสำหรับ session ที่มีเฉพาะ `application.read` เหมือนปุ่ม header
 
 Export (CSV) และ Debug Sheet เฉพาะ dev จงใจไม่ถูก gate นอกเหนือจาก `application.read` ของ route — ทั้งคู่เป็น read-only เหนือข้อมูลที่โหลดมาแล้ว เช่นเดียวกับทุกที่ใน SPA sidebar filter เป็น UX ไม่ใช่ security: session ที่ไม่มี `application.read` จะไม่เห็นรายการ แต่ยังพิมพ์ `/applications` ใน address bar ได้และจะชน route guard
 
-key ของ route ทั้งสามเป็นอิสระต่อกัน — `PrivateRoute` ตรวจสอบเฉพาะ key เดียวที่ route ของมันประกาศ ชุดผสมที่มีประโยชน์ในการทดสอบอย่างจงใจ: `application.update` ที่ไม่มี `application.read` สามารถ deep-link ตรงไป `/applications/:id/edit` ได้ (เมื่อได้ id มาจากที่อื่น) ขณะที่ตัวหน้า list เอง render `<AccessDenied>`; `application.create` ที่ไม่มี `application.read` เข้าถึง `/applications/new` ผ่าน URL ได้แม้ว่าทางเข้าทั้งสอง (ปุ่ม header, CTA ของ empty-state) จะอยู่บนหน้าที่มันเปิดไม่ได้
+key ของ route ทั้งสามเป็นอิสระต่อกัน — `PrivateRoute` ตรวจสอบเฉพาะ key เดียวที่ route ของมันประกาศ ชุดผสมที่มีประโยชน์ในการทดสอบอย่างจงใจ: `application.update` ที่ไม่มี `application.read` สามารถ deep-link ตรงไป `/applications/:id/edit` ได้ (เมื่อได้ id มาจากที่อื่น) ขณะที่ตัวหน้า list เอง render `<Forbidden>`; `application.create` ที่ไม่มี `application.read` เข้าถึง `/applications/new` ผ่าน URL ได้แม้ว่าทางเข้าทั้งสอง (ปุ่ม header, CTA ของ empty-state) จะอยู่บนหน้าที่มันเปิดไม่ได้
 
 ## 3. การเข้าถึงของ application ต่างจาก RBAC ของผู้ใช้อย่างไร
 
@@ -68,7 +69,7 @@ header ทั้งสองเดินทางไปด้วยกันบ�
 | 3 | การ fetch catalog ล้มเหลว | selector ลดรูปเป็น `ChipInput` แบบ free-text; string ใดก็ได้ถูกกรอกเป็น `api_name` ได้ | การพิมพ์ผิด persist เป็น grant row ที่ตายแล้ว — `tb_application_api.api_name` ไม่มี FK หรือ enum ให้ validate เทียบ ตรวจสอบการจัดการ trailing space (service trim ให้) และว่าชื่อมั่ว ๆ ก็เพียงแค่ไม่มีวัน match guard ใดเลย |
 | 4 | response ของ catalog ที่ไม่มี `groups` (backend รุ่นเก่ากว่า) | client derive กลุ่มที่เหมือนกันทุกประการผ่าน `groupApiNames()` — กฎ prefix-ก่อนจุดแรกเดียวกับ generator | ความทนทานต่อลำดับการ deploy ไม่ใช่ bug; UI แบบจัดกลุ่มต้องดูเหมือนเดิมไม่ว่าทางใด |
 | 5 | Application `is_active = false` | SPA render badge Inactive และให้เรคคอร์ดยังแก้ไขได้เต็มที่; ไม่มีอะไรใน SPA ที่ block caller ของ application | การที่ `x-app-id` ของ application ที่ inactive จะถูกปฏิเสธหรือไม่เป็นพฤติกรรมของ backend (`AppIdGuard`) — ตรวจสอบมันฝั่ง server; อย่าอนุมานการบังคับใช้จาก badge guard ตรวจกับ allowlist snapshot ใน memory ที่ refresh ตาม interval ดังนั้น app ที่เพิ่งถูก deactivate อาจยังผ่านต่อไปจนถึงการ refresh ครั้งถัดไป — ความหน่วงนั้นไม่ใช่ bug |
-| 6 | session ที่มีเฉพาะ `application.read` | list โหลดได้; dropdown ของ action ว่างเปล่า (ไม่มี Edit/Delete), Add ใน header ถูกซ่อน — แต่ CTA ของ empty-state ยังแสดงบน list ที่ว่างและจบเป็นทางตันที่ `<AccessDenied>` | ช่องว่างของ gate ใน §2; นอกนั้นเป็นการตรวจสอบการหายไปของ `<Can>` แบบ canonical |
+| 6 | session ที่มีเฉพาะ `application.read` | list โหลดได้; dropdown ของ action ว่างเปล่า (ไม่มี Edit/Delete), Add ใน header ถูกซ่อน — **และตั้งแต่ sync ก่อนหน้า CTA ของ empty-state ก็ถูกซ่อนด้วย** (ช่องว่าง `<Can>` ของมันแก้ไขแล้ว) | การตรวจสอบการหายไปของ `<Can>` แบบ canonical ครอบคลุมทุก affordance บนหน้านี้แล้ว — ไม่มีช่องว่างเหลือให้ทดสอบตรงนี้อีก |
 | 7 | การลบ application ที่ client ยังใช้อยู่ | dialog ยืนยันเตือนว่า undo ไม่ได้; เมื่อถูกลบแล้ว caller ที่แสดง UUID นั้นถูก guard ปฏิเสธ **หลังการ refresh allowlist ครั้งถัดไป** — app ที่เพิ่งถูกลบอาจยังผ่านได้ชั่วครู่ | Soft delete (`deleted_at`) — ยืนยันว่าการลบหลุดออกจาก snapshot ที่การ refresh ครั้งถัดไป และ `name` ที่ถูกปล่อยนำกลับมาใช้ได้ (`@@unique` รวม `deleted_at`); หน้าต่าง grace สั้น ๆ นั้นคือ interval ของการ refresh ไม่ใช่ bug |
 | 8 | guard ถูกเพิ่มใน backend แต่ catalog ไม่ถูก regenerate | endpoint บังคับใช้ key ที่ไม่มี selector ใดเสนอให้; application แบบรายการระบุชัดรับ grant ของมันผ่าน UI ไม่ได้ | การ regenerate + deploy เป็นส่วนหนึ่งของการ ship `AppIdGuard` ตัวใหม่; จนกว่าจะถึงตอนนั้น มีเพียง application แบบ `allow_all` ที่ผ่าน |
 | 9 | ถือ key โดยไม่มี `read` ที่เป็นพี่น้องของมัน | `application.update` ตัวเดียวเปิด `/applications/:id/edit` ผ่าน deep link ได้; `application.create` ตัวเดียวเปิด `/applications/new` ผ่าน URL ได้ — ทั้งคู่ขณะที่ route ของ list ปฏิเสธ | route guard ตรวจสอบ key เดียวต่อตัว (§2); ตัดสินตาม test plan ว่า partial grant แบบนี้เป็นรูปร่าง role ที่ตั้งใจหรือเป็นการตั้งค่าผิด |
@@ -80,7 +81,7 @@ header ทั้งสองเดินทางไปด้วยกันบ�
 - **ปฏิบัติกับ semantics แบบ replace เป็นอันตรายโดยปริยาย** workflow หรือ script ใดที่อัพเดท application ต้อง read-modify-write ชุด `api_names` แบบเต็ม; PUT บางส่วนแบบ "แค่เพิ่ม key เดียว" จะล้างส่วนที่เหลือทิ้ง flag โค้ด client ใหม่ใดที่ port shape แบบ delta ของ RBAC มาที่นี่
 - **Audit รายการระบุชัดหลัง catalog เปลี่ยน** การเปลี่ยนชื่อหรือลบ key ของ `AppIdGuard` ทิ้ง grant row เดิมให้ค้างอยู่ (ไม่มี FK ที่เก็บกวาดมัน); diff ค่า `tb_application_api.api_name` กับ catalog ที่ generate ขึ้นเป็นระยะ
 - **เลือกใช้รายการระบุชัดแทน `allow_all` นอก dev** `allow_all` คือ super-admin ฉบับ machine — มีประโยชน์สำหรับ bootstrap และ tooling ภายใน แต่มันทำให้รายการ grant ไร้ความหมายและซ่อน defect แบบ missing-grant เหมือนกับการทดสอบ RBAC จาก session ของ super-admin เป๊ะ ๆ
-- **ปิดช่องว่างของ gate บน empty-state ที่ต้นทาง** ห่อ CTA ของ `EmptyState` ด้วย `<Can permission="application.create">` ให้ตรงกับปุ่ม header; จนกว่าจะถึงตอนนั้น ให้ document ทางตันนี้ใน test plan แทนที่จะ file เป็น bug ของ route guard
+- ~~ปิดช่องว่างของ gate บน empty-state ที่ต้นทาง~~ **เสร็จแล้ว** — CTA ของ `EmptyState` ถูกห่อด้วย `<Can permission="application.create">` แล้ว ตรงกับปุ่ม header ไม่ต้องดำเนินการเพิ่มเติมตรงนี้
 
 **แหล่งข้อมูลอ้างอิง:** `../carmen-platform/src/App.tsx` (route guard `application.*` ทั้งสาม) · `src/components/Layout.tsx` (รายการ sidebar) · `src/pages/ApplicationManagement.tsx` (gate `<Can>`, empty state) · `src/pages/ApplicationEdit.tsx` (gate ของ toggle Edit) · `../carmen-turborepo-backend-v2/scripts/generate-app-api-catalog/run.ts` (การ generate catalog)
 **Cross-link:** [หน้า landing ของ Applications](/th/platform/applications) &nbsp;·&nbsp; [Data Model](./data-model.md) &nbsp;·&nbsp; [UI Screens](./ui-screens.md) &nbsp;·&nbsp; [Platform RBAC — Permissions](../rbac/permissions.md)

@@ -2,7 +2,7 @@
 title: แอปพลิเคชัน (Applications)
 description: ภาพรวมโมดูล Applications — API client ที่ลงทะเบียนของแพลตฟอร์ม, identity แบบ x-app-id และการมอบสิทธิ์เข้าถึงแบบ allow-all เทียบกับรายการ api_name แบบระบุชัด
 published: true
-date: 2026-06-17T08:00:00.000Z
+date: 2026-07-29T07:21:27.000Z
 tags: platform/applications, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T15:15:00.000Z
@@ -19,12 +19,12 @@ dateCreated: 2026-06-10T15:15:00.000Z
 
 โมดูลนี้ทำตามรูปแบบสองหน้าจอมาตรฐานของ SPA:
 
-- **`/applications` → `ApplicationManagement`** — `DataTable` ฝั่ง server พร้อมการค้นหาแบบ debounce (name/description), filter Active/Inactive แบบ Sheet, ส่งออก CSV และจดจำสถานะ UI ใน `localStorage` คอลัมน์ **App ID** render UUID ของเรคคอร์ดเป็น monospace เพื่อให้ operator คัดลอกค่า `x-app-id` ที่ถูกต้องเป๊ะ ๆ ได้ และคอลัมน์ **Access** สรุป grant เป็น badge "All APIs" หรือ "N APIs"
-- **`/applications/new` และ `/applications/:id/edit` → `ApplicationEdit`** — การ์ด "Application Details" การ์ดเดียว (โหมด create แก้ไขได้ทันที; route edit เริ่มต้นแบบ read-only อยู่หลัง toggle Edit) องค์ประกอบที่เป็นเอกลักษณ์ของมันคือ **API Names selector**: accordion แบบพับเก็บได้ของ key `api_name` จัดกลุ่มตามโมดูล พร้อมช่อง filter, select-all ต่อโมดูล และ badge นับจำนวนที่เลือก selector จะ render เฉพาะเมื่อ `allow_all` ปิดอยู่
+- **`/applications` → `ApplicationManagement`** — `DataTable` ฝั่ง server พร้อมการค้นหาแบบ debounce (name/description), filter Active/Inactive + Device แบบ Sheet, ส่งออก CSV, แถบสรุป **Registry** (`ApplicationRegistrySummary` — จำนวนรวม/active/inactive, แถบสัดส่วน full-access เทียบกับ scoped และสรุปตามอุปกรณ์) และจดจำสถานะ UI ใน `localStorage` **คอลัมน์ App ID และ Description ถูกยุบรวมเข้าคอลัมน์ Name แล้ว** (ไม่ใช่คอลัมน์แยกอีกต่อไป): เซลล์ Name ตอนนี้ซ้อนลิงก์ชื่อ, UUID ของเรคคอร์ดแบบ monospace พร้อมปุ่ม copy inline และคำอธิบายไว้ข้างล่าง คอลัมน์ **Access** ยังคงสรุป grant เป็น badge "All APIs" หรือ "N APIs" เหมือนเดิม
+- **`/applications/new` และ `/applications/:id/edit` → `ApplicationEdit`** — เขียนใหม่จากการ์ด "Application Details" การ์ดเดียว ให้เป็นการ์ด **`ApplicationIdentityHero`** (ไอคอน, ชื่อ, badge device/สถานะ, chip App ID พร้อมปุ่ม copy, บรรทัดสรุปการเข้าถึง API) บวก layout สองคอลัมน์: การ์ด **"API access"** ทางซ้าย ที่ถือ accordion selector (ตอนนี้เป็นองค์ประกอบหลักทางสายตา แสดงเสมอ ไม่ได้ซ่อนอยู่ในฟอร์มใหญ่กว่า) และการ์ด **"Settings"** แบบ sticky ทางขวา (Name, Description, Device, Status) route edit ยังคงเริ่มต้นแบบ read-only อยู่หลัง toggle Edit (ต่างจาก clusters/business-units ที่ย้ายไปเป็นหน้า one-document แก้ไขได้ตลอด); แถบ sticky ด้านล่างแสดง Save/Cancel ขณะแก้ไข องค์ประกอบที่เป็นเอกลักษณ์ยังคงเป็น **API Names selector**: accordion แบบพับเก็บได้ของ key `api_name` จัดกลุ่มตามโมดูล พร้อมช่อง filter, select-all ต่อโมดูล และ badge นับจำนวนที่เลือก — render เฉพาะเมื่อ `allow_all` ปิดอยู่ โดยมี banner เตือนแบบ inline แสดงแทนเมื่อ `allow_all` เปิดอยู่ (ทั้งในโหมด view และ edit)
 
 ตัวเลือกของ selector มาจาก `GET /api-system/applications/api-catalog` SPA เพิ่มหรือแก้ไขรายการใน catalog ไม่ได้ — catalog ถูก generate ฝั่ง backend (§2) และ SPA ทำได้เพียงเลือกจากมัน ดู [UI Screens](/th/platform/applications/ui-screens) สำหรับ walkthrough ฉบับเต็ม
 
-ส่วนที่เหลือทั้งหมดเป็นองค์ประกอบมาตรฐานของหน้า Management ใน SPA: `TableSkeleton` ตอนโหลดครั้งแรก, `EmptyState` เมื่อ list ว่าง, toast feedback ตอน mutation, navigation guard `useUnsavedChanges` ระหว่างแก้ไข และ Debug Sheet เฉพาะ dev ที่เปิดเผย raw API response ของแต่ละหน้าจอ
+ส่วนที่เหลือทั้งหมดเป็นองค์ประกอบมาตรฐานของหน้า Management ใน SPA: `TableSkeleton` ตอนโหลดครั้งแรก, `EmptyState` เมื่อ list ว่าง (CTA "Add Application" ของมันตอนนี้ถูก gate ด้วย `<Can>` แล้ว — ดู §4), toast feedback ตอน mutation, สถานะ not-found ที่ gate ทั้ง shell ของหน้า edit เมื่อ id หาไม่เจอ, การบันทึกแบบ optimistic-lock ด้วย `doc_version`, navigation guard `useUnsavedChanges` ระหว่างแก้ไข และ Debug Sheet เฉพาะ dev ที่เปิดเผย raw API response ของแต่ละหน้าจอ
 
 ## 2. บริบททางธุรกิจ
 
@@ -38,8 +38,8 @@ catalog ที่เลือกได้นั้น **derive มาจาก g
 
 - **App ID = UUID ของเรคคอร์ด** primary key `tb_application.id` คือค่า `x-app-id` ไม่มีคอลัมน์หรือ field `app_id` แยกต่างหากที่ใดเลย — SPA เพียงแสดง `id` ภายใต้ label "App ID" (read-only, server เป็นผู้ generate)
 - **`allow_all` กับรายการแบบระบุชัด** ทางแยกแบบ boolean: `allow_all = true` มอบทุก endpoint ที่ถูก guard และทำให้ row ใด ๆ ใน `tb_application_api` ไม่มีความหมาย; `allow_all = false` มอบเฉพาะ row `api_name` ที่ live อยู่เท่านั้น SPA ซ่อน API Names selector ทั้งหมดขณะที่ `allow_all` ถูกติ๊ก และ payload ของการเขียนละเว้น names ในกรณีนั้น
-- **ไวยากรณ์ของ `api_name`** key เป็น string รูปแบบ `resource.action` — shape เดียวกับ permission key ของ RBAC แต่เป็น **คลังศัพท์แยกต่างหากจากแหล่งที่มาแยกต่างหาก**: `api_name` มาจากการสแกน `AppIdGuard` ส่วน key ของ RBAC มาจาก `tb_platform_permission` segment ฝั่ง action ทำตาม method ของ backend controller ไม่ใช่ชุด verb ของ RBAC — `cluster.findAll`, `cluster.findOne`, `cluster.uploadLogo` แทนที่จะเป็น `cluster.read` — สอง catalog จึงใช้ไวยากรณ์ร่วมกันแต่ key string ไม่เหมือนกัน catalog ที่ generate ขึ้นมี 777 key ใน 124 กลุ่มโมดูล ณ 2026-06-10 โมดูลของ `api_name` คือ prefix ก่อน `.` ตัวแรก; ชื่อที่ไม่มีจุดเป็นโมดูลของตัวเอง (`src/utils/apiCatalog.ts` สะท้อนกฎการแบ่งของ generator ฝั่ง backend แบบเป๊ะ ๆ)
-- **Replace ไม่ใช่ delta** `PUT /api-system/applications/:id` ส่ง **ชุดที่ต้องการแบบเต็ม** เป็น `details: { add: [{ api_name }] }` — semantics แบบ replace ตรงข้ามกับการเขียน role ของ RBAC ซึ่งส่ง delta `{ add, remove }`; นักพัฒนาที่ port โค้ดข้ามไปมาระหว่างสองโมดูลนี้ต้องไม่ assume ว่าใช้ convention เดียวกัน
+- **ไวยากรณ์ของ `api_name`** key เป็น string รูปแบบ `resource.action` — shape เดียวกับ permission key ของ RBAC แต่เป็น **คลังศัพท์แยกต่างหากจากแหล่งที่มาแยกต่างหาก**: `api_name` มาจากการสแกน `AppIdGuard` ส่วน key ของ RBAC มาจาก `tb_platform_permission` segment ฝั่ง action ทำตาม method ของ backend controller ไม่ใช่ชุด verb ของ RBAC — `cluster.findAll`, `cluster.findOne`, `cluster.uploadLogo` แทนที่จะเป็น `cluster.read` — สอง catalog จึงใช้ไวยากรณ์ร่วมกันแต่ key string ไม่เหมือนกัน catalog ที่ generate ขึ้นมี 788 key ใน 125 กลุ่มโมดูล ณ 2026-07-29 (เดิม 777/124 ในการตรวจครั้งก่อน — catalog เติบโตขึ้นเมื่อมี endpoint ที่ถูก guard ตัวใหม่ เช่น service tenant-migration/tenant-seed/interface-entitlement ที่เพิ่มเข้ามา) โมดูลของ `api_name` คือ prefix ก่อน `.` ตัวแรก; ชื่อที่ไม่มีจุดเป็นโมดูลของตัวเอง (`src/utils/apiCatalog.ts` สะท้อนกฎการแบ่งของ generator ฝั่ง backend แบบเป๊ะ ๆ)
+- **Replace ไม่ใช่ delta** `PUT /api-system/applications/:id` ส่ง **ชุดที่ต้องการแบบเต็ม** เป็น `details: { add: [{ api_name }] }` — semantics แบบ replace ตรงข้ามกับการเขียน role ของ RBAC ซึ่งส่ง delta `{ add, remove }`; นักพัฒนาที่ port โค้ดข้ามไปมาระหว่างสองโมดูลนี้ต้องไม่ assume ว่าใช้ convention เดียวกัน payload ของ `PUT` (และ `POST`) ตอนนี้ถือ `doc_version` มาด้วย (token optimistic-concurrency — ดู [Data Model](/th/platform/applications/data-model) §2.1)
 - **`device` จำแนกชนิดของ client** `tb_application.device` (default `"web"`; ชุดค่าของ SPA คือ `mobile` / `web` / `desktop` / `pos`) บันทึกว่า client เป็นชนิดใด backend gateway resolve มันจาก header `x-app-id` (`getDevice(appId)`) เพื่อขับเคลื่อนพฤติกรรมเฉพาะอุปกรณ์ที่ปลายทาง — เช่น application แบบ `mobile` จะเห็นเฉพาะ GRN แบบ `draft` ในมุมมอง list (ดู [good-receive-note/02-business-rules](/th/inventory/good-receive-note/02-business-rules))
 - **สุขอนามัยมาตรฐานของแพลตฟอร์ม** `tb_application` มี `is_active`, audit trio และ unique name ที่รองรับ soft-delete (`@@unique([name, deleted_at])`) ชื่อของ application ที่ถูกลบแล้วจึงนำกลับมาใช้ใหม่ได้
 
@@ -52,12 +52,12 @@ catalog ที่เลือกได้นั้น **derive มาจาก g
 | route `/applications` + รายการ sidebar "Applications" (กลุ่ม Platform) | `PrivateRoute` / sidebar filter | `application.read` |
 | route `/applications/new` | `PrivateRoute` | `application.create` |
 | route `/applications/:id/edit` | `PrivateRoute` | `application.update` |
-| ปุ่ม Add Application (header ของหน้า list) | `<Can>` | `application.create` |
+| ปุ่ม Add Application (header ของหน้า list + empty state) | `<Can>` | `application.create` |
 | Edit ของ row (dropdown action ในหน้า list) | `<Can>` | `application.update` |
 | Delete ของ row (dropdown action ในหน้า list) | `<Can>` | `application.delete` |
-| toggle Edit (header ของหน้า edit) | `<Can>` | `application.update` |
+| toggle Edit (actions slot ของ hero ในหน้า edit) | `<Can>` | `application.update` |
 
-สังเกตว่า `application.delete` มีอยู่ **เป็น gate ภายในหน้าเท่านั้น** — ไม่มี route ใดต้องการมัน และหน้า edit ไม่มี action ลบเลย; การลบเกิดขึ้นจาก dropdown ของ row ในหน้า list เท่านั้น เมทริกซ์ฉบับเต็ม รวมถึง CTA ของ empty-state ที่ทราบกันว่าไม่ถูก gate อยู่ใน [Permissions](/th/platform/applications/permissions)
+สังเกตว่า `application.delete` มีอยู่ **เป็น gate ภายในหน้าเท่านั้น** — ไม่มี route ใดต้องการมัน และหน้า edit ไม่มี action ลบเลย; การลบเกิดขึ้นจาก dropdown ของ row ในหน้า list เท่านั้น **ช่องว่างของ CTA ใน empty-state ที่เคยพบใน sync ก่อนหน้า ตอนนี้ปิดแล้ว** — มันถูกห่อด้วย `<Can permission="application.create">` เหมือนปุ่ม header ยืนยันด้วยการอ่าน source โดยตรง เมทริกซ์ฉบับเต็มอยู่ใน [Permissions](/th/platform/applications/permissions)
 
 ## 5. โมดูลที่เกี่ยวข้อง
 
@@ -66,18 +66,19 @@ catalog ที่เลือกได้นั้น **derive มาจาก g
 
 ## 6. แหล่งข้อมูลอ้างอิง
 
-- `../carmen-platform/src/App.tsx` — route guard `application.*` ทั้งสาม
-- `../carmen-platform/src/components/Layout.tsx` — รายการ sidebar "Applications" (กลุ่ม Platform, `application.read`)
-- `../carmen-platform/src/pages/ApplicationManagement.tsx` — หน้า list: คอลัมน์, filter, ส่งออก CSV, gate `<Can>`
-- `../carmen-platform/src/pages/ApplicationEdit.tsx` — ฟอร์ม create/view/edit และ API Names selector
-- `../carmen-platform/src/services/applicationService.ts` — REST client และการแปลง read/write (`details.add`, fallback ของ catalog)
+- `../carmen-platform/src/App.tsx` — route guard `application.*` ทั้งสาม (block ของ route บรรทัด 96–118)
+- `../carmen-platform/src/components/Layout.tsx` — รายการ sidebar "Applications" (กลุ่ม Platform, `application.read`, บรรทัด 63)
+- `../carmen-platform/src/pages/ApplicationManagement.tsx` และ `applicationManagement/ApplicationRegistrySummary.tsx` — หน้า list: แถบสรุป Registry, การยุบคอลัมน์ App-ID/description เข้า Name, filter, ส่งออก CSV, gate `<Can>` (รวม CTA ของ empty-state ที่แก้ไขแล้ว)
+- `../carmen-platform/src/pages/ApplicationEdit.tsx` และ `applicationEdit/ApplicationIdentityHero.tsx` — หน้า create/view/edit: การ์ด hero, layout สองคอลัมน์ API-access/Settings, การเดินสาย `doc_version`, gate not-found
+- `../carmen-platform/src/utils/docVersion.ts` — helper optimistic-lock
+- `../carmen-platform/src/services/applicationService.ts` — REST client และการแปลง read/write (`details.add`, fallback ของ catalog, `doc_version`)
 - `../carmen-platform/src/utils/apiCatalog.ts` + `src/types/index.ts` — helper สำหรับจัดกลุ่ม และ type `Application` / `ApplicationWritePayload` / `ApiCatalogGroup`
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_application` (บรรทัด 75), `tb_application_api` (บรรทัด 98)
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_application` (บรรทัด 65), `tb_application_api` (บรรทัด 90)
 - `../carmen-turborepo-backend-v2/scripts/generate-app-api-catalog/run.ts` — generator ของ catalog
 - `../carmen-turborepo-backend-v2/apps/backend-gateway/src/common/guard/` — `app-id.guard.ts` (validate header + ตรวจสอบ allowlist), `app-allowlist.store.ts` (snapshot ใน memory), `app-allowlist.refresher.ts` (โหลดตอน boot + refresh ตาม interval)
 
 ## 7. หน้าในโมดูลนี้
 
-- [Data Model](/th/platform/applications/data-model) — ตาราง field ของ `tb_application` และ `tb_application_api`, shape read/write ที่ไม่สมมาตร, semantics แบบ replace, endpoint ของ catalog และตระกูล `tb_application_role` ที่มีเฉพาะใน schema
-- [UI Screens](/th/platform/applications/ui-screens) — list `ApplicationManagement` และฟอร์ม `ApplicationEdit` รวมถึง API Names selector แบบ accordion จัดกลุ่มและ fallback แบบ ChipInput ของมัน
+- [Data Model](/th/platform/applications/data-model) — ตาราง field ของ `tb_application` และ `tb_application_api` (รวม `doc_version`), shape read/write ที่ไม่สมมาตร, semantics แบบ replace, endpoint ของ catalog และตระกูล `tb_application_role` ที่มีเฉพาะใน schema
+- [UI Screens](/th/platform/applications/ui-screens) — list `ApplicationManagement` และ layout hero + สองคอลัมน์ของ `ApplicationEdit` รวมถึง API Names selector แบบ accordion จัดกลุ่มและ fallback แบบ ChipInput ของมัน
 - [Permissions](/th/platform/applications/permissions) — เมทริกซ์ของ gate, การเข้าถึงของ application ต่างจาก RBAC ของผู้ใช้อย่างไร และกรณีพิเศษสำหรับผู้ทดสอบ
