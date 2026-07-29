@@ -2,7 +2,7 @@
 title: การแมปเทมเพลตพิมพ์ (Print Template Mapping)
 description: โมดูลที่ถูกลบออกแล้ว — การ routing ชนิดเอกสารไปยังเทมเพลตพิมพ์ถูกลบออกจาก carmen-platform เมื่อ 2026-07-23/24 และถูกรวมเข้ากับ Form Groups ของ Report Templates (report_group + is_default)
 published: true
-date: 2026-07-29T00:00:00.000Z
+date: 2026-07-29T09:46:00.000Z
 tags: platform/print-template-mapping, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T15:30:00.000Z
@@ -10,7 +10,7 @@ dateCreated: 2026-06-10T15:30:00.000Z
 
 # การแมปเทมเพลตพิมพ์ (Print Template Mapping)
 
-> **สถานะการใช้งาน (ตรวจสอบล่าสุด 2026-07-29): โมดูลนี้ถูกลบออกแล้ว** ทุกหน้าจอ, route, proxy ฝั่ง backend และตารางฐานข้อมูลที่อธิบายไว้ด้านล่างถูกลบระหว่าง 2026-07-23 ถึง 2026-07-24 ปัญหาการเลือก "ชนิดเอกสาร → เทมเพลต" ที่โมดูลนี้เคยแก้ยังคงอยู่ แต่ตอนนี้ถูกแก้ **ภายใน** [Report Templates](/th/platform/report-templates) ผ่านคู่คอลัมน์ `report_group` + `is_default` และหน้าจอใหม่ **Form Groups** (`/report-form-groups` ยังไม่ถูกบันทึกเป็น unit ของ wiki เอง — ดู backlog ของ Task 5) หน้านี้ถูกเก็บไว้เป็นบันทึกประวัติศาสตร์เพื่อให้ลิงก์เก่าและผลการค้นหานำไปสู่คำอธิบาย ไม่ใช่หน้า 404 — อย่าใช้เป็นคู่มือพฤติกรรมปัจจุบัน
+> **สถานะการใช้งาน (ตรวจสอบล่าสุด 2026-07-29): โมดูลนี้ถูกลบออกแล้ว** ทุกหน้าจอ, route, proxy ฝั่ง backend และตารางฐานข้อมูลที่อธิบายไว้ด้านล่างถูกลบระหว่าง 2026-07-23 ถึง 2026-07-24 ปัญหาการเลือก "ชนิดเอกสาร → เทมเพลต" ที่โมดูลนี้เคยแก้ยังคงอยู่ แต่ตอนนี้ถูกแก้ **ภายใน** [Report Templates](/th/platform/report-templates) ผ่านคู่คอลัมน์ `report_group` + `is_default` และหน้าจอใหม่ [Form Groups](/th/platform/report-templates/form-groups) (`/report-form-groups`) หน้านี้ถูกเก็บไว้เป็นบันทึกประวัติศาสตร์เพื่อให้ลิงก์เก่าและผลการค้นหานำไปสู่คำอธิบาย ไม่ใช่หน้า 404 — อย่าใช้เป็นคู่มือพฤติกรรมปัจจุบัน
 
 ในอดีต โมดูล **Print Template Mapping** คือตาราง routing ระหว่างชนิดเอกสารกับ layout การพิมพ์: แต่ละ row บอกว่า "เมื่อเอกสารชนิด X พิมพ์ ให้ render ด้วย `tb_report_template` ตัวนี้" ขณะที่ [Report Templates](/th/platform/report-templates) เป็นฝั่งที่ *เขียน (author)* layout ของ FastReport โมดูลนี้เป็นผู้ตัดสินใจว่า *จะใช้ตัวไหน* — ต่อชนิดเอกสาร, ต่อ business unit แบบ optional โดยมี default หนึ่งตัวต่อชนิดสำหรับปุ่ม Print แบบ legacy และตัวเลือกสำรองแบบเรียงลำดับสำหรับเมนู "Print as…"
 
@@ -36,10 +36,10 @@ dateCreated: 2026-06-10T15:30:00.000Z
 - `report_group` เป็น code คงที่จาก `FORM_REPORT_GROUPS` (`carmen-platform/src/constants/reportGroups.ts`): `PR, PO, GRN, SR, CN, SI, SO, IA, PC, SC, RFP, EOP` — 12 code ไม่ใช่ 10 code เดิมของโมดูลนี้ (ได้ `SI`, `SO`, `EOP` เพิ่ม; เสีย `INV`; `RFQ` เปลี่ยนชื่อเป็น `RFP`)
 - `template_type = 'form'` ระบุว่าเทมเพลตเป็น layout เอกสารเดี่ยว (`kind = 'print'` เดิม); `template_type = 'list'` คือ `kind = 'report'` เดิม (รายงานวิเคราะห์แบบตาราง) `kind` เองไม่มีอยู่ในชื่อคอลัมน์อีกต่อไป — ดู [Report Templates — Data Model](/th/platform/report-templates/data-model) สำหรับการเปลี่ยนชื่อ
 - `is_default` (คอลัมน์ boolean ใหม่ที่อธิบายข้างต้น) ระบุ form template ตัวเดียวที่ business unit จะได้สำหรับ `report_group` เมื่อยังไม่ได้เลือกเอง — บทบาทเดียวกับที่ `tb_print_template_mapping.is_default` เคยทำ เพียงย้ายไปอีกตารางหนึ่งและบังคับความเป็นหนึ่งเดียวด้วย unique index จริงแทนการลด default คู่แข่งแบบ best-effort ของ Go
-- หน้าจอ **Form Groups** ใหม่ (`/report-form-groups`, `ReportFormGroupManagement.tsx`, รายการ sidebar ในกลุ่ม "Content") แทนที่ list แบบการ์ดจัดกลุ่มของ `PrintTemplateMappingManagement`: หนึ่งการ์ดต่อ `report_group` แสดงทุกเทมเพลต `template_type = 'form'` ในกลุ่มนั้น พร้อม action "Set as default" ต่อแถว (`reportTemplateService.setGroupDefault`) แทน checkbox `is_default` บน form ของแถว mapping แยกต่างหาก
-- ไม่มีสิ่งเทียบเท่ารายการ allow/deny ต่อ BU ของ mapping row เดิม หรือ endpoint `resolve(document_type, bu_code)` `tb_report_template` ยังคงมีคอลัมน์ `allow_business_unit` / `deny_business_unit` ของตัวเอง (การมองเห็นเทมเพลตแถวนั้นต่อ BU) แต่ไม่มีกลไกใหม่ใดจำลอง "default template ต่างกันต่อ business unit" แบบเดิม — นี่เป็นช่องว่างความสามารถจริงเมื่อเทียบกับโมดูลที่ถูกลบ ไม่ใช่สิ่งที่ pass นี้แก้ไขได้ — บันทึกไว้สำหรับ Task 5
+- หน้าจอ [Form Groups](/th/platform/report-templates/form-groups) ใหม่ (`/report-form-groups`, `ReportFormGroupManagement.tsx`, รายการ sidebar ในกลุ่ม "Content") แทนที่ list แบบการ์ดจัดกลุ่มของ `PrintTemplateMappingManagement`: หนึ่งการ์ดต่อ `report_group` แสดงทุกเทมเพลต `template_type = 'form'` ในกลุ่มนั้น พร้อม action "Set as default" ต่อแถว (`reportTemplateService.setGroupDefault`) แทน checkbox `is_default` บน form ของแถว mapping แยกต่างหาก
+- ไม่มีสิ่งเทียบเท่ารายการ allow/deny ต่อ BU ของ mapping row เดิม หรือ endpoint `resolve(document_type, bu_code)` `tb_report_template` ยังคงมีคอลัมน์ `allow_business_unit` / `deny_business_unit` ของตัวเอง (การมองเห็นเทมเพลตแถวนั้นต่อ BU) แต่ไม่มีกลไกใหม่ใดจำลอง "default template ต่างกันต่อ business unit" แบบเดิม — นี่เป็นช่องว่างความสามารถจริงเมื่อเทียบกับโมดูลที่ถูกลบ ไม่ใช่สิ่งที่ pass นี้แก้ไขได้
 
-`/report-form-groups` ไม่ใช่หนึ่งใน 11 unit ของ Platform book ที่ระบุชื่อไว้ และยังไม่เป็นหน้า wiki ของตัวเอง — ดูรายการ Route gaps ใน progress log ของการ resync
+`/report-form-groups` ไม่ใช่หนึ่งใน 11 unit ของ Platform book ที่ระบุชื่อไว้ — มันถูกบันทึกเป็น sub-page ของ [Report Templates](/th/platform/report-templates) แทน ([Form Groups](/th/platform/report-templates/form-groups)) เช่นเดียวกับที่ sub-page ของโมดูลนี้เองไม่เคยถูกนับเป็น unit แยกต่างหาก
 
 ## 3. ส่วนที่เนื้อหาเดิมยังใช้ได้
 
@@ -47,7 +47,7 @@ dateCreated: 2026-06-10T15:30:00.000Z
 
 ## 4. โมดูลที่เกี่ยวข้อง
 
-- [Report Templates](/th/platform/report-templates) — เป็นเจ้าของกลไกทดแทน (`report_group`, `is_default`, หน้าจอ Form Groups) และตาราง `tb_report_template` ที่โมดูลนี้เคยชี้ไปหา
+- [Report Templates](/th/platform/report-templates) — เป็นเจ้าของกลไกทดแทน (`report_group`, `is_default`, หน้าจอ [Form Groups](/th/platform/report-templates/form-groups)) และตาราง `tb_report_template` ที่โมดูลนี้เคยชี้ไปหา
 - [Platform RBAC](/th/platform/rbac) — key `print_template_mapping.*` ที่โมดูลนี้ใช้ไม่มีอยู่ใน permission catalog อีกต่อไปเลย (ถูกลบออกจาก seed ไม่ใช่แค่ไม่ถูก assign)
 - [Business Units](/th/platform/business-units) — รายการ allow/deny ของโมดูลที่ถูกลบถือ code ของ BU; การกำหนดขอบเขต BU ต่อ mapping แบบนั้นไม่มีสิ่งทดแทน (ดู §2)
 
