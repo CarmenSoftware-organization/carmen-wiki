@@ -2,7 +2,7 @@
 title: System Configuration
 description: Document-flow and accounting-period system configuration — workflow, period, running codes are real, working screens; dimension, menu, application-config, and query-dataset are schema/backend features with no working Sysadmin UI.
 published: true
-date: 2026-07-16T00:00:00.000Z
+date: 2026-07-29T11:00:00.000Z
 tags: system-config, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # System Configuration
 
 > **At a Glance**
-> **Module purpose:** Document-flow and accounting-period machinery — approval workflows, accounting periods, document numbering, plus several schema-provisioned-but-unimplemented concepts (dimensions, generic app config, menu registry) &nbsp;·&nbsp; **Audience:** Sysadmin, Workflow Administrator, Finance (period close) &nbsp;·&nbsp; **Key entities/tables:** `tb_workflow`, `tb_period`, `tb_dimension`, `tb_config_running_code`, `tb_application_config`, `tb_menu` &nbsp;·&nbsp; **Sub-pages:** 11 &nbsp;·&nbsp; **Verified 2026-07-16: 6 of 11 sub-pages describe a real, reachable Sysadmin screen (workflow, period, running-code, config-email, document, dashboard-dataset); dimension and menu have no code path at all beyond a dead schema table; application-config and query-dataset are real backend capabilities with no general admin screen.**
+> **Module purpose:** Document-flow and accounting-period machinery — approval workflows, accounting periods, document numbering, plus several schema-provisioned-but-unimplemented concepts (dimensions, generic app config, menu registry) &nbsp;·&nbsp; **Audience:** Sysadmin, Workflow Administrator, Finance (period close) &nbsp;·&nbsp; **Key entities/tables:** `tb_workflow`, `tb_period`, `tb_dimension`, `tb_config_running_code`, `tb_application_config`, `tb_menu`, `tb_business_unit` (config fields), `tb_notification_template`, `tb_activity` &nbsp;·&nbsp; **Sub-pages:** 14 &nbsp;·&nbsp; **Verified 2026-07-29: 9 of 14 sub-pages describe a real, reachable Sysadmin screen (workflow, period, running-code, config-email, document, dashboard-dataset, company-profile, notification-template, activity-log); dimension and menu have no code path at all beyond a dead schema table; application-config and query-dataset are real backend capabilities with no general admin screen.**
 
 ![System Configuration screen](/screenshots/system-config/index.png)
 
@@ -37,6 +37,9 @@ Sysadmin. Workflow definition may be delegated to a Workflow Administrator perso
 | [config-email](/en/inventory/system-config/config-email) | Per-BU SMTP profile for outbound system email — workflow notifications, scheduled reports, password reset | Sysadmin by convention | Real screen; **backend has no permission guard** |
 | [document](/en/inventory/system-config/document) | Tenant-scoped file-storage registry — upload, list, download, and delete for documents attached to transactional records | Sysadmin | Real screen; backed by `tb_file_tag` + MinIO (not `tb_attachment`) |
 | [dashboard-dataset](/en/inventory/system-config/dashboard-dataset) | Read-only catalog of code-registered data feeds available to dashboard widgets | Sysadmin | Real screen |
+| [company-profile](/en/inventory/system-config/company-profile) | Two screens (Company Profile + Default Setting) editing disjoint field groups of the current `tb_business_unit` row — identity/address/formats, and PR/SI/PO config + print-form selection | Sysadmin | Real screens; `/system-admin/business-setting` is a dead redirect to Company Profile |
+| [notification-template](/en/inventory/system-config/notification-template) | Reusable message templates picked per workflow stage/action/recipient/channel | Sysadmin / Workflow Admin | Real screen; **only the `app` channel is actually dispatched** — `email` is configurable but silently ignored, `sms`/`line` have no consumer anywhere |
+| [activity-log](/en/inventory/system-config/activity-log) | List/grid UI over the tenant audit log (`tb_activity`) with action/entity-type/actor filters, export, print | Sysadmin / Auditor | Real screen; the *only* activity UI in the product — data model lives at [reporting-audit/activity](/en/inventory/reporting-audit/activity) |
 | [application-config](/en/inventory/system-config/application-config) | Tenant-wide key-value settings + per-user preference overrides | No general admin screen | Real table, consumed key-by-key by config-email/signature features only |
 | [query-dataset](/en/inventory/system-config/query-dataset) | SQL Workbench — author tenant views, stored procedures, and functions as reusable data sources | No admin screen found | Real backend service; **no frontend route exists** |
 | [dimension](/en/inventory/system-config/dimension) | User-defined custom fields with per-place display matrix | Nobody — no CRUD path | Schema only; no service, controller, or route found |

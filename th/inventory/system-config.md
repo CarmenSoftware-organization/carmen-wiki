@@ -2,7 +2,7 @@
 title: ระบบและการตั้งค่า (System Configuration)
 description: การตั้งค่าระบบสำหรับการไหลของเอกสารและช่วงงวดบัญชี — workflow, period, running code เป็นหน้าจอจริงที่ใช้งานได้; dimension, menu, application-config และ query-dataset เป็นฟีเจอร์ schema/backend ที่ไม่มี Sysadmin UI ใช้งานได้จริง
 published: true
-date: 2026-07-16T00:00:00.000Z
+date: 2026-07-29T11:00:00.000Z
 tags: system-config, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # ระบบและการตั้งค่า (System Configuration)
 
 > **At a Glance**
-> **วัตถุประสงค์โมดูล:** กลไกสำหรับการไหลของเอกสารและช่วงงวดบัญชี — เวิร์กโฟลว์การอนุมัติ ช่วงงวดบัญชี การกำหนดเลขที่เอกสาร บวกแนวคิดหลายตัวที่ provision ไว้ใน schema แต่ยังไม่ implement (มิติ, การตั้งค่าแอปทั่วไป, menu registry) &nbsp;·&nbsp; **กลุ่มเป้าหมาย:** Sysadmin, Workflow Administrator, Finance (ปิดงวด) &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_workflow`, `tb_period`, `tb_dimension`, `tb_config_running_code`, `tb_application_config`, `tb_menu` &nbsp;·&nbsp; **หน้าย่อย:** 11 &nbsp;·&nbsp; **ตรวจสอบ 2026-07-16: 6 จาก 11 หน้าย่อยอธิบายหน้าจอ Sysadmin ที่มีจริงและเข้าถึงได้ (workflow, period, running-code, config-email, document, dashboard-dataset); dimension และ menu ไม่มี code path เลยนอกจากตาราง schema ที่ dead; application-config และ query-dataset เป็นความสามารถ backend จริงแต่ไม่มีหน้าจอ admin ทั่วไป**
+> **วัตถุประสงค์โมดูล:** กลไกสำหรับการไหลของเอกสารและช่วงงวดบัญชี — เวิร์กโฟลว์การอนุมัติ ช่วงงวดบัญชี การกำหนดเลขที่เอกสาร บวกแนวคิดหลายตัวที่ provision ไว้ใน schema แต่ยังไม่ implement (มิติ, การตั้งค่าแอปทั่วไป, menu registry) &nbsp;·&nbsp; **กลุ่มเป้าหมาย:** Sysadmin, Workflow Administrator, Finance (ปิดงวด) &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_workflow`, `tb_period`, `tb_dimension`, `tb_config_running_code`, `tb_application_config`, `tb_menu`, `tb_business_unit` (ฟิลด์ config), `tb_notification_template`, `tb_activity` &nbsp;·&nbsp; **หน้าย่อย:** 14 &nbsp;·&nbsp; **ตรวจสอบ 2026-07-29: 9 จาก 14 หน้าย่อยอธิบายหน้าจอ Sysadmin ที่มีจริงและเข้าถึงได้ (workflow, period, running-code, config-email, document, dashboard-dataset, company-profile, notification-template, activity-log); dimension และ menu ไม่มี code path เลยนอกจากตาราง schema ที่ dead; application-config และ query-dataset เป็นความสามารถ backend จริงแต่ไม่มีหน้าจอ admin ทั่วไป**
 
 ![ระบบและการตั้งค่า (System Configuration) screen](/screenshots/system-config/index.png)
 
@@ -37,6 +37,9 @@ Sysadmin การนิยามเวิร์กโฟลว์อาจม�
 | [config-email](/th/inventory/system-config/config-email) | SMTP profile ต่อ BU สำหรับอีเมลขาออกของระบบ — การแจ้งเตือนเวิร์กโฟลว์ รายงานตามตารางเวลา รีเซ็ตรหัสผ่าน | Sysadmin ตามข้อตกลง | หน้าจอจริง; **backend ไม่มี permission guard** |
 | [document](/th/inventory/system-config/document) | Registry การจัดเก็บไฟล์ scope ตาม tenant — upload, list, download และ delete สำหรับเอกสารที่แนบกับ record ธุรกรรม | Sysadmin | หน้าจอจริง; backed ด้วย `tb_file_tag` + MinIO (ไม่ใช่ `tb_attachment`) |
 | [dashboard-dataset](/th/inventory/system-config/dashboard-dataset) | แคตตาล็อก read-only ของ data feed ที่ลงทะเบียนไว้ในโค้ดสำหรับ widget บนแดชบอร์ด | Sysadmin | หน้าจอจริง |
+| [company-profile](/th/inventory/system-config/company-profile) | สองหน้าจอ (Company Profile + Default Setting) แก้ไขกลุ่มฟิลด์ที่แยกกันของแถว `tb_business_unit` ปัจจุบัน — identity/ที่อยู่/format และ config PR/SI/PO + การเลือก print-form | Sysadmin | หน้าจอจริง; `/system-admin/business-setting` เป็น redirect ที่ตายแล้วไปยัง Company Profile |
+| [notification-template](/th/inventory/system-config/notification-template) | Template ข้อความที่ใช้ซ้ำได้ ถูกเลือกต่อ workflow stage/action/recipient/channel | Sysadmin / Workflow Admin | หน้าจอจริง; **มีแค่ channel `app` เท่านั้นที่ถูก dispatch จริง** — `email` ตั้งค่าได้แต่ถูกเพิกเฉยเงียบ ๆ, `sms`/`line` ไม่มีผู้บริโภคเลย |
+| [activity-log](/th/inventory/system-config/activity-log) | UI แบบ list/grid เหนือ audit log ของ tenant (`tb_activity`) พร้อม filter action/entity-type/actor, export, print | Sysadmin / Auditor | หน้าจอจริง; เป็น activity UI *เดียว* ในผลิตภัณฑ์ — โมเดลข้อมูลอยู่ที่ [reporting-audit/activity](/th/inventory/reporting-audit/activity) |
 | [application-config](/th/inventory/system-config/application-config) | การตั้งค่า key-value ระดับ tenant + การ override preference ต่อผู้ใช้ | ไม่มีหน้าจอ admin ทั่วไป | ตารางจริง consume เป็นราย key โดยฟีเจอร์ config-email/signature เท่านั้น |
 | [query-dataset](/th/inventory/system-config/query-dataset) | SQL Workbench — เขียน tenant view, stored procedure และ function เป็นแหล่งข้อมูลใช้ซ้ำ | ไม่พบหน้าจอ admin | Backend service จริง; **ไม่มี frontend route เลย** |
 | [dimension](/th/inventory/system-config/dimension) | Custom field ที่ผู้ใช้นิยามได้ พร้อม matrix การแสดงผลต่อสถานที่ | ไม่มีใคร — ไม่มี CRUD path | Schema เท่านั้น; ไม่พบ service, controller หรือ route |
