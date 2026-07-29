@@ -2,7 +2,7 @@
 title: Purchase Request — Test Scenarios — Approver
 description: Approver's test cases (happy path, permission, validation, edge cases) for purchase-request.
 published: true
-date: 2026-07-29T05:18:05.000Z
+date: 2026-07-29T05:45:00.000Z
 tags: purchase-request, test-scenarios, approver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -40,7 +40,7 @@ This page captures the test scenarios that the Approver persona directly drives 
 | APP-PERM-04 | Approver clicks **Approve** on a PR that has already advanced past their stage (race after another concurrent approver acted) | **Deny.** Server-side `PR_AUTH_002` rejects because `user_action.execute[]` was recomputed for the new stage and the calling user is no longer in it; UI shows a "PR has moved to a later stage — please refresh" message and disables the action bar on refresh. |
 | APP-PERM-05 | Department Head approves a PR from a different department they are not responsible for | **Deny.** Default-chain Stage 1 routing scopes `user_action.execute[]` to the requestor's department (or the HOD configured for that department in `tb_workflow`). A different-department HOD is not on the list; `PR_AUTH_002` blocks the action. |
 | APP-PERM-06 | Approver attempts to approve a PR they personally submitted (segregation of duties) | **Deny.** The `create` stage role and downstream `approve` stage roles are disjoint by workflow definition. Even if the same user appears in both stages by misconfig, `user_action.execute[]` is recomputed per stage and the create-stage owner is filtered out before the action runs (see [02-business-rules.md](./02-business-rules.md) Section 4, default chain). |
-| APP-PERM-07 | Delegate user acts on a delegated PR within a delegation window **(unconfirmed — no delegation code found)** | **Not confirmed to exist.** No delegation, reassignment, proxy, or substitute-approver mechanism was found in the frontend workflow admin or the backend workflow orchestrator. `user_action.execute[]` is recomputed from the stage's static `assigned_users` list and, separately, `routing_rules` (amount / department / category) — neither supports a temporary hand-off of a stage to a different user. |
+| APP-PERM-07 | Delegate user acts on a delegated PR within a delegation window **(unconfirmed — no delegation code found)** | **Not confirmed to exist.** No delegation, reassignment, proxy, or substitute-approver mechanism was found in the frontend workflow admin or the backend workflow orchestrator. `user_action.execute[]` is recomputed from the stage's static `assigned_users` list and, separately, `routing_rules` (amount / department / category — though `category` never actually matches, since no mapper emits a document-level `category` field, `workflows.navagation.service.ts` ~L455-456) — neither supports a temporary hand-off of a stage to a different user. |
 | APP-PERM-08 | Approver opens any PR URL with `noAuth` fixture / expired session | **Deny — redirect to login.** Without an auth context, `user_action.execute[]` cannot be evaluated against the current user; `PR_AUTH_002` cannot pass. Covered by the `noAuthTest` fixture in `301-pr.spec.ts`. |
 
 ## 3. Validation / Error

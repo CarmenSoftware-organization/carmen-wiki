@@ -2,7 +2,7 @@
 title: Purchase Order — User Flow — Purchaser
 description: Purchaser's flow within the purchase-order module.
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-29T05:45:00.000Z
 tags: purchase-order, user-flow, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -47,7 +47,7 @@ The Purchaser fully owns the document at `draft`. A send-back keeps the PO at `i
 | Add / remove lines | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Edit line qty / price / tax / FOC | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Submit for approval | ✅ (≥1 line + workflow) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Approve at own stage (when assigned) | ❌ | ✅ (`PO_AUTH_011` — no amount threshold gates this) | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Approve at own stage (when assigned) | ❌ | ✅ (`PO_AUTH_011` — authorization itself is not amount-gated, though which stage this is can be, via workflow `routing_rules`) | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Transmit to vendor | ❌ | ✅ (bundled into final-stage approve, `PO_AUTH_006`) | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Set `cancelled_qty` / per-line note (amendment) | ❌ | ❌ | ✅ (`PO_VAL_016`) | ✅ | ❌ | ❌ | ❌ |
 | Add Comment / Attachment | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -56,7 +56,7 @@ The Purchaser fully owns the document at `draft`. A send-back keeps the PO at `i
 | Reject (→ `voided`, when assigned to the current stage) | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | — |
 | Close (`PO_AUTH_008`) | ❌ | ✅ | ✅ | ✅ (PM / Inv Mgr) | ❌ | — | ❌ |
 
-> ⚠️ **Corrected this pass:** the previous version of this table gated approval on "below threshold" self-approval and reserved "Void" for the Procurement Manager alone from `sent`/`partial`. Neither concept exists in current source — see [02-business-rules.md](./02-business-rules.md) § 4 note. The `IN PROGRESS` status itself is real (confirmed by the `enum_purchase_order_doc_status` enum and the live badge text in e2e specs); it is simply not gated by an amount threshold.
+> ⚠️ **Corrected this pass:** the previous version of this table gated approval on "below threshold" self-approval and reserved "Void" for the Procurement Manager alone from `sent`/`partial`. Neither the self-approval gate nor the Manager-exclusive void exists in current source — see [02-business-rules.md](./02-business-rules.md) § 4 note. The `IN PROGRESS` status itself is real (confirmed by the `enum_purchase_order_doc_status` enum and the live badge text in e2e specs); *who* may approve at a stage is not amount-gated (purely `user_action.execute[]` membership) — but *which* stage a PO reaches can be: the assigned workflow's `routing_rules` may skip or jump stages based on `total_amount` (`PO_AUTH_004`).
 
 ## 2. Entry Point and Primary Flow
 
@@ -72,7 +72,7 @@ The Purchaser fully owns the document at `draft`. A send-back keeps the PO at `i
 6. Watch the header totals recalculate. Line subtotal, discount, net, tax, and total are computed per `PO_CALC_001`–`PO_CALC_005`; base-currency dual-posting uses the locked `exchange_rate` via `PO_CALC_006`; FOC lines flow quantity but zero money per `PO_CALC_007`; the header rolls up `total_price`, `total_tax`, `total_amount`, and `total_qty` per `PO_CALC_008`–`PO_CALC_011`; all rounding uses half-up via `PO_CALC_012`.
 7. Open the **Attachments** and **Comments** tabs and attach any supporting documents (vendor quote, internal memo) or notes for the approver chain. The activity log records every save event, including header and line changes, via `tb_purchase_order_comment` and `tb_purchase_order_detail_comment`.
 8. Run the submit-time check. The PO must have at least one non-soft-deleted line (`PO_VAL_012`), all lines must share the header `vendor_id` and `currency_id` (single-vendor / single-currency invariant, `PO_VAL_013`), and PR-sourced lines must carry the bridge row (`PO_VAL_014`).
-9. Click **Submit for approval** (`PO_AUTH_003`, `PO_POST_002`). `po_status` transitions `draft → in_progress`, `last_action = submitted`, `workflow_current_stage` advances to the first approval stage, and `user_action.execute` is populated from the workflow definition. Handoff is to whichever user(s) the workflow's first stage assigns — a single-stage workflow may assign the Purchaser's own stage, letting the same user submit and later approve; there is no amount-threshold gate.
+9. Click **Submit for approval** (`PO_AUTH_003`, `PO_POST_002`). `po_status` transitions `draft → in_progress`, `last_action = submitted`, `workflow_current_stage` advances to the first approval stage, and `user_action.execute` is populated from the workflow definition. Handoff is to whichever user(s) the workflow's first stage assigns — a single-stage workflow may assign the Purchaser's own stage, letting the same user submit and later approve; authorization to act at that stage is not amount-gated (purely `user_action.execute[]` membership), though the assigned workflow's `routing_rules` may itself route the *next* stage by `total_amount` (`PO_AUTH_004`).
 10. On final approval (`in_progress → sent`, `PO_POST_004`), the same approve call transmits the PO in one step — there is no separate manual "Send to Vendor" action. The system sets `tb_purchase_order.email` and `approval_date` and the channel (email / EDI / vendor portal) fires per tenant configuration. `po_status` is now `sent` and the PO is a firm, vendor-facing commitment.
 11. Track the PO on the **Open POs** dashboard. The Purchaser follows up on delays and watches the GRN postings (driven by the [good-receive-note](/en/inventory/good-receive-note) module) flip `po_status` from `sent` to `partial` and eventually to `completed` via `PO_POST_006` and `PO_POST_007`. Per-line `received_qty` and the bridge `received_qty` columns update on each GRN post. **Unverified:** whether the system captures a distinct vendor-acknowledgement event was not confirmed this pass.
 12. Handle any post-`sent` amendment requests. Per `PO_VAL_016`, only `cancelled_qty` and per-line notes may be updated after `sent` — material vendor / currency / line changes require voiding the open balance and issuing a new PO. The Purchaser writes a comment for every amendment so the activity log preserves the change history.

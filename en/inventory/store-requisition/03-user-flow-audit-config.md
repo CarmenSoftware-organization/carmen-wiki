@@ -2,7 +2,7 @@
 title: Store Requisition — User Flow — Audit & Config
 description: Inventory Controller, Finance, Sysadmin, and Auditor flow within the store-requisition module — largely unconfirmed persona; documents what is and is not verified in current source.
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-29T05:45:00.000Z
 tags: store-requisition, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -18,7 +18,7 @@ dateCreated: 2026-05-15T13:30:00.000Z
 > - **No admin-void console.** `store-requisition.service.ts` has no `void`/`admin-void` method at all. The only way `doc_status` reaches `voided` is `StoreRequisitionService.reject()` — the same whole-document reject action available to whoever holds the current workflow stage, not an Inventory-Controller-exclusive path. See [03-user-flow-approver.md](./03-user-flow-approver.md) and [02-business-rules.md](./02-business-rules.md) § 5.
 > - **No GL/journal-entry code at all.** A repo-wide search of `carmen-turborepo-backend-v2` for `journal` / `ledger` against this module and its `inventory-transaction` dependency returned zero hits. There is nothing for a "Finance" role to verify or reconcile.
 > - **No closed-period gate.** A search for `period` in `store-requisition.service.ts`, `store-requisition.logic.ts`, and the SR DTOs returned zero hits. The inventory-transaction layer resolves a current period only to *stamp* `at_period` on the transaction row (for lot-sequencing) — it does not block anything.
-> - **No RBAC/workflow console, threshold editor, or SoD-relaxation config specific to SR.** `tb_workflow` is a real, shared configuration table (also used by PR/PO/GRN), but no `threshold` or `delegat` hits were found anywhere in this module or the workflow orchestrator, and `enum_stage_role` has no `finance` member.
+> - **No RBAC/workflow console or SoD-relaxation config specific to SR.** `tb_workflow` is a real, shared configuration table (also used by PR/PO/GRN), and `enum_stage_role` has no `finance` member. A repo-wide search for `delegat` found nothing anywhere in this module or the workflow orchestrator. **The generic amount-based routing-rule config, however, is real and was wrongly dismissed in an earlier version of this correction:** the workflow's `routing_rules` (configured from the **Routing** tab of `/system-admin/workflow`, shared by PR/PO/SR) can route on `total_amount` — for SR, computed by `sr-workflow.mapper.ts` — evaluated by `evaluateCondition`/`findNextStep` in `workflows.navagation.service.ts`. It is generic system-config, not an SR-specific Sysadmin screen and not an SoD-relaxation mechanism. See `SR_XMOD_008` in [02-business-rules.md](./02-business-rules.md).
 > - **No variance-dashboard route or component** was found in `routes/store-operation/store-requisition/`.
 > - **No Auditor-specific read-only role or route** was found; any audit trail available is the same `workflow_history` / per-line `history` JSON any user with read access to the SR can already see.
 >
@@ -30,7 +30,7 @@ dateCreated: 2026-05-15T13:30:00.000Z
 |---|---|
 | A dedicated "Admin Void" action, restricted to Inventory Controller / System Administrator | **Not implemented as described.** The real mechanism is the whole-document `reject` action, available to whoever holds the current workflow stage; it sets `voided`, not a separately-gated administrative action. |
 | Finance GL-reconciliation queue, journal-entry verification, closed-period commit block | **Not implemented.** No journal/ledger code and no period-closed check exist anywhere in this module. |
-| Sysadmin RBAC / workflow-config console, approval value-thresholds, SoD-relaxation thresholds | **Unconfirmed / not found.** `tb_workflow` configuration is real and shared across modules, but no threshold or SoD-relaxation fields were found for SR specifically. |
+| Sysadmin RBAC / workflow-config console, approval value-thresholds, SoD-relaxation thresholds | **Split finding.** A dedicated SR-specific console is unconfirmed / not found. But "approval value-thresholds" as a *generic* mechanism is confirmed real, corrected this pass: the workflow's `routing_rules` can route on `total_amount` (`SR_XMOD_008`) via the same generic `/system-admin/workflow` Routing tab PR/PO also use — not an SR-specific screen. SoD-relaxation thresholds remain unconfirmed — no such field was found for SR. |
 | Auditor read-only signature-trace tool | **Unconfirmed as a distinct route.** The underlying data (`workflow_history`, per-line `history` JSON, comment threads) is real and readable by any user with SR read access — there is no confirmed Auditor-exclusive screen. |
 | Recipe auto-create wiring (`[recipe](/en/inventory/recipe)` → SR draft) | **Plausible but not re-verified this pass** — carried over from an earlier version of this page; the SR side of this (an SR arriving in `draft` with `info.recipe_id` populated) is consistent with the data model, but the recipe-module trigger itself belongs to that module's own resync pass. |
 | Period-end reconciliation / signoff as a distinct workflow | **Not implemented** — depends on the non-existent closed-period gate and journal-entry feature above. |
@@ -39,12 +39,12 @@ dateCreated: 2026-05-15T13:30:00.000Z
 
 Until an admin-void endpoint, a GL/journal-posting feature, a period-close gate, or an RBAC/workflow-config console specific to this module are confirmed to exist, do not treat any "Inventory Controller admin-voids," "Finance blocks a closed-period commit," "Sysadmin configures SoD-relaxation thresholds," or "Auditor traces signatures" claim elsewhere in this module's pages as live behavior.
 
-The closest existing analogues today are: (a) whoever holds the current workflow stage can reject the whole document (`voided`, not a separate admin path); (b) `tb_workflow` is configurable per tenant, the same generic mechanism PR/PO/GRN use, with no confirmed SR-specific threshold or SoD fields; (c) `workflow_history` and per-line `history` JSON are readable by anyone with SR access, which is the closest thing to an audit trail. Building dedicated variance-dashboard, GL-verification, or RBAC-console screens would be new functionality, not a documentation gap.
+The closest existing analogues today are: (a) whoever holds the current workflow stage can reject the whole document (`voided`, not a separate admin path); (b) `tb_workflow` is configurable per tenant, the same generic mechanism PR/PO/GRN use — including real, generic amount-based routing rules (`SR_XMOD_008`), just not an SR-specific console and not an SoD field; (c) `workflow_history` and per-line `history` JSON are readable by anyone with SR access, which is the closest thing to an audit trail. Building dedicated variance-dashboard, GL-verification, or RBAC-console screens would be new functionality, not a documentation gap.
 
 ## 3. References
 
 - Parent overview: [03-user-flow.md](./03-user-flow.md) — global SR state machine; this persona set is listed there as largely unconfirmed.
 - Sibling: [03-user-flow-approver.md](./03-user-flow-approver.md) + [03-user-flow-fulfiller.md](./03-user-flow-fulfiller.md) — the real generic `/approve` / `/reject` mechanics any workflow-stage holder (including a tenant-titled "Inventory Controller") would use today.
 - Sibling: [03-user-flow-receiver.md](./03-user-flow-receiver.md) — the discrepancy-escalation target this page's prior version described; itself unconfirmed.
-- Business rules: [02-business-rules.md](./02-business-rules.md) § 2 (`SR_VAL_014`, marked unconfirmed), § 4 (`SR_AUTH_009`–`SR_AUTH_013`, corrected), § 5 (`SR_POST_007`, `SR_POST_009`, `SR_POST_010`, `SR_POST_013`, corrected), § 6 (`SR_XMOD_008`, marked unconfirmed).
+- Business rules: [02-business-rules.md](./02-business-rules.md) § 2 (`SR_VAL_014`, marked unconfirmed), § 4 (`SR_AUTH_009`–`SR_AUTH_013`, corrected), § 5 (`SR_POST_007`, `SR_POST_009`, `SR_POST_010`, `SR_POST_013`, corrected), § 6 (`SR_XMOD_008` — amount-based routing confirmed real this pass; delegation remains unconfirmed).
 - `../carmen/docs/store-requisitions/SR-Overview.md` § User Roles → Manager row — legacy design source for the collapsed Inventory Controller / Finance Manager / Sysadmin "Manager" role; treat as design intent, not verified current behavior.

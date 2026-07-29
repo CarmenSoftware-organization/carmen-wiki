@@ -2,7 +2,7 @@
 title: Purchase Order
 description: Formal commitment to a vendor to purchase goods at agreed prices, quantities, and delivery terms.
 published: true
-date: 2026-07-15T13:30:00.000Z
+date: 2026-07-29T05:45:00.000Z
 tags: purchase-order, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -52,12 +52,12 @@ Financial accuracy is enforced at the calculation layer. Item subtotal, discount
 | Role | Responsibility |
 |------|----------------|
 | Procurement Officer / Purchaser | Creates POs manually, by converting approved PRs, or from a vendor price list; validates vendor allocation and pricelist pricing; sets delivery and payment terms; submits into the approval workflow; manages amendments and follow-up once `sent`. |
-| Procurement Manager | Acts as an approver on a configured workflow stage (same generic stage-based approve / send-back / reject mechanism as any other approver — no amount-threshold or deviation-percentage auto-routing was found in current source). Holds delete-in-draft authority. |
+| Procurement Manager | Acts as an approver on a configured workflow stage (same generic stage-based approve / send-back / reject mechanism as any other approver). **Confirmed this pass:** the assigned workflow's `routing_rules` (configured from the generic **Routing** tab of `/system-admin/workflow`) can amount-route which stage comes next via `total_amount` — a per-workflow configuration choice, not a Procurement-Manager-specific mechanism; no pricelist-deviation-percentage routing field exists (see `02-business-rules.md` `PO_AUTH_004`). Holds delete-in-draft authority. |
 | Vendor | External party that receives the PO and fulfils delivery against the agreed terms. No confirmed in-system acknowledgement or invoice-matching feature exists today. |
 | Receiver / Store Keeper | Downstream role that physically accepts the goods and raises the GRN against the PO line by line. The GRN posting increments `received_qty` on the PO line and drives the `sent → partial → completed` transition; inventory on-hand is incremented by the GRN / inventory module, not by the PO. |
 | Inventory Manager | Manages goods receipt for the location, supervises GRN creation, and closes POs once receipt is complete or accepted as final. |
 | Finance | Named in legacy design docs as a pre-transmission approver and post-receipt three-way-match / AP-posting owner. **Unconfirmed:** no distinct "finance" `stage_role`, invoice-capture screen, or AP-matching code was found; the only approver evidence in current e2e fixtures (`fc@blueledgers.com`) is documented elsewhere as the same generic approve-stage actor as the Procurement Manager. |
-| System Administrator | Configures PO numbering (via the generic running-code screen), workflow stage definitions, and RBAC. A dedicated PO-specific configuration workbench (vendor ranking, conversion-grouping rule editor, pricelist-tolerance band, approval-amount threshold) was not found in current source — treat it as unconfirmed. |
+| System Administrator | Configures PO numbering (via the generic running-code screen), workflow stage definitions and amount/department/category routing rules (via the generic **Routing** tab of `/system-admin/workflow`, shared across PR/PO/SR — not a PO-specific screen), and RBAC. A dedicated PO-specific configuration workbench (vendor ranking, conversion-grouping rule editor, pricelist-tolerance band) was not found in current source — treat it as unconfirmed. |
 | Auditor | Read-only access to POs, amendments, and the activity log to verify policy compliance, segregation of duties, and traceability from PR through PO and GRN. |
 
 ## 5. Related Modules

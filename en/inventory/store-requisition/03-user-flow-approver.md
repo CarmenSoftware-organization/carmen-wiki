@@ -2,7 +2,7 @@
 title: Store Requisition — User Flow — Approver
 description: Approver's flow within the store-requisition module — reviews, trims, rejects, splits, or sends back submitted SRs.
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-29T05:45:00.000Z
 tags: store-requisition, user-flow, approver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -13,7 +13,9 @@ dateCreated: 2026-05-15T13:30:00.000Z
 > **At a Glance**
 > **Persona:** Approver — whoever holds a workflow stage tagged `enum_stage_role.approve` &nbsp;·&nbsp; **Module:** [store-requisition](/en/inventory/store-requisition) &nbsp;·&nbsp; **Workflow stages:** in_progress (approve-tagged stage) → in_progress (next stage) / voided / draft (send-back) &nbsp;·&nbsp; **Key permissions:** approve, trim approved_qty, reject (bundled into the same `/approve` call), send-back (`/review`)
 > **What this persona does:** Reviews submitted SR lines against operational need and source availability; approves, trims, rejects, or sends back via workflow stage advance.
-> ⚠️ **Corrected this pass.** The prior version of this page described a value-threshold-routed multi-tier escalation, budget-cap and par-level-cap trims, approval delegation, and SLA time-out escalation — a repo-wide search for `threshold`, `delegat`, and `par_level` against the SR module and the workflow orchestrator returned zero hits (`tb_product_location.par_qty` exists but is a stock-replenishment policy field, not a per-line "par level" surfaced to the approver). These claims are removed or marked unconfirmed below.
+> ⚠️ **Corrected this pass.** The prior version of this page described a value-threshold-routed multi-tier escalation, budget-cap and par-level-cap trims, approval delegation, and SLA time-out escalation. Budget-cap / par-level-cap trims, delegation, and SLA time-out escalation were not found: a repo-wide search for `delegat` and `par_level` against the SR module and the workflow orchestrator returned zero hits (`tb_product_location.par_qty` exists but is a stock-replenishment policy field, not a per-line "par level" surfaced to the approver).
+>
+> **The value-threshold-routing half of that claim was itself wrongly dismissed** — a follow-up search confirms `total_amount`-based stage routing is real: the assigned workflow's `routing_rules` (`tb_workflow.data.routing_rules`) can skip or jump stages by `total_amount` — for SR, computed by `sr-workflow.mapper.ts` as Σ `qty × current_average_cost` per line — evaluated by `evaluateCondition`/`findNextStep` in `workflows.navagation.service.ts` on every submit/approve. It's the same generic mechanism documented for PR and PO (the **Routing** tab of `/system-admin/workflow`), not an SR-specific "multi-tier escalation" feature. See `SR_XMOD_008` in [02-business-rules.md](./02-business-rules.md).
 
 ## 1. Role in This Module
 
@@ -34,7 +36,7 @@ graph LR
 
 ### Permission Matrix — V2 Action × Stage Role (Approver)
 
-The Approver acts at `doc_status = in_progress` while `workflow_current_stage` points to a stage where the Approver is in `user_action.execute`. If the tenant's `tb_workflow` config defines more than one `approve`-tagged stage, the same action set applies at each stage — this is a generic feature of the shared workflow engine, not something specific to SR — but no value-threshold-based routing between stages was found in code.
+The Approver acts at `doc_status = in_progress` while `workflow_current_stage` points to a stage where the Approver is in `user_action.execute`. If the tenant's `tb_workflow` config defines more than one `approve`-tagged stage, the same action set applies at each stage — this is a generic feature of the shared workflow engine, not something specific to SR. *Authorization* to act at a given stage is not amount-gated (purely `user_action.execute[]` membership); *which* stage comes next, however, can be amount-driven via the workflow's `routing_rules` (`SR_XMOD_008`).
 
 | Action | Approver at any `approve`-tagged stage |
 |---|---|
@@ -78,7 +80,7 @@ If a tenant's workflow defines more than one `approve`-tagged stage, the documen
 - **Reject for missing justification**: an unusual or high-value line lacks a justification note. The Approver chooses send-back (not reject) and writes a `review_message`; the line is returned to the requester for amendment.
 - **Reject the entire SR**: every line is marked reject in one submission, enabling the whole-document `/reject` action. The system sets `doc_status = voided` directly — **corrected this pass**: prior versions of this page described this landing on `cancelled`; no `cancelled` assignment exists anywhere in `store-requisition.service.ts`.
 - **Send back a single line, approve the rest**: **corrected this pass.** `computeSrAction()` shows that marking even one line "review" makes the whole submission a send-back — approve/reject selections on other lines in that same submission are not sent. To approve some lines and separately flag one for correction, the Approver would need two submissions (approve the others first, then a follow-up send-back), not one mixed action as previously described.
-- **Multi-tier escalation, delegation, and SLA time-out escalation** — **removed this pass; unconfirmed.** No value-threshold routing, delegation, or SLA-timeout logic was found in `workflow-orchestrator.service.ts` or this module. If a tenant's `tb_workflow` genuinely defines more than one `approve` stage, the document simply advances through them using the ordinary mechanism in Section 2 — there is no confirmed value-based trigger for when that happens.
+- **Delegation and SLA time-out escalation** — **removed this pass; unconfirmed.** No delegation or SLA-timeout logic was found in `workflow-orchestrator.service.ts` or this module. **Value-threshold-based stage routing, however, is confirmed real** (corrected this pass — see the callout above and `SR_XMOD_008`): the assigned workflow's `routing_rules` can route on `total_amount` to skip or jump `approve`-tagged stages. If a tenant's `tb_workflow` defines more than one `approve` stage, the document advances through them using the ordinary mechanism in Section 2, and the assigned workflow's routing rules — not a dedicated SR "multi-tier" feature — determine whether any stage is skipped based on value.
 
 ## 4. Exit Point / Handoffs
 
@@ -98,7 +100,7 @@ No confirmed post-commit dispute path specific to the Approver was found; see [0
 - `../carmen/docs/store-requisitions/Store Requisitions.md` § UC-64 (Approve Requisition Requests), § UC-65 (Deny Requisition Requests), § UC-66 (Modify Requisition Requests) — use-case sources for the approve / trim / reject decisions in Section 2 above.
 - Sibling: [03-user-flow-requester.md](./03-user-flow-requester.md) — upstream persona; the Approver's input is the Requester's submitted SR.
 - Sibling: [03-user-flow-fulfiller.md](./03-user-flow-fulfiller.md) — the issuance-stage persona; the Approver's `approved_qty` is the cap that stage works within (same generic `/approve` mechanism).
-- Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — corrected this pass; most of the oversight/config workspace it previously described (RBAC console, thresholds) was not found in current source.
+- Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — corrected this pass; most of the oversight/config workspace it previously described (RBAC console, SoD-relaxation thresholds) was not found in current source, though the generic amount-based routing-rule config is confirmed real (`SR_XMOD_008`).
 - Sibling: [01-data-model.md](./01-data-model.md) — per-line approval / review / rejection signature columns on `tb_store_requisition_detail` (`approved_by_*`, `review_by_*`, `reject_by_*`), the `history` and `stages_status` JSON timelines.
 - Sibling: [02-business-rules.md](./02-business-rules.md) — `SR_VAL_010` (approval invariant: `approved_qty ≤ requested_qty`), `SR_AUTH_005`–`SR_AUTH_006` (approve / trim / send-back authority, mixing rules), `SR_POST_005`–`SR_POST_010` (final-stage advance and whole-document reject → `voided`).
 - Related: [recipe](/en/inventory/recipe) — recipe-driven SRs carry `info.recipe_id`; the Approver sees the recipe context as part of the per-line decision.

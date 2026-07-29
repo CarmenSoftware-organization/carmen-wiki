@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order)
 description: เอกสารผูกพันอย่างเป็นทางการกับผู้ขายเพื่อจัดซื้อสินค้าตามราคา ปริมาณ และเงื่อนไขการส่งมอบที่ตกลงกัน
 published: true
-date: 2026-07-15T13:30:00.000Z
+date: 2026-07-29T05:45:00.000Z
 tags: purchase-order, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -52,12 +52,12 @@ PO คือจุดที่คำขอภายในกลายเป็�
 | Role | ความรับผิดชอบ |
 |------|----------------|
 | Procurement Officer / Purchaser | สร้าง PO ด้วยมือ โดยการแปลง PR ที่อนุมัติแล้ว หรือจาก vendor price list; ตรวจสอบการจัดสรรผู้ขายและราคา pricelist; ตั้งเงื่อนไขการส่งของและการชำระเงิน; ส่งเข้าสู่ workflow การอนุมัติ; บริหาร amendments และการติดตามผลหลังจากสถานะ `sent` |
-| Procurement Manager | ทำหน้าที่เป็นผู้อนุมัติในขั้นตอน workflow ที่กำหนดไว้ (ใช้กลไก approve / send-back / reject แบบ stage-based ทั่วไปเหมือนผู้อนุมัติรายอื่น — ไม่พบการ auto-routing ตาม amount-threshold หรือ deviation-percentage ใน source ปัจจุบัน) ถือสิทธิ์ delete-in-draft |
+| Procurement Manager | ทำหน้าที่เป็นผู้อนุมัติในขั้นตอน workflow ที่กำหนดไว้ (ใช้กลไก approve / send-back / reject แบบ stage-based ทั่วไปเหมือนผู้อนุมัติรายอื่น) **ยืนยันแล้วในรอบนี้:** `routing_rules` ของ workflow ที่ assign ให้ (ตั้งค่าได้จากแท็บ **Routing** ทั่วไปใน `/system-admin/workflow`) สามารถ auto-route stage ถัดไปตาม `total_amount` ได้ — เป็นทางเลือกการตั้งค่าต่อ workflow ไม่ใช่กลไกเฉพาะของ Procurement Manager; ไม่มี field routing ตาม pricelist-deviation-percentage (ดู `02-business-rules.md` `PO_AUTH_004`) ถือสิทธิ์ delete-in-draft |
 | Vendor | ฝ่ายภายนอกที่รับ PO และส่งของตามเงื่อนไขที่ตกลงกัน ปัจจุบันยังไม่พบฟีเจอร์การตอบรับในระบบหรือการจับคู่ invoice ที่ยืนยันได้ |
 | Receiver / Store Keeper | บทบาทปลายน้ำที่รับสินค้าจริงและสร้าง GRN กับ PO ทีละบรรทัด การ post GRN เพิ่มค่า `received_qty` บนบรรทัด PO และขับเคลื่อนการเปลี่ยนสถานะ `sent → partial → completed`; on-hand ของ inventory จะถูกเพิ่มโดยโมดูล GRN / inventory ไม่ใช่โดย PO |
 | Inventory Manager | บริหารการรับสินค้าสำหรับ location กำกับดูแลการสร้าง GRN และปิด PO เมื่อรับของครบหรือยอมรับเป็นการสิ้นสุด |
 | Finance | ถูกระบุไว้ในเอกสารออกแบบรุ่นเก่าว่าเป็นผู้อนุมัติก่อนส่งและเจ้าของขั้นตอน three-way-match / AP-posting หลังรับของ **ยังไม่ยืนยัน:** ไม่พบ `stage_role` ชื่อ "finance" แยกต่างหาก หน้าจอบันทึก invoice หรือโค้ด AP-matching ใด ๆ; หลักฐานผู้อนุมัติเพียงรายเดียวใน e2e fixtures ปัจจุบัน (`fc@blueledgers.com`) ถูกบันทึกไว้ในที่อื่นว่าเป็น actor ขั้นตอน approve ทั่วไปแบบเดียวกับ Procurement Manager |
-| System Administrator | ตั้งค่าการเรียงเลข PO (ผ่านหน้าจอ running-code ทั่วไป) นิยามขั้นตอน workflow และ RBAC ไม่พบ configuration workbench เฉพาะของ PO (การจัดอันดับผู้ขาย, ตัวแก้ไขกฎ conversion-grouping, ช่วง pricelist-tolerance, threshold การอนุมัติ) ใน source ปัจจุบัน — ให้ถือว่ายังไม่ยืนยัน |
+| System Administrator | ตั้งค่าการเรียงเลข PO (ผ่านหน้าจอ running-code ทั่วไป) นิยามขั้นตอน workflow และกฎ routing ตาม amount/department/category (ผ่านแท็บ **Routing** ทั่วไปใน `/system-admin/workflow` ใช้ร่วมกันระหว่าง PR/PO/SR — ไม่ใช่หน้าจอเฉพาะของ PO) และ RBAC ไม่พบ configuration workbench เฉพาะของ PO (การจัดอันดับผู้ขาย, ตัวแก้ไขกฎ conversion-grouping, ช่วง pricelist-tolerance) ใน source ปัจจุบัน — ให้ถือว่ายังไม่ยืนยัน |
 | Auditor | สิทธิ์ read-only ต่อ PO, amendments และ activity log เพื่อตรวจสอบความสอดคล้องของนโยบาย segregation of duties และ traceability จาก PR ผ่าน PO ไปยัง GRN |
 
 ## 5. โมดูลที่เกี่ยวข้อง

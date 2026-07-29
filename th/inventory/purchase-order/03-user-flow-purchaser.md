@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — User Flow — Purchaser
 description: เส้นทางผู้ใช้งานของ Purchaser ภายในโมดูล purchase-order
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-29T05:45:00.000Z
 tags: purchase-order, user-flow, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -47,7 +47,7 @@ Purchaser เป็นเจ้าของเอกสารเต็มที�
 | เพิ่ม / ลบบรรทัด | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Edit qty / price / tax / FOC บรรทัด | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Submit for approval | ✅ (≥1 บรรทัด + workflow) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Approve ที่ stage ตัวเอง (เมื่อถูก assign) | ❌ | ✅ (`PO_AUTH_011` — ไม่มี amount threshold gate สิ่งนี้) | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Approve ที่ stage ตัวเอง (เมื่อถูก assign) | ❌ | ✅ (`PO_AUTH_011` — authorization เองไม่ถูก gate ด้วย amount แม้ว่า stage ที่เป็นอยู่นั้นอาจถูก gate ด้วยได้ผ่าน workflow `routing_rules`) | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Transmit ให้ vendor | ❌ | ✅ (bundle เข้ากับ approve ที่ stage สุดท้าย, `PO_AUTH_006`) | ❌ | ❌ | ❌ | ❌ | ❌ |
 | ตั้ง `cancelled_qty` / note ต่อบรรทัด (amendment) | ❌ | ❌ | ✅ (`PO_VAL_016`) | ✅ | ❌ | ❌ | ❌ |
 | เพิ่ม Comment / Attachment | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -56,7 +56,7 @@ Purchaser เป็นเจ้าของเอกสารเต็มที�
 | Reject (→ `voided`, เมื่อถูก assign ให้ stage ปัจจุบัน) | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | — |
 | Close (`PO_AUTH_008`) | ❌ | ✅ | ✅ | ✅ (PM / Inv Mgr) | ❌ | — | ❌ |
 
-> ⚠️ **แก้ไขในรอบนี้:** ตารางเวอร์ชันก่อนหน้า gate การ approve ด้วย self-approval แบบ "below threshold" และสงวน "Void" ไว้เฉพาะ Procurement Manager จาก `sent`/`partial` เท่านั้น ทั้งสองแนวคิดไม่มีอยู่ใน source ปัจจุบัน — ดู [02-business-rules.md](./02-business-rules.md) § 4 note สถานะ `IN PROGRESS` เองมีอยู่จริง (ยืนยันโดย enum `enum_purchase_order_doc_status` และ badge text จริงใน e2e specs) เพียงแต่ไม่ได้ gate ด้วย amount threshold
+> ⚠️ **แก้ไขในรอบนี้:** ตารางเวอร์ชันก่อนหน้า gate การ approve ด้วย self-approval แบบ "below threshold" และสงวน "Void" ไว้เฉพาะ Procurement Manager จาก `sent`/`partial` เท่านั้น ทั้ง self-approval gate และ void ที่สงวนเฉพาะ Manager ไม่มีอยู่ใน source ปัจจุบัน — ดู [02-business-rules.md](./02-business-rules.md) § 4 note สถานะ `IN PROGRESS` เองมีอยู่จริง (ยืนยันโดย enum `enum_purchase_order_doc_status` และ badge text จริงใน e2e specs) *ใคร* อนุมัติที่ stage หนึ่งได้ไม่ถูก gate ด้วย amount (เป็น membership ใน `user_action.execute[]` ล้วน ๆ) — แต่ *stage ไหน* ที่ PO มาถึงอาจถูก gate ด้วยได้: `routing_rules` ของ workflow ที่ assign ให้อาจ skip หรือกระโดดข้าม stage ตาม `total_amount` (`PO_AUTH_004`)
 
 ## 2. Entry Point และ Primary Flow
 
@@ -72,7 +72,7 @@ Purchaser เป็นเจ้าของเอกสารเต็มที�
 6. ดูยอดรวม header คำนวณใหม่ Line subtotal, discount, net, tax, และ total คำนวณตาม `PO_CALC_001`–`PO_CALC_005`; base-currency dual-posting ใช้ `exchange_rate` ที่ lock ผ่าน `PO_CALC_006`; FOC lines flow quantity แต่เงินเป็นศูนย์ตาม `PO_CALC_007`; header roll up `total_price`, `total_tax`, `total_amount`, และ `total_qty` ตาม `PO_CALC_008`–`PO_CALC_011`; การปัดเศษทั้งหมดใช้ half-up ผ่าน `PO_CALC_012`
 7. เปิดแท็บ **Attachments** และ **Comments** และแนบเอกสาร supporting (vendor quote, internal memo) หรือ note สำหรับ approver chain Activity log บันทึกทุก save event รวมถึงการเปลี่ยนแปลง header และบรรทัดผ่าน `tb_purchase_order_comment` และ `tb_purchase_order_detail_comment`
 8. รัน submit-time check PO ต้องมีอย่างน้อยหนึ่งบรรทัดที่ไม่ soft-deleted (`PO_VAL_012`) ทุกบรรทัดต้องใช้ `vendor_id` และ `currency_id` ของ header เดียวกัน (invariant single-vendor / single-currency, `PO_VAL_013`) และ PR-sourced lines ต้องบรรจุ bridge row (`PO_VAL_014`)
-9. คลิก **Submit for approval** (`PO_AUTH_003`, `PO_POST_002`) `po_status` transition `draft → in_progress`, `last_action = submitted`, `workflow_current_stage` advance ไปยัง stage approval แรก และ `user_action.execute` populate จาก workflow definition Handoff ไปยัง user(s) ใดก็ตามที่ stage แรกของ workflow assign — workflow ที่มี stage เดียวอาจ assign stage ของ Purchaser เอง ทำให้ user คนเดียวกัน submit และ approve ในภายหลังได้; ไม่มี amount-threshold gate
+9. คลิก **Submit for approval** (`PO_AUTH_003`, `PO_POST_002`) `po_status` transition `draft → in_progress`, `last_action = submitted`, `workflow_current_stage` advance ไปยัง stage approval แรก และ `user_action.execute` populate จาก workflow definition Handoff ไปยัง user(s) ใดก็ตามที่ stage แรกของ workflow assign — workflow ที่มี stage เดียวอาจ assign stage ของ Purchaser เอง ทำให้ user คนเดียวกัน submit และ approve ในภายหลังได้; authorization ในการดำเนินการที่ stage นั้นไม่ถูก gate ด้วย amount (เป็น membership ใน `user_action.execute[]` ล้วน ๆ) แม้ว่า `routing_rules` ของ workflow ที่ assign ให้อาจ route stage *ถัดไป* ตาม `total_amount` เองได้ (`PO_AUTH_004`)
 10. บน final approval (`in_progress → sent`, `PO_POST_004`) approve call เดียวกัน transmit PO ในขั้นตอนเดียว — ไม่มี action "Send to Vendor" แบบ manual แยกต่างหาก ระบบตั้ง `tb_purchase_order.email` และ `approval_date` และ channel (email / EDI / vendor portal) fire ตาม tenant configuration `po_status` ตอนนี้เป็น `sent` และ PO เป็น firm, vendor-facing commitment
 11. Track PO บน dashboard **Open POs** Purchaser follow up เรื่อง delays และดู GRN postings (driven โดยโมดูล [good-receive-note](/th/inventory/good-receive-note)) flip `po_status` จาก `sent` เป็น `partial` และในที่สุดเป็น `completed` ผ่าน `PO_POST_006` และ `PO_POST_007` `received_qty` ต่อบรรทัดและ bridge `received_qty` columns update บนแต่ละ GRN post **ยังไม่ยืนยัน:** ว่าระบบ capture vendor-acknowledgement event แยกต่างหากหรือไม่ ยังไม่ได้รับการยืนยันในรอบนี้
 12. จัดการ amendment requests post-`sent` ใด ๆ ตาม `PO_VAL_016` เฉพาะ `cancelled_qty` และ note ต่อบรรทัดเท่านั้นที่ update ได้หลัง `sent` — การเปลี่ยน vendor / currency / line ที่ material ต้อง void open balance และออก PO ใหม่ Purchaser เขียน comment สำหรับทุก amendment เพื่อให้ activity log เก็บประวัติการเปลี่ยนแปลง

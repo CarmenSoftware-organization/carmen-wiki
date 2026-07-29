@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — User Flow — Audit & Config
 description: เส้นทางของ Auditor (activity log แบบ read-only) และ System Administrator (การตั้งค่า workflow / RBAC / numbering) สำหรับ purchase-order
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-29T05:45:00.000Z
 tags: purchase-order, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -11,19 +11,21 @@ dateCreated: 2026-05-15T10:00:00.000Z
 # ใบสั่งซื้อ (Purchase Order) — User Flow — Audit & Config
 
 > **At a Glance**
-> **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [purchase-order](/th/inventory/purchase-order) &nbsp;·&nbsp; **Surface ที่ยืนยันแล้ว:** มุมมอง activity/history ต่อเอกสารแบบ generic (Auditor, read-only); การตั้งค่า workflow-stage และ running-code (numbering) แบบ generic ที่ใช้ร่วมกันข้าม document type (System Administrator) &nbsp;·&nbsp; **ยังไม่ยืนยัน:** query builder แบบ "audit workspace" ข้ามเอกสารโดยเฉพาะ หรือ configuration workbench เฉพาะของ PO (numbering scheme editor, threshold editor, vendor-ranking editor, PR-to-PO grouping-rule editor, delegation-window manager)
+> **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [purchase-order](/th/inventory/purchase-order) &nbsp;·&nbsp; **Surface ที่ยืนยันแล้ว:** มุมมอง activity/history ต่อเอกสารแบบ generic (Auditor, read-only); การตั้งค่า workflow-stage, routing-rule ตาม amount/department/category, และ running-code (numbering) แบบ generic ที่ใช้ร่วมกันข้าม document type (System Administrator — แท็บ routing-rule คือแท็บ Routing แบบเดียวกับที่ PR/PO/SR ใช้ร่วมกัน ไม่ใช่เฉพาะของ PO) &nbsp;·&nbsp; **ยังไม่ยืนยัน:** query builder แบบ "audit workspace" ข้ามเอกสารโดยเฉพาะ หรือ configuration workbench เฉพาะของ PO (numbering scheme editor, vendor-ranking editor, PR-to-PO grouping-rule editor, delegation-window manager)
 
-> ⚠️ **การแก้ไขครั้งใหญ่ในรอบนี้** เวอร์ชันก่อนหน้าของหน้านี้อธิบาย audit workspace เฉพาะที่ชื่อ **"Procurement Activity Queries"** (query templates, filter chips, export-approval workflow, case-file notes) และ **"Configuration workspace"** เฉพาะ พร้อม child surfaces สำหรับ PO Numbering & Templates, PO Workflow Settings (รวมถึง high-value threshold และ approval delegations), RBAC & Roles, Integration Settings, และ PR-to-PO Rules ทั้งหมดนี้ไม่พบใน source ปัจจุบัน:
+> ⚠️ **การแก้ไขครั้งใหญ่ในรอบนี้** เวอร์ชันก่อนหน้าของหน้านี้อธิบาย audit workspace เฉพาะที่ชื่อ **"Procurement Activity Queries"** (query templates, filter chips, export-approval workflow, case-file notes) และ **"Configuration workspace"** เฉพาะ พร้อม child surfaces สำหรับ PO Numbering & Templates, PO Workflow Settings (รวมถึง high-value threshold และ approval delegations), RBAC & Roles, Integration Settings, และ PR-to-PO Rules audit workspace, configuration workbench เฉพาะของ PO, และฟีเจอร์ approval-delegation ไม่พบใน source ปัจจุบัน:
 > - ไม่พบ route หรือ component ที่ตรงกับ "audit workspace", "activity queries", หรือ configuration workbench เฉพาะของ PO ใน `carmen-inventory-frontend-react`
-> - การค้นหาทั่ว repo สำหรับ `threshold`, `segregation`, และ code เกี่ยวกับ delegation-window ไม่คืนผลลัพธ์ที่เกี่ยวข้องใน `carmen-turborepo-backend-v2` เลย
-> - Configuration surfaces แบบ generic **มีอยู่จริง** ในส่วนอื่นของ product — workflow stage definitions และ running-code (document numbering) ถูกตั้งค่าในโมดูล **system-config** ที่ใช้ร่วมกันข้าม document type (PR, PO, GRN, ฯลฯ) ไม่ใช่เป็นหน้าจอเฉพาะของ PO เวอร์ชันก่อนหน้าของหน้านี้ปนกันระหว่าง "PO ใช้ workflow และ numbering scheme" (จริง และบันทึกไว้ใน [01-data-model.md](./01-data-model.md) / [02-business-rules.md](./02-business-rules.md)) กับ "PO มี configuration workspace เฉพาะของตัวเอง" (ยังไม่ยืนยัน)
+> - การค้นหาทั่ว repo สำหรับ `segregation` และ code เกี่ยวกับ delegation-window ไม่คืนผลลัพธ์ที่เกี่ยวข้องใน `carmen-turborepo-backend-v2` เลย
+> - Configuration surfaces แบบ generic **มีอยู่จริง** ในส่วนอื่นของ product — workflow stage definitions, routing rules ตาม amount/department/category, และ running-code (document numbering) ถูกตั้งค่าในโมดูล **system-config** ที่ใช้ร่วมกันข้าม document type (PR, PO, GRN, SR, ฯลฯ) ไม่ใช่เป็นหน้าจอเฉพาะของ PO เวอร์ชันก่อนหน้าของหน้านี้ปนกันระหว่าง "PO ใช้ workflow และ numbering scheme" (จริง และบันทึกไว้ใน [01-data-model.md](./01-data-model.md) / [02-business-rules.md](./02-business-rules.md)) กับ "PO มี configuration workspace เฉพาะของตัวเอง" (ยังไม่ยืนยัน)
+>
+> **ครึ่งหนึ่งของ claim เดิมที่เป็น "high-value threshold" กลับถูกตัดทิ้งผิดพลาดโดยการแก้ไขรุ่นก่อนหน้าเอง** — การค้นหาติดตามผลยืนยันว่าแท็บ **Routing** แบบทั่วไปของ `/system-admin/workflow` (`wf-routing.tsx`) ให้ System Administrator แนบ `routing_rules` เข้ากับ workflow ที่ route ตาม `total_amount` (รวมถึง `department`/`category`) ได้ ประเมินโดย `evaluateCondition`/`findNextStep` ใน `workflows.navagation.service.ts` ทุกครั้งที่ submit/approve มันมีจริง เป็น generic (ไม่ใช่เฉพาะของ PO) และตั้งค่าควบคู่ไปกับ — ไม่ใช่แทนที่ — การตั้งค่า stage/numbering ทั่วไปข้างต้น ดู [02-business-rules.md](./02-business-rules.md) `PO_AUTH_004`
 > - รูปแบบเดียวกันนี้เป๊ะ (เรื่องเล่า audit-workspace + configuration-workspace ที่ละเอียดแต่ไม่มี route ที่ตรงกัน) ก็เคยถูก flag ว่ายัง unverified/deferred ในรอบ resync ก่อนหน้าของโมดูล `purchase-request` เช่นกัน เนื่องจากการค้นหาทั่ว repo ที่กว้างขึ้นในรอบนี้ไม่พบสิ่งใดสนับสนุน workspace ทั้งสองแบบเลยในทุกส่วนของ product ให้ถือว่าทั้งคู่ยังไม่ยืนยัน แทนที่จะเป็นเพียง deferred
 
 ## 1. บทบาทในโมดูลนี้
 
 **Auditor** เป็น role แบบ read-only surface เดียวที่ยืนยันได้คือ activity/history ของหน้า PO detail เอง — `workflow_history`, `history`, และ `tb_purchase_order_comment` — ซึ่ง user ใด ๆ ที่มีสิทธิ์อ่าน PO ก็เห็นได้อยู่แล้ว ส่วนว่า role "Auditor" ที่แยกต่างหาก หรือ cross-document query workspace เฉพาะจะมีอยู่เพิ่มเติมจากนั้นหรือไม่ ยังไม่ได้รับการยืนยันในรอบนี้ Auditor ไม่สามารถ approve, transmit, reject, close, หรือ edit lines ได้
 
-**System Administrator** ตั้งค่า workflow definition ที่ `tb_purchase_order.workflow_id` อ้างอิง (stages, `stage_role`, และ membership `user_action.execute[]` — นี่คือ functionality system-config แบบ generic ที่ใช้ร่วมกันข้าม document type ไม่ใช่เฉพาะของ PO) และ running-code scheme ที่ generate `po_no` การ map RBAC role-to-permission ก็เป็นเรื่องของ system-config แบบ generic เช่นกัน ไม่พบ numbering template เฉพาะของ PO, หน้า integration-settings, PR-to-PO grouping-rule editor, หรือ amount-threshold editor ใด ๆ
+**System Administrator** ตั้งค่า workflow definition ที่ `tb_purchase_order.workflow_id` อ้างอิง (stages, `stage_role`, membership `user_action.execute[]`, และ — **ยืนยันแล้วในรอบนี้** — routing rules ตาม amount/department/category ผ่านแท็บ **Routing** ของ workflow, `PO_AUTH_004` — ทั้งหมดนี้คือ functionality system-config แบบ generic ที่ใช้ร่วมกันข้าม document type ไม่ใช่เฉพาะของ PO) และ running-code scheme ที่ generate `po_no` การ map RBAC role-to-permission ก็เป็นเรื่องของ system-config แบบ generic เช่นกัน ไม่พบ numbering template เฉพาะของ PO, หน้า integration-settings, หรือ PR-to-PO grouping-rule editor ใด ๆ
 
 ### ตำแหน่งเทียบกับ transactional flow
 

@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — Test Scenarios — Approver
 description: Test case ของ Approver (happy path, permission, validation, edge case) สำหรับโมดูล purchase-request
 published: true
-date: 2026-07-29T05:18:05.000Z
+date: 2026-07-29T05:45:00.000Z
 tags: purchase-request, test-scenarios, approver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -40,7 +40,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 | APP-PERM-04 | Approver คลิก **Approve** บน PR ที่ already advanced past stage ของพวกเขา (race หลัง approver concurrent อื่นลงมือ) | **Deny.** `PR_AUTH_002` ฝั่ง server reject เพราะ `user_action.execute[]` ถูกคำนวณใหม่สำหรับ stage ใหม่และผู้ใช้ที่เรียกไม่อยู่ใน list นั้นแล้ว; UI แสดงข้อความ "PR has moved to a later stage — please refresh" และ disable action bar ตอน refresh |
 | APP-PERM-05 | Department Head approve PR จากแผนกที่ตนไม่รับผิดชอบ | **Deny.** Routing default chain Stage 1 scope `user_action.execute[]` ไปยังแผนกของ requestor (หรือ HOD ที่ตั้งสำหรับแผนกใน `tb_workflow`) HOD แผนกอื่นไม่อยู่ใน list; `PR_AUTH_002` บล็อก action |
 | APP-PERM-06 | Approver พยายาม approve PR ที่ตน submit เอง (segregation of duties) | **Deny.** Role stage `create` และ role stage `approve` ปลายน้ำ disjoint ตามนิยาม workflow แม้ผู้ใช้เดียวกันปรากฏในทั้งสอง stage โดย misconfig `user_action.execute[]` ถูกคำนวณใหม่ต่อ stage และเจ้าของ create-stage ถูก filter ออกก่อน action รัน (ดู [02-business-rules.md](./02-business-rules.md) Section 4, chain default) |
-| APP-PERM-07 | ผู้ใช้ Delegate ลงมือกับ PR ที่ delegate ใน window delegation **(ยังไม่ยืนยัน — ไม่พบโค้ด delegation)** | **ยังไม่ยืนยันว่ามีอยู่จริง** ไม่พบกลไก delegation, reassignment, proxy หรือ substitute-approver ใน workflow admin ฝั่ง frontend หรือ backend workflow orchestrator `user_action.execute[]` ถูกคำนวณใหม่จาก `assigned_users` แบบ static ของ stage และ (แยกต่างหาก) `routing_rules` (amount / department / category) — ไม่มีตัวใดรองรับการส่งต่อ stage ให้ผู้ใช้อื่นชั่วคราว |
+| APP-PERM-07 | ผู้ใช้ Delegate ลงมือกับ PR ที่ delegate ใน window delegation **(ยังไม่ยืนยัน — ไม่พบโค้ด delegation)** | **ยังไม่ยืนยันว่ามีอยู่จริง** ไม่พบกลไก delegation, reassignment, proxy หรือ substitute-approver ใน workflow admin ฝั่ง frontend หรือ backend workflow orchestrator `user_action.execute[]` ถูกคำนวณใหม่จาก `assigned_users` แบบ static ของ stage และ (แยกต่างหาก) `routing_rules` (amount / department / category — แม้ `category` จะไม่เคย match จริง เพราะไม่มี mapper ใดส่ง field `category` ระดับเอกสาร, `workflows.navagation.service.ts` ~บรรทัด 455-456) — ไม่มีตัวใดรองรับการส่งต่อ stage ให้ผู้ใช้อื่นชั่วคราว |
 | APP-PERM-08 | Approver เปิด URL PR ใด ๆ ด้วย fixture `noAuth` / session หมดอายุ | **Deny — redirect ไป login.** ไม่มี auth context, `user_action.execute[]` ไม่สามารถ evaluate กับผู้ใช้ปัจจุบัน; `PR_AUTH_002` ผ่านไม่ได้ Covered โดย fixture `noAuthTest` ใน `301-pr.spec.ts` |
 
 ## 3. Validation / Error

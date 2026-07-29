@@ -2,7 +2,7 @@
 title: ใบเบิกของสโตร์ (Store Requisition) — User Flow — Approver
 description: flow ของ Approver ในโมดูล store-requisition — review ตัด reject หรือส่งกลับ SR ที่ submit แล้ว
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: 2026-07-29T05:45:00.000Z
 tags: store-requisition, user-flow, approver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -13,7 +13,9 @@ dateCreated: 2026-05-15T13:30:00.000Z
 > **At a Glance**
 > **Persona:** Approver — ผู้ถือขั้น workflow ที่ tag `enum_stage_role.approve` &nbsp;·&nbsp; **โมดูล:** [store-requisition](/th/inventory/store-requisition) &nbsp;·&nbsp; **ขั้น workflow:** in_progress (ขั้นที่ tag approve) → in_progress (ขั้นถัดไป) / voided / draft (send-back) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** approve, ตัด approved_qty, reject (bundle รวมในการเรียก `/approve` เดียวกัน), send-back (`/review`)
 > **persona นี้ทำอะไร:** review บรรทัดของ SR ที่ submit เทียบกับความต้องการเชิงปฏิบัติการและความพร้อมที่ต้นทาง; อนุมัติ ตัด reject หรือส่งกลับผ่านการเดินขั้น workflow
-> ⚠️ **แก้ไขรอบนี้.** เวอร์ชันก่อนหน้าของหน้านี้บรรยาย multi-tier escalation ที่ route ตาม value-threshold, การตัดตาม budget-cap และ par-level-cap, การ delegate การอนุมัติ และ SLA time-out escalation — การค้นทั้ง repo หา `threshold`, `delegat` และ `par_level` ในโมดูล SR และ workflow orchestrator ให้ผลลัพธ์เป็นศูนย์ (`tb_product_location.par_qty` มีอยู่จริงแต่เป็น field นโยบาย stock-replenishment ไม่ใช่ "par level" ต่อบรรทัดที่ surface ให้ approver เห็น) ข้อความเหล่านี้ถูกลบหรือ mark ว่ายังไม่ยืนยันด้านล่าง
+> ⚠️ **แก้ไขรอบนี้.** เวอร์ชันก่อนหน้าของหน้านี้บรรยาย multi-tier escalation ที่ route ตาม value-threshold, การตัดตาม budget-cap และ par-level-cap, การ delegate การอนุมัติ และ SLA time-out escalation การตัดตาม budget-cap/par-level-cap, delegation, และ SLA time-out escalation ไม่พบ: การค้นทั้ง repo หา `delegat` และ `par_level` ในโมดูล SR และ workflow orchestrator ให้ผลลัพธ์เป็นศูนย์ (`tb_product_location.par_qty` มีอยู่จริงแต่เป็น field นโยบาย stock-replenishment ไม่ใช่ "par level" ต่อบรรทัดที่ surface ให้ approver เห็น)
+>
+> **ครึ่งหนึ่งของ claim ที่เป็นเรื่อง value-threshold routing กลับถูกตัดทิ้งผิดพลาดเอง** — การค้นหาติดตามผลยืนยันว่าการ route stage ตาม `total_amount` มีจริง: `routing_rules` ของ workflow ที่ assign ให้ (`tb_workflow.data.routing_rules`) สามารถ skip หรือกระโดดข้าม stage ตาม `total_amount` ได้ — สำหรับ SR คำนวณโดย `sr-workflow.mapper.ts` เป็นผลรวม `qty × current_average_cost` ต่อบรรทัด — ประเมินโดย `evaluateCondition`/`findNextStep` ใน `workflows.navagation.service.ts` ทุกครั้งที่ submit/approve เป็นกลไกทั่วไปแบบเดียวกับที่ documented ไว้สำหรับ PR และ PO (แท็บ **Routing** ของ `/system-admin/workflow`) ไม่ใช่ฟีเจอร์ "multi-tier escalation" เฉพาะของ SR ดู `SR_XMOD_008` ใน [02-business-rules.md](./02-business-rules.md)
 
 ## 1. บทบาทในโมดูลนี้
 
@@ -34,7 +36,7 @@ graph LR
 
 ### ตารางสิทธิ์ — V2 Action × Stage Role (Approver)
 
-Approver กระทำที่ `doc_status = in_progress` ขณะที่ `workflow_current_stage` ชี้ขั้นที่ Approver อยู่ใน `user_action.execute` ถ้า `tb_workflow` ของ tenant นิยามขั้นที่ tag `approve` มากกว่าหนึ่งขั้น action set เดียวกันใช้ที่แต่ละขั้น — นี่เป็นคุณสมบัติทั่วไปของ workflow engine ที่ใช้ร่วมกัน ไม่ใช่สิ่งที่สร้างเฉพาะสำหรับ SR — แต่ไม่พบการ route ระหว่างขั้นตาม value-threshold ในโค้ด
+Approver กระทำที่ `doc_status = in_progress` ขณะที่ `workflow_current_stage` ชี้ขั้นที่ Approver อยู่ใน `user_action.execute` ถ้า `tb_workflow` ของ tenant นิยามขั้นที่ tag `approve` มากกว่าหนึ่งขั้น action set เดียวกันใช้ที่แต่ละขั้น — นี่เป็นคุณสมบัติทั่วไปของ workflow engine ที่ใช้ร่วมกัน ไม่ใช่สิ่งที่สร้างเฉพาะสำหรับ SR *Authorization* ในการดำเนินการที่ขั้นหนึ่งไม่ถูก gate ด้วย amount (เป็น membership ใน `user_action.execute[]` ล้วน ๆ) แต่ *ขั้นถัดไปคือขั้นไหน* อาจขับเคลื่อนด้วย amount ได้ผ่าน `routing_rules` ของ workflow (`SR_XMOD_008`)
 
 | Action | Approver ที่ขั้น tag `approve` ใดก็ได้ |
 |---|---|
@@ -78,7 +80,7 @@ Approver กระทำที่ `doc_status = in_progress` ขณะที่ 
 - **Reject เพราะขาด justification**: บรรทัดที่ผิดปกติหรือมูลค่าสูงขาดโน้ต justification Approver เลือก send-back (ไม่ใช่ reject) และเขียน `review_message`; บรรทัดถูกส่งกลับ requester เพื่อแก้
 - **Reject ทั้ง SR**: ทุกบรรทัดถูก mark reject ใน submission เดียว เปิดใช้ action `/reject` ทั้งเอกสาร ระบบตั้ง `doc_status = voided` โดยตรง — **แก้ไขรอบนี้**: เวอร์ชันก่อนหน้าของหน้านี้บรรยายว่าจบที่ `cancelled`; ไม่มีการ assign `cancelled` เลยที่ใดใน `store-requisition.service.ts`
 - **ส่งบรรทัดเดียวกลับ อนุมัติส่วนที่เหลือ**: **แก้ไขรอบนี้.** `computeSrAction()` แสดงว่าการ mark แม้เพียงบรรทัดเดียวเป็น "review" ทำให้ submission ทั้งหมดกลายเป็น send-back — ตัวเลือก approve/reject ของบรรทัดอื่นใน submission เดียวกันจะไม่ถูกส่งไป การจะอนุมัติบางบรรทัดและแยก flag บรรทัดหนึ่งเพื่อแก้ไข Approver ต้องทำสอง submission (อนุมัติบรรทัดอื่นก่อน แล้วตามด้วย send-back) ไม่ใช่ action ผสมเดียวตามที่เคยบรรยายไว้
-- **Multi-tier escalation, delegation และ SLA time-out escalation** — **ลบออกรอบนี้; ยังไม่ยืนยัน.** ไม่พบ value-threshold routing, delegation หรือ SLA-timeout logic ใน `workflow-orchestrator.service.ts` หรือโมดูลนี้ ถ้า `tb_workflow` ของ tenant นิยามขั้น `approve` มากกว่าหนึ่งขั้นจริง เอกสารก็เพียงเดินผ่านขั้นเหล่านั้นด้วยกลไกปกติในส่วนที่ 2 — ไม่มี trigger ตาม value ที่ยืนยันได้ว่าเกิดขึ้นเมื่อใด
+- **Delegation และ SLA time-out escalation** — **ลบออกรอบนี้; ยังไม่ยืนยัน.** ไม่พบ delegation หรือ SLA-timeout logic ใน `workflow-orchestrator.service.ts` หรือโมดูลนี้ **แต่ value-threshold-based stage routing ยืนยันแล้วว่ามีจริง** (แก้ไขรอบนี้ — ดู callout ด้านบนและ `SR_XMOD_008`): `routing_rules` ของ workflow ที่ assign ให้สามารถ route ตาม `total_amount` เพื่อ skip หรือกระโดดข้ามขั้นที่ tag `approve` ได้ ถ้า `tb_workflow` ของ tenant นิยามขั้น `approve` มากกว่าหนึ่งขั้น เอกสารเดินผ่านขั้นเหล่านั้นด้วยกลไกปกติในส่วนที่ 2 และ routing rules ของ workflow ที่ assign ให้ — ไม่ใช่ฟีเจอร์ "multi-tier" เฉพาะของ SR — เป็นตัวกำหนดว่าขั้นใดถูก skip ตาม value หรือไม่
 
 ## 4. จุดออก / Handoff
 
@@ -98,7 +100,7 @@ Approver กระทำที่ `doc_status = in_progress` ขณะที่ 
 - `../carmen/docs/store-requisitions/Store Requisitions.md` § UC-64 (Approve Requisition Requests), § UC-65 (Deny Requisition Requests), § UC-66 (Modify Requisition Requests) — แหล่ง use-case สำหรับการตัดสินใจ approve / trim / reject ในส่วนที่ 2 ข้างบน
 - Sibling: [03-user-flow-requester.md](./03-user-flow-requester.md) — persona ต้นน้ำ; input ของ Approver คือ SR ที่ Requester submit
 - Sibling: [03-user-flow-fulfiller.md](./03-user-flow-fulfiller.md) — persona ขั้น issuance; `approved_qty` ของ Approver คือ cap ที่ขั้นนั้นทำงานภายใน (endpoint `/approve` ทั่วไปเดียวกัน)
-- Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — แก้ไขรอบนี้; ส่วนใหญ่ของ workspace การกำกับดูแล/config ที่เคยบรรยายไว้ (RBAC console, threshold) ไม่พบใน source ปัจจุบัน
+- Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — แก้ไขรอบนี้; ส่วนใหญ่ของ workspace การกำกับดูแล/config ที่เคยบรรยายไว้ (RBAC console, SoD-relaxation threshold) ไม่พบใน source ปัจจุบัน แม้ว่า config ทั่วไปสำหรับ routing-rule ตาม amount จะยืนยันแล้วว่ามีจริง (`SR_XMOD_008`)
 - Sibling: [01-data-model.md](./01-data-model.md) — คอลัมน์ลายเซ็น approval / review / rejection ต่อบรรทัดบน `tb_store_requisition_detail` (`approved_by_*`, `review_by_*`, `reject_by_*`), timeline JSON `history` และ `stages_status`
 - Sibling: [02-business-rules.md](./02-business-rules.md) — `SR_VAL_010` (approval invariant: `approved_qty ≤ requested_qty`), `SR_AUTH_005`–`SR_AUTH_006` (อำนาจ approve / trim / send-back, กฎการผสม), `SR_POST_005`–`SR_POST_010` (การเดินขั้นสุดท้ายและ reject ทั้งเอกสาร → `voided`)
 - Related: [recipe](/th/inventory/recipe) — SR ที่ขับโดย recipe มี `info.recipe_id`; Approver เห็น context recipe เป็นส่วนหนึ่งของการตัดสินใจต่อบรรทัด
