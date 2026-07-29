@@ -1,8 +1,8 @@
 ---
 title: โปรไฟล์ (Profile)
-description: หน้าจัดการตนเองสำหรับผู้ใช้ที่ล็อกอินอยู่ใช้ดูและแก้ไขข้อมูลตัวตนของตน รวมถึงเปลี่ยนรหัสผ่าน
+description: หน้าจัดการตนเองสำหรับผู้ใช้ที่ล็อกอินอยู่ใช้ดูและแก้ไขข้อมูลตัวตนของตน รวมถึงเปลี่ยนรหัสผ่าน ตอนนี้มีการ validate field แบบ inline และข้อความ error เมื่อ fetch ล้มเหลว
 published: true
-date: 2026-06-10T16:30:00.000Z
+date: 2026-07-29T00:00:00.000Z
 tags: platform/profile, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -32,8 +32,10 @@ Profile เป็นหน้าจัดการตนเองแบบ self-
 - **Email (เปลี่ยนไม่ได้)**: รหัสประจำตัวสำหรับล็อกอินของผู้ใช้ แสดงในหน้า Profile แบบอ่านอย่างเดียว การเปลี่ยนค่านี้เป็นการดำเนินการระดับ administrative ที่จัดการนอกโมดูลนี้
 - **Toggle view/edit**: การ์ด Profile Information เปิดมาแบบอ่านอย่างเดียว; ปุ่ม **Edit** (มองเห็นคู่กับ **Change Password** เมื่อไม่ได้แก้ไขอยู่) สลับฟิลด์ตัวตนเข้าโหมดแก้ไข Cancel คืนค่าที่บันทึกไว้โดยไม่เรียก API; hook `useUnsavedChanges` จะเตือนผ่าน browser เมื่อ navigate ออกทั้งที่มีการแก้ไขค้างอยู่ Ctrl/Cmd+S submit, Escape ยกเลิก
 - **การเปลี่ยนรหัสผ่าน**: flow แบบ modal เฉพาะที่ต้องการรหัสผ่านปัจจุบัน รหัสผ่านใหม่ (อย่างน้อยหกตัวอักษร) และค่ายืนยันที่ตรงกัน ส่งผ่าน endpoint `PATCH /api/user/profile` เดียวกันกับการแก้ไขข้อมูลตัวตน แต่ใส่ `currentPassword` / `newPassword` แทน
-- **Business unit ที่ถูกกำหนด**: รายการ BU ที่ผู้ใช้สังกัด แสดงเป็นการ์ดแบบอ่านอย่างเดียว การเป็นสมาชิกจัดการในโมดูล [users](/th/platform/users) โดยผู้ดูแลระบบ หน้า Profile เพียงแสดงข้อมูลเท่านั้น
+- **Business unit ที่ถูกกำหนด**: รายการ BU ที่ผู้ใช้สังกัด แสดงเป็นการ์ดแบบอ่านอย่างเดียว การเป็นสมาชิกจัดการในโมดูล [users](/th/platform/users) โดยผู้ดูแลระบบ หน้า Profile เพียงแสดงข้อมูลเท่านั้น บัญชีที่ไม่มี BU เลย render component `EmptyState` ที่ใช้ร่วมกัน ("No business units", ไอคอน Building2) แทนที่จะเป็นประโยคธรรมดา
 - **รหัสบัญชีและวันที่เป็นสมาชิก**: ข้อมูล metadata แบบอ่านอย่างเดียวที่ประทับเวลาตอนสร้างบัญชี มีประโยชน์สำหรับการสนทนากับ support และ audit แต่แก้ไขจากหน้านี้ไม่ได้
+- **การ validate field แบบ inline**: Alias Name และ Telephone validate ตอน blur ผ่าน helper `validateField` ที่ใช้ร่วมกัน — Alias Name เทียบกับ `^[a-zA-Z0-9]{0,3}$` ("Alias must be 1-3 alphanumeric characters"), Telephone เทียบกับ `^\+?[\d\s\-()]{8,20}$` ("Invalid phone number format") error แสดงแบบ inline เฉพาะในโหมดแก้ไขและเคลียร์ทันทีที่ field เปลี่ยน ทั้งสองการตรวจสอบผ่านแบบเงียบ ๆ เมื่อค่าว่าง (ไม่มี field ใดจำเป็น)
+- **การมองเห็นเมื่อ fetch ล้มเหลว**: การ `GET /api/user/profile` เริ่มต้นที่ล้มเหลวตอนนี้แสดง error banner ที่มองเห็นได้ ("Failed to load profile: …") เพิ่มเติมจาก dev-console log เดิม — ก่อนหน้านี้ fetch ที่ล้มเหลวจะทำให้หน้าค้างอยู่แบบเงียบ ๆ โดยไม่มีข้อมูลและไม่มีคำอธิบายบนหน้าจอ
 
 ## 4. บทบาทและ Persona
 
@@ -47,7 +49,7 @@ Profile เป็นหน้าจัดการตนเองแบบ self-
 
 ## 6. แหล่งข้อมูลอ้างอิง
 
-- Frontend: `../carmen-platform/SITEMAP.md`, `../carmen-platform/src/pages/Profile.tsx` (เรียก `GET` / `PATCH /api/user/profile` ตรง ๆ ผ่าน axios instance ที่ใช้ร่วมกันใน `src/services/api.ts` — ไม่มีไฟล์ profile service แยก), `../carmen-platform/src/App.tsx` (`<PrivateRoute>` เปล่า ๆ บน `/profile`)
+- Frontend: `../carmen-platform/SITEMAP.md`, `../carmen-platform/src/pages/Profile.tsx` (เรียก `GET` / `PATCH /api/user/profile` ตรง ๆ ผ่าน axios instance ที่ใช้ร่วมกันใน `src/services/api.ts` — ไม่มีไฟล์ profile service แยก), `../carmen-platform/src/App.tsx` (`<PrivateRoute>` เปล่า ๆ บน `/profile`), `../carmen-platform/src/utils/validation.ts` (`validateField`, regex ของ Alias Name / Telephone), `../carmen-platform/src/components/PageHeader.tsx` และ `EmptyState.tsx` (component header และ empty-state ที่ใช้ร่วมกันซึ่งถูกนำมาใช้ในหน้านี้)
 
 ## 7. หน้าในโมดูลนี้
 

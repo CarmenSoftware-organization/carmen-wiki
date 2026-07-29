@@ -1,8 +1,8 @@
 ---
 title: Profile
-description: Self-service page where a signed-in user views and edits their own identity fields and changes their password.
+description: Self-service page where a signed-in user views and edits their own identity fields, changes their password, and now gets inline field validation and a proper fetch-failure message.
 published: true
-date: 2026-06-10T14:15:00.000Z
+date: 2026-07-29T00:00:00.000Z
 tags: platform/profile, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -32,8 +32,10 @@ Profile is a self-service maintenance page; it has no external business driver b
 - **Email (immutable)**: The user's sign-in identifier. Surfaced read-only on the Profile page; changing it is an administrative operation handled outside this module.
 - **View/edit toggle**: The Profile Information card opens read-only; an **Edit** button (visible alongside **Change Password** when not editing) switches the identity fields into edit mode. Cancel restores the saved values without an API call; the `useUnsavedChanges` hook fires a browser warning on navigation with unsaved edits. Ctrl/Cmd+S submits, Escape cancels.
 - **Password change**: A dedicated modal flow that requires the current password, a new password (minimum six characters), and a matching confirmation. Submitted through the same `PATCH /api/user/profile` endpoint as identity edits, but with `currentPassword` / `newPassword` populated instead.
-- **Assigned business units**: The list of BUs the user belongs to, shown as a read-only card. Membership is managed in the [users](/en/platform/users) module by an administrator; the Profile page only displays it.
+- **Assigned business units**: The list of BUs the user belongs to, shown as a read-only card. Membership is managed in the [users](/en/platform/users) module by an administrator; the Profile page only displays it. An account with none renders the shared `EmptyState` component ("No business units", Building2 icon) rather than a plain sentence.
 - **Account ID and member-since date**: Read-only metadata stamped at account creation. Useful for support and audit conversations but not editable from this page.
+- **Inline field validation**: Alias Name and Telephone validate on blur via the shared `validateField` helper — Alias Name against `^[a-zA-Z0-9]{0,3}$` ("Alias must be 1-3 alphanumeric characters"), Telephone against `^\+?[\d\s\-()]{8,20}$` ("Invalid phone number format"). Errors render inline in edit mode only and clear as soon as the field changes; both checks pass silently on an empty value (neither field is required).
+- **Fetch-failure visibility**: A failed initial `GET /api/user/profile` now surfaces a visible error banner ("Failed to load profile: …") in addition to the existing dev-console log — previously a failed fetch left the page silently stuck with no data and no on-screen explanation.
 
 ## 4. Roles and Personas
 
@@ -47,7 +49,7 @@ Used by the signed-in user themselves. The `/profile` route is wrapped in a plai
 
 ## 6. Reference Sources
 
-- Frontend: `../carmen-platform/SITEMAP.md`, `../carmen-platform/src/pages/Profile.tsx` (calls `GET` / `PATCH /api/user/profile` directly via the shared axios instance in `src/services/api.ts` — there is no dedicated profile service file), `../carmen-platform/src/App.tsx` (the bare `<PrivateRoute>` on `/profile`)
+- Frontend: `../carmen-platform/SITEMAP.md`, `../carmen-platform/src/pages/Profile.tsx` (calls `GET` / `PATCH /api/user/profile` directly via the shared axios instance in `src/services/api.ts` — there is no dedicated profile service file), `../carmen-platform/src/App.tsx` (the bare `<PrivateRoute>` on `/profile`), `../carmen-platform/src/utils/validation.ts` (`validateField`, the Alias Name / Telephone regexes), `../carmen-platform/src/components/PageHeader.tsx` and `EmptyState.tsx` (shared header and empty-state components adopted on this page)
 
 ## 7. Pages in This Module
 
