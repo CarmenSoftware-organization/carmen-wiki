@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe)
 description: สูตรอาหาร (รายการวัตถุดิบพร้อม yield) — สะพานเชื่อมระหว่างเมนูและการใช้คลังสินค้า
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: 2026-07-29T10:00:00.000Z
 tags: recipe, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 # สูตรอาหาร (Recipe)
 
 > **At a Glance**
-> **วัตถุประสงค์ของโมดูล:** แคตตาล็อกสูตรการผลิตที่คิดต้นทุนแล้ว (การคิดต้นทุนระดับส่วนหัว, การอ้างอิง sub-recipe, prep-step API, แกลเลอรีรูปภาพ) ภายใต้ `/operation-plan/*` — ดีไซน์เป้าหมายขยายไปถึงการใช้วัตถุดิบเชิงทฤษฎีและความแปรปรวนของ food-cost เทียบกับยอดขาย POS (ยังไม่ได้ implement — ดูหมายเหตุสถานะด้านล่าง) &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Chef / Kitchen Manager, Cost Controller, Outlet Manager, F&B Operations, Procurement &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_recipe`, `tb_recipe_ingredient`, `tb_recipe_preparation_step`, `tb_recipe_image`, `tb_recipe_yield_variant`, `tb_recipe_version`, `tb_recipe_pricing_history` &nbsp;·&nbsp; **หน้าย่อย:** 18
+> **วัตถุประสงค์ของโมดูล:** แคตตาล็อกสูตรการผลิตที่คิดต้นทุนแล้ว (การคิดต้นทุนระดับส่วนหัว, การอ้างอิง sub-recipe, prep-step API, แกลเลอรีรูปภาพ) ภายใต้ `/operation-plan/*` — ดีไซน์เป้าหมายขยายไปถึงการใช้วัตถุดิบเชิงทฤษฎีและความแปรปรวนของ food-cost เทียบกับยอดขาย POS (ยังไม่ได้ implement — ดูหมายเหตุสถานะด้านล่าง) &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Chef / Kitchen Manager, Cost Controller, Outlet Manager, F&B Operations, Procurement &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_recipe`, `tb_recipe_ingredient`, `tb_recipe_preparation_step`, `tb_recipe_image`, `tb_recipe_yield_variant`, `tb_recipe_version`, `tb_recipe_pricing_history` &nbsp;·&nbsp; **หน้าย่อย:** 19
 
 ![สูตรอาหาร (Recipe) screen](/screenshots/recipe/index.png)
 
@@ -111,6 +111,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
   - [Outlet Manager scenarios](/th/inventory/recipe/04-test-scenarios-outlet-manager)
   - [Procurement / F&B Ops scenarios](/th/inventory/recipe/04-test-scenarios-procurement-fb-ops)
   - [Audit / Config scenarios](/th/inventory/recipe/04-test-scenarios-audit-config)
+- [Operation Plan Dashboard](/th/inventory/recipe/operation-dashboard) — 10 tile KPI/chart ที่ hardcode ไว้ (recipe + equipment) ของหน้าจอ landing `/operation-plan` — ไม่ใช่ widget board ที่ผู้ใช้ปรับแต่งได้; ดูหน้านั้นสำหรับความต่างจากระบบ widget BU/personal จริง
 - หน้าย่อย master data (หน้าจอตั้งค่า Operation Plan):
   - [Recipe Category](/th/inventory/recipe/category) — taxonomy แบบลำดับชั้น (`tb_recipe_category`), `/operation-plan/category`
   - [Cuisine](/th/inventory/recipe/cuisine) — แคตตาล็อกแบบแบนที่ tag ภูมิภาค (`tb_recipe_cuisines`), `/operation-plan/cuisine`

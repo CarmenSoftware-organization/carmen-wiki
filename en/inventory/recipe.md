@@ -2,7 +2,7 @@
 title: Recipe
 description: Recipes (ingredient lists with yields) — the bridge between menu items and inventory consumption.
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: 2026-07-29T10:00:00.000Z
 tags: recipe, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 # Recipe
 
 > **At a Glance**
-> **Module purpose:** Costed production-formula catalogue (header costing, sub-recipe references, prep-step API, image gallery) under `/operation-plan/*`; the target design extends this to theoretical consumption and food-cost variance against POS sales (not yet implemented — see status note below) &nbsp;·&nbsp; **Audience:** Chef / Kitchen Manager, Cost Controller, Outlet Manager, F&B Operations, Procurement &nbsp;·&nbsp; **Key entities/tables:** `tb_recipe`, `tb_recipe_ingredient`, `tb_recipe_preparation_step`, `tb_recipe_image`, `tb_recipe_yield_variant`, `tb_recipe_version`, `tb_recipe_pricing_history` &nbsp;·&nbsp; **Sub-pages:** 18
+> **Module purpose:** Costed production-formula catalogue (header costing, sub-recipe references, prep-step API, image gallery) under `/operation-plan/*`; the target design extends this to theoretical consumption and food-cost variance against POS sales (not yet implemented — see status note below) &nbsp;·&nbsp; **Audience:** Chef / Kitchen Manager, Cost Controller, Outlet Manager, F&B Operations, Procurement &nbsp;·&nbsp; **Key entities/tables:** `tb_recipe`, `tb_recipe_ingredient`, `tb_recipe_preparation_step`, `tb_recipe_image`, `tb_recipe_yield_variant`, `tb_recipe_version`, `tb_recipe_pricing_history` &nbsp;·&nbsp; **Sub-pages:** 19
 
 ![Recipe screen](/screenshots/recipe/index.png)
 
@@ -111,6 +111,7 @@ The other major business function the module supports is **theoretical vs. actua
   - [Outlet Manager scenarios](/en/inventory/recipe/04-test-scenarios-outlet-manager)
   - [Procurement / F&B Ops scenarios](/en/inventory/recipe/04-test-scenarios-procurement-fb-ops)
   - [Audit / Config scenarios](/en/inventory/recipe/04-test-scenarios-audit-config)
+- [Operation Plan Dashboard](/en/inventory/recipe/operation-dashboard) — the `/operation-plan` landing screen's 10 hardcoded KPI/chart tiles (recipe + equipment) — not a user-configurable widget board; see that page for the distinction from the real BU/personal widget system.
 - Master-data sub-pages (Operation Plan setup screens):
   - [Recipe Category](/en/inventory/recipe/category) — hierarchical taxonomy (`tb_recipe_category`), `/operation-plan/category`.
   - [Cuisine](/en/inventory/recipe/cuisine) — flat region-tagged catalogue (`tb_recipe_cuisines`), `/operation-plan/cuisine`.
