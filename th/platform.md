@@ -2,7 +2,7 @@
 title: Carmen Platform
 description: Overview of the Carmen Platform admin product — entry point for the book.
 published: true
-date: 2026-06-10T17:15:00.000Z
+date: 2026-07-29T09:46:00.000Z
 tags: book/platform, home
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -39,6 +39,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 | โมดูล | ครอบคลุมเรื่อง |
 |---|---|
 | [Applications](/th/platform/applications) | API client ที่ลงทะเบียน, identity แบบ `x-app-id` และการมอบสิทธิ์เข้าถึงตาม `api_name` |
+| [SQL Workbench](/th/platform/sql-workbench) | คอนโซล SQL ต่อ tenant — browse/รัน/save/drop view, procedure, และ function กับฐานข้อมูลของ business unit |
 
 ## 5. Reporting
 
@@ -47,10 +48,12 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 | [Report Templates](/th/platform/report-templates) | แคตตาล็อกเทมเพลตรายงานแบบ XML พร้อม editor แบบแท็บ และการกำหนดขอบเขตราย BU |
 | [Print Template Mapping](/th/platform/print-template-mapping) | การ route ชนิดเอกสาร (PR, PO, GRN, …) ไปยังเทมเพลตพิมพ์ FastReport |
 
-## 6. Product
+## 6. Product & Shell
 
 | โมดูล | ครอบคลุมเรื่อง |
 |---|---|
+| [Landing](/th/platform/landing) | หน้าการตลาดสาธารณะที่ `/` — redirect session ที่ authenticated ไปยัง Dashboard ทันที |
+| [Dashboard](/th/platform/dashboard) | home hub สำหรับผู้ใช้ที่ signed-in — activity stream รวม + จำนวน active/total ต่อโดเมน |
 | [Changelog](/th/platform/changelog) | ประวัติการเปลี่ยนแปลงเวอร์ชัน (สาธารณะ) + version badge |
 
 ## 7. การใช้งาน book นี้

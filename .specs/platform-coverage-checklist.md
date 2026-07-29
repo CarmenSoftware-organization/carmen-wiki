@@ -12,7 +12,7 @@ How to read: each row is a sub-process. **DM/UI/PERM** = covered in the module's
 counts toward whichever axis it serves. Symbols: ✅ complete · 🟡 partial/stub · ⬜ missing.
 Tracks the **EN locale** (canonical); TH state is summarized in "Locale coverage".
 
-## Summary (as of 2026-06-11)
+## Summary (as of 2026-06-11; Shell & Dashboard closed 2026-07-29 — see Maintenance notes)
 
 | Module | Sub-processes | Done | Partial | Not yet | % complete |
 |--------|--------------:|-----:|--------:|--------:|-----------:|
@@ -27,8 +27,8 @@ Tracks the **EN locale** (canonical); TH state is summarized in "Locale coverage
 | Report Templates | 9 | 9 | 0 | 0 | 100% |
 | Profile | 3 | 3 | 0 | 0 | 100% |
 | Changelog | 3 | 3 | 0 | 0 | 100% |
-| Shell & Dashboard | 2 | 0 | 1 | 1 | 0% |
-| **Project total** | 86 | 84 | 1 | 1 | **98%** |
+| Shell & Dashboard | 2 | 2 | 0 | 0 | 100% |
+| **Project total** | 86 | 86 | 0 | 0 | **100%** |
 
 ## How status is judged
 
@@ -51,7 +51,9 @@ Tracks the **EN locale** (canonical); TH state is summarized in "Locale coverage
 | report-templates | ReportTemplateManagement, ReportTemplateEdit | reportTemplateService; micro-report; Prisma `tb_report_template` |
 | profile | Profile | shared axios (no service file) |
 | changelog | Changelog (public) | src/data/changelog.json; build:bump |
-| *(undocumented)* | Dashboard, Landing, Login | — |
+| dashboard | Dashboard | six-domain activity/counts services (`clusterService`, `businessUnitService`, `userService`, `applicationService`, `newsService`, `reportTemplateService`) |
+| landing | Landing | `VersionBadge`; no service of its own |
+| *(undocumented)* | Login | — (screen itself has no dedicated page; its redirect/gate mechanics are covered in RBAC + Users lifecycle) |
 
 ## Table A — Modules with full sub-page sets
 
@@ -188,8 +190,8 @@ Tracks the **EN locale** (canonical); TH state is summarized in "Locale coverage
 | Changelog | JSON source + authoring flow | ✅ | ✅ | ✅ Done | [Changelog §2](/en/platform/changelog) |
 | Changelog | Public page + version badges | ✅ | ✅ | ✅ Done | [Changelog §3](/en/platform/changelog) |
 | Changelog | Release process (`build:bump`) | ✅ | ✅ | ✅ Done | [Changelog §4](/en/platform/changelog) |
-| Shell & Dashboard | Dashboard hub (`/dashboard` — summary cards) | ⬜ | ⬜ | ⬜ Not yet | — |
-| Shell & Dashboard | Landing + Login shell (public pages) | 🟡 | 🟡 | 🟡 Partial | Login gate covered in [RBAC](/en/platform/rbac) + [Users lifecycle](/en/platform/users/lifecycle); Landing page itself undocumented |
+| Shell & Dashboard | Dashboard hub (`/dashboard` — activity stream + counts rail) | ✅ | ✅ | ✅ Done | [Dashboard](/en/platform/dashboard) |
+| Shell & Dashboard | Landing + Login shell (public pages) | ✅ | ✅ | ✅ Done | [Landing](/en/platform/landing); Login gate mechanics covered in [RBAC](/en/platform/rbac) + [Users lifecycle](/en/platform/users/lifecycle) — the Login screen itself has no dedicated page, matching the Dashboard/Profile treatment of bare `<PrivateRoute>` screens |
 
 ## Locale coverage (TH)
 
@@ -206,8 +208,20 @@ Not counted in the summary; EN is canonical. TH state as of 2026-06-11:
 - Coverage was established by the 2026-06-10 Platform Book Sync
   (`.specs/2026-06-10-platform-book-sync-plan.md`, 39 commits) with two-stage review of
   every page against SPA + backend source.
-- The only open gaps: the Dashboard hub page and the public Landing page (Table B,
-  Shell & Dashboard). Both are small; Dashboard is the natural next page if the SPA's
-  dashboard gains real content beyond summary cards.
+- **Closed 2026-07-29:** the Dashboard hub and public Landing page gaps (Table B, Shell &
+  Dashboard) — see [Dashboard](/en/platform/dashboard) and [Landing](/en/platform/landing).
+  Project total is now 86/86 (100%).
+- **Not tracked in this file's tables (by design — none are one of the 11 named Platform
+  units):** three screens carmen-platform shipped after this checklist's 2026-06-11
+  baseline — [Tenant Migrations](/en/platform/business-units/tenant-migrations)
+  (`/tenant-migrations`, 2026-06-30, documented as a Business Units sub-page),
+  [SQL Workbench](/en/platform/sql-workbench) (`/sql-workbench`, 2026-07-09, standalone page),
+  and [Form Groups](/en/platform/report-templates/form-groups) (`/report-form-groups`,
+  2026-07-24, documented as a Report Templates sub-page, replacing the removed
+  print-template-mapping module's grouped-card list). All three are fully documented; they
+  are omitted from the Summary/Table A/Table B structure only because that structure is
+  scoped to the 11 named units plus Table B's single-page modules, and these three don't
+  fit either category cleanly — same treatment the pre-existing sub-pages (data-model,
+  ui-screens, permissions, xml-spec, lifecycle) already get.
 - carmen-platform moves fast — verify against `src/App.tsx` HEAD before trusting any
   row here; SITEMAP.md in that repo lags.
