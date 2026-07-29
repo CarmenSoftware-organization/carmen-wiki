@@ -2,7 +2,7 @@
 title: ใบลดหนี้ (Credit Note)
 description: เอกสารใบลดหนี้จากผู้ขายที่กลับรายการบางส่วนหรือทั้งหมดของ PO/GRN ก่อนหน้า — กลับรายการ cost layer ของสินค้าคงคลัง (คืนสินค้าหรือ revalue ต้นทุน); การโพสต์ AP/GL ยังไม่ยืนยัน (เป็นเพียง design intent ไม่มีโค้ดรองรับ)
 published: true
-date: 2026-07-29T09:00:00.000Z
+date: 2026-07-29T10:00:00.000Z
 tags: purchase-order, credit-note, accounting, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -41,7 +41,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 | "GRN required for quantity_return" | ชนิดเป็น `quantity_return` แต่ `grn_id` ว่าง | เลือก GRN ต้นทาง |
 | "Return qty exceeds receipted - already returned" | ปริมาณคืนสะสมจะเกิน lot | ลดปริมาณ หรือแบ่งหลาย lot |
 | "Tax rate must match GRN snapshot" | ต้องตั้ง `is_tax_adjustment = true` สำหรับภาษีย้อนหลัง | toggle `is_tax_adjustment` บนบรรทัด |
-| "Period is closed — cannot void" | งวด posting ของ CRN ปิดแล้ว | **ยังไม่ยืนยัน** — ไม่พบ flow การสร้าง journal voucher ใดๆ (`tb_jv_header` ไม่ถูกอ้างอิงนอก schema เลยทั้งระบบหลังบ้าน); ไม่พบกลไกการแก้ไขเชิงชดเชยสำหรับกรณีนี้ |
+| "Period is closed — cannot void" | งวด posting ของ CRN ปิดแล้ว | **ยังไม่ยืนยัน** — ไม่พบโค้ดสร้าง JV ที่ใช้งานได้จริง; `tb_jv_header` ปรากฏเพียงเป็น placeholder key ที่ไม่มีการเรียกใช้งานจริงใน dispatch map ของ doc-type ทั่วไป (`DOCUMENT_TABLE_MAP` ใน `workflows.service.ts`) โดย `activity-registry.ts` ระบุชัดเจนว่าไม่มี handler ใดเป็นเจ้าของ; ไม่พบกลไกการแก้ไขเชิงชดเชยสำหรับกรณีนี้ |
 | "Rate not in history" | **ยังไม่ยืนยัน — ไม่พบการตรวจสอบลักษณะนี้** `exchange_rate` เป็นฟิลด์ snapshot ที่แก้ไขได้อิสระ ไม่มีการ lookup `tb_exchange_rate` แบบ dynamic ในระบบหลังบ้านของใบลดหนี้ (ไม่พบข้อความนี้เลยทั้ง repo) | — (ดู § 4 "FX rate handling") |
 | "User not authorised at this stage" | ผู้ใช้ที่ลงชื่ออยู่ไม่อยู่ใน `user_action.execute[]` | รอผู้อนุมัติที่ถูกต้อง หรือ escalate |
 

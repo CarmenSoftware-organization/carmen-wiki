@@ -2,7 +2,7 @@
 title: Credit Note
 description: Vendor-issued credit document reversing all or part of a prior PO / GRN — reverses the inventory cost layer (returns goods or revalues cost); AP/GL posting is unconfirmed (design intent only, no such code exists).
 published: true
-date: 2026-07-29T09:00:00.000Z
+date: 2026-07-29T10:00:00.000Z
 tags: purchase-order, credit-note, accounting, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -41,7 +41,7 @@ A **Credit Note (CRN)** is the post-receipt correction instrument in procure-to-
 | "GRN required for quantity_return" | Type is `quantity_return` but `grn_id` empty | Pick the anchor GRN |
 | "Return qty exceeds receipted - already returned" | Cumulative returns would over-deplete the lot | Reduce qty or split across multiple lots |
 | "Tax rate must match GRN snapshot" | `is_tax_adjustment = true` was expected for retrospective tax | Toggle `is_tax_adjustment` on the line |
-| "Period is closed — cannot void" | Posting period for the CRN has closed | **Unconfirmed** — no journal-voucher creation flow exists (`tb_jv_header` has zero non-schema references anywhere in the backend); no compensating-entry mechanism was found for this case |
+| "Period is closed — cannot void" | Posting period for the CRN has closed | **Unconfirmed** — no functional JV-creation code exists; `tb_jv_header` appears only as an inert placeholder key in a generic doc-type dispatch map (`workflows.service.ts`'s `DOCUMENT_TABLE_MAP`), with `activity-registry.ts` explicitly noting no handler owns it; no compensating-entry mechanism was found for this case |
 | "Rate not in history" | **Unconfirmed — no such validation found.** `exchange_rate` is a freely-editable snapshot field with no dynamic `tb_exchange_rate` lookup anywhere in the credit-note backend (zero repo-wide hits for this message) | — (see § 4 "FX rate handling") |
 | "User not authorised at this stage" | Signed-in user not in `user_action.execute[]` | Wait for the correct approver, or escalate |
 
