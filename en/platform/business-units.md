@@ -2,7 +2,7 @@
 title: Business Units
 description: Per-property/per-hotel entity with a multi-section form covering identity, contact, tax, formats, calculation, configuration, database connection, branding, and BU-scoped user roster.
 published: true
-date: 2026-07-29T07:50:16.000Z
+date: 2026-07-29T09:46:00.000Z
 tags: platform/business-units, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-19T00:00:00.000Z
 # Business Units
 
 > **At a Glance**
-> **Module purpose:** Authoring surface where the operational entity that Carmen calls a **business unit** (BU) is created and configured — one row per hotel/property/legal-entity, with the form fields that drive both the inventory app's tenant context and the platform's user-role assignments &nbsp;·&nbsp; **Audience:** Developers and QA working on the Platform admin SPA; operator access is gated by **reused `cluster.*` permission keys** ([rbac](/en/platform/rbac)) — there are no `business_unit.*` keys &nbsp;·&nbsp; **Key entities/tables:** `business_unit` (identity fields `code`, `name`, `alias_name`, `is_hq`, `is_active`, `max_license_users`; contact blocks for hotel/company; tax fields; date/time/number format fields; `calculation_method`, `default_currency_id`; `db_connection`; `config[]` key/value rows; branding `logo_file_token`/`avatar_file_token`) plus the BU-to-user join carrying a per-BU `role` of `admin` or `user` &nbsp;·&nbsp; **Sub-pages:** 2
+> **Module purpose:** Authoring surface where the operational entity that Carmen calls a **business unit** (BU) is created and configured — one row per hotel/property/legal-entity, with the form fields that drive both the inventory app's tenant context and the platform's user-role assignments &nbsp;·&nbsp; **Audience:** Developers and QA working on the Platform admin SPA; operator access is gated by **reused `cluster.*` permission keys** ([rbac](/en/platform/rbac)) — there are no `business_unit.*` keys &nbsp;·&nbsp; **Key entities/tables:** `business_unit` (identity fields `code`, `name`, `alias_name`, `is_hq`, `is_active`, `max_license_users`; contact blocks for hotel/company; tax fields; date/time/number format fields; `calculation_method`, `default_currency_id`; `db_connection`; `config[]` key/value rows; branding `logo_file_token`/`avatar_file_token`) plus the BU-to-user join carrying a per-BU `role` of `admin` or `user` &nbsp;·&nbsp; **Sub-pages:** 3
 
 ## 1. Overview
 
@@ -93,3 +93,4 @@ The scoped (`clusterId`) gates resolve against the BU's **parent cluster** — a
 
 - [Data Model](/en/platform/business-units/data-model) — BU entity reference: identity fields, the restructured hotel/company address blocks, date/time/number format fields, calculation settings, the `config[]` key/value array, the `db_connection` JSON block, the branding file tokens, `doc_version`, and the BU-user join schema.
 - [UI Screens](/en/platform/business-units/ui-screens) — Tour of the list view (`BusinessUnitManagement`) and the one-document edit page (`BusinessUnitEdit`), including the hero, inline field groups, the advanced cards (visible to any editor, actions super-admin-gated), and the Users card with its BU-role select and add-from-cluster dialog.
+- [Tenant Migrations](/en/platform/business-units/tenant-migrations) — the standalone fleet-wide `/tenant-migrations` screen: every BU's migration status and batch-deploy console in one table, distinct from (but sharing a service with) the per-BU card in UI Screens §4.13.

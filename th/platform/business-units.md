@@ -2,7 +2,7 @@
 title: หน่วยธุรกิจ (Business Units)
 description: เอนทิตีต่อ property/ต่อโรงแรม พร้อมฟอร์มหลายเซกชันที่ครอบคลุมข้อมูลระบุตัวตน ข้อมูลติดต่อ ภาษี รูปแบบ การคำนวณ การตั้งค่า การเชื่อมต่อฐานข้อมูล branding และรายชื่อผู้ใช้ที่ผูกกับ BU
 published: true
-date: 2026-07-29T07:50:16.000Z
+date: 2026-07-29T09:46:00.000Z
 tags: platform/business-units, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-19T00:00:00.000Z
 # หน่วยธุรกิจ (Business Units)
 
 > **At a Glance**
-> **วัตถุประสงค์ของโมดูล:** หน้าจอ authoring ที่ใช้สร้างและตั้งค่าเอนทิตีปฏิบัติการที่ Carmen เรียกว่า **business unit** (BU) — หนึ่งแถวต่อหนึ่งโรงแรม/property/นิติบุคคล พร้อมฟิลด์ในฟอร์มที่ขับเคลื่อนทั้งบริบทของ tenant ใน inventory app และการมอบหมาย role ของผู้ใช้ในแพลตฟอร์ม &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับ Platform admin SPA; การเข้าถึงของ operator ถูก gate ด้วย **permission key `cluster.*` ที่ reuse มา** ([rbac](/th/platform/rbac)) — ไม่มี key `business_unit.*` &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `business_unit` (ฟิลด์ระบุตัวตน `code`, `name`, `alias_name`, `is_hq`, `is_active`, `max_license_users`; บล็อกข้อมูลติดต่อสำหรับ hotel/company; ฟิลด์ภาษี; ฟิลด์รูปแบบวันที่/เวลา/ตัวเลข; `calculation_method`, `default_currency_id`; `db_connection`; `config[]` แถว key/value; branding `logo_file_token`/`avatar_file_token`) บวกกับตาราง join BU-to-user ที่ถือ `role` ระดับ BU เป็น `admin` หรือ `user` &nbsp;·&nbsp; **หน้าย่อย:** 2
+> **วัตถุประสงค์ของโมดูล:** หน้าจอ authoring ที่ใช้สร้างและตั้งค่าเอนทิตีปฏิบัติการที่ Carmen เรียกว่า **business unit** (BU) — หนึ่งแถวต่อหนึ่งโรงแรม/property/นิติบุคคล พร้อมฟิลด์ในฟอร์มที่ขับเคลื่อนทั้งบริบทของ tenant ใน inventory app และการมอบหมาย role ของผู้ใช้ในแพลตฟอร์ม &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับ Platform admin SPA; การเข้าถึงของ operator ถูก gate ด้วย **permission key `cluster.*` ที่ reuse มา** ([rbac](/th/platform/rbac)) — ไม่มี key `business_unit.*` &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `business_unit` (ฟิลด์ระบุตัวตน `code`, `name`, `alias_name`, `is_hq`, `is_active`, `max_license_users`; บล็อกข้อมูลติดต่อสำหรับ hotel/company; ฟิลด์ภาษี; ฟิลด์รูปแบบวันที่/เวลา/ตัวเลข; `calculation_method`, `default_currency_id`; `db_connection`; `config[]` แถว key/value; branding `logo_file_token`/`avatar_file_token`) บวกกับตาราง join BU-to-user ที่ถือ `role` ระดับ BU เป็น `admin` หรือ `user` &nbsp;·&nbsp; **หน้าย่อย:** 3
 
 ## 1. ภาพรวม
 
@@ -93,3 +93,4 @@ gate แบบ scoped (`clusterId`) จะ resolve กับ **cluster แม่
 
 - [Data Model](/th/platform/business-units/data-model) — เอกสารอ้างอิงเอนทิตี BU: ฟิลด์ระบุตัวตน บล็อกที่อยู่ hotel/company แบบมีโครงสร้างใหม่ ฟิลด์รูปแบบวันที่/เวลา/ตัวเลข การตั้งค่าการคำนวณ array `config[]` แบบ key/value บล็อก `db_connection` branding file token `doc_version` และ schema ของตาราง join BU-user
 - [UI Screens](/th/platform/business-units/ui-screens) — ทัวร์ของหน้ารายการ (`BusinessUnitManagement`) และหน้าแก้ไขแบบ one-document (`BusinessUnitEdit`) รวมถึง hero, กลุ่ม field แบบ inline, การ์ด advanced (ทุกคนที่แก้ไขได้เห็น — action ถูก gate ด้วย super-admin) และ card Users พร้อม select สำหรับ BU role และ dialog เพิ่ม user จาก cluster
+- [Tenant Migrations](/th/platform/business-units/tenant-migrations) — หน้าจอ `/tenant-migrations` แบบ standalone ระดับ fleet: สถานะ migration และ console batch-deploy ของทุก BU ในตารางเดียว แยกจาก (แต่ใช้ service ร่วมกับ) การ์ดต่อ BU ใน UI Screens §4.13
