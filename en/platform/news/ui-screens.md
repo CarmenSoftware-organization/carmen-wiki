@@ -2,7 +2,7 @@
 title: News — UI Screens
 description: The NewsroomSummary masthead + NewsManagement list (thumbnail, Target, Tags, status/tag filters, CSV export, bulk publish/archive/delete) and the masthead-based NewsEdit form — MarkdownEditor, ImageUpload, Tags, Publish rail — with validation and keyboard shortcuts.
 published: true
-date: 2026-07-29T00:00:00.000Z
+date: 2026-07-29T03:00:00.000Z
 tags: book/platform, news, ui
 editor: markdown
 dateCreated: 2026-06-10T13:00:00.000Z
@@ -138,7 +138,7 @@ Rendered when the loaded record carries an `audit` object: **Created** and **Las
 
 A sticky bottom bar (visible only while editing) shows an "Unsaved changes" dot indicator (or "No changes") plus **Cancel** and **Save** (`Create News` / `Save Changes`, spinner while saving, disabled when nothing changed on an existing record). Save submits `{ title, contents?, url?, status, business_unit_ids, tags, doc_version? }`. With a pending image file the service switches to `multipart/form-data` — binary `image` field, `business_unit_ids` and `tags` JSON-encoded as string fields, and an explicit multipart `Content-Type` (required: the axios instance defaults to JSON, which would serialize the `FormData` away). Without a file it sends plain JSON, leaving any saved image untouched.
 
-A stale `doc_version` on update returns a 409; the SPA shows "This record was changed by someone else", discards any pending image selection, and refetches the record instead of surfacing a generic save error. Other API field errors from `parseApiError` map back onto the form fields; after a successful update the SPA re-fetches the record (the `PUT` response carries only `{ id, image_url }`). The Debug Sheet's floating button shifts up (`bottom-20`) while editing so it doesn't collide with the sticky action bar.
+A stale `doc_version` on update returns a 409; the SPA shows "This record was changed by someone else", discards any pending image selection, and refetches the record instead of surfacing a generic save error. Other API field errors from `parseApiError` map back onto the form fields; after a successful update the SPA re-fetches the record (the `PUT` response carries only `{ id, doc_version }` — see [Data Model](./data-model.md) §6). The Debug Sheet's floating button shifts up (`bottom-20`) while editing so it doesn't collide with the sticky action bar.
 
 ## 4. References
 

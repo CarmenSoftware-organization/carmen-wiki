@@ -2,7 +2,7 @@
 title: News — หน้าจอ UI (UI Screens)
 description: การ์ด masthead NewsroomSummary + list NewsManagement (thumbnail, Target, Tags, filter สถานะ/tag, ส่งออก CSV, bulk publish/archive/delete) และฟอร์ม NewsEdit แบบ masthead — MarkdownEditor, ImageUpload, Tags, Publish rail — พร้อมการ validate และคีย์ลัด
 published: true
-date: 2026-07-29T00:00:00.000Z
+date: 2026-07-29T03:00:00.000Z
 tags: book/platform, news, ui
 editor: markdown
 dateCreated: 2026-06-10T15:45:00.000Z
@@ -138,7 +138,7 @@ render เมื่อเรคคอร์ดที่โหลดมามี 
 
 แถบ sticky ด้านล่าง (แสดงเฉพาะขณะแก้ไข) แสดงตัวบ่งชี้จุด "Unsaved changes" (หรือ "No changes") บวก **Cancel** และ **Save** (`Create News` / `Save Changes`, spinner ขณะกำลัง save, disabled เมื่อไม่มีอะไรเปลี่ยนบนเรคคอร์ดที่มีอยู่แล้ว) Save submit `{ title, contents?, url?, status, business_unit_ids, tags, doc_version? }` เมื่อมีไฟล์รูปที่ค้างอยู่ service จะสลับเป็น `multipart/form-data` — binary ใน field `image`, `business_unit_ids` และ `tags` ถูก encode เป็น string แบบ JSON และ `Content-Type` แบบ multipart ที่ระบุชัด (จำเป็น: axios instance ตั้งค่าเริ่มต้นเป็น JSON ซึ่งจะ serialize ตัว `FormData` ทิ้งไป) เมื่อไม่มีไฟล์จะส่ง JSON ธรรมดา โดยไม่แตะรูปที่ save ไว้
 
-`doc_version` ที่ล้าสมัยตอน update จะคืน 409; SPA แสดง "This record was changed by someone else" ทิ้งการเลือกรูปที่ค้างอยู่ และ refetch เรคคอร์ดแทนที่จะแสดง error การ save แบบทั่วไป field error อื่น ๆ จาก API ผ่าน `parseApiError` map กลับลง field ของฟอร์ม; หลัง update สำเร็จ SPA จะ re-fetch เรคคอร์ด (response ของ `PUT` มีเพียง `{ id, image_url }`) ปุ่มลอยของ Debug Sheet จะขยับขึ้น (`bottom-20`) ขณะแก้ไขเพื่อไม่ให้ชนกับ sticky action bar
+`doc_version` ที่ล้าสมัยตอน update จะคืน 409; SPA แสดง "This record was changed by someone else" ทิ้งการเลือกรูปที่ค้างอยู่ และ refetch เรคคอร์ดแทนที่จะแสดง error การ save แบบทั่วไป field error อื่น ๆ จาก API ผ่าน `parseApiError` map กลับลง field ของฟอร์ม; หลัง update สำเร็จ SPA จะ re-fetch เรคคอร์ด (response ของ `PUT` มีเพียง `{ id, doc_version }` — ดู [Data Model](./data-model.md) §6) ปุ่มลอยของ Debug Sheet จะขยับขึ้น (`bottom-20`) ขณะแก้ไขเพื่อไม่ให้ชนกับ sticky action bar
 
 ## 4. แหล่งข้อมูลอ้างอิง
 
