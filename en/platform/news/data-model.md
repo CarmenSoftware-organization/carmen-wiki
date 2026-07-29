@@ -1,8 +1,8 @@
 ---
 title: News — Data Model
-description: The tb_news field table, the JSONB business_unit_ids targeting column, enum_news_status, the image_file_token → presigned image_url pipeline, and divergences against the SPA News type.
+description: The tb_news field table (business_unit_ids, tags, doc_version), enum_news_status, the image_file_token → presigned image_url pipeline, the doc_version optimistic lock, and divergences against the SPA News type.
 published: true
-date: 2026-06-10T13:00:00.000Z
+date: 2026-07-29T00:00:00.000Z
 tags: book/platform, news, data-model
 editor: markdown
 dateCreated: 2026-06-10T13:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-06-10T13:00:00.000Z
 # News — Data Model
 
 > **At a Glance**
-> **Tables:** `tb_news` — single table, **no FK relations, no unique constraints beyond the PK** &nbsp;·&nbsp; **Enums:** `enum_news_status` (draft · published · archived) &nbsp;·&nbsp; **Targeting:** `business_unit_ids Json @default("[]")` — a JSONB UUID array, not a join table; `[]` = global &nbsp;·&nbsp; **Image:** stored as `image_file_token` (MinIO); API responses replace it with a presigned `image_url` (1-hour expiry) &nbsp;·&nbsp; **Endpoints:** `/api/news` (authenticated CRUD) + `/api/public/news` (anonymous) — `/api`, **not** `/api-system`
+> **Tables:** `tb_news` — single table, **no FK relations, no unique constraints beyond the PK** &nbsp;·&nbsp; **Enums:** `enum_news_status` (draft · published · archived) &nbsp;·&nbsp; **Targeting:** `business_unit_ids Json @default("[]")` — a JSONB UUID array, not a join table; `[]` = global &nbsp;·&nbsp; **Tags:** `tags Json @default("[]")` — a JSONB string array, lowercased/deduped/capped server-side &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` — required on every `PUT`, enforces optimistic locking &nbsp;·&nbsp; **Image:** stored as `image_file_token` (MinIO); API responses replace it with a presigned `image_url` (1-hour expiry) &nbsp;·&nbsp; **Endpoints:** `/api/news` (authenticated CRUD) + `/api/news/tags` + `/api/public/news` (anonymous) — `/api`, **not** `/api-system`
 
 > **Source of truth:** Backend Prisma platform schema. Always read this first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
@@ -20,7 +20,7 @@ dateCreated: 2026-06-10T13:00:00.000Z
 
 ## 1. Overview
 
-The News module owns exactly one table. `tb_news` holds the article itself (`title`, markdown `contents`, optional source `url`), the image as a MinIO file-token string, the publication state (`status`, `published_at`), the targeting list (`business_unit_ids` JSONB), and the platform-standard audit trio. Unusually for the platform schema, the model declares **no `@relation` directives at all**: the audit actor columns are bare UUIDs (contrast `tb_application`, whose actor columns FK to `tb_user`), and the BU targeting is a JSONB array rather than a join table. Referential integrity for targeting is enforced at **write time only**, by the micro-cluster service.
+The News module owns exactly one table. `tb_news` holds the article itself (`title`, markdown `contents`, optional source `url`), the image as a MinIO file-token string, freeform `tags`, the publication state (`status`, `published_at`), the targeting list (`business_unit_ids` JSONB), an optimistic-lock counter (`doc_version`), and the platform-standard audit trio. Unusually for the platform schema, the model declares **no `@relation` directives at all**: the audit actor columns are bare UUIDs (contrast `tb_application`, whose actor columns FK to `tb_user`), and the BU targeting is a JSONB array rather than a join table. Referential integrity for targeting is enforced at **write time only**, by the micro-cluster service.
 
 The persistence path is gateway → TCP → micro-cluster (`PRISMA_SYSTEM` client); the gateway layer additionally owns the image side-effects (upload to micro-file, rollback, old-file cleanup) and the response shaping (presigned URL, nested audit enrichment) described in §5.
 
@@ -28,7 +28,7 @@ The persistence path is gateway → TCP → micro-cluster (`PRISMA_SYSTEM` clien
 
 ### 2.1 `tb_news`
 
-One announcement/article. Schema line 803.
+One announcement/article. Schema line 812.
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
@@ -38,8 +38,10 @@ One announcement/article. Schema line 803.
 | `url` | `String? @db.VarChar` | Yes | Optional source link (SPA validates http(s) format) |
 | `image_file_token` | `String? @db.VarChar` | Yes | MinIO file token from micro-file; **never exposed to API consumers** — resolved to `image_url` (§5) |
 | `business_unit_ids` | `Json @default("[]") @db.JsonB` | No | Array of `tb_business_unit.id` UUIDs; `[]` = global (all BUs) |
+| `tags` | `Json @default("[]") @db.JsonB` | No | Array of lowercase, de-duplicated tag strings — normalized by micro-cluster on every write (§2.3) |
 | `status` | `enum_news_status @default(draft)` | No | `draft` · `published` · `archived` |
 | `published_at` | `DateTime? @db.Timestamptz(6)` | Yes | First-publish stamp (server-set, §2.2); also the public feed's visibility cutoff (`<= now()`) |
+| `doc_version` | `Int @default(0) @db.Integer` | No | Optimistic-lock counter — every `PUT` must supply the version last read; a mismatch fails the update (§2.4) |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: row creation time, default `now()` |
 | `created_by_id` | `String? @db.Uuid` | Yes | Audit: creator user id — **bare UUID, no FK** |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: last update time, default `now()` |
@@ -77,6 +79,38 @@ update(id, data):
 
 Consequences: the stamp is set **once** — demoting to `draft`/`archived` keeps it, and re-publishing later keeps the *original* time. A future-dated `published_at` (settable via API only; the SPA never sends the field) keeps the row out of the public feed until that time — de-facto scheduled publishing.
 
+### 2.3 Tag normalization (`normalizeTags`)
+
+Owned by micro-cluster, run on every create and on any update that touches `tags`:
+
+```
+normalizeTags(input):
+    if input is null/undefined: return []
+    if input is not an array: error "tags must be an array"
+    pieces = input.flatMap(el -> String(el).split(','))   -- defends against a stored
+                                                            -- tag containing the chip
+                                                            -- input's own delimiter
+    for each piece:
+        tag = piece.trim().toLowerCase()
+        skip if empty or already seen (de-dupe)
+        error if tag.length > 40                            -- MAX_TAG_LENGTH
+        append to cleaned
+    error if cleaned.length > 20                             -- MAX_TAGS
+    return cleaned
+```
+
+The SPA's `ChipInput`/`NewsEdit` apply the same lowercase-trim-dedupe rule client-side before the request is even sent; the backend re-applies it as defense in depth (and is the only enforcement point for the 20-tag / 40-character caps).
+
+### 2.4 Optimistic locking (`doc_version`)
+
+`update()` rejects a request with no `doc_version` (`ErrorCode` `COMMON_DOC_VERSION_REQUIRED`) and otherwise issues:
+
+```sql
+UPDATE tb_news SET ... WHERE id = :id AND doc_version = :doc_version
+```
+
+via Prisma's `update({ where: { id, doc_version } })`. If another write changed the row since the client's last read, this matches zero rows; a shared Prisma hook raises `OptimisticLockError` (`code = 'DOC_VERSION_CONFLICT'`), which the service's `@TryCatch` decorator maps to `ErrorCode.ALREADY_EXISTS` — surfaced as **HTTP 409** with that message text. The SPA's `isVersionConflict` helper checks for the 409 status **and** either the `DOC_VERSION_CONFLICT` code or the "modified by another request" message text (the code can arrive as `ALREADY_EXISTS` instead, so the message match is load-bearing), then shows "This record was changed by someone else" and refetches. This is the same mechanism used across the Platform book's other `doc_version`-guarded modules (clusters, business units, users, applications, RBAC).
+
 ## 3. Relationships
 
 `tb_news` participates in **zero Prisma relations**. The two logical references are convention-only:
@@ -86,7 +120,7 @@ Consequences: the stamp is set **once** — demoting to `draft`/`archived` keeps
 
 ## 4. Enums
 
-### `enum_news_status` (schema line 693)
+### `enum_news_status` (schema line 726)
 
 | Value | Meaning |
 |---|---|
@@ -104,11 +138,13 @@ The SPA type is `News` in `../carmen-platform/src/types/index.ts`; the translati
 | --------- | ---------- | -------------- | ----- |
 | `image_url?: string` (presigned) + `image?: string` (legacy fallback) | `News`; list/edit read `image_url \|\| image` | `image_file_token String?` | The gateway resolves the token via micro-file (`files.presigned-url`, 3600 s expiry), sets `image_url`, and **deletes `image_file_token` from the payload**. URLs expire — never persist or cache them. `image` is an older payload field kept only as a read fallback |
 | `audit?: Audit` — nested `{ created, updated, deleted }`, each `{ at, id, name, avatar }` | `News`, `Audit`, `AuditEntry` | six flat audit columns | `@EnrichAuditUsers()` on the GET/POST/PUT routes collapses the flat columns into the nested object (resolving actor names) and removes the flat fields. On enrichment failure the original flat payload passes through — hence the next row |
-| Soft-delete dual detection: `!n.deleted_at && !n.audit?.deleted?.at` | `newsService.getAll` | `deleted_at` | The **admin list endpoint returns soft-deleted rows** (micro-cluster's list query applies no `deleted_at` filter); the SPA hides them client-side, checking both the enriched and the flat location. `getById`/update/delete do enforce `deleted_at: null` server-side (404) |
+| Soft-delete dual detection: `!n.deleted_at && !n.audit?.deleted?.at` | `newsService.getAll` | `deleted_at` | **Confirmed fixed since the last sync.** Micro-cluster's `findAll` now merges `deleted_at: null` into its `where` clause (the same fix applied to Applications and Business Units) — the admin list endpoint no longer returns soft-deleted rows at all. The SPA's client-side dual check is now a defensive no-op, not the only filter. `getById`/update/delete continue to enforce `deleted_at: null` server-side (404) |
 | `business_unit_ids?: string[]` | `News` | `Json @default("[]")` | Same values; under **multipart** writes the SPA JSON-encodes the array into a string field, which `news-body.parser.ts` parses back. Absent/`[]` both mean global |
+| `tags?: string[]` | `News` | `Json @default("[]")` | Same lowercase/deduped values on both sides; under multipart the SPA JSON-encodes the array the same way as `business_unit_ids` |
 | List sort `published_at:desc` (default; column sorts clickable) | `NewsManagement` `DataTable` | n/a | **The server ignores the sort parameter**: micro-cluster's list spreads the query args and then overrides with `orderBy: { updated_at: 'desc' }`. The list is always most-recently-updated first regardless of the SPA's sort UI |
-| Update response | `newsService.update` → `fetchNews()` re-fetch | n/a | `PUT` returns only `{ id, image_url }`, not the full record — the SPA re-fetches after every save; API consumers must `GET :id` for the updated row |
+| Update response | `newsService.update` → `fetchNews()` re-fetch | n/a | `PUT` returns only `{ id, doc_version }` (list/detail responses carry the full row); the SPA re-fetches the record after a save either way |
 | `published_at?: string` (read-only in the SPA) | `NewsEdit` | `DateTime?` | The API accepts explicit `published_at` on create/update (set or `null`-clear); the SPA never sends it and relies on the server stamp (§2.2) |
+| `doc_version?: number` | `NewsEdit`, `NewsManagement` (bulk actions) | `Int @default(0)` | Required on every `PUT`; the SPA threads it through from whatever it last fetched (single edit) or from each selected row (bulk publish/archive) |
 
 ## 6. References
 
@@ -116,24 +152,26 @@ REST surface (backend-gateway). **Note the prefix: `/api/news`, not `/api-system
 
 | Method + Path | Auth | Purpose | Notes |
 |---|---|---|---|
-| `GET /api/news` | Bearer + `x-app-id` (`news.findAll`) | Admin list | Paginated; SPA searches `title`,`contents`; status filter via `advance` `{ where: { status: { in } } }`; **includes soft-deleted rows**; audit nested; server-side sort fixed to `updated_at DESC` |
+| `GET /api/news` | Bearer + `x-app-id` (`news.findAll`) | Admin list | Paginated; SPA searches `title`,`contents`; status/tag filters via `advance` `{ where: { status: { in }, OR: [{ tags: { array_contains } }, ...] } }`; **excludes soft-deleted rows** (`where.deleted_at = null`, confirmed fixed); audit nested; server-side sort fixed to `updated_at DESC` |
+| `GET /api/news/tags` | Bearer + `x-app-id` (`news.findAll`) | Distinct tags | `SELECT DISTINCT jsonb_array_elements_text(tags) ... WHERE deleted_at IS NULL`, alphabetical — feeds the list's Tags filter and the edit page's autocomplete |
 | `GET /api/news/:news_id` | Bearer + `x-app-id` (`news.findOne`) | Detail | UUID v4 param; 404 when soft-deleted; audit nested; `image_url` presigned |
-| `POST /api/news` | Bearer + `x-app-id` (`news.create`) | Create | `multipart/form-data` (binary `image` field; `business_unit_ids` as JSON-encoded string) **or** plain JSON without an image. Returns 201 `{ id, image_url }` (`image_url` is `null` unless a file was uploaded). Failed create rolls the uploaded file back |
-| `PUT /api/news/:news_id` | Bearer + `x-app-id` (`news.update`) | Update | Same multipart/JSON fork; a new image replaces and deletes the old file; JSON-only updates leave the image unchanged. Returns `{ id, image_url }` only |
+| `POST /api/news` | Bearer + `x-app-id` (`news.create`) | Create | `multipart/form-data` (binary `image` field; `business_unit_ids`/`tags` as JSON-encoded strings) **or** plain JSON without an image. Returns 201 `{ id, doc_version }`. Failed create rolls the uploaded file back |
+| `PUT /api/news/:news_id` | Bearer + `x-app-id` (`news.update`) | Update | Same multipart/JSON fork; **requires `doc_version`** (400 if missing, 409 on a stale value); a new image replaces and deletes the old file; JSON-only updates leave the image unchanged. Returns `{ id, doc_version }` only |
 | `DELETE /api/news/:news_id` | Bearer + `x-app-id` (`news.delete`) | Soft delete | Sets `deleted_at`/`deleted_by_id`; best-effort deletes the MinIO file |
-| `GET /api/public/news` | **None (anonymous)** | Public feed | `bu_id`/`page`/`perpage` query; published + `published_at <= now()` + not deleted; no `bu_id` → global only; with `bu_id` → global + targeted; lean projection (`id`,`title`,`contents`,`url`,`image_url`,`published_at`), `published_at DESC` |
+| `GET /api/public/news` | **None (anonymous)** | Public feed | `bu_id`/`page`/`perpage` query; published + `published_at <= now()` + not deleted; no `bu_id` → global only; with `bu_id` → global + targeted; lean projection (`id`,`title`,`contents`,`url`,`image_url`,`tags`,`published_at`), `published_at DESC` |
 | `GET /api/public/news/:news_id` | **None (anonymous)** | Public detail | 404 for draft/archived/deleted/future-dated/unknown alike |
 
-Multipart format details (create/update): field `image` carries the binary; the gateway's `validateImageUpload` enforces MIME `image/jpeg`/`png`/`webp`, ≤5 MB, and ≤2048×2048 px (parse failure → 400 `BAD_DIMENSIONS`). Text fields arrive as strings; only `business_unit_ids` is JSON-decoded.
+Multipart format details (create/update): field `image` carries the binary; the gateway's `validateImageUpload` enforces MIME `image/jpeg`/`png`/`webp`, ≤5 MB, and ≤2048×2048 px (parse failure → 400 `BAD_DIMENSIONS`). Text fields arrive as strings; `business_unit_ids` and `tags` are JSON-decoded.
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_news` (line 803), `enum_news_status` (line 693).
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/news/news.service.ts` — BU validation, `published_at` stamping, soft delete, public filters, the `updated_at` sort override.
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_news` (line 812), `enum_news_status` (line 726).
+- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/news/news.service.ts` — BU validation, tag normalization, `published_at` stamping, the `doc_version` optimistic lock, soft-delete filtering, public filters, the `updated_at` sort override.
 
 **Secondary (gateway + consumer shape):**
 - `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/news/` — `news.controller.ts`, `news.service.ts` (upload/rollback/cleanup), `news-image.helper.ts`, `news-body.parser.ts`, `public-news.controller.ts`.
 - `../carmen-turborepo-backend-v2/apps/backend-gateway/src/common/helpers/image-upload.validator.ts` — server-side image limits.
-- `../carmen-platform/src/types/index.ts` — `News`, `NewsStatus`, `Audit`, `AuditEntry`; `src/services/newsService.ts` — multipart builder, envelope walking, soft-delete filter.
-- `../carmen-turborepo-backend-bruno/collections/carmen-inventory/master-data/news/` — executable contracts including the `public/` pair.
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/src/index.ts` — `OptimisticLockError` (`DOC_VERSION_CONFLICT`).
+- `../carmen-platform/src/types/index.ts` — `News`, `NewsStatus`, `Audit`, `AuditEntry`; `src/services/newsService.ts` — multipart builder, `getTags`, envelope walking; `src/utils/docVersion.ts` — conflict helpers.
+- `../carmen-turborepo-backend-bruno/collections/carmen-inventory/master-data/news/` — executable contracts including the `public/` pair and `GET-find-tags-master-data-news.bru`.
 
 **Cross-links:** [News landing](/en/platform/news) &nbsp;·&nbsp; [UI Screens](./ui-screens.md) &nbsp;·&nbsp; [Permissions](./permissions.md) &nbsp;·&nbsp; [Business Units data-model](../business-units/data-model.md) (the targeted ids)
