@@ -1,8 +1,8 @@
 ---
 title: Platform RBAC
-description: Permission-based access control for the Platform admin SPA — permission catalog, roles, scoped user assignments, and the super-admin bypass.
+description: Permission-based access control for the Platform admin SPA — permission catalog, roles, scoped user assignments, the super-admin bypass, and the 2026-07 RoleEdit/SuperAdminManagement/UserPlatformManagement redesign.
 published: true
-date: 2026-06-10T14:30:00.000Z
+date: 2026-07-29T00:00:00.000Z
 tags: platform/rbac, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-06-10T12:00:00.000Z
 The **Platform RBAC** module is the access-control system of the Carmen Platform admin SPA. It replaces the legacy single-value role enum with a permission-based model: a backend-owned **permission catalog** defines `resource.action` keys, **roles** bundle those keys, **assignments** bind a role to a user at platform-wide or per-cluster scope, and a separate **super-admin flag** bypasses every check. Every route guard, sidebar entry, and in-page action gate in the SPA resolves against this system.
 
 > **At a Glance**
-> **Module purpose:** Permission-based access control — catalog defines `resource.action` keys, roles bundle keys, scoped assignments bind roles to users, super-admin flag bypasses all checks &nbsp;·&nbsp; **Audience:** Developers and QA working on the Platform admin SPA and its authorization backend &nbsp;·&nbsp; **Key entities/tables:** `tb_platform_permission`, `tb_platform_role`, `tb_platform_role_tb_permission`, `tb_user_tb_platform_role` (scope via nullable `cluster_id`), `tb_platform_super_admin` &nbsp;·&nbsp; **Screens:** Roles · Permission Catalog · Super Admins · User Platform &nbsp;·&nbsp; **Sub-pages:** 3
+> **Module purpose:** Permission-based access control — catalog defines `resource.action` keys, roles bundle keys, scoped assignments bind roles to users, super-admin flag bypasses all checks &nbsp;·&nbsp; **Audience:** Developers and QA working on the Platform admin SPA and its authorization backend &nbsp;·&nbsp; **Key entities/tables:** `tb_platform_permission`, `tb_platform_role`, `tb_platform_role_tb_permission`, `tb_user_tb_platform_role` (scope via nullable `cluster_id`), `tb_platform_super_admin` — all five carry `doc_version` (2026-07-16 platform-wide optimistic-lock rollout) &nbsp;·&nbsp; **Screens:** Roles · Permission Catalog · Super Admins · User Platform &nbsp;·&nbsp; **Sub-pages:** 3 &nbsp;·&nbsp; **Since 2026-07:** `RoleEdit` gained an identity hero + not-found gating + `doc_version` conflict handling; `RoleManagement` gained a Roles Access Summary strip and now gates row Edit/Delete with `<Can>`; `SuperAdminManagement` was rewritten from a two-card layout to a searchable `DataTable` + Add dialog; `UserPlatformManagement` gained a Platform Access Summary strip and an Actions column
 
 ## 1. Overview
 
@@ -22,9 +22,11 @@ The module surfaces as four screens in the SPA's **Platform** sidebar group, for
 - **Permission Catalog (`/platform/permissions` → `PermissionCatalog`)** — read-only reference of every permission key the backend defines, grouped by resource. There is no sidebar entry; it is reached from a header button on the Roles list. The SPA cannot create or edit catalog entries.
 - **Roles (`/platform/roles` → `RoleManagement`, `/platform/roles/new` and `/platform/roles/:id/edit` → `RoleEdit`)** — standard list + create/view/edit pattern. A role is a named, activatable bundle of permission keys picked from the catalog via an accordion `PermissionPicker`.
 - **User Platform (`/platform/user-platform` → `UserPlatformManagement`, `/platform/user-platform/:userId` → `UserPlatformEdit`)** — assigns roles to users. Each assignment carries a scope: platform-wide or a specific cluster. The detail page's "Roles & Scope" card is where assignments are added and removed.
-- **Super Admins (`/platform/super-admins` → `SuperAdminManagement`)** — a flat add/remove list of users who bypass every permission check. Membership here is a flag, not a role.
+- **Super Admins (`/platform/super-admins` → `SuperAdminManagement`)** — an add/remove list of users who bypass every permission check. Membership here is a flag, not a role. **Rewritten since 2026-06-10:** the former two-card layout (inline native `<select>` + plain divided row list) is now a searchable `DataTable` (User / Status / Added / Actions columns) with a header CSV Export button and a modal Add-Super-Admin dialog (shadcn `Select`, not an inline native one).
 
 At login the SPA fetches the user's **effective permissions** (`GET /api/user/permission/platform`) — the flattened result of all their assignments — and every guard in the app evaluates against that snapshot.
+
+**Since 2026-07, all four screens gained further changes not present in the last sync:** `RoleEdit` now opens with a `RoleIdentityHero` card (name, Active/Inactive badge, a permission-reach summary that flags "Full access to every permission" in amber) above a Permissions-card-left / Settings-card-right form, adds not-found gating for a bad/deleted `id`, and sends `doc_version` on every save with the shared version-conflict toast; `RoleManagement`'s list gained a **Roles Access Summary** strip (total/active/inactive counts plus the three broadest roles by permission count, as horizontal bars) and now gates row **Edit** (`role.update`) and **Delete** (`role.delete`) with `<Can>` — previously both were visible to any `role.read` holder; `UserPlatformManagement` gained a **Platform Access Summary** strip and a row Actions dropdown ("Manage roles"), and its background per-row role-count fetch now distinguishes a failed count (amber warning icon) from a genuine zero rather than collapsing both to `0`. All five RBAC tables (`tb_platform_permission`, `tb_platform_role`, `tb_platform_role_tb_permission`, `tb_user_tb_platform_role`, `tb_platform_super_admin`) picked up `doc_version` in the 2026-07-16 platform-wide rollout. Full detail on [UI Screens](/en/platform/rbac/ui-screens).
 
 ## 2. Business Context
 
@@ -62,9 +64,9 @@ Access to the four RBAC screens is itself permission-gated. Route guards use `re
 
 | Screen | Route(s) | Route guard | In-page gates |
 |---|---|---|---|
-| Roles list | `/platform/roles` | `role.read` | None — Add/Edit/Delete/Export all visible once the route resolves |
+| Roles list | `/platform/roles` | `role.read` | **Corrected — no longer "None":** Add is `<Can permission="role.create">`; row Edit is `<Can permission="role.update">`; row Delete is `<Can permission="role.delete">` (all three added since the last sync). Export remains ungated |
 | Role create | `/platform/roles/new` | `role.create` | None |
-| Role edit | `/platform/roles/:id/edit` | `role.update` | None |
+| Role edit | `/platform/roles/:id/edit` | `role.update` | The header **Edit** button is `<Can permission="role.update">` |
 | Permission Catalog | `/platform/permissions` | `role.read` | None (read-only screen) |
 | Super Admins | `/platform/super-admins` | `requireSuperAdmin` | None — only super admins ever reach the page |
 | User Platform list | `/platform/user-platform` | `user_platform.read` | None |
@@ -79,7 +81,7 @@ The sidebar mirrors the route guards (`src/components/Layout.tsx`, "Platform" gr
 | User Platform | `permission: 'user_platform.read'` |
 | Permission Catalog | — no sidebar entry; reached from the Roles header button |
 
-A failed route guard renders `<AccessDenied>` inside the normal `<Layout>` shell — the sidebar stays visible, the session stays valid, and a Back-to-Dashboard button is offered. `/dashboard` and `/profile` remain authenticated-only — any signed-in user reaches them regardless of permissions. The full per-route key map for the rest of the SPA lives in [Permissions](/en/platform/rbac/permissions).
+A failed route guard renders the `Forbidden` page (`src/pages/Forbidden.tsx` — renamed from an inline `AccessDenied` component previously defined inside `PrivateRoute.tsx`) **in place**, leaving the URL untouched, inside the normal `<Layout>` shell — the sidebar stays visible, the session stays valid, and two actions are offered: "Go Back" (context-aware, falls back to `/dashboard` if there's no sensible back target) and "Go to Dashboard". A direct `/403` route renders the same page. `/dashboard` and `/profile` remain authenticated-only — any signed-in user reaches them regardless of permissions. The full per-route key map for the rest of the SPA lives in [Permissions](/en/platform/rbac/permissions).
 
 ## 5. Migration from the legacy role model
 

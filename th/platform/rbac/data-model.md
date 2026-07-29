@@ -1,8 +1,8 @@
 ---
 title: Platform RBAC — แบบจำลองข้อมูล (Data Model)
-description: ตาราง RBAC ทั้งห้า — permission catalog, role, join ระหว่าง role กับ permission, assignment ผู้ใช้แบบมี scope, flag super-admin — และความแตกต่างจาก shape ของ SPA
+description: ตาราง RBAC ทั้งห้า — permission catalog, role, join ระหว่าง role กับ permission, assignment ผู้ใช้แบบมี scope, flag super-admin — การ rollout doc_version เมื่อ 2026-07-16 และความแตกต่างจาก shape ของ SPA
 published: true
-date: 2026-06-10T15:00:00.000Z
+date: 2026-07-29T00:00:00.000Z
 tags: book/platform, rbac, data-model
 editor: markdown
 dateCreated: 2026-06-10T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-06-10T15:00:00.000Z
 # Platform RBAC — แบบจำลองข้อมูล (Data Model)
 
 > **At a Glance**
-> **ตาราง:** `tb_platform_permission` &nbsp;·&nbsp; `tb_platform_role` &nbsp;·&nbsp; `tb_platform_role_tb_permission` &nbsp;·&nbsp; `tb_user_tb_platform_role` &nbsp;·&nbsp; `tb_platform_super_admin` &nbsp;·&nbsp; **Enum:** ไม่มี — `resource`/`action` เป็น VarChar รูปแบบอิสระ &nbsp;·&nbsp; **Scope:** `cluster_id` แบบ nullable บน assignment row (`null` = ทั้งแพลตฟอร์ม) &nbsp;·&nbsp; **คอลัมน์ audit:** trio มาตรฐาน `created_*`/`updated_*`/`deleted_*` บนทุกตาราง &nbsp;·&nbsp; **Unique แบบ soft-delete:** uniqueness constraint ทุกตัวรวม `deleted_at` ดังนั้น row ที่ถูกลบสามารถสร้างใหม่ได้
+> **ตาราง:** `tb_platform_permission` &nbsp;·&nbsp; `tb_platform_role` &nbsp;·&nbsp; `tb_platform_role_tb_permission` &nbsp;·&nbsp; `tb_user_tb_platform_role` &nbsp;·&nbsp; `tb_platform_super_admin` &nbsp;·&nbsp; **Enum:** ไม่มี — `resource`/`action` เป็น VarChar รูปแบบอิสระ &nbsp;·&nbsp; **Scope:** `cluster_id` แบบ nullable บน assignment row (`null` = ทั้งแพลตฟอร์ม) &nbsp;·&nbsp; **คอลัมน์ audit:** trio มาตรฐาน `created_*`/`updated_*`/`deleted_*` บนทุกตาราง บวก `doc_version Int @default(0)` บนทั้งห้าตาราง (เพิ่มเมื่อ 2026-07-16, การ rollout optimistic-lock ทั้งแพลตฟอร์ม) &nbsp;·&nbsp; **Unique แบบ soft-delete:** uniqueness constraint ทุกตัวรวม `deleted_at` ดังนั้น row ที่ถูกลบสามารถสร้างใหม่ได้
 
 > **Source of truth:** Prisma platform schema ฝั่ง backend อ่านไฟล์นี้ก่อนเสมอเมื่อเขียนหรืออัพเดทหน้านี้:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
@@ -20,7 +20,7 @@ dateCreated: 2026-06-10T15:00:00.000Z
 
 ## 1. ภาพรวม
 
-โมดูล RBAC เป็นเจ้าของตารางห้าตัว จัดกลุ่มใต้ banner `// Platform RBAC` และ `// Platform Super Admin` ใน Prisma schema (บรรทัด 919–1013) `tb_platform_permission` คือ catalog: หนึ่ง row ต่อคู่ `resource` + `action` เขียนโดย backend เท่านั้น (seed/migration) — SPA อ่านได้แต่ไม่มี surface สำหรับสร้าง/แก้ไข `tb_platform_role` เก็บชุด key ที่มีชื่อ และ `tb_platform_role_tb_permission` คือ M:N join ที่บันทึกว่า role มอบ row ใดของ catalog บ้าง
+โมดูล RBAC เป็นเจ้าของตารางห้าตัว จัดกลุ่มใต้ banner `// Platform RBAC` และ `// Platform Super Admin` ใน Prisma schema (บรรทัด 933–1032) `tb_platform_permission` คือ catalog: หนึ่ง row ต่อคู่ `resource` + `action` เขียนโดย backend เท่านั้น (seed/migration) — SPA อ่านได้แต่ไม่มี surface สำหรับสร้าง/แก้ไข `tb_platform_role` เก็บชุด key ที่มีชื่อ และ `tb_platform_role_tb_permission` คือ M:N join ที่บันทึกว่า role มอบ row ใดของ catalog บ้าง
 
 `tb_user_tb_platform_role` ผูก role เข้ากับผู้ใช้พร้อม scope: คอลัมน์ `cluster_id` ที่เป็น nullable ของมันคือกลไก scope ทั้งหมด — `null` หมายถึง assignment มีผลทั้งแพลตฟอร์ม ส่วน UUID หมายถึงมีผลภายใน cluster นั้นเท่านั้น `tb_platform_super_admin` จงใจไม่เป็นส่วนหนึ่งของกราฟ role: มันคือตาราง flag (มีแค่ `user_id` + `is_active` นอกเหนือจาก audit trio) ที่ row ของมันทำเครื่องหมายผู้ใช้ที่ bypass ทุกการตรวจสอบ permission
 
@@ -38,6 +38,7 @@ permission catalog หนึ่ง row ต่อ action ที่มอบสิ
 | `resource` | `String @db.VarChar` | No | segment ฝั่ง resource ของ key (เช่น `role`, `cluster`, `user_platform`) |
 | `action` | `String @db.VarChar` | No | segment ฝั่ง action ของ key (เช่น `read`, `create`, `manage`, `send`) |
 | `description` | `String?` | Yes | คำอธิบายที่อ่านเข้าใจได้ แสดงบนหน้าจอ Permission Catalog และ tooltip ของ PermissionPicker |
+| `doc_version` | `Int @default(0) @db.Integer` | No | Token สำหรับ optimistic-lock เพิ่มเมื่อ 2026-07-16 (rollout ทั้งแพลตฟอร์ม 35 ตาราง) |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: เวลาสร้าง row, default `now()` |
 | `created_by_id` | `String? @db.Uuid` | Yes | Audit: id ของผู้ใช้ที่สร้าง |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: เวลาอัพเดทล่าสุด, default `now()` |
@@ -61,6 +62,7 @@ permission catalog หนึ่ง row ต่อ action ที่มอบสิ
 | `name` | `String @db.VarChar` | No | ชื่อ role; unique ในหมู่ live row |
 | `description` | `String?` | Yes | คำอธิบาย optional แสดงบนหน้า list ของ Roles |
 | `is_active` | `Boolean?` | Yes | Default `true`; badge Active/Inactive ใน SPA |
+| `doc_version` | `Int @default(0) @db.Integer` | No | Token สำหรับ optimistic-lock เพิ่มเมื่อ 2026-07-16; `RoleEdit.tsx` ส่งค่านี้ทุกครั้งที่ `PUT` และแสดง toast conflict + reload เมื่อไม่ตรงกัน |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: เวลาสร้าง row, default `now()` |
 | `created_by_id` | `String? @db.Uuid` | Yes | Audit: id ของผู้ใช้ที่สร้าง |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: เวลาอัพเดทล่าสุด, default `now()` |
@@ -84,6 +86,7 @@ M:N join ระหว่าง role กับ row ของ catalog แต่ล
 | `platform_role_id` | `String @db.Uuid` | No | FK ไป `tb_platform_role.id` |
 | `platform_permission_id` | `String @db.Uuid` | No | FK ไป `tb_platform_permission.id` |
 | `is_active` | `Boolean?` | Yes | Default `true`; flag ว่า grant ยัง active |
+| `doc_version` | `Int @default(0) @db.Integer` | No | Token สำหรับ optimistic-lock เพิ่มเมื่อ 2026-07-16 |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: เวลาสร้าง row, default `now()` |
 | `created_by_id` | `String? @db.Uuid` | Yes | Audit: id ของผู้ใช้ที่สร้าง |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: เวลาอัพเดทล่าสุด, default `now()` |
@@ -110,6 +113,7 @@ M:N join ระหว่าง role กับ row ของ catalog แต่ล
 | `user_id` | `String @db.Uuid` | No | id ของผู้ใช้เป้าหมาย — คอลัมน์ธรรมดา **ไม่มี Prisma `@relation` ไป `tb_user`** |
 | `platform_role_id` | `String @db.Uuid` | No | FK ไป `tb_platform_role.id` |
 | `cluster_id` | `String? @db.Uuid` | Yes | Scope: `null` = scope ทั้งแพลตฟอร์ม; มีค่า = scope เฉพาะ cluster นี้ (ตาม comment ใน schema คำต่อคำ) คอลัมน์ธรรมดา ไม่มี `@relation` ไป `tb_cluster` |
+| `doc_version` | `Int @default(0) @db.Integer` | No | Token สำหรับ optimistic-lock เพิ่มเมื่อ 2026-07-16 |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: เวลาสร้าง row, default `now()` |
 | `created_by_id` | `String? @db.Uuid` | Yes | Audit: id ของผู้ใช้ที่สร้าง |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: เวลาอัพเดทล่าสุด, default `now()` |
@@ -135,6 +139,7 @@ flag สำหรับ bypass การมี live row ที่นี่ทำ
 | `id` | `String @db.Uuid` | No | Primary key, default `gen_random_uuid()`; คือ id ที่ endpoint remove ใช้ |
 | `user_id` | `String @db.Uuid` | No | id ของผู้ใช้ที่ถูก flag — คอลัมน์ธรรมดา ไม่มี `@relation` ไป `tb_user` |
 | `is_active` | `Boolean?` | Yes | Default `true`; SPA render row ที่ Inactive แต่ row เหล่านั้นมีอยู่ในข้อมูล |
+| `doc_version` | `Int @default(0) @db.Integer` | No | Token สำหรับ optimistic-lock เพิ่มเมื่อ 2026-07-16 |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: เวลาสร้าง row, default `now()` — แสดงเป็น "Added" ใน SPA |
 | `created_by_id` | `String? @db.Uuid` | Yes | Audit: id ของผู้ใช้ที่สร้าง |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: เวลาอัพเดทล่าสุด, default `now()` |
@@ -189,6 +194,7 @@ type ของ SPA อยู่ใน `../carmen-platform/src/types/index.ts` (`
 | `EffectivePermissions` `{ platform, clusters, is_super_admin }` | `EffectivePermissions` | ไม่มีตาราง | การ flatten ที่คำนวณจาก assignment ที่ live ทั้งหมด + flag super-admin; เสิร์ฟโดย `GET /api/user/permission/platform` |
 | `created_at`/`created_by_name` แบบแบนบน row ของ role list | `RoleManagement.tsx` | คอลัมน์ audit id | response ของ list อาจซ้อนข้อมูล audit เป็น `audit.created/updated` `{ at, name }`; SPA flatten และรองรับทั้งสอง shape |
 | envelope `{ data }` หลายชั้น | `userRoleService.list`, `SuperAdminManagement.extractArray` | n/a | endpoint user-roles และ super-admins อาจซ้อน `{ data: { data: [...] } }` ลึกกว่าหนึ่งชั้นตามปกติ; consumer ทั้งสองไล่ลงไปจนเจอ array |
+| `Role.doc_version?: number` | `Role` (`src/types/index.ts`) | `doc_version Int @default(0)` | **สอดคล้องกัน ไม่ใช่ความแตกต่าง** — เพิ่มทั้งสองฝั่งใน rollout เมื่อ 2026-07-16 `RoleEdit.tsx` อ่านผ่าน `getDocVersion()` และส่งกลับตอน `PUT` พร้อม delta ของ `permissions` |
 
 ### 5.1 Endpoint
 
@@ -199,7 +205,7 @@ REST surface ที่ service ของ SPA ใช้ (`roleService.ts`, `permi
 | `GET /api-system/platform/roles` | list ของ role | แบ่งหน้า; row มี `permission_count` และอาจมี `audit` ซ้อนอยู่ |
 | `POST /api-system/platform/roles` | สร้าง role | body มี `permissions: { add: string[] }` |
 | `GET /api-system/platform/roles/:id` | detail ของ role | คืน `permissions: string[]` ที่ flatten แล้ว |
-| `PUT /api-system/platform/roles/:id` | อัพเดท role | body มี `permissions: { add: string[], remove: string[] }` (delta) |
+| `PUT /api-system/platform/roles/:id` | อัพเดท role | body มี `permissions: { add: string[], remove: string[] }` (delta) บวก `doc_version` เมื่อทราบค่า — ไม่ตรงกันจะแสดง toast conflict และหน้าจะ re-fetch |
 | `DELETE /api-system/platform/roles/:id` | ลบ role | |
 | `GET /api-system/platform/permissions` | permission catalog | read-only; ไม่มี endpoint สำหรับเขียนใน SPA |
 | `GET /api-system/platform/super-admins` | list ของ super-admin | response อาจซ้อน envelope `{ data }` หลายชั้น |
@@ -213,7 +219,7 @@ REST surface ที่ service ของ SPA ใช้ (`roleService.ts`, `permi
 ## 6. แหล่งข้อมูลอ้างอิง
 
 **หลัก (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — model `tb_platform_permission` (บรรทัด 921), `tb_platform_role` (บรรทัด 939), `tb_platform_role_tb_permission` (บรรทัด 958), `tb_user_tb_platform_role` (บรรทัด 978), `tb_platform_super_admin` (บรรทัด 1000)
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — model `tb_platform_permission` (บรรทัด 935), `tb_platform_role` (บรรทัด 954), `tb_platform_role_tb_permission` (บรรทัด 974), `tb_user_tb_platform_role` (บรรทัด 995), `tb_platform_super_admin` (บรรทัด 1018)
 
 **รอง (shape ฝั่ง consumer):**
 - `../carmen-platform/src/types/index.ts` — `Role`, `PermissionCatalogItem`, `UserRoleAssignment`, `Scope`, `EffectivePermissions`
