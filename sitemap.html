@@ -1,0 +1,983 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Carmen Inventory · Sitemap</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--bg:#fff;--fg:#111;--muted:#666;--line:#e5e5e5;--card:#fafafa}
+@media(prefers-color-scheme:dark){:root{--bg:#111;--fg:#eee;--muted:#999;--line:#333;--card:#1a1a1a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 ui-sans-serif,system-ui,sans-serif}
+header{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:12px 20px;z-index:2}
+h1{font-size:16px;margin:0 0 8px}
+.stats{color:var(--muted);font-size:12px}
+input{width:280px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)}
+section{padding:16px 20px;border-bottom:1px solid var(--line)}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 12px}
+.count{background:var(--card);border-radius:10px;padding:1px 7px;font-size:11px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.shot{aspect-ratio:16/10;overflow:hidden;background:var(--bg);border-bottom:1px solid var(--line)}
+.shot img{width:100%;height:100%;object-fit:cover;object-position:top left;display:block}
+.no-shot{display:grid;place-items:center;height:100%;color:var(--muted);font-size:12px}
+.shot img,a.b.var{cursor:zoom-in}
+/* Lightbox: opens fit-to-screen, a second click on the image switches to
+   100% so fine print is readable; the image is then scrollable. */
+#lb{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;place-items:center;z-index:10;padding:28px}
+#lb.on{display:grid}
+#lb img{max-width:100%;max-height:100%;object-fit:contain;cursor:zoom-in;box-shadow:0 8px 40px rgba(0,0,0,.6)}
+#lb.full{place-items:start;overflow:auto;padding:0}
+#lb.full img{max-width:none;max-height:none;cursor:zoom-out;box-shadow:none}
+#lb .cap{position:fixed;top:10px;left:14px;right:14px;color:#fff;font:12px ui-monospace,SFMono-Regular,monospace;text-shadow:0 1px 4px #000;pointer-events:none}
+#lb .hint{position:fixed;bottom:10px;left:14px;color:#bbb;font-size:11px;text-shadow:0 1px 4px #000;pointer-events:none}
+.meta{padding:8px 10px 4px}
+.meta code{font-size:11px;word-break:break-all;display:block}
+.slug{color:var(--muted);font-size:11px}
+.badges{padding:4px 10px 10px;display:flex;flex-wrap:wrap;gap:4px}
+.b{font-size:10px;padding:1px 6px;border-radius:9px;border:1px solid var(--line);text-decoration:none;color:var(--fg)}
+.base{background:#2563eb;color:#fff;border-color:#2563eb}
+.var{background:#16a34a;color:#fff;border-color:#16a34a}
+.denied{color:#b91c1c;border-color:#b91c1c}
+.na{color:var(--muted)}
+.reasons{margin:0;padding:0 10px 10px 24px;color:var(--muted);font-size:10px;line-height:1.45}
+.reasons li{margin:0;word-break:break-word}
+.hidden{display:none}
+</style></head><body>
+<header>
+<h1>Carmen Inventory · Sitemap</h1>
+<div class="stats">168 screens · 104 captured · 44 role variants · 64 unreachable</div>
+<div style="margin-top:8px"><input id="q" type="search" placeholder="filter by route or role..."></div>
+</header>
+<section><h2>accounting <span class="count">19</span></h2>
+<div class="grid"><article class="card" data-route="/accounting" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/accounting</code><span class="slug">accounting · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/accounting/accounts-payable/invoice" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/accounting/accounts-payable/invoice</code><span class="slug">accounting · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/accounting/accounts-payable/invoice/:id" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/accounting/accounts-payable/invoice/:id</code><span class="slug">accounting · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/accounting/accounts-payable/payment" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/accounting/accounts-payable/payment</code><span class="slug">accounting · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/accounting/accounts-payable/payment/:id" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/accounting/accounts-payable/payment/:id</code><span class="slug">accounting · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/accounting/accounts-receivable/invoice" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/accounting/accounts-receivable/invoice</code><span class="slug">accounting · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/accounting/accounts-receivable/invoice/:id" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/accounting/accounts-receivable/invoice/:id</code><span class="slug">accounting · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/accounting/accounts-receivable/receipt" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/accounting/accounts-receivable/receipt</code><span class="slug">accounting · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/accounting/accounts-receivable/receipt/:id" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/accounting/accounts-receivable/receipt/:id</code><span class="slug">accounting · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/accounting/allocation-voucher" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/accounting/allocation-voucher</code><span class="slug">accounting · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/accounting/allocation-voucher/:id" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/accounting/allocation-voucher/:id</code><span class="slug">accounting · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/accounting/financial-reports" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/accounting/financial-reports</code><span class="slug">accounting · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/accounting/financial-reports/:id" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/accounting/financial-reports/:id</code><span class="slug">accounting · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/accounting/journal-voucher" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/accounting/journal-voucher</code><span class="slug">accounting · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/accounting/journal-voucher/:id" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/accounting/journal-voucher/:id</code><span class="slug">accounting · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/accounting/recurring-voucher" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/accounting/recurring-voucher</code><span class="slug">accounting · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/accounting/recurring-voucher/:id" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/accounting/recurring-voucher/:id</code><span class="slug">accounting · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/accounting/template-voucher" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/accounting/template-voucher</code><span class="slug">accounting · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/accounting/template-voucher/:id" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/accounting/template-voucher/:id</code><span class="slug">accounting · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article></div></section>
+<section><h2>config <span class="count">31</span></h2>
+<div class="grid"><article class="card" data-route="/config" data-roles="Admin">
+  <div class="shot"><img src="assets/screenshots/inventory/config/index.png" alt="/config" loading="lazy"></div>
+  <div class="meta"><code>/config</code><span class="slug">config · index</span></div>
+  <div class="badges"><span class="b base">Admin</span></div>
+  
+</article><article class="card" data-route="/config/adjustment-type" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/adjustment-type/index.png" alt="/config/adjustment-type" loading="lazy"></div>
+  <div class="meta"><code>/config/adjustment-type</code><span class="slug">adjustment-type · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/adjustment-type" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/adjustment-type/index-dialog-add.png" alt="/config/adjustment-type" loading="lazy"></div>
+  <div class="meta"><code>/config/adjustment-type</code><span class="slug">adjustment-type · index (dialog)</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/business-type" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/business-type/index.png" alt="/config/business-type" loading="lazy"></div>
+  <div class="meta"><code>/config/business-type</code><span class="slug">business-type · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/business-type" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/business-type/index-dialog-add.png" alt="/config/business-type" loading="lazy"></div>
+  <div class="meta"><code>/config/business-type</code><span class="slug">business-type · index (dialog)</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/certification" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/certification/index.png" alt="/config/certification" loading="lazy"></div>
+  <div class="meta"><code>/config/certification</code><span class="slug">certification · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/certification" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/certification/index-dialog-add.png" alt="/config/certification" loading="lazy"></div>
+  <div class="meta"><code>/config/certification</code><span class="slug">certification · index (dialog)</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/credit-note-reason" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/credit-note-reason/index.png" alt="/config/credit-note-reason" loading="lazy"></div>
+  <div class="meta"><code>/config/credit-note-reason</code><span class="slug">credit-note-reason · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/credit-note-reason" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/credit-note-reason/index-dialog-add.png" alt="/config/credit-note-reason" loading="lazy"></div>
+  <div class="meta"><code>/config/credit-note-reason</code><span class="slug">credit-note-reason · index (dialog)</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/credit-term" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/credit-term/index.png" alt="/config/credit-term" loading="lazy"></div>
+  <div class="meta"><code>/config/credit-term</code><span class="slug">credit-term · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/credit-term" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/credit-term/index-dialog-add.png" alt="/config/credit-term" loading="lazy"></div>
+  <div class="meta"><code>/config/credit-term</code><span class="slug">credit-term · index (dialog)</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/currency" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/currency/index.png" alt="/config/currency" loading="lazy"></div>
+  <div class="meta"><code>/config/currency</code><span class="slug">currency · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/currency" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/currency/index-dialog-add.png" alt="/config/currency" loading="lazy"></div>
+  <div class="meta"><code>/config/currency</code><span class="slug">currency · index (dialog)</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/delivery-point" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/delivery-point/index.png" alt="/config/delivery-point" loading="lazy"></div>
+  <div class="meta"><code>/config/delivery-point</code><span class="slug">delivery-point · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/delivery-point" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/delivery-point/index-dialog-add.png" alt="/config/delivery-point" loading="lazy"></div>
+  <div class="meta"><code>/config/delivery-point</code><span class="slug">delivery-point · index (dialog)</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/department" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/department/index.png" alt="/config/department" loading="lazy"></div>
+  <div class="meta"><code>/config/department</code><span class="slug">department · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/department/:id" data-roles=" StoreManager Budget">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/config/department/:id</code><span class="slug">department · detail</span></div>
+  <div class="badges"><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span><span class="b na" title="Something went wrong Department not found Back to list Go to dashboard">Requestor —</span><span class="b na" title="Something went wrong Department not found Back to list Go to dashboard">HOD —</span><span class="b na" title="Something went wrong Department not found Back to list Go to dashboard">Purchase —</span><span class="b na" title="Something went wrong Department not found Back to list Go to dashboard">FC —</span><span class="b na" title="Something went wrong Department not found Back to list Go to dashboard">GM —</span><span class="b na" title="Something went wrong Department not found Back to list Go to dashboard">Owner —</span><span class="b na" title="Something went wrong Department not found Back to list Go to dashboard">Admin —</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li><li>Something went wrong Department not found Back to list Go to dashboard — Requestor, HOD, Purchase, FC, GM, Owner, Admin</li></ul>
+</article><article class="card" data-route="/config/department/new" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/department/new.png" alt="/config/department/new" loading="lazy"></div>
+  <div class="meta"><code>/config/department/new</code><span class="slug">department · new</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/eco" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/eco/index.png" alt="/config/eco" loading="lazy"></div>
+  <div class="meta"><code>/config/eco</code><span class="slug">eco · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/eco" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/eco/index-dialog-add.png" alt="/config/eco" loading="lazy"></div>
+  <div class="meta"><code>/config/eco</code><span class="slug">eco · index (dialog)</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/exchange-rate" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/exchange-rate/index.png" alt="/config/exchange-rate" loading="lazy"></div>
+  <div class="meta"><code>/config/exchange-rate</code><span class="slug">exchange-rate · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/exchange-rate" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/exchange-rate/index-dialog-add.png" alt="/config/exchange-rate" loading="lazy"></div>
+  <div class="meta"><code>/config/exchange-rate</code><span class="slug">exchange-rate · index (dialog)</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/extra-cost" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/extra-cost/index.png" alt="/config/extra-cost" loading="lazy"></div>
+  <div class="meta"><code>/config/extra-cost</code><span class="slug">extra-cost · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/extra-cost" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/extra-cost/index-dialog-add.png" alt="/config/extra-cost" loading="lazy"></div>
+  <div class="meta"><code>/config/extra-cost</code><span class="slug">extra-cost · index (dialog)</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/location" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/location/index.png" alt="/config/location" loading="lazy"></div>
+  <div class="meta"><code>/config/location</code><span class="slug">location · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/location/:id" data-roles=" StoreManager Budget">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/config/location/:id</code><span class="slug">location · detail</span></div>
+  <div class="badges"><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span><span class="b na" title="Something went wrong Location not found Back to list Go to dashboard">Requestor —</span><span class="b na" title="Something went wrong Location not found Back to list Go to dashboard">HOD —</span><span class="b na" title="Something went wrong Location not found Back to list Go to dashboard">Purchase —</span><span class="b na" title="Something went wrong Location not found Back to list Go to dashboard">FC —</span><span class="b na" title="Something went wrong Location not found Back to list Go to dashboard">GM —</span><span class="b na" title="Something went wrong Location not found Back to list Go to dashboard">Owner —</span><span class="b na" title="Something went wrong Location not found Back to list Go to dashboard">Admin —</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li><li>Something went wrong Location not found Back to list Go to dashboard — Requestor, HOD, Purchase, FC, GM, Owner, Admin</li></ul>
+</article><article class="card" data-route="/config/location/new" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/location/new.png" alt="/config/location/new" loading="lazy"></div>
+  <div class="meta"><code>/config/location/new</code><span class="slug">location · new</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/tax-profile" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/tax-profile/index.png" alt="/config/tax-profile" loading="lazy"></div>
+  <div class="meta"><code>/config/tax-profile</code><span class="slug">tax-profile · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/tax-profile" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/tax-profile/index-dialog-add.png" alt="/config/tax-profile" loading="lazy"></div>
+  <div class="meta"><code>/config/tax-profile</code><span class="slug">tax-profile · index (dialog)</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/unit" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/unit/index.png" alt="/config/unit" loading="lazy"></div>
+  <div class="meta"><code>/config/unit</code><span class="slug">unit · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/config/unit" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/unit/index-dialog-add.png" alt="/config/unit" loading="lazy"></div>
+  <div class="meta"><code>/config/unit</code><span class="slug">unit · index (dialog)</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li></ul>
+</article></div></section>
+<section><h2>dashboard <span class="count">1</span></h2>
+<div class="grid"><article class="card" data-route="/dashboard" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/dashboard/index.png" alt="/dashboard" loading="lazy"></div>
+  <div class="meta"><code>/dashboard</code><span class="slug">dashboard · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><a class="b var" href="assets/screenshots/inventory/dashboard/index--Requestor.png">Requestor ⊕</a><a class="b var" href="assets/screenshots/inventory/dashboard/index--HOD.png">HOD ⊕</a><a class="b var" href="assets/screenshots/inventory/dashboard/index--Purchase.png">Purchase ⊕</a><a class="b var" href="assets/screenshots/inventory/dashboard/index--FC.png">FC ⊕</a><a class="b var" href="assets/screenshots/inventory/dashboard/index--GM.png">GM ⊕</a><a class="b var" href="assets/screenshots/inventory/dashboard/index--Owner.png">Owner ⊕</a><a class="b var" href="assets/screenshots/inventory/dashboard/index--StoreManager.png">StoreManager ⊕</a><a class="b var" href="assets/screenshots/inventory/dashboard/index--Budget.png">Budget ⊕</a></div>
+  
+</article></div></section>
+<section><h2>dev <span class="count">1</span></h2>
+<div class="grid"><article class="card" data-route="/dev/toast" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/dev/toast</code><span class="slug">dev · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article></div></section>
+<section><h2>forgot-password <span class="count">1</span></h2>
+<div class="grid"><article class="card" data-route="/forgot-password" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/forgot-password</code><span class="slug">forgot-password · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article></div></section>
+<section><h2>inventory-management <span class="count">16</span></h2>
+<div class="grid"><article class="card" data-route="/inventory-management" data-roles="Admin">
+  <div class="shot"><img src="assets/screenshots/inventory/inventory-management/index.png" alt="/inventory-management" loading="lazy"></div>
+  <div class="meta"><code>/inventory-management</code><span class="slug">inventory-management · index</span></div>
+  <div class="badges"><span class="b base">Admin</span></div>
+  
+</article><article class="card" data-route="/inventory-management/inventory-adjustment" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/inventory-adjustment/index.png" alt="/inventory-management/inventory-adjustment" loading="lazy"></div>
+  <div class="meta"><code>/inventory-management/inventory-adjustment</code><span class="slug">inventory-adjustment · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/inventory-management/inventory-adjustment/:id" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/inventory-management/inventory-adjustment/:id</code><span class="slug">inventory-adjustment · detail</span></div>
+  <div class="badges"><span class="b na" title="no seedId">Requestor —</span><span class="b na" title="no seedId">HOD —</span><span class="b na" title="no seedId">Purchase —</span><span class="b na" title="no seedId">FC —</span><span class="b na" title="no seedId">GM —</span><span class="b na" title="no seedId">Owner —</span><span class="b na" title="no seedId">StoreManager —</span><span class="b na" title="no seedId">Budget —</span><span class="b na" title="no seedId">Admin —</span></div>
+  <ul class="reasons"><li>no seedId — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget, Admin</li></ul>
+</article><article class="card" data-route="/inventory-management/inventory-adjustment/new" data-roles=" StoreManager Budget">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/inventory-management/inventory-adjustment/new</code><span class="slug">inventory-adjustment · new</span></div>
+  <div class="badges"><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span><span class="b na" title="Something went wrong Invalid adjustment type. Use ?type=stock-in or ?type=stock-out">Requestor —</span><span class="b na" title="Something went wrong Invalid adjustment type. Use ?type=stock-in or ?type=stock-out">HOD —</span><span class="b na" title="Something went wrong Invalid adjustment type. Use ?type=stock-in or ?type=stock-out">Purchase —</span><span class="b na" title="Something went wrong Invalid adjustment type. Use ?type=stock-in or ?type=stock-out">FC —</span><span class="b na" title="Something went wrong Invalid adjustment type. Use ?type=stock-in or ?type=stock-out">GM —</span><span class="b na" title="Something went wrong Invalid adjustment type. Use ?type=stock-in or ?type=stock-out">Owner —</span><span class="b na" title="Something went wrong Invalid adjustment type. Use ?type=stock-in or ?type=stock-out">Admin —</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li><li>Something went wrong Invalid adjustment type. Use ?type=stock-in or ?type=stock-out — Requestor, HOD, Purchase, FC, GM, Owner, Admin</li></ul>
+</article><article class="card" data-route="/inventory-management/period-end" data-roles="Admin Requestor StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/period-end/index.png" alt="/inventory-management/period-end" loading="lazy"></div>
+  <div class="meta"><code>/inventory-management/period-end</code><span class="slug">period-end · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/inventory-management/period-end/review" data-roles="Admin Requestor StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/period-end/review.png" alt="/inventory-management/period-end/review" loading="lazy"></div>
+  <div class="meta"><code>/inventory-management/period-end/review</code><span class="slug">period-end · review</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/inventory-management/physical-count" data-roles="Admin Requestor StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/physical-count/index.png" alt="/inventory-management/physical-count" loading="lazy"></div>
+  <div class="meta"><code>/inventory-management/physical-count</code><span class="slug">physical-count · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/inventory-management/physical-count/:id" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/inventory-management/physical-count/:id</code><span class="slug">physical-count · detail</span></div>
+  <div class="badges"><span class="b na" title="no seedId">Requestor —</span><span class="b na" title="no seedId">HOD —</span><span class="b na" title="no seedId">Purchase —</span><span class="b na" title="no seedId">FC —</span><span class="b na" title="no seedId">GM —</span><span class="b na" title="no seedId">Owner —</span><span class="b na" title="no seedId">StoreManager —</span><span class="b na" title="no seedId">Budget —</span><span class="b na" title="no seedId">Admin —</span></div>
+  <ul class="reasons"><li>no seedId — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget, Admin</li></ul>
+</article><article class="card" data-route="/inventory-management/physical-count/:id/entry" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/inventory-management/physical-count/:id/entry</code><span class="slug">physical-count · entry</span></div>
+  <div class="badges"><span class="b na" title="no seedId">Requestor —</span><span class="b na" title="no seedId">HOD —</span><span class="b na" title="no seedId">Purchase —</span><span class="b na" title="no seedId">FC —</span><span class="b na" title="no seedId">GM —</span><span class="b na" title="no seedId">Owner —</span><span class="b na" title="no seedId">StoreManager —</span><span class="b na" title="no seedId">Budget —</span><span class="b na" title="no seedId">Admin —</span></div>
+  <ul class="reasons"><li>no seedId — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget, Admin</li></ul>
+</article><article class="card" data-route="/inventory-management/physical-count/:id/review" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/inventory-management/physical-count/:id/review</code><span class="slug">physical-count · review</span></div>
+  <div class="badges"><span class="b na" title="no seedId">Requestor —</span><span class="b na" title="no seedId">HOD —</span><span class="b na" title="no seedId">Purchase —</span><span class="b na" title="no seedId">FC —</span><span class="b na" title="no seedId">GM —</span><span class="b na" title="no seedId">Owner —</span><span class="b na" title="no seedId">StoreManager —</span><span class="b na" title="no seedId">Budget —</span><span class="b na" title="no seedId">Admin —</span></div>
+  <ul class="reasons"><li>no seedId — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget, Admin</li></ul>
+</article><article class="card" data-route="/inventory-management/physical-count/new" data-roles="Admin Requestor StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/physical-count/new.png" alt="/inventory-management/physical-count/new" loading="lazy"></div>
+  <div class="meta"><code>/inventory-management/physical-count/new</code><span class="slug">physical-count · new</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/inventory-management/spot-check" data-roles="Admin Requestor StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/spot-check/index.png" alt="/inventory-management/spot-check" loading="lazy"></div>
+  <div class="meta"><code>/inventory-management/spot-check</code><span class="slug">spot-check · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/inventory-management/spot-check/:id" data-roles=" Requestor StoreManager Budget">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/inventory-management/spot-check/:id</code><span class="slug">spot-check · detail</span></div>
+  <div class="badges"><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span><span class="b na" title="Something went wrong We couldn't find what you were looking for. Go to dashboard">HOD —</span><span class="b na" title="Something went wrong We couldn't find what you were looking for. Go to dashboard">Purchase —</span><span class="b na" title="Something went wrong We couldn't find what you were looking for. Go to dashboard">FC —</span><span class="b na" title="Something went wrong We couldn't find what you were looking for. Go to dashboard">GM —</span><span class="b na" title="Something went wrong We couldn't find what you were looking for. Go to dashboard">Owner —</span><span class="b na" title="Something went wrong We couldn't find what you were looking for. Go to dashboard">Admin —</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, StoreManager, Budget</li><li>Something went wrong We couldn't find what you were looking for. Go to dashboard — HOD, Purchase, FC, GM, Owner, Admin</li></ul>
+</article><article class="card" data-route="/inventory-management/spot-check/:id/review" data-roles=" Requestor StoreManager Budget">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/inventory-management/spot-check/:id/review</code><span class="slug">spot-check · review</span></div>
+  <div class="badges"><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span><span class="b na" title="Something went wrong You're going a bit too fast. Wait a moment and try again. Try again">HOD —</span><span class="b na" title="Something went wrong You're going a bit too fast. Wait a moment and try again. Try again">Purchase —</span><span class="b na" title="Something went wrong You're going a bit too fast. Wait a moment and try again. Try again">FC —</span><span class="b na" title="Something went wrong Something went wrong on our end. Please try again. Try again">GM —</span><span class="b na" title="Something went wrong Something went wrong on our end. Please try again. Try again">Owner —</span><span class="b na" title="Something went wrong Something went wrong on our end. Please try again. Try again">Admin —</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, StoreManager, Budget</li><li>Something went wrong You're going a bit too fast. Wait a moment and try again. Try again — HOD, Purchase, FC</li><li>Something went wrong Something went wrong on our end. Please try again. Try again — GM, Owner, Admin</li></ul>
+</article><article class="card" data-route="/inventory-management/spot-check/location/:location_id" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/inventory-management/spot-check/location/:location_id</code><span class="slug">location · detail</span></div>
+  <div class="badges"><span class="b na" title="no seedId">Requestor —</span><span class="b na" title="no seedId">HOD —</span><span class="b na" title="no seedId">Purchase —</span><span class="b na" title="no seedId">FC —</span><span class="b na" title="no seedId">GM —</span><span class="b na" title="no seedId">Owner —</span><span class="b na" title="no seedId">StoreManager —</span><span class="b na" title="no seedId">Budget —</span><span class="b na" title="no seedId">Admin —</span></div>
+  <ul class="reasons"><li>no seedId — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget, Admin</li></ul>
+</article><article class="card" data-route="/inventory-management/transaction" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/transaction/index.png" alt="/inventory-management/transaction" loading="lazy"></div>
+  <div class="meta"><code>/inventory-management/transaction</code><span class="slug">transaction · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article></div></section>
+<section><h2>invitations <span class="count">2</span></h2>
+<div class="grid"><article class="card" data-route="/invitations" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/invitations</code><span class="slug">invitations · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/invitations/:token" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/invitations/:token</code><span class="slug">invitations · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article></div></section>
+<section><h2>login <span class="count">1</span></h2>
+<div class="grid"><article class="card" data-route="/login" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/login</code><span class="slug">login · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article></div></section>
+<section><h2>notifications <span class="count">1</span></h2>
+<div class="grid"><article class="card" data-route="/notifications" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/notifications/index.png" alt="/notifications" loading="lazy"></div>
+  <div class="meta"><code>/notifications</code><span class="slug">notifications · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><a class="b var" href="assets/screenshots/inventory/notifications/index--Requestor.png">Requestor ⊕</a><a class="b var" href="assets/screenshots/inventory/notifications/index--HOD.png">HOD ⊕</a><a class="b var" href="assets/screenshots/inventory/notifications/index--Purchase.png">Purchase ⊕</a><a class="b var" href="assets/screenshots/inventory/notifications/index--FC.png">FC ⊕</a><a class="b var" href="assets/screenshots/inventory/notifications/index--GM.png">GM ⊕</a><a class="b var" href="assets/screenshots/inventory/notifications/index--Owner.png">Owner ⊕</a><a class="b var" href="assets/screenshots/inventory/notifications/index--StoreManager.png">StoreManager ⊕</a><a class="b var" href="assets/screenshots/inventory/notifications/index--Budget.png">Budget ⊕</a></div>
+  
+</article></div></section>
+<section><h2>operation-plan <span class="count">15</span></h2>
+<div class="grid"><article class="card" data-route="/operation-plan" data-roles="Admin">
+  <div class="shot"><img src="assets/screenshots/inventory/operation-plan/index.png" alt="/operation-plan" loading="lazy"></div>
+  <div class="meta"><code>/operation-plan</code><span class="slug">operation-plan · index</span></div>
+  <div class="badges"><span class="b base">Admin</span></div>
+  
+</article><article class="card" data-route="/operation-plan/category" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/category/index.png" alt="/operation-plan/category" loading="lazy"></div>
+  <div class="meta"><code>/operation-plan/category</code><span class="slug">category · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/operation-plan/category/:id" data-roles=" StoreManager Budget">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/operation-plan/category/:id</code><span class="slug">category · detail</span></div>
+  <div class="badges"><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span><span class="b na" title="Something went wrong Recipe category not found Back to list Go to dashboard">Requestor —</span><span class="b na" title="Something went wrong Recipe category not found Back to list Go to dashboard">HOD —</span><span class="b na" title="Something went wrong Recipe category not found Back to list Go to dashboard">Purchase —</span><span class="b na" title="Something went wrong Recipe category not found Back to list Go to dashboard">FC —</span><span class="b na" title="Something went wrong Recipe category not found Back to list Go to dashboard">GM —</span><span class="b na" title="Something went wrong Recipe category not found Back to list Go to dashboard">Owner —</span><span class="b na" title="Something went wrong Recipe category not found Back to list Go to dashboard">Admin —</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li><li>Something went wrong Recipe category not found Back to list Go to dashboard — Requestor, HOD, Purchase, FC, GM, Owner, Admin</li></ul>
+</article><article class="card" data-route="/operation-plan/category/new" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/category/new.png" alt="/operation-plan/category/new" loading="lazy"></div>
+  <div class="meta"><code>/operation-plan/category/new</code><span class="slug">category · new</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/operation-plan/cuisine" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/cuisine/index.png" alt="/operation-plan/cuisine" loading="lazy"></div>
+  <div class="meta"><code>/operation-plan/cuisine</code><span class="slug">cuisine · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/operation-plan/cuisine/:id" data-roles=" StoreManager Budget">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/operation-plan/cuisine/:id</code><span class="slug">cuisine · detail</span></div>
+  <div class="badges"><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span><span class="b na" title="Something went wrong Cuisine not found Back to list Go to dashboard">Requestor —</span><span class="b na" title="Something went wrong Cuisine not found Back to list Go to dashboard">HOD —</span><span class="b na" title="Something went wrong Cuisine not found Back to list Go to dashboard">Purchase —</span><span class="b na" title="Something went wrong Cuisine not found Back to list Go to dashboard">FC —</span><span class="b na" title="Something went wrong Cuisine not found Back to list Go to dashboard">GM —</span><span class="b na" title="Something went wrong Cuisine not found Back to list Go to dashboard">Owner —</span><span class="b na" title="Something went wrong Cuisine not found Back to list Go to dashboard">Admin —</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li><li>Something went wrong Cuisine not found Back to list Go to dashboard — Requestor, HOD, Purchase, FC, GM, Owner, Admin</li></ul>
+</article><article class="card" data-route="/operation-plan/cuisine/new" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/cuisine/new.png" alt="/operation-plan/cuisine/new" loading="lazy"></div>
+  <div class="meta"><code>/operation-plan/cuisine/new</code><span class="slug">cuisine · new</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/operation-plan/equipment" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/equipment/index.png" alt="/operation-plan/equipment" loading="lazy"></div>
+  <div class="meta"><code>/operation-plan/equipment</code><span class="slug">equipment · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/operation-plan/equipment-category" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/equipment-category/index.png" alt="/operation-plan/equipment-category" loading="lazy"></div>
+  <div class="meta"><code>/operation-plan/equipment-category</code><span class="slug">equipment-category · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/operation-plan/equipment/:id" data-roles=" StoreManager Budget">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/operation-plan/equipment/:id</code><span class="slug">equipment · detail</span></div>
+  <div class="badges"><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span><span class="b na" title="Something went wrong Equipment not found Back to list Go to dashboard">Requestor —</span><span class="b na" title="Something went wrong Equipment not found Back to list Go to dashboard">HOD —</span><span class="b na" title="Something went wrong Equipment not found Back to list Go to dashboard">Purchase —</span><span class="b na" title="Something went wrong Equipment not found Back to list Go to dashboard">FC —</span><span class="b na" title="Something went wrong Equipment not found Back to list Go to dashboard">GM —</span><span class="b na" title="Something went wrong Equipment not found Back to list Go to dashboard">Owner —</span><span class="b na" title="Something went wrong Equipment not found Back to list Go to dashboard">Admin —</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li><li>Something went wrong Equipment not found Back to list Go to dashboard — Requestor, HOD, Purchase, FC, GM, Owner, Admin</li></ul>
+</article><article class="card" data-route="/operation-plan/equipment/new" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/equipment/new.png" alt="/operation-plan/equipment/new" loading="lazy"></div>
+  <div class="meta"><code>/operation-plan/equipment/new</code><span class="slug">equipment · new</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/operation-plan/recipe" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/recipe/index.png" alt="/operation-plan/recipe" loading="lazy"></div>
+  <div class="meta"><code>/operation-plan/recipe</code><span class="slug">recipe · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/operation-plan/recipe-equipment-category" data-roles="Admin">
+  <div class="shot"><img src="assets/screenshots/inventory/recipe-equipment-category/index.png" alt="/operation-plan/recipe-equipment-category" loading="lazy"></div>
+  <div class="meta"><code>/operation-plan/recipe-equipment-category</code><span class="slug">recipe-equipment-category · index</span></div>
+  <div class="badges"><span class="b base">Admin</span></div>
+  
+</article><article class="card" data-route="/operation-plan/recipe/:id" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/operation-plan/recipe/:id</code><span class="slug">recipe · detail</span></div>
+  <div class="badges"><span class="b na" title="no seedId">Requestor —</span><span class="b na" title="no seedId">HOD —</span><span class="b na" title="no seedId">Purchase —</span><span class="b na" title="no seedId">FC —</span><span class="b na" title="no seedId">GM —</span><span class="b na" title="no seedId">Owner —</span><span class="b na" title="no seedId">StoreManager —</span><span class="b na" title="no seedId">Budget —</span><span class="b na" title="no seedId">Admin —</span></div>
+  <ul class="reasons"><li>no seedId — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget, Admin</li></ul>
+</article><article class="card" data-route="/operation-plan/recipe/new" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/recipe/new.png" alt="/operation-plan/recipe/new" loading="lazy"></div>
+  <div class="meta"><code>/operation-plan/recipe/new</code><span class="slug">recipe · new</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article></div></section>
+<section><h2>pl <span class="count">1</span></h2>
+<div class="grid"><article class="card" data-route="/pl/:url_token" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/pl/:url_token</code><span class="slug">pl · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article></div></section>
+<section><h2>privacy <span class="count">1</span></h2>
+<div class="grid"><article class="card" data-route="/privacy" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/privacy</code><span class="slug">privacy · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article></div></section>
+<section><h2>procurement <span class="count">18</span></h2>
+<div class="grid"><article class="card" data-route="/procurement" data-roles="Admin">
+  <div class="shot"><img src="assets/screenshots/inventory/procurement/index.png" alt="/procurement" loading="lazy"></div>
+  <div class="meta"><code>/procurement</code><span class="slug">procurement · index</span></div>
+  <div class="badges"><span class="b base">Admin</span></div>
+  
+</article><article class="card" data-route="/procurement/approval" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/approval/index.png" alt="/procurement/approval" loading="lazy"></div>
+  <div class="meta"><code>/procurement/approval</code><span class="slug">approval · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><a class="b var" href="assets/screenshots/inventory/approval/index--Requestor.png">Requestor ⊕</a><a class="b var" href="assets/screenshots/inventory/approval/index--HOD.png">HOD ⊕</a><a class="b var" href="assets/screenshots/inventory/approval/index--Purchase.png">Purchase ⊕</a><a class="b var" href="assets/screenshots/inventory/approval/index--FC.png">FC ⊕</a><a class="b var" href="assets/screenshots/inventory/approval/index--GM.png">GM ⊕</a><a class="b var" href="assets/screenshots/inventory/approval/index--Owner.png">Owner ⊕</a><a class="b var" href="assets/screenshots/inventory/approval/index--StoreManager.png">StoreManager ⊕</a><a class="b var" href="assets/screenshots/inventory/approval/index--Budget.png">Budget ⊕</a></div>
+  
+</article><article class="card" data-route="/procurement/credit-note" data-roles="Admin Requestor StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/credit-note/index.png" alt="/procurement/credit-note" loading="lazy"></div>
+  <div class="meta"><code>/procurement/credit-note</code><span class="slug">credit-note · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/procurement/credit-note/:id" data-roles=" Requestor StoreManager Budget">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/procurement/credit-note/:id</code><span class="slug">credit-note · detail</span></div>
+  <div class="badges"><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span><span class="b na" title="Something went wrong Credit note not found Back to list Go to dashboard">HOD —</span><span class="b na" title="Something went wrong Credit note not found Back to list Go to dashboard">Purchase —</span><span class="b na" title="Something went wrong Credit note not found Back to list Go to dashboard">FC —</span><span class="b na" title="Something went wrong Credit note not found Back to list Go to dashboard">GM —</span><span class="b na" title="Something went wrong Credit note not found Back to list Go to dashboard">Owner —</span><span class="b na" title="Something went wrong Credit note not found Back to list Go to dashboard">Admin —</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, StoreManager, Budget</li><li>Something went wrong Credit note not found Back to list Go to dashboard — HOD, Purchase, FC, GM, Owner, Admin</li></ul>
+</article><article class="card" data-route="/procurement/credit-note/new" data-roles="Admin Requestor StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/credit-note/new.png" alt="/procurement/credit-note/new" loading="lazy"></div>
+  <div class="meta"><code>/procurement/credit-note/new</code><span class="slug">credit-note · new</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/procurement/goods-receive-note" data-roles="Admin Requestor StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/goods-receive-note/index.png" alt="/procurement/goods-receive-note" loading="lazy"></div>
+  <div class="meta"><code>/procurement/goods-receive-note</code><span class="slug">goods-receive-note · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/procurement/goods-receive-note/:id" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/procurement/goods-receive-note/:id</code><span class="slug">goods-receive-note · detail</span></div>
+  <div class="badges"><span class="b na" title="no seedId">Requestor —</span><span class="b na" title="no seedId">HOD —</span><span class="b na" title="no seedId">Purchase —</span><span class="b na" title="no seedId">FC —</span><span class="b na" title="no seedId">GM —</span><span class="b na" title="no seedId">Owner —</span><span class="b na" title="no seedId">StoreManager —</span><span class="b na" title="no seedId">Budget —</span><span class="b na" title="no seedId">Admin —</span></div>
+  <ul class="reasons"><li>no seedId — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget, Admin</li></ul>
+</article><article class="card" data-route="/procurement/goods-receive-note/new" data-roles="Admin Requestor StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/goods-receive-note/new.png" alt="/procurement/goods-receive-note/new" loading="lazy"></div>
+  <div class="meta"><code>/procurement/goods-receive-note/new</code><span class="slug">goods-receive-note · new</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/procurement/purchase-order" data-roles="Admin">
+  <div class="shot"><img src="assets/screenshots/inventory/purchase-order/index.png" alt="/procurement/purchase-order" loading="lazy"></div>
+  <div class="meta"><code>/procurement/purchase-order</code><span class="slug">purchase-order · index</span></div>
+  <div class="badges"><span class="b base">Admin</span></div>
+  
+</article><article class="card" data-route="/procurement/purchase-order/:id" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/procurement/purchase-order/:id</code><span class="slug">purchase-order · detail</span></div>
+  <div class="badges"><span class="b na" title="Something went wrong Purchase order not found Back to list Go to dashboard">Requestor —</span><span class="b na" title="Something went wrong Purchase order not found Back to list Go to dashboard">HOD —</span><span class="b na" title="Something went wrong Purchase order not found Back to list Go to dashboard">Purchase —</span><span class="b na" title="Something went wrong Purchase order not found Back to list Go to dashboard">FC —</span><span class="b na" title="Something went wrong Purchase order not found Back to list Go to dashboard">GM —</span><span class="b na" title="Something went wrong Purchase order not found Back to list Go to dashboard">Owner —</span><span class="b na" title="Something went wrong Purchase order not found Back to list Go to dashboard">StoreManager —</span><span class="b na" title="Something went wrong Purchase order not found Back to list Go to dashboard">Budget —</span><span class="b na" title="Something went wrong Purchase order not found Back to list Go to dashboard">Admin —</span></div>
+  <ul class="reasons"><li>Something went wrong Purchase order not found Back to list Go to dashboard — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget, Admin</li></ul>
+</article><article class="card" data-route="/procurement/purchase-order/from-price-list" data-roles="Purchase Requestor HOD FC GM Owner StoreManager Budget Admin">
+  <div class="shot"><img src="assets/screenshots/inventory/from-price-list/index.png" alt="/procurement/purchase-order/from-price-list" loading="lazy"></div>
+  <div class="meta"><code>/procurement/purchase-order/from-price-list</code><span class="slug">from-price-list · index</span></div>
+  <div class="badges"><span class="b base">Purchase</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span><span class="b denied" title="Permission Denied">Admin ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, FC, GM, Owner, StoreManager, Budget, Admin</li></ul>
+</article><article class="card" data-route="/procurement/purchase-order/new" data-roles="Purchase Requestor HOD FC GM Owner StoreManager Budget Admin">
+  <div class="shot"><img src="assets/screenshots/inventory/purchase-order/new.png" alt="/procurement/purchase-order/new" loading="lazy"></div>
+  <div class="meta"><code>/procurement/purchase-order/new</code><span class="slug">purchase-order · new</span></div>
+  <div class="badges"><span class="b base">Purchase</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span><span class="b denied" title="Permission Denied">Admin ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, FC, GM, Owner, StoreManager, Budget, Admin</li></ul>
+</article><article class="card" data-route="/procurement/purchase-request" data-roles="Admin">
+  <div class="shot"><img src="assets/screenshots/inventory/purchase-request/index.png" alt="/procurement/purchase-request" loading="lazy"></div>
+  <div class="meta"><code>/procurement/purchase-request</code><span class="slug">purchase-request · index</span></div>
+  <div class="badges"><span class="b base">Admin</span></div>
+  
+</article><article class="card" data-route="/procurement/purchase-request-template" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/purchase-request-template/index.png" alt="/procurement/purchase-request-template" loading="lazy"></div>
+  <div class="meta"><code>/procurement/purchase-request-template</code><span class="slug">purchase-request-template · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/procurement/purchase-request-template/:id" data-roles=" StoreManager Budget">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/procurement/purchase-request-template/:id</code><span class="slug">purchase-request-template · detail</span></div>
+  <div class="badges"><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span><span class="b na" title="Something went wrong You're going a bit too fast. Wait a moment and try again. Try again">Requestor —</span><span class="b na" title="Something went wrong You're going a bit too fast. Wait a moment and try again. Try again">HOD —</span><span class="b na" title="Something went wrong You're going a bit too fast. Wait a moment and try again. Try again">Purchase —</span><span class="b na" title="Something went wrong You're going a bit too fast. Wait a moment and try again. Try again">FC —</span><span class="b na" title="Something went wrong Something went wrong on our end. Please try again. Try again">GM —</span><span class="b na" title="Something went wrong Something went wrong on our end. Please try again. Try again">Owner —</span><span class="b na" title="Something went wrong Something went wrong on our end. Please try again. Try again">Admin —</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li><li>Something went wrong You're going a bit too fast. Wait a moment and try again. Try again — Requestor, HOD, Purchase, FC</li><li>Something went wrong Something went wrong on our end. Please try again. Try again — GM, Owner, Admin</li></ul>
+</article><article class="card" data-route="/procurement/purchase-request-template/new" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/purchase-request-template/new.png" alt="/procurement/purchase-request-template/new" loading="lazy"></div>
+  <div class="meta"><code>/procurement/purchase-request-template/new</code><span class="slug">purchase-request-template · new</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/procurement/purchase-request/:id" data-roles="Admin Purchase">
+  <div class="shot"><img src="assets/screenshots/inventory/purchase-request/detail.png" alt="/procurement/purchase-request/:id" loading="lazy"></div>
+  <div class="meta"><code>/procurement/purchase-request/:id</code><span class="slug">purchase-request · detail</span></div>
+  <div class="badges"><span class="b base">Admin</span><a class="b var" href="assets/screenshots/inventory/purchase-request/detail--Purchase.png">Purchase ⊕</a><span class="b na" title="Something went wrong You don't have permission to do that. Try again">Requestor —</span></div>
+  <ul class="reasons"><li>Something went wrong You don't have permission to do that. Try again — Requestor</li></ul>
+</article><article class="card" data-route="/procurement/purchase-request/new" data-roles="Requestor HOD FC GM Owner StoreManager Budget Admin">
+  <div class="shot"><img src="assets/screenshots/inventory/purchase-request/new.png" alt="/procurement/purchase-request/new" loading="lazy"></div>
+  <div class="meta"><code>/procurement/purchase-request/new</code><span class="slug">purchase-request · new</span></div>
+  <div class="badges"><span class="b base">Requestor</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span><span class="b denied" title="Permission Denied">Admin ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — HOD, FC, GM, Owner, StoreManager, Budget, Admin</li></ul>
+</article></div></section>
+<section><h2>product-management <span class="count">5</span></h2>
+<div class="grid"><article class="card" data-route="/product-management" data-roles="Admin">
+  <div class="shot"><img src="assets/screenshots/inventory/product-management/index.png" alt="/product-management" loading="lazy"></div>
+  <div class="meta"><code>/product-management</code><span class="slug">product-management · index</span></div>
+  <div class="badges"><span class="b base">Admin</span></div>
+  
+</article><article class="card" data-route="/product-management/category" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/category/index.png" alt="/product-management/category" loading="lazy"></div>
+  <div class="meta"><code>/product-management/category</code><span class="slug">category · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/product-management/product" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/product/index.png" alt="/product-management/product" loading="lazy"></div>
+  <div class="meta"><code>/product-management/product</code><span class="slug">product · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/product-management/product/:id" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/product-management/product/:id</code><span class="slug">product · detail</span></div>
+  <div class="badges"><span class="b na" title="no seedId">Requestor —</span><span class="b na" title="no seedId">HOD —</span><span class="b na" title="no seedId">Purchase —</span><span class="b na" title="no seedId">FC —</span><span class="b na" title="no seedId">GM —</span><span class="b na" title="no seedId">Owner —</span><span class="b na" title="no seedId">StoreManager —</span><span class="b na" title="no seedId">Budget —</span><span class="b na" title="no seedId">Admin —</span></div>
+  <ul class="reasons"><li>no seedId — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget, Admin</li></ul>
+</article><article class="card" data-route="/product-management/product/new" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/product/new.png" alt="/product-management/product/new" loading="lazy"></div>
+  <div class="meta"><code>/product-management/product/new</code><span class="slug">product · new</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article></div></section>
+<section><h2>profile <span class="count">2</span></h2>
+<div class="grid"><article class="card" data-route="/profile" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/profile/index.png" alt="/profile" loading="lazy"></div>
+  <div class="meta"><code>/profile</code><span class="slug">profile · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><a class="b var" href="assets/screenshots/inventory/profile/index--Requestor.png">Requestor ⊕</a><a class="b var" href="assets/screenshots/inventory/profile/index--HOD.png">HOD ⊕</a><a class="b var" href="assets/screenshots/inventory/profile/index--Purchase.png">Purchase ⊕</a><a class="b var" href="assets/screenshots/inventory/profile/index--FC.png">FC ⊕</a><a class="b var" href="assets/screenshots/inventory/profile/index--GM.png">GM ⊕</a><a class="b var" href="assets/screenshots/inventory/profile/index--Owner.png">Owner ⊕</a><a class="b var" href="assets/screenshots/inventory/profile/index--StoreManager.png">StoreManager ⊕</a><a class="b var" href="assets/screenshots/inventory/profile/index--Budget.png">Budget ⊕</a></div>
+  
+</article><article class="card" data-route="/profile/setting" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/setting/index.png" alt="/profile/setting" loading="lazy"></div>
+  <div class="meta"><code>/profile/setting</code><span class="slug">setting · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><a class="b var" href="assets/screenshots/inventory/setting/index--Requestor.png">Requestor ⊕</a><a class="b var" href="assets/screenshots/inventory/setting/index--HOD.png">HOD ⊕</a><a class="b var" href="assets/screenshots/inventory/setting/index--Purchase.png">Purchase ⊕</a><a class="b var" href="assets/screenshots/inventory/setting/index--FC.png">FC ⊕</a><a class="b var" href="assets/screenshots/inventory/setting/index--GM.png">GM ⊕</a><a class="b var" href="assets/screenshots/inventory/setting/index--Owner.png">Owner ⊕</a><a class="b var" href="assets/screenshots/inventory/setting/index--StoreManager.png">StoreManager ⊕</a><a class="b var" href="assets/screenshots/inventory/setting/index--Budget.png">Budget ⊕</a></div>
+  
+</article></div></section>
+<section><h2>register <span class="count">2</span></h2>
+<div class="grid"><article class="card" data-route="/register" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/register</code><span class="slug">register · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/register/verify" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/register/verify</code><span class="slug">register · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article></div></section>
+<section><h2>report <span class="count">4</span></h2>
+<div class="grid"><article class="card" data-route="/report" data-roles="Admin">
+  <div class="shot"><img src="assets/screenshots/inventory/report/index.png" alt="/report" loading="lazy"></div>
+  <div class="meta"><code>/report</code><span class="slug">report · index</span></div>
+  <div class="badges"><span class="b base">Admin</span></div>
+  
+</article><article class="card" data-route="/report/history" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/history/index.png" alt="/report/history" loading="lazy"></div>
+  <div class="meta"><code>/report/history</code><span class="slug">history · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/report/list" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/list/index.png" alt="/report/list" loading="lazy"></div>
+  <div class="meta"><code>/report/list</code><span class="slug">list · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/report/schedules" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/schedules/index.png" alt="/report/schedules" loading="lazy"></div>
+  <div class="meta"><code>/report/schedules</code><span class="slug">schedules · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li></ul>
+</article></div></section>
+<section><h2>reset-password <span class="count">1</span></h2>
+<div class="grid"><article class="card" data-route="/reset-password" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/reset-password</code><span class="slug">reset-password · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article></div></section>
+<section><h2>store-operation <span class="count">8</span></h2>
+<div class="grid"><article class="card" data-route="/store-operation" data-roles="Admin Requestor StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/store-operation/index.png" alt="/store-operation" loading="lazy"></div>
+  <div class="meta"><code>/store-operation</code><span class="slug">store-operation · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><a class="b var" href="assets/screenshots/inventory/store-operation/index--Requestor.png">Requestor ⊕</a><a class="b var" href="assets/screenshots/inventory/store-operation/index--StoreManager.png">StoreManager ⊕</a><a class="b var" href="assets/screenshots/inventory/store-operation/index--Budget.png">Budget ⊕</a></div>
+  
+</article><article class="card" data-route="/store-operation/stock-replenishment" data-roles="Admin Requestor StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/stock-replenishment/index.png" alt="/store-operation/stock-replenishment" loading="lazy"></div>
+  <div class="meta"><code>/store-operation/stock-replenishment</code><span class="slug">stock-replenishment · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/store-operation/store-requisition" data-roles="Admin">
+  <div class="shot"><img src="assets/screenshots/inventory/store-requisition/index.png" alt="/store-operation/store-requisition" loading="lazy"></div>
+  <div class="meta"><code>/store-operation/store-requisition</code><span class="slug">store-requisition · index</span></div>
+  <div class="badges"><span class="b base">Admin</span></div>
+  
+</article><article class="card" data-route="/store-operation/store-requisition/:id" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/store-operation/store-requisition/:id</code><span class="slug">store-requisition · detail</span></div>
+  <div class="badges"><span class="b na" title="Something went wrong You're going a bit too fast. Wait a moment and try again. Try again">Requestor —</span><span class="b na" title="Something went wrong You're going a bit too fast. Wait a moment and try again. Try again">HOD —</span><span class="b na" title="Something went wrong You're going a bit too fast. Wait a moment and try again. Try again">Purchase —</span><span class="b na" title="Something went wrong You're going a bit too fast. Wait a moment and try again. Try again">FC —</span><span class="b na" title="Something went wrong Something went wrong on our end. Please try again. Try again">GM —</span><span class="b na" title="Something went wrong Something went wrong on our end. Please try again. Try again">Owner —</span><span class="b na" title="Something went wrong Something went wrong on our end. Please try again. Try again">StoreManager —</span><span class="b na" title="Something went wrong Something went wrong on our end. Please try again. Try again">Budget —</span><span class="b na" title="Something went wrong Something went wrong on our end. Please try again. Try again">Admin —</span></div>
+  <ul class="reasons"><li>Something went wrong You're going a bit too fast. Wait a moment and try again. Try again — Requestor, HOD, Purchase, FC</li><li>Something went wrong Something went wrong on our end. Please try again. Try again — GM, Owner, StoreManager, Budget, Admin</li></ul>
+</article><article class="card" data-route="/store-operation/store-requisition/new" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/store-requisition/new.png" alt="/store-operation/store-requisition/new" loading="lazy"></div>
+  <div class="meta"><code>/store-operation/store-requisition/new</code><span class="slug">store-requisition · new</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/store-operation/wastage-reporting" data-roles="Admin Requestor StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/wastage-reporting/index.png" alt="/store-operation/wastage-reporting" loading="lazy"></div>
+  <div class="meta"><code>/store-operation/wastage-reporting</code><span class="slug">wastage-reporting · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/store-operation/wastage-reporting/:id" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/store-operation/wastage-reporting/:id</code><span class="slug">wastage-reporting · detail</span></div>
+  <div class="badges"><span class="b na" title="no seedId">Requestor —</span><span class="b na" title="no seedId">HOD —</span><span class="b na" title="no seedId">Purchase —</span><span class="b na" title="no seedId">FC —</span><span class="b na" title="no seedId">GM —</span><span class="b na" title="no seedId">Owner —</span><span class="b na" title="no seedId">StoreManager —</span><span class="b na" title="no seedId">Budget —</span><span class="b na" title="no seedId">Admin —</span></div>
+  <ul class="reasons"><li>no seedId — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget, Admin</li></ul>
+</article><article class="card" data-route="/store-operation/wastage-reporting/new" data-roles="Admin Requestor StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/wastage-reporting/new.png" alt="/store-operation/wastage-reporting/new" loading="lazy"></div>
+  <div class="meta"><code>/store-operation/wastage-reporting/new</code><span class="slug">wastage-reporting · new</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, StoreManager, Budget</li></ul>
+</article></div></section>
+<section><h2>system-admin <span class="count">24</span></h2>
+<div class="grid"><article class="card" data-route="/system-admin" data-roles="Admin">
+  <div class="shot"><img src="assets/screenshots/inventory/system-admin/index.png" alt="/system-admin" loading="lazy"></div>
+  <div class="meta"><code>/system-admin</code><span class="slug">system-admin · index</span></div>
+  <div class="badges"><span class="b base">Admin</span></div>
+  
+</article><article class="card" data-route="/system-admin/activity-log" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/activity-log/index.png" alt="/system-admin/activity-log" loading="lazy"></div>
+  <div class="meta"><code>/system-admin/activity-log</code><span class="slug">activity-log · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/system-admin/company-profile" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/system-admin/company-profile</code><span class="slug">system-admin · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/system-admin/config-email" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/system-admin/config-email</code><span class="slug">config-email · index</span></div>
+  <div class="badges"><span class="b na" title="We can't find that page">Requestor —</span><span class="b na" title="We can't find that page">HOD —</span><span class="b na" title="We can't find that page">Purchase —</span><span class="b na" title="We can't find that page">FC —</span><span class="b na" title="We can't find that page">GM —</span><span class="b na" title="We can't find that page">Owner —</span><span class="b na" title="We can't find that page">StoreManager —</span><span class="b na" title="We can't find that page">Budget —</span><span class="b na" title="We can't find that page">Admin —</span></div>
+  <ul class="reasons"><li>We can't find that page — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget, Admin</li></ul>
+</article><article class="card" data-route="/system-admin/dashboard-dataset" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/dashboard-dataset/index.png" alt="/system-admin/dashboard-dataset" loading="lazy"></div>
+  <div class="meta"><code>/system-admin/dashboard-dataset</code><span class="slug">dashboard-dataset · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/system-admin/default-setting" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/system-admin/default-setting</code><span class="slug">system-admin · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/system-admin/document" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/document/index.png" alt="/system-admin/document" loading="lazy"></div>
+  <div class="meta"><code>/system-admin/document</code><span class="slug">document · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/system-admin/interface" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/system-admin/interface</code><span class="slug">system-admin · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/system-admin/interface/:category/:brand" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/system-admin/interface/:category/:brand</code><span class="slug">system-admin · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article><article class="card" data-route="/system-admin/notification-template" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/notification-template/index.png" alt="/system-admin/notification-template" loading="lazy"></div>
+  <div class="meta"><code>/system-admin/notification-template</code><span class="slug">notification-template · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/system-admin/notification-template/:id" data-roles=" Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/system-admin/notification-template/:id</code><span class="slug">notification-template · detail</span></div>
+  <div class="badges"><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span><span class="b na" title="Something went wrong We couldn't find what you were looking for. Go to dashboard">Admin —</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li><li>Something went wrong We couldn't find what you were looking for. Go to dashboard — Admin</li></ul>
+</article><article class="card" data-route="/system-admin/notification-template/new" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/notification-template/new.png" alt="/system-admin/notification-template/new" loading="lazy"></div>
+  <div class="meta"><code>/system-admin/notification-template/new</code><span class="slug">notification-template · new</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/system-admin/period" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/period/index.png" alt="/system-admin/period" loading="lazy"></div>
+  <div class="meta"><code>/system-admin/period</code><span class="slug">period · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/system-admin/query-dataset" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/system-admin/query-dataset</code><span class="slug">query-dataset · index</span></div>
+  <div class="badges"><span class="b na" title="We can't find that page">Requestor —</span><span class="b na" title="We can't find that page">HOD —</span><span class="b na" title="We can't find that page">Purchase —</span><span class="b na" title="We can't find that page">FC —</span><span class="b na" title="We can't find that page">GM —</span><span class="b na" title="We can't find that page">Owner —</span><span class="b na" title="We can't find that page">StoreManager —</span><span class="b na" title="We can't find that page">Budget —</span><span class="b na" title="We can't find that page">Admin —</span></div>
+  <ul class="reasons"><li>We can't find that page — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget, Admin</li></ul>
+</article><article class="card" data-route="/system-admin/role" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/role/index.png" alt="/system-admin/role" loading="lazy"></div>
+  <div class="meta"><code>/system-admin/role</code><span class="slug">role · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/system-admin/role/:id" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/role/detail.png" alt="/system-admin/role/:id" loading="lazy"></div>
+  <div class="meta"><code>/system-admin/role/:id</code><span class="slug">role · detail</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/system-admin/role/new" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/role/new.png" alt="/system-admin/role/new" loading="lazy"></div>
+  <div class="meta"><code>/system-admin/role/new</code><span class="slug">role · new</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/system-admin/running-code" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/running-code/index.png" alt="/system-admin/running-code" loading="lazy"></div>
+  <div class="meta"><code>/system-admin/running-code</code><span class="slug">running-code · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/system-admin/user" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/user/index.png" alt="/system-admin/user" loading="lazy"></div>
+  <div class="meta"><code>/system-admin/user</code><span class="slug">user · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/system-admin/user-activity" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/user-activity/index.png" alt="/system-admin/user-activity" loading="lazy"></div>
+  <div class="meta"><code>/system-admin/user-activity</code><span class="slug">user-activity · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/system-admin/user/:id" data-roles=" Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/system-admin/user/:id</code><span class="slug">user · detail</span></div>
+  <div class="badges"><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span><span class="b na" title="Something went wrong Something went wrong on our end. Please try again. Try again">Admin —</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li><li>Something went wrong Something went wrong on our end. Please try again. Try again — Admin</li></ul>
+</article><article class="card" data-route="/system-admin/workflow" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/workflow/index.png" alt="/system-admin/workflow" loading="lazy"></div>
+  <div class="meta"><code>/system-admin/workflow</code><span class="slug">workflow · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/system-admin/workflow/:id" data-roles=" Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/system-admin/workflow/:id</code><span class="slug">workflow · detail</span></div>
+  <div class="badges"><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span><span class="b na" title="Something went wrong Something went wrong on our end. Please try again. Try again">Admin —</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li><li>Something went wrong Something went wrong on our end. Please try again. Try again — Admin</li></ul>
+</article><article class="card" data-route="/system-admin/workflow/new" data-roles="Admin Requestor HOD Purchase FC GM Owner StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/workflow/new.png" alt="/system-admin/workflow/new" loading="lazy"></div>
+  <div class="meta"><code>/system-admin/workflow/new</code><span class="slug">workflow · new</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">Requestor ⊘</span><span class="b denied" title="Permission Denied">HOD ⊘</span><span class="b denied" title="Permission Denied">Purchase ⊘</span><span class="b denied" title="Permission Denied">FC ⊘</span><span class="b denied" title="Permission Denied">GM ⊘</span><span class="b denied" title="Permission Denied">Owner ⊘</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget</li></ul>
+</article></div></section>
+<section><h2>terms <span class="count">1</span></h2>
+<div class="grid"><article class="card" data-route="/terms" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/terms</code><span class="slug">terms · unmapped</span></div>
+  <div class="badges"></div>
+  
+</article></div></section>
+<section><h2>vendor-management <span class="count">13</span></h2>
+<div class="grid"><article class="card" data-route="/vendor-management" data-roles="Admin">
+  <div class="shot"><img src="assets/screenshots/inventory/vendor-management/index.png" alt="/vendor-management" loading="lazy"></div>
+  <div class="meta"><code>/vendor-management</code><span class="slug">vendor-management · index</span></div>
+  <div class="badges"><span class="b base">Admin</span></div>
+  
+</article><article class="card" data-route="/vendor-management/price-list" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/price-list/index.png" alt="/vendor-management/price-list" loading="lazy"></div>
+  <div class="meta"><code>/vendor-management/price-list</code><span class="slug">price-list · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/vendor-management/price-list-template" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/price-list-template/index.png" alt="/vendor-management/price-list-template" loading="lazy"></div>
+  <div class="meta"><code>/vendor-management/price-list-template</code><span class="slug">price-list-template · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/vendor-management/price-list-template/:id" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/vendor-management/price-list-template/:id</code><span class="slug">price-list-template · detail</span></div>
+  <div class="badges"><span class="b na" title="no seedId">Requestor —</span><span class="b na" title="no seedId">HOD —</span><span class="b na" title="no seedId">Purchase —</span><span class="b na" title="no seedId">FC —</span><span class="b na" title="no seedId">GM —</span><span class="b na" title="no seedId">Owner —</span><span class="b na" title="no seedId">StoreManager —</span><span class="b na" title="no seedId">Budget —</span><span class="b na" title="no seedId">Admin —</span></div>
+  <ul class="reasons"><li>no seedId — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget, Admin</li></ul>
+</article><article class="card" data-route="/vendor-management/price-list-template/new" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/price-list-template/new.png" alt="/vendor-management/price-list-template/new" loading="lazy"></div>
+  <div class="meta"><code>/vendor-management/price-list-template/new</code><span class="slug">price-list-template · new</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/vendor-management/price-list/:id" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/vendor-management/price-list/:id</code><span class="slug">price-list · detail</span></div>
+  <div class="badges"><span class="b na" title="no seedId">Requestor —</span><span class="b na" title="no seedId">HOD —</span><span class="b na" title="no seedId">Purchase —</span><span class="b na" title="no seedId">FC —</span><span class="b na" title="no seedId">GM —</span><span class="b na" title="no seedId">Owner —</span><span class="b na" title="no seedId">StoreManager —</span><span class="b na" title="no seedId">Budget —</span><span class="b na" title="no seedId">Admin —</span></div>
+  <ul class="reasons"><li>no seedId — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget, Admin</li></ul>
+</article><article class="card" data-route="/vendor-management/price-list/new" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/price-list/new.png" alt="/vendor-management/price-list/new" loading="lazy"></div>
+  <div class="meta"><code>/vendor-management/price-list/new</code><span class="slug">price-list · new</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/vendor-management/request-price-list" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/request-price-list/index.png" alt="/vendor-management/request-price-list" loading="lazy"></div>
+  <div class="meta"><code>/vendor-management/request-price-list</code><span class="slug">request-price-list · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/vendor-management/request-price-list/:id" data-roles="">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/vendor-management/request-price-list/:id</code><span class="slug">request-price-list · detail</span></div>
+  <div class="badges"><span class="b na" title="no seedId">Requestor —</span><span class="b na" title="no seedId">HOD —</span><span class="b na" title="no seedId">Purchase —</span><span class="b na" title="no seedId">FC —</span><span class="b na" title="no seedId">GM —</span><span class="b na" title="no seedId">Owner —</span><span class="b na" title="no seedId">StoreManager —</span><span class="b na" title="no seedId">Budget —</span><span class="b na" title="no seedId">Admin —</span></div>
+  <ul class="reasons"><li>no seedId — Requestor, HOD, Purchase, FC, GM, Owner, StoreManager, Budget, Admin</li></ul>
+</article><article class="card" data-route="/vendor-management/request-price-list/new" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/request-price-list/new.png" alt="/vendor-management/request-price-list/new" loading="lazy"></div>
+  <div class="meta"><code>/vendor-management/request-price-list/new</code><span class="slug">request-price-list · new</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/vendor-management/vendor" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/vendor/index.png" alt="/vendor-management/vendor" loading="lazy"></div>
+  <div class="meta"><code>/vendor-management/vendor</code><span class="slug">vendor · index</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article><article class="card" data-route="/vendor-management/vendor/:id" data-roles=" StoreManager Budget">
+  <div class="shot"><div class="no-shot">no screenshot</div></div>
+  <div class="meta"><code>/vendor-management/vendor/:id</code><span class="slug">vendor · detail</span></div>
+  <div class="badges"><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span><span class="b na" title="Something went wrong Vendor not found Back to list Go to dashboard">Requestor —</span><span class="b na" title="Something went wrong Vendor not found Back to list Go to dashboard">HOD —</span><span class="b na" title="Something went wrong Vendor not found Back to list Go to dashboard">Purchase —</span><span class="b na" title="Something went wrong Vendor not found Back to list Go to dashboard">FC —</span><span class="b na" title="Something went wrong Vendor not found Back to list Go to dashboard">GM —</span><span class="b na" title="Something went wrong Vendor not found Back to list Go to dashboard">Owner —</span><span class="b na" title="Something went wrong Vendor not found Back to list Go to dashboard">Admin —</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li><li>Something went wrong Vendor not found Back to list Go to dashboard — Requestor, HOD, Purchase, FC, GM, Owner, Admin</li></ul>
+</article><article class="card" data-route="/vendor-management/vendor/new" data-roles="Admin StoreManager Budget">
+  <div class="shot"><img src="assets/screenshots/inventory/vendor/new.png" alt="/vendor-management/vendor/new" loading="lazy"></div>
+  <div class="meta"><code>/vendor-management/vendor/new</code><span class="slug">vendor · new</span></div>
+  <div class="badges"><span class="b base">Admin</span><span class="b denied" title="Permission Denied">StoreManager ⊘</span><span class="b denied" title="Permission Denied">Budget ⊘</span></div>
+  <ul class="reasons"><li>Permission Denied — StoreManager, Budget</li></ul>
+</article></div></section>
+<div id="lb"><div class="cap"></div><img alt=""><div class="hint">click image to zoom 1:1 · click outside or Esc to close</div></div>
+<script>
+const lb = document.getElementById("lb");
+const lbImg = lb.querySelector("img");
+const lbCap = lb.querySelector(".cap");
+
+function openLightbox(src, label) {
+  lbImg.src = src;
+  lbImg.alt = label;
+  lbCap.textContent = label;
+  lb.classList.add("on");
+  lb.classList.remove("full");
+}
+function closeLightbox() {
+  lb.classList.remove("on", "full");
+  lbImg.removeAttribute("src");
+}
+
+document.addEventListener("click", (e) => {
+  const thumb = e.target.closest(".shot img");
+  if (thumb) { openLightbox(thumb.getAttribute("src"), thumb.getAttribute("alt")); return; }
+  // Role-variant badges link to their own PNG; open them in the same viewer
+  // rather than navigating away from the sitemap.
+  const variant = e.target.closest("a.b.var");
+  if (variant) {
+    e.preventDefault();
+    const route = variant.closest(".card").dataset.route;
+    openLightbox(variant.getAttribute("href"), route + "  —  " + variant.textContent.trim());
+  }
+});
+
+lb.addEventListener("click", (e) => {
+  // Clicking the image toggles fit-to-screen vs 1:1; anywhere else closes.
+  if (e.target === lbImg) { lb.classList.toggle("full"); lb.scrollTop = 0; return; }
+  closeLightbox();
+});
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeLightbox(); });
+
+document.getElementById("q").addEventListener("input", (e) => {
+  const q = e.target.value.toLowerCase();
+  for (const card of document.querySelectorAll(".card")) {
+    const hay = (card.dataset.route + " " + card.dataset.roles).toLowerCase();
+    card.classList.toggle("hidden", q !== "" && !hay.includes(q));
+  }
+  for (const s of document.querySelectorAll("section")) {
+    s.classList.toggle("hidden", s.querySelectorAll(".card:not(.hidden)").length === 0);
+  }
+});
+</script>
+</body></html>
