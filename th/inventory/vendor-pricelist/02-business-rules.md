@@ -1,8 +1,8 @@
 ---
 title: รายการราคาผู้ขาย (Vendor Pricelist) — Business Rules
-description: การ validate, การคำนวณ, authorization, การเปลี่ยนสถานะ และกติกาข้ามโมดูลสำหรับ vendor-pricelist
+description: กติกา validation, การคำนวณ, authorization, การเปลี่ยนสถานะ และกติกาข้ามโมดูลสำหรับ vendor-pricelist
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T00:00:00.000Z
 tags: vendor-pricelist, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -11,194 +11,121 @@ dateCreated: 2026-05-15T15:00:00.000Z
 # รายการราคาผู้ขาย (Vendor Pricelist) — Business Rules
 
 > **At a Glance**
-> **กลุ่มกติกา:** `VPL_VAL_*` validation &nbsp;·&nbsp; `VPL_AUTH_*` permission &nbsp;·&nbsp; `VPL_CALC_*` calc &nbsp;·&nbsp; `VPL_POST_*` posting &nbsp;·&nbsp; `VPL_XMOD_*` cross-module
-> **จำนวนกติกา:** ประมาณ 81 กติกา
+> **กลุ่มกติกา:** `VPL_VAL_*` validation &nbsp;·&nbsp; `VPL_CALC_*` calc &nbsp;·&nbsp; `VPL_XMOD_*` cross-module
 > **กลุ่มผู้ใช้:** Test author + developer — ทุก rule ID anchor จากหน้า `04-test-scenarios*`
-> **Status lifecycle:** Section 5.1 (เมื่อมี) carry callout ความแตกต่าง Live UI vs BRD
+> **สถานะการ implement (ตรวจสอบเมื่อ 2026-07-16):** แถวส่วนใหญ่ด้านล่างถูก mark เป็น **Confirmed** (มีโค้ดจริง: Zod check, Prisma constraint หรือ `if` ที่ชัดเจนใน service method) หรือ **Design-target** (มีอยู่ใน `../carmen/docs/vendor-pricelist-management/` แต่ไม่มีโค้ดที่ตรงกันเลยใน `carmen-inventory-frontend-react` หรือ `carmen-turborepo-backend-v2`) โมดูลนี้ **ไม่มี workflow engine**, **ไม่มี endpoint แยกสำหรับ approve/reject/submit**, **ไม่มี quality score**, **ไม่มี validation engine เกินกว่าการตรวจสอบระดับฟิลด์** และ **ไม่มีการเขียน comment/activity-log อัตโนมัติ** — ดู [01-data-model](/th/inventory/vendor-pricelist/01-data-model) § 5 และ [01a-data-model-comments](/th/inventory/vendor-pricelist/01a-data-model-comments) สำหรับหลักฐานที่มา
 
 ## 1. ภาพรวม
 
-หน้านี้จับกติกาทางธุรกิจเชิงปฏิบัติการที่กำกับสาม tier ของโมดูล vendor-pricelist — **template** (`tb_pricelist_template`), **request-for-pricing campaign** (`tb_request_for_pricing`) และ **vendor pricelist** (`tb_pricelist`) — ผ่าน lifecycle ของแต่ละ กลุ่มกติกาคือ: การ validate input ที่เวลา create / edit / submit, การ validate MOQ-tier ข้ามหลายแถวต่อสินค้า, การคำนวณเงิน (การแยกราคาระดับบรรทัด; effective unit price ต่อ UoM ฐาน; การแสดงผล multi-currency), authorization gate ตาม role (Purchaser / Manager / Vendor / Finance / Sysadmin / Auditor), การเปลี่ยนสถานะบน `enum_pricelist_template_status` และ `enum_pricelist_status`, นโยบาย portal-token (การหมดอายุ, IP, session), semantic ของ validation-engine (รูปแบบ, ความสมบูรณ์, business rule, quality score) และกติกาข้ามโมดูลกับ [purchase-request](/th/inventory/purchase-request) (การ default ราคาจาก pricelist ของ preferred vendor), [purchase-order](/th/inventory/purchase-order) (snapshot ราคา + การติดตาม deviation), [good-receive-note](/th/inventory/good-receive-note) (price-variance check) และ [product](/th/inventory/product) (อ้างอิงจากทุกแถว detail)
+หน้านี้จับกติกาเชิงปฏิบัติการของสี่หน้าจอจริงในโมดูล — **Vendor**, **Price List** (`tb_pricelist`), **Price List Template** (`tb_pricelist_template`) และ **Request for Pricing** (`tb_request_for_pricing`, มีรายละเอียดที่ [request-price-list](/th/inventory/vendor-pricelist/request-price-list)) — บวก external vendor portal แต่ละตัวใน Price List, Price List Template และ Request for Pricing เป็น plain CRUD resource: create / find / update / soft-delete พร้อม `doc_version` optimistic-concurrency locking บนทุกแถว Price List Template มี endpoint เฉพาะเพิ่มเติมหนึ่งตัวคือ `PATCH :id/status` แต่มันทำเพียงเขียนค่า status เปล่า ๆ โดยไม่มีการ validate ใด ๆ ไม่มี action แยกสำหรับ "submit," "approve," หรือ "reject" บน resource เหล่านี้เลย — `status` เป็นเพียงฟิลด์ที่ฟอร์มแก้ไขสามารถตั้งค่าได้ กำกับด้วย permission เดียวกันกับที่กำกับส่วนที่เหลือของ record
 
-กติกาด้านล่างสังเคราะห์จากเอกสาร vendor-pricelist ของ carmen/docs (`design.md`, `requirements.md`, `price-assignment-workflow-documentation.md`, `VENDOR_PORTAL_ENHANCEMENT_SUMMARY.md`, `VENDOR_MANAGEMENT_TECHNICAL_SPECIFICATION.md`) และโมเดลข้อมูล Prisma canonical ใน [vendor-pricelist/01-data-model](/th/inventory/vendor-pricelist/01-data-model) ที่ carmen/docs และ Prisma ไม่ตรงกัน **Prisma เป็น canonical สำหรับเอนทิตี, ฟิลด์ และค่า enum**; carmen/docs เป็น canonical สำหรับ semantic ของ workflow, คำอธิบายกติกา และนโยบายที่ชั้นแอปบังคับใช้บน Prisma schema ที่ slim กว่า — โดยเฉพาะ campaign status (`draft` / `active` / `paused` / `completed` / `cancelled`) และ invitation submission status (`pending` / `in-progress` / `submitted` / `approved` / `expired`) เป็น derivation ระดับแอปเพราะ Prisma ไม่มีคอลัมน์ dedicated สำหรับมัน ([vendor-pricelist/01-data-model](/th/inventory/vendor-pricelist/01-data-model) § 5 ทำแคตตาล็อก divergence material 12 รายการ)
+หน้าเวอร์ชันก่อนหน้าสังเคราะห์กติกาส่วนใหญ่จาก `../carmen/docs/vendor-pricelist-management/` (`design.md`, `requirements.md`, `price-assignment-workflow-documentation.md`) และถือว่ากลไก 6-phase campaign/quality-score/threshold/RBAC ส่วนใหญ่ของเอกสารออกแบบนั้นถูก implement แล้ว การอ่าน `price-list.service.ts`, `price-list-template.service.ts`, `request-for-pricing.service.ts` และ `check-price-list.service.ts` โดยตรงอีกครั้ง (รอบนี้) แสดงว่ากลไกเหล่านั้นไม่มีอยู่จริง กติกาด้านล่างถูก re-anchor ให้ตรงกับสิ่งที่โค้ดทำจริง; การอ้างอิง carmen/docs ถูกเก็บไว้เฉพาะที่อธิบายสิ่งที่ยังไม่ถูก implement และถูก label เป็น **Design-target** ตามนั้น
 
 ## 2. กติกาการ Validate
 
-Rule ID ตาม `VPL_VAL_NNN` กติกา template (001–007) รันบนเส้นทาง create / edit / activate template; กติกา campaign (008–013) บน create / send-invitation request-for-pricing; กติกา pricelist (014–025) บน submission ของ vendor / การ approve ของ purchaser ที่ index Prisma `@@unique` เป็น guard สุดท้าย ข้อความ validation ถูกส่งที่ชั้นแอปโดยมี index DB เป็น fallback
-
-| Rule ID | Tier | เงื่อนไข | บังคับใช้เมื่อ | Error / behavior |
-| ------- | ---- | --------- | ------------- | ----------------- |
-| `VPL_VAL_001` | Template | `tb_pricelist_template.name` ไม่ว่างและ unique ในแถวที่ไม่ถูก soft-delete (`@@unique([name, deleted_at])`) | Create, edit, activate | Reject ด้วย "Template name is required and must be unique." Fallback ระดับ DB ผ่าน unique index `pricelist_template_name_deletedat_u` |
-| `VPL_VAL_002` | Template | `tb_pricelist_template.status ∈ enum_pricelist_template_status (draft, active, inactive)` Activate transition (`draft → active`) ต้องมีแถว `tb_pricelist_template_detail` อย่างน้อยหนึ่ง | Activate | Reject ด้วย "Template must contain at least one product before it can be activated." |
-| `VPL_VAL_003` | Template | `tb_pricelist_template.currency_id` อ้างอิงแถว `tb_currency` ที่ไม่ถูก soft-delete เมื่อตั้งค่า | Save | Reject ด้วย "Default currency must be a valid, active currency." Currency บน template เป็น default — ผู้ขายอาจเลือกสกุลเงิน submission อื่นบน pricelist เอง |
-| `VPL_VAL_004` | Template | `tb_pricelist_template.validity_period > 0` เมื่อตั้ง; ค่า days-to-deadline ใน `reminder_days` เป็นบวกและลดลงอย่างเข้มงวด (เช่น `[14, 7, 3, 1]`) | Save | Reject ด้วย "Validity period must be positive and reminder schedule must be strictly decreasing." |
-| `VPL_VAL_005` | Template | `tb_pricelist_template_detail.product_id` แต่ละตัวอ้างอิง `tb_product` ที่ active และไม่ถูก soft-delete; `@@unique([pricelist_template_id, product_id, deleted_at])` ป้องกันสินค้าซ้ำบน template เดียวกัน | Save line | Reject ด้วย "Product is required and may only appear once per template." Fallback DB ผ่าน unique index |
-| `VPL_VAL_006` | Template | `tb_pricelist_template_detail.order_unit_obj` carry object `default_order` และ MOQ tier อย่างน้อยหนึ่ง; แต่ละ MOQ tier มี `unit_id`, `unit_name` และ `qty > 0`; ค่า MOQ `qty` เพิ่มขึ้นอย่างเข้มงวดข้าม tier (auto-sort ตอน save) | Save line | Reject ด้วย "Order unit and at least one MOQ tier with positive quantity are required; MOQ quantities must be strictly increasing." |
-| `VPL_VAL_007` | Template | `tb_pricelist_template.escalation_after_days >= 0` ไม่สามารถ escalate ก่อน deadline | Save | Reject ด้วย "Escalation days must be non-negative." |
-| `VPL_VAL_008` | Campaign | `tb_request_for_pricing.name` ไม่ว่างและ unique ในแถวที่ไม่ถูก soft-delete (`@@unique([name, deleted_at])`) | Create, edit | Reject ด้วย "Campaign name is required and must be unique." |
-| `VPL_VAL_009` | Campaign | `tb_request_for_pricing.pricelist_template_id` อ้างอิง `tb_pricelist_template` ที่ `status = active` | Create | Reject ด้วย "Campaign must reference an active template — draft or inactive templates cannot drive campaigns." |
-| `VPL_VAL_010` | Campaign | `tb_request_for_pricing.start_date < end_date`; `end_date > now()` ที่ launch campaign; `start_date` และ `end_date` ครอบคลุมอย่างน้อย response window ขั้นต่ำของ tenant (default 3 วัน, ตั้งค่าได้) | Create, launch | Reject ด้วย "Campaign window must run for at least the tenant minimum (default 3 days) and end strictly after start; end_date must be in the future at launch." |
-| `VPL_VAL_011` | Campaign | มีแถว `tb_request_for_pricing_detail` อย่างน้อยหนึ่งก่อน launch campaign; แต่ละแถว detail มี `vendor_id` ที่ไม่ null และ `contact_email` (snapshot-or-master) ที่เป็น email ที่ถูก syntactic | Launch | Reject ด้วย "Campaign must invite at least one vendor and every invited vendor must have a contact email." |
-| `VPL_VAL_012` | Campaign | `tb_request_for_pricing_detail.@@unique([request_for_pricing_id, vendor_id, deleted_at])` ป้องกันการเชิญผู้ขายเดียวกันสองครั้ง | Add vendor | Reject ด้วย "Vendor has already been invited to this campaign." Fallback ระดับ DB |
-| `VPL_VAL_013` | Campaign | Email-template ที่อ้างอิงโดย `email_template_id` มีอยู่ใน tenant email-template registry และไม่ archive | Launch | Reject ด้วย "Email template not found or archived — pick a valid template before launch." |
-| `VPL_VAL_014` | Pricelist | `tb_pricelist.pricelist_no` ไม่ว่างและ unique ในแถวที่ไม่ถูก soft-delete (`@@unique([pricelist_no, deleted_at])`) | Create | Reject ด้วย "Pricelist reference number is required and must be unique." Fallback DB ผ่าน index `pricelist_pricelist_no_u` |
-| `VPL_VAL_015` | Pricelist | `tb_pricelist.vendor_id` อ้างอิง `tb_vendor` ที่ active และไม่ถูก soft-delete; `tb_pricelist.currency_id` อ้างอิง `tb_currency` ที่ไม่ถูก soft-delete | Save | Reject ด้วย "Vendor and currency are required and must reference active master-data records." |
-| `VPL_VAL_016` | Pricelist | `tb_pricelist.effective_from_date < effective_to_date`; `effective_from_date >= submitted_at` (effective date ไม่สามารถอยู่ในอดีตเทียบกับ submission ยกเว้น template อนุญาตการ back-date อย่างชัดเจน) | Save, submit | Reject ด้วย "Effective-from date must precede effective-to date; effective-from cannot precede submission." |
-| `VPL_VAL_017` | Pricelist | `tb_pricelist.submission_method ∈ pricelist_submission_method (online, email, portal, manual)` | Save | Reject ด้วย "Submission method must be one of online, email, portal, or manual." |
-| `VPL_VAL_018` | Pricelist | `tb_pricelist_detail.product_id` แต่ละตัวอ้างอิง `tb_product` ที่ active และไม่ถูก soft-delete; สินค้าต้องมีอยู่บน template ที่อ้างอิงโดย campaign ที่ออก invitation (ผู้ขายไม่สามารถเสนอราคาสินค้าที่ไม่ได้ถาม) | Save line | Reject ด้วย "Product is required and must appear on the issuing template." |
-| `VPL_VAL_019` | Pricelist | `tb_pricelist_detail.@@unique([pricelist_id, product_id, unit_id, moq_qty, deleted_at])` อนุญาตหลายแถวต่อ `(pricelist, product, unit)` แยกโดย `moq_qty` `moq_qty` ของแต่ละแถว `>= 0` | Save line | Reject ด้วย "MOQ quantity is required and must be non-negative; duplicate (product, unit, MOQ) rows are not permitted." |
-| `VPL_VAL_020` | Pricelist | เมื่อสินค้ามีหลายแถว MOQ-tier บน pricelist เดียวกัน (`product_id` + `unit_id` เดียวกัน) แถวถูก auto-sort ตาม `moq_qty` จากน้อยไปมาก และ **ปริมาณที่สูงกว่าต้อง carry ราคาต่อหน่วยที่เท่าหรือต่ำกว่า** (`price` non-increasing เมื่อ `moq_qty` เพิ่มขึ้น) | Save, submit | Warn ที่ save ด้วย "Tier MOQ 50 (฿10.50) is cheaper than MOQ 100 (฿11.00) — please review."; reject ที่ submit ด้วย "MOQ-tier pricing must be non-increasing as MOQ quantity increases." |
-| `VPL_VAL_021` | Pricelist | `tb_pricelist_detail.price_without_tax >= 0` (อนุญาต zero แต่ flag สำหรับ review); `tax_rate >= 0`; `tax_amt = Round(price_without_tax × tax_rate, 5)`; `price = Round(price_without_tax + tax_amt, 5)` | Save line | Reject ด้วย "Price-without-tax must be non-negative; tax_amt and price must reconcile to the configured rounding rule (5 dp internal, 2 dp display)." |
-| `VPL_VAL_022` | Pricelist | `tb_pricelist_detail.lead_time_days >= 0`; `tb_pricelist_detail.rating ∈ [0, 5]` (ขอบบนตั้งค่าได้ตาม tenant) | Save line | Reject ด้วย "Lead time must be non-negative; rating must be within 0–5." |
-| `VPL_VAL_023` | Pricelist | ตอน submit (ผู้ขายคลิก Submit) pricelist มีแถว detail ที่ไม่ถูก soft-delete อย่างน้อยหนึ่ง; ทุกแถว detail ผ่าน `VPL_VAL_018`–`VPL_VAL_022` | Submit | Reject ด้วย "Pricelist must contain at least one valid line item to submit." |
-| `VPL_VAL_024` | Pricelist | การเปลี่ยนสถานะตาม state machine ใน § 5; การเปลี่ยน out-of-order ถูกบล็อก | On status change | Reject ด้วย "Invalid status transition from `<from>` to `<to>`." |
-| `VPL_VAL_025` | Pricelist | หลัง `tb_pricelist.status = active` header ของ pricelist เป็น immutable ยกเว้น `status` (admin สามารถย้ายไป `inactive`) และ surface comment / activity-log; การแก้ detail row ต้องมี administrative override หรือ pricelist ใหม่ (ออกภายใต้ campaign ใหม่) | Edit on active | Reject ด้วย "Active pricelist is immutable — open a new pricelist via a fresh campaign, or move this pricelist to inactive first." |
+| Rule ID | Tier | เงื่อนไข | Status | หลักฐาน |
+| ------- | ---- | --------- | ------ | -------- |
+| `VPL_VAL_001` | Template | `tb_pricelist_template.name` ไม่ว่างและ unique ในแถวที่ไม่ถูก soft-delete | **Confirmed** (DB) | `@@unique([name, deleted_at])` (`pricelist_template_name_deletedat_u`); ไม่พบการตรวจสอบล่วงหน้าระดับแอปแยกต่างหาก ดังนั้นสัญญาณแรกที่ผู้เรียกเห็นเมื่อชื่อซ้ำคือการละเมิด constraint ของ DB |
+| `VPL_VAL_002` | Template | Activate (`draft → active`) ต้องมีแถว `tb_pricelist_template_detail` อย่างน้อย 1 แถว; re-activate ต้องการให้สินค้าที่อ้างอิงทั้งหมดยัง active | **Design-target** | `pricelist-templates.service.ts` ใน `updateStatus()` ตั้งค่า `status` โดยตรง ไม่มีการตรวจนับแถวหรือตรวจความถูกต้องของสินค้าใด ๆ |
+| `VPL_VAL_003` | Template | `currency_id` อ้างอิงแถว `tb_currency` ที่ไม่ถูก soft-delete เมื่อตั้งค่า | **Confirmed (DB FK)** | `currency_id → tb_currency.id`; ไม่มีข้อความระดับแอปที่ชัดเจนนอกเหนือจากการ fail ของ FK |
+| `VPL_VAL_004` | Template | `validity_period > 0`; `reminder_days` ลดลงอย่างเข้มงวด | **Design-target** | ไม่มีการตรวจสอบเช่นนี้ในเส้นทาง create/update ของ `price-list-template.service.ts`; `reminder_days` ถูกเก็บเป็น `Json` แบบ opaque |
+| `VPL_VAL_005` | Template | `tb_pricelist_template_detail.product_id` อ้างอิงสินค้าที่ active; unique ต่อ `(template, product)` | **Confirmed (uniqueness only)** | `@@unique([pricelist_template_id, product_id, deleted_at])` มีอยู่จริง; "สินค้าต้อง active" ไม่ถูกตรวจสอบแยกต่างหาก |
+| `VPL_VAL_006` | Template | `order_unit_obj` carry `default_order` + MOQ tier อย่างน้อย 1 รายการที่ `qty > 0` เพิ่มขึ้นอย่างเข้มงวดข้าม tier | **Design-target** | `order_unit_obj` ถูกเก็บเป็น JSON blob แบบ opaque (`Json? @default("{}")`); ไม่มี service หรือ frontend schema ใด validate โครงสร้างภายในของมัน |
+| `VPL_VAL_007` | Template | `escalation_after_days >= 0` | **Design-target** | ไม่พบการตรวจสอบเช่นนี้ |
+| `VPL_VAL_008` | RFQ | `tb_request_for_pricing.name` ไม่ว่างและ unique ในแถวที่ไม่ถูก soft-delete | **Confirmed** (DB) | `@@unique([name, deleted_at])` (`request_for_pricing_name_u`) |
+| `VPL_VAL_009` | RFQ | `pricelist_template_id` อ้างอิง template ที่ `status = active` | **Design-target (partial)** | `request-for-pricing.service.ts` ใน `create()` ตรวจสอบว่า template **มีอยู่จริง** เท่านั้น ไม่ได้ตรวจว่า `status` เป็น `active` |
+| `VPL_VAL_010` | RFQ | `start_date < end_date`; ทั้งสอง window ต้องถูกต้อง; response window ขั้นต่ำของ tenant (design: 3 วัน) | **Confirmed (partial)** | `create()` reject `startDate > endDate` อย่างชัดเจน (`RFP_INVALID_DATE_RANGE`); ไม่มีการตรวจสอบ "window ขั้นต่ำ" แยกต่างหาก |
+| `VPL_VAL_011` | RFQ | ต้องมีผู้ขายที่เชิญอย่างน้อย 1 รายพร้อม contact email ที่ถูกต้องก่อน "launch" | **Design-target** | ไม่มีขั้นตอน launch แยกต่างหาก — `create()` รับ array `vendors.add` ที่มีความยาวเท่าใดก็ได้ รวมถึงศูนย์ ในการเรียกเดียวกันกับที่สร้าง RFQ header; ไม่มีสิ่งใดบล็อก RFQ ที่ไม่มี vendor เลย |
+| `VPL_VAL_012` | RFQ | Vendor เดียวกันไม่สามารถถูกเชิญสองครั้ง | **Confirmed** (DB) | `@@unique([request_for_pricing_id, vendor_id, deleted_at])` |
+| `VPL_VAL_013` | RFQ | `email_template_id` ต้องอ้างอิง email template ของ tenant ที่ถูกต้องและไม่ archive | **Design-target** | `email_template_id` ถูกเก็บเป็น `String?` แบบอิสระ; ไม่พบการ lookup หรือ validate เทียบกับ email-template registry ใด ๆ |
+| `VPL_VAL_014` | Pricelist | `pricelist_no` ไม่ว่างและ unique ในแถวที่ไม่ถูก soft-delete | **Confirmed** (DB + app) | `@@unique([pricelist_no, deleted_at])`; `generatePLNo()` derive เลขรันถัดไปจาก running-code pattern ของ tenant |
+| `VPL_VAL_015` | Pricelist | `vendor_id` / `currency_id` จำเป็นและอ้างอิงแถว master-data ที่ active | **Confirmed (existence only)** | `create()` lookup vendor/currency ตาม id เพื่อ snapshot ชื่อ/รหัส; ไม่พบ gate "ต้อง active" ที่ชัดเจน |
+| `VPL_VAL_016` | Pricelist | `effective_from_date < effective_to_date`; ไม่มีวันใดอยู่ในอดีตตอน create | **Confirmed** | `create()` ตรวจสอบ `effective_from_date < now()`, `effective_to_date < now()` และ `effective_from_date > effective_to_date` อย่างชัดเจน แต่ละตัวมี entry `ERROR_CATALOG` ของตัวเอง |
+| `VPL_VAL_017` | Pricelist | `submission_method ∈ {online, email, portal, manual}` | **Confirmed** (Prisma enum) | `pricelist_submission_method` |
+| `VPL_VAL_018` | Pricelist | แต่ละแถว detail's `product_id` อ้างอิงสินค้าที่ active ซึ่งปรากฏอยู่บน template ที่ออก | **Design-target** | `create()`/`update()` lookup สินค้าเพียงเพื่อ snapshot ชื่อ/รหัส/SKU เท่านั้น; ไม่มีการตรวจสอบว่าสินค้าเป็นของ template ใด |
+| `VPL_VAL_019` | Pricelist | `moq_qty >= 0`; ไม่มี `(product, unit, moq_qty)` ซ้ำต่อ pricelist | **Confirmed (uniqueness only)** | `@@unique([pricelist_id, product_id, unit_id, moq_qty, deleted_at])`; ขอบเขต `>= 0` บังคับใช้ฝั่ง client (Zod `min(0)` ใน `pl-form-schema.ts`) แต่ไม่ถูกตรวจซ้ำฝั่ง server |
+| `VPL_VAL_020` | Pricelist | แถว MOQ-tier หลายแถวของสินค้าเดียวกันต้องมีราคาไม่เพิ่มขึ้นเมื่อ `moq_qty` เพิ่มขึ้น | **Design-target** | ไม่มีการ sort-and-compare check อยู่ที่ใดเลย — ทั้งใน `price-list.service.ts` และในฟอร์มฝั่ง frontend Vendor หรือ purchaser สามารถ save การตั้งราคา MOQ แบบเพิ่มขึ้นได้โดยไม่มีคำเตือนหรือการ reject ใด ๆ |
+| `VPL_VAL_021` | Pricelist | `tax_amt = Round(price_without_tax × tax_rate, 5)`; `price = Round(price_without_tax + tax_amt, 5)` | **Confirmed (client-side only)** | `pl-form-schema.ts` derive `tax_amt`/`price` จาก `price_without_tax` และ `tax_rate` ก่อน submit; backend persist ค่าใดก็ตามที่ได้รับโดยไม่มีการคำนวณซ้ำหรือตรวจสอบ reconciliation ฝั่ง server |
+| `VPL_VAL_022` | Pricelist | `lead_time_days >= 0`; `rating` อยู่ในช่วง 0–5 ที่ตั้งค่าได้ | **Confirmed (client-side only)** | บังคับใช้โดย Zod schema ฝั่ง frontend; ไม่ถูกตรวจซ้ำฝั่ง server |
+| `VPL_VAL_023` | Pricelist | Submit ต้องมีแถว detail ที่ถูกต้องอย่างน้อย 1 แถว | **N/A** | ไม่มี action "submit" แยกต่างหากบนหน้าจอ Price List ภายใน; `status` เป็นเพียงค่าที่ฟอร์มแก้ไขส่งมา (การเรียก `submit` ของ external vendor-portal มีอยู่ในฝั่ง frontend แต่ชี้ไปยัง backend route ที่ไม่มีอยู่จริง — ดู [03-user-flow-vendor](/th/inventory/vendor-pricelist/03-user-flow-vendor)) |
+| `VPL_VAL_024` | Pricelist | การเปลี่ยนสถานะต้องเป็นไปตาม state machine ที่ตายตัว; การเปลี่ยน out-of-order ถูกบล็อก | **Design-target** | ไม่มี transition guard อยู่จริง — `update()` เขียนค่า `status` ใดก็ตามที่ผู้เรียกส่งมา ในทิศทางใดก็ได้ |
+| `VPL_VAL_025` | Pricelist | pricelist ที่ `active` ต้อง immutable ยกเว้น `status` | **Design-target** | `update()` ไม่มี branch ตาม status — แถว detail สามารถเพิ่ม/แก้/ลบบน pricelist ที่ `active` ได้เหมือนกับบน `draft` ทุกประการ |
 
 ## 3. กติกาการคำนวณ
 
-ค่าเงินทั้งหมดเก็บเป็น `Decimal(20, 5)` ที่ระดับแถว; อัตราภาษีใช้ `Decimal(15, 5)` การปัดเศษการแสดงผลเป็น half-up (banker's rounding สำหรับ tie ที่ .5) ไปยัง 2 ทศนิยมสำหรับสกุลเงิน, 3 ทศนิยมสำหรับปริมาณ และ 5 ทศนิยมสำหรับอัตรา การคำนวณ intermediate อ่านค่าที่ปัดเศษของขั้นก่อนหน้าเสมอ
+ค่าเงินทั้งหมดเก็บเป็น `Decimal(20, 5)` ที่ระดับแถว; อัตราภาษีใช้ `Decimal(15, 5)`
 
-Rule ID ตาม `VPL_CALC_NNN`
-
-| Rule ID | สูตร |
-| ------- | ------- |
-| `VPL_CALC_001` (จำนวนภาษีบรรทัด) | `tax_amt = Round(price_without_tax × tax_rate, 5)` ต่อ `tb_pricelist_detail` |
-| `VPL_CALC_002` (ราคาบรรทัดรวมภาษี) | `price = Round(price_without_tax + tax_amt, 5)` |
-| `VPL_CALC_003` (effective unit price ต่อ UoM ฐาน) | สำหรับแถว MOQ-tier ที่ `(unit_id, moq_qty, price)`: `effective_unit_price = Round(price ÷ unit.conversion_factor_to_base, 5)` `conversion_factor_to_base` resolve ที่เวลา lookup จาก `tb_unit` ไม่ได้เก็บบนแถว pricelist การปัดเศษการแสดงผลเป็น 2 dp ตอน render |
-| `VPL_CALC_004` (การเปรียบเทียบ tier) | เมื่อสินค้า carry หลายแถว MOQ-tier บน pricelist เดียวกัน แถวถูก sort ตาม `moq_qty` จากน้อยไปมากตอน save; แอป assert `price[i+1] <= price[i]` สำหรับแถวที่ติดกันหลัง sort (`VPL_VAL_020`) สำหรับรายงานเปรียบเทียบข้ามผู้ขาย effective unit price ต่อ UoM ฐาน (`VPL_CALC_003`) เป็นค่าที่เปรียบเทียบได้ |
-| `VPL_CALC_005` (การแสดงผล multi-currency) | ค่า pricelist เก็บใน `tb_pricelist.currency_id` (สกุลเงิน submission ที่ vendor เลือก); ไม่มี FX conversion เก็บบนแถว การเปรียบเทียบและรายงานแปลงเป็นสกุลเงินเป้าหมายที่เวลาแสดงผลโดยใช้อัตรา FX ของ tenant ที่ as-of date ของรายงาน — ราคา pricelist ที่เก็บไม่เคย mutate สำหรับ FX |
-| `VPL_CALC_006` (quality score — ระดับแอป, เก็บใน `info`) | `quality_score ∈ [0, 100] = w1 × completeness_pct + w2 × business_rule_pass_pct + w3 × format_correctness_pct + w4 × vendor_reliability_score` ด้วย weight ที่ tenant ตั้งได้ (default `0.30 / 0.40 / 0.15 / 0.15`) เก็บเป็น `info.quality_score` บน `tb_pricelist` |
-| `VPL_CALC_007` (validity countdown สำหรับการแสดงผล portal) | `days_remaining = floor((effective_to_date − now()) ÷ 1 day)` render บน vendor portal และบน dashboard open-pricelists ของ purchaser |
-| `VPL_CALC_008` (โหมดการปัดเศษ) | โหมด Half-up (banker's) สำหรับการปัดเศษทุกเงินและอัตรา; การ format ตัวเลขตามภูมิภาคถูกใช้ที่การ render เท่านั้น ไม่ใช่ที่การเก็บ |
+| Rule ID | สูตร | Status |
+| ------- | ------- | ------ |
+| `VPL_CALC_001` (จำนวนภาษีบรรทัด) | `tax_amt = Round(price_without_tax × tax_rate, 5)` | **Confirmed (client-side)** — คำนวณใน `pl-form-schema.ts` ก่อน submit; backend ไม่คำนวณซ้ำ |
+| `VPL_CALC_002` (ราคาบรรทัดรวมภาษี) | `price = Round(price_without_tax + tax_amt, 5)` | **Confirmed (client-side)** — ข้อจำกัดเดียวกัน |
+| `VPL_CALC_003` (effective unit price ต่อ UoM ฐาน) | `effective_unit_price = price ÷ unit.conversion_factor_to_base` | **Design-target** — ไม่มีโค้ดใดคำนวณหรือแสดงผลค่านี้; `tb_pricelist_detail` ไม่มีคอลัมน์ conversion-factor และ frontend ไม่เคย resolve ค่านี้ |
+| `VPL_CALC_004` (การเลือกแถว preferred) | สำหรับ tuple `(product_id, currency_id, due_date)`, `GET .../pricelists/price-compare` return แถว `tb_pricelist_detail` ที่ตรงกันข้าม vendor ทั้งหมด sorted `is_preferred desc, price asc`; แถวแรกคือ `selected` ที่เหลือคือ `lists` | **Confirmed** — endpoint จริง (`PriceListService.priceCompare`) ใช้โดย dialog การตั้งราคา/เปรียบเทียบปลายน้ำ |
+| `VPL_CALC_005` (การแสดงผล multi-currency) | ค่า Pricelist เก็บใน `tb_pricelist.currency_id`; ไม่มี FX conversion ถูกใช้หรือเก็บที่ใดในโมดูลนี้ | **Confirmed (by absence)** — ไม่มีการ lookup FX-rate ใน `price-list.service.ts`; การแปลงข้ามสกุลเงินใด ๆ เป็นเรื่องของโมดูลปลายน้ำ ไม่ใช่สิ่งที่โมดูลนี้ทำ |
+| `VPL_CALC_006` (quality score) | *(สูตรที่เคยบันทึกไว้ก่อนหน้า)* | **Removed — no code.** การค้นหาทั้ง repo สำหรับ `quality_score`/`qualityScore` ไม่พบผลลัพธ์ใด ๆ ในโมดูลนี้ |
 
 ### 3.1 ตัวอย่างที่ทำงาน — การตั้งราคา multi-MOQ บนสินค้าหนึ่ง
 
-Vendor `V1` submit pricelist สำหรับสินค้า `P1` (`unit = Each`, conversion ไปฐาน `Each = 1`) ที่สาม MOQ tier ใน `currency_id = THB`, `tax_rate = 0.07000`:
+Vendor `V1` submit pricelist สำหรับสินค้า `P1` (`unit = Each`) ที่สาม MOQ tier ใน `currency_id = THB`, `tax_rate = 0.07000`:
 
-- Tier 1: `moq_qty = 1`, `unit_id = Each`, `price_without_tax = ฿12.50`
-  - `tax_amt = Round(12.50 × 0.07, 5) = ฿0.87500`
-  - `price = Round(12.50 + 0.87500, 5) = ฿13.37500`
-  - `effective_unit_price_per_base = Round(13.37500 ÷ 1, 5) = ฿13.37500`
-- Tier 2: `moq_qty = 50`, `unit_id = Each`, `price_without_tax = ฿10.50`
-  - `tax_amt = ฿0.73500`; `price = ฿11.23500`; `effective_unit_price_per_base = ฿11.23500`
-- Tier 3: `moq_qty = 100`, `unit_id = Each`, `price_without_tax = ฿9.75`
-  - `tax_amt = ฿0.68250`; `price = ฿10.43250`; `effective_unit_price_per_base = ฿10.43250`
+- Tier 1: `moq_qty = 1`, `price_without_tax = ฿12.50` → `tax_amt = ฿0.87500` → `price = ฿13.37500` (คำนวณฝั่ง client ตาม `VPL_CALC_001`/`VPL_CALC_002`)
+- Tier 2: `moq_qty = 50`, `price_without_tax = ฿10.50` → `tax_amt = ฿0.73500` → `price = ฿11.23500`
+- Tier 3: `moq_qty = 100`, `price_without_tax = ฿9.75` → `tax_amt = ฿0.68250` → `price = ฿10.43250`
 
-Validation `VPL_VAL_020` ผ่าน — `price` ลดลงอย่างเข้มงวดข้ามสาม tier (`13.375 > 11.235 > 10.4325`) ถ้า Tier 3 เสนอราคาที่ `฿11.00` (เหนือ Tier 2) save warn และ submit reject
-
-ถ้า `V1` ยังเสนอสินค้าเดียวกันที่ `unit = Box of 12` (`tb_unit.conversion_factor_to_base = 12`) ที่ `moq_qty = 1`, `price_without_tax = ฿138.00` แล้ว `effective_unit_price_per_base = Round(138.00 ÷ 12, 5) = ฿11.50000` — **เปรียบเทียบได้** กับราคา MOQ-tier `Each` ข้างต้น Schema เก็บแถวในหน่วยที่ vendor เสนอราคา (`Box`); การเปรียบเทียบเกิดผ่าน `VPL_CALC_003`
+ราคาทั้งสามนี้บังเอิญไม่เพิ่มขึ้นเมื่อ `moq_qty` สูงขึ้น ซึ่งตรงกับเจตนาเบื้องหลัง `VPL_VAL_020` — แต่ไม่มีโค้ดปัจจุบันใดตรวจสอบหรือบังคับใช้ลำดับนั้น Vendor (หรือ purchaser ที่พิมพ์ตรงเข้าไปในฟอร์ม Price List) สามารถ save Tier 3 ที่ `฿15.00` และ record จะถูก save โดยไม่มีคำเตือนใด ๆ
 
 ## 4. กติกา Authorization
 
-Rule ID ตาม `VPL_AUTH_NNN` Authorization บังคับใช้โดย RBAC ที่ชั้น API; กติกาด้านล่างระบุนโยบาย ไม่ใช่การ implement ชื่อ role สะท้อนตาราง RBAC ของ carmen/docs ขีดจำกัด "high-value" หรือ "multi-currency" สำหรับการ approve เฉพาะ Manager ตั้งค่าได้ตาม tenant
+Authorization ในโมดูลนี้หยาบ (coarse): **Vendor** (หน้าจอ CRUD ซึ่งแยกจาก persona Vendor ของ external portal), **Price List**, **Price List Template** และ **Request for Pricing** แต่ละตัว gate ด้วย permission ระดับโมดูลของตัวเอง — ไม่มีการแยก create-vs-edit-vs-approve, ไม่มี threshold high-value เฉพาะ Manager และไม่มีการตรวจสอบ segregation-of-duties ที่ใดในโค้ดเลย
 
-| Rule ID | Subject | สิทธิ์ | ข้อจำกัด |
-| ------- | ------- | ----- | ---------- |
-| `VPL_AUTH_001` | Purchaser / Purchasing Staff | Create / edit / activate / inactivate `tb_pricelist_template` | ทั้ง `status = draft` และ `status = active` สามารถแก้ได้; activate ต้องการ `VPL_VAL_002` |
-| `VPL_AUTH_002` | Purchaser | Create / edit / launch `tb_request_for_pricing` (campaign) | Launch ต้องการ `VPL_VAL_009`–`VPL_VAL_013`; เฉพาะผู้สร้าง campaign หรือสมาชิกของ role procurement-team สามารถแก้ campaign mid-flight |
-| `VPL_AUTH_003` | Purchaser | Upload manually pricelist ที่ส่งมาทาง email (`tb_pricelist.submission_method = email`) ในนาม vendor | อนุญาต; การ upload เขียน `system` comment บน pricelist บันทึกแหล่ง email, staff ที่ upload และการอ้างอิง email ต้นฉบับ |
-| `VPL_AUTH_004` | Purchaser | Review และ approve pricelist ที่ submit (`draft → active`) | ต่ำกว่าขีดจำกัด high-value ของ tenant; pricelist high-value route ไปยัง Purchasing Manager ตาม `VPL_AUTH_005` |
-| `VPL_AUTH_005` | Purchasing Manager | Approve pricelist high-value หรือ multi-currency; ตั้งค่า business rule สำหรับ logic preferred-vendor และ price-assignment | ต้องการสำหรับ pricelist ที่เกินขีดจำกัด high-value ของ tenant หรือครอบคลุมข้อตกลงข้ามพรมแดน multi-currency ยังถือ sign-off บนการ toggle preferred-vendor flag (`tb_pricelist_detail.is_preferred`) |
-| `VPL_AUTH_006` | Purchasing Manager | Reject pricelist ที่ submit พร้อมเหตุผล | ส่ง pricelist กลับไปยัง vendor (สถานะยังเป็น `draft` พร้อม `system` rejection comment ใน `tb_pricelist_comment`); vendor ได้รับ email พร้อมเหตุผลการ reject และอาจ resubmit ผ่าน portal token เดียวกัน (ถ้ายังไม่หมดอายุ) |
-| `VPL_AUTH_007` | Vendor (external) | เข้าถึง portal ผ่าน `pricelist_url_token`; draft, save, resubmit pricelist | Token ต้องไม่หมดอายุ (ไม่เลย `tb_request_for_pricing.end_date` และไม่ถูก revoke); IP ต้องตรงกับ allowlist ที่ตั้งค่าไว้ถ้ามี; บังคับ session limit (default 5 session พร้อมกันต่อ token) |
-| `VPL_AUTH_008` | Vendor | เลือกสกุลเงิน submission; จัด MOQ tier พร้อมหน่วยและ conversion factor | สกุลเงินต้องอยู่ในรายการสกุลเงินที่ tenant อนุญาต; conversion factor อ่านจาก master data ของ `tb_unit` ไม่ใช่ vendor-supplied เป็นค่าอิสระ |
-| `VPL_AUTH_009` | Finance Officer / Accounts Payable | อ่าน pricelist สำหรับการ audit variance | อ่านอย่างเดียวข้าม pricelist, campaign และ invitation ทั้งหมด; ไม่สามารถแก้หรือเปลี่ยนสถานะ |
-| `VPL_AUTH_010` | Finance Manager | Sign off บน pricelist multi-currency หรือ high-value | สิทธิ์ co-approval ข้าง Purchasing Manager เมื่อตั้งค่า; gate การเปลี่ยน `draft → active` สำหรับกรณี multi-currency |
-| `VPL_AUTH_011` | Receiver / Store Keeper | ผู้บริโภคทางอ้อม — ไม่มีสิทธิ์เขียนโมดูล | การเข้าถึงอ่านผ่าน variance check ของ [good-receive-note](/th/inventory/good-receive-note); ไม่สามารถแก้ pricelist |
-| `VPL_AUTH_012` | System Administrator | ตั้งค่า scheme การกำหนดเลข pricelist, RBAC, การตั้งค่า template / campaign, นโยบาย portal token (การหมดอายุ, IP restriction, session limit), การเชื่อม email, กติกา validation | ไม่สามารถสร้างหรือ approve pricelist; ไม่สามารถ transact ในโมดูล สามารถ revoke portal token โดยตั้ง `tb_request_for_pricing_detail.pricelist_url_token = NULL` และเขียน `system` comment ซึ่ง invalidate การเข้าถึง portal ของ vendor ทันที |
-| `VPL_AUTH_013` | Auditor | อ่านอย่างเดียวข้าม pricelist, campaign, invitation, ประวัติการ submission, ผลการ validate และ activity log | ไม่มี surface เขียน; ไม่สามารถ approve, reject, void หรือ amend การ export ฟิลด์ละเอียดอ่อน (vendor identity เต็ม, pricing snapshot, portal-token telemetry) ต้องการการ approve การ export ทุติยภูมิตามนโยบายการ export ของ tenant |
-| `VPL_AUTH_014` | การแยกหน้าที่ | Vendor ≠ Purchaser; Purchaser ≠ Approver (สำหรับ high-value) | user ที่ถือ portal token ของ vendor ไม่สามารถ approve pricelist; user ที่สร้างหรือแก้ pricelist high-value's detail rows อย่างมีนัยสำคัญต้องไม่เป็น user เดียวกันที่ approve มัน บังคับใช้ที่การเปลี่ยนสถานะ |
-| `VPL_AUTH_015` | การ revoke token | System Administrator หรือ Purchasing Manager อาจ revoke `pricelist_url_token` | การ revoke เป็นทันที; การเข้า portal ตามมาด้วย token ที่ revoke return `401 — token revoked` การออกใหม่ต้องส่ง invitation ใหม่พร้อม token ใหม่; แถว invitation ต้นฉบับคงไว้สำหรับ audit |
+| ข้อกล่าวอ้างใน draft ก่อนหน้า | Status | หลักฐาน |
+| --- | --- | --- |
+| Purchasing Manager approve pricelist ที่เกิน "high-value threshold" ของ tenant; Purchaser ถูกจำกัดไว้ต่ำกว่านั้น | **Design-target — removed.** | การค้นหาทั้ง repo สำหรับ `threshold` ในโมดูลนี้ไม่พบผลลัพธ์ที่เกี่ยวข้องเลย (สอดคล้องกับข้อค้นพบที่ยืนยันแล้วในโมดูล `purchase-order`) ไม่มี endpoint approve แยกต่างหากให้ gate ตั้งแต่แรก — `status` ถูกตั้งค่าผ่าน `PATCH` ธรรมดา |
+| ต้องมี Finance Manager co-signoff เพื่อ activate pricelist multi-currency | **Design-target — removed.** | ไม่มี persona Finance หรือกลไก co-signoff ใดอยู่จริง — ดู [03-user-flow-finance](/th/inventory/vendor-pricelist/03-user-flow-finance) |
+| Session ของ vendor portal ถูก gate ด้วยการหมดอายุ token, IP allowlist และขีดจำกัด concurrent-session (default 5) | **Design-target — removed.** | `check-price-list.service.ts` ใน `checkPriceList()` lookup แถว invitation ตาม id แล้ว return/สร้าง pricelist; มันไม่เคยตรวจสอบ `end_date`, IP address หรือจำนวน session เลย |
+| การแยกหน้าที่ (segregation of duties): ผู้ถือ vendor-token ≠ user ที่ approve; ผู้แก้ high-value ≠ ผู้ approve | **Design-target — removed.** | ไม่มี cross-check เช่นนี้อยู่ใน service ใดในโมดูลนี้เลย |
+| System Administrator สามารถ revoke portal token ของ vendor | **Design-target — removed.** | ไม่มี endpoint ใดตั้งค่า `pricelist_url_token` กลับเป็น `NULL` ที่ใดในฝั่ง backend; token ถูกเขียนเพียงครั้งเดียวตอน RFQ-create และไม่ถูกแตะต้องอีกเลยโดย code path ใดที่พบ |
+| Purchaser upload pricelist ที่ส่งทาง email ด้วยตนเองในนามของ vendor | **Confirmed (mechanism), unconfirmed (label)** | `submission_method = email` เป็นฟิลด์จริงที่ตั้งค่าได้บน `tb_pricelist`; Purchaser สามารถสร้าง/แก้ pricelist ด้วยค่านั้นได้โดยตรง ไม่มีหน้าจอ "upload ในนาม vendor" แยกต่างหากจากฟอร์ม create/edit ปกติของ Price List |
+| Auditor มีสิทธิ์อ่านอย่างเดียวข้าม pricelist/campaign/invitation/validation results/activity log | **Partially true, overstated** | User ใดก็ตามที่มีสิทธิ์ view สามารถอ่านสี่หน้าจอ list/detail ได้; ไม่มี role Auditor เฉพาะ, ไม่มี query-builder workspace หรือ surface "validation results" (ไม่มีผล validation ให้แสดงตั้งแต่แรก) ดู [03-user-flow-audit-config](/th/inventory/vendor-pricelist/03-user-flow-audit-config) |
 
-## 5. กติกา Status / Posting
+## 5. กติกา Status
 
-โมดูลมีสาม enum สถานะที่มี lifecycle แยกกัน บวก campaign และ invitation status ที่ derive ระดับแอป
+### 5.1 Price List Template (`enum_pricelist_template_status`: `draft`, `active`, `inactive`)
 
-### 5.1 Template lifecycle (`enum_pricelist_template_status`)
+`updateStatus()` เป็น endpoint เฉพาะที่มีอยู่จริง (`PATCH :id/status`) แต่ทำ **ไม่มีการ validate ใด ๆ** — ผู้เรียกที่ authenticated แล้วซึ่งมี permission ของ endpoint นี้สามารถย้าย status ไปทิศทางใดก็ได้ เมื่อใดก็ได้ ไม่ว่า template จะมีแถวสินค้าหรือไม่ ไม่มี cron, ไม่มี gate การ re-activation และไม่มี comment ใดถูกเขียนตอนเปลี่ยน transition
 
-State: `draft`, `active`, `inactive` Rule ID `VPL_POST_001`–`VPL_POST_004`
+### 5.2 Request for Pricing (ไม่มีคอลัมน์ status)
 
-| Rule ID | Transition | ผลกระทบ |
-| ------- | ---------- | ------- |
-| `VPL_POST_001` | Create (→ `draft`) | Insert `tb_pricelist_template` ด้วย `status = draft`, `doc_version = 0` แถว detail สามารถเพิ่ม / แก้ได้อย่างอิสระ ไม่สามารถขับ campaign ขณะ `draft` |
-| `VPL_POST_002` | Activate (`draft → active`) | ต้องการ `VPL_VAL_002`–`VPL_VAL_007` ตั้ง `status = active`; template ตอนนี้เลือกได้เป็นแหล่งสำหรับแถว `tb_request_for_pricing` ใหม่ `system` comment append ใน `tb_pricelist_template_comment` บันทึกการ activate |
-| `VPL_POST_003` | Inactivate (`active → inactive`) | ตั้ง `status = inactive` Template ไม่สามารถขับ campaign ใหม่; campaign ที่มีอยู่ดำเนินต่อภายใต้การอ้างอิงที่ snapshot |
-| `VPL_POST_004` | Re-activate (`inactive → active`) | อนุญาตเมื่อสินค้าและสกุลเงินที่อ้างอิงของ template ยังถูกต้อง; ถ้าสินค้าใดถูก soft-delete แล้ว activate ถูก reject พร้อมรายการสินค้าที่ได้รับผลกระทบ |
+`tb_request_for_pricing` ไม่มีฟิลด์ status และไม่มีโค้ดแอปใด derive ค่านี้ สัญญาณต่อ vendor เดียวที่ UI อ่านคือ `has_submitted: !!pricelist_id` บนแต่ละแถว invitation (`request-for-pricings.service.ts` ใน `findAll()`) ไม่มีการ derive `draft`/`active`/`paused`/`completed`/`cancelled` ที่ใดเลย — ทั้ง section "campaign lifecycle" ใน draft ก่อนหน้าอธิบาย state machine ที่ไม่มีโค้ดรองรับเลยและถูกลบออกแล้ว RFQ ที่ "cancelled" เป็นเพียงแถวที่ soft-delete (`remove()`)
 
-### 5.2 Campaign lifecycle (แอป derive จาก `start_date`, `end_date` และ count pricelist ฝั่ง detail)
+### 5.3 Price List (`enum_pricelist_status`: `draft`, `active`, `inactive`, `expired`)
 
-ตาม [vendor-pricelist/01-data-model](/th/inventory/vendor-pricelist/01-data-model) § 5 item 2 มี **คอลัมน์ Prisma ที่ไม่มีสำหรับ campaign status** แอป derive สถานะดังนี้ Rule ID `VPL_POST_005`–`VPL_POST_009`
+`create()`/`update()` ตั้งค่า `status` เป็นค่าใดก็ตามที่ผู้เรียกส่งมา; ไม่มี action approve/reject/submit/activate แยกต่างหาก ไม่มี transition guard และไม่มี cron auto-expire ใน repo นี้ (`micro-cronjobs` ไม่มี job ที่ตรงกัน) `remove()` (soft-delete) ยังบังคับ `status = inactive` เพิ่มเติม แถว detail สามารถเพิ่ม แก้ หรือลบได้ไม่ว่า `status` ปัจจุบันของ header จะเป็นอะไร รวมถึง `active`
 
-| Rule ID | State ที่ derive | เงื่อนไข | ผลกระทบ |
-| ------- | ------------- | --------- | ------- |
-| `VPL_POST_005` | `draft` | `tb_request_for_pricing` มีอยู่ที่ `start_date IS NULL` OR `start_date > now()` และไม่มีแถว detail ที่ dispatch invitation email | Campaign กำลังเตรียม; vendor ยังไม่ถูกติดต่อ; แก้ได้อย่างอิสระ |
-| `VPL_POST_006` | `active` | `start_date <= now() < end_date` AND มีแถว detail อย่างน้อยหนึ่งที่ dispatch invitation | Campaign live; vendor สามารถเข้า portal ผ่าน token; reminder fire ตาม schedule ของ template |
-| `VPL_POST_007` | `paused` | Flag ที่แอปตั้ง (ใน JSON `info` บน `tb_request_for_pricing`) ระงับ reminder และล็อก invitation ใหม่; portal token ที่มีอยู่ยังถูกต้อง | ใช้เมื่อฝ่ายจัดซื้อระงับ campaign ชั่วคราว (เช่น พบ error ของ template) แถว detail คง `pricelist_url_token` ของมัน; vendor ยัง submit ได้ถ้าต้องการ |
-| `VPL_POST_008` | `completed` | `now() >= end_date` OR ทุกแถว detail มี `tb_pricelist.status = active` ที่ link | Window campaign ปิด; reminder ถูกระงับ; portal token อาจถูก revoke โดย `VPL_AUTH_015` |
-| `VPL_POST_009` | `cancelled` | Flag ที่แอปตั้ง (ใน JSON `info`) บันทึกการ cancel ด้วย `system` comment ใน `tb_request_for_pricing_comment` | ใช้เมื่อ campaign ถูกละทิ้งก่อน complete portal token ทั้งหมดถูก revoke; vendor ได้รับแจ้งทาง email |
+### 5.4 External vendor portal (ช่องว่างที่ยืนยันแล้ว)
 
-### 5.3 Invitation lifecycle (แอป derive จาก `tb_pricelist.status` และ `submitted_at`)
-
-ตาม [vendor-pricelist/01-data-model](/th/inventory/vendor-pricelist/01-data-model) § 5 item 4 Rule ID `VPL_POST_010`–`VPL_POST_014`
-
-| Rule ID | State ที่ derive | เงื่อนไข |
-| ------- | ------------- | --------- |
-| `VPL_POST_010` | `pending` | `tb_request_for_pricing_detail.pricelist_id IS NULL` AND ไม่มีการเข้า portal ที่บันทึก |
-| `VPL_POST_011` | `in-progress` | บันทึกการเข้า portal แล้ว (`system` comment first-access มีอยู่) OR `tb_pricelist` ที่ link มี `status = draft` และ `submitted_at IS NULL` |
-| `VPL_POST_012` | `submitted` | `tb_pricelist.submitted_at IS NOT NULL` ที่ link AND `tb_pricelist.status = draft` (รอการ approve ของ purchaser) |
-| `VPL_POST_013` | `approved` | `tb_pricelist.status = active` ที่ link |
-| `VPL_POST_014` | `expired` | Campaign `end_date < now()` AND `tb_pricelist.submitted_at IS NULL` ที่ link Portal token ถูก revoke อัตโนมัติโดย cron job |
-
-### 5.4 Pricelist lifecycle (`enum_pricelist_status`)
-
-State: `draft`, `active`, `inactive`, `expired` Rule ID `VPL_POST_015`–`VPL_POST_022`
-
-| Rule ID | Transition / Event | ผลกระทบ |
-| ------- | ------------------ | ------- |
-| `VPL_POST_015` | Create (→ `draft`) | Vendor บันทึกครั้งแรกที่ portal: insert `tb_pricelist` ด้วย `status = draft`, `doc_version = 0`, snapshot `vendor_id` / `currency_id` จาก invitation; FK `tb_request_for_pricing_detail.pricelist_id` ถูก populate Auto-save fire ทุก 30 วินาทีหลังจากนั้น |
-| `VPL_POST_016` | Submit (`draft → draft` พร้อม `submitted_at` ถูกเขียน) | Vendor คลิก Submit ที่ portal: validator รัน (`VPL_VAL_018`–`VPL_VAL_023`); ผ่าน `submitted_at = now()`, `system` comment append บน `tb_pricelist_comment` บันทึก submission, quality score คำนวณ (`VPL_CALC_006`) และเขียนไป `info` และ purchaser ถูกแจ้งสำหรับ review สถานะคง `draft` จนกว่าจะมีการ approve ของ purchaser — state `submitted` / `under-review` ของ carmen/docs คือ window `draft + submitted_at IS NOT NULL` นี้ |
-| `VPL_POST_017` | Approve (`draft → active`) | Purchaser approve: ต้องการ `VPL_AUTH_004` (หรือ `VPL_AUTH_005` สำหรับ high-value, บวก `VPL_AUTH_010` สำหรับ multi-currency) ตั้ง `status = active`; pricelist ตอนนี้เป็นการอ้างอิงสดสำหรับ PR / PO / GRN ปลายน้ำภายใน validity window `system` comment การ approve append |
-| `VPL_POST_018` | Reject (`draft → draft` พร้อม `system` rejection comment) | Purchaser reject ผ่าน `VPL_AUTH_006` พร้อมเหตุผล: pricelist อยู่ที่ `draft`, `submitted_at` reset เป็น `NULL`, `system` comment จับเหตุผล และ vendor email สำหรับ resubmission Vendor สามารถ resubmit ผ่าน portal token เดียวกันจนกว่าจะหมดอายุ |
-| `VPL_POST_019` | Inactivate (`active → inactive`) | Purchaser หรือ Sysadmin ย้าย pricelist active ไป `inactive` (เช่น vendor flag สำหรับ compliance review) PR / PO / GRN ปลายน้ำปฏิบัติกับ pricelist เป็น historical-only จากจุดนี้ `system` comment Inactivation append |
-| `VPL_POST_020` | Re-activate (`inactive → active`) | อนุญาตภายใน validity window เท่านั้น นอก window ระบบ reject การ re-activate และต้องการ pricelist ใหม่ (ผ่าน campaign ใหม่) |
-| `VPL_POST_021` | Auto-expire (`active → expired`) | Cron background: เมื่อ `now() > effective_to_date` AND `status = active` ตั้ง `status = expired` Auto-expiry `system` comment append Pricelist ยัง queryable สำหรับรายงานประวัติ; PR / PO / GRN ปลายน้ำไม่ปฏิบัติกับมันเป็น live |
-| `VPL_POST_022` | Soft delete | `deleted_at = now()`, `deleted_by_id = user` อนุญาตเฉพาะที่ `draft` (ก่อน approve); pricelist active ไม่สามารถ soft-delete ได้เพราะ PR / PO / GRN ปลายน้ำอาจอ้างอิง unique index ทั้งหมดรวม `deleted_at` ดังนั้น pricelist ใหม่สามารถใช้ `pricelist_no` เดิม |
-
-State diagram (Prisma-canonical):
-
-```
-[*] → draft → (submitted_at เขียน) → draft → active → inactive → active (ภายใน window)
-                                          ↓        ↓
-                                       (reject)  expired (auto, เมื่อ now > effective_to_date)
-                                          ↓
-                                        draft
-```
-
-`expired` และ `inactive` กู้คืนเป็น `active` ได้ (`expired` ต้องการ validity date ใหม่ผ่าน pricelist ใหม่; `inactive` re-activate ภายใน window) `draft` รับ soft-delete; `active` / `inactive` / `expired` คง audit history
+`POST /api/check-pricelist/:url_token` (endpoint backend จริงเดียวสำหรับ portal) auto-create draft pricelist ที่ราคาศูนย์จาก template ของ invitation ในการเยี่ยมชมครั้งแรก หรือ return ตัวที่มีอยู่แล้ว Frontend ยัง wire `PATCH /api/pricelist-external/:token` (save) และ `POST /api/pricelist-external/:token/submit` (submit) ผ่าน `hooks/use-price-list-external.ts` แต่ **ไม่มี backend route ที่ตรงกับ `pricelist-external` อยู่ที่ใดใน `carmen-turborepo-backend-v2` เลย** — ยืนยันโดยการค้นหาทั้ง repo ที่ไม่พบผลลัพธ์ใดนอกเหนือจากไฟล์ endpoint-constant ของ frontend เอง ในโค้ดปัจจุบัน vendor portal ทำได้เพียงดูอย่างเดียว; การแก้ไขและ submission ไม่ persist ผ่านมันได้ ดู [03-user-flow-vendor](/th/inventory/vendor-pricelist/03-user-flow-vendor) สำหรับรายละเอียดเต็ม
 
 ## 6. กติกาข้ามโมดูล
 
-Rule ID ตาม `VPL_XMOD_NNN`
-
-| Rule ID | โมดูลที่เกี่ยวข้อง | กติกา |
-| ------- | -------------- | ---- |
-| `VPL_XMOD_001` | [purchase-request](/th/inventory/purchase-request) | การสร้างบรรทัด PR default ราคาต่อหน่วยจาก **pricelist active ของ preferred vendor** สำหรับ tuple `(product_id, currency_id)`, ปรับขนาดเป็น MOQ ของบรรทัด PR ผ่าน `VPL_CALC_004` Preferred vendor resolve ต่อ `is_preferred = true` บน `tb_pricelist_detail` (หรือผ่าน business-rule engine ที่บันทึกใน carmen/docs `price-assignment-workflow-documentation.md`) บรรทัด PR เก็บ `pricelist_detail_id` เป็น back-reference และ `pricelist_type ∈ enum_pricelist_compare_type (automatic, manual_select, manual_input)` เพื่อบันทึกว่าราคาได้รับมาอย่างไร |
-| `VPL_XMOD_002` | [purchase-request](/th/inventory/purchase-request) | เมื่อไม่มี pricelist active สำหรับสินค้า บรรทัด PR ถูกสร้างด้วย `pricelist_type = manual_input` ราคาจับแบบอิสระ และ `system` comment append บน PR flag การขาด pricelist coverage Purchaser คาดว่าจะ raise campaign เพื่อเก็บ coverage หรือ override ราคา manual ระหว่างการ approve |
-| `VPL_XMOD_003` | [purchase-order](/th/inventory/purchase-order) | ที่การ conversion PR-to-PO บรรทัด PO snapshot `price` จาก `pricelist_detail_id` ของบรรทัด PR (ราคามีผลที่การสร้าง PR) ถ้า pricelist active เปลี่ยนระหว่างการสร้าง PR และการ conversion PO ระบบ surface deviation เทียบกับราคา pricelist **ปัจจุบัน** สำหรับ Purchaser review บรรทัด PO เก็บราคาที่ snapshot ไม่ใช่ FK สด — pricelist อาจเปลี่ยนโดยไม่ส่งผลต่อ PO อ้างอิง: `PO_XMOD_005` ใน [purchase-order/02-business-rules](/th/inventory/purchase-order/02-business-rules) § 6 |
-| `VPL_XMOD_004` | [purchase-order](/th/inventory/purchase-order) | เมื่อราคาบรรทัด PO เบี่ยงเบนจาก pricelist active เกินขีดจำกัด tenant (default ±5%) PO ถูก route ไปยัง stage approve high-value แม้ว่า `total_amount` จะต่ำกว่าขีดจำกัด Deviation ถูก log ใน `tb_purchase_order_detail_comment` และ surface เป็น entry vendor-pricelist deviation อ้างอิง: `PO_XMOD_006` |
-| `VPL_XMOD_005` | [good-receive-note](/th/inventory/good-receive-note) | ที่การ post GRN ราคาต่อหน่วยบนบรรทัด GRN ถูกเปรียบเทียบกับราคา pricelist active สำหรับ tuple `(vendor_id, product_id, unit_id, qty bracket)` Variance เกินขีดจำกัด tenant ถูก flag เป็น variance comment บน GRN และสร้าง entry deviation บนฝั่ง vendor / vendor-pricelist ป้อน analytics pricelist-deviation |
-| `VPL_XMOD_006` | [product](/th/inventory/product) | ทุก `tb_pricelist_detail.product_id` อ้างอิง `tb_product` ถ้าสินค้าถูก soft-delete ขณะมีแถว pricelist active แถวยัง queryable แต่ product picker กรองสินค้าออกสำหรับ pricelist ใหม่ แอป surface แถว pricelist ที่กลายเป็น orphan ในรายงาน data-hygiene สำหรับ Purchasing review |
-| `VPL_XMOD_007` | Vendor master (`tb_vendor`) | Vendor ที่ flag เป็น inactive (`tb_vendor.is_active = false`) หรือ soft-delete ไม่สามารถถูกเชิญไปยัง campaign ใหม่และไม่สามารถสร้าง pricelist ใหม่ pricelist active ที่มีอยู่ยัง queryable แต่ surface สำหรับ review; แอปอาจ auto-inactivate (`VPL_POST_019`) ตอน vendor inactivation ตามนโยบาย tenant |
-| `VPL_XMOD_008` | Currency master (`tb_currency`) | ค่า Pricelist เก็บใน `currency_id` ที่ vendor เลือก และ **ไม่** mutate โดย FX move การเปรียบเทียบข้าม vendor และข้ามสกุลเงินใช้อัตรา FX ของ tenant ที่ as-of date ของรายงาน (`VPL_CALC_005`) แหล่ง FX rate เป็นข้อกังวลการตั้งค่าของ System Administrator |
-| `VPL_XMOD_009` | Validation engine (ระดับแอป) | ทุก pricelist ที่ submit ถูก validate โดย validation engine รัน format check (รูปแบบราคา, ความสม่ำเสมอสกุลเงิน), business-rule check (MOQ-tier non-increasing, lead-time bound, dedupe สินค้า+หน่วย+MOQ), completeness check (ฟิลด์ที่ต้องการ populate, ครอบคลุมสินค้า template ทั้งหมด) และ quality scoring (`VPL_CALC_006`) Output เขียนไป `tb_pricelist.info` เป็น `validation_results` (structured object) และ `quality_score` (numeric) Quality score ต่ำกว่าขีดจำกัด tenant (default 70) route pricelist ไป Purchasing Manager review แทนที่จะ auto-approve |
+| Rule ID | โมดูลที่เกี่ยวข้อง | กติกา | Status |
+| ------- | -------------- | ---- | ------ |
+| `VPL_XMOD_001` | [purchase-request](/th/inventory/purchase-request) | การตั้งราคาบรรทัด PR สามารถ source จากแถว `selected` ของ `price-compare` สำหรับ product/currency/date ของบรรทัดนั้น | **Confirmed (mechanism)** — ผ่าน endpoint `price-compare` จริง; ส่วนที่ว่า UI ของโมดูล PR เรียกใช้จริงหรือไม่สำหรับทุกบรรทัด ถูกบันทึกไว้ในรอบตรวจสอบของโมดูล `purchase-request` เอง ไม่ได้ตรวจซ้ำที่นี่ |
+| `VPL_XMOD_002` | [purchase-request](/th/inventory/purchase-request) | เมื่อไม่มี pricelist active ครอบคลุมสินค้า บรรทัด PR ถูกจับด้วย `pricelist_type = manual_input` (`enum_pricelist_compare_type`) | **Confirmed (schema)** — enum และฟิลด์บรรทัด PR มีอยู่จริง; บันทึกไว้ในโมดูล `purchase-request` |
+| `VPL_XMOD_003` | [purchase-order](/th/inventory/purchase-order) | การ convert PO snapshot ราคา ณ จุดที่ convert PR-to-PO แทนที่จะถือ FK สด | **Confirmed** — ตรงกับข้อค้นพบที่บันทึกไว้แล้วของโมดูล PO; ไม่มีการอ่าน pricelist สดซ้ำหลัง conversion |
+| `VPL_XMOD_004` | [purchase-order](/th/inventory/purchase-order) | บรรทัด PO ที่เบี่ยงเบนจาก pricelist active เกิน tolerance ของ tenant route ไปยัง stage approve "high-value" | **Design-target — removed.** รอบ resync ของโมดูล PO เองยืนยันแล้วว่าไม่พบ `threshold` สำหรับกลไกนี้เลย (`PO_AUTH_004`/`PO_XMOD_006`) |
+| `VPL_XMOD_005` | [good-receive-note](/th/inventory/good-receive-note) | การ post GRN สามารถเปรียบเทียบราคาต่อหน่วยกับ pricelist active และ flag variance | **Unconfirmed here** — อ่านข้อกล่าวอ้างของโมดูลนี้ร่วมกับข้อค้นพบ resync ของโมดูล GRN เอง รอบนี้ไม่ได้ตรวจสอบโค้ดฝั่ง GRN ซ้ำ |
+| `VPL_XMOD_006` | [product](/th/inventory/product) | ทุก `tb_pricelist_detail.product_id` อ้างอิง `tb_product`; แถว pricelist ที่มีอยู่ของสินค้าที่ soft-delete แล้วยัง queryable ได้ | **Confirmed (schema)** — `onDelete: NoAction`, รูปแบบ soft-delete สอดคล้องกับส่วนที่เหลือของ schema |
+| `VPL_XMOD_007` | Vendor | Vendor ที่ inactive ไม่ควรถูกเชิญไปยัง RFQ ใหม่หรือมี pricelist ใหม่ถูกสร้าง | **Design-target** — ไม่พบการตรวจสอบ `is_active` ของ vendor ใน `request-for-pricing.service.ts` `create()` หรือ `price-list.service.ts` `create()` |
+| `VPL_XMOD_008` | Currency master | ค่า Pricelist เก็บในสกุลเงินที่เลือกไว้; การเปรียบเทียบข้ามสกุลเงิน ถ้าจำเป็น เป็นเรื่องของโมดูลปลายน้ำ | **Confirmed (by absence)** — ดู `VPL_CALC_005` |
+| `VPL_XMOD_009` | Validation engine | Engine ตรวจสอบรูปแบบ/ความสมบูรณ์/business-rule/quality-scoring validate ทุก submission | **Removed — no code.** ดู § 2 และ § 3 ข้างต้น; สิ่งที่ใกล้เคียงที่สุดที่มีจริงคือ Zod field validation ธรรมดาบนฟอร์มฝั่ง frontend |
 
 ## 7. แหล่งอ้างอิง
 
-- `../carmen/docs/vendor-pricelist-management/design.md` — สถาปัตยกรรม 6-phase, component breakdown และ TypeScript interface ใช้เป็น carmen/docs basis สำหรับการ cross-check แต่ละกลุ่มกติกาข้างต้น
-- `../carmen/docs/vendor-pricelist-management/requirements.md` — 30+ functional requirement; map ไปยังกติกา validation ใน Section 2, กติกา authorization ใน Section 4 และกติกาข้ามโมดูลใน Section 6
-- `../carmen/docs/vendor-pricelist-management/price-assignment-workflow-documentation.md` — business-rule-engine specification: rule category, condition, action และ real-time assignment logic ที่ขับ `VPL_XMOD_001`–`VPL_XMOD_004` ฝั่งโมดูลที่บริโภค
-- `../carmen/docs/vendor-pricelist-management/VENDOR_PORTAL_ENHANCEMENT_SUMMARY.md` — feature vendor portal ที่ใช้ใน `VPL_AUTH_007`–`VPL_AUTH_008` และ `VPL_POST_015`–`VPL_POST_016`
-- `../carmen/docs/vendor-pricelist-management/VENDOR_MANAGEMENT_TECHNICAL_SPECIFICATION.md` — RBAC matrix ใช้ใน Section 4
-- Sibling: [01-data-model.md](./01-data-model.md) — โมเดล Prisma canonical, ค่า enum, unique key multi-MOQ-per-product บน `tb_pricelist_detail` และตาราง divergence ที่ derivation Section 5 พึ่งพา
-- Backend rule implementation (เมื่อเพิ่ม): `../carmen-turborepo-backend-v2/apps/` — vendor-pricelist service module เป็นจุดเชื่อมการ implement สำหรับกติกาเหล่านี้ (validation engine, quality scorer, การ derive campaign-status, token middleware, cron jobs สำหรับ auto-expire)
+- Frontend: `../carmen-inventory-frontend-react/routes/vendor-management/` (vendor, price-list, price-list-template, request-price-list) และ `routes/external/pl/` (vendor portal)
+- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/master/price-list/price-list.service.ts`, `.../price-list-template/price-list-template.service.ts`, `.../request-for-pricing/request-for-pricing.service.ts`, `.../check-price-list/check-price-list.service.ts`; gateway controller ภายใต้ `apps/backend-gateway/src/application/pricelists/`, `pricelist-templates/`, `request-for-pricings/`
+- Prisma: `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (`tb_pricelist*`, `tb_pricelist_template*`, `tb_request_for_pricing*`)
+- `../carmen/docs/vendor-pricelist-management/` — เก็บไว้เป็นแหล่งที่มาสำหรับทุกกติกาที่ label ว่า **Design-target**; ถือว่าเป็น aspirational spec ไม่ใช่คำอธิบายพฤติกรรมปัจจุบัน
+- E2E: `../carmen-inventory-frontend-e2e/tests/150-vendor.spec.ts`, `159-pl.spec.ts`, `160-pl-template.spec.ts`
+- Sibling: [01-data-model.md](./01-data-model.md) — โมเดล Prisma canonical และตาราง divergence § 5 ที่ label สถานะของหน้านี้อ้างอิงมา
 - โมดูลที่เกี่ยวข้อง: [purchase-request](/th/inventory/purchase-request) (`VPL_XMOD_001`–`VPL_XMOD_002`), [purchase-order](/th/inventory/purchase-order) (`VPL_XMOD_003`–`VPL_XMOD_004`), [good-receive-note](/th/inventory/good-receive-note) (`VPL_XMOD_005`), [product](/th/inventory/product) (`VPL_XMOD_006`)

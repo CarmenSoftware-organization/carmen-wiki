@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — Test Scenarios — Outlet Manager
 description: test case ของ Outlet Manager (การบริโภค read-only, explosion demand, variance, feedback) สำหรับโมดูล recipe
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: recipe, test-scenarios, outlet-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -13,7 +13,9 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **At a Glance**
 > **Persona:** Outlet Manager (read-only บน recipe library) &nbsp;·&nbsp; **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **scenario:** ~23
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **การครอบคลุม E2E:** ไม่มีสำหรับภายในสูตร; `tests/701-sr.spec.ts` ครอบคลุมด้าน SR ของ recipe-driven auto-create ใน `../carmen-inventory-frontend-e2e/`
+> **การครอบคลุม E2E:** ไม่มีสำหรับภายในสูตร; spec อัตโนมัติเดียวของโมดูลคือ `tests/121-recipe-equipment-category.spec.ts` (`701-sr.spec.ts` ครอบคลุมเฉพาะ SR ธรรมดา — ไม่มีเส้นทาง recipe-driven auto-create อยู่ในโค้ด)
+
+> **สถานะการ implement (ตรวจสอบแล้ว 2026-07-15)** surface ของ Outlet Manager ที่ scenario เหล่านี้ทดสอบยังไม่มีอยู่จริง: ไม่มี permission อ่านอย่างเดียวสำหรับสูตร (กลุ่มนี้เป็น admin-only ผ่าน placeholder `operation_plan.view`), ไม่มีมุมมองสูตร scope ตาม outlet, ไม่มี recipe explosion, ไม่มี recipe→SR auto-create (ไม่มี `recipe_id` ที่ใดเลยในโค้ด SR) และไม่มี dashboard variance ตัว store requisition เองมีจริงแต่เป็น manual ให้ถือ scenario ด้านล่างเป็นแผน acceptance ของดีไซน์
 
 หน้านี้บันทึก test scenario ที่ persona Outlet Manager ขับเคลื่อนตรงในโมดูล `recipe` Outlet Manager เป็น **read-only บน recipe library** (`recipe:read` ตาม `REC_AUTH_009`); การโต้ตอบของ persona กับสูตรเป็นปลายน้ำ — ใช้ recipe explosion เพื่อวางแผนการดึงวัตถุดิบ ติดตาม variance ของ outlet ที่ขับเคลื่อนบางส่วนโดยความถูกต้องของสูตร และส่ง feedback issue การควบคุม portion / ความถูกต้องให้ Chef revise scenario จัดกลุ่มเป็น **happy path** (อ่านรายละเอียดสูตรในมุมมอง outlet; explosion การผลิตที่วางแผน; auto-create SR จาก demand สูตร; review variance ของ outlet; การ submit recipe-feedback) **RBAC** (Outlet Manager พยายามเขียน scope การอ่านข้าม outlet) **validation** (negative test รอบความถูกต้องของ forecast สูตร demand-zero) และ **edge case** รอบ event banquet demand รูปแบบ par-level top-up การใช้สูตรหลาย outlet handoff ข้าม persona ที่ pivot จาก Outlet Manager (Scenario 5, 6 ใน parent overview) อยู่ใน [04-test-scenarios.md](./04-test-scenarios.md) ไม่ใช่ที่นี่
 
@@ -65,7 +67,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 - Parent overview: [04-test-scenarios.md](./04-test-scenarios.md) — handoff ข้าม persona ที่ pivot จาก Outlet Manager: Scenario 5 (feedback บนการควบคุม portion), Scenario 6 (recipe-driven SR auto-create สำหรับ banquet)
 - User flow: [03-user-flow-outlet-manager.md](./03-user-flow-outlet-manager.md) — แหล่ง happy-path สำหรับ Section 1 ด้านบน; อธิบาย primary flow 8 ขั้นตอน (planning → explosion demand → SR → บริการ → variance → feedback)
 - กฎทางธุรกิจที่ verify: [02-business-rules.md](./02-business-rules.md) Section 3 — `REC_CALC_014` (สูตร theoretical-consumption / demand-explosion); Section 4 — `REC_AUTH_009` (scope read-only ของ Outlet Manager); Section 6 — `REC_XMOD_003` (theoretical OUT fan-out trigger โดยการขายเมนู), `REC_XMOD_004` (sub-recipe recursion), `REC_XMOD_007` (auto-create SR จาก demand สูตร)
-- spec E2E: **ไม่มีสำหรับภายในสูตร**; `701-sr.spec.ts` ครอบคลุมด้าน SR ของเส้นทาง recipe-driven auto-create (trigger จากสูตร → SR อยู่ที่ boundary ของ test)
+- spec E2E: **ไม่มีสำหรับภายในสูตร**; `701-sr.spec.ts` ครอบคลุมเฉพาะ SR ที่ author ด้วยมือตามปกติเท่านั้น — ไม่มีเส้นทาง recipe-driven auto-create อยู่ในโค้ด
 - Cross-link: [store-requisition](/th/inventory/store-requisition) — เอกสารปลายน้ำหลักที่ Outlet Manager author จาก demand สูตร
 - Cross-link: [inventory](/th/inventory/inventory) — การกระทบยอด on-hand ของ outlet กับการใช้เชิงทฤษฎีที่ recipe-driven คือการคำนวณ food-cost-variance
 - Cross-link: [inventory-adjustment](/th/inventory/inventory-adjustment) — movement แก้ไขสำหรับ shrinkage / spoilage flag โดยการสอบสวน variance

@@ -2,7 +2,7 @@
 title: User — Data Model
 description: User entity, profile extension, status, per-cluster BU assignments.
 published: true
-date: 2026-06-10T14:00:00.000Z
+date: 2026-07-29T07:06:05.000Z
 tags: book/platform, users, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -11,7 +11,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 # User — Data Model
 
 > **At a Glance**
-> **Tables:** `tb_user` &nbsp;·&nbsp; `tb_cluster_user` &nbsp;·&nbsp; `tb_user_tb_business_unit` &nbsp;·&nbsp; `tb_user_profile` (profile extension, incl. `avatar_file_token`) &nbsp;·&nbsp; **Enums:** `enum_cluster_user_role` (admin/user) &nbsp;·&nbsp; `enum_user_business_unit_role` (admin/user) &nbsp;·&nbsp; **Audit columns:** standard `created_*`/`updated_*`/`deleted_*` trio on every table, surfaced as a nested `audit` object by the API &nbsp;·&nbsp; **Platform access:** not stored on these tables — RBAC role assignments own it (see [Platform RBAC](/en/platform/rbac))
+> **Tables:** `tb_user` &nbsp;·&nbsp; `tb_cluster_user` &nbsp;·&nbsp; `tb_user_tb_business_unit` &nbsp;·&nbsp; `tb_user_profile` (profile extension, incl. `avatar_file_token` and the new, SPA-unused `signature_file_token`) &nbsp;·&nbsp; **Enums:** `enum_cluster_user_role` (admin/user) &nbsp;·&nbsp; `enum_user_business_unit_role` (admin/user) &nbsp;·&nbsp; **Audit columns:** standard `created_*`/`updated_*`/`deleted_*` trio on every table, surfaced as a nested `audit` object by the API &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` on `tb_user` and `tb_user_profile` (added 2026-07-16), enforced as an optimistic lock on `PUT` &nbsp;·&nbsp; **Platform access:** not stored on these tables — RBAC role assignments own it (see [Platform RBAC](/en/platform/rbac))
 
 > **Source of truth:** Backend Prisma platform schema. Always read this first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
@@ -43,6 +43,7 @@ The identity row. One row per platform user, driving sign-in. This table does no
 | `consent_at` | `DateTime? @db.Timestamptz(6)` | Yes | — | Timestamp of consent acceptance |
 | `socket_id` | `String?` | Yes | — | WebSocket socket identifier for the current session, if any |
 | `is_online` | `Boolean` | No | `false` | Real-time presence flag updated by the WebSocket layer |
+| `doc_version` | `Int` | No | `0` | Optimistic-concurrency token, added platform-wide (35 tables, incl. `tb_user` and `tb_user_profile`) on 2026-07-16. `UserEdit` resends it on every `PUT`; a stale write is rejected with `409` and the SPA reloads the record with a conflict toast instead of overwriting silently |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: row creation time |
 | `created_by_id` | `String? @db.Uuid` | Yes | — | Audit: FK to `tb_user.id` of the creator |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: last update time |
@@ -128,6 +129,8 @@ Profile extension for `tb_user`. Holds the name parts and supplementary contact 
 | `telephone` | `String? @db.VarChar(20)` | Yes | — | Contact telephone number |
 | `bio` | `Json? @db.Json` | Yes | `{}` | Free-form biography/notes as JSON |
 | `avatar_file_token` | `String? @db.VarChar` | Yes | — | Reference to the user's avatar image in the platform file service. The API resolves it to a presigned `avatar_url` string on user list and detail responses — the raw token is not exposed to the SPA (same `file_token` storage pattern as `tb_cluster.avatar_file_token` and `tb_business_unit.logo_file_token`; see §5). Added 2026-05-20. |
+| `signature_file_token` | `String? @db.VarChar` | Yes | — | File-storage token, same pattern as `avatar_file_token`, presumably for an e-signature image. **New since the last sync — no SPA surface found anywhere** (no reference in `UserEdit.tsx`, `UserIdentityHero.tsx`, or any service module); confirmed schema-only. |
+| `doc_version` | `Int` | No | `0` | Optimistic-concurrency token, added platform-wide on 2026-07-16 (see `tb_user` above) |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: row creation time |
 | `created_by_id` | `String? @db.Uuid` | Yes | — | Audit: FK to `tb_user.id` of the creator |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: last update time |
@@ -188,7 +191,7 @@ Carried on `tb_user_tb_business_unit.role`. Controls what the user can do within
 
 ## 5. Divergences from carmen-platform SPA shape
 
-The `UserFormData` interface in `UserEdit.tsx` (lines 59–67) declares 7 editable fields: `username`, `email`, `alias_name`, `firstname`, `middlename`, `lastname`, `is_active`. (Historical: `platform_role` was the 8th field until the RBAC migration removed it from the form and the schema — commit `6091ffc`.)
+The `UserFormData` interface in `UserEdit.tsx` (lines 66–74) declares 7 editable fields: `username`, `email`, `alias_name`, `firstname`, `middlename`, `lastname`, `is_active`. (Historical: `platform_role` was the 8th field until the RBAC migration removed it from the form and the schema — commit `6091ffc`.)
 
 The Prisma-level divergence is that `firstname`, `middlename`, and `lastname` do **not** live in `tb_user`. They live in `tb_user_profile`. The SPA flattens both tables into a single `UserFormData` object and splits writes between `tb_user` (core fields) and `tb_user_profile` (name fields) transparently. The `UserEdit.tsx` load function confirms this: it merges `profile.firstname || user.firstname` when populating the form, reflecting that some older records may have had name fields on the user row before the profile extension table was introduced.
 
@@ -202,7 +205,7 @@ Three further read-shape divergences:
 - **Avatar** — Prisma stores `avatar_file_token` on `tb_user_profile`; the API returns a presigned **`avatar_url` string** on list and detail responses, and the SPA reads `user.avatar_url || profile.avatar_url`. Note the contrast with clusters/business units, where the same token pattern resolves to an embedded `PresignedImage` *object* (`{ url, expires_at }`) on a `logo`/`avatar` key — users get a plain string.
 - **Nested assignment arrays** — the detail response (`GET /api-system/user/:id`) embeds the user's `clusters` (the `tb_cluster_user` rows with a nested `cluster` object) and `business_units` (the `tb_user_tb_business_unit` rows with a nested `business_unit` object); the list response embeds a `business_unit` array used for the BU active/total count column.
 
-No other divergences detected as of 2026-06-10.
+No other divergences detected as of 2026-07-29 (re-verified; `doc_version` is aligned on both sides, not a divergence).
 
 | SPA field | SPA source | Prisma table | Notes |
 | --------- | ---------- | ------------ | ----- |
@@ -218,11 +221,12 @@ No other divergences detected as of 2026-06-10.
 ## 6. References
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — models `tb_user` (line 472), `tb_cluster_user` (line 243), `tb_user_tb_business_unit` (line 600), `tb_user_profile` (line 555); enums `enum_cluster_user_role` (line 645), `enum_user_business_unit_role` (line 661). Line numbers as of 2026-06-10. (`enum_platform_role` and `tb_user.platform_role` no longer exist — see §4.)
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — models `tb_cluster_user` (line 255), `tb_user_profile` (line 579), `tb_user_tb_business_unit` (line 627), `tb_user` (line 494); enums `enum_cluster_user_role` (line 675), `enum_user_business_unit_role` (line 691). Line numbers as of 2026-07-29; `doc_version` added to `tb_user`/`tb_user_profile` on 2026-07-16 (`8e53bbe`). (`enum_platform_role` and `tb_user.platform_role` no longer exist — see §4.)
 
 **Secondary (consumer shape):**
-- `../carmen-platform/src/pages/UserEdit.tsx` — `UserFormData` interface (lines 59–67); `BU_ROLES` constant; load logic merging `tb_user` + `tb_user_profile` fields and resolving `avatar_url`.
-- `../carmen-platform/src/pages/UserManagement.tsx` — `UserRecord` list shape (incl. `avatar_url` and the nested-`audit` flattening).
+- `../carmen-platform/src/pages/UserEdit.tsx` — `UserFormData` interface (lines 66–74); `BU_ROLES` constant; load logic merging `tb_user` + `tb_user_profile` fields and resolving `avatar_url`; `doc_version` wiring via `../carmen-platform/src/utils/docVersion.ts`.
+- `../carmen-platform/src/pages/userEdit/{UserIdentityHero,UserAccessTree}.tsx` — hero card and the merged cluster+BU access hierarchy that replaced the separate Clusters/Business Units cards.
+- `../carmen-platform/src/pages/UserManagement.tsx` — `UserRecord` list shape (incl. `avatar_url`, the BU-count column, and the nested-`audit` flattening).
 - `../carmen-platform/src/types/index.ts` — `User` interface (flattened API response shape), `UserInfo` interface, `Audit`/`AuditEntry`.
 - `../carmen-platform/src/services/userService.ts` — REST client at `/api-system/user`.
 - `../carmen-platform/src/context/AuthContext.tsx` — permission-based login gate (effective permissions, not a role allow-list); see [Platform RBAC](/en/platform/rbac).

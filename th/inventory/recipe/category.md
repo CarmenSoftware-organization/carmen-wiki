@@ -2,7 +2,7 @@
 title: หมวดหมู่สูตรอาหาร (Recipe Category)
 description: taxonomy หมวดหมู่เชิงลำดับชั้นสำหรับสูตรอาหาร — ขับเคลื่อน menu engineering, รายงาน cost-band และการนำทาง recipe library
 published: true
-date: 2026-06-09T16:28:56.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: recipe, category, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -27,29 +27,30 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
-| เพิ่มหมวดหมู่ย่อยใหม่ | Operation Plan → Recipe Category → ต้นไม้ → **+ Child** | สืบทอด default ของ parent สามารถ override ได้ |
-| Reparent หมวดหมู่ย่อย | ลากโหนดไปวางที่ parent ใหม่ในมุมมองต้นไม้ | คำนวณ `level` ใหม่สำหรับโหนดที่ย้าย + descendant ทั้งหมด |
-| แก้ % food-cost เป้าหมายของหมวดหมู่ | edit dialog → **Default Cost Settings** | กระทบเฉพาะสูตร *ใหม่* — ไม่อัปเดตสูตรเดิม |
-| ปลดประจำการหมวดหมู่ | edit dialog → ตั้ง `is_active = false` | สูตรในประวัติยังอ่านได้ ซ่อนจาก picker |
+| เพิ่มหมวดหมู่ย่อยใหม่ | Operation Plan → Recipe Category → **+ Add** → เลือก **Parent Category** จาก dropdown | list/grid เป็น `DataGrid` แบน (`recipe-category-component.tsx`) — ไม่มี widget ต้นไม้ `level` ถูกคำนวณฝั่ง server จาก `level + 1` ของ parent ที่เลือก |
+| Reparent หมวดหมู่ | ฟอร์ม edit → เปลี่ยน dropdown **Parent Category** | คำนวณ `level` ใหม่เฉพาะแถวที่แก้เท่านั้น (`recipe-category.service.ts` `update()`) `level` ของ descendant ไม่ถูกแตะ |
+| แก้ % food-cost เป้าหมายของหมวดหมู่ | หน้า edit (`/operation-plan/category/:id`) → **Default Cost Settings** | กระทบเฉพาะสูตร *ใหม่* — ไม่อัปเดตสูตรเดิม (ไม่มี code path ที่อ่าน default ของหมวดหมู่กลับเข้าแถว `tb_recipe` ที่มีอยู่แล้ว) |
+| ปลดประจำการหมวดหมู่ | หน้า edit → ตั้ง `is_active = false` | สูตรในประวัติยังอ่านได้ ซ่อนจาก picker |
 | Hard-delete หมวดหมู่ | ไม่อนุญาตถ้ามีลูกหรือสูตรอ้างอิง | ใช้ soft-delete + inactive แทน |
 
 ## 3. การตรวจสอบและ Error
 
 | อาการ / ข้อความ | สาเหตุ | การแก้ไข |
 |---|---|---|
-| "Code already in use" | `code` ชนกันทั่ว tenant (บังคับใช้ที่ app) | เลือก code ที่ไม่ซ้ำ |
-| "Name already exists under this parent" | ชื่อพี่น้องชนกัน (บังคับใช้ที่ app) | เปลี่ยนชื่อหรือเลือก parent อื่น |
-| "Cannot delete: category has children" | `parent_id` FK `onDelete: Restrict` | reparent หรือ soft-delete ลูกก่อน |
-| "Cannot delete: recipes still reference this category" | `tb_recipe.category_id` FK `onDelete: Restrict` | reassign สูตรแล้วปลดประจำการ |
-| "Cycle detected on reparent" | การย้ายจะทำให้โหนดเป็น ancestor ของตัวเอง | เลือก parent อื่น |
-| "Parent must be active" | `parent_id` อ้างอิงแถวที่ลบ/inactive | เลือก parent ที่ active |
+| "Recipe category code already exists" (`RECIPE_CATEGORY_CODE_ALREADY_EXISTS`) | `code` ชนกันทั่ว tenant แบบ case-insensitive ในแถวที่ไม่ถูกลบ (`recipe-category.service.ts`) | เลือก code ที่ไม่ซ้ำ |
+| "Cannot delete: category has children" (`RECIPE_CATEGORY_HAS_SUBCATEGORIES`) | การนับลูก `parent_id` ที่ไม่ถูกลบที่ระดับ application ก่อนลบ | reparent หรือ soft-delete ลูกก่อน |
+| "Cannot delete: recipes still reference this category" (`RECIPE_CATEGORY_IN_USE`) | การนับการอ้างอิง `tb_recipe.category_id` ที่ไม่ถูกลบที่ระดับ application ก่อนลบ | reassign สูตรแล้วปลดประจำการ |
+| "Category cannot be its own parent" (`RECIPE_CATEGORY_CANNOT_BE_OWN_PARENT`) | เฉพาะการอ้างอิงตัวเองตรง ๆ เท่านั้น (`parent_id === id`) | เลือก parent อื่น — นี่คือการตรวจ cycle เพียงอย่างเดียว cycle หลายระดับ (reparent หมวดหมู่ไปอยู่ใต้หลานของตัวเอง) **ไม่** ถูกตรวจจับ |
+| "Parent category not found" (`RECIPE_CATEGORY_PARENT_NOT_FOUND`) | `parent_id` ไม่ resolve เป็นแถวที่ไม่ถูก soft-delete | เลือก parent ที่มีอยู่จริง — การตรวจ **ไม่** บังคับให้ parent ต้อง `is_active = true` แค่ไม่ถูกลบเท่านั้น |
 
 ## 4. Edge Cases
 
-- **ความลึกของลำดับชั้น** ไม่มี cap ของ DB แต่ UI ปกติ cap ที่ 3 ระดับ (root → group → leaf) เพื่อความอ่านง่ายของ menu engineering `level` ถูก materialise ตอน insert/move
-- **การกระจาย default** การอัปเดต `default_cost_settings` / `default_margins` ไม่ retroactively กระทบสูตรเดิม — พวกเขามี snapshot ของตัวเองจากตอนสร้าง
+- **ไม่มี tree UI** หน้าจอ list/detail ใช้ pattern `DataGrid` แบน + form เดียวกับหน้าจอ config อื่นทุกหน้าในโมดูลนี้ ลำดับชั้นแสดงออกผ่าน dropdown `parent_id` และตัวเลข `level` ที่ derive มาเท่านั้น ไม่ใช่ต้นไม้แบบภาพ
+- **การตรวจจับ cycle ตื้น** ปฏิเสธเฉพาะการเป็น parent ของตัวเองตรง ๆ (`RECIPE_CATEGORY_CANNOT_BE_OWN_PARENT`) การ reparent หมวดหมู่ไปอยู่ใต้ descendant ของตัวเองไม่ถูกตรวจที่ไหนเลยใน `recipe-category.service.ts` และจะสร้าง cycle อย่างเงียบ ๆ
+- **การกระจาย default** การอัปเดต `default_cost_settings` / `default_margins` ไม่ retroactively กระทบสูตรเดิม — พวกเขามี snapshot ของตัวเองจากตอนสร้าง (ไม่มี fan-out job ใน `recipe-category.service.ts` หรือ `recipe.service.ts`)
+- **Reparenting ไม่ cascade `level`** การย้ายหมวดหมู่คำนวณ `level` ใหม่เฉพาะของหมวดหมู่นั้นเองเท่านั้น หมวดหมู่ย่อยใด ๆ ใต้มันเก็บค่า `level` เดิมไว้จนกว่าแต่ละตัวจะถูก save ใหม่ทีละตัว
 - **หมวดหมู่ inactive** ยังอ่านได้บนสูตรในประวัติ แต่ซ่อนจาก picker สร้างสูตร
-- **ไม่มี DB unique constraint** บน `name` หรือ `code` — ความไม่ซ้ำบังคับใช้ที่ application ดังนั้น SQL insert ตรงสามารถ bypass ได้
+- **ไม่มี DB unique constraint** บน `name` หรือ `code` — ความไม่ซ้ำบังคับใช้ที่ application (case-insensitive บน `code` เท่านั้น `name` ไม่มีการตรวจความไม่ซ้ำเลย ทั้งระดับพี่น้องและทั่ว tenant) ดังนั้น SQL insert ตรงสามารถ bypass ได้
 
 ---
 
@@ -78,11 +79,11 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ## 6. กติกาทางธุรกิจ
 
-- **ความไม่ซ้ำ (app)** `name` ไม่ซ้ำต่อ parent (พี่น้องชนกันไม่ได้) `code` ไม่ซ้ำทั่ว tenant
-- **Reparenting** คำนวณ `level` ใหม่สำหรับโหนดที่ย้าย + descendant การตรวจจับ cycle ปฏิเสธการย้ายแบบ self-ancestor
-- **Deletion guards** ทั้ง self-FK และ `tb_recipe.category_id` ใช้ `onDelete: Restrict` — hard-delete ถูกบล็อกในขณะที่มีลูกหรือสูตรอยู่
+- **ความไม่ซ้ำ (app)** `code` ไม่ซ้ำทั่ว tenant แบบ case-insensitive ในแถวที่ไม่ถูกลบ **ไม่มี** การตรวจความไม่ซ้ำของ `name` — หมวดหมู่ชื่อเดียวกัน (พี่น้องหรือไม่เกี่ยวข้องกัน) เป็นสิ่งที่อนุญาต
+- **Reparenting** คำนวณ `level` ใหม่เฉพาะแถวที่ย้ายเท่านั้น (`parent.level + 1`) ไม่ cascade ไปยัง descendant การปฏิเสธ cycle ครอบคลุมเฉพาะการเป็น parent ของตัวเองตรง ๆ ไม่ครอบคลุม cycle ที่ลึกกว่า
+- **Deletion guards** การนับที่ระดับ application (`RECIPE_CATEGORY_HAS_SUBCATEGORIES`, `RECIPE_CATEGORY_IN_USE`) บล็อกการลบในขณะที่มีลูกหรือสูตรอยู่ — ไม่ใช่ความล้มเหลวของ cascade `Restrict` ที่ระดับ database
 - **Default seed ตอน create เท่านั้น** — ไม่ retroactive ตอน update
-- **การ validate** `code`, `name` จำเป็น `level >= 1` `parent_id` (ถ้าตั้ง) ต้องอ้างอิงหมวดหมู่ active ที่ไม่ถูกลบ
+- **การ validate** `code`, `name` จำเป็น `parent_id` (ถ้าตั้ง) ต้องอ้างอิงหมวดหมู่ที่ไม่ถูก soft-delete — `is_active` ไม่ถูกตรวจบน parent
 
 ## 7. Cross-References
 

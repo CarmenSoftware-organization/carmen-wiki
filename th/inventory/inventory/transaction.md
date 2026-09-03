@@ -2,7 +2,7 @@
 title: บันทึกธุรกรรมคลังสินค้า (Inventory Transaction Log)
 description: Ledger append-only ของทุก event ที่กระทบ inventory — GRN, SR, adjustment, wastage, count variance, period flip — และเป็น source of truth สำหรับการคำนวณ balance
 published: true
-date: 2026-06-17T08:00:00.000Z
+date: 2026-07-15T09:00:00.000Z
 tags: inventory, transaction, audit, ledger, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # บันทึกธุรกรรมคลังสินค้า (Inventory Transaction Log)
 
 > **At a Glance**
-> **เจ้าของ:** System (read-only สำหรับ users) &nbsp;·&nbsp; **Tables:** `tb_inventory_transaction` (header) + `_detail` + `_cost_layer` &nbsp;·&nbsp; **Trigger:** ทุก source-document posting (GRN / SR / adjustment / wastage / count / close) &nbsp;·&nbsp; **ใช้โดย:** การคำนวณ balance + audit trace &nbsp;·&nbsp; **1-liner:** event tape ที่ immutable; **append-only, ไม่เคย update, ไม่เคย delete**
+> **เจ้าของ:** System (read-only สำหรับ users) &nbsp;·&nbsp; **Tables:** `tb_inventory_transaction` (header) + `_detail` + `_cost_layer` &nbsp;·&nbsp; **Trigger:** ทุก source-document posting (`good_received_note` / `store_requisition` / `stock_in` / `stock_out` / `credit_note` / `close` / `open` — count variance เข้ามาเป็น stock-in/stock-out) &nbsp;·&nbsp; **ใช้โดย:** การคำนวณ balance + audit trace &nbsp;·&nbsp; **1-liner:** event tape ที่ immutable; **append-only, ไม่เคย update, ไม่เคย delete**
 
 ![บันทึกธุรกรรมคลังสินค้า (Inventory Transaction Log) screen](/screenshots/inventory/transaction.png)
 
@@ -32,17 +32,18 @@ Inventory Transaction Log คือ **event tape ที่ immutable** ของ
 | Verify ว่า GRN posting เขียนไปยัง ledger | Filter `inventory_doc_type = 'good_received_note'` และ GRN id | หนึ่ง header row + หนึ่ง detail row ต่อ GRN line + หนึ่ง cost-layer row ต่อ lot |
 | Trace SR transfer (สองด้าน) | Filter โดย SR id | คู่ของ OUT @ source (`transfer_out`) และ IN @ destination (`transfer_in`) |
 | Audit period close | Filter `inventory_doc_type IN ('close', 'open')` | Close เองปรากฏบน ledger |
-| Diagnose balance mismatch | Sum `qty` สำหรับ `(location, product, lot)` key | ต้องเท่ากับ `InventoryStatus.QuantityOnHand` ที่ cache |
+| Diagnose balance mismatch | Sum cost-layer `in_qty − out_qty` สำหรับ `(location, product)` key | ผลรวมนี้**คือ** balance เอง — ไม่มี balance row ที่ cache แยกต่างหาก; ตัวเลข on-hand ทุกจุดในผลิตภัณฑ์ (dialog on-hand ของ PR, system qty ของ spot-check) derive จาก sum เดียวกันนี้ |
+| Filter รายการ | ช่องค้นหา + date-range presets (Today / 7d / 30d / This month / custom), ทิศทาง Inbound/Outbound, Location, Category, และ ref-type pills (GRN / SR / SI / SO / PC) | Filters เป็นแบบ URL-backed; convention ของ backend filter คือ `field:value;field\|op:v1,v2` |
 
 ## 3. ข้อผิดพลาดและการตรวจสอบ
 
 | อาการ / ข้อความ | สาเหตุ | การกระทำ |
 |---|---|---|
-| "Cannot edit transaction" ใน UI | Ledger คือ read-only โดยการออกแบบ | แก้ไขผ่านเอกสาร source ตรงข้าม-sign (void / reverse) |
-| Balance disagree กับ InventoryStatus cache | Cache stale หรือ corrupted | Re-derive จาก ledger (system maintenance job); ledger คือ source of truth |
-| "Period is closed" บน source-document submit | `document_date` ภายในงวด `closed` / `locked` | Ledger **ไม่เคย** รับ row ที่งวด closed — แก้ที่ source |
-| Transaction rows สองสำหรับ GRN หนึ่ง | คู่ original + reversal | คาดหวังสำหรับ void / reverse — คู่ **คือ** audit trail |
-| Cost ต่างจาก current product cost | `cost_per_unit` snapshot ที่ posting; ไม่ re-fetch | ถูกต้องโดยการออกแบบ; การ re-approve doc **ไม่** re-cost transaction ที่มีอยู่ |
+| "Cannot edit transaction" ใน UI | Ledger คือ read-only โดยการออกแบบ — หน้าจอไม่มี affordance ให้ create/edit เลย | แก้ไขผ่านเอกสาร source ทิศทางตรงข้าม (credit note, stock-in/stock-out) |
+| Balance ดูผิด | เอกสาร source post โดยไม่คาดคิด (เช่น GRN **save** ก็ post แล้ว — commit ไม่ได้ post) | Re-derive จาก ledger; ผลรวม cost-layer คือ balance เดียวที่มี |
+| Movement ที่ลงวันที่เดือนก่อนไปปรากฏในงวดเดือนนี้ | โดยการออกแบบ: `resolveCurrentPeriod` stamp ทุก movement ใหม่เข้า**งวดเปิดปัจจุบัน**เสมอโดยไม่สน document date — row ที่ backdate ไม่เคยถูกจัดเข้างวด closed (และไม่เคยถูก reject เพราะ backdate เช่นกัน) | ไม่มีอะไรต้องแก้; *มูลค่า* ของงวด closed ถูกป้องกันด้วย guard การ reprice ของ credit-note ไม่ใช่ด้วยการ block posting |
+| Filter ref-type PC ไม่คืนผลลัพธ์ | Frontend มี pill `PC (physical_count)` แต่ `enum_inventory_doc_type` ไม่มีค่า `physical_count` — การแก้ไขจาก count เข้ามาเป็นเอกสาร `stock_in` / `stock_out` | Filter ด้วย SI / SO แทน |
+| Cost ต่างจาก current product cost | `cost_per_unit` snapshot ที่ posting; ไม่ re-fetch | ถูกต้องโดยการออกแบบ — ยกเว้น Credit Note Amount กับ lot ในงวดเปิด ซึ่ง**จะ** re-price lot จริง (lot ในงวด closed จะบันทึกเป็น `diff_amount` แทน) |
 
 ## 4. กรณีพิเศษ
 
@@ -50,8 +51,9 @@ Inventory Transaction Log คือ **event tape ที่ immutable** ของ
 - **No standalone insert** Rows insert เฉพาะโดย transitions workflow ของเอกสาร source — ไม่เคยโดย user action Frontend คือ read-only
 - **Cost snapshot ที่ posting** `cost_per_unit` pick ที่ moment ที่เอกสาร source post AVCO ใช้ snapshot running average; FIFO pick layer lot ที่เก่าที่สุดที่เปิด
 - **Lot lineage** `from_lot_no` และ `current_lot_no` จับ splits / merges / consumption FIFO consumption order บังคับใช้ผ่าน `(lot_at_date, lot_seq_no)` บน cost layer
-- **Period stamp != document date** ทุก cost-layer row stamp `period_id` และ `at_period` (YYMM) ที่ insert; `tb_period_snapshot` group โดย stamp นี้ ไม่ใช่ document date
-- **Void = row ใหม่** Reversal insert transaction ใหม่ด้วย qty ลบ link กลับไปยังตัวต้นฉบับโดย application-layer reference; row ดั้งเดิมไม่เคยเปลี่ยน
+- **Period stamp != document date** ทุก cost-layer row stamp `period_id` และ `at_period` (YYMM) ที่ insert — และ stamp เป็น**งวดเปิดปัจจุบัน**เสมอ (`resolveCurrentPeriod`) ไม่เคยเป็นงวดของ document date การ aggregate ตามงวด group โดย stamp นี้
+- **Correction = rows ใหม่ผ่านเอกสาร source** ไม่มี reversal endpoint บน ledger เอง; การแก้ไขเข้ามาเป็นเอกสาร credit-note หรือ stock-in/stock-out ซึ่ง post transaction ใหม่ของตัวเอง `deleted_at` ไม่เคยถูกตั้งโดย code path ใดของ inventory ปัจจุบัน
+- **การรับเข้า direct-location มีสองขา** การรับ GRN เข้า location ที่ `location_type = direct` post layer ขาเข้า **บวก** layer `issue` หักล้างอัตโนมัติ (`createDirectExpenseOut`, lot `ISS-…`) ภายใต้ header เดียวกัน — net on-hand เป็นศูนย์
 
 ---
 
@@ -93,33 +95,37 @@ FIFO layer ต่อ lot ด้วย `lot_no`, `lot_index`, `in_qty` / `out_qty
 
 | Source doc | Cost-layer type | Direction |
 |---|---|---|
-| GRN posting | `good_received_note` | IN |
+| GRN posting (fire ตอน **save**, `draft → saved`) | `good_received_note` | IN (บวกขา OUT `issue` อัตโนมัติเมื่อ location เป็น `direct`) |
 | SR transfer issue | `transfer_in` + `transfer_out` | OUT @ source, IN @ destination |
-| SR issue ไปยัง direct-cost | `issue` | OUT เท่านั้น |
-| Inventory-adjustment IN | `adjustment_in` | IN |
-| Inventory-adjustment / wastage OUT | `adjustment_out` | OUT |
-| Credit note | `credit_note_quantity` หรือ `credit_note_amount` | OUT (qty) หรือ value-only |
-| Period close | `eop_out` + `close_period` | period marker |
-| Period open (next) | `eop_in` + `open_period` | period marker |
+| SR issue ไปยังปลายทาง direct-cost | `issue` | OUT เท่านั้น |
+| Inventory-adjustment IN (`tb_stock_in`) | `adjustment_in` | IN |
+| Inventory-adjustment / wastage OUT (`tb_stock_out`) | `adjustment_out` | OUT |
+| Credit note | `credit_note_quantity` หรือ `credit_note_amount` | OUT (qty) หรือ value-only (`diff_amount`) |
+| Period close | `close_period` (lot `CLOSE-{YYMM}-{seq}`, `out_qty` ล้างแต่ละ lot ที่ยังเหลืออยู่ให้เป็นศูนย์) | OUT, period boundary |
+| Period open (next) | `open_period` (lot `OPEN-{YYMM}-{seq}`, `in_qty` สร้างแต่ละ lot ขึ้นใหม่) | IN, period boundary |
+| EOP adjustment (`eop_in` / `eop_out`) | `eop_in` / `eop_out` | variant แบบ carry-in/out ที่ expose ผ่าน inventory-adjustment API (`enum_adjustment_type` มีทั้งคู่); layer carry-in ถูก value-lock เหมือน `open_period` |
 
 ## 6. Lifecycle / กติกาทางธุรกิจ
 
 ```
-1. Source-document posting (เช่น GRN draft -> completed):
+1. Source-document posting (เช่น GRN save, draft -> saved):
    - INSERT tb_inventory_transaction header
    - INSERT tb_inventory_transaction_detail ต่อ line
-   - INSERT tb_inventory_transaction_cost_layer ต่อ lot ที่ได้รับผลกระทบ
-2. Void / reverse: INSERT rows ใหม่ด้วย qty ลบ (ไม่เคย UPDATE ตัวต้นฉบับ)
-3. Period close: INSERT header ด้วย inventory_doc_type = 'close'
+   - INSERT tb_inventory_transaction_cost_layer ต่อ lot_index
+     (splitFifoCost อาจ split การรับหนึ่งครั้งออกเป็นหลาย layers
+      เพื่อ reconcile ทศนิยมให้ตรงเป๊ะ)
+2. Correction: เอกสาร source ใหม่ (credit note / stock-in / stock-out)
+   post transaction ใหม่ของตัวเอง (ไม่เคย UPDATE ตัวต้นฉบับ)
+3. Period close: INSERT headers ด้วย inventory_doc_type = 'close' และ 'open'
 ```
 
-- **Append-only** การแก้ไขคือ rows ใหม่ด้วย qty ตรงข้าม-sign
-- **Source linkage** `(inventory_doc_type, inventory_doc_no)` คือ back-pointer
-- **No backdating** การ post เข้างวด closed คือ reject ที่ source; ledger ไม่เคยรับ closed-period row
+- **Append-only** การแก้ไขคือ rows ใหม่ผ่านเอกสาร source ใหม่
+- **Source linkage** `(inventory_doc_type, inventory_doc_no)` คือ back-pointer; หน้าจอ list resolve มันเป็น `parent_document_no` (เลขที่ GRN/SI/SO/SR/CN หรือ code ของงวดสำหรับ close/open)
+- **No backdating เข้างวด closed — ด้วยการ re-date ไม่ใช่การ reject** ทุก row ใหม่ถูก stamp เข้างวดเปิดปัจจุบัน (`resolveCurrentPeriod`); ledger ไม่เคยรับ closed-period row เพราะ stamp ไม่สน document date
 
 ## 7. ความเชื่อมโยงข้ามโมดูล
 
-- [inventory](/th/inventory/inventory) — มุมมอง current-state (`InventoryStatus`) คือ running sum ของ ledger นี้
+- [inventory](/th/inventory/inventory) — ตัวเลข on-hand ทุกจุดในผลิตภัณฑ์คือ running sum ของ ledger นี้ (ไม่มี balance row ที่ persist)
 - [costing](/th/inventory/costing) — กฎ `COST_CALC_*` derive จาก cost-layer rows
 - [good-receive-note](/th/inventory/good-receive-note) &nbsp;·&nbsp; [inventory-adjustment](/th/inventory/inventory-adjustment) &nbsp;·&nbsp; [inventory-adjustment/wastage-reporting](/th/inventory/inventory-adjustment/wastage-reporting) &nbsp;·&nbsp; [store-requisition](/th/inventory/store-requisition) &nbsp;·&nbsp; [physical-count](/th/inventory/physical-count) &nbsp;·&nbsp; [purchase-order/credit-note](/th/inventory/purchase-order/credit-note) — เอกสาร source
 - [inventory/period-end](/th/inventory/inventory/period-end) — เขียน `close` / `open` rows และ freeze snapshot

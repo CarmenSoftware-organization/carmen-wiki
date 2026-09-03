@@ -2,7 +2,7 @@
 title: Spot Check — User Flow
 description: Document lifecycle and persona-specific flow files for spot checks.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T18:38:42.000Z
 tags: spot-check, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -11,17 +11,15 @@ dateCreated: 2026-05-15T14:30:00.000Z
 # Spot Check — User Flow
 
 > **At a Glance**
-> **Module:** [spot-check](/en/inventory/spot-check) &nbsp;·&nbsp; **Personas:** Inventory Controller &nbsp;·&nbsp; Counter &nbsp;·&nbsp; Audit / Config
-> **Workflow lifecycle:** Pending → In Progress → Completed (variance rollup to [inventory-adjustment](/en/inventory/inventory-adjustment)) with Void branch
-> **Drill into per-persona views below for action-level detail**
+> **Module:** [spot-check](/en/inventory/spot-check) &nbsp;·&nbsp; **Persona:** one undifferentiated role, gated by a single permission (`inventory_management.spot_check`) — the two files linked below split its journey by screen (list/create vs. entry/review), not by a real role difference
+> **Workflow lifecycle (`enum_spot_check_status`):** `pending → in_progress → completed`, or `pending`/`in_progress → void` (Reset). `pending → completed` directly (skipping `in_progress`) is also reachable if a Save is never triggered mid-count.
+> **Real screens:** `spot-check` (list) → `spot-check/location/:location_id` (create) → `spot-check/:id` (entry) → `spot-check/:id/review` (variance review + final submit)
 
 ## 1. Overview
 
-This page is the **overview entry point** for the user-flow set of the `spot-check` module. Unlike [physical-count](/en/inventory/physical-count)'s three-tier period / document / detail exercise, a spot check is a **two-tier ad-hoc check** — one `tb_spot_check` header per (location, time-window) pairing with a `method` (random / high_value / manual) and `size`, plus `tb_spot_check_detail` rows holding per-product `on_hand_qty` (book snapshot) / `actual_qty` (counted) / `diff_qty` (variance). The work moves quickly along this hierarchy: Inventory Controller opens the spot check, the system (or the controller, for `method = manual`) samples `size` items, assigns a Counter; the Counter walks the location and enters physical quantities line by line; the Inventory Controller inspects variance, triggers recounts, approves completion; the rollup then writes a variance adjustment to [inventory-adjustment](/en/inventory/inventory-adjustment) which is the path to the [inventory](/en/inventory/inventory) ledger.
+This page is the **overview entry point** for the user-flow set of the `spot-check` module. The real implementation is a single continuous journey with no hand-off between different people: one permission-gated user opens the location list (`spot-check`), starts a check for a location with no in-flight spot check (`spot-check/location/:location_id`) by picking a sampling `method` and scope, enters `actual_qty` per sampled product on the entry screen (`spot-check/:id`), clicks **Submit for Review** once every line has a locally-entered value, reviews the computed variance on `spot-check/:id/review`, and clicks the final **Submit** — the action that closes the document (`doc_status = completed`) and, unlike [physical-count](/en/inventory/physical-count), produces **no other effect of any kind**: no rollup document, no ledger write.
 
-Section 2 below describes the **document lifecycle state machine** for `tb_spot_check.doc_status` (`pending → in_progress → completed`, plus the `void` cancel path), independent of who acts. Each per-persona file (linked from Section 3) describes that persona's *path through* this state space — entry point, available actions, decision branches, handoff that ends their involvement. Section 4 then summarises the cross-persona handoffs that stitch the individual paths together (Inventory Controller → Counter for assignment; Counter → Inventory Controller for completed-sheet sign-off; Inventory Controller → Approver/Finance for variance-adjustment approval via [inventory-adjustment](/en/inventory/inventory-adjustment)).
-
-> **TODO:** Source the canonical UI screens / wizard flows from `../carmen-inventory-frontend-react/` once a `spot-check` route is discoverable; cross-reference E2E specs at `../carmen-inventory-frontend-e2e/tests/` once added (no `spot-check` spec exists as of this writing). No carmen/docs source folder exists for this module.
+Section 2 below describes the real document-lifecycle state machine for `tb_spot_check.doc_status`. Section 3 links two files that describe the same real flow from two screen-based angles — the list/create screens (`03-user-flow-inventory-controller.md`) and the entry/review screens (`03-user-flow-counter.md`) — retained as separate pages for continuity with this wiki's page layout, not because a distinct "Inventory Controller" and "Counter" role exists in code. Section 4 is a correction note pointing at `03-user-flow-audit-config.md`, which documents the confirmed absence of any Approver/Auditor/Sysadmin surface for this module.
 
 ## 2. Document Lifecycle
 
@@ -29,26 +27,28 @@ Section 2 below describes the **document lifecycle state machine** for `tb_spot_
 
 ```mermaid
 stateDiagram-v2
-    [*] --> pending : Inventory Controller creates tb_spot_check (location + method + size) — SPC_VAL_001/002; on_hand_qty snapshot captured per line
-    pending --> in_progress : Counter enters first actual_qty — SPC_AUTH_004; counted_at / counted_by_id stamped
-    in_progress --> in_progress : Counter enters/edits actual_qty on assigned lines OR Inventory Controller flags line for recount (SPC_VAL_006)
-    in_progress --> completed : Inventory Controller submits — all lines have actual_qty (SPC_VAL_004); recount flags resolved; rollup fires (SPC_POST_001)
-    pending --> void : Inventory Controller cancels before counting starts — SPC_VAL_008; no rollup
-    in_progress --> void : Inventory Controller cancels mid-count — SPC_VAL_008; partial entries preserved; no rollup
+    [*] --> pending : Create (POST /spot-checks) — location + method + size/products; on_hand_qty snapshot taken per line
+    pending --> in_progress : Save (PATCH .../save) — first mid-count save call
+    in_progress --> in_progress : Save (repeatable) or Submit for Review (PATCH .../review, recomputes on_hand_qty/diff_qty live, does not change doc_status)
+    pending --> in_progress : (also reachable via Submit for Review's first call, without an intervening Save — reviewItems() does not itself change doc_status either, so pending can also flow straight through)
+    pending --> completed : Submit (PATCH .../submit) — no completeness check; reachable directly if Save was never called
+    in_progress --> completed : Submit (PATCH .../submit) — no completeness check
+    pending --> void : Reset (POST .../reset) — from the list screen's Resume section
+    in_progress --> void : Reset (POST .../reset)
     completed --> [*]
     void --> [*]
 
     note right of completed
-        Terminal — immutable (SPC_VAL_007).
-        Satisfies End Period Close Stage 2 (BR-PE-006).
-        Variance rollup fires: diff_qty > 0 -> tb_stock_in (SPOT_CHECK_OVERAGE);
-        diff_qty < 0 -> tb_stock_out (SPOT_CHECK_SHORTAGE) — SPC_POST_001.
-        Note: variance posting to inventory is PENDING (see 02-business-rules § 5.1).
+        Terminal. Only effect: doc_status = completed, end_date stamped.
+        No stock-in/out, no ledger write, no linkage to any other document.
+        reviewItems() itself has no completed/void guard — only the
+        terminal submit() call is blocked on a second attempt (SPC_VAL_008).
     end note
 
     note right of void
-        Terminal alternative — no ledger effect.
-        Cancelled checks do not satisfy End Period Close Stage 2.
+        Terminal alternative. Reset does not clear tb_spot_check_detail rows —
+        it only flips doc_status. The location falls back to "Not Started";
+        resuming means creating a brand-new spot check, not reopening this one.
     end note
 ```
 
@@ -56,53 +56,36 @@ stateDiagram-v2
 
 | From state | Action | To state | Allowed for | Pre-conditions |
 | ---------- | ------ | -------- | ----------- | -------------- |
-| `(none)` | create `tb_spot_check` for `(location, method, size)` | `pending` | Inventory Controller | Location is inventory- or consignment-type per `SPC_VAL_001`; `method` and `size` set per `SPC_VAL_002`. Sample generated per `SPC_VAL_003` (random / high_value) or empty for manual. `on_hand_qty` snapshot captured per line. |
-| `pending` | counter enters first `actual_qty` | `in_progress` | Counter | Counter has location-grant for the spot check per `SPC_AUTH_004`. |
-| `in_progress` | edit `actual_qty` / add detail comments | `in_progress` | Counter (own lines) | Lines within counter's location-grant. |
-| `in_progress` | flag variance line for recount | `in_progress` | Inventory Controller | Variance breach per `SPC_VAL_006`. Triggers recount sub-flow. |
-| `in_progress` | submit (all lines counted) | `completed` | Inventory Controller | All detail lines have non-null `actual_qty` per `SPC_VAL_004`; all recount flags resolved. Fires variance rollup per `SPC_POST_001`. |
-| `pending` | cancel before counting starts | `void` | Inventory Controller | Allowed per `SPC_VAL_008`; no rollup triggered. |
-| `in_progress` | cancel mid-count | `void` | Inventory Controller | Allowed per `SPC_VAL_008`; no rollup triggered; partial entries preserved in audit log. |
-| `completed` | view / report / audit | `completed` | All personas (per scope) | Terminal. Immutable per `SPC_VAL_007`. |
-| `void` | view / audit | `void` | All personas (per scope) | Terminal alternative. No ledger effect. |
+| `(none)` | Create (`POST /spot-checks`) for `(location, method, size or product_id[])` | `pending` | Any user with `inventory_management.spot_check` | Location exists (`SPC_VAL_001`); eligible product pool non-empty (`SPC_VAL_002`); `manual` requires a non-empty, pool-matching `product_id[]` (`SPC_VAL_003`); `high_value` requires an open/locked `tb_period` to exist (`SPC_VAL_004`). `on_hand_qty` snapshot captured per line at this moment. |
+| `pending` | Save (`PATCH .../save`) | `in_progress` | Same user | Non-empty `items[]` (`SPC_VAL_007`). Stamps `counted_at`/`counted_by_id`; recomputes `diff_qty` against the currently-stored `on_hand_qty`. |
+| `in_progress` | Save (repeat) | `in_progress` | Same user | Same as above; repeatable. |
+| `pending` / `in_progress` | Submit for Review (`PATCH .../review`) | (no status change) | Same user | Recomputes `on_hand_qty`/`diff_qty` live for every line from the current ledger balance; stamps `counted_at`/`counted_by_id`; navigates to `/review`. Not blocked by an incomplete document. |
+| `pending` / `in_progress` | Submit (`PATCH .../submit`, from `/review`) | `completed` | Same user | No completeness check (`SPC_VAL_008`) — succeeds even with uncounted lines. Stamps `end_date`. Terminal; no other document or ledger effect. |
+| `pending` / `in_progress` | Reset (`POST .../reset`) | `void` | Same user, from the list screen's Resume section | Rejected if already `void` or `completed` (`SPC_VAL_006`). Does not clear detail rows. |
+| `completed` / `void` | view only | (unchanged) | Any user with the module permission (read) | Reachable from the list's History tab regardless of status; the entry screen renders identically, though Save is blocked by `SPC_VAL_007` and the terminal Submit is blocked by `SPC_VAL_008` — but Submit for Review is **not** blocked and will silently rewrite detail rows if triggered again (see [02-business-rules.md](/en/inventory/spot-check/02-business-rules) `SPC_POST_004`). |
 
-### 2.2 Variance-rollup fan-out
+### 2.2 What the final Submit does — and does not do
 
-The `in_progress → completed` transition on `tb_spot_check` is the **rollup event**. Per `SPC_POST_001` / `SPC_POST_002`:
+Per `SPC_POST_001`–`003`:
 
-- Lines with `diff_qty > 0` group into one or more `tb_stock_in` documents under reason `SPOT_CHECK_OVERAGE` (or aliased `COUNT_OVERAGE`).
-- Lines with `diff_qty < 0` group into one or more `tb_stock_out` documents under reason `SPOT_CHECK_SHORTAGE` (or aliased `COUNT_SHORTAGE`).
-- Lines with `diff_qty = 0` produce no rollup row.
-- Each rollup document carries `info.spotCheckId = <tb_spot_check.id>` for the back-join.
-- Adjustment post (per [inventory-adjustment/03-user-flow](/en/inventory/inventory-adjustment/03-user-flow)) writes the inventory transaction and GL entry; the spot check itself does not write to the ledger directly.
-
-> **TODO:** Document the rollup-document-numbering convention (whether one rollup per spot check, one per reason, or one per line) when frontend logic is confirmed. Confirm reason-code naming.
+- `doc_status` becomes `completed`; `end_date` is stamped. That is the entire effect.
+- **No `tb_stock_in`/`tb_stock_out` document is created.** No `tb_inventory_transaction` row is written. No field on any table records that this spot check ever happened, beyond the spot-check's own rows.
+- Correcting a confirmed variance is a fully separate, manual action: a user must go create an ordinary [inventory-adjustment](/en/inventory/inventory-adjustment) Stock In/Out document themselves. Nothing pre-fills it, links to it, or even reminds the user to create it.
 
 ## 3. Persona Files
 
-Each file describes one persona group's path through the lifecycle above. The three groups collapse from the source personas in [spot-check](/en/inventory/spot-check) § 4:
+Both files below describe the **same single permission-gated role**, split by which screen it is using:
 
-- **[Inventory Controller](/en/inventory/spot-check/03-user-flow-inventory-controller)** — defines selection criteria (`method`, `size`), schedules and launches spot checks, assigns Counters, monitors progress, reviews variances, approves or rejects recount requests, approves adjustments for posting.
-- **[Counter](/en/inventory/spot-check/03-user-flow-counter)** — performs the physical count of in-scope items or locations and records counted quantities accurately and on time.
-- **[Audit / Config](/en/inventory/spot-check/03-user-flow-audit-config)** — Auditor independently reviews spot-check results, recount evidence, and posted adjustments to confirm controls operating and shrinkage investigated. Sysadmin (implicit) configures tolerance / sampling defaults / reason codes.
+- **[List / Create screens](/en/inventory/spot-check/03-user-flow-inventory-controller)** — opening the location list, choosing a sampling method and scope, starting a new spot check.
+- **[Entry / Review screens](/en/inventory/spot-check/03-user-flow-counter)** — line entry, notes, import/export, Submit for Review, and the final Submit.
 
-## 4. Cross-Persona Handoffs
+## 4. Confirmed-Absent Persona Group
 
-| From persona | Trigger | To persona | Handoff artefact |
-| ------------ | ------- | ---------- | ---------------- |
-| Inventory Controller | Generates spot check + assigns counter | Counter | `tb_spot_check` in `pending`; counter location-grant. |
-| Counter | Completes assigned lines | Inventory Controller | `tb_spot_check_detail` lines all have non-null `actual_qty`. |
-| Inventory Controller | Flags variance line for recount | Counter (ideally different from original counter) | Detail-comment with recount-required tag. |
-| Inventory Controller | Submits the spot check | System → rollup → [inventory-adjustment](/en/inventory/inventory-adjustment) | `tb_spot_check.doc_status = completed`; rollup `tb_stock_in` / `tb_stock_out` created. |
-| Inventory Controller | Routes rollup adjustment for approval | Audit / Config (Approver / Finance via adjustment side) | `tb_stock_in` / `tb_stock_out` in `in_progress`. |
-| Approver / Finance (on adjustment side) | Approves rollup adjustment | System → [inventory](/en/inventory/inventory) ledger | `tb_stock_in` / `tb_stock_out` in `completed`; `tb_inventory_transaction` written. |
-| Auditor | Reviews completed spot checks + posted adjustments | (read-only — terminal) | Full chain readable: spot-check sheet, recount records, approvals, posted adjustments, journal entries. |
-
-> **TODO:** Diagram these handoffs once Mermaid / sequence-diagram convention is established for the wiki. Cross-link to [inventory-adjustment/03-user-flow](/en/inventory/inventory-adjustment/03-user-flow) for the rollup-side flow.
+An earlier draft of this wiki module described a third persona group — an Inventory Controller distinct from a Counter, plus an Auditor and an implicit Sysadmin — assigning counters, flagging variance lines for recount, approving rollup adjustments, and configuring tolerance thresholds and reason codes. A targeted search of the frontend, backend, and Bruno collection found no matching permission key, route, workflow stage, or configuration screen for any of this. See [03-user-flow-audit-config.md](/en/inventory/spot-check/03-user-flow-audit-config) for the correction note.
 
 ## 5. References
 
-- **Primary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — UI flow source.
-- **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists.
-- Related flow pages: [inventory-adjustment/03-user-flow](/en/inventory/inventory-adjustment/03-user-flow) (rollup-side flow), [physical-count/03-user-flow](/en/inventory/physical-count/03-user-flow) (full-count counterpart flow with three-tier structure).
+- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/` (`sc-component.tsx`, `sc-form.tsx`, `sc-entry-component.tsx`, `sc-review-component.tsx`).
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts`.
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists; manual test-case catalog at `docs/test-cases/760-spot-check.md`.
+- Related flow pages: [inventory-adjustment/03-user-flow](/en/inventory/inventory-adjustment/03-user-flow) (where a confirmed variance must be manually corrected), [physical-count/03-user-flow](/en/inventory/physical-count/03-user-flow) (full-count counterpart flow).

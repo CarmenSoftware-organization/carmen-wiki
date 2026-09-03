@@ -1,8 +1,8 @@
 ---
 title: บันทึกการเปลี่ยนแปลง (Changelog)
-description: บันทึกการเปลี่ยนแปลงของแพลตฟอร์มแบบมีเวอร์ชัน — ดึงข้อมูลจาก JSON, เปิดเป็นหน้า public /changelog เข้าถึงผ่าน version badge ในแถบด้านข้างและหน้า landing page
+description: บันทึกการเปลี่ยนแปลงของแพลตฟอร์มแบบมีเวอร์ชัน — ดึงข้อมูลจาก JSON, เปิดเป็นหน้า public /changelog (ตอนนี้ค้นหาได้แล้ว) เข้าถึงผ่าน version badge ในแถบด้านข้างและหน้า landing page
 published: true
-date: 2026-06-09T00:00:00.000Z
+date: 2026-07-29T00:00:00.000Z
 tags: platform, changelog, versioning, carmen-software
 editor: markdown
 dateCreated: 2026-06-09T00:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-06-09T00:00:00.000Z
 # บันทึกการเปลี่ยนแปลง (Changelog)
 
 > **สรุปภาพรวม**
-> **แหล่งข้อมูลหลัก:** `src/data/changelog.json` &nbsp;·&nbsp; **หน้าสาธารณะ:** `/changelog` (ไม่ต้องยืนยันตัวตน) &nbsp;·&nbsp; **จุดเข้าถึง:** `VersionBadge` ในส่วนท้ายของแถบด้านข้าง + landing page &nbsp;·&nbsp; **ไฟล์ที่สร้างอัตโนมัติ:** `CHANGELOG.md` (รูปแบบ Keep a Changelog) &nbsp;·&nbsp; **การปล่อยเวอร์ชัน:** `bun run build:bump`.
+> **แหล่งข้อมูลหลัก:** `src/data/changelog.json` &nbsp;·&nbsp; **หน้าสาธารณะ:** `/changelog` (ไม่ต้องยืนยันตัวตน) ตอนนี้มีช่องค้นหาผ่านเวอร์ชัน/หมวดหมู่/รายการ &nbsp;·&nbsp; **จุดเข้าถึง:** `VersionBadge` ในส่วนท้ายของแถบด้านข้าง + landing page &nbsp;·&nbsp; **ไฟล์ที่สร้างอัตโนมัติ:** `CHANGELOG.md` (รูปแบบ Keep a Changelog) &nbsp;·&nbsp; **การปล่อยเวอร์ชัน:** `bun run build:bump`.
 
 ## 1. คืออะไร และใครใช้
 
@@ -45,14 +45,19 @@ JSON มีบัฟเฟอร์ `unreleased` พร้อมกับ `versi
 
 | พื้นที่ | พฤติกรรม |
 |---|---|
-| หน้า `/changelog` | เส้นทางสาธารณะ; แสดงบล็อก `unreleased` (ถ้ามีข้อมูล) ตามด้วยแต่ละเวอร์ชันที่ออกแล้วโดยเรียงล่าสุดก่อน |
+| หน้า `/changelog` | เส้นทางสาธารณะ; แสดงบล็อก `unreleased` (ถ้ามีข้อมูล) ตามด้วยแต่ละเวอร์ชันที่ออกแล้วโดยเรียงล่าสุดก่อน และถูก filter ด้วยช่องค้นหา (§4) เมื่อมีคำค้นหา active |
 | ส่วนท้ายของแถบด้านข้าง | `VersionBadge` แสดง `v{latest}` ลิงก์ไปที่ `/changelog` |
 | Landing page | `VersionBadge` อยู่ถัดจากวันที่ build |
 
 เวอร์ชันปัจจุบันสำหรับ badge ดึงมาจาก `versions[0].version` (ค่าสำรอง `0.0.0`) `/changelog` ถูกลงทะเบียนเป็น **public path ใน auth guard** ดังนั้นจึงแสดงผลได้สำหรับผู้เยี่ยมชมที่ยังไม่ได้ลงชื่อเข้าใช้
 
-## 4. สำหรับนักพัฒนา
+## 4. การค้นหา
+
+ช่องค้นหา (render เฉพาะเมื่อ changelog มีรายการอยู่บ้าง) filter ทั้งบล็อก `unreleased` และเวอร์ชันที่ออกแล้วขณะพิมพ์ — ไม่มี debounce เพราะทุกอย่างเป็นฝั่ง client เหนือ JSON ที่โหลดไว้แล้ว คำค้นหาจะ match การ์ดของเวอร์ชันหนึ่งหากปรากฏใน **หมายเลขเวอร์ชัน** (เช่น `0.1.1`), **label ของหมวดหมู่** (`Added`, `Fixed`, …) หรือข้อความของ**รายการการเปลี่ยนแปลงใด ๆ** ภายใต้เวอร์ชันนั้น — การ match แม้เพียงหนึ่งในนั้นจะทำให้การ์ดเวอร์ชันทั้งใบยังคงแสดงอยู่ ไม่ใช่แค่บรรทัดที่ match มี empty state สองแบบครอบคลุมกรณีไม่มีเนื้อหา: "No changelog entries yet" (changelog ว่างเปล่าจริง ๆ — ไม่มีเนื้อหาใน `unreleased` และไม่มีเวอร์ชันที่ออกแล้ว) เทียบกับ "No matching entries" (มีรายการอยู่ แต่ไม่มีตัวไหน match กับคำค้นหาปัจจุบัน)
+
+## 5. สำหรับนักพัฒนา
 
 - **เพิ่มการเปลี่ยนแปลง:** แก้ไข `src/data/changelog.json` โดยเพิ่ม string ในหมวดหมู่ที่เหมาะสมภายใน `unreleased` ห้ามแตะ `CHANGELOG.md`
 - **ปล่อยเวอร์ชัน:** `bun run build:bump [patch|minor|major]` (ค่าเริ่มต้น `patch`) จะเพิ่ม semver, เลื่อนบัฟเฟอร์ `unreleased` ไปเป็น entry `versions[0]` ใหม่พร้อมวันที่, รีเซ็ต `unreleased` เป็น `{}`, ซิงค์ `package.json`, สร้าง `CHANGELOG.md` ใหม่ แล้ว build
 - **หมายเหตุ public-path:** หากการ refactor ของ route-guard เปลี่ยนวิธีลงรายการ public paths, `/changelog` ต้องยังคงอยู่ใน allowlist มิฉะนั้นหน้าจะ redirect ไปที่หน้าลงชื่อเข้าใช้
+- **การค้นหา match เฉพาะข้อความของหมวดหมู่/รายการเท่านั้น** — ไม่ match วันที่ ดังนั้นการค้นหา string วันที่ (เช่น `2026-06-01`) จะไม่แสดงเวอร์ชันนั้นขึ้นมา

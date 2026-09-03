@@ -2,7 +2,7 @@
 title: ผู้ขาย (Vendor)
 description: ผู้ขายและที่อยู่ ผู้ติดต่อ และ taxonomy ของประเภทธุรกิจ — counterparty ของทุกเอกสารจัดซื้อ
 published: true
-date: 2026-06-17T08:00:00.000Z
+date: 2026-07-15T21:47:09.000Z
 tags: master-data, vendor, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -39,8 +39,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | อาการ / ข้อความ | สาเหตุ | การจัดการ |
 |---|---|---|
 | "Code/name already in use" | `(code, name)` ซ้ำบนแถว non-deleted | เลือก identifier อื่น |
-| "Address type already exists for this vendor" | พยายามเพิ่มที่อยู่ที่สองของ `address_type` เดียวกัน | แก้ที่อยู่ที่มีอยู่แทน |
-| "Cannot delete — referenced by documents" | FK references จาก PR/PO/GRN/pricelist | ใช้ inactivate แทน |
+| "Address type already exists for this vendor" | พยายามเพิ่มที่อยู่ที่สองของ `address_type` เดียวกัน (DB-unique บน `(vendor_id, address_type, deleted_at)`) | แก้ที่อยู่ที่มีอยู่แทน |
+| **ยังไม่ยืนยัน** — ไม่พบ delete guard | `vendors.service.ts`'s `delete()` เป็น soft-delete แบบไม่มีเงื่อนไข (ใน transaction ที่บรรทัดการ cascade-delete ไปยัง vendor-contact/address ถูก comment ไว้) ไม่มีการเช็ค PR/PO/GRN/pricelist ที่อ้างอิง | เดิมหน้านี้ระบุว่า "cannot delete — referenced by documents" เป็น error ที่บังคับใช้จริง; ให้ถือว่า**ยังไม่ถูกบังคับใช้**จนกว่าจะตรวจสอบซ้ำ |
 | Warning "Vendor has no active contact" | ผู้ติดต่อทั้งหมด inactive หรือ deleted | เพิ่มหรือ reactivate อย่างน้อยหนึ่งผู้ติดต่อ |
 | "Cannot have two primary contacts" | สองแถว `is_primary = true` | Toggle off primary เก่าก่อน |
 
@@ -72,7 +72,9 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | `tax_profile_name` | `String? @db.VarChar` | Yes | สำเนาแสดงผลแบบ denormalised |
 | `tax_rate` | `Decimal? @db.Decimal(15, 5)` | Yes | อัตรา snapshot ณ เวลา link (default `0`) |
 | `is_active` | `Boolean?` | Yes | Active flag |
+| `latitude` / `longitude` | `Decimal? @db.Decimal(10,7)` / `Decimal? @db.Decimal(11,7)` | Yes | พิกัดของสถานที่ผู้ขาย; ไม่พบฟิลด์ frontend ใดที่อ่านหรือเขียนค่านี้ในรอบนี้ |
 | `info`, `dimension` | `Json?` | Yes | Metadata มาตรฐาน |
+| `doc_version` | `Int` | No | เวอร์ชัน optimistic-lock (default `0`) |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*` |
 
 **Constraints:** `@@unique([code, name, deleted_at])` map `vendor_code_name_u` Index บน `code`, `name`, `(code, name)` FK ไปยัง `tb_tax_profile` `onDelete: NoAction`
@@ -122,8 +124,8 @@ Flat lookup — `id`, `name`, `description`, `note`, `is_active`, metadata ม�
 
 ## 6. กติกาทางธุรกิจ
 
-- **Uniqueness** `(code, name)` unique ในผู้ขาย non-deleted มากที่สุดหนึ่งของแต่ละ `address_type` ต่อผู้ขาย `name` ของ contact unique ภายในผู้ขาย
-- **Deletion guards** การอ้างอิงจาก PR/PO/GRN/pricelist ที่เปิดอยู่บล็อก hard-delete — ใช้ inactivate
+- **Uniqueness** `(code, name)` unique ในผู้ขาย non-deleted มากที่สุดหนึ่งของแต่ละ `address_type` ต่อผู้ขาย (DB-unique) `name` ของ contact unique ภายในผู้ขาย (DB-unique)
+- **Deletion guards — ยังไม่ยืนยัน** `vendors.service.ts`'s `delete()` เป็น soft-delete แบบไม่มีเงื่อนไข (การเรียก cascade-delete ต่อ `tb_vendor_contact`/`tb_vendor_address` ถูก comment ไว้) ไม่พบการเช็ค PR/PO/GRN/pricelist ที่เปิดอยู่
 - **Validation** `code` และ `name` บังคับ `tax_rate` snapshot `tb_tax_profile` ณ เวลา link
 - **Lifecycle** `is_active = false` ซ่อนจาก picker ใหม่; เอกสารที่มีอยู่ยังทำงานได้ ผู้ขายที่ active โดยไม่มี contact active ควร warn ใน UI
 - **Primary contact invariant** มากที่สุดหนึ่ง `is_primary = true` ต่อผู้ขาย (app invariant)
@@ -142,5 +144,5 @@ Flat lookup — `id`, `name`, `description`, `note`, `is_active`, metadata ม�
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_vendor` (lines ~3249-3296), `tb_vendor_address` (lines ~3332-3365), `tb_vendor_contact` (lines ~3367-3396), `tb_vendor_business_type` (lines ~4853-…), `enum_vendor_address_type` (lines ~259-263)
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/vendor-management/vendor/`
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_vendor` (lines ~3500-3552), `tb_vendor_address` (lines ~3589-3626), `tb_vendor_contact` (lines ~3628-3658), `tb_vendor_business_type` (lines ~5229-5250), `enum_vendor_address_type` (lines ~262-266)
+- **Frontend:** `../carmen-inventory-frontend-react/routes/vendor-management/vendor/`

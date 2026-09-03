@@ -2,7 +2,7 @@
 title: Workflow
 description: Named multi-stage approval workflows attached to transactional documents — defines stages, actions, recipients, SLA, and field visibility per stage.
 published: true
-date: 2026-06-09T16:28:56.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: system-config, workflow, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -116,13 +116,13 @@ Per-stage keys: `name`, `description`; `sla` + `sla_unit` (`hours`/`days`); `ava
 - [purchase-request](/en/inventory/purchase-request) — primary consumer (`purchase_request`).
 - [store-requisition](/en/inventory/store-requisition) — canonical multi-stage user (`store_requisition`).
 - [purchase-order](/en/inventory/purchase-order) — high-value approval (`purchase_order`).
-- [good-receive-note](/en/inventory/good-receive-note), [inventory-adjustment](/en/inventory/inventory-adjustment), [vendor-pricelist](/en/inventory/vendor-pricelist), [physical-count](/en/inventory/physical-count), [spot-check](/en/inventory/spot-check) — optional workflow gating.
+- **These three are the only modules that can attach a workflow.** `enum_workflow_type` has exactly three members (schema.prisma lines ~268-272) — [good-receive-note](/en/inventory/good-receive-note), [inventory-adjustment](/en/inventory/inventory-adjustment), [vendor-pricelist](/en/inventory/vendor-pricelist), [physical-count](/en/inventory/physical-count), and [spot-check](/en/inventory/spot-check) have no enum member and **cannot** attach a `tb_workflow` row (a prior version of this list wrongly described "optional workflow gating" for them).
 - [access-control/application-role](/en/inventory/access-control/application-role) — role descriptors in `assigned_users`.
 - [master-data/department](/en/inventory/master-data/department) — HoD resolution.
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_workflow` (lines ~3398-3425), `enum_workflow_type` (lines ~265-269).
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_workflow` (lines ~3734-3763), `enum_workflow_type` (lines ~268-272).
 - **Seed:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/seed-data-a01/tb_workflow.json`.
 - **carmen/docs:** `../carmen/docs/workflow-permissions-system.md` — role-type semantics.
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/workflow/`.
+- **Frontend:** `../carmen-inventory-frontend-react/routes/system-admin/workflow/` — `wf-component.tsx` (list), `wf-new-form.tsx` / `edit-workflow-content.tsx` (stage editor), `wf-validate.ts` (client-side rule checks, e.g. `submit_only_on_first`).

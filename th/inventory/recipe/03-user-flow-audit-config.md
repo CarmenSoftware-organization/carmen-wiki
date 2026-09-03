@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — User Flow — Audit & Config
 description: flow ของ System Administrator + Auditor ในโมดูลสูตร — config (หมวดหมู่ ประเภทอาหาร RBAC integration) versioning audit compliance review
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: recipe, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -11,8 +11,10 @@ dateCreated: 2026-05-15T16:00:00.000Z
 # สูตรอาหาร (Recipe) — User Flow — Audit & Config
 
 > **At a Glance**
-> **Persona:** System Administrator + Auditor &nbsp;·&nbsp; **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **ขั้นตอน workflow:** off-path — ตั้งค่า (หมวดหมู่ / ประเภทอาหาร / อุปกรณ์ / RBAC / publish-gate / integration) และ audit (versioning, pricing history) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** เขียน config (Sysadmin), read-history (Auditor), soft-delete archived (Sysadmin)
+> **Persona:** System Administrator + Auditor &nbsp;·&nbsp; **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **ขั้นตอน workflow:** off-path — ตั้งค่า (หมวดหมู่ / ประเภทอาหาร / อุปกรณ์ / RBAC / publish-gate / integration) และ audit (versioning, pricing history) &nbsp;·&nbsp; **สิทธิ์สำคัญ (เป้าหมายการออกแบบ — ดูหมายเหตุสถานะ):** เขียน config (Sysadmin), read-history (Auditor), soft-delete archived (Sysadmin)
 > **persona นี้ทำอะไร:** Sysadmin เป็นเจ้าของข้อมูลหลัก RBAC และการ wire integration; Auditor review trail เวอร์ชันและ pricing-history สำหรับ compliance
+
+> **สถานะการติดตั้งใช้งานจริง (ตรวจสอบกับซอร์ส 2026-07-15).** **ครึ่ง master-data ของ persona นี้มีจริง**: หน้าจอ setup ของ Operation Plan ทั้งสี่ — [category](/th/inventory/recipe/category), [cuisine](/th/inventory/recipe/cuisine), [equipment](/th/inventory/recipe/equipment), [equipment-category](/th/inventory/recipe/equipment-category) — เป็น CRUD ที่ใช้งานจริงพร้อม guard ฝั่ง backend (uniqueness ของ code/name, block การลบเมื่อถูกใช้งาน, locking ด้วย `doc_version`) และนี่คือ surface เดียวของโมดูล recipe ที่มี E2E coverage (`121-recipe-equipment-category.spec.ts`) ส่วนที่เหลือไม่มีจริง: ไม่มีการ map RBAC `recipe:*` ให้บริหาร (มีเพียง placeholder `operation_plan.view` ฝั่ง frontend), ไม่มีนโยบาย tenant publish-gate, ไม่มีการ wire integration สำหรับ theoretical consumption / SR auto-create และไม่มีอะไรให้ Auditor trace ใน `tb_recipe_version` / `tb_recipe_pricing_history` เพราะไม่มีโค้ดใดเขียนตารางเหล่านั้น — การ review audit วันนี้จำกัดอยู่ที่คอลัมน์ `created_*`/`updated_*` ต่อแถวและ activity log ที่ใช้ร่วมกัน
 
 ## 1. บทบาทในโมดูลนี้
 

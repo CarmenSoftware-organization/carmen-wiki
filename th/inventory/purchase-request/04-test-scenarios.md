@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — Test Scenarios
 description: Test case แยกตาม persona, scenario ข้าม persona และ mapping ไป Playwright สำหรับโมดูล purchase-request
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-07-29T05:18:05.000Z
 tags: purchase-request, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -25,9 +25,9 @@ Scenario ต่อ persona — Happy Path, Permission / Authorization, Validatio
 
 - **Requestor**: สร้างและ submit PR; ตอบสนองต่อ send-back โดยแก้และ resubmit; ยกเลิก draft ของตัวเอง
 - **Approver**: chain อนุมัติหลายระดับ (Department Head, Budget Controller, Finance Officer / Manager); approve / reject / send-back / split-reject ต่อ stage
-- **Purchaser**: validate การจัดสรร vendor และราคา; consolidate และแปลง PR ที่ approved เป็น PO; สามารถ bounce PR กลับไปยัง chain Approver
-- **Procurement Manager**: override การอนุมัติมูลค่าสูง; ปรับ vendor ranking และกฎ Allocate Vendor; รับ PR ที่ escalated
-- **Audit / Config**: Auditor (review PR และ activity log แบบอ่านอย่างเดียว); System Administrator (ตั้งค่า stage workflow, threshold, กฎ delegation, void ธุรการ)
+- **Purchaser**: ถือ stage role `purchase` ในสายอนุมัติของ PR เอง (แก้ vendor / pricing แล้วตัดสินใจแบบ bulk เหมือน stage อื่น); แยกต่างหาก เมื่อ PR เป็น `approved` แล้ว รัน dialog Convert-to-PO ในโมดูล Purchase Order
+- **Procurement Manager**: stage `approve`-role แบบ escalated / มูลค่าสูงใน chain เดียวกัน โดยใช้ UI Approver แบบเดียวกัน — ไม่มีหน้าจอตั้งค่าแยกต่างหากใน source ปัจจุบัน
+- **Audit / Config**: Auditor (review PR และ activity log แบบอ่านอย่างเดียว); System Administrator (ตั้งค่า stage workflow, ตั้งค่า routing ตาม amount threshold, void ธุรการ) *(กฎ delegation เคยถูกระบุในเอกสารรุ่นก่อนหน้า — ยังไม่ยืนยัน ไม่พบกลไกที่ตรงกัน ดู `02-business-rules.md` `PR_AUTH_006`)*
 
 ## 3. ไฟล์ test ต่อ persona
 
@@ -41,13 +41,13 @@ Scenario ต่อ persona — Happy Path, Permission / Authorization, Validatio
 
 | # | Scenario | Persona ตามลำดับ | Pre-condition | สถานะปลายทางที่คาด |
 | - | -------- | ----------------- | ------------- | ------------------ |
-| X-PR-01 | Happy path เต็ม: สร้าง PR, เดินผ่าน chain อนุมัติสาม stage และแปลงเป็น PO | Requestor → Department Head → Budget Controller → Finance → Purchaser | workflow active ที่มีสาม stage อนุมัติ; header `base_total_amount` ใต้ threshold มูลค่าสูง; ข้อมูล vendor และ pricing พร้อม | PR `completed`, `tb_purchase_order` หนึ่งหรือมากกว่า link กลับมา PR, soft commitment แข็งตัวเป็น PO commitment |
+| X-PR-01 | Happy path เต็ม: สร้าง PR, เดินผ่าน chain อนุมัติ (รวม stage role `purchase` ของตัวเอง) แล้วภายหลังแปลงเป็น PO จากโมดูล Purchase Order | Requestor → Department Head → Budget Controller → Finance → Purchaser (stage role `purchase`, bulk-approve) → (แยกต่างหาก) dialog Convert-to-PO | workflow active ที่ stage สุดท้ายถูก tag เป็น `purchase`; header `base_total_amount` ใต้ threshold มูลค่าสูง; ข้อมูล vendor และ pricing พร้อม | PR `approved` เมื่อ stage role `purchase` bulk-approve แล้ว (`PR_POST_005`); `completed` ก็ต่อเมื่อมี action Convert-to-PO แยกต่างหากในภายหลัง bridge บรรทัดครบเข้ากับ `tb_purchase_order` หนึ่งใบหรือมากกว่า (`PR_POST_007`) |
 | X-PR-02 | Send-back loop: ผู้อนุมัติส่ง PR กลับ, requestor แก้และ resubmit | Requestor → Approver (stage N) → Requestor → Approver (stage N) → … → Approver สุดท้าย | PR submit แล้วและรออนุมัติที่ stage N; ข้อความเหตุผล send-back valid | PR สุดท้าย `approved` หลังรอบที่สอง; ประวัติการแก้ไขและ comment ผู้อนุมัติเก็บไว้; soft budget commitment ปล่อยตอน send-back แล้วสร้างใหม่ตอน resubmit |
 | X-PR-03 | Split-reject: ผู้อนุมัติ reject บางบรรทัด, approve ที่เหลือ, PR ดำเนินต่อกับ subset ที่รอด | Requestor → Approver (stage N) → Approver stage ถัดไป | PR มีอย่างน้อยสองบรรทัด; ผู้อนุมัติที่ reject ให้ข้อความเหตุผลต่อบรรทัด | PR ยังคง `in_progress` พร้อมบรรทัดที่ถูก reject flagged; บรรทัดที่รอดเลื่อนไป stage ถัดไป; บรรทัดที่ reject ถูกตัดจากการแปลง PO ใด ๆ ภายหลัง |
-| X-PR-04 | Partial conversion: purchaser แปลงเฉพาะบางบรรทัดที่ approved, ทิ้งที่เหลือไว้ | Requestor → chain Approver เต็ม → Purchaser | PR เป็น `approved` ที่มีหลายบรรทัด; ต้องการเฉพาะ subset ตอนนี้ (เช่น vendor ที่ต้องการไม่พร้อมสำหรับบางบรรทัด) | สร้าง `tb_purchase_order` อย่างน้อยหนึ่งใบสำหรับบรรทัดที่เลือก; header PR ยังคง `approved` สำหรับบรรทัดที่เหลือจนกว่าจะแปลงหรือ aged out |
-| X-PR-05 | Escalation: ยอด header เกิน threshold มูลค่าสูงและ route ไปยัง Procurement Manager | Requestor → Department Head → Budget Controller → (escalation) → Procurement Manager | Header `base_total_amount` เกิน threshold ที่ตั้งสำหรับ workflow | PR `approved` เฉพาะหลัง Procurement Manager เซ็น stage escalated; cursor stage บันทึก escalation hop |
+| X-PR-04 | Consolidate หลาย PR: สอง PR ที่ approved แล้วซึ่ง share vendor, วันส่งของ และสกุลเงินถูกแปลงรวมกันเป็น PO เดียว | Requestor (หลายคน) → chain Approver เต็ม (×2 PR) → dialog Convert-to-PO (โมดูล Purchase Order) | สอง PR เป็น `approved` ทั้งคู่ และตรง `(vendor, delivery_date, currency)` เดียวกัน | ขั้นตอน group-PR จัด bucket บรรทัดของทั้งสอง PR เข้า draft-PO group เดียว; ยืนยันแล้วสร้าง `tb_purchase_order` หนึ่งใบ; ทั้งสอง PR ต้นทางพลิกเป็น `completed` เมื่อ bridge ครบ (`PR_POST_007`) UI ปัจจุบันเลือกและแปลง PR ทั้งใบ — ไม่มีการแปลงบางส่วนระดับบรรทัด |
+| X-PR-05 | Escalation: ยอด header เกิน threshold มูลค่าสูงและ route ไปยัง Procurement Manager | Requestor → Department Head → Budget Controller → (escalation) → Procurement Manager | Header `base_total_amount` เกิน threshold ที่ตั้งสำหรับ workflow | PR `approved` เฉพาะหลัง Procurement Manager เซ็น stage escalated (ใช้ UI Approver แบบเดียวกัน); cursor stage บันทึก escalation hop |
 | X-PR-06 | เส้นทาง reject: ผู้อนุมัติ reject PR ทันที; workflow ยุติ | Requestor → Approver (stage ใด ๆ) | ผู้อนุมัติที่ reject ให้ข้อความเหตุผล | PR `voided`, soft budget commitment ปล่อย, ไม่มี action เพิ่มเติม, comment audit เขียน |
-| X-PR-07 | Bounce-back จาก Purchaser: Purchaser ส่ง PR กลับเพื่อ clarification vendor / scope | Requestor → chain Approver เต็ม → Purchaser → Approver (stage N หรือ Requestor) | PR `approved`; Purchaser ไม่สามารถ satisfy vendor หรือ pricing ใน scope | PR กลับเข้า chain (หรือไปยัง Requestor เป็น PR ที่ส่งกลับ) พร้อม comment ของ Purchaser; ขึ้นกับ workflow config สถานะย้ายกลับเป็น `in_progress` หรือ `draft` |
+| X-PR-07 | Bounce-back จาก stage role `purchase` ของ Purchaser เอง: Purchaser ส่ง PR กลับเพื่อ clarification vendor / scope | Requestor → chain Approver → Purchaser (stage role `purchase`) → stage ก่อนหน้าหรือ Requestor | PR เป็น `in_progress` ที่ stage role `purchase`; Purchaser ไม่สามารถ satisfy vendor หรือ pricing ตามที่ขอ | Bulk **Send for Review** ย้าย PR กลับหนึ่ง stage (หรือไปที่ `draft` ถ้าเป้าหมายคือ create stage) กลไกเดียวกับ send-back ของ stage อื่น ๆ |
 | X-PR-08 | Void ธุรการโดย System Administrator บน PR กลาง flow | Requestor → Approver (stage N) → System Administrator | PR เป็น `in_progress`; admin มีข้อความเหตุผล (เช่น duplicate, compliance) | PR `voided`, soft budget commitment ปล่อย, workflow ยุติ; Auditor อ่านเหตุผล void หลังเหตุการณ์ได้ |
 | X-PR-09 | Cancel-own-draft: Requestor ทิ้ง draft ก่อน submit | Requestor เท่านั้น | PR เป็น `draft` และไม่เคย submit | PR `voided`; ไม่มีการเลื่อน stage workflow; ไม่มี audit chain นอกเหนือจาก cancel event |
 | X-PR-10 | Returned-PR round trip บน golden path Playwright | Requestor → HOD (Department Head) → Requestor → HOD → … | Seed ผ่าน helper `submitPRAsRequestor` + `sendForReviewAsHOD` ใน E2E suite | PR ย้าย Returned → In Progress หลัง Requestor resubmit; badge สถานะและ Workflow History สะท้อน loop เต็ม |

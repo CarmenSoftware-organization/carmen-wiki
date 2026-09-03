@@ -2,7 +2,7 @@
 title: User Location
 description: Per-user location scoping inside a tenant — restricts a user to a subset of inventory locations for issue, count, and adjustment operations.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T23:46:09.000Z
 tags: access-control, user-location, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -25,10 +25,10 @@ Unlike [access-control/application-role](/en/inventory/access-control/applicatio
 
 | Task | Where | Notes |
 |---|---|---|
-| Assign user to location | User-edit → **Locations** tab → Add | Pick location from BU catalogue |
-| Reassign storekeeper | Soft-delete old row + insert new | Open documents continue to work (FKs target `tb_location`) |
-| View user's effective scope | User-edit → **Locations** tab | Shows current active assignments |
-| Remove all scope (full access) | Soft-delete all rows | Empty set = "no restriction" by convention |
+| Assign user to location | User Assign screen (`/system-admin/user/:id`) → **Locations** section → Transfer control (`user-assigned-locations.tsx`) | Two-panel "Available Locations" / "Assigned Locations" move, not a tab, not a single Add button |
+| Reassign storekeeper | Locations Transfer control: move out, move in → Save | Open documents continue to work (FKs target `tb_location`) |
+| View user's effective scope | Same screen, view mode | Locations grouped by type (`Inventory` / `Direct` / `Consignment`, from `constant/location.ts` `INVENTORY_TYPE`) with filter chips per type |
+| Remove all scope (full access) | Move every location back to Available, then Save | Empty set = "no restriction" by convention (confirm with service code before relying on this for a sensitive path) |
 | Audit scope changes | [reporting-audit/activity](/en/inventory/reporting-audit/activity) log | Filter by `entity_type = user_location` |
 
 ## 3. Validation & Errors
@@ -62,6 +62,7 @@ Source: tenant schema.
 | `location_id` | `String @db.Uuid` | No | FK to tenant `tb_location`. |
 | `note` | `String? @db.VarChar` | Yes | Assignment context. |
 | `info` | `Json? @db.JsonB` | Yes | Default `{}`. Reserved metadata. |
+| `doc_version` | `Int` | No | Default `0`. Optimistic-lock version. |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |
 
 **Constraints:** `@@unique([user_id, location_id, deleted_at])`. Index on `(user_id, location_id)`. FK to `tb_location` `onDelete: NoAction`. `user_id` enforced application-side.
@@ -85,5 +86,5 @@ Source: tenant schema.
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_user_location` (lines ~4451-4470).
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/user-role/` — Locations tab.
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_user_location` (line 4821).
+- **Frontend:** `../carmen-inventory-frontend-react/routes/system-admin/user/user-assigned-locations.tsx` — the Locations section of the User Assign screen (`/system-admin/user/:id`), rendered by `user-assigned-form.tsx`. Not a tab, and not part of a "user-role" route.

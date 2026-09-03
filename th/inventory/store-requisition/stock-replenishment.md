@@ -2,7 +2,7 @@
 title: การเติมสต๊อก (Stock Replenishment)
 description: ข้อเสนอ SR ที่ generate อัตโนมัติขับโดย threshold min / max / par / reorder ที่แต่ละสถานที่ — คู่ขับโดยนโยบายของ flow Store Requisition ที่ทำด้วยมือ
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T15:45:00.000Z
 tags: store-requisition, replenishment, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Inventory Controller (review / submit) &nbsp;·&nbsp; service account ของ Cron (draft เท่านั้น) &nbsp;·&nbsp; **ตาราง:** ไม่มีเฉพาะ — output เป็น `tb_store_requisition` draft &nbsp;·&nbsp; **Trigger:** cron กลางคืน (หรือ on-demand) &nbsp;·&nbsp; **Inputs:** `tb_product_location` (min/max/par/reorder) + on-hand + on-order &nbsp;·&nbsp; **สรุป 1 บรรทัด:** cron กวาด deficit และ pre-fill SR drafts; มนุษย์อนุมัติ
+
+> ⚠️ **สถานะการ implement (ยืนยัน 2026-07-15):** หน้าจอ Stock Replenishment (`/store-operation/stock-replenishment`) มีอยู่ใน frontend แต่ปัจจุบัน **ขับด้วย mock data** — `hooks/use-stock-replenishment.ts` คืนค่า fixture `mockData` ที่ hard-code ไว้ พร้อม `TODO: เปลี่ยนเป็นเรียก API จริง เมื่อ backend พร้อม` ไม่มี endpoint การเติมสต๊อกอยู่ใน `carmen-turborepo-backend-v2` และการค้นหา `../micro-cronjobs/` สำหรับ `replenish` / `min_qty` / `par_qty` ได้ผล **ศูนย์รายการ** — cron กวาดตอนกลางคืนที่อธิบายด้านล่างคือ design intent ยังไม่ถูก implement ตาราง `tb_product_location` เป็นของจริงใน Prisma พิจารณา Section 2–6 ว่าเป็น target design ไม่ใช่พฤติกรรมปัจจุบัน
 
 ![การเติมสต๊อก (Stock Replenishment) screen](/screenshots/store-requisition/stock-replenishment.png)
 
@@ -109,11 +111,11 @@ Cron run กลางคืน (หรือ on-demand):
 - [product](/th/inventory/product) — นโยบาย `tb_product_location` อยู่ใต้ master สินค้า
 - [master-data/location](/th/inventory/master-data/location) — การตั้งค่า min / max / par / reorder ต่อ-location
 - [purchase-order](/th/inventory/purchase-order) — `on_order` รวม qty PO เปิด
-- [inventory/transaction](/th/inventory/inventory/transaction) — เมื่อ SR post, ledger เขียน events `store_requisition`
+- [inventory/transaction](/th/inventory/inventory/transaction) — เมื่อ SR post, log ธุรกรรมสต๊อก (`tb_inventory_transaction`, `inventory_doc_type = store_requisition`) บันทึกการเคลื่อนย้าย
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_product_location` (~4364-4399), `tb_store_requisition` (~2922-2984), `enum_sr_type` (~224-227)
-- **Frontend:** `../carmen-inventory-frontend-react/routes/store-operation/stock-replenishment/`
-- **Cron job:** `../micro-cronjobs/` — Go service ที่ host การ sweep กลางคืน State run อยู่ใน cron service (ไม่มีตาราง tenant)
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_product_location` (~4734), `tb_store_requisition` (~3165), `enum_sr_type` (~228)
+- **Frontend:** `../carmen-inventory-frontend-react/routes/store-operation/stock-replenishment/` — หน้าจอมีอยู่จริง; ข้อมูลมาจาก mock fixture ใน `hooks/use-stock-replenishment.ts` (ดู callout สถานะการ implement ด้านบน)
+- **Cron job:** วางแผนไว้สำหรับ `../micro-cronjobs/` ตามการออกแบบเดิม; **ไม่มีโค้ดการเติมสต๊อกอยู่ที่นั่นในรอบนี้** (ค้นหา `replenish` / `min_qty` / `par_qty` ได้ผลศูนย์รายการ)
 - **Module landing:** [store-requisition](/th/inventory/store-requisition) § 3 (ประเภทการเคลื่อนย้าย workflow อนุมัติ)

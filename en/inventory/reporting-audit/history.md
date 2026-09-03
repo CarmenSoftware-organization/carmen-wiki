@@ -1,8 +1,8 @@
 ---
 title: Report History
-description: Append-only archive of every executed report run — date, parameters, status, link to the generated artefact.
+description: Read-only list of tb_report_job rows — confirmed structurally orphaned under the current live system, since neither on-demand report runs, Print, nor scheduled fires write a job row through any reachable code path.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-22T00:00:00.000Z
 tags: reporting-audit, history, archive, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,47 +11,50 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # Report History
 
 > **At a Glance**
-> **Owner:** `micro-report` executor (read-only UI) &nbsp;·&nbsp; **Table:** `tb_report_job` &nbsp;·&nbsp; **Retention:** `expires_at` per tenant policy (artefact reaped; row kept) &nbsp;·&nbsp; **Used by:** Reports → History, Print History drawer &nbsp;·&nbsp; **Append-only audit log of every report run.**
+> **Route:** `/report/history` &nbsp;·&nbsp; **Table:** `tb_report_job` (tenant schema — real, not dead) &nbsp;·&nbsp; **Screen:** read-only list — no re-run, no requester column, no filter-by-date, no Print-History drawer &nbsp;·&nbsp; **Confirmed gap:** no reachable path in the current frontend or scheduler writes a row to this table.
 
 ![Report History screen](/screenshots/reporting-audit/history.png)
 
+## Implementation status (verified 2026-07-22)
+
+`tb_report_job` itself is real — unlike `tb_report_schedule` (see [reporting-audit/schedule](/en/inventory/reporting-audit/schedule)), it is actively read and written by `micro-report`'s Go `ReportJobRepo`. The problem is which paths write it:
+
+- **"Run a report" on the report list** (`report-component.tsx` → `useRunReportMutation` → `POST /reports/viewer`) calls the `viewReport` handler, which mints a viewer URL directly and returns it — it never calls `ReportJobRepo.Create`.
+- **Every "Print" button** (`lib/print-document.ts`'s `printDocument()`) resolves a print-template mapping and then calls the same `POST .../report/viewer` endpoint — also no job row.
+- **Scheduled report fires** (see [reporting-audit/schedule](/en/inventory/reporting-audit/schedule)) always deliver via `format: "viewer_url"` from the current create-schedule UI, which the executor dispatches through `executeViewerURL()` — again, no job row. Only the executor's legacy `executeFile()` branch (unreachable from the current UI) calls `POST .../report/generate-async`, the one endpoint that does write `tb_report_job`.
+- A repo-wide search of the frontend confirmed **zero callers of `generate-async`, `generateAsync`, or `job-status`/`jobStatus`** anywhere in `carmen-inventory-frontend-react`.
+
+**Net effect:** under the currently reachable UI, nothing populates `tb_report_job`. The `/report/history` screen is real, wired correctly to a real table and a real backend endpoint, but is expected to be **empty in practice** unless some other caller (a direct API integration, a future UI change, or a schedule whose `delivery.type` was set to `"file"` outside the normal create-dialog flow) uses the async-job path. This page is corrected to describe the actual screen and the gap; the previous version's claims about "every report run" landing here, a "Re-run" action, and a "Print History" drawer per document are removed as unconfirmed/absent.
+
 ## 1. What & Who
 
-Report History is the **append-only execution log** for every report run on the tenant — ad-hoc exports, Print invocations, and scheduled runs all land here. Each row captures the report identifier, the concrete filter set, requesting user (or schedule), lifecycle state, and a pointer to the produced artefact in blob storage.
+Report History is the `tb_report_job` execution log — when populated, one row per **async** job (`queued → processing → completed | failed | cancelled`), each carrying the report identifier, concrete filter set, requesting user, lifecycle state, and a pointer to the produced artefact. The `/report/history` screen (`history-component.tsx`) renders it as a plain paginated list.
 
-**Audience:** **Auditor** (who ran what), **Sysadmin** (failed-run triage), **Compliance** (export trail), **Tester** (verify the right template fired).
+**Audience:** any authenticated user with report-read access can view this screen — no distinct Auditor/Sysadmin-only gate was found on the `GET .../history` endpoint beyond the standard `KeycloakGuard` + `X-App-Id` header.
 
 ## 2. Common Tasks
 
 | Task | Where | Notes |
 |---|---|---|
-| Find yesterday's report run | Reports → **History** | Filter by date range + report type |
-| Re-download an output | History row → **Download** | Works until `expires_at` reaper deletes artefact |
-| See who triggered a run | History row → **Requester** column | Schedule runs show schedule owner via `requested_by_id` |
-| Re-run a report with the same filters | History row → **Re-run** | Re-enqueues a fresh job with identical `filters` / `options` |
-| View full filter set used | History row → **View Details** | Renders the `filters` and `options` JSON |
-| Investigate a failed run | Filter by `status = failed`, open Details | `error_message` carries the scrubbed cause |
-| Confirm a Print fired | Document detail → **Print History** drawer | Shows recent jobs against that document |
+| Browse job history | `/report/history` | List or grid display toggle; search box (server-side, matches `job_id`/`report_type`/`format`/`status`/`file_url`/`file_name`/`filters` text) |
+| Open a completed job's file | Click the report-name link in a row | Only rendered as a link when `file_url` is present |
+| **Not available in the current screen** | — | Re-run, a dedicated Requester column, date-range filter, a "View Details" drill-down of the stored `filters`/`options` JSON, and a per-document "Print History" drawer — none of these were found anywhere in `history-component.tsx`, `history-card.tsx`, or `use-history-table.tsx` |
 
 ## 3. Common Questions
 
 | Symptom / Question | Cause / Answer | Action |
 |---|---|---|
-| Download link returns 404 | `expires_at` passed; reaper deleted the artefact | Row remains for audit; **Re-run** to regenerate |
-| Why is my row missing? | RBAC filtered — you are neither the requester nor a category reader | Ask Sysadmin or hold the report's read permission |
-| Can I edit a row? | No — table is **append-only**; only the executor mutates `status` / terminal fields | Re-run instead |
-| Why is `started_at` null? | Job is still `queued` (executor hasn't picked it up) | Wait, or check executor health |
-| What format will I get? | Whatever was requested at enqueue: `pdf` / `excel` / `csv` / `json` | Pick at submit, not re-download |
-| Where do output files live? | Blob storage; `file_url` is the resolved download URL | Backed by tenant storage config |
-| Is the error message safe to share? | Yes — credentials, tokens, raw SQL values are scrubbed; only bound param names survive | — |
+| Why is my history list always empty? | Expected under the current system — see Implementation status above; no reachable UI path writes `tb_report_job` | Not a bug per se; flag if the product intent is for on-demand runs and Print to be logged here |
+| Where did my "Run" report actually go? | It rendered directly via the viewer endpoint — no job row, no history entry, no download-later capability | Re-open it via the same report/filters combination in the report list |
+| Can I edit a row? | No CRUD/update endpoint exists for `tb_report_job` beyond the executor's own internal status transitions | — |
+| What columns does the table actually show? | `#`, report name (linked when `file_url` exists), report type, format, status badge, row count | Confirmed via `use-history-table.tsx` — no requester or date column |
 
 ## 4. Edge Cases
 
-- **Append-only.** Executor writes on enqueue and updates only lifecycle / artefact / error fields. No other path mutates this table.
-- **Retention split.** Artefact (file_url) ages out at `expires_at`; row stays so "who ran what against which filters" survives forever (subject to tenant policy).
-- **Time-zone.** All timestamps are `Timestamptz(6)` UTC; UI renders in profile timezone. Scheduled runs encode intended fire time in `options.scheduled_fire_at`.
-- **RBAC on reading.** Visible to requester, category readers, or Sysadmin / Auditor. Frontend filters server-side; never trust the client.
-- **Failed / cancelled jobs** may use a shorter retention horizon since they have no artefact.
+- **Structurally orphaned, not broken.** The screen, hook, and backend endpoint are all wired correctly to a real table — the gap is that no currently-reachable write path exists, not a bug in the read path.
+- **Append-only where it is written.** `ReportJobRepo` only ever inserts on `generate-async` and updates lifecycle/artefact/error fields afterward — no other code path mutates the table.
+- **Time-zone.** All timestamps are `Timestamptz(6)` UTC on the underlying model; the current list UI does not render `started_at`/`completed_at`/`expires_at` at all (only `row_count` beyond status/format).
+- **Retention (unconfirmed for reachability reasons).** `expires_at` exists on the model and would govern artefact reaping if the async path were ever exercised — not independently verified against a live reaper job in this pass.
 
 ---
 
@@ -68,34 +71,33 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 | `report_category` | `enum_report_category` | No | `inventory` / `procurement` / `recipe` / `vendor` / `financial` / `operational`. |
 | `format` | `enum_report_format` | No | `pdf` / `excel` / `csv` / `json`. |
 | `status` | `enum_report_job_status` | No | Default `queued`. `queued` / `processing` / `completed` / `failed` / `cancelled`. |
-| `filters` | `Json? @db.JsonB` | Yes | Default `{}`. Concrete filter values for this run. |
-| `options` | `Json? @db.JsonB` | Yes | Default `{}`. Render options + `scheduled_fire_at` for scheduled runs. |
+| `filters` | `Json? @db.JsonB` | Yes | Default `{}`. |
+| `options` | `Json? @db.JsonB` | Yes | Default `{}`. |
 | `file_url`, `file_name`, `file_size`, `row_count` | mixed | Yes | Artefact metadata. |
-| `error_message` | `String?` | Yes | Populated when `status = failed`; scrubbed of secrets. |
+| `error_message` | `String?` | Yes | Populated when `status = failed`. |
 | `started_at`, `completed_at`, `expires_at`, `duration_ms` | mixed | Yes | Execution / retention timestamps. |
-| `requested_by_id` | `String @db.Uuid` | No | Requesting user (or schedule's `created_by_id`). |
+| `requested_by_id` | `String @db.Uuid` | No | Requesting user. |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |
 
-**Constraints:** indexes on `status`, `report_type`, `requested_by_id`, and `created_at DESC` (dominant access pattern). No FK to `tb_report_schedule`; the link is logical via matching `report_type` + correlation id in `options`.
+**Constraints:** indexes on `status`, `report_type`, `requested_by_id`, `created_at DESC`. No FK to `tb_report_schedule` (which is itself dead — see [reporting-audit/schedule](/en/inventory/reporting-audit/schedule)).
 
 ## 6. Business Rules
 
-- **Lifecycle.** `queued → processing → (completed | failed | cancelled)`. `started_at` set on entering `processing`; `completed_at` + `duration_ms` set on every terminal state. `cancelled` reachable from `queued` or `processing`.
-- **Output retention.** `expires_at` drives the storage reaper. After it passes, the artefact behind `file_url` is deleted; the row remains.
-- **RBAC.** Row visible to (a) requester, (b) category read permission holder, or (c) Sysadmin / Auditor.
-- **Time-zone of record.** Timestamps stored UTC. Scheduled runs persist intended fire time in `options.scheduled_fire_at` so review is unambiguous.
-- **No PII in errors.** Executor scrubs credentials, tokens, raw SQL values; only bound param names survive.
+- **Lifecycle.** `queued → processing → (completed | failed | cancelled)`, mutated only by `micro-report`'s `ReportJobRepo` (`Create`, `UpdateStatus`, `Complete`, `Fail`).
+- **Only `generate-async` writes rows.** `viewer`, `data`, and `viewer-with-data` (the paths actually used by the report list, Print, and viewer-delivery schedules) never touch this table.
+- **No PII-scrubbing claim independently verified.** The previous version's "credentials/tokens/raw SQL values scrubbed from `error_message`" claim was not confirmed against `ReportJobRepo.Fail()` in this pass — left as an unconfirmed carry-over rather than restated as fact.
 
 ## 7. Cross-References
 
-- [reporting-audit/report](/en/inventory/reporting-audit/report) — parent module; every `kind = report` template firing produces a row here.
-- [reporting-audit/schedule](/en/inventory/reporting-audit/schedule) — recurring runs enqueue jobs here; `last_run_at` derived from latest completed job.
-- [reporting-audit/activity](/en/inventory/reporting-audit/activity) — `export` and `print` actions are also logged with `entity_type = 'report_job'`.
-- [purchase-request](/en/inventory/purchase-request), [purchase-order](/en/inventory/purchase-order), [good-receive-note](/en/inventory/good-receive-note), [store-requisition](/en/inventory/store-requisition), [inventory-adjustment](/en/inventory/inventory-adjustment), [physical-count](/en/inventory/physical-count), [spot-check](/en/inventory/spot-check), [vendor-pricelist](/en/inventory/vendor-pricelist) — Print invocations land here.
-- [access-control/user](/en/inventory/access-control/user) — `requested_by_id` resolves through platform `tb_user`.
+- [reporting-audit/report](/en/inventory/reporting-audit/report) — the on-demand "Run" and Print paths that do **not** populate this table.
+- [reporting-audit/schedule](/en/inventory/reporting-audit/schedule) — the recurring-fire path; also does not populate this table under the current `viewer_url`-only delivery.
+- [purchase-request](/en/inventory/purchase-request), [purchase-order](/en/inventory/purchase-order), [good-receive-note](/en/inventory/good-receive-note), [store-requisition](/en/inventory/store-requisition), [inventory-adjustment](/en/inventory/inventory-adjustment), [physical-count](/en/inventory/physical-count), [spot-check](/en/inventory/spot-check), [vendor-pricelist](/en/inventory/vendor-pricelist) — Print buttons that resolve through the viewer path, not this table.
+- [access-control/user](/en/inventory/access-control/user) — `requested_by_id`.
 
 ## 8. References
 
-- **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_report_job` (lines 5652-5683), `enum_report_job_status` (5644-5650), `enum_report_format` (~5628-5633), `enum_report_category` (~5635-5642).
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/report/history/`.
-- **Reports microservice:** `../micro-report/controller/report_controller.go`, `../micro-report/db/report_job_repo.go`.
+- **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_report_job` (line ~6094), `enum_report_job_status` (line ~6086), `enum_report_format` (line ~6070), `enum_report_category` (line ~6077).
+- **Backend (real, but only reachable via the unreached legacy path):** `../micro-report/controller/report_controller.go` (`generateAsync`, `jobStatus`, `history` handlers), `../micro-report/db/report_job_repo.go`, `../micro-report/model/job.go`.
+- **Backend (the paths actually used — no job row):** `../micro-report/controller/report_controller.go`'s `viewReport` handler.
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/report/history/report-history.route.tsx`, `history-component.tsx`, `use-history-table.tsx`.
+- **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-report-history.ts` — `useReportHistory` (list only; no re-run/detail hook exists).

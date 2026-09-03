@@ -2,7 +2,7 @@
 title: Master Data
 description: Business master data referenced by transactional documents — units, departments, vendors, currencies, tax profiles, and related catalogs.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T21:47:09.000Z
 tags: master-data, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -17,7 +17,9 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 1. Overview
 
-Master data is the set of named records that transactional documents *reference* but do not own. Units, departments, locations, delivery points, business units, currencies, vendors, tax profiles, credit terms, extra-cost types, adjustment types, credit-note reasons, and pricelist templates all live here. Each one is small on its own, and each one is referenced by many transactional rows.
+Master data is the set of named records that transactional documents *reference* but do not own. Units, departments, locations, delivery points, business units, currencies, vendors, tax profiles, credit terms, extra-cost types, adjustment types, and credit-note reasons all live here. (Pricelist templates are a separate entity, owned by the [vendor-pricelist](/en/inventory/vendor-pricelist) module's `vendor-management/price-list-template` route — not part of this module.) Each one is small on its own, and each one is referenced by many transactional rows.
+
+**A note on scope (verified this pass):** the frontend's actual `/config/*` route tree (`routes/config/`) has 14 leaf screens — `unit`, `department`, `location`, `delivery-point`, `currency`, `exchange-rate`, `tax-profile`, `credit-term`, `extra-cost`, `adjustment-type`, `credit-note-reason`, `business-type`, `certification`, `eco`. Two of those — `certification` and `eco` — have no wiki sub-page yet (a pre-existing, already-logged gap from the 2026-06-18 React-stack resync; not authored in this pass). Conversely, two of this module's 14 wiki sub-pages — [vendor](/en/inventory/master-data/vendor) and [business-unit](/en/inventory/master-data/business-unit) — document entities whose real UI lives outside `/config/*` (`vendor-management/vendor` and the separate `carmen-platform` admin app, respectively); they are kept here as cross-references because inventory documents and the costing engine depend on them, not because their screens live under Configuration → Master Data.
 
 Two principles drive how this umbrella is organised. First, **snapshot semantics**: documents store an FK to a master record *and* a denormalised display copy (name, rate, code) so that historical documents render correctly even if the master record is later renamed or inactivated. Second, **soft-delete with active flag**: every entity uses `is_active` + `deleted_at` to retire records without breaking referential integrity, so the standard answer to "delete X" is "inactivate X".
 
@@ -54,8 +56,8 @@ Product Admin and Configurator manage these. Sysadmin oversees integration and R
 - [store-requisition](/en/inventory/store-requisition) requires [master-data/unit](/en/inventory/master-data/unit), [master-data/location](/en/inventory/master-data/location), [master-data/department](/en/inventory/master-data/department).
 - [inventory](/en/inventory/inventory) requires [master-data/unit](/en/inventory/master-data/unit), [master-data/location](/en/inventory/master-data/location), [master-data/business-unit](/en/inventory/master-data/business-unit).
 - [inventory-adjustment](/en/inventory/inventory-adjustment) requires [master-data/unit](/en/inventory/master-data/unit), [master-data/location](/en/inventory/master-data/location), [master-data/adjustment-type](/en/inventory/master-data/adjustment-type), [master-data/credit-note-reason](/en/inventory/master-data/credit-note-reason).
-- [physical-count](/en/inventory/physical-count) requires [master-data/location](/en/inventory/master-data/location), [master-data/unit](/en/inventory/master-data/unit), [master-data/adjustment-type](/en/inventory/master-data/adjustment-type).
-- [spot-check](/en/inventory/spot-check) requires [master-data/location](/en/inventory/master-data/location), [master-data/adjustment-type](/en/inventory/master-data/adjustment-type).
+- [physical-count](/en/inventory/physical-count) requires [master-data/location](/en/inventory/master-data/location), [master-data/unit](/en/inventory/master-data/unit). It does **not** use [master-data/adjustment-type](/en/inventory/master-data/adjustment-type) — its variance rollup creates stock-in/out rows with `adjustment_type_id` left `null` (confirmed this pass; see the adjustment-type page's Cross-References).
+- [spot-check](/en/inventory/spot-check) requires [master-data/location](/en/inventory/master-data/location) only. It does **not** use [master-data/adjustment-type](/en/inventory/master-data/adjustment-type) — it never creates a stock-in/out row at all (confirmed this pass).
 - [costing](/en/inventory/costing) requires [master-data/business-unit](/en/inventory/master-data/business-unit) (for `calculation_method`), [master-data/currency](/en/inventory/master-data/currency), and [master-data/exchange-rate](/en/inventory/master-data/exchange-rate) (for dated FX revaluation).
 - [vendor-pricelist](/en/inventory/vendor-pricelist) requires [master-data/vendor](/en/inventory/master-data/vendor), [master-data/currency](/en/inventory/master-data/currency), [master-data/tax-profile](/en/inventory/master-data/tax-profile), [templates/price-list](/en/inventory/templates/price-list).
 - [product](/en/inventory/product) requires [master-data/unit](/en/inventory/master-data/unit), [master-data/tax-profile](/en/inventory/master-data/tax-profile).

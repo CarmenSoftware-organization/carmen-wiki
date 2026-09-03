@@ -2,7 +2,7 @@
 title: Applications — Data Model
 description: The tb_application and tb_application_api tables, asymmetric read/write shapes, PUT replace semantics, the generated api-catalog, and the schema-only tb_application_role family.
 published: true
-date: 2026-06-17T08:00:00.000Z
+date: 2026-07-29T07:21:27.000Z
 tags: book/platform, applications, data-model
 editor: markdown
 dateCreated: 2026-06-10T12:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-06-10T12:30:00.000Z
 # Applications — Data Model
 
 > **At a Glance**
-> **Tables:** `tb_application` &nbsp;·&nbsp; `tb_application_api` (1:N grant rows) &nbsp;·&nbsp; **Enums:** none — `api_name` is free-form VarChar &nbsp;·&nbsp; **Identity:** `tb_application.id` (UUID) is the `x-app-id` value; no separate app-id column &nbsp;·&nbsp; **Grant fork:** `allow_all` boolean — when true, `tb_application_api` rows are irrelevant &nbsp;·&nbsp; **Write shape:** asymmetric — read returns flat `api_names: string[]`, writes send `details.add[]` with **replace semantics** &nbsp;·&nbsp; **Catalog:** not a table — a generated file in backend-gateway served by `/api-system/applications/api-catalog`
+> **Tables:** `tb_application` &nbsp;·&nbsp; `tb_application_api` (1:N grant rows) &nbsp;·&nbsp; **Enums:** none — `api_name` is free-form VarChar &nbsp;·&nbsp; **Identity:** `tb_application.id` (UUID) is the `x-app-id` value; no separate app-id column &nbsp;·&nbsp; **Grant fork:** `allow_all` boolean — when true, `tb_application_api` rows are irrelevant &nbsp;·&nbsp; **Write shape:** asymmetric — read returns flat `api_names: string[]`, writes send `details.add[]` with **replace semantics** &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` on both tables (added 2026-07-16), enforced as an optimistic lock on `PUT`/`POST` &nbsp;·&nbsp; **Catalog:** not a table — a generated file in backend-gateway served by `/api-system/applications/api-catalog`
 
 > **Source of truth:** Backend Prisma platform schema. Always read this first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
@@ -30,7 +30,7 @@ Both tables carry the platform-standard audit trio and soft-delete-aware unique 
 
 ### 2.1 `tb_application`
 
-The registered API client. Schema line 75.
+The registered API client. Schema line 65.
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
@@ -40,6 +40,7 @@ The registered API client. Schema line 75.
 | `is_active` | `Boolean?` | Yes | Default `true`; Active/Inactive badge in the SPA |
 | `allow_all` | `Boolean?` | Yes | Default `false`; `true` grants every guarded endpoint and makes `tb_application_api` rows irrelevant |
 | `device` | `String @db.VarChar` | No | Default `"web"`; the device class this application identifies as. Free-form at the DB level; the SPA constrains it to `mobile` / `web` / `desktop` / `pos` (`DeviceType` / `DEVICE_OPTIONS`). Read by the backend-gateway app-allowlist (`getDevice(appId)`) to apply device-specific behaviour — e.g. the [GRN mobile draft-only list filter](/en/inventory/good-receive-note/02-business-rules) |
+| `doc_version` | `Int` | No | Default `0`; optimistic-concurrency token, added platform-wide (35 tables) on 2026-07-16. `ApplicationEdit` sends it on every `POST`/`PUT`; a stale write is rejected with `409` and the SPA reloads the record with a conflict toast instead of overwriting silently |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: row creation time, default `now()` |
 | `created_by_id` | `String? @db.Uuid` | Yes | Audit: creator user id (FK to `tb_user`) |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: last update time, default `now()` |
@@ -57,13 +58,14 @@ The registered API client. Schema line 75.
 
 ### 2.2 `tb_application_api`
 
-One explicit API grant: this application may call endpoints guarded by this `api_name`. Schema line 98.
+One explicit API grant: this application may call endpoints guarded by this `api_name`. Schema line 90.
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key, default `gen_random_uuid()` |
 | `application_id` | `String @db.Uuid` | No | FK to `tb_application.id` |
 | `api_name` | `String @db.VarChar` | No | The granted key, `resource.action` shape (e.g. `cluster.create`); free-form — validity is by convention against the generated catalog, not a DB constraint |
+| `doc_version` | `Int` | No | Default `0`; same optimistic-lock counter as `tb_application` above. Not independently surfaced by the SPA — grant rows are always rewritten in bulk via the parent application's replace-semantics `PUT` |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: row creation time, default `now()` |
 | `created_by_id` | `String? @db.Uuid` | Yes | Audit: creator user id (FK to `tb_user`) |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: last update time, default `now()` |
@@ -103,7 +105,8 @@ The SPA types live in `../carmen-platform/src/types/index.ts` (`Application`, `A
 | `Application.api_names: string[]` (flat) | `Application` | `tb_application_api` join rows | The API flattens grant rows into key strings; the SPA never sees grant-row ids |
 | `ApplicationWritePayload.details: { add: { api_name }[] }` | `toWritePayload` in `applicationService.ts` | same join rows | Writes wrap each key as `{ api_name }` under `details.add`; entries are trimmed and blanks dropped. **`details` is omitted entirely when `allow_all` is true** |
 | `PUT` = **replace semantics** | `applicationService.update` | n/a | Every save sends the full desired set in `details.add` — contrast RBAC roles, whose `PUT` sends `{ add, remove }` deltas. Do not port the delta pattern here (or vice versa) |
-| "App ID" field on the edit screen | `ApplicationEdit.tsx` | not a column | Display label for the record `id`; there is no `app_id` column or DTO field |
+| "App ID" chip on the edit screen | `ApplicationIdentityHero.tsx` (moved out of the form itself since the last sync — no longer a Settings-card field row) | not a column | Display label for the record `id`; there is no `app_id` column or DTO field |
+| `doc_version` round-trip | `ApplicationFormData` payload, `getDocVersion`/`isVersionConflict` | `tb_application.doc_version` | New since the last sync — aligned on both sides, not a divergence; listed for completeness since it postdates the original comparison pass |
 | `ApiCatalogGroup { module, api_names[] }` | `getApiCatalog` | **no table** | The catalog is `app-api-catalog.generated.ts` in backend-gateway, emitted by the `AppIdGuard` scan (§5.1) |
 | Catalog envelope tolerance | `getApiCatalog` | n/a | The endpoint returns `{ api_names: string[], groups?: ApiCatalogGroup[] }`, optionally inside the standard `{ data }` envelope; the service also tolerates a bare `string[]`. When `groups` is missing or fails the per-element runtime guard, the client derives identical groups via `groupApiNames()` (`src/utils/apiCatalog.ts`: module = prefix before the first `.`; dotless names are their own module; `actionOf()` = text after the first dot) — same split rule as the backend generator, so fallback output equals server output |
 | Flat `created_at`/`created_by_name` on list rows | `ApplicationManagement.tsx` | audit id columns | The list response may nest audit data as `audit.created/updated` `{ at, name }`; the SPA flattens and tolerates both shapes |
@@ -114,7 +117,7 @@ The SPA types live in `../carmen-platform/src/types/index.ts` (`Application`, `A
 
 ### 5.2 Schema-only: the `tb_application_role` family
 
-The platform schema also contains `tb_application_role` (line 31), `tb_application_role_tb_permission` (line 55), and `tb_user_tb_application_role` (line 580). Despite the `application` prefix, they are **not part of this module's machine-client model**: they describe business-unit-scoped role bundles (`tb_application_role.business_unit_id` → `tb_business_unit`) joining `tb_permission` rows to users — an in-product RBAC vocabulary for the inventory application, not grants for `x-app-id` callers. The Platform SPA has **no surface for them** — no page, service, or type references them as of 2026-06-10 — so they are documented here only to disambiguate the naming; no field tables are warranted until a UI exists.
+The platform schema also contains `tb_application_role` (line 19), `tb_application_role_tb_permission` (line 44), and `tb_user_tb_application_role` (line 606). Despite the `application` prefix, they are **not part of this module's machine-client model**: they describe business-unit-scoped role bundles (`tb_application_role.business_unit_id` → `tb_business_unit`) joining `tb_permission` rows to users — an in-product RBAC vocabulary for the inventory application, not grants for `x-app-id` callers. The Platform SPA has **no surface for them** — no page, service, or type references them, re-confirmed 2026-07-29 — so they are documented here only to disambiguate the naming; no field tables are warranted until a UI exists. (Note: the generated `api_name` catalog does carry `application-role.*`/`application-role-permission.*`/`application-permission.*` guarded endpoints — these are backend-gateway routes with no client in this SPA, a separate observation from the schema-only tables above; do not conflate the two.)
 
 ## 6. References
 
@@ -130,12 +133,13 @@ REST surface consumed by `applicationService.ts`:
 | `GET /api-system/applications/api-catalog` | Selectable `api_name` catalog | `{ api_names, groups? }`, envelope-tolerant; client grouping fallback |
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_application` (line 75), `tb_application_api` (line 98); schema-only family at lines 31, 55, 580.
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_application` (line 65), `tb_application_api` (line 90); schema-only family at lines 19, 44, 606. Line numbers as of 2026-07-29; `doc_version` added to both tables on 2026-07-16 (`8e53bbe`).
 - `../carmen-turborepo-backend-v2/scripts/generate-app-api-catalog/run.ts` — the catalog generator (`AppIdGuard` scan, grouping rule, output path).
 
 **Secondary (consumer shape):**
-- `../carmen-platform/src/types/index.ts` — `Application`, `ApplicationWritePayload`, `ApiCatalogGroup`.
-- `../carmen-platform/src/services/applicationService.ts` — `toWritePayload`, `getApiCatalog` envelope handling and grouping fallback.
+- `../carmen-platform/src/types/index.ts` — `Application` (incl. `doc_version?: number`), `ApplicationWritePayload`, `ApiCatalogGroup`.
+- `../carmen-platform/src/services/applicationService.ts` — `toWritePayload` (incl. `doc_version`), `getApiCatalog` envelope handling and grouping fallback.
 - `../carmen-platform/src/utils/apiCatalog.ts` — `moduleOf`, `actionOf`, `groupApiNames`.
+- `../carmen-platform/src/utils/docVersion.ts` — `getDocVersion`/`isVersionConflict`/`notifyVersionConflict` optimistic-lock helpers used by `ApplicationEdit.tsx`.
 
 **Cross-links:** [Applications landing](/en/platform/applications) &nbsp;·&nbsp; [UI Screens](./ui-screens.md) &nbsp;·&nbsp; [Permissions](./permissions.md) &nbsp;·&nbsp; [Platform RBAC data-model](../rbac/data-model.md) (the delta-write contrast)

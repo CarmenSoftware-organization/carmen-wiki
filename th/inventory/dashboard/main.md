@@ -1,8 +1,8 @@
 ---
 title: แดชบอร์ดหลัก (Main Dashboard)
-description: หน้าแดชบอร์ดแรกที่แสดง KPI ระดับบนของ PR, PO, GRN, คลังสินค้า และ SR — หน้าเดียวที่แสดงทันทีหลังเข้าระบบ
+description: "ถูกลบแล้วเมื่อ 2026-06-27 เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น: หน้าแดชบอร์ดแรกที่แสดง KPI ระดับบนของ PR, PO, GRN, คลังสินค้า และ SR — หน้าเดียวที่แสดงทันทีหลังเข้าระบบ"
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T01:35:43.000Z
 tags: dashboard, landing, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,11 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # แดชบอร์ดหลัก (Main Dashboard)
 
 > **At a Glance**
-> **Route:** `/dashboard/main` (เข้าจาก `/dashboard` ผ่าน redirect ก็ได้) &nbsp;·&nbsp; **สำหรับ:** Executive / Controller / HOD หลังเข้าระบบ &nbsp;·&nbsp; **สถานะ:** Mock data ในปัจจุบัน; การเชื่อมต่อข้อมูลจริงรอ wire
+> **Route:** ไม่มี — `/dashboard/main` ไม่เคยมีอยู่จริงในฐานะ route (`/dashboard` เปล่าๆ resolve ไปยังหน้า live เดียวเสมอมา คือหน้า [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) ในปัจจุบัน ไม่เคยไปที่ sub-route `main`) &nbsp;·&nbsp; **สถานะ:** **ถูกลบแล้วเมื่อ 2026-06-27** — เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น component นี้ถูกลบทิ้งในฐานะ dead code และไม่เคยอยู่หลัง router entry ใดๆ
+
+## สถานะการ implement (ตรวจสอบเมื่อ 2026-07-16)
+
+หน้านี้ document `dashboard-main.tsx` (เดิมคือ `routes/dashboard/_components/dashboard-main.tsx`) และ fixture `mock/main.ts` ของมัน `/dashboard/main` ไม่เคยมีอยู่ใน `routes/router.tsx` — sidebar entry ของ Dashboard resolve ไปยัง component เดียวเท่านั้นเสมอมา คือหน้า [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) ในปัจจุบัน ไฟล์ demo นี้ถูกลบพร้อมไฟล์พี่น้องอีก 7 ไฟล์ใน commit `03891e3d` ("refactor(dashboard): convert to idiomatic structure, drop dead demo code", `carmen-inventory-frontend-react`, 2026-06-27) ซึ่ง commit message ระบุว่ามันและ mock fixture ของมัน "no importers anywhere" เนื้อหาด้านล่างทั้งหมดอธิบายหน้าจอ demo ที่ถูกลบและไม่เคยมี route จริงนี้ — เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น ถือว่าทุกข้อความ "ยังเป็น mock data ในปัจจุบัน", "เมื่อ live" และการอ้าง route ในส่วนที่เหลือของหน้านี้เป็นโมฆะ — จะไม่มีวัน live ภายใต้หน้านี้
 
 ![แดชบอร์ดหลัก (Main Dashboard) screen](/screenshots/dashboard/main.png)
 
@@ -83,7 +87,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ## 7. แหล่งข้อมูลอ้างอิง
 
-- **Page shell:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-main.tsx`
-- **Composition:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-main.tsx`
-- **Mock data:** `../carmen-inventory-frontend-react/routes/dashboard/mock/main.ts`
-- **i18n:** `messages/en.json` → `dashboard.main.title` = "Dashboard"
+- **Page shell / composition (ถูกลบเมื่อ 2026-06-27):** `routes/dashboard/_components/dashboard-main.tsx` ใน `../carmen-inventory-frontend-react`
+- **Mock data (ถูกลบเมื่อ 2026-06-27):** `routes/dashboard/mock/main.ts` ใน `../carmen-inventory-frontend-react`
+- **Commit ที่ลบ:** `03891e3d` — "refactor(dashboard): convert to idiomatic structure, drop dead demo code"
+- **i18n key ที่ยังอยู่แต่ไม่ถูกใช้:** `messages/en.json` → `dashboard.main.title` = "Dashboard"

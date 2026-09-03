@@ -1,8 +1,8 @@
 ---
 title: RBAC ของแพลตฟอร์ม (Platform RBAC)
-description: การควบคุมการเข้าถึงแบบอิง permission สำหรับ Platform admin SPA — permission catalog, role, การ assign ผู้ใช้แบบมี scope และ super-admin bypass
+description: การควบคุมการเข้าถึงแบบอิง permission สำหรับ Platform admin SPA — permission catalog, role, การ assign ผู้ใช้แบบมี scope, super-admin bypass และการปรับปรุง RoleEdit/SuperAdminManagement/UserPlatformManagement ช่วง 2026-07
 published: true
-date: 2026-06-10T15:00:00.000Z
+date: 2026-07-29T00:00:00.000Z
 tags: platform/rbac, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T15:00:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-06-10T15:00:00.000Z
 โมดูล **Platform RBAC** คือระบบควบคุมการเข้าถึงของ Carmen Platform admin SPA โมดูลนี้แทนที่ role enum ค่าเดียวแบบเดิมด้วยแบบจำลองที่อิง permission: **permission catalog** ที่ backend เป็นเจ้าของกำหนด key รูปแบบ `resource.action`, **role** รวม key เหล่านั้นเป็นชุด, **assignment** ผูก role เข้ากับผู้ใช้ที่ scope ระดับทั้งแพลตฟอร์มหรือเฉพาะ cluster และ **flag super-admin** ที่แยกต่างหากจะ bypass ทุกการตรวจสอบ route guard, รายการ sidebar และ gate ของ action ในหน้าทุกตัวใน SPA ล้วน resolve กับระบบนี้
 
 > **At a Glance**
-> **วัตถุประสงค์ของโมดูล:** การควบคุมการเข้าถึงแบบอิง permission — catalog กำหนด key รูปแบบ `resource.action`, role รวม key เป็นชุด, assignment แบบมี scope ผูก role เข้ากับผู้ใช้, flag super-admin จะ bypass ทุกการตรวจสอบ &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับ Platform admin SPA และ authorization backend ของมัน &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_platform_permission`, `tb_platform_role`, `tb_platform_role_tb_permission`, `tb_user_tb_platform_role` (scope ผ่าน `cluster_id` ที่เป็น nullable), `tb_platform_super_admin` &nbsp;·&nbsp; **หน้าจอ:** Roles · Permission Catalog · Super Admins · User Platform &nbsp;·&nbsp; **หน้าย่อย:** 3
+> **วัตถุประสงค์ของโมดูล:** การควบคุมการเข้าถึงแบบอิง permission — catalog กำหนด key รูปแบบ `resource.action`, role รวม key เป็นชุด, assignment แบบมี scope ผูก role เข้ากับผู้ใช้, flag super-admin จะ bypass ทุกการตรวจสอบ &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับ Platform admin SPA และ authorization backend ของมัน &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_platform_permission`, `tb_platform_role`, `tb_platform_role_tb_permission`, `tb_user_tb_platform_role` (scope ผ่าน `cluster_id` ที่เป็น nullable), `tb_platform_super_admin` — ทั้งห้าตารางมี `doc_version` (การ rollout optimistic-lock ทั้งแพลตฟอร์มเมื่อ 2026-07-16) &nbsp;·&nbsp; **หน้าจอ:** Roles · Permission Catalog · Super Admins · User Platform &nbsp;·&nbsp; **หน้าย่อย:** 3 &nbsp;·&nbsp; **ตั้งแต่ 2026-07:** `RoleEdit` ได้ hero ประจำตัว + not-found gating + การจัดการ conflict ของ `doc_version`; `RoleManagement` ได้แถบสรุป Roles Access Summary และตอนนี้ gate Edit/Delete ของแถวด้วย `<Can>`; `SuperAdminManagement` ถูกเขียนใหม่จาก layout สองการ์ดเป็น `DataTable` ที่ค้นหาได้; `UserPlatformManagement` ได้แถบสรุป Platform Access Summary และคอลัมน์ Actions
 
 ## 1. ภาพรวม
 
@@ -22,9 +22,11 @@ dateCreated: 2026-06-10T15:00:00.000Z
 - **Permission Catalog (`/platform/permissions` → `PermissionCatalog`)** — หน้าอ้างอิงแบบ read-only ของ permission key ทุกตัวที่ backend กำหนด จัดกลุ่มตาม resource ไม่มีรายการใน sidebar; เข้าถึงได้จากปุ่ม header บนหน้า list ของ Roles SPA สร้างหรือแก้ไขรายการใน catalog ไม่ได้
 - **Roles (`/platform/roles` → `RoleManagement`, `/platform/roles/new` และ `/platform/roles/:id/edit` → `RoleEdit`)** — รูปแบบ list + create/view/edit มาตรฐาน role คือชุดของ permission key ที่มีชื่อและเปิด/ปิดได้ เลือกจาก catalog ผ่าน `PermissionPicker` แบบ accordion
 - **User Platform (`/platform/user-platform` → `UserPlatformManagement`, `/platform/user-platform/:userId` → `UserPlatformEdit`)** — assign role ให้ผู้ใช้ แต่ละ assignment มี scope กำกับ: ทั้งแพลตฟอร์มหรือ cluster ที่ระบุ การ์ด "Roles & Scope" บนหน้า detail คือจุดที่เพิ่มและลบ assignment
-- **Super Admins (`/platform/super-admins` → `SuperAdminManagement`)** — รายการ add/remove แบบแบนของผู้ใช้ที่ bypass ทุกการตรวจสอบ permission การเป็นสมาชิกที่นี่คือ flag ไม่ใช่ role
+- **Super Admins (`/platform/super-admins` → `SuperAdminManagement`)** — รายการ add/remove ของผู้ใช้ที่ bypass ทุกการตรวจสอบ permission การเป็นสมาชิกที่นี่คือ flag ไม่ใช่ role **ถูกเขียนใหม่ตั้งแต่ 2026-06-10:** layout สองการ์ดเดิม (native `<select>` แบบ inline + รายการแถวธรรมดา) ตอนนี้เป็น `DataTable` ที่ค้นหาได้ (คอลัมน์ User / Status / Added / Actions) พร้อมปุ่ม Export CSV บน header และ dialog แบบ modal สำหรับ Add Super Admin (shadcn `Select` ไม่ใช่ native select แบบ inline)
 
 ตอน login SPA จะดึง **effective permissions** ของผู้ใช้ (`GET /api/user/permission/platform`) — ผลลัพธ์ที่ flatten จาก assignment ทั้งหมดของผู้ใช้ — และ guard ทุกตัวในแอปจะประเมินกับ snapshot นี้
+
+**ตั้งแต่ 2026-07 ทั้งสี่หน้าจอได้รับการเปลี่ยนแปลงเพิ่มเติมที่ไม่มีอยู่ใน sync ครั้งก่อน:** `RoleEdit` ตอนนี้เปิดด้วยการ์ด `RoleIdentityHero` (ชื่อ, badge Active/Inactive, สรุปขอบเขตการมอบสิทธิ์ที่ขึ้นเตือนสีอำพัน "Full access to every permission" เมื่อครบทุก permission) เหนือฟอร์มที่จัดวางเป็นการ์ด Permissions ทางซ้าย / การ์ด Settings ทางขวา เพิ่ม not-found gating สำหรับ `id` ที่ผิดหรือถูกลบ และส่ง `doc_version` ทุกครั้งที่บันทึกพร้อม toast แจ้ง conflict; list ของ `RoleManagement` ได้แถบสรุป **Roles Access Summary** (จำนวนรวม/active/inactive บวกสาม role ที่กว้างที่สุดตามจำนวน permission เป็นแท่งแนวนอน) และตอนนี้ gate แถว **Edit** (`role.update`) และ **Delete** (`role.delete`) ด้วย `<Can>` — เดิมทั้งสองมองเห็นได้สำหรับผู้ถือ `role.read` ทุกคน; `UserPlatformManagement` ได้แถบสรุป **Platform Access Summary** และ dropdown Actions ของแถว ("Manage roles") และการดึงจำนวน role ต่อแถวในพื้นหลังตอนนี้แยกความล้มเหลว (ไอคอนเตือนสีอำพัน) ออกจากศูนย์จริง แทนที่จะรวมทั้งสองเป็น `0` ตารางทั้งห้าของ RBAC (`tb_platform_permission`, `tb_platform_role`, `tb_platform_role_tb_permission`, `tb_user_tb_platform_role`, `tb_platform_super_admin`) ได้ `doc_version` ใน rollout ทั้งแพลตฟอร์มเมื่อ 2026-07-16 รายละเอียดเต็มอยู่ใน [UI Screens](/th/platform/rbac/ui-screens)
 
 ## 2. บริบททางธุรกิจ
 
@@ -62,9 +64,9 @@ dateCreated: 2026-06-10T15:00:00.000Z
 
 | หน้าจอ | Route | Route guard | Gate ภายในหน้า |
 |---|---|---|---|
-| Roles list | `/platform/roles` | `role.read` | ไม่มี — Add/Edit/Delete/Export มองเห็นทั้งหมดเมื่อ route resolve แล้ว |
+| Roles list | `/platform/roles` | `role.read` | **แก้ไขแล้ว — ไม่ใช่ "ไม่มี" อีกต่อไป:** Add คือ `<Can permission="role.create">`; Edit ของแถวคือ `<Can permission="role.update">`; Delete ของแถวคือ `<Can permission="role.delete">` (ทั้งสามเพิ่มมาตั้งแต่ sync ครั้งก่อน) Export ยังไม่ถูก gate |
 | Role create | `/platform/roles/new` | `role.create` | ไม่มี |
-| Role edit | `/platform/roles/:id/edit` | `role.update` | ไม่มี |
+| Role edit | `/platform/roles/:id/edit` | `role.update` | ปุ่ม **Edit** บน header คือ `<Can permission="role.update">` |
 | Permission Catalog | `/platform/permissions` | `role.read` | ไม่มี (หน้าจอ read-only) |
 | Super Admins | `/platform/super-admins` | `requireSuperAdmin` | ไม่มี — มีเพียง super admin เท่านั้นที่เข้าถึงหน้านี้ได้ |
 | User Platform list | `/platform/user-platform` | `user_platform.read` | ไม่มี |
@@ -79,7 +81,7 @@ sidebar สะท้อน route guard (`src/components/Layout.tsx` กลุ่
 | User Platform | `permission: 'user_platform.read'` |
 | Permission Catalog | — ไม่มีรายการ sidebar; เข้าถึงจากปุ่ม header ของหน้า Roles |
 
-route guard ที่ไม่ผ่านจะ render `<AccessDenied>` ภายใน shell `<Layout>` ปกติ — sidebar ยังมองเห็นอยู่ session ยังใช้ได้ และมีปุ่ม Back-to-Dashboard ให้ `/dashboard` และ `/profile` ยังคงเป็น authenticated-only — ผู้ใช้ที่ login แล้วทุกคนเข้าถึงได้โดยไม่ขึ้นกับ permission แผนที่ key ต่อ route ฉบับเต็มของส่วนที่เหลือใน SPA อยู่ใน [Permissions](/th/platform/rbac/permissions)
+route guard ที่ไม่ผ่านจะ render หน้า `Forbidden` (เปลี่ยนชื่อจาก component `AccessDenied` ที่เคยประกาศ inline ใน `PrivateRoute.tsx`) **ในตำแหน่งเดิม** โดย URL ไม่เปลี่ยน ภายใน shell `<Layout>` ปกติ — sidebar ยังมองเห็นอยู่ session ยังใช้ได้ และมีสอง action ให้เลือก: "Go Back" (รู้บริบท ถ้าไม่มีปลายทางย้อนกลับที่เหมาะสมจะ fallback ไป `/dashboard`) และ "Go to Dashboard" route `/403` โดยตรงก็ render หน้าเดียวกันนี้ `/dashboard` และ `/profile` ยังคงเป็น authenticated-only — ผู้ใช้ที่ login แล้วทุกคนเข้าถึงได้โดยไม่ขึ้นกับ permission แผนที่ key ต่อ route ฉบับเต็มของส่วนที่เหลือใน SPA อยู่ใน [Permissions](/th/platform/rbac/permissions)
 
 ## 5. การย้ายจากแบบจำลอง role เดิม
 

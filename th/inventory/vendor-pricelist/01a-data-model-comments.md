@@ -2,7 +2,7 @@
 title: ราคาสินค้าจากผู้ขาย — โมเดลข้อมูล — ตารางคอมเมนต์
 description: ตารางคอมเมนต์ / ไฟล์แนบระดับเอกสารและระดับบรรทัดสำหรับโมดูลราคาสินค้าจากผู้ขาย ครอบคลุม sub-entity families: pricelist template, request-for-pricing, pricelist
 published: true
-date: 2026-06-17T08:00:00.000Z
+date: 2026-07-16T00:00:00.000Z
 tags: vendor-pricelist, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -12,7 +12,9 @@ dateCreated: 2026-05-20T00:00:00.000Z
 
 ## 1. ภาพรวม
 
-โมดูลราคาสินค้าจากผู้ขายจัดเก็บโน้ตที่เขียนโดยผู้ใช้และที่ระบบสร้างให้อัตโนมัติ พร้อมไฟล์แนบ ลงในตาราง `*_comment` ที่แยกออกมาเฉพาะ ครอบคลุม sub-entity families สามกลุ่ม — pricelist template, request-for-pricing และ pricelist — โดยแยกจากตาราง header / detail ที่ถือ lifecycle ซึ่งบันทึกไว้ใน [01 — โมเดลข้อมูล](/th/inventory/vendor-pricelist/01-data-model) แถวคอมเมนต์ทุกแถวมีฟิลด์ `message` แบบข้อความอิสระ, ฟิลด์ `attachments` ที่เป็น JSON array ของ S3-token records (`{originalName, fileToken, contentType}`) และฟิลด์ `type` ที่แยก discriminator (`enum_comment_type`) ซึ่งใช้แยก entry ที่ผู้ใช้เขียนกับ entry ที่ระบบสร้างจาก transition แต่ละ sub-entity family มีตารางคอมเมนต์ระดับ header และตารางคอมเมนต์ระดับ detail (ระดับบรรทัด) เป็นของตัวเอง รองรับการอธิบายเพิ่มเติมต่อบรรทัด การแนบหลักฐาน vendor quotation และการตัดสินใจ approval / rejection ต่อบรรทัด ครอบคลุม lifecycle ของ pricelist request
+โมดูล Vendor Price List เก็บโน้ตพร้อมไฟล์แนบลงในตาราง `*_comment` ที่แยกออกมาเฉพาะ ครอบคลุม sub-entity families สามกลุ่ม — pricelist template, request-for-pricing และ pricelist — โดยแยกจากตาราง header / detail ที่ถือ lifecycle ซึ่งบันทึกไว้ใน [01 — โมเดลข้อมูล](/th/inventory/vendor-pricelist/01-data-model) แถวคอมเมนต์ทุกแถวมีฟิลด์ `message` แบบข้อความอิสระ, ฟิลด์ `attachments` ที่เป็น JSON array ของ S3-token records (`{originalName, fileToken, contentType}`) และฟิลด์ `type` ที่แยก discriminator (`enum_comment_type`, default `user` | `system`) ที่ใช้ร่วมกับทุกตาราง comment อื่นในผลิตภัณฑ์ แต่ละ sub-entity family มีตารางคอมเมนต์ระดับ header และตารางคอมเมนต์ระดับ detail (ระดับบรรทัด) เป็นของตัวเอง พร้อม manual CRUD controller ของตัวเอง
+
+> **ยืนยันแล้ว (ตรวจสอบเมื่อ 2026-07-16):** ค่า `system` บน `enum_comment_type` มีอยู่จริงใน schema แต่ไม่มี service ใดในโมดูลนี้ (`price-list`, `price-list-template`, `request-for-pricing`, `check-price-list`) ที่สร้างแถวคอมเมนต์โดยอัตโนมัติ — `create()`/`update()`/`updateStatus()` ของทั้งสี่ตัวไม่แตะตาราง `*_comment` เลย ทุกแถวคอมเมนต์ที่มีอยู่วันนี้ถูกเขียนโดย call ของผู้ใช้ที่ชัดเจนไปยัง CRUD endpoint ของคอมเมนต์นั้นเอง ให้ถือว่าทุกคำกล่าวแบบ "system comment records..." ด้านล่างและใน [02-business-rules](/th/inventory/vendor-pricelist/02-business-rules) / หน้า user-flow เป็น design-target ไม่ใช่พฤติกรรมปัจจุบัน
 
 ## 2. โครงสร้างร่วม
 
@@ -37,7 +39,7 @@ updated_by_id       uuid / FK ไปยัง tb_user
 
 ### 3.1 tb_pricelist_template_comment
 
-Entry activity-log แนบกับ header ของ template ถือ comment ของ user และ event `system` (การเปลี่ยนสถานะ, การแก้ vendor-instruction)
+โน้ตข้อความอิสระที่แนบกับ header ของ template ผ่าน manual CRUD endpoint ของตัวเอง เขียนโดยผู้ใช้เท่านั้น — `updateStatus()` (endpoint เปลี่ยนสถานะของ template) ไม่เคยเขียนที่นี่ ดังนั้นจึงไม่มี entry อัตโนมัติสำหรับการเปลี่ยนสถานะหรือการแก้ vendor-instruction
 
 | ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | ----------- |
@@ -81,8 +83,8 @@ Activity-log surface บน header ของ campaign และ invitation ต�
 
 | ตาราง | Parent FK | วัตถุประสงค์ |
 | ----- | --------- | ------- |
-| `tb_request_for_pricing_comment` | `request_for_pricing_id → tb_request_for_pricing.id` | activity log ระดับ campaign: campaign สร้าง, ผู้ขายถูกเลือก, email dispatch, reminder fire, campaign ปิด |
-| `tb_request_for_pricing_detail_comment` | `request_for_pricing_detail_id → tb_request_for_pricing_detail.id` | activity log invitation ต่อผู้ขาย: email sent / opened / clicked, portal first-access, draft saved, submission completed Telemetry email และ portal ละเอียด (delivered, opened, clicked, IP, จำนวน session) ที่ carmen/docs อธิบาย อยู่ใน JSON ของ `attachments` / `message` ในชั้นแอป; ไม่มีคอลัมน์ Prisma dedicated สำหรับมัน |
+| `tb_request_for_pricing_comment` | `request_for_pricing_id → tb_request_for_pricing.id` | โน้ตข้อความอิสระแนบกับ header ของ RFQ — เขียนโดยผู้ใช้เท่านั้น; ไม่มีอะไรใน RFQ create/update service ที่เขียน entry ที่นี่โดยอัตโนมัติ |
+| `tb_request_for_pricing_detail_comment` | `request_for_pricing_detail_id → tb_request_for_pricing_detail.id` | โน้ตข้อความอิสระแนบกับแถวผู้ขายที่ถูกเชิญหนึ่งราย — เขียนโดยผู้ใช้เท่านั้น telemetry อีเมล/portal อย่างละเอียด (sent, delivered, opened, clicked, IP addresses, จำนวน session) ที่ carmen/docs อธิบาย ไม่มีโค้ดรองรับที่ไหนเลยในโมดูลนี้ — ไม่มีทั้งคอลัมน์ Prisma dedicated และไม่มีการเขียนอัตโนมัติเข้า JSON `attachments` / `message` ของตารางนี้ |
 
 ### 3.4 tb_pricelist_comment / tb_pricelist_detail_comment
 
@@ -90,8 +92,8 @@ Activity-log surface บน header ของ pricelist และต่อแถ�
 
 | ตาราง | Parent FK | วัตถุประสงค์ |
 | ----- | --------- | ------- |
-| `tb_pricelist_comment` | `pricelist_id → tb_pricelist.id` | activity log header ของ pricelist: created, vendor saved draft, vendor submitted, ผล validate, purchaser approved / rejected, การเปลี่ยนสถานะ |
-| `tb_pricelist_detail_comment` | `pricelist_detail_id → tb_pricelist_detail.id` | activity log ต่อแถว: แถวแก้โดย purchaser, validation warning แนบ, flag preferred-vendor toggle, deviation กับราคาประวัติ log |
+| `tb_pricelist_comment` | `pricelist_id → tb_pricelist.id` | โน้ตข้อความอิสระแนบกับ header ของ pricelist — เขียนโดยผู้ใช้เท่านั้น; `create()`/`update()` ของ `price-list.service.ts` ไม่เคยเขียนที่นี่ ดังนั้นจึงไม่มี entry อัตโนมัติสำหรับการเปลี่ยนสถานะ, การ submit หรือการ approve |
+| `tb_pricelist_detail_comment` | `pricelist_detail_id → tb_pricelist_detail.id` | โน้ตข้อความอิสระแนบกับแถวสินค้าหนึ่งแถว — เขียนโดยผู้ใช้เท่านั้น; ไม่มี entry อัตโนมัติสำหรับการ toggle `is_preferred` หรือการแก้ราคา |
 
 ## 4. แหล่งอ้างอิงข้าม
 

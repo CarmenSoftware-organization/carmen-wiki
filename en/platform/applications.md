@@ -2,7 +2,7 @@
 title: Applications
 description: Application module overview — registered API clients of the platform, their x-app-id identity, and allow-all vs explicit api_name access grants.
 published: true
-date: 2026-06-17T08:00:00.000Z
+date: 2026-07-29T07:21:27.000Z
 tags: platform/applications, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T12:30:00.000Z
@@ -19,12 +19,12 @@ The **Applications** module manages the platform's registered **API clients** �
 
 The module follows the SPA's standard two-screen pattern:
 
-- **`/applications` → `ApplicationManagement`** — server-side `DataTable` with debounced search (name/description), a Sheet-based Active/Inactive filter, CSV export, and persisted UI state in `localStorage`. The **App ID** column renders the record UUID in monospace so operators can copy the exact `x-app-id` value, and the **Access** column summarizes the grant as an "All APIs" or "N APIs" badge.
-- **`/applications/new` and `/applications/:id/edit` → `ApplicationEdit`** — a single "Application Details" card (create mode is immediately editable; the edit route starts read-only behind an Edit toggle). Its signature element is the **API Names selector**: a collapsible accordion of `api_name` keys grouped by module, with a filter box, per-module select-all, and selected-count badges. The selector renders only when `allow_all` is off.
+- **`/applications` → `ApplicationManagement`** — server-side `DataTable` with debounced search (name/description), a Sheet-based Active/Inactive + Device filter, CSV export, a **Registry** summary strip (`ApplicationRegistrySummary` — total/active/inactive, a full-access-vs-scoped proportion bar, and a per-device breakdown), and persisted UI state in `localStorage`. **The App ID and Description columns were folded into the Name column** (no longer separate columns): the Name cell now stacks the name link, the record UUID in monospace with an inline copy button, and the description underneath. The **Access** column still summarizes the grant as an "All APIs" or "N APIs" badge.
+- **`/applications/new` and `/applications/:id/edit` → `ApplicationEdit`** — rewritten from a single "Application Details" card into an **`ApplicationIdentityHero`** (icon, name, device/status badges, an App ID chip with copy button, an API-reach summary line, audit lines) plus a two-column layout: a left **"API access"** card holding the accordion selector (now the visually primary element, always present — not hidden inside a bigger form) and a right, sticky **"Settings"** card (Name, Description, Device, Status). The edit route still starts read-only behind an Edit toggle (unlike clusters/business-units, which moved to always-editable one-document pages); a sticky bottom bar shows Save/Cancel while editing. Its signature element remains the **API Names selector**: a collapsible accordion of `api_name` keys grouped by module, with a filter box, per-module select-all, and selected-count badges — rendered only when `allow_all` is off, with an inline warning banner shown instead whenever `allow_all` is on (in both view and edit mode).
 
 The selector's options come from `GET /api-system/applications/api-catalog`. The SPA cannot add or edit catalog entries — the catalog is generated on the backend (§2) and the SPA only selects from it. See [UI Screens](/en/platform/applications/ui-screens) for the full walkthrough.
 
-Everything else is the SPA's standard Management-page furniture: `TableSkeleton` on first load, `EmptyState` when the list is empty, toast feedback on mutations, the `useUnsavedChanges` navigation guard while editing, and the dev-only Debug Sheet exposing each screen's raw API response.
+Everything else is the SPA's standard Management-page furniture: `TableSkeleton` on first load, `EmptyState` when the list is empty (its "Add Application" CTA is now `<Can>`-gated — see §4), toast feedback on mutations, a not-found state gating the whole edit shell when an id doesn't resolve, `doc_version` optimistic-lock saves, the `useUnsavedChanges` navigation guard while editing, and the dev-only Debug Sheet exposing each screen's raw API response.
 
 ## 2. Business Context
 
@@ -38,8 +38,8 @@ The selectable catalog is **derived from those guards, not hand-maintained**: `s
 
 - **App ID = record UUID.** The `tb_application.id` primary key is the `x-app-id` value. There is no separate `app_id` column or field anywhere — the SPA simply surfaces `id` under the label "App ID" (read-only, server-generated).
 - **`allow_all` vs explicit list.** A boolean fork: `allow_all = true` grants every guarded endpoint and makes any `tb_application_api` rows irrelevant; `allow_all = false` grants exactly the live `api_name` rows. The SPA hides the API Names selector entirely while `allow_all` is checked, and the write payload omits the names in that case.
-- **`api_name` grammar.** Keys are `resource.action` strings — the same shape as RBAC permission keys, but a **separate vocabulary from a separate source**: `api_name`s come from the `AppIdGuard` scan, RBAC keys from `tb_platform_permission`. The action segments follow the backend controller methods, not the RBAC verb set — `cluster.findAll`, `cluster.findOne`, `cluster.uploadLogo` rather than `cluster.read` — so the two catalogs share grammar but not key strings. The generated catalog holds 777 keys across 124 module groups as of 2026-06-10. The module of an `api_name` is the prefix before the first `.`; a dotless name is its own module (`src/utils/apiCatalog.ts` mirrors the backend generator's split rule exactly).
-- **Replace, not delta.** `PUT /api-system/applications/:id` sends the **full desired set** as `details: { add: [{ api_name }] }` — replace semantics. This is the opposite of RBAC role writes, which send `{ add, remove }` deltas; a developer porting code between the two modules must not assume one convention.
+- **`api_name` grammar.** Keys are `resource.action` strings — the same shape as RBAC permission keys, but a **separate vocabulary from a separate source**: `api_name`s come from the `AppIdGuard` scan, RBAC keys from `tb_platform_permission`. The action segments follow the backend controller methods, not the RBAC verb set — `cluster.findAll`, `cluster.findOne`, `cluster.uploadLogo` rather than `cluster.read` — so the two catalogs share grammar but not key strings. The generated catalog holds 788 keys across 125 module groups as of 2026-07-29 (was 777/124 at the last check — the catalog grows as new guarded endpoints ship, e.g. the tenant-migration/tenant-seed/interface-entitlement services added since). The module of an `api_name` is the prefix before the first `.`; a dotless name is its own module (`src/utils/apiCatalog.ts` mirrors the backend generator's split rule exactly).
+- **Replace, not delta.** `PUT /api-system/applications/:id` sends the **full desired set** as `details: { add: [{ api_name }] }` — replace semantics. This is the opposite of RBAC role writes, which send `{ add, remove }` deltas; a developer porting code between the two modules must not assume one convention. The `PUT` (and `POST`) payload now also carries `doc_version` (optimistic-concurrency token — see [Data Model](/en/platform/applications/data-model) §2.1).
 - **`device` classifies the client.** `tb_application.device` (default `"web"`; SPA value set `mobile` / `web` / `desktop` / `pos`) records what kind of client the app is. The backend gateway resolves it from the `x-app-id` header (`getDevice(appId)`) to drive device-specific behaviour downstream — e.g. a `mobile` app sees only `draft` GRNs in list views (see [good-receive-note/02-business-rules](/en/inventory/good-receive-note/02-business-rules)).
 - **Standard platform hygiene.** `tb_application` carries `is_active`, the audit trio, and a soft-delete-aware unique name (`@@unique([name, deleted_at])`), so a deleted application's name can be reused.
 
@@ -52,12 +52,12 @@ Access to the module is permission-gated through [Platform RBAC](/en/platform/rb
 | `/applications` route + "Applications" sidebar entry (Platform group) | `PrivateRoute` / sidebar filter | `application.read` |
 | `/applications/new` route | `PrivateRoute` | `application.create` |
 | `/applications/:id/edit` route | `PrivateRoute` | `application.update` |
-| Add Application button (list header) | `<Can>` | `application.create` |
+| Add Application button (list header + empty state) | `<Can>` | `application.create` |
 | Row Edit (list actions dropdown) | `<Can>` | `application.update` |
 | Row Delete (list actions dropdown) | `<Can>` | `application.delete` |
-| Edit toggle (edit page header) | `<Can>` | `application.update` |
+| Edit toggle (edit page hero) | `<Can>` | `application.update` |
 
-Note that `application.delete` exists **only as an in-page gate** — no route requires it, and the edit page offers no delete action at all; deletion happens exclusively from the list row dropdown. The full matrix, including a known ungated empty-state CTA, is in [Permissions](/en/platform/applications/permissions).
+Note that `application.delete` exists **only as an in-page gate** — no route requires it, and the edit page offers no delete action at all; deletion happens exclusively from the list row dropdown. **The empty-state "Add Application" CTA gap flagged in the previous sync is now closed** — it is wrapped in `<Can permission="application.create">` the same as the header button, confirmed by direct source read. The full matrix is in [Permissions](/en/platform/applications/permissions).
 
 ## 5. Related Modules
 
@@ -66,18 +66,19 @@ Note that `application.delete` exists **only as an in-page gate** — no route r
 
 ## 6. Reference Sources
 
-- `../carmen-platform/src/App.tsx` — the three `application.*` route guards.
-- `../carmen-platform/src/components/Layout.tsx` — the "Applications" sidebar entry (Platform group, `application.read`).
-- `../carmen-platform/src/pages/ApplicationManagement.tsx` — list page: columns, filters, CSV export, `<Can>` gates.
-- `../carmen-platform/src/pages/ApplicationEdit.tsx` — create/view/edit form and the API Names selector.
-- `../carmen-platform/src/services/applicationService.ts` — REST client and the read/write translation (`details.add`, catalog fallback).
+- `../carmen-platform/src/App.tsx` — the three `application.*` route guards (route block, lines 96–118).
+- `../carmen-platform/src/components/Layout.tsx` — the "Applications" sidebar entry (Platform group, `application.read`, line 63).
+- `../carmen-platform/src/pages/ApplicationManagement.tsx` and `applicationManagement/ApplicationRegistrySummary.tsx` — list page: Registry summary strip, Name-column App-ID/description fold-in, filters (incl. Device), CSV export, `<Can>` gates (incl. the now-fixed empty-state CTA).
+- `../carmen-platform/src/pages/ApplicationEdit.tsx` and `applicationEdit/ApplicationIdentityHero.tsx` — create/view/edit page: hero card, two-column API-access/Settings layout, the API Names selector, `doc_version` wiring, not-found gating.
+- `../carmen-platform/src/utils/docVersion.ts` — optimistic-lock helpers.
+- `../carmen-platform/src/services/applicationService.ts` — REST client and the read/write translation (`details.add`, catalog fallback, `doc_version`).
 - `../carmen-platform/src/utils/apiCatalog.ts` + `src/types/index.ts` — grouping helpers and the `Application` / `ApplicationWritePayload` / `ApiCatalogGroup` types.
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_application` (line 75), `tb_application_api` (line 98).
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_application` (line 65), `tb_application_api` (line 90).
 - `../carmen-turborepo-backend-v2/scripts/generate-app-api-catalog/run.ts` — the catalog generator.
 - `../carmen-turborepo-backend-v2/apps/backend-gateway/src/common/guard/` — `app-id.guard.ts` (header validation + allowlist check), `app-allowlist.store.ts` (in-memory snapshot), `app-allowlist.refresher.ts` (boot load + interval refresh).
 
 ## 7. Pages in This Module
 
-- [Data Model](/en/platform/applications/data-model) — `tb_application` and `tb_application_api` field tables, the asymmetric read/write shapes, replace semantics, the catalog endpoint, and the schema-only `tb_application_role` family.
-- [UI Screens](/en/platform/applications/ui-screens) — the `ApplicationManagement` list and the `ApplicationEdit` form, including the grouped-accordion API Names selector and its ChipInput fallback.
+- [Data Model](/en/platform/applications/data-model) — `tb_application` and `tb_application_api` field tables (incl. `doc_version`), the asymmetric read/write shapes, replace semantics, the catalog endpoint, and the schema-only `tb_application_role` family.
+- [UI Screens](/en/platform/applications/ui-screens) — the `ApplicationManagement` list and the hero + two-column `ApplicationEdit` layout, including the grouped-accordion API Names selector and its ChipInput fallback.
 - [Permissions](/en/platform/applications/permissions) — the gate matrix, how application access differs from user RBAC, and edge cases for testers.

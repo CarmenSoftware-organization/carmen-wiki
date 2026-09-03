@@ -2,7 +2,7 @@
 title: Vendor Price List — Data Model — Comment Tables
 description: Document-level and line-level comment / attachment tables for the Vendor Price List module across the pricelist-template, request-for-pricing, and pricelist sub-entity families.
 published: true
-date: 2026-06-17T08:00:00.000Z
+date: 2026-07-16T00:00:00.000Z
 tags: vendor-pricelist, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -12,7 +12,9 @@ dateCreated: 2026-05-20T00:00:00.000Z
 
 ## 1. At a Glance
 
-The Vendor Price List module persists user-authored and system-generated notes plus file attachments on dedicated `*_comment` tables across three sub-entity families — pricelist template, request-for-pricing, and pricelist — separate from the lifecycle-bearing header / detail tables documented in [01 — Data Model](/en/inventory/vendor-pricelist/01-data-model). Every comment row carries a free-text `message`, an `attachments` JSON array of S3-token records (`{originalName, fileToken, contentType}`), and a `type` discriminator (`enum_comment_type`) that distinguishes user-authored entries from system-generated transition notes. Each sub-entity family has its own header-level comment table and detail-level (line-level) comment table, supporting per-line clarifications, vendor-quotation evidence attachment, and per-line approval / rejection decisions across the pricelist-request lifecycle.
+The Vendor Price List module persists notes plus file attachments on dedicated `*_comment` tables across three sub-entity families — pricelist template, request-for-pricing, and pricelist — separate from the lifecycle-bearing header / detail tables documented in [01 — Data Model](/en/inventory/vendor-pricelist/01-data-model). Every comment row carries a free-text `message`, an `attachments` JSON array of S3-token records (`{originalName, fileToken, contentType}`), and a `type` discriminator (`enum_comment_type`, `user` default | `system`) shared with every other comment table in the product. Each sub-entity family has its own header-level comment table and detail-level (line-level) comment table with its own manual CRUD controller.
+>
+> **Confirmed (verified 2026-07-16):** the `system` value on `enum_comment_type` exists in the schema, but no service in this module (`price-list`, `price-list-template`, `request-for-pricing`, `check-price-list`) ever creates a comment row automatically — `create()`/`update()`/`updateStatus()` across all four never touch a `*_comment` table. Every comment row that exists today was written by an explicit user call to that comment's own CRUD endpoint. Treat every "system comment records..." claim below and in [02-business-rules](/en/inventory/vendor-pricelist/02-business-rules) / the user-flow pages as a design-target, not current behaviour.
 
 ## 2. Shared Shape
 
@@ -37,7 +39,7 @@ The same shape applies to header-level comments and detail-level comments across
 
 ### 3.1 tb_pricelist_template_comment
 
-Activity-log entries attached to a template header. Holds user comments and `system` events (status transitions, vendor-instruction edits).
+Free-text notes attached to a template header, via its own manual CRUD endpoint. User-authored only — `updateStatus()` (the template's status-flip endpoint) never writes here, so there is no automatic entry for a status transition or a vendor-instruction edit.
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
@@ -81,8 +83,8 @@ Activity-log surfaces on the campaign header and per-vendor invitation. Same sha
 
 | Table | Parent FK | Purpose |
 | ----- | --------- | ------- |
-| `tb_request_for_pricing_comment` | `request_for_pricing_id → tb_request_for_pricing.id` | Campaign-level activity log: campaign created, vendors selected, emails dispatched, reminders fired, campaign closed. |
-| `tb_request_for_pricing_detail_comment` | `request_for_pricing_detail_id → tb_request_for_pricing_detail.id` | Per-vendor invitation activity log: email sent / opened / clicked, portal first-access, draft saved, submission completed. The fine-grained email and portal telemetry (delivered, opened, clicked, IP addresses, session count) described in carmen/docs lives in `attachments` / `message` JSON in the application layer; there are no dedicated Prisma columns for it. |
+| `tb_request_for_pricing_comment` | `request_for_pricing_id → tb_request_for_pricing.id` | Free-text notes attached to the RFQ header — user-authored only; nothing in the RFQ create/update service writes an entry here automatically. |
+| `tb_request_for_pricing_detail_comment` | `request_for_pricing_detail_id → tb_request_for_pricing_detail.id` | Free-text notes attached to one invited-vendor row — user-authored only. The fine-grained email/portal telemetry (sent, delivered, opened, clicked, IP addresses, session count) described in carmen/docs has no matching code anywhere in this module — there are neither dedicated Prisma columns nor an automatic write into this table's `attachments` / `message` JSON. |
 
 ### 3.4 tb_pricelist_comment / tb_pricelist_detail_comment
 
@@ -90,8 +92,8 @@ Activity-log surfaces on the pricelist header and per-row. Same shape as the tem
 
 | Table | Parent FK | Purpose |
 | ----- | --------- | ------- |
-| `tb_pricelist_comment` | `pricelist_id → tb_pricelist.id` | Pricelist-header activity log: created, vendor saved draft, vendor submitted, validation result, purchaser approved / rejected, status transitions. |
-| `tb_pricelist_detail_comment` | `pricelist_detail_id → tb_pricelist_detail.id` | Per-row activity log: row edited by purchaser, validation warning attached, preferred-vendor flag toggled, deviation against historical price logged. |
+| `tb_pricelist_comment` | `pricelist_id → tb_pricelist.id` | Free-text notes attached to the pricelist header — user-authored only; `price-list.service.ts`'s `create()`/`update()` never write here, so there is no automatic entry for status changes, submission, or approval. |
+| `tb_pricelist_detail_comment` | `pricelist_detail_id → tb_pricelist_detail.id` | Free-text notes attached to one product row — user-authored only; no automatic entry for an `is_preferred` toggle or a price edit. |
 
 ## 4. Cross-References
 

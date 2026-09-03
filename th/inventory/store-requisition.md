@@ -2,7 +2,7 @@
 title: ใบเบิกของสโตร์ (Store Requisition)
 description: เอกสารคำขอภายในเพื่อเบิกสต๊อกจากคลังหรือสโตร์กลางไปยังจุดที่บริโภค (ครัว บาร์ เอาท์เลต)
 published: true
-date: 2026-06-09T16:25:48.000Z
+date: 2026-07-15T12:00:00.000Z
 tags: store-requisition, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -11,7 +11,8 @@ dateCreated: 2026-05-15T07:48:00.000Z
 # ใบเบิกของสโตร์ (Store Requisition)
 
 > **At a Glance**
-> **วัตถุประสงค์ของโมดูล:** เอกสารเคลื่อนย้ายสต๊อกภายใน — `Issue` (ไปยังปลายทางแบบลงค่าใช้จ่ายตรง) หรือ `Transfer` (เคลื่อนย้ายระหว่างสถานที่) พร้อม workflow อนุมัติและการติดตามปริมาณสามค่า (ขอ / อนุมัติ / จ่ายจริง) &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Outlet Manager / Requester, Approver, Store Keeper / Fulfiller, Receiver, Inventory Controller, Finance &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_store_requisition`, `tb_store_requisition_detail`, `StockMovement`, `JournalEntry`, `enum_doc_status`, `enum_sr_type` &nbsp;·&nbsp; **หน้าย่อย:** 15
+> **วัตถุประสงค์ของโมดูล:** เอกสารเคลื่อนย้ายสต๊อกภายใน — `Issue` (ไปยังปลายทางแบบลงค่าใช้จ่ายตรง) หรือ `Transfer` (เคลื่อนย้ายระหว่างสถานที่) พร้อม workflow อนุมัติและการติดตามปริมาณสามค่า (ขอ / อนุมัติ / จ่ายจริง) &nbsp;·&nbsp; **กลุ่มผู้ใช้:** Outlet Manager / Requester, Approver, Store Keeper / Fulfiller &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_store_requisition`, `tb_store_requisition_detail`, `tb_inventory_transaction`, `enum_doc_status`, `enum_sr_type` &nbsp;·&nbsp; **หน้าย่อย:** 16
+> ⚠️ **รอบนี้พบว่า `StockMovement` และ `JournalEntry` เคยถูกบันทึกไว้ว่าเป็นตารางที่ SR เป็นเจ้าของ — ทั้งสองไม่มีอยู่จริงใน Prisma; ข้อมูล stock movement และ journal-entry อยู่บนตระกูล `tb_inventory_transaction` ที่ใช้ร่วมกัน (ดู [01-data-model.md](/th/inventory/store-requisition/01-data-model) §5) นอกจากนี้ยังพบว่า persona "Receiver", การ post GL/journal-entry, การบังคับ segregation-of-duties, การ delegate การอนุมัติ/value-threshold, และการเลือก lot โดย store keeper ไม่มี code รองรับ — ดูหน้า persona ที่แก้ไขแล้วและ Discrepancy entry ใน progress-log ของโมดูล
 
 ![ใบเบิกของสโตร์ (Store Requisition) screen](/screenshots/store-requisition/index.png)
 
@@ -19,43 +20,39 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 ## 1. ภาพรวม
 
-**ใบเบิกของสโตร์ (Store Requisition — SR)** คือเอกสารภายในที่สถานที่หนึ่งใช้เบิกสต๊อกจากอีกสถานที่หนึ่ง — โดยทั่วไปคือเอาท์เลตที่บริโภค (ครัว บาร์ ภัตตาคาร แบงเควต) ขอสินค้าจากสโตร์กลางหรือสโตร์หลัก SR แต่ละใบประกอบด้วยส่วนหัว (เลขที่อ้างอิง วันที่ สถานที่ต้นทาง/ที่ขอเบิก สถานที่ปลายทาง ประเภทการเคลื่อนย้าย คำอธิบาย สถานะ ยอดรวม) และรายการสินค้าหนึ่งรายการขึ้นไปที่ระบุสินค้า หน่วยนับ ปริมาณที่ขอ ปริมาณที่อนุมัติ ปริมาณที่จ่ายจริง ราคาต้นทุนต่อหน่วย และยอดรวมต่อบรรทัด ประเภทการเคลื่อนย้าย — `Issue` (การบริโภคไปยังปลายทางแบบลงค่าใช้จ่ายตรง) หรือ `Transfer` (การเคลื่อนย้ายสต๊อกระหว่างสถานที่) — เป็นตัวกำหนดทั้ง stock-movement records และ journal entries ที่ถูกสร้างจากการ post
+**ใบเบิกของสโตร์ (Store Requisition — SR)** คือเอกสารภายในที่สถานที่หนึ่งใช้เบิกสต๊อกจากอีกสถานที่หนึ่ง — โดยทั่วไปคือเอาท์เลตที่บริโภค (ครัว บาร์ ภัตตาคาร แบงเควต) ขอสินค้าจากสโตร์กลางหรือสโตร์หลัก SR แต่ละใบประกอบด้วยส่วนหัว (เลขที่อ้างอิง วันที่ สถานที่ต้นทาง/ที่ขอเบิก สถานที่ปลายทาง ประเภทการเคลื่อนย้าย คำอธิบาย สถานะ) และรายการสินค้าหนึ่งรายการขึ้นไปที่ระบุสินค้า หน่วยนับ ปริมาณที่ขอ ปริมาณที่อนุมัติ และปริมาณที่จ่ายจริง ไม่มีคอลัมน์การเงินบนส่วนหัวหรือบรรทัดของ SR — ราคาต้นทุนต่อหน่วยและยอดรวมต่อบรรทัดถูกอ่านจาก inventory transaction ที่ลิงก์ในเวลาแสดงผล (ดู [01-data-model.md](/th/inventory/store-requisition/01-data-model) §5) ประเภทการเคลื่อนย้าย — `Issue` (การบริโภคไปยังปลายทางแบบลงค่าใช้จ่ายตรง) หรือ `Transfer` (การเคลื่อนย้ายสต๊อกระหว่างสถานที่) — เป็นตัวกำหนดว่า stock-movement records แบบใดจะถูกเขียน
 
-SR ดำเนินผ่านวงจรชีวิตที่ควบคุม: `Draft` (แก้ไขได้ ยังไม่กระทบใด ๆ) → `In Process` (submit เพื่อขออนุมัติ) → `Approved` (ผู้อนุมัติอาจลดปริมาณที่ขอหรือ reject รายการ) → `Issued` (สถานที่ต้นทาง commit สต๊อก OUT และระบบเขียน stock-movement record) → `Received` / `Complete` ที่ปลายทาง หรือ `Reject` / `Void` สำหรับการยกเลิกที่จุดสิ้นสุด flow รองรับการ fulfill บางส่วนที่ระดับบรรทัด ดังนั้นคำขอ 10 หน่วยอาจถูกจ่ายเพียง 8 ส่วนที่เหลือถูก reject หรือ back-order และทุก transition จะถูก log พร้อมผู้ใช้ timestamp และโน้ตสำหรับการตรวจสอบ
+SR ดำเนินผ่านวงจรชีวิตที่ยืนยันแล้ว: `draft` → `in_progress` → `completed` (`enum_doc_status` ที่ใช้ร่วมกับโมดูลอื่นอีกหลายตัว) การกระทำเดียวที่ผู้อนุมัติ/ผู้ issue ใช้จบเอกสารก่อนกำหนดคือการตั้ง `doc_status = voided` โดยตรง — ไม่มีผลลัพธ์ `cancelled` แยกต่างหากที่ code path ปัจจุบันใด ๆ เข้าถึงได้ (enum นิยามค่า `cancelled` ไว้ก็จริง แต่ไม่มี service method ใดของ SR ที่ตั้งค่านี้ — ดู [01-data-model.md](/th/inventory/store-requisition/01-data-model) §5 และ [02-business-rules.md](/th/inventory/store-requisition/02-business-rules) §5) flow รองรับการ fulfill บางส่วนที่ระดับบรรทัด ดังนั้นคำขอ 10 หน่วยอาจถูกจ่ายเพียง 8 และทุก transition จะถูก log พร้อมผู้ใช้ timestamp และโน้ตสำหรับการตรวจสอบ
 
-โมดูล SR คือ system of record สำหรับการเคลื่อนย้ายสต๊อกภายในระหว่างสถานที่ บังคับใช้ approval routing, จองสต๊อกหลังอนุมัติ, ตรวจสอบความพร้อมที่ต้นทางก่อนจ่าย, บันทึกการเคลื่อนย้าย OUT ที่ต้นทางและ IN ที่ปลายทางในกรณี transfer และสร้าง cost-allocation journal entries ที่ย้ายค่าใช้จ่ายจากบัญชีสต๊อกของสโตร์กลางไปยัง cost centre ของเอาท์เลตที่บริโภค
+โมดูล SR คือ system of record สำหรับการเคลื่อนย้ายสต๊อกภายในระหว่างสถานที่ เมื่อขั้น workflow สุดท้ายเดินหน้า (ไม่ว่าจะเป็นขั้นใดก็ตาม — action "approve" แบบเดียวกันถูกใช้ในทุกขั้น รวมถึงขั้นที่ store keeper กระทำ) ระบบจะตรวจสอบความพร้อมสด ๆ ที่ต้นทาง บันทึกการเคลื่อนย้าย OUT ที่ต้นทาง และในกรณี `Transfer` คือการเคลื่อนย้าย IN คู่กันที่ปลายทาง ผ่านตระกูล `tb_inventory_transaction` ที่ใช้ร่วมกัน ไม่มีตาราง `JournalEntry` หรือ `StockMovement` อยู่ในโมดูลนี้ — ดู correction note ที่ด้านบนของหน้านี้
 
 ## 2. บริบททางธุรกิจ
 
-ในธุรกิจโรงแรม สโตร์กลางซื้อและถือสต๊อกแบบ bulk แต่ต้นทุนสินค้าที่บริโภคจริงต้องลงที่เอาท์เลตที่บริโภค — ครัว บาร์ ฝ่ายแบงเควต ใบเบิกของสโตร์คือกลไกควบคุมที่ทำให้สโตร์กลางสามารถปล่อยสต๊อกออกไปยังสถานที่ที่บริโภคได้พร้อมสร้าง paper trail ที่ผูกต้นทุนเข้ากับ cost centre ที่ถูกต้อง หากไม่มีกลไกควบคุมนี้ การรายงาน food cost ต่อเอาท์เลตจะเป็นไปไม่ได้ เมื่อมีแล้ว วัตถุดิบทุกหน่วยที่จ่ายออกไปสามารถสืบย้อนได้จากชั้นสโตร์จนถึงจาน และผู้จัดการเอาท์เลตทุกคนสามารถถูกตรวจสอบความรับผิดชอบต่อต้นทุนที่เบิกเทียบกับงบประมาณได้
+ในธุรกิจโรงแรม สโตร์กลางซื้อและถือสต๊อกแบบ bulk แต่ต้นทุนสินค้าที่บริโภคจริงต้องลงที่เอาท์เลตที่บริโภค — ครัว บาร์ ฝ่ายแบงเควต ใบเบิกของสโตร์คือกลไกควบคุมที่ทำให้สโตร์กลางสามารถปล่อยสต๊อกออกไปยังสถานที่ที่บริโภคได้พร้อมสร้าง paper trail ที่ผูกต้นทุนเข้ากับ cost centre ที่ถูกต้อง หากไม่มีกลไกควบคุมนี้ การรายงาน food cost ต่อเอาท์เลตจะเป็นไปไม่ได้ เมื่อมีแล้ว วัตถุดิบทุกหน่วยที่จ่ายออกไปสามารถสืบย้อนได้จากชั้นสโตร์จนถึงจาน
 
-Approval workflow มีอยู่เพราะสต๊อกภายในคือเงินจริง เอาท์เลตจะดึงจากสโตร์กลางตามใจไม่ได้ — คำขอถูก review เทียบกับความจำเป็นเชิงปฏิบัติการ par level สต๊อกคงเหลือที่ต้นทาง และงบประมาณ ผู้อนุมัติสามารถลดปริมาณที่ขอก่อนจ่าย, reject รายการที่ไม่มีเหตุผลรองรับ หรือส่งเอกสารกลับพร้อมความคิดเห็น ซึ่งทั้งป้องกันการจ่ายเกิน (ซึ่งทำให้ต้นทุนเอาท์เลตพอง หรือทำให้สโตร์ขาดสำหรับเอาท์เลตอื่น) และสร้าง segregation of duties ระหว่างพนักงานที่ขอสต๊อกกับพนักงานที่ปล่อยสต๊อก
+Approval workflow มีอยู่เพราะสต๊อกภายในคือเงินจริง เอาท์เลตจะดึงจากสโตร์กลางตามใจไม่ได้ — คำขอถูก review เทียบกับความจำเป็นเชิงปฏิบัติการและสต๊อกคงเหลือที่ต้นทาง ผู้อนุมัติสามารถลดปริมาณที่ขอก่อนจ่าย, reject รายการที่ไม่มีเหตุผลรองรับ หรือส่งเอกสารกลับพร้อมความคิดเห็น การออกแบบนี้มีเจตนาเพื่อป้องกันการจ่ายเกินและแยกพนักงานที่ขอสต๊อกออกจากพนักงานที่ปล่อยสต๊อก — แต่ไม่พบการตรวจสอบ segregation-of-duties (requester ≠ approver, approver ≠ issuer) ใด ๆ ใน backend หรือ frontend code ปัจจุบัน ให้ถือว่า SoD เป็นเพียงเจตนาที่บันทึกไว้ ไม่ใช่การควบคุมที่บังคับใช้จริง จนกว่าจะมีการยืนยันเป็นอย่างอื่น
 
-ทางการเงิน การ post issuance ทุกครั้งสร้าง journal entries ที่ credit บัญชีสต๊อกของสถานที่ต้นทาง และ debit บัญชีสต๊อกของสถานที่ปลายทาง (สำหรับ `Transfer`) หรือ debit บัญชีค่าใช้จ่ายในการบริโภคของปลายทางบน cost-centre (สำหรับ `Issue`) Costing ใช้วิธีปัจจุบันของสถานที่ต้นทาง — weighted-average หรือ FIFO — ดังนั้นมูลค่าที่เคลื่อนย้ายสอดคล้องกับวิธีที่ต้นทางประเมินสต๊อกที่เหลือ และการรายงาน food-cost ต่อเอาท์เลต roll up ได้สะอาดจาก journal entries ที่ขับเคลื่อนโดย SR
+Costing ใช้วิธีปัจจุบันของสถานที่ต้นทาง — weighted-average หรือ FIFO — ดังนั้นมูลค่าที่เคลื่อนย้ายสอดคล้องกับวิธีที่ต้นทางประเมินสต๊อกที่เหลือ การ post GL/journal-entry จากการ issue SR ยังไม่ได้รับการยืนยัน: การค้นหาทั่ว repo สำหรับ `journal`, `ledger` และคำที่เกี่ยวข้องในโมดูล SR และ dependency ของ inventory-transaction ไม่พบผลลัพธ์ใด ๆ
 
 ## 3. แนวคิดสำคัญ
 
-- **Source Location (Requested From)**: สถานที่ที่ถือสต๊อกที่ถูกเบิก — โดยทั่วไปคือสโตร์หลักหรือคลังกลาง เก็บที่ส่วนหัวเป็น `movement.source` / `movement.sourceName` วิธี costing ของต้นทาง (weighted-average หรือ FIFO) เป็นตัวกำหนดต้นทุนต่อหน่วยที่ใช้กับทุกรายการที่จ่ายออก และความพร้อมที่ต้นทางถูกตรวจสอบทั้งตอนสร้าง (`SR_CRT_006`) และอีกครั้งตอนจ่ายเพื่อป้องกัน negative stock
-- **Destination Location (Request To)**: สถานที่ที่บริโภคหรือรับ — ครัว บาร์ เอาท์เลต หรือสโตร์สต๊อกอีกแห่ง เก็บเป็น `movement.destination` / `movement.destinationName` ค่า `locationType` ของปลายทาง (`direct` สำหรับการบริโภคที่ cost-centre, `inventory` สำหรับการเก็บสต๊อกต่อ) คือสิ่งที่ควบคุมประเภทการเคลื่อนย้ายที่อนุญาต: `Issue` ต้องการปลายทางแบบ direct-cost, `Transfer` ต้องการปลายทางแบบ inventory
-- **Movement Type (Issue vs Transfer)**: `Issue` post stock OUT ครั้งเดียวที่ต้นทางและส่งมูลค่าไปยังบัญชีค่าใช้จ่ายการบริโภคของปลายทาง — ใช้เมื่อสต๊อกออกจากคลังและถูกบริโภคทันที (เบิกครัว เบิกบาร์) `Transfer` post stock OUT ที่ต้นทางและ stock IN ที่ปลายทางคู่กัน — ใช้เมื่อสต๊อกเคลื่อนย้ายระหว่างสองสถานที่ที่ถือสต๊อกโดยยังไม่ถูกบริโภค การเลือกประเภทกำหนดทั้ง journal entries ที่ถูกเขียนและเอกสารปลายน้ำ (เช่น GRN คู่กัน) ที่อาจเกี่ยวข้อง
-- **Approval Workflow**: SR ถูกจัดเส้นทางอนุมัติตามกฎที่ตั้งค่าได้ (role, threshold มูลค่า, location) ผู้อนุมัติสามารถ `Approve`, `Reject` (พร้อมเหตุผลบังคับ), `Split & Reject` (อนุมัติบางส่วน) หรือ `Send Back` เพื่อให้แก้ไข ผู้อนุมัติอาจแก้ `qtyApproved` ลดลงจาก `qtyRequired` แต่ไม่เกิน ประวัติการอนุมัติ — ผู้กระทำ การกระทำ timestamp ความคิดเห็น — ถูกเก็บไว้สำหรับการตรวจสอบ และการอนุมัติสามารถ delegate ได้
-- **Requested vs Approved vs Issued Quantity**: ปริมาณสามค่าต่อบรรทัดเล่าเรื่องราวทั้งหมด `qtyRequired` คือสิ่งที่เอาท์เลตขอ; `qtyApproved` คือสิ่งที่ผู้อนุมัติอนุญาต (≤ `qtyRequired`); `qtyIssued` คือสิ่งที่ store keeper ปล่อยจริงตอน fulfill (≤ `qtyApproved`) ตัวเลขสามตัวนี้เมื่อรวมจาก SR หลาย ๆ ใบ ขับเคลื่อนการวิเคราะห์ variance และการตัดสินใจ supply-planning
-- **Variance (Requested − Issued)**: ช่องว่างระหว่างสิ่งที่ขอกับสิ่งที่จ่ายจริง บันทึกต่อบรรทัด variance เกิดจากการที่ผู้อนุมัติตัดลง, สต๊อกขาดที่ต้นทางตอนจ่าย หรือการ fulfill บางส่วน การติดตาม variance ตามเวลาเผยให้เห็นการขอเกินเรื้อรัง การขาดแคลนใน supply และเอาท์เลตที่ระเบียบการเบิกของควรถูก review
-- **Cost Center**: บัญชีกลุ่มที่ต้นทุนที่จ่ายออกตกลงที่ปลายทาง — โดยทั่วไปผูกกับเอาท์เลตปลายทาง (Kitchen, Banquet, Bar XYZ) cost-centre ถูก stamp บนทุกบรรทัด journal entry ดังนั้นรายงาน food-cost รายเดือนต่อเอาท์เลต roll up จากการ post SR ได้โดยไม่ต้องจัดสรรด้วยมือ
-- **Stock Movement Record**: ทุกบรรทัดที่จ่ายเขียนแถว `StockMovement` หนึ่งแถวที่บันทึก `commitDate`, `postingDate`, สถานที่ต้นทางและปลายทาง, ประเภทการเคลื่อนย้าย, `inQty` / `outQty`, `unitCost`, `totalCost`, รายละเอียด lot (สำหรับสินค้าที่ติดตาม lot) และการอ้างอิงกลับไปยัง SR ต้นกำเนิด นี่คือบันทึก immutable ที่ inventory sub-ledger ใช้กระทบยอด
-- **Journal Entry / Cost Allocation**: การ post SR สร้างแถว `JournalEntry` ที่ credit บัญชี GL สต๊อกของต้นทางและ debit ทั้งบัญชีสต๊อกของปลายทาง (Transfer) หรือบัญชีค่าใช้จ่ายการบริโภคของปลายทางบน cost-centre (Issue) entries ต้องบาลานซ์ (debits = credits) และถูกบล็อกหากวันที่ post อยู่ในงวดที่ปิดแล้ว
-- **Lot Tracking**: สำหรับสินค้าที่ควบคุม lot SR บันทึกว่าจ่าย lot ใดบ้าง เพื่อรักษา expiry, recall และ lot-cost traceability ตั้งแต่รับสินค้าจนถึงการบริโภค
+- **Source Location (Requested From)**: สถานที่ที่ถือสต๊อกที่ถูกเบิก — โดยทั่วไปคือสโตร์หลักหรือคลังกลาง เก็บที่ส่วนหัวเป็น `from_location_id` / `from_location_name` วิธี costing ของต้นทาง (weighted-average หรือ FIFO) เป็นตัวกำหนดต้นทุนต่อหน่วยที่ใช้กับทุกรายการที่จ่ายออก และความพร้อมที่ต้นทางถูกตรวจสอบทั้งตอน submit และอีกครั้งตอนขั้น workflow สุดท้ายเดินหน้าเพื่อป้องกัน negative stock
+- **Destination Location (Request To)**: สถานที่ที่บริโภคหรือรับ — ครัว บาร์ เอาท์เลต หรือสโตร์สต๊อกอีกแห่ง เก็บเป็น `to_location_id` / `to_location_name` ค่า `location_type` ของปลายทาง (`direct` สำหรับการบริโภคที่ cost-centre, `inventory` สำหรับการเก็บสต๊อกต่อ) คือสิ่งที่ควบคุมประเภทการเคลื่อนย้ายที่อนุญาต: `Issue` ต้องการปลายทางแบบ direct-cost, `Transfer` ต้องการปลายทางแบบ inventory
+- **Movement Type (Issue vs Transfer)**: `Issue` post stock OUT ครั้งเดียวที่ต้นทาง — ใช้เมื่อสต๊อกออกจากคลังและถูกบริโภคทันที (เบิกครัว เบิกบาร์) `Transfer` post stock OUT ที่ต้นทางและ stock IN ที่ปลายทางคู่กัน — ใช้เมื่อสต๊อกเคลื่อนย้ายระหว่างสองสถานที่ที่ถือสต๊อกโดยยังไม่ถูกบริโภค
+- **Approval Workflow**: SR ถูกจัดเส้นทางผ่านหนึ่งขั้นหรือมากกว่าตามการตั้งค่า `tb_workflow` ของ tenant (workflow engine แบบเดียวกับที่ PR/PO/GRN ใช้) ผู้อนุมัติสามารถอนุมัติบรรทัดแบบเต็ม ตัดลง reject (รวมอยู่ใน approve call เดียวกันกับบรรทัดที่อนุมัติอื่น ๆ) หรือส่งเอกสารทั้งใบกลับเพื่อแก้ไข ยังมี action reject ทั้งเอกสารแยกต่างหาก ซึ่งในฟอร์มปัจจุบันถูกเปิดใช้ก็ต่อเมื่อ "ทุกบรรทัดถูกทำเครื่องหมาย reject" — action นี้ตั้ง `doc_status = voided` โดยตรง ไม่ใช่สถานะ `cancelled` แยกต่างหาก ไม่พบการจัดเส้นทางตาม value-threshold, การ delegate, หรือ SLA-timeout escalation ใด ๆ ใน source ปัจจุบัน — ให้ถือว่าข้อกล่าวอ้างเหล่านี้ยังไม่ได้รับการยืนยัน
+- **Requested vs Approved vs Issued Quantity**: ปริมาณสามค่าต่อบรรทัดเล่าเรื่องราวทั้งหมด `requested_qty` คือสิ่งที่เอาท์เลตขอ; `approved_qty` คือสิ่งที่ผู้อนุมัติอนุญาต (≤ `requested_qty`); `issued_qty` คือสิ่งที่ถูกปล่อยจริงตอนขั้นสุดท้าย (≤ `approved_qty`) ตัวเลขสามตัวนี้เมื่อรวมจาก SR หลาย ๆ ใบ ขับเคลื่อนการวิเคราะห์ variance
+- **Variance (Requested − Issued)**: ช่องว่างระหว่างสิ่งที่ขอกับสิ่งที่จ่ายจริง บันทึกต่อบรรทัด variance เกิดจากการที่ผู้อนุมัติตัดลงหรือการ fulfill บางส่วน การติดตาม variance ตามเวลาอาจเผยให้เห็นการขอเกินเรื้อรังหรือปัญหา supply ขาดแคลน แม้ว่ารอบนี้จะไม่พบหน้าจอ variance-dashboard เฉพาะทางก็ตาม
+- **Lot Tracking**: สำหรับสินค้าที่ควบคุม lot การเลือก lot ตอนบริโภคถูกคำนวณโดยอัตโนมัติผ่าน FIFO (`getAvailableFifoLots` / `consumeFifoLots` ใน inventory-transaction service) — ไม่พบ lot-selection UI ใน SR frontend ดังนั้นนี่ไม่ใช่ action ที่ store keeper เลือกด้วยมือ
 
 ## 4. บทบาทและ Persona
 
 | Role | ความรับผิดชอบ |
 |------|----------------|
-| Outlet Manager / Requester | ระบุความต้องการสต๊อกที่สถานที่บริโภค สร้าง SR เพิ่มรายการสินค้าพร้อมปริมาณที่ขอและวันที่ต้องการ แนบโน้ตประกอบ และ submit เอกสารเพื่อขออนุมัติ ติดตามสถานะจนกระทั่งรับของที่เอาท์เลต |
-| Approver / Department Head | review คำขอที่ submit แล้วเทียบกับความจำเป็นเชิงปฏิบัติการ par level และความพร้อมที่ต้นทาง อนุมัติ ตัด `qtyApproved` ลงจาก `qtyRequired` reject รายการพร้อมเหตุผล split คำขอ หรือส่งกลับเพื่อแก้ไข ลายเซ็นอนุมัติถูกเก็บไว้สำหรับการตรวจสอบ |
-| Store Keeper / Fulfiller | รับคำขอที่อนุมัติแล้วที่สถานที่ต้นทาง หยิบสินค้า บันทึก `qtyIssued` ต่อบรรทัด (ซึ่งอาจน้อยกว่า `qtyApproved` หากสต๊อกขาด) commit stock-movement และปล่อยสินค้า อาจเลือก lot เฉพาะสำหรับสินค้าที่ควบคุม lot |
-| Receiver | ยืนยันการรับสินค้าจริงที่ปลายทาง flag ความคลาดเคลื่อนระหว่างปริมาณที่จ่ายและที่รับ และปิดคำขอ |
-| Inventory Controller / Manager | กำกับดูแล SR flow ทั้งหมด ตรวจสอบ variance และรูปแบบการ fulfill บางส่วน กระทบยอด inventory sub-ledger กับการ post GL บริหาร threshold การอนุมัติ และเซ็นรับรองกิจกรรมปลายงวด |
-| Finance Team | ตรวจสอบการ map cost-centre และ journal entries กระทบยอดรายงาน food-cost ของเอาท์เลตกับการ post SR และมั่นใจว่า cost allocation ระหว่างแผนกถูกต้องตอนปิดงวด |
+| Outlet Manager / Requester | ระบุความต้องการสต๊อกที่สถานที่บริโภค สร้าง SR เพิ่มรายการสินค้าพร้อมปริมาณที่ขอและวันที่ต้องการ แนบโน้ตประกอบ และ submit เอกสารเพื่อขออนุมัติ ติดตามสถานะจนกระทั่ง fulfil |
+| Approver / Department Head | review คำขอที่ submit แล้วเทียบกับความจำเป็นเชิงปฏิบัติการและความพร้อมที่ต้นทาง อนุมัติ ตัด `approved_qty` ลงจาก `requested_qty` reject รายการ หรือส่งกลับเพื่อแก้ไข ลายเซ็นต่อบรรทัดถูกเก็บไว้สำหรับการตรวจสอบ |
+| Store Keeper / Fulfiller | กระทำที่ขั้น workflow ใดก็ตามที่ถูกแท็กไว้สำหรับการ issue — เป็น action approve แบบเดียวกับที่ Approver ใช้ — และบันทึก `issued_qty` ต่อบรรทัด (ซึ่งอาจน้อยกว่า `approved_qty` หากสต๊อกขาด) ไม่มี endpoint "commit" เฉพาะที่แยกจาก approve และไม่มี lot-selection UI (lot ถูกเลือกอัตโนมัติโดย FIFO) |
+
+ไม่พบ backend role หรือ workflow stage เฉพาะสำหรับ "Receiver", "Inventory Controller", หรือ "Finance" ในโมดูลนี้ — ดู [03-user-flow-receiver.md](/th/inventory/store-requisition/03-user-flow-receiver) และ [03-user-flow-audit-config.md](/th/inventory/store-requisition/03-user-flow-audit-config) สำหรับการแก้ไขฉบับเต็ม
 
 ## 5. โมดูลที่เกี่ยวข้อง
 
@@ -70,7 +67,7 @@ Approval workflow มีอยู่เพราะสต๊อกภายใ�
 - [master-data/location](/th/inventory/master-data/location) — สถานที่ต้นทาง (issuing) และปลายทาง (receiving) บนส่วนหัว requisition
 - [master-data/department](/th/inventory/master-data/department) — แผนกผู้ขอ / cost-centre ที่ต้นทุนที่จ่ายไปลง
 - [system-config/workflow](/th/inventory/system-config/workflow) — นิยาม workflow อนุมัติสำหรับการอนุญาต requisition
-- [system-config/dimension](/th/inventory/system-config/dimension) — มิติเชิงวิเคราะห์ที่ stamp บน journal entries ของ issuance
+- [system-config/dimension](/th/inventory/system-config/dimension) — มิติเชิงวิเคราะห์ที่ stamp บนบรรทัดของ requisition
 - [system-config/running-code](/th/inventory/system-config/running-code) — การกำหนดลำดับเลขเอกสาร SR
 - [access-control/user-location](/th/inventory/access-control/user-location) — จำกัดสถานที่ต้นทางและปลายทางที่ผู้ใช้ทำธุรกรรมระหว่างกันได้
 - [reporting-audit/activity](/th/inventory/reporting-audit/activity) — log การเปลี่ยนสถานะ requisition และประวัติการอนุมัติสำหรับการตรวจสอบ
@@ -87,16 +84,17 @@ Approval workflow มีอยู่เพราะสต๊อกภายใ�
 
 - [01 — โมเดลข้อมูล](/th/inventory/store-requisition/01-data-model) — เอนทิตี Prisma (`tb_store_requisition`, `tb_store_requisition_detail`, comment tables), enum (`enum_doc_status`, `enum_sr_type`), ความสัมพันธ์ และจุดที่ต่างจาก carmen/docs
 - [01a — โมเดลข้อมูล — ตารางคอมเมนต์](/th/inventory/store-requisition/01a-data-model-comments) — ตารางคอมเมนต์ / ไฟล์แนบระดับเอกสารและระดับบรรทัด พร้อมการแยก user/system ผ่าน `enum_comment_type`
-- [02 — กติกาทางธุรกิจ](/th/inventory/store-requisition/02-business-rules) — Validation (`SR_VAL_*`), การคำนวณ (`SR_CALC_*`, quantity invariant), การกำหนดสิทธิ์ (`SR_AUTH_*`, SoD), การ posting (`SR_POST_*`, posting event ครั้งเดียวที่ `in_progress → completed`) และกฎข้ามโมดูล (`SR_XMOD_*`)
+- [02 — กติกาทางธุรกิจ](/th/inventory/store-requisition/02-business-rules) — Validation (`SR_VAL_*`), การคำนวณ (`SR_CALC_*`, quantity invariant), การกำหนดสิทธิ์ (`SR_AUTH_*`), การ posting (`SR_POST_*`, posting event ครั้งเดียวที่ขั้น workflow สุดท้ายเดินหน้า) และกฎข้ามโมดูล (`SR_XMOD_*`)
 - [03 — User Flow](/th/inventory/store-requisition/03-user-flow) — ภาพรวมวงจรชีวิตเอกสารและไฟล์ flow ตาม persona:
   - [Requester](/th/inventory/store-requisition/03-user-flow-requester) — Outlet Manager: ระบุความต้องการ สร้าง SR submit
   - [Approver](/th/inventory/store-requisition/03-user-flow-approver) — Department Head: review ตัด reject ส่งกลับ
-  - [Fulfiller](/th/inventory/store-requisition/03-user-flow-fulfiller) — Store Keeper: หยิบ บันทึก `issued_qty` เลือก lot commit
-  - [Receiver](/th/inventory/store-requisition/03-user-flow-receiver) — ผู้แทนปลายทาง: ยืนยันการรับ flag ความคลาดเคลื่อน
-  - [Audit / Config](/th/inventory/store-requisition/03-user-flow-audit-config) — การกำกับดูแลโดย Inventory Controller, Finance, Sysadmin, Auditor
+  - [Fulfiller](/th/inventory/store-requisition/03-user-flow-fulfiller) — Store Keeper: บันทึก `issued_qty` ที่ขั้น issuance (action approve แบบเดียวกัน; lot ถูกเลือกอัตโนมัติ ไม่ใช่เลือกด้วยมือ)
+  - [Receiver](/th/inventory/store-requisition/03-user-flow-receiver) — **แก้ไขรอบนี้:** ไม่พบ backend role หรือกลไก discrepancy-flag ที่ตรงกัน ดูรายละเอียดในหน้านั้นว่าอะไรได้รับการยืนยันบ้าง
+  - [Audit / Config](/th/inventory/store-requisition/03-user-flow-audit-config) — **แก้ไขรอบนี้:** ไม่พบ RBAC console, การตรวจสอบ GL, หรือ config การผ่อนปรน SoD ที่ตรงกัน ดูรายละเอียดในหน้านั้นว่าอะไรได้รับการยืนยันบ้าง
 - [04 — Test Scenarios](/th/inventory/store-requisition/04-test-scenarios) — scenario ข้าม persona + การ mapping ไปยัง Playwright พร้อมการเจาะลึกตาม persona:
   - [Requester scenarios](/th/inventory/store-requisition/04-test-scenarios-requester)
   - [Approver scenarios](/th/inventory/store-requisition/04-test-scenarios-approver)
   - [Fulfiller scenarios](/th/inventory/store-requisition/04-test-scenarios-fulfiller)
-  - [Receiver scenarios](/th/inventory/store-requisition/04-test-scenarios-receiver)
-  - [Audit / Config scenarios](/th/inventory/store-requisition/04-test-scenarios-audit-config)
+  - [Receiver scenarios](/th/inventory/store-requisition/04-test-scenarios-receiver) — แก้ไขรอบนี้
+  - [Audit / Config scenarios](/th/inventory/store-requisition/04-test-scenarios-audit-config) — แก้ไขรอบนี้
+- [Stock Replenishment](/th/inventory/store-requisition/stock-replenishment) — คู่ขนานที่ออกแบบให้ขับเคลื่อนด้วย policy ของ flow SR แบบ manual (threshold min/max/par บน `tb_product_location` สร้าง draft `tb_store_requisition`); **หน้าจอ frontend ปัจจุบันขับเคลื่อนด้วย mock data และไม่พบการ implement ฝั่ง backend/cron จริง** — ดู warning สถานะการ implement ในหน้านั้น

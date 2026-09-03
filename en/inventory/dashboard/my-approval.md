@@ -1,8 +1,8 @@
 ---
 title: My Approval Dashboard Widget
-description: Personal approval task-queue widget on /dashboard listing PR/PO/SR documents awaiting the signed-in user's approval action, grouped by document type with live counts.
+description: "REMOVED, historical reference only — never actually rendered on /dashboard: a proposed personal approval task-queue widget listing PR/PO/SR documents awaiting the signed-in user's approval action. The real, live equivalent is the Procurement module's My Approval page (/procurement/approval)."
 published: true
-date: 2026-06-04T00:00:00.000Z
+date: 2026-07-16T01:35:43.000Z
 tags: dashboard, my-approval, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -11,7 +11,15 @@ dateCreated: 2026-06-04T00:00:00.000Z
 # My Approval Dashboard Widget
 
 > **At a Glance**
-> **Route:** `/dashboard` (widget — not a standalone route) &nbsp;·&nbsp; **For:** HOD / Approver &nbsp;·&nbsp; Procurement Manager &nbsp;·&nbsp; **Status:** **Live** — hooks are mounted and call real API endpoints &nbsp;·&nbsp; **Scope:** Personal — only documents where the signed-in user is the next approver
+> **Route:** none — never rendered anywhere &nbsp;·&nbsp; **Status:** **Removed 2026-06-27; was dead code even before that** — this widget was never mounted on the live `/dashboard` page, despite this page's prior claim of "Live". The real, live personal approval inbox is a **different page**: [purchase-request/my-approval](/en/inventory/purchase-request/my-approval) (`/procurement/approval`)
+
+## Implementation status (verified 2026-07-16)
+
+**This page's prior "Live" status claim was wrong.** It documented `dashboard-my-approval.tsx` (formerly `routes/dashboard/_components/dashboard-my-approval.tsx`), which rendered the grouped PR/PO/SR approval tables described below, embedded inside `/dashboard`. Checking `dashboard-component.tsx` (both today's version and the version prior to the 2026-06-27 cleanup) shows the live `/dashboard` page has only ever rendered a greeting header plus the "Saved Widgets" grid — it never imported or mounted `dashboard-my-approval.tsx`. The component file was deleted, along with 7 siblings, in commit `03891e3d` ("refactor(dashboard): convert to idiomatic structure, drop dead demo code", 2026-06-27), whose message confirms it was dead code with "no importers anywhere."
+
+The `useApprovalPending` / `useApprovalPendingSummary` hooks this page describes (`hooks/use-approval.ts`) **are** real and live — but they power the Procurement module's **My Approval** page at `/procurement/approval` (a genuine, routed screen; see [purchase-request/my-approval](/en/inventory/purchase-request/my-approval)), not any section of `/dashboard`. This deleted widget's "View All →" link (described below) pointed at that same real page, which is the one place to actually see and act on pending approvals.
+
+Everything else below describes this never-mounted, now-deleted dashboard widget — kept only as historical reference. Treat every "Live" / "mounted" / route claim in the rest of this page as void.
 
 ## 1. What & Who
 
@@ -79,18 +87,17 @@ Items are sorted by `doc_date` descending from the API. The widget shows up to `
 
 ## 7. Related Modules
 
-- [purchase-request/my-approval](/en/inventory/purchase-request/my-approval) — full approval queue with pagination, search, and approval actions for PRs
-- [purchase-request](/en/inventory/purchase-request) — transactional source for PR items
-- [purchase-order](/en/inventory/purchase-order) — transactional source for PO items
-- [store-requisition](/en/inventory/store-requisition) — transactional source for SR items
+- [purchase-request/my-approval](/en/inventory/purchase-request/my-approval) — **the real, live page** (`/procurement/approval`) — full approval queue with pagination, search, and approval actions across PR/PO/SR
+- [purchase-request](/en/inventory/purchase-request), [purchase-order](/en/inventory/purchase-order), [store-requisition](/en/inventory/store-requisition) — transactional sources the real approval page draws from
 - [system-config/workflow](/en/inventory/system-config/workflow) — workflow stage and approver-role definitions
-- [dashboard/my-pending](/en/inventory/dashboard/my-pending) — companion widget showing the user's own pending document counts
-- [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) — the `/dashboard` page that hosts this widget
+- [dashboard/my-pending](/en/inventory/dashboard/my-pending) — sibling widget with the same fate (never mounted, now deleted)
+- [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) — the real, live `/dashboard` page; it does **not** host this widget and never did
 
 ## 8. Reference Sources
 
-- **Component:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-my-approval.tsx`
-- **Hooks:** `../carmen-inventory-frontend-react/hooks/use-approval.ts` — `useApprovalPending`, `useApprovalPendingSummary`
+- **Component (deleted 2026-06-27):** `routes/dashboard/_components/dashboard-my-approval.tsx` in `../carmen-inventory-frontend-react`
+- **Deletion commit:** `03891e3d` — "refactor(dashboard): convert to idiomatic structure, drop dead demo code"
+- **Hooks (real and live, but power `/procurement/approval` — not `/dashboard`):** `../carmen-inventory-frontend-react/hooks/use-approval.ts` — `useApprovalPending`, `useApprovalPendingSummary`
 - **Types:** `../carmen-inventory-frontend-react/types/approval.ts` — `ApprovalItem`, `ApprovalPendingSummary`, `RawApprovalPR`, `RawApprovalPO`, `RawApprovalSR`
 - **API constants:** `../carmen-inventory-frontend-react/constant/api-endpoints.ts` → `APPROVAL_PENDING`, `APPROVAL_PENDING_SUMMARY`
 - **Colour mapping:** `../carmen-inventory-frontend-react/constant/module-color-map.ts` → `getModuleColor`

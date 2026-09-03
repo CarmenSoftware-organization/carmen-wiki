@@ -1,8 +1,8 @@
 ---
 title: แดชบอร์ด (Dashboard)
-description: หน้าแดชบอร์ดข้ามโมดูล — หน้าแรกหลังเข้าระบบและมุมมอง KPI แยกตามโดเมน (PR, PO, GRN, คลังสินค้า, SR) ที่สรุปจำนวนสด, aging และรายการผิดปกติโดยไม่ต้องเปิดทีละโมดูล
+description: หน้า /dashboard เพียงหน้าเดียว — header ทักทายพร้อมกริด "Saved Widgets" แบบ drag-and-drop ส่วนตัว ประกอบด้วย card KPI/pie ที่ขับเคลื่อนด้วย dataset ซึ่งผู้ใช้แต่ละคนสร้างขึ้นเอง
 published: true
-date: 2026-06-04T00:00:00.000Z
+date: 2026-07-16T01:35:43.000Z
 tags: dashboard, kpi, reporting, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,73 +11,65 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # แดชบอร์ด (Dashboard)
 
 > **At a Glance**
-> **Route:** `/dashboard` (server-redirects ไปยัง `/dashboard/main`) &nbsp;·&nbsp; **สำหรับ:** ทุก role ของผู้ปฏิบัติงานหลังเข้าระบบ &nbsp;·&nbsp; **สถานะ:** **ยังเป็น mock data ในปัจจุบัน**; live hook ถูกนิยามไว้แล้วแต่ยังไม่ถูก mount
+> **Route:** `/dashboard` (root `/` redirect มาที่นี่) &nbsp;·&nbsp; **สำหรับ:** ทุก role ของผู้ปฏิบัติงานหลังเข้าระบบ &nbsp;·&nbsp; **สถานะ:** **Live** — หน้าเดียว: header ทักทาย + กริด "Saved Widgets" ส่วนตัว ขับเคลื่อนด้วย API จริง
 
 ![แดชบอร์ด (Dashboard) screen](/screenshots/dashboard/index.png)
 
+## สถานะการ implement (ตรวจสอบเมื่อ 2026-07-16)
+
+โมดูล Dashboard คือ **หนึ่ง route หนึ่ง component** ไม่ใช่กลุ่ม sidebar ของหกหน้าโดเมน `constant/module-list.ts` ลงทะเบียน entry ระดับบนสุดเพียงหนึ่งรายการ คือ `{ name: "dashboard", path: "/dashboard" }` ไม่มี sub-module ใดๆ; `routes/router.tsx` มี nested route เพียงหนึ่งเดียว คือ `{ path: "dashboard", lazy: () => import("./dashboard/dashboard.route") }` ซึ่ง resolve ไปยัง `DashboardComponent` (header ทักทาย + กริด "Saved Widgets", `routes/dashboard/dashboard-component.tsx`)
+
+หน้าย่อยทั้งแปดหน้าภายใต้โมดูล wiki นี้ (`dashboard/main`, `pr`, `po`, `grn`, `inventory`, `sr`, `my-pending`, `my-approval`) แต่ละหน้า document หน้าย่อยโดเมนที่มีชื่อ (`/dashboard/pr`, `/dashboard/po`, …) หรือ section "companion widget" บน `/dashboard` **ไม่มีหน้าใดเลยที่เคยมี route จริง** เมื่อตรวจสอบประวัติ router: แม้ก่อนการ cleanup ล่าสุด `dashboard/page.tsx` ก็ render component เดียวกันกับที่เห็นทุกวันนี้เสมอมา คือ header ทักทาย + กริด saved-widgets ไฟล์แยกตามโดเมน (`dashboard-main.tsx`, `dashboard-pr.tsx`, `dashboard-po.tsx`, `dashboard-grn.tsx`, `dashboard-inventory.tsx`, `dashboard-sr.tsx`) และไฟล์ companion-widget สองไฟล์ (`dashboard-my-pending.tsx`, `dashboard-my-approval.tsx`) นั่งอยู่ใน `_components/` โดยไม่เคยถูก route commit `03891e3d` ("refactor(dashboard): convert to idiomatic structure, drop dead demo code", 2026-06-27) ลบทั้งแปดไฟล์นี้พร้อมโฟลเดอร์ `mock/` โดยระบุไว้ตรงๆ ว่า *"The mock-fed widgets and the my-pending/my-approval widgets were dead code carried over from the source app — no importers anywhere."*
+
+ผลกระทบเชิงปฏิบัติต่อ wiki นี้: หน้าย่อยด้านล่าง (จำนวนไฟล์ไม่เปลี่ยนแปลง) ถูกเก็บไว้เป็น **ข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น** สำหรับหน้าจอ demo ที่ไม่เคยเข้าถึงได้จริงและไม่มีอยู่บนดิสก์อีกต่อไป ถือว่าทุกการอ้าง route, "ยังเป็น mock data ในปัจจุบัน" และ "การ wire จริงรอ" ในหน้าเหล่านั้นเป็นโมฆะ — จะไม่มีวัน live เพราะ component ถูกลบไปแล้ว
+
 ## 1. คืออะไรและสำหรับใคร
 
-โมดูลแดชบอร์ดคือหน้าจอแรกที่ผู้ปฏิบัติงานส่วนใหญ่เห็นหลังเข้าระบบ กลุ่มในแถบ sidebar เปิด 6 หน้าพี่น้อง — หนึ่งหน้าต่อโดเมนการทำงาน — แต่ละหน้าเป็นภาพรวมแบบ read-only ของ tile, ตาราง และกราฟ ที่ตอบคำถาม *"วันนี้มีอะไรต้องการความสนใจของฉันบ้าง?"* โดยไม่ต้องเปิดโมดูล transactional ที่อยู่ข้างใต้
+Dashboard คือหน้าจอแรกที่ผู้ปฏิบัติงานทุกคนเห็นหลังเข้าระบบ (root `/` redirect ไปยัง `/dashboard`) มันแสดง:
 
-**Production vs. mock แดชบอร์ด:** route `/dashboard` หลักโหลด **[widget-workspace](/th/inventory/dashboard/widget-workspace) แบบ live** — กริด widget ส่วนตัวแบบ drag-and-drop ที่ขับเคลื่อนด้วย API จริง หกหน้าย่อยแบบมีชื่อ (`/dashboard/pr`, `/dashboard/po` ฯลฯ) คือ **หน้า mock-data แยกตามโดเมน** ที่ยังคงอยู่สำหรับ developer reference และ QA testing แต่ไม่ใช่แดชบอร์ดหลักสำหรับผู้ปฏิบัติงาน
+- **Header ทักทาย** — "Good Morning/Afternoon/Evening, {ชื่อเต็ม}" พร้อมวันที่ปัจจุบันแบบ localized มาจากโปรไฟล์ผู้ใช้
+- **Section "Saved Widgets"** — กริด drag-and-drop ส่วนตัวของ card ที่ขับเคลื่อนด้วย dataset ผู้ใช้แต่ละคนสร้าง layout ของตัวเองตั้งแต่ต้น ไม่มี layout ที่กำหนดไว้ล่วงหน้าหรือ curate โดย admin บนหน้านี้
 
-ข้อสังเกตด้านการออกแบบ 3 ข้อที่นักพัฒนาและทดสอบควรรู้:
+ดูหน้า [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) สำหรับเอกสารอ้างอิงเต็มรูปแบบ (layout, การเรียก API, การแก้ปัญหา)
 
-- **หกหน้าแบบมีชื่อ** **ขับเคลื่อนด้วย mock data** ในปัจจุบันผ่าน `app/(root)/dashboard/mock/*.ts` Live count hooks (`useMyPendingPrCount`, `useMyPendingPoCount`, `useMyPendingSrCount`, `useApprovalPending`) มีอยู่แล้วแต่ **ยังไม่ถูก mount** บนหน้าเหล่านี้
-- **widget-workspace** (`/dashboard`) และ section เพิ่มเติม **my-pending** และ **my-approval** เป็น **live** — hook mount แล้วและ endpoint เชื่อมต่อแล้ว
-- แถบสีของ tile ถูก resolve ผ่านการ match prefix ที่ยาวที่สุดใน `constant/module-color-map.ts` (`--sub-pr`, `--sub-po`, `--sub-grn`, `--sub-store-requisition`, `--module-inventory`)
-
-**กลุ่มผู้ใช้**
-
-| Persona | เข้ามาที่ | เพราะอะไร |
-|---|---|---|
-| Requestor | [dashboard/sr](/th/inventory/dashboard/sr), [dashboard/pr](/th/inventory/dashboard/pr) | ใบขอของตัวเองที่ยัง pending และรายการที่ถูก send back |
-| Approver (HOD, Procurement Manager) | [dashboard/pr](/th/inventory/dashboard/pr), [dashboard/po](/th/inventory/dashboard/po) | คิวอนุมัติ + คอขวดของ pipeline |
-| Purchaser | [dashboard/po](/th/inventory/dashboard/po) | PO ที่เปิดอยู่, การส่งของล่าช้า, ผลงานของผู้ขาย |
-| Receiver | [dashboard/grn](/th/inventory/dashboard/grn) | PO ที่รอรับวันนี้/สัปดาห์นี้, การรับของบางส่วน |
-| Inventory Controller / Store Manager | [dashboard/inventory](/th/inventory/dashboard/inventory) | สต๊อกเคลื่อนไหวช้า, การเติมสต๊อก, สถานะ PST |
-| Executive | [dashboard/main](/th/inventory/dashboard/main) | ค่าใช้จ่ายข้ามโดเมน, การใช้งบประมาณ, top vendor |
+**กลุ่มผู้ใช้:** ผู้ปฏิบัติงานที่ล็อกอินทุกคน — ไม่มีการ route ตาม persona บนหน้านี้ ชุด widget ที่บันทึกไว้ของผู้ใช้แต่ละคนเป็นของตนเองทั้งหมด (scope ด้วย `user_id`) ดังนั้นสิ่งที่ Requestor, Approver หรือ Purchaser เห็นบนหน้านี้ขึ้นอยู่กับ dataset ที่พวกเขาปักหมุดไว้เองเท่านั้น ไม่ใช่ตาม role
 
 ## 2. หน้าในโมดูลนี้
 
-**แดชบอร์ด production จริง**
+**หน้า live จริง**
 
-- [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) — route `/dashboard`; กริด widget ส่วนตัวแบบ drag-and-drop ที่ขับเคลื่อนด้วย dataset จริง; ผู้ใช้แต่ละคนสร้าง layout ของตัวเอง
-- [dashboard/my-pending](/th/inventory/dashboard/my-pending) — widget นับ pending ส่วนตัว (PR / PO / SR) แสดงเอกสารที่รอการดำเนินการของผู้ใช้เอง
-- [dashboard/my-approval](/th/inventory/dashboard/my-approval) — widget คิวงานอนุมัติส่วนตัว แสดงเอกสารที่รอการอนุมัติของผู้ใช้ จัดกลุ่มตามประเภท
+- [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) — route `/dashboard` จริง; กริด widget ส่วนตัวแบบ drag-and-drop ที่ขับเคลื่อนด้วย dataset จริง
 
-**แดชบอร์ด mock แยกตามโดเมน (สำหรับ dev/QA reference)**
+**ข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น — ถูกลบเมื่อ 2026-06-27 ไม่เคยมี route จริง**
 
-- [dashboard/main](/th/inventory/dashboard/main) — แดชบอร์ดแรกพร้อม KPI ข้ามโมดูล (ค่าใช้จ่าย, PR ค้าง, PO เปิด, งบประมาณ)
-- [dashboard/pr](/th/inventory/dashboard/pr) — pipeline ของใบขอซื้อ, รายการที่ถูก send-back/reject, คิวอนุมัติ
-- [dashboard/po](/th/inventory/dashboard/po) — pipeline ของใบสั่งซื้อ, การส่งของล่าช้า, มาตรวัด on-time / completeness
-- [dashboard/grn](/th/inventory/dashboard/grn) — KPI ของใบรับสินค้า, PO ค้างตามช่วงวัน, GRN ไม่ครบ / รับเกิน
-- [dashboard/inventory](/th/inventory/dashboard/inventory) — pipeline ของสต๊อก, สต๊อกเคลื่อนไหวช้า, การเติมสต๊อก, สถานะ PST, สินค้าหมดอายุ
-- [dashboard/sr](/th/inventory/dashboard/sr) — pipeline ใบเบิกสโตร์, รายการ send-back, รออนุมัติ, กราฟการบริโภค
+- [dashboard/main](/th/inventory/dashboard/main) — document demo `dashboard-main.tsx` ที่ถูกลบ (tile KPI landing ข้ามโมดูล)
+- [dashboard/pr](/th/inventory/dashboard/pr) — document demo `dashboard-pr.tsx` ที่ถูกลบ (pipeline PR, send-back/reject)
+- [dashboard/po](/th/inventory/dashboard/po) — document demo `dashboard-po.tsx` ที่ถูกลบ (pipeline PO, การส่งของล่าช้า)
+- [dashboard/grn](/th/inventory/dashboard/grn) — document demo `dashboard-grn.tsx` ที่ถูกลบ (KPI GRN, PO ค้างตามช่วงวัน)
+- [dashboard/inventory](/th/inventory/dashboard/inventory) — document demo `dashboard-inventory.tsx` ที่ถูกลบ (pipeline สต๊อก, เติมสต๊อก, PST)
+- [dashboard/sr](/th/inventory/dashboard/sr) — document demo `dashboard-sr.tsx` ที่ถูกลบ (pipeline SR, กราฟการบริโภค)
+- [dashboard/my-pending](/th/inventory/dashboard/my-pending) — document widget `dashboard-my-pending.tsx` ที่ถูกลบ (จำนวน pending ส่วนตัว); hook เบื้องหลัง (`useMyPendingPrCount`/`PoCount`/`SrCount`) ยังอยู่ใน `hooks/use-dashboard.ts` แต่ไม่มี call site เลยในทั้ง frontend
+- [dashboard/my-approval](/th/inventory/dashboard/my-approval) — document widget `dashboard-my-approval.tsx` ที่ถูกลบ (คิว approval ส่วนตัว); หน้าจริงที่ live คือหน้า **My Approval** ของโมดูล Procurement — ดู [purchase-request/my-approval](/th/inventory/purchase-request/my-approval) (`/procurement/approval`)
 
 ---
 
 ## 3. แหล่งข้อมูล (Dev)
 
-เมื่อเปิดการเชื่อมต่อข้อมูลจริง แต่ละ tile จะ resolve ไปยังหนึ่งใน 3 backend surface นี้:
-
-- **My-pending counts** — `GET /api/proxy/api/my-pending/{purchase-requests,purchase-orders,store-requisitions}/count` (ดู `constant/api-endpoints.ts`) คืนค่า `{ pending: number }` ต่อประเภทเอกสาร
-- **Approval queue** — `GET /api/proxy/api/approval/pending` และ `/summary` คืนค่า `ApprovalItem[]` จัดกลุ่มตาม `doc_type` (`pr` / `po` / `sr`) พร้อม `workflow_current_stage`, `doc_date`, `total_amount`
-- **Per-domain aggregates** — ตัวเลข pipeline / KPI (ปัจจุบันเป็น mock) จะ resolve ไปยังรายงาน query-dataset จาก [reporting-audit](/th/inventory/reporting-audit) ไม่ใช่การ scan ทีละ row ของตาราง transactional
-
-ดูหน้าย่อยแต่ละหน้าสำหรับ tile-to-endpoint mapping
+- **Saved widgets (ส่วนตัว)** — `GET /api/proxy/api/me/dashboard-widgets?bu_code=` แสดงรายการ widget ที่ผู้ใช้ปักหมุดไว้; `POST`/`PATCH`/`DELETE` บน path เดียวกันใช้สร้าง, เรียงใหม่/เปลี่ยนชื่อ และลบ ดู [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) §5 สำหรับรูปแบบเต็ม
+- **Dataset catalog** — picker "+ Add Widget" (`LookupDataset`) query dataset catalog ที่ code-registered ให้บริการโดย **micro-data** ดู [system-config/dashboard-dataset](/th/inventory/system-config/dashboard-dataset)
+- **Endpoint ที่พบใน source แต่ไม่ถูกเรียกจากหน้านี้ (dead/unused):** `GET /api/proxy/api/my-pending/{purchase-requests,purchase-orders,store-requisitions}/count` (hook มีอยู่ ไม่มี call site) และ endpoint คิว approval ที่ `/procurement/approval` ใช้แทน (ดู [purchase-request/my-approval](/th/inventory/purchase-request/my-approval)) ไม่ใช่ `/dashboard`
 
 ## 4. โมดูลที่เกี่ยวข้อง
 
-- [purchase-request](/th/inventory/purchase-request), [purchase-order](/th/inventory/purchase-order), [good-receive-note](/th/inventory/good-receive-note), [store-requisition](/th/inventory/store-requisition), [inventory](/th/inventory/inventory) — แหล่งข้อมูล transactional ที่อยู่เบื้องหลังทุก tile
-- [reporting-audit](/th/inventory/reporting-audit) — query dataset สำหรับ KPI aggregate
+- [reporting-audit](/th/inventory/reporting-audit), [system-config/dashboard-dataset](/th/inventory/system-config/dashboard-dataset) — dataset catalog และ data model ของ widget/reporting ที่อยู่เบื้องหลัง saved widget ทุกตัว
+- [purchase-request](/th/inventory/purchase-request), [purchase-order](/th/inventory/purchase-order), [good-receive-note](/th/inventory/good-receive-note), [store-requisition](/th/inventory/store-requisition), [inventory](/th/inventory/inventory) — โมดูล transactional ที่ผู้ใช้น่าจะปักหมุด dataset มาจาก แต่ไม่ได้ wire ตรงเข้ากับหน้านี้
+- [purchase-request/my-approval](/th/inventory/purchase-request/my-approval) — inbox approval ส่วนตัวที่ live จริง (`/procurement/approval`); ไม่ได้เป็นส่วนหนึ่งของโมดูล Dashboard นี้
 
 ## 5. แหล่งข้อมูลอ้างอิง
 
-- `../carmen-inventory-frontend-react/routes/dashboard/page.tsx` — `/dashboard` redirect ไปยัง `/dashboard/main`
-- `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-{main,pr,po,grn,inventory,sr}.tsx` — page shell แยกตามโดเมน
-- `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-{main,pr,po,grn,inventory,sr}.tsx` — การวาง tile
-- `../carmen-inventory-frontend-react/routes/dashboard/mock/{main,pr,po,grn,inventory,sr}.ts` — mock data ปัจจุบัน
-- `../carmen-inventory-frontend-react/constant/module-list.ts` — การลงทะเบียน 6 หน้าย่อยใน sidebar
-- `../carmen-inventory-frontend-react/constant/module-color-map.ts` — การกำหนดแถบสีต่อ route
-- `../carmen-inventory-frontend-react/hooks/use-dashboard.ts`, `hooks/use-approval.ts` — hook นับสด + อนุมัติ (ยังไม่ wire)
+- `../carmen-inventory-frontend-react/routes/router.tsx` — การลงทะเบียน route เดียว: `{ path: "dashboard", lazy: () => import("./dashboard/dashboard.route") }`
+- `../carmen-inventory-frontend-react/routes/dashboard/dashboard.route.tsx`, `dashboard-component.tsx`, `sortable-widget-item.tsx` — หน้า live ทั้งหมด (flatten ออกจาก `_components/` โดย cleanup เมื่อ 2026-06-27)
+- `../carmen-inventory-frontend-react/constant/module-list.ts` — การลงทะเบียน sidebar แบบ entry เดียว (ไม่มี sub-module)
+- `../carmen-inventory-frontend-react/hooks/use-my-dashboard-widgets.ts` — hook CRUD ของ widget ส่วนตัวที่หน้า live ใช้จริง
+- `../carmen-inventory-frontend-react/hooks/use-dashboard.ts` — `useMyPendingPrCount`/`PoCount`/`SrCount`; ยังอยู่ใน source ไม่พบ call site เลยในทั้ง repo
+- Commit ที่ลบ: `03891e3d` ใน `../carmen-inventory-frontend-react` ("refactor(dashboard): convert to idiomatic structure, drop dead demo code", 2026-06-27) — ลบ `_components/dashboard-{main,pr,po,grn,sr,inventory,my-pending,my-approval}.tsx` และ `mock/{main,pr,po,grn,sr,inventory}.ts` (19 ไฟล์, เพิ่ม 6 บรรทัด / ลบ 5,468 บรรทัด)

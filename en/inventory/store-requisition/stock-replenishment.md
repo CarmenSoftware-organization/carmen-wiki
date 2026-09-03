@@ -2,7 +2,7 @@
 title: Stock Replenishment
 description: Auto-generated SR proposal driven by min / max / par / reorder thresholds at each location — the policy-driven counterpart to the manual Store Requisition flow.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T15:45:00.000Z
 tags: store-requisition, replenishment, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,9 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # Stock Replenishment
 
 > **At a Glance**
-> **Owner:** Inventory Controller (review / submit) &nbsp;·&nbsp; Cron service account (draft only) &nbsp;·&nbsp; **Table:** none dedicated — output is `tb_store_requisition` draft &nbsp;·&nbsp; **Trigger:** nightly cron (or on-demand) &nbsp;·&nbsp; **Inputs:** `tb_product_location` (min/max/par/reorder) + on-hand + on-order &nbsp;·&nbsp; **1-liner:** cron sweeps deficits and pre-fills SR drafts; humans approve.
+> **Owner:** Inventory Controller (review / submit) &nbsp;·&nbsp; **Table:** none dedicated — output would be a `tb_store_requisition` draft &nbsp;·&nbsp; **Trigger:** nightly cron (design intent) &nbsp;·&nbsp; **Inputs:** `tb_product_location` (min/max/par/reorder) + on-hand + on-order &nbsp;·&nbsp; **1-liner:** cron sweeps deficits and pre-fills SR drafts; humans approve.
+
+> ⚠️ **Implementation status (verified 2026-07-15):** the Stock Replenishment screen (`/store-operation/stock-replenishment`) exists in the frontend but is currently **mock-data-driven** — `hooks/use-stock-replenishment.ts` returns a hard-coded `mockData` fixture with a `TODO: เปลี่ยนเป็นเรียก API จริง เมื่อ backend พร้อม` ("switch to the real API when the backend is ready"). No replenishment endpoint exists in `carmen-turborepo-backend-v2`, and a search of `../micro-cronjobs/` for `replenish` / `min_qty` / `par_qty` returned **zero hits** — the nightly-sweep cron described below is design intent, not implemented. The `tb_product_location` policy table is real in Prisma. Treat Sections 2–6 as the target design, not current behavior.
 
 ![Stock Replenishment screen](/screenshots/store-requisition/stock-replenishment.png)
 
@@ -109,11 +111,11 @@ If a draft already exists for `(from, to, date)`, the cron updates lines in plac
 - [product](/en/inventory/product) — `tb_product_location` policy lives under the product master
 - [master-data/location](/en/inventory/master-data/location) — per-location min / max / par / reorder configuration
 - [purchase-order](/en/inventory/purchase-order) — `on_order` includes open PO qty
-- [inventory/transaction](/en/inventory/inventory/transaction) — once the SR posts, ledger writes `store_requisition` events
+- [inventory/transaction](/en/inventory/inventory/transaction) — once the SR posts, the inventory transaction log (`tb_inventory_transaction`, `inventory_doc_type = store_requisition`) records the movement
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_product_location` (~4364-4399), `tb_store_requisition` (~2922-2984), `enum_sr_type` (~224-227).
-- **Frontend:** `../carmen-inventory-frontend-react/routes/store-operation/stock-replenishment/`.
-- **Cron job:** `../micro-cronjobs/` — Go service hosting the nightly sweep. Run state lives in the cron service (no tenant table).
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_product_location` (~4734), `tb_store_requisition` (~3165), `enum_sr_type` (~228).
+- **Frontend:** `../carmen-inventory-frontend-react/routes/store-operation/stock-replenishment/` — screen exists; data comes from the mock fixture in `hooks/use-stock-replenishment.ts` (see the implementation-status callout at the top).
+- **Cron job:** planned for `../micro-cronjobs/` per the original design; **no replenishment code exists there as of this pass** (searched `replenish` / `min_qty` / `par_qty`, zero hits).
 - **Module landing:** [store-requisition](/en/inventory/store-requisition) § 3 (movement type, approval workflow).

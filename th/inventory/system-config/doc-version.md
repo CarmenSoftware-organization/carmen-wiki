@@ -2,7 +2,7 @@
 title: เวอร์ชันเอกสาร (Optimistic Concurrency)
 description: ฟิลด์ doc_version (integer) ที่ป้องกันการเขียนทับข้อมูลในเอกสาร — ไคลเอนต์ต้องส่งค่าเวอร์ชันปัจจุบันกลับมาพร้อมการบันทึก มิฉะนั้นจะได้รับ 409 Conflict
 published: true
-date: 2026-06-09T00:00:00.000Z
+date: 2026-07-16T00:00:00.000Z
 tags: system-config, concurrency, doc-version, optimistic-lock, carmen-software
 editor: markdown
 dateCreated: 2026-06-09T00:00:00.000Z
@@ -58,4 +58,4 @@ function update(id, payload):
 
 ## 5. อย่าสับสนกับ
 
-`tb_attachment.doc_version` เป็น **ฟิลด์คนละตัวที่มีความหมายต่างกัน** — มันคือ *ตัวนับการเรนเดอร์ใหม่* สำหรับเอกสารที่สร้างใหม่ (เช่น PDF ที่พิมพ์ซ้ำ) ซึ่งเพิ่มค่าทุกครั้งที่โมดูลเจ้าของสร้างไฟล์ใหม่ และเก็บเวอร์ชันเก่าไว้เพื่อการตรวจสอบ มันไม่ใช่กลไกป้องกันการเขียนพร้อมกัน ดู [reporting-audit/attachment](/th/inventory/reporting-audit/attachment).
+`tb_attachment.doc_version` (tenant schema) มีรูปร่างเดียวกันคือ `Int @default(0)` เหมือนคอลัมน์ `doc_version` อื่นทุกตัว แต่ **มันไม่ใช่ตัวนับการเรนเดอร์ใหม่ที่ใช้งานจริง** — การค้นทั่ว repo ไม่พบโค้ดใดที่เพิ่มค่า อ่าน หรือแตะฟิลด์นี้เลย อันที่จริง `tb_attachment` เองก็ไม่มีการอ้างอิงจากโค้ด non-schema เลยที่ไหน — มันคือตาราง dead registry metadata ไฟล์จริงคือ `tb_file_tag` ในฐานข้อมูล file-service แยกต่างหาก ซึ่งไม่มีคอลัมน์ `doc_version` เลยด้วยซ้ำ ดู [system-config/document](/th/inventory/system-config/document) §5 สำหรับแบบจำลองข้อมูลที่แก้ไขแล้ว ถือว่า `tb_attachment.doc_version` เป็น schema ที่ไม่มีชีวิต ไม่ใช่ทั้ง concurrency guard ที่ใช้งานได้ *หรือ* ตัวนับการเรนเดอร์ใหม่ที่ใช้งานได้

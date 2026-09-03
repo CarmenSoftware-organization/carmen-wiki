@@ -2,7 +2,7 @@
 title: หน่วยนับ (Unit)
 description: หน่วยนับและการแปลงระหว่างหน่วยที่ใช้โดยเอกสารธุรกรรมและระเบียนสินค้าทุกใบ
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T21:47:09.000Z
 tags: master-data, unit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -40,7 +40,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | "Conversion qty must be > 0" | `from_unit_qty` หรือ `to_unit_qty` เป็นศูนย์/ค่าลบ | ใส่ค่าบวก |
 | "Same-unit conversion needs equal qty" | `from_unit_id == to_unit_id` แต่ qty ต่าง | ใช้ identity (`1 = 1`) หรือเลือกคู่อื่น |
 | "Conversion already exists for this product/pair" | ละเมิด unique constraint | แก้แถวที่มี |
-| "Cannot delete — unit in use" | สินค้า, recipe หรือ posting ที่ active อ้างอิงหน่วย | ใช้ inactivate แทน |
+| **ยังไม่ยืนยัน** — ไม่พบ delete guard | `units.service.ts`'s `delete()` เป็น soft-delete แบบไม่มีเงื่อนไข (`is_active: false` + `deleted_at`) โดยไม่มีการเช็คว่าสินค้า/recipe/posting ที่ active ยังอ้างอิงหน่วยอยู่หรือไม่ | เดิมหน้านี้ระบุว่า "cannot delete — unit in use" เป็น error ที่บังคับใช้จริง; ให้ถือว่า**ยังไม่ถูกบังคับใช้**จนกว่าจะตรวจสอบซ้ำ |
 
 ## 4. Edge Cases
 
@@ -69,6 +69,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | `note` | `String? @db.VarChar` | Yes | Internal note |
 | `info` | `Json?` | Yes | Metadata (`{}` default) |
 | `dimension` | `Json?` | Yes | Array ของ dimension tag |
+| `doc_version` | `Int` | No | เวอร์ชัน optimistic-lock (default `0`) |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*` |
 
 **Constraints:** primary key บน `id` Soft-delete ผ่าน `deleted_at` ไม่มี unique บน `name` ที่ชัดเจน — บังคับใช้ระดับ app กับแถว active
@@ -86,6 +87,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | `is_default` | `Boolean?` | Yes | Primary เมื่อมีหลาย conversion สำหรับคู่เดียวกัน |
 | `description` | `Json?` | Yes | คำอธิบาย localised |
 | `is_active`, `note`, `info`, `dimension` | — | Mixed | activation / metadata มาตรฐาน |
+| `doc_version` | `Int` | No | เวอร์ชัน optimistic-lock (default `0`) |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*` |
 
 **Constraints:** `@@unique([product_id, unit_type, from_unit_id, to_unit_id, deleted_at])` ชื่อ `unitconversion_product_unit_type_from_unit_to_unit_deletedat_u` Index บน prefix เดียวกัน FK ทั้งสองไปยัง `tb_unit` `onDelete: NoAction`
@@ -95,7 +97,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 ## 6. กติกาทางธุรกิจ
 
 - **Uniqueness** App enforce ไม่ให้ `name` หน่วย active ซ้ำ (case-insensitive) Conversion unique ต่อ `(product_id, unit_type, from_unit_id, to_unit_id)` ในแถว non-deleted
-- **Deletion guards** การอ้างอิงจาก product/recipe/posting ที่ active บล็อก hard-delete — ใช้ inactivate
+- **Deletion guards — ยังไม่ยืนยัน** ไม่พบการเช็ค FK ใน `delete()`; soft-delete สำเร็จโดยไม่มีเงื่อนไขแม้มีสินค้า/recipe/posting อ้างอิงอยู่
 - **Validation** Conversion `from_unit_qty` และ `to_unit_qty` ต้อง `> 0` ทั้งคู่ คู่หน่วยเดียวกันต้อง qty เท่ากันเท่านั้น
 - **Lifecycle** หน่วย inactive มองเห็นบนเอกสารย้อนหลัง; ถูก lock จากธุรกรรมใหม่
 - **Decimal precision** `decimal_place` คือ rendering เท่านั้น; storage `Decimal(20,5)`
@@ -114,5 +116,5 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_unit` (lines ~3132-3208), `tb_unit_conversion` (lines ~3210-3246), `enum_unit_type` (lines ~254-257)
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/unit/`
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_unit` (lines ~3380-3423), `tb_unit_conversion` (lines ~3460-3498), `enum_unit_type` (lines ~257-260)
+- **Frontend:** `../carmen-inventory-frontend-react/routes/config/unit/`

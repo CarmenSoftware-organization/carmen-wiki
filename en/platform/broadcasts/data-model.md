@@ -1,8 +1,8 @@
 ---
 title: Broadcasts — Data Model
-description: The tb_broadcast_notification and tb_user_broadcast_action field tables, the targeted-send fork into tb_notification, scope_id resolution from bu_code, and divergences against the SPA's write-only payload types.
+description: The tb_broadcast_notification and tb_user_broadcast_action field tables, the targeted-send fork into tb_notification, scope_id resolution from bu_code, the schema-only doc_version column, and divergences against the SPA's write-only payload types.
 published: true
-date: 2026-06-10T13:15:00.000Z
+date: 2026-07-29T00:00:00.000Z
 tags: book/platform, broadcasts, data-model
 editor: markdown
 dateCreated: 2026-06-10T13:15:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-06-10T13:15:00.000Z
 # Broadcasts — Data Model
 
 > **At a Glance**
-> **Tables:** `tb_broadcast_notification` (one row per broadcast) + `tb_user_broadcast_action` (lazy per-user read state, unique per broadcast×user) &nbsp;·&nbsp; **Targeted fork:** `userIds` sends skip both tables and fan out into `tb_notification` (one personal row per recipient) &nbsp;·&nbsp; **Scope:** `scope_id` = `tb_business_unit.id` UUID for `bu-to-user`, null for `system-to-user` — the API accepts the BU **code** and resolves it &nbsp;·&nbsp; **No enums:** `category` and `type` are plain varchar &nbsp;·&nbsp; **Endpoints:** `POST /api/notifications/broadcasts/system` / `/bu` — `/api`, **not** `/api-system`
+> **Tables:** `tb_broadcast_notification` (one row per broadcast) + `tb_user_broadcast_action` (lazy per-user read state, unique per broadcast×user) &nbsp;·&nbsp; **Targeted fork:** `userIds` sends skip both tables and fan out into `tb_notification` (one personal row per recipient) &nbsp;·&nbsp; **Scope:** `scope_id` = `tb_business_unit.id` UUID for `bu-to-user`, null for `system-to-user` — the API accepts the BU **code** and resolves it &nbsp;·&nbsp; **No enums:** `category` and `type` are plain varchar &nbsp;·&nbsp; **`doc_version`:** present on all three tables (2026-07-16 platform-wide rollout) but schema-only here — no update endpoint exists to lock &nbsp;·&nbsp; **Endpoints:** `POST /api/notifications/broadcasts/system` / `/bu` — `/api`, **not** `/api-system`, now enforced server-side by `broadcast.send`
 
 > **Source of truth:** Backend Prisma platform schema. Always read this first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
@@ -30,7 +30,7 @@ The persistence path is backend-gateway (`api/notifications/broadcasts/*`, Keycl
 
 ### 2.1 `tb_broadcast_notification`
 
-One broadcast message. Schema line 357.
+One broadcast message. Schema line 374 (was 357 at the last sync — shifted by field additions earlier in the file).
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
@@ -42,7 +42,8 @@ One broadcast message. Schema line 357.
 | `message` | `String?` | Yes | Notification body (same — required by the SPA only) |
 | `metadata` | `Json? @db.JsonB` | Yes | Free-form. The SPA never sends it; BU sends get `bu_code` merged in server-side |
 | `scheduled_at` | `DateTime?` | Yes | Visibility cutoff: list queries hide the row until `scheduled_at <= NOW()`. No timezone annotation (unlike the audit columns) |
-| `end_at` | `DateTime?` | Yes | **Declared but dead** — never written or read by any code path as of 2026-06-10 |
+| `end_at` | `DateTime?` | Yes | **Declared but dead** — never written or read by any code path |
+| `doc_version` | `Int @default(0) @db.Integer` | No | **Schema-only.** Added platform-wide on 2026-07-16 (all 35 platform tables, migration `8e53bbe`) but nothing reads or writes it here — there is no update endpoint for a broadcast to optimistically lock in the first place (§2.3, "Fire-and-forget") |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: row creation, default `now()`; also the list sort key |
 | `created_by_id` | `String? @db.Uuid` | Yes | Audit/sender: FK → `tb_user`. Set to the token user for **BU** sends; **left `null` for system sends** (§5) |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: default `now()`; never updated (no update path exists) |
@@ -59,7 +60,7 @@ One broadcast message. Schema line 357.
 
 ### 2.2 `tb_user_broadcast_action`
 
-Lazy per-user state for one broadcast. Schema line 388.
+Lazy per-user state for one broadcast. Schema line 406 (was 388).
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
@@ -68,7 +69,8 @@ Lazy per-user state for one broadcast. Schema line 388.
 | `user_id` | `String @db.Uuid` | No | FK → `tb_user.id`, **`onDelete: Cascade`** |
 | `is_read` | `Boolean? @default(false)` | Yes | Read flag; the unread queries treat a missing row and `is_read = false` identically (`COALESCE(a.is_read, false)`) |
 | `read_at` | `DateTime?` | Yes | Stamped by the mark-as-read upsert |
-| `dismissed_at` | `DateTime?` | Yes | **Declared but dead** — the schema comment anticipates a dismiss action, but no code writes it as of 2026-06-10 |
+| `dismissed_at` | `DateTime?` | Yes | **Declared but dead** — the schema comment anticipates a dismiss action, but no code writes it |
+| `doc_version` | `Int @default(0) @db.Integer` | No | **Schema-only**, same 2026-07-16 rollout as above — the mark-read upsert writes plain `is_read`/`read_at`/`updated_at`, never checks or bumps this column |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | Default `now()` |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | Default `now()`; touched by the mark-read upsert |
 
@@ -82,7 +84,7 @@ Rows are written by exactly two paths in micro-notification: single mark-as-read
 
 ### 2.3 `tb_notification` (referenced)
 
-The personal-notification table (schema line 316; `to_user_id`/`from_user_id` FKs, `type` default `SYS_INFO`, `category` default `'system'`, `is_read`/`is_sent` flags, own `scheduled_at`, full audit columns). Broadcasts touches it on one path only: a system send carrying `userIds` creates one row **per existing recipient id** (`category = 'system'`, `from_user_id = null`), then live-emits and stamps `is_sent = true` when unscheduled. Ids that match no `tb_user` row are silently dropped — no error, no partial-failure report. The table's broader lifecycle (user-to-user messages, workflow notifications) belongs to the notification feature generally, not to this module.
+The personal-notification table (schema line 332, was 316; `to_user_id`/`from_user_id` FKs, `type` default `SYS_INFO`, `category` default `'system'`, `is_read`/`is_sent` flags, own `scheduled_at`, a schema-only `doc_version` from the same 2026-07-16 rollout, full audit columns). Broadcasts touches it on one path only: a system send carrying `userIds` creates one row **per existing recipient id** (`category = 'system'`, `from_user_id = null`), then live-emits and stamps `is_sent = true` when unscheduled. Ids that match no `tb_user` row are silently dropped — no error, no partial-failure report. The table's broader lifecycle (user-to-user messages, workflow notifications) belongs to the notification feature generally, not to this module.
 
 ## 3. Relationships
 
@@ -121,23 +123,24 @@ The SPA types (`src/types/index.ts`) are **write-only DTOs** — `BroadcastSyste
 
 ## 6. References
 
-REST surface (backend-gateway). **Note the prefix: `/api/notifications/...`, not `/api-system/...`** — the SPA originally called `/api-system` and was fixed in carmen-platform commit `579b3f7`. Both routes carry `KeycloakGuard` (bearer auth) only; no RBAC or app-id guard — see [Permissions](./permissions.md) §2.
+REST surface (backend-gateway). **Note the prefix: `/api/notifications/...`, not `/api-system/...`** — the SPA originally called `/api-system` and was fixed in carmen-platform commit `579b3f7`. **Confirmed fixed since the last sync:** the two send routes now carry `KeycloakGuard` **and** `PlatformPermissionGuard` (`@RequirePlatformPermission('broadcast.send')`, backend PR #239/`1fa15ec02`) — previously bearer auth was the only check. Still no `x-app-id`/`AppIdGuard` on these two routes (unlike News's authenticated CRUD) — see [Permissions](./permissions.md) §2.
 
 | Method + Path | Auth | Purpose | Notes |
 |---|---|---|---|
-| `POST /api/notifications/broadcasts/system` | Bearer | System-wide or targeted send | Body `{ title, message, type?, metadata?, scheduled_at?, userIds? }`. Without `userIds`: one broadcast row (`system-to-user`), live emit to all active users when unscheduled. With `userIds`: per-user `tb_notification` fan-out. 201 `{ notifications, count }` |
-| `POST /api/notifications/broadcasts/bu` | Bearer | BU-scoped send | Body `{ bu_code, title, message, type?, metadata?, scheduled_at? }`. One broadcast row (`bu-to-user`, `scope_id` = resolved BU id), live emit to BU members when unscheduled. 201 adds `bu_code` to the response |
+| `POST /api/notifications/broadcasts/system` | Bearer + `broadcast.send` (`PlatformPermissionGuard`, coarse: platform-wide or any cluster) | System-wide or targeted send | Body `{ title, message, type?, metadata?, scheduled_at?, userIds? }`. Without `userIds`: one broadcast row (`system-to-user`), live emit to all active users when unscheduled. With `userIds`: per-user `tb_notification` fan-out. 201 `{ notifications, count }` |
+| `POST /api/notifications/broadcasts/bu` | Bearer + `broadcast.send` (`PlatformPermissionGuard`, same coarse check) | BU-scoped send | Body `{ bu_code, title, message, type?, metadata?, scheduled_at? }`. One broadcast row (`bu-to-user`, `scope_id` = resolved BU id), live emit to BU members when unscheduled. 201 adds `bu_code` to the response |
 | `GET /api/notifications` / `/recent` / `/unread` | Bearer | Recipient-side lists | Merge personal + in-scope broadcast rows; broadcasts filtered by `deleted_at IS NULL` and `scheduled_at IS NULL OR <= NOW()` |
 | `PUT /api/notifications/:id/read` | Bearer | Mark read | FE passes the row's `category`; `system-to-user`/`bu-to-user` route to a `tb_user_broadcast_action` upsert, anything else to `tb_notification` |
 
-No Bruno collection exists for the broadcast endpoints as of 2026-06-10; the Swagger annotations on the gateway controller are the closest contract document.
+No Bruno collection exists for the broadcast endpoints (verified still absent) — the Swagger annotations on the gateway controller are the closest contract document.
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_broadcast_notification` (line 357), `tb_user_broadcast_action` (line 388), `tb_notification` (line 316).
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_notification` (line 332), `tb_broadcast_notification` (line 374), `tb_user_broadcast_action` (line 406).
 - `../carmen-turborepo-backend-v2/apps/micro-notification/src/notification/notification.service.ts` — `createSystemNotification` (fan-out fork), `createBusinessUnitNotification` (`bu_code` resolution), `createBroadcastNotification`, `markBroadcastAsRead`/`markAllBroadcastsAsRead`, the scoped list queries.
 
 **Secondary (gateway + consumer shape):**
 - `../carmen-turborepo-backend-v2/apps/backend-gateway/src/notification/notification.controller.ts` — the two POST routes, payload interfaces, TCP forwarding, type defaults.
+- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/auth/guards/platform-permission.guard.ts`, `src/auth/services/platform-permission.service.ts` — the server-side `broadcast.send` enforcement and its coarse platform-or-any-cluster check.
 - `../carmen-turborepo-backend-v2/apps/micro-notification/src/notification/notification.controller.ts` — create dispatch, broadcast-vs-fanout discriminator, live emit + `is_sent` stamping.
 - `../carmen-platform/src/types/index.ts` — `BroadcastTargetMode`, `BroadcastTypePreset`, `BroadcastSystemPayload`, `BroadcastBuPayload`; `src/services/broadcastService.ts` — the two calls.
 

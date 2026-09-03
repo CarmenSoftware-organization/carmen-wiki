@@ -2,7 +2,7 @@
 title: Currency
 description: Per-tenant currency catalogue, ISO reference list, and dated exchange-rate history — drives all FX conversion on POs, GRNs, pricelists, and costing.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T21:47:09.000Z
 tags: master-data, currency, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -36,18 +36,17 @@ Each tenant chooses a subset of ISO currencies to enable. The BU's `default_curr
 
 | Symptom / Message | Cause | Action |
 |---|---|---|
-| "ISO code not found" | `tb_currency.code` doesn't match any `tb_currency_iso.iso_code` | Have Sysadmin seed the ISO row first |
-| "Exchange rate must be > 0" | Cache rate set to zero / negative | Re-enter a positive number |
-| "Cannot inactivate — set as BU default" | Currency is `default_currency_id` for at least one BU | Reassign the BU default first |
-| "Cannot delete — referenced by documents/pricelists" | Hard-delete blocked by FK | Inactivate instead |
+| "Currency already exists" | Duplicate `code` (case-insensitive) among non-deleted rows | Pick a different code or reactivate the existing row |
 | Document shows "rate not in history" warning | No `tb_exchange_rate` row at/before document date | Add a backdated rate in [master-data/exchange-rate](/en/inventory/master-data/exchange-rate) |
+| **Unconfirmed** — no cross-schema, value, or BU-default guard found | `CurrencyCreateSchema`/`CurrencyUpdateSchema` (`currency.dto.ts`) only type-check `code`/`exchange_rate`; `currency.service.ts`'s `create()`/`update()`/`delete()` do not check `tb_currency_iso` for a matching ISO code, do not require `exchange_rate > 0`, do not check whether the currency is any BU's `default_currency_id` before inactivating, and do not check for document/pricelist references before soft-deleting | A prior version of this page asserted "ISO code not found", "exchange rate must be > 0", "cannot inactivate — set as BU default", and "cannot delete — referenced by documents/pricelists" as enforced server errors — none were found this pass; treat all four as **not enforced** until re-verified |
 
 ## 4. Edge Cases
 
 - **"Current" cache vs. history.** `tb_currency.exchange_rate` is a *cache* of the most-recent `tb_exchange_rate`. New documents resolve via dated history first; cache is fallback (with a warning).
 - **Inactivation does not delete history** — historical documents continue to render against their snapshotted rate.
-- **BU default invariant** — a currency that is any BU `default_currency_id` cannot be inactivated.
+- **BU default invariant — unconfirmed.** No code was found that blocks inactivating a currency that is a BU's `default_currency_id`; treat this as a design intent, not a live guard.
 - **Per-tenant override** — `tb_currency.name` / `symbol` override the ISO copies for display.
+- **No ISO cross-check.** `tb_currency.code` is a free-typed string on create — nothing requires it to match a `tb_currency_iso.iso_code` row.
 - **Decimal places.** `tb_currency.decimal_places` controls rendering only — storage is `Decimal(15, 5)` for rates, money rounds to 2 dp.
 
 ---
@@ -81,6 +80,7 @@ Mixed source: tenant + platform.
 | `exchange_rate` | `Decimal? @db.Decimal(15, 5)` | Yes | Current rate cache vs. BU default (default `1`). |
 | `exchange_rate_at` | `DateTime? @db.Timestamptz(6)` | Yes | Cache timestamp. |
 | `note`, `info`, `dimension` | — | Yes | Standard metadata. |
+| `doc_version` | `Int` | No | Optimistic-lock version (default `0`). |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |
 
 **Constraints:** primary key on `id`; uniqueness on `code` enforced at application layer. Reverse relations to GRN, JV, PO, PR, pricelist, credit note, and exchange-rate history.
@@ -91,12 +91,12 @@ See [master-data/exchange-rate](/en/inventory/master-data/exchange-rate) for the
 
 ## 6. Business Rules
 
-- **Uniqueness.** `tb_currency.code` unique among active rows; `tb_currency_iso.iso_code` DB-unique. One `tb_exchange_rate` per `(at_date, currency_id)`.
-- **Deletion guards.** Any document or pricelist reference blocks hard-delete — inactivate instead.
-- **Validation.** `exchange_rate > 0`; `code` must match a `tb_currency_iso` row.
+- **Uniqueness.** `tb_currency.code` unique (case-insensitive) among non-deleted rows, app-checked in `create()`/`update()`; `tb_currency_iso.iso_code` DB-unique. One `tb_exchange_rate` per `(at_date, currency_id)`.
+- **Deletion guards — unconfirmed.** No reference check was found in `delete()`; soft-delete succeeds unconditionally even with document/pricelist references.
+- **Validation — unconfirmed.** No positive-value check on `exchange_rate` and no cross-check against `tb_currency_iso` were found in `currency.service.ts` or its Zod DTOs.
 - **Lifecycle.** Inactive currencies hidden from new-document pickers; historical documents render off the snapshot.
 - **Rate resolution.** Engine selects largest `at_date <= document_date` for `currency_id`; falls back to `tb_currency.exchange_rate` cache and flags the document.
-- **BU default invariant.** Cannot inactivate a currency that is any BU's `default_currency_id`.
+- **BU default invariant — unconfirmed.** No code was found that blocks inactivating a currency that is any BU's `default_currency_id`.
 
 ## 7. Cross-References
 
@@ -108,6 +108,6 @@ See [master-data/exchange-rate](/en/inventory/master-data/exchange-rate) for the
 
 ## 8. References
 
-- **Prisma (tenant):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_currency` (lines ~545-621), `tb_exchange_rate` (lines ~744-768).
-- **Prisma (platform):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_currency_iso` (lines ~217-224).
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/currency/`.
+- **Prisma (tenant):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_currency` (lines ~553-596), `tb_exchange_rate` (lines ~760-785).
+- **Prisma (platform):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_currency_iso` (lines ~279-287).
+- **Frontend:** `../carmen-inventory-frontend-react/routes/config/currency/`.

@@ -2,7 +2,7 @@
 title: Equipment
 description: Kitchen equipment master — referenced from recipe preparation steps that require specific tools (sous-vide bath, deep fryer, smoker, etc.).
 published: true
-date: 2026-06-09T16:28:56.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: recipe, equipment, master-data, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -28,9 +28,9 @@ Recipe **preparation steps** reference equipment so the kitchen workflow planner
 | Task | Where | Notes |
 |---|---|---|
 | Add a new piece of equipment | Operation Plan → Equipment → **+ New** | Pick `category_id`, fill code + name (required) |
-| Update maintenance dates after service | Detail page → Maintenance section | Past `next_maintenance_date` surfaces "overdue" badge |
+| Update maintenance dates after service | Detail page → Maintenance section | Plain date fields; no overdue indicator was found in source |
 | Mark equipment portable | Detail page → `is_portable` | Indicates it can move between stations |
-| Adjust on-property count | Detail page → `total_qty` | `available_qty` decrements on checkout (flow not yet wired) |
+| Adjust on-property count | Detail page → `total_qty` / `available_qty` | Both are plain integer fields the user edits directly — no checkout flow decrements `available_qty` automatically |
 | Retire equipment | Edit → `is_active = false` (soft-delete) | Stays referenceable on historical recipes; hidden from picker |
 | Attach manuals or photos | Detail page → `attachments` / `manuals_urls` | JSON arrays of file links |
 
@@ -40,18 +40,18 @@ Recipe **preparation steps** reference equipment so the kitchen workflow planner
 |---|---|---|
 | "Code + name already in use" | `@@unique([code, name, deleted_at])` violation | Pick a unique pair |
 | "Code is required" / "Name is required" | Blank required field | Fill before save |
-| "available_qty cannot exceed total_qty" | App-enforced quantity rule | Adjust counters consistently |
-| "Next maintenance must be ≥ last maintenance" | App-enforced when both dates set | Fix the dates |
 | Category dropdown empty | No active rows in [recipe/equipment-category](/en/inventory/recipe/equipment-category) | Seed categories first |
-| Category renamed but old `category_name` still shown | Denormalised display copy not refreshed | Save category to trigger fan-out (or re-save equipment) |
+| Category renamed but old `category_name` still shown | `category_name` is only refreshed when the **equipment** row itself is saved (`recipe-equipment.service.ts` looks up the category name at that moment) — there is no fan-out from the category side | Re-save each affected equipment row after renaming the category |
+
+**Not enforced today (checked `recipe-equipment.service.ts` and the gateway zod DTOs — no such rule exists in either):** `available_qty <= total_qty` and `next_maintenance_date >= last_maintenance_date` are not validated anywhere; both fields accept any integer / date independently.
 
 ## 4. Edge Cases
 
 - **Category FK is `onDelete: NoAction`.** The DB will not cascade or block — application layer must reject category delete while equipment references exist (see [recipe/equipment-category](/en/inventory/recipe/equipment-category)).
-- **`category_name` is denormalised** for display. Treat the FK (`category_id`) as source of truth; the string is a cache.
-- **Checkout flow not implemented** — `available_qty` is schema-supported but no UI wired today.
-- **Equipment on preparation steps is denormalised** onto `tb_recipe_preparation_step.equipment` payload, not a join table (see [recipe/01-data-model](/en/inventory/recipe/01-data-model)).
-- **Maintenance overdue badge** is purely visual; no automatic block on recipe usage.
+- **`category_name` is denormalised** for display and refreshed only on the equipment row's own save. Treat the FK (`category_id`) as source of truth; the string is a cache with no rename fan-out from the category side.
+- **Checkout flow not implemented** — `available_qty` / `total_qty` are schema-supported but no consuming UI or cross-field validation is wired today; nothing prevents `available_qty` exceeding `total_qty`.
+- **Equipment on preparation steps is denormalised** onto `tb_recipe_preparation_step.equipment` payload, not a join table (see [recipe/01-data-model](/en/inventory/recipe/01-data-model)). Note the current recipe create/edit screen (`recipe-form.tsx`) has no UI that reads or writes preparation steps at all, so this equipment-on-step linkage is not currently reachable from the recipe form.
+- **No "overdue" badge found.** `last_maintenance_date` / `next_maintenance_date` are plain date fields on the equipment form; no overdue-comparison logic was found in the frontend components or backend service — this callout should be treated as aspirational until a maintenance-status indicator is located in source.
 
 ---
 
@@ -89,10 +89,10 @@ Source: tenant schema.
 
 - **Uniqueness.** `(code, name)` unique among non-deleted rows.
 - **Category FK.** `NoAction` both ways — application must guard category delete while equipment refs exist.
-- **Validation.** `code`, `name` required; `available_qty <= total_qty`; `next_maintenance_date >= last_maintenance_date` when both set.
-- **Quantity semantics.** `total_qty` = on-property count; `available_qty` reserved for checkout flow.
-- **Lifecycle.** Inactive equipment readable on history; hidden from new-step picker.
-- **`category_name`** refreshed on category rename via application fan-out — FK is the truth.
+- **Validation.** `code`, `name` required. No cross-field check between `available_qty` / `total_qty` or between the two maintenance dates was found in `recipe-equipment.service.ts` or the gateway zod DTOs — both pairs are independent, unvalidated integer/date fields.
+- **Quantity semantics.** `total_qty` and `available_qty` are both plain manually-entered counters; no checkout flow reads or decrements either.
+- **Lifecycle.** Inactive equipment readable on history; hidden from new-step picker (though the current recipe form has no step-adding UI at all — see [recipe/01-data-model](/en/inventory/recipe/01-data-model)).
+- **`category_name`** is refreshed only when the equipment row itself is saved and its `category_id` is (re)resolved — there is no fan-out triggered from the category side.
 
 ## 7. Cross-References
 

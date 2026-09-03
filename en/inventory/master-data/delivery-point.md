@@ -2,7 +2,7 @@
 title: Delivery Point
 description: Physical drop-off points for vendor deliveries — referenced by purchase orders and GRNs and joined to inventory locations.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T21:47:09.000Z
 tags: master-data, delivery-point, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -36,7 +36,7 @@ A property typically has a handful of delivery points (Main Dock, Banquet Dock, 
 |---|---|---|
 | "Name already in use" | Duplicate `name` on a non-deleted row | Pick a different name |
 | "Name required" | Empty `name` | Add a display name |
-| "Cannot delete — referenced by POs / GRNs / locations" | FK references exist | Inactivate instead |
+| **Unconfirmed** — no delete guard found | `delivery-point.service.ts`'s `delete()` is an unconditional soft-delete (`is_active: false` + `deleted_at`) with no check for PO/GRN/location references | A prior version of this page asserted "cannot delete — referenced by POs / GRNs / locations" as an enforced error; treat it as **not enforced** until re-verified |
 | Location shows stale delivery-point name | `tb_location.delivery_point_name` snapshot wasn't refreshed after rename | Backfill via maintenance job |
 
 ## 4. Edge Cases
@@ -59,6 +59,7 @@ Source: tenant schema.
 | `name` | `String @db.VarChar` | No | Display name (e.g. `Main Dock`). |
 | `is_active` | `Boolean?` | Yes | Active flag, defaults `true`. |
 | `note`, `info`, `dimension` | — | Yes | Standard metadata. |
+| `doc_version` | `Int` | No | Optimistic-lock version (default `0`). |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |
 
 **Constraints:** `@@unique([name, deleted_at])` map `deliverypoint_name_u`. Index on `name`. Reverse relations to `tb_location`, `tb_purchase_request_detail`, and PO-PR linkage tables.
@@ -66,7 +67,7 @@ Source: tenant schema.
 ## 6. Business Rules
 
 - **Uniqueness.** `name` unique among non-deleted rows (DB-enforced).
-- **Deletion guards.** References from open POs, GRNs, or active locations block hard-delete.
+- **Deletion guards — unconfirmed.** No reference check was found in `delete()`; soft-delete succeeds unconditionally even with open PO/GRN/location references.
 - **Validation.** `name` required.
 - **Lifecycle.** Inactive points stay readable on historical documents; hidden from pickers.
 - **Rename propagation.** Documents resolve via FK; snapshotted name on `tb_location` needs backfill.
@@ -80,5 +81,5 @@ Source: tenant schema.
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_delivery_point` (lines ~623-646).
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/delivery-point/`.
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_delivery_point` (lines ~633-657).
+- **Frontend:** `../carmen-inventory-frontend-react/routes/config/delivery-point/`.

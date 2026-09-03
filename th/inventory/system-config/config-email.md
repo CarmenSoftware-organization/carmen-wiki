@@ -1,8 +1,8 @@
 ---
 title: การตั้งค่าอีเมล (Email Configuration)
-description: การตั้งค่า SMTP / ผู้ส่ง / template สำหรับอีเมลขาออกของระบบ — การแจ้งเตือนเวิร์กโฟลว์ การส่งรายงานตามตารางเวลา การรีเซ็ตรหัสผ่าน
+description: การตั้งค่า SMTP / ผู้ส่ง / template สำหรับอีเมลขาออกของระบบ — endpoint ไม่มี permission guard เลยนอกเหนือ authentication; "Sysadmin เท่านั้น" เป็นข้อตกลงฝั่ง frontend ไม่ใช่การควบคุมการเข้าถึงที่บังคับจริง
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T00:00:00.000Z
 tags: system-config, email, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # การตั้งค่าอีเมล (Email Configuration)
 
 > **At a Glance**
-> **เจ้าของ:** Sysadmin เท่านั้น &nbsp;·&nbsp; **การจัดเก็บ:** Row ใน `tb_application_config` (`key = "report_email"`) &nbsp;·&nbsp; **ใช้โดย:** `micro-notification`, รายงานตามตารางเวลา, การรีเซ็ตรหัสผ่าน, การแจ้งเตือนการตรวจสอบ &nbsp;·&nbsp; **หนึ่ง SMTP profile ต่อ BU; รหัสผ่าน SMTP เข้ารหัสตอนเก็บ**
+> **เจ้าของ:** Sysadmin เท่านั้นตามข้อตกลง frontend — **ไม่มี permission guard ฝั่ง backend ที่ยืนยันได้** &nbsp;·&nbsp; **การจัดเก็บ:** Row ใน `tb_application_config` (`key = "report_email"`) &nbsp;·&nbsp; **ใช้โดย:** `micro-notification`, รายงานตามตารางเวลา, การรีเซ็ตรหัสผ่าน, การแจ้งเตือนการตรวจสอบ &nbsp;·&nbsp; **หนึ่ง SMTP profile ต่อ BU; รหัสผ่าน SMTP เข้ารหัสตอนเก็บ**
 
 ![การตั้งค่าอีเมล (Email Configuration) screen](/screenshots/system-config/config-email.png)
 
@@ -19,7 +19,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 Email Configuration คือ **SMTP profile ต่อ BU** ที่ Carmen ใช้สำหรับอีเมลขาออกทุกฉบับ — การแจ้งเตือนเวิร์กโฟลว์ (การอนุมัติ การส่งกลับ การปฏิเสธ PR / PO / GRN / SR), การส่งรายงานตามตารางเวลา, การแจ้งเตือนรีเซ็ตรหัสผ่าน และอีเมลทดสอบเฉพาะกิจ ไม่มีตารางเฉพาะ: SMTP host, port, credentials, default-from, default-to / CC และ subject prefix ทั้งหมดอยู่ในรูป **JSON blob เดียว** ใน `tb_application_config` ภายใต้ key `report_email`
 
-**กลุ่มเป้าหมาย:** Sysadmin เท่านั้น (App ID `app-config.upsert`) ไม่มีตาราง email-template แยกอยู่ — body สร้างขึ้นโดย `micro-notification` จาก template ต่อประเภทการแจ้งเตือน; เพียง `subject_prefix` (default `[Carmen]`) เท่านั้นที่ผู้ใช้ปรับได้ใน subject line
+**กลุ่มเป้าหมาย:** ตั้งใจให้เป็น Sysadmin เท่านั้น แต่ **`config_app-config.controller.ts` ไม่มี `AppIdGuard`/`RequirePlatformPermission` บน route ใดเลย** — มีแค่ `KeycloakGuard` ระดับ class (authentication) และการตรวจสอบว่า header `x-app-id` valid เท่านั้น การ gate ด้วย "App ID `app-config.upsert`" ที่อธิบายไว้ด้านล่าง **ไม่ได้ implement ใน backend** — การบังคับใช้ (ถ้ามี) มีแค่ระดับ navigation ฝั่ง frontend เท่านั้น (route อยู่ใต้ `/system-admin` ซึ่ง nav ที่ไม่ใช่ admin ไม่แสดง แต่ตัว API เองไม่ตรวจสอบ) ดู [system-config/application-config](/th/inventory/system-config/application-config) สำหรับเวอร์ชันที่ครอบคลุมทั้งโมดูลของ finding นี้ ไม่มีตาราง email-template แยกอยู่ — body สร้างขึ้นโดย `micro-notification` จาก template ต่อประเภทการแจ้งเตือน; เพียง `subject_prefix` (default `[Carmen]`) เท่านั้นที่ผู้ใช้ปรับได้ใน subject line
 
 ## 2. งานทั่วไป
 
@@ -40,7 +40,7 @@ Email Configuration คือ **SMTP profile ต่อ BU** ที่ Carmen ใ
 | "Recipient is not a valid email" | Address แย่ใน `recipients` หรือ `cc` | แก้รายการที่แยกด้วย comma |
 | Test email สำเร็จในฟอร์มแต่ไม่มีเมลมา | Form draft ยังไม่บันทึก — Test ใช้ค่าที่บันทึกแล้ว | กด **Save** ก่อนแล้วค่อย **Test Email** |
 | Notification ทั้งหมดเงียบใน production | `smtp.enabled = false` ถูกตั้งทิ้งไว้โดยไม่ตั้งใจ | เปิดใหม่ในฟอร์มและบันทึก |
-| 403 ตอน save / load | User ไม่มี `app-config.upsert` (Sysadmin เท่านั้น) | Grant ผ่าน [access-control/application-role](/th/inventory/access-control/application-role) |
+| ผู้ใช้ที่ authenticated ใครก็ได้ load/save config นี้ได้ ไม่ใช่แค่ Sysadmin | ช่องโหว่ที่ยืนยันแล้ว — ไม่มี permission guard บน `config_app-config.controller.ts` | Flag ไว้สำหรับติดตามผลต่อ; อย่าคิดว่า 403 ปกป้อง endpoint นี้อยู่วันนี้ |
 | ฟิลด์รหัสผ่านแสดง `***ENCRYPTED***` | คาดหวัง — mask ตอนอ่านเพื่อไม่ให้ ciphertext ถึง browser | คงไว้เพื่อเก็บรหัสผ่านปัจจุบัน; พิมพ์ใหม่เพื่อหมุนเวียน |
 
 ## 4. กรณีพิเศษ
@@ -85,7 +85,7 @@ Email Configuration คือ **SMTP profile ต่อ BU** ที่ Carmen ใ
 
 ## 6. กฎทางธุรกิจ
 
-- **Sysadmin เท่านั้น** Read และ write gate โดย App ID `app-config.upsert`
+- **Sysadmin เท่านั้นตามข้อตกลง ไม่ใช่การบังคับ** ไม่พบ `AppIdGuard`/`RequirePlatformPermission` บน `config_app-config.controller.ts` — ผู้เรียกที่ authenticated ใครก็ได้พร้อม `x-app-id` ที่ valid สามารถอ่านและเขียน key นี้ได้วันนี้
 - **การเข้ารหัสและ mask รหัสผ่าน** เข้ารหัสผ่าน `encryptSecret`; แทนที่ด้วย `***ENCRYPTED***` ตอนอ่าน ค่า masked ที่ไม่เปลี่ยนหมายถึง "คงเดิม"
 - **Zod validation ตอนเขียน** Host, port (1–65535), username, password, from, enabled ทั้งหมดจำเป็นโดย `ReportEmailSchema`; `recipients` / `cc` ต้องเป็น email ที่ valid
 - **Kill-switch `enabled`** เมื่อ `false` notification service ลัดวงจรก่อนเปิด connection — เวิร์กโฟลว์ยังเดินต่อ ไม่มีอีเมลออก
@@ -104,9 +104,9 @@ Email Configuration คือ **SMTP profile ต่อ BU** ที่ Carmen ใ
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_application_config` (lines ~4910-4924)
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_application_config` (lines ~5287-5301)
 - **Backend service:** `../carmen-turborepo-backend-v2/apps/micro-business/src/app-config/app-config.service.ts` — `ReportEmailSchema`, `encryptSensitiveFields`, `maskSensitiveFields`, `getReportEmailForSend`, `testEmail`
-- **Backend gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_app-config/config_app-config.controller.ts`
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/config-email/page.tsx` และ `_components/config-email-component.tsx`
+- **Backend gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_app-config/config_app-config.controller.ts` — ยืนยันว่ามีแค่ `KeycloakGuard` ไม่มี `AppIdGuard`
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/config-email/config-email.route.tsx` + `config-email-component.tsx`
 - **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-app-config.ts` — `useAppConfigByKey('report_email')`, `useUpsertAppConfig`, `useTestEmail`
 - **Notification consumer:** `micro-notification` อ่านผ่าน TCP จาก `getReportEmailForSend`

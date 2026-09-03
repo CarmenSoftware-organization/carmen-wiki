@@ -1,80 +1,69 @@
 ---
-title: Spot Check — Test Scenarios — Counter
-description: Counter test cases for the spot-check module.
+title: Spot Check — Test Scenarios — Entry & Review Screens
+description: Entry- and review-screen test cases for the spot-check module.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T18:38:42.000Z
 tags: spot-check, test-scenarios, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
 ---
 
-# Spot Check — Test Scenarios — Counter
+# Spot Check — Test Scenarios — Entry & Review Screens
 
 > **At a Glance**
-> **Persona:** Counter (floor-level data entry) &nbsp;·&nbsp; **Module:** [spot-check](/en/inventory/spot-check) &nbsp;·&nbsp; **Scenarios:** ~26
+> **Screens:** `spot-check/:id` (`sc-entry-component.tsx`), `spot-check/:id/review` (`sc-review-component.tsx`) &nbsp;·&nbsp; **Module:** [spot-check](/en/inventory/spot-check) &nbsp;·&nbsp; **Role:** same role as [04-test-scenarios-inventory-controller.md](/en/inventory/spot-check/04-test-scenarios-inventory-controller)
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **E2E coverage:** none — no spot-check Playwright spec exists yet in `../carmen-inventory-frontend-e2e/tests/`
+> **E2E coverage:** no `spot-check` Playwright spec exists; scenarios are manual/planned coverage, cross-referenced against `docs/test-cases/760-spot-check.md`'s `TC-SPC-06*`/`TC-SPC-07*` rows.
 
-## 1. Persona Scope
+## 1. Scope
 
-**Counter** — the floor-level worker who enters `actual_qty` per line on assigned spot checks, flags damaged / unlabelled items, and signs off completed sheets. The scenarios below exercise the actions catalogued in [spot-check/03-user-flow-counter](/en/inventory/spot-check/03-user-flow-counter) Section 3 — opening assigned sheets, entering counts, flagging items, adding comments, completion signoff. Authority anchor `SPC_AUTH_002`.
+The scenarios below exercise the actions catalogued in [spot-check/03-user-flow-counter](/en/inventory/spot-check/03-user-flow-counter) § 3 — line entry, notes, import/export, Save For Resume, Submit For Review, and the final Submit.
 
 ## 2. Functional — Happy Paths
 
 | # | Scenario | Pre-condition | Expected outcome |
 | - | -------- | ------------- | ---------------- |
-| C-F-01 | Open assigned spot-check sheet | Counter has location-grant; spot check in `pending`. | Detail lines visible; `on_hand_qty` (book) hidden if blind-count tenant policy is on (TODO confirm). |
-| C-F-02 | Enter first `actual_qty` on a line | Spot check in `pending`; counter has location-grant. | Spot check advances to `in_progress`. |
-| C-F-03 | Enter `actual_qty` matching `on_hand_qty` | Line on assigned spot check. | `actual_qty` saved; `diff_qty = 0`; `counted_at` / `counted_by_id` stamped on `tb_spot_check_detail`. |
-| C-F-04 | Enter `actual_qty` > `on_hand_qty` (overage) | Line on assigned spot check. | `actual_qty` saved; `diff_qty > 0`; line within tolerance bands if applicable. |
-| C-F-05 | Enter `actual_qty` < `on_hand_qty` (shortage) | Line on assigned spot check. | `actual_qty` saved; `diff_qty < 0`; line eligible for tolerance check at controller level. |
-| C-F-06 | Enter `actual_qty = 0` (zero on shelf) | Line with `on_hand_qty > 0`. | `actual_qty = 0` saved; `diff_qty = -on_hand_qty` (full shortage); line flagged at controller level if exceeds threshold. |
-| C-F-07 | Flag damaged / unlabelled / unfamiliar item | Line on assigned spot check. | `tb_spot_check_detail_comment` row created with photo attachment; Inventory Controller notified. |
-| C-F-08 | Add spot-check-level comment | Spot check in `in_progress`. | `tb_spot_check_comment` row created (e.g. `"shelf restock under way, recommend recount line 4"`). |
-| C-F-09 | Edit own line before submit | Counter previously entered `actual_qty`. | `actual_qty` updated; `counted_at` re-stamped; audit log retains previous-value via comment-thread. |
-| C-F-10 | Sign off completed sheet | All lines have non-null `actual_qty`. | Notification fires to Inventory Controller; counter cannot submit the document. |
+| E-F-01 | Enter `actual_qty` on a line | Any status. | Value committed to local state; "counted" indicator appears. Corresponds to `TC-SPC-060001`. |
+| E-F-02 | Filter pills All/Counted/Uncounted | Mixed counted/uncounted lines present. | List narrows to the selected filter; pill counts match. Corresponds to `TC-SPC-060002`. |
+| E-F-03 | Attach a note and photo to a line | Any time. | `POST /spot-check-detail-comment/:detailId` creates a `tb_spot_check_detail_comment` row with the message and attachment. Corresponds to `TC-SPC-060003`. |
+| E-F-04 | Use the calculator to compute a total | Product has a case/unit conversion. | Calculator returns a total written into the line's `actual_qty`. Corresponds to `TC-SPC-060003`. |
+| E-F-05 | "Set X Empty to Zero" | Some lines still uncounted. | Every uncounted line becomes `0` locally and counts as counted; footer switches to Submit For Review once `uncountedCount = 0`. Corresponds to `TC-SPC-060004`. |
+| E-F-06 | Save For Resume with a partial count | Some lines have values, some do not. | `PATCH .../save` stamps `counted_at`/`counted_by_id` on the submitted lines; first call also flips `pending → in_progress`; navigates back to the list. Corresponds to `TC-SPC-060001`. |
+| E-F-07 | Submit For Review once every line has a value | `uncountedCount === 0`. | `PATCH .../review` recomputes `on_hand_qty`/`diff_qty` for every line from the live ledger balance; navigates to `/review`. Corresponds to `TC-SPC-070001`. |
+| E-F-08 | Review screen shows correct summary tiles | Some lines match, some are overages, some are shortages. | Matches/Variances/Overages/Shortages tiles agree with each line's `diff_qty`; negative variances render in a warning colour, positive in a success colour. Corresponds to `TC-SPC-070002`. |
+| E-F-09 | Submit Spot Check (final) | On the review screen. | `PATCH .../submit` sets `doc_status = completed`; navigates back to the list; no other document is created. Corresponds to `TC-SPC-070003`. |
+| E-F-10 | Export the current counts | Any time. | An `.xlsx` file downloads with id, product code/name/local name/SKU, unit, and current effective `actual_qty` per row. |
+| E-F-11 | Import counts from a spreadsheet | A file with matching SKUs. | Matched rows populate their lines' local values; a toast reports matched/total/skipped counts. |
 
 ## 3. RBAC / Permission
 
 | # | Scenario | Pre-condition | Expected outcome |
 | - | -------- | ------------- | ---------------- |
-| C-R-01 | Counter attempts to enter line outside location | Counter has location-grant for Location A; tries to edit a Location B spot check. | Rejected per `SPC_AUTH_004` with location-scope error. |
-| C-R-02 | Counter attempts to submit spot check | All lines counted; Counter clicks submit. | Submit action not available to Counter per `SPC_AUTH_002`; UI guides counter to "complete sheet" sign-off only. |
-| C-R-03 | Counter attempts to edit a `completed` spot check | Spot check in `completed`. | Edit rejected per `SPC_VAL_007` (immutable). |
-| C-R-04 | Counter without location-grant attempts to view sheet | Counter has Counter role but no location-grant. | Document not visible in "My spot-check assignments"; direct URL access rejected. |
-| C-R-05 | Counter attempts to void spot check | Counter clicks void. | Action not available; only Inventory Controller can void per `SPC_AUTH_001`. |
+| E-R-01 | User without `inventory_management.spot_check` opens `:id` directly | Permission not granted. | Access denied per the generic permission-gate mechanism; no module-specific location or assignment restriction exists to test beyond this. |
 
 ## 4. Validation — Negative Tests
 
 | # | Rule | Scenario | Expected error |
 | - | ---- | -------- | -------------- |
-| C-V-01 | `SPC_VAL_005` | Counter enters negative `actual_qty`. | `"Counted quantity must be zero or positive."` |
-| C-V-02 | `SPC_VAL_005` | Counter enters non-numeric `actual_qty`. | Input rejected at form level with type error. |
-| C-V-03 | `SPC_VAL_004` (controller-facing) | Counter leaves line blank (never enters `actual_qty`). | At Inventory Controller submit, the document blocks with `"Cannot submit spot check — <N> of <M> lines remain uncounted."` Counter must enter the value. |
+| V-01 | `SPC_VAL_007` | Attempt Save on a `completed` or `void` document. | `"Cannot save items when spot check is <status>"`. |
+| V-02 | `SPC_VAL_007` | Save with an empty `items[]` array (e.g. a direct API call with no payload). | `SPOT_CHECK_NO_ITEMS` ("No items to save"). |
+| V-03 | `SPC_VAL_008` | Click Submit Spot Check twice in a row (second click after the first already succeeded). | Second call rejected with `"Spot check is already completed"`. |
+| V-04 | (doc_version) | Save/Review with a stale `doc_version` (e.g. a second tab that has not refetched after another save). | The update fails to match and is rejected; client must reload and retry. |
 
 ## 5. Edge Cases
 
 | # | Scenario | Expected outcome |
 | - | -------- | ---------------- |
-| C-E-01 | Recount of own line — discouraged | Original counter A tries to enter recount on a flagged line. | Convention: recount by a different counter; UI may warn but not hard-block (TODO confirm). |
-| C-E-02 | Mobile / handheld scanner barcode mismatch | Counter scans barcode that doesn't match the line's `product_code`. | Scanner UI rejects; counter must locate correct line or flag as unfamiliar. |
-| C-E-03 | Network drop mid-count | Counter loses connection while entering `actual_qty`. | Local cache retains entry; sync resumes on reconnect; idempotent retry. |
-| C-E-04 | Two counters on same spot check (concurrent) | Two counters share location-grant on the same `tb_spot_check`. | Last-write-wins on per-line basis; comment-thread shows both counters' actions in audit log. |
-| C-E-05 | Spot check voided while counter is entering | Inventory Controller voids; counter has unsaved entry. | Subsequent save rejected with `"Spot check is voided."`; counter's partial entries preserved up to void time. |
+| E-E-01 | Submit with uncounted lines | Both Submit For Review and the final Submit succeed regardless — there is no server-side completeness check (`SPC_VAL_008`); uncounted lines simply carry a full-shortage `diff_qty` into the review. |
+| E-E-02 | Reopen a `completed` spot check from the History tab and click through to Submit For Review again | `reviewItems()` has no status guard and will overwrite `on_hand_qty`/`actual_qty`/`diff_qty`/`counted_at` on every detail row; only the subsequent, terminal Submit call is blocked (`"Spot check is already completed"`). |
+| E-E-03 | Reopen a `void` spot check from the History tab | Same as above — `reviewItems()` proceeds without error even though the document is voided; the final Submit is separately blocked with `"Void spot check cannot be submitted"`. |
+| E-E-04 | Two counters editing the same spot check concurrently | Any user with the module permission can edit any line on any spot check (no location-scoping) — last-write-wins per line on Save; no conflict beyond a stale `doc_version` on the header-level fields. |
+| E-E-05 | All lines reconcile to zero variance | Final Submit succeeds; no document of any kind is created regardless of the variance outcome — this module never posts anywhere, matched or not. |
+| E-E-06 | Import partially matches | Toast reports the skipped count; unmatched lines are left exactly as they were. |
 
-## 6. Configuration / Audit-Trail
+## 6. References
 
-| # | Scenario | Expected outcome |
-| - | -------- | ---------------- |
-| C-C-01 | Blind-count tenant policy (if applicable) | `on_hand_qty` hidden from counter view; only product, UoM, and blank `actual_qty` shown. | Counter cannot bias entry against book; Inventory Controller view retains `on_hand_qty`. (TODO confirm tenant policy applies to spot-check.) |
-| C-C-02 | Audit log per-line counted-by stamp | Every line entered. | `tb_spot_check_detail.counted_by_id` and `counted_at` populated; audit trail intact. |
-| C-C-03 | Comment thread with photo attachment | Counter flags damaged item with phone photo. | `tb_spot_check_detail_comment.attachments` carries `[{originalName, fileToken, contentType}]`. |
-
-> **TODO:** Expand every row with explicit error messages and UI behaviour assertions once frontend / E2E sources are authored. Cross-link to cmobile-side scenarios if the PWA owns the counter UI. Confirm blind-count policy applicability for spot-check.
-
-## 7. References
-
-- **Primary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — Counter UI behaviour source; check `../cmobile/` for the PWA-side spot-check sheet implementation if applicable.
-- **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists.
-- Related: [spot-check/03-user-flow-counter](/en/inventory/spot-check/03-user-flow-counter), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_AUTH_002`, `SPC_AUTH_004`, `SPC_VAL_004`–`SPC_VAL_005`), [spot-check/04-test-scenarios](/en/inventory/spot-check/04-test-scenarios) (cross-persona handoff scenarios), [physical-count/04-test-scenarios-counter](/en/inventory/physical-count/04-test-scenarios-counter) (full-count counterpart scenarios).
+- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/sc-entry-component.tsx`, `sc-review-component.tsx`.
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts` (`saveItems`, `reviewItems`, `getReview`, `submit`).
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists; manual test-case catalog at `docs/test-cases/760-spot-check.md` (`TC-SPC-06*`/`TC-SPC-07*`).
+- Related: [spot-check/03-user-flow-counter](/en/inventory/spot-check/03-user-flow-counter), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_VAL_007`–`008`, `SPC_POST_001`–`004`), [spot-check/04-test-scenarios](/en/inventory/spot-check/04-test-scenarios) (end-to-end scenarios).

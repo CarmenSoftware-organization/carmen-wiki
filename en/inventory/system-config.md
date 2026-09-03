@@ -1,8 +1,8 @@
 ---
 title: System Configuration
-description: Document-flow and accounting-period system configuration — workflow, period, dimensions, numbering.
+description: Document-flow and accounting-period system configuration — workflow, period, running codes are real, working screens; dimension, menu, application-config, and query-dataset are schema/backend features with no working Sysadmin UI.
 published: true
-date: 2026-06-09T00:00:00.000Z
+date: 2026-07-29T11:00:00.000Z
 tags: system-config, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,15 +11,15 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # System Configuration
 
 > **At a Glance**
-> **Module purpose:** Document-flow and accounting-period machinery — approval workflows, accounting periods, dimensions, document numbering, app config, menu &nbsp;·&nbsp; **Audience:** Sysadmin, Workflow Administrator, Finance (period close) &nbsp;·&nbsp; **Key entities/tables:** `tb_workflow`, `tb_period`, `tb_dimension`, `tb_config_running_code`, `tb_application_config`, `tb_menu` &nbsp;·&nbsp; **Sub-pages:** 11
+> **Module purpose:** Document-flow and accounting-period machinery — approval workflows, accounting periods, document numbering, plus several schema-provisioned-but-unimplemented concepts (dimensions, generic app config, menu registry) &nbsp;·&nbsp; **Audience:** Sysadmin, Workflow Administrator, Finance (period close) &nbsp;·&nbsp; **Key entities/tables:** `tb_workflow`, `tb_period`, `tb_dimension`, `tb_config_running_code`, `tb_application_config`, `tb_menu`, `tb_business_unit` (config fields), `tb_notification_template`, `tb_activity` &nbsp;·&nbsp; **Sub-pages:** 14 &nbsp;·&nbsp; **Verified 2026-07-29: 9 of 14 sub-pages describe a real, reachable Sysadmin screen (workflow, period, running-code, config-email, document, dashboard-dataset, company-profile, notification-template, activity-log); dimension and menu have no code path at all beyond a dead schema table; application-config and query-dataset are real backend capabilities with no general admin screen.**
 
 ![System Configuration screen](/screenshots/system-config/index.png)
 
 ## 1. Overview
 
-System Configuration is the umbrella for the **document-flow and accounting-period machinery** that every transactional module depends on. Workflows define multi-stage approval routing with per-stage actions, recipients, and field visibility. Periods define the accounting calendar and gate which dated postings are allowed. Dimensions are the user-extensible custom-field system threaded through every transactional table. Running codes drive document numbering. Application config is the generic key-value escape hatch. The menu registry feeds the app shell.
+System Configuration is the umbrella for the **document-flow and accounting-period machinery** that every transactional module depends on. Workflows define multi-stage approval routing with per-stage actions, recipients, and field visibility. Periods define the accounting calendar and gate which dated postings are allowed (via a plain CRUD screen — see [system-config/period](/en/inventory/system-config/period)). Running codes drive document numbering (via a raw-JSON edit dialog — see [system-config/running-code](/en/inventory/system-config/running-code)). Application config is a real, actively-used key-value table, but consumed key-by-key by specific features (SMTP settings, signature candidates) rather than through a general editor. Dimensions and the menu registry are **schema-provisioned but unimplemented** — no CRUD service or frontend route was found for either, in a repo-wide search of `carmen-inventory-frontend-react` and `carmen-turborepo-backend-v2`.
 
-The six entities here sit between [master-data](/en/inventory/master-data) (the static catalogues — units, vendors, currencies) and the runtime [access-control](/en/inventory/access-control) layer (users, roles, permissions). Where master data answers *what* a transaction is referencing, system configuration answers *how* it should flow, *when* it should post, and *what extra dimensions* it should carry. Most rows are owned and edited by Sysadmin; a few — workflow stages and dimension catalogues in particular — see day-to-day adjustment from a designated Workflow Administrator.
+The six entities here sit between [master-data](/en/inventory/master-data) (the static catalogues — units, vendors, currencies) and the runtime [access-control](/en/inventory/access-control) layer (users, roles, permissions). Where master data answers *what* a transaction is referencing, system configuration answers *how* it should flow, *when* it should post, and *what extra dimensions* it should carry — the last of these ("extra dimensions") remains design intent only today. Most rows are owned and edited by Sysadmin; a few — workflow stages in particular — see day-to-day adjustment from a designated Workflow Administrator.
 
 All six entities live in the **tenant** schema. None of them have a platform counterpart — they describe per-property document flow, so each tenant gets its own copy.
 
@@ -29,33 +29,38 @@ Sysadmin. Workflow definition may be delegated to a Workflow Administrator perso
 
 ## 3. Entity List
 
-| Entity | Purpose | Managed by |
-| ------ | ------- | ---------- |
-| [workflow](/en/inventory/system-config/workflow) | Multi-stage approval workflows with per-stage actions, recipients, field visibility | Sysadmin / Workflow Admin |
-| [period](/en/inventory/system-config/period) | Accounting periods (open/closed/locked) and per-period inventory snapshots | Sysadmin / Finance |
-| [dimension](/en/inventory/system-config/dimension) | User-defined custom fields with per-place display matrix | Sysadmin |
-| [running-code](/en/inventory/system-config/running-code) | Document-number patterns per document type | Sysadmin |
-| [application-config](/en/inventory/system-config/application-config) | Tenant-wide key-value settings + per-user preference overrides | Sysadmin |
-| [menu](/en/inventory/system-config/menu) | Navigation registry rendered by the app shell | Sysadmin |
-| [query-dataset](/en/inventory/system-config/query-dataset) | SQL Workbench — author tenant views, stored procedures, and functions as reusable data sources | Sysadmin |
-| [dashboard-dataset](/en/inventory/system-config/dashboard-dataset) | Read-only catalog of code-registered data feeds available to dashboard widgets | Sysadmin |
-| [config-email](/en/inventory/system-config/config-email) | Per-BU SMTP profile for outbound system email — workflow notifications, scheduled reports, password reset | Sysadmin |
-| [document](/en/inventory/system-config/document) | Tenant-scoped file-storage registry — upload, list, download, and delete for documents attached to transactional records | Sysadmin |
-| [doc-version](/en/inventory/system-config/doc-version) | Optimistic-concurrency `doc_version` guard — clients echo the version on save or get a 409 | Engineering |
+| Entity | Purpose | Managed by | Implementation |
+| ------ | ------- | ---------- | --------------- |
+| [workflow](/en/inventory/system-config/workflow) | Multi-stage approval workflows with per-stage actions, recipients, field visibility | Sysadmin / Workflow Admin | Real screen |
+| [period](/en/inventory/system-config/period) | Accounting periods (open/closed/locked) and per-period inventory snapshots | Sysadmin / Finance | Real screen — plain CRUD, no dedicated Close/Lock/Reopen actions |
+| [running-code](/en/inventory/system-config/running-code) | Document-number patterns per document type | Sysadmin | Real screen — raw JSON edit, no segment builder |
+| [config-email](/en/inventory/system-config/config-email) | Per-BU SMTP profile for outbound system email — workflow notifications, scheduled reports, password reset | Sysadmin by convention | Real screen; **backend has no permission guard** |
+| [document](/en/inventory/system-config/document) | Tenant-scoped file-storage registry — upload, list, download, and delete for documents attached to transactional records | Sysadmin | Real screen; backed by `tb_file_tag` + MinIO (not `tb_attachment`) |
+| [dashboard-dataset](/en/inventory/system-config/dashboard-dataset) | Read-only catalog of code-registered data feeds available to dashboard widgets | Sysadmin | Real screen |
+| [company-profile](/en/inventory/system-config/company-profile) | Two screens (Company Profile + Default Setting) editing disjoint field groups of the current `tb_business_unit` row — identity/address/formats, and PR/SI/PO config + print-form selection | Sysadmin | Real screens; `/system-admin/business-setting` is a dead redirect to Company Profile |
+| [notification-template](/en/inventory/system-config/notification-template) | Reusable message templates picked per workflow stage/action/recipient/channel | Sysadmin / Workflow Admin | Real screen; **only the `app` channel is actually dispatched** — `email` is configurable but silently ignored, `sms`/`line` have no consumer anywhere |
+| [activity-log](/en/inventory/system-config/activity-log) | List/grid UI over the tenant audit log (`tb_activity`) with action/entity-type/actor filters, export, print | Sysadmin / Auditor | Real screen; the *only* activity UI in the product — data model lives at [reporting-audit/activity](/en/inventory/reporting-audit/activity) |
+| [application-config](/en/inventory/system-config/application-config) | Tenant-wide key-value settings + per-user preference overrides | No general admin screen | Real table, consumed key-by-key by config-email/signature features only |
+| [query-dataset](/en/inventory/system-config/query-dataset) | SQL Workbench — author tenant views, stored procedures, and functions as reusable data sources | No admin screen found | Real backend service; **no frontend route exists** |
+| [dimension](/en/inventory/system-config/dimension) | User-defined custom fields with per-place display matrix | Nobody — no CRUD path | Schema only; no service, controller, or route found |
+| [menu](/en/inventory/system-config/menu) | Navigation registry rendered by the app shell | Nobody — table unused | Schema only; zero non-schema code references; nav is a static frontend constant |
+| [doc-version](/en/inventory/system-config/doc-version) | Optimistic-concurrency `doc_version` guard — clients echo the version on save or get a 409 | Engineering | Cross-cutting mechanism, not a screen |
 
 ## 4. Cross-Module Dependencies
 
-- [purchase-request](/en/inventory/purchase-request) requires [system-config/workflow](/en/inventory/system-config/workflow) (PR approval routing), [system-config/running-code](/en/inventory/system-config/running-code) (PR number), [system-config/dimension](/en/inventory/system-config/dimension) (PR header/detail tagging).
-- [purchase-order](/en/inventory/purchase-order) requires [system-config/workflow](/en/inventory/system-config/workflow) (PO approval routing where policy demands it), [system-config/running-code](/en/inventory/system-config/running-code) (PO number), [system-config/dimension](/en/inventory/system-config/dimension) (PO header/detail tagging).
-- [good-receive-note](/en/inventory/good-receive-note) requires [system-config/period](/en/inventory/system-config/period) (posting-date guard), [system-config/running-code](/en/inventory/system-config/running-code) (GRN number), [system-config/dimension](/en/inventory/system-config/dimension) (GRN header/detail tagging), [system-config/workflow](/en/inventory/system-config/workflow) (optional approval).
-- [store-requisition](/en/inventory/store-requisition) requires [system-config/workflow](/en/inventory/system-config/workflow) (SR approval routing — canonical multi-stage workflow), [system-config/running-code](/en/inventory/system-config/running-code) (SR number), [system-config/dimension](/en/inventory/system-config/dimension) (issue tagging — project / event).
-- [inventory-adjustment](/en/inventory/inventory-adjustment) requires [system-config/period](/en/inventory/system-config/period) (posting-date guard), [system-config/running-code](/en/inventory/system-config/running-code) (IA / SI / SO numbers), [system-config/dimension](/en/inventory/system-config/dimension) (stock-in / stock-out tagging), [system-config/workflow](/en/inventory/system-config/workflow) (optional approval).
-- [inventory](/en/inventory/inventory) requires [system-config/period](/en/inventory/system-config/period) (period boundaries on every movement) and [system-config/dimension](/en/inventory/system-config/dimension) (cost-centre allocation on transfer).
+**Workflow attachment is narrower than a prior version of this list claimed.** `enum_workflow_type` has exactly three values — `purchase_request`, `store_requisition`, `purchase_order` — confirmed against the Prisma schema. GRN, inventory-adjustment, physical-count, spot-check, and vendor-pricelist have **no `workflow_type` enum member** and cannot attach a `tb_workflow` row; any "optional approval" language for those modules below has been corrected. Likewise, [system-config/dimension](/en/inventory/system-config/dimension)'s tagging claims have been corrected module-wide — the `dimension` JSONB column exists on these tables but no code was found that reads or writes it anywhere (see that page's Implementation status).
+
+- [purchase-request](/en/inventory/purchase-request) requires [system-config/workflow](/en/inventory/system-config/workflow) (PR approval routing — real, `workflow_type = purchase_request`), [system-config/running-code](/en/inventory/system-config/running-code) (PR number). `dimension` column present, unused.
+- [purchase-order](/en/inventory/purchase-order) requires [system-config/workflow](/en/inventory/system-config/workflow) (PO approval routing — real, `workflow_type = purchase_order`, though `tb_purchase_order.workflow_id` is a loose UUID field, not a declared Prisma relation), [system-config/running-code](/en/inventory/system-config/running-code) (PO number). `dimension` column present, unused.
+- [good-receive-note](/en/inventory/good-receive-note) requires [system-config/period](/en/inventory/system-config/period) (posting-date guard), [system-config/running-code](/en/inventory/system-config/running-code) (GRN number). **No workflow attachment** — `goods_received_note` is not a member of `enum_workflow_type`.
+- [store-requisition](/en/inventory/store-requisition) requires [system-config/workflow](/en/inventory/system-config/workflow) (SR approval routing — real, `workflow_type = store_requisition`), [system-config/running-code](/en/inventory/system-config/running-code) (SR number).
+- [inventory-adjustment](/en/inventory/inventory-adjustment) requires [system-config/period](/en/inventory/system-config/period) (posting-date guard), [system-config/running-code](/en/inventory/system-config/running-code) (IA / SI / SO numbers). **No workflow attachment.**
+- [inventory](/en/inventory/inventory) requires [system-config/period](/en/inventory/system-config/period) (period boundaries on every movement). `dimension` column present, unused.
 - [costing](/en/inventory/costing) requires [system-config/period](/en/inventory/system-config/period) (the cost-close engine writes `tb_period_snapshot`).
-- [physical-count](/en/inventory/physical-count) requires [system-config/period](/en/inventory/system-config/period) (count documents are frozen against a period), [system-config/running-code](/en/inventory/system-config/running-code) (count document number), [system-config/workflow](/en/inventory/system-config/workflow) (variance approval).
-- [spot-check](/en/inventory/spot-check) requires [system-config/running-code](/en/inventory/system-config/running-code) (document number), [system-config/workflow](/en/inventory/system-config/workflow) (variance approval).
-- [vendor-pricelist](/en/inventory/vendor-pricelist) requires [system-config/running-code](/en/inventory/system-config/running-code) (pricelist reference), [system-config/workflow](/en/inventory/system-config/workflow) (optional publish-approval), [system-config/dimension](/en/inventory/system-config/dimension) (pricelist tagging).
-- [system-config/application-config](/en/inventory/system-config/application-config) and [system-config/menu](/en/inventory/system-config/menu) are referenced by every module — application-config tunes feature toggles and defaults, menu controls navigation visibility.
+- [physical-count](/en/inventory/physical-count) requires [system-config/period](/en/inventory/system-config/period) (count documents are frozen against a period), [system-config/running-code](/en/inventory/system-config/running-code) (count document number). **No workflow attachment.**
+- [spot-check](/en/inventory/spot-check) requires [system-config/running-code](/en/inventory/system-config/running-code) (document number). **No workflow attachment.**
+- [vendor-pricelist](/en/inventory/vendor-pricelist) requires [system-config/running-code](/en/inventory/system-config/running-code) (pricelist reference). **No workflow attachment.**
+- [system-config/application-config](/en/inventory/system-config/application-config) is a real table, but consumed key-by-key by specific features (SMTP config, signature settings) — not a general feature-flag layer read by every module. [system-config/menu](/en/inventory/system-config/menu) has no confirmed consumer anywhere; navigation is a static frontend constant instead.
 
 ## 5. References
 

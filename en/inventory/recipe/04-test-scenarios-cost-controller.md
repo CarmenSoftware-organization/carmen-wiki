@@ -2,7 +2,7 @@
 title: Recipe — Test Scenarios — Cost Controller
 description: Cost Controller's test cases (cost review, drift, co-approval, variance, pricing-history) for the recipe module.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: recipe, test-scenarios, cost-controller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -13,7 +13,9 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **At a Glance**
 > **Persona:** Cost Controller (+ Cost Control Department) &nbsp;·&nbsp; **Module:** [recipe](/en/inventory/recipe) &nbsp;·&nbsp; **Scenarios:** ~26
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **E2E coverage:** none at this time — Cost-Controller-internal E2E is a gap; closest adjacent coverage is indirect via `tests/701-sr.spec.ts` in `../carmen-inventory-frontend-e2e/`
+> **E2E coverage:** none at this time — Cost-Controller-internal E2E is a gap; the module's only automated spec is `tests/121-recipe-equipment-category.spec.ts`
+
+> **Implementation status (verified 2026-07-15).** The Cost Controller feature set these scenarios test does not exist: no `recipe:edit-cost` permission or cost-columns-only edit mode, no co-approval gate, no cost-drift or variance dashboards, no `tb_recipe_pricing_history` writes, no cost cascades. What is testable today is the shared recipe form's cost sidebar — manually-entered cost inputs and the client-side derived figures (`use-recipe-cost-calc.ts`, including its `actual_food_cost_percentage = ingredient cost / selling price` formula) — under an admin login. Treat the rest as the design acceptance plan.
 
 This page captures the test scenarios that the Cost Controller persona (Cost Controller + Cost Control Department) directly drives in the `recipe` module. The Cost Controller is read across the recipe library and writes on cost / pricing columns only (per `REC_AUTH_006`); their primary work is cost drift monitoring, co-approval of off-target publishes (per `REC_AUTH_007`), and theoretical-vs-actual variance investigation. Scenarios are grouped into **happy paths** (cost-only edit; co-approval at off-target publish; sub-recipe cascade verification; variance dashboard; category-level target adjustment), **RBAC** (cost controller without `recipe:edit-cost`; attempted ingredient edits; auditor read-only side), **validation** (negative tests against `REC_VAL_008` cost percentage bounds, pricing-history integrity), and **edge cases** around high-fanout ingredient drift, sub-recipe deep cascade, currency precision, multi-tenant target settings. Cross-persona handoffs that pivot off the Cost Controller (Scenarios 2, 3, 13 in the parent overview) live in [04-test-scenarios.md](./04-test-scenarios.md), not here.
 
@@ -68,6 +70,6 @@ This page captures the test scenarios that the Cost Controller persona (Cost Con
 - Parent overview: [04-test-scenarios.md](./04-test-scenarios.md) — cross-persona handoffs that pivot off the Cost Controller: Scenario 2 (off-target co-approval), Scenario 3 (sub-recipe cost cascade), Scenario 13 (high-fanout cost drift).
 - User flow: [03-user-flow-cost-controller.md](./03-user-flow-cost-controller.md) — happy-path source for Section 1 above; describes the 10-step primary flow (drift dashboard → drill → corrective action → variance → period close) and the decision branches.
 - Business rules being verified: [02-business-rules.md](./02-business-rules.md) Section 2 — validation `REC_VAL_008` (cost percentage bounds); Section 3 — calculation rules `REC_CALC_001`–`REC_CALC_015` (the math the Cost Controller verifies); Section 4 — `REC_AUTH_006`–`REC_AUTH_008` (Cost Controller's authority scope); Section 5 — `REC_POST_006` (sub-recipe cascade), `REC_POST_010` (pricing-only edit); Section 6 — `REC_XMOD_005`–`REC_XMOD_006` (costing-module coupling), `REC_XMOD_009` (audit / versioning).
-- E2E spec: **none at the time of writing** — Cost-Controller-internal E2E coverage is a gap; closest adjacent coverage is indirect via the SR module's `701-sr.spec.ts` (variance reports indirectly).
+- E2E spec: **none at the time of writing** — Cost-Controller-internal E2E coverage is a gap; the module's only automated spec is `121-recipe-equipment-category.spec.ts` (no variance report exists to be covered).
 - Cross-link: [costing](/en/inventory/costing) — upstream cost feed; cost-drift events fire from there.
 - Cross-link: [inventory](/en/inventory/inventory) — theoretical-vs-actual variance dashboard joins recipe theoretical OUT with actual stock movements.

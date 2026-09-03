@@ -2,7 +2,7 @@
 title: การปรับปรุงสต๊อก — โมเดลข้อมูล — ตารางคอมเมนต์
 description: ตารางคอมเมนต์ / ไฟล์แนบระดับเอกสารและระดับบรรทัดสำหรับโมดูลการปรับปรุงสต๊อก — ข้อความ, JSON ไฟล์แนบ, และ enum ประเภทคอมเมนต์ (user/system)
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-07-15T17:02:22.000Z
 tags: inventory-adjustment, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -12,7 +12,7 @@ dateCreated: 2026-05-20T00:00:00.000Z
 
 ## 1. ภาพรวม
 
-โมดูลการปรับปรุงสต๊อก persist บันทึกที่ผู้ใช้เขียนและที่ระบบสร้าง รวมถึงไฟล์แนบบนตาราง `*_comment` เฉพาะ แยกจากตาราง header / detail ที่ถือวงจรชีวิตซึ่งบันทึกอยู่ใน [01 — โมเดลข้อมูล](/th/inventory/inventory-adjustment/01-data-model) แถวคอมเมนต์ทุกแถวถือข้อความอิสระ `message`, array JSON `attachments` ของ S3-token records (`{originalName, fileToken, contentType}`) และ discriminator `type` (`enum_comment_type`) ที่แยกระหว่างเอนทรีที่ผู้ใช้เขียนกับบันทึกการเปลี่ยนสถานะที่ระบบสร้าง ตารางคอมเมนต์ระดับเอกสารผูกกับ header ของเอกสาร (`tb_stock_in_comment`, `tb_stock_out_comment`); ตารางคอมเมนต์ระดับบรรทัดผูกกับบรรทัดเฉพาะ (`tb_stock_in_detail_comment`, `tb_stock_out_detail_comment`) ทำให้สามารถมีหลักฐานต่อบรรทัด เช่น รูปความเสียหายของสินค้านั้น ๆ หรือ references ของ vendor-RMA
+โมดูลการปรับปรุงสต๊อก persist บันทึกที่ผู้ใช้เขียนและที่ระบบสร้าง รวมถึงไฟล์แนบบนตาราง `*_comment` เฉพาะ แยกจากตาราง header / detail ที่บันทึกอยู่ใน [01 — โมเดลข้อมูล](/th/inventory/inventory-adjustment/01-data-model) แถวคอมเมนต์ทุกแถวถือข้อความอิสระ `message`, array JSON `attachments` ของ S3-token records (`{originalName, fileToken, contentType}`) และ discriminator `type` (`enum_comment_type`) ที่แยกระหว่างเอนทรีที่ผู้ใช้เขียนกับที่ระบบสร้าง ตารางคอมเมนต์ระดับเอกสารผูกกับ header ของเอกสาร (`tb_stock_in_comment`, `tb_stock_out_comment`); ตารางคอมเมนต์ระดับบรรทัดผูกกับบรรทัดเฉพาะ (`tb_stock_in_detail_comment`, `tb_stock_out_detail_comment`) ทำให้สามารถมีหลักฐานต่อบรรทัด เช่น รูปความเสียหายของสินค้านั้น ๆ ไฟล์แนบใช้งานได้อย่างอิสระแต่เป็น optional ล้วน ๆ — ไม่มีกฎตรวจสอบใดในโมดูลนี้บังคับให้ต้องมีคอมเมนต์หรือไฟล์แนบบนเอกสารหรือ reason code ใด ๆ (ดู [02 — กติกาทางธุรกิจ](/th/inventory/inventory-adjustment/02-business-rules))
 
 ## 2. รูปทรงร่วม
 
@@ -82,8 +82,7 @@ updated_by_id       uuid / FK to tb_user
 
 ## 4. ส่วนอ้างอิง
 
-- ส่วนคู่ขนาน: [01 — โมเดลข้อมูล](/th/inventory/inventory-adjustment/01-data-model) — ตาราง header / detail, ตัวจำแนกประเภท `tb_adjustment_type`, นิยาม enum (`enum_adjustment_type`, `enum_doc_status`, `enum_last_action`, `enum_comment_type`), ERD และตารางความต่างจาก design
-- ส่วนคู่ขนาน: [02 — กฎเชิงธุรกิจ](/th/inventory/inventory-adjustment/02-business-rules) — `ADJ_VAL_010` ใช้ `tb_stock_in_comment.attachments` / `tb_stock_out_comment.attachments` บังคับใช้กฎเรื่องเอกสารแนบสนับสนุนเมื่อ adjustment type มี `info.requiresDocument = true`
-- ต้นทาง: [03 — User Flow: Store Keeper](/th/inventory/inventory-adjustment/03-user-flow-store-keeper) — อธิบายการ drag-and-drop ไฟล์แนบลงในแถวคอมเมนต์ระหว่างสร้างเอกสารปรับปรุง
-- ต้นทาง: [04 — Test Scenarios: Inventory Controller](/th/inventory/inventory-adjustment/04-test-scenarios-inventory-controller) — IC-EDGE-08 ครอบคลุมการ flag escalation ผ่านคอมเมนต์โดย Department Manager
+- ส่วนคู่ขนาน: [01 — โมเดลข้อมูล](/th/inventory/inventory-adjustment/01-data-model) — ตาราง header / detail, ตัวจำแนกประเภท `tb_adjustment_type`, นิยาม enum (`enum_adjustment_type`, `enum_doc_status`, `enum_last_action`, `enum_comment_type`) และแคตตาล็อกหมายเหตุเกี่ยวกับ carmen/docs
+- ส่วนคู่ขนาน: [02 — กติกาทางธุรกิจ](/th/inventory/inventory-adjustment/02-business-rules) — กฎตรวจสอบจริงของโมดูล; ไม่มีกฎใดผูกคอมเมนต์/ไฟล์แนบกับ flag บังคับแนบเอกสาร (ดู § 1 ด้านบน)
+- ต้นทาง: [03 — User Flow](/th/inventory/inventory-adjustment/03-user-flow) — วงจรชีวิตเอกสาร; คอมเมนต์เป็นหลักฐาน optional ไม่ใช่ gate การ submit
 - ต้นทาง: [ภาพรวมโมดูลการปรับปรุงสต๊อก](/th/inventory/inventory-adjustment) — หน้า landing ของโมดูล

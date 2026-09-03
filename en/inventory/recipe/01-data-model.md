@@ -2,7 +2,7 @@
 title: Recipe — Data Model
 description: Entities, fields, relationships, and enums for the recipe module.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: recipe, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 # Recipe — Data Model
 
 > **At a Glance**
-> **Tables:** `tb_recipe` &nbsp;·&nbsp; `tb_recipe_ingredient` &nbsp;·&nbsp; `tb_recipe_preparation_step` &nbsp;·&nbsp; `tb_recipe_yield_variant` &nbsp;·&nbsp; `tb_recipe_version` &nbsp;·&nbsp; `tb_recipe_pricing_history` &nbsp;·&nbsp; `tb_recipe_category` / `tb_recipe_cuisines` (masters)
+> **Tables:** `tb_recipe` &nbsp;·&nbsp; `tb_recipe_ingredient` &nbsp;·&nbsp; `tb_recipe_preparation_step` &nbsp;·&nbsp; `tb_recipe_image` / `tb_recipe_preparation_step_image` (galleries) &nbsp;·&nbsp; `tb_recipe_yield_variant` &nbsp;·&nbsp; `tb_recipe_version` &nbsp;·&nbsp; `tb_recipe_pricing_history` &nbsp;·&nbsp; `tb_recipe_category` / `tb_recipe_cuisines` (masters)
 > **Audience:** Developer / Auditor (dev reference)
 > **Key FKs:** recipe `→ tb_recipe_category` / `tb_recipe_cuisines` (Restrict); ingredient `→ tb_product` (when type=product) **OR** `→ tb_recipe` self-ref via `sub_recipe_id` (when type=recipe); ingredient `→ tb_unit` ×2 (recipe + inventory UoM); variant / step / version / pricing-history all `→ tb_recipe` (Cascade)
 > **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*`; **no `tb_recipe_comment` and no workflow** — audit comes from `tb_recipe_version` snapshots + `tb_recipe_pricing_history`; 3-state lifecycle `DRAFT / PUBLISHED / ARCHIVED`
@@ -24,9 +24,9 @@ dateCreated: 2026-05-15T16:00:00.000Z
 
 ## 1. Overview
 
-The recipe module owns eight tenant-schema entities plus four module-specific enums. The core trio is the recipe header (`tb_recipe`), its ingredient lines (`tb_recipe_ingredient`), and its preparation steps (`tb_recipe_preparation_step`); two version-history tables capture change over time (`tb_recipe_version` — full snapshot, `tb_recipe_pricing_history` — cost / price snapshots); a yield-variant table (`tb_recipe_yield_variant`) supports recipes that produce multiple sellable sizes from one formula; and three master-data tables (`tb_recipe_category`, `tb_recipe_cuisines`, plus the equipment pair `tb_recipe_equipment_category` / `tb_recipe_equipment`) provide categorical taxonomies referenced by the header and the steps. The four enums (`enum_recipe_status`, `enum_recipe_difficulty`, `enum_ingredient_type`, `enum_temperature_unit`) are recipe-specific; the recipe module does **not** reuse the shared `enum_doc_status` because recipes do not flow through the standard document workflow — they have their own three-state lifecycle (`DRAFT / PUBLISHED / ARCHIVED`).
+The recipe module owns twelve tenant-schema entities plus four module-specific enums. The core trio is the recipe header (`tb_recipe`), its ingredient lines (`tb_recipe_ingredient`), and its preparation steps (`tb_recipe_preparation_step`); two image-gallery tables carry media (`tb_recipe_image` for the header gallery, `tb_recipe_preparation_step_image` for per-step photos — images are first-class rows with `file_token` / `sort_order` / `is_primary`, **not** JSON columns on the parent); two version-history tables model change over time (`tb_recipe_version` — full snapshot, `tb_recipe_pricing_history` — cost / price snapshots; both currently schema-only, with no service writing them); a yield-variant table (`tb_recipe_yield_variant`) supports recipes that produce multiple sellable sizes from one formula; and four master-data tables (`tb_recipe_category`, `tb_recipe_cuisines`, plus the equipment pair `tb_recipe_equipment_category` / `tb_recipe_equipment`) provide categorical taxonomies referenced by the header and the steps. The four enums (`enum_recipe_status`, `enum_recipe_difficulty`, `enum_ingredient_type`, `enum_temperature_unit`) are recipe-specific; the recipe module does **not** reuse the shared `enum_doc_status` because recipes do not flow through the standard document workflow — they have their own three-state lifecycle (`DRAFT / PUBLISHED / ARCHIVED`).
 
-The recipe sits **upstream of [inventory](/en/inventory/inventory) consumption and downstream of [product](/en/inventory/product) catalog data**. Each ingredient line resolves to either a product (`tb_recipe_ingredient.product_id → tb_product`, when `ingredient_type = product`) or a sub-recipe (`sub_recipe_id → tb_recipe`, when `ingredient_type = recipe`); both paths are present on the same model with a single `enum_ingredient_type` discriminator. The ingredient line carries two unit references — `ingredient_unit_id` (the recipe-display UoM) and `inventory_unit_id` (the source's stock UoM) — plus a `conversion_factor` that bridges them; this lets a recipe say "200 g of flour" while inventory holds "1 kg bags" without ambiguity. Cost data is stored on the line (`cost_per_unit`, `wastage_percentage`, `net_cost`, `wastage_cost`) and rolls up onto the header (`total_ingredient_cost`, plus the labor / overhead / per-portion / pricing / margin columns); for sub-recipe ingredients the cost roll-up is recursive — when the sub-recipe's cost changes, every parent recipe's cost re-computes.
+The recipe sits **upstream of [inventory](/en/inventory/inventory) consumption and downstream of [product](/en/inventory/product) catalog data**. Each ingredient line resolves to either a product (`tb_recipe_ingredient.product_id → tb_product`, when `ingredient_type = product`) or a sub-recipe (`sub_recipe_id → tb_recipe`, when `ingredient_type = recipe`); both paths are present on the same model with a single `enum_ingredient_type` discriminator. The ingredient line carries two unit references — `ingredient_unit_id` (the recipe-display UoM) and `inventory_unit_id` (the source's stock UoM) — plus a `conversion_factor` that bridges them; this lets a recipe say "200 g of flour" while inventory holds "1 kg bags" without ambiguity. Cost data is modelled on the line (`cost_per_unit`, `wastage_percentage`, `net_cost`, `wastage_cost`) with header rollup columns (`total_ingredient_cost`, plus the labor / overhead / per-portion / pricing / margin columns); the recursive sub-recipe cost cascade the model implies is design-stage — no roll-up code exists, and today the header cost fields are populated directly from the form (line-level costing has no write path at all).
 
 A noteworthy structural point: unlike most documents in the system, the recipe is **not** a workflow-driven document — there is no `workflow_id`, no `tb_recipe_comment` table, no `workflow_history` / `workflow_current_stage` columns. State change (`DRAFT → PUBLISHED → ARCHIVED`) is captured as a single enum on the header (`status`), plus two timestamp columns (`published_at`, `archived_at`); auditability comes from the dedicated `tb_recipe_version` table (full versioned snapshots of `recipe_data`, `ingredients_data`, `steps_data`, `variants_data` JSON blobs) and `tb_recipe_pricing_history` (cost / price snapshots with `change_reason` and `effective_date`). The carmen/docs PRD describes a hierarchical recipe / sub-recipe model, ingredient `type` enum, and a `Recipe → Menu Item` linkage; the actual Prisma schema has the recipe / sub-recipe link on `tb_recipe_ingredient.sub_recipe_id`, the discriminator on `enum_ingredient_type`, but **no `tb_menu_item` table** — menu-item linkage is application-layer or in a downstream POS-integration package not present in the tenant schema. See Section 5.
 
@@ -38,13 +38,13 @@ Recipe header. Carries identity, classification, yield, timing, cost rollup, pri
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
+| `doc_version` | `Int @default(0) @db.Integer` | No | Optimistic-concurrency counter — the update/patch DTOs require the client's last-read `doc_version` and the service updates `where: { id, doc_version }` (409-style failure on mismatch). |
 | `id` | `String @db.Uuid` | No | Primary key, generated via `gen_random_uuid()`. |
 | `code` | `String @db.VarChar` | No | Human-readable recipe code (e.g. `RCP-HSBURG-001`). Required. |
 | `name` | `String @db.VarChar` | No | Recipe display name. Required. |
 | `description` | `String? @db.VarChar` | Yes | Free-text description of the dish. |
 | `note` | `String? @db.VarChar` | Yes | Internal note for kitchen / cost control. |
 | `is_active` | `Boolean?` | Yes | Soft-active flag; default `true`. Distinct from `status`. |
-| `images` | `Json? @default("[]") @db.JsonB` | Yes | Array of image refs (main + gallery); default `[]`. |
 | `category_id` | `String @db.Uuid` | No | FK to `tb_recipe_category.id`. Required. Restrict-on-delete. |
 | `cuisine_id` | `String @db.Uuid` | No | FK to `tb_recipe_cuisines.id`. Required. Restrict-on-delete. |
 | `difficulty` | `enum_recipe_difficulty` | No | `EASY` / `MEDIUM` / `HARD`; default `MEDIUM`. |
@@ -53,20 +53,20 @@ Recipe header. Carries identity, classification, yield, timing, cost rollup, pri
 | `default_variant_id` | `String? @db.Uuid` | Yes | FK to `tb_recipe_yield_variant.id` (named relation `DefaultVariant`); points to the yield variant treated as the default for pricing / display. Nullable because a recipe may have no variants (single yield). |
 | `prep_time` | `Int @default(0)` | No | Preparation time in minutes. |
 | `cook_time` | `Int @default(0)` | No | Cooking time in minutes. Note: there is **no** persisted `total_time` column; the rollup is computed at display time as `prep_time + cook_time`. |
-| `total_ingredient_cost` | `Decimal @default(0) @db.Decimal(20, 5)` | No | Σ of net ingredient line costs (after wastage). |
-| `labor_cost` | `Decimal @default(0) @db.Decimal(20, 5)` | No | Recipe labor cost component, typically computed as `(prep_time + cook_time) × labor_rate × labor_cost_percentage`. |
-| `overhead_cost` | `Decimal @default(0) @db.Decimal(20, 5)` | No | Recipe overhead cost component. |
-| `cost_per_portion` | `Decimal @default(0) @db.Decimal(20, 5)` | No | `(total_ingredient_cost + labor_cost + overhead_cost) / base_yield` (or per-variant yield when a variant is in scope). |
-| `suggested_price` | `Decimal? @db.Decimal(20, 5)` | Yes | System-computed price = `cost_per_portion / (1 − target_food_cost_percentage/100)`. |
+| `total_ingredient_cost` | `Decimal @default(0) @db.Decimal(20, 5)` | No | Ingredient cost total. **Manually entered** on the current form (`recipe-cost-breakdown.tsx` registers it as a plain input) — the design intent of Σ line `net_cost` has no implementation because ingredient lines are not persisted yet. |
+| `labor_cost` | `Decimal @default(0) @db.Decimal(20, 5)` | No | Labor cost component. Manually entered on the form; no `labor_rate` tenant config exists anywhere in the backend. |
+| `overhead_cost` | `Decimal @default(0) @db.Decimal(20, 5)` | No | Overhead cost component. Manually entered on the form. |
+| `cost_per_portion` | `Decimal @default(0) @db.Decimal(20, 5)` | No | Computed client-side (`use-recipe-cost-calc.ts`): `(total_ingredient_cost + labor_cost + overhead_cost) / base_yield`, rounded to 2 dp. |
+| `suggested_price` | `Decimal? @db.Decimal(20, 5)` | Yes | Computed client-side: `cost_per_portion / (1 − target_food_cost_percentage/100)` when `0 < target < 100`, else null. |
 | `selling_price` | `Decimal? @db.Decimal(20, 5)` | Yes | Actual chosen selling price (may differ from `suggested_price` for menu strategy). |
-| `target_food_cost_percentage` | `Decimal? @default(33.00) @db.Decimal(20, 5)` | Yes | Target food-cost % (commonly 28–35); default 33. |
-| `actual_food_cost_percentage` | `Decimal? @db.Decimal(20, 5)` | Yes | `cost_per_portion / selling_price × 100` when both are set. |
-| `gross_margin` | `Decimal? @db.Decimal(20, 5)` | Yes | `selling_price − cost_per_portion` (absolute amount). |
-| `gross_margin_percentage` | `Decimal? @db.Decimal(20, 5)` | Yes | `(selling_price − cost_per_portion) / selling_price × 100`. |
-| `labor_cost_percentage` | `Decimal? @default(30.00) @db.Decimal(20, 5)` | Yes | Labor cost as % of total; default 30. |
-| `overhead_percentage` | `Decimal? @default(20.00) @db.Decimal(20, 5)` | Yes | Overhead as % of total; default 20. |
-| `carbon_footprint` | `Decimal? @default(0) @db.Decimal(20, 5)` | Yes | Per-portion CO₂-equivalent footprint (kg CO₂e); rolls up from ingredient footprints. |
-| `deduct_from_stock` | `Boolean @default(true)` | No | Whether menu-sale fires recipe-explosion stock OUT. `false` for menu items priced flat (e.g. service charge "recipes") that should not trigger inventory deduction. |
+| `target_food_cost_percentage` | `Decimal? @default(33.00) @db.Decimal(20, 5)` | Yes | Target food-cost % (commonly 28–35); schema default 33. |
+| `actual_food_cost_percentage` | `Decimal? @db.Decimal(20, 5)` | Yes | Computed client-side as `total_ingredient_cost / selling_price × 100` when `selling_price > 0` (note: ingredient cost over price, **not** `cost_per_portion / selling_price` — see `use-recipe-cost-calc.ts`). |
+| `gross_margin` | `Decimal? @db.Decimal(20, 5)` | Yes | `selling_price − cost_per_portion` (absolute amount), computed client-side. |
+| `gross_margin_percentage` | `Decimal? @db.Decimal(20, 5)` | Yes | `(selling_price − cost_per_portion) / selling_price × 100`, computed client-side. |
+| `labor_cost_percentage` | `Decimal? @default(30.00) @db.Decimal(20, 5)` | Yes | Schema default 30, but the form's calc hook **overwrites** it with `labor_cost / selling_price × 100` on every recalculation. |
+| `overhead_percentage` | `Decimal? @default(20.00) @db.Decimal(20, 5)` | Yes | Schema default 20, but the form's calc hook **overwrites** it with `overhead_cost / selling_price × 100`. |
+| `carbon_footprint` | `Decimal? @default(0) @db.Decimal(20, 5)` | Yes | Manually-entered CO₂-equivalent footprint; no per-ingredient rollup exists. |
+| `deduct_from_stock` | `Boolean @default(true)` | No | Single boolean flag edited on the form's hero section. The design intent (menu-sale fires recipe-explosion stock OUT; `false` = no inventory deduction) has no consuming code yet. |
 | `status` | `enum_recipe_status @default(DRAFT)` | No | Lifecycle state; default `DRAFT`. |
 | `tags` | `Json @default("[]") @db.JsonB` | No | Free-text tag array (e.g. `["vegan", "halal", "summer-menu"]`). |
 | `allergens` | `Json @default("[]") @db.JsonB` | No | Allergen flag array (e.g. `["gluten", "dairy", "nuts"]`); rolled up to menu-item display for front-of-house. |
@@ -79,7 +79,7 @@ Recipe header. Carries identity, classification, yield, timing, cost rollup, pri
 | `deleted_at` | `DateTime? @db.Timestamptz(6)` | Yes | Soft-delete timestamp. |
 | `deleted_by_id` | `String? @db.Uuid` | Yes | Soft-delete actor id. |
 
-**Constraints:** `@id` on `id`. FKs: `category_id → tb_recipe_category.id` (Restrict on delete), `cuisine_id → tb_recipe_cuisines.id` (Restrict), `default_variant_id → tb_recipe_yield_variant.id` (Restrict, named relation `DefaultVariant`). Back-relations: many `tb_recipe_ingredient` (as recipe), many `tb_recipe_ingredient` via `SubRecipeIngredients` (when used as a sub-recipe ingredient elsewhere), many `tb_recipe_preparation_step`, many `tb_recipe_yield_variant` (named relation `RecipeYieldVariants`), many `tb_recipe_version`, many `tb_recipe_pricing_history`.
+**Constraints:** `@id` on `id`. FKs: `category_id → tb_recipe_category.id` (Restrict on delete), `cuisine_id → tb_recipe_cuisines.id` (Restrict), `default_variant_id → tb_recipe_yield_variant.id` (Restrict, named relation `DefaultVariant`). Back-relations: many `tb_recipe_ingredient` (as recipe), many `tb_recipe_ingredient` via `SubRecipeIngredients` (when used as a sub-recipe ingredient elsewhere), many `tb_recipe_preparation_step`, many `tb_recipe_yield_variant` (named relation `RecipeYieldVariants`), many `tb_recipe_version`, many `tb_recipe_pricing_history`, many `tb_recipe_image` (header gallery — Cascade on delete; `is_primary` marks the card thumbnail returned as `primary_image` by the list endpoint).
 **Indexes:** `@@unique([code, name, deleted_at])` as `recipe_code_name_u`; `@@index([code])` as `recipe_code_idx`; `@@index([name])` as `recipe_name_idx`; `@@index([code, name])` as `recipe_code_name_idx`. Note: there is **no** `@@unique([code, deleted_at])` — the unique key is the (code, name) pair, so two recipes can share a code if their names differ (uncommon but permitted).
 
 ### 2.2 tb_recipe_ingredient
@@ -88,6 +88,7 @@ Recipe ingredient line. Identifies what goes into the recipe (a product or anoth
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
+| `doc_version` | `Int @default(0) @db.Integer` | No | Optimistic-concurrency counter (standard pattern; no line-level write path exists yet). |
 | `id` | `String @db.Uuid` | No | Primary key. |
 | `sequence_no` | `Int?` | Yes | Line ordering within the recipe; default `1`. |
 | `name` | `String @db.VarChar` | No | Display name on the recipe (may differ from the product / sub-recipe name — e.g. "diced onion" pointing at the `Onion` product). |
@@ -115,6 +116,7 @@ Recipe ingredient line. Identifies what goes into the recipe (a product or anoth
 
 **Constraints:** `@id` on `id`. FKs: `recipe_id → tb_recipe.id` (Cascade); `product_id → tb_product.id` (Restrict, nullable); `sub_recipe_id → tb_recipe.id` (Restrict, nullable, named relation `SubRecipeIngredients`); `ingredient_unit_id → tb_unit.id` (Restrict, named relation `recipe_ingredient_unit`); `inventory_unit_id → tb_unit.id` (Restrict, nullable, named relation `recipe_inventory_unit`); `tb_recipe_yield_variantId → tb_recipe_yield_variant.id` (nullable).
 **Indexes:** None declared beyond the primary key. There is **no** unique index on `(recipe_id, product_id)` or `(recipe_id, sub_recipe_id)` — the same product / sub-recipe can appear multiple times on the same recipe (e.g. as two separate lines for two preparation stages), which is intentional.
+**Implementation status:** no create/update endpoint exists for ingredient lines anywhere in the backend (`tb_recipe_ingredient` is only read in `recipe.service.ts findOne` and counted in the sub-recipe delete guard); the recipe form's ingredient grid is preview-only and is not included in the save payload.
 
 ### 2.3 tb_recipe_preparation_step
 
@@ -122,13 +124,13 @@ Preparation step on a recipe. Ordered, with optional media, timing, temperature,
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
+| `doc_version` | `Int @default(0) @db.Integer` | No | Optimistic-concurrency counter — the step patch endpoint requires it (`preparation-steps.service.ts patchStep`). |
 | `id` | `String @db.Uuid` | No | Primary key. |
 | `recipe_id` | `String @db.Uuid` | No | FK to `tb_recipe.id` (Cascade on delete). |
-| `sequence_no` | `Int` | No | Step order within the recipe (1, 2, 3, ...). Required. |
+| `sequence_no` | `Int` | No | Step order within the recipe (1, 2, 3, ...). Required. Auto-assigned after the current max on bulk add; rewritten 1..n on reorder. |
 | `title` | `String? @db.VarChar` | Yes | Short title (e.g. "Sear the steak"). |
 | `description` | `String @db.Text` | No | Step body — instruction text. Required. |
-| `images` | `Json? @default("[]") @db.JsonB` | Yes | Step image refs; default `[]`. |
-| `videos` | `Json? @default("[]") @db.JsonB` | Yes | Step video refs; default `[]`. |
+| `videos` | `Json? @default("[]") @db.JsonB` | Yes | Step video refs; default `[]`. (Step **images** are not a JSON column — they live in the child table `tb_recipe_preparation_step_image` with `file_token` / `caption` / `alt_text` / `sort_order` / `is_primary`, Cascade on step delete.) |
 | `duration` | `Int?` | Yes | Step duration in minutes. |
 | `temperature` | `Decimal? @db.Decimal(20, 5)` | Yes | Required cooking / holding temperature for the step. |
 | `temperature_unit` | `enum_temperature_unit?` | Yes | `c` (Celsius) or `f` (Fahrenheit); default `c`. |
@@ -143,12 +145,12 @@ Preparation step on a recipe. Ordered, with optional media, timing, temperature,
 | `deleted_at` | `DateTime? @db.Timestamptz(6)` | Yes | Soft-delete timestamp. |
 | `deleted_by_id` | `String? @db.Uuid` | Yes | Soft-delete actor id. |
 
-**Constraints:** `@id` on `id`. FK `recipe_id → tb_recipe.id` (Cascade).
-**Indexes:** None declared beyond the primary key. There is **no** unique index on `(recipe_id, sequence_no)` — sequence numbers are application-managed; re-ordering rewrites the column on touched rows.
+**Constraints:** `@id` on `id`. FK `recipe_id → tb_recipe.id` (Cascade). Back-relation: many `tb_recipe_preparation_step_image`.
+**Indexes:** `@@index([recipe_id, deleted_at])` and `@@index([recipe_id, sequence_no])`. There is **no** unique index on `(recipe_id, sequence_no)` — sequence numbers are application-managed; the reorder endpoint requires the full active-step ID list and rewrites `sequence_no` 1..n.
 
 ### 2.4 tb_recipe_yield_variant
 
-Yield variant on a recipe. Lets a single recipe produce multiple sellable sizes from the same formula (e.g. "small" / "medium" / "large" portions; "half-tray" / "full-tray"). Carries its own variant-level pricing.
+Yield variant on a recipe. Lets a single recipe produce multiple sellable sizes from the same formula (e.g. "small" / "medium" / "large" portions; "half-tray" / "full-tray"). Carries its own variant-level pricing. **Read-only in practice today** — the detail endpoint includes `yield_variants` in its response and the form exposes `default_variant_id`, but no create/update endpoint for variants exists.
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
@@ -179,7 +181,7 @@ Yield variant on a recipe. Lets a single recipe produce multiple sellable sizes 
 
 ### 2.5 tb_recipe_version
 
-Full versioned snapshot of a recipe at a point in time. Captures the four JSON blobs that together describe the recipe: header data, ingredients, steps, and yield variants. One row per saved version.
+Full versioned snapshot of a recipe at a point in time. Captures the four JSON blobs that together describe the recipe: header data, ingredients, steps, and yield variants. One row per saved version. **Schema-only today** — no backend service writes or reads this table (verified: the only references to `tb_recipe_version` outside the schema/generated files are none); recipe edits update `tb_recipe` in place with `doc_version` optimistic locking.
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
@@ -204,7 +206,7 @@ Full versioned snapshot of a recipe at a point in time. Captures the four JSON b
 
 ### 2.6 tb_recipe_pricing_history
 
-Cost / price history for a recipe (and optionally a specific yield variant). Each row is a snapshot at an `effective_date` capturing cost-per-portion, selling price, food-cost percentage, and gross margin, plus optional competitor benchmarks.
+Cost / price history for a recipe (and optionally a specific yield variant). Each row is a snapshot at an `effective_date` capturing cost-per-portion, selling price, food-cost percentage, and gross margin, plus optional competitor benchmarks. **Schema-only today** — no backend service writes this table; pricing changes simply overwrite the header columns.
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
@@ -243,7 +245,8 @@ Master data for recipe categories. Supports a self-referential hierarchy (parent
 | `note` | `String? @db.VarChar` | Yes | Internal note. |
 | `is_active` | `Boolean?` | Yes | Active flag; default `true`. |
 | `parent_id` | `String? @db.Uuid` | Yes | FK to `tb_recipe_category.id` via named relation `CategoryHierarchy` (Restrict on delete); nullable for root categories. |
-| `level` | `Int @default(1)` | No | Hierarchy level (1 = root, 2 = child, ...). Application-managed alongside `parent_id`. |
+| `level` | `Int @default(1)` | No | Hierarchy level (1 = root, 2 = child, ...). Application-managed: the service sets `parent.level + 1` on create/reparent (moved row only — descendants are not recascaded). |
+| `image_file_token` | `String? @db.VarChar` | Yes | Category image, set via the `recipe-categories.set-image` flow (multipart upload through the gateway). |
 | `default_cost_settings` | `Json @default("{}") @db.JsonB` | No | Per-category default cost settings (target food-cost %, labor %, overhead %, etc.) that new recipes inherit. |
 | `default_margins` | `Json @default("{}") @db.JsonB` | No | Per-category default margin settings. |
 | `info` | `Json? @default("{}") @db.JsonB` | Yes | Extension bag. |
@@ -273,6 +276,7 @@ Master data for cuisine types. Each cuisine carries a region tag (`enum_cuisine_
 | `region` | `enum_cuisine_region` | No | Region tag — `ASIA`, `EUROPE`, `AMERICAS`, `AFRICA`, `MIDDLE_EAST`, `OCEANIA`. |
 | `popular_dishes` | `Json @default("[]")` | No | Array of popular dish names for the cuisine. |
 | `key_ingredients` | `Json @default("[]")` | No | Array of signature ingredients. |
+| `image_file_token` | `String? @db.VarChar` | Yes | Cuisine image, set via the `recipe-cuisines.set-image` flow. |
 | `info` | `Json? @default("{}") @db.JsonB` | Yes | Extension bag. |
 | `dimension` | `Json? @default("[]") @db.JsonB` | Yes | Cost-dimension default. |
 | `doc_version` | `Int @default(0) @db.Integer` | No | Optimistic-concurrency counter. |
@@ -288,7 +292,11 @@ Master data for cuisine types. Each cuisine carries a region tag (`enum_cuisine_
 
 ### 2.9 tb_recipe_equipment_category / tb_recipe_equipment (companion masters)
 
-`tb_recipe_equipment_category` is a thin hierarchy of equipment types; `tb_recipe_equipment` is the per-item master (code, name, category, physical details, capacity, station, operational / maintenance schedules, attachments, manuals). Equipment is referenced from preparation steps via the step's `equipment` JSON array, not via a foreign-key column. See Prisma schema lines 5226–5312 for the full field set. These are master data for recipe-side reference; they do not drive inventory.
+`tb_recipe_equipment_category` is a flat list of equipment types (no hierarchy — it has no `parent_id`); `tb_recipe_equipment` is the per-item master (code, name, category, physical details, capacity, station, operational / maintenance text, attachments, manuals, `image_file_token`). Equipment is referenced from preparation steps via the step's `equipment` JSON array, not via a foreign-key column. See Prisma schema lines 5614–5704 for the full field set. These are master data for recipe-side reference; they do not drive inventory.
+
+### 2.10 tb_recipe_image / tb_recipe_preparation_step_image (galleries)
+
+Both follow the same shape: `doc_version`, `id`, parent FK (`recipe_id` / `preparation_step_id`, Cascade on delete), `file_token` (required), `caption`, `alt_text`, `sort_order @default(0)`, `is_primary @default(false)`, audit columns. Indexes on `(parent, deleted_at)` and `(parent, sort_order)`. The header gallery is maintained through the recipe create/update multipart payload (`data` + `gallery` manifest + `images` files — full-sync semantics: omitting `gallery` keeps existing images, `[]` deletes all, ids present in the manifest are kept in order; `use-recipe.ts`); step images have their own REST endpoints under `.../preparation-steps/:stepId/images` (list / add / delete / set-primary / reorder / update-metadata).
 
 ## 3. Relationships
 
@@ -309,6 +317,10 @@ tb_recipe
     │             └──► tb_unit          (Restrict, recipe_inventory_unit, nullable)
     │
     ├──*──► tb_recipe_preparation_step  (Cascade)
+    │             │
+    │             └──*──► tb_recipe_preparation_step_image (Cascade)
+    │
+    ├──*──► tb_recipe_image             (Cascade — header gallery)
     │
     ├──*──► tb_recipe_yield_variant     (Cascade, named RecipeYieldVariants)
     │             │
@@ -328,7 +340,7 @@ tb_recipe_equipment_category ──1──*──► tb_recipe_equipment
 Notes:
 
 - **Recipe → ingredient** is 1-to-many with **Cascade on delete** — soft-deleting / hard-deleting the recipe takes its ingredient lines with it. This is intentional: the ingredient line has no meaning without its parent recipe.
-- **Recipe → sub-recipe** (recipe-as-ingredient) is a **self-referential 1-to-many** through `tb_recipe_ingredient.sub_recipe_id`. The named relation `SubRecipeIngredients` distinguishes it from the primary `recipe_id` relation. The `tb_recipe_used_in_recipes` back-reference on `tb_recipe` is the inverse — given a recipe, find the parent recipes that use it as a sub-recipe (used by the impact-analysis dashboard when a sub-recipe cost changes).
+- **Recipe → sub-recipe** (recipe-as-ingredient) is a **self-referential 1-to-many** through `tb_recipe_ingredient.sub_recipe_id`. The named relation `SubRecipeIngredients` distinguishes it from the primary `recipe_id` relation. The `tb_recipe_used_in_recipes` back-reference on `tb_recipe` is the inverse — given a recipe, find the parent recipes that use it as a sub-recipe. The one live consumer is the delete guard in `recipe.service.ts` (`RECIPE_USED_AS_SUB_RECIPE` when the count is non-zero); there is no impact-analysis dashboard.
 - **Recipe → preparation step / yield variant / version / pricing history** are all 1-to-many with **Cascade on delete**.
 - **Recipe → category / cuisine** are many-to-one with **Restrict on delete** — a category / cuisine cannot be deleted while any recipe references it; the user must reassign first.
 - **Ingredient → unit (two paths)** — `ingredient_unit_id` (recipe UoM, required) and `inventory_unit_id` (stock UoM, nullable) are both FKs into `tb_unit` with distinct named relations. The `conversion_factor` on the line bridges the two; for inventory-driven recipe explosions ([inventory](/en/inventory/inventory) OUT movements on menu sale), the stock unit and conversion factor are what matter.
@@ -340,9 +352,10 @@ Notes:
 ## 4. Enums
 
 - **`enum_recipe_status`** — three values, recipe-specific. Default `DRAFT`. Used on `tb_recipe.status`.
-  - `DRAFT` — initial editable state; the recipe is being authored. Ingredients, steps, costing may be incomplete. Not eligible for menu-item linkage or for driving theoretical consumption. Cost figures on the header may not yet be valid.
-  - `PUBLISHED` — recipe is approved and live. All required fields complete (`base_yield`, `base_yield_unit`, at least one ingredient, at least one prep step, cost calculations valid — see business rules). Eligible for menu-item linkage and theoretical-consumption drives. `published_at` is set on the transition. Edits to a `PUBLISHED` recipe create a new `tb_recipe_version` and may flip the recipe back to `DRAFT` for re-approval (tenant config) or apply directly with versioning trace.
-  - `ARCHIVED` — recipe is retired from active use. `archived_at` is set on the transition. The recipe remains readable for audit but is excluded from default search / filter views, cannot be linked to new menu items, and does not drive theoretical consumption on new menu-sale events. Existing menu-item links are typically severed at archive (application policy).
+  - `DRAFT` — initial state (backend default). The recipe is being authored; costing may be incomplete.
+  - `PUBLISHED` — the "live" state. **No completeness gate is enforced** — the status is a plain dropdown on the recipe toolbar and any value can be set on any save; the backend's only transition behaviour is stamping `published_at = now()` when the status changes to `PUBLISHED` (`recipe.service.ts update()/patch()`). No `tb_recipe_version` row is written on publish or on later edits (the table has no writer).
+  - `ARCHIVED` — retirement state. `archived_at` is stamped on the transition. Also freely reachable from the same dropdown; nothing in code excludes archived recipes from search or blocks edits to them.
+  - All transitions in every direction (`DRAFT ⇄ PUBLISHED ⇄ ARCHIVED`, including `ARCHIVED → DRAFT`) are possible through the same dropdown — the strict one-way lifecycle described in carmen/docs is not enforced anywhere.
 - **`enum_recipe_difficulty`** — three values, recipe-specific. Default `MEDIUM`. Used on `tb_recipe.difficulty`. Display-only / filter-only; carries no business-rule weight.
   - `EASY` — minimal technique; suitable for trainees.
   - `MEDIUM` — standard kitchen execution.
@@ -365,7 +378,7 @@ The `RECIPE-Overview.md`, `RECIPE-PRD.md`, `RECIPE-Business-Requirements.md`, `R
 | 1 | Recipe status values | PRD `status: 'draft' | 'published'` (two-state lifecycle); User-Flow-Diagram shows a third "Archive" state but doesn't list it in the status enum. Business Requirements `REC_ST_001` says "Valid statuses are 'draft' and 'published'". | `tb_recipe.status` uses the three-value `enum_recipe_status { DRAFT, PUBLISHED, ARCHIVED }`. Archived is a first-class state with its own timestamp column (`archived_at`). | Treat Prisma as canonical. Update carmen/docs to reflect the three-state lifecycle. Section 4 of this page lists the three values. |
 | 2 | Ingredient type enum | Business Requirements `Ingredient.type: 'product' | 'recipe'` (lowercase, two values, no explicit constraint). | `tb_recipe_ingredient.ingredient_type` uses the `enum_ingredient_type { product, recipe }` (lowercase, two values — matches conceptually but the column name on the model is `ingredient_type` not `type`). | Aligned conceptually; the column name differs from the carmen/docs interface. Document the actual column name. |
 | 3 | Total time on the recipe | PRD `Recipe.totalTime: number // Total time in minutes`. Business Requirements treats `totalTime` as a stored field. | `tb_recipe` has **no** `total_time` column. The rollup is computed at display time as `prep_time + cook_time`. | Update carmen/docs to mark `totalTime` as computed / display-only, not a stored column. |
-| 4 | Menu Item linkage | RECIPE-Overview.md, RECIPE-Business-Requirements.md, and the wiki index page describe a Recipe → Menu Item linkage where "one recipe can underpin multiple menu items; one menu item can compose several recipes". RECIPE-PRD.md § 5 lists `Recipe to Menu Item` as a key relationship. | The tenant Prisma schema has **no** `tb_menu_item` table or `tb_recipe_menu_item` join table. The only `tb_menu` model in the schema (line 1375) is the navigation-menu config, not a sellable menu item. Menu-item modelling lives outside the recipe module — likely in a POS-integration layer or as an application-resolved mapping. | Document that menu-item linkage is **not** in the canonical tenant schema. The recipe-as-source-of-truth-for-theoretical-consumption pattern still holds, but the menu-item join is application-layer or in a separate module. Wiki overview text describing "menu item linkage" remains conceptually correct as a domain pattern, not as a schema relationship. |
+| 4 | Menu Item linkage | RECIPE-Overview.md, RECIPE-Business-Requirements.md, and the wiki index page describe a Recipe → Menu Item linkage where "one recipe can underpin multiple menu items; one menu item can compose several recipes". RECIPE-PRD.md § 5 lists `Recipe to Menu Item` as a key relationship. | The tenant Prisma schema has **no** `tb_menu_item` table or `tb_recipe_menu_item` join table. The only `tb_menu` model in the schema (line 1412) is the navigation-menu config, not a sellable menu item. Menu-item modelling lives outside the recipe module — likely in a POS-integration layer or as an application-resolved mapping. | Document that menu-item linkage is **not** in the canonical tenant schema. The recipe-as-source-of-truth-for-theoretical-consumption pattern still holds, but the menu-item join is application-layer or in a separate module. Wiki overview text describing "menu item linkage" remains conceptually correct as a domain pattern, not as a schema relationship. |
 | 5 | Workflow / comments / activity log | RECIPE-Component-Structure.md and the page specs describe recipe approval / review workflows (REC_ST_003 "Status changes must be tracked with timestamp and user") and changelog / audit trail components. | `tb_recipe` has **no** `workflow_id`, no `workflow_history`, no `workflow_current_stage`, and there is **no** `tb_recipe_comment` table. Status-change tracking is via `tb_recipe_version` (full snapshots) plus the per-row audit columns (`created_at`, `created_by_id`, `updated_at`, `updated_by_id`) and the two state-transition timestamps (`published_at`, `archived_at`). | Update carmen/docs to describe versioning (via `tb_recipe_version`) as the audit mechanism, not workflow / comment threads. Approval is an application-layer policy, not a schema-level workflow. |
 | 6 | Yield variants | RECIPE-Business-Requirements.md mentions "yield" as a single number + unit on the recipe. PRD describes scaling but not variants. | `tb_recipe_yield_variant` is a first-class entity. A recipe may have 0 or many variants; `tb_recipe.default_variant_id` points to the default. Variants carry their own `cost_per_unit`, `selling_price`, `food_cost_percentage`, `gross_margin`, `wastage_rate`, `shelf_life`, and `min/max_order_quantity`. Ingredients can be variant-scoped via `tb_recipe_ingredient.tb_recipe_yield_variantId`. | Update carmen/docs to describe the yield-variant model. The "single yield" path is the no-variants case (`tb_recipe.base_yield + base_yield_unit` only); the multi-variant path uses the variant table. |
 | 7 | Pricing history | RECIPE-Page-Flow.md mentions "Price History" as a display panel in the costing tab; PRD treats price as a single column. | `tb_recipe_pricing_history` is a first-class entity capturing per-effective-date snapshots of cost, price, food-cost %, gross margin, and competitor benchmarks. Each variant can have its own pricing history (`variant_id` nullable on the row). | Document pricing history as a persisted timeline, not a display rollup. Used by the cost-drift dashboard and the variance reporting. |
@@ -376,7 +389,9 @@ The `RECIPE-Overview.md`, `RECIPE-PRD.md`, `RECIPE-Business-Requirements.md`, `R
 
 ## 6. References
 
-- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (all eight recipe models at lines 5192–5624, plus the four recipe-specific enums at lines 5166–5186 and `enum_cuisine_region` at lines 5155–5164, and the `tb_product.is_used_in_recipe` flag at line 1477) and `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (verified to contain no recipe models).
+- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (all twelve recipe models at lines 5578–6073, plus the four recipe-specific enums at lines 5552–5572 and `enum_cuisine_region` at lines 5543–5550, and the `tb_product.is_used_in_recipe` flag at line 1518) and `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (verified to contain no recipe models).
+- **Backend implementation:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/recipe/` (recipe CRUD, prep-step + image sub-services), `.../master/recipe-category/`, `.../master/recipe-cuisine/`, `.../master/recipe-equipment/`, `.../master/recipe-equipment-category/`; gateway REST surface in `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_recipes/` (and sibling `config_recipe-*` dirs).
+- **API contracts:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/config/recipe/` (recipe CRUD at `/api/config/{bu_code}/recipes`), `.../config/recipes/` (preparation-steps + step-image endpoints), and the `recipe-categories` / `recipe-cuisines` / `recipe-equipment` / `recipe-equipment-categories` folders.
 - **Secondary (concept cross-check):**
   - `../carmen/docs/recipe-module/RECIPE-Overview.md` — module purpose, key features, user roles; divergences in Section 5 (items 1, 4, 5, 8).
   - `../carmen/docs/recipe-module/RECIPE-PRD.md` — user stories, feature requirements, data requirements, key relationships; divergences in Section 5 (items 1, 2, 3, 4, 6, 7, 10).
@@ -388,5 +403,4 @@ The `RECIPE-Overview.md`, `RECIPE-PRD.md`, `RECIPE-Business-Requirements.md`, `R
   - `../carmen/docs/recipe/recipe-create-edit-page.md` — page-spec source for the recipe form's tabbed interface (Basic Info, Ingredients, Method, Media, Costing, Nutritional).
   - `../carmen/docs/recipe/recipe-list-page.md` — master-list page spec.
   - `../carmen/docs/recipe/recipe-view-page.md` — read-only detail page spec.
-- **Sibling reference:** [01-data-model.md](../store-requisition/01-data-model.md) (store-requisition) — describes the downstream side of the recipe → SR auto-create pattern (`info.recipe_id` back-reference on the SR header).
-- Related modules: [product](/en/inventory/product) (recipe ingredients reference products through `tb_recipe_ingredient.product_id`; `tb_product.is_used_in_recipe` flag distinguishes recipe-eligible products), [inventory](/en/inventory/inventory) (recipe usage drives OUT movements through theoretical consumption on menu-sale events), [costing](/en/inventory/costing) (per-ingredient `cost_per_unit` is sourced from the product's costing-method valuation), [store-requisition](/en/inventory/store-requisition) (recipes may auto-generate SR drafts for planned production / banquet events via `info.recipe_id`).
+- Related modules: [product](/en/inventory/product) (recipe ingredients reference products through `tb_recipe_ingredient.product_id`; `tb_product.is_used_in_recipe` flag distinguishes recipe-eligible products), [inventory](/en/inventory/inventory), [costing](/en/inventory/costing), and [store-requisition](/en/inventory/store-requisition) — the theoretical-consumption, valuation-sourced costing, and recipe→SR auto-create integrations described in carmen/docs have **no implementation** in the current codebase (no `recipe_id` reference exists anywhere in the SR services, and no recipe-side code writes inventory transactions).

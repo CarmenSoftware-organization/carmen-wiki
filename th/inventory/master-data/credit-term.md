@@ -2,7 +2,7 @@
 title: เงื่อนไขการชำระเงิน (Credit Term)
 description: เงื่อนไขการชำระเงินกับผู้ขาย (NET 30, COD ฯลฯ) ที่เลือกบนใบสั่งซื้อเพื่อขับเคลื่อนวันครบกำหนดและตาราง accounts payable
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T21:47:09.000Z
 tags: master-data, credit-term, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -35,9 +35,8 @@ Credit term เข้ารหัสข้อตกลงการจ่าย�
 | อาการ / ข้อความ | สาเหตุ | การจัดการ |
 |---|---|---|
 | "Name already in use" | `name` ซ้ำบนแถว non-deleted | เลือกชื่ออื่น |
-| "Value must be >= 0" | จำนวนวันติดลบ | ใช้ `0` สำหรับ COD หรือ integer บวก |
 | "Name required" | `name` ว่าง | เพิ่มชื่อแสดงผล (เช่น `NET 30`) |
-| "Cannot delete — referenced by open POs" | มี PO ที่เปิดอยู่ใช้เงื่อนไขนี้อย่างน้อยหนึ่ง | ใช้ inactivate แทน |
+| **ยังไม่ยืนยัน** — ไม่พบ guard สำหรับ value หรือการลบ | `CreditTermCreateSchema`/`CreditTermUpdateSchema` (`credit-term.dto.ts`) ประกาศ `value` เป็น `z.number()` เฉย ๆ ไม่มีขั้นต่ำ และ `credit_term.service.ts`'s `delete()` เป็น soft-delete แบบไม่มีเงื่อนไข ไม่มีการเช็ค PO ที่เปิดอยู่ | เดิมหน้านี้ระบุว่า "value must be >= 0" และ "cannot delete — referenced by open POs" เป็น error ที่บังคับใช้จริง; ให้ถือว่าทั้งคู่**ยังไม่ถูกบังคับใช้**จนกว่าจะตรวจสอบซ้ำ |
 
 ## 4. Edge Cases
 
@@ -70,8 +69,8 @@ Credit term เข้ารหัสข้อตกลงการจ่าย�
 ## 6. กติกาทางธุรกิจ
 
 - **Uniqueness** `name` unique ในแถว non-deleted (DB-enforced)
-- **Deletion guards** PO ที่เปิดอยู่บล็อก hard-delete — ใช้ inactivate แทน
-- **Validation** `value >= 0`; `name` บังคับ
+- **Deletion guards — ยังไม่ยืนยัน** ไม่พบการเช็ค FK ใน `delete()`; soft-delete สำเร็จโดยไม่มีเงื่อนไขแม้มี PO ที่เปิดอยู่อ้างอิง
+- **Validation — ยังไม่ยืนยัน** ไม่พบการเช็คค่าไม่ติดลบบน `value` ฝั่ง server; `name` บังคับ
 - **Lifecycle** เงื่อนไข inactive ซ่อนจาก picker PO ใหม่; PO ประวัติยังเก็บเงื่อนไขที่กำหนดไว้
 - **Snapshot semantics** PO เก็บ id ของ term; due date คำนวณ ณ การสร้าง PO และเก็บไว้ การเปลี่ยน rate/value ที่นี่ไม่ retro-edit PO ประวัติ
 
@@ -82,5 +81,5 @@ Credit term เข้ารหัสข้อตกลงการจ่าย�
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_credit_term` (lines ~4548-4572)
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/credit-term/`
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_credit_term` (lines ~4920-4944)
+- **Frontend:** `../carmen-inventory-frontend-react/routes/config/credit-term/`

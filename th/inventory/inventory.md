@@ -2,7 +2,7 @@
 title: คลังสินค้า (Inventory)
 description: ยอดคงเหลือสต๊อก ตำแหน่งจัดเก็บ และกระบวนการปิดงวด — แกนกลางของระบบ ERP ด้านคลังสินค้า
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T09:00:00.000Z
 tags: inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -11,17 +11,17 @@ dateCreated: 2026-05-15T07:48:00.000Z
 # คลังสินค้า (Inventory)
 
 > **At a Glance**
-> **วัตถุประสงค์ของโมดูล:** ระบบบันทึกหลักของยอดคงเหลือสต๊อก (สินค้า × คลัง × ตำแหน่ง × lot) และสายธารของการเคลื่อนไหวที่ป้อนข้อมูลให้กับการคำนวณต้นทุนและ snapshot ปิดงวด &nbsp;·&nbsp; **ผู้ใช้งาน:** Store Keeper, Inventory Controller, Finance &nbsp;·&nbsp; **เอนทิตี/ตารางสำคัญ:** `InventoryStatus`, รายการเคลื่อนไหวสต๊อก (`RECEIPT`/`ISSUE`/`TRANSFER`/`ADJUSTMENT`/`RETURN`/`WRITE_OFF`), `tb_period_snapshot`, ตาราง lot/batch &nbsp;·&nbsp; **หน้าย่อย:** 14
+> **วัตถุประสงค์ของโมดูล:** ระบบบันทึกหลักของการเคลื่อนไหวสต๊อก (สินค้า × ตำแหน่ง × lot) — ledger ธุรกรรมแบบ append-only ที่ป้อนข้อมูลให้การคำนวณต้นทุน พร้อมกระบวนการปิดงวด &nbsp;·&nbsp; **หน้าจอ:** `/inventory-management/transaction` (ledger แบบอ่านอย่างเดียว), `/inventory-management/period-end` + `/review` (ปิดงวด) &nbsp;·&nbsp; **ตารางสำคัญ:** `tb_inventory_transaction` (+ `_detail`, `_cost_layer`), `tb_period`, `tb_period_snapshot` (เฉพาะ tenant วิธี average) &nbsp;·&nbsp; **หน้าย่อย:** 14
 
 ![คลังสินค้า (Inventory) screen](/screenshots/inventory/index.png)
 
 ## 1. ภาพรวม
 
-โมดูล Inventory คือระบบบันทึกหลักของยอดคงเหลือสต๊อกทั่วทั้งทรัพย์สิน ยอดคงเหลือถูก key ด้วย **สินค้า × คลัง × ตำแหน่ง** (พร้อม batch/lot เพิ่มเติมเมื่อเปิดใช้การติดตาม batch) และเปิดเผยปริมาณ `onHand`, `allocated`, `available` และ `inTransit` ควบคู่กับรายละเอียดราย batch ทุกยอดคงเหลือพ่วงต้นทุนต่อหน่วยปัจจุบัน/เฉลี่ยมาด้วย เพื่อให้ปริมาณและการตีมูลค่าเดินไปด้วยกัน
+โมดูล Inventory คือระบบบันทึกหลักของการเคลื่อนไหวสต๊อกทั่วทั้งทรัพย์สิน **ไม่มีแถวยอดคงเหลือที่ persist ไว้** — on-hand ที่ `(location, product, lot)` เป็นผลรวมที่คำนวณจาก ledger ของ cost layer เสมอ (`Σ in_qty − Σ out_qty`) และตัวเลขยอดคงเหลือทุกจุดในผลิตภัณฑ์ (dialog on-hand ของ PR, system qty ของ spot check) อ่านจากผลรวมเดียวกันนี้ ต้นทุนต่อหน่วยเดินทางไปกับแต่ละ layer เพื่อให้ปริมาณและการตีมูลค่าเดินไปด้วยกัน
 
-การเปลี่ยนแปลงปริมาณทั้งหมดไหลผ่าน **stock movements** การเคลื่อนไหวมีประเภท — `RECEIPT`, `ISSUE`, `TRANSFER`, `ADJUSTMENT`, `RETURN` หรือ `WRITE_OFF` — ตำแหน่งต้นทาง ตำแหน่งปลายทาง (optional) บรรทัดรายการ และสถานะ workflow (`DRAFT` → `PENDING` → `IN_TRANSIT` → `COMPLETED` / `CANCELLED`) การเคลื่อนไหวจำแนกพฤติกรรมการ post: ตำแหน่งแบบ inventory จะ debit บัญชีสินทรัพย์สต๊อก ส่วนตำแหน่งแบบ direct-cost จะข้ามคลังและ post ตรงเข้าค่าใช้จ่ายของแผนก Returns, write-offs และ adjustments ใช้กระดูกสันหลังของการเคลื่อนไหวเดียวกัน แต่ต่างกันที่ทิศทาง journal และกฎการอนุมัติ
+การเปลี่ยนแปลงปริมาณทั้งหมดไหลผ่าน **inventory transactions** ธุรกรรมถูกจำแนกด้วย `enum_inventory_doc_type` — `good_received_note`, `credit_note`, `store_requisition`, `stock_in`, `stock_out`, `close` หรือ `open` — และชี้ไปยังเอกสารต้นทางที่สร้างมัน ธุรกรรม**ไม่มีสถานะ workflow ของตัวเอง**: มันถูกเขียนในสภาพ posted แล้วเมื่อเอกสารต้นทางไปถึงเหตุการณ์ posting ของมัน (GRN **save**, SR อนุมัติที่ stage สุดท้าย, inventory-adjustment เสร็จสมบูรณ์, credit-note เสร็จสมบูรณ์, การปิดงวด) การรับเข้าตำแหน่งชนิด `direct` จะเขียนการเบิกหักล้างอัตโนมัติเพิ่มอีกหนึ่งรายการที่ต้นทุนเดียวกัน ทำให้ on-hand สุทธิเป็นศูนย์ ("เบิกใช้ทันทีที่มาถึง"); ไม่มีการ post GL/journal สำหรับ movement ใด ๆ (ดู [01 — แบบจำลองข้อมูล](/th/inventory/inventory/01-data-model) § 1)
 
-ณ สิ้นแต่ละงวดบัญชี โมดูลจะสร้าง **period-end snapshot**: การนับสต๊อกครั้งสุดท้ายจะถูกกระทบยอดกับปริมาณในระบบ ผลต่างถูก post เป็น adjustments การตีมูลค่าถูก lock และงวดถูกปิดจากการ post ย้อนหลัง snapshot คือสมอ audit ที่โมดูลปลายน้ำ (costing, financial reporting) บริโภคต่อ
+ณ สิ้นแต่ละงวดบัญชี โมดูลจะรัน **การปิดงวด (period-end close)**: เอกสารที่ยังค้างและการนับสต๊อกถูกตรวจเป็น gate ที่ block การปิด จากนั้นยอดคงเหลือของทุก lot จะถูกทำให้เป็นศูนย์ในงวดที่ปิดและถูกสร้างขึ้นใหม่ในงวดถัดไปที่ต้นทุนเดิม บน tenant วิธี average การปิดยังเขียนแถว `tb_period_snapshot` ด้วย (opening / bucket การเคลื่อนไหว / closing ต่อสินค้า × ตำแหน่ง); tenant แบบ FIFO ยก lot ไปข้างหน้าโดยไม่มี snapshot movement ใหม่ประทับเข้างวดที่เปิดอยู่ปัจจุบันเสมอ — แถวย้อนหลังไม่มีวันเข้างวดที่ปิดแล้ว
 
 ## 2. บริบททางธุรกิจ
 
@@ -35,19 +35,21 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 ## 3. แนวคิดสำคัญ
 
-- **Stock Balance**: ปริมาณคงเหลือของสินค้าที่คลังและตำแหน่งเจาะจง อาจแยกตาม batch/lot พ่วงปริมาณ `onHand`, `allocated`, `available`, `inTransit` พร้อมต้นทุนต่อหน่วยปัจจุบันและมูลค่ารวม อัปเดตจากทุก stock movement ที่ commit แล้ว
-- **Location Type**: จำแนกตำแหน่งจัดเก็บเป็น `INVENTORY` (สินทรัพย์สต๊อก post เข้าบัญชี GL คลัง), `DIRECT` (cost centre แบบตรง post ตรงเข้าค่าใช้จ่ายแผนก) หรือ transit/วัตถุประสงค์พิเศษ Location type กำหนด journal entry ที่การเคลื่อนไหวสร้าง และกำหนดว่าสินค้านั้นจะปรากฏเป็นสินทรัพย์บน balance sheet หรือไม่
-- **Stock Movement**: บันทึก post ที่ไม่สามารถแก้ได้ของการเปลี่ยนปริมาณ ระบุโดยประเภท (`RECEIPT`, `ISSUE`, `TRANSFER`, `ADJUSTMENT`, `RETURN`, `WRITE_OFF`) อ้างอิงเอกสารต้นทาง (GRN, store requisition, count, อนุมัติ write-off) และผลิตทั้งการอัปเดตยอดและ journal entry การเคลื่อนไหวคือหน่วยอะตอมที่ audit trail ถูกสร้างขึ้นมา
-- **Period-End Snapshot**: สถานะที่ถูก lock ของยอดคงเหลือสต๊อกทุกยอด ณ สิ้นงวดบัญชี สร้างขึ้นหลังจาก checklist ปิดงวด (นับสต๊อก → กระทบยอดผลต่าง → อนุมัติ adjustment → ตรวจสอบการตีมูลค่า → lock งวด) ธุรกรรมย้อนหลังที่ post เข้างวดที่ปิดแล้วจะถูก reject โดยระบบ
-- **Valuation Method**: สมมติฐาน cost-flow ที่ใช้กับสินค้า — `FIFO` หรือ `WEIGHTED_AVERAGE` — กำหนดต่อสินค้า (หรือกำหนดรวม) และใช้โดย costing engine เมื่อ movement บริโภคสต๊อก ดู [costing](/th/inventory/costing) สำหรับกฎการคำนวณ; โมดูลนี้เก็บ input (lot, วันที่, ต้นทุน) ที่ engine ต้องการ
+- **Stock Balance (derived)**: ปริมาณคงเหลือของสินค้าที่ตำแหน่งหนึ่ง อาจแยกตาม lot **ไม่ใช่ตาราง** — คำนวณเป็น `Σ cost_layer.in_qty − Σ out_qty` สำหรับ key นั้นเสมอ ไม่มีคอลัมน์ `allocated` / `available` / `inTransit` อยู่จริง; อะไรก็ตามที่มีรูปทรงแบบนั้นถูกคำนวณจากสถานะเอกสารที่ยังเปิดอยู่ ณ เวลาอ่าน
+- **Location Type**: จำแนกตำแหน่งจัดเก็บเป็น `inventory` (ยอดคงเหลือสะสมตามปกติ), `direct` (การรับจะเบิกตัวเองออกอัตโนมัติที่ต้นทุนเดียวกัน — on-hand สุทธิเป็นศูนย์ "เบิกใช้ทันทีที่มาถึง") หรือ `consignment` (ไม่พบ code path แยกเฉพาะ — พฤติกรรมเหมือน `inventory` ในแง่ cost layer และการนับ) ไม่มีผลทาง GL ที่ยืนยันได้สำหรับทั้งสามค่า
+- **Inventory Transaction**: บันทึก posted ที่ไม่สามารถแก้ได้ของการเปลี่ยนปริมาณ จำแนกตามโมดูลต้นทาง (`enum_inventory_doc_type`) บน header และตามผล cost-flow (`enum_transaction_type` — `good_received_note`, `issue`, `transfer_in/out`, `adjustment_in/out`, `credit_note_*`, `eop_*`, `close_period`, `open_period`) บน cost layer อ้างอิงเอกสารต้นทางแบบ polymorphic; movement คือหน่วยอะตอมที่ audit trail ถูกสร้างขึ้นมา
+- **Period-End Close**: การปิดงวดบัญชีที่มี gate ตรวจสอบ (`open → closed` บน `tb_period.status`) gate ที่ block ได้แก่: PR/PO/SR ที่ยัง in-progress, GRN/CN ในสถานะกลางทาง และการนับสต๊อกที่ยังไม่เสร็จที่ตำแหน่งที่บังคับนับ การปิดจะทำให้ทุก lot ที่ยังเหลืออยู่เป็นศูนย์ (`CLOSE-…`) และสร้างขึ้นใหม่ในงวดถัดไปที่ถูก provision อัตโนมัติ (`OPEN-…`); บน tenant วิธี average ยังเขียน bucket ของ `tb_period_snapshot` ด้วย การ backdate ถูกจัดการด้วยการ re-date (movement ประทับเข้างวดที่เปิดอยู่เสมอ) ไม่ใช่การ reject
+- **Valuation Method**: สมมติฐาน cost-flow — `fifo` หรือ `average` — กำหนด**ต่อ business unit** (`tb_business_unit.calculation_method`, platform schema; ค่าเริ่มต้น `average`) ไม่ใช่ต่อสินค้า posting engine ใช้อย่างสม่ำเสมอทั่วทั้ง tenant เมื่อ movement บริโภคสต๊อก ดู [costing](/th/inventory/costing) สำหรับกฎการคำนวณ; โมดูลนี้เก็บ input (lot, วันที่, ต้นทุน) ที่ engine ต้องการ
 
 ## 4. บทบาทและ Persona
 
-| Role | ความรับผิดชอบ |
+ระบบไม่ได้นิยาม role ของโมดูล inventory ไว้ — การเข้าถึงเป็นแบบ permission key (`constant/permissions.ts`) และ "persona" ที่ใช้ในหน้า user-flow / test-scenario ของโมดูลนี้เป็นการจัดกลุ่มเชิงเอกสารครอบ key เหล่านั้น ไม่ใช่เอนทิตีของระบบ:
+
+| Persona (การจัดกลุ่มเชิงเอกสาร) | พื้นผิวการเข้าถึงจริง |
 |------|----------------|
-| Store Keeper | บันทึก stock movement ประจำวัน — รับ เบิก โอน — และดำเนินการนับสต๊อกระดับตำแหน่ง |
-| Inventory Controller | เป็นเจ้าของความถูกต้องของยอด: review ผลต่าง อนุมัติ adjustments ประสานงาน spot check และนับเต็ม เซ็นปิดการกระทบยอดสิ้นงวด |
-| Finance | ตรวจสอบการตีมูลค่า กระทบยอด GL ของ inventory กับ sub-ledger อนุมัติ journal entry จาก movement และ lock งวดหลังปิด |
+| Store Keeper | อ่าน transaction ledger (`inventory_management.view`); สร้างการปรับยอดในโมดูลพี่น้อง [inventory-adjustment](/th/inventory/inventory-adjustment) (`inventory_management.stock_in.*` / `.stock_out.*`) และการนับใน [physical-count](/th/inventory/physical-count) / [spot-check](/th/inventory/spot-check) |
+| Inventory Controller / ผู้ดำเนินการปิดงวด | รันการ review และการปิดงวด (`inventory_management.period_end.view` / `.execute`) ไม่มี approval queue, variance dashboard หรือการ route ตาม threshold ในโมดูลนี้ |
+| Finance | **ไม่มี role Finance หรือพื้นผิว GL อยู่จริง** — `enum_stage_role` ไม่มีสมาชิก `finance` และไม่พบโค้ด post journal; ดูหน้าแก้ไขข้อมูล [User Flow — Finance](/th/inventory/inventory/03-user-flow-finance) และ [01 — แบบจำลองข้อมูล](/th/inventory/inventory/01-data-model) § 1 |
 
 ## 5. โมดูลที่เกี่ยวข้อง
 
@@ -64,7 +66,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 - [master-data/location](/th/inventory/master-data/location) — คลังและตำแหน่งจัดเก็บที่ผูกกับทุกยอดสต๊อก
 - [master-data/business-unit](/th/inventory/master-data/business-unit) — ขอบเขต tenant/property ที่แยกยอดคงเหลือและ movement
 - [system-config/period](/th/inventory/system-config/period) — งวดบัญชีที่ gate การ post และ lock snapshot
-- [system-config/dimension](/th/inventory/system-config/dimension) — มิติเชิงวิเคราะห์ที่ประทับบนบรรทัด journal ของ movement
+- [system-config/dimension](/th/inventory/system-config/dimension) — มิติเชิงวิเคราะห์ที่เก็บใน JSON `dimension` บนธุรกรรมและ cost layer
 - [access-control/user-location](/th/inventory/access-control/user-location) — จำกัดว่าผู้ใช้สามารถทำธุรกรรมกับตำแหน่งใดได้บ้าง
 - [reporting-audit/activity](/th/inventory/reporting-audit/activity) — log กิจกรรม movement และการเปลี่ยนยอดสำหรับ audit
 

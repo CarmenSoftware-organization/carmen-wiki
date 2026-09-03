@@ -2,7 +2,7 @@
 title: Product
 description: Product master data — categories, units of measure, locations, and import/export — the catalog every inventory document references.
 published: true
-date: 2026-06-09T16:25:48.000Z
+date: 2026-07-16T09:00:00.000Z
 tags: product, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 # Product
 
 > **At a Glance**
-> **Module purpose:** Product catalogue master — codes, categories, base/order/recipe units with conversions, location mapping, allergens, variants, and bulk import/export &nbsp;·&nbsp; **Audience:** Product Administrator, Purchaser, Store Keeper &nbsp;·&nbsp; **Key entities/tables:** `tb_product`, `tb_product_category`, `tb_product_unit_conversion`, `tb_product_location`, `tb_product_variant` &nbsp;·&nbsp; **Sub-pages:** 11
+> **Module purpose:** Product catalogue master — codes, categories, base/order/recipe units with conversions, location mapping, allergens, eco-label certificates, and bulk import/export &nbsp;·&nbsp; **Audience:** Product Administrator, Purchaser, Store Keeper &nbsp;·&nbsp; **Key entities/tables:** `tb_product`, `tb_product_category`, `tb_unit_conversion`, `tb_product_location`, `tb_product_eco_label` &nbsp;·&nbsp; **Sub-pages:** 11
 
 ![Product screen](/screenshots/product/index.png)
 
@@ -40,7 +40,7 @@ This module is therefore the system of record for the *definition* of an item, n
 - **Active/Inactive**: The lifecycle flag controlling whether a product can appear on new documents. Inactive products retain their history (balances, past POs, past recipes) but are excluded from pickers and from new transactions; the status transition is auditable and can be scheduled to take effect on a future date.
 - **Barcode**: A scannable identifier (UPC, EAN, CODE128, QR) attached to a product or product variant. Barcodes must be unique, can be generated in bulk, are printable as labels, and are the primary lookup key for mobile receiving, picking, counting, and spot-check workflows.
 - **Allergen**: A regulated attribute flagging the presence of allergens (gluten, dairy, nuts, shellfish, etc.) in a product. Allergen data is set on the product, inherited through recipes to the menu item, and surfaced to F&B Operations for guest disclosure and to Procurement when sourcing substitutes.
-- **Product Variant**: A specific version of a product distinguished by attribute combinations (size, color, packaging) with its own SKU, optional pricing/costing overrides, and inventory tracking. Variants share the parent product's category and base unit but can carry variant-specific media and sustainability data.
+- **Product Variant**: A specific version of a product distinguished by attribute combinations (size, color, packaging), each with its own SKU. There is no dedicated `tb_product_variant` table — a variant is modelled either as its own `tb_product` row sharing the parent's category / base unit, or as a JSON key under `tb_product.info` for low-cardinality display-only variations (see [01-data-model](/en/inventory/product/01-data-model) § 5 item 1).
 - **Standard Cost / Last Receiving Cost**: The reference costs carried on the product header. Standard cost is the planned/budgeted cost used for variance analysis; last receiving cost is the most recent actual unit cost observed on a GRN, displayed alongside the date and vendor for context. Neither replaces the moving valuation maintained by the costing module.
 - **Quantity / Price Deviation Tolerance**: Per-product percentage tolerances (0–100%) that bound how far a downstream document line (PR, PO, GRN) may diverge from the master quantity or price before approval is required. The tolerances trickle down to child records and act as guard-rails against entry errors.
 - **Import/Export**: A bulk-load and bulk-extract workflow for products, categories, units, and conversion factors. Imports run row-level validation, support dry-run preview, and emit a downloadable error report; exports support multiple formats and respect the user's saved view and filters.
@@ -78,6 +78,7 @@ This module is therefore the system of record for the *definition* of an item, n
 
 ## 7. Pages in This Module
 
+- [Product Category](/en/inventory/product/category) — Three-level taxonomy (category → sub-category → item group) reference.
 - [01 — Data Model](/en/inventory/product/01-data-model) — Entities, fields, relationships, and enums (Prisma-derived).
 - [02 — Business Rules](/en/inventory/product/02-business-rules) — Validation, calculation / inheritance, authorization, lifecycle, and cross-module rules.
 - [03 — User Flow](/en/inventory/product/03-user-flow) — Product record lifecycle, plus persona index.

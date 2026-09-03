@@ -2,7 +2,7 @@
 title: Applications — Permissions
 description: The application.* gate matrix, how machine-client access (x-app-id + api_names) differs from user RBAC, and edge cases for testers.
 published: true
-date: 2026-06-10T12:30:00.000Z
+date: 2026-07-29T07:21:27.000Z
 tags: book/platform, applications, permissions
 editor: markdown
 dateCreated: 2026-06-10T12:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-06-10T12:30:00.000Z
 # Applications — Permissions
 
 > **At a Glance**
-> **Gate:** routes carry `application.read` / `application.create` / `application.update` on `PrivateRoute`; sidebar entry on `application.read` &nbsp;·&nbsp; **In-page `<Can>` gates:** Add (`application.create`), row Edit (`application.update`), row Delete (`application.delete` — in-page only, no route), Edit toggle (`application.update`) &nbsp;·&nbsp; **Two access systems meet here:** RBAC keys gate *who may manage* applications; `api_name` grants decide *what the application may call* &nbsp;·&nbsp; **Known gap:** the empty-state "Add Application" CTA is not `<Can>`-wrapped
+> **Gate:** routes carry `application.read` / `application.create` / `application.update` on `PrivateRoute`; sidebar entry on `application.read` &nbsp;·&nbsp; **In-page `<Can>` gates:** Add (`application.create`, header **and** empty-state — the empty-state gap flagged in a prior sync is now closed), row Edit (`application.update`), row Delete (`application.delete` — in-page only, no route), Edit toggle (`application.update`, now in the `ApplicationIdentityHero` actions slot) &nbsp;·&nbsp; **Two access systems meet here:** RBAC keys gate *who may manage* applications; `api_name` grants decide *what the application may call* &nbsp;·&nbsp; **Concurrency:** `doc_version` optimistic lock on save
 
 ## 1. Overview
 
@@ -19,7 +19,7 @@ This page covers two distinct authorization stories that intersect on these scre
 
 ## 2. Gate matrix
 
-All gates resolve through the single `hasPermission` resolver documented in [Platform RBAC — Permissions](../rbac/permissions.md); a failed route guard renders `<AccessDenied>` inside the normal `<Layout>` shell.
+All gates resolve through the single `hasPermission` resolver documented in [Platform RBAC — Permissions](../rbac/permissions.md); a failed route guard renders `<Forbidden>` (403 page) inside the normal `<Layout>` shell.
 
 | Surface | Mechanism | Key | Source |
 |---|---|---|---|
@@ -27,20 +27,21 @@ All gates resolve through the single `hasPermission` resolver documented in [Pla
 | `/applications/new` | `PrivateRoute requiredPermission` | `application.create` | `src/App.tsx` |
 | `/applications/:id/edit` | `PrivateRoute requiredPermission` | `application.update` | `src/App.tsx` |
 | Sidebar "Applications" (Platform group) | `Layout.tsx` nav filter | `application.read` | `src/components/Layout.tsx` |
-| Add Application (list header) | `<Can>` | `application.create` | `ApplicationManagement.tsx` |
+| Add Application (list header **and** empty state) | `<Can>` | `application.create` | `ApplicationManagement.tsx` |
 | Row Edit (actions dropdown) | `<Can>` | `application.update` | `ApplicationManagement.tsx` |
 | Row Delete (actions dropdown) | `<Can>` | `application.delete` | `ApplicationManagement.tsx` |
-| Edit toggle (edit-page header) | `<Can>` | `application.update` | `ApplicationEdit.tsx` |
+| Edit toggle (hero actions slot) | `<Can>` | `application.update` | `ApplicationEdit.tsx` (button now rendered by `ApplicationIdentityHero.tsx`) |
 
-Three asymmetries worth a tester's attention:
+Two asymmetries worth a tester's attention (a third, historical one — the empty-state gate gap — is resolved, see below):
 
 - **`application.delete` is in-page only.** No route requires it and the edit page has no delete action — the key's entire surface is the list row's Delete item. A session holding only `application.read` sees the list but neither Edit nor Delete in the dropdown.
-- **Save is not separately gated.** On the edit page only the Edit *toggle* is `<Can>`-wrapped; the Save button is plain but unreachable without entering edit mode (and the create route's Save sits behind the route's `application.create`). Client-side this is sound; backend enforcement on `PUT` remains the real boundary.
-- **The empty-state CTA is ungated.** When the list is empty with no search term, the `EmptyState` card's "Add Application" button is **not** wrapped in `<Can permission="application.create">` (unlike the header button). A read-only session can click it and lands on `<AccessDenied>` at `/applications/new` — the route guard catches it, but the affordance leaks. Treat the button's visibility, not its outcome, as the defect if this surfaces in QA.
+- **Save is not separately gated.** On the edit page only the Edit *toggle* is `<Can>`-wrapped; the Save button (now in the sticky bottom bar, not inline in the card) is plain but unreachable without entering edit mode (and the create route's Save sits behind the route's `application.create`). Client-side this is sound; backend enforcement on `PUT`/`POST` remains the real boundary.
+
+**Resolved since the last sync — the empty-state CTA gap is closed.** When the list is empty with no search term, the `EmptyState` card's "Add Application" button is now wrapped in `<Can permission="application.create">`, confirmed by direct source read of `ApplicationManagement.tsx` — matching the header button. The prior finding ("not `<Can>`-wrapped... treat the button's visibility... as the defect") no longer applies; testers should now expect the empty-state CTA to be absent for a `application.read`-only session, same as the header button.
 
 Export (CSV) and the dev-only Debug Sheet are intentionally ungated beyond the route's `application.read` — both are read-only over already-loaded data. As everywhere in the SPA, the sidebar filter is UX, not security: a session lacking `application.read` does not see the entry but can still type `/applications` into the address bar and will hit the route guard.
 
-The three route keys are independent — `PrivateRoute` checks only the one key its route declares. Useful combinations to test deliberately: `application.update` without `application.read` can deep-link straight to `/applications/:id/edit` (given an id from elsewhere) while the list itself renders `<AccessDenied>`; `application.create` without `application.read` can reach `/applications/new` by URL even though both paths into it (header button, empty-state CTA) live on a page it cannot open.
+The three route keys are independent — `PrivateRoute` checks only the one key its route declares. Useful combinations to test deliberately: `application.update` without `application.read` can deep-link straight to `/applications/:id/edit` (given an id from elsewhere) while the list itself renders `<Forbidden>`; `application.create` without `application.read` can reach `/applications/new` by URL even though both paths into it (header button, empty-state CTA) live on a page it cannot open.
 
 ## 3. How application access differs from user RBAC
 
@@ -68,7 +69,7 @@ Both headers travel together on every **authenticated** Platform SPA request —
 | 3 | Catalog fetch fails | The selector degrades to free-text `ChipInput`; any string can be entered as an `api_name` | Typos persist as dead grant rows — `tb_application_api.api_name` has no FK or enum to validate against. Check trailing-space handling (the service trims) and that bogus names simply never match a guard |
 | 4 | Catalog response without `groups` (older backend) | The client derives identical groups via `groupApiNames()` — same prefix-before-first-dot rule as the generator | Deploy-order tolerance, not a bug; grouped UI must look the same either way |
 | 5 | Application `is_active = false` | The SPA renders an Inactive badge and keeps the record fully editable; nothing in the SPA blocks the application's callers | Whether an inactive application's `x-app-id` is rejected is backend (`AppIdGuard`) behaviour — verify it server-side; do not infer enforcement from the badge. The guard checks an in-memory allowlist snapshot refreshed on an interval, so a freshly deactivated app may keep passing until the next refresh — that delay is not a bug |
-| 6 | Session with `application.read` only | List loads; the actions dropdown is empty (no Edit/Delete), header Add is hidden — but the empty-state CTA still shows on an empty list and dead-ends at `<AccessDenied>` | The §2 gate gap; the canonical `<Can>` absence check otherwise |
+| 6 | Session with `application.read` only | List loads; the actions dropdown is empty (no Edit/Delete), header Add is hidden — **and, since the last sync, the empty-state CTA is hidden too** (its `<Can>` gap was fixed) | The canonical `<Can>` absence check across every affordance on this page — no residual gap left to exercise here |
 | 7 | Deleting an application that clients still use | The confirm dialog warns it cannot be undone; once deleted, callers presenting that UUID are rejected by the guard **after the next allowlist refresh** — a freshly deleted app may keep passing briefly | Soft delete (`deleted_at`) — confirm the deletion drops out of the snapshot at the next refresh and that the freed `name` can be reused (`@@unique` includes `deleted_at`); the brief grace window is the refresh interval, not a bug |
 | 8 | Guard added in backend but catalog not regenerated | The endpoint enforces a key that no selector offers; explicit-list applications cannot be granted it through the UI | Regeneration + deploy is part of shipping a new `AppIdGuard`; until then only `allow_all` applications pass |
 | 9 | Key held without its `read` sibling | `application.update` alone opens `/applications/:id/edit` by deep link; `application.create` alone opens `/applications/new` by URL — both while the list route denies | Route guards check one key each (§2); decide per test plan whether such partial grants are intended role shapes or misconfigurations |
@@ -80,7 +81,7 @@ Both headers travel together on every **authenticated** Platform SPA request —
 - **Treat replace semantics as the default hazard.** Any workflow or script that updates an application must read-modify-write the full `api_names` set; partial "just add one key" PUTs will wipe the rest. Flag any new client code that ports the RBAC delta shape here.
 - **Audit explicit lists after catalog changes.** Renaming or removing an `AppIdGuard` key strands existing grant rows (no FK cleans them up); periodically diff `tb_application_api.api_name` values against the generated catalog.
 - **Prefer explicit lists over `allow_all` outside dev.** `allow_all` is the machine equivalent of super-admin — useful for bootstrap and internal tooling, but it makes the grant list meaningless and hides missing-grant defects, exactly like testing RBAC from a super-admin session.
-- **Close the empty-state gate gap at the source.** Wrap the `EmptyState` CTA in `<Can permission="application.create">` to match the header button; until then, document the dead-end in test plans rather than filing route-guard bugs.
+- ~~Close the empty-state gate gap at the source.~~ **Done** — the `EmptyState` CTA is now wrapped in `<Can permission="application.create">`, matching the header button; no further action needed here.
 
 **References:** `../carmen-platform/src/App.tsx` (the three `application.*` route guards) · `src/components/Layout.tsx` (sidebar entry) · `src/pages/ApplicationManagement.tsx` (`<Can>` gates, empty state) · `src/pages/ApplicationEdit.tsx` (Edit-toggle gate) · `../carmen-turborepo-backend-v2/scripts/generate-app-api-catalog/run.ts` (catalog generation).
 **Cross-links:** [Applications landing](/en/platform/applications) &nbsp;·&nbsp; [Data Model](./data-model.md) &nbsp;·&nbsp; [UI Screens](./ui-screens.md) &nbsp;·&nbsp; [Platform RBAC — Permissions](../rbac/permissions.md)

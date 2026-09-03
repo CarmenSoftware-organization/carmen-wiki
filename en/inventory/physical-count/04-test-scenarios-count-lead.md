@@ -1,80 +1,60 @@
 ---
-title: Physical Count — Test Scenarios — Count Lead
-description: Count Lead (Inventory Controller / Manager) test cases for the physical-count module.
+title: Physical Count — Test Scenarios — List Screen
+description: List-screen test cases for the physical-count module.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T17:56:09.000Z
 tags: physical-count, test-scenarios, count-lead, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
 ---
 
-# Physical Count — Test Scenarios — Count Lead
+# Physical Count — Test Scenarios — List Screen
 
 > **At a Glance**
-> **Persona:** Count Lead (Inventory Controller / Inventory Manager) &nbsp;·&nbsp; **Module:** [physical-count](/en/inventory/physical-count) &nbsp;·&nbsp; **Scenarios:** ~30 (skeleton)
+> **Screen:** `physical-count` (`pc-component.tsx`) &nbsp;·&nbsp; **Module:** [physical-count](/en/inventory/physical-count) &nbsp;·&nbsp; **Role:** any user holding `inventory_management.physical_count` (same role as [04-test-scenarios-counter.md](/en/inventory/physical-count/04-test-scenarios-counter))
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **E2E coverage:** no `physical-count` Playwright spec exists at `../carmen-inventory-frontend-e2e/`; scenarios are manual / planned coverage.
+> **E2E coverage:** no `physical-count` Playwright spec exists; scenarios are manual/planned coverage.
 
-## 1. Persona Scope
+## 1. Scope
 
-**Count Lead** = Inventory Controller / Inventory Manager. The owner of the count exercise. The scenarios below exercise the actions catalogued in [physical-count/03-user-flow-count-lead](/en/inventory/physical-count/03-user-flow-count-lead) Section 3 — period and document creation, mode selection, counter assignment, progress monitoring, recount-flag resolution, override / accept variance, submit, and rollup routing. Authority anchor `PHC_AUTH_001`.
+The scenarios below exercise the list screen's actions catalogued in [physical-count/03-user-flow-count-lead](/en/inventory/physical-count/03-user-flow-count-lead) § 3 — period auto-provisioning, filtering, and starting/resuming a count.
 
 ## 2. Functional — Happy Paths
 
 | # | Scenario | Pre-condition | Expected outcome |
 | - | -------- | ------------- | ---------------- |
-| CL-F-01 | Open count period | `tb_period` is `open` per `INV_VAL_008`; no existing `tb_physical_count_period` for this period. | New `tb_physical_count_period` in `draft`; visible in period scheduler. |
-| CL-F-02 | Generate count sheet for a single location (frozen mode) | Period in `draft` or `counting`; target location is inventory-type. | New `tb_physical_count` in `pending`; `physical_count_type = yes`; on-hand snapshot captured per product; `product_total > 0`. |
-| CL-F-03 | Generate count sheet (live mode) | Same as CL-F-02. | `tb_physical_count` with `physical_count_type = no`; parallel inventory writes permitted per `PHC_VAL_006`. |
-| CL-F-04 | Assign counter to zone | Count document in `pending`; counter exists. | Counter zone-grant recorded; counter sees the assignment in their "My count assignments" entry. |
-| CL-F-05 | Monitor live progress | Count document in `in_progress`. | `product_counted` / `product_total` visible and updating; `PHC_CALC_004` correct. |
-| CL-F-06 | Flag variance line for recount | Line with `|diff_qty| / on_hand_qty` over threshold per `PHC_VAL_007`. | Detail-comment with recount tag; submit blocked until recount flag is resolved. |
-| CL-F-07 | Override / accept variance with countersignature | Recount confirms original; variance not investigatable further. | Flag cleared; line eligible for rollup; comment-thread carries override countersignature stamped with `created_by_id`. |
-| CL-F-08 | Submit count — all lines counted, no open flags | `product_counted == product_total`; no open `PHC_VAL_007` flags. | `tb_physical_count.status = completed`; rollup `tb_stock_in` (overage) and / or `tb_stock_out` (shortage) created with `info.countId`. |
-| CL-F-09 | Route rollup adjustment for approval | Rollup adjustment in `draft` (or `in_progress` if above auto-approve). | Adjustment visible in Approver / Finance queue per `ADJ_AUTH_*`. |
+| L-F-01 | Load the list screen for a brand-new fiscal period | No `tb_physical_count_period` exists yet for the current open `tb_period`. | `GET /physical-count-periods/current` auto-creates one at `status: draft`; the location list renders. |
+| L-F-02 | Start a count for a not-started, required location | Location has `location_type ∈ {inventory, consignment}`, `physical_count_type = yes`, `is_active = true`; no `tb_physical_count` for it this period; the physical-count period is already `counting`. | `POST /physical-counts` succeeds; document created at `in_progress`; navigates to `/:id/entry`. |
+| L-F-03 | Resume an in-progress location | Location already has a `tb_physical_count` at `in_progress`. | Navigates directly to `/:id/entry`; no new document created. |
+| L-F-04 | Filter by KPI tile | Click "In Progress" tile. | Only in-progress location cards remain visible. |
+| L-F-05 | Search by name or code | Type a partial location name/code. | List narrows to matching locations, client-side. |
+| L-F-06 | Include not-counted locations | Check "Include not-counted locations". | Locations with `physical_count_type = no` are added to the list, still restricted to active inventory/consignment locations. |
+| L-F-07 | Switch to a previous period | Pick a closed period from the period dropdown. | Badge shows "Previous Period"; that period's locations render read-only-in-effect (starting a *new* count against a closed period's document set is not part of this screen's normal flow). |
 
 ## 3. RBAC / Permission
 
 | # | Scenario | Pre-condition | Expected outcome |
 | - | -------- | ------------- | ---------------- |
-| CL-R-01 | Non-Count-Lead attempts to open period | User without Count Lead role attempts `tb_physical_count_period` create. | Rejected per `PHC_AUTH_001`. |
-| CL-R-02 | Count Lead with no scope at location | Count Lead role assigned but no `tb_user_location` for target location. | Sheet-gen rejected with scope error. |
-| CL-R-03 | Cross-tenant attempt | Count Lead from tenant A attempts to operate on tenant B period. | Rejected at API auth layer (multi-tenancy guard). |
+| L-R-01 | User without `inventory_management.physical_count` opens the list screen | Permission not granted. | Access denied per the generic permission-gate mechanism shared across the product; no module-specific override exists. |
 
 ## 4. Validation — Negative Tests
 
 | # | Rule | Scenario | Expected error |
 | - | ---- | -------- | -------------- |
-| CL-V-01 | `PHC_VAL_001` | Generate `tb_physical_count` for a period that is `completed`. | `"Cannot add count to a completed period."` |
-| CL-V-02 | `PHC_VAL_002` | Attempt to change `physical_count_type` once document is `in_progress`. | `"Cannot change mode on a started count."` |
-| CL-V-03 | `PHC_VAL_003` | Target a direct-cost location for count-sheet generation. | `"Direct-cost locations cannot be physically counted."` |
-| CL-V-04 | `PHC_VAL_004` | Submit with uncounted lines. | `"Cannot submit count — <N> of <M> lines remain uncounted."` |
-| CL-V-05 | `PHC_VAL_007` | Submit with open recount-flagged lines. | `"Cannot submit — <K> variance line(s) await recount resolution."` |
-| CL-V-06 | `PHC_VAL_008` | Attempt to edit a `completed` count document. | `"Cannot edit a completed count. Raise a manual inventory adjustment."` |
+| L-V-01 | `PHC_VAL_001` | Start a count while the physical-count period is still `draft` (the state it is auto-provisioned into). | `POST /physical-counts` rejects with `"Physical Count Period is not in counting status"` — see the confirmed gap noted in [03-user-flow.md](./03-user-flow.md) § 2 (no code path was found that transitions a period from `draft` to `counting`). |
+| L-V-02 | `PHC_VAL_002` | Start a count for a location that has since been soft-deleted. | Rejected with a location-not-found error. |
 
 ## 5. Edge Cases
 
 | # | Scenario | Expected outcome |
 | - | -------- | ---------------- |
-| CL-E-01 | Counter assigned mid-count to a zone with partially-completed lines | Counter sees own zone's already-counted lines (read-only) plus uncounted lines (editable). |
-| CL-E-02 | Tolerance threshold tightened mid-count | In-flight count retains the threshold snapshotted at sheet-gen; new counts use the new threshold. |
-| CL-E-03 | Concurrent submit attempts (Count Lead clicks submit twice) | Second submit no-ops (idempotent); rollup created once; audit log shows single submit. |
-| CL-E-04 | All variance lines reconcile within tolerance | No rollup adjustment created (every `diff_qty = 0` or below tolerance + within zero); document `completed` with no downstream effect. |
-| CL-E-05 | Count spans midnight / mid-period boundary | `start_counting_at` and `completed_at` straddle dates; period-containment check uses count completion date. |
+| L-E-01 | Click a completed location's card | No action fires — the card renders as a plain label, not a button, once `physical_count_status = completed`; there is currently no route from this screen into a completed count's detail. |
+| L-E-02 | Start a count twice in quick succession for the same location (double-click) | `create()`'s idempotent-resume path (`PHC_VAL_003`) means a second call returns the same document's `id`/`doc_version` rather than creating a duplicate. |
+| L-E-03 | A location with zero eligible products | `product_total = 0` at creation; the count can still reach `completed` immediately since there is nothing to count and no lines block `PHC_VAL_004`. |
 
-## 6. Configuration / Audit-Trail
+## 6. References
 
-| # | Scenario | Expected outcome |
-| - | -------- | ---------------- |
-| CL-C-01 | Count Lead changes counter assignment mid-count | New counter sees zone; previous counter loses edit access on the zone (read-only audit). |
-| CL-C-02 | Audit log captures every state transition + comment | `tb_physical_count.status` history + `tb_physical_count_comment` thread fully readable; `created_by_id` / `counted_by_id` populated. |
-| CL-C-03 | Rollup linkage verification | `tb_stock_in.info.countId` and `tb_stock_out.info.countId` reference the source `tb_physical_count.id`. |
-
-> **TODO:** Expand every row with explicit `tb_*` field assertions and expected error message text once frontend / E2E sources are authored. Cross-link to E2E specs once `physical-count.spec.ts` is added at `../carmen-inventory-frontend-e2e/tests/`.
-
-## 7. References
-
-- **Primary (TODO):** carmen/docs source — does not exist for this module.
-- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — Count Lead UI behaviour source.
-- **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists.
-- Related: [physical-count/03-user-flow-count-lead](/en/inventory/physical-count/03-user-flow-count-lead), [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) (`PHC_AUTH_001`, `PHC_VAL_*`, `PHC_POST_*`), [physical-count/04-test-scenarios](/en/inventory/physical-count/04-test-scenarios) (cross-persona handoff scenarios).
+- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/physical-count/pc-component.tsx`.
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (`create`), `.../physical-count-period/physical-count-period.service.ts` (`findCurrent`).
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists.
+- Related: [physical-count/03-user-flow-count-lead](/en/inventory/physical-count/03-user-flow-count-lead), [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) (`PHC_VAL_001`–`003`, `PHC_AUTH_001`), [physical-count/04-test-scenarios](/en/inventory/physical-count/04-test-scenarios) (end-to-end scenarios).

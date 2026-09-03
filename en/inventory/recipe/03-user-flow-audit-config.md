@@ -2,7 +2,7 @@
 title: Recipe — User Flow — Audit & Config
 description: System Administrator + Auditor flow within the recipe module — config (categories, cuisines, RBAC, integration), versioning audit, compliance review.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: recipe, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -11,8 +11,10 @@ dateCreated: 2026-05-15T16:00:00.000Z
 # Recipe — User Flow — Audit & Config
 
 > **At a Glance**
-> **Persona:** System Administrator + Auditor &nbsp;·&nbsp; **Module:** [recipe](/en/inventory/recipe) &nbsp;·&nbsp; **Workflow stages:** off-path — configure (categories / cuisines / equipment / RBAC / publish-gate / integrations) and audit (versioning, pricing history) &nbsp;·&nbsp; **Key permissions:** config write (Sysadmin), read-history (Auditor), soft-delete archived (Sysadmin)
+> **Persona:** System Administrator + Auditor &nbsp;·&nbsp; **Module:** [recipe](/en/inventory/recipe) &nbsp;·&nbsp; **Workflow stages:** off-path — configure (categories / cuisines / equipment / RBAC / publish-gate / integrations) and audit (versioning, pricing history) &nbsp;·&nbsp; **Key permissions (design-target — see status note):** config write (Sysadmin), read-history (Auditor), soft-delete archived (Sysadmin)
 > **What this persona does:** Sysadmin owns master data, RBAC, and integration wiring; Auditor reviews the version and pricing-history trail for compliance.
+
+> **Implementation status (verified 2026-07-15).** The **master-data half of this persona is real**: the four Operation Plan setup screens — [category](/en/inventory/recipe/category), [cuisine](/en/inventory/recipe/cuisine), [equipment](/en/inventory/recipe/equipment), [equipment-category](/en/inventory/recipe/equipment-category) — are live CRUD with backend guards (code/name uniqueness, in-use delete blocks, `doc_version` locking), and this is the only recipe-module surface with E2E coverage (`121-recipe-equipment-category.spec.ts`). The rest is not: there is no `recipe:*` RBAC mapping to administer (only the frontend `operation_plan.view` placeholder), no publish-gate tenant policy, no integration wiring for theoretical consumption / SR auto-create, and nothing for an Auditor to trace in `tb_recipe_version` / `tb_recipe_pricing_history` because no code writes those tables — audit review today is limited to the per-row `created_*`/`updated_*` columns and the shared activity log.
 
 ## 1. Role in This Module
 

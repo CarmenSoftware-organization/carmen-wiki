@@ -2,7 +2,7 @@
 title: หมวดหมู่สินค้า (Product Category)
 description: taxonomy สินค้าสามระดับ (หมวดหมู่ > หมวดหมู่ย่อย > กลุ่มสินค้า) ขับเคลื่อนการนำทางแคตตาล็อก การสืบทอดคุณสมบัติ ค่าความคลาดเคลื่อน และ permission filter ตามหมวดหมู่
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T09:00:00.000Z
 tags: product, category, taxonomy, master-data, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -30,9 +30,9 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
-| เพิ่มหมวดหมู่ระดับบนสุด | Product Management → Category → **New** | `code` ต้องไม่ซ้ำในแถวที่ไม่ถูกลบ |
-| เพิ่มหมวดหมู่ย่อย | เปิดหมวดหมู่ → **Add sub-category** | ตั้ง FK `product_category_id` เป็น parent |
-| เพิ่มกลุ่มสินค้า (ใบไม้) | เปิดหมวดหมู่ย่อย → **Add item group** | ตั้ง FK `product_subcategory_id` เป็น parent |
+| เพิ่มหมวดหมู่ระดับบนสุด | Product Management → Category → **Add Category** | `code` เป็นการ **สร้างอัตโนมัติโดย server** (running-number) — แก้ไขในรอบนี้ (เปลี่ยน frontend เมื่อ 2026-07-13): ฟิลด์ Code ใน dialog ถูก disable เสมอพร้อม placeholder "auto-generated" และถูกตัดออกจาก payload ตอนสร้าง ส่วน API เองยังรับ code ที่ client ระบุเองได้ (เช่น การนำเข้าเป็นชุด) |
+| เพิ่มหมวดหมู่ย่อย | hover แถวหมวดหมู่ parent → คลิกไอคอน **Add child** (+) ที่ปรากฏขึ้น | ตั้ง FK `product_category_id` เป็น parent; ลูกสืบทอด tax profile / ค่าความคลาดเคลื่อน default ของ parent ไม่มีปุ่ม "Add sub-category" แยกต่างหาก — ใช้ action hover "Add child" เดียวกันทุกระดับที่ไม่ใช่ใบไม้ |
+| เพิ่มกลุ่มสินค้า (ใบไม้) | hover แถวหมวดหมู่ย่อย → คลิก **Add child** (+) | ตั้ง FK `product_subcategory_id` เป็น parent กลุ่มสินค้าเป็นระดับใบไม้และไม่มี action "Add child" ของตัวเอง |
 | ตั้งค่าความคลาดเคลื่อนของราคา | แก้ระดับใดก็ได้ → `price_deviation_limit` | % cap ของราคา PO เทียบกับราคาหลัก/รับล่าสุด ระดับที่ละเอียดที่สุดชนะ |
 | ตั้งค่าความคลาดเคลื่อนของปริมาณ | แก้ระดับใดก็ได้ → `qty_deviation_limit` | % cap ของปริมาณ GRN เทียบกับปริมาณ PO ระดับที่ละเอียดที่สุดชนะ |
 | Override tax profile | แก้ระดับใดก็ได้ → `tax_profile_id` / `tax_rate` | กระทบสินค้าใหม่เท่านั้น — สินค้าเดิมเก็บการตั้งค่าที่ snapshot แล้ว |
@@ -44,7 +44,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 | อาการ / ข้อความ | สาเหตุ | การแก้ไข |
 |---|---|---|
-| "Code already exists" บนหมวดหมู่ | `tb_product_category.code` ไม่ซ้ำในแถวที่ไม่ถูกลบ | เลือก code อื่น หรือ restore แถวที่ soft-delete |
+| "Code already exists" บนหมวดหมู่ | `tb_product_category.code` ไม่ซ้ำในแถวที่ไม่ถูกลบ | กติกาฝั่ง server ยังบังคับใช้อยู่ — แต่เนื่องจาก UI ไม่รับ code ที่พิมพ์เองแล้ว (แก้ไขในรอบนี้) เส้นทาง error นี้เข้าถึงได้เฉพาะผ่านการนำเข้าเป็นชุดหรือ direct API ไม่ใช่ dialog Add-Category ที่ใช้งานจริง |
 | "Cannot delete — products still reference this" | มีแถว `tb_product` ที่ active ชี้มาที่นี่ | ย้ายสินค้าก่อน แล้วลองใหม่ |
 | "Cannot re-parent sub-category" | FK บน `product_subcategory_id` เป็น `NoAction` สินค้าอ้างอิงกลุ่มสินค้าของมัน | ต้อง migrate ข้อมูลด้วยมือ — ไม่ใช่ action ของ UI |
 | การเปลี่ยนภาษีไม่สะท้อนบนสินค้าเดิม | tax profile snapshot ตอน save สินค้า | save สินค้าใหม่เพื่อรับค่า default ใหม่ |

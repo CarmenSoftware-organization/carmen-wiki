@@ -2,7 +2,7 @@
 title: Product — User Flow — Purchaser
 description: Purchaser's flow within the product module — read-only lookup, reference, and feedback paths.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T09:00:00.000Z
 tags: product, user-flow, purchaser, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -16,7 +16,7 @@ dateCreated: 2026-05-15T15:30:00.000Z
 
 ## 1. Role in This Module
 
-The **Purchaser** persona is a **read-only consumer** of the product catalogue. Within the product module their authority is **lookup only**: they search and filter the live catalogue, view product detail (including standard cost, last-receiving cost per `PRD_CALC_008`, unit conversions, vendor mapping, classification, tax profile), reference the order-unit conversion factors when composing PR / PO lines, and post comments (`tb_product_comment`) on products they find stale or incorrect or to request a new product to be created. They do **not** create products, do **not** edit any master-data field, do **not** edit unit conversions or classification, do **not** approve standard-cost changes (Cost Controller / Finance role), do **not** edit per-location stock policy (Inventory Controller role), and do **not** participate in product lifecycle transitions. Their inventory-side activity (composing PRs and POs) is fully transactional and lives in the [purchase-request](/en/inventory/purchase-request) and [purchase-order](/en/inventory/purchase-order) persona files — this page covers only the **product-catalogue lookup** surface they touch in support of that work.
+The **Purchaser** persona is a **read-only consumer** of the product catalogue. Within the product module their authority is **lookup only**: they search and filter the live catalogue, view product detail (including standard cost, last-receiving cost per `PRD_CALC_008`, unit conversions, vendor mapping, classification, tax profile), reference the order-unit conversion factors when composing PR / PO lines, and post comments (`tb_product_comment`) on products they find stale or incorrect or to request a new product to be created. They do **not** create products, do **not** edit any master-data field, do **not** edit unit conversions or classification, do **not** approve standard-cost changes (Cost Controller / Finance role), do **not** edit per-location stock policy (Product Administrator authority — see [03-user-flow-product-admin.md](./03-user-flow-product-admin.md) Section 1), and do **not** participate in product lifecycle transitions. Their inventory-side activity (composing PRs and POs) is fully transactional and lives in the [purchase-request](/en/inventory/purchase-request) and [purchase-order](/en/inventory/purchase-order) persona files — this page covers only the **product-catalogue lookup** surface they touch in support of that work.
 
 ## 2. Entry Point and Primary Flow
 

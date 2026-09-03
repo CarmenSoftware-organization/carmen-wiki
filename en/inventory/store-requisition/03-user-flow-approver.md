@@ -2,7 +2,7 @@
 title: Store Requisition — User Flow — Approver
 description: Approver's flow within the store-requisition module — reviews, trims, rejects, splits, or sends back submitted SRs.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-29T05:45:00.000Z
 tags: store-requisition, user-flow, approver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -11,89 +11,86 @@ dateCreated: 2026-05-15T13:30:00.000Z
 # Store Requisition — User Flow — Approver
 
 > **At a Glance**
-> **Persona:** Approver (Department Head + later-stage Ops / Cost Controller) &nbsp;·&nbsp; **Module:** [store-requisition](/en/inventory/store-requisition) &nbsp;·&nbsp; **Workflow stages:** in_progress (approval stage) → in_progress (fulfilment) / cancelled / draft (send-back) &nbsp;·&nbsp; **Key permissions:** approve, trim approved_qty, reject (line / header), split-reject, send-back
-> **What this persona does:** Reviews submitted SR lines against need, par level, and budget; approves, trims, rejects, or sends back via workflow stage advance.
+> **Persona:** Approver — whoever holds a workflow stage tagged `enum_stage_role.approve` &nbsp;·&nbsp; **Module:** [store-requisition](/en/inventory/store-requisition) &nbsp;·&nbsp; **Workflow stages:** in_progress (approve-tagged stage) → in_progress (next stage) / voided / draft (send-back) &nbsp;·&nbsp; **Key permissions:** approve, trim approved_qty, reject (bundled into the same `/approve` call), send-back (`/review`)
+> **What this persona does:** Reviews submitted SR lines against operational need and source availability; approves, trims, rejects, or sends back via workflow stage advance.
+> ⚠️ **Corrected this pass.** The prior version of this page described a value-threshold-routed multi-tier escalation, budget-cap and par-level-cap trims, approval delegation, and SLA time-out escalation. Budget-cap / par-level-cap trims, delegation, and SLA time-out escalation were not found: a repo-wide search for `delegat` and `par_level` against the SR module and the workflow orchestrator returned zero hits (`tb_product_location.par_qty` exists but is a stock-replenishment policy field, not a per-line "par level" surfaced to the approver).
+>
+> **The value-threshold-routing half of that claim was itself wrongly dismissed** — a follow-up search confirms `total_amount`-based stage routing is real: the assigned workflow's `routing_rules` (`tb_workflow.data.routing_rules`) can skip or jump stages by `total_amount` — for SR, computed by `sr-workflow.mapper.ts` as Σ `qty × current_average_cost` per line — evaluated by `evaluateCondition`/`findNextStep` in `workflows.navagation.service.ts` on every submit/approve. It's the same generic mechanism documented for PR and PO (the **Routing** tab of `/system-admin/workflow`), not an SR-specific "multi-tier escalation" feature. See `SR_XMOD_008` in [02-business-rules.md](./02-business-rules.md).
 
 ## 1. Role in This Module
 
-The **Approver** persona is the **Department Head** (or, at later approval stages in a multi-tier workflow, the Operations Manager / Cost Controller) who owns the review of a submitted SR before it can be released for fulfilment. The Approver is the control gate between the outlet's demand (`requested_qty`) and the store's release authority (`approved_qty ≤ requested_qty`). On entry the SR is at `doc_status = in_progress` with `workflow_current_stage` pointing at an approval stage where the Approver is in `user_action.execute`. The Approver reviews each line against operational need, par levels, current source availability, and budget; approves in full, trims `approved_qty` down, rejects with a reason, or sends the document back to the requester for correction. Per-line approval / review / rejection signatures (`approved_by_id`, `review_by_id`, `reject_by_id` plus name / date / message columns) are persisted directly on `tb_store_requisition_detail` for audit; per-line `history` JSON appends a `{ seq, name, status, message, by, at }` entry for every action. The Approver never advances `doc_status` directly — they advance `workflow_current_stage`; the header status stays `in_progress` throughout the approval phase. Segregation of duties forbids the requester from being the approver (`SR_AUTH_011`); the SR module enforces this at the approve action. Approval delegation (a Department Head assigning their approval right to a deputy) is handled at the workflow layer (`tb_workflow` config), not on the SR itself.
+The **Approver** persona is whoever holds a workflow stage tagged `enum_stage_role.approve` (typically titled Department Head) who owns the review of a submitted SR before it can be released for issuance. The Approver is the control gate between the outlet's demand (`requested_qty`) and the store's release authority (`approved_qty ≤ requested_qty`). On entry the SR is at `doc_status = in_progress` with `workflow_current_stage` pointing at a stage where the Approver is in `user_action.execute`. The Approver reviews each line against operational need and current source availability; approves in full, trims `approved_qty` down, rejects (bundled into the same `/approve` call as other approved lines), or sends the whole document back for correction via a separate `/review` call. Per-line approval / review / rejection signatures (`approved_by_id`, `review_by_id`, `reject_by_id` plus name / date / message columns) are persisted directly on `tb_store_requisition_detail` for audit; per-line `history` JSON appends a `{ seq, name, status, message, by, at }` entry for every action. The Approver never advances `doc_status` directly except at the final stage (where the same `/approve` call completes the document) — the header status stays `in_progress` throughout any earlier stage. **Unconfirmed:** whether the requester is blocked from approving their own SR — no `requestor_id` cross-check was found in `store-requisition.service.ts`. **Unconfirmed:** approval delegation — no `delegat` hits were found anywhere in the workflow orchestrator or this module.
 
 ### Workflow position (Approver highlighted)
 
 ```mermaid
 graph LR
-    submitted(("in_progress\n— approval stage")) -->|"approve / trim lines"| advance["Advance workflow"]:::current
-    advance -->|"more approval stages"| nextstage(("in_progress\n— next approval stage")):::current
-    nextstage -->|"final approval stage"| fulfil(("in_progress\n— fulfilment stage"))
-    advance -->|"all lines approved\nat final stage"| fulfil
-    submitted -->|"send back for correction"| sendback["Return to Requester stage"]:::current
-    submitted -->|"all lines rejected"| cancelled(("cancelled")):::current
+    submitted(("in_progress\n— approve-tagged stage")) -->|"approve / trim / reject lines (one /approve call)"| advance["Advance workflow"]:::current
+    advance -->|"more approve-tagged stages"| nextstage(("in_progress\n— next stage")):::current
+    nextstage -->|"final stage"| fulfil(("in_progress\n— issue-tagged stage"))
+    advance -->|"final stage reached"| fulfil
+    submitted -->|"send back for correction (/review)"| sendback["Return to Requester stage"]:::current
+    submitted -->|"whole-document reject (separate call)"| voided(("voided")):::current
     classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
 ```
 
 ### Permission Matrix — V2 Action × Stage Role (Approver)
 
-The Approver acts at `doc_status = in_progress` while `workflow_current_stage` points to an approval stage where the Approver is in `user_action.execute`. The SR module enforces Segregation of Duties: the Approver must not be the same user as the Requester (`SR_AUTH_011`). In multi-tier workflows the same action set applies at each stage; the second-stage Approver (Operations Manager / Cost Controller) sees the first-stage signature as additional context.
+The Approver acts at `doc_status = in_progress` while `workflow_current_stage` points to a stage where the Approver is in `user_action.execute`. If the tenant's `tb_workflow` config defines more than one `approve`-tagged stage, the same action set applies at each stage — this is a generic feature of the shared workflow engine, not something specific to SR. *Authorization* to act at a given stage is not amount-gated (purely `user_action.execute[]` membership); *which* stage comes next, however, can be amount-driven via the workflow's `routing_rules` (`SR_XMOD_008`).
 
-| Action | First-stage Approver (Dept Head) | Second-stage Approver (Ops Mgr / multi-tier) |
-|---|---|---|
-| Open SR pending approval | ✅ (`SR_AUTH_005`) | ✅ (after first-stage acts) |
-| Approve line in full (`approved_qty = requested_qty`) | ✅ (`SR_AUTH_005`) | ✅ (`SR_AUTH_005`) |
-| Trim `approved_qty` down (`0 < approved_qty < requested_qty`) | ✅ (`SR_AUTH_005`) | ✅ (`SR_AUTH_005`) |
-| Reject line (`approved_qty = 0` + mandatory `reject_message`) | ✅ (`SR_AUTH_005`, `SR_VAL_010`) | ✅ (`SR_AUTH_005`, `SR_VAL_010`) |
-| Send back line for correction (`review_message` non-empty) | ✅ (`SR_AUTH_005`) | ✅ (`SR_AUTH_005`) |
-| Split decision — mix approve / reject / send-back per line | ✅ (`SR_AUTH_006`) | ✅ (`SR_AUTH_006`) |
-| Approve own SR (where Approver = Requester) | ❌ (SOD: `SR_AUTH_011`) | ❌ (SOD: `SR_AUTH_011`) |
-| Raise `approved_qty` above `requested_qty` | ❌ (`SR_VAL_010`) | ❌ (`SR_VAL_010`) |
-| Commit / issue goods | ❌ (SOD: Approver ≠ Fulfiller `SR_AUTH_012`) | ❌ (SOD: `SR_AUTH_012`) |
-
-> ℹ️ **Multi-tier escalation:** When the SR's total value exceeds the first-stage approver's threshold, the workflow advances to a second-stage approver after the first stage acts. Each stage's approver sees previous signatures as context; further trimming or rejection is permitted at each stage.
+| Action | Approver at any `approve`-tagged stage |
+|---|---|
+| Open SR pending approval | ✅ (`SR_AUTH_005`) |
+| Approve line in full (`approved_qty = requested_qty`) | ✅ (`SR_AUTH_005`) |
+| Trim `approved_qty` down (`0 < approved_qty < requested_qty`) | ✅ (`SR_AUTH_005`) |
+| Reject line, bundled with other lines' approve decisions in one `/approve` call | ✅ (`SR_AUTH_005`, `SR_VAL_010`) |
+| Send the whole document back for correction (`/review`; cannot mix with approve/reject in the same call) | ✅ (`SR_AUTH_005`) |
+| Mix approve / reject per line in one `/approve` call | ✅ — confirmed in `computeSrAction()` (`sr-form-schema.ts`) |
+| Approve own SR (where Approver = Requester) | Unconfirmed whether blocked — no SoD check found in code |
+| Raise `approved_qty` above `requested_qty` | ❌ (`SR_VAL_010`) |
+| Final-stage advance (recording `issued_qty`) | Same `/approve` endpoint — gated by which stage's `enum_stage_role` the user holds (`approve` vs `issue`), not a separate commit permission |
 
 ## 2. Entry Point and Primary Flow
 
-**Entry point:** Three paths into the approve action.
+**Entry point:** Two confirmed paths into the approve action.
 
 - **Approvals dashboard → Pending SR approvals** — list view filtered to `(doc_status = 'in_progress', workflow_current_stage = '<approver-stage>', user_action.execute CONTAINS me)`; the approver picks an SR to open.
-- **Notification → SR submitted for your approval** — email / in-app notification on submit deep-links to the SR detail; same approve action surface.
-- **Multi-tier approval — second-stage approver** — a tenant with two or more approval levels has a second-stage approver (e.g. Operations Manager for SRs above a value threshold). The same workflow advances the document from the first-stage to the second-stage approver after first-stage approval; same approve action surface, but the Approver sees the first-stage approver's signature on each line as additional context.
+- **Notification → SR submitted for your approval** — an in-app notification is dispatched on submit (`sendSubmitNotification` in `store-requisition.logic.ts`) and deep-links to the SR detail.
+
+If a tenant's workflow defines more than one `approve`-tagged stage, the document advances from one to the next using the identical action surface described here — this is a property of the shared workflow engine, not a distinct "multi-tier" feature built for SR.
 
 **Primary flow (happy path, 8 steps):**
 
 1. **Open the SR.** The detail view shows the header (source / destination, `sr_type`, dates, requester, description, dimension), the lines with their `requested_qty` and the UI-only enrichment block (current source on-hand, on-order, last price, last vendor, product category — not persisted on the SR), and the workflow history.
-2. **Verify the request against context.** For each line: is the quantity consistent with the outlet's par level (`product.par_level` joined per outlet)? Does it match the recipe demand for any production planned in the period (`info.recipe_id` if present)? Is the source on-hand sufficient? Is the cost-centre allocation (`dimension`) consistent with the outlet's budget? The screen surfaces budget-impact hints if Finance has wired the budget module to the approver view.
+2. **Verify the request against context.** For each line: does it match the recipe demand for any production planned in the period (`info.recipe_id` if present)? Is the source on-hand sufficient (the UI-only enrichment block, not persisted)? **Corrected this pass:** no confirmed "par level" or "budget-impact hint" surfaces on this screen — a `product.par_level` field and a Finance-wired budget module were not found in current source (`tb_product_location.par_qty` is a stock-replenishment policy field, unrelated to this screen).
 3. **Per-line decision.** For each line the Approver chooses one of:
    - **Approve in full**: set `approved_qty = requested_qty`. Per-line: `approved_by_id`, `approved_by_name`, `approved_date_at = now()`, optional `approved_message`.
-   - **Trim down**: set `approved_qty ∈ (0, requested_qty)`. Per-line: same signature columns; `approved_message` typically explains the trim ("source on-hand limited", "par-level cap", "budget cap"). `approved_qty > requested_qty` is rejected by `SR_VAL_010`.
-   - **Reject the line**: set `approved_qty = 0`. Per-line: `reject_by_id`, `reject_by_name`, `reject_date_at = now()`, `reject_message` is **mandatory** (`SR_VAL_010` second clause). The requester sees the reason on resubmit and may amend.
-   - **Send back the line for correction**: set `review_by_id`, `review_by_name`, `review_date_at = now()`, `review_message` non-empty. The workflow routes the document back to the requester stage with this line flagged; the Approver does not set `approved_qty` (it remains `0` from the default until the requester resubmits and the line is approved on the next pass).
-4. **Split decision across lines.** Mix of outcomes on the same SR is fine — some lines approved (in full or trimmed), some rejected, some sent back. The action set is per-line; the screen shows running totals of "approved value" and "rejected value" for context.
-5. **Confirm the action.** Click **Submit Approval Decision**. The system fires `SR_VAL_010` per line (cap check on `approved_qty`, reject-message presence), `SR_AUTH_005` (Approver is in `user_action.execute`), `SR_AUTH_011` (Approver ≠ Requester), and `SR_AUTH_006` (split & reject is permitted if at least one line has `approved_qty > 0`).
-6. **Workflow advance.** When all lines on the current stage have been actioned (no line left at status `submit` with no decision), the system advances `workflow_current_stage` to the next stage. Possibilities: (a) next approval stage for multi-tier workflows (typically a higher-level approver); (b) the fulfilment stage when all approvals complete and at least one line has `approved_qty > 0`; (c) automatic move to `cancelled` if all active lines were rejected (`Σ approved_qty = 0`); (d) return to requester stage when any line was sent back for review.
-7. **Notify downstream personas.** The system notifies the next stage's users (`user_action.execute` of the new stage): typically the Fulfiller at the source location is alerted that an approved SR is ready to pick. The requester is notified of the outcome — approval, trim, rejection, or send-back — per line.
-8. **Audit trail recorded.** `last_action` is updated (`approved` for full / partial approve, `rejected` for full reject, `reviewed` for send-back) along with `last_action_at_date` and `last_action_by_id`; `workflow_history` gets an entry; each touched line gets a `history` JSON append. The approver's per-line signature columns (`approved_by_*`, `review_by_*`, `reject_by_*`) are the formal audit signature; the comment table is for additional discussion thread.
+   - **Trim down**: set `approved_qty ∈ (0, requested_qty)`. Per-line: same signature columns; `approved_message` explains the trim (e.g. "trimmed to source on-hand" — the only confirmed trim reason; "par-level cap" and "budget cap" wording is illustrative, not a system-generated label). `approved_qty > requested_qty` is rejected by `SR_VAL_010`.
+   - **Reject the line**: set `approved_qty = 0`. Per-line: `reject_by_id`, `reject_by_name`, `reject_date_at = now()`, `reject_message` optional (the reject dialog allows an empty reason; per-line reason is not enforced as mandatory in the frontend). Bundled into the same `/approve` call as other lines' decisions.
+   - **Send back the whole document for correction**: a separate `/review` call; if any line is marked "review," the whole submission becomes a send-back and approve/reject selections on other lines in that same submission are not applied (`computeSrAction()`).
+4. **Mixed decisions across lines.** Approve and reject can mix in one `/approve` call; review cannot mix with either in the same submission (see point 3). The screen does not show "running totals of approved/rejected value" in the components read this pass — treat that framing as unconfirmed.
+5. **Confirm the action.** Click **Approve** (or **Send Back**, depending on the mix). The system validates `SR_VAL_010` per line (cap check on `approved_qty`) and `SR_AUTH_014` (Approver is in `user_action.execute`).
+6. **Workflow advance.** When all lines on the current stage have been actioned, the system advances `workflow_current_stage` to the next stage — the next `approve`/`issue`-tagged stage per `tb_workflow`, or `completed` if this was the final stage. A separate whole-document `/reject` call (only enabled when every line is marked reject) sets `doc_status = voided` directly — **not** `cancelled` (see [01-data-model.md](./01-data-model.md) §5 item 11).
+7. **Notify downstream.** A notification is dispatched to the next stage's users (`sendApproveNotification` in `store-requisition.logic.ts`); the requester is also notified of the outcome.
+8. **Audit trail recorded.** `last_action` is updated along with `last_action_at_date` and `last_action_by_id`; `workflow_history` gets an entry; each touched line gets a `history` JSON append. The approver's per-line signature columns (`approved_by_*`, `review_by_*`, `reject_by_*`) are the formal audit signature; the comment table is for additional discussion thread.
 
 ## 3. Decision Branches
 
-- **Trim to source availability**: the source on-hand is less than the requested quantity. The Approver trims `approved_qty` to the available stock (or to a buffer below it for safety). The trim is recorded with `approved_message = "trimmed to source on-hand"` (or similar). The fulfiller will see the trimmed value at issue time.
-- **Trim to par-level cap**: the outlet has a par-level discipline (max held quantity per product per outlet). If the requested quantity would push the outlet's holding above par, the Approver trims to the par allowance. Same signature pattern.
-- **Trim to budget cap**: the outlet's cost-centre is approaching its monthly budget; the Approver trims discretionary lines (non-essential ingredients) and leaves essentials at the requested quantity. The trim is documented in `approved_message`.
-- **Reject for missing justification**: an unusual or high-value line lacks a justification note. The Approver chooses send-back (not reject) and writes `review_message = "please provide rationale for the requested quantity"`; the line is returned to the requester for amendment.
-- **Reject the entire SR**: every line is rejected with `reject_message`. The system automatically moves the document to `cancelled` (`SR_POST_004` tail → `SR_POST_009`); the requester is notified.
-- **Send back a single line, approve the rest**: the workflow allows mixed outcomes per line. The Approver approves the lines that are fine and sends back the questioned line; the SR returns to the requester at the requester stage, but the already-approved lines remain approved (they do not revert). When the requester amends and resubmits, the questioned line re-enters the approval stage as a new pass; the already-approved lines do not.
-- **Multi-tier escalation**: the SR's total value exceeds the first-stage approver's threshold. After the first-stage approver acts (approve / trim), the workflow advances to the second-stage approver instead of fulfilment. The second-stage approver sees the first-stage signature and may further trim or reject.
-- **Delegation**: the named approver is on leave; the workflow has been configured to delegate to a deputy. The deputy sees the SR in their queue and acts; the per-line signature records the deputy's id, with a `system` comment noting the delegation chain.
-- **Time-out / SLA escalation**: the SR has been in the approval queue past the tenant's SLA window. The workflow may auto-escalate to a higher approver or notify the inventory controller; the original approver does not lose authority but is reminded with priority flags.
+- **Trim to source availability**: the source on-hand is less than the requested quantity. The Approver trims `approved_qty` to the available stock. The trim is recorded with an `approved_message` such as "trimmed to source on-hand." The next stage will see the trimmed value.
+- **Reject for missing justification**: an unusual or high-value line lacks a justification note. The Approver chooses send-back (not reject) and writes a `review_message`; the line is returned to the requester for amendment.
+- **Reject the entire SR**: every line is marked reject in one submission, enabling the whole-document `/reject` action. The system sets `doc_status = voided` directly — **corrected this pass**: prior versions of this page described this landing on `cancelled`; no `cancelled` assignment exists anywhere in `store-requisition.service.ts`.
+- **Send back a single line, approve the rest**: **corrected this pass.** `computeSrAction()` shows that marking even one line "review" makes the whole submission a send-back — approve/reject selections on other lines in that same submission are not sent. To approve some lines and separately flag one for correction, the Approver would need two submissions (approve the others first, then a follow-up send-back), not one mixed action as previously described.
+- **Delegation and SLA time-out escalation** — **removed this pass; unconfirmed.** No delegation or SLA-timeout logic was found in `workflow-orchestrator.service.ts` or this module. **Value-threshold-based stage routing, however, is confirmed real** (corrected this pass — see the callout above and `SR_XMOD_008`): the assigned workflow's `routing_rules` can route on `total_amount` to skip or jump `approve`-tagged stages. If a tenant's `tb_workflow` defines more than one `approve` stage, the document advances through them using the ordinary mechanism in Section 2, and the assigned workflow's routing rules — not a dedicated SR "multi-tier" feature — determine whether any stage is skipped based on value.
 
 ## 4. Exit Point / Handoffs
 
-The Approver's involvement on a given SR ends at one of four boundaries:
+The Approver's involvement on a given SR ends at one of three confirmed boundaries:
 
-- **All lines actioned, workflow advances to fulfilment** — handoff to the **Fulfiller** at the source location. The document is `in_progress` and now in the fulfiller's queue; the approver is no longer in `user_action.execute` for the current stage. Per-line `approved_qty`, `approved_by_*`, and `approved_message` are the contract the fulfiller will fulfil against.
-- **All lines actioned, workflow advances to next approval stage** — handoff to the **next-stage Approver** (multi-tier workflows). The current approver's signature is preserved; the next-stage approver acts on the lines that survived the first stage.
-- **Any line sent back for correction** — handoff back to the **Requester**. The SR re-enters the requester workflow stage; the already-approved lines remain approved (they do not revert to `submit`); the requester addresses the `review_message` and resubmits.
-- **All lines rejected** — `in_progress → cancelled` automatic per `SR_POST_004` tail; the document terminates; the requester is notified per-line.
+- **All lines actioned, workflow advances to the next stage** — handoff to whoever holds the next stage (an issuance-tagged stage, or another approval stage if the tenant's workflow has more than one). The current approver's signature is preserved.
+- **Any line sent back for correction** — handoff back to the **Requester**. The SR re-enters the requester workflow stage; the requester addresses the `review_message` and resubmits.
+- **Whole-document reject** — `in_progress → voided` (not `cancelled`); the document terminates; the requester is notified.
 
-The Approver may also dispute a downstream issue post-commit (e.g. the fulfiller short-fulfilled an approved line); the resolution is via Inventory Controller variance review and `[inventory-adjustment](/en/inventory/inventory-adjustment)`, not via re-opening the SR.
+No confirmed post-commit dispute path specific to the Approver was found; see [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) for what is and isn't confirmed about post-commit correction.
 
 ## 5. References
 
@@ -102,9 +99,9 @@ The Approver may also dispute a downstream issue post-commit (e.g. the fulfiller
 - `../carmen/docs/store-requisitions/SR-Overview.md` § User Roles → Approver row — carmen/docs source for the persona's responsibility scope.
 - `../carmen/docs/store-requisitions/Store Requisitions.md` § UC-64 (Approve Requisition Requests), § UC-65 (Deny Requisition Requests), § UC-66 (Modify Requisition Requests) — use-case sources for the approve / trim / reject decisions in Section 2 above.
 - Sibling: [03-user-flow-requester.md](./03-user-flow-requester.md) — upstream persona; the Approver's input is the Requester's submitted SR.
-- Sibling: [03-user-flow-fulfiller.md](./03-user-flow-fulfiller.md) — downstream persona; the Approver's `approved_qty` is the cap the Fulfiller works within.
-- Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — Inventory Controller and Auditor monitor approval patterns (chronic over-approval, chronic rejection) and the Sysadmin configures the workflow stages / thresholds that bound the Approver's authority.
+- Sibling: [03-user-flow-fulfiller.md](./03-user-flow-fulfiller.md) — the issuance-stage persona; the Approver's `approved_qty` is the cap that stage works within (same generic `/approve` mechanism).
+- Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — corrected this pass; most of the oversight/config workspace it previously described (RBAC console, SoD-relaxation thresholds) was not found in current source, though the generic amount-based routing-rule config is confirmed real (`SR_XMOD_008`).
 - Sibling: [01-data-model.md](./01-data-model.md) — per-line approval / review / rejection signature columns on `tb_store_requisition_detail` (`approved_by_*`, `review_by_*`, `reject_by_*`), the `history` and `stages_status` JSON timelines.
-- Sibling: [02-business-rules.md](./02-business-rules.md) — `SR_VAL_010` (approval invariant: `approved_qty ≤ requested_qty`, reject-message mandatory), `SR_AUTH_005`–`SR_AUTH_006` (approve / trim / send-back authority), `SR_AUTH_011` (Requester ≠ Approver SoD), `SR_POST_003`–`SR_POST_004` (approve / reject posting effects within `in_progress`).
+- Sibling: [02-business-rules.md](./02-business-rules.md) — `SR_VAL_010` (approval invariant: `approved_qty ≤ requested_qty`), `SR_AUTH_005`–`SR_AUTH_006` (approve / trim / send-back authority, mixing rules), `SR_POST_005`–`SR_POST_010` (final-stage advance and whole-document reject → `voided`).
 - Related: [recipe](/en/inventory/recipe) — recipe-driven SRs carry `info.recipe_id`; the Approver sees the recipe context as part of the per-line decision.
 - Related: [inventory](/en/inventory/inventory) — source-availability context surfaced at approve time (UI enrichment); the Approver's trim decisions ripple into the fulfiller's pick.

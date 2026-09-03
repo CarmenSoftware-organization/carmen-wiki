@@ -1,8 +1,8 @@
 ---
 title: Broadcasts — UI Screens
-description: The single BroadcastCompose screen — target tabs, UserMultiSelect and BU select, title/message counters, type presets with custom input, send-now vs schedule, and the per-mode confirmation dialog.
+description: The BroadcastCompose screen and its live BroadcastPreview panel — target tabs, UserMultiSelect and BU select, title/message counters, type presets with custom input, send-now vs schedule, and the per-mode confirmation dialog.
 published: true
-date: 2026-06-10T13:15:00.000Z
+date: 2026-07-29T00:00:00.000Z
 tags: book/platform, broadcasts, ui
 editor: markdown
 dateCreated: 2026-06-10T13:15:00.000Z
@@ -11,13 +11,13 @@ dateCreated: 2026-06-10T13:15:00.000Z
 # Broadcasts — UI Screens
 
 > **At a Glance**
-> **Screens:** `BroadcastCompose` (`/broadcasts/new`) — the module's only screen; no list/edit routes &nbsp;·&nbsp; **Form:** one Compose card — Target tabs · conditional recipient picker · Title (≤200) · Message (≤2000) · Type presets · Send time tabs &nbsp;·&nbsp; **Dialogs:** one ConfirmDialog, title and styling vary by target mode &nbsp;·&nbsp; **Shortcuts:** Ctrl/Cmd+S send · Escape reset &nbsp;·&nbsp; **Persisted UI state:** none
+> **Screens:** `BroadcastCompose` (`/broadcasts/new`) — the module's only screen; no list/edit routes &nbsp;·&nbsp; **Layout:** Compose card (Target tabs · conditional recipient picker · Title (≤200) · Message (≤2000) · Type presets · Send time tabs) beside a sticky **Preview** card &nbsp;·&nbsp; **Dialogs:** one ConfirmDialog, title and styling vary by target mode &nbsp;·&nbsp; **Shortcuts:** Ctrl/Cmd+S send · Escape reset &nbsp;·&nbsp; **Persisted UI state:** none
 
 ## 1. Overview
 
-Broadcasts is a one-screen module: `/broadcasts/new` → `BroadcastCompose`, a single Compose card under a Megaphone-icon header ("Send Broadcast" / "Push a notification to all users, specific users, or a business unit."). There is no Management list, no view/edit toggle, no record to come back to — the deliberate inverse of every other Platform module. Because nothing is loaded (beyond the BU options), the page has no skeleton state and persists no `localStorage` UI state.
+Broadcasts is a one-screen module: `/broadcasts/new` → `BroadcastCompose`, a `PageHeader` (Megaphone icon, "Send Broadcast" / "Push a notification to all users, specific users, or a business unit.", no back link — the page is reached only from the sidebar) above a two-column grid: the Compose card on the left, a sticky `BroadcastPreview` card on the right (§2.7). There is no Management list, no view/edit toggle, no record to come back to — the deliberate inverse of every other Platform module. Because nothing is loaded (beyond the BU options), the page has no skeleton state and persists no `localStorage` UI state.
 
-Standard furniture still applies: `useUnsavedChanges` arms a navigation guard as soon as any field deviates from its default (including picked recipients), Ctrl/Cmd+S triggers Send and Escape triggers Reset (both suppressed while a send is in flight or the confirm dialog is open), errors surface as red field messages plus a toast, and a dev-only Debug Sheet (amber floating button, `NODE_ENV === 'development'`) shows the last API response with a Copy JSON button.
+Standard furniture still applies: `useUnsavedChanges` arms a navigation guard as soon as any field deviates from its default (including picked recipients), Ctrl/Cmd+S triggers Send and Escape triggers Reset (both suppressed while a send is in flight or the confirm dialog is open), errors surface as red field messages plus a toast, and a dev-only Debug Sheet (amber floating button, `import.meta.env.DEV`) shows the last API response with a Copy JSON button. A sticky bottom action bar (§3.3) carries Reset and Send with an "Unsaved changes" indicator, matching the redesigned edit pages elsewhere in the Platform book.
 
 ## 2. The Compose form
 
@@ -58,11 +58,19 @@ A native select with five presets — Info (default), Warning, Critical, Mainten
 
 A second `Tabs` strip — **Send immediately** (Send icon, default) vs **Schedule for later** (Calendar icon). Schedule mode reveals a native `datetime-local` input; validation requires a value ("Pick a date and time"), a parseable value ("Invalid date/time"), and a **future** instant ("Scheduled time must be in the future" — checked against `Date.now()` at validation time). The value is converted to a UTC ISO string (`new Date(v).toISOString()`) in the payload.
 
+### 2.7 `BroadcastPreview`
+
+A sticky card beside the Compose form, recomputed on every keystroke — the notification as recipients will see it, plus who it reaches and when:
+
+- **Notification card** — a left accent bar colored by severity (`severityStyle`: Info → info, Warning → warning, Critical → destructive, Maintenance → secondary/muted, Other… → default/primary), the resolved type as a badge, the title (italic placeholder "Your title appears here" until typed), and the message (placeholder "Your message appears here.", clamped to 6 lines).
+- **Reaches** — a one-line audience summary (`reachSummary`): "Every user in the system" (`system_all`, rendered with a warning tint and an `AlertTriangle` icon instead of the mode's normal icon), "N selected user(s)" or "No recipients picked yet" (`system_users`), or the picked BU's label / "No business unit picked yet" (`bu`).
+- **Delivery** — "Sends immediately" or "Scheduled for `<local datetime>`" / "Pick a date and time" depending on the Send time tab and whether a valid date is set.
+
 ## 3. Send flow
 
 ### 3.1 Validation → confirmation
 
-The **Send** button (footer, `<Can permission="broadcast.send">`; label flips to **Schedule** in schedule mode, spinner while sending) first runs validation — failures mark the fields and toast "Please fix the highlighted fields". On success a `ConfirmDialog` opens:
+The **Send** button (sticky bottom action bar, `<Can permission="broadcast.send">`; label flips to **Schedule** in schedule mode, spinner while sending) first runs validation — failures mark the fields and toast "Please fix the highlighted fields". On success a `ConfirmDialog` opens:
 
 | Target mode | Dialog title | Confirm button |
 |---|---|---|
@@ -78,14 +86,15 @@ Confirming posts `BroadcastBuPayload` to `/api/notifications/broadcasts/bu` in B
 
 ### 3.3 Reset, shortcuts, unsaved-changes guard
 
-**Reset** (outline button beside Send, also Escape) clears the form, recipients, and field errors without confirmation — the confirm-before-discard protection exists only on *navigation*, via `useUnsavedChanges`, which arms when any field differs from its default. Ctrl/Cmd+S is equivalent to clicking Send (validation first, then the dialog).
+A sticky bottom bar (always visible on this screen, unlike the redesigned edit pages where it only appears while editing) shows an "Unsaved changes" dot indicator (or "No changes") plus **Reset** and **Send**. **Reset** (also triggered by Escape) clears the form, recipients, and field errors without confirmation — the confirm-before-discard protection exists only on *navigation*, via `useUnsavedChanges`, which arms when any field differs from its default. Ctrl/Cmd+S is equivalent to clicking Send (validation first, then the dialog).
 
 ## 4. References
 
-- `../carmen-platform/src/pages/BroadcastCompose.tsx` — the whole screen: constants (`TITLE_MAX`, `MESSAGE_MAX`, `TYPE_CUSTOM_RE`), `resolveType`, payload builders, `validate`, confirm title/description, Debug Sheet.
+- `../carmen-platform/src/pages/BroadcastCompose.tsx`, `src/pages/broadcastCompose/BroadcastPreview.tsx` — the whole screen: constants (`TITLE_MAX`, `MESSAGE_MAX`, `TYPE_CUSTOM_RE`), `resolveType`, payload builders, `validate`, confirm title/description, the live preview, Debug Sheet.
 - `../carmen-platform/src/components/UserMultiSelect.tsx` — debounce, page size, display-name fallback, badge/keyboard interactions.
 - `../carmen-platform/src/services/broadcastService.ts` — `sendSystem` / `sendBu`.
 - `../carmen-platform/src/components/KeyboardShortcuts.tsx`, `src/hooks/useUnsavedChanges.ts` — shortcuts and the navigation guard.
+- `../carmen-platform/src/components/PageHeader.tsx` — the shared header (icon/title/subtitle, no `backTo` here).
 - `../carmen-platform/src/App.tsx` (route), `src/components/Layout.tsx` ("Send Broadcast", Content group).
 
 **Cross-links:** [Broadcasts landing](/en/platform/broadcasts) &nbsp;·&nbsp; [Data Model](./data-model.md) &nbsp;·&nbsp; [Permissions](./permissions.md)

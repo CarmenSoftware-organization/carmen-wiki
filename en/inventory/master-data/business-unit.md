@@ -2,7 +2,7 @@
 title: Business Unit
 description: The legal/operating unit (property or BU) that scopes every transaction — owns calculation method, default currency, and module subscriptions.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-29T05:09:51.000Z
 tags: master-data, business-unit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -37,17 +37,16 @@ A **Business Unit (BU)** is the top-level scope every document, user role, and r
 | Symptom / Message | Cause | Action |
 |---|---|---|
 | "Code already in use in cluster" | Duplicate `code` within the same `cluster_id` | Pick a different code |
-| "Calculation method required" | Form submitted without `average` / `fifo` | Pick one — there is no default |
-| "Cannot change calculation method mid-period" | Switch attempted with open postings | Close period, snapshot, recost, then change |
-| "Default currency must be active" | `default_currency_id` points to an inactive row | Activate the currency first |
-| "Cannot delete BU — active users / open documents / non-zero balances" | Deletion guard | Wind down operations first, then soft-delete |
+| **Unconfirmed** — the edit form imposes no client-side restriction | `carmen-platform`'s `CalculationSettingsSection.tsx` renders `calculation_method` as a plain, always-editable `<select>` (`average`/`fifo`) with no disabled state, warning, or mid-period check found in the component; whether the backend `business-units.update` microservice command enforces a block was not traced this pass | A prior version of this page asserted "cannot change calculation method mid-period" as an enforced error; treat it as **unconfirmed** rather than a guaranteed guard |
+| "Default currency must be active" — **unconfirmed** | No disabled-state or validation tying `default_currency_id` to the target currency's `is_active` flag was found in the edit form this pass | Treat as unconfirmed |
+| "Cannot delete BU — active users / open documents / non-zero balances" — **unconfirmed** | `deleteBusinessUnit` in the gateway is a thin proxy to a `business-units.delete` microservice command; the guard, if any, was not traced this pass | Treat as unconfirmed rather than a guaranteed block |
 
 ## 4. Edge Cases
 
-- **Calculation-method switch.** Flipping `average` ↔ `fifo` retro-actively breaks historical valuation. System should reject mid-period and require period-end snapshot + audit-approved recost before activation.
+- **Calculation-method switch — unconfirmed guard.** Flipping `average` ↔ `fifo` would retro-actively break historical valuation in principle, but `carmen-platform`'s edit form has no disabled state or warning on this field, and whether the backend microservice blocks it mid-period was not traced this pass. Treat "system rejects mid-period" as design intent, not a confirmed guard.
 - **`is_hq` invariant.** Exactly one BU per cluster carries `is_hq = true` — app-enforced, not DB.
 - **Module disable preserves data.** Removing a module via `tb_business_unit_tb_module` hides UI; underlying transactional data is untouched.
-- **Currency inactivation.** A currency that is the BU `default_currency_id` cannot be inactivated.
+- **Currency inactivation — unconfirmed.** Whether the platform blocks inactivating a currency that is a BU's `default_currency_id` was not traced this pass (the equivalent check was directly confirmed **absent** on the Inventory side's own `tb_currency` update path — see [master-data/currency](/en/inventory/master-data/currency)).
 - **Tenant DB connection.** `db_connection` JSON points the BU at its tenant schema; misconfiguration takes the whole BU offline.
 
 ---
@@ -75,6 +74,7 @@ Source: platform schema (`packages/prisma-shared-schema-platform/prisma/schema.p
 | Company info: `branch_no`, `company_name`, `company_address`, `company_email`, `company_tel`, `company_zip_code`, `tax_no` | `String?` | Yes | Legal-entity identity. |
 | Hotel info: `hotel_name`, `hotel_address`, `hotel_email`, `hotel_tel`, `hotel_zip_code` | `String?` | Yes | Operating identity. |
 | Format settings: `date_format`, `date_time_format`, `time_format`, `short_time_format`, `long_time_format`, `timezone`, `amount_format`, `quantity_format`, `perpage_format`, `recipe_format` | mixed | Yes | UI defaults. `timezone` defaults `Asia/Bangkok`. |
+| `doc_version` | `Int` | No | Optimistic-lock version (default `0`). |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |
 
 ### 5.2 `tb_business_unit_tb_module`
@@ -95,10 +95,10 @@ Note: same enum name in tenant schema uses `FIFO` / `AVG`; the platform definiti
 ## 6. Business Rules
 
 - **Uniqueness.** `code` unique within a cluster (app-enforced); `name` also unique by convention.
-- **Deletion guards.** Active users, open documents, or non-zero balances all block deletion.
+- **Deletion guards — unconfirmed.** The gateway's `deleteBusinessUnit` is a thin proxy to a `business-units.delete` microservice command; whether active users, open documents, or non-zero balances actually block deletion was not traced this pass.
 - **Validation.** `cluster_id`, `code`, `name`, `calculation_method` required.
 - **Lifecycle.** `is_active = false` blocks logins, preserves data.
-- **Calculation method change** must follow period-close + recost discipline.
+- **Calculation method change** — **design intent, unconfirmed guard.** Flipping `average` ↔ `fifo` should in principle follow period-close + recost discipline, but as noted in Section 4 (Edge Cases; also Section 3 Validation & Errors), `carmen-platform`'s edit form imposes no disabled state or mid-period restriction on this field, and whether the backend microservice enforces one was not traced this pass — treat "must follow period-close + recost discipline" as design intent, not a confirmed guard.
 - **`is_hq` invariant.** Exactly one HQ per cluster.
 
 ## 7. Cross-References
@@ -111,5 +111,6 @@ Note: same enum name in tenant schema uses `FIFO` / `AVG`; the platform definiti
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_business_unit` (lines ~79-144), `tb_business_unit_tb_module` (lines ~146-164), `enum_calculation_method` (lines ~74-77).
-- **Frontend:** `../carmen-platform/src/` (platform admin dashboard).
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_business_unit` (lines ~117-202), `tb_business_unit_tb_module` (lines ~204-223), `enum_calculation_method` (lines ~112-115).
+- **Frontend:** `../carmen-platform/src/pages/BusinessUnitEdit.tsx` + `businessUnitEdit/sections/CalculationSettingsSection.tsx` (platform admin dashboard).
+- **Backend:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_business-units/platform_business-units.service.ts` (thin proxy to a `business-units` microservice not traced this pass).

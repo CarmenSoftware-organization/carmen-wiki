@@ -2,7 +2,7 @@
 title: แผนก (Department)
 description: แผนกขององค์กรและการกำหนดผู้ใช้ — ใช้เป็น cost-centre และ scope การอนุมัติบนเอกสาร requisition และ PR
 published: true
-date: 2026-06-09T16:28:56.000Z
+date: 2026-07-15T21:47:09.000Z
 tags: master-data, department, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -40,14 +40,14 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | "Code already in use" | `code` ซ้ำบนแถว non-deleted | เลือก code อื่น |
 | "Department-name typo conflict" | `(code, name)` ชนกับแถวที่มีอยู่ | แก้ชื่อหรือ reactivate แถวที่มี |
 | "Code / name required" | Form ส่งว่าง | เพิ่มทั้งคู่ |
-| "Cannot delete — referenced by open PR/SR" | มี FK references | Soft-delete หลังปิด document ที่เปิดอยู่และเคลียร์ user mapping เท่านั้น |
+| **ยังไม่ยืนยัน** — ไม่พบ delete guard | `departments.service.ts`'s `delete()` เป็น soft-delete แบบไม่มีเงื่อนไข (`is_active: false` + `deleted_at`) โดยไม่มีการเช็ค PR/SR ที่เปิดอยู่ หรือแถว `tb_department_user` ที่มีอยู่ | เดิมหน้านี้ระบุว่า "cannot delete — referenced by open PR/SR" เป็น error ที่บังคับใช้จริง; ให้ถือว่า**ยังไม่ถูกบังคับใช้**จนกว่าจะตรวจสอบซ้ำ |
 | Workflow resolve HOD ไม่ได้ | ไม่มี `is_hod = true` ในแผนก | ตั้งผู้ใช้หนึ่งคนเป็น HOD |
 
 ## 4. Edge Cases
 
 - **Single-HOD invariant** บังคับใช้ระดับ app ไม่ใช่ DB การ maintenance check ควรล้มเหลวอย่างชัดเจนถ้ามีแถว `is_hod = true` หลายแถว
 - **การเปลี่ยน HOD** ไม่ retro-fit การอนุมัติย้อนหลัง — ขั้นตอนที่ผ่านมายังเก็บผู้ใช้ที่เซ็นจริง
-- **Soft-delete** ต้องไม่มี user mapping ที่ active; มิฉะนั้น HOD resolution จะแตกสำหรับผู้ใช้เหล่านั้น
+- **Soft-delete — guard ยังไม่ยืนยัน** อ่านโค้ด `departments.service.ts` โดยตรงไม่พบการเช็คแถว `tb_department_user` ที่มีอยู่ก่อน soft-delete แผนก; HOD resolution ของผู้ใช้เหล่านั้นอาจพังแทนที่จะถูกกันไว้ก่อน
 - **Triple unique** — `code`, `name` และ `(code, name)` มี uniqueness guard ทั้งหมดเพื่อป้องกันการ typo ซ้ำ
 
 ---
@@ -66,6 +66,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | `description` | `String? @db.VarChar` | Yes | Free text |
 | `is_active` | `Boolean?` | Yes | Active flag, default `true` |
 | `note`, `info`, `dimension` | — | Yes | Metadata มาตรฐาน |
+| `doc_version` | `Int` | No | เวอร์ชัน optimistic-lock (default `0`) |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*` |
 
 **Constraints:** `@@unique([name, deleted_at])` map `department_name_u`; `@@unique([code, deleted_at])` map `department_code_u`; `@@unique([code, name, deleted_at])` map `department_code_name_u` Index บน `name` และ `code`
@@ -86,7 +87,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 ## 6. กติกาทางธุรกิจ
 
 - **Uniqueness** `code` unique ในแถว non-deleted; index `(code, name)` ป้องกัน typo duplicate
-- **Deletion guards** การอ้างอิงจาก PR/SR ที่เปิดอยู่บล็อก hard-delete; soft-delete หลังจากปิดและเคลียร์ user mapping เท่านั้น
+- **Deletion guards — ยังไม่ยืนยัน** ไม่พบการเช็ค FK ใน `delete()`; soft-delete สำเร็จโดยไม่มีเงื่อนไขแม้มี PR/SR ที่เปิดอยู่หรือ user mapping ที่มีอยู่
 - **Validation** `code` และ `name` บังคับ มากที่สุดหนึ่ง `is_hod = true` ต่อแผนก (app invariant)
 - **Lifecycle** `is_active = false` ซ่อนจาก picker ใหม่; รักษาการอ้างอิงประวัติ
 - **การเปลี่ยน HOD** ไม่ retro-fit การอนุมัติประวัติ
@@ -100,5 +101,5 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_department` (lines ~682-708), `tb_department_user` (lines ~4401-4425)
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/department/`
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_department` (lines ~694-723), `tb_department_user` (lines ~4771-4795)
+- **Frontend:** `../carmen-inventory-frontend-react/routes/config/department/`

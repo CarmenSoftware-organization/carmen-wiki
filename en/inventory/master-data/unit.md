@@ -2,7 +2,7 @@
 title: Unit
 description: Units of measure and inter-unit conversions used by every transactional document and product record.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T21:47:09.000Z
 tags: master-data, unit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -40,7 +40,7 @@ The companion table `tb_unit_conversion` stores **multipliers between two units*
 | "Conversion qty must be > 0" | Either `from_unit_qty` or `to_unit_qty` is zero/negative | Enter positive values |
 | "Same-unit conversion needs equal qty" | `from_unit_id == to_unit_id` but qty differs | Use the identity (`1 = 1`) or pick a different pair |
 | "Conversion already exists for this product/pair" | Unique constraint violated | Edit the existing row |
-| "Cannot delete — unit in use" | Active products, recipes, or postings reference the unit | Inactivate instead |
+| **Unconfirmed** — no delete guard found | `units.service.ts`'s `delete()` is an unconditional soft-delete (`is_active: false` + `deleted_at`) with no check for active product/recipe/posting references | A prior version of this page asserted "cannot delete — unit in use" as an enforced error; treat it as **not enforced** until re-verified |
 
 ## 4. Edge Cases
 
@@ -69,6 +69,7 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 | `note` | `String? @db.VarChar` | Yes | Internal note. |
 | `info` | `Json?` | Yes | Metadata (`{}` default). |
 | `dimension` | `Json?` | Yes | Dimension tag array. |
+| `doc_version` | `Int` | No | Optimistic-lock version (default `0`). |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |
 
 **Constraints:** primary key on `id`. Soft-delete via `deleted_at`. No explicit unique on `name` — app-layer enforcement against active rows.
@@ -86,6 +87,7 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 | `is_default` | `Boolean?` | Yes | Primary when multiple conversions exist for the same pair. |
 | `description` | `Json?` | Yes | Localised description. |
 | `is_active`, `note`, `info`, `dimension` | — | Mixed | Standard activation/metadata. |
+| `doc_version` | `Int` | No | Optimistic-lock version (default `0`). |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |
 
 **Constraints:** `@@unique([product_id, unit_type, from_unit_id, to_unit_id, deleted_at])` named `unitconversion_product_unit_type_from_unit_to_unit_deletedat_u`. Index on the same prefix. Both FKs to `tb_unit` `onDelete: NoAction`.
@@ -95,7 +97,7 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 ## 6. Business Rules
 
 - **Uniqueness.** App enforces no duplicate active unit `name` (case-insensitive). Conversions unique per `(product_id, unit_type, from_unit_id, to_unit_id)` among non-deleted rows.
-- **Deletion guards.** Active product/recipe/posting references block hard-delete — inactivate.
+- **Deletion guards — unconfirmed.** No reference check was found in `delete()`; soft-delete succeeds unconditionally even when products, recipes, or postings still reference the unit.
 - **Validation.** Conversion `from_unit_qty` and `to_unit_qty` both `> 0`. Same-unit pairs only with equal qty.
 - **Lifecycle.** Inactive units visible on historical documents; locked from new transactions.
 - **Decimal precision.** `decimal_place` is rendering only; storage `Decimal(20,5)`.
@@ -114,5 +116,5 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_unit` (lines ~3132-3208), `tb_unit_conversion` (lines ~3210-3246), `enum_unit_type` (lines ~254-257).
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/unit/`.
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_unit` (lines ~3380-3423), `tb_unit_conversion` (lines ~3460-3498), `enum_unit_type` (lines ~257-260).
+- **Frontend:** `../carmen-inventory-frontend-react/routes/config/unit/`.

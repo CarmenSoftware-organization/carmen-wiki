@@ -1,8 +1,8 @@
 ---
 title: Platform RBAC — Data Model
-description: The five RBAC tables — permission catalog, roles, role-permission join, scoped user assignments, super-admin flag — and divergences from the SPA shapes.
+description: The five RBAC tables — permission catalog, roles, role-permission join, scoped user assignments, super-admin flag — their 2026-07-16 doc_version rollout, and divergences from the SPA shapes.
 published: true
-date: 2026-06-10T12:15:00.000Z
+date: 2026-07-29T00:00:00.000Z
 tags: book/platform, rbac, data-model
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-06-10T12:00:00.000Z
 # Platform RBAC — Data Model
 
 > **At a Glance**
-> **Tables:** `tb_platform_permission` &nbsp;·&nbsp; `tb_platform_role` &nbsp;·&nbsp; `tb_platform_role_tb_permission` &nbsp;·&nbsp; `tb_user_tb_platform_role` &nbsp;·&nbsp; `tb_platform_super_admin` &nbsp;·&nbsp; **Enums:** none — `resource`/`action` are free-form VarChar &nbsp;·&nbsp; **Scope:** nullable `cluster_id` on the assignment row (`null` = platform-wide) &nbsp;·&nbsp; **Audit columns:** standard `created_*`/`updated_*`/`deleted_*` trio on every table &nbsp;·&nbsp; **Soft-delete uniques:** every uniqueness constraint includes `deleted_at`, so deleted rows can be re-created
+> **Tables:** `tb_platform_permission` &nbsp;·&nbsp; `tb_platform_role` &nbsp;·&nbsp; `tb_platform_role_tb_permission` &nbsp;·&nbsp; `tb_user_tb_platform_role` &nbsp;·&nbsp; `tb_platform_super_admin` &nbsp;·&nbsp; **Enums:** none — `resource`/`action` are free-form VarChar &nbsp;·&nbsp; **Scope:** nullable `cluster_id` on the assignment row (`null` = platform-wide) &nbsp;·&nbsp; **Audit columns:** standard `created_*`/`updated_*`/`deleted_*` trio on every table, plus `doc_version Int @default(0)` on all five (added 2026-07-16, platform-wide optimistic-lock rollout) &nbsp;·&nbsp; **Soft-delete uniques:** every uniqueness constraint includes `deleted_at`, so deleted rows can be re-created
 
 > **Source of truth:** Backend Prisma platform schema. Always read this first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
@@ -20,7 +20,7 @@ dateCreated: 2026-06-10T12:00:00.000Z
 
 ## 1. Overview
 
-The RBAC module owns five tables, grouped under the `// Platform RBAC` and `// Platform Super Admin` banners in the Prisma schema (lines 919–1013). `tb_platform_permission` is the catalog: one row per `resource` + `action` pair, written only by the backend (seed/migration) — the SPA reads it but exposes no create/edit surface. `tb_platform_role` holds the named bundles, and `tb_platform_role_tb_permission` is the M:N join that records which catalog rows a role grants.
+The RBAC module owns five tables, grouped under the `// Platform RBAC` and `// Platform Super Admin` banners in the Prisma schema (lines 933–1032). `tb_platform_permission` is the catalog: one row per `resource` + `action` pair, written only by the backend (seed/migration) — the SPA reads it but exposes no create/edit surface. `tb_platform_role` holds the named bundles, and `tb_platform_role_tb_permission` is the M:N join that records which catalog rows a role grants.
 
 `tb_user_tb_platform_role` binds a role to a user with a scope: its nullable `cluster_id` column is the entire scope mechanism — `null` means the assignment applies platform-wide, a UUID means it applies inside that cluster only. `tb_platform_super_admin` is deliberately not part of the role graph: it is a flag table (just `user_id` + `is_active` beyond the audit trio) whose rows mark users that bypass every permission check.
 
@@ -38,6 +38,7 @@ The permission catalog. One row per grantable action; the SPA derives the key st
 | `resource` | `String @db.VarChar` | No | Resource segment of the key (e.g. `role`, `cluster`, `user_platform`) |
 | `action` | `String @db.VarChar` | No | Action segment of the key (e.g. `read`, `create`, `manage`, `send`) |
 | `description` | `String?` | Yes | Human-readable explanation shown in the Permission Catalog screen and PermissionPicker tooltips |
+| `doc_version` | `Int @default(0) @db.Integer` | No | Optimistic-lock token, added 2026-07-16 (platform-wide rollout, all 35 tables) |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: row creation time, default `now()` |
 | `created_by_id` | `String? @db.Uuid` | Yes | Audit: creator user id |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: last update time, default `now()` |
@@ -61,6 +62,7 @@ A named, activatable bundle of permissions. The role's key set lives entirely in
 | `name` | `String @db.VarChar` | No | Role name; unique among live rows |
 | `description` | `String?` | Yes | Optional description shown in the Roles list |
 | `is_active` | `Boolean?` | Yes | Default `true`; Active/Inactive badge in the SPA |
+| `doc_version` | `Int @default(0) @db.Integer` | No | Optimistic-lock token, added 2026-07-16; `RoleEdit.tsx` sends it on every `PUT` and shows a conflict toast + reload on mismatch |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: row creation time, default `now()` |
 | `created_by_id` | `String? @db.Uuid` | Yes | Audit: creator user id |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: last update time, default `now()` |
@@ -84,6 +86,7 @@ M:N join between roles and catalog rows. Each row grants one permission to one r
 | `platform_role_id` | `String @db.Uuid` | No | FK to `tb_platform_role.id` |
 | `platform_permission_id` | `String @db.Uuid` | No | FK to `tb_platform_permission.id` |
 | `is_active` | `Boolean?` | Yes | Default `true`; grant active flag |
+| `doc_version` | `Int @default(0) @db.Integer` | No | Optimistic-lock token, added 2026-07-16 |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: row creation time, default `now()` |
 | `created_by_id` | `String? @db.Uuid` | Yes | Audit: creator user id |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: last update time, default `now()` |
@@ -110,6 +113,7 @@ The assignment table: binds a user to a role at a scope. This is the row the Use
 | `user_id` | `String @db.Uuid` | No | Target user id — plain column, **no Prisma `@relation` to `tb_user`** |
 | `platform_role_id` | `String @db.Uuid` | No | FK to `tb_platform_role.id` |
 | `cluster_id` | `String? @db.Uuid` | Yes | Scope: `null` = platform-wide scope; set = scoped to this cluster (schema comment verbatim). Plain column, no `@relation` to `tb_cluster` |
+| `doc_version` | `Int @default(0) @db.Integer` | No | Optimistic-lock token, added 2026-07-16 |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: row creation time, default `now()` |
 | `created_by_id` | `String? @db.Uuid` | Yes | Audit: creator user id |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: last update time, default `now()` |
@@ -135,6 +139,7 @@ The bypass flag. A live row here makes `is_super_admin: true` appear in the user
 | `id` | `String @db.Uuid` | No | Primary key, default `gen_random_uuid()`; the id used by the remove endpoint |
 | `user_id` | `String @db.Uuid` | No | Flagged user id — plain column, no `@relation` to `tb_user` |
 | `is_active` | `Boolean?` | Yes | Default `true`; the SPA renders Inactive rows but they exist in data |
+| `doc_version` | `Int @default(0) @db.Integer` | No | Optimistic-lock token, added 2026-07-16 |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: row creation time, default `now()` — shown as "Added" in the SPA |
 | `created_by_id` | `String? @db.Uuid` | Yes | Audit: creator user id |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: last update time, default `now()` |
@@ -189,6 +194,7 @@ The SPA types live in `../carmen-platform/src/types/index.ts` (`Role`, `Permissi
 | `EffectivePermissions` `{ platform, clusters, is_super_admin }` | `EffectivePermissions` | no table | Computed flattening of all live assignments + the super-admin flag; served by `GET /api/user/permission/platform` |
 | Flat `created_at`/`created_by_name` on role list rows | `RoleManagement.tsx` | audit id columns | The list response may nest audit data as `audit.created/updated` `{ at, name }`; the SPA flattens and tolerates both shapes |
 | Multi-layer `{ data }` envelopes | `userRoleService.list`, `SuperAdminManagement.extractArray` | n/a | The user-roles and super-admins endpoints may nest `{ data: { data: [...] } }` deeper than the usual one level; both consumers descend until they hit an array |
+| `Role.doc_version?: number` | `Role` (`src/types/index.ts`) | `doc_version Int @default(0)` | **Aligned, not a divergence** — added to both sides in the 2026-07-16 rollout. `RoleEdit.tsx` reads it via `getDocVersion()` and sends it back on `PUT`, alongside the `permissions` delta |
 
 ### 5.1 Endpoints
 
@@ -199,7 +205,7 @@ REST surface consumed by the SPA services (`roleService.ts`, `permissionService.
 | `GET /api-system/platform/roles` | Roles list | Paginated; rows carry `permission_count` and possibly nested `audit` |
 | `POST /api-system/platform/roles` | Create role | Body includes `permissions: { add: string[] }` |
 | `GET /api-system/platform/roles/:id` | Role detail | Returns flattened `permissions: string[]` |
-| `PUT /api-system/platform/roles/:id` | Update role | Body includes `permissions: { add: string[], remove: string[] }` (delta) |
+| `PUT /api-system/platform/roles/:id` | Update role | Body includes `permissions: { add: string[], remove: string[] }` (delta) plus `doc_version` when known — a mismatch is surfaced as a version-conflict toast and the page re-fetches |
 | `DELETE /api-system/platform/roles/:id` | Delete role | |
 | `GET /api-system/platform/permissions` | Permission catalog | Read-only; no write endpoints exist in the SPA |
 | `GET /api-system/platform/super-admins` | Super-admin list | Response may nest multi-layer `{ data }` envelopes |
@@ -213,7 +219,7 @@ REST surface consumed by the SPA services (`roleService.ts`, `permissionService.
 ## 6. References
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — models `tb_platform_permission` (line 921), `tb_platform_role` (line 939), `tb_platform_role_tb_permission` (line 958), `tb_user_tb_platform_role` (line 978), `tb_platform_super_admin` (line 1000).
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — models `tb_platform_permission` (line 935), `tb_platform_role` (line 954), `tb_platform_role_tb_permission` (line 974), `tb_user_tb_platform_role` (line 995), `tb_platform_super_admin` (line 1018).
 
 **Secondary (consumer shape):**
 - `../carmen-platform/src/types/index.ts` — `Role`, `PermissionCatalogItem`, `UserRoleAssignment`, `Scope`, `EffectivePermissions`.

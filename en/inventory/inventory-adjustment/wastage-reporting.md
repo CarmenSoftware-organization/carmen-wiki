@@ -1,8 +1,8 @@
 ---
 title: Wastage Reporting
-description: Specialised stock-out flavour for spoilage, breakage, expiry, and theft — categorised so finance can analyse loss patterns by reason, outlet, and period.
+description: A Store Operations screen for logging spoilage/breakage/expiry loss — currently mock-data-driven with no backend implementation.
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-07-15T17:02:22.000Z
 tags: inventory-adjustment, wastage, loss, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,116 +11,53 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # Wastage Reporting
 
 > **At a Glance**
-> **Owner:** Store Keeper (submit) &nbsp;·&nbsp; Inventory Controller (approve) &nbsp;·&nbsp; **Table:** `tb_stock_out` with `adjustment_type = 'wastage'` flavour (NOT a separate table) &nbsp;·&nbsp; **Trigger:** spoilage / breakage / expiry / theft / sample &nbsp;·&nbsp; **Writes to:** ledger as `stock_out` / `adjustment_out` &nbsp;·&nbsp; **1-liner:** OUT-only variant of [inventory-adjustment](/en/inventory/inventory-adjustment) with mandatory reason and wastage GL account.
+> **Location:** Store Operations → Wastage Reporting (`/store-operation/wastage-reporting`) — **not** part of the Inventory Adjustment module's own routes &nbsp;·&nbsp; **Status:** mock-data only — `hooks/use-wastage-report.ts` carries the literal comment `// ── TODO: เปลี่ยนเป็น API จริงเมื่อ backend พร้อม ──` ("TODO: switch to the real API when the backend is ready"); every list/create/update/delete call resolves against an in-memory fixture array (`wr-mock-data.ts`) with a simulated network delay &nbsp;·&nbsp; **Backend:** no `tb_wastage_report`-style Prisma model, service, or controller exists anywhere in `carmen-turborepo-backend-v2`
 
 ![Wastage Reporting screen](/screenshots/inventory-adjustment/wastage-reporting.png)
 
 ## 1. What & Who
 
-Wastage Reporting is a **variant of [inventory-adjustment](/en/inventory/inventory-adjustment)** for stock that disappeared without a sale: spoilage, breakage, expiry, theft, sample / staff consumption, other-loss. **It is not a separate document type** — every wastage entry is a `tb_stock_out` row whose `adjustment_type_id` resolves to a wastage-flavoured reason. The variant exists so finance can break out loss by reason for cost-control reporting.
+A previous version of this page described Wastage Reporting as "a `tb_stock_out` row whose `adjustment_type_id` resolves to a wastage-flavoured reason" — that is incorrect. Wastage Reporting is its own, separate frontend type (`WastageReport` in `types/wastage-reporting.ts`) with its own status enum (`pending`/`approved`/`rejected` — **not** `enum_doc_status`), its own document number field (`wr_no`), and its own item shape (`unit_id`/`unit_name`/`unit_cost`/`loss_value` — no `cost_per_unit`, no lot reference, no `adjustment_type_id` at all). It shares no schema, service, or endpoint with the Inventory Adjustment module's `tb_stock_in`/`tb_stock_out`. It is cross-referenced from this module for convenience (it is a loss-recording screen, conceptually adjacent to a Stock-Out write-off) but is not a variant of it.
 
-How it differs from a generic adjustment:
-
-- **OUT only** — no return-to-stock counterpart
-- **Reason mandatory** — submit rejected without a recognised wastage reason
-- **Loss / expense GL** — credit side maps to a wastage expense account, not generic adjustment
+More importantly: **the entire feature is currently mock data.** `useWastageReport()`, `useWastageReportById()`, `useCreateWastageReport()`, `useUpdateWastageReport()`, and `useDeleteWastageReport()` all read from and "write" to a hardcoded `wrMockData` array in-memory, simulating a network delay (`await new Promise((r) => setTimeout(r, 300))`) rather than calling a real API. Create/Update/Delete mutations resolve `{ success: true }` and invalidate the query cache, but do not persist anything — a page refresh reverts to the original fixture data. This mirrors the same "mock-data-driven screen with a Thai TODO comment" pattern already found on Store Requisition's Stock Replenishment screen in an earlier resync pass.
 
 ## 2. Common Tasks
 
 | Task | Where | Notes |
 |---|---|---|
-| Record a wastage entry | Store Operation → Wastage Reporting → **New** | Pick location, reason, product, qty, lot |
-| Pick a reason code | Reason field on header | Filters `tb_adjustment_type` to `stock_out` wastage-flavoured rows: `SPOIL`, `BREAK`, `EXPIRY`, `THEFT`, `SAMPLE`, `OTHER` |
-| Attach evidence | Comments tab on the document | Photos of broken bottles / expiry labels (mandatory for high-loss reason codes) |
-| Submit for approval | **Submit** action | Flips `draft → in_progress`, routes to Inventory Controller |
-| Approve and post | Inventory Controller → **Approve** | Posts `tb_inventory_transaction` (stock_out / adjustment_out), debits Wastage Expense, credits Inventory |
-| Reverse a wastage entry | New wastage with negative qty | Only correction path — never edit the original; reference original in `note` |
-| Run loss-by-reason report | [reporting-audit](/en/inventory/reporting-audit) | Per-outlet, per-period, per-reason aggregation |
+| Record a wastage entry | Store Operation → Wastage Reporting → **New** | Pick location, reason (free-text `reason` field, not a `tb_adjustment_type` reference), product lines (`qty`, `unit_id`, `unit_cost`) |
+| List / search wastage reports | Store Operation → Wastage Reporting | Client-side search over `wr_no`/`location_name`/`reason`/`reportor_name` and a `status` filter, both run against the in-memory mock array |
+| View report detail | Click a row | Reads from `wrMockData` by id; not a live document |
 
-## 3. Validation & Errors
+## 3. Data Shape (frontend types, no backend model)
 
-| Symptom / Message | Cause | Action |
+Source: `types/wastage-reporting.ts`. There is no Prisma schema for any of this — the shape below exists only in the frontend TypeScript types and the mock fixture.
+
+| Field | Type | Notes |
 |---|---|---|
-| "Reason required" | `adjustment_type_id` null at submit | Pick a wastage reason from the catalogue |
-| "Invalid reason for this surface" | A `stock_in` or non-wastage `stock_out` reason chosen | Pick a wastage-flavoured `stock_out` reason only |
-| "Evidence required for THEFT / EXPIRY" | High-loss reason without an attachment | Upload photo / damage report to `tb_stock_out_comment` |
-| "Lot has zero balance" | Lot-tracked product at the source location is empty | Choose a different lot or correct on-hand first |
-| "Period is closed" | `so_date` inside a closed period | Use today's date, or raise a manual JV |
-| "Submit and approve must be different users" | Same user attempted both actions | Route to a different approver (segregation of duties) |
-| Cannot edit a completed document | `doc_status = completed` is immutable | Issue a reversal (negative-qty wastage) |
+| `id` | `string` | Mock fixture id (e.g. `wr-001`), not a database UUID. |
+| `wr_no` | `string` | Display document number (e.g. `WR-2602-0001`), hand-authored in the fixture, not generated by any running-code service. |
+| `date`, `location_id`, `location_name` | `string` | Plain fields, no FK enforcement (no backend to enforce one). |
+| `reason` | `string` | Free text — not a reference to `tb_adjustment_type` or any other master-data table. |
+| `reportor_id`, `reportor_name` | `string` | The user who logged the entry. |
+| `status` | `"pending" \| "approved" \| "rejected"` | A distinct three-value enum, unrelated to `enum_doc_status`. |
+| `qty_sum`, `loss_value` | `number` | Fixture-computed rollups. |
+| `items[]` (`WastageReportItem`) | — | `product_id`, `product_name`, `product_code`, `qty`, `unit_id`, `unit_name`, `unit_cost`, `loss_value` — no `cost_per_unit`/`total_cost` naming, no lot reference. |
+| `attachments[]` (`WastageReportAttachment`) | — | `id`, `name`, `url` — a plain array field on the report, not a separate comment table. |
 
 ## 4. Edge Cases
 
-- **Variant, not a separate table.** Same schema as stock-out — discriminator is `adjustment_type_id`. Test plans that look for a `tb_wastage` table will find none.
-- **Cost basis snapshot at submit.** `cost_per_unit` is picked from the active costing method (AVCO snapshot or oldest FIFO layer) and not editable.
-- **No edit after post.** Once `doc_status = completed`, no field is mutable. Correction is a new opposite-sign wastage referencing the original in `note`.
-- **Reversal is append-only.** The original row is never `UPDATE`d — the pair is the audit trail (matches [inventory/transaction](/en/inventory/inventory/transaction) append-only semantics).
-- **GL routing.** Credit side resolves from `tb_adjustment_type` GL mapping — a wastage expense account, NOT the generic adjustment expense.
-- **Period gate.** Same as every inventory document — backdating into a closed period is rejected.
+- **Nothing persists.** Every mutation (`useCreateWastageReport`, `useUpdateWastageReport`, `useDeleteWastageReport`) resolves a fake success after a fixed delay and only invalidates the client-side query cache — there is no server round-trip and no database write.
+- **Not a Stock-Out variant.** No shared schema, endpoint, or validation with `tb_stock_out` — do not cross-apply Inventory Adjustment's rules (§ [02 — Business Rules](/en/inventory/inventory-adjustment/02-business-rules)) to this screen.
+- **Permission gate is real but unrelated to the feature's data.** The nav entry for this screen is gated by `PERMISSIONS.inventory_management.stock_out.view` (`constant/module-list.ts`) — a real permission check — but that permission key otherwise has no other use anywhere in the Inventory Adjustment module's own routes (see [02 — Business Rules](/en/inventory/inventory-adjustment/02-business-rules) § 4).
 
----
+## 5. Cross-References
 
-## 5. Data Model (Dev)
+- [inventory-adjustment](/en/inventory/inventory-adjustment) — cross-referenced module; shares no schema or code with this screen.
+- [master-data/adjustment-type](/en/inventory/master-data/adjustment-type) — the real reason-code master this screen does **not** use.
 
-Wastage shares schema with stock-out. Source: tenant schema.
+## 6. References
 
-### 5.1 `tb_stock_out` (host table)
-
-| Field | Prisma Type | Nullable | Description |
-|---|---|---|---|
-| `id` | `String @db.Uuid` | No | Primary key. |
-| `so_no` | `String? @db.VarChar` | Yes | Document number (`WR-2026-0001` when issued from wastage screen). |
-| `so_date` | `DateTime? @db.Timestamptz(6)` | Yes | Document date — gated against `tb_period`. |
-| `adjustment_type_id` | `String? @db.Uuid` | Yes | FK to `tb_adjustment_type` — must resolve to wastage-flavoured row. |
-| `adjustment_type_code` | `String? @db.VarChar` | Yes | Denormalised code (`SPOIL`, `BREAK`, etc.). |
-| `doc_status` | `enum_doc_status` | No | `draft`, `in_progress`, `completed`, `cancelled`, `voided`. |
-| `location_id` / `location_code` / `location_name` | `String?` | Yes | Location whose balance decrements. |
-| `workflow_*` / `last_action_*` | mixed | Yes | Workflow stage, history, audit. |
-| Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |
-
-**Constraints:** `@@unique([so_no, deleted_at])`. Reverse relations to `tb_stock_out_detail`, `tb_stock_out_comment`.
-
-### 5.2 `tb_stock_out_detail`
-
-Carries `product_id`, `qty`, `cost_per_unit`, `total_cost`, lot reference, and back-pointer `inventory_transaction_id` set at post. `@@unique([stock_out_id, product_id, dimension, deleted_at])`.
-
-### 5.3 `tb_adjustment_type` (reason catalogue)
-
-| Field | Type | Description |
-|---|---|---|
-| `code`, `name` | `String` | e.g. `SPOIL` / "Spoilage". |
-| `type` | `enum_adjustment_type` | `stock_in` or `stock_out` — wastage rows are always `stock_out`. |
-| `is_active` | `Boolean?` | Toggles availability in the picker. |
-
-See [master-data/adjustment-type](/en/inventory/master-data/adjustment-type) for the full reason catalogue.
-
-## 6. Lifecycle / Business Rules
-
-```
-1. Store Keeper opens Wastage Reporting / new, picks location and reason
-2. Adds line items: product, qty, lot (cost_per_unit snapshot at submit)
-3. Attaches evidence (high-loss reasons require it)
-4. Submits -> draft -> in_progress, routes to Inventory Controller
-5. Inventory Controller approves -> in_progress -> completed:
-   - INSERT tb_inventory_transaction { inventory_doc_type: 'stock_out' }
-   - INSERT tb_inventory_transaction_detail per line
-   - INSERT tb_inventory_transaction_cost_layer with transaction_type = 'adjustment_out'
-   - GL: DR Wastage Expense, CR Inventory
-6. Reversal (only correction path): new tb_stock_out with negative qty, note links to original
-```
-
-- **Reason required**, **direction stock_out only**, **submit ≠ approve** (segregation of duties)
-- **No edit after post** — append-only correction
-- **Reporting flag.** Each posting contributes to the per-outlet, per-period, per-reason loss aggregation
-
-## 7. Cross-References
-
-- [inventory-adjustment](/en/inventory/inventory-adjustment) — parent module; same business rules apply
-- [master-data/adjustment-type](/en/inventory/master-data/adjustment-type) — reason catalogue
-- [inventory](/en/inventory/inventory) &nbsp;·&nbsp; [inventory/transaction](/en/inventory/inventory/transaction) &nbsp;·&nbsp; [costing](/en/inventory/costing) &nbsp;·&nbsp; [reporting-audit](/en/inventory/reporting-audit)
-
-## 8. References
-
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_stock_out` (~2759-2812), `tb_stock_out_detail` (~2848-2886), `tb_adjustment_type` (~2569-2594), `enum_adjustment_type` (~2564-2567), `enum_doc_status` (~187-193).
-- **Frontend:** `../carmen-inventory-frontend-react/routes/store-operation/wastage-reporting/` — `wr-form.tsx`, `wr-form-schema.ts`, `wr-item-fields.tsx`.
-- **carmen/docs:** `../carmen/docs/inventory-management/period-end-process.md` (wastage as a pre-close prerequisite).
+- **Frontend:** `../carmen-inventory-frontend-react/routes/store-operation/wastage-reporting/` (`wr-form.tsx`, `wr-form-schema.ts`, `wr-mock-data.ts`), `hooks/use-wastage-report.ts`, `types/wastage-reporting.ts`.
+- **Backend:** none found — no `tb_wastage_report` (or similarly named) Prisma model, service, or controller exists anywhere in `../carmen-turborepo-backend-v2/`.
+- **Permission:** `constant/module-list.ts` gates the nav entry on `PERMISSIONS.inventory_management.stock_out.view`.

@@ -2,7 +2,7 @@
 title: สินค้า (Product) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum สำหรับโมดูลสินค้า
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T09:00:00.000Z
 tags: product, data-model, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -26,7 +26,7 @@ dateCreated: 2026-05-15T15:30:00.000Z
 
 โมดูลสินค้าเป็น **system of record สำหรับแคตตาล็อกที่เอกสารธุรกรรมทุกใบอ้างอิง** ต่างจากโมดูลที่เน้นเอกสาร (PR, PO, GRN, SR) ที่มีเอกสาร workflow พร้อมต้นไม้ header → detail → comment ต้นไม้ของสินค้าเป็น **family ของตารางข้อมูลหลัก** ที่ยึดด้วย `tb_product` สินค้าแต่ละตัวระบุด้วย UUID `id` และ `code`/`name` ที่มนุษย์อ่านได้ อยู่ในห่วงโซ่การจำแนก (`tb_product_item_group → tb_product_sub_category → tb_product_category`) วัดด้วย `tb_unit` คลังฐาน มีการแปลงหน่วยที่เป็นทางเลือก (`tb_unit_conversion` พร้อม `enum_unit_type ∈ {order_unit, ingredient_unit}`) ถูกเปิดใช้ที่คลังจัดเก็บผ่าน `tb_product_location` (มี `min_qty` / `max_qty` / `re_order_qty` / `par_qty` ต่อคลัง) และอาจมีการ map ผู้ขายผ่าน `tb_product_tb_vendor` ตัว product เองมีฟิลด์ header ที่เล็กแต่สำคัญ: `code`, `name`, `local_name`, `description`, `inventory_unit_id`, `product_status_type` (`enum_product_status_type = active | inactive | discontinued`), `product_item_group_id`, `is_used_in_recipe`, `is_sold_directly`, `barcode`, `sku`, `price_deviation_limit`, `qty_deviation_limit`, `standard_cost`, `tax_profile_id` / `tax_profile_name` / `tax_rate`, `is_active` พร้อม JSON ส่วนขยาย (`info`, `dimension`, `certification`) thread ของ comment (`tb_product_comment` พร้อมตาราง comment คู่ขนานบนทุกระดับการจำแนก) ให้ surface ของบทสนทนาที่ตรวจสอบได้ที่ใช้ทุกที่ใน ERP
 
-โมดูลนี้อยู่ **ที่รากของ dependency ของทุกโมดูลธุรกรรม** บรรทัด PR ทุกบรรทัด บรรทัด PO บรรทัด GRN บรรทัด SR บรรทัดนับ วัตถุดิบในสูตร ธุรกรรมคลังสินค้า และแถวของ cost-layer มี reference `product_id` ไม่มีการ post ธุรกรรมบน product — วงจรชีวิตคือ `create → active → deprecated (inactive) → soft-deleted` มี gate ด้วยการตรวจสอบการใช้งาน (สินค้าที่มีคลังไม่เป็นศูนย์ มีเอกสารเปิด หรือถูกอ้างอิงโดยสูตร active ไม่สามารถ soft-delete) ต้นไม้การจำแนก (`category → sub-category → item-group`) มี tax-profile และ ค่าความคลาดเคลื่อน default ที่ cascade product สามารถ override ค่าระดับหมวดหมู่ได้แต่ส่วนใหญ่เก็บไว้ในการสืบทอดเพื่อให้แคตตาล็อกสอดคล้อง การแปลงหน่วยถูกตรวจสอบ **ความสอดคล้องสองทิศทาง** ที่ application layer (`from_unit_qty × conversion_factor = to_unit_qty` ต้อง round-trip) และ engine resolve qty ของบรรทัดเอกสารใด ๆ กลับเป็นหน่วยฐานโดยใช้แถว `tb_unit_conversion`
+โมดูลนี้อยู่ **ที่รากของ dependency ของทุกโมดูลธุรกรรม** บรรทัด PR ทุกบรรทัด บรรทัด PO บรรทัด GRN บรรทัด SR บรรทัดนับ วัตถุดิบในสูตร ธุรกรรมคลังสินค้า และแถวของ cost-layer มี reference `product_id` ไม่มีการ post ธุรกรรมบน product — วงจรชีวิตคือ `create → active → deprecated (inactive) → soft-deleted` มี gate ด้วยการตรวจสอบการใช้งาน (สินค้าที่มีคลังไม่เป็นศูนย์ มีเอกสารเปิด หรือถูกอ้างอิงโดยสูตร active ไม่สามารถ soft-delete) มีการเพิ่ม schema สองรายการนับตั้งแต่ sync ครั้งก่อนของหน้านี้ที่ขยายต้นไม้: `tb_product_eco_label` / `tb_product_master_eco_label` (§2.10 — ติดตามใบรับรอง มี frontend section จริง) และ `tb_product_account_code_mapping` (§2.11 — การ map account code ของ GL ต่อสินค้าหรือระดับการจำแนก ยืนยันแล้วบน API แต่ไม่พบ frontend surface) ต้นไม้การจำแนก (`category → sub-category → item-group`) มี tax-profile และ ค่าความคลาดเคลื่อน default ที่ cascade product สามารถ override ค่าระดับหมวดหมู่ได้แต่ส่วนใหญ่เก็บไว้ในการสืบทอดเพื่อให้แคตตาล็อกสอดคล้อง การแปลงหน่วยถูกตรวจสอบ **ความสอดคล้องสองทิศทาง** ที่ application layer (`from_unit_qty × conversion_factor = to_unit_qty` ต้อง round-trip) และ engine resolve qty ของบรรทัดเอกสารใด ๆ กลับเป็นหน่วยฐานโดยใช้แถว `tb_unit_conversion`
 
 จุดโครงสร้างหลายจุดควรย้ำตั้งแต่ต้น **ประการแรก** canonical schema **แบนและเรียบกว่าที่ carmen/docs PRD อธิบาย** — ไม่มีโมเดล `tb_product_variant`, ไม่มีตาราง key-value แบบมี type `tb_product_attribute`, และไม่มีโมเดล `tb_product_carbon_footprint` คุณสมบัติ ตัวแปร ข้อมูลความยั่งยืน และ certification ถูกเก็บใน **JSON extension bag** (`info`, `dimension`, `certification`) บน `tb_product` หรืออ้างอิงผ่าน JSON `attachments` อิสระบนตาราง comment (หมายเหตุ: คำกล่าวเดิมว่า "ไม่มี `tb_product_media`" แก้บางส่วนเมื่อ 2026-05-20 โดยตาราง gallery ใหม่ `tb_product_image` — ดู Section 2.9 — แม้ว่าเอกสาร / วิดีโอ / โมเดล 3D ที่ PRD อธิบายยังอยู่ใน JSON / comment pattern) Section 5 รวบรวมความแตกต่างเหล่านี้แบบครบ **ประการที่สอง** `tb_product_location` **ไม่ได้** มี on-hand qty — เป็น **แถวของนโยบายสต๊อก** เท่านั้น (min / max / par / reorder) on-hand qty derive จาก inventory cost-layer ledger (ดู [inventory/01-data-model](/th/inventory/inventory/01-data-model) § 5 รายการ 1) **ประการที่สาม** **วิธีการคิดต้นทุนไม่ได้อยู่บน product** — อยู่บน `tb_business_unit.calculation_method` (platform schema, `enum_calculation_method = average | fifo`) และใช้กับ product ทุกตัวที่ business unit นั้น product มี `standard_cost` (ต้นทุนอ้างอิงที่ใช้โดยวิธี count-costing `standard` และโดย recipe baselining) แต่ไม่ใช่ตัวเลือก FIFO / WA เอง
 
@@ -38,8 +38,9 @@ dateCreated: 2026-05-15T15:30:00.000Z
 
 | ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | ----------- |
+| `doc_version` | `Int` | No | default `0` counter optimistic-concurrency (เพิ่มเมื่อ 2026-06-12 ครอบคลุม 103 ตารางของ tenant ที่ยังไม่มีมาก่อน) ทุก `PATCH` ต้อง echo ค่าที่เก็บอยู่ปัจจุบัน ถ้าไม่ตรงจะได้ `409 Conflict` ตาม `PRD_AUTH_013` เพิ่มค่าเมื่ออัปเดตสำเร็จ |
 | `id` | `String @db.Uuid` | No | Primary key; `gen_random_uuid()` |
-| `code` | `String @db.VarChar` | No | code สินค้าที่มนุษย์อ่านได้ ใช้เป็น lookup key บน picker บนป้ายบาร์โค้ด (เมื่อไม่ได้ตั้ง `barcode` แยก) และบนทุกบรรทัดเอกสารปลายน้ำ ไม่ซ้ำภายใน `(code, name, deleted_at)` ตาม index `product_code_name_u` |
+| `code` | `String @db.VarChar` | No | code สินค้าที่มนุษย์อ่านได้ ใช้เป็น lookup key บน picker บนป้ายบาร์โค้ด (เมื่อไม่ได้ตั้ง `barcode` แยก) และบนทุกบรรทัดเอกสารปลายน้ำ ไม่ซ้ำภายใน `(code, name, deleted_at)` ตาม index `product_code_name_u` ตั้งแต่การเปลี่ยน frontend เมื่อ 2026-07-14 ฟอร์มสร้าง/แก้ไขไม่รับการพิมพ์ code เองแล้ว — ฟิลด์ถูก disable พร้อม placeholder "auto-generated" และถูกตัดออกจาก payload ตอนสร้าง ดังนั้นในทางปฏิบัติ code ทุกตัวที่มาจาก UI เป็นการสร้างโดย server (รูปแบบ running-number) ส่วน API เองยังรับ `code` ที่ client ระบุเองได้ (เช่นการนำเข้าเป็นชุด) |
 | `name` | `String @db.VarChar` | No | ชื่อแสดงผลภาษาอังกฤษ / หลัก มี index |
 | `local_name` | `String? @db.VarChar` | Yes | ชื่อท้องถิ่น (เช่นภาษาไทยสำหรับ property ในไทย) แสดงบนใบเสร็จและบน UI ภาษาท้องถิ่น |
 | `description` | `String? @db.VarChar` | Yes | คำอธิบายยาวอิสระ |
@@ -71,7 +72,7 @@ dateCreated: 2026-05-15T15:30:00.000Z
 
 **Constraints:** `@id` บน `id` FK: `inventory_unit_id → tb_unit.id` (`NoAction`); `product_item_group_id → tb_product_item_group.id` (`NoAction`); `tax_profile_id → tb_tax_profile.id` (`NoAction`)
 **Indexes:** `@@unique([code, name, deleted_at])` เป็น `product_code_name_u`; `@@index([code])` เป็น `product_code_idx`; `@@index([name])` เป็น `product_name_idx`
-**Back-relations:** list ที่ครอบคลุมรวมถึง `tb_count_stock_detail`, `tb_credit_note_detail`, `tb_good_received_note_detail`, `tb_pricelist_detail`, `tb_product_location`, `tb_product_tb_vendor`, `tb_purchase_request_detail`, `tb_purchase_request_template_detail`, `tb_stock_in_detail`, `tb_stock_out_detail`, `tb_store_requisition_detail`, `tb_unit_conversion`, `tb_pricelist_template_detail`, `tb_spot_check_detail`, `tb_physical_count_detail`, `tb_product_comment`, `tb_recipe_ingredient`, `tb_purchase_order_detail` ทุกตารางธุรกรรมปลายน้ำของคลังสินค้าอ้างอิง product
+**Back-relations:** list ที่ครอบคลุมรวมถึง `tb_count_stock_detail`, `tb_credit_note_detail`, `tb_good_received_note_detail`, `tb_pricelist_detail`, `tb_product_location`, `tb_product_tb_vendor`, `tb_purchase_request_detail`, `tb_purchase_request_template_detail`, `tb_stock_in_detail`, `tb_stock_out_detail`, `tb_store_requisition_detail`, `tb_unit_conversion`, `tb_pricelist_template_detail`, `tb_spot_check_detail`, `tb_physical_count_detail`, `tb_product_comment`, `tb_recipe_ingredient`, `tb_purchase_order_detail`, `tb_product_eco_label` (§2.10), `tb_product_account_code_mapping` (§2.11) ทุกตารางธุรกรรมปลายน้ำของคลังสินค้าอ้างอิง product
 
 ### 2.2 tb_product_category
 
@@ -251,7 +252,48 @@ dateCreated: 2026-05-15T15:30:00.000Z
 **Indexes:** `@@index([product_id, deleted_at])` (เส้นทาง gallery-fetch); `@@index([product_id, sort_order])` (render เรียงลำดับ)
 **Back-relation บน `tb_product`:** `tb_product_image[]` — list ใน reverse-relation block ที่ด้านล่างของ `tb_product`
 
-### 2.10 ตาราง Comment (tb_product_comment, tb_product_category_comment, tb_product_sub_category_comment, tb_product_item_group_comment, tb_unit_comment)
+### 2.10 tb_product_master_eco_label / tb_product_eco_label
+
+ฟีเจอร์ **ใบรับรอง eco-label** (เพิ่มเมื่อ 2026-06-01 ยืนยันผ่าน `git log -S` บน tenant schema — หลังจากหน้านี้ sync ครั้งก่อน) `tb_product_master_eco_label` คือแคตตาล็อกระดับ tenant ของ eco-label ที่รับรองได้ (เช่น "Energy Star", "USDA Organic") `tb_product_eco_label` คือ record ใบรับรองต่อสินค้า ทั้งสองมี frontend surface จริง: section "Eco Labels" บนหน้ารายละเอียดสินค้า (`pd-eco-label-section.tsx` + `pd-eco-label-dialog.tsx`) ที่ทำ CRUD **อิสระของตัวเอง** — Add / Edit / Delete ยิง API ทันทีและไม่ได้เป็นส่วนหนึ่งของปุ่ม Save บนฟอร์มสินค้า
+
+| ฟิลด์ (`tb_product_master_eco_label`) | Prisma Type | คำอธิบาย |
+| ----- | ----------- | ----------- |
+| `id` | `String @db.Uuid` | Primary key |
+| `code`, `name` | `String @db.VarChar` | ไม่ซ้ำตาม `product_master_eco_label_code_u` / `_name_u` |
+| `description`, `note` | `String? @db.VarChar` | ข้อความอิสระ |
+| `is_active` | `Boolean?` | default `true` |
+| `attachments` | `Json?` | default `[]` |
+
+| ฟิลด์ (`tb_product_eco_label`) | Prisma Type | คำอธิบาย |
+| ----- | ----------- | ----------- |
+| `id` | `String @db.Uuid` | Primary key |
+| `product_id` | `String @db.Uuid` | FK ไปยัง `tb_product.id` |
+| `master_eco_label_id` | `String @db.Uuid` | FK ไปยัง `tb_product_master_eco_label.id` |
+| `certificate_no` | `String? @db.VarChar` | เลขที่ใบรับรองที่แสดงบนตารางของ section |
+| `issued_date` / `expiry_date` | `DateTime? @db.Timestamptz(6)` | ช่วงเวลาที่ใบรับรองมีผล |
+| `attachments` | `Json?` | default `[]`; reference ไฟล์สแกน/PDF ใบรับรอง |
+| `is_active` | `Boolean?` | default `true` |
+
+**Constraints:** `@@unique([product_id, master_eco_label_id, certificate_no, deleted_at])` — สินค้าหนึ่งตัวสามารถมีใบรับรองมากกว่าหนึ่งใบสำหรับ eco-label เดียวกันได้ตราบใดที่เลขที่ใบรับรองต่างกัน
+
+### 2.11 tb_product_account_code_mapping
+
+ตาราง **การ map account code ของ GL** (เพิ่มเมื่อ 2026-06-22 ยืนยันผ่าน `git log -S` — หลังจากหน้านี้ sync ครั้งก่อน) map `product_id`, `product_item_group_id`, `product_sub_category_id` หรือ `product_category_id` ไปยังคู่ `account_code` / `account_name` ตาม `enum_account_type` (`inventory`, `cogs`, `revenue`, `purchase`) backend resolve หนึ่ง code **ที่มีผลบังคับใช้** ต่อ account type ตาม cascade แบบ nearest-first เดียวกับที่ใช้อยู่แล้วสำหรับการสืบทอด tax-profile และค่าความคลาดเคลื่อน (`PRD_CALC_002` / `PRD_CALC_003`): แถวระดับ product ชนะก่อน แล้วตามด้วย item-group, sub-category, category
+
+| ฟิลด์ | Prisma Type | คำอธิบาย |
+| ----- | ----------- | ----------- |
+| `id` | `String @db.Uuid` | Primary key |
+| `account_type` | `enum_account_type` | `inventory` \| `cogs` \| `revenue` \| `purchase` |
+| `account_code` | `String @db.VarChar` | code ของ GL |
+| `account_name` | `String? @db.VarChar` | ชื่อแสดงผล (optional) |
+| `product_id` / `product_item_group_id` / `product_sub_category_id` / `product_category_id` | `String? @db.Uuid` | มีเพียงหนึ่งฟิลด์ที่ populate ต่อแถว — "เจ้าของ" ของ mapping |
+| `doc_version` | `Int` | default `1` |
+
+**Constraints:** หนึ่ง `@@unique` ต่อคอลัมน์เจ้าของ แต่ละอันกำหนดขอบเขตด้วย `(owner_id, account_type, deleted_at)` — มี mapping ที่ active ได้อย่างมากหนึ่งรายการต่อ account type ต่อระดับเจ้าของ
+
+**ยืนยัน API surface จริง แต่ไม่พบ frontend UI:** block `account_codes: { add[], update[], remove[] }` เป็นฟิลด์จริงที่ document ไว้บน Bruno request สำหรับ create/update ของ `config/products`, `config/product-category`, `config/product-sub-category`, และ `config/product-item-group` (`applyAccountCodesWrite` / `resolveEffectiveAccountCodes` ใน `apps/micro-business/src/common/account-code/account-code.helper.ts`) และฝั่ง read คืนค่า `account_codes` บน response รายละเอียดสินค้า — แต่การค้นหาทั่ว repo ของ `carmen-inventory-frontend-react` ไม่พบ component หรือ hook ที่อ้างอิง `account_codes` / `accountCodeMapping` ที่ใดเลย ถือว่าเป็นฟีเจอร์ backend/API-only จนกว่าจะพบ UI surface
+
+### 2.12 ตาราง Comment (tb_product_comment, tb_product_category_comment, tb_product_sub_category_comment, tb_product_item_group_comment, tb_unit_comment)
 
 แต่ละเอนทิตีในต้นไม้ของ product มี **ตาราง comment คู่ขนาน** ที่มี surface ของบทสนทนา ตาราง comment ทั้งหมดมีรูปทรงเดียวกัน: `id`, FK `<parent>_id` ไปยัง parent, `type` (`enum_comment_type`, default `user`), `user_id`, `message`, `attachments` (array JSON ของ object `{originalName, fileToken, contentType}` ที่ map ไปยังไฟล์ที่ upload S3) และคอลัมน์ audit มาตรฐาน `enum_comment_type` แยกแยะ `user` (ข้อความอิสระจากคน) จาก `system` (annotation event อัตโนมัติ — เช่น สรุป import-job, บรรทัด log สถานะ) ธรรมเนียมนี้สอดคล้องกันทั่วทุกโมดูลที่ใช้ comment
 
@@ -329,6 +371,8 @@ tb_product ถูกอ้างถึง BY ทุกตารางธุร�
   - `ingredient_unit` — การแปลงใช้โดย recipe / consumption (เช่น `1 TBSP = 15 ML`) ขับเคลื่อนการแปลง qty วัตถุดิบของสูตรกลับเป็นหน่วยฐานในเวลา explosion ของ theoretical-consumption
 - **`enum_comment_type`**: classifier ของ comment บนทุก `*_comment.type` default `user` ค่า: `user` (ข้อความอิสระของมนุษย์), `system` (annotation event อัตโนมัติ)
 
+- **`enum_account_type`**: ขอบเขตบน `tb_product_account_code_mapping.account_type` (§2.11 เพิ่มเมื่อ 2026-06-22) สี่ค่า: `inventory`, `cogs`, `revenue`, `purchase` ไม่มี default จำเป็นบนทุกแถว
+
 Schema ยังพึ่งพา **enum ต้นน้ำที่บริโภคโดยโมดูล product แต่ไม่ได้เป็นเจ้าของ**:
 
 - `enum_calculation_method` (บน `tb_business_unit.calculation_method`, platform schema): `average`, `fifo` ตัวเลือกวิธีการคิดต้นทุน — **ไม่ได้อยู่บน product** ดู [costing/01-data-model](/th/inventory/costing/01-data-model) § 2.4
@@ -357,7 +401,7 @@ product-management PRD ของ carmen/docs (`PROD-PRD.md`) และ product-m
 
 ## 6. แหล่งอ้างอิง
 
-- **หลัก (แหล่งความจริง):** Prisma schema ที่ list ใน header callout — concretely `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` สำหรับเอนทิตี product (`tb_product`, `tb_product_category`, `tb_product_sub_category`, `tb_product_item_group`, `tb_unit`, `tb_unit_conversion`, `tb_product_location`, `tb_product_tb_vendor` และตาราง comment คู่ขนาน) และ enum `enum_product_status_type`, `enum_unit_type` platform schema `prisma-shared-schema-platform/prisma/schema.prisma` มี `tb_business_unit.calculation_method` และ `enum_calculation_method` อ้างจากมุมมอง costing
+- **หลัก (แหล่งความจริง):** Prisma schema ที่ list ใน header callout — concretely `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` สำหรับเอนทิตี product (`tb_product`, `tb_product_category`, `tb_product_sub_category`, `tb_product_item_group`, `tb_unit`, `tb_unit_conversion`, `tb_product_location`, `tb_product_tb_vendor`, `tb_product_eco_label` / `tb_product_master_eco_label`, `tb_product_account_code_mapping` และตาราง comment คู่ขนาน) และ enum `enum_product_status_type`, `enum_unit_type`, `enum_account_type` platform schema `prisma-shared-schema-platform/prisma/schema.prisma` มี `tb_business_unit.calculation_method` และ `enum_calculation_method` อ้างจากมุมมอง costing
 - **รอง (cross-check แนวคิด):**
   - `../carmen/docs/product-management/PROD-PRD.md` — PRD หลักอธิบายชุดฟีเจอร์ product-management ความแตกต่างใน Section 5 (รายการ 1, 2, 3, 4, 5, 6, 8, 9, 11, 12, 13, 14)
   - `../carmen/docs/product-management/product-master-prd.md` — product-master PRD อธิบายโครงสร้าง UI (List page, Detail page พร้อม tab, Latest Purchase tab) และข้อกำหนดเชิงฟังก์ชัน ความแตกต่างใน Section 5 (รายการ 1, 6, 12)

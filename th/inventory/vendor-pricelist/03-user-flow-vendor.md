@@ -1,8 +1,8 @@
 ---
 title: รายการราคาผู้ขาย (Vendor Pricelist) — User Flow — Vendor
-description: Flow ของ Vendor ภายในโมดูล vendor-pricelist — external party ที่มีการเข้าถึง portal-token (ไม่มี Carmen system login)
+description: Flow ของ Vendor ภายในโมดูล vendor-pricelist — external party ที่มีการเข้าถึง portal-token (ไม่มี Carmen system login); confirmed gap ใน backend route ของ Save/Submit
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T00:00:00.000Z
 tags: vendor-pricelist, user-flow, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -11,56 +11,41 @@ dateCreated: 2026-05-15T15:00:00.000Z
 # รายการราคาผู้ขาย (Vendor Pricelist) — User Flow — Vendor
 
 > **At a Glance**
-> **Persona:** Vendor (external — portal session ที่ authenticate ด้วย token, ไม่มี Carmen login) &nbsp;·&nbsp; **โมดูล:** [vendor-pricelist](/th/inventory/vendor-pricelist) &nbsp;·&nbsp; **Workflow stage:** pricelist (none) → draft → submitted (จากนั้น Purchaser approve / reject) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** การเข้า portal scope ด้วย token — ป้อน / upload ราคา, ตั้งสกุลเงิน / MOQ, save draft, submit
-> **สิ่งที่ persona นี้ทำ:** เข้าถึง portal ต่อ vendor ผ่าน token cryptographic, ป้อนหรือ upload ราคาตาม template และ submit สำหรับ Purchaser review
+> **Persona:** Vendor (external — portal ที่ authenticate ด้วย token, ไม่มี Carmen login) &nbsp;·&nbsp; **โมดูล:** [vendor-pricelist](/th/inventory/vendor-pricelist)
+> **Confirmed gap (2026-07-16):** ปุ่ม Save และ Submit ของ portal เรียก backend route ที่ไม่มีอยู่จริง มีเพียง call เริ่มต้น "เปิด link" เท่านั้นที่ทำงานได้
 
 ## 1. Role ในโมดูลนี้
 
-**Vendor** เป็น **external party ที่ไม่มี Carmen system login** ไม่เหมือนกับ persona external ส่วนใหญ่ (เช่น vendor บนโมดูล [purchase-order](/th/inventory/purchase-order) ที่ติดต่อทั้งหมดผ่าน email / EDI) โมดูล vendor-pricelist ให้ vendor มี **portal session ที่ authenticate ด้วย token** — ที่เดียวที่ external party ขับ system state โดยตรงภายในระบบ Carmen Vendor ได้รับ email invitation จาก campaign ที่ Purchaser launch, navigate ไปยัง URL portal ต่อ vendor ฝัง `tb_request_for_pricing_detail.pricelist_url_token` cryptographic ([vendor-pricelist/01-data-model](/th/inventory/vendor-pricelist/01-data-model) § 2.6), ป้อนหรือ upload ราคาสำหรับสินค้าที่ template ระบุ, เลือกสกุลเงินการ submission, จัด MOQ tier พร้อมหน่วย, save draft (auto-save ทุก ~30 วินาที) และสุดท้ายคลิก Submit — ที่จุดนั้น `tb_pricelist.submitted_at` ถูกเขียนและไฟล์ route ไปยัง Purchaser สำหรับ review Session ของ vendor gate โดย `VPL_AUTH_007` (token-validity, IP allowlist ถ้าตั้งค่า, session limit) และ `VPL_AUTH_008` (สกุลเงินต้องอยู่ในรายการสกุลเงินที่ tenant อนุญาต; conversion factor หน่วยอ่านจาก master data ไม่ใช่ vendor-supplied) Vendor ไม่เคยปฏิบัติการ `tb_pricelist.status` โดยตรงเกินกว่า implicit `(none) → draft` และ action submit; การ approve, reject, inactivation และ expiry ทั้งหมดขับโดย persona ภายในหรือ cron job เพราะ surface หลักของ vendor คือ portal session เดียวที่มีสาขาการตัดสินใจจำกัดและไม่มี matrix RBAC ใน-ระบบที่จะแจกแจง ไฟล์นี้สั้นกว่าไฟล์ Purchaser โดยตั้งใจ — เทียบขนาดได้กับไฟล์ Vendor external ใน [purchase-order/03-user-flow-vendor](/th/inventory/purchase-order/03-user-flow-vendor)
+**Vendor** เป็น external party ที่ไม่มี Carmen login ได้รับ link รูปแบบ `/pl/:url_token` (route component `price-list-external-component.tsx`) โดย token คือ `pricelist_url_token` ที่ถูกสร้างสำหรับแถว invitation ของตน เมื่อ Purchaser สร้าง [Request for Pricing](/th/inventory/vendor-pricelist/request-price-list) ต่างจาก pattern "ไม่มี portal เฉพาะ ไม่มี state ที่คงอยู่" ของ vendor ภายนอกในโมดูลอื่น (เช่น vendor บนโมดูล [purchase-order](/th/inventory/purchase-order)) โมดูลนี้ให้ vendor มีหน้าจริงให้โต้ตอบด้วย — แต่ตามที่ยืนยันในรอบนี้ ส่วนใหญ่ของสิ่งที่หน้านั้นพยายามทำไม่ไปถึง backend endpoint ที่ทำงานได้จริง
 
 ## 2. จุดเข้าและ Primary Flow
 
-**จุดเข้า:** Vendor ได้รับ email invitation (หรือ reminder ครั้งเดียวตาม schedule reminder ของ campaign) Email carry URL portal ต่อ vendor ฝัง `pricelist_url_token`, วัน window ของ campaign และข้อความ custom การคลิก link เปิด portal; token แลกเป็น session cookie ที่อยู่ภายใต้ portal-token policy ของ tenant ([vendor-pricelist/02-business-rules](/th/inventory/vendor-pricelist/02-business-rules) § `VPL_AUTH_007`)
+**จุดเข้า:** Vendor คลิก link จาก invitation ของตน (ไม่ว่าจะถูกส่งมาด้วยวิธีใด — ไม่พบโค้ด email-dispatch ใน repo นี้ ดังนั้นในทางปฏิบัติ link ต้องถูกส่งแบบ out-of-band ในวันนี้ ดูสาขาการตัดสินใจ)
 
-**Primary flow (happy path — การป้อน online):**
+**สิ่งที่เกิดขึ้นจริง ทีละขั้นตอน:**
 
-1. **เปิด portal ผ่าน invitation link** Portal render หน้า welcome พร้อมรายละเอียด invitation, countdown deadline (`VPL_CALC_007`), indicator ความคืบหน้า และตัวเลือก submission สามตัว: **Direct online entry**, **Download Excel template and upload**, **Download Excel template and email to purchasing staff** `system` comment บันทึกบน `tb_request_for_pricing_detail_comment` จับ timestamp first-access; สถานะ invitation ที่ derive ย้ายจาก `pending` ไป `in-progress` (`VPL_POST_011`)
-2. **เลือกสกุลเงิน submission** Currency picker เสนอสกุลเงินที่ tenant อนุญาต; ค่าที่เลือกเขียนไป `tb_pricelist.currency_id` ตอน save ครั้งแรก (`VPL_AUTH_008`) การเลือกสกุลเงินใช้กับ **ทุก** บรรทัดบน submission นี้; ไม่มีสกุลเงินต่อบรรทัด
-3. **เลือกโหมด submission**
-   - **การป้อน online:** portal render รายการสินค้าของ template เป็น single-page editable form แต่ละแถวสินค้าแสดง inventory unit, default order unit จาก template และปุ่ม `[+]` เพื่อเพิ่ม MOQ tier เพิ่มเติม (`VPL_VAL_006`)
-   - **Excel upload:** คลิก **Download template**, กรอกออฟไลน์ และ drag-and-drop workbook กลับมาที่ portal Portal parse workbook (`submission_method = portal`) เป็นแถว `tb_pricelist_detail`
-   - **Email submission:** คลิก **Download template**, กรอกออฟไลน์, email ไปยัง staff ฝ่ายจัดซื้อ Purchaser upload ในนาม vendor (`submission_method = email`, `VPL_AUTH_003`) — session portal ของ vendor สามารถปิด; ไม่ต้องการ action vendor เพิ่มยกเว้นการตอบ email reject
-4. **ป้อนราคาต่อสินค้าต่อ MOQ tier (เส้นทาง online-entry)** สำหรับแต่ละสินค้า ป้อน `price_without_tax`, `tax_rate` (เมื่อมีผลใช้กับ tax profile ของ vendor), `lead_time_days` และโน้ตต่อแถว ใช้ `[+]` เพื่อเพิ่มแถว MOQ-tier สำหรับการตั้งราคา bulk (เช่น MOQ 1 @ ฿12.50, MOQ 50 @ ฿10.50, MOQ 100 @ ฿9.75) Portal auto-sort tier และเตือน inline (`VPL_VAL_020`) ถ้า MOQ ที่สูงกว่า carry ราคาต่อหน่วยที่สูงกว่า MOQ ที่ต่ำกว่า feedback validation แบบ real-time flag ฟิลด์ที่ขาดหรือค่านอกช่วง
-5. **Save และ resume ข้าม session (auto-save)** Portal auto-save pricelist in-progress ทุก ~30 วินาทีและที่ field-blur Vendor สามารถปิด browser และกลับมาภายหลังผ่าน invitation link เดียวกันตราบเท่าที่ (a) campaign `end_date` ยังไม่ผ่าน, (b) token ไม่ถูก revoke และ (c) session limit (default 5 พร้อมกัน) ไม่ถูกเกิน `tb_pricelist.status` ยัง `draft` ตลอด; `submitted_at IS NULL`
-6. **Review panel validation ก่อน submit** Portal surface output การรันของ validator — เปอร์เซ็นต์ความสมบูรณ์, ฟิลด์ที่ขาด, อัตราการผ่าน business-rule และ `quality_score` ที่คำนวณ (`VPL_CALC_006`) ข้อความ error inline พร้อมคำแนะนำการแก้ปรากฏข้างแต่ละแถวที่ได้รับผลกระทบ
-7. **คลิก Submit** Validator รัน full pass (`VPL_VAL_018`–`VPL_VAL_023`) ตอนสำเร็จ `tb_pricelist.submitted_at = now()`, `submission_method` finalise, quality score เขียนไป `info` และ `system` comment append ใน `tb_pricelist_comment` Portal render หน้ายืนยันพร้อมหมายเลขอ้างอิง submission และ timeline review ที่คาด; email ยืนยันอัตโนมัติ dispatch ไปยัง contact ของ vendor สถานะ invitation ย้ายไป `submitted` (`VPL_POST_012`)
-8. **รอ review ของ purchaser** ไม่ต้องการ action เพิ่มจาก vendor ยกเว้น Purchaser reject submission (ดู สาขาการตัดสินใจ)
+1. **เปิด link** Frontend เรียก `POST /api/check-pricelist/:url_token` (`usePriceListExternal`) ฝั่ง backend ไปถึง `CheckPricelistController` → `CheckPricelistService` → (ผ่าน microservice message `check-pricelists.check`) `CheckPriceListService.checkPricelist()` ถ้าแถว invitation ยังไม่มี pricelist link, call นี้ **จะสร้างหนึ่งตัว**: แถว `tb_pricelist` ที่ `status = draft` พร้อมแถว `tb_pricelist_detail` ราคาเป็นศูนย์หนึ่งแถวต่อสินค้าใน template (ฟิลด์ราคาทั้งหมดเป็น `0`) และ link กลับไปยังแถว invitation ถ้ามี pricelist อยู่แล้วสำหรับ token นี้ call เดียวกันจะ return มันกลับมาเฉย ๆ **นี่คือ call เดียวที่ทำงานได้ในทั้ง flow ของ vendor-portal**
+2. **View/edit ใน browser** หน้าจอ render header (`PriceListExternalHeader`) และตาราง product (`PriceListExternalProductTable`) พร้อม toggle โหมด View/Edit ในโหมด edit vendor สามารถพิมพ์ราคาและ MOQ tier ลงในฟอร์ม
+3. **คลิก Save** Frontend เรียก `PATCH /api/external/api/pricelist-external/:url_token` (`useUpdatePriceListExternal`) **Confirmed gap:** การค้นหาทั่ว repo `carmen-turborepo-backend-v2` สำหรับ string ตรงตัว `pricelist-external` คืนผลเป็นศูนย์ hit นอกจาก `constant/api-endpoints.ts` ของ frontend เอง ไม่มี controller, ไม่มี module, ไม่มี microservice message pattern ใดตรงกับ route นี้ Call จะล้มเหลว (path การจัดการ error ของ frontend เองถูก wire ไว้สำหรับกรณีนี้ — `mutateAsync` ที่ reject จะแสดง toast พร้อมข้อความ error จาก backend หรือ "Failed to save changes" ทั่วไปถ้า error ไม่ใช่ `HttpError`) แต่ไม่มีอะไรในโค้ด, test หรือ comment ของ frontend เองที่ flag นี่ว่าเป็นข้อจำกัดที่รู้อยู่แล้ว — มันไม่ได้เป็น placeholder "coming soon" ที่มีเอกสารเหมือน `stock-replenishment` หรือ `wastage-reporting` ในโมดูลอื่น มันอ่านเหมือน feature จริงที่ backend ครึ่งหนึ่งหายไปจาก repo snapshot นี้เฉย ๆ
+4. **คลิก Submit** เรื่องเดียวกัน: frontend เรียก `POST /api/external/api/pricelist-external/:url_token/submit` (`useSubmitPriceListExternal`); ไม่มี backend route ที่ตรงกันเช่นกัน
+
+ผลสุทธิ: vendor ที่เข้า link วันนี้สามารถ **เห็น** draft ที่สร้างอัตโนมัติ (ราคาศูนย์ทั้งหมด จนกว่า Purchaser จะกรอกบนหน้าจอ Price List ภายใน — ดู [03-user-flow-purchaser](/th/inventory/vendor-pricelist/03-user-flow-purchaser) Step 5) แต่ไม่สามารถ **persist การแก้ไขของตนเองหรือ submit** ผ่านหน้าจอนี้ใน codebase ปัจจุบัน
 
 ## 3. สาขาการตัดสินใจ
 
-- **ถ้า vendor ต้องการอัปเดตราคาหลัง submit แต่ก่อนการ approve** หน้า portal ของ pricelist ที่ submit แสดง action **Recall and edit** ขณะ `tb_pricelist.status = draft` และ `submitted_at IS NOT NULL` Vendor คลิก Recall; `submitted_at` reset เป็น `NULL`, pricelist กลับไป surface draft ที่แก้ได้ และ `system` comment บันทึก recall Vendor แก้และ resubmit Purchaser ถูกแจ้งว่า submission ถูกถอน และ re-submit; timeline review เริ่มใหม่
-- **ถ้า submission ของ vendor ถูก reject โดย Purchaser** (`VPL_POST_018`): vendor ได้รับ email reject ที่มีข้อความเหตุผลและ URL portal เดียวกัน (token ต้นฉบับยังถูกต้องจนกว่า campaign `end_date`) Vendor เปิด portal, เห็น `system` rejection comment บน pricelist, ทำการแก้ที่ต้องการ และคลิก Submit อีกครั้ง วงจรกลับไปที่ Step 7 ข้างต้น
-- **ถ้า vendor ต้องการใช้วิธีการ submission ที่ต่างกัน mid-flight** (เช่น เริ่ม online แต่ต้องการ upload Excel แทน): portal อนุญาตการ switch ที่ใดก็ตามก่อน submit — คลิก **Switch to Excel upload** ทิ้ง entry online in-progress (พร้อมการยืนยัน) และ render surface upload การ switch กลับก็อนุญาต `submission_method` ที่เลือก finalise ที่ moment ของการคลิก Submit
-- **ถ้า portal token ถูก revoke หรือ session limit เกิน** Portal return `401 — token revoked` (ตาม `VPL_AUTH_015`) หรือ `429 — session limit exceeded` Vendor ไม่สามารถกู้ session ผ่าน link ต้นฉบับ; ต้องติดต่อ staff ฝ่ายจัดซื้อ (email ผู้ติดต่อบน invitation) เพื่อรับ invitation ใหม่พร้อม token ใหม่ (ภายใต้ `VPL_AUTH_002`) หรือออกการ bypass ครั้งเดียว Auto-save draft รักษาฝั่ง server; ถ้าออก invitation ใหม่ pricelist ใหม่เริ่มว่าง (draft จาก token ที่ revoke ไม่ migrate อัตโนมัติ — รักษาสำหรับ audit ของ Purchaser เท่านั้น)
-- **ถ้า vendor ไม่สามารถตรง deadline** Vendor สามารถ email หรือโทรไปยัง contact จัดซื้อเพื่อขอการขยาย campaign (การปรับ window ของ `VPL_POST_006`) หรือการ submission ภายหลังครั้งเดียวผ่านเส้นทาง email (`VPL_AUTH_003`) Portal เองไม่แสดงการขยายแบบ self-service; คำขอจัดการโดย Purchaser ผ่านหน้าจอการแก้ campaign เลย `end_date` invitation auto-expire (`VPL_POST_014`), token ถูก revoke และ pricelist draft รักษาบน Carmen แต่ไม่สามารถเข้าถึงโดย vendor
+- **ถ้าการแก้ไขของ vendor ดูเหมือนจะไม่ save** นี่เป็นสิ่งที่คาดไว้ตาม confirmed gap ข้างต้น — ปัจจุบันไม่มีทางแยกแยะจากฝั่ง vendor ระหว่าง "การแก้ไขของฉันไม่ save เพราะ bug" กับ "feature นี้ยังไม่ wire" ใครก็ตามที่ทดสอบ flow นี้ไม่ควรเสียเวลาไล่หา reproduction ฝั่ง client; การแก้ไขคือ backend route ไม่ใช่ frontend
+- **ราคาเข้าสู่ pricelist ที่มาจาก RFQ ได้อย่างไรในวันนี้จริง ๆ** Purchaser แก้ draft ที่สร้างอัตโนมัติโดยตรงบนหน้าจอ **Price List** ภายใน (หน้าจอเดียวกับที่ใช้สำหรับ pricelist ที่ป้อนโดยไม่มี RFQ เลย) และตั้ง `status = active` ที่นั่น
+- **Invitation link ถูกส่งไปยัง vendor อย่างไรจริง ๆ** ไม่พบโค้ด email-dispatch (SMTP call, email-template render หรือ queued job) ที่ใดใน backend service ของโมดูลนี้ — `create()` บน RFQ สร้าง token และ JWT แต่ไม่ส่งอะไรออกไป ในทางปฏิบัติ การส่ง link เป็นขั้นตอน manual แบบ out-of-band ในวันนี้ (เช่น copy จาก create-response payload) ไม่ใช่ invitation email อัตโนมัติ
 
 ## 4. จุดออก / Handoff
 
-การมีส่วนร่วมของ vendor ใน invitation ที่กำหนดจบที่หนึ่งในสามจุด; สถานะเอกสารที่ handoff anchor กับ lifecycle ใน [03-user-flow.md](./03-user-flow.md) § 2
-
-- **Submit → purchaser review** Vendor คลิก Submit; `tb_pricelist.submitted_at IS NOT NULL`; สถานะ invitation ย้ายไป `submitted` Handoff ไปยัง **Purchaser** สำหรับ review และ approve / reject สถานะเอกสารที่ handoff: pricelist `draft + submitted_at`; invitation `submitted` การมีส่วนร่วมตามมาของ vendor (ถ้ามี) trigger โดย email reject (กลับไปที่ portal ภายใต้ token ต้นฉบับ)
-- **Submit ผ่านเส้นทาง email → staff จัดซื้อ** Vendor return Excel ทาง email; Purchaser upload ในนาม vendor สถานะเอกสารที่ handoff: pricelist `draft + submitted_at` เขียนโดย staff; invitation `submitted`; `submission_method = email` Session portal ของ vendor ถ้าเปิด ตอนนี้ supersede — pricelist ที่ email-upload คือ submission canonical
-- **Token หมดอายุหรือถูก revoke** Campaign `end_date` ผ่านโดยไม่มี submission หรือ Sysadmin / Manager revoke token สถานะ invitation ย้ายไป `expired`; การเข้า portal ของ vendor terminate สถานะเอกสารที่ handoff: pricelist `(none)` หรือ `draft` (รักษาสำหรับ audit); invitation `expired` Handoff เป็น **out-of-band** — ความสัมพันธ์ของ vendor ต่อเฉพาะผ่าน campaign ในอนาคตที่ออกโดย Purchaser
+- **การเข้า Portal → Purchaser** Action เดียวที่ทำงานได้ของ vendor (การเปิด link) ส่ง draft pricelist ใหม่ไปยัง Purchaser ผู้ทำการป้อนข้อมูลจริงและ activate วันนี้ไม่มีการเปลี่ยน state เพิ่มเติมที่ vendor ขับ
 
 ## 5. แหล่งอ้างอิง
 
-- ภาพรวม parent: [03-user-flow.md](./03-user-flow.md) — lifecycle ทั่วโลกและตาราง handoff ข้าม persona; แถว Vendor อยู่ระหว่าง launch invitation ของ Purchaser และ review การ approve ของ Purchaser
-- Authorization: [02-business-rules.md](./02-business-rules.md) § 4 — `VPL_AUTH_007` (การเข้า portal ผ่าน token), `VPL_AUTH_008` (การเลือกสกุลเงินและหน่วย), `VPL_AUTH_014` (การแยกหน้าที่ — Vendor ≠ Purchaser), `VPL_AUTH_015` (การ revoke token)
-- กติกา Posting: [02-business-rules.md](./02-business-rules.md) § 5 — `VPL_POST_010`–`VPL_POST_014` (lifecycle invitation); `VPL_POST_015`–`VPL_POST_016` (การเปลี่ยน pricelist ที่ขับโดย vendor)
-- กติกา Validation: [02-business-rules.md](./02-business-rules.md) § 2 — `VPL_VAL_018`–`VPL_VAL_023` (การ validate ระดับบรรทัดที่ vendor trigger บน save และ submit), `VPL_VAL_020` (MOQ-tier non-increasing check ของการตั้งราคา surface inline บน portal)
-- กติกา Calculation: [02-business-rules.md](./02-business-rules.md) § 3 — `VPL_CALC_001`–`VPL_CALC_003` (การแยกราคาบรรทัดที่แสดงต่อ vendor), `VPL_CALC_007` (countdown deadline บน portal)
-- `../carmen/docs/vendor-pricelist-management/design.md` § Phase 5 (Vendor Portal Price Submission) — แหล่ง carmen/docs หลักสำหรับ UX ของ portal ที่อธิบายใน Section 2 ข้างต้น
-- `../carmen/docs/vendor-pricelist-management/VENDOR_PORTAL_ENHANCEMENT_SUMMARY.md` — แคตตาล็อก feature ของ portal ครอบคลุม auto-save, การ submission แบบ multi-format, การ validate แบบ real-time และการติดตามความคืบหน้า
-- Sibling: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — persona ภายในที่ launch campaign, review submission ของ vendor และ approve / reject
-- Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — System Administrator ที่ตั้งค่านโยบาย portal-token (`VPL_AUTH_007`) และอาจ revoke token ของ vendor (`VPL_AUTH_015`)
-- Cross-link: [product](/th/inventory/product) — ทุกบรรทัดบน submission ของ vendor อ้างอิงสินค้าบน template
+- ภาพรวม parent: [03-user-flow.md](./03-user-flow.md) — ฟิลด์สถานะจริงและตาราง handoff ข้าม persona ที่ยืนยันแล้ว
+- กติกาทางธุรกิจ: [02-business-rules.md](./02-business-rules.md) § 5.4 — confirmed gap เดียวกัน อ้างอิงร่วมกับกติกาสถานะอื่นของโมดูล
+- Frontend: `../carmen-inventory-frontend-react/routes/external/pl/price-list-external-component.tsx`, `hooks/use-price-list-external.ts`, `constant/api-endpoints.ts` (`PRICE_LIST_EXTERNAL`, `PRICE_LIST_EXTERNAL_CHECK`)
+- Backend (call ที่ทำงานได้เท่านั้น): `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/pricelists/check-pricelist.controller.ts` + `check-pricelist.service.ts`; `apps/micro-business/src/master/check-price-list/check-price-list.controller.ts` + `check-price-list.service.ts`
+- Sibling: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — persona ภายในที่ทำการป้อนราคาจริงบน draft ที่สร้างอัตโนมัติ
+- Cross-link: [product](/th/inventory/product) — ทุกสินค้าบนแถว detail ของ template กลายเป็นแถวราคาศูนย์บน draft ที่สร้างอัตโนมัติ

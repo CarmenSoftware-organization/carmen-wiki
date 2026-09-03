@@ -2,7 +2,7 @@
 title: Department
 description: Organisational departments and their user assignments — used as cost-centre and approval scope on requisition and PR documents.
 published: true
-date: 2026-06-09T16:28:56.000Z
+date: 2026-07-15T21:47:09.000Z
 tags: master-data, department, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -40,14 +40,14 @@ Departments model the **cost-centre / requesting-unit** dimension of the propert
 | "Code already in use" | Duplicate `code` on a non-deleted row | Pick a different code |
 | "Department-name typo conflict" | `(code, name)` collides with an existing row | Resolve naming or reactivate the existing row |
 | "Code / name required" | Form submitted blank | Add both |
-| "Cannot delete — referenced by open PR/SR" | FK references exist | Soft-delete only after closing open docs and clearing user mappings |
+| **Unconfirmed** — no delete guard found | `departments.service.ts`'s `delete()` is an unconditional soft-delete (`is_active: false` + `deleted_at`) with no check for open PR/SR references or existing `tb_department_user` rows | A prior version of this page asserted "cannot delete — referenced by open PR/SR" as an enforced error; treat it as **not enforced** until re-verified |
 | Workflow can't resolve HOD | No `is_hod = true` in the department | Set one user as HOD |
 
 ## 4. Edge Cases
 
 - **Single-HOD invariant** is app-enforced, not DB. A maintenance check should fail loudly if multiple `is_hod = true` rows appear.
 - **HOD change** doesn't retro-fit historical approvals — past steps keep the user who actually signed.
-- **Soft-delete** requires no active user mappings; otherwise HOD resolution breaks for those users.
+- **Soft-delete — unconfirmed guard.** A direct read of `departments.service.ts` found no check for existing `tb_department_user` rows before soft-deleting a department; HOD resolution for those users may break rather than being blocked upstream.
 - **Triple unique** — `code`, `name`, and `(code, name)` all have uniqueness guards to prevent typo duplicates.
 
 ---
@@ -66,6 +66,7 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 | `description` | `String? @db.VarChar` | Yes | Free text. |
 | `is_active` | `Boolean?` | Yes | Active flag, defaults `true`. |
 | `note`, `info`, `dimension` | — | Yes | Standard metadata. |
+| `doc_version` | `Int` | No | Optimistic-lock version (default `0`). |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |
 
 **Constraints:** `@@unique([name, deleted_at])` map `department_name_u`; `@@unique([code, deleted_at])` map `department_code_u`; `@@unique([code, name, deleted_at])` map `department_code_name_u`. Indexes on `name` and `code`.
@@ -86,7 +87,7 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 ## 6. Business Rules
 
 - **Uniqueness.** `code` unique among non-deleted rows; `(code, name)` index guards typo duplicates.
-- **Deletion guards.** Open PR/SR references block hard-delete; soft-delete only after closure and clearing user mappings.
+- **Deletion guards — unconfirmed.** No reference check was found in `delete()`; soft-delete succeeds unconditionally even with open PR/SR references or existing user mappings.
 - **Validation.** `code` and `name` required. At most one `is_hod = true` per department (app invariant).
 - **Lifecycle.** `is_active = false` hides from new pickers; preserves historical references.
 - **HOD changes** never retro-fit historical approvals.
@@ -100,5 +101,5 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_department` (lines ~682-708), `tb_department_user` (lines ~4401-4425).
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/department/`.
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_department` (lines ~694-723), `tb_department_user` (lines ~4771-4795).
+- **Frontend:** `../carmen-inventory-frontend-react/routes/config/department/`.

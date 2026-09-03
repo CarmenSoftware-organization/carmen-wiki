@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — Test Scenarios — Requestor
 description: Test case ของ Requestor (happy path, permission, validation, edge case) สำหรับโมดูล purchase-request
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-07-29T05:18:05.000Z
 tags: purchase-request, test-scenarios, requestor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -35,7 +35,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 | # | Scenario | พฤติกรรมที่คาด (allow/deny + เหตุผล) |
 | - | -------- | --------------------------------------- |
 | REQ-PERM-01 | Requestor เปิด PR ที่ตนเป็นเจ้าของ (`requestor_id == auth.user.id`) ใน `pr_status = draft` | **Allow** read และ edit `PR_AUTH_001` ให้สิทธิ์ edit exclusive แก่เจ้าของขณะที่ PR เป็น `draft` |
-| REQ-PERM-02 | Requestor เปิด PR ที่ผู้ใช้อื่นเป็นเจ้าของใน `pr_status = draft` | **Deny edit, read-only** (ไม่มี toolbar Edit / Delete / Submit) `PR_AUTH_001` สงวน edit ให้เจ้าของหรือ delegate ที่ระบุ Visibility list เองขึ้นกับ grant **All Documents** / department-wide; ถ้า PR นอกแผนกของ Requestor มันไม่ปรากฏใน list เลย |
+| REQ-PERM-02 | Requestor เปิด PR ที่ผู้ใช้อื่นเป็นเจ้าของใน `pr_status = draft` | **Deny edit, read-only** (ไม่มี toolbar Edit / Delete / Submit) `PR_AUTH_001` สงวน edit ให้เจ้าของเท่านั้น *(เอกสารรุ่นก่อนหน้ายังเพิ่มข้อยกเว้น "delegate ที่ระบุ" — ยังไม่ยืนยัน ไม่พบกลไก delegation ดู `PR_AUTH_006`)* Visibility list เองขึ้นกับ grant **All Documents** / department-wide; ถ้า PR นอกแผนกของ Requestor มันไม่ปรากฏใน list เลย |
 | REQ-PERM-03 | Requestor edit draft ของตนเอง (description header และ qty บรรทัดหนึ่ง) | **Allow.** `PR_AUTH_001` ผ่าน; `doc_version` increment ตอน save ตาม `PR_VAL_016` |
 | REQ-PERM-04 | Requestor พยายามแก้ PR ของตนเองหลัง submit (`pr_status = in_progress`) | **Deny.** Lock ของ state-machine — ปุ่ม edit เป็น read-only วิธีเดียวกลับไปแก้คือให้ผู้อนุมัติ **Send Back** PR เป็น `draft` |
 | REQ-PERM-05 | Requestor cancel / delete PR ของตนเองที่ `draft` | **Allow.** Action เฉพาะเจ้าของบนเอกสารที่ยังไม่ submit; ไม่มี stage workflow ที่เลื่อน, ไม่มี soft commitment ที่ต้องปล่อย |

@@ -2,7 +2,7 @@
 title: Product — Data Model
 description: Entities, fields, relationships, and enums for the product module.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T09:00:00.000Z
 tags: product, data-model, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -26,7 +26,7 @@ dateCreated: 2026-05-15T15:30:00.000Z
 
 The Product module is the **system of record for the catalogue every transactional document references**. Unlike a document-centric module (PR, PO, GRN, SR) that carries a workflow document with a header → detail → comment tree, the product tree is a **family of master-data tables** anchored by `tb_product`. Each product is identified by a UUID `id` and a human `code`/`name`, sits in a classification chain (`tb_product_item_group → tb_product_sub_category → tb_product_category`), is measured in a base inventory `tb_unit`, optionally has unit-conversions (`tb_unit_conversion` with `enum_unit_type ∈ {order_unit, ingredient_unit}`), is enabled at storage locations via `tb_product_location` (carrying per-location `min_qty` / `max_qty` / `re_order_qty` / `par_qty`), and may carry vendor mappings via `tb_product_tb_vendor`. The product itself has a small but consequential set of header fields: `code`, `name`, `local_name`, `description`, `inventory_unit_id`, `product_status_type` (`enum_product_status_type = active | inactive | discontinued`), `product_item_group_id`, `is_used_in_recipe`, `is_sold_directly`, `barcode`, `sku`, `price_deviation_limit`, `qty_deviation_limit`, `standard_cost`, `tax_profile_id` / `tax_profile_name` / `tax_rate`, `is_active`, plus extension JSON (`info`, `dimension`, `certification`). Comment threads (`tb_product_comment`, plus parallel comment tables on every classification level) supply the auditable conversation surface used everywhere else in the ERP.
 
-The module sits **at the dependency root of every transactional module**. Every PR line, PO line, GRN line, SR line, count line, recipe ingredient, inventory transaction, and cost-layer row carries a `product_id` reference. There is no transactional posting on a product — the lifecycle is `create → active → deprecated (inactive) → soft-deleted`, gated by usage checks (a product with non-zero inventory, with open documents, or referenced by an active recipe cannot be soft-deleted). The classification tree (`category → sub-category → item-group`) carries cascading tax-profile and deviation-tolerance defaults; the product can override category-level values but most installations keep them in inheritance to keep the catalogue consistent. Unit conversions are validated for **bidirectional consistency** at the application layer (`from_unit_qty × conversion_factor = to_unit_qty` must round-trip), and the engine resolves any document line's qty back to the base unit using `tb_unit_conversion` rows.
+The module sits **at the dependency root of every transactional module**. Every PR line, PO line, GRN line, SR line, count line, recipe ingredient, inventory transaction, and cost-layer row carries a `product_id` reference. There is no transactional posting on a product — the lifecycle is `create → active → deprecated (inactive) → soft-deleted`, gated by usage checks (a product with non-zero inventory, with open documents, or referenced by an active recipe cannot be soft-deleted). Two schema additions since the prior sync of this page extend the tree: `tb_product_eco_label` / `tb_product_master_eco_label` (§2.10 — certificate tracking, with a real frontend section) and `tb_product_account_code_mapping` (§2.11 — GL-account-code mapping per product or classification level, confirmed on the API but with no frontend surface found). The classification tree (`category → sub-category → item-group`) carries cascading tax-profile and deviation-tolerance defaults; the product can override category-level values but most installations keep them in inheritance to keep the catalogue consistent. Unit conversions are validated for **bidirectional consistency** at the application layer (`from_unit_qty × conversion_factor = to_unit_qty` must round-trip), and the engine resolves any document line's qty back to the base unit using `tb_unit_conversion` rows.
 
 A few structural points are worth restating up front. **First**, the canonical schema is **flatter and simpler than the carmen/docs PRD describes** — there is no `tb_product_variant` model, no `tb_product_attribute` typed key-value table, and no `tb_product_carbon_footprint` model. Attributes, variants, sustainability data, and certification are persisted on the **JSON extension bags** (`info`, `dimension`, `certification`) on `tb_product` or referenced via free-form `attachments` JSON on the comment tables. (Note: an earlier "no `tb_product_media`" call-out was partially resolved on 2026-05-20 by the new `tb_product_image` gallery table — see Section 2.9 — though documents / videos / 3D models the PRD also describes still live in the JSON / comment pattern.) Section 5 catalogues these divergences in full. **Second**, `tb_product_location` does **not** carry on-hand qty — it is the **stock-policy row** only (min / max / par / reorder). On-hand qty is derived from the inventory cost-layer ledger (see [inventory/01-data-model](/en/inventory/inventory/01-data-model) § 5 item 1). **Third**, the **costing method is not on the product** — it lives on `tb_business_unit.calculation_method` (platform schema, `enum_calculation_method = average | fifo`) and applies to every product at that business unit. The product carries `standard_cost` (the reference cost used by the `standard` count-costing method and by recipe baselining) but not the FIFO / WA selector itself.
 
@@ -38,8 +38,9 @@ The **product master row**. The single source of truth for product identity; eve
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
+| `doc_version` | `Int` | No | Default `0`. Optimistic-concurrency counter (added 2026-06-12 across 103 tenant tables that previously lacked it). Every `PATCH` must echo the currently-persisted value; a mismatch returns `409 Conflict` per `PRD_AUTH_013`. Increments on each successful update. |
 | `id` | `String @db.Uuid` | No | Primary key; `gen_random_uuid()`. |
-| `code` | `String @db.VarChar` | No | Human-readable product code. Used as the lookup key on pickers, on barcode labels (when `barcode` is not separately set), and on every downstream document line. Unique within `(code, name, deleted_at)` per the index `product_code_name_u`. |
+| `code` | `String @db.VarChar` | No | Human-readable product code. Used as the lookup key on pickers, on barcode labels (when `barcode` is not separately set), and on every downstream document line. Unique within `(code, name, deleted_at)` per the index `product_code_name_u`. As of a 2026-07-14 frontend change the create/edit form no longer accepts manual entry — the field renders disabled with an "auto-generated" placeholder and is stripped from the create payload, so in practice every code reaching this column through the UI is server-assigned (running-number pattern); the API itself still accepts a client-supplied `code` (e.g. via bulk import). |
 | `name` | `String @db.VarChar` | No | English / primary display name. Indexed. |
 | `local_name` | `String? @db.VarChar` | Yes | Localised name (e.g. Thai for Thai properties). Surfaced on receipts and on the local-language UI. |
 | `description` | `String? @db.VarChar` | Yes | Free-text long description. |
@@ -71,7 +72,7 @@ The **product master row**. The single source of truth for product identity; eve
 
 **Constraints:** `@id` on `id`. FKs: `inventory_unit_id → tb_unit.id` (`NoAction`); `product_item_group_id → tb_product_item_group.id` (`NoAction`); `tax_profile_id → tb_tax_profile.id` (`NoAction`).
 **Indexes:** `@@unique([code, name, deleted_at])` as `product_code_name_u`; `@@index([code])` as `product_code_idx`; `@@index([name])` as `product_name_idx`.
-**Back-relations:** an extensive list including `tb_count_stock_detail`, `tb_credit_note_detail`, `tb_good_received_note_detail`, `tb_pricelist_detail`, `tb_product_location`, `tb_product_tb_vendor`, `tb_purchase_request_detail`, `tb_purchase_request_template_detail`, `tb_stock_in_detail`, `tb_stock_out_detail`, `tb_store_requisition_detail`, `tb_unit_conversion`, `tb_pricelist_template_detail`, `tb_spot_check_detail`, `tb_physical_count_detail`, `tb_product_comment`, `tb_recipe_ingredient`, `tb_purchase_order_detail`. Every transactional table downstream of inventory references the product.
+**Back-relations:** an extensive list including `tb_count_stock_detail`, `tb_credit_note_detail`, `tb_good_received_note_detail`, `tb_pricelist_detail`, `tb_product_location`, `tb_product_tb_vendor`, `tb_purchase_request_detail`, `tb_purchase_request_template_detail`, `tb_stock_in_detail`, `tb_stock_out_detail`, `tb_store_requisition_detail`, `tb_unit_conversion`, `tb_pricelist_template_detail`, `tb_spot_check_detail`, `tb_physical_count_detail`, `tb_product_comment`, `tb_recipe_ingredient`, `tb_purchase_order_detail`, `tb_product_eco_label` (§2.10), `tb_product_account_code_mapping` (§2.11). Every transactional table downstream of inventory references the product.
 
 ### 2.2 tb_product_category
 
@@ -251,7 +252,48 @@ The **product-image gallery** table (added 2026-05-20 — partially resolves the
 **Indexes:** `@@index([product_id, deleted_at])` (gallery-fetch path); `@@index([product_id, sort_order])` (ordered render).
 **Back-relation on `tb_product`:** `tb_product_image[]` — listed in the reverse-relation block at the bottom of `tb_product`.
 
-### 2.10 Comment tables (tb_product_comment, tb_product_category_comment, tb_product_sub_category_comment, tb_product_item_group_comment, tb_unit_comment)
+### 2.10 tb_product_master_eco_label / tb_product_eco_label
+
+The **eco-label certificate feature** (added 2026-06-01, confirmed via `git log -S` on the tenant schema — after this page's prior sync). `tb_product_master_eco_label` is the tenant-wide catalogue of certifiable eco-labels (e.g. "Energy Star", "USDA Organic"); `tb_product_eco_label` is the per-product certificate record. Both have a real frontend surface: a dedicated "Eco Labels" section on the product detail view (`pd-eco-label-section.tsx` + `pd-eco-label-dialog.tsx`) that performs its **own independent CRUD** — Add / Edit / Delete fire their own API calls immediately and are not part of the product form's Save button.
+
+| Field (`tb_product_master_eco_label`) | Prisma Type | Description |
+| ----- | ----------- | ----------- |
+| `id` | `String @db.Uuid` | Primary key. |
+| `code`, `name` | `String @db.VarChar` | Unique per `product_master_eco_label_code_u` / `_name_u`. |
+| `description`, `note` | `String? @db.VarChar` | Free text. |
+| `is_active` | `Boolean?` | Default `true`. |
+| `attachments` | `Json?` | Default `[]`. |
+
+| Field (`tb_product_eco_label`) | Prisma Type | Description |
+| ----- | ----------- | ----------- |
+| `id` | `String @db.Uuid` | Primary key. |
+| `product_id` | `String @db.Uuid` | FK to `tb_product.id`. |
+| `master_eco_label_id` | `String @db.Uuid` | FK to `tb_product_master_eco_label.id`. |
+| `certificate_no` | `String? @db.VarChar` | Certificate reference number shown on the section's table. |
+| `issued_date` / `expiry_date` | `DateTime? @db.Timestamptz(6)` | Certificate validity window. |
+| `attachments` | `Json?` | Default `[]`; certificate scan / PDF references. |
+| `is_active` | `Boolean?` | Default `true`. |
+
+**Constraints:** `@@unique([product_id, master_eco_label_id, certificate_no, deleted_at])` — a product may hold more than one certificate for the same eco-label as long as the certificate number differs.
+
+### 2.11 tb_product_account_code_mapping
+
+The **GL-account-code mapping** table (added 2026-06-22, confirmed via `git log -S` — after this page's prior sync). Maps a `product_id`, `product_item_group_id`, `product_sub_category_id`, or `product_category_id` to an `account_code` / `account_name` pair per `enum_account_type` (`inventory`, `cogs`, `revenue`, `purchase`). The backend resolves one **effective** code per account type per the identical nearest-first cascade already used for tax-profile and deviation-tolerance inheritance (`PRD_CALC_002` / `PRD_CALC_003`): product-level row wins, then item-group, then sub-category, then category.
+
+| Field | Prisma Type | Description |
+| ----- | ----------- | ----------- |
+| `id` | `String @db.Uuid` | Primary key. |
+| `account_type` | `enum_account_type` | `inventory` \| `cogs` \| `revenue` \| `purchase`. |
+| `account_code` | `String @db.VarChar` | The GL code. |
+| `account_name` | `String? @db.VarChar` | Optional display name. |
+| `product_id` / `product_item_group_id` / `product_sub_category_id` / `product_category_id` | `String? @db.Uuid` | Exactly one is populated per row — the "owner" of the mapping. |
+| `doc_version` | `Int` | Default `1`. |
+
+**Constraints:** one `@@unique` per owner column, each scoped to `(owner_id, account_type, deleted_at)` — at most one active mapping per account type per owner level.
+
+**Confirmed API surface, no frontend UI found:** the `account_codes: { add[], update[], remove[] }` block is a real, documented field on the create/update Bruno requests for `config/products`, `config/product-category`, `config/product-sub-category`, and `config/product-item-group` (`applyAccountCodesWrite` / `resolveEffectiveAccountCodes` in `apps/micro-business/src/common/account-code/account-code.helper.ts`), and the read side returns `account_codes` on the product detail response — but a repo-wide search of `carmen-inventory-frontend-react` found no component or hook referencing `account_codes` / `accountCodeMapping` anywhere. Treat this as a backend/API-only feature until a UI surface is found.
+
+### 2.12 Comment tables (tb_product_comment, tb_product_category_comment, tb_product_sub_category_comment, tb_product_item_group_comment, tb_unit_comment)
 
 Each entity in the product tree has a **parallel comment table** carrying the conversation surface. All comment tables share the same shape: `id`, `<parent>_id` FK to the parent, `type` (`enum_comment_type`, default `user`), `user_id`, `message`, `attachments` (JSON array of `{originalName, fileToken, contentType}` objects mapping to S3-uploaded files), and the standard audit columns. The `enum_comment_type` distinguishes `user` (free-text from a person) from `system` (automated event annotations — e.g. import-job summary, status-transition log line); this convention is consistent across every module that uses comments.
 
@@ -329,6 +371,8 @@ Notes:
   - `ingredient_unit` — conversion is used by recipe / consumption (e.g. `1 TBSP = 15 ML`). Drives recipe ingredient qty translation back to the base unit at theoretical-consumption explosion time.
 - **`enum_comment_type`**: comment classifier on every `*_comment.type`. Default `user`. Values: `user` (human free-text), `system` (automated event annotation).
 
+- **`enum_account_type`**: scope on `tb_product_account_code_mapping.account_type` (§2.11, added 2026-06-22). Four values: `inventory`, `cogs`, `revenue`, `purchase`. No default; required on every row.
+
 The schema also relies on **upstream enums consumed by the product module but not owned by it**:
 
 - `enum_calculation_method` (on `tb_business_unit.calculation_method`, platform schema): `average`, `fifo`. The costing-method selector — **not on the product**. See [costing/01-data-model](/en/inventory/costing/01-data-model) § 2.4.
@@ -357,7 +401,7 @@ The carmen/docs product-management PRD (`PROD-PRD.md`) and product-master PRD (`
 
 ## 6. References
 
-- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` for the product entities (`tb_product`, `tb_product_category`, `tb_product_sub_category`, `tb_product_item_group`, `tb_unit`, `tb_unit_conversion`, `tb_product_location`, `tb_product_tb_vendor`, and the parallel comment tables) and the enums `enum_product_status_type`, `enum_unit_type`. The platform schema `prisma-shared-schema-platform/prisma/schema.prisma` carries `tb_business_unit.calculation_method` and `enum_calculation_method` referenced from the costing perspective.
+- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` for the product entities (`tb_product`, `tb_product_category`, `tb_product_sub_category`, `tb_product_item_group`, `tb_unit`, `tb_unit_conversion`, `tb_product_location`, `tb_product_tb_vendor`, `tb_product_eco_label` / `tb_product_master_eco_label`, `tb_product_account_code_mapping`, and the parallel comment tables) and the enums `enum_product_status_type`, `enum_unit_type`, `enum_account_type`. The platform schema `prisma-shared-schema-platform/prisma/schema.prisma` carries `tb_business_unit.calculation_method` and `enum_calculation_method` referenced from the costing perspective.
 - **Secondary (concept cross-check):**
   - `../carmen/docs/product-management/PROD-PRD.md` — primary PRD describing the product-management feature set; divergences in Section 5 (items 1, 2, 3, 4, 5, 6, 8, 9, 11, 12, 13, 14).
   - `../carmen/docs/product-management/product-master-prd.md` — product-master PRD describing UI structure (List page, Detail page with tabs, Latest Purchase tab) and functional requirements; divergences in Section 5 (items 1, 6, 12).

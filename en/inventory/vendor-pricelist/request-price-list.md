@@ -2,7 +2,7 @@
 title: Request for Quotation
 description: Outbound request-for-price (RFQ) sent to one or more vendors — collects bids before negotiating a new pricelist.
 published: true
-date: 2026-06-09T16:28:56.000Z
+date: 2026-07-16T00:00:00.000Z
 tags: vendor-pricelist, rfq, procurement, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -21,39 +21,36 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 **Request for Pricing (RFQ)** is the procurement-initiated outbound document that solicits quotes from one or more vendors before a [vendor-pricelist](/en/inventory/vendor-pricelist) is awarded. The buyer picks a [templates/price-list](/en/inventory/templates/price-list) (which carries currency, validity window, reminder schedule, and the product catalogue under quote), names candidate vendors, and dispatches the request. Each invited vendor gets a **tokenised link** to a portal where they submit prices; submissions land as draft `tb_pricelist` rows keyed back to the RFQ. After the deadline, the buyer compares bids and *awards* one (or more) by flipping its status to `active`.
 
-**Created by** Purchaser / Procurement Manager &nbsp;·&nbsp; **Responded to by** invited vendors (no login — token-scoped portal) &nbsp;·&nbsp; **Produces no inventory or AP effect.**
+**Created by** Purchaser &nbsp;·&nbsp; **Responded to by** invited vendors (no login — token-scoped portal; **confirmed gap:** the portal can only view the auto-created draft today, see [03-user-flow-vendor](/en/inventory/vendor-pricelist/03-user-flow-vendor)) &nbsp;·&nbsp; **Produces no inventory or AP effect.**
 
 ## 2. Common Tasks
 
 | Task | Where | Notes |
 |---|---|---|
 | Create an RFQ from a template | Vendor Management → Request Price List → **New** | Template binds currency + product catalogue |
-| Invite vendors | Detail → **Add Vendor** | One row per (RFQ, vendor); unique constraint enforces no double-invite |
-| Send / resend invitation email | Detail → **Send** | Idempotent — reuses existing `pricelist_url_token` |
-| Extend the deadline | Header → edit `end_date` | Audit-logged; required to accept late bids |
-| Compare bids | Detail → **Compare** | Normalises to BU base currency via [master-data/exchange-rate](/en/inventory/master-data/exchange-rate) |
-| Award a pricelist | Pricelist row → **Activate** | Flips `enum_pricelist_status` to `active` — RFQ itself has no "awarded" status |
+| Invite vendors | Same create form → vendor rows | All invitation rows (and their `pricelist_url_token`s) are created in the same `POST` call as the RFQ header — there is no separate "launch" or "send" step. |
+| Add more vendors to an existing RFQ | Detail → edit → add vendor row | `PATCH` supports `vendors.add`/`vendors.remove`/`vendors.update`; unique constraint on `(request_for_pricing_id, vendor_id)` enforces no double-invite. |
+| Compare / award | Purchaser edits the vendor's pricelist directly on the **Price List** screen | Awarding = setting the winning `tb_pricelist.status = active` from the Price List edit form — there is no dedicated "Compare" or "Activate" button on the RFQ screen itself, and no bid-comparison UI was found. |
 
 ## 3. Validation & Errors
 
-| Symptom / Message | Cause | Action |
+| Symptom / Message | Cause | Confirmed? |
 |---|---|---|
-| "Vendor already invited" | A non-deleted detail row exists for (RFQ, vendor) | Edit the existing invitation instead |
-| "end_date must be after start_date" | Date window invalid | Re-pick the deadline |
-| "Cannot change template — invitations sent" | `pricelist_template_id` is immutable post-dispatch | Cancel the RFQ and start a new one |
-| "Late submission rejected" | Portal POST after `end_date` | Extend `end_date` first (audit-logged) before re-sending |
-| "Vendor must be active" | `tb_vendor.is_active = false` | Reactivate under [master-data/vendor](/en/inventory/master-data/vendor) |
-| Invitation link 404s | `pricelist_url_token` rotated or row soft-deleted | Re-issue the invitation; a fresh token is generated |
+| "Vendor already invited" | A non-deleted detail row exists for (RFQ, vendor) | **Confirmed** — `@@unique([request_for_pricing_id, vendor_id, deleted_at])`. |
+| RFQ creation rejected with an invalid date range | `start_date > end_date` | **Confirmed** — `request-for-pricing.service.ts create()` explicitly checks this (`RFP_INVALID_DATE_RANGE`). |
+| "Cannot change template — invitations sent" | `pricelist_template_id` immutable post-dispatch | **Not confirmed.** `update()` accepts a new `pricelist_template_id` with no immutability check once vendor rows exist. |
+| Late submission rejected after `end_date` | Portal enforces the deadline | **Not confirmed.** `checkPricelist()` (the one working portal call) never reads `end_date`; there is no late-submission guard anywhere in this module's code. |
+| "Vendor must be active" | `tb_vendor.is_active = false` blocks the invite | **Not confirmed.** No `is_active` check on the vendor was found in `create()` or `update()`. |
+| Invitation link 404s / returns an error | Row soft-deleted, or the vendor-portal Save/Submit gap (see below) | Soft-delete on the RFQ detail row is real (`vendors.remove`); the Save/Submit 404/failure is the confirmed backend-route gap, not token rotation — no token-rotation code exists either. |
 
 ## 4. Edge Cases
 
-- **Token security.** `pricelist_url_token` is a long random string per invitation; portal access is scoped by the token **alone** (vendors do not authenticate). Token rotation invalidates all outstanding invitations for that vendor.
-- **Late submissions rejected.** A `tb_pricelist` insert after `end_date` is rejected at the API layer. The buyer must explicitly extend `end_date` before close to accept additional bids.
-- **Award is a pricelist-level flip, not RFQ-level.** The RFQ has no system "awarded" status — awarding = flipping the chosen `tb_pricelist` to `active`. Multiple pricelists may be active per product (split awards).
-- **Currency cascade.** RFQ inherits currency from the template; vendors cannot override per-line. Cross-currency RFQs require **separate rounds per currency**.
-- **Idempotent dispatch.** Re-sending the invitation reuses the existing token; no new `tb_pricelist` is created.
-- **Snapshot semantics.** Vendor name, contact, and template fields are snapshotted at invitation time. Master-record edits do not retroactively change the RFQ row.
-- **No workflow engine.** RFQ has no `workflow_*` columns; lifecycle is purely date-window + pricelist-status driven.
+- **Token security.** `pricelist_url_token` is a random string per invitation, generated once at RFQ-create time; portal access is scoped by the token alone (vendors do not authenticate). No expiration check, no IP restriction, and no revocation/rotation code exists anywhere in this module.
+- **No late-submission enforcement found.** The design intent (reject a portal submission after `end_date`) has no matching code — moot in practice today anyway, since the portal's Save/Submit calls do not reach a working backend route at all (see [03-user-flow-vendor](/en/inventory/vendor-pricelist/03-user-flow-vendor)).
+- **Award is a pricelist-level flip, not RFQ-level.** The RFQ has no status column of its own — "awarding" is simply the Purchaser setting the chosen `tb_pricelist.status = active` directly on the Price List screen.
+- **Currency cascade.** The template supplies a default currency to the auto-created draft pricelist; nothing was found preventing a Purchaser from changing `currency_id` afterwards on the Price List edit form.
+- **No reminder job found.** A repo-wide search of this module and `micro-cronjobs` found no scheduled job reading `reminder_days`/`escalation_after_days` — those template fields are stored but currently inert.
+- **No workflow engine.** RFQ has no `workflow_*` columns and no status column at all; the closest per-vendor signal is `has_submitted: !!pricelist_id`.
 
 ---
 
@@ -99,28 +96,28 @@ One row per invited vendor.
 
 ## 6. Workflow / Business Rules
 
-RFQ does **not** use the generic workflow engine. Lifecycle is driven by date windows and child `tb_pricelist` state:
+RFQ has **no status column and no workflow engine** — `tb_request_for_pricing` carries only `start_date`/`end_date` as descriptive fields; nothing in the code reads them to gate or derive a lifecycle state. What actually happens, confirmed against `request-for-pricing.service.ts` and `check-price-list.service.ts`:
 
-- **Setup** — RFQ created from template; vendor detail rows added. No invitation sent yet.
-- **Invitation sent** — each detail row gets `pricelist_url_token`; emails dispatch via `email_template_id`.
-- **Open for response** (`start_date <= now < end_date`) — vendors submit through the portal; each submission creates a `tb_pricelist` in `draft`.
-- **Reminders / escalation** — per [templates/price-list](/en/inventory/templates/price-list) `reminder_days[]` and `escalation_after_days`, a background job chases non-responding vendors.
-- **Closed for response** (`now >= end_date`) — portal locked; late submissions rejected.
-- **Award** — buyer flips the chosen `tb_pricelist` to `active`; losers stay `draft` or flip to `inactive`.
+- **Create** — RFQ header + all vendor detail rows (with their `pricelist_url_token`s) are inserted in one `create()` call. There is no separate "invitation sent" step or dispatch code — the tokens exist from the moment of creation, whether or not anything communicates them to the vendor.
+- **Portal visit** — the vendor's first `POST /api/check-pricelist/:url_token` auto-creates a zero-priced draft `tb_pricelist` from the template. Confirmed **not** gated by `start_date`/`end_date` in any way.
+- **No reminders, no escalation, no deadline enforcement** — `reminder_days[]` and `escalation_after_days` are stored on the template but nothing reads them; no scheduled job was found in this repo or in `micro-cronjobs`.
+- **Award** — the Purchaser sets the chosen `tb_pricelist.status = active` directly on the Price List screen; this module's own code does not touch that field.
 
-**Date validation:** `end_date > start_date`; both must be in the future when invitations are sent. **Template-bound:** `pricelist_template_id` immutable after first invitation. **Currency:** inherits from template; per-line override forbidden.
+**Date validation:** `start_date <= end_date` is checked at RFQ create (`RFP_INVALID_DATE_RANGE`); no other date rule was found. **Template binding:** `pricelist_template_id` can be changed on `update()` with no immutability guard, contradicting a previously-documented "immutable after first invitation" claim. **Currency:** the auto-created draft inherits `currency_id` from the template, but nothing prevents changing it afterwards on the Price List edit form.
 
 ## 7. Cross-References
 
 - [vendor-pricelist](/en/inventory/vendor-pricelist) — vendor responses materialise as `tb_pricelist` rows; the awarded one becomes the active catalogue.
 - [templates/price-list](/en/inventory/templates/price-list) — RFQ requires a template (currency, validity, reminders, product catalogue).
-- [master-data/vendor](/en/inventory/master-data/vendor) — invited vendors must reference active vendor records.
-- [master-data/currency](/en/inventory/master-data/currency) — currency cascades from the template.
+- [master-data/vendor](/en/inventory/master-data/vendor) — invited vendors reference `tb_vendor`; no `is_active` check was found on invite.
+- [master-data/currency](/en/inventory/master-data/currency) — currency defaults from the template.
 - [purchase-request](/en/inventory/purchase-request) / [purchase-order](/en/inventory/purchase-order) — downstream consumers of the awarded pricelist.
 - [system-config/workflow](/en/inventory/system-config/workflow) — *not used* by RFQ; mentioned for contrast.
+- [03-user-flow-vendor](/en/inventory/vendor-pricelist/03-user-flow-vendor) — the confirmed gap in the portal's Save/Submit backend routes.
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_request_for_pricing` (lines 4039-4070), `tb_request_for_pricing_detail` (lines 4106-4142), `tb_request_for_pricing_comment` (lines 4072-4104), `tb_request_for_pricing_detail_comment` (lines 4144-4176).
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/vendor-management/request-price-list/`.
-- **Carmen docs:** `../carmen/docs/business-analysis/price-list-ba.md`; `../carmen/docs/business-analysis/procurement-ba.md` (RFQ section).
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_request_for_pricing` (line 4405), `tb_request_for_pricing_comment` (line 4438), `tb_request_for_pricing_detail` (line 4473), `tb_request_for_pricing_detail_comment` (line 4511). *(Corrected 2026-07-16 — the previous citation of lines 4039-4176 no longer matches the current schema file.)*
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/vendor-management/request-price-list/`; external portal: `routes/external/pl/`.
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/request-for-pricing/request-for-pricing.service.ts`, `.../check-price-list/check-price-list.service.ts`.
+- **Carmen docs:** `../carmen/docs/business-analysis/price-list-ba.md`; `../carmen/docs/business-analysis/procurement-ba.md` (RFQ section) — treat as design intent, not confirmed behaviour, per Section 6 above.

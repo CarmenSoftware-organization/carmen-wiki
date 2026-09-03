@@ -2,7 +2,7 @@
 title: สิทธิ์การเข้าถึง (Access Control)
 description: ผู้ใช้ บทบาท สิทธิ์ และการเข้าถึงหน่วยธุรกิจหลายหน่วย
 published: true
-date: 2026-06-09T16:28:56.000Z
+date: 2026-07-15T23:46:09.000Z
 tags: access-control, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -53,7 +53,7 @@ Sysadmin เป็นเจ้าของการตั้งค่าตั�
 
 ## 5. แหล่งข้อมูลอ้างอิง
 
-- **Prisma platform:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_user`, `tb_user_profile`, `tb_user_login_session`, `tb_application_role`, `tb_application_role_tb_permission`, `tb_user_tb_application_role`, `tb_permission`, `tb_user_tb_business_unit`, `tb_temp_bu_user` และ enum สนับสนุน `enum_platform_role`, `enum_token_type`, `enum_user_business_unit_role`
+- **Prisma platform:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_user`, `tb_user_profile`, `tb_user_login_session`, `tb_application_role`, `tb_application_role_tb_permission`, `tb_user_tb_application_role`, `tb_permission`, `tb_user_tb_business_unit`, `tb_temp_bu_user` (มีแค่ schema ไม่มี code ใช้งานจริง — ดู [access-control/business-unit-user](/th/inventory/access-control/business-unit-user)) และ enum สนับสนุน `enum_token_type`, `enum_user_business_unit_role` ไม่มี `enum_platform_role` แล้ว — ถูกลบไป 2026-06-10 แทนที่ด้วยระบบ relational `tb_platform_role` (ขอบเขตของ Carmen Platform admin — ดู [access-control/user](/th/inventory/access-control/user) หัวข้อ Edge Cases)
 - **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_user_location`
 - **carmen/docs:** `../carmen/docs/workflow-permissions-system.md` — อธิบายว่า role-type ของ workflow-stage (requester / purchaser / approver / reviewer) ซ้อนบน application-role permission grant ที่ documented ที่นี่อย่างไร
 - **Design spec:** `.specs/2026-05-16-master-config-design.md`

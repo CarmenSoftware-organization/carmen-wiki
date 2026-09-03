@@ -2,7 +2,7 @@
 title: Credit Term
 description: Vendor payment terms (NET 30, COD, etc.) selected on purchase orders to drive due-date and accounts-payable schedules.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T21:47:09.000Z
 tags: master-data, credit-term, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -35,9 +35,8 @@ The entity is intentionally minimal — `name`, `value` (days), and an `is_activ
 | Symptom / Message | Cause | Action |
 |---|---|---|
 | "Name already in use" | Duplicate `name` on a non-deleted row | Pick a different name |
-| "Value must be >= 0" | Negative day-count entered | Use `0` for COD or a positive integer |
 | "Name required" | Empty `name` | Add a display name (e.g. `NET 30`) |
-| "Cannot delete — referenced by open POs" | At least one open PO uses this term | Inactivate instead |
+| **Unconfirmed** — no value or delete guard found | `CreditTermCreateSchema`/`CreditTermUpdateSchema` (`credit-term.dto.ts`) declare `value` as a plain optional `z.number()` with no minimum, and `credit_term.service.ts`'s `delete()` is an unconditional soft-delete with no open-PO reference check | A prior version of this page asserted "value must be >= 0" and "cannot delete — referenced by open POs" as enforced errors; treat both as **not enforced** until re-verified |
 
 ## 4. Edge Cases
 
@@ -70,8 +69,8 @@ Source: tenant schema.
 ## 6. Business Rules
 
 - **Uniqueness.** `name` unique among non-deleted rows (DB-enforced).
-- **Deletion guards.** Open POs block hard-delete — inactivate instead.
-- **Validation.** `value >= 0`; `name` required.
+- **Deletion guards — unconfirmed.** No reference check was found in `delete()`; soft-delete succeeds unconditionally even with open POs referencing the term.
+- **Validation — unconfirmed.** No non-negative check on `value` was found server-side; `name` is required.
 - **Lifecycle.** Inactive terms hidden from new-PO pickers; historical POs keep their assigned term.
 - **Snapshot semantics.** PO stores the term id; the due date is computed at PO creation and stored. Rate/value changes here do not retro-edit historical POs.
 
@@ -82,5 +81,5 @@ Source: tenant schema.
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_credit_term` (lines ~4548-4572).
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/credit-term/`.
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_credit_term` (lines ~4920-4944).
+- **Frontend:** `../carmen-inventory-frontend-react/routes/config/credit-term/`.

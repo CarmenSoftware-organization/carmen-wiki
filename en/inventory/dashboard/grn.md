@@ -1,8 +1,8 @@
 ---
 title: GRN Dashboard
-description: Goods Receive Note KPIs — receiving-now / received-today / MTD / YTD counts, tabbed pending PO by day-band, overdue PO with critical highlight, incomplete and over-received GRN tables, plus top vendors and category spend.
+description: "REMOVED 2026-06-27, historical reference only: Goods Receive Note KPIs — receiving-now / received-today / MTD / YTD counts, tabbed pending PO by day-band, overdue PO with critical highlight, incomplete and over-received GRN tables, plus top vendors and category spend."
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T01:35:43.000Z
 tags: dashboard, good-receive-note, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,11 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # GRN Dashboard
 
 > **At a Glance**
-> **Route:** `/dashboard/grn` &nbsp;·&nbsp; **For:** Receiver &nbsp;·&nbsp; Inventory Controller &nbsp;·&nbsp; Procurement Manager &nbsp;·&nbsp; **Status:** **Mock-data today**; live wiring pending
+> **Route:** none — `/dashboard/grn` never existed as a route &nbsp;·&nbsp; **Status:** **Removed 2026-06-27** — historical reference only; the demo component was deleted as dead code and never appeared behind any router entry
+
+## Implementation status (verified 2026-07-16)
+
+This page documents `dashboard-grn.tsx` (formerly `routes/dashboard/_components/dashboard-grn.tsx`) and its `mock/grn.ts` fixture. `/dashboard/grn` never existed in `routes/router.tsx` — the Dashboard sidebar entry has only ever resolved to one component, today's [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace). The demo file was deleted, with 7 siblings, in commit `03891e3d` ("refactor(dashboard): convert to idiomatic structure, drop dead demo code", `carmen-inventory-frontend-react`, 2026-06-27), whose message states it and its mock fixture had "no importers anywhere." Everything below describes that deleted, never-routed demo screen — kept only as historical reference. Treat every "mock-data today," "when live," and route claim in the rest of this page as void; none of it will go live under this page.
 
 ![GRN Dashboard screen](/screenshots/dashboard/grn.png)
 
@@ -90,7 +94,7 @@ Static mock today. Once wired: KPI cards and Receiving Now should refetch freque
 
 ## 8. Reference Sources
 
-- **Page shell:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-grn.tsx`
-- **Composition:** `../carmen-inventory-frontend-react/routes/dashboard/_components/dashboard-grn.tsx`
-- **Mock data:** `../carmen-inventory-frontend-react/routes/dashboard/mock/grn.ts`
-- **i18n:** `messages/en.json` → `dashboard.grn.title` = "Goods Receive Note Dashboard"
+- **Page shell / composition (deleted 2026-06-27):** `routes/dashboard/_components/dashboard-grn.tsx` in `../carmen-inventory-frontend-react`
+- **Mock data (deleted 2026-06-27):** `routes/dashboard/mock/grn.ts` in `../carmen-inventory-frontend-react`
+- **Deletion commit:** `03891e3d` — "refactor(dashboard): convert to idiomatic structure, drop dead demo code"
+- **i18n key still present but unused:** `messages/en.json` → `dashboard.grn.title` = "Goods Receive Note Dashboard"

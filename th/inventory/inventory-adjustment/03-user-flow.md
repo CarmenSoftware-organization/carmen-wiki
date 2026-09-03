@@ -2,7 +2,7 @@
 title: การปรับสต๊อก (Inventory Adjustment) — User Flow
 description: วงจรชีวิตเอกสารและไฟล์ flow เฉพาะ persona สำหรับการปรับสต๊อก
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-07-15T17:02:22.000Z
 tags: inventory-adjustment, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -11,149 +11,68 @@ dateCreated: 2026-05-15T13:00:00.000Z
 # การปรับสต๊อก (Inventory Adjustment) — User Flow
 
 > **At a Glance**
-> **โมดูล:** [inventory-adjustment](/th/inventory/inventory-adjustment) &nbsp;·&nbsp; **Personas:** Store Keeper &nbsp;·&nbsp; Inventory Controller &nbsp;·&nbsp; Finance &nbsp;·&nbsp; Audit / Config (Auditor + Sysadmin)
-> **วงจรชีวิต workflow:** `draft → in_progress → completed → (voided ผ่าน compensating)` ตาม `enum_doc_status`; cancel ก่อน post ผ่าน `draft / in_progress → cancelled` สองต้นคู่ขนาน — `tb_stock_in` (IN) และ `tb_stock_out` (OUT) ต่ำกว่า threshold + lot ที่มีอยู่ auto-approves; เหนือ threshold หรือ new-lot route ไปยัง Controller / Finance
-> **เจาะลึก views ต่อ persona ด้านล่างสำหรับรายละเอียดระดับ action**
+> **โมดูล:** [inventory-adjustment](/th/inventory/inventory-adjustment) &nbsp;·&nbsp; **Persona:** สองหน้าจอที่ไม่แตกต่างกัน (Store Keeper, Inventory Controller); Finance และ Audit/Config ไม่มี route หรือ permission ที่ตรงกัน — ดูหน้าของแต่ละตัวสำหรับประกาศแก้ไข
+> **วงจรชีวิต:** การสร้าง *คือ* การ post — `doc_status = completed` ถูกเขียนโดยไม่มีเงื่อนไขโดย `create()` ในทรานแซกชันเดียวกับการเขียน ledger ไม่มี draft, ไม่มี approval queue, ไม่มี Void ใน app (ดู [02 — กติกาทางธุรกิจ](/th/inventory/inventory-adjustment/02-business-rules) § 5)
+> **ดูรายละเอียดระดับ action ในหน้า persona ด้านล่าง**
 
 ## 1. ภาพรวม
 
-หน้านี้คือ **จุดเข้าภาพรวม** สำหรับชุด user-flow ของโมดูล `inventory-adjustment` โมดูล adjustment คือ **classic document-driven module** แตกต่างจาก sibling [inventory](/th/inventory/inventory) — งานเคลื่อนตาม header ที่จับต้องได้ที่ persona เห็น แก้ไข และดำเนินการบน: เอกสาร `tb_stock_in` (ขาเข้า write-on) หรือ `tb_stock_out` (ขาออก write-off) ที่ถือวงจรชีวิต `doc_status` (`draft → in_progress → completed → cancelled / voided`), สถานะ workflow, comments / attachments และบรรทัด detail ต่อ product สิ่งที่ทำให้ adjustments ต่างจาก PR หรือ PO คือลิงก์ที่เคร่งครัดไปยัง inventory ledger: ทุกเอกสาร `completed` เขียนหนึ่ง `tb_inventory_transaction` ต่อบรรทัด detail ด้วย `enum_inventory_doc_type = stock_in` / `stock_out` และการเขียน ledger นั้นคือ anchor การเงิน / audit เมื่อ post แล้วเอกสาร immutable; การแก้ไขต้องการ void + compensating adjustment ใหม่ตาม [inventory-adjustment/02-business-rules](/th/inventory/inventory-adjustment/02-business-rules) `ADJ_POST_004` และ [inventory](/th/inventory/inventory) `INV_POST_012`
+Inventory Adjustment เป็น **โมดูลที่ขับเคลื่อนด้วยเอกสารในชื่อเท่านั้น** — หน้าจอสร้างดูเหมือนฟอร์ม draft-แล้ว-submit ปกติ (มีทั้งปุ่ม **Save** และ **Submit**) แต่ปุ่มทั้งสองเรียก mutation `create()` เดียวกัน และ backend ไม่สนใจค่า `doc_status` ที่ client ส่งมาและเขียน `completed` เสมอ การเขียน ledger (`executeAdjustmentIn`/`executeAdjustmentOut`) เกิดขึ้นในทรานแซกชันฐานข้อมูลเดียวกับการ insert header/detail ดังนั้น "วงจรชีวิต" ทั้งหมดที่ tester ต้องคิดถึงคือ: **กรอกฟอร์ม กดปุ่มไหนก็ได้ แล้วสต๊อกก็ถูกขยับไปแล้ว**
 
-Section 2 ด้านล่างบรรยาย **state machine ของวงจรชีวิตเอกสาร** — ชุด canonical ของการเปลี่ยน `doc_status` ที่ถูกกฎหมาย เป็นอิสระจากผู้กระทำ ไฟล์ต่อ persona แต่ละไฟล์ (ลิงก์จาก Section 3) บรรยาย *เส้นทางผ่าน* state space นี้ของ persona นั้น — จุดเข้า, action ที่ทำได้, การตัดสินใจที่เผชิญ และ handoff ที่จบการมีส่วนร่วม Section 4 จากนั้นสรุป handoffs ข้าม persona ที่ stitch เส้นทางส่วนตัวเข้าด้วยกัน (Store Keeper → Inventory Controller สำหรับการอนุมัติเหนือ threshold; Inventory Controller → Finance สำหรับการอนุมัติต้นทุนขนาดใหญ่; Finance → period close; System Administrator → ทุก personas สำหรับการกำหนดค่า reason-code / threshold) อ่านภาพรวมนี้ก่อนเพื่อ anchor วงจรชีวิต จากนั้นเจาะลึกไฟล์ persona ที่ตรงกับบทบาทของคุณ
+ผลกระทบนี้ส่งต่อไปทั้งหน้าจอ flag `isReadOnly` บนหน้ารายละเอียดคือ `doc_status === 'voided' || doc_status === 'completed'` ซึ่งเป็น true ตั้งแต่วินาทีที่เอกสารมีอยู่ ปุ่ม **Edit** แสดงผลเฉพาะเมื่อ `!isReadOnly` จึงไม่แสดงสำหรับเอกสารจริงเลย และปุ่ม **Void** แสดงผลเฉพาะในโหมด Edit จึงไม่แสดงเช่นกัน ปุ่ม **Delete** ในเมนูแถวของหน้ารายการ*แสดงผล*สำหรับทุกแถว แต่การคลิกและยืนยันจะล้มเหลวฝั่ง server เสมอด้วยข้อความ "ไม่สามารถลบเอกสารที่ completed แล้ว" เนื่องจากการ delete ฝั่ง server ก็ต้องการ `doc_status === draft` เช่นกัน ในทางปฏิบัติ เมื่อเอกสาร Stock-In หรือ Stock-Out มีอยู่แล้ว สิ่งเดียวที่ทำได้ผ่าน UI คือ **ดูและพิมพ์**
 
-## 2. วงจรชีวิตเอกสาร
-
-เอกสารดำเนินตามวงจรชีวิตห้าสถานะ Prisma บน `enum_doc_status` กรอบ carmen/docs ของ "Draft → Posted → Void" ยุบ workflow stage ที่ระบุชัดเจน (`in_progress`) และสถานะ cancel ก่อน post (`cancelled`); ตารางด้านล่างใช้ความจริง Prisma ห้าสถานะตาม [inventory-adjustment/01-data-model](/th/inventory/inventory-adjustment/01-data-model) § 5 ข้อ 4
-
-โมดูล adjustment ใช้ **สองต้นเอกสารคู่ขนาน** — `tb_stock_in` (ทิศทาง IN / stock-in adjustment) และ `tb_stock_out` (ทิศทาง OUT / stock-out adjustment) — ทั้งคู่กำกับโดย `enum_doc_status` ห้าสถานะเดียวกัน แผนภาพด้านล่างแสดงการเปลี่ยน `doc_status` ที่ถูกกฎหมายสำหรับแต่ละต้นเอกสาร ตัวจำแนก `enum_adjustment_type` (`stock_in` / `stock_out`) บน master ของ reason-code (`tb_adjustment_type`) gate ว่าต้นใดที่ reason ใช้ได้
-
-**Stock-in adjustment (`tb_stock_in`) — ทิศทาง IN (badge เขียว):**
+## 2. "วงจรชีวิต" เอกสาร
 
 ```mermaid
 stateDiagram-v2
-    [*] --> draft : สร้าง tb_stock_in — Store Keeper / Inventory Controller (ADJ_AUTH_001)
-    draft --> in_progress : submit — ต่ำกว่า threshold + lot ที่มีอยู่ — auto-approve ไปยัง completed (ADJ_POST_001)
-    draft --> in_progress : submit — เหนือ threshold หรือ new-lot stock-in — route ไปยัง Controller (ADJ_AUTH_003 / ADJ_AUTH_004)
-    draft --> cancelled : ยกเลิก (ผู้สร้าง — ADJ_POST_003)
-    in_progress --> completed : อนุมัติ — Controller ต่ำกว่า threshold (ADJ_AUTH_004) หรือ Finance เหนือ (ADJ_AUTH_005) — Posting: lot ใหม่ / WA refresh / FIFO layer (ADJ_POST_002)
-    in_progress --> draft : reject (Inventory Controller / Finance — return ผู้สร้าง)
-    in_progress --> cancelled : ยกเลิก in_progress (Inventory Controller — ADJ_AUTH_007)
-    completed --> voided : void ผ่าน tb_stock_out ชดเชย — Transaction ต้นฉบับไม่ถูกแก้ไข (ADJ_POST_004 / INV_POST_012)
-    completed --> [*]
-    cancelled --> [*]
+    [*] --> completed : create() — Save หรือ Submit ปุ่มไหนก็ได้ — เขียน doc_status=completed และ post ledger ในทรานแซกชันเดียว
+    completed --> [*] : ดู / พิมพ์เท่านั้น — ปุ่ม Edit และ Void ไม่เคยแสดงผล (isReadOnly เป็น true เสมอ)
+    completed --> voided : voidStockIn()/voidStockOut() — endpoint จริง เข้าถึงได้เฉพาะผ่านการเรียก API โดยตรง (ตั้ง deleted_at ด้วย เอกสารจึงหายจาก list/detail)
     voided --> [*]
 
-    note right of in_progress
-        New-lot stock-in route ไปยัง Controller เสมอ (ADJ_AUTH_003)
-        ไม่ว่าผลกระทบต้นทุน
-        ต่ำกว่า threshold + lot ที่มีอยู่: auto-approve fast path
-        (draft → in_progress → completed, ADJ_POST_001)
+    note right of completed
+        draft, in_progress, และ cancelled เป็นค่า
+        enum_doc_status ที่ถูกต้อง แต่ไม่เคยถูกกำหนด
+        โดยโค้ดของโมดูลนี้เลย
     end note
 ```
 
-**Stock-out adjustment (`tb_stock_out`) — ทิศทาง OUT (badge แดง):**
+### 2.1 สิ่งที่เกิดขึ้นจริงเมื่อกด Save เทียบกับ Submit
 
-```mermaid
-stateDiagram-v2
-    [*] --> draft : สร้าง tb_stock_out — Store Keeper / Inventory Controller (ADJ_AUTH_001)
-    draft --> in_progress : submit — ต่ำกว่า threshold — auto-approve ไปยัง completed (ADJ_POST_001)
-    draft --> in_progress : submit — เหนือ threshold หรือ requires-quality-check — route ไปยัง Controller / Finance (ADJ_AUTH_004 / ADJ_AUTH_005)
-    draft --> cancelled : ยกเลิก (ผู้สร้าง — ADJ_POST_003)
-    in_progress --> completed : อนุมัติ — Controller / Finance (ADJ_POST_002) — Posting: lot เก่าก่อน / FIFO layers / WA cost picked
-    in_progress --> draft : reject (Inventory Controller / Finance — return ผู้สร้าง)
-    in_progress --> cancelled : ยกเลิก in_progress (Inventory Controller — ADJ_AUTH_007)
-    completed --> voided : void ผ่าน tb_stock_in ชดเชย — Transaction ต้นฉบับไม่ถูกแก้ไข (ADJ_POST_004 / INV_POST_012)
-    completed --> [*]
-    cancelled --> [*]
-    voided --> [*]
+| Action ของ UI | `doc_status` ที่ client ตั้งก่อน submit | สิ่งที่ backend ทำ |
+| ------------- | ---------------------------------------- | ------------------- |
+| กด **Save** | `"draft"` | ถูกละเลย — `create()` เขียน `enum_doc_status.completed` เสมอ ledger post ทันที |
+| กด **Submit** | `"completed"` | ผลลัพธ์เดียวกัน |
 
-    note right of in_progress
-        ข้อจำกัด SoD (ADJ_AUTH_010): ผู้ใช้ที่ submit
-        tb_stock_out write-off ขนาดใหญ่ต้องไม่เป็นผู้ใช้คนเดียวกับที่รับ
-        GRN lot ต้นทาง (เหนือ SoD threshold)
-        Cost-per-unit สำหรับ stock-out engine เลือกตอน post
-        (ADJ_CALC_006 FIFO / ADJ_CALC_007 WA); ค่าที่ผู้ใช้กรอก
-        บน draft เป็น preview เท่านั้น
-    end note
-```
+ไม่มีความแตกต่างในทางปฏิบัติระหว่างสองปุ่มตอนสร้าง (`update()` เคารพค่า `doc_status` ที่ client ส่งจริง แต่ `update()` เข้าถึงได้เฉพาะเมื่อสถานะที่เก็บไว้เป็น `draft` อยู่แล้ว — ซึ่งตามข้างต้นไม่เคยเกิดขึ้นสำหรับเอกสารที่สร้างผ่านโมดูลนี้)
 
-> ℹ️ **Note — `enum_doc_status` เดียว, สองต้นเอกสาร:** ทั้ง `tb_stock_in` และ `tb_stock_out` แชร์ `enum_doc_status` เดียวกัน (`draft`, `in_progress`, `completed`, `cancelled`, `voided`) แผนภาพสองตัวด้านบนแสดงกฎการเปลี่ยนเดียวกันที่ apply กับแต่ละต้น; ความต่างเชิงพฤติกรรมหลักอยู่ใน fan-out ของการ posting: stock-in สร้าง lot ใหม่และเพิ่ม cost layer (หรือ refresh WA) ในขณะที่ stock-out บริโภค lot ที่มีอยู่จากเก่าก่อนและเลือกต้นทุนตอน post เอกสาร count-rollup (`ADJ_POST_006`) auto-advance ไป `completed` ภายใต้อำนาจ commit ของ Inventory Controller ข้าม queue การอนุมัติ `in_progress` ที่ระบุชัดเจน
+### 2.2 การกระจายผลของการ Posting (เกิดขึ้นตอนสร้าง ต่อบรรทัด)
 
-### 2.1 การเปลี่ยนระดับเอกสาร
+1. หนึ่งแถว `tb_inventory_transaction` (`inventory_doc_type = stock_in` / `stock_out`)
+2. หนึ่งแถว `tb_inventory_transaction_detail` (Stock-In: `qty` บวกที่ `cost_per_unit` ผู้ใช้กรอก; Stock-Out: `qty` ลบที่ต้นทุนที่ ledger แก้ไขเอง — FIFO layer เก่าสุดก่อน หรือค่าเฉลี่ยปัจจุบันของ BU)
+3. แถว `tb_inventory_transaction_cost_layer` หนึ่งแถวขึ้นไป (Stock-In: layer ขาเข้าใหม่หนึ่งแถว แยกเพื่อการปัดเศษตาม `splitFifoCost`; Stock-Out FIFO: หนึ่งแถวต่อ lot ที่บริโภค; Stock-Out Average: หนึ่งแถวที่ค่าเฉลี่ยปัจจุบัน)
+4. ประทับ `inventory_transaction_id` ของบรรทัด detail
 
-| จากสถานะ | Action | ไปสถานะ | อนุญาตสำหรับ | เงื่อนไขล่วงหน้า |
-| -------- | ------ | ------- | ----------- | -------------- |
-| `(none)` | สร้าง `tb_stock_in` / `tb_stock_out` ใหม่ | `draft` | Store Keeper, Inventory Controller, Finance (สำหรับ ad-hoc); System สำหรับ count-rollup | ผู้ใช้ภายใน scope `tb_user_location` ตาม `ADJ_AUTH_001`; location เป็นประเภท inventory- หรือ consignment- ตาม `ADJ_VAL_003` Auto-numbering สร้าง `si_no` / `so_no` ตาม `ADJ_VAL_001` |
-| `draft` | แก้ไขบรรทัด / attachments / description / reason | `draft` | ผู้สร้าง + Inventory Controller (ภายใน scope) | Validation `ADJ_VAL_002`–`ADJ_VAL_010` รันที่ save (soft-fail สำหรับบางตัว) ยังไม่มีผลกระทบ inventory |
-| `draft` | submit | `in_progress` (เหนือ threshold หรือ new-lot) | ผู้สร้าง | `ADJ_VAL_001`–`ADJ_VAL_011` ทั้งหมดผ่าน; `INV_VAL_005` (no negative balance) pre-check ผ่านสำหรับ stock-out เอกสาร route ไปยัง queue ของ Controller `workflow_history` ต่อด้วย; `last_action = submitted` |
-| `draft` | submit auto-approve | `completed` (cascade ผ่าน `in_progress`) | Store Keeper | Validations ทั้งหมดผ่าน; ต้นทุนเอกสาร aggregate ต่ำกว่า threshold auto-approve ตาม `ADJ_AUTH_002`; ไม่ใช่ new-lot stock-in ตาม `ADJ_AUTH_003` ระบบ auto-fire posting `ADJ_POST_002` ตาม `ADJ_POST_001` |
-| `draft` | cancel | `cancelled` | ผู้สร้าง | ไม่มีผลกระทบ inventory; ข้อความเหตุผลต้องการ เอกสารคงอยู่ใน DB สำหรับ audit ปลายทาง |
-| `in_progress` | อนุมัติ | `completed` | Inventory Controller (ต่ำกว่า `ADJ_AUTH_005` threshold) หรือ Finance (เหนือ) | Validations ทั้งหมด re-check; period containment re-check ที่ post ตาม `ADJ_VAL_011` `ADJ_POST_002` จุดชนวน — เขียน inventory transaction, cost-layer rows, GL entries เอกสารกลายเป็น immutable |
-| `in_progress` | reject | `draft` | Inventory Controller, Finance | Comment / เหตุผลของผู้ตรวจสอบบันทึกใน `workflow_history`; เอกสาร return ไปยังผู้สร้างสำหรับการแก้ไขหรือยกเลิก ไม่มีผลกระทบ inventory |
-| `in_progress` | cancel | `cancelled` | ผู้ตรวจสอบ (Controller / Finance) | ผู้ตรวจสอบสรุปว่า adjustment ไม่จำเป็น (เช่น recount แก้ไขความไม่ตรง) ไม่มีผลกระทบ inventory; ปลายทาง |
-| `completed` | view / report | `completed` | ทุก personas (ตาม scope) | สถานะ active ปลายทาง Activity log, journal entries, inventory transaction join ทั้งหมดอ่านได้ เอกสาร immutable ตาม `ADJ_VAL_013` |
-| `completed` | void ผ่าน adjustment ชดเชย | `voided` | Inventory Controller, Finance | `tb_stock_in` / `tb_stock_out` ชดเชยถูกสร้างพร้อมทิศทางกลับและ `info.voidsAdjustmentId = <original>`; เอกสารชดเชย submit และ post ตาม `ADJ_POST_002` (เขียน inventory transaction reverse) เฉพาะหลังจาก post นั้น `doc_status` ของเอกสารต้นฉบับเคลื่อนไปยัง `voided` ตาม `ADJ_POST_004` Inventory transaction ต้นฉบับ **ไม่** ถูกแก้ไขตาม [inventory](/th/inventory/inventory) `INV_POST_012` |
-| `completed` / `voided` / `cancelled` | soft-delete | (สถานะเดียวกัน) ด้วย `deleted_at` set | Inventory Controller, Finance | สำหรับ `completed`: ต้องมี reverse ชดเชยตาม `ADJ_VAL_014` สำหรับ `cancelled` / `voided`: soft-delete โดยตรงอนุญาต ซ่อนจากข้อความสอบถามเริ่มต้น; preserve สำหรับ audit |
-
-### 2.2 Auto-approve fast path
-
-สำหรับเอกสารต่ำกว่า threshold (ผลกระทบต้นทุนต่ำกว่า tenant auto-approve threshold, default `฿500`) วงจรชีวิตยุบเป็น `draft → completed` ใน action submit เดียว — ระบบ cascade ผ่าน `in_progress` โดยมองไม่เห็น Audit trail ยังบันทึกการเปลี่ยนทั้งสองใน `workflow_history` ด้วย annotation `auto_approve = true` fast-path นี้ใช้กับ:
-
-- **Store Keeper** routine stock-in สำหรับ lot ที่มีอยู่ (ต่ำกว่า threshold)
-- **Store Keeper** routine stock-out สำหรับ breakage / shortage (ต่ำกว่า threshold)
-- **System** count-rollup auto-post (threshold ใด ๆ โดยอาศัยลายเซ็น count-commit ของ Controller เป็นการอนุมัติ)
-
-ไม่ใช้กับ:
-
-- **New-lot stock-in** โดย Store Keeper — route สำหรับ Controller approval เสมอไม่ว่าต้นทุนตาม `ADJ_AUTH_003`
-- เอกสาร above-threshold — route ไปยัง queue Controller หรือ Finance ตาม `ADJ_AUTH_004` / `ADJ_AUTH_005`
-- Reason codes ที่ flag `info.requiresQualityCheck = true` — ข้าม auto-approve เพื่อบังคับ Controller review
-
-### 2.3 Fan-out ของ Posting
-
-การเปลี่ยน `in_progress → completed` (ไม่ว่า auto หรือผ่านการอนุมัติ) คือ **เหตุการณ์ posting** ตาม `ADJ_POST_002`:
-
-- หนึ่ง `tb_inventory_transaction` ต่อบรรทัด detail
-- หนึ่ง `tb_inventory_transaction_detail` ต่อบรรทัด ด้วย `qty` มีเครื่องหมายตามทิศทาง
-- หนึ่งหรือมากกว่าแถว `tb_inventory_transaction_cost_layer`: หนึ่งแถวขาเข้าสำหรับ stock-in; FIFO multi-row หรือ WA single row สำหรับ stock-out
-- GL journal entry — `Dr/Cr` resolve จาก `info.glAccount` ของ adjustment-type และ `dimension.department` ของเอกสาร
-
-`inventory_transaction_id` ของแถว detail ประทับหลังจาก inventory transaction commit ความล้มเหลวที่ step ใดก็ตาม roll transaction ทั้งหมดกลับ; เอกสารยังคงอยู่ที่ `in_progress` และผู้ตรวจสอบเห็น error
+ไม่มี journal entry ทางบัญชี GL ใด ๆ ถูกสร้างในการกระจายผลนี้เลย
 
 ## 3. สารบัญ Persona
 
-แต่ละ persona ด้านล่างมีไฟล์เจาะลึกเฉพาะที่บรรยายจุดเข้า, primary flow, การตัดสินใจ และจุดออก 4 persona groups ยุบ 6 personas ของ carmen/docs: `Store Keeper` (= Warehouse Staff), `Inventory Controller` (= Inventory Manager, บวกความรับผิดชอบ review ของ Department Manager), `Finance`, `Audit / Config` (= Auditor + System Administrator)
+โค้ดไม่ได้ implement role ที่แตกต่างกันสำหรับโมดูลนี้ — มีหน้าจอสร้าง/แก้ไขเดียวและหน้ารายการเดียว gate ด้วยสิทธิ์ทั่วไปตัวเดียว `inventory_management.view` โดยไม่มี workflow stage หรือการกำหนด `enum_stage_role` ที่ไหนใน `stock-in.service.ts` / `stock-out.service.ts` หน้า persona สองหน้าด้านล่างบรรยายหน้าจอเดียวกันจากสองมุมมอง (ใครมักจะกรอกฟอร์ม vs ใครมักจะ review ledger ที่เกิดขึ้น) ไม่ใช่สิทธิ์สองระดับ:
 
-- [Store Keeper](./03-user-flow-store-keeper.md) — ระบุความไม่ตรงในพื้นที่ (ระหว่างการตรวจสอบ bin, การ execute การนับ, vendor handover, การค้นพบ breakage), ริเริ่ม `tb_stock_in` / `tb_stock_out` ที่ `draft`, แนบหลักฐานประกอบ (รูปถ่าย, รายงานความเสียหาย, ป้ายหมดอายุ, count sheets), เลือก reason code, กรอกข้อมูล product / qty / lot, submit ความเป็นเจ้าของ inventory-adjustment ของพวกเขาสิ้นสุดเมื่อ (a) เอกสาร auto-approve และ post (ต่ำกว่า threshold) หรือ (b) เอกสาร route ไปยัง Inventory Controller สำหรับการอนุมัติเหนือ threshold หรือ new-lot
-- [Inventory Controller](./03-user-flow-inventory-controller.md) — เป็นเจ้าของ **การกำกับ adjustment** เหนือ threshold auto-approve Review adjustments ที่ submit เพื่อความถูกต้องและสมเหตุสมผล; สืบสวนผลต่างขนาดใหญ่และรูปแบบ reason-code ผิดปกติตาม location / department / time; อนุมัติ / reject ตาม `ADJ_AUTH_004`; post (`in_progress → completed`) เพื่อให้ inventory transaction และ GL entry จุดชนวน ยัง commit rollups ผลต่างจากการนับที่เกิดจาก [physical-count](/th/inventory/physical-count) / [spot-check](/th/inventory/spot-check) ความรับผิดชอบ review ของ Department Manager (กำกับ cost-centre read-only, การ flag escalation) ถูกพับเข้ากับ persona group นี้
-- [Finance](./03-user-flow-finance.md) — เป็นเจ้าของ **การตรวจสอบผลกระทบต้นทุนและ GL mapping** อนุมัติ adjustments เหนือ Controller threshold ตาม `ADJ_AUTH_005`; ตรวจสอบ GL account mapping ต่อ reason code ตรงกับ chart of accounts; กระทบยอด inventory sub-ledger กับ GL ที่ปิดงวด; เซ็นรับรองรายงาน adjustment activity ที่ปลายงวด ไม่สามารถแก้ไข adjustments โดยตรง — การแก้ไขไหลผ่านรูปแบบ void + compensating adjustment
-- [Audit / Config](./03-user-flow-audit-config.md) — System Administrator (กำหนดค่า `tb_adjustment_type` reason codes รวม `info.glAccount` mapping, flags `requiresDocument` / `requiresQualityCheck`, tenant thresholds สำหรับ auto-approve / Controller / Finance, RBAC, integration endpoints) และ Auditor (read-only inspection ของ adjustment trail end-to-end — reason codes, attachments, ลายเซ็นอนุมัติ, journal entries, void chains, SoD compliance ตาม `ADJ_AUTH_010`)
+- [Store Keeper](./03-user-flow-store-keeper.md) — ผู้ใช้ประจำวันที่เปิด Add Stock-In / Add Stock-Out เลือก reason และตำแหน่ง กรอกบรรทัด และกด Save หรือ Submit — ไม่ว่าทางไหน เอกสารมีอยู่แล้วและถูก post แล้ว
+- [Inventory Controller](./03-user-flow-inventory-controller.md) — ใช้หน้าจอเดียวกันเพื่อสร้าง adjustment โดยตรง และนอกเหนือจากนั้นก็อ่านผล list/detail/print — ไม่มี action อนุมัติให้ persona นี้ทำ เพราะไม่มีอะไรถูกทิ้งไว้ในสถานะรอตรวจสอบเลย
+- [Finance](./03-user-flow-finance.md) — ไม่พบ route, permission หรือ backend endpoint ที่ตรงกัน มีเพียงประกาศแก้ไข
+- [Audit / Config](./03-user-flow-audit-config.md) — ไม่พบ route, permission หรือ backend endpoint ที่ตรงกัน มีเพียงประกาศแก้ไข
 
-## 4. Handoffs ข้าม Persona
+## 4. หมายเหตุข้ามโมดูล
 
-ตารางด้านล่าง capture moments ที่งาน adjustment เคลื่อนจากความรับผิดชอบของ persona หนึ่งไปยังอีก persona handoff แต่ละตัว anchor ที่สถานะระบบ ณ จุดโอน
-
-| จาก persona | Trigger | ไป persona | สถานะระบบที่ handoff |
-| ------------ | ------- | ---------- | ----------------------- |
-| Store Keeper | เอกสาร submit ที่หรือเหนือ threshold auto-approve | Inventory Controller | `tb_stock_in.doc_status = in_progress` (หรือ `tb_stock_out.doc_status = in_progress`); ยังไม่มี inventory transaction เขียน เอกสารใน queue อนุมัติของ Controller |
-| Store Keeper | New-lot stock-in submit (ไม่ว่าต้นทุน) | Inventory Controller | `tb_stock_in.doc_status = in_progress`; เอกสาร flag ด้วย `info.requires_new_lot_review = true` |
-| Store Keeper | Count execution เสร็จ บรรทัดผลต่างถูก stage | Inventory Controller | `tb_count_stock.status = completed` (ใน [physical-count](/th/inventory/physical-count) / [spot-check](/th/inventory/spot-check)); บรรทัดผลต่างที่ stage มีอยู่แต่ยังไม่ post Controller commit จุดชนวน `ADJ_POST_006` auto-rollup |
-| Inventory Controller | เอกสารอนุมัติต่ำกว่า Finance threshold | (Posting — ไม่มี handoff persona เพิ่มเติม) | `tb_stock_in.doc_status = completed`; inventory transaction post; activity log บันทึก `{ actor: controller, action: 'approve_post' }` |
-| Inventory Controller | ผลกระทบต้นทุนเอกสารเกิน Controller threshold | Finance | เอกสารยังคงอยู่ที่ `in_progress`; route ไปยัง queue Finance ตาม `ADJ_AUTH_005` Preview ผลกระทบต้นทุน, reason-code, GL-account mapping ทั้งหมดมองเห็นโดย Finance |
-| Inventory Controller | เอกสาร reject (recount แก้ไข, reason ไม่ถูกต้อง ฯลฯ) | Store Keeper | `doc_status = draft`; comment ของผู้ตรวจสอบใน `workflow_history` Store Keeper แก้ไข / submit ใหม่หรือ cancel |
-| Inventory Controller | Count-variance commit | (Auto-post — ไม่มี handoff เพิ่มเติมสำหรับ adjustment) | Auto-rollup `tb_stock_in` (overage) / `tb_stock_out` (shortage) auto-advance ไป `completed`; `tb_count_stock.status = completed_posted` |
-| Finance | เอกสาร above-Controller-threshold อนุมัติ | (Posting — ไม่มี handoff) | `doc_status = completed`; inventory transaction post; GL journal entry สร้างและ queue สำหรับ Finance subsystem |
-| Finance | Period-end adjustment-activity review เสร็จ | Finance Manager (period close ใน [inventory](/th/inventory/inventory)) | Adjustments `completed` ในงวดทั้งหมด reconcile กับ inventory sub-ledger; ผลต่างต่ำกว่า tolerance; งวดพร้อมปิด Cross-reference [inventory/03-user-flow](/th/inventory/inventory/03-user-flow) period-level transitions |
-| Inventory Controller / Finance | ต้องการ reverse ชดเชย (post-fact correction) | ผู้สร้างต้นฉบับ (หรือ Controller / Finance เอง) | `tb_stock_in` / `tb_stock_out` ต้นฉบับที่ `completed` เอกสารชดเชยทิศทางตรงข้ามใหม่ถูกสร้าง; submit + post; ต้นฉบับจากนั้นเคลื่อนไปยัง `voided` |
-| System Administrator | การเปลี่ยนการกำหนดค่า reason-code (reason ใหม่เพิ่ม, `info.glAccount` อัปเดต, threshold เปลี่ยน) | ทุก personas | ไม่มีการเปลี่ยนสถานะ transaction; กฎใหม่ apply prospective กับเอกสาร draft ใหม่ เอกสาร `draft` / `in_progress` ที่มีอยู่อาจต้องการ re-evaluate ตามกฎ snapshot |
-| Auditor | Review adjustment audit trail (reason codes, attachments, ลายเซ็นอนุมัติ, journal entries, void chains) | (Read-only — ไม่มี handoff เพิ่มเติม) | เอกสาร `completed` / `voided` ทั้งหมดอ่านได้; การละเมิด SoD flag; reconciliation queries รัน |
+- [physical-count](/th/inventory/physical-count) — `PhysicalCountService.submit()` สร้างแถว `tb_stock_in`/`tb_stock_out` โดยตรงที่ `completed` โดยไม่มี reason code เป็นบันทึก audit ของผลต่างการนับ ส่วนที่ว่า path นั้นขับเคลื่อน ledger แบบเดียวกับ `create()` ของโมดูลนี้เองหรือไม่ ยังไม่ได้รับการยืนยันในรอบนี้ — ถือว่ารอการตรวจสอบซ้ำระหว่างรอบ resync ของโมดูลนั้นเอง
+- [inventory](/th/inventory/inventory) — ทุกการ post stock-in/stock-out เรียก `InventoryTransactionService` ตัวเดียวกับที่ GRN, SR และ period-end เรียก
+- [costing](/th/inventory/costing) — การสร้าง FIFO layer (Stock-In) / การบริโภค FIFO หรือคำนวณค่าเฉลี่ยถ่วงน้ำหนักใหม่ (Stock-Out) คือ costing engine ที่แชร์กัน ไม่เฉพาะเจาะจงกับโมดูลนี้
 
 ## 5. แหล่งอ้างอิง
 
-- `../carmen/docs/inventory-adjustment/INV-ADJ-User-Flow-Diagram.md` — แผนภาพ user-flow ของ carmen/docs สำหรับโมดูล adjustment (note: realign `Draft → Posted → Void` สามสถานะไปยังวงจรชีวิตห้าสถานะ Prisma ตาม [inventory-adjustment/01-data-model](/th/inventory/inventory-adjustment/01-data-model) § 5 ข้อ 4)
-- `../carmen/docs/inventory-adjustment/INV-ADJ-Page-Flow.md` — เอกสาร page-flow (ว่าง / placeholder ใน carmen/docs ปัจจุบัน)
-- `../carmen/docs/inventory-adjustment/INV-ADJ-Overview.md` — ภาพรวมโมดูล ที่มาของ list 6-persona role ที่หน้านี้ยุบเป็น 4 groups
-- Sibling: [01-data-model.md](./01-data-model.md) — รูปทรง `tb_stock_in` / `tb_stock_out` canonical, ค่า `enum_doc_status`, ความแตกต่างต่อ carmen/docs ที่กำหนดกรอบวงจรชีวิตใน Section 2
-- Sibling: [02-business-rules.md](./02-business-rules.md) — validation, calculation, authorization, posting และกฎข้ามโมดูลที่อ้างอิงโดยแต่ละแถวการเปลี่ยนใน Section 2 (โดยเฉพาะ `ADJ_VAL_001`–`ADJ_VAL_014`, `ADJ_AUTH_001`–`ADJ_AUTH_010`, `ADJ_POST_001`–`ADJ_POST_010`, `ADJ_XMOD_001`–`ADJ_XMOD_009`)
-- Sibling: [inventory/03-user-flow](/th/inventory/inventory/03-user-flow) — วงจรชีวิต movement-and-period canonical ที่การ post adjustment ป้อน; period-level transitions (`open → closed → locked`) anchor ฝั่ง period-end ของกระบวนการ review adjustment
-- โมดูลที่เกี่ยวข้อง: [inventory](/th/inventory/inventory) (ทุก adjustment post ไปยัง inventory), [costing](/th/inventory/costing) (FIFO / WA cost picks บนขาออก, layer refresh บนขาเข้า), [physical-count](/th/inventory/physical-count) / [spot-check](/th/inventory/spot-check) (rollup ผลต่างที่ auto-create เอกสาร adjustment ตาม `ADJ_XMOD_002` / `ADJ_XMOD_003`), [good-receive-note](/th/inventory/good-receive-note) (vendor-replacement คู่ขนาน; การ recall write-offs ขนาดใหญ่ cross-link ข้อมูล GRN lot), [product](/th/inventory/product) (ถือ `costing_method` ที่ gate การเลือกต้นทุนขาออก)
+- ส่วนคู่ขนาน: [01-data-model.md](./01-data-model.md) — schema และข้อค้นพบ "เป็น completed เสมอ" แบบเต็ม บวกพฤติกรรม void-ก็-soft-delete
+- ส่วนคู่ขนาน: [02-business-rules.md](./02-business-rules.md) — กฎการตรวจสอบ การคำนวณ และการ posting จริงของโมดูล
+- Frontend: `ia-form.tsx` (สถานะ mode, `submitWith("draft"|"completed")`), `ia-form-hero.tsx` (logic การ gate ของ Edit/Void/Delete), `ia-component.tsx` (action Delete ในหน้ารายการ)
+- Backend: `stock-in.service.ts` / `stock-out.service.ts` `create()`/`update()`/`delete()`/`voidStockIn()`/`voidStockOut()`

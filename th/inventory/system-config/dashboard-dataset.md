@@ -2,7 +2,7 @@
 title: ชุดข้อมูลแดชบอร์ด (Dashboard Dataset)
 description: แคตตาล็อก read-only ของ admin สำหรับ data feed ที่ลงทะเบียนไว้ในโค้ด — แหล่งข้อมูลแบบมีชื่อและมี type ที่ widget บนแดชบอร์ดดึงข้อมูลจาก แยกออกจาก widget workspace layout ของผู้ใช้ และจาก view ที่เขียนด้วย SQL ใน query-dataset
 published: true
-date: 2026-06-09T00:00:00.000Z
+date: 2026-07-16T05:00:00.000Z
 tags: system-config, dashboard, dataset, widget, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -23,7 +23,7 @@ Dashboard Dataset คือ **หน้าจอแคตตาล็อก admi
 |---|---|---|---|
 | **Dashboard Dataset** (หน้านี้) | แคตตาล็อก data feed ที่มีชื่อ — query รันกับ tenant DB และคืนข้อมูลแบบ typed | Read-only; อัปเดตโดย code deployment | บริการ **micro-data** (Go) ให้บริการที่ `/api/dashboard/datasets` |
 | [system-config/query-dataset](/th/inventory/system-config/query-dataset) | SQL Workbench — admin เขียน tenant view / stored procedure / function | Sysadmin สร้าง/drop catalog object | PostgreSQL catalog (`pg_class`, `pg_proc`) |
-| [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) | Layout แดชบอร์ดที่บันทึกต่อผู้ใช้ — dataset ใดแสดง, ขนาดเท่าไร, ลำดับใด | ผู้ใช้แต่ละคนแก้ layout ของตัวเอง | `tb_widget_dashboard` + `tb_widget_dashboard_item`, seed ด้วย `tb_widget_default_layout` (tenant DB) |
+| [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) | Widget tile แดชบอร์ดที่บันทึกไว้ — dataset ใดแสดง, ลำดับใด | BU admin (tile ระดับ BU) + ผู้ใช้แต่ละคน (tile ส่วนตัว) | `tb_dashboard_bu_widget` + `tb_dashboard_personal_widget` (tenant DB, lines ~6185/~6205 — เวอร์ชันก่อนหน้าอ้าง `tb_widget_dashboard`/`tb_widget_dashboard_item`/`tb_widget_default_layout` ซึ่งไม่มีตัวไหนอยู่ใน Prisma schema ใดเลย) |
 
 **บำรุงรักษาโดย** Engineering (code release) **เรียกดูโดย** Sysadmin เพื่อตรวจสอบ feed ที่มี **บริโภคโดย** widget picker ภายใน dialog "Add widget" ของแดชบอร์ด
 
@@ -106,13 +106,13 @@ GET  /api/:bu_code/datasets/:dataset_id  → { meta: DatasetMeta, data: DatasetD
 - **Query scope ตาม tenant** ทุก dataset query รันใน micro-data ภายใน read-only transaction โดย `SET LOCAL search_path` ถูกตรึงไว้กับ schema ของ `bu_code` ของผู้เรียก — ข้อมูลทั้งหมดอ่านจาก schema ของ tenant ที่เรียกใช้
 - **Shape contract เข้มงวด** frontend widget renderer switch ตาม `meta.shape`; การเพิ่ม shape ใหม่ต้องมีการเปลี่ยนแปลง frontend และ backend พร้อมกัน
 - **ไม่ต้องมีสิทธิ์ CRUD เพื่อเรียกดู** หน้าจอมองเห็นได้สำหรับ Sysadmin โดยการเข้าถึงผ่าน navigation; ไม่มี granularity สิทธิ์ต่อ dataset — dataset ที่ลงทะเบียนทั้งหมดอ่านได้โดยผู้ใช้ที่ยืนยันตัวตนแล้วซึ่งสามารถโหลดแดชบอร์ดได้
-- **`id` มีความเสถียร** dot-namespaced id (เช่น `workflow.pr-pending-approval`) ถูกเก็บเป็น `dataset_id` ในการตั้งค่า widget tile ใน `tb_widget_dashboard_item` การเปลี่ยนชื่อหรือลบ registry entry ทำลาย widget config ที่มีอยู่
+- **`id` มีความเสถียร** dot-namespaced id (เช่น `workflow.pr-pending-approval`) ถูกเก็บเป็น `dataset_id` ใน row ของ widget tile (`tb_dashboard_bu_widget` / `tb_dashboard_personal_widget`) การเปลี่ยนชื่อหรือลบ registry entry ทำลาย widget config ที่มีอยู่
 
 ## 7. การอ้างอิงข้าม
 
 - [reporting-audit/widget](/th/inventory/reporting-audit/widget) — widget บนแดชบอร์ดเลือกแหล่งข้อมูลจากแคตตาล็อกนี้; ฟิลด์ `dataset_id` บนแต่ละ widget row อ้างอิง `id` ในแคตตาล็อก
 - [system-config/query-dataset](/th/inventory/system-config/query-dataset) — เครื่องมือ admin เสริม: sysadmin เขียน tenant view / stored procedure / function ด้วย SQL; object เหล่านั้นสามารถรองรับ report template ได้ feed ของ Dashboard Dataset เขียนด้วยโค้ด ไม่ใช่ SQL
-- [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) — layout แดชบอร์ดที่บันทึกต่อผู้ใช้ที่เก็บใน `tb_widget_dashboard` + `tb_widget_dashboard_item`; แต่ละ tile row อ้างอิง `dataset_id` จากแคตตาล็อกนี้ (หมายเหตุ: `tb_widget_workspace` คือตารางแยกต่างหากสำหรับ query ที่บันทึกไว้ใน data explorer ต่อผู้ใช้ — ดู [reporting-audit/widget](/th/inventory/reporting-audit/widget))
+- [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) — widget tile แดชบอร์ดที่บันทึกไว้ใน `tb_dashboard_bu_widget` (scope ระดับ BU) + `tb_dashboard_personal_widget` (ต่อผู้ใช้); แต่ละ tile row อ้างอิง `dataset_id` จากแคตตาล็อกนี้ (เวอร์ชันก่อนหน้าอ้าง `tb_widget_dashboard`/`tb_widget_dashboard_item` และตาราง saved-queries `tb_widget_workspace` แยกต่างหาก — ไม่มี model เหล่านี้อยู่ใน Prisma schema ใดเลย; ดู [reporting-audit/widget](/th/inventory/reporting-audit/widget) ซึ่ง flag ไว้ให้แก้ใน iteration ของมันเอง)
 - [access-control/application-role](/th/inventory/access-control/application-role) — การเข้าถึง navigation และ route ไปยัง `/system-admin/dashboard-dataset`
 
 ## 8. แหล่งข้อมูลอ้างอิง
@@ -121,6 +121,6 @@ GET  /api/:bu_code/datasets/:dataset_id  → { meta: DatasetMeta, data: DatasetD
 - **Gateway proxy:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-datasets/dashboard-datasets.service.ts` — HTTP proxy ไปยัง micro-data; controller `dashboard-datasets.controller.ts` เปิดเผย `GET /api/:bu_code/datasets` และ `GET /api/:bu_code/datasets/:dataset_id`
 - **Swagger response DTOs:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-datasets/swagger/response.ts` — `DatasetMetaDto`, `DatasetListResponseDto`, `DatasetResponseDto`
 - **Platform enum:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `enum_dataset_shape` (บรรทัด ~815)
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/dashboard-dataset/page.tsx` และ `_components/dashboard-dataset-component.tsx`
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/dashboard-dataset/dashboard-dataset.route.tsx` + `dashboard-dataset-component.tsx`
 - **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-dashboard-dataset.ts` — `useDashboardDatasets()`, `useDashboardDatasetDetail(id)`
 - **Frontend type:** `../carmen-inventory-frontend-react/types/dashboard-dataset.ts` — `DashboardDataset`, `DashboardDatasetShape`, `DashboardDatasetCategory`

@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — Business Rules
 description: การตรวจสอบความถูกต้อง การคำนวณ การกำหนดสิทธิ์ การ posting และกฎข้ามโมดูลสำหรับโมดูลสูตรอาหาร
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: recipe, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -12,19 +12,38 @@ dateCreated: 2026-05-15T16:00:00.000Z
 
 > **At a Glance**
 > **family ของกฎ:** `REC_VAL_*` validation &nbsp;·&nbsp; `REC_AUTH_*` permission &nbsp;·&nbsp; `REC_CALC_*` calc &nbsp;·&nbsp; `REC_POST_*` posting &nbsp;·&nbsp; `REC_XMOD_*` cross-module
-> **จำนวนกฎ:** ประมาณ 69 กฎ
-> **กลุ่มผู้ใช้:** ผู้เขียน test + developer — ทุก rule ID ถูก anchor จากหน้า `04-test-scenarios*`
-> **วงจรชีวิตของสถานะ:** Section 5.1 (เมื่อมี) มี callout ความแตกต่างของ Live UI vs BRD
+> **จำนวนกฎ:** ประมาณ 69 กฎ — **ส่วนใหญ่เป็นเป้าหมายการออกแบบจาก carmen/docs ไม่ใช่พฤติกรรมที่ implement แล้ว**; §1.1 แสดงรายการชุดย่อยเล็ก ๆ ที่บังคับใช้จริงพร้อมการอ้างอิงแหล่งที่มา
+> **กลุ่มผู้ใช้:** ผู้เขียน test + developer — ให้ถือกฎที่ยังไม่บังคับใช้เป็น requirement ตัวเลือก ไม่ใช่พฤติกรรมของระบบที่คาดหวัง
 
 ## 1. ภาพรวม
 
-หน้านี้บันทึกกฎทางธุรกิจเชิงปฏิบัติการที่ควบคุมสูตรผ่านวงจรชีวิตของมัน: การ validate input ที่เวลา create / edit / publish / archive กฎการคำนวณ cost-engineering (วัตถุดิบ → บรรทัด → สูตร → portion → ราคา → margin) gate การกำหนดสิทธิ์ตาม role และสถานะ ผลกระทบของการ posting ในแต่ละการเปลี่ยนของ `enum_recipe_status` และกฎข้ามโมดูลกับ [product](/th/inventory/product), [inventory](/th/inventory/inventory), [costing](/th/inventory/costing) และ [store-requisition](/th/inventory/store-requisition) ต่างจากเอกสารที่ขับเคลื่อนด้วย workflow (PR, PO, GRN, SR) สูตร **ไม่ใช่** เอกสาร workflow — ไม่มี `workflow_id` ไม่มีลายเซ็นการอนุมัติต่อบรรทัด ไม่มี thread comment Gate การ publish เป็นการเปลี่ยนเดียวที่ guard โดย RBAC ระดับ application และ checklist ของกฎความครบ; กลไก audit คือ `tb_recipe_version` (snapshot เต็ม) บวก `tb_recipe_pricing_history` (timeline ต้นทุน / ราคา) สูตรเป็น **แหล่งความจริงสำหรับสิ่งที่ควรถูกบริโภคเมื่อมีการขาย** — เมื่อสูตรที่ `PUBLISHED` ถูก link กับ menu item ที่ขาย การ explode สูตรด้วยปริมาณที่ขายขับเคลื่อนการใช้คลังเชิงทฤษฎีที่ใช้ในการรายงาน variance food-cost
+หน้านี้จัดทำแคตตาล็อกกฎทางธุรกิจที่การออกแบบใน carmen/docs กำหนดให้กับโมดูลสูตรอาหาร: การ validate input ห่วงโซ่การคำนวณ cost-engineering (วัตถุดิบ → บรรทัด → สูตร → portion → ราคา → margin) การกำหนดสิทธิ์ตาม role ผลกระทบของการ posting ต่อการเปลี่ยนแต่ละครั้งของ `enum_recipe_status` และกฎข้ามโมดูลกับ [product](/th/inventory/product), [inventory](/th/inventory/inventory), [costing](/th/inventory/costing) และ [store-requisition](/th/inventory/store-requisition) ต่างจากเอกสารที่ขับเคลื่อนด้วย workflow (PR, PO, GRN, SR) สูตร **ไม่ใช่** เอกสาร workflow — ไม่มี `workflow_id` ไม่มีลายเซ็นการอนุมัติต่อบรรทัด ไม่มี thread comment
 
-จุดโครงสร้างสองจุดให้สีกับทุกกฎด้านล่าง **ประการแรก** วงจรชีวิตของสูตรมีสามสถานะ (`DRAFT`, `PUBLISHED`, `ARCHIVED`) และการไหลทิศทางเข้มงวด: `DRAFT → PUBLISHED → ARCHIVED` คือเส้นทาง canonical พร้อม `PUBLISHED → DRAFT` อนุญาตเฉพาะเมื่อนโยบาย tenant ต้องการ re-approval หลังการแก้ (มิฉะนั้นการแก้บนสูตรที่ `PUBLISHED` ใช้ตรงด้วยแถว `tb_recipe_version` ใหม่) `ARCHIVED → PUBLISHED` **ไม่** ได้รับอนุญาตตาม default — สูตร archived เลิกใช้แล้ว เส้นทางกลับคือ clone สูตร archived เป็น `DRAFT` ใหม่และ re-publish **ประการที่สอง** ทุกการเปลี่ยนต่อสูตรที่ `PUBLISHED` (qty วัตถุดิบ sub-recipe swap % wastage prep / cook time อัตรา cost) เขียนแถว `tb_recipe_version` ใหม่จับ snapshot เต็มของ header / วัตถุดิบ / ขั้นตอน / variant — นี่คือ audit trail ของโมดูล recipe และกลไก rollback การเปลี่ยนที่เกี่ยวข้องกับ pricing เพิ่มเขียนแถว `tb_recipe_pricing_history` พร้อม snapshot ต้นทุน / ราคา / % food-cost / gross-margin ที่ effective date ใหม่
+### 1.1 สิ่งที่บังคับใช้จริงในปัจจุบัน (ตรวจสอบแล้ว 2026-07-15)
+
+Implementation ปัจจุบันบังคับใช้ชุดกฎที่เล็กกว่าแคตตาล็อกด้านล่างมาก ตรวจสอบแล้วเทียบกับ `recipe.service.ts`, `preparation-steps.service.ts`, DTO ของ gateway (`recipe.create.dto.ts` / `recipe.update.dto.ts`), error catalog (`@repo/error-catalog`) และ form ฝั่ง frontend (`recipe-form-schema.ts`, `use-recipe-cost-calc.ts`):
+
+| กฎที่บังคับใช้ | ที่ไหน | Error / พฤติกรรม |
+|---|---|---|
+| `code` ต้องไม่ซ้ำในบรรดาสูตรที่ไม่ถูกลบ (จับคู่ตรงบน `code` อย่างเดียว; unique ของ DB คือ `(code, name, deleted_at)`) | `recipe.service.ts create()` | `RECIPE_ALREADY_EXISTS` (409) |
+| `code`, `name`, `category_id` (uuid), `cuisine_id` (uuid), `base_yield`, `base_yield_unit` จำเป็นที่ create | gateway `RecipeCreateSchema` (zod) | 400 validation error |
+| `category_id` / `cuisine_id` ต้องอ้างอิงแถวที่**ไม่ถูก soft-delete** (*ไม่* ตรวจสอบ `is_active`) | `recipe.logic.ts validateCategory()/validateCuisine()` | `RECIPE_CATEGORY_NOT_FOUND` / `RECIPE_CUISINE_NOT_FOUND` |
+| `doc_version` จำเป็นที่ update/patch; optimistic-lock `where: { id, doc_version }` | `RecipeUpdateSchema` + `recipe.service.ts` | Update ล้มเหลวเมื่อ version ไม่ตรงกัน |
+| ผลข้างเคียงของการเปลี่ยนสถานะ: `published_at = now()` เมื่อ `→ PUBLISHED`, `archived_at = now()` เมื่อ `→ ARCHIVED`; **ไม่มี gate ใด ๆ** บนการเปลี่ยนสถานะเอง | `recipe.service.ts update()/patch()` | Timestamp เท่านั้น |
+| การลบถูกบล็อกขณะสูตรถูกอ้างอิงเป็น sub-recipe | `recipe.service.ts delete()` | `RECIPE_USED_AS_SUB_RECIPE` (400) |
+| ขั้นตอนการเตรียม (preparation steps): `description` จำเป็น; การเพิ่มเป็นแบบ bulk พร้อม `sequence_no` อัตโนมัติ; การ reorder ต้องระบุทุกขั้นตอน active ครบหนึ่งครั้งพอดี; การ patch ขั้นตอนต้องการ `doc_version` | `preparation-steps.service.ts` | `RECIPE_PREPARATION_STEPS_REQUIRED`, `INVALID_ARGUMENT` |
+| Form ฝั่ง frontend: `code`, `name`, `status`, `difficulty`, `cuisine_id`, `category_id`, `base_yield_unit` จำเป็น; ฟิลด์ตัวเลข `≥ 0` | `recipe-form-schema.ts` (zod, client-side เท่านั้น) | Error ของฟิลด์แบบ inline |
+| ตัวเลข pricing ที่ derive คำนวณฝั่ง client แล้วเก็บ: `cost_per_portion`, `gross_margin(_percentage)`, `actual_food_cost_percentage`, `labor_cost_percentage`, `overhead_percentage`, `suggested_price` | `use-recipe-cost-calc.ts` | ดู §3 สำหรับสูตรจริง |
+
+ทุกอย่างที่เหลือบนหน้านี้ — gate ความครบที่ publish, การ validate บรรทัดวัตถุดิบ, การตรวจจับ cycle ของ sub-recipe, การ cascade ต้นทุน, การเขียน versioning, snapshot pricing-history, permission ต่อ role, theoretical consumption — **ไม่มีโค้ดที่ implement**: บรรทัดวัตถุดิบไม่มี write path เลย, `tb_recipe_version` / `tb_recipe_pricing_history` ไม่มีตัวเขียน และ gate permission เดียวคือ placeholder ฝั่ง frontend เท่านั้น `operation_plan.view` (admin-only) ที่ครอบทั้ง route group
+
+การแก้ไขเชิงโครงสร้างเพิ่มเติมสองจุดต่อการเล่าเรื่องด้านล่าง **ประการแรก** วงจรชีวิตในทางปฏิบัติ *ไม่* มีทิศทางบังคับ: `DRAFT ⇄ PUBLISHED ⇄ ARCHIVED` ไปได้ทุกทิศทางผ่าน dropdown สถานะบน toolbar รวมถึง `ARCHIVED → PUBLISHED` และ `ARCHIVED → DRAFT` **ประการที่สอง** ไม่มีแถว `tb_recipe_version` ถูกเขียนบนการแก้ใด ๆ — กลไก versioning/rollback ที่อธิบายในกฎเดิมเป็นการออกแบบระดับ schema เท่านั้น
 
 ## 2. กฎการตรวจสอบความถูกต้อง
 
-Rule ID ตามรูปแบบ `REC_VAL_NNN` กฎ header (001–008) รันทุก save และที่ publish; กฎบรรทัด (009–014) รันต่อบรรทัดที่ save และที่ publish; กฎ aggregate / at-publish (015–018) รันเฉพาะที่การเปลี่ยน `DRAFT → PUBLISHED`
+> **สถานะ: แคตตาล็อกการออกแบบ** ในบรรดากฎด้านล่าง มีเพียงบางส่วนของ `REC_VAL_001`–`REC_VAL_004` ที่บังคับใช้ในปัจจุบัน (ดู §1.1 — ความไม่ซ้ำของ code ตรวจบน `code` อย่างเดียว และการตรวจสอบการอ้างอิง category/cuisine ไม่ต้องการ `is_active`) กฎบรรทัด (009–014) ไม่สามารถทำงานได้เพราะบรรทัดวัตถุดิบไม่มี write path และกฎ at-publish (015–018) ไม่มี gate การ publish ให้รัน Rule ID ถูกเก็บไว้เป็นแคตตาล็อก requirement ที่หน้า `04-test-scenarios*` อ้างอิง
+
+Rule ID ตามรูปแบบ `REC_VAL_NNN` ตามการออกแบบ: กฎ header (001–008) รันทุก save และที่ publish; กฎบรรทัด (009–014) รันต่อบรรทัดที่ save และที่ publish; กฎ aggregate / at-publish (015–018) รันเฉพาะที่การเปลี่ยน `DRAFT → PUBLISHED`
 
 | Rule ID | เงื่อนไข | บังคับใช้เมื่อ | Error / พฤติกรรม |
 | ------- | --------- | ------------- | ----------------- |
@@ -49,7 +68,16 @@ Rule ID ตามรูปแบบ `REC_VAL_NNN` กฎ header (001–008) ร�
 
 ## 3. กฎการคำนวณ
 
-สูตรเป็น **เอกสาร cost-engineering**: surface การคำนวณรุ่มรวย ทุกคอลัมน์ cost / quantity เก็บเป็น `Decimal(20, 5)` ที่ระดับแถว; การปัดเศษการแสดงเป็น half-up ถึง 2 ทศนิยมสำหรับสกุลเงิน 3 ทศนิยมสำหรับปริมาณ ห่วงโซ่การคำนวณคือ บรรทัด → สูตร → portion → ราคา → margin โดย cost ของ sub-recipe ไหลเข้ามาแบบ recursive
+สูตรเป็น **เอกสาร cost-engineering**: surface การคำนวณรุ่มรวย ทุกคอลัมน์ cost / quantity เก็บเป็น `Decimal(20, 5)` ที่ระดับแถว ห่วงโซ่การคำนวณตามการออกแบบคือ บรรทัด → สูตร → portion → ราคา → margin โดย cost ของ sub-recipe ไหลเข้ามาแบบ recursive
+
+> **สถานะ: calculator เดียวที่ implement แล้วอยู่ฝั่ง client** (`use-recipe-cost-calc.ts` ใน form สูตร) และคำนวณจาก input ของ header ที่**กรอกด้วยมือ**สามตัว (`total_ingredient_cost`, `labor_cost`, `overhead_cost`) บวก `base_yield`, `selling_price`, `target_food_cost_percentage` สูตรจริงของมัน (ทั้งหมดปัดเศษ half-up ถึง 2 ทศนิยมผ่าน `round2`):
+> - `cost_per_portion = (total_ingredient_cost + labor_cost + overhead_cost) / base_yield` (เป็น 0 เมื่อ yield ≤ 0) — ตรงกับ `REC_CALC_006`–`007`
+> - `suggested_price = cost_per_portion / (1 − target/100)` เมื่อ `0 < target < 100` — ตรงกับ `REC_CALC_008`
+> - `gross_margin = selling_price − cost_per_portion`; `gross_margin_percentage = gross_margin / selling_price × 100` — ตรงกับ `REC_CALC_010`
+> - `actual_food_cost_percentage = total_ingredient_cost / selling_price × 100` — **ต่างจาก `REC_CALC_009`** (ซึ่งระบุ `cost_per_portion / selling_price`): ตัวเลขที่ implement ไม่รวม labor/overhead และไม่หารด้วย yield
+> - `labor_cost_percentage = labor_cost / selling_price × 100`; `overhead_percentage = overhead_cost / selling_price × 100` — **ต่างจาก semantics ของ default ใน schema** (default 30%/20% แบบ "ส่วนแบ่งของต้นทุน"); hook เขียนทับค่าที่เก็บด้วย % แบบสัมพัทธ์กับราคา
+>
+> กฎระดับบรรทัด (`REC_CALC_001`–`003`, `011`–`014`) ไม่มี implementation เพราะบรรทัดวัตถุดิบไม่ถูก persist; ไม่มี config `labor_rate` สำหรับ `REC_CALC_004` และการ derive overhead ของ `REC_CALC_005` ไม่ถูกคำนวณที่ไหนเลย (overhead ถูกกรอกโดย user)
 
 Rule ID ตามรูปแบบ `REC_CALC_NNN`
 
@@ -58,7 +86,7 @@ Rule ID ตามรูปแบบ `REC_CALC_NNN`
 | `REC_CALC_001` (ส่วนประกอบ wastage ของบรรทัด) | `wastage_cost = qty × cost_per_unit × (wastage_percentage / 100)` Persist บนแถววัตถุดิบ ใช้โดยรายงานเพื่อแยก "ต้นทุนดิบ" จาก "wastage allowance" |
 | `REC_CALC_002` (net cost ของบรรทัด) | `net_cost = qty × cost_per_unit × (1 + wastage_percentage / 100) = qty × cost_per_unit + wastage_cost` Persist บนแถววัตถุดิบ Roll up ไปยัง `tb_recipe.total_ingredient_cost` |
 | `REC_CALC_003` (ต้นทุนวัตถุดิบรวมของสูตร) | `total_ingredient_cost = Σ tb_recipe_ingredient.net_cost` ข้ามบรรทัด active (ไม่ถูก soft-delete) Persist บน header คำนวณใหม่บนการเปลี่ยนบรรทัดวัตถุดิบ |
-| `REC_CALC_004` (ต้นทุนแรงงาน) | `labor_cost = (prep_time + cook_time) × labor_rate × labor_cost_percentage / 100` `labor_rate` มาจาก config tenant (โดยทั่วไป $/นาทีหรือ ฿/นาที); `labor_cost_percentage` คือส่วนแบ่งของ labor rate ที่มาจากหมวดหมู่ของสูตรนี้ (default 30% ตั้งค่าได้ต่อหมวดหมู่ผ่าน `tb_recipe_category.default_cost_settings`) Persist บน header |
+| `REC_CALC_004` (ต้นทุนแรงงาน) | *การออกแบบ:* `labor_cost = (prep_time + cook_time) × labor_rate × labor_cost_percentage / 100` โดย `labor_rate` มาจาก config tenant และ default ต่อหมวดหมู่ผ่าน `tb_recipe_category.default_cost_settings` *ที่ implement:* ไม่มี config `labor_rate` อยู่ที่ไหนเลย; `labor_cost` เป็นฟิลด์ form ที่กรอกด้วยมือ persist บน header |
 | `REC_CALC_005` (ต้นทุน overhead) | `overhead_cost = total_ingredient_cost × overhead_percentage / 100` % overhead default คือ 20% ตั้งค่าได้ต่อหมวดหมู่ Persist บน header |
 | `REC_CALC_006` (ต้นทุนรวมของสูตร) | `total_recipe_cost = total_ingredient_cost + labor_cost + overhead_cost` คำนวณสำหรับการแสดงและการหาร per-portion; **ไม่** persist เป็นคอลัมน์แยกบน `tb_recipe` (มันคือผลรวมของสามส่วนประกอบที่ persist) |
 | `REC_CALC_007` (cost per portion) | `cost_per_portion = total_recipe_cost / base_yield` สำหรับ variant `cost_per_unit = total_recipe_cost × (variant.conversion_rate / base_yield) × variant.variant_quantity` แต่ `cost_per_unit` ของ variant ที่ persist คำนวณที่เวลา variant-write Persist บน header สำหรับสูตรฐานและบนแต่ละแถว `tb_recipe_yield_variant` |
@@ -73,7 +101,9 @@ Rule ID ตามรูปแบบ `REC_CALC_NNN`
 
 ### 3.1 ตัวอย่างที่คำนวณ (1 สูตร, 4 วัตถุดิบรวม 1 sub-recipe, 1 variant)
 
-สูตร *House Burger* พร้อม `base_yield = 1 portion`, `base_yield_unit = portions`, `prep_time = 8 min`, `cook_time = 12 min`, `target_food_cost_percentage = 32.00`, `labor_rate = ฿2.50/min`, `labor_cost_percentage = 30.00`, `overhead_percentage = 20.00` สี่บรรทัดวัตถุดิบ
+> ตัวอย่างนี้ใช้สูตร**การออกแบบ** (รวมถึงห่วงโซ่ระดับบรรทัดที่ยังไม่ implement และ config tenant `labor_rate` ที่ยังไม่มีจริง); เฉพาะขั้น roll-up ที่ทำเครื่องหมายด้วยกฎที่ตรวจสอบแล้วใน §1.1 เท่านั้นที่ทำงานแบบนี้ในแอปปัจจุบัน ซึ่ง input ต้นทุนสามตัวจะถูกกรอกตรงเข้า form
+
+สูตร *House Burger* พร้อม `base_yield = 1 portion`, `base_yield_unit = portions`, `prep_time = 8 min`, `cook_time = 12 min`, `target_food_cost_percentage = 32.00`, `labor_rate = ฿2.50/min` (config เฉพาะการออกแบบ), `labor_cost_percentage = 30.00`, `overhead_percentage = 20.00` สี่บรรทัดวัตถุดิบ
 
 - **บรรทัด 1** (Beef Patty, `product`): `qty = 1`, `ingredient_unit = piece`, `cost_per_unit = ฿45.00`, `wastage_percentage = 5%`
   - `wastage_cost = 1 × 45.00 × 0.05 = ฿2.25`
@@ -98,7 +128,7 @@ Roll-up:
 
 ถ้า chef เลือก `selling_price = ฿150.00`:
 
-- `actual_food_cost_percentage = cost_per_portion / selling_price × 100 = 99.23 / 150.00 × 100 = 66.15%` **สูงเกินไป — สูตร over-cost สำหรับราคาเมนู ฿150** นี่คือเอาท์พุตที่คาดหวัง: หน้าจอแสดง % food-cost จริง **สูงกว่า** เป้าหมาย 32% flag สูตรสำหรับ cost review หรือการปรับราคา Chef จะลดต้นทุนวัตถุดิบ (เจรจาราคาเนื้อ swap bun ที่ถูกกว่า) ลดการ allocate labor / overhead หรือเพิ่มราคาขายไปยัง ฿310 (ซึ่งเป็นสิ่งที่เป้าหมาย 32% บน cost ฿99 ต้องการ)
+- สูตรการออกแบบ (`REC_CALC_009`): `actual_food_cost_percentage = cost_per_portion / selling_price × 100 = 99.23 / 150.00 × 100 = 66.15%` **สูงกว่าเป้าหมาย 32% มาก — สูตร over-cost สำหรับราคาเมนู ฿150** flag สูตรสำหรับ cost review หรือการปรับราคา (ตัวเลขฝั่ง client ที่ implement จริงจะเป็น `total_ingredient_cost / selling_price × 100 = 70.19 / 150.00 × 100 = 46.79%` แทน — ดู status note ใน §3) Chef จะลดต้นทุนวัตถุดิบ (เจรจาราคาเนื้อ swap bun ที่ถูกกว่า) ลดการ allocate labor / overhead หรือเพิ่มราคาขายไปยัง ฿310 (ซึ่งเป็นสิ่งที่เป้าหมาย 32% บน cost ฿99 ต้องการ)
 - `gross_margin = 150.00 − 99.23 = ฿50.77` (ตาม `REC_CALC_010`)
 - `gross_margin_percentage = 50.77 / 150.00 × 100 = 33.85%`
 
@@ -107,6 +137,8 @@ Roll-up:
 **Variant scaling**: variant "Double Burger" ที่ `conversion_rate = 1.8` (1.8x ฐาน) — ปริมาณวัตถุดิบ scale: บรรทัด 1 patty กลายเป็น `qty = 2` (มักตั้งค่าแยกต่อ variant แทนตาม pure factor สำหรับวัตถุดิบที่เป็นขั้นเช่น patty ทั้งชิ้น); บรรทัด 3 cheese กลายเป็น 54g; เป็นต้น Variant cost = `total_recipe_cost / variant_quantity` ที่ scale; pricing variant ตามแยก
 
 ### 3.2 ตัวอย่างที่คำนวณ (การ cascade การเปลี่ยน cost ของ sub-recipe)
+
+> การ cascade นี้ (`REC_CALC_011` / `REC_POST_006`) เป็นขั้นการออกแบบทั้งหมด — ไม่มีโค้ดการกระจาย re-cost อยู่จริง
 
 Sub-recipe *Burger Sauce* (ใช้เป็นบรรทัด 4 ข้างบน) มี `cost_per_unit` ของวัตถุดิบ mayonnaise เพิ่มจาก ฿0.10/g เป็น ฿0.14/g เนื่องจากการ update pricelist vendor
 
@@ -123,7 +155,9 @@ Sub-recipe *Burger Sauce* (ใช้เป็นบรรทัด 4 ข้า�
 
 ## 4. กฎการกำหนดสิทธิ์
 
-Rule ID ตามรูปแบบ `REC_AUTH_NNN` การกำหนดสิทธิ์บังคับใช้โดย RBAC ที่ API layer; โมดูล recipe **ไม่ใช่** workflow-driven ดังนั้นการกำหนดสิทธิ์เป็นตรง (role-on-object) ไม่ใช่ stage-gated ชื่อ role map กับการ grouping persona ห้าตัวจาก index ของ wiki: Chef, Cost Controller, Outlet Manager, Procurement / F&B Ops, Audit / Config
+> **สถานะ: permission แบบ role-scoped เหล่านี้ยังไม่มีอยู่เลย** ไม่มี permission `recipe:*` ที่ไหนเลยใน permission catalog ของ frontend หรือใน backend; route group `/operation-plan/*` ทั้งกลุ่มถูก gate ด้วย placeholder ฝั่ง frontend เท่านั้น `operation_plan.view` (`constant/permissions.ts`) ซึ่งปฏิเสธทั้งกลุ่มสำหรับผู้ที่ไม่ใช่ admin ทุกกฎด้านล่างคือโมเดล RBAC เป้าหมายจาก carmen/docs เก็บไว้สำหรับการ implement ในอนาคตและการวางแผน test
+
+Rule ID ตามรูปแบบ `REC_AUTH_NNN` ตามการออกแบบ การกำหนดสิทธิ์บังคับใช้โดย RBAC ที่ API layer; โมดูล recipe **ไม่ใช่** workflow-driven ดังนั้นการกำหนดสิทธิ์เป็นตรง (role-on-object) ไม่ใช่ stage-gated ชื่อ role map กับการ grouping persona ห้าตัวจาก index ของ wiki: Chef, Cost Controller, Outlet Manager, Procurement / F&B Ops, Audit / Config
 
 | Rule ID | Subject | สิทธิ์ | ข้อจำกัด |
 | ------- | ------- | ----- | ---------- |
@@ -144,7 +178,9 @@ Rule ID ตามรูปแบบ `REC_AUTH_NNN` การกำหนดส�
 
 ## 5. กฎ Posting
 
-ค่าสถานะคือสมาชิก literal ของ `enum_recipe_status` ที่ documented ใน [recipe/01-data-model.md](./01-data-model.md) § 4: **`DRAFT`**, **`PUBLISHED`**, **`ARCHIVED`** วงจรชีวิตคือ `DRAFT → PUBLISHED → ARCHIVED` พร้อม `PUBLISHED → DRAFT` เป็นเส้นทาง un-publish ทางเลือก ไม่มี event commit-and-fan-out ในความหมาย GRN / SR — สูตรไม่ใช่เอกสารธุรกรรม แทน **การ publish** คือ event ที่ทำให้สูตรมีสิทธิ์สำหรับ linkage menu-item และ theoretical consumption; **การแก้วัตถุดิบบนสูตรที่ publish** คือ event ที่ trigger snapshot pricing-history และการคิดต้นทุนใหม่ปลายน้ำ; **archive** คือ event ที่เลิกใช้สูตร
+ค่าสถานะคือสมาชิก literal ของ `enum_recipe_status` ที่ documented ใน [recipe/01-data-model.md](./01-data-model.md) § 4: **`DRAFT`**, **`PUBLISHED`**, **`ARCHIVED`** ไม่มี event commit-and-fan-out ในความหมาย GRN / SR — สูตรไม่ใช่เอกสารธุรกรรม
+
+> **สถานะ: พฤติกรรมการเปลี่ยนสถานะที่ implement แล้วมีน้อยมาก** ความจริงที่ตรวจสอบแล้ว (`recipe.service.ts`): สถานะใดก็ตั้งได้จากสถานะใดผ่านการ update ฟิลด์ธรรมดา; service ประทับ `published_at` เมื่อ `→ PUBLISHED` และ `archived_at` เมื่อ `→ ARCHIVED` และไม่มีอะไรอื่นเกิดขึ้น — ไม่มี gate การ validate ไม่มีการเขียน `tb_recipe_version` ไม่มีการเขียน `tb_recipe_pricing_history` ไม่มีผลกระทบ menu-item/consumption การ soft delete (`deleted_at`/`deleted_by_id`) อนุญาตที่สถานะ**ใดก็ได้** (guard เดียวคือการถูกใช้เป็น sub-recipe) ไม่จำกัดเฉพาะ `DRAFT` แคตตาล็อก event ด้านล่างคือโมเดลการออกแบบ
 
 Rule ID ตามรูปแบบ `REC_POST_NNN`
 
@@ -162,18 +198,20 @@ Rule ID ตามรูปแบบ `REC_POST_NNN`
 | `REC_POST_010` | การแก้ pricing-only (ไม่เปลี่ยนวัตถุดิบ / ขั้นตอน) | เมื่อ Cost Controller update `target_food_cost_percentage` หรือ `selling_price` เท่านั้น (ตาม `REC_AUTH_006`): คำนวณ `suggested_price`, `actual_food_cost_percentage`, `gross_margin`, `gross_margin_percentage` ใหม่ตาม `REC_CALC_008`–`REC_CALC_010` เขียนแถว `tb_recipe_pricing_history` ด้วย `change_reason = "pricing-only update"` สูตรอยู่ในสถานะปัจจุบัน (`DRAFT` หรือ `PUBLISHED`); ไม่ต้องการ `tb_recipe_version` ใหม่ (การเปลี่ยน pricing ถูกติดตามผ่านตาราง pricing-history ไม่ใช่ตาราง versioning เต็ม — ทางเลือก tenant) |
 | `REC_POST_011` | Theoretical-consumption fan-out (ปลายน้ำ ไม่ใช่การเปลี่ยนสถานะ recipe) | เมื่อ menu item ที่ link กับสูตร `PUBLISHED` ถูกขายโดย POS inventory / POS-integration layer อ่านบรรทัดวัตถุดิบของสูตรและ post OUT movement เชิงทฤษฎีตาม `REC_CALC_014` นี่คือ **ผลกระทบปลายน้ำ** ของสูตรที่เป็น `PUBLISHED`; โมดูล recipe เองไม่เขียนไปยัง `tb_inventory_transaction` — มันคือแหล่งสูตร |
 
-State diagram (Prisma-canonical):
+State diagram (ตามที่ implement — ทุกการเปลี่ยนสถานะเป็นการเปลี่ยนอย่างอิสระผ่าน dropdown):
 
 ```
-[*] → DRAFT ⇄ PUBLISHED → ARCHIVED → (terminal)
-              (un-publish ทางเลือกตามนโยบาย tenant;
-               การแก้ที่ PUBLISHED ใช้ in-place ด้วย versioning
-               หรือผ่าน un-publish round-trip)
+[*] → DRAFT ⇄ PUBLISHED ⇄ ARCHIVED
+        ▲__________________│
+   (ไปได้ทุกทิศทาง; ผลข้างเคียงเดียวคือ
+    timestamp published_at / archived_at เมื่อเข้าสถานะ)
 ```
 
-`ARCHIVED` เป็น terminal ในการดำเนินการปกติ `DRAFT` รับ soft-delete; `ARCHIVED` รับ soft-delete โดย Sysadmin
+Soft-delete ใช้ได้ที่สถานะใดก็ได้; guard การลบเดียวคือ `RECIPE_USED_AS_SUB_RECIPE` เจตนาการออกแบบ (`ARCHIVED` เป็น terminal, ลบได้เฉพาะจาก `DRAFT`) ไม่ถูกบังคับใช้
 
 ## 6. กฎข้ามโมดูล
+
+> **สถานะ: แคตตาล็อกการออกแบบ** ไม่มี integration ใดในกลุ่มนี้ที่ implement แล้ว: ไม่มี re-cost service ไม่มีการเขียน theoretical-consumption ไม่มี event cost-drift ไม่มีการสร้าง recipe→SR ไม่มี menu-item layer และไม่มีการ map RBAC `recipe:*` ความจริงที่ implement แล้วมีเพียงสองเม็ด: FK `tb_recipe_ingredient.product_id → tb_product` มีอยู่จริงด้วย `Restrict` (ครึ่งด้านการอ้างอิงของ `REC_XMOD_001`) และ guard การลบ sub-recipe (`RECIPE_USED_AS_SUB_RECIPE`)
 
 Rule ID ตามรูปแบบ `REC_XMOD_NNN`
 
@@ -200,4 +238,5 @@ Rule ID ตามรูปแบบ `REC_XMOD_NNN`
 - `../carmen/docs/recipe/recipe-create-edit-page.md` — แหล่ง page-spec สำหรับ form สูตร
 - Sibling: `en/recipe/01-data-model.md` — canonical Prisma model, enum เฉพาะ recipe (`enum_recipe_status`, `enum_recipe_difficulty`, `enum_ingredient_type`, `enum_temperature_unit`, `enum_cuisine_region`) และแคตตาล็อกความแตกต่างที่ Section 1, Section 2 และ Section 6 พึ่งพา
 - Sibling: `en/recipe/03-user-flow.md` — overview วงจรชีวิตและ persona drill-down; หน้ากฎนี้เป็น complement formal สำหรับการเล่าวงจรชีวิต
-- การ implement กฎ backend (เมื่อเพิ่ม): `../carmen-turborepo-backend-v2/apps/` — โมดูล recipe service เป็น hook implementation สำหรับกฎเหล่านี้ (gate ความครบที่เวลา publish, การคำนวณ rollup cost ใหม่, sub-recipe cascade, trigger theoretical-consumption fan-out, snapshot pricing-history)
+- การ implement กฎ backend (ปัจจุบัน): `../carmen-turborepo-backend-v2/apps/micro-business/src/master/recipe/` (`recipe.service.ts`, `recipe.logic.ts`, `preparation-steps/`) — ปัจจุบัน implement เฉพาะชุดย่อยใน §1.1; gate ความครบที่เวลา publish, การคำนวณ rollup cost ใหม่, sub-recipe cascade, theoretical-consumption fan-out และ snapshot pricing-history ยังคงเป็น hook ที่ยังไม่ implement
+- การ implement การคำนวณฝั่ง frontend: `../carmen-inventory-frontend-react/routes/operation-plan/recipe/use-recipe-cost-calc.ts` — calculator pricing ฝั่ง client ที่สูตรของมันถูกอ้างถึงใน status note ของ §3

@@ -2,7 +2,7 @@
 title: การนับสต๊อกประจำงวด (Physical Count) — User Flow
 description: วงจรชีวิตเอกสารและไฟล์ flow เฉพาะ persona ของการนับสต๊อกประจำงวด
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T17:56:09.000Z
 tags: physical-count, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -11,17 +11,15 @@ dateCreated: 2026-05-15T14:00:00.000Z
 # การนับสต๊อกประจำงวด (Physical Count) — User Flow
 
 > **At a Glance**
-> **โมดูล:** [physical-count](/th/inventory/physical-count) &nbsp;·&nbsp; **Persona:** Count Lead (Inventory Controller / Manager) &nbsp;·&nbsp; Counter (Store Keeper) &nbsp;·&nbsp; Audit / Config (Approver / Finance Reviewer + Auditor + Sysadmin)
-> **วงจรชีวิต workflow:** Period (`enum_physical_count_period_status`): `draft → counting → completed` Per-document (`enum_physical_count_status`): `pending → in_progress → completed` Submit ยิง variance rollup ไปยัง [inventory-adjustment](/th/inventory/inventory-adjustment) (`tb_stock_in` overage / `tb_stock_out` shortage)
-> **ดูรายละเอียดระดับ action ในมุมมองต่อ persona ด้านล่าง**
+> **โมดูล:** [physical-count](/th/inventory/physical-count) &nbsp;·&nbsp; **Persona:** role เดียวไม่แยกกลุ่ม gate ด้วย permission เดียว (`inventory_management.physical_count`) — สองไฟล์ที่ลิงก์ด้านล่างแบ่งการเดินทางของมันตามหน้าจอ (list เทียบกับ entry/review) ไม่ใช่ตาม role ที่ต่างกันจริง
+> **วงจรชีวิต workflow:** Period (`enum_physical_count_period_status`): `draft → counting → completed` (ไม่พบโค้ดที่ยืนยันแล้วเปลี่ยน `draft → counting`) Per-document (`enum_physical_count_status`): สร้างโดยตรงที่ `in_progress → completed` — `pending` เข้าถึงไม่ได้ผ่าน create path ที่ยืนยันแล้ว Submit สุดท้ายยิง variance rollup โดยตรงเข้า `tb_stock_in`/`tb_stock_out` (ดู [02-business-rules](/th/inventory/physical-count/02-business-rules) § 5)
+> **หน้าจอจริง:** `physical-count` (list) → `physical-count/:id/entry` (ป้อนบรรทัด) → `physical-count/:id/review` (review variance + submit สุดท้าย)
 
 ## 1. ภาพรวม
 
-หน้านี้เป็น **จุดเริ่ม overview** สำหรับชุด user-flow ของโมดูล `physical-count` ไม่เหมือนโมดูลเอกสารเดี่ยว (PR, PO, GRN) physical count ดำเนินการเป็น **การดำเนินงานสามชั้น** — header `tb_physical_count_period` รวบรวมเอกสาร count ทั้งหมดสำหรับงวดบัญชีหนึ่ง; ภายใต้นั้น เอกสาร `tb_physical_count` หนึ่งฉบับต่อ `(period, location)` พกพาสถานะการนับและความคืบหน้าของ counter; ภายใต้แต่ละเอกสาร count, row ของ `tb_physical_count_detail` ถือ `on_hand_qty` (book snapshot) / `actual_qty` (counted) / `diff_qty` (variance) ต่อสินค้า งานเดินตามลำดับชั้นนี้: Count Lead เปิด period, สร้าง count sheet ต่อ location, มอบหมาย counter; Counter เดินใน zone และป้อนปริมาณ physical ทีละบรรทัด; Count Lead ตรวจสอบ variance, trigger recount, อนุมัติการ complete; rollup จะเขียน variance adjustment ไปยัง [inventory-adjustment](/th/inventory/inventory-adjustment) ซึ่งเป็น path ไปยัง ledger ของ [inventory](/th/inventory/inventory)
+หน้านี้เป็น **จุดเริ่ม overview** สำหรับชุด user-flow ของโมดูล `physical-count` การ implement จริงเป็นการเดินทางต่อเนื่องเดียวโดยไม่มีการส่งต่อระหว่างคนละคน: ผู้ใช้ที่ถือ permission คนหนึ่งเปิดรายการสถานที่ของงวดบัญชีปัจจุบัน (`physical-count`) เริ่มหรือทำต่อการนับที่สถานที่หนึ่ง (สร้าง `tb_physical_count` โดยตรงที่ `in_progress` หรือทำต่อฉบับที่มีอยู่) เดินหน้า entry (`physical-count/:id/entry`) ป้อน `actual_qty` ทีละบรรทัดสินค้า กด **Submit for Review** เมื่อทุกบรรทัดมีค่าแล้ว review variance ที่คำนวณบน `physical-count/:id/review` และกด **Submit** สุดท้าย — action เดียวที่ทั้งปิดการนับ (`status = completed`) และสร้างเอกสาร rollup ของ variance
 
-หัวข้อ 2 ด้านล่างอธิบาย **state machine ของวงจรชีวิตเอกสาร** ทั้ง `tb_physical_count_period.status` (`draft → counting → completed`) และ `tb_physical_count.status` (`pending → in_progress → completed`) โดยไม่ขึ้นกับว่าใครทำ ไฟล์ต่อ persona (ลิงก์จากหัวข้อ 3) อธิบาย *เส้นทางผ่าน* state space นี้ของ persona — จุดเริ่ม action ที่ทำได้ branch ตัดสินใจ handoff ที่จบการมีส่วนร่วม หัวข้อ 4 สรุป handoff ข้าม persona ที่เย็บเส้นทางบุคคลเข้าด้วยกัน (Count Lead → Counter สำหรับการมอบหมาย zone; Counter → Count Lead สำหรับเซ็นรับ sheet ที่เสร็จ; Count Lead → Approver/Finance สำหรับอนุมัติ adjustment ของ variance ผ่าน [inventory-adjustment](/th/inventory/inventory-adjustment))
-
-> **TODO:** ดึงหน้าจอ UI / flow wizard canonical จาก `../carmen-inventory-frontend-react/` เมื่อ route `physical-count` ค้นพบได้; cross-reference E2E spec ที่ `../carmen-inventory-frontend-e2e/tests/` เมื่อเพิ่ม ไม่มี source folder carmen/docs สำหรับโมดูลนี้
+หัวข้อ 2 ด้านล่างอธิบาย state machine ของวงจรชีวิตเอกสารจริงสำหรับ `tb_physical_count_period.status` และ `tb_physical_count.status` หัวข้อ 3 ลิงก์สองไฟล์ที่อธิบาย flow จริงเดียวกันจากสองมุมมองตามหน้าจอ — หน้ารายการ (`03-user-flow-count-lead.md`) และหน้า entry/review (`03-user-flow-counter.md`) — ที่คงไว้เป็นไฟล์แยกกันเพื่อความต่อเนื่องกับ layout หน้าของวิกินี้ ไม่ใช่เพราะมี role "lead" และ "counter" ที่แตกต่างกันในโค้ด หัวข้อ 4 เป็นบันทึก correction ชี้ไปยัง `03-user-flow-audit-config.md` ซึ่งบันทึกการไม่มีอยู่จริงที่ยืนยันแล้วของ surface ใด ๆ ของ Approver/Auditor/Sysadmin
 
 ## 2. วงจรชีวิตเอกสาร
 
@@ -29,15 +27,18 @@ dateCreated: 2026-05-15T14:00:00.000Z
 
 ```mermaid
 stateDiagram-v2
-    [*] --> draft : Count Lead สร้าง period header (tb_period เปิดตาม INV_VAL_008 — PHC_VAL_001)
-    draft --> counting : tb_physical_count แรกถูกสร้างภายใต้ period (auto-transition — Count Lead)
-    counting --> completed : ทุก tb_physical_count child ถึง completed (ระบบ — terminal; period ล็อก)
+    [*] --> draft : Auto-create โดย GET /physical-count-periods/current ครั้งแรกที่ถูกเรียกสำหรับงวดบัญชีที่เพิ่งเปิดใหม่ (physical-count-period.service.ts findCurrent())
+    draft --> counting : ไม่พบ code path ที่ยืนยันแล้วทั้ง frontend หรือ backend
+    counting --> completed : ทุก row tb_physical_count ลูกถึง completed (ระบบขับเคลื่อน; period ล็อก)
     completed --> [*]
 
-    note right of counting
-        เอกสาร count หนึ่งฉบับขึ้นไป (หนึ่งต่อ location) อาจ
-        in_progress พร้อมกัน Period ยังอยู่ counting
-        จนกว่าทุกเอกสารของ location จะถึง completed
+    note right of draft
+        create() บน physical-count.service.ts reject แบบไม่มีเงื่อนไข
+        ด้วย "Physical Count Period is not in counting status"
+        เว้นแต่ period จะเป็น counting อยู่แล้ว — วิธีเดียวที่ดูเหมือนจะ
+        ถึงสถานะนั้นได้คือการเรียก POST /physical-count-periods
+        โดยตรงพร้อมตั้งค่า status ใน request body เอง ไม่พบหน้าจอ
+        frontend ใดที่ทำสิ่งนี้
     end note
 ```
 
@@ -45,78 +46,62 @@ stateDiagram-v2
 
 ```mermaid
 stateDiagram-v2
-    [*] --> pending : Count Lead สร้าง count sheet สำหรับ (period, location) — จับ snapshot on_hand_qty (PHC_VAL_002–003)
-    pending --> in_progress : Counter ป้อน actual_qty แรก (stamp start_counting_at / start_counting_by_id — PHC_AUTH_004)
-    in_progress --> in_progress : Counter ป้อน / แก้ไข actual_qty ใน zone ของตน หรือ Count Lead flag ให้ recount (PHC_VAL_007)
-    in_progress --> completed : Count Lead submit (product_counted == product_total — PHC_VAL_004 / flag recount ทั้งหมดถูกแก้ไข — PHC_POST_001)
+    [*] --> in_progress : Create (POST /physical-counts) — stamp start_counting_at/by_id ทันที (PHC_VAL_001–002)
+    in_progress --> in_progress : Save (PATCH .../save) stamp counted_at ต่อบรรทัด; Submit for Review (PATCH .../review) คำนวณ on_hand_qty/diff_qty สดใหม่สำหรับทุกบรรทัด
+    in_progress --> completed : Submit (PATCH .../submit) — ทุกบรรทัด counted_at != null (PHC_VAL_004); ยิง variance rollup (PHC_POST_001)
     completed --> [*]
 
     note right of in_progress
-        Location ถูกล็อกขณะ status = in_progress (PHC_VAL_006):
-        GRN, SR, Issues, Stock In/Out adj สำหรับ location ถูกบล็อก
-        Variance rollup (PHC_POST_001) สร้าง tb_stock_in (overage)
-        และ/หรือ tb_stock_out (shortage) ใน inventory-adjustment ตอน submit
-        การ post GL ของ rollup (สถานะ completed ใน inventory-adjustment)
-        ต้องมีก่อน End Period Close Stage 3 จะผ่าน (BR-PE-005)
+        ค่า enum pending ไม่เคยถูกกำหนดโดย create() path
+        ที่ยืนยันแล้ว — เอกสารเริ่มที่ in_progress โดยตรง
+        ไม่มี location lock, tolerance threshold หรือ recount flow ใด ๆ
+        Refresh (PATCH .../refresh) สามารถเพิ่มสินค้าที่เข้าเงื่อนไขใหม่
+        เข้า sheet ได้ก่อนถึง completed
     end note
 ```
 
 ### 2.1 การเปลี่ยนสถานะระดับ period (`enum_physical_count_period_status`)
 
-| From state | Action | To state | อนุญาตให้ | Pre-conditions |
+| From state | Action | To state | Allowed for | Pre-conditions |
 | ---------- | ------ | -------- | ----------- | -------------- |
-| `(none)` | สร้าง `tb_physical_count_period` สำหรับ `tb_period` ที่เปิด | `draft` | Count Lead | `tb_period` มีอยู่และเป็น `open` ตาม `INV_VAL_008` |
-| `draft` | เปิด `tb_physical_count` ฉบับแรกภายใต้ period | `counting` | Count Lead | Auto-transition เมื่อสร้าง child-document แรก |
-| `counting` | child count ทั้งหมดถึง `completed` | `completed` | ระบบ | row `tb_physical_count` ทั้งหมดภายใต้ period มี `status = completed` Terminal; period ล็อกจาก count ใหม่ |
+| `(none)` | `GET /physical-count-periods/current` auto-provision period สำหรับ `tb_period` ที่เปิดอยู่ปัจจุบันถ้ายังไม่มี | `draft` | ผู้ใช้ใดก็ตามที่มี permission ของโมดูล (โดยนัย ผ่านหน้ารายการ) | มี `tb_period` เปิดอยู่ |
+| `draft` | — | `counting` | ยังไม่ยืนยัน | ไม่พบ code path ใด ดูหมายเหตุ § 2 ข้างต้น |
+| `counting` | ทุก row `tb_physical_count` ลูกถึง `completed` | `completed` | ระบบ | ทุก `tb_physical_count` ภายใต้ period เป็น `completed` |
 
 ### 2.2 การเปลี่ยนสถานะระดับเอกสาร (`enum_physical_count_status`)
 
-| From state | Action | To state | อนุญาตให้ | Pre-conditions |
+| From state | Action | To state | Allowed for | Pre-conditions |
 | ---------- | ------ | -------- | ----------- | -------------- |
-| `(none)` | สร้าง count sheet สำหรับ `(period, location)` | `pending` | Count Lead | Period อยู่ `draft` หรือ `counting`; location เป็น inventory- หรือ consignment-type ตาม `PHC_VAL_003`; เลือกโหมด (`physical_count_type`) จับ snapshot `on_hand_qty` ต่อบรรทัด |
-| `pending` | counter ป้อน `actual_qty` แรก | `in_progress` | Counter | Counter มี zone-grant สำหรับ location ตาม `PHC_AUTH_004` Stamp `start_counting_at` / `start_counting_by_id` |
-| `in_progress` | แก้ไข `actual_qty` / เพิ่ม detail comment | `in_progress` | Counter (บรรทัดของตน) | บรรทัดภายใน zone ของ counter |
-| `in_progress` | flag บรรทัด variance ให้ recount | `in_progress` | Count Lead | Variance breach ตาม `PHC_VAL_007` Trigger sub-flow ของ recount |
-| `in_progress` | submit (ทุกบรรทัดนับแล้ว) | `completed` | Count Lead | `product_counted == product_total` ตาม `PHC_VAL_004`; flag recount ทั้งหมดแก้ไขแล้ว ยิง variance rollup ตาม `PHC_POST_001` |
-| `completed` | ดู / รายงาน / audit | `completed` | ทุก persona (ตามขอบเขต) | Terminal Immutable ตาม `PHC_VAL_008` |
+| `(none)` | Create (`POST /physical-counts`) | `in_progress` | ผู้ใช้ใดก็ตามที่มี `inventory_management.physical_count` | Period เป็น `counting` (`PHC_VAL_001`); สถานที่มีอยู่จริง (`PHC_VAL_002`) บรรทัดสินค้า seed จาก union ของการ assign `tb_product_location` และสินค้าใดก็ตามที่มีสต๊อกไม่เป็นศูนย์ที่สถานที่นั้น |
+| `in_progress` | Save (`PATCH .../save`) | `in_progress` | ผู้ใช้เดียวกัน | บรรทัด subset ใดก็ได้; stamp `counted_at`/`counted_by_id` บนบรรทัดที่ส่งมา |
+| `in_progress` | Submit for Review (`PATCH .../review`) | `in_progress` (ไม่เปลี่ยนสถานะ) | ผู้ใช้เดียวกัน | คำนวณ `on_hand_qty`/`diff_qty` ใหม่สำหรับทุกบรรทัดจากยอด ledger สด; navigate ไป `/review` |
+| `in_progress` | Submit (`PATCH .../submit`, จาก `/review`) | `completed` | ผู้ใช้เดียวกัน | ทุกบรรทัดมี `counted_at != null` (`PHC_VAL_004`); ยิง variance rollup (`PHC_POST_001`–`004`) |
+| `completed` | ดูอย่างเดียว | `completed` | ผู้ใช้ใดก็ตามที่มี permission ของโมดูล (อ่าน) | Terminal; ถูกบล็อกจาก Save/Review/Submit/Delete ต่อไป (`PHC_VAL_006`) ไม่มี route ที่เปิด detail ของเอกสาร `completed` จากหน้ารายการ — ดูหมายเหตุ § 3 ใน [03-user-flow-count-lead.md](/th/inventory/physical-count/03-user-flow-count-lead) |
 
-### 2.3 Variance-rollup fan-out
+### 2.3 การกระจายตัวของ Variance Rollup
 
-การเปลี่ยน `in_progress → completed` บน `tb_physical_count` คือ **เหตุการณ์ rollup** ตาม `PHC_POST_001` / `PHC_POST_002`:
+Submit สุดท้ายคือ **rollup event** ตาม `PHC_POST_001`–`003`:
 
-- บรรทัดที่ `diff_qty > 0` จัดกลุ่มเป็นเอกสาร `tb_stock_in` หนึ่งฉบับขึ้นไปภายใต้ reason `COUNT_OVERAGE`
-- บรรทัดที่ `diff_qty < 0` จัดกลุ่มเป็นเอกสาร `tb_stock_out` หนึ่งฉบับขึ้นไปภายใต้ reason `COUNT_SHORTAGE`
+- บรรทัดที่ `diff_qty > 0` จัดกลุ่มเข้า `tb_stock_in` ใหม่ **หนึ่งฉบับ** ถูก insert ตรงที่ `doc_status = completed`
+- บรรทัดที่ `diff_qty < 0` จัดกลุ่มเข้า `tb_stock_out` ใหม่ **หนึ่งฉบับ** ถูก insert ตรงที่ `doc_status = completed`
 - บรรทัดที่ `diff_qty = 0` ไม่สร้าง rollup row
-- เอกสาร rollup แต่ละฉบับพกพา `info.countId = <tb_physical_count.id>` สำหรับการ join ย้อนกลับ
-- การ post adjustment (ตาม [inventory-adjustment/03-user-flow](/th/inventory/inventory-adjustment/03-user-flow)) เขียน inventory transaction และ GL entry; เอกสาร count ไม่เขียนลง ledger โดยตรง
-
-> **TODO:** เขียน convention การกำหนดหมายเลขเอกสาร rollup (ว่าหนึ่ง rollup ต่อ location, หนึ่ง rollup ต่อ reason, หรือหนึ่ง rollup ต่อบรรทัด) เมื่อยืนยัน logic frontend
+- ทั้ง header ที่สร้างขึ้นและบรรทัด detail ใดไม่ถูกเชื่อมกลับไปยังการนับต้นทางด้วยฟิลด์ structured ใด ๆ — มีเพียงข้อความ description ที่ใช้ร่วมกัน
+- **ไม่มี row `tb_inventory_transaction` ถูกเขียนโดย action นี้** — เอกสาร rollup มีอยู่เพียงเป็นบันทึกเท่านั้น มันไม่ได้เคลื่อนย้าย on-hand balance ด้วยตัวเอง
 
 ## 3. ไฟล์ Persona
 
-แต่ละไฟล์อธิบายเส้นทางของหนึ่งกลุ่ม persona ผ่านวงจรชีวิตข้างต้น สามกลุ่มยุบจากสี่ persona canonical ใน [physical-count](/th/inventory/physical-count) § 4:
+ทั้งสองไฟล์ด้านล่างอธิบาย **role ที่ gate ด้วย permission เดียวกันตัวเดียว** แบ่งตามหน้าจอที่กำลังใช้:
 
-- **[Count Lead](/th/inventory/physical-count/03-user-flow-count-lead)** — Inventory Controller / Inventory Manager: จัดตารางการดำเนินการ ตั้งค่าขอบเขต มอบหมาย counter ติดตามความคืบหน้า แก้ไขข้อขัดแย้ง อนุมัติ recount, trigger rollup
-- **[Counter](/th/inventory/physical-count/03-user-flow-counter)** — Counter / Store Keeper: ทำการนับใน zone ที่ได้รับมอบหมาย บันทึกปริมาณ flag รายการเสียหาย / ไม่คุ้นเคย เซ็นปิด sheet ที่เสร็จ
-- **[Audit / Config](/th/inventory/physical-count/03-user-flow-audit-config)** — Approver / Finance Reviewer + Auditor + Sysadmin: review การนับที่เสร็จและ rollup adjustment ตรวจสอบความสมเหตุสมผลของ variance เซ็นปิดผลกระทบทางการเงิน; Auditor ตรวจ chain; Sysadmin ตั้งค่า default ของ tolerance / costing-method
+- **[หน้ารายการ](/th/inventory/physical-count/03-user-flow-count-lead)** — การเปิดรายการสถานที่ของงวดปัจจุบัน เริ่มหรือทำต่อการนับ
+- **[หน้า Entry / Review](/th/inventory/physical-count/03-user-flow-counter)** — ป้อนบรรทัด, note, import/export, Submit for Review และ Submit สุดท้าย
 
-## 4. Handoff ข้าม Persona
+## 4. กลุ่ม Persona ที่ยืนยันแล้วว่าไม่มีอยู่จริง
 
-| From persona | Trigger | To persona | Handoff artefact |
-| ------------ | ------- | ---------- | ---------------- |
-| Count Lead | สร้าง count sheet + มอบหมาย zone | Counter | `tb_physical_count` เป็น `pending`; counter zone-grant |
-| Counter | ทำ zone ของตนเสร็จ | Count Lead | บรรทัด `tb_physical_count_detail` ของ zone มี `actual_qty` ไม่เป็น null |
-| Count Lead | flag บรรทัด variance ให้ recount | Counter (คนละคนกับคนนับเดิม) | Detail-comment พร้อม tag recount-required |
-| Count Lead | submit การนับ | ระบบ → rollup → [inventory-adjustment](/th/inventory/inventory-adjustment) | `tb_physical_count.status = completed`; rollup `tb_stock_in` / `tb_stock_out` สร้าง |
-| Count Lead | route rollup adjustment ไปอนุมัติ | Audit / Config (Approver / Finance) | `tb_stock_in` / `tb_stock_out` เป็น `in_progress` |
-| Approver / Finance | อนุมัติ rollup adjustment | ระบบ → ledger ของ [inventory](/th/inventory/inventory) | `tb_stock_in` / `tb_stock_out` เป็น `completed`; เขียน `tb_inventory_transaction` |
-| Auditor | review การนับที่เสร็จ + adjustment ที่ post | (read-only — terminal) | chain ทั้งหมดอ่านได้: count sheet, บันทึก recount, การอนุมัติ, adjustment ที่ post, journal entry |
-
-> **TODO:** วาด handoff นี้เป็น diagram เมื่อ convention Mermaid / sequence-diagram สำหรับวิกิถูกกำหนด Cross-link ไป [inventory-adjustment/03-user-flow](/th/inventory/inventory-adjustment/03-user-flow) สำหรับ flow ฝั่ง rollup
+Draft ก่อนหน้าของโมดูลวิกินี้อธิบายกลุ่ม persona ที่สาม — Approver/Finance Reviewer, Auditor และ Sysadmin — ที่ review rollup adjustment, ตรวจ audit chain และตั้งค่า default ของ tolerance/costing-method การค้นแบบตรงเป้าหมายในทั้ง frontend, backend และ Bruno collection ไม่พบ permission key, route, workflow stage หรือหน้าจอ configuration ใดที่ตรงกับสิ่งเหล่านี้ ดู [03-user-flow-audit-config.md](/th/inventory/physical-count/03-user-flow-audit-config) สำหรับบันทึก correction
 
 ## 5. แหล่งอ้างอิง
 
-- **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
-- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — source ของ UI flow
-- **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count
-- หน้า flow ที่เกี่ยวข้อง: [inventory-adjustment/03-user-flow](/th/inventory/inventory-adjustment/03-user-flow) (flow ฝั่ง rollup), [spot-check](/th/inventory/spot-check) (flow ลูกพี่ลูกน้องการนับบางส่วน)
+- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/physical-count/` (`pc-component.tsx`, `pc-entry-component.tsx`, `pc-review-component.tsx`)
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts`, `.../physical-count-period/physical-count-period.service.ts`
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count
+- Flow ที่เกี่ยวข้อง: [inventory-adjustment/03-user-flow](/th/inventory/inventory-adjustment/03-user-flow) (โมดูลที่ rollup เขียนเข้า), [spot-check](/th/inventory/spot-check) (flow ลูกพี่ลูกน้องการนับบางส่วน)

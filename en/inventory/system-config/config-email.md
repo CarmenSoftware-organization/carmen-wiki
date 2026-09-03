@@ -1,8 +1,8 @@
 ---
 title: Email Configuration
-description: SMTP / sender / template configuration for outbound system email — workflow notifications, scheduled report delivery, password reset.
+description: SMTP / sender / template configuration for outbound system email — workflow notifications, scheduled report delivery, password reset. The endpoint has no backend permission guard beyond authentication; "Sysadmin only" is a frontend-navigation convention, not an enforced access control.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-16T00:00:00.000Z
 tags: system-config, email, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # Email Configuration
 
 > **At a Glance**
-> **Owner:** Sysadmin only &nbsp;·&nbsp; **Storage:** `tb_application_config` row (`key = "report_email"`) &nbsp;·&nbsp; **Used by:** `micro-notification`, scheduled reports, password reset, audit alerts &nbsp;·&nbsp; **One SMTP profile per BU; SMTP password encrypted at rest.**
+> **Owner:** Sysadmin only by frontend convention — **no backend permission guard confirmed** &nbsp;·&nbsp; **Storage:** `tb_application_config` row (`key = "report_email"`) &nbsp;·&nbsp; **Used by:** `micro-notification`, scheduled reports, password reset, audit alerts &nbsp;·&nbsp; **One SMTP profile per BU; SMTP password encrypted at rest.**
 
 ![Email Configuration screen](/screenshots/system-config/config-email.png)
 
@@ -19,7 +19,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 Email Configuration is the **per-BU SMTP profile** Carmen uses for every outbound email — workflow notifications (PR / PO / GRN / SR approvals, sendbacks, rejections), scheduled report delivery, password-reset notices, and ad-hoc test emails. There is no dedicated table: the SMTP host, port, credentials, default-from, default-to / CC, and subject prefix all live as a **single JSON blob** in `tb_application_config` under the key `report_email`.
 
-**Audience:** Sysadmin only (App ID `app-config.upsert`). No separate email-template table exists — bodies are built by `micro-notification` from per-notification-type templates; only `subject_prefix` (default `[Carmen]`) is user-tunable in the subject line.
+**Audience:** intended as Sysadmin only, but **`config_app-config.controller.ts` carries no `AppIdGuard`/`RequirePlatformPermission` on any route** — only the class-level `KeycloakGuard` (authentication) and a valid-`x-app-id`-header check apply. The "App ID `app-config.upsert`" gate described below is **not implemented in the backend**; enforcement, if any, is frontend navigation only (the route sits under `/system-admin`, which non-admin nav doesn't surface, but the API itself does not check for it). See [system-config/application-config](/en/inventory/system-config/application-config) for the module-wide version of this finding. No separate email-template table exists — bodies are built by `micro-notification` from per-notification-type templates; only `subject_prefix` (default `[Carmen]`) is user-tunable in the subject line.
 
 ## 2. Common Tasks
 
@@ -40,7 +40,7 @@ Email Configuration is the **per-BU SMTP profile** Carmen uses for every outboun
 | "Recipient is not a valid email" | Bad address in `recipients` or `cc` | Fix the comma-separated list |
 | Test email succeeds in form but no mail arrives | Form draft not saved — Test uses the saved value | Click **Save** first, then **Test Email** |
 | All notifications silent in production | `smtp.enabled = false` accidentally left set | Re-enable on the form and Save |
-| 403 on save / load | User lacks `app-config.upsert` (Sysadmin only) | Grant via [access-control/application-role](/en/inventory/access-control/application-role) |
+| Any authenticated user can load/save this config, not just Sysadmin | Confirmed gap — no permission guard on `config_app-config.controller.ts` | Flagged for follow-up; do not assume a 403 protects this endpoint today |
 | Password field shows `***ENCRYPTED***` | Expected — masked on read so ciphertext never reaches the browser | Leave as-is to keep current password; type new to rotate |
 
 ## 4. Edge Cases
@@ -85,7 +85,7 @@ Source: tenant schema. **No dedicated `tb_email_config`** — the entire profile
 
 ## 6. Business Rules
 
-- **Sysadmin-only.** Read and write gated by App ID `app-config.upsert`.
+- **Sysadmin-only by convention, not by enforcement.** No `AppIdGuard`/`RequirePlatformPermission` was found on `config_app-config.controller.ts` — any authenticated caller with a valid `x-app-id` can read and write this key today.
 - **Password encryption + masking.** Encrypted via `encryptSecret`; replaced with `***ENCRYPTED***` on read. Unchanged masked value means "leave as-is".
 - **Zod validation on write.** Host, port (1–65535), username, password, from, enabled all required by `ReportEmailSchema`; `recipients` / `cc` must be valid emails.
 - **`enabled` kill-switch.** When `false`, the notification service short-circuits before opening a connection — workflow still progresses, no email leaves.
@@ -104,9 +104,9 @@ Source: tenant schema. **No dedicated `tb_email_config`** — the entire profile
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_application_config` (lines ~4910-4924).
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_application_config` (lines ~5287-5301).
 - **Backend service:** `../carmen-turborepo-backend-v2/apps/micro-business/src/app-config/app-config.service.ts` — `ReportEmailSchema`, `encryptSensitiveFields`, `maskSensitiveFields`, `getReportEmailForSend`, `testEmail`.
-- **Backend gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_app-config/config_app-config.controller.ts`.
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/config-email/page.tsx` and `_components/config-email-component.tsx`.
+- **Backend gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_app-config/config_app-config.controller.ts` — confirmed only `KeycloakGuard`, no `AppIdGuard`.
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/config-email/config-email.route.tsx` + `config-email-component.tsx`.
 - **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-app-config.ts` — `useAppConfigByKey('report_email')`, `useUpsertAppConfig`, `useTestEmail`.
 - **Notification consumer:** `micro-notification` reads via TCP from `getReportEmailForSend`.

@@ -2,7 +2,7 @@
 title: Credit Note Reason
 description: Coded reasons for credit notes raised against GRN — supports the return-to-vendor and price-correction flows.
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T21:47:09.000Z
 tags: master-data, credit-note-reason, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -36,7 +36,7 @@ The entity is a **flat lookup** — reason logic (return-to-stock vs. write-off)
 |---|---|---|
 | "Name already in use" | Duplicate `name` on a non-deleted row | Pick a different name or restore the existing row |
 | "Name required" | Empty `name` | Add a display name |
-| "Cannot delete — referenced by credit notes" | At least one CN points to this reason | Soft-delete only if "Unknown reason" rendering is acceptable; otherwise keep |
+| **Unconfirmed** — no delete guard found | `credit-note-reason.service.ts`'s `delete()` is an unconditional soft-delete with no check for existing credit-note references | A prior version of this page asserted "cannot delete — referenced by credit notes" as an enforced error; treat it as **not enforced** until re-verified — soft-deleting a reason still in use will currently succeed, and since the reason has no `is_active` flag, this is also the only "retire" path |
 | Reason shows blank on a CN | Hard-delete somehow succeeded (data fix only) | Restore or backfill via lookup |
 
 ## 4. Edge Cases
@@ -62,6 +62,7 @@ Source: tenant schema.
 | `description` | `String? @db.VarChar` | Yes | Free text. |
 | `note` | `String? @db.VarChar` | Yes | Internal note. |
 | `info`, `dimension` | `Json?` | Yes | Standard metadata. |
+| `doc_version` | `Int` | No | Optimistic-lock version (default `0`). |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |
 
 **Constraints:** `@@unique([name, deleted_at])` map `creditnotereason_name_u`. Index on `name`. Reverse relation to `tb_credit_note`. Note: no `is_active` column.
@@ -69,7 +70,7 @@ Source: tenant schema.
 ## 6. Business Rules
 
 - **Uniqueness.** `name` unique among non-deleted rows (DB-enforced).
-- **Deletion guards.** A reason referenced by any credit note cannot be hard-deleted. Soft-delete if no historical CNs reference it.
+- **Deletion guards — unconfirmed.** No reference check was found in `delete()`; soft-delete succeeds unconditionally even with credit-note references.
 - **Validation.** `name` required.
 - **Lifecycle.** No `is_active`; soft-delete is the retirement path. Historical CNs keep the FK and resolve the name even on a soft-deleted row.
 - **Translation.** Reasons may face vendors — keep translations in `info` until a localisation table is introduced.
@@ -81,5 +82,6 @@ Source: tenant schema.
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_credit_note_reason` (lines ~299-319); used by `tb_credit_note` (lines ~321-…).
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/credit-note-reason/`.
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_credit_note_reason` (lines ~303-324).
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/procurement/credit-note-reason/credit-note-reason.service.ts` (lives under `procurement`, not `master`, in the backend's own module layout).
+- **Frontend:** `../carmen-inventory-frontend-react/routes/config/credit-note-reason/`.

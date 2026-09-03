@@ -2,7 +2,7 @@
 title: Purchase Request — Test Scenarios — Requestor
 description: Requestor's test cases (happy path, permission, validation, edge cases) for purchase-request.
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-07-29T05:18:05.000Z
 tags: purchase-request, test-scenarios, requestor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -35,7 +35,7 @@ This page captures the test scenarios that the Requestor persona directly drives
 | # | Scenario | Expected behaviour (allow/deny + reason) |
 | - | -------- | --------------------------------------- |
 | REQ-PERM-01 | Requestor opens a PR they own (`requestor_id == auth.user.id`) in `pr_status = draft` | **Allow** read and edit. `PR_AUTH_001` grants the owner exclusive edit rights while the PR is `draft`. |
-| REQ-PERM-02 | Requestor opens a PR owned by another user in `pr_status = draft` | **Deny edit, read-only** (no Edit / Delete / Submit toolbar). `PR_AUTH_001` reserves edit to the owner or an explicit delegate. List visibility itself depends on the **All Documents** / department-wide grant; if the PR is outside the Requestor's department it does not appear on the list at all. |
+| REQ-PERM-02 | Requestor opens a PR owned by another user in `pr_status = draft` | **Deny edit, read-only** (no Edit / Delete / Submit toolbar). `PR_AUTH_001` reserves edit to the owner. *(An earlier revision also carved out "an explicit delegate" — unconfirmed, no delegation mechanism found; see `PR_AUTH_006`.)* List visibility itself depends on the **All Documents** / department-wide grant; if the PR is outside the Requestor's department it does not appear on the list at all. |
 | REQ-PERM-03 | Requestor edits their own draft (header description and one line qty) | **Allow.** `PR_AUTH_001` is satisfied; `doc_version` increments on save per `PR_VAL_016`. |
 | REQ-PERM-04 | Requestor tries to edit their own PR after submit (`pr_status = in_progress`) | **Deny.** State-machine lock — edit controls are read-only. The only way back to edit is for an approver to **Send Back** the PR to `draft`. |
 | REQ-PERM-05 | Requestor cancels / deletes their own `draft` PR | **Allow.** Owner-only action on a not-yet-submitted document; no workflow stage was advanced, no soft commitment to release. |

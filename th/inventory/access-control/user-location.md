@@ -2,7 +2,7 @@
 title: location ของผู้ใช้ (User Location)
 description: Scope ของ location ต่อผู้ใช้ภายใน tenant — จำกัด user ให้อยู่ใน subset ของ location สต๊อกสำหรับการออก count และ adjustment
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T23:46:09.000Z
 tags: access-control, user-location, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -25,10 +25,10 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
-| มอบหมาย user ให้ location | User-edit → tab **Locations** → Add | เลือก location จากแคตตาล็อก BU |
-| Reassign storekeeper | Soft-delete row เก่า + insert ใหม่ | เอกสารที่เปิดยังทำงาน (FK target `tb_location`) |
-| ดู effective scope ของ user | User-edit → tab **Locations** | แสดงการมอบหมายที่ active ปัจจุบัน |
-| ลบ scope ทั้งหมด (full access) | Soft-delete ทุก row | ชุดว่าง = "ไม่มีข้อจำกัด" ตามข้อตกลง |
+| มอบหมาย user ให้ location | หน้าจอ User Assign (`/system-admin/user/:id`) → ส่วน **Locations** → Transfer control (`user-assigned-locations.tsx`) | ย้ายแบบสองแผง "Available Locations" / "Assigned Locations" ไม่ใช่แท็บ ไม่ใช่ปุ่ม Add เดี่ยว |
+| Reassign storekeeper | Transfer control ของ Locations: ย้ายออก, ย้ายเข้า → Save | เอกสารที่เปิดยังทำงาน (FK target `tb_location`) |
+| ดู effective scope ของ user | หน้าจอเดียวกัน โหมดดู | Location จัดกลุ่มตามประเภท (`Inventory` / `Direct` / `Consignment` จาก `constant/location.ts` `INVENTORY_TYPE`) พร้อม filter chip ต่อประเภท |
+| ลบ scope ทั้งหมด (full access) | ย้าย location ทุกตัวกลับ Available แล้ว Save | ชุดว่าง = "ไม่มีข้อจำกัด" ตามข้อตกลง (ยืนยันกับ service code ก่อนพึ่งพาสิ่งนี้ในเส้นทางที่ sensitive) |
 | ตรวจสอบการเปลี่ยน scope | [reporting-audit/activity](/th/inventory/reporting-audit/activity) log | Filter โดย `entity_type = user_location` |
 
 ## 3. การตรวจสอบและ Error
@@ -62,6 +62,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | `location_id` | `String @db.Uuid` | No | FK ไปยัง tenant `tb_location` |
 | `note` | `String? @db.VarChar` | Yes | บริบทการมอบหมาย |
 | `info` | `Json? @db.JsonB` | Yes | Default `{}` Metadata ที่สงวนไว้ |
+| `doc_version` | `Int` | No | Default `0` Optimistic-lock version |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*` |
 
 **Constraints:** `@@unique([user_id, location_id, deleted_at])` Index บน `(user_id, location_id)` FK ไปยัง `tb_location` `onDelete: NoAction` `user_id` บังคับฝั่งแอปพลิเคชัน
@@ -85,5 +86,5 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_user_location` (lines ~4451-4470)
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/user-role/` — tab Locations
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_user_location` (บรรทัด 4821)
+- **Frontend:** `../carmen-inventory-frontend-react/routes/system-admin/user/user-assigned-locations.tsx` — ส่วน Locations ของหน้าจอ User Assign (`/system-admin/user/:id`) render โดย `user-assigned-form.tsx` ไม่ใช่แท็บ และไม่ใช่ส่วนหนึ่งของ route "user-role"

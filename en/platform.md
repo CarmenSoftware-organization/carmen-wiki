@@ -2,7 +2,7 @@
 title: Carmen Platform
 description: Overview of the Carmen Platform admin product — entry point for the book.
 published: true
-date: 2026-06-10T14:30:00.000Z
+date: 2026-07-29T09:46:00.000Z
 tags: book/platform, home
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -39,6 +39,7 @@ Reference manual for developers and support engineers working on the Carmen Plat
 | Module | What it covers |
 |---|---|
 | [Applications](/en/platform/applications) | Registered API clients, their `x-app-id` identity, and `api_name` access grants |
+| [SQL Workbench](/en/platform/sql-workbench) | Per-tenant SQL console — browse/run/save/drop views, procedures, and functions against a business unit's database |
 
 ## 5. Reporting
 
@@ -47,10 +48,12 @@ Reference manual for developers and support engineers working on the Carmen Plat
 | [Report Templates](/en/platform/report-templates) | XML report template catalogue with tabbed editor and per-BU scoping |
 | [Print Template Mapping](/en/platform/print-template-mapping) | Routing document types (PR, PO, GRN, …) to FastReport print templates |
 
-## 6. Product
+## 6. Product & Shell
 
 | Module | What it covers |
 |---|---|
+| [Landing](/en/platform/landing) | Public marketing page at `/` — redirects an authenticated session straight to Dashboard |
+| [Dashboard](/en/platform/dashboard) | Signed-in home hub — merged recent-activity stream + per-domain active/total counts |
 | [Changelog](/en/platform/changelog) | Versioned, public release history + version badge |
 
 ## 7. How to use this book

@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — User Flow
 description: วงจรชีวิตของเอกสารและไฟล์ flow แยกตาม persona สำหรับโมดูล purchase-request
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-07-29T05:18:05.000Z
 tags: purchase-request, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -66,7 +66,7 @@ stateDiagram-v2
 - [Approver](./03-user-flow-approver.md) — สายอนุมัติหลายระดับ (Department Head, Budget Controller, Finance Officer / Manager) พร้อม action approve / send-back / reject / split-reject ในแต่ละ stage
 - [Purchaser](./03-user-flow-purchaser.md) — รับ PR ที่อนุมัติแล้ว ตรวจสอบการจัดสรรผู้ขายและราคา แล้วแปลงเป็นใบสั่งซื้อ
 - [Procurement Manager](./03-user-flow-procurement-manager.md) — กำกับฟังก์ชัน procurement, อนุมัติ PR มูลค่าสูงหรือที่ถูก escalate, ปรับ vendor ranking และกฎ Allocate Vendor
-- [Audit / Config](./03-user-flow-audit-config.md) — Auditor (review PR และ activity log แบบอ่านอย่างเดียว) และ System Administrator (ตั้งค่า stage ของ workflow, threshold, กฎ delegation)
+- [Audit / Config](./03-user-flow-audit-config.md) — Auditor (review PR และ activity log แบบอ่านอย่างเดียว) และ System Administrator (ตั้งค่า stage ของ workflow, กฎ routing ตาม amount threshold; กฎ delegation ยังไม่ยืนยัน — ไม่พบกลไกที่ตรงกัน ดู `PR_AUTH_006`)
 
 ## 4. Handoff ข้าม Persona
 

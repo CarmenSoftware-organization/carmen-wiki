@@ -1,8 +1,8 @@
 ---
 title: กำหนดการรายงาน (Report Schedule)
-description: ตารางเวลาขับโดย cron สำหรับการสร้างรายงานเกิดซ้ำ — fire การรันตาม cadence และส่ง output ไปยังผู้รับที่ตั้งค่า
+description: กำหนดการรายงานเกิดซ้ำ — หน้าจอที่ทำได้เพียง สร้าง/รายการ/ลบ เท่านั้น อยู่เบื้องหลังด้วยตาราง cron-job แบบ generic ใน service micro-cronjobs แยกต่างหาก ไม่ใช่ tb_report_schedule ของ tenant schema (ซึ่งไม่มีการอ้างอิงจากโค้ดเลย)
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-22T00:00:00.000Z
 tags: reporting-audit, schedule, automation, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,96 +11,111 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # กำหนดการรายงาน (Report Schedule)
 
 > **At a Glance**
-> **เจ้าของ:** Sysadmin / schedule-admin &nbsp;·&nbsp; **ตาราง:** `tb_report_schedule` &nbsp;·&nbsp; **Retention:** ไม่จำกัด (soft-delete เท่านั้น); artefact หมดอายุผ่าน [reporting-audit/history](/th/inventory/reporting-audit/history) &nbsp;·&nbsp; **ใช้โดย:** poller ของ `micro-cronjobs` &nbsp;·&nbsp; **จับคู่ template ของรายงานกับ cron expression, ชุด filter แบบ frozen และรายการการส่ง**
+> **Route:** `/report/schedules` &nbsp;·&nbsp; **เจ้าของ:** ผู้ใช้ที่ authenticate แล้วคนใดก็ได้ที่มี BU context — ไม่พบ gate เฉพาะ schedule-admin &nbsp;·&nbsp; **ที่เก็บจริง:** ตาราง `"CRONJOBS"."Cronjob"` ใน service **micro-cronjobs** แยกต่างหาก, `job_type = "report"` &nbsp;·&nbsp; **หน้าจอ:** รายการ + dialog สร้าง + ลบ เท่านั้น — ไม่มีหน้ารายละเอียด, ไม่มีการแก้ไข, ไม่มี pause toggle, ไม่มี test-run &nbsp;·&nbsp; `tb_report_schedule` ของ tenant schema มี **การอ้างอิงจากโค้ดเป็นศูนย์**
 
 ![กำหนดการรายงาน (Report Schedule) screen](/screenshots/reporting-audit/schedule.png)
 
+## สถานะการทำงานจริง (ตรวจสอบเมื่อ 2026-07-22)
+
+หน้านี้ฉบับก่อนหน้าบันทึก `tb_report_schedule` (tenant schema) ว่าเป็นตารางที่เก็บ schedule จริง พร้อมหน้ารายละเอียดที่มี cron-expression builder, Active toggle, action Test Run และ recipients picker แบบมี type (`email`/`user`/`sftp`) การค้นหาโค้ดทั่ว `carmen-turborepo-backend-v2/apps` พบว่า **ไม่มีการอ้างอิง `tb_report_schedule` เลย** นอกเหนือจากการประกาศ Prisma model ของมันเอง — เป็นตารางที่ตายแล้ว รูปแบบเดียวกับที่ยืนยันแล้วสำหรับ `tb_attachment` และตระกูล `tb_widget_*` เดิม
+
+ที่เก็บจริงคือคอมเมนต์ในโค้ดของ `reports.service.ts` เอง: *"micro-report no longer owns schedules; they live in micro-cronjob as rows in the Cronjob table with `job_type="report"` and `source_service="micro-report"`."* `Cronjob` เป็นตาราง scheduler แบบ **generic** (ใช้ร่วมกับ `job_type = "notification"`, `"cleanup"`, `"dashboard_refresh"` ด้วย) อยู่ใน Postgres schema/database ของตัวเองแยกต่างหากทั้งหมดจาก tenant และ platform Prisma schema ทุกข้อกล่าวอ้างระดับ UI ด้านล่างถูกตรวจสอบเทียบกับ `schedule-component.tsx`, `create-schedule-dialog.tsx` และ hook `hooks/use-report-schedule.ts` — frontend **ไม่มีหน้ารายละเอียด, ไม่มี endpoint แก้ไข/อัปเดต, ไม่มี pause toggle และไม่มี test-run** เลย
+
 ## 1. ภาพรวมและผู้ใช้งาน
 
-Report Schedule กำหนด **เวลาที่รายงานจะรันและที่ที่ output ไป** แต่ละแถวผูก template ของรายงานกับ cron expression, ชุด filter แบบ frozen และรายการผู้รับ Service ของ cron poll schedule ที่ active, ล็อก slot การ fire ใน Redis และ enqueue job ของ [reporting-audit/history](/th/inventory/reporting-audit/history) ที่ `micro-report` execute แถว history คือ artefact ของบันทึก; แถว schedule คือคำจำกัดความ
+Report Schedule กำหนด **เวลาที่รายงานจะรันและใครได้รับแจ้งเตือน** หน้าจอที่ `/report/schedules` เป็นรายการแบบแบน (ชื่อ, ประเภทรายงาน, รูปแบบ, ความถี่, badge active, next/last run, ลบ) บวก dialog **Create Schedule** เดียว ไม่มีหน้ารายละเอียดจากการคลิกแถวและไม่มี update mutation ใน frontend — `useReportSchedules` (รายการ), `useCreateReportSchedule` (สร้าง) และ `useDeleteReportSchedule` (ลบ) คือสามการทำงานเดียวที่เชื่อมไว้
 
-**ผู้ใช้งาน:** **Sysadmin** (สร้าง / แก้ / ปิด), **Operations** (เปลี่ยนผู้รับ, ปรับ cron), **Auditor** (ตรวจสอบว่า daily export ยัง fire)
+Schedule ทุกตัวที่สร้างผ่าน UI ส่งมอบผ่าน **ลิงก์ viewer ไม่ใช่ไฟล์ที่ render แล้ว**: create dialog ตั้งค่าคงที่ `format: "viewer_url"` และ `delivery: { type: "viewer_url", viewer_endpoint: ... }` ทุกครั้งที่ submit — ไม่มีตัวเลือกรูปแบบไฟล์ เมื่อ schedule fire, `ReportExecutor` ของ `micro-cronjobs` จะสร้าง viewer URL ใหม่ (`POST .../report/viewer`) แล้วส่งไปยังผู้รับที่เลือกเป็นการแจ้งเตือน in-app/email (`POST .../api/internal/notifications`) — **ไม่** render หรือแนบไฟล์ PDF/Excel/CSV เส้นทางการส่งมอบแบบ "file" (legacy) มีอยู่จริงใน executor (เรียก `generate-async` ของ micro-report) แต่ไม่มี UI ปัจจุบันเข้าถึงได้ เพราะไม่มีที่ไหนตั้ง `delivery.type` เป็นอย่างอื่นนอกจาก `"viewer_url"`
+
+**กลุ่มผู้ใช้:** ผู้ใช้ที่ authenticate แล้วและมี BU context คนใดก็ได้สามารถสร้างและลบ schedule ของตนเองผ่านหน้าจอนี้ — ไม่พบสิทธิ์ schedule-admin ที่แยกออกมาบน endpoint schedule ของ `reports.controller.ts` (มี `KeycloakGuard` + header `X-App-Id` เหมือน endpoint report อื่น ๆ ไม่ใช่ role check ที่แคบกว่า)
 
 ## 2. งานที่พบบ่อย
 
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
-| Pause schedule | Reports → Schedules → แถว → **Active toggle off** | ตั้ง `is_active = false`; แถวคงไว้, การ poll ถูกระงับ |
-| เปลี่ยน cron expression | หน้ารายละเอียด → **Cron builder** | คำนวณ `next_run_at` ใหม่จากตอนนี้ |
-| อัปเดตผู้รับ | หน้ารายละเอียด → **Recipients picker** | รายการแบบมี type: `email` / `user` / `sftp` |
-| ทดสอบ schedule โดยไม่ต้องรอ | หน้ารายละเอียด → **Test Run** | enqueue job ครั้งเดียวด้วย parameter เดียวกัน |
-| ดูผลการ fire ล่าสุด | รายการ → คอลัมน์ **Last status** | สะท้อนแถว [reporting-audit/history](/th/inventory/reporting-audit/history) ล่าสุด |
-| ดูเวลา fire ครั้งหน้า | รายการ → **Next-run countdown** | สดจาก `next_run_at` |
-| ลบ schedule | หน้ารายละเอียด → **Delete** | soft-delete ผ่าน `deleted_at`; scheduler ละเว้น |
-| มี cadence สองชุดจาก template เดียว | สร้าง schedule ที่สองด้วย `report_type` เดียวกัน | ไม่มี uniqueness บน `(report_type, cron_expression)` — โดยตั้งใจ |
+| สร้าง schedule | `/report/schedules` → **Create Schedule** | เลือก report template, ความถี่ (รายวัน/รายสัปดาห์/รายเดือน) + เวลา, filter เฉพาะ template แบบเลือกได้, ช่องทางแจ้งเตือน (checkbox web/email) และผู้รับ (multi-select ของผู้ใช้) |
+| ตั้งความถี่ | Create dialog → select **Frequency** + ตัวเลือกเวลา | รายสัปดาห์เพิ่ม multi-toggle จันทร์–อาทิตย์; รายเดือนเพิ่ม multi-toggle 1–31 **ไม่มีช่อง cron expression ดิบ** ใน UI — backend derive `cron_expression` จาก `schedule_config` เมื่อไม่ได้ส่งมา |
+| เลือกผู้รับ | Create dialog → **Recipients** | checkbox multi-select บน `useAllUsers()` — user ID ธรรมดา ไม่ใช่ entry แบบมี type `email`/`user`/`sftp` |
+| ดูการ fire ล่าสุด/ครั้งหน้า | รายการ → คอลัมน์ **Last Run** / **Next Run** | เติมจาก `lastRunAt`/`nextRunAt` ของแถว `Cronjob` |
+| ลบ schedule | รายการ → ไอคอน trash บนแถว | dialog ยืนยัน แล้วตามด้วย `DELETE .../schedules/:id` |
+| **ไม่มีใน UI เลย** | — | การแก้ไข schedule ที่มีอยู่, pause/reactivate (`is_active` แสดงผลอย่างเดียว), cron-expression builder และการ "run now" แบบ manual |
 
 ## 3. คำถามที่พบบ่อย
 
 | อาการ / คำถาม | สาเหตุ / คำตอบ | การจัดการ |
 |---|---|---|
-| Schedule ไม่ fire | `is_active = false`, `deleted_at` ถูกตั้ง หรือ cron expression ผิด | toggle active + ตรวจสอบ cron ใน builder |
-| มี scheduler สอง replica — จะ fire สองครั้งไหม? | ไม่ — Redis lock บน `(schedule_id, fire_timestamp)` รับประกัน enqueue ครั้งเดียว | — |
-| จะเกิดอะไรถ้าเรา down ตอนที่มี slot ขาด? | `schedule_config.misfire_policy`: `fire_once` (default), `skip` หรือ `fire_all` | tenant ที่ down นานควรใช้ `skip` |
-| Cron รันใน timezone ไหน? | `schedule_config.timezone` (โดยทั่วไป `Asia/Bangkok`); fall back เป็น UTC ถ้าไม่มี | ตั้งตอนสร้าง |
-| Output ไปลงที่ไหน? | `file_url` ของแถว history + ส่งไปยังแต่ละ entry ใน `recipients` | ดู [reporting-audit/history](/th/inventory/reporting-audit/history) |
-| ทำไมผู้รับถูกข้าม? | `type` ไม่รู้จักใน object ของผู้รับ | warning เขียนใน `error_message` ของแถว job |
-| ใครสร้าง schedule ได้? | สิทธิ์ schedule-admin (Sysadmin ถือโดยอัตโนมัติ) | grant ผ่าน [access-control/permission](/th/inventory/access-control/permission) |
+| ทำไมแก้ไข schedule ไม่ได้? | ไม่มี update endpoint เปิดไว้โดย `reports.controller.ts` — มีแค่สร้าง, รายการ และลบ | ลบแล้วสร้างใหม่ |
+| ทำไม pause schedule ไม่ได้? | ไม่มี toggle mutation ใน frontend เลย; badge Active เป็นการแสดงผลอย่างเดียว | ลบถ้าไม่ต้องการให้ fire อีก |
+| ทำไมรายงานที่ fire มาถึงเป็นลิงก์เสมอ ไม่ใช่ไฟล์? | create dialog ส่ง `format: "viewer_url"` เสมอ — เส้นทางการส่งมอบแบบ "file" (render PDF/Excel/CSV) มีอยู่ใน executor แต่ไม่มีที่ไหนใน UI เลือกได้ | เปิดลิงก์ viewer; ดาวน์โหลดจากที่นั่นถ้า viewer รองรับ |
+| ถ้ามี scheduler สองตัวรันพร้อมกันจะเกิดอะไร? | scheduler ของ `micro-cronjobs` ใช้ Redis lock แบบ `SET NX` (key `cronjob:lock:<job-id>`, TTL 5 นาที) ต่อการ execute หนึ่งครั้งผ่าน distributed locker ของ `go-cron` — execute ครั้งเดียวแน่นอนข้าม replica | — |
+| Schedule รันใน timezone ไหน? | `time.Location` ของ process scheduler เอง (default `time.Local` ถ้าไม่ตั้ง) — **ไม่มีฟิลด์ timezone ต่อ schedule** บน model `Cronjob` | ยืนยัน timezone ที่ตั้งค่าของ process scheduler กับทีม Ops แทนการสันนิษฐานว่าควบคุมได้ต่อ schedule |
+| การ fire ที่พลาด (downtime) ถูกตามให้ทันไหม? | ไม่มีฟิลด์ misfire-policy บน model `Cronjob` — `go-cron` เพียงกลับมา poll ต่อเมื่อ restart; ไม่พบการตั้งค่า catch-up/skip | — |
+| ใครสร้าง schedule ได้? | ผู้ใช้ที่ authenticate แล้วใน BU context คนใดก็ได้ — ไม่พบ gate schedule-admin ที่แยกออกมา | — |
 
 ## 4. กรณีพิเศษ
 
-- **Idempotency** Redis lock ต่อ `(schedule_id, fire_timestamp)`; scheduler ตัวที่สองที่ race เข้ามาคือ no-op Job ที่ enqueue carry `options.schedule_id` และ `options.scheduled_fire_at` สำหรับ traceability
-- **Semantic ของ soft-delete** การ poll ของ scheduler กรอง `is_active = true AND deleted_at IS NULL AND next_run_at <= now()` แถวที่ soft-delete ถูกละเว้นตลอดไป
-- **การ reactivate** คำนวณ `next_run_at` ใหม่จาก cron กับเวลาปัจจุบัน — ไม่ back-fill slot ที่ขาด
-- **เขตเวลา** Cron ประเมินกับ `schedule_config.timezone` `last_run_at` / `next_run_at` เก็บ UTC
-- **RBAC ในการอ่าน** การเข้าถึงอ่านต้องมีสิทธิ์อ่านของ category รายงาน; edit / toggle ต้องมีสิทธิ์ schedule-admin
+- **`is_active` เป็น `true` เสมอตอนสร้างและไม่เคยถูก toggle** `createSchedule()` ของ `reports.service.ts` ตั้ง `is_active: true` แบบ hardcode ในทุก payload ที่ส่งไป `micro-cronjobs`; ไม่มีอะไรใน UI ที่เข้าถึงได้เปลี่ยนค่านี้เลย
+- **ผู้รับเป็น user ID ธรรมดา** array `recipients` เก็บ user UUID ที่เลือกจาก user picker มาตรฐาน — ไม่มี recipient type `email`/`sftp` ใน schema หรือ UI ปัจจุบันเลย แม้ type definition ใน `types/report-schedule.ts` จะยอมให้ค่า `ReportFormat` อื่นก็ตาม แต่ create flow ไม่เคยตั้งค่าเหล่านั้น
+- **Redis lock เป็นต่อการ execute job ไม่ใช่ต่อ `(schedule_id, fire_timestamp)`** `RedisLocker.Lock()` รับ argument `key` เดียว (identity ของ job ใน gocron) แล้วล็อกด้วย `SET NX` TTL 5 นาที — ไม่มีส่วนประกอบ fire-timestamp ใน lock key
+- **Cron expression เป็นค่าที่ derive มา ไม่ใช่เขียนเอง** เมื่อ frontend ไม่ส่ง `cron_expression`, `cronFromConfig()` ของ gateway จะ derive จาก `schedule_config.frequency`/`time`/`days_of_week`/`days_of_month` — เช่น `daily` → `mm hh * * *`
+- **Schedule แบบเกิดซ้ำไม่เคยเขียนเข้า `tb_report_job`** เพราะทุก schedule ส่งมอบผ่าน `viewer_url` (ดู §1) เส้นทางการ fire จึงไม่เคยสร้างแถว report-job — ดู [reporting-audit/history](/th/inventory/reporting-audit/history) สำหรับช่องว่างที่เกิดขึ้น
 
 ---
 
 ## 5. โมเดลข้อมูล (Dev)
 
-แหล่ง: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prisma`)
+แหล่ง: **Postgres schema ของ service `micro-cronjobs` เอง** (`"CRONJOBS"."Cronjob"`) — ไม่ใช่ tenant Prisma schema `tb_report_schedule` (tenant schema) แสดงไว้เพื่อเปรียบเทียบเท่านั้น — ตายแล้ว
 
-### 5.1 `tb_report_schedule`
+### 5.1 `Cronjob` (ตารางที่เก็บจริง, แถว `job_type = "report"`)
 
-| ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
-| --- | --- | --- | --- |
-| `id` | `String @db.Uuid` | No | Primary key |
-| `name` | `String @db.VarChar(255)` | No | ชื่อแสดงผล |
-| `report_type` | `String @db.VarChar(100)` | No | identifier ของรายงานเชิง logical (resolve `tb_report_template`) |
-| `report_template_id` | `String? @db.Uuid` | Yes | binding template แบบเลือกได้; มิฉะนั้น resolve ตาม `report_type` |
-| `format` | `enum_report_format` | No | `pdf` / `excel` / `csv` / `json` |
-| `cron_expression` | `String @db.VarChar(100)` | No | cron 5- หรือ 6-field มาตรฐาน |
-| `schedule_config` | `Json? @db.JsonB` | Yes | `{ timezone, jitter_seconds, misfire_policy }` |
-| `filters` | `Json? @db.JsonB` | Yes | Default `{}` ชุด filter ที่ใช้แต่ละการรัน |
-| `options` | `Json? @db.JsonB` | Yes | Default `{}` ตัวเลือกการ render |
-| `recipients` | `Json? @db.JsonB` | Yes | Default `[]` เป้าหมายการส่งแบบ typed |
-| `is_active` | `Boolean` | No | Default `true` ปิดโดยไม่ลบ |
-| `last_run_at`, `next_run_at` | `DateTime? @db.Timestamptz(6)` | Yes | คอลัมน์ health-check |
-| คอลัมน์ audit | — | Yes | `created_*`, `updated_*`, `deleted_*` |
+| ฟิลด์ (Go struct / DB column) | Type | คำอธิบาย |
+| --- | --- | --- |
+| `ID` / `id` | `uuid` | Primary key |
+| `Name` / `name` | `string` | ชื่อแสดงผล — `name` ของ schedule |
+| `Description` / `description` | `string?` | ตั้งอัตโนมัติเป็น `"Scheduled report: <report_type>"` |
+| `JobType` / `jobType` | `string` | `"report"` สำหรับ schedule ที่สร้างจากหน้าจอนี้; `"notification"` / `"cleanup"` / `"dashboard_refresh"` สำหรับผู้ใช้ cron รายอื่น |
+| `CronExpression` / `cronExpression` | `string` | cron มาตรฐาน ส่งมาตรง ๆ หรือ derive จาก `schedule_config` |
+| `JobConfig` / `jobData` | `jsonb` | `ReportJobConfig`: `template_id`, `bu_codes`, `format`, `filters`, `recipients`, `user_id`, `options`, `delivery`, `notifications` |
+| `SourceService` / `sourceService` | `string?` | `"micro-report"` สำหรับ schedule รายงาน |
+| `SourceID` / `sourceID` | `string?` | id ของ report template (หรือ `report_type` เป็น fallback) |
+| `IsActive` / `isActive` | `bool` | Default `true` เป็น `true` เสมอตอนสร้าง; ไม่มี UI path ใด toggle |
+| `LastRunAt` / `lastRunAt`, `NextRunAt` / `nextRunAt` | `timestamp?` | bookkeeping ของ scheduler |
+| `LastError` / `lastError` | `string?` | populate เมื่อ execute ล้มเหลว |
+| `RunCount` / `runCount` | `int` | Default `0` |
+| `MaxRetries` / `maxRetries`, `RetryCount` / `retryCount` | `int` | Default `0` retry แบบ exponential-backoff (`10s, 40s, 90s, …`) เมื่อ `MaxRetries > 0` |
+| `TimeoutSeconds` / `timeoutSeconds` | `int` | Default `300` |
+| คอลัมน์ audit | mixed | `createdAt`/`createdByID`, `updatedAt`/`updatedByID`, `deletedAt` (soft delete) |
 
-**Constraints:** index บน `is_active` (`idx_report_schedule_active`) ไม่มี uniqueness บน `(report_type, cron_expression)` — มีหลาย schedule ต่อ template โดยตั้งใจ
+**ตาราง:** `"CRONJOBS"."Cronjob"` (schema-qualified, ครอบด้วย double-quote เพื่อรักษา case — นี่คือ Postgres schema ที่แยกต่างหาก ไม่ใช่ฐานข้อมูล tenant หรือ platform)
+
+### 5.2 `ReportJobConfig` (รูปร่าง JSONB `jobData`/`JobConfig` สำหรับ `job_type = "report"`)
+
+`template_id`, `bu_codes: string[]`, `format`, `filters: map[string]string`, `recipients: string[]`, `user_id`, `options: map[string]any`, `delivery: { type, viewer_endpoint }`, `notifications: { web, email, mail_source }`
+
+### 5.3 `tb_report_schedule` (tenant schema — ตารางที่ตายแล้ว เก็บไว้เพื่อเปรียบเทียบ)
+
+`id` / `name` / `report_type` / `report_template_id` / `format` / `cron_expression` / `schedule_config` / `filters` / `options` / `recipients` / `is_active` / `last_run_at` / `next_run_at` / คอลัมน์ audit มีรูปร่างใกล้เคียงกับคู่ `Cronjob` + `ReportJobConfig` ที่แท้จริงข้างต้นมาก แต่ **ไม่พบการอ้างอิงจากโค้ดเลย** ทั่วทั้ง `carmen-turborepo-backend-v2/apps` หรือ `micro-report`/`micro-cronjobs`
 
 ## 6. กติกาทางธุรกิจ
 
-- **รูปแบบ cron** มาตรฐาน `minute hour day-of-month month day-of-week` ตัวอย่าง: `0 6 * * *` (รายวัน 06:00), `0 7 * * 1` (จันทร์ 07:00), `0 0 1 * *` (วันที่ 1 ของเดือน)
-- **Idempotency** Redis lock บน `(schedule_id, fire_timestamp)` รับประกัน enqueue ครั้งเดียวข้าม replica
-- **นโยบาย missed-fire** `fire_once` (default — fire ที่ poll ครั้งหน้า), `skip` (ทิ้งและขยับ) หรือ `fire_all` (ตามทุก slot ที่ขาด)
-- **Active flag** `is_active = false` ระงับการ poll โดยไม่ลบ; toggle on คำนวณ `next_run_at` ใหม่จากตอนนี้
-- **การ resolve ผู้รับ** object แบบ typed — `{type:"email",value:...}`, `{type:"user",value:<uuid>}`, `{type:"sftp",value:<config_id>}` Type ที่ไม่รู้จักถูกข้ามพร้อม warning
-- **RBAC ในการสร้าง** เฉพาะ grant ของ schedule-admin (Sysadmin โดยอัตโนมัติ) สร้าง / แก้ได้
-- **Retention** แถว schedule คงไว้ไม่จำกัด (soft-delete เท่านั้น); artefact หมดอายุตาม retention ของ [reporting-audit/history](/th/inventory/reporting-audit/history)
+- **`Cronjob` (micro-cronjobs) คือที่เก็บ schedule ที่แท้จริง; `tb_report_schedule` ตายแล้ว** ยืนยันโดยการค้นหาโค้ดทั่ว repo ทั้ง TypeScript และ Go
+- **Lifecycle เป็นเพียงสร้าง (create-only) จาก UI** ไม่มี update endpoint เปิดไว้เลยใน route schedule ของ `reports.controller.ts` — มีแค่ `POST /schedules` (สร้าง), `GET /schedules` (รายการ), `DELETE /schedules/:id` (ลบ)
+- **การส่งมอบเป็น `viewer_url` เสมอจากหน้าจอนี้** เส้นทางการ render ไฟล์แบบ legacy มีอยู่ใน executor แต่ create dialog ปัจจุบันเข้าไม่ถึง
+- **Redis-locked, execute ครั้งเดียวแน่นอน** distributed locker ของ `go-cron` + Redis key `SET NX` (`cronjob:lock:<job-id>`, TTL 5 นาที) ป้องกันการ fire ซ้ำข้าม scheduler replica
+- **Poll-based ไม่ใช่ event-driven** scheduler poll แถว `Cronjob` ทุก 1 นาทีและ reconcile job `go-cron` ใน memory กับ DB — การแก้ `cron_expression` ตรง DB (ไม่มี UI path ทำแบบนี้) จะมีผลตอน poll ครั้งถัดไป
+- **ไม่มี misfire policy, ไม่มี timezone ต่อ schedule** ทั้งสองฟิลด์ไม่มีอยู่บน model `Cronjob` — ทั้งสองเคยถูกบันทึกไว้ว่าตั้งค่าได้และถูกแก้ไขในที่นี้ว่าไม่มีอยู่จริง
 
 ## 7. ความเชื่อมโยงข้ามโมดูล
 
-- [reporting-audit/report](/th/inventory/reporting-audit/report) — โมดูลพ่อ `report_type` / `report_template_id` resolve `tb_report_template`
-- [reporting-audit/history](/th/inventory/reporting-audit/history) — ทุกการ fire เขียนแถว `tb_report_job` หนึ่งแถว; `last_run_at` สะท้อนแถวนั้น
-- [reporting-audit/notification](/th/inventory/reporting-audit/notification) — ผู้รับ type `user` ได้รับ in-app notification; `email` ได้รับ artefact ผ่าน mailer ของแพลตฟอร์ม
-- [reporting-audit/activity](/th/inventory/reporting-audit/activity) — create / update / delete / enable / disable ถูก log ด้วย `entity_type = 'report_schedule'`
-- [access-control/user](/th/inventory/access-control/user), [access-control/permission](/th/inventory/access-control/permission) — เจ้าของ + grant schedule-admin
+- [reporting-audit/report](/th/inventory/reporting-audit/report) — โมดูลพ่อ; `report_template_id` resolve แถว `tb_report_template` (platform schema, ยังมีอยู่จริง)
+- [reporting-audit/history](/th/inventory/reporting-audit/history) — เพราะ schedule ทุกตัวที่สร้างผ่านหน้าจอนี้ส่งมอบผ่าน `viewer_url` schedule ที่ fire จึง **ไม่** เขียนแถว `tb_report_job` — ดู implementation status ของหน้านั้นสำหรับช่องว่างที่เกิดขึ้น
+- [reporting-audit/notification](/th/inventory/reporting-audit/notification) — mechanism การส่งมอบที่แท้จริง: เรียก `POST /api/internal/notifications` หนึ่งครั้งต่อผู้รับหนึ่งคนเมื่อ schedule fire
+- [access-control/user](/th/inventory/access-control/user) — ผู้รับคือ user ID ธรรมดา
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_report_schedule` (lines 5685-5709), `enum_report_format` (~5628-5633)
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/report/schedules/`
-- **Cron microservice:** `../micro-cronjobs/internal/scheduler/scheduler.go` (poll + dispatch), `../micro-cronjobs/internal/scheduler/redis_locker.go` (idempotency), `../micro-cronjobs/internal/repository/cronjob_repo.go` (reads)
-- **Reports microservice:** `../micro-report/` — บริโภค job ที่ enqueue
+- **ที่เก็บจริง (Go, `micro-cronjobs`):** `../micro-cronjobs/internal/model/cronjob.go` (`CronJob`, `ReportJobConfig`, `ReportDelivery`, `ReportNotifications`), `../micro-cronjobs/internal/repository/cronjob_repo.go`, `../micro-cronjobs/internal/scheduler/scheduler.go` (poll loop, retry), `../micro-cronjobs/internal/scheduler/redis_locker.go` (distributed lock), `../micro-cronjobs/internal/executor/report.go` (การ dispatch แบบ `viewer_url` เทียบกับ `file`)
+- **Gateway (proxy CRUD schedule → micro-cronjobs):** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/reports/reports.controller.ts` (`@Post('schedules')`, `@Get('schedules')`, `@Delete('schedules/:schedule_id')`), `reports.service.ts` (`createSchedule`/`listSchedules`/`deleteSchedule`, `cronFromConfig()`)
+- **Prisma tenant (ตารางที่ตายแล้ว เพื่อเปรียบเทียบ):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_report_schedule` (บรรทัด ~6128)
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/report/schedules/report-schedules.route.tsx`, `schedule-component.tsx`, `create-schedule-dialog.tsx`, `schedule-frequency-field.tsx`, `schedule-recipients-field.tsx`, `schedule-notifications-field.tsx`
+- **Frontend hook/type:** `../carmen-inventory-frontend-react/hooks/use-report-schedule.ts` (`useReportSchedules`, `useCreateReportSchedule`, `useDeleteReportSchedule` — ไม่มี update hook), `types/report-schedule.ts`

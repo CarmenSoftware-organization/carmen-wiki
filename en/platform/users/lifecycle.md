@@ -2,7 +2,7 @@
 title: User — Lifecycle
 description: Create, disable, hard/soft delete, password reset.
 published: true
-date: 2026-06-10T14:00:00.000Z
+date: 2026-07-29T07:06:05.000Z
 tags: book/platform, users, lifecycle
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -11,7 +11,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 # User — Lifecycle
 
 > **At a Glance**
-> **Operations covered:** create · edit · activate/deactivate (`is_active`) · soft-delete · hard-delete · admin password reset · Keycloak sync · the effective-permissions sign-in gate &nbsp;·&nbsp; **Not in this product:** SSO · MFA · OAuth · email-link password reset &nbsp;·&nbsp; **Endpoints:** 8 service methods (7 under `/api-system/user`, Keycloak sync at `/api-system/fetch-user`) &nbsp;·&nbsp; **Cross-entity effects:** cluster assignments (read-only here) · BU assignments (mutated here via Add BU dialog) · RBAC role assignments (mutated on `/platform/user-platform`, not here)
+> **Operations covered:** create · edit · activate/deactivate (`is_active`) · soft-delete · hard-delete (single + bulk, super-admin only) · admin password reset · Keycloak sync · the effective-permissions sign-in gate &nbsp;·&nbsp; **Not in this product:** SSO · MFA · OAuth · email-link password reset &nbsp;·&nbsp; **Endpoints:** 8 service methods (7 under `/api-system/user`, Keycloak sync at `/api-system/fetch-user`) &nbsp;·&nbsp; **Cross-entity effects:** cluster assignments (read-only here) · BU assignments (mutated here via Add BU dialog, now permission-checked per the target cluster) · RBAC role assignments (mutated on `/platform/user-platform`, not here) &nbsp;·&nbsp; **Concurrency:** `doc_version` optimistic lock on save
 
 ## 1. Overview
 
@@ -49,9 +49,9 @@ There is also no access field: creating an account grants **no** Platform admin 
 
 ## 3. Edit flow
 
-**Trigger:** The "Edit" item in the row action menu (`/users` table, wrapped in `<Can permission="user.update">`) navigates to `/users/:id/edit`, which opens in view mode. The "Edit" button in that page's header (also wrapped in `<Can permission="user.update">`) calls `handleEditToggle()`, which saves the current `formData` into `savedFormData` and sets `editing = true`.
+**Trigger:** The "Edit" item in the row action menu (`/users` table, wrapped in `<Can permission="user.update">`) navigates to `/users/:id/edit`, which opens in view mode. The "Edit" button — now part of the `UserIdentityHero` card's action slot (view mode only), not a bare header button — (also wrapped in `<Can permission="user.update">`) calls `handleEditToggle()`, which saves the current `formData` into `savedFormData` and sets `editing = true`.
 
-**Endpoint:** `PUT /api-system/user/:id` via `userService.update(id, formData)`.
+**Endpoint:** `PUT /api-system/user/:id` via `userService.update(id, formData)`, with the loaded `doc_version` appended to the payload when present (optimistic lock — see [Data Model](./data-model.md) §2.1). A stale save (`409`) shows a "changed by someone else" toast and reloads the record via `fetchUser()` instead of overwriting.
 
 **Username lock:** The `username` input carries `disabled={!isNew}`, so it is always disabled in edit mode. The SPA always sends the full `formData` object including `username`; backend handling of this field on `PUT` is not reflected in the SPA source.
 
@@ -99,11 +99,21 @@ There is also no access field: creating an account grants **no** Platform admin 
 
 **Effect on join rows:** Both `tb_cluster_user.user_id → tb_user.id` and `tb_user_tb_business_unit.user_id → tb_user.id` are declared `onDelete: NoAction` in the Prisma platform schema. Hard-deleting a `tb_user` row will therefore fail at the database level if any `tb_cluster_user` or `tb_user_tb_business_unit` rows reference the user — the database engine will raise a foreign-key violation rather than cascade. The SPA shows this as `toast.error('Failed to permanently delete user', ...)`. Operators must remove or soft-delete the user's cluster and BU memberships before a hard delete can succeed.
 
-**Success:** `toast.success('User permanently deleted')`; the table reloads.
+**Success:** `toast.success('User permanently deleted')`; the table and the Directory summary strip both reload.
+
+**Super-admin copy-username shortcut (new since the last sync):** when `isSuperAdmin` is true, the confirmation dialog shows a small clipboard button beside the displayed username/email that copies it to the clipboard (`navigator.clipboard.writeText`, a `Check` icon confirms for 2 seconds) — a convenience for pasting the exact confirmation string, not a security control.
+
+### 5.3 Bulk soft delete and bulk hard delete (super-admin only, new since the last sync)
+
+**Trigger:** Row checkboxes on `UserManagement` are rendered only when `isSuperAdmin` is true (`enableRowSelection={isSuperAdmin}` on the `DataTable`) — this is a super-admin capability check, not a `user.*` permission key. Selecting one or more rows reveals a selection toolbar with **Delete** and **Hard Delete** buttons; the selection resets whenever the page, page size, search, sort, or filters change so an off-screen row can never stay silently selected.
+
+**Bulk soft delete:** Delete opens a plain `ConfirmDialog` ("Delete `<n>` user(s)... They can be restored later."); on confirm, one `DELETE /api-system/user/:id` per selected user fires via `Promise.allSettled`, followed by an aggregate toast (`Deleted N user(s)`, or a partial-failure warning naming both counts).
+
+**Bulk hard delete:** Hard Delete opens a dialog listing every selected user by username/email, and generates a random 6-character alphanumeric code the operator must retype exactly (uppercased as typed) — a materially different confirmation mechanism from the single-row flow's "type the exact username" requirement, chosen because there is no single shared identifier across multiple rows. On confirm, one `DELETE /api-system/user/:id/hard` per selected user fires via `Promise.allSettled`, with the same aggregate-result toast pattern. The same FK-cascade caveat as §5.2 applies per-row — a user with live cluster/BU memberships fails silently into the "failed" count of the aggregate toast, it does not block the rest of the batch.
 
 ## 6. Admin-initiated password reset
 
-**Trigger:** The "Change Password" button (with `KeyRound` icon) in the header of `/users/:id/edit`, visible only when `!isNew && !editing`. Unlike the neighbouring Edit button it carries no `<Can>` gate — anyone who passes the route's `user.update` guard sees it. Calls `handleOpenPasswordDialog()`, which resets the dialog fields and sets `showPasswordDialog = true`.
+**Trigger:** The "Change Password" button (with `KeyRound` icon), now part of the `UserIdentityHero` card's actions slot on `/users/:id/edit` (still visible only when `!isNew && !editing`) rather than a bare page-header button. Unlike the neighbouring Edit button it carries no `<Can>` gate — anyone who passes the route's `user.update` guard sees it. Calls `handleOpenPasswordDialog()`, which resets the dialog fields and sets `showPasswordDialog = true`.
 
 **Dialog fields:**
 
@@ -126,28 +136,29 @@ For self-service password change by the user themselves, see [profile](/en/platf
 
 **Endpoint:** `POST /api-system/fetch-user` (no request body from the SPA).
 
-**Effect:** The backend pulls the current Keycloak user roster and upserts matching records into `tb_user`. After the call, the SPA triggers a table reload by calling `setPaginate(prev => ({ ...prev }))`. The button shows a spinning `Loader2` icon and the label "Fetching..." while `syncing` is true.
+**Effect:** The backend pulls the current Keycloak user roster and upserts matching records into `tb_user`. After the call, the SPA triggers a table reload by calling `setPaginate(prev => ({ ...prev }))` and refreshes the Directory summary strip. The button shows a spinning `Loader2` icon and the label "Fetching..." while `syncing` is true.
 
-**Access control:** The SPA attaches no `<Can>` gate to this button — it is visible to anyone who passes the `/users` route guard (`user.read`). Backend enforcement is the real boundary.
+**Access control — corrected since the last sync:** the button is now wrapped in `<Can permission="user.create">` — it previously carried no in-page gate at all (any `user.read` session could see and click it). It is visible only to sessions holding `user.create`; backend enforcement remains the actual security boundary regardless.
 
 ## 8. Cross-entity side effects
 
-**Cluster assignments (`tb_cluster_user`):** The user edit screen (`UserEdit.tsx`) displays the user's cluster memberships in a read-only Clusters card. The Add BU dialog queries business units filtered by `cluster_id` from the user's existing `tb_cluster_user` rows — cluster membership must exist before a BU can be assigned. Cluster membership itself is created and deleted from the cluster edit page, not here.
+**Cluster assignments (`tb_cluster_user`):** The user edit screen (`UserEdit.tsx`) displays the user's cluster memberships read-only, nested inside the `UserAccessTree` card (which replaced the former separate Clusters card). The Add BU dialog queries business units filtered by `cluster_id` from the user's existing `tb_cluster_user` rows — cluster membership must exist before a BU can be assigned. Cluster membership itself is created and deleted from the cluster edit page, not here.
 
-**BU assignments (`tb_user_tb_business_unit`):** The Business Units card on the user edit screen provides an "Add BU" button that opens a two-step dialog: select a cluster (from the user's existing memberships), then select a BU from that cluster. The resulting `businessUnitService.createUserBusinessUnit()` call (`POST /api-system/user/business-units`) writes a new row to `tb_user_tb_business_unit` with the chosen `user_id`, `business_unit_id`, and `role`. Existing BU rows can be removed via the trash-icon button beside each entry, which calls `businessUnitService.deleteUserBusinessUnit(id)` (`DELETE /api-system/user/business-units/:id`) after a `ConfirmDialog`.
+**BU assignments (`tb_user_tb_business_unit`):** The `UserAccessTree` card on the user edit screen provides an "Add BU" button that opens a two-step dialog: select a cluster (from the user's existing memberships), then select a BU from that cluster. **Permission check, corrected since the last sync:** the Add BU button itself only renders when `canAddBU` is true — computed as `hasPermission('cluster.update', { clusterId })` across the user's own cluster memberships, not merely "the user belongs to at least one cluster" (a prior version conflated a data precondition with a permission check; `handleAddBU` also re-verifies against the specific cluster selected in the dialog before submitting, since an admin might hold `cluster.update` on one of the user's clusters but not the one actually chosen). The resulting `businessUnitService.createUserBusinessUnit()` call (`POST /api-system/user/business-units`) writes a new row to `tb_user_tb_business_unit` with the chosen `user_id`, `business_unit_id`, and `role`. Existing BU rows can be removed via the trash-icon button beside each entry — now wrapped in `<Can permission="cluster.update" clusterId={bu's own cluster_id}>` (scoped to the BU's own cluster, not the viewer's broader memberships, and falling back to a sentinel that can never match a real cluster when the BU's cluster is unresolved, so an orphaned "Other business units" row fails closed) — which calls `businessUnitService.deleteUserBusinessUnit(id)` (`DELETE /api-system/user/business-units/:id`) after a `ConfirmDialog`.
 
-For FK cascade behaviour affecting these joins on hard delete, see §5.2.
+For FK cascade behaviour affecting these joins on hard delete, see §5.2 (and its bulk counterpart, §5.3).
 
 ## 9. References
 
 **SPA sources (primary):**
 - `../carmen-platform/src/services/userService.ts` — all 8 API methods: `getAll`, `getById`, `create`, `update`, `delete`, `hardDelete`, `resetPassword`, `fetchKeycloakUsers`.
-- `../carmen-platform/src/pages/UserManagement.tsx` — soft-delete `ConfirmDialog`, hard-delete typed-confirmation dialog, "Fetch Keycloak" handler, "Show soft-deleted users" toggle, `buildAdvance()` filter logic, `<Can>` gates on the row actions.
-- `../carmen-platform/src/pages/UserEdit.tsx` — "Change Password" dialog (`handleResetPassword`), `handleSubmit` (create/update), `handleCancelEdit` (mode toggle), `handleAddBU` / `handleDeleteBU` (BU assignment), `<Can permission="user.update">` on the Edit toggle.
+- `../carmen-platform/src/pages/UserManagement.tsx` — soft-delete `ConfirmDialog`, hard-delete typed-confirmation dialog (+ super-admin copy-username button), bulk soft/hard-delete dialogs (super-admin only, random-code confirmation), `<Can permission="user.create">`-gated "Fetch Keycloak" handler, "Show soft-deleted users" toggle, `buildAdvance()` filter logic, `<Can>` gates on the row actions.
+- `../carmen-platform/src/pages/UserEdit.tsx` and `userEdit/{UserIdentityHero,UserAccessTree}.tsx` — "Change Password" dialog (`handleResetPassword`), `handleSubmit` (create/update, `doc_version`-aware), `handleCancelEdit` (mode toggle), `handleAddBU` / `handleDeleteBU` (BU assignment, `canAddBU` / scoped `<Can>` permission checks), `<Can permission="user.update">` on the Edit toggle.
+- `../carmen-platform/src/utils/docVersion.ts` — optimistic-lock helpers used by `handleSubmit`.
 - `../carmen-platform/src/context/AuthContext.tsx` — `login()` effective-permissions gate and bootstrap exception (§4).
 
 **Schema source:**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — FK `onDelete: NoAction` on `tb_cluster_user.user_id` and `tb_user_tb_business_unit.user_id`; `tb_user` model (line 472, as of 2026-06-10).
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — FK `onDelete: NoAction` on `tb_cluster_user.user_id` and `tb_user_tb_business_unit.user_id`; `tb_user` model (line 494, as of 2026-07-29; `doc_version` added to `tb_user`/`tb_user_profile` on 2026-07-16).
 
 **Cross-links:**
 - [users](/en/platform/users) — module landing: overview, key concepts, navigation map.

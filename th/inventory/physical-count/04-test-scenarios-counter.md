@@ -1,80 +1,68 @@
 ---
-title: การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios — Counter
-description: Test case ของ Counter / Store Keeper สำหรับโมดูลการนับสต๊อกประจำงวด
+title: การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios — หน้า Entry & Review
+description: Test case ของหน้า entry และ review สำหรับโมดูลการนับสต๊อกประจำงวด
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T17:56:09.000Z
 tags: physical-count, test-scenarios, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
 ---
 
-# การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios — Counter
+# การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios — หน้า Entry & Review
 
 > **At a Glance**
-> **Persona:** Counter (Counter / Store Keeper) &nbsp;·&nbsp; **โมดูล:** [physical-count](/th/inventory/physical-count) &nbsp;·&nbsp; **Scenario:** ~30 (skeleton)
+> **หน้าจอ:** `physical-count/:id/entry` (`pc-entry-component.tsx`), `physical-count/:id/review` (`pc-review-component.tsx`) &nbsp;·&nbsp; **โมดูล:** [physical-count](/th/inventory/physical-count) &nbsp;·&nbsp; **Role:** role เดียวกับ [04-test-scenarios-count-lead.md](/th/inventory/physical-count/04-test-scenarios-count-lead)
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **ความครอบคลุม E2E:** ไม่มี Playwright spec ของ `physical-count` ที่ `../carmen-inventory-frontend-e2e/`; scenario เป็น manual / planned
+> **ความครอบคลุม E2E:** ไม่มี Playwright spec ของ `physical-count`; scenario เป็น manual/planned
 
-## 1. ขอบเขต Persona
+## 1. ขอบเขต
 
-**Counter** = Counter / Store Keeper พนักงานพื้นที่ที่ป้อน `actual_qty` ต่อบรรทัดใน zone ที่ได้รับมอบหมาย flag รายการเสียหาย / ไม่มีป้าย และเซ็นปิด zone ที่เสร็จ Scenario ด้านล่างใช้ action ที่ catalogue ใน [physical-count/03-user-flow-counter](/th/inventory/physical-count/03-user-flow-counter) หัวข้อ 3 — การเปิด sheet ที่ได้รับมอบหมาย, การป้อนการนับ, การ flag รายการ, การเพิ่ม comment, การเซ็นปิด zone Authority anchor `PHC_AUTH_002`
+Scenario ด้านล่างใช้ action ที่ catalogue ใน [physical-count/03-user-flow-counter](/th/inventory/physical-count/03-user-flow-counter) § 3 — การป้อนบรรทัด, note, import/export, Save, Submit for Review และ Submit สุดท้าย
 
 ## 2. Functional — Happy Path
 
 | # | Scenario | Pre-condition | ผลที่คาดหวัง |
 | - | -------- | ------------- | ---------------- |
-| C-F-01 | เปิด count sheet ที่ได้รับมอบหมาย | Counter มี zone-grant; เอกสาร count อยู่ `pending` | บรรทัด zone-scoped มองเห็น; `on_hand_qty` (book) ซ่อนถ้านโยบาย blind-count ของ tenant เปิด |
-| C-F-02 | ป้อน `actual_qty` แรกบนบรรทัด | เอกสาร count อยู่ `pending`; counter มี zone-grant | เอกสาร count เลื่อนไป `in_progress`; stamp `start_counting_at` / `start_counting_by_id` บน `tb_physical_count` |
-| C-F-03 | ป้อน `actual_qty` ตรงกับ `on_hand_qty` | บรรทัดใน zone ของ counter | `actual_qty` บันทึก; `diff_qty = 0`; stamp `counted_at` / `counted_by_id` บน `tb_physical_count_detail` |
-| C-F-04 | ป้อน `actual_qty` > `on_hand_qty` (overage) | บรรทัดใน zone ของ counter | `actual_qty` บันทึก; `diff_qty > 0`; บรรทัดภายใน tolerance band ถ้ามี |
-| C-F-05 | ป้อน `actual_qty` < `on_hand_qty` (shortage) | บรรทัดใน zone ของ counter | `actual_qty` บันทึก; `diff_qty < 0`; บรรทัด eligible สำหรับการตรวจ tolerance ระดับ Count Lead |
-| C-F-06 | ป้อน `actual_qty = 0` (ศูนย์บนชั้น) | บรรทัดที่ `on_hand_qty > 0` | `actual_qty = 0` บันทึก; `diff_qty = -on_hand_qty` (shortage เต็ม); บรรทัด flag ระดับ Count Lead ถ้าเกิน threshold |
-| C-F-07 | Flag รายการเสียหาย / ไม่มีป้าย / ไม่คุ้นเคย | บรรทัดใน zone ของ counter | สร้าง `tb_physical_count_detail_comment` row พร้อม attachment photo; แจ้ง Count Lead |
-| C-F-08 | เพิ่ม comment ระดับ count | เอกสารอยู่ `in_progress` | สร้าง `tb_physical_count_comment` row (เช่น `"zone B นับครบ รอตรวจสอบ bin re-stock"`) |
-| C-F-09 | แก้ไขบรรทัดของตนก่อน submit | Counter ป้อน `actual_qty` ไว้ก่อนหน้า | `actual_qty` อัปเดต; `counted_at` re-stamp; audit log เก็บค่าก่อนหน้าผ่าน thread comment |
-| C-F-10 | เซ็นปิด zone ที่เสร็จ | ทุกบรรทัด zone มี `actual_qty` ไม่เป็น null | Notification ยิงไปยัง Count Lead; counter submit เอกสารไม่ได้ |
+| E-F-01 | ป้อน `actual_qty` บนบรรทัด | เอกสาร `in_progress` | ค่า commit เข้า local state ตอน blur; ป้าย "counted" ปรากฏเมื่อมีค่าแล้ว |
+| E-F-02 | Save บรรทัดบางส่วน | บางบรรทัดมีค่า บางบรรทัดยังไม่มี | `PATCH .../save` stamp `counted_at`/`counted_by_id` บนบรรทัดที่ส่งมา; `product_counted` อัปเดต |
+| E-F-03 | แนบ note และ photo ให้บรรทัด | เวลาใดก็ได้ | `POST /physical-count-detail-comments/:detailId` สร้าง `tb_physical_count_detail_comment` row พร้อมข้อความและ attachment |
+| E-F-04 | ใช้ calculator เพื่อคำนวณยอดรวม | สินค้ามีการแปลงลัง/หน่วยที่ counter ต้องการคำนวณ | `CalculatorDialog` คืนยอดรวมที่ถูกเขียนเข้า `actual_qty` ของบรรทัด |
+| E-F-05 | Export ยอดนับปัจจุบัน | เวลาใดก็ได้ | ไฟล์ `.xlsx` ดาวน์โหลดพร้อม id, รหัส/ชื่อ/ชื่อท้องถิ่น/SKU สินค้า, หน่วย, และ `actual_qty` effective ปัจจุบันต่อแถว |
+| E-F-06 | Import ยอดนับจาก spreadsheet | ไฟล์ที่ export ไว้ก่อนหน้า (หรือเตรียมจากภายนอก) ที่มี SKU ตรงกัน | แถวที่จับคู่เติมค่า local ของบรรทัดของตน; toast รายงานจำนวนที่จับคู่/รวม/ข้าม |
+| E-F-07 | Refresh สินค้าระหว่างการนับ | สินค้าเข้าเงื่อนไขใหม่สำหรับสถานที่ (assign แล้ว หรือมีสต๊อกแล้ว) | `PATCH .../refresh` เพิ่มบรรทัดใหม่เข้า sheet; บรรทัดที่มีอยู่ไม่ได้รับผลกระทบ |
+| E-F-08 | Submit for Review เมื่อทุกบรรทัดมีค่าแล้ว | `uncountedCount === 0` | `PATCH .../review` คำนวณ `on_hand_qty`/`diff_qty` ใหม่สำหรับทุกบรรทัดจากยอด ledger สด; navigate ไป `/review` |
+| E-F-09 | หน้า review แสดงตัวเลขสรุปถูกต้อง | บางบรรทัด match บางบรรทัด overage บางบรรทัด shortage | ตัวเลข matches/variances/overages/shortages บนหน้า review ตรงกับ `diff_qty` ของแต่ละบรรทัด |
+| E-F-10 | Submit สุดท้ายด้วย variance ผสม | `counted_at != null` ของทุกบรรทัด | `PATCH .../submit` ตั้ง `status = completed`, สร้าง `tb_stock_in` หนึ่งฉบับ (บรรทัด overage) และ/หรือ `tb_stock_out` หนึ่งฉบับ (บรรทัด shortage) ทั้งคู่ `doc_status = completed` แล้ว; navigate กลับหน้ารายการ |
 
 ## 3. RBAC / Permission
 
 | # | Scenario | Pre-condition | ผลที่คาดหวัง |
 | - | -------- | ------------- | ---------------- |
-| C-R-01 | Counter พยายามป้อนบรรทัดนอก zone | Counter มี zone-grant สำหรับ zone A; พยายามแก้ไขบรรทัด zone B | Reject ตาม `PHC_AUTH_004` พร้อม error zone-scope |
-| C-R-02 | Counter พยายาม submit เอกสาร count | ทุกบรรทัด zone นับแล้ว; Counter คลิก submit | Action submit ไม่มีให้ Counter ตาม `PHC_AUTH_002`; UI ชี้แนะ counter ให้ "เซ็นปิด zone" เท่านั้น |
-| C-R-03 | Counter พยายามแก้ไขเอกสาร `completed` | เอกสารอยู่ `completed` | แก้ไข reject ตาม `PHC_VAL_008` (immutable) |
-| C-R-04 | Counter ไม่มี zone-grant พยายามดู sheet | Counter มี role Counter แต่ไม่มี zone-grant ที่ location | เอกสารไม่มองเห็นใน "การมอบหมายการนับของฉัน"; การเข้าถึง URL ตรงถูก reject |
+| E-R-01 | ผู้ใช้ที่ไม่มี `inventory_management.physical_count` เปิด `:id/entry` โดยตรง | Permission ไม่ได้รับ | การเข้าถึงถูก reject ตามกลไก permission-gate ทั่วไป; ไม่มีข้อจำกัด zone หรือ assignment เฉพาะโมดูลให้ทดสอบเพิ่มนอกเหนือจากนี้ |
 
 ## 4. Validation — Negative Test
 
 | # | กฎ | Scenario | Error ที่คาดหวัง |
 | - | ---- | -------- | -------------- |
-| C-V-01 | `PHC_VAL_005` | Counter ป้อน `actual_qty` ติดลบ | `"Counted quantity must be zero or positive."` |
-| C-V-02 | `PHC_VAL_005` | Counter ป้อน `actual_qty` ไม่ใช่ตัวเลข | Input ถูก reject ที่ระดับ form ด้วย type error |
-| C-V-03 | `PHC_VAL_004` (Count Lead facing) | Counter ปล่อยบรรทัดว่าง (ไม่ป้อน `actual_qty` เลย) | ตอน Count Lead submit เอกสารบล็อกด้วย `"Cannot submit count — <N> of <M> lines remain uncounted."` Counter ต้องป้อนค่า |
+| V-01 | `PHC_VAL_006` | พยายาม Save, Submit for Review หรือ Submit บนเอกสาร `completed` | `"Physical Count is already completed"` |
+| V-02 | `PHC_VAL_004` | คลิก Submit (สุดท้าย) ขณะอย่างน้อยหนึ่งบรรทัดยังมี `counted_at` เป็น null | `"<N> products have not been counted yet"` — ดูข้อควรระวัง Save-vs-Submit-for-Review ด้านล่าง |
+| V-03 | `PHC_VAL_007` | Save/Review/Submit ด้วย `doc_version` ที่เก่าแล้ว (เช่น แท็บที่สองที่ยังไม่ refetch หลังการ save ของอีกแท็บ) | Conflict แบบ `409`; client ต้อง reload แล้วลองใหม่ |
+| V-04 | `PHC_VAL_006` | พยายามลบเอกสาร `completed` | `"Cannot delete completed Physical Count"` |
 
 ## 5. Edge Case
 
 | # | Scenario | ผลที่คาดหวัง |
 | - | -------- | ---------------- |
-| C-E-01 | Recount บรรทัดของตน — reject | Counter A ต้นฉบับพยายามป้อน recount บนบรรทัดที่ flag | Recount ต้องทำโดย counter คนละคน; UI ป้องกันการ re-entry โดย `counted_by_id` เดียวกัน |
-| C-E-02 | Mobile / handheld scanner barcode ไม่ตรง | Counter scan barcode ที่ไม่ตรงกับ `product_code` ของบรรทัด | Scanner UI reject; counter ต้องหาบรรทัดที่ถูกหรือ flag เป็นไม่คุ้นเคย |
-| C-E-03 | เครือข่ายหลุดระหว่างการนับ | Counter เสียการเชื่อมต่อขณะป้อน `actual_qty` | Local cache เก็บการป้อน; sync resume เมื่อ reconnect; idempotent retry |
-| C-E-04 | Counter สองคนบน zone เดียวกัน (ขนาน) | Counter สองคนแชร์ zone-grant บน `tb_physical_count` เดียวกัน | Last-write-wins ต่อบรรทัด; thread comment แสดง action ของ counter ทั้งสองคนใน audit log |
-| C-E-05 | Counter มอบหมายให้หลาย zone | Counter เดียวกัน, สอง zone-grant บนเอกสารเดียวกัน | Counter เห็นทั้งสอง zone; ป้อนได้อิสระข้าม zone |
-| C-E-06 | การนับโหมด frozen — counter เห็นธุรกรรมที่ถูกบล็อก | การพยายามรับสดที่ location ที่นับถูกบล็อกตาม `PHC_VAL_006`; counter ทราบแต่ไม่ถูกบล็อกจากการนับต่อ | Counter ทำการนับต่อปกติ; พื้นที่รับแสดง lock จนการนับ complete |
+| E-E-01 | ทุกบรรทัดถูกพิมพ์และ Submit for Review ทันที โดยไม่ผ่าน Save ก่อน | เนื่องจาก Save เป็น action เดียวที่ stamp `counted_at` และ Submit for Review ไม่ทำ Submit สุดท้ายบนหน้า review อาจ reject ด้วย `"<N> products have not been counted yet"` แม้ทุกบรรทัดจะแสดงค่าอยู่ก็ตาม — เป็นการอ่านตรงจาก `save()` เทียบกับ `reviewItems()` ใน `physical-count.service.ts` ยังไม่ได้ยืนยันด้วย automated test อิสระ |
+| E-E-02 | ศูนย์บนชั้น | Counter ป้อน `actual_qty = 0` ชัดเจน (ไม่ปล่อยว่าง); นับเป็นการป้อนจริงที่สมบูรณ์ — shortage เต็มเทียบกับ `on_hand_qty` ที่ขั้นตอน review คำนวณได้ |
+| E-E-03 | Set uncounted to zero แล้ว Submit for Review | ทุกบรรทัดที่ว่างก่อนหน้ากลายเป็น `0` ที่ local; Submit for Review พร้อมใช้และคำนวณ variance จริงสำหรับบรรทัดเหล่านั้นเทียบกับยอด ledger สด |
+| E-E-04 | Import จับคู่ได้บางส่วน | บาง row ของ spreadsheet ไม่จับคู่กับ SKU ของบรรทัดใด | Toast รายงานจำนวนที่ข้าม; บรรทัดที่ไม่จับคู่คงเดิมทุกประการ |
+| E-E-05 | Overage และ shortage ผสมกันใน submit เดียว | มีอย่างน้อยหนึ่งบรรทัด `diff_qty` บวกและหนึ่งบรรทัดลบ | ทั้ง `tb_stock_in` และ `tb_stock_out` ถูกสร้างโดย Submit สุดท้ายครั้งเดียวกัน |
+| E-E-06 | ทุกบรรทัด reconcile เป็นศูนย์ variance | ทุก `diff_qty = 0` | Submit สุดท้ายสำเร็จ; ไม่มี `tb_stock_in`/`tb_stock_out` ถูกสร้างเลย |
 
-## 6. Configuration / Audit-Trail
+## 6. แหล่งอ้างอิง
 
-| # | Scenario | ผลที่คาดหวัง |
-| - | -------- | ---------------- |
-| C-C-01 | นโยบาย blind-count ของ tenant | `on_hand_qty` ซ่อนจากมุมมอง counter; แสดงเฉพาะสินค้า UoM และ `actual_qty` ว่าง | Counter ไม่สามารถ bias การป้อนกับ book; มุมมอง Count Lead เก็บ `on_hand_qty` |
-| C-C-02 | Audit log per-line counted-by stamp | ทุกบรรทัดป้อน | `tb_physical_count_detail.counted_by_id` และ `counted_at` เติม; audit trail ครบ |
-| C-C-03 | Thread comment พร้อม attachment photo | Counter flag รายการเสียหายด้วย photo จากโทรศัพท์ | `tb_physical_count_detail_comment.attachments` พกพา `[{originalName, fileToken, contentType}]` |
-
-> **TODO:** ขยายทุก row ด้วยข้อความ error และ assertion พฤติกรรม UI เมื่อ source frontend / E2E ถูกเขียน Cross-link ไป scenario ฝั่ง cmobile ถ้า PWA เป็นเจ้าของ UI counter
-
-## 7. แหล่งอ้างอิง
-
-- **Primary (TODO):** source carmen/docs — ไม่มีสำหรับโมดูลนี้
-- **Frontend (TODO):** `../carmen-inventory-frontend-react/` — source ของพฤติกรรม UI Counter; ตรวจ `../cmobile/` สำหรับการ implement count sheet ฝั่ง PWA ถ้ามี
-- **E2E (TODO):** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count
-- ที่เกี่ยวข้อง: [physical-count/03-user-flow-counter](/th/inventory/physical-count/03-user-flow-counter), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_AUTH_002`, `PHC_AUTH_004`, `PHC_VAL_004`–`PHC_VAL_005`), [physical-count/04-test-scenarios](/th/inventory/physical-count/04-test-scenarios) (scenario handoff ข้าม persona)
+- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/physical-count/pc-entry-component.tsx`, `pc-review-component.tsx`
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (`save`, `reviewItems`, `submit`, `refresh`, `delete`)
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count
+- ที่เกี่ยวข้อง: [physical-count/03-user-flow-counter](/th/inventory/physical-count/03-user-flow-counter), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_VAL_004`–`007`, `PHC_POST_001`–`004`), [physical-count/04-test-scenarios](/th/inventory/physical-count/04-test-scenarios) (scenario end-to-end)

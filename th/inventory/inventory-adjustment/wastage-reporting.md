@@ -1,8 +1,8 @@
 ---
 title: รายงานของเสีย (Wastage Reporting)
-description: Variant เฉพาะของ stock-out สำหรับ spoilage, breakage, expiry และ theft — จัดประเภทเพื่อให้ finance วิเคราะห์รูปแบบการสูญเสียตาม reason, outlet และงวด
+description: หน้าจอ Store Operations สำหรับบันทึกการสูญเสีย spoilage/breakage/expiry — ปัจจุบันขับเคลื่อนด้วย mock data เท่านั้น ไม่มี backend implementation
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-07-15T17:02:22.000Z
 tags: inventory-adjustment, wastage, loss, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,116 +11,53 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # รายงานของเสีย (Wastage Reporting)
 
 > **At a Glance**
-> **เจ้าของ:** Store Keeper (submit) &nbsp;·&nbsp; Inventory Controller (approve) &nbsp;·&nbsp; **ตาราง:** `tb_stock_out` ด้วย flavour `adjustment_type = 'wastage'` (ไม่ใช่ตารางแยก) &nbsp;·&nbsp; **Trigger:** spoilage / breakage / expiry / theft / sample &nbsp;·&nbsp; **เขียนไปยัง:** ledger เป็น `stock_out` / `adjustment_out` &nbsp;·&nbsp; **สรุปบรรทัดเดียว:** variant OUT-only ของ [inventory-adjustment](/th/inventory/inventory-adjustment) ด้วย reason บังคับและบัญชี GL wastage
+> **ตำแหน่ง:** Store Operations → Wastage Reporting (`/store-operation/wastage-reporting`) — **ไม่ใช่** ส่วนหนึ่งของ route ของโมดูล Inventory Adjustment เอง &nbsp;·&nbsp; **สถานะ:** mock data เท่านั้น — `hooks/use-wastage-report.ts` มี comment ตรงตัว `// ── TODO: เปลี่ยนเป็น API จริงเมื่อ backend พร้อม ──` ทุกการเรียก list/create/update/delete ทำงานกับ fixture array ในหน่วยความจำ (`wr-mock-data.ts`) พร้อม delay จำลอง &nbsp;·&nbsp; **Backend:** ไม่มีโมเดล Prisma แบบ `tb_wastage_report`, service หรือ controller ที่ไหนใน `carmen-turborepo-backend-v2` เลย
 
-![รายงานของเสีย (Wastage Reporting) screen](/screenshots/inventory-adjustment/wastage-reporting.png)
+![Wastage Reporting screen](/screenshots/inventory-adjustment/wastage-reporting.png)
 
-## 1. อะไร & ใคร
+## 1. คืออะไรและใครใช้
 
-Wastage Reporting คือ **variant ของ [inventory-adjustment](/th/inventory/inventory-adjustment)** สำหรับสต๊อกที่หายไปโดยไม่มีการขาย: spoilage, breakage, expiry, theft, sample / staff consumption, other-loss **ไม่ใช่ document type แยก** — ทุก entry wastage เป็นแถว `tb_stock_out` ที่ `adjustment_type_id` resolve ไปยัง reason flavour wastage Variant นี้มีอยู่เพื่อให้ finance แยกการสูญเสียตาม reason สำหรับการรายงาน cost-control
+หน้านี้เวอร์ชันก่อนหน้าบรรยาย Wastage Reporting ว่าเป็น "แถว `tb_stock_out` ที่ `adjustment_type_id` resolve เป็น reason แบบ wastage" — นั่นไม่ถูกต้อง Wastage Reporting เป็น type ของ frontend ของตัวเอง (`WastageReport` ใน `types/wastage-reporting.ts`) มี enum สถานะของตัวเอง (`pending`/`approved`/`rejected` — **ไม่ใช่** `enum_doc_status`), มีฟิลด์เลขที่เอกสารของตัวเอง (`wr_no`) และมีรูปทรง item ของตัวเอง (`unit_id`/`unit_name`/`unit_cost`/`loss_value` — ไม่มี `cost_per_unit`, ไม่มี lot reference, ไม่มี `adjustment_type_id` เลย) ไม่ได้แชร์ schema, service หรือ endpoint ใด ๆ กับ `tb_stock_in`/`tb_stock_out` ของโมดูล Inventory Adjustment ถูกอ้างอิงไขว้จากโมดูลนี้เพื่อความสะดวก (เป็นหน้าจอบันทึกการสูญเสีย ใกล้เคียงเชิงแนวคิดกับ write-off ของ Stock-Out) แต่ไม่ใช่ variant ของมัน
 
-มันต่างจาก adjustment ทั่วไปอย่างไร:
-
-- **OUT only** — ไม่มี counterpart return-to-stock
-- **Reason บังคับ** — submit reject โดยไม่มี wastage reason ที่รู้จัก
-- **GL Loss / expense** — credit side map ไปยังบัญชี wastage expense ไม่ใช่ adjustment ทั่วไป
+ที่สำคัญกว่านั้น: **feature ทั้งหมดในปัจจุบันเป็น mock data** `useWastageReport()`, `useWastageReportById()`, `useCreateWastageReport()`, `useUpdateWastageReport()` และ `useDeleteWastageReport()` ทั้งหมดอ่านจากและ "เขียน" ไปยัง array `wrMockData` ที่ hardcode ในหน่วยความจำ จำลอง network delay (`await new Promise((r) => setTimeout(r, 300))`) แทนที่จะเรียก API จริง Mutation Create/Update/Delete resolve `{ success: true }` และ invalidate query cache แต่ไม่ persist อะไรเลย — การรีเฟรชหน้าเว็บกลับไปเป็นข้อมูล fixture เดิม รูปแบบนี้เหมือนกับ "หน้าจอขับเคลื่อนด้วย mock data พร้อม TODO comment ภาษาไทย" ที่พบแล้วบนหน้าจอ Stock Replenishment ของ Store Requisition ในรอบ resync ก่อนหน้า
 
 ## 2. งานทั่วไป
 
-| งาน | ที่ไหน | Notes |
+| งาน | ตำแหน่ง | หมายเหตุ |
 |---|---|---|
-| บันทึก entry wastage | Store Operation → Wastage Reporting → **New** | เลือก location, reason, product, qty, lot |
-| เลือก reason code | ฟิลด์ Reason บน header | Filter `tb_adjustment_type` ไปยังแถว flavour wastage `stock_out`: `SPOIL`, `BREAK`, `EXPIRY`, `THEFT`, `SAMPLE`, `OTHER` |
-| แนบหลักฐาน | Tab Comments บนเอกสาร | รูปขวดแตก / ป้ายหมดอายุ (บังคับสำหรับ reason codes high-loss) |
-| Submit เพื่ออนุมัติ | Action **Submit** | Flip `draft → in_progress`, route ไปยัง Inventory Controller |
-| อนุมัติและ post | Inventory Controller → **Approve** | Post `tb_inventory_transaction` (stock_out / adjustment_out), debit Wastage Expense, credit Inventory |
-| Reverse entry wastage | Wastage ใหม่ด้วย qty ลบ | Path correction เท่านั้น — ไม่แก้ไขต้นฉบับเลย; อ้างอิงต้นฉบับใน `note` |
-| รัน report loss-by-reason | [reporting-audit](/th/inventory/reporting-audit) | Aggregation ต่อ outlet, ต่องวด, ต่อ reason |
+| บันทึกรายการของเสีย | Store Operation → Wastage Reporting → **New** | เลือกตำแหน่ง, reason (ฟิลด์ `reason` แบบข้อความอิสระ ไม่ใช่การอ้างอิง `tb_adjustment_type`), บรรทัดสินค้า (`qty`, `unit_id`, `unit_cost`) |
+| แสดงรายการ / ค้นหา wastage report | Store Operation → Wastage Reporting | ค้นหาฝั่ง client บน `wr_no`/`location_name`/`reason`/`reportor_name` และตัวกรอง `status` ทั้งคู่รันกับ array mock ในหน่วยความจำ |
+| ดูรายละเอียด report | คลิกแถว | อ่านจาก `wrMockData` ตาม id ไม่ใช่เอกสารที่ live |
 
-## 3. Validation & Errors
+## 3. รูปทรงข้อมูล (type ของ frontend ไม่มี backend model)
 
-| อาการ / Message | สาเหตุ | Action |
+ที่มา: `types/wastage-reporting.ts` ไม่มี Prisma schema สำหรับสิ่งนี้เลย — รูปทรงด้านล่างมีอยู่เฉพาะใน TypeScript type ของ frontend และ fixture mock
+
+| ฟิลด์ | Type | หมายเหตุ |
 |---|---|---|
-| "Reason required" | `adjustment_type_id` null ที่ submit | เลือก wastage reason จาก catalogue |
-| "Invalid reason for this surface" | Reason `stock_in` หรือ `stock_out` ที่ไม่ใช่ wastage ถูกเลือก | เลือก reason `stock_out` flavour wastage เท่านั้น |
-| "Evidence required for THEFT / EXPIRY" | High-loss reason โดยไม่มี attachment | Upload รูปถ่าย / รายงานความเสียหายไปยัง `tb_stock_out_comment` |
-| "Lot has zero balance" | Lot-tracked product ที่ source location ว่าง | เลือก lot อื่นหรือแก้ไข on-hand ก่อน |
-| "Period is closed" | `so_date` ภายในงวดที่ปิด | ใช้วันที่วันนี้ หรือสร้าง JV ด้วยมือ |
-| "Submit and approve must be different users" | ผู้ใช้คนเดียวกันพยายามทั้งสอง actions | Route ไปยังผู้อนุมัติคนละคน (segregation of duties) |
-| ไม่สามารถแก้ไขเอกสารที่ completed | `doc_status = completed` เป็น immutable | ออก reversal (wastage qty ลบ) |
+| `id` | `string` | id ของ mock fixture (เช่น `wr-001`) ไม่ใช่ UUID ของฐานข้อมูล |
+| `wr_no` | `string` | เลขที่เอกสารที่แสดง (เช่น `WR-2602-0001`) เขียนด้วยมือใน fixture ไม่ได้สร้างโดย running-code service ใด |
+| `date`, `location_id`, `location_name` | `string` | ฟิลด์ธรรมดา ไม่มีการบังคับ FK (ไม่มี backend ให้บังคับ) |
+| `reason` | `string` | ข้อความอิสระ — ไม่ได้อ้างอิง `tb_adjustment_type` หรือตาราง master data ใด |
+| `reportor_id`, `reportor_name` | `string` | ผู้ใช้ที่บันทึกรายการ |
+| `status` | `"pending" \| "approved" \| "rejected"` | enum สามค่าที่แยกต่างหาก ไม่เกี่ยวข้องกับ `enum_doc_status` |
+| `qty_sum`, `loss_value` | `number` | ยอด roll-up ที่คำนวณจาก fixture |
+| `items[]` (`WastageReportItem`) | — | `product_id`, `product_name`, `product_code`, `qty`, `unit_id`, `unit_name`, `unit_cost`, `loss_value` — ไม่มีชื่อ `cost_per_unit`/`total_cost` ไม่มี lot reference |
+| `attachments[]` (`WastageReportAttachment`) | — | `id`, `name`, `url` — array ฟิลด์ธรรมดาบน report ไม่ใช่ตาราง comment แยกต่างหาก |
 
 ## 4. Edge Cases
 
-- **Variant ไม่ใช่ตารางแยก** Schema เดียวกับ stock-out — discriminator คือ `adjustment_type_id` Test plans ที่มองหาตาราง `tb_wastage` จะไม่พบ
-- **Snapshot Cost basis ที่ submit** `cost_per_unit` เลือกจาก costing method ที่ active (AVCO snapshot หรือ FIFO layer เก่าที่สุด) และไม่แก้ไขได้
-- **ไม่มีการแก้ไขหลัง post** เมื่อ `doc_status = completed` ไม่มีฟิลด์ใดสามารถ mutate การแก้ไขคือ wastage qty ตรงข้ามใหม่อ้างอิงต้นฉบับใน `note`
-- **Reversal เป็น append-only** แถวต้นฉบับไม่ `UPDATE` เลย — คู่คือ audit trail (ตรงกับ [inventory/transaction](/th/inventory/inventory/transaction) semantics append-only)
-- **GL routing** Credit side resolve จาก GL mapping ของ `tb_adjustment_type` — บัญชี wastage expense ไม่ใช่ adjustment expense ทั่วไป
-- **Period gate** เหมือนกับเอกสาร inventory ทุกตัว — การ backdate เข้างวดที่ปิด reject
+- **ไม่มีอะไร persist** ทุก mutation (`useCreateWastageReport`, `useUpdateWastageReport`, `useDeleteWastageReport`) resolve ความสำเร็จปลอมหลัง delay คงที่ และ invalidate เพียง query cache ฝั่ง client — ไม่มี round-trip ไปยัง server และไม่มีการเขียนฐานข้อมูลจริง
+- **ไม่ใช่ variant ของ Stock-Out** ไม่แชร์ schema, endpoint หรือการตรวจสอบใดกับ `tb_stock_out` — อย่านำกฎของ Inventory Adjustment (§ [02 — กติกาทางธุรกิจ](/th/inventory/inventory-adjustment/02-business-rules)) มาใช้กับหน้าจอนี้
+- **Permission gate เป็นของจริง แต่ไม่เกี่ยวข้องกับข้อมูลของ feature** nav entry ของหน้าจอนี้ถูก gate ด้วย `PERMISSIONS.inventory_management.stock_out.view` (`constant/module-list.ts`) — การตรวจสอบสิทธิ์จริง — แต่ permission key นั้นไม่มีการใช้อื่นที่ไหนใน route ของโมดูล Inventory Adjustment เองเลย (ดู [02 — กติกาทางธุรกิจ](/th/inventory/inventory-adjustment/02-business-rules) § 4)
 
----
+## 5. ส่วนอ้างอิง
 
-## 5. Data Model (Dev)
+- [inventory-adjustment](/th/inventory/inventory-adjustment) — โมดูลที่อ้างอิงไขว้; ไม่แชร์ schema หรือโค้ดกับหน้าจอนี้
+- [master-data/adjustment-type](/th/inventory/master-data/adjustment-type) — master ของ reason code จริงที่หน้าจอนี้**ไม่ได้**ใช้
 
-Wastage แชร์ schema กับ stock-out แหล่ง: tenant schema
+## 6. แหล่งอ้างอิง
 
-### 5.1 `tb_stock_out` (ตาราง host)
-
-| ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
-|---|---|---|---|
-| `id` | `String @db.Uuid` | No | Primary key |
-| `so_no` | `String? @db.VarChar` | Yes | เลขที่เอกสาร (`WR-2026-0001` เมื่อ issue จากหน้าจอ wastage) |
-| `so_date` | `DateTime? @db.Timestamptz(6)` | Yes | วันที่เอกสาร — gate กับ `tb_period` |
-| `adjustment_type_id` | `String? @db.Uuid` | Yes | FK ไป `tb_adjustment_type` — ต้อง resolve ไปยังแถว flavour wastage |
-| `adjustment_type_code` | `String? @db.VarChar` | Yes | รหัสที่ denormalise (`SPOIL`, `BREAK` ฯลฯ) |
-| `doc_status` | `enum_doc_status` | No | `draft`, `in_progress`, `completed`, `cancelled`, `voided` |
-| `location_id` / `location_code` / `location_name` | `String?` | Yes | Location ที่ยอดลด |
-| `workflow_*` / `last_action_*` | mixed | Yes | Stage workflow, ประวัติ, audit |
-| Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*` |
-
-**Constraints:** `@@unique([so_no, deleted_at])` Reverse relations ไปยัง `tb_stock_out_detail`, `tb_stock_out_comment`
-
-### 5.2 `tb_stock_out_detail`
-
-ถือ `product_id`, `qty`, `cost_per_unit`, `total_cost`, lot reference และ back-pointer `inventory_transaction_id` ที่ set ตอน post `@@unique([stock_out_id, product_id, dimension, deleted_at])`
-
-### 5.3 `tb_adjustment_type` (catalogue reason)
-
-| ฟิลด์ | Type | คำอธิบาย |
-|---|---|---|
-| `code`, `name` | `String` | เช่น `SPOIL` / "Spoilage" |
-| `type` | `enum_adjustment_type` | `stock_in` หรือ `stock_out` — แถว wastage เป็น `stock_out` เสมอ |
-| `is_active` | `Boolean?` | Toggle ความพร้อมใน picker |
-
-ดู [master-data/adjustment-type](/th/inventory/master-data/adjustment-type) สำหรับ catalogue reason เต็ม
-
-## 6. Lifecycle / กติกาทางธุรกิจ
-
-```
-1. Store Keeper เปิด Wastage Reporting / new, เลือก location และ reason
-2. เพิ่ม line items: product, qty, lot (cost_per_unit snapshot ที่ submit)
-3. แนบหลักฐาน (reasons high-loss ต้องการ)
-4. Submit -> draft -> in_progress, route ไปยัง Inventory Controller
-5. Inventory Controller approve -> in_progress -> completed:
-   - INSERT tb_inventory_transaction { inventory_doc_type: 'stock_out' }
-   - INSERT tb_inventory_transaction_detail per line
-   - INSERT tb_inventory_transaction_cost_layer with transaction_type = 'adjustment_out'
-   - GL: DR Wastage Expense, CR Inventory
-6. Reversal (path correction เท่านั้น): tb_stock_out ใหม่ด้วย qty ลบ, note link ไปยังต้นฉบับ
-```
-
-- **Reason บังคับ**, **direction stock_out เท่านั้น**, **submit ≠ approve** (segregation of duties)
-- **ไม่มีการแก้ไขหลัง post** — append-only correction
-- **Flag การรายงาน** การ post แต่ละครั้ง contribute ไปยัง aggregation loss ต่อ outlet, ต่องวด, ต่อ reason
-
-## 7. Cross-References
-
-- [inventory-adjustment](/th/inventory/inventory-adjustment) — โมดูล parent; กฎทางธุรกิจเดียวกัน apply
-- [master-data/adjustment-type](/th/inventory/master-data/adjustment-type) — catalogue reason
-- [inventory](/th/inventory/inventory) &nbsp;·&nbsp; [inventory/transaction](/th/inventory/inventory/transaction) &nbsp;·&nbsp; [costing](/th/inventory/costing) &nbsp;·&nbsp; [reporting-audit](/th/inventory/reporting-audit)
-
-## 8. แหล่งอ้างอิง
-
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_stock_out` (~2759-2812), `tb_stock_out_detail` (~2848-2886), `tb_adjustment_type` (~2569-2594), `enum_adjustment_type` (~2564-2567), `enum_doc_status` (~187-193)
-- **Frontend:** `../carmen-inventory-frontend-react/routes/store-operation/wastage-reporting/` — `wr-form.tsx`, `wr-form-schema.ts`, `wr-item-fields.tsx`
-- **carmen/docs:** `../carmen/docs/inventory-management/period-end-process.md` (wastage เป็น pre-close prerequisite)
+- **Frontend:** `../carmen-inventory-frontend-react/routes/store-operation/wastage-reporting/` (`wr-form.tsx`, `wr-form-schema.ts`, `wr-mock-data.ts`), `hooks/use-wastage-report.ts`, `types/wastage-reporting.ts`
+- **Backend:** ไม่พบ — ไม่มีโมเดล Prisma `tb_wastage_report` (หรือชื่อใกล้เคียง), service หรือ controller ที่ไหนใน `../carmen-turborepo-backend-v2/` เลย
+- **Permission:** `constant/module-list.ts` gate nav entry ด้วย `PERMISSIONS.inventory_management.stock_out.view`

@@ -2,7 +2,7 @@
 title: ใบรับสินค้า (Goods Receive Note) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูล good-receive-note
 published: true
-date: 2026-06-09T00:00:00.000Z
+date: 2026-07-15T00:00:00.000Z
 tags: good-receive-note, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
@@ -24,9 +24,9 @@ dateCreated: 2026-05-15T11:00:00.000Z
 
 ## 1. ภาพรวม
 
-โมดูล good-receive-note เป็นเจ้าของเอนทิตี tenant-schema ห้าตัว: header เอกสาร GRN (`tb_good_received_note`) รายการสินค้า (`tb_good_received_note_detail`) แถวเหตุการณ์รับของต่อบรรทัด (`tb_good_received_note_detail_item`) ที่บันทึกปริมาณรับ/FOC/รับจริงพร้อมภาพถ่ายการคำนวณราคาและภาษีสำหรับแต่ละเหตุการณ์รับของ และตาราง comment สำหรับ workflow / activity log ทั้งระดับ header และระดับบรรทัด (`tb_good_received_note_comment`, `tb_good_received_note_detail_comment`) เช่นเดียวกับ PR และ PO การติดตามขั้นตอน workflow ไม่ใช่ตารางเฉพาะ — JSON columns บน header (`workflow_history`, `workflow_current_stage` ฯลฯ) บวกตาราง comment รวมกันเป็นบันทึกถาวรของ timeline workflow ส่วน `tb_workflow` ที่ใช้ร่วมกันถูกอ้างอิงด้วย `workflow_id` แต่ไม่มี Prisma `@relation`
+โมดูล good-receive-note เป็นเจ้าของเอนทิตี tenant-schema ห้าตัว: header เอกสาร GRN (`tb_good_received_note`) รายการสินค้า (`tb_good_received_note_detail`) แถวเหตุการณ์รับของต่อบรรทัด (`tb_good_received_note_detail_item`) ที่บันทึกปริมาณรับ/FOC พร้อมภาพถ่ายการคำนวณราคาและภาษีสำหรับแต่ละเหตุการณ์รับของ และตาราง comment สำหรับ workflow / activity log ทั้งระดับ header และระดับบรรทัด (`tb_good_received_note_comment`, `tb_good_received_note_detail_comment`) เช่นเดียวกับ PR และ PO การติดตามขั้นตอน workflow ไม่ใช่ตารางเฉพาะ — JSON columns บน header (`workflow_history`, `workflow_current_stage` ฯลฯ) บวกตาราง comment รวมกันเป็นบันทึกถาวรของ timeline workflow ส่วน `tb_workflow` ที่ใช้ร่วมกันถูกอ้างอิงด้วย `workflow_id` แต่ไม่มี Prisma `@relation` **แก้ไขในรอบนี้:** `tb_good_received_note_detail_item` ไม่มีคอลัมน์ `accepted_qty` (หรือคอลัมน์ acceptance/rejection ต่อบรรทัดใดๆ) — การค้นหาทั่ว schema และโค้ดแอปพลิเคชันไม่พบฟิลด์นี้เลย
 
-GRN อยู่ **ปลายน้ำของ [purchase-order](/th/inventory/purchase-order)** และ **ต้นน้ำของ [inventory](/th/inventory/inventory)** ในห่วงโซ่ procure-to-pay การเชื่อมโยงกับ PO ผ่านสองคอลัมน์บน `tb_good_received_note_detail` — `purchase_order_id` และ `purchase_order_detail_id` — โดย `purchase_order_detail_id` เป็นตัวที่มี Prisma `@relation` ชัดเจนกลับไปยัง `tb_purchase_order_detail` ทั้งสองคอลัมน์เป็น nullable เพื่อให้ตารางบรรทัดเดียวกันสามารถแทน GRN แบบ manual ที่ไม่มี PO ต้นทาง (กำหนดโดย enum `doc_type`) เมื่อ commit ผลปลายทางของ GRN จะกระจาย: ทุกบรรทัด resolve เป็นหนึ่งหรือหลายแถวใน `tb_inventory_transaction` / `tb_inventory_transaction_detail` (ผ่าน `tb_good_received_note_detail_item.inventory_transaction_id`) ซึ่งเป็นที่ที่การเพิ่มของคงคลัง cost layer และข้อมูล lot/expiry อยู่จริง `received_qty` ของบรรทัด PO เลื่อนไปข้างหน้า และ GRN เองเปลี่ยน `draft` → `saved` → `committed` GRN ยังเป็นหลักสำคัญของ **three-way match** (PO ↔ GRN ↔ ใบกำกับจากผู้ขาย) — leg ที่จับคู่แล้วคือสิ่งที่ปลดล็อกการ posting AP ปลายทาง
+GRN อยู่ **ปลายน้ำของ [purchase-order](/th/inventory/purchase-order)** และ **ต้นน้ำของ [inventory](/th/inventory/inventory)** ในห่วงโซ่ procure-to-pay การเชื่อมโยงกับ PO ผ่านสองคอลัมน์บน `tb_good_received_note_detail` — `purchase_order_id` และ `purchase_order_detail_id` — โดย `purchase_order_detail_id` เป็นตัวที่มี Prisma `@relation` ชัดเจนกลับไปยัง `tb_purchase_order_detail` ทั้งสองคอลัมน์เป็น nullable เพื่อให้ตารางบรรทัดเดียวกันสามารถแทน GRN แบบ manual ที่ไม่มี PO ต้นทาง (กำหนดโดย enum `doc_type`) **แก้ไขในรอบนี้ — จังหวะการเปลี่ยนแปลงระบบ:** ผลปลายทางที่อธิบายด้านล่างเกิดขึ้นตอนเปลี่ยนสถานะ **`draft → saved`** ไม่ใช่ตอน commit `GoodReceivedNoteLogic.save()` (`good-received-note.logic.ts`) คือจุดที่ resolve ทุกบรรทัดเป็นหนึ่งหรือหลายแถวใน `tb_inventory_transaction` / `tb_inventory_transaction_detail` (ผ่าน `tb_good_received_note_detail_item.inventory_transaction_id` ซึ่งเป็นที่ที่การเพิ่มของคงคลัง cost layer และข้อมูล lot/expiry อยู่จริง) และเพิ่ม `received_qty` ของบรรทัด PO ต้นทาง; การเรียก `saved → committed` ถัดมาเพียงเปลี่ยน `doc_status` และล็อกเอกสาร — ไม่พบผลกระทบต่อ inventory หรือ PO เพิ่มเติมใน `GoodReceivedNoteLogic.commit()` **ยังไม่ยืนยัน:** ไม่พบฟีเจอร์การบันทึกใบกำกับผู้ขาย, three-way match (PO ↔ GRN ↔ invoice) หรือการโพสต์ AP ใดๆ ทั้งใน backend หรือ frontend ปัจจุบัน — ให้ถือว่าข้อความลักษณะนี้เป็นเจตนาการออกแบบ ไม่ใช่พฤติกรรมที่ implement แล้ว (ตรงกับข้อสรุปเดียวกันที่ยืนยันแล้วในโมดูล `purchase-order`)
 
 ประเด็นโครงสร้างที่น่าสังเกต: เอนทิตี `tb_good_received_note_detail_item` ไม่มีเทียบเท่าใน PR หรือ PO ในขณะที่บรรทัด PO เป็น triple ของ qty/unit/price เดียว บรรทัดของ GRN สามารถครอบคลุม **หลายเหตุการณ์รับของ** (การส่งของแบบแยก สต๊อกที่ผสม lot ลงในบรรทัดเดียวกัน FOC bundle ที่รับพร้อมสต๊อกที่จ่ายเงิน) แต่ละเหตุการณ์เป็นแถว `detail_item` ที่บรรจุ triple `order_qty` / `received_qty` / `foc_qty` ของตนเองและภาพถ่ายการเงิน (tax, discount, price, สกุลเงินฐาน) ที่คำนวณ ณ ขณะรับ — และแต่ละเหตุการณ์ยังบรรจุ `inventory_transaction_id` ซึ่งเป็น link ไปยังฝั่ง inventory ที่ข้อมูล lot number, expiry date และ cost-layer อยู่ ดังนั้นในขณะที่ PRD ของ carmen/docs อธิบาย lot/expiry เป็นฟิลด์ **บนบรรทัด GRN เอง** ความเป็นจริงใน Prisma คือมันอยู่บน inventory transaction ที่ link มา แถว `detail_item` คือ cursor เหตุการณ์รับและสะพาน ดูส่วน 5 สำหรับความแตกต่างนี้
 
@@ -36,14 +36,14 @@ GRN อยู่ **ปลายน้ำของ [purchase-order](/th/inventory
 
 ### 2.1 tb_good_received_note
 
-Header เอกสาร GRN บรรจุหมายเลขอ้างอิง บริบท vendor/currency/credit-term ข้อมูลใบกำกับและการรับ snapshot workflow flag consignment/cash ยอดรวม header ในสกุลธุรกรรมและสกุลฐาน และคอลัมน์ audit มาตรฐาน หนึ่ง header มีหลายแถว detail หลาย comment และหลายแถว extra-cost (`tb_extra_cost`)
+Header เอกสาร GRN บรรจุหมายเลขอ้างอิง บริบท vendor/currency/credit-term ข้อมูลใบกำกับและการรับ snapshot workflow ฟิลด์ `post_type` (ap / consignment / cash) ยอดรวม header ในสกุลธุรกรรมและสกุลฐาน และคอลัมน์ audit มาตรฐาน หนึ่ง header มีหลายแถว detail หลาย comment และหลายแถว extra-cost (`tb_extra_cost`)
 
 | Field | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key สร้างผ่าน `gen_random_uuid()` |
 | `grn_no` | `String @db.VarChar` | Yes | หมายเลขอ้างอิง GRN ที่มนุษย์อ่านได้ Nullable เพื่อรองรับ GRN ที่ยังเป็น draft และยังไม่ได้รับการกำหนดหมายเลข |
 | `grn_date` | `DateTime @db.Timestamptz(6)` | Yes | วันที่รับ — เมื่อสินค้าได้รับการรับจริง |
-| `invoice_no` | `String @db.VarChar` | Yes | หมายเลขใบกำกับจากผู้ขาย (ใช้ใน three-way match) |
+| `invoice_no` | `String @db.VarChar` | Yes | หมายเลขใบกำกับจากผู้ขาย unique ร่วมกับ `vendor_id` ข้าม GRN ที่ไม่ได้ soft-delete |
 | `invoice_date` | `DateTime @db.Timestamptz(6)` | Yes | วันที่ใบกำกับจากผู้ขาย |
 | `description` | `String @db.VarChar` | Yes | คำอธิบาย free-text บน header |
 | `doc_status` | `enum_good_received_note_status` | No | สถานะเอกสาร default `draft` |
@@ -65,9 +65,8 @@ Header เอกสาร GRN บรรจุหมายเลขอ้าง�
 | `last_action_at_date` | `DateTime @db.Timestamptz(6)` | Yes | timestamp ของ `last_action` |
 | `last_action_by_id` | `String @db.Uuid` | Yes | user id ที่ทำ `last_action` |
 | `last_action_by_name` | `String @db.VarChar` | Yes | snapshot ชื่อผู้ทำ action |
-| `is_consignment` | `Boolean` | Yes | `true` เมื่อ GRN บันทึก consignment-in (ผู้ขายเป็นเจ้าของ) default `false` |
-| `is_cash` | `Boolean` | Yes | `true` เมื่อการรับเป็นการซื้อเงินสด (ไม่ก่อภาระ AP) default `false` |
-| `signature_image_url` | `String @db.VarChar` | Yes | URL / token รูปลายเซ็นของผู้รับ |
+| `post_type` | `enum_good_received_note_post_type` | Yes | โหมดการ post ของการรับ — `ap` (default), `consignment`, หรือ `cash` **แก้ไขในรอบนี้:** boolean คู่ `is_consignment` / `is_cash` ที่เคยเอกสารไว้ที่นี่ไม่มีอยู่บน `tb_good_received_note` แล้ว — ทั้งสองถูกแทนที่ด้วย enum เดียวนี้ ไม่พบ logic แยกเงื่อนไขตาม `post_type` ใน backend ในรอบตรวจสอบนี้ (ไม่มีพฤติกรรม GL หรือ inventory-transaction-type ที่ต่างกัน) — ฟิลด์นี้ถูกเก็บและ serialize แต่ดูเหมือนจะไม่เปลี่ยนพฤติกรรมของระบบ |
+| `signature_file_token` | `String @db.VarChar` | Yes | token ไฟล์ลายเซ็นของผู้รับ **แก้ไขในรอบนี้:** ชื่อฟิลด์เดิม `signature_image_url` ไม่ตรงกับคอลัมน์ Prisma ปัจจุบัน |
 | `received_by_id` | `String @db.Uuid` | Yes | user id ของผู้รับ |
 | `received_by_name` | `String @db.VarChar` | Yes | snapshot ชื่อแสดงของผู้รับ |
 | `received_at` | `DateTime @db.Timestamptz(6)` | Yes | timestamp ของการรับจริง |
@@ -244,6 +243,7 @@ tb_purchase_order_detail ──1──*──► tb_good_received_note_detail
   - `manual` — GRN แบบ manual ที่ไม่มี PO ต้นทาง `purchase_order_id` และ `purchase_order_detail_id` ของแถว detail เป็น null และผู้ใช้ป้อน vendor / product / qty / price โดยตรง
 - **`enum_comment_type`** (ใช้ร่วมกับ PR และ PO): `user` (comment ที่มนุษย์เขียน) `system` (รายการ activity-log อัตโนมัติที่เขียนโดย workflow engine) ใช้โดยทั้ง `tb_good_received_note_comment.type` และ `tb_good_received_note_detail_comment.type`
 - **`enum_last_action`** (ใช้ร่วมกับ PR และ PO): `submitted`, `approved`, `reviewed`, `rejected` — ใช้โดย `tb_good_received_note.last_action` เพื่อจับ workflow action ล่าสุด
+- **`enum_good_received_note_post_type`**: enum โหมดการ post สำหรับ `tb_good_received_note.post_type` Default `ap` มีสามค่า: `ap` (การรับที่ผูกกับ accounts-payable แบบมาตรฐาน), `consignment`, `cash` แทนที่ boolean คู่ `is_consignment` / `is_cash` เดิมที่ไม่มีอยู่บน model แล้ว ไม่พบ logic แยกเงื่อนไขตามฟิลด์นี้ใน `good-received-note.service.ts`, `good-received-note.logic.ts`, หรือ `inventory-transaction.service.ts` ในรอบตรวจสอบนี้
 
 ## 5. ความแตกต่างจาก carmen/docs
 
@@ -260,7 +260,7 @@ tb_purchase_order_detail ──1──*──► tb_good_received_note_detail
 | 7 | FOC บนบรรทัด | PRD §3.4.4 / §3.4.5 list `FOC quantities` และ `FOC Unit` ต่อบรรทัด | FOC model **ที่ระดับเหตุการณ์รับ** (`tb_good_received_note_detail_item.foc_qty` / `foc_unit_id` / `foc_unit_conversion_factor` / `foc_base_qty`) ไม่ใช่ระดับบรรทัด GRN ซึ่งหมายความว่าบรรทัดเดียวสามารถบันทึก paid stock และ FOC stock เป็นแถว detail_item **แยก** ภายใต้ `good_received_note_detail_id` เดียวกัน | อัปเดต carmen/docs ให้บรรยาย FOC ที่ระดับเหตุการณ์รับ; ชี้แจงว่า paid และ FOC สำหรับสินค้า/สถานที่เดียวกันปกติถูกบันทึกเป็นแถว detail_item parallel ไม่ใช่เป็นสองคอลัมน์บนบรรทัดเดียว |
 | 8 | Delivery point บน header | PRD §3.4.1 list "Delivery Point" ใน header GRN | `tb_good_received_note` **ไม่มี** คอลัมน์ `delivery_point_id` บริบทการส่งถูกจับโดยปริยายผ่าน `location_id` ต่อบรรทัดและผ่าน snapshot delivery-point ของ PO ต้นทางถึงผ่าน `tb_purchase_order_detail_tb_purchase_request_detail.delivery_point_*` | ทิ้ง "Delivery Point" จาก data dictionary ของ header GRN; เอกสารว่าบริบทการส่งเป็นต่อบรรทัดผ่าน `location_id` (และสืบย้อนได้ผ่าน PR-bridge snapshot) |
 | 9 | Department บน header | Technical Spec `GoodsReceivedNote.departmentId` (จำเป็น) | ไม่มีคอลัมน์ `department_id` บน `tb_good_received_note` ข้อมูล department / cost-centre อยู่ใน JSON `dimension` array (array ของ object cost-dimension) | ทิ้ง `departmentId` จาก data dictionary ของ header carmen/docs; เอกสารว่า cost-centre / department อยู่ใน `dimension` JSON ต่อแถว ซึ่งเป็น tenant-extensible cost-dimension contract |
-| 10 | flag `is_consignment` / `is_cash` | PRD §3.4.1 list "Consignment checkbox" และ "Cash checkbox" บน header แต่ไม่รวมใน `GoodsReceivedNote` Technical Spec interface | ทั้งสองฟิลด์มีอยู่บน `tb_good_received_note` (`is_consignment Boolean?`, `is_cash Boolean?` ทั้งคู่ default `false`) | เพิ่มสอง boolean field ลงใน carmen/docs `GoodsReceivedNote` interface และเอกสารความหมาย (consignment-in กดผลกระทบสต๊อกที่กิจการเป็นเจ้าของ + AP; cash กดภาระ AP) |
+| 10 | flag `is_consignment` / `is_cash` → enum `post_type` | PRD §3.4.1 list "Consignment checkbox" และ "Cash checkbox" บน header แต่ไม่รวมใน `GoodsReceivedNote` Technical Spec interface เวอร์ชันก่อนหน้าของหน้านี้ (จนถึง 2026-06-09) ก็เอกสาร boolean สองตัวของ Prisma คือ `is_consignment` / `is_cash` | **แก้ไขในรอบนี้ (2026-07-15):** boolean ทั้งสองไม่มีอยู่บน model `tb_good_received_note` ปัจจุบัน header มีเพียงฟิลด์ `post_type enum_good_received_note_post_type? @default(ap)` เดียวที่มีสามค่า (`ap`, `consignment`, `cash`) ไม่พบ logic แยกเงื่อนไขตาม `post_type` ที่ใดใน backend — ดูเหมือนจะไม่กดผลกระทบต่อภาระ AP หรือสต๊อกที่กิจการเป็นเจ้าของใน implementation ปัจจุบัน | อัปเดต carmen/docs `GoodsReceivedNote` interface ให้เป็นฟิลด์ `post_type` เดียวพร้อมสามค่า enum; ตัดความหมาย "กดผลกระทบ AP/สต๊อก" ออกจนกว่าจะพบ code path ที่ตรงกัน |
 
 ## 6. แหล่งอ้างอิง
 

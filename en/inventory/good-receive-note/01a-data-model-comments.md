@@ -2,7 +2,7 @@
 title: Goods Receive Note — Data Model — Comment Tables
 description: Document-level and line-level comment / attachment tables for the Goods Receive Note module — message text, attachments JSON, and the user/system comment-type enum.
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-07-15T00:00:00.000Z
 tags: good-receive-note, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -58,7 +58,7 @@ Workflow / activity-log entries attached to a GRN header. There is no dedicated 
 
 ### 3.2 tb_good_received_note_detail_comment
 
-Line-level counterpart of `tb_good_received_note_comment`. Captures comments and system events attached to a single GRN line — typically used during inspection to record acceptance / rejection notes and during commit to log per-line posting decisions.
+Line-level counterpart of `tb_good_received_note_comment`. Captures comments and system events attached to a single GRN line. **Corrected this pass:** there is no first-class "inspection" gate or `accepted_qty` field on this module (see [01-data-model.md](/en/inventory/good-receive-note/01-data-model) §1 and §5) — a free-text comment is the only mechanism available for recording a receiving discrepancy note on a line; treat "used during inspection to record acceptance / rejection" as one possible free-text use, not a structured workflow step.
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |

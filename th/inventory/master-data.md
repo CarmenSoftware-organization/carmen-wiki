@@ -2,7 +2,7 @@
 title: ข้อมูลหลัก (Master Data)
 description: ข้อมูลหลักทางธุรกิจที่ถูกอ้างอิงโดยเอกสารธุรกรรมต่าง ๆ — หน่วยนับ แผนก ผู้ขาย สกุลเงิน Profile ภาษี และแคตตาล็อกที่เกี่ยวข้อง
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: 2026-07-15T21:47:09.000Z
 tags: master-data, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -17,7 +17,9 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 1. ภาพรวม
 
-ข้อมูลหลัก (Master Data) คือชุดของระเบียนที่มีชื่อซึ่งเอกสารธุรกรรม *อ้างอิง* แต่ไม่ได้เป็นเจ้าของ หน่วยนับ แผนก สถานที่ จุดส่งของ หน่วยธุรกิจ สกุลเงิน ผู้ขาย Profile ภาษี เงื่อนไขการชำระเงิน ประเภทค่าใช้จ่ายเพิ่ม ประเภทการปรับสต๊อก เหตุผลใบลดหนี้ และเทมเพลต pricelist ทั้งหมดอยู่ที่นี่ แต่ละเอนทิตีเล็กในตัวเอง แต่ทุกตัวถูกอ้างอิงโดยแถวธุรกรรมจำนวนมาก
+ข้อมูลหลัก (Master Data) คือชุดของระเบียนที่มีชื่อซึ่งเอกสารธุรกรรม *อ้างอิง* แต่ไม่ได้เป็นเจ้าของ หน่วยนับ แผนก สถานที่ จุดส่งของ หน่วยธุรกิจ สกุลเงิน ผู้ขาย Profile ภาษี เงื่อนไขการชำระเงิน ประเภทค่าใช้จ่ายเพิ่ม ประเภทการปรับสต๊อก และเหตุผลใบลดหนี้ ทั้งหมดอยู่ที่นี่ (เทมเพลต pricelist เป็นเอนทิตีแยกต่างหาก เป็นเจ้าของโดยโมดูล [vendor-pricelist](/th/inventory/vendor-pricelist)'s route `vendor-management/price-list-template` — ไม่ได้อยู่ในโมดูลนี้) แต่ละเอนทิตีเล็กในตัวเอง แต่ทุกตัวถูกอ้างอิงโดยแถวธุรกรรมจำนวนมาก
+
+**หมายเหตุเรื่องขอบเขต (ยืนยันในรอบนี้):** route tree `/config/*` จริงของ frontend (`routes/config/`) มี 14 หน้าย่อย — `unit`, `department`, `location`, `delivery-point`, `currency`, `exchange-rate`, `tax-profile`, `credit-term`, `extra-cost`, `adjustment-type`, `credit-note-reason`, `business-type`, `certification`, `eco` สองในนั้น — `certification` และ `eco` — ยังไม่มีหน้าย่อยของ wiki (เป็น gap ที่บันทึกไว้แล้วก่อนหน้านี้จากรอบ resync React-stack เมื่อ 2026-06-18; ไม่ได้เขียนในรอบนี้) ในทางกลับกัน สองใน 14 หน้าย่อยของโมดูลนี้ — [vendor](/th/inventory/master-data/vendor) และ [business-unit](/th/inventory/master-data/business-unit) — เอกสาร entity ที่ UI จริงอยู่นอก `/config/*` (`vendor-management/vendor` และแอป admin แยกต่างหาก `carmen-platform` ตามลำดับ); ยังคงเก็บไว้ที่นี่ในฐานะ cross-reference เพราะเอกสาร inventory และ costing engine ต้องพึ่งพามัน ไม่ใช่เพราะหน้าจอของมันอยู่ใต้ Configuration → Master Data
 
 มีหลักการสองข้อที่ขับเคลื่อนการจัดวางของโมดูลร่ม **snapshot semantics**: เอกสารเก็บ FK ไปยังระเบียนหลัก *พร้อมกับ* สำเนาสำหรับแสดงผลแบบ denormalised (name, rate, code) เพื่อให้เอกสารย้อนหลังยังแสดงผลถูกต้องแม้ระเบียนหลักจะถูกเปลี่ยนชื่อหรือยกเลิกการใช้งานในภายหลัง สอง **soft-delete พร้อม active flag**: ทุกเอนทิตีใช้ `is_active` + `deleted_at` เพื่อปลดระวางระเบียนโดยไม่ทำลาย referential integrity ดังนั้นคำตอบมาตรฐานต่อ "ลบ X" คือ "ยกเลิกการใช้งาน X"
 
@@ -54,8 +56,8 @@ Product Admin และ Configurator เป็นผู้บริหารจ�
 - [store-requisition](/th/inventory/store-requisition) ต้องใช้ [master-data/unit](/th/inventory/master-data/unit), [master-data/location](/th/inventory/master-data/location), [master-data/department](/th/inventory/master-data/department)
 - [inventory](/th/inventory/inventory) ต้องใช้ [master-data/unit](/th/inventory/master-data/unit), [master-data/location](/th/inventory/master-data/location), [master-data/business-unit](/th/inventory/master-data/business-unit)
 - [inventory-adjustment](/th/inventory/inventory-adjustment) ต้องใช้ [master-data/unit](/th/inventory/master-data/unit), [master-data/location](/th/inventory/master-data/location), [master-data/adjustment-type](/th/inventory/master-data/adjustment-type), [master-data/credit-note-reason](/th/inventory/master-data/credit-note-reason)
-- [physical-count](/th/inventory/physical-count) ต้องใช้ [master-data/location](/th/inventory/master-data/location), [master-data/unit](/th/inventory/master-data/unit), [master-data/adjustment-type](/th/inventory/master-data/adjustment-type)
-- [spot-check](/th/inventory/spot-check) ต้องใช้ [master-data/location](/th/inventory/master-data/location), [master-data/adjustment-type](/th/inventory/master-data/adjustment-type)
+- [physical-count](/th/inventory/physical-count) ต้องใช้ [master-data/location](/th/inventory/master-data/location), [master-data/unit](/th/inventory/master-data/unit) **ไม่ใช้** [master-data/adjustment-type](/th/inventory/master-data/adjustment-type) — variance rollup ของมันสร้างแถว stock-in/out โดยปล่อย `adjustment_type_id` เป็น `null` (ยืนยันในรอบนี้ ดู Cross-References ของหน้า adjustment-type)
+- [spot-check](/th/inventory/spot-check) ต้องใช้ [master-data/location](/th/inventory/master-data/location) เท่านั้น **ไม่ใช้** [master-data/adjustment-type](/th/inventory/master-data/adjustment-type) — มันไม่เคยสร้างแถว stock-in/out เลย (ยืนยันในรอบนี้)
 - [costing](/th/inventory/costing) ต้องใช้ [master-data/business-unit](/th/inventory/master-data/business-unit) (สำหรับ `calculation_method`), [master-data/currency](/th/inventory/master-data/currency) และ [master-data/exchange-rate](/th/inventory/master-data/exchange-rate) (สำหรับ FX revaluation แบบมีวันที่)
 - [vendor-pricelist](/th/inventory/vendor-pricelist) ต้องใช้ [master-data/vendor](/th/inventory/master-data/vendor), [master-data/currency](/th/inventory/master-data/currency), [master-data/tax-profile](/th/inventory/master-data/tax-profile), [templates/price-list](/th/inventory/templates/price-list)
 - [product](/th/inventory/product) ต้องใช้ [master-data/unit](/th/inventory/master-data/unit), [master-data/tax-profile](/th/inventory/master-data/tax-profile)

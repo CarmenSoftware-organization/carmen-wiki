@@ -1,8 +1,8 @@
 ---
 title: Report Template — UI Screens
-description: ReportTemplateManagement list (Status + Source Type filters, CSV export) and ReportTemplateEdit 2-pane form (left — identity + source + BU scope; right — 3-tab CodeMirror Dialog XML / Content XML / Preview) — layout, filters, Browse-in-BU probe, sticky action bar, persisted state.
+description: ReportTemplateManagement list (Status + Source Type + Template Type filters, CSV export) and ReportTemplateEdit 2-pane form (left — identity + source + BU scope; right — 3-tab CodeMirror Dialog XML / Content XML / Preview) — layout, filters, Browse-in-BU probe, sticky action bar, not-found gating, doc_version, persisted state.
 published: true
-date: 2026-06-10T14:15:00.000Z
+date: 2026-07-29T00:00:00.000Z
 tags: book/platform, report-templates, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -11,7 +11,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 # Report Template — UI Screens
 
 > **At a Glance**
-> **Screens:** `ReportTemplateManagement` (list, `/report-templates`) &nbsp;·&nbsp; `ReportTemplateEdit` create (`/report-templates/new`) &nbsp;·&nbsp; `ReportTemplateEdit` view/edit (`/report-templates/:id/edit`) &nbsp;·&nbsp; **Edit layout:** 2-pane — left: identity + BU scope + data source cards (sticky); right: 3-tab CodeMirror — Dialog XML · Content XML · Preview &nbsp;·&nbsp; **Dialogs:** Browse in BU probe · Soft Delete confirm &nbsp;·&nbsp; **Access:** routes gated by `report_template.read` / `.create` / `.update`; in-page `<Can>` gates on Add Template, row Edit, row Delete, and the Edit toggle (see [Permissions](./permissions.md)) &nbsp;·&nbsp; **Persisted UI state:** 6 `localStorage` keys on the list page + 1 on the edit page
+> **Screens:** `ReportTemplateManagement` (list, `/report-templates`) &nbsp;·&nbsp; `ReportTemplateEdit` create (`/report-templates/new`) &nbsp;·&nbsp; `ReportTemplateEdit` view/edit (`/report-templates/:id/edit`) &nbsp;·&nbsp; **Edit layout:** 2-pane — left: identity + BU scope + data source cards (sticky); right: 3-tab CodeMirror — Dialog XML · Content XML · Preview &nbsp;·&nbsp; **Dialogs:** Browse in BU probe · Soft Delete confirm &nbsp;·&nbsp; **Access:** routes gated by `report_template.read` / `.create` / `.update`; in-page `<Can>` gates on Add Template, row Edit, row Delete, and the Edit toggle (see [Permissions](./permissions.md)) &nbsp;·&nbsp; **Persisted UI state:** 7 `localStorage` keys on the list page + 1 on the edit page &nbsp;·&nbsp; **Since 2026-07-23:** `template_type` (List/Form select, required) drives conditional fields — `is_standard` for list templates, `is_default` + a fixed `report_group` dropdown for form templates; not-found gating and `doc_version` optimistic locking added to the edit page
 
 ## 1. Overview
 
@@ -27,25 +27,26 @@ The page renders inside `Layout` with a two-row header: a title row ("Report Tem
 
 ### 2.2 Filters (Sheet panel)
 
-Clicking **Filters** opens a right-side Sheet (`SheetContent side="right"`, `w-full sm:max-w-sm`). Two filter groups are wired (`ReportTemplateManagement.tsx:373-428`):
+Clicking **Filters** opens a right-side Sheet (`SheetContent side="right"`, `w-full sm:max-w-sm`). Three filter groups are wired (`ReportTemplateManagement.tsx`, the Sheet body):
 
 - **Status** — two toggle buttons: **Active** (`is_active = true`) and **Inactive** (`is_active = false`). Toggling a button appends or removes the value from `statusFilter`. The SPA serialises the selection as `is_active: boolean` inside the `advance` query object sent to `GET /api-system/report-templates`.
-- **Source Type** — three toggle buttons: **View**, **Function**, **Procedure** (values: `view`, `function`, `procedure`). The SPA serialises the selection as `source_type: { in: [...] }` inside `advance` when any value is selected. Multiple values may be toggled simultaneously.
+- **Source Type** — three toggle buttons: **view**, **function**, **procedure**. The SPA serialises the selection as `source_type` (a scalar when one value is picked, `{ in: [...] }` when more than one) inside `advance`. Multiple values may be toggled simultaneously.
+- **Template Type** — two toggle buttons: **form**, **list** (added 2026-07-23 alongside the `template_type` column rename). Serialises the same way as Source Type (`template_type` scalar or `{ in: [...] }`).
 
-There is no Standard/Custom filter group and no soft-deleted row toggle (unlike clusters). When any filter is active a **Clear All Filters** button appears at the bottom of the Sheet. The active filter count badge (`activeFilterCount`) increments once per filter group that has any active values, not per value — so the maximum shown is `2` (`ReportTemplateManagement.tsx:157`).
+There is no Standard/Custom filter group and no soft-deleted row toggle (unlike clusters). When any filter is active a **Clear All Filters** button appears at the bottom of the Sheet. The active filter count badge (`activeFilterCount`) increments once per filter group that has any active values, not per value — so the maximum shown is `3` (Status + Source Type + Template Type, `ReportTemplateManagement.tsx`).
 
 ### 2.3 Header actions
 
 Two buttons appear in the header actions row, left to right:
 
-- **Export** — client-side CSV export using the shared `generateCSV` / `downloadCSV` utilities (`ReportTemplateManagement.tsx:181-191`). Exports the currently loaded page of rows with columns: `name`, `description`, `report_group`, `source_type`, `source_name`, `Standard` (`is_standard`), `Status` (`is_active`). File name: `report-templates-<YYYY-MM-DD>.csv` where the date is the export moment. The button is disabled while loading or when the table is empty. Not permission-gated — any `report_template.read` holder can export.
+- **Export** — client-side CSV export using the shared `generateCSV` / `downloadCSV` utilities (`ReportTemplateManagement.tsx`, `handleExport`). Exports the currently loaded page of rows with columns: `Name` (`name`), `Description` (`description`), `Report Group` (`report_group`), `Standard` (`is_standard`), `Status` (`is_active`), `Created` (`created_at`) — **not** `source_type`/`source_name`, despite an earlier sync claiming those were exported. File name: `report-templates-<YYYY-MM-DD>.csv` where the date is the export moment. The button is disabled while loading or when the table is empty. Not permission-gated — any `report_template.read` holder can export.
 - **Add Template** — navigates to `/report-templates/new`. Wrapped in `<Can permission="report_template.create">` — hidden without that grant. (The empty-state Add Template button is ungated; the route guard on `/report-templates/new` catches — see [Permissions §7](./permissions.md).)
 
 There is no Hard Delete option in the report-template header. The export is purely client-side — it operates on the in-memory `templates` array, not a separate backend endpoint.
 
 ### 2.4 Row actions
 
-Each row has a `DropdownMenu` (⋯ icon button) with two items, each wrapped in its own `<Can>` gate (`ReportTemplateManagement.tsx:304-315`):
+Each row has a `DropdownMenu` (⋯ icon button) with two items, each wrapped in its own `<Can>` gate (`ReportTemplateManagement.tsx:315-326`):
 
 - **Edit** — navigates to `/report-templates/:id/edit`. Wrapped in `<Can permission="report_template.update">`.
 - **Delete** — sets `deleteId` state; opens the Soft Delete confirm `ConfirmDialog` (§5.2). On confirm, calls `DELETE /api-system/report-templates/:id`. The SPA uses `reportTemplateService.delete(id)` with no hard-delete alternative exposed from the management UI. Wrapped in `<Can permission="report_template.delete">`.
@@ -56,35 +57,37 @@ There is no Hard Delete row action. Hard deletion is not exposed from the Platfo
 
 ### 2.5 Audit columns
 
-The `DataTable` includes the following columns in order (`ReportTemplateManagement.tsx:194-315`):
+The `DataTable` includes the following columns in order (`ReportTemplateManagement.tsx`, the `columns` array):
 
 | Column header | Accessor / field | Notes |
 |---|---|---|
-| Name | `name` | Clickable link text; navigates to `/report-templates/:id/edit` |
-| Description | `description` | Truncated at `max-w-[200px]`; muted foreground text |
-| Report Group | `report_group` | Rendered as an outline `Badge` |
-| Source | `source_type` + `source_name` | Two-line cell: type badge (variant `default` = function, `secondary` = procedure, `outline` = view) + monospace `source_name` below |
-| Standard | `is_standard` | `Standard` (default badge) or `Custom` (secondary badge) |
+| Name | `name` | Clickable link text (+ description as muted subtext below); navigates to `/report-templates/:id/edit` |
+| Template Type | `template_type` | **Added 2026-07-23.** Outline `Badge`, capitalised, defaults to `list` when absent |
+| Report Group | `report_group` | Outline `Badge`; when `template_type = 'form'` and `is_default`, a second filled "Default" badge renders alongside it |
+| Standard | `is_standard` | `Standard` (default badge) or `Custom` (secondary badge) — shown regardless of `template_type`, though the field is only editable for list templates in the edit form |
 | Status | `is_active` | `Active` (success badge) or `Inactive` (secondary badge) |
 | Created | `created_at` | Formatted `YYYY-MM-DD HH:mm:ss` in browser local time |
-| Updated | `updated_at` | Same format; suppressed (renders `null`) when `updated_at === created_at` |
+| Updated | `updated_at` | Same format; row omitted when `updated_at === created_at` |
 | Actions | — | `DropdownMenu` icon button; see §2.4 |
 
-There are no `deleted_at` / `deleted_by_name` columns — the list does not support a show-soft-deleted filter (unlike the clusters list).
+**Removed 2026-07-23:** the former "Source" column (`source_type` + `source_name` two-line cell) no longer exists in the list — `source_type`/`source_name` are edit-page-only fields now; the Template Type column took its place. There are no `deleted_at` / `deleted_by_name` columns — the list does not support a show-soft-deleted filter (unlike the clusters list). Default sort is `name:asc` (was `created_at:desc` before 2026-07-23 — see §6 for the persisted-key migration this forced).
 
 ## 3. `ReportTemplateEdit` — create mode (`/report-templates/new`)
 
-In create mode (`isNew = true`) the page title is "New Report Template" and the subtitle is "Create a new report template". The form is immediately editable — there is no Edit header button and no view mode. The same 2-pane layout renders as in edit mode, but the **Metadata** card is absent (it is only shown when `!isNew && !loading && (metadata.created_at || metadata.updated_at)` — `ReportTemplateEdit.tsx:536`).
+In create mode (`isNew = true`) the page title is "New Report Template" and the subtitle is "Create a new report template". The form is immediately editable — there is no Edit header button and no view mode. The same 2-pane layout renders as in edit mode, but the **Metadata** card is absent (it is only shown when `!isNew && !loading && (metadata.created_at || metadata.updated_at)` — `ReportTemplateEdit.tsx:743`).
 
-Required fields at submit time (`ReportTemplateEdit.tsx:259-268`):
+Required fields at submit time (`ReportTemplateEdit.tsx` `handleSubmit`):
 
 | Field | Required | Validation |
 |---|---|---|
+| `template_type` | Yes | **Added 2026-07-23.** Must be `list` or `form`; inline error if left at the blank placeholder option |
 | `name` | Yes | Non-empty; inline error on blur and on submit |
-| `report_group` | Yes | Non-empty; inline error on blur and on submit |
+| `report_group` | Yes | Non-empty; inline error on blur and on submit. For `template_type = 'form'` this is a `<select>` constrained to `FORM_REPORT_GROUPS`; for `list` it is a free-text input |
 | `source_name` | Conditional | Required when `source_type` is `function` or `procedure`; optional for `view` |
 
-All other fields (`description`, `builder_key`, `is_standard`, `is_active`, `allow_business_unit`, `deny_business_unit`, `dialog`, `content`, `source_params`) are optional at creation time. Default values from `initialFormData`: `is_standard = true`, `is_active = true`, `source_type = 'view'`.
+All other fields (`description`, `builder_key`, `is_standard`, `is_default`, `is_active`, `allow_business_unit`, `deny_business_unit`, `dialog`, `content`, `source_params`) are optional at creation time. Default values from `initialFormData`: `template_type = ''` (blank placeholder, unless pre-filled — see below), `is_standard = true`, `is_default = false`, `is_active = true`, `source_type = 'view'`.
+
+**Pre-filled create (added 2026-07-23):** navigating from the Form Groups screen's "+ Add" action passes `{ template_type: 'form', report_group: <group code> }` via router state, seeding the create form (`seedInitialFormData`) so the author doesn't have to re-pick the type/group. Direct visits to `/report-templates/new` (no state) get the plain blank defaults above.
 
 The sticky action bar (§4.8) shows the **Create Template** label. On submit, calls `POST /api-system/report-templates`. On success, if the response carries an `id`, navigates to `/report-templates/:id/edit` with `{ replace: true }` so Back returns to the list rather than the create form. If no `id` is returned, navigates to `/report-templates`.
 
@@ -94,25 +97,33 @@ The page starts in **view mode** (`editing = false`). An **Edit** button appears
 
 The 2-pane grid uses `grid-cols-1 lg:grid-cols-[minmax(320px,380px)_1fr]` — the left column is fixed-width and `lg:sticky lg:top-4 lg:self-start` so it stays visible while the right pane scrolls.
 
+### 4.0 Not-found gating and doc_version (both added 2026-07-23)
+
+A bad or deleted `id` renders a dedicated not-found shell instead of the edit form: `PageHeader` with just a back link, a `SearchX`-icon `EmptyState` titled "Report template not found", and a "Back to report templates" button — mirrors the same pattern added to clusters/business-units/users/applications. `docVersion` is captured from the loaded record (`getDocVersion`) and sent back on every `PUT`; a version conflict shows the shared `notifyVersionConflict()` toast and re-fetches rather than silently overwriting.
+
+Below the header (view mode only), a badge row shows: Active/Inactive, then either a Standard/Custom badge (list templates) or a Default/— badge (form templates, shown only when `is_default`), then the `report_group` value as an outline badge.
+
 ### 4.1 Left pane — Template Info card
 
-Card title: "Template Info" (`ReportTemplateEdit.tsx:381`).
+Card title: "Template Info".
 
 | Field | Input type | Required | Edit-mode notes |
 |---|---|---|---|
+| `template_type` | `<select>` (List / Form) | Yes | **Added 2026-07-23.** In view mode shown as an outline `Badge`. Changes which of `is_standard`/`is_default` and which `report_group` control (select vs. free text) render below |
 | `name` | text `Input` | Yes | `required`, inline destructive error on blur and submit |
 | `description` | `<textarea>` | No | 3 rows; auto-resize not used |
-| `report_group` | text `Input` | Yes | Inline error; in view mode shown as an outline `Badge` |
-| `is_standard` | checkbox | — | Visible in edit mode only (`ReportTemplateEdit.tsx:468-480`). Defaults `true`. |
-| `is_active` | checkbox | — | Visible in edit mode only (`ReportTemplateEdit.tsx:480-490`). Defaults `true`. |
+| `report_group` | `<select>` (form templates) or text `Input` (list templates) | Yes | For `template_type = 'form'`: a `<select>` constrained to `FORM_REPORT_GROUPS`, with the current value kept as an extra option if it's a legacy code outside that list. For `list`: a free-text input, unconstrained. In view mode both render as an outline `Badge` |
+| `is_standard` | checkbox | — | Visible in edit mode only, and **only when `template_type ≠ 'form'`**. Defaults `true` |
+| `is_default` | checkbox ("Default for this report group") | — | **Added 2026-07-23.** Visible in edit mode only, and **only when `template_type = 'form'`**. A helper note below warns that saving a second default in the same group will fail server-side (the partial unique index) — unset the other one first |
+| `is_active` | checkbox | — | Visible in edit mode only. Defaults `true` |
 
-In view mode, `is_standard` and `is_active` are not rendered as fields — they appear as header badges only (`ReportTemplateEdit.tsx:337-343`). In edit mode they render as side-by-side checkboxes in a `grid-cols-2` row inside the Template Info card.
+In view mode, `is_standard`/`is_default` and `is_active` are not rendered as form fields — they appear in the badge row above the form (§4.0) and as small labelled badges inside the Template Info card ("Kind"/"Group Default" + "Status"). In edit mode the lifecycle checkboxes render side-by-side in a `grid-cols-2` row inside the Template Info card.
 
-The `kind` field (`'report' | 'print'` in `ReportTemplate` service type — `reportTemplateService.ts:22`) is **not exposed** in the edit form. It exists on the API type but the SPA form does not display or mutate it.
+**Renamed 2026-07-23:** the field previously called `kind` (`'report' | 'print'`, undocumented in the SPA form) is now `template_type` (`'list' | 'form'`) and **is** exposed as the first field in this card, required at submit — the earlier sync's claim that it was absent from the form is stale.
 
 ### 4.2 Left pane — Business Unit Scope card
 
-Card title: "Business Unit Scope" (`ReportTemplateEdit.tsx:498`).
+Card title: "Business Unit Scope" (`ReportTemplateEdit.tsx:706`).
 
 Two `ChipInput` fields:
 
@@ -121,13 +132,13 @@ Two `ChipInput` fields:
 | `allow_business_unit` | Allow | "Type BU code + Enter (blank = all)" |
 | `deny_business_unit` | Deny | "Type BU code + Enter (blank = none)" |
 
-Both inputs are disabled when `editing = false`. Each chip represents one BU code; pressing Enter after typing a code adds it; clicking the chip's remove button deletes it.
+Both inputs are disabled when `editing = false`. **Added 2026-07-23:** both are also force-disabled and show empty/placeholder values whenever `template_type = 'form'` (placeholders read "All business units (form template)" / "—") — form templates are not BU-scoped this way; the fields only do anything for `template_type = 'list'`. Each chip represents one BU code; pressing Enter after typing a code adds it; clicking the chip's remove button deletes it.
 
-**Storage note:** the underlying Prisma columns `allow_business_unit` and `deny_business_unit` are `Json @db.JsonB` (see [Data Model §2.1](./data-model.md)). The SPA normalises the API response to a CSV string via a local `toCsv()` helper (`ReportTemplateEdit.tsx:183-186`) for `ChipInput` display. On save, the form sends the CSV string directly in the payload — the backend is responsible for parsing it back to the stored JSON shape. Testers verifying API round-trips should read the data-model page for the exact stored representation.
+**Storage note:** the underlying Prisma columns `allow_business_unit` and `deny_business_unit` are `Json @db.JsonB` (see [Data Model §2.1](./data-model.md)). The SPA normalises the API response to a CSV string via a local `toCsv()` helper (`ReportTemplateEdit.tsx:213-217`) for `ChipInput` display. On save, the form sends the CSV string directly in the payload — the backend is responsible for parsing it back to the stored JSON shape. Testers verifying API round-trips should read the data-model page for the exact stored representation.
 
 ### 4.3 Left pane — Metadata card
 
-Shown only in view/edit mode, only when at least one of `created_at` or `updated_at` is non-null (`ReportTemplateEdit.tsx:536`). Card title: "Metadata".
+Shown only in view/edit mode, only when at least one of `created_at` or `updated_at` is non-null (`ReportTemplateEdit.tsx:743`). Card title: "Metadata".
 
 Displays four read-only fields: Created date/time (`fmtDateTime`), Created by (`created_by_name`), Updated date/time, Updated by (`updated_by_name`). All timestamps are formatted `YYYY-MM-DD HH:mm` in browser local time.
 
@@ -135,13 +146,13 @@ The Metadata card is absent in create mode and absent while loading. It appears 
 
 ### 4.4 Left pane — Data Source card
 
-Card title: "Data Source" (`ReportTemplateEdit.tsx:560`).
+Card title: "Data Source" (`ReportTemplateEdit.tsx:764`).
 
 **Source Type** (`source_type`): a `<select>` with three options in edit mode: `View`, `Function`, `Procedure` (values: `view`, `function`, `procedure`). In view mode renders as an outline `Badge`. Changing `source_type` updates the Source Name placeholder and determines whether `source_name` becomes required.
 
 **Source Name** (`source_name`): text `Input` in edit mode. Required when `source_type` is `function` or `procedure`; optional for `view`. Placeholder text changes per type: `e.g. v_pr_summary` (view), `e.g. fn_pr_report` (function), `e.g. sp_pr_report` (procedure). Help text below: "Plain identifier only — no schema prefix, no quotes. Resolved against each tenant's schema at runtime." In view mode renders as `ReadOnlyText`.
 
-**Browse in BU** (inline probe panel, edit mode only — `ReportTemplateEdit.tsx:610-676`): a dashed-border panel below the Source Name input. The author enters a BU code into a compact text input (`probe_bu`), clicks **Load**, and the SPA calls `reportTemplateService.listDbObjects(buCode)` → `GET /api-system/report-templates/db-objects?bu_code=<buCode>`. The response (`{ views, functions, procedures }` each as `Array<{ name, kind }>`) is stored in `dbObjects` state. A `<select>` dropdown appears listing all objects matching the current `source_type`; selecting one populates `source_name`. The last-used BU code is persisted to `localStorage` key `report_template_probe_bu` so it survives page reloads. If the chosen `source_type` has no objects in that BU, an italic message "No `<type>`s found in `<BU>`" is shown instead of the select.
+**Browse in BU** (inline probe panel, edit mode only — `ReportTemplateEdit.tsx:818-897`): a dashed-border panel below the Source Name input. The author enters a BU code into a compact text input (`probe_bu`), clicks **Load**, and the SPA calls `reportTemplateService.listDbObjects(buCode)` → `GET /api-system/report-templates/db-objects?bu_code=<buCode>`. The response (`{ views, functions, procedures }` each as `Array<{ name, kind }>`) is stored in `dbObjects` state. A `<select>` dropdown appears listing all objects matching the current `source_type`; selecting one populates `source_name`. The last-used BU code is persisted to `localStorage` key `report_template_probe_bu` so it survives page reloads. If the chosen `source_type` has no objects in that BU, an italic message "No `<type>`s found in `<BU>`" is shown instead of the select.
 
 **Source Parameters** (`source_params`): an editable table of `SourceParamRow` items. Columns: `Filter Field (ReportFilters)` (maps a named filter from the Dialog XML to a procedure/function argument), `PG Type` (PostgreSQL type string, e.g. `date`, `uuid`, `text`), `Nullable` (checkbox). An **+ Add Param** button appends a blank row; each row has a `×` remove button. In view mode the table renders read-only with monospace text. For `source_type = 'view'`, a hint reads "Views do not take parameters — filters apply via WHERE clause" and the Add Param button is hidden. For `source_type = 'procedure'`, an italic note explains: "Procedure must accept these positional args plus an INOUT refcursor at the end (default name `rs`). Filters are applied inside the procedure — executor will not add a WHERE clause."
 
@@ -149,7 +160,7 @@ Card title: "Data Source" (`ReportTemplateEdit.tsx:560`).
 
 ### 4.5 Right pane — Dialog XML tab
 
-Tab trigger label: "Dialog XML" with a line-count badge (count of newlines in `formData.dialog`) and a red dot (`aria-label="Invalid"`) when `dialogValidation.valid = false` (`ReportTemplateEdit.tsx:832-845`).
+Tab trigger label: "Dialog XML" with a line-count badge (count of newlines in `formData.dialog`) and a red dot (`aria-label="Invalid"`) when `dialogValidation.valid = false` (`ReportTemplateEdit.tsx:1049-1061`).
 
 Hosts a `XmlEditor` component with:
 - `uploadAccept=".xml,.txt"` — file upload button in the editor toolbar accepts `.xml` and `.txt`
@@ -179,7 +190,7 @@ Renders `<DialogPreview xml={formData.dialog} />` — a disabled-form rendering 
 
 ### 4.8 Sticky action bar
 
-Rendered when `editing = true` as a `fixed bottom-0 ... z-40` bar with a translucent backdrop (`bg-background/85 backdrop-blur-xl`), inset to the sidebar width (`md:left-16 lg:left-60`) (`ReportTemplateEdit.tsx:912-948`).
+Rendered when `editing = true` as a `fixed bottom-0 ... z-40` bar with a translucent backdrop (`bg-background/85 backdrop-blur-xl`), inset to the sidebar width (`md:left-16 lg:left-60`) (`ReportTemplateEdit.tsx:1122-1164`).
 
 Left side: unsaved-changes indicator. When `hasChanges = true` (i.e. `editing` is true and current `formData !== savedFormData`), shows a pulsing amber dot + "Unsaved changes" text. When no changes have been made yet, shows "No changes" in muted foreground.
 
@@ -187,9 +198,9 @@ Right side, left to right:
 - **Cancel** (outline button, shown only when `!isNew`) — calls `handleCancelEdit()`: restores `formData` from `savedFormData`, sets `editing = false`, clears `fieldErrors` and `error`. No API call.
 - **Create Template** / **Save Changes** (primary button) — calls `formRef.current?.requestSubmit()`. Label is "Create Template" in create mode, "Save Changes" in edit mode. Disabled when saving or (in edit mode) when `!hasChanges`. Shows a `Loader2` spinner while `saving = true`.
 
-**Keyboard shortcuts**: the `useGlobalShortcuts` hook wires Ctrl/Cmd+S to `formRef.current?.requestSubmit()` and plain Escape (no modifier) to `handleCancelEdit()` (`ReportTemplateEdit.tsx:153-163`).
+**Keyboard shortcuts**: the `useGlobalShortcuts` hook wires Ctrl/Cmd+S to `formRef.current?.requestSubmit()` and plain Escape (no modifier) to `handleCancelEdit()` (`ReportTemplateEdit.tsx:181-188`).
 
-**Unsaved-changes guard**: `useUnsavedChanges(hasChanges)` fires a browser `beforeunload` warning when the user attempts to navigate away or close the tab while `hasChanges = true` (`ReportTemplateEdit.tsx:144`).
+**Unsaved-changes guard**: `useUnsavedChanges(hasChanges)` fires a browser `beforeunload` warning when the user attempts to navigate away or close the tab while `hasChanges = true` (`ReportTemplateEdit.tsx:172`).
 
 ## 5. Dialogs
 
@@ -198,20 +209,20 @@ Right side, left to right:
 This is not a modal dialog — it is an **inline panel** inside the Data Source card's Source Name section, visible only in edit mode (§4.4). The panel uses a dashed border to distinguish it from the main form area.
 
 Workflow:
-1. Author types a BU code into the compact `probe_bu` input. The code is persisted immediately to `localStorage.setItem('report_template_probe_bu', value)` (`ReportTemplateEdit.tsx:621`).
+1. Author types a BU code into the compact `probe_bu` input. The code is persisted immediately to `localStorage.setItem('report_template_probe_bu', value)` (`ReportTemplateEdit.tsx:829`).
 2. Author clicks **Load**. The button shows "Loading…" while `loadingDbObjects = true`.
 3. SPA calls `reportTemplateService.listDbObjects(buCode)` → `GET /api-system/report-templates/db-objects?bu_code=<buCode>`.
 4. On success, a `<select>` renders the objects of the matching type (`views` / `functions` / `procedures` based on current `source_type`). The placeholder option shows the count: "— pick from N `<type>`s in `<BU>` —".
 5. Selecting an object sets `formData.source_name` to that object's `name` value.
 6. On error, a `toast.error` is shown and `dbObjects` is reset to `null`.
 
-If `probeBuCode` is present on mount (restored from `localStorage`), `loadDbObjects` is called automatically during `useEffect` (`ReportTemplateEdit.tsx:136-140`).
+If `probeBuCode` is present on mount (restored from `localStorage`), `loadDbObjects` is called automatically during `useEffect` (`ReportTemplateEdit.tsx:166-169`).
 
 ### 5.2 Soft Delete confirm
 
-Triggered by the **Delete** row action in `ReportTemplateManagement` (`ReportTemplateManagement.tsx:310-315`).
+Triggered by the **Delete** row action in `ReportTemplateManagement` (`ReportTemplateManagement.tsx:315-326`).
 
-Uses the shared `ConfirmDialog` component — a simple Yes/No confirm, no typed confirmation required (`ReportTemplateManagement.tsx:508-516`). Properties:
+Uses the shared `ConfirmDialog` component — a simple Yes/No confirm, no typed confirmation required (`ReportTemplateManagement.tsx:552-560`). Properties:
 - **Title:** "Delete Report Template"
 - **Description:** "Are you sure you want to delete this report template? This action cannot be undone."
 - **Confirm button label:** "Delete" (destructive variant)
@@ -220,19 +231,20 @@ On confirm, calls `reportTemplateService.delete(id)` → `DELETE /api-system/rep
 
 ## 6. Persisted UI state
 
-The list page writes 6 keys to `localStorage`. The edit page writes 1 key (the Browse-in-BU probe BU code).
+The list page writes 7 keys to `localStorage`. The edit page writes 1 key (the Browse-in-BU probe BU code).
 
 | Key | Stored type | Persists |
 |---|---|---|
 | `search_report_templates` | string | Current debounced search term |
 | `page_report_templates` | number (string) | Current page number; reset to `1` on search or filter change |
 | `perpage_report_templates` | number (string) | Rows per page |
-| `sort_report_templates` | string | Current sort column/direction (default `created_at:desc`) |
+| `sort_report_templates_v2` | string | Current sort column/direction (default `name:asc`). **Renamed from `sort_report_templates` on 2026-07-23** — the code comment explains this deliberately force-resets any user who had the old `created_at:desc` default persisted, since the new default is `name:asc` |
 | `filters_report_templates` | JSON array | Active Status filter values (e.g. `["true"]`, `["false"]`, `[]`) |
 | `filters_report_templates_source_type` | JSON array | Active Source Type filter values (e.g. `["view","function"]`, `[]`) |
+| `filters_report_templates_template_type` | JSON array | **Added 2026-07-23.** Active Template Type filter values (e.g. `["form"]`, `["form","list"]`, `[]`) |
 | `report_template_probe_bu` | string | Last-used BU code for the Browse-in-BU probe in the edit page |
 
-Note: `filters_report_templates` stores `is_active` booleans as **string values** `"true"` / `"false"` (not native JSON booleans) because they originate from button click values (`ReportTemplateManagement.tsx:392-406`). Readers querying this key directly should parse strings, not booleans.
+Note: `filters_report_templates` stores `is_active` booleans as **string values** `"true"` / `"false"` (not native JSON booleans) because they originate from button click values. Readers querying this key directly should parse strings, not booleans.
 
 There is no Standard/Custom filter and therefore no `filters_report_templates_standard` key. The `ReportTemplateEdit` page does not persist any state beyond `report_template_probe_bu`.
 
@@ -244,6 +256,7 @@ There is no Standard/Custom filter and therefore no `filters_report_templates_st
 
 - `../carmen-platform/SITEMAP.md` — route table for the three report-template routes; note it still shows the legacy `allowedRoles` lists — `src/App.tsx` is authoritative for the `requiredPermission` keys.
 - `../carmen-platform/src/pages/ReportTemplateManagement.tsx` — list page: filters (Status + Source Type), header actions (Export, Add Template behind `<Can permission="report_template.create">`), row actions (Edit / Delete soft, behind `<Can>` gates), DataTable columns, 6 `localStorage` keys.
-- `../carmen-platform/src/pages/ReportTemplateEdit.tsx` — create/view/edit page: 2-pane layout, Template Info card (5 visible fields + `kind` absent), Business Unit Scope card (ChipInput, `toCsv()` normalisation), Metadata card, Data Source card (source binding, Browse-in-BU probe, source params table, builder key), 3-tab CodeMirror right pane, sticky action bar, `useUnsavedChanges` hook.
+- `../carmen-platform/src/pages/ReportTemplateEdit.tsx` — create/view/edit page: 2-pane layout, Template Info card (`template_type`/`is_standard`/`is_default` conditional on type, not-found gating, `doc_version`), Business Unit Scope card (ChipInput, `toCsv()` normalisation, disabled for form templates), Metadata card, Data Source card (source binding, Browse-in-BU probe, source params table, builder key), 3-tab CodeMirror right pane, sticky action bar, `useUnsavedChanges` hook.
+- `../carmen-platform/src/pages/ReportFormGroupManagement.tsx` / `../carmen-platform/src/constants/reportGroups.ts` — the Form Groups screen and its fixed `report_group` list (see [report-templates landing](/en/platform/report-templates) §1).
 - `../carmen-platform/src/services/reportTemplateService.ts` — API surface (paths pluralised 2026-06): `GET /api-system/report-templates`, `GET /api-system/report-templates/:id`, `POST /api-system/report-templates`, `PUT /api-system/report-templates/:id`, `DELETE /api-system/report-templates/:id`, `GET /api-system/report-templates/db-objects?bu_code=<buCode>` (`listDbObjects`).
-- Cross-links: [report-templates](/en/platform/report-templates) (module landing), [business-units](/en/platform/business-units) (BU chip context and `cluster_id` FK), [Data Model](./data-model.md) (storage types for `allow_business_unit`, `deny_business_unit`, `source_params`; `kind` field), [Permissions](./permissions.md), [XML Spec](./xml-spec.md) (Dialog XML schema §2, Content XML schema §3).
+- Cross-links: [report-templates](/en/platform/report-templates) (module landing), [business-units](/en/platform/business-units) (BU chip context and `cluster_id` FK), [Data Model](./data-model.md) (storage types for `allow_business_unit`, `deny_business_unit`, `source_params`; `template_type`/`is_default` fields), [Permissions](./permissions.md), [XML Spec](./xml-spec.md) (Dialog XML schema §2, Content XML schema §3), [print-template-mapping](/en/platform/print-template-mapping) (removed 2026-07-23/24 — historical page for what the Form Groups screen replaced).

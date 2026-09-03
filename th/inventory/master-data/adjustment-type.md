@@ -1,8 +1,8 @@
 ---
 title: ประเภทการปรับสต๊อก (Adjustment Type)
-description: รหัสเหตุผลสำหรับการปรับสต๊อก stock-in / stock-out — ใช้โดย inventory adjustment, physical count และ spot check เพื่ออธิบาย variance
+description: รหัสเหตุผลสำหรับการปรับสต๊อก stock-in / stock-out — ใช้โดยการ posting แบบ manual ของโมดูล inventory-adjustment เท่านั้น; physical count และ spot check ไม่ได้ตั้งค่านี้
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: 2026-07-15T21:47:09.000Z
 tags: master-data, adjustment-type, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,13 +11,15 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # ประเภทการปรับสต๊อก (Adjustment Type)
 
 > **At a Glance**
-> **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_adjustment_type` &nbsp;·&nbsp; **ใช้โดย:** inventory adjustment / physical count / spot check &nbsp;·&nbsp; รหัสเหตุผลสำหรับการเคลื่อนไหว stock-in / stock-out ทุกครั้ง
+> **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_adjustment_type` &nbsp;·&nbsp; **ใช้โดย:** เฉพาะฟอร์ม Stock-In / Stock-Out แบบ manual ของโมดูล inventory-adjustment — เป็น FK ที่ nullable ถูกปล่อย `null` โดย physical count และไม่เคยถูกแตะโดย spot check &nbsp;·&nbsp; รหัสเหตุผลสำหรับการเคลื่อนไหว stock-in / stock-out ที่กรอกด้วยมือ
 
 ![ประเภทการปรับสต๊อก (Adjustment Type) screen](/screenshots/master-data/adjustment-type.png)
 
 ## 1. คืออะไร / ใครใช้
 
-ประเภทการปรับสต๊อกจำแนก *ทำไม* ยอดสต๊อกจึงขึ้นหรือลง — write-off, write-on, spoilage, theft, count variance, transfer error ฯลฯ ทุก record `tb_stock_in` และ `tb_stock_out` บรรจุหนึ่งประเภท และรายงาน variance ปลายน้ำจัดกลุ่มตามเหตุผลเพื่อให้ controller เห็น pattern ตัว discriminator `type` (`stock_in` / `stock_out`) ทำให้ catalogue ถูก filter ตามทิศทางได้
+ประเภทการปรับสต๊อกจำแนก *ทำไม* ยอดสต๊อกจึงขึ้นหรือลง — write-off, write-on, spoilage, theft, transfer error ฯลฯ `adjustment_type_id` บน `tb_stock_in` / `tb_stock_out` เป็น **nullable** และในทางปฏิบัติจะถูกกรอกโดยฟอร์ม Stock-In / Stock-Out แบบ manual ของโมดูล [inventory-adjustment](/th/inventory/inventory-adjustment) เท่านั้น ซึ่งบังคับให้เลือกเหตุผล ตัว discriminator `type` (`stock_in` / `stock_out`) ทำให้ catalogue ถูก filter ตามทิศทางได้ที่นั่น
+
+**ไม่ใช่เหตุผลการ posting แบบสากล (ยืนยันในรอบนี้)** variance rollup ของ [physical-count](/th/inventory/physical-count) สร้างแถว `tb_stock_in`/`tb_stock_out` โดยตรงตอน submit แต่ไม่เคยตั้ง `adjustment_type_id` — ค่ายังเป็น `null` ในทุกแถวที่โมดูลนั้นสร้าง [spot-check](/th/inventory/spot-check) ยิ่งง่ายกว่านั้นอีก: `submit()` ของมันไม่สร้างแถว `tb_stock_in`/`tb_stock_out` เลย จึงไม่แตะตารางนี้เลยไม่ว่าทางใด มีเพียงการ posting ของโมดูล inventory-adjustment เองเท่านั้นที่มีรหัสเหตุผลจริง
 
 **บริหารจัดการโดย** Product Admin **อ่านโดย** developer หรือ tester ที่ทำงานบน adjustments, physical count หรือเส้นทางการ posting ของ spot check
 
@@ -36,13 +38,12 @@ dateCreated: 2026-05-16T08:00:00.000Z
 |---|---|---|
 | "Code already in use" | `code` ซ้ำบนแถว non-deleted | เลือก code อื่นหรือ reactivate แถวที่มี |
 | "Type required" | Form ส่งโดยไม่มี `stock_in` / `stock_out` | เลือกทิศทาง — UI filter ตามมัน |
-| "Cannot delete — referenced by postings" | มี record stock-in/out อย่างน้อยหนึ่งชี้ไปยังเหตุผลนี้ | ใช้ inactivate แทน |
-| "Type cannot be changed" | พยายามพลิก `stock_in` ↔ `stock_out` หลังใช้ | สร้างเหตุผลใหม่ในทิศทางที่ถูกต้อง |
+| **ยังไม่ยืนยัน** — ไม่พบ guard สำหรับการลบหรือการเปลี่ยน type | อ่านโค้ด `adjustment-type.service.ts`'s `delete()` และ `update()` โดยตรงในรอบนี้ พบว่า**ไม่มี**การเช็ค stock-in/out ที่อ้างอิงอยู่ก่อน soft-delete และ**ไม่มี**การเช็คที่กัน `type` ไม่ให้เปลี่ยนตอน `update()` — `...data` ถูก spread ตรงเข้า Prisma update โดยมีแค่การเช็ค code-uniqueness เท่านั้น | ถือว่า "cannot delete — referenced by postings" และ "type cannot be changed" **ยังไม่ถูกบังคับใช้** จนกว่าจะตรวจสอบซ้ำ — การ inactivate หรือเปลี่ยนทิศทางของเหตุผลที่ใช้อยู่แล้วจะสำเร็จในปัจจุบัน |
 
 ## 4. Edge Cases
 
-- **การพลิกทิศทางหลังใช้** ทำลายรายงานประวัติ — ระบบปฏิเสธ
-- **การลบเหตุผลที่ถูกอ้างอิง** ถูกบล็อก; soft-delete ก็ปล่อยให้แถวประวัติ resolve ได้
+- **การพลิกทิศทางหลังใช้ทำได้ในปัจจุบัน** ไม่มีโค้ดใดบล็อกไว้ — `update()` ยอมรับ `type` ใหม่บนแถวที่ถูกอ้างอิงอยู่แล้ว การทำเช่นนี้จะทำลายรายงานที่อิงทิศทางของ posting เดิม; ถือว่าข้ออ้างเดิม "ระบบปฏิเสธ" ยังไม่ยืนยัน
+- **การลบเหตุผลที่ถูกอ้างอิงสำเร็จในปัจจุบัน** `delete()` เป็น soft-delete แบบไม่มีเงื่อนไข (`is_active: false` + `deleted_at`) โดยไม่มีการเช็ค FK — แถวประวัติยัง resolve ชื่อผ่าน FK (ที่ soft-deleted) ได้เหมือนเดิม
 - **การ filter ทิศทาง** อยู่ที่ picker — หน้า stock-in ไม่เห็นแถว `stock_out` และในทางกลับกัน
 
 ---
@@ -62,6 +63,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | `description` | `String? @db.VarChar` | Yes | Free text |
 | `is_active` | `Boolean?` | Yes | Active flag |
 | `note`, `info`, `dimension` | — | Yes | Metadata มาตรฐาน |
+| `doc_version` | `Int` | No | เวอร์ชัน optimistic-lock (default `0`) |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*` |
 
 **Constraints:** `@@unique([code, deleted_at])` map `AT1_code_u` Index บน `code` Reverse relations ไปยัง `tb_stock_in` และ `tb_stock_out`
@@ -71,18 +73,18 @@ dateCreated: 2026-05-16T08:00:00.000Z
 ## 6. กติกาทางธุรกิจ
 
 - **Uniqueness** `code` unique ในแถว non-deleted (DB-enforced)
-- **Deletion guards** เหตุผลที่ถูกอ้างอิงโดย stock-in/out ที่ posted ไม่สามารถ hard-delete — ใช้ inactivate
-- **Validation** `code`, `name`, และ `type` บังคับ `type` ไม่สามารถพลิกหลังใช้ครั้งแรก
+- **Deletion guards — ยังไม่ยืนยัน** ไม่พบการเช็ค FK ใน `delete()`; soft-delete สำเร็จโดยไม่มีเงื่อนไขแม้มี stock-in/out อ้างอิงอยู่
+- **Validation** `code`, `name`, และ `type` บังคับตอนสร้าง `update()` ไม่ได้กันการเปลี่ยน `type` หลังใช้ครั้งแรก — ยืนยันว่า**ไม่มี** ไม่ใช่แค่ยังไม่ยืนยัน
 - **Lifecycle** เหตุผล inactive ยังอ่านได้บน adjustment ประวัติ; ซ่อนจาก picker adjustment ใหม่
 - **การ filter ทิศทาง** UI picker filter ตาม `type` — discriminator ไม่ต้อง re-filter ปลายน้ำ
 
 ## 7. การอ้างอิงข้ามโมดูล
 
-- [inventory-adjustment](/th/inventory/inventory-adjustment) — ทุกบรรทัด adjustment บรรจุ FK ของ adjustment type
-- [physical-count](/th/inventory/physical-count) — variance write-on / write-off post กับ adjustment type
-- [spot-check](/th/inventory/spot-check) — variance ของ spot check ใช้เส้นทาง posting เดียวกัน
+- [inventory-adjustment](/th/inventory/inventory-adjustment) — ทุกบรรทัด Stock-In / Stock-Out แบบ manual บรรจุ FK ของ adjustment type; เป็นโมดูลเดียวที่ตั้งค่านี้จริง
+- [physical-count](/th/inventory/physical-count) — variance rollup ของมันสร้างแถว `tb_stock_in`/`tb_stock_out` โดยตรง แต่**ไม่**ตั้ง `adjustment_type_id` (ยืนยันว่าเป็น `null` ทุกแถวที่มันสร้าง) — ไม่มีรหัสเหตุผล ไม่มีการเชื่อมกลับมาที่ตารางนี้
+- [spot-check](/th/inventory/spot-check) — `submit()` ของมันไม่สร้างแถว `tb_stock_in`/`tb_stock_out` เลย จึงไม่เคยอ้างอิงตารางนี้
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_adjustment_type` (lines ~2569-2594), `enum_adjustment_type` (lines ~2564-2567)
-- **Frontend:** `../carmen-turborepo-frontend/apps/web/app/(app)/configuration/adjustment-type/`
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_adjustment_type` (lines ~2807-2833), `enum_adjustment_type` (lines ~2800-2805)
+- **Frontend:** `../carmen-inventory-frontend-react/routes/config/adjustment-type/`

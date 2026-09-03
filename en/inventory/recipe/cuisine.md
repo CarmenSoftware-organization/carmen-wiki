@@ -2,7 +2,7 @@
 title: Cuisine
 description: Cuisine catalogue — regional / style label applied to recipes for menu segmentation (Thai, Italian, French, fusion, etc.).
 published: true
-date: 2026-06-09T16:28:56.000Z
+date: 2026-07-16T04:00:00.000Z
 tags: recipe, cuisine, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -27,20 +27,20 @@ Distinct from [recipe/category](/en/inventory/recipe/category) which is *functio
 
 | Task | Where | Notes |
 |---|---|---|
-| Add a new cuisine | Operation Plan → Cuisine → **+ New** | Name + region (dropdown of 6) required |
-| Curate popular dishes / key ingredients | Edit dialog → tag editors | Free-form strings; no FK validation to product/recipe |
-| Rename a cuisine | Edit dialog → `name` | Recipes store the ID, so display refreshes automatically |
-| Retire a cuisine | Edit dialog → `is_active = false` | Historical recipes keep rendering; hidden from picker |
-| Move a cuisine to a different region | Edit dialog → `region` | Region lives on the cuisine row only — no cascade |
+| Add a new cuisine | Operation Plan → Cuisine → **+ Add** (full-page form at `/operation-plan/cuisine/new`) | Name + region (dropdown of 6) required |
+| Curate popular dishes / key ingredients | Edit page → tag editors | Free-form strings; no FK validation to product/recipe |
+| Rename a cuisine | Edit page (`/operation-plan/cuisine/:id`) → `name` | Recipes store the ID, so display refreshes automatically |
+| Retire a cuisine | Edit page → `is_active = false` | Historical recipes keep rendering; hidden from picker |
+| Move a cuisine to a different region | Edit page → `region` | Region lives on the cuisine row only — no cascade |
 
 ## 3. Validation & Errors
 
 | Symptom / Message | Cause | Action |
 |---|---|---|
-| "Name already exists" | `@@unique([name, deleted_at])` violation | Pick a different name (or restore the deleted row) |
+| "Recipe cuisine already exists" (`RECIPE_CUISINE_ALREADY_EXISTS`) | App-level duplicate-name check plus `@@unique([name, deleted_at])` | Pick a different name (or restore the deleted row) |
 | "Region is required" | `region` left blank — no NULL fallback | Choose one of the 6 enum values |
 | "Region value not allowed" | Tried to set an unknown region | New regions require a schema migration |
-| "Cannot delete: recipes still reference this cuisine" | `tb_recipe.cuisine_id` FK `onDelete: Restrict` | Reassign recipes, then soft-delete |
+| "Recipe cuisine is in use by recipes" (`RECIPE_CUISINE_IN_USE`) | App-level count of non-deleted `tb_recipe.cuisine_id` references blocks delete (`recipe-cuisine.service.ts`); the `Restrict` FK is the backstop | Reassign recipes, then soft-delete |
 | Recipe library shows blank cuisine on old recipe | Cuisine soft-deleted but row preserved | Reads still work — restore or reassign as needed |
 
 ## 4. Edge Cases
@@ -67,6 +67,7 @@ Source: tenant schema.
 | `region` | `enum_cuisine_region` | No | `ASIA` / `EUROPE` / `AMERICAS` / `AFRICA` / `MIDDLE_EAST` / `OCEANIA`. |
 | `popular_dishes` | `Json @db.JsonB` | No | Curated canonical dishes (defaults `[]`). |
 | `key_ingredients` | `Json @db.JsonB` | No | Curated characteristic ingredients (defaults `[]`). |
+| `image_file_token` | `String? @db.VarChar` | Yes | Cuisine image, set via the `recipe-cuisines.set-image` multipart flow. |
 | `info`, `dimension` | `Json?` | Yes | Standard metadata. |
 | `doc_version` | `Int` | No | Optimistic-lock version. |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |
@@ -81,7 +82,7 @@ Values: `ASIA`, `EUROPE`, `AMERICAS`, `AFRICA`, `MIDDLE_EAST`, `OCEANIA`.
 
 - **Uniqueness.** `name` unique among non-deleted rows (DB-enforced).
 - **Region required.** No `NULL` / `OTHER` fallback; new regions need a schema migration.
-- **Deletion guards.** `onDelete: Restrict` on `tb_recipe.cuisine_id` blocks hard-delete of a referenced cuisine; use soft-delete + inactive.
+- **Deletion guards.** The delete endpoint checks the count of non-deleted referencing recipes first and returns `RECIPE_CUISINE_IN_USE` (`recipe-cuisine.service.ts`); the `onDelete: Restrict` FK on `tb_recipe.cuisine_id` is the DB-level backstop against hard deletes. Soft-delete + inactive is the supported retirement.
 - **Validation.** `name` and `region` required; `popular_dishes` / `key_ingredients` are free-form string arrays (no FK validation).
 - **Rename propagation.** Recipes store the ID, so renames refresh automatically on display.
 
