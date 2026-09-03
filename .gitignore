@@ -21,3 +21,12 @@ __pycache__/
 scripts/.env
 .pytest_cache/
 .venv/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+graft/
+
+# .claude/settings.json IS committed — it carries the shared hooks and status line.
+.claude/settings.local.json
+
+# Obsidian's per-user vault settings — personal, not part of the wiki.
+.obsidian/
