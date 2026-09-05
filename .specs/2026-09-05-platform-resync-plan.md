@@ -731,6 +731,8 @@ Route: `/platform/super-admins` → `SuperAdminManagement`. Nav: **`superAdminOn
 
 One page only, per the depth rule — a permissions page here would hold a single row.
 
+**Cover the table in the landing page's prose.** This module does own a table, `tb_platform_super_admin` (`../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma:1090`), and by the letter of the depth rule that would earn a `data-model` page. It is deliberately not getting one: beyond the audit columns the table holds only `user_id` and `is_active`, so a whole page would be the stub outcome the rule exists to prevent. Document those columns, their meaning, and how a row is created and deactivated, inside the landing page instead — do not leave the table undocumented on the grounds that it has no page.
+
 - [ ] **Step 3: Update the log (e2e: `tests/super-admins/`), run the frontmatter check, commit**
 
 ```bash
