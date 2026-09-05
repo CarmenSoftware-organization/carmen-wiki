@@ -55,7 +55,7 @@ This plan therefore creates **16 modules**, with a single `license-catalog` modu
 | Path | Responsibility |
 |------|----------------|
 | `.specs/resync-platform-2026-09-05-progress.md` | Tracking log: per-module source map, status, claims fixed, e2e backing, visually-changed routes. Created in Task 1, appended by every later task. |
-| `en/platform/<module>/`, `th/platform/<module>/` | One folder per module; `index.md` plus the sub-pages the depth rule allows. |
+| `en/platform/<module>.md` + `en/platform/<module>/`, and the TH mirrors | Sibling landing file plus a folder of sub-pages — the shape every existing module uses. No `index.md`. |
 | `en/platform.md`, `th/platform.md` | Book landing: eight nav-group sections with one card per module. Rebuilt in Task 29. |
 | `scripts/migrate_books/platform_pages.yaml` | Declarative record of every page the book contains; input to the scaffolder. Extended in Task 12. |
 | `scripts/nav-overrides.yaml` | `books:` block driving the Wiki.js nav rebuild. Updated in Task 31. |
@@ -441,42 +441,69 @@ Claude-Session: https://claude.ai/code/session_01368ie91bMhnxN3muJYUm9U"
 
 **Files:**
 - Modify: `scripts/migrate_books/platform_pages.yaml`
-- Create: `en/platform/<module>/index.md` and sub-pages, plus TH mirrors, for all 16 modules
+- Create: `en/platform/<module>.md` and its `<module>/` sub-pages, plus TH mirrors, for all 16 modules
 
 **Interfaces:**
 - Produces: scaffolded EN+TH files with valid frontmatter for every module Tasks 13–28 fill in. Those tasks assume their files already exist and only rewrite the body.
 
 - [ ] **Step 1: Decide each module's sub-pages using the depth rule**
 
+**Page shape — read this before writing YAML.** Every module in this book is a
+sibling landing file plus a folder of sub-pages: `en/platform/clusters.md` next to
+`en/platform/clusters/{data-model,ui-screens,permissions}.md`. **There is no
+`index.md` anywhere in the book**, and Wiki.js serves `/en/platform/clusters` from
+`clusters.md`. New modules use the same shape: `path: licenses.md` for the landing
+and `path: licenses/data-model.md` for each sub-page. The `<module>/index.md` form
+that appears in the YAML's existing entries is a shape the book abandoned — Step 1b
+removes it.
+
 Apply the rule from Global Constraints. Recommended shape, from the route map:
 
 | Module | Pages |
 |--------|-------|
-| `licenses` | index, data-model, ui-screens, permissions |
-| `license-catalog` | index, data-model, ui-screens |
-| `cluster-admin` | index, ui-screens, permissions |
-| `platform-config` | index, data-model |
-| `email-settings` | index, data-model |
-| `user-platform` | index, ui-screens, permissions |
-| `super-admins` | index |
-| `feature-flags` | index, data-model |
-| `tenant-migrations` | index, data-model |
-| `tenant-imports` | index, ui-screens |
-| `usage-analytics` | index |
-| `activity-events` | index, data-model |
-| `platform-migrations` | index |
-| `database-pools` | index, data-model, ui-screens |
-| `cronjobs` | index, data-model, ui-screens |
-| `report-form-groups` | index |
+| `licenses` | landing, data-model, ui-screens, permissions |
+| `license-catalog` | landing, data-model, ui-screens |
+| `cluster-admin` | landing, ui-screens, permissions |
+| `platform-config` | landing, data-model |
+| `email-settings` | landing, data-model |
+| `user-platform` | landing, ui-screens, permissions |
+| `super-admins` | landing |
+| `feature-flags` | landing, data-model |
+| `tenant-migrations` | landing, data-model |
+| `tenant-imports` | landing, ui-screens |
+| `usage-analytics` | landing |
+| `activity-events` | landing, data-model |
+| `platform-migrations` | landing |
+| `database-pools` | landing, data-model, ui-screens |
+| `cronjobs` | landing, data-model, ui-screens |
+| `report-form-groups` | landing |
 
 Adjust upward only if the source shows more real content; never add a page that would carry a single row.
+
+- [ ] **Step 1b: Prune the stale entries from the YAML first**
+
+`scripts/migrate_books/platform_pages.yaml` still describes the May 2026 scaffold.
+Seven of its entries name files that do not exist, and running the scaffolder
+against them would create junk in both locales — including resurrecting
+`auth-roles/`, the module RBAC replaced:
+
+```bash
+grep -E '^\s+- path:' scripts/migrate_books/platform_pages.yaml | sed 's/.*path: //' \
+  | while read p; do [ -f "en/platform/$p" ] || echo "MISSING en/platform/$p"; done
+```
+
+Expect exactly these seven: `index.md`, `clusters/index.md`,
+`business-units/index.md`, `users/index.md`, `report-templates/index.md`,
+`profile/index.md`, `auth-roles/index.md`. Delete all seven blocks. Re-run the
+check; it must print nothing before you continue. (`users/lifecycle.md` and
+`report-templates/xml-spec.md` exist on disk — keep them.)
 
 - [ ] **Step 2: Add the page specs to the YAML**
 
 Append one block per page to `scripts/migrate_books/platform_pages.yaml`, following the existing shape exactly:
 
 ```yaml
-  - path: licenses/index.md
+  - path: licenses.md
     title_en: Licenses
     title_th: ไลเซนส์
     description: License centre — subscriptions, seat purchases and per-BU quota across a cluster.
@@ -527,7 +554,7 @@ Tasks 13–28 share one shape. For each: read the named source in full, replace 
 ### Task 13: Write `licenses`
 
 **Files:**
-- Modify: `en/platform/licenses/{index,data-model,ui-screens,permissions}.md` and TH mirrors
+- Modify: `en/platform/licenses.md`, `en/platform/licenses/{data-model,ui-screens,permissions}.md` and TH mirrors
 - Read: `../carmen-platform/src/pages/licenses/`, `src/pages/LicenseCenter.tsx`, `src/pages/ClusterLicenseDetail.tsx`, `src/pages/SubscriptionForm.tsx`, `src/pages/LicensePurchaseForm.tsx`, `src/pages/subscriptionEdit/`, `src/services/expiryThresholdService.ts`
 
 - [ ] **Step 1: Read the source**
@@ -558,7 +585,7 @@ Claude-Session: https://claude.ai/code/session_01368ie91bMhnxN3muJYUm9U"
 ### Task 14: Write `license-catalog`
 
 **Files:**
-- Modify: `en/platform/license-catalog/{index,data-model,ui-screens}.md` and TH mirrors
+- Modify: `en/platform/license-catalog.md`, `en/platform/license-catalog/{data-model,ui-screens}.md` and TH mirrors
 - Read: `../carmen-platform/src/pages/LicenseCatalog.tsx`, `src/pages/licenseCatalog/`, `src/pages/licenseFeatures/`, `src/pages/LicenseFeatureGroupEdit.tsx`
 
 - [ ] **Step 1: Read the source**
@@ -583,7 +610,7 @@ Claude-Session: https://claude.ai/code/session_01368ie91bMhnxN3muJYUm9U"
 ### Task 15: Write `cluster-admin`
 
 **Files:**
-- Modify: `en/platform/cluster-admin/{index,ui-screens,permissions}.md` and TH mirrors
+- Modify: `en/platform/cluster-admin.md`, `en/platform/cluster-admin/{ui-screens,permissions}.md` and TH mirrors
 - Read: `../carmen-platform/src/pages/clusterAdmin/`, `src/components/nav/clusterAdminNav.ts`, and the `ClusterAdminRoute` and `AuthedRoute` guards in `src/App.tsx`
 
 - [ ] **Step 1: Read the source**
@@ -612,7 +639,7 @@ Claude-Session: https://claude.ai/code/session_01368ie91bMhnxN3muJYUm9U"
 ### Task 16: Write `platform-config`
 
 **Files:**
-- Modify: `en/platform/platform-config/{index,data-model}.md` and TH mirrors
+- Modify: `en/platform/platform-config.md`, `en/platform/platform-config/data-model.md` and TH mirrors
 - Read: `../carmen-platform/src/pages/PlatformConfigManagement.tsx`, `src/pages/platformConfig/`
 
 - [ ] **Step 1: Read the source**
@@ -637,7 +664,7 @@ Claude-Session: https://claude.ai/code/session_01368ie91bMhnxN3muJYUm9U"
 ### Task 17: Write `email-settings`
 
 **Files:**
-- Modify: `en/platform/email-settings/{index,data-model}.md` and TH mirrors
+- Modify: `en/platform/email-settings.md`, `en/platform/email-settings/data-model.md` and TH mirrors
 - Read: `../carmen-platform/src/pages/EmailSettingManagement.tsx`, `src/pages/emailSettings/`, `src/constants/emailFlows.ts`
 
 - [ ] **Step 1: Read the source**
@@ -662,7 +689,7 @@ Claude-Session: https://claude.ai/code/session_01368ie91bMhnxN3muJYUm9U"
 ### Task 18: Write `user-platform`
 
 **Files:**
-- Modify: `en/platform/user-platform/{index,ui-screens,permissions}.md` and TH mirrors
+- Modify: `en/platform/user-platform.md`, `en/platform/user-platform/{ui-screens,permissions}.md` and TH mirrors
 - Read: `../carmen-platform/src/pages/UserPlatformManagement.tsx`, `src/pages/UserPlatformEdit.tsx`, `src/pages/userPlatformManagement/`, `src/pages/userPlatformEdit/`, `../carmen-platform-e2e/tests/user-platform/`
 
 - [ ] **Step 1: Read the source**
@@ -687,7 +714,7 @@ Claude-Session: https://claude.ai/code/session_01368ie91bMhnxN3muJYUm9U"
 ### Task 19: Write `super-admins`
 
 **Files:**
-- Modify: `en/platform/super-admins/index.md` and TH mirror
+- Modify: `en/platform/super-admins.md` and TH mirror
 - Read: `../carmen-platform/src/pages/SuperAdminManagement.tsx`, `../carmen-platform-e2e/tests/super-admins/`
 
 - [ ] **Step 1: Read the source**
@@ -710,7 +737,7 @@ Claude-Session: https://claude.ai/code/session_01368ie91bMhnxN3muJYUm9U"
 ### Task 20: Write `feature-flags`
 
 **Files:**
-- Modify: `en/platform/feature-flags/{index,data-model}.md` and TH mirrors
+- Modify: `en/platform/feature-flags.md`, `en/platform/feature-flags/data-model.md` and TH mirrors
 - Read: `../carmen-platform/src/pages/FeatureFlagManagement.tsx`, `src/constants/featureFlags.ts`, `src/components/nav/platformNav.ts`, `src/components/nav/clusterAdminNav.ts`
 
 - [ ] **Step 1: Read the source**
@@ -735,7 +762,7 @@ Claude-Session: https://claude.ai/code/session_01368ie91bMhnxN3muJYUm9U"
 ### Task 21: Write `tenant-migrations`
 
 **Files:**
-- Modify: `en/platform/tenant-migrations/{index,data-model}.md` and TH mirrors
+- Modify: `en/platform/tenant-migrations.md`, `en/platform/tenant-migrations/data-model.md` and TH mirrors
 - Read: `../carmen-platform/src/pages/TenantMigrationManagement.tsx`, `src/pages/tenantMigration/`
 
 - [ ] **Step 1: Read the source**
@@ -760,7 +787,7 @@ Claude-Session: https://claude.ai/code/session_01368ie91bMhnxN3muJYUm9U"
 ### Task 22: Write `tenant-imports`
 
 **Files:**
-- Modify: `en/platform/tenant-imports/{index,ui-screens}.md` and TH mirrors
+- Modify: `en/platform/tenant-imports.md`, `en/platform/tenant-imports/ui-screens.md` and TH mirrors
 - Read: `../carmen-platform/src/pages/TenantImportWizard.tsx`, `src/pages/tenantImport/`
 
 - [ ] **Step 1: Read the source**
@@ -785,7 +812,7 @@ Claude-Session: https://claude.ai/code/session_01368ie91bMhnxN3muJYUm9U"
 ### Task 23: Write `usage-analytics`
 
 **Files:**
-- Modify: `en/platform/usage-analytics/index.md` and TH mirror
+- Modify: `en/platform/usage-analytics.md` and TH mirror
 - Read: `../carmen-platform/src/pages/UsageAnalytics.tsx`, `src/pages/usageAnalytics/`
 
 - [ ] **Step 1: Read the source**
@@ -810,7 +837,7 @@ Claude-Session: https://claude.ai/code/session_01368ie91bMhnxN3muJYUm9U"
 ### Task 24: Write `activity-events`
 
 **Files:**
-- Modify: `en/platform/activity-events/{index,data-model}.md` and TH mirrors
+- Modify: `en/platform/activity-events.md`, `en/platform/activity-events/data-model.md` and TH mirrors
 - Read: `../carmen-platform/src/pages/ActivityEventManagement.tsx`, `src/pages/activityEvents/`
 
 - [ ] **Step 1: Read the source**
@@ -835,7 +862,7 @@ Claude-Session: https://claude.ai/code/session_01368ie91bMhnxN3muJYUm9U"
 ### Task 25: Write `platform-migrations`
 
 **Files:**
-- Modify: `en/platform/platform-migrations/index.md` and TH mirror
+- Modify: `en/platform/platform-migrations.md` and TH mirror
 - Read: `../carmen-platform/src/pages/PlatformMigrationManagement.tsx`, `src/pages/platformMigration/`
 
 - [ ] **Step 1: Read the source**
@@ -858,7 +885,7 @@ Claude-Session: https://claude.ai/code/session_01368ie91bMhnxN3muJYUm9U"
 ### Task 26: Write `database-pools`
 
 **Files:**
-- Modify: `en/platform/database-pools/{index,data-model,ui-screens}.md` and TH mirrors
+- Modify: `en/platform/database-pools.md`, `en/platform/database-pools/{data-model,ui-screens}.md` and TH mirrors
 - Read: `../carmen-platform/src/pages/DatabasePoolManagement.tsx`, `src/pages/DatabasePoolEdit.tsx`
 
 - [ ] **Step 1: Read the source**
@@ -881,7 +908,7 @@ Claude-Session: https://claude.ai/code/session_01368ie91bMhnxN3muJYUm9U"
 ### Task 27: Write `cronjobs`
 
 **Files:**
-- Modify: `en/platform/cronjobs/{index,data-model,ui-screens}.md` and TH mirrors
+- Modify: `en/platform/cronjobs.md`, `en/platform/cronjobs/{data-model,ui-screens}.md` and TH mirrors
 - Read: `../carmen-platform/src/pages/cronjobs/`, and `../micro-cronjobs/` for what the jobs actually do
 
 - [ ] **Step 1: Read the source**
@@ -906,7 +933,7 @@ Claude-Session: https://claude.ai/code/session_01368ie91bMhnxN3muJYUm9U"
 ### Task 28: Write `report-form-groups`
 
 **Files:**
-- Modify: `en/platform/report-form-groups/index.md` and TH mirror
+- Modify: `en/platform/report-form-groups.md` and TH mirror
 - Read: `../carmen-platform/src/pages/ReportFormGroupManagement.tsx`, `src/pages/reportFormGroups/`, `src/constants/reportGroups.ts`
 
 - [ ] **Step 1: Read the source**
@@ -952,7 +979,7 @@ bad = []
 for md in [pathlib.Path('en/platform.md'), pathlib.Path('th/platform.md')]:
     for link in re.findall(r'\]\((/(?:en|th)/[^)]+)\)', md.read_text()):
         rel = link.lstrip('/')
-        if not (pathlib.Path(rel + '.md').exists() or pathlib.Path(rel, 'index.md').exists()):
+        if not pathlib.Path(rel + '.md').exists():   # no index.md shape in this book
             bad.append(f"{md}: {link}")
 print("\n".join(bad) if bad else "all links resolve")
 PY
