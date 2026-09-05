@@ -2,7 +2,7 @@
 title: Platform RBAC — Permissions
 description: Route-guard matrix for the whole SPA, how route/sidebar/in-page gates compose, the permission-resolution algorithm, and edge cases for testers. Updated for the platform_role.* key rename, the category-permissions route move, and the cluster-admin login exception.
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: 2026-09-05T16:00:00.000Z
 tags: book/platform, rbac, permissions
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z
@@ -35,7 +35,7 @@ Two routes are authenticated-only with no key requirement: `/dashboard` and `/pr
 | `/platform/user-platform` | `UserPlatformManagement` | `user_platform.read` (`feature="user_platform"`) | None |
 | `/platform/user-platform/:userId` | `UserPlatformEdit` | `user_platform.read` | `<Can permission="user_platform.manage">` on Add Role, the add-role form, and per-row Remove |
 
-**Renamed 2026-08-20** (`8df0b10`): every Roles key changed from `role.*` to `platform_role.*`, and the Permission Catalog's route moved from `/platform/permissions` (which no longer exists) to `/platform/category-permissions`. The Roles list's row Edit/Delete and Add Role have carried `<Can>` gates since 2026-06-10 (`role.*` originally, `platform_role.*` now) — the gating *pattern* is unchanged, only the key strings are. Whether a role delete actually succeeds is still up to the backend's own enforcement of `platform_role.delete` (see §5) — the in-page gate is advisory, as everywhere else.
+**Renamed 2026-08-20** (`carmen-platform` commit `8df0b10`): every Roles key changed from `role.*` to `platform_role.*`, and the Permission Catalog's route moved from `/platform/permissions` (which no longer exists) to `/platform/category-permissions`. The Roles list's row Edit/Delete and Add Role have carried `<Can>` gates since 2026-06-10 (`role.*` originally, `platform_role.*` now) — the gating *pattern* is unchanged, only the key strings are. Whether a role delete actually succeeds is still up to the backend's own enforcement of `platform_role.delete` (see §5) — the in-page gate is advisory, as everywhere else.
 
 ### 2.2 Rest of the SPA
 
@@ -138,7 +138,7 @@ The `EffectivePermissions` snapshot is fetched at login and again on every `Auth
 | 6 | Permission revoked mid-session | The cached `effectivePermissions` snapshot keeps granting until the next login or `AuthProvider` mount refetches | Backend enforcement is the real boundary; the SPA snapshot is advisory between refreshes |
 | 7 | New permission key needed | The catalog is read-only in the SPA — new `resource.action` rows arrive only via backend seed/migration and redeploy | A feature branch adding a guarded route must coordinate a backend catalog change; the key will not exist until then |
 | 8 | Cluster-scoped role and platform-wide routes | Route guards check without `clusterId`, so any single cluster grant opens the corresponding screens globally | Scoping narrows `<Can clusterId>` call sites and backend data filtering, not SPA route access |
-| 9 | **Removed 2026-08-06** (`19d90c4`) — dev builds no longer get a mock permission set | `DEV_MOCK_EFFECTIVE_PERMISSIONS` (all 31 platform keys, substituted whenever the backend returned none in `import.meta.env.DEV`) was deleted outright — it happened to match a membership-only cluster admin's permission shape exactly, so that boundary was invisible in local development and could not be verified in a browser. A dev instance pointed at an unseeded backend can no longer sign in at all; DEV has shipped 31 seeded permissions and 5 seeded roles for some time | Do not write test plans or setup docs referencing a dev-mode permission mock — none exists. The bootstrap hatch (`userCount <= 1`) is the only escape valve for a genuinely fresh install |
+| 9 | **Removed 2026-08-06** (`carmen-platform` commit `19d90c4`) — dev builds no longer get a mock permission set | `DEV_MOCK_EFFECTIVE_PERMISSIONS` (all 31 platform keys, substituted whenever the backend returned none in `import.meta.env.DEV`) was deleted outright — it happened to match a membership-only cluster admin's permission shape exactly, so that boundary was invisible in local development and could not be verified in a browser. A dev instance pointed at an unseeded backend can no longer sign in at all; DEV has shipped 31 seeded permissions and 5 seeded roles for some time | Do not write test plans or setup docs referencing a dev-mode permission mock — none exists. The bootstrap hatch (`userCount <= 1`) is the only escape valve for a genuinely fresh install |
 | 10 | Granting cluster access | `cluster.*` keys also open `/business-units*` — there are no separate `business_unit.*` keys | Include Business Units screens in any cluster-permission test plan |
 
 ## 6. Recommendations

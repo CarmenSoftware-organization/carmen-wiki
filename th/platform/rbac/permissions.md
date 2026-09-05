@@ -2,7 +2,7 @@
 title: Platform RBAC — สิทธิ์ (Permissions)
 description: เมทริกซ์ route-guard ของทั้ง SPA, การประกอบกันของ gate ระดับ route/sidebar/ภายในหน้า, อัลกอริทึมการ resolve permission และกรณีพิเศษสำหรับผู้ทดสอบ อัพเดทสำหรับการเปลี่ยนคีย์เป็น platform_role.*, การย้าย route ไป category-permissions และข้อยกเว้น login ของ cluster-admin
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: 2026-09-05T16:00:00.000Z
 tags: book/platform, rbac, permissions
 editor: markdown
 dateCreated: 2026-06-10T15:00:00.000Z
@@ -35,7 +35,7 @@ dateCreated: 2026-06-10T15:00:00.000Z
 | `/platform/user-platform` | `UserPlatformManagement` | `user_platform.read` (`feature="user_platform"`) | ไม่มี |
 | `/platform/user-platform/:userId` | `UserPlatformEdit` | `user_platform.read` | `<Can permission="user_platform.manage">` บน Add Role, ฟอร์ม add-role และปุ่ม Remove ของแต่ละ row |
 
-**เปลี่ยนชื่อเมื่อ 2026-08-20** (`8df0b10`): key ของ Roles ทุกตัวเปลี่ยนจาก `role.*` เป็น `platform_role.*` และ route ของ Permission Catalog ย้ายจาก `/platform/permissions` (ไม่มีอยู่แล้ว) ไปเป็น `/platform/category-permissions` Edit/Delete ของแถวและ Add Role ในหน้า list ของ Roles ถูก gate ด้วย `<Can>` มาตั้งแต่ 2026-06-10 (เดิมเป็น `role.*` ตอนนี้เป็น `platform_role.*`) — *รูปแบบ* การ gate เองไม่เปลี่ยน เปลี่ยนแค่ string ของ key การลบ role จะสำเร็จหรือไม่ยังคงขึ้นกับการบังคับใช้ `platform_role.delete` ของ backend เอง (ดู §5) — gate ภายในหน้าเป็นเพียงคำแนะนำ เหมือนที่อื่นทุกแห่ง
+**เปลี่ยนชื่อเมื่อ 2026-08-20** (`carmen-platform` commit `8df0b10`): key ของ Roles ทุกตัวเปลี่ยนจาก `role.*` เป็น `platform_role.*` และ route ของ Permission Catalog ย้ายจาก `/platform/permissions` (ไม่มีอยู่แล้ว) ไปเป็น `/platform/category-permissions` Edit/Delete ของแถวและ Add Role ในหน้า list ของ Roles ถูก gate ด้วย `<Can>` มาตั้งแต่ 2026-06-10 (เดิมเป็น `role.*` ตอนนี้เป็น `platform_role.*`) — *รูปแบบ* การ gate เองไม่เปลี่ยน เปลี่ยนแค่ string ของ key การลบ role จะสำเร็จหรือไม่ยังคงขึ้นกับการบังคับใช้ `platform_role.delete` ของ backend เอง (ดู §5) — gate ภายในหน้าเป็นเพียงคำแนะนำ เหมือนที่อื่นทุกแห่ง
 
 ### 2.2 ส่วนที่เหลือของ SPA
 
@@ -138,7 +138,7 @@ snapshot `EffectivePermissions` ถูก fetch ตอน login และอี�
 | 6 | Permission ถูกถอนกลาง session | snapshot `effectivePermissions` ที่ cache ไว้ยังคงมอบสิทธิ์จนกว่า login ครั้งถัดไปหรือ `AuthProvider` mount จะ refetch | การบังคับใช้ฝั่ง backend คือขอบเขตจริง; snapshot ของ SPA เป็นเพียงคำแนะนำระหว่าง refresh |
 | 7 | ต้องการ permission key ใหม่ | catalog เป็น read-only ใน SPA — row `resource.action` ใหม่มาจาก seed/migration ฝั่ง backend และการ redeploy เท่านั้น | feature branch ที่เพิ่ม route ที่ถูก guard ต้องประสานงานการเปลี่ยน catalog ฝั่ง backend; key จะไม่มีอยู่จนกว่าจะถึงตอนนั้น |
 | 8 | role ที่ scope ระดับ cluster กับ route ระดับแพลตฟอร์ม | route guard ตรวจสอบโดยไม่มี `clusterId` ดังนั้น grant ของ cluster เดียวใดก็ได้เปิดหน้าจอที่เกี่ยวข้องแบบ global | การจำกัด scope มีผลกับ call site ของ `<Can clusterId>` และการกรองข้อมูลฝั่ง backend ไม่ใช่การเข้าถึง route ของ SPA |
-| 9 | **ถูกลบเมื่อ 2026-08-06** (`19d90c4`) — dev build ไม่มี mock permission set อีกต่อไป | `DEV_MOCK_EFFECTIVE_PERMISSIONS` (key ของ platform ทั้ง 31 ตัว ถูกนำมาใช้แทนเมื่อ backend คืนค่าว่างเปล่าใน `import.meta.env.DEV`) ถูกลบออกทั้งหมด — มันบังเอิญมี shape ตรงกับ permission ของ cluster-admin ที่มีแค่ membership ทุกประการ ขอบเขตนั้นจึงมองไม่เห็นใน dev local และตรวจสอบในเบราว์เซอร์ไม่ได้ dev instance ที่ชี้ไปที่ backend ที่ยังไม่ seed จะ sign in ไม่ได้เลย; DEV ถูก seed ด้วย permission 31 ตัวและ role 5 ตัวมาสักพักแล้ว | อย่าเขียน test plan หรือเอกสาร setup ที่อ้างถึง dev-mode permission mock — ไม่มีอยู่แล้ว ทางหนี bootstrap (`userCount <= 1`) เป็นทางเดียวสำหรับการติดตั้งใหม่ที่ยังไม่มีข้อมูลจริง |
+| 9 | **ถูกลบเมื่อ 2026-08-06** (`carmen-platform` commit `19d90c4`) — dev build ไม่มี mock permission set อีกต่อไป | `DEV_MOCK_EFFECTIVE_PERMISSIONS` (key ของ platform ทั้ง 31 ตัว ถูกนำมาใช้แทนเมื่อ backend คืนค่าว่างเปล่าใน `import.meta.env.DEV`) ถูกลบออกทั้งหมด — มันบังเอิญมี shape ตรงกับ permission ของ cluster-admin ที่มีแค่ membership ทุกประการ ขอบเขตนั้นจึงมองไม่เห็นใน dev local และตรวจสอบในเบราว์เซอร์ไม่ได้ dev instance ที่ชี้ไปที่ backend ที่ยังไม่ seed จะ sign in ไม่ได้เลย; DEV ถูก seed ด้วย permission 31 ตัวและ role 5 ตัวมาสักพักแล้ว | อย่าเขียน test plan หรือเอกสาร setup ที่อ้างถึง dev-mode permission mock — ไม่มีอยู่แล้ว ทางหนี bootstrap (`userCount <= 1`) เป็นทางเดียวสำหรับการติดตั้งใหม่ที่ยังไม่มีข้อมูลจริง |
 | 10 | การมอบสิทธิ์เข้าถึง cluster | key `cluster.*` เปิด `/business-units*` ด้วย — ไม่มี key `business_unit.*` แยกต่างหาก | รวมหน้าจอ Business Units ไว้ใน test plan ของ cluster-permission ทุกชุด |
 
 ## 6. คำแนะนำ

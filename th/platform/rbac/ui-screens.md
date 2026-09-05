@@ -2,7 +2,7 @@
 title: Platform RBAC — หน้าจอ UI (UI Screens)
 description: RoleManagement/RoleEdit พร้อม RolesAccessSummary แบบวัดเทียบ catalog และ PermissionGrid แบบแถวต่อ resource, Permission Catalog แบบ read-only, และ (ระดับสรุป) ทะเบียน Super Admins กับหน้าจอ assignment ของ User Platform ที่เขียนใหม่
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: 2026-09-05T16:00:00.000Z
 tags: book/platform, rbac, ui
 editor: markdown
 dateCreated: 2026-06-10T15:00:00.000Z
@@ -17,11 +17,11 @@ dateCreated: 2026-06-10T15:00:00.000Z
 
 ## 1. ภาพรวม
 
-**Roles** ทำตามรูปแบบ Management/Edit มาตรฐานของ Platform SPA: list แบบ `DataTable` ฝั่ง server พร้อมการค้นหาแบบ debounce, filter แบบ Sheet, ส่งออก CSV, แถบสรุป `RolesAccessSummary` รวมถึงหน้า create/view/edit ที่นำด้วยการ์ด `RoleIdentityHero` **permission key เปลี่ยนจาก `role.*` เป็น `platform_role.*` และ route ของ Permission Catalog ย้ายไปเป็น `/platform/category-permissions` เมื่อ 2026-08-20** (`8df0b10`) — ดู[หน้า landing ของโมดูล](/th/platform/rbac) และ [Permissions](/th/platform/rbac/permissions) สำหรับการเปลี่ยนชื่อฉบับเต็ม
+**Roles** ทำตามรูปแบบ Management/Edit มาตรฐานของ Platform SPA: list แบบ `DataTable` ฝั่ง server พร้อมการค้นหาแบบ debounce, filter แบบ Sheet, ส่งออก CSV, แถบสรุป `RolesAccessSummary` รวมถึงหน้า create/view/edit ที่นำด้วยการ์ด `RoleIdentityHero` **permission key เปลี่ยนจาก `role.*` เป็น `platform_role.*` และ route ของ Permission Catalog ย้ายไปเป็น `/platform/category-permissions` เมื่อ 2026-08-20** (`carmen-platform` commit `8df0b10`) — ดู[หน้า landing ของโมดูล](/th/platform/rbac) และ [Permissions](/th/platform/rbac/permissions) สำหรับการเปลี่ยนชื่อฉบับเต็ม
 
 **Permission Catalog** เป็นหน้าอ้างอิงแบบ read-only: grid ของ card แบบ responsive จัดกลุ่มตาม resource ไม่มีตาราง ไม่มี mutation เข้าถึงได้จากปุ่ม header บนหน้า list ของ Roles เท่านั้น ไม่มีรายการ sidebar และ — ต่างจากทุกหน้าจอในโมดูลนี้ — **ไม่มี permission gate ที่ระดับ route ของ SPA เลย** ผู้ใช้ platform ที่ login แล้วคนใดก็นำทางไปหน้านี้ได้โดยตรง การดึงข้อมูลของหน้ายังคงถูกบังคับที่ฝั่ง backend ด้วย `platform_role.read` (§3)
 
-**User Platform** และ **Super Admins** สรุปไว้ใน §4/§5 ตามหมายเหตุขอบเขตข้างบน ทั้งคู่ผ่านการเขียนใหม่ต่ออีกครั้งตั้งแต่ sync ครั้งก่อน (`#244`/`#250`/`#251` ทั้งหมดเมื่อ 2026-09-02) ที่ไม่ได้ตรวจสอบบรรทัดต่อบรรทัดในหน้านี้
+**User Platform** และ **Super Admins** สรุปไว้ใน §4/§5 ตามหมายเหตุขอบเขตข้างบน ทั้งคู่ผ่านการเขียนใหม่ต่ออีกครั้งตั้งแต่ sync ครั้งก่อน (`carmen-platform` PR #244/#250/#251 ทั้งหมดเมื่อ 2026-09-02) ที่ไม่ได้ตรวจสอบบรรทัดต่อบรรทัดในหน้านี้
 
 ทั้งหกหน้าจอมาพร้อม **Debug Sheet** เฉพาะ dev ของ SPA — ปุ่มลอยสีเหลืองอำพัน (มุมขวาล่าง) ที่เปิด JSON ดิบของ API response ของหน้าจอนั้น (เฉพาะ `import.meta.env.DEV` ไม่มีใน production build) บน `RoleEdit` มีสอง tab คือ Role และ Catalog เปิดเผย payload ของทั้งสอง endpoint — เป็นวิธีที่เร็วที่สุดสำหรับ QA ในการตรวจสอบการซ้อนของ envelope และ shape ของ audit จริง ๆ ตามที่อธิบายด้านล่าง
 
@@ -83,7 +83,7 @@ Title มาจาก hero (ชื่อว่างแสดง "(unnamed role)
 
 Render เฉพาะขณะ `editing = true` ตาม pattern เดียวกับ clusters/business-units/users/applications/report-templates: bar แบบ `fixed bottom-0` มีตัวบ่งชี้การเปลี่ยนแปลงที่ยังไม่บันทึก (จุดสีอำพันกระพริบ + "Unsaved changes" หรือ "No changes" ด้วยข้อความสีจาง) ทางซ้าย และ **Cancel** (ซ่อนในโหมด create; disable ขณะบันทึก) + **Create Role**/**Save Changes** (disable ขณะบันทึก หรือในโหมด edit เมื่อไม่มีการเปลี่ยนแปลง) ทางขวา
 
-### 2.6 `PermissionGrid` (แทนที่ accordion `PermissionPicker` เมื่อ 2026-08-20, `42eeafe`)
+### 2.6 `PermissionGrid` (แทนที่ accordion `PermissionPicker` เมื่อ 2026-08-20, `carmen-platform` commit `42eeafe`)
 
 `roleEdit/PermissionGrid.tsx` คือ component เดียวที่ทั้งสองโหมดใช้ร่วมกัน — read และ edit render เหมือนกันทุกประการยกเว้น affordance ดังนั้นการกด Edit จะไม่ขยับอะไรบนหน้าจอเลย แถวเรียงหนึ่งต่อ `resource` ตามลำดับ `resourceRank()` (ลำดับที่ derive จาก nav ของ `platformNav.ts` — ดู [Permissions](/th/platform/rbac/permissions)); ภายในแถว action เรียงตาม `actionRank()` (`utils/permissionOrder.ts`: `['read', 'create', 'update', 'delete', 'manage']` verb ที่ไม่อยู่ในรายการเรียงท้ายสุดตามลำดับ catalog) แทนที่จะเป็นลำดับตัวอักษรของ catalog เอง ซึ่งจะทำให้ `create`/`delete` มาก่อน `read`
 

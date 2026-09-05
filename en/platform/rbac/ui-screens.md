@@ -2,7 +2,7 @@
 title: Platform RBAC — UI Screens
 description: RoleManagement/RoleEdit with the catalog-anchored RolesAccessSummary and the resource-row PermissionGrid, the read-only Permission Catalog, and (summary-level) the redesigned Super Admins roster and User Platform assignment screens.
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: 2026-09-05T16:00:00.000Z
 tags: book/platform, rbac, ui
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z
@@ -17,11 +17,11 @@ dateCreated: 2026-06-10T12:00:00.000Z
 
 ## 1. Overview
 
-**Roles** follows the Platform SPA's standard Management/Edit pattern: a server-side `DataTable` list with debounced search, Sheet filters, CSV export, a `RolesAccessSummary` strip, plus a create/view/edit page led by a `RoleIdentityHero` card. **Permission keys renamed from `role.*` to `platform_role.*` and the Permission Catalog route moved to `/platform/category-permissions` on 2026-08-20** (`8df0b10`) — see the [module landing](/en/platform/rbac) and [Permissions](/en/platform/rbac/permissions) for the full rename.
+**Roles** follows the Platform SPA's standard Management/Edit pattern: a server-side `DataTable` list with debounced search, Sheet filters, CSV export, a `RolesAccessSummary` strip, plus a create/view/edit page led by a `RoleIdentityHero` card. **Permission keys renamed from `role.*` to `platform_role.*` and the Permission Catalog route moved to `/platform/category-permissions` on 2026-08-20** (`carmen-platform` commit `8df0b10`) — see the [module landing](/en/platform/rbac) and [Permissions](/en/platform/rbac/permissions) for the full rename.
 
 **Permission Catalog** is a read-only reference: a responsive grid of cards grouped by resource, no table, no mutations, reached only from a header button on the Roles list. It has no sidebar entry and, unlike every other screen in this module, **no permission gate at the SPA route level at all** — any authenticated platform user can navigate to it directly. Its data fetch is still backend-enforced on `platform_role.read` (§3).
 
-**User Platform** and **Super Admins** are summarized in §4/§5 per the scope note above; both went through further redesigns since the module's last full sync (`#244`/`#250`/`#251`, all 2026-09-02) that are not verified line-by-line here.
+**User Platform** and **Super Admins** are summarized in §4/§5 per the scope note above; both went through further redesigns since the module's last full sync (`carmen-platform` PRs #244/#250/#251, all 2026-09-02) that are not verified line-by-line here.
 
 All six screens ship the SPA's dev-only **Debug Sheet** — the amber floating button (bottom-right) that opens the raw JSON of the screen's API responses (`import.meta.env.DEV` only, never in production builds). On `RoleEdit` it carries two tabs, Role and Catalog, exposing both endpoint payloads — the fastest way for QA to inspect the actual envelope nesting and audit shapes described below.
 
@@ -83,7 +83,7 @@ Saving computes the **permission delta** against the key set captured at fetch t
 
 Rendered only while `editing = true`, mirroring the pattern used across clusters/business-units/users/applications/report-templates: a `fixed bottom-0` bar with an unsaved-changes indicator (pulsing amber dot + "Unsaved changes", or "No changes" in muted text) on the left, and **Cancel** (hidden in create mode; disabled while saving) + **Create Role**/**Save Changes** (disabled while saving, or in edit mode when there are no changes) on the right.
 
-### 2.6 `PermissionGrid` (replaced the accordion `PermissionPicker` on 2026-08-20, `42eeafe`)
+### 2.6 `PermissionGrid` (replaced the accordion `PermissionPicker` on 2026-08-20, `carmen-platform` commit `42eeafe`)
 
 `roleEdit/PermissionGrid.tsx` is the one component both modes share — read and edit render identically except for the affordance, so pressing Edit cannot move anything on screen. Rows are one per `resource`, ordered by `resourceRank()` (`platformNav.ts`'s nav-derived order — see [Permissions](/en/platform/rbac/permissions)); within a row, actions are ordered by `actionRank()` (`utils/permissionOrder.ts`: `['read', 'create', 'update', 'delete', 'manage']`, unlisted verbs sort last in catalog order) rather than the catalog's own alphabetical order, which would otherwise put `create`/`delete` ahead of `read`.
 
