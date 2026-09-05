@@ -130,9 +130,6 @@ books:
           - slug: report-templates
             label_en: "Report Templates"
             label_th: "Report Templates"
-          - slug: print-template-mapping
-            label_en: "Print Template Mapping"
-            label_th: "Print Template Mapping"
       - label_en: "Product"
         label_th: "Product"
         modules:

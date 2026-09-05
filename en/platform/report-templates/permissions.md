@@ -2,7 +2,7 @@
 title: Report Template — Permissions
 description: Permission-key route guards, in-page Can gates, sidebar filter, and bootstrap exception for the report-templates surface. Updated for the Forbidden rename and the removal of the neighbouring print-template-mapping module.
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: 2026-09-06T01:00:00.000Z
 tags: book/platform, report-templates, permissions
 editor: markdown
 dateCreated: '2026-05-19T18:30:00.000Z'
@@ -39,7 +39,7 @@ Four things to note:
 - **Route guards check without a `clusterId`.** `PrivateRoute` calls `hasPermission(requiredPermission)` with no options, taking the broad "any scope grants it" branch. Because the in-page `<Can>` gates on this surface also omit `clusterId` (§7), a role assignment scoped to a single cluster whose role bundles `report_template.*` keys passes everywhere — there is no per-cluster narrowing anywhere on this surface. That is consistent with the data model: report templates are tenant-global and carry no cluster FK ([Data Model](/en/platform/report-templates/data-model) §3).
 - **No route requires `report_template.delete`.** Deletion is reachable only through the list page's row action, gated in-page (§7).
 - **No key reuse.** The `report_template.*` keys gate only this module (now including Form Groups) — unlike the Business Units routes, which reuse the `cluster.*` keys (see [Clusters Permissions](/en/platform/clusters/permissions) §2).
-- **Removed 2026-07-23/24:** the sibling `print-template-mapping` module and its `print_template_mapping.*` keys no longer exist — that module has been deleted outright (see [print-template-mapping](/en/platform/print-template-mapping), historical page), not merely disconnected from this one.
+- **Removed 2026-07-24** (carmen-platform commit `de11377`; its `print_template_mapping.*` keys were dropped from the permission-catalog seed the day before, 2026-07-23, carmen-turborepo-backend-v2 commit `c135bb21e`): the sibling print-template-mapping module and its keys no longer exist — that module was deleted outright, not merely disconnected from this one.
 
 ## 3. Effective access matrix
 
@@ -150,5 +150,5 @@ Tester-relevant consequences. First, a `report_template.read`-only session sees 
 - [rbac permissions](/en/platform/rbac/permissions) — SPA-wide gate matrix and the full permission-resolution algorithm
 - [users](/en/platform/users) — user identity rows that role assignments point at
 - [Clusters Permissions](/en/platform/clusters/permissions) — sibling permissions page; documents the cluster-scoped `<Can clusterId>` variant this surface does *not* use
-- [print-template-mapping](/en/platform/print-template-mapping) — **removed 2026-07-23/24** (historical page); used to be a sibling Content-group module with its own `print_template_mapping.*` keys, now gone
+- **Print Template Mapping** — removed from the product 2026-07-24 (carmen-platform commit `de11377`); used to be a sibling Content-group module with its own `print_template_mapping.*` keys, dropped from the permission catalog the day before (carmen-turborepo-backend-v2 commit `c135bb21e`, 2026-07-23) — none of it survives today
 - [Data Model](/en/platform/report-templates/data-model) &nbsp;·&nbsp; [UI Screens](/en/platform/report-templates/ui-screens) &nbsp;·&nbsp; [XML Spec](/en/platform/report-templates/xml-spec) — sibling sub-pages

@@ -2,7 +2,7 @@
 title: Report Templates — สิทธิ์ (Permissions)
 description: Route guard ตาม permission key, gate Can ภายในหน้า, filter ของ sidebar และข้อยกเว้น bootstrap สำหรับ surface ของ report-templates อัพเดทสำหรับการเปลี่ยนชื่อเป็น Forbidden และการลบโมดูล print-template-mapping ข้างเคียง
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: 2026-09-06T01:00:00.000Z
 tags: book/platform, report-templates, permissions
 editor: markdown
 dateCreated: 2026-06-10T17:00:00.000Z
@@ -39,7 +39,7 @@ Report Templates เป็น surface สำหรับ authoring ภายใ�
 - **Route guard ตรวจสอบโดยไม่มี `clusterId`** `PrivateRoute` เรียก `hasPermission(requiredPermission)` โดยไม่มี options ผ่าน branch แบบกว้าง "scope ใดก็มอบให้ได้" เนื่องจาก gate `<Can>` ภายในหน้าบน surface นี้ก็ละเว้น `clusterId` เช่นกัน (§7) role assignment ที่ scope ไปยัง cluster เดียวซึ่ง role รวม key `report_template.*` จึงผ่านได้ทุกที่ — ไม่มีการจำกัดต่อ cluster ที่ใดเลยบน surface นี้ ซึ่งสอดคล้องกับ data model: เทมเพลตรายงานเป็น tenant-global และไม่มี cluster FK ([Data Model](/th/platform/report-templates/data-model) §3)
 - **ไม่มี route ใดต้องการ `report_template.delete`** การลบเข้าถึงได้ทาง row action ของหน้า list เท่านั้น gate ภายในหน้า (§7)
 - **ไม่มีการใช้ key ซ้ำข้ามโมดูล** key `report_template.*` gate เฉพาะโมดูลนี้ (รวม Form Groups แล้วตอนนี้) — ต่างจาก route ของ Business Units ที่ใช้ key `cluster.*` ซ้ำ (ดู [Clusters Permissions](/th/platform/clusters/permissions) §2)
-- **ถูกลบเมื่อ 2026-07-23/24:** โมดูล print-template-mapping พี่น้องและ key `print_template_mapping.*` ของมันไม่มีอยู่แล้ว — โมดูลนั้นถูกลบไปเลย (ดู [print-template-mapping](/th/platform/print-template-mapping) หน้าเชิงประวัติศาสตร์) ไม่ใช่แค่ตัดการเชื่อมโยงจากโมดูลนี้
+- **ถูกลบเมื่อ 2026-07-24** (carmen-platform commit `de11377`; key `print_template_mapping.*` ถูกลบออกจาก permission-catalog seed ก่อนหน้าหนึ่งวันคือ 2026-07-23, carmen-turborepo-backend-v2 commit `c135bb21e`): โมดูล print-template-mapping พี่น้องและ key ของมันไม่มีอยู่แล้ว — โมดูลนั้นถูกลบไปเลย ไม่ใช่แค่ตัดการเชื่อมโยงจากโมดูลนี้
 
 ## 3. เมทริกซ์ effective access
 
@@ -150,5 +150,5 @@ return ALL_PLATFORM_NAV_ITEMS.filter(
 - [rbac permissions](/th/platform/rbac/permissions) — เมทริกซ์ gate ทั่วทั้ง SPA และอัลกอริทึมการ resolve permission ฉบับเต็ม
 - [users](/th/platform/users) — row ตัวตนผู้ใช้ที่ role assignment ชี้ไป
 - [Clusters Permissions](/th/platform/clusters/permissions) — หน้า permissions พี่น้อง; document ตัวแปร `<Can clusterId>` แบบ scope ต่อ cluster ที่ surface นี้*ไม่*ใช้
-- [print-template-mapping](/th/platform/print-template-mapping) — **ถูกลบเมื่อ 2026-07-23/24** (หน้าเชิงประวัติศาสตร์); เคยเป็นโมดูลพี่น้องในกลุ่ม Content ที่มี key `print_template_mapping.*` ของตัวเอง ตอนนี้หายไปแล้ว
+- **Print Template Mapping** — ถูกลบออกจากผลิตภัณฑ์เมื่อ 2026-07-24 (carmen-platform commit `de11377`); เคยเป็นโมดูลพี่น้องในกลุ่ม Content ที่มี key `print_template_mapping.*` ของตัวเอง ถูกลบออกจาก permission catalog ก่อนหน้าหนึ่งวัน (carmen-turborepo-backend-v2 commit `c135bb21e`, 2026-07-23) — ไม่มีสิ่งใดเหลืออยู่แล้ววันนี้
 - [Data Model](/th/platform/report-templates/data-model) &nbsp;·&nbsp; [UI Screens](/th/platform/report-templates/ui-screens) &nbsp;·&nbsp; [XML Spec](/th/platform/report-templates/xml-spec) — หน้าย่อยพี่น้อง

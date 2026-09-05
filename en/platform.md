@@ -2,7 +2,7 @@
 title: Carmen Platform
 description: Overview of the Carmen Platform admin product — entry point for the book.
 published: true
-date: 2026-07-29T09:46:00.000Z
+date: 2026-09-06T01:00:00.000Z
 tags: book/platform, home
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -46,7 +46,6 @@ Reference manual for developers and support engineers working on the Carmen Plat
 | Module | What it covers |
 |---|---|
 | [Report Templates](/en/platform/report-templates) | XML report template catalogue with tabbed editor and per-BU scoping |
-| [Print Template Mapping](/en/platform/print-template-mapping) | Routing document types (PR, PO, GRN, …) to FastReport print templates |
 
 ## 6. Product & Shell
 

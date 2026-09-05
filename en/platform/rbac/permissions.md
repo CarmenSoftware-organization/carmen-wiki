@@ -2,7 +2,7 @@
 title: Platform RBAC — Permissions
 description: Route-guard matrix for the whole SPA, how route/sidebar/in-page gates compose, the permission-resolution algorithm, and edge cases for testers. Updated for the platform_role.* key rename, the category-permissions route move, and the cluster-admin login exception.
 published: true
-date: 2026-09-05T17:00:00.000Z
+date: 2026-09-06T01:00:00.000Z
 tags: book/platform, rbac, permissions
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z
@@ -53,7 +53,7 @@ Two routes are authenticated-only with no key requirement: `/dashboard` and `/pr
 | `/broadcasts/new` | `broadcast.send` | Single route; no list page |
 | `/sql-workbench` | `sql_workbench.read` | Not a named unit of this book; no wiki page yet |
 
-**Removed 2026-07-23/24:** `/print-template-mapping*` and its `print_template_mapping.*` keys no longer exist — the module and the permission catalog rows it used were both deleted (see [print-template-mapping](/en/platform/print-template-mapping), historical page).
+**Removed 2026-07-23/24:** `/print-template-mapping*` and its `print_template_mapping.*` keys no longer exist — the module was deleted from carmen-platform on 2026-07-24 (commit `de11377`) and the permission-catalog rows it used were dropped the day before from carmen-turborepo-backend-v2's seed (commit `c135bb21e`, 2026-07-23); `template_type` plus the [Report Templates — Form Groups](/en/platform/report-templates/form-groups) screen now serve the same need.
 
 Three routes are fully public (no `PrivateRoute` at all): `/` (landing), `/login`, and `/changelog`. Source: `../carmen-platform/src/App.tsx` (the full `<Routes>` block). No route anywhere in the SPA passes a `.delete` key as `requiredPermission` — delete actions live inside list pages, where every management list gates them in-page with `<Can permission="*.delete">` (§3), **now including Roles** (§2.1) — the previous sync's "only the Roles list still exposes Delete to anyone holding its `.read` guard" is stale.
 

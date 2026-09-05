@@ -2,7 +2,7 @@
 title: บันทึกการเปลี่ยนแปลง (Changelog)
 description: บันทึกการเปลี่ยนแปลงของแพลตฟอร์มแบบมีเวอร์ชัน — ดึงข้อมูลจาก JSON, เปิดเป็นหน้า public /changelog (ตอนนี้ค้นหาได้แล้ว) เข้าถึงผ่าน version badge ในแถบด้านข้างและหน้า landing page
 published: true
-date: 2026-09-06T00:00:00.000Z
+date: 2026-09-06T01:00:00.000Z
 tags: platform, changelog, versioning, carmen-software
 editor: markdown
 dateCreated: 2026-06-09T00:00:00.000Z
@@ -61,3 +61,9 @@ JSON มีบัฟเฟอร์ `unreleased` พร้อมกับ `versi
 - **ปล่อยเวอร์ชัน:** `bun run build:bump [patch|minor|major]` รันสคริปต์ `scripts/release.mjs` — สคริปต์ที่หนักกว่าชื่อบอกไว้มาก หลัง rewrite เมื่อ 2026-08-05 ตามลำดับมันจะ: (1) อ่านเวอร์ชันปัจจุบันจาก `changelog.json` (แหล่งข้อมูลหลัก — `VersionBadge` อ่านจากตรงนี้ `package.json` แค่สะท้อนตาม) แล้ว fail ทันทีถ้าสองไฟล์นี้ไม่ตรงกัน; (2) ตรวจว่า branch เป็น `main` หรือ `chore/release-*` และ working tree สะอาด; (3) ตรวจว่า branch ไม่ตามหลัง upstream ของมัน (หรือ `origin/main` เป็นค่าสำรองเมื่อไม่มี upstream) โดยใช้ ref ที่ fetch มาแล้วเท่านั้น — ไม่เรียก `git fetch` เลย; (4) fail ถ้า `unreleased` ว่างเปล่า — ไม่มีอะไรให้เลื่อนขึ้น; (5) รับ level จาก CLI argument หรือถ้าไม่ระบุจะถามแบบ interactive โดยไม่มีค่าเริ่มต้น ยกเลิกได้ด้วย Enter หรือ `q` (ไม่มี "patch" โดยปริยายอีกต่อไป); (6) fail ถ้า git tag ของเวอร์ชันเป้าหมายมีอยู่แล้ว; (7) รัน `typecheck`, `lint`, และ `test` เป็นประตูก่อนเริ่ม ถ้าอันไหนไม่ผ่านจะยกเลิกการปล่อยทั้งหมดก่อนแตะไฟล์ใด ๆ; (8) คำนวณและ validate `changelog.json` ที่เลื่อนแล้ว, `package.json` ที่ bump แล้ว, และ `CHANGELOG.md` ที่สร้างใหม่ ก่อนจะเขียนไฟล์ไหนเลย; (9) commit ไฟล์ทั้งสามนั้นด้วย `git commit --only -- <ไฟล์ทั้งสาม>` (`chore(release): vX.Y.Z`) และสร้าง tag แบบ annotated `vX.Y.Z` — โดยไม่แตะสิ่งที่ stage ไว้อื่น; (10) แสดงขั้นตอนถัดไปที่ต้องทำเอง ซึ่งต่างกันตาม branch: บน `main` ให้ push commit และ tag ตรง ๆ; บน branch `chore/release-*` ให้ push branch, เปิด PR, merge ด้วย **merge commit** (ห้าม squash เด็ดขาด — squash จะเขียน commit release ใหม่และทำให้ tag ที่สร้างไว้แล้วลอยค้างอยู่บน commit ที่ไม่มีวันเข้าถึง `main`) แล้วค่อย push tag สคริปต์เองไม่ push อะไรเลย
 - **หมายเหตุ public-path:** หากการ refactor ของ route-guard เปลี่ยนวิธีลงรายการ public paths, `/changelog` ต้องยังคงอยู่ใน allowlist มิฉะนั้นหน้าจะ redirect ไปที่หน้าลงชื่อเข้าใช้
 - **การค้นหา match เฉพาะข้อความของหมวดหมู่/รายการเท่านั้น** — ไม่ match วันที่ ดังนั้นการค้นหา string วันที่ (เช่น `2026-06-01`) จะไม่แสดงเวอร์ชันนั้นขึ้นมา
+
+## 6. การถูกลบออกจากผลิตภัณฑ์ที่ควรทราบ
+
+ไม่ใช่ทุกการลบออกจากผลิตภัณฑ์จะมีรายการใน `unreleased`/`versions` ของ `changelog.json` — `src/data/changelog.json` ไม่เคยใช้หมวดหมู่ `Removed` เลย ดังนั้นรายการด้านล่างนี้จึงไม่ปรากฏบนหน้า `/changelog` จริง บันทึกไว้ที่นี่แทน เพราะหน้าอื่นใน Platform book อ้างอิงถึงมัน:
+
+- **Print Template Mapping** — หน้าจอ, service, route, และ permission key ของโมดูล Print Template Mapping ถูกลบออกจากผลิตภัณฑ์เมื่อ **2026-07-24** (carmen-platform commit `de11377`; backend-gateway proxy และแถว permission catalog `print_template_mapping.*` ถูกลบก่อนหน้าหนึ่งวันคือ 2026-07-23, carmen-turborepo-backend-v2 commit `c135bb21e`) ตอนนี้ฟิลด์ `template_type` บน `tb_report_template` บวกหน้าจอ [เทมเพลตรายงาน — Form Groups](/th/platform/report-templates/form-groups) ทำหน้าที่แทนความต้องการเดิม — migration แยกต่างหาก `20260723120000_print_form_default` (2026-07-23) คือตัวที่เพิ่ม `template_type`/`is_default` และ drop `tb_print_template_mapping`

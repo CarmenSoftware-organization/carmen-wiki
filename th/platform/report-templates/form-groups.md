@@ -2,7 +2,7 @@
 title: เทมเพลตรายงาน — Form Groups
 description: หน้าจอ /report-form-groups (เพิ่มเมื่อ 2026-07-24) ที่แทนที่ list แบบการ์ดจัดกลุ่มของ print-template-mapping — หนึ่งการ์ดต่อ report_group code ที่ตายตัว พร้อม action "set as default" บน tb_report_template.is_default
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: 2026-09-06T01:00:00.000Z
 tags: book/platform, report-templates, form-groups
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -11,11 +11,11 @@ dateCreated: 2026-07-29T09:46:00.000Z
 # เทมเพลตรายงาน — Form Groups
 
 > **At a Glance**
-> **หน้าจอ:** `ReportFormGroupManagement` (`/report-form-groups` เพิ่มเมื่อ 2026-07-24) &nbsp;·&nbsp; **Route gate:** `report_template.read` (reuse — ไม่มี permission key ใหม่) **และ** `feature="report_form_groups"` — key feature ของตัวเอง แยกจาก `report_templates` ของ Report Templates &nbsp;·&nbsp; **Sidebar:** รายการ "Form Groups" ในกลุ่ม Content (`platformNav.ts`) &nbsp;·&nbsp; **แทนที่:** list แบบการ์ดจัดกลุ่มของ [print-template-mapping](/th/platform/print-template-mapping) ที่ถูกลบในสัปดาห์เดียวกัน &nbsp;·&nbsp; **ข้อมูล:** ทุกแถว `tb_report_template` ที่ `template_type = "form"` จัดกลุ่มตาม `report_group` &nbsp;·&nbsp; **ตั้งแต่ 2026-08-22:** แต่ละแถวแสดงบรรทัด audit แบบย่อ (actor ล่าสุด สร้างหรือแก้ไข)
+> **หน้าจอ:** `ReportFormGroupManagement` (`/report-form-groups` เพิ่มเมื่อ 2026-07-24) &nbsp;·&nbsp; **Route gate:** `report_template.read` (reuse — ไม่มี permission key ใหม่) **และ** `feature="report_form_groups"` — key feature ของตัวเอง แยกจาก `report_templates` ของ Report Templates &nbsp;·&nbsp; **Sidebar:** รายการ "Form Groups" ในกลุ่ม Content (`platformNav.ts`) &nbsp;·&nbsp; **แทนที่:** list แบบการ์ดจัดกลุ่มของ print-template-mapping — โมดูลนั้นถูกลบออกจากผลิตภัณฑ์ในสัปดาห์เดียวกัน (carmen-platform commit `de11377`, 2026-07-24) &nbsp;·&nbsp; **ข้อมูล:** ทุกแถว `tb_report_template` ที่ `template_type = "form"` จัดกลุ่มตาม `report_group` &nbsp;·&nbsp; **ตั้งแต่ 2026-08-22:** แต่ละแถวแสดงบรรทัด audit แบบย่อ (actor ล่าสุด สร้างหรือแก้ไข)
 
 ## 1. ภาพรวม
 
-Form Groups เป็นหน้าจอที่ admin เลือก per ชนิดเอกสารว่า form template แบบเอกสารเดี่ยวตัวไหนที่ business unit จะได้เป็น default เมื่อยังไม่ได้เลือกเอง มันแทนที่ list แบบการ์ดจัดกลุ่มของโมดูล [print-template-mapping](/th/platform/print-template-mapping) เองในการเปลี่ยนแปลงเดียวกันเมื่อ 2026-07-23/24 ที่ drop `tb_print_template_mapping` และเพิ่ม `tb_report_template.is_default` — ดูหน้านั้นสำหรับ timeline การถูกลบฉบับเต็ม และ [Report Templates](/th/platform/report-templates) §1/§3 สำหรับคู่คอลัมน์ `template_type`/`is_default` ที่หน้านี้แก้ไข ก่อนหน้านี้หน้าจอนี้ถูกกล่าวถึงแค่ในเนื้อความบนหน้า landing ของ [Report Templates](/th/platform/report-templates) และหน้าเชิงประวัติศาสตร์ของ [print-template-mapping](/th/platform/print-template-mapping)
+Form Groups เป็นหน้าจอที่ admin เลือก per ชนิดเอกสารว่า form template แบบเอกสารเดี่ยวตัวไหนที่ business unit จะได้เป็น default เมื่อยังไม่ได้เลือกเอง มันแทนที่ list แบบการ์ดจัดกลุ่มของโมดูล print-template-mapping เองในการเปลี่ยนแปลงเดียวกันเมื่อ 2026-07-23/24 ที่ drop `tb_print_template_mapping` และเพิ่ม `tb_report_template.is_default` — ดู [โมดูลที่เกี่ยวข้อง](#6-โมดูลที่เกี่ยวข้อง) ด้านล่างสำหรับ timeline การถูกลบฉบับเต็ม และ [Report Templates](/th/platform/report-templates) §1/§3 สำหรับคู่คอลัมน์ `template_type`/`is_default` ที่หน้านี้แก้ไข ก่อนหน้านี้หน้าจอนี้ถูกกล่าวถึงแค่ในเนื้อความบนหน้า landing ของ [Report Templates](/th/platform/report-templates) และบนหน้า print-template-mapping ที่ถูกลบไปแล้ว
 
 หน้าจอนี้ fetch เทมเพลตที่ `template_type = "form"` **ทั้งหมด** (paging เป็นชุดละ 500 จนถึงจำนวนรวมที่ server รายงาน เพื่อไม่ให้การจัดกลุ่มทำงานบน fetch ที่ไม่ครบโดยไม่รู้ตัว) แล้วจัดกลุ่มตาม `report_group` มัน reuse permission `report_template.*` ทั้งหมด — ไม่มี key แบบ `report_form_group.*` หรือคล้ายกันใน permission catalog เลย
 
@@ -36,7 +36,7 @@ Form Groups เป็นหน้าจอที่ admin เลือก per �
 
 การคลิก radio ที่ยังไม่ checked จะเปิด confirm dialog ("Set '{name}' as the default for {code}? Replaces '{old name}'." เมื่อมี default เดิมอยู่) การยืนยันจะเรียก `reportTemplateService.setGroupDefault({ current, target })` ซึ่งเป็น **สอง `PUT /api-system/report-templates/:id` ที่เรียงตามลำดับ ไม่ใช่ transaction เดียว** — ตัวแรก `{ is_default: false }` บน default เดิม (ข้ามไปเลยถ้าไม่มี default เดิม) แล้วตามด้วย `{ is_default: true }` บนเป้าหมาย แต่ละตัวพก `doc_version` ของตัวเองสำหรับตรวจ optimistic-lock ความขัดแย้งเวอร์ชัน `409` ในการเรียกใดก็ตามจะเรียก toast `notifyVersionConflict()` ที่ใช้ร่วมกันและ re-fetch รายการทั้งกลุ่มใหม่; ความล้มเหลวอื่นแสดง toast ทั่วไป "Failed to set default" ตามด้วย re-fetch เช่นกัน เพื่อให้ UI สะท้อน state จริงที่เกิดขึ้น
 
-ฐานข้อมูลบังคับ invariant ที่ flow สองขั้นนี้พยายามรักษาไว้: `idx_report_template_default_per_group` เป็น partial unique index บน `tb_report_template(report_group)` `WHERE is_default AND template_type = 'form' AND deleted_at IS NULL` (เพิ่มโดย migration `20260723120000_print_form_default` ตัวเดียวกับที่ drop `tb_print_template_mapping` — ดู [print-template-mapping](/th/platform/print-template-mapping) §1) เพราะสอง `PUT` ไม่ได้อยู่ใน transaction เดียว จึงมีช่วงแคบ ๆ ระหว่างสองการเรียกที่กลุ่มนั้นมี default **เป็นศูนย์** แทนที่จะมีพอดีหนึ่งตัว ว่า request ตั้ง default ของ admin คนที่สองที่เกิดขึ้นพร้อมกันในช่วงเดียวกันจะ fail แบบสะอาด (unique-violation) หรือ race แบบคาดเดาไม่ได้ ยังไม่ได้ทดสอบแยกในรอบนี้ — ระบุเป็น edge case ที่ยังไม่ยืนยันทั้งสองทาง
+ฐานข้อมูลบังคับ invariant ที่ flow สองขั้นนี้พยายามรักษาไว้: `idx_report_template_default_per_group` เป็น partial unique index บน `tb_report_template(report_group)` `WHERE is_default AND template_type = 'form' AND deleted_at IS NULL` (เพิ่มโดย migration `20260723120000_print_form_default` ตัวเดียวกับที่ drop `tb_print_template_mapping` — ดู [โมดูลที่เกี่ยวข้อง](#6-โมดูลที่เกี่ยวข้อง) ด้านล่าง) เพราะสอง `PUT` ไม่ได้อยู่ใน transaction เดียว จึงมีช่วงแคบ ๆ ระหว่างสองการเรียกที่กลุ่มนั้นมี default **เป็นศูนย์** แทนที่จะมีพอดีหนึ่งตัว ว่า request ตั้ง default ของ admin คนที่สองที่เกิดขึ้นพร้อมกันในช่วงเดียวกันจะ fail แบบสะอาด (unique-violation) หรือ race แบบคาดเดาไม่ได้ ยังไม่ได้ทดสอบแยกในรอบนี้ — ระบุเป็น edge case ที่ยังไม่ยืนยันทั้งสองทาง
 
 action kebab **Activate/Deactivate** เป็น `PUT` เดี่ยวแยกต่างหาก (`{ is_active: !t.is_active }` บวก `doc_version`) และมี lock ฝั่ง client ของตัวเอง: การ deactivate default ปัจจุบันของกลุ่มขณะยัง active อยู่ถูก disable ใน menu item (`lockDeactivate = t.is_default && t.is_active`) — admin ต้องมอบหมาย default ใหม่ในกลุ่มก่อนจึงจะ deactivate เทมเพลตที่ถือ default อยู่ได้ การตั้งเทมเพลตที่ **inactive** เป็น default ใหม่ผ่าน radio ก็ถูก disable แยกต่างหาก (`disableRadio = !canWrite || !t.is_active || busy`) พร้อม tooltip ("Activate the template to make it the default") บน label ของ radio — admin ต้อง activate เทมเพลตก่อนจึงจะเป็น default ของกลุ่มได้
 
@@ -60,7 +60,7 @@ Grid การ์ดจะ render 12 code ใน `FORM_REPORT_GROUPS` (`carmen-p
 
 - [Report Templates](/th/platform/report-templates) — เป็นเจ้าของ `tb_report_template`, คอลัมน์ `template_type`/`is_default`/`report_group` ที่หน้าจอนี้แก้ไข และหน้า Edit ที่ลิงก์ **Edit** ของทุกแถวเปิด
 - [Report Templates — Permissions](/th/platform/report-templates/permissions) — matrix gate `report_template.*` ฉบับเต็มที่หน้าจอนี้ reuse โดยไม่เปลี่ยนแปลง
-- [print-template-mapping](/th/platform/print-template-mapping) — โมดูลที่ถูกลบซึ่งหน้าจอนี้เข้ามาแทนที่หน้าที่ หน้า landing ของมันบันทึก timeline การถูกลบเมื่อ 2026-07-23/24 ฉบับเต็ม และความสามารถหนึ่งอย่าง (การกำหนดขอบเขต default ต่อ BU) ที่ไม่ได้ย้ายมาด้วย
+- **Print Template Mapping** — โมดูลที่หน้าจอนี้เข้ามาแทนที่หน้าที่ ถูกลบออกจากผลิตภัณฑ์เมื่อ 2026-07-24 (carmen-platform commit `de11377`; backend-gateway proxy และ permission key `print_template_mapping.*` ของมันถูกลบก่อนหน้าหนึ่งวันคือ 2026-07-23, carmen-turborepo-backend-v2 commit `c135bb21e`) ความสามารถหนึ่งอย่างที่ไม่ได้ย้ายมาด้วยคือการกำหนด default ต่อ business unit — โมดูลเดิม route เทมเพลต default ต่างกันได้ต่อ BU แต่กลไก `is_default` ของหน้าจอนี้ไม่มีสิ่งทดแทน
 
 ## 7. แหล่งข้อมูลอ้างอิง
 

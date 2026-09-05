@@ -2,7 +2,7 @@
 title: Platform RBAC — สิทธิ์ (Permissions)
 description: เมทริกซ์ route-guard ของทั้ง SPA, การประกอบกันของ gate ระดับ route/sidebar/ภายในหน้า, อัลกอริทึมการ resolve permission และกรณีพิเศษสำหรับผู้ทดสอบ อัพเดทสำหรับการเปลี่ยนคีย์เป็น platform_role.*, การย้าย route ไป category-permissions และข้อยกเว้น login ของ cluster-admin
 published: true
-date: 2026-09-05T17:00:00.000Z
+date: 2026-09-06T01:00:00.000Z
 tags: book/platform, rbac, permissions
 editor: markdown
 dateCreated: 2026-06-10T15:00:00.000Z
@@ -53,7 +53,7 @@ dateCreated: 2026-06-10T15:00:00.000Z
 | `/broadcasts/new` | `broadcast.send` | Route เดียว; ไม่มีหน้า list |
 | `/sql-workbench` | `sql_workbench.read` | ไม่ใช่ unit ที่ตั้งชื่อไว้ใน book นี้; ยังไม่มีหน้า wiki |
 
-**ถูกลบเมื่อ 2026-07-23/24:** `/print-template-mapping*` และ key `print_template_mapping.*` ไม่มีอยู่แล้ว — ทั้งโมดูลและแถว permission catalog ที่มันใช้ถูกลบทั้งคู่ (ดู [print-template-mapping](/th/platform/print-template-mapping) หน้าเชิงประวัติศาสตร์)
+**ถูกลบเมื่อ 2026-07-23/24:** `/print-template-mapping*` และ key `print_template_mapping.*` ไม่มีอยู่แล้ว — โมดูลถูกลบออกจาก carmen-platform เมื่อ 2026-07-24 (commit `de11377`) และแถว permission catalog ที่มันใช้ถูกลบออกจาก seed ของ carmen-turborepo-backend-v2 ก่อนหน้าหนึ่งวัน (commit `c135bb21e`, 2026-07-23); ตอนนี้ `template_type` บวกหน้าจอ [เทมเพลตรายงาน — Form Groups](/th/platform/report-templates/form-groups) ทำหน้าที่แทน
 
 มีสาม route ที่เป็น public เต็มรูปแบบ (ไม่มี `PrivateRoute` เลย): `/` (landing), `/login` และ `/changelog` แหล่งที่มา: `../carmen-platform/src/App.tsx` (block `<Routes>` ฉบับเต็ม) ไม่มี route ใดใน SPA ที่ส่ง key `.delete` เป็น `requiredPermission` — action ของการลบอยู่ภายในหน้า list ซึ่ง management list ทุกหน้า gate ภายในหน้าด้วย `<Can permission="*.delete">` (§3) **รวมถึง Roles ด้วยแล้วตอนนี้** (§2.1) — ข้อความเดิมที่ว่า "มีเพียงหน้า list ของ Roles ที่ยังเปิดเผย Delete" ล้าสมัยแล้ว
 

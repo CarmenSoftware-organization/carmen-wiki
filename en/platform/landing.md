@@ -2,7 +2,7 @@
 title: Landing
 description: The public marketing page at / — redirects an already-authenticated session straight to Dashboard, and shows a hardcoded "Inside the console" module index that has drifted far further from the real sidebar than at its last sync (still lists the removed Print Mapping module; missing Report Form Groups from Content, several Platform-group rows including User Platform and SQL Workbench, and an entire License Management, Analytics, Scheduling, and Database presence).
 published: true
-date: 2026-09-06T00:00:00.000Z
+date: 2026-09-06T01:00:00.000Z
 tags: platform/landing, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -52,7 +52,7 @@ Direct comparison of `Landing.tsx`'s `groups` array against `ALL_PLATFORM_NAV_IT
 
 In prose:
 
-- **Print Mapping is still listed under Content**, even though the [print-template-mapping](/en/platform/print-template-mapping) module — sidebar entry included — was deleted from carmen-platform on 2026-07-24. The Landing page's own copy was not touched by that removal commit.
+- **Print Mapping is still listed under Content**, even though the print-template-mapping module — sidebar entry included — was deleted from carmen-platform on 2026-07-24 (commit `de11377`). The Landing page's own copy was not touched by that removal commit; confirmed still current — `pages.landing.itemPrintMapping` remains in `Landing.tsx`'s hardcoded Content group as of this task.
 - **Report Form Groups is missing from Content** — it shipped the same week as the Print Mapping removal (2026-07-24) and sits in the sidebar's Content group today, but Landing's Content list still only shows the pre-2026-07-24 four items (one of which is the now-dead Print Mapping row).
 - **The Platform group is missing four of its current seven rows**: User Platform (part of [Platform RBAC](/en/platform/rbac)), SQL Workbench, and two rows added since this page's own last review — Platform Config and Email Settings (both `navGroup.platform`) — plus Feature Flags, whose own nav entry carries a permission (`feature_flag.manage`) but deliberately no `feature` key of its own, per `platformNav.ts`'s comment: "a switch that could hide itself could never be restored from the UI." Feature Flags is not yet its own wiki module as of this pass.
 - **Three entire groups the current sidebar organizes work into — License Management, Analytics, and Scheduling — have no representation on Landing at all.** These are all modules added after this page's last review: Licenses, License Feature Groups, and License Features (License Management); Usage Analytics and Activity Events (Analytics); Cronjobs (Scheduling).
@@ -68,7 +68,6 @@ No authentication and no permission grant of any kind is required to view this p
 
 - [Dashboard](/en/platform/dashboard) — where an authenticated session is redirected to, both from this page and from Login, and whose own route guard (not Landing) is what actually separates a platform-authority session from a membership-only cluster admin (§1); the real, permission-filtered module surface that this page's static index is meant to preview.
 - [Changelog](/en/platform/changelog) — the other fully public route, linked from the hero's "See what's new" and sharing the `VersionBadge` component with this page's footer.
-- [print-template-mapping](/en/platform/print-template-mapping) — the removed module this page's own index has not yet stopped listing (§4).
 - [Report Templates — Form Groups](/en/platform/report-templates/form-groups), [Platform RBAC](/en/platform/rbac), [SQL Workbench](/en/platform/sql-workbench) — three of the many real screens missing from this page's index (§4); see §4's table for the full accounting, including the three groups (License Management, Analytics, Scheduling) that have no representation on Landing at all.
 
 ## 7. Reference Sources

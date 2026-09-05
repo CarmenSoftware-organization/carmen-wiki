@@ -2,7 +2,7 @@
 title: Landing
 description: หน้าการตลาดสาธารณะที่ / — redirect session ที่ authenticated แล้วไปยัง Dashboard ทันที และแสดงดัชนีโมดูล "Inside the console" แบบ hardcode ที่คลาดเคลื่อนไปจาก sidebar จริง (ยังแสดงโมดูล Print Mapping ที่ถูกลบแล้ว ขาด Form Groups, User Platform, และ SQL Workbench)
 published: true
-date: 2026-09-06T00:00:00.000Z
+date: 2026-09-06T01:00:00.000Z
 tags: platform/landing, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -52,7 +52,7 @@ Landing คือจุดเริ่มต้นสำหรับผู้ท
 
 เป็นข้อความ:
 
-- **Print Mapping ยังอยู่ในรายการ Content** แม้ว่าโมดูล [print-template-mapping](/th/platform/print-template-mapping) — รวมถึงรายการ sidebar ของมัน — ถูกลบออกจาก carmen-platform เมื่อ 2026-07-24 สำเนาของหน้า Landing เองไม่ถูกแตะต้องโดย commit การลบนั้น
+- **Print Mapping ยังอยู่ในรายการ Content** แม้ว่าโมดูล print-template-mapping — รวมถึงรายการ sidebar ของมัน — ถูกลบออกจาก carmen-platform เมื่อ 2026-07-24 (commit `de11377`) สำเนาของหน้า Landing เองไม่ถูกแตะต้องโดย commit การลบนั้น; ตรวจสอบแล้วว่ายังเป็นจริงอยู่ — `pages.landing.itemPrintMapping` ยังอยู่ในกลุ่ม Content แบบ hardcode ของ `Landing.tsx` ณ การตรวจสอบครั้งนี้
 - **Report Form Groups ขาดหายจาก Content** — ออกมาสัปดาห์เดียวกับการลบ Print Mapping (2026-07-24) และอยู่ในกลุ่ม Content ของ sidebar วันนี้ แต่รายการ Content ของ Landing ยังแสดงแค่สี่รายการก่อน 2026-07-24 เท่านั้น (หนึ่งในนั้นคือแถว Print Mapping ที่ตายไปแล้ว)
 - **กลุ่ม Platform ขาดไป 4 จาก 7 แถวปัจจุบัน**: User Platform (ส่วนหนึ่งของ [Platform RBAC](/th/platform/rbac)), SQL Workbench, และอีกสองแถวที่เพิ่มหลังจากหน้านี้ทบทวนครั้งล่าสุด — Platform Config กับ Email Settings (ทั้งคู่อยู่ `navGroup.platform`) — บวก Feature Flags ซึ่งแถว nav ของตัวเองมี permission (`feature_flag.manage`) แต่ตั้งใจไม่มีคีย์ `feature` เป็นของตัวเอง ตาม comment ใน `platformNav.ts`: "สวิตช์ที่ปิดตัวเองได้จะเปิดกลับไม่ได้อีกจากหน้าจอ" Feature Flags ยังไม่เป็นโมดูล wiki ของตัวเอง ณ รอบนี้
 - **สามกลุ่มทั้งหมดที่ sidebar ปัจจุบันใช้จัดงาน — License Management, Analytics, และ Scheduling — ไม่มีตัวแทนบน Landing เลย** ทั้งหมดเป็นโมดูลที่เพิ่มหลังจากหน้านี้ทบทวนครั้งล่าสุด: Licenses, License Feature Groups, และ License Features (License Management); Usage Analytics และ Activity Events (Analytics); Cronjobs (Scheduling)
@@ -68,7 +68,6 @@ Landing คือจุดเริ่มต้นสำหรับผู้ท
 
 - [Dashboard](/th/platform/dashboard) — ที่ session ที่ authenticated จะถูก redirect ไป ทั้งจากหน้านี้และจาก Login และ route guard ของมันเอง (ไม่ใช่ Landing) คือตัวที่แยก session ที่มี platform authority ออกจาก cluster admin แบบ membership-only จริง ๆ (§1); พื้นผิวโมดูลจริงที่ filter ด้วย permission ที่ดัชนี static ของหน้านี้ตั้งใจจะ preview
 - [Changelog](/th/platform/changelog) — อีก route สาธารณะเต็มรูปแบบ ลิงก์จาก "See what's new" ของ hero และใช้ component `VersionBadge` ร่วมกับ footer ของหน้านี้
-- [print-template-mapping](/th/platform/print-template-mapping) — โมดูลที่ถูกลบซึ่งดัชนีของหน้านี้เองยังไม่หยุดแสดง (§4)
 - [เทมเพลตรายงาน — Form Groups](/th/platform/report-templates/form-groups), [Platform RBAC](/th/platform/rbac), [SQL Workbench](/th/platform/sql-workbench) — สามในหลายหน้าจอจริงที่ขาดหายจากดัชนีของหน้านี้ (§4) ดูตารางเต็มใน §4 รวมถึงสามกลุ่ม (License Management, Analytics, Scheduling) ที่ไม่มีตัวแทนบน Landing เลย
 
 ## 7. แหล่งข้อมูลอ้างอิง

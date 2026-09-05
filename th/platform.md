@@ -2,7 +2,7 @@
 title: Carmen Platform
 description: Overview of the Carmen Platform admin product — entry point for the book.
 published: true
-date: 2026-07-29T09:46:00.000Z
+date: 2026-09-06T01:00:00.000Z
 tags: book/platform, home
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -46,7 +46,6 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 | โมดูล | ครอบคลุมเรื่อง |
 |---|---|
 | [Report Templates](/th/platform/report-templates) | แคตตาล็อกเทมเพลตรายงานแบบ XML พร้อม editor แบบแท็บ และการกำหนดขอบเขตราย BU |
-| [Print Template Mapping](/th/platform/print-template-mapping) | การ route ชนิดเอกสาร (PR, PO, GRN, …) ไปยังเทมเพลตพิมพ์ FastReport |
 
 ## 6. Product & Shell
 
