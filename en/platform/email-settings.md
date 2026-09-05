@@ -1,8 +1,8 @@
 ---
 title: Email Settings
-description: Single-screen SMTP/email configuration and routing rules, gated by email_setting.read/manage.
+description: One screen, two peer sections — a named list of SMTP sender profiles, and the routing map that decides which of the five outbound mail flows uses which profile.
 published: true
-date: '2026-09-05T18:14:07.000Z'
+date: '2026-09-06T18:00:00.000Z'
 tags: book/platform, email-settings
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -10,18 +10,126 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 # Email Settings
 
-## 1. At a Glance
+The **Email Settings** module is one screen, `EmailSettingManagement` at `/platform/email-settings`, that manages two things which used to be one: a named master list of outbound SMTP sender profiles (`tb_email_sender_profile`), and a routing map (`email_routing`, a `tb_platform_config` key — the **same** shared config table the [Platform Config](/en/platform/platform-config) module edits) that decides which profile sends each of five outbound mail flows: sign-up/account-exists, email verification, invitation, forgot-password, and notification. The two used to be one thing — one profile row per hard-coded `purpose` enum value — until migration `20260808130000_email_profile_master_and_routing` split them apart specifically so an operator could add a new sender, or repoint a flow to a different one, from a screen instead of an enum change and a deploy (§2).
 
-- EmailSettingManagement — single-screen email/SMTP configuration and routing
-- email_setting.read gates the nav/route; email_setting.manage gates saves
-- feature key email_settings
+> **At a Glance**
+> **Component:** `EmailSettingManagement` &nbsp;·&nbsp; **Route:** `/platform/email-settings` &nbsp;·&nbsp; **Nav:** `permission: 'email_setting.read'`, `feature: 'email_settings'`, `groupKey: 'navGroup.platform'` (`platformNav.ts:39`) &nbsp;·&nbsp; **This module's own gate:** `email_setting.read` (view) / `email_setting.manage` (create/update/delete sender profiles, send a test email) — consistent on both frontend and backend for every one of its **own** endpoints (§4.2) &nbsp;·&nbsp; **The one surface that is *not* this module's own gate:** the Email Routing card, which reads and writes a `platform_config` row through the Platform Config module's shared endpoint — see §4.3, the mismatch this page was specifically asked to trace end to end &nbsp;·&nbsp; **e2e suite:** **None** — `../carmen-platform-e2e/tests/` has no `email-settings` directory; every claim below is sourced from `../carmen-platform` and `../carmen-turborepo-backend-v2` implementation directly &nbsp;·&nbsp; **Sub-pages:** 1
 
-## 2. References
+## 1. Overview
 
-- ../carmen-platform/src/pages/EmailSettingManagement.tsx
-- ../carmen-platform/src/pages/emailSettings/
-- ../carmen-platform/src/services/emailSettingService.ts
+The page fetches every sender profile in one call, `emailSettingService.getAll()` → `GET /api-system/platform/email-settings?perpage=20` (`emailSettingService.ts:11-14`), gated by `email_setting.read`, and separately loads the routing map through a shared hook, `useEmailRouting()` (`hooks/useEmailRouting.ts`), which calls `platformConfigService.getByKey('email_routing')` — the **Platform Config** module's own generic client, not this module's service. The hook is factored out of the routing card specifically so the card and every profile card read the identical mapping (`useEmailRouting.ts:18-24`): if each fetched its own copy, the routing panel and a profile card's "carries: Invitation, Forgot password" badge could show two different pictures of the same data on one screen.
 
-## 3. TODO
+The page lays out two peer sections (`SectionHeading`, both rendered as `<h2>`, `EmailSettingManagement.tsx:134-191`):
 
-- [ ] Fill from source in Task 17
+| Section | Component | What it edits |
+| --- | --- | --- |
+| Email Routing | `EmailRoutingCard` → `RoutingPanel` | The `email_routing` platform-config row — which profile each of the five flows (§3.2) sends through |
+| Sender Profiles | A grid of `EmailSettingCard`, one per profile, plus an "Add Profile" placeholder card when creating | `tb_email_sender_profile` rows — name, from address, SMTP endpoint, credentials, active flag |
+
+A component-level comment on `EmailSettingManagement.tsx:22-30` documents a deliberate visual-hierarchy fix (`#260`, commit `8fc31e7`): both section headings render at the same `<h2>` weight on purpose, because an earlier layout had the routing section with no heading of its own (bare card header) sitting visually *lighter* than "Sender profiles" below it, even though routing is the higher-level concern — the document's heading order was silently H1 → H3 → H2 → H3, skipping a level.
+
+**Only one card can be in edit mode at a time**, tracked by a single page-level `editingPurpose: string | null` (`'routing'`, `'new'`, or a profile's `id`). Requesting to edit a second card while one is already open does not switch immediately — it raises a confirm dialog ("Discard your changes?") and only swaps `editingPurpose` on confirmation (`EmailSettingManagement.tsx:94-100, 246-259`). The page's own `useUnsavedChanges` guard fires whenever *any* card is open, for the same reason [Platform Config](/en/platform/platform-config) documents for its own single-editor-at-a-time design: each card owns its own form state, so the page cannot compute per-field dirtiness without coupling to every card individually.
+
+Saving any profile refetches the whole list (`handleSaved` → `fetchAll()`), and every profile card is keyed on `` `${setting.id}-${setting.doc_version ?? 'new'}` `` (`EmailSettingManagement.tsx:221-224`) — a save that changes `doc_version` remounts that card, resetting its form to the freshly-fetched value. This is what makes the optimistic-lock recovery path work: on a `409`, the card asks the page to refetch *without* leaving edit mode (`onSaved({ keepEditing: true })`, `EmailSettingCard.tsx:229-234`), and the remount from the new `doc_version` refreshes the form in place.
+
+A dev-only debug panel (`DevDebugSheet`, bottom-right, same shared component [Platform Config](/en/platform/platform-config) uses) renders the raw `GET /api-system/platform/email-settings` payload — populated only when `process.env.NODE_ENV === 'development'` and rendered only when `import.meta.env.DEV` is true, so it compiles away in production regardless of the viewer's permissions. The page's own comment states this is safe to stash even with real data in it, because the API always returns `smtp_password` masked (§3.3) — it never carries a decryptable secret.
+
+## 2. Business Context
+
+Before migration `20260729000000_email_sender_profile`, this table did not exist at all in its current form: it was created with a `purpose` column typed to a three-value enum (`no_reply`, `support`, `billing`) and a unique index on `(purpose, deleted_at)` — one live profile per purpose, full stop. Adding a fourth kind of outbound mail meant adding an enum value and deploying. Migration `20260808130000_email_profile_master_and_routing` removed that ceiling: it renamed each existing row after the purpose it held, moved uniqueness from `purpose` to the operator-chosen `name`, dropped the `purpose` column outright, and seeded a new `tb_platform_config` row (`key = 'email_routing'`) that pointed every one of the five mail flows at the pre-existing "No-reply" profile — so the migration itself changed nothing observable for an already-running deployment, only the storage shape underneath it. From that point on, a profile is a named, general-purpose sender an operator creates freely, and the flow-to-profile assignment lives entirely in the separate routing map (§3.2) — adding a sixth sender, or moving Invitation onto it, is a screen change, never a deploy.
+
+**A schema fossil worth recognizing on sight:** the original `enum_email_sender_purpose` Postgres/Prisma enum type is still declared in the schema (`schema.prisma:1415-1425`) and referenced by **zero columns** — the migration dropped the *column* that used it, not the type itself. Its own doc-comment is now actively misleading: it states "a flow without its own profile falls back to `no_reply`" — true of the pre-2026-08-08 design, false of the current one, where the fallback target is whatever profile an operator has set as `default` in the `email_routing` map (§3.2), which need not be named "No-reply" at all. Do not treat this enum's comment as a description of current behavior; it documents an architecture this migration replaced.
+
+## 3. Key Concepts
+
+### 3.1 Two peer concerns on one screen: who can send, and who sends what
+
+Sender profiles (§4 of the data model) and mail-flow routing (this section) are deliberately independent axes. A profile that carries zero flows still shows in the grid as fully configured, just unused (`pages.emailSettings.laneDark`, rendered by `RoutingPanel`'s `Lane` component when `carries === 0`) — deleting an unused-looking profile is still gated the same way as deleting a busy one, because "unused" is read from the routing map, which can itself still be loading or have failed to load (§4.3) when a profile card renders; `lane` is `null`, not `false`, in that window, and the card deliberately shows nothing about routing rather than a wrong "unused" claim (`EmailSettingCard.tsx`, the `lane` prop's own doc comment).
+
+### 3.2 The five email flows — trigger, controlling setting, and where the send actually happens
+
+`src/constants/emailFlows.ts` defines the fixed list of five flows a route can be assigned to (`EMAIL_FLOWS`, used to render both `RoutingPanel`'s lanes and each `FlowChip`'s label/menu). The list is a UI-facing *catalog* of destinations; the actual trigger, link-lifetime setting, and send call for each flow live in the backend, split across two services in `../carmen-turborepo-backend-v2`:
+
+| Flow | Triggered by | Controlling `platform_config` key | Sent from |
+| --- | --- | --- | --- |
+| **register** | `AuthService.signupRequest()` (micro-business, `auth.service.ts:1396-1481`) — the self-service sign-up request endpoint, which always answers `200` regardless of outcome so it cannot be used to enumerate existing accounts. **Two different messages share this one flow**, chosen by the address's existing-account state: a new/reclaimable address gets `sendSignupLinkEmail()` ("Confirm your email to finish signing up," `auth.service.ts:3065-3092`); an already-owned or username-conflicting address gets `sendAccountExistsEmail()` ("You already have a Carmen account" — the message that closes the enumeration oracle while still helping a real user, `auth.service.ts:3100-3116`). Both funnel through a shared helper, `sendPlatformEmail(..., 'register')` (`auth.service.ts:3127-3151`). | `signup` — `verify_base_url`/`link_expiry_hours`, read via `readSignupConfig()` (`auth.service.ts:322-327`) | micro-business, via RPC `Notifications.platformEmailSend` to micro-notification |
+| **verify_email** | `AuthService.resendVerificationEmail()` (`auth.service.ts:1329-1382`) — a separate, **legacy** endpoint for an account that already exists in `tb_user` with `email_verified_at: null` (created directly, or predating the sign-up flow's 2026 reversal); simultaneously live alongside `register` above, not superseded by it. Sends `sendEmailVerification()` ("Verify your email address," `auth.service.ts:3010-3057`). | `email_verification` — `base_url`/`expiry_hours`, read via `readEmailVerificationConfig()` (`auth.service.ts:335-338, 1364`) | micro-business, via the same RPC call |
+| **forgot_password** | `AuthService.forgotPassword()` (`auth.service.ts:1648`+), which calls `sendPasswordResetEmail()` **fire-and-forget** (no `await`) so a mail-send failure never fails the forgot-password request itself (`auth.service.ts:2923-2999`, comment at 2989-2996 explains the deliberate non-throw). Sends "Password Reset Request" with both a link and a short code. | `password_reset` — `base_url`/`expiry_hours`, read via `readPasswordResetConfig()` (`auth.service.ts:348-350`) | micro-business, via the same RPC call |
+| **invitation** | `UserInvitationService` (micro-cluster, `user-invitation.service.ts`) — three distinct call sites, all this one flow: `sendInvitationEmail()` (line 303, RPC call at 336) sends the invite link itself, called from `createInvitation()` and `resendInvitation()`; `notifyAccountCreatedFromInvitation()` (line 1254, RPC call around 1276) sends an account-created confirmation when an invited user completes sign-up via `acceptWithSignup()`; `notifyAddressConflict()` (line 1336, RPC call around 1412) sends a conflict notice when acceptance collides with an existing account. | `invitation` — `base_url`/`expiry_days` half of the two-card `invitation` key documented on [Platform Config](/en/platform/platform-config)'s landing page §3.2 | micro-cluster, via the same RPC call |
+| **notification** | **No confirmed trigger anywhere.** A repository-wide search for every call site of the RPC contract this module's flows all use, `Notifications.platformEmailSend` (`packages/rpc-contract/src/contracts/notifications.ts:31`), finds exactly **seven** — three in `auth.service.ts` (register ×2 messages, verify_email, forgot_password — four call sites, one flow value each except register's shared helper), three in `user-invitation.service.ts`, and the `@MessagePattern` handler itself in `micro-notification`. None pass `flow: 'notification'`. The same search across `micro-report`, `micro-cronjobs`, and `micro-data` returns nothing. The routing panel still renders a live "Notification" lane — an operator can point it at any profile — but nothing in the current codebase sends through it. | *(none found)* | *(none found)* |
+
+**The `notification` flow above is a different thing from the `notification_email` platform-config key** documented on [Platform Config](/en/platform/platform-config)'s own page (§3.2 there) — that key is a separate, unrelated `tb_platform_config` row (recipient list + subject prefix for internal report/notification mail), which that module's own research also found had no confirmed reader. Two independently-verified "nothing currently consumes this" findings, on two different mechanisms that happen to share the word "notification," is worth stating plainly rather than letting a reader conflate them: this page's finding is about an **email-routing lane** with no sender; the Platform Config page's finding is about a **config key** with no reader. Neither confirms nor depends on the other.
+
+### 3.3 How a flow becomes an SMTP send — and what happens when it cannot
+
+Every flow above ends at the same resolver, `PlatformEmailService.resolveProfile()` (micro-notification, `platform-email.service.ts:114-138`): it reads the live `email_routing` row from `tb_platform_config`, validates it against a Zod schema, looks up `routing[flow] ?? routing.default`, and loads that `tb_email_sender_profile` row **only if** it is not soft-deleted and `is_active` is `true`. If the row is missing, deleted, or inactive, `send()` reports `{ sent: false, reason: 'no-config' }` and logs a warning naming the flow and the dangling profile id — it never falls back to any other profile or to environment variables.
+
+**There is no environment-variable fallback anywhere in this file**, despite a doc-comment on the sibling method `resolveSmtpConfig()` claiming otherwise ("a failed lookup... falls through to env exactly as `send()` does," `platform-email.service.ts:195-196`). The only `process.env` read in the entire file is the database connection string (line 93); `send()` returns `no-config` on an unresolved lookup exactly as described above, with no env read at all. `resolveSmtpConfig()` itself is additionally dead code today — grepped across all of `micro-notification`, it has **zero callers**; only `send()`, `sendTest()`, and `sendWithConfig()` are wired to the `@MessagePattern` handler that micro-business and micro-cluster actually call. Its doc-comment describes a future integration ("made public so the internal-notification path shares one SMTP source") that does not exist in the current codebase — treat the comment as an aspiration, not a description of what runs today.
+
+**A fresh, never-configured deployment starts with an unusable placeholder.** The `email_routing` key's registry default (`platform-config.schema.ts`, same registry [Platform Config](/en/platform/platform-config) documents) is `{ default: '00000000-0000-0000-0000-000000000000' }` — an all-zero UUID that matches no real profile, by design (the registry's own comment says there is no meaningful default because profile ids differ per environment). In practice this default is never reached on an upgraded deployment: migration `20260808130000_email_profile_master_and_routing` seeds a real mapping pointing every flow at the pre-existing "No-reply" profile at migration time (§2). A genuinely fresh environment with no such profile to seed from would sit on the placeholder default — every flow returns `no-config` — until an operator creates at least one profile and saves a routing map with a real `default`.
+
+### 3.4 Password handling
+
+`smtp_password` is stored encrypted (`enc:v1`, AES-256-GCM, `decryptSecret`/`encryptSecret` from `@repo/secret-crypto`) and is **never** returned in plaintext by any endpoint — `findAll`/`findOne`/`create`/`update` all mask it to a fixed `••••••` string before responding (`email-sender-profile.service.ts:41-43`). The frontend's `PasswordField` component treats the mask as "no change, do not resend": the save payload omits `smtp_password` entirely unless the operator has actively typed a new value (`PasswordField.tsx:40-43`), and an empty string is likewise treated as "unchanged," not "clear" — the field's own comment states this is deliberate, so that clearing a text box by accident can never blank out a working credential (`PasswordField.tsx:13-15`). The backend's own `passwordPatch()` (`email-sender-profile.service.ts:51-56`) *would* accept an explicit `null`/`''` to clear the stored password, but nothing in this screen's UI can produce that value — clearing a profile's password is not reachable from the Email Settings screen today, only replacing it with a new one.
+
+### 3.5 Sending a test email
+
+Each configured profile's non-editing state shows a "Send test email" action, opening `TestEmailDialog`, which defaults the recipient to the caller's own address when it looks like an email (`user.email.includes('@')`, since `AuthContext` can populate `user.email` from a username rather than an address) and otherwise leaves the field blank for the operator to fill in. The send goes through this module's own endpoint, `POST /api-system/platform/email-settings/:id/test` (`email_setting.manage`, not `.read` — sending mail, even a test, requires the write permission), which is proxied to micro-notification's `sendTest()` — the only path in this service that loads a profile **without** checking `is_active`, so a deactivated profile can still be smoke-tested before being turned back on. Failure reasons (`smtp-error`, `decrypt-failed`, `lookup-failed`, `no-config`) are mapped to distinct, actionable toast messages (`TestEmailDialog.tsx:27-33`) rather than one generic failure string.
+
+## 4. Roles and Permissions
+
+### 4.1 This module's own gate — consistent everywhere
+
+| Surface | Permission | Source |
+| --- | --- | --- |
+| Sidebar entry, `/platform/email-settings` route | `email_setting.read` + feature `email_settings` | `platformNav.ts:39`; `App.tsx:491-494` |
+| Every Sender Profile card's Edit/Configure, Send test email, Unset buttons | `email_setting.manage` (`canManage`) | `EmailSettingManagement.tsx:48`, passed down as the `canManage` prop |
+| `GET`/`POST`/`PUT`/`DELETE`/`POST .../test` on `/api-system/platform/email-settings*` | `email_setting.read` (list/get) or `email_setting.manage` (create/update/delete/test) | `platform_email-settings.controller.ts:55-56, 92-93, 129-130, 168-169, 210-211, 247-248` |
+
+Every one of this module's **own** REST routes matches its frontend gate exactly — list/get on `.read`, every write (including the test-send) on `.manage`. There is no asymmetry inside this table.
+
+### 4.2 The one surface that is not this module's own gate — the Email Routing card, traced end to end
+
+This was flagged forward by the [Platform Config](/en/platform/platform-config) module's own task as a mismatch to verify, not assert. Tracing it end to end, on both the read and write sides:
+
+**Read side.** `useEmailRouting()` calls `platformConfigService.getByKey('email_routing')` → `GET /api-system/platform/configs/email_routing`, which the Platform Config module's controller gates on **`platform_config.read`** (`platform_configs.controller.ts:198-200`) — not `email_setting.read`. This call runs unconditionally whenever the Email Settings page mounts, for **every** viewer, regardless of whether they can manage anything. A session holding `email_setting.read` alone (enough to reach this page at all) but lacking `platform_config.read` sees the Sender Profiles grid load normally — that call is gated correctly, on this module's own key — while the Email Routing card above it permanently shows a load error (`loadError`, `EmailRoutingCard.tsx:166-167`), because the one API call it depends on is gated by a resource this module's own screen never checks for.
+
+**Write side.** `EmailRoutingCard.handleSave()` calls `platformConfigService.update('email_routing', payload)` → `PUT /api-system/platform/configs/email_routing` (`EmailRoutingCard.tsx:124`). The **frontend** gate on reaching this button at all is `canManage` — `hasPermission('email_setting.manage')`, computed once on the page (`EmailSettingManagement.tsx:48`) and passed down as the `SectionHeading` action's visibility condition (`EmailSettingManagement.tsx:140-154`); `EmailRoutingCard` itself contains no permission check of its own, trusting the page entirely. The **backend** endpoint that save actually hits requires `platform_config.manage` (`platform_configs.controller.ts:236-238`, the `PUT` route's `@RequirePlatformPermission` decorator, enforced by `PlatformPermissionGuard` *before* the handler body runs) — and `writeKeyDenial()`, the handler's own per-key second gate, adds nothing further for `email_routing`; it only tightens `license` and `platform_migration` (documented on [Platform Config](/en/platform/platform-config) §3.3). `email_routing` is not one of those two, so `platform_config.manage` alone is what the endpoint checks.
+
+**The two keys do not agree, in the direction that produces a live-looking trap.** A session holding `email_setting.manage` but **not** `platform_config.manage` sees a fully rendered, clickable "Edit Routing" button (the frontend gate is satisfied), can open the editor, reassign every flow chip, and click Save — and the request 403s, rejected by `PlatformPermissionGuard` before `writeKeyDenial()` or any application code ever runs, because the resource the endpoint decorator names is `platform_config`, not `email_setting`. There is no reachable combination in the other direction: a session holding only `platform_config.*` and nothing in `email_setting.*` cannot even load `/platform/email-settings` in the first place, since the route itself requires `email_setting.read` (`App.tsx:493`) — so this gap is one-directional, and it affects the read path (a permanent error, not a 403 trap) as much as the write path (a working-looking editor that cannot save).
+
+**This confirms, rather than contradicts, the Platform Config module's own forward-flagged account.** That module described the identical shape from its own side (§3.5 of its landing page) and explicitly left verification to this task. Reading both sides independently, they agree: `email_setting.manage` is necessary but not sufficient to save the routing map from this screen, and — a detail the Platform Config page's framing did not need to state, since it was written from the write side only — `email_setting.read` is not sufficient to even *view* it without error.
+
+### 4.3 What this means for a tester
+
+Treat "can manage Email Settings" and "can manage Platform Config" as two RBAC resources a real deployment may grant independently, per the source map's own note that this product has no static permission-key catalog beyond call-site literals. A role built to let a support operator manage sender profiles and test them, without giving them the broader Platform Config screen, will show that operator a broken-looking routing panel (permanent load error) and, if the button were somehow reached, a silent-looking write failure. Granting `platform_config.read`/`.manage` alongside `email_setting.read`/`.manage` is the only combination that makes the whole screen behave as designed.
+
+## 5. Related Modules
+
+- [Platform Config](/en/platform/platform-config) — owns the `email_routing` registry key and the generic `/api-system/platform/configs` surface this module's routing card reads and writes through (§4.2); also documents, from its own side, the identical permission mismatch this page traces end to end.
+- [Platform RBAC](/en/platform/rbac) — the permission catalog where `email_setting.read`/`.manage` and `platform_config.read`/`.manage` are both visible as independent resources.
+
+## 6. Reference Sources
+
+All paths below are `../carmen-platform` (the Platform admin SPA, HEAD `157a65e`, 2026-09-04) unless prefixed `../carmen-turborepo-backend-v2` (the backend monorepo, HEAD `937cf5ac4`, 2026-09-06).
+
+- `../carmen-platform/src/pages/EmailSettingManagement.tsx` — the page shell, `editingPurpose` state machine, permission wiring.
+- `../carmen-platform/src/pages/emailSettings/{EmailSettingCard,EmailRoutingCard,PasswordField,TestEmailDialog,routingLanes,RoutingPanel}.ts(x)` — the five per-purpose components and the routing-lane data shape.
+- `../carmen-platform/src/constants/emailFlows.ts` — `EMAIL_FLOWS`, the five-flow catalog rendered by the routing UI.
+- `../carmen-platform/src/services/emailSettingService.ts`, `src/hooks/useEmailRouting.ts` — REST clients for profiles and the shared routing-map loader.
+- `../carmen-platform/src/components/nav/platformNav.ts` (line 39), `src/App.tsx` (lines 491-494) — nav entry and route registration.
+- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_email-settings/{platform_email-settings.controller.ts,platform_email-settings.service.ts}` — this module's own REST surface and RPC proxy to micro-cluster/micro-notification.
+- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/email-sender-profile/email-sender-profile.service.ts` — profile CRUD, name-uniqueness enforcement, password masking/encryption.
+- `../carmen-turborepo-backend-v2/apps/micro-notification/src/platform-email/platform-email.service.ts` — `resolveProfile`/`resolveSmtpConfig`/`send`/`sendTest`, the routing resolver every flow ends at.
+- `../carmen-turborepo-backend-v2/apps/micro-business/src/authen/auth/auth.service.ts` (lines 322-350, 1329-1481, 1648+, 2923-3151) — `register`/`verify_email`/`forgot_password` triggers and senders.
+- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/user-invitation/user-invitation.service.ts` (lines 303-370, 1254-1335, 1336-1470) — `invitation` triggers and senders.
+- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_configs/platform_configs.controller.ts` (lines 198-200, 236-238, 285-287, 145-159) — the `email_routing` read/write gates, shared with [Platform Config](/en/platform/platform-config).
+- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts` — the `email_routing` registry entry and its placeholder default.
+- `../carmen-turborepo-backend-v2/packages/rpc-contract/src/contracts/notifications.ts` (line 31) — the `platformEmailSend` RPC contract every flow's send goes through.
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (lines 1415-1460) — `enum_email_sender_purpose` (orphaned), `tb_email_sender_profile`.
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/{20260729000000_email_sender_profile,20260808130000_email_profile_master_and_routing}/migration.sql` — the purpose-enum-to-named-list redesign.
+- `../carmen-turborepo-backend-v2/packages/error-catalog/src/catalog.ts` (lines 513-514) — `EMAIL_SENDER_PROFILE_NOT_FOUND` (404), `EMAIL_SENDER_PROFILE_NAME_EXISTS` (409).
+
+## 7. Pages in This Module
+
+- [Data Model](/en/platform/email-settings/data-model) — the `tb_email_sender_profile` entity in full, the `email_routing` config shape, and the write-path mechanics (optimistic locking, password patch semantics, name-uniqueness) behind §3 and §4 above.
