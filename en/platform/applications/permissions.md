@@ -2,7 +2,7 @@
 title: Applications — Permissions
 description: The application.* gate matrix, how machine-client access (x-app-id + api_names) differs from user RBAC, and edge cases for testers.
 published: true
-date: 2026-07-29T07:21:27.000Z
+date: 2026-09-05T00:00:00.000Z
 tags: book/platform, applications, permissions
 editor: markdown
 dateCreated: 2026-06-10T12:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-06-10T12:30:00.000Z
 # Applications — Permissions
 
 > **At a Glance**
-> **Gate:** routes carry `application.read` / `application.create` / `application.update` on `PrivateRoute`; sidebar entry on `application.read` &nbsp;·&nbsp; **In-page `<Can>` gates:** Add (`application.create`, header **and** empty-state — the empty-state gap flagged in a prior sync is now closed), row Edit (`application.update`), row Delete (`application.delete` — in-page only, no route), Edit toggle (`application.update`, now in the `ApplicationIdentityHero` actions slot) &nbsp;·&nbsp; **Two access systems meet here:** RBAC keys gate *who may manage* applications; `api_name` grants decide *what the application may call* &nbsp;·&nbsp; **Concurrency:** `doc_version` optimistic lock on save
+> **Gate:** routes carry `application.read` / `application.create` / `application.update` **and** `feature="applications"` on `PrivateRoute`; sidebar entry on `application.read` (no `superAdminOnly`) &nbsp;·&nbsp; **In-page `<Can>` gates:** Add (`application.create`, header **and** empty-state — the empty-state gap flagged in a prior sync is now closed), row Edit (`application.update`), row Delete (`application.delete` — in-page only, no route), Edit toggle (`application.update`, now in the `ApplicationIdentityHero` actions slot), row/hero **View History** (`activity_log.read`, `clusterId={PLATFORM_SCOPED_RECORD}` — new cross-cutting Activity Trail feature) &nbsp;·&nbsp; **Two access systems meet here:** RBAC keys gate *who may manage* applications; `api_name` grants decide *what the application may call* &nbsp;·&nbsp; **Concurrency:** `doc_version` optimistic lock on save
 
 ## 1. Overview
 
@@ -19,18 +19,24 @@ This page covers two distinct authorization stories that intersect on these scre
 
 ## 2. Gate matrix
 
-All gates resolve through the single `hasPermission` resolver documented in [Platform RBAC — Permissions](../rbac/permissions.md); a failed route guard renders `<Forbidden>` (403 page) inside the normal `<Layout>` shell.
+All gates resolve through the single `hasPermission` resolver documented in [Platform RBAC — Permissions](/en/platform/rbac/permissions); a failed route guard renders `<Forbidden>` (403 page) inside the normal `<Layout>` shell.
 
 | Surface | Mechanism | Key | Source |
 |---|---|---|---|
-| `/applications` | `PrivateRoute requiredPermission` | `application.read` | `src/App.tsx` |
-| `/applications/new` | `PrivateRoute requiredPermission` | `application.create` | `src/App.tsx` |
-| `/applications/:id/edit` | `PrivateRoute requiredPermission` | `application.update` | `src/App.tsx` |
-| Sidebar "Applications" (Platform group) | `Layout.tsx` nav filter | `application.read` | `src/components/Layout.tsx` |
+| `/applications` | `PrivateRoute requiredPermission` + `feature` | `application.read` + `feature="applications"` | `../carmen-platform/src/App.tsx` |
+| `/applications/new` | `PrivateRoute requiredPermission` + `feature` | `application.create` + `feature="applications"` | `../carmen-platform/src/App.tsx` |
+| `/applications/:id/edit` | `PrivateRoute requiredPermission` + `feature` | `application.update` + `feature="applications"` | `../carmen-platform/src/App.tsx` |
+| Sidebar "Applications" (Platform group) | nav filter | `application.read`, `feature: 'applications'` | `../carmen-platform/src/components/nav/platformNav.ts` (line 40) — **not** `Layout.tsx`, which no longer defines nav rows |
 | Add Application (list header **and** empty state) | `<Can>` | `application.create` | `ApplicationManagement.tsx` |
 | Row Edit (actions dropdown) | `<Can>` | `application.update` | `ApplicationManagement.tsx` |
 | Row Delete (actions dropdown) | `<Can>` | `application.delete` | `ApplicationManagement.tsx` |
+| Row **View History** (actions dropdown, new) | `<Can>` | `activity_log.read`, `clusterId={PLATFORM_SCOPED_RECORD}` | `ApplicationManagement.tsx` — cross-cutting Activity Trail feature, same as [clusters](/en/platform/clusters)/[business-units](/en/platform/business-units)/[users](/en/platform/users) |
 | Edit toggle (hero actions slot) | `<Can>` | `application.update` | `ApplicationEdit.tsx` (button now rendered by `ApplicationIdentityHero.tsx`) |
+| Hero **View History** (edit page, new) | `<Can>` | `activity_log.read`, `clusterId={PLATFORM_SCOPED_RECORD}` | `ApplicationEdit.tsx` — always shown, independent of edit mode |
+
+`PLATFORM_SCOPED_RECORD` is an alias of `UNRESOLVED_CLUSTER_ID` (`../carmen-platform/src/utils/permissions.ts`): a sentinel `clusterId` that forces `checkPermission`'s scoped branch to evaluate false for every real cluster, leaving only a platform-wide `activity_log.read` grant as a path to `true` — the correct shape for a record type (application) that has no cluster of its own. Activity recording started 2026-08-31 (`AUDIT_RECORDING_STARTED_ON_PHASE_2`); an application created earlier shows an empty history, not a broken one.
+
+**Feature flag.** All three routes and the sidebar entry additionally require the `applications` feature flag, checked by `PrivateRoute` **after** the permission check. A session without the right `application.*` key still sees `<Forbidden>` regardless of the flag; a session that does have the key sees `NotFound` or a "Coming Soon" placeholder instead of the page if the flag itself is toggled to `hide`/`inactive` from the platform's Feature Flags screen (`/platform/features`; not yet a documented module in this wiki).
 
 Two asymmetries worth a tester's attention (a third, historical one — the empty-state gate gap — is resolved, see below):
 
@@ -39,7 +45,7 @@ Two asymmetries worth a tester's attention (a third, historical one — the empt
 
 **Resolved since the last sync — the empty-state CTA gap is closed.** When the list is empty with no search term, the `EmptyState` card's "Add Application" button is now wrapped in `<Can permission="application.create">`, confirmed by direct source read of `ApplicationManagement.tsx` — matching the header button. The prior finding ("not `<Can>`-wrapped... treat the button's visibility... as the defect") no longer applies; testers should now expect the empty-state CTA to be absent for a `application.read`-only session, same as the header button.
 
-Export (CSV) and the dev-only Debug Sheet are intentionally ungated beyond the route's `application.read` — both are read-only over already-loaded data. As everywhere in the SPA, the sidebar filter is UX, not security: a session lacking `application.read` does not see the entry but can still type `/applications` into the address bar and will hit the route guard.
+Export (CSV) and the dev-only Debug Sheet are intentionally ungated beyond the route's `application.read` — both are read-only over already-loaded data. **Re-verified directly against source for this task**: neither `handleExport` (the Export `<Button>`) nor `<DevDebugSheet>` in `ApplicationManagement.tsx` is wrapped in `<Can>`; the claim stands. As everywhere in the SPA, the sidebar filter is UX, not security: a session lacking `application.read` does not see the entry but can still type `/applications` into the address bar and will hit the route guard.
 
 The three route keys are independent — `PrivateRoute` checks only the one key its route declares. Useful combinations to test deliberately: `application.update` without `application.read` can deep-link straight to `/applications/:id/edit` (given an id from elsewhere) while the list itself renders `<Forbidden>`; `application.create` without `application.read` can reach `/applications/new` by URL even though both paths into it (header button, empty-state CTA) live on a page it cannot open.
 
@@ -51,7 +57,7 @@ The `resource.action` grammar is shared; almost everything else differs:
 |---|---|---|
 | Caller identifies by | `Authorization: Bearer <token>` (session) | `x-app-id: <tb_application.id>` header |
 | Key vocabulary | `tb_platform_permission` rows (Postgres, seeded by backend migration); verb set `read`/`create`/`update`/… | `api_name`s harvested from `new AppIdGuard('...')` calls by `scripts/generate-app-api-catalog/run.ts` (generated file, no table); verbs follow controller methods (`findAll`, `findOne`, `uploadLogo`) — same grammar, different strings |
-| Grant storage | role→permission join rows plus scoped user→role assignment rows (five tables — see [Platform RBAC data-model](../rbac/data-model.md)) | flat `tb_application_api` rows per application (no roles, no scopes) |
+| Grant storage | role→permission join rows plus scoped user→role assignment rows (five tables — see [Platform RBAC data-model](/en/platform/rbac/data-model)) | flat `tb_application_api` rows per application (no roles, no scopes) |
 | Wildcard | super-admin flag (`tb_platform_super_admin`) per user | `allow_all` boolean per application |
 | Scope dimension | platform-wide or per-cluster (`cluster_id` on the assignment) | none — a grant applies wherever the endpoint does |
 | Write semantics (SPA) | role permissions sent as deltas `{ add, remove }` | full-set replace via `details.add[]` on every `PUT` |
@@ -64,16 +70,19 @@ Both headers travel together on every **authenticated** Platform SPA request —
 
 | # | Scenario | Behaviour | Tester notes |
 |---|---|---|---|
-| 1 | `allow_all = true` with `api_names` previously selected | The selector disappears; the write payload **omits `details` entirely**, and the backend grants every API regardless of stored grant rows | The list badge flips to "All APIs". Toggling `allow_all` back off within the same edit session restores the in-memory selection — verify what actually persists after each save, not what the form shows. The flip reaches the gateway only at the next allowlist refresh (interval, default 60 s), so allow a cycle before verifying server-side |
+| 1 | `allow_all = true` with `api_names` previously selected | The selector disappears; the write payload **omits `details` entirely**, and the backend grants every API regardless of stored grant rows. The stored `api_names` are **not cleared** — the edit page now says so explicitly ("Still holds `N` scoped endpoints underneath...") | The list's Access cell now reads `n/n` on a warning-toned bar rather than the word "All APIs". Toggling `allow_all` back off (same session or a later edit) restores the stored selection — verify what actually persists after each save, not what the form shows. The flip reaches the gateway only at the next allowlist refresh (interval, default 60 s), so allow a cycle before verifying server-side |
 | 2 | Concurrent edits + replace semantics | Two operators editing the same application both send their *full* desired set; last save wins and silently discards the other's additions/removals | The replace-not-delta foot-gun. Unlike RBAC role deltas, there is no merge — reproduce with two sessions and verify the audit columns identify the surviving writer |
 | 3 | Catalog fetch fails | The selector degrades to free-text `ChipInput`; any string can be entered as an `api_name` | Typos persist as dead grant rows — `tb_application_api.api_name` has no FK or enum to validate against. Check trailing-space handling (the service trims) and that bogus names simply never match a guard |
 | 4 | Catalog response without `groups` (older backend) | The client derives identical groups via `groupApiNames()` — same prefix-before-first-dot rule as the generator | Deploy-order tolerance, not a bug; grouped UI must look the same either way |
 | 5 | Application `is_active = false` | The SPA renders an Inactive badge and keeps the record fully editable; nothing in the SPA blocks the application's callers | Whether an inactive application's `x-app-id` is rejected is backend (`AppIdGuard`) behaviour — verify it server-side; do not infer enforcement from the badge. The guard checks an in-memory allowlist snapshot refreshed on an interval, so a freshly deactivated app may keep passing until the next refresh — that delay is not a bug |
-| 6 | Session with `application.read` only | List loads; the actions dropdown is empty (no Edit/Delete), header Add is hidden — **and, since the last sync, the empty-state CTA is hidden too** (its `<Can>` gap was fixed) | The canonical `<Can>` absence check across every affordance on this page — no residual gap left to exercise here |
+| 6 | Session with `application.read` only | List loads; the actions dropdown shows **View History** only if the session separately holds `activity_log.read` (independent of `application.*`) — Edit/Delete are absent, header Add is hidden, and **the empty-state CTA is hidden too** (its `<Can>` gap was fixed) | `activity_log.read` is a genuinely separate grant from every `application.*` key — test the two independently; a session can hold one, both, or neither |
 | 7 | Deleting an application that clients still use | The confirm dialog warns it cannot be undone; once deleted, callers presenting that UUID are rejected by the guard **after the next allowlist refresh** — a freshly deleted app may keep passing briefly | Soft delete (`deleted_at`) — confirm the deletion drops out of the snapshot at the next refresh and that the freed `name` can be reused (`@@unique` includes `deleted_at`); the brief grace window is the refresh interval, not a bug |
 | 8 | Guard added in backend but catalog not regenerated | The endpoint enforces a key that no selector offers; explicit-list applications cannot be granted it through the UI | Regeneration + deploy is part of shipping a new `AppIdGuard`; until then only `allow_all` applications pass |
 | 9 | Key held without its `read` sibling | `application.update` alone opens `/applications/:id/edit` by deep link; `application.create` alone opens `/applications/new` by URL — both while the list route denies | Route guards check one key each (§2); decide per test plan whether such partial grants are intended role shapes or misconfigurations |
-| 10 | Super-admin or bootstrap session | All `application.*` gates pass regardless of grants — the [RBAC resolver](../rbac/permissions.md) short-circuits before any key check | Never QA this module's gate matrix from a super-admin session; it cannot reveal a missing key |
+| 10 | Super-admin or bootstrap session | All `application.*` gates pass regardless of grants — the [RBAC resolver](/en/platform/rbac/permissions) short-circuits before any key check | Never QA this module's gate matrix from a super-admin session; it cannot reveal a missing key |
+| 11 | Reach bar's own catalog fetch fails (list page) | `ApplicationReachCell` falls back to an unanchored rendering (bare `N` granted, no bar, no denominator) — a **separate, independent** catalog fetch from the one the edit page's selector uses | Best-effort by design: the list keeps working with degraded reach display; there is no retry banner for this specific fetch (unlike the edit page's `ChipInput` fallback, edge case 3) — do not conflate the two catalog fetches when reproducing a failure |
+| 12 | A grant row's `api_name` no longer exists in the regenerated catalog | The read-only view counts it apart from the module's `known/total` fraction as a `+N` warning annotation (e.g. `known/total +1`) rather than folding it into the numerator | The one place on the platform that surfaces these orphaned grants; confirm the stale count matches the number of `tb_application_api` rows whose `api_name` has no catalog match |
+| 13 | Granted `api_name`s include an authority verb (`delete`/`approve`/`submit`/`revoke`/…) | Those chips render tinted (warning border/fill) and sort first within their module, both in the accordion selector and the read-only grouped view; a running "`N` can delete or approve" count appears near the selection meter | `isAuthorityAction()` is deliberately narrower than "any write" — `create`/`update`/`upload` are not tinted. Use this to spot-check that an audit reviewer can find the highest-risk grants without reading every chip in a 148-module catalog |
 
 ## 5. Recommendations
 
@@ -83,5 +92,5 @@ Both headers travel together on every **authenticated** Platform SPA request —
 - **Prefer explicit lists over `allow_all` outside dev.** `allow_all` is the machine equivalent of super-admin — useful for bootstrap and internal tooling, but it makes the grant list meaningless and hides missing-grant defects, exactly like testing RBAC from a super-admin session.
 - ~~Close the empty-state gate gap at the source.~~ **Done** — the `EmptyState` CTA is now wrapped in `<Can permission="application.create">`, matching the header button; no further action needed here.
 
-**References:** `../carmen-platform/src/App.tsx` (the three `application.*` route guards) · `src/components/Layout.tsx` (sidebar entry) · `src/pages/ApplicationManagement.tsx` (`<Can>` gates, empty state) · `src/pages/ApplicationEdit.tsx` (Edit-toggle gate) · `../carmen-turborepo-backend-v2/scripts/generate-app-api-catalog/run.ts` (catalog generation).
-**Cross-links:** [Applications landing](/en/platform/applications) &nbsp;·&nbsp; [Data Model](./data-model.md) &nbsp;·&nbsp; [UI Screens](./ui-screens.md) &nbsp;·&nbsp; [Platform RBAC — Permissions](../rbac/permissions.md)
+**References:** all paths `../carmen-platform` unless noted. `src/App.tsx` (the three `application.*` route guards, each also `feature="applications"`) · `src/components/nav/platformNav.ts` (sidebar entry, line 40 — not `Layout.tsx`, which defines no nav rows today) · `src/pages/ApplicationManagement.tsx` (`<Can>` gates, empty state, row View History) · `src/pages/ApplicationEdit.tsx` (Edit-toggle gate, hero View History) · `src/utils/permissions.ts` (`PLATFORM_SCOPED_RECORD`) · `src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` (the View History feature; `AUDIT_RECORDING_STARTED_ON_PHASE_2` = 2026-08-31) · `../carmen-turborepo-backend-v2/scripts/generate-app-api-catalog/run.ts` (catalog generation).
+**Cross-links:** [Applications landing](/en/platform/applications) &nbsp;·&nbsp; [Data Model](/en/platform/applications/data-model) &nbsp;·&nbsp; [UI Screens](/en/platform/applications/ui-screens) &nbsp;·&nbsp; [Platform RBAC — Permissions](/en/platform/rbac/permissions)
