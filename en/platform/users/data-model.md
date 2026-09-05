@@ -2,7 +2,7 @@
 title: User — Data Model
 description: User entity, profile extension, status, per-cluster BU assignments.
 published: true
-date: 2026-07-29T07:06:05.000Z
+date: 2026-09-05T12:15:00.000Z
 tags: book/platform, users, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -43,6 +43,9 @@ The identity row. One row per platform user, driving sign-in. This table does no
 | `consent_at` | `DateTime? @db.Timestamptz(6)` | Yes | — | Timestamp of consent acceptance |
 | `socket_id` | `String?` | Yes | — | WebSocket socket identifier for the current session, if any |
 | `is_online` | `Boolean` | No | `false` | Real-time presence flag updated by the WebSocket layer |
+| `email_verified_at` | `DateTime? @db.Timestamptz(6)` | Yes | — | Added by migration `20260804000000_user_email_verification`. **No SPA surface on this module's own screens** — `UserEdit.tsx`/`UserManagement.tsx` never read it; it is surfaced only on the [User Platform](/en/platform/rbac) screen (`UserPlatformEdit.tsx` lines 43, 195, `!!userRecord?.email_verified_at`) |
+| `email_verification_token_hash` | `String? @db.VarChar` | Yes | — | Same migration as `email_verified_at`. No SPA surface found anywhere in `carmen-platform/src` — backend-only |
+| `email_verification_expires_at` | `DateTime? @db.Timestamptz(6)` | Yes | — | Same migration. No SPA surface found |
 | `doc_version` | `Int` | No | `0` | Optimistic-concurrency token, added platform-wide (35 tables, incl. `tb_user` and `tb_user_profile`) on 2026-07-16. `UserEdit` resends it on every `PUT`; a stale write is rejected with `409` and the SPA reloads the record with a conflict toast instead of overwriting silently |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: row creation time |
 | `created_by_id` | `String? @db.Uuid` | Yes | — | Audit: FK to `tb_user.id` of the creator |
@@ -63,7 +66,9 @@ The identity row. One row per platform user, driving sign-in. This table does no
 
 ### 2.2 `tb_cluster_user`
 
-Many-to-many join between `tb_user` and `tb_cluster`. Each row records that a specific user belongs to a specific cluster, at what role, and whether that membership is currently active. This table is the authoritative source for cluster membership; the Users module shows these rows read-only in the Clusters card. The `parent_bu_id` field (nullable) identifies the billing-owner BU for the user within that cluster.
+Many-to-many join between `tb_user` and `tb_cluster`. Each row records that a specific user belongs to a specific cluster, at what role, and whether that membership is currently active. This table is the authoritative source for cluster membership; the Users module shows these rows read-only in the Access card (`UserAccessTree`).
+
+**`parent_bu_id` was physically dropped** by migration `20260825000000_drop_cluster_user_parent_bu` (confirmed absent from the current model, read in full). The migration's own comment explains why: the column labelled which BU "owned" a user's seat for future invoicing, but no service ever read it — no license/seat/subscription/invoice code touched it, it was only a passthrough in select/create/update, and seat quota has been cluster-wide (not per-BU) since well before this drop. Real BU membership lives entirely in `tb_user_tb_business_unit` (§2.3); the SPA's `UserCluster`/`AccessCluster` interfaces never carried this field either.
 
 | Field | Prisma Type | Nullable | Default | Description |
 | ----- | ----------- | -------- | ------- | ----------- |
@@ -71,7 +76,6 @@ Many-to-many join between `tb_user` and `tb_cluster`. Each row records that a sp
 | `user_id` | `String? @db.Uuid` | Yes | — | FK to `tb_user.id` |
 | `cluster_id` | `String @db.Uuid` | No | — | FK to `tb_cluster.id` |
 | `is_active` | `Boolean?` | Yes | `true` | Membership active flag |
-| `parent_bu_id` | `String? @db.Uuid` | Yes | — | Billing-owner BU for this user-cluster relationship |
 | `role` | `enum_cluster_user_role` | No | `user` | Per-cluster role: `admin` or `user` |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: row creation time |
 | `created_by_id` | `String? @db.Uuid` | Yes | — | Audit: FK to `tb_user.id` of the creator |
@@ -201,11 +205,11 @@ The load function additionally reads `profile.alias_name || user.alias_name`; si
 
 Three further read-shape divergences:
 
-- **Audit columns** — Prisma stores the flat trio (`created_at`/`created_by_id`, `updated_at`/`updated_by_id`, `deleted_at`/`deleted_by_id`, raw IDs); the API resolves the `_id` FKs to actor names and groups everything under a nested `audit` object (`audit.created/updated/deleted`, each `{ at, id, name, avatar }`). The SPA list page flattens this back into `created_at`/`created_by_name` etc. for its date columns, tolerating the older flat shape, which wins when present (`item.created_at ?? item.audit?.created?.at` — commits `f9b61cb`, `30b5bd6` in `carmen-platform`).
+- **Audit columns** — Prisma stores the flat trio (`created_at`/`created_by_id`, `updated_at`/`updated_by_id`, `deleted_at`/`deleted_by_id`, raw IDs); the API resolves the `_id` FKs to actor names and groups everything under a nested `audit` object (`audit.created/updated/deleted`, each `{ at, id, name, avatar }`). The shared `normalizeAudit()` helper (`src/utils/audit.ts`) reads both shapes, but **the nested shape is tried first and the flat columns are only the fallback** — `fromNested(nested?.created) ?? fromFlat(record.created_at, record.created_by_name, record.created_by)`, and likewise for `updated`/`deleted` — the reverse of what an earlier version of this page stated. A record's `updated` entry is surfaced only when `everEdited` is true: the resolved updated actor carries a `name`, or (absent a name) its `at` differs from `created.at` — a plain `updated_at === created_at` comparison is not what gates it, since `updated_at` defaults to `now()` on every insert and would otherwise look "edited" on a brand-new row whenever the two timestamps happen to differ by clock precision.
 - **Avatar** — Prisma stores `avatar_file_token` on `tb_user_profile`; the API returns a presigned **`avatar_url` string** on list and detail responses, and the SPA reads `user.avatar_url || profile.avatar_url`. Note the contrast with clusters/business units, where the same token pattern resolves to an embedded `PresignedImage` *object* (`{ url, expires_at }`) on a `logo`/`avatar` key — users get a plain string.
 - **Nested assignment arrays** — the detail response (`GET /api-system/user/:id`) embeds the user's `clusters` (the `tb_cluster_user` rows with a nested `cluster` object) and `business_units` (the `tb_user_tb_business_unit` rows with a nested `business_unit` object); the list response embeds a `business_unit` array used for the BU active/total count column.
 
-No other divergences detected as of 2026-07-29 (re-verified; `doc_version` is aligned on both sides, not a divergence).
+No other divergences detected as of 2026-09-05 (re-verified against backend HEAD `3bae0679d`; `doc_version` is aligned on both sides, not a divergence).
 
 | SPA field | SPA source | Prisma table | Notes |
 | --------- | ---------- | ------------ | ----- |
@@ -221,14 +225,16 @@ No other divergences detected as of 2026-07-29 (re-verified; `doc_version` is al
 ## 6. References
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — models `tb_cluster_user` (line 255), `tb_user_profile` (line 579), `tb_user_tb_business_unit` (line 627), `tb_user` (line 494); enums `enum_cluster_user_role` (line 675), `enum_user_business_unit_role` (line 691). Line numbers as of 2026-07-29; `doc_version` added to `tb_user`/`tb_user_profile` on 2026-07-16 (`8e53bbe`). (`enum_platform_role` and `tb_user.platform_role` no longer exist — see §4.)
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (backend HEAD `3bae0679d`, 2026-09-05) — models `tb_cluster_user` (line 299), `tb_user_profile` (line 564), `tb_user_tb_business_unit` (line 612), `tb_user` (line 476); enums `enum_cluster_user_role` (line 718), `enum_user_business_unit_role` (line 751). `doc_version` added to `tb_user`/`tb_user_profile` on 2026-07-16 (`8e53bbe`); `tb_cluster_user.parent_bu_id` dropped by migration `20260825000000_drop_cluster_user_parent_bu`; `email_verified_at`/`email_verification_token_hash`/`email_verification_expires_at` added to `tb_user` by migration `20260804000000_user_email_verification`. (`enum_platform_role` and `tb_user.platform_role` no longer exist — see §4.)
 
 **Secondary (consumer shape):**
-- `../carmen-platform/src/pages/UserEdit.tsx` — `UserFormData` interface (lines 66–74); `BU_ROLES` constant; load logic merging `tb_user` + `tb_user_profile` fields and resolving `avatar_url`; `doc_version` wiring via `../carmen-platform/src/utils/docVersion.ts`.
-- `../carmen-platform/src/pages/userEdit/{UserIdentityHero,UserAccessTree}.tsx` — hero card and the merged cluster+BU access hierarchy that replaced the separate Clusters/Business Units cards.
-- `../carmen-platform/src/pages/UserManagement.tsx` — `UserRecord` list shape (incl. `avatar_url`, the BU-count column, and the nested-`audit` flattening).
+- `../carmen-platform/src/pages/UserEdit.tsx` — `UserFormData` interface (lines 71–79); `BU_ROLES` constant; load logic merging `tb_user` + `tb_user_profile` fields and resolving `avatar_url`; `doc_version` wiring via `../carmen-platform/src/utils/docVersion.ts`. The `UserCluster`/`ClusterBU` interfaces here (and `AccessCluster`/`AccessBU` in `userEdit/UserAccessTree.tsx`) confirm the SPA never modelled `parent_bu_id`.
+- `../carmen-platform/src/pages/userEdit/{UserIdentityHero,UserAccessTree}.tsx` — hero card (now with an `AuditMeta` line) and the merged cluster+BU access hierarchy that replaced the separate Clusters/Business Units cards; each BU row also renders a compact audit line via `latestActor()`.
+- `../carmen-platform/src/pages/UserManagement.tsx` — `UserRecord` list shape (incl. `avatar_url`, the BU-count column).
+- `../carmen-platform/src/utils/audit.ts` — `normalizeAudit()`, `latestActor()`, `auditCsvFields()` — the single reader for both the nested and flat audit shapes.
+- `../carmen-platform/src/pages/UserPlatformEdit.tsx` (lines 43, 195) — the only SPA surface for `tb_user.email_verified_at`; this module's own `UserEdit.tsx`/`UserManagement.tsx` never read it.
 - `../carmen-platform/src/types/index.ts` — `User` interface (flattened API response shape), `UserInfo` interface, `Audit`/`AuditEntry`.
-- `../carmen-platform/src/services/userService.ts` — REST client at `/api-system/user`.
+- `../carmen-platform/src/services/userService.ts` — REST client at `/api-system/user`, plus `getDirectorySummary` at `/api-system/user/summary`.
 - `../carmen-platform/src/context/AuthContext.tsx` — permission-based login gate (effective permissions, not a role allow-list); see [Platform RBAC](/en/platform/rbac).
 
 **Landing cross-link:** [users](/en/platform/users)
