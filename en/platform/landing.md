@@ -1,6 +1,6 @@
 ---
 title: Landing
-description: The public marketing page at / — redirects an already-authenticated session straight to Dashboard, and shows a hardcoded "Inside the console" module index that has drifted far further from the real sidebar than at its last sync (still lists the removed Print Mapping module; missing an entire License Management, Analytics, Scheduling, and Database presence, plus several Platform-group rows).
+description: The public marketing page at / — redirects an already-authenticated session straight to Dashboard, and shows a hardcoded "Inside the console" module index that has drifted far further from the real sidebar than at its last sync (still lists the removed Print Mapping module; missing Report Form Groups from Content, several Platform-group rows including User Platform and SQL Workbench, and an entire License Management, Analytics, Scheduling, and Database presence).
 published: true
 date: 2026-09-06T00:00:00.000Z
 tags: platform/landing, carmen-software
