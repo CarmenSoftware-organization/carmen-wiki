@@ -2,7 +2,7 @@
 title: Cluster — Permissions
 description: Permission-key route guards, the feature-flag layer, in-page Can gates, the platform-authority/cluster-admin redirect, and what each cluster.* key opens.
 published: true
-date: 2026-09-05T04:42:43.000Z
+date: 2026-09-05T14:00:00.000Z
 tags: book/platform, clusters, permissions
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -63,7 +63,7 @@ Read the table as "what a session holding exactly this grant can do on the clust
 | Grant held | `/clusters` list | Add Cluster | Row Edit / edit page | Row Delete | View History | Notes |
 |---|---|---|---|---|---|---|
 | None of `cluster.*` | `Forbidden` (403); sidebar entry hidden | — | — | — | — | Can still type the URL; route guard catches |
-| `cluster.read` (platform scope) | Full list, search, filters, CSV export | Hidden (header); empty-state Add still visible but leads to `Forbidden` | Row Edit hidden; edit route blocked | Hidden | Hidden | Read-only persona; row-action menu renders empty or near-empty |
+| `cluster.read` (platform scope) | Full list, search, filters, CSV export | Hidden — both the header button and the empty-state button are `<Can permission="cluster.create">`-gated, so neither renders | Row Edit hidden; edit route blocked | Hidden | Hidden | Read-only persona; row-action menu renders empty or near-empty |
 | + `cluster.create` (platform scope) | — | Visible and functional | — | — | — | Create form only |
 | + `cluster.update` (platform scope) | — | — | Row Edit on every row; edit page's `canEdit` resolves `true` | — | — | Unlocks the full plate + all three tabs, incl. Branding uploads and Users tab management |
 | + `cluster.update` scoped to cluster A | — | — | Edit route opens for *any* cluster (broad route check), but row Edit renders and `canEdit` resolves `true` only for cluster A | — | — | The scoped-vs-broad asymmetry testers should target |
@@ -128,7 +128,7 @@ Passing the route guard does not unlock every button — the mutating actions ca
 | View list (pagination, search, filters) | None — route key (`cluster.read`) suffices | — |
 | Export cluster list as CSV | None — any `cluster.read` holder can export | — |
 | Add Cluster (header button) | `<Can permission="cluster.create">` | No |
-| Add Cluster (empty-state button) | **Ungated** — the `cluster.create` route guard on `/clusters/new` catches | No |
+| Add Cluster (empty-state button) | `<Can permission="cluster.create">` (`ClusterManagement.tsx` lines 670–671) — an earlier version of this page called this button ungated; it is not. The `cluster.create` route guard on `/clusters/new` is still a live second layer if the button were ever reached without the permission | No |
 | Row Edit (list dropdown) | `<Can permission="cluster.update" clusterId={row.original.id}>` | Yes |
 | Row/header **View History** | `<Can permission="activity_log.read" clusterId={...}>` — **new** | Yes |
 | Row Delete (list dropdown) | `<Can permission="cluster.delete" clusterId={row.original.id}>` — plus a client-side "has business units" guard regardless of permission | Yes |

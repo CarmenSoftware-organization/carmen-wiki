@@ -2,7 +2,7 @@
 title: Cluster — UI Screens
 description: ClusterManagement (list) and ClusterEdit (create/view/edit) screens — the tabbed plate layout, licensing tab, filters, dialogs, and persisted state.
 published: true
-date: 2026-09-05T04:42:43.000Z
+date: 2026-09-05T14:00:00.000Z
 tags: book/platform, clusters, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -60,7 +60,7 @@ When any filter is active a **Clear All Filters** button appears at the bottom o
 ### 2.3 Header actions
 
 - **Export** — client-side CSV export (`generateCSV`/`downloadCSV`). Columns: `Code`, `Name`, `Alias`, `Status`, **`BU Quota`** (`bu_cap`), **`Quota Expires`** (`bu_cap_end_date`, perpetual sentinel converted to "No expiry" text before export — never a raw 2099 date), `Users` (`users_count`), `Max Licensed Users` (`total_max_license_users`), `Created`/`Created By`, `Updated`/`Updated By`. File name: `clusters-<YYYY-MM-DD>.csv`. Disabled while loading or when the table is empty. **`Max Licensed BUs`/`max_license_bu` is no longer a column** — the ledger-derived `bu_cap`/`bu_cap_end_date` pair replaces it.
-- **Add Cluster** — navigates to `/clusters/new`. Wrapped in `<Can permission="cluster.create">`. The **empty-state** Add Cluster button (shown when the table has no rows and no search term) is *not* `<Can>`-gated — a `cluster.read`-only session can click it, and the `cluster.create` route guard on `/clusters/new` then renders `Forbidden`.
+- **Add Cluster** — navigates to `/clusters/new`. Wrapped in `<Can permission="cluster.create">`. The **empty-state** Add Cluster button (shown when the table has no rows) is **also** wrapped in `<Can permission="cluster.create">` (`ClusterManagement.tsx` lines 670–671) — an earlier version of this page stated the empty-state button was ungated and reachable by a `cluster.read`-only session; it is not, and that session never sees it. The `cluster.create` route guard on `/clusters/new` remains a second layer regardless.
 
 There is no Hard Delete action anywhere in cluster management — the row action menu contains only Edit, View History, and Delete (soft). No hard-delete endpoint is called from the clusters UI.
 

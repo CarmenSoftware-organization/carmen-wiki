@@ -2,7 +2,7 @@
 title: User — UI Screens
 description: UserManagement (list) and UserEdit (BU assignment matrix).
 published: true
-date: 2026-09-05T12:30:00.000Z
+date: 2026-09-05T14:00:00.000Z
 tags: book/platform, users, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -60,7 +60,7 @@ Three buttons appear in the header actions row, left to right:
 
 - **Fetch Keycloak** — calls `userService.fetchKeycloakUsers()` → `POST /api-system/fetch-user`. A spinner replaces the icon while the request is in flight; on success a toast confirms the sync and both the table and the Directory strip reload. Wrapped in `<Can permission="user.create">`.
 - **Export** — client-side CSV export (uses `generateCSV` / `downloadCSV` utilities, merged with `auditCsvFields(normalizeAudit(u))` per row). Exports the currently loaded page of rows with **7** columns: `username`, `email`, `is_active` (labelled "Status"), `created_at`, `created_by`, `updated_at`, `updated_by` — the two audit actor-name columns are new since the last sync. Timestamps in the CSV are always the absolute ISO value from `normalizeAudit()`, never the relative-time string the table cells display. The button is disabled while loading or when the table is empty. File name: `users-<YYYY-MM-DD>.csv`. Not `<Can>`-gated.
-- **Add User** — navigates to `/users/new`. Wrapped in `<Can permission="user.create">`. Note: the empty-state's "Add User" shortcut (shown when the table has no rows and no search term) is **not** wrapped in `<Can>` — it renders for any `user.read` session, though the `/users/new` route guard still blocks navigation without `user.create`.
+- **Add User** — navigates to `/users/new`. Wrapped in `<Can permission="user.create">`. The empty-state's "Add User" shortcut (`ListEmptyState`'s `addAction`, shown when the table has no rows) is **also** wrapped in `<Can permission="user.create">` (`UserManagement.tsx` lines 749–750) — gated by the same commit `239b4a9` (2026-06-10, "feat(rbac): gate Add/Edit/Delete on Management pages with `<Can>`") that gated Add/Edit/Delete across seven Management pages at once. An earlier version of this page stated the empty-state button was ungated; it is not, and predates this task's own 2026-07-29 baseline — a pre-existing error, not new drift.
 
 ### 2.4 Row actions
 
