@@ -2,7 +2,7 @@
 title: Business Unit — UI Screens
 description: BusinessUnitManagement (list) and the six-tab BusinessUnitEdit (General/Location/Formats/Technical/Users/Licenses) — code auto-generation, the schema-name randomizer, the Licenses tab split out of Users, and the database-pool picker that replaced db_connection.
 published: true
-date: 2026-09-05T09:15:00.000Z
+date: 2026-09-05T10:00:00.000Z
 tags: book/platform, business-units, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -76,7 +76,7 @@ A session whose grants cover none of these keys for a given BU's parent cluster 
 
 ### 2.5 Audit columns
 
-Unchanged in mechanism since the last sync, but now shared code: both `BusinessUnitManagement` and `BusinessUnitEdit` read every audit value through `normalizeAudit()` (`src/utils/audit.ts`), which handles the nested `audit.{created,updated,deleted}.{at,id,name,avatar}` shape and tolerates the older flat shape, preferring the flat value when present. The list's Created/Updated columns come from the shared `auditColumns()` helper rather than a page-local formatter.
+Unchanged in mechanism since the last sync, but now shared code: both `BusinessUnitManagement` and `BusinessUnitEdit` read every audit value through `normalizeAudit()` (`src/utils/audit.ts`), which tries the nested `audit.{created,updated,deleted}.{at,id,name,avatar}` shape first (`fromNested()`) and only falls back to the older flat shape (`fromFlat()` — `created_at`/`created_by_name` or `created_by`, etc.) when the nested value is absent or empty. An `updated` entry is included only when the record was actually edited: `everEdited` is true when the updated actor carries a name, or — absent a name — when its timestamp differs from `created`'s; a record with neither is treated as never-edited and its Updated cell is omitted (not a plain `updated_at === created_at` check, since `updated_at` defaults to `now()` on every row while `updated_by_id` is only ever written on a real update). The list's Created/Updated columns come from the shared `auditColumns()` helper rather than a page-local formatter.
 
 ## 3. `BusinessUnitEdit` — create mode (`/business-units/new`)
 

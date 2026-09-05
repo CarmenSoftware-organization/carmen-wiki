@@ -2,7 +2,7 @@
 title: Business Unit — Data Model
 description: BU entity, formatting/locale block, database-pool + schema pointer, config array, branding tokens, module activation join, and the per-BU license ledger that replaced the old max_license_users column.
 published: true
-date: 2026-09-05T09:15:00.000Z
+date: 2026-09-05T10:00:00.000Z
 tags: book/platform, business-units, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -319,7 +319,7 @@ The `BusinessUnit` interface in `../carmen-platform/src/types/index.ts` and the 
 | # | Item | Prisma has | SPA expects | Notes |
 | - | ---- | ---------- | ----------- | ----- |
 | 1 | `cluster_name` | Not present on `tb_business_unit` | `cluster_name?: string` on `BusinessUnit` interface | API-resolved display name for the cluster; the Prisma model carries only `cluster_id`. Not in `BusinessUnitFormData` — read-only display field. |
-| 2 | Audit columns | `created_at`/`created_by_id`, `updated_at`/`updated_by_id`, `deleted_at`/`deleted_by_id` (flat columns, raw IDs) | Nested `audit` object — `audit.created`, `audit.updated`, `audit.deleted`, each an `AuditEntry` `{ at, id, name, avatar }` | The API resolves the `_id` FKs to actor names and groups everything under `audit`. Both the list page and the edit page read every audit value through the shared `normalizeAudit()` helper now, which tolerates the older flat shape too, preferring it when present. |
+| 2 | Audit columns | `created_at`/`created_by_id`, `updated_at`/`updated_by_id`, `deleted_at`/`deleted_by_id` (flat columns, raw IDs) | Nested `audit` object — `audit.created`, `audit.updated`, `audit.deleted`, each an `AuditEntry` `{ at, id, name, avatar }` | The API resolves the `_id` FKs to actor names and groups everything under `audit`. Both the list page and the edit page read every audit value through the shared `normalizeAudit()` helper now, which tries the nested shape first and falls back to the older flat shape only when the nested value is absent or empty — never the reverse. |
 | 3 | `max_license_users` | **Column dropped** — does not exist | Not present on `BusinessUnit`; not present in `BusinessUnitFormData` | Fully removed from both sides since the last sync (item was previously a form-string-vs-Prisma-Int divergence; the divergence itself no longer exists because the field is gone). See §1 and §2.3. |
 | 4 | `amount_format` / `quantity_format` / `recipe_format` / `perpage_format` | `Json?` (JSON objects) | Typed as `string?` on `BusinessUnit` interface; `string` in `BusinessUnitFormData` | The SPA serialises these JSON objects to strings for plain text inputs (`toJsonString()` helper) and parses them back before the API call. The `BusinessUnit` read interface types them as `string?` rather than `Json`, which reflects the serialised wire shape rather than the Prisma storage shape. |
 | 5 | `db_connection` | **Column dropped** — does not exist | Not present; replaced by `database_pool_id: string` / `db_schema: string` on `BusinessUnitFormData`, and `database_pool_name: string` (read-only display, never sent back) | **Structural change, not a value-shape divergence.** The BU no longer holds any database credential fields at all — see §1 and §2.4. `objectToDbFields`/`dbFieldsToObject`/`SAFE_DB_CONNECTION_KEYS` and the guarded password-reveal endpoint documented at the last sync no longer exist anywhere in the SPA. |

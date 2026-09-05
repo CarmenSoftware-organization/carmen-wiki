@@ -2,7 +2,7 @@
 title: หน่วยธุรกิจ (Business Units)
 description: เอนทิตีต่อ property/ต่อโรงแรม แก้ไขบนฟอร์มหกแท็บ (General/Location/Formats/Technical/Users/Licenses) ครอบคลุมข้อมูลระบุตัวตน รูปแบบ การผูก database pool และรายชื่อผู้ใช้/license ที่ผูกกับ BU
 published: true
-date: 2026-09-05T09:15:00.000Z
+date: 2026-09-05T10:00:00.000Z
 tags: platform/business-units, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -53,7 +53,7 @@ Business unit คือ tenant ปฏิบัติการของ Carmen pl
 - **Database pool + schema (`database_pool_id`/`db_schema`)**: แทนที่ JSON blob `db_connection` เดิมทั้งหมด BU ชี้ไปที่ record `tb_database_pool` ที่แพลตฟอร์มจัดการร่วมกัน แล้วระบุชื่อ schema ของตัวเองในนั้น host/port/username/password อยู่ที่ record ของ pool เท่านั้น ไม่เคยอยู่บนหน้านี้ ปุ่ม "Generate schema" ช่วยเติมช่อง schema ด้วยชื่อสุ่มขึ้นต้นด้วย `bu_`
 - **Branding (logo + avatar)**: แต่ละ BU มี **logo** สี่เหลี่ยมผืนผ้าและ **avatar** สี่เหลี่ยมจัตุรัส เก็บเป็น file token และ API คืนค่าเป็น presigned object ฝังในตัว การอัปโหลดทำบน Branding section ของแท็บ General; หน้ารายการแสดง `BrandMark` avatar เล็ก ๆ ข้างชื่อ BU (นำกลับมาใช้ตั้งแต่ sync ครั้งก่อน ตรงกับการเปลี่ยนแปลงเดียวกันบน [clusters](/th/platform/clusters))
 - **Optimistic concurrency (`doc_version`)**: `tb_business_unit` มี counter `doc_version`; หน้าแก้ไขจะส่งค่านี้กลับไปทุกครั้งที่ `PUT` และแสดง toast แจ้ง conflict + โหลดใหม่เมื่อเจอ `409` ที่ล้าหลัง
-- **คอลัมน์ audit**: หน้ารายการแสดงคอลัมน์ Created และ Updated (timestamp พร้อมชื่อผู้กระทำ) ตอนนี้ทั้งหน้ารายการและหน้าแก้ไขอ่านค่า audit ทุกตัวผ่าน helper ที่ใช้ร่วมกัน `normalizeAudit()` (`src/utils/audit.ts`) ซึ่งรองรับทั้ง object `audit` แบบ nested และ shape แบบ flat รุ่นเก่า (ชนะเมื่อมีค่า) เซลล์ Updated จะถูกละเมื่อ `updated_at` เท่ากับ `created_at`
+- **คอลัมน์ audit**: หน้ารายการแสดงคอลัมน์ Created และ Updated (timestamp พร้อมชื่อผู้กระทำ) ตอนนี้ทั้งหน้ารายการและหน้าแก้ไขอ่านค่า audit ทุกตัวผ่าน helper ที่ใช้ร่วมกัน `normalizeAudit()` (`src/utils/audit.ts`) ซึ่งลองอ่าน object `audit` แบบ nested ก่อนเสมอ แล้วค่อย fallback ไปที่ shape แบบ flat รุ่นเก่า (`created_at`/`created_by_name` หรือ `created_by` ฯลฯ) เฉพาะเมื่อค่าฝั่ง nested ไม่มีหรือว่างเปล่า — ไม่ใช่ทางกลับกัน แถว Updated จะแสดงก็ต่อเมื่อ record ถูกแก้ไขจริง ตัดสินจากการมีชื่อผู้แก้ไข หรือ — เมื่อไม่มีชื่อ — เวลาที่ต่างจากเวลาสร้าง ไม่ใช่การเทียบ `updated_at === created_at` ตรง ๆ
 - **ที่นั่ง (`tb_business_unit_license`)**: ledger การซื้อแบบมีวันที่ หนึ่งแถวต่อหนึ่งสัญญาที่นั่ง แทนที่ integer `max_license_users` ที่ถูกถอดออก รวมกันจากแถวที่ active เป็นตัวเลข "Max users" แบบอ่านอย่างเดียวบนแท็บ General; ถูกดู (ไม่ใช่แก้ไข) บนแท็บ Licenses ซึ่งลิงก์ออกไปฟอร์ม License Center เต็มหน้าสำหรับสร้าง/แก้ไขแถวจริง
 - **BU role (`admin` vs. `user`)**: role ที่ผูกกับการ assign user-BU แต่ละครั้ง เก็บบนแถว join ของ BU-user คู่กับ `is_active` และ `is_default` role นี้ **orthogonal** กับ permission assignment ของ Platform RBAC บนบัญชีผู้ใช้ BU role ควบคุมพฤติกรรมของผู้ใช้ใน inventory app สำหรับ BU นั้น ไม่ใช่การเข้าถึง route ของ admin
 - **Pattern เพิ่ม user จาก cluster**: สมาชิก BU ใหม่ถูกเลือกจากรายชื่อผู้ใช้ของ cluster ที่เป็นแม่ — ผู้ใช้ต้องเป็นสมาชิก cluster ก่อนถึงจะถูกเพิ่มเข้า BU ภายใน cluster ได้
