@@ -161,7 +161,7 @@ Card title: "Data Source" (`ReportTemplateEdit.tsx:764`).
 
 ### 4.5 Right pane — Dialog XML tab
 
-Tab trigger label: "Dialog XML" with a line-count badge (count of newlines in `formData.dialog`) and a red dot (`aria-label="Has errors"`) when `dialogValidation.valid = false`. **Corrected 2026-09-02 (commit `3b7cba020066b588df87c0a15a14237a2bb085ee`):** the tab strip is now the shared `TabStrip` component (`count`/`hasError` props), not bespoke `Tabs`/`TabsTrigger` markup — same visual badge and dot, but the screen-reader label changed from "Invalid" to "Has errors" to match every other tab strip in the app.
+Tab trigger label: "Dialog XML" with a line-count badge (count of newlines in `formData.dialog`) and a red dot (`aria-label="Has errors"`) when `dialogValidation.valid = false` (`ReportTemplateEdit.tsx:426-428, 1102` — line numbers corrected; the old `1049-1061` citation predates the refactor below). **Corrected 2026-09-02 (commit `3b7cba020066b588df87c0a15a14237a2bb085ee`):** the tab strip is now the shared `TabStrip` component (`count`/`hasError` props), not bespoke `Tabs`/`TabsTrigger` markup — same visual badge and dot, but the screen-reader label changed from "Invalid" to "Has errors" to match every other tab strip in the app.
 
 Hosts a `XmlEditor` component with:
 - `uploadAccept=".xml,.txt"` — file upload button in the editor toolbar accepts `.xml` and `.txt`
