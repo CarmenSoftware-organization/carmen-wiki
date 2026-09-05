@@ -1,5 +1,5 @@
 ---
-title: Cronjobs — โมเดลข้อมูล (Data Model)
+title: งานตามกำหนดเวลา — โมเดลข้อมูล (Data Model)
 description: The scheduled-job entity — cron expression, target job, enabled state and run history — read/written by cronjobService.ts.
 published: true
 date: '2026-09-05T18:14:07.000Z'
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
 ---
 
-# Cronjobs — โมเดลข้อมูล (Data Model)
+# งานตามกำหนดเวลา — โมเดลข้อมูล (Data Model)
 
 ## 1. At a Glance
 

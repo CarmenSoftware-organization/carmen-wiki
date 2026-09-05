@@ -1,5 +1,5 @@
 ---
-title: Cronjobs
+title: งานตามกำหนดเวลา (Cronjobs)
 description: CRUD over scheduled backend jobs and their cron expressions, gated by cronjob.read/manage.
 published: true
 date: '2026-09-05T18:14:07.000Z'
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
 ---
 
-# Cronjobs
+# งานตามกำหนดเวลา (Cronjobs)
 
 ## 1. At a Glance
 

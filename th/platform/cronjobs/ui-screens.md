@@ -1,5 +1,5 @@
 ---
-title: Cronjobs — หน้าจอ UI (UI Screens)
+title: งานตามกำหนดเวลา — หน้าจอ UI (UI Screens)
 description: CronJobManagement (list, CronJobFilterSheet) and CronJobEdit (create/edit, CronScheduleField).
 published: true
 date: '2026-09-05T18:14:07.000Z'
@@ -8,7 +8,7 @@ editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
 ---
 
-# Cronjobs — หน้าจอ UI (UI Screens)
+# งานตามกำหนดเวลา — หน้าจอ UI (UI Screens)
 
 ## 1. At a Glance
 

@@ -691,7 +691,7 @@ pages:
   # --- New module: cronjobs (Task 27) ---
   - path: cronjobs.md
     title_en: Cronjobs
-    title_th: Cronjobs
+    title_th: งานตามกำหนดเวลา (Cronjobs)
     description: CRUD over scheduled backend jobs and their cron expressions, gated by cronjob.read/manage.
     tags: [book/platform, cronjobs]
     at_a_glance:
@@ -708,7 +708,7 @@ pages:
 
   - path: cronjobs/data-model.md
     title_en: Cronjobs — Data Model
-    title_th: Cronjobs — โมเดลข้อมูล (Data Model)
+    title_th: งานตามกำหนดเวลา — โมเดลข้อมูล (Data Model)
     description: The scheduled-job entity — cron expression, target job, enabled state and run history — read/written by cronjobService.ts.
     tags: [book/platform, cronjobs, data-model]
     at_a_glance:
@@ -722,7 +722,7 @@ pages:
 
   - path: cronjobs/ui-screens.md
     title_en: Cronjobs — UI Screens
-    title_th: Cronjobs — หน้าจอ UI (UI Screens)
+    title_th: งานตามกำหนดเวลา — หน้าจอ UI (UI Screens)
     description: CronJobManagement (list, CronJobFilterSheet) and CronJobEdit (create/edit, CronScheduleField).
     tags: [book/platform, cronjobs, ui]
     at_a_glance:
