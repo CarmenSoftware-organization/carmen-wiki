@@ -997,6 +997,12 @@ Use the SPA's own grouping and order from `platformNav.ts`, so the landing page 
 
 Every link is absolute-URL markdown: `[Licenses](/en/platform/licenses)`.
 
+- [ ] **Step 1b: Sweep for forward references this plan has invalidated**
+
+Pages written early in this plan describe modules that did not exist yet — `profile.md` said the cluster-admin console was "not yet its own wiki module as of this pass", which stopped being true when Task 15 created it. That class of sentence is correct when written and silently wrong later, and nothing in the per-task reviews catches it because each task only reads its own module.
+
+Grep the book for phrasings like "not yet", "no wiki page", "does not exist yet" and "as of this pass", and check each against what the book now holds. Fix the ones that name a module this plan has since created; leave the ones still genuinely true. Report both lists.
+
 - [ ] **Step 2: Verify every link resolves**
 
 ```bash
