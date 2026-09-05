@@ -5,41 +5,6 @@
 book: platform
 
 pages:
-  - path: index.md
-    title_en: Carmen Platform
-    title_th: Carmen Platform
-    description: Overview of the Carmen Platform admin product — entry point for the book.
-    tags: [book/platform, home]
-    at_a_glance:
-      - Audience and scope
-      - Modules and how they connect
-      - Quick links to each module's home page
-    references:
-      - "../carmen-platform/README.md"
-      - "../carmen-platform/SITEMAP.md"
-      - "../carmen-platform/docs/OVERVIEW.md"
-    todo:
-      - Replace this skeleton with an introduction matching the existing Inventory book home page
-      - Add a table of modules with one-line descriptions
-
-  - path: clusters/index.md
-    title_en: Clusters
-    title_th: Clusters
-    description: Cluster management — CRUD, user/BU assignment, license limits.
-    tags: [book/platform, clusters]
-    at_a_glance:
-      - What a cluster is and which entities it groups
-      - License limits enforced at cluster level
-      - Workflows for adding users and business units
-    references:
-      - "../carmen-platform/SITEMAP.md (Clusters routes)"
-      - "../carmen-platform/src/pages/ClusterManagement.tsx"
-      - "../carmen-platform/src/pages/ClusterEdit.tsx"
-    todo:
-      - Document the data model
-      - Document the UI screens
-      - Document permissions
-
   - path: clusters/data-model.md
     title_en: Cluster — Data Model
     title_th: Cluster — Data Model
@@ -85,22 +50,6 @@ pages:
     todo:
       - Cross-link to auth-roles/index.md for role definitions
 
-  - path: business-units/index.md
-    title_en: Business Units
-    title_th: Business Units
-    description: Hotel/company entity with multi-section form (info, formats, timezone, DB connection, config array).
-    tags: [book/platform, business-units]
-    at_a_glance:
-      - What a BU represents
-      - Form sections and their purpose
-      - Relationship to clusters
-    references:
-      - "../carmen-platform/src/pages/BusinessUnitManagement.tsx"
-      - "../carmen-platform/src/pages/BusinessUnitEdit.tsx"
-    todo:
-      - Document each form section
-      - Note which fields are editable by which roles
-
   - path: business-units/data-model.md
     title_en: Business Unit — Data Model
     title_th: Business Unit — Data Model
@@ -129,21 +78,6 @@ pages:
       - "../carmen-platform/src/pages/BusinessUnitEdit.tsx"
     todo:
       - Screenshot each form section
-
-  - path: users/index.md
-    title_en: Users
-    title_th: Users
-    description: User accounts, role assignment, BU assignment, lifecycle.
-    tags: [book/platform, users]
-    at_a_glance:
-      - User identity vs role vs BU assignment
-      - Role + status filters on the list page
-      - Lifecycle operations
-    references:
-      - "../carmen-platform/src/pages/UserManagement.tsx"
-      - "../carmen-platform/src/pages/UserEdit.tsx"
-    todo:
-      - Document role assignment rules
 
   - path: users/data-model.md
     title_en: User — Data Model
@@ -187,21 +121,6 @@ pages:
     todo:
       - Document the password reset email flow if any
 
-  - path: report-templates/index.md
-    title_en: Report Templates
-    title_th: Report Templates
-    description: XML-based report definitions; tabbed editor with live validation and preview.
-    tags: [book/platform, report-templates]
-    at_a_glance:
-      - What a report template is
-      - Dialog XML vs Content XML
-      - Allow/deny BU lists
-    references:
-      - "../carmen-platform/src/pages/ReportTemplateManagement.tsx"
-      - "../carmen-platform/src/pages/ReportTemplateEdit.tsx"
-    todo:
-      - Document the XML schema
-
   - path: report-templates/xml-spec.md
     title_en: Report Template — XML Spec
     title_th: Report Template — XML Spec
@@ -233,32 +152,18 @@ pages:
     todo:
       - Screenshot each tab
 
-  - path: profile/index.md
-    title_en: Profile
-    title_th: Profile
-    description: View/edit own profile; change password.
-    tags: [book/platform, profile]
+  - path: report-templates/form-groups.md
+    title_en: Report Templates — Form Groups
+    title_th: เทมเพลตรายงาน — Form Groups
+    description: The /report-form-groups screen (added 2026-07-24) that replaced print-template-mapping's grouped-card list — one card per fixed report_group code, with a "set as default" action on tb_report_template.is_default.
+    tags: [book/platform, report-templates, form-groups]
     at_a_glance:
-      - View/edit fields
-      - Change password workflow
+      - ReportFormGroupManagement — grouped-card list, one card per report_group
+      - Reuses report_template.* permissions and its own report_form_groups feature key
+      - Replaces print-template-mapping's grouped-card list (removed 2026-07-24)
     references:
-      - "../carmen-platform/src/pages/Profile.tsx"
+      - "../carmen-platform/src/pages/ReportFormGroupManagement.tsx"
+      - "../carmen-platform/src/components/nav/platformNav.ts"
     todo:
-      - Document avatar menu entry point (not a sidebar item)
+      - Already written in full as part of Task 9 — no further action
 
-  - path: auth-roles/index.md
-    title_en: Authentication and Roles
-    title_th: Authentication and Roles
-    description: JWT auth, role gates, role catalog.
-    tags: [book/platform, auth, cross-cutting]
-    at_a_glance:
-      - JWT lifecycle (login, refresh, expiry)
-      - Role catalog and gates
-      - "Roles: platform_admin, super_admin, support_manager, support_staff, security_officer"
-    references:
-      - "../carmen-platform/README.md (Auth section)"
-      - "../carmen-platform/SITEMAP.md (Access column)"
-      - "../carmen-platform/CLAUDE.md"
-    todo:
-      - Build the role × route gate matrix
-      - Cross-link from each module's permissions doc
