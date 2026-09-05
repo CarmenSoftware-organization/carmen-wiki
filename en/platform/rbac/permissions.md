@@ -2,7 +2,7 @@
 title: Platform RBAC — Permissions
 description: Route-guard matrix for the whole SPA, how route/sidebar/in-page gates compose, the permission-resolution algorithm, and edge cases for testers. Updated for the platform_role.* key rename, the category-permissions route move, and the cluster-admin login exception.
 published: true
-date: 2026-09-06T01:00:00.000Z
+date: 2026-09-06T13:00:00.000Z
 tags: book/platform, rbac, permissions
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z
@@ -44,14 +44,14 @@ Two routes are authenticated-only with no key requirement: `/dashboard` and `/pr
 | `/dashboard`, `/profile` | authenticated only — no key | |
 | `/clusters` | `cluster.read` / `cluster.create` / `cluster.update` | |
 | `/business-units` | `cluster.read` / `cluster.create` / `cluster.update` | **Reuses `cluster.*` keys** — there are no `business_unit.*` keys; granting cluster access also grants Business Units, and the two cannot be separated |
-| `/tenant-migrations` | `cluster.read` | Standalone fleet-wide migration overview; also reuses `cluster.*` (not a named unit of this book) |
+| `/tenant-migrations` | `cluster.read` | Standalone fleet-wide migration overview; also reuses `cluster.*` — documented as [Business Units — Tenant Migrations](/en/platform/business-units/tenant-migrations), a sub-page of Business Units rather than a top-level module of its own |
 | `/users` | `user.read` / `user.create` / `user.update` | Distinct from `user_platform.*`, which gates role assignment, not user CRUD |
 | `/applications` | `application.read` / `application.create` / `application.update` | |
 | `/report-templates` | `report_template.read` / `report_template.create` / `report_template.update` | |
 | `/report-form-groups` | `report_template.read` (mutations via `report_template.update`/`.create`) | New 2026-07-23; reuses Report Templates' keys, no new ones |
 | `/news` | `news.read` / `news.create` / `news.update` | |
 | `/broadcasts/new` | `broadcast.send` | Single route; no list page |
-| `/sql-workbench` | `sql_workbench.read` | Not a named unit of this book; no wiki page yet |
+| `/sql-workbench` | `sql_workbench.read` | Documented as [SQL Workbench](/en/platform/sql-workbench), one of the book's standalone pages (not a sub-page of another module) |
 
 **Removed 2026-07-23/24:** `/print-template-mapping*` and its `print_template_mapping.*` keys no longer exist — the module was deleted from carmen-platform on 2026-07-24 (commit `de11377`) and the permission-catalog rows it used were dropped the day before from carmen-turborepo-backend-v2's seed (commit `c135bb21e`, 2026-07-23); `template_type` plus the [Report Templates — Form Groups](/en/platform/report-templates/form-groups) screen now serve the same need.
 
