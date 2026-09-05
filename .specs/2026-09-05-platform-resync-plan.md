@@ -1136,6 +1136,14 @@ Every nav entry must map to a wiki module, and every wiki module to a backing ro
 
 Open one page per nav group on `http://dev.blueledgers.com:3987/`, in both `/en/` and `/th/`. Confirm the page renders, its sub-page links work, and it appears in the sidebar under the right group.
 
+- [ ] **Step 4b: Report the residues this re-sync deliberately did not fix**
+
+Three things were ruled out of scope along the way and must reach the reader of the PR rather than dying in the tracking log:
+
+1. **Legacy relative links.** The baseline at the start of this plan was 768 relative links (`](./x.md)`) across 129 files, against 2,902 absolute ones. The ruling was to convert only those on pages a task edits. Count what remains now and report the delta — the Task 29 link resolver cannot see relative links, so this number is the only visibility anyone has.
+2. **A false security claim in the *Inventory* book.** `sql-workbench.md` in this book claimed four endpoints were open to any BU member; that gap was closed on 2026-08-20 by `525597688` in `carmen-turborepo-backend-v2`. The Inventory book's Query Dataset page carries the same now-false claim and was out of scope here. It tells QA a hole exists that does not. Name it in the PR as follow-up work with the commit that closed it.
+3. **The e2e suite's own staleness.** Of the suites checked during verification, only `broadcast-compose.spec.ts` was current; the rest assert UI that no longer exists — a dead route, checkbox selectors for a deleted component, a create test that never fills a now-required field, a locator for an `aria-label` the component no longer renders. Summarise this for the e2e owners; it is not this plan's job to fix, but nobody else has looked.
+
 - [ ] **Step 5: Close the tracking log**
 
 Fill in the final row counts, list any page that failed to push, and list the follow-up work: the platform screenshot round, and the platform folder ids still missing from `folder_id()` in `scripts/upload_assets.sh`.
