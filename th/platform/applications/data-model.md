@@ -2,7 +2,7 @@
 title: Applications — แบบจำลองข้อมูล (Data Model)
 description: ตาราง tb_application และ tb_application_api, shape read/write ที่ไม่สมมาตร, semantics แบบ replace ของ PUT, api-catalog ที่ generate ขึ้น และตระกูล tb_application_role ที่มีเฉพาะใน schema
 published: true
-date: 2026-07-29T07:21:27.000Z
+date: 2026-09-05T00:00:00.000Z
 tags: book/platform, applications, data-model
 editor: markdown
 dateCreated: 2026-06-10T15:15:00.000Z
@@ -109,7 +109,9 @@ type ของ SPA อยู่ใน `../carmen-platform/src/types/index.ts` (`
 | การ round-trip ของ `doc_version` | payload `ApplicationFormData`, `getDocVersion`/`isVersionConflict` | `tb_application.doc_version` | ใหม่ตั้งแต่ sync ก่อนหน้า — ตรงกันทั้งสองฝั่ง ไม่ใช่ความแตกต่าง; ระบุไว้เพื่อความครบถ้วนเนื่องจากเกิดขึ้นหลังการเปรียบเทียบครั้งแรก |
 | `ApiCatalogGroup { module, api_names[] }` | `getApiCatalog` | **ไม่มีตาราง** | catalog คือ `app-api-catalog.generated.ts` ใน backend-gateway, emit จากการสแกน `AppIdGuard` (§5.1) |
 | ความทนทานต่อ envelope ของ catalog | `getApiCatalog` | n/a | endpoint คืน `{ api_names: string[], groups?: ApiCatalogGroup[] }` ซึ่งอาจอยู่ใน envelope `{ data }` มาตรฐาน; service ยังรองรับ `string[]` เปล่า ๆ ด้วย เมื่อ `groups` หายไปหรือไม่ผ่าน runtime guard รายตัว client จะ derive กลุ่มที่เหมือนกันทุกประการผ่าน `groupApiNames()` (`src/utils/apiCatalog.ts`: module = prefix ก่อน `.` ตัวแรก; ชื่อที่ไม่มีจุดเป็นโมดูลของตัวเอง; `actionOf()` = ข้อความหลังจุดแรก) — กฎการแบ่งเดียวกับ generator ฝั่ง backend ดังนั้นผลลัพธ์ของ fallback เท่ากับผลลัพธ์ของ server |
-| `created_at`/`created_by_name` แบบแบนบน row ของ list | `ApplicationManagement.tsx` | คอลัมน์ audit id | response ของ list อาจซ้อนข้อมูล audit เป็น `audit.created/updated` `{ at, name }`; SPA flatten และรองรับทั้งสอง shape |
+| Shape ของ audit อ่านผ่าน `normalizeAudit()`/`auditColumns()` | `ApplicationManagement.tsx` (ตั้งแต่ `a85a166`, 2026-08-22 — นี่คือหนึ่งใน 5 ตารางหน้า Management ที่ย้ายออกจาก `fmt()` ของตัวเอง) | คอลัมน์ audit id | `normalizeAudit()` ลอง shape แบบ **nested** (`audit.created`/`audit.updated`) ก่อน แล้วถอยไปใช้คอลัมน์แบบ **flat** (`created_at`/`created_by_name`) เฉพาะเมื่อ nested ไม่มี — ไม่ใช่ทางกลับกัน actor ของ `updated` จะแสดงเฉพาะเมื่อ `everEdited` (มีชื่อ actor หรือ `at` ต่างจาก `created.at`) ไม่ใช่การเทียบ `updated_at === created_at` |
+| `ApplicationSummaryData` (แถบ Registry) | `getRegistrySummary` → `GET /api-system/applications/summary` | n/a — query aggregate สด ไม่ใช่ตาราง | จำนวนที่ไม่กรอง ทั้งทะเบียน: `total`/`active`/`inactive`/`full_access`/`scoped`/`devices[]` บวกจำนวน `deleted` (soft-deleted ทั้งทะเบียน) ที่**อยู่บน wire แต่ไม่ถูก render**โดย `ApplicationRegistrySummary` ในตอนนี้ แทนที่การกวาดฝั่ง client ด้วย `perpage: -1` เมื่อ 2026-08-24 (`99a93c8`, หนึ่งใน 5 หน้าที่ย้ายวันเดียวกัน) |
+| API reach (`reachOf()`) | `utils/apiReach.ts`, เรียกโดย `ApplicationReachCell` (list) และ `ApplicationIdentityHero` (edit) | n/a — คำนวณฝั่ง client จาก catalog ที่โหลดมา | ไม่ใช่ข้อมูลที่เก็บไว้: `granted`/`anchored`/`full`/`modules`/`percent` ถูก derive ทุกครั้งที่ render จาก `allow_all`, `api_names` และขนาด catalog ที่ fetch แยกต่างหาก (`getApiCatalog()`) ฟังก์ชันเดียวป้อนทั้งสองหน้าจอเพื่อไม่ให้ list กับหน้ารายละเอียดขัดแย้งกันว่าอะไรคือ "full access" |
 
 ### 5.1 endpoint ของ catalog และ generator
 
@@ -131,15 +133,21 @@ REST surface ที่ `applicationService.ts` ใช้:
 | `PUT /api-system/applications/:id` | อัพเดท | **Semantics แบบ replace** — ชุดที่ต้องการแบบเต็มใน `details.add` |
 | `DELETE /api-system/applications/:id` | ลบ | เข้าถึงได้จาก dropdown ของ row ในหน้า list เท่านั้น |
 | `GET /api-system/applications/api-catalog` | catalog ของ `api_name` ที่เลือกได้ | `{ api_names, groups? }`, ทนทานต่อ envelope; มี fallback การจัดกลุ่มฝั่ง client |
+| `GET /api-system/applications/summary` | Aggregate สำหรับแถบ Registry ของหน้า list | ไม่กรอง — อธิบายทั้งทะเบียน ไม่ใช่มุมมอง search/advance ปัจจุบัน; ไม่มี block `paginate` ใหม่ตั้งแต่ sync ก่อนหน้า (ก่อน 2026-08-24 เป็นการกวาดฝั่ง client ด้วย `perpage: -1`) |
+
+การอ้างอิง commit/PR ข้ามฝั่งด้านบนทั้งหมดอยู่ใน `../carmen-turborepo-backend-v2` หรือ `../carmen-platform` ตามที่ระบุไว้แล้วตรงจุดอ้างอิงแต่ละแห่ง; ส่วนข้างล่างนี้แยก primary/secondary สำหรับรายการอ้างอิงของหน้านี้เอง
 
 **หลัก (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_application` (บรรทัด 65), `tb_application_api` (บรรทัด 90); ตระกูลที่มีเฉพาะใน schema ที่บรรทัด 19, 44, 606 เลขบรรทัด ณ 2026-07-29; `doc_version` เพิ่มทั้งสองตารางเมื่อ 2026-07-16 (`8e53bbe`)
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_application` (บรรทัด 65), `tb_application_api` (บรรทัด 90); ตระกูลที่มีเฉพาะใน schema ที่บรรทัด 19, 44, 606 ตรวจซ้ำ 2026-09-05 กับ source HEAD `157a65e` — ทั้งเลขบรรทัดและทุก field ไม่เปลี่ยนตั้งแต่ 2026-07-29; `doc_version` เพิ่มทั้งสองตารางเมื่อ 2026-07-16 (`8e53bbe`)
 - `../carmen-turborepo-backend-v2/scripts/generate-app-api-catalog/run.ts` — generator ของ catalog (การสแกน `AppIdGuard`, กฎการจัดกลุ่ม, path ของ output)
+- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/applications/app-api-catalog.generated.ts` — catalog ที่ generate จริง: 900 key ใน 148 กลุ่มโมดูล ณ source HEAD `157a65e` (2026-09-04) เพิ่มขึ้นจาก 788/125 ในการ sync ก่อนหน้า
 
 **รอง (shape ฝั่ง consumer):**
-- `../carmen-platform/src/types/index.ts` — `Application` (รวม `doc_version?: number`), `ApplicationWritePayload`, `ApiCatalogGroup`
-- `../carmen-platform/src/services/applicationService.ts` — `toWritePayload` (รวม `doc_version`), การจัดการ envelope ของ `getApiCatalog` และ fallback การจัดกลุ่ม
-- `../carmen-platform/src/utils/apiCatalog.ts` — `moduleOf`, `actionOf`, `groupApiNames`
+- `../carmen-platform/src/types/index.ts` — `Application` (รวม `doc_version?: number`), `ApplicationWritePayload`, `ApiCatalogGroup`, `ApplicationSummaryData`, `DeviceCount`
+- `../carmen-platform/src/services/applicationService.ts` — `toWritePayload` (รวม `doc_version`), การจัดการ envelope ของ `getApiCatalog` และ fallback การจัดกลุ่ม, `getRegistrySummary()`
+- `../carmen-platform/src/utils/apiCatalog.ts` — `moduleOf`, `actionOf`, `groupApiNames` บวก (ใหม่) `verbOf`/`isAuthorityAction`/`countAuthority`
+- `../carmen-platform/src/utils/apiReach.ts` — `reachOf()` ฟังก์ชันคำนวณรัศมีตัวเดียวที่ `ApplicationReachCell` (list) และ `ApplicationIdentityHero` (edit) ใช้ร่วมกัน
+- `../carmen-platform/src/utils/audit.ts` — `normalizeAudit()` (ลอง nested ก่อน flat เป็นทางถอย; `updated` ถูกกำหนดด้วย `everEdited`) ที่ list ของโมดูลนี้ใช้ตั้งแต่ 2026-08-22
 - `../carmen-platform/src/utils/docVersion.ts` — helper optimistic-lock `getDocVersion`/`isVersionConflict`/`notifyVersionConflict` ที่ `ApplicationEdit.tsx` ใช้
 
-**Cross-link:** [หน้า landing ของ Applications](/th/platform/applications) &nbsp;·&nbsp; [UI Screens](./ui-screens.md) &nbsp;·&nbsp; [Permissions](./permissions.md) &nbsp;·&nbsp; [Platform RBAC data-model](../rbac/data-model.md) (จุดเทียบของการเขียนแบบ delta)
+**Cross-link:** [หน้า landing ของ Applications](/th/platform/applications) &nbsp;·&nbsp; [UI Screens](/th/platform/applications/ui-screens) &nbsp;·&nbsp; [Permissions](/th/platform/applications/permissions) &nbsp;·&nbsp; [Platform RBAC data-model](/th/platform/rbac/data-model) (จุดเทียบของการเขียนแบบ delta)
