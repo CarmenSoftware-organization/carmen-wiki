@@ -2,7 +2,7 @@
 title: User — Lifecycle
 description: Create, disable, hard/soft delete, password reset.
 published: true
-date: 2026-07-29T07:06:05.000Z
+date: 2026-09-05T12:45:00.000Z
 tags: book/platform, users, lifecycle
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -11,11 +11,11 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 # User — Lifecycle
 
 > **At a Glance**
-> **Operations covered:** create · edit · activate/deactivate (`is_active`) · soft-delete · hard-delete (single + bulk, super-admin only) · admin password reset · Keycloak sync · the effective-permissions sign-in gate &nbsp;·&nbsp; **Not in this product:** SSO · MFA · OAuth · email-link password reset &nbsp;·&nbsp; **Endpoints:** 8 service methods (7 under `/api-system/user`, Keycloak sync at `/api-system/fetch-user`) &nbsp;·&nbsp; **Cross-entity effects:** cluster assignments (read-only here) · BU assignments (mutated here via Add BU dialog, now permission-checked per the target cluster) · RBAC role assignments (mutated on `/platform/user-platform`, not here) &nbsp;·&nbsp; **Concurrency:** `doc_version` optimistic lock on save
+> **Operations covered:** create (now requiring `firstname`/`lastname`, not just `username`/`email`) · edit · activate/deactivate (`is_active`) · soft-delete · hard-delete (single + bulk, super-admin only) · admin password reset · Keycloak sync · the effective-permissions sign-in gate &nbsp;·&nbsp; **Not in this product:** SSO · MFA · OAuth · email-link password reset &nbsp;·&nbsp; **Endpoints:** 9 service methods (8 under `/api-system/user`, incl. the directory-summary endpoint; Keycloak sync at `/api-system/fetch-user`) &nbsp;·&nbsp; **Cross-entity effects:** cluster assignments (read-only here) · BU assignments (mutated here via Add BU dialog, permission-checked per the target cluster) · RBAC role assignments (mutated on `/platform/user-platform`, not here) &nbsp;·&nbsp; **Concurrency:** `doc_version` optimistic lock on save
 
 ## 1. Overview
 
-This page covers every mutating operation that an admin performs on a user record through the Platform SPA: creating an account, editing identity fields, toggling the `is_active` flag, soft-deleting and hard-deleting, resetting a password without the user's current credential, and pulling user records from Keycloak into the platform database. The data model that underpins these operations (field definitions, enums, constraints) is on the [Data Model](./data-model.md) sibling page.
+This page covers every mutating operation that an admin performs on a user record through the Platform SPA: creating an account, editing identity fields, toggling the `is_active` flag, soft-deleting and hard-deleting, resetting a password without the user's current credential, and pulling user records from Keycloak into the platform database. The data model that underpins these operations (field definitions, enums, constraints) is on the [Data Model](/en/platform/users/data-model) sibling page.
 
 The product does not implement SSO, MFA, OAuth, or email-link password reset. All credential management is delegated to Keycloak; the SPA performs an admin-override password push via the `reset-password` endpoint and a pull-from-Keycloak sync via the `fetch-user` endpoint — there is no self-service reset link sent to the user's inbox.
 
@@ -27,17 +27,19 @@ Mutation scope is split between three surfaces. This page (user edit screen) own
 
 **Endpoint:** `POST /api-system/user` via `userService.create(formData)`.
 
-**Request body:** The full `UserFormData` object is posted as-is. Its 7 fields are:
+**Request body:** The full `UserFormData` object is posted as-is. Its 7 fields, now grouped on the form into three labelled sections — Sign-in details / Display name / Status (design pass commit `d21c57c`, #220) — are:
 
 | Field | Type | Notes |
 | ----- | ---- | ----- |
 | `username` | string | Required; set once; the input is enabled only on create — it is `disabled={!isNew}` in the form |
 | `email` | string (email) | Required |
+| `firstname` | string | **Required (new since the last sync)** — carries the HTML `required` attribute and is checked by a client-side preflight before submit; stored in `tb_user_profile` |
+| `middlename` | string | Optional; stored in `tb_user_profile` |
+| `lastname` | string | **Required (new since the last sync)** — same validation as `firstname`; stored in `tb_user_profile` |
 | `alias_name` | string | Optional |
-| `firstname` | string | Stored in `tb_user_profile` |
-| `middlename` | string | Stored in `tb_user_profile` |
-| `lastname` | string | Stored in `tb_user_profile` |
 | `is_active` | boolean | Default `true` at create |
+
+Previously only `username` and `email` were required; `firstname`/`lastname` are now required too, so the "minimum required fields" case is four fields, not two.
 
 There is no separate password field in `UserFormData`. The account is created without a credential in the SPA payload; the admin must use the "Change Password" button (§6) after creation, or the user's credential is managed entirely by Keycloak.
 
@@ -51,11 +53,11 @@ There is also no access field: creating an account grants **no** Platform admin 
 
 **Trigger:** The "Edit" item in the row action menu (`/users` table, wrapped in `<Can permission="user.update">`) navigates to `/users/:id/edit`, which opens in view mode. The "Edit" button — now part of the `UserIdentityHero` card's action slot (view mode only), not a bare header button — (also wrapped in `<Can permission="user.update">`) calls `handleEditToggle()`, which saves the current `formData` into `savedFormData` and sets `editing = true`.
 
-**Endpoint:** `PUT /api-system/user/:id` via `userService.update(id, formData)`, with the loaded `doc_version` appended to the payload when present (optimistic lock — see [Data Model](./data-model.md) §2.1). A stale save (`409`) shows a "changed by someone else" toast and reloads the record via `fetchUser()` instead of overwriting.
+**Endpoint:** `PUT /api-system/user/:id` via `userService.update(id, formData)`, with the loaded `doc_version` appended to the payload when present (optimistic lock — see [Data Model](/en/platform/users/data-model) §2.1). A stale save (`409`) shows a "changed by someone else" toast and reloads the record via `fetchUser()` instead of overwriting.
 
 **Username lock:** The `username` input carries `disabled={!isNew}`, so it is always disabled in edit mode. The SPA always sends the full `formData` object including `username`; backend handling of this field on `PUT` is not reflected in the SPA source.
 
-**Mode toggle:** Clicking "Edit" reveals "Save" and "Cancel" buttons. "Cancel" calls `handleCancelEdit()`, which restores `formData` to the snapshot taken at `handleEditToggle()` time — no API call is made. Unsaved changes are tracked by comparing `formData` to `savedFormData` using `JSON.stringify`; the `useUnsavedChanges` hook will prompt the user before navigation if there are pending changes.
+**Mode toggle:** Clicking "Edit" reveals "Save" and "Cancel" buttons. "Cancel" calls `handleCancelEdit()`, which restores `formData` to the snapshot taken at `handleEditToggle()` time — no API call is made. Unsaved changes are tracked by comparing `formData` to `savedFormData` using `JSON.stringify`; the `useUnsavedChanges` hook will prompt the user before navigation if there are pending changes. Save and Cancel are also bound as keyboard shortcuts via `useGlobalShortcuts`: `Ctrl`/`⌘`+`S` submits the form while `editing && !saving`; `Escape` calls `handleCancelEdit()` only while `editing && !isNew` (a no-op in create mode).
 
 **Success:** A `toast.success('Changes saved successfully')` appears; the page re-fetches the user from the server via `fetchUser()` and exits edit mode.
 
@@ -65,7 +67,7 @@ There is also no access field: creating an account grants **no** Platform admin 
 
 **Field:** `is_active` boolean on `tb_user` (nullable, default `false` at the DB level; the SPA initialises it to `true` for new records and reads `user.is_active ?? true` when loading existing ones).
 
-**UI:** A checkbox labelled "Active" in the User Details card, with a `Badge` showing "Active" (green) or "Inactive" (grey). The checkbox is editable only when the form is in edit mode; toggling it updates `formData.is_active`. The change is persisted on the next "Save" via the normal `PUT /api-system/user/:id` request — there is no dedicated toggle endpoint.
+**UI:** A checkbox labelled "Active" in the account-details card (see [UI Screens](/en/platform/users/ui-screens) §4.1) — that whole card, checkbox included, renders only while `editing`, so its own `Badge`-based view-mode branch is unreachable; the Active/Inactive status a viewer actually sees in view mode comes from the `UserIdentityHero` badge instead. The checkbox is editable only when the form is in edit mode; toggling it updates `formData.is_active`. The change is persisted on the next "Save" via the normal `PUT /api-system/user/:id` request — there is no dedicated toggle endpoint.
 
 **Effect on sign-in:** When `is_active` is `false` the user's row is present in the database but the downstream inventory application treats the account as blocked. The Platform SPA's `AuthContext` does not check `is_active` at login itself — the gate is enforced by the consuming applications.
 
@@ -113,7 +115,7 @@ There is also no access field: creating an account grants **no** Platform admin 
 
 ## 6. Admin-initiated password reset
 
-**Trigger:** The "Change Password" button (with `KeyRound` icon), now part of the `UserIdentityHero` card's actions slot on `/users/:id/edit` (still visible only when `!isNew && !editing`) rather than a bare page-header button. Unlike the neighbouring Edit button it carries no `<Can>` gate — anyone who passes the route's `user.update` guard sees it. Calls `handleOpenPasswordDialog()`, which resets the dialog fields and sets `showPasswordDialog = true`.
+**Trigger:** The "Change Password" button (with `KeyRound` icon), part of the `UserIdentityHero` card's actions slot on `/users/:id/edit` (visible only when `!isNew && !editing`). **Like the neighbouring Edit button, it is now wrapped in `<Can permission="user.update">`** — previously it carried no in-page gate at all and rendered for any session that passed the route's `user.update` guard; this page's own gate is functionally redundant with that route guard, but it is present in current source. Calls `handleOpenPasswordDialog()`, which resets the dialog fields and sets `showPasswordDialog = true`.
 
 **Dialog fields:**
 
@@ -151,17 +153,17 @@ For FK cascade behaviour affecting these joins on hard delete, see §5.2 (and it
 ## 9. References
 
 **SPA sources (primary):**
-- `../carmen-platform/src/services/userService.ts` — all 8 API methods: `getAll`, `getById`, `create`, `update`, `delete`, `hardDelete`, `resetPassword`, `fetchKeycloakUsers`.
+- `../carmen-platform/src/services/userService.ts` — all 9 API methods: `getAll`, `getById`, `getDirectorySummary`, `create`, `update`, `delete`, `hardDelete`, `resetPassword`, `fetchKeycloakUsers`.
 - `../carmen-platform/src/pages/UserManagement.tsx` — soft-delete `ConfirmDialog`, hard-delete typed-confirmation dialog (+ super-admin copy-username button), bulk soft/hard-delete dialogs (super-admin only, random-code confirmation), `<Can permission="user.create">`-gated "Fetch Keycloak" handler, "Show soft-deleted users" toggle, `buildAdvance()` filter logic, `<Can>` gates on the row actions.
-- `../carmen-platform/src/pages/UserEdit.tsx` and `userEdit/{UserIdentityHero,UserAccessTree}.tsx` — "Change Password" dialog (`handleResetPassword`), `handleSubmit` (create/update, `doc_version`-aware), `handleCancelEdit` (mode toggle), `handleAddBU` / `handleDeleteBU` (BU assignment, `canAddBU` / scoped `<Can>` permission checks), `<Can permission="user.update">` on the Edit toggle.
+- `../carmen-platform/src/pages/UserEdit.tsx` and `userEdit/{UserIdentityHero,UserAccessTree}.tsx` — "Change Password" dialog (`handleResetPassword`, now `<Can permission="user.update">`-gated), `handleSubmit` (create/update, `doc_version`-aware, required-field preflight), `handleCancelEdit` (mode toggle), `handleAddBU` / `handleDeleteBU` (BU assignment, `canAddBU` / scoped `<Can>` permission checks), `<Can permission="user.update">` on the Edit toggle.
 - `../carmen-platform/src/utils/docVersion.ts` — optimistic-lock helpers used by `handleSubmit`.
 - `../carmen-platform/src/context/AuthContext.tsx` — `login()` effective-permissions gate and bootstrap exception (§4).
 
 **Schema source:**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — FK `onDelete: NoAction` on `tb_cluster_user.user_id` and `tb_user_tb_business_unit.user_id`; `tb_user` model (line 494, as of 2026-07-29; `doc_version` added to `tb_user`/`tb_user_profile` on 2026-07-16).
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (backend HEAD `3bae0679d`) — FK `onDelete: NoAction` on `tb_cluster_user.user_id` and `tb_user_tb_business_unit.user_id`; `tb_user` model (line 476); `doc_version` added to `tb_user`/`tb_user_profile` on 2026-07-16.
 
 **Cross-links:**
 - [users](/en/platform/users) — module landing: overview, key concepts, navigation map.
-- [Data Model](./data-model.md) — schema reference: field definitions, enums, constraints, SPA divergences.
+- [Data Model](/en/platform/users/data-model) — schema reference: field definitions, enums, constraints, SPA divergences.
 - [rbac](/en/platform/rbac) — the effective-permissions login gate, role assignments (`/platform/user-platform`), and the bootstrap exception referenced in §4.
 - [profile](/en/platform/profile) — self-service password change by the signed-in user.
