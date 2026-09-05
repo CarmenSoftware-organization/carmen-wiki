@@ -213,7 +213,7 @@ A BU no longer owns its database credentials. Instead it points at a shared, pla
 
 ### 2.5 `tb_user_tb_business_unit` (BU-side view)
 
-The full field table for `tb_user_tb_business_unit` is documented in [users data-model](../users/data-model.md) §2.3. From the business-unit perspective, the key points are:
+The full field table for `tb_user_tb_business_unit` is documented in [users data-model](/en/platform/users/data-model) §2.3. From the business-unit perspective, the key points are:
 
 - **`business_unit_id` FK** — `String? @db.Uuid` (nullable), FK to `tb_business_unit.id` with `onDelete: NoAction, onUpdate: NoAction`. Removing a BU does not automatically remove join rows — application-layer cleanup is required.
 - **`role`** — `enum_user_business_unit_role` (non-nullable, default `user`). Records the per-BU role for this user-BU assignment: `admin` or `user`. This role is independent of the platform RBAC assignments on the user account ([rbac](/en/platform/rbac)) and of `enum_cluster_user_role` on `tb_cluster_user`. See §4 for the full enum definition.
@@ -268,7 +268,7 @@ Note: `default_currency_id` on `tb_business_unit` is a logical reference to the 
 
 ### `enum_user_business_unit_role` — 2 values
 
-Carried on `tb_user_tb_business_unit.role`. Controls what a user can do within a specific business unit. Orthogonal to both the platform RBAC assignments on the user account ([rbac](/en/platform/rbac) — which replaced the removed `platform_role` enum) and `enum_cluster_user_role` on `tb_cluster_user` — the role axes are evaluated independently. This enum is also documented in [users data-model](../users/data-model.md) §4 — restated here for readers who arrive from the business-units module.
+Carried on `tb_user_tb_business_unit.role`. Controls what a user can do within a specific business unit. Orthogonal to both the platform RBAC assignments on the user account ([rbac](/en/platform/rbac) — which replaced the removed `platform_role` enum) and `enum_cluster_user_role` on `tb_cluster_user` — the role axes are evaluated independently. This enum is also documented in [users data-model](/en/platform/users/data-model) §4 — restated here for readers who arrive from the business-units module.
 
 | Value | Meaning |
 | ----- | ------- |
