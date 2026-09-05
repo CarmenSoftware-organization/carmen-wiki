@@ -2,7 +2,7 @@
 title: Cluster — Permissions
 description: Permission-key route guards, the feature-flag layer, in-page Can gates, the platform-authority/cluster-admin redirect, and what each cluster.* key opens.
 published: true
-date: 2026-09-05T04:19:00.000Z
+date: 2026-09-05T04:42:43.000Z
 tags: book/platform, clusters, permissions
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -95,7 +95,7 @@ if (effectivePermissions !== null && !hasPlatformAuthority) {
 }
 ```
 
-`hasPlatformAuthority` (`../carmen-platform/src/utils/permissions.ts`, `checkPlatformAuthority`) is `true` for a super-admin, for any platform-wide permission grant, or for **any** cluster-scoped grant — deliberately **not** true for a user whose only standing is a `tb_cluster_user.role = 'admin'` membership (that role, §4 of [Data Model](./data-model.md), is a tenant-membership attribute, not platform authority). A session with a resolved permission payload and no platform authority at all is redirected to `/cluster-admin` if it has that scope (a distinct persona and route tree — see [business-units](/en/platform/business-units) and the source map's `cluster-admin` row); if it has neither authority, the check falls through to the ordinary `requiredPermission` gate below it, which will then 403 it exactly as before. This branch exists so a pure cluster-admin member is routed to the surface built for them instead of hitting a confusing 403 on the platform-admin list, and so it does not change the *outcome* for a genuinely permission-less session — only for one with legitimate cluster-admin-only standing.
+`hasPlatformAuthority` (`../carmen-platform/src/utils/permissions.ts`, `checkPlatformAuthority`) is `true` for a super-admin, for any platform-wide permission grant, or for **any** cluster-scoped grant — deliberately **not** true for a user whose only standing is a `tb_cluster_user.role = 'admin'` membership (that role, §4 of [Data Model](/en/platform/clusters/data-model), is a tenant-membership attribute, not platform authority). A session with a resolved permission payload and no platform authority at all is redirected to `/cluster-admin` if it has that scope (a distinct persona and route tree — see [business-units](/en/platform/business-units) and the source map's `cluster-admin` row); if it has neither authority, the check falls through to the ordinary `requiredPermission` gate below it, which will then 403 it exactly as before. This branch exists so a pure cluster-admin member is routed to the surface built for them instead of hitting a confusing 403 on the platform-admin list, and so it does not change the *outcome* for a genuinely permission-less session — only for one with legitimate cluster-admin-only standing.
 
 ## 6. Forbidden (403) behaviour
 
@@ -139,7 +139,7 @@ Passing the route guard does not unlock every button — the mutating actions ca
 | Add BU (navigate-to-new, Business Units tab) | `<Can permission="cluster.create">` (unscoped) | No |
 | BU row Edit (Pencil, navigate-to-edit) | None in-page — the target `/business-units/:id/edit` route reuses `cluster.update` | — |
 
-Two tester-relevant consequences, both carried forward unchanged: the cluster-user management actions all still share the single page-level `canEdit` boolean rather than each carrying its own `<Can>` call; and the BU-quota cap that disables the Add BU button is now a licence-ledger fact (`bu_cap`, see [Data Model](./data-model.md) §2.4) rather than a permission gate — all permitted sessions see the same enabled/disabled state. **The bulk "Move to BU" action documented in the prior sync no longer exists** — it depended on `parent_bu_id`, which has been removed (§ Data Model §2.2). Test plans should cover the scoped gates (§3) per cluster, not per persona, and should now also exercise the `clusters` feature flag's `hide`/`inactive` states (§2) alongside the permission matrix.
+Two tester-relevant consequences, both carried forward unchanged: the cluster-user management actions all still share the single page-level `canEdit` boolean rather than each carrying its own `<Can>` call; and the BU-quota cap that disables the Add BU button is now a licence-ledger fact (`bu_cap`, see [Data Model](/en/platform/clusters/data-model) §2.4) rather than a permission gate — all permitted sessions see the same enabled/disabled state. **The bulk "Move to BU" action documented in the prior sync no longer exists** — it depended on `parent_bu_id`, which has been removed (§ Data Model §2.2). Test plans should cover the scoped gates (§3) per cluster, not per persona, and should now also exercise the `clusters` feature flag's `hide`/`inactive` states (§2) alongside the permission matrix.
 
 ## 9. References
 
@@ -159,4 +159,4 @@ Two tester-relevant consequences, both carried forward unchanged: the cluster-us
 - [rbac permissions](/en/platform/rbac/permissions) — SPA-wide gate matrix and the full permission-resolution algorithm
 - [users](/en/platform/users) — user identity rows that role assignments point at
 - [clusters](/en/platform/clusters) — Clusters module landing
-- [Data Model](./data-model.md) &nbsp;·&nbsp; [UI Screens](./ui-screens.md) — sibling sub-pages
+- [Data Model](/en/platform/clusters/data-model) &nbsp;·&nbsp; [UI Screens](/en/platform/clusters/ui-screens) — sibling sub-pages
