@@ -624,6 +624,12 @@ Claude-Session: https://claude.ai/code/session_01368ie91bMhnxN3muJYUm9U"
 
 Routes: `/cluster-admin` → `AuthedRoute` + `ClusterAdminEntry`; then under `ClusterAdminRoute`: `/cluster-admin/:clusterId/cluster` → `ClusterProfile`, `/business-units` → `ClusterAdminBusinessUnitList`, `/business-units/:buId/edit` → `ClusterAdminBusinessUnitForm`, `/users` → `ClusterAdminUsers`, `/licenses` → `ClusterAdminLicenses`, `/profile` → the shared `Profile`. 161 commits in the window — read the whole directory.
 
+- [ ] **Step 1b: Get the gate description right — this has already been written wrongly once**
+
+`ClusterAdminRoute.tsx` checks in this order: authenticated, then `adminScope` loaded, then **`!clusterId || !isClusterAdminOf(clusterId)` renders `<Forbidden />`**, and only then the feature flag — the source carries a comment saying so explicitly ("the feature gate comes last… scope answers before the flag").
+
+So the honest description is **"no RBAC permission key — gated instead by cluster membership"**. Do not write "no permission check at all", "unguarded", or "gated only by the feature flag": another module's page said exactly that and it reads as though any authenticated user could open any cluster's screens once the flag is on, which is false. Membership is the load-bearing gate. State it that way everywhere, including in any At-a-Glance summary and any edge-case table, not only in the one section where the full explanation lives.
+
 - [ ] **Step 2: Lead with what makes this a separate persona**
 
 State plainly: this is a **second navigation**, not the platform console. Every path carries the cluster id so the sidebar cannot navigate out of its cluster; there is **no permission filtering** on the nav because clearing `ClusterAdminRoute` is the whole check; and the feature keys are separate from the platform ones that share menu labels — `cluster_admin_cluster`, `cluster_admin_business_units`, `cluster_admin_licenses`, `cluster_admin_users`. A reader who assumes platform-side permission keys apply here will be wrong.
