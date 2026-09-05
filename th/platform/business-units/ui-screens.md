@@ -2,7 +2,7 @@
 title: Business Unit — UI Screens
 description: BusinessUnitManagement (list) และ BusinessUnitEdit หกแท็บ (General/Location/Formats/Technical/Users/Licenses) — code สร้างอัตโนมัติ ปุ่มสุ่มชื่อ schema และแท็บ Licenses ใหม่
 published: true
-date: 2026-09-05T07:45:00.000Z
+date: 2026-09-05T09:15:00.000Z
 tags: book/platform, business-units, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -19,6 +19,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 - **Database Connection ถูกสร้างใหม่ทั้งหมด** — ไม่มี field host/port/database/user/password/ssl อีกต่อไป (และไม่มีปุ่ม Reveal password ด้วย) แทนที่ด้วย dropdown เลือก Database Pool (gate ด้วย `database_pool.read`) + ช่อง Schema พร้อม**ปุ่ม "Generate schema" สุ่มชื่อ** (`bu_` + ตัวอักษร/ตัวเลขสุ่ม 16 ตัว) เปลี่ยนค่า pool/schema จากค่าที่เคย save ไว้ต้องผ่าน confirm dialog ก่อน
 - **แท็บ Licenses ใหม่** แยกออกจาก Users — การ์ดอ่านอย่างเดียวพร้อมปุ่ม Manage licences และปุ่ม **New subscription** (gate ด้วย `subscription.manage`, ใหม่)
 - Max users บนแท็บ General ไม่ใช่ integer ที่พิมพ์ได้อีกต่อไป — เป็นผลรวมที่นั่ง active จาก `tb_business_unit_license` แบบอ่านอย่างเดียว
+- **ยังใช้งานได้จริงหลังการเขียนใหม่ทั้งสองรอบ**: แต่ละ field ยัง commit ตอน blur/Enter และ revert ตอน `Escape` ผ่าน `InlineField`; แถบล่าง sticky ยังมี `Ctrl/⌘+S` (save, เช็ก `canEdit` ซ้ำเอง) และ `Escape` (cancel — ทำงานเฉพาะ BU ที่มีอยู่แล้วและมีการเปลี่ยนแปลงค้างอยู่ ไม่ทำอะไรตอนสร้างใหม่)
 
 ## 2. References
 

@@ -2,7 +2,7 @@
 title: Business Unit — Data Model
 description: BU entity, formatting/locale block, database-pool + schema pointer, config array, branding tokens, module activation join, and the per-BU license ledger that replaced the old max_license_users column.
 published: true
-date: 2026-09-05T07:00:00.000Z
+date: 2026-09-05T09:15:00.000Z
 tags: book/platform, business-units, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -284,7 +284,7 @@ Carried on `tb_business_unit.calculation_method`. Determines the costing method 
 | `average` | Weighted average cost method (default). Each receipt adjusts the running average cost of inventory items |
 | `fifo` | First-In First-Out method. Issues are costed at the price of the oldest stock layer |
 
-The default is `average`. Both values match the costing methods documented in the Carmen Inventory ERP ([calculation-methods](../../inventory/costing/calculation-methods.md)).
+The default is `average`. Both values match the costing methods documented in the Carmen Inventory ERP ([calculation-methods](/en/inventory/costing/calculation-methods)).
 
 ## 5. The `config` and `info` JSON columns
 
