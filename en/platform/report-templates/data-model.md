@@ -2,7 +2,7 @@
 title: Report Template — Data Model
 description: tb_report_template entity, dialog/content XML payloads, source binding, BU scope, and the 2026-07-23 kind→template_type rename plus is_default/doc_version columns.
 published: true
-date: 2026-07-29T00:00:00.000Z
+date: 2026-09-05T00:00:00.000Z
 tags: book/platform, report-templates, data-model
 editor: markdown
 dateCreated: 2026-05-19T18:30:00.000Z
@@ -20,7 +20,7 @@ dateCreated: 2026-05-19T18:30:00.000Z
 
 ## 1. Overview
 
-`tb_report_template` is the catalogue entry for one printable or exportable document in the Carmen Platform. Each row encodes the complete definition of a report: its identity (`name`, `report_group`, `template_type`), two XML payload columns (`dialog` and `content`) consumed by the report runtime, the runtime source binding (`source_type`, `source_name`, `source_params`), print-layout fields (`orientation`, `signature_config`), a BU-scope allow/deny pair, and the standard lifecycle flags and audit trio (including `doc_version`, the platform-wide optimistic-lock column added 2026-07-16).
+`tb_report_template` is the catalogue entry for one printable or exportable document in the Carmen Platform. Each row encodes the complete definition of a report: its identity (`name`, `report_group`, `template_type`), two XML payload columns (`dialog` and `content`) consumed by the report runtime, the runtime source binding (`source_type`, `source_name`, `source_params`), print-layout fields (`orientation`, `signature_config`), a BU-scope allow/deny pair, and the standard lifecycle flags and audit trio (including `doc_version`, the platform-wide optimistic-lock column added 2026-06-12 — **corrected**, an earlier sync misdated this 2026-07-16).
 
 Report templates are tenant-global — they are not cluster-scoped and carry no FK to `tb_cluster`. The BU-scope columns (`allow_business_unit`, `deny_business_unit`) are opt-in filtering lists that restrict which business units a template is visible to; they do not bind the row to any particular cluster. This distinguishes the report-templates surface from the [clusters](/en/platform/clusters) and [business-units](/en/platform/business-units) pages, which document the cluster/BU hierarchy. BU codes referenced in the chip lists correspond to `tb_business_unit.code` values, but there is no FK constraint — the reference is an application-layer convention.
 
@@ -41,8 +41,8 @@ One row per report or print template. The field table below follows the Prisma d
 | `report_group` | `String @db.VarChar(100)` | No | — | Grouping key used to organise templates in the management list (e.g. `"Receiving"`, `"Inventory"`) |
 | `template_type` | `String @default("list") @db.Text` | No | `"list"` | Template category: `"list"` (tabular analytical report, was `"report"`) or `"form"` (single-record document layout, was `"print"`). Renamed from `kind` by migration `20260723120000_print_form_default` (2026-07-23); values changed at the same time |
 | **— XML Payloads —** | | | | |
-| `dialog` | `String @db.Text` | No | — | XML string defining the parameter form rendered by the report runtime. Not nullable — an empty string `""` is the valid "no dialog" value. Detailed XML structure documented in [XML Spec §2](./xml-spec.md) |
-| `content` | `String @db.Text` | No | — | XML string defining the report output layout rendered by the report runtime. Not nullable — `""` is valid for a new template. The Content tab in the editor also accepts `.frx` / `.xml` / `.txt` file uploads (legacy FastReport migration). Detailed structure in [XML Spec §3](./xml-spec.md) |
+| `dialog` | `String @db.Text` | No | — | XML string defining the parameter form rendered by the report runtime. Not nullable — an empty string `""` is the valid "no dialog" value. Detailed XML structure documented in [XML Spec §2](/en/platform/report-templates/xml-spec) |
+| `content` | `String @db.Text` | No | — | XML string defining the report output layout rendered by the report runtime. Not nullable — `""` is valid for a new template. The Content tab in the editor also accepts `.frx` / `.xml` / `.txt` file uploads (legacy FastReport migration). Detailed structure in [XML Spec §3](/en/platform/report-templates/xml-spec) |
 | **— Go Builder —** | | | | |
 | `builder_key` | `String? @db.VarChar` | Yes | — | Links a template row to a Go report.Definition registry key. When set, the Go runtime uses this key to resolve the report definition rather than executing `source_type`/`source_name` directly |
 | **— Source Binding (legacy) —** | | | | |
@@ -62,7 +62,7 @@ One row per report or print template. The field table below follows the Prisma d
 | `deny_business_unit` | `Json? @db.JsonB` | Yes | — | Optional list of BU codes explicitly excluded from seeing this template. `NULL` = no denials. Same `toCsv()` normalisation as `allow_business_unit` |
 | `is_active` | `Boolean` | No | `true` | When `false`, the template is inactive and hidden from selection lists |
 | **— Audit —** | | | | |
-| `doc_version` | `Int @default(0) @db.Integer` | No | `0` | Optimistic-lock token, part of the platform-wide `doc_version` rollout (2026-07-16, all 35 platform tables). The SPA sends it on every `PUT` and shows a conflict toast + reload on a version mismatch |
+| `doc_version` | `Int @default(0) @db.Integer` | No | `0` | Optimistic-lock token, part of the platform-wide `doc_version` rollout (**2026-06-12**, migration `20260612000000_add_doc_version`, all 35 platform tables — corrects an earlier sync's "2026-07-16"). The SPA sends it on every `PUT` and shows a conflict toast + reload on a version mismatch |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: row creation time |
 | `created_by_id` | `String? @db.Uuid` | Yes | — | Audit: FK to `tb_user.id` of the creator (application-layer convention; no Prisma `@relation` declared) |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: last update time |
@@ -118,13 +118,13 @@ Four columns on `tb_report_template` carry structured payloads that the database
 
 A non-nullable `String @db.Text` column (not `Json`) containing the XML that the report runtime renders as the parameter input form shown to users before running the report. An empty string `""` is the valid "no parameters" state for templates that take no user input.
 
-The Dialog tab in the SPA editor accepts free-form XML entry or file upload. Detailed XML element and attribute reference is in [XML Spec §2](./xml-spec.md).
+The Dialog tab in the SPA editor accepts free-form XML entry or file upload. Detailed XML element and attribute reference is in [XML Spec §2](/en/platform/report-templates/xml-spec).
 
 ### 5.2 `content` (XML payload)
 
 A non-nullable `String @db.Text` column containing the XML that defines the report output layout — columns, groupings, totals, formatting, etc. An empty string is valid for a newly created template before content is added.
 
-The Content tab in the editor accepts direct XML entry and also allows uploading `.frx`, `.xml`, or `.txt` files, which supports migrating legacy FastReport template files. Detailed XML structure is in [XML Spec §3](./xml-spec.md).
+The Content tab in the editor accepts direct XML entry and also allows uploading `.frx`, `.xml`, or `.txt` files, which supports migrating legacy FastReport template files. Detailed XML structure is in [XML Spec §3](/en/platform/report-templates/xml-spec).
 
 ### 5.3 `source_params` (object)
 
@@ -202,7 +202,7 @@ All core identity fields (`id`, `name`, `description`, `report_group`, `template
 ## 7. References
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `model tb_report_template` (line 734).
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `model tb_report_template` (line 806 — corrects an earlier sync's "line 734"; the file grew above this model since the last sync).
 - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260723120000_print_form_default/migration.sql` — the `kind`→`template_type` rename's accompanying data migration, `is_default` addition, unique index, and `tb_print_template_mapping` drop.
 
 **Secondary (consumer shape):**
@@ -218,6 +218,6 @@ All core identity fields (`id`, `name`, `description`, `report_group`, `template
 - [print-template-mapping](/en/platform/print-template-mapping) — **removed 2026-07-23/24** (historical page); used to own `tb_print_template_mapping`, dropped by the same migration that added `is_default` here
 - [business-units](/en/platform/business-units) — BU codes referenced in the allow/deny chip lists correspond to `tb_business_unit.code`
 - [clusters](/en/platform/clusters) — sibling Platform surface; report templates are tenant-global and not cluster-scoped
-- [Permissions](./permissions.md) — access control for the report-templates admin surface
-- [UI Screens](./ui-screens.md) — SPA screens for report template management and editing
-- [XML Spec](./xml-spec.md) — detailed structure of the `dialog` and `content` XML payloads
+- [Permissions](/en/platform/report-templates/permissions) — access control for the report-templates admin surface
+- [UI Screens](/en/platform/report-templates/ui-screens) — SPA screens for report template management and editing
+- [XML Spec](/en/platform/report-templates/xml-spec) — detailed structure of the `dialog` and `content` XML payloads
