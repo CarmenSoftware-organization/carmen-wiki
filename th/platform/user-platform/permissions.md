@@ -2,7 +2,7 @@
 title: ผู้ใช้แพลตฟอร์ม — สิทธิ์ (Permissions)
 description: user_platform.read กั้นทั้งสอง route; user_platform.manage กั้นทุกจุดที่เขียนได้บนทั้งสองหน้าจอและตรงกับ decorator ฝั่ง backend เป๊ะ ช่องว่างที่ควรทดสอบอยู่ที่อื่น — ส่วนใหญ่ที่หน้า detail แสดงยังต้องมี user.read ด้วย ซึ่งเป็นคีย์ของโมดูล Users ที่ route guard ของโมดูลนี้เองไม่เคยตรวจ
 published: true
-date: '2026-09-06T19:00:00.000Z'
+date: '2026-09-06T21:00:00.000Z'
 tags: book/platform, user-platform, permissions
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -24,7 +24,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 | route `/platform/user-platform` | `PrivateRoute` | `user_platform.read`, `feature: 'user_platform'` | `App.tsx:451-457` |
 | route `/platform/user-platform/:userId` | `PrivateRoute` | `user_platform.read`, `feature: 'user_platform'` | `App.tsx:458-465` |
 | รายการ sidebar | nav filter | `permission: 'user_platform.read'`, `feature: 'user_platform'`, `groupKey: 'navGroup.platform'` — ไม่ใช่ `superAdminOnly` | `platformNav.ts:43` |
-| ปุ่ม Grant Access (header รายการ, empty state) | `<Can>` | `user_platform.manage` | `UserPlatformManagement.tsx:421,590` |
+| ปุ่ม Grant Access (header รายการ, empty state) | `<Can>` | `user_platform.manage` | `UserPlatformManagement.tsx:422,591` |
 | Revoke all access (row menu รายการ) | `<Can>` | `user_platform.manage` | `UserPlatformManagement.tsx:394` |
 | sheet Add Role (หน้า detail) | `<Can>` | `user_platform.manage` | `UserPlatformEdit.tsx:299` |
 | Remove role (หน้า detail, ต่อแถว) | `<Can>` | `user_platform.manage` | `RoleGrantList.tsx:126` |
@@ -75,5 +75,5 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 - **อย่าพึ่ง e2e suite ของ `user-platform` สำหรับการทดสอบขอบเขตสิทธิ์ใด ๆ** — ทั้งสอง spec รันในฐานะ super admin และไม่มี spec ไหนทดสอบ session ที่ลดสิทธิ์เลย ดู [UI Screens](/th/platform/user-platform/ui-screens) §4 สำหรับสองจุดที่ suite นี้ล้าสมัยแม้ในแง่ที่ไม่เกี่ยวกับสิทธิ์เลย
 - **เมื่อตรวจสอบคำเตือนผู้ถือสิทธิ์ที่ไม่ active หรือ badge "Email not verified" ให้แน่ใจว่ากำลังดูสถานะจริง ไม่ใช่ failure mode ในกรณีที่ 1** — ทั้งคู่เป็นข้อเท็จจริงที่ถูกต้อง (§3.4/§3.3 ของ [หน้า landing](/th/platform/user-platform)) เฉพาะเมื่อการดึงข้อมูลบัญชีสำเร็จจริงเท่านั้น
 
-**References:** path ทั้งหมดคือ `../carmen-platform` (HEAD `157a65e`) ยกเว้นที่ขึ้นต้นด้วย `../carmen-turborepo-backend-v2` (HEAD `937cf5ac4`) `src/App.tsx:451-465` (routes) · `src/components/nav/platformNav.ts:43` (nav) · `src/pages/UserPlatformManagement.tsx` (gate ของหน้ารายการ, บรรทัด 394,421,590) · `src/pages/UserPlatformEdit.tsx` (gate ของหน้า detail และลำดับการโหลด, บรรทัด 134-160,262-269,299) · `src/pages/userPlatformEdit/RoleGrantList.tsx:126` · `src/components/UserPicker.tsx`, `src/hooks/useUserSearch.ts` (พฤติกรรม error การค้นหาแบบ inline) · `src/context/AuthContext.tsx:268-272`, `src/utils/permissions.ts:56` (ทางลัด super-admin) · `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/user-platform-roles/user-platform-roles.controller.ts` (บรรทัด 91-93,138-140,183-185,233-235,280-282) · `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform-user/platform-user.controller.ts:124-126,254-256` (`user.read` บน endpoint ของโมดูล Users ที่โมดูลนี้พึ่ง) · `../carmen-turborepo-backend-v2/apps/micro-business/src/authen/user_platform_role/user_platform_role.service.ts:220-228` (race ของการมอบสิทธิ์ซ้ำ, กรณีที่ 5)
+**References:** path ทั้งหมดคือ `../carmen-platform` (HEAD `157a65e`) ยกเว้นที่ขึ้นต้นด้วย `../carmen-turborepo-backend-v2` (HEAD `937cf5ac4`) `src/App.tsx:451-465` (routes) · `src/components/nav/platformNav.ts:43` (nav) · `src/pages/UserPlatformManagement.tsx` (gate ของหน้ารายการ, บรรทัด 394,422,591) · `src/pages/UserPlatformEdit.tsx` (gate ของหน้า detail และลำดับการโหลด, บรรทัด 134-160,262-269,299) · `src/pages/userPlatformEdit/RoleGrantList.tsx:126` · `src/components/UserPicker.tsx`, `src/hooks/useUserSearch.ts` (พฤติกรรม error การค้นหาแบบ inline) · `src/context/AuthContext.tsx:268-272`, `src/utils/permissions.ts:56` (ทางลัด super-admin) · `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/user-platform-roles/user-platform-roles.controller.ts` (บรรทัด 91-93,138-140,183-185,233-235,280-282) · `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform-user/platform-user.controller.ts:124-126,254-256` (`user.read` บน endpoint ของโมดูล Users ที่โมดูลนี้พึ่ง) · `../carmen-turborepo-backend-v2/apps/micro-business/src/authen/user_platform_role/user_platform_role.service.ts:220-228` (race ของการมอบสิทธิ์ซ้ำ, กรณีที่ 5)
 **Cross-links:** [ผู้ใช้แพลตฟอร์ม (landing)](/th/platform/user-platform) &nbsp;·&nbsp; [UI Screens](/th/platform/user-platform/ui-screens) &nbsp;·&nbsp; [Users](/th/platform/users) &nbsp;·&nbsp; [Platform RBAC — Permissions](/th/platform/rbac/permissions) &nbsp;·&nbsp; [Platform Config](/th/platform/platform-config) &nbsp;·&nbsp; [Email Settings](/th/platform/email-settings)
