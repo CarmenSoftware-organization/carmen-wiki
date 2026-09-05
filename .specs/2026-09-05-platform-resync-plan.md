@@ -16,7 +16,8 @@
 - Truth precedence: **implementation + e2e (`../carmen-platform-e2e/tests/`) > `../carmen/docs/` > memory or speculation.** A claim that cannot be traced to current source gets rewritten from source, not preserved.
 - **Never modify `dateCreated` on an existing page.** Bump `date` to the current ISO 8601 timestamp on every page you edit. New pages get the same value for both.
 - Frontmatter must carry all seven keys: `title`, `description`, `published: true`, `date`, `tags`, `editor: markdown`, `dateCreated`.
-- Sub-page links use absolute-URL markdown — `[Display](/en/platform/<module>/<slug>)`. Pipe wikilinks (`[[a|b]]`) do not render in this Wiki.js.
+- Links use absolute-URL markdown — `[Display](/en/platform/<module>/<slug>)`. Pipe wikilinks (`[[a|b]]`) do not render in this Wiki.js. The book also holds ~768 legacy relative links (`](./ui-screens.md)`) across 129 files against 2,902 absolute ones: **convert relative links to absolute on the pages your task edits, and leave the rest alone** — a repo-wide sweep is out of scope and Task 32 reports the residue.
+- **TH sub-pages are deliberate stubs** (`## 1. At a Glance` / `## 2. References` / `## 3. TODO`), per a standing deferral recorded in project memory that the spec keeps deferred. Mirroring means every correction you made in EN is reflected in that stub's body — it does **not** mean growing the stub to EN's section count. TH module *landing* pages are full mirrors and must match EN's section structure. Do not re-litigate this per task.
 - Currency in examples: Thai Baht (`฿`).
 - Section numbering: `## 1. Title`, `### 1.1 Subtitle`.
 - Per user preference, **no automated tests are written in this plan.** Static checks still run — the frontmatter checker on every touched page, and `pytest scripts/` when `scripts/` is modified.
