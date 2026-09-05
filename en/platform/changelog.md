@@ -2,7 +2,7 @@
 title: Changelog
 description: The platform's versioned changelog — a JSON-sourced, public /changelog page (now searchable) reached via a version badge in the sidebar and on the landing page.
 published: true
-date: 2026-07-29T00:00:00.000Z
+date: 2026-09-06T00:00:00.000Z
 tags: platform, changelog, versioning, carmen-software
 editor: markdown
 dateCreated: 2026-06-09T00:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-06-09T00:00:00.000Z
 # Changelog
 
 > **At a Glance**
-> **Source of truth:** `src/data/changelog.json` &nbsp;·&nbsp; **Public page:** `/changelog` (no auth), now with a search box over versions/categories/entries &nbsp;·&nbsp; **Discovery:** `VersionBadge` in the sidebar footer + landing page &nbsp;·&nbsp; **Generated artifact:** `CHANGELOG.md` (Keep a Changelog format) &nbsp;·&nbsp; **Release:** `bun run build:bump`.
+> **Source of truth:** `src/data/changelog.json` &nbsp;·&nbsp; **Public page:** `/changelog` (no auth), now with a search box over versions/categories/entries &nbsp;·&nbsp; **Discovery:** `VersionBadge` in the sidebar footer + landing page &nbsp;·&nbsp; **Generated artifact:** `CHANGELOG.md` (Keep a Changelog format) &nbsp;·&nbsp; **Release:** `bun run build:bump [patch|minor|major]` — now a full release script (`scripts/release.mjs`, 2026-08-05) with branch/tree/upstream/tag guards, typecheck+lint+test gates, and a git commit + annotated tag, not a bare bump-and-build (§5).
 
 ## 1. What & Who
 
@@ -58,6 +58,6 @@ A search box (only rendered when the changelog has any entries at all) filters b
 ## 5. For developers
 
 - **Add a change:** edit `src/data/changelog.json`, adding strings under the appropriate category inside `unreleased`. Do not touch `CHANGELOG.md`.
-- **Cut a release:** `bun run build:bump [patch|minor|major]` (default `patch`) increments the semver, promotes the `unreleased` buffer into a new dated `versions[0]` entry, resets `unreleased` to `{}`, syncs `package.json`, regenerates `CHANGELOG.md`, then builds.
+- **Cut a release:** `bun run build:bump [patch|minor|major]` runs `scripts/release.mjs` — a substantially heavier script than the name suggests as of a 2026-08-05 rewrite. In order, it: (1) reads the current version from `changelog.json` (the source of truth — `VersionBadge` reads it, `package.json` only mirrors it) and fails loudly if the two disagree; (2) asserts the branch is `main` or `chore/release-*` and the working tree is clean; (3) asserts the branch is not behind its upstream (or `origin/main` as a fallback when there is no upstream) using only already-fetched refs — it never runs `git fetch`; (4) fails if `unreleased` is empty — there is nothing to promote; (5) takes the level as a CLI argument, or — if omitted — prompts interactively with no default, cancelling on Enter or `q` (there is no implicit "patch" anymore); (6) fails if the target version's git tag already exists; (7) runs `typecheck`, `lint`, and `test` as pre-flight gates, aborting the whole release if any fails, before touching a single file; (8) computes and validates the promoted `changelog.json`, the bumped `package.json`, and the regenerated `CHANGELOG.md` before writing any of them; (9) commits exactly those three files with `git commit --only -- <the three files>` (`chore(release): vX.Y.Z`) and creates an annotated tag `vX.Y.Z` — leaving anything else staged untouched; (10) prints the next manual step, which differs by branch: on `main`, push the commit and the tag directly; on a `chore/release-*` branch, push the branch, open a PR, merge it with a **merge commit** (never squash — a squash rewrites the release commit and strands the already-created tag on a commit that never reaches `main`), then push the tag. The script never pushes anything itself.
 - **Public-path note:** if a route-guard refactor changes how public paths are listed, `/changelog` must stay allowlisted or the page will redirect to sign-in.
 - **Search is category/entry-text matching only** — it does not match dates, so searching a date string (e.g. `2026-06-01`) will not surface that version.
