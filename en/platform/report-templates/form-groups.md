@@ -2,7 +2,7 @@
 title: Report Templates — Form Groups
 description: The /report-form-groups screen (added 2026-07-24) that replaced print-template-mapping's grouped-card list — one card per fixed report_group code, with a "set as default" action on tb_report_template.is_default.
 published: true
-date: 2026-07-29T09:46:00.000Z
+date: 2026-09-05T00:00:00.000Z
 tags: book/platform, report-templates, form-groups
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-07-29T09:46:00.000Z
 # Report Templates — Form Groups
 
 > **At a Glance**
-> **Screen:** `ReportFormGroupManagement` (`/report-form-groups`, added 2026-07-24) &nbsp;·&nbsp; **Route gate:** `report_template.read` (reused — no new permission keys) &nbsp;·&nbsp; **Sidebar:** "Form Groups" entry in the Content group &nbsp;·&nbsp; **Replaces:** [print-template-mapping](/en/platform/print-template-mapping)'s grouped-card list, removed the same week &nbsp;·&nbsp; **Data:** every `tb_report_template` row where `template_type = "form"`, grouped by `report_group`
+> **Screen:** `ReportFormGroupManagement` (`/report-form-groups`, added 2026-07-24) &nbsp;·&nbsp; **Route gate:** `report_template.read` (reused — no new permission keys) **and** `feature="report_form_groups"` — its own feature key, separate from Report Templates' `report_templates` &nbsp;·&nbsp; **Sidebar:** "Form Groups" entry in the Content group (`platformNav.ts`) &nbsp;·&nbsp; **Replaces:** [print-template-mapping](/en/platform/print-template-mapping)'s grouped-card list, removed the same week &nbsp;·&nbsp; **Data:** every `tb_report_template` row where `template_type = "form"`, grouped by `report_group` &nbsp;·&nbsp; **Since 2026-08-22:** each row shows a compact audit line (latest actor, created or updated)
 
 ## 1. Overview
 
@@ -27,7 +27,7 @@ The screen fetches **every** template with `template_type = "form"` (paging thro
   - the group code as a monospace outline badge, plus a template count ("N templates");
   - an **Add** button (gated `report_template.create`) that pre-fills `report_group` alongside `template_type: "form"` when navigating to create;
   - a warning banner ("No default set — pick one.") when the group has at least one template but none marked default;
-  - one row per template: a radio button (checked = current default), the template name, an **Active/Inactive** badge, a **Standard/Custom** badge, an **Edit** link to `/report-templates/:id/edit`, and — gated `report_template.update` — a kebab menu with a single **Activate**/**Deactivate** action;
+  - one row per template: a radio button (checked = current default), the template name with a compact audit line underneath (**added 2026-08-22**, commit `f62a90ec54b72cde4fcbc9b77a17650b0e3c389b`) — `latestActor(t)` picks whichever of created/updated is most recent and `<AuditMeta variant="compact">` renders it as "Created `<relative>` · `<name>`" or "Updated `<relative>` · `<name>`" — an **Active/Inactive** badge, a **Standard/Custom** badge, an **Edit** link to `/report-templates/:id/edit`, and — gated `report_template.update` — a kebab menu with a single **Activate**/**Deactivate** action;
   - an empty state ("No form templates" / "No form templates in {code} yet.") when the group (after filtering) has no rows.
 - Rows within a card are sorted default-first, then by name; the default's radio and the "Default" framing are purely presentational — there is no separate "Default" column badge on this screen (that badge lives on the Report Templates list page instead, per [Report Templates](/en/platform/report-templates) §1).
 - A dev-only `DevDebugSheet` shows the raw first-page API response.
@@ -48,13 +48,13 @@ The card grid always renders the 12 codes in `FORM_REPORT_GROUPS` (`carmen-platf
 
 | Surface | Gate | Key |
 |---|---|---|
-| `/report-form-groups` route | `requiredPermission` | `report_template.read` |
-| Sidebar "Form Groups" entry | `permission` filter | `report_template.read` |
+| `/report-form-groups` route | `requiredPermission` + `feature` | `report_template.read` + `report_form_groups` |
+| Sidebar "Form Groups" entry | `permission` + `feature` filter (`platformNav.ts`) | `report_template.read` + `report_form_groups` |
 | **New Form Template** button | `hasPermission` | `report_template.create` |
 | Per-card **Add** button | `canCreate` prop (same check) | `report_template.create` |
 | Set-as-default radio, kebab menu | `canWrite` prop | `report_template.update` |
 
-No new permission keys were introduced for this screen — it is gated entirely by the same `report_template.*` catalog documented in full (route matrix, bootstrap exception, effective-access table) on [Report Templates — Permissions](/en/platform/report-templates/permissions). A session with only `report_template.read` can view every group and every template's current default, but sees no Add button, no kebab menu, and cannot select a different default radio (rendered disabled rather than hidden).
+No new **permission** keys were introduced for this screen — it is gated entirely by the same `report_template.*` catalog documented in full (route matrix, bootstrap exception, effective-access table) on [Report Templates — Permissions](/en/platform/report-templates/permissions). It does carry its own **feature** key, though (`report_form_groups`, distinct from Report Templates' `report_templates`) — a feature-flag change to one module does not affect the other. A session with only `report_template.read` can view every group and every template's current default, but sees no Add button, no kebab menu, and cannot select a different default radio (rendered disabled rather than hidden).
 
 ## 6. Related Modules
 
@@ -65,11 +65,12 @@ No new permission keys were introduced for this screen — it is gated entirely 
 ## 7. Reference Sources
 
 - `../carmen-platform/src/pages/ReportFormGroupManagement.tsx` — the page: paged fetch, grouping, search/active filter, default-set and activate-toggle handlers.
-- `../carmen-platform/src/pages/reportFormGroups/GroupCard.tsx` — per-group card: radio, badges, Edit link, kebab menu, empty state, no-default warning.
+- `../carmen-platform/src/pages/reportFormGroups/GroupCard.tsx` — per-group card: radio, compact audit line (`latestActor()` + `AuditMeta variant="compact"`, added 2026-08-22), badges, Edit link, kebab menu, empty state, no-default warning.
 - `../carmen-platform/src/constants/reportGroups.ts` — `FORM_REPORT_GROUPS`, the fixed 12-code canonical order.
 - `../carmen-platform/src/services/reportTemplateService.ts` — `setGroupDefault` (the two sequential `PUT`s), `getAll`, `update`.
 - `../carmen-platform/src/utils/docVersion.ts` — `getDocVersion`, `isVersionConflict`, `notifyVersionConflict`.
-- `../carmen-platform/src/App.tsx:177` — the `/report-form-groups` route (`requiredPermission="report_template.read"`); `src/components/Layout.tsx:59` — the sidebar entry.
+- `../carmen-platform/src/utils/audit.ts` — `latestActor()`.
+- **Stale citation fixed:** `../carmen-platform/src/App.tsx:323-329` — the `/report-form-groups` route (`requiredPermission="report_template.read"`, `feature="report_form_groups"`); `../carmen-platform/src/components/nav/platformNav.ts:25` — the sidebar entry (not `Layout.tsx`, which defines no nav rows today).
 - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260723120000_print_form_default/migration.sql` — `is_default` column, `idx_report_template_default_per_group` partial unique index.
 
 ## 8. Pages in This Module
