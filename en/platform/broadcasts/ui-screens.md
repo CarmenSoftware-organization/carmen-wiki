@@ -63,7 +63,7 @@ An empty state (no rows, no error) shows a "New Broadcast" CTA gated the same wa
 
 A `Tabs` strip — **All users** (Globe, `system_all`, default), **Specific users** (Users, `system_users`), **Business Unit** (Building2, `bu`). The two system tabs render only when the session holds `broadcast.send` (`canSendSystem`); since the route itself already requires that same key, every user who can reach this page sees all three tabs — this in-component gate is unreachable defensive code, re-verified against current source. Switching tabs swaps the conditional section below but **does not clear previously entered state** — see the stale-recipients edge case in [Permissions](/en/platform/broadcasts/permissions) §4.
 
-- **Specific users**: `UserMultiSelect` — 400 ms debounced search (also fires an empty-query search on open, so the first 20 users typically populate before any keystroke), top 20 matches by name or email, each rendered as name over muted email. Clicking a result adds a removable badge (already-selected rows disabled, tagged "Selected"); Backspace with an empty query removes the last badge; Escape closes the dropdown. "Pick at least one recipient" validation, cleared as soon as one is added.
+- **Specific users**: `UserMultiSelect` — 400 ms debounced search (also fires an empty-query search on open, so the first 20 users typically populate before any keystroke), top 20 matches by name or email, each rendered as name over muted email (display name is `firstname middlename lastname`, falling back to `name`, `email`, then the raw id). Clicking a result adds a removable badge (already-selected rows disabled, tagged "Selected"); Backspace with an empty query removes the last badge; Escape closes the dropdown. "Pick at least one recipient" validation, cleared as soon as one is added.
 - **Business Unit**: a native select loaded once via `businessUnitService.getAll({ page: 1, perpage: 100 })` — **only the first 100 BUs** are offered — filtered to active BUs, rendered `Name (CODE)`, submitting the code; a load failure shows an inline Retry.
 
 ### 3.2 Message
@@ -104,6 +104,8 @@ The **Send** button (`<Can permission="broadcast.send">`; label flips to **Sched
 | `system_all` | **Send to ALL users?** | destructive (red) |
 | `system_users` | Send to N user(s)? | default |
 | `bu` | Send to {BU name}? (falls back to the code) | default |
+
+The dialog description leads with timing ("Will be delivered immediately" or "Scheduled for `<when>`"), then the audience: the title being sent (`system_all`), the first five recipient names plus "and N more" (`system_users`), or "Business unit: Name (CODE)" (`bu`).
 
 On success: a toast ("Broadcast sent"/"Broadcast scheduled for `<when>`"), the entire form resets, and the response populates the Debug Sheet. On failure: the parsed error shows both as a toast and as a persistent in-page banner, and any field-level errors are mapped onto the form. There is no redirect — a `system_all`/`bu` send now shows up on the List screen; a `system_users` send does not (§1).
 

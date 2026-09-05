@@ -75,6 +75,8 @@ Lazy per-user state for one `system_all`/`bu` broadcast. Schema line 403. **Unch
 
 **Constraints:** `@@unique([broadcast_id, user_id])` (`user_broadcast_action_broadcast_user_u`) — the mark-read path upserts against this key. **Indexes:** `@@index([user_id, is_read])`.
 
+Rows are written by exactly two paths in micro-notification: single mark-as-read (`BroadcastService.markBroadcastAsRead`, a Prisma upsert) and mark-all-as-read (`markAllBroadcastsAsRead`, one raw SQL `INSERT … ON CONFLICT … DO UPDATE` covering every in-scope unread broadcast in a single round trip) — both unchanged by the redesign.
+
 ### 2.3 `tb_notification` (referenced — the targeted-send fork)
 
 The personal-notification table (schema line 332). **Reshaped by the same redesign**: `type` (varchar), `category` (varchar), and `is_sent` (boolean) were all **dropped**; `doc_type`/`event` (the same two enums broadcasts use) and a new `pushed_at` timestamp were added.
@@ -122,10 +124,11 @@ There is **no `severity` column anywhere** in either table. The sender's Info/Wa
 | — | — | `severity` (wire field, no DB column) | `BroadcastAdminRow.severity` is synthesized per-row from `metadata.severity`, not read from a schema field — there isn't one |
 | — | — | `updated_at`, `updated_by_id` | **Written by every `PATCH`/`DELETE` but never returned** by `GET`/`GET :id`/`PATCH`/`DELETE` (`BroadcastAdminRow`/`BroadcastListItem` carry no `updated_at`/`updated_by` field at all) — the List screen's CSV export still requests these two columns and they render permanently blank (see [UI Screens](/en/platform/broadcasts/ui-screens) §2.1). The `PageHeader`'s audit line on the Edit screen therefore only ever shows "Created", never "Updated", even for a broadcast that has in fact been edited |
 | — | — | `end_at`, `dismissed_at` (on `tb_user_broadcast_action`) | `dismissed_at` remains schema-only (§2.2); the broadcast table's own `end_at` is the opposite case — no longer dead, see above |
+| `created_by_id` (**resolved divergence**) | — | `created_by_id` | The pre-redesign wiki documented a live inconsistency: the gateway's Swagger doc claimed "the token user becomes `from_user_id`", but the system-send code path silently dropped it, leaving `created_by_id = null` on every `system_all` row (only BU rows recorded a sender). `BroadcastService.create()` now sets `created_by_id: input.from_user_id ?? null` for **every** non-`users` audience — `system_all` and `bu` sends both record the sender consistently. This divergence is fixed, not merely re-described |
 
 ## 6. References
 
-REST surface (backend-gateway), all under `/api/notifications/...` — **not** `/api-system/...`.
+REST surface (backend-gateway), all under `/api/notifications/...` — **not** `/api-system/...`. **Still no `AppIdGuard` on any of the six broadcast routes** (unlike News's authenticated CRUD) — re-verified against the current controller: the class carries `@ApiHeaderRequiredXAppId()`, which only documents the header for Swagger, and none of the six route decorators add an `AppIdGuard` to their `@UseGuards(...)` list.
 
 | Method + Path | Auth | Purpose | Notes |
 |---|---|---|---|
