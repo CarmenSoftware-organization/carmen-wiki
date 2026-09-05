@@ -1,8 +1,8 @@
 ---
 title: Cluster — UI Screens
-description: ClusterManagement (list) and ClusterEdit (create/view/edit) screens — layout, filters, dialogs, persisted state.
+description: ClusterManagement (list) and ClusterEdit (create/view/edit) screens — the tabbed plate layout, licensing tab, filters, dialogs, and persisted state.
 published: true
-date: 2026-07-29T06:35:38.000Z
+date: 2026-09-05T04:19:00.000Z
 tags: book/platform, clusters, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -11,176 +11,151 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 # Cluster — UI Screens
 
 > **At a Glance**
-> **Screens:** `ClusterManagement` (list, `/clusters`) &nbsp;·&nbsp; `ClusterEdit` create (`/clusters/new`) &nbsp;·&nbsp; `ClusterEdit` view/edit (`/clusters/:id/edit`) &nbsp;·&nbsp; **Edit layout:** single-column scrollspy document ("A4" pattern) — sticky nav (Overview/Details/Branding/Business Units/Users) + edit-in-place fields, no page-level Edit toggle &nbsp;·&nbsp; **Dialogs:** Add User to Cluster · Remove Cluster User confirm (single + bulk) · Soft Delete Cluster confirm &nbsp;·&nbsp; **Access:** route guards `cluster.read` / `cluster.create` / `cluster.update`; Add/Edit/Delete buttons behind `<Can>` gates (see [Permissions](./permissions.md)) &nbsp;·&nbsp; **Persisted UI state:** 6 `localStorage` keys on the list page &nbsp;·&nbsp; **Concurrency:** `doc_version` optimistic lock on save
+> **Screens:** `ClusterManagement` (list, `/clusters`) &nbsp;·&nbsp; `ClusterEdit` create (`/clusters/new`) &nbsp;·&nbsp; `ClusterEdit` view/edit (`/clusters/:id/edit`) &nbsp;·&nbsp; **Edit layout (rewritten 2026-08-23, commit `69027b9`):** an always-visible `ClusterPlate` header (identity, branding, status, two licence rails) plus a 3-tab `TabStrip` — **Licensing** (default), **Business Units**, **Users** — replacing the earlier 5-section scrollspy document (Overview/Details/Branding/Business Units/Users) &nbsp;·&nbsp; **Dialogs:** Add User to Cluster · Remove Cluster User confirm (single + bulk) · Soft Delete Cluster confirm &nbsp;·&nbsp; **Access:** route guards `cluster.read` / `cluster.create` / `cluster.update`, each also gated by the `clusters` feature flag; Add/Edit/Delete buttons behind `<Can>` gates (see [Permissions](./permissions.md)) &nbsp;·&nbsp; **Persisted UI state:** 7 `localStorage` keys on the list page &nbsp;·&nbsp; **Concurrency:** `doc_version` optimistic lock on save &nbsp;·&nbsp; **BU quota is licence-based now** — the create form issues the cluster's first BU-quota licence; ongoing quota purchases happen in the **licenses** module, not on this page
 
 ## 1. Overview
 
-The Platform SPA follows a consistent two-screen pattern for cluster management: a list page (`ClusterManagement`) with a server-side `DataTable`, a slide-over filters Sheet, and a Fleet Capacity summary strip; and an edit page (`ClusterEdit`) that follows the platform-wide "A4" edit-in-place pattern — no page-level Edit toggle, no separate view/edit mode. Both screens are registered under the `/clusters` route prefix and are guarded by `requiredPermission` keys — `cluster.read` (list), `cluster.create` (create), `cluster.update` (edit); mutating fields and buttons inside the pages carry an additional `canEdit` gate resolved from `cluster.update` (see [Permissions](./permissions.md)).
+The Platform SPA follows a two-screen pattern for cluster management: a list page (`ClusterManagement`) with a server-side `DataTable`, a slide-over filters Sheet, and a Fleet Capacity summary band; and an edit page (`ClusterEdit`) built around a persistent identity **plate** (`ClusterPlate`) with a 3-tab body beneath it. Both screens are registered under the `/clusters` route prefix and are guarded by `requiredPermission` keys — `cluster.read` (list), `cluster.create` (create), `cluster.update` (edit) — plus a `feature="clusters"` flag check on the same `PrivateRoute` (see [Permissions](./permissions.md) §2).
 
-The cluster edit page renders as a single scrolling column with a sticky `ClusterEditNav` sidebar (desktop: vertical scrollspy list; mobile: a horizontal scrollable chip row) that jumps between five `id`-anchored sections: **Overview** (a read-first `ClusterHero` card — logo/avatar, code/alias/status badge, audit lines, and two `CapacityGauge` meters for BU and user license usage), **Details** (identity + licensing fields), **Branding** (logo/avatar upload), **Business Units**, and **Users** — the last two sections show a live row count as a nav badge. There is no Edit button anywhere in the header: every field renders via `InlineField` (click-to-edit; commits on blur/Enter, reverts on Escape) gated by a single `canEdit = !isNew && hasPermission('cluster.update', { clusterId: id })` boolean computed once per page, and a sticky bottom bar reading "Unsaved changes" with Cancel/Save Changes buttons appears whenever `formData` differs from the last-loaded/saved snapshot — `Ctrl/⌘+S` saves and `Escape` cancels via the shared keyboard-shortcut hook. In create mode (`isNew = true`) the page instead renders a single "Cluster details" card with the older `ClusterIdentityFields` component (still a plain form, no inline-edit or scrollspy) — the Branding, BU, and Users sections don't exist until the record is saved and the SPA navigates straight to `/clusters/:id/edit`. The Business Units section uses a navigate-to-create flow (`/business-units/new?cluster_id=<id>`) to pre-link a new BU to this cluster; the Users section has its own in-page **Add User to Cluster** dialog that searches the global user pool, plus inline role/parent-BU editing and bulk actions directly in the table (§4.4).
+**The edit page's layout changed twice since this page was last fully verified (2026-07-29):** first from a 3-column card grid to a single-column scrollspy document, then (2026-08-23, `69027b9`) from that scrollspy document to the current plate-plus-tabs shape. There is no `ClusterEditNav`/`useScrollSpy` on this page any more — those files still exist on disk but their only remaining caller is `ClusterProfile.tsx`, the **cluster-admin** persona's own cluster page (a different module; see [business-units](/en/platform/business-units) and the source map's `cluster-admin` row). Likewise `DetailsSection.tsx`/`BrandingSection.tsx` (the old scrollspy sections) are now used only by that cluster-admin page — `ClusterEdit.tsx` itself no longer imports either.
 
-A dedicated **not-found** state renders when `GET /api-system/clusters/:id` returns no record (bad or deleted id): an `EmptyState` card with a "Back to clusters" button, gating the entire hero/section shell so it never renders over blank data.
+`ClusterPlate` sits above the tabs and never disappears when you switch tabs: logo/avatar upload controls, the editable name/status/code/alias identity, audit metadata, and two **licence rails** (Business Units, Seats) drawn as `AllocationTicks` — one tick per licence, not a percentage bar. Below the plate, a sticky `TabStrip` (pinned under the app header once the plate scrolls out of view, at which point a compact `used/cap` readout fades in beside the tabs) switches between three tab bodies: **Licensing** (default — a read-only subscription summary plus a link to the License Center), **Business Units**, and **Users**. The active tab is reflected in the URL as `?tab=business-units` / `?tab=users` (via `replace`, so switching tabs does not add browser-history entries); the plain URL with no `?tab=` means Licensing. There is no separate "Details"/"Branding"/"Overview" tab any more — those fields now live directly in the plate header, always visible regardless of which tab is open.
+
+In create mode (`isNew = true`) the page instead renders a two-column layout: a live-updating `ClusterDraftPlate` preview (sticky, right column on `lg`+) beside a two-card form (`ClusterCreateForm`) — Identity (code/alias/name) and **First Quota Licence** (the BU count and expiry that become the cluster's opening `tb_cluster_license` row). See §3.
+
+A dedicated **not-found** state renders when `GET /api-system/clusters/:id` returns no record (bad or deleted id): an `EmptyState` card with a "Back to clusters" button, gating the entire plate/tab shell so it never renders over blank data.
 
 ## 2. `ClusterManagement` — list page (`/clusters`)
 
 ### 2.1 Layout
 
-The page renders inside `Layout` with a two-row header: a title/subtitle row ("Cluster Management" / "Manage and configure clusters") and an actions row containing **Export** and **Add Cluster** buttons. Below the header sits the **Fleet Capacity** card (§2.1a), then a search-and-filters row: a debounced (400 ms) search `Input` on the left, and a **Filters** Sheet trigger on the right (shows an active-filter count badge when any filter is set). Active filter chips appear as a strip below the search row when any filter is active. The main content area is a `DataTable` in server-side mode with pagination, with the Name column frozen (sticky) on horizontal scroll (`stickyLeftColumns={3}`).
+The page renders inside `Layout` with a `PageHeader` (title "Cluster Management" / subtitle) and an actions row containing **Export** and **Add Cluster** buttons. Below the header sits the **Fleet Capacity** band (§2.1a), then a search-and-filters row: a debounced (400 ms) search `Input` on the left, and a **Filters** Sheet trigger on the right (shows an active-filter count badge when any filter is set). Active filter chips appear as a strip below the search row when any filter is active. The main content area is a `DataTable` in server-side mode with pagination, with the first three columns frozen (sticky) on horizontal scroll (`stickyLeftColumns={3}`).
 
-Columns in order: `code` (clickable link — navigates to `/clusters/:id/edit`), `name` (clickable link — also navigates to edit, with a red `Deleted` badge appended when `deleted_at` is non-null; the badge's tooltip reads "Deleted by &lt;name&gt;" when `deleted_by_name` is present), `is_active` (Active/Inactive badge), `bu_count` (rendered as a `CapacityMeter` bar — `used / cap` with a coloured fill, "near"/"over" tag near or at the cap, `∞` when uncapped), `user_count` (same `CapacityMeter` treatment against `total_max_license_users`), `created_at` + `created_by_name`, `updated_at` + `updated_by_name` (suppressed when equal to `created_at`), and conditionally `deleted_at` + `deleted_by_name` in destructive red (appended only when the "Show soft-deleted" filter is active). The final column is a narrow (`max-w-12`) icon-button `DropdownMenu` for row actions. **There is no logo thumbnail column** — a per-row logo/avatar image was shown here before the Fleet Capacity strip and `CapacityMeter` columns were introduced; it was removed, not relocated. A cluster's logo/avatar is now only visible on its own edit page (`ClusterHero`, §4) and the Branding section.
+Columns in order: **Code** (a muted, monospace link — no longer the blue link it once was; only **Name** now carries the link colour, to avoid two same-meaning coloured marks per row), **Name** (a small `BrandMark` avatar/initials chip + the primary link, with a red `Deleted` badge appended when `deleted_at` is non-null — tooltip "Deleted by &lt;name&gt;" when `deleted_by_name` is present), **Status** (a small dot + muted text for Active, bold text for Inactive — colour is reserved for the abnormal state, not a filled badge on every row), **Business Units** (`bu_count`/`bu` — a `CapacityMeter` bar, `finite` mode: `bu_used / bu_cap`, `0` cap reads as zero not infinite, sortable — sorts by `bu_used`, resolved server-side against a view join, not the cap), **Quota Expires** (`bu_cap_end_date` — sortable, NULLS LAST both directions; shows "No expiry" for the perpetual sentinel, "—" when there is no covering licence at all, else a plain `YYYY-MM-DD` date), **Users** (`user_count` — a `CapacityMeter` bar against `total_max_license_users`, `null`/absent renders `∞`, sortable by `users_count`), then the shared `auditColumns()` (Created; Updated, suppressed when equal to Created — both rendered one visual weight lighter than Name/Users), and conditionally a **Deleted By** column (only when the "Show soft-deleted" filter is on). The final column is a narrow icon-button `DropdownMenu` for row actions.
 
-### 2.1a Fleet Capacity strip
+**There is no dedicated logo-thumbnail column any more** (removed when the Fleet Capacity band was introduced, before the 2026-07-29 sync) — but the Name cell itself now carries a small `BrandMark` avatar next to the link, added alongside the current column set. A cluster's full-size logo/avatar is visible on its own edit page (the `ClusterPlate` header) and the Branding upload controls there.
 
-A `FleetCapacity` card sits between the header and the search row, summarising **every non-deleted cluster** (fetched as a separate, unpaginated `perpage: -1` call, not the current page's rows) via `summarizeFleet()` (`../carmen-platform/src/utils/capacity.ts`):
+**Row-level colour is reserved for anomalies.** Both `CapacityMeter` bars (Business Units, Users) render a neutral grey fill at normal headroom, amber at ≥ 90% of a finite cap ("NEAR" tag appended inline), and red at/over 100% — matching the same `ok`/`warn`/`over` thresholds used everywhere licence capacity is drawn (`../carmen-platform/src/utils/capacity.ts`, `NEAR = 0.9`).
 
-- Two `CapacityGauge` bars — **Business units** and **Users** — showing fleet-wide `used / cap` (capped clusters' caps and usage summed together) plus a note of how many clusters are uncapped and how much they use (uncapped clusters are excluded from the cap sum so an unlimited cluster doesn't zero out the ratio).
-- Three plain stats: total cluster count, active count, and a **near-limit** count (clusters at ≥ 90% or over on either the BU or the user cap — the same `NEAR = 0.9` threshold used by the row-level `CapacityMeter`).
+### 2.1a Fleet Capacity band
 
-The strip shows a skeleton while `loadFleet()` is in flight and silently falls back to `null` (rendering the skeleton indefinitely, not an error) if the aggregate fetch fails — the main table is unaffected either way.
+A `FleetCapacity` card sits between the header and the search row, reading a **dedicated, unfiltered summary endpoint** — `clusterService.getFleetSummary()` → `GET /api-system/clusters/summary` — rather than any locally-fetched page of rows. This endpoint takes no `search`/`advance` params, so the band's numbers always describe the whole fleet and never shift as the operator types into the search box (a bug fixed by commit `42a0fac`, "แถบ Fleet capacity เลิกเดินตามช่องค้นหา"). It shows:
+
+- Two `CapacityGauge` bars — **Business units** (`finite` mode, fleet-wide `bu.used`/`bu.cap`) and **Users** (`null`-cap-means-uncapped mode, fleet-wide `users.used`/`users.cap`) — each with an "N clusters uncapped, using M" note when applicable.
+- Four plain stats: **Clusters** (total), **Active**, **Near limit** (amber, count of clusters at ≥ 90% of either cap), and **Quota expiring** (amber, count of clusters whose *winning BU-quota licence* expires within 30 days — a distinct dimension from Near limit, and from `bu_cap = 0`, which means "no licence at all", not "expiring soon"; seat/subscription expiry is not counted here).
+- The **Quota expiring** stat is clickable when non-zero: clicking it toggles a `bu_quota_expiring_soon` advance-filter marker (resolved entirely server-side against the view `v_cluster_bu_cap` — the frontend holds no copy of the "which licence wins, how many days left" rule) and highlights the stat as active. This filter, like the others, is persisted to `localStorage` (`filter_clusters_quota_expiring`) and cleared by **Clear All Filters**.
+- **Failure handling:** a first failed load shows "Capacity unavailable"; a load that fails *after* a prior success keeps the stale numbers visible (dimmed, with a "couldn't refresh" cue) rather than either freezing on a spinner or silently pretending they're current (fixed by commit `f7944bc`).
 
 ### 2.2 Filters (Sheet panel)
 
 Clicking **Filters** opens a right-side Sheet. Two filter groups are wired:
 
-- **Status** — two toggle buttons: **Active** (`is_active = true`) and **Inactive** (`is_active = false`). The two buttons may be toggled independently; when both are active or both are off, no `is_active` constraint is applied (the filter is elided from the query). A **Clear** link appears in the group header when any status value is selected.
-- **Deleted** — a checkbox labelled "Show soft-deleted clusters". When off (default), the query appends `deleted_at: null`; when on, soft-deleted rows surface in the table with a red `Deleted` badge in the `name` cell, and the conditional `Deleted By` audit column is appended to the `DataTable`.
+- **Status** — two toggle buttons: **Active** (`is_active = true`) and **Inactive** (`is_active = false`). The two buttons may be toggled independently; when both are active or both are off, no `is_active` constraint is applied. A **Clear** link appears in the group header when any status value is selected.
+- **Deleted** — a checkbox labelled "Show soft-deleted clusters". When off (default), the query appends `deleted_at: null`; when on, soft-deleted rows surface with a red `Deleted` badge in the `name` cell, and the conditional `Deleted By` audit column is appended to the `DataTable`.
 
-There is no Role filter group. When any filter is active a **Clear All Filters** button appears at the bottom of the Sheet, and active filter chips appear in the strip below the search row. Each chip has an inline remove button; a **Clear all** text link also clears all filters at once.
+The **Quota expiring** filter (§2.1a) is not in this Sheet — it is toggled only from the Fleet Capacity band's own stat — but it still counts toward the active-filter badge and chip strip, and **Clear All Filters** clears it too (a deliberate consistency fix: what's on screen must equal what's sent to the API).
+
+When any filter is active a **Clear All Filters** button appears at the bottom of the Sheet, and active filter chips appear in the strip below the search row, each with an inline remove button.
 
 ### 2.3 Header actions
 
-Two buttons appear in the header actions row, left to right:
+- **Export** — client-side CSV export (`generateCSV`/`downloadCSV`). Columns: `Code`, `Name`, `Alias`, `Status`, **`BU Quota`** (`bu_cap`), **`Quota Expires`** (`bu_cap_end_date`, perpetual sentinel converted to "No expiry" text before export — never a raw 2099 date), `Users` (`users_count`), `Max Licensed Users` (`total_max_license_users`), `Created`/`Created By`, `Updated`/`Updated By`. File name: `clusters-<YYYY-MM-DD>.csv`. Disabled while loading or when the table is empty. **`Max Licensed BUs`/`max_license_bu` is no longer a column** — the ledger-derived `bu_cap`/`bu_cap_end_date` pair replaces it.
+- **Add Cluster** — navigates to `/clusters/new`. Wrapped in `<Can permission="cluster.create">`. The **empty-state** Add Cluster button (shown when the table has no rows and no search term) is *not* `<Can>`-gated — a `cluster.read`-only session can click it, and the `cluster.create` route guard on `/clusters/new` then renders `Forbidden`.
 
-- **Export** — client-side CSV export using `generateCSV` / `downloadCSV` utilities. Exports the currently loaded page of rows with columns: `Code`, `Name`, `Alias`, `Status` (`is_active`), `Max Licensed BUs` (`max_license_bu`), `Users` (`users_count`), `Max Licensed Users` (`total_max_license_users`), `Created` (`created_at`). File name: `clusters-<YYYY-MM-DD>.csv`. The button is disabled while loading or when the table is empty.
-- **Add Cluster** — navigates to `/clusters/new`. Wrapped in `<Can permission="cluster.create">`, so it renders only for sessions holding that key. Note: the **empty-state** Add Cluster button (shown when the table has no rows and no search term) is *not* `<Can>`-gated — a `cluster.read`-only session can click it, and the `cluster.create` route guard on `/clusters/new` then renders the `Forbidden` (403) page.
-
-There is no Fetch Keycloak button (that affordance exists only on the Users list). There is no Hard Delete action anywhere in cluster management — the `ClusterManagement.tsx` row action menu contains only **Edit** and **Delete** (soft). No hard-delete endpoint is called from the clusters UI.
+There is no Hard Delete action anywhere in cluster management — the row action menu contains only Edit, View History, and Delete (soft). No hard-delete endpoint is called from the clusters UI.
 
 ### 2.4 Row actions
 
-Each row has a `DropdownMenu` (⋯ icon button) with two items, each behind a **cluster-scoped `<Can>` gate** (the `clusterId={row.original.id}` prop makes the check resolve against that specific cluster's grants — see [Permissions](./permissions.md) §3):
+Each row has a `DropdownMenu` (⋯ icon button) with up to three items, each behind a **cluster-scoped `<Can>` gate** (`clusterId={row.original.id}` — see [Permissions](./permissions.md) §3):
 
-- **Edit** — inside `<Can permission="cluster.update" clusterId={row.original.id}>`; navigates to `/clusters/:id/edit`.
-- **Delete** — inside `<Can permission="cluster.delete" clusterId={row.original.id}>`; calls the row's `handleDelete(id)` first. If the cluster's `bu_count > 0`, the click is blocked client-side with an error toast ("Can't delete `<name>`... it still has N business unit(s). Delete or move them to another cluster first.") and **no** `ConfirmDialog` opens — deleting a cluster does not cascade to its BUs on the backend, so this guard prevents orphaning them. Otherwise it sets `deleteId` state and opens the Soft Delete Cluster `ConfirmDialog` (§5.4); on confirm, calls `DELETE /api-system/clusters/:id` (soft delete — sets `deleted_at`).
+- **Edit** — `<Can permission="cluster.update" clusterId={row.original.id}>`; navigates to `/clusters/:id/edit`.
+- **View History** — `<Can permission="activity_log.read" clusterId={row.original.id}>` — **new since the last sync**. Opens a shared `ActivityTrailSheet` (one instance for the whole table, its `entityId` swapped per row via `activityTrail.openFor(id)` rather than mounting per-row) showing this cluster's change history. Change history recording only started `2026-08-31` (`AUDIT_RECORDING_STARTED_ON_PHASE_2` — a cluster created before that date shows an empty timeline rather than implying "never edited").
+- **Delete** — `<Can permission="cluster.delete" clusterId={row.original.id}>`; calls `handleDelete(id)`. If the cluster's `bu_count > 0`, the click is blocked client-side with an error toast ("Can't delete `<name>`… it still has N business unit(s)…") and **no** `ConfirmDialog` opens — deleting a cluster does not cascade to its BUs on the backend. Otherwise it opens the Soft Delete Cluster `ConfirmDialog` (§5.4); on confirm, `DELETE /api-system/clusters/:id` (soft delete).
 
-A session whose grants cover neither key for a given cluster sees an empty dropdown for that row. There is no **Hard Delete** option in the cluster row action menu. Hard deletion of cluster records is not exposed through the Platform SPA.
+A session whose grants cover none of the three keys for a given cluster sees an empty dropdown for that row.
 
 ### 2.5 Audit columns
 
-The API returns audit data as a nested `audit` object (`audit.created/updated/deleted`, each `{ at, id, name, avatar }`). `fetchClusters` flattens this into `created_at`/`created_by_name` etc. before rendering, tolerating the older flat shape, which wins when present (`item.created_at ?? item.audit?.created?.at`). Two audit columns are always shown:
-
-| Column header | Fields rendered |
-|---|---|
-| Created | `created_at` (formatted `YYYY-MM-DD HH:mm:ss`, browser local time) + `created_by_name` on the next line |
-| Updated | `updated_at` + `updated_by_name` — suppressed (renders `null`) when `updated_at === created_at` |
-
-When the "Show soft-deleted clusters" filter toggle is on, a third audit column is conditionally appended:
-
-| Column header | Fields rendered |
-|---|---|
-| Deleted By | `deleted_at` + `deleted_by_name` (text in destructive red); shows `-` for non-deleted rows |
-
-All timestamps are formatted in the browser's local timezone using JS `Date` — no UTC offset indicator is displayed. This matches the audit-column format used across all Platform SPA list pages.
+Unchanged from the prior sync: the API's nested `audit` object is read through the shared `normalizeAudit()` helper (`../carmen-platform/src/utils/audit.ts`), tolerating both the nested and an older flat shape (flat wins when present). Created and Updated columns render `at` + `by_name`; Updated is suppressed when it equals Created. A third **Deleted By** column is appended only when the "Show soft-deleted clusters" filter is on. All timestamps are formatted in the browser's local timezone.
 
 ## 3. `ClusterEdit` — create mode (`/clusters/new`)
 
-In create mode (`isNew = true`) the page title is "Add Cluster" and the subtitle is "Create a new cluster". The page renders a single **Cluster details** card (no scrollspy nav, no hero, no Branding/BU/Users sections). There is no Edit button in the header — the form is immediately editable, using the older `ClusterIdentityFields` component (not `InlineField`/`DetailsSection`).
+**Rewritten** (commit `50386b9`, "แผ่นป้ายร่างพรีวิวสด + แยกฟอร์มเป็น 2 section") to require the cluster's opening BU-quota licence at creation time, and to show a live preview beside the form rather than a header banner above it.
 
-The form contains five fields from `ClusterFormData`:
+Layout: a `BackLink` to the list, then a two-column grid from `lg` up — the form on the left (DOM order first, so it stacks above the preview on narrower screens), a sticky `ClusterDraftPlate` preview on the right. The preview draws the cluster's `BrandMark` initials (from `code`, falling back to `name` while `code` is invalid), the name/status/code/alias exactly as typed, and — instead of the edit plate's two licence rails — a single **Business units** tick-strip showing the `licensed_bus` count as issued-but-unused licences (neutral grey ticks, not the "in use" green), with a note stating when it expires or "Never expires" or (while the field is empty) "No quota yet".
 
-| Field | Input type | Required | Notes |
+The form is two cards:
+
+| Card | Fields | Required | Notes |
 |---|---|---|---|
-| `code` | text | Yes | Cluster short identifier. **Editable in create mode** — see §4.1 for edit-mode behaviour |
-| `alias_name` | text | No | Max 3 characters (`maxLength={3}`). Used in compact UI surfaces |
-| `name` | text | Yes | Full display name |
-| `max_license_bu` | number | No | Leave blank for unlimited; placeholder text "Unlimited" |
-| `is_active` | checkbox | — | Defaults to `true` |
+| **Identity** | `code` (text, mono), `alias_name` (text, max 3 chars), `name` (text) | `code`*, `name`* | Same three fields as before; laid out on one row now rather than stacked |
+| **First Quota Licence** | `licensed_bus` (number, min 1), `license_end_date` (date, min = today), **Never expires** (checkbox) | `licensed_bus`*, `license_end_date`* unless "Never expires" is checked | **New.** This becomes the cluster's first `tb_cluster_license` row — see [Data Model](./data-model.md) §2.4. The date input stays mounted and merely disables when "Never expires" is checked (so ticking the box does not yank the field out from under the pointer) |
 
-Branding is **not** part of the create form — the former `logo_url` text field is gone, and the logo/avatar upload section (§4.2) only appears once the cluster exists, because the upload endpoints need a cluster id.
+There is **no `max_license_bu` field, and no `is_active` checkbox, on the create form any more** — status defaults to Active and is set from the draft plate's `StatusToggle`, not a form checkbox. Branding is still not part of the create form — the upload endpoints need a cluster id, so the logo/avatar controls only appear once the record exists.
 
-Submit button label: **Create Cluster**. On submit, calls `POST /api-system/clusters`. On success, if the response includes an `id`, navigates to `/clusters/:id/edit` with `{ replace: true }` — a registered route, so a successful create now lands the operator directly on the new cluster's edit page. (Earlier behaviour navigated to `/clusters/:id` without the `/edit` suffix, an unregistered route that bounced through the catch-all to the Dashboard — that gap has been fixed.) If no `id` is returned, navigates to `/clusters`. **Cancel** navigates to `/clusters` without an API call.
+On submit, the page builds the payload as `{ code, name, alias_name, is_active, initial_license: { licensed_bus: Number(licensed_bus), end_date: <PERPETUAL_END_DATE or the chosen date, end-of-day> } }` and calls `POST /api-system/clusters`. Submit button label: **Create Cluster**. On success, if the response includes an `id`, navigates to `/clusters/:id/edit` with `{ replace: true }`. If no `id` is returned, navigates to `/clusters`. **Cancel** (a ghost-styled button, not outline — the page has exactly one accent) navigates to `/clusters` without an API call.
 
 ## 4. `ClusterEdit` — view/edit mode (`/clusters/:id/edit`)
 
-There is no page-level view/edit mode split any more. The page computes `canEdit = !isNew && hasPermission('cluster.update', { clusterId: id })` once and renders every section unconditionally — the same JSX tree serves both a read-only viewer and an editor, with individual controls disabled/hidden per `canEdit`. `PageHeader` shows the cluster's name as the title and "Cluster details" as the subtitle, with a **back-to-list** button; there is no header Edit button.
+`canEdit = !isNew && hasPermission('cluster.update', { clusterId: id })`, computed once and passed down; every field/action in the plate and every tab body is disabled or hidden per this single boolean — there is still no page-level Edit toggle. `PageHeader`/back-link behaviour is folded into the plate itself now (§4.1) rather than a separate header row; a `headerAction` slot next to the back-link carries the **View History** button (`<Can permission="activity_log.read" clusterId={id}>`, same `ActivityTrailSheet` pattern as the list page, using the fixed date `2026-08-31` as this cluster's own recording-start constant).
 
-The layout is `lg:grid-cols-[200px_1fr]`: a sticky `ClusterEditNav` (§1) occupies the narrow left column, and the right column stacks five `id`-anchored `<section>`s in a single flow — **Overview**, **Details**, **Branding**, **Business Units**, **Users** — each inside its own `Card`. A dedicated loading skeleton mirrors this exact stack (header → hero → details → BU table → users table) so nothing reflows once data arrives, and a not-found `EmptyState` gates the whole shell when the id doesn't resolve to a live record (§1).
+### 4.1 `ClusterPlate` — the persistent identity header
 
-### 4.1 Overview section — `ClusterHero`
+Replaces the prior sync's four stacked surfaces (hero card, Details section, Branding section, and the scrollspy nav) with one card that never leaves the screen while a tab is open:
 
-A read-first identity + capacity card with **no title and no actions** (the page's `PageHeader` owns those). It shows the logo (or a code-initials placeholder) and avatar (or a name-initial placeholder) side by side, the `code`/`alias_name` chips and an Active/Inactive badge, "Tenant group" plus Created/Updated audit lines (date-only, no time), and — in a shaded footer strip — two `CapacityGauge` bars: **Business units** (`used/cap`, active/inactive counts, licences-free note) and **Users** (`used/cap`, licences-free note, or "no per-BU user cap set" when no BU in the cluster has `max_license_users`).
+- **Left/main area:** compact logo (`shape="rect"`) and avatar (`shape="square"`) upload controls side by side (via `BrandingImageUpload`, `compact` mode) — clicking either opens the file picker directly; there is no separate "Branding" tab any more. Beside the marks: the cluster **name** as an inline-editable `<h1>` (click-to-edit, commits on blur/Enter, reverts on Escape — via the shared `HeroName` control), a `StatusToggle` badge beside it (outside the heading, so "Active"/"Inactive" is never folded into the `<h1>`'s accessible name) that toggles `is_active` directly on click, then a row of two `PlateField` chips for **Code**\* and **Alias** (same click-to-edit behaviour, each showing its own inline validation error), and an `AuditMeta` line (Created/Updated, actor + relative time).
+- **Right/muted band** (stacks below on narrower screens, sits beside on `lg`+): two **licence rails** — **Business units** and **Seats** — each drawn via `AllocationTicks`: one tick per licence rather than a percentage fill, because "5 of 5" is something you can see is full at a glance, not something you compute from a 100% bar. The Business units rail is always finite (`bu_cap`, `bu_used`, active/inactive sub-counts); the Seats rail can show `∞` when `total_max_license_users` is `null`/unset.
+- **Sticky compact strip:** once the plate scrolls out from under the app header, a thin bar carrying just the `TabStrip` (still interactive) plus a fading-in `bu.used/bu.cap` · `users.used/users.cap` readout pins below the header — so the licence headroom stays visible without permanently eating a third of the viewport with the full plate.
 
-### 4.2 Details section
+All Details/Branding fields that the prior 5-section scrollspy exposed as separate sections are here now: there is no dedicated "Details" or "Branding" tab body.
 
-Identity + licensing as an **edit-in-place document** (`DetailsSection` + `InlineField`) — not a form with Save/Cancel of its own. Each of the five `ClusterFormData` fields (`code`, `name`, `alias_name`, `max_license_bu`, `is_active`) renders as a compact read-mode row that turns into an inline editor on click; `Enter`/blur commits into `formData`, `Escape` reverts the field to its last-committed value. Every field carries `disabled={!canEdit}` — a session without the `cluster.update` grant for this cluster sees the same rows but cannot open any editor. **`code` remains editable** here (no `disabled={!isNew}` guard, unlike `username` on the user form) — a code change that collides with the `@@unique([code, name, deleted_at])` constraint is rejected by the API, not pre-validated client-side.
+### 4.2 Licensing tab (default, `?tab=` omitted)
 
-There is no per-section Save button: committing a field only updates local `formData`. The page-wide **Save Changes** action lives in the sticky bottom bar (§4.5), which appears once `formData` differs from `savedFormData` and calls `PUT /api-system/clusters/:id` with the current `doc_version` attached.
+A single card titled "Subscriptions" with a **Manage licences** button (outline, links to `/licenses/:id#quota` — the License Center's BU-quota anchor, out of this module's scope) in its header, and below it an embedded, read-only `SubscriptionCard` (`embedded` prop — no card chrome of its own, folded into this one card). `SubscriptionCard` renders **nothing at all**, and fires no request, for a session without `subscription.read` — the parent hides the border/empty space entirely (`empty:hidden`) rather than showing a hairline over blank content. There is no BU-quota edit UI on this page any more — purchasing or cancelling a BU-quota licence happens only in the License Center.
 
-### 4.3 Branding section
+### 4.3 Business Units tab
 
-Renders two `BrandingImageUpload` controls side by side when `canEdit` is true: **Logo** with `shape="rect"` and **Avatar** with `shape="square"`, each showing the current image from its presigned URL (`cluster.logo?.url` / `cluster.avatar?.url`) or an empty placeholder, labelled **Upload**/**Replace** per control (replace semantics — no remove/clear affordance). The component validates client-side before uploading: accepted types JPEG/PNG/WebP, max 5 MB — failures surface as an error toast without an API call. When `canEdit` is false the section instead renders two plain, non-interactive preview boxes ("No logo"/"No avatar" placeholders) with no upload affordance at all.
+A client-side-filtered/sorted table (`TableToolbar` search + Active/Inactive toggle filters, `cycleSort` on **Code**/**Name** headers) over every `tb_business_unit` row whose `cluster_id` matches this cluster (fetched via `GET /api-system/business-units?perpage=-1`, filtered client-side). Columns: **Code** (outline badge), **Name** (with an "Over limit" red badge appended when the BU's rank — per `../carmen-platform/src/utils/businessUnitRank.ts`, matching `v_cluster_bu_quota`'s `is_hq DESC, created_at ASC, id ASC` — exceeds the cluster's `bu_cap`; plus a compact audit line showing the latest actor/verb), **Status** (muted text for Active, a badge for Inactive), and a right-aligned **Edit** icon (navigates to `/business-units/:buId/edit`).
 
-On file selection the page calls the dedicated multipart endpoint — `POST /api-system/clusters/:id/logo` (form field `logo`) or `POST /api-system/clusters/:id/avatar` (form field `avatar`) — and sets the preview from the returned presigned `url` directly, deliberately *not* re-fetching the cluster so unsaved Details edits are not clobbered. Uploads are independent of the sticky Save bar: an uploaded image is persisted immediately even if the operator then discards the Details changes via Cancel.
+**There is no per-BU Users/seat column any more** — the seat pool is cluster-wide now (§ Data Model §2.5), not a per-BU cap, so there is nothing meaningful to meter per row here. A note above the table reports how many BUs are currently over the quota line when `overLimitCount > 0`. Toolbar actions: a **Refresh** icon and an **Add** button (`<Can permission="cluster.create">`, unscoped) that navigates to `/business-units/new?cluster_id=<id>`, disabled with a "License limit reached (N/M)" tooltip once `businessUnits.length >= bu_cap`. There is still no Remove/Unlink button on BU rows.
 
-### 4.4 Business Units section
+### 4.4 Users tab
 
-Lists every `tb_business_unit` row whose `cluster_id` matches the current cluster, fetched from `GET /api-system/business-units?perpage=-1` and filtered client-side on `bu.cluster_id === id`. Unlike the earlier plain table, this section now has its own **`TableToolbar`**: a search box (matches `code`/`name`) and **Active**/**Inactive** toggle filters (mutually exclusive), plus sortable **Code**/**Name** column headers (`cycleSort`/`sortRows` — ascending/descending/none). The section header shows loading state or a "`<n>` total · `<n>` active" summary.
+A client-side-filtered table (same `TableToolbar` pattern: search across name/email/username, Active/Inactive filters) over `tb_cluster_user` rows for this cluster (`useClusterUsers` hook, `GET /api-system/user/clusters/:id`), sorted by display name then email. Columns: an optional leading **checkbox** (only rendered when `canEdit`), **Name** (with email folded onto a second line — there is no separate Email column), **Role** (an inline-editable `InlineCell` select, `admin`/`user`, committing via `PUT /api-system/user/clusters/:clusterUserId` per keystroke-equivalent change with an optimistic update that rolls back on failure), a centered **Status** badge, and (when `canEdit`) a right-aligned **Remove** (Trash) icon per row.
 
-The table has columns **Code** (outline badge), **Name**, **Users** (a `CapacityMeter` bar for `parent_bu_id === bu.id` count vs. `bu.max_license_users`), **Status** (Active/Inactive badge), and a right-aligned **Edit** icon button (navigates to `/business-units/:buId/edit`). Toolbar controls: a **Refresh** icon button (re-calls `onRefresh`) and an **Add** button — inside `<Can permission="cluster.create">` — that navigates to `/business-units/new?cluster_id=<id>` ([business-units](/en/platform/business-units)), disabled with a "License limit reached (N/M)" title when `businessUnits.length >= max_license_bu`. There is no Remove/Unlink button on BU rows and no in-place BU create dialog, same as before.
+**There is no Parent Business Unit column, select, or bulk "Move to BU" action any more** — `tb_cluster_user.parent_bu_id` was removed from both the schema and the UI (see [Data Model](./data-model.md) §2.2). The bulk-action bar (visible only when `canEdit` and at least one row is selected) now offers a single action: **Remove** (destructive, opens the bulk confirm, §5.3). The header offers a **Refresh** icon and, when `canEdit`, an **Add User** button (opens the Add User to Cluster dialog, §5.1).
 
-### 4.5 Users section
+### 4.5 Sticky "Unsaved changes" bar
 
-Lists `tb_cluster_user` rows for this cluster (`useClusterUsers` hook, `GET /api-system/user/clusters/:id`), sorted by display name then email. Like Business Units, it now has its own `TableToolbar` (search across name/email/username, Active/Inactive filters).
+Appears fixed to the bottom of the viewport (offset by the sidebar width on `md`+/`lg`+, an iOS-glass surface since commit `cf5bdc6`) whenever `formData !== savedFormData` — i.e. an uncommitted edit to a `ClusterPlate` identity field (name/status/code/alias). Branding uploads and Business-Units/Users tab actions are independently persisted and never trigger this bar. `Ctrl/⌘+S` triggers **Save Changes** and `Escape` triggers **Cancel** via the shared `useGlobalShortcuts` hook.
 
-Columns: an optional leading **checkbox** column (only rendered `canEdit`), **Name** (plain text — no longer a clickable link; there is no per-user edit dialog any more, see below), **Email**, **Parent Business Unit** — an **inline-editable** `InlineCell` select (badge display `code - name` when set, disabled when `!canEdit`), **Role** — also an inline-editable `InlineCell` select (`admin`/`user`, plain text display), a centered Active/Inactive **Status** badge, and (when `canEdit`) a right-aligned **Remove** (Trash) icon button per row. **The former "Edit Cluster User" dialog no longer exists** — Parent Business Unit and Role are edited directly in the table cell (`PUT /api-system/user/clusters/:clusterUserId` fires per commit, with an optimistic local update that rolls back on failure) rather than through a modal. The section header shows a **Refresh** icon and, when `canEdit`, an **Add User** button (opens the Add User to Cluster dialog, §5.1).
-
-When `canEdit` is true, checkbox multi-select drives a **bulk-action bar**: a "Move target BU…" select plus a `BulkActionBar` showing the selected count and two actions — **Remove** (destructive, opens the bulk confirm, §5.3) and **Move to BU** (disabled until a target BU is chosen; calls `PUT` once per selected row via a sequential fan-out that never aborts on a single failure, then shows an aggregate "`<n>` updated" / "`<n>` updated, `<n>` failed" toast). Selection resets whenever the search term or Active/Inactive filter changes.
-
-### 4.6 Sticky "Unsaved changes" bar
-
-Replaces the old in-card Save Changes/Cancel buttons. Appears fixed to the bottom of the viewport whenever `formData !== savedFormData` (Details-section edits only — Branding uploads and Users/BU actions are independently persisted and don't trigger it): a pulsing dot, "Unsaved changes" label, and **Cancel**/**Save Changes** buttons. `Ctrl/⌘+S` triggers Save and `Escape` triggers Cancel via the shared `useGlobalShortcuts` hook, matching the same shortcuts used on other A4 edit pages.
-
-- **Save Changes** → `PUT /api-system/clusters/:id` with the loaded `doc_version` attached (when present). On success, `fetchCluster()` re-fetches the record (refreshing `doc_version` too). On a `409` version conflict, shows a "This record was changed by someone else" toast and reloads the record instead of retrying the stale write.
-- **Cancel** → restores `formData` from `savedFormData` and clears any pending field errors. No API call.
-- **Unsaved changes guard**: the `useUnsavedChanges` hook still fires if the operator attempts to navigate away while `hasChanges` is true.
+- **Save Changes** → `PUT /api-system/clusters/:id` with the loaded `doc_version` attached (when present) — the payload no longer carries any BU-quota field at all, since quota now lives only in the licence ledger. On success, `fetchCluster()` re-fetches the record (refreshing `doc_version`). On a `409` version conflict, shows a "changed by someone else" toast and reloads the record.
+- **Cancel** → restores `formData` from `savedFormData` and clears pending field errors. No API call.
+- The `useUnsavedChanges` hook still fires if the operator attempts to navigate away while a change is pending.
 
 ## 5. Dialogs
 
 ### 5.1 Add User to Cluster dialog
 
-Triggered by the **Add User** button in the Users section header on `/clusters/:id/edit` (only rendered when `canEdit`).
+Triggered by **Add User** in the Users tab (only rendered when `canEdit`). Searches the global user pool ([users](/en/platform/users), `GET /api-system/user`) with a 400 ms debounced input across `username`/`email`/`firstname`/`lastname`, paginated at 10 per page with infinite-scroll load-more (within 40 px of the bottom). Users already in this cluster are excluded. Selecting a user shows a confirmation card (`username`, `email`, full name); the X on that card deselects.
 
-The dialog searches the global user pool ([users](/en/platform/users), `GET /api-system/user` via `userService.getAll`) with a 400 ms debounced search input. Search fields: `username`, `email`, `firstname`, `lastname`. Results are paginated at 10 per page with infinite-scroll load-more (triggered by scrolling to within 40 px of the bottom of the results list). Users already in this cluster are excluded from the results (`availableUsers` filter). Selecting a user shows a confirmation card with `username`, `email`, and full name; clicking the X on that card deselects and returns to the search list.
-
-Fields after a user is selected:
-- **Cluster Role** — select populated from `CLUSTER_ROLES = ['admin', 'user']`. Default: `user`.
-- **Business Unit** — select populated from the cluster's current BUs (all BUs, not filtered by active status). Shows `code - name (count/max users)` per option; options are disabled when their BU is at `max_license_users` limit. Empty default: "Select business unit" (the BU assignment is optional).
-
-The **Add User** button is disabled when: no user is selected, the request is in flight (`addingUser`), or the selected BU is at its user license limit. On submit, calls `POST /api-system/user/clusters` with body `{ user_id, cluster_id, role, is_active: true }` (plus `parent_bu_id` if a BU was selected). On success, dialog closes, a toast confirms, and `fetchClusterUsers()` re-fetches.
+Fields after selection: **Cluster Role** (select, `admin`/`user`, default `user`). **There is no Business Unit field any more** — the dialog no longer asks which BU a new member belongs to, matching the removal of `parent_bu_id`. The **Add User** button is disabled when no user is selected, a request is in flight, or the cluster's aggregate seat pool is already at its cap (`userCap != null && userUsed >= userCap` — a cluster-wide check now, not per-BU). On submit, `POST /api-system/user/clusters` with body `{ user_id, cluster_id, role, is_active: true }` — no `parent_bu_id` in the payload.
 
 ### 5.2 Remove Cluster User confirm (single)
 
-Triggered by the row-level **Trash** icon button in the Users section (§4.5), rendered only when `canEdit`.
-
-Uses the shared `ConfirmDialog` component — a simple Yes/No confirm (no typed confirmation required). Title: "Remove User from Cluster". Description: `Remove "<display name>" from this cluster?` where the display name is resolved from `userInfo` first/middle/last, falling back to `name` then `email` (no `username` fallback step).
-
-On confirm, calls `DELETE /api-system/user/clusters/:clusterUserId` using the `tb_cluster_user.id` field returned by the cluster users endpoint. On success, toast confirms and `fetchClusterUsers()` re-fetches.
+Triggered by the row-level **Trash** icon in the Users tab, rendered only when `canEdit`. A simple Yes/No `ConfirmDialog` (no typed confirmation). Description names the user (first/middle/last, falling back to `name` then `email`). On confirm, `DELETE /api-system/user/clusters/:clusterUserId`; on success, `fetchClusterUsers()` re-fetches.
 
 ### 5.3 Remove selected users confirm (bulk)
 
-Triggered by the **Remove** bulk action in the Users section's `BulkActionBar` (§4.5). Title: "Remove selected users". Description: `Remove <n> user(s) from this cluster?`. On confirm, fans out one `DELETE` per selected id (continuing past individual failures), then shows an aggregate result toast and clears the selection.
+Triggered by the **Remove** bulk action. Fans out one `DELETE` per selected id (continuing past individual failures), then shows an aggregate result toast and clears the selection.
 
 ### 5.4 Soft Delete Cluster confirm
 
-Triggered by the **Delete** row action in `ClusterManagement` — which itself renders only inside `<Can permission="cluster.delete" clusterId={row.original.id}>` (§2.4), and only opens once the client-side deletion guard (bu_count check) has passed.
-
-Uses the shared `ConfirmDialog` — a simple Yes/No confirm (no typed confirmation required). Title: "Delete Cluster". Description: "Are you sure you want to delete this cluster? This action cannot be undone." Confirm button label: "Delete" (destructive variant).
-
-On confirm, calls `DELETE /api-system/clusters/:id` (soft delete — sets `deleted_at`). No hard-delete dialog exists for clusters in the Platform SPA.
+Triggered by the list page's **Delete** row action, and only after the client-side `bu_count > 0` guard has passed. A simple Yes/No `ConfirmDialog`. Confirm calls `DELETE /api-system/clusters/:id` (soft delete). No hard-delete dialog exists for clusters anywhere in the Platform SPA.
 
 ## 6. Persisted UI state
 
-The list page writes 6 keys to `localStorage` so that filter and pagination state survives page reloads. The `ClusterEdit` page writes no `localStorage` keys.
+The list page writes 7 keys to `localStorage`. The `ClusterEdit` page writes no `localStorage` keys of its own (its tab selection lives in the URL query string instead, §1).
 
 | Key | Stored type | Persists |
 |---|---|---|
@@ -190,22 +165,29 @@ The list page writes 6 keys to `localStorage` so that filter and pagination stat
 | `sort_clusters` | string | Current sort column/direction (default `created_at:desc`) |
 | `filters_clusters` | JSON array | Active status filter values (e.g. `["true"]`, `["false"]`, `[]`) |
 | `filter_clusters_deleted` | JSON boolean | "Show soft-deleted clusters" toggle state (default `false`) |
+| `filter_clusters_quota_expiring` | JSON boolean | "Quota expiring" fleet-band stat toggle state (default `false`) — **new since the 2026-07-29 sync** |
 
-Note: the clusters list persists no filter keys beyond the status array and the deleted toggle — there is no role filter group on this page. (The users list once persisted a role filter, but that disappeared along with the role-enum model; see [rbac](/en/platform/rbac) §5.)
+## 7. Developer tooling
 
-## 7. Screenshots
+Both `ClusterManagement` and `ClusterEdit` mount a `DevDebugSheet` (dev-only floating action button) exposing the raw API payloads behind the page — cluster record, business-units list, cluster-users list, and (on the edit page) the activity-history response — labelled with their exact endpoint strings. Not user-facing; useful when QA needs to compare what the API actually returned against what the page rendered.
 
-> **TODO:** Screenshots deferred to the upcoming Platform screenshots batch. See `.specs/2026-05-17-screenshots-coverage-checklist.md` for the cross-module coverage plan. **Note (2026-07-29):** the edit page's layout changed from a 3-column card grid to a single-column scrollspy document since this page was last captured-for — any future capture should target the new `ClusterEditNav`/`ClusterHero`/edit-in-place layout described in §4, not the earlier grid.
+## 8. Screenshots
 
-## 8. References
+> **TODO:** Screenshots deferred to the upcoming Platform screenshots batch. **Note (2026-09-05):** the edit page's layout changed again since the last capture-note (2026-07-29) — from the single-column scrollspy document to the current plate-plus-3-tab layout (`69027b9`, 2026-08-23), and the create page gained a live side-by-side draft preview (`50386b9`). Any future capture should target `ClusterPlate` + `TabStrip` (Licensing/Business Units/Users) and the two-column create layout described in §3–§4, not either earlier layout.
 
-- `../carmen-platform/src/App.tsx` — three cluster routes with `requiredPermission` keys (`cluster.read`/`cluster.create`/`cluster.update`); the create-navigation quirk documented in a prior sync (§3) has been fixed — the catch-all now serves a dedicated 404 page (`NotFound.tsx`) rather than silently redirecting to Landing.
-- `../carmen-platform/src/pages/ClusterManagement.tsx` — list page: Fleet Capacity strip, filters (Status + Deleted), header actions (Export, `<Can>`-gated Add Cluster), deletion guard (blocks delete when `bu_count > 0`), `<Can>`-gated row action menu (Edit / Delete soft), nested-audit column mapping, 6 `localStorage` keys.
-- `../carmen-platform/src/pages/ClusterEdit.tsx` — create/edit-in-place orchestrator page: scrollspy layout, `canEdit` gating (no page-level Edit toggle), `doc_version` optimistic locking, Add User dialog, license-cap logic.
-- `../carmen-platform/src/pages/clusterManagement/{ClusterHero,FleetCapacity,CapacityGauge,CapacityMeter,ClusterIdentityFields}.tsx`, `../carmen-platform/src/utils/capacity.ts` — hero card, fleet-wide and per-row capacity gauges, and the create-mode-only identity form.
-- `../carmen-platform/src/pages/clusterEdit/{ClusterEditNav,useScrollSpy,useClusterUsers,TableToolbar,BulkActionBar,InlineCell,tableSort}.ts(x)` and `sections/{DetailsSection,BrandingSection,BusinessUnitsSection,UsersSection}.tsx` — scrollspy nav, per-section components, bulk-action and inline-edit primitives shared with other A4 edit pages.
-- `../carmen-platform/src/pages/businessUnitEdit/InlineField.tsx` — shared click-to-edit field control reused by `DetailsSection` (also used by the Business Units edit page).
-- `../carmen-platform/src/utils/docVersion.ts` — `getDocVersion`/`isVersionConflict`/`notifyVersionConflict` optimistic-lock helpers.
-- `../carmen-platform/src/components/BrandingImageUpload.tsx` — shared upload control: type/size validation, rect/square preview shapes, Upload/Replace button states.
-- `../carmen-platform/src/services/clusterService.ts` — API surface: `GET/POST /api-system/clusters`, `PUT/DELETE /api-system/clusters/:id`, `GET /api-system/user/clusters/:clusterId`, `POST /api-system/clusters/:id/logo`, `POST /api-system/clusters/:id/avatar`.
-- Cross-links: [clusters](/en/platform/clusters) (module landing), [rbac](/en/platform/rbac) (permission model behind every gate on these screens), [users](/en/platform/users) (global user pool searched by Add User dialog; `tb_cluster_user` doc), [business-units](/en/platform/business-units) (Add BU navigate-to-new flow; `cluster_id` FK), [Data Model](./data-model.md), [Permissions](./permissions.md).
+## 9. References
+
+- `../carmen-platform/src/App.tsx` — three cluster routes with `requiredPermission` keys, each also carrying `feature="clusters"` (see [Permissions](./permissions.md) §2).
+- `../carmen-platform/src/pages/ClusterManagement.tsx` — list page: Fleet Capacity band, filters (Status + Deleted + Quota-expiring), header actions, deletion guard, `<Can>`-gated row action menu (Edit / View History / Delete soft), nested-audit column mapping, 7 `localStorage` keys, `DevDebugSheet`.
+- `../carmen-platform/src/pages/ClusterEdit.tsx` — create/edit orchestrator: `ClusterPlate`/`ClusterDraftPlate`, 3-tab body, `doc_version` optimistic locking, Add User dialog (no BU field), Activity Trail header action.
+- `../carmen-platform/src/pages/clusterManagement/{FleetCapacity,CapacityGauge,CapacityMeter,ClusterCreateForm,ClusterIdentityFields}.tsx`, `../carmen-platform/src/utils/capacity.ts` — fleet-wide and per-row capacity gauges, the two-card create form.
+- `../carmen-platform/src/pages/clusterEdit/{ClusterPlate,ClusterDraftPlate,PlateField,clusterTabs,useClusterUsers,TableToolbar,BulkActionBar,InlineCell,tableSort}.ts(x)` and `sections/{BusinessUnitsSection,UsersSection,SubscriptionCard}.tsx` — the current plate, tab definitions, and per-tab components. `ClusterEditNav.tsx`/`useScrollSpy.ts` and `sections/{DetailsSection,BrandingSection}.tsx` still exist on disk but are no longer imported by this page — their only caller now is the cluster-admin persona's `ClusterProfile.tsx`.
+- `../carmen-platform/src/utils/businessUnitRank.ts` — `rankBusinessUnits()`/`countOverLimit()` behind the Business Units tab's "Over limit" badge.
+- `../carmen-platform/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail}.tsx`, `constants.ts` — the shared change-history sheet used by both cluster screens.
+- `../carmen-platform/src/components/BrandingImageUpload.tsx` — shared upload control (compact mode on the plate; type/size validation, rect/square preview shapes).
+- `../carmen-platform/src/services/clusterService.ts` — API surface: `GET/POST /api-system/clusters`, `GET /api-system/clusters/summary`, `PUT/DELETE /api-system/clusters/:id`, `GET /api-system/user/clusters/:clusterId`, `POST /api-system/clusters/:id/logo`, `POST /api-system/clusters/:id/avatar`.
+- Cross-links: [clusters](/en/platform/clusters) (module landing), [rbac](/en/platform/rbac) (permission model behind every gate on these screens), [users](/en/platform/users) (global user pool searched by Add User dialog; `tb_cluster_user` doc), [business-units](/en/platform/business-units) (Add BU navigate-to-new flow; `cluster_id` FK), [licenses](/en/platform/licenses) (License Center — BU-quota purchase/cancel UI; forward link, module not yet documented), [Data Model](./data-model.md), [Permissions](./permissions.md).
+
+## 10. E2E note
+
+`../carmen-platform-e2e/tests/clusters/` (7 spec files, 904 lines) was last touched 2026-06-26, and its page object `pages/ClusterEditPage.ts` was last touched 2026-08-22 — both **predate** the 2026-08-23 plate/tabs rewrite (`69027b9`) and, in the page object's case, an even earlier UI generation: `ClusterEditPage.editButton`/`expectReadOnlyMode()` assert a page-level "Edit" button and a read-only/edit-mode toggle that has not existed on this page since before the 2026-07-29 scrollspy revision, let alone the current plate. `cluster-create.spec.ts`'s `fillForm()` never fills the now-required `licensed_bus`/`license_end_date` fields, so its "create with minimum required fields" case is likely to stall on the native `required`-field validation rather than reach the save API. Treat this suite as **stale, not current evidence** for `clusters` until it is updated — do not cite it as behavioral confirmation for anything in this module without re-checking against source first.
