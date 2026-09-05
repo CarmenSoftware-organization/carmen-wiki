@@ -684,6 +684,12 @@ Claude-Session: https://claude.ai/code/session_01368ie91bMhnxN3muJYUm9U"
 
 Route: `/platform/email-settings` → `EmailSettingManagement`. Nav: `permission: 'email_setting.read'`, `feature: 'email_settings'`. 36 commits in the window.
 
+- [ ] **Step 1b: Investigate a permission mismatch flagged by the platform-config task**
+
+`src/pages/emailSettings/EmailRoutingCard.tsx:124` calls `platformConfigService.update('email_routing', payload)` — it writes a **platform_config** key through the platform-config endpoint. The card itself carries no `hasPermission` call, so whatever gates it comes from its parent `EmailSettingManagement.tsx`, which is an `email_setting.*` screen. If the parent gates on `email_setting.manage` while the endpoint requires `platform_config.manage`, a reader holding the first and not the second sees an enabled Save button and gets a 403 from the backend.
+
+Establish what actually happens: read the parent's gate, read the controller's guard on that endpoint, and determine whether the two agree. Document the real behaviour — and if they do not agree, document it as a named edge case with both keys, the way the licences module documents its own gating asymmetries. Do not assert a bug you have not traced end to end; do not omit it either.
+
 - [ ] **Step 2: Document the email flows**
 
 `src/constants/emailFlows.ts` enumerates the flows; list each flow, what triggers it, and which setting controls it.
