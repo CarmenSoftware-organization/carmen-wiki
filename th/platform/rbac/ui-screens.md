@@ -2,7 +2,7 @@
 title: Platform RBAC — หน้าจอ UI (UI Screens)
 description: RoleManagement/RoleEdit พร้อม RolesAccessSummary แบบวัดเทียบ catalog และ PermissionGrid แบบแถวต่อ resource, Permission Catalog แบบ read-only, และ (ระดับสรุป) ทะเบียน Super Admins กับหน้าจอ assignment ของ User Platform ที่เขียนใหม่
 published: true
-date: 2026-09-05T16:00:00.000Z
+date: 2026-09-05T17:00:00.000Z
 tags: book/platform, rbac, ui
 editor: markdown
 dateCreated: 2026-06-10T15:00:00.000Z
@@ -31,7 +31,7 @@ dateCreated: 2026-06-10T15:00:00.000Z
 
 แถว header: title "Roles" / subtitle "Manage platform roles and their permissions" และ header action สามตัวจากซ้ายไปขวา — **Permission Catalog** (นำทางไป `/platform/category-permissions`), **Export** (CSV ฝั่ง client ของหน้าที่โหลดอยู่: Name, Description, Permissions, Active, Created At/By, Updated At/By — ผ่าน `auditCsvFields(normalizeAudit(r))`; ไฟล์ `roles-<YYYY-MM-DD>.csv`; disable ขณะกำลังโหลดหรือว่างเปล่า) และ **Add Role** (นำทางไป `/platform/roles/new`, ห่อด้วย `<Can permission="platform_role.create">`)
 
-ใต้ header มีแถบ **`RolesAccessSummary`** (`roleManagement/RolesAccessSummary.tsx`) ดึงจาก endpoint เฉพาะทาง `GET /api-system/platform/roles/summary` (`roleService.getAccessSummary()` — ทั้งระบบ ไม่สนใจ search/filter ของตาราง คงตัวเลขล่าสุดไว้และหรี่ตัวเองเมื่อ refresh ล้มเหลวแทนที่จะว่างเปล่า) แสดงจำนวน role รวมพร้อม breakdown active/inactive/**deleted** (จำนวนที่ถูก soft-delete เป็นข้อมูลใหม่ที่มีในระบบแต่ไม่เคยแสดงมาก่อน) บวกสาม role ที่มีขอบเขต permission กว้างที่สุด **ตั้งแต่ 2026-09-02 (`#252`) แท่ง "broadest roles" วัดเทียบกับขนาดของ permission catalog ไม่ใช่เทียบกับ role ที่กว้างที่สุดในสามตัวที่แสดง** — role ที่มอบ permission ครบทุกตัวใน catalog จะได้แท่งสีอำพันพร้อมไอคอนเตือน (ตรงกับถ้อยคำ "Full access" ของ `RoleIdentityHero`) และหัวข้อของ section จะระบุ "of `N`" เมื่อทราบขนาด catalog แล้ว; ถ้าไม่ทราบ (catalog กำลังโหลดหรือล้มเหลว) แท่งจะถูกตัดออกทั้งหมดแทนที่จะวาดเทียบตัวหารที่ไม่มีความหมาย
+ใต้ header มีแถบ **`RolesAccessSummary`** (`roleManagement/RolesAccessSummary.tsx`) ดึงจาก endpoint เฉพาะทาง `GET /api-system/platform/roles/summary` (`roleService.getAccessSummary()` — ทั้งระบบ ไม่สนใจ search/filter ของตาราง คงตัวเลขล่าสุดไว้และหรี่ตัวเองเมื่อ refresh ล้มเหลวแทนที่จะว่างเปล่า) แสดงจำนวน role รวมพร้อม breakdown active/inactive/**deleted** (จำนวนที่ถูก soft-delete เป็นข้อมูลใหม่ที่มีในระบบแต่ไม่เคยแสดงมาก่อน) บวกสาม role ที่มีขอบเขต permission กว้างที่สุด **ตั้งแต่ 2026-09-02 (`carmen-platform` PR #252) แท่ง "broadest roles" วัดเทียบกับขนาดของ permission catalog ไม่ใช่เทียบกับ role ที่กว้างที่สุดในสามตัวที่แสดง** — role ที่มอบ permission ครบทุกตัวใน catalog จะได้แท่งสีอำพันพร้อมไอคอนเตือน (ตรงกับถ้อยคำ "Full access" ของ `RoleIdentityHero`) และหัวข้อของ section จะระบุ "of `N`" เมื่อทราบขนาด catalog แล้ว; ถ้าไม่ทราบ (catalog กำลังโหลดหรือล้มเหลว) แท่งจะถูกตัดออกทั้งหมดแทนที่จะวาดเทียบตัวหารที่ไม่มีความหมาย
 
 ด้านล่างคือแถวค้นหาและ filter มาตรฐาน: input ค้นหาแบบ debounce (400 ms) เหนือ `name`/`description` และ Sheet **Filters** ที่มีกลุ่ม Status กลุ่มเดียว (ปุ่ม toggle Active / Inactive → query `advance` `{ where: { is_active } }` เมื่อเลือกเพียงค่าเดียว) chip ของ filter ที่ active แสดงใต้แถวค้นหา
 
@@ -65,7 +65,7 @@ dateCreated: 2026-06-10T15:00:00.000Z
 - **โหมด create หรือขณะแก้ไข:** hero กลับไปใช้ `permissionSummary()` แบบง่ายของตัวเอง — "No permissions granted yet" หรือ "`N` permission(s) across `M` resource(s)" — คำนวณใหม่แบบ live ตาม toggle ที่เปลี่ยน
 - **ทั้งสองโหมด เมื่อจำนวน key ที่มอบให้ role ถึงขนาดของ catalog:** ทั้งสองรูปแบบถูกแทนที่ด้วย "Full access to every permission" สีอำพันพร้อมสามเหลี่ยมเตือน — สถานะที่ audit-worthy ที่สุด จึงชนะเสมอ
 
-ใต้ hero ฟอร์มเป็น grid สองคอลัมน์ **เฉพาะขณะแก้ไขเท่านั้น** (`lg:grid-cols-[1fr_minmax(300px,340px)]`); ในโหมด view จะยุบเหลือคอลัมน์เดียว **Permissions** เป็นการ์ดซ้าย/กว้างในทั้งสองโหมด เป็นที่อยู่ของ `PermissionGrid` (§2.6) **Settings** — `name` (จำเป็น), `description` (textarea) และ checkbox/badge `is_active` — เป็น rail ขวา/แคบแบบ sticky แต่ **ตั้งแต่ 2026-09-02 (`#253`) แสดงเฉพาะขณะแก้ไขเท่านั้น**: ในโหมด view ไม่มีการ์ด "Settings" หรือ "Role Details" แยกต่างหากอีกต่อไป เพราะสองข้อเท็จจริงที่มันเคยซ้ำ (ชื่อเป็น `<h1>`, สถานะเป็น badge) อยู่ใน hero อยู่แล้ว และข้อเท็จจริงเดียวที่มันถืออยู่คนเดียว (description) ก็ย้ายไปที่ hero ด้วย รูปแบบนี้คือ pattern เดียวกับที่โมดูล `users` เจอ — การ์ด detail ของโหมด read ถูกดูดซับเข้า identity hero
+ใต้ hero ฟอร์มเป็น grid สองคอลัมน์ **เฉพาะขณะแก้ไขเท่านั้น** (`lg:grid-cols-[1fr_minmax(300px,340px)]`); ในโหมด view จะยุบเหลือคอลัมน์เดียว **Permissions** เป็นการ์ดซ้าย/กว้างในทั้งสองโหมด เป็นที่อยู่ของ `PermissionGrid` (§2.6) **Settings** — `name` (จำเป็น), `description` (textarea) และ checkbox/badge `is_active` — เป็น rail ขวา/แคบแบบ sticky แต่ **ตั้งแต่ 2026-09-02 (`carmen-platform` PR #253) แสดงเฉพาะขณะแก้ไขเท่านั้น**: ในโหมด view ไม่มีการ์ด "Settings" หรือ "Role Details" แยกต่างหากอีกต่อไป เพราะสองข้อเท็จจริงที่มันเคยซ้ำ (ชื่อเป็น `<h1>`, สถานะเป็น badge) อยู่ใน hero อยู่แล้ว และข้อเท็จจริงเดียวที่มันถืออยู่คนเดียว (description) ก็ย้ายไปที่ hero ด้วย รูปแบบนี้คือ pattern เดียวกับที่โมดูล `users` เจอ — การ์ด detail ของโหมด read ถูกดูดซับเข้า identity hero
 
 ### 2.3 `RoleEdit` — โหมด create (`/platform/roles/new`)
 

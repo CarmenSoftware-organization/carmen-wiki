@@ -2,7 +2,7 @@
 title: RBAC ของแพลตฟอร์ม (Platform RBAC)
 description: การควบคุมการเข้าถึงแบบอิง permission สำหรับ Platform admin SPA — permission catalog, role, การ assign ผู้ใช้แบบมี scope, super-admin bypass และการเปลี่ยนคีย์เป็น platform_role.* ช่วงสิงหาคม/กันยายน 2026 พร้อมการปรับปรุง RoleEdit/RolesAccessSummary/SuperAdminManagement
 published: true
-date: 2026-09-05T16:00:00.000Z
+date: 2026-09-05T17:00:00.000Z
 tags: platform/rbac, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T15:00:00.000Z
