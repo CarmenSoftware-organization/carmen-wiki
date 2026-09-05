@@ -1,8 +1,8 @@
 ---
 title: บรอดแคสต์ (Broadcasts)
-description: ภาพรวมโมดูล Broadcasts — หน้าจอเขียน push notification (พร้อมแผง preview แบบ live) พร้อม target mode สามแบบ (ผู้ใช้ทั้งหมด ผู้ใช้ที่ระบุ business unit หนึ่งแห่ง), type preset แบบ SYS_/BU_ และการส่งทันทีหรือตามกำหนดเวลา ตอนนี้ถูกบังคับใช้ฝั่ง server แล้ว
+description: ภาพรวมโมดูล Broadcasts — สามหน้าจอ (List, Compose, Edit) ครอบคลุม push notification พร้อมวันหมดอายุที่บังคับ และวงจรชีวิตฝั่งผู้ส่งแบบเต็ม (กำหนดเวลา แก้ไขระหว่างที่ยังไม่ส่ง ต่ออายุให้หมดทันที ลบแบบ soft) — ยกเว้นการส่งแบบระบุผู้รับที่ยังคง fire-and-forget
 published: true
-date: 2026-07-29T00:00:00.000Z
+date: 2026-09-05T00:00:00.000Z
 tags: platform/broadcasts, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T16:00:00.000Z
@@ -10,68 +10,91 @@ dateCreated: 2026-06-10T16:00:00.000Z
 
 # บรอดแคสต์ (Broadcasts)
 
-โมดูล **Broadcasts** push การแจ้งเตือนไปยังผู้ใช้แพลตฟอร์ม: ผู้ใช้ทั้งหมด, รายการที่ระบุชัด หรือสมาชิกทุกคนของ business unit หนึ่งแห่ง — ส่งทันทีหรือกำหนดเวลาไว้ในอนาคต มันคือคู่เทียบแบบ **push** ของ [News](/th/platform/news) ซึ่งเป็นแบบ **pull**: broadcast ตกถึง notification list ของผู้รับแต่ละคน (และแบบ live ผ่าน WebSocket เมื่อพวกเขาออนไลน์อยู่) ขณะที่บทความข่าวนั่งรออยู่ใน `tb_news` ให้ถูก fetch ฝั่ง SPA คือ**หน้าจอเขียน (compose) หน้าเดียว** (`/broadcasts/new`) ไม่มี route ของ list, edit หรือ cancel — เมื่อส่งออกไปแล้ว broadcast เป็นแบบ fire-and-forget จากผลิตภัณฑ์นี้
+โมดูล **Broadcasts** push การแจ้งเตือนไปยังผู้ใช้แพลตฟอร์ม: ผู้ใช้ทั้งหมด, รายการที่ระบุชัด หรือสมาชิกทุกคนของ business unit หนึ่งแห่ง — ส่งทันทีหรือกำหนดเวลาไว้ในอนาคต พร้อม**วันหมดอายุที่บังคับ** มันคือคู่เทียบแบบ **push** ของ [News](/th/platform/news) ซึ่งเป็นแบบ **pull**: broadcast ตกถึง notification list ของผู้รับแต่ละคน (และแบบ live ผ่าน WebSocket เมื่อพวกเขาออนไลน์อยู่และการส่งนั้นไม่ได้กำหนดเวลาไว้) ขณะที่บทความข่าวนั่งรออยู่ใน `tb_news` ให้ถูก fetch
+
+**รูปร่างของโมดูลนี้เปลี่ยนไปมากตั้งแต่ถูก document ครั้งล่าสุด** จากเดิมที่เป็นหน้าจอเขียน (compose) หน้าเดียวไม่มี list, edit หรือวงจรชีวิตใด ๆ ตอนนี้มีสามหน้าจอที่แยกกันชัดเจน: **List** (`/broadcasts` → `BroadcastManagement`) แสดง broadcast ทั้งหมดที่เป็น system-wide และ business-unit พร้อมค้นหา, filter ตามสถานะ/scope, สรุปยอด CSV export, ปุ่มลัด "Expire Now" และการลบแบบ soft; **Compose** (`/broadcasts/new` → `BroadcastCompose`) ที่ใช้ส่งอันใหม่; และ **Edit** (`/broadcasts/:id/edit` → `BroadcastEdit`) ที่ดูได้เสมอ และแก้ schedule/วันหมดอายุ/เนื้อหาได้ตราบใดที่ยังอยู่สถานะ `scheduled` **Compose กับ Edit เป็นคอมโพเนนต์คนละตัว ไม่ใช่หน้าจอเดียวที่มีสองโหมด** — มีไฟล์คนละไฟล์ route คนละ route และ permission gate คนละชุด target mode หนึ่งเป็นข้อยกเว้นของทั้งหมดนี้: การส่งแบบระบุ **ผู้ใช้เจาะจง** ยังคง fan out เป็น row ของ `tb_notification` ส่วนตัวและมองไม่เห็นทั้งจาก List และ Edit เลย — โหมดนั้นยังคง fire-and-forget เหมือนที่ทั้งโมดูลเคยเป็นมาก่อน
 
 > **At a Glance**
-> **วัตถุประสงค์ของโมดูล:** เขียนและส่ง push notification — target mode สามแบบ (`system_all` / `system_users` / `bu`), type preset ที่ถูก resolve เป็น `SYS_*`/`BU_*`, ส่งทันทีหรือตามกำหนดเวลา (`datetime-local`, ต้องเป็นอนาคต) &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับ Platform admin SPA, โมดูล notification ของ backend-gateway และ micro-notification &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_broadcast_notification` + `tb_user_broadcast_action` (read state แบบ lazy); การส่งแบบกำหนดเป้าหมาย fan out ลง `tb_notification` แทน &nbsp;·&nbsp; **Endpoint:** `POST /api/notifications/broadcasts/system` และ `/bu` — สังเกตว่าเป็น `/api` **ไม่ใช่** `/api-system` &nbsp;·&nbsp; **หน้าย่อย:** 3
+> **วัตถุประสงค์ของโมดูล:** แสดงรายการ, เขียน, กำหนดเวลา, แก้ไข (ระหว่างที่ยังกำหนดเวลาไว้), ต่ออายุให้หมด และลบแบบ soft สำหรับ push notification — target mode สามแบบ (`system_all` / `system_users` / `bu`), ป้าย severity ที่เป็นแค่ข้อมูลฝั่งผู้ส่ง และวันหมดอายุที่บังคับ (`end_at`) &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับ Platform admin SPA, โมดูล notification ของ backend-gateway และ micro-notification &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_broadcast_notification` (enum scope/doc_type/event, `doc_version` เป็น optimistic lock จริงแล้ว) + `tb_user_broadcast_action` (read state แบบ lazy); **การส่งแบบระบุผู้รับ (`system_users`) fork ไปที่ `tb_notification` แทน และไม่ปรากฏบน List หรือ Edit เลย** &nbsp;·&nbsp; **Endpoint:** `POST /api/notifications/broadcasts/system` และ `/bu` (ส่ง), `GET .../broadcasts` (list ฝั่งแอดมิน), `GET/PATCH/DELETE .../broadcasts/:id` — ทั้งหมดอยู่ใต้ `/api` **ไม่ใช่** `/api-system` &nbsp;·&nbsp; **Permission key:** `broadcast.read` (nav, list, ดูหน้า Edit) · `broadcast.send` (route Compose + ปุ่ม Send) · `broadcast.update` (action Edit + PATCH) · `broadcast.delete` (action Delete + DELETE) — nav `feature: 'broadcasts'`, ไม่มี `superAdminOnly` &nbsp;·&nbsp; **หน้าย่อย:** 3
 
 ## 1. ภาพรวม
 
-Broadcasts เป็นโมดูล Platform ตัวเดียวที่ surface ฝั่ง SPA เป็น**หน้าจอเดียว**: `/broadcasts/new` → `BroadcastCompose`, การ์ด Compose คู่กับการ์ด **Preview** แบบ sticky ไม่มี route ของ list `/broadcasts`, ไม่มี route ของ edit, ไม่มี detail view — เป็นการเบี่ยงเบนโดยเจตนาจากรูปแบบสองหน้าจอ Management/Edit มาตรฐานของ SPA เพราะหน้าที่ของโมดูลคือ action แบบ one-shot ไม่ใช่การจัดการเรคคอร์ด อย่างไรก็ตามหน้านี้ยังคงมีองค์ประกอบมาตรฐานครบ: `PageHeader` (ไอคอน Megaphone, ไม่มีลิงก์ย้อนกลับ — เข้าถึงได้จาก sidebar เท่านั้น), guard `useUnsavedChanges`, คีย์ลัด global (Ctrl/Cmd+S ส่ง, Escape รีเซ็ต), toast feedback, Debug Sheet เฉพาะ dev ที่แสดง response ล่าสุดของ API และ sticky action bar ด้านล่าง (Reset/Send) พร้อมตัวบ่งชี้ "Unsaved changes"
+รายการใน sidebar ("Broadcasts", ไอคอน Megaphone, กลุ่ม Content) ถูกกำหนดไว้ใน `platformNav.ts` ด้วย `permission: 'broadcast.read'` และ `feature: 'broadcasts'` — ไม่มี `superAdminOnly` มันเปิดหน้า **List** ซึ่งคือ `BroadcastManagement`: `PageHeader` (พร้อม subtitle และข้อความบอกชัดเจนว่าการส่งแบบระบุผู้รับไม่แสดงที่นี่), แถบสรุปสถานะที่คลิกได้ (จำนวน All / Active / Scheduled / Expired / Deleted แต่ละอันสลับ filter ที่ตรงกัน), ช่องค้นหา, sheet ของ Filters (สถานะ, scope, "show deleted"), `DataTable` แบบ server-side (Title+message, Scope, Severity, Status, Scheduled Date, Expires, Created), ปุ่ม CSV Export และปุ่ม "New Broadcast" ที่ gate ด้วย `broadcast.send` action menu ของแต่ละแถวมี Edit (`broadcast.update`, ซ่อนเมื่อถูกลบไปแล้ว), Expire Now (`broadcast.update`, เฉพาะแถวที่ active) และ Delete (`broadcast.delete`, ซ่อนเมื่อถูกลบไปแล้ว)
 
-การ์ด Compose จากบนลงล่าง: แถบแท็บ **Target** (All users / Specific users / Business Unit), ตัวเลือกผู้รับแบบมีเงื่อนไข (`UserMultiSelect`) หรือ select ของ BU, **Title** (≤200 ตัวอักษร, ตัวนับแบบ live) และ **Message** (≤2000 ตัวอักษร, ตัวนับแบบ live), select ของ **Type** preset (Info / Warning / Critical / Maintenance / Other…) และแถบแท็บ **Send time** (Send immediately / Schedule for later พร้อม input แบบ `datetime-local`) ข้าง ๆ กัน การ์ด `BroadcastPreview` render การแจ้งเตือนตามที่ผู้รับจะเห็น (badge ประเภท, หัวข้อ, ข้อความ), บรรทัด "Reaches" (สรุปกลุ่มผู้ชม พร้อมโทนสีเตือนสำหรับการยิงแบบ system-wide) และบรรทัด "Delivery" (ทันทีเทียบกับเวลาที่กำหนดไว้ที่ format แล้ว) — ทั้งหมดคำนวณใหม่แบบ live จาก state ของฟอร์ม การส่งต้องผ่าน dialog ยืนยันเสมอ โดยหัวข้อและสไตล์ของ dialog แตกต่างกันตาม target mode ดู [UI Screens](/th/platform/broadcasts/ui-screens) สำหรับ walkthrough ฉบับเต็ม
+**Compose** (`/broadcasts/new` → `BroadcastCompose`) คือหน้าจอส่ง: แถบแท็บ Target (All users / Specific users / Business Unit), ตัวเลือกผู้รับแบบมีเงื่อนไข (`UserMultiSelect`) หรือ select ของ BU, ป้าย metadata "Related Business Unit" ที่เป็นตัวเลือก (ไม่เกี่ยวกับกลุ่มผู้รับจริง), Title/Message พร้อมตัวนับแบบ live, preset ของ Type (Info / Warning / Critical / Maintenance / Other…) ที่**เป็นป้ายฝั่งผู้ส่งล้วน ๆ** — ผู้รับไม่มีวันเห็นมันเลย — แถบแท็บ Send-time (ทันทีหรือกำหนดเวลา) และวันหมดอายุที่บังคับ (7/30/90 วัน หรือกำหนดเอง) การ์ด `BroadcastPreview` ที่ใช้ร่วมกันจะ render การแจ้งเตือน, การเข้าถึง และเวลาส่ง/หมดอายุแบบ live จาก state ของฟอร์ม การส่งต้องยืนยันเสมอ โดยสไตล์สีแดงสงวนไว้สำหรับการยิงแบบ system-wide เท่านั้น
 
-เบื้องหลัง SPA, controller ของ backend-gateway (`api/notifications/broadcasts/*`) forward ผ่าน TCP (`notifications.create`) ไปยัง **micro-notification** ซึ่งเป็นผู้เขียน row และ push แบบ live ผ่าน Socket.io ไปยังผู้ใช้ in-scope ที่ออนไลน์ การจัดเก็บคือ row ของ `tb_broadcast_notification` หนึ่งตัวต่อการส่งหนึ่งครั้ง พร้อม read state รายผู้ใช้แบบ lazy ใน `tb_user_broadcast_action` — ยกเว้นโหมด *specific users* ซึ่ง fan out เป็น row ของ `tb_notification` หนึ่งตัวต่อผู้รับแทน ดู [Data Model](/th/platform/broadcasts/data-model)
+**Edit** (`/broadcasts/:id/edit` → `BroadcastEdit`) เป็นคอมโพเนนต์แยกที่เข้าถึงได้จากลิงก์หัวข้อของ List หรือเมนูแถว route เองต้องการแค่ `broadcast.read` — ผู้อ่านคนไหนก็เปิดในโหมดดูได้; ปุ่ม Edit (และทุกอย่างที่มันปลดล็อก) ต้องการ `broadcast.update` Scope/กลุ่มผู้รับถูกกำหนดตายตัวตอนส่งและแก้ไขไม่ได้ที่นี่ Schedule กับวันหมดอายุแก้ไขได้เสมอ; **title, message และ severity แก้ได้ก็ต่อเมื่อสถานะปัจจุบันของ broadcast ยังเป็น `scheduled`** — เมื่อออกอากาศไปแล้ว backend จะ 400 ทันทีที่พยายามแตะเนื้อหา (`content_locked`) เพราะผู้รับอาจอ่านไปแล้ว การ์ด `BroadcastPreview` ตัวเดียวกับที่ Compose ใช้ก็ถูกนำมาแสดงผลแบบ live ที่นี่ด้วย
+
+เบื้องหลัง SPA, controller ของ backend-gateway (`api/notifications/broadcasts/*`) forward ผ่าน RPC ไปยัง **micro-notification** — `BroadcastService` (สร้าง) และ `BroadcastAdminService` (list/get/update/delete) ซึ่งเขียน `tb_broadcast_notification` และเติม `tb_user_broadcast_action` แบบ lazy ตอนอ่าน ดู [Data Model](/th/platform/broadcasts/data-model)
 
 ## 2. บริบททางธุรกิจ
 
-News และ Broadcasts แบ่งปัญหาการประกาศกันตามความเร่งด่วน บทความข่าวเป็นเนื้อหาแบบ **pull**: มันนั่งอยู่หลัง public feed จนกว่า client จะ render มัน เหมาะกับเอกสารนโยบายและอัพเดทแบบ long-form และแก้ไขหรือ archive ภายหลังได้ broadcast นั้น**ขัดจังหวะ**: มันปรากฏใน notification bell ของผู้ใช้ in-scope ทุกคน (และเป็น socket event แบบ live สำหรับผู้ใช้ที่ออนไลน์) ทันทีที่ถูกส่ง — และแก้ไขหรือเรียกคืนภายหลังไม่ได้ use case ตามแบบฉบับเป็นเชิงปฏิบัติการ: คำเตือนปิดปรับปรุงตามกำหนด (`SYS_MAINTENANCE`), ประกาศ incident (`SYS_CRITICAL`) และประกาศรายโรงแรมไปยังพนักงานของ business unit หนึ่งแห่ง (`BU_INFO`)
+News และ Broadcasts ยังคงแบ่งปัญหาการประกาศกันตามความเร่งด่วนเหมือนเดิม บทความข่าวเป็นเนื้อหาแบบ **pull**: มันนั่งอยู่หลัง public feed จนกว่า client จะ render มัน broadcast นั้น**ขัดจังหวะ**: มันปรากฏใน notification bell ของผู้ใช้ in-scope ทุกคน — และแบบ live ผ่าน WebSocket สำหรับผู้ใช้ที่ออนไลน์ — ทันทีที่ถูกส่ง สิ่งที่ไม่จริงอีกต่อไปคือ broadcast "แก้ไขหรือเรียกคืนไม่ได้": ตอนนี้ผู้ส่งแก้เนื้อหาของ broadcast ที่ยัง `scheduled` ได้, ปรับเวลากำหนดหรือวันหมดอายุได้ตลอด, ต่ออายุให้หมดทันทีจากรายการได้ หรือลบแบบ soft ได้เลย มีแค่ *เนื้อหา* เท่านั้นที่ล็อกเมื่อออกอากาศไปแล้ว — กลุ่มผู้รับและข้อเท็จจริงว่ามันออกอากาศไปแล้วยกเลิกไม่ได้ use case ตามแบบฉบับไม่เปลี่ยนแปลง: คำเตือนปิดปรับปรุงตามกำหนด, ประกาศ incident และประกาศรายโรงแรมไปยัง business unit หนึ่งแห่ง
 
-การกำหนดเวลา (scheduling) ให้ operator เตรียมประกาศปิดปรับปรุงไว้ล่วงหน้าได้: row ของ broadcast ที่กำหนดเวลาไว้ถูกสร้างทันทีแต่จะอยู่นอก list ของผู้รับจนกว่า `scheduled_at` จะผ่านไป (เป็นการ filter ตอนอ่าน — **ไม่มี delivery cron** เข้ามาเกี่ยวข้องสำหรับ row ของ broadcast) ข้อพึงระวังสองข้อที่ QA ควรรู้ตั้งแต่ต้น: side-effect ของการ fan-out อีเมล (เมื่อ SMTP ถูกเปิดใช้บน micro-notification) ทำงานตอน **create** แม้กับการส่งแบบกำหนดเวลา และโหมด *specific users* ไม่เคารพการกำหนดเวลาเลยบนเส้นทางอ่าน — รายละเอียดอยู่ใน [Permissions](/th/platform/broadcasts/permissions) §3–§4
+การกำหนดเวลา (scheduling) ยังให้ operator เตรียมประกาศไว้ล่วงหน้าได้เหมือนเดิม: row ของ broadcast ที่กำหนดเวลาไว้ถูกสร้างทันทีแต่จะอยู่นอก list ของผู้รับจนกว่า `scheduled_at` จะผ่านไป (เป็นการ filter ตอนอ่าน เหมือนเดิม) สิ่งหนึ่งที่ดีขึ้นเฉพาะเส้นทาง**ระบุผู้รับ**เท่านั้น: การส่งแบบกำหนดเวลาไปยังผู้ใช้ที่ระบุเจาะจงเคยค้างไม่ถูกส่งเลยโดยไม่มี live push; ตอนนี้มี background worker ใหม่ทุก 30 วินาทีที่คอย claim personal notification ที่ถึงเวลาแล้วแต่ยังไม่ push แล้ว push แบบ live ทันทีที่ถึงเวลา **system-wide และ business-unit broadcast ไม่มีกลไกเทียบเท่าเลย** — เมื่อกำหนดเวลาไว้แล้วมันจะปรากฏแบบ passive เท่านั้น ตอนที่ผู้รับ fetch ครั้งถัดไป รายละเอียดอยู่ใน [Permissions](/th/platform/broadcasts/permissions) §3–§4
 
 ## 3. แนวคิดสำคัญ
 
-- **Target mode** — `BroadcastTargetMode = 'system_all' | 'system_users' | 'bu'` สองตัวแรกใช้ `POST .../broadcasts/system` ร่วมกัน (array `userIds` แบบระบุชัดเปลี่ยน "ทุกคน" เป็น "ผู้ใช้เหล่านี้"); `bu` post ไป `.../broadcasts/bu` พร้อม `bu_code` — **code** ของ BU ที่มนุษย์อ่านได้ ไม่ใช่ UUID; micro-notification resolve มันเป็น `tb_business_unit.id` แล้วจัดเก็บค่านั้นเป็น `scope_id`
-- **การ resolve type** — SPA resolve ตัว preset ฝั่ง client: `SYS_<PRESET>` สำหรับสองโหมด system, `BU_<PRESET>` สำหรับโหมด BU (เช่น Maintenance → `SYS_MAINTENANCE` หรือ `BU_MAINTENANCE`) การเลือก **Other…** เผย input ของ custom type (`[A-Z0-9_]+`, ≤50 ตัวอักษร, อัพเปอร์เคสอัตโนมัติ) ที่ถูกส่งแบบ verbatim **โดยไม่มี prefix** หาก `type` ถูกละไว้ทั้งหมด (เฉพาะ caller ของ API เท่านั้น — SPA ส่งมันเสมอ) gateway จะ default เป็น `SYS_INFO`/`BU_INFO`
-- **หนึ่ง row, read state แบบ lazy** — broadcast แบบ system-wide หรือแบบ BU คือ row ของ `tb_broadcast_notification` ตัวเดียว; ใครอ่านแล้วอยู่ใน `tb_user_broadcast_action` ซึ่งถูกสร้างแบบ lazy ตอน action แรก แบบแผนนี้แทนที่ดีไซน์ fan-out-on-write รุ่นก่อนหน้า (comment ของ schema document การ migrate ไว้) เส้นทาง *specific users* ยังคงใช้ fan-out แบบ legacy: row ของ `tb_notification` หนึ่งตัวต่อผู้รับ
-- **การกำหนดเวลา = การมองเห็นตอนอ่าน** — broadcast ที่ `scheduled_at` เป็นอนาคตมีอยู่ทันทีแต่ถูก filter ออกจากทุก list query (`scheduled_at IS NULL OR scheduled_at <= NOW()`) จนกว่าเวลาจะผ่านไป; การ push ผ่าน socket แบบ live ถูกข้ามสำหรับการส่งแบบกำหนดเวลาและไม่มีวันเกิดขึ้นภายหลัง (ผู้รับเห็นมันตอน fetch list ครั้งถัดไป)
-- **Fire-and-forget** — ไม่มี API ที่ไหนเลย (gateway หรือ micro-notification) ที่ list, update, cancel หรือ delete broadcast read query เคารพ `deleted_at` แต่ไม่มี code path ใดเคยเขียนมัน — การถอน broadcast ที่ส่งผิดหรือกำหนดเวลาผิดเป็นการดำเนินการบนฐานข้อมูลด้วยมือในวันนี้
+- **Target mode** — ไม่เปลี่ยน: `BroadcastTargetMode = 'system_all' | 'system_users' | 'bu'` สองตัวแรกใช้ `POST .../broadcasts/system` ร่วมกัน (array `userIds` แบบระบุชัดเปลี่ยน "ทุกคน" เป็น "ผู้ใช้เหล่านี้"); `bu` post ไป `.../broadcasts/bu` พร้อม `bu_code` ที่ resolve เป็น `tb_business_unit.id` ที่ฝั่ง server
+- **Severity เป็นป้ายฝั่งผู้ส่งเท่านั้น ไม่ใช่ type ที่ผู้รับเห็น** คอลัมน์ `type` แบบเดิมที่มี prefix `SYS_*`/`BU_*` **หายไปแล้ว** — `tb_broadcast_notification` ไม่มีคอลัมน์ `type` หรือ `category` อีกต่อไปเลย สิ่งที่ผู้ส่งเลือก (Info/Warning/Critical/Maintenance/Other…) ถูกเก็บเป็นสตริงธรรมดาใน `metadata.severity` สำหรับ badge ของหน้าแอดมินเท่านั้น; `event` ของ broadcast ทุกตัวถูก hardcode เป็น `info` จริง ๆ และ `doc_type` สะท้อน scope ของมัน (`system` หรือ `business_unit`) UI ของ compose บอกตรง ๆ เลยว่า "สีและป้ายเป็นการจัดหมวดหมู่ภายในเท่านั้น — ผู้รับเห็นแค่การแจ้งเตือนแบบมาตรฐาน"
+- **วันหมดอายุ (`end_at`) บังคับแล้ว** ไม่ใช่คอลัมน์ตายอีกต่อไป หน้า Compose ตั้งค่าเริ่มต้นเป็น preset 30 วัน (7/30/90 วัน หรือกำหนดวันที่เอง) โดยอิงจากเวลาที่*กำหนดไว้ส่ง*เมื่อมีการตั้งเวลา ไม่งั้นอิงจากตอนนี้ `end_at` คือสิ่งที่ backend ใช้คำนวณ `status` ของ broadcast
+- **`status` คำนวณเสมอ ไม่เคยถูกเก็บ** `active` / `scheduled` / `expired` / `deleted` ถูกคำนวณที่ฝั่ง server จาก `deleted_at`, `scheduled_at` และ `end_at` ทุกครั้งที่อ่าน — ไม่มีคอลัมน์ status
+- **`doc_version` เป็น optimistic lock จริงแล้ว** ไม่ใช่แค่ตกแต่ง schema เฉย ๆ ทั้ง endpoint update และ delete ต้องใช้มันและปฏิเสธค่าที่เก่าด้วย 409
+- **Content lock** — title, message และ metadata แก้ได้ก็ต่อเมื่อสถานะปัจจุบันของ row เป็น `scheduled` การเลื่อน schedule ของ broadcast ที่ออกอากาศไปแล้วกลับไปในอนาคต (การ "ถอน") จะเปิดให้แก้เนื้อหาได้อีกครั้งอย่างถูกต้อง (เป็นสองขั้นที่ตั้งใจ ไม่ใช่รูรั่ว)
+- **หนึ่ง row, read state แบบ lazy** — broadcast แบบ `system_all` หรือ `bu` ยังเป็น row ของ `tb_broadcast_notification` ตัวเดียว; ใครอ่านแล้วอยู่ใน `tb_user_broadcast_action` ที่สร้างแบบ lazy ตอน action แรก
+- **การส่งแบบระบุผู้รับยัง fork ออกไปเต็มตัว** การส่งแบบ `system_users` ที่มี `userIds` ไม่แตะ `tb_broadcast_notification` เลย — มัน fan out เป็น row ของ `tb_notification` หนึ่งตัวต่อผู้รับที่มีอยู่จริง เหมือนเดิม นี่ยังเป็น target mode เดียวที่ List/Edit มองไม่เห็น จัดการไม่ได้ หรือลบภายหลังไม่ได้เลย
+- **การลบใช้งานได้แล้ว** `DELETE /api/notifications/broadcasts/:id` ลบแบบ soft สำหรับ broadcast แบบ `system_all`/`bu` (`deleted_at`/`deleted_by_id`) ซึ่งแทนที่ผลการตรวจสอบเดิมที่บอกว่า "ไม่มี code path ใดเขียน `deleted_at`"
 
 ## 4. บทบาทและ Persona
 
-permission key ตัวเดียว gate ทุก surface ผ่าน [Platform RBAC](/th/platform/rbac) (`broadcast.send`, seed ใน `seed.platform-permission.ts` คู่กับ `broadcast.read` ที่ SPA ไม่ได้ใช้):
+ตอนนี้มีสี่ permission key ที่ gate โมดูลนี้ ผ่าน [Platform RBAC](/th/platform/rbac) ที่ seed ไว้ตาม role ใน `seed.platform-role-permission.data.ts`:
 
 | Surface | Gate | Key |
 |---|---|---|
+| route `/broadcasts` + รายการใน nav | `PrivateRoute` / nav filter | `broadcast.read` |
+| route `/broadcasts/:id/edit` (เปิดในโหมดดู) | `PrivateRoute` | `broadcast.read` |
 | route `/broadcasts/new` | `PrivateRoute` | `broadcast.send` |
-| sidebar "Send Broadcast" (กลุ่ม Content, ไอคอน Megaphone) | nav filter ของ `Layout.tsx` | `broadcast.send` |
-| ปุ่ม Send (footer ของฟอร์ม) | `<Can>` | `broadcast.send` |
-| `POST /api/notifications/broadcasts/system` / `/bu` | `KeycloakGuard` + `PlatformPermissionGuard` | `broadcast.send` |
+| ปุ่ม Send (Compose) | `<Can>` | `broadcast.send` |
+| ปุ่ม Edit (แถวใน List + หน้า Edit) | `<Can>` | `broadcast.update` |
+| Expire Now (แถวใน List) | `<Can>` | `broadcast.update` |
+| Delete (แถวใน List) | `<Can>` | `broadcast.delete` |
+| `GET/PATCH/DELETE .../broadcasts*` | `KeycloakGuard` + `PlatformPermissionGuard` | key ที่ตรงกัน ฝั่ง server |
 
-ต่างจากโมดูลแบบ CRUD ตรงที่ไม่มีการแบ่ง read/create/update/delete — การส่งเป็นการดำเนินการเดียวของโมดูล **ยืนยันว่าแก้แล้วนับจาก sync ครั้งก่อน:** สอง endpoint ของ gateway ตอนนี้บังคับใช้ `broadcast.send` ฝั่ง server ด้วยแล้ว (backend PR #239, `PlatformPermissionGuard` + `@RequirePlatformPermission('broadcast.send')`) — ก่อนหน้านี้ gate ของ SPA เองเป็นขอบเขตเดียว การบังคับใช้นี้จงใจทำแบบ**หยาบ (coarse)**: ผ่านได้ด้วย grant ระดับแพลตฟอร์ม **หรือ** grant ใน cluster ใดก็ได้หนึ่งตัว ตรงกับ (ไม่ได้เข้มกว่า) การตรวจสอบแบบไม่มี scope ของ SPA เอง; การ scope ราย cluster แบบจริงจังยังคงเป็นช่องว่างที่ทราบและถูกเลื่อนออกไปอย่างชัดเจน เมทริกซ์ฉบับเต็ม, quirk ของการ gate แท็บภายใน component และ semantics การส่งมอบราย target mode อยู่ใน [Permissions](/th/platform/broadcasts/permissions)
+| Role | Key ที่ได้รับ |
+|---|---|
+| Platform Admin | `broadcast.*` (ครบทั้งสี่) |
+| Support Manager | `read`, `send`, `update` — **ไม่มี** `delete` |
+| Support Staff | `read` เท่านั้น |
+| Security Officer | ไม่มีเลย |
+
+`broadcast.read` **ไม่ใช่ orphan key อีกต่อไป** — ตอนนี้มัน gate route ของ List, รายการใน nav และโหมดดูของหน้า Edit ทุก route ฝั่ง server บังคับใช้ key ที่ตรงกันผ่าน `PlatformPermissionGuard` แบบหยาบ (coarse): grant ระดับแพลตฟอร์ม **หรือ** grant ใน cluster เดียวก็ผ่านได้ ตรงกับ check ฝั่ง SPA เอง; การจำกัดขอบเขตราย-cluster แบบแท้จริงยังเป็นช่องว่างที่รู้และตั้งใจเลื่อนออกไป matrix แบบเต็ม, กฎ content lock และ delivery/scheduling semantics แต่ละโหมดอยู่ใน [Permissions](/th/platform/broadcasts/permissions)
 
 ## 5. โมดูลที่เกี่ยวข้อง
 
-- [News](/th/platform/news) — sibling ฝั่ง pull: เนื้อหาที่ถูกเขียนพร้อม lifecycle และ public feed เทียบกับ push แบบ one-shot ทันทีของ Broadcasts ใช้ Broadcasts เพื่อขัดจังหวะ ใช้ News เพื่อแจ้งข้อมูล
-- [Business Units](/th/platform/business-units) — โหมด BU กำหนดเป้าหมายหนึ่ง unit ด้วย `code`; หน้าจอเขียนโหลดตัวเลือก select ของมันจาก API ของโมดูลนั้น (เฉพาะ BU ที่ active) และ micro-notification resolve ตัว code กับ row ของ `tb_business_unit` ที่ live อยู่ ณ เวลาส่ง
+- [News](/th/platform/news) — คู่เทียบฝั่ง pull: เนื้อหาที่เขียนไว้พร้อมวงจรชีวิตและ public feed เทียบกับ push ของ Broadcasts
+- [Business Units](/th/platform/business-units) — โหมด BU กำหนดเป้าหมายหนึ่งหน่วยด้วย `code`; หน้า Compose โหลด option จาก API ของโมดูลนั้น (เฉพาะ BU ที่ active, จำกัด 100 รายการ)
 - [Users](/th/platform/users) — โหมด *specific users* ค้นหา user registry ผ่าน `UserMultiSelect`; ผู้รับถูกส่งเป็น UUID ของ `tb_user.id`
-- [Platform RBAC](/th/platform/rbac) — กำหนดและ resolve key `broadcast.send` ที่ gate surface ของ SPA
+- [Platform RBAC](/th/platform/rbac) — กำหนดและ resolve สี่ key `broadcast.*` ที่ gate ทั้ง SPA และ API
 
-## 6. แหล่งข้อมูลอ้างอิง
+## 6. แหล่งอ้างอิง
 
-- `../carmen-platform/src/App.tsx` — route guard ของ `/broadcasts/new` (`broadcast.send`)
-- `../carmen-platform/src/components/Layout.tsx` — รายการ sidebar "Send Broadcast" (กลุ่ม Content)
-- `../carmen-platform/src/pages/BroadcastCompose.tsx`, `src/pages/broadcastCompose/BroadcastPreview.tsx` — หน้าจอเขียน: แท็บ, การ validate, ตัวสร้าง payload, preview แบบ live, dialog ยืนยัน, คีย์ลัด
-- `../carmen-platform/src/components/UserMultiSelect.tsx` — การค้นหาผู้ใช้แบบ debounce พร้อมการเลือกแบบ badge
-- `../carmen-platform/src/services/broadcastService.ts` — การเรียก POST สองตัว; `src/types/index.ts` — `BroadcastTargetMode`, `BroadcastTypePreset`, payload type สองตัว, `UserOption`
+- `../carmen-platform/src/App.tsx` — สาม route guard (`broadcast.read`, `broadcast.send`, `broadcast.read`) และ `feature="broadcasts"`
+- `../carmen-platform/src/components/nav/platformNav.ts` — รายการ nav "Broadcasts" (`permission: 'broadcast.read'`, `feature: 'broadcasts'`, ไม่มี `superAdminOnly`)
+- `../carmen-platform/src/pages/BroadcastManagement.tsx`, `src/pages/broadcastManagement/{BroadcastSummary,BroadcastFilters,broadcastColumns}.tsx` — หน้า List
+- `../carmen-platform/src/pages/BroadcastCompose.tsx` — หน้า Compose: แท็บ, validation, payload builder, preset วันหมดอายุ, confirm dialog, shortcut
+- `../carmen-platform/src/pages/BroadcastEdit.tsx` — หน้า Edit: content lock, การแก้ schedule/วันหมดอายุ, confirm ของ past/reschedule
+- `../carmen-platform/src/components/BroadcastPreview.tsx` — preview แบบ live ที่ใช้ร่วมกันระหว่าง Compose และ Edit (`severityStyle`, `reachSummary`)
+- `../carmen-platform/src/utils/broadcastExpiry.ts` — `resolveExpiryIso()`, preset 7/30/90 วัน
+- `../carmen-platform/src/services/broadcastService.ts` — `sendSystem`/`sendBu`/`getAll`/`getById`/`update`/`remove`; `src/types/index.ts` — `BroadcastTargetMode`, `BroadcastTypePreset`, `BroadcastListItem`, `BroadcastStatus`, `BroadcastUpdatePayload`, `BroadcastSummary`
 - `../carmen-platform/src/utils/permissions.ts` — ค่าคงที่ `PERMISSIONS.BROADCAST.SEND`
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_notification` (บรรทัด 332), `tb_broadcast_notification` (บรรทัด 374), `tb_user_broadcast_action` (บรรทัด 406)
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/notification/notification.controller.ts` — `pushSystemBroadcast` / `pushBuBroadcast` (`KeycloakGuard` + `PlatformPermissionGuard`, การ forward ผ่าน TCP)
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/auth/guards/platform-permission.guard.ts`, `src/auth/services/platform-permission.service.ts` — การตรวจสอบแบบหยาบ platform-wide-หรือ-cluster-ใดก็ได้ (backend PR #239, commit `1fa15ec02`)
-- `../carmen-turborepo-backend-v2/apps/micro-notification/src/notification/` — `notification.controller.ts` (dispatch ของ create, live emit), `notification.service.ts` (การเขียน row, การ resolve scope, filter ตอนอ่าน, การ fan-out อีเมล)
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_notification` (บรรทัด 332), `tb_broadcast_notification` (บรรทัด 369), `tb_user_broadcast_action` (บรรทัด 403); enum `enum_broadcast_scope`, `enum_notification_doc_type`, `enum_notification_event` (บรรทัด 112–131)
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260810000000_notification_redesign_additive/`, `20260811000000_notification_redesign_drop_legacy/` — การปรับใหญ่ที่ลบ `type`/`category`/`is_sent` และเพิ่ม `scope`/`doc_type`/`event`/`pushed_at`
+- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/notification/notification.controller.ts` — ทั้งหกเส้นทางของ broadcast และ guard ของมัน
+- `../carmen-turborepo-backend-v2/apps/micro-notification/src/notification/broadcast.service.ts` (เส้นทางสร้าง), `broadcast-admin.service.ts` (list/get/update/delete, การคำนวณ status), `schedule.worker.ts` (worker push ที่ทำงานทุก 30 วินาที เฉพาะ `tb_notification`)
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts`, `seed.platform-role-permission.data.ts` — สี่ key `broadcast.*` และการมอบสิทธิ์ตาม role
 
 ## 7. หน้าในโมดูลนี้
 
-- [Data Model](/th/platform/broadcasts/data-model) — ตาราง field ของ `tb_broadcast_notification` และ `tb_user_broadcast_action`, ทางแยกของการส่งแบบกำหนดเป้าหมายลง `tb_notification`, คลังศัพท์ของ type และความแตกต่างจาก payload type ของ SPA
-- [UI Screens](/th/platform/broadcasts/ui-screens) — หน้าจอเขียนและแผง preview แบบ live: แท็บ target, ตัวเลือกผู้รับ, ตัวนับ, flow ส่ง/กำหนดเวลา, dialog ยืนยัน และคีย์ลัด
-- [Permissions](/th/platform/broadcasts/permissions) — เมทริกซ์ gate แบบ key เดียว, การบังคับใช้ฝั่ง server ที่ยืนยันว่าแก้แล้ว (พร้อมความหยาบที่ทราบ), semantics การส่งมอบราย target mode และเมทริกซ์กรณีพิเศษสำหรับผู้ทดสอบ
+- [Data Model](/th/platform/broadcasts/data-model) — ตารางฟิลด์ของ `tb_broadcast_notification` และ `tb_user_broadcast_action`, การปรับปรุง enum, การ fork ของการส่งแบบระบุผู้รับไปยัง `tb_notification`, และความแตกต่างเทียบกับ type ของ SPA
+- [UI Screens](/th/platform/broadcasts/ui-screens) — ทั้งสามหน้าจอ: List (คอลัมน์, filter, สรุปยอด, CSV export), Compose (แท็บ target, preset วันหมดอายุ, preview แบบ live) และ Edit (content lock, การแก้ schedule/วันหมดอายุ)
+- [Permissions](/th/platform/broadcasts/permissions) — matrix gate สี่ key, delivery/scheduling semantics แต่ละโหมด, กฎ content lock และ optimistic lock, และตาราง edge case สำหรับผู้ทดสอบ
