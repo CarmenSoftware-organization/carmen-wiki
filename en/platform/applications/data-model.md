@@ -2,7 +2,7 @@
 title: Applications — Data Model
 description: The tb_application and tb_application_api tables, asymmetric read/write shapes, PUT replace semantics, the generated api-catalog, and the schema-only tb_application_role family.
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: 2026-09-05T18:00:00.000Z
 tags: book/platform, applications, data-model
 editor: markdown
 dateCreated: 2026-06-10T12:30:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-06-10T12:30:00.000Z
 # Applications — Data Model
 
 > **At a Glance**
-> **Tables:** `tb_application` &nbsp;·&nbsp; `tb_application_api` (1:N grant rows) &nbsp;·&nbsp; **Enums:** none — `api_name` is free-form VarChar &nbsp;·&nbsp; **Identity:** `tb_application.id` (UUID) is the `x-app-id` value; no separate app-id column &nbsp;·&nbsp; **Grant fork:** `allow_all` boolean — when true, `tb_application_api` rows are irrelevant &nbsp;·&nbsp; **Write shape:** asymmetric — read returns flat `api_names: string[]`, writes send `details.add[]` with **replace semantics** &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` on both tables (added 2026-07-16), enforced as an optimistic lock on `PUT`/`POST` &nbsp;·&nbsp; **Catalog:** not a table — a generated file in backend-gateway served by `/api-system/applications/api-catalog`
+> **Tables:** `tb_application` &nbsp;·&nbsp; `tb_application_api` (1:N grant rows) &nbsp;·&nbsp; **Enums:** none — `api_name` is free-form VarChar &nbsp;·&nbsp; **Identity:** `tb_application.id` (UUID) is the `x-app-id` value; no separate app-id column &nbsp;·&nbsp; **Grant fork:** `allow_all` boolean — when true, `tb_application_api` rows are irrelevant &nbsp;·&nbsp; **Write shape:** asymmetric — read returns flat `api_names: string[]`, writes send `details.add[]` with **replace semantics** &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` on both tables (added 2026-06-12), enforced as an optimistic lock on `PUT`/`POST` &nbsp;·&nbsp; **Catalog:** not a table — a generated file in backend-gateway served by `/api-system/applications/api-catalog`
 
 > **Source of truth:** Backend Prisma platform schema. Always read this first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
@@ -40,7 +40,7 @@ The registered API client. Schema line 65.
 | `is_active` | `Boolean?` | Yes | Default `true`; Active/Inactive badge in the SPA |
 | `allow_all` | `Boolean?` | Yes | Default `false`; `true` grants every guarded endpoint and makes `tb_application_api` rows irrelevant |
 | `device` | `String @db.VarChar` | No | Default `"web"`; the device class this application identifies as. Free-form at the DB level; the SPA constrains it to `mobile` / `web` / `desktop` / `pos` (`DeviceType` / `DEVICE_OPTIONS`). Read by the backend-gateway app-allowlist (`getDevice(appId)`) to apply device-specific behaviour — e.g. the [GRN mobile draft-only list filter](/en/inventory/good-receive-note/02-business-rules) |
-| `doc_version` | `Int` | No | Default `0`; optimistic-concurrency token, added platform-wide (35 tables) on 2026-07-16. `ApplicationEdit` sends it on every `POST`/`PUT`; a stale write is rejected with `409` and the SPA reloads the record with a conflict toast instead of overwriting silently |
+| `doc_version` | `Int` | No | Default `0`; optimistic-concurrency token, added platform-wide (35 tables) on 2026-06-12 (`8e53bbe`). `ApplicationEdit` sends it on every `POST`/`PUT`; a stale write is rejected with `409` and the SPA reloads the record with a conflict toast instead of overwriting silently |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: row creation time, default `now()` |
 | `created_by_id` | `String? @db.Uuid` | Yes | Audit: creator user id (FK to `tb_user`) |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | Audit: last update time, default `now()` |
@@ -119,7 +119,7 @@ The SPA types live in `../carmen-platform/src/types/index.ts` (`Application`, `A
 
 ### 5.2 Schema-only: the `tb_application_role` family
 
-The platform schema also contains `tb_application_role` (line 19), `tb_application_role_tb_permission` (line 44), and `tb_user_tb_application_role` (line 606). Despite the `application` prefix, they are **not part of this module's machine-client model**: they describe business-unit-scoped role bundles (`tb_application_role.business_unit_id` → `tb_business_unit`) joining `tb_permission` rows to users — an in-product RBAC vocabulary for the inventory application, not grants for `x-app-id` callers. The Platform SPA has **no surface for them** — no page, service, or type references them, re-confirmed 2026-07-29 — so they are documented here only to disambiguate the naming; no field tables are warranted until a UI exists. (Note: the generated `api_name` catalog does carry `application-role.*`/`application-role-permission.*`/`application-permission.*` guarded endpoints — these are backend-gateway routes with no client in this SPA, a separate observation from the schema-only tables above; do not conflate the two.)
+The platform schema also contains `tb_application_role` (line 19), `tb_application_role_tb_permission` (line 44), and `tb_user_tb_application_role` (line 591). Despite the `application` prefix, they are **not part of this module's machine-client model**: they describe business-unit-scoped role bundles (`tb_application_role.business_unit_id` → `tb_business_unit`) joining `tb_permission` rows to users — an in-product RBAC vocabulary for the inventory application, not grants for `x-app-id` callers. The Platform SPA has **no surface for them** — no page, service, or type references them, re-confirmed 2026-07-29 — so they are documented here only to disambiguate the naming; no field tables are warranted until a UI exists. (Note: the generated `api_name` catalog does carry `application-role.*`/`application-role-permission.*`/`application-permission.*` guarded endpoints — these are backend-gateway routes with no client in this SPA, a separate observation from the schema-only tables above; do not conflate the two.)
 
 ## 6. References
 
@@ -138,9 +138,9 @@ REST surface consumed by `applicationService.ts`:
 Backend commit/PR references above are all in `../carmen-turborepo-backend-v2` or `../carmen-platform` as already named at each citation; the sections below repeat the primary/secondary split for this page's own reference list.
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_application` (line 65), `tb_application_api` (line 90); schema-only family at lines 19, 44, 606. Re-verified 2026-09-05 against source HEAD `157a65e` — both line numbers and every field unchanged since 2026-07-29; `doc_version` added to both tables on 2026-07-16 (`8e53bbe`).
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_application` (line 65), `tb_application_api` (line 90); schema-only family at lines 19, 44, 591. Re-verified 2026-09-05 by direct read against the repo's current checkout (HEAD `a48904d2`) — every line number above and every field confirmed unchanged since 2026-07-29. Table content itself last changed by `35c2d67c9` (2026-06-16, added `device`) and `8e53bbe` (2026-06-12, added `doc_version`) — dated by `git log -L`, correcting this page's earlier "2026-07-16" for the `doc_version` commit.
 - `../carmen-turborepo-backend-v2/scripts/generate-app-api-catalog/run.ts` — the catalog generator (`AppIdGuard` scan, grouping rule, output path).
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/applications/app-api-catalog.generated.ts` — the generated catalog: 900 `api_name` keys across 148 module groups as of source HEAD `157a65e` (2026-09-04), up from 788/125 at the last sync.
+- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/applications/app-api-catalog.generated.ts` — the generated catalog: 900 `api_name` keys across 148 module groups as regenerated by commit `fa64299f1` (2026-09-04, `chore(applications): regenerate app-api catalog หลังเพิ่ม configUser.getAccess`), up from 788/125 at the last sync.
 
 **Secondary (consumer shape):**
 - `../carmen-platform/src/types/index.ts` — `Application` (incl. `doc_version?: number`), `ApplicationWritePayload`, `ApiCatalogGroup`, `ApplicationSummaryData`, `DeviceCount`.
