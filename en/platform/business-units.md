@@ -2,7 +2,7 @@
 title: Business Units
 description: Per-property/per-hotel entity edited on a six-tab form (General/Location/Formats/Technical/Users/Licenses) covering identity, formats, database-pool assignment, and BU-scoped user and license rosters.
 published: true
-date: 2026-09-05T10:00:00.000Z
+date: 2026-09-06T12:00:00.000Z
 tags: platform/business-units, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -91,7 +91,7 @@ A second, narrower permission gates one control **inside** the page-wide `canEdi
 - [users](/en/platform/users) — supplies the user accounts that get assigned to BUs through the Users tab; new BU members are drawn from the parent cluster's user list, and clicking a name jumps to the user edit page
 - [rbac](/en/platform/rbac) — the permission model behind every gate in §4: catalog, roles, scoped assignments, super-admin bypass, and (§5 there) the legacy role-enum model this module was gated by until 2026-06
 - [report-templates](/en/platform/report-templates) — `allow_business_unit` / `deny_business_unit` chip inputs there scope a report template by the BU `code` values defined here
-- **licenses** (not yet a documented wiki module) — the full-page License Center (`/licenses/:clusterId`) that the Licenses tab's Manage/New subscription buttons link out to; seat and BU-quota purchase rows are actually created and edited there, not on this page
+- [licenses](/en/platform/licenses) — the full-page License Center (`/licenses/:clusterId`) that the Licenses tab's Manage/New subscription buttons link out to; seat and BU-quota purchase rows are actually created and edited there, not on this page
 
 ## 6. Reference Sources
 

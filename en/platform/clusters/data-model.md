@@ -2,7 +2,7 @@
 title: Cluster — Data Model
 description: Cluster entity, relationships to BUs and users, and the licence-ledger model that replaced the static max_license_bu/max_license_users caps.
 published: true
-date: 2026-09-05T04:42:43.000Z
+date: 2026-09-06T12:00:00.000Z
 tags: book/platform, clusters, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -201,4 +201,4 @@ All core identity fields (`id`, `code`, `name`, `alias_name`, `is_active`, `info
 
 **Sibling cross-links:** [Permissions](/en/platform/clusters/permissions) &nbsp;·&nbsp; [UI Screens](/en/platform/clusters/ui-screens).
 
-**Related module cross-links:** [users](/en/platform/users) (full `tb_cluster_user` field table and enum docs) &nbsp;·&nbsp; [business-units](/en/platform/business-units) (full `tb_business_unit` field table) &nbsp;·&nbsp; [licenses](/en/platform/licenses) (full `tb_cluster_license`/`tb_business_unit_license`/`tb_subscription` ledger model and the License Center UI — module not yet documented as of this sync; forward link).
+**Related module cross-links:** [users](/en/platform/users) (full `tb_cluster_user` field table and enum docs) &nbsp;·&nbsp; [business-units](/en/platform/business-units) (full `tb_business_unit` field table) &nbsp;·&nbsp; [licenses](/en/platform/licenses) (full `tb_cluster_license`/`tb_business_unit_license`/`tb_subscription` ledger model and the License Center UI).

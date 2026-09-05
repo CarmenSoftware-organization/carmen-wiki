@@ -2,7 +2,7 @@
 title: โปรไฟล์ (Profile)
 description: หน้าจัดการตนเองสำหรับผู้ใช้ที่ล็อกอินอยู่ใช้ดูและแก้ไขข้อมูลตัวตนของตน รวมถึงเปลี่ยนรหัสผ่าน ตอนนี้มีการ validate field แบบ inline และข้อความ error เมื่อ fetch ล้มเหลว mount อยู่สอง route — /profile (platform) และ /cluster-admin/:clusterId/profile (cluster-admin) — ใช้ component และแหล่งข้อมูลเดียวกัน
 published: true
-date: 2026-09-06T00:00:00.000Z
+date: 2026-09-06T12:00:00.000Z
 tags: platform/profile, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -70,7 +70,7 @@ Profile เป็นหน้าจัดการตนเองแบบ self-
 - [rbac](/th/platform/rbac) — เป็นเจ้าของโมเดล permission ที่ gate ทุก surface อื่น; ตัว Profile เองต้องการเพียง session ที่ผ่านการพิสูจน์ตัวตน และการ assign role/permission ทำบนหน้าจอ User Platform ของโมดูล RBAC
 - [business-units](/th/platform/business-units) — แหล่งของรายการ BU ที่แสดงแบบอ่านอย่างเดียวบนหน้า Profile
 - [Dashboard](/th/platform/dashboard) — อีก route ที่ได้รับการห่อ `<PrivateRoute>` เปล่า ๆ เหมือน `/profile` ทุกประการ รวมถึงการ redirect platform-authority/cluster-admin ที่อธิบายใน §4
-- Cluster Admin (`/cluster-admin/...`) — persona ที่สองที่ component `Profile` เดียวกันนี้ให้บริการที่ `/cluster-admin/:clusterId/profile` (§1.1) ยังไม่เป็นโมดูล wiki ของตัวเอง ณ รอบนี้
+- [ผู้ดูแลคลัสเตอร์ (Cluster Admin)](/th/platform/cluster-admin) — persona ที่สองที่ component `Profile` เดียวกันนี้ให้บริการที่ `/cluster-admin/:clusterId/profile` (§1.1) [UI Screens](/th/platform/cluster-admin/ui-screens) §8 ของโมดูลนั้นเห็นตรงกับเรื่องนี้ตามที่หน้านี้บันทึกไว้ แทนที่จะเล่าใหม่ให้ต่างออกไป
 
 ## 6. แหล่งข้อมูลอ้างอิง
 

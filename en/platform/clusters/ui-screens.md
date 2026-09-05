@@ -2,7 +2,7 @@
 title: Cluster — UI Screens
 description: ClusterManagement (list) and ClusterEdit (create/view/edit) screens — the tabbed plate layout, licensing tab, filters, dialogs, and persisted state.
 published: true
-date: 2026-09-05T14:00:00.000Z
+date: 2026-09-06T12:00:00.000Z
 tags: book/platform, clusters, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -187,7 +187,7 @@ Both `ClusterManagement` and `ClusterEdit` mount a `DevDebugSheet` (dev-only flo
 - `../carmen-platform/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail}.tsx`, `constants.ts` — the shared change-history sheet used by both cluster screens.
 - `../carmen-platform/src/components/BrandingImageUpload.tsx` — shared upload control (compact mode on the plate; type/size validation, rect/square preview shapes).
 - `../carmen-platform/src/services/clusterService.ts` — API surface: `GET/POST /api-system/clusters`, `GET /api-system/clusters/summary`, `PUT/DELETE /api-system/clusters/:id`, `GET /api-system/user/clusters/:clusterId`, `POST /api-system/clusters/:id/logo`, `POST /api-system/clusters/:id/avatar`.
-- Cross-links: [clusters](/en/platform/clusters) (module landing), [rbac](/en/platform/rbac) (permission model behind every gate on these screens), [users](/en/platform/users) (global user pool searched by Add User dialog; `tb_cluster_user` doc), [business-units](/en/platform/business-units) (Add BU navigate-to-new flow; `cluster_id` FK), [licenses](/en/platform/licenses) (License Center — BU-quota purchase/cancel UI; forward link, module not yet documented), [Data Model](/en/platform/clusters/data-model), [Permissions](/en/platform/clusters/permissions).
+- Cross-links: [clusters](/en/platform/clusters) (module landing), [rbac](/en/platform/rbac) (permission model behind every gate on these screens), [users](/en/platform/users) (global user pool searched by Add User dialog; `tb_cluster_user` doc), [business-units](/en/platform/business-units) (Add BU navigate-to-new flow; `cluster_id` FK), [licenses](/en/platform/licenses) (License Center — BU-quota purchase/cancel UI), [Data Model](/en/platform/clusters/data-model), [Permissions](/en/platform/clusters/permissions).
 
 ## 10. E2E note
 

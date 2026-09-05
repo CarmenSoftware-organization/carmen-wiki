@@ -2,7 +2,7 @@
 title: Clusters
 description: Cluster module overview — the top-level tenant grouping that owns business units and licensed users, now backed by a dated licence ledger rather than static caps.
 published: true
-date: 2026-09-05T04:19:00.000Z
+date: 2026-09-06T12:00:00.000Z
 tags: platform/clusters, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -77,7 +77,7 @@ Three things to note. First, a session with no platform-wide or cluster-scoped g
 - [business-units](/en/platform/business-units) — clusters own BUs 1:N; the Business Units tab is the canonical place to create a BU pre-bound to a cluster. **Gotcha:** the `/business-units*` routes reuse the `cluster.read`/`cluster.create`/`cluster.update` keys — there are no `business_unit.*` keys, so granting cluster access also grants Business Units.
 - [users](/en/platform/users) — clusters add users through the global user list; the user edit page is the other side of the join (`tb_cluster_user`).
 - [rbac](/en/platform/rbac) — defines the permission catalog, roles, and scoped assignments behind every `cluster.*` gate in §4, plus the super-admin bypass and bootstrap exception.
-- [licenses](/en/platform/licenses) — the full BU-quota/seat licence ledger and its purchase/cancel UI (License Center) now referenced from every cluster screen — module not yet documented as of this sync (forward link; see the plan's later tasks).
+- [licenses](/en/platform/licenses) — the full BU-quota/seat licence ledger and its purchase/cancel UI (License Center) now referenced from every cluster screen.
 - [report-templates](/en/platform/report-templates) — same route-guard pattern with its own `report_template.*` keys.
 
 ## 6. Reference Sources

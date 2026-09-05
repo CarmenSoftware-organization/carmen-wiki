@@ -2,7 +2,7 @@
 title: คลัสเตอร์ (Clusters)
 description: ภาพรวมโมดูล Clusters — กลุ่ม tenant ระดับบนสุดที่เป็นเจ้าของ business unit และ user ตามไลเซนส์ ปัจจุบันอ้างอิงจาก licence ledger แบบมีวันหมดอายุแทน cap แบบ static เดิม
 published: true
-date: 2026-09-05T04:19:00.000Z
+date: 2026-09-06T12:00:00.000Z
 tags: platform/clusters, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -77,7 +77,7 @@ dateCreated: 2026-05-19T00:00:00.000Z
 - [business-units](/th/platform/business-units) — cluster เป็นเจ้าของ BU แบบ 1:N แท็บ Business Units คือจุดมาตรฐานในการสร้าง BU ที่ผูกกับ cluster ตั้งแต่ต้น **Gotcha:** route `/business-units*` ใช้ key `cluster.read`/`cluster.create`/`cluster.update` ซ้ำ — ไม่มี key `business_unit.*`
 - [users](/th/platform/users) — cluster เพิ่ม user ผ่าน global user list ส่วนหน้า edit user คืออีกฝั่งของ join `tb_cluster_user`
 - [rbac](/th/platform/rbac) — กำหนด catalog ของ permission, role และ scoped assignment ที่อยู่เบื้องหลังทุก gate `cluster.*` ใน §4
-- [licenses](/th/platform/licenses) — licence ledger เต็มรูปแบบของโควตา BU/ที่นั่งและ UI ซื้อ/ยกเลิก (License Center) ที่ทุกหน้าจอ cluster ลิงก์ไปหาแล้วตอนนี้ — โมดูลนี้ยังไม่ถูกบันทึกเป็นหน้า ณ รอบ sync นี้ (ลิงก์ล่วงหน้า)
+- [licenses](/th/platform/licenses) — licence ledger เต็มรูปแบบของโควตา BU/ที่นั่งและ UI ซื้อ/ยกเลิก (License Center) ที่ทุกหน้าจอ cluster ลิงก์ไปหาแล้วตอนนี้
 - [report-templates](/th/platform/report-templates) — ใช้ pattern route-guard เดียวกันแต่มี key `report_template.*` ของตัวเอง
 
 ## 6. แหล่งข้อมูลอ้างอิง

@@ -2,7 +2,7 @@
 title: Profile
 description: Self-service page where a signed-in user views and edits their own identity fields, changes their password, and now gets inline field validation and a proper fetch-failure message. Mounted at two routes — /profile (platform) and /cluster-admin/:clusterId/profile (cluster-admin) — sharing one component and one data source.
 published: true
-date: 2026-09-06T00:00:00.000Z
+date: 2026-09-06T12:00:00.000Z
 tags: platform/profile, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -70,7 +70,7 @@ No `<Can>` gates appear within the `Profile` component itself at either mount, a
 - [rbac](/en/platform/rbac) — owns the permission model that gates every other surface; Profile itself requires only an authenticated session, and role/permission assignment happens in the RBAC module's User Platform screen
 - [business-units](/en/platform/business-units) — the source of the BU list rendered read-only on the Profile page
 - [Dashboard](/en/platform/dashboard) — the other route sharing `/profile`'s exact bare `<PrivateRoute>` treatment, including the platform-authority/cluster-admin redirect described in §4
-- Cluster Admin (`/cluster-admin/...`) — the second persona this same `Profile` component serves at `/cluster-admin/:clusterId/profile` (§1.1); not yet its own wiki module as of this pass
+- [Cluster Admin](/en/platform/cluster-admin) — the second persona this same `Profile` component serves at `/cluster-admin/:clusterId/profile` (§1.1); that module's own [UI Screens](/en/platform/cluster-admin/ui-screens) §8 agrees with this page's account of the shared mounting rather than restating it differently
 
 ## 6. Reference Sources
 

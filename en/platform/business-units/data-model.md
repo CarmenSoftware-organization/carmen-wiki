@@ -2,7 +2,7 @@
 title: Business Unit — Data Model
 description: BU entity, formatting/locale block, database-pool + schema pointer, config array, branding tokens, module activation join, and the per-BU license ledger that replaced the old max_license_users column.
 published: true
-date: 2026-09-05T10:00:00.000Z
+date: 2026-09-06T12:00:00.000Z
 tags: book/platform, business-units, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -188,7 +188,7 @@ Replaces the single `max_license_users` integer with dated, individually-purchas
 - `@@index([business_unit_id, deleted_at])` — map `"bu_license_bu_deleted_at_idx"`
 - `@@index([end_date])` — map `"bu_license_end_date_idx"` — supports expiry-threshold scans
 
-**SPA read/write surface:** `businessUnitLicenseService.ts` — `getAll(buId)` (nested under the BU), `create`/`update`/`delete`. Creating and editing a license row happens on the full-page form at `/licenses/subscriptions/new` and `/licenses/seats/...` (the `licenses` module, not yet a documented wiki module) — the BU edit page's Licenses tab is **read-only summary + links**, not an inline editor; see [UI Screens](/en/platform/business-units/ui-screens) §4.
+**SPA read/write surface:** `businessUnitLicenseService.ts` — `getAll(buId)` (nested under the BU), `create`/`update`/`delete`. Creating and editing a license row happens on the full-page form at `/licenses/subscriptions/new` and `/licenses/seats/...` (the [licenses](/en/platform/licenses) module) — the BU edit page's Licenses tab is **read-only summary + links**, not an inline editor; see [UI Screens](/en/platform/business-units/ui-screens) §4.
 
 ### 2.4 `tb_database_pool` (referenced) — NEW, replaces `db_connection`
 

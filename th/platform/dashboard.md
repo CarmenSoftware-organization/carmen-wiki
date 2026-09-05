@@ -2,7 +2,7 @@
 title: Dashboard
 description: หน้า home hub สำหรับผู้ใช้ที่ signed-in (/dashboard) — activity stream รวมทั่ว 6 โดเมน บวกแถบสรุปจำนวน active/total ต่อโดเมนแบบ sticky ไม่มี requiredPermission ของตัวเอง ทุกโดเมนจะหลุดจากทั้งสองส่วนแบบเงียบ ๆ ถ้า session อ่านไม่ได้
 published: true
-date: 2026-09-06T00:00:00.000Z
+date: 2026-09-06T12:00:00.000Z
 tags: platform/dashboard, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -56,7 +56,7 @@ route `/dashboard` ถูกห่อด้วย `<PrivateRoute>` เปล่�
 - [Landing](/th/platform/landing) — หน้าสาธารณะที่ redirect session ที่ authenticated แล้วมาที่นี่ทันที; ยังเป็นหน้าที่ดัชนี "Inside the console" แบบ hardcode ของตัวเองควรจะแสดงโมดูลเดียวกับที่ sidebar แสดง (ดู Overview ของหน้านั้นสำหรับความคลาดเคลื่อนที่ยืนยันแล้วระหว่างสองสิ่งนี้)
 - [Profile](/th/platform/profile) — อีก route หนึ่งที่ gate ด้วย `<PrivateRoute>` เปล่า ๆ ไม่มีข้อกำหนด permission และ component เดียวที่เข้าถึงได้ทั้งจากฝั่ง platform และ persona cluster-admin แยกต่างหากที่อธิบายด้านล่าง
 - [Clusters](/th/platform/clusters), [Business Units](/th/platform/business-units), [Users](/th/platform/users), [Applications](/th/platform/applications), [News](/th/platform/news), [Report Templates](/th/platform/report-templates) — หกโดเมนที่ Activity Stream และ Counts Rail อ่านข้อมูลมา
-- Cluster Admin (`/cluster-admin/...`) — persona แยกต่างหากที่ไม่มี dashboard ของตัวเอง ซึ่ง cluster admin แบบ membership-only ถูก redirect เข้าไปแทนหน้านี้ (§5) ยังไม่เป็นโมดูล wiki ของตัวเอง ณ รอบนี้
+- [ผู้ดูแลคลัสเตอร์ (Cluster Admin)](/th/platform/cluster-admin) — persona แยกต่างหากที่ไม่มี dashboard ของตัวเอง ซึ่ง cluster admin แบบ membership-only ถูก redirect เข้าไปแทนหน้านี้ (§5) [Permissions](/th/platform/cluster-admin/permissions) §4 กรณีพิเศษที่ 9 ของโมดูลนั้นบันทึกกลไก redirect เดียวกันนี้ไว้จากอีกฝั่งหนึ่งแล้ว
 
 ## 7. แหล่งข้อมูลอ้างอิง
 

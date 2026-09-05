@@ -2,7 +2,7 @@
 title: หน่วยธุรกิจ (Business Units)
 description: เอนทิตีต่อ property/ต่อโรงแรม แก้ไขบนฟอร์มหกแท็บ (General/Location/Formats/Technical/Users/Licenses) ครอบคลุมข้อมูลระบุตัวตน รูปแบบ การผูก database pool และรายชื่อผู้ใช้/license ที่ผูกกับ BU
 published: true
-date: 2026-09-05T10:00:00.000Z
+date: 2026-09-06T12:00:00.000Z
 tags: platform/business-units, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -91,7 +91,7 @@ gate แบบ scoped (`clusterId`) จะ resolve กับ **cluster แม่
 - [users](/th/platform/users) — เป็นแหล่งของบัญชีผู้ใช้ที่ถูก assign เข้า BU ผ่านแท็บ Users สมาชิก BU ใหม่ถูกดึงจากรายชื่อผู้ใช้ของ cluster ที่เป็นแม่ และการคลิกชื่อจะกระโดดไปหน้าแก้ไข user
 - [rbac](/th/platform/rbac) — โมเดล permission เบื้องหลังทุก gate ใน §4: catalog, role, scoped assignment, bypass ของ super-admin และ (§5 ของหน้านั้น) โมเดล role-enum รุ่นเก่าที่เคย gate โมดูลนี้จนถึง 2026-06
 - [report-templates](/th/platform/report-templates) — chip input `allow_business_unit` / `deny_business_unit` ที่นั่นกำหนดขอบเขตเทมเพลตรายงานด้วยค่า `code` ของ BU ที่นิยามไว้ที่นี่
-- **licenses** (ยังไม่มีหน้า wiki เอกสารเต็ม) — License Center เต็มหน้า (`/licenses/:clusterId`) ที่ปุ่ม Manage/New subscription ของแท็บ Licenses ลิงก์ออกไป แถวการซื้อที่นั่งและโควตา BU ถูกสร้าง/แก้ไขจริงที่นั่น ไม่ใช่บนหน้านี้
+- [licenses](/th/platform/licenses) — License Center เต็มหน้า (`/licenses/:clusterId`) ที่ปุ่ม Manage/New subscription ของแท็บ Licenses ลิงก์ออกไป แถวการซื้อที่นั่งและโควตา BU ถูกสร้าง/แก้ไขจริงที่นั่น ไม่ใช่บนหน้านี้
 
 ## 6. แหล่งข้อมูลอ้างอิง
 

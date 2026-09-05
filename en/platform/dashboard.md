@@ -2,7 +2,7 @@
 title: Dashboard
 description: The signed-in home hub (/dashboard) — a unified recent-activity stream across six domains plus a sticky per-domain active/total counts rail. No requiredPermission of its own; every domain silently drops out of both if the session can't read it.
 published: true
-date: 2026-09-06T00:00:00.000Z
+date: 2026-09-06T12:00:00.000Z
 tags: platform/dashboard, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -56,7 +56,7 @@ The `/dashboard` route is wrapped in a plain `<PrivateRoute>` with no `requiredP
 - [Landing](/en/platform/landing) — the public page that redirects an already-authenticated session straight here; also the page whose own hardcoded "Inside the console" index should list the same modules the sidebar does (see that page's Overview for a confirmed drift between the two).
 - [Profile](/en/platform/profile) — the other route gated by a bare `<PrivateRoute>` with no permission requirement, and the one shared component reachable from both the platform view and the separate cluster-admin persona described below.
 - [Clusters](/en/platform/clusters), [Business Units](/en/platform/business-units), [Users](/en/platform/users), [Applications](/en/platform/applications), [News](/en/platform/news), [Report Templates](/en/platform/report-templates) — the six domains the Activity Stream and Counts Rail read from.
-- Cluster Admin (`/cluster-admin/...`) — the separate, dashboard-less persona a membership-only cluster admin is redirected into instead of this page (§5); not yet its own wiki module as of this pass.
+- [Cluster Admin](/en/platform/cluster-admin) — the separate, dashboard-less persona a membership-only cluster admin is redirected into instead of this page (§5); that module's own [Permissions](/en/platform/cluster-admin/permissions) §4, edge case 9, documents the identical `PrivateRoute` redirect from the other side.
 
 ## 7. Reference Sources
 
