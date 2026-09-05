@@ -2,7 +2,7 @@
 title: เทมเพลตรายงาน (Report Templates)
 description: แคตตาล็อกเทมเพลตรายงานแบบ XML พร้อม editor แบบแท็บ Dialog/Content/Preview การผูก data source กับฐานข้อมูล การกำหนดขอบเขต business unit แบบ allow/deny และ (ตั้งแต่ 2026-07-23) default form template ต่อ report group
 published: true
-date: 2026-07-29T09:46:00.000Z
+date: 2026-09-05T00:00:00.000Z
 tags: platform/report-templates, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -17,7 +17,7 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 โมดูล Report Templates คือหน้าจอ authoring สำหรับนิยามรายงานของแพลตฟอร์ม แต่ละแถวใน `tb_report_template` อธิบายเอกสารที่พิมพ์/ส่งออกได้หนึ่งรายการ ได้แก่ ชื่อที่อ่านง่ายสำหรับมนุษย์ แท็ก `report_group` สำหรับการจัดกลุ่มใน picker ตอน runtime payload XML สองชุด (**Dialog XML** ที่นิยาม form ตัวกรองที่แสดงให้ผู้ใช้ปลายทาง และ **Content XML** ที่นิยามผลลัพธ์ที่ render ออกมา) การผูก data source (`source_type` + `source_name` + `source_params`) และฟิลด์ควบคุมการเข้าถึงที่จำกัดว่า business unit ใดจะรันได้ หน้ารายการที่ `/report-templates` (`ReportTemplateManagement.tsx`) เป็นแคตตาล็อกแบบ server-paginated ค้นหาได้ กรองได้ มี facet สำหรับ status/source-type/template-type และส่งออก CSV ได้ หน้าแก้ไขที่ `/report-templates/:id/edit` และ `/report-templates/new` (`ReportTemplateEdit.tsx`) เป็น layout สองคอลัมน์ คอลัมน์ซ้ายเป็นข้อมูลเทมเพลต, ขอบเขต BU, metadata และการผูก data source ส่วนคอลัมน์ขวาเป็นแท็บ editor XML และพรีวิว Dialog แบบ live
 
-ตั้งแต่ 2026-07-23 โมดูลนี้ยังเป็นเจ้าของการเลือก "ชนิดเอกสาร → เทมเพลต" ซึ่งเดิมเป็นงานของโมดูลแยกชื่อ `print-template-mapping` ค่า `report_group` ที่จับคู่กับ `template_type = "form"` และ boolean ใหม่ `is_default` (unique ต่อกลุ่มในหมู่ form template ที่ live) ตอนนี้ตัดสินใจว่า layout เอกสารเดี่ยวตัวไหนที่ business unit จะได้เป็น default สำหรับ `report_group` หนึ่ง ๆ เมื่อยังไม่ได้เลือกเอง หน้าจอ [Form Groups](/th/platform/report-templates/form-groups) ใหม่ที่ `/report-form-groups` (`ReportFormGroupManagement.tsx` รายการ sidebar ในกลุ่ม Content) แสดงสิ่งนี้เป็นการ์ดหนึ่งใบต่อ `report_group` ที่ตายตัว แต่ละใบแสดง form template ของตนพร้อม action "set as default" — ดู [โมดูลที่เกี่ยวข้อง](#5-โมดูลที่เกี่ยวข้อง) และ [print-template-mapping](/th/platform/print-template-mapping) สำหรับสิ่งที่มันแทนที่
+ตั้งแต่ 2026-07-23 โมดูลนี้ยังเป็นเจ้าของการเลือก "ชนิดเอกสาร → เทมเพลต" ซึ่งเดิมเป็นงานของโมดูลแยกชื่อ `print-template-mapping` ค่า `report_group` ที่จับคู่กับ `template_type = "form"` และ boolean ใหม่ `is_default` (unique ต่อกลุ่มในหมู่ form template ที่ live) ตอนนี้ตัดสินใจว่า layout เอกสารเดี่ยวตัวไหนที่ business unit จะได้เป็น default สำหรับ `report_group` หนึ่ง ๆ เมื่อยังไม่ได้เลือกเอง หน้าจอ [Form Groups](/th/platform/report-templates/form-groups) ใหม่ที่ `/report-form-groups` (`ReportFormGroupManagement.tsx` รายการ sidebar ในกลุ่ม Content) แสดงสิ่งนี้เป็นการ์ดหนึ่งใบต่อ `report_group` ที่ตายตัว แต่ละใบแสดง form template ของตนพร้อม action "set as default" — ดู [โมดูลที่เกี่ยวข้อง](#5-โมดูลที่เกี่ยวข้อง) และ [print-template-mapping](/th/platform/print-template-mapping) สำหรับสิ่งที่มันแทนที่ หน้าจอนี้มีแผนจะย้ายไปเป็นโมดูล Platform ระดับบนสุดของตัวเอง [Report Form Groups](/th/platform/report-form-groups) ในเฟสถัดไปของการ re-sync wiki นี้ — จนกว่าหน้านั้นจะถูกสร้าง เอกสารฉบับเต็มของหน้าจอนี้ยังอยู่ที่หน้าย่อย [Form Groups](/th/platform/report-templates/form-groups) ที่ลิงก์ไว้ข้างต้น
 
 การผูก data source คือสัญญาตอน runtime เทมเพลตจะอ่านจาก **view** ของฐานข้อมูล (ไม่มีพารามิเตอร์ ตัวกรองทำงานผ่าน WHERE clause ตอน runtime) **function** (พารามิเตอร์แบบ positional ที่ได้จาก `source_params`) หรือ **procedure** (พารามิเตอร์ positional เหมือนกัน บวกกับ INOUT refcursor ต่อท้ายชื่อ `rs` และ procedure มีหน้าที่ใช้ตัวกรองภายในเอง) แต่ละแถวของ `source_params` จะ map ฟิลด์ filter หนึ่งฟิลด์จาก Dialog XML (เช่น `DateFrom`) เข้ากับ type ของ PostgreSQL และธง `nullable` ค่า `source_name` เป็น identifier แบบ plain ที่ไม่มี schema prefix และไม่มี quote — จะถูก resolve กับ schema ของแต่ละ tenant ตอน runtime ตัว probe "Browse in BU" ให้ผู้ดูแลเลือก business unit เป้าหมาย ดึงรายการ views/functions/procedures ที่มีอยู่จริงใน schema ของ tenant นั้น แล้วเลือกแทนที่จะพิมพ์ identifier จากความจำ
 
@@ -48,7 +48,7 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 ## 4. บทบาทและ Persona
 
-การเข้าถึงถูกควบคุมด้วยโมเดล RBAC แบบ permission-based ของแพลตฟอร์ม ([rbac](/th/platform/rbac)): แต่ละ route ถือ key `requiredPermission` ของตัวเองบน `PrivateRoute` และ session ต้องมี grant `report_template.*` ที่ตรงกัน (หรือ flag super-admin) จึงจะผ่าน session ที่ไม่มี key จะเห็น `<AccessDenied>` ภายใน shell `<Layout>` ปกติ
+การเข้าถึงถูกควบคุมด้วยโมเดล RBAC แบบ permission-based ของแพลตฟอร์ม ([rbac](/th/platform/rbac)): แต่ละ route ถือ key `requiredPermission` ของตัวเองบน `PrivateRoute` และ session ต้องมี grant `report_template.*` ที่ตรงกัน (หรือ flag super-admin) จึงจะผ่าน session ที่ไม่มี key จะเห็นหน้า `Forbidden` ภายใน shell `<Layout>` ปกติ
 
 | Route | `requiredPermission` |
 |---|---|
@@ -56,7 +56,9 @@ dateCreated: 2026-05-19T00:00:00.000Z
 | `/report-templates/new` | `report_template.create` |
 | `/report-templates/:id/edit` | `report_template.update` |
 
-ภายในหน้าจอ action ที่แก้ไขข้อมูลมี gate `<Can>` ของตัวเอง: **Add Template** ห่อด้วย `report_template.create`, **Edit** ของ row ด้วย `report_template.update`, **Delete** ของ row ด้วย `report_template.delete` (มีเฉพาะภายในหน้า — ไม่มี route ใดต้องการ key delete) และ toggle **Edit** ของหน้า edit ด้วย `report_template.update` ไม่มี gate ใดส่ง `clusterId` — เทมเพลตรายงานเป็น tenant-global การตรวจสอบจึง resolve โดยไม่จำกัดขอบเขตต่อ cluster รายการใน sidebar filter ด้วย `report_template.read` เมทริกซ์ฉบับเต็ม ข้อยกเว้น bootstrap และกลไกของ gate อยู่ใน [Permissions](/th/platform/report-templates/permissions)
+ภายในหน้าจอ action ที่แก้ไขข้อมูลมี gate `<Can>` ของตัวเอง: **Add Template** ห่อด้วย `report_template.create` (ทั้งปุ่ม header และปุ่ม empty-state — ไม่มีตัวใดที่ไม่ถูก gate), **Edit** ของ row ด้วย `report_template.update`, **Delete** ของ row ด้วย `report_template.delete` (มีเฉพาะภายในหน้า — ไม่มี route ใดต้องการ key delete) และ toggle **Edit** ของหน้า edit ด้วย `report_template.update` action **View History** (ใหม่ ข้ามโมดูล) ทั้งบน row และหน้า edit ถูก gate ด้วย `activity_log.read` พร้อม `clusterId={PLATFORM_SCOPED_RECORD}` — ฟีเจอร์ Activity Trail เดียวกับที่ document ไว้ใน [clusters](/th/platform/clusters)/[business-units](/th/platform/business-units)/[users](/th/platform/users)/[applications](/th/platform/applications) ไม่มี gate ใดส่ง `clusterId` จริง — เทมเพลตรายงานเป็น tenant-global การตรวจสอบจึง resolve โดยไม่จำกัดขอบเขตต่อ cluster
+
+รายการ sidebar และ route ของทั้ง `/report-templates` และ `/report-form-groups` ถือ `permission: 'report_template.read'` เหมือนกัน (`../carmen-platform/src/components/nav/platformNav.ts`) — **key permission นี้ใช้ร่วมกันระหว่างโมดูลนี้กับรายการเมนู Form Groups** ไม่ใช่ของ Report Templates แต่ผู้เดียว แต่ **key feature ต่างกัน**: `feature: 'report_templates'` gate สาม route ของโมดูลนี้ ส่วน `feature: 'report_form_groups'` gate route และแถว sidebar ของ Form Groups แยกต่างหาก — การเปลี่ยน feature flag ของฝั่งหนึ่งไม่กระทบอีกฝั่ง ไม่มีแถว nav ใดถือ `superAdminOnly` เมทริกซ์ฉบับเต็ม ข้อยกเว้น bootstrap และกลไกของ gate อยู่ใน [Permissions](/th/platform/report-templates/permissions)
 
 ลูกค้าปลายทางไม่เข้าถึงโมดูลนี้ — พวกเขาบริโภคผลลัพธ์ของรายงานผ่าน picker ตอน runtime ไม่ใช่ผ่านแคตตาล็อกเทมเพลต การ authoring ยังคงเป็นงานภายในของ Carmen: การมอบสิทธิ์ให้ใครสักคนหมายถึงการ assign role ใน catalog ที่รวม key `report_template.*` (จนถึง 2026-06 surface นี้เคยถูก hardcode กับ role enum รุ่นเก่า `platform_admin` / `support_manager` / `support_staff` ซึ่งถูกถอดออกแล้ว — ตาราง mapping การ migrate อยู่ใน [rbac](/th/platform/rbac) §5)
 
@@ -70,13 +72,13 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 ## 6. แหล่งข้อมูลอ้างอิง
 
-- Frontend: `../carmen-platform/SITEMAP.md`, `../carmen-platform/src/pages/ReportTemplateManagement.tsx`, `../carmen-platform/src/pages/ReportTemplateEdit.tsx`, `../carmen-platform/src/pages/ReportFormGroupManagement.tsx`, `../carmen-platform/src/constants/reportGroups.ts`, `../carmen-platform/src/services/reportTemplateService.ts`, `../carmen-platform/src/App.tsx`
+- Frontend: `../carmen-platform/SITEMAP.md`, `../carmen-platform/src/pages/ReportTemplateManagement.tsx`, `../carmen-platform/src/pages/ReportTemplateEdit.tsx`, `../carmen-platform/src/pages/ReportFormGroupManagement.tsx`, `../carmen-platform/src/constants/reportGroups.ts`, `../carmen-platform/src/services/reportTemplateService.ts`, `../carmen-platform/src/App.tsx`, `../carmen-platform/src/components/nav/platformNav.ts` (รายการ sidebar, key permission/feature — ไม่ใช่ `Layout.tsx` ซึ่งไม่ได้นิยาม nav row แล้วในปัจจุบัน)
 - Backend: `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260723120000_print_form_default/migration.sql` — การเพิ่ม `is_default`, unique index `idx_report_template_default_per_group`, การ drop `tb_print_template_mapping`
 
 ## 7. หน้าในโมดูลนี้
 
 - [Data Model](/th/platform/report-templates/data-model) — entity `tb_report_template`, payload JSON (Dialog/Content XML เป็น `String @db.Text`; `source_params`, `signature_config`, ขอบเขต BU เป็น JsonB) และการตรวจ divergence กับ type `ReportTemplate` ของ SPA
-- [Permissions](/th/platform/report-templates/permissions) — key `requiredPermission` ต่อ route (`report_template.read` / `.create` / `.update`), gate `<Can>` ภายในหน้า (รวม `report_template.delete` ที่ไม่มี route), filter ของ sidebar, ข้อยกเว้น bootstrap และเมทริกซ์ effective access ตาม grant
+- [Permissions](/th/platform/report-templates/permissions) — key `requiredPermission` ต่อ route (`report_template.read` / `.create` / `.update`), gate `<Can>` ภายในหน้า (รวม `report_template.delete` ที่ไม่มี route และ gate View History `activity_log.read` ใหม่), filter ของ sidebar, ข้อยกเว้น bootstrap และเมทริกซ์ effective access ตาม grant
 - [UI Screens](/th/platform/report-templates/ui-screens) — ทัวร์ของแท็บ editor XML แบบ CodeMirror (stub — ยังไม่สมบูรณ์), marker การ validate แบบ live, แท็บ Dialog Preview, chip input ของ BU, แถบ action ติดล่างพร้อมตัวบ่งชี้การเปลี่ยนแปลงที่ยังไม่ได้บันทึก, และฟิลด์ `template_type`/`is_default` ที่เพิ่มเมื่อ 2026-07-23
 - [XML Spec](/th/platform/report-templates/xml-spec) — เอกสารอ้างอิงสำหรับ schema XML ของ Dialog และ Content (stub — ยังไม่สมบูรณ์) — root element, โครงสร้างของ child และ pattern การจับคู่ Label + Date/Lookup ที่ใช้ใน form ตัวกรอง
 - [Form Groups](/th/platform/report-templates/form-groups) — หน้าจอ `/report-form-groups`: การ์ดกลุ่ม 12 code ตายตัว flow "set as default" แบบสอง `PUT` ตามลำดับที่ไม่ใช่ transaction เดียว และวิธีที่มันแทนที่ list แบบการ์ดจัดกลุ่มของ print-template-mapping
