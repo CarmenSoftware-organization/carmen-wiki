@@ -2,7 +2,7 @@
 title: Platform RBAC — แบบจำลองข้อมูล (Data Model)
 description: ตาราง RBAC ทั้งห้า — permission catalog, role, join ระหว่าง role กับ permission, assignment ผู้ใช้แบบมี scope, flag super-admin — การ rollout doc_version เมื่อ 2026-07-16 และความแตกต่างจาก shape ของ SPA
 published: true
-date: 2026-07-29T00:00:00.000Z
+date: 2026-09-05T00:00:00.000Z
 tags: book/platform, rbac, data-model
 editor: markdown
 dateCreated: 2026-06-10T15:00:00.000Z
@@ -30,7 +30,7 @@ dateCreated: 2026-06-10T15:00:00.000Z
 
 ### 2.1 `tb_platform_permission`
 
-permission catalog หนึ่ง row ต่อ action ที่มอบสิทธิ์ได้; SPA derive key string เป็น `resource.action` (เช่น `role.read`) row เป็นข้อมูลอ้างอิงที่ backend เป็นเจ้าของ
+permission catalog หนึ่ง row ต่อ action ที่มอบสิทธิ์ได้; SPA derive key string เป็น `resource.action` (เช่น `platform_role.read`) row เป็นข้อมูลอ้างอิงที่ backend เป็นเจ้าของ
 
 | Field | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | ----------- |
@@ -187,13 +187,16 @@ type ของ SPA อยู่ใน `../carmen-platform/src/types/index.ts` (`
 | Shape ของ SPA | แหล่งที่มาใน SPA | การจัดเก็บใน Prisma | หมายเหตุ |
 | --------- | ---------- | -------------- | ----- |
 | `Role.permissions: string[]` (key string) | `Role` | join row ใน `tb_platform_role_tb_permission` | API flatten join row เป็น string `resource.action` ที่ derive แล้ว; SPA ไม่เคยเห็น id ของ join-row การเขียนส่งกลับเป็น delta `{ add, remove }` (`roleService.RoleWriteData`) ไม่ใช่ชุดเต็ม |
-| `permission_count` บน row ของ list | `RoleRow` ใน `RoleManagement.tsx` | ไม่ใช่คอลัมน์ | aggregate ฝั่ง server เหนือ live join row; มีอยู่เฉพาะใน response ของ list |
+| `permission_count` บน row ของ list | `RoleRow` ใน `RoleManagement.tsx` | ไม่ใช่คอลัมน์ | aggregate ฝั่ง server เหนือ live join row; **ไม่มีในผลลัพธ์การอ่าน role เดี่ยว** (`Role.permission_count?` ใน `types/index.ts` ระบุว่า "list read model only") — reach ที่แสดงใน `RoleIdentityHero` จึงคำนวณฝั่ง client จาก `formData.permissions.length` แทน |
 | `PermissionCatalogItem.key` | `permissionService.getCatalog` | ไม่ใช่คอลัมน์ | Derive ขึ้นมา; service สังเคราะห์ `` `${resource}.${action}` `` เมื่อ response ไม่มี `key` |
+| `PermissionCatalogItem.created_at`/`created_by_name`/`audit` | mapper ของ `permissionService.getCatalog` | audit trio บน `tb_platform_permission` | เป็น optional และในทางปฏิบัติแทบไม่มีค่าเลย: `tb_platform_permission` เป็นข้อมูล seed ที่ `created_by_id` เป็น null ทุก row จึงทำให้บรรทัด `latestActor()`/`AuditMeta` ต่อ item ของ `PermissionCatalog.tsx` ไม่แสดงอะไรในปัจจุบัน field เหล่านี้ถูกเก็บไว้ใน type/mapper เผื่อ backend เริ่ม attribute การแก้ไข catalog ให้ actor ในอนาคต |
 | union `Scope` `{ type: 'platform' } \| { type: 'cluster', cluster_id }` | `Scope` | คอลัมน์ `cluster_id` แบบ nullable คอลัมน์เดียว | discriminated union เป็นโครงสร้างของ API/client; `type: 'platform'` ⇔ `cluster_id IS NULL` |
 | `UserRoleAssignment.role_name` | `UserRoleAssignment` | ไม่ใช่คอลัมน์ | API join มาจาก `tb_platform_role.name` เพื่อการแสดงผล |
 | `EffectivePermissions` `{ platform, clusters, is_super_admin }` | `EffectivePermissions` | ไม่มีตาราง | การ flatten ที่คำนวณจาก assignment ที่ live ทั้งหมด + flag super-admin; เสิร์ฟโดย `GET /api/user/permission/platform` |
-| `created_at`/`created_by_name` แบบแบนบน row ของ role list | `RoleManagement.tsx` | คอลัมน์ audit id | response ของ list อาจซ้อนข้อมูล audit เป็น `audit.created/updated` `{ at, name }`; SPA flatten และรองรับทั้งสอง shape |
+| `created_at`/`created_by_name` (หรือ `created_by: {id,name}`) แบบแบนบน row ของ role list | `RoleManagement.tsx` (ผ่าน `auditColumns()`/`normalizeAudit()` ที่ใช้ร่วมกัน) | คอลัมน์ audit id | response ของ list อาจซ้อนข้อมูล audit เป็น `audit.created/updated` `{ at, name }`; `normalizeAudit()` **ลองรูปแบบ nested ก่อนเสมอ** แล้วค่อย fallback ไปคอลัมน์แบบแบนเมื่อไม่มี entry แบบ nested เท่านั้น — ไม่ใช่ทางกลับกัน cell ของ list แสดงผลเป็นเวลาแบบ relative (`AuditMeta`, เช่น "5mo ago") พร้อม timestamp เต็มเป็น tooltip `title` ไม่ใช่ string ตายตัว; คอลัมน์ Updated จะถูกซ่อนก็ต่อเมื่อ record ยังไม่เคยถูกแก้ไขจริง (`everEdited`: มีชื่อ actor ที่แก้ หรือ `at` ต่างจาก `created.at`) — ไม่ใช่การเทียบ `updated_at === created_at` ตรง ๆ |
+| **`GET /api-system/platform/roles/:id` ไม่ส่ง audit block กลับมาเลย** | `RoleEdit.fetchRole()` | n/a | payload ของ role เดี่ยวคือ `{ id, doc_version, name, description, is_active, permissions }` เท่านั้น `RoleEdit.tsx` แก้ปัญหาด้วยการยิง request ที่สองแบบ best-effort — ไป query endpoint แบบ *list* กรองด้วย `id` นั้น (`advance: { where: { id } }`) แล้วดึง field audit ของ row นั้นมาใช้กับบรรทัด audit ของ `RoleIdentityHero` role ที่ไม่พบใน request สำรองนี้ (เช่นล้มเหลวชั่วคราว) ก็แค่ไม่แสดงบรรทัด audit แทนที่จะแสดงผิด |
 | envelope `{ data }` หลายชั้น | `userRoleService.list`, `SuperAdminManagement.extractArray` | n/a | endpoint user-roles และ super-admins อาจซ้อน `{ data: { data: [...] } }` ลึกกว่าหนึ่งชั้นตามปกติ; consumer ทั้งสองไล่ลงไปจนเจอ array |
+| `RolesSummaryData` `{ total, active, inactive, deleted, top_roles }` | `RolesResponse.summary` (`roleService.getAccessSummary()`) | aggregate เหนือ `tb_platform_role` | ไม่กรอง (ไม่มี `search`/`advance`) ดึงจาก **endpoint สรุปเฉพาะทาง** ไม่ใช่การกวาด list ด้วย `perpage: -1` `deleted` (จำนวน role ที่ถูก soft-delete) มีอยู่ในข้อมูลแต่ก่อนการเขียนใหม่ `RolesAccessSummary` เมื่อ 2026-09-02 ไม่เคยถูกแสดงเลย |
 | `Role.doc_version?: number` | `Role` (`src/types/index.ts`) | `doc_version Int @default(0)` | **สอดคล้องกัน ไม่ใช่ความแตกต่าง** — เพิ่มทั้งสองฝั่งใน rollout เมื่อ 2026-07-16 `RoleEdit.tsx` อ่านผ่าน `getDocVersion()` และส่งกลับตอน `PUT` พร้อม delta ของ `permissions` |
 
 ### 5.1 Endpoint
@@ -202,12 +205,13 @@ REST surface ที่ service ของ SPA ใช้ (`roleService.ts`, `permi
 
 | Method + Path | วัตถุประสงค์ | หมายเหตุ |
 |---|---|---|
-| `GET /api-system/platform/roles` | list ของ role | แบ่งหน้า; row มี `permission_count` และอาจมี `audit` ซ้อนอยู่ |
+| `GET /api-system/platform/roles` | list ของ role | แบ่งหน้า; row มี `permission_count` และอาจมี `audit` ซ้อนอยู่; response อาจมี block `summary` (`RolesSummaryData`) |
+| `GET /api-system/platform/roles/summary` | สรุปการเข้าถึงของ role (เพิ่มใหม่ตั้งแต่ sync ครั้งก่อน) | `roleService.getAccessSummary()` — aggregate ทั้งระบบ ไม่กรองตาม search/filter ปัจจุบันของตาราง |
 | `POST /api-system/platform/roles` | สร้าง role | body มี `permissions: { add: string[] }` |
-| `GET /api-system/platform/roles/:id` | detail ของ role | คืน `permissions: string[]` ที่ flatten แล้ว |
+| `GET /api-system/platform/roles/:id` | detail ของ role | คืน `permissions: string[]` ที่ flatten แล้ว; **ไม่มี audit block** (ดู §5 ด้านบน) |
 | `PUT /api-system/platform/roles/:id` | อัพเดท role | body มี `permissions: { add: string[], remove: string[] }` (delta) บวก `doc_version` เมื่อทราบค่า — ไม่ตรงกันจะแสดง toast conflict และหน้าจะ re-fetch |
 | `DELETE /api-system/platform/roles/:id` | ลบ role | |
-| `GET /api-system/platform/permissions` | permission catalog | read-only; ไม่มี endpoint สำหรับเขียนใน SPA |
+| `GET /api-system/platform/permissions` | permission catalog | read-only; ไม่มี endpoint สำหรับเขียนใน SPA **บังคับที่ฝั่ง backend ด้วย `platform_role.read`** (`RequirePlatformPermission`, `platform-permissions.controller.ts`) แม้ว่า route ของ SPA ที่เรียก (`/platform/category-permissions`) จะไม่มี permission gate ที่ฝั่ง frontend เลยก็ตาม |
 | `GET /api-system/platform/super-admins` | list ของ super-admin | response อาจซ้อน envelope `{ data }` หลายชั้น |
 | `POST /api-system/platform/super-admins` | มอบ flag | body `{ user_id }` |
 | `DELETE /api-system/platform/super-admins/:id` | ถอน flag | `:id` คือ id ของ flag-row ไม่ใช่ id ของผู้ใช้ |
@@ -219,13 +223,15 @@ REST surface ที่ service ของ SPA ใช้ (`roleService.ts`, `permi
 ## 6. แหล่งข้อมูลอ้างอิง
 
 **หลัก (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — model `tb_platform_permission` (บรรทัด 935), `tb_platform_role` (บรรทัด 954), `tb_platform_role_tb_permission` (บรรทัด 974), `tb_user_tb_platform_role` (บรรทัด 995), `tb_platform_super_admin` (บรรทัด 1018)
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (backend HEAD `2378c3b`, 2026-09-05) — model `tb_platform_permission` (บรรทัด 1007), `tb_platform_role` (บรรทัด 1026), `tb_platform_role_tb_permission` (บรรทัด 1046), `tb_user_tb_platform_role` (บรรทัด 1067), `tb_platform_super_admin` (บรรทัด 1090) รายการ field ไม่เปลี่ยนตั้งแต่ sync ครั้งก่อน — เปลี่ยนแค่เลขบรรทัดจากตารางของโมดูลอื่นที่เพิ่มเข้ามาก่อนหน้านี้ในไฟล์
 
 **รอง (shape ฝั่ง consumer):**
-- `../carmen-platform/src/types/index.ts` — `Role`, `PermissionCatalogItem`, `UserRoleAssignment`, `Scope`, `EffectivePermissions`
-- `../carmen-platform/src/services/roleService.ts` — shape delta `RoleWriteData`, endpoint ของ roles
+- `../carmen-platform/src/types/index.ts` — `Role`, `PermissionCatalogItem`, `UserRoleAssignment`, `Scope`, `EffectivePermissions`, `RolesSummaryData`
+- `../carmen-platform/src/services/roleService.ts` — shape delta `RoleWriteData`, endpoint ของ roles, `getAccessSummary()`
 - `../carmen-platform/src/services/permissionService.ts` — การ map catalog (การ derive key), การ fetch effective-permissions
+- `../carmen-platform/src/pages/RoleEdit.tsx` — `fetchAudit()`, การ fallback audit จาก endpoint แบบ list สำหรับหน้า detail
+- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform-permissions/platform-permissions.controller.ts` — `RequirePlatformPermission('platform_role.read')` บน endpoint ของ catalog
 - `../carmen-platform/src/services/superAdminService.ts` และ `src/pages/SuperAdminManagement.tsx` — endpoint ของ super-admin และ `extractArray` ที่ไล่ลง envelope
 - `../carmen-platform/src/services/userRoleService.ts` — endpoint ของ assignment และการไล่ลง envelope
 
-**Cross-link:** [หน้า landing ของ Platform RBAC](/th/platform/rbac) &nbsp;·&nbsp; [UI Screens](./ui-screens.md) &nbsp;·&nbsp; [Permissions](./permissions.md) &nbsp;·&nbsp; [data-model ของ users](../users/data-model.md) (row ของ `tb_user` ที่ assignment ชี้ไป)
+**Cross-link:** [หน้า landing ของ Platform RBAC](/th/platform/rbac) &nbsp;·&nbsp; [UI Screens](/th/platform/rbac/ui-screens) &nbsp;·&nbsp; [Permissions](/th/platform/rbac/permissions) &nbsp;·&nbsp; [data-model ของ users](/th/platform/users/data-model) (row ของ `tb_user` ที่ assignment ชี้ไป)
