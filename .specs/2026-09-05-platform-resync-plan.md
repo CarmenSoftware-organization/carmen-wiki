@@ -775,6 +775,12 @@ Claude-Session: https://claude.ai/code/session_01368ie91bMhnxN3muJYUm9U"
 
 Route: `/tenant-migrations` → `TenantMigrationManagement`. Nav: `permission: 'cluster.read'` (shared with Clusters and Business Units — say so, since the key does not name this screen), `feature: 'tenant_migrations'`, group `navGroup.organization`.
 
+- [ ] **Step 1b: Collapse the existing sub-page — ruling, already decided**
+
+`en/platform/business-units/tenant-migrations.md` and its TH mirror already document this **entire** screen: its own route, its own nav entry, full layout, actions, gaps and references. Its §1 already states it is "a standalone page, not a sub-route of Business Units". Keeping both it and this module would leave two pages carrying the same route/layout/actions content, hand-synced on every change — one earlier task alone needed six line-for-line mirror edits there.
+
+Migrate that content into this module rather than writing it fresh, then reduce the sub-page to a short pointer keeping only the business-unit-specific relationship (the embedded per-BU `TenantMigrationCard`, which `business-units/ui-screens.md` §4.5 also documents). Rewrite any sentence whose meaning depended on the sub-page holding the full account.
+
 - [ ] **Step 2: Write both pages from source**
 
 Cover the migration states, what advances one, and what a failed migration leaves behind.
@@ -945,6 +951,12 @@ Claude-Session: https://claude.ai/code/session_01368ie91bMhnxN3muJYUm9U"
 - [ ] **Step 1: Read the source**
 
 Route: `/report-form-groups` → `ReportFormGroupManagement`. Nav: `permission: 'report_template.read'` — **shared with Report Templates**, so anyone who can see one sees the other; `feature: 'report_form_groups'`, group `navGroup.content`.
+
+- [ ] **Step 1b: Migrate the existing sub-page — ruling, already decided**
+
+`en/platform/report-templates/form-groups.md` and its TH mirror already document `ReportFormGroupManagement` in full, and that content was verified against source and passed review in the `report-templates` task. **Migrate it into this module; do not write the module green-field.**
+
+Two cautions. First, the TH page (17.9 KB) is **larger than the EN one** (11.3 KB), so neither locale can be treated as the source for the other — migrate each into its own locale and reconcile the surplus deliberately rather than regenerating TH from EN. Second, after migrating, reduce the sub-page to a short pointer keeping only the report-template-specific relationship, and rewrite any sentence whose meaning depended on it holding the full account. `report-templates.md` already links to it as a sub-page; that link must move to this module.
 
 - [ ] **Step 2: Document the succession from print template mapping**
 
