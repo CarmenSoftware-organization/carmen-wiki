@@ -12,7 +12,7 @@ How to read: each row is a sub-process. **DM/UI/PERM** = covered in the module's
 counts toward whichever axis it serves. Symbols: ✅ complete · 🟡 partial/stub · ⬜ missing.
 Tracks the **EN locale** (canonical); TH state is summarized in "Locale coverage".
 
-## Summary (as of 2026-06-11; Shell & Dashboard closed 2026-07-29 — see Maintenance notes)
+## Summary (as of 2026-06-11; Shell & Dashboard closed 2026-07-29; Print Template Mapping row removed 2026-09-05 — see Maintenance notes)
 
 | Module | Sub-processes | Done | Partial | Not yet | % complete |
 |--------|--------------:|-----:|--------:|--------:|-----------:|
@@ -21,14 +21,18 @@ Tracks the **EN locale** (canonical); TH state is summarized in "Locale coverage
 | Users | 10 | 10 | 0 | 0 | 100% |
 | Platform RBAC | 8 | 8 | 0 | 0 | 100% |
 | Applications | 7 | 7 | 0 | 0 | 100% |
-| Print Template Mapping | 8 | 8 | 0 | 0 | 100% |
 | News | 9 | 9 | 0 | 0 | 100% |
 | Broadcasts | 8 | 8 | 0 | 0 | 100% |
 | Report Templates | 9 | 9 | 0 | 0 | 100% |
 | Profile | 3 | 3 | 0 | 0 | 100% |
 | Changelog | 3 | 3 | 0 | 0 | 100% |
 | Shell & Dashboard | 2 | 2 | 0 | 0 | 100% |
-| **Project total** | 86 | 86 | 0 | 0 | **100%** |
+| **Project total** | 78 | 78 | 0 | 0 | **100%** |
+
+*Print Template Mapping's row (8 sub-processes, 8 done) was removed 2026-09-05 —
+the module was deleted from the product 2026-07-24 (`de11377`) and its wiki page
+was deleted the same day in this plan's Task 11. The 86→78 total reflects that
+subtraction, not new documentation loss; see Maintenance notes.*
 
 ## How status is judged
 
@@ -45,7 +49,7 @@ Tracks the **EN locale** (canonical); TH state is summarized in "Locale coverage
 | users | UserManagement, UserEdit | userService; AuthContext; Prisma `tb_user`, `tb_user_profile` |
 | rbac | RoleManagement, RoleEdit, PermissionCatalog, SuperAdminManagement, UserPlatformManagement, UserPlatformEdit | role/permission/superAdmin/userRole services; utils/permissions.ts; Prisma `tb_platform_*` |
 | applications | ApplicationManagement, ApplicationEdit | applicationService, utils/apiCatalog.ts; backend AppIdGuard + allowlist; Prisma `tb_application`, `tb_application_api` |
-| print-template-mapping | PrintTemplateMappingManagement, PrintTemplateMappingEdit | printTemplateMappingService; micro-report Go (resolve, EnsureSingleDefault); micro-business print helper; Prisma `tb_print_template_mapping` |
+| ~~print-template-mapping~~ | *removed 2026-07-24 (`de11377`)* | superseded by `template_type`/`is_default` on `tb_report_template` (migration `20260723120000_print_form_default`) plus the Report Templates → Form Groups sub-page; see Maintenance notes |
 | news | NewsManagement, NewsEdit | newsService; backend-gateway news module + micro-cluster; Prisma `tb_news` |
 | broadcasts | BroadcastCompose | broadcastService; backend-gateway + micro-notification; Prisma `tb_broadcast_notification`, `tb_user_broadcast_action` |
 | report-templates | ReportTemplateManagement, ReportTemplateEdit | reportTemplateService; micro-report; Prisma `tb_report_template` |
@@ -126,18 +130,22 @@ Tracks the **EN locale** (canonical); TH state is summarized in "Locale coverage
 | 6 | Delete (in-page `<Can>` only) | ✅ | ✅ | ✅ | ✅ Done | [PERM §2](/en/platform/applications/permissions) |
 | 7 | Runtime enforcement: AppIdGuard + allowlist refresh | ✅ | — | ✅ | ✅ Done | [Landing §2](/en/platform/applications) |
 
-### 6. Print Template Mapping
+### 6. Print Template Mapping — REMOVED (2026-09-05)
 
-| # | Sub-process | DM | UI | PERM | Status | Doc link |
-|---|-------------|----|----|------|--------|----------|
-| 1 | Grouped-by-document-type list + filters (pattern deviation) | ✅ | ✅ | ✅ | ✅ Done | [UI §2](/en/platform/print-template-mapping/ui-screens) |
-| 2 | Create mapping | ✅ | ✅ | ✅ | ✅ Done | [UI §3](/en/platform/print-template-mapping/ui-screens) |
-| 3 | Edit (soft-sort template select, view/edit toggle) | ✅ | ✅ | ✅ | ✅ Done | [UI §3.3](/en/platform/print-template-mapping/ui-screens) |
-| 4 | Default flag + server `EnsureSingleDefault` (warn-only) | ✅ | ✅ | ✅ | ✅ Done | [DM §6](/en/platform/print-template-mapping/data-model) |
-| 5 | Allow/deny BU lists + `resolve` semantics | ✅ | ✅ | ✅ | ✅ Done | [PERM §3](/en/platform/print-template-mapping/permissions) |
-| 6 | Document types (hard-coded Go list, server-validated) | ✅ | ✅ | — | ✅ Done | [Landing §3](/en/platform/print-template-mapping) |
-| 7 | Known gap: main print path bypasses BU scoping (8 services + PR) | ✅ | — | ✅ | ✅ Done | [PERM §3](/en/platform/print-template-mapping/permissions) |
-| 8 | 10-row silent truncation / SPA can't clear BU lists | ✅ | ✅ | ✅ | ✅ Done | [DM §5](/en/platform/print-template-mapping/data-model) |
+The module was deleted from the product on 2026-07-24 (carmen-platform commit
+`de11377`; the backend-gateway proxy and its `print_template_mapping.*`
+permission keys were removed the day before, 2026-07-23,
+carmen-turborepo-backend-v2 commit `c135bb21e`). The wiki module
+(`en(th)/platform/print-template-mapping.md` + 3 sub-pages) was deleted the
+same day this note was added, in this plan's Task 11 — no page at that path
+exists any more, so the 8 sub-processes this section used to enumerate (and
+their `Doc link` cells, which pointed at those now-deleted pages) are dropped
+from this checklist rather than left dangling. `template_type`/`is_default`
+on `tb_report_template` plus the [Report Templates → Form
+Groups](/en/platform/report-templates/form-groups) sub-page now cover the
+successor functionality — see [Report Templates](/en/platform/report-templates)
+§1/§5. This section is kept only so the numbering below does not shift; see
+Maintenance notes for the interim-correction caveat.
 
 ### 7. News
 
@@ -178,7 +186,7 @@ Tracks the **EN locale** (canonical); TH state is summarized in "Locale coverage
 | 6 | Per-BU scoping (allow/deny) | ✅ | ✅ | ✅ | ✅ Done | [DM](/en/platform/report-templates/data-model) |
 | 7 | Preview / db-objects probe | — | ✅ | — | ✅ Done | [UI §4.4](/en/platform/report-templates/ui-screens) |
 | 8 | Permission gates (`report_template.*`, delete in-page only) | — | — | ✅ | ✅ Done | [PERM §2](/en/platform/report-templates/permissions) |
-| 9 | Relation to Print Template Mapping (`report_group`) | ✅ | — | — | ✅ Done | [Landing §5](/en/platform/report-templates) |
+| 9 | Historical relation to the now-removed Print Template Mapping module (`report_group`; superseded by `template_type`/`is_default`, 2026-07-23/24) | ✅ | — | — | ✅ Done | [Landing §5](/en/platform/report-templates) |
 
 ## Table B — Single-page modules
 
@@ -197,7 +205,7 @@ Tracks the **EN locale** (canonical); TH state is summarized in "Locale coverage
 
 Not counted in the summary; EN is canonical. TH state as of 2026-06-11:
 
-- **Full TH translations:** all 5 new modules (rbac, applications, print-template-mapping, news, broadcasts — 20 pages), both book landings, all 5 legacy-module landings, and report-templates data-model + permissions (backfilled).
+- **Full TH translations:** all 5 new modules as shipped by the 2026-06-10 sync (rbac, applications, print-template-mapping, news, broadcasts — 20 pages), both book landings, all 5 legacy-module landings, and report-templates data-model + permissions (backfilled). Of those 20 pages, print-template-mapping's 4 (EN+TH) were deleted along with the module on 2026-07-24 (`de11377`) — 4 of the original 5 new modules / 16 of the 20 pages remain current today.
 - **TH stubs (~25 lines, deliberate 2026-05-19 deferral — corrected for accuracy 2026-06-10, not expanded):** clusters/{data-model,ui-screens,permissions}, business-units/{data-model,ui-screens}, users/{data-model,lifecycle,ui-screens}, report-templates/ui-screens. xml-spec TH is a full page.
 - Expanding the stubs is a known deferred task — do not start without user confirmation.
 
@@ -210,15 +218,24 @@ Not counted in the summary; EN is canonical. TH state as of 2026-06-11:
   every page against SPA + backend source.
 - **Closed 2026-07-29:** the Dashboard hub and public Landing page gaps (Table B, Shell &
   Dashboard) — see [Dashboard](/en/platform/dashboard) and [Landing](/en/platform/landing).
-  Project total is now 86/86 (100%).
+  Project total was 86/86 (100%) at that point.
+- **Interim correction, 2026-09-05 (Task 11 of the 2026-09-05 Platform re-sync):** the
+  Print Template Mapping row, its §6 sub-process table, and its source-map row were
+  removed because the module and its wiki page were deleted from the product 2026-07-24
+  (`de11377`); the Summary total was patched from 86 to 78 by subtracting its 8
+  sub-processes, not by re-deriving the other 11 modules' counts. This file is still due
+  a full rewrite against current carmen-platform HEAD (a later task in the 2026-09-05
+  Platform re-sync plan) — treat every number here as provisional until that task runs.
 - **Not tracked in this file's tables (by design — none are one of the 11 named Platform
   units):** three screens carmen-platform shipped after this checklist's 2026-06-11
   baseline — [Tenant Migrations](/en/platform/business-units/tenant-migrations)
   (`/tenant-migrations`, 2026-06-30, documented as a Business Units sub-page),
   [SQL Workbench](/en/platform/sql-workbench) (`/sql-workbench`, 2026-07-09, standalone page),
   and [Form Groups](/en/platform/report-templates/form-groups) (`/report-form-groups`,
-  2026-07-24, documented as a Report Templates sub-page, replacing the removed
-  print-template-mapping module's grouped-card list). All three are fully documented; they
+  2026-07-24, documented as a Report Templates sub-page, replacing the grouped-card list
+  of the print-template-mapping module that carmen-platform deleted the same day, commit
+  `de11377` — the module's own wiki page was removed in Task 11, 2026-09-05). All three
+  screens above are fully documented; they
   are omitted from the Summary/Table A/Table B structure only because that structure is
   scoped to the 11 named units plus Table B's single-page modules, and these three don't
   fit either category cleanly — same treatment the pre-existing sub-pages (data-model,
