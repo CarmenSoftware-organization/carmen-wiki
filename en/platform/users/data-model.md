@@ -2,7 +2,7 @@
 title: User — Data Model
 description: User entity, profile extension, status, per-cluster BU assignments.
 published: true
-date: 2026-09-05T12:15:00.000Z
+date: 2026-09-06T19:00:00.000Z
 tags: book/platform, users, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -43,7 +43,7 @@ The identity row. One row per platform user, driving sign-in. This table does no
 | `consent_at` | `DateTime? @db.Timestamptz(6)` | Yes | — | Timestamp of consent acceptance |
 | `socket_id` | `String?` | Yes | — | WebSocket socket identifier for the current session, if any |
 | `is_online` | `Boolean` | No | `false` | Real-time presence flag updated by the WebSocket layer |
-| `email_verified_at` | `DateTime? @db.Timestamptz(6)` | Yes | — | Added by migration `20260804000000_user_email_verification`. **No SPA surface on this module's own screens** — `UserEdit.tsx`/`UserManagement.tsx` never read it; it is surfaced only on the [User Platform](/en/platform/rbac) screen (`UserPlatformEdit.tsx` lines 43, 195, `!!userRecord?.email_verified_at`) |
+| `email_verified_at` | `DateTime? @db.Timestamptz(6)` | Yes | — | Added by migration `20260804000000_user_email_verification`. **No SPA surface on this module's own screens** — `UserEdit.tsx`/`UserManagement.tsx` never read it; it is surfaced only on the [User Platform](/en/platform/user-platform) screen (`UserPlatformEdit.tsx` lines 43, 195, `!!userRecord?.email_verified_at`) — see that module's own page for what sets the column and the other two below |
 | `email_verification_token_hash` | `String? @db.VarChar` | Yes | — | Same migration as `email_verified_at`. No SPA surface found anywhere in `carmen-platform/src` — backend-only |
 | `email_verification_expires_at` | `DateTime? @db.Timestamptz(6)` | Yes | — | Same migration. No SPA surface found |
 | `doc_version` | `Int` | No | `0` | Optimistic-concurrency token, added platform-wide (35 tables, incl. `tb_user` and `tb_user_profile`) on 2026-07-16. `UserEdit` resends it on every `PUT`; a stale write is rejected with `409` and the SPA reloads the record with a conflict toast instead of overwriting silently |
