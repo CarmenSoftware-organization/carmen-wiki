@@ -2,7 +2,7 @@
 title: Applications — Data Model
 description: The tb_application and tb_application_api tables, asymmetric read/write shapes, PUT replace semantics, the generated api-catalog, and the schema-only tb_application_role family.
 published: true
-date: 2026-07-29T07:21:27.000Z
+date: 2026-09-05T00:00:00.000Z
 tags: book/platform, applications, data-model
 editor: markdown
 dateCreated: 2026-06-10T12:30:00.000Z
@@ -109,7 +109,9 @@ The SPA types live in `../carmen-platform/src/types/index.ts` (`Application`, `A
 | `doc_version` round-trip | `ApplicationFormData` payload, `getDocVersion`/`isVersionConflict` | `tb_application.doc_version` | New since the last sync — aligned on both sides, not a divergence; listed for completeness since it postdates the original comparison pass |
 | `ApiCatalogGroup { module, api_names[] }` | `getApiCatalog` | **no table** | The catalog is `app-api-catalog.generated.ts` in backend-gateway, emitted by the `AppIdGuard` scan (§5.1) |
 | Catalog envelope tolerance | `getApiCatalog` | n/a | The endpoint returns `{ api_names: string[], groups?: ApiCatalogGroup[] }`, optionally inside the standard `{ data }` envelope; the service also tolerates a bare `string[]`. When `groups` is missing or fails the per-element runtime guard, the client derives identical groups via `groupApiNames()` (`src/utils/apiCatalog.ts`: module = prefix before the first `.`; dotless names are their own module; `actionOf()` = text after the first dot) — same split rule as the backend generator, so fallback output equals server output |
-| Flat `created_at`/`created_by_name` on list rows | `ApplicationManagement.tsx` | audit id columns | The list response may nest audit data as `audit.created/updated` `{ at, name }`; the SPA flattens and tolerates both shapes |
+| `ApplicationSummaryData` (Registry band) | `getRegistrySummary` → `GET /api-system/applications/summary` | n/a — a live aggregate query, not a table | Unfiltered, fleet-wide counts: `total`/`active`/`inactive`/`full_access`/`scoped`/`devices[]`, plus a `deleted` (soft-deleted, fleet-wide) count that is **on the wire but not rendered** by `ApplicationRegistrySummary` today. Replaced a client-side `perpage: -1` sweep on 2026-08-24 (`99a93c8`, one of 5 pages migrated the same day) |
+| API reach (`reachOf()`) | `utils/apiReach.ts`, called by `ApplicationReachCell` (list) and `ApplicationIdentityHero` (edit) | n/a — computed client-side against the loaded catalog | Not a stored fact: `granted`/`anchored`/`full`/`modules`/`percent` are derived on every render from `allow_all`, `api_names`, and the catalog size fetched separately (`getApiCatalog()`). One function feeds both screens so the list and the detail page can never disagree about what counts as "full access" |
+| Audit shape read via `normalizeAudit()`/`auditColumns()` | `ApplicationManagement.tsx` (since `a85a166`, 2026-08-22 — this was one of the 5 Management tables migrated off a bespoke `fmt()`) | audit id columns | `normalizeAudit()` tries the **nested** `audit.created`/`audit.updated` shape first and falls back to the **flat** `created_at`/`created_by_name` columns only when nested is absent — not the reverse. The `updated` actor is included only when `everEdited` (an actor name is present, or its `at` differs from `created.at`), not by comparing `updated_at === created_at` |
 
 ### 5.1 The catalog endpoint and generator
 
@@ -131,15 +133,21 @@ REST surface consumed by `applicationService.ts`:
 | `PUT /api-system/applications/:id` | Update | **Replace semantics** — full desired set in `details.add` |
 | `DELETE /api-system/applications/:id` | Delete | Reached only from the list row dropdown |
 | `GET /api-system/applications/api-catalog` | Selectable `api_name` catalog | `{ api_names, groups? }`, envelope-tolerant; client grouping fallback |
+| `GET /api-system/applications/summary` | Registry aggregate for the list's Registry band | Unfiltered — describes the whole registry, not the current search/advance view; no `paginate` block. New since the last sync (was a client-side `perpage: -1` sweep before 2026-08-24) |
+
+Backend commit/PR references above are all in `../carmen-turborepo-backend-v2` or `../carmen-platform` as already named at each citation; the sections below repeat the primary/secondary split for this page's own reference list.
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_application` (line 65), `tb_application_api` (line 90); schema-only family at lines 19, 44, 606. Line numbers as of 2026-07-29; `doc_version` added to both tables on 2026-07-16 (`8e53bbe`).
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_application` (line 65), `tb_application_api` (line 90); schema-only family at lines 19, 44, 606. Re-verified 2026-09-05 against source HEAD `157a65e` — both line numbers and every field unchanged since 2026-07-29; `doc_version` added to both tables on 2026-07-16 (`8e53bbe`).
 - `../carmen-turborepo-backend-v2/scripts/generate-app-api-catalog/run.ts` — the catalog generator (`AppIdGuard` scan, grouping rule, output path).
+- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/applications/app-api-catalog.generated.ts` — the generated catalog: 900 `api_name` keys across 148 module groups as of source HEAD `157a65e` (2026-09-04), up from 788/125 at the last sync.
 
 **Secondary (consumer shape):**
-- `../carmen-platform/src/types/index.ts` — `Application` (incl. `doc_version?: number`), `ApplicationWritePayload`, `ApiCatalogGroup`.
-- `../carmen-platform/src/services/applicationService.ts` — `toWritePayload` (incl. `doc_version`), `getApiCatalog` envelope handling and grouping fallback.
-- `../carmen-platform/src/utils/apiCatalog.ts` — `moduleOf`, `actionOf`, `groupApiNames`.
+- `../carmen-platform/src/types/index.ts` — `Application` (incl. `doc_version?: number`), `ApplicationWritePayload`, `ApiCatalogGroup`, `ApplicationSummaryData`, `DeviceCount`.
+- `../carmen-platform/src/services/applicationService.ts` — `toWritePayload` (incl. `doc_version`), `getApiCatalog` envelope handling and grouping fallback, `getRegistrySummary()`.
+- `../carmen-platform/src/utils/apiCatalog.ts` — `moduleOf`, `actionOf`, `groupApiNames`, and (new) `verbOf`/`isAuthorityAction`/`countAuthority`.
+- `../carmen-platform/src/utils/apiReach.ts` — `reachOf()`, the shared reach-arithmetic function behind both the list's `ApplicationReachCell` and the edit page's `ApplicationIdentityHero`.
+- `../carmen-platform/src/utils/audit.ts` — `normalizeAudit()` (nested-first, flat-fallback; `updated` gated on `everEdited`), read by this module's `ApplicationManagement.tsx` list columns since 2026-08-22.
 - `../carmen-platform/src/utils/docVersion.ts` — `getDocVersion`/`isVersionConflict`/`notifyVersionConflict` optimistic-lock helpers used by `ApplicationEdit.tsx`.
 
-**Cross-links:** [Applications landing](/en/platform/applications) &nbsp;·&nbsp; [UI Screens](./ui-screens.md) &nbsp;·&nbsp; [Permissions](./permissions.md) &nbsp;·&nbsp; [Platform RBAC data-model](../rbac/data-model.md) (the delta-write contrast)
+**Cross-links:** [Applications landing](/en/platform/applications) &nbsp;·&nbsp; [UI Screens](/en/platform/applications/ui-screens) &nbsp;·&nbsp; [Permissions](/en/platform/applications/permissions) &nbsp;·&nbsp; [Platform RBAC data-model](/en/platform/rbac/data-model) (the delta-write contrast)
