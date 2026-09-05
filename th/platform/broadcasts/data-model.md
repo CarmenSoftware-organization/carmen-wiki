@@ -2,7 +2,7 @@
 title: Broadcasts — แบบจำลองข้อมูล (Data Model)
 description: ตาราง field ของ tb_broadcast_notification และ tb_user_broadcast_action หลังการปรับใหญ่ระบบ notification — enum scope/doc_type/event แทนที่คอลัมน์ category/type แบบ varchar, doc_version เป็น optimistic lock จริง, end_at บังคับ และทางแยกของการส่งแบบระบุผู้รับลง tb_notification
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: 2026-09-05T22:00:00.000Z
 tags: book/platform, broadcasts, data-model
 editor: markdown
 dateCreated: 2026-06-10T16:00:00.000Z
@@ -139,7 +139,9 @@ REST surface (backend-gateway) ทั้งหมดอยู่ใต้ `/api/
 | `PATCH /api/notifications/broadcasts/:id` | Bearer + `broadcast.update` | แก้ schedule/วันหมดอายุ/เนื้อหา | ต้องส่ง `doc_version` (409 ถ้าไม่ตรง); `title`/`message`/`metadata` แก้ได้เฉพาะตอน `status === 'scheduled'` (ไม่งั้น 400 `content_locked`); `end_at` ที่เป็นอดีตคือกลไกของ "Expire Now" |
 | `DELETE /api/notifications/broadcasts/:id` | Bearer + `broadcast.delete` | ลบแบบ soft | ต้องส่ง `doc_version` เป็น query param (409 ถ้าไม่ตรง) |
 | `GET /api/notifications` / `/recent` / `/unread` | Bearer | List ฝั่งผู้รับ | รวม row ส่วนตัว + broadcast ที่อยู่ใน scope; broadcast ถูกกรองด้วย `deleted_at IS NULL` และ `scheduled_at IS NULL OR <= NOW()` |
+| `GET /api/notifications/:notification_id` | Bearer | ดึงรายการเดียวฝั่งผู้รับ | คืน row ของ `tb_notification` ถ้าผู้เรียกเป็นผู้รับ หรือ row ของ `tb_broadcast_notification` ถ้าผู้เรียกอยู่ใน scope; ไม่งั้น 404 — ใช้ filter scope/`scheduled_at` ชุดเดียวกับ endpoint list ด้านบน |
 | `PUT /api/notifications/:id/read` | Bearer | Mark ว่าอ่านแล้ว | Client ส่ง `source` ของ row นั้น (`'broadcast'` หรือ `'personal'` **ไม่ใช่** `category` ที่เลิกใช้แล้ว) เพื่อ route ไปตารางที่ถูกต้อง |
+| `PUT /api/notifications/mark-all-read` | Bearer | Mark ทุกการแจ้งเตือนที่ยังไม่อ่านว่าอ่านแล้ว ทั้งส่วนตัว**และ** broadcast | Mark ทั้งสองอย่างในครั้งเดียว: `tb_notification.updateMany({ to_user_id, is_read: false })` **และ** `BroadcastService.markAllBroadcastsAsRead()` (upsert แบบ raw-SQL ของ §2.2) รันพร้อมกันผ่าน `Promise.all` **คำอธิบาย Swagger ของ gateway เองอธิบายน้อยกว่าที่มันทำจริง** — บอกแค่ "ทุก row ของ `tb_notification` ที่ยังไม่อ่าน" — แต่ comment ของ RPC handler เองและ implementation จริง (`markAllNotificationsAsRead()` ใน `notification.service.ts`) ครอบคลุมทั้งสองตาราง และคืน `{ count, personal_count, broadcast_count }` |
 
 ไม่มี Bruno collection สำหรับ broadcast endpoint เลย (ตรวจสอบแล้วว่ายังไม่มี) — annotation ของ Swagger บน gateway controller คือเอกสาร contract ที่ใกล้เคียงที่สุด
 

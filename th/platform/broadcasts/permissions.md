@@ -2,7 +2,7 @@
 title: Broadcasts — สิทธิ์การเข้าถึง (Permissions)
 description: สี่ key broadcast.* (read/send/update/delete) gate หน้าจอ List/Compose/Edit ของโมดูลและ REST endpoint ที่ตรงกันฝั่ง server; เนื้อหาถูกล็อกเมื่อ broadcast ออกอากาศไปแล้ว doc_version เป็น optimistic lock จริง และมีแค่การส่งแบบระบุผู้รับ (system_users) เท่านั้นที่ยังคง fire-and-forget
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: 2026-09-05T22:00:00.000Z
 tags: book/platform, broadcasts, permissions
 editor: markdown
 dateCreated: 2026-06-10T16:00:00.000Z
@@ -19,7 +19,7 @@ Broadcasts ย้ายจาก key gate เดียวมาเป็นส�
 
 ทุก key ถูกบังคับใช้**ทั้งสอง**ฝั่ง — client (`<Can>`, `PrivateRoute`) และ server (`KeycloakGuard` + `PlatformPermissionGuard` + `@RequirePlatformPermission(...)`) บนทั้งหกเส้นทางของ gateway: สอง endpoint สำหรับส่ง (การบังคับใช้แบบหยาบไม่เปลี่ยนตั้งแต่ backend PR #239) บวกสี่ endpoint ฝั่งแอดมิน (list/get/update/delete) ที่ถูกเพิ่มมาในการปรับใหญ่ครั้งเดียวกันที่สร้างหน้า List/Edit การบังคับใช้ตั้งใจให้**หยาบ**ทุกที่ ไม่ใช่แค่ตอนส่ง: `PlatformPermissionService.has()` คืน true ถ้า key ที่ต้องการมีอยู่ใน scope **ระดับแพลตฟอร์ม** ของผู้เรียก **หรือ** ใน scope ของ **cluster เดียวก็ได้** — ผู้ใช้ที่ได้รับ เช่น `broadcast.delete` แค่ cluster เดียว สามารถลบ broadcast row **ไหนก็ได้** ผ่าน API นี้ ไม่ว่าจะเป็น system-wide หรือ scope เป็น BU เพราะไม่มี code path ไหนในโมดูลนี้ที่ resolve ว่า "broadcast รายการนี้เป็นของ cluster ไหน" แล้วเช็ค grant กับมัน นี่คือข้อจำกัดเดียวกับที่ wiki ก่อนปรับใหญ่ document ไว้สำหรับ `broadcast.send` อย่างเดียว ตอนนี้มันใช้กับทั้งสี่ key เหมือนกันหมด
 
-## 2. Gate matrix
+## 2. เมทริกซ์ของ gate
 
 | Surface | กลไก | Key | แหล่งที่มา |
 |---|---|---|---|
@@ -79,7 +79,7 @@ Delivery/การมองเห็นยังคงรูปแบบ filter 
 - **`doc_version` เป็น optimistic lock จริง** ไม่ใช่แค่ตกแต่ง schema: ทั้ง `PATCH` และ `DELETE` ต้องใช้มันและเทียบกับ row ที่เก็บไว้ก่อนเขียน (`updateMany` ใส่ `doc_version` ไว้ใน `where` เพื่อไม่ให้ request สองอันที่ถือ version เดียวกัน "ชนะ" ทั้งคู่ — ตัวที่สองจะได้ 409 ไม่ใช่การเพิ่มค่าซ้ำแบบเงียบ ๆ) นี่แก้ผลตรวจสอบเดิมก่อนปรับใหญ่ที่บอกว่า `doc_version` บนตารางนี้มีเฉพาะใน schema เพราะ "ไม่มี update endpoint... ให้ lock ตั้งแต่แรก"
 - การตั้ง `end_at` เป็นอดีตเป็นวิธีที่ถูกต้องในการต่ออายุให้ broadcast ที่ live อยู่หมดทันที (นี่คือสิ่งที่ action "Expire Now" ของหน้า List ทำอยู่เบื้องหลังพอดี) — backend อนุญาตให้ทำแบบนี้ตรง ๆ ต่างจาก check ที่จะบังคับให้วันหมดอายุเป็นอนาคตเท่านั้น
 
-## 5. Edge Case
+## 5. กรณีพิเศษ
 
 | # | สถานการณ์ | พฤติกรรม | หมายเหตุสำหรับผู้ทดสอบ |
 |---|---|---|---|

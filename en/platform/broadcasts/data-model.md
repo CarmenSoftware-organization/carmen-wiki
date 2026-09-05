@@ -2,7 +2,7 @@
 title: Broadcasts — Data Model
 description: The tb_broadcast_notification and tb_user_broadcast_action field tables after the notification redesign — scope/doc_type/event enums replacing category/type varchar, a real optimistic-lock doc_version, a mandatory end_at, and the targeted-send fork into tb_notification.
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: 2026-09-05T22:00:00.000Z
 tags: book/platform, broadcasts, data-model
 editor: markdown
 dateCreated: 2026-06-10T13:15:00.000Z
@@ -139,7 +139,9 @@ REST surface (backend-gateway), all under `/api/notifications/...` — **not** `
 | `PATCH /api/notifications/broadcasts/:id` | Bearer + `broadcast.update` | Update schedule/expiry/content | Requires `doc_version` (409 on mismatch); `title`/`message`/`metadata` only while `status === 'scheduled'` (400 `content_locked` otherwise); a past `end_at` is how "Expire Now" works |
 | `DELETE /api/notifications/broadcasts/:id` | Bearer + `broadcast.delete` | Soft-delete | Requires `doc_version` as a query param (409 on mismatch) |
 | `GET /api/notifications` / `/recent` / `/unread` | Bearer | Recipient-side lists | Merge personal + in-scope broadcast rows; broadcasts filtered by `deleted_at IS NULL` and `scheduled_at IS NULL OR <= NOW()` |
+| `GET /api/notifications/:notification_id` | Bearer | Single recipient-side fetch | Returns the `tb_notification` row if the caller is the recipient, or the `tb_broadcast_notification` row if the caller is in scope; 404 otherwise — same scope/`scheduled_at` filters as the list endpoints above |
 | `PUT /api/notifications/:id/read` | Bearer | Mark read | Client passes the row's `source` (`'broadcast'` or `'personal'`, **not** the retired `category`) to route to the right table |
+| `PUT /api/notifications/mark-all-read` | Bearer | Mark every unread notification read, personal **and** broadcast | Marks both in one call: `tb_notification.updateMany({ to_user_id, is_read: false })` **and** `BroadcastService.markAllBroadcastsAsRead()` (§2.2's raw-SQL upsert) run together via `Promise.all`. **The gateway's own Swagger description undersells this** — it says only "every unread `tb_notification` row" — but the RPC handler's own doc comment and its actual implementation (`notification.service.ts`'s `markAllNotificationsAsRead()`) cover both tables and return `{ count, personal_count, broadcast_count }` |
 
 No Bruno collection exists for the broadcast endpoints (verified still absent) — the Swagger annotations on the gateway controller are the closest contract document.
 

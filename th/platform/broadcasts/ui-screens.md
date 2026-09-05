@@ -2,7 +2,7 @@
 title: Broadcasts — หน้าจอ UI (UI Screens)
 description: สามหน้าจอของ Broadcasts — BroadcastManagement (list, filter, CSV export), BroadcastCompose (แท็บ target, preset วันหมดอายุ, preview แบบ live) และ BroadcastEdit (content lock, การแก้ schedule/วันหมดอายุ) — บวกแผง BroadcastPreview ที่ใช้ร่วมกันระหว่าง Compose และ Edit
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: 2026-09-05T22:00:00.000Z
 tags: book/platform, broadcasts, ui
 editor: markdown
 dateCreated: 2026-06-10T16:00:00.000Z
@@ -51,7 +51,7 @@ Broadcasts เป็นโมดูลสามหน้าจอแล้วต
 
 Row action: **Edit** (`<Can permission="broadcast.update">`, ซ่อนเมื่อ `status === 'deleted'`) ลิงก์ไปยังหน้า Edit; **Expire Now** (`<Can permission="broadcast.update">`, แสดงเฉพาะเมื่อ `status === 'active'`) เปิด confirm dialog แล้วเมื่อยืนยัน จะ `PATCH` ค่า `end_at` เป็นเวลาปัจจุบัน; **Delete** (`<Can permission="broadcast.delete">`, ซ่อนเมื่อถูกลบไปแล้ว) เปิด confirm dialog แล้วเมื่อยืนยัน จะลบแบบ soft ผ่าน `DELETE` การลบหรือต่ออายุให้หมดจะ re-fetch หน้าปัจจุบันในที่เดิม (ไม่มีการนำทาง)
 
-### 2.4 Empty state, loading, debug
+### 2.4 Empty state, การโหลด และ debug
 
 Empty state (ไม่มีแถว ไม่มี error) แสดง CTA "New Broadcast" ที่ gate เหมือนปุ่มใน header การโหลดครั้งแรกแสดง skeleton เต็มตาราง; การ refetch ครั้งถัดไปจะซ้อนแถบ "Loading…" แบบจาง ๆ แทนที่จะล้างตารางทิ้ง `DevDebugSheet` (เฉพาะ dev) แสดง response ดิบของ `GET /api/notifications/broadcasts`
 
@@ -115,7 +115,7 @@ Select ของ BU ตัวที่สองที่แยกกัน — *
 
 เข้าถึงได้จากลิงก์หัวข้อของ List หรือเมนูแถว **route ของมันต้องการแค่ `broadcast.read`** — ผู้อ่านคนไหนก็เปิดได้ เริ่มที่โหมดดูเสมอ; ปุ่ม Edit ต้องการ `broadcast.update` เพิ่มเติม
 
-### 4.1 Loading, not-found, header
+### 4.1 การโหลด, not-found และ header
 
 Skeleton แสดงระหว่างดึงข้อมูล id ที่ไม่พบ/ถูกลบแบบ soft-แต่เข้าถึงไม่ได้/ผิดรูปแบบ render `EmptyState` ของ `SearchX` ("Broadcast not found") พร้อมปุ่ม "Back to broadcasts" — แถวที่ถูกลบแบบ soft **ไม่ได้**ถูกจัดการแบบนี้ (§4.4) `PageHeader` แสดง `backTo="/broadcasts"`, หัวข้อปัจจุบัน, status Badge ข้าง ๆ และ `audit={normalizeAudit(rawResponse)}` สำหรับบรรทัด Created/Updated **ในทางปฏิบัติบรรทัดนี้แสดงแค่ "Created" เท่านั้น** — ไม่เคยแสดง "Updated" — เพราะ wire shape ไม่มีฟิลด์ `updated_at`/`updated_by` ให้ `normalizeAudit()` อ่าน แม้ broadcast นั้นจะถูกแก้ไขจริงก็ตาม (ดู [Data Model](/th/platform/broadcasts/data-model) §5) ปุ่ม Edit (Pencil) ปรากฏเฉพาะเมื่อยังไม่ได้แก้ไขและ `status !== 'deleted'`, gate ด้วย `<Can permission="broadcast.update">`
 
@@ -141,7 +141,7 @@ Body ของ PATCH ส่งแค่**ฟิลด์ที่เปลี่
 
 ต่างจากโมดูล CRUD ส่วนใหญ่ `GET /api/notifications/broadcasts/:id` ตั้งใจยังคืน row ที่ถูกลบแบบ soft (`status: "deleted"`) แทนที่จะเป็น 404 — เพื่อให้รายการที่ถูกลบซึ่งคลิกจากประวัติของ List ยังดูได้ ปุ่ม Edit ถูกซ่อนสำหรับมัน (gate `status !== 'deleted'`) และเนื้อหาก็ถูกล็อกโดยธรรมชาติด้วย (status ไม่ใช่ `scheduled`) ทำให้ broadcast ที่ถูกลบเป็นแบบอ่านอย่างเดียวจริง ๆ ทุกที่บนหน้านี้
 
-### 4.5 Sticky bar, shortcut, debug
+### 4.5 Sticky bar, shortcut และ debug
 
 `.unsaved-bar` แบบกระจกเดียวกับ Compose แสดงเฉพาะตอนกำลังแก้ไข แสดง Cancel/Save Changes Ctrl/Cmd+S save (เฉพาะตอนกำลังแก้ไขและยังไม่ save อยู่); Escape ยกเลิกการแก้ไข (เฉพาะตอนกำลังแก้ไข) — ต่างจาก binding ของ Compose ที่ Escape reset ฟอร์มทั้งหมด Debug Sheet ที่นี่มี**สองแท็บ** — Response (payload ล่าสุดของ `GET`/`PATCH`) และ Form State (local state แบบ live) — ต่างจากแท็บเดียวของ Compose
 
