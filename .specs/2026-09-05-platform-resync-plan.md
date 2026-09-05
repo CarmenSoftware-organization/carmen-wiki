@@ -896,6 +896,12 @@ Claude-Session: https://claude.ai/code/session_01368ie91bMhnxN3muJYUm9U"
 
 Route: `/platform/migrations` → `PlatformMigrationManagement`. Nav: **`superAdminOnly: true`, no permission key**, `feature: 'platform_migrations'`, group `navGroup.database`. PR #281 added multi-BU selection when seeding role permissions — document it here and cross-link to `rbac`.
 
+- [ ] **Step 1b: Two authorities reach these endpoints, not one**
+
+`PlatformMigrationGuard.canActivate()` in `../carmen-turborepo-backend-v2/apps/backend-gateway/src/auth/guards/platform-migration.guard.ts` returns `true` for a matching `x-deploy-token` header **before** it consults Keycloak or the super-admin guard, tagging the request `deployActor = 'ci:deploy-token'`; only if no token matches does it fall through to the human path and tag `super-admin:<user_id>`. A machine credential therefore has a live, first-checked route into these endpoints alongside the human one, and the whole guard sits behind an enable switch (`isApiEnabled()`).
+
+Document both authorities and the switch. The `platform-config` module's pages describe moving this control as having traded machine access for super-admin status, which reads as though the machine path is gone — it is not. Say which actor each path records, since that is what an audit trail will show.
+
 - [ ] **Step 2: Write the landing page, then mirror to TH**
 
 Say what each migration does and what it is safe to re-run, since this screen changes data for everyone.
