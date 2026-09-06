@@ -88,8 +88,13 @@ books:
     label_en: "Carmen Platform"
     label_th: "Carmen Platform"
     groups:
-      - label_en: "Tenancy"
-        label_th: "Tenancy"
+      # Groups below mirror the SPA's own eight nav-group sections as
+      # documented on en/platform.md (Task 29 rebuild), which in turn mirror
+      # `../carmen-platform/src/components/nav/platformNav.ts` groupKey order.
+      # `sql-workbench` and `dashboard` are intentionally not nav-overrides
+      # entries (pre-existing state, unchanged by this task).
+      - label_en: "Organization"
+        label_th: "Organization"
         modules:
           - slug: clusters
             label_en: "Clusters"
@@ -97,42 +102,99 @@ books:
           - slug: business-units
             label_en: "Business Units"
             label_th: "Business Units"
-      - label_en: "Identity & Access"
-        label_th: "Identity & Access"
-        modules:
+          - slug: tenant-migrations
+            label_en: "Tenant Migrations"
+            label_th: "Tenant Migrations"
+          - slug: tenant-imports
+            label_en: "Tenant Imports"
+            label_th: "Tenant Imports"
           - slug: users
             label_en: "Users"
             label_th: "Users"
-          - slug: rbac
-            label_en: "Platform RBAC"
-            label_th: "Platform RBAC"
-          - slug: profile
-            label_en: "Profile"
-            label_th: "Profile"
+      - label_en: "License Management"
+        label_th: "License Management"
+        modules:
+          - slug: licenses
+            label_en: "Licenses"
+            label_th: "Licenses"
+          - slug: license-catalog
+            label_en: "License Catalog"
+            label_th: "License Catalog"
       - label_en: "Content"
         label_th: "Content"
         modules:
+          - slug: report-templates
+            label_en: "Report Templates"
+            label_th: "Report Templates"
+          - slug: report-form-groups
+            label_en: "Report Form Groups"
+            label_th: "Report Form Groups"
           - slug: news
             label_en: "News"
             label_th: "News"
           - slug: broadcasts
             label_en: "Broadcasts"
             label_th: "Broadcasts"
+      - label_en: "Analytics"
+        label_th: "Analytics"
+        modules:
+          - slug: usage-analytics
+            label_en: "Usage Analytics"
+            label_th: "Usage Analytics"
+          - slug: activity-events
+            label_en: "Activity Events"
+            label_th: "Activity Events"
+      - label_en: "Scheduling"
+        label_th: "Scheduling"
+        modules:
+          - slug: cronjobs
+            label_en: "Cronjobs"
+            label_th: "Cronjobs"
       - label_en: "Platform"
         label_th: "Platform"
         modules:
+          - slug: platform-config
+            label_en: "Platform Config"
+            label_th: "Platform Config"
+          - slug: email-settings
+            label_en: "Email Settings"
+            label_th: "Email Settings"
           - slug: applications
             label_en: "Applications"
             label_th: "Applications"
-      - label_en: "Reporting"
-        label_th: "Reporting"
+          - slug: rbac
+            label_en: "Platform RBAC"
+            label_th: "Platform RBAC"
+          - slug: user-platform
+            label_en: "User Platform"
+            label_th: "User Platform"
+          - slug: super-admins
+            label_en: "Super Admins"
+            label_th: "Super Admins"
+          - slug: feature-flags
+            label_en: "Feature Flags"
+            label_th: "Feature Flags"
+      - label_en: "Database"
+        label_th: "Database"
         modules:
-          - slug: report-templates
-            label_en: "Report Templates"
-            label_th: "Report Templates"
-      - label_en: "Product"
-        label_th: "Product"
+          - slug: platform-migrations
+            label_en: "Platform Migrations"
+            label_th: "Platform Migrations"
+          - slug: database-pools
+            label_en: "Database Pools"
+            label_th: "Database Pools"
+      - label_en: "Cluster Admin Console"
+        label_th: "Cluster Admin Console"
         modules:
+          - slug: cluster-admin
+            label_en: "Cluster Admin"
+            label_th: "Cluster Admin"
+      - label_en: "Account & Product Chrome"
+        label_th: "Account & Product Chrome"
+        modules:
+          - slug: profile
+            label_en: "Profile"
+            label_th: "Profile"
           - slug: changelog
             label_en: "Changelog"
             label_th: "Changelog"
