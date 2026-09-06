@@ -2,7 +2,7 @@
 title: การวิเคราะห์การใช้งาน (Usage Analytics)
 description: หน้าแดชบอร์ด UI telemetry ที่ /analytics (module slug คือ usage-analytics) — ทุก StatCard, กราฟรายวัน, และ Top List ทั้งสองชุด นิยามจาก tb_activity_event พร้อมช่องว่างสิทธิ์ activity_event.read/activity_event.detail ที่คุมการ drill-down
 published: true
-date: '2026-09-06T01:14:11.000Z'
+date: '2026-09-06T01:40:06.000Z'
 tags: book/platform, usage-analytics
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -70,7 +70,7 @@ to_char((server_ts AT TIME ZONE 'Asia/Bangkok')::date, 'YYYY-MM-DD') AS day
 
 เพราะ `sessions` และ `users` ในแถวรายวันเป็น `COUNT(DISTINCT ...)` **เฉพาะภายในวันนั้นวันเดียว** ตัวเลขจึงไม่รวมกันเป็นยอดของการ์ด `summary` เมื่อ session หรือผู้ใช้คนเดียวกันมีกิจกรรมมากกว่าหนึ่งวันในช่วงที่เลือก — ตัวเลขสองชุดนี้ไม่ได้ถูกออกแบบให้กระทบยอดกัน ความต่างระหว่าง "ผลรวมของคอลัมน์รายวัน" กับ "การ์ดสรุป" จึงไม่ใช่บั๊ก
 
-**การ export CSV** (ปุ่ม "Export CSV" ที่ page header) เขียน `day, clicks, page_views, sessions, users` ตรงจาก array `overview.daily` ที่ดึงมาแล้ว ไม่มี endpoint export แยกต่างหาก (`UsageAnalytics.tsx:101-118`, `generateCSV`/`downloadCSV` ใน `utils/csvExport.ts`) `generateCSV` ทำ neutralization ป้องกัน CSV-formula-injection (ค่าที่ขึ้นต้นด้วย `=`, `+`, `@`, tab, หรือ CR จะถูกใส่เครื่องหมายคำพูดนำหน้า) ก่อนสร้าง blob ฝั่ง client ชื่อไฟล์คำนวณช่วงวันผ่านการแปลงเวลาไทยแบบเดียวกับที่ UI แสดง (`ymdInTz()`) ไม่ใช่การตัดสตริง UTC ตรง ๆ — คอมเมนต์ในโค้ดยกตัวอย่างจริงที่หลีกเลี่ยงได้: ช่วง "1–7 ส.ค. เวลาไทย" ที่ `from` เป็น `2026-07-31T17:00Z` ถ้าไม่แปลงก่อนจะได้ชื่อไฟล์ที่ขึ้นต้นด้วยวันที่ 31 ก.ค. แทน
+**การ export CSV** (ปุ่ม "Export CSV" ที่ page header) เขียน `day, clicks, page_views, sessions, users` ตรงจาก array `overview.daily` ที่ดึงมาแล้ว ไม่มี endpoint export แยกต่างหาก (`UsageAnalytics.tsx:101-118`, `generateCSV`/`downloadCSV` ใน `utils/csvExport.ts`) ก่อนสร้าง blob ฝั่ง client ทุกเซลล์ผ่าน `neutraliseFormulaPrefix()` (`csvExport.ts:1-13` อ่านจากตัวฟังก์ชันตรง ๆ ไม่ใช่จากคอมเมนต์ของมัน): ค่าที่ขึ้นต้นด้วย `=`, `+`, `@`, tab, CR, **หรือเครื่องหมายลบ (hyphen)** (`/^[=+@\t\r-]/`) จะถูกใส่เครื่องหมายคำพูดเดี่ยวนำหน้า เพื่อให้สเปรดชีตอ่านเป็นข้อความล้วน — คอมเมนต์ของฟังก์ชันเองระบุแค่ `=`, `+`, `@`, และ tab/CR เท่านั้น ไม่ได้พูดถึงเครื่องหมายลบที่ regex จริง ๆ ตรวจอยู่ ค่าที่ขึ้นต้นด้วยเครื่องหมายลบมีข้อยกเว้นก่อน: `isValidNegativeNumber()` (`/^-\d+(\.\d+)?$/`) ตรวจว่าค่านั้นเป็นจำนวนลบแบบสะอาด (จำนวนเต็มหรือทศนิยม เช่น `-42`, `-3.14`) หรือไม่ ถ้าใช่ `neutraliseFormulaPrefix()` จะคืนค่านั้นโดยไม่ใส่เครื่องหมายคำพูด ค่าที่ขึ้นต้นด้วยเครื่องหมายลบแต่ *ไม่ใช่* จำนวนลบแบบสะอาด — เช่น payload สูตรอย่าง `-cmd|'/c calc'!A1` หรือค่าที่มีตัวคั่นหลักพันอย่าง `-1,234` — จะตกไปที่กิ่ง neutralize และถูกใส่เครื่องหมายคำพูดเหมือนค่าที่ขึ้นต้นด้วยอักขระเสี่ยงตัวอื่น เนื่องจากทุกค่าที่หน้านี้ export (StatCard/รายวัน) เป็นจำนวนเต็มที่ไม่ติดลบล้วน กิ่งเครื่องหมายลบจึงเป็นโค้ดที่ไม่ถูกใช้งานจริงสำหรับ export ชุดนี้โดยเฉพาะ แต่ไม่ใช่โค้ดที่ตายใน `generateCSV` โดยรวม เพราะฟังก์ชันนี้ใช้ร่วมกับการ export CSV อื่นในโค้ดเบส ชื่อไฟล์คำนวณช่วงวันผ่านการแปลงเวลาไทยแบบเดียวกับที่ UI แสดง (`ymdInTz()`) ไม่ใช่การตัดสตริง UTC ตรง ๆ — คอมเมนต์ในโค้ดยกตัวอย่างจริงที่หลีกเลี่ยงได้: ช่วง "1–7 ส.ค. เวลาไทย" ที่ `from` เป็น `2026-07-31T17:00Z` ถ้าไม่แปลงก่อนจะได้ชื่อไฟล์ที่ขึ้นต้นด้วยวันที่ 31 ก.ค. แทน
 
 ### 3.4 Top Pages (`top_pages`)
 
@@ -184,7 +184,7 @@ path ทั้งหมดด้านล่างเป็น `../carmen-platfo
 - `../carmen-platform/src/utils/analyticsRange.ts` (เต็ม) — `ANALYTICS_TZ`, `MAX_RANGE_DAYS`, `TZ_OFFSET_MS` และคอมเมนต์เรื่อง lockstep กับ backend, `presetRange`/`customRange`/`rangeSpanDays`
 - `../carmen-platform/src/components/analytics/DateRangeFilter.tsx` — UI preset/กำหนดเอง, การตรวจเพดานช่วงฝั่ง client
 - `../carmen-platform/src/hooks/useAnalyticsFilterOptions.ts` — การโหลด dropdown BU/Application, เพดาน 100 แถว, เหตุผลของ `Promise.allSettled`
-- `../carmen-platform/src/utils/csvExport.ts` — `generateCSV` (การป้องกัน CSV-injection), `downloadCSV`
+- `../carmen-platform/src/utils/csvExport.ts:1-13` — `neutraliseFormulaPrefix()` และ `isValidNegativeNumber()` อ่านจากตัวฟังก์ชันตรง ๆ (ข้อค้นพบเรื่องเครื่องหมายลบใน §3.3); `generateCSV`, `downloadCSV`
 - `../carmen-platform/src/components/Can.tsx`, `src/components/PrivateRoute.tsx` (ทั้งคู่แบบเต็ม) — ลำดับการ gate สิทธิ์ก่อน feature flag; ผลลัพธ์ `Forbidden`/`ComingSoon`/`NotFound`
 - `../carmen-platform/src/context/AuthContext.tsx:268-272`, `src/utils/permissions.ts` (เต็ม) — bootstrap escape hatch ของ `hasPermission` และความหมายของ `checkPermission` แบบมี/ไม่มี `clusterId` (§4.2)
 - `../carmen-platform/src/App.tsx:475-489` — การลงทะเบียน route `/analytics` และ `/activity-events`

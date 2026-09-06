@@ -2,7 +2,7 @@
 title: Usage Analytics
 description: The UI-telemetry dashboard at /analytics (module slug usage-analytics) — every StatCard, the daily chart, and both Top Lists defined against tb_activity_event, plus the activity_event.read/activity_event.detail permission seam that gates its drill-down.
 published: true
-date: '2026-09-06T01:14:11.000Z'
+date: '2026-09-06T01:40:06.000Z'
 tags: book/platform, usage-analytics
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -70,7 +70,7 @@ to_char((server_ts AT TIME ZONE 'Asia/Bangkok')::date, 'YYYY-MM-DD') AS day
 
 Because `sessions` and `users` in the daily rows are each `COUNT(DISTINCT ...)` **within that single day**, they do not sum to the `summary` card's totals when a session or a user is active on more than one day inside the window — the two figures are not designed to reconcile, and a difference between "sum of the daily column" and "the summary card" is not a bug.
 
-**CSV export** ("Export CSV" in the page header) writes `day, clicks, page_views, sessions, users` straight from the already-fetched `overview.daily` array — there is no separate export endpoint (`UsageAnalytics.tsx:101-118`, `generateCSV`/`downloadCSV` in `utils/csvExport.ts`). `generateCSV` neutralizes CSV-formula-injection (a leading `=`, `+`, `@`, tab, or CR is prefixed with a quote) before the blob is built client-side. The filename's date range is computed through the same Thailand-timezone conversion the UI displays (`ymdInTz()`), not a raw UTC slice of the ISO string — the code comment gives the concrete case this avoids: a "Aug 1–7 Thailand time" window whose `from` is `2026-07-31T17:00Z` would otherwise print a filename starting on July 31.
+**CSV export** ("Export CSV" in the page header) writes `day, clicks, page_views, sessions, users` straight from the already-fetched `overview.daily` array — there is no separate export endpoint (`UsageAnalytics.tsx:101-118`, `generateCSV`/`downloadCSV` in `utils/csvExport.ts`). Before the blob is built client-side, every cell passes through `neutraliseFormulaPrefix()` (`csvExport.ts:1-13`, read directly rather than taken from its own comment): a value starting with `=`, `+`, `@`, tab, CR, **or a hyphen** (`/^[=+@\t\r-]/`) gets a leading single-quote prefix so a spreadsheet reads it as literal text — the function's own comment lists only `=`, `+`, `@`, and tab/CR, omitting the hyphen the regex actually tests for. A leading hyphen gets a carve-out first, though: `isValidNegativeNumber()` (`/^-\d+(\.\d+)?$/`) checks whether the value is a clean negative integer or decimal (e.g. `-42`, `-3.14`), and if so `neutraliseFormulaPrefix()` returns it unquoted. A hyphen-led value that is *not* a clean negative number — a formula payload like `-cmd|'/c calc'!A1`, or a value like `-1,234` with a thousands separator — falls through to the neutralizing branch and gets quoted like any other risky prefix. Since every StatCard/daily value exported by this page is a plain non-negative integer, the hyphen branch is dead code on this particular export today, but it is not dead code in `generateCSV` generally, which is shared by other CSV exports in the codebase. The filename's date range is computed through the same Thailand-timezone conversion the UI displays (`ymdInTz()`), not a raw UTC slice of the ISO string — the code comment gives the concrete case this avoids: a "Aug 1–7 Thailand time" window whose `from` is `2026-07-31T17:00Z` would otherwise print a filename starting on July 31.
 
 ### 3.4 Top Pages (`top_pages`)
 
@@ -184,7 +184,7 @@ All paths below are `../carmen-platform` (the Platform admin SPA, HEAD `157a65e`
 - `../carmen-platform/src/utils/analyticsRange.ts` (full) — `ANALYTICS_TZ`, `MAX_RANGE_DAYS`, `TZ_OFFSET_MS` and its lockstep-with-backend comment, `presetRange`/`customRange`/`rangeSpanDays`.
 - `../carmen-platform/src/components/analytics/DateRangeFilter.tsx` — preset/custom UI, client-side range-cap validation.
 - `../carmen-platform/src/hooks/useAnalyticsFilterOptions.ts` — BU/Application dropdown load, the 100-row cap, `Promise.allSettled` reasoning.
-- `../carmen-platform/src/utils/csvExport.ts` — `generateCSV` (CSV-injection neutralization), `downloadCSV`.
+- `../carmen-platform/src/utils/csvExport.ts:1-13` — `neutraliseFormulaPrefix()` and `isValidNegativeNumber()`, read directly (§3.3's hyphen finding); `generateCSV`, `downloadCSV`.
 - `../carmen-platform/src/components/Can.tsx`, `src/components/PrivateRoute.tsx` (both full) — permission-then-feature-flag gate order; `Forbidden`/`ComingSoon`/`NotFound` outcomes.
 - `../carmen-platform/src/context/AuthContext.tsx:268-272`, `src/utils/permissions.ts` (full) — `hasPermission`'s bootstrap escape hatch and `checkPermission`'s with/without-`clusterId` semantics (§4.2).
 - `../carmen-platform/src/App.tsx:475-489` — the `/analytics` and `/activity-events` route registrations.
