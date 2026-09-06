@@ -872,6 +872,15 @@ Claude-Session: https://claude.ai/code/session_01368ie91bMhnxN3muJYUm9U"
 
 Route: `/activity-events` → `ActivityEventManagement`. Nav: `permission: 'activity_event.detail'` — **a different key from the `activity_event.read` that gates Usage Analytics**, so a reader can hold one and not the other. Say so on both pages.
 
+- [ ] **Step 1b: Two different resources with similar names — the skeleton conflates them**
+
+Task 12's seeded text for this module mixes `activity_event` with `activity_log`. They are unrelated systems, confirmed:
+
+- **`activity_event`** is UI telemetry. Its keys `activity_event.read` and `activity_event.detail` appear only in `UsageAnalytics.tsx` and `platformNav.ts`, and it is stored in `tb_activity_event` and `tb_activity_event_daily` (`schema.prisma:1489` and `:1514`). This is your module.
+- **`activity_log`** is the audit trail behind the View History affordance on CRUD screens — `BusinessUnitManagement.tsx`, `ClusterManagement.tsx`, `UserManagement.tsx`, `ReportTemplateEdit.tsx` and others. Different keys, different storage, different purpose.
+
+Correct the seeded text rather than building on it, and say plainly on the page which of the two this module covers — the names are close enough that a reader arriving from a View History link will otherwise assume they have found the right page.
+
 - [ ] **Step 2: Write both pages**
 
 `data-model.md` documents the event record: its fields, which are always present, and how long events are kept.
