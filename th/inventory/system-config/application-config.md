@@ -1,8 +1,8 @@
 ---
 title: การตั้งค่าแอปพลิเคชัน (Application Config)
-description: การตั้งค่าแอปพลิเคชันแบบ key-value ทั่วไป — เป็น backing store จริงที่ใช้งานอยู่ (config-email, การตั้งค่า signature) ที่ถูก consume เป็นราย key โดยฟีเจอร์เฉพาะ แต่ไม่มีหน้าจอ Sysadmin สำหรับ browse/edit ทั่วไป และไม่มี permission guard บน endpoint อ่าน/เขียนเลย
+description: การตั้งค่าแอปพลิเคชันแบบ key-value ทั่วไป — backing store จริงที่ใช้งานอยู่ ถูก consume เป็นราย key โดยฟีเจอร์เฉพาะ ตรวจสอบซ้ำ 2026-09-06: ยังไม่มีหน้าจอ Sysadmin ทั่วไป และยังไม่มี permission guard บน endpoint อ่าน/เขียน
 published: true
-date: 2026-07-16T00:00:00.000Z
+date: 2026-09-06T07:05:00.000Z
 tags: system-config, application-config, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,14 +11,20 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # การตั้งค่าแอปพลิเคชัน (Application Config)
 
 > **At a Glance**
-> **เจ้าของ:** ไม่มีหน้าจอเดียว — แต่ละ key ถูกจัดการโดย frontend feature ที่เป็นเจ้าของมัน (เช่น Email Configuration เขียน `report_email`) &nbsp;·&nbsp; **ตาราง:** `tb_application_config` (+ `tb_application_user_config`) &nbsp;·&nbsp; **ใช้โดย:** ยืนยันจริงสำหรับ `report_email` (SMTP) และการตั้งค่า signature; **ไม่มีหน้าจอ admin "Application Settings" ทั่วไป** &nbsp;·&nbsp; **ไม่มี permission guard** บน endpoint อ่าน/เขียน นอกเหนือจาก authentication พื้นฐาน
+> **เจ้าของ:** ไม่มีหน้าจอเดียว — แต่ละ key ถูกจัดการโดย frontend feature ที่เป็นเจ้าของมัน (เช่น Email Configuration เขียน `report_email`) &nbsp;·&nbsp; **ตาราง:** `tb_application_config` (+ `tb_application_user_config`) &nbsp;·&nbsp; **ใช้โดย:** ยืนยันจริงสำหรับ `report_email` (SMTP) และการตั้งค่า signature; **ไม่มีหน้าจอ admin "Application Settings" ทั่วไป** &nbsp;·&nbsp; **ไม่มี permission guard** บน endpoint อ่าน/เขียน นอกเหนือจาก authentication พื้นฐาน ยกเว้นการตรวจ BU-admin แบบแคบสำหรับ key `list_views_*` (ตรวจสอบซ้ำ 2026-09-06)
 
 ## สถานะการ implement (ตรวจสอบ 2026-07-16)
 
 `tb_application_config` เป็นตารางจริงที่ถูกเขียนใช้งานอยู่ — แต่ถูก **consume เป็นราย key โดยฟีเจอร์เฉพาะ** ไม่ใช่ผ่าน editor สำหรับใช้งานทั่วไป:
 
 - **ไม่มีหน้าจอ "System Config → Application Settings"** ไม่มี path `application-config` ใน `../carmen-inventory-frontend-react/routes/router.tsx` และไม่มี directory แบบนี้ใต้ `routes/system-admin/` ผู้บริโภคฝั่ง frontend มีเพียง `hooks/use-app-config.ts` (`useAppConfigByKey`, `useUpsertAppConfig`, `useTestEmail`) ที่ถูกเรียกโดยฟีเจอร์เฉพาะชื่อ: [system-config/config-email](/th/inventory/system-config/config-email) (key `report_email`) และหน้าจอ signature-candidates ของ workflow (`signature-config.tsx`) ไม่มีอะไรให้ Sysadmin browse หรือแก้ key ใดก็ได้ตามใจ
-- **ไม่มี permission guard บน controller** `config_app-config.controller.ts` ใช้แค่ `KeycloakGuard` (authentication) ระดับ class — ไม่มี decorator `AppIdGuard` หรือ `RequirePlatformPermission` บน endpoint list/get/upsert ใดเลย (ต่างจาก [system-config/document](/th/inventory/system-config/document) ที่ controller gate ทุก endpoint ด้วย `AppIdGuard('documents.*')` ที่มีชื่อชัดเจน) การ gate ด้วย "App ID `app-config.upsert`" ที่อธิบายไว้ด้านล่างในหน้านี้ และใน [system-config/config-email](/th/inventory/system-config/config-email) **ไม่ได้ implement ใน backend** — ผู้เรียกที่ authenticated แล้วพร้อม `x-app-id` ที่ลงทะเบียนถูกต้องสามารถอ่านและเขียนทุก row config ระดับ tenant ได้ รวมถึง SMTP credentials การบังคับใช้ (ถ้ามี) มีแค่ระดับ navigation/route ฝั่ง frontend ไม่ใช่ server-side check
+- **ไม่มี permission guard บน controller — ตรวจสอบซ้ำ 2026-09-06 ยังเปิดอยู่** `config_app-config.controller.ts` ใช้แค่ `@UseGuards(KeycloakGuard)` (authentication) ระดับ class (`:46`) ไม่มี decorator `AppIdGuard` หรือ `RequirePlatformPermission` บน route ใดเลย (ต่างจาก [system-config/document](/th/inventory/system-config/document) ที่ controller gate ทุก endpoint ด้วย `AppIdGuard('documents.*')` ที่มีชื่อชัดเจน) รอบนี้ตรวจและตัดออกเพิ่มเติม: ไม่มี `APP_GUARD` ใน `app.module.ts` ของ gateway นอกจาก throttler สำหรับจำกัดอัตรา — ซึ่งคอมเมนต์ในไฟล์ระบุเองว่าเป็นคนละแกนกับการตรวจสิทธิ์ — และไม่มี guard ที่ลงทะเบียนใน `config_app-config.module.ts` **ผู้เรียกที่ authenticated ใครก็ได้อ่านและเขียนทุก row config ระดับ tenant ได้ รวมถึง SMTP credentials**
+
+  ไม่มี `x-app-id` ให้พึ่ง: `@ApiHeaderRequiredXAppId()` ประกาศ header ไว้สำหรับ Swagger เท่านั้น และไม่มี `AppIdGuard` ที่นี่ ข้อความเดิมในหน้านี้ที่สื่อว่าต้องมี "`x-app-id` ที่ลงทะเบียนถูกต้อง" ถูกแก้แล้ว — authentication คือด่านเดียว
+
+  **ข้อยกเว้นหนึ่งเดียว ที่เพิ่มเข้ามาหลังหน้านี้ถูกเขียน:** commit `1b76f2caa` (2026-07-29) เพิ่ม `assertSharedListViewsAdmin()` (`:256-287`) เรียกจาก `PUT :key` (`:202`) และ `DELETE :key` (`:237`) บังคับให้ต้องมี role **`admin` ระดับ BU** ของ `bu_code` เป้าหมาย แต่เฉพาะ key ที่ตรงกับ `/^list_views_/` (`:262`) เท่านั้น key อื่นทั้งหมด return ออกทันทีโดยไม่ตรวจ ส่วน `GET`, `GET :key`, `signature-candidates` และ `POST test-email` ไม่มีการตรวจเลย role ถูกอ่านจาก header `x-bu-datas` ซึ่ง `KeycloakGuard` เขียนทับทุกคำขอที่ authenticate แล้ว (`keycloak.guard.ts:192`, `:211`, `:301`, `:327`) จึงปลอมจากฝั่ง client ไม่ได้ และ fail closed เมื่อไม่มี header
+
+  การ gate ด้วย "App ID `app-config.upsert`" ที่อธิบายไว้ด้านล่างในหน้านี้ และใน [system-config/config-email](/th/inventory/system-config/config-email) **ไม่ได้ implement ใน backend** การบังคับใช้ (ถ้ามี) มีแค่ระดับ navigation/route ฝั่ง frontend ไม่ใช่ server-side check
 
 Schema, JSONB shape และคำอธิบายลำดับการ resolve ด้านล่างยังคงถูกต้องสำหรับ row ที่มีจริง (`report_email`, การตั้งค่าที่เกี่ยวกับ `signature-candidates`); ตาราง "งานทั่วไป" ถูกแก้ไขให้ลบหน้าจอ admin ทั่วไปที่ไม่มีอยู่จริงออกแล้ว
 
@@ -47,7 +53,7 @@ Application Config คือ **ที่เก็บ key-value ทั่วไ�
 |---|---|---|
 | Key collision ตอน insert | มี row ที่ไม่ถูก delete อยู่แล้ว | Update row เดิมหรือเลือก key อื่น |
 | Value ถูก reject ตอน runtime | Zod schema mismatch (ยืนยันสำหรับ `ReportEmailSchema` ของ `report_email`) | แก้ shape ตาม contract ของ consumer |
-| ผู้ใช้ที่ authenticated ใครก็ได้อ่าน/เขียน config key ใดก็ได้ | ไม่มี permission guard บน `config_app-config.controller.ts` | ช่องโหว่ที่ยืนยันแล้ว — flag ไว้สำหรับติดตามผลต่อ ไม่ได้แก้ในรอบนี้ |
+| ผู้ใช้ที่ authenticated ใครก็ได้อ่าน/เขียน config key ใดก็ได้ | ไม่มี permission guard บน `config_app-config.controller.ts` | **ช่องโหว่ที่ยืนยันแล้ว — ยังเปิดอยู่ ตรวจสอบซ้ำ 2026-09-06** มีเพียง key `list_views_*` ที่ถูกป้องกัน และเฉพาะบน `PUT`/`DELETE` |
 | Secret รั่ว | เก็บ credentials ใน config | ย้ายไป env / secrets manager — config แก้ไขได้โดยมนุษย์; หมายเหตุ `smtp.password` ของ `report_email` *ถูก* encrypt at rest (ดู [system-config/config-email](/th/inventory/system-config/config-email)) |
 
 ## 4. กรณีพิเศษ
@@ -106,5 +112,5 @@ Application Config คือ **ที่เก็บ key-value ทั่วไ�
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_application_config` (lines ~5287-5301), `tb_application_user_config` (lines ~5304-5319)
 - **Backend service:** `../carmen-turborepo-backend-v2/apps/micro-business/src/app-config/app-config.service.ts`
-- **Backend gateway controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_app-config/config_app-config.controller.ts` — ยืนยันว่าไม่มี `AppIdGuard`/`RequirePlatformPermission`
+- **Backend gateway controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_app-config/config_app-config.controller.ts` — อ่านซ้ำทั้งไฟล์ 2026-09-06: ไม่มี `AppIdGuard`/`RequirePlatformPermission` บน route ใดเลย; การตรวจสิทธิ์เพียงอย่างเดียวคือ `assertSharedListViewsAdmin()` (`:256-287`) ซึ่งจำกัดที่ key แบบ `list_views_*`
 - **Frontend:** ไม่มีหน้าจอ admin ทั่วไป ผู้บริโภค: `../carmen-inventory-frontend-react/hooks/use-app-config.ts` (`useAppConfigByKey`, `useUpsertAppConfig`, `useTestEmail`, `useSignatureCandidates`) ใช้โดย `routes/system-admin/config-email/` และ `routes/system-admin/signature-config.tsx`
