@@ -1,8 +1,8 @@
 ---
 title: Broadcasts — UI Screens
-description: The three Broadcasts screens — BroadcastManagement (list, filters, CSV export), BroadcastCompose (target tabs, expiry presets, live preview), and BroadcastEdit (content lock, schedule/expiry editing) — plus the BroadcastPreview panel shared by Compose and Edit.
+description: The three Broadcasts screens — BroadcastManagement (list/filters/CSV export), BroadcastCompose (target/expiry/preview), and BroadcastEdit (content lock).
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: 2026-09-06T23:45:00.000Z
 tags: book/platform, broadcasts, ui
 editor: markdown
 dateCreated: 2026-06-10T13:15:00.000Z

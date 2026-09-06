@@ -1,8 +1,8 @@
 ---
 title: Business Unit — UI Screens
-description: BusinessUnitManagement (list) and the six-tab BusinessUnitEdit (General/Location/Formats/Technical/Users/Licenses) — code auto-generation, the schema-name randomizer, the Licenses tab split out of Users, and the database-pool picker that replaced db_connection.
+description: BusinessUnitManagement (list) and the six-tab BusinessUnitEdit — code auto-generation, the schema-name randomizer, and the Licenses tab split out of Users.
 published: true
-date: 2026-09-06T23:30:00.000Z
+date: 2026-09-06T23:45:00.000Z
 tags: book/platform, business-units, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'

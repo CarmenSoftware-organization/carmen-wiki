@@ -1,8 +1,8 @@
 ---
 title: การตั้งค่าอีเมล — โมเดลข้อมูล (Data Model)
-description: tb_email_sender_profile (โปรไฟล์ผู้ส่ง SMTP ที่ตั้งชื่อได้ credential เข้ารหัส) บวกโครงสร้าง config email_routing ที่มันถูก resolve ผ่าน — และการรับประกันฝั่งเขียน (optimistic locking, ความหมายของ password-patch, ความไม่ซ้ำของชื่อ) ที่ต่างจากตาราง platform-config ที่ใช้ร่วมกัน
+description: tb_email_sender_profile (โปรไฟล์ผู้ส่ง SMTP ที่ตั้งชื่อได้ credential เข้ารหัส) และโครงสร้าง config email_routing ที่มันถูก resolve ผ่าน
 published: true
-date: '2026-09-06T20:00:00.000Z'
+date: '2026-09-06T23:45:00.000Z'
 tags: book/platform, email-settings, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'

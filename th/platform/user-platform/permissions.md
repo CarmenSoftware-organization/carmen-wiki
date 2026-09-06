@@ -1,8 +1,8 @@
 ---
 title: ผู้ใช้แพลตฟอร์ม — สิทธิ์ (Permissions)
-description: user_platform.read กั้นทั้งสอง route; user_platform.manage กั้นทุกจุดที่เขียนได้บนทั้งสองหน้าจอและตรงกับ decorator ฝั่ง backend เป๊ะ ช่องว่างที่ควรทดสอบอยู่ที่อื่น — ส่วนใหญ่ที่หน้า detail แสดงยังต้องมี user.read ด้วย ซึ่งเป็นคีย์ของโมดูล Users ที่ route guard ของโมดูลนี้เองไม่เคยตรวจ
+description: user_platform.read กั้นทั้งสอง route; user_platform.manage กั้นทุกจุดที่เขียนได้ — แต่หน้า detail ส่วนใหญ่ยังต้องมี user.read ของโมดูล Users ด้วย
 published: true
-date: '2026-09-06T21:00:00.000Z'
+date: '2026-09-06T23:45:00.000Z'
 tags: book/platform, user-platform, permissions
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'

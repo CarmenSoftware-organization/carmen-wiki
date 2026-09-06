@@ -1,8 +1,8 @@
 ---
 title: การย้ายเทแนนต์ (Tenant Migrations)
-description: หน้าจอ /tenant-migrations ระดับ fleet ที่ตรวจสอบและ apply schema migration ของฐานข้อมูล tenant ที่ค้างอยู่ทั่วทุก business unit — reuse cluster.read บวก feature flag tenant_migrations ของตัวเองที่ระดับ route แต่ทุก action จริงถูกจำกัดเพิ่มเป็น super-admin (หรือ CI deploy token) ทั้งฝั่ง frontend และ backend guard
+description: หน้าจอระดับ fleet ที่ตรวจสอบและ apply schema migration ของฐานข้อมูล tenant ที่ค้างอยู่ทั่วทุก business unit ทุก action ถูกจำกัดเฉพาะ super-admin
 published: true
-date: '2026-09-06T19:00:00.000Z'
+date: '2026-09-06T23:45:00.000Z'
 tags: book/platform, tenant-migrations
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'

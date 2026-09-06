@@ -1,8 +1,8 @@
 ---
 title: Broadcasts
-description: Broadcasts module overview — three screens (List, Compose, Edit) covering push notifications with three target modes, a mandatory expiry, and a full sender-side lifecycle (schedule, edit-while-scheduled, expire now, soft-delete) — except targeted sends, which stay fire-and-forget.
+description: Broadcasts module overview — three screens covering push notifications with three target modes, a mandatory expiry, and a full sender-side lifecycle.
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: 2026-09-06T23:45:00.000Z
 tags: platform/broadcasts, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T13:15:00.000Z

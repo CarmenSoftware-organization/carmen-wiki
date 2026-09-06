@@ -1,8 +1,8 @@
 ---
 title: SQL Workbench
-description: Admin console (/sql-workbench, added 2026-07-09) that runs arbitrary SQL and browses/creates/drops views, stored procedures, and functions against a chosen tenant's database — the confirmed carmen-platform frontend for the backend service documented in the Inventory book's Query Dataset page. Redesigned 2026-09-02 into a fixed three-pane workbench with a draggable, virtual-scrolled result grid.
+description: Admin console that runs arbitrary SQL and browses/creates/drops views, procedures, and functions against a chosen tenant's database — a three-pane workbench with a virtual-scrolled result grid.
 published: true
-date: 2026-09-06T21:00:00.000Z
+date: 2026-09-06T23:45:00.000Z
 tags: platform/sql-workbench, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z

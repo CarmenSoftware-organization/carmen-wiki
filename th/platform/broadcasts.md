@@ -1,8 +1,8 @@
 ---
 title: บรอดแคสต์ (Broadcasts)
-description: ภาพรวมโมดูล Broadcasts — สามหน้าจอ (List, Compose, Edit) ครอบคลุม push notification พร้อมวันหมดอายุที่บังคับ และวงจรชีวิตฝั่งผู้ส่งแบบเต็ม (กำหนดเวลา แก้ไขระหว่างที่ยังไม่ส่ง ต่ออายุให้หมดทันที ลบแบบ soft) — ยกเว้นการส่งแบบระบุผู้รับที่ยังคง fire-and-forget
+description: ภาพรวมโมดูล Broadcasts — สามหน้าจอ (List, Compose, Edit) ครอบคลุม push notification พร้อมวันหมดอายุที่บังคับ และวงจรชีวิตฝั่งผู้ส่งแบบเต็ม
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: 2026-09-06T23:45:00.000Z
 tags: platform/broadcasts, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T16:00:00.000Z

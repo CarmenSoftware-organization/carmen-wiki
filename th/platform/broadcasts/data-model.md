@@ -1,8 +1,8 @@
 ---
 title: Broadcasts — แบบจำลองข้อมูล (Data Model)
-description: ตาราง field ของ tb_broadcast_notification และ tb_user_broadcast_action หลังการปรับใหญ่ระบบ notification — enum scope/doc_type/event แทนที่คอลัมน์ category/type แบบ varchar, doc_version เป็น optimistic lock จริง, end_at บังคับ และทางแยกของการส่งแบบระบุผู้รับลง tb_notification
+description: ตาราง field ของ tb_broadcast_notification และ tb_user_broadcast_action หลังการปรับใหญ่ระบบ notification — enum scope/doc_type/event, doc_version เป็น optimistic lock จริง
 published: true
-date: 2026-09-05T22:00:00.000Z
+date: 2026-09-06T23:45:00.000Z
 tags: book/platform, broadcasts, data-model
 editor: markdown
 dateCreated: 2026-06-10T16:00:00.000Z

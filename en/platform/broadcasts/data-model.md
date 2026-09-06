@@ -1,8 +1,8 @@
 ---
 title: Broadcasts — Data Model
-description: The tb_broadcast_notification and tb_user_broadcast_action field tables after the notification redesign — scope/doc_type/event enums replacing category/type varchar, a real optimistic-lock doc_version, a mandatory end_at, and the targeted-send fork into tb_notification.
+description: The tb_broadcast_notification and tb_user_broadcast_action field tables after the notification redesign — new enums and a real optimistic-lock doc_version.
 published: true
-date: 2026-09-05T22:00:00.000Z
+date: 2026-09-06T23:45:00.000Z
 tags: book/platform, broadcasts, data-model
 editor: markdown
 dateCreated: 2026-06-10T13:15:00.000Z

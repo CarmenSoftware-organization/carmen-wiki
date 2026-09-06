@@ -1,8 +1,8 @@
 ---
 title: User Platform
-description: Assigns RBAC platform roles — platform-wide or per-cluster — to existing tb_user accounts, the privilege-registry screen split out of RBAC and Users. The detail route is /platform/user-platform/:userId, with no /edit suffix; most real workflows on it also need user.read from the Users module, a dependency this module's own nav gate does not cover.
+description: Assigns RBAC platform roles — platform-wide or per-cluster — to existing user accounts, the privilege-registry screen split out of RBAC and Users.
 published: true
-date: '2026-09-06T21:00:00.000Z'
+date: '2026-09-06T23:45:00.000Z'
 tags: book/platform, user-platform
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'

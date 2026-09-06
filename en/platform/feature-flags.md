@@ -1,8 +1,8 @@
 ---
 title: Feature Flags
-description: The single screen that sets every feature's visibility (active/inactive/hide) across both the Platform and Cluster-admin consoles — deliberately reachable through no feature key of its own, since a switch that could hide itself could never be restored from the UI.
+description: The single screen that sets every feature's visibility (active/inactive/hide) across the Platform and Cluster-admin consoles — ungated by any feature key of its own.
 published: true
-date: '2026-09-06T23:30:00.000Z'
+date: '2026-09-06T23:45:00.000Z'
 tags: book/platform, feature-flags
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'

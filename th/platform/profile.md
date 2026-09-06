@@ -1,8 +1,8 @@
 ---
 title: โปรไฟล์ (Profile)
-description: หน้าจัดการตนเองสำหรับผู้ใช้ที่ล็อกอินอยู่ใช้ดูและแก้ไขข้อมูลตัวตนของตน รวมถึงเปลี่ยนรหัสผ่าน ตอนนี้มีการ validate field แบบ inline และข้อความ error เมื่อ fetch ล้มเหลว mount อยู่สอง route — /profile (platform) และ /cluster-admin/:clusterId/profile (cluster-admin) — ใช้ component และแหล่งข้อมูลเดียวกัน
+description: หน้าจัดการตนเองสำหรับผู้ใช้ที่ล็อกอินอยู่ ดูและแก้ไขข้อมูลตัวตนของตน รวมถึงเปลี่ยนรหัสผ่าน mount อยู่สอง route ที่ใช้ component เดียวกัน
 published: true
-date: 2026-09-06T12:00:00.000Z
+date: 2026-09-06T23:45:00.000Z
 tags: platform/profile, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z

@@ -1,8 +1,8 @@
 ---
 title: ผู้ใช้แพลตฟอร์ม (User Platform)
-description: มอบ role แบบ RBAC — ทั้งแพลตฟอร์มหรือเฉพาะ cluster — ให้บัญชี tb_user ที่มีอยู่แล้ว หน้าจอ "ทะเบียนสิทธิ์" ที่แยกออกมาจาก RBAC และ Users เส้นทาง detail คือ /platform/user-platform/:userId ไม่มี /edit ต่อท้าย และ workflow จริงส่วนใหญ่ยังต้องมี user.read จากโมดูล Users เพิ่มด้วย ซึ่งด่าน nav ของโมดูลนี้เองไม่ครอบคลุม
+description: มอบ role แบบ RBAC — ทั้งแพลตฟอร์มหรือเฉพาะ cluster — ให้บัญชีผู้ใช้ที่มีอยู่แล้ว หน้าจอทะเบียนสิทธิ์ที่แยกออกมาจาก RBAC และ Users
 published: true
-date: '2026-09-06T21:00:00.000Z'
+date: '2026-09-06T23:45:00.000Z'
 tags: book/platform, user-platform
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'

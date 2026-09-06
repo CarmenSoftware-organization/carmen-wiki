@@ -1,8 +1,8 @@
 ---
 title: Profile
-description: Self-service page where a signed-in user views and edits their own identity fields, changes their password, and now gets inline field validation and a proper fetch-failure message. Mounted at two routes — /profile (platform) and /cluster-admin/:clusterId/profile (cluster-admin) — sharing one component and one data source.
+description: Self-service page where a signed-in user views and edits their own identity fields and changes their password. Mounted at two routes sharing one component.
 published: true
-date: 2026-09-06T12:00:00.000Z
+date: 2026-09-06T23:45:00.000Z
 tags: platform/profile, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z

@@ -1,8 +1,8 @@
 ---
 title: การนำเข้าเทแนนต์ (Tenant Imports)
-description: TenantImportWizard ที่ /tenant-imports — sidebar ใช้ป้าย "Data Import" gate ด้วยคีย์ data_import.manage (manage ไม่ใช่ read) — นำข้อมูลหลักจาก Preconfig.xlsx เข้าฐานข้อมูล tenant ของหนึ่ง business unit ทีละขั้นตอน พร้อมช่องโหว่ที่ยังคงอยู่จริงในการแมป error status ของ endpoint แบบ stream
+description: TenantImportWizard ที่ /tenant-imports — sidebar ใช้ป้าย "Data Import" gate ด้วย data_import.manage — นำข้อมูลหลักจาก Preconfig.xlsx เข้าฐานข้อมูล tenant ทีละขั้นตอน
 published: true
-date: '2026-09-07T00:15:00.000Z'
+date: '2026-09-06T23:45:00.000Z'
 tags: book/platform, tenant-imports
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'

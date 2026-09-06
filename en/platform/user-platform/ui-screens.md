@@ -1,8 +1,8 @@
 ---
 title: User Platform — UI Screens
-description: UserPlatformManagement's filter-consistent registry (PlatformAccessSummary, RoleChips, Grant Access) and UserPlatformEdit's per-holder dossier (AccessReachBand, RoleGrantList, MembershipCard) — plus the two ways the user-platform e2e suite no longer matches this UI.
+description: UserPlatformManagement's filter-consistent registry and UserPlatformEdit's per-holder dossier — plus where the e2e suite no longer matches this UI.
 published: true
-date: '2026-09-06T19:00:00.000Z'
+date: '2026-09-06T23:45:00.000Z'
 tags: book/platform, user-platform, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'

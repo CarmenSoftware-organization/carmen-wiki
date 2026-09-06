@@ -1,8 +1,8 @@
 ---
 title: Email Settings — Data Model
-description: tb_email_sender_profile (named SMTP sender profiles, encrypted credentials) plus the email_routing config shape it is resolved through — and the write-path guarantees (optimistic locking, password-patch semantics, name uniqueness) that differ from the shared platform-config table.
+description: tb_email_sender_profile (named SMTP sender profiles, encrypted credentials) and the email_routing config it resolves through, with its own write-path guarantees.
 published: true
-date: '2026-09-06T20:00:00.000Z'
+date: '2026-09-06T23:45:00.000Z'
 tags: book/platform, email-settings, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'

@@ -1,8 +1,8 @@
 ---
 title: News — UI Screens
-description: The NewsroomSummary masthead + NewsManagement list (thumbnail, Target, Tags, status/tag filters, CSV export, bulk publish/archive/delete) and the masthead-based NewsEdit form — MarkdownEditor, ImageUpload, Tags, Publish rail — with validation and keyboard shortcuts.
+description: The NewsroomSummary masthead, NewsManagement list (filters, CSV export, bulk actions), and the masthead-based NewsEdit form with its Publish rail.
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: 2026-09-06T23:45:00.000Z
 tags: book/platform, news, ui
 editor: markdown
 dateCreated: 2026-06-10T13:00:00.000Z

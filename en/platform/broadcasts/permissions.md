@@ -1,8 +1,8 @@
 ---
 title: Broadcasts — Permissions
-description: Four broadcast.* keys (read/send/update/delete) gate the module's List/Compose/Edit screens and their matching REST endpoints server-side; content locks once a broadcast has aired, doc_version is a real optimistic lock, and only targeted (system_users) sends stay fire-and-forget.
+description: Four broadcast.* keys (read/send/update/delete) gate the module's List/Compose/Edit screens and their matching REST endpoints; content locks once aired.
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: 2026-09-06T23:45:00.000Z
 tags: book/platform, broadcasts, permissions
 editor: markdown
 dateCreated: 2026-06-10T13:15:00.000Z

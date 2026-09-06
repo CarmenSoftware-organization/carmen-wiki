@@ -1,8 +1,8 @@
 ---
 title: Tenant Migrations
-description: Fleet-wide /tenant-migrations screen that checks and applies pending tenant-database schema migrations across every business unit in one table — reuses cluster.read plus its own tenant_migrations feature flag at the route, with every actual action further restricted to super-admin (or a CI deploy token) on both the frontend and the backend guard.
+description: Fleet-wide screen that checks and applies pending tenant-database schema migrations across every business unit; every action is restricted to super-admins.
 published: true
-date: '2026-09-06T19:00:00.000Z'
+date: '2026-09-06T23:45:00.000Z'
 tags: book/platform, tenant-migrations
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'

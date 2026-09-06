@@ -1,8 +1,8 @@
 ---
 title: Platform RBAC — สิทธิ์ (Permissions)
-description: เมทริกซ์ route-guard ของทั้ง SPA, การประกอบกันของ gate ระดับ route/sidebar/ภายในหน้า, อัลกอริทึมการ resolve permission และกรณีพิเศษสำหรับผู้ทดสอบ อัพเดทสำหรับการเปลี่ยนคีย์เป็น platform_role.*, การย้าย route ไป category-permissions และข้อยกเว้น login ของ cluster-admin
+description: เมทริกซ์ route-guard ของทั้ง SPA, การประกอบกันของ gate ระดับ route/sidebar/ภายในหน้า และอัลกอริทึมการ resolve permission พร้อมกรณีพิเศษสำหรับผู้ทดสอบ
 published: true
-date: 2026-09-06T21:00:00.000Z
+date: 2026-09-06T23:45:00.000Z
 tags: book/platform, rbac, permissions
 editor: markdown
 dateCreated: 2026-06-10T15:00:00.000Z

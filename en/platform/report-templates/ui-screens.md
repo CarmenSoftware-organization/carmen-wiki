@@ -1,8 +1,8 @@
 ---
 title: Report Template — UI Screens
-description: ReportTemplateManagement list (Status + Source Type + Template Type filters, CSV export) and ReportTemplateEdit 2-pane form (left — identity + source + BU scope; right — 3-tab CodeMirror Dialog XML / Content XML / Preview) — layout, filters, Browse-in-BU probe, sticky action bar, not-found gating, doc_version, persisted state.
+description: The report templates list (status/source/template-type filters, CSV export) and the two-pane edit form — identity, source, BU scope, and a tabbed XML editor with preview.
 published: true
-date: 2026-09-06T01:00:00.000Z
+date: 2026-09-06T23:45:00.000Z
 tags: book/platform, report-templates, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'

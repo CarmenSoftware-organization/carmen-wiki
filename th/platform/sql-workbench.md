@@ -1,8 +1,8 @@
 ---
 title: SQL Workbench
-description: คอนโซล admin (/sql-workbench เพิ่มเมื่อ 2026-07-09) ที่รัน SQL ใด ๆ ก็ได้ และ browse/สร้าง/drop view, stored procedure, function กับฐานข้อมูลของ tenant ที่เลือก — ยืนยันว่าเป็น frontend ของ carmen-platform สำหรับ backend service ที่บันทึกไว้ในหน้า Query Dataset ของ Inventory book ออกแบบใหม่เมื่อ 2026-09-02 ให้เป็น workbench สามช่องแบบตรึงจอ พร้อม result grid แบบ virtual scroll ที่ลากปรับขนาดได้
+description: คอนโซล admin (/sql-workbench) ที่รัน SQL ใด ๆ และ browse/สร้าง/drop view, procedure, function ของฐานข้อมูล tenant ที่เลือก — ออกแบบใหม่เป็น workbench สามช่องพร้อม result grid แบบ virtual scroll
 published: true
-date: 2026-09-06T21:00:00.000Z
+date: 2026-09-06T23:45:00.000Z
 tags: platform/sql-workbench, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z

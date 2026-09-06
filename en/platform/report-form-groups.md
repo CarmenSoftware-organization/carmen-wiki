@@ -1,8 +1,8 @@
 ---
 title: Report Form Groups
-description: The /report-form-groups screen — one card per fixed report_group code, each listing its "form"-type report templates with a set-as-default action on tb_report_template.is_default; the surface that, together with Report Templates' template_type field, replaced the deleted print-template-mapping module.
+description: One card per fixed report_group code, each listing its form templates with a set-as-default action — the surface that replaced print-template-mapping.
 published: true
-date: '2026-09-06T23:00:00.000Z'
+date: '2026-09-06T23:45:00.000Z'
 tags: book/platform, report-form-groups
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'

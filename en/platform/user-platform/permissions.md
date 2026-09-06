@@ -1,8 +1,8 @@
 ---
 title: User Platform — Permissions
-description: user_platform.read gates both routes; user_platform.manage gates every mutating affordance on both screens and matches its backend decorator exactly. The gap worth testing is elsewhere — most of what the detail screen actually shows also requires user.read, a Users-module key this module's own route guard never checks.
+description: user_platform.read gates both routes; user_platform.manage gates every mutating action — but most of the detail screen also needs the Users module's user.read.
 published: true
-date: '2026-09-06T21:00:00.000Z'
+date: '2026-09-06T23:45:00.000Z'
 tags: book/platform, user-platform, permissions
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'

@@ -1,8 +1,8 @@
 ---
 title: Platform RBAC
-description: Permission-based access control for the Platform admin SPA — permission catalog, roles, scoped user assignments, the super-admin bypass, and the August/September 2026 platform_role.* key rename plus the RoleEdit/RolesAccessSummary/SuperAdminManagement redesign waves.
+description: Permission-based access control for the Platform admin SPA — permission catalog, roles, scoped user assignments, and the super-admin bypass.
 published: true
-date: 2026-09-06T23:00:00.000Z
+date: 2026-09-06T23:45:00.000Z
 tags: platform/rbac, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z

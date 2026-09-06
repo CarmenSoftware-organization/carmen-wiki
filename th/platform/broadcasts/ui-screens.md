@@ -1,8 +1,8 @@
 ---
 title: Broadcasts — หน้าจอ UI (UI Screens)
-description: สามหน้าจอของ Broadcasts — BroadcastManagement (list, filter, CSV export), BroadcastCompose (แท็บ target, preset วันหมดอายุ, preview แบบ live) และ BroadcastEdit (content lock, การแก้ schedule/วันหมดอายุ) — บวกแผง BroadcastPreview ที่ใช้ร่วมกันระหว่าง Compose และ Edit
+description: สามหน้าจอของ Broadcasts — BroadcastManagement (list, filter, CSV export), BroadcastCompose (target, preset วันหมดอายุ, preview) และ BroadcastEdit
 published: true
-date: 2026-09-05T22:00:00.000Z
+date: 2026-09-06T23:45:00.000Z
 tags: book/platform, broadcasts, ui
 editor: markdown
 dateCreated: 2026-06-10T16:00:00.000Z

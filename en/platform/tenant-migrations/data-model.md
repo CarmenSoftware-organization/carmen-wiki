@@ -1,8 +1,8 @@
 ---
 title: Tenant Migrations — Data Model
-description: There is no persisted migration-status entity — every state on this screen is derived live from tb_business_unit.db_schema plus the linked tb_database_pool row, by shelling out to the Prisma CLI against the resolved tenant connection and parsing its text output.
+description: There is no persisted migration-status entity — every state is derived live from tb_business_unit.db_schema and the linked tb_database_pool row.
 published: true
-date: '2026-09-06T19:00:00.000Z'
+date: '2026-09-06T23:45:00.000Z'
 tags: book/platform, tenant-migrations, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'

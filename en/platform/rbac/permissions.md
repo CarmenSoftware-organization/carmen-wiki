@@ -1,8 +1,8 @@
 ---
 title: Platform RBAC — Permissions
-description: Route-guard matrix for the whole SPA, how route/sidebar/in-page gates compose, the permission-resolution algorithm, and edge cases for testers. Updated for the platform_role.* key rename, the category-permissions route move, and the cluster-admin login exception.
+description: Route-guard matrix for the whole SPA, how route/sidebar/in-page gates compose, the permission-resolution algorithm, and edge cases for testers.
 published: true
-date: 2026-09-06T21:00:00.000Z
+date: 2026-09-06T23:45:00.000Z
 tags: book/platform, rbac, permissions
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z

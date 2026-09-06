@@ -1,8 +1,8 @@
 ---
 title: Landing
-description: หน้าการตลาดสาธารณะที่ / — redirect session ที่ authenticated แล้วไปยัง Dashboard ทันที และแสดงดัชนีโมดูล "Inside the console" แบบ hardcode ที่คลาดเคลื่อนไปจาก sidebar จริง (ยังแสดงโมดูล Print Mapping ที่ถูกลบแล้ว ขาด Form Groups, User Platform, และ SQL Workbench)
+description: หน้าการตลาดสาธารณะที่ / — redirect session ที่ authenticated แล้วไปยัง Dashboard และแสดงดัชนีโมดูล "Inside the console" แบบ hardcode ที่คลาดเคลื่อนจาก sidebar จริง
 published: true
-date: 2026-09-06T23:00:00.000Z
+date: 2026-09-06T23:45:00.000Z
 tags: platform/landing, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z

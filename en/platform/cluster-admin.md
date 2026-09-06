@@ -1,8 +1,8 @@
 ---
 title: Cluster Admin
-description: The cluster-administration console — a second navigation and persona scoped to one cluster at a time, reached at /cluster-admin/:clusterId/*. No RBAC permission key anywhere in it — gated instead by cluster membership via isClusterAdminOf, checked before the feature flag on every route.
+description: The cluster-administration console — a second navigation and persona scoped to one cluster, gated by cluster membership rather than any RBAC permission key.
 published: true
-date: '2026-09-06T11:00:00.000Z'
+date: '2026-09-06T23:45:00.000Z'
 tags: book/platform, cluster-admin
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'

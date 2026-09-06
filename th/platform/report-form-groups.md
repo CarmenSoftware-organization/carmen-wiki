@@ -1,8 +1,8 @@
 ---
 title: กลุ่มฟอร์มรายงาน (Report Form Groups)
-description: หน้าจอ /report-form-groups — การ์ดหนึ่งใบต่อ report_group code ที่ตายตัว แต่ละใบแสดง report template ประเภท "form" พร้อม action ตั้งเป็น default บน tb_report_template.is_default — surface ที่ควบคู่กับฟิลด์ template_type ของ Report Templates เข้ามาแทนที่โมดูล print-template-mapping ที่ถูกลบไป
+description: การ์ดหนึ่งใบต่อ report_group code ที่ตายตัว แต่ละใบแสดง form template พร้อม action ตั้งเป็น default — surface ที่เข้ามาแทนที่โมดูล print-template-mapping ที่ถูกลบไป
 published: true
-date: '2026-09-06T23:00:00.000Z'
+date: '2026-09-06T23:45:00.000Z'
 tags: book/platform, report-form-groups
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'

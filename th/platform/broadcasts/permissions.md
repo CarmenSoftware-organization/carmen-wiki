@@ -1,8 +1,8 @@
 ---
 title: Broadcasts — สิทธิ์การเข้าถึง (Permissions)
-description: สี่ key broadcast.* (read/send/update/delete) gate หน้าจอ List/Compose/Edit ของโมดูลและ REST endpoint ที่ตรงกันฝั่ง server; เนื้อหาถูกล็อกเมื่อ broadcast ออกอากาศไปแล้ว doc_version เป็น optimistic lock จริง และมีแค่การส่งแบบระบุผู้รับ (system_users) เท่านั้นที่ยังคง fire-and-forget
+description: สี่คีย์ broadcast.* (read/send/update/delete) กั้นหน้าจอ List/Compose/Edit และ endpoint ฝั่ง server ที่ตรงกัน — เนื้อหาถูกล็อกเมื่อออกอากาศแล้ว
 published: true
-date: 2026-09-05T22:00:00.000Z
+date: 2026-09-06T23:45:00.000Z
 tags: book/platform, broadcasts, permissions
 editor: markdown
 dateCreated: 2026-06-10T16:00:00.000Z

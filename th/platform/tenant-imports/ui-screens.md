@@ -1,8 +1,8 @@
 ---
 title: การนำเข้าเทแนนต์ — หน้าจอ UI (UI Screens)
-description: ลำดับสี่หน้าจอของ TenantImportWizard — เลือก business unit, อัปโหลด Preconfig.xlsx, ทบทวนผลตรวจไฟล์, แล้วทำงานทีละขั้นตอนผ่าน StepRail/StepPanel และ CompanyProfilePanel ที่เป้าหมายเป็น platform — พร้อมสิ่งที่แต่ละหน้าจอตรวจ สิ่งที่เกิดขึ้นเมื่อล้มเหลว และย้อนกลับได้หรือไม่
+description: ลำดับสี่หน้าจอของ TenantImportWizard — เลือก business unit, อัปโหลด Preconfig.xlsx, ทบทวนผลตรวจไฟล์ แล้วทำงานทีละขั้นตอน
 published: true
-date: '2026-09-06T23:30:00.000Z'
+date: '2026-09-06T23:45:00.000Z'
 tags: book/platform, tenant-imports, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'

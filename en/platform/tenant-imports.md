@@ -1,8 +1,8 @@
 ---
 title: Tenant Imports
-description: TenantImportWizard at /tenant-imports — sidebar label "Data Import," gated by the manage-not-read key data_import.manage — loads Preconfig.xlsx master data into one business unit's tenant database, step by step, with a live gap in the stream endpoint's error-status mapping.
+description: TenantImportWizard at /tenant-imports, gated by the manage-not-read key data_import.manage — loads Preconfig.xlsx master data into one business unit's tenant database.
 published: true
-date: '2026-09-07T00:15:00.000Z'
+date: '2026-09-06T23:45:00.000Z'
 tags: book/platform, tenant-imports
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'

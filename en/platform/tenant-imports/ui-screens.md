@@ -1,8 +1,8 @@
 ---
 title: Tenant Imports — UI Screens
-description: TenantImportWizard's four-screen sequence — pick a business unit, upload Preconfig.xlsx, review the file check, then work step by step through StepRail/StepPanel and the platform-target CompanyProfilePanel — with exactly what each screen validates, what happens on failure, and whether it can be revisited.
+description: TenantImportWizard's four-screen sequence — pick a business unit, upload Preconfig.xlsx, review the file check, then step through the import screens.
 published: true
-date: '2026-09-06T23:30:00.000Z'
+date: '2026-09-06T23:45:00.000Z'
 tags: book/platform, tenant-imports, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
