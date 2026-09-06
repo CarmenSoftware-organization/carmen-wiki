@@ -2,7 +2,7 @@
 title: งานตามกำหนดเวลา — โมเดลข้อมูล (Data Model)
 description: ตารางฟิลด์เต็มของ "CRONJOBS"."Cronjob" (เป็นของ migration SQL ของ micro-cronjobs เอง ไม่ใช่ Prisma) รูปแบบ config ของแต่ละประเภทงาน กลไกของ scheduler และจุดที่จะเห็นว่า run ไหนล้มเหลว
 published: true
-date: '2026-09-06T22:00:00.000Z'
+date: '2026-09-06T23:10:00.000Z'
 tags: book/platform, cronjobs, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,7 +12,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **แหล่งความจริง:** อ่านสิ่งเหล่านี้ก่อนแก้ไขหน้านี้
 > - `../micro-cronjobs/internal/model/cronjob.go` — struct ของ Go และการ map คอลัมน์แบบ GORM (อ่านแบบเต็ม)
-> - `../micro-cronjobs/migrations/*.up.sql` — ทุกการเปลี่ยน DDL ของ `"CRONJOBS"."Cronjob"` ตามลำดับ (อ่านครบทั้งสิบไฟล์)
+> - `../micro-cronjobs/migrations/*.up.sql` — ทุกการเปลี่ยน DDL ของ `"CRONJOBS"."Cronjob"` ตามลำดับ (อ่านครบทั้งเก้าไฟล์)
 > - `../micro-cronjobs/internal/executor/{executor.go,report.go,notification.go,cleanup.go,dashboard.go,activity_rollup.go,activity_retention.go}` — เป้าหมาย dispatch ทั้งหก (อ่านแบบเต็ม)
 > - `../micro-cronjobs/internal/scheduler/scheduler.go`, `cmd/server/main.go` — polling, retry, timezone (อ่านแบบเต็ม)
 > - `../micro-cronjobs/internal/handler/cronjob_handler.go`, `internal/repository/cronjob_repo.go` — REST surface และเส้นทางเขียนระดับแถว (อ่านแบบเต็ม)
@@ -42,7 +42,7 @@ skeleton ที่ seed ไว้ของหน้านี้ชี้ไป�
 | `"lastError"` | `LastError` | `TEXT` nullable | scheduler เท่านั้น — ข้อความ `err.Error()` ของ run ที่ล้มเหลว หรือ `NULL` ที่ถูกล้างเมื่อ run ถัดไปสำเร็จ |
 | `"runCount"` | `RunCount` | `INTEGER DEFAULT 0` | scheduler เท่านั้น เพิ่มขึ้นทุกครั้งที่พยายามรัน (สำเร็จหรือล้มเหลว) |
 | `"notifyAt"` | `NotifyAt` | `VARCHAR(5)` nullable, `CHECK` บังคับรูปแบบ `HH:mm` | ผู้ปฏิบัติงาน — **เฉพาะ job type `report`**; executor อื่นไม่มีตัวไหนอ่านมันเลย |
-| `"notifyDayOffset"` | `NotifyDayOffset` | `SMALLINT DEFAULT 0`, `CHECK` ระหว่าง 0 ถึง 7 | **ตั้งจาก UI ของคอนโซลนี้ไม่ได้เลย** — ดู §4.4 |
+| `"notifyDayOffset"` | `NotifyDayOffset` | `SMALLINT DEFAULT 0`, `CHECK` ระหว่าง 0 ถึง 7 | **ตั้งจาก UI ของคอนโซลนี้ไม่ได้เลย** — ดู §6 |
 | `"maxRetries"` | `MaxRetries` | `INTEGER DEFAULT 0` | ผู้ปฏิบัติงาน (การ์ด Execution) |
 | `"retryCount"` | `RetryCount` | `INTEGER DEFAULT 0` | scheduler เท่านั้น — เพิ่มขึ้นทุกครั้งที่ retry ล้มเหลว รีเซ็ตเป็น 0 เมื่อ run ถัดไปสำเร็จ |
 | `"timeoutSeconds"` | `TimeoutSeconds` | `INTEGER DEFAULT 300` | ผู้ปฏิบัติงาน (การ์ด Execution) |
@@ -63,7 +63,7 @@ skeleton ที่ seed ไว้ของหน้านี้ชี้ไป�
 5. `20260730092930_seed_activity_rollup_job.up.sql` / `20260730093731_seed_activity_retention_job.up.sql` — seed สองงานของ Activity Events; ไม่มีการเปลี่ยนสคีมา
 6. `20260824100000_add_notify_at_column.up.sql` — เพิ่ม `"notifyAt"` ย้ายค่าเดิม (ถ้ามี) ออกจาก `jobData->schedule_config->notify_time` (backfill เฉพาะที่ตรงรูปแบบ `HH:mm` อยู่แล้ว) แล้วลบ key นั้นออกจาก `jobData`
 7. `20260902104533_add_doc_version.up.sql` — เพิ่ม `"docVersion"` (default 1) สำหรับ optimistic locking บนการแก้ไขของมนุษย์
-8. `20260903100000_add_notify_day_offset.up.sql` — เพิ่ม `"notifyDayOffset"` (default 0, `CHECK 0..7`) ซึ่ง comment ของ migration เองระบุตรง ๆ ว่าเป็นข้อเท็จจริงของตารางเวลา ไม่ใช่ค่าที่เดาเอาตอนรัน — ดู §4.4
+8. `20260903100000_add_notify_day_offset.up.sql` — เพิ่ม `"notifyDayOffset"` (default 0, `CHECK 0..7`) ซึ่ง comment ของ migration เองระบุตรง ๆ ว่าเป็นข้อเท็จจริงของตารางเวลา ไม่ใช่ค่าที่เดาเอาตอนรัน — ดู §6
 
 ## 3. ประเภทงานและ Config ของแต่ละแบบ
 
@@ -140,7 +140,7 @@ HTTP client ของ executor มี timeout 5 นาทีของตัว�
 
 ### 4.2 Timezone
 
-resolve **ครั้งเดียว** ตอน process เริ่มทำงาน (`cmd/server/main.go:142-166`): timezone แบบ IANA ที่ตั้งไว้ของ business unit หลัก (`BusinessUnitRepo.PrimaryTimezone()`) fallback ไปที่ `DEFAULT_TIMEZONE` (env, default `Asia/Bangkok`) ถ้าการค้นหานั้น error หรือคืนค่าว่าง และ fallback ไปที่ UTC ถ้าชื่อที่ resolve ได้โหลดไม่สำเร็จ โซนที่เลือกได้จะกลายเป็นทั้ง `time.Local` ของทั้งโปรเซส และโซนที่ cron expression ทุกตัวถูกตีความ — รวมถึงงานที่ seed ไว้ในหน้า landing §3.2 ที่เวลา "03:30"/"04:00" อยู่ในโซนนี้ ปกติคือ Asia/Bangkok สอดคล้องและยืนยันอย่างเป็นอิสระกับกรอบ "HQ BU timezone" ใน [Activity Events — Data Model](/th/platform/activity-events/data-model) §4.1
+resolve **ครั้งเดียว** ตอน process เริ่มทำงาน (`cmd/server/main.go:142-166`): timezone แบบ IANA ที่ตั้งไว้ของ business unit หลัก (`BusinessUnitRepo.PrimaryTimezone()`) fallback ไปที่ `DEFAULT_TIMEZONE` (env, default `Asia/Bangkok`) ถ้าการค้นหานั้น error หรือคืนค่าว่าง และ fallback ไปที่ UTC ถ้าชื่อที่ resolve ได้โหลดไม่สำเร็จ โซนที่เลือกได้จะกลายเป็นทั้ง `time.Local` ของทั้งโปรเซส และโซนที่ cron expression ทุกตัวถูกตีความ — รวมถึงงานที่ seed ไว้ในหน้า landing §3.2 ที่เวลา "03:30"/"04:00" อยู่ในโซนนี้ ปกติคือ Asia/Bangkok [Activity Events — Data Model](/th/platform/activity-events/data-model) §4 ระบุเวลาทั้งสองนี้เหมือนกัน แต่ไม่ได้พูดถึงกลไก resolve timezone เอง — กลไกด้านบนอ้างอิงจาก `cmd/server/main.go` เพียงแหล่งเดียว
 
 ### 4.3 Retry, Timeout, ความขนาน
 
@@ -208,8 +208,8 @@ executor ของ `dashboard_refresh` ถือว่า HTTP call ไป `micr
 - `../micro-cronjobs/internal/handler/cronjob_handler.go` (451 บรรทัด) — REST surface (`list`, `status`, `getByID`, `create`, `update`, `delete`, `start`, `stop`, `execute`, `getBySource`, `updateBySource`, `deleteBySource`)
 - `../micro-cronjobs/internal/repository/cronjob_repo.go` (207 บรรทัด) — `UpdateLastRun`, `Update` แบบ optimistic-lock, `FindActive`/`FindBySource`
 - `../micro-cronjobs/cmd/server/main.go` (166 บรรทัด) — การประกอบระบบ การ resolve timezone
-- `../micro-cronjobs/migrations/{20260405120000,20260406010000,20260406135707,20260610120000,20260730092930,20260730093731,20260824100000,20260902104533,20260903100000}_*.up.sql` — migration ทั้งสิบไฟล์ อ่านแบบเต็ม
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_cronjobs/platform_cronjobs.service.ts` — comment เรื่องการถอดการตรวจความเป็นเจ้าของ (§5, กรณีขอบ)
+- `../micro-cronjobs/migrations/{20260405120000,20260406010000,20260406135707,20260610120000,20260730092930,20260730093731,20260824100000,20260902104533,20260903100000}_*.up.sql` — migration ทั้งเก้าไฟล์ อ่านแบบเต็ม
+- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_cronjobs/platform_cronjobs.service.ts` — comment เรื่องการถอดการตรวจความเป็นเจ้าของ (§6, กรณีขอบ)
 - `../carmen-platform/src/types/index.ts:1660-1746` — รูปร่างชนิดข้อมูลฝั่ง frontend เทียบกับ struct ของ Go ทีละฟิลด์
 - [Activity Events — Data Model](/th/platform/activity-events/data-model) §4 — ข้อมูล `activity_rollup`/`activity_retention` ที่หน้านี้เห็นตรงกัน
 - [Database Pools — Data Model](/th/platform/database-pools/data-model) §2 — การบังคับความไม่ซ้ำของชื่อของโมดูลพี่น้อง เทียบกับที่ §2 ด้านบน

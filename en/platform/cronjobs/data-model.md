@@ -2,7 +2,7 @@
 title: Cronjobs — Data Model
 description: The full "CRONJOBS"."Cronjob" field table (owned by micro-cronjobs' own SQL migrations, not Prisma), every job type's config shape, scheduler mechanics, and exactly where a failed run becomes visible.
 published: true
-date: '2026-09-06T22:00:00.000Z'
+date: '2026-09-06T23:10:00.000Z'
 tags: book/platform, cronjobs, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,7 +12,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **Source of truth:** read these before updating this page.
 > - `../micro-cronjobs/internal/model/cronjob.go` — the Go struct and its GORM column mapping (read in full)
-> - `../micro-cronjobs/migrations/*.up.sql` — every DDL change to `"CRONJOBS"."Cronjob"`, in order (all ten files read)
+> - `../micro-cronjobs/migrations/*.up.sql` — every DDL change to `"CRONJOBS"."Cronjob"`, in order (all nine files read)
 > - `../micro-cronjobs/internal/executor/{executor.go,report.go,notification.go,cleanup.go,dashboard.go,activity_rollup.go,activity_retention.go}` — the six dispatch targets (read in full)
 > - `../micro-cronjobs/internal/scheduler/scheduler.go`, `cmd/server/main.go` — polling, retry, timezone (read in full)
 > - `../micro-cronjobs/internal/handler/cronjob_handler.go`, `internal/repository/cronjob_repo.go` — the REST surface and the row-level write path (read in full)
@@ -42,7 +42,7 @@ The seeded skeleton for this page pointed at `../carmen-turborepo-backend-v2/pac
 | `"lastError"` | `LastError` | `TEXT`, nullable | The scheduler only — the failing run's `err.Error()` string, or `NULL` cleared on the next successful run |
 | `"runCount"` | `RunCount` | `INTEGER DEFAULT 0` | The scheduler only, incremented on every run attempt (success or failure) |
 | `"notifyAt"` | `NotifyAt` | `VARCHAR(5)`, nullable, `CHECK` constrains it to `HH:mm` | Operator — **`report` job type only**; no other executor reads it |
-| `"notifyDayOffset"` | `NotifyDayOffset` | `SMALLINT DEFAULT 0`, `CHECK` between 0 and 7 | **Not settable from this console's UI at all** — see §4.4 |
+| `"notifyDayOffset"` | `NotifyDayOffset` | `SMALLINT DEFAULT 0`, `CHECK` between 0 and 7 | **Not settable from this console's UI at all** — see §6 |
 | `"maxRetries"` | `MaxRetries` | `INTEGER DEFAULT 0` | Operator (Execution card) |
 | `"retryCount"` | `RetryCount` | `INTEGER DEFAULT 0` | The scheduler only — incremented per failed retry attempt, reset to 0 on the next success |
 | `"timeoutSeconds"` | `TimeoutSeconds` | `INTEGER DEFAULT 300` | Operator (Execution card) |
@@ -63,7 +63,7 @@ The table has been renamed and restructured twice since its first migration, ent
 5. `20260730092930_seed_activity_rollup_job.up.sql` / `20260730093731_seed_activity_retention_job.up.sql` — seeded the two Activity Events jobs; no schema change.
 6. `20260824100000_add_notify_at_column.up.sql` — added `"notifyAt"`, migrated any pre-existing value out of `jobData->schedule_config->notify_time` (backfilled only if it already matched `HH:mm`), then deleted that key from `jobData`.
 7. `20260902104533_add_doc_version.up.sql` — added `"docVersion"` (default 1) for optimistic locking on human edits.
-8. `20260903100000_add_notify_day_offset.up.sql` — added `"notifyDayOffset"` (default 0, `CHECK 0..7`), explicitly framed by its own comment as a fact about the schedule, not a value inferred at run time — see §4.4.
+8. `20260903100000_add_notify_day_offset.up.sql` — added `"notifyDayOffset"` (default 0, `CHECK 0..7`), explicitly framed by its own comment as a fact about the schedule, not a value inferred at run time — see §6.
 
 ## 3. Job Types and Their Configs
 
@@ -140,7 +140,7 @@ Every create, update, delete, start, or stop call from the gateway also triggers
 
 ### 4.2 Timezone
 
-Resolved **once**, at process startup (`cmd/server/main.go:142-166`): the primary business unit's configured IANA timezone (`BusinessUnitRepo.PrimaryTimezone()`), falling back to `DEFAULT_TIMEZONE` (env, default `Asia/Bangkok`) if that lookup errors or returns empty, and falling back to UTC if the resolved name fails to load. The chosen location becomes both `time.Local` for the whole process and the location every cron expression is interpreted in — including the seeded jobs in the landing page §3.2, whose "03:30"/"04:00" times are in this zone, normally Asia/Bangkok. This matches and independently confirms the account in [Activity Events — Data Model](/en/platform/activity-events/data-model) §4.1's "HQ BU timezone" framing.
+Resolved **once**, at process startup (`cmd/server/main.go:142-166`): the primary business unit's configured IANA timezone (`BusinessUnitRepo.PrimaryTimezone()`), falling back to `DEFAULT_TIMEZONE` (env, default `Asia/Bangkok`) if that lookup errors or returns empty, and falling back to UTC if the resolved name fails to load. The chosen location becomes both `time.Local` for the whole process and the location every cron expression is interpreted in — including the seeded jobs in the landing page §3.2, whose "03:30"/"04:00" times are in this zone, normally Asia/Bangkok. [Activity Events — Data Model](/en/platform/activity-events/data-model) §4 states those same two times but does not itself discuss timezone resolution — the mechanism above is sourced from `cmd/server/main.go` alone.
 
 ### 4.3 Retries, timeouts, concurrency
 
@@ -208,8 +208,8 @@ The list page's summary band shows **"Active in Scheduler"** from `GET /api/cron
 - `../micro-cronjobs/internal/handler/cronjob_handler.go` (451 lines) — the REST surface (`list`, `status`, `getByID`, `create`, `update`, `delete`, `start`, `stop`, `execute`, `getBySource`, `updateBySource`, `deleteBySource`).
 - `../micro-cronjobs/internal/repository/cronjob_repo.go` (207 lines) — `UpdateLastRun`, optimistic-lock `Update`, `FindActive`/`FindBySource`.
 - `../micro-cronjobs/cmd/server/main.go` (166 lines) — wiring, timezone resolution.
-- `../micro-cronjobs/migrations/{20260405120000,20260406010000,20260406135707,20260610120000,20260730092930,20260730093731,20260824100000,20260902104533,20260903100000}_*.up.sql` — all ten migration files, read in full.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_cronjobs/platform_cronjobs.service.ts` — the ownership-check removal comments (§5, edge cases).
+- `../micro-cronjobs/migrations/{20260405120000,20260406010000,20260406135707,20260610120000,20260730092930,20260730093731,20260824100000,20260902104533,20260903100000}_*.up.sql` — all nine migration files, read in full.
+- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_cronjobs/platform_cronjobs.service.ts` — the ownership-check removal comments (§6, edge cases).
 - `../carmen-platform/src/types/index.ts:1660-1746` — frontend type shapes, cross-checked against the Go struct field-for-field.
 - [Activity Events — Data Model](/en/platform/activity-events/data-model) §4 — the `activity_rollup`/`activity_retention` account this page agrees with.
 - [Database Pools — Data Model](/en/platform/database-pools/data-model) §2 — the sibling module's name-uniqueness enforcement, contrasted in §2 above.

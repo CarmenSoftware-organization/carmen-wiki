@@ -2,7 +2,7 @@
 title: Cronjobs — UI Screens
 description: CronJobManagement's list, filters, and summary stats; CronJobEdit's basics/schedule/execution/type-config cards; and CronScheduleField's six-mode schedule builder.
 published: true
-date: '2026-09-06T22:00:00.000Z'
+date: '2026-09-06T23:10:00.000Z'
 tags: book/platform, cronjobs, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -98,7 +98,7 @@ Renders one of six components (`jobConfig/`) selected by `job_type`, each backin
 
 | `job_type` | Component | Notable UI behavior |
 |---|---|---|
-| `report` | `ReportConfigFields` | Loads report templates and users live for two pickers (template dropdown, a searchable multi-select of recipient users by name/email — not a free-text field); a **Delivery Type** select (`file`/`viewer_url`); **no field for `viewer_url`'s endpoint at all**, by deliberate design (§3.1's SSRF note) |
+| `report` | `ReportConfigFields` | Loads report templates and users live for two pickers (template dropdown, a searchable multi-select of recipient users by name/email — not a free-text field); a **Delivery Type** select (`file`/`viewer_url`); **no field for `viewer_url`'s endpoint at all**, by deliberate design (see [Data Model](/en/platform/cronjobs/data-model) §3.1's SSRF note) |
 | `notification` | `NotificationConfigFields` | Same searchable multi-select pattern for `user_ids`; a hint states the field is required, correcting an earlier hint copied from `dashboard_refresh` that wrongly implied empty meant "everyone" |
 | `cleanup` | `CleanupConfigFields` | Three free-text inputs (`action`, `type`, `older_than`) with no validation — matching the backend, which also validates nothing here |
 | `dashboard_refresh` | `DashboardRefreshConfigFields` | A business-unit multi-select (empty genuinely means "every active BU" — the one type where that hint is accurate) and a Tier select (`operational`/`breakdown`/`matrix`/"All") |

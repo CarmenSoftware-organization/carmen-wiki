@@ -2,7 +2,7 @@
 title: งานตามกำหนดเวลา — หน้าจอ UI (UI Screens)
 description: หน้ารายการ ตัวกรอง และสถิติสรุปของ CronJobManagement การ์ด basics/schedule/execution/type-config ของ CronJobEdit และตัวสร้างตารางเวลาหกโหมดของ CronScheduleField
 published: true
-date: '2026-09-06T22:00:00.000Z'
+date: '2026-09-06T23:10:00.000Z'
 tags: book/platform, cronjobs, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -98,7 +98,7 @@ render หนึ่งในหกคอมโพเนนต์ (`jobConfig/`) 
 
 | `job_type` | คอมโพเนนต์ | พฤติกรรม UI ที่น่าสังเกต |
 |---|---|---|
-| `report` | `ReportConfigFields` | โหลดเทมเพลตรายงานและผู้ใช้แบบสดสำหรับสอง picker (dropdown เทมเพลต, multi-select ค้นหาได้ของผู้รับตามชื่อ/email — ไม่ใช่ช่องพิมพ์เอง); Select **Delivery Type** (`file`/`viewer_url`); **ไม่มีช่องสำหรับ endpoint ของ `viewer_url` เลย** โดยตั้งใจ (ดู SSRF note §3.1) |
+| `report` | `ReportConfigFields` | โหลดเทมเพลตรายงานและผู้ใช้แบบสดสำหรับสอง picker (dropdown เทมเพลต, multi-select ค้นหาได้ของผู้รับตามชื่อ/email — ไม่ใช่ช่องพิมพ์เอง); Select **Delivery Type** (`file`/`viewer_url`); **ไม่มีช่องสำหรับ endpoint ของ `viewer_url` เลย** โดยตั้งใจ (ดู SSRF note ที่ [Data Model](/th/platform/cronjobs/data-model) §3.1) |
 | `notification` | `NotificationConfigFields` | รูปแบบ multi-select ค้นหาได้แบบเดียวกันสำหรับ `user_ids`; hint ระบุว่าฟิลด์นี้จำเป็น แก้จาก hint เดิมที่คัดลอกมาจาก `dashboard_refresh` ซึ่งบอกผิด ๆ ว่าว่างคือ "ทุกคน" |
 | `cleanup` | `CleanupConfigFields` | ช่องพิมพ์เองสามช่อง (`action`, `type`, `older_than`) ไม่มีการ validate — ตรงกับฝั่ง backend ที่ก็ไม่ validate อะไรเช่นกัน |
 | `dashboard_refresh` | `DashboardRefreshConfigFields` | multi-select business unit (ว่างหมายถึง "ทุก BU ที่ active" จริง — ประเภทเดียวที่ hint นี้ถูกต้อง) และ Select Tier (`operational`/`breakdown`/`matrix`/"All") |

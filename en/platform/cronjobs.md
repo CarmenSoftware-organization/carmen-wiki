@@ -2,7 +2,7 @@
 title: Cronjobs
 description: The platform's scheduling console over the shared "CRONJOBS"."Cronjob" table — six job types, who runs them (../micro-cronjobs), and exactly where a failed run becomes visible.
 published: true
-date: '2026-09-06T22:00:00.000Z'
+date: '2026-09-06T23:10:00.000Z'
 tags: book/platform, cronjobs
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -27,7 +27,7 @@ This is also why the module sits in its **own** nav group rather than inside `na
 
 ## 3. Key Concepts
 
-- **One row, one scheduled job.** Every row is a `job_type` (one of six — §3.4), a 5-field cron expression, a type-specific `job_config` JSON blob, an active/inactive flag, and the outcome of its own most recent run (`last_run_at`, `next_run_at`, `last_error`, `run_count`). Full field table: [Data Model](/en/platform/cronjobs/data-model) §2.
+- **One row, one scheduled job.** Every row is a `job_type` (one of six — §3.1), a 5-field cron expression, a type-specific `job_config` JSON blob, an active/inactive flag, and the outcome of its own most recent run (`last_run_at`, `next_run_at`, `last_error`, `run_count`). Full field table: [Data Model](/en/platform/cronjobs/data-model) §2.
 - **The scheduler, not the console, decides when a job fires.** `micro-cronjobs` polls the database once a minute, holds every active job in an in-memory `go-cron` scheduler, and fires it at the moment its cron expression is next due — in the process's resolved timezone (normally `Asia/Bangkok`; see [Data Model](/en/platform/cronjobs/data-model) §4). Saving an edit here does not run the job; it changes what the next scheduled (or manually triggered) run will do.
 - **"Run Now" dispatches; it does not confirm.** The execute button (`POST /:id/execute`) hands the job to a background goroutine and returns immediately — the console's own toast says "dispatched" (`toast.info`), deliberately not "succeeded," because the outcome is not yet known when the HTTP response comes back. See §3.5 and [Data Model](/en/platform/cronjobs/data-model) §5 for where that outcome eventually surfaces.
 - **Ownership is visible but not a lock.** A job another service created (`source_service` set) can be started, stopped, run now, edited, or deleted from this console exactly like a platform-created one — the gateway's `update()`/`remove()`/`control()` methods run no ownership check at all (confirmed by reading `platform_cronjobs.service.ts` — each says so in its own comment). The console's only concession to ownership is informational: an Owner column/badge on the list, a warning banner on the edit page, and a different confirmation message before deleting ("this removes that business unit's report schedule for good," not a generic "delete this job?").
