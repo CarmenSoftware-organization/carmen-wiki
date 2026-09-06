@@ -2,7 +2,7 @@
 title: Platform RBAC — สิทธิ์ (Permissions)
 description: เมทริกซ์ route-guard ของทั้ง SPA, การประกอบกันของ gate ระดับ route/sidebar/ภายในหน้า, อัลกอริทึมการ resolve permission และกรณีพิเศษสำหรับผู้ทดสอบ อัพเดทสำหรับการเปลี่ยนคีย์เป็น platform_role.*, การย้าย route ไป category-permissions และข้อยกเว้น login ของ cluster-admin
 published: true
-date: 2026-09-06T13:00:00.000Z
+date: 2026-09-06T19:00:00.000Z
 tags: book/platform, rbac, permissions
 editor: markdown
 dateCreated: 2026-06-10T15:00:00.000Z
@@ -44,7 +44,7 @@ dateCreated: 2026-06-10T15:00:00.000Z
 | `/dashboard`, `/profile` | authenticated เท่านั้น — ไม่มี key | |
 | `/clusters` | `cluster.read` / `cluster.create` / `cluster.update` | |
 | `/business-units` | `cluster.read` / `cluster.create` / `cluster.update` | **Reuse key `cluster.*`** — ไม่มี key `business_unit.*`; การมอบสิทธิ์เข้าถึง cluster มอบ Business Units ไปด้วย และแยกทั้งสองออกจากกันไม่ได้ |
-| `/tenant-migrations` | `cluster.read` | หน้าภาพรวม migration ของทั้งฟลีทแบบ standalone; reuse `cluster.*` เช่นกัน — บันทึกไว้ที่ [Business Units — Tenant Migrations](/th/platform/business-units/tenant-migrations) เป็นหน้าย่อยของ Business Units ไม่ใช่โมดูลระดับบนสุดของตัวเอง |
+| `/tenant-migrations` | `cluster.read` | หน้าภาพรวม migration ของทั้งฟลีทแบบ standalone เป็นโมดูลระดับบนสุดของตัวเอง; reuse `cluster.*` เช่นกัน บวก feature flag `tenant_migrations` ของตัวเอง — บันทึกไว้เต็มรูปแบบที่ [Tenant Migrations](/th/platform/tenant-migrations) |
 | `/users` | `user.read` / `user.create` / `user.update` | ต่างจาก `user_platform.*` ซึ่ง gate การ assign role ไม่ใช่ CRUD ของผู้ใช้ |
 | `/applications` | `application.read` / `application.create` / `application.update` | |
 | `/report-templates` | `report_template.read` / `report_template.create` / `report_template.update` | |

@@ -2,7 +2,7 @@
 title: Platform RBAC — Permissions
 description: Route-guard matrix for the whole SPA, how route/sidebar/in-page gates compose, the permission-resolution algorithm, and edge cases for testers. Updated for the platform_role.* key rename, the category-permissions route move, and the cluster-admin login exception.
 published: true
-date: 2026-09-06T13:00:00.000Z
+date: 2026-09-06T19:00:00.000Z
 tags: book/platform, rbac, permissions
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z
@@ -44,7 +44,7 @@ Two routes are authenticated-only with no key requirement: `/dashboard` and `/pr
 | `/dashboard`, `/profile` | authenticated only — no key | |
 | `/clusters` | `cluster.read` / `cluster.create` / `cluster.update` | |
 | `/business-units` | `cluster.read` / `cluster.create` / `cluster.update` | **Reuses `cluster.*` keys** — there are no `business_unit.*` keys; granting cluster access also grants Business Units, and the two cannot be separated |
-| `/tenant-migrations` | `cluster.read` | Standalone fleet-wide migration overview; also reuses `cluster.*` — documented as [Business Units — Tenant Migrations](/en/platform/business-units/tenant-migrations), a sub-page of Business Units rather than a top-level module of its own |
+| `/tenant-migrations` | `cluster.read` | Standalone fleet-wide migration overview, its own top-level module — also reuses `cluster.*`, plus its own `tenant_migrations` feature flag; documented in full at [Tenant Migrations](/en/platform/tenant-migrations) |
 | `/users` | `user.read` / `user.create` / `user.update` | Distinct from `user_platform.*`, which gates role assignment, not user CRUD |
 | `/applications` | `application.read` / `application.create` / `application.update` | |
 | `/report-templates` | `report_template.read` / `report_template.create` / `report_template.update` | |
