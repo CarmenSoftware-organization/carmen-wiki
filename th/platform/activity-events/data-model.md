@@ -2,7 +2,7 @@
 title: บันทึกกิจกรรม — โมเดลข้อมูล (Data Model)
 description: ทุกฟิลด์ของเรคคอร์ด tb_activity_event — ใครเป็นคนเขียน ฟิลด์ไหนจำเป็น ฟิลด์ที่เพิ่มเข้ามาเฉพาะตอนอ่าน พร้อมงาน retention 365 วันและ rollup รายวันที่คุมว่าแถวมีชีวิตอยู่นานแค่ไหน
 published: true
-date: '2026-09-06T01:55:00.000Z'
+date: '2026-09-06T02:14:23.000Z'
 tags: book/platform, activity-events, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -61,7 +61,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ### 4.1 Retention — คำตอบ และจุดที่บังคับใช้จริง
 
-**แถวดิบถูกเก็บไว้ 365 วัน แล้วถูกลบทิ้งจริง** จุดบังคับใช้คือ `ActivityRetentionExecutor.Execute()` (`../micro-cronjobs/internal/executor/activity_retention.go` เต็ม 65 บรรทัด) ถูก dispatch เมื่อ `job_type` ของ cron job เป็น `"activity_retention"` (`executor.go:80-81`) มันทำงานเป็นลูปลบแบบแบ่ง batch ไม่ใช่คำสั่งเดียว:
+**แถวดิบถูกเก็บไว้ 365 วัน แล้วถูกลบทิ้งจริง** จุดบังคับใช้คือ `ActivityRetentionExecutor.Execute()` (`../micro-cronjobs/internal/executor/activity_retention.go` เต็ม) ถูก dispatch เมื่อ `job_type` ของ cron job เป็น `"activity_retention"` (`executor.go:80-81`) มันทำงานเป็นลูปลบแบบแบ่ง batch ไม่ใช่คำสั่งเดียว:
 
 ```
 DELETE FROM tb_activity_event
@@ -103,7 +103,7 @@ WHERE id IN (
 - `../carmen-turborepo-backend-v2/apps/micro-business/src/log/activity-event/activity-event.service.ts:82-112,246-347` — `createBatch()` (การ insert) และ `findEvents()` (การเติมชื่อผู้ใช้/แอปตอนอ่าน)
 - `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_cronjobs/platform_cronjobs.service.ts:7-30` — `CronJobRow` ยืนยันว่าหน้า Cronjobs ของแพลตฟอร์มกับงาน retention/rollup ที่ seed ไว้ใช้ตารางเดียวกัน
 - `../carmen-inventory-frontend-react/lib/analytics.ts:30-42` (HEAD `72d6cd340`, 2026-09-04) — รูปร่าง `AnalyticsEvent` ฝั่ง client (ยืนยันว่าไม่มี `user_id` อยู่ในนั้น)
-- `../micro-cronjobs/internal/executor/activity_retention.go` (เต็ม 65 บรรทัด, HEAD `d17d8eb9bc3`, 2026-09-04) — executor การลบแบบ batch สำหรับ retention
+- `../micro-cronjobs/internal/executor/activity_retention.go` (เต็ม, HEAD `d17d8eb9bc3`, 2026-09-04) — executor การลบแบบ batch สำหรับ retention
 - `../micro-cronjobs/internal/executor/activity_rollup.go` (เต็ม 80 บรรทัด) — executor การ upsert รายวันสำหรับ rollup
 - `../micro-cronjobs/internal/executor/executor.go:68-84` — switch การ dispatch ตาม `job.JobType` ยืนยันว่า job type ทั้งสองต่อเข้ากับ executor ของตัวเองจริง
 - `../micro-cronjobs/migrations/20260730093731_seed_activity_retention_job.up.sql` — cron entry retention ที่ seed ไว้และ active (365 วัน, 04:00 ทุกวัน)

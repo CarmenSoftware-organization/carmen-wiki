@@ -2,7 +2,7 @@
 title: Activity Events — Data Model
 description: Every field of the tb_activity_event record — what writes it, what's optional, the enriched fields added only at read time — plus the 365-day retention job and daily rollup that govern how long rows live.
 published: true
-date: '2026-09-06T01:55:00.000Z'
+date: '2026-09-06T02:14:23.000Z'
 tags: book/platform, activity-events, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -61,7 +61,7 @@ Two scheduled jobs govern this table's lifecycle, both defined in `../micro-cron
 
 ### 4.1 Retention — the answer, and its enforcement point
 
-**Raw rows are kept for 365 days, then physically deleted.** The enforcement point is `ActivityRetentionExecutor.Execute()` (`../micro-cronjobs/internal/executor/activity_retention.go`, full, 65 lines), dispatched when a cron job's `job_type` is `"activity_retention"` (`executor.go:80-81`). It runs as a batched delete loop, not one statement:
+**Raw rows are kept for 365 days, then physically deleted.** The enforcement point is `ActivityRetentionExecutor.Execute()` (`../micro-cronjobs/internal/executor/activity_retention.go`, full), dispatched when a cron job's `job_type` is `"activity_retention"` (`executor.go:80-81`). It runs as a batched delete loop, not one statement:
 
 ```
 DELETE FROM tb_activity_event
@@ -103,7 +103,7 @@ Before retention runs each day, a second job aggregates recent raw rows into `tb
 - `../carmen-turborepo-backend-v2/apps/micro-business/src/log/activity-event/activity-event.service.ts:82-112,246-347` — `createBatch()` (the insert) and `findEvents()` (the read-time user/app-name enrichment).
 - `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_cronjobs/platform_cronjobs.service.ts:7-30` — `CronJobRow`, confirming the platform's Cronjobs module and the seeded retention/rollup jobs share one table.
 - `../carmen-inventory-frontend-react/lib/analytics.ts:30-42` (HEAD `72d6cd340`, 2026-09-04) — the `AnalyticsEvent` client-side shape (confirms `user_id` is absent from it).
-- `../micro-cronjobs/internal/executor/activity_retention.go` (full, 65 lines, HEAD `d17d8eb9bc3`, 2026-09-04) — the batched-delete retention executor.
+- `../micro-cronjobs/internal/executor/activity_retention.go` (full, HEAD `d17d8eb9bc3`, 2026-09-04) — the batched-delete retention executor.
 - `../micro-cronjobs/internal/executor/activity_rollup.go` (full, 80 lines) — the daily upsert rollup executor.
 - `../micro-cronjobs/internal/executor/executor.go:68-84` — the `job.JobType` dispatch switch, confirming both job types are wired to their executors.
 - `../micro-cronjobs/migrations/20260730093731_seed_activity_retention_job.up.sql` — the seeded, active retention cron entry (365 days, 04:00 daily).
