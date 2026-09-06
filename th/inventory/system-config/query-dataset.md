@@ -1,8 +1,8 @@
 ---
 title: Query Dataset
-description: SQL Workbench — backend admin-SQL-console service ที่มีจริง แต่ไม่มีหน้าจอ frontend ที่ยืนยันได้ และ endpoint execute รัน SQL อะไรก็ได้ (รวมถึง DROP/ALTER/multi-statement) แทนที่จะเป็นพื้นผิว read-only ที่เอกสารเดิมเคยระบุไว้
+description: SQL Workbench — backend admin-SQL-console service ที่มีจริง หน้าจอของมันอยู่ใน Platform SPA ไม่ใช่ผลิตภัณฑ์นี้ และ endpoint execute รัน SQL อะไรก็ได้ (รวมถึง DROP/ALTER/multi-statement) แทนที่จะเป็นพื้นผิว read-only ที่เอกสารเดิมเคยระบุไว้
 published: true
-date: 2026-07-16T05:00:00.000Z
+date: 2026-09-06T06:45:00.000Z
 tags: system-config, query, dataset, sql, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,16 +11,28 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # Query Dataset
 
 > **At a Glance**
-> **เจ้าของ:** Gate ด้วย platform permission เดียวคือ `sql_workbench.manage` — แต่ **เฉพาะ endpoint `execute` เท่านั้น** &nbsp;·&nbsp; **การจัดเก็บ:** PostgreSQL catalog (`pg_class`, `pg_proc`) ใน tenant schema — **ไม่มี `tb_query_dataset`** &nbsp;·&nbsp; **ไม่มีหน้าจอ frontend ที่ยืนยันได้** — backend service มีจริง แต่ไม่พบ route/component/hook ที่ตรงกันใน `carmen-inventory-frontend-react` &nbsp;·&nbsp; **`execute` ไม่ใช่ read-only** — รัน SQL อะไรก็ได้ รวมถึง DDL และ multi-statement
+> **เจ้าของ:** Gate ด้วย platform permission สองตัว — `sql_workbench.read` (เรียกดู) และ `sql_workbench.manage` (รัน / บันทึก / drop) ครบ **ทั้ง 5 route** ตั้งแต่ 2026-08-20 &nbsp;·&nbsp; **การจัดเก็บ:** PostgreSQL catalog (`pg_class`, `pg_proc`) ใน tenant schema — **ไม่มี `tb_query_dataset`** &nbsp;·&nbsp; **ไม่มีหน้าจอใน*ผลิตภัณฑ์นี้*** — console อยู่ที่หน้าจอ [SQL Workbench](/th/platform/sql-workbench) ของ Platform SPA ไม่มี route/component/hook ที่ตรงกันใน `carmen-inventory-frontend-react` &nbsp;·&nbsp; **`execute` ไม่ใช่ read-only** — รัน SQL อะไรก็ได้ รวมถึง DDL และ multi-statement
 
-## สถานะการ implement (ตรวจสอบ 2026-07-16)
+## สถานะการ implement (ตรวจสอบ 2026-07-16; ตรวจสอบ permission และ UI ใหม่ 2026-09-06)
 
-สอง claim ในเวอร์ชันก่อนหน้าของหน้านี้ไม่ตรงกับ backend source ปัจจุบัน และถูกแก้ไขด้านล่าง:
+สาม claim ในเวอร์ชันก่อนหน้าของหน้านี้ไม่ตรงกับ source ปัจจุบัน และถูกแก้ไขด้านล่าง ข้อ 1 และ 2 แก้เมื่อ 2026-07-16 ข้อ 3 แก้เมื่อ 2026-09-06:
 
-1. **ไม่พบ frontend implementation ใดๆ** ไฟล์ที่เคยอ้างถึง `routes/system-admin/query-dataset/page.tsx`, `_components/query-dataset-component.tsx`, `hooks/use-sql-query.ts` และ `lib/sql-validator.ts` (frontend mirror) **ไม่มีอยู่จริงเลยใน `carmen-inventory-frontend-react`** — การค้นทั่ว repo หา `query-dataset` และ `sql-query` ใน repo นั้นคืนค่าศูนย์ไฟล์ และ `routes/router.tsx` ไม่มี path `query-dataset` ใต้ `/system-admin` เลย backend service และ endpoint ของมัน (ด้านล่าง) มีจริง — แต่ปัจจุบันไม่มี Sysadmin UI ที่จะเข้าถึงมันได้
+1. **ไม่พบ frontend implementation ใดๆ** ไฟล์ที่เคยอ้างถึง `routes/system-admin/query-dataset/page.tsx`, `_components/query-dataset-component.tsx`, `hooks/use-sql-query.ts` และ `lib/sql-validator.ts` (frontend mirror) **ไม่มีอยู่จริงเลยใน `carmen-inventory-frontend-react`** — การค้นทั่ว repo หา `query-dataset` และ `sql-query` ใน repo นั้นคืนค่าศูนย์ไฟล์ และ `routes/router.tsx` ไม่มี path `query-dataset` ใต้ `/system-admin` เลย backend service และ endpoint ของมัน (ด้านล่าง) มีจริง และ **มี UI อยู่ — เพียงแต่ไม่ได้อยู่ในผลิตภัณฑ์นี้** Platform SPA (`carmen-platform`) มีหน้าจอ [SQL Workbench](/th/platform/sql-workbench) เต็มรูปแบบที่ `/sql-workbench` (เพิ่มเมื่อ 2026-07-09) ซึ่ง `sqlQueryService.ts` ของมันเรียก `/api/config/${buCode}/sql-query` — endpoint ชุดเดียวกันทั้ง 5 ตัวที่หน้านี้บันทึกไว้ ให้อ่านว่า "ไม่มีหน้าจอใน Carmen Inventory" ไม่ใช่ "ไม่มีหน้าจอที่ไหนเลย"; ข้อความเดิมเขียนก่อนที่จะมีใครไปตรวจ SPA อีกตัว
 2. **`execute` คือ admin SQL console ที่ไม่จำกัด ไม่ใช่ Run แบบ read-only** `SqlQueryService.execute()` เรียก `validateSqlSafety(sql_text, { allowMultiple: true, allowDangerous: true })` — `allowDangerous: true` ข้าม blocklist keyword ต้องห้ามทั้งหมด (`DROP`, `TRUNCATE`, `ALTER`, `GRANT`, `REVOKE`, `COPY`, `VACUUM`, `CLUSTER`, `REASSIGN`, `REINDEX`) และไม่มีการส่งข้อจำกัด `allowedLeading` เลย ดังนั้น `INSERT`/`UPDATE`/`DELETE`/`CREATE`/`DROP`/`ALTER` ผ่านหมด และ `allowMultiple: true` อนุญาต multi-statement script คำอธิบาย Swagger ของ controller เองบอกไว้ตรงๆ: *"Runs any SQL against the tenant DB — SELECT, DML (INSERT/UPDATE/DELETE) and DDL (CREATE/ALTER/DROP/…), one or more statements."* คอมเมนต์ในโค้ดอธิบายเหตุผลไว้ชัดเจน: *"Access is gated by the `sql_workbench.manage` platform permission at the gateway; this validator only rejects empty/unparseable input here — it is not the security boundary."* มีแค่ `saveDdl()` (สัญญา "Save" ใน §5.3) ที่ยังคง validation แบบเข้มงวด (`SELECT`/`WITH` เท่านั้น หรือ `CREATE`-only) ที่หน้านี้เคยระบุไว้ผิดว่าเป็นของ `execute`
 
-**การ gate permission ก็แคบกว่าที่เคยระบุไว้เช่นกัน** มีแค่ route `POST .../execute` ที่มี `@UseGuards(PlatformPermissionGuard)` + `@RequirePlatformPermission('sql_workbench.manage')` ใน `config_sql-query.controller.ts` route `save`, `db-objects` (list), `db-objects/definition` (get) และ `db-objects` (drop, `DELETE`) **ไม่มี permission guard ใดเลยนอกเหนือจาก `KeycloakGuard`** ระดับ controller (authentication เท่านั้น) — ไม่มี App-ID สามตัว `sql-query.execute` / `.save` / `.drop` ตามที่เคยระบุไว้ — มีแค่ permission เดียว (`sql_workbench.manage`) และครอบคลุมแค่ `execute`
+3. **ช่องโหว่ permission ที่หน้านี้เคยรายงานถูกปิดแล้ว — อย่าใช้ข้อความเดิมเป็นแนวทาง** ระหว่าง 2026-07-16 ถึง 2026-08-20 หน้านี้รายงานถูกต้องว่ามีแค่ `POST .../execute` ที่มี guard และ `save`, `db-objects` (list), `db-objects/definition` (get) กับ `db-objects` (drop, `DELETE`) เข้าถึงได้โดยผู้เรียกที่ authenticated คนใดก็ได้ **ตอนนี้ไม่จริงแล้ว** commit `525597688` (2026-08-20, `carmen-turborepo-backend-v2`, *fix(security): คุมสิทธิ์ 4 endpoint ของ SQL Workbench ที่เปิดให้สมาชิก BU ทุกคน* ปิด issue #321) เพิ่ม `@UseGuards(PlatformPermissionGuard)` + `@RequirePlatformPermission(...)` ครบทั้งสี่ route:
+
+| Route | Permission ที่ต้องมี ตั้งแต่ 2026-08-20 |
+|---|---|
+| `POST .../execute` | `sql_workbench.manage` (ไม่เปลี่ยน — route นี้มี guard มาตลอด) |
+| `POST .../save` | `sql_workbench.manage` |
+| `GET .../db-objects` | `sql_workbench.read` |
+| `GET .../db-objects/definition` | `sql_workbench.read` |
+| `DELETE .../db-objects` | `sql_workbench.manage` |
+
+ความผิดพลาดที่ commit อธิบายไว้ตรงกับที่ข้อความเดิมของหน้านี้บอกให้คาดหวัง: สมาชิกคนใดก็ได้ของ business unit เป้าหมาย — "พนักงานธรรมดาที่ไม่มี platform role เลย" — เคย `CREATE OR REPLACE` หรือ `DROP` view/procedure/function ใน tenant schema ได้ ขณะที่การรัน `SELECT` ธรรมดากลับต้องมี permission ตอนนี้ทั้ง 5 route มี `@ApiResponse` 403 ที่ตรงกับการบังคับใช้จริงแล้ว
+
+ยังไม่มี App-ID สามตัว `sql-query.execute` / `.save` / `.drop` ตามที่ข้อความเก่าบางส่วนเคยระบุ และ **ไม่มี `AppIdGuard` บน route ใดเลยใน controller นี้** — header `x-app-id` ประกาศไว้สำหรับ Swagger (`@ApiHeaderRequiredXAppId()`) แต่ไม่ได้ถูกบังคับใช้ที่นี่ สิ่งที่บังคับใช้จริงคือ platform permission `sql_workbench.*` สองตัวเท่านั้น — มีแค่ permission เดียว (`sql_workbench.manage`) และครอบคลุมแค่ `execute`
 
 ส่วนที่เหลือของหน้านี้ (catalog projections, save/DDL contract, response shapes) ยังตรงกับ backend source และไม่มีการเปลี่ยนแปลงด้านล่าง
 
@@ -28,13 +40,13 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 Query Dataset (เรียกภายในว่า "SQL Workbench") คือ **backend admin-SQL-console service** สำหรับการรัน SQL ใดๆ ก็ได้ และการสร้าง / browse / drop object ฐานข้อมูลที่ใช้ซ้ำได้ — **view**, **stored procedure** และ **function** — โดยตรงภายในฐานข้อมูล tenant ปัจจุบัน **ไม่มีหน้าจอ frontend ที่เรียกมันเลย** (ดูสถานะการ implement) ผลลัพธ์มีเจตนาให้กลายเป็นแหล่งข้อมูลสำหรับ template รายงานและ tile dashboard consume ณ run time โดย service **micro-data** ที่แยกต่างหาก
 
-**กลุ่มเป้าหมายวันนี้:** ใครก็ตามที่เรียก API ได้โดยตรง (เช่นผ่าน Bruno) พร้อม grant `sql_workbench.manage` สำหรับ `execute` หรือผู้เรียกที่ authenticated พร้อม `x-app-id` ถูกต้องสำหรับ `save`/list/get-definition/drop — ไม่มีกลุ่มเป้าหมายระดับ UI เพราะไม่มี UI ไม่เหมือนตาราง Carmen ส่วนใหญ่ **ไม่มี row `tb_query_dataset`** สำหรับแต่ละ object ที่บันทึก — registry คือ PostgreSQL catalog ที่ live scope ตาม tenant schema
+**กลุ่มเป้าหมายวันนี้:** ผู้ปฏิบัติงานที่ถือ `sql_workbench.read` (เรียกดู) หรือ `sql_workbench.manage` (รัน / บันทึก / drop) ไม่ว่าจะทำงานผ่านหน้าจอ [SQL Workbench](/th/platform/sql-workbench) ของ Platform SPA หรือเรียก API โดยตรง (เช่นผ่าน Bruno) ไม่มีกลุ่มเป้าหมายใน*ผลิตภัณฑ์นี้* เพราะ Carmen Inventory ไม่มีหน้าจอสำหรับมัน ไม่เหมือนตาราง Carmen ส่วนใหญ่ **ไม่มี row `tb_query_dataset`** สำหรับแต่ละ object ที่บันทึก — registry คือ PostgreSQL catalog ที่ live scope ตาม tenant schema
 
 view, stored procedure และ function ที่สร้างที่นี่มีเจตนาเป็นแหล่งข้อมูลที่ service **micro-data** เรียกใช้งานจริง ณ run time: รายงานหรือ dashboard ควรระบุชื่อ object นั้น (ผ่าน `builder_key` หรือ template `name`) และ micro-data จะ resolve ผ่าน `POST /api/datasets/execute`, ประกอบ WHERE clause จาก filter ที่ส่งมา, กระจาย query ไปยัง business unit ที่ร้องขอ, และส่งคืน `Dataset` (columns + rows + totals + summary) ดู [reporting-audit/report](/th/inventory/reporting-audit/report) สำหรับฝั่งการแสดงผล ความเชื่อมโยงนี้ยังไม่ได้ re-verify แยกในรอบนี้
 
 ## 2. งานทั่วไป
 
-ไม่มี UI (ดูสถานะการ implement) — นี่คือ API operation ที่อยู่เบื้องหลัง ซึ่งเรียกได้โดยตรงวันนี้ (เช่นผ่าน Bruno)
+ไม่มี UI *ใน Carmen Inventory* (ดูสถานะการ implement) — นี่คือ API operation ที่อยู่เบื้องหลัง ซึ่งเข้าถึงได้ผ่านหน้าจอ [SQL Workbench](/th/platform/sql-workbench) ของ Platform SPA หรือเรียกโดยตรง (เช่นผ่าน Bruno)
 
 | งาน | API call | หมายเหตุ |
 |---|---|---|
@@ -57,8 +69,9 @@ view, stored procedure และ function ที่สร้างที่น�
 | "Database is busy" | Connection pool หมด; ลองซ้ำหนึ่งครั้งแล้วหลัง 500 ms | ลองใหม่ทีหลัง; ตรวจสอบ load พร้อมกัน |
 | คอลัมน์ `BigInt` ส่งคืนเป็น string ในผลลัพธ์ | คาดหวัง — JSON ไม่สามารถพา `bigint` แบบดั้งเดิม | Cast ใน SQL ถ้าจำเป็นต้องจัดการเชิงตัวเลขปลายทาง |
 | รายงาน error หลัง drop | View / procedure ที่ผูกถูกลบจาก catalog | สร้าง object ใหม่หรืออัปเดต binding ของรายงาน |
-| 401 ตอน `execute` | ผู้เรียกไม่มี platform permission `sql_workbench.manage` | Grant ผ่านระบบ permission ของแพลตฟอร์ม — นี่คือ route เดียวใน service นี้ที่มี guard |
-| `save` / list / get-definition / drop สำเร็จสำหรับผู้เรียกที่ authenticated ใครก็ได้ | ช่องโหว่ที่ยืนยันแล้ว — route เหล่านี้ไม่มี permission guard เลยนอกเหนือ auth พื้นฐาน | Flag ไว้สำหรับติดตามผลต่อ ไม่ได้แก้ในรอบนี้ |
+| 403 ตอน `execute`, `save` หรือ `DELETE db-objects` | ผู้เรียกไม่มี `sql_workbench.manage` | Grant ผ่านระบบ permission ของแพลตฟอร์ม — ดู [Platform RBAC](/th/platform/rbac) |
+| 403 ตอน `GET db-objects` หรือ `db-objects/definition` | ผู้เรียกไม่มี `sql_workbench.read` | เช่นเดียวกัน; `.read` คือ grant สำหรับเรียกดูอย่างเดียว |
+| `save` / list / get-definition / drop สำเร็จสำหรับผู้เรียกที่ authenticated ใครก็ได้ | **เป็นเรื่องในอดีตเท่านั้น — แก้แล้วเมื่อ 2026-08-20 โดย `525597688`** ถ้าพบอาการนี้วันนี้ แสดงว่าคุณอยู่บน build ที่เก่ากว่า commit นั้น | อัปเกรด อย่าถือว่าเป็นพฤติกรรมที่คาดหวัง |
 
 ## 4. กรณีพิเศษ
 
@@ -123,10 +136,10 @@ Shape `DbObjectsResponse`:
 
 ## 6. กฎทางธุรกิจ
 
-- **`execute` gate ด้วย `sql_workbench.manage`** (platform permission เดียว) — route เดียวใน service นี้ที่มี guard
+- **`execute` gate ด้วย `sql_workbench.manage`** — สังเกตว่าแม้ชื่อจะเป็น `.manage` แต่มันคือสิ่งที่ทำให้ผู้ปฏิบัติงานรัน *อะไรก็ได้* ผ่าน `execute` รวมถึง `SELECT` ธรรมดา ไม่ใช่ `.read`
 - **`execute` อนุญาต statement ประเภทใดก็ได้ รวมถึง DDL/DML และหลาย statement** (`allowDangerous: true`, `allowMultiple: true`) — ยืนยันว่า **ไม่ใช่** read-only ต่างจากเวอร์ชันก่อนหน้าของหน้านี้
-- **`save` คือ `CREATE`-only:** DDL เต็ม (`allowedLeading: ['CREATE']`) หรือ SELECT เปล่าสำหรับ view (`['SELECT', 'WITH']`) และ **ไม่มี permission guard** เลยนอกเหนือ authentication พื้นฐาน
-- **`db-objects` (list/get-definition) และ `db-objects` (drop) ก็ไม่มี permission guard เช่นกัน** นอกเหนือ authentication พื้นฐาน
+- **`save` คือ `CREATE`-only:** DDL เต็ม (`allowedLeading: ['CREATE']`) หรือ SELECT เปล่าสำหรับ view (`['SELECT', 'WITH']`) และ gate ด้วย `sql_workbench.manage`
+- **`db-objects` (list/get-definition) ต้องมี `sql_workbench.read`; `db-objects` (drop) ต้องมี `sql_workbench.manage`**
 - **Timeout statement 30 วินาที** ภายใน transaction budget 35 วินาทีของ Prisma (max-wait 8 วินาที) บน `execute`
 - **Credentials scope ตาม tenant** ผ่าน `prismaTenantInstance(bu_code, user_id)` — การเข้าถึง cross-tenant เป็นไปไม่ได้ที่ชั้น DB ไม่ว่าประเภท statement จะเป็นอะไร
 - **Connection-pool retry** — รอ 500 ms ลองหนึ่งครั้ง แล้ว "Database is busy" (ทั้งบน `execute` และ `saveDdl`)
@@ -145,7 +158,7 @@ Shape `DbObjectsResponse`:
 ## 8. แหล่งข้อมูลอ้างอิง
 
 - **Backend service:** `../carmen-turborepo-backend-v2/apps/micro-business/src/sql-query/sql-query.service.ts` — `execute`, `saveDdl`, `listDbObjects`, `getDbObjectDefinition`, `dropDbObject`
-- **Backend gateway controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_sql-query/config_sql-query.controller.ts` — ยืนยัน `PlatformPermissionGuard` + `RequirePlatformPermission('sql_workbench.manage')` เฉพาะ `POST .../execute` เท่านั้น; ไม่มี guard บนอีก 4 route
+- **Backend gateway controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_sql-query/config_sql-query.controller.ts` — อ่านซ้ำ 2026-09-06: มี `PlatformPermissionGuard` + `RequirePlatformPermission` ครบ **ทั้ง 5 route** (`execute` `:70-71`, `save` `:119-120`, `db-objects` `:174-175`, `db-objects/definition` `:209-210`, `DELETE db-objects` `:258-259`) ไม่มี `AppIdGuard` ที่ใดเลยในไฟล์นี้
 - **SQL safety validator:** `../carmen-turborepo-backend-v2/apps/micro-business/src/sql-query/sql-validator.ts` — blocklist `FORBIDDEN_LEADING`, flag `allowDangerous` สำหรับ bypass
 - **Frontend:** ไม่พบเลย ไม่มีไฟล์ `query-dataset` หรือ `sql-query` ที่ไหนใน `../carmen-inventory-frontend-react` (ยืนยันด้วยการค้นทั่ว repo); ไม่มี route ใน `routes/router.tsx`
 - **Prisma ที่เกี่ยวข้อง:** `tb_report_job` (line ~6101), `tb_report_schedule` (line ~6135), `tb_dashboard_bu_widget` (line ~6185), `tb_dashboard_personal_widget` (line ~6205)
