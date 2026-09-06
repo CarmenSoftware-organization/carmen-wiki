@@ -9,6 +9,13 @@ frontmatter — or creates the page if no existing id is found for that
 locale+path.
 
 Usage: python3 scripts/push_pages.py <file.md> [<file.md> ...] [--limit N]
+       python3 scripts/push_pages.py --delete <locale>/<path> [...]
+
+In --delete mode the arguments are wiki paths, not files: the pages are
+gone from git, so there is nothing on disk left to read. Each argument is
+split the same way as a file path (leading <locale>/, no .md suffix) and
+the matching page is removed from the Wiki.js DB. A path with no page in
+the index is reported as MISSING and is not an error.
 """
 import json, os, sys, re, urllib.request
 
@@ -62,6 +69,9 @@ $isPrivate:Boolean!,$isPublished:Boolean!,$locale:String!,$path:String!,$tags:[S
  isPublished:$isPublished,locale:$locale,path:$path,tags:$tags,title:$title){
  responseResult{succeeded errorCode message} page{id} } } }"""
 
+DELETE = """mutation($id:Int!){ pages{ delete(id:$id){
+ responseResult{succeeded errorCode message} } } }"""
+
 
 def apply_page(gql_fn, pid, page_vars):
     """Create or update one page via GraphQL, chosen by whether `pid` is known.
@@ -83,8 +93,53 @@ def apply_page(gql_fn, pid, page_vars):
     return bool(rr and rr["succeeded"]), rr, pid
 
 
+def delete_page(gql_fn, pid):
+    """Remove one page from the Wiki.js DB by id.
+
+    Returns (succeeded, response_result_or_None).
+    """
+    res = gql_fn(DELETE, {"id": pid})
+    rr = (((res.get("data") or {}).get("pages") or {}).get("delete") or {}).get("responseResult")
+    return bool(rr and rr["succeeded"]), rr
+
+
+def wiki_path(arg):
+    """Split one argument into (locale, path) the way the Wiki.js index keys it."""
+    rel = arg.replace("\\", "/")
+    locale = rel.split("/")[0]
+    path = re.sub(r"^[a-z]{2}/", "", rel)
+    if path.endswith(".md"):
+        path = path[:-3]
+    return locale, path
+
+
+def delete_main(args):
+    idx = page_index()
+    deleted = missing = fail = 0
+    for a in args:
+        locale, path = wiki_path(a)
+        pid = idx.get((locale, path))
+        if pid is None:
+            print(f"MISS  {locale}:{path} (no such page)"); missing += 1
+            continue
+        ok, rr = delete_page(gql, pid)
+        if not ok and (locale, path) not in page_index():
+            # Wiki.js removes the DB row first, then syncs its storage targets.
+            # A git-storage failure (e.g. the file is already absent from the
+            # server's working copy) surfaces as an error even though the page
+            # is gone, so re-read the index before believing the failure.
+            print(f"DEL   {locale}:{path} (id {pid}) [storage warning: {rr}]"); deleted += 1
+        elif ok:
+            print(f"DEL   {locale}:{path} (id {pid})"); deleted += 1
+        else:
+            print(f"FAIL  {locale}:{path} (delete) -> {rr}"); fail += 1
+    print(f"---- deleted {deleted}, missing {missing}, failed {fail} ----")
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    if "--delete" in sys.argv[1:]:
+        return delete_main(args)
     limit = next((int(sys.argv[i + 1]) for i, a in enumerate(sys.argv) if a == "--limit"), None)
     if limit:
         args = args[:limit]
