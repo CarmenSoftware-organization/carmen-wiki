@@ -2,7 +2,7 @@
 title: Platform RBAC — หน้าจอ UI (UI Screens)
 description: RoleManagement/RoleEdit พร้อม RolesAccessSummary แบบวัดเทียบ catalog และ PermissionGrid แบบแถวต่อ resource, Permission Catalog แบบ read-only, และ (ระดับสรุป) ทะเบียน Super Admins กับหน้าจอ assignment ของ User Platform ที่เขียนใหม่
 published: true
-date: 2026-09-05T17:00:00.000Z
+date: 2026-09-06T23:00:00.000Z
 tags: book/platform, rbac, ui
 editor: markdown
 dateCreated: 2026-06-10T15:00:00.000Z
@@ -113,7 +113,7 @@ response ของ list ยังคงซ้อน envelope `{ data }` หล�
 
 **`UserPlatformEdit`** (`/platform/user-platform/:userId`) detail: ได้ **Access Reach Band** (สรุปขอบเขตทั้งแพลตฟอร์มเทียบกับต่อ cluster) แบบใหม่, banner เตือนเมื่อบัญชีที่ถูกปิดใช้งานยังถือ role assignment อยู่, badge "Email Unverified" (`!!userRecord?.email_verified_at` — คอลัมน์ email-verification ของ `tb_user` ที่ระบุไว้ใน[หน้า landing ของโมดูล](/th/platform/rbac)) และ **Membership Card** ที่ list cluster/BU ของผู้ใช้เพื่อบริบท การระบุ "granted by" ต่อ assignment ยัง workaround อยู่: endpoint ของ role ต่อผู้ใช้ไม่คืน actor มาด้วย หน้าจึง query endpoint list ของ registry ด้วย search term แยกต่างหากแล้วจับคู่ row กลับด้วย `user_id` ถ้าล้มเหลวจะแสดง "ไม่มีข้อมูล provenance" อย่างชัดเจนแทนที่จะเดา การ์ด Roles & Scope, gate `<Can permission="user_platform.manage">` และ flow add-role/remove เป็นกลไกเดียวกับเดิม แม้ UI ของ add-role จะย้ายจากฟอร์ม inline ไปเป็น Sheet (`AddRoleSheet`)
 
-ด้วยความลึกของการเขียนใหม่นี้ การตรวจสอบ §4/§5 แบบละเอียดทุก section (คอลัมน์, ถ้อยคำที่แน่นอน, key ของ `localStorage` ที่จดจำไว้, ทุก component) จึงเลื่อนไปให้ task ที่สร้างโมดูล `user-platform`/`super-admins` แบบ standalone ตามที่แผน resync ปัจจุบันเรียกร้อง
+ด้วยความลึกของการเขียนใหม่นี้ การตรวจสอบ §4/§5 แบบละเอียดทุก section (คอลัมน์, ถ้อยคำที่แน่นอน, key ของ `localStorage` ที่จดจำไว้, ทุก component) จึงปล่อยให้เป็นหน้าที่ของโมดูล standalone [User Platform](/th/platform/user-platform) และ [Super Admins](/th/platform/super-admins) ซึ่งตอนนี้บันทึกแต่ละหน้าจอไว้ในระดับความละเอียดนั้นแล้ว
 
 ## 6. แหล่งข้อมูลอ้างอิง
 

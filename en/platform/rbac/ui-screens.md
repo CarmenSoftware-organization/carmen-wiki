@@ -2,7 +2,7 @@
 title: Platform RBAC — UI Screens
 description: RoleManagement/RoleEdit with the catalog-anchored RolesAccessSummary and the resource-row PermissionGrid, the read-only Permission Catalog, and (summary-level) the redesigned Super Admins roster and User Platform assignment screens.
 published: true
-date: 2026-09-05T17:00:00.000Z
+date: 2026-09-06T23:00:00.000Z
 tags: book/platform, rbac, ui
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z
@@ -113,7 +113,7 @@ Both screens were substantially redesigned since the last full sync (`#250`/`#25
 
 **`UserPlatformEdit`** (`/platform/user-platform/:userId`) detail: gained an **Access Reach Band** (platform-wide vs. per-cluster reach summary), an inactive-account warning banner when a deactivated user still holds role assignments, an "Email Unverified" badge (`!!userRecord?.email_verified_at` — the `tb_user` email-verification column noted on the [module landing](/en/platform/rbac)), and a **Membership Card** listing the user's cluster/BU memberships for context. Per-assignment "granted by" attribution is still a workaround: the per-user roles endpoint returns no actor, so the page separately queries the registry list endpoint by search term and matches rows back by `user_id`, falling back to an explicit "provenance unavailable" state on failure rather than guessing. The Roles & Scope card, its `<Can permission="user_platform.manage">` gate, and the add-role/remove flow are structurally the same as before, though the add-role UI moved from an inline form to a Sheet (`AddRoleSheet`).
 
-Given the depth of this redesign, a full section-by-section rewrite of §4/§5 (columns, exact copy, persisted `localStorage` keys, every component) is deferred to whichever task creates the standalone `user-platform`/`super-admins` modules the current re-sync plan calls for.
+Given the depth of this redesign, a full section-by-section rewrite of §4/§5 (columns, exact copy, persisted `localStorage` keys, every component) is left to the standalone [User Platform](/en/platform/user-platform) and [Super Admins](/en/platform/super-admins) modules, which now document each screen at that depth.
 
 ## 6. References
 

@@ -2,7 +2,7 @@
 title: Applications — Permissions
 description: The application.* gate matrix, how machine-client access (x-app-id + api_names) differs from user RBAC, and edge cases for testers.
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: 2026-09-06T23:00:00.000Z
 tags: book/platform, applications, permissions
 editor: markdown
 dateCreated: 2026-06-10T12:30:00.000Z
@@ -36,7 +36,7 @@ All gates resolve through the single `hasPermission` resolver documented in [Pla
 
 `PLATFORM_SCOPED_RECORD` is an alias of `UNRESOLVED_CLUSTER_ID` (`../carmen-platform/src/utils/permissions.ts`): a sentinel `clusterId` that forces `checkPermission`'s scoped branch to evaluate false for every real cluster, leaving only a platform-wide `activity_log.read` grant as a path to `true` — the correct shape for a record type (application) that has no cluster of its own. Activity recording started 2026-08-31 (`AUDIT_RECORDING_STARTED_ON_PHASE_2`); an application created earlier shows an empty history, not a broken one.
 
-**Feature flag.** All three routes and the sidebar entry additionally require the `applications` feature flag, checked by `PrivateRoute` **after** the permission check. A session without the right `application.*` key still sees `<Forbidden>` regardless of the flag; a session that does have the key sees `NotFound` or a "Coming Soon" placeholder instead of the page if the flag itself is toggled to `hide`/`inactive` from the platform's Feature Flags screen (`/platform/features`; not yet a documented module in this wiki).
+**Feature flag.** All three routes and the sidebar entry additionally require the `applications` feature flag, checked by `PrivateRoute` **after** the permission check. A session without the right `application.*` key still sees `<Forbidden>` regardless of the flag; a session that does have the key sees `NotFound` or a "Coming Soon" placeholder instead of the page if the flag itself is toggled to `hide`/`inactive` from the platform's [Feature Flags](/en/platform/feature-flags) screen (`/platform/features`).
 
 Two asymmetries worth a tester's attention (a third, historical one — the empty-state gate gap — is resolved, see below):
 

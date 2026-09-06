@@ -2,7 +2,7 @@
 title: Landing
 description: หน้าการตลาดสาธารณะที่ / — redirect session ที่ authenticated แล้วไปยัง Dashboard ทันที และแสดงดัชนีโมดูล "Inside the console" แบบ hardcode ที่คลาดเคลื่อนไปจาก sidebar จริง (ยังแสดงโมดูล Print Mapping ที่ถูกลบแล้ว ขาด Form Groups, User Platform, และ SQL Workbench)
 published: true
-date: 2026-09-06T21:00:00.000Z
+date: 2026-09-06T23:00:00.000Z
 tags: platform/landing, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -54,7 +54,7 @@ Landing คือจุดเริ่มต้นสำหรับผู้ท
 
 - **Print Mapping ยังอยู่ในรายการ Content** แม้ว่าโมดูล print-template-mapping — รวมถึงรายการ sidebar ของมัน — ถูกลบออกจาก carmen-platform เมื่อ 2026-07-24 (commit `de11377`) สำเนาของหน้า Landing เองไม่ถูกแตะต้องโดย commit การลบนั้น; ตรวจสอบแล้วว่ายังเป็นจริงอยู่ — `pages.landing.itemPrintMapping` ยังอยู่ในกลุ่ม Content แบบ hardcode ของ `Landing.tsx` ณ การตรวจสอบครั้งนี้
 - **Report Form Groups ขาดหายจาก Content** — ออกมาสัปดาห์เดียวกับการลบ Print Mapping (2026-07-24) และอยู่ในกลุ่ม Content ของ sidebar วันนี้ แต่รายการ Content ของ Landing ยังแสดงแค่สี่รายการก่อน 2026-07-24 เท่านั้น (หนึ่งในนั้นคือแถว Print Mapping ที่ตายไปแล้ว)
-- **กลุ่ม Platform ขาดไป 4 จาก 7 แถวปัจจุบัน**: User Platform (ส่วนหนึ่งของ [Platform RBAC](/th/platform/rbac)), SQL Workbench, และอีกสองแถวที่เพิ่มหลังจากหน้านี้ทบทวนครั้งล่าสุด — Platform Config กับ Email Settings (ทั้งคู่อยู่ `navGroup.platform`) — บวก Feature Flags ซึ่งแถว nav ของตัวเองมี permission (`feature_flag.manage`) แต่ตั้งใจไม่มีคีย์ `feature` เป็นของตัวเอง ตาม comment ใน `platformNav.ts`: "สวิตช์ที่ปิดตัวเองได้จะเปิดกลับไม่ได้อีกจากหน้าจอ" Feature Flags ยังไม่เป็นโมดูล wiki ของตัวเอง ณ รอบนี้
+- **กลุ่ม Platform ขาดไป 4 จาก 7 แถวปัจจุบัน**: User Platform (ส่วนหนึ่งของ [Platform RBAC](/th/platform/rbac)), SQL Workbench, และอีกสองแถวที่เพิ่มหลังจากหน้านี้ทบทวนครั้งล่าสุด — Platform Config กับ Email Settings (ทั้งคู่อยู่ `navGroup.platform`) — บวก Feature Flags ซึ่งแถว nav ของตัวเองมี permission (`feature_flag.manage`) แต่ตั้งใจไม่มีคีย์ `feature` เป็นของตัวเอง ตาม comment ใน `platformNav.ts`: "สวิตช์ที่ปิดตัวเองได้จะเปิดกลับไม่ได้อีกจากหน้าจอ" ตอนนี้ Feature Flags มีโมดูล wiki ของตัวเองแล้ว — [Feature Flags](/th/platform/feature-flags)
 - **สามกลุ่มทั้งหมดที่ sidebar ปัจจุบันใช้จัดงาน — License Management, Analytics, และ Scheduling — ไม่มีตัวแทนบน Landing เลย** ทั้งหมดเป็นโมดูลที่เพิ่มหลังจากหน้านี้ทบทวนครั้งล่าสุด: Licenses, License Feature Groups, และ License Features (License Management); Usage Analytics และ Activity Events (Analytics); Cronjobs (Scheduling)
 - **กลุ่ม Database ก็ขาดหายไปทั้งหมดเช่นกัน** รวมถึง SQL Workbench (ระบุไว้แล้วข้างต้น) บวก Platform Migrations และ Database Pools ซึ่งทั้งคู่เพิ่มหลังจากหน้านี้ทบทวนครั้งล่าสุด
 

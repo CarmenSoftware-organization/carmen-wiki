@@ -2,7 +2,7 @@
 title: Cluster — Permissions
 description: Permission-key route guards, the feature-flag layer, in-page Can gates, the platform-authority/cluster-admin redirect, and what each cluster.* key opens.
 published: true
-date: 2026-09-05T14:00:00.000Z
+date: 2026-09-06T23:00:00.000Z
 tags: book/platform, clusters, permissions
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -48,7 +48,7 @@ if (feature) {
 return <>{children}</>;
 ```
 
-The ordering is deliberate (source comment, `src/components/PrivateRoute.tsx`): "permission answers *can you access this*, the flag answers *is this ready yet*" — someone without `cluster.*` access must still see 403, not a 404 that hides whether the route exists. A session that **does** hold the required permission but whose `clusters` feature flag is set to `hide` gets a 404 instead of the cluster screen; `inactive` gets a "Coming Soon" placeholder instead. This is a cross-cutting mechanism (documented in full under the **feature-flags** module — forward link, not yet written as of this sync) rather than anything specific to clusters, but it now sits on every cluster route and is a real state QA can put the app into.
+The ordering is deliberate (source comment, `src/components/PrivateRoute.tsx`): "permission answers *can you access this*, the flag answers *is this ready yet*" — someone without `cluster.*` access must still see 403, not a 404 that hides whether the route exists. A session that **does** hold the required permission but whose `clusters` feature flag is set to `hide` gets a 404 instead of the cluster screen; `inactive` gets a "Coming Soon" placeholder instead. This is a cross-cutting mechanism (documented in full on [Feature Flags](/en/platform/feature-flags) §3) rather than anything specific to clusters, but it now sits on every cluster route and is a real state QA can put the app into.
 
 Three things to note, unchanged from the prior sync:
 

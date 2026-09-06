@@ -2,7 +2,7 @@
 title: Applications — สิทธิ์ (Permissions)
 description: เมทริกซ์ของ gate application.*, การเข้าถึงของ machine-client (x-app-id + api_names) ต่างจาก RBAC ของผู้ใช้อย่างไร และกรณีพิเศษสำหรับผู้ทดสอบ
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: 2026-09-06T23:00:00.000Z
 tags: book/platform, applications, permissions
 editor: markdown
 dateCreated: 2026-06-10T15:15:00.000Z
@@ -36,7 +36,7 @@ gate ทุกตัว resolve ผ่าน resolver `hasPermission` ตัว�
 
 `PLATFORM_SCOPED_RECORD` เป็นนามแฝงของ `UNRESOLVED_CLUSTER_ID` (`../carmen-platform/src/utils/permissions.ts`): sentinel `clusterId` ที่บังคับให้กิ่ง scoped ของ `checkPermission` ประเมินเป็น false สำหรับทุก cluster จริง เหลือเพียง grant `activity_log.read` ระดับแพลตฟอร์มเป็นทางเดียวไปสู่ `true` — รูปแบบที่ถูกต้องสำหรับ record ประเภทที่ไม่มี cluster ของตัวเอง (application) การบันทึกเริ่มตั้งแต่ 2026-08-31 (`AUDIT_RECORDING_STARTED_ON_PHASE_2`); application ที่สร้างก่อนหน้านั้นจะเห็นประวัติว่างเปล่า ไม่ใช่ประวัติที่พัง
 
-**Feature flag** ทั้งสาม route และ sidebar entry ยังต้องการ feature flag `applications` ซึ่ง `PrivateRoute` ตรวจ**หลัง**การตรวจ permission session ที่ไม่มี `application.*` key ที่ถูกต้องยังเห็น `<Forbidden>` เหมือนเดิมไม่ว่า flag จะเป็นอย่างไร; session ที่มี key นั้นจะเห็น `NotFound` หรือหน้า "Coming Soon" แทนหน้าจริง ถ้า flag ถูกตั้งเป็น `hide`/`inactive` จากหน้าจอ Feature Flags ของ platform (`/platform/features`; ยังไม่ใช่โมดูลที่ document ใน wiki นี้)
+**Feature flag** ทั้งสาม route และ sidebar entry ยังต้องการ feature flag `applications` ซึ่ง `PrivateRoute` ตรวจ**หลัง**การตรวจ permission session ที่ไม่มี `application.*` key ที่ถูกต้องยังเห็น `<Forbidden>` เหมือนเดิมไม่ว่า flag จะเป็นอย่างไร; session ที่มี key นั้นจะเห็น `NotFound` หรือหน้า "Coming Soon" แทนหน้าจริง ถ้า flag ถูกตั้งเป็น `hide`/`inactive` จากหน้าจอ [Feature Flags](/th/platform/feature-flags) ของ platform (`/platform/features`)
 
 ความไม่สมมาตรสองข้อที่ผู้ทดสอบควรใส่ใจ (ข้อที่สาม เชิงประวัติ — ช่องว่างของ gate ที่ empty-state — ได้รับการแก้ไขแล้ว ดูข้างล่าง):
 
