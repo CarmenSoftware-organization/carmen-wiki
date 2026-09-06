@@ -2,7 +2,7 @@
 title: Business Unit — Data Model
 description: BU entity, formatting/locale block, database-pool + schema pointer, config array, branding tokens, module activation join, and the per-BU license ledger that replaced the old max_license_users column.
 published: true
-date: 2026-09-06T12:00:00.000Z
+date: 2026-09-06T22:00:00.000Z
 tags: book/platform, business-units, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -197,7 +197,7 @@ A BU no longer owns its database credentials. Instead it points at a shared, pla
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key |
-| `name` | `String @db.VarChar` | No | Operator-chosen name, picked when configuring a BU's Technical tab (not derived from the DSN, per current convention — a pool auto-created from a legacy `db_connection` import got named after its own DSN, which the SPA's `isDerivedName()` helper detects to avoid printing the same string twice) |
+| `name` | `String @db.VarChar` | No | Operator-chosen name — but **not settable from this page**: the BU's Technical tab only offers a `<select>` of already-existing pools (`DatabaseConnectionSection.tsx`'s `PoolPicker`, loaded via `databasePoolService.getAll()`); a pool can only be named on its own create form in the [Database Pools](/en/platform/database-pools) module. Not derived from the DSN, per current convention — a pool auto-created from a legacy `db_connection` import got named after its own DSN, which the SPA's `isDerivedName()` helper detects to avoid printing the same string twice. |
 | `description` | `String?` | Yes | Optional description |
 | `host` | `String @db.VarChar` | No | DB server hostname — **never rendered on the Business Units edit page**; visible only to a session holding `database_pool.read` on the Database Pools screen itself |
 | `port` | `Int @default(5432)` | No | DB server port |
