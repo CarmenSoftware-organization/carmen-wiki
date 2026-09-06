@@ -26,7 +26,7 @@ counted" below for method and the arithmetic reconciliation.
 
 **Book size, verified from the filesystem, not estimated:** `find en/platform -name '*.md' | wc -l` and the `th/` equivalent both return **74**, and `en/`/`th/` trees are identical file-for-file (diffed by path list). Of the 29 top-level pages under `en/platform/`: **20** own a sub-page folder (Table A), **4** are landing-only modules with no sub-pages because the depth rule gave them none (`platform-migrations`, `report-form-groups`, `super-admins`, `usage-analytics` — Table B), and **5** are standalone pages that are not modules at all (`changelog`, `dashboard`, `landing`, `profile`, `sql-workbench` — Table C). 20 + 4 + 5 = 29 pages = **24 modules** + **5 standalone pages**. `74` reconciles as 29 top-level pages + 45 sub-pages (Table A's 20 modules hold 1–5 sub-pages each; see the module list below).
 
-| Module | Sub-processes | Done | Partial | Not yet | % complete |
+| Module | Sub-processes | Done | Partial | Not yet | % rows ✅ (sampled check) |
 |--------|--------------:|-----:|--------:|--------:|-----------:|
 | **Table A — modules with a sub-page folder** | | | | | |
 | Clusters | 10 | 10 | 0 | 0 | 100% |
@@ -64,6 +64,15 @@ counted" below for method and the arithmetic reconciliation.
 | SQL Workbench | 6 | 6 | 0 | 0 | 100% |
 | **Table C subtotal** | **18** | **18** | **0** | **0** | **100%** |
 | **Project total** | **211** | **211** | **0** | **0** | **100%** |
+
+**Read the 100% figures above as a full enumeration, checked on a sample:**
+every one of the 211 rows was enumerated from the current pages and given a
+doc link, but only **19 of the 74 files were read in full** to confirm their
+content actually covers what the row claims — the other 55 were checked at
+section-header level only. "100%" means no gap was found in that sample, not
+that all 211 rows were individually re-verified this pass. See "Depth of
+verification" under "How this was counted," immediately below, for the exact
+file list and what "checked at header level" did and did not confirm.
 
 Arithmetic check: 167 + 26 + 18 = 211, matching the "Project total" row; each
 module's own Done+Partial+Not-yet also sums to its own Sub-processes count. No
