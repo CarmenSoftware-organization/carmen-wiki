@@ -17,7 +17,7 @@ split the same way as a file path (leading <locale>/, no .md suffix) and
 the matching page is removed from the Wiki.js DB. A path with no page in
 the index is reported as MISSING and is not an error.
 """
-import json, os, sys, re, urllib.request
+import json, os, sys, re, time, urllib.error, urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ENV = os.path.join(ROOT, "scripts", ".env")
@@ -28,12 +28,39 @@ for line in open(ENV):
 URL = os.environ["WIKI_API_URL"]; TOKEN = os.environ["WIKI_API_TOKEN"]
 
 
+# A single slow request used to abort a whole run: urlopen's timeout raises,
+# nothing caught it, and a 148-file push died after 28 pages with the rest
+# silently unattempted. Transient network faults are retried with backoff;
+# anything still failing after RETRIES raises, so a real outage still stops
+# the run loudly rather than being papered over.
+TIMEOUT = 60
+RETRIES = 3
+BACKOFF = 2.0
+
+
 def gql(query, variables=None):
     body = json.dumps({"query": query, "variables": variables or {}}).encode()
-    req = urllib.request.Request(URL, data=body, headers={
-        "Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=60) as r:
-        return json.load(r)
+    last = None
+    for attempt in range(1, RETRIES + 1):
+        req = urllib.request.Request(URL, data=body, headers={
+            "Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"})
+        try:
+            with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
+                return json.load(r)
+        except (TimeoutError, urllib.error.URLError, ConnectionError) as e:
+            # An HTTPError is a real answer from the server (4xx/5xx), not a
+            # transport fault — retrying it would just repeat the same refusal.
+            if isinstance(e, urllib.error.HTTPError):
+                raise
+            last = e
+            if attempt < RETRIES:
+                wait = BACKOFF ** (attempt - 1)
+                print(f"  ... {type(e).__name__} on attempt {attempt}/{RETRIES}, "
+                      f"retrying in {wait:.0f}s", file=sys.stderr)
+                time.sleep(wait)
+    raise RuntimeError(
+        f"GraphQL request failed after {RETRIES} attempts: {type(last).__name__}: {last}"
+    ) from last
 
 
 def page_index():

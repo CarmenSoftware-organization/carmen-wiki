@@ -1,8 +1,8 @@
 ---
 title: Application Config
-description: Generic key-value application settings — real, actively-used backing store (config-email, signature settings) consumed key-by-key by specific features, but there is no general Sysadmin browse/edit screen and no permission guard on the read/write endpoints.
+description: Generic key-value application settings — a real, actively-used backing store consumed key-by-key by specific features. Re-verified 2026-09-06: no general Sysadmin screen, and no permission guard on the read/write endpoints.
 published: true
-date: 2026-07-16T00:00:00.000Z
+date: 2026-09-06T07:05:00.000Z
 tags: system-config, application-config, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,14 +11,20 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # Application Config
 
 > **At a Glance**
-> **Owner:** No one screen — each key is managed by the frontend feature that owns it (e.g. Email Configuration writes `report_email`) &nbsp;·&nbsp; **Table:** `tb_application_config` (+ `tb_application_user_config`) &nbsp;·&nbsp; **Used by:** confirmed real for `report_email` (SMTP) and signature settings; **no generic "Application Settings" admin screen exists** &nbsp;·&nbsp; **No permission guard** on the read/write endpoints beyond basic authentication.
+> **Owner:** No one screen — each key is managed by the frontend feature that owns it (e.g. Email Configuration writes `report_email`) &nbsp;·&nbsp; **Table:** `tb_application_config` (+ `tb_application_user_config`) &nbsp;·&nbsp; **Used by:** confirmed real for `report_email` (SMTP) and signature settings; **no generic "Application Settings" admin screen exists** &nbsp;·&nbsp; **No permission guard** on the read/write endpoints beyond basic authentication, except a narrow BU-admin check on `list_views_*` keys (re-verified 2026-09-06).
 
 ## Implementation status (verified 2026-07-16)
 
 `tb_application_config` is a real, actively-written table — but it is consumed **key-by-key by specific features**, not through a general-purpose Sysadmin editor:
 
 - **No "System Config → Application Settings" screen exists.** There is no `application-config` path in `../carmen-inventory-frontend-react/routes/router.tsx` and no such directory under `routes/system-admin/`. The only frontend consumer is `hooks/use-app-config.ts` (`useAppConfigByKey`, `useUpsertAppConfig`, `useTestEmail`), called by name-specific features: [system-config/config-email](/en/inventory/system-config/config-email) (key `report_email`) and the workflow signature-candidates screen (`signature-config.tsx`). Nothing lets a Sysadmin browse or edit an arbitrary key.
-- **No permission guard on the controller.** `config_app-config.controller.ts` applies only `KeycloakGuard` (authentication) at the class level — there is no `AppIdGuard` or `RequirePlatformPermission` decorator on any of its list/get/upsert endpoints (unlike, for example, [system-config/document](/en/inventory/system-config/document)'s controller, which gates every endpoint with a named `AppIdGuard('documents.*')`). The "App ID `app-config.upsert`" gate described lower on this page, and on [system-config/config-email](/en/inventory/system-config/config-email), **is not implemented in the backend** — any authenticated caller with a valid registered `x-app-id` can read and write every tenant-wide config row, including SMTP credentials. Enforcement, if any, exists only as frontend navigation/route-level gating, not a server-side check.
+- **No permission guard on the controller — re-verified 2026-09-06, still open.** `config_app-config.controller.ts` applies only `@UseGuards(KeycloakGuard)` (authentication) at the class level (`:46`); there is no `AppIdGuard` or `RequirePlatformPermission` decorator on any route (unlike, for example, [system-config/document](/en/inventory/system-config/document)'s controller, which gates every endpoint with a named `AppIdGuard('documents.*')`). Also checked and ruled out this pass: no `APP_GUARD` in the gateway's `app.module.ts` other than the rate-limiting throttler — whose own comment states it is orthogonal to authorization — and no guard registered in `config_app-config.module.ts`. **Any authenticated caller can read and write every tenant-wide config row, including SMTP credentials.**
+
+  There is no `x-app-id` fallback: `@ApiHeaderRequiredXAppId()` declares the header for Swagger only, and no `AppIdGuard` exists here. Earlier wording on this page implying a "valid registered `x-app-id`" was required has been corrected — authentication is the only bar.
+
+  **One exception, added since this page was written:** commit `1b76f2caa` (2026-07-29) added `assertSharedListViewsAdmin()` (`:256-287`), called from `PUT :key` (`:202`) and `DELETE :key` (`:237`). It requires a **BU-level `admin`** role for the target `bu_code`, but only for keys matching `/^list_views_/` (`:262`) — every other key returns early, unchecked. `GET`, `GET :key`, `signature-candidates` and `POST test-email` have no check at all. The role is read from the `x-bu-datas` header, which `KeycloakGuard` overwrites on every authenticated request (`keycloak.guard.ts:192`, `:211`, `:301`, `:327`), so it is not client-spoofable and fails closed when absent.
+
+  The "App ID `app-config.upsert`" gate described lower on this page, and on [system-config/config-email](/en/inventory/system-config/config-email), **is not implemented in the backend.** Enforcement, if any, exists only as frontend navigation/route-level gating, not a server-side check.
 
 The schema, JSONB shape, and resolution-order description below remain accurate for the rows that are real (`report_email`, `signature-candidates`-adjacent settings); the "Common Tasks" table has been corrected to remove the non-existent general admin screen.
 
@@ -47,7 +53,7 @@ There is no general editor — only the feature-specific tasks below were confir
 |---|---|---|
 | Key collision on insert | Existing non-deleted row | Update existing or pick different key |
 | Value rejected at runtime | Zod schema mismatch (confirmed for `report_email`'s `ReportEmailSchema`) | Fix shape per consumer's contract |
-| Any authenticated user can read/write a config key | No permission guard on `config_app-config.controller.ts` | Confirmed gap — flagged for Task 5/6 follow-up, not fixed by this pass |
+| Any authenticated user can read/write a config key | No permission guard on `config_app-config.controller.ts` | **Confirmed gap — still open, re-verified 2026-09-06.** Only `list_views_*` keys are protected, and only on `PUT`/`DELETE` |
 | Secret leaked | Stored credentials in config | Move to env / secrets manager — config is human-editable; note `report_email`'s `smtp.password` *is* encrypted at rest (see [system-config/config-email](/en/inventory/system-config/config-email)) |
 
 ## 4. Edge Cases
@@ -108,5 +114,5 @@ Source: tenant schema.
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_application_config` (lines ~5287-5301), `tb_application_user_config` (lines ~5304-5319).
 - **Backend service:** `../carmen-turborepo-backend-v2/apps/micro-business/src/app-config/app-config.service.ts`.
-- **Backend gateway controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_app-config/config_app-config.controller.ts` — confirmed no `AppIdGuard`/`RequirePlatformPermission` on any route.
+- **Backend gateway controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_app-config/config_app-config.controller.ts` — re-read in full 2026-09-06: no `AppIdGuard`/`RequirePlatformPermission` on any route; sole authorization is `assertSharedListViewsAdmin()` (`:256-287`), scoped to `list_views_*`.
 - **Frontend:** no general admin screen. Consumers: `../carmen-inventory-frontend-react/hooks/use-app-config.ts` (`useAppConfigByKey`, `useUpsertAppConfig`, `useTestEmail`, `useSignatureCandidates`), used by `routes/system-admin/config-email/` and `routes/system-admin/signature-config.tsx`.
