@@ -2,7 +2,7 @@
 title: หน่วยธุรกิจ (Business Units)
 description: เอนทิตีต่อ property/ต่อโรงแรม แก้ไขบนฟอร์มหกแท็บ (General/Location/Formats/Technical/Users/Licenses) ครอบคลุมข้อมูลระบุตัวตน รูปแบบ การผูก database pool และรายชื่อผู้ใช้/license ที่ผูกกับ BU
 published: true
-date: 2026-09-06T19:00:00.000Z
+date: 2026-09-06T23:45:00.000Z
 tags: platform/business-units, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -84,6 +84,8 @@ Business unit คือ tenant ปฏิบัติการของ Carmen pl
 gate แบบ scoped (`clusterId`) จะ resolve กับ **cluster แม่** ของ BU — role assignment ที่ scope ไว้กับ cluster A จะ render Edit/Delete/View History ของ row เฉพาะบน BU ที่ `cluster_id` เป็น A เท่านั้น ขณะที่ route guard แบบ unscoped จะผ่านด้วย grant แบบ cluster-scoped ของ cluster ใดก็ได้ หมายเหตุ sentinel `UNRESOLVED_CLUSTER_ID`: เมื่อ `formData.cluster_id` ว่างเปล่า (BU ที่ไม่มี cluster หรือก่อนที่ dropdown Cluster จะมีค่าตอน create) check จะถูกจงใจรักษาไว้ที่ branch แบบ scoped ของ `checkPermission` (fail closed) แทนที่จะตกไปที่ branch แบบกว้าง "cluster ใดก็ได้"
 
 มี permission ที่แคบกว่าอีกตัวหนึ่งซึ่ง gate control หนึ่งตัว**ภายใน**ขอบเขตของ `canEdit`: dropdown Database Pool บนแท็บ Technical ต้องการ `database_pool.read` เพิ่มเติม — เซสชันที่มี `cluster.update` บน BU นี้แต่ไม่มี `database_pool.read` ยังแก้อย่างอื่นได้ทั้งหมด แต่จะเห็นชื่อ pool กับ schema แบบอ่านอย่างเดียวพร้อมหมายเหตุอธิบายเหตุผล อัลกอริทึมการ resolve, ข้อยกเว้น bootstrap และ bypass ของ super-admin อยู่ใน [rbac permissions](/th/platform/rbac/permissions)
+
+**ช่องว่างที่สาม อยู่ที่ backend ที่ฟอร์มแก้ไขของหน้านี้เขียนไปหา ไม่ใช่ที่ frontend gate ด้านบน:** endpoint `PUT` ที่อยู่หลัง `cluster.update` (`/api-system/business-units/:id`) ถูกป้องกันด้วย allowlist ตัวตนแอป (`AppIdGuard`) เท่านั้น ไม่ใช่การตรวจ permission RBAC ของ `cluster.update` — ต่างจาก route `POST`/`DELETE` ข้างเคียงบน controller เดียวกันที่ซ้อน `PlatformPermissionGuard` + `RequirePlatformPermission` ไว้จริง ๆ การไล่รอยแบบเต็มพบผ่านขั้นตอน Company Profile ของ [Tenant Imports](/th/platform/tenant-imports) (ที่เขียนผ่าน endpoint เดียวกันนี้): [Tenant Imports](/th/platform/tenant-imports) §3.5
 
 ## 5. โมดูลที่เกี่ยวข้อง
 

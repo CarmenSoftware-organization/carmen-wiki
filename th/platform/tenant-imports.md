@@ -2,7 +2,7 @@
 title: การนำเข้าเทแนนต์ (Tenant Imports)
 description: TenantImportWizard ที่ /tenant-imports — sidebar ใช้ป้าย "Data Import" gate ด้วยคีย์ data_import.manage (manage ไม่ใช่ read) — นำข้อมูลหลักจาก Preconfig.xlsx เข้าฐานข้อมูล tenant ของหนึ่ง business unit ทีละขั้นตอน พร้อมช่องโหว่ที่ยังคงอยู่จริงในการแมป error status ของ endpoint แบบ stream
 published: true
-date: '2026-09-06T23:00:00.000Z'
+date: '2026-09-07T00:15:00.000Z'
 tags: book/platform, tenant-imports
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -69,7 +69,7 @@ Wizard รันไฟล์ผ่านการเรียก backend สา�
 
 `clear_will_soft_delete`/`clear_will_soft_delete_related` (ตัวเลขที่กล่องยืนยันแสดง) ถูกคำนวณโดย `preview` เสมอ ไม่ว่าจะขอ `clear_existing` หรือไม่ (คอมเมนต์ของ `PreviewResult`, `preconfig-types.ts`) — กล่องยืนยันแสดงตัวเลขจริงได้ก็เพราะ preview รู้ตัวเลขนี้อยู่แล้วก่อนที่ operator จะเลือกยอมรับ
 
-`parseOptions()` ของ gateway (`preconfig-imports.controller.ts:47-79`) ตรวจ `duplicate_mode` เทียบกับสตริงที่ถูกกฎหมายสามค่า และ `clear_existing`/`accept_lookup_creation` เทียบกับ `boolean` โดยปฏิเสธชนิดผิดด้วย 400 — แต่คอมเมนต์ของฟังก์ชันเอง ("anything else … is a 400") กล่าวเกินจริงกว่าที่โค้ดทำจริง: **คีย์พิเศษที่ไม่รู้จัก**ใน JSON ของ `options` ที่ส่งมาจะถูกทิ้งอย่างเงียบ ๆ ไม่ใช่ถูกปฏิเสธ ควรอ่านฟังก์ชัน ไม่ใช่คอมเมนต์ หากจะทดสอบ payload ที่ผิดรูปแบบ
+`parseOptions()` ของ gateway (`preconfig-imports.controller.ts:42-43,48-85`) ตรวจ `duplicate_mode` เทียบกับสตริงที่ถูกกฎหมายสามค่า และ `clear_existing`/`accept_lookup_creation` เทียบกับ `boolean` โดยปฏิเสธชนิดผิดด้วย 400 — แต่คอมเมนต์ของฟังก์ชันเอง ("anything else … is a 400") กล่าวเกินจริงกว่าที่โค้ดทำจริง: **คีย์พิเศษที่ไม่รู้จัก**ใน JSON ของ `options` ที่ส่งมาจะถูกทิ้งอย่างเงียบ ๆ ไม่ใช่ถูกปฏิเสธ ควรอ่านฟังก์ชัน ไม่ใช่คอมเมนต์ หากจะทดสอบ payload ที่ผิดรูปแบบ
 
 ### 3.4 การนำเข้าแบบ stream: การแบตช์ การ retry บางส่วน และแถว audit ที่เขียนเสมอ
 
@@ -87,7 +87,13 @@ Wizard รันไฟล์ผ่านการเรียก backend สา�
 
 `CompanyProfilePanel` (`../carmen-platform/src/pages/tenantImport/CompanyProfilePanel.tsx`) แสดงผล diff และ apply ตรงผ่าน `businessUnitService.update()` — เรียก `PUT /api-system/business-units/:id` ตัวเดียวกับที่ปุ่ม Save ของหน้าแก้ไข [Business Units](/th/platform/business-units) ปกติใช้ พร้อม `doc_version` optimistic locking (`409` จะโหลดเรกคอร์ดใหม่และ diff ซ้ำแทนการเขียนทับ) "BU Code" แสดงแบบอ่านอย่างเดียวพร้อมแบนเนอร์เตือนเมื่อรหัสในชีตไม่ตรงกับ BU ที่เลือก และไม่ถูกส่งไปใน payload การอัปเดตเลย; "BU Name" ถูกระบุว่า "Not applied" ด้วยเหตุผลเรื่องข้อมูลระบุตัวตนเดียวกัน
 
-**การเขียนนี้ไม่ได้ถูก gate ด้วย `cluster.update` ซึ่งเป็นคีย์ที่ route ของหน้าแก้ไขปกติเองต้องการ** `PUT /api-system/business-units/:business_unit_id` ถูกป้องกันด้วย `AppIdGuard('businessUnit.update')` เท่านั้น (`platform_business-units.controller.ts:374-375`) — เป็นการ**ตรวจ allowlist ตัวตนของแอปพลิเคชัน**ผ่าน header `x-app-id` (`app-id.guard.ts`) ไม่ใช่การตรวจ permission RBAC ระดับแพลตฟอร์มของผู้ใช้ที่เรียก guard ระดับคลาสของ endpoint นี้คือ `KeycloakGuard` เท่านั้น (ตรวจแค่การยืนยันตัวตน) ไม่มี `PlatformPermissionGuard`/`@RequirePlatformPermission` อยู่บน route นี้เลย พูดให้เป็นรูปธรรม: session ที่ถือ `data_import.manage` แต่**ไม่มี** `cluster.update` จะถูก frontend กั้นไม่ให้เปิด `/business-units/:id/edit` ได้เลย แต่**ไม่ถูกกั้น**ทั้งที่ frontend (ไม่มี `<Can>` gate ครอบปุ่ม Apply ของ `CompanyProfilePanel`) และที่ backend จากการเขียนฟิลด์เดียวกันผ่านขั้นตอน Company Profile ของ wizard นี้ — คีย์ `cluster.update` ที่ดูเหมือนควรจะ gate การเขียนนี้ด้วย ไม่เคยถูกตรวจบนเส้นทางนี้เลย
+**การเขียนนี้ไม่ได้ถูก gate ด้วย `cluster.update` ซึ่งเป็นคีย์ที่ route ของหน้าแก้ไขปกติเองต้องการ** `PUT /api-system/business-units/:business_unit_id` ถูกป้องกันด้วย `AppIdGuard('businessUnit.update')` เท่านั้น (`platform_business-units.controller.ts:374-375`) — เป็นการ**ตรวจ allowlist ตัวตนของแอปพลิเคชัน**ผ่าน header `x-app-id` (`app-id.guard.ts`) ไม่ใช่การตรวจ permission RBAC ระดับแพลตฟอร์มของผู้ใช้ที่เรียก guard ระดับคลาสของ endpoint นี้คือ `KeycloakGuard` เท่านั้น (ตรวจแค่การยืนยันตัวตน) ไม่มี `PlatformPermissionGuard`/`@RequirePlatformPermission` อยู่บน route นี้เลย
+
+หลักฐานรูปแบบที่หนักแน่นที่สุดอยู่**ใน controller เดียวกัน**: route `POST` (create) และ `DELETE` (delete) บนคลาสเดียวกันนี้เอง ทั้งคู่ซ้อน `AppIdGuard` **และ** `PlatformPermissionGuard` + `@RequirePlatformPermission('cluster.create')` / `('cluster.delete')` (`platform_business-units.controller.ts:282-283`, `:633-634`) — เป็นแพตเทิร์นที่ route เขียนได้อื่นทุกตัวในหนังสือเล่มนี้ทำตาม `PUT` (update) เป็นตัวเดียวในสามที่ตัด `PlatformPermissionGuard`/`@RequirePlatformPermission` ออก เหลือแค่ `AppIdGuard` นี่ไม่ใช่การเทียบข้ามไฟล์ที่ไม่เกี่ยวข้องกันซึ่งอาจอธิบายได้ด้วยธรรมเนียมที่ต่างกัน — แต่เป็นคลาสเดียวที่ route ข้างเคียงสองตัวรู้วิธีเพิ่มการตรวจนี้ ในขณะที่ตัวที่สามไม่ทำ
+
+และนี่คือการเขียนของ user session จริง ๆ ไม่ใช่การเรียกระหว่างเซอร์วิสที่ `AppIdGuard` เพียงตัวเดียวจะเป็น gate ที่สมเหตุสมผล: client `api` ที่ใช้ร่วมกันส่งทั้ง bearer token ของผู้ใช้เอง (`Authorization: Bearer ${token}` จาก `localStorage` แนบทุกคำขอโดย request interceptor) และค่า `x-app-id` เดียวที่กำหนดตอน build (`import.meta.env.REACT_APP_API_APP_ID` ค่าเดียวกันสำหรับทุกผู้ใช้ของ SPA build ที่ deploy ไว้) ในทุกคำขอ (`../carmen-platform/src/services/api.ts:8,23`) — ดังนั้นการที่ `AppIdGuard` ผ่านบอก backend ได้แค่ว่า "มี session ของ SPA build นี้กำลังเรียกอยู่" ไม่เคยบอกอะไรเลยว่าผู้ใช้คนนั้นถือ permission อะไรบ้าง
+
+พูดให้เป็นรูปธรรม: session ที่ถือ `data_import.manage` แต่**ไม่มี** `cluster.update` จะถูก frontend กั้นไม่ให้เปิด `/business-units/:id/edit` ได้เลย แต่**ไม่ถูกกั้น**ทั้งที่ frontend (ไม่มี `<Can>` gate ครอบปุ่ม Apply ของ `CompanyProfilePanel`) และที่ backend จากการเขียนฟิลด์เดียวกันผ่านขั้นตอน Company Profile ของ wizard นี้ — คีย์ `cluster.update` ที่ดูเหมือนควรจะ gate การเขียนนี้ด้วย ไม่เคยถูกตรวจบนเส้นทางนี้เลย นี่คือช่องว่างของ endpoint `PUT` ที่ใช้ร่วมกันเอง ไม่ใช่สิ่งที่เกิดเฉพาะกับ wizard นี้ — ดู [Business Units](/th/platform/business-units) §4 สำหรับ pointer ย้อนกลับจากตาราง permission ของโมดูลนั้นเอง
 
 ### 3.6 ช่องโหว่ที่ยังคงอยู่จริงในการแมป error status ของ `import/stream`
 
@@ -128,11 +134,12 @@ regex ตัวกลางตรงกับถ้อยคำความล�
 - `src/i18n/en.ts:3188-3283`, `src/i18n/th.ts:2179-2273` (namespace `tenantImport`) — ทุกข้อความที่อ้างในหน้านี้และ [UI Screens](/th/platform/tenant-imports/ui-screens); `src/i18n/en.ts:22,88` / `th.ts:21,85` (ป้าย nav `dataImport`)
 - `src/types/index.ts:332-418` — `PreconfigStepMeta`, `PreconfigCheckReport`, `PreconfigPreview`, `PreconfigImportOptions`, `PreconfigImportSummary`, `PreconfigImportEvent`
 - `src/utils/docVersion.ts` — helper optimistic-lock ที่ปุ่ม Apply ของ Company Profile ใช้ซ้ำ
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/preconfig-imports/{preconfig-imports.controller,preconfig-imports.service}.ts` — gateway proxy, decorator permission ทั้งสี่, การตรวจไฟล์อัปโหลด (`assertXlsx`), การแปลง options (`parseOptions`), และ `resolvePreStreamErrorStatus()` ที่ค้าง (บรรทัด 47-79, 91-95, 224)
+- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/preconfig-imports/{preconfig-imports.controller,preconfig-imports.service}.ts` — gateway proxy, decorator permission ทั้งสี่, การตรวจไฟล์อัปโหลด (`assertXlsx`), การแปลง options (`parseOptions`), และ `resolvePreStreamErrorStatus()` ที่ค้าง (บรรทัด 42-43,48-85, 91-95, 224)
 - `../carmen-turborepo-backend-v2/apps/micro-business/src/preconfig-import/{preconfig-import.service,preconfig-catalog,preconfig-workbook,preconfig-lookup,preconfig-related,preconfig-types}.ts` — ตัวนำเข้าเอง: การ resolve connection, แคตตาล็อกสิบสองขั้นตอน, การแปลงไฟล์/ค่า, การ resolve lookup และการย้อน creation ที่ staged ไว้, การสร้างแถวลูก, การแบตช์/retry, และการเขียน audit `tb_activity`
 - `../carmen-turborepo-backend-v2/apps/micro-business/src/tenant/tenant.service.ts:480-515` — `resolveConnection`/`resolveConnectionForBusinessUnit`, ข้อความความล้มเหลวสี่แบบที่อ้างใน §3.6
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_business-units/platform_business-units.controller.ts:66-70,374-375` — guard ระดับคลาสของ controller Business Units และ `AppIdGuard` ของ route `PUT` (§3.5)
+- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_business-units/platform_business-units.controller.ts:66-70,282-283,374-375,633-634` — guard ระดับคลาสของ controller Business Units, ด่านเฉพาะ `AppIdGuard` ของ route `PUT`, และคู่ `PlatformPermissionGuard` + `@RequirePlatformPermission` ของ route `POST`/`DELETE` ข้างเคียง (§3.5)
 - `../carmen-turborepo-backend-v2/apps/backend-gateway/src/common/guard/app-id.guard.ts` — สิ่งที่ `AppIdGuard` ตรวจจริง (allowlist `x-app-id` ไม่ใช่ permission ของผู้ใช้)
+- `../carmen-platform/src/services/api.ts:8,23` — header `x-app-id` เริ่มต้นที่กำหนดตอน build และ interceptor ที่แนบ bearer token ต่อคำขอของ client ที่ใช้ร่วมกัน อ้างใน §3.5 เพื่อยืนยันว่านี่คือการเขียนของ user session จริง
 - `../carmen-turborepo-backend-v2/packages/nest-result/src/base-microservice-controller.ts:194-225` — การแมป `ErrorCode` → `HttpStatus` ทั่วไปที่ `check`/`preview`/`steps` ใช้ เทียบกับของ `import/stream` ที่เขียนมือเอง
 - Commit `af2437074` (`../carmen-turborepo-backend-v2`, 2026-08-13) — การ refactor connection แบบ database-pool ที่อยู่เบื้องหลังข้อค้นพบใน §3.6
 - `../carmen-platform-e2e/tests/` — ยืนยันแล้วว่าไม่มี suite `tenant-imports`/`preconfig-import`

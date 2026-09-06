@@ -2,7 +2,7 @@
 title: Business Units
 description: Per-property/per-hotel entity edited on a six-tab form (General/Location/Formats/Technical/Users/Licenses) covering identity, formats, database-pool assignment, and BU-scoped user and license rosters.
 published: true
-date: 2026-09-06T19:00:00.000Z
+date: 2026-09-06T23:45:00.000Z
 tags: platform/business-units, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -84,6 +84,8 @@ Access is permission-based ([Platform RBAC](/en/platform/rbac)) — but with the
 The scoped (`clusterId`) gates resolve against the BU's **parent cluster** — a role assignment scoped to cluster A renders row Edit/Delete/View History only on BUs whose `cluster_id` is A, while the unscoped route guards pass on any cluster-scoped grant. Note the `UNRESOLVED_CLUSTER_ID` sentinel: when `formData.cluster_id` is empty (a cluster-less BU, or before the Cluster dropdown has a value in create mode), the check is deliberately kept on `checkPermission`'s scoped branch (fail closed) rather than falling through to the broad "any cluster" branch.
 
 A second, narrower permission gates one control **inside** the page-wide `canEdit` boundary: the Database Pool picker on the Technical tab additionally requires `database_pool.read` — a session with `cluster.update` on this BU but not `database_pool.read` still edits everything else, but sees the pool name and schema read-only with a note explaining why. The resolution algorithm, bootstrap exception, and super-admin bypass live in [rbac permissions](/en/platform/rbac/permissions).
+
+**A third gap, on the backend this page's edit form writes to, not on the frontend gate above:** the `PUT` endpoint behind `cluster.update` (`/api-system/business-units/:id`) is itself guarded only by an app-identity allowlist (`AppIdGuard`), not by a `cluster.update` RBAC check — unlike the sibling `POST`/`DELETE` routes on the same controller, which do stack `PlatformPermissionGuard` + `RequirePlatformPermission`. Full trace, found via [Tenant Imports](/en/platform/tenant-imports)' Company Profile step (which writes through this same endpoint): [Tenant Imports](/en/platform/tenant-imports) §3.5.
 
 ## 5. Related Modules
 
