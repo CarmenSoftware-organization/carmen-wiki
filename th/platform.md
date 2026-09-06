@@ -1,8 +1,8 @@
 ---
 title: Carmen Platform
-description: ภาพรวมของผลิตภัณฑ์ Carmen Platform admin — จุดเริ่มต้นของ book นี้ จัดเรียงตามแปดกลุ่ม nav ของ sidebar ในตัว SPA เอง บวก persona cluster-admin แยกต่างหาก
+description: ภาพรวมของผลิตภัณฑ์ Carmen Platform admin — จุดเริ่มต้นของ book นี้ จัดเรียงตามแถว Dashboard ที่ไม่อยู่ในกลุ่มใด บวกเจ็ดกลุ่ม `groupKey` ของ sidebar ใน SPA เอง (รวมเป็นแปดส่วน) บวก persona cluster-admin แยกต่างหาก
 published: true
-date: 2026-09-06T22:00:00.000Z
+date: 2026-09-06T23:30:00.000Z
 tags: book/platform, home
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'

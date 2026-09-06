@@ -1,8 +1,8 @@
 ---
 title: Carmen Platform
-description: Overview of the Carmen Platform admin product — entry point for the book, organized by the SPA's own eight sidebar nav groups plus the separate cluster-admin persona.
+description: Overview of the Carmen Platform admin product — entry point for the book, organized by the ungrouped Dashboard row and the SPA's own seven sidebar `groupKey` groups (eight sections in total), plus the separate cluster-admin persona.
 published: true
-date: 2026-09-06T22:00:00.000Z
+date: 2026-09-06T23:30:00.000Z
 tags: book/platform, home
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'

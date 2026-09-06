@@ -2,7 +2,7 @@
 title: Business Unit — UI Screens
 description: BusinessUnitManagement (list) and the six-tab BusinessUnitEdit (General/Location/Formats/Technical/Users/Licenses) — code auto-generation, the schema-name randomizer, the Licenses tab split out of Users, and the database-pool picker that replaced db_connection.
 published: true
-date: 2026-09-05T10:00:00.000Z
+date: 2026-09-06T23:30:00.000Z
 tags: book/platform, business-units, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -159,7 +159,7 @@ The card is **read-only summary + links** — there is no inline seat-editing fo
 - A summary line: "N seats from M active license(s)" (`sumActiveLicenses()`/count of rows where `licenseStatus() === 'active'`).
 - A cluster-pool line, mirroring the Users tab's own indicator (§4.6), same over-limit styling.
 - A warning badge per license that is expiring soon (`isExpiringSoon()`, threshold from `useExpiryThresholds()` — configurable per platform config, not hardcoded — showing "N days left").
-- **Manage licences** button — always shown, links to `/licenses/:clusterId#seats` (the License Center — a separate, not-yet-documented `licenses` module). The href is supplied by the parent page, not built here, because this same card is reused in a shell (cluster-admin) that cannot reach `/licenses/*` at all (no `subscription.read`) — a caller that can't route there passes a fallback href.
+- **Manage licences** button — always shown, links to `/licenses/:clusterId#seats` (the License Center — a separate [Licenses](/en/platform/licenses) module). The href is supplied by the parent page, not built here, because this same card is reused in a shell (cluster-admin) that cannot reach `/licenses/*` at all (no `subscription.read`) — a caller that can't route there passes a fallback href.
 - **New subscription button — new since the last sync, PR #275.** Rendered only when the parent page supplies a `createHref` (which it does only when the session holds `subscription.manage` **and** a cluster is set on the BU — the button and the destination route `/licenses/subscriptions/new` are gated by the exact same permission, `subscription.manage`, deliberately not this page's own `canEdit`: editing a BU and selling it a licence are different authorities, and a cluster-admin session has the first without the second). The link pre-fills `cluster_id` and `business_unit_id` as query parameters so the full-page subscription form opens already scoped to this BU.
 - A footer note: "Seats are managed in the License Center" — reinforcing that this tab does not itself create or edit license rows.
 
