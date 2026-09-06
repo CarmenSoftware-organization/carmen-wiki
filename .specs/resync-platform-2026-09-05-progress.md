@@ -143,3 +143,156 @@ the 15 no-e2e modules in Phase 3 must be sourced from implementation alone and m
 | 28 | `report-form-groups` | **Migration** — content already existed under the wrong parent (`report-templates/form-groups`), previously verified against source and passed review in the `report-templates` task; the last of the plan's 16 new modules | 1 page written at the new top-level path, migrated from the sub-page rather than written green-field (single-page module, no sub-pages) | 1 page mirrored in full Thai, migrated from its own sub-page mirror — **not** derived from the EN migration: per the brief's own flag, the TH sub-page (17.9 KB) was larger than the EN one (11.3 KB). Line-by-line comparison found both were exactly 78 lines and section-for-section identical in content — the byte gap is fully explained by Thai UTF-8 multi-byte encoding of an already-faithful translation, not by any real informational surplus in either direction; nothing was added to EN or dropped from TH. | Re-verified rather than trusted, against `../carmen-platform` (`ReportFormGroupManagement.tsx`, `reportFormGroups/GroupCard.tsx`, `constants/reportGroups.ts`, `services/reportTemplateService.ts`, `utils/docVersion.ts`, `utils/audit.ts`, `components/AuditMeta.tsx`, `components/nav/platformNav.ts`, `App.tsx`, and the `i18n/en.ts`/`th.ts` catalogs) and the backend migration (`20260723120000_print_form_default/migration.sql`). Found and fixed one real citation error carried over from the prior review: the confirm-dialog text was quoted with single quotes around a placeholder invented as `{old name}` — the actual i18n literals (`setDefaultConfirm`/`setDefaultReplaces`) use double quotes and the same `{{name}}` key twice (the second fill is the *current* default's name, not the target's) — fixed to quote the literal exactly, with the disambiguation stated unquoted rather than folded into the quote. Corrected the `App.tsx` route citation from `:323-329` to `:322-329` (the `<Route` opening tag itself starts at 322). Re-confirmed rather than re-asserted that `latestActor()`'s "Created"/"Updated" verb is an i18n **key**, not a hardcoded string — source's own comment on that function describes a prior bug where it was one, producing mixed-language Thai lines; the existing page's rendering description was already correct. New, previously undocumented detail added from direct source reading: the paged fetch's `MAX_PAGES = 50` runaway guard; `setGroupDefault`'s defensive `if (current.id === target.id) return` self-select guard, confirmed unreachable from this screen's own call site since `requestDefault` already excludes the target's id when computing `current`; the kebab menu's disabled Deactivate item getting a literal `" (default)"` suffix appended, not just a disabled state; and a genuinely new edge case found by reading the grouping and `GroupCard` filter logic side by side — a fixed report-group card whose rows are all hidden by "Active only" still renders an (ambiguously worded) empty card, while a legacy-code card in the identical situation disappears entirely, because only the legacy branch's visibility test is `rows.length > 0` computed after the same filter. Reconstructed and cited the full print-template-mapping succession commit sequence — `cd4fc5d` (group default exposed + `IA` added, 2026-07-23), `bf7a28a` (page added), `ea699bc` (`GroupCard` added), `aa454d3` (`FORM_REPORT_GROUPS` extracted to a shared constant), `2a73a4d` (Add pre-fill), `b707b0a` (pagination fix), all 2026-07-24 — that the prior sub-page had not enumerated; this agrees with, and adds granularity to, the succession note already carried on `report-templates.md` §1/§5 and `changelog.md` §6, re-read (not merely cited) to confirm agreement. Reduced the old sub-page to a short pointer keeping only what is genuinely report-templates-specific — the shared `tb_report_template` columns (`template_type`/`report_group`/`is_default`) and the Add/Edit hand-off to `ReportTemplateEdit.tsx` — and rewrote every sentence on `report-templates.md`/`changelog.md`/`landing.md`/`rbac/permissions.md`/`report-templates/{permissions,data-model}.md`/`sql-workbench.md` (both locales) whose link or framing depended on the sub-page holding the full account, following the `Sub-pages: 5` / "Pages in This Module" pointer-annotation pattern Task 21 established (count unchanged; the file still exists, now as a pointer) rather than deleting the entry. **Fix round (reviewer):** confirmed all six succession-commit hashes/dates/diffstats, the confirm-dialog quote correction against `en.ts:4080-4081`, the `App.tsx:322-329` route-line fix, every previously-undocumented detail (`MAX_PAGES=50`, the unreachable self-select guard, the `" (default)"` suffix, the fixed-vs-legacy Active-only asymmetry and its search-term edge case), and the 78/78-lines-before locale finding — all independently verified correct, no corrections needed to any of that. One Important and two Minor findings, all fixed: (1) **Important** — the migration had dropped two still-true claims from the old page's §2 Screen Layout: the dev-only `DevDebugSheet` (`ReportFormGroupManagement.tsx:18,316-318`, shows the raw **first-page-only** response) and the "no separate Default column badge here — it lives on the Report Templates list page" cross-reference; both restored on both locales, verified against source rather than re-pasted from the old text. Prompted a full section-by-section diff of the old sub-page (as of `a7ef98c`) against the new pages, which turned up two more silently-dropped, still-true claims beyond what the reviewer named: the `PageHeader` subtitle text (`Manage the default form template for each report group`, quoted verbatim from `en.ts`) and the card grid's two-column layout at large screens (`lg:grid-cols-2`, confirmed in `ReportFormGroupManagement.tsx`) — both restored on both locales; no other old-page claim was found missing. (2) **Minor** — fixed the `getAll` citation from `:47-54` to `:49-54` (the function itself starts at line 49; 47–48 are a blank line and the `reportTemplateService = {` declaration) on both locales. (3) **Minor** — folded into the Important fix above (the Default-badge cross-reference). Both static checks re-run clean before committing: the frontmatter loop (18 files, exit 0) and the `dateCreated` guard (empty diff — both `report-form-groups.md` files' `dateCreated` untouched). | **None — confirmed no e2e suite exists** (`../carmen-platform-e2e/tests/` has no `report-form-groups`/`form-groups` directory, HEAD `a8e3b31` 2026-08-25; `tests/report-templates/`'s two specs, read directly, do not cover this screen either) | Not applicable — migration/re-verification task, no prior UI sync to compare against; screenshots deferred per plan | `133e1a0`, `a83caf7`, `613ba16` |
 | 29 | Book landing pages (`en/platform.md`, `th/platform.md`) — front-door rebuild, not a module task | Rebuilt around the SPA's own eight nav-group sections, re-verified fresh against `../carmen-platform/src/components/nav/platformNav.ts` (which changed mid-plan) rather than trusted from the brief — found **zero** discrepancies: brief's group membership/order matches source exactly (Dashboard; Organization: clusters/business-units/tenant-migrations/tenant-imports/users; License Management: licenses/license-catalog; Content: report-templates/report-form-groups/news/broadcasts; Analytics: usage-analytics/activity-events; Scheduling: cronjobs; Platform: platform-config/email-settings/applications/rbac/user-platform/super-admins/feature-flags; Database: platform-migrations/sql-workbench/database-pools). Group labels pulled from `src/i18n/en.ts`/`th.ts`'s `navGroup` block. Added a 9th section for the `cluster-admin` console framed explicitly as a separate persona with its own nav file (`clusterAdminNav.ts`), not a menu group. Added a 10th "Account & Product Chrome" section for `profile`/`landing`/`changelog` — pages outside both navs that are still heavily cross-linked from `dashboard.md`/`cluster-admin.md`/`users.md` and would otherwise fall off the book's front door; the brief didn't mention them, kept rather than dropped. Deliberately stated no aggregate module/page count on the page itself — the filesystem count (20 folder-shaped modules + 9 standalone-shaped pages, of which 6 are nav items and 3 are not) didn't reconcile cleanly to a single "N modules" framing, so none was asserted. | Both pages full rewrites (not a translation pass): EN and TH module lists diffed programmatically after locale-prefix normalization — identical set, identical order. TH `description` is native Thai, not translated-last filler. | **Step 1b sweep (not optional, per brief) found more than the brief's own worked example.** Grepped the whole book for "not yet"/"no wiki page"/"does not exist yet"/"as of this pass" plus (since those four under-catch) "deferred to"/"slated to become"/"future standalone"/"forward link". Fixed 3 distinct stale sentences across 9 file locations: (1) `landing.md` + TH — "Feature Flags is not yet its own wiki module as of this pass"; (2) `applications/permissions.md` + TH — "not yet a documented module in this wiki" for Feature Flags; (3) `clusters/permissions.md` (EN only, no TH equivalent text) — "forward link, not yet written as of this sync" for feature-flags; (4) `rbac.md` + TH, four spots (At-a-Glance line, Scope note, §1 Overview, "Summarized here only" lead-in) — described `user-platform`/`super-admins` as future modules the plan merely "lists" and defers verification of, when both now exist as full pages (verified `user-platform`'s own `ui-screens.md`/`permissions.md` and `super-admins.md`'s 11-section depth before rewording); (5) `rbac/ui-screens.md` + TH — same deferral language in §5. Items 4–5 were **not** caught by the four literal brief-listed phrases — found only by also searching "deferred to"/"slated to become". Confirmed still-true and left alone: two `sql-workbench.md` "as of this pass" hits about a different book (Inventory) being out of this task's scope; `landing.md`'s own "Confirmed Drift" section (a real product bug in `Landing.tsx`'s hardcoded copy, not a wiki gap); all "Screenshots deferred" TODOs (standing plan-wide deferral); the brief's own worked example (`cluster-admin` on `profile.md`) was already fixed in an earlier round, confirmed gone. Read through the full ~190 remaining "not yet"/"ยังไม่" hits book-wide; the rest are ordinary product-behavior prose, not wiki-module-existence claims. Link resolver (brief's Step 2 script) run against both landing pages: all links resolve; re-run against all 9 sweep-fixed files (which gained new internal links): all resolve. `.specs/verify_frontmatter.py` clean on all 11 touched files; `dateCreated` diffed unchanged on all 11, `date` bumped on all 11. Full detail in `task-29-report.md`. | Not applicable — no e2e suite covers a landing page; not a module verification task | Not applicable — text-only page rebuild, no screenshots | `071b460` (sweep fixes), `f520aed` (landing rebuild) |
 | 31 | **COMPLETE — implementer stopped correctly; controller finished it with the user's approval.** — `scripts/nav-overrides.yaml` + dev Wiki.js push, not a module task | Reshuffled the `platform:` book's nav groups from 6 old groups into the 9 sections `en/platform.md` documents (Organization/License Management/Content/Analytics/Scheduling/Platform/Database/Cluster Admin Console/Account & Product Chrome — the last a residual group for `profile`+`changelog` once `users`/`rbac` moved to their real groups), adding all 16 new modules with `label_th` (kept = `label_en`, the book's pre-existing convention for all 10 old entries, verified against those pages' own bilingual TH frontmatter titles which the nav deliberately doesn't use). `print-template-mapping` confirmed absent. 26 total modules, no duplicates, no link dropped — only regrouped. `pytest scripts/`: **68 passed**. | N/A — nav config + tracking docs only, no page content touched | **Found and fixed a glob bug in the brief's own push command**: `'en/**/*.md'`/`'th/**/*.md'` does not match root-level `en/platform.md`/`th/platform.md` (no subdirectory nesting) — this silently excluded the Task 29 landing-page rebuild from the first push run, which is why a mid-task external check found `/en/platform` still serving old content; not a token/scope/backgrounding problem (proved with direct `curl` re-fetch showing Task-29-only strings live after the corrected push). Corrected pathspec: `git diff --name-only main...HEAD \| grep -E '^(en\|th)/.*\.md$'`. Full push, 148 files: **56 OK, 75 MISS, 17 FAIL** (retried once per policy — all 17 failed identically, deterministic). MISS = all 16 new modules + sub-pages: `push_pages.py` only calls the Wiki.js `pages.update` mutation (its own docstring: a git-storage-pull bypass tool) and has no page-create path — confirmed live, `/en/platform/licenses` and `/en/platform/cronjobs` both 404. FAIL = pre-existing `description:` frontmatter over Wiki.js's 255-char column limit (280–336 chars measured) on `broadcasts`+3 sub-pages (both locales), `business-units/ui-screens`, `news/ui-screens`, `profile` (both locales), `rbac`+`permissions` (both locales), `report-templates/ui-screens` — a content defect from earlier module tasks, first surfaced here because this is the first live push. Also noted, not fixed: repo-root `.env` and `scripts/.env` carry different `WIKI_API_TOKEN` values; shell-sourcing order means the root one was used for every call this task (and evidently has adequate scope — 56 real successful updates prove it), but the mismatch should be reconciled. Dry-run (`sync_nav.py --mode=build --dry-run --verbose`) read in full: 64 items/locale, structurally correct, no `[fallback]` lines possible (build mode has no label-resolution step at all — verified by reading `_run_build_mode`). **Not applied**: publishing now would put 16+ new sidebar links live against 404 pages, and 92 of 148 pages are not yet in their intended state — matches the brief's own stop condition ("failures on more than a couple of pages") and its explicit "an incomplete sidebar is worse than a delayed one." Committed only `scripts/nav-overrides.yaml` + this log row (tested, no live effect). Full detail, per-page result table, and recommendation in `task-31-report.md`. **Controller completion:** both blockers were ruled on and fixed — `8f81107` shortened all 39 over-long descriptions (zero now exceed 255 chars) and `98b18fc` added the `pages.create` path (pytest 68 → 72). A second partial run was traced to a real bug in `push_pages.py`: `gql()` has a 60s socket timeout with no retry and no catch, so an unhandled `TimeoutError` killed the 148-file run after 28 pages — not a property of the pages that were missing. The remaining 120 files were pushed in four foreground batches. Final: **148/148 (74 created, 74 updated, 0 failed)**; 32/32 new module landings return 200 in both locales. The controller then found that the 8 pages of the **deleted** `print-template-mapping` module were still live — Task 11 removed them from git, but the tooling had no delete path at all, so nothing had ever removed them from the instance; once the nav was rebuilt they would have become orphaned pages documenting a feature removed from the product on 2026-07-24. Both remaining decisions were put to the user, who chose to apply the nav build and to delete the stale pages. Nav build applied: `updateTree succeeded`, 64 items per locale, 9 groups, 26 modules, matching the dry-run read in full twice. Delete path added (`1369d26`) and all 8 pages deleted — gone from the DB and 404 over HTTP. Worth recording for whoever next deletes a page: Wiki.js drops the DB row **before** syncing its storage targets, so the four EN deletes were reported `FAIL` with a git-storage `pathspec ... did not match any files` error *after* the delete had already committed; the script now re-reads the index before believing a failure. | Out of scope for this task | Not applicable — nav/config task, no page content rendered | (pending — committed after this row) |
+| 32 | Final verification + pull request — not a module task | Ran every static check across the whole branch, both-directions nav reconciliation, live spot-checks, and the residue accounting. **Step 1** (corrected pathspec `git diff --name-only main...HEAD \| grep -E '^(en\|th)/.*\.md$'` — the plan's own `'en/**/*.md'` glob is the Task 31 bug and misses `en/platform.md`/`th/platform.md`; confirmed 156 vs 154 paths): 156 changed `.md` paths = 70 added + 78 modified + 8 deleted (`print-template-mapping`); `verify_frontmatter.py` **OK on all 148 existing files, exit 0**; no `-dateCreated` line in the diff of any surviving file. **Step 2**: EN/TH tree parity `diff` prints nothing (74 `.md` per locale); no link anywhere in either locale targets `/platform/print-template-mapping`; all 26 remaining `print-template-mapping` string matches in `en/`/`th/`/`scripts/` are deliberate historical prose about the removal (report-form-groups' succession story, rbac/report-templates "Removed 2026-07-23/24" notes, landing.md's still-true `itemPrintMapping` observation, cronjobs/platform-migrations' verbatim e2e directory listings) plus two `platform_pages.yaml` description lines of the same kind — nothing stale. **One real stale reference found outside the grep's stated scope and fixed**: `README.md`'s illustrative platform tree still listed `print-template-mapping` as an example module; replaced with `licenses, cluster-admin, cronjobs`. Link resolver re-run across all 150 platform pages (not just the two landings): **1,800 absolute links, all resolve**. **Step 3**: two-way nav reconciliation recorded below. **Step 4**: `curl` (no browser tooling available) — one page per nav group in both locales, 20 fetches, all HTTP 200 with an expected source-identifier string present on each; all 8 deleted pages 404; nav tree re-read live via GraphQL — 64 items per locale, the 9 platform group headers exactly as `nav-overrides.yaml` declares them, 27 platform links per locale (26 modules + the book landing). | Same 20-fetch check run in `/th/` alongside `/en/`; the only string mismatch was `th/platform` not containing the literal "Cluster Admin Console" — correct, the TH landing translates the heading to "คอนโซล Cluster Admin", confirmed present. | No new claims written; this task fixed one stale README reference and verified, not authored | Not applicable — verification task | Not applicable — no page content changed | (pending — committed with this row) |
+
+## Task 32 — Step 3: two-way nav reconciliation
+
+Source: `../carmen-platform` HEAD `157a65e`. `platformNav.ts` has **26** entries;
+`clusterAdminNav.ts` has **4**. The book has **29** top-level pages per locale.
+
+**Direction A — every nav entry maps to a wiki module (30/30):**
+
+| Nav path | Wiki module |
+|---|---|
+| `/dashboard` | `dashboard` |
+| `/clusters` | `clusters` |
+| `/business-units` | `business-units` |
+| `/tenant-migrations` | `tenant-migrations` |
+| `/tenant-imports` | `tenant-imports` |
+| `/users` | `users` |
+| `/licenses` | `licenses` |
+| `/license-feature-groups` | `license-catalog` (documented merge — two nav rows, one screen) |
+| `/license-features` | `license-catalog` (same) |
+| `/report-templates` | `report-templates` |
+| `/report-form-groups` | `report-form-groups` |
+| `/news` | `news` |
+| `/broadcasts` | `broadcasts` |
+| `/analytics` | `usage-analytics` |
+| `/activity-events` | `activity-events` |
+| `/cronjobs` | `cronjobs` |
+| `/platform/configs` | `platform-config` |
+| `/platform/email-settings` | `email-settings` |
+| `/applications` | `applications` |
+| `/platform/roles` | `rbac` |
+| `/platform/user-platform` | `user-platform` |
+| `/platform/super-admins` | `super-admins` |
+| `/platform/features` | `feature-flags` |
+| `/platform/migrations` | `platform-migrations` |
+| `/sql-workbench` | `sql-workbench` |
+| `/platform/database-pools` | `database-pools` |
+| `/cluster-admin/:id/cluster` | `cluster-admin` |
+| `/cluster-admin/:id/business-units` | `cluster-admin` |
+| `/cluster-admin/:id/licenses` | `cluster-admin` |
+| `/cluster-admin/:id/users` | `cluster-admin` |
+
+No nav entry is undocumented. `license-features` + `license-feature-groups` collapse to
+one module by the Task 1 ruling; the four cluster-admin rows collapse to one module because
+they are one console.
+
+**Direction B — every wiki module maps to a backing route (29/29):**
+
+The 26 nav-backed modules above account for 26 of the 29 top-level pages. The remaining
+**three have no nav entry, and each is expected**:
+
+| Page | Route | Why it has no nav row |
+|---|---|---|
+| `landing` | `/` (`src/App.tsx:99`) | Public pre-login marketing route; the sidebar does not exist on it. |
+| `changelog` | `/changelog` (`src/App.tsx:101`) | Public route, not wrapped in `PrivateRoute`; reached from the footer/version badge (`Layout.tsx:282`, `VersionBadge.tsx:20`, `Landing.tsx:136`), never from the sidebar. |
+| `profile` | `/profile` (`src/App.tsx:563`), also `/cluster-admin/:clusterId/profile` | Reached from the header avatar menu (`HeaderUserMenu.tsx:52`), which picks the cluster-scoped path when the caller is in the cluster-admin console. Acting on one's own account, so it has no permission key and no menu row. |
+
+Note the earlier brief's assumption that `sql-workbench` and `dashboard` also lack nav
+entries is **wrong** — both have one (`platformNav.ts:54` and `:10`). The one route with no
+nav entry that is *not* its own module is `/platform/category-permissions` (`App.tsx:427`),
+documented inside `rbac` and reachable by any authenticated platform user; that asymmetry is
+recorded on `rbac.md` and is a property of the product, not a documentation gap.
+
+## Task 32 — Step 4b: residues this re-sync deliberately did not fix
+
+**1. Legacy relative links.**
+
+The plan's stated baseline (768 relative links / 129 files / 2,902 absolute) **could not be
+reproduced** by any measurement at `main` — `](./…)` repo-wide gives 1,753/271, restricted
+to `.md` targets 1,748/269, and the closest single bucket is `en/inventory` at 668/103. The
+baseline appears to predate this branch point or to have used a scope nobody recorded. What
+follows is measured consistently at both ends, `main` → HEAD, and is the number to carry
+forward.
+
+| Scope | `main` | HEAD | Delta |
+|---|---|---|---|
+| **Platform book** relative `.md` links (`](./…md)`, `](../…md)`) | 194 across 43 files | **4 across 1 file** | **−190 links, −42 files** |
+| Platform book absolute `/en\|/th` links | 617 | 1,800 | +1,183 |
+| Repo-wide `](./…)` (both books) | 1,753 across 271 files | 1,609 across 230 files | −144 links, −41 files |
+
+The single remaining platform residue is `en/platform/report-templates/xml-spec.md`
+(3× `](./data-model.md)`, 1× `](./ui-screens.md)`) — the one page Task 9 read but did not
+edit, so the convert-on-edit ruling never reached it. Its TH mirror is already clean. The
+inventory book was never in this plan's scope and holds essentially all of the remaining
+1,605 repo-wide relative links.
+
+**2. A false security claim still live in the *Inventory* book.**
+
+`en/inventory/system-config/query-dataset.md` (and its TH mirror) still tells QA that four
+SQL-Workbench endpoints — `POST save`, `GET db-objects`, `GET db-objects/definition`,
+`DELETE db-objects` — carry no permission guard beyond authentication, at §0 (owner line),
+§2, the Edge Cases table ("succeed for any authenticated caller"), and §7. That was true
+when written; it stopped being true on **2026-08-20**, when
+`525597688aa556526009e2a93bd2d9ae51014b6f` in `carmen-turborepo-backend-v2`
+(*fix(security): คุมสิทธิ์ 4 endpoint ของ SQL Workbench ที่เปิดให้สมาชิก BU ทุกคน*, closing
+issue #321) added `@UseGuards(PlatformPermissionGuard)` + `@RequirePlatformPermission` to
+all four: `sql_workbench.read` on the two `GET`s, `sql_workbench.manage` on `save` and the
+`DELETE`. The Platform book's own `sql-workbench.md` §4 was corrected in this plan and says
+so explicitly; the Inventory page was out of scope. **It currently tells testers a hole
+exists that does not.** Follow-up: apply the same correction to
+`en/inventory/system-config/query-dataset.md` and `th/…`.
+
+**3. The `carmen-platform-e2e` suite is broadly stale.**
+
+Of the suites read during this plan, **three** were current — `broadcast-compose.spec.ts`,
+`landing.spec.ts`, `changelog.spec.ts` (the plan text names only the first). Confirmed
+stale, with the specific reason:
+
+| Suite | What no longer exists |
+|---|---|
+| `clusters` (7 specs) | `ClusterEditPage.ts` asserts a page-level Edit/read-only toggle predating the July scrollspy revision; `cluster-create.spec.ts`'s `fillForm()` never fills the now-required `licensed_bus`/`license_end_date`. |
+| `business-units` (6 specs) | `business-unit-create.spec.ts` fills a `code` field PR #279 removed outright, and targets a "Basic Information section" predating the 6-tab layout; last touched 2026-06-11. |
+| `users` (6 specs) | "minimum required fields" fills only `username`/`email`; `firstname`/`lastname` are now required and preflight validation rejects it. |
+| `roles`, `permission-catalog` (3 specs) | `permission-catalog.spec.ts` navigates the dead `/platform/permissions` route; `role-crud.spec.ts` drives the permission picker as a checkbox, deleted with the move to `PermissionGrid`. |
+| `applications` (4 specs) | `application-delete.spec.ts` asserts a `role="alert"` "Failed to load application" banner; source now renders an "Application not found" `EmptyState`. |
+| `report-templates` (2 specs) | `report-template-crud.spec.ts` never fills `template_type`, required with inline validation since `9cfbf72` (2026-07-21) — the create test cannot reach the toast it asserts. |
+| `user-platform` (2 specs) | Both predate the 2026-09-02 privilege-registry rewrite (`fc690cb`/`f6e91c9`); the page object's doc-comment insists there is no Add button, but a `user_platform.manage`-gated Grant Access button now renders for the suite's own super-admin session, and it expects an inline role panel where source now shows a `Sheet`. |
+| `dashboard` (8 tests) | Three conditional "click generic text, expect navigation" tests plausibly broken by the Activity Stream redesign. |
+| `print-template-mapping` | Tests a module deleted from the product on 2026-07-24 (`de11377`); the directory should be removed. |
+| `landing/` directory | Empty — no spec file, no history. The Task 1 source map's "e2e suite: `landing`" cell was wrong; corrected in the Task 10 row. |
+
+Fixing this is not this plan's job, but nobody else has looked. Hand to the e2e owners.
+
+## Task 32 — Step 5: final counts and follow-up work
+
+**Final counts.** 156 `.md` paths changed on the branch: 70 added, 78 modified, 8 deleted.
+148 live files pushed to `http://dev.blueledgers.com:3987/` — **74 created, 74 updated,
+0 failed**; 8 stale pages deleted (all 404). **No page failed to push.** Nav rebuilt and
+applied: 64 items per locale, 9 platform groups, 26 modules. 16 new modules; 1 module
+removed; 13 existing modules verified; both book landings rebuilt; the coverage checklist
+rewritten against SPA HEAD `157a65e`.
+
+**Follow-up work, in rough priority order:**
+
+1. **Fix the false security claim** in `en|th/inventory/system-config/query-dataset.md`
+   (Step 4b residue 2). It misleads QA today.
+2. **`push_pages.py`'s `gql()` has a 60-second socket timeout with no retry and no catch.**
+   An unhandled `TimeoutError` silently truncated the 148-file run after 28 pages during
+   Task 31 — the run simply stopped, with no error attributable to any page. Anyone running
+   a long push today can still be bitten. Wrap it, retry with backoff, and report the page
+   the timeout hit.
+3. **Wiki.js deletes the DB row before syncing storage targets**, so a delete can report
+   `FAIL` with a git-storage `pathspec … did not match any files` error *after* it has
+   already succeeded. `push_pages.py` now re-reads the index before believing a failure
+   (`1369d26`); anyone writing similar tooling needs the same guard.
+4. **`folder_id()` in `scripts/upload_assets.sh` still has no platform entries** — the
+   platform book cannot upload screenshots until it does.
+5. **The deferred platform screenshot round.** No platform capture pipeline exists; every
+   page in this book is text-only.
+6. **Convert the last 4 relative links** in `en/platform/report-templates/xml-spec.md`.
+7. **The e2e staleness table** in Step 4b residue 3, for the `carmen-platform-e2e` owners.
+8. **Reconcile the two `WIKI_API_TOKEN` values** (repo-root `.env` vs `scripts/.env`).
+   Noted in Task 31, still open; deliberately not touched here.

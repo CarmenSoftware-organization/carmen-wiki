@@ -39,7 +39,7 @@ carmen-wiki/
 │       │   └── permissions.md
 │       └── ...                    # business-units, users, rbac, profile, news,
 │                                  # broadcasts, applications, report-templates,
-│                                  # print-template-mapping, changelog
+│                                  # licenses, cluster-admin, cronjobs, changelog
 ├── th/                            # Thai translation tracking (mirrors en/ shape)
 │   ├── home.md                    # Locale landing (URL: /th/home)
 │   ├── inventory.md, inventory/
