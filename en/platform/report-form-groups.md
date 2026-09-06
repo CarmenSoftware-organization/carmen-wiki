@@ -2,7 +2,7 @@
 title: Report Form Groups
 description: The /report-form-groups screen — one card per fixed report_group code, each listing its "form"-type report templates with a set-as-default action on tb_report_template.is_default; the surface that, together with Report Templates' template_type field, replaced the deleted print-template-mapping module.
 published: true
-date: '2026-09-06T21:00:00.000Z'
+date: '2026-09-06T23:00:00.000Z'
 tags: book/platform, report-form-groups
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -43,15 +43,17 @@ Rows are bucketed by `t.report_group`, falling back to a literal `(none)` sentin
 
 ### 3.2 The Group Card
 
-The header (`PageHeader`, title bound to the `nav.formGroups` i18n key, "Form Groups") carries a **New Form Template** button, gated `report_template.create`, that navigates to `/report-templates/new` with router state `{ template_type: 'form' }`. Below it, a filter bar holds a search box (matches group code or template name, case-insensitive) and an "Active only" checkbox that filters rows *within* each card — it never hides an otherwise-matching card outright.
+The header (`PageHeader`, title bound to the `nav.formGroups` i18n key, "Form Groups"; subtitle reading exactly `Manage the default form template for each report group`) carries a **New Form Template** button, gated `report_template.create`, that navigates to `/report-templates/new` with router state `{ template_type: 'form' }`. Below it, a filter bar holds a search box (matches group code or template name, case-insensitive) and an "Active only" checkbox that filters rows *within* each card — it never hides an otherwise-matching card outright.
 
-The card grid (`GroupCard`, `../carmen-platform/src/pages/reportFormGroups/GroupCard.tsx`) renders one card per group:
+The card grid (`GroupCard`, `../carmen-platform/src/pages/reportFormGroups/GroupCard.tsx`, two columns on large screens via `lg:grid-cols-2`) renders one card per group:
 
 - the group code as a monospace outline badge, plus a template count — `"{n} template"` for exactly one, `"{n} templates"` otherwise (the catalog carries both forms; Thai uses one string for both, since Thai does not inflect for number);
 - a per-card **Add** button, gated `report_template.create`, that navigates to create with state `{ template_type: 'form', report_group: <code> }` (omitted when the card is the `(none)` bucket);
 - a warning banner reading exactly `No default set — pick one.` when the group has at least one template but none marked default;
 - one row per template: a radio button (checked when `is_default`), the template name with a compact audit line underneath, an **Active/Inactive** status badge, a **Standard**/`Custom` type badge, an **Edit** link to `/report-templates/:id/edit`, and — gated `report_template.update` — a kebab menu with a single toggle action;
 - an empty state, `No form templates` / `No form templates in {code} yet.`, when the card's row list (**after** the search/active-only filter is applied — see [Edge Cases](#5-edge-cases)) is empty.
+
+Rows within a card are sorted default-first, then by name (§3.1); the default's radio and the surrounding "Default" framing are purely presentational — there is no separate "Default" column badge on this screen. That badge lives on the Report Templates list page instead, per [Report Templates](/en/platform/report-templates) §1. A dev-only `DevDebugSheet` (`title="Form Groups — raw"`) shows the raw **first-page-only** API response — the same `firstResponse` captured once in §3.1's paging loop, not the full aggregated list.
 
 The audit line (added 2026-08-22, commit `f62a90ec54b72cde4fcbc9b77a17650b0e3c389b`) is rendered by `<AuditMeta variant="compact" verbKey={...} actor={...}>`, where `latestActor()` (`../carmen-platform/src/utils/audit.ts:101-108`) picks whichever of created/updated is more recent and returns an i18n **key** — `common.audit.created` ("Created") or `common.audit.updatedDate` ("Updated") — not a hardcoded string; the component composes it with the actor's relative time and name as `<verb> <relative> · <name>` (`AuditMeta.tsx:62-70`). This is a deliberate fix for a bug the source comments describe on `latestActor()` itself: an earlier version returned the literal English words, which produced mixed-language lines like "Updated 23 วันที่แล้ว" in the Thai UI once the relative-time part was translated but the verb was not.
 
@@ -111,7 +113,7 @@ No new **permission** keys were introduced for this module — it is gated entir
 - `../carmen-platform/src/pages/ReportFormGroupManagement.tsx` — the page: paged fetch, grouping, search/active filter, default-set and activate-toggle handlers.
 - `../carmen-platform/src/pages/reportFormGroups/GroupCard.tsx` — per-group card: radio, compact audit line (`latestActor()` + `AuditMeta variant="compact"`), badges, Edit link, kebab menu, empty state, no-default warning.
 - `../carmen-platform/src/constants/reportGroups.ts` — `FORM_REPORT_GROUPS`, the fixed 12-code canonical order.
-- `../carmen-platform/src/services/reportTemplateService.ts:81-99` — `setGroupDefault` (the two sequential `PUT`s); `:66-69` `update`; `:47-54` `getAll`.
+- `../carmen-platform/src/services/reportTemplateService.ts:81-99` — `setGroupDefault` (the two sequential `PUT`s); `:66-69` `update`; `:49-54` `getAll`.
 - `../carmen-platform/src/utils/docVersion.ts` — `getDocVersion`, `isVersionConflict`, `notifyVersionConflict`.
 - `../carmen-platform/src/utils/audit.ts:101-108` — `latestActor()`; `../carmen-platform/src/components/AuditMeta.tsx:62-70` — the compact-variant render.
 - `../carmen-platform/src/i18n/en.ts` (`reportFormGroups` block, "slice 6: Report Templates") — every UI string quoted on this page, read verbatim rather than paraphrased.

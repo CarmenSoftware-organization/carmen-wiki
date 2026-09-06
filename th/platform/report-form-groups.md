@@ -2,7 +2,7 @@
 title: กลุ่มฟอร์มรายงาน (Report Form Groups)
 description: หน้าจอ /report-form-groups — การ์ดหนึ่งใบต่อ report_group code ที่ตายตัว แต่ละใบแสดง report template ประเภท "form" พร้อม action ตั้งเป็น default บน tb_report_template.is_default — surface ที่ควบคู่กับฟิลด์ template_type ของ Report Templates เข้ามาแทนที่โมดูล print-template-mapping ที่ถูกลบไป
 published: true
-date: '2026-09-06T21:00:00.000Z'
+date: '2026-09-06T23:00:00.000Z'
 tags: book/platform, report-form-groups
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -43,15 +43,17 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ### 3.2 การ์ดกลุ่ม
 
-Header (`PageHeader` หัวข้อผูกกับ i18n key `nav.formGroups`, "Form Groups") มีปุ่ม **New Form Template** gate ด้วย `report_template.create` ที่ navigate ไป `/report-templates/new` พร้อม router state `{ template_type: 'form' }` ด้านล่างเป็นแถบ filter: ช่องค้นหา (จับคู่ code ของกลุ่มหรือชื่อเทมเพลต ไม่สนตัวพิมพ์เล็กใหญ่) และ checkbox "Active only" ที่ filter แถว *ภายใน* แต่ละการ์ด — ไม่เคยซ่อนการ์ดทั้งใบที่ตรงเงื่อนไขอื่น
+Header (`PageHeader` หัวข้อผูกกับ i18n key `nav.formGroups`, "Form Groups"; subtitle ข้อความตรงตัว `Manage the default form template for each report group`) มีปุ่ม **New Form Template** gate ด้วย `report_template.create` ที่ navigate ไป `/report-templates/new` พร้อม router state `{ template_type: 'form' }` ด้านล่างเป็นแถบ filter: ช่องค้นหา (จับคู่ code ของกลุ่มหรือชื่อเทมเพลต ไม่สนตัวพิมพ์เล็กใหญ่) และ checkbox "Active only" ที่ filter แถว *ภายใน* แต่ละการ์ด — ไม่เคยซ่อนการ์ดทั้งใบที่ตรงเงื่อนไขอื่น
 
-Grid การ์ด (`GroupCard`, `../carmen-platform/src/pages/reportFormGroups/GroupCard.tsx`) render หนึ่งการ์ดต่อกลุ่ม:
+Grid การ์ด (`GroupCard`, `../carmen-platform/src/pages/reportFormGroups/GroupCard.tsx`, สองคอลัมน์บนจอใหญ่ผ่าน `lg:grid-cols-2`) render หนึ่งการ์ดต่อกลุ่ม:
 
 - code ของกลุ่มเป็น badge outline แบบ monospace บวกจำนวนเทมเพลต — `"{n} template"` เมื่อมีพอดีหนึ่งตัว, `"{n} templates"` กรณีอื่น (catalog มีทั้งสองรูป; ภาษาไทยใช้สตริงเดียวสำหรับทั้งคู่ เพราะภาษาไทยไม่ผันตามจำนวน)
 - ปุ่ม **Add** ต่อการ์ด gate ด้วย `report_template.create` navigate ไปสร้างพร้อม state `{ template_type: 'form', report_group: <code> }` (ไม่มีสำหรับการ์ด `(none)`)
 - banner เตือนข้อความตรงตัว `No default set — pick one.` เมื่อกลุ่มมีเทมเพลตอย่างน้อยหนึ่งตัวแต่ไม่มีตัวไหนเป็น default
 - หนึ่งแถวต่อเทมเพลต: radio button (checked เมื่อ `is_default`), ชื่อเทมเพลตพร้อมบรรทัด audit แบบย่อด้านล่าง, badge สถานะ **Active/Inactive**, badge ประเภท **Standard**/`Custom`, ลิงก์ **Edit** ไป `/report-templates/:id/edit`, และ — gate ด้วย `report_template.update` — เมนู kebab พร้อม action เดียว
 - empty state, `No form templates` / `No form templates in {code} yet.`, เมื่อรายการแถวของการ์ด (**หลัง** ผ่าน filter ค้นหา/active-only แล้ว — ดู [กรณีขอบเขต](#5-กรณีขอบเขต)) ว่างเปล่า
+
+แถวภายในการ์ดเรียงลำดับ default ก่อน แล้วตามด้วยชื่อ (§3.1); radio ของ default และกรอบ "Default" ที่ล้อมรอบเป็นแค่การนำเสนอ — ไม่มีคอลัมน์ badge "Default" แยกต่างหากบนหน้าจอนี้ badge นั้นอยู่บนหน้ารายการ Report Templates แทน ตาม [Report Templates](/th/platform/report-templates) §1 `DevDebugSheet` (dev เท่านั้น, `title="Form Groups — raw"`) แสดง response ดิบ **เฉพาะหน้าแรก** ของ API — คือ `firstResponse` ตัวเดียวกันที่ถูกเก็บไว้ครั้งเดียวใน loop paging ของ §3.1 ไม่ใช่รายการที่รวมมาครบทั้งหมด
 
 บรรทัด audit (เพิ่มเมื่อ 2026-08-22, commit `f62a90ec54b72cde4fcbc9b77a17650b0e3c389b`) render โดย `<AuditMeta variant="compact" verbKey={...} actor={...}>` โดย `latestActor()` (`../carmen-platform/src/utils/audit.ts:101-108`) เลือกว่า created หรือ updated ตัวไหนล่าสุดกว่า แล้วคืน **key** ของ i18n — `common.audit.created` ("Created") หรือ `common.audit.updatedDate` ("Updated") — ไม่ใช่สตริงตายตัว; component ประกอบเป็น `<verb> <relative> · <name>` (`AuditMeta.tsx:62-70`) นี่คือการแก้ bug ที่ comment ใน source บน `latestActor()` เองบรรยายไว้: เวอร์ชันก่อนหน้าคืนคำอังกฤษตายตัว ทำให้เกิดบรรทัดผสมภาษาแบบ "Updated 23 วันที่แล้ว" ในโหมดไทย เมื่อส่วน relative-time ถูกแปลแล้วแต่คำกริยายังไม่ถูกแปล
 
@@ -111,7 +113,7 @@ Grid จะ render 12 code ใน `FORM_REPORT_GROUPS` เสมอ (`../carmen-
 - `../carmen-platform/src/pages/ReportFormGroupManagement.tsx` — หน้า: paged fetch, การจัดกลุ่ม, filter ค้นหา/active, handler ตั้ง default และ toggle activate
 - `../carmen-platform/src/pages/reportFormGroups/GroupCard.tsx` — การ์ดต่อกลุ่ม: radio, บรรทัด audit แบบย่อ (`latestActor()` + `AuditMeta variant="compact"`), badge, ลิงก์ Edit, เมนู kebab, empty state, banner ไม่มี default
 - `../carmen-platform/src/constants/reportGroups.ts` — `FORM_REPORT_GROUPS` ลำดับ 12 code ตายตัว
-- `../carmen-platform/src/services/reportTemplateService.ts:81-99` — `setGroupDefault` (สอง `PUT` ตามลำดับ); `:66-69` `update`; `:47-54` `getAll`
+- `../carmen-platform/src/services/reportTemplateService.ts:81-99` — `setGroupDefault` (สอง `PUT` ตามลำดับ); `:66-69` `update`; `:49-54` `getAll`
 - `../carmen-platform/src/utils/docVersion.ts` — `getDocVersion`, `isVersionConflict`, `notifyVersionConflict`
 - `../carmen-platform/src/utils/audit.ts:101-108` — `latestActor()`; `../carmen-platform/src/components/AuditMeta.tsx:62-70` — การ render ของ variant compact
 - `../carmen-platform/src/i18n/en.ts` (block `reportFormGroups`, "slice 6: Report Templates") — ทุกสตริง UI ที่ยกมาตรงตัวบนหน้านี้ อ่านจาก source ตรง ๆ ไม่ใช่ paraphrase
