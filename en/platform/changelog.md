@@ -2,7 +2,7 @@
 title: Changelog
 description: The platform's versioned changelog — a JSON-sourced, public /changelog page (now searchable) reached via a version badge in the sidebar and on the landing page.
 published: true
-date: 2026-09-06T01:00:00.000Z
+date: 2026-09-06T21:00:00.000Z
 tags: platform, changelog, versioning, carmen-software
 editor: markdown
 dateCreated: 2026-06-09T00:00:00.000Z
@@ -66,4 +66,4 @@ A search box (only rendered when the changelog has any entries at all) filters b
 
 Not every removal from the product gets an `unreleased`/`versions` entry in `changelog.json` — `src/data/changelog.json` has never used the `Removed` category at all, so the item below is not on the live `/changelog` page. Recorded here instead, since other Platform pages cross-reference it:
 
-- **Print Template Mapping** — the screens, service, routes, and permission keys for the Print Template Mapping module were removed from the product on **2026-07-24** (carmen-platform commit `de11377`; the backend-gateway proxy and the `print_template_mapping.*` permission-catalog rows were removed the day before, 2026-07-23, carmen-turborepo-backend-v2 commit `c135bb21e`). The `template_type` field on `tb_report_template` plus the [Report Templates — Form Groups](/en/platform/report-templates/form-groups) screen now serve the same need — a separate schema migration, `20260723120000_print_form_default` (2026-07-23), added `template_type`/`is_default` and dropped `tb_print_template_mapping`.
+- **Print Template Mapping** — the screens, service, routes, and permission keys for the Print Template Mapping module were removed from the product on **2026-07-24** (carmen-platform commit `de11377`; the backend-gateway proxy and the `print_template_mapping.*` permission-catalog rows were removed the day before, 2026-07-23, carmen-turborepo-backend-v2 commit `c135bb21e`). The `template_type` field on `tb_report_template` plus the standalone [Report Form Groups](/en/platform/report-form-groups) module now serve the same need — a separate schema migration, `20260723120000_print_form_default` (2026-07-23), added `template_type`/`is_default` and dropped `tb_print_template_mapping`.

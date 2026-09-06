@@ -2,7 +2,7 @@
 title: Platform RBAC — สิทธิ์ (Permissions)
 description: เมทริกซ์ route-guard ของทั้ง SPA, การประกอบกันของ gate ระดับ route/sidebar/ภายในหน้า, อัลกอริทึมการ resolve permission และกรณีพิเศษสำหรับผู้ทดสอบ อัพเดทสำหรับการเปลี่ยนคีย์เป็น platform_role.*, การย้าย route ไป category-permissions และข้อยกเว้น login ของ cluster-admin
 published: true
-date: 2026-09-06T19:00:00.000Z
+date: 2026-09-06T21:00:00.000Z
 tags: book/platform, rbac, permissions
 editor: markdown
 dateCreated: 2026-06-10T15:00:00.000Z
@@ -48,12 +48,12 @@ dateCreated: 2026-06-10T15:00:00.000Z
 | `/users` | `user.read` / `user.create` / `user.update` | ต่างจาก `user_platform.*` ซึ่ง gate การ assign role ไม่ใช่ CRUD ของผู้ใช้ |
 | `/applications` | `application.read` / `application.create` / `application.update` | |
 | `/report-templates` | `report_template.read` / `report_template.create` / `report_template.update` | |
-| `/report-form-groups` | `report_template.read` (mutation ผ่าน `report_template.update`/`.create`) | ใหม่เมื่อ 2026-07-23; reuse key ของ Report Templates ไม่มี key ใหม่ |
+| `/report-form-groups` | `report_template.read` (mutation ผ่าน `report_template.update`/`.create`) | ใหม่เมื่อ 2026-07-23; reuse key ของ Report Templates ไม่มี key ใหม่; โมดูลระดับบนสุด standalone document ไว้ที่ [กลุ่มฟอร์มรายงาน (Report Form Groups)](/th/platform/report-form-groups) |
 | `/news` | `news.read` / `news.create` / `news.update` | |
 | `/broadcasts/new` | `broadcast.send` | Route เดียว; ไม่มีหน้า list |
 | `/sql-workbench` | `sql_workbench.read` | บันทึกไว้ที่ [SQL Workbench](/th/platform/sql-workbench) หนึ่งในหน้า standalone ของ book นี้ (ไม่ใช่หน้าย่อยของโมดูลอื่น) |
 
-**ถูกลบเมื่อ 2026-07-23/24:** `/print-template-mapping*` และ key `print_template_mapping.*` ไม่มีอยู่แล้ว — โมดูลถูกลบออกจาก carmen-platform เมื่อ 2026-07-24 (commit `de11377`) และแถว permission catalog ที่มันใช้ถูกลบออกจาก seed ของ carmen-turborepo-backend-v2 ก่อนหน้าหนึ่งวัน (commit `c135bb21e`, 2026-07-23); ตอนนี้ `template_type` บวกหน้าจอ [เทมเพลตรายงาน — Form Groups](/th/platform/report-templates/form-groups) ทำหน้าที่แทน
+**ถูกลบเมื่อ 2026-07-23/24:** `/print-template-mapping*` และ key `print_template_mapping.*` ไม่มีอยู่แล้ว — โมดูลถูกลบออกจาก carmen-platform เมื่อ 2026-07-24 (commit `de11377`) และแถว permission catalog ที่มันใช้ถูกลบออกจาก seed ของ carmen-turborepo-backend-v2 ก่อนหน้าหนึ่งวัน (commit `c135bb21e`, 2026-07-23); ตอนนี้ `template_type` บวกโมดูล [กลุ่มฟอร์มรายงาน (Report Form Groups)](/th/platform/report-form-groups) แบบ standalone ทำหน้าที่แทน
 
 มีสาม route ที่เป็น public เต็มรูปแบบ (ไม่มี `PrivateRoute` เลย): `/` (landing), `/login` และ `/changelog` แหล่งที่มา: `../carmen-platform/src/App.tsx` (block `<Routes>` ฉบับเต็ม) ไม่มี route ใดใน SPA ที่ส่ง key `.delete` เป็น `requiredPermission` — action ของการลบอยู่ภายในหน้า list ซึ่ง management list ทุกหน้า gate ภายในหน้าด้วย `<Can permission="*.delete">` (§3) **รวมถึง Roles ด้วยแล้วตอนนี้** (§2.1) — ข้อความเดิมที่ว่า "มีเพียงหน้า list ของ Roles ที่ยังเปิดเผย Delete" ล้าสมัยแล้ว
 

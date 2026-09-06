@@ -2,7 +2,7 @@
 title: Landing
 description: The public marketing page at / — redirects an already-authenticated session straight to Dashboard, and shows a hardcoded "Inside the console" module index that has drifted far further from the real sidebar than at its last sync (still lists the removed Print Mapping module; missing Report Form Groups from Content, several Platform-group rows including User Platform and SQL Workbench, and an entire License Management, Analytics, Scheduling, and Database presence).
 published: true
-date: 2026-09-06T01:00:00.000Z
+date: 2026-09-06T21:00:00.000Z
 tags: platform/landing, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -68,7 +68,7 @@ No authentication and no permission grant of any kind is required to view this p
 
 - [Dashboard](/en/platform/dashboard) — where an authenticated session is redirected to, both from this page and from Login, and whose own route guard (not Landing) is what actually separates a platform-authority session from a membership-only cluster admin (§1); the real, permission-filtered module surface that this page's static index is meant to preview.
 - [Changelog](/en/platform/changelog) — the other fully public route, linked from the hero's "See what's new" and sharing the `VersionBadge` component with this page's footer.
-- [Report Templates — Form Groups](/en/platform/report-templates/form-groups), [Platform RBAC](/en/platform/rbac), [SQL Workbench](/en/platform/sql-workbench) — three of the many real screens missing from this page's index (§4); see §4's table for the full accounting, including the three groups (License Management, Analytics, Scheduling) that have no representation on Landing at all.
+- [Report Form Groups](/en/platform/report-form-groups), [Platform RBAC](/en/platform/rbac), [SQL Workbench](/en/platform/sql-workbench) — three of the many real screens missing from this page's index (§4); see §4's table for the full accounting, including the three groups (License Management, Analytics, Scheduling) that have no representation on Landing at all.
 
 ## 7. Reference Sources
 

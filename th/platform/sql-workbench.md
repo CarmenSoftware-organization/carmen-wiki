@@ -2,7 +2,7 @@
 title: SQL Workbench
 description: คอนโซล admin (/sql-workbench เพิ่มเมื่อ 2026-07-09) ที่รัน SQL ใด ๆ ก็ได้ และ browse/สร้าง/drop view, stored procedure, function กับฐานข้อมูลของ tenant ที่เลือก — ยืนยันว่าเป็น frontend ของ carmen-platform สำหรับ backend service ที่บันทึกไว้ในหน้า Query Dataset ของ Inventory book ออกแบบใหม่เมื่อ 2026-09-02 ให้เป็น workbench สามช่องแบบตรึงจอ พร้อม result grid แบบ virtual scroll ที่ลากปรับขนาดได้
 published: true
-date: 2026-09-06T19:00:00.000Z
+date: 2026-09-06T21:00:00.000Z
 tags: platform/sql-workbench, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -15,7 +15,7 @@ dateCreated: 2026-07-29T09:46:00.000Z
 
 ## 1. ภาพรวม
 
-SQL Workbench คือคอนโซล SQL ต่อ tenant: เลือก business unit หนึ่งตัว, browse table/view/procedure/function ที่มีอยู่จริง, โหลด definition ของ object ที่มีอยู่แล้วเข้า editor, รัน SQL ใด ๆ กับมัน, และ save เนื้อหาใน editor กลับเป็น view/procedure/function ใหม่หรือแทนที่ของเดิม เข้าถึงได้จากกลุ่ม Database ใน sidebar และเป็นหนึ่งในหน้าจอใหม่ล่าสุดของ carmen-platform (เพิ่มเมื่อ 2026-07-09 พร้อมกับ [Tenant Migrations](/th/platform/tenant-migrations) และ [Report Form Groups](/th/platform/report-templates/form-groups) ในฐานะสามหน้าจอ Bucket-A ล่าสุดที่รอบ resync นี้ครอบคลุม) การออกแบบใหม่เมื่อ 2026-09-02 (PR `#240`/`#241`/`#242`/`#243`) ปรับกรอบทั้งหน้าใหม่ตามคำใน commit message ของมันเองว่าเป็น "เครื่องมือที่นั่งอยู่ข้างใน ไม่ใช่เอกสารที่ต้องเลื่อนหา": บนเดสก์ท็อป กรอบตอนนี้ตรึงกับ viewport (`lg:h-[calc(100dvh-13.5rem)]`) และมีแค่สามช่อง — object tree, editor, และ result grid — ที่ scroll ภายในตัวเอง แทนที่หน้าทั้งหน้าจะ scroll ผ่านฟอร์มที่เรียงต่อกัน
+SQL Workbench คือคอนโซล SQL ต่อ tenant: เลือก business unit หนึ่งตัว, browse table/view/procedure/function ที่มีอยู่จริง, โหลด definition ของ object ที่มีอยู่แล้วเข้า editor, รัน SQL ใด ๆ กับมัน, และ save เนื้อหาใน editor กลับเป็น view/procedure/function ใหม่หรือแทนที่ของเดิม เข้าถึงได้จากกลุ่ม Database ใน sidebar และเป็นหนึ่งในหน้าจอใหม่ล่าสุดของ carmen-platform (เพิ่มเมื่อ 2026-07-09 พร้อมกับ [Tenant Migrations](/th/platform/tenant-migrations) และ [Report Form Groups](/th/platform/report-form-groups) ในฐานะสามหน้าจอ Bucket-A ล่าสุดที่รอบ resync นี้ครอบคลุม) การออกแบบใหม่เมื่อ 2026-09-02 (PR `#240`/`#241`/`#242`/`#243`) ปรับกรอบทั้งหน้าใหม่ตามคำใน commit message ของมันเองว่าเป็น "เครื่องมือที่นั่งอยู่ข้างใน ไม่ใช่เอกสารที่ต้องเลื่อนหา": บนเดสก์ท็อป กรอบตอนนี้ตรึงกับ viewport (`lg:h-[calc(100dvh-13.5rem)]`) และมีแค่สามช่อง — object tree, editor, และ result grid — ที่ scroll ภายในตัวเอง แทนที่หน้าทั้งหน้าจะ scroll ผ่านฟอร์มที่เรียงต่อกัน
 
 นี่ไม่ใช่ความสามารถ backend ใหม่ — แต่เป็น **frontend** ใหม่ของ backend เดิม หน้า [Query Dataset](/th/inventory/system-config/query-dataset) ของ Inventory book บันทึก backend controller family เดียวกันเป๊ะ (`config_sql-query.controller.ts` เรียก `SqlQueryService.execute/saveDdl/listDbObjects/getDbObjectDefinition/dropDbObject` ใน `micro-business`) และในรอบตรวจสอบล่าสุดของหน้านั้นสรุปว่า "no frontend screen that calls it" — การค้นหานั้น scope อยู่ที่ `carmen-inventory-frontend-react` ซึ่งยังจริงอยู่ แต่ไม่ได้ตรวจสอบ Platform admin product ที่แยกออกไปต่างหาก service layer ของ `SqlWorkbench.tsx` (`sqlQueryService.ts`) เรียก route `/api/config/:bu_code/sql-query/*` เดียวกันเป๊ะ ยืนยันว่าหน้าจอนี้คือคำตอบในโลกจริงของข้อค้นพบ "no confirmed frontend screen" ของหน้านั้น — เพียงแต่สร้างในอีก repository หนึ่งจากที่หน้านั้นค้นหาไว้
 

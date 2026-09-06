@@ -2,7 +2,7 @@
 title: Report Templates — แบบจำลองข้อมูล (Data Model)
 description: เอนทิตี tb_report_template, payload XML ของ dialog/content, การผูก source, ขอบเขต BU และการเปลี่ยนชื่อ kind→template_type บวกคอลัมน์ is_default/doc_version เมื่อ 2026-07-23
 published: true
-date: 2026-09-06T01:00:00.000Z
+date: 2026-09-06T21:00:00.000Z
 tags: book/platform, report-templates, data-model
 editor: markdown
 dateCreated: 2026-06-10T17:00:00.000Z
@@ -215,7 +215,7 @@ interface `ReportTemplate` ใน `../carmen-platform/src/services/reportTemplat
 
 **Cross-link:**
 - [report-templates](/th/platform/report-templates) — หน้า landing ของโมดูล
-- **Print Template Mapping** — ถูกลบออกจากผลิตภัณฑ์เมื่อ 2026-07-24 (carmen-platform commit `de11377`); เคยเป็นเจ้าของ `tb_print_template_mapping` ที่ถูก drop โดย migration `20260723120000_print_form_default` เดียวกับที่เพิ่ม `is_default` ที่นี่ หน้าที่ของมันตอนนี้ทำโดย `template_type = "form"` + `report_group` + `is_default` บนตารางนี้ แสดงผลผ่านหน้าจอ [Form Groups](/th/platform/report-templates/form-groups)
+- **Print Template Mapping** — ถูกลบออกจากผลิตภัณฑ์เมื่อ 2026-07-24 (carmen-platform commit `de11377`); เคยเป็นเจ้าของ `tb_print_template_mapping` ที่ถูก drop โดย migration `20260723120000_print_form_default` เดียวกับที่เพิ่ม `is_default` ที่นี่ หน้าที่ของมันตอนนี้ทำโดย `template_type = "form"` + `report_group` + `is_default` บนตารางนี้ แสดงผลผ่านโมดูล [กลุ่มฟอร์มรายงาน (Report Form Groups)](/th/platform/report-form-groups) แบบ standalone
 - [business-units](/th/platform/business-units) — BU code ที่อ้างอิงใน chip list ของ allow/deny ตรงกับ `tb_business_unit.code`
 - [clusters](/th/platform/clusters) — surface พี่น้องของ Platform; เทมเพลตรายงานเป็น tenant-global และไม่ scope ต่อ cluster
 - [Permissions](/th/platform/report-templates/permissions) — การควบคุมการเข้าถึงของ surface การจัดการ report-templates

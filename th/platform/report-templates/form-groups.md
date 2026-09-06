@@ -1,8 +1,8 @@
 ---
 title: เทมเพลตรายงาน — Form Groups
-description: หน้าจอ /report-form-groups (เพิ่มเมื่อ 2026-07-24) ที่แทนที่ list แบบการ์ดจัดกลุ่มของ print-template-mapping — หนึ่งการ์ดต่อ report_group code ที่ตายตัว พร้อม action "set as default" บน tb_report_template.is_default
+description: หน้าจอ /report-form-groups ตอนนี้มีโมดูลระดับบนสุดของตัวเองแล้ว — หน้านี้ครอบคลุมเฉพาะส่วนที่ยังเฉพาะเจาะจงกับ Report Templates คือคอลัมน์ tb_report_template ที่ใช้ร่วมกันและการส่งต่อ Add/Edit ระหว่างสองหน้าจอ
 published: true
-date: 2026-09-06T01:00:00.000Z
+date: 2026-09-06T21:00:00.000Z
 tags: book/platform, report-templates, form-groups
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -10,69 +10,19 @@ dateCreated: 2026-07-29T09:46:00.000Z
 
 # เทมเพลตรายงาน — Form Groups
 
-> **At a Glance**
-> **หน้าจอ:** `ReportFormGroupManagement` (`/report-form-groups` เพิ่มเมื่อ 2026-07-24) &nbsp;·&nbsp; **Route gate:** `report_template.read` (reuse — ไม่มี permission key ใหม่) **และ** `feature="report_form_groups"` — key feature ของตัวเอง แยกจาก `report_templates` ของ Report Templates &nbsp;·&nbsp; **Sidebar:** รายการ "Form Groups" ในกลุ่ม Content (`platformNav.ts`) &nbsp;·&nbsp; **แทนที่:** list แบบการ์ดจัดกลุ่มของ print-template-mapping — โมดูลนั้นถูกลบออกจากผลิตภัณฑ์ในสัปดาห์เดียวกัน (carmen-platform commit `de11377`, 2026-07-24) &nbsp;·&nbsp; **ข้อมูล:** ทุกแถว `tb_report_template` ที่ `template_type = "form"` จัดกลุ่มตาม `report_group` &nbsp;·&nbsp; **ตั้งแต่ 2026-08-22:** แต่ละแถวแสดงบรรทัด audit แบบย่อ (actor ล่าสุด สร้างหรือแก้ไข)
+> **ย้ายแล้ว:** หน้าจอ `/report-form-groups` (`ReportFormGroupManagement` มี route, รายการ sidebar และ feature key `report_form_groups` เป็นของตัวเอง) ถูก document ไว้ฉบับเต็มที่ **[กลุ่มฟอร์มรายงาน (Report Form Groups)](/th/platform/report-form-groups)** — layout, flow การตั้ง default ของกลุ่ม, กลุ่มตายตัว vs. legacy, บทบาท และกรณีขอบเขต หน้านี้ตอนนี้ครอบคลุมเฉพาะความสัมพันธ์เดียวที่ยังเฉพาะเจาะจงกับ Report Templates จริง ๆ: คอลัมน์ `tb_report_template` ที่ใช้ร่วมกัน และการส่งต่อ Add/Edit ระหว่างสองหน้าจอ
 
-## 1. ภาพรวม
+## 1. สิ่งที่ Report Form Groups แก้ไขบนตารางของโมดูลนี้
 
-Form Groups เป็นหน้าจอที่ admin เลือก per ชนิดเอกสารว่า form template แบบเอกสารเดี่ยวตัวไหนที่ business unit จะได้เป็น default เมื่อยังไม่ได้เลือกเอง มันแทนที่ list แบบการ์ดจัดกลุ่มของโมดูล print-template-mapping เองในการเปลี่ยนแปลงเดียวกันเมื่อ 2026-07-23/24 ที่ drop `tb_print_template_mapping` และเพิ่ม `tb_report_template.is_default` — ดู [โมดูลที่เกี่ยวข้อง](#6-โมดูลที่เกี่ยวข้อง) ด้านล่างสำหรับ timeline การถูกลบฉบับเต็ม และ [Report Templates](/th/platform/report-templates) §1/§3 สำหรับคู่คอลัมน์ `template_type`/`is_default` ที่หน้านี้แก้ไข ก่อนหน้านี้หน้าจอนี้ถูกกล่าวถึงแค่ในเนื้อความบนหน้า landing ของ [Report Templates](/th/platform/report-templates) และบนหน้า print-template-mapping ที่ถูกลบไปแล้ว
+Report Form Groups แก้ไขคอลัมน์ที่โมดูลนี้เป็นเจ้าของบน `tb_report_template` อยู่สามคอลัมน์เท่านั้น: `template_type` (จำกัดเป็น `"form"` สำหรับทุกอย่างที่แสดงที่นั่น), `report_group` (SPA จำกัดไว้ที่รายการ code ตายตัว 12 ตัวตามที่บันทึกไว้ที่ [กลุ่มฟอร์มรายงาน](/th/platform/report-form-groups) §3.4) และ `is_default` (flag default ของกลุ่ม ตั้งผ่านคู่ `PUT` สองขั้นที่ไม่ใช่ transaction เดียวของหน้าจอนั้นเอง — ดู §3.3 ของมัน) ทุกฟิลด์อื่นบนแถว — payload XML, การผูก data source, ขอบเขต BU, `is_standard`/`is_active` — แก้ไขได้เฉพาะที่นี่เท่านั้น บนหน้า Edit ของโมดูลนี้เอง; Report Form Groups ไม่มี edit surface ของตัวเอง
 
-หน้าจอนี้ fetch เทมเพลตที่ `template_type = "form"` **ทั้งหมด** (paging เป็นชุดละ 500 จนถึงจำนวนรวมที่ server รายงาน เพื่อไม่ให้การจัดกลุ่มทำงานบน fetch ที่ไม่ครบโดยไม่รู้ตัว) แล้วจัดกลุ่มตาม `report_group` มัน reuse permission `report_template.*` ทั้งหมด — ไม่มี key แบบ `report_form_group.*` หรือคล้ายกันใน permission catalog เลย
+action Add/Edit ของทั้งสองหน้าจอไปจบที่เดียวกัน ปุ่ม **New Form Template** ที่ header และปุ่ม **Add** ของแต่ละการ์ดบน Report Form Groups navigate ไป `/report-templates/new` — create route ของโมดูลนี้เอง — พร้อม pre-fill `template_type: 'form'` (ปุ่ม **Add** ของการ์ดยัง pre-fill `report_group` ของการ์ดนั้นด้วย) ลิงก์ **Edit** ของทุกแถวบนหน้าจอนั้นเปิด `/report-templates/:id/edit` ซึ่งเป็นหน้า edit ของโมดูลนี้เอง Report Form Groups เป็นมุมมองแบบจัดกลุ่มที่คัดสรรมาบนแถวที่หน้า Edit ของโมดูลนี้เป็นเจ้าของเต็มตัว ไม่ใช่ authoring surface คู่ขนาน
 
-## 2. Layout ของหน้าจอ
+ทั้งสองหน้าจอยังใช้ permission key ร่วมกันซึ่งควรพูดซ้ำจากฝั่งนี้: `/report-templates` และ `/report-form-groups` ทั้งคู่ gate ด้วย `report_template.read` (ดู [Permissions](/th/platform/report-templates/permissions) §7) — grant ที่นี่คือ grant ที่นั่นด้วย สิ่งที่แยกทั้งสองออกจากกันอย่างเป็นอิสระคือ key **feature**: `report_templates` สำหรับโมดูลนี้ `report_form_groups` สำหรับอีกฝั่ง
 
-- **Header** — `PageHeader` หัวข้อ "Form Groups" คำบรรยาย "Manage the default form template for each report group"; ปุ่ม **New Form Template** (gate ด้วย `report_template.create`) ที่ navigate ไป `/report-templates/new` พร้อม pre-fill `template_type: "form"`
-- **แถบ filter** — ช่องค้นหา (จับคู่ code ของกลุ่มหรือชื่อเทมเพลต) และ checkbox "Active only" ที่ filter แถวภายในแต่ละการ์ด (ไม่ซ่อนการ์ดทั้งใบแม้จะตรงเงื่อนไขอื่น)
-- **Grid การ์ดกลุ่ม** (2 คอลัมน์บนจอใหญ่) — หนึ่ง `GroupCard` ต่อกลุ่มรายงาน แต่ละการ์ดแสดง:
-  - code ของกลุ่มเป็น badge outline แบบ monospace บวกจำนวนเทมเพลต ("N templates")
-  - ปุ่ม **Add** (gate ด้วย `report_template.create`) ที่ pre-fill `report_group` พร้อม `template_type: "form"` ตอน navigate ไปสร้าง
-  - banner เตือน ("No default set — pick one.") เมื่อกลุ่มมีเทมเพลตอย่างน้อยหนึ่งตัวแต่ไม่มีตัวไหนเป็น default
-  - หนึ่งแถวต่อเทมเพลต: radio button (checked = default ปัจจุบัน), ชื่อเทมเพลตพร้อมบรรทัด audit แบบย่อด้านล่าง (**เพิ่มเมื่อ 2026-08-22**, commit `f62a90ec54b72cde4fcbc9b77a17650b0e3c389b`) — `latestActor(t)` เลือกว่า created หรือ updated ตัวไหนล่าสุดกว่า แล้ว `<AuditMeta variant="compact">` render เป็น "Created `<relative>` · `<name>`" หรือ "Updated `<relative>` · `<name>`" — badge **Active/Inactive**, badge **Standard/Custom**, ลิงก์ **Edit** ไป `/report-templates/:id/edit`, และ — gate ด้วย `report_template.update` — เมนู kebab พร้อม action เดียวคือ **Activate**/**Deactivate**
-  - empty state ("No form templates" / "No form templates in {code} yet.") เมื่อกลุ่ม (หลัง filter) ไม่มีแถวเหลือ
-- แถวภายในการ์ดเรียงลำดับ default ก่อน แล้วตามด้วยชื่อ; radio ของ default และกรอบ "Default" เป็นแค่การนำเสนอ — ไม่มีคอลัมน์ badge "Default" แยกต่างหากบนหน้าจอนี้ (badge นั้นอยู่บนหน้ารายการ Report Templates แทน ตาม [Report Templates](/th/platform/report-templates) §1)
-- `DevDebugSheet` (dev เท่านั้น) แสดง response ดิบของหน้าแรกจาก API
+## 2. แหล่งข้อมูลอ้างอิง
 
-## 3. การตั้งค่า Default ของกลุ่ม
-
-การคลิก radio ที่ยังไม่ checked จะเปิด confirm dialog ("Set '{name}' as the default for {code}? Replaces '{old name}'." เมื่อมี default เดิมอยู่) การยืนยันจะเรียก `reportTemplateService.setGroupDefault({ current, target })` ซึ่งเป็น **สอง `PUT /api-system/report-templates/:id` ที่เรียงตามลำดับ ไม่ใช่ transaction เดียว** — ตัวแรก `{ is_default: false }` บน default เดิม (ข้ามไปเลยถ้าไม่มี default เดิม) แล้วตามด้วย `{ is_default: true }` บนเป้าหมาย แต่ละตัวพก `doc_version` ของตัวเองสำหรับตรวจ optimistic-lock ความขัดแย้งเวอร์ชัน `409` ในการเรียกใดก็ตามจะเรียก toast `notifyVersionConflict()` ที่ใช้ร่วมกันและ re-fetch รายการทั้งกลุ่มใหม่; ความล้มเหลวอื่นแสดง toast ทั่วไป "Failed to set default" ตามด้วย re-fetch เช่นกัน เพื่อให้ UI สะท้อน state จริงที่เกิดขึ้น
-
-ฐานข้อมูลบังคับ invariant ที่ flow สองขั้นนี้พยายามรักษาไว้: `idx_report_template_default_per_group` เป็น partial unique index บน `tb_report_template(report_group)` `WHERE is_default AND template_type = 'form' AND deleted_at IS NULL` (เพิ่มโดย migration `20260723120000_print_form_default` ตัวเดียวกับที่ drop `tb_print_template_mapping` — ดู [โมดูลที่เกี่ยวข้อง](#6-โมดูลที่เกี่ยวข้อง) ด้านล่าง) เพราะสอง `PUT` ไม่ได้อยู่ใน transaction เดียว จึงมีช่วงแคบ ๆ ระหว่างสองการเรียกที่กลุ่มนั้นมี default **เป็นศูนย์** แทนที่จะมีพอดีหนึ่งตัว ว่า request ตั้ง default ของ admin คนที่สองที่เกิดขึ้นพร้อมกันในช่วงเดียวกันจะ fail แบบสะอาด (unique-violation) หรือ race แบบคาดเดาไม่ได้ ยังไม่ได้ทดสอบแยกในรอบนี้ — ระบุเป็น edge case ที่ยังไม่ยืนยันทั้งสองทาง
-
-action kebab **Activate/Deactivate** เป็น `PUT` เดี่ยวแยกต่างหาก (`{ is_active: !t.is_active }` บวก `doc_version`) และมี lock ฝั่ง client ของตัวเอง: การ deactivate default ปัจจุบันของกลุ่มขณะยัง active อยู่ถูก disable ใน menu item (`lockDeactivate = t.is_default && t.is_active`) — admin ต้องมอบหมาย default ใหม่ในกลุ่มก่อนจึงจะ deactivate เทมเพลตที่ถือ default อยู่ได้ การตั้งเทมเพลตที่ **inactive** เป็น default ใหม่ผ่าน radio ก็ถูก disable แยกต่างหาก (`disableRadio = !canWrite || !t.is_active || busy`) พร้อม tooltip ("Activate the template to make it the default") บน label ของ radio — admin ต้อง activate เทมเพลตก่อนจึงจะเป็น default ของกลุ่มได้
-
-## 4. กลุ่มแบบตายตัว vs. Legacy
-
-Grid การ์ดจะ render 12 code ใน `FORM_REPORT_GROUPS` (`carmen-platform/src/constants/reportGroups.ts`: `PR, PO, GRN, SR, CN, SI, SO, IA, PC, SC, RFP, EOP`) ตามลำดับตายตัวนั้นเสมอ แม้ code หนึ่งจะยังไม่มี form template เลยก็ตาม — เพื่อให้ admin เห็นรายการ ชนิดเอกสารที่ต้องมี default ครบถ้วนตามหลักการเสมอ ไม่ใช่แค่ตัวที่มีข้อมูลอยู่แล้ว ค่า `report_group` ใด ๆ ที่มีอยู่ในข้อมูลแต่ **ไม่** อยู่ในรายการตายตัว ("legacy" code) ก็ยังได้การ์ดของตัวเอง เรียงตามตัวอักษรและต่อท้ายหลัง 12 code ตายตัว แต่จะแสดงเฉพาะเมื่อมีอย่างน้อยหนึ่งแถวที่มองเห็นได้ — legacy code ที่ไม่มีอะไรจะแสดงจะไม่ถูก render เป็นการ์ดว่างแบบที่ code ตายตัวเป็น ภายใต้คำค้นหาที่ active การ์ด code ตายตัวจะถูกเก็บไว้ก็ต่อเมื่อ code เองตรงกับคำค้น หรือยังมีแถวที่ตรงอยู่ — นี่คือกรณีเดียวที่กลุ่มตายตัวจะหายไปจากมุมมอง
-
-## 5. บทบาทและ Persona
-
-| Surface | Gate | Key |
-|---|---|---|
-| Route `/report-form-groups` | `requiredPermission` + `feature` | `report_template.read` + `report_form_groups` |
-| รายการ sidebar "Form Groups" | `permission` + `feature` filter (`platformNav.ts`) | `report_template.read` + `report_form_groups` |
-| ปุ่ม **New Form Template** | `hasPermission` | `report_template.create` |
-| ปุ่ม **Add** ต่อการ์ด | prop `canCreate` (ตรวจสอบเดียวกัน) | `report_template.create` |
-| Radio ตั้ง default, เมนู kebab | prop `canWrite` | `report_template.update` |
-
-ไม่มี **permission** key ใหม่ถูกเพิ่มสำหรับหน้าจอนี้ — ถูก gate ทั้งหมดด้วย catalog `report_template.*` เดียวกันที่บันทึกไว้ครบถ้วน (matrix ของ route, bootstrap exception, ตาราง effective-access) บน [เทมเพลตรายงาน — Permissions](/th/platform/report-templates/permissions) แต่มัน**มี** key **feature** ของตัวเอง (`report_form_groups` แยกจาก `report_templates` ของ Report Templates) — การเปลี่ยน feature flag ของโมดูลหนึ่งไม่กระทบอีกโมดูล session ที่มีแค่ `report_template.read` จะดูได้ทุกกลุ่มและ default ปัจจุบันของทุกเทมเพลต แต่จะไม่เห็นปุ่ม Add ไม่เห็นเมนู kebab และไม่สามารถเลือก radio default ตัวอื่นได้ (render แบบ disabled ไม่ใช่ซ่อน)
-
-## 6. โมดูลที่เกี่ยวข้อง
-
-- [Report Templates](/th/platform/report-templates) — เป็นเจ้าของ `tb_report_template`, คอลัมน์ `template_type`/`is_default`/`report_group` ที่หน้าจอนี้แก้ไข และหน้า Edit ที่ลิงก์ **Edit** ของทุกแถวเปิด
-- [Report Templates — Permissions](/th/platform/report-templates/permissions) — matrix gate `report_template.*` ฉบับเต็มที่หน้าจอนี้ reuse โดยไม่เปลี่ยนแปลง
-- **Print Template Mapping** — โมดูลที่หน้าจอนี้เข้ามาแทนที่หน้าที่ ถูกลบออกจากผลิตภัณฑ์เมื่อ 2026-07-24 (carmen-platform commit `de11377`; backend-gateway proxy และ permission key `print_template_mapping.*` ของมันถูกลบก่อนหน้าหนึ่งวันคือ 2026-07-23, carmen-turborepo-backend-v2 commit `c135bb21e`) ความสามารถหนึ่งอย่างที่ไม่ได้ย้ายมาด้วยคือการกำหนด default ต่อ business unit — โมดูลเดิม route เทมเพลต default ต่างกันได้ต่อ BU แต่กลไก `is_default` ของหน้าจอนี้ไม่มีสิ่งทดแทน
-
-## 7. แหล่งข้อมูลอ้างอิง
-
-- `../carmen-platform/src/pages/ReportFormGroupManagement.tsx` — หน้า: paged fetch, การจัดกลุ่ม, filter ค้นหา/active, handler ตั้ง default และ toggle activate
-- `../carmen-platform/src/pages/reportFormGroups/GroupCard.tsx` — การ์ดต่อกลุ่ม: radio, บรรทัด audit แบบย่อ (`latestActor()` + `AuditMeta variant="compact"`, เพิ่มเมื่อ 2026-08-22), badge, ลิงก์ Edit, เมนู kebab, empty state, banner ไม่มี default
-- `../carmen-platform/src/constants/reportGroups.ts` — `FORM_REPORT_GROUPS` ลำดับ 12 code ตายตัว
-- `../carmen-platform/src/services/reportTemplateService.ts` — `setGroupDefault` (สอง `PUT` ตามลำดับ), `getAll`, `update`
-- `../carmen-platform/src/utils/docVersion.ts` — `getDocVersion`, `isVersionConflict`, `notifyVersionConflict`
-- `../carmen-platform/src/utils/audit.ts` — `latestActor()`
-- **แก้ citation ที่ล้าสมัย:** `../carmen-platform/src/App.tsx:323-329` — route `/report-form-groups` (`requiredPermission="report_template.read"`, `feature="report_form_groups"`); `../carmen-platform/src/components/nav/platformNav.ts:25` — รายการ sidebar (ไม่ใช่ `Layout.tsx` ซึ่งไม่ได้นิยาม nav row แล้วในปัจจุบัน)
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260723120000_print_form_default/migration.sql` — คอลัมน์ `is_default`, partial unique index `idx_report_template_default_per_group`
-
-## 8. หน้าในโมดูลนี้
-
-นี่คือ sub-page ของ [Report Templates](/th/platform/report-templates) — ดู §7 ของหน้า landing นั้นสำหรับรายการ sub-page ฉบับเต็ม
+- [กลุ่มฟอร์มรายงาน (Report Form Groups)](/th/platform/report-form-groups) — เอกสารฉบับเต็มของหน้าจอ
+- [Report Templates](/th/platform/report-templates) §3 — นิยามฟิลด์ `template_type`/`report_group`/`is_default` ของโมดูลนี้เอง
+- [Permissions](/th/platform/report-templates/permissions) — matrix gate `report_template.*` ฉบับเต็มที่ทั้งสองหน้าจอใช้ร่วมกัน
+- `../carmen-platform/src/pages/ReportTemplateEdit.tsx` — หน้า Edit ที่ใช้ร่วมกัน ซึ่ง action Add/Edit ของทั้งสองหน้าจอเปิด

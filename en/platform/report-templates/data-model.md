@@ -2,7 +2,7 @@
 title: Report Template — Data Model
 description: tb_report_template entity, dialog/content XML payloads, source binding, BU scope, and the 2026-07-23 kind→template_type rename plus is_default/doc_version columns.
 published: true
-date: 2026-09-06T01:00:00.000Z
+date: 2026-09-06T21:00:00.000Z
 tags: book/platform, report-templates, data-model
 editor: markdown
 dateCreated: 2026-05-19T18:30:00.000Z
@@ -215,7 +215,7 @@ All core identity fields (`id`, `name`, `description`, `report_group`, `template
 
 **Cross-links:**
 - [report-templates](/en/platform/report-templates) — module landing page
-- **Print Template Mapping** — removed from the product 2026-07-24 (carmen-platform commit `de11377`); used to own `tb_print_template_mapping`, dropped by the same `20260723120000_print_form_default` migration that added `is_default` here. Its job is now served by `template_type = "form"` + `report_group` + `is_default` on this table, surfaced by the [Form Groups](/en/platform/report-templates/form-groups) screen
+- **Print Template Mapping** — removed from the product 2026-07-24 (carmen-platform commit `de11377`); used to own `tb_print_template_mapping`, dropped by the same `20260723120000_print_form_default` migration that added `is_default` here. Its job is now served by `template_type = "form"` + `report_group` + `is_default` on this table, surfaced by the standalone [Report Form Groups](/en/platform/report-form-groups) module
 - [business-units](/en/platform/business-units) — BU codes referenced in the allow/deny chip lists correspond to `tb_business_unit.code`
 - [clusters](/en/platform/clusters) — sibling Platform surface; report templates are tenant-global and not cluster-scoped
 - [Permissions](/en/platform/report-templates/permissions) — access control for the report-templates admin surface

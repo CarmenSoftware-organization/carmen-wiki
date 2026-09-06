@@ -2,7 +2,7 @@
 title: Report Templates — สิทธิ์ (Permissions)
 description: Route guard ตาม permission key, gate Can ภายในหน้า, filter ของ sidebar และข้อยกเว้น bootstrap สำหรับ surface ของ report-templates อัพเดทสำหรับการเปลี่ยนชื่อเป็น Forbidden และการลบโมดูล print-template-mapping ข้างเคียง
 published: true
-date: 2026-09-06T01:00:00.000Z
+date: 2026-09-06T21:00:00.000Z
 tags: book/platform, report-templates, permissions
 editor: markdown
 dateCreated: 2026-06-10T17:00:00.000Z
@@ -28,7 +28,7 @@ Report Templates เป็น surface สำหรับ authoring ภายใ�
 | `/report-templates` | `ReportTemplateManagement` | `report_template.read` | `report_templates` | `src/App.tsx` (block ของ route report-templates) |
 | `/report-templates/new` | `ReportTemplateEdit` | `report_template.create` | `report_templates` | `src/App.tsx` |
 | `/report-templates/:id/edit` | `ReportTemplateEdit` | `report_template.update` | `report_templates` | `src/App.tsx` |
-| `/report-form-groups` | `ReportFormGroupManagement` | `report_template.read` | `report_form_groups` | **เพิ่มเมื่อ 2026-07-23** `src/App.tsx`; ไม่ใช่หนึ่งในสาม route เดิมที่หน้านี้เคย document แต่ถูก gate ด้วย key permission ตระกูลเดียวกัน — ดู §7 key **feature** ของมันเป็นของตัวเอง (`report_form_groups`) ไม่ได้ใช้ร่วมกับสามแถวข้างบน |
+| `/report-form-groups` | `ReportFormGroupManagement` | `report_template.read` | `report_form_groups` | **เพิ่มเมื่อ 2026-07-23** `src/App.tsx`; ไม่ใช่หนึ่งในสาม route เดิมที่หน้านี้เคย document แต่ถูก gate ด้วย key permission ตระกูลเดียวกัน — ดู §7 key **feature** ของมันเป็นของตัวเอง (`report_form_groups`) ไม่ได้ใช้ร่วมกับสามแถวข้างบน เอกสารฉบับเต็มของหน้าจอ: [กลุ่มฟอร์มรายงาน (Report Form Groups)](/th/platform/report-form-groups) |
 
 แต่ละ route ถือ key permission เดียวพอดี ต่างจาก array ของ role ที่ซ้ำกันแบบ legacy key เดิมทั้งสามจงใจต่างกันต่อ route ดังนั้น surface ของ list, create และ edit สามารถมอบให้แยกกันได้ — role แบบ read-only ที่รวมเฉพาะ `report_template.read` ตอนนี้เขียนออกมาได้แล้ว
 

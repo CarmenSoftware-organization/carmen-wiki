@@ -2,7 +2,7 @@
 title: Report Template — Permissions
 description: Permission-key route guards, in-page Can gates, sidebar filter, and bootstrap exception for the report-templates surface. Updated for the Forbidden rename and the removal of the neighbouring print-template-mapping module.
 published: true
-date: 2026-09-06T01:00:00.000Z
+date: 2026-09-06T21:00:00.000Z
 tags: book/platform, report-templates, permissions
 editor: markdown
 dateCreated: '2026-05-19T18:30:00.000Z'
@@ -28,7 +28,7 @@ Until 2026-06 these routes were instead gated by a hardcoded role-enum array (`p
 | `/report-templates` | `ReportTemplateManagement` | `report_template.read` | `report_templates` | `src/App.tsx` (report-templates route block) |
 | `/report-templates/new` | `ReportTemplateEdit` | `report_template.create` | `report_templates` | `src/App.tsx` |
 | `/report-templates/:id/edit` | `ReportTemplateEdit` | `report_template.update` | `report_templates` | `src/App.tsx` |
-| `/report-form-groups` | `ReportFormGroupManagement` | `report_template.read` | `report_form_groups` | **Added 2026-07-23.** `src/App.tsx`; not one of the three routes this page originally documented, but gated by the same permission key family — see §7. Its **feature** key is its own (`report_form_groups`), not shared with the three rows above |
+| `/report-form-groups` | `ReportFormGroupManagement` | `report_template.read` | `report_form_groups` | **Added 2026-07-23.** `src/App.tsx`; not one of the three routes this page originally documented, but gated by the same permission key family — see §7. Its **feature** key is its own (`report_form_groups`), not shared with the three rows above. Full screen documentation: [Report Form Groups](/en/platform/report-form-groups) |
 
 Each route carries exactly one permission key. Unlike the legacy duplicated role arrays, the three original keys are intentionally different per route, so the list, create, and edit surfaces can be granted independently — a read-only role that bundles only `report_template.read` is now expressible.
 
