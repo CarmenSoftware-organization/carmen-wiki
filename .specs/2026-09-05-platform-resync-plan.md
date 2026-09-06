@@ -1062,7 +1062,7 @@ cd ../carmen-platform && git rev-parse --short HEAD && git log -1 --format=%ci
 
 - [ ] **Step 2: Rewrite the summary and rows**
 
-Replace the "as of 2026-06-11 … 86 sub-processes … 100%" summary, which measures a June snapshot of the SPA and is misleading today. Enumerate sub-processes for every unit the book now holds — 24 folder modules (8 kept + 16 new) and 5 standalone pages — keeping the existing DM/UI/PERM axes and the ✅/🟡/⬜ symbols. Remove the `print-template-mapping` rows. State the HEAD from Step 1 in the summary heading.
+Replace the "as of 2026-06-11 … 86 sub-processes … 100%" summary, which measures a June snapshot of the SPA and is misleading today. Enumerate sub-processes for every unit the book now holds. **Count from the filesystem, not from this plan's earlier estimates, which were wrong twice:** each locale has 29 top-level pages — 20 modules that own a sub-page folder, 4 modules that are landing-only because the depth rule gave them no sub-pages (`platform-migrations`, `report-form-groups`, `super-admins`, `usage-analytics`), and 5 genuinely standalone pages that are not modules at all (`changelog`, `dashboard`, `landing`, `profile`, `sql-workbench`). That is 24 modules and 5 pages, and the EN and TH trees are identical. Keep the existing DM/UI/PERM axes and the ✅/🟡/⬜ symbols. Remove the `print-template-mapping` rows. State the HEAD from Step 1 in the summary heading.
 
 - [ ] **Step 3: Reconcile the numbers against the tree**
 
