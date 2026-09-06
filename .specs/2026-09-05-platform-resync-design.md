@@ -11,9 +11,9 @@ instance.
 Last Platform book edit: **2026-07-29** (`docs(resync): new pages — platform/dashboard + platform/landing`).
 Source delta since then: **972 commits** in `carmen-platform`.
 
-Heaviest-changed source areas in that window:
+Heaviest-changed source areas in that window, ranked by **how many times a file under each path appears across the window's commits** — not by commit count. One commit touching three files under a path contributes three. The figures are a relative heat map, nothing more: `src/pages/tenantImport` shows 36 here while only 25 commits touched it. Do not quote these as commit counts.
 
-| Path | Commits touching it |
+| Path | File-touch count (not commits — see note) |
 |------|--------------------:|
 | `src/pages/licenses` | 228 |
 | `src/pages/clusterAdmin` | 161 |
