@@ -1,8 +1,8 @@
 ---
 title: Report Template — UI Screens
-description: ReportTemplateManagement list (Status + Source Type + Template Type filters, CSV export) and ReportTemplateEdit 2-pane form (left — identity + source + BU scope; right — 3-tab CodeMirror Dialog XML / Content XML / Preview) — layout, filters, Browse-in-BU probe, sticky action bar, not-found gating, doc_version, persisted state.
+description: The report templates list (status/source/template-type filters, CSV export) and the two-pane edit form — identity, source, BU scope, and a tabbed XML editor with preview.
 published: true
-date: 2026-07-29T00:00:00.000Z
+date: 2026-09-06T23:45:00.000Z
 tags: book/platform, report-templates, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -11,13 +11,13 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 # Report Template — UI Screens
 
 > **At a Glance**
-> **Screens:** `ReportTemplateManagement` (list, `/report-templates`) &nbsp;·&nbsp; `ReportTemplateEdit` create (`/report-templates/new`) &nbsp;·&nbsp; `ReportTemplateEdit` view/edit (`/report-templates/:id/edit`) &nbsp;·&nbsp; **Edit layout:** 2-pane — left: identity + BU scope + data source cards (sticky); right: 3-tab CodeMirror — Dialog XML · Content XML · Preview &nbsp;·&nbsp; **Dialogs:** Browse in BU probe · Soft Delete confirm &nbsp;·&nbsp; **Access:** routes gated by `report_template.read` / `.create` / `.update`; in-page `<Can>` gates on Add Template, row Edit, row Delete, and the Edit toggle (see [Permissions](./permissions.md)) &nbsp;·&nbsp; **Persisted UI state:** 7 `localStorage` keys on the list page + 1 on the edit page &nbsp;·&nbsp; **Since 2026-07-23:** `template_type` (List/Form select, required) drives conditional fields — `is_standard` for list templates, `is_default` + a fixed `report_group` dropdown for form templates; not-found gating and `doc_version` optimistic locking added to the edit page
+> **Screens:** `ReportTemplateManagement` (list, `/report-templates`) &nbsp;·&nbsp; `ReportTemplateEdit` create (`/report-templates/new`) &nbsp;·&nbsp; `ReportTemplateEdit` view/edit (`/report-templates/:id/edit`) &nbsp;·&nbsp; **Edit layout:** 2-pane — left: identity + BU scope + data source cards (sticky); right: 3-tab CodeMirror — Dialog XML · Content XML · Preview &nbsp;·&nbsp; **Dialogs:** Browse in BU probe · Soft Delete confirm &nbsp;·&nbsp; **Access:** routes gated by `report_template.read` / `.create` / `.update`; in-page `<Can>` gates on Add Template, row Edit, row Delete, row/hero View History (`activity_log.read`, new), and the Edit toggle (see [Permissions](/en/platform/report-templates/permissions)) &nbsp;·&nbsp; **Persisted UI state:** 7 `localStorage` keys on the list page + 1 on the edit page &nbsp;·&nbsp; **Since 2026-07-23:** `template_type` (List/Form select, required) drives conditional fields — `is_standard` for list templates, `is_default` + a fixed `report_group` dropdown for form templates; not-found gating and `doc_version` optimistic locking added to the edit page
 
 ## 1. Overview
 
-The Platform SPA follows the standard two-screen pattern for report template management: a list page (`ReportTemplateManagement`) with a server-side `DataTable`, a slide-over Filters Sheet, and two header action buttons; and an edit page (`ReportTemplateEdit`) that starts in read-only view mode and transitions to an editable form on demand. Both screens are registered under the `/report-templates` route prefix and are guarded by per-route `requiredPermission` keys — `report_template.read` on the list, `report_template.create` on create, `report_template.update` on edit (see [Permissions §2](./permissions.md)).
+The Platform SPA follows the standard two-screen pattern for report template management: a list page (`ReportTemplateManagement`) with a server-side `DataTable`, a slide-over Filters Sheet, and two header action buttons; and an edit page (`ReportTemplateEdit`) that starts in read-only view mode and transitions to an editable form on demand. Both screens are registered under the `/report-templates` route prefix and are guarded by per-route `requiredPermission` keys — `report_template.read` on the list, `report_template.create` on create, `report_template.update` on edit (see [Permissions §2](/en/platform/report-templates/permissions)).
 
-The edit page uses a 2-pane layout: a left column (fixed width, `minmax(320px, 380px)`, sticky while the right pane scrolls) stacks four Cards vertically — **Template Info**, **Business Unit Scope**, **Metadata** (view-mode only), and **Data Source**. The right column fills the remaining width with a single Card whose header contains the 3-tab selector: **Dialog XML**, **Content XML**, and **Preview**. Each XML tab hosts a `XmlEditor` component wrapping CodeMirror. The Preview tab renders the `dialog` XML as a disabled form using `DialogPreview`. The XML structures accepted by each tab are documented in [XML Spec](./xml-spec.md); the `source_params` JSON shape and storage types for `allow_business_unit` / `deny_business_unit` are documented in [Data Model](./data-model.md).
+The edit page uses a 2-pane layout: a left column (fixed width, `minmax(320px, 380px)`, sticky while the right pane scrolls) stacks **three** Cards vertically — **Template Info**, **Business Unit Scope**, and **Data Source**. **Corrected:** a fourth "Metadata" card that used to sit between Business Unit Scope and Data Source no longer exists — commit `682652d94c3ee5e243f22459d13ee410bb92f804` (2026-08-22) removed it in favour of an audit line rendered directly in the page's own `PageHeader` (§4.0). The right column fills the remaining width with a single Card whose header contains the 3-tab selector: **Dialog XML**, **Content XML**, and **Preview**. Each XML tab hosts a `XmlEditor` component wrapping CodeMirror. The Preview tab renders the `dialog` XML as a disabled form using `DialogPreview`. The XML structures accepted by each tab are documented in [XML Spec](/en/platform/report-templates/xml-spec); the `source_params` JSON shape and storage types for `allow_business_unit` / `deny_business_unit` are documented in [Data Model](/en/platform/report-templates/data-model).
 
 ## 2. `ReportTemplateManagement` — list page (`/report-templates`)
 
@@ -39,19 +39,20 @@ There is no Standard/Custom filter group and no soft-deleted row toggle (unlike 
 
 Two buttons appear in the header actions row, left to right:
 
-- **Export** — client-side CSV export using the shared `generateCSV` / `downloadCSV` utilities (`ReportTemplateManagement.tsx`, `handleExport`). Exports the currently loaded page of rows with columns: `Name` (`name`), `Description` (`description`), `Report Group` (`report_group`), `Standard` (`is_standard`), `Status` (`is_active`), `Created` (`created_at`) — **not** `source_type`/`source_name`, despite an earlier sync claiming those were exported. File name: `report-templates-<YYYY-MM-DD>.csv` where the date is the export moment. The button is disabled while loading or when the table is empty. Not permission-gated — any `report_template.read` holder can export.
-- **Add Template** — navigates to `/report-templates/new`. Wrapped in `<Can permission="report_template.create">` — hidden without that grant. (The empty-state Add Template button is ungated; the route guard on `/report-templates/new` catches — see [Permissions §7](./permissions.md).)
+- **Export** — client-side CSV export using the shared `generateCSV` / `downloadCSV` utilities (`ReportTemplateManagement.tsx`, `handleExport`). Exports the currently loaded page of rows with 9 columns: `Name` (`name`), `Description` (`description`), `Report Group` (`report_group`), `Standard` (`is_standard`), `Status` (`is_active`), `Created` (`created_at`), `Created By` (`created_by`), `Updated` (`updated_at`), `Updated By` (`updated_by`) — **not** `source_type`/`source_name`. The four audit columns are built via `auditCsvFields(normalizeAudit(t))` (§2.5) and always render an **absolute** ISO timestamp, never a relative one, so the exported file stays readable months later. File name: `report-templates-<YYYY-MM-DD>.csv` where the date is the export moment. The button is disabled while loading or when the table is empty. Not permission-gated — any `report_template.read` holder can export.
+- **Add Template** — navigates to `/report-templates/new`. Wrapped in `<Can permission="report_template.create">` — hidden without that grant. **The empty-state Add Template button carries the identical gate** (`ReportTemplateManagement.tsx:529-536`, `addAction={<Can permission="report_template.create">...}`) — it is **not** ungated, correcting a pre-existing wiki error; see [Permissions §7](/en/platform/report-templates/permissions).
 
 There is no Hard Delete option in the report-template header. The export is purely client-side — it operates on the in-memory `templates` array, not a separate backend endpoint.
 
 ### 2.4 Row actions
 
-Each row has a `DropdownMenu` (⋯ icon button) with two items, each wrapped in its own `<Can>` gate (`ReportTemplateManagement.tsx:315-326`):
+Each row has a `DropdownMenu` (⋯ icon button) with **three** items, each wrapped in its own `<Can>` gate (`ReportTemplateManagement.tsx:317-339`):
 
 - **Edit** — navigates to `/report-templates/:id/edit`. Wrapped in `<Can permission="report_template.update">`.
+- **View History** (new, cross-cutting Activity Trail feature) — sits between Edit and Delete. Wrapped in `<Can permission="activity_log.read" clusterId={PLATFORM_SCOPED_RECORD}>`; `onSelect` opens the shared `ActivityTrailSheet` for the row via `activityTrail.openFor(row.original.id)`. Recording started 2026-08-31 — a template created earlier shows an empty history. Same feature as [clusters](/en/platform/clusters/ui-screens)/[business-units](/en/platform/business-units/ui-screens)/[users](/en/platform/users/ui-screens)/[applications](/en/platform/applications/ui-screens).
 - **Delete** — sets `deleteId` state; opens the Soft Delete confirm `ConfirmDialog` (§5.2). On confirm, calls `DELETE /api-system/report-templates/:id`. The SPA uses `reportTemplateService.delete(id)` with no hard-delete alternative exposed from the management UI. Wrapped in `<Can permission="report_template.delete">`.
 
-For a `report_template.read`-only session both items are hidden and the dropdown renders empty.
+For a `report_template.read`-only session, Edit and Delete are hidden; the dropdown renders only View History if `activity_log.read` is also held, otherwise it renders empty.
 
 There is no Hard Delete row action. Hard deletion is not exposed from the Platform SPA for report templates.
 
@@ -66,11 +67,13 @@ The `DataTable` includes the following columns in order (`ReportTemplateManageme
 | Report Group | `report_group` | Outline `Badge`; when `template_type = 'form'` and `is_default`, a second filled "Default" badge renders alongside it |
 | Standard | `is_standard` | `Standard` (default badge) or `Custom` (secondary badge) — shown regardless of `template_type`, though the field is only editable for list templates in the edit form |
 | Status | `is_active` | `Active` (success badge) or `Inactive` (secondary badge) |
-| Created | `created_at` | Formatted `YYYY-MM-DD HH:mm:ss` in browser local time |
-| Updated | `updated_at` | Same format; row omitted when `updated_at === created_at` |
+| Created | via `auditColumns<ReportTemplate>({ t })` | **Corrected — no longer a bespoke fixed-format renderer.** Renders `<AuditMeta variant="cell" actor={normalizeAudit(row).created} />`: relative time (e.g. "5mo ago") on the first line, actor name on the second, full absolute timestamp as a hover `title` tooltip |
+| Updated | via `auditColumns<ReportTemplate>({ t })` | Same `AuditMeta variant="cell"` rendering, for `normalizeAudit(row).updated`. **Suppression rule corrected:** the cell is blank when the record has never been edited — decided by `everEdited` (an actor **name** is present, or the timestamp differs from `created` with no name), not by a plain `updated_at === created_at` comparison |
 | Actions | — | `DropdownMenu` icon button; see §2.4 |
 
 **Removed 2026-07-23:** the former "Source" column (`source_type` + `source_name` two-line cell) no longer exists in the list — `source_type`/`source_name` are edit-page-only fields now; the Template Type column took its place. There are no `deleted_at` / `deleted_by_name` columns — the list does not support a show-soft-deleted filter (unlike the clusters list). Default sort is `name:asc` (was `created_at:desc` before 2026-07-23 — see §6 for the persisted-key migration this forced).
+
+`normalizeAudit()` (`../carmen-platform/src/utils/audit.ts`) reads the **nested** shape first and falls back to the **flat** shape: `fromNested(nested?.created) ?? fromFlat(record.created_at, record.created_by_name, record.created_by)`, same order for `updated`. This lets the same column definition work whether or not a given backend route has been migrated to the nested `audit.{created,updated}` response shape yet.
 
 ## 3. `ReportTemplateEdit` — create mode (`/report-templates/new`)
 
@@ -93,7 +96,9 @@ The sticky action bar (§4.8) shows the **Create Template** label. On submit, ca
 
 ## 4. `ReportTemplateEdit` — view/edit mode (`/report-templates/:id/edit`)
 
-The page starts in **view mode** (`editing = false`). An **Edit** button appears at the top right of the header (`<Pencil>` icon), wrapped in `<Can permission="report_template.update">` — a session without that grant sees a permanently read-only page (in practice the edit route's own `report_template.update` guard already blocks such sessions; the in-page gate re-checks the same key). Clicking **Edit** saves the current `formData` to `savedFormData` and sets `editing = true`. The Edit button is replaced by a **Cancel** button in the header while editing is active.
+The page starts in **view mode** (`editing = false`). The `PageHeader`'s `actions` row (rendered whenever `!isNew && !loading`, independent of `editing`) carries, left to right: a **View History** button gated on `<Can permission="activity_log.read" clusterId={PLATFORM_SCOPED_RECORD}>` (new, cross-cutting Activity Trail feature — see [Permissions §7](/en/platform/report-templates/permissions)), then either **Cancel** (while editing) or **Edit** (`<Pencil>` icon, wrapped in `<Can permission="report_template.update">` — a session without that grant sees a permanently read-only page; in practice the edit route's own `report_template.update` guard already blocks such sessions, so the in-page gate re-checks the same key). Clicking **Edit** saves the current `formData` to `savedFormData` and sets `editing = true`.
+
+**Audit line (new, replaces the removed Metadata card — see §4.3):** the same `PageHeader` also takes an `audit={normalizeAudit(templateRecord)}` prop (only when `!isNew && !loading`), which renders one line under the subtitle: "Created `<relative>` by `<name>` · Updated `<relative>` by `<name>`" via the shared `AuditMeta variant="header"` component, each half omitted if inapplicable, full absolute timestamp as a hover tooltip.
 
 The 2-pane grid uses `grid-cols-1 lg:grid-cols-[minmax(320px,380px)_1fr]` — the left column is fixed-width and `lg:sticky lg:top-4 lg:self-start` so it stays visible while the right pane scrolls.
 
@@ -113,7 +118,7 @@ Card title: "Template Info".
 | `name` | text `Input` | Yes | `required`, inline destructive error on blur and submit |
 | `description` | `<textarea>` | No | 3 rows; auto-resize not used |
 | `report_group` | `<select>` (form templates) or text `Input` (list templates) | Yes | For `template_type = 'form'`: a `<select>` constrained to `FORM_REPORT_GROUPS`, with the current value kept as an extra option if it's a legacy code outside that list. For `list`: a free-text input, unconstrained. In view mode both render as an outline `Badge` |
-| `is_standard` | checkbox | — | Visible in edit mode only, and **only when `template_type ≠ 'form'`**. Defaults `true` |
+| `is_standard` | checkbox | — | Visible in edit mode only, and **only when `template_type ≠ 'form'`**. Defaults `true`. **Also forced `true` on submit, not just hidden:** `handleSubmit` sends `is_standard: isForm ? true : formData.is_standard` — even an existing form template loaded with `is_standard = false` is coerced to `true` the next time it is saved |
 | `is_default` | checkbox ("Default for this report group") | — | **Added 2026-07-23.** Visible in edit mode only, and **only when `template_type = 'form'`**. A helper note below warns that saving a second default in the same group will fail server-side (the partial unique index) — unset the other one first |
 | `is_active` | checkbox | — | Visible in edit mode only. Defaults `true` |
 
@@ -134,15 +139,11 @@ Two `ChipInput` fields:
 
 Both inputs are disabled when `editing = false`. **Added 2026-07-23:** both are also force-disabled and show empty/placeholder values whenever `template_type = 'form'` (placeholders read "All business units (form template)" / "—") — form templates are not BU-scoped this way; the fields only do anything for `template_type = 'list'`. Each chip represents one BU code; pressing Enter after typing a code adds it; clicking the chip's remove button deletes it.
 
-**Storage note:** the underlying Prisma columns `allow_business_unit` and `deny_business_unit` are `Json @db.JsonB` (see [Data Model §2.1](./data-model.md)). The SPA normalises the API response to a CSV string via a local `toCsv()` helper (`ReportTemplateEdit.tsx:213-217`) for `ChipInput` display. On save, the form sends the CSV string directly in the payload — the backend is responsible for parsing it back to the stored JSON shape. Testers verifying API round-trips should read the data-model page for the exact stored representation.
+**Storage note:** the underlying Prisma columns `allow_business_unit` and `deny_business_unit` are `Json @db.JsonB` (see [Data Model §2.1](/en/platform/report-templates/data-model)). The SPA normalises the API response to a CSV string via a local `toCsv()` helper (`ReportTemplateEdit.tsx:213-217`) for `ChipInput` display. On save, the form sends the CSV string directly in the payload — the backend is responsible for parsing it back to the stored JSON shape. Testers verifying API round-trips should read the data-model page for the exact stored representation.
 
-### 4.3 Left pane — Metadata card
+### 4.3 Metadata card — removed 2026-08-22
 
-Shown only in view/edit mode, only when at least one of `created_at` or `updated_at` is non-null (`ReportTemplateEdit.tsx:743`). Card title: "Metadata".
-
-Displays four read-only fields: Created date/time (`fmtDateTime`), Created by (`created_by_name`), Updated date/time, Updated by (`updated_by_name`). All timestamps are formatted `YYYY-MM-DD HH:mm` in browser local time.
-
-The Metadata card is absent in create mode and absent while loading. It appears between the Business Unit Scope card and the Data Source card when conditions are met.
+**Corrected:** there is no longer a separate "Metadata" card on this page. Commit `682652d94c3ee5e243f22459d13ee410bb92f804` (2026-08-22, `refactor(audit): หน้า Edit และ Hero ที่คู่กันใช้ AuditMeta`) deleted the bespoke card — its four read-only fields (Created date/time, Created by, Updated date/time, Updated by, each hand-formatted `YYYY-MM-DD HH:mm`) and the `metadata.created_at || metadata.updated_at` presence check that gated it are both gone. The equivalent information now renders as a single audit line inside the page's own `PageHeader`, documented in §4.0 above — same underlying data (`normalizeAudit(templateRecord)`), same "hidden in create mode" behaviour (the `audit` prop is only passed when `!isNew`), but relative-time formatting instead of an absolute one, and positioned in the header rather than as a left-pane card between Business Unit Scope and Data Source. This is the same "hero absorbs the read-mode metadata" pattern documented on [users](/en/platform/users/ui-screens), [rbac](/en/platform/rbac/ui-screens), and [news](/en/platform/news/ui-screens).
 
 ### 4.4 Left pane — Data Source card
 
@@ -160,7 +161,7 @@ Card title: "Data Source" (`ReportTemplateEdit.tsx:764`).
 
 ### 4.5 Right pane — Dialog XML tab
 
-Tab trigger label: "Dialog XML" with a line-count badge (count of newlines in `formData.dialog`) and a red dot (`aria-label="Invalid"`) when `dialogValidation.valid = false` (`ReportTemplateEdit.tsx:1049-1061`).
+Tab trigger label: "Dialog XML" with a line-count badge (count of newlines in `formData.dialog`) and a red dot (`aria-label="Has errors"`) when `dialogValidation.valid = false` (`ReportTemplateEdit.tsx:426-428, 1102` — line numbers corrected; the old `1049-1061` citation predates the refactor below). **Corrected 2026-09-02 (commit `3b7cba020066b588df87c0a15a14237a2bb085ee`):** the tab strip is now the shared `TabStrip` component (`count`/`hasError` props), not bespoke `Tabs`/`TabsTrigger` markup — same visual badge and dot, but the screen-reader label changed from "Invalid" to "Has errors" to match every other tab strip in the app.
 
 Hosts a `XmlEditor` component with:
 - `uploadAccept=".xml,.txt"` — file upload button in the editor toolbar accepts `.xml` and `.txt`
@@ -168,7 +169,7 @@ Hosts a `XmlEditor` component with:
 - `minHeight={360}`, `maxHeight={560}` — CodeMirror viewport constraints
 - `onParseChange={setDialogValidation}` — live XML parse callback; invalid XML sets the red dot on the tab trigger
 
-The Dialog XML structure defines the filter dialog shown to end users at report-run time. See [XML Spec §2](./xml-spec.md) for the schema.
+The Dialog XML structure defines the filter dialog shown to end users at report-run time. See [XML Spec §2](/en/platform/report-templates/xml-spec) for the schema.
 
 ### 4.6 Right pane — Content XML tab
 
@@ -180,7 +181,7 @@ Hosts a `XmlEditor` component with:
 - `minHeight={360}`, `maxHeight={560}`
 - `onParseChange={setContentValidation}`
 
-The Content XML carries the FastReport-compatible layout definition. See [XML Spec §3](./xml-spec.md) for the schema.
+The Content XML carries the FastReport-compatible layout definition. See [XML Spec §3](/en/platform/report-templates/xml-spec) for the schema.
 
 ### 4.7 Right pane — Preview tab
 
@@ -255,8 +256,8 @@ There is no Standard/Custom filter and therefore no `filters_report_templates_st
 ## 8. References
 
 - `../carmen-platform/SITEMAP.md` — route table for the three report-template routes; note it still shows the legacy `allowedRoles` lists — `src/App.tsx` is authoritative for the `requiredPermission` keys.
-- `../carmen-platform/src/pages/ReportTemplateManagement.tsx` — list page: filters (Status + Source Type), header actions (Export, Add Template behind `<Can permission="report_template.create">`), row actions (Edit / Delete soft, behind `<Can>` gates), DataTable columns, 6 `localStorage` keys.
-- `../carmen-platform/src/pages/ReportTemplateEdit.tsx` — create/view/edit page: 2-pane layout, Template Info card (`template_type`/`is_standard`/`is_default` conditional on type, not-found gating, `doc_version`), Business Unit Scope card (ChipInput, `toCsv()` normalisation, disabled for form templates), Metadata card, Data Source card (source binding, Browse-in-BU probe, source params table, builder key), 3-tab CodeMirror right pane, sticky action bar, `useUnsavedChanges` hook.
+- `../carmen-platform/src/pages/ReportTemplateManagement.tsx` — list page: filters (Status + Source Type + Template Type), header actions (Export, Add Template behind `<Can permission="report_template.create">` on both the header and empty-state buttons), row actions (Edit / View History / Delete soft, behind `<Can>` gates), `auditColumns()`-based DataTable columns, 7 `localStorage` keys (**corrected** — an earlier sync undercounted this at 6).
+- `../carmen-platform/src/pages/ReportTemplateEdit.tsx` — create/view/edit page: 2-pane layout (Template Info card — `template_type`/`is_standard`/`is_default` conditional on type — and Business Unit Scope card, ChipInput, `toCsv()` normalisation, disabled for form templates, plus Data Source card: source binding, Browse-in-BU probe, source params table, builder key; **no Metadata card since 2026-08-22**, replaced by a `PageHeader`-level audit line and View History button), not-found gating, `doc_version`, 3-tab `TabStrip` CodeMirror right pane, sticky action bar, `useUnsavedChanges` hook.
 - `../carmen-platform/src/pages/ReportFormGroupManagement.tsx` / `../carmen-platform/src/constants/reportGroups.ts` — the Form Groups screen and its fixed `report_group` list (see [report-templates landing](/en/platform/report-templates) §1).
 - `../carmen-platform/src/services/reportTemplateService.ts` — API surface (paths pluralised 2026-06): `GET /api-system/report-templates`, `GET /api-system/report-templates/:id`, `POST /api-system/report-templates`, `PUT /api-system/report-templates/:id`, `DELETE /api-system/report-templates/:id`, `GET /api-system/report-templates/db-objects?bu_code=<buCode>` (`listDbObjects`).
-- Cross-links: [report-templates](/en/platform/report-templates) (module landing), [business-units](/en/platform/business-units) (BU chip context and `cluster_id` FK), [Data Model](./data-model.md) (storage types for `allow_business_unit`, `deny_business_unit`, `source_params`; `template_type`/`is_default` fields), [Permissions](./permissions.md), [XML Spec](./xml-spec.md) (Dialog XML schema §2, Content XML schema §3), [print-template-mapping](/en/platform/print-template-mapping) (removed 2026-07-23/24 — historical page for what the Form Groups screen replaced).
+- Cross-links: [report-templates](/en/platform/report-templates) (module landing), [business-units](/en/platform/business-units) (BU chip context and `cluster_id` FK), [Data Model](/en/platform/report-templates/data-model) (storage types for `allow_business_unit`, `deny_business_unit`, `source_params`; `template_type`/`is_default` fields), [Permissions](/en/platform/report-templates/permissions), [XML Spec](/en/platform/report-templates/xml-spec) (Dialog XML schema §2, Content XML schema §3), print-template-mapping — removed from the product 2026-07-24 (carmen-platform commit `de11377`), the module whose grouped-card list the Form Groups screen replaced.

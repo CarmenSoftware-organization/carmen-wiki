@@ -2,7 +2,7 @@
 title: News
 description: News module overview — markdown announcements with optional image, tags, a draft → published → archived lifecycle, global or per-BU targeting, and bulk publish/archive/delete — authored in the admin SPA and delivered through anonymous public endpoints.
 published: true
-date: 2026-07-29T00:00:00.000Z
+date: 2026-09-05T00:00:00.000Z
 tags: platform/news, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T13:00:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-06-10T13:00:00.000Z
 The **News** module manages announcements and articles for platform users: a markdown body, an optional image, a source URL, freeform tags, and a `draft → published → archived` status lifecycle, targeted either globally or at an explicit list of business units. The Platform admin SPA is the **authoring side**; delivery to end users happens through a separate pair of **anonymous public endpoints** (`/api/public/news`) that expose only published, non-deleted articles whose publish time has arrived (no in-repo client consumes them yet — see §2).
 
 > **At a Glance**
-> **Module purpose:** Author and manage announcements — markdown `contents`, optional image (multipart upload → MinIO file token → presigned `image_url`), freeform tags, status lifecycle with server-stamped `published_at`, global vs per-BU targeting, bulk publish/archive/delete &nbsp;·&nbsp; **Audience:** Developers and QA working on the Platform admin SPA, the backend-gateway news module, and the micro-cluster news service &nbsp;·&nbsp; **Key entities/tables:** `tb_news` (single table, JSONB `business_unit_ids` and `tags`, `doc_version` optimistic lock, no FK relations) &nbsp;·&nbsp; **Endpoints:** `/api/news` (authenticated CRUD — note `/api`, **not** `/api-system`), `/api/news/tags` (distinct tag list), and `/api/public/news` (anonymous read) &nbsp;·&nbsp; **Sub-pages:** 3
+> **Module purpose:** Author and manage announcements — markdown `contents`, optional image (multipart upload → MinIO file token → presigned `image_url`), freeform tags, status lifecycle with server-stamped `published_at`, global vs per-BU targeting, bulk publish/archive/delete &nbsp;·&nbsp; **Audience:** Developers and QA working on the Platform admin SPA, the backend-gateway news module, and the micro-cluster news service &nbsp;·&nbsp; **Key entities/tables:** `tb_news` (single table, JSONB `business_unit_ids` and `tags`, `doc_version` optimistic lock, no FK relations) &nbsp;·&nbsp; **Endpoints:** `/api/news` (authenticated CRUD — note `/api`, **not** `/api-system`), `/api/news/tags` (distinct tag list), `/api/news/summary` (unfiltered newsroom aggregate, added 2026-08-24), and `/api/public/news` (anonymous read) &nbsp;·&nbsp; **Server-side enforcement:** `POST`/`PUT`/`DELETE` check the caller's own `news.create`/`.update`/`.delete` permission (`PlatformPermissionGuard`, added 2026-08-20); the four `GET` routes check only the calling application's `x-app-id` allowlist, deliberately, so the mobile app's tenant-level users — who hold no platform role at all — can keep reading news &nbsp;·&nbsp; **Sub-pages:** 3
 
 ## 1. Overview
 
@@ -24,13 +24,15 @@ The module follows the SPA's standard two-screen pattern:
 
 A news record is one row in `tb_news`: `title` (required), `contents` (markdown), `url` (optional source link), an image stored as a MinIO **file token** (`image_file_token` — the API resolves it to a presigned `image_url` and never exposes the token), `tags` (a JSONB string array), `status`, `published_at`, `business_unit_ids` (a JSONB array; empty = visible to all business units), and `doc_version` (optimistic-lock counter). See [Data Model](/en/platform/news/data-model) for the full field table and [UI Screens](/en/platform/news/ui-screens) for the screen walkthrough.
 
+Both screens also carry the cross-cutting **Activity Trail** feature added platform-wide: a **View History** action gated on `activity_log.read` with the `PLATFORM_SCOPED_RECORD` sentinel `clusterId`, since one article can target many business units and therefore has no single cluster to scope against (see [Permissions](/en/platform/news/permissions)). On the list it sits in the row actions dropdown; on `NewsEdit` it sits in the page's top header row next to the "← News" back link (existing records only) — **not** inside the `NewsMasthead` card's own actions slot, which carries only the Edit button. Recording started 2026-08-31 (`AUDIT_RECORDING_STARTED_ON_PHASE_2`), so an article created earlier shows an empty timeline rather than implying nothing was ever changed. Since 2026-08-24 the `NewsroomSummary` masthead also reads a dedicated, unfiltered `GET /api/news/summary` endpoint rather than sweeping the whole table client-side (see [Data Model](/en/platform/news/data-model) §6).
+
 Everything else is standard Management-page furniture: `TableSkeleton`, a filter-aware `ListEmptyState`, toast feedback, the `useUnsavedChanges` guard, global keyboard shortcuts (Ctrl/Cmd+S save, Escape cancel, Ctrl/Cmd+K search focus), and the dev-only Debug Sheet.
 
 ## 2. Business Context
 
 News exists to communicate operational updates — policy changes, maintenance notices, hotel-group announcements — to the staff of one, several, or all business units. The module splits cleanly into two halves with different security models:
 
-- **Authoring** (this SPA + `/api/news`): full CRUD, gated by RBAC `news.*` keys for the human and `AppIdGuard` grants for the calling application. Authors see every record regardless of status, including drafts and archived rows.
+- **Authoring** (this SPA + `/api/news`): full CRUD, gated by RBAC `news.*` keys for the human and `AppIdGuard` grants for the calling application — but not identically on every route. `POST`/`PUT`/`DELETE` enforce the caller's own `news.create`/`.update`/`.delete` permission server-side (`PlatformPermissionGuard`, added 2026-08-20 — before that fix the API accepted any authenticated, app-id-allowed caller regardless of RBAC). The four `GET` routes (list, detail, tags, summary) deliberately carry no such check: the DB shows the `mobile-app` application holds `news.findAll`/`news.findOne` in its allowlist and serves tenant-level users who have no platform role at all, so adding `news.read` there would lock mobile users out of news entirely — `news.read` stays a "hide the admin menu" key only (see [Permissions](/en/platform/news/permissions) §1). Authors see every record regardless of status, including drafts and archived rows.
 - **Delivery** (`/api/public/news` + `/api/public/news/:id`): **anonymous** — the controller carries no authentication guard at all. It serves only rows that are `status = published`, not soft-deleted, **and** `published_at <= now()`. With no `bu_id` query parameter only global news returns; with a `bu_id`, global news plus news targeting that BU. A draft, archived, deleted, or future-dated article answers 404 — the same response as an unknown id, so record existence never leaks.
 
 The `published_at <= now()` filter means an author can **schedule** an article by publishing it with a future timestamp via the API (the SPA itself never sends `published_at` — see §3). No in-repo client renders the public feed yet: the Carmen Inventory web frontend has no news surface. Treat the public endpoints as the module's delivery contract.
@@ -56,14 +58,15 @@ Access is permission-gated through [Platform RBAC](/en/platform/rbac) (the four 
 | `/news` route + "News" sidebar entry (Content group, Newspaper icon) | `PrivateRoute` / sidebar filter | `news.read` |
 | `/news/new` route | `PrivateRoute` | `news.create` |
 | `/news/:id/edit` route | `PrivateRoute` | `news.update` |
-| Add News button (list header) | `<Can>` | `news.create` |
+| Add News button (list header **and** empty-state CTA) | `<Can>` | `news.create` |
 | Row Edit (list actions dropdown) | `<Can>` | `news.update` |
 | Row Delete (list actions dropdown) | `<Can>` | `news.delete` |
 | Bulk Publish / Archive Selected | in-component (`canUpdate`) | `news.update` |
 | Bulk Delete Selected | in-component (`canDelete`) | `news.delete` |
-| Edit toggle (edit-page header) | `<Can>` | `news.update` |
+| Edit toggle (edit-page masthead) | `<Can>` | `news.update` |
+| Row / edit-page header **View History** (cross-cutting Activity Trail — not in the masthead) | `<Can>` | `activity_log.read`, `clusterId={PLATFORM_SCOPED_RECORD}` |
 
-As in Applications and Print Template Mapping, `news.delete` exists **only as an in-page gate** — no route requires it. A failed route guard now renders the dedicated `Forbidden` page (renamed from the old inline `AccessDenied`, still a 403 "Access Denied" heading, now with Go Back / Go to Dashboard actions) inside the normal `Layout` shell. Machine callers are gated separately by `AppIdGuard` keys (`news.findAll`, `news.findOne`, `news.create`, `news.update`, `news.delete` — the same key also guards `GET /api/news/tags`) — a different vocabulary from the RBAC keys. The full matrix, including an ungated empty-state CTA, is in [Permissions](/en/platform/news/permissions).
+As in Applications, `news.delete` has **no SPA route that requires it** — deleting is a row/bulk action, not a navigable page — but that is a client-routing fact only, not the whole enforcement story. Server-side, `POST`/`PUT`/`DELETE /api/news` each check the caller's own `news.create`/`.update`/`.delete` permission via `PlatformPermissionGuard` (added 2026-08-20; before that fix the API had zero user-permission checks and accepted any authenticated, app-id-allowed caller — see [Permissions](/en/platform/news/permissions) §1). A failed route guard renders the dedicated `Forbidden` page (renamed from the old inline `AccessDenied`, still a 403 "Access Denied" heading, now with Go Back / Go to Dashboard actions) inside the normal `Layout` shell. Machine callers are gated separately by `AppIdGuard` keys (`news.findAll`, `news.findOne`, `news.create`, `news.update`, `news.delete` — the same `news.findAll` key also guards `GET /api/news/tags` and `GET /api/news/summary`) — a different vocabulary from the RBAC keys, and the *only* server-side check on the four `GET` routes (see [Permissions](/en/platform/news/permissions) §1 for why). The full matrix is in [Permissions](/en/platform/news/permissions).
 
 ## 5. Related Modules
 
@@ -75,13 +78,16 @@ As in Applications and Print Template Mapping, `news.delete` exists **only as an
 ## 6. Reference Sources
 
 - `../carmen-platform/src/App.tsx` — the three `news.*` route guards.
-- `../carmen-platform/src/components/Layout.tsx` — "News" sidebar entry (Content group, `news.read`).
+- `../carmen-platform/src/components/nav/platformNav.ts` — "News" sidebar entry (line 27: Content group, Newspaper icon, `news.read`, `feature: 'news'`, `dividerBefore: true`). Not `Layout.tsx`, which defines no nav rows.
+- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/news/news.controller.ts` — `PlatformPermissionGuard`/`RequirePlatformPermission` on the three write routes (added 2026-08-20) and the `/summary` route (added 2026-08-24).
+- `../carmen-platform/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` — the View History feature; `AUDIT_RECORDING_STARTED_ON_PHASE_2` (2026-08-31).
+- `../carmen-platform/src/utils/permissions.ts` — `PLATFORM_SCOPED_RECORD`, the sentinel `clusterId` the View History gate uses.
 - `../carmen-platform/src/pages/NewsManagement.tsx`, `src/pages/newsManagement/NewsroomSummary.tsx` — list page: thumbnail/Target/Tags columns, status/tag filters, CSV export, bulk toolbar, `<Can>` gates.
 - `../carmen-platform/src/pages/NewsEdit.tsx`, `src/pages/newsEdit/NewsMasthead.tsx` — masthead + two-column create/view/edit layout and validation.
 - `../carmen-platform/src/services/newsService.ts` — REST client, multipart builder, `getTags`.
 - `../carmen-platform/src/components/MarkdownEditor.tsx`, `ImageUpload.tsx`, `BusinessUnitMultiSelect.tsx`, `ui/chip-input.tsx`, `ReadOnlyField.tsx` — the module's form components.
 - `../carmen-platform/src/utils/docVersion.ts` — `getDocVersion`/`isVersionConflict`/`notifyVersionConflict` optimistic-lock helpers.
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_news` (line 812), `enum_news_status` (line 726).
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_news` (line 884), `enum_news_status` (line 798).
 - `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/news/` — `news.controller.ts` (guards, multipart, `GET tags`), `news.service.ts` (file upload/rollback/cleanup), `news-image.helper.ts` (presigned `image_url`), `news-body.parser.ts`, `public-news.controller.ts` / `public-news.service.ts` (anonymous delivery).
 - `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/news/news.service.ts` — persistence: BU validation, tag normalization, `published_at` stamping, the `doc_version` optimistic lock, soft-delete filtering, public visibility filters.
 - `../carmen-turborepo-backend-bruno/collections/carmen-inventory/master-data/news/` — request/response contracts, including the `public/` pair and `GET-find-tags-master-data-news.bru`.

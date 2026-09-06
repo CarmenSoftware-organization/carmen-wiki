@@ -2,7 +2,7 @@
 title: News — แบบจำลองข้อมูล (Data Model)
 description: ตาราง field ของ tb_news (business_unit_ids, tags, doc_version), enum_news_status, pipeline จาก image_file_token → presigned image_url, optimistic lock ของ doc_version และความแตกต่างจาก type News ของ SPA
 published: true
-date: 2026-07-29T00:00:00.000Z
+date: 2026-09-05T00:00:00.000Z
 tags: book/platform, news, data-model
 editor: markdown
 dateCreated: 2026-06-10T15:45:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-06-10T15:45:00.000Z
 # News — แบบจำลองข้อมูล (Data Model)
 
 > **At a Glance**
-> **ตาราง:** `tb_news` — ตารางเดียว, **ไม่มีความสัมพันธ์ FK, ไม่มี unique constraint นอกเหนือจาก PK** &nbsp;·&nbsp; **Enum:** `enum_news_status` (draft · published · archived) &nbsp;·&nbsp; **การกำหนดเป้าหมาย:** `business_unit_ids Json @default("[]")` — array ของ UUID แบบ JSONB ไม่ใช่ join table; `[]` = global &nbsp;·&nbsp; **Tags:** `tags Json @default("[]")` — array ของ string แบบ JSONB ที่ถูก lowercase/dedupe/จำกัดจำนวนฝั่ง server &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` — จำเป็นทุก `PUT`, บังคับใช้ optimistic locking &nbsp;·&nbsp; **รูปภาพ:** จัดเก็บเป็น `image_file_token` (MinIO); response ของ API แทนที่มันด้วย presigned `image_url` (หมดอายุ 1 ชั่วโมง) &nbsp;·&nbsp; **Endpoint:** `/api/news` (CRUD แบบ authenticated) + `/api/news/tags` + `/api/public/news` (anonymous) — `/api` **ไม่ใช่** `/api-system`
+> **ตาราง:** `tb_news` — ตารางเดียว, **ไม่มีความสัมพันธ์ FK, ไม่มี unique constraint นอกเหนือจาก PK** &nbsp;·&nbsp; **Enum:** `enum_news_status` (draft · published · archived) &nbsp;·&nbsp; **การกำหนดเป้าหมาย:** `business_unit_ids Json @default("[]")` — array ของ UUID แบบ JSONB ไม่ใช่ join table; `[]` = global &nbsp;·&nbsp; **Tags:** `tags Json @default("[]")` — array ของ string แบบ JSONB ที่ถูก lowercase/dedupe/จำกัดจำนวนฝั่ง server &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` — จำเป็นทุก `PUT`, บังคับใช้ optimistic locking &nbsp;·&nbsp; **รูปภาพ:** จัดเก็บเป็น `image_file_token` (MinIO); response ของ API แทนที่มันด้วย presigned `image_url` (หมดอายุ 1 ชั่วโมง) &nbsp;·&nbsp; **Endpoint:** `/api/news` (CRUD แบบ authenticated) + `/api/news/tags` + `/api/news/summary` (เพิ่มเมื่อ 2026-08-24) + `/api/public/news` (anonymous) — `/api` **ไม่ใช่** `/api-system` &nbsp;·&nbsp; **การบังคับใช้:** route เขียนทั้งสามตรวจสอบ permission `news.*` ของผู้เรียกเองฝั่ง server (`PlatformPermissionGuard` เพิ่มเมื่อ 2026-08-20); route `GET` ทั้งสี่ตรวจสอบเฉพาะ `x-app-id` — ไม่มีการตรวจสอบ permission ของผู้ใช้ โดยตั้งใจ (§6)
 
 > **Source of truth:** Prisma platform schema ฝั่ง backend อ่านไฟล์นี้ก่อนเสมอเมื่อเขียนหรืออัพเดทหน้านี้:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
@@ -28,7 +28,7 @@ dateCreated: 2026-06-10T15:45:00.000Z
 
 ### 2.1 `tb_news`
 
-หนึ่งประกาศ/บทความ Schema บรรทัด 812
+หนึ่งประกาศ/บทความ Schema บรรทัด 884
 
 | Field | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | ----------- |
@@ -120,13 +120,13 @@ UPDATE tb_news SET ... WHERE id = :id AND doc_version = :doc_version
 
 ## 4. Enum
 
-### `enum_news_status` (schema บรรทัด 726)
+### `enum_news_status` (schema บรรทัด 798)
 
 | ค่า | ความหมาย |
 |---|---|
 | `draft` | ค่าเริ่มต้น งานระหว่างทำ — มองไม่เห็นจาก public feed |
 | `published` | เผยแพร่อยู่ — ถูกเสิร์ฟโดย `/api/public/news` เมื่อ `published_at <= now()` |
-| `archived` | ปลดระวางจาก public feed แต่ยังมองเห็นได้ใน admin list; แตกต่างจาก soft delete (§5, กรณีพิเศษใน [Permissions](./permissions.md) §4) |
+| `archived` | ปลดระวางจาก public feed แต่ยังมองเห็นได้ใน admin list; แตกต่างจาก soft delete (§5, กรณีพิเศษใน [Permissions](/th/platform/news/permissions) §4) |
 
 การ transition ไม่มีข้อจำกัดทั้งใน SPA (select ธรรมดา) และ backend (ไม่มี transition guard) — สถานะใดก็ย้ายไปสถานะอื่นใดได้
 
@@ -152,26 +152,29 @@ REST surface (backend-gateway) **สังเกต prefix: `/api/news` ไม�
 
 | Method + Path | Auth | วัตถุประสงค์ | หมายเหตุ |
 |---|---|---|---|
-| `GET /api/news` | Bearer + `x-app-id` (`news.findAll`) | Admin list | แบ่งหน้า; SPA ค้นหา `title`,`contents`; filter สถานะ/tag ผ่าน `advance` `{ where: { status: { in }, OR: [{ tags: { array_contains } }, ...] } }`; **ไม่รวม row ที่ soft-delete** (`where.deleted_at = null`, ยืนยันว่าแก้แล้ว); audit แบบซ้อน; sort ฝั่ง server ถูกตรึงเป็น `updated_at DESC` |
-| `GET /api/news/tags` | Bearer + `x-app-id` (`news.findAll`) | Tag ที่ไม่ซ้ำ | `SELECT DISTINCT jsonb_array_elements_text(tags) ... WHERE deleted_at IS NULL` เรียงตามตัวอักษร — ป้อน filter Tags ของ list และ autocomplete ของหน้า edit |
-| `GET /api/news/:news_id` | Bearer + `x-app-id` (`news.findOne`) | Detail | param แบบ UUID v4; 404 เมื่อถูก soft-delete; audit แบบซ้อน; `image_url` แบบ presigned |
-| `POST /api/news` | Bearer + `x-app-id` (`news.create`) | สร้าง | `multipart/form-data` (binary ใน field `image`; `business_unit_ids`/`tags` เป็น string ที่ encode เป็น JSON) **หรือ** JSON ธรรมดาแบบไม่มีรูป คืน 201 `{ id, doc_version }` create ที่ล้มเหลวจะ roll back ไฟล์ที่อัพโหลดไปแล้ว |
-| `PUT /api/news/:news_id` | Bearer + `x-app-id` (`news.update`) | อัพเดท | ทางแยก multipart/JSON เดียวกัน; **ต้องมี `doc_version`** (400 ถ้าไม่มี, 409 ถ้าค่าล้าสมัย); รูปใหม่จะแทนที่และลบไฟล์เก่า; update แบบ JSON อย่างเดียวไม่แตะรูป คืน `{ id, doc_version }` เท่านั้น |
-| `DELETE /api/news/:news_id` | Bearer + `x-app-id` (`news.delete`) | Soft delete | ตั้ง `deleted_at`/`deleted_by_id`; ลบไฟล์ MinIO แบบ best-effort |
+| `GET /api/news` | Bearer + `x-app-id` (`news.findAll`) — **ไม่มีการตรวจสอบ permission** | Admin list | แบ่งหน้า; SPA ค้นหา `title`,`contents`; filter สถานะ/tag ผ่าน `advance` `{ where: { status: { in }, OR: [{ tags: { array_contains } }, ...] } }`; **ไม่รวม row ที่ soft-delete** (`where.deleted_at = null`, ยืนยันว่าแก้แล้ว); audit แบบซ้อน; sort ฝั่ง server ถูกตรึงเป็น `updated_at DESC` |
+| `GET /api/news/tags` | Bearer + `x-app-id` (`news.findAll`) — **ไม่มีการตรวจสอบ permission** | Tag ที่ไม่ซ้ำ | `SELECT DISTINCT jsonb_array_elements_text(tags) ... WHERE deleted_at IS NULL` เรียงตามตัวอักษร — ป้อน filter Tags ของ list และ autocomplete ของหน้า edit |
+| `GET /api/news/summary` | Bearer + `x-app-id` (`news.findAll` ใช้ซ้ำ — ดูหมายเหตุ §6) — **ไม่มีการตรวจสอบ permission** | ค่าสรุปห้องข่าว | เพิ่มเมื่อ 2026-08-24 คู่กับการแก้เดียวกันบน Applications; ไม่กรอง (`where: {}`) — จำนวนตามสถานะ (draft/published/archived), จำนวน `deleted` ทั่วทั้งชุด, บทความนำ (publish ล่าสุด); ป้อน `NewsroomSummary` |
+| `GET /api/news/:news_id` | Bearer + `x-app-id` (`news.findOne`) — **ไม่มีการตรวจสอบ permission** | Detail | param แบบ UUID v4; 404 เมื่อถูก soft-delete; audit แบบซ้อน; `image_url` แบบ presigned |
+| `POST /api/news` | Bearer + `x-app-id` (`news.create`) **+ permission `news.create` ฝั่งแพลตฟอร์ม** (`PlatformPermissionGuard` เพิ่มเมื่อ 2026-08-20 — ดูหมายเหตุ §6) | สร้าง | `multipart/form-data` (binary ใน field `image`; `business_unit_ids`/`tags` เป็น string ที่ encode เป็น JSON) **หรือ** JSON ธรรมดาแบบไม่มีรูป คืน 201 `{ id, doc_version }` create ที่ล้มเหลวจะ roll back ไฟล์ที่อัพโหลดไปแล้ว |
+| `PUT /api/news/:news_id` | Bearer + `x-app-id` (`news.update`) **+ permission `news.update` ฝั่งแพลตฟอร์ม** (`PlatformPermissionGuard` เพิ่มเมื่อ 2026-08-20) | อัพเดท | ทางแยก multipart/JSON เดียวกัน; **ต้องมี `doc_version`** (400 ถ้าไม่มี, 409 ถ้าค่าล้าสมัย); รูปใหม่จะแทนที่และลบไฟล์เก่า; update แบบ JSON อย่างเดียวไม่แตะรูป คืน `{ id, doc_version }` เท่านั้น |
+| `DELETE /api/news/:news_id` | Bearer + `x-app-id` (`news.delete`) **+ permission `news.delete` ฝั่งแพลตฟอร์ม** (`PlatformPermissionGuard` เพิ่มเมื่อ 2026-08-20) | Soft delete | ตั้ง `deleted_at`/`deleted_by_id`; ลบไฟล์ MinIO แบบ best-effort |
 | `GET /api/public/news` | **ไม่มี (anonymous)** | Public feed | query `bu_id`/`page`/`perpage`; published + `published_at <= now()` + ไม่ถูกลบ; ไม่มี `bu_id` → global เท่านั้น; มี `bu_id` → global + ที่กำหนดเป้าหมาย; projection แบบ lean (`id`,`title`,`contents`,`url`,`image_url`,`tags`,`published_at`), เรียง `published_at DESC` |
 | `GET /api/public/news/:news_id` | **ไม่มี (anonymous)** | Public detail | 404 เหมือนกันหมดสำหรับ draft/archived/ถูกลบ/ลงวันที่อนาคต/ไม่รู้จัก |
+
+**การบังคับใช้ permission ฝั่ง server ไม่สมมาตร และเป็นแบบนี้โดยตั้งใจ** ก่อน 2026-08-20 `news.controller.ts` ไม่มี decorator `@RequirePlatformPermission` แม้แต่ตัวเดียว — มีเพียง `KeycloakGuard` (ต้อง login) และ `AppIdGuard` (application ที่เรียกต้องถือ key นั้น) การแก้ในวันนั้นเพิ่ม `PlatformPermissionGuard` + `@RequirePlatformPermission` ให้เฉพาะ route **เขียน** สามตัว route **อ่าน** ทั้งสี่ (`findAll`, `findOne`, `tags`, `summary`) ถูกปล่อยไว้แบบไม่มี guard โดยตั้งใจ ไม่ใช่ความผิดพลาด: DB ของ DEV แสดงว่า application `mobile-app` ถือ `news.findAll`/`news.findOne` อยู่ใน allowlist และให้บริการผู้ใช้ระดับ tenant ที่ไม่มี role ระดับแพลตฟอร์มเลย — การเพิ่มการตรวจสอบ `news.read` ที่นั่นจะทำให้ผู้ใช้มือถือทุกคนอ่านข่าวไม่ได้ การอ่าน `/api/news` จึงยังเป็น authenticated-แต่ไม่ตรวจสอบ-role; `news.read` ยังคงเป็นเพียง key "แสดงเมนู admin" ฝั่ง client เท่านั้น การอ่านแบบไม่ login มี controller แยกต่างหากและไม่มี guard เลย (`PublicNewsController` ที่ `/api/public/news`)
 
 รายละเอียดรูปแบบ multipart (create/update): field `image` ถือ binary; `validateImageUpload` ของ gateway บังคับ MIME `image/jpeg`/`png`/`webp`, ≤5 MB และ ≤2048×2048 px (parse ล้มเหลว → 400 `BAD_DIMENSIONS`) field ที่เป็นข้อความมาถึงเป็น string; `business_unit_ids` และ `tags` เท่านั้นที่ถูก decode จาก JSON
 
 **หลัก (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_news` (บรรทัด 812), `enum_news_status` (บรรทัด 726)
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_news` (บรรทัด 884), `enum_news_status` (บรรทัด 798)
 - `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/news/news.service.ts` — การตรวจสอบ BU, การ normalize tag, การประทับ `published_at`, optimistic lock ของ `doc_version`, filter soft-delete, filter ฝั่ง public, การ override sort เป็น `updated_at`
 
 **รอง (gateway + shape ฝั่ง consumer):**
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/news/` — `news.controller.ts`, `news.service.ts` (อัพโหลด/rollback/cleanup), `news-image.helper.ts`, `news-body.parser.ts`, `public-news.controller.ts`
+- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/news/` — `news.controller.ts` (`PlatformPermissionGuard` บน route เขียนสามตัวเท่านั้น — ดู §6 ด้านบน), `news.service.ts` (อัพโหลด/rollback/cleanup; เป็น RPC proxy ไปยัง `micro-cluster` ไม่ได้เข้าถึง Prisma ตรง ๆ), `news-image.helper.ts`, `news-body.parser.ts`, `public-news.controller.ts`
 - `../carmen-turborepo-backend-v2/apps/backend-gateway/src/common/helpers/image-upload.validator.ts` — ขีดจำกัดรูปภาพฝั่ง server
 - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/src/index.ts` — `OptimisticLockError` (`DOC_VERSION_CONFLICT`)
 - `../carmen-platform/src/types/index.ts` — `News`, `NewsStatus`, `Audit`, `AuditEntry`; `src/services/newsService.ts` — ตัวสร้าง multipart, `getTags`, การเดิน envelope; `src/utils/docVersion.ts` — helper ของ conflict
 - `../carmen-turborepo-backend-bruno/collections/carmen-inventory/master-data/news/` — สัญญาที่ execute ได้ รวมถึงคู่ `public/` และ `GET-find-tags-master-data-news.bru`
 
-**Cross-link:** [หน้า landing ของ News](/th/platform/news) &nbsp;·&nbsp; [UI Screens](./ui-screens.md) &nbsp;·&nbsp; [Permissions](./permissions.md) &nbsp;·&nbsp; [Business Units data-model](../business-units/data-model.md) (id ที่ถูกกำหนดเป้าหมาย)
+**Cross-link:** [หน้า landing ของ News](/th/platform/news) &nbsp;·&nbsp; [UI Screens](/th/platform/news/ui-screens) &nbsp;·&nbsp; [Permissions](/th/platform/news/permissions) &nbsp;·&nbsp; [Business Units data-model](/th/platform/business-units/data-model) (id ที่ถูกกำหนดเป้าหมาย)

@@ -2,7 +2,7 @@
 title: ข่าวสาร (News)
 description: ภาพรวมโมดูล News — ประกาศแบบ markdown พร้อมรูปภาพแบบ optional, tags, lifecycle ของสถานะ draft → published → archived, การกำหนดเป้าหมายแบบ global หรือราย BU และ bulk publish/archive/delete เขียนใน admin SPA และส่งมอบผ่าน public endpoint แบบ anonymous
 published: true
-date: 2026-07-29T00:00:00.000Z
+date: 2026-09-05T00:00:00.000Z
 tags: platform/news, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T15:45:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-06-10T15:45:00.000Z
 โมดูล **News** จัดการประกาศและบทความสำหรับผู้ใช้แพลตฟอร์ม: เนื้อหา markdown, รูปภาพแบบ optional, URL ของแหล่งที่มา, tags แบบอิสระ และ lifecycle ของสถานะ `draft → published → archived` กำหนดเป้าหมายแบบ global หรือไปยังรายการ business unit แบบระบุชัด Platform admin SPA คือ**ฝั่งผู้เขียน (authoring)**; การส่งมอบไปยังผู้ใช้ปลายทางเกิดขึ้นผ่านคู่ **public endpoint แบบ anonymous** ที่แยกต่างหาก (`/api/public/news`) ซึ่งเปิดเผยเฉพาะบทความที่ published, ไม่ถูกลบ และเวลาเผยแพร่มาถึงแล้วเท่านั้น (ยังไม่มี client ใน repo ใดบริโภค endpoint เหล่านี้ — ดู §2)
 
 > **At a Glance**
-> **วัตถุประสงค์ของโมดูล:** เขียนและจัดการประกาศ — `contents` แบบ markdown, รูปภาพแบบ optional (อัพโหลด multipart → file token ของ MinIO → presigned `image_url`), tags แบบอิสระ, lifecycle ของสถานะพร้อม `published_at` ที่ server ประทับให้, การกำหนดเป้าหมายแบบ global หรือราย BU, bulk publish/archive/delete &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับ Platform admin SPA, โมดูล news ของ backend-gateway และ news service ของ micro-cluster &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_news` (ตารางเดียว, `business_unit_ids` และ `tags` แบบ JSONB, `doc_version` เป็น optimistic lock, ไม่มีความสัมพันธ์ FK) &nbsp;·&nbsp; **Endpoint:** `/api/news` (CRUD แบบ authenticated — สังเกตว่าเป็น `/api` **ไม่ใช่** `/api-system`), `/api/news/tags` (รายการ tag ที่ไม่ซ้ำ) และ `/api/public/news` (อ่านแบบ anonymous) &nbsp;·&nbsp; **หน้าย่อย:** 3
+> **วัตถุประสงค์ของโมดูล:** เขียนและจัดการประกาศ — `contents` แบบ markdown, รูปภาพแบบ optional (อัพโหลด multipart → file token ของ MinIO → presigned `image_url`), tags แบบอิสระ, lifecycle ของสถานะพร้อม `published_at` ที่ server ประทับให้, การกำหนดเป้าหมายแบบ global หรือราย BU, bulk publish/archive/delete &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับ Platform admin SPA, โมดูล news ของ backend-gateway และ news service ของ micro-cluster &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_news` (ตารางเดียว, `business_unit_ids` และ `tags` แบบ JSONB, `doc_version` เป็น optimistic lock, ไม่มีความสัมพันธ์ FK) &nbsp;·&nbsp; **Endpoint:** `/api/news` (CRUD แบบ authenticated — สังเกตว่าเป็น `/api` **ไม่ใช่** `/api-system`), `/api/news/tags` (รายการ tag ที่ไม่ซ้ำ), `/api/news/summary` (ค่าสรุปห้องข่าวแบบไม่กรอง เพิ่มเมื่อ 2026-08-24) และ `/api/public/news` (อ่านแบบ anonymous) &nbsp;·&nbsp; **การบังคับใช้ฝั่ง server:** `POST`/`PUT`/`DELETE` ตรวจสอบ permission `news.create`/`.update`/`.delete` ของผู้เรียกเอง (`PlatformPermissionGuard` เพิ่มเมื่อ 2026-08-20); route `GET` ทั้งสี่ตรวจสอบเฉพาะ allowlist ของ `x-app-id` ของ application ที่เรียก โดยตั้งใจ เพื่อให้ผู้ใช้ระดับ tenant ของแอปมือถือ — ซึ่งไม่มี role ระดับแพลตฟอร์มเลย — ยังอ่านข่าวได้ &nbsp;·&nbsp; **หน้าย่อย:** 3
 
 ## 1. ภาพรวม
 
@@ -24,13 +24,15 @@ dateCreated: 2026-06-10T15:45:00.000Z
 
 เรคคอร์ดข่าวหนึ่งตัวคือหนึ่ง row ใน `tb_news`: `title` (จำเป็น), `contents` (markdown), `url` (ลิงก์แหล่งที่มาแบบ optional), รูปภาพที่จัดเก็บเป็น **file token** ของ MinIO (`image_file_token` — API จะ resolve มันเป็น presigned `image_url` และไม่เคยเปิดเผยตัว token), `tags` (array ของ string แบบ JSONB), `status`, `published_at`, `business_unit_ids` (array แบบ JSONB; ว่าง = มองเห็นได้ทุก business unit) และ `doc_version` (ตัวนับ optimistic-lock) ดู [Data Model](/th/platform/news/data-model) สำหรับตาราง field ฉบับเต็มและ [UI Screens](/th/platform/news/ui-screens) สำหรับ walkthrough ของหน้าจอ
 
+ทั้งสองหน้าจอยังมีฟีเจอร์ **Activity Trail** ข้ามโมดูลที่เพิ่มเข้ามาทั้งแพลตฟอร์ม: action **View History** (dropdown action ของ row ในหน้า list; ที่หน้า edit อยู่ในแถว header บนสุดข้าง back link) ถูก gate ด้วย `activity_log.read` พร้อม sentinel `clusterId={PLATFORM_SCOPED_RECORD}` เพราะบทความหนึ่งชิ้นกำหนดเป้าหมายได้หลาย business unit จึงไม่มี cluster เดียวให้ผูก (ดู [Permissions](/th/platform/news/permissions)) การบันทึกเริ่มตั้งแต่ 2026-08-31 (`AUDIT_RECORDING_STARTED_ON_PHASE_2`) บทความที่สร้างก่อนหน้านั้นจึงมี timeline ว่างเปล่า ไม่ได้หมายความว่าไม่เคยมีการแก้ไข ตั้งแต่ 2026-08-24 การ์ด `NewsroomSummary` ก็อ่านจาก endpoint `GET /api/news/summary` แบบไม่กรองโดยเฉพาะแล้ว แทนที่การกวาดทั้งตารางฝั่ง client แบบเดิม (ดู [Data Model](/th/platform/news/data-model) §6)
+
 ส่วนที่เหลือทั้งหมดเป็นองค์ประกอบมาตรฐานของหน้า Management: `TableSkeleton`, `ListEmptyState` ที่รับรู้ filter, toast feedback, navigation guard `useUnsavedChanges`, คีย์ลัด global (Ctrl/Cmd+S save, Escape cancel, Ctrl/Cmd+K โฟกัสช่องค้นหา) และ Debug Sheet เฉพาะ dev
 
 ## 2. บริบททางธุรกิจ
 
 News มีไว้เพื่อสื่อสารข้อมูลอัพเดทเชิงปฏิบัติการ — การเปลี่ยนนโยบาย, ประกาศปิดปรับปรุงระบบ, ประกาศของกลุ่มโรงแรม — ไปยังพนักงานของ business unit หนึ่งแห่ง หลายแห่ง หรือทั้งหมด โมดูลแบ่งออกเป็นสองส่วนอย่างชัดเจนโดยมี security model ต่างกัน:
 
-- **Authoring** (SPA นี้ + `/api/news`): CRUD เต็มรูปแบบ ถูก gate ด้วย key `news.*` ของ RBAC สำหรับมนุษย์ และ grant ของ `AppIdGuard` สำหรับ application ที่เรียก ผู้เขียนเห็นทุกเรคคอร์ดไม่ว่าสถานะใด รวมถึง row ที่เป็น draft และ archived
+- **Authoring** (SPA นี้ + `/api/news`): CRUD เต็มรูปแบบ ถูก gate ด้วย key `news.*` ของ RBAC สำหรับมนุษย์ และ grant ของ `AppIdGuard` สำหรับ application ที่เรียก — แต่ไม่เหมือนกันทุก route `POST`/`PUT`/`DELETE` ตรวจสอบ permission `news.create`/`.update`/`.delete` ของผู้เรียกเองที่ฝั่ง server (`PlatformPermissionGuard` เพิ่มเมื่อ 2026-08-20 — ก่อนแก้ API ยอมรับผู้เรียกที่ authenticated และ app-id ผ่าน โดยไม่สนใจ RBAC เลย) route `GET` ทั้งสี่ (list, detail, tags, summary) ตั้งใจไม่มีการตรวจสอบแบบนี้: DB แสดงว่า application `mobile-app` ถือ `news.findAll`/`news.findOne` อยู่ใน allowlist และให้บริการผู้ใช้ระดับ tenant ที่ไม่มี role ระดับแพลตฟอร์มเลย การเพิ่ม `news.read` ที่นั่นจะทำให้ผู้ใช้มือถือทุกคนอ่านข่าวไม่ได้ — `news.read` จึงยังเป็นเพียง key สำหรับ "ซ่อนเมนู admin" (ดู [Permissions](/th/platform/news/permissions) §1) ผู้เขียนเห็นทุกเรคคอร์ดไม่ว่าสถานะใด รวมถึง row ที่เป็น draft และ archived
 - **Delivery** (`/api/public/news` + `/api/public/news/:id`): **anonymous** — controller ไม่มี authentication guard ใด ๆ เลย มันเสิร์ฟเฉพาะ row ที่ `status = published`, ไม่ถูก soft-delete **และ** `published_at <= now()` เมื่อไม่มี query parameter `bu_id` จะคืนเฉพาะข่าว global; เมื่อมี `bu_id` จะคืนข่าว global บวกข่าวที่กำหนดเป้าหมายไปยัง BU นั้น บทความที่เป็น draft, archived, ถูกลบ หรือลงวันที่อนาคตตอบกลับ 404 — response เดียวกับ id ที่ไม่รู้จัก การมีอยู่ของเรคคอร์ดจึงไม่เคยรั่วไหล
 
 filter `published_at <= now()` หมายความว่าผู้เขียนสามารถ**กำหนดเวลาเผยแพร่ (schedule)** บทความได้โดย publish พร้อม timestamp อนาคตผ่าน API (ตัว SPA เองไม่เคยส่ง `published_at` — ดู §3) ยังไม่มี client ใน repo ใด render public feed: web frontend ของ Carmen Inventory ไม่มี surface สำหรับข่าว ให้ปฏิบัติกับ public endpoint เป็นสัญญาการส่งมอบ (delivery contract) ของโมดูล
@@ -56,14 +58,15 @@ filter `published_at <= now()` หมายความว่าผู้เข�
 | route `/news` + รายการ sidebar "News" (กลุ่ม Content, ไอคอน Newspaper) | `PrivateRoute` / sidebar filter | `news.read` |
 | route `/news/new` | `PrivateRoute` | `news.create` |
 | route `/news/:id/edit` | `PrivateRoute` | `news.update` |
-| ปุ่ม Add News (header ของหน้า list) | `<Can>` | `news.create` |
+| ปุ่ม Add News (header ของหน้า list **และ** CTA ของ empty-state) | `<Can>` | `news.create` |
 | Edit ของ row (dropdown action ในหน้า list) | `<Can>` | `news.update` |
 | Delete ของ row (dropdown action ในหน้า list) | `<Can>` | `news.delete` |
 | Bulk Publish / Archive Selected | in-component (`canUpdate`) | `news.update` |
 | Bulk Delete Selected | in-component (`canDelete`) | `news.delete` |
-| toggle Edit (header ของหน้า edit) | `<Can>` | `news.update` |
+| toggle Edit (masthead ของหน้า edit) | `<Can>` | `news.update` |
+| **View History** ของ row/header หน้า edit (Activity Trail ข้ามโมดูล) | `<Can>` | `activity_log.read`, `clusterId={PLATFORM_SCOPED_RECORD}` |
 
-เช่นเดียวกับ Applications และ Print Template Mapping, `news.delete` มีอยู่ **เป็น gate ภายในหน้าเท่านั้น** — ไม่มี route ใดต้องการมัน route guard ที่ไม่ผ่านตอนนี้ render หน้า `Forbidden` แบบเฉพาะ (เปลี่ยนชื่อจาก `AccessDenied` แบบ inline เดิม ยังคงเป็นหัวข้อ 403 "Access Denied" เหมือนเดิม ตอนนี้มี action Go Back / Go to Dashboard เพิ่มมา) ภายใน shell `Layout` ปกติ caller ที่เป็น machine ถูก gate แยกต่างหากด้วย key ของ `AppIdGuard` (`news.findAll`, `news.findOne`, `news.create`, `news.update`, `news.delete` — key เดียวกันนี้ยัง gate `GET /api/news/tags` ด้วย) — คลังศัพท์คนละชุดกับ key ของ RBAC เมทริกซ์ฉบับเต็ม รวมถึง CTA ของ empty-state ที่ไม่ถูก gate อยู่ใน [Permissions](/th/platform/news/permissions)
+เช่นเดียวกับ Applications, `news.delete` **ไม่มี route ของ SPA ที่ต้องการมัน** — การลบเป็น action ของ row/bulk ไม่ใช่หน้าที่ navigate ไปถึง แต่นั่นเป็นข้อเท็จจริงเรื่อง client-routing เท่านั้น ไม่ใช่เรื่องการบังคับใช้ทั้งหมด ฝั่ง server `POST`/`PUT`/`DELETE /api/news` แต่ละตัวตรวจสอบ permission `news.create`/`.update`/`.delete` ของผู้เรียกเองผ่าน `PlatformPermissionGuard` (เพิ่มเมื่อ 2026-08-20; ก่อนแก้ API ไม่มีการตรวจสอบ permission ของผู้ใช้เลยและยอมรับผู้เรียกที่ authenticated และ app-id ผ่านทุกคน — ดู [Permissions](/th/platform/news/permissions) §1) route guard ที่ไม่ผ่านตอนนี้ render หน้า `Forbidden` แบบเฉพาะ (เปลี่ยนชื่อจาก `AccessDenied` แบบ inline เดิม ยังคงเป็นหัวข้อ 403 "Access Denied" เหมือนเดิม ตอนนี้มี action Go Back / Go to Dashboard เพิ่มมา) ภายใน shell `Layout` ปกติ caller ที่เป็น machine ถูก gate แยกต่างหากด้วย key ของ `AppIdGuard` (`news.findAll`, `news.findOne`, `news.create`, `news.update`, `news.delete` — key `news.findAll` เดียวกันนี้ยัง gate `GET /api/news/tags` และ `GET /api/news/summary` ด้วย) — คลังศัพท์คนละชุดกับ key ของ RBAC และเป็นการตรวจสอบฝั่ง server เพียงอย่างเดียวของ route `GET` ทั้งสี่ (ดู [Permissions](/th/platform/news/permissions) §1 สำหรับเหตุผล) เมทริกซ์ฉบับเต็มอยู่ใน [Permissions](/th/platform/news/permissions)
 
 ## 5. โมดูลที่เกี่ยวข้อง
 
@@ -75,13 +78,16 @@ filter `published_at <= now()` หมายความว่าผู้เข�
 ## 6. แหล่งข้อมูลอ้างอิง
 
 - `../carmen-platform/src/App.tsx` — route guard `news.*` ทั้งสาม
-- `../carmen-platform/src/components/Layout.tsx` — รายการ sidebar "News" (กลุ่ม Content, `news.read`)
+- `../carmen-platform/src/components/nav/platformNav.ts` — รายการ sidebar "News" (บรรทัด 27: กลุ่ม Content, ไอคอน Newspaper, `news.read`, `feature: 'news'`, `dividerBefore: true`) ไม่ใช่ `Layout.tsx` ซึ่งไม่ได้กำหนดรายการ nav ใด ๆ แล้ว
+- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/news/news.controller.ts` — `PlatformPermissionGuard`/`RequirePlatformPermission` บน route เขียนสามตัว (เพิ่มเมื่อ 2026-08-20) และ route `/summary` (เพิ่มเมื่อ 2026-08-24)
+- `../carmen-platform/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` — ฟีเจอร์ View History; `AUDIT_RECORDING_STARTED_ON_PHASE_2` (2026-08-31)
+- `../carmen-platform/src/utils/permissions.ts` — `PLATFORM_SCOPED_RECORD` sentinel `clusterId` ที่ gate ของ View History ใช้
 - `../carmen-platform/src/pages/NewsManagement.tsx`, `src/pages/newsManagement/NewsroomSummary.tsx` — หน้า list: คอลัมน์ thumbnail/Target/Tags, filter สถานะ/tag, ส่งออก CSV, bulk toolbar, gate `<Can>`
 - `../carmen-platform/src/pages/NewsEdit.tsx`, `src/pages/newsEdit/NewsMasthead.tsx` — layout แบบ masthead + สองคอลัมน์ของ create/view/edit และการ validate
 - `../carmen-platform/src/services/newsService.ts` — REST client, ตัวสร้าง multipart, `getTags`
 - `../carmen-platform/src/components/MarkdownEditor.tsx`, `ImageUpload.tsx`, `BusinessUnitMultiSelect.tsx`, `ui/chip-input.tsx`, `ReadOnlyField.tsx` — component ของฟอร์มในโมดูล
 - `../carmen-platform/src/utils/docVersion.ts` — helper ของ optimistic-lock (`getDocVersion`/`isVersionConflict`/`notifyVersionConflict`)
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_news` (บรรทัด 812), `enum_news_status` (บรรทัด 726)
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_news` (บรรทัด 884), `enum_news_status` (บรรทัด 798)
 - `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/news/` — `news.controller.ts` (guard, multipart, `GET tags`), `news.service.ts` (อัพโหลดไฟล์/rollback/cleanup), `news-image.helper.ts` (presigned `image_url`), `news-body.parser.ts`, `public-news.controller.ts` / `public-news.service.ts` (การส่งมอบแบบ anonymous)
 - `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/news/news.service.ts` — ชั้น persistence: การตรวจสอบ BU, การ normalize tag, การประทับ `published_at`, optimistic lock ของ `doc_version`, การ filter soft-delete, filter การมองเห็นฝั่ง public
 - `../carmen-turborepo-backend-bruno/collections/carmen-inventory/master-data/news/` — สัญญา request/response รวมถึงคู่ `public/` และ `GET-find-tags-master-data-news.bru`

@@ -5,41 +5,6 @@
 book: platform
 
 pages:
-  - path: index.md
-    title_en: Carmen Platform
-    title_th: Carmen Platform
-    description: Overview of the Carmen Platform admin product — entry point for the book.
-    tags: [book/platform, home]
-    at_a_glance:
-      - Audience and scope
-      - Modules and how they connect
-      - Quick links to each module's home page
-    references:
-      - "../carmen-platform/README.md"
-      - "../carmen-platform/SITEMAP.md"
-      - "../carmen-platform/docs/OVERVIEW.md"
-    todo:
-      - Replace this skeleton with an introduction matching the existing Inventory book home page
-      - Add a table of modules with one-line descriptions
-
-  - path: clusters/index.md
-    title_en: Clusters
-    title_th: Clusters
-    description: Cluster management — CRUD, user/BU assignment, license limits.
-    tags: [book/platform, clusters]
-    at_a_glance:
-      - What a cluster is and which entities it groups
-      - License limits enforced at cluster level
-      - Workflows for adding users and business units
-    references:
-      - "../carmen-platform/SITEMAP.md (Clusters routes)"
-      - "../carmen-platform/src/pages/ClusterManagement.tsx"
-      - "../carmen-platform/src/pages/ClusterEdit.tsx"
-    todo:
-      - Document the data model
-      - Document the UI screens
-      - Document permissions
-
   - path: clusters/data-model.md
     title_en: Cluster — Data Model
     title_th: Cluster — Data Model
@@ -85,22 +50,6 @@ pages:
     todo:
       - Cross-link to auth-roles/index.md for role definitions
 
-  - path: business-units/index.md
-    title_en: Business Units
-    title_th: Business Units
-    description: Hotel/company entity with multi-section form (info, formats, timezone, DB connection, config array).
-    tags: [book/platform, business-units]
-    at_a_glance:
-      - What a BU represents
-      - Form sections and their purpose
-      - Relationship to clusters
-    references:
-      - "../carmen-platform/src/pages/BusinessUnitManagement.tsx"
-      - "../carmen-platform/src/pages/BusinessUnitEdit.tsx"
-    todo:
-      - Document each form section
-      - Note which fields are editable by which roles
-
   - path: business-units/data-model.md
     title_en: Business Unit — Data Model
     title_th: Business Unit — Data Model
@@ -129,21 +78,6 @@ pages:
       - "../carmen-platform/src/pages/BusinessUnitEdit.tsx"
     todo:
       - Screenshot each form section
-
-  - path: users/index.md
-    title_en: Users
-    title_th: Users
-    description: User accounts, role assignment, BU assignment, lifecycle.
-    tags: [book/platform, users]
-    at_a_glance:
-      - User identity vs role vs BU assignment
-      - Role + status filters on the list page
-      - Lifecycle operations
-    references:
-      - "../carmen-platform/src/pages/UserManagement.tsx"
-      - "../carmen-platform/src/pages/UserEdit.tsx"
-    todo:
-      - Document role assignment rules
 
   - path: users/data-model.md
     title_en: User — Data Model
@@ -187,21 +121,6 @@ pages:
     todo:
       - Document the password reset email flow if any
 
-  - path: report-templates/index.md
-    title_en: Report Templates
-    title_th: Report Templates
-    description: XML-based report definitions; tabbed editor with live validation and preview.
-    tags: [book/platform, report-templates]
-    at_a_glance:
-      - What a report template is
-      - Dialog XML vs Content XML
-      - Allow/deny BU lists
-    references:
-      - "../carmen-platform/src/pages/ReportTemplateManagement.tsx"
-      - "../carmen-platform/src/pages/ReportTemplateEdit.tsx"
-    todo:
-      - Document the XML schema
-
   - path: report-templates/xml-spec.md
     title_en: Report Template — XML Spec
     title_th: Report Template — XML Spec
@@ -233,32 +152,609 @@ pages:
     todo:
       - Screenshot each tab
 
-  - path: profile/index.md
-    title_en: Profile
-    title_th: Profile
-    description: View/edit own profile; change password.
-    tags: [book/platform, profile]
+  - path: report-templates/form-groups.md
+    title_en: Report Templates — Form Groups
+    title_th: เทมเพลตรายงาน — Form Groups
+    description: The /report-form-groups screen (added 2026-07-24) that replaced print-template-mapping's grouped-card list — one card per fixed report_group code, with a "set as default" action on tb_report_template.is_default.
+    tags: [book/platform, report-templates, form-groups]
     at_a_glance:
-      - View/edit fields
-      - Change password workflow
+      - ReportFormGroupManagement — grouped-card list, one card per report_group
+      - Reuses report_template.* permissions and its own report_form_groups feature key
+      - Replaces print-template-mapping's grouped-card list (removed 2026-07-24)
     references:
-      - "../carmen-platform/src/pages/Profile.tsx"
+      - "../carmen-platform/src/pages/ReportFormGroupManagement.tsx"
+      - "../carmen-platform/src/components/nav/platformNav.ts"
     todo:
-      - Document avatar menu entry point (not a sidebar item)
+      - Already written in full as part of Task 9 — no further action
 
-  - path: auth-roles/index.md
-    title_en: Authentication and Roles
-    title_th: Authentication and Roles
-    description: JWT auth, role gates, role catalog.
-    tags: [book/platform, auth, cross-cutting]
+  # --- New module: licenses (Task 13) ---
+  - path: licenses.md
+    title_en: Licenses
+    title_th: ไลเซนส์ (Licenses)
+    description: License centre — subscriptions, the per-cluster BU-quota ledger, the per-BU seat ledger, and expiry thresholds, reached also via legacy /subscriptions redirects.
+    tags: [book/platform, licenses]
     at_a_glance:
-      - JWT lifecycle (login, refresh, expiry)
-      - Role catalog and gates
-      - "Roles: platform_admin, super_admin, support_manager, support_staff, security_officer"
+      - LicenseCenter (cluster-level overview) and ClusterLicenseDetail (per-cluster ledger)
+      - Backs the tb_cluster_license (BU-quota) and tb_business_unit_license (seat) ledgers referenced from Clusters and Business Units
+      - Legacy /subscriptions* routes redirect into this module
     references:
-      - "../carmen-platform/README.md (Auth section)"
-      - "../carmen-platform/SITEMAP.md (Access column)"
-      - "../carmen-platform/CLAUDE.md"
+      - "../carmen-platform/src/pages/LicenseCenter.tsx"
+      - "../carmen-platform/src/pages/licenses/"
+      - "../carmen-platform/src/services/subscriptionService.ts"
+      - "../carmen-platform/src/services/clusterLicenseService.ts"
+      - "../carmen-platform/src/services/businessUnitLicenseService.ts"
+      - "../carmen-platform/src/services/expiryThresholdService.ts"
     todo:
-      - Build the role × route gate matrix
-      - Cross-link from each module's permissions doc
+      - Fill from source in Task 13
+
+  - path: licenses/data-model.md
+    title_en: Licenses — Data Model
+    title_th: ไลเซนส์ — โมเดลข้อมูล (Data Model)
+    description: tb_cluster_license (BU-quota ledger, winning-row semantics) and tb_business_unit_license (per-BU seat ledger, summed), plus subscription and expiry-threshold entities.
+    tags: [book/platform, licenses, data-model]
+    at_a_glance:
+      - tb_cluster_license — per-cluster BU-quota purchase ledger
+      - tb_business_unit_license — per-BU seat purchase ledger
+      - Subscription and expiry-threshold entities
+    references:
+      - "../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma"
+      - "../carmen-platform/src/services/subscriptionService.ts"
+      - "../carmen-platform/src/services/clusterLicenseService.ts"
+      - "../carmen-platform/src/services/businessUnitLicenseService.ts"
+    todo:
+      - Fill from source in Task 13
+
+  - path: licenses/ui-screens.md
+    title_en: Licenses — UI Screens
+    title_th: ไลเซนส์ — หน้าจอ UI (UI Screens)
+    description: LicenseCenter (cluster list), ClusterLicenseDetail (per-cluster ledger view), and the SubscriptionForm/LicensePurchaseForm purchase forms.
+    tags: [book/platform, licenses, ui]
+    at_a_glance:
+      - LicenseCenter — cluster-level license overview list
+      - ClusterLicenseDetail — per-cluster subscriptions, seats, BU-quota detail
+      - SubscriptionForm / LicensePurchaseForm — purchase and edit forms
+    references:
+      - "../carmen-platform/src/pages/LicenseCenter.tsx"
+      - "../carmen-platform/src/pages/licenses/ClusterLicenseDetail.tsx"
+      - "../carmen-platform/src/pages/licenses/SubscriptionForm.tsx"
+      - "../carmen-platform/src/pages/licenses/LicensePurchaseForm.tsx"
+    todo:
+      - Fill from source in Task 13
+
+  - path: licenses/permissions.md
+    title_en: Licenses — Permissions
+    title_th: ไลเซนส์ — สิทธิ์ (Permissions)
+    description: subscription.read gates the nav entry; subscription.manage and license.manage gate purchase/edit actions across subscriptions, seats and BU quota.
+    tags: [book/platform, licenses, permissions]
+    at_a_glance:
+      - subscription.read — nav/list gate
+      - subscription.manage / license.manage — CRUD gates on purchase and edit forms
+      - No dedicated e2e suite — verify against implementation only
+    references:
+      - "../carmen-platform/src/components/nav/platformNav.ts"
+      - "../carmen-platform/src/pages/LicenseCenter.tsx"
+    todo:
+      - Fill from source in Task 13
+
+  # --- New module: license-catalog (Task 14) ---
+  - path: license-catalog.md
+    title_en: License Catalog
+    title_th: แคตตาล็อกไลเซนส์ (License Catalog)
+    description: One screen, two tabs — the license feature catalog and license feature groups — documenting two legacy nav rows and permission pairs as a single merged module.
+    tags: [book/platform, license-catalog]
+    at_a_glance:
+      - LicenseCatalog — one component, two tabs (FeatureCatalogPanel, GroupCatalogPanel)
+      - Features and Groups tabs keep separate nav rows, permission pairs and feature keys
+      - Groups tab creates/edits via LicenseFeatureGroupEdit
+    references:
+      - "../carmen-platform/src/pages/LicenseCatalog.tsx"
+      - "../carmen-platform/src/pages/licenseCatalog/"
+      - "../carmen-platform/src/pages/LicenseFeatureGroupEdit.tsx"
+      - "../carmen-platform/src/services/licenseFeatureService.ts"
+      - "../carmen-platform/src/services/licenseFeatureGroupService.ts"
+    todo:
+      - Fill from source in Task 14
+
+  - path: license-catalog/data-model.md
+    title_en: License Catalog — Data Model
+    title_th: แคตตาล็อกไลเซนส์ — โมเดลข้อมูล (Data Model)
+    description: License feature and license feature group entities, and their relation to subscriptions built from them.
+    tags: [book/platform, license-catalog, data-model]
+    at_a_glance:
+      - License feature entity — the catalog of purchasable capabilities
+      - License feature group entity — named bundles of features
+      - Referenced by subscriptionService.ts when composing a subscription
+    references:
+      - "../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma"
+      - "../carmen-platform/src/services/licenseFeatureService.ts"
+      - "../carmen-platform/src/services/licenseFeatureGroupService.ts"
+    todo:
+      - Fill from source in Task 14
+
+  - path: license-catalog/ui-screens.md
+    title_en: License Catalog — UI Screens
+    title_th: แคตตาล็อกไลเซนส์ — หน้าจอ UI (UI Screens)
+    description: FeatureCatalogPanel and GroupCatalogPanel tabs inside LicenseCatalog, plus GroupCatalogPanel's own create/edit screen.
+    tags: [book/platform, license-catalog, ui]
+    at_a_glance:
+      - FeatureCatalogPanel — feature catalog tab (read-oriented)
+      - GroupCatalogPanel — group list tab, links to LicenseFeatureGroupEdit
+      - LicenseFeatureGroupEdit — create/edit screen for one feature group
+    references:
+      - "../carmen-platform/src/pages/LicenseCatalog.tsx"
+      - "../carmen-platform/src/pages/licenseCatalog/FeatureCatalogPanel.tsx"
+      - "../carmen-platform/src/pages/licenseCatalog/GroupCatalogPanel.tsx"
+      - "../carmen-platform/src/pages/LicenseFeatureGroupEdit.tsx"
+    todo:
+      - Fill from source in Task 14
+
+  # --- New module: cluster-admin (Task 15) ---
+  - path: cluster-admin.md
+    title_en: Cluster Admin
+    title_th: ผู้ดูแลคลัสเตอร์ (Cluster Admin)
+    description: The cluster-admin persona's own entry point — a membership-scoped mirror of Cluster, Business Units, Users, Licenses and Profile, with no platform-side RBAC permission filtering.
+    tags: [book/platform, cluster-admin]
+    at_a_glance:
+      - Second persona, distinct from the platform-side RBAC-gated screens
+      - ClusterAdminRoute gates on cluster membership, not a permission string
+      - Mirrors Cluster, Business Units, Users, Licenses and Profile for one :clusterId
+    references:
+      - "../carmen-platform/src/pages/clusterAdmin/ClusterAdminEntry.tsx"
+      - "../carmen-platform/src/pages/clusterAdmin/"
+      - "../carmen-platform/src/services/clusterAdminService.ts"
+      - "../carmen-platform/src/components/nav/clusterAdminNav.ts"
+    todo:
+      - Fill from source in Task 15
+
+  - path: cluster-admin/ui-screens.md
+    title_en: Cluster Admin — UI Screens
+    title_th: ผู้ดูแลคลัสเตอร์ — หน้าจอ UI (UI Screens)
+    description: ClusterProfile, BusinessUnitList/BusinessUnitForm, ClusterUsers and ClusterAdminLicenses, plus the shared Profile screen, all scoped to one :clusterId.
+    tags: [book/platform, cluster-admin, ui]
+    at_a_glance:
+      - ClusterProfile — cluster-admin's own cluster detail screen
+      - BusinessUnitList / BusinessUnitForm — cluster-admin's BU list and edit form
+      - ClusterUsers / ClusterAdminLicenses — cluster-admin's users and licenses views
+    references:
+      - "../carmen-platform/src/pages/clusterAdmin/ClusterProfile.tsx"
+      - "../carmen-platform/src/pages/clusterAdmin/BusinessUnitList.tsx"
+      - "../carmen-platform/src/pages/clusterAdmin/BusinessUnitForm.tsx"
+      - "../carmen-platform/src/pages/clusterAdmin/ClusterUsers.tsx"
+      - "../carmen-platform/src/pages/clusterAdmin/ClusterAdminLicenses.tsx"
+    todo:
+      - Fill from source in Task 15
+
+  - path: cluster-admin/permissions.md
+    title_en: Cluster Admin — Permissions
+    title_th: ผู้ดูแลคลัสเตอร์ — สิทธิ์ (Permissions)
+    description: No permission-string gate anywhere in this module — ClusterAdminRoute checks cluster membership only, a distinct axis from the platform-side platform_role/permission keys.
+    tags: [book/platform, cluster-admin, permissions]
+    at_a_glance:
+      - ClusterAdminRoute — membership check, not a permission string
+      - clusterAdminNav.ts applies no permission filtering at all
+      - Contrast with the platform-side RBAC gates in rbac/permissions.md
+    references:
+      - "../carmen-platform/src/components/ClusterAdminRoute.tsx"
+      - "../carmen-platform/src/components/nav/clusterAdminNav.ts"
+    todo:
+      - Fill from source in Task 15
+
+  # --- New module: platform-config (Task 16) ---
+  - path: platform-config.md
+    title_en: Platform Config
+    title_th: การตั้งค่าแพลตฟอร์ม (Platform Config)
+    description: Single-screen, card-based platform-wide configuration (invitations, expiry thresholds, links, notification email, signup, license enforcement), gated by platform_config.read/manage.
+    tags: [book/platform, platform-config]
+    at_a_glance:
+      - PlatformConfigManagement — card-based global configuration screen
+      - platform_config.read gates the nav/route; platform_config.manage gates every card save
+      - feature key platform_config
+    references:
+      - "../carmen-platform/src/pages/PlatformConfigManagement.tsx"
+      - "../carmen-platform/src/pages/platformConfig/"
+      - "../carmen-platform/src/services/platformConfigService.ts"
+    todo:
+      - Fill from source in Task 16
+
+  - path: platform-config/data-model.md
+    title_en: Platform Config — Data Model
+    title_th: การตั้งค่าแพลตฟอร์ม — โมเดลข้อมูล (Data Model)
+    description: The platform config key/value entity backing each configuration card (invitations, expiry thresholds, links, notification email, signup, license enforcement).
+    tags: [book/platform, platform-config, data-model]
+    at_a_glance:
+      - Config entity read and written by platformConfigService.ts
+      - Card-to-key mapping used by PlatformConfigManagement's per-domain cards
+    references:
+      - "../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma"
+      - "../carmen-platform/src/services/platformConfigService.ts"
+    todo:
+      - Fill from source in Task 16
+
+  # --- New module: email-settings (Task 17) ---
+  - path: email-settings.md
+    title_en: Email Settings
+    title_th: การตั้งค่าอีเมล (Email Settings)
+    description: Single-screen SMTP/email configuration and routing rules, gated by email_setting.read/manage.
+    tags: [book/platform, email-settings]
+    at_a_glance:
+      - EmailSettingManagement — single-screen email/SMTP configuration and routing
+      - email_setting.read gates the nav/route; email_setting.manage gates saves
+      - feature key email_settings
+    references:
+      - "../carmen-platform/src/pages/EmailSettingManagement.tsx"
+      - "../carmen-platform/src/pages/emailSettings/"
+      - "../carmen-platform/src/services/emailSettingService.ts"
+    todo:
+      - Fill from source in Task 17
+
+  - path: email-settings/data-model.md
+    title_en: Email Settings — Data Model
+    title_th: การตั้งค่าอีเมล — โมเดลข้อมูล (Data Model)
+    description: The email/SMTP settings and routing-lane entities backing this screen.
+    tags: [book/platform, email-settings, data-model]
+    at_a_glance:
+      - Email setting entity fields (SMTP host, credentials, sender identity)
+      - Routing-lane entity consumed by RoutingPanel/EmailRoutingCard
+    references:
+      - "../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma"
+      - "../carmen-platform/src/services/emailSettingService.ts"
+    todo:
+      - Fill from source in Task 17
+
+  # --- New module: user-platform (Task 18) ---
+  - path: user-platform.md
+    title_en: User Platform
+    title_th: ผู้ใช้แพลตฟอร์ม (User Platform)
+    description: A privilege registry summarizing each user's platform-role and cluster-scoped assignments, split out from Users/RBAC into its own module.
+    tags: [book/platform, user-platform]
+    at_a_glance:
+      - UserPlatformManagement — list summarizing every user's assigned platform roles
+      - UserPlatformEdit — per-user role/cluster assignment editor
+      - e2e suite user-platform (has coverage, unlike most modules in this batch)
+    references:
+      - "../carmen-platform/src/pages/UserPlatformManagement.tsx"
+      - "../carmen-platform/src/pages/UserPlatformEdit.tsx"
+      - "../carmen-platform/src/pages/userPlatformManagement/"
+      - "../carmen-platform/src/pages/userPlatformEdit/"
+      - "../carmen-platform/src/services/userPlatformService.ts"
+    todo:
+      - Fill from source in Task 18
+
+  - path: user-platform/ui-screens.md
+    title_en: User Platform — UI Screens
+    title_th: ผู้ใช้แพลตฟอร์ม — หน้าจอ UI (UI Screens)
+    description: UserPlatformManagement (privilege-registry list, PlatformAccessSummary, role chips) and UserPlatformEdit (Access Reach Band, Membership Card, role grant list).
+    tags: [book/platform, user-platform, ui]
+    at_a_glance:
+      - UserPlatformManagement — filter-consistent summary, inline role chips, CSV export
+      - UserPlatformEdit — Access Reach Band, Membership Card, Revoke-all-access action
+    references:
+      - "../carmen-platform/src/pages/UserPlatformManagement.tsx"
+      - "../carmen-platform/src/pages/userPlatformManagement/PlatformAccessSummary.tsx"
+      - "../carmen-platform/src/pages/UserPlatformEdit.tsx"
+      - "../carmen-platform/src/pages/userPlatformEdit/AccessReachBand.tsx"
+      - "../carmen-platform/src/pages/userPlatformEdit/MembershipCard.tsx"
+    todo:
+      - Fill from source in Task 18
+
+  - path: user-platform/permissions.md
+    title_en: User Platform — Permissions
+    title_th: ผู้ใช้แพลตฟอร์ม — สิทธิ์ (Permissions)
+    description: user_platform.read gates the nav/list; user_platform.manage gates role/cluster assignment edits.
+    tags: [book/platform, user-platform, permissions]
+    at_a_glance:
+      - user_platform.read — nav/list gate
+      - user_platform.manage — assignment-edit gate
+      - e2e suite user-platform
+    references:
+      - "../carmen-platform/src/components/nav/platformNav.ts"
+      - "../carmen-platform/src/pages/UserPlatformEdit.tsx"
+    todo:
+      - Fill from source in Task 18
+
+  # --- New module: super-admins (Task 19) ---
+  - path: super-admins.md
+    title_en: Super Admins
+    title_th: ผู้ดูแลระบบสูงสุด (Super Admins)
+    description: Card-based roster of super admins, gated by superAdminOnly rather than a permission string, with a self-removal guard and a UserPicker typeahead.
+    tags: [book/platform, super-admins]
+    at_a_glance:
+      - SuperAdminManagement — card-based roster, no DataTable
+      - Gated by superAdminOnly:true on the nav entry, not a permission key
+      - Self-removal guard; UserPicker typeahead to add a member
+      - e2e suite super-admins (has coverage, unlike most modules in this batch)
+    references:
+      - "../carmen-platform/src/pages/SuperAdminManagement.tsx"
+      - "../carmen-platform/src/services/superAdminService.ts"
+      - "../carmen-platform/src/components/nav/platformNav.ts"
+    todo:
+      - Fill from source in Task 19
+
+  # --- New module: feature-flags (Task 20) ---
+  - path: feature-flags.md
+    title_en: Feature Flags
+    title_th: แฟล็กฟีเจอร์ (Feature Flags)
+    description: The single-screen list of feature-flag switches (active/hide/inactive per module) gated by feature_flag.manage only, deliberately carrying no feature key of its own.
+    tags: [book/platform, feature-flags]
+    at_a_glance:
+      - FeatureFlagManagement — single-screen list of feature flags
+      - feature_flag.manage — single gate, no separate .read key
+      - Deliberately has no feature key of its own — a switch that hides itself could never be restored from the UI
+    references:
+      - "../carmen-platform/src/pages/FeatureFlagManagement.tsx"
+      - "../carmen-platform/src/services/featureFlagService.ts"
+      - "../carmen-platform/src/components/nav/platformNav.ts"
+    todo:
+      - Fill from source in Task 20
+
+  - path: feature-flags/data-model.md
+    title_en: Feature Flags — Data Model
+    title_th: แฟล็กฟีเจอร์ — โมเดลข้อมูล (Data Model)
+    description: The feature-flag entity — key, state (active/hide/inactive) and scope — consumed by PrivateRoute's feature check across every gated module.
+    tags: [book/platform, feature-flags, data-model]
+    at_a_glance:
+      - Feature flag entity read/written by featureFlagService.ts
+      - States consumed by PrivateRoute's feature-flag check across every gated route
+    references:
+      - "../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma"
+      - "../carmen-platform/src/services/featureFlagService.ts"
+    todo:
+      - Fill from source in Task 20
+
+  # --- New module: tenant-migrations (Task 21) ---
+  # NOTE: en/platform/business-units/tenant-migrations.md (+ TH mirror) already documents
+  # TenantMigrationManagement in full at the sub-page URL /platform/business-units/tenant-migrations.
+  # See the cross-module note added to .specs/resync-platform-2026-09-05-progress.md — Task 21
+  # needs to decide on relocating that content, the same situation Task 9 flagged for
+  # report-form-groups.
+  - path: tenant-migrations.md
+    title_en: Tenant Migrations
+    title_th: การย้ายเทแนนต์ (Tenant Migrations)
+    description: Fleet-wide screen that checks and applies pending tenant-database schema migrations across every business unit; reuses cluster.read, with every mutating action further restricted to super-admin.
+    tags: [book/platform, tenant-migrations]
+    at_a_glance:
+      - TenantMigrationManagement (+ DeployConsole, FleetSync) — fleet-wide migration console
+      - Route reuses cluster.read (shares the Clusters resource); actions are additionally super-admin gated
+      - "Content currently exists at business-units/tenant-migrations.md — see cross-module note"
+    references:
+      - "../carmen-platform/src/pages/TenantMigrationManagement.tsx"
+      - "../carmen-platform/src/pages/tenantMigration/DeployConsole.tsx"
+      - "../carmen-platform/src/pages/tenantMigration/FleetSync.tsx"
+      - "../carmen-platform/src/services/tenantMigrationService.ts"
+      - en/platform/business-units/tenant-migrations.md (existing content pending relocation decision)
+    todo:
+      - Decide whether to relocate content from business-units/tenant-migrations.md or keep both — see cross-module note in .specs/resync-platform-2026-09-05-progress.md
+      - Fill from source in Task 21
+
+  - path: tenant-migrations/data-model.md
+    title_en: Tenant Migrations — Data Model
+    title_th: การย้ายเทแนนต์ — โมเดลข้อมูล (Data Model)
+    description: The tenant-migration run/status entity tracked per business unit, read and written by tenantMigrationService.ts.
+    tags: [book/platform, tenant-migrations, data-model]
+    at_a_glance:
+      - Per-BU migration status/run entity
+      - Read by the same businessUnitService.ts list the Business Units module uses
+    references:
+      - "../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma"
+      - "../carmen-platform/src/services/tenantMigrationService.ts"
+      - "../carmen-platform/src/services/businessUnitService.ts"
+    todo:
+      - Fill from source in Task 21
+
+  # --- New module: tenant-imports (Task 22) ---
+  - path: tenant-imports.md
+    title_en: Tenant Imports
+    title_th: การนำเข้าเทแนนต์ (Tenant Imports)
+    description: A multi-step wizard for importing preconfigured tenant/business-unit data, gated by data_import.manage.
+    tags: [book/platform, tenant-imports]
+    at_a_glance:
+      - TenantImportWizard — single-screen, multi-step import wizard
+      - data_import.manage — sole gate on the nav/route
+      - feature key tenant_imports
+    references:
+      - "../carmen-platform/src/pages/TenantImportWizard.tsx"
+      - "../carmen-platform/src/pages/tenantImport/"
+      - "../carmen-platform/src/services/preconfigImportService.ts"
+      - "../carmen-platform/src/services/businessUnitService.ts"
+    todo:
+      - Fill from source in Task 22
+
+  - path: tenant-imports/ui-screens.md
+    title_en: Tenant Imports — UI Screens
+    title_th: การนำเข้าเทแนนต์ — หน้าจอ UI (UI Screens)
+    description: The TenantImportWizard's step sequence (StepRail, CompanyProfilePanel, WorkbookDropzone, FileCheckPanel) for importing preconfigured business-unit data.
+    tags: [book/platform, tenant-imports, ui]
+    at_a_glance:
+      - Wizard steps for selecting, validating and importing preconfigured tenant data
+      - WorkbookDropzone / FileCheckPanel — file upload and validation steps
+      - Resulting business unit(s) created via businessUnitService.ts
+    references:
+      - "../carmen-platform/src/pages/TenantImportWizard.tsx"
+      - "../carmen-platform/src/pages/tenantImport/StepRail.tsx"
+      - "../carmen-platform/src/pages/tenantImport/CompanyProfilePanel.tsx"
+      - "../carmen-platform/src/pages/tenantImport/WorkbookDropzone.tsx"
+      - "../carmen-platform/src/pages/tenantImport/FileCheckPanel.tsx"
+    todo:
+      - Fill from source in Task 22
+
+  # --- New module: usage-analytics (Task 23) ---
+  - path: usage-analytics.md
+    title_en: Usage Analytics
+    title_th: การวิเคราะห์การใช้งาน (Usage Analytics)
+    description: A single analytics dashboard (StatCards, TopList, UsageChart) built on the activity-event stream, with drill-down into individual events.
+    tags: [book/platform, usage-analytics]
+    at_a_glance:
+      - UsageAnalytics — single-screen dashboard (StatCards, TopList, UsageChart)
+      - activity_event.read gates the screen; activity_event.detail gates drill-down
+      - feature key usage_analytics
+    references:
+      - "../carmen-platform/src/pages/UsageAnalytics.tsx"
+      - "../carmen-platform/src/pages/usageAnalytics/"
+      - "../carmen-platform/src/services/analyticsService.ts"
+    todo:
+      - Fill from source in Task 23
+
+  # --- New module: activity-events (Task 24) ---
+  - path: activity-events.md
+    title_en: Activity Events
+    title_th: เหตุการณ์กิจกรรม (Activity Events)
+    description: The fleet-wide activity/audit-log list backing every module's View History action, with a detail sheet per event.
+    tags: [book/platform, activity-events]
+    at_a_glance:
+      - ActivityEventManagement — fleet-wide activity/audit-log list
+      - EventDetailSheet — per-event detail view
+      - Backs the activity_log.read View History action referenced from Clusters, Business Units, Users and other modules
+    references:
+      - "../carmen-platform/src/pages/ActivityEventManagement.tsx"
+      - "../carmen-platform/src/pages/activityEvents/EventDetailSheet.tsx"
+      - "../carmen-platform/src/services/analyticsService.ts"
+    todo:
+      - Fill from source in Task 24
+
+  - path: activity-events/data-model.md
+    title_en: Activity Events — Data Model
+    title_th: เหตุการณ์กิจกรรม — โมเดลข้อมูล (Data Model)
+    description: The activity/audit-log entity recording actor, action, target record and timestamp for every logged change across the platform.
+    tags: [book/platform, activity-events, data-model]
+    at_a_glance:
+      - Activity event entity — actor, action, target, timestamp
+      - The PLATFORM_SCOPED_RECORD sentinel referenced by other modules' View History gate
+    references:
+      - "../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma"
+      - "../carmen-platform/src/services/analyticsService.ts"
+    todo:
+      - Fill from source in Task 24
+
+  # --- New module: platform-migrations (Task 25) ---
+  - path: platform-migrations.md
+    title_en: Platform Migrations
+    title_th: การย้ายระบบแพลตฟอร์ม (Platform Migrations)
+    description: A super-admin-only console for running platform-level database migrations and seed operations, with a live run console.
+    tags: [book/platform, platform-migrations]
+    at_a_glance:
+      - PlatformMigrationManagement — operation list (OpRow) plus a RunConsole
+      - Gated by superAdminOnly:true, not a permission key
+      - feature key platform_migrations
+    references:
+      - "../carmen-platform/src/pages/PlatformMigrationManagement.tsx"
+      - "../carmen-platform/src/pages/platformMigration/"
+      - "../carmen-platform/src/services/platformMigrationService.ts"
+      - "../carmen-platform/src/services/platformSeedService.ts"
+    todo:
+      - Fill from source in Task 25
+
+  # --- New module: database-pools (Task 26) ---
+  - path: database-pools.md
+    title_en: Database Pools
+    title_th: พูลฐานข้อมูล (Database Pools)
+    description: CRUD over the tenant database connection pools that business units are now assigned to via database_pool_id, replacing the dropped per-BU db_connection fields.
+    tags: [book/platform, database-pools]
+    at_a_glance:
+      - DatabasePoolManagement (list) and DatabasePoolEdit (create/edit)
+      - database_pool.read gates the nav/list; database_pool.manage gates create/edit/delete
+      - Referenced by Business Units' database_pool_id field (replaced db_connection)
+    references:
+      - "../carmen-platform/src/pages/DatabasePoolManagement.tsx"
+      - "../carmen-platform/src/pages/DatabasePoolEdit.tsx"
+      - "../carmen-platform/src/services/databasePoolService.ts"
+    todo:
+      - Fill from source in Task 26
+
+  - path: database-pools/data-model.md
+    title_en: Database Pools — Data Model
+    title_th: พูลฐานข้อมูล — โมเดลข้อมูล (Data Model)
+    description: The tb_database_pool entity that tb_business_unit.database_pool_id now references, replacing the dropped db_connection column.
+    tags: [book/platform, database-pools, data-model]
+    at_a_glance:
+      - tb_database_pool — connection pool entity (host, credentials, schema strategy)
+      - Referenced by tb_business_unit.database_pool_id
+    references:
+      - "../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma"
+      - "../carmen-platform/src/services/databasePoolService.ts"
+    todo:
+      - Fill from source in Task 26
+
+  - path: database-pools/ui-screens.md
+    title_en: Database Pools — UI Screens
+    title_th: พูลฐานข้อมูล — หน้าจอ UI (UI Screens)
+    description: DatabasePoolManagement (list) and DatabasePoolEdit (create/edit) screens.
+    tags: [book/platform, database-pools, ui]
+    at_a_glance:
+      - DatabasePoolManagement — list, filters (verify exact columns against source)
+      - DatabasePoolEdit — create/edit form for one connection pool
+    references:
+      - "../carmen-platform/src/pages/DatabasePoolManagement.tsx"
+      - "../carmen-platform/src/pages/DatabasePoolEdit.tsx"
+    todo:
+      - Fill from source in Task 26
+
+  # --- New module: cronjobs (Task 27) ---
+  - path: cronjobs.md
+    title_en: Cronjobs
+    title_th: งานตามกำหนดเวลา (Cronjobs)
+    description: CRUD over scheduled backend jobs and their cron expressions, gated by cronjob.read/manage.
+    tags: [book/platform, cronjobs]
+    at_a_glance:
+      - CronJobManagement (list) and CronJobEdit (create/edit) with CronScheduleField for cron-expression input
+      - cronjob.read gates the nav/list; cronjob.manage gates create/edit/delete
+      - feature key cronjobs
+    references:
+      - "../carmen-platform/src/pages/CronJobManagement.tsx"
+      - "../carmen-platform/src/pages/CronJobEdit.tsx"
+      - "../carmen-platform/src/pages/cronjobs/"
+      - "../carmen-platform/src/services/cronjobService.ts"
+    todo:
+      - Fill from source in Task 27
+
+  - path: cronjobs/data-model.md
+    title_en: Cronjobs — Data Model
+    title_th: งานตามกำหนดเวลา — โมเดลข้อมูล (Data Model)
+    description: The scheduled-job entity — cron expression, target job, enabled state and run history — read/written by cronjobService.ts.
+    tags: [book/platform, cronjobs, data-model]
+    at_a_glance:
+      - Cron job entity fields (schedule expression, target, enabled state)
+      - Read/written by cronjobService.ts
+    references:
+      - "../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma"
+      - "../carmen-platform/src/services/cronjobService.ts"
+    todo:
+      - Fill from source in Task 27
+
+  - path: cronjobs/ui-screens.md
+    title_en: Cronjobs — UI Screens
+    title_th: งานตามกำหนดเวลา — หน้าจอ UI (UI Screens)
+    description: CronJobManagement (list, CronJobFilterSheet) and CronJobEdit (create/edit, CronScheduleField).
+    tags: [book/platform, cronjobs, ui]
+    at_a_glance:
+      - CronJobManagement — list with CronJobFilterSheet
+      - CronJobEdit — create/edit form with CronScheduleField cron-expression input
+    references:
+      - "../carmen-platform/src/pages/CronJobManagement.tsx"
+      - "../carmen-platform/src/pages/CronJobEdit.tsx"
+      - "../carmen-platform/src/pages/cronjobs/CronJobFilterSheet.tsx"
+      - "../carmen-platform/src/pages/cronjobs/CronScheduleField.tsx"
+    todo:
+      - Fill from source in Task 27
+
+  # --- New module: report-form-groups (Task 28) ---
+  # NOTE: en/platform/report-templates/form-groups.md (+ TH mirror) already documents
+  # ReportFormGroupManagement in full at the sub-page URL /platform/report-templates/form-groups
+  # (written in Task 9). See the existing cross-module note in
+  # .specs/resync-platform-2026-09-05-progress.md — Task 28 decides on relocation.
+  - path: report-form-groups.md
+    title_en: Report Form Groups
+    title_th: กลุ่มฟอร์มรายงาน (Report Form Groups)
+    description: The planned top-level home for ReportFormGroupManagement — a grouped-card list of default form templates per report_group — currently documented in full at the report-templates/form-groups sub-page pending relocation.
+    tags: [book/platform, report-form-groups]
+    at_a_glance:
+      - ReportFormGroupManagement — one card per report_group, "set as default" action on tb_report_template.is_default
+      - Reuses report_template.read; carries its own report_form_groups feature key
+      - "Content currently lives at report-templates/form-groups.md — see cross-module note"
+    references:
+      - "../carmen-platform/src/pages/ReportFormGroupManagement.tsx"
+      - "../carmen-platform/src/pages/reportFormGroups/GroupCard.tsx"
+      - "../carmen-platform/src/components/nav/platformNav.ts"
+      - en/platform/report-templates/form-groups.md (existing content pending relocation decision)
+    todo:
+      - Decide whether to relocate content from report-templates/form-groups.md or keep both — see cross-module note in .specs/resync-platform-2026-09-05-progress.md
+      - Fill from source in Task 28

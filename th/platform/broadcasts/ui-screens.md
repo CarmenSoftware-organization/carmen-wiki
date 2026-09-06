@@ -1,8 +1,8 @@
 ---
 title: Broadcasts — หน้าจอ UI (UI Screens)
-description: หน้าจอ BroadcastCompose และแผง BroadcastPreview แบบ live — แท็บ target, UserMultiSelect และ select ของ BU, ตัวนับ title/message, type preset พร้อม input แบบ custom, ส่งทันทีเทียบกับกำหนดเวลา และ dialog ยืนยันราย target mode
+description: สามหน้าจอของ Broadcasts — BroadcastManagement (list, filter, CSV export), BroadcastCompose (target, preset วันหมดอายุ, preview) และ BroadcastEdit
 published: true
-date: 2026-07-29T00:00:00.000Z
+date: 2026-09-06T23:45:00.000Z
 tags: book/platform, broadcasts, ui
 editor: markdown
 dateCreated: 2026-06-10T16:00:00.000Z
@@ -11,90 +11,152 @@ dateCreated: 2026-06-10T16:00:00.000Z
 # Broadcasts — หน้าจอ UI (UI Screens)
 
 > **At a Glance**
-> **หน้าจอ:** `BroadcastCompose` (`/broadcasts/new`) — หน้าจอเดียวของโมดูล; ไม่มี route ของ list/edit &nbsp;·&nbsp; **Layout:** การ์ด Compose (แท็บ Target · ตัวเลือกผู้รับแบบมีเงื่อนไข · Title (≤200) · Message (≤2000) · Type preset · แท็บ Send time) คู่กับการ์ด **Preview** แบบ sticky &nbsp;·&nbsp; **Dialog:** ConfirmDialog ตัวเดียว หัวข้อและสไตล์แตกต่างกันตาม target mode &nbsp;·&nbsp; **คีย์ลัด:** Ctrl/Cmd+S ส่ง · Escape รีเซ็ต &nbsp;·&nbsp; **สถานะ UI ที่จดจำ:** ไม่มี
+> **หน้าจอ:** `BroadcastManagement` (`/broadcasts`, list) · `BroadcastCompose` (`/broadcasts/new`, ส่ง) · `BroadcastEdit` (`/broadcasts/:id/edit`, ดู/แก้) — **สามคอมโพเนนต์แยกกัน** ไม่ใช่หน้าจอเดียวที่มีหลายโหมด &nbsp;·&nbsp; **List:** แถบสรุปสถานะ, ค้นหา, sheet ของ filter, ตารางแบบ server-side, CSV export &nbsp;·&nbsp; **โครงของ Compose:** แท็บ Audience → ฟิลด์ Message → Type preset → ป้าย Related-BU → Delivery (เวลาส่ง + วันหมดอายุ) ข้างการ์ด **Preview** แบบ sticky &nbsp;·&nbsp; **โครงของ Edit:** สี่การ์ด (Info / Delivery / Content / Preview) — Content อ่านอย่างเดียวเว้นแต่ broadcast ยังเป็น `scheduled` &nbsp;·&nbsp; **ใช้ร่วมกัน:** คอมโพเนนต์ `BroadcastPreview`, `useUnsavedChanges`, Ctrl/Cmd+S, Escape, sticky action bar ด้านล่างแบบกระจก &nbsp;·&nbsp; **UI state ที่เก็บไว้:** 7 `localStorage` key เฉพาะหน้า List
 
 ## 1. ภาพรวม
 
-Broadcasts เป็นโมดูลแบบหน้าจอเดียว: `/broadcasts/new` → `BroadcastCompose`, `PageHeader` (ไอคอน Megaphone, "Send Broadcast" / "Push a notification to all users, specific users, or a business unit.", ไม่มีลิงก์ย้อนกลับ — เข้าถึงหน้านี้ได้จาก sidebar เท่านั้น) เหนือ grid สองคอลัมน์: การ์ด Compose ฝั่งซ้าย, การ์ด `BroadcastPreview` แบบ sticky ฝั่งขวา (§2.7) ไม่มี list แบบ Management, ไม่มี toggle view/edit, ไม่มีเรคคอร์ดให้กลับมาดู — เป็นด้านกลับโดยเจตนาของโมดูล Platform อื่นทุกตัว เนื่องจากไม่มีอะไรถูกโหลด (นอกจากตัวเลือกของ BU) หน้านี้จึงไม่มี skeleton state และไม่จดจำสถานะ UI ใด ๆ ใน `localStorage`
+Broadcasts เป็นโมดูลสามหน้าจอแล้วตอนนี้ ไม่ใช่หน้าจอเขียนหน้าเดียวเหมือนเดิม `/broadcasts` → `BroadcastManagement` (§2) แสดง broadcast แบบ `system_all`/`bu` ทั้งหมด; `/broadcasts/new` → `BroadcastCompose` (§3) ใช้ส่งอันใหม่; `/broadcasts/:id/edit` → `BroadcastEdit` (§4) ดูได้เสมอ และแก้ schedule/วันหมดอายุ/เนื้อหาได้ตราบใดที่ยัง `scheduled` **นี่คือสามไฟล์และสาม route ที่แยกกันจริง** — Compose กับ Edit โดยเฉพาะไม่ใช้คอมโพเนนต์ร่วมกันเลย มีแค่แผง preview (`BroadcastPreview`, §3.7) และ utility validation/formatting บางส่วนเท่านั้น
 
-องค์ประกอบมาตรฐานยังคง apply: `useUnsavedChanges` ติดอาวุธ navigation guard ทันทีที่ field ใดเบี่ยงจากค่า default ของมัน (รวมถึงผู้รับที่เลือกไว้), Ctrl/Cmd+S trigger การส่งและ Escape trigger การรีเซ็ต (ทั้งคู่ถูกระงับขณะการส่งกำลังดำเนินอยู่หรือ dialog ยืนยันเปิดอยู่), error ปรากฏเป็นข้อความสีแดงราย field บวก toast และ Debug Sheet เฉพาะ dev (ปุ่มลอยสีเหลืองอำพัน, `import.meta.env.DEV`) แสดง response ล่าสุดของ API พร้อมปุ่ม Copy JSON sticky action bar ด้านล่าง (§3.3) มีปุ่ม Reset และ Send พร้อมตัวบ่งชี้ "Unsaved changes" ตรงกับหน้า edit ที่ redesign แล้วในที่อื่น ๆ ของ Platform book
+องค์ประกอบมาตรฐานเกิดซ้ำทั้งใน Compose และ Edit: `useUnsavedChanges` ตั้ง guard การนำทางทันทีที่ฟิลด์ต่างจากค่าที่ save/default ไว้, Ctrl/Cmd+S save หรือส่ง, Escape reset หรือยกเลิก, error แสดงเป็นข้อความสีแดงที่ฟิลด์บวก toast และ Debug Sheet เฉพาะ dev แสดง response ล่าสุดของ API ทั้งสองใช้ sticky bottom action bar แบบกระจกสไตล์ "iOS" เดียวกัน (`.unsaved-bar`, เพิ่มเมื่อ 2026-08-31) ที่แสดงจุดบ่งชี้การเปลี่ยนแปลงที่ยังไม่ save คู่กับ Reset/Send หรือ Cancel/Save
 
-## 2. ฟอร์ม Compose
+## 2. หน้าจอ List (`BroadcastManagement`)
 
-field จากบนลงล่าง; ทุกอย่างยกเว้นแถบแท็บสองแถบเป็น controlled input ธรรมดา
+`PageHeader` ("Broadcasts") พร้อม subtitle บวกข้อความบอกชัดเจน — *"ประกาศที่ส่งถึงผู้ใช้ที่ระบุเจาะจงจะไม่แสดงที่นี่ — ถูกบันทึกเป็นการแจ้งเตือนรายบุคคล"* — อยู่เหนือแถบสรุปสถานะที่คลิกได้, แถบค้นหา-กรอง และ `DataTable` แบบ server-side
 
-### 2.1 แท็บ Target
+### 2.1 Action ของ header และแถบสรุป
 
-แถบ `Tabs` ที่มีสามตัวเลือก — **All users** (ไอคอน Globe, `system_all`, ค่าเริ่มต้น), **Specific users** (ไอคอน Users, `system_users`), **Business Unit** (ไอคอน Building2, `bu`) การสลับแท็บสลับ section แบบมีเงื่อนไขด้านล่างของมัน (ตัวเลือกผู้รับเทียบกับ select ของ BU) แต่**ไม่เคลียร์ state ที่กรอกไว้แล้ว** — ดูกรณีพิเศษเรื่องผู้รับค้าง (stale recipients) ใน [Permissions](./permissions.md) §4
+- **Export** (ปุ่ม outline, disable ระหว่างโหลดหรือไม่มีข้อมูล) สร้าง CSV ของแถวในหน้าปัจจุบันผ่าน `generateCSV`/`downloadCSV` คอลัมน์: Title, Message, Scope, BU Code, Severity, Status, Scheduled At, Expires At, Created At, Created By, Updated At, Updated By — **สองคอลัมน์สุดท้ายว่างเปล่าเสมอ** เพราะ API ไม่เคยส่ง `updated_at`/`updated_by` คืนมาสำหรับ broadcast row เลย ทั้งที่ฐานข้อมูลตอนนี้บันทึกทั้งสองอย่างทุกครั้งที่แก้ไข (ดู [Data Model](/th/platform/broadcasts/data-model) §5)
+- **New Broadcast** (gate ด้วย `<Can permission="broadcast.send">`) นำทางไปยัง Compose
+- `BroadcastSummary` render ห้าช่องที่คลิกได้ — All, Active, Scheduled, Expired, Deleted — มาจาก object `summary` ของ response list เอง (ไม่ใช่นับฝั่ง client) คลิก All/Active/Scheduled/Expired สลับ filter `status` ที่ตรงกัน; **Deleted ต่างออกไปโดยตั้งใจ** — มันสลับ `include_deleted` แทนค่า status เพราะ query param `status` รับได้แค่ `active|scheduled|expired` และแถวที่ถูกลบเข้าถึงผ่าน `include_deleted` เท่านั้น การโหลดล้มเหลว render สถานะ retry แทนแถบสรุป
 
-แท็บ system สองตัว render เฉพาะเมื่อ session ถือ `broadcast.send` (`canSendSystem`) โดยมี effect บังคับเป็นโหมด `bu` เมื่อไม่ถือ เนื่องจากตัว route เองต้องการ key เดียวกัน การ gate ภายใน component นี้จึงเป็น defensive code ที่ไปไม่ถึงในวันนี้ — ผู้ใช้ทุกคนที่เปิดหน้านี้ได้เห็นทั้งสามแท็บ
+### 2.2 การค้นหาและ filter
 
-### 2.2 ผู้รับ (เฉพาะ `system_users`)
+- `SearchInput` แบบ debounce (400 ms) จับคู่ title หรือ message แบบไม่สนตัวพิมพ์เล็กใหญ่ กลับไปหน้า 1 ทุกครั้งที่พิมพ์คำใหม่
+- Sheet ของ **Filters** (`BroadcastFilters`) มี: ปุ่ม toggle สถานะ (Active/Scheduled/Expired, เลือกได้หลายอัน), ปุ่ม toggle scope (System/Business Unit, เลือกได้หลายอัน) และ checkbox "Show deleted broadcasts" — บวกปุ่ม "Clear all" เมื่อมี filter ใดถูกเปิดใช้งาน ปุ่ม Filters ของ header มี badge ตัวเลขนับกลุ่ม filter ที่ active อยู่ (status-any, scope-any, deleted)
+- **เจ็ด `localStorage` key** เก็บ state ของหน้า List ข้ามการเข้าชม: `search_broadcasts`, `filters_broadcast_status` (JSON array), `filters_broadcast_scope` (JSON array), `filter_broadcast_deleted` (JSON boolean), `page_broadcasts`, `perpage_broadcasts`, `sort_broadcasts` (ค่าเริ่มต้น `created_at:desc`)
 
-`UserMultiSelect` — combo box แบบ badge-input ที่หนุนด้วย Users API:
+### 2.3 คอลัมน์
 
-- การพิมพ์ (debounce 400 ms, dropdown เปิดตอน focus — ตัว debounce ยังยิงการค้นหาแบบ query ว่างตอนเปิดด้วย ดังนั้นผู้ใช้ 20 คนแรกมักถูกเติมก่อนการกดคีย์ใด ๆ) ค้นหาผ่าน `userService.getAll({ page: 1, perpage: 20, search })` — 20 ผลลัพธ์แรกที่ match ตามชื่อหรืออีเมล แต่ละตัว render เป็นชื่อเหนืออีเมลแบบ muted ชื่อสำหรับแสดงคือ `firstname middlename lastname` โดย fall back ไป `name`, `email` แล้วจึง id ดิบ
-- การคลิกผลลัพธ์เพิ่ม badge ที่ลบได้ (row ที่ถูกเลือกแล้วเป็น disabled และติด tag "Selected"); Backspace ขณะ query ว่างลบ badge ตัวสุดท้าย; Escape ปิด dropdown empty state: "Type to search users" / `No users match "<query>"`; การค้นหาที่ล้มเหลว render error ของ API ที่ parse แล้วแบบ inline ใน dropdown
-- การ validate: ต้องมีผู้รับอย่างน้อยหนึ่งคน ("Pick at least one recipient") บังคับใช้ก่อน submit และถูกเคลียร์ทันทีที่มีการเพิ่มหนึ่งคน
+| คอลัมน์ | หมายเหตุ |
+|---|---|
+| Title | ลิงก์ไปยัง `/broadcasts/:id/edit`; message แสดงอยู่ด้านล่าง ตัดให้สั้นลง |
+| Scope | "System" หรือ "BU · `<code>`" |
+| Severity | Badge, สีอิงจาก `metadata.severity` ที่เป็นแค่ตกแต่งของผู้ส่ง (Critical→destructive, Warning→warning, Info→info, Maintenance→secondary); sort ไม่ได้ |
+| Status | Badge — Active (success), Scheduled (info), Expired (secondary), Deleted (destructive) |
+| Scheduled Date | `YYYY-MM-DD HH:mm`, `-` เมื่อไม่ได้กำหนดเวลา |
+| Expires | รูปแบบเดียวกัน; แสดงเป็นสีอำพันเมื่อแถวเป็น `active`/`scheduled` และเหลือน้อยกว่า 24 ชั่วโมงก่อนหมดอายุ |
+| Created | helper audit-columns ที่ใช้ร่วมกัน แสดงแค่ฝั่ง **Created** — **ไม่มีคอลัมน์ Updated เลย** เพราะ `BroadcastListItem` ไม่มีฟิลด์ `updated_at`/`updated_by` ให้อ่าน (การละไว้โดยตั้งใจ ตาม comment ของ source เอง เพื่อไม่ให้มีคอลัมน์ที่ว่างเปล่าตลอด) |
+| Deleted Date | ปรากฏเฉพาะเมื่อ "Show deleted" เปิดอยู่ |
+| Actions | dropdown ของแถว ทั้งสามรายการแสดงแบบมีเงื่อนไข |
 
-### 2.3 Business Unit (เฉพาะ `bu`)
+Row action: **Edit** (`<Can permission="broadcast.update">`, ซ่อนเมื่อ `status === 'deleted'`) ลิงก์ไปยังหน้า Edit; **Expire Now** (`<Can permission="broadcast.update">`, แสดงเฉพาะเมื่อ `status === 'active'`) เปิด confirm dialog แล้วเมื่อยืนยัน จะ `PATCH` ค่า `end_at` เป็นเวลาปัจจุบัน; **Delete** (`<Can permission="broadcast.delete">`, ซ่อนเมื่อถูกลบไปแล้ว) เปิด confirm dialog แล้วเมื่อยืนยัน จะลบแบบ soft ผ่าน `DELETE` การลบหรือต่ออายุให้หมดจะ re-fetch หน้าปัจจุบันในที่เดิม (ไม่มีการนำทาง)
 
-native select ที่โหลดครั้งเดียวตอน mount ผ่าน `businessUnitService.getAll({ page: 1, perpage: 100 })` — สังเกตเพดาน: มีเพียง **BU 100 ตัวแรก**เท่านั้นที่ถูกเสนอ ตัวเลือกถูก filter เป็น BU ที่ active (`is_active !== false`) และ render เป็น `Name (CODE)`; ค่าที่ submit คือ **code** ขณะกำลังโหลด select เป็น disabled พร้อม placeholder "Loading business units…"; การโหลดที่ล้มเหลว render ข้อความ error พร้อมปุ่ม **Retry** แบบ inline ที่ยิง fetch ใหม่ การ validate: จำเป็น ("Choose a business unit")
+### 2.4 Empty state, การโหลด และ debug
 
-### 2.4 Title และ Message
+Empty state (ไม่มีแถว ไม่มี error) แสดง CTA "New Broadcast" ที่ gate เหมือนปุ่มใน header การโหลดครั้งแรกแสดง skeleton เต็มตาราง; การ refetch ครั้งถัดไปจะซ้อนแถบ "Loading…" แบบจาง ๆ แทนที่จะล้างตารางทิ้ง `DevDebugSheet` (เฉพาะ dev) แสดง response ดิบของ `GET /api/notifications/broadcasts`
 
-| Field | Control | ขีดจำกัด | หมายเหตุ |
-|---|---|---|---|
-| Title | Text input, placeholder "Scheduled maintenance" | 200 | ตัวนับ `N/200` แบบ live; input ตัดทิ้งแบบ hard ที่ขีดจำกัด (`slice(0, 200)`) ดังนั้น error เรื่องความยาวเกินปกติแล้วไปถึงไม่ได้ด้วยการพิมพ์ จำเป็น ("Title is required") |
-| Message | Textarea, 6 แถว, placeholder "The system will be unavailable from 02:00 to 03:00 UTC." | 2000 | ตัวนับ `N/2000` แบบ live, การตัดทิ้งแบบ hard เช่นเดียวกัน จำเป็น ("Message is required") |
+## 3. หน้าจอ Compose (`BroadcastCompose`)
 
-ทั้งคู่ถูก trim ก่อนการ validate และการ submit
+`PageHeader` พร้อม `backTo="/broadcasts"` (ตอนนี้หน้านี้มีที่ให้กลับไปแล้ว — ต่างจากโมดูลหน้าจอเดียวก่อนปรับใหญ่ที่ไม่มีลิงก์ย้อนกลับเลย), หัวข้อ "Send Broadcast", subtitle "Push a notification to all users, specific users, or a business unit." grid สองคอลัมน์ถือการ์ด Compose และ `BroadcastPreview` แบบ sticky อยู่ทางขวา
 
-### 2.5 Type
+### 3.1 Audience
 
-native select ที่มีห้า preset — Info (ค่าเริ่มต้น), Warning, Critical, Maintenance, **Other…** สี่ตัวแรก resolve ฝั่ง client เป็น `SYS_<PRESET>` (โหมด system) หรือ `BU_<PRESET>` (โหมด BU) ณ เวลา submit การเลือก Other… เผย input ของ custom type (placeholder `CUSTOM_TYPE`) ที่**อัพเปอร์เคสขณะพิมพ์**และ submit แบบ verbatim โดยไม่มี prefix การ validate (เฉพาะ Other…): จำเป็น, ≤50 ตัวอักษร, ต้อง match `[A-Z0-9_]+` ("Use uppercase letters, digits, and underscores only")
+แถบแท็บ `Tabs` — **All users** (Globe, `system_all`, ค่าเริ่มต้น), **Specific users** (Users, `system_users`), **Business Unit** (Building2, `bu`) สองแท็บของ system render เฉพาะเมื่อ session มี `broadcast.send` (`canSendSystem`); เพราะ route เองก็ต้องการ key เดียวกันอยู่แล้ว ผู้ใช้ทุกคนที่เข้าหน้านี้ได้จะเห็นครบทั้งสามแท็บ — gate ใน component นี้เป็น code ป้องกันที่ไปไม่ถึงจริง ตรวจสอบใหม่กับ source ปัจจุบันแล้ว การสลับแท็บสลับ section ที่มีเงื่อนไขด้านล่างแต่**ไม่ล้าง state ที่กรอกไว้ก่อนหน้า** — ดู edge case ของผู้รับเก่าตกค้างใน [Permissions](/th/platform/broadcasts/permissions) §4
 
-### 2.6 Send time
+- **Specific users**: `UserMultiSelect` — ค้นหาแบบ debounce 400 ms (ยิง search แบบ query ว่างตอนเปิดด้วย จึงมักมี 20 ผู้ใช้แรกปรากฏก่อนพิมพ์คำใดเลย), จับคู่ 20 อันดับแรกด้วยชื่อหรืออีเมล แต่ละอัน render เป็นชื่อทับอีเมลสีจาง (ชื่อที่แสดงคือ `firstname middlename lastname` ถอยไปใช้ `name`, `email`, แล้วสุดท้ายเป็น id ดิบ) คลิกผลลัพธ์เพิ่ม badge ที่ลบได้ (แถวที่เลือกแล้ว disable และติดป้าย "Selected"); Backspace ตอน query ว่างลบ badge ตัวสุดท้าย; Escape ปิด dropdown validation "Pick at least one recipient" ถูกล้างทันทีที่เพิ่มอันหนึ่งเข้ามา
+- **Business Unit**: native select ที่โหลดครั้งเดียวผ่าน `businessUnitService.getAll({ page: 1, perpage: 100 })` — **เฉพาะ 100 BU แรก** เท่านั้นที่ถูกเสนอ — กรองเฉพาะ BU ที่ active, render เป็น `Name (CODE)`, ส่งค่า code; การโหลดล้มเหลวแสดง Retry แบบ inline
 
-แถบ `Tabs` แถบที่สอง — **Send immediately** (ไอคอน Send, ค่าเริ่มต้น) เทียบกับ **Schedule for later** (ไอคอน Calendar) โหมด schedule เผย input แบบ native `datetime-local`; การ validate ต้องการค่า ("Pick a date and time"), ค่าที่ parse ได้ ("Invalid date/time") และเวลาที่เป็น**อนาคต** ("Scheduled time must be in the future" — ตรวจสอบกับ `Date.now()` ณ เวลา validate) ค่าถูกแปลงเป็น UTC ISO string (`new Date(v).toISOString()`) ใน payload
+### 3.2 Message
 
-### 2.7 `BroadcastPreview`
+Title (≤200 ตัวอักษร, ตัวนับแบบ live, ตัดที่ขีดจำกัดแบบ hard) และ Message (≤2000 ตัวอักษร, textarea, ตัดแบบเดียวกัน) ทั้งคู่ถูก trim ก่อน validate/submit
 
-การ์ดแบบ sticky ข้างฟอร์ม Compose คำนวณใหม่ทุกครั้งที่พิมพ์ — การแจ้งเตือนตามที่ผู้รับจะเห็น บวกว่ามันเข้าถึงใครและเมื่อไหร่:
+### 3.3 Type (ป้ายฝั่งผู้ส่งเท่านั้น)
 
-- **การ์ดแจ้งเตือน** — แถบสีข้างซ้ายตามความรุนแรง (`severityStyle`: Info → info, Warning → warning, Critical → destructive, Maintenance → secondary/muted, Other… → default/primary), type ที่ resolve แล้วเป็น badge, หัวข้อ (placeholder แบบ italic "Your title appears here" จนกว่าจะพิมพ์) และข้อความ (placeholder "Your message appears here.", จำกัด 6 บรรทัด)
-- **Reaches** — สรุปกลุ่มผู้ชมหนึ่งบรรทัด (`reachSummary`): "Every user in the system" (`system_all`, render ด้วยโทนสีเตือนและไอคอน `AlertTriangle` แทนไอคอนปกติของโหมด), "N selected user(s)" หรือ "No recipients picked yet" (`system_users`), หรือ label ของ BU ที่เลือก / "No business unit picked yet" (`bu`)
-- **Delivery** — "Sends immediately" หรือ "Scheduled for `<local datetime>`" / "Pick a date and time" ขึ้นอยู่กับแท็บ Send time และว่ามีการตั้งวันที่ที่ valid หรือไม่
+Native select — Info (ค่าเริ่มต้น), Warning, Critical, Maintenance, **Other…** **ตัวเลือกนี้ไม่เคยถูกส่งไปยังผู้รับเลย** — มัน resolve เป็น `metadata.severity` สตริงธรรมดาที่หน้าแอดมิน List/Edit อ่านกลับมาแสดง badge ของตัวเอง; wire ไม่มีฟิลด์ `type` อีกต่อไปเลย (ดู [Data Model](/th/platform/broadcasts/data-model) §4) การเลือก Other… เผย input ของ custom type (อัพเปอร์เคสตอนพิมพ์, `[A-Z0-9_]+`, ≤50 ตัวอักษร)
 
-## 3. flow การส่ง
+### 3.4 Related Business Unit (ป้าย metadata แบบเป็นตัวเลือก)
 
-### 3.1 การ validate → การยืนยัน
+Select ของ BU ตัวที่สองที่แยกกัน — **ไม่ใช่** ตัวเลือกผู้รับ — ที่ติดป้าย `metadata.bu_code` ให้กับ broadcast ใดก็ได้ (system หรือ BU) เพื่อจุดประสงค์อ้างอิง (เช่น การนำทางฝั่งปลายทาง) ไม่ว่าใครจะเป็นผู้รับจริง ๆ นี่เป็นของใหม่ตั้งแต่เวอร์ชันล่าสุดของหน้านี้ที่เคย document ไว้ และสับสนได้ง่ายกับ select ของ BU ที่เป็นผู้รับใน §3.1 — มันเป็นฟิลด์คนละตัวบน control คนละอันที่ไม่เกี่ยวข้องกันเลย
 
-ปุ่ม **Send** (sticky action bar ด้านล่าง, `<Can permission="broadcast.send">`; label พลิกเป็น **Schedule** ในโหมด schedule, spinner ขณะกำลังส่ง) รันการ validate ก่อน — ความล้มเหลว mark ตัว field และ toast "Please fix the highlighted fields" เมื่อสำเร็จ `ConfirmDialog` จะเปิด:
+### 3.5 Delivery — เวลาส่ง
 
-| Target mode | หัวข้อ dialog | ปุ่มยืนยัน |
+แถบแท็บ `Tabs` — **Send immediately** (ค่าเริ่มต้น) กับ **Schedule for later** ที่เผย input `datetime-local` เมื่อเลือกกำหนดเวลา (ต้องเป็นค่าที่ parse ได้และเป็นอนาคต)
+
+### 3.6 Delivery — วันหมดอายุ (บังคับ)
+
+ฟิลด์**ใหม่ที่บังคับ**: select ของ preset วันหมดอายุ — 7 วัน, 30 วัน (ค่าเริ่มต้น), 90 วัน หรือ **Custom…** (เผย input `datetime-local` ของตัวเอง) `resolveExpiryIso()` คำนวณ `end_at` จริง: จำนวนวันของ preset ถูกบวกเข้ากับเวลา*ที่กำหนดไว้ส่ง*เมื่อมีการตั้งเวลา ไม่งั้นบวกกับตอนนี้ — ดังนั้น broadcast ที่กำหนดส่งวันที่ 20 พร้อมวันหมดอายุ "7 days" จะหมดอายุวันที่ 27 ไม่ใช่วันที่ 18 (ซึ่งจะทำให้มันหมดอายุก่อนถูกส่งจริงด้วยซ้ำ) วันหมดอายุแบบกำหนดเองต้องอยู่หลังเวลากำหนดส่งที่เลือกไว้เสมอ
+
+### 3.7 `BroadcastPreview` (ใช้ร่วมกับ Edit)
+
+คอมโพเนนต์เดียว (`src/components/BroadcastPreview.tsx`) ที่ใช้ร่วมกันทั้ง Compose และ Edit คำนวณใหม่ทุกครั้งที่พิมพ์:
+
+- **การ์ดการแจ้งเตือน** — แถบสีด้านซ้ายและ badge ที่ระบายสีตาม severity ที่เลือก, หัวข้อ (placeholder ตัวเอียงจนกว่าจะพิมพ์), ข้อความ (clamp ไว้ 6 บรรทัด)
+- **Reaches** — "Every user in the system" (`system_all`, โทนสีเตือน + ไอคอนแจ้งเตือน), "N selected user(s)"/"No recipients picked yet" (`system_users`) หรือป้ายของ BU ที่เลือก (`bu`)
+- **Delivery** — "Sends immediately" หรือ "Scheduled for `<datetime>`" บวกบรรทัด "Expires `<datetime>`" เมื่อคำนวณได้
+- **คำเตือนถาวร**: *"สีและป้ายเป็นการจัดหมวดหมู่ภายในเท่านั้น — ผู้รับเห็นแค่การแจ้งเตือนแบบมาตรฐาน"* — นี่คือการยอมรับของ UI เองว่า severity เป็นแค่การตกแต่งฝั่งผู้ส่ง (ดู [Data Model](/th/platform/broadcasts/data-model) §4)
+
+### 3.8 เส้นทางการส่ง
+
+ปุ่ม **Send** (`<Can permission="broadcast.send">`; label เปลี่ยนเป็น **Schedule** ในโหมดกำหนดเวลา) validate ก่อน แล้วเปิด `ConfirmDialog`:
+
+| Target mode | หัวข้อ Dialog | ปุ่ม Confirm |
 |---|---|---|
-| `system_all` | **Send to ALL users?** | สไตล์ **destructive** (สีแดง) |
-| `system_users` | Send to N user(s)? | ค่าเริ่มต้น |
-| `bu` | Send to {BU name}? (fall back ไปที่ code) | ค่าเริ่มต้น |
+| `system_all` | **Send to ALL users?** | destructive (แดง) |
+| `system_users` | Send to N user(s)? | default |
+| `bu` | Send to {ชื่อ BU}? (ถอยไปใช้ code) | default |
 
-คำอธิบายขึ้นต้นด้วยเรื่องเวลา — "Will be delivered immediately." หรือ "Scheduled for `<local datetime>`." — แล้วตามด้วยกลุ่มผู้ชม: หัวข้อที่กำลังถูกส่ง (`system_all`), ชื่อผู้รับห้าคนแรกบวก "and N more" (`system_users`) หรือ "Business unit: Name (CODE)" (`bu`) label ของปุ่มยืนยันคือ **Send** หรือ **Schedule** ให้ตรงกับโหมด
+คำอธิบายของ dialog ขึ้นต้นด้วยเวลา ("Will be delivered immediately" หรือ "Scheduled for `<when>`") ตามด้วยกลุ่มผู้ชม: หัวข้อที่กำลังส่ง (`system_all`), รายชื่อผู้รับห้าคนแรกบวก "and N more" (`system_users`) หรือ "Business unit: Name (CODE)" (`bu`)
 
-### 3.2 Submit, สำเร็จ, ล้มเหลว
+สำเร็จ: toast ("Broadcast sent"/"Broadcast scheduled for `<when>`"), form ทั้งหมด reset และ response ไปเติม Debug Sheet ล้มเหลว: error ที่ parse แล้วแสดงทั้งเป็น toast และเป็น banner ค้างในหน้า และ field error ถูก map ลงบนฟอร์ม ไม่มีการ redirect — การส่งแบบ `system_all`/`bu` ตอนนี้ปรากฏบนหน้า List; การส่งแบบ `system_users` ไม่ปรากฏ (§1)
 
-การยืนยัน post `BroadcastBuPayload` ไป `/api/notifications/broadcasts/bu` ในโหมด BU ไม่เช่นนั้น post `BroadcastSystemPayload` ไป `.../broadcasts/system` (พร้อม `userIds` เมื่อมีการเลือกผู้รับไว้ — ดู [Data Model](./data-model.md) §5 สำหรับ shape ของ payload) เมื่อสำเร็จ: toast "Broadcast sent" หรือ "Broadcast scheduled for `<local datetime>`", **ฟอร์มทั้งหมดรีเซ็ต**กลับเป็นค่า default และ raw response ถูกเก็บไว้สำหรับ Debug Sheet เมื่อล้มเหลว: `parseApiError` toast ข้อความและ map field error ใด ๆ ลงบนฟอร์ม; dialog ปิดในทั้งสองกรณี ไม่มีการ redirect — หน้าจอพร้อมสำหรับ broadcast ถัดไป และตัวที่เพิ่งส่งไปมองไม่เห็นที่ไหนเลยใน SPA นี้
+**Reset** (ถูกกระตุ้นจาก Escape ด้วย) ล้าง form, ผู้รับ และ field error ทันที โดยไม่มี confirm dialog — การป้องกันก่อนทิ้งข้อมูลมีแค่ตอน *นำทาง* เท่านั้น ผ่าน `useUnsavedChanges` ต่างจาก bottom bar ของหน้า Edit ที่ render เฉพาะตอนกำลังแก้ไข sticky bottom bar ของ Compose **แสดงอยู่เสมอ**บนหน้านี้ เพราะ Compose ไม่มีโหมด "editing" แยกให้สลับ
 
-### 3.3 รีเซ็ต, คีย์ลัด, guard ของการเปลี่ยนแปลงที่ยังไม่ save
+## 4. หน้าจอ Edit (`BroadcastEdit`)
 
-sticky bar ด้านล่าง (แสดงตลอดเวลาบนหน้าจอนี้ ต่างจากหน้า edit ที่ redesign แล้วซึ่งแสดงเฉพาะขณะแก้ไข) มีตัวบ่งชี้จุด "Unsaved changes" (หรือ "No changes") บวก **Reset** และ **Send** **Reset** (trigger ได้ด้วย Escape เช่นกัน) เคลียร์ฟอร์ม, ผู้รับ และ field error โดยไม่มีการยืนยัน — การปกป้องแบบ confirm-before-discard มีอยู่เฉพาะกับ*การนำทาง*เท่านั้น ผ่าน `useUnsavedChanges` ซึ่งติดอาวุธเมื่อ field ใดต่างจากค่า default ของมัน Ctrl/Cmd+S เทียบเท่ากับการคลิก Send (validate ก่อน แล้วจึง dialog)
+เข้าถึงได้จากลิงก์หัวข้อของ List หรือเมนูแถว **route ของมันต้องการแค่ `broadcast.read`** — ผู้อ่านคนไหนก็เปิดได้ เริ่มที่โหมดดูเสมอ; ปุ่ม Edit ต้องการ `broadcast.update` เพิ่มเติม
 
-## 4. แหล่งข้อมูลอ้างอิง
+### 4.1 การโหลด, not-found และ header
 
-- `../carmen-platform/src/pages/BroadcastCompose.tsx`, `src/pages/broadcastCompose/BroadcastPreview.tsx` — หน้าจอทั้งหมด: ค่าคงที่ (`TITLE_MAX`, `MESSAGE_MAX`, `TYPE_CUSTOM_RE`), `resolveType`, ตัวสร้าง payload, `validate`, หัวข้อ/คำอธิบายของ dialog ยืนยัน, preview แบบ live, Debug Sheet
-- `../carmen-platform/src/components/UserMultiSelect.tsx` — debounce, ขนาดหน้า, fallback ของชื่อสำหรับแสดง, การโต้ตอบแบบ badge/คีย์บอร์ด
-- `../carmen-platform/src/services/broadcastService.ts` — `sendSystem` / `sendBu`
-- `../carmen-platform/src/components/KeyboardShortcuts.tsx`, `src/hooks/useUnsavedChanges.ts` — คีย์ลัดและ navigation guard
-- `../carmen-platform/src/components/PageHeader.tsx` — header ที่ใช้ร่วมกัน (ไอคอน/title/subtitle, ไม่มี `backTo` ในหน้านี้)
-- `../carmen-platform/src/App.tsx` (route), `src/components/Layout.tsx` ("Send Broadcast", กลุ่ม Content)
+Skeleton แสดงระหว่างดึงข้อมูล id ที่ไม่พบ/ถูกลบแบบ soft-แต่เข้าถึงไม่ได้/ผิดรูปแบบ render `EmptyState` ของ `SearchX` ("Broadcast not found") พร้อมปุ่ม "Back to broadcasts" — แถวที่ถูกลบแบบ soft **ไม่ได้**ถูกจัดการแบบนี้ (§4.4) `PageHeader` แสดง `backTo="/broadcasts"`, หัวข้อปัจจุบัน, status Badge ข้าง ๆ และ `audit={normalizeAudit(rawResponse)}` สำหรับบรรทัด Created/Updated **ในทางปฏิบัติบรรทัดนี้แสดงแค่ "Created" เท่านั้น** — ไม่เคยแสดง "Updated" — เพราะ wire shape ไม่มีฟิลด์ `updated_at`/`updated_by` ให้ `normalizeAudit()` อ่าน แม้ broadcast นั้นจะถูกแก้ไขจริงก็ตาม (ดู [Data Model](/th/platform/broadcasts/data-model) §5) ปุ่ม Edit (Pencil) ปรากฏเฉพาะเมื่อยังไม่ได้แก้ไขและ `status !== 'deleted'`, gate ด้วย `<Can permission="broadcast.update">`
 
-**Cross-link:** [หน้า landing ของ Broadcasts](/th/platform/broadcasts) &nbsp;·&nbsp; [Data Model](./data-model.md) &nbsp;·&nbsp; [Permissions](./permissions.md)
+### 4.2 โครงการ์ด
+
+สี่การ์ดใน grid สองคอลัมน์ แสดงเสมอ:
+
+1. **Broadcast Info** — อ่านอย่างเดียวเสมอ: Scope ("System" หรือ "BU · `<code>`") และ Event, captioned "(System generated)" ค่า Event ที่แสดงที่นี่คือคอลัมน์ `event` ดิบ — ซึ่งเป็น `info` เสมอสำหรับทุก broadcast ที่โมดูลนี้สร้างได้ (§1 ของ [Data Model](/th/platform/broadcasts/data-model)) — ดังนั้นฟิลด์นี้จึงบอกอะไรตามชื่อเท่านั้น มันไม่เคยเปลี่ยนค่าเลย
+2. **Delivery** — Scheduled At และ Expires At ทั้งสองสลับเป็น input `datetime-local` ตอนแก้ไข; Expires At มีปุ่มเพิ่มเติม +7d/+30d/+90d **แต่ไม่มี selector preset "Custom…"** — ต่างจาก dropdown-ของ-preset ของ Compose ปุ่มเพิ่มเติมของ Edit เป็นทางลัดบน input วันที่ตัวเดียวกันที่แสดงอยู่เสมอ Expires At บังคับ
+3. **Content** — Title, Message และ select ของ Severity **แก้ได้ก็ต่อเมื่อ `editing` เป็น true และสถานะปัจจุบันของ broadcast เป็น `scheduled`** (`contentEditable`); ไม่งั้นทุกฟิลด์ render ผ่าน `ReadOnlyField` และตอนแก้ไข row ที่ไม่ scheduled หัวการ์ดแสดงคำเตือนชัดเจน: *"Already broadcast — content can't be edited, some recipients may have already seen it."* การพยายามส่ง `title`/`message`/`metadata` ใน PATCH อยู่ดีจะถูกปฏิเสธฝั่ง server ด้วย 400 `content_locked`
+4. **Preview** — คอมโพเนนต์ `BroadcastPreview` ตัวเดียวกับ Compose (§3.7) ป้อนจาก state ของฟอร์มแบบ live; `recipientCount` เป็น 0 เสมอที่นี่เพราะ Edit ไม่เคยเปลี่ยนกลุ่มผู้รับ
+
+### 4.3 เส้นทางการ Save
+
+Save (ใน sticky bottom bar) disable จนกว่าจะมีอะไรเปลี่ยนแปลง เมื่อ submit `handleSubmit()` รัน client validation (title/message/วันหมดอายุบังคับตอน content แก้ได้; วันหมดอายุต้องหลังกำหนดส่ง) แล้วผ่านสอง confirmation branch ก่อน `PATCH` จริง:
+
+- **Confirm วันหมดอายุเป็นอดีต** — ถ้า `end_at` ใหม่เป็นอดีตแล้วและ row ยังไม่ใช่ `expired`/`deleted` มาก่อน dialog เตือน *"The broadcast disappears from recipients immediately"* ก่อน submit (นี่คือวิธีต่ออายุ broadcast ที่ออกอากาศแล้วให้หมดจากหน้า Edit เอง แยกจาก action Expire Now เฉพาะของ List)
+- **Confirm การเลื่อนกำหนดเวลาใหม่** — ถ้า row ปัจจุบันเป็น `active` และกำหนดเวลาใหม่ดันมันกลับไปอนาคต dialog เตือน *"The message disappears from recipients until the new time"*
+
+Body ของ PATCH ส่งแค่**ฟิลด์ที่เปลี่ยนแปลงจริง**เท่านั้น (diff กับ snapshot ที่ save ล่าสุด ไม่ใช่ row ที่เพิ่ง fetch มา — เพราะการไป-กลับของ `datetime-local` เสียความละเอียดระดับวินาที ไม่งั้นจะดู "เปลี่ยนแปลง" ตลอด) บวก `doc_version` ที่บังคับ ถ้าไม่มีอะไรนอกจาก `doc_version` ที่จะถูกส่ง การ save จะถูกข้ามทั้งหมดพร้อม toast "No changes to save" แทนที่จะยิง PATCH เปล่าที่ยังทำให้ `doc_version` เพิ่มขึ้น 409 (`doc_version` เก่า) จะกระตุ้น toast version-conflict ที่ใช้ร่วมกันและ refetch เงียบ ๆ; ความล้มเหลวอื่นแสดง error ที่ map กับฟิลด์บวก toast
+
+### 4.4 แถวที่ถูกลบแบบ soft ยังเปิดดูได้
+
+ต่างจากโมดูล CRUD ส่วนใหญ่ `GET /api/notifications/broadcasts/:id` ตั้งใจยังคืน row ที่ถูกลบแบบ soft (`status: "deleted"`) แทนที่จะเป็น 404 — เพื่อให้รายการที่ถูกลบซึ่งคลิกจากประวัติของ List ยังดูได้ ปุ่ม Edit ถูกซ่อนสำหรับมัน (gate `status !== 'deleted'`) และเนื้อหาก็ถูกล็อกโดยธรรมชาติด้วย (status ไม่ใช่ `scheduled`) ทำให้ broadcast ที่ถูกลบเป็นแบบอ่านอย่างเดียวจริง ๆ ทุกที่บนหน้านี้
+
+### 4.5 Sticky bar, shortcut และ debug
+
+`.unsaved-bar` แบบกระจกเดียวกับ Compose แสดงเฉพาะตอนกำลังแก้ไข แสดง Cancel/Save Changes Ctrl/Cmd+S save (เฉพาะตอนกำลังแก้ไขและยังไม่ save อยู่); Escape ยกเลิกการแก้ไข (เฉพาะตอนกำลังแก้ไข) — ต่างจาก binding ของ Compose ที่ Escape reset ฟอร์มทั้งหมด Debug Sheet ที่นี่มี**สองแท็บ** — Response (payload ล่าสุดของ `GET`/`PATCH`) และ Form State (local state แบบ live) — ต่างจากแท็บเดียวของ Compose
+
+## 5. แหล่งอ้างอิง
+
+- `../carmen-platform/src/pages/BroadcastManagement.tsx`, `src/pages/broadcastManagement/{BroadcastSummary,BroadcastFilters,broadcastColumns}.tsx` — หน้าจอ List
+- `../carmen-platform/src/pages/BroadcastCompose.tsx` — ค่าคงที่ (`TITLE_MAX`, `MESSAGE_MAX`, `TYPE_CUSTOM_RE`), `resolveSeverity`, payload builder, `validate`, หัวข้อ/คำอธิบาย confirm
+- `../carmen-platform/src/pages/BroadcastEdit.tsx` — `contentEditable`, confirm dialog ของ past/reschedule, ตัวสร้าง patch แบบฟิลด์ที่เปลี่ยนเท่านั้น
+- `../carmen-platform/src/components/BroadcastPreview.tsx` — `severityStyle`, `reachSummary`, คำเตือนการจัดหมวดหมู่ภายใน
+- `../carmen-platform/src/utils/broadcastExpiry.ts` — `resolveExpiryIso()`, preset 7/30/90 วัน
+- `../carmen-platform/src/components/UserMultiSelect.tsx` — debounce, ขนาดหน้า, การถอยไปใช้ชื่อสำรอง
+- `../carmen-platform/src/services/broadcastService.ts` — `sendSystem`/`sendBu`/`getAll`/`getById`/`update`/`remove`
+- `../carmen-platform/src/utils/audit.ts` — `normalizeAudit()` (รูปแบบแบน `created_by: { id, name }` ที่ broadcast ใช้ — ถูกเอ่ยชื่อตรง ๆ ใน comment ของ source ไฟล์นี้เองว่าเป็นหนึ่งใน endpoint ที่ไม่มีรูปแบบ `audit.*` แบบ nested)
+- `../carmen-platform/src/utils/docVersion.ts` — `isVersionConflict`/`notifyVersionConflict`/`getDocVersion`
+- `../carmen-platform/src/components/KeyboardShortcuts.tsx`, `src/hooks/useUnsavedChanges.ts` — shortcut และ navigation guard
+- `../carmen-platform/src/App.tsx` (สาม route), `src/components/nav/platformNav.ts` (รายการ nav "Broadcasts")
+
+**Cross-links:** [หน้าแรก Broadcasts](/th/platform/broadcasts) &nbsp;·&nbsp; [Data Model](/th/platform/broadcasts/data-model) &nbsp;·&nbsp; [Permissions](/th/platform/broadcasts/permissions)

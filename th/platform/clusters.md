@@ -1,8 +1,8 @@
 ---
 title: คลัสเตอร์ (Clusters)
-description: ภาพรวมโมดูล Clusters — กลุ่ม tenant ระดับบนสุดที่เป็นเจ้าของ business unit และ user ตามไลเซนส์
+description: ภาพรวมโมดูล Clusters — กลุ่ม tenant ระดับบนสุดที่เป็นเจ้าของ business unit และ user ตามไลเซนส์ ปัจจุบันอ้างอิงจาก licence ledger แบบมีวันหมดอายุแทน cap แบบ static เดิม
 published: true
-date: 2026-07-29T06:35:38.000Z
+date: 2026-09-06T12:00:00.000Z
 tags: platform/clusters, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -10,79 +10,91 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 # คลัสเตอร์ (Clusters)
 
-โมดูล **Clusters** เป็นจุดเริ่มต้นของ container ระดับองค์กรที่ใหญ่ที่สุด ใน Carmen Platform โดย cluster หนึ่ง ๆ จะรวม business unit (BU) และ user ที่ผูกกับ BU เหล่านั้นเข้าด้วยกัน นอกจากนี้ cluster ยังเป็นที่เก็บข้อมูล **ไลเซนส์** — ทั้งจำนวน BU สูงสุดที่ cluster นี้มีได้ และ (ผ่านการรวมยอด จากทุก BU) จำนวน user ทั้งหมดที่ครอบคลุม route และ action ที่แก้ไขข้อมูลในโมดูลนี้ถูก gate ด้วย permission key `cluster.*` (ดู [Platform RBAC](/th/platform/rbac))
+โมดูล **Clusters** เป็นจุดเริ่มต้นของ container ระดับองค์กรที่ใหญ่ที่สุดใน Carmen Platform โดย cluster หนึ่ง ๆ จะรวม business unit (BU) และ user ที่ผูกกับ BU เหล่านั้นเข้าด้วยกัน ลิมิตไลเซนส์ — จำนวน BU สูงสุดที่ cluster มีได้ และจำนวน named user ที่ครอบคลุม — แต่เดิมเป็นคอลัมน์ static บน record ของ cluster/BU แต่ตั้งแต่มีการปรับระบบไลเซนส์ระหว่าง 2026-07-29 ถึง 2026-09-04 ค่าเหล่านี้กลายเป็นแถวที่ "ชนะ" ของ ledger การซื้อแบบมีช่วงวันที่แทน (ดู §3) route และ action ที่แก้ไขข้อมูลในโมดูลนี้ถูก gate ด้วย permission key `cluster.*` **และ** feature flag `clusters` (ดู [Platform RBAC](/th/platform/rbac) และ [Permissions](/th/platform/clusters/permissions))
 
 > **At a Glance**
-> **วัตถุประสงค์ของโมดูล:** container ของ tenant ที่รวม business unit (BU) และ user ที่ผูกกับ BU เหล่านั้น และเป็นที่เก็บไลเซนส์ ("จำนวน BU สูงสุดต่อ cluster" และจำนวน user รวมจากทุก BU) &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับ Platform admin SPA; การเข้าถึงของ operator ต้องได้รับ grant permission `cluster.*` ([rbac](/th/platform/rbac)) &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_cluster` (ฟิลด์: `code`, `name`, `alias_name`, `logo_file_token`, `avatar_file_token`, `max_license_bu`, `is_active`, soft-delete trio), `tb_business_unit` (1:N), `tb_cluster_user` (M:N join ที่ถือ role per-cluster เป็น `admin`/`user`) &nbsp;·&nbsp; **หน้าย่อย:** 3
+> **วัตถุประสงค์ของโมดูล:** container ของ tenant ที่รวม business unit (BU) และ user ที่ผูกกับ BU เหล่านั้น และลิงก์ไปยัง licence ledger ที่ปัจจุบันเป็นที่เก็บ cap ของจำนวน BU และจำนวนที่นั่ง &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับ Platform admin SPA; การเข้าถึงของ operator ต้องได้รับ grant permission `cluster.*` ([rbac](/th/platform/rbac)) และ feature flag `clusters` ต้องเปิดอยู่ &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_cluster` (ฟิลด์: `code`, `name`, `alias_name`, `logo_file_token`, `avatar_file_token`, `is_active`, `doc_version`, soft-delete trio — **ไม่มีคอลัมน์ licence-cap อีกต่อไป**), `tb_business_unit` (1:N), `tb_cluster_user` (M:N join ที่ถือ role per-cluster เป็น `admin`/`user` — **ไม่มี `parent_bu_id` แล้ว**), `tb_cluster_license` (ใหม่ — ledger การซื้อโควตา BU ของ cluster) &nbsp;·&nbsp; **หน้าย่อย:** 3 &nbsp;·&nbsp; **Permission key:** `cluster.read` (list/nav) + `cluster.create`/`cluster.update`/`cluster.delete` &nbsp;·&nbsp; **Feature-flag key:** `clusters` &nbsp;·&nbsp; **superAdminOnly:** ไม่ใช่ — gate ด้วย permission ไม่ใช่ flag แบบ super-admin-only (อ้างอิง `../carmen-platform/src/components/nav/platformNav.ts`)
 
 ## 1. ภาพรวม
 
-โมดูล Clusters เปิดเผย aggregate root ของ cluster ผ่านรูปแบบสองหน้าจอ มาตรฐานที่ใช้ในทุกที่ใน Platform SPA:
+โมดูล Clusters เปิดเผย aggregate root ของ cluster ผ่านสองหน้าจอ ซึ่งถูกเขียนใหม่สองรอบนับตั้งแต่ sync ฉบับเต็มครั้งล่าสุด (2026-07-29):
 
-- **`/clusters` → `ClusterManagement`** — `DataTable` แบบ server-side พร้อมการค้นหาแบบ debounce, แผง filter แบบ Sheet (active/inactive และ ตัวเลือก "show soft-deleted"), ส่งออก CSV, แถบสรุป **Fleet Capacity** ทั้งฝูง (fleet-wide) เหนือตาราง และจดจำสถานะ UI ใน `localStorage` (search, page, perpage, sort, filters) หน้า list ไม่มีคอลัมน์ thumbnail logo ต่อแถวอีกต่อไป — คอลัมน์นั้นถูกลบออกเมื่อเพิ่มแถบ Fleet Capacity เข้ามา
-- **`/clusters/new` → `ClusterEdit` (โหมด create)** — แสดงการ์ด "Cluster details" การ์ดเดียว เมื่อสร้างสำเร็จ ตอนนี้หน้าจะ navigate ตรงไป `/clusters/:id/edit` (ซึ่งเป็น route ที่ลงทะเบียนไว้แล้ว) — การสร้างสำเร็จจะไม่พา operator ไปลงที่ Dashboard อีกต่อไป
-- **`/clusters/:id/edit` → `ClusterEdit` (โหมด view/edit)** — เอกสารแบบคอลัมน์เดียว แก้ไข-แบบ-in-place ตามแพทเทิร์น "A4" ทั่วทั้ง platform ไม่ใช่เลย์เอาต์การ์ดสามคอลัมน์แบบเดิม nav แบบ scrollspy ที่ sticky (`ClusterEditNav`, บนเดสก์ท็อป) / แถบ chip แนวนอน (บนมือถือ) จะพาไปยัง 5 ส่วนที่วางซ้อนกันในคอลัมน์เดียว: **Overview** (การ์ด `ClusterHero` แสดงตัวตน + capacity — logo/avatar, code/alias/status และมาตรวัด capacity ของ BU/user), **Details** (field ของตัวตน + license แก้ไขได้แบบ in-place), **Branding** (อัปโหลด logo/avatar), **Business Units** ใน cluster นี้ และ **Users** ใน cluster นี้ ไม่มี toggle Edit ระดับหน้าอีกต่อไป — แต่ละ field หรือแถวในตารางแก้ไขได้เป็นอิสระ (หรือไม่ได้) ตามสิทธิ์ `cluster.update` (`canEdit`) และแถบ "Unsaved changes" แบบ sticky จะปรากฏที่ด้านล่างของหน้าจอพร้อมปุ่ม Save/Cancel เมื่อ field ใด ๆ ต่างจาก snapshot ล่าสุดที่บันทึกไว้ การบันทึกถูกป้องกันด้วย token optimistic-lock `doc_version` (ดู [Data Model](/th/platform/clusters/data-model) §2.1) การบันทึกที่ล้าหลังจะแสดง toast แจ้ง conflict และโหลด record ใหม่ `Ctrl/⌘+S` บันทึกและ `Escape` ยกเลิกได้ขณะมีการเปลี่ยนแปลงค้างอยู่
+- **`/clusters` → `ClusterManagement`** — `DataTable` แบบ server-side พร้อมการค้นหาแบบ debounce, แผง filter แบบ Sheet (active/inactive, "show soft-deleted"), ส่งออก CSV, แถบสรุป **Fleet Capacity** ทั้งฝูงเหนือตาราง (ตอนนี้อ่านจาก endpoint เฉพาะ `GET /api-system/clusters/summary` ไม่ใช่การรวมยอดฝั่ง client แล้ว) และจดจำสถานะ UI ใน `localStorage` แถบ Fleet Capacity เพิ่มสถิติ **Quota expiring** ที่คลิกได้ (cluster ที่ใบโควตา BU ที่ชนะจะหมดอายุใน 30 วัน) นอกเหนือจากสถิติ Near limit เดิม
+- **`/clusters/new` → `ClusterEdit` (โหมด create)** — เลย์เอาต์สองคอลัมน์: พรีวิว `ClusterDraftPlate` แบบสดข้างฟอร์มสองการ์ด — Identity และ (ใหม่) **First Quota Licence** ซึ่งออกใบโควตา BU แถวแรก (`tb_cluster_license`) ให้ cluster ตั้งแต่ตอนสร้าง เมื่อสำเร็จจะ navigate ตรงไป `/clusters/:id/edit`
+- **`/clusters/:id/edit` → `ClusterEdit` (โหมด view/edit)** — แผ่นป้ายตัวตนที่แสดงตลอดเวลา (`ClusterPlate`: branding, ชื่อ, สถานะ, code/alias, มาตรวัดไลเซนส์สองแถบแบบ tick-strip) พร้อม 3 แท็บด้านล่าง — **Licensing** (ค่าเริ่มต้น), **Business Units**, **Users** — แทนที่เอกสารแบบ scrollspy คอลัมน์เดียว (Overview/Details/Branding/Business Units/Users) ที่หน้านี้เคยอธิบายไว้เมื่อเดือนกรกฎาคม ไม่มี toggle Edit ระดับหน้าอีกต่อไป — ทุก field บนแผ่นป้ายและทุก action ในแท็บแก้ไขได้เป็นอิสระตามสิทธิ์ `cluster.update` (`canEdit`) และแถบ "Unsaved changes" แบบ sticky จะปรากฏเมื่อ field บนแผ่นป้ายต่างจาก snapshot ล่าสุด การบันทึกป้องกันด้วย token optimistic-lock `doc_version` (ดู [Data Model](/th/platform/clusters/data-model) §2.1)
 
-การ์ด Business Units แสดงรายการ BU ทุกตัวที่ `cluster_id` ตรงกับ cluster ปัจจุบัน (พร้อมช่องค้นหาของตัวเอง, filter Active/Inactive และคอลัมน์ Code/Name ที่ sort ได้) พร้อมปุ่ม **Add** ที่นำทางไป `/business-units/new?cluster_id=<id>` เพื่อให้ BU ใหม่ผูกกับ cluster ตั้งแต่เริ่ม ส่วนส่วน Users แสดงข้อมูล จาก `tb_cluster_user` (กรองตาม cluster_id) พร้อมช่องค้นหา/filter เช่นกัน และรองรับ add ผ่าน dialog บวกกับการแก้ไข role และ parent BU **แบบ inline** ตรงในแถวของตาราง (ไม่มี dialog แก้ไขแยกอีกต่อไป) — พร้อมการเลือกหลายรายการด้วย checkbox และ action แบบกลุ่ม (bulk) **Remove** / **Move to BU**
+หน้าจอทั้งสองของ cluster ยังมี action **View History** (permission `activity_log.read` ใหม่รอบนี้) เปิดแผ่นประวัติการเปลี่ยนแปลงที่ใช้ร่วมกันสำหรับ record ของ cluster นั้น
+
+แท็บ Business Units แสดงรายการ BU ทุกตัวที่ `cluster_id` ตรงกับ cluster ปัจจุบัน พร้อมช่องค้นหา, filter Active/Inactive และคอลัมน์ Code/Name ที่ sort ได้ของตัวเอง BU ที่มีอันดับ (HQ มาก่อน ตามด้วยตัวที่เก่าที่สุด ตรงกับ database view เป๊ะ) เกินโควตา BU ของ cluster จะถูกติดป้าย "Over limit" ปุ่ม **Add** จะนำทางไป `/business-units/new?cluster_id=<id>` เพื่อให้ BU ใหม่ผูกกับ cluster ตั้งแต่เริ่ม แท็บ Users แสดงรายการจาก `tb_cluster_user` พร้อมการแก้ไข role แบบ inline ตรงในแถวของตาราง และเลือกหลายรายการด้วย checkbox สำหรับ action แบบกลุ่ม **Remove** — ส่วน action กลุ่ม **Move to BU** ที่เคยบันทึกไว้ก่อนหน้านี้ไม่มีอยู่แล้ว เพราะ field ที่มันย้าย (`parent_bu_id`) ถูกถอดออกจาก schema ไปแล้ว
 
 ## 2. บริบททางธุรกิจ
 
-โดยทั่วไป cluster จะแทนองค์กรลูกค้าหนึ่งรายหรือเครือโรงแรมที่ทำสัญญา Carmen Platform หนึ่งฉบับ สัญญานี้กำหนดว่าลูกค้ามีสิทธิ์ใช้ BU ได้กี่ตัว และ (ต่อ BU) มีสิทธิ์มี named user กี่คน ตัว cluster record คือที่เก็บ ค่า cap เหล่านี้ และเป็นที่ที่ทำการคำนวณ "ยังอยู่ใต้ลิมิตหรือไม่"
+โดยทั่วไป cluster จะแทนองค์กรลูกค้าหนึ่งรายหรือเครือโรงแรมที่ทำสัญญา Carmen Platform หนึ่งฉบับ สัญญากำหนดว่าลูกค้ามีสิทธิ์ใช้ BU ได้กี่ตัวและมีสิทธิ์มีที่นั่งกี่ที่ — cap เหล่านี้ตอนนี้เป็น **แถวใบซื้อที่มีวันที่** ไม่ใช่ field แบบ static บน record cluster/BU เองแล้ว:
 
-- ปุ่ม **Add BU** บนหน้า edit cluster จะ disable ตัวเองเมื่อ `business_units.length >= max_license_bu` พร้อม tooltip ("License limit reached (N/M)")
-- Dialog **Add User** จะ disable ตัวเลือก BU ที่ `max_license_users` เต็มแล้ว และแสดงยอด "X of Y licensed users" ที่กำลังใช้งานต่อ BU
-- เมื่อรวม cluster + BU ภายใต้สังกัด คือกลไกที่ Carmen ใช้กำหนดว่า user คนหนึ่งสลับเข้าใช้ BU ใดได้บ้าง — assignment ถูกเก็บใน `tb_cluster_user` พร้อมตัวชี้ `parent_bu_id`
-- **การป้องกันการลบ (deletion guard):** action Delete ของแถวในหน้า list จะถูกบล็อกฝั่ง client (แสดง toast โดยไม่ยิง API) เมื่อ cluster เป้าหมายยังมี `bu_count > 0` — การลบ cluster ไม่ cascade ไปยัง business unit ของมันที่ฝั่ง backend ดังนั้นการลบ cluster ที่ยังมี BU ที่ยังใช้งานอยู่จะทำให้ BU เหล่านั้นกำพร้า operator ต้องย้ายหรือลบ BU ก่อน
-- **แถบ Fleet Capacity:** หน้า list จะรวมยอด cluster ที่ยังไม่ถูกลบทั้งหมดเป็นภาพรวมทั้งฝูง — capacity รวมของ BU/user ที่ใช้ไปเทียบกับ cap, จำนวน cluster ที่ไม่มี cap พร้อมยอดที่ใช้อยู่ และจำนวน cluster ทั้งหมด/active/near-limit (≥ 90% ของ cap ที่กำหนดไว้)
+- **โควตา BU** มาจาก `tb_cluster_license` — ledger การซื้อโควตา BU ต่อ cluster โควตาที่มีผลคือ **ใบที่ชนะใบเดียว** (ครอบคลุม "ตอนนี้" และยังไม่ถูกยกเลิก) ไม่ใช่ผลรวมของทุกใบที่เคยซื้อ ไม่มีใบที่ชนะ = โควตา `0` ซึ่งเป็นศูนย์จริง ไม่ใช่ "ไม่จำกัด"
+- **ที่นั่ง** มาจาก `tb_business_unit_license` — ledger ต่อ BU ที่รวมยอดจากทุก BU ในคลัสเตอร์ที่ยังคุ้มครองอยู่ ต่างจากโควตา BU ตรงที่ `null`/ไม่มีใบคุ้มครองยังหมายถึง "ไม่จำกัด" สำหรับมิตินี้
+- ปุ่ม **Add BU** บนหน้า edit cluster จะ disable ตัวเองเมื่อ `business_units.length >= bu_cap` พร้อม tooltip ("License limit reached (N/M)") การเกินโควตา BU ด้วยวิธีอื่น (เช่นซื้อใบใหม่ที่โควตาน้อยลงกว่าจำนวน BU ปัจจุบัน) จะไม่ลบหรือบล็อก BU ที่มีอยู่ — แต่จะติดป้าย "Over limit" ตามอันดับแทน (ดู [UI Screens](/th/platform/clusters/ui-screens) §4.3)
+- Dialog **Add User** ตอนนี้เช็ค cap แบบทั้งคลัสเตอร์ ไม่ใช่ต่อ BU แล้ว — dialog ไม่ถาม BU ของสมาชิกใหม่อีกต่อไป เพราะไม่มี field ที่ผูกกับ BU บน membership ของ cluster-user แล้ว
+- เมื่อรวม cluster + BU ภายใต้สังกัด คือกลไกที่ Carmen ใช้กำหนดว่า user คนหนึ่งสลับเข้าใช้ BU ใดได้บ้าง
+- **การป้องกันการลบ (deletion guard):** action Delete ของแถวในหน้า list จะถูกบล็อกฝั่ง client เมื่อ cluster เป้าหมายยังมี `bu_count > 0` — การลบ cluster ไม่ cascade ไปยัง business unit ของมันที่ฝั่ง backend
+- การซื้อ ต่ออายุ หรือยกเลิกใบโควตา BU/ที่นั่งทำในโมดูล **licenses** (License Center) ทั้งหมด — หน้าของโมดูลนี้ลิงก์ไปที่นั่นแต่ไม่ได้บันทึก CRUD เต็มรูปแบบของ ledger ดู [Data Model](/th/platform/clusters/data-model) §2.4–2.5
 
 ## 3. แนวคิดสำคัญ
 
-- **Cluster** — container ที่มีชื่อ ประกอบด้วย `code`, `name`, `alias_name` (ไม่เกิน 3 ตัวอักษร แสดงเฉพาะในฟอร์ม edit และคอลัมน์ Alias ของ CSV export เท่านั้น — ไม่มี UI badge ใด render ค่านี้), flag `is_active` และ cap `max_license_bu` (optional) ส่วน soft-delete ติดตามผ่าน `deleted_at` / `deleted_by_name`
-- **Branding (logo + avatar)** — แต่ละ cluster มี **logo** สี่เหลี่ยมผืนผ้าและ **avatar** สี่เหลี่ยมจัตุรัส เก็บใน Prisma เป็น file token (`logo_file_token`, `avatar_file_token`) และ API คืนค่าเป็น presigned object ฝังในตัว (`logo: { url, expires_at }`, `avatar: { url, expires_at }`) การอัปโหลดทำบนส่วน Branding ของหน้า edit ผ่าน multipart endpoint เฉพาะ หน้า list ไม่แสดงคอลัมน์ thumbnail logo อีกต่อไป (ถูกลบเมื่อเพิ่มแถบ Fleet Capacity) — การ์ด `ClusterHero` บนส่วน Overview ของหน้า edit เป็นจุดเดียวตอนนี้ที่เห็น logo/avatar ของ cluster นอกจากส่วน Branding เอง
-- **Cluster ↔ Business Unit (1:N)** — BU ทุกตัวถือ `cluster_id` หน้า edit cluster จะกรอง BU list ระดับ global ให้เหลือเฉพาะลูกของ cluster ตัวเอง และนับว่ามีกี่ตัวที่ active
-- **Cluster ↔ User (M:N ผ่าน `tb_cluster_user`)** — เพิ่ม user เข้า cluster โดย insert row ที่มี key fields คือ `user_id`, `cluster_id`, `role` (`admin` | `user`), `is_active` และ `parent_bu_id` (optional) ส่วน Users บน `ClusterEdit` อ่าน join นี้ผ่าน `GET /api-system/user/clusters/:clusterId`
-- **License caps** — มีสอง limit อิสระต่อกัน: ระดับ cluster `max_license_bu` (จำกัดจำนวน BU ที่ผูกได้) และระดับ BU `max_license_users` (จำกัดจำนวน cluster_user ที่มี BU นี้เป็น parent) หน้า edit cluster รวม cap ของทุก BU เป็นตัวเลข "total licensed users" บนการ์ด `ClusterHero` และแถบ Fleet Capacity/หน้า list ก็รวมยอดแบบเดียวกันในระดับทั้งฝูง
-- **Optimistic concurrency (`doc_version`)** — `tb_cluster` (และ `tb_cluster_user`) ตอนนี้มี counter `doc_version` แล้ว หน้า edit จะอ่านค่านี้ตอนโหลดและส่งกลับไปพร้อมทุก `PUT`; การบันทึกที่ล้าหลังจะถูกปฏิเสธด้วย `409` และ SPA จะแสดง toast "ถูกเปลี่ยนโดยคนอื่น" แล้วโหลด record ใหม่แทนที่จะเขียนทับแบบเงียบ ๆ (ดู [Data Model](/th/platform/clusters/data-model) §2.1)
-- **คอลัมน์ audit** — หน้า list แสดงคอลัมน์ Created และ Updated (timestamp พร้อมชื่อผู้กระทำ) SPA จะ flatten object `audit` แบบ nested จาก API response (`audit.created.{at,name}`, `audit.updated.{at,name}`) สำหรับคอลัมน์วันที่ โดยยอมรับ shape แบบ flat รุ่นเก่าด้วย ซึ่งชนะเมื่อมีค่า (`item.created_at ?? item.audit?.created?.at`) เซลล์ Updated จะถูกละเมื่อ `updated_at` เท่ากับ `created_at`
-- **Soft delete** — หน้า list จะซ่อน row ที่ `deleted_at IS NOT NULL` เว้นแต่จะเปิด filter "Show soft-deleted clusters" row ที่ถูก soft-delete จะมี badge "Deleted" สีแดงกำกับ (tooltip ของ badge ระบุชื่อผู้ลบ) และเมื่อเปิด filter จะมีคอลัมน์ audit "Deleted By" เพิ่มต่อท้าย การลบ cluster ที่ยังเป็นเจ้าของ business unit อยู่จะถูกบล็อกฝั่ง client (§2)
+- **Cluster** — container ที่มีชื่อ ประกอบด้วย `code`, `name`, `alias_name` (ไม่เกิน 3 ตัวอักษร), flag `is_active` ส่วน soft-delete ติดตามผ่าน `deleted_at` / `deleted_by_name` **ไม่มีคอลัมน์ licence-cap อีกต่อไป** — `max_license_bu` ถูกถอดออกทั้งจาก Prisma model และทุก path อ่าน/เขียนฝั่ง SPA (โค้ดฝั่ง SPA ตัวสุดท้ายที่อ่านค่านี้ถูกลบโดย commit `7fda015`)
+- **Branding (logo + avatar)** — แต่ละ cluster มี **logo** สี่เหลี่ยมผืนผ้าและ **avatar** สี่เหลี่ยมจัตุรัส เก็บเป็น file token และ API คืนค่าเป็น presigned object ฝังในตัว ปุ่มอัปโหลดตอนนี้อยู่ในส่วนหัว `ClusterPlate` แบบกะทัดรัด ไม่ใช่แท็บ/ส่วน "Branding" แยกต่างหากแล้ว
+- **Cluster ↔ Business Unit (1:N)** — BU ทุกตัวถือ `cluster_id`
+- **Cluster ↔ User (M:N ผ่าน `tb_cluster_user`)** — เพิ่ม user เข้า cluster โดย insert row ที่มี key fields คือ `user_id`, `cluster_id`, `role` (`admin` | `user`), `is_active` **ไม่มี `parent_bu_id` แล้ว** — คอลัมน์นี้ถูกถอดออกจาก schema และแท็บ Users กับ dialog Add User ไม่มี field ของ Business Unit อีกต่อไป
+- **Licence ledger โควตา BU (`tb_cluster_license`, ใหม่)** — หนึ่งแถวต่อการซื้อโควตา BU หนึ่งครั้ง มี `licensed_bus`, `start_date`/`end_date` และ field การยกเลิก ใบที่ชนะจะกำหนด `bu_cap`; `end_date` ของมันกลายเป็น `bu_cap_end_date` (แสดงเป็น "No expiry" เมื่อเป็น sentinel วันหมดอายุตลอดชีพ)
+- **Licence ledger ที่นั่ง (`tb_business_unit_license`, ใหม่)** — ใบซื้อที่นั่งต่อ BU รวมยอดเป็น `total_max_license_users` ของ cluster แทนคอลัมน์ `tb_business_unit.max_license_users` ที่ถูกถอดออก (migration `20260821000000_drop_bu_max_license_users`)
+- **Optimistic concurrency (`doc_version`)** — `tb_cluster` และ `tb_cluster_user` ยังมี counter `doc_version` หน้า edit จะส่งค่านี้กลับไปพร้อมทุก `PUT` และการบันทึกที่ล้าหลังจะแสดง toast "ถูกเปลี่ยนโดยคนอื่น" (ดู [Data Model](/th/platform/clusters/data-model) §2.1)
+- **คอลัมน์ audit** — หน้า list แสดง Created และ Updated (timestamp + ผู้กระทำ) อ่านผ่าน helper `normalizeAudit()` ที่ยอมรับทั้ง object `audit` แบบ nested และ shape แบบ flat รุ่นเก่า
+- **Soft delete** — หน้า list จะซ่อนแถวที่ถูกลบ เว้นแต่เปิด "Show soft-deleted clusters" การลบ cluster ที่ยังมี business unit อยู่จะถูกบล็อกฝั่ง client (§2)
+- **Feature flag (`clusters`)** — ทุก route ของ cluster ตอนนี้มี check `feature="clusters"` บน `PrivateRoute` ด้วย ทำงานหลังจาก check permission: session ที่ไม่มีสิทธิ์ `cluster.*` จะยังเห็น 403 (ไม่ใช่ 404 จาก flag) แต่ session ที่มีสิทธิ์อยู่แล้วจะเห็น `NotFound` หรือหน้า "Coming Soon" ถ้า flag ถูกตั้งเป็น `hide`/`inactive` ตามลำดับ
+- **View History (`activity_log.read`, ใหม่)** — หน้าจอทั้งสองของ cluster มี action ดูประวัติการเปลี่ยนแปลง; ระบบเริ่มบันทึกตั้งแต่ 2026-08-31 เท่านั้น ดังนั้น cluster ที่สร้างก่อนหน้านั้นจะเห็นไทม์ไลน์ว่างเปล่า ไม่ได้แปลว่าไม่เคยมีการแก้ไข
 
 ## 4. บทบาทและ Persona
 
-การเข้าถึงเป็นแบบ permission-based ([Platform RBAC](/th/platform/rbac)): แต่ละ route ถือ key `requiredPermission` บน `PrivateRoute` และปุ่มที่แก้ไขข้อมูลยังถูกห่อด้วย gate `<Can>` เพิ่มเติม — บางตัวเป็นแบบ cluster-scoped ผ่าน prop `clusterId`
+การเข้าถึงเป็นแบบ permission-based ([Platform RBAC](/th/platform/rbac)): แต่ละ route ถือ key `requiredPermission` บวก key `feature` บน `PrivateRoute` และปุ่มที่แก้ไขข้อมูลยังถูกห่อด้วย gate `<Can>` เพิ่มเติม — บางตัวเป็นแบบ cluster-scoped ผ่าน prop `clusterId`
 
 | Surface | ชนิดของ gate | Key | Scoped? |
 |---|---|---|---|
-| route `/clusters` | `requiredPermission` | `cluster.read` | ไม่ |
-| route `/clusters/new` | `requiredPermission` | `cluster.create` | ไม่ |
-| route `/clusters/:id/edit` | `requiredPermission` | `cluster.update` | ไม่ |
-| รายการ "Clusters" ใน sidebar | filter `permission` | `cluster.read` | ไม่ |
+| route `/clusters` | `requiredPermission` + `feature` | `cluster.read` + `clusters` | ไม่ |
+| route `/clusters/new` | `requiredPermission` + `feature` | `cluster.create` + `clusters` | ไม่ |
+| route `/clusters/:id/edit` | `requiredPermission` + `feature` | `cluster.update` + `clusters` | ไม่ |
+| รายการ "Clusters" ใน sidebar | filter `permission` + `feature` | `cluster.read` + `clusters` | ไม่ |
 | List: ปุ่ม Add Cluster | `<Can>` | `cluster.create` | ไม่ |
 | List: action Edit ของ row | `<Can>` | `cluster.update` | ใช่ — `clusterId={row.original.id}` |
+| List: action **View History** ของ row (ใหม่) | `<Can>` | `activity_log.read` | ใช่ — `clusterId={row.original.id}` |
 | List: action Delete ของ row | `<Can>` | `cluster.delete` | ใช่ — `clusterId={row.original.id}` |
-| หน้า edit: field Details/Branding/Users, bulk actions | `canEdit = hasPermission('cluster.update', {clusterId})` | `cluster.update` | ใช่ — `clusterId={id}` |
+| หน้า edit: field บนแผ่นป้าย, อัปโหลด Branding, Add User, bulk actions | `canEdit = hasPermission('cluster.update', {clusterId})` | `cluster.update` | ใช่ — `clusterId={id}` |
+| หน้า edit: action **View History** ที่หัวหน้า (ใหม่) | `<Can>` | `activity_log.read` | ใช่ — `clusterId={id}` |
 
-มีสองจุดที่ควรสังเกต ข้อแรก `cluster.delete` มีอยู่ **เฉพาะ** ในรูป gate ภายในหน้าเท่านั้น — ไม่มี route ใดต้องการมัน ดังนั้น session ที่ถือเพียง `cluster.read` จะเห็นหน้า list แต่เมนู action ของ row จะว่างเปล่า ข้อสอง gate แบบ scoped (`clusterId`) จะเข้า branch การ resolve แบบ cluster-specific: role assignment ที่ scope ไว้กับ cluster A จะเปิด Edit/Delete เฉพาะบน row ของ cluster A เท่านั้น ขณะที่ route guard แบบ unscoped จะผ่านด้วย grant แบบ cluster-scoped ของ cluster ใดก็ได้ ไม่มี gate แบบ toggle Edit แยกต่างหากอีกต่อไป — หน้า edit คำนวณ boolean `canEdit` ตัวเดียว (`!isNew && hasPermission('cluster.update', { clusterId: id })`) แล้วส่งลงไปทุกส่วน session ที่ไม่มี grant สามารถเข้าถึง `/clusters/:id/edit` ได้ (route guard เป็นแบบ unscoped) แต่จะเห็นทุก field, control อัปโหลด และ action จัดการ user เป็นแบบอ่านอย่างเดียว/ซ่อนไว้ อัลกอริทึมการ resolve และเมทริกซ์ gate ทั้ง SPA อยู่ใน [rbac permissions](/th/platform/rbac/permissions)
+สามจุดที่ควรสังเกต ข้อแรก session ที่ไม่มี grant ทั้งระดับ platform และ cluster-scoped เลยตอนนี้จะถูก resolve **ก่อน** ที่ check permission จะทำงานเสียอีก — `PrivateRoute` จะ redirect ไป `/cluster-admin` ถ้า session นั้นมี scope นั้น แทนที่จะแสดง 403 ซึ่งเป็น layer ใหม่ที่ยังไม่มีตอน sync ครั้งก่อน (ดู [Permissions](/th/platform/clusters/permissions) §5) ข้อสอง `cluster.delete` มีอยู่ **เฉพาะ** ในรูป gate ภายในหน้าเท่านั้น — ไม่มี route ใดต้องการมัน ข้อสาม gate แบบ scoped (`clusterId`) จะเข้า branch การ resolve แบบ cluster-specific: role assignment ที่ scope ไว้กับ cluster A จะเปิด Edit/Delete/View History เฉพาะบน row ของ cluster A เท่านั้น ขณะที่ route guard แบบ unscoped จะผ่านด้วย grant แบบ cluster-scoped ของ cluster ใดก็ได้ อัลกอริทึมการ resolve และเมทริกซ์ gate ทั้ง SPA อยู่ใน [rbac permissions](/th/platform/rbac/permissions)
 
 ## 5. โมดูลที่เกี่ยวข้อง
 
-- [business-units](/th/platform/business-units) — cluster เป็นเจ้าของ BU แบบ 1:N หน้า edit cluster คือจุดมาตรฐานในการสร้าง BU ที่ผูกกับ cluster ตั้งแต่ต้น (เรียก `navigate('/business-units/new?cluster_id=<id>')`) **Gotcha:** route `/business-units*` ใช้ key `cluster.read`/`cluster.create`/`cluster.update` ซ้ำ — ไม่มี key `business_unit.*` ดังนั้นการ grant สิทธิ์เข้าถึง cluster จะมอบ Business Units ไปด้วย
-- [users](/th/platform/users) — cluster เพิ่ม user ผ่าน global user list ส่วนหน้า edit user คืออีกฝั่งของ join `tb_cluster_user` ที่ดู assignment เดียวกัน จากมุมของ user
-- [rbac](/th/platform/rbac) — กำหนด catalog ของ permission, role และ scoped assignment ที่อยู่เบื้องหลังทุก gate `cluster.*` ใน §4 รวมถึง bypass ของ super-admin และข้อยกเว้น bootstrap ส่วน §5 ของหน้านั้นอธิบายโมเดล role-enum รุ่นเก่าที่เคย gate โมดูลนี้จนถึง 2026-06
-- [report-templates](/th/platform/report-templates) — ใช้ pattern route-guard เดียวกันแต่มี key `report_template.*` ของตัวเอง จึงโอนแบบจำลองการ gate ที่อธิบายไว้ที่นี่ไปใช้ได้ 1 ต่อ 1
+- [business-units](/th/platform/business-units) — cluster เป็นเจ้าของ BU แบบ 1:N แท็บ Business Units คือจุดมาตรฐานในการสร้าง BU ที่ผูกกับ cluster ตั้งแต่ต้น **Gotcha:** route `/business-units*` ใช้ key `cluster.read`/`cluster.create`/`cluster.update` ซ้ำ — ไม่มี key `business_unit.*`
+- [users](/th/platform/users) — cluster เพิ่ม user ผ่าน global user list ส่วนหน้า edit user คืออีกฝั่งของ join `tb_cluster_user`
+- [rbac](/th/platform/rbac) — กำหนด catalog ของ permission, role และ scoped assignment ที่อยู่เบื้องหลังทุก gate `cluster.*` ใน §4
+- [licenses](/th/platform/licenses) — licence ledger เต็มรูปแบบของโควตา BU/ที่นั่งและ UI ซื้อ/ยกเลิก (License Center) ที่ทุกหน้าจอ cluster ลิงก์ไปหาแล้วตอนนี้
+- [report-templates](/th/platform/report-templates) — ใช้ pattern route-guard เดียวกันแต่มี key `report_template.*` ของตัวเอง
 
 ## 6. แหล่งข้อมูลอ้างอิง
 
-- `../carmen-platform/src/App.tsx` — การต่อสาย `PrivateRoute` พร้อม key `requiredPermission` (authoritative สำหรับการ gate route; `SITEMAP.md` ยังแสดง role list รุ่นเก่าและ stale ในคอลัมน์ access)
-- `../carmen-platform/src/pages/ClusterManagement.tsx` — หน้า list, แถบ Fleet Capacity, filter, ส่งออก CSV, การจัดการ soft-delete, คอลัมน์ audit, การป้องกันการลบ, row action ที่ gate ด้วย `<Can>`
-- `../carmen-platform/src/pages/ClusterEdit.tsx` — หน้า orchestrator แบบ create/view/edit: scrollspy nav, hero, ส่วน Details/Branding/Business-Units/Users แบบแก้ไข-in-place, optimistic locking ด้วย `doc_version`, dialog เพิ่ม user, ตรรกะ license-cap
-- `../carmen-platform/src/pages/clusterManagement/{ClusterHero,FleetCapacity,CapacityGauge,CapacityMeter}.tsx` และ `../carmen-platform/src/utils/capacity.ts` — สูตรคำนวณและการ render มาตรวัด capacity ที่ใช้ร่วมกันระหว่างหน้า list และหน้า edit
-- `../carmen-platform/src/pages/clusterEdit/{ClusterEditNav,useClusterUsers}.ts(x)` และ `sections/{DetailsSection,BrandingSection,BusinessUnitsSection,UsersSection}.tsx` — scrollspy nav ของหน้า edit และ component แต่ละส่วน
-- `../carmen-platform/src/components/BrandingImageUpload.tsx` — control อัปโหลด logo/avatar ที่ใช้ร่วมกันบนส่วน Branding
-- `../carmen-platform/src/services/clusterService.ts` — REST client (`/api-system/clusters` บวก endpoint อัปโหลด `/logo` และ `/avatar`)
-- `../carmen-platform/src/types/` — TypeScript interface `Cluster`, `PresignedImage` และ `BusinessUnit` ที่ทั้งสองหน้าจอใช้
+- `../carmen-platform/src/App.tsx` — การต่อสาย `PrivateRoute` พร้อม key `requiredPermission` + `feature` ของทั้งสาม route ของ cluster
+- `../carmen-platform/src/components/PrivateRoute.tsx` — guard แบบเป็นชั้น: auth → resolve platform-authority/cluster-admin → permission → super-admin → feature flag
+- `../carmen-platform/src/components/nav/platformNav.ts` — รายการ nav ของ Clusters/Business Units/Tenant Migrations (permission, feature, group)
+- `../carmen-platform/src/pages/ClusterManagement.tsx` — หน้า list, แถบ Fleet Capacity (อ่านจาก `GET /clusters/summary` แล้ว), filter รวม Quota-expiring, ส่งออก CSV, การจัดการ soft-delete, row action ที่ gate ด้วย `<Can>` รวม View History
+- `../carmen-platform/src/pages/ClusterEdit.tsx` — หน้า orchestrator แบบ create/view/edit: `ClusterPlate`/`ClusterDraftPlate`, เนื้อหา 3 แท็บ, optimistic locking ด้วย `doc_version`, dialog เพิ่ม user, action View History ที่หัวหน้า
+- `../carmen-platform/src/pages/clusterEdit/{ClusterPlate,ClusterDraftPlate,PlateField,clusterTabs}.ts(x)` และ `sections/{BusinessUnitsSection,UsersSection,SubscriptionCard}.tsx` — แผ่นป้าย, นิยามแท็บ และเนื้อหาแต่ละแท็บปัจจุบัน
+- `../carmen-platform/src/pages/clusterManagement/{FleetCapacity,CapacityGauge,CapacityMeter,ClusterCreateForm,ClusterIdentityFields}.tsx` และ `../carmen-platform/src/utils/capacity.ts` — สูตรคำนวณ capacity และฟอร์ม create แบบสองการ์ด
+- `../carmen-platform/src/utils/businessUnitRank.ts` — การจัดอันดับ "Over limit" ที่ใช้ร่วมกับหน้า BU list ของฝั่ง cluster-admin
+- `../carmen-platform/src/services/clusterService.ts` — REST client (`/api-system/clusters`, `/api-system/clusters/summary`, endpoint อัปโหลด `/logo` และ `/avatar`)
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — model `tb_cluster`, `tb_cluster_user`, `tb_cluster_license`, `tb_business_unit_license` (ดูเลขบรรทัดที่แน่นอนใน [Data Model](/th/platform/clusters/data-model) §6)
 
 ## 7. หน้าในโมดูลนี้
 
-- [Data Model](/th/platform/clusters/data-model) — field ของ entity cluster, ความสัมพันธ์ 1:N กับ BU, การ join ผ่าน `tb_cluster_user` และสอง field สำหรับ license-cap (stub — ยังไม่สมบูรณ์)
-- [Permissions](/th/platform/clusters/permissions) — gate `requiredPermission` ของแต่ละ route, gate `<Can>` ภายในหน้า (รวม variant แบบ cluster-scoped) และสิ่งที่ key `cluster.*` แต่ละตัวเปิดให้ทำ (stub — ยังไม่สมบูรณ์)
-- [UI Screens](/th/platform/clusters/ui-screens) — หน้า list `ClusterManagement` (แถบ Fleet Capacity) และเลย์เอาต์แบบ scrollspy ของ `ClusterEdit` (Overview/Details/Branding/Business Units/Users) รวมถึง flow ของ dialog เพิ่ม user และ bulk action (stub — ยังไม่สมบูรณ์)
+- [Data Model](/th/platform/clusters/data-model) — field ของ entity cluster, ความสัมพันธ์ 1:N กับ BU, การ join ผ่าน `tb_cluster_user` และตาราง licence ledger ใหม่ที่มาแทน cap แบบ static เดิม
+- [Permissions](/th/platform/clusters/permissions) — gate `requiredPermission`/`feature` ของแต่ละ route, gate `<Can>` ภายในหน้า (รวม variant แบบ cluster-scoped และ gate `activity_log.read` ใหม่) และ layer การ resolve platform-authority ใหม่
+- [UI Screens](/th/platform/clusters/ui-screens) — หน้า list `ClusterManagement` (แถบ Fleet Capacity) และเลย์เอาต์ `ClusterPlate` + 3 แท็บของ `ClusterEdit` รวมถึงพรีวิวโหมด create, dialog เพิ่ม user และ flow ของ bulk action

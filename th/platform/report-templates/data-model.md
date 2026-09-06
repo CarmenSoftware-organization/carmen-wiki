@@ -2,7 +2,7 @@
 title: Report Templates — แบบจำลองข้อมูล (Data Model)
 description: เอนทิตี tb_report_template, payload XML ของ dialog/content, การผูก source, ขอบเขต BU และการเปลี่ยนชื่อ kind→template_type บวกคอลัมน์ is_default/doc_version เมื่อ 2026-07-23
 published: true
-date: 2026-07-29T00:00:00.000Z
+date: 2026-09-06T21:00:00.000Z
 tags: book/platform, report-templates, data-model
 editor: markdown
 dateCreated: 2026-06-10T17:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-06-10T17:00:00.000Z
 # Report Templates — แบบจำลองข้อมูล (Data Model)
 
 > **At a Glance**
-> **ตาราง:** `tb_report_template` (หลัก) &nbsp;·&nbsp; **ตารางพี่น้องเดิม:** `tb_print_template_mapping` — **ถูก drop เมื่อ 2026-07-23** บทบาท `is_default` ของมันถูกดูดซับมาที่ตารางนี้แล้ว ดู [Print Template Mapping](/th/platform/print-template-mapping) (เชิงประวัติศาสตร์) &nbsp;·&nbsp; **Payload JSON:** `dialog` (XML, non-nullable), `content` (XML, non-nullable), `source_params` (`{ params: [...] }`), `signature_config` (`{ blocks: [...] }`) &nbsp;·&nbsp; **การผูก source:** `source_type` (String ธรรมดา: `view` / `function` / `procedure`) + `source_name` + `source_params` &nbsp;·&nbsp; **ขอบเขต BU:** `allow_business_unit` / `deny_business_unit` เก็บเป็น `Json?`; serialise เป็น string แบบ CSV ในฟอร์มของ SPA &nbsp;·&nbsp; **Flag วงจรชีวิต:** `is_standard`, `is_default` (เฉพาะ form template ใหม่เมื่อ 2026-07-23), `is_active`, `doc_version`
+> **ตาราง:** `tb_report_template` (หลัก) &nbsp;·&nbsp; **ตารางพี่น้องเดิม:** `tb_print_template_mapping` — **ถูก drop เมื่อ 2026-07-23** (migration `20260723120000_print_form_default`) บทบาท `is_default` ของมันถูกดูดซับมาที่ตารางนี้แล้ว โมดูล print-template-mapping ที่เคยเป็นเจ้าของตารางนี้ถูกลบออกจากผลิตภัณฑ์เมื่อ 2026-07-24 (carmen-platform commit `de11377`; ดู §7 Cross-link) &nbsp;·&nbsp; **Payload JSON:** `dialog` (XML, non-nullable), `content` (XML, non-nullable), `source_params` (`{ params: [...] }`), `signature_config` (`{ blocks: [...] }`) &nbsp;·&nbsp; **การผูก source:** `source_type` (String ธรรมดา: `view` / `function` / `procedure`) + `source_name` + `source_params` &nbsp;·&nbsp; **ขอบเขต BU:** `allow_business_unit` / `deny_business_unit` เก็บเป็น `Json?`; serialise เป็น string แบบ CSV ในฟอร์มของ SPA &nbsp;·&nbsp; **Flag วงจรชีวิต:** `is_standard`, `is_default` (เฉพาะ form template ใหม่เมื่อ 2026-07-23), `is_active`, `doc_version`
 
 > **Source of truth:** Prisma platform schema ฝั่ง backend อ่านไฟล์นี้ก่อนเสมอเมื่อเขียนหรืออัพเดทหน้านี้:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
@@ -20,11 +20,11 @@ dateCreated: 2026-06-10T17:00:00.000Z
 
 ## 1. ภาพรวม
 
-`tb_report_template` คือรายการใน catalogue สำหรับเอกสารที่พิมพ์หรือส่งออกได้หนึ่งรายการใน Carmen Platform แต่ละ row encode นิยามที่สมบูรณ์ของรายงานหนึ่งฉบับ: identity ของมัน (`name`, `report_group`, `template_type`), คอลัมน์ payload XML สองคอลัมน์ (`dialog` และ `content`) ที่ report runtime นำไปใช้, การผูก source ตอน runtime (`source_type`, `source_name`, `source_params`), ฟิลด์ print-layout (`orientation`, `signature_config`), คู่ allow/deny สำหรับขอบเขต BU และ flag วงจรชีวิตมาตรฐานพร้อม audit trio (รวมถึง `doc_version` คอลัมน์ optimistic-lock ทั้งแพลตฟอร์มที่เพิ่มเมื่อ 2026-07-16)
+`tb_report_template` คือรายการใน catalogue สำหรับเอกสารที่พิมพ์หรือส่งออกได้หนึ่งรายการใน Carmen Platform แต่ละ row encode นิยามที่สมบูรณ์ของรายงานหนึ่งฉบับ: identity ของมัน (`name`, `report_group`, `template_type`), คอลัมน์ payload XML สองคอลัมน์ (`dialog` และ `content`) ที่ report runtime นำไปใช้, การผูก source ตอน runtime (`source_type`, `source_name`, `source_params`), ฟิลด์ print-layout (`orientation`, `signature_config`), คู่ allow/deny สำหรับขอบเขต BU และ flag วงจรชีวิตมาตรฐานพร้อม audit trio (รวมถึง `doc_version` คอลัมน์ optimistic-lock ทั้งแพลตฟอร์มที่เพิ่มเมื่อ 2026-06-12 — **แก้ไขแล้ว** sync ครั้งก่อนระบุวันที่ผิดเป็น 2026-07-16)
 
 เทมเพลตรายงานเป็น tenant-global — ไม่ scope ต่อ cluster และไม่มี FK ไป `tb_cluster` คอลัมน์ขอบเขต BU (`allow_business_unit`, `deny_business_unit`) เป็นรายการกรองแบบ opt-in ที่จำกัดว่า business unit ใดมองเห็นเทมเพลตได้; มันไม่ได้ผูก row เข้ากับ cluster ใดเป็นการเฉพาะ จุดนี้ทำให้ surface ของ report-templates ต่างจากหน้า [clusters](/th/platform/clusters) และ [business-units](/th/platform/business-units) ซึ่ง document ลำดับชั้น cluster/BU ไว้ BU code ที่อ้างอิงใน chip list ตรงกับค่า `tb_business_unit.code` แต่ไม่มี FK constraint — การอ้างอิงเป็น convention ระดับ application
 
-คอลัมน์ `template_type` (เปลี่ยนชื่อจาก `kind` โดย migration `20260723120000_print_form_default`, 2026-07-23) แยกการใช้งานสองแบบของตารางนี้ออกจากกัน: row แบบ `"list"` (เดิม `"report"`) คือรายงานเชิงวิเคราะห์แบบตารางที่ผู้ใช้มองเห็น; row แบบ `"form"` (เดิม `"print"`) คือ layout เอกสารเดี่ยว จนถึง 2026-07-23 ตาราง `tb_print_template_mapping` แยกต่างหากเคย map document type (PO, GRN, SR, …) เข้ากับ row แบบ `kind="print"` ที่นี่; ตอนนี้ตารางนั้น **ถูก drop แล้ว** หน้าที่ของมัน — การเลือก template default หนึ่งตัวที่ business unit จะได้สำหรับกลุ่มหนึ่ง ๆ — ตอนนี้ทำโดยคอลัมน์ `is_default` ของตารางนี้เอง กำหนดขอบเขตด้วย `report_group` และบังคับด้วย partial unique index (§2.1) ดู [Print Template Mapping](/th/platform/print-template-mapping) สำหรับ timeline การถูกลบ — หน้านี้ครอบคลุมเฉพาะ `tb_report_template`
+คอลัมน์ `template_type` (เปลี่ยนชื่อจาก `kind` โดย migration `20260723120000_print_form_default`, 2026-07-23) แยกการใช้งานสองแบบของตารางนี้ออกจากกัน: row แบบ `"list"` (เดิม `"report"`) คือรายงานเชิงวิเคราะห์แบบตารางที่ผู้ใช้มองเห็น; row แบบ `"form"` (เดิม `"print"`) คือ layout เอกสารเดี่ยว จนถึง 2026-07-23 ตาราง `tb_print_template_mapping` แยกต่างหากเคย map document type (PO, GRN, SR, …) เข้ากับ row แบบ `kind="print"` ที่นี่; ตอนนี้ตารางนั้น **ถูก drop แล้ว** หน้าที่ของมัน — การเลือก template default หนึ่งตัวที่ business unit จะได้สำหรับกลุ่มหนึ่ง ๆ — ตอนนี้ทำโดยคอลัมน์ `is_default` ของตารางนี้เอง กำหนดขอบเขตด้วย `report_group` และบังคับด้วย partial unique index (§2.1) โมดูล print-template-mapping ที่เคยเป็นเจ้าของตารางนี้ถูกลบออกจากผลิตภัณฑ์เมื่อ 2026-07-24 เช่นกัน (carmen-platform commit `de11377`) — ดู §7 Cross-link สำหรับ timeline การถูกลบฉบับเต็ม หน้านี้ครอบคลุมเฉพาะ `tb_report_template`
 
 ## 2. เอนทิตี
 
@@ -41,8 +41,8 @@ dateCreated: 2026-06-10T17:00:00.000Z
 | `report_group` | `String @db.VarChar(100)` | No | — | key สำหรับจัดกลุ่ม ใช้จัดระเบียบเทมเพลตในหน้า list ของการจัดการ (เช่น `"Receiving"`, `"Inventory"`) |
 | `template_type` | `String @default("list") @db.Text` | No | `"list"` | หมวดของเทมเพลต: `"list"` (รายงานเชิงวิเคราะห์แบบตาราง เดิม `"report"`) หรือ `"form"` (layout เอกสารเดี่ยว เดิม `"print"`) เปลี่ยนชื่อจาก `kind` โดย migration `20260723120000_print_form_default` (2026-07-23); ค่าก็เปลี่ยนพร้อมกัน |
 | **— XML Payloads —** | | | | |
-| `dialog` | `String @db.Text` | No | — | string XML ที่นิยามฟอร์ม parameter ซึ่ง report runtime render ไม่เป็น nullable — string ว่าง `""` คือค่า "ไม่มี dialog" ที่ valid โครงสร้าง XML โดยละเอียด document ไว้ใน [XML Spec §2](./xml-spec.md) |
-| `content` | `String @db.Text` | No | — | string XML ที่นิยาม layout ผลลัพธ์ของรายงานซึ่ง report runtime render ไม่เป็น nullable — `""` valid สำหรับเทมเพลตที่สร้างใหม่ แท็บ Content ใน editor ยังรับการอัพโหลดไฟล์ `.frx` / `.xml` / `.txt` ด้วย (การ migrate ไฟล์ FastReport รุ่นเก่า) โครงสร้างโดยละเอียดอยู่ใน [XML Spec §3](./xml-spec.md) |
+| `dialog` | `String @db.Text` | No | — | string XML ที่นิยามฟอร์ม parameter ซึ่ง report runtime render ไม่เป็น nullable — string ว่าง `""` คือค่า "ไม่มี dialog" ที่ valid โครงสร้าง XML โดยละเอียด document ไว้ใน [XML Spec §2](/th/platform/report-templates/xml-spec) |
+| `content` | `String @db.Text` | No | — | string XML ที่นิยาม layout ผลลัพธ์ของรายงานซึ่ง report runtime render ไม่เป็น nullable — `""` valid สำหรับเทมเพลตที่สร้างใหม่ แท็บ Content ใน editor ยังรับการอัพโหลดไฟล์ `.frx` / `.xml` / `.txt` ด้วย (การ migrate ไฟล์ FastReport รุ่นเก่า) โครงสร้างโดยละเอียดอยู่ใน [XML Spec §3](/th/platform/report-templates/xml-spec) |
 | **— Go Builder —** | | | | |
 | `builder_key` | `String? @db.VarChar` | Yes | — | ผูก row ของเทมเพลตเข้ากับ key ใน registry ของ Go report.Definition เมื่อถูกตั้งค่า runtime ฝั่ง Go ใช้ key นี้ resolve นิยามรายงานแทนการ execute `source_type`/`source_name` โดยตรง |
 | **— Source Binding (legacy) —** | | | | |
@@ -62,7 +62,7 @@ dateCreated: 2026-06-10T17:00:00.000Z
 | `deny_business_unit` | `Json? @db.JsonB` | Yes | — | รายการ optional ของ BU code ที่ถูกตัดออกจากการมองเห็นเทมเพลตนี้อย่างชัดเจน `NULL` = ไม่มีการ deny การ normalise ด้วย `toCsv()` แบบเดียวกับ `allow_business_unit` |
 | `is_active` | `Boolean` | No | `true` | เมื่อเป็น `false` เทมเพลต inactive และถูกซ่อนจาก list การเลือก |
 | **— Audit —** | | | | |
-| `doc_version` | `Int @default(0) @db.Integer` | No | `0` | Token สำหรับ optimistic-lock ส่วนหนึ่งของการ rollout `doc_version` ทั้งแพลตฟอร์ม (2026-07-16, 35 ตาราง) SPA ส่งค่านี้ทุกครั้งที่ `PUT` และแสดง toast conflict + reload เมื่อไม่ตรงกัน |
+| `doc_version` | `Int @default(0) @db.Integer` | No | `0` | Token สำหรับ optimistic-lock ส่วนหนึ่งของการ rollout `doc_version` ทั้งแพลตฟอร์ม (**2026-06-12**, migration `20260612000000_add_doc_version`, 35 ตาราง — แก้จาก "2026-07-16" ของ sync ครั้งก่อน) SPA ส่งค่านี้ทุกครั้งที่ `PUT` และแสดง toast conflict + reload เมื่อไม่ตรงกัน |
 | `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: เวลาสร้าง row |
 | `created_by_id` | `String? @db.Uuid` | Yes | — | Audit: FK ไป `tb_user.id` ของผู้สร้าง (convention ระดับ application; ไม่มี Prisma `@relation` ประกาศไว้) |
 | `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: เวลาอัพเดทล่าสุด |
@@ -87,7 +87,7 @@ tb_report_template  self-FK  updated_by_id  → tb_user.id  (audit; no Prisma @r
 tb_report_template  self-FK  deleted_by_id  → tb_user.id  (audit; no Prisma @relation)
 ```
 
-**ถูกลบเมื่อ 2026-07-23:** `tb_report_template 1 ─── M tb_print_template_mapping` ไม่มีอยู่แล้ว — ตาราง mapping ถูก drop ไปเลย ไม่ใช่แค่ตัดการเชื่อมต่อ ดู [Print Template Mapping](/th/platform/print-template-mapping) สำหรับการถูกลบ
+**ถูกลบเมื่อ 2026-07-23:** `tb_report_template 1 ─── M tb_print_template_mapping` ไม่มีอยู่แล้ว — ตาราง mapping ถูก drop ไปเลย ไม่ใช่แค่ตัดการเชื่อมต่อ (migration `20260723120000_print_form_default`); โมดูล print-template-mapping เองถูกลบออกจากผลิตภัณฑ์วันถัดมาคือ 2026-07-24 (carmen-platform commit `de11377`) — ดู §7 Cross-link
 
 สิ่งที่จงใจไม่มี:
 
@@ -118,13 +118,13 @@ tb_report_template  self-FK  deleted_by_id  → tb_user.id  (audit; no Prisma @r
 
 คอลัมน์ `String @db.Text` แบบ non-nullable (ไม่ใช่ `Json`) ที่เก็บ XML ซึ่ง report runtime render เป็นฟอร์มกรอก parameter ที่แสดงให้ผู้ใช้ก่อนรันรายงาน string ว่าง `""` คือสถานะ "ไม่มี parameter" ที่ valid สำหรับเทมเพลตที่ไม่รับ input จากผู้ใช้
 
-แท็บ Dialog ใน editor ของ SPA รับการกรอก XML อิสระหรือการอัพโหลดไฟล์ เอกสารอ้างอิง element และ attribute ของ XML โดยละเอียดอยู่ใน [XML Spec §2](./xml-spec.md)
+แท็บ Dialog ใน editor ของ SPA รับการกรอก XML อิสระหรือการอัพโหลดไฟล์ เอกสารอ้างอิง element และ attribute ของ XML โดยละเอียดอยู่ใน [XML Spec §2](/th/platform/report-templates/xml-spec)
 
 ### 5.2 `content` (payload XML)
 
 คอลัมน์ `String @db.Text` แบบ non-nullable ที่เก็บ XML ซึ่งนิยาม layout ผลลัพธ์ของรายงาน — คอลัมน์, การจัดกลุ่ม, ยอดรวม, การจัดรูปแบบ ฯลฯ string ว่าง valid สำหรับเทมเพลตที่เพิ่งสร้างก่อนเพิ่ม content
 
-แท็บ Content ใน editor รับการกรอก XML โดยตรงและยังอนุญาตให้อัพโหลดไฟล์ `.frx`, `.xml` หรือ `.txt` ซึ่งรองรับการ migrate ไฟล์เทมเพลต FastReport รุ่นเก่า โครงสร้าง XML โดยละเอียดอยู่ใน [XML Spec §3](./xml-spec.md)
+แท็บ Content ใน editor รับการกรอก XML โดยตรงและยังอนุญาตให้อัพโหลดไฟล์ `.frx`, `.xml` หรือ `.txt` ซึ่งรองรับการ migrate ไฟล์เทมเพลต FastReport รุ่นเก่า โครงสร้าง XML โดยละเอียดอยู่ใน [XML Spec §3](/th/platform/report-templates/xml-spec)
 
 ### 5.3 `source_params` (object)
 
@@ -202,7 +202,7 @@ interface `ReportTemplate` ใน `../carmen-platform/src/services/reportTemplat
 ## 7. แหล่งข้อมูลอ้างอิง
 
 **หลัก (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `model tb_report_template` (บรรทัด 734)
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `model tb_report_template` (บรรทัด 806 — แก้จาก "บรรทัด 734" ของ sync ครั้งก่อน ไฟล์ขยายขึ้นเหนือ model นี้ตั้งแต่ sync ครั้งล่าสุด)
 - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260723120000_print_form_default/migration.sql` — data migration ที่มากับการเปลี่ยนชื่อ `kind`→`template_type`, การเพิ่ม `is_default`, unique index และการ drop `tb_print_template_mapping`
 
 **รอง (shape ฝั่ง consumer):**
@@ -215,9 +215,9 @@ interface `ReportTemplate` ใน `../carmen-platform/src/services/reportTemplat
 
 **Cross-link:**
 - [report-templates](/th/platform/report-templates) — หน้า landing ของโมดูล
-- [print-template-mapping](/th/platform/print-template-mapping) — **ถูกลบเมื่อ 2026-07-23/24** (หน้าเชิงประวัติศาสตร์); เคยเป็นเจ้าของ `tb_print_template_mapping` ที่ถูก drop โดย migration เดียวกับที่เพิ่ม `is_default` ที่นี่
+- **Print Template Mapping** — ถูกลบออกจากผลิตภัณฑ์เมื่อ 2026-07-24 (carmen-platform commit `de11377`); เคยเป็นเจ้าของ `tb_print_template_mapping` ที่ถูก drop โดย migration `20260723120000_print_form_default` เดียวกับที่เพิ่ม `is_default` ที่นี่ หน้าที่ของมันตอนนี้ทำโดย `template_type = "form"` + `report_group` + `is_default` บนตารางนี้ แสดงผลผ่านโมดูล [กลุ่มฟอร์มรายงาน (Report Form Groups)](/th/platform/report-form-groups) แบบ standalone
 - [business-units](/th/platform/business-units) — BU code ที่อ้างอิงใน chip list ของ allow/deny ตรงกับ `tb_business_unit.code`
 - [clusters](/th/platform/clusters) — surface พี่น้องของ Platform; เทมเพลตรายงานเป็น tenant-global และไม่ scope ต่อ cluster
-- [Permissions](./permissions.md) — การควบคุมการเข้าถึงของ surface การจัดการ report-templates
-- [UI Screens](./ui-screens.md) — หน้าจอ SPA สำหรับการจัดการและแก้ไขเทมเพลตรายงาน
-- [XML Spec](./xml-spec.md) — โครงสร้างโดยละเอียดของ payload XML `dialog` และ `content`
+- [Permissions](/th/platform/report-templates/permissions) — การควบคุมการเข้าถึงของ surface การจัดการ report-templates
+- [UI Screens](/th/platform/report-templates/ui-screens) — หน้าจอ SPA สำหรับการจัดการและแก้ไขเทมเพลตรายงาน
+- [XML Spec](/th/platform/report-templates/xml-spec) — โครงสร้างโดยละเอียดของ payload XML `dialog` และ `content`
