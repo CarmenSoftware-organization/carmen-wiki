@@ -1,8 +1,8 @@
 ---
 title: Application Role
-description: Per-business-unit role definitions plus the join tables that map roles to permissions and users to roles — the heart of tenant RBAC.
+description: Per-business-unit role definitions plus the role→permission and user→role join tables — the heart of tenant RBAC. List returns a permission count, detail the full catalog; role print; picker fix for module-level permissions.
 published: true
-date: 2026-07-15T23:46:09.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: access-control, application-role, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,7 +11,15 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # Application Role
 
 > **At a Glance**
-> **Owner:** Sysadmin (per BU) &nbsp;·&nbsp; **Table:** `tb_application_role` (+ `tb_application_role_tb_permission`, `tb_user_tb_application_role`) &nbsp;·&nbsp; **Used by:** every transactional module's permission check &nbsp;·&nbsp; Named bundles of permissions assigned to users inside a BU.
+> **Owner:** Sysadmin (per BU) &nbsp;·&nbsp; **Table:** `tb_application_role` (+ `tb_application_role_tb_permission`, `tb_user_tb_application_role`) &nbsp;·&nbsp; **Screen:** `/system-admin/role` (+ `/new`, `/:id`) — permission `system_admin.role.view`, licence `system_admin.role` &nbsp;·&nbsp; **Endpoint:** `api/config/:bu_code/application-roles` (`KeycloakGuard` only — **no `AppIdGuard` and no `@Permission` on any of its five routes**, re-verified 2026-09-22) &nbsp;·&nbsp; **Used by:** every transactional module's permission check &nbsp;·&nbsp; Named bundles of permissions assigned to users inside a BU.
+
+## Implementation status (re-verified 2026-09-22)
+
+- **List vs detail payloads split (BE `d911ad988`, 2026-09-07).** `GET …/application-roles` returns `permissions: { count }` per role plus `audit` (`ApplicationRoleResponseDto`, `swagger/response.ts:38-66`); `GET …/application-roles/:id` returns the **whole permission catalog** with the role's grants marked (`ApplicationRoleDetailResponseDto`, `:91-105`). The FE types mirror this (`types/role.ts`: `Role.permissions: { count }`, `RoleDetail.permissions: RolePermission[]`; FE `3d339913`). Since the 2026-09-17 serializer pass the list row carries `business_unit: { id }` instead of a flat `business_unit_id` (BE `5d64f5dfd` — list only; the detail DTO has no such field).
+- **Create / update payloads:** `CreateRoleDto { name, description?, permissions: { add: string[] } }`, `UpdateRoleDto { …, doc_version, permissions: { add: string[], remove: string[] } }` (`types/role.ts:35-44`).
+- **Role screen rebuilt (FE `aad79674`, 2026-08-20).** `permission-matrix.tsx` was deleted; the form is now `role-form.tsx` + `role-form-hero.tsx` + `permission-picker.tsx` (`permission-catalog.ts` groups the catalog category → resource → action; actions are Toggle pills, `4c28bcf0`). Two picker bugs fixed on 2026-08-31 (`bad71662`): permissions whose `resource` has no dot — the **module-level** grants `procurement`, `configuration`, `inventory_management`, `dashboard`, `report`, `system_admin`, … (11 of them) — were skipped by `if (dot === -1) continue;` and could never be granted from the UI; and soft-deleted permissions returned with `audit.deleted` were still rendered. Module-level rows now appear first in each category as "Module access" (`MODULE_RESOURCE_KEY`).
+- **Print (FE `efdc52ba`, 2026-08-20).** `use-role-print.ts` renders a per-module summary of granted permissions (same order and labels as the picker) with BU / printed-by / printed-at header, through a hidden iframe.
+- **Delete** is offered in the list row and on the detail hero, both permission-checked (`65751027`).
 
 ![Application Role screen](/screenshots/access-control/application-role.png)
 
@@ -27,9 +35,11 @@ Application roles are the **named bundles of [access-control/permission](/en/inv
 
 | Task | Where | Notes |
 |---|---|---|
-| Create a role for a BU | `/system-admin/role/new` → **Name** + permission matrix → Save | No BU picker on this form — the role is created inside the caller's active BU context |
-| Add permissions to a role | Role edit → permission matrix / picker (`permission-matrix.tsx`, `permission-picker.tsx`) | Checkboxes over `tb_permission` grouped by `resource`; column-header click grants/revokes a whole action across all resources, row `Grant All` grants a whole category |
-| Assign a user to a role | **Not on the Role screen** — done from `/system-admin/user/:id` → **Assign Roles** section → toggle role cards → Save | The Role edit screen has only Name + Permissions; there is no Users tab (confirmed against `role-form.tsx` and the e2e test-case catalog `1101-role.md`) |
+| Create a role for a BU | `/system-admin/role/new` → **Name**, Description + permission picker → Save | No BU picker on this form — the role is created inside the caller's active BU context; `POST …/application-roles { name, description, permissions: { add } }` |
+| Add permissions to a role | Role edit → permission picker (`permission-picker.tsx`) | One row per resource with a Toggle pill per real action; "Grant all" per category and select-all per row; module-level "Module access" row first in each category |
+| Print a role's grants | Role detail → **Print** | `use-role-print.ts` — per-module grant summary, hotel-style document header |
+| Assign a user to a role | **Not on the Role screen** — done from `/system-admin/user/:id` → **Edit** → tick roles → Save (`PATCH /api/config/:bu_code/users/:user_id { application_role_id: { add, remove } }`) | The Role edit screen has only Name + Description + Permissions; there is no Users tab (confirmed against `role-form.tsx` and the e2e test-case catalog `1101-role.md`) |
+| See who holds which role | `/system-admin/user` → **Print** / **Export** | User × role matrix from `GET /api/config/:bu_code/user-application-roles` |
 | Retire a role | Set `is_active = false` | Existing assignments persist; permissions stop granting on next eval |
 | Delete a role | Role list row action, or Hero **Delete** button on the detail screen | Blocked if active assignments exist per Validation & Errors below |
 | Audit role changes | [reporting-audit/activity](/en/inventory/reporting-audit/activity) log | Filter by `entity_type = application_role` |
@@ -49,7 +59,7 @@ Application roles are the **named bundles of [access-control/permission](/en/inv
 - **BU scoping is application-enforced.** No DB constraint blocks assigning a role to a user without BU access — the service layer must validate.
 - **Soft-deleted roles** stop granting permissions (joins filter `deleted_at IS NULL`) but assignment rows persist for audit.
 - **Inactive permission link** (`tb_application_role_tb_permission.is_active = false`) removes the permission without deleting the link — useful for staged rollouts.
-- **Managing roles is itself coarsely gated.** The `/system-admin/role` route (and `/system-admin/user`, `/system-admin/user-activity`) is gated by a single coarse frontend permission key, `PERMISSIONS.system_configuration.view` (`constant/module-list.ts`) — there is no granular "who may manage roles" permission distinct from general system-configuration access.
+- **Managing roles is gated in the frontend only.** The `/system-admin/role` nav entry gates on `PERMISSIONS.system_admin.role.view` (`constant/module-list.ts:691-695`; the `system_configuration.view` key a prior version cited was a ghost, replaced 2026-09-21) and `tb_permission` carries `system_admin.role.{view,create,update,delete}` — but `config_application-roles.controller.ts` checks none of them: its five routes sit behind the class-level `KeycloakGuard` (`:59`) with no `AppIdGuard` and no `@Permission` decorator (`grep -c` = 0 at HEAD). The same is true of `config_user-application-roles` and `config_permissions`. Any authenticated member of the BU whose licence includes `system_admin.role` can create, edit or delete roles via the API. **Unconfirmed whether this is intended** — flagged, not fixed.
 
 ---
 
@@ -114,7 +124,9 @@ Source: platform schema.
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_application_role` (line 19), `tb_application_role_tb_permission` (line 44), `tb_user_tb_application_role` (line 606).
-- **Frontend:** `../carmen-inventory-frontend-react/routes/system-admin/role/` (`role-form.tsx`, `permission-matrix.tsx`, `permission-picker.tsx`, `role-component.tsx`) for the role screen itself; `../carmen-inventory-frontend-react/routes/system-admin/user/user-assigned-roles.tsx` for user↔role assignment; route guard key in `constant/module-list.ts` / `constant/permissions.ts`.
-- **E2E:** `../carmen-inventory-frontend-e2e/docs/test-cases/1101-role.md` (documentation-only test-case catalog; no automated Playwright spec yet).
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_application_role`, `tb_application_role_tb_permission`, `tb_user_tb_application_role`.
+- **Backend gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_application-roles/config_application-roles.controller.ts` (`GET` `:76`, `GET :id` `:140`, `POST` `:190`, `PUT :id` `:253`, `DELETE :id` `:320`; swagger `response.ts`), `config/config_user-application-roles/` (matrix `GET` `:80`, per-user `GET :user_id`, `POST`, `PATCH`, `DELETE`); service `apps/micro-business/src/authen/role_permission/role_permission.service.ts`; serializer `apps/backend-gateway/src/common/dto/application-role/application-role.serializer.ts`.
+- **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/config/application-roles/`, `config/user-application-roles/`.
+- **Frontend:** `../carmen-inventory-frontend-react/routes/system-admin/role/` (`role.route.tsx`, `role-new.route.tsx`, `role-edit.route.tsx`, `role-component.tsx`, `role-form.tsx`, `role-form-hero.tsx`, `role-form-schema.ts`, `permission-picker.tsx`, `permission-catalog.ts`, `use-permission.ts`, `use-role-print.ts`, `use-role-table.tsx`) for the role screen itself; `../carmen-inventory-frontend-react/routes/system-admin/user/user-assigned-roles.tsx` for user↔role assignment; `types/role.ts`; nav key in `constant/module-list.ts:691-695` / `constant/permissions.ts` (`system_admin.role`).
+- **E2E:** `../carmen-inventory-frontend-e2e/docs/test-cases/1101-role.md` (44 cases, documentation-only; no automated Playwright spec yet).
 - **carmen/docs:** `../carmen/docs/workflow-permissions-system.md`.

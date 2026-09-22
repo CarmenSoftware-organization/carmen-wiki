@@ -1,8 +1,8 @@
 ---
 title: Company Profile & Default Setting
-description: Two system-admin screens that edit disjoint field groups of the same tb_business_unit row — Company Profile (identity, address, branding, date/time/number formats) and Default Setting (PR/SI/PO operational config + print-form template selection). /system-admin/business-setting is a dead redirect to Company Profile.
+description: Two system-admin screens editing disjoint field groups of the same tb_business_unit row — Company Profile (identity, address, formats) and Default Setting (PR/SI/PO config + print forms). Permission system_admin.business_unit.
 published: true
-date: 2026-07-29T10:52:30.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: system-config, business-unit, company-profile, default-setting, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T10:30:00.000Z
@@ -11,7 +11,14 @@ dateCreated: 2026-07-29T10:30:00.000Z
 # Company Profile & Default Setting
 
 > **At a Glance**
-> **Routes:** `/system-admin/company-profile`, `/system-admin/default-setting` &nbsp;·&nbsp; **Redirect:** `/system-admin/business-setting` → `/system-admin/company-profile` (client-side `<Navigate replace>`, no screen of its own) &nbsp;·&nbsp; **Table:** `tb_business_unit` (platform schema) — same row as [master-data/business-unit](/en/inventory/master-data/business-unit), disjoint field groups &nbsp;·&nbsp; **Endpoint:** `GET`/`PATCH /api/business-units` (no id in the URL — resolved server-side from the caller's token/BU context) &nbsp;·&nbsp; **Permission:** `system_configuration.view` (both screens; no dedicated key of their own).
+> **Routes:** `/system-admin/company-profile`, `/system-admin/default-setting` &nbsp;·&nbsp; **Redirect:** `/system-admin/business-setting` → `/system-admin/company-profile` (client-side `<Navigate replace>`, no screen of its own) &nbsp;·&nbsp; **Table:** `tb_business_unit` (platform schema) — same row as [master-data/business-unit](/en/inventory/master-data/business-unit), disjoint field groups &nbsp;·&nbsp; **Endpoint:** `GET`/`PATCH /api/business-units` (no id in the URL — resolved server-side from the caller's token/BU context; `AppIdGuard('userBusinessUnit.getCurrent' | 'patchCurrent')`, `user-business-units.controller.ts:122-245`) &nbsp;·&nbsp; **Permission:** `system_admin.business_unit.view` / `.update` (both screens; `constant/permissions.ts` — the `system_configuration.view` key this page cited was a frontend ghost that never existed in `tb_permission`, replaced on 2026-09-21 by FE `b9e2de5f`) &nbsp;·&nbsp; **Licence:** `system_admin`.
+
+## Implementation status (re-verified 2026-09-22)
+
+- **`max_license_users` is gone.** The column was dropped from `tb_business_unit` (platform migration, BE `59c841346` 2026-08-21, following the unapplied drop `1280c2ce9`) when seat licensing moved to `tb_business_unit_license` / cluster seat pools; the FE removed the read-only field on 2026-08-19 (`60d95cd9`) and `types/business-unit.ts` no longer declares it. Only `calculation_method` remains as a read-only `SettingField` in the General section (`company-profile-component.tsx:268-271`).
+- **Permission key corrected** as above; the sidebar entries for both screens gate on `PERMISSIONS.system_admin.business_unit.view` with `licenseFeature: "system_admin"` (`module-list.ts:592-607`).
+- **Default Setting lookup 403s no longer block the page** (`ee8c75bf`, 2026-09-21): a 403 from the print-form template lookup renders inline instead of a modal over the whole screen.
+- Everything else on this page (field groups, `config[]` registry, diff-and-`PATCH` with `doc_version`) re-checked against `company-profile-config-registry.ts` and `company-profile-component.tsx` at HEAD — unchanged. Print-form keys are `print-form.<type>` (`lib/print-form-config.ts:26-28`).
 
 ## 1. What & Who
 
@@ -33,7 +40,7 @@ Both screens share the exact same view/edit toggle pattern, the exact same `useB
 | Edit business unit identity, address, or format defaults | Company Profile → **Edit** → change a field → **Save** | Sends only the changed fields as a `PATCH` (diff against the last-loaded snapshot) |
 | Edit PR/SI/PO operational toggles | Default Setting → **Edit** → change a value → **Save** | Same diff-and-`PATCH` mechanism, scoped to the `config` array only |
 | Pick a print form for a document type | Default Setting → Print Forms section → select a template per type | Dropdown is populated from [reporting-audit](/en/inventory/reporting-audit)'s report-template catalog, filtered to that document's `report_group`; see §6 |
-| View (not edit) costing method or license cap | Company Profile → General section | `calculation_method` and `max_license_users` render as read-only `SettingField`s — no input, no matter what edit mode is active |
+| View (not edit) costing method | Company Profile → General section | `calculation_method` renders as a read-only `SettingField` — no input, no matter what edit mode is active. The former `max_license_users` field was removed (column dropped 2026-08-21) |
 | Discard unsaved changes | **Cancel** while editing | Prompts a confirm dialog (`useDiscardConfirm`) only if the form is dirty |
 
 ## 3. Validation & Errors
@@ -65,14 +72,16 @@ Source: `types/business-unit.ts` (`BusinessUnitDetail`), cross-checked against `
 | Section | Fields | Editable here? |
 |---|---|---|
 | General | `name`, `alias_name`, `cluster_name`, `description`, `info`, `default_currency_id` | Yes (except `cluster_name`) |
-| General (read-only) | `calculation_method`, `max_license_users` | No — display only |
+| General (read-only) | `calculation_method` | No — display only (`max_license_users` dropped 2026-08-21) |
 | Hotel | `hotel_name`, `hotel_email`, `hotel_tel`, `hotel_address_line1/2`, `hotel_sub_district`, `hotel_district`, `hotel_city`, `hotel_province`, `hotel_postal_code`, `hotel_country` | Yes |
 | Company | `company_name`, `branch_no`, `tax_no`, `company_email`, `company_tel`, `company_address_line1/2`, `company_sub_district`, `company_district`, `company_city`, `company_province`, `company_postal_code`, `company_country` | Yes |
 | Branding | `logo`, `avatar` | No — read-only image preview |
 | Date & Time | `timezone`, `date_format`, `date_time_format`, `time_format`, `short_time_format`, `long_time_format` | Yes — all `<select>` from fixed option lists in `company-profile-options.ts` |
 | Number Formats | `amount_format`, `quantity_format`, `perpage_format`, `recipe_format` | Yes — each a `{ locales, minimumIntegerDigits }` pair |
 
-Not shown on this screen at all: `hotel_latitude/longitude`, `company_latitude/longitude`, `id`, `cluster_id`, `is_hq`, `is_active`, `db_connection`, `doc_version`, `audit` — these exist on `BusinessUnitDetail` but have no field on either in-app screen (some are edited only from the `carmen-platform` admin console — see [master-data/business-unit](/en/inventory/master-data/business-unit)).
+Not shown on this screen at all: `hotel_latitude/longitude`, `company_latitude/longitude`, `id`, `cluster_id`, `is_hq`, `is_active`, `doc_version`, `audit` — these exist on `BusinessUnitDetail` but have no field on either in-app screen (some are edited only from the `carmen-platform` admin console — see [master-data/business-unit](/en/inventory/master-data/business-unit)). Note that `db_connection` no longer exists either: since BE `e54248d88` (2026-08-13) a BU references a platform **database pool + schema** instead of holding its own credentials, and the credential-reveal endpoint was deleted.
+
+Each print-form key is built as `printFormConfigKey(type)` → `print-form.<type>` (e.g. `print-form.pr`; `lib/print-form-config.ts:26-28`).
 
 ### 5.2 Default Setting sections (`config[]` registry)
 
@@ -84,8 +93,6 @@ Not shown on this screen at all: `hotel_latitude/longitude`, `company_latitude/l
 | `printForm` | Print Forms | 12 keys, one per document type: PR, PO, GRN, SR, CN, SI, SO, IA, PC, SC, RFP, EOP | enum (report-template id, sourced from the [reporting-audit](/en/inventory/reporting-audit) template catalog filtered by `report_group`) |
 
 \* `average` option only shown when `tb_business_unit.calculation_method = average` (or already selected).
-
-Each print-form key is built as `printFormConfigKey(type)` (e.g. resolving to something like `print_form.pr`) — the exact string constant lives in `lib/print-form-config.ts`, not reproduced here to avoid re-deriving a value already centralized in one source file.
 
 ## 6. Business Rules
 
@@ -109,4 +116,7 @@ Each print-form key is built as `printFormConfigKey(type)` (e.g. resolving to so
 - **Frontend types:** `../carmen-inventory-frontend-react/types/business-unit.ts` — `BusinessUnitDetail`, `BusinessUnitEditable`, `BusinessUnitConfigItem`.
 - **API endpoint:** `../carmen-inventory-frontend-react/constant/api-endpoints.ts` — `BUSINESS_UNIT: "/api/proxy/api/business-units"`.
 - **Design history:** `../carmen-inventory-frontend-react/docs/superpowers/specs/2026-07-10-default-setting-page-split-design.md` + `.../plans/2026-07-10-default-setting-page-split.md`, `.../specs/2026-07-09-business-setting-{pr,si,po}-config-section-design.md` + `.../plans/2026-07-09-business-setting-{pr,si,po}-config-section.md` — the split from a single "Business Setting" page into these two screens (the `-design` suffix is a `specs/`-only convention; sibling `plans/` files carry the same basename without it).
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_business_unit` (line ~117); see [master-data/business-unit](/en/inventory/master-data/business-unit) §8 for the full citation.
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_business_unit`; see [master-data/business-unit](/en/inventory/master-data/business-unit) §8 for the full citation. Column drops since baseline: `max_license_users` (`59c841346`), credential columns replaced by database-pool reference (`e54248d88`).
+- **Gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/user-business-units/user-business-units.controller.ts` (`GET`/`PUT`/`PATCH /api/business-units`, `POST /api/business-units/default`).
+- **Nav / permission:** `../carmen-inventory-frontend-react/constant/module-list.ts:592-607`, `constant/permissions.ts` (`system_admin.business_unit`).
+- **E2E:** `../carmen-inventory-frontend-e2e/docs/test-cases/1114-company-profile.md` (29 cases), `1115-default-setting.md` (30 cases) — catalogs only, no Playwright spec.

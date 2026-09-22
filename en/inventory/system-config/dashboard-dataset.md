@@ -1,8 +1,8 @@
 ---
 title: Dashboard Dataset
-description: Read-only admin catalog of code-registered data feeds — the named, typed data sources that dashboard widgets pull from, distinct from the user widget workspace layout and from SQL-authored query-dataset views.
+description: Read-only admin catalog of code-registered data feeds in micro-data (62 definitions, seven shapes, per-shape supported_renders) that dashboard widgets pull from — distinct from widget layout and SQL-authored views.
 published: true
-date: 2026-07-16T05:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: system-config, dashboard, dataset, widget, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -11,7 +11,13 @@ dateCreated: 2026-06-04T00:00:00.000Z
 # Dashboard Dataset
 
 > **At a Glance**
-> **Owner:** Sysadmin (read-only catalog) &nbsp;·&nbsp; **Backing:** Code-registered in the **micro-data** service (`GET /api/dashboard/datasets`), proxied by backend-gateway over HTTP — **no dedicated tenant table** &nbsp;·&nbsp; **Used by:** [reporting-audit/widget](/en/inventory/reporting-audit/widget) (widget picker), dashboard tiles &nbsp;·&nbsp; **68 shaped feeds** (`scalar`, `scalar_delta`, `time_series`, `categorical`, `ranked`, `matrix`) across inventory, workflow, procurement, product, vendor, recipe, and equipment categories.
+> **Owner:** Sysadmin (read-only catalog) &nbsp;·&nbsp; **Backing:** Code-registered in the **micro-data** service (`GET /api/dashboard/datasets`), proxied by backend-gateway over HTTP — **no dedicated tenant table** &nbsp;·&nbsp; **Used by:** [reporting-audit/widget](/en/inventory/reporting-audit/widget) (widget picker), dashboard tiles &nbsp;·&nbsp; **Permission / licence:** `dashboard.dataset.view` / `dashboard.dataset` (`module-list.ts:736-742`; licence routes `app:datasets`, `app:dashboard-lab`) &nbsp;·&nbsp; **62 registered definitions** (`ENTRIES` in `../micro-data/service/dashboard/registry.go`, counted 2026-09-22: 16 `scalar`, 9 `scalar_delta`, 6 `time_series`, 21 `categorical`, 7 `ranked`, 3 `matrix`) across inventory, workflow, document, procurement, product, vendor, recipe, and equipment categories; a seventh shape, `table`, exists in the model (`model/dashboard.go:17`) but no registry entry uses it yet. A prior version said 68.
+
+## Implementation status (re-verified 2026-09-22)
+
+- **`supported_renders` is on the catalog entry** (BE `6dfe58992`, 2026-09-07; `swagger/response.ts:50-57`, FE `types/dashboard-dataset.ts:19`): the backend owns the list of widget render types a shape can be drawn as (`dashboard.SupportedRenders(shape)` in `../micro-data/service/widget_service.go:94-114`), and `PATCH` on a widget with a `widget_type` outside that list is rejected as `ErrInvalidWidget` instead of rendering a broken tile.
+- **Gateway → micro-data calls carry `x-internal-token`** since BE `c94a625ed` (2026-09-21) — without it the whole dashboard answered 401 after micro-data's internal-token middleware landed. Nothing changes for the browser, which still calls the gateway.
+- The PR/PO/SR/GRN "pending" KPI tiles moved from per-document `fn_dash_*_pending` functions to `document.{pr,po,sr,grn}-pending` entries over shared `v_dash_*_base` views (registry comment `:20-25`); ids of the form `workflow.<doc>-pending-approval` for those four no longer exist.
 
 ## 1. What & Who
 
@@ -72,9 +78,10 @@ Each dataset executes inside a **read-only transaction** with `SET LOCAL search_
 | `id` | `string` | Dot-namespaced identifier, e.g. `inventory.low-stock-count`. Used as the widget `dataset_id` reference. |
 | `name` | `string` | Human-readable label shown on the catalog card. |
 | `description` | `string?` | Optional longer description. |
-| `shape` | `enum_dataset_shape` | One of: `scalar`, `scalar_delta`, `time_series`, `categorical`, `ranked`, `matrix`. Determines the payload structure the widget renderer expects. |
-| `category` | `string` | Functional grouping. Current values: `inventory`, `workflow`, `movement`, `spend`, `variance`. |
+| `shape` | `enum_dataset_shape` | One of: `scalar`, `scalar_delta`, `time_series`, `categorical`, `ranked`, `matrix`, `table` (model only, unused in the registry). Determines the payload structure the widget renderer expects. |
+| `category` | `string` | Functional grouping. Values seen in the registry: `inventory`, `workflow`, `document`, `movement`, `spend`, `variance`, … |
 | `unit` | `string?` | Display-only hint, e.g. `items`, `฿`, `%`. |
+| `supported_renders` | `string[]?` | Widget render types legal for this shape (backend-owned; 2026-09-07). |
 
 ### 5.2 `enum_dataset_shape` — payload contracts
 
@@ -86,6 +93,7 @@ Each dataset executes inside a **read-only transaction** with `SET LOCAL search_
 | `categorical` | `Array<{ label: string; value: number; color?: string }>` | Bar / pie / donut chart |
 | `ranked` | `Array<{ rank: number; label: string; value: number; extras?: … }>` | Ranked bar / data table |
 | `matrix` | `{ rows: string[]; cols: string[]; values: number[][] }` | Heatmap / cross-tab table |
+| `table` | `{ columns: [{ key, label, type? }]; rows: [{ <key>: <val> }] }` | Data table (declared in `model/dashboard.go:17`; no registry entry yet) |
 
 ### 5.3 API endpoints
 
@@ -98,7 +106,7 @@ Both require `Authorization: Bearer <token>` and `X-App-Id` header. The `list` r
 
 ### 5.4 Registry location
 
-The dataset catalog is code-registered in the **micro-data** service (Go): handlers in `../micro-data/controller/dashboard_controller.go`, dataset/widget logic in `../micro-data/service/dashboard/` and `../micro-data/service/widget_service.go`, and models in `../micro-data/model/dashboard.go`. At the time of writing the catalog contains **68** shaped datasets across inventory, procurement, product, vendor, recipe, equipment, and config categories.
+The dataset catalog is code-registered in the **micro-data** service (Go): handlers in `../micro-data/controller/dashboard_controller.go`, dataset/widget logic in `../micro-data/service/dashboard/` (`registry.go` `ENTRIES`, plus `document.go`, `ops.go`, `replenishment.go`, `visibility.go`, `windows.go`) and `../micro-data/service/widget_service.go`, and models in `../micro-data/model/dashboard.go`. At HEAD (2026-09-22) the catalog contains **62** shaped datasets.
 
 ## 6. Business Rules
 
@@ -118,7 +126,9 @@ The dataset catalog is code-registered in the **micro-data** service (Go): handl
 ## 8. References
 
 - **micro-data service (Go):** `../micro-data/` — dashboard datasets + widget CRUD. Handlers: `controller/dashboard_controller.go`; logic: `service/dashboard/`, `service/widget_service.go`; models: `model/dashboard.go`; routes: `routes/routes.go`; overview: `README.md`.
-- **Gateway proxy:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-datasets/dashboard-datasets.service.ts` — HTTP proxy to micro-data; controller `dashboard-datasets.controller.ts` exposes `GET /api/:bu_code/datasets` and `GET /api/:bu_code/datasets/:dataset_id`.
+- **Gateway proxy:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-datasets/dashboard-datasets.service.ts` — HTTP proxy to micro-data (sends `x-internal-token`, `c94a625ed`); controller `dashboard-datasets.controller.ts` exposes `GET /api/:bu_code/datasets` and `GET /api/:bu_code/datasets/:dataset_id`.
+- **Nav / permission:** `../carmen-inventory-frontend-react/constant/module-list.ts:736-742` — `PERMISSIONS.dashboard.dataset.view`, `licenseFeature: "dashboard.dataset"`.
+- **E2E:** `../carmen-inventory-frontend-e2e/docs/test-cases/1112-dashboard-dataset.md` — catalog only.
 - **Swagger response DTOs:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-datasets/swagger/response.ts` — `DatasetMetaDto`, `DatasetListResponseDto`, `DatasetResponseDto`.
 - **Platform enum:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `enum_dataset_shape` (line ~815).
 - **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/dashboard-dataset/dashboard-dataset.route.tsx` + `dashboard-dataset-component.tsx`.

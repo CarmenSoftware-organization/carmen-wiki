@@ -2,7 +2,7 @@
 title: Dimension
 description: Schema-provisioned custom-field system (tb_dimension, tb_dimension_display_in, and a dimension JSONB slot on ~65 tables) with no CRUD screen, no backend service, and no frontend consumer found anywhere in the codebase.
 published: true
-date: 2026-07-16T00:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: system-config, dimension, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -13,7 +13,9 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **Owner:** Nobody today — **no UI or API to create/edit a dimension exists** &nbsp;·&nbsp; **Table:** `tb_dimension` (+ `tb_dimension_display_in`) &nbsp;·&nbsp; **`dimension` JSONB column** provisioned on ~65 tenant tables (transactional + master) but never read or written by any found code path &nbsp;·&nbsp; Design-stage custom-field system — schema exists, nothing implements it.
 
-## Implementation status (verified 2026-07-16)
+## Implementation status (verified 2026-07-16; re-verified 2026-09-22 — unchanged)
+
+Re-checked at HEAD on 2026-09-22: `grep -rl "tb_dimension" apps/` in the backend still returns only `apps/micro-business/src/master/dimension-comment/dimension-comment.service.ts`; the gateway still has only `config/config_dimension-comments/`; no `dimension` route exists under `routes/system-admin/` or in `routes/router.tsx`. The one new fact since baseline is that a **permission resource `configuration.dimension`** is seeded in `tb_permission` (`seed.permission.data.ts`, added 2026-07-23 when BU-scoped endpoints were catalogued) — it maps to the comment routes (`config:dimension-comments`) and nothing else; there is no `dimension` entry in the frontend `PERMISSIONS` object.
 
 A repo-wide search (`carmen-inventory-frontend-react`, `carmen-turborepo-backend-v2`) found **no route, component, controller, or service** that creates, edits, lists, or deletes a `tb_dimension` or `tb_dimension_display_in` row:
 

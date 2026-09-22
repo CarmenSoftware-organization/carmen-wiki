@@ -1,8 +1,8 @@
 ---
 title: Document Management
-description: Tenant-scoped file storage registry backed by MinIO and a tb_file_tag metadata table in a separate file-service database — NOT the tenant schema's tb_attachment, which is a dead, unreferenced table. Upload has no server-side size or MIME validation.
+description: Tenant-scoped file registry backed by MinIO + tb_file_tag in a separate file-service DB (not the dead tenant tb_attachment). Storage summary endpoint since 2026-08-13; permission system_admin.document; no server-side size/MIME check.
 published: true
-date: 2026-07-16T00:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: system-config, document, attachment, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -15,7 +15,14 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ![Document Management screen](/screenshots/system-config/document.png)
 
-## Implementation status (verified 2026-07-16)
+## Implementation status (verified 2026-07-16; re-verified 2026-09-22)
+
+**Changes since baseline (2026-09-22 read of `document-management.controller.ts`):**
+
+- **`GET /api/:bu_code/documents/summary`** (`:263-264`, `AppIdGuard('documents.summary')`, BE `c8ca7bb0d` 2026-08-13; declared before `:filetoken` so Nest does not treat "summary" as a token) returns `{ total_size, total_count, rows[{ reference_type, size, count }] }` (FE `types/document.ts:11-19`). The screen renders it as a storage summary bar above the list (`document-summary-bar.tsx`: total size, file count, per-reference-type breakdown; `document-summary-sheet.tsx` for the detail) — reference types are labelled via `document-reference-labels.ts`, with direct uploads shown separately.
+- **`fileToken` without a `bu_code/` prefix is normalised** before the gateway forwards to `micro-file` (`bbd817833`), so a bare token from an older attachment still resolves.
+- Guard names now: `documents.upload` (`:85`), `documents.list` (`:188`), `documents.summary` (`:264`), `documents.get` (`:299`), `documents.download` (`:346`), `documents.info` (`:409`), `documents.presignedUrl` (`:461`), `documents.delete` (`:530`). Sidebar: `system_admin.document.view`, licence `system_admin.document` (`module-list.ts:714-717`; route `app:documents`).
+- The two 2026-07-16 findings below (registry table, no server-side validation) were re-checked and still hold — `files.service.ts` `uploadFile()` is unchanged apart from the RPC refactor.
 
 Two corrections to the previous version of this page:
 
@@ -37,6 +44,7 @@ Document Management is the **file-storage registry surface** at `/system-admin/d
 | Download a file | Per-row download action | Presigned URL via `GET /api/:bu_code/documents/:filetoken/download` |
 | Share a time-limited link | `GET /api/:bu_code/documents/:filetoken/presigned-url?expirySeconds=N` | Never embed permanent storage creds in the browser |
 | Delete a stale file | Per-row delete (Sysadmin only) | Confirmation dialog; removes the MinIO object **and** soft-deletes (`deleted_at`) the `tb_file_tag` row; dangling `fileToken`s render as "missing" on bound documents |
+| See how much storage the BU uses and where | Summary bar at the top of the list (since 2026-08-13) | `GET /api/:bu_code/documents/summary` — total bytes, file count, and a per-`reference_type` breakdown |
 | Attach a file to a PR / PO / GRN | **NOT here** — use the transactional screen | This page is the registry, not per-document attachment management |
 
 ## 3. Validation & Errors
@@ -108,7 +116,7 @@ Every transactional table that supports attachments (`tb_purchase_request`, `tb_
 - **10 MB upload cap and MIME allow-list are frontend-only.** Confirmed no server-side check in `files.service.ts`'s `uploadFile()`.
 - **BU-scoped.** All endpoints under `/api/:bu_code/documents/*`; MinIO objects and `tb_file_tag` rows both partitioned by `bu_code`.
 - **Presigned URLs** for download / sharing — never embed permanent credentials.
-- **AppId guards (confirmed real).** `documents.upload`, `documents.list`, `documents.get`, `documents.download`, `documents.info`, `documents.presignedUrl`, `documents.delete` — each is a distinct `AppIdGuard(...)` decorator on `document-management.controller.ts`. Non-admin = list / get / download only.
+- **AppId guards (confirmed real).** `documents.upload`, `documents.list`, `documents.summary`, `documents.get`, `documents.download`, `documents.info`, `documents.presignedUrl`, `documents.delete` — each is a distinct `AppIdGuard(...)` decorator on `document-management.controller.ts`. RBAC resource `system_admin.document`. Non-admin = list / get / download only.
 - **Delete.** MinIO object removal is immediate and unrecoverable; the `tb_file_tag` row is soft-deleted (`deleted_at`) on a best-effort basis (a DB failure here is logged, not raised). Per-document `attachments` arrays are *not* cascaded.
 - **Audit logging** via `runWithAuditContext`/`AuditContext` in `micro-file`'s controller (uploads, deletes, presigned-URL, tag updates).
 - **No in-place versioning** — overwrite via delete + re-upload.
@@ -127,6 +135,7 @@ Every transactional table that supports attachments (`tb_purchase_request`, `tb_
 - **Prisma (tenant schema — dead table, for contrast):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_attachment` (lines ~4797-4819); per-document `attachments` JSONB columns throughout.
 - **Backend gateway (proxy layer):** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/document-management/document-management.controller.ts` + `document-management.service.ts` — forwards to the `FILE_SERVICE` microservice over `files.*` TCP commands.
 - **Backend file microservice (actual storage + registry):** `../carmen-turborepo-backend-v2/apps/micro-file/src/files/files.controller.ts` + `files.service.ts` — MinIO client, `tb_file_tag` CRUD.
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/document/document.route.tsx` + `document-component.tsx`.
-- **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-document.ts` — `useDocument`, `useUploadDocument`, `useDeleteDocument`.
-- **Frontend type:** `../carmen-inventory-frontend-react/types/document.ts` — `DocumentFile`.
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/document/document.route.tsx` + `document-component.tsx`, `document-summary-bar.tsx`, `document-summary-sheet.tsx`, `document-reference-labels.ts`, `document-card.tsx`, `use-document-table.tsx`.
+- **Frontend hook:** `../carmen-inventory-frontend-react/routes/system-admin/document/use-document.ts` (moved from `hooks/` on 2026-08-28, `0d9757f3`) — `useDocument`, `useUploadDocument`, `useDeleteDocument`; `constant/api-endpoints.ts:108` `DOCUMENTS_SUMMARY`.
+- **Frontend type:** `../carmen-inventory-frontend-react/types/document.ts` — `DocumentFile`, `DocumentSummary`.
+- **E2E:** `../carmen-inventory-frontend-e2e/docs/test-cases/1107-document.md` — catalog only.
