@@ -2,7 +2,7 @@
 title: Credit Note Reason
 description: Coded reasons for credit notes raised against GRN — supports the return-to-vendor and price-correction flows.
 published: true
-date: 2026-07-15T21:47:09.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: master-data, credit-note-reason, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -74,6 +74,7 @@ Source: tenant schema.
 - **Validation.** `name` required.
 - **Lifecycle.** No `is_active`; soft-delete is the retirement path. Historical CNs keep the FK and resolve the name even on a soft-deleted row.
 - **Translation.** Reasons may face vendors — keep translations in `info` until a localisation table is introduced.
+- **Default sort.** `GET /credit-note-reasons` with no `?sort=` returns `name:asc, id:asc` (`procurement/credit-note-reason/credit-note-reason.service.ts:46`, `withDefaultSort`, 2026-09-13). Re-verified 2026-09-22: schema (`creditnotereason_name_u`, no `is_active`) and the unconditional soft-delete are unchanged.
 
 ## 7. Cross-References
 
@@ -82,6 +83,6 @@ Source: tenant schema.
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_credit_note_reason` (lines ~303-324).
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_credit_note_reason` (line ~312).
 - **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/procurement/credit-note-reason/credit-note-reason.service.ts` (lives under `procurement`, not `master`, in the backend's own module layout).
 - **Frontend:** `../carmen-inventory-frontend-react/routes/config/credit-note-reason/`.

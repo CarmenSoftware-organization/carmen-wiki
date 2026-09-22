@@ -2,7 +2,7 @@
 title: Unit
 description: Units of measure and inter-unit conversions used by every transactional document and product record.
 published: true
-date: 2026-07-15T21:47:09.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: master-data, unit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -25,7 +25,7 @@ The companion table `tb_unit_conversion` stores **multipliers between two units*
 
 | Task | Where | Notes |
 |---|---|---|
-| Add a unit | Configuration → Master Data → Unit → **New** | Required: `name`; `decimal_place` defaults `2` |
+| Add a unit | Configuration → Master Data → Unit → **New** | Required: `name`; `decimal_place` defaults `2` and is now editable in the dialog (`components/share/unit-dialog.tsx`, frontend commit `7c53de65` — before that the column existed only on the backend) |
 | Deactivate | Toggle `is_active` | Hidden from new transactions; historical lines unchanged |
 | Add a global conversion | Conversion matrix | `product_id = NULL`; pick `unit_type`, from-unit/qty, to-unit/qty |
 | Add a per-product conversion | Product detail → Conversions | Overrides global for that product |
@@ -101,6 +101,8 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 - **Validation.** Conversion `from_unit_qty` and `to_unit_qty` both `> 0`. Same-unit pairs only with equal qty.
 - **Lifecycle.** Inactive units visible on historical documents; locked from new transactions.
 - **Decimal precision.** `decimal_place` is rendering only; storage `Decimal(20,5)`.
+- **Default sort.** `GET /units` with no `?sort=` returns `name:asc, id:asc` (`units.service.ts`, `withDefaultSort`, 2026-09-13).
+- **Comments.** Units have their own comment thread: `api/config/:bu_code/unit-comments` (+ `unit-comment-attachments`), Bruno `config/unit-comments/*` (6 requests) — same shape as every other `*-comment` table.
 
 ## 7. Cross-References
 
@@ -116,5 +118,7 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_unit` (lines ~3380-3423), `tb_unit_conversion` (lines ~3460-3498), `enum_unit_type` (lines ~257-260).
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_unit` (line ~3739), `tb_unit_conversion` (~3819), `enum_unit_type` (~265).
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/units/units.service.ts`, `master/unit-conversion/`, `master/unit-comment/`.
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/020-unit.spec.ts` (13 cases) + `docs/test-cases/gaps/020-unit-gap.md` (27 uncovered cases).
 - **Frontend:** `../carmen-inventory-frontend-react/routes/config/unit/`.

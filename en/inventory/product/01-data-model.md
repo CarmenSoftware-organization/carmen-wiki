@@ -2,7 +2,7 @@
 title: Product — Data Model
 description: Entities, fields, relationships, and enums for the product module.
 published: true
-date: 2026-07-16T09:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: product, data-model, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -11,9 +11,9 @@ dateCreated: 2026-05-15T15:30:00.000Z
 # Product — Data Model
 
 > **At a Glance**
-> **Tables:** `tb_product` &nbsp;·&nbsp; `tb_product_category` → `tb_product_sub_category` → `tb_product_item_group` (3-level classification) &nbsp;·&nbsp; `tb_unit` &nbsp;·&nbsp; `tb_unit_conversion` &nbsp;·&nbsp; `tb_product_location` &nbsp;·&nbsp; `tb_product_tb_vendor`
+> **Tables:** `tb_product` &nbsp;·&nbsp; `tb_product_category` → `tb_product_sub_category` → `tb_product_item_group` (3-level classification) &nbsp;·&nbsp; `tb_unit` &nbsp;·&nbsp; `tb_unit_conversion` &nbsp;·&nbsp; `tb_product_location` (→ `tb_location_shelf`) &nbsp;·&nbsp; `tb_product_tb_vendor` &nbsp;·&nbsp; `tb_eco_label` / `tb_product_eco_label`
 > **Audience:** Developer / Auditor (dev reference)
-> **Key FKs:** product `→ tb_unit` (`inventory_unit_id`), `→ tb_product_item_group`, `→ tb_tax_profile`; unit-conversion `→ tb_product` + two `→ tb_unit`; product-location `→ tb_location`. Reached BY every downstream transactional table via `product_id` (PR / PO / GRN / SR / count / inventory ledger / recipe)
+> **Key FKs:** product `→ tb_unit` (`inventory_unit_id`), `→ tb_product_item_group`, `→ tb_tax_profile`; unit-conversion `→ tb_product` + two `→ tb_unit`; product-location `→ tb_location` and (since 2026-08-14) `→ tb_location_shelf`. Reached BY every downstream transactional table via `product_id` (PR / PO / GRN / SR / count / inventory ledger / recipe)
 > **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*` universal across all entities; uniqueness scoped to `deleted_at`. **Costing method is NOT on the product** — lives at `tb_business_unit.calculation_method`
 
 > **Source of truth:** Backend Prisma schema. Always read these first when writing or updating this page:
@@ -26,9 +26,9 @@ dateCreated: 2026-05-15T15:30:00.000Z
 
 The Product module is the **system of record for the catalogue every transactional document references**. Unlike a document-centric module (PR, PO, GRN, SR) that carries a workflow document with a header → detail → comment tree, the product tree is a **family of master-data tables** anchored by `tb_product`. Each product is identified by a UUID `id` and a human `code`/`name`, sits in a classification chain (`tb_product_item_group → tb_product_sub_category → tb_product_category`), is measured in a base inventory `tb_unit`, optionally has unit-conversions (`tb_unit_conversion` with `enum_unit_type ∈ {order_unit, ingredient_unit}`), is enabled at storage locations via `tb_product_location` (carrying per-location `min_qty` / `max_qty` / `re_order_qty` / `par_qty`), and may carry vendor mappings via `tb_product_tb_vendor`. The product itself has a small but consequential set of header fields: `code`, `name`, `local_name`, `description`, `inventory_unit_id`, `product_status_type` (`enum_product_status_type = active | inactive | discontinued`), `product_item_group_id`, `is_used_in_recipe`, `is_sold_directly`, `barcode`, `sku`, `price_deviation_limit`, `qty_deviation_limit`, `standard_cost`, `tax_profile_id` / `tax_profile_name` / `tax_rate`, `is_active`, plus extension JSON (`info`, `dimension`, `certification`). Comment threads (`tb_product_comment`, plus parallel comment tables on every classification level) supply the auditable conversation surface used everywhere else in the ERP.
 
-The module sits **at the dependency root of every transactional module**. Every PR line, PO line, GRN line, SR line, count line, recipe ingredient, inventory transaction, and cost-layer row carries a `product_id` reference. There is no transactional posting on a product — the lifecycle is `create → active → deprecated (inactive) → soft-deleted`, gated by usage checks (a product with non-zero inventory, with open documents, or referenced by an active recipe cannot be soft-deleted). Two schema additions since the prior sync of this page extend the tree: `tb_product_eco_label` / `tb_product_master_eco_label` (§2.10 — certificate tracking, with a real frontend section) and `tb_product_account_code_mapping` (§2.11 — GL-account-code mapping per product or classification level, confirmed on the API but with no frontend surface found). The classification tree (`category → sub-category → item-group`) carries cascading tax-profile and deviation-tolerance defaults; the product can override category-level values but most installations keep them in inheritance to keep the catalogue consistent. Unit conversions are validated for **bidirectional consistency** at the application layer (`from_unit_qty × conversion_factor = to_unit_qty` must round-trip), and the engine resolves any document line's qty back to the base unit using `tb_unit_conversion` rows.
+The module sits **at the dependency root of every transactional module**. Every PR line, PO line, GRN line, SR line, count line, recipe ingredient, inventory transaction, and cost-layer row carries a `product_id` reference. There is no transactional posting on a product — the lifecycle is `create → active → deprecated (inactive) → soft-deleted`. **Corrected 2026-09-22:** the usage gates on soft-delete that earlier revisions described (non-zero on-hand, open documents, recipe references) are **not implemented** — `products.service.ts` `delete()` only checks `PRODUCT_NOT_FOUND` and then sets `deleted_at` on the product and its unit-conversion rows; see [02-business-rules](/en/inventory/product/02-business-rules) § 5.1. Three schema additions since 2026-06 extend the tree: `tb_product_eco_label` / `tb_eco_label` (§2.10 — certificate tracking, with a real frontend tab; master renamed from `tb_product_master_eco_label` on 2026-09-04), `tb_product_account_code_mapping` (§2.11 — GL-account-code mapping per product or classification level, confirmed on the API but with no frontend surface found), and the **shelf** columns on `tb_product_location` (§2.7, 2026-08-14) that reference the new [shelf](/en/inventory/master-data/shelf) master. The classification tree (`category → sub-category → item-group`) carries cascading tax-profile and deviation-tolerance defaults; the product can override category-level values but most installations keep them in inheritance to keep the catalogue consistent. Unit conversions are validated for **bidirectional consistency** at the application layer (`from_unit_qty × conversion_factor = to_unit_qty` must round-trip), and the engine resolves any document line's qty back to the base unit using `tb_unit_conversion` rows.
 
-A few structural points are worth restating up front. **First**, the canonical schema is **flatter and simpler than the carmen/docs PRD describes** — there is no `tb_product_variant` model, no `tb_product_attribute` typed key-value table, and no `tb_product_carbon_footprint` model. Attributes, variants, sustainability data, and certification are persisted on the **JSON extension bags** (`info`, `dimension`, `certification`) on `tb_product` or referenced via free-form `attachments` JSON on the comment tables. (Note: an earlier "no `tb_product_media`" call-out was partially resolved on 2026-05-20 by the new `tb_product_image` gallery table — see Section 2.9 — though documents / videos / 3D models the PRD also describes still live in the JSON / comment pattern.) Section 5 catalogues these divergences in full. **Second**, `tb_product_location` does **not** carry on-hand qty — it is the **stock-policy row** only (min / max / par / reorder). On-hand qty is derived from the inventory cost-layer ledger (see [inventory/01-data-model](/en/inventory/inventory/01-data-model) § 5 item 1). **Third**, the **costing method is not on the product** — it lives on `tb_business_unit.calculation_method` (platform schema, `enum_calculation_method = average | fifo`) and applies to every product at that business unit. The product carries `standard_cost` (the reference cost used by the `standard` count-costing method and by recipe baselining) but not the FIFO / WA selector itself.
+A few structural points are worth restating up front. **First**, the canonical schema is **flatter and simpler than the carmen/docs PRD describes** — there is no `tb_product_variant` model, no `tb_product_attribute` typed key-value table, and no `tb_product_carbon_footprint` model. Attributes, variants, sustainability data, and certification are persisted on the **JSON extension bags** (`info`, `dimension`, `certification`) on `tb_product` or referenced via free-form `attachments` JSON on the comment tables. (Note: an earlier "no `tb_product_media`" call-out was partially resolved on 2026-05-20 by the new `tb_product_image` gallery table — see Section 2.9 — though documents / videos / 3D models the PRD also describes still live in the JSON / comment pattern.) Section 5 catalogues these divergences in full. **Second**, `tb_product_location` does **not** carry on-hand qty — it is the **stock-policy row** only (min / max / par, plus shelf). On-hand qty is derived from the inventory cost-layer ledger (see [inventory/01-data-model](/en/inventory/inventory/01-data-model) § 5 item 1), and since 2026-08-20 so is `re_order_qty`: `products.replenishment.ts` computes it as `(max_qty if > 0 else par_qty) − on_hand`, and `GET /products/:id` returns `on_hand_qty` / `re_order_qty` per location only when the caller asks (`products.service.ts:326-335` — "re_order_qty's column still exists but nothing writes it any more"). **Third**, the **costing method is not on the product** — it lives on `tb_business_unit.calculation_method` (platform schema, `enum_calculation_method = average | fifo`) and applies to every product at that business unit. The product carries `standard_cost` (the reference cost used by the `standard` count-costing method and by recipe baselining) but not the FIFO / WA selector itself.
 
 ## 2. Entities
 
@@ -194,23 +194,27 @@ The **conversion-factor row**. Defines how a quantity expressed in one unit tran
 
 ### 2.7 tb_product_location
 
-The **per-product / per-location stock-policy row**. Holds par / min / max / reorder qty used by the replenishment-suggestion and over/under-stock alert logic. Does **not** carry on-hand qty (derived from the inventory cost-layer ledger).
+The **per-product / per-location stock-policy row**. Holds par / min / max qty used by the replenishment-suggestion logic, and the shelf the product sits on at that location. Does **not** carry on-hand qty (derived from the inventory cost-layer ledger); `re_order_qty` is likewise derived at read time since 2026-08-20.
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key. |
 | `product_id` | `String @db.Uuid` | No | FK to `tb_product.id`. |
 | `location_id` | `String? @db.Uuid` | Yes | FK to `tb_location.id`. |
+| `shelf_id` | `String? @db.Uuid` | Yes | FK to `tb_location_shelf.id` (`onDelete: NoAction`, index `product_location_shelf_id_idx`). Added `20260814150000_add_location_shelf`. Nullable because not every location is shelved. Validated on product create/update (`resolveShelfAssignments`, `products.service.ts:2035` / `:2244`) → `SHELF_NOT_FOUND`. |
+| `shelf_code` / `shelf_name` | `String? @db.VarChar` | Yes | Denormalised copies of the shelf written by `shelfColumns()` whenever `shelf_id` is set; what the product detail response returns as `shelf` (nested `{ id, code, name }` in `types/product.ts:30`). |
 | `min_qty` | `Decimal? @db.Decimal(20, 5)` | Yes | Default `0`. Below this triggers a replenishment alert. |
 | `max_qty` | `Decimal? @db.Decimal(20, 5)` | Yes | Default `0`. Above this triggers an over-stock alert. |
-| `re_order_qty` | `Decimal? @db.Decimal(20, 5)` | Yes | Default `0`. Suggested order qty when on-hand drops below `min_qty`. |
+| `re_order_qty` | `Decimal? @db.Decimal(20, 5)` | Yes | Default `0`. **Legacy column — nothing writes it any more** (backend comment, `products.service.ts:326`). The API's `re_order_qty` is computed per read from the cost layers as the gap between the target level (`max_qty`, else `par_qty`) and on-hand; the frontend Location Assignment grid no longer shows a Reorder column. |
 | `par_qty` | `Decimal? @db.Decimal(20, 5)` | Yes | Default `0`. Par level for outlet stocking (target on-hand). |
 | `note` / `info` / `dimension` | various | Yes | Standard. |
 | `doc_version` | `Int` | No | Default `0`. Optimistic-concurrency counter; used when multiple users edit the policy concurrently. |
 | audit | various | Yes | Standard `created_at` / `created_by_id` / `updated_at` / `updated_by_id` / `deleted_at` / `deleted_by_id`. |
 
-**Constraints:** `@id` on `id`. FKs: `product_id → tb_product.id` (`NoAction`); `location_id → tb_location.id` (`NoAction`).
-**Indexes:** `@@unique([product_id, location_id, deleted_at])` as `product_location_product_id_location_id_u`; `@@index([product_id, location_id])`.
+**Constraints:** `@id` on `id`. FKs: `product_id → tb_product.id` (`NoAction`); `location_id → tb_location.id` (`NoAction`); `shelf_id → tb_location_shelf.id` (`NoAction`).
+**Indexes:** `@@unique([product_id, location_id, deleted_at])` as `product_location_product_id_location_id_u`; `@@index([product_id, location_id])`; `@@index([shelf_id])` as `product_location_shelf_id_idx`.
+
+The shelf master itself (`tb_location_shelf`, line ~1441 — BU-wide, not location-scoped despite the name) is documented on [master-data/shelf](/en/inventory/master-data/shelf).
 
 ### 2.8 tb_product_tb_vendor
 
@@ -252,14 +256,14 @@ The **product-image gallery** table (added 2026-05-20 — partially resolves the
 **Indexes:** `@@index([product_id, deleted_at])` (gallery-fetch path); `@@index([product_id, sort_order])` (ordered render).
 **Back-relation on `tb_product`:** `tb_product_image[]` — listed in the reverse-relation block at the bottom of `tb_product`.
 
-### 2.10 tb_product_master_eco_label / tb_product_eco_label
+### 2.10 tb_eco_label / tb_product_eco_label
 
-The **eco-label certificate feature** (added 2026-06-01, confirmed via `git log -S` on the tenant schema — after this page's prior sync). `tb_product_master_eco_label` is the tenant-wide catalogue of certifiable eco-labels (e.g. "Energy Star", "USDA Organic"); `tb_product_eco_label` is the per-product certificate record. Both have a real frontend surface: a dedicated "Eco Labels" section on the product detail view (`pd-eco-label-section.tsx` + `pd-eco-label-dialog.tsx`) that performs its **own independent CRUD** — Add / Edit / Delete fire their own API calls immediately and are not part of the product form's Save button.
+The **eco-label certificate feature** (added 2026-06-01). The master table was **renamed from `tb_product_master_eco_label` to `tb_eco_label`** on 2026-09-04 (`20260904133000_rename_eco_label_and_certificate`; indexes now `eco_label_code_u` / `eco_label_name_u`; columns and the API paths `api/config/:bu_code/product-master-eco-labels` / `product-eco-labels` unchanged). `tb_eco_label` is the tenant-wide catalogue of certifiable eco-labels (e.g. "Energy Star", "USDA Organic"); `tb_product_eco_label` is the per-product certificate record. Both have a real frontend surface: the master screen moved from `/config/eco` to `/product-management/eco` (`routes/product-management/eco/`, 2026-09-03 `ac1e7c56`), and the product form has an **Eco Labels** tab (`pd-tab-eco.tsx` + `pd-eco-label-dialog.tsx`, `pd-form.tsx:441-478`) that performs its **own independent CRUD** — Add / Edit / Delete fire their own API calls immediately and are not part of the product form's Save button. Default list sort for the master is `name:asc`, for per-product rows `created_at:desc`.
 
-| Field (`tb_product_master_eco_label`) | Prisma Type | Description |
+| Field (`tb_eco_label`) | Prisma Type | Description |
 | ----- | ----------- | ----------- |
 | `id` | `String @db.Uuid` | Primary key. |
-| `code`, `name` | `String @db.VarChar` | Unique per `product_master_eco_label_code_u` / `_name_u`. |
+| `code`, `name` | `String @db.VarChar` | Unique per `eco_label_code_u` / `eco_label_name_u` (with `deleted_at`). |
 | `description`, `note` | `String? @db.VarChar` | Free text. |
 | `is_active` | `Boolean?` | Default `true`. |
 | `attachments` | `Json?` | Default `[]`. |
@@ -268,7 +272,7 @@ The **eco-label certificate feature** (added 2026-06-01, confirmed via `git log 
 | ----- | ----------- | ----------- |
 | `id` | `String @db.Uuid` | Primary key. |
 | `product_id` | `String @db.Uuid` | FK to `tb_product.id`. |
-| `master_eco_label_id` | `String @db.Uuid` | FK to `tb_product_master_eco_label.id`. |
+| `master_eco_label_id` | `String @db.Uuid` | FK to `tb_eco_label.id` (column name kept). |
 | `certificate_no` | `String? @db.VarChar` | Certificate reference number shown on the section's table. |
 | `issued_date` / `expiry_date` | `DateTime? @db.Timestamptz(6)` | Certificate validity window. |
 | `attachments` | `Json?` | Default `[]`; certificate scan / PDF references. |
@@ -324,9 +328,10 @@ tb_unit_conversion        (product_id; unit_type ∈ {order_unit, ingredient_uni
     │
     │ 1 — *
     ▼
-tb_product_location       (product_id, location_id; min/max/par/reorder — no on-hand)
+tb_product_location       (product_id, location_id; min/max/par + shelf_id — no on-hand, re_order derived)
     │
-    └──► tb_location
+    ├──► tb_location
+    └──► tb_location_shelf   (BU-wide shelf master; shelf_code/shelf_name snapshotted on the row)
 
 tb_product
     │ 1 — *
@@ -348,7 +353,7 @@ tb_product is reached BY every transactional table downstream:
     tb_recipe_ingredient.product_id
     tb_inventory_transaction_detail.product_id (no @relation — application-resolved)
     tb_inventory_transaction_cost_layer.product_id (no @relation — application-resolved)
-    tb_period_snapshot.product_id (no @relation — application-resolved)
+    tb_inventory_period_snapshot.product_id (no @relation — application-resolved; table renamed from tb_period_snapshot on 2026-09-16)
 ```
 
 Notes:
@@ -358,7 +363,9 @@ Notes:
 - **No `tb_product_attribute` model.** Typed key-value attributes (the PRD's `attributeType ∈ {text, number, boolean, date, select, multi-select, rich-text}`) are not modelled as a normalised table; they live as JSON in `tb_product.info`. The category-level attribute requirement / inheritance is documented in carmen/docs but is **not** schema-enforced. See Section 5 item 2.
 - **Product images now have a first-class `tb_product_image` table** (added 2026-05-20 — see Section 2.9): `file_token`, `caption`, `alt_text`, `sort_order`, `is_primary`, with cascade-delete from `tb_product`. Documents / videos / 3D models still ride the `tb_product_comment.attachments` JSON array. Thumbnail derivation and AI auto-tagging from the PRD remain application-layer / deferred. See Section 5 item 3.
 - **Soft-delete is universal.** Every entity in this module carries `deleted_at` / `deleted_by_id`. The unique constraints include `deleted_at` (e.g. `product_code_name_u = (code, name, deleted_at)`) so a deleted product's code can be reused; the live row guards uniqueness only against other live rows.
-- **All explicit `@relation` FK declarations use `onDelete: NoAction, onUpdate: NoAction`** — referential integrity is preserved by application-level soft-delete and by the in-use guards (a product with non-zero on-hand or open documents cannot be deleted).
+- **All explicit `@relation` FK declarations use `onDelete: NoAction, onUpdate: NoAction`** — referential integrity is preserved by application-level soft-delete. There are **no** in-use guards on product delete (see § 1); the classification tree does have them (each level refuses to delete while it has live direct children — `PRODUCT_CATEGORY_HAS_SUB_CATEGORY`, `PRODUCT_SUB_CATEGORY_HAS_ITEM_GROUP`, `PRODUCT_ITEM_GROUP_HAS_PRODUCTS`).
+- **API shape (2026-09-17).** `GET /config/:bu_code/products` and `/:id` now return foreign keys as nested objects — `inventory_unit`, `tax_profile`, `product_category` / `product_sub_category` / `product_item_group`, `locations[].location`, `locations[].shelf`, `order_units[].from_unit` / `to_unit` (`types/product.ts`, backend `bb0ae46e1` / `ce2e1d473`). The write payload is still flat (`inventory_unit_id`, `locations.add[].location_id` / `shelf_id`, …). The list default sort is `code:asc, id:asc` (`products.service.ts`, 2026-09-13).
+- **Derived per-location figures.** `on_hand_qty` (never a column) and `re_order_qty` are summed from `tb_inventory_transaction_cost_layer` by `products.replenishment.ts` (`computeReplenishmentByLocation`) and attached to `locations[]` on demand; the same source feeds `GET /:bu_code/products/:id/on-hand` and `/on-order`, which since 2026-09-22 also carry `last_price` (`09f2e8d36`).
 
 ## 4. Enums
 
@@ -401,7 +408,11 @@ The carmen/docs product-management PRD (`PROD-PRD.md`) and product-master PRD (`
 
 ## 6. References
 
-- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` for the product entities (`tb_product`, `tb_product_category`, `tb_product_sub_category`, `tb_product_item_group`, `tb_unit`, `tb_unit_conversion`, `tb_product_location`, `tb_product_tb_vendor`, `tb_product_eco_label` / `tb_product_master_eco_label`, `tb_product_account_code_mapping`, and the parallel comment tables) and the enums `enum_product_status_type`, `enum_unit_type`, `enum_account_type`. The platform schema `prisma-shared-schema-platform/prisma/schema.prisma` carries `tb_business_unit.calculation_method` and `enum_calculation_method` referenced from the costing perspective.
+- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` for the product entities (`tb_product` ~1563, `tb_product_category` ~1801, `tb_product_sub_category` ~1952, `tb_product_item_group` ~1876, `tb_unit` ~3739, `tb_unit_conversion` ~3819, `tb_product_location` ~5334, `tb_location_shelf` ~1441, `tb_product_tb_vendor` ~2028, `tb_product_image` ~1634, `tb_eco_label` ~1727 / `tb_product_eco_label` ~1755, `tb_product_account_code_mapping` ~1692, and the parallel comment tables) and the enums `enum_product_status_type` (~165), `enum_unit_type` (~265), `enum_account_type` (~6781).
+- **Migrations since 2026-07-29:** `20260814150000_add_location_shelf`, `20260820120000_rename_location_shelf_to_shelf`, `20260904131500_rename_shelf_and_user_location`, `20260904133000_rename_eco_label_and_certificate`, `20260916141000_rename_tb_period_to_tb_inventory_period`.
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/products/products.service.ts` (delete `:2661`, shelf validation `:2035` / `:2244`), `products.replenishment.ts`, `master/shelf/shelf.helper.ts`; gateway `apps/backend-gateway/src/config/config_products/` (`@ExpandRefs` / `@Serialize`), `common/dto/product/product.serializer.ts`.
+- **Frontend:** `../carmen-inventory-frontend-react/types/product.ts`, `routes/product-management/product/` (tabs: `pd-tab-general.tsx`, `pd-tab-unit-conversion.tsx`, `pd-tab-locations.tsx`, `pd-tab-eco.tsx`), `routes/product-management/eco/`.
+- **Bruno:** `config/products/*` (13 requests), `config/product-location/`, `config/location-product/`, `config/products-location-workflow/` (3), `master-data/products/*` (on-hand, on-order, last-purchase, inventory-movement, cost). The platform schema `prisma-shared-schema-platform/prisma/schema.prisma` carries `tb_business_unit.calculation_method` and `enum_calculation_method` referenced from the costing perspective.
 - **Secondary (concept cross-check):**
   - `../carmen/docs/product-management/PROD-PRD.md` — primary PRD describing the product-management feature set; divergences in Section 5 (items 1, 2, 3, 4, 5, 6, 8, 9, 11, 12, 13, 14).
   - `../carmen/docs/product-management/product-master-prd.md` — product-master PRD describing UI structure (List page, Detail page with tabs, Latest Purchase tab) and functional requirements; divergences in Section 5 (items 1, 6, 12).

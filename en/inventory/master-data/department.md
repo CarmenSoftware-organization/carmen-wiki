@@ -2,7 +2,7 @@
 title: Department
 description: Organisational departments and their user assignments — used as cost-centre and approval scope on requisition and PR documents.
 published: true
-date: 2026-07-15T21:47:09.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: master-data, department, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -29,9 +29,9 @@ Departments model the **cost-centre / requesting-unit** dimension of the propert
 |---|---|---|
 | Add a department | Configuration → Master Data → Department → **New** | Required: `code`, `name` |
 | Deactivate | Toggle `is_active` | Hidden from PR/SR pickers; historical references preserved |
-| Assign user to department | User-admin screen → Department tab | Writes to `tb_department_user` |
-| Set HOD | Same screen → toggle `is_hod` | At most one HOD per department (app invariant) |
-| Reassign HOD | Toggle off old, on new | Past approvals retain the original signer |
+| Assign user to department | Department form → **Members** transfer list (`routes/config/department/department-form.tsx:64-81`) | Sends `department_users: { add[], remove[] }`; writes `tb_department_user` — **corrected this pass:** there is no "User-admin → Department tab"; membership is edited on the department itself |
+| Set HOD | Department form → **Head of Department** transfer list | Sends `hod_users: { add[], remove[] }` → `is_hod = true` on the junction row. The form is a plain multi-select; no single-HOD guard was found in `departments.service.ts` |
+| Reassign HOD | Remove from HOD list, add the new user | Past approvals retain the original signer |
 
 ## 3. Validation & Errors
 
@@ -91,6 +91,8 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 - **Validation.** `code` and `name` required. At most one `is_hod = true` per department (app invariant).
 - **Lifecycle.** `is_active = false` hides from new pickers; preserves historical references.
 - **HOD changes** never retro-fit historical approvals.
+- **Response shape (2026-09-17).** `GET /departments/:id` returns `department_users[]` and `hod_users[]` whose members carry `user: { id }` as a nested object (plus flat `firstname` / `lastname`), not a flat `user_id` — `types/department.ts:5-10`, frontend fix `b55294b3`. Only the detail (`findOne`) carries these arrays; the list does not.
+- **Default sort.** `GET /departments` with no `?sort=` returns `code:asc, name:asc, id:asc` (`departments.service.ts`, `withDefaultSort`, 2026-09-13).
 
 ## 7. Cross-References
 
@@ -101,5 +103,7 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_department` (lines ~694-723), `tb_department_user` (lines ~4771-4795).
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_department` (line ~703), `tb_department_user` (~5378).
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/departments/departments.service.ts`, `master/department-user/`; gateway `config_departments/`, `config_department-users/`.
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/010-department.spec.ts` (21 cases) + `docs/test-cases/gaps/010-department-gap.md` (37 uncovered cases).
 - **Frontend:** `../carmen-inventory-frontend-react/routes/config/department/`.

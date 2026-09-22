@@ -2,7 +2,7 @@
 title: Delivery Point
 description: Physical drop-off points for vendor deliveries — referenced by purchase orders and GRNs and joined to inventory locations.
 published: true
-date: 2026-07-15T21:47:09.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: master-data, delivery-point, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -71,6 +71,8 @@ Source: tenant schema.
 - **Validation.** `name` required.
 - **Lifecycle.** Inactive points stay readable on historical documents; hidden from pickers.
 - **Rename propagation.** Documents resolve via FK; snapshotted name on `tb_location` needs backfill.
+- **PO header FK is real since 2026-09-15.** `tb_purchase_order.delivery_point_id` (FK `tb_purchase_order_delivery_point_id_fkey`) + `delivery_point_name` were added by `20260915120000_po_header_delivery_point`; the PO `group-pr` / `confirm-pr` flows accept the delivery point on the header (backend `c467a287d`). Before that the reference lived only on PR detail / PO-PR junction rows.
+- **Default sort.** `GET /delivery-points` with no `?sort=` returns `name:asc, id:asc` (`delivery-point.service.ts`, `withDefaultSort`, 2026-09-13).
 
 ## 7. Cross-References
 
@@ -81,5 +83,7 @@ Source: tenant schema.
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_delivery_point` (lines ~633-657).
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_delivery_point` (line ~641).
+- **Migration:** `20260915120000_po_header_delivery_point`.
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/079-delivery-point.spec.ts` + `docs/test-cases/gaps/079-delivery-point-gap.md` (30 uncovered cases).
 - **Frontend:** `../carmen-inventory-frontend-react/routes/config/delivery-point/`.

@@ -2,7 +2,7 @@
 title: Tax Profile
 description: Named tax rate definitions referenced by vendors, products, and every priced document line.
 published: true
-date: 2026-07-15T21:47:09.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: master-data, tax-profile, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -76,6 +76,7 @@ Source: tenant schema.
 - **Lifecycle.** Inactive profiles hidden from new pickers; readable on historical lines.
 - **Snapshot semantics.** Document lines snapshot the rate; editing here does not retro-edit historical documents.
 - **Rate-change discipline.** Always create a new profile when the headline rate changes.
+- **Default sort.** `GET /tax-profiles` with no `?sort=` returns `name:asc, tax_rate:asc, id:asc` (`tax_profile.service.ts`, `withDefaultSort`, 2026-09-13).
 
 ## 7. Cross-References
 
@@ -88,5 +89,6 @@ Source: tenant schema.
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_tax_profile` (lines ~1433-1468), `enum_tax_type` (lines ~92-96) — note that `enum_tax_type` lives on each document line, not on this entity.
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_tax_profile` (line ~1491), `enum_tax_type` (~96) — note that `enum_tax_type` lives on each document line, not on this entity.
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/042-tax-profile.spec.ts` + `docs/test-cases/gaps/042-tax-profile-gap.md`.
 - **Frontend:** `../carmen-inventory-frontend-react/routes/config/tax-profile/`.

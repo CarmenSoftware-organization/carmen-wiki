@@ -2,7 +2,7 @@
 title: Product — Test Scenarios — Purchaser
 description: Purchaser's test cases (happy-path lookup, RBAC scope, validation read-side, comment / feedback, edge cases) for the product module.
 published: true
-date: 2026-07-16T09:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: product, test-scenarios, purchaser, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -13,7 +13,9 @@ dateCreated: 2026-05-15T15:30:00.000Z
 > **At a Glance**
 > **Persona:** Purchaser (read-only catalogue consumer) &nbsp;·&nbsp; **Module:** [product](/en/inventory/product) &nbsp;·&nbsp; **Scenarios:** ~33
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **E2E coverage:** indirect — exercised through upstream module specs (`300-pr.spec.ts`, `400-po.spec.ts`) in `../carmen-inventory-frontend-e2e/`
+> **E2E coverage:** indirect — exercised through upstream module specs (`tests/301-pr.spec.ts`, `302-pr-creator-journey.spec.ts`, `304-pr-purchaser-journey.spec.ts`, `401-po.spec.ts`, `402-po-purchaser-journey.spec.ts`) in `../carmen-inventory-frontend-e2e/`
+
+> **Executable coverage (2026-09-22):** the e2e repo has **no `100-product.spec.ts`** — `/product-management/product` is a catalog-only row (`📄 catalog`) in `../carmen-inventory-frontend-e2e/docs/test-cases/COVERAGE.md:148`, backed by `docs/test-cases/100-product.md` (52 cases, re-audited against the React form on 2026-09-20). Adjacent screens do have specs: `tests/101-product-category.spec.ts` (23 cases; gap report `docs/test-cases/gaps/101-product-category-gap.md`, 39 uncovered) and `tests/044-eco.spec.ts` (19 cases; `gaps/044-eco-gap.md`, 29 uncovered). This page does not mirror those catalogs.
 
 This page captures the test scenarios the Purchaser persona drives in the `product` module. They are **read-only consumers** of the catalogue — they search, filter, view, and pick products for PR / PO composition; reference standard cost, last-receiving cost (derived), unit conversions, and vendor mapping; and post comments for stale entries or new-product requests. Because the persona is lookup-only, the scenarios concentrate on **search / picker behaviour** (filtering, scoping, sorting), **read-side RBAC** (what they can and cannot see), **validation rules they encounter as a consumer** (rejected attempts to pick inactive products, rejected attempts to use unconfigured units), and **the comment / feedback paths** that route their concerns back to the Product Administrator. There are no CRUD scenarios for this persona; their transactional work (composing PRs and POs) lives in [purchase-request](/en/inventory/purchase-request) and [purchase-order](/en/inventory/purchase-order). Cross-persona handoffs that pivot off the Purchaser (Scenarios 1, 8, 10, 16 in the parent overview) live in [04-test-scenarios.md](./04-test-scenarios.md), not here.
 
@@ -53,7 +55,7 @@ This page captures the test scenarios the Purchaser persona drives in the `produ
 | PR-VAL-01 | Pick inactive product on new PR line (`PRD_XMOD_001`) | Purchaser toggles "show inactive" filter and tries to select an inactive product. | **Reject at line save** — `"Product <code> is inactive or deleted and cannot be added to new transactions."` `400 Bad Request`. Picker normally greys out inactive rows when the toggle is on; direct API submission re-checks. Maps to inactive-product handling. |
 | PR-VAL-02 | Pick a unit not configured for the product (`PRD_XMOD_006`) | Product has order-unit conversions `1 CASE = 5 KG` only; Purchaser attempts to enter qty in `BAG` via API. | **Reject at line save** — `"No conversion factor defined for unit BAG → KG on product COF-001."` `400 Bad Request`. Picker normally shows only configured units; this is a defensive backend check. Resolution: post comment requesting the conversion per parent Scenario 10. |
 | PR-VAL-03 | Pick a product not mapped to the PO's selected vendor | PO scoped to vendor V1; product P1 has no `tb_product_tb_vendor` row for V1. | **Reject at line save** — `"Product P1 is not mapped to vendor V1."` `400 Bad Request`. (Convention; not a hard schema rule — application-enforced.) Resolution: change the PO's vendor, or post a comment requesting the mapping per parent Scenario 16. |
-| PR-VAL-04 | Submit PR line with unit-price exceeding `price_deviation_limit` | Product has `price_deviation_limit = 10`, `standard_cost = ฿100`; Purchaser enters unit-price = `฿120` (20% above standard, exceeds 10%). | **Soft-block** — the line is accepted but flagged for above-threshold approval per [purchase-request](/en/inventory/purchase-request)'s validation rules (the product-side rule per `PRD_CALC_003` feeds the gating). The flag is visible on the PR's approval workflow. Per `PRD_XMOD_007`, the deviation tolerance is the gate. |
+| PR-VAL-04 | Submit PR line with unit-price exceeding `price_deviation_limit` | Product has `price_deviation_limit = 10`; PO price `฿100`; GRN later receives at `฿120` (20% above, exceeds 10%). | **Corrected 2026-09-22 — the only confirmed enforcement is on GRN save**, not on the PR line: `POST …/good-received-notes/:id/save` rejects the whole GRN with `400 GRN_DEVIATION_LIMIT_EXCEEDED` (`good-received-note.deviation.ts`, product-level limit, base-unit price compared with the ordered price; receiving *below* the ordered price passes). No PR-side soft-block / approval routing was found; treat the PR flag as unconfirmed. |
 | PR-VAL-05 | Comment with malformed attachment | Purchaser posts comment with attachment metadata missing `fileToken`. | **Reject at submit** — comment attachment shape is enforced per the tenant-comment convention; malformed attachments return `400 Bad Request`. |
 
 ## 4. Edge Cases

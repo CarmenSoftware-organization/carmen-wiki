@@ -1,8 +1,8 @@
 ---
 title: Product
-description: Product master data — categories, units of measure, locations, and import/export — the catalog every inventory document references.
+description: Product master data — categories, units of measure, locations and shelves, eco labels, and export — the catalog every inventory document references.
 published: true
-date: 2026-07-16T09:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: product, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 # Product
 
 > **At a Glance**
-> **Module purpose:** Product catalogue master — codes, categories, base/order/recipe units with conversions, location mapping, allergens, eco-label certificates, and bulk import/export &nbsp;·&nbsp; **Audience:** Product Administrator, Purchaser, Store Keeper &nbsp;·&nbsp; **Key entities/tables:** `tb_product`, `tb_product_category`, `tb_unit_conversion`, `tb_product_location`, `tb_product_eco_label` &nbsp;·&nbsp; **Sub-pages:** 11
+> **Module purpose:** Product catalogue master — codes, categories, base/order/recipe units with conversions, location mapping, allergens, eco-label certificates, and bulk import/export &nbsp;·&nbsp; **Audience:** Product Administrator, Purchaser, Store Keeper &nbsp;·&nbsp; **Key entities/tables:** `tb_product`, `tb_product_category`, `tb_unit_conversion`, `tb_product_location` (+ `tb_location_shelf`), `tb_eco_label` / `tb_product_eco_label` &nbsp;·&nbsp; **Sub-pages:** 11
 
 ![Product screen](/screenshots/product/index.png)
 
@@ -19,11 +19,11 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 ## 1. Overview
 
-The Product module is the central master-data catalogue for the ERP. Every product is identified by a unique `productCode`, classified through a **category → sub-category → item group** hierarchy (up to five levels deep), and carries the descriptive, costing, taxation, and packaging attributes that downstream modules consume. English and local-language descriptions, barcode, standard cost, last receiving cost, and quantity/price deviation tolerances live on the product header; extended attributes (weight, shelf life, storage instructions, size, color, allergens, sustainability data) are modelled as typed key-value pairs that can be inherited from the category and overridden at the product level.
+The Product module is the central master-data catalogue for the ERP. Every product is identified by a unique `productCode`, classified through a **category → sub-category → item group** hierarchy (exactly three levels — see [01-data-model](/en/inventory/product/01-data-model) § 5 item 8), and carries the descriptive, costing, taxation, and packaging attributes that downstream modules consume. English and local-language descriptions, barcode, standard cost, last receiving cost, and quantity/price deviation tolerances live on the product header; extended attributes (weight, shelf life, storage instructions, size, color, allergens, sustainability data) are modelled as typed key-value pairs that can be inherited from the category and overridden at the product level.
 
-A product is measured in a **base inventory unit** with one or more **order units** and **recipe units** layered on top via explicit conversion factors. The conversion table is validated for consistency (bidirectional, non-circular) so that a quantity entered in any unit on any document — PR, PO, GRN, requisition, recipe — can be resolved back to the base unit for valuation. Every product is also activated against one or more **storage locations**, with per-location minimum and maximum thresholds that drive replenishment and the level-check logic in inventory.
+A product is measured in a **base inventory unit** with one or more **order units** and **recipe units** layered on top via explicit conversion factors. The conversion table is validated for consistency (bidirectional, non-circular) so that a quantity entered in any unit on any document — PR, PO, GRN, requisition, recipe — can be resolved back to the base unit for valuation. Every product is also activated against one or more **storage locations**, with per-location minimum / maximum / par thresholds that drive replenishment, and — since 2026-08 — an optional **shelf** from the BU-wide [shelf](/en/inventory/master-data/shelf) master.
 
-Bulk maintenance is a first-class concern. **Import/export** workflows accept Excel and CSV payloads for products, categories, units, and conversion factors with row-level validation, dry-run preview, and a downloadable error report; barcodes, QR codes, and category templates support bulk generation. The combination of validated master data and bulk tooling is what lets new properties and new menu launches go live without one-off entry per item.
+Bulk tooling is narrower than earlier revisions of this page claimed (**corrected 2026-09-22**): the list screen has an **Export** action (`hooks/use-product.ts:37` `useExportProduct`), but there is **no product import** — `config_products.controller.ts` exposes only CRUD, item-group lookup, and image endpoints, and `grep -ri import routes/product-management/product` finds only ES-module imports. Dry-run preview, error reports, and bulk barcode / QR generation have no code path in the frontend, gateway, or Bruno collection; treat every "bulk import" statement on the sub-pages as design intent.
 
 ## 2. Business Context
 
@@ -33,17 +33,17 @@ This module is therefore the system of record for the *definition* of an item, n
 
 ## 3. Key Concepts
 
-- **Product Category**: A hierarchical classification node (category → sub-category → item group, up to five levels) used for organisation, reporting roll-ups, and attribute inheritance. Categories can carry required attributes, default values, and business rules that propagate to every product assigned beneath them. Deletion is blocked while any product is still assigned.
+- **Product Category**: A hierarchical classification node (category → sub-category → item group, three fixed levels) used for organisation, reporting roll-ups, and default inheritance (tax profile, deviation limits, recipe / sold-directly flags). See [category](/en/inventory/product/category) for what the tree actually enforces.
 - **Base Unit**: The canonical inventory unit of measure for a product (e.g., `KG`, `LITRE`, `EACH`). All stock balances, costs, and valuations are stored in the base unit; every other unit attached to the product is defined relative to it via a conversion factor.
 - **Conversion Factor**: The multiplier that translates a quantity expressed in an order unit or recipe unit into the base unit (e.g., 1 `CASE` = 12 `EACH`). Conversions are validated for bidirectional consistency, must avoid cycles, and propagate to PR/PO/GRN/recipe lines so the system can always resolve the same physical quantity regardless of how it is entered.
-- **Location Mapping**: The assignment of a product to one or more storage locations (warehouses, stores, kitchens), each with optional minimum and maximum quantity thresholds. Only locations a product is mapped to can hold a balance for that product; the mapping also drives par-level alerts and replenishment suggestions.
+- **Location Mapping**: The assignment of a product to one or more storage locations (warehouses, stores, kitchens), each with optional `min_qty` / `max_qty` / `par_qty` thresholds and, optionally, a **shelf** (`tb_product_location.shelf_id` + snapshot `shelf_code` / `shelf_name`, validated against the shelf master — `SHELF_NOT_FOUND` otherwise). The product **Location Assignment** tab is the only UI that sets the shelf. `re_order_qty` is no longer a setting: the API derives it (and `on_hand_qty`) from the cost layers at read time (`products.replenishment.ts`).
 - **Active/Inactive**: The lifecycle flag controlling whether a product can appear on new documents. Inactive products retain their history (balances, past POs, past recipes) but are excluded from pickers and from new transactions; the status transition is auditable and can be scheduled to take effect on a future date.
-- **Barcode**: A scannable identifier (UPC, EAN, CODE128, QR) attached to a product or product variant. Barcodes must be unique, can be generated in bulk, are printable as labels, and are the primary lookup key for mobile receiving, picking, counting, and spot-check workflows.
+- **Barcode**: A single free-text `tb_product.barcode` column, edited on the General tab (labelled "Barcode (EAN-13)" in `pd-tab-general.tsx:445`). No schema `@unique`, and **unconfirmed** beyond that: no bulk-generation, label-printing, or dedicated barcode-lookup endpoint was found in the gateway (`config_products.controller.ts`) or the frontend this pass.
 - **Allergen**: A regulated attribute flagging the presence of allergens (gluten, dairy, nuts, shellfish, etc.) in a product. Allergen data is set on the product, inherited through recipes to the menu item, and surfaced to F&B Operations for guest disclosure and to Procurement when sourcing substitutes.
 - **Product Variant**: A specific version of a product distinguished by attribute combinations (size, color, packaging), each with its own SKU. There is no dedicated `tb_product_variant` table — a variant is modelled either as its own `tb_product` row sharing the parent's category / base unit, or as a JSON key under `tb_product.info` for low-cardinality display-only variations (see [01-data-model](/en/inventory/product/01-data-model) § 5 item 1).
 - **Standard Cost / Last Receiving Cost**: The reference costs carried on the product header. Standard cost is the planned/budgeted cost used for variance analysis; last receiving cost is the most recent actual unit cost observed on a GRN, displayed alongside the date and vendor for context. Neither replaces the moving valuation maintained by the costing module.
 - **Quantity / Price Deviation Tolerance**: Per-product percentage tolerances (0–100%) that bound how far a downstream document line (PR, PO, GRN) may diverge from the master quantity or price before approval is required. The tolerances trickle down to child records and act as guard-rails against entry errors.
-- **Import/Export**: A bulk-load and bulk-extract workflow for products, categories, units, and conversion factors. Imports run row-level validation, support dry-run preview, and emit a downloadable error report; exports support multiple formats and respect the user's saved view and filters.
+- **Export (no import)**: The product list can be exported (`useExportProduct`); there is no product import endpoint or screen — see § 1. Category, unit, and conversion imports likewise have no code path.
 
 ## 4. Roles and Personas
 
@@ -64,6 +64,8 @@ This module is therefore the system of record for the *definition* of an item, n
 
 **Master configuration:**
 - [master-data/unit](/en/inventory/master-data/unit) — base, order, and recipe units of measure plus conversion factors
+- [master-data/location](/en/inventory/master-data/location) and [master-data/shelf](/en/inventory/master-data/shelf) — the location rows a product is assigned to and the shelf master those rows may reference
+- Eco labels — the `tb_eco_label` master (renamed from `tb_product_master_eco_label` on 2026-09-04) is maintained at `/product-management/eco` (`routes/product-management/eco/`, moved out of `/config` on 2026-09-03); per-product certificates are edited on the product form's **Eco Labels** tab. See [01-data-model](/en/inventory/product/01-data-model) § 2.10
 - [system-config/application-config](/en/inventory/system-config/application-config) — tenant-level defaults (deviation tolerances, barcode policy, attribute schema)
 - [reporting-audit/activity](/en/inventory/reporting-audit/activity) — product lifecycle and bulk-import activity log for audit
 - [reporting-audit/attachment](/en/inventory/reporting-audit/attachment) — product images, spec sheets, and certificates attached to each product

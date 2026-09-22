@@ -2,7 +2,7 @@
 title: Vendor Business Type
 description: Flat lookup that classifies vendors by business type (manufacturer, distributor, service, etc.) — referenced by the vendor record for reporting and filtering.
 published: true
-date: 2026-07-15T21:47:09.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: master-data, vendor-business-type, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -85,6 +85,7 @@ This is a **loose, app-enforced reference only** — there is no foreign key, so
 - **Lifecycle.** `is_active = false` hides the type from pickers; vendors retain their JSON snapshot regardless.
 - **Rename propagation.** Renaming a type does not auto-update the `business_type` JSON on vendors — run a maintenance refresh after a rename.
 - **Translation.** Keep translations in `info` JSON until a localisation table is introduced.
+- **Default sort.** `GET /vendor-business-types` with no `?sort=` returns `name:asc, id:asc` (`vendor_business_type.service.ts`, `withDefaultSort`, 2026-09-13).
 
 ## 7. Cross-References
 
@@ -94,6 +95,7 @@ This is a **loose, app-enforced reference only** — there is no foreign key, so
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_vendor_business_type` (lines ~5229-5250); `tb_vendor`'s `business_type` JSON field (lines ~3500-3552, no `business_type_id` column exists).
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_vendor_business_type` (line ~5836); `tb_vendor`'s `business_type` JSON field (~3859, no `business_type_id` column exists).
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/029-business-type.spec.ts` + `docs/test-cases/gaps/029-business-type-gap.md`.
 - **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/vendor_business_type/vendor_business_type.service.ts`.
 - **Frontend:** `../carmen-inventory-frontend-react/routes/config/business-type/`.
