@@ -1,6 +1,6 @@
 ---
 title: Licenses — Data Model
-description: tb_cluster_license and its winning-row views, tb_business_unit_license and its summed view, tb_business_unit_interface_license and its union-of-windows rule, tb_subscription's feature-group joins, the group kind enum, and the four configurable expiry thresholds.
+description: The BU-quota, seat, interface (INF) and subscription ledgers, their views and counting rules, the group kind enum, and the four configurable expiry thresholds.
 published: true
 date: '2026-09-22T17:30:00.000Z'
 tags: book/platform, licenses, data-model
