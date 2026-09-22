@@ -2,7 +2,7 @@
 title: Carmen Inventory
 description: Carmen Inventory ERP — module reference for developers and testers.
 published: true
-date: 2026-07-29T06:11:01.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: book/inventory, home
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -52,6 +52,7 @@ Reference manual for developers and QA engineers working on the Carmen Inventory
 |---|---|
 | [Costing](/en/inventory/costing) | Calculation methods, FIFO, weighted average |
 | [Reporting & Audit](/en/inventory/reporting-audit) | Reports and audit trail |
+| [General Ledger](/en/inventory/general-ledger) | GL subsystem (backend only, no UI) — documented only where it touches inventory; no inventory→GL posting exists yet |
 
 ## 6. Administration
 
