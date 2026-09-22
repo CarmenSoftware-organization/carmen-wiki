@@ -2,7 +2,7 @@
 title: Purchase Order — User Flow — Audit & Config
 description: Auditor (read-only activity log) and System Administrator (workflow / RBAC / numbering configuration) flows for purchase-order.
 published: true
-date: 2026-07-29T05:45:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: purchase-order, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -23,7 +23,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 
 ## 1. Role in This Module
 
-The **Auditor** is a read-only role. The one confirmed surface is the PO detail page's own activity/history — `workflow_history`, `history`, and `tb_purchase_order_comment` — which any user with read access to a PO can already see; whether a distinct "Auditor" role or a dedicated cross-document query workspace exists on top of that was not confirmed this pass. The Auditor cannot approve, transmit, reject, close, or edit lines.
+The **Auditor** is a read-only role. The confirmed surfaces are the PO detail page's own activity/history — `workflow_history`, `history`, and `tb_purchase_order_comment` — which any user with read access to a PO can already see; the per-line history endpoint `GET .../purchase-orders/detail/:detail_id/history` (new since baseline; every save and stage action on one line, surfaced by the row history button); and, since 2026-09-08/14, the `tb_activity` rows the PO service writes for vendor transmission — `action = email_sent` for every `send-email` attempt (success **and** failure, with recipients / rejected list) and `action = other` "Marked as sent to vendor" for `mark-sent` — readable through [reporting-audit/activity](/en/inventory/reporting-audit/activity). Whether a distinct "Auditor" role or a dedicated cross-document query workspace exists on top of that was not confirmed this pass. The Auditor cannot approve, send, reject, close, or edit lines.
 
 The **System Administrator** configures the workflow definition referenced by `tb_purchase_order.workflow_id` (stages, `stage_role`, `user_action.execute[]` membership, and — **confirmed this pass** — amount/department/category **routing rules** via the workflow's **Routing** tab, `PO_AUTH_004` — all generic system-config functionality shared across document types, not PO-specific) and the running-code scheme that generates `po_no`. RBAC role-to-permission mapping is likewise a generic system-config concern. No PO-specific numbering template, integration-settings screen, or PR-to-PO grouping-rule editor was found.
 
@@ -49,11 +49,13 @@ graph LR
 | Action | Auditor | System Administrator |
 |---|---|---|
 | Read PO `workflow_history` / `tb_purchase_order_comment` | ✅ | ✅ |
+| Read per-line history (`GET .../detail/:detail_id/history`) and `tb_activity` send / email entries | ✅ | ✅ |
 | Read header / lines / snapshots | ✅ | ✅ |
 | Walk PR→PO bridge (`tb_purchase_order_detail_tb_purchase_request_detail`) | ✅ | ✅ |
 | Edit workflow stages / `stage_role` / `user_action.execute[]` (generic system-config) | ❌ | ✅ |
 | Edit running-code (`po_no`) scheme (generic system-config) | ❌ | ✅ |
-| Edit RBAC permission map | ❌ | ✅ (via generic system-config, not confirmed as a PO-specific screen) |
+| Edit RBAC permission map | ❌ | ✅ (via generic system-config, not confirmed as a PO-specific screen). Keys the SPA declares: `procurement.purchase_order` (view-only resource), `procurement.credit_note` (CRUD), `system_admin.workflow.purchase_order` (`constant/permissions.ts`); the gateway enforces only `procurement.purchase_order: create` on `GET .../purchase-orders/grn/:id` |
+| Configure BU email profiles used by PO Send Email | ❌ | ✅ ([system-config/config-email](/en/inventory/system-config/config-email); PO / RFP templates seeded per BU) |
 | Edit PO header / lines / vendor / qty | ❌ | ❌ |
 | Approve / Transmit / Send-back / Reject | ❌ | ❌ |
 | Close a PO | ❌ | ❌ (escalate to Procurement Manager or Inventory Manager under `PO_AUTH_008`) |
@@ -64,7 +66,7 @@ graph LR
 
 **Entry point:** Open a PO's detail page → **Activity Log** / history view. **Unconfirmed:** a dedicated cross-document audit query builder spanning PR → PO → GRN.
 
-**Confirmed flow:** Open the PO, read `workflow_history` (stage transitions, actor, timestamp) and `tb_purchase_order_comment` (user and system comments). Walk the PR→PO bridge for PR-sourced POs to see the originating PR(s). No PO state is changed by any of this.
+**Confirmed flow:** Open the PO, read `workflow_history` (stage transitions, actor, timestamp — `approved` final entries carry `action = completed`) and `tb_purchase_order_comment` (user and system comments). For "did the vendor get it, and when?", read `tb_activity` for `entity_type = 'purchase_order'`: the `email_sent` entry records each send attempt and its outcome, and the PO's `sent_or_print` status corroborates a successful send or a `mark-sent`. Walk the PR→PO bridge for PR-sourced POs to see the originating PR(s) (the detail screen's **view source PR** button) and the GRN label(s) per line. No PO state is changed by any of this.
 
 ### 2.2 System Administrator
 
@@ -75,7 +77,7 @@ graph LR
 ## 3. Decision Branches
 
 - **If the Auditor finds a workflow-history gap or an out-of-order timestamp**: escalate outside the PO module — no PO-module "case file" or flagging feature was confirmed. A generic activity-log or audit trail feature, if one exists, is documented in [reporting-audit](/en/inventory/reporting-audit), not here.
-- **If a Sysadmin needs to end a stuck PO** (e.g., no eligible approver remains at a stage after an RBAC change): the confirmed remediation is a Procurement Manager or Inventory Manager action (**Cancel**/**Close**/**Reject**, as documented in [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md)) — there is no confirmed Sysadmin-level override that directly mutates PO state.
+- **If a Sysadmin needs to end a stuck PO** (e.g., no eligible approver remains at a stage after an RBAC change): the confirmed remediation is **Cancel** / **Close** (no role gate) or a current-stage approver's **Reject**, as documented in [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md); a platform super-admin can additionally **Delete** a draft that is not theirs (`remove()` `isSuperAdmin` branch). There is no other Sysadmin-level override that directly mutates PO state. Note that editing a workflow definition while a document that uses it is still `in_progress` is blocked (`a1c435208`, 2026-08-14).
 
 ## 4. Exit Point / Handoffs
 
