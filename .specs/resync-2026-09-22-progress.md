@@ -13,7 +13,7 @@ Baseline: carmen-platform `157a65e` (2026-09-04) → HEAD `f1c69f1` (2026-09-22)
 20 commits / 78 files. Backend-v2 platform-side: `20260908…drop_business_unit_interface`,
 `20260910…{license_feature_group_kind,business_unit_interface_license,migrate_interface_groups_to_inf_license}`,
 `20260916…{rename_period_to_inventory_period,fix_license_group_item_inventory_period_key}`.
-Status: **done, EN only** — 27 pages edited, 0 new pages, nav unchanged.
+Status: **done, EN only** — 26 pages edited, 0 new pages, nav unchanged.
 
 | Theme | SPA PRs | Pages touched | Notes |
 |---|---|---|---|
