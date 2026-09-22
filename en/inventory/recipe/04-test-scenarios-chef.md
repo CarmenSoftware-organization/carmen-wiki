@@ -2,7 +2,7 @@
 title: Recipe — Test Scenarios — Chef
 description: Chef's test cases (happy path, permission, validation, edge cases) for the recipe module.
 published: true
-date: 2026-07-29T04:45:21.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: recipe, test-scenarios, chef, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **At a Glance**
 > **Persona:** Chef (Chef / Kitchen Manager + Kitchen Staff read-only) &nbsp;·&nbsp; **Module:** [recipe](/en/inventory/recipe) &nbsp;·&nbsp; **Scenarios:** ~38
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **E2E coverage:** none at this time — recipe-internal E2E is a gap; the module's only automated spec is `tests/121-recipe-equipment-category.spec.ts` (equipment-category master, not the recipe screen)
+> **E2E coverage:** none for the recipe screen — the catalog `docs/test-cases/120-recipe.md` (59 cases) is documentation only; automated specs exist for the master-data screens (`110-op-category`, `111-cuisine`, `121-recipe-equipment-category`, `131-equipment-category`). Re-verified 2026-09-22 — see [04-test-scenarios](/en/inventory/recipe/04-test-scenarios)
 
 > **Implementation status (verified 2026-07-15).** Most scenarios below test unimplemented features — publish gates (`REC_VAL_015`–`018` never fire), `recipe:*` permissions (none exist; the group is admin-gated by the `operation_plan.view` placeholder), clone, ingredient persistence (the grid is preview-only), prep-step UI, yield-variant editing, versioning, and pricing history. Executable today: header CRUD + required-field validation (client-side zod), status-dropdown transitions with timestamp stamping, code-uniqueness (`RECIPE_ALREADY_EXISTS`), `doc_version` conflict, sub-recipe delete guard, and image-gallery sync. Treat the rest as the design acceptance plan.
 

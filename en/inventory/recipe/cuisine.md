@@ -2,7 +2,7 @@
 title: Cuisine
 description: Cuisine catalogue — regional / style label applied to recipes for menu segmentation (Thai, Italian, French, fusion, etc.).
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: recipe, cuisine, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -16,6 +16,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 ![Cuisine screen](/screenshots/recipe/cuisine.png)
 
 ![Cuisine detail screen](/screenshots/recipe/cuisine-detail.png)
+
+> **Re-verified 2026-09-22.** Schema, enum and service rules below are unchanged. `GET /api/config/{bu}/recipe-cuisines` now defaults to `sort=name:asc` (`928f3b950`, 2026-09-13); the list's Region column is plain text rather than a six-colour badge (`3174e9df`). E2E: `tests/111-cuisine.spec.ts` (17 tests, 2026-09-20).
 
 ## 1. What & Who
 

@@ -2,7 +2,7 @@
 title: My Pending Dashboard Widget
 description: "REMOVED, historical reference only — never actually rendered on /dashboard: a proposed personal pending-count widget showing the number of draft or in-progress documents awaiting the signed-in user's action across PR, PO, and SR."
 published: true
-date: 2026-07-16T02:01:42.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: dashboard, my-pending, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -16,6 +16,8 @@ dateCreated: 2026-06-04T00:00:00.000Z
 ## Implementation status (verified 2026-07-16)
 
 **This page's prior "Live" status claim was wrong.** It documented `dashboard-my-pending.tsx` (formerly `routes/dashboard/_components/dashboard-my-pending.tsx`), which rendered the three count cards described below. Checking `dashboard-component.tsx` (both the current version and the version prior to the 2026-06-27 cleanup) shows the live `/dashboard` page has only ever rendered a greeting header plus the "Saved Widgets" grid — it never imported or mounted `dashboard-my-pending.tsx`. The underlying hooks (`useMyPendingPrCount`, `useMyPendingPoCount`, `useMyPendingSrCount` in `hooks/use-dashboard.ts`) still exist in source today and their endpoints (`GET /api/proxy/api/my-pending/{purchase-requests,purchase-orders,store-requisitions}/count`) are still declared in `constant/api-endpoints.ts`, but a repo-wide search found **zero call sites** for any of the three hooks — not on `/dashboard`, not in the sidebar, not anywhere. The component file itself was deleted, along with 7 siblings, in commit `03891e3d` ("refactor(dashboard): convert to idiomatic structure, drop dead demo code", 2026-06-27), whose message confirms it was dead code with "no importers anywhere."
+
+**Re-verified 2026-09-22:** the hooks named above no longer "still exist" — `hooks/use-dashboard.ts` was deleted with 16 other dead files on 2026-08-31 (`02228125`, "ลบโค้ดตาย 17 ไฟล์ ~1,800 บรรทัด"). Only the `MY_PENDING_PURCHASE_REQUESTS_COUNT` / `MY_PENDING_PURCHASE_ORDERS_COUNT` / `MY_PENDING_STORE_REQUISITIONS_COUNT` constants remain in `constant/api-endpoints.ts`, with zero callers. The live way to see personal pending counts on `/dashboard` today is a status-group card with the "mine" preset (`owner_visibility = @current_user`) — see [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) §1.2.
 
 Everything below describes this never-mounted, now-deleted widget — kept only as historical reference. Treat every "Live" / "mounted" / route claim in the rest of this page as void.
 
@@ -90,7 +92,7 @@ All three hooks use `CACHE_DYNAMIC` (staleTime 1 min). Endpoint paths are regist
 
 - **Component (deleted 2026-06-27):** `routes/dashboard/_components/dashboard-my-pending.tsx` in `../carmen-inventory-frontend-react`
 - **Deletion commit:** `03891e3d` — "refactor(dashboard): convert to idiomatic structure, drop dead demo code"
-- **Hooks (still present, zero call sites found):** `../carmen-inventory-frontend-react/hooks/use-dashboard.ts` — `useMyPendingPrCount`, `useMyPendingPoCount`, `useMyPendingSrCount`
+- **Hooks (deleted 2026-08-31, `02228125`):** `../carmen-inventory-frontend-react/hooks/use-dashboard.ts` — `useMyPendingPrCount`, `useMyPendingPoCount`, `useMyPendingSrCount`
 - **API constants (still declared, unused):** `../carmen-inventory-frontend-react/constant/api-endpoints.ts` → `MY_PENDING_PURCHASE_REQUESTS_COUNT`, `MY_PENDING_PURCHASE_ORDERS_COUNT`, `MY_PENDING_STORE_REQUISITIONS_COUNT`
 - **Colour mapping:** `../carmen-inventory-frontend-react/constant/module-color-map.ts` → `getModuleColor`
 - **Cache config:** `../carmen-inventory-frontend-react/lib/cache-config.ts` → `CACHE_DYNAMIC`

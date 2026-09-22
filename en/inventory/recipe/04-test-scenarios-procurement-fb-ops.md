@@ -2,7 +2,7 @@
 title: Recipe — Test Scenarios — Procurement F&B Ops
 description: Procurement and F&B Ops test cases (PO sizing, substitution, menu-item linkage approval, menu engineering) for the recipe module.
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: recipe, test-scenarios, procurement-fb-ops, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **At a Glance**
 > **Persona:** Procurement / F&B Ops (Procurement Department + F&B Operations Manager) &nbsp;·&nbsp; **Module:** [recipe](/en/inventory/recipe) &nbsp;·&nbsp; **Scenarios:** ~25
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **E2E coverage:** none for recipe internals; the module's only automated spec is `tests/121-recipe-equipment-category.spec.ts`. PO E2E specs cover the PR→PO flow, which has no recipe input.
+> **E2E coverage:** none for recipe internals; automated specs exist only for the master-data screens (`110-op-category`, `111-cuisine`, `121-recipe-equipment-category`, `131-equipment-category`). PO E2E specs cover the PR→PO flow, which has no recipe input. Re-verified 2026-09-22 — see [04-test-scenarios](/en/inventory/recipe/04-test-scenarios)
 
 > **Implementation status (verified 2026-07-15).** The feature set these scenarios test does not exist: no recipe explosion or PO sizing from recipes (ingredient lines are not even persisted), no substitution-request channel, no menu-item entity or `recipe:approve-menu-link` permission, and no menu-engineering view. Treat the scenarios below as the design acceptance plan.
 

@@ -1,8 +1,8 @@
 ---
 title: My Approval Dashboard Widget
-description: "REMOVED, historical reference only — never actually rendered on /dashboard: a proposed personal approval task-queue widget listing PR/PO/SR documents awaiting the signed-in user's approval action. The real, live equivalent is the Procurement module's My Approval page (/procurement/approval)."
+description: REMOVED, historical reference only — a proposed personal approval task-queue widget for /dashboard that was never rendered; the real, live equivalent is the Procurement module's My Approval page (/procurement/approval).
 published: true
-date: 2026-07-16T01:35:43.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: dashboard, my-approval, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -18,6 +18,8 @@ dateCreated: 2026-06-04T00:00:00.000Z
 **This page's prior "Live" status claim was wrong.** It documented `dashboard-my-approval.tsx` (formerly `routes/dashboard/_components/dashboard-my-approval.tsx`), which rendered the grouped PR/PO/SR approval tables described below, embedded inside `/dashboard`. Checking `dashboard-component.tsx` (both today's version and the version prior to the 2026-06-27 cleanup) shows the live `/dashboard` page has only ever rendered a greeting header plus the "Saved Widgets" grid — it never imported or mounted `dashboard-my-approval.tsx`. The component file was deleted, along with 7 siblings, in commit `03891e3d` ("refactor(dashboard): convert to idiomatic structure, drop dead demo code", 2026-06-27), whose message confirms it was dead code with "no importers anywhere."
 
 The `useApprovalPending` / `useApprovalPendingSummary` hooks this page describes (`hooks/use-approval.ts`) **are** real and live — but they power the Procurement module's **My Approval** page at `/procurement/approval` (a genuine, routed screen; see [purchase-request/my-approval](/en/inventory/purchase-request/my-approval)), not any section of `/dashboard`. This deleted widget's "View All →" link (described below) pointed at that same real page, which is the one place to actually see and act on pending approvals.
+
+**Re-verified 2026-09-22:** the live hooks moved to `routes/procurement/approval/use-approval.ts` (2026-08-28, `0d9757f3`), and on 2026-09-16 (`9bd21427`, backend `bb0000283`) the approval page switched from three per-type calls to one unified list: `APPROVAL_PENDING` is now `GET /api/proxy/api/my-pending` (backed by the tenant view `sys_v_my_pending`), while the summary stays on `GET /api/proxy/api/my-approve/pending`. The `/api/my-approve` list path and the `root.purchase_requests / purchase_orders / store_requisitions` partitioning described in §3/§5 belong to the pre-2026-09-16 contract.
 
 Everything else below describes this never-mounted, now-deleted dashboard widget — kept only as historical reference. Treat every "Live" / "mounted" / route claim in the rest of this page as void.
 
@@ -97,7 +99,7 @@ Items are sorted by `doc_date` descending from the API. The widget shows up to `
 
 - **Component (deleted 2026-06-27):** `routes/dashboard/_components/dashboard-my-approval.tsx` in `../carmen-inventory-frontend-react`
 - **Deletion commit:** `03891e3d` — "refactor(dashboard): convert to idiomatic structure, drop dead demo code"
-- **Hooks (real and live, but power `/procurement/approval` — not `/dashboard`):** `../carmen-inventory-frontend-react/hooks/use-approval.ts` — `useApprovalPending`, `useApprovalPendingSummary`
+- **Hooks (real and live, but power `/procurement/approval` — not `/dashboard`):** `../carmen-inventory-frontend-react/routes/procurement/approval/use-approval.ts` — `useApprovalPending` (`GET /api/my-pending` since 2026-09-16), `useApprovalPendingSummary` (moved out of `hooks/` on 2026-08-28)
 - **Types:** `../carmen-inventory-frontend-react/types/approval.ts` — `ApprovalItem`, `ApprovalPendingSummary`, `RawApprovalPR`, `RawApprovalPO`, `RawApprovalSR`
 - **API constants:** `../carmen-inventory-frontend-react/constant/api-endpoints.ts` → `APPROVAL_PENDING`, `APPROVAL_PENDING_SUMMARY`
 - **Colour mapping:** `../carmen-inventory-frontend-react/constant/module-color-map.ts` → `getModuleColor`

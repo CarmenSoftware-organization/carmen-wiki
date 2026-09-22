@@ -2,7 +2,7 @@
 title: Equipment Category
 description: Functional grouping for kitchen equipment — preparation, cooking, holding, refrigeration, dispense, cleaning, etc.
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: recipe, equipment, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **Owner:** Chef / Product Admin &nbsp;·&nbsp; **Table:** `tb_recipe_equipment_category` &nbsp;·&nbsp; **Shape:** Flat (no `parent_id`) &nbsp;·&nbsp; **Children:** [recipe/equipment](/en/inventory/recipe/equipment) via `category_id` &nbsp;·&nbsp; **Used by:** equipment picker filter, maintenance dashboard, fit-out checklists
 
 ![Equipment Category screen](/screenshots/recipe/equipment-category.png)
+
+> **Re-verified 2026-09-22.** Schema and service rules below are unchanged. `GET /api/config/{bu}/recipe-equipment-categories` defaults to `sort=name:asc` (`928f3b950`). E2E: both screens over this table are automated — `tests/131-equipment-category.spec.ts` (12 tests; 4 manual cases left in `docs/test-cases/gaps/131-equipment-category-gap.md`) and `tests/121-recipe-equipment-category.spec.ts` (12 tests; 3 manual cases in `gaps/121-recipe-equipment-category-gap.md`).
 
 ## 1. What & Who
 
