@@ -1,8 +1,8 @@
 ---
 title: Inventory Adjustment — User Flow — Inventory Controller
-description: There is no approval queue for this module — the Inventory Controller uses the same create screen and the read-only list/detail/print views.
+description: Reviewing drafts before commit, voiding mistakes, and reading completed documents, their stock movements and print output — same screen and permission as the Store Keeper.
 published: true
-date: 2026-07-15T17:02:22.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: inventory-adjustment, user-flow, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -11,58 +11,64 @@ dateCreated: 2026-05-15T13:00:00.000Z
 # Inventory Adjustment — User Flow — Inventory Controller
 
 > **At a Glance**
-> **Persona:** Inventory Controller (any user with `inventory_management.view` — same permission as Store Keeper) &nbsp;·&nbsp; **Module:** [inventory-adjustment](/en/inventory/inventory-adjustment) &nbsp;·&nbsp; **What this persona can do that a Store Keeper cannot:** nothing distinct — there is no approval action, no pending-approval queue, and no permission key that separates the two roles anywhere in this module's code
-> **What this persona actually does:** raises adjustments directly on the same screen, and reads the resulting list/detail/print output as the after-the-fact record.
+> **Persona:** Inventory Controller (any user with `inventory_management.view` — same permission as Store Keeper) &nbsp;·&nbsp; **Module:** [inventory-adjustment](/en/inventory/inventory-adjustment) &nbsp;·&nbsp; **What this persona can do that a Store Keeper cannot:** nothing enforced — there is no approval action or permission key separating the two; the *practice* is that the Controller commits what others drafted and reverses what went wrong
+> **What this persona actually does:** filters the list to `Draft`, opens each draft, edits / deletes / voids or **Commit**s it; reads completed documents (detail, **Stock movements**, Print); voids posted documents through the API when a reversal is needed.
 
-### Position relative to the "lifecycle"
+### Position relative to the lifecycle
 
 ```mermaid
 graph LR
-    subgraph reality["What the code does"]
-        create(("create() — Save or Submit")):::current -->|"same transaction"| posted(("doc_status = completed\n+ ledger posted")):::current
-    end
-    ic["Inventory Controller"]:::current -.->|"same create screen\nno approval step exists"| create
-    ic -.->|"reads"| list["List / Detail / Print\n(read-only after posting)"]:::current
+    sk["Store Keeper\nSave draft"]:::current --> draft(("draft")):::current
+    ic["Inventory Controller"]:::current -->|"Edit / Delete / Void"| draft
+    ic -->|"Commit (PATCH /commit)"| posted(("completed\n+ ledger posted")):::current
+    ic -.->|"DELETE /void (API only for posted docs)"| voided(("voided\n+ reversal posted")):::current
+    ic -.->|"reads"| views["List / Detail / Stock movements / Print"]:::current
     classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
 ```
 
 ## 1. Role in This Module
 
-A previous version of this page described the Inventory Controller as an above-threshold approval authority who reviews `in_progress` documents, validates new-lot stock-ins, and commits count-variance rollups. None of that has a matching route, permission key, or backend code path:
+A 2026-05 draft of this page described an above-threshold approval authority reviewing `in_progress` documents; the 2026-07-15 revision then (correctly, for that code) said nothing was ever left in a reviewable state. Since 2026-07-30 there **is** something to review: drafts. What still does not exist:
 
-- There is no `in_progress` status ever assigned by this module's `create()` — so there is nothing sitting in a queue to approve.
-- There is no per-user threshold, no `enum_stage_role` distinguishing this persona from the person who filled out the form, and the nav entry / create screen / list all gate on the same `inventory_management.view` permission used by every other user of the module.
-- The real Void endpoint (`voidStockIn`/`voidStockOut`) exists in the backend and would be a natural fit for a "Controller reverses a bad entry" story, but the UI button that would trigger it is unreachable for any persisted document — see [03-user-flow.md](./03-user-flow.md) § 1 and [02-business-rules.md](./02-business-rules.md) § 5 `ADJ_POST_004`.
-
-What this persona realistically does with the module is: (a) use the identical Add Stock-In/Add Stock-Out screen described in [03-user-flow-store-keeper.md](./03-user-flow-store-keeper.md) when they themselves need to raise a correction, and (b) read the list, the detail view, and the print output as the historical record of what was posted — since there is nothing left in a reviewable state to act on.
+- No `in_progress` status is ever assigned by this module (`create` → `draft`, `commit` → `completed`, `void` → `voided`); the list's `In Progress` status filter is a shared component option that never matches a stock-in/stock-out.
+- No per-user threshold, no `enum_stage_role`, no workflow orchestrator call — the nav entry and every route gate on `inventory_management.view`.
+- No Approve / Reject action — **Commit** is the only "approval", and anyone with the module permission can press it.
 
 ## 2. Entry Point and Primary Flow
 
 **Entry points:**
 
-- **Inventory Adjustment module → list** — the same list Store Keeper uses; filterable by type (Stock-In/Stock-Out) and status. Since every document lands at `completed` immediately, filtering by status mostly distinguishes `completed` from `voided` (the latter only reachable via direct API call, and — because void also sets `deleted_at` — a voided document disappears from this list once voided anyway).
-- **Inventory Adjustment module → detail (click a row)** — opens the read-only view. **Print** is the only action button that reliably renders (`canPrint = isView && !!id`, always true for a persisted document).
-- **Direct create** — same screen as Store Keeper, no different entry point or extra fields.
+- **Inventory Adjustment module → list** — filter by type (`adj_type` URL param: Stock-In / Stock-Out), status (`Draft` / `Completed` / `Voided`; status icons + labels since 2026-08-24), date, search. Voided documents are soft-deleted by the void endpoint and therefore do not appear in the list.
+- **Inventory Adjustment module → detail (click a row)** — opens the document in view mode. A `draft` shows **Edit** and **Delete**; a `completed` document shows **Print** and the **Stock movements** panel (`GET /stock-ins/{id}/stock-movements`, `buildStockMovements`) listing the posted lines with lot, quantity, cost and transaction type.
 
-**Primary flow (reviewing a posted document, 4 steps — there is no approval step to perform):**
+**Primary flow (review and commit a draft, 5 steps):**
 
-1. **Open the list.** Filter by type/status/date/search as needed.
-2. **Open a row.** The detail view renders the header (reason, location, description, date) and the line items, all read-only.
-3. **Print, if needed**, via the always-available Print button (routes to the FastReport viewer through `inventory-adjustments.print-to-report`).
-4. **There is no step 4.** No Approve, Reject, or Void button renders for this view given the document's `doc_status` is always `completed` — confirmed by tracing `isView && !isReadOnly` (false) and `canVoid = isEdit && ...` (also false, since `isEdit` is unreachable).
+1. **Filter the list to `Draft`** (and the direction of interest).
+2. **Open the draft.** Check reason, location, date (must be inside the period), lines and — for stock-in — the entered `cost_per_unit`.
+3. **Fix or discard if needed.** **Edit** → change header/lines → **Save** (`PATCH /{id}/save`, `doc_version` checked); or **Delete** (view mode, `DELETE /{id}`); or **Edit** → **Void** with a reason (`DELETE /{id}/void` — on a draft this only marks it `voided` + soft-deleted, nothing to reverse).
+4. **Commit.** **Commit** → confirm dialog → `PATCH /{id}/commit` with the current `doc_version`. Stock-out: the service first checks on-hand per product (`STOCK_OUT_INSUFFICIENT_STOCK`); both directions re-check the document date against the period. On success the ledger rows exist, `inventory_transaction_id` is stamped on each line and the document is `completed`.
+5. **Verify.** Re-open the document → **Stock movements** shows the lot(s) and `adjustment_in` / `adjustment_out` layers; the Transaction Log ([inventory/transaction](/en/inventory/inventory/transaction)) shows the same rows under the SI / SO number.
+
+**Reversal of a posted document (API):** `DELETE /{bu}/stock-ins/{id}/void` (`{ void_reason }`) — `voidStockIn` first checks that on-hand at the location can absorb the reversal of every posted line (`Cannot void: product … has insufficient on-hand qty (…) to reverse …`), then posts an `adjustment_out` per line at the cost the ledger resolves now, and marks the header `voided` + `deleted_at`. `voidStockOut` mirrors it with `adjustment_in` legs. The document then disappears from list/detail queries.
 
 ## 3. Decision Branches
 
-There are no decision branches to document for this persona in the current implementation — every document that exists has already been posted, and no in-app action changes that. The only meaningful "decision" available is whether to raise a new, opposite-direction adjustment as a manual correction for a mistaken prior entry, which is identical to the Store Keeper flow.
+- **Draft looks wrong.** Edit and Save, or Delete / Void — no stock has moved, so nothing needs reversing.
+- **Commit fails on stock.** The draft survives with the shortfall message; reduce the quantity or receive stock first.
+- **Commit fails on date.** `STOCK_IN_DATE_OUTSIDE_OPEN_PERIOD` / `STOCK_OUT_DATE_NOT_CURRENT_PERIOD` — re-date the draft (a stock-out cannot be dated in a previous, still-open period).
+- **Posted document is wrong.** Void via the API (UI has no button for a completed document) or raise the opposite adjustment.
+- **Period end is coming.** Every `draft` stock-in / stock-out dated in the period blocks **Start Period Close** — commit or delete them first ([inventory/period-end](/en/inventory/inventory/period-end)).
 
 ## 4. Exit Point
 
-Not applicable — there is no handoff into or out of this persona's involvement, since no document is ever left in a state requiring their action.
+A committed document is immutable in the UI; a voided document leaves the list. Handoffs: to the Store Keeper (fix the draft), or to the period-end operator once no drafts remain for the period.
 
 ## 5. References
 
-- Parent overview: [03-user-flow.md](./03-user-flow.md) — the always-completed lifecycle and the dead Edit/Void code path this page is built on.
-- Sibling: [03-user-flow-store-keeper.md](./03-user-flow-store-keeper.md) — the create flow, identical for this persona.
-- Sibling: [02-business-rules.md](./02-business-rules.md) — `ADJ_POST_004` (the real, currently-unreachable void endpoint).
-- Sibling: [01-data-model.md](./01-data-model.md) — `doc_status` reality and the void-also-soft-deletes behavior.
-- Related: [inventory](/en/inventory/inventory) — the ledger effect of every posting, viewable via the Transaction Log.
+- Parent overview: [03-user-flow](/en/inventory/inventory-adjustment/03-user-flow) — lifecycle and endpoint map.
+- Sibling: [03-user-flow-store-keeper](/en/inventory/inventory-adjustment/03-user-flow-store-keeper) — the entry flow.
+- Sibling: [02-business-rules](/en/inventory/inventory-adjustment/02-business-rules) — `ADJ_POST_002`–`ADJ_POST_005` (save / commit / delete / void), `ADJ_VAL_010`–`ADJ_VAL_014`.
+- Sibling: [01-data-model](/en/inventory/inventory-adjustment/01-data-model) — `doc_status` values and the void-also-soft-deletes behaviour.
+- Frontend: `ia-component.tsx` (list filters), `ia-form.tsx` / `ia-form-hero.tsx` (Edit / Delete / Void / Commit / Print gating), `use-inventory-adjustment.ts`.
+- Backend: `stock-in.service.ts` / `stock-out.service.ts` (`commit`, `voidStockIn` / `voidStockOut`, `findStockShortage`, `getStockMovements`).
+- Related: [inventory](/en/inventory/inventory) — the ledger effect of commit and void, viewable via the Transaction Log.

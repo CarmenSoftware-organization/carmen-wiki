@@ -2,7 +2,7 @@
 title: Inventory Adjustment — Data Model — Comment Tables
 description: Document-level and line-level comment / attachment tables for the Inventory Adjustment module — message text, attachments JSON, and the user/system comment-type enum.
 published: true
-date: 2026-07-15T17:02:22.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: inventory-adjustment, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -84,5 +84,5 @@ Mirror of `tb_stock_in_comment` / `tb_stock_in_detail_comment` for the outbound 
 
 - Sibling: [01 — Data Model](/en/inventory/inventory-adjustment/01-data-model) — header and detail tables, the `tb_adjustment_type` reason classifier, enum definitions (`enum_adjustment_type`, `enum_doc_status`, `enum_last_action`, `enum_comment_type`), and the notes-on-carmen/docs catalogue.
 - Sibling: [02 — Business Rules](/en/inventory/inventory-adjustment/02-business-rules) — the module's real validation rules; no rule ties a comment/attachment to a required-document flag (see § 1 above).
-- Upstream: [03 — User Flow](/en/inventory/inventory-adjustment/03-user-flow) — document lifecycle; comments are optional evidence, not a submit gate.
+- Upstream: [03 — User Flow](/en/inventory/inventory-adjustment/03-user-flow) — document lifecycle (draft → commit → void since 2026-07-30); comments are optional evidence, not a save or commit gate.
 - Upstream: [Inventory Adjustment Module Overview](/en/inventory/inventory-adjustment) — module landing page.

@@ -2,7 +2,7 @@
 title: Inventory — Test Scenarios — Audit & Config (correction)
 description: Correction page — the Audit/Config test suite previously documented here targeted an audit workspace and configuration console that do not exist.
 published: true
-date: 2026-07-15T09:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: inventory, test-scenarios, audit-config, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -15,7 +15,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 
 ## 1. Why these scenarios were removed
 
-- **No audit workspace or configuration console route exists** under `/inventory-management/` (`routes/router.tsx` lists only `transaction`, `period-end(/review)`, `inventory-adjustment`, `physical-count`, `spot-check`).
+- **No audit workspace or configuration console route exists** under `/inventory-management/` (`routes/router.tsx` lists only the index dashboard, `transaction`, `period-end(/review)`, `inventory-adjustment`, `physical-count`, `spot-check` — re-checked 2026-09-22).
 - **No threshold, impact-preview, configuration-history, or dual-write mechanism exists** in the backend inventory services.
 - **The costing method is not per-product** — it is `tb_business_unit.calculation_method` (platform BU setting); there is nothing to configure in this product's UI, and no drain-guard exists.
 - **No dedicated lot-trace or snapshot-reconciliation tool exists**; lot lineage data (`from_lot_no` / `current_lot_no` / `parent_lot_no`) is real but only queryable via the transaction list or the database.

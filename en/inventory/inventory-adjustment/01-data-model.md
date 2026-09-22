@@ -2,7 +2,7 @@
 title: Inventory Adjustment — Data Model
 description: Entities, fields, relationships, and enums for the inventory-adjustment module.
 published: true
-date: 2026-07-15T17:02:22.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: inventory-adjustment, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -26,9 +26,9 @@ dateCreated: 2026-05-15T13:00:00.000Z
 
 The Inventory Adjustment module is the **document layer** for manual stock-in / stock-out corrections — write-offs, write-ons, found stock, and expiry / damage / breakage adjustments that do not flow through a procurement (GRN) or consumption (Store Requisition) document. Unlike the other document-centric modules, the adjustment module **does not own a single `tb_inventory_adjustment` model** in the canonical Prisma schema: the persisted shape is **two parallel document trees** — `tb_stock_in` (inbound / write-on direction) and `tb_stock_out` (outbound / write-off direction) — joined by a shared classifier table `tb_adjustment_type` that carries a `code` / `name` (e.g. `FOUND_STOCK`, `BREAKAGE`) and is keyed by `enum_adjustment_type` (`stock_in` / `stock_out` / `eop_in` / `eop_out`).
 
-Both `tb_stock_in` and `tb_stock_out` follow the standard document spine — header (`si_no` / `so_no`, `si_date` / `so_date`, location, adjustment-type, `doc_status`, workflow columns, comments) plus child detail rows (per product, with `qty`, `cost_per_unit`, `total_cost`, and the `inventory_transaction_id` back-reference to the [inventory](/en/inventory/inventory) ledger). The header `doc_status` column defaults to `draft` in the schema, but **`StockInService.create()` / `StockOutService.create()` always write `doc_status: enum_doc_status.completed` directly, in the same database transaction as the ledger write** — there is no code path in this module that ever produces a `draft`, `in_progress`, or `cancelled` row; those three enum values exist on the shared `enum_doc_status` but are not reachable through stock-in/stock-out creation. Posting therefore fires **at creation**, not on a later transition, and writes a `tb_inventory_transaction` row of `inventory_doc_type = stock_in` / `stock_out` with the detail's `inventory_transaction_id` stamped onto it. Lot data lives on the inventory transaction side (`current_lot_no` / `from_lot_no` on `tb_inventory_transaction_detail`, `lot_no` / `lot_index` on `tb_inventory_transaction_cost_layer`, both system-generated — `ADI-`/`ADO-` prefixes), **not** on the stock-in / stock-out detail row itself, and there is no lot-selection UI anywhere in this module's frontend.
+Both `tb_stock_in` and `tb_stock_out` follow the standard document spine — header (`si_no` / `so_no`, `si_date` / `so_date`, location, adjustment-type, `doc_status`, workflow columns, comments) plus child detail rows (per product, with `qty`, `cost_per_unit`, `total_cost`, `expired_at` on the stock-in side, and the `inventory_transaction_id` back-reference to the [inventory](/en/inventory/inventory) ledger). **Since 2026-07-30 (`281a16399`) `StockInService.create()` / `StockOutService.create()` write `doc_status = draft`** and touch nothing in the ledger; `commit()` (`PATCH /{id}/commit`) is the posting event — it writes a `tb_inventory_transaction` row of `inventory_doc_type = stock_in` / `stock_out` per line, stamps `inventory_transaction_id` on the detail, and flips the header to `completed`. `voidStockIn` / `voidStockOut` set `voided` (plus `deleted_at`); `in_progress` and `cancelled` exist on the shared `enum_doc_status` but are never written by this module. Lot data lives on the inventory transaction side (`current_lot_no` / `from_lot_no` on `tb_inventory_transaction_detail`, `lot_no` / `lot_index` on `tb_inventory_transaction_cost_layer`, system-generated in the `{location_code}{YYMM}{seq4}` format from `buildLotNo`), **not** on the stock-in / stock-out detail row itself, and there is no lot-selection UI anywhere in this module's frontend.
 
-The module sits **between the operations floor and the inventory ledger**. [physical-count](/en/inventory/physical-count)'s `submit()` method creates `tb_stock_in` (overage) / `tb_stock_out` (shortage) rows directly at `doc_status = completed`, with no `adjustment_type_id` set — this pass confirmed the row creation but did not trace whether that path also calls the ledger's `executeAdjustmentIn`/`executeAdjustmentOut` the way the manual stock-in/stock-out screens do; re-verify against `physical-count`'s own resync pass. Every stock-in/stock-out write calls the same shared `InventoryTransactionService` (`executeAdjustmentIn` / `executeAdjustmentOut`) that GRN, SR, and period-end also use, feeding [costing](/en/inventory/costing) for FIFO layer creation / weighted-average refresh. A repo-wide search for `journal`, `ledger`, and GL-posting code in this module's service files found no hits — there is no accounting/GL integration in this module.
+The module sits **between the operations floor and the inventory ledger**. [physical-count](/en/inventory/physical-count)'s `submit()` creates `tb_stock_in` (overage) / `tb_stock_out` (shortage) rows directly at `doc_status = completed`, with no `adjustment_type_id` set — and **never calls the ledger** (confirmed 2026-09-22: `grep inventoryTransactionService physical-count/*.ts` → no hits), so those rows are audit records only. [wastage-reporting](/en/inventory/inventory-adjustment/wastage-reporting)'s write-off creates a `tb_stock_out` per location and commits it through `executeAdjustmentOut` in the same call. Every manual commit calls the same shared `InventoryTransactionService` (`executeAdjustmentIn` / `executeAdjustmentOut`) that GRN, SR, and period-end also use, feeding [costing](/en/inventory/costing) for FIFO layer creation / weighted-average refresh. No GL/journal code exists in this module — the 2026-09 GL core (`tb_gl_jv*`) has no hook from stock-in / stock-out.
 
 ## 2. Entities
 
@@ -65,12 +65,12 @@ The **inbound adjustment document header**. One row per stock-in event, carrying
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key. |
-| `si_date` | `DateTime @db.Timestamptz(6)` | Yes | Document date. Validated client-side against the current period's window (Zod, in `ia-form-schema.ts`); no equivalent check was found in `StockInService.create()`/`update()`. |
-| `si_no` | `String @db.VarChar` | Yes | Human-readable stock-in number; unique within `deleted_at`. Generated via the running-code service (`STOCK-IN` pattern). |
+| `si_date` | `DateTime @db.Timestamptz(6)` | Yes | Document date. Validated client-side against the current period window (Zod, `ia-form-schema.ts`) **and** server-side on create and commit — must fall inside an `open`/`locked` `tb_inventory_period` (`assertDateInOpenPeriod`, `STOCK_IN_DATE_OUTSIDE_OPEN_PERIOD`, 422). Drives `si_no` numbering and the ledger's `at_period`. |
+| `si_no` | `String @db.VarChar` | Yes | Human-readable stock-in number; unique within `deleted_at`. Generated at create via the running-code service from `si_date` (`generateSINo`). |
 | `description` | `String @db.VarChar` | Yes | Header-level free-text description; optional (max 256 chars client-side), not required. |
 | `adjustment_type_id` | `String @db.Uuid` | Yes | FK to `tb_adjustment_type.id` (`onDelete: NoAction`). The reason picker filters to `type = stock_in` rows client-side; the backend only checks the referenced row exists, not its `type`. |
 | `adjustment_type_code` | `String @db.VarChar` | Yes | Snapshot of the chosen reason code. |
-| `doc_status` | `enum_doc_status` | No | Schema default `draft`; **`StockInService.create()` always writes `completed` directly** — `in_progress` and `cancelled` are never assigned by this module's code. `voided` is reachable only via the void endpoint (see [02 — Business Rules](/en/inventory/inventory-adjustment/02-business-rules) § 5). |
+| `doc_status` | `enum_doc_status` | No | Schema default `draft` — and `create()` now writes exactly that. `commit()` → `completed`; `voidStockIn()` → `voided` (+ `deleted_at`). `in_progress` and `cancelled` are never assigned by this module (see [02 — Business Rules](/en/inventory/inventory-adjustment/02-business-rules) § 5). `update()` rejects any payload `doc_status ≠ draft` (`STOCK_IN_STATUS_CHANGE_NOT_ALLOWED`). |
 | `location_id` | `String @db.Uuid` | Yes | FK to `tb_location.id` — destination location for the inbound. |
 | `location_code` | `String @db.VarChar` | Yes | Snapshot of the location code. |
 | `location_name` | `String @db.VarChar` | Yes | Snapshot of the location name. |
@@ -101,12 +101,12 @@ The **inbound adjustment document header**. One row per stock-in event, carrying
 
 ### 2.3 tb_stock_in_detail
 
-The **per-product detail line on a stock-in document**. One row per affected product line; carries `qty` (positive for inbound), `cost_per_unit`, `total_cost`, and the back-reference `inventory_transaction_id` that links to the [inventory](/en/inventory/inventory) ledger row. Because creation always posts (§ 1), `inventory_transaction_id` is populated on every real row — there is no draft-then-post window in which it stays null. `cost_per_unit` is user-entered on this screen (pre-filled from the current location average as a starting suggestion) and is what the ledger actually uses to build the new cost layer. Comments and attachments per detail line hang off `tb_stock_in_detail_comment`.
+The **per-product detail line on a stock-in document**. One row per affected product line; carries `qty` (positive for inbound), `cost_per_unit`, `total_cost`, and the back-reference `inventory_transaction_id` that links to the [inventory](/en/inventory/inventory) ledger row. Because posting happens at commit (§ 1), `inventory_transaction_id` is populated on every real row — there is no draft-then-post window in which it stays null. `cost_per_unit` is user-entered on this screen (pre-filled from the current location average as a starting suggestion) and is what the ledger actually uses to build the new cost layer. Comments and attachments per detail line hang off `tb_stock_in_detail_comment`.
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key. |
-| `inventory_transaction_id` | `String @db.Uuid` | Yes | FK to `tb_inventory_transaction.id` — stamped in the same transaction as document creation. |
+| `inventory_transaction_id` | `String @db.Uuid` | Yes | FK to `tb_inventory_transaction.id` — `null` while the document is a `draft`; stamped by `commit()` in the same transaction as the ledger write. |
 | `stock_in_id` | `String @db.Uuid` | No | FK to `tb_stock_in.id`. |
 | `sequence_no` | `Int` | Yes | Line ordering within the document; default `1`. |
 | `description` | `String @db.VarChar` | Yes | Free-text description for the line. |
@@ -116,9 +116,10 @@ The **per-product detail line on a stock-in document**. One row per affected pro
 | `product_name` | `String @db.VarChar` | Yes | Snapshot of the product name. |
 | `product_local_name` | `String @db.VarChar` | Yes | Localised snapshot. |
 | `product_sku` | `String @db.VarChar` | Yes | SKU snapshot. |
-| `qty` | `Decimal @db.Decimal(20, 5)` | Yes | Inbound quantity in base UoM. Client-side Zod requires `qty >= 1` (not just `> 0` — a fractional quantity below 1 is rejected by the form); default `0`. |
+| `qty` | `Decimal @db.Decimal(20, 5)` | Yes | Inbound quantity in base UoM. Client-side Zod requires `qty >= 0` (relaxed from `>= 1`; fractional quantities accepted); default `0`. |
 | `cost_per_unit` | `Decimal @db.Decimal(20, 5)` | Yes | Unit cost in base currency, user-entered on the Stock-In line (pre-filled with the current location average as a suggestion, editable); default `0`. Passed straight through to `executeAdjustmentIn` as the new layer's cost. |
 | `total_cost` | `Decimal @db.Decimal(20, 5)` | Yes | `qty × cost_per_unit`, computed client-side; default `0`. |
+| `expired_at` | `DateTime @db.Timestamptz(6)` | Yes | Line expiry (migration `20260731120000_add_inflow_price_expiry`; DTO/swagger since 2026-08-03). Accepted on create, save and the detail endpoints and returned by `GET /details`; the shipped form has no input for it. |
 | `note` | `String @db.VarChar` | Yes | Free-text note. |
 | `info` | `Json @db.JsonB` | Yes | Extension bag; default `{}`. Passed through unmodified by `create()`; no recognised keys interpreted (no lot/expiry fields — this module has no lot-entry UI). |
 | `dimension` | `Json @db.JsonB` | Yes | Cost-dimension array; default `[]`. Passed through unmodified. |
@@ -147,7 +148,7 @@ The **outbound adjustment document header**. Mirror-image of `tb_stock_in` with 
 | `description` | `String @db.VarChar` | Yes | Header-level description; optional. |
 | `adjustment_type_id` | `String @db.Uuid` | Yes | FK to `tb_adjustment_type.id` (`onDelete: NoAction`). Reason picker filters to `type = stock_out` client-side only. |
 | `adjustment_type_code` | `String @db.VarChar` | Yes | Snapshot. |
-| `doc_status` | `enum_doc_status` | No | Schema default `draft`; `StockOutService.create()` always writes `completed` directly — same headline finding as `tb_stock_in` (§ 2.2). |
+| `doc_status` | `enum_doc_status` | No | Schema default `draft` — written by `StockOutService.create()`; `commit()` → `completed` (after the on-hand pre-check and the ledger write); `voidStockOut()` → `voided` (+ `deleted_at`). Same lifecycle as `tb_stock_in` (§ 2.2). |
 | `location_id` | `String @db.Uuid` | Yes | FK to `tb_location.id` — source location for the outbound. |
 | `location_code` | `String @db.VarChar` | Yes | Snapshot. |
 | `location_name` | `String @db.VarChar` | Yes | Snapshot. |
@@ -183,7 +184,7 @@ The **per-product detail line on a stock-out document**. Similar shape to `tb_st
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key. |
-| `inventory_transaction_id` | `String @db.Uuid` | Yes | FK to `tb_inventory_transaction.id`; stamped at creation. |
+| `inventory_transaction_id` | `String @db.Uuid` | Yes | FK to `tb_inventory_transaction.id`; `null` on a `draft`, stamped by `commit()`. |
 | `stock_out_id` | `String @db.Uuid` | No | FK to `tb_stock_out.id`. |
 | `sequence_no` | `Int` | Yes | Line ordering; default `1`. |
 | `description` | `String @db.VarChar` | Yes | Free-text. |
@@ -193,7 +194,7 @@ The **per-product detail line on a stock-out document**. Similar shape to `tb_st
 | `product_name` | `String @db.VarChar` | Yes | Snapshot. |
 | `product_local_name` | `String @db.VarChar` | Yes | Localised snapshot. |
 | `product_sku` | `String @db.VarChar` | Yes | SKU snapshot. |
-| `qty` | `Decimal @db.Decimal(20, 5)` | Yes | Outbound quantity, entered positive on the form; default `0`. Client-side Zod requires `qty >= 1`. |
+| `qty` | `Decimal @db.Decimal(20, 5)` | Yes | Outbound quantity, entered positive on the form; default `0`. Client-side Zod requires `qty >= 0` (relaxed from `>= 1`). At commit the service pre-checks Σ qty per product against on-hand (`STOCK_OUT_INSUFFICIENT_STOCK`). |
 | `cost_per_unit` | `Decimal @db.Decimal(20, 5)` | Yes | **Always `0`** on this table — `create()` never sets it for stock-out (see note above). |
 | `total_cost` | `Decimal @db.Decimal(20, 5)` | Yes | **Always `0`** on this table for the same reason; the frontend computes a preview client-side (`useProductLastReceiving`) but it is never persisted here. |
 | `note` | `String @db.VarChar` | Yes | Free-text. |
@@ -216,22 +217,22 @@ The **per-product detail line on a stock-out document**. Similar shape to `tb_st
 tb_adjustment_type  (reason-code master — stock_in or stock_out direction, client-filtered only)
     │  enum_adjustment_type ∈ {stock_in, stock_out, eop_in, eop_out}
     │
-    ├─1──*──► tb_stock_in   (inbound adjustment document — doc_status always "completed" at creation)
+    ├─1──*──► tb_stock_in   (inbound adjustment document — draft at creation, completed at commit, voided by void)
     │           │
     │           ├─1──*──► tb_stock_in_detail   (per-product line, cost_per_unit user-entered)
     │           │           │
-    │           │           ├──► tb_inventory_transaction (inventory_transaction_id, stamped at creation)
+    │           │           ├──► tb_inventory_transaction (inventory_transaction_id, stamped at commit)
     │           │           ├──► tb_product
     │           │           └─1──*──► tb_stock_in_detail_comment
     │           │
     │           ├─1──*──► tb_stock_in_comment (header comments)
     │           └──► tb_location  (location_id — destination of inbound)
     │
-    └─1──*──► tb_stock_out  (outbound adjustment document — doc_status always "completed" at creation)
+    └─1──*──► tb_stock_out  (outbound adjustment document — draft at creation, completed at commit, voided by void)
                 │
                 ├─1──*──► tb_stock_out_detail   (per-product line, cost_per_unit/total_cost always 0)
                 │           │
-                │           ├──► tb_inventory_transaction (inventory_transaction_id, stamped at creation)
+                │           ├──► tb_inventory_transaction (inventory_transaction_id, stamped at commit)
                 │           ├──► tb_product
                 │           └─1──*──► tb_stock_out_detail_comment
                 │
@@ -258,8 +259,8 @@ tb_inventory_transaction  (header: inventory_doc_type ∈ {stock_in, stock_out},
 Notes:
 
 - **Two parallel document trees, one classifier.** `tb_stock_in` and `tb_stock_out` are independent Prisma models with the same shape; the `tb_adjustment_type` row's `type` column is used by the frontend to filter which reasons appear on which document's picker, but the backend's header validation only checks that the referenced `tb_adjustment_type` row exists — it does not re-check `type` matches the document's direction, so this is a client-side-only constraint.
-- **Inventory-transaction back-reference is populated at creation, not at a later "post" step.** Each detail row carries `inventory_transaction_id` as a nullable FK, but because `create()` always writes the ledger row in the same transaction as the document, every real row has it populated — there is no draft window in which it stays null. This differs from [good-receive-note](/en/inventory/good-receive-note), where `save()` (not `commit()`) is the analogous single mutation-and-post event but at least happens on a distinct action from creation.
-- **No lot data anywhere in this module's UI.** Lot identity (`current_lot_no` / `from_lot_no` on `tb_inventory_transaction_detail`, `lot_no` / `lot_index` on `tb_inventory_transaction_cost_layer`) is generated mechanically by the ledger (`ADI-`/`ADO-` prefixes) — there is no lot-picker, lot-entry field, or expiry-date field anywhere in `ia-item-fields.tsx` / `ia-item-table.tsx` / `ia-form-schema.ts`.
+- **Inventory-transaction back-reference is populated at commit.** Each detail row carries `inventory_transaction_id` as a nullable FK: it is `null` for the whole life of a `draft` and is stamped by `commit()` in the same transaction that writes the ledger rows (`executeAdjustmentIn` / `executeAdjustmentOut`). A `completed` document therefore always has it set; the physical-count rollup rows never get it because that path never posts. The reverse link is by id only — there is no Prisma `@relation` from the ledger back to the adjustment line.
+- **No lot data anywhere in this module's UI.** Lot identity (`current_lot_no` / `from_lot_no` on `tb_inventory_transaction_detail`, `lot_no` / `lot_index` on `tb_inventory_transaction_cost_layer`) is generated mechanically by the ledger (`{location_code}{YYMM}{seq4}` format from `buildLotNo`) — there is no lot-picker, lot-entry field, or expiry-date field anywhere in `ia-item-fields.tsx` / `ia-item-table.tsx` / `ia-form-schema.ts`.
 - **`adjustment_type_code` is a snapshot, not a live join.** Both documents persist the snapshot code on the header for performance and audit; deleting / renaming the reason code after posting does not retroactively change the historical document.
 - **All explicit `@relation` FK declarations use `onDelete: NoAction, onUpdate: NoAction`** — referential integrity is preserved by application-level soft-delete (`deleted_at`), not by cascade.
 
@@ -269,12 +270,12 @@ Notes:
   - `stock_in` — filters into the Stock-In reason picker.
   - `stock_out` — filters into the Stock-Out reason picker.
   - `eop_in` / `eop_out` — used by the period-end engine (surfaced via the merged `inventory-adjustments` gateway list, tagged by the `wantIn`/`wantOut` filter in `inventory-adjustments.service.ts`); not offered by either creation screen's reason picker.
-- **`enum_doc_status`**: document lifecycle column on `tb_stock_in.doc_status` / `tb_stock_out.doc_status`. Schema default `draft`. Five values exist on the shared enum, but only two are ever assigned by this module's own code:
-  - `draft` — schema default only; never assigned by `create()`.
+- **`enum_doc_status`**: document lifecycle column on `tb_stock_in.doc_status` / `tb_stock_out.doc_status`. Schema default `draft`. Five values exist on the shared enum; three are assigned by this module's own code:
+  - `draft` — written by `create()` (`POST /stock-ins` | `/stock-outs`); the only editable / removable state. A draft dated in the period blocks **Start Period Close**.
   - `in_progress` — never assigned anywhere in this module's code.
-  - `completed` — the value every `create()` call writes, unconditionally, regardless of the client-sent `doc_status`.
+  - `completed` — written by `commit()` (`PATCH /{id}/commit`) after the ledger rows are posted; read-only thereafter.
   - `cancelled` — never assigned anywhere in this module's code.
-  - `voided` — assigned only by the void endpoint (`voidStockIn` / `voidStockOut`), which also sets `deleted_at` in the same update (see § 2.2 note) — but the UI's Void button is unreachable for any persisted document (see the module landing page § 1), so this transition currently requires a direct API call.
+  - `voided` — assigned by the void endpoint (`voidStockIn` / `voidStockOut`), which posts the reversal legs for a committed document and sets `deleted_at` in the same update — so a voided document disappears from list/detail queries. The UI offers **Void** only in Edit mode (drafts); voiding a posted document is API-only.
 - **`enum_last_action`**: column exists (`submitted`, `approved`, `reviewed`, `rejected`, default `submitted`) but is not observed to be read or written by `stock-in.service.ts` / `stock-out.service.ts`.
 - **`enum_comment_type`**: on `tb_stock_in_comment.type` / `tb_stock_in_detail_comment.type` / `tb_stock_out_comment.type` / `tb_stock_out_detail_comment.type`. Default `user`. Two values: `user`, `system`.
 
@@ -286,7 +287,7 @@ Notes:
 |---|------|------|
 | 1 | Single `InventoryAdjustment` entity with a `type: 'IN' \| 'OUT'` discriminator. | Two independent tables, `tb_stock_in` and `tb_stock_out`, with no shared parent — confirmed accurate framing to keep, see § 3. |
 | 2 | `AdjustmentReason` interface with `type: 'IN' \| 'OUT' \| 'BOTH'`, `requiresDocument`, `requiresQualityCheck`, `glAccount` fields. | `tb_adjustment_type` has only `code`, `name`, `type` (`enum_adjustment_type`, no `BOTH` value), `description`, `is_active`, `note`. No `glAccount`/`requiresDocument`/`requiresQualityCheck` field exists, and no code anywhere in the frontend or backend reads or writes those key names inside `info`/`dimension` JSON — this is not a JSON-vs-column distinction, the concept itself is absent. |
-| 3 | Three-state `Draft → Posted → Void` lifecycle with threshold-based approval routing to Inventory Controller / Finance. | There is no approval stage at all: `create()` always writes `completed` directly, regardless of cost or any threshold — a repo-wide search found zero `threshold` hits in this module's backend code. See § 4. |
+| 3 | Three-state `Draft → Posted → Void` lifecycle with threshold-based approval routing to Inventory Controller / Finance. | The three states are now real (`draft` → `completed` via commit → `voided` via void), but there is no approval routing at all: anyone with the module permission commits; a repo-wide search finds zero `threshold` hits in this module's backend code. See § 4. |
 | 4 | Embedded `journalEntries: JournalEntry[]`. | No GL/journal code exists anywhere in this module (or, per the module map's earlier passes, anywhere in the backend for GRN/PO/SR either). Adjustments are a pure quantity/value ledger movement. |
 | 5 | Reference number implied to be the record `id`. | The human-readable reference is `si_no` / `so_no`, generated via the running-code service; `id` is the UUID primary key. |
 | 6 | "Supporting documents must be attached" for certain reasons. | Comments (`tb_stock_in_comment`/`tb_stock_out_comment`, with an `attachments` JSON array) are real and freely usable, but no validation rule ties any reason code to a required attachment — the concept of a reason flagging "requires document" does not exist in the schema or the code. |
@@ -294,8 +295,9 @@ Notes:
 ## 6. References
 
 - **Primary (source of truth):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (`tb_adjustment_type`, `tb_stock_in`, `tb_stock_in_detail`, `tb_stock_in_comment`, `tb_stock_in_detail_comment`, `tb_stock_out`, `tb_stock_out_detail`, `tb_stock_out_comment`, `tb_stock_out_detail_comment`; enums `enum_adjustment_type`, `enum_doc_status`, `enum_last_action`, `enum_comment_type`).
-- **Backend services:** `apps/micro-business/src/inventory/stock-in/stock-in.service.ts`, `.../stock-out/stock-out.service.ts`, `.../inventory-transaction/inventory-transaction.service.ts` (`executeAdjustmentIn`/`executeAdjustmentOut`), `apps/backend-gateway/src/application/inventory-adjustments/inventory-adjustments.service.ts` (read-only gateway merge of stock-in + stock-out for the list view and print viewer).
-- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/inventory-adjustment/` (`ia-form.tsx`, `ia-form-schema.ts`, `ia-item-fields.tsx`, `ia-item-table.tsx`).
+- **Backend services:** `apps/micro-business/src/inventory/stock-in/stock-in.service.ts`, `.../stock-out/stock-out.service.ts` (`create` → draft, `update` → `/save`, `commit`, `voidStockIn` / `voidStockOut`, `getStockMovements`), `.../inventory-period.helper.ts` (date guards), `.../inventory-transaction/inventory-transaction.service.ts` (`executeAdjustmentIn`/`executeAdjustmentOut`), `apps/backend-gateway/src/application/stock-ins/`, `stock-outs/` (`GET /`, `GET /:id`, `GET /:id/stock-movements`, `POST /`, `PATCH /:id/save`, `PATCH /:id/commit`, `…/:id/void`, `GET /:id/print-viewer`, `…/details` CRUD), `inventory-adjustments/` (read-only gateway merge of stock-in + stock-out for the list view and print viewer).
+- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/inventory-adjustment/` (`ia-form.tsx`, `ia-form-hero.tsx`, `ia-form-schema.ts`, `ia-item-fields.tsx`, `use-ia-item-table.tsx`, `use-inventory-adjustment.ts`, `ia-component.tsx`), `constant/inventory-adjustment.ts` (`IA_STATUS_CONFIG`: draft / in_progress / completed / voided icons).
+- **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/inventory/stock-in/`, `inventory/stock-out/`, `inventory/inventory-adjustment/`.
 - **Secondary (concept cross-check, superseded by the code — see § 5):** `../carmen/docs/inventory-adjustment/INV-ADJ-Overview.md`, `INV-ADJ-PRD.md`, `INV-ADJ-Business-Requirements.md`, `INV-ADJ-Business-Logic.md`, `INV-ADJ-Component-Structure.md`.
-- E2E: no dedicated `inventory-adjustment` spec exists; `../carmen-inventory-frontend-e2e/tests/031-adjustment-type.spec.ts` covers only the reason-code master-data screen.
+- E2E: no dedicated `inventory-adjustment` spec exists; manual catalog `../carmen-inventory-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (60 cases); `tests/031-adjustment-type.spec.ts` covers only the reason-code master-data screen.
 - Related modules: [inventory](/en/inventory/inventory) (shared ledger — `tb_inventory_transaction` / `tb_inventory_transaction_detail` / `tb_inventory_transaction_cost_layer`), [costing](/en/inventory/costing) (FIFO layer creation on Stock-In, FIFO consumption / weighted-average recompute on Stock-Out), [physical-count](/en/inventory/physical-count) (creates `tb_stock_in`/`tb_stock_out` rows directly on variance commit — see the module landing page § 2), [product](/en/inventory/product).

@@ -2,7 +2,7 @@
 title: Inventory Adjustment — User Flow — Finance
 description: Correction notice — no Finance persona, GL posting, or threshold-based approval exists for this module.
 published: true
-date: 2026-07-15T17:02:22.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: inventory-adjustment, user-flow, finance, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -14,7 +14,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 
 ## What was checked
 
-- A repo-wide search of `carmen-turborepo-backend-v2` and `carmen-inventory-frontend-react` for `journal`, `ledger`, and GL-posting code in the stock-in/stock-out module found no hits.
+- A repo-wide search of `carmen-turborepo-backend-v2` and `carmen-inventory-frontend-react` for `journal`, `ledger`, and GL-posting code in the stock-in/stock-out module found no hits (re-run 2026-09-22). A GL core (`tb_gl_jv*`, `apps/micro-business/src/gl/`, manual journal vouchers) arrived in 2026-09, but nothing in `stock-in/` / `stock-out/` references it.
 - `tb_adjustment_type` has no GL-account field, no document-required flag, no quality-check flag — only `code`, `name`, `type`, `description`, `is_active`, `note`.
 - `enum_stage_role` (the platform's workflow-role enum) is `{create, approve, purchase, issue, view_only}` — it has no `finance` member, and this module's `create()`/`update()`/`void*()` methods never call a workflow orchestrator at all.
 - A repo-wide search for `threshold` scoped to the inventory/stock-in/stock-out modules found zero relevant hits.
@@ -24,10 +24,10 @@ dateCreated: 2026-05-15T13:00:00.000Z
 
 | Previously claimed | Status | What the source actually shows |
 | ------------------- | ------ | -------------------------------- |
-| Finance approves above-Controller-threshold adjustments | **Fabricated** | No approval stage exists at all — `create()` always writes `doc_status = completed` directly (see [02 — Business Rules](/en/inventory/inventory-adjustment/02-business-rules) § 1). |
+| Finance approves above-Controller-threshold adjustments | **Fabricated** | No approval stage exists — since 2026-07-30 `create()` writes a `draft` and anyone with the module permission may **Commit** it; no threshold, no Finance tier (see [02 — Business Rules](/en/inventory/inventory-adjustment/02-business-rules) § 1 / § 4). |
 | GL-account mapping per reason code (`info.glAccount`) | **Fabricated** | No such field exists on `tb_adjustment_type`; no journal/ledger code anywhere in this module. |
 | Period-end sign-off / inventory-to-GL reconciliation | **Fabricated** | No matching route or backend method found for this module. Period close itself is a real feature of the separate [inventory](/en/inventory/inventory) module, unrelated to a Finance-specific sign-off here. |
-| Compensating-reversal (void) authority | **Real endpoint, wrong owner** | `voidStockIn`/`voidStockOut` are real backend methods, but they aren't gated to any role — and the UI button that would call them never renders for any persisted document (see [03 — User Flow](/en/inventory/inventory-adjustment/03-user-flow) § 1). |
+| Compensating-reversal (void) authority | **Real endpoint, wrong owner** | `voidStockIn`/`voidStockOut` (`DELETE /{id}/void`) are real and not gated to any role; the UI offers **Void** only on drafts (Edit mode), so reversing a posted document is an API call — by whoever holds the module permission, not a Finance role (see [03 — User Flow](/en/inventory/inventory-adjustment/03-user-flow) § 2.1). |
 
 ## Where to look instead
 

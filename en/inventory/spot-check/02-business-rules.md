@@ -2,7 +2,7 @@
 title: Spot Check — Business Rules
 description: Validation, calculation, authorization, posting, and cross-module rules for spot checks.
 published: true
-date: 2026-07-29T04:45:21.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: spot-check, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -31,7 +31,7 @@ Rule IDs follow `SPC_VAL_NNN`.
 | `SPC_VAL_001` | `location_id` must reference an existing, non-deleted `tb_location`. | Create (`POST /spot-checks`) | Reject with `COMMON_LOCATION_NOT_FOUND`. No independent check on `location_type` or `is_active` inside `create()` itself — the list screen only ever offers locations already filtered by `findCurrentByLocation()` (`location_type ∈ {inventory, consignment}`, `is_active = true`, and — unless "Include Not Count" is checked — `physical_count_type = yes`). |
 | `SPC_VAL_002` | The eligible product pool (union of `tb_product_location` assignments and any product with non-zero net stock at the location) must be non-empty. | Create | Reject with `"No products found at this location"`. |
 | `SPC_VAL_003` | `method = manual` requires a non-empty `product_id[]` array; after filtering to products actually in the eligible pool, at least one must remain. | Create | Reject with `"product_id is required for manual selection"` (empty/missing array) or `"None of the selected products were found at this location"` (all filtered out). |
-| `SPC_VAL_004` | `method = high_value` requires at least one `tb_period` row with `status ∈ {open, locked}` to exist. | Create | Reject with `SPOT_CHECK_NO_ACTIVE_PERIOD` ("No active period found") if none does. |
+| `SPC_VAL_004` | `method = high_value` requires at least one `tb_inventory_period` row (renamed from `tb_period`, migration `20260916141000`; `spot-check.logic.ts` reads `prisma.tb_inventory_period`) with `status ∈ {open, locked}` to exist. | Create | Reject with `SPOT_CHECK_NO_ACTIVE_PERIOD` ("No active period found") if none does. |
 | `SPC_VAL_005` | Only `doc_status = pending` documents can be updated (`description`/`note` only — no other field is editable via `update()`). | Update | Reject with `"Only pending spot checks can be updated"`. **Not reachable through any shipped screen** — see [spot-check](/en/inventory/spot-check) § 1; only Bruno/direct-API calls exercise this path. |
 | `SPC_VAL_006` | `doc_status = void` or `= completed` blocks Reset (`"Spot check is already void"` / `"Completed spot check cannot be reset"`). `pending`/`in_progress` are the only resettable states. | Reset | Reject with the quoted message on `void`/`completed`; allow otherwise. |
 | `SPC_VAL_007` | Save (`saveItems()`) requires a non-empty `items[]` array, and the document must be `pending` or `in_progress`. | Save | Reject with `SPOT_CHECK_NO_ITEMS` ("No items to save") on an empty array, or `"Cannot save items when spot check is <status>"` outside `{pending, in_progress}`. |
@@ -57,7 +57,7 @@ Rule IDs follow `SPC_AUTH_NNN`.
 | Rule ID | Rule |
 | ------- | ---- |
 | `SPC_AUTH_001` | Every list, create, save, review, submit, reset, delete, and comment action in this module is gated by one CRUD permission key: `inventory_management.spot_check` (`constant/permissions.ts`). No distinct create-only, approve-only, or read-only permission variant was found. |
-| `SPC_AUTH_002` | No zone-based, location-scoped-to-user, or "assigned counter" restriction was found in `spot-check.service.ts` — any user holding the module permission can open, count, and submit any spot check at any location. A generic `tb_user_location` table exists elsewhere in the schema for location-level access grants, but no reference to it was found in this module's own service code. |
+| `SPC_AUTH_002` | No zone-based, location-scoped-to-user, or "assigned counter" restriction was found in `spot-check.service.ts` — any user holding the module permission can open, count, and submit any spot check at any location. A generic `tb_location_user` table exists elsewhere in the schema for location-level access grants, but no reference to it was found in this module's own service code. |
 | `SPC_AUTH_003` | No Approver/Finance Reviewer, Auditor, or Sysadmin permission, route, or workflow stage exists for this module — there is nothing to review or approve, since the final submit has no downstream document or ledger effect to gate. |
 
 ## 5. Posting Rules
@@ -104,5 +104,5 @@ Rule IDs follow `SPC_XMOD_NNN`.
 - **Primary:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts` (create/update/delete/reset/saveItems/reviewItems/getReview/submit), `spot-check.logic.ts` (sampling strategies).
 - **Secondary (planning-stage, partially confirmed):** `../carmen-inventory-frontend-e2e/docs/persona-doc/System Process/tx-10-spot-check.md`.
 - **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/` (`sc-component.tsx`, `sc-form.tsx`, `sc-entry-component.tsx`, `sc-review-component.tsx`); `constant/permissions.ts`.
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists; manual test-case catalog at `docs/test-cases/760-spot-check.md`.
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists; manual test-case catalog `docs/test-cases/760-spot-check.md` (44 cases, re-verified 2026-09-20).
 - Related rule sets: [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) (`PHC_*` — the full-count counterpart, which at least creates unposted stock-in/out rows at submit), [inventory-adjustment/02-business-rules](/en/inventory/inventory-adjustment/02-business-rules) (`ADJ_*` — where a confirmed variance must be manually corrected), [inventory/02-business-rules](/en/inventory/inventory/02-business-rules) (ledger semantics — not reached by this module at all).

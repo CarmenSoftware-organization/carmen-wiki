@@ -2,7 +2,7 @@
 title: Inventory — User Flow — Audit & Config (correction)
 description: Correction page — no inventory audit workspace or configuration console exists; real configuration lives in master-data, system-config, and access-control.
 published: true
-date: 2026-07-15T09:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: inventory, user-flow, audit-config, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -18,7 +18,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 
 An earlier draft described two dedicated workspaces: an Auditor screen (audit-log query, forward/backward lot-recall trace, period-snapshot reconciliation, watermarked sensitive-field export with co-approval) and a Sysadmin "inventory configuration console" (panels for locations, per-product costing method, adjustment types, periods, approval thresholds, RBAC scope, integration-endpoint dual-write cutover, with impact previews and configuration history). Verification against current source found no matching route, component, or endpoint — the same config-workbench fabrication pattern already confirmed absent in the purchase-request, purchase-order, good-receive-note, and store-requisition passes. Specifics:
 
-- No route under `/inventory-management/` beyond `transaction`, `period-end(/review)`, `inventory-adjustment`, `physical-count`, `spot-check` (see `routes/router.tsx`).
+- No route under `/inventory-management/` beyond the index dashboard (`inventory-dashboard.tsx`, KPI tiles only), `transaction`, `period-end(/review)`, `inventory-adjustment(/new, /:id)`, `physical-count(/new, /:id, /:id/entry, /:id/review)`, `spot-check(/location/:location_id, /:id, /:id/review)` (see `routes/router.tsx`, re-checked 2026-09-22).
 - No `threshold` configuration exists anywhere in the backend inventory services; no per-product costing method exists to configure (the method is `tb_business_unit.calculation_method` — a platform BU setting).
 - No lot-trace or snapshot-reconciliation query tool exists; lot lineage *data* is real (`from_lot_no` / `current_lot_no` / `parent_lot_no`) but the only UI over it is the transaction list.
 - No impact-preview, drain-requirement, dual-write, or configuration-history mechanism was found.

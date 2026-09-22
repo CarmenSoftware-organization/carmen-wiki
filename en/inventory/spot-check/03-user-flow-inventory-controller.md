@@ -2,7 +2,7 @@
 title: Spot Check — User Flow — List & Create Screens
 description: The location-list and create screens where a spot check is started, scoped, and sampled.
 published: true
-date: 2026-07-15T18:38:42.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: spot-check, user-flow, inventory-controller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -40,7 +40,7 @@ graph LR
 - **Location cards** (`ScLocationCard`) — one per location; "Not Started" locations show a **Start** button; locations with an in-flight spot check show a resume-info panel (spot-check number, method badge, counted/total progress, status badge) plus **Resume** and **Reset** buttons.
 - **History cards** (`ScHistoryCard`) — one per historical spot check, clickable to open it (routes to the same entry screen documented in [03-user-flow-counter.md](/en/inventory/spot-check/03-user-flow-counter), regardless of the spot check's status).
 
-### What the create screen shows (`sc-form.tsx`, always in "add" mode here)
+### What the create screen shows (`sc-form.tsx`, create-only since 2026-09-04 — its dead view/edit branches were removed in `0647b32e`)
 
 - **Method picker** (`ScMethodPicker`) — three cards: **Random** (system samples N products), **High Value** (system samples the N highest-value products), **Manual** (pick specific products).
 - **Location** — locked to the `location_id` from the URL; not editable on this screen.
@@ -60,7 +60,7 @@ graph LR
 | Action | State precondition | State effect | Notes |
 | ------ | ------------------ | ------------ | ----- |
 | Start a spot check (Random) | Location has no in-flight spot check | `POST /spot-checks` with `method: "random"`, `items: N`; new document at `pending`; navigates to `/:id` | Per `SPC_VAL_001`–`002`. |
-| Start a spot check (High Value) | Same, plus an open/locked `tb_period` must exist | `POST /spot-checks` with `method: "high_value"`, `items: N`, optional `minimum_cost`; new document at `pending` | Rejects with `SPOT_CHECK_NO_ACTIVE_PERIOD` if no period is open/locked (`SPC_VAL_004`). |
+| Start a spot check (High Value) | Same, plus an open/locked `tb_inventory_period` must exist | `POST /spot-checks` with `method: "high_value"`, `items: N`, optional `minimum_cost`; new document at `pending` | Rejects with `SPOT_CHECK_NO_ACTIVE_PERIOD` if no period is open/locked (`SPC_VAL_004`). |
 | Start a spot check (Manual) | Same | `POST /spot-checks` with `method: "manual"`, `product_id: [...]`; new document at `pending` | At least one selected product must be in the eligible pool (`SPC_VAL_003`). |
 | Resume an in-progress check | Location has a `pending`/`in_progress` spot check | Navigates directly to `/:id` — no new document created | Pure client-side route change. |
 | Reset a spot check | Location has a `pending`/`in_progress` spot check | `POST /spot-checks/:id/reset` — `doc_status → void`; location falls back to Not Started | Rejected on `void`/`completed` (`SPC_VAL_006`); does **not** clear `tb_spot_check_detail` rows. |
@@ -84,5 +84,5 @@ graph LR
 
 - **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/sc-component.tsx`, `sc-form.tsx`, `sc-location-card.tsx`, `sc-history-card.tsx`, `sc-method-picker.tsx`, `sc-reset-dialog.tsx`.
 - **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts` (`create`, `reset`, `findCurrentByLocation`), `spot-check.logic.ts` (sampling).
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists; manual test-case catalog at `docs/test-cases/760-spot-check.md`.
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists; manual test-case catalog `docs/test-cases/760-spot-check.md` (44 cases; `TC-SPC-01*` list, `TC-SPC-03*` create).
 - Related: [spot-check/03-user-flow](/en/inventory/spot-check/03-user-flow) (overview), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_VAL_001`–`004`, `SPC_VAL_006`, `SPC_AUTH_001`), [spot-check/03-user-flow-counter](/en/inventory/spot-check/03-user-flow-counter) (the same role's entry/review journey).
