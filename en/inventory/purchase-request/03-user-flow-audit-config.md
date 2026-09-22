@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow — Audit & Config
 description: Auditor (read-only activity log) and System Administrator (generic workflow / master-data configuration) flows for purchase-request — no PR-specific audit workspace or configuration workbench exists.
 published: true
-date: 2026-07-29T05:45:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: purchase-request, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 # Purchase Request — User Flow — Audit & Config
 
 > **At a Glance**
-> **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [purchase-request](/en/inventory/purchase-request) &nbsp;·&nbsp; **Confirmed surface:** generic per-document activity log (Auditor, read-only — `/system-admin/activity-log`); generic workflow-stage editor with a **Routing** tab that supports amount/department/category-threshold stage routing (`/system-admin/workflow`), tax-profile (`/config/tax-profile`), currency + exchange-rate (`/config/currency`, `/config/exchange-rate`), and user / role screens (`/system-admin/user`, `/system-admin/role`) shared across every document type, not PR-specific (System Administrator) &nbsp;·&nbsp; **Not confirmed:** a PR-specific "Audit workspace" query builder, a PR-specific "Configuration workspace," delegation windows, or per-PR-type defaults
+> **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **Module:** [purchase-request](/en/inventory/purchase-request) &nbsp;·&nbsp; **Confirmed surface:** generic per-document activity log (Auditor, read-only — `/system-admin/activity-log`); generic workflow-stage editor with a **Routing** tab that supports amount/department/category-threshold stage routing (`/system-admin/workflow`), tax-profile (`/config/tax-profile`), currency + exchange-rate (`/config/currency`, `/config/exchange-rate`), and user / role screens (`/system-admin/user`, `/system-admin/role`) shared across every document type, not PR-specific (System Administrator) &nbsp;·&nbsp; **Not confirmed:** a PR-specific "Audit workspace" query builder, a PR-specific "Configuration workspace," delegation windows, per-PR-type defaults, **or an administrative void of a PR** (re-checked 2026-09-22: `purchase-requests.controller.ts` has no void route; `voided` is written only by Reject)
 
 > ⚠️ **Major correction this pass.** The previous version of this page described a dedicated sidebar **"Audit"** workspace with a **"PR Activity Queries"** query builder (audit templates, filter chips, case-file flagging, export-approval workflow) and a dedicated sidebar **"Configuration"** workspace with child pages — **PR Workflow Settings** (stage editor plus a Threshold Rules panel, preview/forecast panel, and `effective_from` versioning), **PR Type Defaults**, **Delegation Rules**, **Tax Codes**, and **Currency Rates**. This was settled against current source in `.specs/resync-2026-07-15-progress.md` (commit `df8ab13`, "settle PR audit-config deferral vs system-admin screens"), which read every route in `router.tsx` and every screen component under `routes/system-admin/` and `routes/config/`:
 > - **No route or component matching an "audit workspace," "PR Activity Queries," or a PR-specific configuration workbench exists anywhere** in `carmen-inventory-frontend-react`. There is also no "PR detail → Activity Log tab" — the PR detail page has a comment sheet only.
@@ -27,7 +27,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 
 The **Auditor** is a read-only role. The one confirmed surface is the generic **`/system-admin/activity-log`** screen — a filterable list of `action` / `entity_type` / `user` events across all document types, including `purchase_request` rows — plus the PR detail page's own comment sheet (`tb_purchase_request_comment`, immutable for `type = system` rows per `PR_POST_008`) that any user with read access to a PR can already see. Whether a distinct "Auditor" role gates either surface differently from any other viewer with read access was not confirmed this pass. The Auditor cannot approve, reject, send back, edit lines, or void a PR.
 
-The **System Administrator** configures the workflow definition referenced by a PR's `workflow_id` (stages, `stage_role`, `user_action.execute[]` membership, and the **Routing** tab's amount/department/category-threshold rules — generic system-config functionality shared across document types via `/system-admin/workflow`, not PR-specific), tax rates (`/config/tax-profile`), currency and exchange-rate masters (`/config/currency`, `/config/exchange-rate`), and RBAC user/role assignments (`/system-admin/user`, `/system-admin/role`). No PR-specific amount-threshold editor (the real one is generic, not PR-specific), delegation-window manager (no equivalent anywhere), or per-PR-type default screen was found. Separately, the System Administrator (jointly with Finance) holds the elevated **void** right under `PR_AUTH_007`, which is a real, confirmed action distinct from any of the configuration screens above.
+The **System Administrator** configures the workflow definition referenced by a PR's `workflow_id` (stages, `stage_role`, `user_action.execute[]` membership, and the **Routing** tab's amount/department/category-threshold rules — generic system-config functionality shared across document types via `/system-admin/workflow`, not PR-specific), tax rates (`/config/tax-profile`), currency and exchange-rate masters (`/config/currency`, `/config/exchange-rate`), and RBAC user/role assignments (`/system-admin/user`, `/system-admin/role`). No PR-specific amount-threshold editor (the real one is generic, not PR-specific), delegation-window manager (no equivalent anywhere), or per-PR-type default screen was found. *(An elevated **void** right under `PR_AUTH_007` was described here as confirmed in the previous revision — it is not: no void endpoint exists in `purchase-requests.controller.ts`, no Void control exists in the PR form, and `enum_purchase_request_doc_status.voided` is written only by the approver Reject path, `purchase-request.service.ts:2201`. A platform super-admin can only bypass the *ownership* rule when deleting a `draft` (`PR_VAL_018`).)*
 
 ### Position relative to the transactional flow
 
@@ -41,7 +41,7 @@ graph LR
     end
     auditor["Auditor<br/>(read-only activity log)"]:::audit -.->|"Reads /system-admin/activity-log,<br/>PR comments"| transactional
     sysadmin["System Administrator<br/>(generic system-config)"]:::cfg -.->|"Workflow / tax / currency / RBAC<br/>(shared config)"| transactional
-    sysadmin -.->|"Void (PR_AUTH_007)"| voided
+    sysadmin -.->|"Delete a draft as super-admin (PR_VAL_018)"| draft
     classDef audit fill:#eab308,color:#000,stroke:#eab308;
     classDef cfg fill:#7c3aed,color:#fff,stroke:#7c3aed;
 ```
@@ -60,7 +60,8 @@ graph LR
 | Configure a delegation window | **Not confirmed to exist** | **Not confirmed to exist** |
 | Edit PR header / lines / vendor / pricing | ❌ | ❌ |
 | Approve / Reject / Send-back / Split-Reject | ❌ | ❌ |
-| Void an in-flight or approved PR (`PR_AUTH_007`) | ❌ | ✅ |
+| Void an in-flight or approved PR (`PR_AUTH_007`) | **Not confirmed to exist** | **Not confirmed to exist** |
+| Delete another user's `draft` PR (super-admin bypass of the ownership rule, `PR_VAL_018`) | ❌ | ✅ (platform super-admin only) |
 
 ## 2. Entry Point and Primary Flow
 
@@ -79,7 +80,7 @@ graph LR
 ## 3. Decision Branches
 
 - **If the Auditor finds an activity-log gap or an anomalous entry**: escalate outside the module — no PR-specific "case file" or flagging feature was confirmed. A generic activity-log or audit-trail feature beyond the filtered list, if one exists, is documented in [reporting-audit](/en/inventory/reporting-audit), not here.
-- **If a Sysadmin needs to end a stuck PR** (e.g., a workflow edit leaves no eligible approver at a stage after an RBAC change): the confirmed remediation is the System Administrator's own elevated **void** under `PR_AUTH_007`, or escalation to Finance. There is no confirmed delegation mechanism to temporarily reassign the stuck stage — a repo-wide search for a delegation-window feature returned nothing (see the correction note above).
+- **If a Sysadmin needs to end a stuck PR** (e.g., a workflow edit leaves no eligible approver at a stage after an RBAC change): there is **no** administrative void and no delegation mechanism. The only confirmed remediations are editing the stage's assigned users in `/system-admin/workflow` so someone can Reject or Approve, or — for a `draft` only — deleting it as super-admin.
 - **If the Sysadmin edits a tax rate, exchange rate, or workflow stage while a PR is in flight under the old values**: the edit does not appear to retroactively rewrite an in-flight PR's own snapshotted fields (`exchange_rate`, `vat_rate`, etc., captured at submit — see [02-business-rules.md](./02-business-rules.md) Section 6), but no configuration-side preview panel or affected-PR count was found to confirm this is surfaced to the Sysadmin before saving.
 
 ## 4. Exit Point / Handoffs
@@ -88,13 +89,13 @@ Neither role transitions a PR across `enum_purchase_request_doc_status = { draft
 
 - **Auditor** — the activity-log read never changes state. Any remediation the Auditor's review surfaces is handed off out-of-band to Finance, Compliance, or the System Administrator.
 - **System Administrator (configuration)** — a workflow / tax / currency / RBAC edit is saved and takes effect for future PRs and (for RBAC) future actions; it never itself moves a PR's `pr_status`.
-- **System Administrator (void)** — the one action in this persona axis that does change PR state: `pr_status` flips to `voided` (terminal) under `PR_AUTH_007` / `PR_POST_006`, releasing the budget soft-commitment and appending a mandatory-reason system comment. Handoff is to the Requestor (sees `voided` on **My PRs**) and to the Auditor (sees the void in the activity log on next query).
+- **System Administrator (super-admin delete)** — the one PR-affecting action confirmed for this persona axis: soft-deleting another user's `draft` (`PR_VAL_018` / `PR_POST_009`). It does not change `pr_status` — the row simply disappears. *(An administrative void under `PR_AUTH_007` was asserted in earlier revisions — unconfirmed.)*
 
 ## 5. References
 
 - Parent overview: [03-user-flow.md](./03-user-flow.md)
-- Authorization rules: [02-business-rules.md](./02-business-rules.md) Section 4 — `PR_AUTH_002` (per-stage executors), `PR_AUTH_007` (elevated void, Finance / System Administrator scope), `PR_AUTH_008` (`enum_stage_role` ownership for PO conversion). **`PR_AUTH_005`** (amount thresholds) is confirmed live behavior via the `/system-admin/workflow` **Routing** tab (see the correction note above). **`PR_AUTH_006`** (delegation) remains unconfirmed — no matching delegation code was found anywhere.
-- Posting rules: [02-business-rules.md](./02-business-rules.md) Section 5 — `PR_POST_006` (void), `PR_POST_008` (immutable audit comments).
+- Authorization rules: [02-business-rules.md](./02-business-rules.md) Section 4 — `PR_AUTH_002` (per-stage executors), `PR_AUTH_007` (elevated void — **unconfirmed**), `PR_AUTH_008` (`enum_stage_role` ownership for PO conversion). **`PR_AUTH_005`** (amount thresholds) is confirmed live behavior via the `/system-admin/workflow` **Routing** tab (see the correction note above). **`PR_AUTH_006`** (delegation) remains unconfirmed — no matching delegation code was found anywhere.
+- Posting rules: [02-business-rules.md](./02-business-rules.md) Section 5 — `PR_POST_006` (reject), `PR_POST_009` (draft delete), `PR_POST_008` (immutable audit comments).
 - Cross-module rules: [02-business-rules.md](./02-business-rules.md) Section 6 — snapshot semantics (`exchange_rate`, tax fields) captured at submit, relevant to what a Sysadmin's master-data edit does and does not retroactively affect.
 - Related (generic config, not PR-specific): [system-config/workflow](/en/inventory/system-config/workflow).
 - Sibling: [03-user-flow-requestor.md](./03-user-flow-requestor.md) — upstream persona whose actions appear in the activity log.

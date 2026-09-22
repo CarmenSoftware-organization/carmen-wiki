@@ -2,7 +2,7 @@
 title: Purchase Request — Test Scenarios — Procurement Manager
 description: Procurement Manager's test cases (escalated / high-value approval) for purchase-request.
 published: true
-date: 2026-07-29T05:18:05.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: purchase-request, test-scenarios, procurement-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -15,6 +15,8 @@ dateCreated: 2026-05-15T09:00:00.000Z
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation
 > **E2E coverage:** no dedicated Procurement Manager persona-journey spec exists yet; escalation / high-value paths are exercised via the `gmTest` fixture in `tests/301-pr.spec.ts` in `../carmen-inventory-frontend-e2e/`
 
+> **Executable coverage (2026-09-22).** Only the `gmTest` blocks of `../carmen-inventory-frontend-e2e/tests/301-pr.spec.ts` (197 tests overall) touch this persona; the catalogued gap cases are in `docs/test-cases/gaps/301-pr-core-gap.md` (46 cases) and `gaps/303-pr-approver-journey-gap.md` (37 — same UI). No `3xx-pr-procurement-manager` spec, gap report or story exists.
+
 This page captures the test scenarios that the Procurement Manager persona drives in the `purchase-request` module. As documented in [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md), the current source has no dedicated Procurement Manager screen — the persona is an `approve`-role stage in the **same** workflow as the base Approver chain, reached either through threshold-based escalation (`PR_AUTH_005`, confirmed) or direct workflow routing. Scenarios below are the escalated-stage subset of the base Approver scenarios in [04-test-scenarios-approver.md](./04-test-scenarios-approver.md); that page's line-level and threshold-boundary scenarios apply verbatim here. *(That page's delegation scenarios do not — `PR_AUTH_006` is unconfirmed, see the correction note there.)*
 
 > ⚠️ **Discrepancy note:** an earlier revision of this page described a "configurational surface" (Vendor Allocation Rules scoring weights, per-vendor priority overrides, Stuck PR Oversight bulk actions) with ~20 additional scenarios. No matching screen, route, or endpoint was found in `../carmen-inventory-frontend-react/` or `../carmen-turborepo-backend-v2/` during this pass — see the discrepancy log entry in the resync progress log. Those scenarios have been removed rather than carried forward as fiction.
@@ -23,7 +25,7 @@ This page captures the test scenarios that the Procurement Manager persona drive
 
 | # | Scenario | Pre-condition | Steps | Expected |
 | - | -------- | ------------- | ----- | -------- |
-| PM-HP-01 | Receive and review an escalated PR | PR `pr_status = in_progress`, routed to the Procurement Manager because `base_total_amount` breached the configured threshold (`PR_AUTH_005`), or by direct workflow routing | Open **My Pending**; open the escalated PR; review header, lines, Budget Impact, and Activity Log (full upstream Approver comments visible). | PR detail loads with the same read-mostly / Edit Mode UI as the base Approver chain; action bar shows the standard bulk toolbar. |
+| PM-HP-01 | Receive and review a routed PR | PR `pr_status = in_progress`, routed to the Procurement Manager because a `routing_rules` condition on `total_amount` matched (`PR_AUTH_005`), or by direct workflow configuration | Open **My Approval** (`/procurement/approval`) or the PR list's **My Pending** tab; open the PR; review header, lines, Workflow History and comments. *(A Budget Impact panel — unconfirmed, no code path.)* | PR detail loads with the same read-mostly / Edit Mode UI as the base Approver chain; footer shows Approve / Reject / Send Back, the bulk toolbar shows Approve / Reject / Send for Review / Split. |
 | PM-HP-02 | Approve an escalated PR at the final stage | PR at the Procurement Manager's stage, which is the chain's last `approve`-role stage | Enter Edit Mode, select all, bulk **Approve**, confirm. | `PR_POST_005` fires: `pr_status` flips `in_progress → approved`; PR becomes eligible for the separate Convert-to-PO dialog. |
 | PM-HP-03 | Reject a very-high-value PR | PR assigned to the Procurement Manager / General Manager for approval (`TC-PR-060005`) | Open the PR; click **Reject**; enter a reason; confirm. | `pr_status` flips to `voided`; requestor notified; Auditor can review the reason post-hoc. |
 | PM-HP-04 | Send an escalated PR back for revision | PR at the escalated stage; justification insufficient | Bulk **Send for Review** with a reason. | `workflow_current_stage` moves back one step (or all the way to the Requestor's create stage, returning `pr_status` to `draft`, depending on workflow configuration). |
@@ -41,7 +43,7 @@ This page captures the test scenarios that the Procurement Manager persona drive
 | # | Scenario | Trigger | Expected error |
 | - | -------- | ------- | -------------- |
 | PM-VAL-01 | Reject / Send for Review without a reason | Reason field left empty, Confirm clicked | Reject — Confirm stays disabled or the server rejects the call; a reason is mandatory for both actions. |
-| PM-VAL-02 | Adjust `approved_qty` beyond `requested_qty` | `approved_qty` set above `requested_qty` on a line, Approve clicked | `PR_VAL_013` — reject with "Approved quantity must be positive and may not exceed requested quantity". |
+| PM-VAL-02 | Adjust `approved_qty` beyond `requested_qty` | `approved_qty` set above `requested_qty` on a line, Approve clicked | **Accepted** — no client or server rule compares the two (`PR_VAL_013` upper bound is unconfirmed). Only a negative `approved_qty` is reported, and only by `POST …/verify`. Earlier revisions expected a rejection — no code path. |
 
 ## 4. References
 

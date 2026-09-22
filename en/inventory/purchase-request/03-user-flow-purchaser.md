@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow — Purchaser
 description: Purchaser's flow within the purchase-request module.
 published: true
-date: 2026-07-15T10:50:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: purchase-request, user-flow, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 # Purchase Request — User Flow — Purchaser
 
 > **At a Glance**
-> **Persona:** Purchaser / Purchasing Staff — holds the `enum_stage_role = purchase` stage inside the PR's own approval chain, and separately operates the PR→PO conversion dialog in the Purchase Order module &nbsp;·&nbsp; **Module:** [purchase-request](/en/inventory/purchase-request) &nbsp;·&nbsp; **Workflow stages:** in_progress (own `purchase`-role stage: edit vendor/pricing, then bulk-decide like any other stage) → approved → completed (via a separate Convert-to-PO dialog) &nbsp;·&nbsp; **Key permissions:** edit vendor / unit price / discount / tax profile at the `purchase` stage, Auto Allocate, bulk Approve / Reject / Send for Review / Split, select approved PRs for PO conversion
+> **Persona:** Purchaser / Purchasing Staff — holds the `enum_stage_role = purchase` stage inside the PR's own approval chain, and separately operates the PR→PO conversion dialog in the Purchase Order module &nbsp;·&nbsp; **Module:** [purchase-request](/en/inventory/purchase-request) &nbsp;·&nbsp; **Workflow stages:** in_progress (own `purchase`-role stage: edit vendor/pricing, then bulk-decide like any other stage) → approved → completed (via a separate Convert-to-PO dialog) &nbsp;·&nbsp; **Key permissions:** edit vendor / unit price / discount / tax profile at the `purchase` stage, Auto Allocate, Price Comparison (with last purchase price since 2026-09-22), bulk Approve / Reject / Send for Review / Split, select approved PRs for PO conversion &nbsp;·&nbsp; **Re-verified 2026-09-22**
 > **What this persona does:** At their stage in the PR's own approval chain, sets or validates vendor and pricing per line and bulk-decides like any other approver. Separately, from the Purchase Order module, selects one or more already-`approved` PRs and converts them to purchase orders (grouped automatically by vendor, delivery date, and currency).
 
 ## 1. Role in This Module
@@ -61,8 +61,8 @@ graph LR
 
 1. Open a PR sitting at the `purchase` stage (`pr_status = in_progress`, `workflow_current_stage` assigned to the Purchaser). The detail page opens in view mode with the full header, lines, and Activity Log from every prior stage.
 2. Click **Edit** to enter Edit Mode. Vendor, unit price, discount, and tax profile become editable per line; `approved_qty` stays read-only.
-3. Optionally click **Auto Allocate** to bulk-fill vendor, price, pricelist reference, and tax from the current pricelist for every line that has a product, requested unit, and currency set; or open the Price Comparison dialog on an individual line to pick a vendor manually.
-4. Select the lines to act on (or **Select All**) and choose a bulk action from the toolbar: **Approve** (advance — or, if this is the chain's last stage, flip to `approved`), **Reject** (terminate → `voided`, reason required), **Send for Review** (send back to a prior stage, reason required), or **Split** (accept some lines, reject others).
+3. Optionally click **Auto Allocate** to bulk-fill vendor, price, pricelist reference, tax profile and exchange rate from the price-compare endpoint for every line that has a product, requested unit, and currency set (`pr-auto-allocate.ts`; the backend picks preferred-first, then cheapest, at the MOQ tier the requested `qty` reaches — `price-list.service.ts:715`); or open the **Price Comparison** dialog on an individual line (`pr-pricelist-dialog.tsx`) — vendor, pricelist no., unit, price with a "best" marker, effective range, and an **Assign** button per row; the dialog header shows requested / approved qty and the product's **last purchase price**.
+4. Before approving, every line that is not rejected / sent back must carry a vendor, a unit price `> 0`, a currency and a tax profile (`pr-form-schema.ts` `superRefine` for the `purchase` stage; the footer Approve shows "purchaseIncomplete" otherwise). The server-side counterpart is `POST …/verify` with `verify_state = approve`, `stage_role = purchase`, which also recomputes every amount and rejects a discount or tax larger than the line value (`PR_VAL_012`). Then select the lines to act on (or **Select All**) and choose a bulk action from the toolbar: **Approve** (advance — or, if this is the chain's last stage, flip to `approved`), **Reject** (terminate → `voided`, reason required), **Send for Review** (send back to a prior stage, reason required), or **Split** (accept some lines, reject others).
 5. Confirm in the dialog. The PR either advances (`pr_status` stays `in_progress` with the stage cursor moved), flips to `approved` (final stage clears), returns to a prior stage / `draft` (send-back), or terminates (`voided`).
 
 **Entry point — PO conversion:** Sidebar → **Purchase Order** module → **Create from PR** (`PoFromPrDialog`).
@@ -91,14 +91,14 @@ graph LR
 - **Bulk Reject.** `pr_status` flips to `voided` (terminal); the **Auditor** reviews post-hoc.
 - **Convert to PO confirmed.** Fully-bridged source PRs flip from `approved` to `completed` (`PR_POST_007`); handoff is to the [purchase-order](/en/inventory/purchase-order) module for vendor commitment and tracking to receipt. Partially-bridged PRs (if a future release adds partial conversion) would stay `approved`; the current UI converts whole PRs at a time.
 
-Document state across these transitions is recorded by `enum_purchase_request_doc_status = { draft, in_progress, voided, approved, completed }`. Voiding via administrative void (as opposed to a workflow reject) is reserved for Finance / system-admin per `PR_AUTH_007`.
+Document state across these transitions is recorded by `enum_purchase_request_doc_status = { draft, in_progress, voided, approved, completed }`. There is no administrative void endpoint (`PR_AUTH_007` unconfirmed) — `voided` comes only from Reject.
 
 ## 5. References
 
 - Parent overview: [03-user-flow.md](./03-user-flow.md)
 - Bridge table: [01-data-model.md](./01-data-model.md) Section 2 — `tb_purchase_order_detail_tb_purchase_request_detail` (PR↔PO line linkage)
 - Posting rules: [02-business-rules.md](./02-business-rules.md) Section 5 — `PR_POST_005` (final approve → `approved`), `PR_POST_007` (convert to PO → bridge writes + `completed`)
-- Frontend: `../carmen-inventory-frontend-react/routes/procurement/purchase-request/pr-item-fields.tsx` (Auto Allocate, per-stage editable fields), `../carmen-inventory-frontend-react/routes/procurement/purchase-order/po-from-pr-dialog.tsx` (Convert-to-PO dialog)
+- Frontend: `../carmen-inventory-frontend-react/routes/procurement/purchase-request/pr-item-fields.tsx` (per-stage editable fields), `pr-auto-allocate.ts`, `pr-pricelist-dialog.tsx` / `pr-pricelist-compare.tsx` (Price Comparison), `workflow/pr-purchase-action.ts`; `../carmen-inventory-frontend-react/routes/procurement/purchase-order/from-pr/` (Convert-to-PO wizard — `from-pr-content.tsx`, `step-select-pr.tsx`, `step-review-group.tsx`, `step-result.tsx`; the earlier `po-from-pr-dialog.tsx` was replaced by this full page, URL `/procurement/purchase-order/from-pr`)
 - API contracts: `../carmen-turborepo-backend-bruno/collections/carmen-inventory/procurement/purchase-order/POST-group-pr-for-po-procurement-purchase-order.bru`, `POST-confirm-pr-to-po-procurement-purchase-order.bru`
 - E2E: `../carmen-inventory-frontend-e2e/tests/304-pr-purchaser-journey.spec.ts` — persona-journey spec covering the `purchase`-stage edit + bulk-decide flow. Convert-to-PO is covered separately (more loosely) in `../carmen-inventory-frontend-e2e/tests/301-pr.spec.ts` under "PR — Convert to PO — Purchase Staff".
 - Sibling: [03-user-flow-approver.md](./03-user-flow-approver.md) — the same bulk-toolbar decision mechanics apply at every approve-role and purchase-role stage

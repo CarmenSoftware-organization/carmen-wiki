@@ -2,7 +2,7 @@
 title: Price List Template
 description: Reusable RFQ / pricelist scaffold defining currency, validity, vendor instructions, and a per-product MOQ list — the source template Request for Pricing rounds are issued from.
 published: true
-date: 2026-07-29T04:41:24.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: templates, price-list, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -16,6 +16,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 ![Price List Template screen](/screenshots/templates/price-list.png)
 
 ![Price List Template detail screen](/screenshots/templates/price-list-detail.png)
+
+> **Re-verified 2026-09-22:** no backend feature commits touched this module since 2026-07-29; the one contract change is that the gateway now serialises entity references as objects (`@Serialize(PricelistTemplateDetailResponseSchema)` / `PricelistTemplateListItemResponseSchema`, `pricelist-templates.controller.ts:90,153`): `currency: { id, code }`, each product as `product: { id, name, … }` and each MOQ tier's unit as `unit: { id, name }` (FE `types/price-list-template.ts:17-20`, commit `bf9f2c3a`, 2026-09-17). The create / update **request** still sends flat `product_id` / `unit_id` (`types/price-list-template.ts:46-51`), and the RFP module still returns `moq[]` with flat `unit_id` / `unit_name`. Everything else in the callout below still holds.
 
 > **Implementation status (verified 2026-07-29):** the create/edit form (`plt-form.tsx`) exposes exactly six things — Name, Currency, Validity period, Description, Status, Vendor instructions — plus a **Products** section (per-product MOQ tiers) the previous version of this page didn't document at all. `reminder_days`, `send_reminders`, and `escalation_after_days` are real columns on `tb_pricelist_template` and the backend `update()` will happily persist them if posted directly to the API, but **no UI field sets them, no server-side validation checks them, and no background job (`micro-cronjobs`, repo-wide search) reads them** — they are inert. Clone was explicitly removed: `../carmen-inventory-frontend-e2e/tests/160-pl-template.spec.ts` has a dedicated "Pricelist Template — Clone (removed)" suite asserting no clone affordance exists in the list, detail, or edit view, for any role. Delete (`price-list-template.service.ts` → `remove()`) is an unconditional **soft delete** (`status = inactive` + `deleted_at`) with no usage guard — there is no separate hard-delete path to be blocked.
 
@@ -55,7 +57,7 @@ Claims **not** backed by any code found in this pass, previously documented as i
 - **Currency change on an existing template** only matters going forward — `tb_request_for_pricing` denormalizes nothing from the template beyond the FK, so this page cannot confirm from the frontend alone whether an in-flight RFQ re-reads the template's current currency or not; treat as unconfirmed.
 - **`reminder_days` / `send_reminders` / `escalation_after_days` are dead weight through the UI.** They're real columns, accepted by `create()`/`update()` if posted directly (confirmed by reading `price-list-template.service.ts`), but the create/edit form has no field for any of them, and no background job reads them — a `../carmen-inventory-frontend-e2e/tests/160-pl-template.spec.ts` test's own step-by-step description (`TC-PT-030001`) still narrates "toggle send-reminders switch… select 14 and 7 day reminder checkboxes… enter escalation days," but the test body it's attached to only fills the Name field and saves — the annotation is stale/aspirational relative to the code it's supposed to describe.
 - **Clone is confirmed removed, not merely undocumented.** `160-pl-template.spec.ts`'s "Pricelist Template — Clone (removed)" suite explicitly asserts `cloneButton()`/`cloneMenuItem()` have zero matches in the list, the detail view, and edit mode, for every role tested.
-- **Delete is soft, unconditional, and immediate — but the detail-row soft-delete is incomplete.** `remove()` sets `status = inactive`, `deleted_at`, and `deleted_by_id` on the **header** row, but the detail-row `updateMany` (`price-list-template.service.ts:741-746`) sets **only `deleted_by_id`** — `deleted_at` is never written on `tb_pricelist_template_detail`. A query filtering detail rows on `deleted_at IS NULL` would not detect a deleted template's lines at all; only the header's `deleted_at`/`status` reliably signal deletion. There is no distinct hard-delete action anywhere, and no check for whether an RFQ round (`tb_request_for_pricing.pricelist_template_id`) still points at this template.
+- **Delete is soft, unconditional, and immediate — but the detail-row soft-delete is incomplete.** `remove()` sets `status = inactive`, `deleted_at`, and `deleted_by_id` on the **header** row, but the detail-row `updateMany` (`price-list-template.service.ts:680-684` as of 2026-09-22) sets **only `deleted_by_id`** — `deleted_at` is never written on `tb_pricelist_template_detail`. A query filtering detail rows on `deleted_at IS NULL` would not detect a deleted template's lines at all; only the header's `deleted_at`/`status` reliably signal deletion. There is no distinct hard-delete action anywhere, and no check for whether an RFQ round (`tb_request_for_pricing.pricelist_template_id`) still points at this template.
 - **Status is a real 3-value enum** (`draft`/`active`/`inactive`, DB default `draft`) edited through an ordinary `<Select>` in the same form as every other field — no distinct workflow, no gate tied to product-list completeness.
 
 ---
@@ -97,7 +99,7 @@ One row per product on the template; MOQ tiers for that product are packed into 
 | `sequence_no` | `Int? @default(1)` | Yes | Display order. |
 | `product_id`, `product_code`, `product_name`, `product_local_name`, `product_sku` | mixed | No / Yes | Product snapshot, enriched server-side from `tb_product` on save. |
 | `inventory_unit_id`, `inventory_unit_name` | mixed | Yes | Product's inventory unit, enriched server-side. |
-| `order_unit_obj` | `Json? @db.JsonB` | Yes | The MOQ tier array — `[{unit_id, unit_name, qty, note}, …]`. The form's "Add tier" button appends entries here; there's no separate tier table. |
+| `order_unit_obj` | `Json? @db.JsonB` | Yes | The MOQ tier array as stored — `[{unit_id, unit_name, qty, note}, …]`; on the wire the gateway returns each tier's unit as `unit: { id, name }`. The form's "Add tier" button appends entries here; there's no separate tier table. |
 | `comment` | `String? @db.VarChar` | Yes | Free text. |
 | `info`, `dimension`, `doc_version` | mixed | Yes | Standard metadata. |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |
@@ -125,7 +127,7 @@ Comments on the template itself, following the canonical comment shape. No front
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `enum_pricelist_template_status` + `tb_pricelist_template` (lines 4222-4268), `tb_pricelist_template_comment` (lines 4270-4303), `tb_pricelist_template_detail` (lines 4305 onward).
-- **Backend service:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/price-list-template/price-list-template.service.ts` (direct Prisma access — this is the real data layer; the `backend-gateway` `pricelist-templates.service.ts` is a thin TCP proxy in front of it); DTOs and validation factories in `dto/price-list-template.dto.ts`.
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `enum_pricelist_template_status` (line 4826), `tb_pricelist_template` (line 4832), `tb_pricelist_template_comment` (line 4874), `tb_pricelist_template_detail` (line 4909), `tb_request_for_pricing` (line 5004) as of 2026-09-22.
+- **Backend service:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/price-list-template/price-list-template.service.ts` (direct Prisma access — this is the real data layer; the `backend-gateway` `pricelist-templates.service.ts` is a thin RPC proxy in front of it — the inter-service transport has been HTTP, not TCP, since before this page's baseline; `AppIdGuard('pricelistTemplate.*')`, `@Serialize` response schemas, `@ExpandRefs` on create / update); DTOs and validation factories in `dto/price-list-template.dto.ts`.
 - **Frontend:** `../carmen-inventory-frontend-react/routes/vendor-management/price-list-template/` (`plt-form.tsx`, `plt-form-schema.ts`, `plt-form-products-section.tsx` for the MOQ UI).
 - **E2E:** `../carmen-inventory-frontend-e2e/tests/160-pl-template.spec.ts` — see the "Clone (removed)" suite and note `TC-PT-030001`'s step annotation describes UI controls (multi-MOQ switch, lead-time switch, max-items field, reminder checkboxes, escalation days) that the test body never interacts with and that don't exist in `plt-form.tsx`.
