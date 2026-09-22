@@ -2,7 +2,7 @@
 title: Applications — UI Screens
 description: The ApplicationManagement list and the ApplicationEdit form, including the grouped-accordion API Names selector and its ChipInput fallback.
 published: true
-date: 2026-09-05T18:00:00.000Z
+date: '2026-09-22T17:30:00.000Z'
 tags: book/platform, applications, ui
 editor: markdown
 dateCreated: 2026-06-10T12:30:00.000Z
@@ -46,7 +46,7 @@ A debounced (400 ms) search input over `name`/`description` (server-side via the
 | Column | Rendering |
 |---|---|
 | Name | A small stack: the name (link to `/applications/:id/edit`) with an **Inactive** `Badge` (warning) beside it, shown only when `is_active` is false; the record UUID underneath in monospace muted text with an inline copy-to-clipboard icon button (`Copy`/`Check` toggle, 2 s confirm, toast on copy); and the description (if any) below that in smaller muted text |
-| Access | **No longer a plain badge.** `ApplicationReachCell` (new, `#254`): a bar sized against the live API catalog plus a `granted/catalogSize` fraction (e.g. `207/900`), switching to the warning colour with an alert-triangle icon once reach equals the whole catalog; `allow_all` renders as `n/n` on the same ruler rather than the word "All APIs". A second, smaller line names the module count reached. Fixed-width column (`lg:w-56`) so every row's bar is comparable; not sortable. If the list's own (separate, best-effort) catalog-size fetch fails or hasn't resolved yet, the bar and denominator disappear and the cell falls back to a bare granted count — there is no retry UI for this fetch |
+| Access | **No longer a plain badge.** `ApplicationReachCell` (new, `#254`): a bar sized against the live API catalog plus a `granted/catalogSize` fraction (e.g. `207/900`), switching to the warning colour with an alert-triangle icon once reach equals the whole catalog; `allow_all` renders as `n/n` on the same ruler rather than the word "All APIs". A second, smaller line names the module count reached. Fixed-width column (`lg:w-56`) so every row's bar is comparable; **sortable since 2026-09-09** (PR #293) through a backend-derived `access` key — `DERIVED_SORT_KEYS = ['access']` in `micro-cluster`'s `application.service.ts:37`, which also fixed a bug the sortable-headers audit surfaced: the service used to place a hard-coded `orderBy` *after* the caller's query args, silently discarding every `sort` the headers sent. If the list's own (separate, best-effort) catalog-size fetch fails or hasn't resolved yet, the bar and denominator disappear and the cell falls back to a bare granted count — there is no retry UI for this fetch |
 | Device | Quiet muted text via `formatDevice(row.original.device || 'web')` (e.g. `POS`, `Mobile`) — falls back to `web` when absent, same as before; no longer a `Badge`, since `#254` judged a per-row pill redundant with the Registry strip's device histogram above the table |
 | ~~Status~~ | **Removed as a column.** See the Name column's Inactive badge above |
 | Created | Rendered via the shared `auditColumns()`/`AuditMeta` helpers (since `a85a166`, 2026-08-22 — one of 5 Management tables migrated off a bespoke `fmt()`): relative time (e.g. "5mo ago") with the absolute timestamp as a `title` tooltip, actor name on the line below. Reads `normalizeAudit()`, which tries the **nested** `audit.created` shape first and falls back to the **flat** `created_at`/`created_by_name` columns only when nested is absent |

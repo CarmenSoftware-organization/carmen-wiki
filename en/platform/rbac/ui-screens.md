@@ -2,7 +2,7 @@
 title: Platform RBAC — UI Screens
 description: RoleManagement/RoleEdit with the catalog-anchored RolesAccessSummary and the resource-row PermissionGrid, the read-only Permission Catalog, and (summary-level) the redesigned Super Admins roster and User Platform assignment screens.
 published: true
-date: 2026-09-06T23:00:00.000Z
+date: '2026-09-22T17:30:00.000Z'
 tags: book/platform, rbac, ui
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z
@@ -40,7 +40,7 @@ Below that sits the standard search-and-filters row: a debounced (400 ms) search
 | Column | Rendering |
 |---|---|
 | Name | Clickable link — navigates to `/platform/roles/:id/edit` — with the role's `description` as muted subtext beneath it (merged into this column; there is no separate Description column) |
-| Permissions | **`RoleReachCell`** (`roleManagement/RoleReachCell.tsx`, since 2026-09-02) — `permission_count`/`catalogSize` as a fraction with a proportional bar (bar hidden below `lg` to avoid a near-invisible sliver), a warning icon + amber styling when the role holds the whole catalog, and an optional `resource_count` line beneath ("N resources") when the backend sends it; not sortable |
+| Permissions | **`RoleReachCell`** (`roleManagement/RoleReachCell.tsx`, since 2026-09-02) — `permission_count`/`catalogSize` as a fraction with a proportional bar (bar hidden below `lg` to avoid a near-invisible sliver), a warning icon + amber styling when the role holds the whole catalog, and an optional `resource_count` line beneath ("N resources") when the backend sends it; **sortable since 2026-09-09** (PR #293) by `permission_count`, which `micro-business`'s `platform_role.service.ts` (`DERIVED_SORT_KEYS = ['permission_count', 'resource_count']`, line 46) orders in memory rather than via a Prisma relation `_count` |
 | Status | Active/Inactive badge from `is_active` |
 | Created | `AuditMeta` (`variant="cell"`) via the shared `auditColumns()` — relative time (e.g. "5mo ago") on one line, actor name on the next, full timestamp as a hover `title`. Reads `normalizeAudit(row)`, which tries the nested `audit.created` `{ at, name }` shape first and falls back to flat `created_at`/`created_by_name` only when nested is absent |
 | Updated | Same `AuditMeta` rendering from `normalizeAudit(row).updated` — **omitted (renders `-`) only when the record has never really been edited** (`everEdited`: an updated actor name is present, or its timestamp differs from `created`'s), not by a plain `updated_at === created_at` comparison |

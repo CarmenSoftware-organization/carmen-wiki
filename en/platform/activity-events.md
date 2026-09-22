@@ -2,7 +2,7 @@
 title: Activity Events
 description: The raw, per-event UI-telemetry explorer at /activity-events — every filter and column, the activity_event.detail permission it shares (but does not duplicate) with Usage Analytics, and why it is not the activity_log "View History" audit trail.
 published: true
-date: '2026-09-06T02:14:23.000Z'
+date: '2026-09-22T17:30:00.000Z'
 tags: book/platform, activity-events
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -62,15 +62,15 @@ No prior conceptual documentation for this module exists in `../carmen/docs` (se
 | Column | Field | Sortable | Notes |
 | --- | --- | --- | --- |
 | Time | `server_ts` | Yes | Formatted `YYYY-MM-DD HH:MM:SS`, local to the browser |
-| User | `user_name` (or first 8 chars of `user_id` if no name resolved), `user_email` below in small text | No | `user_name`/`user_email` are resolved server-side, not stored on the row (§ data model) |
-| BU | `bu_code` | No | `-` when absent |
+| User | `user_name` (or first 8 chars of `user_id` if no name resolved), `user_email` below in small text | **Yes** (since 2026-09-09) | `user_name`/`user_email` are resolved server-side, not stored on the row (§ data model); the sort joins a derived user-name table |
+| BU | `bu_code` | **Yes** (since 2026-09-09) | `-` when absent |
 | Type | `event_type` badge | Yes | |
 | Page | `page_path`, monospace, truncated with a title tooltip | Yes | |
-| Element | `element_id`, monospace, truncated; tooltip shows `element_text` or `element_id` | No | `-` for `page_view` rows, which never carry an element |
-| App | `app_name` | No | Hidden on the card/mobile layout (`meta: { card: 'hidden' }`) |
+| Element | `element_id`, monospace, truncated; tooltip shows `element_text` or `element_id` | **Yes** (since 2026-09-09) | `-` for `page_view` rows, which never carry an element |
+| App | `app_name` | **Yes** (since 2026-09-09) | Hidden on the card/mobile layout (`meta: { card: 'hidden' }`) |
 | (actions) | — | No | An eye icon opens the detail sheet for that row |
 
-The four sortable columns match exactly the backend's sort whitelist (`SORTABLE`, `activity-event.service.ts:25-30`, `../carmen-turborepo-backend-v2`): `server_ts`, `client_ts`, `page_path`, `event_type` — except `client_ts` has no table column at all on this screen (it only appears in the detail sheet, §3.3) and so cannot be reached as a sort by any UI control, even though the backend would honor it. An unrecognized or non-whitelisted `sort` value falls back to `server_ts:desc` server-side (`activity-event.service.ts:275-277`); ties always break on `id` in the same direction (`activity-event.service.ts:284`, its own comment: every row inserted in one batch shares the same `server_ts` because Postgres's `now()` default resolves to transaction-start time, so `server_ts` alone cannot guarantee a stable page boundary).
+Every data column now sorts, matching the backend's whitelist one-for-one — `buildSortable()` (`activity-event.service.ts:62`, `../carmen-turborepo-backend-v2/apps/micro-business/src/log/activity-event/`) accepts `server_ts`, `client_ts`, `page_path`, `event_type`, `user_name`, `bu_code`, `element_id`, `app_name`. The four that opened on 2026-09-09 (`../carmen-platform` PR #293, part of the repo-wide "sortable column headers" pass whose design doc is `docs/superpowers/specs/2026-09-09-sortable-column-headers-design.md`) were the "bucket B" columns — values the backend had to learn to order by because Prisma's `orderBy` could not reach a resolved user name or a joined BU code — and the SPA deliberately shipped them only after the backend was on DEV, since the old backend answered 500 to an unknown key. `client_ts` still has no table column on this screen (it only appears in the detail sheet, §3.3) and so cannot be reached as a sort by any UI control, even though the backend would honor it. An unrecognized or non-whitelisted `sort` value falls back to `server_ts:desc` server-side; ties always break on `id` in the same direction (`activity-event.service.ts:349`, its own comment: every row inserted in one batch shares the same `server_ts` because Postgres's `now()` default resolves to transaction-start time, so `server_ts` alone cannot guarantee a stable page boundary).
 
 Clicking a column header cycles the table through ascending → descending → unsorted; landing on "unsorted" resets the query to `server_ts:desc` and remounts the table (a `sortResetKey` bump, `ActivityEventManagement.tsx:223-226`) so the header arrow and the actual row order stay in agreement — `DataTable` itself has no controlled way to represent "no sort," so the component is deliberately reset rather than left showing a stale arrow.
 

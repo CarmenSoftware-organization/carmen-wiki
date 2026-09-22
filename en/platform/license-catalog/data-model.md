@@ -2,7 +2,7 @@
 title: License Catalog — Data Model
 description: tb_license_feature (generator-owned, n-tier tree since the 2026-09-03 catalog restructuring) and tb_license_feature_group / tb_license_feature_group_item (admin-curated bundles), with the verified current catalog counts.
 published: true
-date: '2026-09-06T09:00:00.000Z'
+date: '2026-09-22T17:30:00.000Z'
 tags: book/platform, license-catalog, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -11,7 +11,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # License Catalog — Data Model
 
 > **At a Glance**
-> **`tb_license_feature`** — the sellable-capability catalog. Rows come **only** from a backend generator; a platform admin edits `state` alone &nbsp;·&nbsp; **`tb_license_feature_group`** — an admin-curated, freely cross-module bundle of feature keys, sold as a unit &nbsp;·&nbsp; **`tb_license_feature_group_item`** — the join, `feature_key` referenced **by value, no FK** on purpose &nbsp;·&nbsp; **Tree shape:** n-tier since 2026-09-03 (`parent_key` = longest existing prefix, not "text before the first dot") &nbsp;·&nbsp; **Verified catalog size:** 89 rows / 11 root modules / 79 `active` / 10 `inactive` — corrects a stale in-source comment claiming 76/10/66 (§3) &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` on both tables, optimistic lock on every write
+> **`tb_license_feature`** — the sellable-capability catalog. Rows come **only** from a backend generator; a platform admin edits `state` alone &nbsp;·&nbsp; **`tb_license_feature_group`** — an admin-curated, freely cross-module bundle of feature keys, sold as a unit &nbsp;·&nbsp; **`tb_license_feature_group_item`** — the join, `feature_key` referenced **by value, no FK** on purpose &nbsp;·&nbsp; **Tree shape:** n-tier since 2026-09-03 (`parent_key` = longest existing prefix, not "text before the first dot") &nbsp;·&nbsp; **Verified catalog size:** 107 rows / 12 root modules / 100 `active` / 7 `inactive` (was 89/11/79/10 on 2026-09-06 — +19/−2: the `interface` module, five `configuration.*` and two `accounting.gl.*` keys, `system_admin.period` renamed to `system_admin.inventory_period`, `system_admin.query_dataset` removed; see landing §3.2) — corrects a stale in-source comment claiming 76/10/66 (§3) &nbsp;·&nbsp; **Group `kind`:** `standard` | `interface`, `NOT NULL DEFAULT 'standard'`, create-only (§2.2, §5) &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` on both tables, optimistic lock on every write
 
 > **Source of truth:** the backend Prisma platform schema and the generator's own output file. Always read these first when writing or updating this page:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
@@ -58,12 +58,13 @@ Schema line 1284. One row per named, sellable bundle.
 | `description` | `String?` | Yes | Editable, free text |
 | `sort_order` | `Int @default(0)` | No | The bundle's position on the sales form — collisions across bundles are allowed by the schema and flagged (not blocked) by the UI (see [UI Screens](/en/platform/license-catalog/ui-screens) §4) |
 | `is_active` | `Boolean @default(true)` | No | Whether the bundle is currently offered for sale |
+| `kind` | `enum_license_feature_group_kind @default(standard)` | No | **Added 2026-09-10** (`20260910000000_license_feature_group_kind`, schema line 1308). `standard` bundles attach to subscriptions (`tb_subscription_bu_group`); `interface` bundles attach to interface licences (`tb_business_unit_interface_license`, one per licence). Settable only at create — the service's update path does not read it. The backend answers 400 to the wrong pairing in either direction |
 | `doc_version` | `Int @default(0)` | No | Optimistic-lock counter, required on `PATCH` and on `PUT .../features` |
 | audit trio + soft delete | — | Yes | Standard |
 
-**Constraints:** `@@unique([code, deleted_at])` (map `license_feature_group_code_deleted_at_u`). **Indexes:** `(is_active, deleted_at)`.
+**Constraints:** `@@unique([code, deleted_at])` (map `license_feature_group_code_deleted_at_u`). **Indexes:** `(is_active, deleted_at)`, `(kind, deleted_at)` (`license_feature_group_kind_deleted_at_idx`, 2026-09-10).
 
-**Relations:** `tb_license_feature_group_item[]` (§2.3), `tb_subscription_bu_group[]` — the [Licenses](/en/platform/licenses) module's join table that attaches this bundle to a specific business unit's subscription. A bundle referenced by one or more live `tb_subscription_bu_group` rows cannot be deleted (see §4).
+**Relations:** `tb_license_feature_group_item[]` (§2.3), `tb_subscription_bu_group[]` — the [Licenses](/en/platform/licenses) module's join table that attaches a `standard` bundle to a specific business unit's subscription — and, since 2026-09-10, `tb_business_unit_interface_license[]`, the ledger that sells an `interface` bundle to a BU one licence at a time ([Licenses — Data Model](/en/platform/licenses/data-model) §2.4). A bundle referenced by one or more live `tb_subscription_bu_group` rows cannot be deleted (see §4).
 
 ### 2.3 `tb_license_feature_group_item` — the join, by value not by foreign key
 
@@ -90,13 +91,14 @@ Since the 2026-09-03 "license feature tree" work (design doc `docs/superpowers/s
 **Verified current counts — do not trust the in-source comments.** `FeatureCatalogPanel.tsx`'s own doc-comment and `ModuleShelf.tsx`'s both still describe "76 rows" and "10 modules + 66 children," which predate the 2026-09-03 restructuring. Counting the generator's own output directly:
 
 ```
-grep -c '"key":' seed.license-feature.data.ts           → 89
-grep -c '"parent_key": null' seed.license-feature.data.ts → 11
-grep -c '"state": "active"' seed.license-feature.data.ts   → 79
-grep -c '"state": "inactive"' seed.license-feature.data.ts → 10
+grep -c '"key":' seed.license-feature.data.ts           → 107
+grep -c '"parent_key": null' seed.license-feature.data.ts → 12
+grep -c '"state": "active"' seed.license-feature.data.ts   → 100
+grep -c '"state": "inactive"' seed.license-feature.data.ts → 7
+grep -c '"key": "interface' seed.license-feature.data.ts   → 12
 ```
 
-**89 total rows, 11 root modules** (`accounting`, `configuration`, `dashboard`, `inventory_management`, `operation_plan`, `procurement`, `product_management`, `report`, `store_operations`, `system_admin`, `vendor_management`), **78 non-root rows** spread across up to three tiers, **79 rows currently sellable** (`active`) and **10 reserved but not yet sellable** (`inactive` — the ten `accounting.*` keys registered in Phase C ahead of their real endpoints; the design doc's own §2.4 explains why they were seeded `inactive` rather than the schema's own `active` default: a feature with no route behind it yet must not be sellable on day one, the exact class of bug the generator's code comments say already happened once, with `report.schedule`).
+(Re-counted 2026-09-22 against backend HEAD `ef4d6f08f`; the 2026-09-06 figures were 89 / 11 / 79 / 10.) **107 total rows, 12 root modules** (`accounting`, `configuration`, `dashboard`, `interface`, `inventory_management`, `operation_plan`, `procurement`, `product_management`, `report`, `store_operations`, `system_admin`, `vendor_management`), **95 non-root rows** spread across up to three tiers, **100 rows currently sellable** (`active`) and **7 reserved but not yet sellable** (`inactive` — all `accounting.*` keys registered in Phase C ahead of their real endpoints; the design doc's own §2.4 explains why they were seeded `inactive` rather than the schema's own `active` default: a feature with no route behind it yet must not be sellable on day one, the exact class of bug the generator's code comments say already happened once, with `report.schedule`). The `interface` module (12 rows, three tiers: `interface` → `interface.{accounting,pos,pms}` → eight brand leaves) is the first module whose keys have **no permission and no route at all** — they enter the catalog through `LICENSE_ONLY_RESOURCES` in `permission.route-map.ts` (2026-09-08) precisely because they are sold and enforced by the inventory frontend, not by `LicenseInterceptor`; see [landing](/en/platform/license-catalog) §3.2 for why the older `PLANNED_LICENSE_RESOURCES` set could not carry them.
 
 **The hazard this tree shape creates — hiding a middle tier breaks every descendant's entitlement, invisibly on this screen.** The runtime license evaluator (`license.evaluator.ts` in `carmen-turborepo-backend-v2`, per the design doc §2.2/§4.5) drops every `state='hide'` key from a business unit's effective `features` set **before** checking that every ancestor of a held key is also held. Setting a middle-tier feature to `hide` therefore silently fails the ancestor check for every descendant, for every business unit that holds them — even though those descendants still display as `active` on this screen, since their own row's `state` never changed. `FeatureCatalogPanel`'s hide-confirmation dialog appends a descendant count specifically because of this hazard (see [UI Screens](/en/platform/license-catalog/ui-screens) §3); it is a deliberate, documented risk in the design, not something this page is flagging as a bug.
 
@@ -114,7 +116,7 @@ Neither `tb_license_feature` nor `tb_license_feature_group` has a foreign key to
 
 ## 5. Enum
 
-`enum_license_feature_state` (schema line 740): `active` | `inactive` | `hide`. This spelling is the wire contract with the frontend (`FeatureState` in `src/constants/featureFlags.ts` states outright: "these three strings are the wire contract with the backend enum — do not rename them") — but see §3.3 of the [landing page](/en/platform/license-catalog) for why the identical three strings mean something different on the unrelated Feature Flags screen. There is no separate enum for `tb_license_feature_group` — `is_active` is a plain boolean, not a three-state field, because a bundle has no equivalent to `hide`: deactivating a bundle stops it being offered for **new** sales but a subscription that already references it keeps its entitlement live (removing the entitlement outright means editing the bundle's feature set, or deleting the bundle, both covered by §7 of [UI Screens](/en/platform/license-catalog/ui-screens)).
+`enum_license_feature_state` (schema line 740): `active` | `inactive` | `hide`. This spelling is the wire contract with the frontend (`FeatureState` in `src/constants/featureFlags.ts` states outright: "these three strings are the wire contract with the backend enum — do not rename them") — but see §3.3 of the [landing page](/en/platform/license-catalog) for why the identical three strings mean something different on the unrelated Feature Flags screen. `enum_license_feature_group_kind` (schema line 747, since 2026-09-10): `standard` | `interface` — which ledger a bundle may be sold on (§2.2); the SPA reads it defensively as `kind ?? 'standard'` for a gateway predating the rollout, but the column is `NOT NULL` with a default. Apart from that, `tb_license_feature_group` has no three-state field — `is_active` is a plain boolean, because a bundle has no equivalent to `hide`: deactivating a bundle stops it being offered for **new** sales but a subscription that already references it keeps its entitlement live (removing the entitlement outright means editing the bundle's feature set, or deleting the bundle, both covered by §7 of [UI Screens](/en/platform/license-catalog/ui-screens)).
 
 ## 6. `affected_bu_count` — computed, not stored
 

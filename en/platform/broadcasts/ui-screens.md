@@ -2,7 +2,7 @@
 title: Broadcasts — UI Screens
 description: The three Broadcasts screens — BroadcastManagement (list/filters/CSV export), BroadcastCompose (target/expiry/preview), and BroadcastEdit (content lock).
 published: true
-date: 2026-09-06T23:45:00.000Z
+date: '2026-09-22T17:30:00.000Z'
 tags: book/platform, broadcasts, ui
 editor: markdown
 dateCreated: 2026-06-10T13:15:00.000Z
@@ -41,7 +41,7 @@ A `PageHeader` ("Broadcasts") with a subtitle plus an explicit note — *"Broadc
 |---|---|
 | Title | Links to `/broadcasts/:id/edit`; the message is shown beneath it, truncated |
 | Scope | "System" or "BU · `<code>`" |
-| Severity | Badge, colour keyed off the sender's cosmetic `metadata.severity` (Critical→destructive, Warning→warning, Info→info, Maintenance→secondary); not sortable |
+| Severity | Badge, colour keyed off the sender's cosmetic `metadata.severity` (Critical→destructive, Warning→warning, Info→info, Maintenance→secondary); sortable by header click since 2026-09-09 (PR #293, sort key `severity`) — like every "bucket B" column in that pass, the header was opened only once the backend accepted the key, so verify on an environment whose gateway is newer than 2026-09-09 |
 | Status | Badge — Active (success), Scheduled (info), Expired (secondary), Deleted (destructive) |
 | Scheduled Date | `YYYY-MM-DD HH:mm`, `-` when unscheduled |
 | Expires | Same format; renders in amber when the row is `active`/`scheduled` and less than 24 hours from expiring |
