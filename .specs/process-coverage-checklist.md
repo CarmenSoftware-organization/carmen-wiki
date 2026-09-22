@@ -9,29 +9,34 @@ How to read: each row is a sub-process. **BR/UF/TS** = covered in the module's
 `02-business-rules` / `03-user-flow*` / `04-test-scenarios*` page(s).
 Symbols: ✅ complete · 🟡 partial/stub · ⬜ missing. See "How status is judged".
 
-## Summary (as of 2026-06-09)
+Source HEADs for the 2026-09-22 re-sync: backend-v2 `ef4d6f08f`, frontend-react `0713cbc9`, bruno `7f96637`, e2e `809d8e3`; baseline wiki `21fa189` (2026-07-29).
+
+## Summary (as of 2026-09-22 — EN re-sync against the HEADs above; TH deferred)
 
 | Module | Sub-processes | Done | Partial | Not yet | % complete |
 |--------|--------------:|-----:|--------:|--------:|-----------:|
-| Good Receive Note | 18 | 12 | 6 | 0 | 67% |
-| Purchase Request | 25 | 22 | 3 | 0 | 88% |
-| Purchase Order | 24 | 23 | 1 | 0 | 96% |
-| Store Requisition | 25 | 21 | 4 | 0 | 84% |
-| Inventory Adjustment | 16 | 12 | 4 | 0 | 75% |
-| Costing | 13 | 10 | 3 | 0 | 77% |
-| Inventory | 35 | 32 | 3 | 0 | 91% |
+| Good Receive Note | 22 | 16 | 6 | 0 | 73% |
+| Purchase Request | 27 | 24 | 3 | 0 | 89% |
+| Purchase Order | 29 | 28 | 1 | 0 | 97% |
+| Store Requisition | 26 | 23 | 3 | 0 | 88% |
+| Inventory Adjustment | 16 | 13 | 3 | 0 | 81% |
+| Costing | 16 | 13 | 3 | 0 | 81% |
+| Inventory | 37 | 33 | 4 | 0 | 89% |
 | Product | 12 | 11 | 1 | 0 | 92% |
-| Recipe | 20 | 16 | 4 | 0 | 80% |
-| Vendor Pricelist | 14 | 12 | 2 | 0 | 86% |
-| Physical Count | 14 | 0 | 14 | 0 | 0% |
+| Recipe | 20 | 18 | 2 | 0 | 90% |
+| Vendor Pricelist | 17 | 15 | 2 | 0 | 88% |
+| Physical Count | 14 | 1 | 13 | 0 | 7% |
 | Spot Check | 13 | 0 | 13 | 0 | 0% |
-| Master Data | 14 | 14 | 0 | 0 | 100% |
-| System Config | 11 | 11 | 0 | 0 | 100% |
+| Master Data | 17 | 16 | 1 | 0 | 94% |
+| System Config | 15 | 14 | 0 | 1 | 93% |
 | Dashboard | 9 | 9 | 0 | 0 | 100% |
-| Access Control | 6 | 6 | 0 | 0 | 100% |
-| Reporting & Audit | 8 | 8 | 0 | 0 | 100% |
+| Access Control | 10 | 9 | 1 | 0 | 90% |
+| Reporting & Audit | 9 | 9 | 0 | 0 | 100% |
 | Templates | 2 | 2 | 0 | 0 | 100% |
-| **Project total** | 279 | 221 | 58 | 0 | 79% |
+| General Ledger | 2 | 1 | 0 | 1 | 50% |
+| **Project total** | 313 | 255 | 56 | 2 | 81% |
+
+Arithmetic (2026-09-22): Done = 16 + 24 + 28 + 23 + 13 + 13 + 33 + 11 + 18 + 15 + 1 + 0 + 16 + 14 + 9 + 9 + 9 + 2 + 1 = **255**; Partial = 6 + 3 + 1 + 3 + 3 + 3 + 4 + 1 + 2 + 2 + 13 + 13 + 1 + 0 + 0 + 1 + 0 + 0 + 0 = **56**; Not yet = 0 + 0 + 0 + 0 + 0 + 0 + 0 + 0 + 0 + 0 + 0 + 0 + 0 + 1 + 0 + 0 + 0 + 0 + 1 = **2**; total = 255 + 56 + 2 = **313**; 255 / 313 = **81%** (previous: 279 sub-processes, 221 / 58 / 0, 79% as of 2026-06-09).
 
 ## How status is judged
 
@@ -61,6 +66,7 @@ Symbols: ✅ complete · 🟡 partial/stub · ⬜ missing. See "How status is ju
 | access-control | security/ , settings/ |
 | reporting-audit | reports/ , features/ |
 | templates | templates/ |
+| general-ledger | (none in carmen/docs — backend-v2 `gl` module, Bruno `gl/*`, micro-cronjobs) |
 
 ## Table A — Process modules
 
@@ -76,11 +82,11 @@ Source: `../carmen/docs/good-recive-note-managment/`
 | 3 | Partial receipt | ✅ | ✅ | ✅ | ✅ Done | [BR §2 GRN_VAL_009](/en/inventory/good-receive-note/02-business-rules) |
 | 4 | Over-receipt (with/without tolerance) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 GRN_VAL_009](/en/inventory/good-receive-note/02-business-rules) |
 | 5 | FOC (free-of-charge) items | ✅ | 🟡 | 🟡 | 🟡 Partial | [BR §3 GRN_CALC_001/012](/en/inventory/good-receive-note/02-business-rules) |
-| 6 | Extra-cost allocation (manual / by_value / by_qty) | ✅ | ✅ | ✅ | ✅ Done | [BR §3 GRN_CALC_009–011](/en/inventory/good-receive-note/02-business-rules) |
+| 6 | Extra-cost allocation (manual / by_value / by_qty — live; written to `cost_layer.extra_cost_amount`; re-verified 2026-09-22) | ✅ | ✅ | ✅ | ✅ Done | [BR §3 GRN_CALC_009–011](/en/inventory/good-receive-note/02-business-rules) |
 | 7 | Tax handling (inclusive vs exclusive pricing) | ✅ | 🟡 | 🟡 | 🟡 Partial | [BR §3 GRN_CALC_003/004](/en/inventory/good-receive-note/02-business-rules) |
 | 8 | Returns / credit note (post-commit correction) | ✅ | ✅ | 🟡 | 🟡 Partial | [BR §5 GRN_POST_009/010](/en/inventory/good-receive-note/02-business-rules) |
-| 9 | Posting to inventory on commit | ✅ | ✅ | ✅ | ✅ Done | [BR §5 GRN_POST_003/004](/en/inventory/good-receive-note/02-business-rules) |
-| 10 | Status lifecycle (draft → saved → committed → voided) | ✅ | ✅ | ✅ | ✅ Done | [UF — lifecycle](/en/inventory/good-receive-note/03-user-flow) |
+| 9 | Posting to inventory on commit — timing re-verified 2026-09-22: commit posts; average-costing BUs re-average at save | ✅ | ✅ | ✅ | ✅ Done | [BR §5 GRN_POST_003/004](/en/inventory/good-receive-note/02-business-rules) |
+| 10 | Status lifecycle (draft → saved → committed → voided; reject path) — save / commit / void / reject re-verified 2026-09-22 | ✅ | ✅ | ✅ | ✅ Done | [UF — lifecycle](/en/inventory/good-receive-note/03-user-flow) |
 | 11 | Multi-PO consolidation into one GRN | ✅ | ✅ | ✅ | ✅ Done | [BR §6 GRN_XMOD_002](/en/inventory/good-receive-note/02-business-rules) |
 | 12 | Batch commit | ✅ | ✅ | ✅ | ✅ Done | [BR §4 GRN_AUTH_006](/en/inventory/good-receive-note/02-business-rules) |
 | 13 | Lot number / expiry date assignment | ✅ | ✅ | ✅ | ✅ Done | [BR §2 GRN_VAL_012](/en/inventory/good-receive-note/02-business-rules) |
@@ -89,6 +95,10 @@ Source: `../carmen/docs/good-recive-note-managment/`
 | 16 | Three-way match (PO ↔ GRN ↔ invoice) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 GRN_POST_007–009](/en/inventory/good-receive-note/02-business-rules) |
 | 17 | Vendor cancellation of PO line items (BR-02) | ✅ | 🟡 | ⬜ | 🟡 Partial | [BR §6 GRN_XMOD_003](/en/inventory/good-receive-note/02-business-rules) |
 | 18 | Multi-currency / FX handling | ✅ | ✅ | ✅ | ✅ Done | [BR §3 GRN_CALC_008](/en/inventory/good-receive-note/02-business-rules) |
+| 19 | `POST …/verify` dry-run (pre-commit validation without side effects) | ✅ | ✅ | ✅ | ✅ Done | [BR §2](/en/inventory/good-receive-note/02-business-rules) |
+| 20 | `GET …/stock-movements` (per-GRN ledger movements view) | ✅ | ✅ | ✅ | ✅ Done | [UF](/en/inventory/good-receive-note/03-user-flow) |
+| 21 | `GET …/ref` reference documents (linked PO / CN lookup) | ✅ | ✅ | ✅ | ✅ Done | [UF](/en/inventory/good-receive-note/03-user-flow) |
+| 22 | Draft save without full validation + out-of-period document-date prompt | ✅ | ✅ | ✅ | ✅ Done | [BR §2 / UF](/en/inventory/good-receive-note/03-user-flow) |
 
 ### 2. Purchase Request
 Source: `../carmen/docs/purchase-request-management/`
@@ -98,8 +108,8 @@ Source: `../carmen/docs/purchase-request-management/`
 | 1 | Create PR (blank — header + items) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 PR_VAL_001–015](/en/inventory/purchase-request/02-business-rules) |
 | 2 | Create PR from template | ✅ | ✅ | ✅ | ✅ Done | [UF — Requestor §2](/en/inventory/purchase-request/03-user-flow-requestor) |
 | 3 | Add / edit line items (qty, UoM, price, FOC, discount, tax) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 PR_VAL_007–013](/en/inventory/purchase-request/02-business-rules) |
-| 4 | Submit PR (draft → in_progress, budget soft-commit) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PR_POST_002](/en/inventory/purchase-request/02-business-rules) |
-| 5 | Budget availability check at submit | ✅ | ✅ | ✅ | ✅ Done | [BR §2 PR_VAL_015](/en/inventory/purchase-request/02-business-rules) |
+| 4 | Submit PR (draft → in_progress; submit validation re-verified 2026-09-22 — budget soft-commit has no code path) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PR_POST_002](/en/inventory/purchase-request/02-business-rules) |
+| 5 | Budget availability check at submit (documented as not implemented — no code path) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 PR_VAL_015](/en/inventory/purchase-request/02-business-rules) |
 | 6 | Multi-stage approval routing (Department Head → Budget Controller → Finance) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 PR_AUTH_001–005](/en/inventory/purchase-request/02-business-rules) |
 | 7 | Approve at intermediate stage | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PR_POST_004](/en/inventory/purchase-request/02-business-rules) |
 | 8 | Final-stage approve (in_progress → approved) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PR_POST_005](/en/inventory/purchase-request/02-business-rules) |
@@ -109,8 +119,8 @@ Source: `../carmen/docs/purchase-request-management/`
 | 12 | Approve with quantity adjustment (approved_qty < requested_qty) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 PR_VAL_013](/en/inventory/purchase-request/02-business-rules) |
 | 13 | Delegate approval authority | ✅ | ✅ | 🟡 | 🟡 Partial | [BR §4 PR_AUTH_006](/en/inventory/purchase-request/02-business-rules) |
 | 14 | Threshold-based escalation to Procurement Manager | ✅ | ✅ | ✅ | ✅ Done | [BR §4 PR_AUTH_005](/en/inventory/purchase-request/02-business-rules) |
-| 15 | Cancel / void draft PR (requestor-initiated before submit) | ✅ | ✅ | ✅ | ✅ Done | [UF — Requestor §3](/en/inventory/purchase-request/03-user-flow-requestor) |
-| 16 | Admin void (Finance / sys-admin, any post-submit stage) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 PR_AUTH_007](/en/inventory/purchase-request/02-business-rules) |
+| 15 | Cancel / void / delete draft PR (requestor-initiated before submit; delete re-verified 2026-09-22) | ✅ | ✅ | ✅ | ✅ Done | [UF — Requestor §3](/en/inventory/purchase-request/03-user-flow-requestor) |
+| 16 | Admin void (Finance / sys-admin, any post-submit stage) (documented as not implemented — no code path) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 PR_AUTH_007](/en/inventory/purchase-request/02-business-rules) |
 | 17 | Resubmit / amend after send-back | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PR_POST_003](/en/inventory/purchase-request/02-business-rules) |
 | 18 | Convert PR → PO (full conversion) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PR_POST_007](/en/inventory/purchase-request/02-business-rules) |
 | 19 | Convert PR → PO (partial conversion) | ✅ | ✅ | ✅ | ✅ Done | [UF — Purchaser §3](/en/inventory/purchase-request/03-user-flow-purchaser) |
@@ -120,6 +130,8 @@ Source: `../carmen/docs/purchase-request-management/`
 | 23 | Financial calculations (subtotal / discount / tax / base-currency roll-up) | ✅ | ✅ | ✅ | ✅ Done | [BR §3 PR_CALC_001–008](/en/inventory/purchase-request/02-business-rules) |
 | 24 | Multi-currency / FX rate snapshot | ✅ | ✅ | ✅ | ✅ Done | [BR §3 PR_CALC_006](/en/inventory/purchase-request/02-business-rules) |
 | 25 | Status lifecycle (draft → in_progress → approved → completed / voided) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PR_POST_001–007](/en/inventory/purchase-request/02-business-rules) |
+| 26 | Pre-flight verify endpoint (dry-run validation before submit) | ✅ | ✅ | ✅ | ✅ Done | [BR §2](/en/inventory/purchase-request/02-business-rules) |
+| 27 | My Approval queue — unified `GET /api/my-pending` backed by view `sys_v_my_pending` | ✅ | ✅ | ✅ | ✅ Done | [my-approval](/en/inventory/purchase-request/my-approval) |
 
 ### 3. Purchase Order
 Source: `../carmen/docs/purchase-order-management/`
@@ -136,7 +148,7 @@ Source: `../carmen/docs/purchase-order-management/`
 | 8 | High-value approval gate (in_progress, FC Procurement Manager) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 PO_AUTH_004](/en/inventory/purchase-order/02-business-rules) |
 | 9 | Send-back / return to buyer during approval (in_progress → draft) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PO_POST_005](/en/inventory/purchase-order/02-business-rules) |
 | 10 | Reject PO at approval stage (in_progress → voided) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PO_POST_010](/en/inventory/purchase-order/02-business-rules) |
-| 11 | Final approval + transmit PO to vendor (in_progress → sent, auto-transmit) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PO_POST_004](/en/inventory/purchase-order/02-business-rules) |
+| 11 | Final approval (lands on `approved`) + send to vendor (`send-email` / `mark-sent` → status `sent_or_print`) — re-verified 2026-09-22 | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PO_POST_004](/en/inventory/purchase-order/02-business-rules) |
 | 12 | Vendor acknowledgement (recorded by Purchaser as comment — no status change) | ✅ | ✅ | ✅ | ✅ Done | [UF — Vendor §2](/en/inventory/purchase-order/03-user-flow-vendor) |
 | 13 | Pricelist price snapshot and deviation check at PR-to-PO conversion | ✅ | ✅ | ✅ | ✅ Done | [BR §6 PO_XMOD_005–006](/en/inventory/purchase-order/02-business-rules) |
 | 14 | Post-sent amendment (cancelled_qty + per-line note only — PO_VAL_016) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 PO_VAL_016](/en/inventory/purchase-order/02-business-rules) |
@@ -150,6 +162,11 @@ Source: `../carmen/docs/purchase-order-management/`
 | 22 | Credit note (post-receipt quantity return or amount discount against GRN) | 🟡 | 🟡 | ⬜ | 🟡 Partial | [credit-note.md](/en/inventory/purchase-order/credit-note) |
 | 23 | Segregation of duties (PO buyer ≠ GRN poster, PO_AUTH_010) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 PO_AUTH_010](/en/inventory/purchase-order/02-business-rules) |
 | 24 | Status lifecycle (draft → in_progress → sent → partial → completed / closed / voided) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 + §5.1 status mapping](/en/inventory/purchase-order/02-business-rules) |
+| 25 | Verify dry-run endpoint (pre-submit validation without side effects) | ✅ | ✅ | ✅ | ✅ Done | [BR §2](/en/inventory/purchase-order/02-business-rules) |
+| 26 | Swipe approve (mobile-style approve gesture on the approval list) | ✅ | ✅ | ✅ | ✅ Done | [BR §4](/en/inventory/purchase-order/02-business-rules) |
+| 27 | Credit note approval workflow — none: `draft → completed` on submit (documented as not implemented — no code path) | ✅ | ✅ | ✅ | ✅ Done | [credit-note.md](/en/inventory/purchase-order/credit-note) |
+| 28 | Credit note void — no void route (documented as not implemented — no code path) | ✅ | ✅ | ✅ | ✅ Done | [credit-note.md](/en/inventory/purchase-order/credit-note) |
+| 29 | Credit note stock-movement tab (ledger rows written by the CN) | ✅ | ✅ | ✅ | ✅ Done | [credit-note.md](/en/inventory/purchase-order/credit-note) |
 
 ### 4. Store Requisition
 Source: `../carmen/docs/store-requisitions/`
@@ -173,14 +190,15 @@ Source: `../carmen/docs/store-requisitions/`
 | 15 | Commit SR (`in_progress → completed` — the single posting event, inventory tx + GL) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 SR_POST_005](/en/inventory/store-requisition/02-business-rules) |
 | 16 | Receiver acknowledgement (post-commit, no `doc_status` change, `SR_POST_013`) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 SR_AUTH_008](/en/inventory/store-requisition/02-business-rules) |
 | 17 | Receiver discrepancy flag (post-commit; resolution via inventory-adjustment) | ✅ | ✅ | ✅ | ✅ Done | [TS — Receiver](/en/inventory/store-requisition/04-test-scenarios-receiver) |
-| 18 | Stock replenishment trigger (cron auto-generates SR draft; Inventory Controller reviews) | 🟡 | ✅ | ⬜ | 🟡 Partial | [stock-replenishment.md](/en/inventory/store-requisition/stock-replenishment) |
+| 18 | Stock replenishment (real API — Inventory Controller reviews generated SR draft; auto-generating cron still absent, re-verified 2026-09-22) | ✅ | ✅ | ✅ | ✅ Done | [stock-replenishment.md](/en/inventory/store-requisition/stock-replenishment) |
 | 19 | Cancel SR (requester withdrawal / all-lines-rejected automatic, `SR_POST_009`) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 SR_POST_009](/en/inventory/store-requisition/02-business-rules) |
 | 20 | Void SR (admin — Inventory Controller / Sysadmin, pre-commit only, `SR_POST_010`) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 SR_POST_010](/en/inventory/store-requisition/02-business-rules) |
 | 21 | Segregation of duties (Requester ≠ Approver `SR_AUTH_011`; Approver ≠ Fulfiller `SR_AUTH_012`) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 SR_AUTH_011–012](/en/inventory/store-requisition/02-business-rules) |
-| 22 | Closed-period commit block (`SR_VAL_014`; Finance reopen or admin void) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 SR_VAL_014](/en/inventory/store-requisition/02-business-rules) |
+| 22 | Closed-period commit block (`SR_VAL_014`; real gate via `sr-date.helper`, 2026-09-18; Finance reopen or admin void) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 SR_VAL_014](/en/inventory/store-requisition/02-business-rules) |
 | 23 | Journal entry generation and GL posting (Dr/Cr per `sr_type` and cost-centre dimension) | ✅ | ✅ | 🟡 | 🟡 Partial | [BR §5 SR_POST_007](/en/inventory/store-requisition/02-business-rules) |
 | 24 | Source costing-method feed (FIFO / moving-average cost-per-unit at issue, `SR_CALC_004`) | ✅ | ✅ | 🟡 | 🟡 Partial | [BR §3 SR_CALC_004](/en/inventory/store-requisition/02-business-rules) |
 | 25 | Status lifecycle (`draft → in_progress → completed / cancelled / voided` + §5.1 UI-vs-BRD mapping) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 + §5.1](/en/inventory/store-requisition/02-business-rules) |
+| 26 | Three-quantity invariant `0 ≤ issued_qty ≤ approved_qty ≤ requested_qty` (`SR_CALC_001` / `SR_VAL_008`) — not enforced (design) (documented as not implemented — no code path) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 SR_VAL_008; §3 SR_CALC_001](/en/inventory/store-requisition/02-business-rules) |
 
 ### 5. Inventory Adjustment
 Source: `../carmen/docs/inventory-adjustment/`
@@ -192,17 +210,17 @@ Source: `../carmen/docs/inventory-adjustment/`
 | 3 | Lot-level entry — existing lot on stock-in or stock-out; new-lot creation on stock-in (`ADJ_VAL_009`, `ADJ_AUTH_003`) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 ADJ_VAL_009 / §4 ADJ_AUTH_003](/en/inventory/inventory-adjustment/02-business-rules) |
 | 4 | Submit auto-approve (below-threshold existing-lot → `draft → completed` fast path, `ADJ_POST_001` / `ADJ_AUTH_002`) | ✅ | ✅ | ✅ | ✅ Done | [UF §2.2](/en/inventory/inventory-adjustment/03-user-flow) |
 | 5 | Threshold-based approval routing (Store Keeper → Inventory Controller → Finance, `ADJ_AUTH_004` / `ADJ_AUTH_005`) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 ADJ_AUTH_004–005](/en/inventory/inventory-adjustment/02-business-rules) |
-| 6 | Wastage / write-off categorisation and GL-account mapping per reason code (`ADJ_XMOD_007`; wastage-reporting variant) | ✅ | ✅ | 🟡 | 🟡 Partial | [wastage-reporting](/en/inventory/inventory-adjustment/wastage-reporting) |
+| 6 | Wastage / write-off categorisation and GL-account mapping per reason code (`ADJ_XMOD_007`; wastage-reporting variant — real API, re-verified 2026-09-22) | ✅ | ✅ | ✅ | ✅ Done | [wastage-reporting](/en/inventory/inventory-adjustment/wastage-reporting) |
 | 7 | Posting — inventory transaction + FIFO or weighted-average cost-layer write (`ADJ_POST_002`, `ADJ_CALC_005`–`007`) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 ADJ_POST_002](/en/inventory/inventory-adjustment/02-business-rules) |
 | 8 | GL journal entry generation (Dr/Cr per reason-code `info.glAccount` and `dimension.department`, `ADJ_XMOD_007`) | ✅ | ✅ | 🟡 | 🟡 Partial | [BR §6 ADJ_XMOD_007](/en/inventory/inventory-adjustment/02-business-rules) |
 | 9 | Physical-count / spot-check variance rollup — auto-create and auto-post `tb_stock_in` / `tb_stock_out` (`ADJ_POST_006`, `ADJ_XMOD_002/003`) | ✅ | ✅ | ✅ | ✅ Done | [TS cross-persona #5–6](/en/inventory/inventory-adjustment/04-test-scenarios) |
-| 10 | Void via compensating reversal (post-fact correction — two-step, `ADJ_POST_004`; original transaction not edited) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 ADJ_POST_004](/en/inventory/inventory-adjustment/02-business-rules) |
+| 10 | Void via compensating reversal (post-fact correction — two-step, `ADJ_POST_004`; original transaction not edited) — void real in UI (draft → save → commit → void), re-verified 2026-09-22 | ✅ | ✅ | ✅ | ✅ Done | [BR §5 ADJ_POST_004](/en/inventory/inventory-adjustment/02-business-rules) |
 | 11 | Cancel pre-post (`draft / in_progress → cancelled`, `ADJ_POST_003`; no inventory effect; terminal) | ✅ | ✅ | 🟡 | 🟡 Partial | [BR §5 ADJ_POST_003](/en/inventory/inventory-adjustment/02-business-rules) |
 | 12 | Segregation of duties (adjuster ≠ originating receiver above SoD threshold, `ADJ_AUTH_010`) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 ADJ_AUTH_010](/en/inventory/inventory-adjustment/02-business-rules) |
 | 13 | Period-containment gate (closed / locked period rejection, `ADJ_VAL_011` / `INV_VAL_008`) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 ADJ_VAL_011](/en/inventory/inventory-adjustment/02-business-rules) |
 | 14 | Consignment-location adjustment (memo-only inbound; COGS + AP deferred to consumption, `ADJ_POST_008`) | ✅ | ✅ | 🟡 | 🟡 Partial | [BR §5 ADJ_POST_008](/en/inventory/inventory-adjustment/02-business-rules) |
 | 15 | Reason-code / adjustment-type configuration (Sysadmin CRUD, GL mapping, `requiresDocument` / `requiresQualityCheck` flags, thresholds, `ADJ_AUTH_008`) | ✅ | ✅ | ✅ | ✅ Done | [TS Audit/Config](/en/inventory/inventory-adjustment/04-test-scenarios-audit-config) |
-| 16 | Status lifecycle (`draft → in_progress → completed → cancelled / voided` + §5.1 live-UI vs BRD mapping) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 + §5.1](/en/inventory/inventory-adjustment/02-business-rules) |
+| 16 | Status lifecycle (`draft → in_progress → completed → cancelled / voided` + §5.1 live-UI vs BRD mapping) — draft → save → commit → void re-verified 2026-09-22 | ✅ | ✅ | ✅ | ✅ Done | [BR §5 + §5.1](/en/inventory/inventory-adjustment/02-business-rules) |
 
 ### 6. Costing
 Source: `../carmen/docs/costing/` · Wiki: `en/inventory/costing/`
@@ -224,6 +242,9 @@ Source: `../carmen/docs/costing/` · Wiki: `en/inventory/costing/`
 | 11 | Standard-cost management — `tb_product.standard_cost` update; prospective only, no cost-layer effect (`COST_CALC_009`, `COST_POST_010`; `COST_AUTH_003`) | ✅ | ✅ | ✅ | ✅ Done | [cross-persona TS #9; FIN-HP-08](/en/inventory/costing/04-test-scenarios) |
 | 12 | Direct-cost location receipt — engine skipped, no cost-layer row written; GL expensed at receipt (`COST_VAL_011`, `COST_POST_005`) | ✅ | 🟡 | ✅ | 🟡 Partial | [cross-persona TS #17; BR §5 COST_POST_005](/en/inventory/costing/04-test-scenarios) |
 | 13 | Consignment location receipt — memo cost-layer row flagged; AP and Inventory journal deferred to consumption (`COST_VAL_012`, `COST_POST_006`) | ✅ | 🟡 | ✅ | 🟡 Partial | [cross-persona TS #18; BR §5 COST_POST_006](/en/inventory/costing/04-test-scenarios) |
+| 14 | Extra-cost allocation into landed cost — `by_qty` / `by_value` / `manual`, `cost_layer.extra_cost_amount` (`COST_CALC_011`) | ✅ | ✅ | ✅ | ✅ Done | [BR §3 COST_CALC_011](/en/inventory/costing/02-business-rules) |
+| 15 | GL posting from the costing engine — Not applicable: GL module exists (2026-09) but is unwired to inventory (documented as not implemented — no code path) | ✅ | ✅ | ✅ | ✅ Done | [calculation-methods](/en/inventory/costing/calculation-methods) · [gl-posting](/en/inventory/general-ledger/gl-posting) |
+| 16 | Cost read endpoints — last cost, last receiving by unit, on-hand / on-order with `last_price` | ✅ | ✅ | ✅ | ✅ Done | [BR §3](/en/inventory/costing/02-business-rules) |
 
 ### 7. Inventory
 Source: `../carmen/docs/inventory-management/`
@@ -259,7 +280,7 @@ Source: `../carmen/docs/inventory-management/`
 | 25 | Period open / rollforward (next-period opening rows, FIFO `lot_seq_no` preserved — `INV_POST_010`) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 INV_POST_010; FIN-HP-04; period-end.md §6](/en/inventory/inventory/period-end) |
 | 26 | Period lock (`closed → locked` — terminal; Finance Manager only — `INV_POST_011`, `INV_AUTH_006`) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 INV_POST_011; FIN-HP-06; IC-PERM-05](/en/inventory/inventory/04-test-scenarios-finance) |
 | 27 | Period re-open within audit window (exceptional — audit-logged, Finance Manager only — `INV_AUTH_006`) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 INV_AUTH_006; FIN-HP-07; cross-persona TS #17](/en/inventory/inventory/04-test-scenarios-finance) |
-| 28 | Period close blocked by prerequisite hold (in-flight documents / missing Controller sign-off) | ✅ | ✅ | ✅ | ✅ Done | [period-end.md §3; FIN-HP-05; FIN-VAL-03–04; cross-persona TS #6](/en/inventory/inventory/period-end) |
+| 28 | Period close blocked by prerequisite hold (start-counting gate `listStartCountingBlockers`; PR/PO no longer gate; period resolved from document date — re-verified 2026-09-22) | ✅ | ✅ | ✅ | ✅ Done | [period-end.md §3; FIN-HP-05; FIN-VAL-03–04; cross-persona TS #6](/en/inventory/inventory/period-end) |
 | 29 | Lot-recall chain-of-custody trace (backward GRN + forward consumption — Auditor read-only) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 INV_AUTH_009; AUD-HP-02; cross-persona TS #13](/en/inventory/inventory/04-test-scenarios-audit-config) |
 | 30 | Period-snapshot reconciliation audit query (Auditor verifies ledger sum vs snapshot delta) | ✅ | ✅ | ✅ | ✅ Done | [AUD-HP-03; transaction.md §2](/en/inventory/inventory/04-test-scenarios-audit-config) |
 | 31 | Location-type change blocked by non-zero on-hand (`INV_AUTH_008` drain requirement) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 INV_AUTH_008; AUD-VAL-01; cross-persona TS #16](/en/inventory/inventory/04-test-scenarios-audit-config) |
@@ -267,6 +288,8 @@ Source: `../carmen/docs/inventory-management/`
 | 33 | Concurrent inbound posts to same lot — append-only, no race condition (`INV_CALC_004`, `INV_CALC_007`) | ✅ | ✅ | ✅ | ✅ Done | [BR §3 INV_CALC_004; cross-persona TS #9; SK-EDGE-03](/en/inventory/inventory/04-test-scenarios-store-keeper) |
 | 34 | Multi-source channel convergence — all modules post via same `tb_inventory_transaction` API (`INV_XMOD_010`) | ✅ | ✅ | 🟡 | 🟡 Partial | [BR §6 INV_XMOD_010; transaction.md §6](/en/inventory/inventory/transaction) |
 | 35 | Inventory transaction log query / audit trail (read-only ledger view, balance derivation check) | ✅ | ✅ | ✅ | ✅ Done | [transaction.md §2–4; AUD-HP-01](/en/inventory/inventory/transaction) |
+| 36 | Start counting round — `POST /period-ends/start-counting` (idempotent; opens `tb_physical_count_period`) | ✅ | ✅ | ✅ | ✅ Done | [period-end.md](/en/inventory/inventory/period-end) |
+| 37 | Physical-count submit never posts to the ledger — confirmed gap (code gap, not doc gap; `PhysicalCountService.submit` writes no `tb_inventory_transaction`) | ✅ | ✅ | ⬜ | 🟡 Partial | [transaction.md](/en/inventory/inventory/transaction) |
 
 ### 8. Product
 Source: `../carmen/docs/product-management/`
@@ -280,10 +303,10 @@ Source: `../carmen/docs/product-management/`
 | 3 | Unit management — create / edit units, in-use deletion guard (`PRD_VAL_017`) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 PRD_VAL_017; PA-HP-06; PA-VAL-15](/en/inventory/product/02-business-rules) |
 | 4 | Unit conversions — define order-unit / ingredient-unit factors, bidirectional consistency, multi-hop resolution (`PRD_VAL_010/011`, `PRD_CALC_005/006`) | ✅ | ✅ | ✅ | ✅ Done | [BR §2–§3 PRD_VAL_010/011; PA-HP-02; PA-VAL-08/09; PA-EDGE-04/05](/en/inventory/product/02-business-rules) |
 | 5 | Product lifecycle / status — active → inactive → discontinued → soft-delete → restore, with in-use guards (`PRD_LIFE_001–010`) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PRD_LIFE_*; UF §2 state table; PA-LIFE-01–13](/en/inventory/product/02-business-rules) |
-| 6 | Product–location assignment — enable product at location, set min / max / par / reorder policy (`PRD_VAL_012`) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 PRD_VAL_012; PA-HP-03; PA-VAL-10](/en/inventory/product/02-business-rules) |
+| 6 | Product–location assignment — enable product at location, shelf assignment, set min / max / par / reorder policy (`PRD_VAL_012`) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 PRD_VAL_012; PA-HP-03; PA-VAL-10](/en/inventory/product/02-business-rules) |
 | 7 | Vendor mapping — product–vendor join, vendor-product-code cross-reference (`PRD_VAL_013`) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 PRD_VAL_013; PA-HP-04; PA-VAL-11](/en/inventory/product/02-business-rules) |
 | 8 | Barcode / SKU management — assign barcode, uniqueness guard, barcode-scan lookup by Store Keeper, mismatch comment flow | ✅ | ✅ | ✅ | ✅ Done | [TS — Store Keeper](/en/inventory/product/04-test-scenarios-store-keeper) |
-| 9 | Bulk import / export — dry-run preview, partial-success mode, strict-commit, row-level error report (`PRD_LIFE_006/007`) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PRD_LIFE_006/007; PA-HP-07/08; cross-persona TS #2/3](/en/inventory/product/02-business-rules) |
+| 9 | Bulk import / export — Not applicable: no importer exists (documented as not implemented — no code path) | ✅ | ✅ | ✅ | ✅ Done | [BR §5 PRD_LIFE_006/007; PA-HP-07/08; cross-persona TS #2/3](/en/inventory/product/02-business-rules) |
 | 10 | Tax-profile and deviation-tolerance inheritance cascade — item-group → sub-category → category fallback (`PRD_CALC_002/003`) | ✅ | ✅ | 🟡 | 🟡 Partial | [BR §3 PRD_CALC_002/003; UF product-admin §2 step 5; PA-EDGE-02/03](/en/inventory/product/02-business-rules) |
 | 11 | Standard-cost management and SoD approval gate — edit, above-threshold routing to Cost Controller / Finance, activity-log record (`PRD_AUTH_012`, `PRD_CALC_008`) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 PRD_AUTH_012; UF product-admin §3; PA-HP-09; cross-persona TS #4](/en/inventory/product/02-business-rules) |
 | 12 | Audit trail / activity log — every product-master change logged (create, edit, status transition, soft-delete, restore, comment threads) (`PRD_XMOD_011`) | ✅ | ✅ | ✅ | ✅ Done | [BR §6 PRD_XMOD_011; cross-persona TS #15; PA-PERM-08/10](/en/inventory/product/04-test-scenarios) |
@@ -310,8 +333,8 @@ Source: `../carmen/docs/recipe/` , `../carmen/docs/recipe-module/`
 | 13 | Preparation steps — add sequential steps (title, description, equipment, temperature, duration, images), reorder, at-publish completeness gate (`REC_VAL_016`, `REC_POST_002`) | ✅ | ✅ | ✅ | ✅ Done | [BR §2,§5; CHEF-HP-02; CHEF-VAL-13](/en/inventory/recipe/02-business-rules) |
 | 14 | Versioning and pricing-history audit trail — `tb_recipe_version` full snapshot on every `PUBLISHED` edit; `tb_recipe_pricing_history` on cost/price change; rollback via snapshot re-apply; auditor read-only access (`REC_XMOD_009`, `REC_AUTH_013`) | ✅ | ✅ | ✅ | ✅ Done | [BR §5–§6; CC-EDGE-07/08; AC-HP-06/07; cross-persona TS #11](/en/inventory/recipe/02-business-rules) |
 | 15 | RBAC and permission gates — per-role, per-category permission scoping (chef, cost controller, outlet manager, procurement, audit/config); category-scoped chefs; soft-delete authority (`REC_AUTH_001–014`) | ✅ | ✅ | ✅ | ✅ Done | [BR §4; CHEF-PERM-01–07; CC-PERM-01–07; AC-PERM-01–09](/en/inventory/recipe/02-business-rules) |
-| 16 | Recipe category master CRUD — hierarchical tree (self-FK `parent_id`), default cost settings seed onto new recipes, reparenting with cycle guard, delete guards, inactive flag | ✅ | 🟡 | 🟡 | 🟡 Partial | [category.md](/en/inventory/recipe/category) |
-| 17 | Cuisine master CRUD — flat catalogue with `enum_cuisine_region` anchor, unique-name guard, delete guard, retire/inactive flow | ✅ | 🟡 | 🟡 | 🟡 Partial | [cuisine.md](/en/inventory/recipe/cuisine) |
+| 16 | Recipe category master CRUD — hierarchical tree (self-FK `parent_id`), default cost settings seed onto new recipes, reparenting with cycle guard, delete guards, inactive flag — e2e-covered screen (2026-09-22) | ✅ | ✅ | ✅ | ✅ Done | [category.md](/en/inventory/recipe/category) |
+| 17 | Cuisine master CRUD — flat catalogue with `enum_cuisine_region` anchor, unique-name guard, delete guard, retire/inactive flow — e2e-covered screen (2026-09-22) | ✅ | ✅ | ✅ | ✅ Done | [cuisine.md](/en/inventory/recipe/cuisine) |
 | 18 | Equipment master CRUD — code + name, category FK, specs, maintenance schedule + dates, station assignment, qty counters, delete guard | ✅ | 🟡 | 🟡 | 🟡 Partial | [equipment.md](/en/inventory/recipe/equipment) |
 | 19 | Equipment category master CRUD — flat functional grouping (Preparation, Cooking, Holding, …), name-unique guard, delete guard (app-layer; FK `NoAction`), rename fan-out to denormalised `category_name` | ✅ | 🟡 | 🟡 | 🟡 Partial | [equipment-category.md](/en/inventory/recipe/equipment-category) |
 | 20 | Clone recipe — copy header/ingredients/steps/variants into new `DRAFT`, clear `published_at`/`archived_at`, assign new code/name, fresh version chain on first publish | ✅ | ✅ | ✅ | ✅ Done | [CHEF-HP-07; CHEF-EDGE-06](/en/inventory/recipe/04-test-scenarios-chef) |
@@ -327,7 +350,7 @@ Source: `../carmen/docs/vendor-pricelist-management/`
 | 2 | Price-collection template create / edit / activate — name uniqueness, product selection (category/subcategory/item-group), MOQ-tier structure, validity-period / reminder schedule, activate/inactivate/re-activate lifecycle (`VPL_VAL_001–007`, `VPL_POST_001–004`) | ✅ | ✅ | ✅ | ✅ Done | [BR §2,§5.1](/en/inventory/vendor-pricelist/02-business-rules) |
 | 3 | Campaign (RFQ) create / launch / pause / cancel — date-window validation, vendor invitation rows, email-template validation, campaign lifecycle states (`VPL_VAL_008–013`, `VPL_POST_005–009`) | ✅ | ✅ | ✅ | ✅ Done | [BR §2,§5.2; UF §2.2; request-price-list.md](/en/inventory/vendor-pricelist/02-business-rules) |
 | 4 | Vendor invitation & secure token dispatch — cryptographic token generation, per-vendor unique link, email delivery, invitation lifecycle (pending → in-progress → submitted → approved/expired) (`VPL_VAL_011–013`, `VPL_AUTH_007`, `VPL_POST_010–014`) | ✅ | ✅ | ✅ | ✅ Done | [BR §4,§5.3; UF §2.3; TS-Vendor HP-01](/en/inventory/vendor-pricelist/02-business-rules) |
-| 5 | Vendor portal price submission — online entry, single-page interface, multi-MOQ-tier inline expansion, auto-save, draft/resume, submission (`VPL_VAL_018–023`, `VPL_POST_015–016`, `VPL_AUTH_008`) | ✅ | ✅ | ✅ | ✅ Done | [BR §2,§5.4; TS-Vendor HP-01..06](/en/inventory/vendor-pricelist/04-test-scenarios-vendor) |
+| 5 | Vendor portal price submission — save / submit via `pricelist-external` controller + `UrlTokenGuard`; multi-MOQ-tier inline expansion, auto-save, draft/resume (`VPL_VAL_018–023`, `VPL_POST_015–016`, `VPL_AUTH_008`) | ✅ | ✅ | ✅ | ✅ Done | [BR §2,§5.4; TS-Vendor HP-01..06](/en/inventory/vendor-pricelist/04-test-scenarios-vendor) |
 | 6 | Excel template download / upload and email submission method — Excel parse/validate, portal upload, email-to-staff upload path (`submission_method = email / portal`), error reporting (`VPL_AUTH_003`, `VPL_VAL_017`) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 VPL_AUTH_003; TS-Purchaser HP-06; TS-Vendor HP-04,09](/en/inventory/vendor-pricelist/04-test-scenarios-purchaser) |
 | 7 | Multi-currency pricing — vendor chooses submission currency, per-currency storage (no FX mutation), cross-currency comparison via tenant FX rate at report date, Finance Manager co-signoff for multi-currency activation (`VPL_CALC_005`, `VPL_AUTH_008–010`) | ✅ | ✅ | ✅ | ✅ Done | [BR §3 VPL_CALC_005; §4 VPL_AUTH_008-010; TS-Finance HP-01; X-VPL-03](/en/inventory/vendor-pricelist/02-business-rules) |
 | 8 | Price validity periods — effective-from / effective-to validation, auto-expire cron (`active → expired`), re-activate within window, validity countdown display (`VPL_VAL_016`, `VPL_CALC_007`, `VPL_POST_020–021`) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 VPL_VAL_016; §5.4 VPL_POST_021; TS-Purchaser VAL-09; EDGE-04; X-VPL-08](/en/inventory/vendor-pricelist/02-business-rules) |
@@ -337,6 +360,9 @@ Source: `../carmen/docs/vendor-pricelist-management/`
 | 12 | Data validation & quality scoring — real-time field-level validation, MOQ-tier non-increasing rule, completeness checks, quality-score computation and threshold routing to Manager (`VPL_CALC_006`, `VPL_VAL_018–025`, `VPL_XMOD_009`) | ✅ | ✅ | 🟡 | 🟡 Partial | [BR §2–§3 VPL_CALC_006; §6 VPL_XMOD_009; TS X-VPL-09; TS-Purchaser HP-03](/en/inventory/vendor-pricelist/02-business-rules) |
 | 13 | Portal token policy / session security — token expiry, IP-allowlist enforcement, concurrent-session limits, token revocation by Sysadmin/Manager, suspicious-activity detection (`VPL_AUTH_007`, `VPL_AUTH_012`, `VPL_AUTH_015`) | ✅ | ✅ | ✅ | ✅ Done | [BR §4 VPL_AUTH_007,012,015; TS-Vendor VAL-01..03; EDGE-04; TS-AuditConfig HP-08; X-VPL-07](/en/inventory/vendor-pricelist/04-test-scenarios-audit-config) |
 | 14 | Audit trail & RBAC — activity-log writes on every status transition and comment, full chain traceability (template → campaign → invitation → pricelist → PR/PO/GRN), read-only Auditor surface, Sysadmin configuration-change audit log, data-export approval flow (`VPL_AUTH_001–015`, `VPL_POST_001–022`) | ✅ | ✅ | ✅ | ✅ Done | [BR §4; TS-AuditConfig HP-01..10; PERM-01..08](/en/inventory/vendor-pricelist/04-test-scenarios-audit-config) |
+| 15 | RFQ send-email (dispatch campaign invitation mail) | ✅ | ✅ | ✅ | ✅ Done | [request-price-list](/en/inventory/vendor-pricelist/request-price-list) |
+| 16 | Vendor `tax_no` / `branch_no` / `rating` fields (backend-only) | ✅ | ✅ | ✅ | ✅ Done | [BR §2](/en/inventory/vendor-pricelist/02-business-rules) |
+| 17 | Vendor certification screen | ✅ | ✅ | ✅ | ✅ Done | [UF — Vendor](/en/inventory/vendor-pricelist/03-user-flow-vendor) |
 
 ### 11. Physical Count
 Source: `../carmen/docs/app/inventory-management/physical-count/` , `../carmen/docs/app/inventory-management/physical-count-management/` , `../carmen/docs/documents/pc/`
@@ -345,7 +371,7 @@ Source: `../carmen/docs/app/inventory-management/physical-count/` , `../carmen/d
 
 | # | Sub-process | BR | UF | TS | Status | Doc link |
 |---|-------------|----|----|----|--------|----------|
-| 1 | Create count period header — Count Lead opens `tb_physical_count_period` for an open fiscal period; validates `tb_period` is open (`PHC_VAL_001`); period enters `draft` status | ✅ | ✅ | 🟡 | 🟡 Partial | [BR §2 PHC_VAL_001](/en/inventory/physical-count/02-business-rules) · [UF §2.1](/en/inventory/physical-count/03-user-flow) · [TS-CL CL-F-01](/en/inventory/physical-count/04-test-scenarios-count-lead) |
+| 1 | Create count period header — Count Lead opens `tb_physical_count_period` for an open fiscal period; validates `tb_period` is open (`PHC_VAL_001`); period enters `draft` status — open count via `POST /period-ends/start-counting` path documented (2026-09-22) | ✅ | ✅ | ✅ | ✅ Done | [BR §2 PHC_VAL_001](/en/inventory/physical-count/02-business-rules) · [UF §2.1](/en/inventory/physical-count/03-user-flow) · [TS-CL CL-F-01](/en/inventory/physical-count/04-test-scenarios-count-lead) |
 | 2 | Generate count sheet / snapshot stock — Count Lead creates `tb_physical_count` for `(period, location)`, capturing `on_hand_qty` snapshot per line; validates location type (`PHC_VAL_002`–`PHC_VAL_003`); document enters `pending` | ✅ | ✅ | 🟡 | 🟡 Partial | [BR §2 PHC_VAL_002–003](/en/inventory/physical-count/02-business-rules) · [UF-CL §3](/en/inventory/physical-count/03-user-flow-count-lead) · [TS-CL CL-F-02,03](/en/inventory/physical-count/04-test-scenarios-count-lead) |
 | 3 | Frozen vs live mode selection — `physical_count_type = yes` (frozen) locks inventory writes at location during count (`PHC_VAL_006`); `no` (live) allows parallel GRN/SR; mode immutable once `in_progress` (`PHC_VAL_002`) | ✅ | ✅ | 🟡 | 🟡 Partial | [BR §2 PHC_VAL_002,006; §5.1](/en/inventory/physical-count/02-business-rules) · [UF-CL §4](/en/inventory/physical-count/03-user-flow-count-lead) · [TS cross-persona #5,6](/en/inventory/physical-count/04-test-scenarios) |
 | 4 | Counter assignment — Count Lead assigns counters to zones; zone-grant scopes counter to `(location, zone)` lines; scope-bound visibility enforced (`PHC_AUTH_004`) | ✅ | ✅ | 🟡 | 🟡 Partial | [BR §4 PHC_AUTH_004](/en/inventory/physical-count/02-business-rules) · [UF-CL §3](/en/inventory/physical-count/03-user-flow-count-lead) · [TS-CL CL-F-04; TS-C C-R-01,C-R-04](/en/inventory/physical-count/04-test-scenarios-count-lead) |
@@ -398,12 +424,15 @@ Source: `../carmen/docs/settings/` , `../carmen/docs/prisma-schema/`
 | 6 | Delivery Point | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/delivery-point) |
 | 7 | Department | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/department) |
 | 8 | Exchange Rate | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/exchange-rate) |
-| 9 | Extra Cost Type | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/extra-cost-type) |
+| 9 | Extra Cost Type (allocation `by_qty` / `by_value` / `manual`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/extra-cost-type) |
 | 10 | Location | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/location) |
 | 11 | Tax Profile | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/tax-profile) |
 | 12 | Unit | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/unit) |
 | 13 | Vendor | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/vendor) |
 | 14 | Vendor Business Type (`tb_vendor_business_type`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/vendor-business-type) |
+| 15 | Shelf | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/shelf) |
+| 16 | Chart of Accounts | ✅ | ✅ | ✅ Done | [link](/en/inventory/master-data/chart-of-accounts) |
+| 17 | Cost Center (API only — no frontend screen) | ✅ | 🟡 | 🟡 Partial | [link](/en/inventory/master-data/cost-center) |
 
 ### 14. System Config
 Source: `../carmen/docs/settings/` , `../carmen/docs/app/system-administration/`
@@ -415,12 +444,16 @@ Source: `../carmen/docs/settings/` , `../carmen/docs/app/system-administration/`
 | 3 | Dimension | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/dimension) |
 | 4 | Document Management | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/document) |
 | 5 | Menu | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/menu) |
-| 6 | Period | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/period) |
+| 6 | Inventory Period | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/period) |
 | 7 | Query Dataset (SQL Workbench) | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/query-dataset) |
 | 8 | Running Code | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/running-code) |
 | 9 | Workflow | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/workflow) |
 | 10 | Dashboard Dataset (code-registered in **micro-data** Go service; no tenant table — gateway proxies `/api/dashboard/datasets`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/dashboard-dataset) |
 | 11 | Document Version — optimistic-concurrency `doc_version` guard (409 Conflict on stale save); cross-cutting across ~20 transactional/config entities | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/doc-version) |
+| 12 | Email Profile | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/config-email) |
+| 13 | Email Template | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/config-email) |
+| 14 | Interface screen (no page yet) | ⬜ | ⬜ | ⬜ Not yet | — |
+| 15 | Notification Template (app-only) | ✅ | ✅ | ✅ Done | [link](/en/inventory/system-config/notification-template) |
 
 ### 15. Dashboard
 Source: `../carmen/docs/features/` , `../carmen/docs/pages/`
@@ -433,7 +466,7 @@ Source: `../carmen/docs/features/` , `../carmen/docs/pages/`
 | 4 | PO dashboard | ✅ | ✅ | ✅ Done | [link](/en/inventory/dashboard/po) |
 | 5 | PR dashboard | ✅ | ✅ | ✅ Done | [link](/en/inventory/dashboard/pr) |
 | 6 | SR dashboard | ✅ | ✅ | ✅ Done | [link](/en/inventory/dashboard/sr) |
-| 7 | Widget workspace dashboard (current `/dashboard` route — drag-and-drop `tb_widget_workspace` tiles, add/remove/reorder KPI/pie/bar widgets from Dataset catalogue) | ✅ | ✅ | ✅ Done | [link](/en/inventory/dashboard/widget-workspace) |
+| 7 | Widget workspace dashboard (current `/dashboard` route — drag-and-drop `tb_widget_workspace` tiles, add/remove/reorder KPI/pie/bar widgets from Dataset catalogue) — display / render switch / lazy load via micro-data (2026-09-22) | ✅ | ✅ | ✅ Done | [link](/en/inventory/dashboard/widget-workspace) |
 | 8 | My Pending widget (PR / PO / SR pending-count tiles for the signed-in user — `dashboard-my-pending.tsx`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/dashboard/my-pending) |
 | 9 | My Approval widget (approval task queue by doc type across PR / PO / SR — `dashboard-my-approval.tsx`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/dashboard/my-approval) |
 
@@ -448,6 +481,10 @@ Source: `../carmen/docs/security/` , `../carmen/docs/app/system-administration/p
 | 4 | Business Unit User (`tb_user_tb_business_unit`, `tb_temp_bu_user`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/access-control/business-unit-user) |
 | 5 | User Location (`tb_user_location`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/access-control/user-location) |
 | 6 | Department User (`tb_department_user` — user ↔ department pivot with `is_hod` HOD flag; exists in `schema.prisma` and referenced in `DD-permission-management.md` / `DD-user-management.md`) | ✅ | ✅ | ✅ Done | [link](/en/inventory/access-control/department-user) |
+| 7 | User access PATCH (single-request update of a user's access) | ✅ | ✅ | ✅ Done | [link](/en/inventory/access-control/user) |
+| 8 | User × role matrix | ✅ | ✅ | ✅ Done | [link](/en/inventory/access-control/user) |
+| 9 | Invitations flow | ✅ | ✅ | ✅ Done | [link](/en/inventory/access-control/user) |
+| 10 | Role / permission controllers carry no `AppIdGuard` and no `@Permission` — open code gap | ✅ | 🟡 | 🟡 Partial | [link](/en/inventory/access-control/permission) |
 
 ### 17. Reporting & Audit
 Source: `../carmen/docs/reports/` , `../carmen/docs/app/system-administration/notification-preferences/` , `../carmen/docs/app/system-administration/monitoring/`
@@ -457,23 +494,37 @@ Source: `../carmen/docs/reports/` , `../carmen/docs/app/system-administration/no
 | 1 | Activity (`tb_activity`, `enum_activity_action`) — tenant-wide append-only audit log | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/activity) |
 | 2 | Attachment (`tb_attachment`) — S3-backed binary metadata, polymorphic linkage; presigned-URL re-resolution on read + comment-attachment DTO | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/attachment) |
 | 3 | Report History (`tb_report_job`) — append-only execution log for every report run | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/history) |
-| 4 | Notification (`tb_notification`, `tb_message_format`, `tb_news`) — inbound message pipe, templates, platform bulletins | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/notification) |
-| 5 | Report (`tb_report_job`, `tb_report_schedule`, `tb_report_template`, `tb_print_template_mapping`) — full report generation pipeline; micro-data/micro-report split (dataset resolve vs render) | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/report) |
+| 4 | Notification (`tb_notification`, `tb_message_format`, `tb_news`) — inbound message pipe, templates, platform bulletins — NotifyInput redesign (2026-09-22) | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/notification) |
+| 5 | Report (`tb_report_job`, `tb_report_schedule`, `tb_report_template`, `tb_print_template_mapping`) — full report generation pipeline; micro-data/micro-report split (dataset resolve vs render) — print-form default + PDF export (2026-09-22) | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/report) |
 | 6 | Report Schedule (`tb_report_schedule`) — cron-driven recurring report runs | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/schedule) |
 | 7 | User Activity (`tb_user_login_session` + `tb_activity` projection) — actor-centric forensic login/logout timeline | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/user-activity) |
 | 8 | Widget (`tb_widget_dashboard`, `tb_widget_default_layout`, `tb_widget_workspace`) — dashboard tiles, seed layouts, saved queries; CRUD hosted in **micro-data** (gateway-proxied) | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/widget) |
+| 9 | Per-record Activity sheet (document-level audit drawer) | ✅ | ✅ | ✅ Done | [link](/en/inventory/reporting-audit/activity) |
 
 ### 18. Templates
 Source: `../carmen/docs/app/vendor-management/pricelist-templates/` , `../carmen/docs/purchase-request-management/`
+
+> **Note (2026-09-22):** the notification template lives in System Config (#15 Notification Template), not here.
 
 | # | Page / entity | Page exists? | Content complete? | Status | Link |
 |---|---------------|--------------|-------------------|--------|------|
 | 1 | Price List Template (`tb_pricelist_template`) — RFQ-round scaffold: currency, validity, reminder schedule, escalation | ✅ | ✅ | ✅ Done | [link](/en/inventory/templates/price-list) |
 | 2 | Purchase Request Template (`tb_purchase_request_template` + detail + comment) — reusable PR line-bundle cloned into new PRs | ✅ | ✅ | ✅ Done | [link](/en/inventory/templates/purchase-request) |
 
+### 19. General Ledger
+Source: `../carmen-turborepo-backend-v2/` GL module (backend + Bruno + cron only, no UI) · Wiki: `en/inventory/general-ledger.md`, `en/inventory/general-ledger/gl-posting.md`
+
+> **Scope note (owner decision 2026-09-22):** the wiki documents the General Ledger only at its seam with inventory. Row 1 is the seam and is Done because the page proves no inventory-to-GL posting exists. Row 2 (GL master, budgets, JV templates, GL reports) is **⬜ Not yet — out of scope by owner decision 2026-09-22**; it is listed so the gap is explicit and must not be read as 🟡 Partial.
+
+| # | Page / entity | Page exists? | Content complete? | Status | Link |
+|---|---------------|--------------|-------------------|--------|------|
+| 1 | GL posting from inventory (scoped: page proves none exists — nothing in inventory posts to the ledger as of backend `ef4d6f08f`) | ✅ | ✅ | ✅ Done | [gl-posting](/en/inventory/general-ledger/gl-posting) |
+| 2 | GL master / budget / JV template / reports — out of scope by owner decision 2026-09-22 | ⬜ | ⬜ | ⬜ Not yet | [landing §1.1](/en/inventory/general-ledger) |
+
 ## Maintenance notes
 
 - Living doc — update by hand when wiki pages are added/expanded.
 - Bump the `(as of …)` date in the Summary heading whenever rows change.
 - 2026-06-09 backend/platform/micro-data docs sync: added System Config #11 Document Version (`doc_version` optimistic concurrency); enriched Access Control #3 Permission (comment + approval-workflow App IDs), Reporting & Audit #2/#5/#8 (attachment presigned-URL/DTO, micro-data↔micro-report split, widget CRUD in micro-data), System Config #10 Dashboard Dataset (micro-data backing). Process-module BR/UF/TS rows unchanged — these are reference/Table-B entities, all already ✅.
+- 2026-09-22 EN re-sync (backend-v2 `ef4d6f08f`, frontend `0713cbc9`, bruno `7f96637`, e2e `809d8e3`): statuses re-judged against code; rows added for verify dry-runs, stock-movement / ref views, My Approval, CN tabs, cost read endpoints, start-counting, vendor portal / RFQ, Shelf / Chart of Accounts / Cost Center, Email Profile / Template / Interface / Notification Template, access PATCH / role matrix / invitations, Activity sheet; new §19 General Ledger (seam only — out of scope by owner decision). Rows whose behaviour has no code path are marked Done with a "(documented as not implemented — no code path)" suffix — the wiki documents the absence. Details: `.specs/resync-inventory-2026-09-22-progress.md` and `.specs/carmen-docs-drift-2026-09-22.md`. TH deferred.
 - Re-run Task 19's count when any row status changes.
