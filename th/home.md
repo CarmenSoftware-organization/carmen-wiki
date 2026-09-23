@@ -2,7 +2,7 @@
 title: Carmen Wiki
 description: เอกสารอ้างอิงสำหรับนักพัฒนาและทีมทดสอบของ Carmen ครอบคลุมทั้ง Inventory และ Platform
 published: true
-date: 2026-05-19T00:00:00.000Z
+date: 2026-09-23T08:30:00.000Z
 tags: home, landing
 editor: markdown
 dateCreated: 2026-05-16T14:00:00.000Z
@@ -11,6 +11,8 @@ dateCreated: 2026-05-16T14:00:00.000Z
 # Carmen Wiki
 
 เอกสารอ้างอิงสำหรับนักพัฒนาและทีมทดสอบของผลิตภัณฑ์ Carmen
+
+> **เพิ่งเริ่มกับ Carmen?** เริ่มที่ [ภาพรวมระบบ](/th/overview) — requirement, เหตุผลที่ต้องมีระบบนี้, tech stack และ architecture diagram
 
 ## 1. Carmen Inventory
 
