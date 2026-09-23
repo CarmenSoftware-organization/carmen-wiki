@@ -2,7 +2,7 @@
 title: ผู้ดูแลคลัสเตอร์ — หน้าจอ UI (UI Screens)
 description: ClusterAdminEntry, ClusterProfile, BusinessUnitList/BusinessUnitForm, ClusterUsers และ ClusterAdminLicenses ที่อ่านอย่างเดียว บวกหน้าจอ Profile ที่ใช้ร่วมกัน — ทุกหน้าจำกัดขอบเขตอยู่ที่ :clusterId เดียว และเทียบกับคู่ของมันฝั่ง platform
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: 2026-09-23T11:05:32.000Z
 tags: book/platform, cluster-admin, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -14,6 +14,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 > **หน้าจอ:** `ClusterAdminEntry` (`/cluster-admin`) &nbsp;·&nbsp; `ClusterProfile` (`/cluster-admin/:clusterId/cluster`) &nbsp;·&nbsp; `BusinessUnitList`/`BusinessUnitForm` (`/cluster-admin/:clusterId/business-units[/:buId/edit]`) &nbsp;·&nbsp; `ClusterUsers` (`/cluster-admin/:clusterId/users`) &nbsp;·&nbsp; `ClusterAdminLicenses` (`/cluster-admin/:clusterId/licenses` อ่านอย่างเดียวทั้งหมด) &nbsp;·&nbsp; `Profile` ที่ใช้ร่วมกัน (`/cluster-admin/:clusterId/profile`) &nbsp;·&nbsp; **Gate บนทุกหน้าจอต่อคลัสเตอร์:** ไม่มี RBAC permission key — กั้นด้วยสมาชิกภาพของคลัสเตอร์ผ่าน `isClusterAdminOf` แทน ตรวจก่อน feature flag เสมอ (ดู [Permissions](/th/platform/cluster-admin/permissions)) &nbsp;·&nbsp; **การเขียนในหน้าจอกั้นด้วยการเข้าถึง route ได้เท่านั้น** — `canEdit` ของ `ClusterProfile` และ `BusinessUnitForm` คำนวณจากการเข้าถึงได้ล้วน ๆ ไม่มีการตรวจ permission หรือ role ใด ๆ ใน component เลย &nbsp;·&nbsp; **ไม่มี e2e suite** — ทุกคำกล่าวอ้างด้านล่างมาจากการอ่าน `../carmen-platform` โดยตรง
 
 ![ผู้ดูแลคลัสเตอร์ — หน้าจอ UI (UI Screens) screen](/screenshots/platform/cluster-admin/ui-screens.png)
+
+![ผู้ดูแลคลัสเตอร์ — หน้าจอ UI (UI Screens) form screen](/screenshots/platform/cluster-admin/ui-screens-form.png)
 
 ## 1. ภาพรวม
 

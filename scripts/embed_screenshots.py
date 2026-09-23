@@ -7,9 +7,13 @@ Spec: docs/superpowers/specs/2026-09-23-screenshots-all-books-design.md §2, §5
   assets/screenshots/<book>/<module>/<slug>.png           -> <loc>/<book>/<module>/<slug>.md
   assets/screenshots/<book>/<module>/<slug>-<variant>.png -> same page as <slug> (exact page name wins)
 
+Only the variants in VARIANTS are embedded; any other suffix (catalog leftovers
+such as "index-dialog-add", role shots "--Role") is reported and skipped, so a
+renamed page can never pull an unrelated image in by prefix.
+
 Idempotent: a URL already present in a page is never inserted again.
 """
-import argparse, datetime, re, sys
+import argparse, datetime, re, sys, tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -21,12 +25,16 @@ SKIP_PAGES = {
     "inventory/costing", "inventory/costing/calculation-methods",
     "inventory/general-ledger/gl-posting", "inventory/system-config/doc-version",
     "platform/users/lifecycle", "platform/report-templates/xml-spec",
+    # No screen in Carmen Inventory: the SQL Workbench UI moved to the Platform SPA on 2026-07-09.
+    "inventory/system-config/query-dataset",
 }
-CHANGED_LIST = Path("/private/tmp/claude-501/embed-changed.txt")
+# Suffixes that mark a second image of the same page: detail/edit screen, create form.
+VARIANTS = {"detail", "form"}
+DEFAULT_CHANGED_LIST = Path(tempfile.gettempdir()) / "carmen-wiki-embed-changed.txt"
 
 
 def page_exists(rel: str) -> bool:
-    return (ROOT / "en" / f"{rel}.md").is_file()
+    return any((ROOT / loc / f"{rel}.md").is_file() for loc in LOCALES)
 
 
 def resolve(book: str, module: str, stem: str) -> tuple[str, str | None] | None:
@@ -34,16 +42,16 @@ def resolve(book: str, module: str, stem: str) -> tuple[str, str | None] | None:
     if "--" in stem:  # role-suffixed catalog shot, never embedded
         return None
     if stem == "index" or stem.startswith("index-"):
-        rel = f"{book}/{module}"
-        return (rel, stem[len("index-"):] or None) if page_exists(rel) else None
+        rel, variant = f"{book}/{module}", stem[len("index-"):] or None
+        ok = page_exists(rel) and (variant is None or variant in VARIANTS)
+        return (rel, variant) if ok else None
     exact = f"{book}/{module}/{stem}"
     if page_exists(exact):
         return (exact, None)
-    parts = stem.split("-")
-    for i in range(len(parts) - 1, 0, -1):  # longest prefix first
-        rel = f"{book}/{module}/{'-'.join(parts[:i])}"
-        if page_exists(rel):
-            return (rel, "-".join(parts[i:]))
+    base, _, variant = stem.rpartition("-")
+    rel = f"{book}/{module}/{base}"
+    if base and variant in VARIANTS and page_exists(rel):
+        return (rel, variant)
     return None
 
 
@@ -52,8 +60,19 @@ def title_of(text: str) -> str:
     return m.group(1).strip().strip("'\"") if m else ""
 
 
-def insert_at(lines: list[str]) -> int:
-    """Index before which the image line goes (spec §5.1 placement)."""
+def insert_at(lines: list[str], base_url: str | None = None) -> int:
+    """Index before which the image line goes (spec §5.1 placement).
+
+    A variant goes directly after its base image when the page already has it,
+    wherever that image sits, so the pair is never split or reversed.
+    """
+    if base_url:
+        for i, line in enumerate(lines):
+            if line.startswith("![") and f"]({base_url})" in line:
+                j = i + 1
+                while j < len(lines) and (lines[j].strip() == "" or lines[j].startswith("![")):
+                    j += 1
+                return j
     fm_end = lines.index("---", 1)
     body = range(fm_end + 1, len(lines))
     glance = next((i for i in body if lines[i].startswith("> **At a Glance**")), None)
@@ -78,7 +97,8 @@ def embed(page: Path, url: str, variant: str | None, now: str) -> bool:
         return False
     alt = title_of(text) + (f" {variant.replace('-', ' ')}" if variant else "") + " screen"
     lines = text.split("\n")
-    at = insert_at(lines)
+    base_url = url.replace(f"-{variant}.png", ".png") if variant else None
+    at = insert_at(lines, base_url)
     lines[at:at] = [f"![{alt}]({url})", ""]
     out = re.sub(r"^date:.*$", f"date: {now}", "\n".join(lines), count=1, flags=re.M)
     page.write_text(out, encoding="utf-8")
@@ -89,6 +109,8 @@ def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--book", choices=sorted(URL_PREFIX))
+    ap.add_argument("--changed-list", type=Path, default=DEFAULT_CHANGED_LIST,
+                    help=f"file receiving the changed page paths (default: {DEFAULT_CHANGED_LIST})")
     args = ap.parse_args(argv)
     now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
     inserts = skips = 0
@@ -103,6 +125,8 @@ def main(argv: list[str]) -> int:
                 skips += 1
                 continue
             rel, variant = hit
+            if variant:
+                print(f"~ {png.relative_to(ROOT)}  variant '{variant}' of {rel}")
             if rel in SKIP_PAGES or SKIP_NAME.search(rel.rsplit("/", 1)[-1]):
                 print(f"- {png.relative_to(ROOT)}  out-of-scope page {rel}")
                 skips += 1
@@ -120,8 +144,9 @@ def main(argv: list[str]) -> int:
                 if not args.dry_run and embed(page, url, variant, now):
                     changed.add(f"{loc}/{rel}.md")
     if not args.dry_run:
-        CHANGED_LIST.parent.mkdir(parents=True, exist_ok=True)
-        CHANGED_LIST.write_text("".join(f"{p}\n" for p in sorted(changed)))
+        args.changed_list.parent.mkdir(parents=True, exist_ok=True)
+        args.changed_list.write_text("".join(f"{p}\n" for p in sorted(changed)))
+        print(f"changed pages listed in {args.changed_list}")
     verb = "planned" if args.dry_run else "inserted"
     print(f"---- {verb} {inserts}, skipped images {skips}, pages changed {len(changed)} ----")
     return 0

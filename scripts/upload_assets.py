@@ -8,7 +8,7 @@ Folder layout (spec 2026-09-23 §2.1):
   platform  -> screenshots/platform/<module>/   URL /screenshots/platform/<module>/<file>
 Reads WIKI_API_URL / WIKI_API_TOKEN from scripts/.env.
 """
-import json, os, subprocess, sys, urllib.request
+import hashlib, json, os, subprocess, sys, urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -65,23 +65,38 @@ def folder_for(parts: list[str]) -> int:
     return fid
 
 
-def curl_code(args: list[str]) -> str:
-    return subprocess.run(["curl", "-sS", "-o", "/dev/null", "-w", "%{http_code}", *args],
-                          capture_output=True, text=True).stdout
+def post_upload(png: Path, folder_id: int) -> str:
+    """POST the file to /u; returns the HTTP status. The token goes through curl's
+    stdin config (-K -) so it never appears in the process list."""
+    config = f'header = "Authorization: Bearer {TOKEN}"\n'
+    return subprocess.run(
+        ["curl", "-sS", "-K", "-", "-o", "/dev/null", "-w", "%{http_code}", "-m", "60",
+         "-X", "POST", f"{BASE}/u",
+         "-F", f'mediaUpload={{"folderId":{folder_id}}};type=application/json',
+         "-F", f"mediaUpload=@{png};type=image/png"],
+        input=config, capture_output=True, text=True).stdout
+
+
+def served_sha256(url: str) -> tuple[int, str]:
+    """Status and SHA-256 of what the wiki serves now (cache-busted)."""
+    try:
+        with urllib.request.urlopen(f"{BASE}{url}?v={os.getpid()}", timeout=30) as r:
+            return r.status, hashlib.sha256(r.read()).hexdigest()
+    except urllib.error.HTTPError as e:
+        return e.code, ""
 
 
 def upload(png: Path) -> tuple[bool, str]:
     rel = png.resolve().relative_to(ROOT / "assets" / "screenshots")
     book, module = rel.parts[0], rel.parts[1]
     folder = ["screenshots", module] if book == "inventory" else ["screenshots", book, module]
-    fid = folder_for(folder)
     url = "/" + "/".join(folder + [png.name])
-    up = curl_code(["-m", "60", "-X", "POST", f"{BASE}/u",
-                    "-H", f"Authorization: Bearer {TOKEN}",
-                    "-F", f'mediaUpload={{"folderId":{fid}}};type=application/json',
-                    "-F", f"mediaUpload=@{png};type=image/png"])
-    get = curl_code(["-m", "20", f"{BASE}{url}"])
-    return (up == "200" and get == "200", f"{url} (upload {up}, get {get})")
+    up = post_upload(png, folder_for(folder))
+    status, served = served_sha256(url)
+    # A 200 alone also matches a stale asset Wiki.js kept instead of replacing.
+    same = served == hashlib.sha256(png.read_bytes()).hexdigest()
+    ok = up == "200" and status == 200 and same
+    return ok, f"{url} (upload {up}, get {status}, {'content matches' if same else 'CONTENT DIFFERS'})"
 
 
 def main(argv: list[str]) -> int:
@@ -91,7 +106,11 @@ def main(argv: list[str]) -> int:
         if not p.is_file():
             print(f"SKIP (missing) {arg}")
             continue
-        good, msg = upload(p)
+        try:
+            good, msg = upload(p)
+        except (ValueError, IndexError, RuntimeError, OSError) as e:
+            # One bad path (e.g. outside assets/screenshots/<book>/<module>/) must not abort the batch.
+            good, msg = False, f"{arg} ({type(e).__name__}: {e})"
         print(("OK   " if good else "FAIL ") + msg)
         ok, fail = ok + good, fail + (not good)
     print(f"---- uploaded {ok}, failed {fail} ----")
