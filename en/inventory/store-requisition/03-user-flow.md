@@ -2,7 +2,7 @@
 title: Store Requisition — User Flow
 description: Document lifecycle and persona-specific flow files for store-requisition.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-23T01:30:00.000Z'
 tags: store-requisition, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -32,7 +32,7 @@ The SR document status is stored on `tb_store_requisition.doc_status` and constr
 
 ```mermaid
 stateDiagram-v2
-    [*] --> draft: create (Requester — manual or recipe auto-create)
+    [*] --> draft: create (Requester — manual or stock-replenishment auto-create)
     draft --> in_progress: submit (Requester — dept derived, products enabled at destination, date resolved)
     draft --> [*]: soft-delete (Requester — own draft only, single or batch)
     in_progress --> in_progress: approve / trim / reject line (whoever holds current stage)

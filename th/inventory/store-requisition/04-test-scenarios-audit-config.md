@@ -2,7 +2,7 @@
 title: ใบเบิกของสโตร์ (Store Requisition) — Test Scenarios — Audit & Config
 description: test case ของ Inventory Controller, Finance, Sysadmin และ Auditor — ส่วนใหญ่เป็น persona ที่ยังไม่ยืนยัน; อธิบายว่าทำไมชุด scenario เดิมไม่ตรงกับ source ปัจจุบัน
 published: true
-date: 2026-07-29T05:45:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: store-requisition, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -12,7 +12,8 @@ dateCreated: 2026-05-15T13:30:00.000Z
 
 > **At a Glance**
 > **Persona:** Inventory Controller + Finance + Sysadmin + Auditor — **ส่วนใหญ่ยังไม่ยืนยันว่าเป็น persona แยกของโมดูล SR ใน source ปัจจุบัน** &nbsp;·&nbsp; **โมดูล:** [store-requisition](/th/inventory/store-requisition)
-> ⚠️ **แก้ไขครั้งใหญ่รอบนี้** หน้านี้เคยระบุ test scenario ~27 รายการสำหรับ admin-void console, Finance closed-period gate พร้อมการยืนยัน journal-entry, Sysadmin RBAC/workflow/SoD-threshold configuration console และเครื่องมือ Auditor signature-trace [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) บันทึกร่องรอยการตรวจสอบ source เต็ม: ไม่มี admin-void method ใดแยกจาก `reject` ทั้งเอกสารตามปกติ (ซึ่งผู้กระทำขั้นปัจจุบันคนใดก็เรียกได้); ไม่มี code `journal`/`ledger` ใด ๆ ในโมดูลนี้; ไม่มี check `period` ใน `store-requisition.service.ts` หรือ `store-requisition.logic.ts`; และไม่มีผลลัพธ์ `delegat` ใด ๆ ในโมดูลนี้หรือ workflow orchestrator ดังนั้นจึงไม่มีอะไรแยกให้เขียน test scenario ต่อสำหรับ sub-role ทั้งสี่นี้ **ข้อยกเว้นหนึ่งข้อ แก้ไขในรอบนี้:** `routing_rules` ของ workflow แบบทั่วไปตาม amount (ที่การแก้ไขรุ่นก่อนหน้าเคยรวมเข้ากับข้อค้นพบ "ผลศูนย์รายการ" ผิดพลาด — การค้นหานั้นครอบคลุมเฉพาะคำตรงตัว `threshold`) มีจริงและมีผลต่อการ route stage ของ SR (`SR_XMOD_008`) แต่เป็น functionality system-config ที่ใช้ร่วมกับ PR/PO ไม่ใช่ console เฉพาะของ Sysadmin สำหรับ SR — จึงยังไม่มีอะไรแยกให้ persona Audit/Config ของโมดูลนี้ test
+> **Executable coverage (2026-09-22):** ดู [04-test-scenarios](/th/inventory/store-requisition/04-test-scenarios) — `tests/701-sr.spec.ts`, `tests/720-stock-issue.spec.ts` และรายงาน gap `docs/test-cases/gaps/701-sr-gap.md` (62) / `720-stock-issue-gap.md` (44) ใน `../carmen-inventory-frontend-e2e/`; ไม่มีสิ่งใดในนั้นที่มุ่งเป้าไปยัง persona นี้
+> ⚠️ **แก้ไขครั้งใหญ่รอบนี้** หน้านี้เคยระบุ test scenario ~27 รายการสำหรับ admin-void console, Finance closed-period gate พร้อมการยืนยัน journal-entry, Sysadmin RBAC/workflow/SoD-threshold configuration console และเครื่องมือ Auditor signature-trace [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) บันทึกร่องรอยการตรวจสอบ source เต็ม: ไม่มี admin-void method ใดแยกจาก `reject` ทั้งเอกสารตามปกติ (ซึ่งผู้กระทำขั้นปัจจุบันคนใดก็เรียกได้); ไม่มี code journal ที่ต่อสายกับ SR (โมดูล GL ที่มีอยู่ตอนนี้ไม่มี hook ของ SR); open-period gate ที่รอบ 2026-07-15 หาไม่พบ **ตอนนี้มีจริงแล้ว** (`logic/sr-date.helper.ts`, `SR_VAL_014`) แต่เป็นกฎวันที่ทั่วไปตอน submit/issue ไม่ใช่ console ของ Finance; และไม่มีผลลัพธ์ `delegat` ใด ๆ ในโมดูลนี้หรือ workflow orchestrator ดังนั้นจึงไม่มีอะไรแยกให้เขียน test scenario ต่อสำหรับ sub-role ทั้งสี่นี้ **ข้อยกเว้นหนึ่งข้อ แก้ไขในรอบนี้:** `routing_rules` ของ workflow แบบทั่วไปตาม amount (ที่การแก้ไขรุ่นก่อนหน้าเคยรวมเข้ากับข้อค้นพบ "ผลศูนย์รายการ" ผิดพลาด — การค้นหานั้นครอบคลุมเฉพาะคำตรงตัว `threshold`) มีจริงและมีผลต่อการ route stage ของ SR (`SR_XMOD_008`) แต่เป็น functionality system-config ที่ใช้ร่วมกับ PR/PO ไม่ใช่ console เฉพาะของ Sysadmin สำหรับ SR — จึงยังไม่มีอะไรแยกให้ persona Audit/Config ของโมดูลนี้ test
 
 ## 1. สิ่งที่มาแทน Scenario เหล่านี้
 
@@ -21,7 +22,7 @@ dateCreated: 2026-05-15T13:30:00.000Z
 | กลุ่ม Scenario เดิม | สิ่งที่ยืนยันได้จริง |
 |---|---|
 | Admin void บน SR ก่อน commit | action `reject` ทั้งเอกสารตามปกติ (`StoreRequisitionService.reject()`) ใช้ได้โดยผู้ที่ถือขั้น workflow ปัจจุบัน — ดู [04-test-scenarios-approver.md](./04-test-scenarios-approver.md) APR-EDGE-02 และ [04-test-scenarios-fulfiller.md](./04-test-scenarios-fulfiller.md) ไม่ใช่เส้นทาง "admin" แยกต่างหาก |
-| Finance closed-period block, การยืนยัน journal-entry, period close | **ยังไม่ implement** ไม่สามารถเขียน test scenario ต่อ feature ที่ไม่พบ code เลยได้ |
+| Finance closed-period block, การยืนยัน journal-entry, period close | การยืนยัน journal: **ยังไม่ implement สำหรับ SR** closed-period block: **implement แล้วเป็น gate ทั่วไป** — ทดสอบจากหน้า Requester / Fulfiller (REQ-VAL-11, FUL-VAL-06) ไม่ใช่ในฐานะ action ของ Finance |
 | Sysadmin RBAC / workflow / SoD-relaxation-threshold console | `tb_workflow` เป็นตารางจริงที่ tenant config ได้ ใช้ร่วมกับ PR/PO/GRN — การ test การเปลี่ยนจำนวนขั้น, stage-role, หรือ routing-rule ตาม amount/department/category ที่นั่นเป็น test config workflow ทั่วไป (ส่วน routing-rule ยืนยันแล้วว่ามีจริง, `SR_XMOD_008`) ไม่ใช่เฉพาะ SR ไม่มีฟิลด์ SoD-relaxation ให้ test |
 | Auditor read-only signature trace | `workflow_history` และ JSON `history` ต่อบรรทัดอ่านได้โดยผู้ใช้ใดก็ได้ที่มีสิทธิ์อ่าน SR — ไม่มี route เฉพาะ Auditor ให้ test |
 
@@ -36,4 +37,4 @@ Test scenario ขั้นต่ำที่ตรงตามความเป
 - ภาพรวมแม่: [04-test-scenarios.md](./04-test-scenarios.md) — Scenarios 9, 10, 11, 13, 14 ถูกลบหรือแคบลงรอบนี้ด้วยเหตุผลเดียวกัน
 - User flow: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — ร่องรอย "อะไรยืนยันได้และอะไรยังไม่ยืนยัน" เต็มที่หน้านี้สรุป
 - Sibling: [04-test-scenarios-receiver.md](./04-test-scenarios-receiver.md) — เป้าหมายการ escalate ความคลาดเคลื่อนที่เวอร์ชันก่อนหน้าของหน้านี้บรรยาย ตัวมันเองก็ยังไม่ยืนยันเช่นกัน
-- Business rules: [02-business-rules.md](./02-business-rules.md) § 2 (`SR_VAL_014`, ยังไม่ยืนยัน), § 4 (`SR_AUTH_009`–`SR_AUTH_013`, แก้ไขแล้ว), § 5 (`SR_POST_007`, `SR_POST_009`, `SR_POST_010`, `SR_POST_013`, แก้ไขแล้ว)
+- Business rules: [02-business-rules.md](./02-business-rules.md) § 2 (`SR_VAL_014`, ยืนยันแล้ว 2026-09-22), § 4 (`SR_AUTH_009`–`SR_AUTH_013`, แก้ไขแล้ว), § 5 (`SR_POST_007`, `SR_POST_009`, `SR_POST_010`, `SR_POST_013`, แก้ไขแล้ว)

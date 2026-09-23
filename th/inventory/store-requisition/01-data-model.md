@@ -2,7 +2,7 @@
 title: ใบเบิกของสโตร์ (Store Requisition) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูล store-requisition
 published: true
-date: 2026-07-15T15:45:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: store-requisition, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -14,7 +14,8 @@ dateCreated: 2026-05-15T13:30:00.000Z
 > **ตาราง:** `tb_store_requisition` &nbsp;·&nbsp; `tb_store_requisition_detail` &nbsp;·&nbsp; `tb_store_requisition_comment` &nbsp;·&nbsp; `tb_store_requisition_detail_comment`
 > **กลุ่มผู้ใช้:** Developer / Auditor (เอกสารอ้างอิงสำหรับ dev)
 > **FK สำคัญ:** ส่วนหัว `→ tb_location` ×2 (`from_location_id` + `to_location_id`, named relations) และ `→ tb_workflow` (มี `@relation` ระบุชัด ต่างจาก PR/PO/GRN); รายการ `→ tb_product` และ `→ tb_inventory_transaction` (ถูกบรรจุค่าตอน commit — ข้อมูล lot / cost / expiry ที่เป็น canonical อยู่ฝั่ง inventory)
-> **รูปแบบ audit:** `created_*` / `updated_*` / `deleted_*` มาตรฐาน; ปริมาณสามค่าต่อบรรทัด (`requested` / `approved` / `issued`); คอลัมน์ลายเซ็น approval / review / reject ต่อบรรทัด; **ไม่มียอดเงิน roll-up บนส่วนหัว** (SR เป็นเอกสารเชิงปริมาณ)
+> **รูปแบบ audit:** `created_*` / `updated_*` / `deleted_*` มาตรฐาน; ปริมาณสามค่าต่อบรรทัด (`requested` / `approved` / `issued`); คอลัมน์ลายเซ็น approval / review / reject ต่อบรรทัด; ส่วนหัว `issue_at` / `issue_by_id` ถูก stamp ที่ขั้น issue; **ไม่มียอดเงิน roll-up บนส่วนหัว** (SR เป็นเอกสารเชิงปริมาณ)
+> **ตรวจสอบซ้ำ 2026-09-22** เทียบกับ `schema.prisma` ที่ backend HEAD `cd2e07f60`: ไม่มีคอลัมน์ SR ถูกเพิ่มหรือลบตั้งแต่ 2026-07-29 แต่ `sr_type` ตอนนี้ถูก derive ฝั่ง server, `sr_date` / `sr_no` ถูกกำหนดขั้นสุดท้ายตอน submit และ response ของ detail endpoint ย้ายไปเป็น nested entity objects (`workflow`, `requestor`, `department`, `from_location`, `to_location`, `issue_by`, `product` — `@ExpandRefs`, 2026-09-17); list endpoint ยังคืนสตริง `*_name` แบบ flat (`types/store-requisition.ts`)
 
 > **Source of truth:** Prisma schema ฝั่ง backend ให้อ่านสิ่งเหล่านี้ก่อนเสมอเมื่อจะเขียนหรือแก้หน้านี้:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
@@ -41,8 +42,8 @@ SR วางตัว **ระหว่าง [inventory](/th/inventory/inventor
 | ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | -------- |
 | `id` | `String @db.Uuid` | No | Primary key สร้างผ่าน `gen_random_uuid()` |
-| `sr_no` | `String @db.VarChar` | No | เลขที่อ้างอิง SR สำหรับมนุษย์อ่าน บังคับ (หมายเหตุ: GRN ของคู่กันยอม null; SR ไม่ยอม) |
-| `sr_date` | `DateTime @db.Timestamptz(6)` | Yes | วันที่ requisition — เมื่อเอาท์เลตตั้งคำขอ |
+| `sr_no` | `String @db.VarChar` | No | เลขที่อ้างอิง SR สำหรับมนุษย์อ่าน `NOT NULL` แต่ draft ใช้ placeholder `draft-<6 hex>` ที่ `StoreRequisitionService.create()` เขียนไว้; เลขที่ running-code (type `STORE-REQUISITION`, date pattern เอาจาก `sr_date` ที่ freeze แล้ว) ถูกออกโดย `generateSRNo()` ระหว่าง `submit()` และไม่ถูกออกใหม่เมื่อ resubmit หลัง send-back |
+| `sr_date` | `DateTime @db.Timestamptz(6)` | Yes | วันที่ requisition บน draft เป็นค่าใดก็ตามที่ฟอร์มส่งมา (default `now()`) และเป็นเพียง placeholder; `submit()` เขียนทับผ่าน `resolveSubmitSrDate()` (`logic/sr-date.helper.ts`, 2026-09-18): วันนี้หากวันนี้อยู่ใน inventory period ที่เปิด มิฉะนั้นตามที่ client เลือกใน `sr_date_pattern` (`open-period` → วันสุดท้ายของ open period ปัจจุบัน, `today` → วันนี้) เลขที่เอกสารถูก derive จากค่าที่ freeze นี้ |
 | `expected_date` | `DateTime @db.Timestamptz(6)` | Yes | วันที่เอาท์เลตต้องการของ ใช้สำหรับลำดับความสำคัญในการ fulfill |
 | `description` | `String @db.VarChar` | Yes | คำอธิบายแบบอิสระบนส่วนหัว |
 | `doc_status` | `enum_doc_status` | No | สถานะเอกสาร; default `draft` enum 5 ค่าที่ใช้ร่วมกัน (ดูส่วนที่ 4) |
@@ -52,10 +53,10 @@ SR วางตัว **ระหว่าง [inventory](/th/inventory/inventor
 | `to_location_id` | `String @db.Uuid` | Yes | FK ไปยัง `tb_location.id` — สถานที่ปลายทาง (เอาท์เลตที่บริโภคหรือสโตร์สต๊อกต่อ) named relation `store_requisition_to_location` ยอม null ในช่วง draft แรก |
 | `to_location_code` | `String @db.VarChar` | Yes | Snapshot ของรหัสสถานที่ปลายทาง |
 | `to_location_name` | `String @db.VarChar` | Yes | Snapshot ของชื่อสถานที่ปลายทาง |
-| `sr_type` | `enum_sr_type` | No | ประเภทการเคลื่อนย้าย; default `transfer` เป็น `issue` (การบริโภคไปยังปลายทางแบบ direct-cost) หรือ `transfer` (การเคลื่อนย้ายสต๊อกระหว่างสถานที่) |
+| `sr_type` | `enum_sr_type` | No | ประเภทการเคลื่อนย้าย; default `transfer` **ถูก derive ไม่ใช่ค่าที่ client ส่ง:** `create()` เรียก `resolveAndValidateSrType()` → `deriveSrType()` (`logic/sr-type.helper.ts`): ปลายทาง `direct` → `issue`; ปลายทาง `inventory` หรือ `consignment` → `transfer`; ต้นทางแบบ `direct` ถูกปฏิเสธ (`from_location must be inventory or consignment, not direct`, 400) swagger response บันทึกกฎเดียวกัน |
 | `workflow_id` | `String @db.Uuid` | Yes | FK ไปยัง `tb_workflow.id` ผ่าน named relation `workflow` ต่างจากโมดูล GRN ส่วนหัว SR **ประกาศ** Prisma `@relation` ระบุชัดบน `workflow_id` |
 | `workflow_name` | `String @db.VarChar` | Yes | Snapshot ของชื่อ workflow |
-| `workflow_history` | `Json @db.JsonB` | Yes | Timeline การเปลี่ยนขั้นแบบ append-only; default `{}` แต่ละ entry เก็บ `stage`, `action`, `message`, `by` (`{id, name}`), `at` |
+| `workflow_history` | `Json @db.JsonB` | Yes | Timeline การเปลี่ยนขั้นแบบ append-only; default `{}` ตาม doc-comment ของ schema แต่ละ entry คือ `{ action, at, user: {id, name}, current_stage, next_stage }` โดย `action ∈ submitted | approved | reviewed | rejected | completed` (`completed` ถูก push โดย `WorkflowOrchestratorService` ตอนอนุมัติขั้นสุดท้าย และไม่ใช่สมาชิกของ `enum_last_action`) |
 | `workflow_current_stage` | `String @db.VarChar` | Yes | Slug ของขั้นที่ถือ SR อยู่ปัจจุบัน |
 | `workflow_previous_stage` | `String @db.VarChar` | Yes | Slug ของขั้นที่เพิ่งปล่อย SR ออก |
 | `workflow_next_stage` | `String @db.VarChar` | Yes | Slug ของขั้นถัดไปในสาย |
@@ -64,13 +65,15 @@ SR วางตัว **ระหว่าง [inventory](/th/inventory/inventor
 | `last_action_at_date` | `DateTime @db.Timestamptz(6)` | Yes | Timestamp ของ `last_action` |
 | `last_action_by_id` | `String @db.Uuid` | Yes | user id ที่ทำ `last_action` |
 | `last_action_by_name` | `String @db.VarChar` | Yes | Snapshot ของชื่อผู้กระทำ |
-| `requestor_id` | `String @db.Uuid` | Yes | user id ของผู้ขอ (outlet manager ที่ตั้ง SR) ไม่ประกาศ Prisma `@relation` |
+| `requestor_id` | `String @db.Uuid` | Yes | user id ของผู้ขอ (outlet manager ที่ตั้ง SR) ไม่ประกาศ Prisma `@relation` ยอม null ใน Prisma แต่ `ValidateSRBeforeSubmitSchema` บังคับตอน submit |
 | `requestor_name` | `String @db.VarChar` | Yes | Snapshot ของชื่อแสดงผู้ขอ |
-| `department_id` | `String @db.Uuid` | Yes | department id ของเอาท์เลตผู้ขอ ไม่ประกาศ Prisma `@relation` |
+| `department_id` | `String @db.Uuid` | Yes | department id ของเอาท์เลตผู้ขอ ไม่ประกาศ Prisma `@relation` ยอม null ใน Prisma แต่ create DTO บังคับตั้งแต่ 2026-09-17 (`1dbaf76b1`); หาก draft เก่ายังไม่มีค่า `submit()` จะ derive จากสมาชิกภาพ `tb_department_user` ของผู้ขอ (`logic/sr-department.helper.ts`) — หนึ่งสมาชิกภาพ → stamp, ศูนย์ → `SR_DEPARTMENT_NOT_FOUND`, มากกว่าหนึ่ง → `SR_DEPARTMENT_AMBIGUOUS` (422 พร้อมรายชื่อ) |
 | `department_name` | `String @db.VarChar` | Yes | Snapshot ของชื่อแผนก |
 | `info` | `Json @db.JsonB` | Yes | Extension bag สำหรับ attribute ส่วนหัวเฉพาะ tenant; default `{}` |
 | `dimension` | `Json @db.JsonB` | Yes | Cost-dimension array (project, cost-centre, job code, ฯลฯ); default `[]` |
 | `doc_version` | `Int @db.Integer` | No | Optimistic-concurrency version counter; default `0` |
+| `issue_by_id` | `String @db.Uuid` | Yes | ผู้ใช้ที่ issue สต๊อก (migration `20260619120000_sr_issue_fields`) ถูกเขียนโดย `approve()` เมื่อขั้นที่กระทำคือ `enum_stage_role.issue` และโดย `updateByIssue()` เมื่อบันทึกที่ขั้น issue ไม่มี Prisma `@relation`; detail endpoint expand เป็น object `issue_by` |
+| `issue_at` | `DateTime @db.Timestamptz(6)` | Yes | วันที่ issue ที่ resolve แล้ว (migration เดียวกัน) ตั้งพร้อมกับ `issue_by_id`; เท่ากับค่าที่ `resolveIssueDate()` คืน — วันนี้เมื่อวันนี้อยู่ใน open period มิฉะนั้นวันสุดท้ายของ period ของใบเบิกเอง (`issue_date_pattern = open-period`) วันที่นี้ถูกส่งต่อให้ inventory transaction เป็น `doc_date` ดังนั้น stock movement จึงถูกวางใน period ของวันที่นั้น (`resolveDocumentPeriod`) |
 | `created_at` | `DateTime @db.Timestamptz(6)` | Yes | Timestamp สร้าง default `now()` |
 | `created_by_id` | `String @db.Uuid` | Yes | user id ที่สร้างแถว |
 | `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | Timestamp อัปเดตล่าสุด default `now()` |
@@ -99,9 +102,9 @@ SR วางตัว **ระหว่าง [inventory](/th/inventory/inventor
 | `product_name` | `String @db.VarChar` | Yes | Snapshot ของชื่อสินค้า |
 | `product_local_name` | `String @db.VarChar` | Yes | Snapshot ของชื่อสินค้าแบบ localised |
 | `product_sku` | `String @db.VarChar` | Yes | Snapshot ของ SKU |
-| `requested_qty` | `Decimal @db.Decimal(20, 5)` | Yes | ปริมาณที่เอาท์เลตขอ; default `0` ตั้งบน `draft`; ล็อกตอน submit |
-| `approved_qty` | `Decimal @db.Decimal(20, 5)` | Yes | ปริมาณที่ผู้อนุมัติอนุญาต; default `0` `approved_qty ≤ requested_qty` ตั้งระหว่างการอนุมัติ; ล็อกตอน issue |
-| `issued_qty` | `Decimal @db.Decimal(20, 5)` | Yes | ปริมาณที่ store keeper ปล่อยจริงตอน fulfill; default `0` `issued_qty ≤ approved_qty` ตั้งตอน commit |
+| `requested_qty` | `Decimal @db.Decimal(20, 5)` | Yes | ปริมาณที่เอาท์เลตขอ; default `0` create DTO รับ `z.number()` ใดก็ได้; `ValidateSRBeforeSubmitSchema` (`store-requisition.dto.ts`) บังคับ `> 0` ต่อบรรทัดตอน submit ฟอร์มรับค่าทศนิยม (2026-07-29) |
+| `approved_qty` | `Decimal @db.Decimal(20, 5)` | Yes | ปริมาณที่ผู้อนุมัติอนุญาต; default `0` `submit()` ตั้งค่าเริ่มต้นเป็น `requested_qty` ทุกบรรทัด; จากนั้นการบันทึกที่ขั้น approve หรือ `approve()` เขียนทับด้วยค่าใน payload **เพดาน `approved_qty ≤ requested_qty` เป็นเจตนาที่บันทึกไว้เท่านั้น** — detail DTO เป็น `z.number()` เปล่า ๆ และทั้ง `saveStageRoleDetails()` และ `approve()` ไม่เปรียบเทียบสองค่านี้ (ดู [02-business-rules](/th/inventory/store-requisition/02-business-rules) `SR_VAL_008`) |
+| `issued_qty` | `Decimal @db.Decimal(20, 5)` | Yes | ปริมาณที่ store keeper ปล่อยจริงตอน fulfill; default `0` ถูกเขียนโดยการบันทึกที่ขั้น issue (`updateByIssue()`) หรือโดย `approve()` ครั้งสุดท้าย เพดาน `issued_qty ≤ approved_qty` ก็ไม่ถูกบังคับใช้เช่นกัน; จุดหยุดจริงเพียงจุดเดียวคือการบริโภค cost-layer ที่ throw `Insufficient stock` เมื่อ on-hand ที่ต้นทางไม่พอ |
 | `last_action` | `enum_last_action` | Yes | Action ล่าสุดบนบรรทัด; default `submitted` |
 | `approved_message` | `String @db.VarChar` | Yes | โน้ตของผู้อนุมัติแบบอิสระ |
 | `approved_by_id` | `String @db.Uuid` | Yes | user id ที่อนุมัติบรรทัด |
@@ -180,9 +183,10 @@ tb_store_requisition_detail ──1──*──► tb_inventory_transaction_det
   - `completed` — fulfillment ถูก post: stock-OUT ที่ต้นทาง (และในกรณี `transfer` คือ stock-IN ที่ปลายทาง) ถูกเขียนผ่าน `tb_store_requisition_detail.inventory_transaction_id`; on-hand ที่ต้นทางถูกลด; cost-layer ถูกใช้ (การ post GL/journal-entry จาก event นี้ยังไม่ยืนยัน — ดูส่วนที่ 5 ข้อ 7) เอกสารถูกล็อก; การแก้ไขต้องทำผ่าน compensating adjustment ใน `[inventory-adjustment](/th/inventory/inventory-adjustment)`
   - `cancelled` — นิยามไว้ใน enum ที่ใช้ร่วมกัน แต่**ไม่พบ method ใดใน `store-requisition.service.ts` ที่ตั้งค่านี้**; ให้ถือว่าเข้าถึงไม่ได้ในปัจจุบัน ไม่ใช่ user path ที่มีการบันทึกไว้ (หน้านี้ในเวอร์ชันก่อนหน้าเคยอธิบาย path การถอนคำขอโดยผู้ขอและ path การ auto-cancel เมื่อทุกบรรทัดถูก reject ว่าจบที่สถานะนี้ — ยังไม่ได้รับการยืนยัน ดูส่วนที่ 5 ข้อ 11)
   - `voided` — คือปลายทางที่แท้จริงของ `StoreRequisitionService.reject()` ซึ่งตั้ง `doc_status = voided` โดยไม่มีเงื่อนไขในทุก whole-document reject call กระทำโดยผู้ที่ถือขั้น workflow ปัจจุบัน (ไม่ได้จำกัดเฉพาะ role "Inventory Controller / Sysadmin admin-void" — ไม่พบข้อจำกัดเช่นนั้นใน code) ไม่กระทบสต๊อกหรือ GL จุดสิ้นสุด
-- **`enum_sr_type`**: ประเภทการเคลื่อนย้าย SR สำหรับ `tb_store_requisition.sr_type` default `transfer` สองค่า:
-  - `issue` — สต๊อกออกจาก inventory และถูกบริโภคทันทีที่ cost-centre ของปลายทาง (เบิกครัว เบิกบาร์) ต้องการ `to_location.location_type = 'direct'` stock-OUT ครั้งเดียวที่ต้นทาง; มูลค่าส่งไปยังบัญชีค่าใช้จ่ายการบริโภคของปลายทางบน cost-centre
-  - `transfer` — สต๊อกเคลื่อนย้ายระหว่างสองสถานที่ที่ถือ inventory โดยยังไม่ถูกบริโภค ต้องการ `to_location.location_type = 'inventory'` stock-OUT ที่ต้นทางและ stock-IN ที่ปลายทางคู่กัน; มูลค่าย้ายจากบัญชี inventory หนึ่งไปอีกบัญชี ยังไม่รับรู้ค่าใช้จ่าย
+- **`enum_location_type`** (`tb_location.location_type` ควบคุม `sr_type`): `inventory`, `direct`, `consignment` สำหรับ SR `consignment` ทำตัวเหมือน `inventory` (เป็นต้นทางที่ถูกต้อง; เป็นปลายทางจะได้ `transfer`)
+- **`enum_sr_type`**: ประเภทการเคลื่อนย้าย SR สำหรับ `tb_store_requisition.sr_type` default `transfer` ถูก derive โดย `deriveSrType()` ตอน create — ไม่เคยรับจาก client สองค่า:
+  - `issue` — สต๊อกออกจาก inventory และถูกบริโภคทันทีที่ cost-centre ของปลายทาง (เบิกครัว เบิกบาร์) เกิดเมื่อ `to_location.location_type = 'direct'` stock-OUT ครั้งเดียวที่ต้นทาง; มูลค่าส่งไปยังบัญชีค่าใช้จ่ายการบริโภคของปลายทางบน cost-centre
+  - `transfer` — สต๊อกเคลื่อนย้ายระหว่างสองสถานที่ที่ถือ inventory โดยยังไม่ถูกบริโภค เกิดเมื่อ `to_location.location_type` เป็น `inventory` หรือ `consignment` stock-OUT ที่ต้นทางและ stock-IN ที่ปลายทางคู่กัน; มูลค่าย้ายจากบัญชี inventory หนึ่งไปอีกบัญชี ยังไม่รับรู้ค่าใช้จ่าย
 - **`enum_inventory_doc_type`** (ใช้ร่วม ไม่ได้อยู่บน `tb_store_requisition` โดยตรง แต่อยู่บน `tb_inventory_transaction.inventory_doc_type` ที่ลิงก์): ระบุ `store_requisition` เป็นหนึ่งในเจ็ดค่า (`good_received_note`, `credit_note`, `store_requisition`, `stock_in`, `stock_out`, `close`, `open`) inventory transaction ที่สร้างตอน commit จะ stamp `store_requisition` ที่นี่ ดังนั้น query ปลายน้ำสามารถ filter inventory movement ตามประเภทเอกสารต้นกำเนิด
 - **`enum_comment_type`** (ใช้ร่วมกับ PR / PO / GRN): `user` (comment ที่มนุษย์เขียน), `system` (รายการ activity-log ที่ workflow engine สร้างอัตโนมัติ) ใช้โดยทั้ง `tb_store_requisition_comment.type` และ `tb_store_requisition_detail_comment.type`
 - **`enum_last_action`** (ใช้ร่วมกับ PR / PO / GRN): `submitted`, `approved`, `reviewed`, `rejected` — ใช้โดย `tb_store_requisition.last_action` และ `tb_store_requisition_detail.last_action` เพื่อจับ action workflow ล่าสุด
@@ -205,9 +209,13 @@ tb_store_requisition_detail ──1──*──► tb_inventory_transaction_det
 | 10 | Uniqueness ต่อบรรทัดที่อิง dimension | Tech Spec และ Component-Specifications บรรยายว่าบรรทัด key ด้วย `product_id` เพียงอย่างเดียว | unique index `SRT1_store_requisition_product_location_dimension_u` คือ `(store_requisition_id, product_id, dimension, deleted_at)` — สินค้าเดียวสามารถปรากฏหลายครั้งบน SR เดียวได้ตราบเท่าที่แต่ละครั้งมี `dimension` JSON ต่างกัน (การจัดสรร cost-centre แยกกัน) | ระบุ uniqueness ที่ตระหนัก dimension: การจัดสรร cost-centre แบบ split บนสินค้าเดียวกันถูก model เป็นบรรทัดแยก ไม่ใช่ aggregate |
 | 11 | `cancelled` ในฐานะสถานะที่เข้าถึงได้ (เพิ่มในรอบนี้ ไม่ใช่จุดต่างจาก carmen/docs) | หน้านี้ในเวอร์ชันก่อนหน้า (และหน้า business-rules / user-flow) เคยอธิบาย path การถอนคำขอโดยผู้ขอและ path การ auto-cancel เมื่อทุกบรรทัดถูก reject ว่าทั้งสองจบที่ `cancelled` โดยสงวน `voided` ไว้สำหรับ "admin void" แยกต่างหากโดย Inventory-Controller/Sysadmin | `StoreRequisitionService.reject()` (`store-requisition.service.ts`) ตั้ง `doc_status = enum_doc_status.voided` โดยไม่มีเงื่อนไขในทุก whole-document reject call; ไม่มี method ใดในเซอร์วิสนี้ที่ตั้งค่า `cancelled` เลย action `voided` กระทำโดยผู้ที่ถือขั้น workflow ปัจจุบัน — ไม่มี endpoint "void" เฉพาะ admin แยกต่างหาก | แก้ไขแล้วในรอบนี้ — ดู bullet ของ enum ด้านบนและ [02-business-rules.md](/th/inventory/store-requisition/02-business-rules) §5 |
 | 12 | การเลือก lot โดย Fulfiller/store-keeper (เพิ่มในรอบนี้ ไม่ใช่จุดต่างจาก carmen/docs) | หน้านี้ในเวอร์ชันก่อนหน้าและหน้า persona เคยอธิบายว่า store keeper เปิด "lot sub-form" เพื่อเลือก lot เฉพาะตอน issue | `createFifoConsumption()` ใน `inventory-transaction.service.ts` เลือก lot โดยอัตโนมัติ (`getAvailableFifoLots` / `consumeFifoLots`); ไม่มี lot-selection UI ใน SR frontend (`grep` หา `lot_no` / `lotNo` / `LotSelect` ใต้ `routes/store-operation/store-requisition/` ไม่พบผลลัพธ์) | แก้ไขแล้วในรอบนี้ — การกำหนด lot เป็นระบบคำนวณ FIFO อัตโนมัติ ไม่ใช่ action ที่ Fulfiller ทำด้วยมือ |
+| 13 | Invariant ปริมาณสามค่า (เพิ่ม 2026-09-22 ไม่ใช่จุดต่างจาก carmen/docs) | หน้านี้และ `02-business-rules` ในเวอร์ชันก่อนหน้าระบุว่า `0 ≤ issued_qty ≤ approved_qty ≤ requested_qty` "ถูกบังคับใช้ที่ระดับค่าในทุกการบันทึกและ transition" | `store-requisition-detail.dto.ts` กำหนด type ของ `approved_qty` / `issued_qty` เป็น `z.number()` ธรรมดา; `saveStageRoleDetails()` เขียน `detail[qtyField]` ตรง ๆ และ `approve()` spread payload เข้า update; frontend `sr-form-schema.ts` จำกัดเพียง `requested_qty ≥ 0` (รายงาน gap ของ e2e `701-sr-gap.md` fact 6 บันทึกเรื่องเดียวกัน) มีเพียง `requested_qty > 0` ตอน submit เท่านั้นที่เป็นของจริง | แก้ไขในที่ทั่วทั้งโมดูลนี้ — ให้ถือลำดับนี้เป็น convention ของ UI ไม่ใช่ control |
+| 14 | `sr_type` ในฐานะ input จาก client (เพิ่ม 2026-09-22) | หน้าก่อนหน้าบรรยายว่าผู้ขอ "เลือก" `issue` กับ `transfer` และมี validation rule ปฏิเสธปลายทางที่ไม่เข้ากัน | `sr_type` ถูก derive จาก `location_type` ทั้งสองโดย `deriveSrType()`; การปฏิเสธเดียวคือต้นทางแบบ `direct` frontend ทำแบบเดียวกัน (`derivedSrType` ใน `sr-form.tsx`) และแสดงประเภทเป็น label แบบอ่านอย่างเดียว | แก้ไขแล้ว — ไม่มีตัวเลือกประเภทการเคลื่อนย้ายและไม่มี compatibility error ให้ทดสอบ |
+| 15 | Open-period gate บนวันที่ SR (เพิ่ม 2026-09-22) | รอบ 2026-07-15 ไม่พบการอ้างอิง `period` ในโมดูล SR และทำเครื่องหมายการบล็อก closed-period ใด ๆ ว่ายังไม่ยืนยัน | `logic/sr-date.helper.ts` (2026-09-18) resolve `sr_date` ตอน submit และ `issue_at` ที่ขั้น issue เทียบกับ `tb_inventory_period` (`findOpenPeriodForDate` / `findCurrentOpenPeriod`) พร้อม error-catalog codes `SR_DATE_PATTERN_REQUIRED`, `SR_NO_OPEN_PERIOD`, `SR_DATE_OUTSIDE_OPEN_PERIOD`, `SR_ISSUE_DATE_PATTERN_REQUIRED`, `SR_ISSUE_DATE_TODAY_OUTSIDE_PERIOD` (ทั้งหมด 422) | แก้ไขแล้ว — `SR_VAL_014` ใน `02-business-rules` เป็นกฎที่ยืนยันแล้ว |
 
 ## 6. แหล่งอ้างอิง
 
+- **Backend logic ที่อ้างถึงด้านบน:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/store-requisition/store-requisition.service.ts` (`create`, `submit`, `approve`, `saveStageRoleDetails`, `generateSRNo`), `logic/sr-type.helper.ts`, `logic/sr-date.helper.ts`, `logic/sr-department.helper.ts`, `dto/store-requisition.dto.ts` (`StoreRequisitionCreateSchema`, `ValidateSRBeforeSubmitSchema`), `dto/store-requisition-detail.dto.ts`; error codes ใน `packages/error-catalog/src/catalog.ts`; migration `20260619120000_sr_issue_fields`
 - **Primary (source of truth):** Prisma schemas ที่ระบุใน header callout — โดยเฉพาะ `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (โมเดล SR ทั้งสี่, `enum_sr_type` เฉพาะ SR, `enum_doc_status` / `enum_inventory_doc_type` / `enum_comment_type` / `enum_last_action` ที่ใช้ร่วม และตระกูล `tb_inventory_transaction*` ที่เกี่ยวข้อง) และ `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (ตรวจสอบแล้วว่าไม่มีโมเดล SR)
 - **Secondary (cross-check แนวคิด):**
   - `../carmen/docs/store-requisitions/SR-Overview.md` — วัตถุประสงค์โมดูล บริบทธุรกิจ ฟีเจอร์สำคัญ user roles; จุดที่ต่างในส่วนที่ 5 (ข้อ 2, 3, 4)

@@ -2,7 +2,7 @@
 title: Vendor Pricelist — Test Scenarios
 description: Test cases by persona, cross-persona scenarios, and E2E mapping for vendor-pricelist.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-23T01:30:00.000Z'
 tags: vendor-pricelist, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -19,7 +19,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 
 This page is the overview entry point for the test-scenario set of the `vendor-pricelist` module. The previous version of this page described four personas (Purchaser, Vendor, Finance, Audit/Config) and ~12 cross-persona handoff scenarios built around a quality-scored, threshold-gated, multi-status campaign workflow. Re-verifying against the real frontend/backend (2026-07-16, re-checked 2026-09-22) found that workflow does not exist — this module is five plain CRUD screens (Vendor, Certification, Price List, Price List Template, Request for Pricing) plus an external vendor portal that, since 2026-08/09, really saves and submits (the Save/Submit gap reported on 2026-07-16 is closed). Test coverage below is re-anchored to that reality.
 
-Scope of testing on the vendor-pricelist module: **functional coverage** of create/edit/delete on all four screens plus the template's dedicated status-flip endpoint; **the vendor portal round-trip** (open → save → submit → `submitted`, and expiry at `end_date`); **the RFQ send-email action**; **validation** of the checks that are actually implemented (see [02-business-rules](/en/inventory/vendor-pricelist/02-business-rules) § 2 for which rule IDs are confirmed vs. design-target); and **the `price-compare` mechanism** that downstream PR/PO pricing consumes.
+Scope of testing on the vendor-pricelist module: **functional coverage** of create/edit/delete on all five screens plus the template's dedicated status-flip endpoint; **the vendor portal round-trip** (open → save → submit → `submitted`, and expiry at `end_date`); **the RFQ send-email action**; **validation** of the checks that are actually implemented (see [02-business-rules](/en/inventory/vendor-pricelist/02-business-rules) § 2 for which rule IDs are confirmed vs. design-target); and **the `price-compare` mechanism** that downstream PR/PO pricing consumes.
 
 ## 2. Personas in Scope
 
