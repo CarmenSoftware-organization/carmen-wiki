@@ -2,7 +2,7 @@
 title: พูลฐานข้อมูล (Database Pools)
 description: ทะเบียน CRUD ของ Postgres connection pool ที่แชร์กันระดับแพลตฟอร์ม (tb_database_pool) — แหล่งเดียวของ credential ฐานข้อมูล tenant หลังจาก tb_business_unit.db_connection ถูกลบออกจริง แทนที่ด้วย database_pool_id + db_schema
 published: true
-date: '2026-09-06T21:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, database-pools
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **จุดประสงค์โมดูล:** ทะเบียนของเซิร์ฟเวอร์ฐานข้อมูลที่แชร์กันระดับแพลตฟอร์ม ซึ่ง business unit แต่ละตัวชี้ schema ของ tenant ตัวเองไปหา — โมดูลนี้เป็นเจ้าของ `tb_database_pool` ตารางที่ `tb_business_unit.database_pool_id` ถูกผูกไปหลังจาก `db_connection` ถูกลบ &nbsp;·&nbsp; **หน้าจอ:** `DatabasePoolManagement` (รายการ, `/platform/database-pools`) และ `DatabasePoolEdit` ใช้ทั้งสร้าง (`/platform/database-pools/new`) และแก้ไข (`/platform/database-pools/:id/edit`) &nbsp;·&nbsp; **Sidebar:** `permission: 'database_pool.read'` กลุ่ม `navGroup.database` (อยู่กลุ่มเดียวกับ [Platform Migrations](/th/platform/platform-migrations) และ `sql_workbench`) &nbsp;·&nbsp; **Feature flag:** `database_pools` &nbsp;·&nbsp; **`superAdminOnly`:** ไม่ใช่ — gate ด้วย RBAC permission ปกติ ไม่ใช่ flag super-admin &nbsp;·&nbsp; **โมเดลสอง permission:** `database_pool.read` (list/get และ — ดู §4 — เป็น permission **เดียว** ที่ frontend route guard เช็คบนทั้งสามเส้นทาง รวมถึง `/new` และ `/:id/edit`) กับ `database_pool.manage` (create/update/delete บังคับด้วย `<Can>` บนทุกปุ่มที่เขียนข้อมูล **และ** เช็คซ้ำใน submit handler) &nbsp;·&nbsp; **ความลับ:** ทุก pool มี `password` ที่รับเข้ามาเป็น plaintext แต่เก็บเป็น ciphertext — API มาสก์เป็น `••••••` ในทุก response และ**ไม่มี endpoint เปิดเผยค่าจริง**เลยในโค้ดชุดนี้ &nbsp;·&nbsp; **e2e suite:** ไม่มี — `../carmen-platform-e2e/tests/` ไม่มีโฟลเดอร์ `database-pools` &nbsp;·&nbsp; **หน้าย่อย:** 2
+
+![พูลฐานข้อมูล (Database Pools) screen](/screenshots/platform/database-pools/index.png)
 
 ## 1. ภาพรวม
 

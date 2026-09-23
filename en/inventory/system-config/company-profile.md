@@ -2,7 +2,7 @@
 title: Company Profile & Default Setting
 description: Two system-admin screens editing disjoint field groups of the same tb_business_unit row — Company Profile (identity, address, formats) and Default Setting (PR/SI/PO config + print forms). Permission system_admin.business_unit.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: system-config, business-unit, company-profile, default-setting, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T10:30:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-07-29T10:30:00.000Z
 
 > **At a Glance**
 > **Routes:** `/system-admin/company-profile`, `/system-admin/default-setting` &nbsp;·&nbsp; **Redirect:** `/system-admin/business-setting` → `/system-admin/company-profile` (client-side `<Navigate replace>`, no screen of its own) &nbsp;·&nbsp; **Table:** `tb_business_unit` (platform schema) — same row as [master-data/business-unit](/en/inventory/master-data/business-unit), disjoint field groups &nbsp;·&nbsp; **Endpoint:** `GET`/`PATCH /api/business-units` (no id in the URL — resolved server-side from the caller's token/BU context; `AppIdGuard('userBusinessUnit.getCurrent' | 'patchCurrent')`, `user-business-units.controller.ts:122-245`) &nbsp;·&nbsp; **Permission:** `system_admin.business_unit.view` / `.update` (both screens; `constant/permissions.ts` — the `system_configuration.view` key this page cited was a frontend ghost that never existed in `tb_permission`, replaced on 2026-09-21 by FE `b9e2de5f`) &nbsp;·&nbsp; **Licence:** `system_admin`.
+
+![Company Profile & Default Setting screen](/screenshots/system-config/company-profile.png)
 
 ## Implementation status (re-verified 2026-09-22)
 

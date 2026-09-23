@@ -2,7 +2,7 @@
 title: พูลฐานข้อมูล — หน้าจอ UI (UI Screens)
 description: หน้ารายการของ DatabasePoolManagement ที่ยุบทุกแถวเหลือ DSN เดียวพร้อมปุ่มคัดลอก และหน้าบันทึก/ฟอร์มของ DatabasePoolEdit — รวมถึงช่องรหัสผ่านที่มาสก์และไม่มีทางเปิดเผยค่าจริง
 published: true
-date: '2026-09-06T21:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, database-pools, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -11,6 +11,10 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # พูลฐานข้อมูล — หน้าจอ UI (UI Screens)
 
 > **หน้าจอ:** `DatabasePoolManagement` (รายการ, `/platform/database-pools`) &nbsp;·&nbsp; `DatabasePoolEdit` — component เดียวทั้งสร้าง (`/platform/database-pools/new`) และแก้ไข (`/platform/database-pools/:id/edit`) &nbsp;·&nbsp; **ไม่มีแท็บ ไม่มี wizard** — การ์ดเดียวทั้งโหมดสร้างและแก้ไข &nbsp;·&nbsp; **Dialog:** ยืนยันการลบ pool &nbsp;·&nbsp; **สถานะที่ persist ใน UI:** 5 key `localStorage` บนหน้ารายการ (search/filters/page/perpage/sort); หน้าแก้ไขไม่ persist อะไรเลย &nbsp;·&nbsp; **Concurrency:** optimistic lock `doc_version` จำเป็นต้องส่งทุกครั้งที่บันทึก &nbsp;·&nbsp; **ภาพหน้าจอ:** เลื่อนออกไปตามแผน — ยังไม่มี asset ภาพหน้าจอสำหรับโมดูลนี้
+
+![พูลฐานข้อมูล — หน้าจอ UI (UI Screens) screen](/screenshots/platform/database-pools/ui-screens.png)
+
+![พูลฐานข้อมูล — หน้าจอ UI (UI Screens) form screen](/screenshots/platform/database-pools/ui-screens-form.png)
 
 ## 1. ภาพรวม
 

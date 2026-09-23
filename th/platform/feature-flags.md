@@ -2,7 +2,7 @@
 title: แฟล็กฟีเจอร์ (Feature Flags)
 description: หน้าเดียวที่ตั้งค่าการมองเห็นของทุกฟีเจอร์ (active/inactive/hide) ทั้งฝั่ง Platform admin และ Cluster-admin — ตั้งใจให้ไม่มี feature key ของตัวเอง เพราะสวิตช์ที่ปิดตัวเองได้จะเปิดกลับไม่ได้อีกจากหน้าจอ
 published: true
-date: '2026-09-06T23:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, feature-flags
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -14,6 +14,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **Component:** `FeatureFlagManagement` &nbsp;·&nbsp; **Route:** `/platform/features` &nbsp;·&nbsp; **Nav:** `permission: 'feature_flag.manage'` **ไม่มี `feature` key** — ตั้งใจไม่ gate ด้วย feature flag (§2) &nbsp;·&nbsp; **ด่านอ่าน:** ไม่มี — `GET` เปิดให้ทุกคนที่ล็อกอินแล้ว (§4.2) &nbsp;·&nbsp; **ด่านเขียน:** `feature_flag.manage` เท่านั้น มีเฉพาะ role bundle `Platform Admin` ในบรรดา role แพลตฟอร์มที่ seed ไว้ทั้งสี่ (§4.1) &nbsp;·&nbsp; **ขอบเขต:** flag key ทั้งหมด 28 ตัว — 24 ตัวสำหรับ Platform console และ 4 ตัวสำหรับ Cluster-admin console ที่แยกต่างหาก (§3.3) &nbsp;·&nbsp; **ชุดทดสอบ e2e:** **ไม่มี** — `../carmen-platform-e2e/tests/` ไม่มีโฟลเดอร์ `feature-flags` เลย ทุกข้อความในหน้านี้มาจากการอ่าน implementation ของ `../carmen-platform` และ `../carmen-turborepo-backend-v2` โดยตรง (§4.4) &nbsp;·&nbsp; **หน้าย่อย:** 1
+
+![แฟล็กฟีเจอร์ (Feature Flags) screen](/screenshots/platform/feature-flags/index.png)
 
 ## 1. ภาพรวม
 

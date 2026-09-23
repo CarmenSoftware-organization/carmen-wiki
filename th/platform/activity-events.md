@@ -2,7 +2,7 @@
 title: บันทึกกิจกรรม (Activity Events)
 description: หน้า explorer ของ UI telemetry แบบรายอีเวนต์ที่ /activity-events — ทุกตัวกรองและคอลัมน์ สิทธิ์ activity_event.detail ที่ใช้ร่วมกัน (แต่ไม่ซ้ำกัน) กับ Usage Analytics และเหตุผลที่หน้านี้ไม่ใช่ audit trail ของ activity_log
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, activity-events
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -13,6 +13,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 **Activity Events** คือหน้าเดียว `ActivityEventManagement` ที่เข้าถึงได้ที่ route **`/activity-events`** — route กับ slug ของโมดูลนี้ตรงกัน ต่างจากโมดูลพี่น้อง มันคือคู่แบบรายแถวของ [Usage Analytics](/th/platform/usage-analytics) — ในขณะที่แดชบอร์ดนั้นแสดงตัวเลขสรุป หน้านี้แสดงรายการ UI telemetry แบบรายแถว (หนึ่งแถวต่อหนึ่งการคลิกหรือการเปิดหน้า) จากตารางเดียวกัน คือ `tb_activity_event` พร้อมตัวกรอง การเรียงลำดับ การ export CSV และมุมมองรายละเอียดเต็มต่อแถว
 
 **นี่ไม่ใช่ audit trail** หน้าจอที่มีชื่อคล้ายกัน — ปุ่ม "View History" บน Clusters, Business Units, Users และ Report Templates — อ่านจากตารางที่ต่างกันโดยสิ้นเชิง (`tb_activity`, resource key `activity_log`) ซึ่งบันทึกว่าใครเปลี่ยนฟิลด์ไหนของเรคคอร์ดระดับแพลตฟอร์ม พร้อมค่าก่อน/หลัง หน้านี้ไม่มีความเกี่ยวข้องกับฟีเจอร์นั้นเลย ดูรายละเอียดเต็มที่ §2 (draft ก่อนหน้าของหน้านี้เคยปนสองระบบนี้เข้าด้วยกัน — แก้ไขแล้วในเวอร์ชันนี้)
+
+![บันทึกกิจกรรม (Activity Events) screen](/screenshots/platform/activity-events/index.png)
 
 ## 1. ภาพรวม
 

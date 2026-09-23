@@ -2,7 +2,7 @@
 title: ผู้ใช้แพลตฟอร์ม — หน้าจอ UI (UI Screens)
 description: ทะเบียนของ UserPlatformManagement (PlatformAccessSummary, RoleChips, Grant Access) และแฟ้มรายบุคคลของ UserPlatformEdit (AccessReachBand, RoleGrantList, MembershipCard) พร้อมสองจุดที่ e2e suite ของ user-platform ไม่ตรงกับ UI นี้แล้ว
 published: true
-date: '2026-09-06T19:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, user-platform, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **หน้าจอ:** `UserPlatformManagement` (`/platform/user-platform`) &nbsp;·&nbsp; `UserPlatformEdit` (`/platform/user-platform/:userId` ไม่มี `/edit` ต่อท้าย — ดู [Landing](/th/platform/user-platform) §1) &nbsp;·&nbsp; **เปลือกที่ใช้ร่วมกัน:** `Layout`, `PageHeader`, `DevDebugSheet` เฉพาะตอน dev บนทั้งสองหน้าจอ, `useGlobalShortcuts` &nbsp;·&nbsp; **e2e suite:** `user-platform` (2 specs, `../carmen-platform-e2e`, HEAD `a8e3b31`, 2026-08-25) — **ทั้งสอง spec มีมาก่อนการเขียนใหม่เมื่อ 2026-09-02 และไม่ตรงกับ markup ปัจจุบันแล้ว** — ดู §4
+
+![ผู้ใช้แพลตฟอร์ม — หน้าจอ UI (UI Screens) screen](/screenshots/platform/user-platform/ui-screens.png)
 
 ## 1. ภาพรวม
 

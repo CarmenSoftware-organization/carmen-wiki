@@ -2,7 +2,7 @@
 title: Applications — UI Screens
 description: The ApplicationManagement list and the ApplicationEdit form, including the grouped-accordion API Names selector and its ChipInput fallback.
 published: true
-date: '2026-09-22T17:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, applications, ui
 editor: markdown
 dateCreated: 2026-06-10T12:30:00.000Z
@@ -12,6 +12,10 @@ dateCreated: 2026-06-10T12:30:00.000Z
 
 > **At a Glance**
 > **Screens:** `ApplicationManagement` (`/applications`) · `ApplicationEdit` (`/applications/new`, `/applications/:id/edit`) &nbsp;·&nbsp; **New since last sync (2026-09-02, `#254`/`#255`):** the Access column and the edit-page hero/API-access card now share one **reach ruler** (`utils/apiReach.ts`'s `reachOf()`) — a bar + `granted/catalogSize` fraction anchored against the live API catalog (900 keys / 148 modules, per `../carmen-turborepo-backend-v2` commit `fa64299f1`, 2026-09-04), replacing the old "All APIs"/"N APIs" badge; the list's Status column is gone (folded into an exception-only Inactive badge beside Name); Device is now quiet text, not a badge; authority-verb chips (`delete`/`approve`/`submit`/…) are tinted and sorted first; stale/retired grants and never-reached modules are now called out explicitly &nbsp;·&nbsp; **Also new:** cross-cutting **View History** (`activity_log.read`, `PLATFORM_SCOPED_RECORD`) on the list row menu and the edit hero; the Registry strip reads a dedicated `GET /api-system/applications/summary` endpoint (2026-08-24) instead of a client-side sweep; Created/Updated now render via the shared `auditColumns()`/`AuditMeta` (relative time + tooltip, `everEdited` suppression) instead of a fixed timestamp string; all three routes carry a `feature="applications"` flag &nbsp;·&nbsp; **Edit layout:** still a view/edit toggle (unlike clusters/business-units' one-document rewrite) &nbsp;·&nbsp; **Signature UI:** API Names selector — accordion grouped by module, filter box, per-module All/None, action-only button labels, authority-verb tinting &nbsp;·&nbsp; **Fallback:** `ChipInput` free-text entry when the catalog fetch fails &nbsp;·&nbsp; **Persisted UI state:** 6 `localStorage` keys on the list page
+
+![Applications — UI Screens screen](/screenshots/platform/applications/ui-screens.png)
+
+![Applications — UI Screens form screen](/screenshots/platform/applications/ui-screens-form.png)
 
 ## 1. Overview
 

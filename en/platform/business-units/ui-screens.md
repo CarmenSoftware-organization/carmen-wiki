@@ -2,7 +2,7 @@
 title: Business Unit — UI Screens
 description: BusinessUnitManagement (list) and the six-tab BusinessUnitEdit — code auto-generation, the schema-name randomizer, and the Licenses tab split out of Users.
 published: true
-date: '2026-09-22T17:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, business-units, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -12,6 +12,10 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 > **At a Glance**
 > **Screens:** `BusinessUnitManagement` (list, `/business-units`) &nbsp;·&nbsp; `BusinessUnitEdit` create (`/business-units/new`) &nbsp;·&nbsp; `BusinessUnitEdit` edit (`/business-units/:id/edit`) &nbsp;·&nbsp; **Edit layout — rewritten a second time since the last sync:** the "one-document" continuous scroll (hero + inline groups + collapsible sections in one page) was itself replaced by a **6-tab document** — General, Location, Formats, Technical, Users, Licenses — behind a pinned `ClusterPlate`-style hero + `TabStrip`, the same redesign pattern [clusters](/en/platform/clusters/ui-screens) went through &nbsp;·&nbsp; **Four confirmed behavior changes:** (a) `code` is no longer typed by the user — the backend generates it; (b) the Technical tab has a schema-name randomizer button; (c) **Licenses is its own tab**, split out of Users; (d) the Licenses tab has a **New subscription** button &nbsp;·&nbsp; **Dialogs:** Add User to BU · Edit BU User · Remove BU User confirm · Soft Delete BU confirm · Repoint database pool/schema confirm &nbsp;·&nbsp; **Access:** route guards reuse `cluster.read` / `cluster.create` / `cluster.update`, all three gated behind the `business_units` feature flag too; Add/Edit/Delete buttons behind `<Can>` gates (see [business-units](/en/platform/business-units) §4) &nbsp;·&nbsp; **Persisted UI state:** 6 `localStorage` keys on the list; the edit page's active tab lives in `?tab=`, not `localStorage` &nbsp;·&nbsp; **Concurrency:** `doc_version` optimistic lock on save
+
+![Business Unit — UI Screens screen](/screenshots/platform/business-units/ui-screens.png)
+
+![Business Unit — UI Screens form screen](/screenshots/platform/business-units/ui-screens-form.png)
 
 ## 1. Overview
 

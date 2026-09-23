@@ -2,7 +2,7 @@
 title: การแจ้งเตือน (Notification)
 description: Fan-out การแจ้งเตือนหลัง redesign 2026-08 — แถวส่วนตัว (doc_type + event), broadcast ของระบบ/BU พร้อมสถานะอ่านต่อผู้ใช้แบบ lazy, bridge ภายใน NotifyInput และข่าวแพลตฟอร์มที่ scope ตาม BU พร้อม lifecycle การ publish
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: reporting-audit, notification, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Workflow runtime + micro-cronjobs/micro-report (เขียน) · Platform Admin (broadcast `broadcast.send`, ข่าว) · BU admin (`tb_notification_template` ต่อ BU สำหรับข้อความอีเมล/in-app) &nbsp;·&nbsp; **ตาราง (platform):** `tb_notification` (ส่วนตัว) + `tb_broadcast_notification` / `tb_user_broadcast_action` (broadcast) + `tb_news` &nbsp;·&nbsp; **หายไปแล้ว:** `tb_message_format` (ลบเมื่อ 2026-08-11) &nbsp;·&nbsp; **ใช้โดย:** ทุกการเปลี่ยน stage ของ workflow, comment, การส่งมอบรายงานตามเวลา, ข่าวประกาศแพลตฟอร์ม
+
+![การแจ้งเตือน (Notification) screen](/screenshots/reporting-audit/notification.png)
 
 ## สถานะการทำงานจริง (ตรวจสอบซ้ำเมื่อ 2026-09-22)
 

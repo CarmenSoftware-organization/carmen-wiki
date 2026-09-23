@@ -2,7 +2,7 @@
 title: ข่าวสาร (News)
 description: ภาพรวมโมดูล News — ประกาศแบบ markdown พร้อมรูปภาพแบบ optional, tags, lifecycle ของสถานะ draft → published → archived, การกำหนดเป้าหมายแบบ global หรือราย BU และ bulk publish/archive/delete เขียนใน admin SPA และส่งมอบผ่าน public endpoint แบบ anonymous
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: platform/news, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T15:45:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-06-10T15:45:00.000Z
 
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** เขียนและจัดการประกาศ — `contents` แบบ markdown, รูปภาพแบบ optional (อัพโหลด multipart → file token ของ MinIO → presigned `image_url`), tags แบบอิสระ, lifecycle ของสถานะพร้อม `published_at` ที่ server ประทับให้, การกำหนดเป้าหมายแบบ global หรือราย BU, bulk publish/archive/delete &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับ Platform admin SPA, โมดูล news ของ backend-gateway และ news service ของ micro-cluster &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_news` (ตารางเดียว, `business_unit_ids` และ `tags` แบบ JSONB, `doc_version` เป็น optimistic lock, ไม่มีความสัมพันธ์ FK) &nbsp;·&nbsp; **Endpoint:** `/api/news` (CRUD แบบ authenticated — สังเกตว่าเป็น `/api` **ไม่ใช่** `/api-system`), `/api/news/tags` (รายการ tag ที่ไม่ซ้ำ), `/api/news/summary` (ค่าสรุปห้องข่าวแบบไม่กรอง เพิ่มเมื่อ 2026-08-24) และ `/api/public/news` (อ่านแบบ anonymous) &nbsp;·&nbsp; **การบังคับใช้ฝั่ง server:** `POST`/`PUT`/`DELETE` ตรวจสอบ permission `news.create`/`.update`/`.delete` ของผู้เรียกเอง (`PlatformPermissionGuard` เพิ่มเมื่อ 2026-08-20); route `GET` ทั้งสี่ตรวจสอบเฉพาะ allowlist ของ `x-app-id` ของ application ที่เรียก โดยตั้งใจ เพื่อให้ผู้ใช้ระดับ tenant ของแอปมือถือ — ซึ่งไม่มี role ระดับแพลตฟอร์มเลย — ยังอ่านข่าวได้ &nbsp;·&nbsp; **หน้าย่อย:** 3
+
+![ข่าวสาร (News) screen](/screenshots/platform/news/index.png)
 
 ## 1. ภาพรวม
 

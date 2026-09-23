@@ -2,7 +2,7 @@
 title: Widget My Pending แดชบอร์ด (My Pending Dashboard Widget)
 description: "ถูกลบแล้ว เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น — ไม่เคยถูก render บน /dashboard จริง: widget นับจำนวนเอกสาร pending ส่วนตัวที่เสนอไว้ แสดงจำนวนร่างหรือเอกสารระหว่างดำเนินการของผู้ใช้ที่ล็อกอิน ครอบคลุม PR, PO และ SR"
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: dashboard, my-pending, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-06-04T00:00:00.000Z
 
 > **At a Glance**
 > **Route:** ไม่มี — ไม่เคยถูก render ที่ไหนเลย &nbsp;·&nbsp; **สถานะ:** **ถูกลบเมื่อ 2026-06-27; เป็น dead code อยู่แล้วตั้งแต่ก่อนหน้านั้น** — widget นี้ไม่เคยถูก mount บนหน้า `/dashboard` จริง แม้หน้านี้จะเคยอ้างสถานะ "Live" ไว้ก่อนหน้านี้ก็ตาม
+
+![Widget My Pending แดชบอร์ด (My Pending Dashboard Widget) screen](/screenshots/dashboard/my-pending.png)
 
 ## สถานะการ implement (ตรวจสอบเมื่อ 2026-07-16)
 

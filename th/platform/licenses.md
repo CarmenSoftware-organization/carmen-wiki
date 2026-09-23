@@ -2,7 +2,7 @@
 title: ไลเซนส์ (Licenses)
 description: License centre — บัญชีโควตา BU ต่อ cluster, บัญชีที่นั่งต่อ BU, บัญชี interface licence (INF) ต่อ BU และสัญญา subscription ที่พก feature-group entitlement พร้อมเกณฑ์ใกล้หมดอายุและ redirect เก่าจาก /subscriptions
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, licenses
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -14,6 +14,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** บัญชีซื้อสำหรับ BU-quota ระดับ cluster (`tb_cluster_license`), ที่นั่งระดับ BU (`tb_business_unit_license`) และ interface licence ระดับ BU (`tb_business_unit_interface_license` ตั้งแต่ 2026-09-10) บวกสัญญา subscription (`tb_subscription`) ที่พก feature-group entitlement &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับด้านการค้า/licensing ของ Platform admin SPA &nbsp;·&nbsp; **Route:** `/licenses` (`LicenseCenter`), `/licenses/:clusterId` (`ClusterLicenseDetail`), `/licenses/subscriptions/{new,:id/edit}` (`SubscriptionForm`), `/licenses/seats/{new,:id/edit}`, `/licenses/bu-quota/{new,:id/edit}` และ `/licenses/interface/{new,:id/edit}` (ทั้งสาม render **component เดียวกัน** คือ `LicensePurchaseForm` สลับด้วย prop `config`) &nbsp;·&nbsp; **Route เก่า:** `/subscriptions`, `/subscriptions/new`, `/subscriptions/:id/edit` ทุกตัว redirect เข้า `/licenses/...` — ลิงก์เก่ายังใช้ได้ &nbsp;·&nbsp; **Permission key:** `subscription.read` (nav + view) และ `subscription.manage` (create/edit/cancel) — **ไม่ใช่** `license.manage` ซึ่งเป็นของอีกโมดูลหนึ่ง (ดู §3) &nbsp;·&nbsp; **Feature-flag key:** `licenses` (ตรวจหลัง permission gate บนทุก route) &nbsp;·&nbsp; **Nav group:** `navGroup.licenseManagement` ("License Management") &nbsp;·&nbsp; **superAdminOnly:** ไม่ใช่ &nbsp;·&nbsp; **e2e suite:** **ไม่มี** — `../carmen-platform-e2e/tests/` ไม่มีไดเรกทอรี `licenses` เลย ทุกคำกล่าวอ้างในหน้าของโมดูลนี้มาจากการอ่าน implementation ล้วน &nbsp;·&nbsp; **หน้าย่อย:** 3
+
+![ไลเซนส์ (Licenses) screen](/screenshots/platform/licenses/index.png)
 
 ## 1. ภาพรวม
 

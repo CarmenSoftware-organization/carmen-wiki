@@ -2,7 +2,7 @@
 title: Database Pools
 description: CRUD registry of shared, platform-managed Postgres connection targets (tb_database_pool) — the single source of tenant database credentials since tb_business_unit.db_connection was physically dropped in favor of database_pool_id + db_schema.
 published: true
-date: '2026-09-06T21:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, database-pools
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **Module purpose:** Registry of shared, platform-managed database servers that business units point their tenant schema at — the module that owns `tb_database_pool`, the table `tb_business_unit.database_pool_id` was repointed to after `db_connection` was dropped &nbsp;·&nbsp; **Screens:** `DatabasePoolManagement` (list, `/platform/database-pools`) and `DatabasePoolEdit`, used for both create (`/platform/database-pools/new`) and edit (`/platform/database-pools/:id/edit`) &nbsp;·&nbsp; **Nav entry:** `permission: 'database_pool.read'`, group `navGroup.database` (alongside [Platform Migrations](/en/platform/platform-migrations) and `sql_workbench`) &nbsp;·&nbsp; **Feature flag:** `database_pools` &nbsp;·&nbsp; **`superAdminOnly`:** No — gated by ordinary RBAC permissions, not a super-admin flag &nbsp;·&nbsp; **Two-permission model:** `database_pool.read` (list/get, and — see §4 — the **only** permission the frontend route guard checks on all three routes including `/new` and `/:id/edit`) and `database_pool.manage` (create/update/delete, enforced by `<Can>` on every mutating control **and** re-checked inside the submit handler) &nbsp;·&nbsp; **Secrets:** every pool carries a plaintext-in, ciphertext-at-rest `password`; the API masks it as `••••••` in every response and has **no reveal endpoint** anywhere in this codebase &nbsp;·&nbsp; **e2e suite:** **none** — `../carmen-platform-e2e/tests/` has no `database-pools` directory &nbsp;·&nbsp; **Sub-pages:** 2
+
+![Database Pools screen](/screenshots/platform/database-pools/index.png)
 
 ## 1. Overview
 

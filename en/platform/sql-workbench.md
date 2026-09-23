@@ -2,7 +2,7 @@
 title: SQL Workbench
 description: Admin console that runs arbitrary SQL and browses/creates/drops views, procedures, and functions against a chosen tenant's database — a three-pane workbench with a virtual-scrolled result grid.
 published: true
-date: 2026-09-06T06:45:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: platform/sql-workbench, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-07-29T09:46:00.000Z
 
 > **At a Glance**
 > **Screen:** `SqlWorkbench` (`/sql-workbench`, added 2026-07-09) &nbsp;·&nbsp; **Route gate:** `sql_workbench.read` (feature key `sql_workbench`) &nbsp;·&nbsp; **Write gate:** `sql_workbench.manage` — separately controls whether Run/Save/Drop render at all, **and**, since 2026-08-20, is enforced server-side on every route that needs it (§4) &nbsp;·&nbsp; **Sidebar:** "SQL Workbench" entry in the Database group (not "Platform" — the group was split out after this page's last sync, §4) &nbsp;·&nbsp; **Backend:** the exact `config_sql-query` controller family documented from the backend side in [Query Dataset](/en/inventory/system-config/query-dataset) — this page is that service's confirmed frontend, though that page's own permission-gating section is now stale (§4)
+
+![SQL Workbench screen](/screenshots/platform/sql-workbench/index.png)
 
 ## 1. Overview
 

@@ -2,7 +2,7 @@
 title: News
 description: News module overview — markdown announcements with optional image, tags, a draft → published → archived lifecycle, global or per-BU targeting, and bulk publish/archive/delete — authored in the admin SPA and delivered through anonymous public endpoints.
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: platform/news, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T13:00:00.000Z
@@ -14,6 +14,8 @@ The **News** module manages announcements and articles for platform users: a mar
 
 > **At a Glance**
 > **Module purpose:** Author and manage announcements — markdown `contents`, optional image (multipart upload → MinIO file token → presigned `image_url`), freeform tags, status lifecycle with server-stamped `published_at`, global vs per-BU targeting, bulk publish/archive/delete &nbsp;·&nbsp; **Audience:** Developers and QA working on the Platform admin SPA, the backend-gateway news module, and the micro-cluster news service &nbsp;·&nbsp; **Key entities/tables:** `tb_news` (single table, JSONB `business_unit_ids` and `tags`, `doc_version` optimistic lock, no FK relations) &nbsp;·&nbsp; **Endpoints:** `/api/news` (authenticated CRUD — note `/api`, **not** `/api-system`), `/api/news/tags` (distinct tag list), `/api/news/summary` (unfiltered newsroom aggregate, added 2026-08-24), and `/api/public/news` (anonymous read) &nbsp;·&nbsp; **Server-side enforcement:** `POST`/`PUT`/`DELETE` check the caller's own `news.create`/`.update`/`.delete` permission (`PlatformPermissionGuard`, added 2026-08-20); the four `GET` routes check only the calling application's `x-app-id` allowlist, deliberately, so the mobile app's tenant-level users — who hold no platform role at all — can keep reading news &nbsp;·&nbsp; **Sub-pages:** 3
+
+![News screen](/screenshots/platform/news/index.png)
 
 ## 1. Overview
 

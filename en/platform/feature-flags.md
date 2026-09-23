@@ -2,7 +2,7 @@
 title: Feature Flags
 description: The single screen that sets every feature's visibility (active/inactive/hide) across the Platform and Cluster-admin consoles — ungated by any feature key of its own.
 published: true
-date: '2026-09-06T23:45:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, feature-flags
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -14,6 +14,8 @@ The **Feature Flags** module is one screen, `FeatureFlagManagement` at `/platfor
 
 > **At a Glance**
 > **Component:** `FeatureFlagManagement` &nbsp;·&nbsp; **Route:** `/platform/features` &nbsp;·&nbsp; **Nav:** `permission: 'feature_flag.manage'`, **no `feature` key** — deliberately not gated by a feature flag (§2) &nbsp;·&nbsp; **Read gate:** none — `GET` is open to every signed-in user (§4.2) &nbsp;·&nbsp; **Write gate:** `feature_flag.manage` alone, held only by the `Platform Admin` role bundle among the four seeded platform roles (§4.1) &nbsp;·&nbsp; **Scope:** 28 flag keys total — 24 for the Platform console, 4 for the separate Cluster-admin console (§3.3) &nbsp;·&nbsp; **e2e suite:** **none** — `../carmen-platform-e2e/tests/` has no `feature-flags` directory; every claim below is sourced from `../carmen-platform` and `../carmen-turborepo-backend-v2` implementation directly (§4.4) &nbsp;·&nbsp; **Sub-pages:** 1
+
+![Feature Flags screen](/screenshots/platform/feature-flags/index.png)
 
 ## 1. Overview
 

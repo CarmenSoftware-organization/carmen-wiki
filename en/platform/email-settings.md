@@ -2,7 +2,7 @@
 title: Email Settings
 description: One screen, two peer sections — a named list of SMTP sender profiles, and the routing map that decides which of the five outbound mail flows uses which profile.
 published: true
-date: '2026-09-06T20:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, email-settings
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -14,6 +14,8 @@ The **Email Settings** module is one screen, `EmailSettingManagement` at `/platf
 
 > **At a Glance**
 > **Component:** `EmailSettingManagement` &nbsp;·&nbsp; **Route:** `/platform/email-settings` &nbsp;·&nbsp; **Nav:** `permission: 'email_setting.read'`, `feature: 'email_settings'`, `groupKey: 'navGroup.platform'` (`platformNav.ts:39`) &nbsp;·&nbsp; **This module's own gate:** `email_setting.read` (view) / `email_setting.manage` (create/update/delete sender profiles, send a test email) — consistent on both frontend and backend for every one of its **own** endpoints (§4.2) &nbsp;·&nbsp; **The one surface that is *not* this module's own gate:** the Email Routing card, which reads and writes a `platform_config` row through the Platform Config module's shared endpoint — see §4.3, the mismatch this page was specifically asked to trace end to end &nbsp;·&nbsp; **e2e suite:** **None** — `../carmen-platform-e2e/tests/` has no `email-settings` directory; every claim below is sourced from `../carmen-platform` and `../carmen-turborepo-backend-v2` implementation directly &nbsp;·&nbsp; **Sub-pages:** 1
+
+![Email Settings screen](/screenshots/platform/email-settings/index.png)
 
 ## 1. Overview
 

@@ -2,7 +2,7 @@
 title: Tenant Imports
 description: TenantImportWizard at /tenant-imports, gated by the manage-not-read key data_import.manage — loads Preconfig.xlsx master data into one business unit's tenant database.
 published: true
-date: '2026-09-06T23:45:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, tenant-imports
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **Component:** `TenantImportWizard` at `/tenant-imports`, added `../carmen-platform` commit `80d6872` (2026-08-03) &nbsp;·&nbsp; **Three names, one page:** the sidebar entry reads **"Data Import"** (`labelKey: 'nav.dataImport'`, `platformNav.ts:15`), the route is `/tenant-imports`, and the page's own `PageHeader` title reads **"Tenant Data Import"** (`pages.tenantImport.title`, `src/i18n/en.ts:3211`) — a reader searching any of the three should land here &nbsp;·&nbsp; **Nav gate:** `permission: 'data_import.manage'` — a **`manage`** key, not `.read` like every other row in the Organization group (Clusters, Business Units, Tenant Migrations and Users all gate on a `.read` key); an administrator who holds only read-level access anywhere else in this book does not see this menu entry at all &nbsp;·&nbsp; **Backend gate:** the identical `data_import.manage` key, checked independently at every one of the importer's four endpoints via `@RequirePlatformPermission` (`preconfig-imports.controller.ts:104,123,149,179`) — a real RBAC check enforced on the server, not only a hidden sidebar row &nbsp;·&nbsp; **Feature flag:** `tenant_imports`, `groupKey: 'navGroup.organization'`, not `superAdminOnly` &nbsp;·&nbsp; **Scope:** one business unit's tenant database per wizard run &nbsp;·&nbsp; **e2e suite:** none — `../carmen-platform-e2e/tests/` has no `tenant-imports` (or `preconfig-import`) directory; every claim below is sourced from `../carmen-platform` and `../carmen-turborepo-backend-v2` implementation directly &nbsp;·&nbsp; **Sub-pages:** 1
+
+![Tenant Imports screen](/screenshots/platform/tenant-imports/index.png)
 
 ## 1. Overview
 

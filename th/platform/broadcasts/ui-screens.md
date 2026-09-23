@@ -2,7 +2,7 @@
 title: Broadcasts — หน้าจอ UI (UI Screens)
 description: สามหน้าจอของ Broadcasts — BroadcastManagement (list, filter, CSV export), BroadcastCompose (target, preset วันหมดอายุ, preview) และ BroadcastEdit
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, broadcasts, ui
 editor: markdown
 dateCreated: 2026-06-10T16:00:00.000Z
@@ -12,6 +12,10 @@ dateCreated: 2026-06-10T16:00:00.000Z
 
 > **At a Glance**
 > **หน้าจอ:** `BroadcastManagement` (`/broadcasts`, list) · `BroadcastCompose` (`/broadcasts/new`, ส่ง) · `BroadcastEdit` (`/broadcasts/:id/edit`, ดู/แก้) — **สามคอมโพเนนต์แยกกัน** ไม่ใช่หน้าจอเดียวที่มีหลายโหมด &nbsp;·&nbsp; **List:** แถบสรุปสถานะ, ค้นหา, sheet ของ filter, ตารางแบบ server-side, CSV export &nbsp;·&nbsp; **โครงของ Compose:** แท็บ Audience → ฟิลด์ Message → Type preset → ป้าย Related-BU → Delivery (เวลาส่ง + วันหมดอายุ) ข้างการ์ด **Preview** แบบ sticky &nbsp;·&nbsp; **โครงของ Edit:** สี่การ์ด (Info / Delivery / Content / Preview) — Content อ่านอย่างเดียวเว้นแต่ broadcast ยังเป็น `scheduled` &nbsp;·&nbsp; **ใช้ร่วมกัน:** คอมโพเนนต์ `BroadcastPreview`, `useUnsavedChanges`, Ctrl/Cmd+S, Escape, sticky action bar ด้านล่างแบบกระจก &nbsp;·&nbsp; **UI state ที่เก็บไว้:** 7 `localStorage` key เฉพาะหน้า List
+
+![Broadcasts — หน้าจอ UI (UI Screens) screen](/screenshots/platform/broadcasts/ui-screens.png)
+
+![Broadcasts — หน้าจอ UI (UI Screens) form screen](/screenshots/platform/broadcasts/ui-screens-form.png)
 
 ## 1. ภาพรวม
 

@@ -2,7 +2,7 @@
 title: ไฟล์แนบ (Attachment)
 description: registry ของ file-metadata ที่ทุกโมดูลที่มีการอัปโหลดใช้ — tb_file_tag เก็บบน MinIO ในฐานข้อมูล file-service แยกต่างหาก ให้บริการโดย micro-file ตาราง tb_attachment ของ tenant ไม่มีการอ้างอิงจากโค้ดเลยและตายแล้ว
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: reporting-audit, attachment, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** flow การอัปโหลดของโมดูลเจ้าของ &nbsp;·&nbsp; **ตาราง:** `tb_file_tag` — อยู่ใน **ฐานข้อมูล `prisma-shared-schema-file` (`CARMEN_FILE`) แยกต่างหาก** ไม่ใช่ tenant schema &nbsp;·&nbsp; **การจัดเก็บ:** MinIO &nbsp;·&nbsp; **ใช้โดย:** ทุกโมดูลที่มีการอัปโหลดไฟล์ &nbsp;·&nbsp; ตาราง `tb_attachment` ใน tenant schema ตายแล้ว — ไม่มีการอ้างอิงจากโค้ดนอกเหนือจาก schema เลย
+
+![ไฟล์แนบ (Attachment) screen](/screenshots/reporting-audit/attachment.png)
 
 ## สถานะการทำงานจริง (ตรวจสอบเมื่อ 2026-07-22)
 

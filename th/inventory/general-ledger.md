@@ -2,7 +2,7 @@
 title: บัญชีแยกประเภททั่วไป (General Ledger)
 description: ระบบย่อย GL (backend + Bruno + cron เท่านั้น ไม่มี UI) บันทึกเฉพาะส่วนที่แตะ inventory วันนี้ไม่มีอะไรใน inventory ที่ post เข้า ledger; GL master, budget, JV template และรายงานเป็นช่องว่างที่ตั้งใจเว้นไว้
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: general-ledger, inventory, carmen-software
 editor: markdown
 dateCreated: '2026-09-22T18:00:00.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-22T18:00:00.000Z'
 
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** ledger แบบ journal-voucher (`tb_gl_jv_header` / `tb_gl_jv_detail` → `tb_gl_balance`) ที่มาถึง backend เมื่อ 2026-09-09..15 โดย **ไม่มี frontend** — tree `routes/accounting` ของ React เป็น mock แบบ hardcode &nbsp;·&nbsp; **ขอบเขตของ wiki:** บันทึก **เฉพาะส่วนที่แตะ inventory**; GL master data, budget, JV template และรายงาน GL เป็นช่องว่างที่ตั้งใจเว้น (§ 1.1) &nbsp;·&nbsp; **Inventory→GL วันนี้:** **ไม่มี** — ไม่มี GRN, stock-in/out, credit note, store requisition, physical count, cost layer หรือการปิดงวด inventory ใดที่เขียน voucher (ดู [gl-posting](/th/inventory/general-ledger/gl-posting) § 2) &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_gl_jv_header`, `tb_gl_jv_detail`, `tb_gl_balance`, `tb_gl_period` (ปฏิทินคนละชุดกับ `tb_inventory_period`) &nbsp;·&nbsp; **หน้าย่อย:** 1
+
+![บัญชีแยกประเภททั่วไป (General Ledger) screen](/screenshots/general-ledger/index.png)
 
 ## 1. ภาพรวม
 

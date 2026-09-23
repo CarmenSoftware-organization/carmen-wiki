@@ -2,7 +2,7 @@
 title: SQL Workbench
 description: คอนโซล admin (/sql-workbench) ที่รัน SQL ใด ๆ และ browse/สร้าง/drop view, procedure, function ของฐานข้อมูล tenant ที่เลือก — ออกแบบใหม่เป็น workbench สามช่องพร้อม result grid แบบ virtual scroll
 published: true
-date: 2026-09-06T06:45:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: platform/sql-workbench, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-07-29T09:46:00.000Z
 
 > **At a Glance**
 > **หน้าจอ:** `SqlWorkbench` (`/sql-workbench` เพิ่มเมื่อ 2026-07-09) &nbsp;·&nbsp; **Route gate:** `sql_workbench.read` (feature key `sql_workbench`) &nbsp;·&nbsp; **Write gate:** `sql_workbench.manage` — ควบคุมแยกว่า Run/Save/Drop จะ render หรือไม่ **และ** ตั้งแต่ 2026-08-20 บังคับใช้ฝั่ง server บนทุก route ที่ต้องการแล้ว (§4) &nbsp;·&nbsp; **Sidebar:** รายการ "SQL Workbench" ในกลุ่ม Database (ไม่ใช่ "Platform" — กลุ่มถูกแยกออกหลังจากหน้านี้ sync ครั้งล่าสุด §4) &nbsp;·&nbsp; **Backend:** controller family `config_sql-query` ตัวเดียวกับที่บันทึกไว้ฝั่ง backend ใน [Query Dataset](/th/inventory/system-config/query-dataset) — หน้านี้คือ frontend ที่ยืนยันแล้วของ service นั้น แม้ว่าส่วน permission-gating ของหน้านั้นเองจะล้าสมัยไปแล้ว (§4)
+
+![SQL Workbench screen](/screenshots/platform/sql-workbench/index.png)
 
 ## 1. ภาพรวม
 

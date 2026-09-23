@@ -2,7 +2,7 @@
 title: การตั้งค่าอีเมล (Email Settings)
 description: หน้าจอเดียว สอง section ที่เป็น peer กัน — รายการโปรไฟล์ผู้ส่ง SMTP ที่ตั้งชื่อได้ กับแผนที่เส้นทางที่ตัดสินว่าอีเมลขาออกทั้งห้าเส้นทางส่งด้วยโปรไฟล์ไหน
 published: true
-date: '2026-09-06T20:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, email-settings
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -14,6 +14,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **Component:** `EmailSettingManagement` &nbsp;·&nbsp; **Route:** `/platform/email-settings` &nbsp;·&nbsp; **Nav:** `permission: 'email_setting.read'`, `feature: 'email_settings'`, `groupKey: 'navGroup.platform'` (`platformNav.ts:39`) &nbsp;·&nbsp; **ด่านของโมดูลนี้เอง:** `email_setting.read` (ดู) / `email_setting.manage` (สร้าง/แก้/ลบโปรไฟล์ผู้ส่ง, ส่งอีเมลทดสอบ) — สอดคล้องกันทั้งฝั่ง frontend และ backend สำหรับทุก endpoint **ของโมดูลนี้เอง** (§4.1) &nbsp;·&nbsp; **จุดเดียวที่ไม่ใช่ด่านของโมดูลนี้เอง:** การ์ด Email Routing ซึ่งอ่านและเขียนแถว `platform_config` ผ่าน endpoint ที่ใช้ร่วมกับโมดูล Platform Config — ดู §4.2 ความไม่ตรงกันที่หน้านี้ถูกขอให้ไล่ตามให้ครบวงจรโดยเฉพาะ &nbsp;·&nbsp; **e2e suite:** **ไม่มี** — `../carmen-platform-e2e/tests/` ไม่มีโฟลเดอร์ `email-settings` ทุกคำกล่าวอ้างด้านล่างมาจากการอ่าน implementation ของ `../carmen-platform` และ `../carmen-turborepo-backend-v2` โดยตรง &nbsp;·&nbsp; **หน้าย่อย:** 1
+
+![การตั้งค่าอีเมล (Email Settings) screen](/screenshots/platform/email-settings/index.png)
 
 ## 1. ภาพรวม
 

@@ -2,7 +2,7 @@
 title: แคตตาล็อกไลเซนส์ — หน้าจอ UI (UI Screens)
 description: กลไกแท็บของ shell LicenseCatalog แบบละเอียด, FeatureCatalogPanel (Features), GroupCatalogPanel (Bundles), LicenseFeatureGroupEdit, และส่วนประกอบตัวเลือก feature/แถบสัดส่วนที่ใช้ร่วมกัน
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, license-catalog, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **Shell:** `LicenseCatalog` (`/license-features`, `/license-feature-groups`) — component เดียว, prop `tab`, แท็บคือ route ไม่ใช่ state &nbsp;·&nbsp; **แท็บ Features:** `FeatureCatalogPanel` — เน้นอ่าน มีแค่สวิตช์ `state` ต่อแถว ไม่มี create/delete &nbsp;·&nbsp; **แท็บ Bundles:** `GroupCatalogPanel` — รายการ CRUD เต็มรูปแบบของ `tb_license_feature_group` &nbsp;·&nbsp; **ตัวแก้ไข:** `LicenseFeatureGroupEdit` (`/license-feature-groups/{new,:id/edit}`) — component เดียว สองโหมด &nbsp;·&nbsp; **ตัวเลือก feature ที่ใช้ร่วมกัน:** `FeatureSelectionCard` — ตอนนี้มีผู้เรียกใช้**เฉพาะ**ตัวแก้ไขนี้เท่านั้น ไม่ใช่หน้าจอขายใด ๆ &nbsp;·&nbsp; **ไม่มี View History / Activity Trail** — grep `src/pages/licenseCatalog/`, `src/pages/licenseFeatures/`, `LicenseCatalog.tsx`, และ `LicenseFeatureGroupEdit.tsx` หา `activity_log.read`/`ActivityTrail`/`PLATFORM_SCOPED_RECORD` ไม่พบเลย &nbsp;·&nbsp; **ไม่มี e2e suite** — ทุกคำกล่าวอ้างด้านล่างมาจาก implementation ไม่ใช่จาก test spec
+
+![แคตตาล็อกไลเซนส์ — หน้าจอ UI (UI Screens) screen](/screenshots/platform/license-catalog/ui-screens.png)
 
 ## 1. ภาพรวม
 

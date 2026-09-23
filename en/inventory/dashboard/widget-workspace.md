@@ -2,7 +2,7 @@
 title: Widget Workspace Dashboard
 description: The live /dashboard — a personalised drag-and-drop 12-column workspace where each user pins dataset-backed widgets (KPI, gauge, pie, bar, line, area, table) and status-pipeline cards from the micro-data catalog.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: dashboard, widget-workspace, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-06-04T00:00:00.000Z
 
 > **At a Glance**
 > **Route:** `/dashboard` &nbsp;·&nbsp; **For:** All operator roles post-login &nbsp;·&nbsp; **Status:** **Live** — backed by real API endpoints; dataset content depends on the micro-data dataset registry &nbsp;·&nbsp; **Scope:** Personal — each user's own saved widget layout, per business unit &nbsp;·&nbsp; **License feature:** `dashboard.widget` (`constant/module-list.ts`; license catalog `app:dashboard-widgets`)
+
+![Widget Workspace Dashboard screen](/screenshots/dashboard/widget-workspace.png)
 
 ## Implementation status (re-verified 2026-09-22)
 

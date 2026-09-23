@@ -2,7 +2,7 @@
 title: location ของผู้ใช้ (User Location, tb_location_user)
 description: Scope ของ location ต่อผู้ใช้ภายใน tenant — จำกัด user ให้อยู่ใน subset ของ location สต๊อก ตารางเปลี่ยนชื่อ tb_user_location → tb_location_user เมื่อ 2026-09-04; แก้ไขผ่าน PATCH /api/config/:bu_code/users/:user_id
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: access-control, user-location, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Sysadmin / BU Admin &nbsp;·&nbsp; **ตาราง:** `tb_location_user` (tenant; **เปลี่ยนชื่อจาก `tb_user_location` เมื่อ 2026-09-04**) &nbsp;·&nbsp; **แก้ไขผ่าน:** `PATCH /api/config/:bu_code/users/:user_id { location_id: { add[], remove[] } }` (2026-09-04) หรือ `PUT /api/config/:bu_code/locations-users/:userId` / `PUT …/user-locations/:locationId` &nbsp;·&nbsp; **อ่านโดย:** [inventory](/th/inventory/inventory), [store-requisition](/th/inventory/store-requisition), [physical-count](/th/inventory/physical-count), [spot-check](/th/inventory/spot-check) และ picker product-location ของ workflow &nbsp;·&nbsp; Filter location ระดับ row — จำกัด row สต๊อกที่ user มองเห็น
+
+![location ของผู้ใช้ (User Location, tb_location_user) screen](/screenshots/access-control/user-location.png)
 
 ## ประกาศการเปลี่ยนชื่อ (2026-09-04)
 

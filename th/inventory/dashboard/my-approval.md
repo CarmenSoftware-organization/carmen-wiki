@@ -2,7 +2,7 @@
 title: Widget My Approval แดชบอร์ด (My Approval Dashboard Widget)
 description: ถูกลบแล้ว เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น — widget คิวงานอนุมัติส่วนตัวที่เสนอไว้สำหรับ /dashboard ซึ่งไม่เคยถูก render; หน้าจริงที่ live คือหน้า My Approval ของโมดูล Procurement (/procurement/approval)
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: dashboard, my-approval, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-06-04T00:00:00.000Z
 
 > **At a Glance**
 > **Route:** ไม่มี — ไม่เคยถูก render ที่ไหนเลย &nbsp;·&nbsp; **สถานะ:** **ถูกลบเมื่อ 2026-06-27; เป็น dead code อยู่แล้วตั้งแต่ก่อนหน้านั้น** — widget นี้ไม่เคยถูก mount บนหน้า `/dashboard` จริง แม้หน้านี้จะเคยอ้างสถานะ "Live" ไว้ก่อนหน้านี้ก็ตาม คิว approval ส่วนตัวที่ live จริงคือ**คนละหน้า**: [purchase-request/my-approval](/th/inventory/purchase-request/my-approval) (`/procurement/approval`)
+
+![Widget My Approval แดชบอร์ด (My Approval Dashboard Widget) screen](/screenshots/dashboard/my-approval.png)
 
 ## สถานะการ implement (ตรวจสอบเมื่อ 2026-07-16)
 

@@ -2,7 +2,7 @@
 title: Query Dataset
 description: SQL Workbench — backend admin-SQL service ที่ UI คือ Platform SPA ทั้งห้า route gate ด้วยสิทธิ์ platform sql_workbench.read/manage; execute รัน SQL อะไรก็ได้ key system_admin.query_dataset ถูกลบเมื่อ 2026-09-21
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: system-config, query, dataset, sql, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Gate ด้วย platform permission สองตัว — `sql_workbench.read` (เรียกดู) และ `sql_workbench.manage` (รัน / บันทึก / drop) ครบ **ทั้ง 5 route** ตั้งแต่ 2026-08-20 &nbsp;·&nbsp; **การจัดเก็บ:** PostgreSQL catalog (`pg_class`, `pg_proc`) ใน tenant schema — **ไม่มี `tb_query_dataset`** &nbsp;·&nbsp; **ไม่มีหน้าจอใน*ผลิตภัณฑ์นี้*** — console อยู่ที่หน้าจอ [SQL Workbench](/th/platform/sql-workbench) ของ Platform SPA ไม่มี route/component/hook ที่ตรงกันใน `carmen-inventory-frontend-react` &nbsp;·&nbsp; **`execute` ไม่ใช่ read-only** — รัน SQL อะไรก็ได้ รวมถึง DDL และ multi-statement
+
+![Query Dataset screen](/screenshots/system-config/query-dataset.png)
 
 ## สถานะการ implement (ตรวจสอบ 2026-07-16; ตรวจสอบ permission และ UI ใหม่ 2026-09-06 และ 2026-09-22)
 

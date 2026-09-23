@@ -2,7 +2,7 @@
 title: เทมเพลตรายงาน — Form Groups
 description: หน้าจอ /report-form-groups ตอนนี้มีโมดูลระดับบนสุดของตัวเองแล้ว — หน้านี้ครอบคลุมเฉพาะส่วนที่ยังเฉพาะเจาะจงกับ Report Templates คือคอลัมน์ tb_report_template ที่ใช้ร่วมกันและการส่งต่อ Add/Edit ระหว่างสองหน้าจอ
 published: true
-date: 2026-09-06T21:00:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, report-templates, form-groups
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -11,6 +11,8 @@ dateCreated: 2026-07-29T09:46:00.000Z
 # เทมเพลตรายงาน — Form Groups
 
 > **ย้ายแล้ว:** หน้าจอ `/report-form-groups` (`ReportFormGroupManagement` มี route, รายการ sidebar และ feature key `report_form_groups` เป็นของตัวเอง) ถูก document ไว้ฉบับเต็มที่ **[กลุ่มฟอร์มรายงาน (Report Form Groups)](/th/platform/report-form-groups)** — layout, flow การตั้ง default ของกลุ่ม, กลุ่มตายตัว vs. legacy, บทบาท และกรณีขอบเขต หน้านี้ตอนนี้ครอบคลุมเฉพาะความสัมพันธ์เดียวที่ยังเฉพาะเจาะจงกับ Report Templates จริง ๆ: คอลัมน์ `tb_report_template` ที่ใช้ร่วมกัน และการส่งต่อ Add/Edit ระหว่างสองหน้าจอ
+
+![เทมเพลตรายงาน — Form Groups screen](/screenshots/platform/report-templates/form-groups.png)
 
 ## 1. สิ่งที่ Report Form Groups แก้ไขบนตารางของโมดูลนี้
 

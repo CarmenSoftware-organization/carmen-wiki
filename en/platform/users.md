@@ -2,7 +2,7 @@
 title: Users
 description: Platform-level user accounts — identity, avatars, and the cluster/BU assignments that scope what the user can reach in the inventory app. Platform-admin access itself is granted via RBAC role assignments.
 published: true
-date: '2026-09-22T17:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: platform/users, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 > **At a Glance**
 > **Module purpose:** Authoring surface for the platform-level user account — one row per person who can sign in, holding the identity fields (`username`, `email`, name parts, `alias_name`), the avatar, the `is_active` flag, and the read-only views of which clusters and BUs the user is assigned to (assignments themselves are mutated from the cluster side or, for BUs, from the Add-BU dialog inside this page). What the account can *do* in the Platform admin SPA is not stored here — that is the [RBAC](/en/platform/rbac) module's role assignments &nbsp;·&nbsp; **Audience:** Holders of the `user.read`/`user.create`/`user.update`/`user.delete` permission keys — typically Carmen support engineers and customer-side admins &nbsp;·&nbsp; **Key entities/tables:** `tb_user` + `tb_user_profile` (7 form fields: `username`, `email`, `alias_name`, `firstname`, `middlename`, `lastname`, `is_active`; plus soft-delete trio `deleted_at`/`deleted_by_name`/timestamps and a presigned `avatar_url` on read), `tb_cluster_user` (M:N cluster join — read-only here), BU-user join (M:N BU assignment with per-BU `role` of `admin`/`user` and an `is_default` flag) &nbsp;·&nbsp; **Sub-pages:** 3
+
+![Users screen](/screenshots/platform/users/index.png)
 
 ## 1. Overview
 

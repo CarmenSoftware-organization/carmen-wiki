@@ -2,7 +2,7 @@
 title: Licenses
 description: License centre — the per-cluster BU-quota ledger, the per-BU seat ledger, the per-BU interface (INF) licence ledger, and subscriptions with feature-group entitlements, plus expiry thresholds and legacy /subscriptions redirects.
 published: true
-date: '2026-09-22T17:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, licenses
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -14,6 +14,8 @@ The **Licenses** module is the platform's commercial ledger for what a cluster a
 
 > **At a Glance**
 > **Module purpose:** Purchase ledgers for cluster BU-quota (`tb_cluster_license`), BU seats (`tb_business_unit_license`) and BU interface licences (`tb_business_unit_interface_license`, since 2026-09-10), plus subscription contracts (`tb_subscription`) carrying feature-group entitlements &nbsp;·&nbsp; **Audience:** Developers and QA working on the Platform admin SPA's commercial/licensing surface &nbsp;·&nbsp; **Routes:** `/licenses` (`LicenseCenter`), `/licenses/:clusterId` (`ClusterLicenseDetail`), `/licenses/subscriptions/{new,:id/edit}` (`SubscriptionForm`), `/licenses/seats/{new,:id/edit}`, `/licenses/bu-quota/{new,:id/edit}` and `/licenses/interface/{new,:id/edit}` (all three render the **same** `LicensePurchaseForm`, switched by a `config` prop) &nbsp;·&nbsp; **Legacy routes:** `/subscriptions`, `/subscriptions/new`, `/subscriptions/:id/edit` all redirect into `/licenses/...` — old links still work &nbsp;·&nbsp; **Permission key:** `subscription.read` (nav + view) and `subscription.manage` (create/edit/cancel) — **not** `license.manage`, which belongs to a different module (see §3) &nbsp;·&nbsp; **Feature-flag key:** `licenses` (checked on every route, after the permission gate) &nbsp;·&nbsp; **Nav group:** `navGroup.licenseManagement` ("License Management") &nbsp;·&nbsp; **superAdminOnly:** No &nbsp;·&nbsp; **e2e suite:** **None** — `../carmen-platform-e2e/tests/` has no `licenses` directory; every claim in this module's pages is sourced from implementation alone &nbsp;·&nbsp; **Sub-pages:** 3
+
+![Licenses screen](/screenshots/platform/licenses/index.png)
 
 ## 1. Overview
 

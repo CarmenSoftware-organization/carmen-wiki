@@ -2,7 +2,7 @@
 title: Report Form Groups
 description: One card per fixed report_group code, each listing its form templates with a set-as-default action — the surface that replaced print-template-mapping.
 published: true
-date: '2026-09-06T23:45:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, report-form-groups
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -14,6 +14,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **Component:** `ReportFormGroupManagement` &nbsp;·&nbsp; **Route:** `/report-form-groups`, gated by `<PrivateRoute requiredPermission="report_template.read" feature="report_form_groups">` (`../carmen-platform/src/App.tsx:322-329`) &nbsp;·&nbsp; **Nav:** "Form Groups" entry in the Content sidebar group — **same `report_template.read` permission as Report Templates**, a **different** `report_form_groups` feature key (`../carmen-platform/src/components/nav/platformNav.ts:25`) &nbsp;·&nbsp; **Added:** 2026-07-24 (`bf7a28a`), the same week `print-template-mapping` was removed from the product &nbsp;·&nbsp; **Data:** every `tb_report_template` row where `template_type = "form"`, grouped by `report_group` &nbsp;·&nbsp; **Since 2026-08-22:** each row shows a compact audit line (latest actor, created or updated) &nbsp;·&nbsp; **e2e suite:** **None** — confirmed no `report-form-groups` (or similarly named) directory in `../carmen-platform-e2e/tests/` (HEAD `a8e3b31`, 2026-08-25) &nbsp;·&nbsp; **Sub-pages:** 0
+
+![Report Form Groups screen](/screenshots/platform/report-form-groups/index.png)
 
 ## 1. Overview
 

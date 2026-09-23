@@ -2,7 +2,7 @@
 title: Broadcasts — UI Screens
 description: The three Broadcasts screens — BroadcastManagement (list/filters/CSV export), BroadcastCompose (target/expiry/preview), and BroadcastEdit (content lock).
 published: true
-date: '2026-09-22T17:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, broadcasts, ui
 editor: markdown
 dateCreated: 2026-06-10T13:15:00.000Z
@@ -12,6 +12,10 @@ dateCreated: 2026-06-10T13:15:00.000Z
 
 > **At a Glance**
 > **Screens:** `BroadcastManagement` (`/broadcasts`, list) · `BroadcastCompose` (`/broadcasts/new`, send) · `BroadcastEdit` (`/broadcasts/:id/edit`, view/edit) — **three separate components**, not one screen in different modes &nbsp;·&nbsp; **List:** status-summary strip, search, filters sheet, server-side table, CSV export &nbsp;·&nbsp; **Compose layout:** Audience tabs → Message fields → Type preset → Related-BU tag → Delivery (send time + expiry) beside a sticky **Preview** card &nbsp;·&nbsp; **Edit layout:** four cards (Info / Delivery / Content / Preview) — Content is read-only unless the broadcast is still `scheduled` &nbsp;·&nbsp; **Shared:** `BroadcastPreview` component, `useUnsavedChanges`, Ctrl/Cmd+S, Escape, a glassy sticky bottom action bar &nbsp;·&nbsp; **Persisted UI state:** 7 `localStorage` keys, List screen only
+
+![Broadcasts — UI Screens screen](/screenshots/platform/broadcasts/ui-screens.png)
+
+![Broadcasts — UI Screens form screen](/screenshots/platform/broadcasts/ui-screens-form.png)
 
 ## 1. Overview
 

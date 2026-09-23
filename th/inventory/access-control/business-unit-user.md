@@ -2,7 +2,7 @@
 title: ผู้ใช้ของหน่วยธุรกิจ (Business Unit User)
 description: Pivot การเป็นสมาชิกต่อ BU (tb_user_tb_business_unit) บวก flow การเชิญที่ scope ระดับ cluster (tb_user_invitation + _business_unit) ที่มาแทน tb_temp_bu_user ซึ่งถูก drop เมื่อ 2026-08-05; /api/auth/invite-user ถูกลบแล้ว
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: access-control, business-unit-user, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Platform / cluster admin (เชิญ), ผู้ใช้ (ตอบรับ), Sysadmin (row membership) &nbsp;·&nbsp; **ตาราง:** `tb_user_tb_business_unit` (membership) + `tb_user_invitation` / `tb_user_invitation_business_unit` (การเชิญ — **มาแทน `tb_temp_bu_user` ที่ถูก drop เมื่อ 2026-08-05**) &nbsp;·&nbsp; **Endpoint:** `POST /api/business-units/default` (switch), `GET /api/business-units` (ปัจจุบัน), `api/invitations/{mine,:token,:token/accept,:token/accept-with-signup,:token/decline}`, Platform `api-system/clusters/:cluster_id/invitations` (create / list / revoke / resend) &nbsp;·&nbsp; **ใช้โดย:** ทุก request ที่ authenticate แล้ว (การ resolve BU) &nbsp;·&nbsp; Pivot การเข้าถึง multi-tenant — ประกาศว่าผู้ใช้คนใดอาจดำเนินงานภายใน BU ใด
+
+![ผู้ใช้ของหน่วยธุรกิจ (Business Unit User) screen](/screenshots/access-control/business-unit-user.png)
 
 ## สถานะการ implement (ตรวจสอบซ้ำ 2026-09-22)
 

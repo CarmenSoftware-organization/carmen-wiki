@@ -2,7 +2,7 @@
 title: งานตามกำหนดเวลา — หน้าจอ UI (UI Screens)
 description: หน้ารายการ ตัวกรอง และสถิติสรุปของ CronJobManagement การ์ด basics/schedule/execution/type-config ของ CronJobEdit และตัวสร้างตารางเวลาหกโหมดของ CronScheduleField
 published: true
-date: '2026-09-06T23:10:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, cronjobs, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -11,6 +11,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # งานตามกำหนดเวลา — หน้าจอ UI (UI Screens)
 
 > **หน้าจอ:** `CronJobManagement` (รายการ, `/cronjobs`) &nbsp;·&nbsp; `CronJobEdit` — คอมโพเนนต์เดียวใช้ทั้งสร้าง (`/cronjobs/new`) และแก้ไข (`/cronjobs/:id/edit`) &nbsp;·&nbsp; **ไม่มีแท็บ ไม่มี wizard** — การ์ดสี่อันเรียงกันบนฟอร์มแก้ไข &nbsp;·&nbsp; **คอมโพเนนต์ย่อย:** `CronScheduleField` ตัวสร้าง cron หกโหมด บวกคอมโพเนนต์ฟิลด์ config เฉพาะประเภทหกตัว (`jobConfig/`) &nbsp;·&nbsp; **Dialog:** ยืนยันการลบงาน (ข้อความรับรู้ความเป็นเจ้าของ) &nbsp;·&nbsp; **State ที่จำไว้:** `localStorage` key เดียว (`perpage_cronjob`) &nbsp;·&nbsp; **Concurrency:** optimistic lock `doc_version` ส่งเฉพาะเมื่อ GET ที่โหลดฟอร์มคืนค่ามาให้ &nbsp;·&nbsp; **Screenshot:** เลื่อนออกไปตามแผน — ยังไม่มี asset screenshot สำหรับโมดูลนี้
+
+![งานตามกำหนดเวลา — หน้าจอ UI (UI Screens) screen](/screenshots/platform/cronjobs/ui-screens.png)
 
 ## 1. ภาพรวม
 

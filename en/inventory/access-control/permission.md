@@ -2,7 +2,7 @@
 title: Permission
 description: Atomic resource + action pairs bundled into application roles for RBAC; App ID allowlist and per-BU licence features are separate layers. Catalog changes since 2026-07-29: inventory_period rename, query_dataset removed.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: access-control, permission, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Seed-managed (release-time) &nbsp;·&nbsp; **Table:** `tb_permission` &nbsp;·&nbsp; **Used by:** [access-control/application-role](/en/inventory/access-control/application-role) (only consumer) &nbsp;·&nbsp; **Endpoints:** `GET api/config/:bu_code/permissions` (catalog, `KeycloakGuard` only), `GET /api/user/permission` (+ `/mobile`, `/platform`) &nbsp;·&nbsp; Atomic `(resource, action)` pairs — the smallest unit of authorisation. **Three authorisation layers coexist at HEAD:** RBAC (`@Permission` + `PermissionGuard`, on 38 route decorations), App-ID client allowlist (`AppIdGuard`, most routes), and per-BU **licence** features (`LicenseInterceptor`, every mapped route).
+
+![Permission screen](/screenshots/access-control/permission.png)
 
 ## Implementation status (re-verified 2026-09-22)
 

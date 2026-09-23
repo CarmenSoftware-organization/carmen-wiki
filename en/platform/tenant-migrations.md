@@ -2,7 +2,7 @@
 title: Tenant Migrations
 description: Fleet-wide screen that checks and applies pending tenant-database schema migrations across every business unit; every action is restricted to super-admins.
 published: true
-date: '2026-09-22T17:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, tenant-migrations
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **Screen:** `TenantMigrationManagement` (+ `FleetSync`, `DeployConsole`) at `/tenant-migrations`, added `../carmen-platform` commit `c59bbba` (2026-06-30) &nbsp;·&nbsp; **Route gate:** `cluster.read` — reused from [Clusters](/en/platform/clusters), the same key that also gates [Business Units](/en/platform/business-units) — plus this module's own `tenant_migrations` feature flag on `PrivateRoute`, checked after the permission gate &nbsp;·&nbsp; **Action gate:** every Check / Apply / Deploy-all / Resolve action is additionally restricted to `isSuperAdmin` on the frontend and, at the backend `TenantMigrationGuard`, to a super-admin session **or** a matching `x-deploy-token` header &nbsp;·&nbsp; **New since 2026-09-16 (PRs #296, #297):** a **Schema** column (tenant `db_schema` + pool name) and an in-app **Resolve** path for a stuck migration (`POST .../:bu_id/resolve`), from both this table and the per-BU card — the "no frontend caller for `resolve`" gap the 2026-09-06 revision of this page recorded is closed &nbsp;·&nbsp; **Sidebar:** its own "Tenant Migrations" entry in the Organization group (`src/components/nav/platformNav.ts:14`) — not nested under Business Units or Clusters, despite sharing their permission key &nbsp;·&nbsp; **Kill switch:** `TENANT_MIGRATION_API_ENABLED`, an env var that is **off by default** — every endpoint, including status checks, 403s until it is explicitly set to `true` &nbsp;·&nbsp; **Relationship:** fleet-wide table view of the same backend capability the per-BU `TenantMigrationCard` on [Business Units — UI Screens](/en/platform/business-units/ui-screens) §4.5 exposes for one BU at a time &nbsp;·&nbsp; **e2e suite:** none — every claim below is sourced from implementation, not test coverage
+
+![Tenant Migrations screen](/screenshots/platform/tenant-migrations/index.png)
 
 ## 1. Overview
 

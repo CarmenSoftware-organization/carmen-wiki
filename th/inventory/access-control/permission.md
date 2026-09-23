@@ -2,7 +2,7 @@
 title: สิทธิ์ (Permission)
 description: คู่ resource + action แบบ atomic ที่รวมเข้าใน application role เพื่อ RBAC; App ID allowlist และ licence feature ต่อ BU เป็นเลเยอร์แยก การเปลี่ยนแคตตาล็อกตั้งแต่ 2026-07-29: เปลี่ยนชื่อ inventory_period, ลบ query_dataset
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: access-control, permission, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** จัดการโดย seed (release-time) &nbsp;·&nbsp; **ตาราง:** `tb_permission` &nbsp;·&nbsp; **ใช้โดย:** [access-control/application-role](/th/inventory/access-control/application-role) (consumer เดียว) &nbsp;·&nbsp; **Endpoint:** `GET api/config/:bu_code/permissions` (แคตตาล็อก, `KeycloakGuard` เท่านั้น), `GET /api/user/permission` (+ `/mobile`, `/platform`) &nbsp;·&nbsp; คู่ `(resource, action)` แบบ atomic — หน่วยเล็กที่สุดของการอนุญาต **มีเลเยอร์การอนุญาตสามชั้นอยู่ร่วมกันที่ HEAD:** RBAC (`@Permission` + `PermissionGuard` บน route decoration 38 จุด), App-ID client allowlist (`AppIdGuard` route ส่วนใหญ่) และ **licence** feature ต่อ BU (`LicenseInterceptor` ทุก route ที่ map ไว้)
+
+![สิทธิ์ (Permission) screen](/screenshots/access-control/permission.png)
 
 ## สถานะการ implement (ตรวจสอบซ้ำ 2026-09-22)
 

@@ -2,7 +2,7 @@
 title: การนำเข้าเทแนนต์ (Tenant Imports)
 description: TenantImportWizard ที่ /tenant-imports — sidebar ใช้ป้าย "Data Import" gate ด้วย data_import.manage — นำข้อมูลหลักจาก Preconfig.xlsx เข้าฐานข้อมูล tenant ทีละขั้นตอน
 published: true
-date: '2026-09-06T23:45:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, tenant-imports
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **Component:** `TenantImportWizard` ที่ `/tenant-imports` เพิ่มโดย `../carmen-platform` commit `80d6872` (2026-08-03) &nbsp;·&nbsp; **สามชื่อ หนึ่งหน้า:** รายการ sidebar เขียนว่า **"Data Import"** (`labelKey: 'nav.dataImport'`, `platformNav.ts:15`), route คือ `/tenant-imports`, ส่วนหัวข้อ `PageHeader` ของหน้าเองเขียนว่า **"Tenant Data Import"** (`pages.tenantImport.title`, `src/i18n/en.ts:3211`) — ไม่ว่าจะค้นด้วยชื่อไหนในสามชื่อนี้ก็ควรเจอหน้านี้ &nbsp;·&nbsp; **Nav gate:** `permission: 'data_import.manage'` — เป็นคีย์ **`manage`** ไม่ใช่ `.read` เหมือนทุกแถวอื่นในกลุ่ม Organization (Clusters, Business Units, Tenant Migrations, Users ล้วน gate ด้วยคีย์ `.read`) ผู้ดูแลที่มีแค่สิทธิ์อ่านในโมดูลอื่นของหนังสือเล่มนี้จะไม่เห็นรายการเมนูนี้เลย &nbsp;·&nbsp; **Backend gate:** คีย์ `data_import.manage` เดียวกัน ถูกตรวจแยกอิสระที่ทุก endpoint ทั้งสี่ของตัวนำเข้าผ่าน `@RequirePlatformPermission` (`preconfig-imports.controller.ts:104,123,149,179`) — เป็นการตรวจ RBAC จริงบน server ไม่ใช่แค่ซ่อนแถวเมนู &nbsp;·&nbsp; **Feature flag:** `tenant_imports`, `groupKey: 'navGroup.organization'`, ไม่ใช่ `superAdminOnly` &nbsp;·&nbsp; **ขอบเขต:** หนึ่ง business unit ต่อการรัน wizard หนึ่งครั้ง &nbsp;·&nbsp; **e2e suite:** ไม่มี — `../carmen-platform-e2e/tests/` ไม่มีโฟลเดอร์ `tenant-imports` (หรือ `preconfig-import`) ทุกข้อความในหน้านี้มาจากการอ่าน source ของ `../carmen-platform` และ `../carmen-turborepo-backend-v2` โดยตรง &nbsp;·&nbsp; **หน้าย่อย:** 1
+
+![การนำเข้าเทแนนต์ (Tenant Imports) screen](/screenshots/platform/tenant-imports/index.png)
 
 ## 1. ภาพรวม
 

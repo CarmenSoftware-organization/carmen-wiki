@@ -2,7 +2,7 @@
 title: การนำเข้าเทแนนต์ — หน้าจอ UI (UI Screens)
 description: ลำดับสี่หน้าจอของ TenantImportWizard — เลือก business unit, อัปโหลด Preconfig.xlsx, ทบทวนผลตรวจไฟล์ แล้วทำงานทีละขั้นตอน
 published: true
-date: '2026-09-06T23:45:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, tenant-imports, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **State machine ของหน้าจอ:** `pick-bu` → `upload` → `check` → `steps` (`type Screen`, `TenantImportWizard.tsx`) &nbsp;·&nbsp; **เปลือกที่ใช้ร่วมกัน:** `Layout`, `PageHeader` (หัวข้อ "Tenant Data Import"), ปุ่มบน header ที่เปิด command palette `BuSwitcher` ที่ใช้ร่วมกัน, `DevDebugSheet` เฉพาะตอน dev &nbsp;·&nbsp; **ไม่มีปุ่มย้อนกลับ:** เมื่อถึง `steps` แล้วไม่มีปุ่มไหนย้อนกลับไป `check` โดยที่ไฟล์ที่โหลดไว้ยังอยู่ — ทางเดียวที่จะย้อนกลับไป `upload` คือผ่าน `BuSwitcher` ซึ่งทิ้งความคืบหน้าทั้งหมดของ wizard ฝั่ง client (§6) &nbsp;·&nbsp; **e2e suite:** ไม่มี — พฤติกรรมทุกอย่างด้านล่างอ่านตรงจาก source ของ `../carmen-platform`
+
+![การนำเข้าเทแนนต์ — หน้าจอ UI (UI Screens) screen](/screenshots/platform/tenant-imports/ui-screens.png)
 
 ## 1. ภาพรวม
 

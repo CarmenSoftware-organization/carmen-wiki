@@ -2,7 +2,7 @@
 title: Usage Analytics
 description: The UI-telemetry dashboard at /analytics (module slug usage-analytics) — every StatCard, the daily chart, and both Top Lists defined against tb_activity_event, plus the activity_event.read/activity_event.detail permission seam that gates its drill-down.
 published: true
-date: '2026-09-06T01:40:06.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, usage-analytics
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -11,6 +11,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # Usage Analytics
 
 **Usage Analytics** is one screen, `UsageAnalytics`, reached at the route **`/analytics`** — note that the route and this wiki module's own slug (`usage-analytics`) differ, so a reader searching either term should land here. It is a read-only aggregate dashboard over UI telemetry (page views and clicks the frontend itself logs), built from a single backend call, `GET /api-system/platform/analytics/overview`. It has a narrower sibling, [Activity Events](/en/platform/activity-events) at `/activity-events`, which shows the same telemetry as individual rows rather than aggregates — the two screens are gated by two different permission keys, detailed in §4.
+
+![Usage Analytics screen](/screenshots/platform/usage-analytics/index.png)
 
 ## 1. Overview
 

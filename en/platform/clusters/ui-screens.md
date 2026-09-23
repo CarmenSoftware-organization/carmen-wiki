@@ -2,7 +2,7 @@
 title: Cluster — UI Screens
 description: ClusterManagement (list) and ClusterEdit (create/view/edit) screens — the tabbed plate layout, licensing tab, filters, dialogs, and persisted state.
 published: true
-date: '2026-09-22T17:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, clusters, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -12,6 +12,10 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 > **At a Glance**
 > **Screens:** `ClusterManagement` (list, `/clusters`) &nbsp;·&nbsp; `ClusterEdit` create (`/clusters/new`) &nbsp;·&nbsp; `ClusterEdit` view/edit (`/clusters/:id/edit`) &nbsp;·&nbsp; **Edit layout (rewritten 2026-08-23, commit `69027b9`):** an always-visible `ClusterPlate` header (identity, branding, status, two licence rails) plus a 3-tab `TabStrip` — **Licensing** (default), **Business Units**, **Users** — replacing the earlier 5-section scrollspy document (Overview/Details/Branding/Business Units/Users) &nbsp;·&nbsp; **Dialogs:** Add User to Cluster · Remove Cluster User confirm (single + bulk) · Soft Delete Cluster confirm &nbsp;·&nbsp; **Access:** route guards `cluster.read` / `cluster.create` / `cluster.update`, each also gated by the `clusters` feature flag; Add/Edit/Delete buttons behind `<Can>` gates (see [Permissions](/en/platform/clusters/permissions)) &nbsp;·&nbsp; **Persisted UI state:** 7 `localStorage` keys on the list page &nbsp;·&nbsp; **Concurrency:** `doc_version` optimistic lock on save &nbsp;·&nbsp; **BU quota is licence-based now** — the create form issues the cluster's first BU-quota licence; ongoing quota purchases happen in the **licenses** module, not on this page
+
+![Cluster — UI Screens screen](/screenshots/platform/clusters/ui-screens.png)
+
+![Cluster — UI Screens form screen](/screenshots/platform/clusters/ui-screens-form.png)
 
 ## 1. Overview
 

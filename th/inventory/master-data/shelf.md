@@ -2,7 +2,7 @@
 title: ชั้นวาง (Shelf)
 description: ข้อมูลหลักชั้นวางระดับ BU (ลำดับการเดินนับ) กำหนดต่อแถว product-location — เพิ่มเมื่อ 2026-08 และแยกออกจาก location เมื่อ 2026-08-20
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: master-data, shelf, location, configuration, carmen-software
 editor: markdown
 dateCreated: '2026-09-22T18:00:00.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-22T18:00:00.000Z'
 
 > **At a Glance**
 > **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_location_shelf` &nbsp;·&nbsp; **ใช้โดย:** การกำหนด product ↔ location (`tb_product_location.shelf_*`) &nbsp;·&nbsp; **Permission:** `configuration.location_shelf.{view,create,update,delete}` &nbsp;·&nbsp; **Licence key:** `configuration.location_shelf` &nbsp;·&nbsp; รายการชั้นวาง / rack ระดับ BU พร้อมลำดับการเดินนับ `sequence_no`; **ไม่ได้** scope ตาม location แม้ชื่อตารางจะบอกอย่างนั้น
+
+![ชั้นวาง (Shelf) screen](/screenshots/master-data/shelf.png)
 
 ## 1. คืออะไร / ใครใช้
 

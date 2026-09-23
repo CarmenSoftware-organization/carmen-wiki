@@ -2,7 +2,7 @@
 title: Platform RBAC — หน้าจอ UI (UI Screens)
 description: RoleManagement/RoleEdit พร้อม RolesAccessSummary แบบวัดเทียบ catalog และ PermissionGrid แบบแถวต่อ resource, Permission Catalog แบบ read-only, และ (ระดับสรุป) ทะเบียน Super Admins กับหน้าจอ assignment ของ User Platform ที่เขียนใหม่
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, rbac, ui
 editor: markdown
 dateCreated: 2026-06-10T15:00:00.000Z
@@ -12,6 +12,10 @@ dateCreated: 2026-06-10T15:00:00.000Z
 
 > **At a Glance**
 > **หน้าจอ:** `RoleManagement` (`/platform/roles`) · `RoleEdit` (`/platform/roles/new`, `/platform/roles/:id/edit`) · `PermissionCatalog` (`/platform/category-permissions`) · `SuperAdminManagement` (`/platform/super-admins`) · `UserPlatformManagement` (`/platform/user-platform`) · `UserPlatformEdit` (`/platform/user-platform/:userId`) &nbsp;·&nbsp; **รูปแบบมาตรฐาน:** Roles และ User Platform ใช้ `DataTable` แบบ server-side; Super Admins (เขียนใหม่อีกครั้งเมื่อ 2026-09-02) เป็นทะเบียนแบบการ์ด ไม่ใช่ตาราง; Permission Catalog เป็น card grid แบบ read-only &nbsp;·&nbsp; **Component หลัก:** `PermissionGrid` — action ทุกตัวใน catalog แสดงเป็นแถวต่อ resource, ปุ่ม toggle ในโหมดแก้ไข, action ที่ไม่ได้มอบให้แสดงจางลงแทนที่จะซ่อนไป (แทนที่ accordion `PermissionPicker` เมื่อ 2026-08-20) &nbsp;·&nbsp; **Gate ภายในหน้า:** list/edit ของ Roles gate Add/Edit/Delete และ toggle Edit ด้วยคีย์ `platform_role.*`; `<Can permission="user_platform.manage">` บนหน้า detail ของ User Platform &nbsp;·&nbsp; **แถบสรุป:** `RolesAccessSummary` บนหน้า list ของ Roles (วัดเทียบ catalog ตั้งแต่ 2026-09-02), `PlatformAccessSummary` บนหน้า list ของ User Platform
+
+![Platform RBAC — หน้าจอ UI (UI Screens) screen](/screenshots/platform/rbac/ui-screens.png)
+
+![Platform RBAC — หน้าจอ UI (UI Screens) form screen](/screenshots/platform/rbac/ui-screens-form.png)
 
 **หมายเหตุขอบเขต:** หน้านี้ตรวจสอบ §2 (Roles) และ §3 (Permission Catalog) กับซอร์สปัจจุบันอย่างครบถ้วน §4 (Super Admins) และ §5 (User Platform) อัพเดทเฉพาะระดับสรุปเท่านั้น — ดูหมายเหตุขอบเขตใน[หน้า landing ของโมดูล](/th/platform/rbac)
 

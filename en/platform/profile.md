@@ -2,7 +2,7 @@
 title: Profile
 description: Self-service page where a signed-in user views and edits their own identity fields and changes their password. Mounted at two routes sharing one component.
 published: true
-date: 2026-09-06T23:45:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: platform/profile, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 > **At a Glance**
 > **Module purpose:** Self-service page where a signed-in user views and edits their own identity fields and changes their password &nbsp;·&nbsp; **Audience:** The signed-in user themselves &nbsp;·&nbsp; **Access:** authenticated-only — the `/profile` route carries no `requiredPermission` and no `feature` key &nbsp;·&nbsp; **Mounted twice:** `/profile` (platform view) and `/cluster-admin/:clusterId/profile` (cluster-admin view) both render the same `Profile` component with identical content and data — only the chrome differs (§1) &nbsp;·&nbsp; **Key entities/tables:** `user`, `user_info`, `business_unit` (read-only display) &nbsp;·&nbsp; **Sub-pages:** 0
+
+![Profile screen](/screenshots/platform/profile/index.png)
 
 ## 1. Overview
 

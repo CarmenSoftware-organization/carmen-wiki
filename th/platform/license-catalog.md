@@ -2,7 +2,7 @@
 title: แคตตาล็อกไลเซนส์ (License Catalog)
 description: หน้าจอเดียว สองแท็บ สอง nav row — แคตตาล็อก feature ที่ขายได้ (Features) และชุดที่จัดไว้ล่วงหน้าที่ขายจากมัน (Bundles) — แต่ละแท็บมีคู่ permission และ feature flag ของตัวเอง
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, license-catalog
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -14,6 +14,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **Component:** `LicenseCatalog` (component เดียว, prop `tab: 'bundles' | 'features'`) &nbsp;·&nbsp; **Route:** `/license-features` → แท็บ Features, `/license-feature-groups` → แท็บ Bundles, `/license-feature-groups/new` และ `/license-feature-groups/:id/edit` → `LicenseFeatureGroupEdit` &nbsp;·&nbsp; **Permission key — สองคู่แยกจากกัน:** แท็บ Features `license_feature.read` (nav/อ่าน) + `license_feature.manage` (แก้ `state`); แท็บ Bundles `license_feature_group.read` (nav/อ่าน) + `license_feature_group.manage` (สร้าง/แก้/ลบ/ตั้ง feature) &nbsp;·&nbsp; **Feature-flag key:** `license_features` และ `license_feature_groups` แท็บละหนึ่ง &nbsp;·&nbsp; **Nav group:** `navGroup.licenseManagement` — สองแถว "License Feature Groups" กับ "License Features" (ป้ายบน sidebar) ซึ่งพาไปแท็บที่ตัว shell เองเรียกว่า "Bundles" กับ "Features" &nbsp;·&nbsp; **ขนาดแคตตาล็อก (ยืนยันจากข้อมูล generator ไม่ใช่จากคอมเมนต์ในซอร์ส):** 107 แถว ใน 12 module ราก — ขายได้ (`active`) 100, สำรองไว้ (`inactive`) 7 คีย์ (`accounting.*` ที่จองไว้ล่วงหน้ารอ endpoint จริง); module ที่ 12 คือ `interface` มาเมื่อ 2026-09-08 &nbsp;·&nbsp; **Kind ของกลุ่ม:** ตั้งแต่ 2026-09-10 ทุก bundle มี `kind` (`standard` | `interface`) ตั้งได้ตอนสร้างเท่านั้น — bundle ชนิด `interface` ขายบน interface licence เท่านั้น ไม่เคยขายบน subscription &nbsp;·&nbsp; **ด่านข้ามโมดูลที่ต้องรู้:** ตัวหารของแถบสัดส่วนบนแท็บ Bundles และตัวเลือก feature ทั้งชุดในหน้าแก้ไขกลุ่ม ต่างโหลดผ่าน `GET /api-system/platform/license-features` (ไม่มี `/all`) ซึ่งกั้นด้วย `subscription.read` — permission key ของ**อีกโมดูลหนึ่ง**โดยสิ้นเชิง (§4) &nbsp;·&nbsp; **e2e suite:** **ไม่มี** — ทุกคำกล่าวอ้างในหน้าของโมดูลนี้มาจากการอ่าน implementation ของ `../carmen-platform` และ `../carmen-turborepo-backend-v2` โดยตรง &nbsp;·&nbsp; **หน้าย่อย:** 2
+
+![แคตตาล็อกไลเซนส์ (License Catalog) screen](/screenshots/platform/license-catalog/index.png)
 
 ## 1. ภาพรวม
 

@@ -2,7 +2,7 @@
 title: Attachment
 description: File-metadata registry used by every module with uploads — MinIO-backed tb_file_tag in a separate file-service database served by micro-file. The tenant tb_attachment table has zero code references and is dead.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: reporting-audit, attachment, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Owning module's upload flow &nbsp;·&nbsp; **Table:** `tb_file_tag` — in a **separate `prisma-shared-schema-file` (`CARMEN_FILE`) database**, not the tenant schema &nbsp;·&nbsp; **Storage:** MinIO &nbsp;·&nbsp; **Used by:** every module with file uploads &nbsp;·&nbsp; The tenant schema's `tb_attachment` table is dead — zero non-schema code references.
+
+![Attachment screen](/screenshots/reporting-audit/attachment.png)
 
 ## Implementation status (verified 2026-07-22)
 

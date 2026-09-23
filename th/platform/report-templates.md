@@ -2,7 +2,7 @@
 title: เทมเพลตรายงาน (Report Templates)
 description: แคตตาล็อกเทมเพลตรายงานแบบ XML พร้อม editor แบบแท็บ Dialog/Content/Preview การผูก data source กับฐานข้อมูล การกำหนดขอบเขต business unit แบบ allow/deny และ (ตั้งแต่ 2026-07-23) default form template ต่อ report group
 published: true
-date: 2026-09-06T21:00:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: platform/report-templates, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** หน้าจอ authoring ที่ผู้ดูแลภายในของ Carmen ใช้สร้างและดูแลเทมเพลตรายงานแบบ XML ที่ขับเคลื่อนทุกเอกสารพิมพ์ของแพลตฟอร์ม และ (ตั้งแต่ 2026-07-23) เลือก default form template ต่อประเภทเอกสารด้วย &nbsp;·&nbsp; **กลุ่มผู้ใช้:** ผู้ดูแลภายในและวิศวกร support ของ Carmen ที่ถือ grant permission `report_template.*` (ดู [Permissions](/th/platform/report-templates/permissions)) &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_report_template` (ฟิลด์: `name`, `description`, `report_group`, `template_type`, `is_default`, `dialog`, `content`, `source_type`, `source_name`, `source_params`, `orientation`, `signature_config`, `allow_business_unit`, `deny_business_unit`, `is_standard`, `is_active`, `builder_key`, `doc_version`) &nbsp;·&nbsp; **หน้าย่อย:** 5
+
+![เทมเพลตรายงาน (Report Templates) screen](/screenshots/platform/report-templates/index.png)
 
 ## 1. ภาพรวม
 

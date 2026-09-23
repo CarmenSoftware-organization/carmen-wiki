@@ -2,7 +2,7 @@
 title: Widget
 description: Dashboard widget entity — per-user (and BU-scoped, backend-only) tiles bound to a code-registered dataset catalog, served by micro-data over HTTP behind the gateway; 2026-09 display column, render switching, config-only module route.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: reporting-audit, widget, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **Owner:** End users (personal widgets) &nbsp;·&nbsp; **Tables:** `tb_dashboard_bu_widget` + `tb_dashboard_personal_widget` (tenant schema) &nbsp;·&nbsp; **Used by:** the [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) `/dashboard` screen (personal). The BU table has full CRUD in micro-data + gateway but **no frontend caller**; the per-module landing dashboards use hardcoded **system widgets**, not BU rows &nbsp;·&nbsp; **Served by:** micro-data (Go, HTTP + `x-internal-token`)
+
+![Widget screen](/screenshots/reporting-audit/widget.png)
 
 ## Implementation status (re-verified 2026-09-22)
 

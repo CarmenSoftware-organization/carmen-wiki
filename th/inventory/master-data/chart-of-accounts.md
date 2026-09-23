@@ -2,7 +2,7 @@
 title: ผังบัญชี (Chart of Accounts)
 description: รหัสบัญชี GL (nature, type, category, use-in, flag ศูนย์ต้นทุน) พร้อมการนำเข้าจากไฟล์และ Carmen GL — เปลี่ยนชื่อจาก Account Code เมื่อ 2026-08-27; ป้อนให้ GL book และ allow-list ของศูนย์ต้นทุน
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: master-data, chart-of-accounts, general-ledger, configuration, carmen-software
 editor: markdown
 dateCreated: '2026-09-22T18:00:00.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-22T18:00:00.000Z'
 
 > **At a Glance**
 > **เจ้าของ:** Sysadmin / Finance &nbsp;·&nbsp; **ตาราง:** `tb_chart_of_accounts` + `enum_chart_of_accounts_{nature,type,category,use_in}` &nbsp;·&nbsp; **ใช้โดย:** [general-ledger](/th/inventory/general-ledger) (บรรทัด JV, account group), allow-list ของ [cost-center](/th/inventory/master-data/cost-center) &nbsp;·&nbsp; **Permission:** `configuration.chart_of_accounts.*` &nbsp;·&nbsp; **Licence key:** `configuration.chart_of_accounts` &nbsp;·&nbsp; รายการรหัสบัญชีของ BU ดูแลได้ผ่าน dialog, อัปโหลดไฟล์ หรือดึงจาก Carmen GL
+
+![ผังบัญชี (Chart of Accounts) screen](/screenshots/master-data/chart-of-accounts.png)
 
 ## 1. คืออะไร / ใครใช้
 

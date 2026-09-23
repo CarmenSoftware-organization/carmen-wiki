@@ -2,7 +2,7 @@
 title: Platform RBAC
 description: Permission-based access control for the Platform admin SPA — permission catalog, roles, scoped user assignments, and the super-admin bypass.
 published: true
-date: 2026-09-06T23:45:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: platform/rbac, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z
@@ -16,6 +16,8 @@ The **Platform RBAC** module is the access-control system of the Carmen Platform
 
 > **At a Glance**
 > **Module purpose:** Permission-based access control — catalog defines `resource.action` keys, roles bundle keys, scoped assignments bind roles to users, super-admin flag bypasses all checks &nbsp;·&nbsp; **Audience:** Developers and QA working on the Platform admin SPA and its authorization backend &nbsp;·&nbsp; **Key entities/tables:** `tb_platform_permission`, `tb_platform_role`, `tb_platform_role_tb_permission`, `tb_user_tb_platform_role` (scope via nullable `cluster_id`), `tb_platform_super_admin` — all five carry `doc_version` (2026-07-16 platform-wide optimistic-lock rollout) &nbsp;·&nbsp; **Screens documented here:** Roles · Permission Catalog &nbsp;·&nbsp; **Screens summarized here, full module elsewhere:** [Super Admins](/en/platform/super-admins) · [User Platform](/en/platform/user-platform) (see scope note below) &nbsp;·&nbsp; **Sub-pages:** 3 &nbsp;·&nbsp; **Permission keys renamed 2026-08-20:** `role.*` → `platform_role.*` everywhere, the standalone `rbac.read` key some earlier screens used was retired, and Permission Catalog's route moved from `/platform/permissions` to `/platform/category-permissions` (`carmen-platform` commit `8df0b10`) &nbsp;·&nbsp; **Since 2026-09-02:** `RoleManagement`/`RoleEdit` measure a role's permission count against the **catalog size**, not the widest role, and `RoleEdit`'s permission picker became a per-resource-row grid with toggle buttons that also shows withheld actions (`carmen-platform` PR #252/#253); `SuperAdminManagement` was rewritten a second time, from a `DataTable` into a people-roster list with a self-removal guard (`carmen-platform` PR #244)
+
+![Platform RBAC screen](/screenshots/platform/rbac/index.png)
 
 **Scope note (2026-09-05 resync):** this page documents the **Roles** screens and **Permission Catalog** in full. **User Platform** and **Super Admins** are covered here at a summary level only — both now have their own standalone Platform modules, [User Platform](/en/platform/user-platform) and [Super Admins](/en/platform/super-admins), each with the independent nav row, permission key, and e2e suite noted below and each carrying the full line-by-line verification of its own screen. Facts stated below about them were confirmed against current source, but for the exhaustive treatment — screens, columns, endpoints — see their own module pages, not this one.
 

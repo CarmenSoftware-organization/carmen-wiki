@@ -2,7 +2,7 @@
 title: User Platform — UI Screens
 description: UserPlatformManagement's filter-consistent registry and UserPlatformEdit's per-holder dossier — plus where the e2e suite no longer matches this UI.
 published: true
-date: '2026-09-06T23:45:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, user-platform, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **Screens:** `UserPlatformManagement` (`/platform/user-platform`) &nbsp;·&nbsp; `UserPlatformEdit` (`/platform/user-platform/:userId`, no `/edit` suffix — see [Landing](/en/platform/user-platform) §1) &nbsp;·&nbsp; **Shared shell:** `Layout`, `PageHeader`, a dev-only `DevDebugSheet` on both screens, `useGlobalShortcuts` &nbsp;·&nbsp; **e2e suite:** `user-platform` (2 specs, `../carmen-platform-e2e`, HEAD `a8e3b31`, 2026-08-25) — **both specs predate the 2026-09-02 rewrite and no longer match current markup**; see §4
+
+![User Platform — UI Screens screen](/screenshots/platform/user-platform/ui-screens.png)
 
 ## 1. Overview
 

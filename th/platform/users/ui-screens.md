@@ -2,13 +2,17 @@
 title: User — UI Screens
 description: UserManagement (list พร้อมคอลัมน์ avatar) และ UserEdit (เมทริกซ์ BU assignment, avatar บน header)
 published: true
-date: 2026-09-05T13:25:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, users, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
 ---
 
 # User — UI Screens
+
+![User — UI Screens screen](/screenshots/platform/users/ui-screens.png)
+
+![User — UI Screens form screen](/screenshots/platform/users/ui-screens-form.png)
 
 ## 1. At a Glance
 

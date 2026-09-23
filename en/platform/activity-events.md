@@ -2,7 +2,7 @@
 title: Activity Events
 description: The raw, per-event UI-telemetry explorer at /activity-events — every filter and column, the activity_event.detail permission it shares (but does not duplicate) with Usage Analytics, and why it is not the activity_log "View History" audit trail.
 published: true
-date: '2026-09-22T17:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, activity-events
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -13,6 +13,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 **Activity Events** is one screen, `ActivityEventManagement`, reached at the route **`/activity-events`** — route and module slug match here, unlike its sibling. It is the raw, per-row counterpart to [Usage Analytics](/en/platform/usage-analytics): where that dashboard shows aggregate counts, this screen lists individual UI-telemetry rows (one per click or page view) from the same underlying table, `tb_activity_event`, with filters, sorting, CSV export, and a full-record detail view per row.
 
 **This is not the audit trail.** A screen with a similar name — the "View History" action on Clusters, Business Units, Users, and Report Templates — reads a completely different table (`tb_activity`, resource key `activity_log`) recording who changed which field of a platform *record* and its old/new values. This page has no relationship to that feature; see §2 for the full distinction. (An earlier draft of this page conflated the two — corrected here.)
+
+![Activity Events screen](/screenshots/platform/activity-events/index.png)
 
 ## 1. Overview
 

@@ -2,7 +2,7 @@
 title: ผู้ใช้ระดับแผนก (Department User)
 description: Pivot การเป็นสมาชิกของผู้ใช้กับแผนก — ผู้ใช้คนใดอยู่ในแผนกใด และ Head of Department (HOD) ที่ขับเคลื่อน approval routing ของ PR/SR ตั้งแต่ 2026-09-04 แก้ไขแผนกของผู้ใช้จากหน้าจอ user ได้ด้วย
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: access-control, department-user, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-06-04T00:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Sysadmin / Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_department_user` (tenant) &nbsp;·&nbsp; **แก้ไขจาก:** หน้าจอ Department (`/config/department/:id`, สมาชิก + HOD) **และ** ตั้งแต่ 2026-09-04 หน้าจอ User (`PATCH /api/config/:bu_code/users/:user_id { department_id }`) &nbsp;·&nbsp; **Endpoint:** `api/config/:bu_code/department-users` (App ID `departmentUser.*`; licence `configuration.department`) &nbsp;·&nbsp; **ใช้โดย:** approval routing ของ PR และ SR (ขั้น HOD, กฎ routing ตามแผนก), รายงานผลกระทบ assignee ของ workflow &nbsp;·&nbsp; Pivot การเป็นสมาชิกระหว่างผู้ใช้กับแผนก — `is_hod = true` ระบุ Head of Department ที่ต้องการการอนุมัติบน requisition ของแผนก
+
+![ผู้ใช้ระดับแผนก (Department User) screen](/screenshots/access-control/department-user.png)
 
 ## สถานะการ implement (ตรวจสอบซ้ำ 2026-09-22)
 

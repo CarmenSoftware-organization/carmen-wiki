@@ -2,7 +2,7 @@
 title: กลุ่มฟอร์มรายงาน (Report Form Groups)
 description: การ์ดหนึ่งใบต่อ report_group code ที่ตายตัว แต่ละใบแสดง form template พร้อม action ตั้งเป็น default — surface ที่เข้ามาแทนที่โมดูล print-template-mapping ที่ถูกลบไป
 published: true
-date: '2026-09-06T23:45:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, report-form-groups
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -14,6 +14,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **Component:** `ReportFormGroupManagement` &nbsp;·&nbsp; **Route:** `/report-form-groups` gate ด้วย `<PrivateRoute requiredPermission="report_template.read" feature="report_form_groups">` (`../carmen-platform/src/App.tsx:322-329`) &nbsp;·&nbsp; **Nav:** รายการ "Form Groups" ในกลุ่ม Content ของ sidebar — **permission `report_template.read` เดียวกับ** Report Templates แต่ **feature key ต่างกัน** คือ `report_form_groups` (`../carmen-platform/src/components/nav/platformNav.ts:25`) &nbsp;·&nbsp; **เพิ่มเมื่อ:** 2026-07-24 (`bf7a28a`) สัปดาห์เดียวกับที่ `print-template-mapping` ถูกลบออกจากผลิตภัณฑ์ &nbsp;·&nbsp; **ข้อมูล:** ทุกแถว `tb_report_template` ที่ `template_type = "form"` จัดกลุ่มตาม `report_group` &nbsp;·&nbsp; **ตั้งแต่ 2026-08-22:** แต่ละแถวแสดงบรรทัด audit แบบย่อ (actor ล่าสุด สร้างหรือแก้ไข) &nbsp;·&nbsp; **e2e suite:** **ไม่มี** — ยืนยันแล้วว่าไม่มี directory `report-form-groups` (หรือชื่อใกล้เคียง) ใน `../carmen-platform-e2e/tests/` (HEAD `a8e3b31`, 2026-08-25) &nbsp;·&nbsp; **หน้าย่อย:** 0
+
+![กลุ่มฟอร์มรายงาน (Report Form Groups) screen](/screenshots/platform/report-form-groups/index.png)
 
 ## 1. ภาพรวม
 

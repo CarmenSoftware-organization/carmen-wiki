@@ -2,7 +2,7 @@
 title: Report Templates — Form Groups
 description: The /report-form-groups screen now has its own top-level module — this page covers only what remains specific to Report Templates, the shared tb_report_template columns and the Add/Edit hand-off between the two screens.
 published: true
-date: 2026-09-06T21:00:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, report-templates, form-groups
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -11,6 +11,8 @@ dateCreated: 2026-07-29T09:46:00.000Z
 # Report Templates — Form Groups
 
 > **Moved:** the `/report-form-groups` screen (`ReportFormGroupManagement`, its own route, sidebar entry, and `report_form_groups` feature key) is documented in full at **[Report Form Groups](/en/platform/report-form-groups)** — layout, the group-default flow, fixed vs. legacy groups, roles, and edge cases. This page now covers only the one relationship that is genuinely Report-Templates-specific: the shared `tb_report_template` columns and the Add/Edit hand-off between the two screens.
+
+![Report Templates — Form Groups screen](/screenshots/platform/report-templates/form-groups.png)
 
 ## 1. What Report Form Groups Edits on This Module's Table
 

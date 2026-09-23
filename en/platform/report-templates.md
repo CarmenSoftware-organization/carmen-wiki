@@ -2,7 +2,7 @@
 title: Report Templates
 description: XML-based report template catalogue with tabbed Dialog/Content/Preview editor, database source binding, business-unit allow/deny scoping, and (since 2026-07-23) per-report-group default form templates.
 published: true
-date: 2026-09-06T21:00:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: platform/report-templates, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 > **At a Glance**
 > **Module purpose:** Authoring surface where Carmen-internal admins create and maintain the XML-based report templates that drive every printable document in the platform, and (since 2026-07-23) also choose the default form template per document type &nbsp;·&nbsp; **Audience:** Carmen-internal admins and support engineers holding `report_template.*` permission grants (see [Permissions](/en/platform/report-templates/permissions)) &nbsp;·&nbsp; **Key entities/tables:** `tb_report_template` (fields: `name`, `description`, `report_group`, `template_type`, `is_default`, `dialog`, `content`, `source_type`, `source_name`, `source_params`, `orientation`, `signature_config`, `allow_business_unit`, `deny_business_unit`, `is_standard`, `is_active`, `builder_key`, `doc_version`) &nbsp;·&nbsp; **Sub-pages:** 5
+
+![Report Templates screen](/screenshots/platform/report-templates/index.png)
 
 ## 1. Overview
 

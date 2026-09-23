@@ -2,7 +2,7 @@
 title: ประเภทธุรกิจผู้ขาย (Vendor Business Type)
 description: Flat lookup สำหรับจัดประเภทผู้ขายตามลักษณะธุรกิจ (ผู้ผลิต, ผู้จัดจำหน่าย, บริการ ฯลฯ) — อ้างอิงโดยระเบียนผู้ขายเพื่อรายงานและกรองข้อมูล
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: master-data, vendor-business-type, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-06-04T00:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_vendor_business_type` &nbsp;·&nbsp; **ใช้โดย:** ระเบียนผู้ขาย (`tb_vendor.business_type` JSON array) &nbsp;·&nbsp; Flat lookup สำหรับจัดประเภทผู้จัดหาตามลักษณะธุรกิจ (ผู้ผลิต, ผู้จัดจำหน่าย, ผู้ให้บริการ ฯลฯ)
+
+![ประเภทธุรกิจผู้ขาย (Vendor Business Type) screen](/screenshots/master-data/vendor-business-type.png)
 
 ## 1. คืออะไร / ใครใช้
 
