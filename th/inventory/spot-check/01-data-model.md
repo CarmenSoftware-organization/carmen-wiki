@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูลการสุ่มตรวจ
 published: true
-date: 2026-07-29T04:45:21.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: spot-check, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -71,7 +71,7 @@ tb_location
 ## 4. Enum
 
 - **`enum_spot_check_status`** — วงจรชีวิตระดับเอกสาร สี่ค่า: `pending` (สร้างแล้ว; จับ snapshot `on_hand_qty`; ยังไม่ถูกแตะโดย save/review call ใด), `in_progress` (call Save ระหว่างนับถูกเรียกอย่างน้อยหนึ่งครั้ง), `void` (ยกเลิกผ่าน Reset — เข้าถึงได้จาก `pending` หรือ `in_progress` เท่านั้น), `completed` (submit แล้ว; terminal) **เอกสารสามารถไปถึง `completed` ตรงจาก `pending` ข้าม `in_progress` ไปเลยได้** — precondition เดียวของ `submit()` คือสถานะปัจจุบันต้องไม่ใช่ `completed` หรือ `void`; ผู้ใช้ที่นับทุกบรรทัดแล้วกดตรงไป Submit for Review แล้ว Submit โดยไม่เคย trigger การ Save ระหว่างนับเลย จะไม่เคยเปลี่ยน header เป็น `in_progress` เลย เพราะมีแค่ `saveItems()` เท่านั้นที่ทำ transition นั้น
-- **`enum_spot_check_method`** — strategy การเลือกตัวอย่างบน `tb_spot_check.method` สามค่า: `random` (Fisher-Yates shuffle บน eligible product pool เก็บ `size` ตัวแรก), `high_value` (จัดอันดับ pool ตาม `cost_per_unit` สูงสุดที่พบใน cost-layer receipt ภายในงวดบัญชีที่เปิดอยู่หรือล็อกของ tenant ที่ตำแหน่งนั้น เลือกตัดสินค้าต่ำกว่า `minimum_cost` floor ออกได้ — ต้องมี `tb_period` อย่างน้อยหนึ่งที่ `status ∈ {open, locked}` มิเช่นนั้นการสร้างล้มเหลวด้วย `SPOT_CHECK_NO_ACTIVE_PERIOD`), `manual` (ผู้เรียกส่ง `product_id[]` ชัดเจน; สินค้าที่ไม่พบใน eligible pool ถูกทิ้งเงียบ ๆ และ set ที่เหลือว่างเปล่าหลังกรองล้มเหลวด้วย `"None of the selected products were found at this location"`)
+- **`enum_spot_check_method`** — strategy การเลือกตัวอย่างบน `tb_spot_check.method` สามค่า: `random` (Fisher-Yates shuffle บน eligible product pool เก็บ `size` ตัวแรก), `high_value` (จัดอันดับ pool ตาม `cost_per_unit` สูงสุดที่พบใน cost-layer receipt ภายในงวดบัญชีที่เปิดอยู่หรือล็อกของ tenant ที่ตำแหน่งนั้น เลือกตัดสินค้าต่ำกว่า `minimum_cost` floor ออกได้ — ต้องมี `tb_inventory_period` อย่างน้อยหนึ่งที่ `status ∈ {open, locked}` มิเช่นนั้นการสร้างล้มเหลวด้วย `SPOT_CHECK_NO_ACTIVE_PERIOD`), `manual` (ผู้เรียกส่ง `product_id[]` ชัดเจน; สินค้าที่ไม่พบใน eligible pool ถูกทิ้งเงียบ ๆ และ set ที่เหลือว่างเปล่าหลังกรองล้มเหลวด้วย `"None of the selected products were found at this location"`)
 - **ค่าสถานะระดับ frontend เท่านั้น ไม่มี schema รองรับ** `SpotCheckStatus` union ของ `types/spot-check.ts` ยัง list `"voided"` และ `"cancelled"` เพิ่มเติมนอกเหนือจากสี่ค่า Prisma จริง — ทั้งสองไม่มีอยู่บน `enum_spot_check_status` จึงไม่มีทางปรากฏใน `doc_status` ของเอกสารจริง น่าจะเป็น union member ที่ตายแล้ว carry มาจาก type ของโมดูลอื่น ไม่ใช่สัญญาณของชุดสถานะที่หลากหลายกว่า
 - **`enum_transaction_type`** — ที่ระดับ inventory ledger (บรรทัด schema ~1103) `spot-check` ไม่ใช่ค่าบน enum นี้ และ — เนื่องจาก `submit()` ไม่เขียนอะไรลง ledger เลย — ไม่มี row `adjustment_in`/`adjustment_out` ถูกสร้างโดย action ของโมดูลนี้เองด้วย
 
@@ -85,5 +85,5 @@ tb_location
 - **Service layer:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts` (create/update/delete/reset/saveItems/reviewItems/getReview/submit/findCurrentByLocation/getProductsByLocation), `spot-check.logic.ts` (sampling strategies)
 - **Secondary (ระดับวางแผน ยืนยันบางส่วน):** `../carmen-inventory-frontend-e2e/docs/persona-doc/System Process/tx-10-spot-check.md`
 - **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/` (`sc-component.tsx`, `sc-form.tsx`, `sc-entry-component.tsx`, `sc-review-component.tsx`); `types/spot-check.ts`; `hooks/use-spot-check.ts`, `hooks/use-spot-check-current.ts`, `hooks/use-spot-check-comments.ts`
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check; มี manual test-case catalog ที่ `docs/test-cases/760-spot-check.md`
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check; manual test-case catalog `docs/test-cases/760-spot-check.md` (44 cases, re-verify 2026-09-20), stories `docs/user-stories/760-spot-check.md` (32)
 - โมดูลที่เกี่ยวข้อง: [inventory](/th/inventory/inventory) (ledger ที่ spot check เปรียบเทียบด้วยแต่ไม่เคยเขียนลงไป), [inventory-adjustment](/th/inventory/inventory-adjustment) (โมดูลที่ผู้ใช้ต้องไปแยกต่างหากเพื่อแก้ไขผลต่างที่ยืนยันแล้ว — ไม่มีลิงก์อัตโนมัติ), [physical-count](/th/inventory/physical-count) (คู่เทียบการนับเต็ม เป็น document tree ที่แยกต่างหากโดยสิ้นเชิง)

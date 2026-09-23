@@ -2,7 +2,7 @@
 title: การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios
 description: Test case ต่อ persona, scenario end-to-end และการ map ไปยัง E2E สำหรับการนับสต๊อกประจำงวด
 published: true
-date: 2026-07-15T17:56:09.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: physical-count, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T14:00:00.000Z
 > **At a Glance**
 > **โมดูล:** [physical-count](/th/inventory/physical-count) &nbsp;·&nbsp; **ขอบเขต:** role permission-gated จริงหนึ่งเดียว แบ่งตามสองหน้าจอ (list; entry/review) บวกกลุ่มที่สามที่ยืนยันแล้วว่าไม่มีอยู่จริง
 > **ลำดับการรัน:** ตรวจสอบ period/การ provision period → scenario หน้ารายการ → scenario หน้า entry/review → scenario end-to-end ด้านล่าง
-> **ความครอบคลุม E2E:** ไม่มี Playwright spec ของ `physical-count` ที่ `../carmen-inventory-frontend-e2e/tests/`; มีเอกสารระดับวางแผนสามฉบับใน repo นั้น (`docs/persona-doc/System Process/tx-08-physical-stocktake.md`, `docs/test-cases/750-physical-count.md`, `docs/user-stories/750-physical-count.md`) แต่อธิบายการออกแบบที่ต่างออกไปอย่างมากและยังไม่ถูกสร้างจริง — ดู [02-business-rules.md](/th/inventory/physical-count/02-business-rules) § 5.1
+> **ความครอบคลุมที่รันได้ (2026-09-22):** ไม่มี Playwright spec ของ `physical-count` ที่ `../carmen-inventory-frontend-e2e/tests/` manual catalog `docs/test-cases/750-physical-count.md` (41 case, ตรวจทานซ้ำกับ component จริงเมื่อ 2026-09-20 — ตอนนี้บันทึกกลไกจริงแล้ว รวมเงื่อนไขก่อนหน้า Start Period Close และ dialog "Counting has not started") และ generated stories `docs/user-stories/750-physical-count.md` (33) ส่วน `docs/persona-doc/System Process/tx-08-physical-stocktake.md` ยังเป็นการออกแบบระดับวางแผนที่ implementation ไม่ตรงด้วย — ดู [02-business-rules.md](/th/inventory/physical-count/02-business-rules) § 5.1 gap catalog ของ period-end `docs/test-cases/gaps/900-period-end-gap.md` (TC-PE-31xxxx) ครอบคลุมการ unlock ด้วยปุ่ม Start
 
 ## 1. ภาพรวม
 
@@ -48,11 +48,11 @@ dateCreated: 2026-05-15T14:00:00.000Z
 
 ## 5. E2E Spec Map
 
-ไม่มี Playwright spec ของ `physical-count` ที่ `../carmen-inventory-frontend-e2e/tests/` (ตรวจสอบโดย `ls tests/ | grep -i 'physical\|count'`) มีเอกสารระดับวางแผนสามฉบับใน repo นั้นแทน — `docs/persona-doc/System Process/tx-08-physical-stocktake.md`, `docs/test-cases/750-physical-count.md`, และ `docs/user-stories/750-physical-count.md` — แต่อธิบายการออกแบบ (transaction type ของตัวเอง, สถานะ `FINALIZED`/GL-posted, location transaction lock, tolerance/recount) ที่ implementation ปัจจุบันไม่ตรงด้วย ดู [02-business-rules.md](/th/inventory/physical-count/02-business-rules) § 5.1 สำหรับการเปรียบเทียบทีละจุด ให้ถือทุก scenario ในโมดูลนี้เป็น manual/planned จนกว่าจะมี spec อัตโนมัติ และเขียน coverage อัตโนมัติใหม่ตามกลไกจริงที่บันทึกไว้ที่นี่ — ไม่ใช่ตามเอกสารวางแผน
+ไม่มี Playwright spec ของ `physical-count` ที่ `../carmen-inventory-frontend-e2e/tests/` (ตรวจสอบโดย `ls tests/ | grep -i 'physical\|count'`) manual catalog `docs/test-cases/750-physical-count.md` (41 case) ถูกเขียนใหม่เทียบกับ component จริงเมื่อ 2026-09-20 และเป็นสิ่งที่ใกล้เคียง executable spec ที่สุด — หมายเหตุของ case 24 และ `TC-PC-900002`–`900004` ครอบคลุมเงื่อนไขก่อนหน้า Start Period Close; `docs/user-stories/750-physical-count.md` (33) ถูก generate จากมัน `docs/persona-doc/System Process/tx-08-physical-stocktake.md` ยังคงอธิบายการออกแบบ (transaction type ของตัวเอง, สถานะ `FINALIZED`/GL-posted, location transaction lock, tolerance/recount) ที่ implementation ปัจจุบันไม่ตรงด้วย ดู [02-business-rules.md](/th/inventory/physical-count/02-business-rules) § 5.1 ให้ถือทุก scenario ในโมดูลนี้เป็น manual จนกว่าจะมี automated spec และเขียน automated coverage ใหม่เทียบกับกลไกจริงที่บันทึกไว้ที่นี่
 
 ## 6. แหล่งอ้างอิง
 
 - **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/physical-count/`
 - **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts`, `.../physical-count-period/physical-count-period.service.ts`, `.../period-end/period-end.validate.ts`
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count; เอกสารวางแผนที่ `docs/persona-doc/System Process/tx-08-physical-stocktake.md`, `docs/test-cases/750-physical-count.md`, `docs/user-stories/750-physical-count.md`
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count; manual catalog `docs/test-cases/750-physical-count.md` (41), stories `docs/user-stories/750-physical-count.md` (33), เอกสารวางแผน `docs/persona-doc/System Process/tx-08-physical-stocktake.md`, การ unlock ของ period-end ใน `docs/test-cases/gaps/900-period-end-gap.md`
 - ที่เกี่ยวข้อง: [physical-count/03-user-flow](/th/inventory/physical-count/03-user-flow) (state machine ที่หน้านี้ใช้), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_VAL_*` / `PHC_AUTH_*` / `PHC_POST_*`), [inventory-adjustment/04-test-scenarios](/th/inventory/inventory-adjustment/04-test-scenarios) (ตารางที่ rollup เขียนเข้า)

@@ -2,7 +2,7 @@
 title: การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios — หน้า Entry & Review
 description: Test case ของหน้า entry และ review สำหรับโมดูลการนับสต๊อกประจำงวด
 published: true
-date: 2026-07-15T17:56:09.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: physical-count, test-scenarios, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T14:00:00.000Z
 > **At a Glance**
 > **หน้าจอ:** `physical-count/:id/entry` (`pc-entry-component.tsx`), `physical-count/:id/review` (`pc-review-component.tsx`) &nbsp;·&nbsp; **โมดูล:** [physical-count](/th/inventory/physical-count) &nbsp;·&nbsp; **Role:** role เดียวกับ [04-test-scenarios-count-lead.md](/th/inventory/physical-count/04-test-scenarios-count-lead)
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **ความครอบคลุม E2E:** ไม่มี Playwright spec ของ `physical-count`; scenario เป็น manual/planned
+> **ความครอบคลุมที่รันได้:** ไม่มี Playwright spec ของ `physical-count`; manual catalog `../carmen-inventory-frontend-e2e/docs/test-cases/750-physical-count.md` (41 case; แถวของ entry / review / submit) — ดู [04-test-scenarios](/th/inventory/physical-count/04-test-scenarios) § 5
 
 ## 1. ขอบเขต
 
@@ -64,5 +64,5 @@ Scenario ด้านล่างใช้ action ที่ catalogue ใน [ph
 
 - **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/physical-count/pc-entry-component.tsx`, `pc-review-component.tsx`
 - **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (`save`, `reviewItems`, `submit`, `refresh`, `delete`)
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count; manual catalog `docs/test-cases/750-physical-count.md`
 - ที่เกี่ยวข้อง: [physical-count/03-user-flow-counter](/th/inventory/physical-count/03-user-flow-counter), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_VAL_004`–`007`, `PHC_POST_001`–`004`), [physical-count/04-test-scenarios](/th/inventory/physical-count/04-test-scenarios) (scenario end-to-end)

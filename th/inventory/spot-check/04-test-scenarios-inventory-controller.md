@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check) — Test Scenarios — หน้ารายการ & สร้าง
 description: Test case หน้ารายการและหน้าสร้างสำหรับโมดูลการสุ่มตรวจ
 published: true
-date: 2026-07-15T18:38:42.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: spot-check, test-scenarios, inventory-controller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T14:30:00.000Z
 > **At a Glance**
 > **หน้าจอ:** `spot-check` (`sc-component.tsx`), `spot-check/location/:location_id` (`sc-form.tsx`) &nbsp;·&nbsp; **โมดูล:** [spot-check](/th/inventory/spot-check) &nbsp;·&nbsp; **Role:** ผู้ใช้ใดก็ตามที่มีสิทธิ์ `inventory_management.spot_check` (role เดียวกับ [04-test-scenarios-counter.md](/th/inventory/spot-check/04-test-scenarios-counter))
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **ความครอบคลุม E2E:** ไม่มี Playwright spec ของ `spot-check`; scenario เป็นการครอบคลุม manual/planned cross-reference กับ row `TC-SPC-01*`/`TC-SPC-03*` ของ `docs/test-cases/760-spot-check.md`
+> **ความครอบคลุมแบบ executable:** ไม่มี Playwright spec ของ `spot-check`; manual catalog `../carmen-inventory-frontend-e2e/docs/test-cases/760-spot-check.md` (44 cases, re-verify 2026-09-20; row `TC-SPC-01*` list / `TC-SPC-03*` create) — ดู [04-test-scenarios](/th/inventory/spot-check/04-test-scenarios) § 5
 
 ## 1. ขอบเขต
 
@@ -29,7 +29,7 @@ Scenario ด้านล่างใช้ action ที่ catalogue ใน [sp
 | L-F-04 | ค้นหาตามชื่อ/รหัสตำแหน่ง | พิมพ์คำที่ตรงบางส่วน | รายการแคบลงฝั่ง client ตรงกับ `TC-SPC-010004` |
 | L-F-05 | Include Not Count | ติ๊ก "Include Not Count" | ตำแหน่งที่ flag `physical_count_type = no` ถูกเพิ่มเข้ารายการ ตรงกับ `TC-SPC-010006` |
 | L-F-06 | เริ่ม spot check — Random | ตำแหน่งไม่มี spot check ค้าง; `items ≥ 1` | `POST /spot-checks` สำเร็จ; เอกสารสร้างที่ `pending` พร้อม `size` แถวสุ่ม; navigate ไป `/:id` ตรงกับ `TC-SPC-030002` |
-| L-F-07 | เริ่ม spot check — High Value | เหมือนกัน บวก `items ≥ 1` และมีงวดบัญชีที่เปิด/ล็อกอยู่ | เอกสารสร้างพร้อมสินค้า top-`items` ตามการจัดอันดับมูลค่า ตรงกับ `TC-SPC-030003` |
+| L-F-07 | เริ่ม spot check — High Value | เหมือนกัน บวก `items ≥ 1` และมี `tb_inventory_period` ที่เปิดอยู่/ล็อกอยู่ | เอกสารสร้างพร้อมสินค้า top-`items` ตามการจัดอันดับมูลค่า ตรงกับ `TC-SPC-030003` |
 | L-F-08 | เริ่ม spot check — Manual | เหมือนกัน บวกเลือกสินค้าอย่างน้อยหนึ่งผ่าน transfer picker | เอกสารสร้างพร้อมสินค้าที่เลือกตรงเป็นแถว detail ตรงกับ `TC-SPC-030004` |
 | L-F-09 | Method picker สลับ field ที่แสดง | บนหน้าสร้าง คลิกแต่ละ method card | Random/High Value แสดงช่อง Items (High Value เพิ่ม Min Value); Manual แสดง product transfer picker แทน ตรงกับ `TC-SPC-030005` |
 | L-F-10 | Product transfer (Manual) | Method = Manual | สินค้าย้ายระหว่างคอลัมน์ Available/Selected; ตัวนับอัปเดต; select-all และ empty-search state ทำงาน ตรงกับ `TC-SPC-030006` |
@@ -51,7 +51,7 @@ Scenario ด้านล่างใช้ action ที่ catalogue ใน [sp
 | L-V-02 | `SPC_VAL_003` | Method = Manual; ปล่อย Products Selected ว่าง; คลิก Create | Error ฝั่ง client ใต้ product transfer ("ต้องเลือกอย่างน้อยหนึ่งสินค้า"); backend จะ reject ด้วย `"product_id is required for manual selection"` เช่นกัน ตรงกับ `TC-SPC-200002` |
 | L-V-03 | (client) | Method = Random หรือ High Value; ปล่อย Items ที่ `0`; คลิก Create | Error ฝั่ง client บังคับ `items ≥ 1` ตรงกับ `TC-SPC-200001` |
 | L-V-04 | (client) | Method = High Value; กรอก Min Value ติดลบ; คลิก Create | Error ฝั่ง client บังคับ `min_value ≥ 0` ตรงกับ `TC-SPC-200003` |
-| L-V-05 | `SPC_VAL_004` | Method = High Value; ไม่มี `tb_period` ที่ `status ∈ {open, locked}` | `SPOT_CHECK_NO_ACTIVE_PERIOD` ("No active period found") |
+| L-V-05 | `SPC_VAL_004` | Method = High Value; ไม่มี `tb_inventory_period` ที่ `status ∈ {open, locked}` | `SPOT_CHECK_NO_ACTIVE_PERIOD` ("No active period found") |
 | L-V-06 | `SPC_VAL_006` | คลิก Reset บน spot check ที่เป็น `void` หรือ `completed` อยู่แล้ว — เข้าถึงไม่ได้ผ่าน UI ที่ shipped (Reset render เฉพาะสำหรับรายการ `pending`/`in_progress`) แต่การ retry API ตรงจะเจอสิ่งนี้ | `"Spot check is already void"` / `"Completed spot check cannot be reset"` |
 
 ## 5. Edge Case
