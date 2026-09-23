@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum สำหรับโมดูล purchase-order
 published: true
-date: 2026-07-15T13:30:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: purchase-order, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -11,10 +11,11 @@ dateCreated: 2026-05-15T10:00:00.000Z
 # ใบสั่งซื้อ (Purchase Order) — Data Model
 
 > **At a Glance**
-> **ตาราง:** `tb_purchase_order` &nbsp;·&nbsp; `tb_purchase_order_detail` &nbsp;·&nbsp; `tb_purchase_order_comment` &nbsp;·&nbsp; `tb_purchase_order_detail_comment` &nbsp;·&nbsp; `tb_purchase_order_detail_tb_purchase_request_detail` (bridge PR↔PO)
+> **ตาราง:** `tb_purchase_order` (schema.prisma L2063) &nbsp;·&nbsp; `tb_purchase_order_detail` (L2179) &nbsp;·&nbsp; `tb_purchase_order_comment` (L2144) &nbsp;·&nbsp; `tb_purchase_order_detail_comment` (L2293) &nbsp;·&nbsp; `tb_purchase_order_detail_tb_purchase_request_detail` (L2328, bridge PR↔PO)
 > **กลุ่มผู้ใช้:** Developer / Auditor (ใช้อ้างอิงสำหรับ dev)
-> **FK สำคัญ:** detail `→ tb_product` / `tb_tax_profile` / `tb_unit` ×2 (order + base); header `→ tb_vendor` / `tb_currency` / `tb_credit_term`; bridge `→ tb_purchase_request_detail` (many-to-many รองรับการรวม PR และการแปลงบางส่วน); back-relation จาก `tb_good_received_note_detail` (GRN ปลายน้ำ)
-> **รูปแบบ audit:** มาตรฐาน `created_*` / `updated_*` / `deleted_*`; counter ต่อบรรทัด `received_qty` / `cancelled_qty`; snapshot workflow บน header JSON
+> **FK สำคัญ:** detail `→ tb_product` / `tb_tax_profile` / `tb_unit` ×2 (order + base); header `→ tb_vendor` / `tb_currency` / `tb_credit_term` / `tb_delivery_point` (ใหม่ 2026-09-15); bridge `→ tb_purchase_request_detail` / `tb_location` / `tb_delivery_point` (many-to-many รองรับการรวม PR และการแปลงบางส่วน); back-relation จาก `tb_good_received_note_detail` (GRN ปลายน้ำ)
+> **รูปแบบ audit:** มาตรฐาน `created_*` / `updated_*` / `deleted_*`; counter ต่อบรรทัด `received_qty` / `cancelled_qty`; `received_qty` / `foc_received_qty` ระดับ bridge ต่อ allocation ของ PR-line; snapshot workflow บน header JSON
+> **Re-sync 2026-09-22:** status enum `sent` → `sent_or_print` + เพิ่ม `approved` (migration `20260914080000`, `20260914080100`); header `delivery_point_id/name` (`20260915120000`); bridge `pr_detail_foc_qty` / `foc_received_qty` (`20260916030000`); รูปแบบ API response ตอนนี้หนึ่งแถว = หนึ่ง location พร้อม entity object ซ้อน (§ 2.4)
 
 > **แหล่งอ้างอิง:** Prisma schema ฝั่ง backend อ่านที่นี่ก่อนเสมอเมื่อเขียนหรือแก้ไขหน้านี้:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
@@ -28,7 +29,9 @@ dateCreated: 2026-05-15T10:00:00.000Z
 
 PO อยู่ **ปลายน้ำของ [purchase-request](/th/inventory/purchase-request)** และ **ต้นน้ำของ [good-receive-note](/th/inventory/good-receive-note)** ในห่วงโซ่ procure-to-pay ลิงก์ PR-to-PO ทำผ่านตาราง bridge ที่กล่าวข้างต้น; bridge เดียวกันนี้ capture ปริมาณที่รับและ FOC ต่อ PR-line รองรับทั้งการรวม PR (หลาย PR lines → หนึ่ง PO line) และการแปลงบางส่วน (หนึ่ง PR line → หลาย PO lines) บรรทัด PO มี column `received_qty` และ `cancelled_qty` แบบ running เพื่อให้ "pending qty" ที่ใช้ได้สำหรับ GRN คือ `order_qty − received_qty − cancelled_qty`; ความสัมพันธ์จาก PO detail ไปยัง GRN detail (`tb_good_received_note_detail`) คือสิ่งที่ปิดวงจร แถวของ PO detail ยังอ้างอิงถึง [product](/th/inventory/product), `tb_tax_profile`, และ `tb_unit` (สองครั้ง — สำหรับ order UoM และ base UoM), และ header อ้างอิง `tb_vendor`, `tb_currency`, และ `tb_credit_term` เอนทิตี PO ทั้งหมดอยู่ใน tenant Prisma schema; platform schema ไม่มี model purchase-order
 
-ส่วนหัวบรรจุ context ของผู้ขาย สกุลเงิน อัตราแลกเปลี่ยน และ credit-term ครั้งเดียวสำหรับทั้ง PO — โดยการออกแบบ ทุกบรรทัดบน PO หนึ่งใบใช้ผู้ขายและสกุลเงินเดียวกัน ซึ่งเป็นเหตุผลที่ flow การแปลง PR-to-PO ต้อง group PR ที่เลือกด้วย `(vendor_id, delivery_date, currency_id)` ก่อน fan-out (ยืนยันใน `purchase-order.service.ts` `buildPoGroupKey` / `groupPrForPo` / `confirmPrToPo` — comment: "Group by vendor_id -> delivery_date -> currency_id") ค่า default ของ `tb_purchase_order.po_type` คือ `purchase_request` ซึ่งทำให้การสร้างผ่าน PR-sourced เป็นเส้นทางมาตรฐาน; `manual` เป็นทางเลือกสำหรับ PO ที่สร้างโดย procurement เท่านั้นโดยไม่มี PR ต้นน้ำ; `pricelist` คือช่องทางที่สาม — PO ที่สร้างโดยตรงจาก vendor price list ผ่าน wizard 4 ขั้นตอน (`routes/procurement/purchase-order/from-price-list/`) โดยข้ามขั้นตอน PR ไปทั้งหมด
+ส่วนหัวบรรจุ context ของผู้ขาย สกุลเงิน อัตราแลกเปลี่ยน credit-term และ — ตั้งแต่ 2026-09-15 — delivery point ครั้งเดียวสำหรับทั้ง PO — โดยการออกแบบ ทุกบรรทัดบน PO หนึ่งใบใช้ผู้ขายและสกุลเงินเดียวกัน ซึ่งเป็นเหตุผลที่ flow การแปลง PR-to-PO ต้อง group PR ที่เลือกด้วย `(vendor_id, delivery_date, currency_id)` ก่อน fan-out (ยืนยันใน `purchase-order.service.ts` `buildPoGroupKey`: `` `${vendor_id}|${yyyy-MM-dd}|${currency_id}` ``; `delivery_date` override ที่ผู้เรียกส่งมาแบบ optional จะแทนที่วันที่ของ PR line ใน key นั้น ดังนั้น `groupPrForPo` / `confirmPrToPo` จึงรวมบรรทัดที่เดิมจะแยกตามวันที่) ค่า default ของ `tb_purchase_order.po_type` คือ `purchase_request` ซึ่งทำให้การสร้างผ่าน PR-sourced เป็นเส้นทางมาตรฐาน; `manual` เป็นทางเลือกสำหรับ PO ที่สร้างโดย procurement เท่านั้นโดยไม่มี PR ต้นน้ำ; `pricelist` คือช่องทางที่สาม — PO ที่สร้างโดยตรงจาก vendor price list ผ่าน wizard 4 ขั้นตอน (`routes/procurement/purchase-order/from-price-list/`) โดยข้ามขั้นตอน PR ไปทั้งหมด
+
+**หนึ่งบรรทัด = หนึ่ง location** ตั้งแต่ `feat(po)!: location ย้ายมาแบนบน detail` (2026-09-09) แถว `tb_purchase_order_detail` คือสินค้าหนึ่งตัวที่ไปยัง delivery location เดียว ตัวตาราง Prisma เองไม่มีคอลัมน์ `location_id` — location ยังอยู่บน bridge row ใต้บรรทัดนั้น — แต่ create DTO บังคับ `location_id` ต่อบรรทัด (`dto/create-purchase-order.dto.ts` L60-69) และ detail serializer ยก `location_id/code/name` และ `delivery_point_*` จาก junction ขึ้นมาบนแถว (`dto/purchase-order.serializer.ts` L74-80) breakdown `locations[]` แบบซ้อนเดิม ซึ่งปริมาณต่อ location รวมกันเท่ากับ `order_qty` ของแถว ไม่มีอยู่บน create payload หรือ detail response อีกต่อไป; เหลืออยู่เฉพาะบน view ฝั่ง GRN `GET .../purchase-orders/grn*` (`PoForGrnLocationResponseSchema`)
 
 **Concurrency:** การแก้ไขเอกสารนี้ใช้ optimistic locking ผ่าน [system-config/doc-version](/th/inventory/system-config/doc-version) — client ต้องส่ง `doc_version` ปัจจุบันตอนบันทึก ไม่งั้นจะได้ `409 Conflict`
 
@@ -47,9 +50,11 @@ PO อยู่ **ปลายน้ำของ [purchase-request](/th/inventor
 | `description` | `String` | Yes | คำอธิบาย / เหตุผลที่ใส่บน header |
 | `order_date` | `DateTime @db.Timestamptz(6)` | Yes | วันที่สั่งซื้อที่กำหนดบน header |
 | `delivery_date` | `DateTime @db.Timestamptz(6)` | Yes | วันส่งของที่ต้องการระดับ header |
+| `delivery_point_id` | `String @db.Uuid` | Yes | FK ไปยัง `tb_delivery_point.id` — จุดที่ส่งทั้งใบสั่ง เพิ่มโดย `20260915120000_po_header_delivery_point` nullable โดยไม่มี backfill (ใบสั่งเดิมไม่เคยบันทึกไว้จริง ๆ) ต่างจาก `delivery_point_id` ต่อบรรทัดบน bridge PR↔PO ซึ่งบันทึกว่า *บรรทัดคำขอต้นทาง* แต่ละบรรทัดขอให้ส่งของที่ไหน เติมจาก `delivery_point_id` override บน `confirm-pr` หรือฟอร์ม header บน PO แบบ manual / pricelist |
+| `delivery_point_name` | `String @db.VarChar` | Yes | Snapshot ของชื่อ delivery point resolve ฝั่งเซิร์ฟเวอร์ (`resolvePrToPoOverrides`) เพื่อให้ delivery point ที่ถูกเปลี่ยนชื่อหรือลบไม่เปลี่ยนสิ่งที่ใบสั่งในอดีตบอกไว้ |
 | `workflow_id` | `String @db.Uuid` | Yes | FK อ้างอิงไปยัง `tb_workflow` row (ไม่มี Prisma `@relation` ประกาศไว้บน model นี้ — selection resolve ที่ application) |
 | `workflow_name` | `String @db.VarChar` | Yes | Snapshot ของชื่อ workflow |
-| `workflow_history` | `Json @db.JsonB` | Yes | Timeline ของ stage-transition แบบ append-only; default `[]` แต่ละ entry มี `stage`, `action`, `message`, `by`, `at` |
+| `workflow_history` | `Json @db.JsonB` | Yes | Timeline ของ stage-transition แบบ append-only; default `[]` แต่ละ entry มี `action`, `at`, `user { id, name }`, `current_stage`, `next_stage` (schema comment L2083) `action` คือ `submitted \| approved \| reviewed \| rejected \| completed` — `completed` ถูก push โดย `WorkflowOrchestratorService` ตอนอนุมัติขั้นสุดท้าย และ **ไม่ใช่** สมาชิกของ `enum_last_action` |
 | `workflow_current_stage` | `String @db.VarChar` | Yes | Slug ของ stage ที่กำลังถือ PO อยู่ |
 | `workflow_previous_stage` | `String @db.VarChar` | Yes | Slug ของ stage ที่เพิ่งปล่อย PO |
 | `workflow_next_stage` | `String @db.VarChar` | Yes | Slug ของ stage ถัดไปในห่วงโซ่ |
@@ -63,8 +68,8 @@ PO อยู่ **ปลายน้ำของ [purchase-request](/th/inventor
 | `currency_id` | `String @db.Uuid` | Yes | FK ไปยัง `tb_currency.id` — สกุลเงินที่ใช้บันทึก transaction สำหรับ PO ทั้งใบ |
 | `currency_code` | `String @db.VarChar` | Yes | Snapshot ของรหัสสกุลเงิน |
 | `exchange_rate` | `Decimal @db.Decimal(15, 5)` | Yes | อัตราแลกเปลี่ยน transaction-to-base; default `1` |
-| `approval_date` | `DateTime @db.Timestamptz(6)` | Yes | Timestamp เมื่อ PO ถูกอนุมัติ |
-| `email` | `String @db.VarChar` | Yes | อีเมลที่ใช้เมื่อส่ง PO ให้ผู้ขาย |
+| `approval_date` | `DateTime @db.Timestamptz(6)` | Yes | Timestamp เมื่อ PO ผ่านขั้นตอนอนุมัติสุดท้าย (`performApprove` set เป็น `workflow.last_action_at_date` พร้อมกับ `po_status = approved`) |
+| `email` | `String @db.VarChar` | Yes | อีเมลผู้ขายที่บันทึกบนฟอร์ม header `send-email` ไม่เขียนคอลัมน์นี้ — ผู้รับจริง หัวข้อ และผลของการส่งแต่ละครั้งไปอยู่ที่ `tb_activity` (`email_sent`) ไม่ใช่คอลัมน์นี้ |
 | `buyer_id` | `String @db.Uuid` | Yes | ID ของ buyer / procurement officer |
 | `buyer_name` | `String @db.VarChar` | Yes | Snapshot ของชื่อแสดงผลของ buyer |
 | `credit_term_id` | `String @db.Uuid` | Yes | FK ไปยัง `tb_credit_term.id` |
@@ -88,14 +93,14 @@ PO อยู่ **ปลายน้ำของ [purchase-request](/th/inventor
 | `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | Timestamp ของ soft-delete; non-null หมายถึง logically deleted |
 | `deleted_by_id` | `String @db.Uuid` | Yes | User id ที่ soft-delete row |
 
-**Constraints:** `@id` บน `id` FKs: `credit_term_id → tb_credit_term.id` (`NoAction`); `currency_id → tb_currency.id` ผ่าน named relation `tb_purchase_order_currency_idTotb_currency` (`NoAction`); `vendor_id → tb_vendor.id` (`NoAction`) หมายเหตุ: `workflow_id` เก็บเป็น UUID แต่ไม่มี Prisma `@relation` บน model นี้
-**Indexes:** `@@unique([po_no, deleted_at])` ชื่อ `PO_po_no_u`; `@@index([po_no])` ชื่อ `PO_po_no_idx`; `@@index([vendor_id])` ชื่อ `PO_vendor_id_idx`
+**Constraints:** `@id` บน `id` FKs: `credit_term_id → tb_credit_term.id` (`NoAction`); `currency_id → tb_currency.id` ผ่าน named relation `tb_purchase_order_currency_idTotb_currency` (`NoAction`); `vendor_id → tb_vendor.id` (`NoAction`); `delivery_point_id → tb_delivery_point.id` (`NoAction`, constraint `tb_purchase_order_delivery_point_id_fkey`) หมายเหตุ: `workflow_id` เก็บเป็น UUID แต่ไม่มี Prisma `@relation` บน model นี้
+**Indexes:** `@@unique([po_no, deleted_at])` ชื่อ `PO_po_no_u`; `@@index([po_no])` ชื่อ `PO_po_no_idx`; `@@index([vendor_id])` ชื่อ `PO_vendor_id_idx`; `PO_delivery_point_id_idx` บน `delivery_point_id` (สร้างโดย SQL ของ migration; ไม่ได้ประกาศเป็น `@@index` ใน Prisma model)
 
 ตารางคอมเมนต์ / ไฟล์แนบของโมดูลนี้ถูกแยกไปอีกหน้า — ดู [01a — โมเดลข้อมูล — ตารางคอมเมนต์](/th/inventory/purchase-order/01a-data-model-comments)
 
 ### 2.2 tb_purchase_order_detail
 
-Line item ของ PO บรรจุ product reference, คู่ order-qty และ base-qty (qty/UoM เดี่ยวต่างจาก PR ที่บรรจุ triple ของ requested/approved/FOC — FOC บน PO เป็น boolean ต่อบรรทัด), tax และ discount, ยอดรวมบรรทัดในสกุลเงิน transaction และ base, ปริมาณ received / cancelled แบบ running และประวัติ workflow stage ต่อบรรทัด
+Line item ของ PO — สินค้าหนึ่งตัวสำหรับ delivery location เดียว บรรจุ product reference, คู่ order-qty และ base-qty (qty/UoM เดี่ยวต่างจาก PR ที่บรรจุ triple ของ requested/approved/FOC — FOC บน PO เป็น boolean `is_foc` ต่อบรรทัดที่ระดับตาราง; *ปริมาณ* FOC `foc_qty` / `foc_received_qty` ที่ detail response แสดงบนแถวถูก aggregate มาจาก bridge rows, `purchase-order.service.ts` L767), tax และ discount, ยอดรวมบรรทัดในสกุลเงิน transaction และ base, ปริมาณ received / cancelled แบบ running และประวัติ workflow stage ต่อบรรทัด สังเกตว่า **ไม่มี** คอลัมน์ `location_id` บนตารางนี้แม้ API จะถือว่าแถวเป็น single-location — ดู § 2.4
 
 | ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | ----------- |
@@ -140,7 +145,7 @@ Line item ของ PO บรรจุ product reference, คู่ order-qty �
 | `cancelled_qty` | `Decimal @db.Decimal(20, 5)` | Yes | ปริมาณที่ยกเลิก / write off จากบรรทัดนี้; default `0` |
 | `history` | `Json @db.JsonB` | Yes | Timeline stage ต่อบรรทัด (`seq`, `name`, `status`, `to_stage`, `message`, `by_id`, `by_name`, `at_date`); default `[]` |
 | `stages_status` | `Json @db.JsonB` | Yes | Stage cursor ต่อบรรทัด — array ของ `{ seq, name, status }`; default `{}` |
-| `current_stage_status` | `String @db.VarChar` | Yes | Working copy ของ status stage ปัจจุบัน Prisma schema ประกาศ `enum_stage_action { submit, approve, reject, review, pending }` (pass enum-cleanup พฤษภาคม 2026) ที่เจตนาใช้ type คอลัมน์นี้; ตัวคอลัมน์ยังเป็น `String?` จนกว่า migration ที่วางแผนไว้จะ validate ค่าประวัติและ retype ถือว่าค่านอก `enum_stage_action` เป็นข้อมูล legacy ที่ migration จะ normalise |
+| `current_stage_status` | `String @db.VarChar` | Yes | Working copy ของ status stage ปัจจุบัน Prisma schema ประกาศ `enum_stage_action { submit, approve, reject, review, … }` (schema.prisma L2511-2524, "present-tense action verbs for `current_stage_status`") ที่เจตนาใช้ type คอลัมน์นี้; ตัวคอลัมน์ยังเป็น `String?` (ยังมี mark `// temp field`) จนกว่า migration ที่วางแผนไว้จะ validate ค่าประวัติและ retype footer ของ React อ่านค่านี้ต่อบรรทัดเพื่อตัดสินว่าปุ่มระดับเอกสารเป็น Approve / Send Back / Reject (`po-footer-action.tsx` `computePoAction`) |
 | `note` | `String @db.VarChar` | Yes | หมายเหตุ free-text แนบกับบรรทัด |
 | `info` | `Json @db.JsonB` | Yes | Extension bag; default `{}` |
 | `dimension` | `Json @db.JsonB` | Yes | Cost dimensions ต่อบรรทัด; default `[]` |
@@ -166,17 +171,24 @@ Line item ของ PO บรรจุ product reference, คู่ order-qty �
 | `pr_detail_id` | `String @db.Uuid` | Yes | FK ไปยัง `tb_purchase_request_detail.id` Nullable เพื่ออนุญาตให้ PO lines ที่ไม่ได้มาจาก PR (manual POs) ยังเขียน bridge row ได้หากจำเป็น |
 | `pr_detail_order_unit_id` | `String @db.Uuid` | Yes | Snapshot ของ UoM จาก PR line ต้นทาง |
 | `pr_detail_order_unit_name` | `String @db.VarChar` | Yes | Snapshot ของชื่อ UoM ของ PR-line |
-| `pr_detail_qty` | `Decimal @db.Decimal(20, 5)` | Yes | ปริมาณที่บริโภคจาก PR line (ใน UoM ของ PR-line); default `0` |
-| `received_qty` | `Decimal @db.Decimal(20, 5)` | Yes | ปริมาณที่รับแล้วเทียบกับ allocation นี้ของ PR-line; default `0` |
-| `foc_qty` | `Decimal @db.Decimal(20, 5)` | Yes | ปริมาณ free-of-charge ที่จัดสรรจาก PR line นี้; default `0` |
-| `location_id` | `String @db.Uuid` | Yes | Snapshot store / location จาก PR line |
+| `pr_detail_qty` | `Decimal @db.Decimal(20, 5)` | Yes | ปริมาณแบบจ่ายเงินที่สั่งจาก PR line (ใน UoM ของ PR-line); default `0` |
+| `received_qty` | `Decimal @db.Decimal(20, 5)` | Yes | ปริมาณแบบจ่ายเงินที่รับแล้วเทียบกับ allocation นี้ของ PR-line; default `0` เพิ่มค่าโดยการ post GRN (`good-received-note.service.ts` บริเวณ L3720) |
+| `pr_detail_foc_qty` | `Decimal @db.Decimal(20, 5)` | Yes | **ใหม่ 2026-09-16** (`20260916030000_po_junction_foc_ordered_vs_received`) ปริมาณ free-of-charge ที่*สั่ง*จาก PR line นี้; default `0` backfill จาก `foc_qty` เมื่อยังเป็นค่า default คู่กับ `pr_detail_qty` (ฝั่งสั่ง) |
+| `foc_received_qty` | `Decimal @db.Decimal(20, 5)` | Yes | **ใหม่ 2026-09-16** ปริมาณ free-of-charge ที่*มาถึง*จริง; default `0` เพิ่มค่าโดยการ post GRN (`foc_received_qty: { increment }`, `good-received-note.service.ts` L3720) — ของ FOC เข้าคลังแล้วตอนนี้ (`f8cd9f0d9`, 2026-09-10) คู่กับ `received_qty` รวมขึ้นบน PO line เป็น `foc_received_qty` ใน detail response และแสดงใต้คอลัมน์ FOC / GRN |
+| `foc_qty` | `Decimal @db.Decimal(20, 5)` | Yes | **ถูกแทนที่** โดย `pr_detail_foc_qty` เก็บไว้เพียงเพื่อให้ expand migration รันได้ขณะ service เก่ายัง deploy อยู่; ไม่มีอะไรเขียนมันอีกแล้ว และ migration ถัดไปจะ drop (schema comment) อย่าอ่านมันในโค้ดใหม่ |
+| `location_id` | `String @db.Uuid` | Yes | Store / location สำหรับ allocation นี้ ตั้งแต่ 2026-09-09 นี่คือ delivery location เดียวของบรรทัด (ยกขึ้นบน detail response เป็น `location`) |
 | `location_code` | `String @db.VarChar` | Yes | Snapshot |
 | `location_name` | `String @db.VarChar` | Yes | Snapshot |
 | `delivery_point_id` | `String @db.Uuid` | Yes | Snapshot จุดส่งของจาก PR line |
 | `delivery_point_name` | `String @db.VarChar` | Yes | Snapshot |
 | `pr_detail_base_qty` | `Decimal @db.Decimal(20, 5)` | Yes | เทียบเท่า base-UoM ของ `pr_detail_qty`; default `0` |
 | `pr_detail_base_unit_id` | `String @db.Uuid` | Yes | Snapshot base UoM จาก PR line |
-| `pr_detail_base_unit_name` | `String @db.VarChar` | Yes | Snapshot ของชื่อ base UoM |
+| `pr_detail_base_unit_name` | `String @db.VarChar` | Yes | Snapshot ของชื่อ base UoM (`fix(po): junction เก็บจำนวนฐานโดยไม่มีหน่วยกำกับ`, 2026-09-17 — ก่อนหน้านี้เป็น null ทุกแถว) |
+| `price`, `sub_total_price`, `net_amount`, `total_price` | `Decimal @db.Decimal(20, 5)` | Yes | เงินต่อ allocation ในสกุลเงิน transaction (สะท้อน detail row เพื่อให้แต่ละ location มีราคาของตัวเองได้; `20260709120000_add_po_pr_detail_location_price_tax_discount`); default `0` |
+| `base_price`, `base_sub_total_price`, `base_net_amount`, `base_total_price` | `Decimal @db.Decimal(20, 5)` | Yes | เหมือนกันในสกุลเงิน base; default `0` |
+| `tax_profile_id`, `tax_profile_name`, `tax_rate`, `tax_amount`, `base_tax_amount`, `is_tax_adjustment` | mixed | Yes | Snapshot ภาษีต่อ allocation (`tax_rate` เป็น `Decimal(15, 5)`) |
+| `discount_rate`, `discount_amount`, `base_discount_amount`, `is_discount_adjustment` | mixed | Yes | Snapshot ส่วนลดต่อ allocation |
+| `doc_version` | `Int @db.Integer` | No | Version แบบ optimistic-concurrency; default `0` |
 | `created_at` | `DateTime @db.Timestamptz(6)` | Yes | Timestamp การสร้าง |
 | `created_by_id` | `String @db.Uuid` | Yes | ID ผู้สร้าง |
 | `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | Timestamp การ update ล่าสุด |
@@ -186,6 +198,30 @@ Line item ของ PO บรรจุ product reference, คู่ order-qty �
 
 **Constraints:** `@id` บน `id` FKs: `po_detail_id → tb_purchase_order_detail.id` (`NoAction`); `pr_detail_id → tb_purchase_request_detail.id` (`NoAction`); `delivery_point_id → tb_delivery_point.id` (`NoAction`); `location_id → tb_location.id` (`NoAction`)
 **Indexes:** `@@unique([po_detail_id, pr_detail_id, deleted_at])` ชื่อ `PO1_purchase_order_purchase_request_detail_u`; `@@index([po_detail_id, pr_detail_id])` ชื่อ `PO1_purchase_order_purchase_request_detail_idx`; `@@index([pr_detail_id])` ชื่อ `PO1_purchase_request_detail_idx`
+
+### 2.4 รูปแบบ API response (`GET .../purchase-orders/:id`) — หนึ่งแถว = หนึ่ง location พร้อม entity ref ซ้อน
+
+รูปแบบบน wire แยกออกจากตารางสองครั้งนับจาก 2026-07-29 และ type ฝั่ง React (`carmen-inventory-frontend-react/types/purchase-order.ts`) คือบันทึกที่รันได้จริงของมัน:
+
+```
+PurchaseOrder
+  po_status            enum (draft | in_progress | approved | sent_or_print | partial | closed | completed — voided ไม่เคยปรากฏใน UI enum)
+  vendor, currency     EntityRef { id, name/code }   ← object ซ้อนตั้งแต่ 2026-09-17 (@ExpandRefs / @CollapseRefs) ไม่ใช่ vendor_id / vendor_name
+  buyer, workflow, credit_term   EntityRef | null   (เฉพาะ detail endpoint)
+  purchase_order_detail[]
+    product, order_unit, base_unit, tax_profile   EntityRef | null
+    location, delivery_point                       EntityRef | null   ← location เดียวของบรรทัด ยกมาจาก bridge row
+    order_qty, price, …money…, is_foc
+    foc_qty, foc_received_qty                      aggregate จาก bridge rows
+    current_stage_status, stages_status, history[] (PoItemHistoryEntry: at, seq, name, user, status, message)
+    pr_details[]                                   PrDetailRef
+      pr_detail   EntityRef | null
+      pr_id, pr_no                                 null บนแถว manual / pricelist
+      grn[]       { grn_id, grn_no }               การรับของกับ allocation นี้ (2e38ba899, 2026-09-21)
+      order_qty, order_base_qty, received_qty, foc_qty, foc_received_qty
+```
+
+payload ฝั่งเขียน (`PoDetailPayload`) ยังส่ง id แบบ flat — `location_id`, `location_code`, `location_name`, `delivery_point_id`, `delivery_point_name`, `pr_details[] { pr_detail_id, … }` — เพราะ contract ฝั่งอ่านและฝั่งเขียนเปลี่ยนคนละวัน บรรทัด manual / pricelist มี `pr_details = []` จึงไม่มีทางแสดง label GRN บนหน้า detail ได้แม้รับของแล้ว: `grn[]` ห้อยอยู่ใต้ `pr_details` และ backend ไม่มีที่อื่นให้วาง (comment ใน `pr-source-button.tsx`) `received_qty` ของปริมาณแบบจ่ายเงินก็ถูก client รวมจาก `pr_details[]` เช่นกัน ในขณะที่ `foc_received_qty` มาบนแถวเลย
 
 ## 3. ความสัมพันธ์
 
@@ -208,7 +244,8 @@ tb_purchase_order_detail ──1──*──► tb_purchase_order_detail_commen
 tb_purchase_order (FK ระดับ header)
     ├──► tb_vendor             (vendor_id)
     ├──► tb_currency           (currency_id — named relation)
-    └──► tb_credit_term        (credit_term_id)
+    ├──► tb_credit_term        (credit_term_id)
+    └──► tb_delivery_point     (delivery_point_id — ระดับ header ตั้งแต่ 2026-09-15)
 
 tb_purchase_request_detail ──*──*──► tb_purchase_order_detail
     ผ่าน bridge tb_purchase_order_detail_tb_purchase_request_detail
@@ -226,21 +263,24 @@ tb_purchase_order_detail ──1──*──► tb_good_received_note_detail
 - **Header → detail** เป็น 1-to-many `purchase_order_id` ของ detail nullable ซึ่งอนุญาตให้มี orphan / scratch lines แต่ถูกบังคับเป็น 1-to-many ในทางปฏิบัติโดย application layer
 - **Header → comment** และ **detail → comment** ทั้งคู่เป็น 1-to-many ตาราง comment เป็นบันทึก persistent ของกิจกรรม workflow; JSON columns บน header (`workflow_history`, `stages_status`) คือ in-place cursor
 - **PR ↔ PO** เป็น many-to-many ผ่าน `tb_purchase_order_detail_tb_purchase_request_detail` เพื่อรองรับ PR consolidation (PR lines หลาย → PO line หนึ่ง) และ partial conversion (PR line หนึ่ง → PO lines หลาย) Bridge ยังเป็น cursor ต่อ allocation สำหรับ received และ FOC qty
-- **PO → GRN** เป็น 1-to-many ผ่าน `tb_purchase_order_detail.tb_good_received_note_detail` (back-relation) `received_qty` ของ PO line update โดยการ post GRN; `received_qty < order_qty − cancelled_qty` หมายถึง PO line ยังมี fulfilment ค้างอยู่
+- **PO → GRN** เป็น 1-to-many ผ่าน `tb_purchase_order_detail.tb_good_received_note_detail` (back-relation) `received_qty` ของ PO line update โดยการ post GRN; `received_qty < order_qty − cancelled_qty` หมายถึง PO line ยังมี fulfilment ค้างอยู่ การ post GRN ยังเพิ่ม `received_qty` และ `foc_received_qty` ของ bridge row แล้วคำนวณสถานะ header ใหม่ (`good-received-note.logic.ts` `updatePoStatuses`: ทุกบรรทัด `received_qty ≥ order_qty − cancelled_qty` → `completed` ไม่งั้น `partial`) — ไม่ว่าก่อนรับของ PO จะเป็น `approved` หรือ `sent_or_print`
+- **หนึ่งบรรทัด = หนึ่ง location** (2026-09-09): location ยังเก็บบน bridge row ไม่ใช่บน detail row แต่ application บังคับให้มี location เดียวต่อ detail (`location_id` required ใน create DTO) และยกขึ้นบน response (§ 2.4)
 - **Vendor / currency invariant**: vendor, currency, exchange-rate และ credit-term อยู่บน header ไม่ใช่บรรทัด นี่หมายความว่าทุก PO line บน PO หนึ่ง ๆ ใช้ vendor และ currency เดียวกัน ซึ่งเป็นเหตุผลที่การแปลง PR-to-PO ต้อง pre-group บรรทัดของ PR ด้วย `(vendor_id, delivery_date, currency_id)` (`buildPoGroupKey`) — มิติ delivery-date จะแยกบรรทัดที่ vendor และ currency เดียวกันแต่วันที่ส่งต่างกันออกเป็นคนละ PO เพิ่มเติมด้วย
 - ประกาศ FK `@relation` ทั้งหมดใช้ `onDelete: NoAction, onUpdate: NoAction` ดังนั้น referential integrity จึงรักษาโดย soft-delete ระดับ application (`deleted_at`) แทน cascade
 
 ## 4. Enums
 
 - **`enum_purchase_order_type`**: `manual` (PO ที่สร้างโดย procurement โดยตรงโดยไม่มี PR ต้นน้ำ), `purchase_request` (PO ที่มีต้นทางจาก PR หนึ่งหรือมากกว่าหนึ่งใบผ่าน flow การแปลง), `pricelist` (PO ที่สร้างโดยตรงจาก vendor price list ผ่าน wizard 4 ขั้นตอน from-price-list ไม่มี PR ต้นน้ำ) `purchase_request` **ยังเป็นค่า default บน `tb_purchase_order.po_type`** — หมายถึง PR-sourced เป็นเส้นทาง procure-to-pay มาตรฐาน; `manual` และ `pricelist` คือสอง opt-out ที่ชัดเจนสำหรับ PO ที่ทำโดย procurement เท่านั้น หรือขับเคลื่อนโดย catalog เท่านั้น Enum เดียวกันใช้ร่วมกันระหว่าง PR และ PO documentation เพราะมันอยู่ใน namespace ของ tenant schema เพียงครั้งเดียว
-- **`enum_purchase_order_doc_status`**: enum สถานะเอกสารสำหรับ `tb_purchase_order.po_status`
+- **`enum_purchase_order_doc_status`** (schema.prisma L246-255): enum สถานะเอกสารสำหรับ `tb_purchase_order.po_status` **เปลี่ยน 2026-09-14** — `sent` ถูกเปลี่ยนชื่อเป็น `sent_or_print` และแทรกสมาชิกใหม่ `approved` ไว้ก่อนหน้า; ทุกแถวที่เคยเป็น `sent` ถูกจัดใหม่เป็น `approved` เพราะโค้ดเดิม set `sent` ตอนอนุมัติขั้นสุดท้ายก่อนที่จะมีการส่งจริง (`20260914080100_po_status_backfill_and_rename_sent`)
   - `draft` (`ร่าง`) — สถานะแก้ไขได้เริ่มต้น; PO สามารถแก้ไขได้อย่างอิสระ ไม่มี commitment กับผู้ขาย
   - `in_progress` (`กำลังดำเนินการ`) — submit แล้วและกำลังเดินผ่านห่วงโซ่ approval
-  - `voided` (`โมฆะ`) — voided เชิงบริหารหลัง submission; PO ถูก terminate โดยไม่มี fulfilment
-  - `sent` — PO ถูกส่งให้ผู้ขายแล้ว; รอ GRN ครั้งแรก
+  - `voided` (`โมฆะ`) — ผลลัพธ์แบบสิ้นสุดของ `/reject` จาก `in_progress`; PO ถูก terminate โดยไม่มี fulfilment
+  - `approved` (`อนุมัติ`) — **ใหม่** ผ่านขั้นตอนอนุมัติสุดท้ายแล้ว (`performApprove`, `purchase-order.logic.ts` L433-435) GRN รับของได้ตั้งแต่จุดนี้ ไม่ได้บอกอะไรว่าผู้ขายเห็นใบสั่งแล้วหรือยัง
+  - `sent_or_print` ("sent to vendor") — **เปลี่ยนชื่อจาก `sent`** ผู้ขายมีเอกสารแล้วจริง: เข้าถึงโดย `send-email` สำเร็จ หรือ `mark-sent` ซึ่งทั้งคู่เป็น `updateMany where po_status = approved` (`markPoAsSent`, service L7218) รอ GRN ครั้งแรก (หรือรับบางส่วนไปแล้วก่อนส่ง)
   - `partial` — อย่างน้อย GRN หนึ่งใบ post แล้วแต่ `received_qty < order_qty − cancelled_qty` บนอย่างน้อยหนึ่งบรรทัด; partial fulfilment
-  - `closed` (annotated ใน Prisma ว่า "closed หยุดหาไม่เจอ") — PO closed ก่อน fulfilment เต็มที่ มักเพราะผู้ขายไม่สามารถจัดหา qty ที่ค้างอยู่; qty ที่เหลือถูกถือเป็น cancelled
+  - `closed` (annotated ใน Prisma ว่า "closed หยุดหาไม่เจอ") — PO ถูก cancel หรือ close ก่อน fulfilment เต็มที่ มักเพราะผู้ขายไม่สามารถจัดหา qty ที่ค้างอยู่; qty ที่เหลือถูกเขียนลง `cancelled_qty`
   - `completed` (annotated ว่า "รับครบผ่าน receiving") — ทุกบรรทัดรับครบผ่าน GRN; PO ปิดปกติ
+  - Period-end ถือว่า `completed`, `closed`, `voided` เป็นสถานะสมบูรณ์ (`period-end.validate.ts` `PO_COMPLETE`); สถานะอื่นทั้งหมดนับเป็น PO ที่ยังเปิดอยู่เมื่อปิดงวด
 - **`enum_comment_type`** (ใช้ร่วมกับ PR): `user` (comment ที่มนุษย์เขียน), `system` (entry activity-log ที่ auto-generate โดย workflow engine) ใช้โดยทั้ง `tb_purchase_order_comment.type` และ `tb_purchase_order_detail_comment.type`
 - **`enum_last_action`** (ใช้ร่วมกับ PR): `submitted`, `approved`, `reviewed`, `rejected` — ใช้โดย `tb_purchase_order.last_action` เพื่อ capture action workflow ล่าสุด
 
@@ -250,7 +290,9 @@ tb_purchase_order_detail ──1──*──► tb_good_received_note_detail
 
 | # | Item | carmen/docs บอกว่า | Prisma มี | Action |
 |---|------|------------------|------------|--------|
-| 1 | ค่า PO status | State diagram ใช้ `Draft → Sent → Partial / FullyReceived → Closed` บวกกับ branch `Voided` และ `Deleted` | `enum_purchase_order_doc_status { draft, in_progress, voided, sent, partial, closed, completed }` — เพิ่ม `in_progress` (state ห่วงโซ่ approval ไม่มีใน state diagram) และใช้ `completed` แทน `FullyReceived` | ถือ Prisma เป็น canonical update state diagram ให้แทรก `in_progress` ระหว่าง `draft` และ `sent` และเปลี่ยนชื่อ `FullyReceived` → `completed` `Deleted` ใน diagram คือ soft-delete flag (`deleted_at`) ไม่ใช่ค่า status |
+| 1 | ค่า PO status | State diagram ใช้ `Draft → Sent → Partial / FullyReceived → Closed` บวกกับ branch `Voided` และ `Deleted` (`purchase-order-module.md` L220-229 รวม `Sent --> Voided: Void`) | `enum_purchase_order_doc_status { draft, in_progress, voided, approved, sent_or_print, partial, closed, completed }` — เพิ่ม `in_progress` (state ห่วงโซ่ approval) และ `approved` (หลังอนุมัติ ก่อนส่ง) เปลี่ยนชื่อ `Sent` → `sent_or_print` ใช้ `completed` แทน `FullyReceived` และไม่มีเส้นทาง `Sent → Voided` (cancel/close ลงที่ `closed`) | ถือ Prisma เป็น canonical `Deleted` ใน diagram คือ soft-delete flag (`deleted_at`) ไม่ใช่ค่า status |
+| 1b | Delivery point บน header | ไม่ได้ model ไว้ | `tb_purchase_order.delivery_point_id/name` (2026-09-15) | เพิ่มลง data dictionary ของ carmen/docs |
+| 1c | FOC บน PO line | แนวคิด `foc` เดียว | Bridge row แยกที่สั่ง (`pr_detail_foc_qty`) ออกจากที่รับ (`foc_received_qty`); FOC เข้าคลังแล้วตอน GRN | Document คู่ ordered/received |
 | 2 | Column หมายเลขอ้างอิง | `purchase_orders.number VARCHAR(20)` | `tb_purchase_order.po_no VARCHAR` (ไม่มี cap ความยาวประกาศ) | เปลี่ยนชื่อ `number` → `po_no` ใน data dictionary ของ carmen/docs ตัด claim 20-char cap |
 | 3 | Data dictionary ของ PO header | List `id, number, vendor_id, order_date, status, currency_code, exchange_rate, total_amount, created_by` เท่านั้น (8 columns) | `tb_purchase_order` มี ~45 columns รวมถึง workflow JSON, credit-term snapshot, buyer, history, ยอดรวมหลายตัว (`total_qty`, `total_price`, `total_tax`, `total_amount`), `is_active`, `info`, `dimension`, `doc_version` และชุด audit ครบ | Dictionary ของ carmen/docs เป็นเพียงตัวอย่าง อย่าถือเป็น spec field-complete cross-reference Section 2.1 ของหน้านี้แทน |
 | 4 | Data dictionary ของ PO line | List `id, purchase_order_id, item_id, ordered_quantity, unit_price, total_amount, pr_item_id` (7 columns) | `tb_purchase_order_detail` มี ~50 columns รวมถึงคู่ `order_*` / `base_*` UoM แยก, FOC boolean, ภาษีและส่วนลดเต็ม columns, ยอดรวมสกุลเงิน transaction และ base, `received_qty`, `cancelled_qty`, workflow JSON ต่อบรรทัด นอกจากนี้: ไม่มี `pr_item_id` บน detail row — PR linkage อยู่บนตาราง bridge `tb_purchase_order_detail_tb_purchase_request_detail` | ตัด `pr_item_id` จาก claim ของ carmen/docs document ตาราง bridge เป็น PR linkage แบบ canonical Cross-reference Section 2.2 / 2.3 ของหน้านี้ |
@@ -260,7 +302,8 @@ tb_purchase_order_detail ──1──*──► tb_good_received_note_detail
 
 ## 6. แหล่งอ้างอิง
 
-- **Primary (source of truth):** Prisma schemas ที่ list ใน callout ของ header — โดยเฉพาะ `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (ทุก PO models และ enum ทั้งสอง) และ `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (ตรวจสอบแล้วว่าไม่มี PO models)
+- **Primary (source of truth):** Prisma schemas ที่ list ใน callout ของ header — โดยเฉพาะ `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (ทุก PO models และ enum ทั้งสอง) และ `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (ตรวจสอบแล้วว่าไม่มี PO models) migration นับจาก baseline: `20260914080000_po_status_add_approved`, `20260914080100_po_status_backfill_and_rename_sent`, `20260915120000_po_header_delivery_point`, `20260916030000_po_junction_foc_ordered_vs_received` (ทั้งหมดอยู่ใต้ `prisma/migrations/`)
+- **Wire contract:** `../carmen-turborepo-backend-v2/apps/micro-business/src/procurement/purchase-order/dto/purchase-order.serializer.ts` (response) และ `dto/create-purchase-order.dto.ts` (payload); `../carmen-inventory-frontend-react/types/purchase-order.ts` (mirror ฝั่ง client พร้อม change note ที่อ้างใน § 2.4)
 - **Secondary (cross-check แนวคิด):** `../carmen/docs/purchase-order-management/purchase-order-module.md` — เอกสาร business-analysis ระดับสูง; ความแตกต่าง capture ใน Section 5
 - **Sibling reference:** `en/purchase-request/01-data-model.md` — อธิบายฝั่ง PR ของ PR↔PO bridge อย่า duplicate เนื้อหานั้นที่นี่
 - โมดูลที่เกี่ยวข้อง: [purchase-request](/th/inventory/purchase-request) (ต้นทาง upstream), [good-receive-note](/th/inventory/good-receive-note) (fulfilment ปลายน้ำผ่าน `received_qty`), [product](/th/inventory/product) (อ้างอิงสินค้าบรรทัด), [vendor-pricelist](/th/inventory/vendor-pricelist) (snapshot ราคา ณ เวลา PR-to-PO conversion), [inventory](/th/inventory/inventory) (context on-hand)

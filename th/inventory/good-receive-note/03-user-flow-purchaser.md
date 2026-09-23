@@ -2,7 +2,7 @@
 title: ใบรับสินค้า (Goods Receive Note) — User Flow — Purchaser
 description: Flow ของ Purchaser ในโมดูล good-receive-note — การ review GRN บน PO ของตัวเอง และการประสานกับ vendor Department Manager review cost-centre
 published: true
-date: 2026-07-15T00:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 dateCreated: 2026-05-15T11:00:00.000Z
 tags: good-receive-note, user-flow, purchaser, inventory, carmen-software
 editor: markdown
@@ -17,12 +17,13 @@ editor: markdown
 
 ## 1. บทบาทในโมดูลนี้
 
-Persona **Purchaser** ครอบคลุม **Purchaser / Procurement Officer** ที่ออก PO ต้นทางและ subset **Department Manager** ที่เป็นเจ้าของ cost-centre ที่ GRN post เข้า ภายในโมดูล GRN Purchaser เป็นผู้เข้าร่วมแบบ **review-only** — พวกเขา **ไม่** สร้าง GRN ที่ dock, **ไม่** บันทึกรายการบรรทัด (การ save คือสิ่งที่ post inventory และเลื่อน PO — ดู [03-user-flow-receiver.md](./03-user-flow-receiver.md)) และ **ไม่** commit Purchaser เปิดเอกสารในโหมด read เพื่อ review ข้อมูลการรับเทียบกับ PO ที่ตนเป็นเจ้าของ (`received_qty` เทียบ `order_qty`, ข้อมูล lot / expiry บน `tb_inventory_transaction_detail` ที่ link, ใบส่งของที่แนบ และ comment ใดๆ ที่ Receiver เขียน) และเป็นเจ้าของ **การตามฝั่ง vendor** สำหรับ variance ที่ flag — ตาม short-ship, ทดแทนสำหรับสินค้าผิด Department Manager subset review GRN ที่กระทบ cost-centre ของแผนกและยืนยันว่าสิ่งที่รับตรงกับที่สั่งสำหรับแผนก sub-persona ทั้งสองไม่เปลี่ยนสถานะเอกสาร GRN
+Persona **Purchaser** ครอบคลุม **Purchaser / Procurement Officer** ที่ออก PO ต้นทาง และในฐานะ subset **Department Manager** ที่เป็นเจ้าของ cost-centre ที่ GRN โพสต์เข้า ภายในโมดูล GRN Purchaser เป็นผู้มีส่วนร่วมแบบ **review-only** — **ไม่** สร้าง GRN ที่ dock, **ไม่** save และ **ไม่** commit (commit คือสิ่งที่โพสต์ inventory และเลื่อน PO — ดู [03-user-flow-receiver.md](./03-user-flow-receiver.md)) Purchaser เปิดเอกสารในโหมด read เพื่อ review ข้อมูลการรับของเทียบกับ PO ที่ตนเป็นเจ้าของ (`received_qty` เทียบ `order_qty`, `received_price` เทียบ `order_price`, `expired_at`, lot บนแท็บ Stock Movement เมื่อ committed แล้ว, ใบส่งสินค้าที่แนบ และ comment ใดที่ Receiver เขียน) และเป็นเจ้าของ **การติดตามฝั่ง vendor** สำหรับ variance ที่ถูกทำเครื่องหมาย — ตามของที่ส่งขาด การแทนที่สินค้าที่ผิด subset Department Manager review GRN ที่กระทบ cost-centre ของแผนกและยืนยันว่าสิ่งที่รับตรงกับที่สั่งสำหรับแผนก ทั้งสอง sub-persona ไม่เปลี่ยนสถานะเอกสาร GRN
 
-**ยังไม่ยืนยันในรอบนี้:**
-- **การแยกหน้าที่ (Receiver ≠ Purchaser):** การค้นหาทั่ว `good-received-note.service.ts` และ `good-received-note.logic.ts` สำหรับการตรวจ `buyer_id` cross-check ไม่พบอะไรเลย — ไม่พบโค้ดที่ห้ามเจ้าของ PO จาก save/commit GRN กับ PO ของตัวเองด้วย ตรงกับข้อสรุปเดียวกันที่ยืนยันแล้วสำหรับ `PO_AUTH_010` ของโมดูล PO ให้ถือว่านี่เป็นเจตนาควบคุม ไม่ใช่กฎที่บังคับใช้
-- **ความคลาดเคลื่อนของราคาเทียบกับ vendor pricelist:** ไม่พบโค้ด lookup pricelist ภายในโมดูล GRN ในรอบนี้ (ดู [02-business-rules.md](./02-business-rules.md) `GRN_XMOD_008`) — การค้นหาทั่ว backend/frontend ของ GRN สำหรับ `pricelist` ให้ผลศูนย์รายการ
-- **Handoff Finance / credit note สำหรับสินค้าเสียหายหรือความคลาดเคลื่อนของราคา:** ไม่พบฟีเจอร์ three-way match หรือ AP — ดู [03-user-flow-finance.md](./03-user-flow-finance.md)
+**ตรวจซ้ำ 2026-09-22 — ยังไม่มีในโค้ด:**
+- **การแยกหน้าที่ (Receiver ≠ Purchaser):** ไม่มีการตรวจ `buyer_id` ไขว้ใน `good-received-note.service.ts` / `.logic.ts`; ใครก็ตามที่ถือ `procurement.goods_received_note.commit` สามารถ save และ commit GRN ใดก็ได้ ตรงกับ `PO_AUTH_010` ของโมดูล PO
+- **ความคลาดเคลื่อนของราคาเทียบกับ vendor pricelist:** ไม่มีการ lookup pricelist ภายในโมดูล GRN (`GRN_XMOD_008`) สิ่งที่มีแทนคือ **เพดาน deviation เทียบราคา PO** บังคับใช้ตอน save (`GRN_VAL_007`, `tb_product.price_deviation_limit`) ดังนั้นการรับของที่ราคาสูงกว่า PO เกิน limit ของสินค้าจะไม่มีวันมาถึง Purchaser ในฐานะเอกสาร `saved`
+- **Handoff Finance / credit note สำหรับสินค้าเสียหายหรือความคลาดเคลื่อนของราคา:** ไม่มีฟีเจอร์ three-way match หรือ AP — ดู [03-user-flow-finance.md](./03-user-flow-finance.md) เอกสารแก้ไขจริงคือ credit note (หนึ่งใบต่อสินค้าต่อ GRN)
+- **การมองเห็นในขอบเขตของ Purchaser:** backend ไม่ได้กรอง list GRN ให้เหลือเฉพาะ PO ของ Purchaser เอง (`findAll` ไม่มีตัวกรอง `buyer_id`); การ review "PO ของตัวเอง" ด้านล่างเป็นธรรมเนียมการทำงาน ไม่ใช่ขอบเขตที่บังคับใช้
 
 ### ตำแหน่ง Workflow (Purchaser highlighted)
 
@@ -53,20 +54,20 @@ Purchaser เป็นผู้เข้าร่วมแบบ **review-only**
 
 **Entry point:** ไม่มีเส้นทางใดที่เปิด GRN ในโหมดแก้ไขได้สำหรับ persona นี้
 
-- **โมดูล PO → Receiving History tab** — เปิด PO ที่ `po_status ∈ {sent, partial, completed}`; list ทุก GRN (`saved` และ `committed`) ที่ reference PO นี้ผ่าน `tb_good_received_note_detail.purchase_order_detail_id` พร้อม running total ของ `received_qty` ต่อบรรทัด; คลิกแถวเพื่อเปิด GRN read view
+- **โมดูล PO → Receiving History tab** — เปิด PO ที่ `po_status ∈ {approved, sent_or_print, partial, completed}` (enum ของ PO เปลี่ยนชื่อ `sent → sent_or_print` และเพิ่ม `approved` เมื่อ 2026-09-14); list ทุก GRN ที่อ้างอิง PO นี้ผ่าน `tb_good_received_note_detail.purchase_order_detail_id` พร้อมยอดสะสม `received_qty` ต่อบรรทัด (เลื่อนโดย GRN ที่ `committed` เท่านั้น); คลิกแถวเพื่อเปิด GRN read view list **Reference documents** ของ GRN เอง (`GET …/good-received-notes/:id/ref`, 2026-09-21) link กลับไปยัง PO ต้นทาง
 - **โมดูล GRN → list กรองตาม PO ที่เป็นเจ้าของ** — list GRN ที่ scope ตาม PO ที่ Purchaser เป็นเจ้าของ
 
 **Flow หลัก (review path, 5 ขั้นตอน):**
 
-1. **เปิด GRN ในโหมด read** จาก Receiving History tab ของโมดูล PO หรือ list GRN header แสดง `doc_status`, `vendor_id`, `receipt_date`, currency; บรรทัดแสดง `order_qty`, `received_qty` และยอด pending คงเหลือบน PO ต้นทาง
-2. **Review variance เทียบกับ PO** สำหรับแต่ละบรรทัด: เทียบ `received_qty` กับ `pending_qty` (`= order_qty − received_qty − cancelled_qty`) ณ ขณะ GRN ถูก save เปิด `tb_inventory_transaction_detail` ที่ link เพื่อตรวจหมายเลข lot และวันหมดอายุ และเปิด list attachment เพื่อดูใบส่งของ
+1. **เปิด GRN ในโหมด read** จาก Receiving History tab ของโมดูล PO หรือ list GRN header แสดง `doc_status`, vendor, `grn_date`, สกุลเงิน และอัตราแลกเปลี่ยน (5 ตำแหน่งเสมอ); แต่ละแถวบรรทัดแสดง `order_qty` / `order_price`, `received_qty` / `received_price`, `foc_qty`, ส่วนลดและภาษี และยอดคงเหลือ pending บน PO ต้นทาง ในโหมด read คอลัมน์ action แสดง link เอกสารต้นทาง (`dab3505d`)
+2. **Review variance เทียบกับ PO** สำหรับแต่ละบรรทัด: เทียบ `received_qty` กับ `order_qty`, `received_price` กับ `order_price`, ตรวจ `expired_at`, เปิดแท็บ **Stock Movement** (แสดงเมื่อ `committed` แล้ว) เพื่อดูหมายเลข lot ที่สร้างและต้นทุนที่โพสต์ และเปิด list ไฟล์แนบเพื่อดูใบส่งสินค้า
 3. **ตัดสินใจเส้นทางแก้ไข** ถ้าทุกบรรทัดสะอาด (`received_qty = pending_qty`): ไม่ต้องติดต่อ vendor ถ้าบรรทัดใดขาดหรือสินค้าผิด: ไปขั้นตอน 4
 4. **ติดต่อ vendor** ขึ้น conversation ฝั่ง vendor ตาม variance type — ตาม short-ship สำหรับยอดคงเหลือที่ไม่สำเร็จ ขออนุญาต return-shipment สำหรับการส่งสินค้าผิด conversation อยู่นอกเอกสาร GRN (อีเมล, vendor portal, โทร) — ไม่พบ screen สื่อสารกับ vendor เฉพาะทางในโมดูล GRN
 5. **บันทึกผลการแก้ไขบน activity log ของ GRN** (comment) บันทึกการตอบสนองของ vendor และถ้าเกี่ยวข้อง ขึ้น PO amendment เพื่อครอบคลุมปริมาณทดแทน เอกสาร GRN เอง **ไม่** ถูกแก้ไข
 
 ## 3. Decision Branch
 
-- **รับของสะอาด** (`received_qty = pending_qty` ไม่มี Receiver-written variance comment): ไม่ต้องติดต่อ vendor บรรทัด PO เลื่อนโดยธรรมชาติตอน Receiver save (`sent → partial → completed`); ความเกี่ยวข้องของ Purchaser จบที่นี่
+- **รับของสะอาด** (`received_qty = pending_qty` ไม่มี Receiver-written variance comment): ไม่ต้องติดต่อ vendor บรรทัด PO เลื่อนตอน commit ของ Receiver (`approved` / `sent_or_print → partial → completed`); การมีส่วนร่วมของ Purchaser จบที่นี่
 - **รับของขาด** (`received_qty < pending_qty`): ตาม vendor สำหรับยอดคงเหลือ PO source ยังที่ `po_status = partial` พร้อมยอดคงเหลือที่ไม่สำเร็จเปิดอยู่; shipment ถัดไปสร้าง GRN ที่สองกับ PO เดียวกัน ถ้า vendor ไม่สามารถส่งส่วนที่ขาดได้ ขึ้นการยกเลิกบรรทัด PO บน flow `[purchase-order](/th/inventory/purchase-order)`
 - **สินค้าผิด** (การส่งของถูกปฏิเสธที่ dock — ไม่มีบรรทัด GRN บันทึกโดย Receiver): log ความผิดพลาดฝั่ง vendor บน activity log ของ PO และแก้ไข PO ด้วยบรรทัดทดแทนหรือปล่อย commitment ที่เปิดอยู่
 - **การ review cost-centre ของ Department Manager** (subset Department Manager): แยกจาก variance — สำหรับทุก GRN ที่ post เข้า cost-centre ของแผนก review ว่าสิ่งที่รับตรงกับที่สั่งสำหรับแผนก **ยังไม่ยืนยัน:** ไม่พบ screen override หรือ signoff cost-centre allocation เฉพาะทางในซอร์สปัจจุบัน; บริบทแผนก/cost-centre อยู่ใน JSON array `dimension` ของ header (ดู [01-data-model.md](./01-data-model.md)) ไม่ใช่ฟิลด์ workflow ที่มีโครงสร้าง
@@ -79,7 +80,7 @@ Purchaser เป็นผู้เข้าร่วมแบบ **review-only**
 ## 5. แหล่งอ้างอิง
 
 - ภาพรวม parent: [03-user-flow.md](./03-user-flow.md) — วงจรชีวิตทางการ 4 สถานะและตาราง handoff ข้าม persona
-- Sibling: [03-user-flow-receiver.md](./03-user-flow-receiver.md) — persona ต้นทางที่การ save โพสต์การรับและ flag variance บนบรรทัด
+- Sibling: [03-user-flow-receiver.md](./03-user-flow-receiver.md) — persona ต้นทางที่การ commit โพสต์การรับของและเลื่อน PO; variance ถูกทำเครื่องหมายบนบรรทัดตอน save
 - Sibling: [03-user-flow-finance.md](./03-user-flow-finance.md) — หน้าแก้ไข: เหตุผลที่ไม่พบ handoff three-way-match / credit note
 - Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — หน้าแก้ไข
 - Sibling: [01-data-model.md](./01-data-model.md) — `tb_good_received_note_detail.purchase_order_detail_id` (link ที่ Receiving History tab ของ PO ใช้)

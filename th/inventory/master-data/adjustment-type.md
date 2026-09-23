@@ -2,7 +2,7 @@
 title: ประเภทการปรับสต๊อก (Adjustment Type)
 description: รหัสเหตุผลสำหรับการปรับสต๊อก stock-in / stock-out — ใช้โดยการ posting แบบ manual ของโมดูล inventory-adjustment เท่านั้น; physical count และ spot check ไม่ได้ตั้งค่านี้
 published: true
-date: 2026-07-15T21:47:09.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: master-data, adjustment-type, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -77,6 +77,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 - **Validation** `code`, `name`, และ `type` บังคับตอนสร้าง `update()` ไม่ได้กันการเปลี่ยน `type` หลังใช้ครั้งแรก — ยืนยันว่า**ไม่มี** ไม่ใช่แค่ยังไม่ยืนยัน
 - **Lifecycle** เหตุผล inactive ยังอ่านได้บน adjustment ประวัติ; ซ่อนจาก picker adjustment ใหม่
 - **การ filter ทิศทาง** UI picker filter ตาม `type` — discriminator ไม่ต้อง re-filter ปลายน้ำ
+- **Default sort** `GET /adjustment-types` ที่ไม่มี `?sort=` คืน `code:asc, name:asc, id:asc` (`adjustment-type.service.ts`, `withDefaultSort`, 2026-09-13)
 
 ## 7. การอ้างอิงข้ามโมดูล
 
@@ -86,5 +87,6 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_adjustment_type` (lines ~2807-2833), `enum_adjustment_type` (lines ~2800-2805)
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_adjustment_type` (line ~3166), `enum_adjustment_type` (~3159)
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/031-adjustment-type.spec.ts` + `docs/test-cases/gaps/031-adjustment-type-gap.md`
 - **Frontend:** `../carmen-inventory-frontend-react/routes/config/adjustment-type/`

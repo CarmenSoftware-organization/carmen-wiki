@@ -2,7 +2,7 @@
 title: การนับสต๊อกประจำงวด (Physical Count) — User Flow — หน้ารายการ
 description: หน้ารายการสถานที่ที่ใช้เริ่มหรือทำต่อการนับสำหรับงวดนับปัจจุบัน
 published: true
-date: 2026-07-15T17:56:09.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: physical-count, user-flow, count-lead, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -46,7 +46,7 @@ graph LR
 
 | Action | State precondition | State effect | Notes |
 | ------ | ------------------ | ------------ | ----- |
-| เริ่มการนับสำหรับสถานที่ที่ยังไม่เริ่ม | สถานที่ไม่มี `tb_physical_count` สำหรับ period นี้ (`physical_count_id === null`) | `POST /physical-counts` สร้างเอกสารใหม่โดยตรงที่ `in_progress`; navigate ไป `/:id/entry` | ตาม `PHC_VAL_001`–`002` ต้องการ period เป็น `counting` อยู่แล้ว — ถ้า period ที่ auto-provision ยังเป็น `draft` call นี้จะถูก reject (ดูหมายเหตุ § 2 ใน [03-user-flow.md](/th/inventory/physical-count/03-user-flow)) |
+| เริ่มการนับสำหรับสถานที่ที่ยังไม่เริ่ม | สถานที่ไม่มี `tb_physical_count` สำหรับ period นี้ (`physical_count_id === null`) | `POST /physical-counts` สร้างเอกสารใหม่โดยตรงที่ `in_progress`; navigate ไป `/:id/entry` | ตาม `PHC_VAL_001`–`002` ต้องการ period เป็น `counting` อยู่แล้ว — ขณะที่รอบที่ auto-provision ยังเป็น `draft` หน้ารายการจะแสดง dialog "Counting has not started" (**Go to Period End**) แทนการส่ง call; ให้กด **Start Period Close** บน `/inventory-management/period-end` ก่อน (ดู [03-user-flow.md](/th/inventory/physical-count/03-user-flow) § 2) |
 | ทำต่อการนับสำหรับสถานที่ที่ in-progress | มี `physical_count_id` และสถานะเป็น `in_progress` | Navigate ตรงไป `/:id/entry` — ไม่สร้างเอกสารใหม่ | ไม่มีการเรียก API; เป็นการเปลี่ยน route ฝั่ง client ล้วน ๆ |
 | คลิกการ์ดสถานที่ที่ completed | สถานะเป็น `completed` | **ไม่มี action** `PcLocationCard` render เป็นป้าย "Done" ธรรมดา (ไม่ใช่ปุ่ม) สำหรับรายการที่ `completed` — ไม่มี `onClick` handler เลยในสถานะนี้ | Component รายการยังมี branch ของ `handleAction` ที่จะแสดง dialog "Coming Soon" สำหรับรายการที่ completed แต่มันเป็นโค้ดตายที่เข้าถึงไม่ได้ เพราะการ์ดไม่เคยเรียก `onAction` เมื่อ `actionType === "done"` ปัจจุบันไม่มีวิธีดู detail ของการนับที่ completed จากหน้านี้ |
 | สลับไป period ก่อนหน้า | เลือก period จาก dropdown `LookupPhysicalCountPeriod` | โหลดสถานที่ของ period นั้นแบบอ่านอย่างเดียวผ่าน `GET /physical-count-periods/:id` | ป้ายเปลี่ยนจาก "Current Period" เป็น "Previous Period"; grid การ์ดเดียวกัน render แต่สถานที่ completed/in-progress จาก period ที่ปิดแล้วยังคงดูได้จำกัดแบบเดียวกับด้านบน |
@@ -67,5 +67,5 @@ graph LR
 
 - **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/physical-count/pc-component.tsx`, `routes/inventory-management/shared/pc-location-card.tsx`
 - **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (`create`), `.../physical-count-period/physical-count-period.service.ts` (`findCurrent`)
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count; manual catalog `docs/test-cases/750-physical-count.md` (รายการ TC-PC-01xxxx, `TC-PC-900002`–`900004` dialog "Counting has not started")
 - ที่เกี่ยวข้อง: [physical-count/03-user-flow](/th/inventory/physical-count/03-user-flow) (overview), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_VAL_001`–`003`, `PHC_AUTH_001`), [physical-count/03-user-flow-counter](/th/inventory/physical-count/03-user-flow-counter) (การเดินทางฝั่ง entry/review ของ role เดียวกัน)

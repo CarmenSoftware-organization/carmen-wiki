@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — User Flow — Procurement Manager
 description: เส้นทางการใช้งานของ Procurement Manager ในโมดูล purchase-request — stage อนุมัติแบบ escalated / มูลค่าสูง
 published: true
-date: 2026-07-29T05:18:05.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: purchase-request, user-flow, procurement-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -16,7 +16,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 
 ## 1. บทบาทในโมดูลนี้
 
-**Procurement Manager** (ในชุด test fixture ปัจจุบันเรียกว่า **General Manager**) เป็นตำแหน่งทางธุรกิจที่วางทับบน stage role `approve` ใน workflow ที่ตั้งค่าได้ **เดียวกัน** กับ stage ของ Department Head / Budget Controller / Finance — source ปัจจุบันไม่มีหน้าจอ, route หรือ API surface เฉพาะของ Procurement Manager ที่แตกต่างจาก UI Approver ทั่วไปที่อธิบายใน [03-user-flow-approver.md](./03-user-flow-approver.md) เมื่อ `base_total_amount` ของ PR ข้าม threshold มูลค่าสูงที่ตั้งไว้ (`PR_AUTH_005`) หรือ workflow ถูกตั้งค่าให้ route PR ตรงไปยัง role นี้ เอกสารจะลงในคิว **My Pending** ของ Procurement Manager เหมือนการส่งต่อ stage อื่น ๆ พวกเขา review PR (header, บรรทัด, Activity Log, Budget Impact) แล้วทำหนึ่งใน action เดียวกับที่ใช้ได้ทุก stage — **Approve**, **Reject**, **Send for Review** (send-back), **Split** — จาก bulk toolbar ใน Edit Mode ถ้า stage ของพวกเขาเป็น stage `approve`-role สุดท้ายของ chain การ Approve จะพลิก `pr_status` จาก `in_progress` เป็น `approved` (`PR_POST_005`) ส่งต่อ PR ไปยัง stage หรือโมดูลถัดไป (โดยทั่วไปคือ stage role `purchase` หรือส่งตรงไปยังการแปลง PO เมื่อ approved แล้ว — ดู [03-user-flow-purchaser.md](./03-user-flow-purchaser.md))
+**Procurement Manager** (ในชุด test fixture ปัจจุบันเรียกว่า **General Manager**) เป็นตำแหน่งทางธุรกิจที่วางทับบน stage role `approve` ใน workflow ที่ตั้งค่าได้ **เดียวกัน** กับ stage ของ Department Head / Budget Controller / Finance — source ปัจจุบันไม่มีหน้าจอ, route หรือ API surface เฉพาะของ Procurement Manager ที่แตกต่างจาก UI Approver ทั่วไปที่อธิบายใน [03-user-flow-approver.md](./03-user-flow-approver.md) เมื่อ `base_total_amount` ของ PR ข้าม threshold มูลค่าสูงที่ตั้งไว้ (`PR_AUTH_005`) หรือ workflow ถูกตั้งค่าให้ route PR ตรงไปยัง role นี้ เอกสารจะลงในคิว **My Pending** ของ Procurement Manager เหมือนการส่งต่อ stage อื่น ๆ พวกเขา review PR (header, บรรทัด, Workflow History, comment — ไม่มี panel Budget Impact ดู `PR_VAL_015`) แล้วทำหนึ่งใน action เดียวกับที่ใช้ได้ทุก stage — **Approve**, **Reject**, **Send for Review** (send-back), **Split** — จาก bulk toolbar ใน Edit Mode ถ้า stage ของพวกเขาเป็น stage `approve`-role สุดท้ายของ chain การ Approve จะพลิก `pr_status` จาก `in_progress` เป็น `approved` (`PR_POST_005`) ส่งต่อ PR ไปยัง stage หรือโมดูลถัดไป (โดยทั่วไปคือ stage role `purchase` หรือส่งตรงไปยังการแปลง PO เมื่อ approved แล้ว — ดู [03-user-flow-purchaser.md](./03-user-flow-purchaser.md))
 
 > ⚠️ **ความคลาดเคลื่อน — ไม่พบหน้าจอตั้งค่า vendor-ranking ใน source ปัจจุบัน** เนื้อหารุ่นก่อนหน้าของหน้านี้อธิบาย "configurational surface" แยกต่างหากสำหรับ Procurement Manager — หน้าจอ Vendor Allocation Rules พร้อม scoring weight, override priority ต่อ vendor และมุมมอง "Stuck PR Oversight" แบบ bulk action ไม่พบ route, component หรือ backend endpoint ที่ตรงกันใน `../carmen-inventory-frontend-react/` หรือ `../carmen-turborepo-backend-v2/` ในรอบตรวจสอบนี้ และไม่มี route แบบนี้ปรากฏใน `.specs/resync-2026-07-15-routes-inventory.txt` การจัดอันดับ vendor สำหรับ **Auto Allocate** ถูก resolve ฝั่ง server โดย price-compare lookup ของ vendor-pricelist (ดู [vendor-pricelist](/th/inventory/vendor-pricelist)); ไม่มีหน้าจอสำหรับผู้ใช้ในการปรับเกณฑ์ ranking นี้ใน build ปัจจุบัน ให้ถือว่าเนื้อหา "configurational surface" เดิมเป็นสิ่งที่ยังไม่ถูกสร้าง / เป็น aspiration — บันทึกไว้ใน Discrepancy log ของ progress log สำหรับรอบนี้
 
@@ -51,7 +51,7 @@ graph LR
 
 **จุดเริ่มต้น:** Notification deep link หรือ Sidebar → โมดูล **Purchase Request** → **My Pending** (filter เป็น PR ที่ผู้ใช้ที่ล็อกอินอยู่ใน `user_action.execute[]` ของ stage ปัจจุบัน)
 
-**Flow หลัก (happy path):** เหมือนกับ flow Approver พื้นฐานใน [03-user-flow-approver.md](./03-user-flow-approver.md) Section 2 ทุกประการ — เปิด PR, review header / บรรทัด / Budget Impact / Activity Log, ปรับ `approved_qty` ตาม `PR_VAL_013` ได้ถ้าจำเป็น แล้วทำ bulk action (Approve / Reject / Send for Review / Split) จาก toolbar ใน Edit Mode ปัจจัยเดียวที่ต่างคือ PR ใดถูก route มาที่ stage นี้ (threshold breach หรือ workflow route ตรง) ไม่ใช่ชุดหน้าจอหรือ action ที่ต่างกัน
+**Flow หลัก (happy path):** เหมือนกับ flow Approver พื้นฐานใน [03-user-flow-approver.md](./03-user-flow-approver.md) Section 2 ทุกประการ — เปิด PR, review header / บรรทัด / Workflow History / comment, ปรับ `approved_qty` (≥ 0, `PR_VAL_013`) ได้ถ้าจำเป็น แล้วทำ bulk action (Approve / Reject / Send for Review / Split) จาก toolbar ใน Edit Mode ปัจจัยเดียวที่ต่างคือ PR ใดถูก route มาที่ stage นี้ (threshold breach หรือ workflow route ตรง) ไม่ใช่ชุดหน้าจอหรือ action ที่ต่างกัน
 
 ## 3. แขนงการตัดสินใจ
 
@@ -60,7 +60,7 @@ graph LR
 ## 4. จุดออก / Handoff
 
 - **Approve ที่ stage สุดท้าย** `pr_status` พลิกจาก `in_progress` เป็น `approved` (`PR_POST_005`); handoff ไปยังใครก็ตามที่รัน dialog Convert-to-PO แยกต่างหากในโมดูล Purchase Order ([03-user-flow-purchaser.md](./03-user-flow-purchaser.md))
-- **Send for Review** `workflow_current_stage` ย้ายกลับหนึ่ง step; ถ้าถึง create stage ของ Requestor `pr_status` กลับเป็น `draft` และ **Requestor** รับต่อ ([03-user-flow-requestor.md](./03-user-flow-requestor.md))
+- **Send for Review** `workflow_current_stage` ย้ายกลับไป stage ที่เลือก; ถ้าเป็น create stage ของ Requestor **Requestor** รับต่อ ([03-user-flow-requestor.md](./03-user-flow-requestor.md)) — `pr_status` คงอยู่ที่ `in_progress`
 - **Reject ระดับ header** `pr_status` พลิกเป็น `voided` (terminal, `PR_POST_006`); **Auditor** review ภายหลัง
 
 สถานะเอกสารข้ามทุก transition บันทึกโดย `enum_purchase_request_doc_status = { draft, in_progress, voided, approved, completed }`

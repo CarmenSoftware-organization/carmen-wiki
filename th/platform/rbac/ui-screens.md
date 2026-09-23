@@ -2,7 +2,7 @@
 title: Platform RBAC — หน้าจอ UI (UI Screens)
 description: RoleManagement/RoleEdit พร้อม RolesAccessSummary แบบวัดเทียบ catalog และ PermissionGrid แบบแถวต่อ resource, Permission Catalog แบบ read-only, และ (ระดับสรุป) ทะเบียน Super Admins กับหน้าจอ assignment ของ User Platform ที่เขียนใหม่
 published: true
-date: 2026-09-06T23:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: book/platform, rbac, ui
 editor: markdown
 dateCreated: 2026-06-10T15:00:00.000Z
@@ -40,7 +40,7 @@ dateCreated: 2026-06-10T15:00:00.000Z
 | คอลัมน์ | การ render |
 |---|---|
 | Name | ลิงก์คลิกได้ — นำทางไป `/platform/roles/:id/edit` — พร้อม `description` ของ role เป็นข้อความสีจางด้านล่าง (รวมเข้าคอลัมน์นี้แล้ว ไม่มีคอลัมน์ Description แยกต่างหาก) |
-| Permissions | **`RoleReachCell`** (`roleManagement/RoleReachCell.tsx`, ตั้งแต่ 2026-09-02) — `permission_count`/`catalogSize` เป็นเศษส่วนพร้อมแท่งตามสัดส่วน (ซ่อนแท่งต่ำกว่า `lg` เพื่อไม่ให้เหลือเป็นเส้นบางจนแทบมองไม่เห็น) พร้อมไอคอนเตือน + สไตล์สีอำพันเมื่อ role ถือ catalog ทั้งหมด และบรรทัด `resource_count` แบบ optional ด้านล่าง ("N resources") เมื่อ backend ส่งมา; sort ไม่ได้ |
+| Permissions | **`RoleReachCell`** (`roleManagement/RoleReachCell.tsx`, ตั้งแต่ 2026-09-02) — `permission_count`/`catalogSize` เป็นเศษส่วนพร้อมแท่งตามสัดส่วน (ซ่อนแท่งต่ำกว่า `lg` เพื่อไม่ให้เหลือเป็นเส้นบางจนแทบมองไม่เห็น) พร้อมไอคอนเตือน + สไตล์สีอำพันเมื่อ role ถือ catalog ทั้งหมด และบรรทัด `resource_count` แบบ optional ด้านล่าง ("N resources") เมื่อ backend ส่งมา; **sort ได้ตั้งแต่ 2026-09-09** (PR #293) ตาม `permission_count` ซึ่ง `platform_role.service.ts` ของ `micro-business` (`DERIVED_SORT_KEYS = ['permission_count', 'resource_count']` บรรทัด 46) เรียงใน memory แทนที่จะผ่าน relation `_count` ของ Prisma |
 | Status | badge Active/Inactive จาก `is_active` |
 | Created | `AuditMeta` (`variant="cell"`) ผ่าน `auditColumns()` ที่ใช้ร่วมกัน — เวลาแบบ relative (เช่น "5mo ago") บรรทัดหนึ่ง ชื่อ actor บรรทัดถัดไป timestamp เต็มเป็น tooltip `title` เมื่อ hover อ่านจาก `normalizeAudit(row)` ซึ่งลองรูปแบบซ้อน `audit.created` `{ at, name }` ก่อน แล้ว fallback ไปคอลัมน์แบบแบน `created_at`/`created_by_name` เฉพาะเมื่อไม่มี nested เท่านั้น |
 | Updated | render ด้วย `AuditMeta` แบบเดียวกันจาก `normalizeAudit(row).updated` — **ถูกซ่อน (render `-`) ก็ต่อเมื่อ record ยังไม่เคยถูกแก้ไขจริง** (`everEdited`: มีชื่อ actor ที่แก้ หรือ timestamp ต่างจาก `created`) ไม่ใช่การเทียบ `updated_at === created_at` ตรง ๆ |

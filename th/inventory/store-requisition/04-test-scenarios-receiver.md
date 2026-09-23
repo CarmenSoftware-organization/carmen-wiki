@@ -2,7 +2,7 @@
 title: ใบเบิกของสโตร์ (Store Requisition) — Test Scenarios — Receiver
 description: test case ของ Receiver — persona ยังไม่ยืนยัน; อธิบายว่าทำไมชุด scenario เดิมไม่ตรงกับ source ปัจจุบัน
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: store-requisition, test-scenarios, receiver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -12,6 +12,7 @@ dateCreated: 2026-05-15T13:30:00.000Z
 
 > **At a Glance**
 > **Persona:** Receiver — **ยังไม่ยืนยันว่าเป็น persona แยกใน source ปัจจุบัน** &nbsp;·&nbsp; **โมดูล:** [store-requisition](/th/inventory/store-requisition)
+> **Executable coverage (2026-09-22):** ดู [04-test-scenarios](/th/inventory/store-requisition/04-test-scenarios) — `tests/701-sr.spec.ts`, `tests/720-stock-issue.spec.ts` และรายงาน gap `docs/test-cases/gaps/701-sr-gap.md` (62) / `720-stock-issue-gap.md` (44) ใน `../carmen-inventory-frontend-e2e/`; ไม่มีสิ่งใดในนั้นที่มุ่งเป้าไปยัง persona นี้
 > ⚠️ **แก้ไขครั้งใหญ่รอบนี้** หน้านี้เคยระบุ test scenario ~20 รายการ (happy path, permission, validation, edge case) สำหรับ "Receiver" ของเอาท์เลตปลายทางที่ยืนยันการรับจริง flag ความคลาดเคลื่อน และ escalate ไปยัง Inventory Controller [03-user-flow-receiver.md](./03-user-flow-receiver.md) บันทึกร่องรอยการตรวจสอบ source เต็ม: การค้นหาทั่ว repo ใน `carmen-turborepo-backend-v2` และ `carmen-inventory-frontend-react` สำหรับ `receiver` / `discrepancy` ไม่พบผลลัพธ์ใด ๆ ภายในโมดูล `store-requisition`, `enum_stage_role` ไม่มีสมาชิก `receiver` และไม่มี route หรือ component ใดสำหรับ receiver ดังนั้นจึงไม่มีอะไรให้เขียน test scenario ต่อ
 
 ## 1. สิ่งที่มาแทน Scenario เหล่านี้

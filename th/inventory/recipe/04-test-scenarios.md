@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — Test Scenarios
 description: test case ตาม persona, scenario ข้าม persona และ mapping Playwright สำหรับโมดูล recipe
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: recipe, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -15,13 +15,15 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **ลำดับการรัน:** การตั้งค่า Audit / Config → happy path ของ persona หลัก → scenario ข้าม persona
 > **drill-down ของแต่ละ persona อยู่ที่ `04-test-scenarios-<role>.md`**
 
-> **สถานะการ implement (ตรวจสอบแล้ว 2026-07-15)** scenario ส่วนใหญ่ในหน้านี้และใน drill-down ต่อ persona ทดสอบฟีเจอร์ที่ยังไม่มีอยู่จริง (publish gate, versioning, pricing history, RBAC ต่อ role, การ persist วัตถุดิบ, menu linkage, theoretical consumption, recipe→SR auto-create, cost cascade) — ให้ถือเป็นแผน acceptance-test สำหรับดีไซน์ carmen/docs ไม่ใช่ regression test ที่รันได้จริง **ชุดที่รันได้จริงวันนี้**: CRUD header ของสูตรพร้อม optimistic locking ด้วย `doc_version`, การเปลี่ยนสถานะผ่าน dropdown พร้อมการ stamp `published_at`/`archived_at`, ความ unique ของ code (`RECIPE_ALREADY_EXISTS`), การตรวจ reference หมวดหมู่/cuisine, guard การลบ sub-recipe (`RECIPE_USED_AS_SUB_RECIPE`), CRUD/reorder ขั้นตอนการเตรียมผ่าน API, image gallery และหน้าจอ master-data ทั้งสี่ การครอบคลุม E2E อัตโนมัติมีเฉพาะหน้าจอ dialog equipment-category (`121-recipe-equipment-category.spec.ts`) เท่านั้น
+> **การครอบคลุมที่รันได้จริง (ตรวจสอบซ้ำ 2026-09-22)** หน้าจอสูตรยังไม่มี Playwright spec — catalog `../carmen-inventory-frontend-e2e/docs/test-cases/120-recipe.md` (59 กรณี เอกสารเท่านั้น; โน้ตของผู้รีวิวยืนยันว่าวัตถุดิบเป็น preview เท่านั้น `total_ingredient_cost` กรอกเอง และคอลัมน์ Status ของ list คือ `is_active` ไม่ใช่ DRAFT/PUBLISHED/ARCHIVED) คือ executable spec ที่ควรอ่านก่อน หน้าจอ master-data **automate แล้ว**: `tests/110-op-category.spec.ts` (13 test, recipe category), `tests/111-cuisine.spec.ts` (17 test), `tests/121-recipe-equipment-category.spec.ts` (12 test; กรณี manual ที่เหลืออยู่ใน `docs/test-cases/gaps/121-recipe-equipment-category-gap.md`, 3 กรณี), `tests/131-equipment-category.spec.ts` (12 test; gap ใน `gaps/131-equipment-category-gap.md`, 4 กรณี) Equipment มีแค่ catalog: `docs/test-cases/130-equipment.md` (45 กรณี) แผนที่รวม: `docs/test-cases/COVERAGE.md` § Operation Plan
+
+> **สถานะการ implement (ตรวจสอบแล้ว 2026-07-15)** scenario ส่วนใหญ่ในหน้านี้และใน drill-down ต่อ persona ทดสอบฟีเจอร์ที่ยังไม่มีอยู่จริง (publish gate, versioning, pricing history, RBAC ต่อ role, การ persist วัตถุดิบ, menu linkage, theoretical consumption, recipe→SR auto-create, cost cascade) — ให้ถือเป็นแผน acceptance-test สำหรับดีไซน์ carmen/docs ไม่ใช่ regression test ที่รันได้จริง **ชุดที่รันได้จริงวันนี้**: CRUD header ของสูตรพร้อม optimistic locking ด้วย `doc_version`, การเปลี่ยนสถานะผ่าน dropdown พร้อมการ stamp `published_at`/`archived_at`, ความ unique ของ code (`RECIPE_ALREADY_EXISTS`), การตรวจ reference หมวดหมู่/cuisine, guard การลบ sub-recipe (`RECIPE_USED_AS_SUB_RECIPE`), CRUD/reorder ขั้นตอนการเตรียมผ่าน API, image gallery และหน้าจอ master-data ทั้งสี่ การครอบคลุม E2E อัตโนมัติมีสำหรับหน้าจอ master-data ทั้งสี่ (spec `110-op-category`, `111-cuisine`, `121-recipe-equipment-category`, `131-equipment-category`) แต่ไม่มีสำหรับหน้าจอสูตรเอง — ดูโน้ตการครอบคลุมที่รันได้จริงด้านบน
 
 ## 1. ภาพรวม
 
 หน้านี้เป็น **จุดเข้าภาพรวม** สำหรับชุด test-scenario ของโมดูล `recipe` รวบรวมการครอบคลุม recipe ตาม 5 persona ที่โต้ตอบกับ recipe library ข้ามวงจรชีวิตของมัน (Chef, Cost Controller, Outlet Manager, Procurement / F&B Ops, Audit / Config) จัดทำคลังไฟล์ test ต่อ persona จับ scenario handoff ข้าม persona ที่เย็บเส้นทางบุคคลเข้าด้วยกัน และระบุสถานะการครอบคลุม E2E ขอบเขตจงใจกว้างกว่า functional pass บริสุทธิ์: ไฟล์แต่ละ persona รวม **happy path เชิงฟังก์ชัน** (create / save / publish / archive; การแก้ cost-only; flow การทดแทน; การอนุมัติ menu-item linkage; config admin) **RBAC / กรณีปฏิเสธ permission** (chef ที่ไม่มี `recipe:publish`; cost controller พยายามแก้วัตถุดิบ; outlet manager พยายามเขียน; auditor พยายามเขียน) **edge case** (recipe ใหญ่ — วัตถุดิบและขั้นตอนมาก; sub-recipe ซ้อนลึก; yield variant ด้วยปริมาณขั้น; การแก้พร้อมกัน; กรณีมุมความแม่นยำทศนิยม) และ **trace versioning / pricing-history** (ทุกการเปลี่ยนต่อ recipe ที่ `PUBLISHED` เขียนแถว `tb_recipe_version`; การแก้ cost-only เขียนแถว `tb_recipe_pricing_history`; chain audit verify ได้จากตารางเหล่านั้น)
 
-scenario ข้าม persona ใน Section 4 เป็นชั้น integration เหนือ suite ต่อ persona พวกเขาอธิบาย journey end-to-end ที่ข้าม boundary ของ handoff ที่บันทึกใน [03-user-flow.md](./03-user-flow.md) Section 4 — เช่น *Chef สร้าง → Cost Controller co-approve การ publish off-target → Chef publish → F&B Ops อนุมัติ menu-item linkage → สูตรขับเคลื่อน theoretical consumption* Section 5 ระบุ **สถานะการครอบคลุมอัตโนมัติ** — **ไม่มีไฟล์ `recipe.spec.ts` Playwright** สำหรับหน้าจอสูตรเอง; spec อัตโนมัติเดียวของโมดูลคือ `121-recipe-equipment-category.spec.ts` (smoke + CRUD ผ่าน dialog + กรณี security สำหรับ `/operation-plan/recipe-equipment-category`, ตรวจสอบแล้ว 2026-07-15) ไฟล์ test ต่อ persona จึงอธิบาย scenario ที่ปัจจุบันเป็น **manual / planned** สำหรับการ automate E2E (คำกล่าวก่อนหน้านี้ที่ว่า `701-sr.spec.ts` ครอบคลุมเส้นทาง recipe-driven SR auto-create ทางอ้อมผ่าน `info.recipe_id` นั้นผิด — ไม่มีการอ้างอิง `recipe_id` อยู่ที่ใดเลยในโค้ด SR)
+scenario ข้าม persona ใน Section 4 เป็นชั้น integration เหนือ suite ต่อ persona พวกเขาอธิบาย journey end-to-end ที่ข้าม boundary ของ handoff ที่บันทึกใน [03-user-flow.md](./03-user-flow.md) Section 4 — เช่น *Chef สร้าง → Cost Controller co-approve การ publish off-target → Chef publish → F&B Ops อนุมัติ menu-item linkage → สูตรขับเคลื่อน theoretical consumption* Section 5 ระบุ **สถานะการครอบคลุมอัตโนมัติ** — **ไม่มีไฟล์ `recipe.spec.ts` Playwright** สำหรับหน้าจอสูตรเอง; spec อัตโนมัติของโมดูลครอบคลุมหน้าจอ master-data (`110-op-category`, `111-cuisine`, `121-recipe-equipment-category`, `131-equipment-category` ตรวจสอบแล้ว 2026-09-22) ไฟล์ test ต่อ persona จึงอธิบาย scenario ที่ปัจจุบันเป็น **manual / planned** สำหรับการ automate E2E (คำกล่าวก่อนหน้านี้ที่ว่า `701-sr.spec.ts` ครอบคลุมเส้นทาง recipe-driven SR auto-create ทางอ้อมผ่าน `info.recipe_id` นั้นผิด — ไม่มีการอ้างอิง `recipe_id` อยู่ที่ใดเลยในโค้ด SR)
 
 ## 2. Persona ในขอบเขต
 
@@ -62,11 +64,15 @@ scenario ข้าม persona ใน Section 4 เป็นชั้น integrat
 
 ## 5. การ Map Test E2E
 
-**ไม่มีไฟล์ `recipe.spec.ts` Playwright** สำหรับหน้าจอสูตรใน `../carmen-inventory-frontend-e2e/tests/`; spec อัตโนมัติเดียวของโมดูล (ตรวจสอบแล้ว 2026-07-15) คือ:
+**ไม่มีไฟล์ `recipe.spec.ts` Playwright** สำหรับหน้าจอสูตรใน `../carmen-inventory-frontend-e2e/tests/`; spec อัตโนมัติของโมดูล (ตรวจสอบแล้ว 2026-09-22) คือ:
 
-| spec E2E | การครอบคลุมโมดูล recipe |
+| spec E2E / catalog | การครอบคลุมโมดูล recipe |
 | ----------------- | ----------------------- |
-| `121-recipe-equipment-category.spec.ts` | `/operation-plan/recipe-equipment-category` — smoke ของ list, การค้นหา, CRUD ผ่าน dialog (field id `rec-eq-cat-*`), การปฏิเสธชื่อซ้ำ, กรณี security หมายเหตุ: spec นี้ชี้ไปที่หน้าจอซ้ำที่ไม่ได้ link ใน nav (ดู [equipment-category](/th/inventory/recipe/equipment-category) §2) |
+| `tests/110-op-category.spec.ts` (13 test เพิ่มเมื่อ 2026-09-20) | `/operation-plan/category` — list หมวดหมู่สูตร, สร้าง/แก้/ลบ, ตัวเลือก parent |
+| `tests/111-cuisine.spec.ts` (17 test เพิ่มเมื่อ 2026-09-20) | `/operation-plan/cuisine` — list, ภูมิภาค, สร้าง/แก้/ลบ |
+| `tests/121-recipe-equipment-category.spec.ts` (12 test) + `docs/test-cases/gaps/121-recipe-equipment-category-gap.md` (3 กรณี manual) | `/operation-plan/recipe-equipment-category` — smoke ของ list, การค้นหา, CRUD ผ่าน dialog, การปฏิเสธชื่อซ้ำ, กรณี security หมายเหตุ: spec นี้ชี้ไปที่หน้าจอซ้ำที่ไม่ได้ link ใน nav (ดู [equipment-category](/th/inventory/recipe/equipment-category) §2) |
+| `tests/131-equipment-category.spec.ts` (12 test) + `gaps/131-equipment-category-gap.md` (4 กรณี manual) | `/operation-plan/equipment-category` |
+| `docs/test-cases/120-recipe.md` (59 กรณี ไม่มี spec) · `130-equipment.md` (45 กรณี ไม่มี spec) | หน้าจอสูตรและ equipment — catalog เท่านั้น |
 | (None) | Scenario 1–13 ด้านบน document เป็น manual / planned; scenario 14 (conflict `doc_version`) implement ได้วันนี้แต่ยังไม่ได้ automate |
 
 ช่องว่างเทียบกับ Section 4: scenario 1–13 ขึ้นกับฟีเจอร์ที่ยังไม่ได้ implement (ดู callout สถานะด้านบน) และ automate ไม่ได้จนกว่าฟีเจอร์เหล่านั้นจะมาถึง; scenario 14 บวก smoke CRUD ของสูตร (filter ของ list, ฟอร์ม create/edit, dropdown สถานะ, guard การลบ) automate ได้ตอนนี้และเป็น candidate ลำดับความสำคัญสำหรับ `recipe.spec.ts`
@@ -76,5 +82,5 @@ scenario ข้าม persona ใน Section 4 เป็นชั้น integrat
 - Sibling: [03-user-flow.md](./03-user-flow.md) Section 4 — handoff ข้าม persona ที่ขับเคลื่อน scenario integration ด้านบน
 - Sibling: [02-business-rules.md](./02-business-rules.md) Section 5 — กฎ posting ที่อ้างที่ทุกการเปลี่ยนสถานะและผลกระทบปลายน้ำ (publish, edit-published, cost cascade, archive)
 - รายละเอียดต่อ persona: [Chef](./04-test-scenarios-chef.md), [Cost Controller](./04-test-scenarios-cost-controller.md), [Outlet Manager](./04-test-scenarios-outlet-manager.md), [Procurement / F&B Ops](./04-test-scenarios-procurement-fb-ops.md), [Audit / Config](./04-test-scenarios-audit-config.md)
-- การครอบคลุม E2E: `../carmen-inventory-frontend-e2e/tests/121-recipe-equipment-category.spec.ts` (spec อัตโนมัติเดียวของโมดูล)
+- การครอบคลุม E2E: `../carmen-inventory-frontend-e2e/docs/test-cases/COVERAGE.md` (§ Operation Plan), `tests/110-op-category.spec.ts`, `tests/111-cuisine.spec.ts`, `tests/121-recipe-equipment-category.spec.ts`, `tests/131-equipment-category.spec.ts`, catalog `docs/test-cases/120-recipe.md`, `130-equipment.md`, รายงาน gap `docs/test-cases/gaps/121-*.md`, `131-*.md`
 - โมดูลที่เกี่ยวข้อง: [product](/th/inventory/product) (feed วัตถุดิบ), [inventory](/th/inventory/inventory) (เป้าหมาย theoretical-consumption fan-out), [costing](/th/inventory/costing) (cost-drift ต้นน้ำ), [store-requisition](/th/inventory/store-requisition) (auto-create ปลายน้ำ)

@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check) — User Flow
 description: วงจรชีวิตเอกสารและไฟล์ flow เฉพาะ persona ของการสุ่มตรวจ
 published: true
-date: 2026-07-15T18:38:42.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: spot-check, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -56,7 +56,7 @@ stateDiagram-v2
 
 | From state | Action | To state | อนุญาตให้ | Pre-conditions |
 | ---------- | ------ | -------- | ----------- | -------------- |
-| `(none)` | สร้าง (`POST /spot-checks`) สำหรับ `(location, method, size หรือ product_id[])` | `pending` | ผู้ใช้ใดก็ตามที่มี `inventory_management.spot_check` | Location มีอยู่ (`SPC_VAL_001`); eligible product pool ไม่ว่างเปล่า (`SPC_VAL_002`); `manual` ต้องมี `product_id[]` ไม่ว่างเปล่าและตรงกับ pool (`SPC_VAL_003`); `high_value` ต้องมี `tb_period` ที่เปิดอยู่/ล็อกอยู่ (`SPC_VAL_004`) จับ snapshot `on_hand_qty` ต่อบรรทัด ณ จุดนี้ |
+| `(none)` | สร้าง (`POST /spot-checks`) สำหรับ `(location, method, size หรือ product_id[])` | `pending` | ผู้ใช้ใดก็ตามที่มี `inventory_management.spot_check` | Location มีอยู่ (`SPC_VAL_001`); eligible product pool ไม่ว่างเปล่า (`SPC_VAL_002`); `manual` ต้องมี `product_id[]` ไม่ว่างเปล่าและตรงกับ pool (`SPC_VAL_003`); `high_value` ต้องมี `tb_inventory_period` ที่เปิดอยู่/ล็อกอยู่ (`SPC_VAL_004`) จับ snapshot `on_hand_qty` ต่อบรรทัด ณ จุดนี้ |
 | `pending` | Save (`PATCH .../save`) | `in_progress` | ผู้ใช้เดิม | `items[]` ไม่ว่างเปล่า (`SPC_VAL_007`) Stamp `counted_at`/`counted_by_id`; คำนวณ `diff_qty` ใหม่เทียบกับ `on_hand_qty` ที่เก็บอยู่ปัจจุบัน |
 | `in_progress` | Save (ซ้ำ) | `in_progress` | ผู้ใช้เดิม | เหมือนข้างต้น; ทำซ้ำได้ |
 | `pending` / `in_progress` | Submit for Review (`PATCH .../review`) | (ไม่เปลี่ยนสถานะ) | ผู้ใช้เดิม | คำนวณ `on_hand_qty`/`diff_qty` สดใหม่ทุกบรรทัดจากยอด ledger ปัจจุบัน; stamp `counted_at`/`counted_by_id`; navigate ไป `/review` ไม่ถูกบล็อกโดยเอกสารที่ไม่ครบ |
@@ -87,5 +87,5 @@ stateDiagram-v2
 
 - **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/` (`sc-component.tsx`, `sc-form.tsx`, `sc-entry-component.tsx`, `sc-review-component.tsx`)
 - **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts`
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check; manual test-case catalog ที่ `docs/test-cases/760-spot-check.md`
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check; manual test-case catalog `docs/test-cases/760-spot-check.md` (44 cases, re-verify 2026-09-20)
 - หน้า flow ที่เกี่ยวข้อง: [inventory-adjustment/03-user-flow](/th/inventory/inventory-adjustment/03-user-flow) (จุดที่ต้อง manual แก้ไขผลต่างที่ยืนยันแล้ว), [physical-count/03-user-flow](/th/inventory/physical-count/03-user-flow) (flow คู่เทียบการนับเต็ม)

@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ — โมเดลข้อมูล — ตารางคอมเมนต์
 description: ตารางคอมเมนต์ / ไฟล์แนบระดับเอกสารและระดับบรรทัดสำหรับโมดูลใบสั่งซื้อ — ข้อความ, JSON ไฟล์แนบ, และ enum ประเภทคอมเมนต์ (user/system)
 published: true
-date: 2026-07-15T13:30:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: purchase-order, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -21,16 +21,17 @@ dateCreated: 2026-05-20T00:00:00.000Z
 ```
 id                  uuid / PK
 <parent>_id         uuid / FK ไปยังแถว header หรือ detail
-message             text (free-form, nullable)
-attachments         json — array ของ `{originalName, fileToken, contentType}` (nullable)
 type                enum_comment_type — `user` (default) | `system`
-created_at          timestamp
-created_by_id       uuid / FK ไปยัง tb_user
-updated_at          timestamp
-updated_by_id       uuid / FK ไปยัง tb_user
+user_id             uuid (ผู้เขียน; null สำหรับ entry ของระบบ)
+message             text (free-form, nullable)
+attachments         json — array ของ `{originalName, fileToken, contentType}` (default [])
+doc_version         int (default 0) — ตัวนับ optimistic-lock เหมือนทุกแถว tenant อื่น
+created_at / created_by_id / updated_at / updated_by_id / deleted_at / deleted_by_id
 ```
 
-รูปแบบเดียวกันใช้กับคอมเมนต์ระดับ header และระดับ detail; ต่างกันแค่ FK ของ parent
+รูปแบบเดียวกันใช้กับคอมเมนต์ระดับ header และระดับ detail; ต่างกันแค่ FK ของ parent (spot-check กับ `schema.prisma` L2144-2177 และ L2293-2326 เมื่อ 2026-09-22: คอลัมน์ `doc_version` หายไปจากหน้านี้และเพิ่มไว้ด้านล่างแล้ว; ไม่มี drift อื่น)
+
+โปรดสังเกตว่า event send / mark-sent / email ของ workflow engine เอง **ไม่ใช่** แถวคอมเมนต์: `send-email` และ `mark-sent` เขียนลง `tb_activity` (`action = email_sent` / `other`, `entity_type = 'purchase_order'`) ซึ่งหน้า [reporting-audit/activity](/th/inventory/reporting-audit/activity) เป็นผู้บันทึกไว้ แถวคอมเมนต์ยังคงเป็นที่สำหรับ note ของมนุษย์ เหตุผล send-back / reject และไฟล์แนบ
 
 ## 3. ตาราง
 
@@ -42,6 +43,7 @@ updated_by_id       uuid / FK ไปยัง tb_user
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key |
 | `purchase_order_id` | `String @db.Uuid` | No | FK ไปยัง `tb_purchase_order.id` |
+| `doc_version` | `Int @db.Integer` | No | เวอร์ชัน optimistic-concurrency; default `0` |
 | `type` | `enum_comment_type` | No | `user` หรือ `system`; default `user` |
 | `user_id` | `String @db.Uuid` | Yes | User id ผู้เขียน (null สำหรับ entry `system`) |
 | `message` | `String` | Yes | เนื้อหา comment free-text |
@@ -64,6 +66,7 @@ updated_by_id       uuid / FK ไปยัง tb_user
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key |
 | `purchase_order_detail_id` | `String @db.Uuid` | No | FK ไปยัง `tb_purchase_order_detail.id` |
+| `doc_version` | `Int @db.Integer` | No | เวอร์ชัน optimistic-concurrency; default `0` |
 | `type` | `enum_comment_type` | No | `user` หรือ `system`; default `user` |
 | `user_id` | `String @db.Uuid` | Yes | User id ผู้เขียน (null สำหรับ entry `system`) |
 | `message` | `String` | Yes | เนื้อหา comment free-text |

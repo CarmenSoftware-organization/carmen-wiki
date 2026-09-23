@@ -2,7 +2,7 @@
 title: ผู้ดูแลคลัสเตอร์ (Cluster Admin)
 description: คอนโซลผู้ดูแลคลัสเตอร์ — nav และ persona ที่สองของแอป จำกัดขอบเขตอยู่ที่คลัสเตอร์เดียวต่อครั้ง เข้าที่ /cluster-admin/:clusterId/* ไม่มี RBAC permission key เลยในโมดูลนี้ — กั้นด้วยสมาชิกภาพของคลัสเตอร์ผ่าน isClusterAdminOf แทน ตรวจก่อน feature flag เสมอ
 published: true
-date: '2026-09-06T11:00:00.000Z'
+date: '2026-09-23T01:30:00.000Z'
 tags: book/platform, cluster-admin
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -11,7 +11,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # ผู้ดูแลคลัสเตอร์ (Cluster Admin)
 
 > **At a Glance**
-> **คืออะไร:** **คอนโซลที่สอง** ไม่ใช่หน้าจอเพิ่มเติมของผลิตภัณฑ์ platform admin — มี nav ของตัวเอง มี shell ของตัวเอง และเป็น persona ของตัวเอง อยู่ทั้งหมดใต้ `/cluster-admin/:clusterId/*` &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับพื้นผิว "ผู้ดูแลคลัสเตอร์" ที่ลูกค้าใช้เอง — บทบาทที่พนักงานของลูกค้าถือได้โดยไม่ต้องมี RBAC grant ใด ๆ ของ platform เลย &nbsp;·&nbsp; **Route ทางเข้า:** `/cluster-admin` → `ClusterAdminEntry` กั้นด้วย `AuthedRoute` ที่ตรวจแค่การล็อกอิน &nbsp;·&nbsp; **Route ต่อคลัสเตอร์:** `/cluster-admin/:clusterId/{cluster,business-units,business-units/:buId/edit,users,licenses,profile}` ทั้งหมดกั้นด้วย `ClusterAdminRoute` &nbsp;·&nbsp; **ตัว gate:** **ไม่มี RBAC permission key — กั้นด้วยสมาชิกภาพของคลัสเตอร์ผ่าน `isClusterAdminOf` แทน** ตรวจก่อน feature flag เสมอ บนทุก route ทั้งห้าที่ผูกกับคลัสเตอร์ &nbsp;·&nbsp; **Nav:** `clusterAdminNav.ts` **ไม่มีการกรองด้วย permission เลย** — การผ่าน route guard มาได้คือด่านทั้งหมดอยู่แล้ว — และ feature key ทั้งสี่ตัว (`cluster_admin_cluster`, `cluster_admin_business_units`, `cluster_admin_licenses`, `cluster_admin_users`) เป็น **คนละชุด** จาก nav ฝั่ง platform แม้ป้ายเมนูจะซ้ำกัน &nbsp;·&nbsp; **Key entities/tables:** อ่าน `tb_cluster`, `tb_business_unit`, `tb_cluster_user`, `tb_cluster_license`, `tb_business_unit_license` — ตารางชุดเดียวกับที่โมดูลฝั่ง platform อย่าง [Clusters](/th/platform/clusters), [Business Units](/th/platform/business-units), [Users](/th/platform/users) และ [Licenses](/th/platform/licenses) เป็นเจ้าของ — โมดูลนี้ไม่มี schema ของตัวเองเลย &nbsp;·&nbsp; **e2e suite:** **ไม่มี** — `../carmen-platform-e2e/tests/` ไม่มีไดเรกทอรี `cluster-admin` เลย ทุกคำกล่าวอ้างในหน้าของโมดูลนี้มาจากการอ่าน `../carmen-platform` (และสำหรับภาพสะท้อนฝั่ง backend ของ gate มาจาก `../carmen-turborepo-backend-v2`) โดยตรง &nbsp;·&nbsp; **หน้าย่อย:** 2
+> **คืออะไร:** **คอนโซลที่สอง** ไม่ใช่หน้าจอเพิ่มเติมของผลิตภัณฑ์ platform admin — มี nav ของตัวเอง มี shell ของตัวเอง และเป็น persona ของตัวเอง อยู่ทั้งหมดใต้ `/cluster-admin/:clusterId/*` &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับพื้นผิว "ผู้ดูแลคลัสเตอร์" ที่ลูกค้าใช้เอง — บทบาทที่พนักงานของลูกค้าถือได้โดยไม่ต้องมี RBAC grant ใด ๆ ของ platform เลย &nbsp;·&nbsp; **Route ทางเข้า:** `/cluster-admin` → `ClusterAdminEntry` กั้นด้วย `AuthedRoute` ที่ตรวจแค่การล็อกอิน &nbsp;·&nbsp; **Route ต่อคลัสเตอร์:** `/cluster-admin/:clusterId/{cluster,business-units,business-units/:buId/edit,users,licenses,profile}` ทั้งหมดกั้นด้วย `ClusterAdminRoute` &nbsp;·&nbsp; **ตัว gate:** **ไม่มี RBAC permission key — กั้นด้วยสมาชิกภาพของคลัสเตอร์ผ่าน `isClusterAdminOf` แทน** ตรวจก่อน feature flag เสมอ บนทุก route ทั้งห้าที่ผูกกับคลัสเตอร์ &nbsp;·&nbsp; **Nav:** `clusterAdminNav.ts` **ไม่มีการกรองด้วย permission เลย** — การผ่าน route guard มาได้คือด่านทั้งหมดอยู่แล้ว — และ feature key ทั้งสี่ตัว (`cluster_admin_cluster`, `cluster_admin_business_units`, `cluster_admin_licenses`, `cluster_admin_users`) เป็น **คนละชุด** จาก nav ฝั่ง platform แม้ป้ายเมนูจะซ้ำกัน &nbsp;·&nbsp; **Key entities/tables:** อ่าน `tb_cluster`, `tb_business_unit`, `tb_cluster_user`, `tb_cluster_license`, `tb_business_unit_license` และ — ตั้งแต่ PR #291 (2026-09-09) — `tb_subscription` กับ `tb_business_unit_interface_license` — ตารางชุดเดียวกับที่โมดูลฝั่ง platform อย่าง [Clusters](/th/platform/clusters), [Business Units](/th/platform/business-units), [Users](/th/platform/users) และ [Licenses](/th/platform/licenses) เป็นเจ้าของ — โมดูลนี้ไม่มี schema ของตัวเองเลย &nbsp;·&nbsp; **e2e suite:** **ไม่มี** — `../carmen-platform-e2e/tests/` ไม่มีไดเรกทอรี `cluster-admin` เลย ทุกคำกล่าวอ้างในหน้าของโมดูลนี้มาจากการอ่าน `../carmen-platform` (และสำหรับภาพสะท้อนฝั่ง backend ของ gate มาจาก `../carmen-turborepo-backend-v2`) โดยตรง &nbsp;·&nbsp; **หน้าย่อย:** 2
 
 ## 1. ภาพรวม
 
@@ -58,7 +58,7 @@ Carmen ขายคลัสเตอร์ของ business unit ให้ล�
 
 ### 3.4 สองสระว่ายน้ำที่มีจำกัด อ่านอย่างเดียวทุกที่ในคอนโซลนี้
 
-ทุกหน้าจอที่แสดงความจุ — `ClusterProfile`, `ClusterAdminLicenses`, และแผ่นป้าย `BuPropertyPlate` บน `BusinessUnitForm` — ดึงตัวเลขสองชุดเดียวกัน: **โควตา BU** ของคลัสเตอร์ (สร้าง business unit ได้กี่หน่วย จาก `bu_cap`/`bu_used` บนเรคคอร์ดคลัสเตอร์ ท้ายที่สุดมาจาก `v_cluster_bu_cap`) และ **สระที่นั่ง** (`total_max_license_users`/`users_count` ระดับคลัสเตอร์ ไม่ใช่รายต่อ BU) ทั้งคู่ใช้สูตรความจุและสเกลสีเดียวกับฝั่ง platform (`utils/capacity`) ระดับ "warn" หรือ "over" จึงมีความหมายเดียวกันกับมิเตอร์ฝั่ง platform ที่ [Licenses — Data Model](/th/platform/licenses/data-model) §3 บันทึกไว้ ไม่มีอะไรในคอนโซลนี้ซื้อ แก้ หรือยกเลิกสระใดสระหนึ่งได้เลย — ดู §4 และ [UI Screens](/th/platform/cluster-admin/ui-screens) §7 สำหรับหน้าจอ `ClusterAdminLicenses` ที่อ่านอย่างเดียว และ [Licenses](/th/platform/licenses) §4 ว่าตัวเลขเหล่านั้นถูกเขียนที่ไหนจริง ๆ
+ทุกหน้าจอที่แสดงความจุ — `ClusterProfile`, `ClusterAdminLicenses`, และแผ่นป้าย `BuPropertyPlate` บน `BusinessUnitForm` — ดึงตัวเลขสองชุดเดียวกัน: **โควตา BU** ของคลัสเตอร์ (สร้าง business unit ได้กี่หน่วย จาก `bu_cap`/`bu_used` บนเรคคอร์ดคลัสเตอร์ ท้ายที่สุดมาจาก `v_cluster_bu_cap`) และ **สระที่นั่ง** (`total_max_license_users`/`users_count` ระดับคลัสเตอร์ ไม่ใช่รายต่อ BU) ทั้งคู่ใช้สูตรความจุและสเกลสีเดียวกับฝั่ง platform (`utils/capacity`) ระดับ "warn" หรือ "over" จึงมีความหมายเดียวกันกับมิเตอร์ฝั่ง platform ที่ [Licenses — Data Model](/th/platform/licenses/data-model) §3 บันทึกไว้ ตั้งแต่ PR #291 หน้าจอ licences และแท็บ Licenses ใหม่ของฟอร์ม BU ยังแสดง ledger อีกสองชุดที่*ไม่ใช่*สระด้วย — **subscription** ของคลัสเตอร์ (อ่านผ่าน `GET /api-system/clusters/:id/subscriptions` ซึ่งเป็น route ที่อนุญาตด้วยสมาชิกภาพ cluster-admin ไม่ใช่ `subscription.read`) และ **interface licence** ของทุก BU (badge `in_force`/`state` ตรงจาก backend) — ยังคงอ่านอย่างเดียว ไม่มีอะไรในคอนโซลนี้ซื้อ แก้ หรือยกเลิกได้เลยทั้งสี่ชุด — ดู §4 และ [UI Screens](/th/platform/cluster-admin/ui-screens) §5, §7 และ [Licenses](/th/platform/licenses) §4 ว่าแถวเหล่านั้นถูกเขียนที่ไหนจริง ๆ
 
 ### 3.5 สมาชิกภาพ กับ RBAC — สองแกนที่ไม่เคยตัดกัน
 
@@ -95,16 +95,16 @@ Carmen ขายคลัสเตอร์ของ business unit ให้ล�
 - [Clusters](/th/platform/clusters) — `ClusterProfile` เป็นภาพสะท้อนที่แคบกว่าและอ่านเป็นหลักของ `ClusterEdit` ดูการเทียบที่ [UI Screens](/th/platform/cluster-admin/ui-screens) §3
 - [Business Units](/th/platform/business-units) — `BusinessUnitList`/`BusinessUnitForm` เป็นภาพสะท้อนแบบจำกัดคลัสเตอร์และแก้ไขได้อย่างเดียวของ `BusinessUnitManagement`/`BusinessUnitEdit` ดู [UI Screens](/th/platform/cluster-admin/ui-screens) §4–5
 - [Users](/th/platform/users) — เป็นคนละ data model กันเลย: หน้าจอ Users ของโมดูลนี้จัดการสมาชิกภาพ `tb_cluster_user` และคำเชิญของคลัสเตอร์ ไม่ใช่เรคคอร์ดบัญชี platform `tb_user` ที่โมดูล Users เป็นเจ้าของ ดู [UI Screens](/th/platform/cluster-admin/ui-screens) §6
-- [Licenses](/th/platform/licenses) — บันทึกหน้าจอ licence อ่านอย่างเดียวของโมดูลนี้ไว้จากฝั่งตัวเองแล้ว (§4, §5) และใช้คำอธิบาย gate เดียวกันเป๊ะกับที่นี่ `ClusterAdminLicenses` ใช้ hook (`useLicenseLedger`, `useClusterSeatLicenses`) และ service ของโมดูลนั้นซ้ำ
+- [Licenses](/th/platform/licenses) — บันทึกหน้าจอ licence อ่านอย่างเดียวของโมดูลนี้ไว้จากฝั่งตัวเองแล้ว (§4, §5) และใช้คำอธิบาย gate เดียวกันเป๊ะกับที่นี่ `ClusterAdminLicenses` ใช้ hook (`useLicenseLedger`, `useClusterSeatLicenses`, `useClusterSubscriptions`, `useClusterInterfaceLicenses`) และ service ของโมดูลนั้นซ้ำ
 - [RBAC](/th/platform/rbac) — เป็นเจ้าของแกน permission ที่โมดูลนี้ตั้งใจอยู่นอกเหนือไปเลย (§3.5)
 - [Profile](/th/platform/profile) — เป็นเจ้าของบันทึกเต็มของ component `Profile` ที่ใช้ร่วมกันซึ่งโมดูลนี้ mount เป็นครั้งที่สอง (§4.1)
 - [Dashboard](/th/platform/dashboard) — บันทึกกลไก redirect ของ `PrivateRoute` ที่พา session มาลงที่นี่ได้โดยไม่เคยเรียก `/cluster-admin` ตรง ๆ เลย (§4.2)
 
 ## 6. แหล่งข้อมูลอ้างอิง
 
-path ทั้งหมดคือ `../carmen-platform` (HEAD `157a65e`, 2026-09-04) เว้นแต่จะขึ้นต้นด้วย `../carmen-turborepo-backend-v2` (HEAD `937cf5ac4`, 2026-09-06)
+path ทั้งหมดคือ `../carmen-platform` (HEAD `f1c69f1`, 2026-09-22) เว้นแต่จะขึ้นต้นด้วย `../carmen-turborepo-backend-v2` (HEAD `ef4d6f08f`, 2026-09-22)
 
-- `src/App.tsx:578-605` — หก route `/cluster-admin*` และ guard/feature prop ของแต่ละตัว
+- `src/App.tsx:595-622` — หก route `/cluster-admin*` และ guard/feature prop ของแต่ละตัว
 - `src/components/AuthedRoute.tsx` — guard ทางเข้าที่ตรวจแค่ล็อกอิน และเหตุผลที่มันมีอยู่
 - `src/components/ClusterAdminRoute.tsx` — ตัว gate ต่อคลัสเตอร์ (§3.2)
 - `src/components/ClusterAdminLayout.tsx`, `src/components/ClusterSwitcher.tsx` — chrome ของ shell

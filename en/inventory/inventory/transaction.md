@@ -2,7 +2,7 @@
 title: Inventory Transaction Log
 description: Append-only ledger of every inventory-affecting event — GRN, SR, adjustment, wastage, count variance, period flip — and the source of truth for balance computation.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-23T01:30:00.000Z'
 tags: inventory, transaction, audit, ledger, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # Inventory Transaction Log
 
 > **At a Glance**
-> **Owner:** System (read-only for users) &nbsp;·&nbsp; **Tables:** `tb_inventory_transaction` (header) + `_detail` + `_cost_layer` &nbsp;·&nbsp; ***Trigger:** every source-document posting (`good_received_note` / `store_requisition` / `stock_in` / `stock_out` / `credit_note` / `close` / `open`); count variances create stock-in/stock-out **rows** but those rows are not posted to the ledger (see [physical-count](/en/inventory/physical-count)) &nbsp;·&nbsp; **Used by:** balance computation + audit trace &nbsp;·&nbsp; **1-liner:** the immutable event tape; **append-only, never updated, never deleted**.
+> **Owner:** System (read-only for users) &nbsp;·&nbsp; **Tables:** `tb_inventory_transaction` (header) + `_detail` + `_cost_layer` &nbsp;·&nbsp; **Trigger:** every source-document posting (`good_received_note` / `store_requisition` / `stock_in` / `stock_out` / `credit_note` / `close` / `open`); count variances create stock-in/stock-out **rows** but those rows are not posted to the ledger (see [physical-count](/en/inventory/physical-count)) &nbsp;·&nbsp; **Used by:** balance computation + audit trace &nbsp;·&nbsp; **1-liner:** the immutable event tape; **append-only, never updated, never deleted**.
 
 ![Inventory Transaction Log screen](/screenshots/inventory/transaction.png)
 

@@ -2,7 +2,7 @@
 title: การคำนวณต้นทุน (Costing) — Test Scenarios — Inventory Controller (แก้ไข)
 description: หน้าแก้ไข — ชุด test ของ Inventory Controller ที่เคยเอกสารไว้ที่นี่เล็งไปที่ cost-pick-preview adjustment-approval queue ที่ไม่มีอยู่จริง
 published: true
-date: 2026-07-22T11:30:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: costing, test-scenarios, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -15,7 +15,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 
 ## 1. ทำไม scenarios เหล่านี้ถูกลบ
 
-- **ไม่มี approval queue สำหรับ `tb_stock_in` / `tb_stock_out` เลย** [inventory-adjustment](/th/inventory/inventory-adjustment) § 1 (ยืนยันแล้ว) พบว่า `StockInService.create()` / `StockOutService.create()` post ทันที — `doc_status = completed` ถูกเขียนในการเรียกเดียวกันที่สร้างเอกสาร ไม่ว่า client จะส่งปุ่มไหนมา ไม่มี draft state เหลือให้ approver ใดทวน
+- **ไม่มี approval queue สำหรับ `tb_stock_in` / `tb_stock_out`** อัปเดต 2026-09-22: ตอนนี้การสร้างเขียน `doc_status = draft` (`stock-in.service.ts:418`) และการโพสต์เกิดที่ `PATCH …/commit` (`:471-575`) — แต่ผู้ถือ permission เดียวกันเป็นคน commit จึงยังคงไม่มีสถานะที่ทวนได้สำหรับผู้อนุมัติแยกและไม่มี cost-pick preview
 - **ไม่มีหน้าจอ "cost-pick preview" อยู่จริง**
 - **ไม่มีการแยก Inventory-Controller-vs-Store-Keeper ในโมดูลนี้** — ทั้งคู่ gate ด้วย permission ทั่วไปเดียวคือ `inventory_management.view`
 - **ไม่มี Finance persona ให้ escalate variance ไปหา** — ดู [03-user-flow-finance](./03-user-flow-finance.md) (แก้ไข)
@@ -26,8 +26,8 @@ dateCreated: 2026-05-15T12:30:00.000Z
 
 | เคย test ที่นี่ | ที่ test จริง |
 |---|---|
-| Cost-pick preview / adjustment approval | ไม่มีขั้นตอนอนุมัติอยู่จริง — ดู [inventory-adjustment](/th/inventory/inventory-adjustment) § 1 |
-| Arithmetic ของ FIFO / Average cost-pick | [04-test-scenarios](./04-test-scenarios.md) Scenarios 1, 2, 9, 10, 11 |
+| Cost-pick preview / adjustment approval | ไม่มีขั้นตอนอนุมัติอยู่จริง — draft → commit โดยผู้ใช้คนเดียวกัน; ดู [inventory-adjustment](/th/inventory/inventory-adjustment) § 1 |
+| Arithmetic ของ FIFO / Average cost-pick | [04-test-scenarios](./04-test-scenarios.md) Scenarios 1, 2, 9, 10, 11, 12, 13, 14 |
 | Period-end review checklist + close | [inventory/04-test-scenarios-inventory-controller](/th/inventory/inventory/04-test-scenarios-inventory-controller) |
 
 ## 3. References

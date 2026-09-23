@@ -1,8 +1,8 @@
 ---
 title: ไลเซนส์ — หน้าจอ UI (UI Screens)
-description: สี่แท็บของ LicenseCenter, สามส่วนของ ClusterLicenseDetail, SubscriptionForm และ LicensePurchaseForm ที่ใช้ร่วมกัน, และพฤติกรรมของ redirect เก่าจาก /subscriptions
+description: ห้าแท็บของ LicenseCenter, สามส่วนของ ClusterLicenseDetail, SubscriptionForm และ LicensePurchaseForm สามชนิด (seats / BU quota / interface), และพฤติกรรมของ redirect เก่าจาก /subscriptions
 published: true
-date: '2026-09-06T09:00:00.000Z'
+date: '2026-09-23T01:30:00.000Z'
 tags: book/platform, licenses, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -11,11 +11,11 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # ไลเซนส์ — หน้าจอ UI (UI Screens)
 
 > **At a Glance**
-> **หน้าจอ:** `LicenseCenter` (`/licenses`, 4 แท็บ) &nbsp;·&nbsp; `ClusterLicenseDetail` (`/licenses/:clusterId`, 3 แท็บ) &nbsp;·&nbsp; `SubscriptionForm` (`/licenses/subscriptions/{new,:id/edit}`) &nbsp;·&nbsp; `LicensePurchaseForm` — **component เดียว สองโหมด** สลับด้วย prop `config` (`/licenses/seats/*`, `/licenses/bu-quota/*`) &nbsp;·&nbsp; **Route เก่า:** `/subscriptions*` redirect เข้า `/licenses/...` &nbsp;·&nbsp; **ภาพร่วม:** `LicenseCoverageBar` — เส้นเวลาแนวนอนแบบ div ล้วน (ไม่มี chart library) ของช่วงความคุ้มครอง ใช้ในทั้งสามแท็บของ `ClusterLicenseDetail` &nbsp;·&nbsp; **ไม่มี View History / Activity Trail** — ต่างจากโมดูลอื่นส่วนใหญ่ในแผนนี้ โมดูลนี้ไม่มี action "ดูประวัติ" ที่กั้นด้วย `activity_log.read` อยู่บนหน้าจอไหนเลย &nbsp;·&nbsp; **ไม่มี e2e suite** — ทุกคำกล่าวอ้างด้านล่างมาจาก implementation ไม่ใช่จาก test spec
+> **หน้าจอ:** `LicenseCenter` (`/licenses`, 5 แท็บ) &nbsp;·&nbsp; `ClusterLicenseDetail` (`/licenses/:clusterId`, 3 แท็บ) &nbsp;·&nbsp; `SubscriptionForm` (`/licenses/subscriptions/{new,:id/edit}`) &nbsp;·&nbsp; `LicensePurchaseForm` — **component เดียว สามโหมด** สลับด้วย prop `config` (`/licenses/seats/*`, `/licenses/bu-quota/*`, `/licenses/interface/*`) &nbsp;·&nbsp; **ทุกคอลัมน์บนทุกตารางของ `/licenses` เรียงได้ด้วยการคลิกหัวคอลัมน์** (PR #290; Status เรียงฝั่ง server ผ่าน key `status` ของ backend) &nbsp;·&nbsp; **Route เก่า:** `/subscriptions*` redirect เข้า `/licenses/...` &nbsp;·&nbsp; **ภาพร่วม:** `LicenseCoverageBar` — เส้นเวลาแนวนอนแบบ div ล้วน (ไม่มี chart library) ของช่วงความคุ้มครอง ใช้ในทั้งสามแท็บของ `ClusterLicenseDetail` &nbsp;·&nbsp; **ไม่มี View History / Activity Trail** — ต่างจากโมดูลอื่นส่วนใหญ่ในแผนนี้ โมดูลนี้ไม่มี action "ดูประวัติ" ที่กั้นด้วย `activity_log.read` อยู่บนหน้าจอไหนเลย &nbsp;·&nbsp; **ไม่มี e2e suite** — ทุกคำกล่าวอ้างด้านล่างมาจาก implementation ไม่ใช่จาก test spec
 
 ## 1. ภาพรวม
 
-สี่ route ของโมดูลนี้ render ห้า component โดยสามตัวใช้ข้อมูลที่โหลดมาชุดเดียวกันร่วมกันข้ามแท็บ แทนที่แต่ละแท็บจะดึงสำเนาของตัวเอง — เป็นความตั้งใจ เพื่อไม่ให้แถบสรุปกับแท็บด้านล่างเพี้ยนจากกันได้เลย สองประเภทการซื้อ (seats, BU quota) ใช้ฟอร์มแก้ไข**เดียวกัน** (`LicensePurchaseForm`) สลับทั้งหมดด้วย `LicenseKindConfig` ที่ route ส่งเข้ามา (ดู [Data Model](/th/platform/licenses/data-model) §2.1–2.2 และ [หน้าลงจอด](/th/platform/licenses) §3.1 ว่า config เปลี่ยนอะไรบ้าง) ทุกหน้าจออ่านเกณฑ์ "ใกล้หมดอายุ" จาก `useExpiryThresholds()` ไม่เคยเป็นตัวเลขตายตัว (ดู [Data Model](/th/platform/licenses/data-model) §6)
+route ของโมดูลนี้ render ห้า component โดยสามตัวใช้ข้อมูลที่โหลดมาชุดเดียวกันร่วมกันข้ามแท็บ แทนที่แต่ละแท็บจะดึงสำเนาของตัวเอง — เป็นความตั้งใจ เพื่อไม่ให้แถบสรุปกับแท็บด้านล่างเพี้ยนจากกันได้เลย สามประเภทการซื้อ (seats, BU quota, interface) ใช้ฟอร์มแก้ไข**เดียวกัน** (`LicensePurchaseForm`) สลับทั้งหมดด้วย `LicenseKindConfig` ที่ route ส่งเข้ามา (ดู [Data Model](/th/platform/licenses/data-model) §2.1–2.4 และ [หน้าลงจอด](/th/platform/licenses) §3.1 ว่า config เปลี่ยนอะไรบ้าง) ทุกหน้าจออ่านเกณฑ์ "ใกล้หมดอายุ" จาก `useExpiryThresholds()` ไม่เคยเป็นตัวเลขตายตัว (ดู [Data Model](/th/platform/licenses/data-model) §6)
 
 ทั้งสี่หน้าจอมีของมาตรฐานของ SPA เหมือนกัน — `TableSkeleton` ตอนโหลดครั้งแรก, `EmptyState` เมื่อผลลัพธ์ว่างเปล่า, toast แจ้งผลตอนแก้ไข, การบันทึกแบบ optimistic-lock ด้วย `doc_version` (toast แจ้งขัดแย้ง + reload ตอน `409`), การ์ด `useUnsavedChanges` กันออกจากหน้าตอนฟอร์มมีการแก้ไขค้างอยู่, `useGlobalShortcuts` (⌘/Ctrl+S บันทึก, Escape ยกเลิก), และ `DevDebugSheet` เฉพาะ dev ที่โชว์ raw response ของแต่ละหน้าจอ **โมดูลนี้ไม่มี View History / Activity Trail เลยสักหน้า** — งานของโมดูลอื่นในแผนนี้ส่วนใหญ่บันทึกไว้ว่ามี action "View History" ที่กั้นด้วย `activity_log.read` ข้าม-โมดูลอยู่บนแถวของ list และหัวของหน้าแก้ไข การ grep `src/pages/licenses/` และ `LicenseCenter.tsx` โดยตรงหา `activity_log.read`/`ActivityTrailSheet`/`PLATFORM_SCOPED_RECORD` ไม่เจออะไรเลย โมดูลนี้ไม่เคยได้รับ feature นั้นมา
 
@@ -25,9 +25,9 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 `PageHeader` ("Licenses") อยู่เหนือ component `FleetCapacity` ที่ใช้ร่วมกัน — แถบเดียวกับที่ list ของ [Clusters](/th/platform/clusters) เองใช้ อ่าน `GET /api-system/clusters/summary` แบบไม่กรองตัวเดียวกัน สถิติ "BU quota expiring" ของมันคลิกได้และสลับตัวแปร `expiringSoonFilter` ฝั่ง client ที่กรองแค่ตารางในแท็บ **By cluster** เท่านั้น — ยอดรวมของแถบเองไม่เคยถูกกรองด้วยมัน เพราะต้องบอกภาพรวมของทั้ง fleet เสมอไม่ว่าแท็บหรือ filter ไหนกำลังเปิดอยู่ด้านล่าง
 
-### 2.2 สวิตช์สี่แท็บ
+### 2.2 สวิตช์ห้าแท็บ
 
-`TabStrip` (จอใหญ่) / `<Select>` (มือถือ, `sm:hidden`, เพราะสี่แท็บที่ความกว้าง 386px จะเหลือป้ายของแท็บที่สี่โผล่มาแค่ 4px) สลับระหว่าง:
+`TabStrip` (จอใหญ่) / `<Select>` (มือถือ, `sm:hidden`, เพราะสี่แท็บที่ความกว้าง 386px ก็เหลือป้ายของแท็บที่สี่โผล่มาแค่ 4px อยู่แล้ว — แท็บที่ห้าทำให้ select กลายเป็นของจำเป็น) สลับระหว่าง (`LicenseView = 'cluster' | 'subscription' | 'seat' | 'bu-quota' | 'interface'`, `LicenseCenter.tsx:17-20`):
 
 | แท็บ | Component | เนื้อหา |
 |---|---|---|
@@ -35,6 +35,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 | By subscription | `SubscriptionTable` (render แบบ `embedded`) | รายการ subscription ทั้ง fleet — ทุกสัญญาข้ามทุก cluster |
 | By seat license | `PurchaseLicenseTable` (`config={SEAT_CONFIG}`) | ทุกแถวซื้อที่นั่งข้ามทุก business unit |
 | By BU quota | `PurchaseLicenseTable` (`config={BU_QUOTA_CONFIG}`) | ทุกแถวซื้อ BU-quota ข้ามทุก cluster |
+| By interface license | `PurchaseLicenseTable` (`config={INTERFACE_CONFIG}`) — **ใหม่, PR #287** | ทุกแถว interface (INF) licence ข้ามทุก business unit; คอลัมน์ Amount กลายเป็น **Feature group** (`group_code` + `group_name`) |
 
 แท็บที่กำลังเปิดอยู่ถูกเขียนลงทั้ง URL (`?tab=`) และ `localStorage` (`license_center_view`) ทุกครั้งที่เปลี่ยน และตอนโหลดหน้า URL ชนะค่าที่เก็บไว้ — ลิงก์ deep link ที่ส่งต่อกันไปที่ `?tab=seat` เปิดมุมมองนั้นเสมอ แม้เบราว์เซอร์ของผู้รับจะเปิดแท็บอื่นค้างไว้ล่าสุดก็ตาม ค่า `?tab=` ที่จำไม่ได้หรือเก่าเกินไป (พิมพ์ผิด หรือค่าจากแอปเวอร์ชันที่ใช้ชื่อแท็บต่างออกไป) จะถูกแก้ไขในที่: หน้าจอ render มุมมองสำรองของมัน แล้วเขียนทับ URL ให้ตรง แทนที่จะปล่อยให้ address bar อ้างว่ากำลังแสดงมุมมองที่ไม่ได้แสดงจริง
 
@@ -52,9 +53,11 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ### 2.5 `PurchaseLicenseTable` — By seat license / By BU quota
 
-Component เดียว สลับด้วย `config` แสดงรายการทุกแถวซื้อของประเภทหนึ่งข้ามทั้ง fleet คอลัมน์: **License Number** (ลิงก์ไปที่ `/licenses/{seats|bu-quota}/:id/edit`) · **Cluster** (เฉพาะประเภทที่นั่ง — `config.showCluster` เพราะเจ้าของของที่นั่งคือ BU และตารางยังบอกด้วยว่า BU นั้นอยู่ cluster ไหน; แถวของ BU-quota ไม่มีคอลัมน์นี้เพราะเจ้าของ**คือ** cluster อยู่แล้ว) · **[Business Unit | Cluster]** (เจ้าของ ป้ายสลับตาม `config.kind`) · **Amount** (`licensed_users`/`licensed_bus`) · **Coverage** (`start_date – end_date` เป็นข้อความล้วน) · **Status** (คำนวณฝั่ง client จากวันที่ — `active`/`scheduled`/`expired` บวก `superseded`/`cancelled` เฉพาะประเภท BU-quota; ไม่ใช่คอลัมน์ที่เรียงได้เพราะไม่ใช่ฟิลด์จริงของ backend) · **Reference No** · **Created** (แถวของตารางนี้ไม่มี `updated_at` บน DTO เลย จึงไม่มีคอลัมน์ Updated เฉพาะที่นี่ ต่างจากตาราง Management-style อื่นในโมดูลนี้) sheet Filters เสนอแค่ `active`/`scheduled`/`expired` ไม่ว่าประเภทไหน — `superseded`/`cancelled` จงใจไม่อยู่ในรายการ filter แม้ตอนเปิดแท็บ BU-quota เพราะปุ่ม filter ที่ไม่คืนอะไรเลยตอนเปิดแท็บ seat จะเป็นปุ่มที่โกหกว่าทำอะไรได้
+Component เดียว สลับด้วย `config` แสดงรายการทุกแถวซื้อของประเภทหนึ่งข้ามทั้ง fleet คอลัมน์: **License Number** (ลิงก์ไปที่ `/licenses/{seats|bu-quota|interface}/:id/edit`) · **Cluster** (เฉพาะประเภทที่นั่งและ interface — `config.showCluster` เพราะเจ้าของของมันคือ BU และตารางยังบอกด้วยว่า BU นั้นอยู่ cluster ไหน; แถวของ BU-quota ไม่มีคอลัมน์นี้เพราะเจ้าของ**คือ** cluster อยู่แล้ว) · **[Business Unit | Cluster]** (เจ้าของ ป้ายสลับตาม `config.kind`; เรียงฝั่ง server ผ่าน `config.ownerSortKey` — relation key แบบมีจุด `tb_business_unit.name` หรือ `tb_cluster.name` ที่ backend แปลงเป็น `orderBy` แบบ nested ของ Prisma) · **Amount** (`licensed_users`/`licensed_bus`) **หรือ สำหรับประเภท interface คือ Feature group** (`group_code` แบบ monospace เหนือ `group_name` เรียงผ่าน relation key `tb_license_feature_group.code` ไม่ใช่ uuid ดิบ — `config.selector` ตัดสินว่าคอลัมน์ไหนในสองอันนี้ render) · **Coverage** (`start_date – end_date` เป็นข้อความล้วน) · **Status** (`active`/`scheduled`/`expired` บวก `superseded`/`cancelled` เฉพาะประเภท BU-quota — สำหรับที่นั่งและ BU quota ยังคำนวณฝั่ง client จากวันที่; สำหรับประเภท interface badge อ่าน `in_force`/`state` ของ backend ไม่เคยอ่านวันที่) · **Reference No** · **Created** (แถวของตารางนี้ไม่มี `updated_at` บน DTO ทั้งสามเลย จึงไม่มีคอลัมน์ Updated เฉพาะที่นี่ ต่างจากตาราง Management-style อื่นในโมดูลนี้)
 
-CSV export (ฝั่ง client เฉพาะหน้าปัจจุบัน) เพิ่มคอลัมน์ audit สี่คอลัมน์ (Created/Updated At/By) นอกเหนือจากคอลัมน์ที่มองเห็นในตาราง
+**ทุกคอลัมน์เหล่านั้นเรียงได้ด้วยการคลิกหัวคอลัมน์ตั้งแต่ PR #290 รวมถึง Status** Status เป็นคอลัมน์เดียวที่ตั้งใจปิดไว้ก่อนหน้านั้น ("ruling R21" ใน design doc sortable-headers ฉบับ 2026-09-09); มันเปิดเมื่อ backend รับกฎวันที่ไปเป็นเจ้าของ — licence service ทั้งสามใน `micro-cluster` ตอนนี้ดึง key `status` ออกจาก `sort` ด้วย `takeSortKey()` แล้วเรียงด้วยตรรกะ bucket ของตัวเอง ลูกศรบนหัวคอลัมน์และลำดับแถวจริงจึงมาจากนิยามเดียว SPA ต่อท้าย tiebreaker `id:asc` ให้ทุก sort ที่ส่ง (`withTiebreaker`) เพื่อไม่ให้ขอบหน้าสลับแถวที่เท่ากันได้ sheet Filters เสนอแค่ `active`/`scheduled`/`expired` ไม่ว่าประเภทไหน — `superseded`/`cancelled` จงใจไม่อยู่ในรายการ filter แม้ตอนเปิดแท็บ BU-quota เพราะปุ่ม filter ที่ไม่คืนอะไรเลยตอนเปิดแท็บอื่นจะเป็นปุ่มที่โกหกว่าทำอะไรได้
+
+CSV export (ฝั่ง client เฉพาะหน้าปัจจุบัน) เพิ่มคอลัมน์ audit สี่คอลัมน์ (Created/Updated At/By) นอกเหนือจากคอลัมน์ที่มองเห็นในตาราง; บนแท็บ interface มันสลับคอลัมน์ Amount เป็นสองคอลัมน์ — `Feature group (Code)` และ `Feature group` — และไม่เคยปล่อยจำนวนออกมา
 
 ## 3. `ClusterLicenseDetail` (`/licenses/:clusterId`)
 
@@ -80,15 +83,15 @@ CSV export (ฝั่ง client เฉพาะหน้าปัจจุบั
 
 แถบล่างแบบ sticky (โชว์เฉพาะเมื่อมีการแก้ไขค้างอยู่) มี **Save Changes** (`<Can permission="subscription.manage">`) และ **Cancel** (คืนค่าที่โหลดมาล่าสุด) เพราะ `subscription.manage` กั้นแค่ปุ่ม Save กับธง field-editability — ไม่ใช่ตัว route เอง ซึ่งต้องการแค่ `subscription.read` — session ที่มีสิทธิ์อ่านอย่างเดียวจึงเปิด URL นี้เป๊ะ ๆ ได้และเห็นทุกช่อง แค่แก้หรือบันทึกไม่ได้ (ดู [Permissions](/th/platform/licenses/permissions) §3)
 
-## 5. `LicensePurchaseForm` (`/licenses/seats/*`, `/licenses/bu-quota/*`)
+## 5. `LicensePurchaseForm` (`/licenses/seats/*`, `/licenses/bu-quota/*`, `/licenses/interface/*`)
 
-**Component และโค้ด route handler ตัวเดียวกัน** ให้บริการสี่ route แยกกันแค่ด้วย prop `config: LicenseKindConfig` และ `mode: 'create' | 'edit'` ที่ `App.tsx` ส่งเข้ามา — ดู [Data Model](/th/platform/licenses/data-model) §2.1–2.2 และ [หน้าลงจอด](/th/platform/licenses) §3.1 สำหรับตารางความต่างเต็มระหว่าง seat กับ BU-quota หน้าจอเองมีหน้าตาแบบนี้:
+**Component และโค้ด route handler ตัวเดียวกัน** ให้บริการหก route แยกกันแค่ด้วย prop `config: LicenseKindConfig` และ `mode: 'create' | 'edit'` ที่ `App.tsx` ส่งเข้ามา (`App.tsx:215-262`) — ดู [Data Model](/th/platform/licenses/data-model) §2.1–2.4 และ [หน้าลงจอด](/th/platform/licenses) §3.1 สำหรับตารางความต่างเต็มสามทาง หน้าจอเองมีหน้าตาแบบนี้:
 
-**โหมดสร้าง** บังคับให้มีเจ้าของมาทาง query parameter เท่านั้น (`?bu=` หรือ `?cluster=` บวก `?ownerLabel=` ที่ไม่บังคับสำหรับชื่ออ่านง่าย) — ฟอร์มนี้ไม่มี owner picker เลย ทุกจุดเข้าถึง (ลิงก์ "Add seat license"/"Add BU-quota license" บน `SeatSection`/`BuQuotaSection`, และบนการ์ด Licenses ของ [Business Units](/th/platform/business-units) เอง) ส่งเจ้าของมาให้ตรง ๆ ถ้าไม่มี owner param หน้าจะ render empty state "ไม่มีเจ้าของ" แยกต่างหากแทนที่จะเป็นฟอร์มที่พัง — เกิดได้เฉพาะจาก URL ที่แก้เองหรือค้างเก่าเท่านั้น
+**โหมดสร้าง** บังคับให้มีเจ้าของมาทาง query parameter เท่านั้น (`?bu=` หรือ `?cluster=` บวก `?ownerLabel=` ที่ไม่บังคับสำหรับชื่ออ่านง่าย) — ฟอร์มนี้ไม่มี owner picker เลย ทุกจุดเข้าถึง (ลิงก์ "Add seat license"/"Add BU-quota license" บน `SeatSection`/`BuQuotaSection` และลิงก์ "New subscription"/"Add interface license" บนแท็บ Licenses ของ [Business Units](/th/platform/business-units) เอง) ส่งเจ้าของมาให้ตรง ๆ ถ้าไม่มี owner param หน้าจะ render empty state "ไม่มีเจ้าของ" แยกต่างหากแทนที่จะเป็นฟอร์มที่พัง — เกิดได้เฉพาะจาก URL ที่แก้เองหรือค้างเก่าเท่านั้น **สำหรับประเภท interface ฟิลด์หลักคือตัวเลือกกลุ่ม ไม่ใช่ตัวเลข** (`config.selector === 'feature-group'`): `<Select>` ของ feature group ที่โหลดจาก `licenseFeatureGroupService` และกรองเหลือ `kind === 'interface'` กับ `is_active` — กลุ่ม `standard` ไม่ถูกเสนอเลย เพราะ backend จะปฏิเสธด้วย 400 แทนที่จะทิ้งเงียบ ๆ ตัวเลือกมีเฉพาะตอนสร้าง; ในโหมดแก้ไขกลุ่ม render เป็นป้ายคงที่ เพราะการเปลี่ยนว่า licence ที่ขายไปแล้วครอบคลุม interface ไหนคือการขายใหม่ ไม่ใช่การแก้ไข
 
-**โหมดดู/แก้** โชว์ `IssuedLicensePlate` — ตัวตนของใบ (เลขที่, เจ้าของ, cluster ถ้ามี), ป้ายสถานะที่คำนวณแล้ว, บรรทัด "เหลืออีก N วัน"/"หมดอายุมาแล้ว N วัน" ระบายสีตามเกณฑ์เฉพาะประเภท และ เฉพาะประเภท BU-quota — การใช้งานปัจจุบันของ cluster เจ้าของ (`bu_used`) อ่านผ่าน `config.readUsage` ใต้แผ่นลงมา การ์ด `LicenseFieldsCard` ตัวเดียว ใช้ร่วมกันทั้งสร้างและแก้ ต่างกันแค่ boolean `editing` มี Amount, Reference No, สวิตช์แบบ segmented "มีวันหมดอายุ / ไม่มีวันหมดอายุ" (**โชว์เฉพาะ BU quota** — `config.showNoExpiry`; ประเภทที่นั่งไม่มีสวิตช์นี้และไม่มีแนวคิด perpetual เลย), วันที่คุ้มครอง, และ — เฉพาะ BU-quota — ช่อง Note ข้อความอิสระ (`config.showNote`) **ฟิลด์ของใบ BU-quota ที่ถูกยกเลิกกลายเป็นอ่านอย่างเดียวถาวร** (`canEditFields = canEdit && !isCancelled`) พร้อม banner อธิบายเหนือการ์ด แทนที่จะยอมรับการแก้ไขเรคคอร์ดที่ไม่ให้อะไรแล้วเงียบ ๆ ใบที่นั่งไม่มีสถานะยกเลิกเลยจึงไม่มีวันเข้าเงื่อนไขนี้
+**โหมดดู/แก้** โชว์ `IssuedLicensePlate` — ตัวตนของใบ (เลขที่, เจ้าของ, cluster ถ้ามี), ป้ายสถานะ (client คำนวณสำหรับที่นั่ง/BU quota; จาก `in_force`/`state` ของ backend สำหรับ interface), บรรทัด "เหลืออีก N วัน"/"หมดอายุมาแล้ว N วัน" ระบายสีตามเกณฑ์เฉพาะประเภท (`seat_days`/`bu_quota_days`/`interface_days`) และ เฉพาะประเภท BU-quota — การใช้งานปัจจุบันของ cluster เจ้าของ (`bu_used`) อ่านผ่าน `config.readUsage` ใต้แผ่นลงมา การ์ด `LicenseFieldsCard` ตัวเดียว ใช้ร่วมกันทั้งสร้างและแก้ ต่างกันแค่ boolean `editing` มี Amount (หรือ feature group), Reference No, สวิตช์แบบ segmented "มีวันหมดอายุ / ไม่มีวันหมดอายุ" (**โชว์สำหรับ BU quota และ interface** — `config.showNoExpiry`; ประเภทที่นั่งไม่มีสวิตช์นี้และไม่มีแนวคิด perpetual เลย สวิตช์ของ interface เป็นการกลับคำสเปกการออกแบบฉบับ 2026-09-09 โดยตั้งใจ บันทึกไว้ในคอมเมนต์ของ `INTERFACE_CONFIG` เอง: INF licence ที่เป็นอมตะยังถูกสถานะสัญญาหลักจำกัดอยู่ดี badge "Capped by contract" จึงทำให้หน้าจอซื่อสัตย์), วันที่คุ้มครอง, และ — BU quota และ interface — ช่อง Note ข้อความอิสระ (`config.showNote`) **ฟิลด์ของใบ BU-quota ที่ถูกยกเลิกกลายเป็นอ่านอย่างเดียวถาวร** (`canEditFields = canEdit && !isCancelled`) พร้อม banner อธิบายเหนือการ์ด แทนที่จะยอมรับการแก้ไขเรคคอร์ดที่ไม่ให้อะไรแล้วเงียบ ๆ ใบที่นั่งและ interface ไม่มีสถานะยกเลิกเลยจึงไม่มีวันเข้าเงื่อนไขนี้
 
-action **Cancel this license** (สไตล์ destructive อยู่ท้ายหน้า หลัง `ConfirmDialog`) โผล่ **เฉพาะเมื่อ `config.cancel` ไม่ใช่ null** — คือเฉพาะประเภท BU-quota เท่านั้น ไม่มีปุ่มแบบนี้เลยบนหน้าแก้ไขใบที่นั่ง ตรงกับข้อเท็จจริงของ schema ที่ไม่มี endpoint cancel สำหรับแถว `tb_business_unit_license` เลย ทั้งสองประเภทการซื้อไม่มี action ลบจริงบนหน้าแก้ไขของมันเอง — สิ่งนั้นมีให้แค่จากเมนูแถวของบัญชีต่อคลัสเตอร์เอง (§3.2 ข้างบน) ไม่ใช่จาก URL ของใบเดี่ยวโดยตรง
+action **Cancel this license** (สไตล์ destructive อยู่ท้ายหน้า หลัง `ConfirmDialog`) โผล่ **เฉพาะเมื่อ `config.cancel` ไม่ใช่ null** — คือเฉพาะประเภท BU-quota เท่านั้น ไม่มีปุ่มแบบนี้เลยบนหน้าแก้ไขใบที่นั่งหรือ interface ตรงกับข้อเท็จจริงของ schema ที่ไม่มี endpoint cancel สำหรับแถว `tb_business_unit_license` หรือ `tb_business_unit_interface_license` เลย ไม่มีประเภทการซื้อไหนมี action ลบจริงบนหน้าแก้ไขของมันเอง — สิ่งนั้นมีให้แค่จากเมนูแถวของบัญชีต่อคลัสเตอร์เอง (§3.2 ข้างบน) ไม่ใช่จาก URL ของใบเดี่ยวโดยตรง หลังสร้างสำเร็จฟอร์มพาไป `config.listPath` — `/licenses` สำหรับสองประเภทแรก `/licenses?tab=interface` สำหรับประเภทที่สาม เพื่อให้แถวใหม่อยู่บนหน้าจอ
 
 ## 6. Redirect เก่าของ `/subscriptions*`
 
@@ -104,15 +107,16 @@ action **Cancel this license** (สไตล์ destructive อยู่ท้�
 
 path ทั้งหมดคือ `../carmen-platform` ยกเว้นที่ระบุไว้เป็นอย่างอื่น
 
-- `src/pages/licenses/LicenseCenter.tsx` — หน้าจอลงจอดสี่แท็บ, แถบ Fleet Capacity, การจำแท็บ
-- `src/pages/licenses/ClusterLicenseTable.tsx`, `src/pages/licenses/SubscriptionTable.tsx`, `src/pages/licenses/PurchaseLicenseTable.tsx` — เนื้อหาของสี่แท็บ
+- `src/pages/licenses/LicenseCenter.tsx` — หน้าจอลงจอดห้าแท็บ, แถบ Fleet Capacity, การจำแท็บ
+- `src/pages/licenses/ClusterLicenseTable.tsx`, `src/pages/licenses/SubscriptionTable.tsx`, `src/pages/licenses/PurchaseLicenseTable.tsx` — เนื้อหาของห้าแท็บ (ตัวสุดท้ายให้บริการสามแท็บ)
+- `docs/superpowers/specs/2026-09-09-sortable-column-headers-design.md` — การออกแบบเบื้องหลังการเรียงทุกคอลัมน์บนตารางเหล่านี้ รวมถึงเหตุผลที่ Status เปิดเมื่อ backend เป็นเจ้าของกฎวันที่แล้วเท่านั้น (§2.5)
 - `src/pages/licenses/ClusterLicenseDetail.tsx` — หน้าจอรายละเอียดต่อ cluster และ hook โหลดข้อมูลที่ใช้ร่วมกัน (`useLicenseLedger`, `useClusterSeatLicenses`, `useClusterSubscriptions`)
 - `src/pages/licenses/LicenseHealthStrip.tsx`, `src/pages/licenses/LicenseCoverageBar.tsx` — แถบสรุปและภาพเส้นเวลาที่ใช้ร่วมกัน
 - `src/pages/licenses/sections/{BuQuotaSection,SeatSection,SubscriptionSection}.tsx` — สามแท็บของ `ClusterLicenseDetail`
 - `src/utils/businessUnitRank.ts` — `rankBusinessUnits()`/`countOverLimit()` ตรรกะป้าย Over-limit (§3.2)
 - `src/pages/licenses/SubscriptionForm.tsx`, `src/pages/licenses/subscriptionCreate/{SubscriptionCreateForm,SubscriptionDraftPlate,subscriptionTerm}.tsx`, `src/pages/licenses/subscriptionEdit/{IssuedSubscriptionPlate,SubscriptionInfoCard,GroupSelectionCard}.tsx` — ฟอร์ม subscription และ component สนับสนุน
-- `src/pages/licenses/LicensePurchaseForm.tsx`, `src/pages/licenses/licenseKindConfig.ts`, `src/pages/licenses/licenseEdit/IssuedLicensePlate.tsx`, `src/pages/licenses/plate/plateParts.tsx` — ฟอร์มซื้อที่ใช้ร่วมกันและ config สลับประเภท
-- `src/App.tsx` (บรรทัด 183–249) — ทุก route ที่หน้านี้อธิบาย บวก redirect เก่า (§6)
+- `src/pages/licenses/LicensePurchaseForm.tsx`, `src/pages/licenses/licenseKindConfig.ts`, `src/pages/licenses/licenseEdit/IssuedLicensePlate.tsx`, `src/pages/licenses/plate/plateParts.tsx` — ฟอร์มซื้อที่ใช้ร่วมกันและ config สลับประเภท (`selector`, `INTERFACE_CONFIG`)
+- `src/App.tsx` (บรรทัด 183–265) — ทุก route ที่หน้านี้อธิบาย บวก redirect เก่า (§6)
 - `src/hooks/useAllClusters.ts`, `src/hooks/useExpiryThresholds` (`src/context/ExpiryThresholdContext.tsx`) — hook ข้อมูลที่ใช้ร่วมกันข้ามฟอร์ม
 - `src/pages/licenses/subscriptionEdit/SeatsCard.tsx` — **ไม่ใช่ส่วนหนึ่งของ UI ที่ใช้งานจริง** การ์ด seat-pool ระดับ cluster ที่มีอยู่ใน source และมี test file ของตัวเอง แต่ไม่ถูก import โดย production page component ตัวไหนเลย (`SubscriptionForm.tsx` ไม่ render การ์ดแบบนี้เลย); คอมเมนต์ใน test file ของมันเองอ้างว่า "ยังใช้ที่ License Center" ซึ่งล้าสมัยเทียบกับ source ปัจจุบัน — ยืนยันด้วยการ grep ทั้ง repo แล้วเจอ import ที่ไม่ใช่ test เป็นศูนย์ ไม่ถูกบันทึกเป็นหน้าจอด้านบนเพราะไม่มี route ไหนพาไปถึงมันได้เลย
 

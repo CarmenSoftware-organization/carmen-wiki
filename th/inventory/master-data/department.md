@@ -2,7 +2,7 @@
 title: แผนก (Department)
 description: แผนกขององค์กรและการกำหนดผู้ใช้ — ใช้เป็น cost-centre และ scope การอนุมัติบนเอกสาร requisition และ PR
 published: true
-date: 2026-07-15T21:47:09.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: master-data, department, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -29,9 +29,9 @@ dateCreated: 2026-05-16T08:00:00.000Z
 |---|---|---|
 | เพิ่มแผนก | Configuration → Master Data → Department → **New** | บังคับ: `code`, `name` |
 | ยกเลิกการใช้งาน | Toggle `is_active` | ซ่อนจาก picker PR/SR; การอ้างอิงประวัติยังเก็บไว้ |
-| กำหนดผู้ใช้ให้กับแผนก | หน้า user-admin → Department tab | เขียนไปยัง `tb_department_user` |
-| ตั้ง HOD | หน้าเดียวกัน → toggle `is_hod` | มากที่สุดหนึ่ง HOD ต่อแผนก (app invariant) |
-| เปลี่ยน HOD | Toggle off อันเก่า, on อันใหม่ | การอนุมัติในอดีตยังเก็บผู้เซ็นจริง |
+| กำหนดผู้ใช้ให้กับแผนก | ฟอร์ม Department → transfer list **Members** (`routes/config/department/department-form.tsx:64-81`) | ส่ง `department_users: { add[], remove[] }`; เขียนไปยัง `tb_department_user` — **แก้ไขในรอบนี้:** ไม่มี "User-admin → Department tab"; สมาชิกภาพแก้ไขบนตัวแผนกเอง |
+| ตั้ง HOD | ฟอร์ม Department → transfer list **Head of Department** | ส่ง `hod_users: { add[], remove[] }` → `is_hod = true` บนแถว junction ฟอร์มเป็น multi-select ธรรมดา; ไม่พบ guard แบบ HOD เดียวใน `departments.service.ts` |
+| เปลี่ยน HOD | เอาออกจากรายการ HOD แล้วเพิ่มผู้ใช้คนใหม่ | การอนุมัติในอดีตยังเก็บผู้เซ็นจริง |
 
 ## 3. การตรวจสอบและข้อผิดพลาด
 
@@ -91,6 +91,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 - **Validation** `code` และ `name` บังคับ มากที่สุดหนึ่ง `is_hod = true` ต่อแผนก (app invariant)
 - **Lifecycle** `is_active = false` ซ่อนจาก picker ใหม่; รักษาการอ้างอิงประวัติ
 - **การเปลี่ยน HOD** ไม่ retro-fit การอนุมัติประวัติ
+- **Response shape (2026-09-17)** `GET /departments/:id` คืน `department_users[]` และ `hod_users[]` ซึ่งสมาชิกมี `user: { id }` เป็น nested object (บวก `firstname` / `lastname` แบบแบน) ไม่ใช่ `user_id` แบบแบน — `types/department.ts:5-10`, frontend fix `b55294b3` เฉพาะ detail (`findOne`) เท่านั้นที่มี array เหล่านี้; list ไม่มี
+- **Default sort** `GET /departments` ที่ไม่มี `?sort=` คืน `code:asc, name:asc, id:asc` (`departments.service.ts`, `withDefaultSort`, 2026-09-13)
 
 ## 7. การอ้างอิงข้ามโมดูล
 
@@ -101,5 +103,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_department` (lines ~694-723), `tb_department_user` (lines ~4771-4795)
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_department` (line ~703), `tb_department_user` (~5378)
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/departments/departments.service.ts`, `master/department-user/`; gateway `config_departments/`, `config_department-users/`
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/010-department.spec.ts` (21 กรณี) + `docs/test-cases/gaps/010-department-gap.md` (37 กรณีที่ยังไม่ครอบคลุม)
 - **Frontend:** `../carmen-inventory-frontend-react/routes/config/department/`

@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — Test Scenarios — Outlet Manager
 description: test case ของ Outlet Manager (การบริโภค read-only, explosion demand, variance, feedback) สำหรับโมดูล recipe
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: recipe, test-scenarios, outlet-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **At a Glance**
 > **Persona:** Outlet Manager (read-only บน recipe library) &nbsp;·&nbsp; **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **scenario:** ~23
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **การครอบคลุม E2E:** ไม่มีสำหรับภายในสูตร; spec อัตโนมัติเดียวของโมดูลคือ `tests/121-recipe-equipment-category.spec.ts` (`701-sr.spec.ts` ครอบคลุมเฉพาะ SR ธรรมดา — ไม่มีเส้นทาง recipe-driven auto-create อยู่ในโค้ด)
+> **การครอบคลุม E2E:** ไม่มีสำหรับภายในสูตร; spec อัตโนมัติมีเฉพาะหน้าจอ master-data (`110-op-category`, `111-cuisine`, `121-recipe-equipment-category`, `131-equipment-category`) (`701-sr.spec.ts` ครอบคลุมเฉพาะ SR ธรรมดา — ไม่มีเส้นทาง recipe-driven auto-create อยู่ในโค้ด) ตรวจสอบซ้ำ 2026-09-22 — ดู [04-test-scenarios](/th/inventory/recipe/04-test-scenarios)
 
 > **สถานะการ implement (ตรวจสอบแล้ว 2026-07-15)** surface ของ Outlet Manager ที่ scenario เหล่านี้ทดสอบยังไม่มีอยู่จริง: ไม่มี permission อ่านอย่างเดียวสำหรับสูตร (กลุ่มนี้เป็น admin-only ผ่าน placeholder `operation_plan.view`), ไม่มีมุมมองสูตร scope ตาม outlet, ไม่มี recipe explosion, ไม่มี recipe→SR auto-create (ไม่มี `recipe_id` ที่ใดเลยในโค้ด SR) และไม่มี dashboard variance ตัว store requisition เองมีจริงแต่เป็น manual ให้ถือ scenario ด้านล่างเป็นแผน acceptance ของดีไซน์
 

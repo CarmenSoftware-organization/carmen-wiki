@@ -2,7 +2,7 @@
 title: ใบรับสินค้า (Goods Receive Note) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูล good-receive-note
 published: true
-date: 2026-07-15T00:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: good-receive-note, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T11:00:00.000Z
@@ -13,7 +13,8 @@ dateCreated: 2026-05-15T11:00:00.000Z
 > **At a Glance**
 > **ตาราง:** `tb_good_received_note` &nbsp;·&nbsp; `tb_good_received_note_detail` &nbsp;·&nbsp; `tb_good_received_note_detail_item` &nbsp;·&nbsp; `tb_good_received_note_comment` &nbsp;·&nbsp; `tb_good_received_note_detail_comment`
 > **ผู้ใช้:** Developer / Auditor (อ้างอิงสำหรับ dev)
-> **FK สำคัญ:** detail `→ tb_purchase_order_detail` (บรรทัด PO ต้นทาง); `detail_item.inventory_transaction_id → tb_inventory_transaction` (UUID เท่านั้น ไม่มี `@relation` — ledger inventory ปลายทาง); detail `→ tb_location` / `tb_product`; header `→ tb_vendor` / `tb_currency`
+> **FK สำคัญ:** detail `→ tb_purchase_order_detail` (บรรทัด PO ต้นทาง); **`tb_inventory_transaction_detail.good_received_note_detail_item_id → detail_item`** (แถว ledger ชี้กลับมายังเหตุการณ์รับ — `@relation` จริง, migration `20260810180000_move_grn_lot_link_to_ledger`); `detail_item.inventory_transaction_id` (UUID เท่านั้น, id ของ **header** การเคลื่อนไหว — ธง "โพสต์แล้ว"); detail `→ tb_location` / `tb_product`; header `→ tb_vendor` / `tb_currency`
+> **ตรวจสอบซ้ำ 2026-09-22** กับ `schema.prisma` ที่ HEAD (`tb_good_received_note` `:831-908`, `_detail` `:945-980`, `_detail_item` `:1017-1092`) การเปลี่ยนแปลงตั้งแต่ 2026-07-29: ลบ `received_at` และทำให้ `grn_date` เป็น `NOT NULL` (`20260907153500_drop_grn_received_at`); เพิ่ม `order_price`, `received_price`, `expired_at` บนเหตุการณ์รับ (`20260731120000_add_inflow_price_expiry`); ย้าย link ของ lot ไปฝั่ง ledger (`20260810160000` แล้วตามด้วย `20260810180000`)
 > **รูปแบบ Audit:** `created_*` / `updated_*` / `deleted_*` มาตรฐานบนทั้งห้าตาราง; ลายเซ็น workflow ต่อบรรทัด + `workflow_history` JSON บน header
 
 > **แหล่งความจริง:** Prisma schema ของ backend อ่านสิ่งเหล่านี้ก่อนเสมอเมื่อเขียนหรืออัปเดตหน้านี้:
@@ -26,9 +27,9 @@ dateCreated: 2026-05-15T11:00:00.000Z
 
 โมดูล good-receive-note เป็นเจ้าของเอนทิตี tenant-schema ห้าตัว: header เอกสาร GRN (`tb_good_received_note`) รายการสินค้า (`tb_good_received_note_detail`) แถวเหตุการณ์รับของต่อบรรทัด (`tb_good_received_note_detail_item`) ที่บันทึกปริมาณรับ/FOC พร้อมภาพถ่ายการคำนวณราคาและภาษีสำหรับแต่ละเหตุการณ์รับของ และตาราง comment สำหรับ workflow / activity log ทั้งระดับ header และระดับบรรทัด (`tb_good_received_note_comment`, `tb_good_received_note_detail_comment`) เช่นเดียวกับ PR และ PO การติดตามขั้นตอน workflow ไม่ใช่ตารางเฉพาะ — JSON columns บน header (`workflow_history`, `workflow_current_stage` ฯลฯ) บวกตาราง comment รวมกันเป็นบันทึกถาวรของ timeline workflow ส่วน `tb_workflow` ที่ใช้ร่วมกันถูกอ้างอิงด้วย `workflow_id` แต่ไม่มี Prisma `@relation` **แก้ไขในรอบนี้:** `tb_good_received_note_detail_item` ไม่มีคอลัมน์ `accepted_qty` (หรือคอลัมน์ acceptance/rejection ต่อบรรทัดใดๆ) — การค้นหาทั่ว schema และโค้ดแอปพลิเคชันไม่พบฟิลด์นี้เลย
 
-GRN อยู่ **ปลายน้ำของ [purchase-order](/th/inventory/purchase-order)** และ **ต้นน้ำของ [inventory](/th/inventory/inventory)** ในห่วงโซ่ procure-to-pay การเชื่อมโยงกับ PO ผ่านสองคอลัมน์บน `tb_good_received_note_detail` — `purchase_order_id` และ `purchase_order_detail_id` — โดย `purchase_order_detail_id` เป็นตัวที่มี Prisma `@relation` ชัดเจนกลับไปยัง `tb_purchase_order_detail` ทั้งสองคอลัมน์เป็น nullable เพื่อให้ตารางบรรทัดเดียวกันสามารถแทน GRN แบบ manual ที่ไม่มี PO ต้นทาง (กำหนดโดย enum `doc_type`) **แก้ไขในรอบนี้ — จังหวะการเปลี่ยนแปลงระบบ:** ผลปลายทางที่อธิบายด้านล่างเกิดขึ้นตอนเปลี่ยนสถานะ **`draft → saved`** ไม่ใช่ตอน commit `GoodReceivedNoteLogic.save()` (`good-received-note.logic.ts`) คือจุดที่ resolve ทุกบรรทัดเป็นหนึ่งหรือหลายแถวใน `tb_inventory_transaction` / `tb_inventory_transaction_detail` (ผ่าน `tb_good_received_note_detail_item.inventory_transaction_id` ซึ่งเป็นที่ที่การเพิ่มของคงคลัง cost layer และข้อมูล lot/expiry อยู่จริง) และเพิ่ม `received_qty` ของบรรทัด PO ต้นทาง; การเรียก `saved → committed` ถัดมาเพียงเปลี่ยน `doc_status` และล็อกเอกสาร — ไม่พบผลกระทบต่อ inventory หรือ PO เพิ่มเติมใน `GoodReceivedNoteLogic.commit()` **ยังไม่ยืนยัน:** ไม่พบฟีเจอร์การบันทึกใบกำกับผู้ขาย, three-way match (PO ↔ GRN ↔ invoice) หรือการโพสต์ AP ใดๆ ทั้งใน backend หรือ frontend ปัจจุบัน — ให้ถือว่าข้อความลักษณะนี้เป็นเจตนาการออกแบบ ไม่ใช่พฤติกรรมที่ implement แล้ว (ตรงกับข้อสรุปเดียวกันที่ยืนยันแล้วในโมดูล `purchase-order`)
+GRN อยู่ **ปลายน้ำของ [purchase-order](/th/inventory/purchase-order)** และ **ต้นน้ำของ [inventory](/th/inventory/inventory)** ในห่วงโซ่ procure-to-pay การเชื่อมโยงกับ PO ผ่านสองคอลัมน์บน `tb_good_received_note_detail` — `purchase_order_id` และ `purchase_order_detail_id` — โดย `purchase_order_detail_id` เป็นตัวที่มี Prisma `@relation` ชัดเจนกลับไปยัง `tb_purchase_order_detail` ทั้งสองคอลัมน์เป็น nullable เพื่อให้ตารางบรรทัดเดียวกันสามารถแทน GRN แบบ manual ที่ไม่มี PO ต้นทาง (กำหนดโดย enum `doc_type`) **จังหวะการเปลี่ยนแปลงระบบ (ตรวจสอบซ้ำ 2026-09-22 — กลับข้อสรุปของ 2026-07-15):** ผลปลายทางเกิดขึ้นตอน **`saved → committed`** (`GoodReceivedNoteLogic.commit()` / `approve()` → `postReceipt()`, `good-received-note.logic.ts:228-270`): แถว ledger ใน `tb_inventory_transaction` / `tb_inventory_transaction_detail` / `tb_inventory_transaction_cost_layer` ถูกเขียนที่นั่น และ `received_qty` ของบรรทัด PO ถูกเพิ่มที่นั่น บน business unit ที่ `calculation_method = average` ครึ่งที่เป็น ledger เกิดขึ้นตั้งแต่ `save()` แล้ว (`logic.ts:105-143`, `postsInventoryAtSave()` ใน `good-received-note.ledger.ts:49-51`) และ commit เพียงทำครึ่งที่เป็น PO ให้ครบ; header การเคลื่อนไหวบันทึกว่ากรณีใดใช้อยู่ใน `tb_inventory_transaction.info = { posted_at_save, po_receiving_applied }` (`ledger.ts:24-29`) **ยังไม่ยืนยัน / ไม่พบ:** โค้ดใบกำกับผู้ขาย, three-way match หรือการโพสต์ AP — ไม่มีในโมดูลนี้; โมดูล GL ที่มีอยู่ใน backend ตอนนี้ไม่เคยถูกเรียกจากโค้ด GRN (ดู [ภาพรวมโมดูล](/th/inventory/good-receive-note) §2)
 
-ประเด็นโครงสร้างที่น่าสังเกต: เอนทิตี `tb_good_received_note_detail_item` ไม่มีเทียบเท่าใน PR หรือ PO ในขณะที่บรรทัด PO เป็น triple ของ qty/unit/price เดียว บรรทัดของ GRN สามารถครอบคลุม **หลายเหตุการณ์รับของ** (การส่งของแบบแยก สต๊อกที่ผสม lot ลงในบรรทัดเดียวกัน FOC bundle ที่รับพร้อมสต๊อกที่จ่ายเงิน) แต่ละเหตุการณ์เป็นแถว `detail_item` ที่บรรจุ triple `order_qty` / `received_qty` / `foc_qty` ของตนเองและภาพถ่ายการเงิน (tax, discount, price, สกุลเงินฐาน) ที่คำนวณ ณ ขณะรับ — และแต่ละเหตุการณ์ยังบรรจุ `inventory_transaction_id` ซึ่งเป็น link ไปยังฝั่ง inventory ที่ข้อมูล lot number, expiry date และ cost-layer อยู่ ดังนั้นในขณะที่ PRD ของ carmen/docs อธิบาย lot/expiry เป็นฟิลด์ **บนบรรทัด GRN เอง** ความเป็นจริงใน Prisma คือมันอยู่บน inventory transaction ที่ link มา แถว `detail_item` คือ cursor เหตุการณ์รับและสะพาน ดูส่วน 5 สำหรับความแตกต่างนี้
+ประเด็นโครงสร้างที่น่าสังเกต: เอนทิตี `tb_good_received_note_detail_item` ไม่มีเทียบเท่าใน PR หรือ PO ในขณะที่บรรทัด PO เป็น triple ของ qty/unit/price เดียว บรรทัดของ GRN สามารถครอบคลุม **หลายเหตุการณ์รับของ** (การส่งของแบบแยก FOC bundle ที่รับพร้อมสต๊อกที่จ่ายเงิน) แต่ละเหตุการณ์เป็นแถว `detail_item` ที่บรรจุ triple `order_qty` / `received_qty` / `foc_qty` ของตนเอง ราคาต่อหน่วยที่สั่งและที่รับ (`order_price`, `received_price`) `expired_at` แบบไม่บังคับ และภาพถ่ายการเงิน (tax, discount, สกุลเงินฐาน) ที่คำนวณ ณ ขณะรับ link ไปยังฝั่ง inventory ตอนนี้เป็น **one-to-many จาก ledger ย้อนกลับมายังเหตุการณ์**: ทุกแถว `tb_inventory_transaction_detail` ที่สร้างให้เหตุการณ์นั้นบรรจุ `good_received_note_detail_item_id` (ดังนั้นในอนาคตหนึ่งเหตุการณ์อาจกลายเป็นหลายแถว lot ได้) ในขณะที่ `detail_item.inventory_transaction_id` เก็บเพียง id ของ **header** การเคลื่อนไหวและทำหน้าที่เป็นสัญญาณ "โพสต์แล้ว" ด้วย (schema comment `:1022-1024`) หมายเลข lot อยู่บนแถว ledger (`current_lot_no`) และบน cost layer ของมัน; ส่วน expiry ตอนนี้อยู่บนเหตุการณ์ GRN เอง (`expired_at`) ดูส่วน 5 สำหรับตารางความแตกต่าง
 
 **Concurrency:** การแก้ไขเอกสารนี้ใช้ optimistic locking ผ่าน [system-config/doc-version](/th/inventory/system-config/doc-version) — client ต้องส่ง `doc_version` ปัจจุบันตอนบันทึก ไม่งั้นจะได้ `409 Conflict`
 
@@ -41,9 +42,9 @@ Header เอกสาร GRN บรรจุหมายเลขอ้าง�
 | Field | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key สร้างผ่าน `gen_random_uuid()` |
-| `grn_no` | `String @db.VarChar` | Yes | หมายเลขอ้างอิง GRN ที่มนุษย์อ่านได้ Nullable เพื่อรองรับ GRN ที่ยังเป็น draft และยังไม่ได้รับการกำหนดหมายเลข |
-| `grn_date` | `DateTime @db.Timestamptz(6)` | Yes | วันที่รับ — เมื่อสินค้าได้รับการรับจริง |
-| `invoice_no` | `String @db.VarChar` | Yes | หมายเลขใบกำกับจากผู้ขาย unique ร่วมกับ `vendor_id` ข้าม GRN ที่ไม่ได้ soft-delete |
+| `grn_no` | `String @db.VarChar` | Yes | หมายเลขอ้างอิง GRN ที่มนุษย์อ่านได้ GRN ใหม่ถูกสร้างด้วย placeholder `draft-{seq}` จากตัวนับต่อ tenant ใน `tb_application_config` (`good-received-note.service.ts:90,2333-2339`); เลข running จริงถูกออกตอน **save** (`assignRunningGrnNo`, `:2392-2410`) ดังนั้น draft ที่ถูกทิ้งจะไม่ทำให้เลขในชุดขาดช่วง |
+| `grn_date` | `DateTime @db.Timestamptz(6)` | **No** | วันที่รับ — เมื่อสินค้าได้รับการรับจริง **แก้ไข 2026-09-22:** ทำให้เป็น `NOT NULL` โดย `20260907153500_drop_grn_received_at` (แถวเดิม backfill จาก `received_at` แล้วตามด้วย `created_at`) เป็นวันที่ ledger ประทับบนการเคลื่อนไหว (`lot_at_date`, การ resolve งวด) และเป็นวันที่ตรวจสอบกับงวดสินค้าคงคลังที่เปิด `PATCH` เปลี่ยนค่านี้ได้ (`7968259a6`) |
+| `invoice_no` | `String @db.VarChar` | Yes | หมายเลขใบกำกับจากผู้ขาย **แก้ไข 2026-09-22:** **ไม่มี** uniqueness constraint หรือการตรวจสอบในโค้ดบน `(invoice_no, vendor_id)` — unique index เดียวบนตารางนี้คือ `(grn_no, deleted_at)` |
 | `invoice_date` | `DateTime @db.Timestamptz(6)` | Yes | วันที่ใบกำกับจากผู้ขาย |
 | `description` | `String @db.VarChar` | Yes | คำอธิบาย free-text บน header |
 | `doc_status` | `enum_good_received_note_status` | No | สถานะเอกสาร default `draft` |
@@ -56,7 +57,7 @@ Header เอกสาร GRN บรรจุหมายเลขอ้าง�
 | `exchange_rate_date` | `DateTime @db.Timestamptz(6)` | Yes | วันที่มีผลของอัตราแลกเปลี่ยนที่ใช้ |
 | `workflow_id` | `String @db.Uuid` | Yes | FK ไปยังแถว `tb_workflow` (ไม่มี Prisma `@relation` — การเลือกถูก resolve โดย application) |
 | `workflow_name` | `String @db.VarChar` | Yes | snapshot ชื่อ workflow |
-| `workflow_history` | `Json @db.JsonB` | Yes | timeline การเปลี่ยนขั้น append-only default `{}` รายการบรรจุ `stage`, `action`, `message`, `by`, `at` |
+| `workflow_history` | `Json @db.JsonB` | Yes | timeline การเปลี่ยนขั้น append-only default `{}` ตาม schema comment (`:853-854`) รายการบรรจุ `action` (`submitted` \| `approved` \| `reviewed` \| `rejected` \| `completed` — `completed` ถูก push โดย `WorkflowOrchestratorService` และไม่อยู่ใน `enum_last_action`), `at`, `user {id, name}`, `current_stage`, `next_stage` |
 | `workflow_current_stage` | `String @db.VarChar` | Yes | slug ของขั้นที่ถือ GRN อยู่ |
 | `workflow_previous_stage` | `String @db.VarChar` | Yes | slug ของขั้นที่เพิ่งปล่อย GRN |
 | `workflow_next_stage` | `String @db.VarChar` | Yes | slug ของขั้นถัดไปในห่วงโซ่ |
@@ -67,9 +68,9 @@ Header เอกสาร GRN บรรจุหมายเลขอ้าง�
 | `last_action_by_name` | `String @db.VarChar` | Yes | snapshot ชื่อผู้ทำ action |
 | `post_type` | `enum_good_received_note_post_type` | Yes | โหมดการ post ของการรับ — `ap` (default), `consignment`, หรือ `cash` **แก้ไขในรอบนี้:** boolean คู่ `is_consignment` / `is_cash` ที่เคยเอกสารไว้ที่นี่ไม่มีอยู่บน `tb_good_received_note` แล้ว — ทั้งสองถูกแทนที่ด้วย enum เดียวนี้ ไม่พบ logic แยกเงื่อนไขตาม `post_type` ใน backend ในรอบตรวจสอบนี้ (ไม่มีพฤติกรรม GL หรือ inventory-transaction-type ที่ต่างกัน) — ฟิลด์นี้ถูกเก็บและ serialize แต่ดูเหมือนจะไม่เปลี่ยนพฤติกรรมของระบบ |
 | `signature_file_token` | `String @db.VarChar` | Yes | token ไฟล์ลายเซ็นของผู้รับ **แก้ไขในรอบนี้:** ชื่อฟิลด์เดิม `signature_image_url` ไม่ตรงกับคอลัมน์ Prisma ปัจจุบัน |
-| `received_by_id` | `String @db.Uuid` | Yes | user id ของผู้รับ |
-| `received_by_name` | `String @db.VarChar` | Yes | snapshot ชื่อแสดงของผู้รับ |
-| `received_at` | `DateTime @db.Timestamptz(6)` | Yes | timestamp ของการรับจริง |
+| `received_by_id` | `String @db.Uuid` | Yes | user id ของผู้รับ server เป็นเจ้าของค่านี้: ค่าที่ client ส่งมาถูกทิ้ง และผู้ใช้ที่กระทำถูกประทับตอน create (`service.ts:1081-1090`) หรือถ้ายังว่างอยู่ ตอน save (`logic.ts:101-103,131-133`) |
+| `received_by_name` | `String @db.VarChar` | Yes | snapshot ชื่อแสดงของผู้รับ (กฎการประทับเดียวกัน) |
+| ~~`received_at`~~ | — | — | **ถูกลบ** โดย `20260907153500_drop_grn_received_at` (BE `#520`, FE `feat(grn)!: ตัดวันที่รับของ`) `grn_date` รับหน้าที่วันที่รับแทน client ที่ยังส่ง `received_at` มาจะถูกเพิกเฉย |
 | `credit_term_id` | `String @db.Uuid` | Yes | FK reference ไปยัง `tb_credit_term.id` (ไม่ประกาศ Prisma `@relation`) |
 | `credit_term_name` | `String @db.VarChar` | Yes | snapshot ชื่อ credit term |
 | `credit_term_days` | `Int` | Yes | snapshot จำนวนวันของ credit term |
@@ -116,17 +117,20 @@ Header เอกสาร GRN บรรจุหมายเลขอ้าง�
 | `product_sku` | `String @db.VarChar` | Yes | snapshot SKU |
 
 **ข้อจำกัด:** `@id` บน `id` FKs: `good_received_note_id → tb_good_received_note.id`; `location_id → tb_location.id` (จำเป็น); `product_id → tb_product.id` (จำเป็น); `purchase_order_detail_id → tb_purchase_order_detail.id` (nullable) หมายเหตุ: `purchase_order_id` ถูกเก็บบนแถวแต่ไม่มี Prisma `@relation` — การ link PO ทำผ่าน relation ของ `purchase_order_detail_id` back-relations: หลาย `tb_good_received_note_detail_item` หลาย `tb_good_received_note_detail_comment`
-**Indexes:** `@@unique([good_received_note_id, sequence_no])` เป็น `goodreceivednotedetail_good_received_note_id_sequence_no_u`; `@@index([good_received_note_id, sequence_no])` เป็น `goodreceivednotedetail_good_received_note_id_sequence_no_idx` หมายเหตุ: unique constraint ที่นี่ไม่รวม `deleted_at` (ต่างจาก PR / PO equivalent) ดังนั้นบรรทัดที่ soft-deleted ยังครอบครอง slot `sequence_no`
+**Indexes:** `@@unique([good_received_note_id, sequence_no, deleted_at])` เป็น `goodreceivednotedetail_good_received_note_id_sequence_no_u`; `@@index([good_received_note_id, sequence_no])` เป็น `goodreceivednotedetail_good_received_note_id_sequence_no_idx` **แก้ไข 2026-09-22:** unique constraint ตอนนี้ **รวม** `deleted_at` แล้ว (`schema.prisma:978`) ตรงกับ PR / PO — บรรทัดที่ soft-deleted ไม่ขวางการใช้ `sequence_no` ซ้ำอีกต่อไป แถว detail ยังบรรจุ `doc_version` (optimistic lock ต่อแถว; frontend refresh version ของทุกแถวก่อน PATCH, `use-grn-form-actions.ts` `withFreshDetailVersions`)
 
 ### 2.3 tb_good_received_note_detail_item
 
-**แถวเหตุการณ์รับเฉพาะ GRN — ไม่มีเทียบเท่าใน PR หรือ PO** detail ของ GRN เดียว (ส่วน 2.2) สามารถสร้างหลายแถว `detail_item` เพื่อบันทึกการส่งของแบบแยก (หนึ่งบรรทัด สองกล่องที่มาคนละรถ) lot ผสม (หนึ่งบรรทัด สอง lot ต่างกันลงในสินค้า/สถานที่เดียวกัน) หรือ paid-plus-FOC bundle ที่ post กับบรรทัดเดียวกัน แต่ละแถวบรรจุ triple qty/unit/conversion-factor สาม parallel — `order_*`, `received_*` และ `foc_*` — บวก snapshot price-tax-discount-totals เต็ม **ทั้งสกุลธุรกรรมและสกุลฐาน** ที่คำนวณ ณ ขณะรับ `inventory_transaction_id` ของแถวคือ link ไปยังฝั่ง inventory; transaction ที่ link มา (และลูก `tb_inventory_transaction_detail`) คือที่ที่ lot number, expiry date และข้อมูล FIFO / average-cost layer อยู่จริง ดังนั้นแถว `detail_item` **ไม่ได้เป็น lot store เอง** — เป็น cursor ฝั่ง GRN สำหรับเหตุการณ์รับ และ inventory transaction คือ lot store
+**แถวเหตุการณ์รับเฉพาะ GRN — ไม่มีเทียบเท่าใน PR หรือ PO** detail ของ GRN เดียว (ส่วน 2.2) สามารถสร้างหลายแถว `detail_item` เพื่อบันทึกการส่งของแบบแยกหรือ paid-plus-FOC bundle ที่ post กับบรรทัดเดียวกัน (ตารางรายการของ frontend แสดง **หนึ่งแถวต่อเหตุการณ์รับ**, `grn-item-table.tsx`; form schema map แต่ละแถว UI ไปยัง `detail.items[0]`, `grn-form-schema.ts:261-270`) แต่ละแถวบรรจุ triple qty/unit/conversion-factor สาม parallel — `order_*`, `received_*` และ `foc_*` — บวกราคาต่อหน่วยที่สั่งและที่รับ expiry แบบไม่บังคับ และ snapshot price-tax-discount-totals เต็ม **ทั้งสกุลธุรกรรมและสกุลฐาน** conversion factor ถูก resolve ใหม่จาก master data ทุกครั้งที่เขียน โดยทิ้งค่าจาก client (`enrichConversionFactors`, `service.ts:791`); ฟิลด์เงินทุกตัวถูกคำนวณใหม่ฝั่ง server จาก `received_price` (`calcGrnItemPrices`, `good-received-note.pricing.ts:40-60`) ดังนั้น `sub_total_price` / `net_amount` / `total_price` / `base_*` ที่ client ส่งมาจะไม่ถูกเชื่อถือเลย `inventory_transaction_id` ของแถวเก็บเพียง id ของ **header** การเคลื่อนไหว; แถว lot ที่เหตุการณ์นั้นกลายเป็นหาได้จากฝั่ง ledger ผ่าน `tb_inventory_transaction_detail.good_received_note_detail_item_id`
 
 | Field | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key |
 | `good_received_note_detail_id` | `String @db.Uuid` | No | FK ไปยัง `tb_good_received_note_detail.id` |
-| `inventory_transaction_id` | `String @db.Uuid` | Yes | FK reference ไปยัง `tb_inventory_transaction.id` (ไม่ประกาศ Prisma `@relation`) populate ตอน commit; ลูก `tb_inventory_transaction_detail` ของแถวที่ link มาบรรจุ `lot_no`, `expiry_date`, `cost_per_unit` |
+| `inventory_transaction_id` | `String @db.Uuid` | Yes | UUID ของ **header** `tb_inventory_transaction` ที่เขียนให้ทั้ง GRN (ไม่มี Prisma `@relation`; ค่าเดียวกันบนทุกเหตุการณ์ของ GRN จึงระบุ lot ไม่ได้ — schema comment `:1022-1024`) ถูกตั้งค่าเมื่อการรับถูกโพสต์ (commit หรือ save บน BU แบบ average); ถูกล้างอีกครั้งโดย `voidGrnLedger()` เพื่อให้การโพสต์ซ้ำไม่ถูกข้าม `postReceipt()` ถือว่าค่าที่ไม่ใช่ null หมายถึง "โพสต์สต๊อกแล้ว" (`logic.ts:237-239`) |
+| `order_price` | `Decimal @db.Decimal(20, 5)` | Yes | ราคาต่อหน่วยตาม `order_unit` ตามที่สั่งบนบรรทัด PO; **ไม่มี default** โดยตั้งใจ — `NULL` หมายถึง "ไม่มี PO ให้เทียบ" (GRN แบบ manual) และต่างจากราคาที่สั่งเท่ากับ `0` (FOC) backfill จาก `tb_purchase_order_detail.price` โดย `20260731120000_add_inflow_price_expiry` เป็น input ของการตรวจสอบ price deviation |
+| `received_price` | `Decimal @db.Decimal(20, 5)` | Yes | ราคาต่อหน่วยตาม `received_unit` ที่รับจริง; default `0` **แหล่งของสายการคำนวณเงินทั้งหมด** — `sub_total_price = received_price × received_qty` จำเป็นเมื่อใดก็ตามที่ `received_qty > 0` (`GRN_RECEIVED_PRICE_REQUIRED`, verify-create `:170-185`; frontend map `unit_price → received_price`, `grn-form-schema.ts:342-343`) |
+| `expired_at` | `DateTime @db.Timestamptz(6)` | Yes | วันหมดอายุของ lot ที่กำลังรับ จงใจ **ไม่** ตรวจสอบเทียบกับ `grn_date` เพื่อให้รับสินค้าใกล้หมดอายุ/หมดอายุแล้วได้ (schema comment `:1076`) ถูกอ่านโดยรายการใกล้หมดอายุของ wastage-reporting (`WASTAGE_GRN_ITEM_NOT_FOUND_LIST`) |
 | `comment` | `String @db.VarChar` | Yes | comment free-text บนเหตุการณ์รับนี้ |
 | `purchase_order_detail_purchase_request_detail_id` | `String @db.Uuid` | Yes | FK reference ไปยัง `tb_purchase_order_detail_tb_purchase_request_detail.id` (ไม่มี Prisma `@relation`) ชี้ไปยังแถวสะพาน PO↔PR เพื่อให้เหตุการณ์รับสามารถสืบย้อนกลับไปยังบรรทัด PR ต้นทาง |
 | `order_qty` | `Decimal @db.Decimal(20, 5)` | Yes | qty ที่สั่งสำหรับเหตุการณ์นี้ (ใน order UoM) default `0` |
@@ -154,10 +158,10 @@ Header เอกสาร GRN บรรจุหมายเลขอ้าง�
 | `discount_amount` | `Decimal @db.Decimal(20, 5)` | Yes | จำนวนส่วนลดในสกุลธุรกรรม default `0` |
 | `base_discount_amount` | `Decimal @db.Decimal(20, 5)` | Yes | จำนวนส่วนลดในสกุลฐาน default `0` |
 | `is_discount_adjustment` | `Boolean` | Yes | `true` เมื่อผู้ใช้เขียนทับส่วนลดด้วยมือ default `false` |
-| `sub_total_price` | `Decimal @db.Decimal(20, 5)` | Yes | `price × received_qty` (สกุลธุรกรรม) default `0` |
+| `sub_total_price` | `Decimal @db.Decimal(20, 5)` | Yes | `received_price × received_qty` (สกุลธุรกรรม ปัดเป็น 5 ตำแหน่งโดย `calcGrnItemPrices`) default `0` ปริมาณ FOC ไม่มีส่วนร่วมเลย |
 | `net_amount` | `Decimal @db.Decimal(20, 5)` | Yes | `sub_total_price − discount_amount` default `0` |
 | `total_price` | `Decimal @db.Decimal(20, 5)` | Yes | `net_amount + tax_amount` default `0` |
-| `base_price` | `Decimal @db.Decimal(20, 5)` | Yes | `price × exchange_rate` (ราคาต่อหน่วยสกุลฐาน) default `0` |
+| `base_price` | `Decimal @db.Decimal(20, 5)` | Yes | `received_price × exchange_rate` (ราคาต่อหน่วยสกุลฐาน, `calcBase`) default `0` |
 | `base_sub_total_price` | `Decimal @db.Decimal(20, 5)` | Yes | `base_price × received_qty` default `0` |
 | `base_net_amount` | `Decimal @db.Decimal(20, 5)` | Yes | `base_sub_total_price − base_discount_amount` default `0` |
 | `base_total_price` | `Decimal @db.Decimal(20, 5)` | Yes | `base_net_amount + base_tax_amount` default `0` |
@@ -169,8 +173,8 @@ Header เอกสาร GRN บรรจุหมายเลขอ้าง�
 | `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | timestamp soft-delete |
 | `deleted_by_id` | `String @db.Uuid` | Yes | id ผู้ soft-delete |
 
-**ข้อจำกัด:** `@id` บน `id` FKs: `good_received_note_detail_id → tb_good_received_note_detail.id`; `tax_profile_id → tb_tax_profile.id`; FK `@relation` ที่ตั้งชื่อสามตัวไปยัง `tb_unit` — `tb_good_received_note_detail_item_order_unit_idTotb_unit` สำหรับ `order_unit_id`, `tb_good_received_note_detail_item_received_unit_idTotb_unit` สำหรับ `received_unit_id` และ `tb_good_received_note_detail_item_foc_unit_idTotb_unit` สำหรับ `foc_unit_id` หมายเหตุ: `inventory_transaction_id` และ `purchase_order_detail_purchase_request_detail_id` ถูกเก็บเป็น UUID แต่ไม่มี Prisma `@relation` บน model นี้
-**Indexes:** ไม่ประกาศนอกเหนือจาก primary key
+**ข้อจำกัด:** `@id` บน `id` FKs: `good_received_note_detail_id → tb_good_received_note_detail.id`; `tax_profile_id → tb_tax_profile.id`; FK `@relation` ที่ตั้งชื่อสามตัวไปยัง `tb_unit` — `tb_good_received_note_detail_item_order_unit_idTotb_unit` สำหรับ `order_unit_id`, `tb_good_received_note_detail_item_received_unit_idTotb_unit` สำหรับ `received_unit_id` และ `tb_good_received_note_detail_item_foc_unit_idTotb_unit` สำหรับ `foc_unit_id` back-relation: หลาย `tb_inventory_transaction_detail` (ผ่าน `good_received_note_detail_item_id` ของตารางนั้น, FK `inventory_transaction_detail_grn_detail_item_fkey`, index `inventorytransactiondetail_grndetailitemid_idx`) หมายเหตุ: `inventory_transaction_id` และ `purchase_order_detail_purchase_request_detail_id` ถูกเก็บเป็น UUID แต่ไม่มี Prisma `@relation` บน model นี้
+**Indexes:** ไม่ประกาศนอกเหนือจาก primary key (คอลัมน์ชั่วคราว `inventory_transaction_detail_id` + index ที่เพิ่มโดย `20260810160000` ถูกถอดออกอีกครั้งโดย `20260810180000`)
 
 ## 3. ความสัมพันธ์
 
@@ -202,23 +206,33 @@ tb_good_received_note_detail_item    (แถวเหตุการณ์รั
     │ FK reference
     ├──► tb_unit ×3                   (order_unit_id, received_unit_id, foc_unit_id — named relation)
     ├──► tb_tax_profile               (tax_profile_id)
-    └──  (inventory_transaction_id และ purchase_order_detail_purchase_request_detail_id
-          เก็บเป็น UUID แต่ไม่มี Prisma @relation — application resolve และ
-          ให้ link ฝั่ง inventory และ PR-traceback ตามลำดับ)
+    ├──  inventory_transaction_id     (UUID ของ HEADER การเคลื่อนไหว ไม่มี @relation —
+    │                                  ค่าเดียวกันบนทุกเหตุการณ์ของ GRN; ธง "posted")
+    └──  purchase_order_detail_purchase_request_detail_id
+                                      (UUID ไม่มี @relation — junction row PO↔PR ที่
+                                       received_qty / FOC-received ถูกเพิ่มตอน commit)
+    ▲
+    │ * good_received_note_detail_item_id   (@relation จริง ตั้งแต่ 2026-08-10)
+tb_inventory_transaction_detail      (หนึ่งแถว ledger ต่อเหตุการณ์ที่เคลื่อนสต๊อก —
+    │                                  current_lot_no, qty = received_base + foc_base,
+    │                                  cost_per_unit, total_cost)
+    └──1──*──► tb_inventory_transaction_cost_layer
+                                      (lot_no, lot_seq_no, in_qty, cost_per_unit,
+                                       total_cost, extra_cost_amount, average_cost_per_unit,
+                                       period_id → tb_inventory_period)
 
 tb_good_received_note (FK ระดับ header)
     ├──► tb_currency                  (currency_id จำเป็น)
     └──► tb_vendor                    (vendor_id optional)
 
-tb_good_received_note_detail ──1──*──► tb_inventory_transaction_detail
-    ทางอ้อมผ่าน tb_good_received_note_detail_item.inventory_transaction_id
-    inventory transaction คือที่เก็บอย่างเป็นทางการของ lot_no, expiry_date
-    และข้อมูล FIFO / average-cost layer — ฟิลด์เหล่านี้ไม่อยู่บน GRN
-    detail_item เอง
+tb_inventory_transaction (header: inventory_doc_type = good_received_note,
+    inventory_doc_no = tb_good_received_note.id; info JSON บรรจุ
+    { posted_at_save, po_receiving_applied } — good-received-note.ledger.ts:24-29)
 
 tb_purchase_order_detail ──1──*──► tb_good_received_note_detail
-    back-reference บรรทัด PO; received_qty ของบรรทัด PO เพิ่มขึ้นตอน commit GRN
-    ทำให้ PO เลื่อนจาก `sent` → `partial` → `completed`
+    back-reference บรรทัด PO; received_qty ของบรรทัด PO เพิ่มขึ้นตอน COMMIT GRN
+    (ไม่เคยตอน save) ทำให้ po_status เลื่อนไป `partial` หรือ `completed`
+    (จาก `approved` / `sent_or_print` / `partial`)
 ```
 
 หมายเหตุ:
@@ -227,17 +241,17 @@ tb_purchase_order_detail ──1──*──► tb_good_received_note_detail
 - **Detail → detail_item** เป็น 1-to-many บน `good_received_note_detail_id` (non-nullable บน item) นี่คือความแตกต่างเชิงโครงสร้างจาก PR / PO: GRN มีระดับ nesting พิเศษเพื่อรองรับการรับแบบแยก / lot ผสมบนบรรทัดที่สั่งเดียว
 - **Header → comment** และ **detail → comment** เป็น 1-to-many ทั้งคู่ ตาราง comment คือบันทึกถาวรของกิจกรรม workflow ส่วน JSON columns บน header (`workflow_history`, `user_action`) คือ cursor ในที่
 - **PO → GRN** เป็น 1-to-many ผ่าน `tb_good_received_note_detail.purchase_order_detail_id` (คอลัมน์ที่บรรจุ Prisma `@relation`) `purchase_order_id` ก็เก็บบนแถวด้วยแต่ denormalised — link อย่างเป็นทางการคือผ่าน `purchase_order_detail_id` ทั้งสองคอลัมน์เป็น nullable เพื่อรองรับ GRN แบบ manual (กำหนดโดย `doc_type = manual`)
-- **GRN → inventory** เข้าถึงผ่าน `tb_good_received_note_detail_item.inventory_transaction_id` ซึ่งไม่มี Prisma `@relation` แต่เป็นสะพานที่ application resolve เข้าสู่ `tb_inventory_transaction` และลูก **Lot number, expiry date และข้อมูล cost-layer อยู่บน inventory transaction ไม่ใช่บน GRN detail_item**
+- **GRN → inventory** เป็นสะพานสองทาง: `inventory_transaction_id` ของเหตุการณ์ระบุ header การเคลื่อนไหว (ไม่มี `@relation`) และแต่ละแถว ledger ระบุเหตุการณ์ต้นทางของตนผ่าน `tb_inventory_transaction_detail.good_received_note_detail_item_id` (`@relation` จริง) ให้อ่าน lot จากฝั่ง ledger (`GET …/good-received-notes/:id/stock-movements`, `service.ts:2082`) ไม่ใช่โดยการจับคู่ปริมาณ **หมายเลข lot และข้อมูล cost-layer อยู่บน ledger; วันหมดอายุอยู่บนเหตุการณ์ GRN (`expired_at`)**
 - **GRN ↔ PR traceback** เดินผ่าน `tb_good_received_note_detail_item.purchase_order_detail_purchase_request_detail_id` ซึ่งเป็น UUID reference (ไม่มี `@relation`) ไปยังสะพาน PO↔PR — ปิดวงจร procure-to-pay จาก PR ต้นทางไปยัง inventory landing
 - การประกาศ FK `@relation` ที่ชัดเจนทั้งหมดใช้ `onDelete: NoAction, onUpdate: NoAction` ดังนั้น referential integrity ถูกรักษาโดย soft-delete (`deleted_at`) ระดับ application แทนที่จะเป็น cascade
 
 ## 4. Enum
 
 - **`enum_good_received_note_status`**: enum สถานะเอกสารสำหรับ `tb_good_received_note.doc_status` Default `draft` มีสี่ค่า:
-  - `draft` — สถานะเริ่มต้นที่แก้ไขได้; พนักงานรับของยังกรอกข้อมูล qty / lot อยู่; ไม่กระทบสต๊อกหรือ GL
-  - `saved` — กรอกบรรทัดเสร็จและบันทึกเอกสารเพื่อ review (เช่นโดย Inventory Manager หรือ Finance) แต่ยังไม่ commit; ยังแก้ไขได้ ยังไม่กระทบสต๊อกหรือ GL
-  - `committed` — เหตุการณ์ posting เดียวเกิดขึ้นแล้ว: inventory on-hand เพิ่ม FIFO / average-cost layer อัปเดต journal entry เขียน `received_qty` ของบรรทัด PO ต้นทางเลื่อน เอกสารถูกล็อก; การแก้ไขต้องใช้ `tb_credit_note` กับ GRN นี้หรือการปรับชดเชยใน [inventory-adjustment](/th/inventory/inventory-adjustment)
-  - `voided` — GRN ถูก void ก่อน commit; การรับถูกยกเลิกโดยไม่กระทบ inventory หรือ GL
+  - `draft` — สถานะเริ่มต้นที่แก้ไขได้ (placeholder `grn_no = draft-{seq}`); พนักงานรับของยังกรอกข้อมูลอยู่; ไม่กระทบสต๊อก PO หรือ GL เฉพาะ `draft` เท่านั้นที่รับการเพิ่ม/แก้/ลบ detail และ soft-delete
+  - `saved` — ผ่าน checklist ของการ save แล้ว ออกเลข `grn_no` จริง ประทับ `received_by_*` แล้ว **BU แบบ FIFO:** ยังไม่กระทบสต๊อก **BU แบบ average:** การเคลื่อนไหวสต๊อกอยู่ใน ledger แล้ว (`posted_at_save = true`) แต่ PO ยังไม่ถูกแตะ read-only บน UI; การ `PATCH` GRN สถานะ `saved` บน BU แบบ average จะ void และโพสต์การเคลื่อนไหวใหม่เมื่อปริมาณ/ต้นทุนเปลี่ยน
+  - `committed` — เหตุการณ์ posting เกิดขึ้นแล้ว (`commit()` หรือ `approve()` → `postReceipt()`): inventory on-hand เพิ่ม (ถ้ายังไม่ได้เพิ่มตอน save) FIFO / average cost layer ถูกเขียน junction PO↔PR และ `tb_purchase_order_detail.received_qty` เลื่อน `po_status` คำนวณใหม่ **ไม่มีการเขียน journal entry** (โมดูล GL ไม่เคยถูกเรียก) ล็อก; void ไม่ได้ (`GRN_COMMITTED_NOT_VOIDABLE`); การแก้ไขต้องใช้ `tb_credit_note` กับ GRN นี้หรือการปรับชดเชยใน [inventory-adjustment](/th/inventory/inventory-adjustment)
+  - `voided` — เข้าถึงจาก `draft` หรือ `saved` ผ่าน `DELETE …/void` หรือ `POST …/reject` หากการเคลื่อนไหวถูกโพสต์ไปแล้วตอน save `voidGrnLedger()` จะ soft-delete มัน ล้าง `inventory_transaction_id` และประทับ average ของสินค้าใหม่ (`ledger.ts:298-377`); จะปฏิเสธด้วย `GRN_RECEIPT_ALREADY_CONSUMED` (409) หาก lot ที่รับเข้ามาถูกเบิกไปแล้ว
 - **`enum_good_received_note_type`**: โหมดการสร้าง GRN สำหรับ `tb_good_received_note.doc_type` Default `purchase_order` มีสองค่า:
   - `purchase_order` — มาจาก PO (เส้นทางมาตรฐาน) แถว detail บรรจุ `purchase_order_detail_id` การ validate qty รันกับ `order_qty − received_qty − cancelled_qty` ที่เหลือบนบรรทัด PO
   - `manual` — GRN แบบ manual ที่ไม่มี PO ต้นทาง `purchase_order_id` และ `purchase_order_detail_id` ของแถว detail เป็น null และผู้ใช้ป้อน vendor / product / qty / price โดยตรง
@@ -253,7 +267,7 @@ tb_purchase_order_detail ──1──*──► tb_good_received_note_detail
 |---|------|------------------|------------|--------|
 | 1 | ค่าสถานะ GRN | Technical Spec: `enum GRNStatus { DRAFT, PENDING_APPROVAL, APPROVED, REJECTED, CANCELLED }` PRD §5.1: model 3 สถานะ `Received` / `Draft` → `Committed` → `Voided` | `enum_good_received_note_status { draft, saved, committed, voided }` — เพิ่มสถานะกลาง `saved` (review-ready) ระหว่าง `draft` และ `committed`; ไม่มี `pending_approval`, `approved`, `rejected` หรือ `cancelled` | ถือ Prisma เป็นทางการ enum ของ Technical Spec มาจากรอบ modelling เก่าและควร deprecate; model 3 สถานะของ PRD แมพใกล้เคียงแต่ขาด `saved` อัปเดตทั้งสอง |
 | 2 | ฟิลด์ header ที่ไม่อยู่ใน Prisma | Technical Spec `GoodsReceivedNote` รวม `departmentId`, `locationId`, `referenceNumber`, `subtotal`, `discountAmount`, `taxAmount`, `extraCostsTotal`, `total`, `approvedBy`, `approvedAt` บน header | `tb_good_received_note` **ไม่มี** `department_id` หรือ `location_id` ใน header (location อยู่ต่อบรรทัดบน detail) **ไม่มี** `reference_number` (มีเพียง `grn_no` และ `invoice_no`) และโครงสร้างยอดรวมต่างไป (`net_amount`, `base_net_amount`, `total_amount`, `base_total_amount` — ไม่มี `subtotal`, `discount_amount`, `tax_amount` หรือ `extra_costs_total` ระดับ header — เหล่านี้ roll up จากตาราง line / extra-cost ตอนอ่าน) ไม่มี `approved_by` / `approved_at` — ข้อมูลอนุมัติอยู่ใน workflow JSON และ `last_action_*` | จัดแนว carmen/docs `GoodsReceivedNote` interface ให้ตรงกับชื่อคอลัมน์ Prisma เอกสารว่า location ของ header *ไม่* ถูก model (location ต่อบรรทัด) และ approval อยู่ใน snapshot workflow |
-| 3 | ตำแหน่ง lot / expiry / serial | PRD §3.5 และ Technical Spec `GRNItem` อ้างว่า `lotNumber`, `expiryDate`, `manufacturingDate` เป็นฟิลด์ **บนบรรทัด GRN** | `tb_good_received_note_detail` และ `tb_good_received_note_detail_item` **ไม่มี** คอลัมน์ `lot_no`, `expiry_date`, `manufacturing_date` หรือ `serial_no` ข้อมูล lot และ expiry อยู่บน `tb_inventory_transaction_detail.from_lot_no` / `current_lot_no` (และ `tb_inventory_transaction_cost_layer.lot_no`) ถึงผ่าน `tb_good_received_note_detail_item.inventory_transaction_id` | อัปเดต carmen/docs ให้บรรยาย lot/expiry เป็นฟิลด์ฝั่ง inventory-transaction ที่ปรากฏ **ผ่าน** link GRN detail_item ไม่ใช่เก็บบนแถว GRN เอง GRN detail_item คือ cursor เหตุการณ์รับ; inventory transaction คือ lot store |
+| 3 | ตำแหน่ง lot / expiry / serial | PRD §3.5 และ Technical Spec `GRNItem` อ้างว่า `lotNumber`, `expiryDate`, `manufacturingDate` เป็นฟิลด์ **บนบรรทัด GRN** | **อัปเดต 2026-09-22:** ตอนนี้มี `tb_good_received_note_detail_item.expired_at` แล้ว (`20260731120000`) ดังนั้น expiry **ถูก** เก็บบนเหตุการณ์รับ ส่วน `lot_no`, `manufacturing_date` และ `serial_no` ยังไม่มีบนตาราง GRN ใดเลย — lot ถูกสร้างตอนโพสต์ (`<location_code><YYMM><run>`) บน `tb_inventory_transaction_detail.current_lot_no` / `tb_inventory_transaction_cost_layer.lot_no` และแถว ledger ชี้กลับมายังเหตุการณ์ผ่าน `good_received_note_detail_item_id` | อัปเดต carmen/docs: expiry อยู่บน GRN item, lot อยู่บน ledger, ไม่มีฟิลด์ manufacturing/serial และทิศทาง link คือ ledger → GRN event |
 | 4 | สถานะระดับ item บนบรรทัด | Technical Spec `GRNItem` รวม `status: GRNItemStatus { RECEIVED, REJECTED, PARTIALLY_REJECTED }` และ `rejectedQuantity`, `rejectionReason` | `tb_good_received_note_detail` และ `tb_good_received_note_detail_item` ไม่มี enum สถานะต่อบรรทัด ไม่มี `rejected_qty` และไม่มีคอลัมน์ `rejection_reason` การยอมรับ/ปฏิเสธ model โดยเขียนเหตุการณ์ qty ปฏิเสธเป็นแถว `detail_item` เพิ่มเติมหรือเป็นรายการ `_comment` ระดับบรรทัด ไม่มี enum first-class | ทิ้ง enum `GRNItemStatus` จาก carmen/docs หรือเอกสารว่ามันเป็นฟิลด์ derived ระดับ application ไม่ใช่คอลัมน์ schema |
 | 5 | การ model extra-cost allocation | Technical Spec กำหนด `GRNExtraCost` และ `GRNExtraCostAllocation` เป็นเอนทิตีที่ GRN เป็นเจ้าของ พร้อม `allocationMethod: AllocationMethod { MANUAL, BY_VALUE, BY_QUANTITY, BY_WEIGHT, BY_VOLUME }` | Prisma มี model `tb_extra_cost` แยกต่างหากพร้อม `allocate_extra_cost_type: enum_allocate_extra_cost_type { manual, by_value, by_qty }` — และมีเพียง 3 โหมด allocation (`manual`, `by_value`, `by_qty`); ไม่มี `by_weight` หรือ `by_volume` **ไม่มี** ตารางสะพาน `tb_extra_cost_allocation` — allocation ถูกคำนวณและเขียนลงใน snapshot การเงินต่อ item ไม่ persist เป็นแถวแยก model ใช้ร่วมกัน (ไม่ใช่ GRN เป็นเจ้าของ); GRN back-reference ผ่าน `tb_extra_cost.good_received_note_id` | อัปเดต carmen/docs ให้ (a) ทิ้ง `BY_WEIGHT` / `BY_VOLUME` จาก enum allocation, (b) บรรยาย `tb_extra_cost` เป็น model ใช้ร่วมกันที่ GRN แนบ ไม่ใช่ลูก GRN, และ (c) ทิ้งการอ้าง entity `GRNExtraCostAllocation` แยกต่างหาก |
 | 6 | ชื่อคอลัมน์ reference number | Technical Spec: `grnNumber` PRD: "GRN Reference Number" | `tb_good_received_note.grn_no` (nullable ไม่มี length cap) | เปลี่ยนชื่อใน data dictionary ของ carmen/docs; flag ว่าคอลัมน์เป็น nullable บน draft GRN และ uniqueness บังคับใช้ร่วมกับ `deleted_at` (`@@unique([grn_no, deleted_at])`) |
@@ -261,6 +275,9 @@ tb_purchase_order_detail ──1──*──► tb_good_received_note_detail
 | 8 | Delivery point บน header | PRD §3.4.1 list "Delivery Point" ใน header GRN | `tb_good_received_note` **ไม่มี** คอลัมน์ `delivery_point_id` บริบทการส่งถูกจับโดยปริยายผ่าน `location_id` ต่อบรรทัดและผ่าน snapshot delivery-point ของ PO ต้นทางถึงผ่าน `tb_purchase_order_detail_tb_purchase_request_detail.delivery_point_*` | ทิ้ง "Delivery Point" จาก data dictionary ของ header GRN; เอกสารว่าบริบทการส่งเป็นต่อบรรทัดผ่าน `location_id` (และสืบย้อนได้ผ่าน PR-bridge snapshot) |
 | 9 | Department บน header | Technical Spec `GoodsReceivedNote.departmentId` (จำเป็น) | ไม่มีคอลัมน์ `department_id` บน `tb_good_received_note` ข้อมูล department / cost-centre อยู่ใน JSON `dimension` array (array ของ object cost-dimension) | ทิ้ง `departmentId` จาก data dictionary ของ header carmen/docs; เอกสารว่า cost-centre / department อยู่ใน `dimension` JSON ต่อแถว ซึ่งเป็น tenant-extensible cost-dimension contract |
 | 10 | flag `is_consignment` / `is_cash` → enum `post_type` | PRD §3.4.1 list "Consignment checkbox" และ "Cash checkbox" บน header แต่ไม่รวมใน `GoodsReceivedNote` Technical Spec interface เวอร์ชันก่อนหน้าของหน้านี้ (จนถึง 2026-06-09) ก็เอกสาร boolean สองตัวของ Prisma คือ `is_consignment` / `is_cash` | **แก้ไขในรอบนี้ (2026-07-15):** boolean ทั้งสองไม่มีอยู่บน model `tb_good_received_note` ปัจจุบัน header มีเพียงฟิลด์ `post_type enum_good_received_note_post_type? @default(ap)` เดียวที่มีสามค่า (`ap`, `consignment`, `cash`) ไม่พบ logic แยกเงื่อนไขตาม `post_type` ที่ใดใน backend — ดูเหมือนจะไม่กดผลกระทบต่อภาระ AP หรือสต๊อกที่กิจการเป็นเจ้าของใน implementation ปัจจุบัน | อัปเดต carmen/docs `GoodsReceivedNote` interface ให้เป็นฟิลด์ `post_type` เดียวพร้อมสามค่า enum; ตัดความหมาย "กดผลกระทบ AP/สต๊อก" ออกจนกว่าจะพบ code path ที่ตรงกัน |
+| 11 | timestamp การรับ | Technical Spec `GoodsReceivedNote.receivedDate` + `receivedAt`; เวอร์ชันก่อนหน้าของหน้านี้เอกสารทั้ง `grn_date` (nullable) และ `received_at` | **`received_at` ถูกลบแล้ว** (`20260907153500_drop_grn_received_at`); `grn_date` เป็นวันที่รับเพียงตัวเดียวและเป็น `NOT NULL` | ตัด `receivedAt` ออกจาก carmen/docs; เอกสาร `grn_date` เป็นฟิลด์บังคับและเป็นวันที่ใช้ resolve งวด |
+| 12 | ราคาที่สั่งเทียบราคาที่รับบนเหตุการณ์ | Technical Spec `GRNItem.unitPrice` (ราคาเดียว) | สองราคา: `order_price` (จากบรรทัด PO, `NULL` เมื่อไม่มี PO) และ `received_price` (ที่รับจริง; แหล่งของ `sub_total_price`) การตรวจสอบ price deviation เทียบทั้งสองต่อหน่วยฐานกับ `tb_product.price_deviation_limit` (`good-received-note.deviation.ts:98-116`) | เอกสารทั้งสองคอลัมน์และกฎ deviation ใน carmen/docs |
+| 13 | การเก็บผลการจัดสรร extra cost | Technical Spec แถว `GRNExtraCostAllocation` ต่อบรรทัด | ยังไม่มีตารางการจัดสรรต่อบรรทัด แต่การจัดสรรตอนนี้ **คำนวณตอนโพสต์** (`allocateExtraCost`, `good-received-note.extra-cost.ts`) และเก็บถาวร **บน cost layer** เป็น `tb_inventory_transaction_cost_layer.extra_cost_amount` (`20260910130000_add_cost_layer_extra_cost`) — เขียนครั้งเดียว ไม่แก้ไข | แทนที่ข้ออ้างเรื่องตารางการจัดสรรด้วยคอลัมน์บน cost layer |
 
 ## 6. แหล่งอ้างอิง
 
@@ -269,4 +286,4 @@ tb_purchase_order_detail ──1──*──► tb_good_received_note_detail
   - `../carmen/docs/good-recive-note-managment/GRN-Technical-Specification.md` — TypeScript interface model และกฎการคำนวณ; ความแตกต่างในส่วน 5 (รายการ 1, 2, 4, 5, 9)
   - `../carmen/docs/good-recive-note-managment/grn-master-prd.md` — PRD พร้อม list ฟิลด์ header, พฤติกรรม FOC และ prose วงจรชีวิต 3 สถานะ; ความแตกต่างในส่วน 5 (รายการ 1, 3, 6, 7, 8, 10)
 - **Sibling reference:** [01-data-model.md](../purchase-order/01-data-model.md) (purchase-order) — บรรยายฝั่ง PO ของ linkage PO→GRN; อย่าทำซ้ำเนื้อหานี้ที่นี่
-- โมดูลที่เกี่ยวข้อง: [purchase-order](/th/inventory/purchase-order) (ต้นทางผ่าน `purchase_order_detail_id`), [purchase-request](/th/inventory/purchase-request) (จุดเริ่ม ถึงผ่าน PO↔PR bridge id เก็บบน detail_item), [inventory](/th/inventory/inventory) (ปลายทาง — inventory transaction คือที่ที่ข้อมูล lot, expiry และ cost-layer อยู่), [costing](/th/inventory/costing) (การสร้าง FIFO / average-cost layer ตอน commit), [inventory-adjustment](/th/inventory/inventory-adjustment) (การแก้ไขหลัง commit), [vendor-pricelist](/th/inventory/vendor-pricelist) (การตรวจสอบ price-variance กับราคา GRN ต่อหน่วย), [product](/th/inventory/product) (reference สินค้าต่อบรรทัด)
+- โมดูลที่เกี่ยวข้อง: [purchase-order](/th/inventory/purchase-order) (ต้นทางผ่าน `purchase_order_detail_id`), [purchase-request](/th/inventory/purchase-request) (จุดเริ่ม ถึงผ่าน PO↔PR bridge id เก็บบน detail_item), [inventory](/th/inventory/inventory) (ปลายทาง — inventory transaction คือที่ที่ข้อมูล lot และ cost-layer อยู่), [costing](/th/inventory/costing) (การสร้าง FIFO / average-cost layer ตอน commit หรือตอน save บน BU แบบ average; `extra_cost_amount` บน layer), [inventory-adjustment](/th/inventory/inventory-adjustment) (การแก้ไขหลัง commit), [product](/th/inventory/product) (reference สินค้าต่อบรรทัด; `price_deviation_limit` / `qty_deviation_limit` ป้อนการตรวจสอบ deviation ตอน save — ไม่มีการตรวจสอบอิง pricelist)

@@ -1,8 +1,8 @@
 ---
 title: ไลเซนส์ — โมเดลข้อมูล (Data Model)
-description: tb_cluster_license กับ view ใบที่ชนะของมัน, tb_business_unit_license กับ view ผลรวมของมัน, join ของ feature-group ใน tb_subscription, และเกณฑ์ใกล้หมดอายุที่ตั้งค่าได้สามค่า
+description: บัญชี BU-quota, ที่นั่ง, interface (INF) และ subscription พร้อม view และกติกาการนับ, enum kind ของกลุ่ม, และเกณฑ์ใกล้หมดอายุที่ตั้งค่าได้สี่ค่า
 published: true
-date: '2026-09-06T09:00:00.000Z'
+date: '2026-09-23T01:30:00.000Z'
 tags: book/platform, licenses, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -11,19 +11,19 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # ไลเซนส์ — โมเดลข้อมูล (Data Model)
 
 > **At a Glance**
-> **บัญชีซื้อ:** `tb_cluster_license` (BU quota, ระดับ cluster, ยกเลิกได้) &nbsp;·&nbsp; `tb_business_unit_license` (seats, ระดับ BU, ยกเลิกไม่ได้) &nbsp;·&nbsp; **สัญญา:** `tb_subscription` (หนึ่งแถวต่อคู่ cluster+BU) → `tb_subscription_bu` → `tb_subscription_bu_group` (feature-group entitlement แทนที่ทั้งชุดทุกครั้งที่บันทึก) &nbsp;·&nbsp; **View:** `v_cluster_bu_cap` (หนึ่งแถวต่อ **cluster** — เพดานของใบที่ชนะ) กับ `v_cluster_bu_quota` (หนึ่งแถวต่อ **business unit** — อันดับ + เพดานที่ยืมมาจาก view แรก) เป็นสอง grain ที่ตอบคนละคำถาม อย่าเอามาปนกัน &nbsp;·&nbsp; `v_business_unit_seat` (หนึ่งแถวต่อ BU — ผลรวม ไม่ใช่ใบชนะใบเดียว) &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` บนทั้งสามตารางบัญชี/สัญญา ล็อกแบบ optimistic ทุกการเขียน &nbsp;·&nbsp; **เกณฑ์ใกล้หมดอายุ:** จำนวนวันตั้งค่าได้อิสระสามค่า (`subscription_days`, `bu_quota_days`, `seat_days`) ค่าเริ่มต้น 30 ทั้งหมด แก้ได้จาก Platform Config อ่านได้โดยไม่ต้องมีสิทธิ์
+> **บัญชีซื้อ:** `tb_cluster_license` (BU quota, ระดับ cluster, ยกเลิกได้) &nbsp;·&nbsp; `tb_business_unit_license` (seats, ระดับ BU, ยกเลิกไม่ได้) &nbsp;·&nbsp; `tb_business_unit_interface_license` (interface/INF, ระดับ BU, feature group `kind = 'interface'` หนึ่งกลุ่มต่อแถว, ยกเลิกไม่ได้ — ตั้งแต่ migration `20260910010000`) &nbsp;·&nbsp; **สัญญา:** `tb_subscription` (หนึ่งแถวต่อคู่ cluster+BU) → `tb_subscription_bu` → `tb_subscription_bu_group` (feature-group entitlement แทนที่ทั้งชุดทุกครั้งที่บันทึก) &nbsp;·&nbsp; **View:** `v_cluster_bu_cap` (หนึ่งแถวต่อ **cluster** — เพดานของใบที่ชนะ) กับ `v_cluster_bu_quota` (หนึ่งแถวต่อ **business unit** — อันดับ + เพดานที่ยืมมาจาก view แรก) เป็นสอง grain ที่ตอบคนละคำถาม อย่าเอามาปนกัน &nbsp;·&nbsp; `v_business_unit_seat` (หนึ่งแถวต่อ BU — ผลรวม ไม่ใช่ใบชนะใบเดียว) &nbsp;·&nbsp; **ไม่มี view สำหรับ INF licence** — `state`/`in_force`/`contract_state` ของมันคำนวณต่อ request โดย service ไม่เคยเก็บและไม่เคยให้ client derive &nbsp;·&nbsp; **Kind ของกลุ่ม:** `tb_license_feature_group.kind` (`standard` | `interface`) ตั้งได้ตอนสร้างเท่านั้น; กลุ่ม `interface` ผูกกับ INF licence เท่านั้น กลุ่ม `standard` ผูกกับ subscription เท่านั้น (400 ไม่ว่าทางไหน) &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` บนทั้งสี่ตารางบัญชี/สัญญา ล็อกแบบ optimistic ทุกการเขียน &nbsp;·&nbsp; **เกณฑ์ใกล้หมดอายุ:** จำนวนวันตั้งค่าได้อิสระสี่ค่า (`subscription_days`, `bu_quota_days`, `seat_days`, `interface_days`) ค่าเริ่มต้น 30 ทั้งหมด แก้ได้จาก Platform Config อ่านได้โดยไม่ต้องมีสิทธิ์
 
 > **แหล่งความจริง:** Prisma schema ฝั่ง backend platform และ migration SQL ที่เขียนด้วยมือ อ่านไฟล์เหล่านี้ก่อนเสมอเมื่อจะเขียนหรืออัปเดตหน้านี้:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260822000000_add_cluster_license/migration.sql`, `20260824000000_add_cap_end_date_to_view/migration.sql`, `20260901020000_cluster_license_cancel/migration.sql`, `20260819000000_bu_user_license/migration.sql`, `20260821130000_subscription_one_bu/migration.sql`
+> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260822000000_add_cluster_license/migration.sql`, `20260824000000_add_cap_end_date_to_view/migration.sql`, `20260901020000_cluster_license_cancel/migration.sql`, `20260819000000_bu_user_license/migration.sql`, `20260821130000_subscription_one_bu/migration.sql`, `20260910000000_license_feature_group_kind/migration.sql`, `20260910010000_business_unit_interface_license/migration.sql`, `20260910020000_migrate_interface_groups_to_inf_license/migration.sql`
 >
-> ไฟล์ `generated/client/schema.prisma` เป็นสำเนาที่ generate อัตโนมัติ ไม่ใช่แหล่งความจริง ตรวจสอบแล้วกับ `carmen-turborepo-backend-v2` HEAD `50cce6953` (2026-09-06) และ `carmen-platform` HEAD `157a65e` (2026-09-04)
+> ไฟล์ `generated/client/schema.prisma` เป็นสำเนาที่ generate อัตโนมัติ ไม่ใช่แหล่งความจริง ตรวจสอบแล้วกับ `carmen-turborepo-backend-v2` HEAD `ef4d6f08f` (2026-09-22) และ `carmen-platform` HEAD `f1c69f1` (2026-09-22)
 
 ## 1. ภาพรวม
 
-สามประเภทการซื้อ สามตาราง ไม่มีตารางแม่ร่วมกัน `tb_cluster_license` คือสิทธิ์ที่ cluster ซื้อไว้ในการสร้าง business unit ได้สูงสุด N หน่วยในช่วงวันที่หนึ่ง — เป็นบัญชีการซื้อล้วน ๆ "แถวไหนชนะตอนนี้" เป็นคำถามที่ฐานข้อมูลตอบด้วย view (§3) ไม่ใช่คอลัมน์บนตาราง `tb_business_unit_license` เป็นรูปแบบเดียวกันลงมาอีกชั้น: สิทธิ์ที่ business unit ซื้อไว้ในการเติมที่นั่งผู้ใช้ได้สูงสุด N ที่ในช่วงวันที่หนึ่ง แต่นับด้วยการ **บวกรวม** ทุกแถวที่ active อยู่ตอนนี้ แทนที่จะเลือกใบชนะใบเดียว (§3.2) — การซื้อที่นั่งสองก้อนพร้อมกันคือความจุที่บวกกันจริง ต่างจาก BU quota ที่การซื้อครั้งที่สองแทนที่ผลของครั้งแรกแทนที่จะบวกเพิ่ม `tb_subscription` เป็นเรคคอร์ดคนละแบบไปเลย: ไม่ใช่บัญชีความจุ แต่เป็นสัญญาเชิงพาณิชย์ระหว่าง cluster กับ business unit หนึ่งหน่วยที่เจาะจง จุดประสงค์เดียวในสคีมานี้คือผูกว่า **feature group** ไหน (นิยามโดย [License Catalog](/th/platform/license-catalog)) ที่สัญญาของ BU นั้นให้สิทธิ์ใช้
+สี่ประเภทการซื้อ สี่ตาราง ไม่มีตารางแม่ร่วมกัน `tb_cluster_license` คือสิทธิ์ที่ cluster ซื้อไว้ในการสร้าง business unit ได้สูงสุด N หน่วยในช่วงวันที่หนึ่ง — เป็นบัญชีการซื้อล้วน ๆ "แถวไหนชนะตอนนี้" เป็นคำถามที่ฐานข้อมูลตอบด้วย view (§3) ไม่ใช่คอลัมน์บนตาราง `tb_business_unit_license` เป็นรูปแบบเดียวกันลงมาอีกชั้น: สิทธิ์ที่ business unit ซื้อไว้ในการเติมที่นั่งผู้ใช้ได้สูงสุด N ที่ในช่วงวันที่หนึ่ง แต่นับด้วยการ **บวกรวม** ทุกแถวที่ active อยู่ตอนนี้ แทนที่จะเลือกใบชนะใบเดียว (§3.2) — การซื้อที่นั่งสองก้อนพร้อมกันคือความจุที่บวกกันจริง ต่างจาก BU quota ที่การซื้อครั้งที่สองแทนที่ผลของครั้งแรกแทนที่จะบวกเพิ่ม `tb_business_unit_interface_license` (2026-09-10) เป็นรูปแบบที่สี่และ**กติกาการนับแบบที่สาม**: สิทธิ์ที่ business unit ซื้อไว้ในการใช้ interface feature group หนึ่งกลุ่ม (`interface.pos.micros`, `interface.accounting.carmen_gl`, …) ในช่วงวันที่หนึ่ง โดยสิทธิ์เปิดอยู่ถ้าแถว*ใดแถวหนึ่ง*ของกลุ่มนั้นครอบคลุม `now` — เป็น union ของช่วงความคุ้มครอง ไม่ใช่ผลรวมแบบที่นั่ง และไม่ใช่ใบชนะใบเดียวแบบ BU quota — **และ** subscription หลักของ BU เป็น `active` (§2.4) `tb_subscription` เป็นเรคคอร์ดคนละแบบไปเลย: ไม่ใช่บัญชีความจุ แต่เป็นสัญญาเชิงพาณิชย์ระหว่าง cluster กับ business unit หนึ่งหน่วยที่เจาะจง จุดประสงค์เดียวในสคีมานี้คือผูกว่า **feature group ชนิด `standard`** ไหน (นิยามโดย [License Catalog](/th/platform/license-catalog)) ที่สัญญาของ BU นั้นให้สิทธิ์ใช้
 
-ทั้งสามตารางบัญชี/สัญญาพก audit trio, soft delete และตัวนับ `doc_version` แบบ optimistic-concurrency ที่บังคับใช้ทุกครั้งที่เขียน (`PATCH`/`PUT`/endpoint cancel ทุกตัวต้องส่งค่านี้มา และตอบ 409 ถ้าค่าเก่าไปแล้ว)
+ทั้งสี่ตารางบัญชี/สัญญาพก audit trio, soft delete และตัวนับ `doc_version` แบบ optimistic-concurrency ที่บังคับใช้ทุกครั้งที่เขียน (`PATCH`/`PUT`/endpoint cancel ทุกตัวต้องส่งค่านี้มา และตอบ 409 ถ้าค่าเก่าไปแล้ว)
 
 ## 2. เอนทิตี
 
@@ -78,7 +78,37 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 นับตั้งแต่ migration `20260821130000_subscription_one_bu` สัญญาหนึ่งผูกกับ business unit **เพียงหน่วยเดียว** ผ่าน `tb_subscription_bu` (schema บรรทัด 1257: `subscription_id`, `business_unit_id`, `doc_version`, audit trio, soft delete; `@@unique([subscription_id, business_unit_id, deleted_at])`) — แก้ BU หลังสร้างไม่ได้ (ฟิลด์ `business_unit_id` ของ `SubscriptionForm` แก้ไขได้เฉพาะตอนฟอร์มสร้างเท่านั้น) ลูกของแถว join นั้น คือ `tb_subscription_bu_group` (schema บรรทัด 1336: `subscription_bu_id`, `group_id → tb_license_feature_group.id`, doc_version, audit trio, soft delete; `@@unique([subscription_bu_id, group_id, deleted_at])`) คือที่ที่ feature-group entitlement จริง ๆ อยู่ — นี่คือสิ่งที่ `PUT /subscriptions/:id/groups` แทนที่ทั้งชุดทุกครั้งที่บันทึก schema generation รุ่นก่อนหน้าเคยผูก subscription เข้ากับ feature รายตัวโดยตรงแทน (ถูกถอดโดย `20260901000000_drop_subscription_bu_feature`) ตารางนั้นไม่มีอยู่แล้ว และ UI ของโมดูลนี้ก็ไม่มีตัวเลือกรายฟีเจอร์แบบนั้นอีกต่อไป (§3.2 ของ [หน้าลงจอด](/th/platform/licenses))
 
-`tb_license_feature_group` (schema บรรทัด 1284: `code`, `name`, `description`, `sort_order`, `is_active`, doc_version, audit trio, soft delete) และ `tb_license_feature` (schema บรรทัด 1214) เป็นของและเอกสารอยู่ที่ [License Catalog](/th/platform/license-catalog) — หน้านี้ระบุไว้แค่เพื่อให้เห็นว่า `tb_subscription_bu_group.group_id` ชี้ไปที่อะไร
+`tb_license_feature_group` (schema บรรทัด 1284: `code`, `name`, `description`, `sort_order`, `is_active`, **`kind`** (บรรทัด 1308, `enum_license_feature_group_kind`, default `standard`), doc_version, audit trio, soft delete) และ `tb_license_feature` (schema บรรทัด 1214) เป็นของและเอกสารอยู่ที่ [License Catalog](/th/platform/license-catalog) — หน้านี้ระบุไว้แค่เพื่อให้เห็นว่า `tb_subscription_bu_group.group_id` ชี้ไปที่อะไร **เฉพาะกลุ่ม `kind = 'standard'` เท่านั้นที่ผูกกับ subscription ได้** ตั้งแต่ migration `20260910000000`: backend ตอบ 400 กับ `PUT .../groups` ที่ระบุกลุ่ม `interface` และ data migration `20260910020000` ย้ายทุกกลุ่ม `interface` ที่ห้อยอยู่กับ subscription เมื่อ 2026-09-10 ไปเป็นแถว INF licence ของตัวเอง (§2.4) ก่อน soft-delete ลิงก์ `tb_subscription_bu_group`
+
+### 2.4 `tb_business_unit_interface_license` — บัญชี interface (INF) licence
+
+เพิ่มโดย `20260910010000_business_unit_interface_license` (schema บรรทัด 1149) เป็นรูปแบบ licence ที่สี่ ตั้งใจให้เป็นพี่น้องของ `tb_business_unit_license` ไม่ใช่คอลัมน์ `type` บน `tb_subscription` — สเปกการออกแบบ (`../carmen-platform/docs/superpowers/specs/2026-09-09-interface-license-split-design.md` §2) ปฏิเสธคอลัมน์เพราะทุก query ของ subscription, summary และ partial unique index หนึ่ง-BU-หนึ่ง-สัญญา ต่างต้องมี `WHERE type = 'contract'` ที่จุดเรียกใดจุดหนึ่งที่ลืมอาจละไปเงียบ ๆ
+
+| ฟิลด์ | ชนิด Prisma | Nullable | คำอธิบาย |
+| ----- | ----------- | -------- | ----------- |
+| `id` | `String @db.Uuid` | ไม่ | Primary key |
+| `license_number` | `String @db.VarChar` | ไม่ | server ออกให้เป็น `INF-YYMM-####` ผ่าน `nextLicenseNumber('INF', …)` — ตัวนับตระกูลเดียวกับ SEAT/BUQ/SUB ซึ่งนับแถวที่ soft-delete ด้วย เลขที่ออกแล้วจึงไม่ถูกใช้ซ้ำ (อาจไปโผล่บนใบเสร็จ) unique ในหมู่แถวที่ยังอยู่ผ่าน partial index แบบ SQL-only `bu_interface_license_number_global_u` |
+| `business_unit_id` | `String @db.Uuid` | ไม่ | FK ไป `tb_business_unit.id` — เจ้าของคือ BU เหมือนที่นั่ง |
+| `license_feature_group_id` | `String @db.Uuid` | ไม่ | FK ไป `tb_license_feature_group.id`; service บังคับว่ากลุ่มต้องมีอยู่ ไม่ถูกลบ และเป็น `kind = 'interface'` — กลุ่ม `standard` ถูกปฏิเสธด้วย 400 ไม่ใช่กรองออก |
+| `start_date` / `end_date` | `DateTime @db.Timestamptz(6)` | ไม่ | ช่วงความคุ้มครอง; `CHECK (end_date > start_date)` (`bu_interface_license_dates_chk`) SPA เสนอสวิตช์ "ไม่มีวันหมดอายุ" ให้ประเภทนี้ (`INTERFACE_CONFIG.showNoExpiry: true` เขียน sentinel `2099-12-31`) — สเปกเคยตัดออก เจ้าของกลับคำเมื่อ 2026-09-09 |
+| `reference_no` | `String? @db.VarChar` | ใช่ | เลขอ้างอิงใบเสร็จแบบข้อความอิสระ |
+| `note` | `String?` | ใช่ | ข้อความอิสระ; แถวที่ data migration เมื่อ 2026-09-10 สร้างจะพก `migrated from SUB-… (sbg <uuid>)` และ marker `(sbg <uuid>)` นั้นคือ idempotency key ของ migration |
+| `doc_version` | `Int` | ไม่ | ค่าเริ่มต้น `0` |
+| audit trio + soft delete | — | ใช่ | มาตรฐาน |
+
+**Constraint:** `CHECK (end_date > start_date)`, FK `business_unit_id → tb_business_unit.id`, FK `license_feature_group_id → tb_license_feature_group.id` (ทั้งคู่ `NoAction`) **Index:** `(business_unit_id, deleted_at)`, `(license_feature_group_id, deleted_at)`, `(end_date)` **ตั้งใจไม่มี unique index บน `(business_unit_id, license_feature_group_id)`** — การต่ออายุ interface คือการออกแถวใหม่ แถวเก่ายังอยู่เป็นประวัติ และช่วงที่ทับซ้อนกันเป็นเรื่องที่คาดไว้ (เอกสาร Bruno ของ endpoint สร้างระบุไว้ตรง ๆ)
+
+**ไม่มีคอลัมน์ `cancelled_at`** — เหมือนที่นั่ง INF licence ถูกแก้ไขหรือลบทิ้ง ไม่เคยถูกยกเลิก
+
+**ฟิลด์ที่ server คำนวณสามตัวเดินทางไปกับทุกแถวและไม่ได้เก็บที่ไหนเลย** (`serialize()` ใน `business-unit-interface-license.service.ts`, `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/business-unit-interface-license/`):
+
+```
+state          = 'scheduled' | 'active' | 'expired'   จาก start/end ของแถวนี้เองเทียบกับ now
+contract_state = สถานะ subscription หลักของ BU เจ้าของ ('active' | 'expired' | 'inactive' | 'none')
+in_force       = state === 'active' && contract_state === 'active'
+```
+
+`in_force` เป็นฟิลด์เดียวที่หน้าจอใดก็ตามใส่ badge ตามได้ กฎสองเงื่อนไขคือกับดักที่สเปกระบุชื่อไว้ตรง ๆ (§4): การตรวจที่ถามแค่ "มี INF licence ที่มีชีวิตไหม" จะปล่อยให้ลูกค้าที่สัญญาหลักหมดอายุแล้วยังส่งข้อมูล POS เข้ามาได้ กฎเดียวกันคือสิ่งที่ `GET /api/license` ใช้ตอนสร้าง `features[]` ของ BU — กลุ่ม INF ที่มีชีวิตถูก union เข้าไปเฉพาะเมื่อสัญญาหลัก `active`; ไม่งั้นทุกคีย์ INF ไปที่ `expired_features[]` (`license.service.ts`, `license.types.ts` ใน `apps/backend-gateway/src/license/`)
 
 ## 3. View — สอง view ของความจุ และทำไมถึงมีสองตัว
 
@@ -153,6 +183,8 @@ SELECT bu.id         AS business_unit_id,
 ```
 tb_cluster_license.cluster_id            ──>  tb_cluster.id
 tb_business_unit_license.business_unit_id ──>  tb_business_unit.id
+tb_business_unit_interface_license.business_unit_id         ──>  tb_business_unit.id
+tb_business_unit_interface_license.license_feature_group_id ──>  tb_license_feature_group.id   (kind = 'interface' เท่านั้น)
 tb_subscription.cluster_id                ──>  tb_cluster.id
 tb_subscription_bu.subscription_id        ──>  tb_subscription.id
 tb_subscription_bu.business_unit_id       ──>  tb_business_unit.id
@@ -161,11 +193,13 @@ tb_subscription_bu_group.group_id         ──>  tb_license_feature_group.id
 *.created_by_id / *.updated_by_id / *.cancelled_by_id / *.deleted_by_id  ──>  tb_user.id  (audit actor)
 ```
 
-`v_cluster_bu_cap` อ่านแค่ `tb_cluster` กับ `tb_cluster_license` `v_cluster_bu_quota` อ่านเพิ่ม `tb_business_unit` ผ่าน `v_cluster_bu_cap` ไม่ใช่ผ่าน `tb_cluster_license` ตรง ๆ (§3.2) `v_business_unit_seat` อ่านแค่ `tb_business_unit` กับ `tb_business_unit_license` ไม่มีตารางบัญชี/สัญญาตัวไหนใน §2 มี foreign key ชี้ไปหาอีกตัวเลย — โควตา BU ของ cluster, seat pool ของ BU, และสัญญา subscription ของ BU เป็นเรคคอร์ดการซื้อสามชุดที่เป็นอิสระจากกัน บังเอิญมาถูกเรียกดูร่วมกันบนหน้าจอของโมดูลนี้เท่านั้น
+`v_cluster_bu_cap` อ่านแค่ `tb_cluster` กับ `tb_cluster_license` `v_cluster_bu_quota` อ่านเพิ่ม `tb_business_unit` ผ่าน `v_cluster_bu_cap` ไม่ใช่ผ่าน `tb_cluster_license` ตรง ๆ (§3.2) `v_business_unit_seat` อ่านแค่ `tb_business_unit` กับ `tb_business_unit_license` ไม่มีตารางบัญชี/สัญญาทั้งสี่ใน §2 ตัวไหนมี foreign key ชี้ไปหาอีกตัวเลย — โควตา BU ของ cluster, seat pool ของ BU, interface licence ของ BU และสัญญา subscription ของ BU เป็นเรคคอร์ดการซื้อสี่ชุดที่เป็นอิสระจากกัน บังเอิญมาถูกเรียกดูร่วมกันบนหน้าจอของโมดูลนี้เท่านั้น การพึ่งพาข้ามบัญชีหนึ่งเดียวเป็นแบบคำนวณ ไม่ใช่ประกาศไว้: `in_force` ของ INF licence อ่านสถานะ subscription ของ BU ตอน request (§2.4)
 
 ## 5. Enum
 
-`enum_subscription_status` (`active` / `inactive` / `expired`) เป็น enum ตัวเดียวที่โมดูลนี้นิยาม และมัน **ไม่ใช่** สิ่งเดียวกับ `state` ที่ผู้เรียกเห็นจริง backend คำนวณ `state` ที่แสดงผล (`SubscriptionState`) จาก `status` บวกเวลาปัจจุบันผ่านฟังก์ชันเดียวที่ใช้ร่วมกัน `deriveSubscriptionState()` (`packages/prisma-shared-schema-platform/src/index.ts`) ใช้เหมือนกันทั้งใน gateway และ `micro-business`:
+`enum_license_feature_group_kind` (`standard` / `interface`, schema บรรทัด 747 เพิ่มเมื่อ 2026-09-10) ตัดสินว่ากลุ่มขายบนบัญชีไหนได้ และตั้งได้ตอนสร้างกลุ่มเท่านั้น — `LicenseFeatureGroupEdit` แสดงเป็นค่าอ่านอย่างเดียวที่ล็อกไว้พร้อมคำใบ้อธิบายในโหมดแก้ไข และ DTO `update` ของ backend ไม่รับมัน backfill ใน `20260910000000` ตั้ง `interface` ให้ทุกกลุ่มที่ item ที่ยังอยู่*ทั้งหมด*เป็นคีย์ `interface`/`interface.*`; กลุ่มผสมและกลุ่มว่างยังเป็น `standard`
+
+`enum_subscription_status` (`active` / `inactive` / `expired`) เป็น enum อีกตัวที่โมดูลนี้แตะ และมัน **ไม่ใช่** สิ่งเดียวกับ `state` ที่ผู้เรียกเห็นจริง backend คำนวณ `state` ที่แสดงผล (`SubscriptionState`) จาก `status` บวกเวลาปัจจุบันผ่านฟังก์ชันเดียวที่ใช้ร่วมกัน `deriveSubscriptionState()` (`packages/prisma-shared-schema-platform/src/index.ts`) ใช้เหมือนกันทั้งใน gateway และ `micro-business`:
 
 ```
 status inactive  → state = 'inactive'   (ตายตัว)
@@ -173,24 +207,26 @@ status expired   → state = 'expired'    (ตายตัว)
 status active    → state = 'expired' ถ้า end_date < now, ไม่งั้น 'active'
 ```
 
-SPA ถูกกำชับไม่ให้คำนวณสิ่งนี้เองอีก (doc-comment ของ `src/utils/subscriptionState.ts` เองอ้างโน้ตใน Swagger: "the frontend must not recompute this — use this field directly") มันคำนวณเองแค่ธง "expiring soon" ที่แยกออกไป (ไม่ใช่ enum) จาก `state` บวกเกณฑ์ (§6) เท่านั้น `tb_cluster_license` และ `tb_business_unit_license` ไม่มีคอลัมน์ status เลย สถานะของมัน (`active`/`scheduled`/`expired`/`superseded`/`cancelled`) คำนวณทั้งหมดฝั่ง client จากวันที่ และสำหรับ BU quota จาก `cancelled_at` กับการเทียบใบที่ชนะ (`licenseStatus()`/`statusMap()` ใน `utils/clusterLicense.ts` และ `utils/buLicense.ts`)
+SPA ถูกกำชับไม่ให้คำนวณสิ่งนี้เองอีก (doc-comment ของ `src/utils/subscriptionState.ts` เองอ้างโน้ตใน Swagger: "the frontend must not recompute this — use this field directly") มันคำนวณเองแค่ธง "expiring soon" ที่แยกออกไป (ไม่ใช่ enum) จาก `state` บวกเกณฑ์ (§6) เท่านั้น `tb_cluster_license` และ `tb_business_unit_license` ไม่มีคอลัมน์ status เลย สถานะของมัน (`active`/`scheduled`/`expired`/`superseded`/`cancelled`) คำนวณทั้งหมดฝั่ง client จากวันที่ และสำหรับ BU quota จาก `cancelled_at` กับการเทียบใบที่ชนะ (`licenseStatus()`/`statusMap()` ใน `utils/clusterLicense.ts` และ `utils/buLicense.ts`) `tb_business_unit_interface_license` เป็นกรณีตรงข้าม: `state`/`in_force`/`contract_state` ของมันคำนวณ**ฝั่ง server เท่านั้น** (§2.4) และ SPA ถูกห้ามไม่ให้ derive ซ้ำจากวันที่ ตั้งแต่ PR #290 endpoint รายการ fleet ของบัญชีซื้อทั้งสามยังรับ `sort=status:asc|desc` (`takeSortKey(q.sort, ['status'])` ในแต่ละ licence service ของ `micro-cluster`) หัวคอลัมน์ Status จึงเรียงฝั่ง server ได้ทั้งที่ไม่ใช่คอลัมน์จริง
 
 ## 6. เกณฑ์ใกล้หมดอายุ
 
-จำนวนวันที่ตั้งค่าได้จาก backend สามค่าที่เป็นอิสระต่อกัน ตัดสินว่าเมื่อไรหน้าจอของโมดูลนี้จะขึ้นคำเตือน "ใกล้หมดอายุ" — เป็นค่าที่ผู้ทดสอบเดาจากหน้าจอเองไม่ได้ เพราะข้อเท็จจริงเดียวกันคือ "หมดอายุในอีก 12 วัน" อ่านว่าเร่งด่วนที่เกณฑ์ 30 วัน แต่อ่านว่าธรรมดาที่เกณฑ์ 7 วัน
+จำนวนวันที่ตั้งค่าได้จาก backend สี่ค่าที่เป็นอิสระต่อกัน ตัดสินว่าเมื่อไรหน้าจอของโมดูลนี้จะขึ้นคำเตือน "ใกล้หมดอายุ" — เป็นค่าที่ผู้ทดสอบเดาจากหน้าจอเองไม่ได้ เพราะข้อเท็จจริงเดียวกันคือ "หมดอายุในอีก 12 วัน" อ่านว่าเร่งด่วนที่เกณฑ์ 30 วัน แต่อ่านว่าธรรมดาที่เกณฑ์ 7 วัน
 
 | ฟิลด์ (`ExpiryThresholdsConfig`) | ควบคุมอะไร | ค่าเริ่มต้น |
 |---|---|---|
 | `subscription_days` | ตัวนับ expiring-soon ของ `SubscriptionSection`, ป้ายต่อแถวของ `SubscriptionTable`, `IssuedSubscriptionPlate` | 30 |
 | `bu_quota_days` | `BuQuotaSection`, ป้าย "Quota Expires" ของ `ClusterLicenseTable`, `IssuedLicensePlate` (โหมด BU-quota), `LicenseHealthStrip` | 30 |
 | `seat_days` | ป้ายใกล้หมดอายุแรกสุดต่อแถวและต่อ BU ของ `SeatSection`, `IssuedLicensePlate` (โหมด seat) | 30 |
+| `interface_days` | `PurchaseLicenseTable` (แท็บ interface), `IssuedLicensePlate` (โหมด interface), ป้าย "เหลืออีก N วัน" ต่อแถวของ `BusinessUnitInterfaceLicensesCard` และ `InterfaceLicensesCard` ของ `ClusterAdminLicenses` — ตั้งแต่ PR #287 | 30 |
 
-**แหล่งที่มาและการส่งค่า:** `GET /api-system/platform/expiry-thresholds` (`expiryThresholdService.getAll()`) จงใจ **เปิดให้ผู้ใช้ที่ล็อกอินแล้วทุกคนโดยไม่ต้องตรวจสิทธิ์** — ต่างจาก `platformConfigService.getAll()` ที่ต้องมี `platform_config.read` คอมเมนต์ใน `expiryThresholdService.ts` ระบุเหตุผลตรง ๆ: การกั้น endpoint นี้แบบเดียวกันจะ 403 ผู้ใช้ทั่วไปที่เปิด `/licenses` ทุกคน แล้วปักหมุดพวกเขาไว้ที่ค่าเริ่มต้นในโค้ดตลอดกาลโดยไม่สนใจว่าผู้ดูแลตั้งค่าอะไรไว้จริง ค่าทั้งสามเก็บเป็น JSON object เดียวใต้ key ของ `platform_config` (แก้ได้จากการ์ด Expiry Thresholds ของโมดูล [Platform Config](/th/platform/platform-config) กั้นด้วย `platform_config.manage` เพียงอย่างเดียว — **ไม่ใช่** `license.manage` ซึ่งเป็นคีย์คนละตัวที่กั้นสวิตช์ License Enforcement ที่ไม่เกี่ยวข้องกันบนหน้าจอเดียวกัน; ดูคำแก้ไขใน [Permissions](/th/platform/licenses/permissions) §1) และถูก serve ผ่าน `ExpiryThresholdContext` ซึ่ง merge คำตอบจาก backend ลงบน `DEFAULT_EXPIRY_THRESHOLDS` **ทีละฟิลด์** — backend ที่ยังไม่รู้จักฟิลด์ใหม่จะไม่ทำให้ฟิลด์นั้นกลายเป็น `undefined` แล้วพังเงียบ ๆ ทุกการเปรียบเทียบ (operand ที่เป็น `undefined` ทำให้การเทียบ `<=` ทุกครั้งเป็น `false` ซึ่งจะทำให้ป้ายเตือนหายไปทั้งระบบโดยไม่มี error ให้เห็น) คำขอที่ล้มเหลว (รวมถึง "ยังไม่ล็อกอิน") ตกกลับไปใช้ค่าเริ่มต้นในโค้ดอย่างเงียบ ๆ (ทั้งสามค่า `30`) โดยไม่มี toast — หน้ายังทำงานได้ปกติ แค่หน้าต่างของป้ายเตือนย้อนกลับไปเป็นค่าเก่า
+**แหล่งที่มาและการส่งค่า:** `GET /api-system/platform/expiry-thresholds` (`expiryThresholdService.getAll()`) จงใจ **เปิดให้ผู้ใช้ที่ล็อกอินแล้วทุกคนโดยไม่ต้องตรวจสิทธิ์** — ต่างจาก `platformConfigService.getAll()` ที่ต้องมี `platform_config.read` คอมเมนต์ใน `expiryThresholdService.ts` ระบุเหตุผลตรง ๆ: การกั้น endpoint นี้แบบเดียวกันจะ 403 ผู้ใช้ทั่วไปที่เปิด `/licenses` ทุกคน แล้วปักหมุดพวกเขาไว้ที่ค่าเริ่มต้นในโค้ดตลอดกาลโดยไม่สนใจว่าผู้ดูแลตั้งค่าอะไรไว้จริง ค่าทั้งสามเก็บเป็น JSON object เดียวใต้ key ของ `platform_config` (แก้ได้จากการ์ด Expiry Thresholds ของโมดูล [Platform Config](/th/platform/platform-config) กั้นด้วย `platform_config.manage` เพียงอย่างเดียว — **ไม่ใช่** `license.manage` ซึ่งเป็นคีย์คนละตัวที่กั้นสวิตช์ License Enforcement ที่ไม่เกี่ยวข้องกันบนหน้าจอเดียวกัน; ดูคำแก้ไขใน [Permissions](/th/platform/licenses/permissions) §1) และถูก serve ผ่าน `ExpiryThresholdContext` ซึ่ง merge คำตอบจาก backend ลงบน `DEFAULT_EXPIRY_THRESHOLDS` **ทีละฟิลด์** — backend ที่ยังไม่รู้จักฟิลด์ใหม่จะไม่ทำให้ฟิลด์นั้นกลายเป็น `undefined` แล้วพังเงียบ ๆ ทุกการเปรียบเทียบ (operand ที่เป็น `undefined` ทำให้การเทียบ `<=` ทุกครั้งเป็น `false` ซึ่งจะทำให้ป้ายเตือนหายไปทั้งระบบโดยไม่มี error ให้เห็น); `interface_days` คือกรณีที่กลไกนี้ป้องกันพอดี — gateway ที่เก่ากว่า 2026-09-09 ไม่ส่งมันมา และ SPA ยังได้ `30` คำขอที่ล้มเหลว (รวมถึง "ยังไม่ล็อกอิน") ตกกลับไปใช้ค่าเริ่มต้นในโค้ดอย่างเงียบ ๆ (ทั้งสี่ค่า `30`) โดยไม่มี toast — หน้ายังทำงานได้ปกติ แค่หน้าต่างของป้ายเตือนย้อนกลับไปเป็นค่าเก่า
 
 **ผลกระทบต่อแต่ละบัญชี ให้ชัดเจน:**
 - **Subscription:** `isExpiringSoon(state, endDate, days)` — เป็น `true` เฉพาะเมื่อ `state` ที่ backend คำนวณมาเป็น `'active'` **และ** `daysLeft <= days` เท่านั้น `state` ที่เป็น `'inactive'` หรือ `'expired'` ไปแล้วไม่มีวันอ่านว่า "expiring soon"
 - **BU quota:** `isExpiringSoon(lic, days)` — เป็น `false` เสมอสำหรับใบ perpetual (`end_date >= 2099-01-01`) และสำหรับใบที่ไม่ `'active'` ตาม `licenseStatus()` ตอนนี้ (ใบที่ยกเลิกหรือถูกแทนที่ไม่มีวัน "ใกล้หมดอายุ" มันตายไปแล้ว)
 - **Seat:** `isExpiringSoon(lic, days)` — เป็น `false` สำหรับใบที่ไม่ `'active'`; ที่นั่งไม่มีแนวคิด perpetual เลย (§2.2) ดังนั้นใบที่นั่งที่ active ทุกใบมีสิทธิ์เตือนได้ในที่สุด
+- **Interface:** ป้าย "เหลืออีก N วัน" ขึ้นเฉพาะเมื่อแถว `in_force` **และ** `end_date - now <= interface_days` — licence ที่ยังอยู่ในช่วงวันที่แต่ถูกสัญญาหลักที่หมดอายุจำกัดไว้จะแสดง "Capped by contract" ไม่เคยแสดง "ใกล้หมดอายุ" เพราะมันไม่ได้ให้สิทธิ์อะไรที่จะหมดอายุได้
 
 ## 7. ความแตกต่างจาก shape ของ carmen-platform SPA
 
@@ -201,6 +237,8 @@ SPA ถูกกำชับไม่ให้คำนวณสิ่งนี�
 | `FleetLicenseRow` (row shape ของ `PurchaseLicenseTable` ทั้ง fleet) ไม่มี `updated_at` | `PurchaseLicenseTable.tsx` | ทั้ง `BusinessUnitLicenseListRowDto` และ `ClusterLicenseListRowDto` ไม่ส่งค่านี้มาเลย | ไม่ใช่บั๊กที่ต้องแก้ — DTO ของ fleet-list ทั้งสองไม่เคย project `updated_at` เลย CSV export กับคอลัมน์ audit เดียวของตารางนี้จึงโชว์แค่ Created ไม่มี Updated เฉพาะหน้าจอนี้ |
 | `group_ids` / `feature_keys` บน `SubscriptionDetail.bu` | `SubscriptionForm.tsx` `load()` | `tb_subscription_bu_group` (join) / การรวมค่าที่ server คำนวณ | `group_ids` อ่านเป็น optional และตกกลับเป็น `[]` — สัญญาที่สร้างก่อนระบบกลุ่มมีอยู่จริงพก `feature_keys` โดยไม่มี `group_ids` และ SPA ต้องไม่ crash ตอนอ่านฟิลด์ที่แถวยุค pre-migration ไม่เคยมี |
 | การ merge ของ `ExpiryThresholdsConfig` | `ExpiryThresholdContext.tsx` | ค่า JSON เดียวบนแถว `platform_config` (เป็นของ [Platform Config](/th/platform/platform-config)) | Merge ทีละฟิลด์ลงบนค่าเริ่มต้นในโค้ด ไม่ใช่แทนที่ทั้งก้อน (§6) |
+| `InterfaceLicense.state` / `in_force` / `contract_state` | `types/index.ts:1703`, `BusinessUnitInterfaceLicensesCard.tsx` | ไม่ได้เก็บ — คำนวณต่อ request โดย `serialize()` ใน service ของ micro-cluster (§2.4) | ตรงข้ามกับแพทเทิร์นของที่นั่ง/BU-quota: SPA **ต้องไม่**คำนวณค่าเหล่านี้จากวันที่ คอมเมนต์ของการ์ดเองเรียกแถว "อยู่ในช่วงวันที่แต่ `in_force = false`" ว่าเป็นจุดที่หน้าจอโกหกง่ายที่สุด |
+| `LicenseFeatureGroup.kind` อ่านเป็น optional (`kind ?? 'standard'`) | `GroupCatalogPanel.tsx:202`, `GroupSelectionCard.tsx:104` | `tb_license_feature_group.kind`, `NOT NULL DEFAULT 'standard'` | การอ่านแบบป้องกันสำหรับ gateway ก่อนการ rollout 2026-09-10; ตัวคอลัมน์เองไม่เคยเป็น null |
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
@@ -216,24 +254,32 @@ REST surface ที่ service ของโมดูลนี้ใช้:
 | `GET /api-system/business-units/:buId/licenses` | รายการใบที่นั่งของ BU เดียว | ไม่มี `@RequirePlatformPermission` |
 | `GET /api-system/platform/business-unit-licenses[/:id]` | รายการใบที่นั่งทั้ง fleet / หนึ่งใบจาก id ล้วน | กติกา scope เดียวกับ fleet route ของ cluster-licence |
 | `POST/PATCH/DELETE /api-system/business-units/:buId/licenses[/:id]` | สร้าง/แก้/soft-delete ใบที่นั่ง | ทั้งสามต้องมี `subscription.manage`; **ไม่มี route cancel สำหรับที่นั่งเลย** |
+| `GET /api-system/business-units/:buId/interface-licenses` | รายการ interface licence ของ BU เดียว (แต่ละแถวพก `group`, `state`, `in_force`, `contract_state`) | ไม่มี `@RequirePlatformPermission` — `AppIdGuard('businessUnitInterfaceLicense.findAll')` เท่านั้น อนุญาตตาม scope ภายใน `micro-cluster` |
+| `POST/PATCH/DELETE /api-system/business-units/:buId/interface-licenses[/:id]` | สร้าง/แก้/soft-delete interface licence | ทั้งสามต้องมี `subscription.manage` (`platform_business-unit-interface-licenses.controller.ts:143-145,189-191,236-238`); body ตอนสร้าง: `license_feature_group_id`, `start_date`, `end_date`, `reference_no?`, `note?` — ไม่เคยส่ง `license_number`; **ไม่มี route cancel** |
+| `GET /api-system/platform/interface-licenses[/:id]` | รายการ interface licence ทั้ง fleet (แบ่งหน้า, `searchfields=license_number,reference_no`, รับ `sort=status`) / หนึ่งแถวด้วย id เปล่า (คืน `business_unit_id` เพื่อสร้าง path update แบบ nested ได้) | ไม่มี `@RequirePlatformPermission`; กรองตาม scope ของผู้เรียกเหมือนอีกสอง route ระดับ fleet |
+| `GET /api-system/clusters/:id/subscriptions` | subscription ของ cluster เดียว อนุญาตด้วยสมาชิกภาพ cluster-admin | ใช้โดย shell ของ cluster-admin (`useClusterSubscriptions(clusterId, 'cluster')`, `useBusinessUnitSubscriptions(buId, { clusterId })`) แทน `GET /platform/subscriptions` |
 | `GET/POST/PATCH/DELETE /api-system/platform/subscriptions[/:id]` | CRUD ของ subscription | `GET` ต้องมี `subscription.read`; verb เขียนต้องมี `subscription.manage` |
 | `PUT /api-system/platform/subscriptions/:id/groups` | แทนที่ชุด feature-group ของสัญญา | ต้องมี `subscription.manage`; ส่งชุดที่ต้องการทั้งหมด ไม่ใช่ diff |
 | `GET /api-system/platform/subscriptions/summary` | ยอดรวม subscription ทั้ง fleet แบบไม่กรอง | ต้องมี `subscription.read`; เป็นอิสระจาก filter ของ list ปัจจุบัน |
 | `GET /api-system/platform/license-features` | catalog ของ feature (อ่านอย่างเดียว สำหรับการกางแสดงผลของ SPA) | เป็นของ [License Catalog](/th/platform/license-catalog) |
-| `GET /api-system/platform/expiry-thresholds` | จำนวนวันตั้งค่าได้สามค่า (§6) | ไม่ต้องมีสิทธิ์ |
+| `GET /api-system/platform/expiry-thresholds` | จำนวนวันตั้งค่าได้สี่ค่า (§6) | ไม่ต้องมีสิทธิ์ |
+| `GET /api/license` (inventory gateway ไม่ใช่ `/api-system`) | ผู้บริโภคของทั้งหมดข้างบน: `state`, `end_date`, `features[]`, `hidden_features[]`, `expired_features[]` ของ BU — กลุ่ม INF ถูก union เข้า `features[]` เฉพาะเมื่อสัญญาหลัก `active` (§2.4) | Bearer + `x-app-id`; ไม่มี RBAC ตั้งแต่ `feat(user)!` (2026-09) ข้อมูล licence **ไม่อยู่บน `GET /api/user/profile` อีกต่อไป** — ดูเล่ม Inventory |
 
 **หลัก (แหล่งความจริง):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_subscription` (452), `enum_subscription_status` (723), `tb_business_unit_license` (1133), `tb_cluster_license` (1168), `tb_license_feature` (1214), `tb_subscription_bu` (1257), `tb_license_feature_group` (1284), `tb_subscription_bu_group` (1336)
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_subscription` (452), `enum_subscription_status` (723), `enum_license_feature_group_kind` (747), `tb_business_unit_license` (1133), `tb_business_unit_interface_license` (1149), `tb_cluster_license` (1168), `tb_license_feature` (1214), `tb_subscription_bu` (1257), `tb_license_feature_group` (1284, `kind` ที่ 1308), `tb_subscription_bu_group` (1336)
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260910000000_license_feature_group_kind`, `20260910010000_business_unit_interface_license`, `20260910020000_migrate_interface_groups_to_inf_license/migration.sql` และ `prisma/check.interface-license-migration.ts` — schema ของ INF, data migration ของมัน และด่าน preflight/snapshot/verify ที่บังคับรอบมัน (§2.4)
+- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/business-unit-interface-license/business-unit-interface-license.service.ts` — `serialize()` (`state`/`in_force`/`contract_state`), การตรวจกลุ่ม `kind = 'interface'`, `takeSortKey(…, ['status'])`
+- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/license/{license.service.ts,license.types.ts}` — วิธีที่ `GET /api/license` พับ INF licence เข้า `features[]`/`expired_features[]`
 - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260819000000_bu_user_license/migration.sql` — `tb_business_unit_license`, `v_business_unit_seat`
 - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260822000000_add_cluster_license/migration.sql` (บรรทัด 36, 55), `20260824000000_add_cap_end_date_to_view/migration.sql`, `20260901020000_cluster_license_cancel/migration.sql` — `tb_cluster_license`, `v_cluster_bu_cap`, `v_cluster_bu_quota`
 - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260821130000_subscription_one_bu/migration.sql`, `20260831000000_subscription_bu_group/migration.sql`, `20260901000000_drop_subscription_bu_feature/migration.sql` — โมเดลหนึ่ง-BU-ต่อหนึ่ง-subscription และการย้าย feature→group ของ entitlement
 - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/src/index.ts` — `deriveSubscriptionState()` ฟังก์ชันคำนวณ `state` ตัวเดียวที่ใช้ร่วมกัน (§5)
 
 **รอง (shape ฝั่งผู้บริโภค):**
-- `../carmen-platform/src/pages/licenses/licenseKindConfig.ts` — `SEAT_CONFIG`/`BU_QUOTA_CONFIG`
+- `../carmen-platform/src/pages/licenses/licenseKindConfig.ts` — `SEAT_CONFIG`/`BU_QUOTA_CONFIG`/`INTERFACE_CONFIG`
 - `../carmen-platform/src/utils/clusterLicense.ts`, `src/utils/buLicense.ts`, `src/utils/subscriptionState.ts` — สามสูตร status/expiring-soon ที่เป็นอิสระต่อกัน
 - `../carmen-platform/src/utils/businessUnitRank.ts` — `rankBusinessUnits()`/`countOverLimit()` ต้องตรงกับ `ORDER BY` ของ `v_cluster_bu_quota` เป๊ะ
 - `../carmen-platform/src/context/ExpiryThresholdContext.tsx`, `src/services/expiryThresholdService.ts` — การส่งค่าเกณฑ์ (§6)
-- `../carmen-platform/src/types/index.ts` — `ClusterLicense`, `BusinessUnitLicense`, `Subscription`, `SubscriptionDetail`, `ExpiryThresholdsConfig`
+- `../carmen-platform/src/types/index.ts` — `ClusterLicense`, `BusinessUnitLicense`, `InterfaceLicense` (1703), `LicenseFeatureGroupKind`, `Subscription`, `SubscriptionDetail`, `ExpiryThresholdsConfig`
 
 **ลิงก์ข้าม:** [หน้าลงจอด Licenses](/th/platform/licenses) &nbsp;·&nbsp; [UI Screens](/th/platform/licenses/ui-screens) &nbsp;·&nbsp; [Permissions](/th/platform/licenses/permissions) &nbsp;·&nbsp; [License Catalog](/th/platform/license-catalog) &nbsp;·&nbsp; [Platform Config](/th/platform/platform-config)

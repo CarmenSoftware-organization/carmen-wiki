@@ -2,7 +2,7 @@
 title: เทมเพลต (Templates)
 description: นิยาม scaffold ที่ใช้ซ้ำได้สำหรับ PR และ Vendor Pricelist — สองวิธี implement ที่ต่างกันโดยโครงสร้าง ไม่ใช่กลไกร่วมเดียว แม้ทั้งคู่จะ prefill record ใหม่ตอนเลือกใช้
 published: true
-date: 2026-07-29T04:21:35.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: templates, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T16:00:00.000Z
@@ -16,6 +16,8 @@ dateCreated: 2026-05-16T16:00:00.000Z
 ![เทมเพลต (Templates) screen](/screenshots/templates/purchase-request.png)
 
 ![เทมเพลต (Templates) detail screen](/screenshots/templates/purchase-request-detail.png)
+
+> **ตรวจสอบซ้ำ 2026-09-22:** ตรวจหน้าย่อยทั้งสองกับ HEAD อีกครั้ง สิ่งที่เปลี่ยนจากรอบก่อน: ทางเข้า **From Template** ของ PR กลายเป็นหน้าเต็มที่มีขั้นกรอกจำนวน (`/procurement/purchase-request/from-template`, 2026-09-15); API ของ template ทั้งสองคืน entity reference (product, unit, currency, workflow, location, …) เป็น object `{ id, name }` แทนคู่ `*_id` / `*_name` แบบ flat (2026-09-17); list ของ PR template เรียงตามผู้สร้างได้ โมดูล template ฝั่ง backend ไม่มี feature commit — มีแค่ refactor base class `TenantScopedService` **Notification template** (system-config, มีเฉพาะ app-channel พร้อม variable จริงตั้งแต่ 2026-09-16) *ไม่ใช่* ส่วนของโมดูลนี้ — ดู [system-config](/th/inventory/system-config)
 
 > **สถานะการ implement (ตรวจสอบ 2026-07-29):** เทมเพลตสองตัวในโมดูลนี้ **ไม่ได้** สร้างด้วยวิธีเดียวกัน แม้ผิวเผินจะดูคล้ายกัน ("เลือก template แล้วได้ record ที่ prefill แล้ว") PR template ไม่ deep-clone อะไรเลย — การเลือก template แค่ prefill ฟอร์ม PR ใหม่ฝั่ง client และ PR ที่ได้ไม่มี link กลับไปยัง template Pricelist template เก็บ FK ที่ persist จริง (`tb_request_for_pricing.pricelist_template_id`) จากทุกรอบ RFQ ที่ออกอิงกับมัน กลไก Delete ก็ต่างกันด้วย: PR template delete แบบ hard delete ไม่มีเงื่อนไข; pricelist template delete แบบ soft delete ไม่มีเงื่อนไข ดู callout สถานะการ implement ของแต่ละหน้าย่อยสำหรับรายละเอียดเต็ม — หน้านี้ไม่ยืนยันกลไกเดียวสำหรับทั้งคู่อีกต่อไป
 
@@ -36,7 +38,7 @@ dateCreated: 2026-05-16T16:00:00.000Z
 
 | | PR Template | Price List Template |
 |---|---|---|
-| กลไกการสร้าง instance | prefill ฟอร์มฝั่ง client เท่านั้น (ไม่มี backend clone endpoint) | ไม่มี — template ไม่ถูก "instantiate"; รอบ RFQ อ้างมันผ่าน FK |
+| กลไกการสร้าง instance | prefill ฟอร์มฝั่ง client เท่านั้น (ไม่มี backend clone endpoint) — `/procurement/purchase-request/from-template` → ขั้นกรอกจำนวน → ฟอร์ม PR ใหม่ผ่าน router state | ไม่มี — template ไม่ถูก "instantiate"; รอบ RFQ อ้างมันผ่าน FK |
 | link จาก record ใหม่/ที่สร้างจากมันกลับไปยัง template | ไม่มี — ไม่มีคอลัมน์ `created_from_template_id` หรือเทียบเท่าที่ไหนเลย | มีจริง — `tb_request_for_pricing.pricelist_template_id` persist |
 | ฟิลด์ lifecycle | boolean เดียว `is_active` ไม่มี state "draft" | enum 3 ค่าจริง `status` (`draft`/`active`/`inactive`) |
 | กลไก Delete | **hard delete** แบบไม่มีเงื่อนไข ไม่มี usage guard | **soft delete** แบบไม่มีเงื่อนไข (`status = inactive` + `deleted_at`) ไม่มี usage guard |
@@ -56,10 +58,10 @@ dateCreated: 2026-05-16T16:00:00.000Z
 
 ## 5. แหล่งข้อมูลอ้างอิง
 
-- `../carmen-inventory-frontend-react/routes/procurement/purchase-request-template/` — frontend ของ PR template (`prt-form.tsx`, `prt-form-schema.ts`, `prt-item-table.tsx`)
+- `../carmen-inventory-frontend-react/routes/procurement/purchase-request-template/` — frontend ของ PR template (`prt-form.tsx`, `prt-form-schema.ts`, `use-prt-item-table.tsx`, `use-prt-table.tsx`)
 - `../carmen-inventory-frontend-react/routes/vendor-management/price-list-template/` — frontend ของ Pricelist template (`plt-form.tsx`, `plt-form-schema.ts`, `plt-form-products-section.tsx`)
-- `../carmen-inventory-frontend-react/routes/procurement/purchase-request/new-purchase-request-content.tsx` + `pr-form-schema.ts` — จุดที่ฟิลด์ของ PR template ถูก merge เข้า PR ใหม่จริง ๆ
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/procurement/purchase-request-template/purchase-request-template.service.ts` — data layer จริงของ PR-template (Prisma โดยตรง)
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/master/price-list-template/price-list-template.service.ts` — data layer จริงของ pricelist-template (Prisma โดยตรง); `apps/backend-gateway/src/application/pricelist-templates/` เป็นแค่ TCP proxy บาง ๆ อยู่หน้ามัน
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_purchase_request_template` (+detail/comment, บรรทัด 2635-2797), `tb_pricelist_template` (+detail/comment, บรรทัด 4222-4360), `tb_request_for_pricing` (บรรทัด 4400-4429)
+- `../carmen-inventory-frontend-react/routes/procurement/purchase-request/from-template/` (`from-template-content.tsx`, `qty-step.tsx`, `template-card.tsx`) + `pr-new-content.tsx` + `pr-form-schema.ts` — จุดที่แถวของ PR template ถูกเลือก กรอกจำนวน และ merge เข้า PR ใหม่
+- `../carmen-turborepo-backend-v2/apps/micro-business/src/procurement/purchase-request-template/purchase-request-template.service.ts` — data layer จริงของ PR-template (`TenantScopedService`, Prisma โดยตรง)
+- `../carmen-turborepo-backend-v2/apps/micro-business/src/master/price-list-template/price-list-template.service.ts` — data layer จริงของ pricelist-template (Prisma โดยตรง); `apps/backend-gateway/src/application/pricelist-templates/` เป็นแค่ RPC proxy บาง ๆ อยู่หน้ามัน (พร้อม response schema `@Serialize` ที่ทำให้ reference ออกมาเป็น object)
+- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_purchase_request_template` (+comment/detail, บรรทัด 2711-2870), `tb_pricelist_template` (+comment/detail, บรรทัด 4826-4990), `tb_request_for_pricing` (บรรทัด 5004) ณ 2026-09-22
 - `../carmen-inventory-frontend-e2e/tests/310-pr-template.spec.ts`, `../carmen-inventory-frontend-e2e/tests/160-pl-template.spec.ts` — E2E spec; ทั้งคู่มี `describe` block สำหรับฟีเจอร์ที่ไม่มีในโค้ดปัจจุบัน (PR template "Clone"/"Set as Default"; pricelist template ที่ Clone ถูกถอดออกแล้ว ยืนยันด้วย suite "(removed)" ของมันเอง)

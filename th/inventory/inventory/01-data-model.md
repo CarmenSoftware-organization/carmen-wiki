@@ -2,7 +2,7 @@
 title: คลังสินค้า (Inventory) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูล inventory
 published: true
-date: 2026-07-15T09:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: inventory, data-model, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -11,9 +11,9 @@ dateCreated: 2026-05-15T12:00:00.000Z
 # คลังสินค้า (Inventory) — Data Model
 
 > **At a Glance**
-> **ตาราง:** `tb_inventory_transaction` &nbsp;·&nbsp; `tb_inventory_transaction_detail` &nbsp;·&nbsp; `tb_inventory_transaction_cost_layer` &nbsp;·&nbsp; `tb_location` &nbsp;·&nbsp; `tb_product_location` &nbsp;·&nbsp; `tb_period` &nbsp;·&nbsp; `tb_period_snapshot`
+> **ตาราง:** `tb_inventory_transaction` &nbsp;·&nbsp; `tb_inventory_transaction_detail` &nbsp;·&nbsp; `tb_inventory_transaction_cost_layer` &nbsp;·&nbsp; `tb_location` &nbsp;·&nbsp; `tb_product_location` &nbsp;·&nbsp; `tb_inventory_period` &nbsp;·&nbsp; `tb_inventory_period_snapshot`
 > **ผู้ใช้งาน:** Developer / Auditor (อ้างอิงสำหรับนักพัฒนา)
-> **FK สำคัญ:** `inventory_doc_no` เป็น **polymorphic** (ไม่มี `@relation`) — resolve ไปยัง `tb_good_received_note` / `tb_store_requisition` / `tb_stock_in` / `tb_stock_out` / `tb_credit_note` / `tb_period` ตาม `inventory_doc_type`; cost-layer `→ tb_period`; โมดูลฝั่ง source กลับมาเข้าหาผ่าน column UUID `inventory_transaction_id`
+> **FK สำคัญ:** `inventory_doc_no` เป็น **polymorphic** (ไม่มี `@relation`) — resolve ไปยัง `tb_good_received_note` / `tb_store_requisition` / `tb_stock_in` / `tb_stock_out` / `tb_credit_note` / `tb_inventory_period` ตาม `inventory_doc_type`; cost-layer `→ tb_inventory_period`; โมดูลฝั่ง source กลับมาเข้าหาผ่าน column UUID `inventory_transaction_id`
 > **รูปแบบ audit:** `created_*` / `updated_*` / `deleted_*` มาตรฐานบนตารางส่วนใหญ่; **`tb_inventory_transaction_detail` ไม่มี soft-delete** — การกลับรายการ post compensating row แทน ไม่มี `tb_stock_balance` — on-hand derive จาก cost-layer rows ตั้งแต่ snapshot ล่าสุด
 
 > **Source of truth:** Prisma schema ของ Backend ต้องอ่านเหล่านี้ก่อนเสมอเมื่อเขียนหรืออัปเดตหน้านี้:
@@ -24,13 +24,13 @@ dateCreated: 2026-05-15T12:00:00.000Z
 
 ## 1. ภาพรวม
 
-โมดูล Inventory คือ **ระบบบันทึกหลักของการเคลื่อนไหวสต๊อกและการตีมูลค่า on-hand** ทั่วทั้งทรัพย์สิน ไม่เหมือนโมดูลที่เน้นเอกสาร ([purchase-request](/th/inventory/purchase-request), [purchase-order](/th/inventory/purchase-order), [good-receive-note](/th/inventory/good-receive-note)) inventory ไม่อาศัยอยู่บน tree header → detail → comment เดียว มันคือ **family ของ record ที่เชื่อมกันด้วย movement** — ทุกการเปลี่ยนปริมาณในระบบไหลผ่าน `tb_inventory_transaction` (header ของ movement) และลูก `tb_inventory_transaction_detail` (บรรทัด ledger ต่อสินค้า / ต่อ lot) โดยมี record คงรูปแบบของ cost-flow เก็บบน `tb_inventory_transaction_cost_layer` (FIFO / weighted-average layers, key โดย `lot_no` และ `lot_index`) Location ถูกกำหนดบน `tb_location` ด้วย `location_type` (`inventory`, `direct` หรือ `consignment`) — การรับเข้าตำแหน่ง `direct` ได้การเบิกตัวเองหักล้างอัตโนมัติที่ต้นทุนเดียวกัน (on-hand สุทธิเป็นศูนย์); `inventory` และ `consignment` สะสมยอดตามปกติ (ดู § 5 items 7–8) พารามิเตอร์สต๊อกต่อสินค้า / ต่อตำแหน่ง (par, min, max, reorder) อยู่บน `tb_product_location` ขอบเขตงวดถูก anchor โดย `tb_period` (งวดบัญชี) และ `tb_period_snapshot` (row bucket opening / closing ต่อ `period × location × product` เขียนเฉพาะบนการปิดแบบ average เท่านั้น); enum สถานะของงวด (`open` → `closed` บวก `locked`) กำหนดว่า movement ใหม่ถูกประทับเข้างวดใด — ทุก movement ลงในงวดที่เปิดอยู่ปัจจุบันเสมอไม่ว่าวันที่เอกสารจะเป็นเท่าไร
+โมดูล Inventory คือ **ระบบบันทึกหลักของการเคลื่อนไหวสต๊อกและการตีมูลค่า on-hand** ทั่วทั้งทรัพย์สิน ไม่เหมือนโมดูลที่เน้นเอกสาร ([purchase-request](/th/inventory/purchase-request), [purchase-order](/th/inventory/purchase-order), [good-receive-note](/th/inventory/good-receive-note)) inventory ไม่อาศัยอยู่บน tree header → detail → comment เดียว มันคือ **family ของ record ที่เชื่อมกันด้วย movement** — ทุกการเปลี่ยนปริมาณในระบบไหลผ่าน `tb_inventory_transaction` (header ของ movement) และลูก `tb_inventory_transaction_detail` (บรรทัด ledger ต่อสินค้า / ต่อ lot) โดยมี record คงรูปแบบของ cost-flow เก็บบน `tb_inventory_transaction_cost_layer` (FIFO / weighted-average layers, key โดย `lot_no` และ `lot_index`) Location ถูกกำหนดบน `tb_location` ด้วย `location_type` (`inventory`, `direct` หรือ `consignment`) — การรับเข้าตำแหน่ง `direct` ได้การเบิกตัวเองหักล้างอัตโนมัติที่ต้นทุนเดียวกัน (on-hand สุทธิเป็นศูนย์); `inventory` และ `consignment` สะสมยอดตามปกติ (ดู § 5 items 7–8) พารามิเตอร์สต๊อกต่อสินค้า / ต่อตำแหน่ง (par, min, max, reorder) อยู่บน `tb_product_location` ขอบเขตงวดถูก anchor โดย `tb_inventory_period` (งวดบัญชี) และ `tb_inventory_period_snapshot` (row bucket opening / closing ต่อ `period × location × product` เขียนเฉพาะบนการปิดแบบ average เท่านั้น); enum สถานะของงวด (`open` → `closed` บวก `locked`) กำหนดว่า movement ใหม่ถูกประทับเข้างวดใด — ตั้งแต่ 2026-08-31 movement จะถูกประทับลงในงวดที่เปิดอยู่ซึ่งครอบวันที่เอกสารของมัน (`findOpenPeriodForDate`) และวันที่เอกสารที่ไม่อยู่ในงวดเปิดใดเลยจะถูกปฏิเสธ (ดู § 2.6 / § 4)
 
 โมดูลตั้งอยู่ **ที่ศูนย์กลางของห่วงโซ่ procure-to-pay / requisition-to-consume** เป็นปลายน้ำของ [good-receive-note](/th/inventory/good-receive-note) (การรับ post `enum_inventory_doc_type = good_received_note` transactions), [store-requisition](/th/inventory/store-requisition) (การเบิก post `store_requisition` transactions), [physical-count](/th/inventory/physical-count) และ [spot-check](/th/inventory/spot-check) (การนับ post adjustment_in / adjustment_out transactions) และ [inventory-adjustment](/th/inventory/inventory-adjustment) (manual stock-in / stock-out transactions) เป็นต้นน้ำของ [costing](/th/inventory/costing) ซึ่งอ่าน cost-layer ledger เพื่อคำนวณ COGS และ unit-cost ป้อนกลับไปยังโมดูล source การออกแบบ single-table-as-ledger เป็นเจตนา: ทุก movement ของสต๊อกที่เป็นเจ้าของ ไม่ว่าจะมาจากโมดูล source ใด จะลงใน `tb_inventory_transaction` เพื่อให้ trace ทั้งไปและกลับ (movement → cost layer → period snapshot → on-hand) เดียวรองรับทั้ง audit และ recall
 
 จุดโครงสร้างที่น่าสังเกต: **ไม่มี `tb_stock_balance` model ใน canonical Prisma schema** ยอด on-hand ถูก derive — สูตรจริงใน service (`getLocationBalance` ใน `inventory-transaction.service.ts`) คือผลรวมเชิงพีชคณิตแบบตรง ๆ ของ cost layer ที่ไม่ถูก soft-delete **ทั้งหมด**: `balance = Σ in_qty − Σ out_qty` ที่ `(product_id, location_id)` โดยไม่มี snapshot anchor หรือ date cutoff การปิดงวดรักษาให้ผลรวมแบบตรงนี้ถูกต้องข้ามขอบงวดโดยกลไก: transaction `close` ทำให้แต่ละ lot ที่ยังเหลือเป็นศูนย์ด้วย row `out_qty` และ transaction `open` เพิ่มมันกลับด้วย row `in_qty` ดังนั้นการรวมทุกอย่างยังคงให้ยอดปัจจุบัน `inventory-management-prd.md` และเอกสารอนุพันธ์อ้างถึงเอนทิตี `InventoryStatus` / `StockBalance` ที่มี column `QuantityOnHand`, `LastUnitCost`, `TotalCost` — interface นั้นเป็น application-layer-derived ไม่ใช่ row ใน schema ดู Section 5 สำหรับความแตกต่างนี้
 
-จุดโครงสร้างประการที่สอง แก้ไขในรอบนี้: **ไม่พบโค้ด GL/journal-posting ที่ใดเลยในเส้นทาง posting ของ inventory** `tb_jv_header` / `tb_jv_detail` (tenant schema, enum สถานะ `enum_jv_status = { draft, posted }`) มีอยู่จริงเป็น Prisma models แต่การค้นทั้ง repo ของ `carmen-turborepo-backend-v2` พบการอ้างอิงนอก schema ถึงตารางทั้งสองเพียงจุดเดียว — string map จาก document-type ไปยังชื่อตารางที่ไม่เกี่ยวข้องใน `workflows.service.ts` (`jv: 'tb_jv_header'`) — และไม่มีโค้ดใน `inventory-transaction.service.ts`, `period-end.service.ts` หรือ service ใดของ GRN/SR ที่สร้าง row `tb_jv_header` / `tb_jv_detail` จาก inventory movement ตรงกับ finding เดียวกันที่ยืนยันไว้แล้วใน [purchase-order](/th/inventory/purchase-order), [good-receive-note](/th/inventory/good-receive-note) และ [store-requisition](/th/inventory/store-requisition): ตารางเหล่านี้มีอยู่สำหรับ feature GL แยกต่างหาก (ยังไม่ถูกต่อสาย) และทุกคำกล่าว "movement post journal entry" ที่อื่นในหน้าของโมดูลนี้เป็น design intent ที่มาจาก carmen/docs ไม่ใช่พฤติกรรมจริงที่ตรวจสอบแล้ว
+จุดโครงสร้างประการที่สอง: **ไม่มีโค้ด GL/journal-posting ที่ใดเลยในเส้นทาง posting ของ inventory** ตั้งแต่เดือน 2026-09 tenant schema มีแกน GL จริง — `tb_gl_jv_prefix`, `tb_gl_jv_detail`, `tb_gl_balance`, `tb_gl_budget*`, `tb_gl_jv_template*`, `tb_gl_period`, `tb_gl_account_group` (migrations `20260909170000_gl_core_master`, `20260914030000_gl_core_jv_ledger`, `20260915043038_gl_core_budget_template`; placeholder `tb_jv_header` / `tb_jv_detail` เดิมหายไปแล้ว) ให้บริการโดย `apps/micro-business/src/gl/` และ controller `gl-posting` / `gl-jv` ของ gateway (manual journal voucher: post, void, reverse, rebuild balances, close/reopen fiscal year) การ grep `apps/micro-business/src/inventory/` หา `gl`, `journal`, `GlPosting` ไม่พบอะไร และการ grep `apps/micro-business/src/gl/` หา `inventory_transaction`, `good_received_note`, `tb_stock_in`, `cost_layer` ก็ไม่พบเช่นกัน — โมดูล GL กับ ledger ของ inventory ไม่อ้างอิงถึงกัน ตรงกับ finding เดียวกันใน [purchase-order](/th/inventory/purchase-order), [good-receive-note](/th/inventory/good-receive-note) และ [store-requisition](/th/inventory/store-requisition): ทุกคำกล่าว "movement post journal entry" ในหน้าของโมดูลนี้เป็น design intent ที่มาจาก carmen/docs ไม่ใช่พฤติกรรมจริงที่ตรวจสอบแล้ว
 
 ## 2. เอนทิตี
 
@@ -102,8 +102,8 @@ dateCreated: 2026-05-15T12:00:00.000Z
 | `lot_seq_no` | `Int` | Yes | anchor การเรียง FIFO ภายใน `(location_id, product_id)`; default `1` `lot_seq_no` ที่ต่ำกว่าถูกบริโภคก่อนภายใต้ FIFO |
 | `product_id` | `String @db.Uuid` | Yes | FK reference ไปยัง `tb_product.id` |
 | `parent_lot_no` | `String @db.VarChar` | Yes | เมื่อ layer ถูกสร้างจาก transfer / split / re-pack คือ lot ต้นกำเนิด |
-| `period_id` | `String @db.Uuid` | Yes | FK ไปยัง `tb_period.id` — งวดบัญชีที่บรรจุ event ของ layer นี้ |
-| `at_period` | `String @db.VarChar` | Yes | งวดในรูป `YYMM` (denormalised จาก `tb_period.period`) |
+| `period_id` | `String @db.Uuid` | Yes | FK ไปยัง `tb_inventory_period.id` — งวดบัญชีที่บรรจุ event ของ layer นี้ |
+| `at_period` | `String @db.VarChar` | Yes | งวดในรูป `YYMM` (denormalised จาก `tb_inventory_period.period`) |
 | `transaction_type` | `enum_transaction_type` | Yes | จำแนกอิสระจาก `inventory_doc_type`: `good_received_note`, `transfer_in`, `transfer_out`, `issue`, `adjustment_in`, `adjustment_out`, `credit_note_amount`, `credit_note_quantity`, `eop_in`, `eop_out`, `close_period`, `open_period` |
 | `in_qty` | `Decimal @db.Decimal(20, 5)` | Yes | ปริมาณ inbound; default `0` Non-zero สำหรับ event layer inbound |
 | `out_qty` | `Decimal @db.Decimal(20, 5)` | Yes | ปริมาณ outbound; default `0` Non-zero สำหรับ event layer outbound |
@@ -121,7 +121,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 | `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | timestamp soft-delete |
 | `deleted_by_id` | `String @db.Uuid` | Yes | id ผู้ soft-delete |
 
-**Constraints:** `@id` บน `id` FKs: `inventory_transaction_detail_id → tb_inventory_transaction_detail.id` (`NoAction`); `period_id → tb_period.id` (`NoAction`) Note: `location_id` และ `product_id` เก็บโดยไม่มี `@relation` ชื่อ map `tb_inventory_transaction_clos_inventory_transaction_detail_fkey` สะท้อนการตั้งชื่อ "closing balance" ก่อนหน้า
+**Constraints:** `@id` บน `id` FKs: `inventory_transaction_detail_id → tb_inventory_transaction_detail.id` (`NoAction`); `period_id → tb_inventory_period.id` (`NoAction`) Note: `location_id` และ `product_id` เก็บโดยไม่มี `@relation` ชื่อ map `tb_inventory_transaction_clos_inventory_transaction_detail_fkey` สะท้อนการตั้งชื่อ "closing balance" ก่อนหน้า
 **Indexes:** `@@unique([lot_no, lot_index])` เป็น `inventorytransactionclosingbalance_lotno_lot_index_u` (lot identity); `@@index([lot_no, lot_index])` เป็น `inventorytransactioncostlayer_lotno_lot_index_idx`
 
 ### 2.4 tb_location
@@ -149,7 +149,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 | `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | timestamp soft-delete |
 | `deleted_by_id` | `String @db.Uuid` | Yes | id ผู้ soft-delete |
 
-**Constraints:** `@id` บน `id` FK `delivery_point_id → tb_delivery_point.id` (`NoAction`) Back-relations ครอบคลุมตารางปลายน้ำหลายตาราง: `tb_good_received_note_detail`, `tb_purchase_request_detail`, `tb_stock_in`, `tb_stock_out`, `tb_count_stock`, `tb_spot_check`, `tb_physical_count`, `tb_product_location`, `tb_user_location`, `tb_credit_note_detail`, `tb_store_requisition_from`, `tb_store_requisition_to`, `tb_location_comment`, `tb_purchase_request_template_detail`, `tb_purchase_order_detail_tb_purchase_request_detail`
+**Constraints:** `@id` บน `id` FK `delivery_point_id → tb_delivery_point.id` (`NoAction`) Back-relations ครอบคลุมตารางปลายน้ำหลายตาราง: `tb_good_received_note_detail`, `tb_purchase_request_detail`, `tb_stock_in`, `tb_stock_out`, `tb_count_stock`, `tb_spot_check`, `tb_physical_count`, `tb_product_location`, `tb_location_user` (เปลี่ยนชื่อจาก `tb_user_location`, migration `20260904131500_rename_shelf_and_user_location`), `tb_location_shelf` (master ของชั้นวาง, `20260814150000_add_location_shelf` → `20260904131500`), `tb_credit_note_detail`, `tb_store_requisition_from`, `tb_store_requisition_to`, `tb_location_comment`, `tb_purchase_request_template_detail`, `tb_purchase_order_detail_tb_purchase_request_detail`
 **Indexes:** `@@unique([name, deleted_at])` เป็น `location_name_u`; `@@index([name])` เป็น `location_name_idx`; `@@index([code])` เป็น `location_code_idx`
 
 ### 2.5 tb_product_location
@@ -179,9 +179,9 @@ dateCreated: 2026-05-15T12:00:00.000Z
 **Constraints:** `@id` บน `id` FKs: `product_id → tb_product.id` (`NoAction`); `location_id → tb_location.id` (`NoAction`)
 **Indexes:** `@@unique([product_id, location_id, deleted_at])` เป็น `product_location_product_id_location_id_u`; `@@index([product_id, location_id])` เป็น `product_location_product_id_location_id_idx`
 
-### 2.6 tb_period
+### 2.6 tb_inventory_period (เปลี่ยนชื่อจาก `tb_period`)
 
-**header งวดบัญชี** — ของพื้นฐาน time-boundary ที่กระบวนการ period-end ดำเนินการบน enum สถานะของงวด (`open`, `closed`, `locked`) กำหนดว่า movement ใหม่ประทับเข้างวดใด (`resolveCurrentPeriod` เลือกงวด `open`/`locked` ที่เร็วที่สุด — เอกสารย้อนหลังถูก re-date เข้างวดนั้น ไม่ถูก reject) และกำหนดว่ามูลค่าของ lot สามารถถูก re-price โดย Credit Note Amount ได้หรือไม่ (งวดรับที่ closed/locked จะบันทึก `diff_amount` แทน)
+**header งวดบัญชี** — ของพื้นฐาน time-boundary ที่กระบวนการ period-end ดำเนินการบน เปลี่ยนชื่อจาก `tb_period` (พร้อม `tb_period_snapshot` → `tb_inventory_period_snapshot`, `tb_period_comment` → `tb_inventory_period_comment`) โดย migration `20260916141000_rename_tb_period_to_tb_inventory_period`; admin API ย้ายไป `/api/{bu}/inventory-periods` (route legacy `/periods` ยังอยู่ใน `inventory-periods-legacy.controller.ts`) และ permission / licence key คือ `system_admin.inventory_period` enum สถานะของงวด (`open`, `closed`, `locked`) กำหนดว่า movement post เข้างวดใดได้ — ตั้งแต่ 2026-08-31 ledger resolve งวดจาก**วันที่เอกสาร** (`findOpenPeriodForDate` ใน `inventory-period.helper.ts`; เฉพาะงวด `open`/`locked` เท่านั้นที่เข้าเกณฑ์ ดังนั้นเอกสารที่ลงวันที่ในงวด `closed` ถูก reject ที่ต้นทาง — `STOCK_IN_DATE_OUTSIDE_OPEN_PERIOD`, `STOCK_OUT_DATE_NOT_CURRENT_PERIOD`, GRN `No open period covers …`) — และกำหนดว่ามูลค่าของ lot สามารถถูก re-price โดย Credit Note Amount ได้หรือไม่ (งวดรับที่ closed/locked จะบันทึก `diff_amount` แทน)
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
@@ -202,17 +202,17 @@ dateCreated: 2026-05-15T12:00:00.000Z
 | `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | timestamp soft-delete |
 | `deleted_by_id` | `String @db.Uuid` | Yes | id ผู้ soft-delete |
 
-**Constraints:** `@id` บน `id` Back-relations: many `tb_period_snapshot`, many `tb_inventory_transaction_cost_layer`, many `tb_period_comment`, many `tb_physical_count_period`
+**Constraints:** `@id` บน `id` Back-relations: many `tb_inventory_period_snapshot`, many `tb_inventory_transaction_cost_layer`, many `tb_inventory_period_comment`, many `tb_physical_count_period`
 **Indexes:** `@@unique([period, deleted_at])` เป็น `period_period_u`; `@@unique([fiscal_year, fiscal_month, deleted_at])` เป็น `period_fiscal_year_month_u`; `@@index([fiscal_year, fiscal_month])` เป็น `period_fiscal_year_month_idx`; `@@index([period])` เป็น `period_period_idx`
 
-### 2.7 tb_period_snapshot
+### 2.7 tb_inventory_period_snapshot
 
 **row balance opening / closing ต่อ period × location × product** เขียน ณ ปิดงวด **เฉพาะเมื่อ `calculation_method = average` ของ business unit** (`processAverageClose` ใน `period-end.close-average.helper.ts` เป็นผู้เขียนเพียงรายเดียว — หนึ่ง row ต่อ bucket `(product, location)`, `snapshot_at = period.end_at`); เส้นทางปิดแบบ FIFO เขียน transaction ยก lot ไปข้างหน้า (carry-over) แทนและไม่แตะตารางนี้ ถือ column qty และ cost ของ opening / movement-bucket / closing เพื่อให้รายงานอ่านกิจกรรม net ของงวดได้โดยตรงโดยไม่ต้อง re-walk cost-layer ledger
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key |
-| `period_id` | `String @db.Uuid` | No | FK ไปยัง `tb_period.id` |
+| `period_id` | `String @db.Uuid` | No | FK ไปยัง `tb_inventory_period.id` |
 | `snapshot_at` | `DateTime @db.Timestamptz(6)` | No | timestamp มีผลของ snapshot |
 | `location_id` | `String @db.Uuid` | No | FK reference ไปยัง `tb_location.id` |
 | `location_code` | `String @db.VarChar` | Yes | Snapshot |
@@ -249,7 +249,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 | `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | timestamp soft-delete |
 | `deleted_by_id` | `String @db.Uuid` | Yes | id ผู้ soft-delete |
 
-**Constraints:** `@id` บน `id` FK `period_id → tb_period.id` (`NoAction`) Note: `location_id` และ `product_id` เก็บโดยไม่มี `@relation`
+**Constraints:** `@id` บน `id` FK `period_id → tb_inventory_period.id` (`NoAction`) Note: `location_id` และ `product_id` เก็บโดยไม่มี `@relation`
 **Indexes:** `@@unique([period_id, snapshot_at, deleted_at])` เป็น `periodsnapshot_period_id_snapshot_at_u`; `@@index([period_id, snapshot_at])` เป็น `periodsnapshot_period_id_snapshot_at_idx`
 
 ## 3. ความสัมพันธ์
@@ -264,7 +264,7 @@ tb_inventory_transaction        (movement header — polymorphic source)
     │       store_requisition  → tb_store_requisition.id
     │       stock_in           → tb_stock_in.id
     │       stock_out          → tb_stock_out.id
-    │       close / open       → tb_period.id
+    │       close / open       → tb_inventory_period.id
     │
     │ * inventory_transaction_id
     ▼
@@ -288,7 +288,7 @@ tb_inventory_transaction_cost_layer  (FIFO / weighted-average layer event —
     │  lot_no, lot_index, lot_seq_no (FIFO ordering anchor),
     │  parent_lot_no (transfer/split source)
     │
-    └──► tb_period   (period_id — accounting period containing the layer event)
+    └──► tb_inventory_period   (period_id — accounting period containing the layer event)
 
 
 tb_location ──1──*──► tb_product_location  (per-product stock policy:
@@ -297,7 +297,7 @@ tb_location ──1──*──► tb_product_location  (per-product stock poli
     └──► tb_delivery_point  (delivery_point_id)
 
 
-tb_period ──1──*──► tb_period_snapshot  (locked period × location × product × lot
+tb_inventory_period ──1──*──► tb_inventory_period_snapshot  (locked period × location × product × lot
                                           balance row — opening/closing anchor)
 
 
@@ -325,11 +325,11 @@ tb_inventory_transaction is reached BACK from the source modules:
 ## 4. Enums
 
 - **`enum_inventory_doc_type`**: จำแนกโมดูล source บน `tb_inventory_transaction.inventory_doc_type` เจ็ดค่า ไม่มี default ประกาศบน column (ทุก transaction ต้องระบุ):
-  - `good_received_note` — receipt จาก [good-receive-note](/th/inventory/good-receive-note) **save** (`draft → saved` — เหตุการณ์ posting; `commit` เพียง lock เอกสาร)
+  - `good_received_note` — receipt จาก [good-receive-note](/th/inventory/good-receive-note): post ตอน **save** สำหรับ business unit วิธี average (และ post ใหม่เมื่อจำนวนเปลี่ยน) และตอน **commit** สำหรับ business unit แบบ FIFO (`postsInventoryAtSave`, `good-received-note.ledger.ts`, 2026-09-08)
   - `credit_note` — vendor credit-note adjustment (การแก้ไขหลังรับ; เป็น quantity-only หรือ amount-only ได้)
   - `store_requisition` — issue / transfer ภายในจาก [store-requisition](/th/inventory/store-requisition) approve / dispatch
-  - `stock_in` — manual stock-in (เอกสาร `tb_stock_in` — โดยปกติใช้สำหรับ inventory-adjustment-in, found-stock หรือการแก้ไข count overage)
-  - `stock_out` — manual stock-out (เอกสาร `tb_stock_out` — โดยปกติ write-off, breakage, การแก้ไข count shortage)
+  - `stock_in` — manual stock-in (เอกสาร `tb_stock_in` post ตอน `PATCH /stock-ins/{id}/commit` — `create` เขียนเพียง `draft` ตั้งแต่ 2026-07-30; และเป็นขากลับรายการของการ void stock-out ด้วย)
+  - `stock_out` — manual stock-out (เอกสาร `tb_stock_out` post ตอน `PATCH /stock-outs/{id}/commit`; ยังถูกเขียนโดยตรงโดย endpoint write-off ของ wastage `POST /wastage-reporting` และเป็นขากลับรายการของการ void stock-in) rows variance ของ physical count ก็เป็น rows `tb_stock_out`/`tb_stock_in` เช่นกัน แต่**ไม่**ถูก post ไป ledger
   - `close` — period-close rollforward (post โดยระบบ ณ การเปลี่ยนงวด)
   - `open` — period-open rollforward (post โดยระบบเป็น opening ที่จับคู่ของงวดถัดไป)
 - **`enum_location_type`**: flag ความ eligible / การจัดการการรับสำหรับ `tb_location.location_type` Default `inventory` สามค่า (ไม่มีการ post GL ที่ยืนยันได้สำหรับค่าใดเลย — ดู § 1 และ § 5 item 7/8):
@@ -349,10 +349,10 @@ tb_inventory_transaction is reached BACK from the source modules:
   - `eop_out` — end-of-period outbound rollforward
   - `close_period` — anchor row period-close เขียนเข้างวดที่กำลังปิด
   - `open_period` — anchor row period-open เขียนเข้างวดถัดไป
-- **`enum_period_status`**: สถานะของงวดบัญชีบน `tb_period.status` Default `open` สามค่า:
+- **`enum_period_status`**: สถานะของงวดบัญชีบน `tb_inventory_period.status` Default `open` สามค่า:
   - `open` — รับ movements (งวดเปิดปัจจุบันหรืออนาคต)
-  - `closed` — การปิดงวด (period-end close) รันแล้ว (เขียน lot carry-over แล้ว; rows snapshot เฉพาะบนเส้นทาง average) งวดไม่มีวันได้รับ rows ใหม่หลังจากนั้นเพราะ movement ประทับเข้างวดที่เปิดอยู่ปัจจุบัน; มูลค่าของ lot ในงวดที่ปิดถูกปกป้องจากการ re-price ของ Credit Note (`isLotPeriodClosed` → บันทึก `diff_amount` งวดปัจจุบันแทน)
-  - `locked` — set โดย period service ที่อยู่หลัง [system-config/period](/th/inventory/system-config/period) ไม่ใช่โดยโมดูลนี้ ถูกปฏิบัติเหมือน `closed` ในแง่การปกป้องมูลค่า แต่ `findCurrent` ยังนับงวด `locked` เป็น "ปัจจุบัน" ดังนั้นมันยังแสดงได้ — และปิดได้ — บนหน้าจอ period-end
+  - `closed` — การปิดงวด (period-end close) รันแล้ว (เขียน lot carry-over แล้ว; rows snapshot เฉพาะบนเส้นทาง average) งวดไม่มีวันได้รับ rows ใหม่หลังจากนั้นเพราะเอกสารที่ลงวันที่ในงวดนั้นถูก reject ตอน create/commit (date guard ของ SI/SO/GRN); มูลค่าของ lot ในงวดที่ปิดถูกปกป้องจากการ re-price ของ Credit Note (`isLotPeriodClosed` → บันทึก `diff_amount` งวดปัจจุบันแทน)
+  - `locked` — set โดย inventory-period service ที่อยู่หลัง [system-config/period](/th/inventory/system-config/period) (`/api/{bu}/inventory-periods`) ไม่ใช่โดยโมดูลนี้ ถูกปฏิบัติเป็นงวด*เปิด*โดย helper resolve วันที่ (`OPEN_STATUSES = {open, locked}`) และโดย `findCurrent` ดังนั้นงวด locked ยังรับ posting ที่ลงวันที่ในงวดนั้น และยังแสดงได้และปิดได้บนหน้าจอ period-end; มีเพียง **Start Period Close** ที่ยืนกรานว่าต้องเป็น `open`
 - **`enum_physical_count_type`**: flag count-eligibility บน `tb_location.physical_count_type` Default `no` สองค่า:
   - `no` — location **ไม่ถูก** กวาดโดย physical-count run ตามตาราง (โดยปกติ direct / consignment / staging locations)
   - `yes` — location **ถูก** กวาดโดย physical count ตามตาราง
@@ -367,7 +367,7 @@ Inventory PRD ของ carmen/docs (`inventory-management-prd.md`), data-struct
 | 2 | ชื่อเอนทิตี movement และค่าประเภท | PRD อธิบาย `StockMovement` ด้วย `type ∈ {RECEIPT, ISSUE, TRANSFER, ADJUSTMENT, RETURN, WRITE_OFF}` และสถานะ workflow (`DRAFT → PENDING → IN_TRANSIT → COMPLETED → CANCELLED`) | model สองตาราง: `tb_inventory_transaction` ถือ `inventory_doc_type` (จำแนกโมดูล source — `good_received_note`, `credit_note`, `store_requisition`, `stock_in`, `stock_out`, `close`, `open`) และ `tb_inventory_transaction_cost_layer.transaction_type` (สิบสองประเภท cost-flow ใน Section 4) **ไม่มี `RETURN`, ไม่มี `WRITE_OFF` และไม่มีสถานะ workflow บนตัว transaction** — transaction คือ posted ledger record ไม่ใช่เอกสาร workflow Returns จำลองเป็น credit notes (`credit_note_amount` / `credit_note_quantity`); write-offs จำลองเป็น `tb_stock_out` พร้อม `adjustment_type_id` ที่เหมาะสม | จัดเรียง carmen/docs ใหม่ให้อธิบาย enum สองตัว (`enum_inventory_doc_type` จำแนกโมดูล source, `enum_transaction_type` cost-flow effect) แทน type field รวมเดียว บันทึกว่า returns และ write-offs จัดเส้นทางผ่านเอกสาร credit-note / stock-out ตามลำดับ |
 | 3 | สถานะ workflow ของ stock movement | PRD §3 บ่งบอก multi-state workflow บน movement (`DRAFT → PENDING → IN_TRANSIT → COMPLETED → CANCELLED`) | `tb_inventory_transaction` **ไม่มี** enum `doc_status`, **ไม่มี** `workflow_history`, **ไม่มี** `workflow_current_stage` และ **ไม่มี** `user_action` Workflow อยู่บนเอกสารโมดูล source (GRN's `enum_good_received_note_status`, SR's `enum_doc_status` เป็นต้น); inventory transaction เป็น **posted-only** — มีอยู่ก็ต่อเมื่อเอกสาร source อยู่ในสถานะ committed/posted การกลับรายการทำโดยเขียน compensating transaction (หรือโดยเอกสาร source ขยับไปสถานะ void/credit-note ที่ trigger compensating write) ไม่ใช่โดยการเปลี่ยนสถานะบน transaction row | ลบการอ้างสถานะ workflow จากคำอธิบายเอนทิตี inventory ของ carmen/docs ระบุว่า workflow อยู่บนเอกสาร source และ inventory transaction คือ artefact ที่ posted immutable |
 | 4 | Valuation method บนสินค้า | PRD §3 อ้างอิง `valuationMethod: FIFO | WEIGHTED_AVERAGE` ที่กำหนดต่อสินค้า | **แก้ไขในรอบนี้ — method ไม่ได้อยู่ต่อสินค้าเลย** `tb_product` ไม่มี column `costing_method` (หรือชื่อคล้ายกัน) Costing method เป็นการตั้งค่าระดับ **tenant / business-unit ทั้งหมด** ค่าเดียว: `tb_business_unit.calculation_method enum_calculation_method { average, fifo }` (default `average`, platform schema) `InventoryTransactionService.getCalculationMethod(bu_code)` อ่านค่าเดียวนี้และใช้กับสินค้า**ทุกตัว**ใน tenant อย่างสม่ำเสมอ — ไม่มี per-product override และไม่มี code path ที่ผสม FIFO กับ weighted-average ภายใน business unit เดียว ไม่พบ guard "block การเปลี่ยนเมื่อ on-hand ไม่เป็นศูนย์" เช่นกัน; การเปลี่ยนการตั้งค่า BU เป็น admin action ระดับ platform นอกโมดูลนี้ | ลบ framing per-product ทุกที่ใน wiki โมดูลนี้ บันทึก method เป็นการตั้งค่าระดับ BU ที่ inventory posting engine อ่านหนึ่งครั้งต่อ batch GRN/transaction; ย้ายเอกสาร costing-method ต่อสินค้าไปที่ [product](/th/inventory/product) เฉพาะเมื่อการเปลี่ยน schema ในอนาคตเพิ่ม field นั้นจริง |
-| 5 | scope และรูปของ Period-end snapshot | `inventory-management/period-end-process.md` อธิบาย period-end snapshot เป็นผลลัพธ์ checklist เชิงกระบวนการพร้อมรายงาน (Inventory Valuation Report, Movement Report, Variance Report) | `tb_period_snapshot` คือ snapshot ที่ persist — หนึ่ง row ต่อ bucket `(period_id, location_id, product_id)` ถือ buckets opening / receipt / issue / adjustment / closing ทั้ง qty และ cost **เขียนโดยเส้นทางปิดแบบ average เท่านั้น** (`period-end.close-average.helper.ts`); การปิดของ business unit แบบ FIFO เขียน transaction ยก lot ไปข้างหน้า (lots `CLOSE-…` / `OPEN-…`) แทนและไม่เคย populate ตารางนี้ | อัปเดต carmen/docs เพิ่มคำจำกัดความเอนทิตี `tb_period_snapshot` และบันทึกความขึ้นกับ method: rows snapshot มีอยู่เฉพาะ tenant แบบ average เท่านั้น |
+| 5 | scope และรูปของ Period-end snapshot | `inventory-management/period-end-process.md` อธิบาย period-end snapshot เป็นผลลัพธ์ checklist เชิงกระบวนการพร้อมรายงาน (Inventory Valuation Report, Movement Report, Variance Report) | `tb_inventory_period_snapshot` คือ snapshot ที่ persist — หนึ่ง row ต่อ bucket `(period_id, location_id, product_id)` ถือ buckets opening / receipt / issue / adjustment / closing ทั้ง qty และ cost **เขียนโดยเส้นทางปิดแบบ average เท่านั้น** (`period-end.close-average.helper.ts`); การปิดของ business unit แบบ FIFO เขียน transaction ยก lot ไปข้างหน้า (lots `{location_code}{YYMM}{seq4}`) แทนและไม่เคย populate ตารางนี้ | อัปเดต carmen/docs เพิ่มคำจำกัดความเอนทิตี `tb_inventory_period_snapshot` และบันทึกความขึ้นกับ method: rows snapshot มีอยู่เฉพาะ tenant แบบ average เท่านั้น |
 | 6 | columns "Free / Allocated / Available / InTransit" qty | PRD §3 Key Concepts ระบุ `onHand`, `allocated`, `available` และ `inTransit` เป็น columns ขนานบน stock balance | ไม่มีตัวใดที่ persist บนตาราง inventory ใด ๆ `onHand` คือผลรวม derive (item 1 ข้างบน) `allocated` และ `available` derive จากสถานะ open-document: `allocated = Σ open store-requisition reservations` สำหรับ product/location; `available = onHand − allocated` `inTransit` คือ `Σ store-requisition lines ในสถานะ transfer-dispatched-but-not-received` | บันทึกกฎ derivation ใน carmen/docs และ read-model ที่เปิดเผย; ลบ framing "persisted column" |
 | 7 | Direct-cost location ไม่เป็นส่วนของ inventory | `location-type-and-financial-treatment.md` กล่าวถึง Direct Location Inventory bypass balance sheet ("ไม่มี inventory asset บันทึก… Bypass balance sheet โดยสิ้นเชิง") | **แก้ไขในรอบนี้** `InventoryTransactionService.createFifoTransaction` / `createAverageTransaction` (`inventory-transaction.service.ts`) เขียน row `tb_inventory_transaction_cost_layer` inbound ตามปกติสำหรับการรับแบบ `direct` เหมือนกับแบบ `inventory` ทุกประการ **จากนั้น** เรียก `createDirectExpenseOut()` ทันที ซึ่งเขียน detail + cost-layer row outbound หักล้าง **ตัวที่สอง** (`transaction_type = issue`) ที่ต้นทุนเดียวกัน ทำให้ยอดสุทธิที่ direct location เป็นศูนย์ การรับที่ direct-location จึงเขียน cost-layer rows **สอง** rows ไม่ใช่ศูนย์ — "bypass ledger" ผิด; "สุทธิเป็นศูนย์ผ่านการเบิกตัวเองอัตโนมัติ" คือสิ่งที่โค้ดทำ ไม่พบการเขียน GL/journal สำหรับ leg ใดเลย (ดู § 1) | ลบ "ไม่มี cost-layer row" ทุกที่ในโมดูลนี้ บันทึกกลไกจริง: layer inbound + layer outbound หักล้างที่สร้างอัตโนมัติ, on-hand สุทธิเป็นศูนย์, ไม่มีผลทาง GL ที่ยืนยันได้ |
 | 8 | การติดตาม Consignment inventory | `location-type-and-financial-treatment.md`: consignment receipt เป็น memo-only ("Receipt: ไม่มี entry — memo record เท่านั้น"); consumption trigger `Dr COGS / Cr AP` | **แก้ไขในรอบนี้ — ไม่พบ branching เฉพาะ consignment ที่ใดเลยใน `inventory-transaction.service.ts`** การค้นทั้ง repo หา `consignment` ใน backend แสดงว่าถูกใช้เพียงเป็นค่า filter ของ `location_type` ที่จัดกลุ่ม**ร่วมกับ** `inventory` (ไม่เคยถูกแยกเดี่ยว) ใน `period-end.service.ts`, `period-end.validate.ts`, `physical-count-period.service.ts` และ `spot-check.service.ts` — กล่าวคือ location แบบ consignment ถูกนับและคิดยอดเหมือน location แบบ `inventory` ทุกประการ ไม่พบเส้นทางรับแบบ memo-only, ไม่พบการ post COGS/AP คู่ และไม่พบ "consignment flag" บน cost-layer | Mark เรื่องเล่า memo-only / dual-posting เป็น **design intent ที่ยังไม่ยืนยัน** ไม่ใช่พฤติกรรมที่ตรวจสอบแล้ว บันทึกสิ่งที่โค้ดทำจริง: `consignment` มีพฤติกรรมเหมือน `inventory` ทุกประการในแง่ cost-layer และยอดคงเหลือ; เฉพาะ `direct` เท่านั้นที่ได้การปฏิบัติแยก (item 7) |
@@ -378,11 +378,11 @@ Inventory PRD ของ carmen/docs (`inventory-management-prd.md`), data-struct
 
 ## 6. แหล่งอ้างอิง
 
-- **หลัก (source of truth):** Prisma schemas ที่ระบุใน header callout — เป็นรูปธรรม `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (เอนทิตี inventory ทั้งเจ็ด: `tb_inventory_transaction`, `tb_inventory_transaction_detail`, `tb_inventory_transaction_cost_layer`, `tb_location`, `tb_product_location`, `tb_period`, `tb_period_snapshot` พร้อม enum ห้าตัว `enum_inventory_doc_type`, `enum_location_type`, `enum_transaction_type`, `enum_period_status`, `enum_physical_count_type`) และ `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (ตรวจสอบแล้วไม่มี model inventory)
+- **หลัก (source of truth):** Prisma schemas ที่ระบุใน header callout — เป็นรูปธรรม `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (เอนทิตี inventory ทั้งเจ็ด: `tb_inventory_transaction`, `tb_inventory_transaction_detail`, `tb_inventory_transaction_cost_layer`, `tb_location`, `tb_product_location`, `tb_inventory_period`, `tb_inventory_period_snapshot` (เปลี่ยนชื่อ 2026-09-16, migration `20260916141000_rename_tb_period_to_tb_inventory_period`) พร้อม enum ห้าตัว `enum_inventory_doc_type`, `enum_location_type`, `enum_transaction_type`, `enum_period_status`, `enum_physical_count_type`) และ `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (ตรวจสอบแล้วไม่มี model inventory)
 - **รอง (cross-check แนวคิด):**
   - `../carmen/docs/Inventory/inventory-management-prd.md` — PRD อธิบาย `InventoryStatus` / `StockMovement` / valuation methods; ความแตกต่างใน Section 5 (items 1, 2, 3, 4, 6)
   - `../carmen/docs/Inventory/data-structure-trace.md` — data-structure trace อธิบาย relationship lot / location / delivery-point; ความแตกต่างใน Section 5 (items 9, 11)
   - `../carmen/docs/Inventory/location-type-and-financial-treatment.md` — breakdown journal-entry ต่อ location type (inventory / direct / consignment); cross-check กับ `enum_location_type` และพฤติกรรม cost-layer ledger (items 7, 8)
   - `../carmen/docs/Inventory/stock-in-detail.md` — workflow manual stock-in adjustment; cross-reference สำหรับเส้นทาง `enum_inventory_doc_type = stock_in`
-  - `../carmen/docs/inventory-management/period-end-process.md` — checklist period-end และ framing snapshot; ความแตกต่างใน Section 5 (item 5 — `tb_period_snapshot` คือ anchor ที่ persist ไม่ใช่เพียง output รายงาน)
+  - `../carmen/docs/inventory-management/period-end-process.md` — checklist period-end และ framing snapshot; ความแตกต่างใน Section 5 (item 5 — `tb_inventory_period_snapshot` คือ anchor ที่ persist ไม่ใช่เพียง output รายงาน)
 - โมดูลที่เกี่ยวข้อง: [good-receive-note](/th/inventory/good-receive-note) (receipts post `enum_inventory_doc_type = good_received_note` transactions; cross-link ไปยัง inventory transaction อยู่บน `tb_good_received_note_detail_item.inventory_transaction_id`), [store-requisition](/th/inventory/store-requisition) (issues / transfers; SR detail ถือ `inventory_transaction_id`), [physical-count](/th/inventory/physical-count) (count adjustments post `tb_stock_in` / `tb_stock_out` rows map ไปยัง `adjustment_in` / `adjustment_out`), [spot-check](/th/inventory/spot-check) (partial counts; เส้นทาง posting เดียวกับ physical-count), [inventory-adjustment](/th/inventory/inventory-adjustment) (manual stock-in / stock-out สำหรับการแก้ไขที่ไม่ใช่ count), [costing](/th/inventory/costing) (บริโภค `tb_inventory_transaction_cost_layer.cost_per_unit` / `.average_cost_per_unit` สำหรับการเลือก cost outbound และสำหรับ COGS), [product](/th/inventory/product) (ถือการกำหนดค่า costing-method ที่ cost-layer อ่าน ณ เวลา post), [vendor-pricelist](/th/inventory/vendor-pricelist) (price-variance เทียบกับ unit cost ของ GRN ที่รับ ทางอ้อมผ่าน layer inbound)

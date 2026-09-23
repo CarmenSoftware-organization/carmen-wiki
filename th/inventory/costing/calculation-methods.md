@@ -2,7 +2,7 @@
 title: วิธีคำนวณต้นทุนสินค้าคงคลัง: FIFO vs. Weighted Average (Inventory Costing Methods)
 description: การวิเคราะห์วิธีคำนวณต้นทุนสินค้าคงคลัง FIFO vs. Weighted Average สำหรับแพลตฟอร์ม Carmen Software
 published: true
-date: 2026-07-22T10:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: inventory, costing, fifo, weighted-average, carmen-software
 editor: markdown
 dateCreated: 2026-02-16T11:19:18.975Z
@@ -14,6 +14,7 @@ dateCreated: 2026-02-16T11:19:18.975Z
 > **กลุ่มผู้ใช้:** นักพัฒนา & QA ฝั่ง Inventory &nbsp;·&nbsp; **ขอบเขต:** FIFO vs. Weighted Average — แนวคิด สูตร ผลกระทบ COGS trade-off &nbsp;·&nbsp; วิธี costing ถูกตั้งค่าครั้งเดียวต่อ business unit ตอนตั้งค่า; การตรวจ code เมื่อ 2026-07-22 พบว่า **ไม่มี guard ป้องกันการเปลี่ยนภายหลัง** แม้มี on-hand ไม่เท่ากับศูนย์ — ดู [01-data-model](/th/inventory/costing/01-data-model) § 5 item 1 และ [02-business-rules](/th/inventory/costing/02-business-rules) § 2
 
 > **หมายเหตุเกี่ยวกับเนื้อหาหน้านี้:** หน้านี้เป็น **เอกสารอ้างอิงรูปแบบอุตสาหกรรมทั่วไป** (แนวคิด FIFO vs. Weighted Average, สูตร, และข้อพิจารณาการออกแบบแพลตฟอร์ม) ไม่ใช่คำอธิบาย schema ของ Carmen เอง — หน้านี้มีมาก่อนส่วนที่เหลือของโมดูลนี้และใช้ชื่อ table/field ทั่วไป (`inventory_lot`, `warehouse_id`, `organization_settings`) แทนชื่อ Prisma model จริง ตรงจุดที่มันต่างจาก implementation จริง — โดยเฉพาะขอบเขตการตั้งค่าต่อสินค้า/หมวดใน § 6.1 ซึ่งไม่มีอยู่จริง costing เป็นค่าเดียวต่อ business unit — [01-data-model](/th/inventory/costing/01-data-model) § 5 เอกสารความต่างทุกจุดไว้แล้ว อ่าน section นั้นควบคู่ไปกับหน้านี้ แทนที่จะถือ pseudocode ของหน้านี้เป็น schema จริงของ Carmen
+> **ความต่างเพิ่มอีกสามจุดที่ยืนยัน 2026-09-22** (รายละเอียดใน [01-data-model](/th/inventory/costing/01-data-model) § 5 item 10–12 และ [02-business-rules](/th/inventory/costing/02-business-rules) § 3): (1) เอนจินรักษาค่าเฉลี่ยถ่วงน้ำหนัก **ต่อสินค้าข้ามทุก location** ไม่ใช่ต่อ warehouse อย่างที่ § 3 สมมติ; (2) ต้นทุนต่อหน่วยบน ledger ปัดเป็น **2 ตำแหน่ง** (`Math.round(x × 100) / 100`) ดังนั้นคำแนะนำ "use high precision" ของ § 3.6 ไม่ใช่สิ่งที่โค้ดทำ; (3) ต้นทุนขาเข้าเป็น **landed** cost — ยอด net ของบรรทัด GRN บวกส่วนแบ่ง extra cost ของการรับที่จัดสรรให้ กระจายบนหน่วยที่รับ **บวกหน่วยของแถม (FOC)** — เก็บถาวรต่อ layer เป็น `extra_cost_amount` หมายเลข lot เป็น `<location_code><YYMM><ลำดับ 4 หลัก>` ไม่ใช่ surrogate `lot_id` ที่ใช้ในหน้านี้
 
 ## 1. ภาพรวม
 

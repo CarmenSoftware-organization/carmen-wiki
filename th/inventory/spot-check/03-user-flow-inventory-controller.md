@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check) — User Flow — หน้ารายการ & สร้าง
 description: หน้ารายการตำแหน่งและหน้าสร้างที่ใช้เริ่ม กำหนด scope และสุ่มตัวอย่างการสุ่มตรวจ
 published: true
-date: 2026-07-15T18:38:42.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: spot-check, user-flow, inventory-controller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -40,7 +40,7 @@ graph LR
 - **Card ตำแหน่ง** (`ScLocationCard`) — หนึ่งต่อตำแหน่ง; ตำแหน่ง "Not Started" แสดงปุ่ม **Start**; ตำแหน่งที่มี spot check ค้างแสดง panel ข้อมูล resume (หมายเลข spot-check, badge method, ความคืบหน้า counted/total, badge สถานะ) พร้อมปุ่ม **Resume** และ **Reset**
 - **Card History** (`ScHistoryCard`) — หนึ่งต่อ spot check ในประวัติ คลิกเพื่อเปิด (route ไปยังหน้า entry เดียวกันที่บันทึกใน [03-user-flow-counter.md](/th/inventory/spot-check/03-user-flow-counter) ไม่ว่างสถานะใดของ spot check)
 
-### สิ่งที่หน้าสร้างแสดง (`sc-form.tsx` อยู่ในโหมด "add" เสมอที่นี่)
+### สิ่งที่หน้าสร้างแสดง (`sc-form.tsx` เป็นฟอร์มสร้างอย่างเดียวตั้งแต่ 2026-09-04 — branch view/edit ที่ตายแล้วถูกลบใน `0647b32e`)
 
 - **Method picker** (`ScMethodPicker`) — สาม card: **Random** (ระบบสุ่ม N สินค้า), **High Value** (ระบบสุ่ม N สินค้าที่มีมูลค่าสูงสุด), **Manual** (เลือกสินค้าเฉพาะ)
 - **Location** — ล็อกไว้ตาม `location_id` จาก URL ไม่แก้ไขได้บนหน้านี้
@@ -60,7 +60,7 @@ graph LR
 | Action | State precondition | State effect | Notes |
 | ------ | ------------------ | ------------ | ----- |
 | เริ่ม spot check (Random) | ตำแหน่งไม่มี spot check ค้างอยู่ | `POST /spot-checks` ด้วย `method: "random"`, `items: N`; เอกสารใหม่ที่ `pending`; navigate ไป `/:id` | ตาม `SPC_VAL_001`–`002` |
-| เริ่ม spot check (High Value) | เหมือนกัน บวกต้องมี `tb_period` ที่เปิดอยู่/ล็อกอยู่ | `POST /spot-checks` ด้วย `method: "high_value"`, `items: N`, `minimum_cost` ทางเลือก; เอกสารใหม่ที่ `pending` | Reject ด้วย `SPOT_CHECK_NO_ACTIVE_PERIOD` ถ้าไม่มีงวดที่เปิด/ล็อก (`SPC_VAL_004`) |
+| เริ่ม spot check (High Value) | เหมือนกัน บวกต้องมี `tb_inventory_period` ที่เปิดอยู่/ล็อกอยู่ | `POST /spot-checks` ด้วย `method: "high_value"`, `items: N`, `minimum_cost` ทางเลือก; เอกสารใหม่ที่ `pending` | Reject ด้วย `SPOT_CHECK_NO_ACTIVE_PERIOD` ถ้าไม่มีงวดที่เปิด/ล็อก (`SPC_VAL_004`) |
 | เริ่ม spot check (Manual) | เหมือนกัน | `POST /spot-checks` ด้วย `method: "manual"`, `product_id: [...]`; เอกสารใหม่ที่ `pending` | ต้องมีสินค้าที่เลือกอย่างน้อยหนึ่งอยู่ใน eligible pool (`SPC_VAL_003`) |
 | Resume การตรวจที่ค้าง | ตำแหน่งมี spot check `pending`/`in_progress` | Navigate ตรงไปยัง `/:id` — ไม่มีเอกสารใหม่สร้าง | เปลี่ยน route ฝั่ง client ล้วน ๆ |
 | Reset spot check | ตำแหน่งมี spot check `pending`/`in_progress` | `POST /spot-checks/:id/reset` — `doc_status → void`; ตำแหน่งกลับไปเป็น Not Started | Reject บน `void`/`completed` (`SPC_VAL_006`); **ไม่** ล้างแถว `tb_spot_check_detail` |
@@ -84,5 +84,5 @@ graph LR
 
 - **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/sc-component.tsx`, `sc-form.tsx`, `sc-location-card.tsx`, `sc-history-card.tsx`, `sc-method-picker.tsx`, `sc-reset-dialog.tsx`
 - **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts` (`create`, `reset`, `findCurrentByLocation`), `spot-check.logic.ts` (sampling)
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check; manual test-case catalog ที่ `docs/test-cases/760-spot-check.md`
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check; manual test-case catalog `docs/test-cases/760-spot-check.md` (44 cases; `TC-SPC-01*` list, `TC-SPC-03*` create)
 - ที่เกี่ยวข้อง: [spot-check/03-user-flow](/th/inventory/spot-check/03-user-flow) (overview), [spot-check/02-business-rules](/th/inventory/spot-check/02-business-rules) (`SPC_VAL_001`–`004`, `SPC_VAL_006`, `SPC_AUTH_001`), [spot-check/03-user-flow-counter](/th/inventory/spot-check/03-user-flow-counter) (การเดินทางหน้า entry/review ของ role เดียวกัน)

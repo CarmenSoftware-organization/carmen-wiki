@@ -1,8 +1,8 @@
 ---
 title: บทบาท (Application Role)
-description: นิยาม role ต่อ business unit บวกตาราง join ที่ map role กับ permission และ user กับ role — หัวใจของ tenant RBAC
+description: นิยาม role ต่อ business unit บวกตาราง join role→permission และ user→role — หัวใจของ tenant RBAC List คืนจำนวน permission, detail คืนแคตตาล็อกเต็ม; role print; แก้ picker สำหรับ permission ระดับโมดูล
 published: true
-date: 2026-07-15T23:46:09.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: access-control, application-role, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,7 +11,15 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # บทบาท (Application Role)
 
 > **At a Glance**
-> **เจ้าของ:** Sysadmin (ต่อ BU) &nbsp;·&nbsp; **ตาราง:** `tb_application_role` (+ `tb_application_role_tb_permission`, `tb_user_tb_application_role`) &nbsp;·&nbsp; **ใช้โดย:** การตรวจสอบ permission ของทุกโมดูลธุรกรรม &nbsp;·&nbsp; Bundle ที่ตั้งชื่อแล้วของ permission ที่มอบให้ผู้ใช้ภายใน BU
+> **เจ้าของ:** Sysadmin (ต่อ BU) &nbsp;·&nbsp; **ตาราง:** `tb_application_role` (+ `tb_application_role_tb_permission`, `tb_user_tb_application_role`) &nbsp;·&nbsp; **หน้าจอ:** `/system-admin/role` (+ `/new`, `/:id`) — permission `system_admin.role.view`, licence `system_admin.role` &nbsp;·&nbsp; **Endpoint:** `api/config/:bu_code/application-roles` (`KeycloakGuard` เท่านั้น — **ไม่มี `AppIdGuard` และไม่มี `@Permission` บน route ทั้งห้า** ตรวจสอบซ้ำ 2026-09-22) &nbsp;·&nbsp; **ใช้โดย:** การตรวจสอบ permission ของทุกโมดูลธุรกรรม &nbsp;·&nbsp; Bundle ที่ตั้งชื่อแล้วของ permission ที่มอบให้ผู้ใช้ภายใน BU
+
+## สถานะการ implement (ตรวจสอบซ้ำ 2026-09-22)
+
+- **แยก payload ของ list กับ detail (BE `d911ad988`, 2026-09-07)** `GET …/application-roles` คืน `permissions: { count }` ต่อ role บวก `audit` (`ApplicationRoleResponseDto`, `swagger/response.ts:38-66`); `GET …/application-roles/:id` คืน **แคตตาล็อก permission ทั้งหมด** พร้อมทำเครื่องหมาย grant ของ role (`ApplicationRoleDetailResponseDto`, `:91-105`) type ฝั่ง FE สะท้อนแบบเดียวกัน (`types/role.ts`: `Role.permissions: { count }`, `RoleDetail.permissions: RolePermission[]`; FE `3d339913`) ตั้งแต่รอบ serializer 2026-09-17 row ของ list มี `business_unit: { id }` แทน `business_unit_id` แบบ flat (BE `5d64f5dfd` — เฉพาะ list; DTO ของ detail ไม่มีฟิลด์นี้)
+- **Payload สร้าง / แก้ไข:** `CreateRoleDto { name, description?, permissions: { add: string[] } }`, `UpdateRoleDto { …, doc_version, permissions: { add: string[], remove: string[] } }` (`types/role.ts:35-44`)
+- **หน้าจอ role ถูกสร้างใหม่ (FE `aad79674`, 2026-08-20)** `permission-matrix.tsx` ถูกลบ; ฟอร์มตอนนี้เป็น `role-form.tsx` + `role-form-hero.tsx` + `permission-picker.tsx` (`permission-catalog.ts` จัดกลุ่มแคตตาล็อกเป็น category → resource → action; action เป็น Toggle pill, `4c28bcf0`) แก้บั๊ก picker สองจุดเมื่อ 2026-08-31 (`bad71662`): permission ที่ `resource` ไม่มีจุด — grant **ระดับโมดูล** `procurement`, `configuration`, `inventory_management`, `dashboard`, `report`, `system_admin`, … (11 ตัว) — ถูกข้ามด้วย `if (dot === -1) continue;` จึง grant จาก UI ไม่ได้เลย; และ permission ที่ soft-delete แล้วที่คืนมาพร้อม `audit.deleted` ยังถูก render อยู่ ตอนนี้ row ระดับโมดูลแสดงเป็นแถวแรกในแต่ละ category ในชื่อ "Module access" (`MODULE_RESOURCE_KEY`)
+- **Print (FE `efdc52ba`, 2026-08-20)** `use-role-print.ts` render สรุป permission ที่ grant ต่อโมดูล (ลำดับและ label เดียวกับ picker) พร้อม header BU / printed-by / printed-at ผ่าน iframe ที่ซ่อนอยู่
+- **Delete** มีให้ทั้งใน row ของ list และบน hero ของ detail ตรวจสอบ permission ทั้งสองจุด (`65751027`)
 
 ![บทบาท (Application Role) screen](/screenshots/access-control/application-role.png)
 
@@ -27,9 +35,11 @@ Application role คือ **bundle ที่ตั้งชื่อแล้�
 
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
-| สร้าง role สำหรับ BU | `/system-admin/role/new` → **Name** + permission matrix → Save | ไม่มี BU picker บนฟอร์มนี้ — role ถูกสร้างภายใน BU context ที่ active ของผู้เรียก |
-| เพิ่ม permission ให้ role | Role edit → permission matrix / picker (`permission-matrix.tsx`, `permission-picker.tsx`) | Checkbox บน `tb_permission` จัดกลุ่มโดย `resource`; คลิก column-header grant/revoke ทั้ง action ข้ามทุก resource, row `Grant All` grant ทั้งหมวดหมู่ |
-| มอบหมายผู้ใช้ให้ role | **ไม่ได้อยู่บนหน้าจอ Role** — ทำจาก `/system-admin/user/:id` → ส่วน **Assign Roles** → toggle role card → Save | หน้าจอ Role edit มีแค่ Name + Permissions; ไม่มีแท็บ Users (ยืนยันจาก `role-form.tsx` และแคตตาล็อก test-case e2e `1101-role.md`) |
+| สร้าง role สำหรับ BU | `/system-admin/role/new` → **Name**, Description + permission picker → Save | ไม่มี BU picker บนฟอร์มนี้ — role ถูกสร้างภายใน BU context ที่ active ของผู้เรียก; `POST …/application-roles { name, description, permissions: { add } }` |
+| เพิ่ม permission ให้ role | Role edit → permission picker (`permission-picker.tsx`) | หนึ่ง row ต่อ resource พร้อม Toggle pill ต่อ action จริง; "Grant all" ต่อ category และ select-all ต่อ row; row ระดับโมดูล "Module access" อยู่แถวแรกของแต่ละ category |
+| Print grant ของ role | Role detail → **Print** | `use-role-print.ts` — สรุป grant ต่อโมดูล header เอกสารสไตล์โรงแรม |
+| มอบหมายผู้ใช้ให้ role | **ไม่ได้อยู่บนหน้าจอ Role** — ทำจาก `/system-admin/user/:id` → **Edit** → ติ๊ก role → Save (`PATCH /api/config/:bu_code/users/:user_id { application_role_id: { add, remove } }`) | หน้าจอ Role edit มีแค่ Name + Description + Permissions; ไม่มีแท็บ Users (ยืนยันจาก `role-form.tsx` และแคตตาล็อก test-case e2e `1101-role.md`) |
+| ดูว่าใครถือ role ไหน | `/system-admin/user` → **Print** / **Export** | Matrix ผู้ใช้ × role จาก `GET /api/config/:bu_code/user-application-roles` |
 | ปลดระวาง role | ตั้ง `is_active = false` | การมอบหมายที่มีอยู่คงอยู่; permission หยุด grant ตอน eval ครั้งถัดไป |
 | ลบ role | Action ของ row ใน role list, หรือปุ่ม **Delete** บน Hero ของหน้าจอ detail | ถูกบล็อกถ้ามีการมอบหมายที่ active อยู่ ตาม การตรวจสอบและ Error ด้านล่าง |
 | ตรวจสอบการเปลี่ยนแปลง role | [reporting-audit/activity](/th/inventory/reporting-audit/activity) log | Filter โดย `entity_type = application_role` |
@@ -49,7 +59,7 @@ Application role คือ **bundle ที่ตั้งชื่อแล้�
 - **BU scoping บังคับฝั่งแอปพลิเคชัน** ไม่มี constraint DB บล็อกการมอบ role ให้ user ที่ไม่มี BU access — เลเยอร์ service ต้อง validate
 - **Role ที่ soft-delete** หยุด grant permission (join filter `deleted_at IS NULL`) แต่ row การมอบหมายคงอยู่สำหรับ audit
 - **Link permission ที่ inactive** (`tb_application_role_tb_permission.is_active = false`) ลบ permission โดยไม่ delete link — มีประโยชน์สำหรับ rollout เป็นขั้น
-- **การจัดการ role เองก็ถูก gate แบบหยาบ** Route `/system-admin/role` (และ `/system-admin/user`, `/system-admin/user-activity`) ถูก gate ด้วย frontend permission key แบบหยาบตัวเดียว คือ `PERMISSIONS.system_configuration.view` (`constant/module-list.ts`) — ไม่มี permission แบบละเอียด "ใครจัดการ role ได้" แยกจาก system-configuration access ทั่วไป
+- **การจัดการ role ถูก gate เฉพาะฝั่ง frontend** รายการ nav `/system-admin/role` gate ด้วย `PERMISSIONS.system_admin.role.view` (`constant/module-list.ts:691-695`; key `system_configuration.view` ที่เวอร์ชันก่อนอ้างถึงเป็น key ผี ถูกแทนที่เมื่อ 2026-09-21) และ `tb_permission` มี `system_admin.role.{view,create,update,delete}` — แต่ `config_application-roles.controller.ts` ไม่ตรวจสักตัว: route ทั้งห้าอยู่หลัง `KeycloakGuard` ระดับ class (`:59`) โดยไม่มี `AppIdGuard` และไม่มี decorator `@Permission` (`grep -c` = 0 ที่ HEAD) `config_user-application-roles` และ `config_permissions` ก็เป็นแบบเดียวกัน สมาชิก BU ที่ authenticate แล้วคนใดก็ตามที่ licence รวม `system_admin.role` สามารถสร้าง แก้ไข หรือลบ role ผ่าน API ได้ **ยังไม่ยืนยันว่าตั้งใจให้เป็นแบบนี้หรือไม่** — flag ไว้ ไม่ได้แก้
 
 ---
 
@@ -114,7 +124,9 @@ Application role คือ **bundle ที่ตั้งชื่อแล้�
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_application_role` (บรรทัด 19), `tb_application_role_tb_permission` (บรรทัด 44), `tb_user_tb_application_role` (บรรทัด 606)
-- **Frontend:** `../carmen-inventory-frontend-react/routes/system-admin/role/` (`role-form.tsx`, `permission-matrix.tsx`, `permission-picker.tsx`, `role-component.tsx`) สำหรับหน้าจอ role เอง; `../carmen-inventory-frontend-react/routes/system-admin/user/user-assigned-roles.tsx` สำหรับการมอบหมาย user↔role; permission key ของ route guard อยู่ที่ `constant/module-list.ts` / `constant/permissions.ts`
-- **E2E:** `../carmen-inventory-frontend-e2e/docs/test-cases/1101-role.md` (แคตตาล็อก test-case แบบเอกสารเท่านั้น; ยังไม่มี Playwright spec อัตโนมัติ)
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_application_role`, `tb_application_role_tb_permission`, `tb_user_tb_application_role`
+- **Backend gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_application-roles/config_application-roles.controller.ts` (`GET` `:76`, `GET :id` `:140`, `POST` `:190`, `PUT :id` `:253`, `DELETE :id` `:320`; swagger `response.ts`), `config/config_user-application-roles/` (matrix `GET` `:80`, ต่อผู้ใช้ `GET :user_id`, `POST`, `PATCH`, `DELETE`); service `apps/micro-business/src/authen/role_permission/role_permission.service.ts`; serializer `apps/backend-gateway/src/common/dto/application-role/application-role.serializer.ts`
+- **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/config/application-roles/`, `config/user-application-roles/`
+- **Frontend:** `../carmen-inventory-frontend-react/routes/system-admin/role/` (`role.route.tsx`, `role-new.route.tsx`, `role-edit.route.tsx`, `role-component.tsx`, `role-form.tsx`, `role-form-hero.tsx`, `role-form-schema.ts`, `permission-picker.tsx`, `permission-catalog.ts`, `use-permission.ts`, `use-role-print.ts`, `use-role-table.tsx`) สำหรับหน้าจอ role เอง; `../carmen-inventory-frontend-react/routes/system-admin/user/user-assigned-roles.tsx` สำหรับการมอบหมาย user↔role; `types/role.ts`; nav key ใน `constant/module-list.ts:691-695` / `constant/permissions.ts` (`system_admin.role`)
+- **E2E:** `../carmen-inventory-frontend-e2e/docs/test-cases/1101-role.md` (44 case แบบเอกสารเท่านั้น; ยังไม่มี Playwright spec อัตโนมัติ)
 - **carmen/docs:** `../carmen/docs/workflow-permissions-system.md`

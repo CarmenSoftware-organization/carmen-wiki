@@ -2,7 +2,7 @@
 title: เหตุผลใบลดหนี้ (Credit Note Reason)
 description: รหัสเหตุผลสำหรับใบลดหนี้ที่ออกต่อ GRN — รองรับ flow การคืนสินค้าให้ผู้ขายและการแก้ราคา
 published: true
-date: 2026-07-15T21:47:09.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: master-data, credit-note-reason, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -74,6 +74,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 - **Validation** `name` บังคับ
 - **Lifecycle** ไม่มี `is_active`; soft-delete คือเส้นทาง retirement CN ประวัติเก็บ FK และ resolve ชื่อแม้บนแถวที่ soft-deleted
 - **การแปล** เหตุผลอาจหันหน้าหาผู้ขาย — เก็บการแปลใน `info` จนกว่าจะมีการ introduce ตาราง localisation
+- **Default sort** `GET /credit-note-reasons` ที่ไม่มี `?sort=` คืน `name:asc, id:asc` (`procurement/credit-note-reason/credit-note-reason.service.ts:46`, `withDefaultSort`, 2026-09-13) ยืนยันซ้ำ 2026-09-22: schema (`creditnotereason_name_u`, ไม่มี `is_active`) และ soft-delete แบบไม่มีเงื่อนไขไม่เปลี่ยนแปลง
 
 ## 7. การอ้างอิงข้ามโมดูล
 
@@ -82,6 +83,6 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_credit_note_reason` (lines ~303-324)
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_credit_note_reason` (line ~312)
 - **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/procurement/credit-note-reason/credit-note-reason.service.ts` (อยู่ใต้ `procurement` ไม่ใช่ `master` ใน layout ของโมดูล backend เอง)
 - **Frontend:** `../carmen-inventory-frontend-react/routes/config/credit-note-reason/`

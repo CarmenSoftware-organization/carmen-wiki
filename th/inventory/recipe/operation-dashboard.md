@@ -1,8 +1,8 @@
 ---
 title: Operation Plan Dashboard
-description: หน้าจอ /operation-plan — 10 tile KPI/chart ที่ hardcode ไว้ (recipe + equipment) มาจาก dataset catalog ที่ลงทะเบียนในโค้ด ไม่ใช่ widget board ที่ผู้ใช้ปรับแต่งได้
+description: หน้าจอ /operation-plan — 10 tile KPI/chart ที่ hardcode ไว้ (recipe + equipment) จาก route config-only ของ gateway แต่ละ tile โหลด dataset ของตัวเองแบบ lazy; ไม่ใช่ widget board ที่ผู้ใช้ปรับแต่งได้
 published: true
-date: 2026-07-29T10:52:30.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: recipe, operation-plan, dashboard, widget, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T10:00:00.000Z
@@ -11,7 +11,9 @@ dateCreated: 2026-07-29T10:00:00.000Z
 # Operation Plan Dashboard
 
 > **สรุปโดยย่อ**
-> **Route:** `/operation-plan` (index) &nbsp;·&nbsp; **Component:** `operation-dashboard.tsx` &nbsp;·&nbsp; **Data:** `GET /api/{bu_code}/dashboard-widgets/operation-plan` &nbsp;·&nbsp; **Tiles:** 10 tile hardcode (5 KPI, 5 chart) ครอบคลุม recipe + equipment &nbsp;·&nbsp; **แก้ไขไม่ได้** — ไม่มี UI add/remove/reorder ไม่มีการปรับแต่งตาม tenant
+> **Route:** `/operation-plan` (index) &nbsp;·&nbsp; **Component:** `operation-dashboard.tsx` &nbsp;·&nbsp; **Data:** `GET /api/{bu_code}/dashboard-widgets/operation-plan/config` (config เท่านั้น ตั้งแต่ 2026-09-07) + `GET /api/{bu_code}/datasets/{dataset_id}` แบบ lazy หนึ่งครั้งต่อ tile &nbsp;·&nbsp; **Tiles:** 10 tile hardcode (5 KPI, 5 chart) ครอบคลุม recipe + equipment &nbsp;·&nbsp; **แก้ไขไม่ได้** — ไม่มี UI add/remove/reorder ไม่มีการปรับแต่งตาม tenant
+
+> **ตรวจสอบซ้ำ 2026-09-22** สองการเปลี่ยนแปลงตั้งแต่ 2026-07-29: **(1)** หน้าไม่รอ response รวมชุดเดียวอีกต่อไป — `useOperationPlanWidgets()` → `useDashboardWidgetConfigs("operation-plan")` (`hooks/use-dashboard-widgets.ts`) เรียก route ใหม่ `…/dashboard-widgets/operation-plan/config` (`374aad8e5`; gateway คืน config ที่ hardcode ไว้โดยไม่แตะฐานข้อมูล ถ้า 404 จะถอยไปใช้ route รวมชุดเดิม) ด้วย `CACHE_STATIC` และแต่ละ tile เป็น `LazyWidget` ที่ดึง `GET /api/{bu}/datasets/{dataset_id}` เฉพาะเมื่อเลื่อนเข้ามาในสายตา (`db046517`) dataset ที่พังจึงแสดงเป็น error บน **tile นั้น** ไม่ใช่หายไปเงียบ ๆ **(2)** tile วางบน grid 12 คอลัมน์ / แถวสูง 4 rem ที่ใช้ร่วมกันด้วย `gridClasses(widget_type, display)` และสี่ section แบ่งตามชนิดการ render (KPI + gauge · Trends = line/area · Comparison = bar · Distribution = pie) เรียงตาม `order_index` ภายในแต่ละ section
 
 ![Operation Plan dashboard](/screenshots/operation-plan/index.png)
 
@@ -37,17 +39,17 @@ Operation Plan Dashboard คือหน้าจอ landing ที่แสด�
 | อาการ | สาเหตุ | ยืนยันแล้วหรือไม่ |
 |---|---|---|
 | Dashboard ทั้งหมดแสดง banner error | `GET .../dashboard-widgets/operation-plan` ล้มเหลว (network, auth, หรือ micro-data มีปัญหา) | **ยืนยันแล้ว** — `operation-dashboard.tsx` render banner `role="alert"` เดียว ผูกกับ `isError` |
-| Tile หายไปจาก grid เฉย ๆ | `dataset_id` ของมัน resolve ไม่สำเร็จ (`meta`/`data` หาย) | **ยืนยันแล้ว** — `isResolved()` กรอง widget ที่ไม่มีทั้ง `meta` และ `data` ออกก่อน render |
-| ข้อความ empty-state ("No widget data") | dataset ที่ตั้งค่าไว้ทั้ง 10 ตัว resolve ไม่สำเร็จ หรือ catalog entry ถูกลบ | **ยืนยันแล้ว** — `hasAny` เช็คกับ list ที่ resolve แล้วหลัง filter/sort |
+| Tile ชิ้นเดียวแสดง error / skeleton | `GET /api/{bu}/datasets/{dataset_id}` แบบ lazy ของมันล้มเหลว หรือยังไม่ยิง (tile ยังไม่เข้ามาในสายตา) | **ยืนยันแล้ว (2026-09-22)** — query ต่อ tile ใน `LazyWidget`; grid ที่เหลือไม่กระทบ (แทนที่พฤติกรรม "หายไปเงียบ ๆ" ก่อน 2026-09) |
+| ข้อความ empty-state ("No widget data") | route config คืนรายการว่าง (หรือทั้งหมดอยู่ใน `HIDDEN_DATASETS` ซึ่งปัจจุบันว่าง) | **ยืนยันแล้ว** — `hasAny` เช็คกับ list ของ config ไม่ใช่ผลของ dataset |
 | Skeleton grid แสดง placeholder card 4 ชิ้นพอดีตอนโหลด | `Array.from({ length: 4 })` hardcode ไว้ใน loading state | **ยืนยันแล้ว** — เป็นเรื่อง cosmetic เท่านั้น; ชุดจริงที่ resolve คือ 10 tile ไม่ใช่ 4 |
 
 ## 4. กรณีพิเศษ
 
 - **ไม่พบ permission gate บน data endpoint** `DashboardSystemWidgetsController` (`api/:bu_code/dashboard-widgets`) ถูก guard ด้วย `KeycloakGuard` เท่านั้น (ผู้ใช้ authenticate แล้วคนใดก็ได้) — ไม่พบ decorator แบบ `@RequirePermission` บน route handler ของ `operation-plan` ต่างจาก sidebar entry ของหน้าจอย่อย `/operation-plan/*` ที่ gate ด้วย `operation_plan.view` ตัว `operation_plan.view` เองเป็น **placeholder เฉพาะ frontend** ที่ยืนยันแล้ว (ดู [recipe](/th/inventory/recipe) §4 "RBAC reality check") — ไม่ถูกใช้ที่ใดเพื่อ gate route dashboard นี้หรือ data call ของมัน
 - **Tile เป็นของ hardcode ไม่ใช่ข้อมูลที่เก็บไว้** ต่างจากแถว `tb_dashboard_bu_widget`/`tb_dashboard_personal_widget` — ไม่มีอะไรเกี่ยวกับการเลือก tile, ลำดับ, หรือ title ที่อยู่ใน tenant database เลย ทั้งหมดของ config ของหน้าจอนี้คือ array `OPERATION_PLAN_WIDGETS` ใน `system-widgets.config.ts` (backend-gateway) ทุก business unit เห็น tile ทั้ง 10 ชิ้นในลำดับเดียวกันเป๊ะ
-- **Layout จัดกลุ่มตาม widget type ไม่ใช่ตาม `order_index` ของ config เอง** Frontend จัดกลุ่ม widget ที่ resolve แล้วเป็น 4 section ที่ตั้งชื่อไว้ (KPI, Trends, Comparison, Distribution) แล้วเรียง *ภายใน* แต่ละ section ตาม `order_index` — ไม่ได้ render grid แบนเดียวตามลำดับ `order_index` แบบที่ component `DashboardWidgetGrid` ทั่วไป (ที่ [vendor-dashboard](/th/inventory/vendor-pricelist/vendor-dashboard) ใช้) ทำ ดู §6 สำหรับความต่างระดับโค้ดระหว่าง dashboard ทั้งสอง
+- **Layout จัดกลุ่มตาม widget type ไม่ใช่ตาม `order_index` ของ config เอง** Frontend จัดกลุ่ม widget เป็น 4 section ที่ตั้งชื่อไว้ (KPI รวม gauge, Trends = line/area, Comparison = bar, Distribution = pie) แล้วเรียง *ภายใน* แต่ละ section ตาม `order_index` วางแต่ละชิ้นบน grid 12 คอลัมน์ที่ใช้ร่วมกันผ่าน `gridClasses(widget_type, display)` — ไม่ได้ render grid แบนเดียวแบบที่ component `DashboardWidgetGrid` ทั่วไป (ที่ [vendor-dashboard](/th/inventory/vendor-pricelist/vendor-dashboard) ใช้) ทำ ดู §6
 - **`equipment.by-category` เป็น tile รูปวงกลม (pie) เพียงชิ้นเดียวในชุดนี้** (categorical shape) — ที่เหลือเป็น `kpi` (scalar/scalar_delta) หรือ `bar` (categorical/ranked render เป็น bar) ไม่มี tile line/area/time-series เลย แม้ `recipe.added-daily` (dataset รูปแบบ `time_series`) จะมีอยู่ใน catalog ก็ตาม — มันไม่ใช่หนึ่งใน 10 tile ที่ตั้งค่าไว้สำหรับ dashboard นี้
-- **Cache** query ของ widget list ใช้ `CACHE_DYNAMIC` (`useOperationPlanWidgets` → `useDashboardWidgets("operation-plan")`) tier เดียวกับ dashboard module อื่นทุกตัว
+- **Cache** query ของ config ใช้ `CACHE_STATIC` (`useOperationPlanWidgets` → `useDashboardWidgetConfigs("operation-plan")` — config hardcode ที่ gateway และเปลี่ยนภายใน session ไม่ได้); query dataset ของแต่ละ tile ใช้ `CACHE_DYNAMIC` (stale 1 นาที)
 
 ---
 
@@ -74,12 +76,12 @@ Source: `apps/backend-gateway/src/application/dashboard-widgets/system-widgets.c
 
 | | หน้าจอนี้ (`operation-plan`) | [reporting-audit/widget](/th/inventory/reporting-audit/widget) |
 |---|---|---|
-| Backend route | `GET api/:bu_code/dashboard-widgets/operation-plan` — endpoint คงที่เฉพาะ module บน `DashboardSystemWidgetsController` | `GET api/:bu_code/dashboard-widgets/bu` (BU, บน `DashboardBuWidgetsController` ที่แยกต่างหาก) หรือ `GET api/me/dashboard-widgets` (personal, บน `DashboardPersonalWidgetsController` ที่แยกต่างหาก — คนละ root path เลย ไม่ได้อยู่ใต้ `:bu_code/dashboard-widgets/`) |
+| Backend route | `GET api/:bu_code/dashboard-widgets/operation-plan/config` (config เท่านั้น; `GET …/operation-plan` แบบรวมชุดเดิมยังอยู่เป็น fallback) บน `DashboardSystemWidgetsController` แล้วตามด้วย `GET api/:bu_code/datasets/:dataset_id` ต่อ tile | `GET api/:bu_code/dashboard-widgets/bu` (BU, บน `DashboardBuWidgetsController` ที่แยกต่างหาก — ไม่มีผู้เรียกฝั่ง frontend) หรือ `GET api/me/dashboard-widgets` (personal, บน `DashboardPersonalWidgetsController` ที่แยกต่างหาก — คนละ root path เลย ไม่ได้อยู่ใต้ `:bu_code/dashboard-widgets/`) |
 | Storage | ไม่มี — array hardcode ใน source ของ gateway (`system-widgets.config.ts`) | `tb_dashboard_bu_widget` / `tb_dashboard_personal_widget` (แถว tenant DB) |
 | เพิ่ม / ลบ / จัดเรียง | ต้องแก้โค้ด + deploy เท่านั้น | CRUD จริง (`POST`/`PATCH`/`DELETE`) — BU widget จาก landing dashboard ของแต่ละ module เอง, personal widget จาก `/dashboard` |
 | Frontend component | `operation-dashboard.tsx` — layout เฉพาะตัว, 4 section ตั้งชื่อ (Metrics/Trends/Comparison/Distribution) | `DashboardWidgetGrid` (component ที่ใช้ร่วมกัน ใช้โดย [vendor-dashboard](/th/inventory/vendor-pricelist/vendor-dashboard) ด้วย) — grid แบนเดียว เรียงตาม render-group ของ widget-type แล้วตาม `order_index` |
 
-**การแก้ไขต่อการอ้างอิงก่อนหน้า:** [reporting-audit/widget](/th/inventory/reporting-audit/widget) §1 อ้าง `procurement-dashboard.tsx → useProcurementWidgets → GET api/:bu_code/dashboard-widgets/bu` เป็นตัวอย่างผู้บริโภค BU-widget การอ่าน `system-widgets.controller.ts` โดยตรงแสดงว่า route จริงที่ `useProcurementWidgets`/`useOperationPlanWidgets`/`useVendorWidgets`/`useInventoryWidgets`/`useProductWidgets`/`useConfigWidgets` เรียกคือ `api/:bu_code/dashboard-widgets/{module}` บน `DashboardSystemWidgetsController` (กลไกของหน้านี้ ไม่ใช่ของ BU-widget) — route `/bu` จริงของ `DashboardBuWidgetsController` อยู่บน controller ที่แยกต่างหากจริง ๆ และ path การดึง personal widget ที่ frontend เรียกจริง (`api/me/dashboard-widgets` ผ่าน `hooks/use-my-dashboard-widgets.ts` → `MY_DASHBOARD_WIDGETS` ซึ่งบันทึกไว้ถูกต้องแล้วที่ [reporting-audit/widget](/th/inventory/reporting-audit/widget) §1.1) ให้บริการโดย `DashboardPersonalWidgetsController` ที่ root แยกต่างหากนั้น — ไม่ได้อยู่ใต้ `:bu_code/dashboard-widgets/` เลย ตัว `DashboardSystemWidgetsController` เองก็มี handler `@Get('me')` ของตัวเอง (`api/:bu_code/dashboard-widgets/me`) ที่ประกอบ personal-widget list เดียวกันพร้อม live dataset values แต่ไม่พบผู้เรียก frontend ใดสำหรับ composite route ตัวนี้โดยเฉพาะ (`useDashboardWidgets()` ใน `use-dashboard-widgets.ts` ถูกเรียกด้วย `procurement`/`inventory`/`product`/`config`/`vendor-management`/`operation-plan` เท่านั้น ไม่เคยเรียกด้วย `me`) หน้านี้และ [vendor-dashboard](/th/inventory/vendor-pricelist/vendor-dashboard) เป็นหน้า wiki สองหน้าแรกที่ตาม trace ความต่างนี้ถึง source แนะนำให้แก้ไข `reporting-audit/widget.md` เองในรอบถัดไป แต่อยู่นอกขอบเขตของงานนี้
+**การแก้ไขต่อการอ้างอิงก่อนหน้า (ใส่ลงใน [reporting-audit/widget](/th/inventory/reporting-audit/widget) แล้วเมื่อ 2026-09-22):** หน้านั้นเคยอ้าง `procurement-dashboard.tsx → useProcurementWidgets → GET api/:bu_code/dashboard-widgets/bu` เป็นตัวอย่างผู้บริโภค BU-widget การอ่าน `system-widgets.controller.ts` โดยตรงแสดงว่า route จริงที่ `useProcurementWidgets`/`useOperationPlanWidgets`/`useVendorWidgets`/`useInventoryWidgets`/`useProductWidgets`/`useConfigWidgets` เรียกคือ `api/:bu_code/dashboard-widgets/{module}` บน `DashboardSystemWidgetsController` (กลไกของหน้านี้ ไม่ใช่ของ BU-widget) — route `/bu` จริงของ `DashboardBuWidgetsController` อยู่บน controller ที่แยกต่างหากจริง ๆ และ path การดึง personal widget ที่ frontend เรียกจริง (`api/me/dashboard-widgets` ผ่าน `hooks/use-my-dashboard-widgets.ts` → `MY_DASHBOARD_WIDGETS` ซึ่งบันทึกไว้ถูกต้องแล้วที่ [reporting-audit/widget](/th/inventory/reporting-audit/widget) §1.1) ให้บริการโดย `DashboardPersonalWidgetsController` ที่ root แยกต่างหากนั้น — ไม่ได้อยู่ใต้ `:bu_code/dashboard-widgets/` เลย ตัว `DashboardSystemWidgetsController` เองก็มี handler `@Get('me')` ของตัวเอง (`api/:bu_code/dashboard-widgets/me`) ที่ประกอบ personal-widget list เดียวกันพร้อม live dataset values แต่ไม่พบผู้เรียก frontend ใดสำหรับ composite route ตัวนี้โดยเฉพาะ (`useDashboardWidgets()` ใน `use-dashboard-widgets.ts` ถูกเรียกด้วย `procurement`/`inventory`/`product`/`config`/`vendor-management`/`operation-plan` เท่านั้น ไม่เคยเรียกด้วย `me`) หน้านี้และ [vendor-dashboard](/th/inventory/vendor-pricelist/vendor-dashboard) เป็นหน้า wiki สองหน้าแรกที่ตาม trace ความต่างนี้ถึง source แนะนำให้แก้ไข `reporting-audit/widget.md` เองในรอบถัดไป แต่อยู่นอกขอบเขตของงานนี้
 
 ## 7. ความเชื่อมโยงข้ามโมดูล
 
@@ -92,9 +94,9 @@ Source: `apps/backend-gateway/src/application/dashboard-widgets/system-widgets.c
 ## 8. แหล่งอ้างอิง
 
 - **Frontend route:** `../carmen-inventory-frontend-react/routes/operation-plan/operation-plan.route.tsx` → `operation-dashboard.tsx`
-- **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-dashboard-widgets.ts` — `useOperationPlanWidgets()`
-- **Frontend shared cards:** `../carmen-inventory-frontend-react/components/dashboard-widget/dashboard-widget-grid.tsx` — `KpiCard`, `BarCard`, `PieCard`, `LineCard`, `WidgetSkeleton` (ใช้ซ้ำโดย layout เฉพาะของหน้าจอนี้ ไม่ใช่ wrapper `DashboardWidgetGrid` ที่ใช้ร่วมกัน)
-- **Gateway controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-widgets/system-widgets.controller.ts` — `DashboardSystemWidgetsController`, `@Get('operation-plan')`
+- **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-dashboard-widgets.ts` — `useOperationPlanWidgets()` → `useDashboardWidgetConfigs("operation-plan")`; `dashboardDatasetDataQueryOptions()` ต่อ tile ใน `hooks/use-dashboard-dataset.ts`
+- **Frontend shared cards:** `../carmen-inventory-frontend-react/components/dashboard-widget/dashboard-widget-grid.tsx` — `LazyWidget`, `KpiCard`, `BarCard`, `PieCard`, `LineCard`, `WidgetSkeleton` (ใช้ซ้ำโดย layout เฉพาะของหน้าจอนี้ ไม่ใช่ wrapper `DashboardWidgetGrid` ที่ใช้ร่วมกัน); `widget-display.ts` — `gridClasses()`
+- **Gateway controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-widgets/system-widgets.controller.ts` — `DashboardSystemWidgetsController`, `@Get(':module/config')` (2026-09-07) และ `@Get('operation-plan')` แบบรวมชุด Bruno: `_uncategorized/dashboard-widgets/GET-module-config-dashboard-widgets.bru`, `GET-operation-plan-dashboard-widgets.bru`
 - **Gateway config:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-widgets/system-widgets.config.ts` — `OPERATION_PLAN_WIDGETS`, `getSystemWidgets()`
 - **Dataset registry:** `../micro-data/service/dashboard/registry.go` — entry `recipe.*` (บรรทัด ~150-165), `equipment.*` (บรรทัด ~166-169)
 - **Translations:** `../carmen-inventory-frontend-react/messages/en.json` — `operationPlan.dashboard.title`/`.description`, `dashboardWidget.section*`

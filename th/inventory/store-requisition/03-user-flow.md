@@ -2,7 +2,7 @@
 title: ใบเบิกของสโตร์ (Store Requisition) — User Flow
 description: วงจรชีวิตเอกสารและไฟล์ flow ตาม persona สำหรับ store-requisition
 published: true
-date: 2026-07-15T15:45:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: store-requisition, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -14,6 +14,7 @@ dateCreated: 2026-05-15T13:30:00.000Z
 > **โมดูล:** [store-requisition](/th/inventory/store-requisition) &nbsp;·&nbsp; **Persona:** Requester &nbsp;·&nbsp; Approver &nbsp;·&nbsp; Fulfiller (ยืนยันแล้ว) &nbsp;·&nbsp; Receiver + Audit / Config (ยังไม่ยืนยัน — หน้า correction)
 > **วงจรชีวิต workflow:** draft → in_progress (ขั้นย่อยอนุมัติ + issuance) → completed โดยมี voided เป็นทางยกเลิกทางเดียวที่ไปถึงได้จริง (reject ทั้งเอกสาร); `cancelled` มีนิยามใน enum แต่ไม่มี code path ปัจจุบันไปถึง
 > **เจาะลึก view ต่อ persona ด้านล่างสำหรับรายละเอียดระดับ action**
+> **Re-sync 2026-09-22:** `sr_type` ถูก derive จากสองสถานที่; `sr_date` / `sr_no` ถูกกำหนดขั้นสุดท้ายตอน submit; วันที่ issue ถูก resolve เทียบกับ open period (dialog date-pattern); workflow verb ทุกตัวเป็น `PATCH`; เพดานปริมาณไม่ถูกบังคับใช้; draft ลบได้โดยเจ้าของ (เดี่ยวหรือ batch); มี Duplicate และแท็บ Stock Movement
 
 ## 1. ภาพรวม
 
@@ -31,18 +32,18 @@ dateCreated: 2026-05-15T13:30:00.000Z
 
 ```mermaid
 stateDiagram-v2
-    [*] --> draft: สร้าง (Requester — manual หรือ auto-create จาก recipe)
-    draft --> in_progress: submit (Requester — SR_VAL_001-009 ผ่าน)
-    draft --> [*]: soft-delete (Requester — เฉพาะ draft ของตน)
+    [*] --> draft: สร้าง (Requester — manual หรือ auto-create จาก stock replenishment)
+    draft --> in_progress: submit (Requester — derive แผนก, สินค้าเปิดใช้ที่ปลายทาง, resolve วันที่)
+    draft --> [*]: soft-delete (Requester — เฉพาะ draft ของตน เดี่ยวหรือ batch)
     in_progress --> in_progress: approve / ตัด / reject บรรทัด (ผู้ถือขั้นปัจจุบัน)
     in_progress --> in_progress: ส่งกลับเพื่อแก้ไข (ขั้นปัจจุบัน → ขั้นก่อนหน้า)
-    in_progress --> completed: final stage advance บันทึก issued_qty (approve action ทั่วไปเดียวกัน)
+    in_progress --> completed: final stage advance บันทึก issued_qty + issue_at (approve action ทั่วไปเดียวกัน)
     in_progress --> voided: whole-document reject (ผู้ถือขั้นปัจจุบัน)
     completed --> [*]
     voided --> [*]
 
     note right of in_progress
-        Approve และ "issue" ทั้งคู่เรียก endpoint POST .../approve เดียวกัน;
+        Approve และ "issue" ทั้งคู่เรียก endpoint PATCH .../approve เดียวกัน;
         เอกสารเสร็จสมบูรณ์เมื่อ workflow_next_stage ที่ได้เป็น '-'
         Sub-stage ติดตามผ่าน workflow_current_stage ไม่ใช่ doc_status
         ไม่มี UI เลือก lot -- lot ถูก assign แบบ FIFO อัตโนมัติ
@@ -53,16 +54,17 @@ stateDiagram-v2
 
 | จากสถานะ | Action | ไปสถานะ | อนุญาตให้ | เงื่อนไขล่วงหน้า |
 | -------- | ------ | -------- | --------- | ----------------- |
-| `(none)` | สร้าง | `draft` | Requester | Requester เป็นสมาชิก `department_id`; อนุญาตให้ทำธุรกรรมระหว่าง `from_location_id` และ `to_location_id`; `sr_no` กำหนดตามนโยบายเลขของ tenant ส่วนหัวอาจป้อนบางส่วน; บรรทัดอาจว่าง |
-| `(none)` | auto-create จาก recipe demand | `draft` | System (cross-ref [recipe](/th/inventory/recipe)) | โมดูล recipe คำนวณปริมาณวัตถุดิบสำหรับ event production / banquet ของเอาท์เลตปลายทางและ post SR `draft` ให้ requester ของเอาท์เลต review และ submit `info.recipe_id` มี back-reference |
+| `(none)` | สร้าง | `draft` | Requester | Create DTO บังคับ `workflow_id`, `department_id`, `from_location_id`, `to_location_id`, `sr_date`; `sr_type` ถูก derive จากสองสถานที่ (`deriveSrType()` — ต้นทางแบบ `direct` ถูกปฏิเสธ); `sr_no` เป็น placeholder `draft-<hex>` บรรทัดอาจว่าง `/new` ถูกห่อด้วย `CreateWorkflowGate` — ผู้ใช้ที่ไม่มี SR workflow ที่อนุญาตให้ create เห็น `AccessDeniedBlock` ปุ่ม **Submit** เปิดใช้อยู่แล้วบนฟอร์มที่ยังไม่บันทึก: client บันทึกก่อนแล้ว submit |
+| `(none)` | auto-create จาก stock replenishment | `draft` | Requester ผ่าน `POST /api/{bu}/stock-replenishment/sr` | แถวที่ต่ำกว่า par กลายเป็น draft SR หนึ่งใบต่อคู่ `(from_location, location_id)` ผ่าน `StoreRequisitionLogic.create()` ปกติ (`SR_XMOD_011`) เส้นทาง auto-create จาก recipe ที่เคยระบุไว้ไม่มีโค้ดรองรับ (`SR_XMOD_006` ยังไม่ยืนยัน) |
+| `(none)` | duplicate | `draft` | Requester | **Duplicate** ในส่วนหัวโหมด view เปิด `/store-operation/store-requisition/new?duplicate_id=<id>` โดยส่วนหัวและบรรทัดถูกเติมไว้ล่วงหน้า (`buildSrDuplicateValues`); การบันทึกสร้าง draft ใหม่ |
 | `draft` | แก้ไข / save | `draft` | Requester (เจ้าของ) | กฎ validation ส่วนหัวและบรรทัดใน [02-business-rules.md](./02-business-rules.md) Section 2 ผ่านตอน save (warn-only บางส่วน) หรือ block ตอน submit; เอกสารยังแก้ไขได้ |
-| `draft` | submit | `in_progress` | Requester (เจ้าของ) | กฎตอน submit ทั้งหมดผ่าน (`SR_VAL_001`–`SR_VAL_009`): สถานที่ต้นทาง / ปลายทางตั้งและเข้ากันกับ `sr_type`, source-availability check ผ่าน (ตาม tenant config: hard block หรือ soft warn), อย่างน้อยหนึ่งบรรทัดที่ `requested_qty > 0` Workflow engine จัดเส้นทางไปยังขั้นอนุมัติแรกและบรรจุ `user_action.execute` |
-| `draft` | soft-delete (กลไกถอนก่อน submit เดียวที่ยืนยันได้) | `(deleted)` | Requester (draft ของตนเท่านั้น) | ยืนยันว่าจำกัดเฉพาะ `doc_status = draft`; ไม่มี action ถอนที่ `in_progress` ที่ยืนยันได้ |
-| `in_progress` | approve / ตัด / reject บรรทัด (ผสม approve+reject ในการเรียกเดียว; ผสมกับ review ไม่ได้) | `in_progress` | ผู้อยู่ใน `user_action.execute` สำหรับขั้นปัจจุบัน | `approved_qty ≤ requested_qty` ตาม `SR_VAL_010` `workflow_current_stage` เดินต่อเมื่อบรรทัดทั้งหมดที่ขั้นปัจจุบันถูก action การตรวจ segregation-of-duties (`requester ≠ approver`, `approver ≠ issuer`) ยังไม่ยืนยัน — ไม่พบโค้ดลักษณะนี้ |
-| `in_progress` | ส่งกลับ (`/review`, action ระดับทั้งการเรียก) | `in_progress` | ผู้อยู่ใน `user_action.execute` สำหรับขั้นปัจจุบัน | ส่งเอกสารกลับขั้นก่อนหน้า (โดยทั่วไปคือ requester) พร้อม `review_message`; `doc_status` ไม่เปลี่ยน |
-| `in_progress` | final stage advance บันทึก `issued_qty` | `completed` | ผู้อยู่ใน `user_action.execute` สำหรับขั้นที่ tag `enum_stage_role.issue` | endpoint `/approve` เดียวกับขั้นอื่น; เสร็จสมบูรณ์เมื่อ `workflow_next_stage === '-'` Trigger การลด on-hand ต้นทางและ (สำหรับ `sr_type = transfer`) การเพิ่ม on-hand ปลายทาง ผ่าน `executeTransferOnComplete` การเลือก lot เป็น FIFO อัตโนมัติ |
+| `draft` | submit | `in_progress` | Requester (เจ้าของ) | `PATCH .../submit` derive แผนกจาก requester หากขาด (`SR_VAL_005`); `ValidateSRBeforeSubmitSchema` (workflow, requester, แผนก, ≥ 1 บรรทัดที่ `requested_qty > 0`); ทุกสินค้าเปิดใช้ที่ปลายทาง (`SR_VAL_015`); `sr_date` ถูก freeze ผ่าน `resolveSubmitSrDate()` — นอก open period client ถูกขอให้เลือก `open-period` / `today` (`SR_VAL_014`/`016`); ออก `sr_no` ไม่มีการตรวจความพร้อมต้นทาง Workflow engine จัดเส้นทางไปยังขั้นแรกและบรรจุ `user_action.execute`; `approved_qty` ของทุกบรรทัดถูกตั้งค่าเริ่มต้นเป็น `requested_qty` |
+| `draft` | soft-delete (กลไกถอนก่อน submit เดียวที่ยืนยันได้) | `(deleted)` | Requester (draft ของตนเท่านั้น) | จำกัดเฉพาะ `doc_status = draft` **และ** เจ้าของเอกสาร (มิฉะนั้น `SR_DELETE_FORBIDDEN`; platform super-admin ข้ามได้) หน้า list มี batch delete (`DELETE .../store-requisitions/batch` แบบ all-or-nothing) ไม่มี action ถอนที่ `in_progress` |
+| `in_progress` | approve / ตัด / reject บรรทัด (ผสม approve+reject ในการเรียกเดียว; ผสมกับ review ไม่ได้) | `in_progress` | ผู้อยู่ใน `user_action.execute` สำหรับขั้นปัจจุบัน | `PATCH .../approve` เพดาน `approved_qty ≤ requested_qty` **ไม่ถูกบังคับใช้** (`SR_VAL_010`) `workflow_current_stage` เดินต่อตาม routing ของ workflow (`SR_XMOD_008`) การตรวจ segregation-of-duties ยังไม่ยืนยัน — ไม่พบโค้ดลักษณะนี้ |
+| `in_progress` | ส่งกลับ (`PATCH .../review`, action ระดับทั้งการเรียก) | `in_progress` | ผู้อยู่ใน `user_action.execute` สำหรับขั้นปัจจุบัน | ต้องระบุขั้นปลายทาง (`des_stage` เลือกจาก `GET .../workflow-previous-step-list`); ข้อความเป็น optional ตั้ง `last_action = reviewed`; `doc_status` ไม่เปลี่ยน requester resubmit ผ่าน `PATCH .../submit` เดียวกัน ซึ่งรับ `in_progress + reviewed` และคง `sr_no` / `sr_date` ไว้ |
+| `in_progress` | final stage advance บันทึก `issued_qty` | `completed` | ผู้อยู่ใน `user_action.execute` สำหรับขั้นที่ tag `enum_stage_role.issue` | endpoint `PATCH .../approve` เดียวกับขั้นอื่น (`stage_role: "issue"`); `resolveIssueDate()` run ก่อน — วันที่ของ SR เองต้องอยู่ใน open period และนอก open period client ถูกถาม `issue_date_pattern` (`today` ถูกปฏิเสธ) เสร็จสมบูรณ์เมื่อ `workflow_next_stage === '-'`; stamp `issue_at` / `issue_by_id`; trigger การลด on-hand ต้นทางและ (สำหรับ `sr_type = transfer`) การเพิ่ม on-hand ปลายทาง ผ่าน `executeTransferOnComplete` (movement ลงวันที่ `issue_at`) การเลือก lot เป็น FIFO อัตโนมัติ; `Insufficient stock` ที่ต้นทาง throw ภายใน fan-out |
 | `in_progress` | whole-document reject | `voided` | ผู้อยู่ใน `user_action.execute` สำหรับขั้นปัจจุบัน | ไม่จำกัดเฉพาะ role "admin" — reject action เดียวกันพร้อมใช้สำหรับผู้ถือขั้นปัจจุบันคนใดก็ได้ ข้อความเหตุผลเป็นทางเลือกตาม reject dialog (maxLength 256 ไม่มี minimum) ไม่กระทบ inventory (SR ไม่เคย post) |
-| `completed` | (ไม่มี transition สถานะต่อ) | `completed` | — | สถานะจุดสิ้นสุด การแก้ไขต้องผ่าน compensating adjustment ใน `[inventory-adjustment](/th/inventory/inventory-adjustment)`; SR เองยังคงล็อก ไม่มี action ยืนยันการรับของ Receiver หรือ flag ความคลาดเคลื่อนที่ยืนยันได้กับ SR ที่ `completed` — ดู [03-user-flow-receiver.md](./03-user-flow-receiver.md) |
+| `completed` | (ไม่มี transition สถานะต่อ) | `completed` | — | สถานะจุดสิ้นสุด การแก้ไขต้องผ่าน compensating adjustment ใน `[inventory-adjustment](/th/inventory/inventory-adjustment)`; SR เองยังคงล็อก แท็บ **Stock Movement** (`GET .../stock-movements`) ตอนนี้แสดง lot และต้นทุนที่ post แล้ว (`is_posted = true`) ไม่มี action ยืนยันการรับของ Receiver หรือ flag ความคลาดเคลื่อนที่ยืนยันได้กับ SR ที่ `completed` — ดู [03-user-flow-receiver.md](./03-user-flow-receiver.md) |
 | `voided` | (ไม่มี action ต่อ) | `voided` | — | จุดสิ้นสุด เก็บไว้สำหรับ audit |
 
 ## 3. ดัชนี Persona
@@ -87,7 +89,7 @@ stateDiagram-v2
 | Approver / Fulfiller | whole-document reject | (จุดสิ้นสุด — `voided`) | `voided` ไม่ใช่ `cancelled` — ดูหมายเหตุการแก้ไขใน Section 2 ไม่กระทบ inventory |
 | Fulfiller | บันทึก `issued_qty`, final stage เสร็จสมบูรณ์ | (ไม่มี persona ปลายทางที่ยืนยันได้) | `completed` (on-hand ต้นทางลด; on-hand ปลายทางเพิ่มสำหรับ `transfer` หรือไม่เปลี่ยน on-hand ปลายทางสำหรับ `issue`; ข้อมูล lot auto-assign บน inventory transaction ที่ลิงก์) ไม่มี handoff ไปยัง "Receiver" ที่ยืนยันได้ — ดู [03-user-flow-receiver.md](./03-user-flow-receiver.md) |
 | Fulfiller | เจอ stock-out ตอน issue และบันทึกบางส่วน | — | `completed` (พร้อม `issued_qty < approved_qty` ในหนึ่งบรรทัดขึ้นไป) ไม่พบกลไก alert/notification ที่ยืนยันได้เฉพาะกรณีนี้ |
-| Recipe (auto-create) | คำนวณ recipe demand สำหรับ production / banquet | Requester | `draft` (pre-populate โดยโมดูล recipe; `info.recipe_id` มี back-reference) |
+| Stock replenishment (auto-create) | Purchaser/requester สร้าง SR จากรายการที่ต่ำกว่า par | Requester | `draft` (หนึ่งใบต่อคู่ `(from_location, location_id)` สร้างโดย `POST .../stock-replenishment/sr`) แถว auto-create จาก recipe ที่เคยระบุไว้ที่นี่ไม่มีโค้ดรองรับ |
 
 แถวที่บรรยาย persona "Receiver" หรือ "Inventory Controller / Sysadmin / Finance" ที่กระทำต่อ SR หลัง commit ถูกถอดออกในรอบนี้ — ดู [03-user-flow-receiver.md](./03-user-flow-receiver.md) และ [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) สำหรับสิ่งที่ตรวจสอบแล้วและสิ่งที่ยังไม่ยืนยัน
 
@@ -98,4 +100,4 @@ stateDiagram-v2
 - `../carmen/docs/store-requisitions/Store Requisitions.md` — Use cases UC-64 (Approve), UC-65 (Deny), UC-66 (Modify), UC-67 (Monitor), UC-68 (Create and Manage), UC-69 (Approve and Record Stock as Issued); ไฟล์ persona Requester, Approver และ Fulfiller ดึง flow หลักจากนี้
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical `enum_doc_status`, `enum_sr_type` และ three-quantity invariant (`requested_qty / approved_qty / issued_qty`) ที่อ้างถึงตลอดส่วนที่ 2
 - Sibling: [02-business-rules.md](./02-business-rules.md) Section 5 — ผลกระทบ posting และ gate authorization ที่อ้างถึงโดยทุกแถวของส่วนที่ 2
-- โมดูลที่เกี่ยวข้อง: [inventory](/th/inventory/inventory) (ปลายน้ำ — ตอน commit on-hand ต้นทางลดและปลายทางเพิ่มสำหรับ `transfer`; ข้อมูล lot, expiry และ cost-layer อยู่บน inventory transaction ที่ลิงก์), [costing](/th/inventory/costing) (FIFO / moving-average ของสถานที่ต้นทาง feed unit cost ที่ issue), [recipe](/th/inventory/recipe) (เส้นทาง auto-create สำหรับการเบิกวัตถุดิบที่ขับโดย recipe), [good-receive-note](/th/inventory/good-receive-note) (การโอนระหว่างสถานที่อาจจับคู่ SR-OUT ที่ต้นทางกับ GRN-IN ที่ปลายทาง), [inventory-adjustment](/th/inventory/inventory-adjustment) (การแก้ไขหลัง commit)
+- โมดูลที่เกี่ยวข้อง: [inventory](/th/inventory/inventory) (ปลายน้ำ — ตอน commit on-hand ต้นทางลดและปลายทางเพิ่มสำหรับ `transfer`; ข้อมูล lot, expiry และ cost-layer อยู่บน inventory transaction ที่ลิงก์), [costing](/th/inventory/costing) (FIFO / moving-average ของสถานที่ต้นทาง feed unit cost ที่ issue), [stock-replenishment](/th/inventory/store-requisition/stock-replenishment) (เส้นทาง auto-create เดียวที่ยืนยันได้; การสร้าง SR ที่ขับโดย recipe ยังไม่ยืนยัน), [good-receive-note](/th/inventory/good-receive-note) (การโอนระหว่างสถานที่อาจจับคู่ SR-OUT ที่ต้นทางกับ GRN-IN ที่ปลายทาง), [inventory-adjustment](/th/inventory/inventory-adjustment) (การแก้ไขหลัง commit)

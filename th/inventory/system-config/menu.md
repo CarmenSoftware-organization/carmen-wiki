@@ -2,7 +2,7 @@
 title: เมนู (Menu)
 description: ตาราง tb_menu มีอยู่ใน tenant schema แต่ไม่มีการอ้างอิงจากโค้ด non-schema เลยไม่ว่าใน backend หรือ frontend — sidebar จริงของ app shell คือ static navigation tree ที่เขียนด้วยโค้ด ไม่ได้ขับเคลื่อนด้วยข้อมูลจากตารางนี้
 published: true
-date: 2026-07-16T00:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: system-config, menu, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -13,11 +13,11 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** ไม่มีใคร — **ไม่มีโค้ดใดอ่านหรือเขียนตารางนี้เลย** &nbsp;·&nbsp; **ตาราง:** `tb_menu` (schema เท่านั้น) &nbsp;·&nbsp; **การนำทางจริง:** static tree ที่เขียนด้วยโค้ด (เช่น `CHAPTERS` ใน `landing-types.ts` สำหรับ System Admin hub และโครงสร้างเดียวกันสำหรับ sidebar หลักของแอป) &nbsp;·&nbsp; ตาราง dead — เก็บไว้ใน schema แต่ไม่ต่อสายกับอะไรเลย
 
-## สถานะการ implement (ตรวจสอบ 2026-07-16)
+## สถานะการ implement (ตรวจสอบ 2026-07-16; ตรวจสอบซ้ำ 2026-09-22 — ไม่เปลี่ยน)
 
-การค้นทั่ว repo หา `tb_menu` ใน `carmen-turborepo-backend-v2/apps` และ `carmen-turborepo-backend-v2/packages` พบ **เฉพาะการประกาศใน Prisma schema และ migration SQL ของมัน** — ไม่มีแม้แต่จุดเดียวในไฟล์ `.service.ts`, `.controller.ts` หรือ DTO ใดเลย ไม่มี `menu.service.ts`, ไม่มี `menu.controller.ts`, ไม่มี Bruno folder `config/menu/*` และไม่มี route `menu` ที่ไหนใต้ `../carmen-inventory-frontend-react/routes/`
+การค้นทั่ว repo หา `tb_menu` ใน `carmen-turborepo-backend-v2/apps` และ `carmen-turborepo-backend-v2/packages` พบ **เฉพาะการประกาศใน Prisma schema และ migration SQL ของมัน** — ไม่มีแม้แต่จุดเดียวในไฟล์ `.service.ts`, `.controller.ts` หรือ DTO ใดเลย (รันซ้ำ 2026-09-22 ยังเป็นศูนย์) ไม่มี `menu.service.ts`, ไม่มี `menu.controller.ts`, ไม่มี Bruno folder `config/menu/*` และไม่มี route `menu` ที่ไหนใต้ `../carmen-inventory-frontend-react/routes/`
 
-การนำทางจริงของ app shell ถูก **hard-code ไว้ใน frontend** ไม่ได้ขับเคลื่อนด้วยข้อมูล: หน้า System Admin landing render จาก array `CHAPTERS` ที่กำหนดตอน compile (`routes/system-admin/landing-types.ts`) ซึ่ง map module key ตรงไปยัง string `href` (เช่น `{ key: "period", href: "/system-admin/period" }`); sidebar หลักของแอปก็ตาม pattern static-config เดียวกัน การปิดโมดูลสำหรับ property หนึ่ง หรือเปลี่ยนการมองเห็นของการนำทาง ต้องอาศัย **การแก้โค้ด frontend และ redeploy** — ไม่มีหน้าจอ admin และไม่มี row ที่ runtime ควบคุมมันได้เลยวันนี้
+การนำทางจริงของ app shell ถูก **hard-code ไว้ใน frontend** ไม่ได้ขับเคลื่อนด้วยข้อมูล: หน้า System Admin landing render จาก array `CHAPTERS` ที่กำหนดตอน compile (`routes/system-admin/landing-types.ts:43-140`) ที่มีห้า chapter — `access` (roles, assign), `process` (`inventoryPeriod` → `/system-admin/inventory-period`, workflows, docs), `observe` (userActivity, monitor), `config` (interface, notifyTemplate, code), `data` (dataset) — และ sidebar หลักคือ tree แบบ static ใน `constant/module-list.ts` สิ่งที่*แปรผัน*ต่อ property ที่ runtime จริง ๆ คือ **การมองเห็นตาม licence และ permission** ไม่ใช่ตามตารางนี้: แต่ละ entry ใน `module-list.ts` มี key `licenseFeature` และ `permission` และ `hooks/use-license.ts` (`isLicensed`, `isHidden`, `canWrite`) ซ่อนฟีเจอร์ที่เลิกใช้และล็อกฟีเจอร์ที่ไม่มี licence (FE `2addc658`, 2026-08-31) การเพิ่มหรือเปลี่ยนชื่อ entry ยังต้องอาศัย **การแก้โค้ด frontend และ redeploy** — ไม่มีหน้าจอ admin และไม่มี row ที่ runtime ควบคุมมันได้
 
 เนื้อหาหลังจากบรรทัดนี้ทั้งหมดอธิบาย **เจตนาการออกแบบ** ที่บอกใบ้จากรูปร่างฟิลด์ของ schema (`is_visible` / `is_active` / `is_lock` / `module_id`) เก็บไว้เพราะตารางอาจถูกสร้างต่อในอนาคต — ไม่ใช่พฤติกรรมที่ยืนยันแล้วหรือ ship แล้ว
 
@@ -54,7 +54,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 - **ไม่มีสูตรการมองเห็นที่มีผลอยู่ในโค้ดเลย** ชุดค่าผสม `is_active && is_visible && deleted_at IS NULL` ที่อธิบายไว้ ณ ที่นี้ อนุมานจากชื่อคอลัมน์ ไม่ใช่จาก guard ที่สังเกตได้จริง
 - **ไม่มี FK จาก `module_id`** ไปยังตาราง `tb_module` ใน schema — สอดคล้องกับการออกแบบที่ไม่เคยเสร็จ ไม่ใช่หลักฐานยืนยันการ implement ไปทางใดทางหนึ่ง
-- **การจะซ่อนโมดูลจริงๆ วันนี้** Sysadmin ไม่มี lever ใดเลย — การเปลี่ยนแปลงต้องผ่านโค้ดเบส frontend (เช่น แก้ `CHAPTERS` ใน `landing-types.ts` หรือ config sidebar หลัก) และ deploy
+- **การจะซ่อนโมดูลจริงๆ วันนี้** Sysadmin ไม่มี lever ในผลิตภัณฑ์นี้ — lever ที่มีอยู่คือสถานะ licence feature ฝั่ง Platform (`tb_license_feature.state = 'hide'` เอาออกจากเมนูของทุก BU; ฟีเจอร์ที่ยังไม่ได้ขายแสดงเป็นล็อก) และ role permission ของ tenant; นอกเหนือจากนั้นต้องผ่านโค้ดเบส frontend (`CHAPTERS` ใน `landing-types.ts`, `constant/module-list.ts`) และ deploy
 
 ---
 
@@ -92,4 +92,4 @@ dateCreated: 2026-05-16T08:00:00.000Z
 ## 8. แหล่งข้อมูลอ้างอิง
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_menu` (lines ~1412-1430)
-- **Frontend (การนำทางจริงแบบ static สำหรับเทียบ):** `../carmen-inventory-frontend-react/routes/system-admin/landing-types.ts` (`CHAPTERS` — รายการโมดูลของ System Admin hub) และ `../carmen-inventory-frontend-react/routes/router.tsx` (static route tree ทั้งหมด) ทั้งสองไม่อ่าน `tb_menu`
+- **Frontend (การนำทางจริงแบบ static สำหรับเทียบ):** `../carmen-inventory-frontend-react/routes/system-admin/landing-types.ts` (`CHAPTERS` — รายการโมดูลของ System Admin hub), `constant/module-list.ts` (tree ของ sidebar พร้อม `licenseFeature` / `permission` ต่อ entry), `hooks/use-license.ts` (ซ่อน/ล็อกที่ runtime) และ `routes/router.tsx` (route tree แบบ static ทั้งหมด) ไม่มีตัวไหนอ่าน `tb_menu`

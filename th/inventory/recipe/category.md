@@ -2,7 +2,7 @@
 title: หมวดหมู่สูตรอาหาร (Recipe Category)
 description: taxonomy หมวดหมู่เชิงลำดับชั้นสำหรับสูตรอาหาร — ขับเคลื่อน menu engineering, รายงาน cost-band และการนำทาง recipe library
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: recipe, category, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -16,6 +16,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 ![หมวดหมู่สูตรอาหาร (Recipe Category) screen](/screenshots/recipe/category.png)
 
 ![หมวดหมู่สูตรอาหาร (Recipe Category) detail screen](/screenshots/recipe/category-detail.png)
+
+> **ตรวจสอบซ้ำ 2026-09-22** schema และกฎของ service ด้านล่างไม่เปลี่ยน การเปลี่ยนแปลงของสัญญา API: response ของ list/detail serialize ผ่าน `RecipeCategoryResponseSchema` (`config_recipe-categories/swagger/*`, 2026-09-17) — parent กลับมาเป็น `parent: { id, name } | null` และ**ไม่มี `parent_id` บนสาย**ตอนอ่าน (`types/recipe-category.ts`; grid/ฟอร์มอ่านจาก object ตั้งแต่ `768af593`); create/update/patch ยังส่ง `parent_id` การอ่านถูกเสริมด้วย object `audit` แทน `created_*`/`updated_*` ดิบ; มี `image_url` รวมอยู่ `GET /api/config/{bu}/recipe-categories` default เป็น `sort=code:asc` (`b375b078b`) E2E: `tests/110-op-category.spec.ts` (13 test, 2026-09-20)
 
 ## 1. คืออะไรและใครใช้
 
@@ -95,5 +97,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 ## 8. แหล่งอ้างอิง
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_recipe_category` (lines ~5314-5350)
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/operation-plan/category/`
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/operation-plan/category/` (`recipe-category-component.tsx`, `use-recipe-category-table.tsx`, `recipe-category-form-schema.ts`); type `types/recipe-category.ts`
+- **Gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_recipe-categories/config_recipe-categories.controller.ts` (`@Serialize(RecipeCategoryResponseSchema)`, `@ExpandRefs` ตอนเขียน), `swagger/`
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/110-op-category.spec.ts`
 - **Concept docs:** `../carmen/docs/recipe/setup-pages-spec.md`

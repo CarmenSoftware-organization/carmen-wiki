@@ -1,116 +1,176 @@
 ---
-title: การตั้งค่าอีเมล (Email Configuration)
-description: การตั้งค่า SMTP / ผู้ส่ง / template สำหรับอีเมลขาออกของระบบ — ตรวจสอบซ้ำ 2026-09-06: endpoint ยังไม่มี permission guard เลยนอกเหนือ authentication; "Sysadmin เท่านั้น" เป็นข้อตกลงฝั่ง frontend ไม่ใช่การควบคุมการเข้าถึงที่บังคับจริง
+title: การตั้งค่าอีเมล (Sender Profiles & Message Library)
+description: อีเมลขาออกมีสองหน้าจอ — Email Profile (SMTP sender profile, key email_profiles) และ Email Template (คลังข้อความต่อเอกสาร, key email_templates) หน้าจอ report_email แบบเดี่ยวไม่มี route แล้ว ไม่มี RBAC guard
 published: true
-date: 2026-09-06T07:05:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: system-config, email, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
 ---
 
-# การตั้งค่าอีเมล (Email Configuration)
+# การตั้งค่าอีเมล (Sender Profiles & Message Library)
 
 > **At a Glance**
-> **เจ้าของ:** Sysadmin เท่านั้นตามข้อตกลง frontend — **ไม่มี permission guard ฝั่ง backend (ตรวจสอบซ้ำ 2026-09-06)** &nbsp;·&nbsp; **การจัดเก็บ:** Row ใน `tb_application_config` (`key = "report_email"`) &nbsp;·&nbsp; **ใช้โดย:** `micro-notification`, รายงานตามตารางเวลา, การรีเซ็ตรหัสผ่าน, การแจ้งเตือนการตรวจสอบ &nbsp;·&nbsp; **หนึ่ง SMTP profile ต่อ BU; รหัสผ่าน SMTP เข้ารหัสตอนเก็บ**
+> **หน้าจอ:** `/system-admin/email-profile` (sender profile ตั้งแต่ 2026-09-08) และ `/system-admin/email-template` (label บน UI "Email Messages" ตั้งแต่ 2026-09-16) &nbsp;·&nbsp; **การจัดเก็บ:** row ใน `tb_application_config` คือ `email_profiles` และ `email_templates` (JSONB; ไม่มีตารางเฉพาะ) &nbsp;·&nbsp; **Licence:** `configuration.email_profile` / `configuration.email_template` (แยกออกจาก `configuration.app_config` เมื่อ 2026-09-20) &nbsp;·&nbsp; **Permission (nav ฝั่ง FE เท่านั้น):** `system_admin.config_email.view` &nbsp;·&nbsp; **RBAC guard ฝั่ง backend: ไม่มี** (ตรวจสอบซ้ำ 2026-09-22) &nbsp;·&nbsp; **ผู้บริโภค:** dialog *Send by email* บน Purchase Order และ Request for Pricing ผ่าน lookup ที่ไม่มี secret `GET /api/:bu_code/email-senders` และ `/email-messages` &nbsp;·&nbsp; **Legacy:** หน้าจอ `report_email` แบบ SMTP เดี่ยว (`routes/system-admin/config-email/`) ยังอยู่บนดิสก์แต่ **ไม่มี route** ใน `router.tsx` หรือ nav
 
 ![การตั้งค่าอีเมล (Email Configuration) screen](/screenshots/system-config/config-email.png)
 
+## สถานะการ implement (ตรวจสอบซ้ำ 2026-09-22)
+
+หน้านี้เคยอธิบายหน้าจอเดียวที่แก้ JSON blob `report_email` ก้อนเดียว ระหว่าง 2026-08-08 ถึง 2026-09-20 อีเมลขาออกถูกสร้างใหม่เป็น **master list ของ sender profile ที่มีชื่อ** บวก **คลังข้อความต่อประเภทเอกสาร** แต่ละอย่างมีหน้าจอของตัวเองและ licence feature ของตัวเอง:
+
+| ประเด็น | ก่อน (baseline 2026-07-29) | HEAD |
+|---|---|---|
+| หน้าจอ | `/system-admin/config-email` (ฟอร์มเดียว) | `/system-admin/email-profile` (`routes/system-admin/email-profile/`) + `/system-admin/email-template` (`routes/system-admin/email-template/`); `config-email` หายไปจาก `routes/router.tsx` และ `constant/module-list.ts` — folder ของ component เป็น dead code |
+| Config key | `report_email` (SMTP เดี่ยว + recipient + `subject_prefix`) | `email_profiles` = `{ default_profile_id, profiles[] }` (BE `f5c3e5c5b` 2026-08-08); `email_templates` = `{ defaults, templates[] }` (FE `2b80f83c` 2026-09-16) |
+| Schema ฝั่ง backend | `ReportEmailSchema` | `EmailProfilesSchema` / `EmailProfileSchema` (`app-config.service.ts:101-128`); **`email_templates` ไม่มี Zod schema ฝั่ง backend** — เก็บตามที่ส่งมา HTML ถูก sanitise ฝั่ง frontend เท่านั้น (`sanitizeEmailHtml`) |
+| การจัดการ secret | `smtp.password` เข้ารหัส mask เป็น `***ENCRYPTED***` | `profiles[*].smtp.password` เข้ารหัสและ mask; ค่าที่ mask/ว่างตอนบันทึกถูก restore **ตาม `id` ของ profile ไม่ใช่ index ของ array** (`49162675a`) การลบ profile กลางรายการจึงไม่ทำให้รหัสผ่านของ profile อื่นเลื่อน |
+| ส่งทดสอบ | `POST /app-config/test-email` ใช้ `report_email` ที่บันทึกไว้ | `POST /api/config/:bu_code/app-config/test-email-profile` `{ profile_id, to? }` — ต่อ profile ระบุผู้รับได้ (`f00088307`, `7d82d77f9`); dialog คือ `email-profile-test-dialog.tsx` |
+| ผู้บริโภคตอน runtime | `micro-notification` ผ่าน `getReportEmailForSend` (RPC) | `getEmailProfileForSend(bu_code, profile_id?)` (`app-config.service.ts:828`) export ให้โมดูล Purchase Order สำหรับ `POST /api/:bu_code/purchase-orders/:id/send-email` (`purchase-orders.controller.ts:2474`, BE `1897b4fc1`) และ Request for Pricing `POST …/request-for-pricings/:id/send-email` (`:480`); การส่งแต่ละครั้งเขียนแถว `tb_activity` ด้วย `enum_activity_action.email_sent` ตัวใหม่ |
+| Lookup สำหรับ dialog ส่ง | — | `GET /api/:bu_code/email-senders` → `{ default_profile_id, profiles[{ id, name, enabled, from_email, from_name }] }` และ `GET /api/:bu_code/email-messages` — block `smtp` ถูกตัดออกทั้งหมด dialog จึงไม่เคยได้รับ host/username (`email-lookup.service.ts:22-54`, BE `6a859f9e2` 2026-09-20); ทั้งคู่ map ไปที่ licence ทั่วไป `configuration.app_config` (`permission.route-map.ts:55-56`) |
+| Licence | `configuration.app_config` | `configuration.email_profile` สำหรับ `app-config/email_profiles` + `test-email-profile`; `configuration.email_template` สำหรับ `app-config/email_templates` (`LICENSE_ROUTE_OVERRIDES`, 2026-09-20); `GET /app-config` (รายการ) ไม่คืน key ทั้งสองอีกแล้ว |
+| ฟิลด์ของ profile | — | `id`, `name`, `enabled`, `smtp{host,port,secure,username,password}`, `from_email`, `from_name` (FE `types/email-profile.ts`); schema ฝั่ง backend ยังรับ `reply_to`, `default_cc`, `subject_template`, `body_template`, `note` พร้อม default — ฟอร์มตัดออกเมื่อ 2026-09-16 (`e98ef3ee`) เพราะเนื้อหาข้อความย้ายไปคลัง template |
+| ฟิลด์ของ template | — | `id`, `name`, `doc_type` (`po` \| `rfp`), `enabled`, `subject_template` (ข้อความธรรมดา), `body_template` (HTML), `default_cc[]`, `note`; `defaults[doc_type]` ระบุ template ที่ถูกเลือกไว้ล่วงหน้าใน dialog ส่งของเอกสารนั้น |
+
+**ข้อค้นพบด้าน permission — ยังเปิดอยู่** `config_app-config.controller.ts` ที่ HEAD มีเพียง `@UseGuards(KeycloakGuard)` ระดับ class (`:56`) `PUT :key` (`:141`) และ `DELETE :key` (`:224`) เรียก `assertSharedListViewsAdmin()` (`:264`) ซึ่ง return ออกทันทีสำหรับทุก key ที่ไม่ตรง `/^list_views_/` — ดังนั้น `email_profiles` และ `email_templates` เขียนได้โดย **สมาชิก BU ที่ authenticated คนใดก็ได้** ที่สัญญาของ BU มี licence feature `system_admin.config_email.view` มีอยู่ใน `tb_permission` และ gate sidebar entry (`module-list.ts:680,687`) แต่ไม่มี route ใดตรวจมัน licence interceptor ตอบว่า "BU นี้ใช้ feature ได้ไหม" ไม่เคยตอบว่า "ผู้ใช้คนนี้ทำได้ไหม" ดู [system-config/application-config](/th/inventory/system-config/application-config) สำหรับเวอร์ชันที่ครอบคลุมทั้งโมดูลของ finding นี้
+
 ## 1. คืออะไรและใครใช้
 
-Email Configuration คือ **SMTP profile ต่อ BU** ที่ Carmen ใช้สำหรับอีเมลขาออกทุกฉบับ — การแจ้งเตือนเวิร์กโฟลว์ (การอนุมัติ การส่งกลับ การปฏิเสธ PR / PO / GRN / SR), การส่งรายงานตามตารางเวลา, การแจ้งเตือนรีเซ็ตรหัสผ่าน และอีเมลทดสอบเฉพาะกิจ ไม่มีตารางเฉพาะ: SMTP host, port, credentials, default-from, default-to / CC และ subject prefix ทั้งหมดอยู่ในรูป **JSON blob เดียว** ใน `tb_application_config` ภายใต้ key `report_email`
+สองหน้าจอตั้งค่า เส้นทาง runtime เดียว:
 
-**กลุ่มเป้าหมาย:** ตั้งใจให้เป็น Sysadmin เท่านั้น แต่ **`config_app-config.controller.ts` ยังไม่มี `AppIdGuard` และไม่มี `RequirePlatformPermission` บน route ใดเลย** — `@UseGuards(KeycloakGuard)` ระดับ class (`:46`) คือ authentication เท่านั้น อ่านซ้ำทั้งไฟล์เมื่อ 2026-09-06 — **ต่างจากช่องโหว่ SQL Workbench ที่หน้าพี่น้องเคยรายงาน ช่องโหว่นี้ยังไม่ถูกปิด**
+- **Email Profile** (`/system-admin/email-profile`) — รายการ SMTP sender identity ที่มีชื่อของ business unit แต่ละ profile คือ SMTP host หนึ่งตัว + credential + identity `From:` พร้อม toggle `enabled`; มี profile **default** หนึ่งตัวพอดี (`default_profile_id`, row action "Set as default") การลบ profile สุดท้ายที่เหลือจะล้าง default; การเพิ่มตัวแรกจะทำให้เป็น default อัตโนมัติ (`email-profile.route.tsx:71,98`)
+- **Email Template / "Email Messages"** (`/system-admin/email-template`) — คลัง template subject + body HTML แยกตามประเภทเอกสาร `doc_type` ที่รองรับที่ HEAD: `po` และ `rfp` (`EMAIL_DOC_TYPES`, `types/email-template.ts`) placeholder คงที่ต่อประเภท (`lib/email-template.ts:14-24`): PO `{{po_no}}`, `{{vendor_name}}`, `{{bu_name}}`, `{{total}}`, `{{delivery_date}}`; RFP `{{rfp_name}}`, `{{vendor_name}}`, `{{contact_person}}`, `{{bu_name}}`, `{{start_date}}`, `{{end_date}}`, `{{portal_url}}` placeholder ที่ไม่ได้ให้ค่า render เป็น string ว่าง
+- **Runtime** — dialog *Send by email* บน Purchase Order (`po-send-email-dialog.tsx`) และ Request for Pricing (`rfp-send-email-dialog.tsx`) โหลด sender และ message ผ่าน lookup ที่ไม่มี secret ให้ผู้ใช้เลือก profile และ message (เติมล่วงหน้าจาก `defaults[doc_type]`) แล้ว `POST …/send-email` backend ถอดรหัสรหัสผ่านของ profile ที่เลือกผ่าน `getEmailProfileForSend` ส่งเมลพร้อมแนบ PDF และ log `email_sent`
 
-มีการตรวจแบบแคบเพิ่มเข้ามาหลังจากหน้านี้ถูกเขียน แต่ไม่ช่วยในกรณีนี้: commit `1b76f2caa` (2026-07-29) เพิ่ม `assertSharedListViewsAdmin()` (`:256-287`) ซึ่งถูกเรียกจาก `PUT :key` (`:202`) และ `DELETE :key` (`:237`) มันบังคับให้ผู้เรียกต้องมี role **`admin` ระดับ BU** ของ `bu_code` เป้าหมาย แต่เฉพาะเมื่อ key ตรงกับ `/^list_views_/` (`:262`) เท่านั้น key อื่นทั้งหมดจะ return `true` ทันที **`report_email` ไม่ใช่ key แบบ `list_views_*` ดังนั้น endpoint นี้จึงไม่มีการป้องกันเลย** การตรวจนี้อ่าน role จาก header `x-bu-datas` ซึ่ง `KeycloakGuard` เขียนทับทุกคำขอที่ authenticate แล้ว (`keycloak.guard.ts:192`, `:211`, `:301`, `:327`) จึงปลอมจากฝั่ง client ไม่ได้ และ fail closed เมื่อไม่มี header
+การแจ้งเตือนอนุมัติของ workflow **ไม่** ใช้ profile เหล่านี้ — workflow dispatcher ส่งเฉพาะการแจ้งเตือนในแอป (ดู [system-config/notification-template](/th/inventory/system-config/notification-template)) key `report_email` แบบ legacy ยังอ่าน/เขียนได้ผ่าน endpoint ทั่วไปและยังมี `ReportEmailSchema` + handler RPC `getReportEmailForSend` แต่ไม่มีหน้าจอใดในผลิตภัณฑ์นี้ route ไปหามัน และไม่พบผู้บริโภคใน repo นอกจาก handler นั้น (grep `getReportEmailForSend` → `app-config.service.ts`, `app-config.controller.ts` เท่านั้น) ถือเป็น legacy
 
-และไม่มี `x-app-id` ให้พึ่งด้วย: `@ApiHeaderRequiredXAppId()` ประกาศ header ไว้สำหรับ Swagger เท่านั้น ไม่มี `AppIdGuard` ใน controller นี้ ข้อความเดิมในหน้านี้ที่สื่อว่าต้องมี `x-app-id` ที่ valid ถูกแก้แล้ว การ gate ด้วย "App ID `app-config.upsert`" ที่อธิบายไว้ด้านล่าง **ไม่ได้ implement ใน backend** — การบังคับใช้ (ถ้ามี) มีแค่ระดับ navigation ฝั่ง frontend เท่านั้น (route อยู่ใต้ `/system-admin` ซึ่ง nav ที่ไม่ใช่ admin ไม่แสดง แต่ตัว API เองไม่ตรวจสอบ) ดู [system-config/application-config](/th/inventory/system-config/application-config) สำหรับเวอร์ชันที่ครอบคลุมทั้งโมดูลของ finding นี้ ไม่มีตาราง email-template แยกอยู่ — body สร้างขึ้นโดย `micro-notification` จาก template ต่อประเภทการแจ้งเตือน; เพียง `subject_prefix` (default `[Carmen]`) เท่านั้นที่ผู้ใช้ปรับได้ใน subject line
+**กลุ่มเป้าหมาย:** Sysadmin ตามข้อตกลง nav (`system_admin.config_email.view`); ไม่บังคับฝั่ง server
 
 ## 2. งานทั่วไป
 
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
-| อัปเดต SMTP host / port / username / from | System Admin → Email Configuration → ส่วน **SMTP Server** | `Save` เรียก `PUT /api/config/:bu_code/app-config/report_email` |
-| หมุนเวียนรหัสผ่าน SMTP | พิมพ์รหัสผ่านใหม่ในฟิลด์ที่ mask แล้วกด **Save** | เข้ารหัสตอนเก็บโดย `encryptSecret`; ค่า masked ที่ไม่เปลี่ยน = "คงรหัสผ่านเดิม" |
-| เพิ่ม / ลบ default recipient หรือ CC | ส่วน **Recipients**, แยกด้วย comma | ต้องเป็น email ที่ valid; Zod-validated ตอนเขียน |
-| เปลี่ยน subject prefix | **Recipients** → Subject Prefix | นำหน้าทุก subject (default `[Carmen]`) |
-| ส่งอีเมลทดสอบ | ปุ่ม **Test Email** (ด้านบนของฟอร์ม) | ใช้ config ที่ *บันทึกแล้ว* ไม่ใช่ form draft — **บันทึกก่อนแล้วทดสอบ** |
-| ปิดอีเมลโดยไม่ทำลายเวิร์กโฟลว์ | ตั้ง `smtp.enabled = false` | Kill-switch: notification ลัดวงจร; เอกสารยังเดินต่อ |
+| เพิ่ม sender profile | Email Profile → **Add** → ชื่อ, SMTP host/port/secure/username/password, From email/name, Enabled | `PUT /api/config/:bu_code/app-config/email_profiles` พร้อม value `{ default_profile_id, profiles }` ทั้งก้อน (`hooks/use-email-profiles.ts:60`); port `1..65535`, `secure` default `true`, port default 587 (`email-profile-schema.ts`) |
+| หมุนเวียนรหัสผ่านของ profile | แก้ profile พิมพ์รหัสผ่านใหม่ Save | ค่า masked ที่ไม่เปลี่ยนหรือว่าง = คง secret ที่เก็บไว้; backend ปฏิเสธการเก็บ mask ตามตัวอักษรเมื่อไม่มี secret อยู่ (`app-config.service.ts:396-437`) |
+| ตั้ง profile เป็น default | Row action **Set as default** | ส่ง array เดิมโดยเปลี่ยนเฉพาะ `default_profile_id` |
+| ส่งอีเมลทดสอบ | Row action **Test** → ผู้รับ (ไม่บังคับ) → Send | `POST …/app-config/test-email-profile` `{ profile_id, to? }`; ใช้ profile ที่ *บันทึกแล้ว* จึงต้องบันทึกก่อน |
+| ปิด profile โดยไม่ลบ | Toggle **Enabled** ปิด | profile ที่ปิดยังถูกคืนโดย `email-senders` พร้อม `enabled: false`; dialog ส่งไม่ควรเสนอมัน |
+| เขียนข้อความอีเมล PO / RFP | Email Messages → **Add** → ประเภทเอกสาร, ชื่อ, subject, body HTML, default CC, Enabled | `PUT …/app-config/email_templates`; แทรก placeholder จากรายการ chip; preview ใช้ค่าตัวอย่างที่ไม่เคยถูกส่ง |
+| เลือก message default ต่อประเภทเอกสาร | Email Messages → **Set as default** | เขียน `defaults[doc_type]` |
+| ส่ง PO / RFP ให้ vendor | หน้า detail ของ PO / RFP → **Send email** | Dialog อ่าน `email-senders` + `email-messages` แล้ว `POST …/send-email` |
+| ~~ตั้งค่า SMTP profile เดี่ยว~~ | ~~System Admin → Email Configuration~~ | **ไม่มี route ตั้งแต่ 2026-09** — `report_email` แก้ได้เฉพาะโดยเรียก `PUT …/app-config/report_email` ตรง ๆ |
 
 ## 3. การตรวจสอบและ Error
 
 | อาการ / ข้อความ | สาเหตุ | การดำเนินการ |
 |---|---|---|
-| "Invalid SMTP config" Zod error | ขาด host / username / from หรือ port อยู่นอกช่วง `1..65535` | กรอกฟิลด์ที่จำเป็น; ตรวจสอบ port |
-| "Recipient is not a valid email" | Address แย่ใน `recipients` หรือ `cc` | แก้รายการที่แยกด้วย comma |
-| Test email สำเร็จในฟอร์มแต่ไม่มีเมลมา | Form draft ยังไม่บันทึก — Test ใช้ค่าที่บันทึกแล้ว | กด **Save** ก่อนแล้วค่อย **Test Email** |
-| Notification ทั้งหมดเงียบใน production | `smtp.enabled = false` ถูกตั้งทิ้งไว้โดยไม่ตั้งใจ | เปิดใหม่ในฟอร์มและบันทึก |
-| ผู้ใช้ที่ authenticated ใครก็ได้ load/save config นี้ได้ ไม่ใช่แค่ Sysadmin | **ช่องโหว่ที่ยืนยันแล้ว — ยังเปิดอยู่ ตรวจสอบซ้ำ 2026-09-06** ไม่มี permission guard บน `config_app-config.controller.ts`; การตรวจ BU-admin สำหรับ `list_views_*` ที่เพิ่มใน `1b76f2caa` ไม่ครอบคลุม `report_email` | อย่าคิดว่า 403 ปกป้อง endpoint นี้อยู่วันนี้ |
-| ฟิลด์รหัสผ่านแสดง `***ENCRYPTED***` | คาดหวัง — mask ตอนอ่านเพื่อไม่ให้ ciphertext ถึง browser | คงไว้เพื่อเก็บรหัสผ่านปัจจุบัน; พิมพ์ใหม่เพื่อหมุนเวียน |
+| Zod error ตอนบันทึก profile | ขาด name/host/username/password, port อยู่นอกช่วง `1..65535`, `from_email` ไม่ valid | แก้ฟิลด์; backend validate ซ้ำด้วย `EmailProfileSchema` |
+| `Cannot save email_profiles: no stored secret to restore for profiles.*.smtp.password (id=…)` | Client post mask หรือรหัสผ่านว่างสำหรับ profile ที่ไม่เคยมีรหัสผ่าน | พิมพ์รหัสผ่านจริง |
+| ส่งทดสอบล้มเหลว | SMTP host/port/`secure` หรือ credential ผิด | แก้แล้วทดสอบใหม่; การทดสอบใช้ค่าที่บันทึกแล้ว ไม่ใช่ form draft |
+| `403 LICENSE_REQUIRED` / `LICENSE_EXPIRED` บนหน้าจอใดหน้าจอหนึ่ง | สัญญาของ BU ไม่มี `configuration.email_profile` / `configuration.email_template` | ต่ออายุ/ซื้อผ่าน Platform; `GET /api/license` แสดง `features[]` และ `expired_features[]` |
+| Dialog ส่งไม่แสดง sender | ไม่มี profile ที่ enabled หรือ `email_profiles` ไม่เคยถูกบันทึก | สร้างและเปิดใช้ profile |
+| placeholder ค้างตามตัวอักษรในเมลที่ส่ง (`{{something}}`) | placeholder ไม่อยู่ในรายการของ `doc_type` นั้น | ใช้เฉพาะ key ใน `EMAIL_PLACEHOLDERS[doc_type]` |
+| ผู้ใช้ที่ authenticated ใครก็ได้ load/save ทั้งสอง key ได้ ไม่ใช่แค่ Sysadmin | **ช่องโหว่ที่ยืนยันแล้ว — ยังเปิดอยู่ ตรวจสอบซ้ำ 2026-09-22** (ไม่มี RBAC guard บน `config_app-config.controller.ts`) | อย่าคิดว่า 403 ปกป้อง endpoint เหล่านี้อยู่วันนี้ |
+| ฟิลด์รหัสผ่านแสดง `***ENCRYPTED***` | คาดหวัง — mask ตอนอ่าน | คงไว้เพื่อเก็บรหัสผ่านปัจจุบัน |
 
 ## 4. กรณีพิเศษ
 
-- **การเข้ารหัสรหัสผ่านตอนเก็บ** `smtp.password` ถูกเข้ารหัสด้วย `encryptSecret` ก่อน persist และแทนที่ด้วยตัวอักษร `***ENCRYPTED***` ตอน `GET` Idempotent — ค่าที่เข้ารหัสแล้วจะไม่ถูกเข้ารหัสซ้ำ
-- **เส้นทางการเข้าถึงแบบถอดรหัส** เฉพาะ `getReportEmailForSend(bu_code)` ภายใน (TCP-only เรียกโดย `micro-notification` / cron) เท่านั้นที่ถอดรหัส เส้นทาง HTTP สาธารณะไม่เคยส่งคืน plaintext
-- **ความปลอดภัยของ audit** ทุก upsert ถูกจับผ่าน `EnrichAuditUsers` ไปยัง [reporting-audit/activity](/th/inventory/reporting-audit/activity) — แต่ค่าเองจะ *ไม่* ถูก log ป้องกันการเปิดเผย ciphertext โดยไม่ตั้งใจ
-- **หนึ่ง row ต่อ BU** `tb_application_config` มี `@@unique([key, deleted_at])` การแยก cross-BU บังคับโดย route ที่ scope ตาม BU
-- **`enabled` คือ kill-switch ไม่ใช่ delete** การปิดหยุดอีเมลอย่างสะอาดโดยไม่สูญเสีย config
+- **สอง key สอง licence หนึ่ง controller** การแยก licence ทำตาม URL (`resolveRouteFeature`) BU ที่มี `configuration.email_template` แต่ไม่มี `configuration.email_profile` จึงแก้ message ได้แต่แก้ sender ไม่ได้; lookup ของ dialog ส่งอยู่ใต้ `configuration.app_config` ทั่วไปและยังทำงานได้ไม่ว่ากรณีใด
+- **การ restore secret ยึดตาม id** `retainMaskedEmailProfileSecrets` (`app-config.service.ts:396`) จับคู่ profile ที่ส่งเข้ามากับที่เก็บไว้ด้วย `id`; profile ที่มี `id` ใหม่ต้องมีรหัสผ่านจริง
+- **`email_templates` ไม่ถูก validate ฝั่ง server** ไม่มี entry ใน `schemaByKey` — ผู้เรียก API โดยตรงเก็บรูปร่างใดก็ได้; หน้าจอคือการบังคับรูปร่างเพียงอย่างเดียว
+- **ความปลอดภัยของ audit** upsert ถูกจับผ่าน `EnrichAuditUsers`; ค่า config ไม่ถูก log การส่ง log `email_sent` บนเอกสาร ไม่ใช่บน profile
+- **`report_email` ถูกทิ้งร้าง ไม่ได้ถูกลบ** schema, secret path และ RPC reader ยังอยู่; มีเพียงหน้าจอที่เข้าถึงไม่ได้
 
 ---
 
 ## 5. Backing Service / Data Shape (Dev)
 
-แหล่งที่มา: tenant schema **ไม่มี `tb_email_config` เฉพาะ** — profile ทั้งหมดเป็น JSON row เดียว
+แหล่งที่มา: tenant schema **ไม่มีตารางเฉพาะ** — row ใน `tb_application_config` สองแถว
 
-### 5.1 `tb_application_config` row (`key = "report_email"`)
+### 5.1 `email_profiles` (Zod: `EmailProfilesSchema`, `app-config.service.ts:101-128`)
 
-`tb_application_config` คือ KV store ระดับ tenant ทั่วไป (ดู [system-config/application-config](/th/inventory/system-config/application-config)) Shape ที่ Zod-validated:
-
-```jsonc
+```
 {
-  "smtp": {
-    "host": "smtp.gmail.com",          // string, required
-    "port": 587,                        // int 1..65535
-    "username": "noreply@example.com", // string, required
-    "password": "ENC:<ciphertext>",    // เข้ารหัสตอนเก็บ; mask ตอน GET
-    "from": "noreply@example.com",     // From: header
-    "enabled": true                     // master kill-switch
-  },
-  "recipients": ["admin@example.com"], // default To
-  "cc": ["finance@example.com"],       // default CC
-  "subject_prefix": "[Carmen]"         // นำหน้าทุก subject
+  "default_profile_id": "p-001",             // string | null
+  "profiles": [
+    {
+      "id": "p-001",                         // required, คงที่ — secret จับคู่ด้วยค่านี้
+      "name": "Purchasing",
+      "enabled": true,
+      "smtp": {
+        "host": "smtp.example.com",
+        "port": 587,                         // int 1..65535
+        "secure": true,
+        "username": "purchasing@example.com",
+        "password": "***ENCRYPTED***"        // เข้ารหัสตอนเก็บ mask ตอนอ่าน
+      },
+      "from_email": "purchasing@example.com",
+      "from_name": "Carmen Purchasing",
+      "reply_to": "", "default_cc": [], "subject_template": "", "body_template": "", "note": ""
+                                             // รับพร้อม default; ฟอร์มไม่แก้ไขอีกแล้ว
+    }
+  ]
 }
 ```
 
-### 5.2 ตารางปลายทางที่เกี่ยวข้อง
+### 5.2 `email_templates` (ไม่มี schema ฝั่ง backend; FE `types/email-template.ts`, seed `packages/prisma-shared-schema-tenant/src/seed-data/email-templates.ts`)
 
-- `tb_report_schedule.recipients` (JSONB) — override ต่อ schedule
-- `tb_report_job` — ความพยายามส่งจริง (`status`, `started_at`, `completed_at`, `error_message`)
-- `tb_purchase_request.email_template_id`, `tb_purchase_order.email_template_id` — handle string สำหรับ template family ต่อเอกสารใน `micro-notification`
+```
+{
+  "defaults": { "po": "t-po-1", "rfp": null },
+  "templates": [
+    {
+      "id": "t-po-1",
+      "name": "Standard PO",
+      "doc_type": "po",                       // "po" | "rfp"
+      "enabled": true,
+      "subject_template": "Purchase Order {{po_no}} from {{bu_name}}",
+      "body_template": "<p>Dear {{vendor_name}}, …</p>",   // HTML, sanitise ฝั่ง client
+      "default_cc": ["finance@example.com"],
+      "note": ""
+    }
+  ]
+}
+```
+
+### 5.3 Endpoints
+
+```
+GET  /api/config/:bu_code/app-config/email_profiles         licence configuration.email_profile
+PUT  /api/config/:bu_code/app-config/email_profiles         { value }  (hook ส่ง doc_version กลับมา)
+POST /api/config/:bu_code/app-config/test-email-profile     { profile_id, to? }  licence configuration.email_profile
+GET  /api/config/:bu_code/app-config/email_templates        licence configuration.email_template
+PUT  /api/config/:bu_code/app-config/email_templates        { value }
+GET  /api/:bu_code/email-senders                            ไม่มี secret { default_profile_id, profiles[] }
+GET  /api/:bu_code/email-messages                           คลังข้อความ
+POST /api/:bu_code/purchase-orders/:id/send-email           ผู้บริโภค
+POST /api/:bu_code/request-for-pricings/:id/send-email      ผู้บริโภค
+```
+
+ทั้งหมดอยู่ใต้ `KeycloakGuard`; lookup สองตัวยังไม่มี `AppIdGuard` ด้วย (`email-lookup.controller.ts:2`)
 
 ## 6. กฎทางธุรกิจ
 
-- **Sysadmin เท่านั้นตามข้อตกลง ไม่ใช่การบังคับ** ไม่มี `AppIdGuard`/`RequirePlatformPermission` บน `config_app-config.controller.ts` — **ผู้เรียกที่ authenticated ใครก็ได้** อ่านและเขียน key นี้ได้วันนี้ (ตรวจสอบซ้ำ 2026-09-06) และไม่มีการตรวจ `x-app-id` ด้วย header นั้นเป็นเอกสาร Swagger ไม่ใช่ guard
-- **การเข้ารหัสและ mask รหัสผ่าน** เข้ารหัสผ่าน `encryptSecret`; แทนที่ด้วย `***ENCRYPTED***` ตอนอ่าน ค่า masked ที่ไม่เปลี่ยนหมายถึง "คงเดิม"
-- **Zod validation ตอนเขียน** Host, port (1–65535), username, password, from, enabled ทั้งหมดจำเป็นโดย `ReportEmailSchema`; `recipients` / `cc` ต้องเป็น email ที่ valid
-- **Kill-switch `enabled`** เมื่อ `false` notification service ลัดวงจรก่อนเปิด connection — เวิร์กโฟลว์ยังเดินต่อ ไม่มีอีเมลออก
-- **Send context** การถอดรหัสเฉพาะผ่าน `getReportEmailForSend` ภายในผ่าน TCP จาก `micro-notification` / cron — ไม่ต้อง user_id
-- **Test email** ใช้ config ที่ *บันทึกแล้ว* (ไม่ใช่ form draft) และส่งไปยัง recipient ที่ตั้งค่าไว้
-- **Audit logging** ผ่าน `EnrichAuditUsers`; ค่า JSON เองจะ *ไม่* ถูก log
+- **Sysadmin เท่านั้นตามข้อตกลง ไม่ใช่การบังคับ** ไม่มี RBAC guard บน app-config controller (ตรวจสอบซ้ำ 2026-09-22)
+- **licence ต่อกลุ่ม key** (`configuration.email_profile`, `configuration.email_template`) ผ่าน `LICENSE_ROUTE_OVERRIDES`; endpoint รายการทั่วไปซ่อนทั้งสอง key
+- **การเข้ารหัสและ mask รหัสผ่าน** restore ตาม id; ค่าว่างไม่เคยลบ secret
+- **default profile หนึ่งตัวต่อ BU** (`default_profile_id`); `enabled: false` คง profile ไว้แต่ควรถูกตัดออกจาก dialog ส่ง
+- **คลังข้อความต่อประเภทเอกสาร** (`po`, `rfp`); ชุด placeholder คงที่; body HTML sanitise ฝั่ง frontend
+- **ทุกการส่งถูก audit** เป็น `enum_activity_action.email_sent` บนเอกสาร
 
 ## 7. การอ้างอิงข้าม
 
-- [system-config/application-config](/th/inventory/system-config/application-config) — KV store แม่; `report_email` คือ key ที่สงวนไว้หนึ่งตัว
-- [reporting-audit/notification](/th/inventory/reporting-audit/notification) — `micro-notification` คือ consumer ตอน runtime
-- [reporting-audit/schedule](/th/inventory/reporting-audit/schedule) / [reporting-audit/report](/th/inventory/reporting-audit/report) — การส่งรายงานตามตารางเวลาและตามคำขอ
-- [access-control/user](/th/inventory/access-control/user) — การรีเซ็ตรหัสผ่าน การเชิญ การให้สิทธิ์
-- [system-config/workflow](/th/inventory/system-config/workflow) — กฎเส้นทาง recipient (`requestor`, `current_approve`, `next_step`) resolve กับเวิร์กโฟลว์; transport คือ config นี้
-- [reporting-audit/activity](/th/inventory/reporting-audit/activity) — upserts log ที่นี่
+- [system-config/application-config](/th/inventory/system-config/application-config) — KV store แม่; registry ของ key และการแยก licence
+- [purchase-order](/th/inventory/purchase-order) — dialog *Send email* และ `POST …/send-email`
+- [vendor-pricelist](/th/inventory/vendor-pricelist) — dialog *Send email* ของ RFP
+- [system-config/notification-template](/th/inventory/system-config/notification-template) — การแจ้งเตือน workflow ในแอป (ไม่มีอีเมล)
+- [reporting-audit/activity](/th/inventory/reporting-audit/activity) — แถว `email_sent`
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_application_config` (lines ~5287-5301)
-- **Backend service:** `../carmen-turborepo-backend-v2/apps/micro-business/src/app-config/app-config.service.ts` — `ReportEmailSchema`, `encryptSensitiveFields`, `maskSensitiveFields`, `getReportEmailForSend`, `testEmail`
-- **Backend gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_app-config/config_app-config.controller.ts` — อ่านซ้ำ 2026-09-06: มีแค่ `KeycloakGuard` ระดับ class (`:46`) ไม่มี `AppIdGuard` ไม่มี `RequirePlatformPermission`; การตรวจสิทธิ์เพียงอย่างเดียวในไฟล์คือ `assertSharedListViewsAdmin()` (`:256-287`) ซึ่งจำกัดที่ key แบบ `list_views_*` ตรวจและตัดออกแล้วเช่นกัน: ไม่มี `APP_GUARD` ใน `app.module.ts` นอกจาก throttler สำหรับจำกัดอัตรา (ซึ่งคอมเมนต์ในไฟล์ระบุเองว่าเป็นคนละแกนกับการตรวจสิทธิ์) และไม่มี guard ใน `config_app-config.module.ts`
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/config-email/config-email.route.tsx` + `config-email-component.tsx`
-- **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-app-config.ts` — `useAppConfigByKey('report_email')`, `useUpsertAppConfig`, `useTestEmail`
-- **Notification consumer:** `micro-notification` อ่านผ่าน TCP จาก `getReportEmailForSend`
+- **Backend service:** `../carmen-turborepo-backend-v2/apps/micro-business/src/app-config/app-config.service.ts` — `EmailProfileSchema`/`EmailProfilesSchema` (`:96-128`), `secretPathsFor` (`:216`), `retainMaskedEmailProfileSecrets` (`:396`), `getEmailProfileForSend` (`:828`), `testEmailProfile`; `app-config.module.ts` (export ให้โมดูล PO)
+- **Backend gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_app-config/config_app-config.controller.ts` (`test-email-profile` `:395`); `apps/backend-gateway/src/application/email-lookup/{email-lookup.controller,email-lookup.service}.ts`; `packages/prisma-shared-schema-platform/prisma/permission.route-map.ts:55-56,257-260`
+- **Seed:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/src/seed-data/email-templates.ts`; `apps/micro-business/src/authen/tenant_seed/seed-sets/email-templates.seed-set.ts`
+- **Frontend:** `../carmen-inventory-frontend-react/routes/system-admin/email-profile/` (`email-profile.route.tsx`, `email-profile-dialog.tsx`, `email-profile-test-dialog.tsx`, `email-profile-schema.ts`); `routes/system-admin/email-template/`; `hooks/use-email-profiles.ts`, `hooks/use-email-templates.ts`, `hooks/use-email-senders.ts`, `hooks/use-email-messages.ts`; `types/email-profile.ts`, `types/email-template.ts`, `lib/email-template.ts`; `routes/procurement/purchase-order/po-send-email-dialog.tsx`, `routes/vendor-management/request-price-list/rfp-send-email-dialog.tsx` Legacy: `routes/system-admin/config-email/` (ไม่มี route)
+- **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/config/app-config/POST-test-email-profile-config-app-config.bru`
+- **E2E:** `../carmen-inventory-frontend-e2e/docs/test-cases/1116-email-profile.md` (30 case), `1117-email-template.md` (30 case) — แคตตาล็อกเท่านั้น ไม่มี Playwright spec

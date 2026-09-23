@@ -2,7 +2,7 @@
 title: เทมเพลตรายการราคา (Price List Template)
 description: scaffold RFQ / pricelist ที่ใช้ซ้ำได้ นิยาม currency, validity, คำแนะนำ vendor, และรายการสินค้า/MOQ — template ต้นทางที่รอบ Request for Pricing ถูกออกจากมัน
 published: true
-date: 2026-07-29T04:41:24.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: templates, price-list, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -16,6 +16,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 ![เทมเพลตรายการราคา (Price List Template) screen](/screenshots/templates/price-list.png)
 
 ![เทมเพลตรายการราคา (Price List Template) detail screen](/screenshots/templates/price-list-detail.png)
+
+> **ตรวจสอบซ้ำ 2026-09-22:** ไม่มี feature commit ฝั่ง backend แตะโมดูลนี้ตั้งแต่ 2026-07-29; contract ที่เปลี่ยนมีอย่างเดียวคือ gateway serialise entity reference เป็น object แล้ว (`@Serialize(PricelistTemplateDetailResponseSchema)` / `PricelistTemplateListItemResponseSchema`, `pricelist-templates.controller.ts:90,153`): `currency: { id, code }`, สินค้าแต่ละตัวเป็น `product: { id, name, … }` และ unit ของ MOQ tier แต่ละชั้นเป็น `unit: { id, name }` (FE `types/price-list-template.ts:17-20`, commit `bf9f2c3a`, 2026-09-17) **request** ของ create / update ยังส่ง `product_id` / `unit_id` แบบ flat (`types/price-list-template.ts:46-51`) และโมดูล RFP ยังคืน `moq[]` ที่มี `unit_id` / `unit_name` แบบ flat ทุกอย่างอื่นใน callout ด้านล่างยังคงเป็นจริง
 
 > **สถานะการ implement (ตรวจสอบ 2026-07-29):** ฟอร์มสร้าง/แก้ (`plt-form.tsx`) มีแค่ 6 อย่าง — Name, Currency, Validity period, Description, Status, Vendor instructions — บวกส่วน **Products** (MOQ tier ต่อสินค้า) ที่หน้านี้เวอร์ชันก่อนไม่เคยพูดถึงเลย `reminder_days`, `send_reminders`, และ `escalation_after_days` เป็นคอลัมน์จริงบน `tb_pricelist_template` และ `update()` ฝั่ง backend ยินดีบันทึกให้ถ้า post มาตรงกับ API แต่ **ไม่มี UI field ตั้งค่าพวกมัน ไม่มี server-side validation ตรวจสอบ และไม่มี background job (`micro-cronjobs`, ค้นทั้ง repo) อ่านค่ามัน** — มันไม่มีผลจริง Clone ถูกถอดออกอย่างชัดเจน: `../carmen-inventory-frontend-e2e/tests/160-pl-template.spec.ts` มี suite เฉพาะชื่อ "Pricelist Template — Clone (removed)" ที่ assert ว่าไม่มี clone affordance ใน list, detail, หรือ edit view สำหรับทุก role Delete (`price-list-template.service.ts` → `remove()`) เป็น **soft delete** แบบไม่มีเงื่อนไข (`status = inactive` + `deleted_at`) ไม่มี usage guard — ไม่มี hard-delete path แยกที่จะถูกบล็อกเลย
 
@@ -55,7 +57,7 @@ Claim ที่ **ไม่มี** โค้ดรองรับในรอ�
 - **การเปลี่ยน currency บน template ที่มีอยู่** มีผลแค่ไปข้างหน้าเท่านั้น — `tb_request_for_pricing` ไม่ denormalize อะไรจาก template นอกจาก FK ดังนั้นหน้านี้ยืนยันจาก frontend อย่างเดียวไม่ได้ว่า RFQ ที่กำลังดำเนินอยู่จะอ่าน currency ปัจจุบันของ template ใหม่หรือไม่ — ถือว่ายังไม่ยืนยัน
 - **`reminder_days` / `send_reminders` / `escalation_after_days` เป็นของที่ตายแล้วผ่าน UI** พวกมันเป็นคอลัมน์จริง `create()`/`update()` รับไว้ถ้า post มาตรง (ยืนยันจากการอ่าน `price-list-template.service.ts`) แต่ฟอร์มสร้าง/แก้ไม่มีฟิลด์ให้เลยสักตัว และไม่มี background job อ่านมัน — คำอธิบาย step ของ test ตัวหนึ่งใน `../carmen-inventory-frontend-e2e/tests/160-pl-template.spec.ts` (`TC-PT-030001`) ยังบรรยายว่า "toggle switch send-reminders… เลือก checkbox เตือน 14 และ 7 วัน… กรอก escalation days" แต่ตัว test body ที่มันแนบอยู่กรอกแค่ฟิลด์ Name แล้ว save เท่านั้น — annotation นั้นเก่า/ตกยุคเทียบกับโค้ดที่มันควรจะบรรยาย
 - **Clone ยืนยันแล้วว่าถูกถอดออก ไม่ใช่แค่ไม่มีเอกสาร** suite "Pricelist Template — Clone (removed)" ใน `160-pl-template.spec.ts` assert ตรง ๆ ว่า `cloneButton()`/`cloneMenuItem()` มี 0 match ใน list, detail view, และ edit mode สำหรับทุก role ที่ทดสอบ
-- **Delete เป็น soft ไม่มีเงื่อนไข และเกิดทันที — แต่ soft-delete ของ detail row ไม่ครบ** `remove()` set `status = inactive`, `deleted_at`, และ `deleted_by_id` บน row **header** แต่ `updateMany` ของ detail row (`price-list-template.service.ts:741-746`) set **แค่ `deleted_by_id`** เท่านั้น — `deleted_at` ไม่เคยถูกเขียนบน `tb_pricelist_template_detail` เลย query ที่ filter detail row ด้วย `deleted_at IS NULL` จะตรวจไม่พบว่ารายการของ template ที่ถูกลบแล้วถูกลบ — มีแค่ `deleted_at`/`status` ของ header เท่านั้นที่บอกสถานะ deletion ได้แน่นอน ไม่มี hard-delete action แยกที่ไหนเลย และไม่มีการเช็คว่ารอบ RFQ (`tb_request_for_pricing.pricelist_template_id`) ยังชี้มาที่ template นี้อยู่หรือไม่
+- **Delete เป็น soft ไม่มีเงื่อนไข และเกิดทันที — แต่ soft-delete ของ detail row ไม่ครบ** `remove()` set `status = inactive`, `deleted_at`, และ `deleted_by_id` บน row **header** แต่ `updateMany` ของ detail row (`price-list-template.service.ts:680-684` ณ 2026-09-22) set **แค่ `deleted_by_id`** เท่านั้น — `deleted_at` ไม่เคยถูกเขียนบน `tb_pricelist_template_detail` เลย query ที่ filter detail row ด้วย `deleted_at IS NULL` จะตรวจไม่พบว่ารายการของ template ที่ถูกลบแล้วถูกลบ — มีแค่ `deleted_at`/`status` ของ header เท่านั้นที่บอกสถานะ deletion ได้แน่นอน ไม่มี hard-delete action แยกที่ไหนเลย และไม่มีการเช็คว่ารอบ RFQ (`tb_request_for_pricing.pricelist_template_id`) ยังชี้มาที่ template นี้อยู่หรือไม่
 - **Status เป็น enum 3 ค่าจริง** (`draft`/`active`/`inactive`, DB default `draft`) แก้ผ่าน `<Select>` ธรรมดาในฟอร์มเดียวกับฟิลด์อื่นทุกตัว — ไม่มี workflow แยก ไม่มี gate ที่ผูกกับความครบถ้วนของรายการสินค้า
 
 ---
@@ -97,7 +99,7 @@ Claim ที่ **ไม่มี** โค้ดรองรับในรอ�
 | `sequence_no` | `Int? @default(1)` | Yes | ลำดับการแสดง |
 | `product_id`, `product_code`, `product_name`, `product_local_name`, `product_sku` | mixed | No / Yes | snapshot สินค้า เติมค่าฝั่ง server จาก `tb_product` ตอน save |
 | `inventory_unit_id`, `inventory_unit_name` | mixed | Yes | หน่วย inventory ของสินค้า เติมค่าฝั่ง server |
-| `order_unit_obj` | `Json? @db.JsonB` | Yes | array ของ MOQ tier — `[{unit_id, unit_name, qty, note}, …]` ปุ่ม "Add tier" ของฟอร์มเพิ่ม entry ลงตรงนี้; ไม่มีตาราง tier แยก |
+| `order_unit_obj` | `Json? @db.JsonB` | Yes | array ของ MOQ tier ตามที่เก็บจริง — `[{unit_id, unit_name, qty, note}, …]`; บน wire gateway คืน unit ของแต่ละ tier เป็น `unit: { id, name }` ปุ่ม "Add tier" ของฟอร์มเพิ่ม entry ลงตรงนี้; ไม่มีตาราง tier แยก |
 | `comment` | `String? @db.VarChar` | Yes | Free text |
 | `info`, `dimension`, `doc_version` | mixed | Yes | metadata มาตรฐาน |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*` |
@@ -125,7 +127,7 @@ comment บน template เอง ตามรูป comment มาตรฐา�
 
 ## 8. การอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `enum_pricelist_template_status` + `tb_pricelist_template` (บรรทัด 4222-4268), `tb_pricelist_template_comment` (บรรทัด 4270-4303), `tb_pricelist_template_detail` (บรรทัด 4305 เป็นต้นไป)
-- **Backend service:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/price-list-template/price-list-template.service.ts` (เข้า Prisma โดยตรง — นี่คือ data layer จริง; `backend-gateway` `pricelist-templates.service.ts` เป็นแค่ TCP proxy บาง ๆ อยู่หน้ามัน); DTO และ validation factory ใน `dto/price-list-template.dto.ts`
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `enum_pricelist_template_status` (บรรทัด 4826), `tb_pricelist_template` (บรรทัด 4832), `tb_pricelist_template_comment` (บรรทัด 4874), `tb_pricelist_template_detail` (บรรทัด 4909), `tb_request_for_pricing` (บรรทัด 5004) ณ 2026-09-22
+- **Backend service:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/price-list-template/price-list-template.service.ts` (เข้า Prisma โดยตรง — นี่คือ data layer จริง; `backend-gateway` `pricelist-templates.service.ts` เป็นแค่ RPC proxy บาง ๆ อยู่หน้ามัน — transport ระหว่าง service เป็น HTTP ไม่ใช่ TCP มาตั้งแต่ก่อน baseline ของหน้านี้; `AppIdGuard('pricelistTemplate.*')`, response schema `@Serialize`, `@ExpandRefs` บน create / update); DTO และ validation factory ใน `dto/price-list-template.dto.ts`
 - **Frontend:** `../carmen-inventory-frontend-react/routes/vendor-management/price-list-template/` (`plt-form.tsx`, `plt-form-schema.ts`, `plt-form-products-section.tsx` สำหรับ UI ของ MOQ)
 - **E2E:** `../carmen-inventory-frontend-e2e/tests/160-pl-template.spec.ts` — ดู suite "Clone (removed)" และสังเกตว่า step annotation ของ `TC-PT-030001` บรรยาย UI control (switch multi-MOQ, switch lead-time, ฟิลด์ max-items, checkbox เตือน, escalation days) ที่ test body ไม่เคยแตะเลย และที่ไม่มีอยู่ใน `plt-form.tsx`

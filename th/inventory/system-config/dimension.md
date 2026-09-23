@@ -2,7 +2,7 @@
 title: มิติ (Dimension)
 description: ระบบ custom field ที่ provision ไว้ใน schema (tb_dimension, tb_dimension_display_in และคอลัมน์ dimension JSONB บน ~65 ตาราง) แต่ไม่มีหน้าจอ CRUD ไม่มี backend service และไม่มี frontend ที่ใช้งานจริงเลยในโค้ดเบส
 published: true
-date: 2026-07-16T00:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: system-config, dimension, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -13,7 +13,9 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** ไม่มีใครวันนี้ — **ไม่มี UI หรือ API สำหรับสร้าง/แก้ dimension เลย** &nbsp;·&nbsp; **ตาราง:** `tb_dimension` (+ `tb_dimension_display_in`) &nbsp;·&nbsp; **คอลัมน์ `dimension` JSONB** provision ไว้บน ~65 ตารางในฐาน tenant (ทั้งธุรกรรมและ master) แต่ไม่มีโค้ดใดอ่านหรือเขียนเลย &nbsp;·&nbsp; ระบบ custom field ที่ยังเป็นแค่ design — schema มีอยู่ แต่ไม่มีอะไร implement มัน
 
-## สถานะการ implement (ตรวจสอบ 2026-07-16)
+## สถานะการ implement (ตรวจสอบ 2026-07-16; ตรวจสอบซ้ำ 2026-09-22 — ไม่เปลี่ยน)
+
+ตรวจซ้ำที่ HEAD เมื่อ 2026-09-22: `grep -rl "tb_dimension" apps/` ใน backend ยังคืนเฉพาะ `apps/micro-business/src/master/dimension-comment/dimension-comment.service.ts`; gateway ยังมีแค่ `config/config_dimension-comments/`; ไม่มี route `dimension` ใต้ `routes/system-admin/` หรือใน `routes/router.tsx` ข้อเท็จจริงใหม่หนึ่งข้อตั้งแต่ baseline คือมี **permission resource `configuration.dimension`** ถูก seed ใน `tb_permission` (`seed.permission.data.ts`, เพิ่มเมื่อ 2026-07-23 ตอนจัดทำแคตตาล็อก endpoint ที่ scope ตาม BU) — มัน map ไปยัง route ของ comment (`config:dimension-comments`) และไม่มีอะไรอื่น; ไม่มี entry `dimension` ใน object `PERMISSIONS` ของ frontend
 
 การค้นทั่วทั้ง repo (`carmen-inventory-frontend-react`, `carmen-turborepo-backend-v2`) **ไม่พบ route, component, controller หรือ service ใดเลย** ที่สร้าง แก้ไข แสดงรายการ หรือลบ row ของ `tb_dimension` หรือ `tb_dimension_display_in`:
 

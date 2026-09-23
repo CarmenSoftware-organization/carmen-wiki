@@ -2,7 +2,7 @@
 title: แคตตาล็อกไลเซนส์ — โมเดลข้อมูล (Data Model)
 description: tb_license_feature (เป็นของ generator ต้นไม้ n ชั้นตั้งแต่การปรับโครงแคตตาล็อกเมื่อ 2026-09-03) และ tb_license_feature_group / tb_license_feature_group_item (bundle ที่ผู้ดูแลจัดเอง) พร้อมจำนวนแคตตาล็อกปัจจุบันที่ยืนยันแล้ว
 published: true
-date: '2026-09-06T09:00:00.000Z'
+date: '2026-09-23T01:30:00.000Z'
 tags: book/platform, license-catalog, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -11,7 +11,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # แคตตาล็อกไลเซนส์ — โมเดลข้อมูล (Data Model)
 
 > **At a Glance**
-> **`tb_license_feature`** — แคตตาล็อกความสามารถที่ขายได้ แถวมาจาก generator ฝั่ง backend**เท่านั้น** ผู้ดูแลแพลตฟอร์มแก้ได้แค่ `state` &nbsp;·&nbsp; **`tb_license_feature_group`** — bundle ที่ผู้ดูแลจัดเอง ข้าม module ได้อย่างอิสระ &nbsp;·&nbsp; **`tb_license_feature_group_item`** — ตารางเชื่อม `feature_key` อ้างอิง**ด้วยค่า ไม่มี FK** โดยเจตนา &nbsp;·&nbsp; **โครงต้นไม้:** n ชั้นตั้งแต่ 2026-09-03 (`parent_key` = prefix ที่ยาวที่สุดที่มีอยู่จริง ไม่ใช่ "ข้อความก่อนจุดแรก") &nbsp;·&nbsp; **ขนาดแคตตาล็อกที่ยืนยันแล้ว:** 89 แถว / 11 module ราก / active 79 / inactive 10 — แก้ไขคอมเมนต์ในซอร์สที่ล้าสมัยซึ่งอ้าง 76/10/66 (§3) &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` บนทั้งสองตาราง ล็อกแบบ optimistic บนทุกการเขียน
+> **`tb_license_feature`** — แคตตาล็อกความสามารถที่ขายได้ แถวมาจาก generator ฝั่ง backend**เท่านั้น** ผู้ดูแลแพลตฟอร์มแก้ได้แค่ `state` &nbsp;·&nbsp; **`tb_license_feature_group`** — bundle ที่ผู้ดูแลจัดเอง ข้าม module ได้อย่างอิสระ &nbsp;·&nbsp; **`tb_license_feature_group_item`** — ตารางเชื่อม `feature_key` อ้างอิง**ด้วยค่า ไม่มี FK** โดยเจตนา &nbsp;·&nbsp; **โครงต้นไม้:** n ชั้นตั้งแต่ 2026-09-03 (`parent_key` = prefix ที่ยาวที่สุดที่มีอยู่จริง ไม่ใช่ "ข้อความก่อนจุดแรก") &nbsp;·&nbsp; **ขนาดแคตตาล็อกที่ยืนยันแล้ว:** 107 แถว / 12 module ราก / active 100 / inactive 7 (เดิม 89/11/79/10 เมื่อ 2026-09-06 — +19/−2: module `interface`, คีย์ `configuration.*` ห้าตัวและ `accounting.gl.*` สองตัว, `system_admin.period` เปลี่ยนชื่อเป็น `system_admin.inventory_period`, `system_admin.query_dataset` ถูกลบ; ดูหน้าลงจอด §3.2) — แก้ไขคอมเมนต์ในซอร์สที่ล้าสมัยซึ่งอ้าง 76/10/66 (§3) &nbsp;·&nbsp; **`kind` ของกลุ่ม:** `standard` | `interface`, `NOT NULL DEFAULT 'standard'` ตั้งได้ตอนสร้างเท่านั้น (§2.2, §5) &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` บนทั้งสองตาราง ล็อกแบบ optimistic บนทุกการเขียน
 
 > **แหล่งความจริง:** Prisma schema ฝั่ง backend และไฟล์ผลลัพธ์ของ generator เอง ต้องอ่านสองไฟล์นี้ก่อนเสมอเวลาเขียนหรือปรับหน้านี้:
 > - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
@@ -58,12 +58,13 @@ Schema บรรทัด 1284 หนึ่งแถวต่อหนึ่ง�
 | `description` | `String?` | ใช่ | แก้ได้ ข้อความอิสระ |
 | `sort_order` | `Int @default(0)` | ไม่ | ตำแหน่งของ bundle บนฟอร์มขาย — schema อนุญาตให้ชนกันข้ามชุด และ UI แค่แจ้งเตือน ไม่บล็อก (ดู [UI Screens](/th/platform/license-catalog/ui-screens) §4) |
 | `is_active` | `Boolean @default(true)` | ไม่ | ชุดนี้ยังขายอยู่ไหม |
+| `kind` | `enum_license_feature_group_kind @default(standard)` | ไม่ | **เพิ่มเมื่อ 2026-09-10** (`20260910000000_license_feature_group_kind`, schema บรรทัด 1308) bundle ชนิด `standard` ผูกกับ subscription (`tb_subscription_bu_group`); bundle ชนิด `interface` ผูกกับ interface licence (`tb_business_unit_interface_license` หนึ่งกลุ่มต่อ licence) ตั้งได้ตอนสร้างเท่านั้น — path update ของ service ไม่อ่านมัน backend ตอบ 400 เมื่อจับคู่ผิดไม่ว่าทิศทางไหน |
 | `doc_version` | `Int @default(0)` | ไม่ | ตัวนับล็อกแบบ optimistic บังคับตอน `PATCH` และ `PUT .../features` |
 | audit trio + soft delete | — | ใช่ | มาตรฐาน |
 
-**Constraint:** `@@unique([code, deleted_at])` (map `license_feature_group_code_deleted_at_u`) **Index:** `(is_active, deleted_at)`
+**Constraint:** `@@unique([code, deleted_at])` (map `license_feature_group_code_deleted_at_u`) **Index:** `(is_active, deleted_at)`, `(kind, deleted_at)` (`license_feature_group_kind_deleted_at_idx`, 2026-09-10)
 
-**ความสัมพันธ์:** `tb_license_feature_group_item[]` (§2.3), `tb_subscription_bu_group[]` — ตารางเชื่อมของโมดูล [Licenses](/th/platform/licenses) ที่ผูก bundle นี้เข้ากับ subscription ของ business unit หนึ่ง bundle ที่ยังมีแถว `tb_subscription_bu_group` ที่ยังไม่ถูกลบอ้างถึงอยู่จะลบไม่ได้ (ดู §4)
+**ความสัมพันธ์:** `tb_license_feature_group_item[]` (§2.3), `tb_subscription_bu_group[]` — ตารางเชื่อมของโมดูล [Licenses](/th/platform/licenses) ที่ผูก bundle ชนิด `standard` เข้ากับ subscription ของ business unit หนึ่ง — และตั้งแต่ 2026-09-10 `tb_business_unit_interface_license[]` ledger ที่ขาย bundle ชนิด `interface` ให้ BU ทีละหนึ่ง licence ([Licenses — Data Model](/th/platform/licenses/data-model) §2.4) bundle ที่ยังมีแถว `tb_subscription_bu_group` ที่ยังไม่ถูกลบอ้างถึงอยู่จะลบไม่ได้ (ดู §4)
 
 ### 2.3 `tb_license_feature_group_item` — ตารางเชื่อม ด้วยค่า ไม่ใช่ foreign key
 
@@ -90,13 +91,14 @@ Schema บรรทัด 1313 หนึ่งแถวต่อคู่ (ก�
 **จำนวนปัจจุบันที่ยืนยันแล้ว — อย่าเชื่อคอมเมนต์ในซอร์ส** คอมเมนต์ของ `FeatureCatalogPanel.tsx` เองและของ `ModuleShelf.tsx` ยังพูดถึง "76 แถว" และ "10 module + 66 ลูก" ซึ่งมาก่อนงานปรับโครงเมื่อ 2026-09-03 การนับผลลัพธ์ของ generator เองตรง ๆ:
 
 ```
-grep -c '"key":' seed.license-feature.data.ts           → 89
-grep -c '"parent_key": null' seed.license-feature.data.ts → 11
-grep -c '"state": "active"' seed.license-feature.data.ts   → 79
-grep -c '"state": "inactive"' seed.license-feature.data.ts → 10
+grep -c '"key":' seed.license-feature.data.ts           → 107
+grep -c '"parent_key": null' seed.license-feature.data.ts → 12
+grep -c '"state": "active"' seed.license-feature.data.ts   → 100
+grep -c '"state": "inactive"' seed.license-feature.data.ts → 7
+grep -c '"key": "interface' seed.license-feature.data.ts   → 12
 ```
 
-**89 แถวทั้งหมด, 11 module ราก** (`accounting`, `configuration`, `dashboard`, `inventory_management`, `operation_plan`, `procurement`, `product_management`, `report`, `store_operations`, `system_admin`, `vendor_management`), **78 แถวที่ไม่ใช่รากกระจายอยู่ได้ถึงสามชั้น**, **79 แถวขายได้ตอนนี้** (`active`) และ **10 แถวจองไว้แต่ยังขายไม่ได้** (`inactive` — สิบคีย์ `accounting.*` ที่ลงทะเบียนในเฟส C ก่อนมี endpoint จริง §2.4 ของสเปกอธิบายไว้ตรง ๆ ว่าทำไมถึง seed เป็น `inactive` แทนค่า default `active` ของ schema เอง: feature ที่ยังไม่มี route รองรับต้องไม่ขายได้ตั้งแต่วันแรก บั๊กแบบเดียวกับที่คอมเมนต์ในโค้ดของ generator บอกว่าเคยเกิดมาแล้วกับ `report.schedule`)
+(นับใหม่เมื่อ 2026-09-22 เทียบกับ backend HEAD `ef4d6f08f`; ตัวเลขเมื่อ 2026-09-06 คือ 89 / 11 / 79 / 10) **107 แถวทั้งหมด, 12 module ราก** (`accounting`, `configuration`, `dashboard`, `interface`, `inventory_management`, `operation_plan`, `procurement`, `product_management`, `report`, `store_operations`, `system_admin`, `vendor_management`), **95 แถวที่ไม่ใช่รากกระจายอยู่ได้ถึงสามชั้น**, **100 แถวขายได้ตอนนี้** (`active`) และ **7 แถวจองไว้แต่ยังขายไม่ได้** (`inactive` — ทั้งหมดเป็นคีย์ `accounting.*` ที่ลงทะเบียนในเฟส C ก่อนมี endpoint จริง §2.4 ของสเปกอธิบายไว้ตรง ๆ ว่าทำไมถึง seed เป็น `inactive` แทนค่า default `active` ของ schema เอง: feature ที่ยังไม่มี route รองรับต้องไม่ขายได้ตั้งแต่วันแรก บั๊กแบบเดียวกับที่คอมเมนต์ในโค้ดของ generator บอกว่าเคยเกิดมาแล้วกับ `report.schedule`) module `interface` (12 แถว สามชั้น: `interface` → `interface.{accounting,pos,pms}` → ใบ brand แปดใบ) เป็น module แรกที่คีย์**ไม่มี permission และไม่มี route เลย** — เข้าแคตตาล็อกผ่าน `LICENSE_ONLY_RESOURCES` ใน `permission.route-map.ts` (2026-09-08) เพราะมันถูกขายและบังคับใช้โดย inventory frontend ไม่ใช่โดย `LicenseInterceptor`; ดู[หน้าลงจอด](/th/platform/license-catalog) §3.2 ว่าทำไมชุด `PLANNED_LICENSE_RESOURCES` เดิมรองรับมันไม่ได้
 
 **ความเสี่ยงที่โครงต้นไม้แบบนี้สร้างขึ้น — การซ่อนชั้นกลางทำลายสิทธิ์ของลูกหลานทุกตัวแบบมองไม่เห็นบนหน้านี้** evaluator สิทธิ์ตอน runtime (`license.evaluator.ts` ใน `carmen-turborepo-backend-v2` ตามสเปก §2.2/§4.5) ตัดคีย์ที่ `state='hide'` ออกจากชุด `features` ที่มีผลจริงของ business unit **ก่อน**ตรวจว่าบรรพบุรุษของคีย์ที่ถืออยู่ครบทุกตัวไหม การตั้งค่า `hide` ให้ feature ชั้นกลางจึงทำให้การตรวจบรรพบุรุษของลูกหลานทุกตัวล้มเหลวแบบเงียบ ๆ สำหรับทุก business unit ที่ถือมันอยู่ — แม้ว่าลูกหลานเหล่านั้นจะยังขึ้นเป็น `active` บนหน้าจอนี้อยู่ก็ตาม เพราะ `state` ของแถวตัวเองไม่เคยเปลี่ยน กล่องยืนยันการซ่อนของ `FeatureCatalogPanel` จึงต่อท้ายด้วยจำนวนลูกหลานก็เพราะความเสี่ยงนี้เป๊ะ (ดู [UI Screens](/th/platform/license-catalog/ui-screens) §3); นี่คือความเสี่ยงที่ตั้งใจและถูกเขียนไว้ในการออกแบบ ไม่ใช่สิ่งที่หน้านี้กำลังรายงานว่าเป็นบั๊ก
 
@@ -114,7 +116,7 @@ tb_subscription_bu_group.group_id          ──>  tb_license_feature_group.id 
 
 ## 5. Enum
 
-`enum_license_feature_state` (schema บรรทัด 740): `active` | `inactive` | `hide` การสะกดนี้คือสัญญาสายข้อมูลกับ frontend (`FeatureState` ใน `src/constants/featureFlags.ts` เขียนไว้ตรง ๆ ว่า "สามสตริงนี้คือสัญญาสายข้อมูลกับ backend enum — ห้ามเปลี่ยนชื่อ") — แต่ดู §3.3 ของ[หน้าลงจอด](/th/platform/license-catalog) ว่าทำไมสามสตริงเดียวกันเป๊ะถึงหมายความต่างกันบนหน้า Feature Flags ที่ไม่เกี่ยวข้องกัน ไม่มี enum แยกสำหรับ `tb_license_feature_group` — `is_active` เป็น boolean ธรรมดา ไม่ใช่ฟิลด์สามสถานะ เพราะ bundle ไม่มีสิ่งที่เทียบเท่า `hide` เลย: การปิด bundle หยุดการเสนอขาย**ใหม่** แต่ subscription ที่อ้างมันอยู่แล้วยังถือสิทธิ์ต่อไป (การถอดสิทธิ์จริง ๆ ต้องแก้ชุด feature ของ bundle หรือลบ bundle ทิ้ง ทั้งสองอยู่ใน §7 ของ [UI Screens](/th/platform/license-catalog/ui-screens))
+`enum_license_feature_state` (schema บรรทัด 740): `active` | `inactive` | `hide` การสะกดนี้คือสัญญาสายข้อมูลกับ frontend (`FeatureState` ใน `src/constants/featureFlags.ts` เขียนไว้ตรง ๆ ว่า "สามสตริงนี้คือสัญญาสายข้อมูลกับ backend enum — ห้ามเปลี่ยนชื่อ") — แต่ดู §3.3 ของ[หน้าลงจอด](/th/platform/license-catalog) ว่าทำไมสามสตริงเดียวกันเป๊ะถึงหมายความต่างกันบนหน้า Feature Flags ที่ไม่เกี่ยวข้องกัน `enum_license_feature_group_kind` (schema บรรทัด 747 ตั้งแต่ 2026-09-10): `standard` | `interface` — bundle ขายบน ledger ไหนได้ (§2.2); SPA อ่านแบบป้องกันเป็น `kind ?? 'standard'` เผื่อ gateway ก่อนการ rollout แต่คอลัมน์เป็น `NOT NULL` พร้อมค่า default นอกจากนั้น `tb_license_feature_group` ไม่มีฟิลด์สามสถานะ — `is_active` เป็น boolean ธรรมดา เพราะ bundle ไม่มีสิ่งที่เทียบเท่า `hide` เลย: การปิด bundle หยุดการเสนอขาย**ใหม่** แต่ subscription ที่อ้างมันอยู่แล้วยังถือสิทธิ์ต่อไป (การถอดสิทธิ์จริง ๆ ต้องแก้ชุด feature ของ bundle หรือลบ bundle ทิ้ง ทั้งสองอยู่ใน §7 ของ [UI Screens](/th/platform/license-catalog/ui-screens))
 
 ## 6. `affected_bu_count` — คำนวณสด ไม่เก็บลง DB
 

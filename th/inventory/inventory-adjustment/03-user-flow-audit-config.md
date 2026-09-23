@@ -2,7 +2,7 @@
 title: การปรับสต๊อก (Inventory Adjustment) — User Flow — Audit & Config
 description: ประกาศแก้ไข — ไม่มี surface เฉพาะของ Auditor หรือ System Administrator สำหรับโมดูลนี้ นอกเหนือจาก master ของ reason code ทั่วไป
 published: true
-date: 2026-07-15T17:02:22.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: inventory-adjustment, user-flow, audit, sysadmin, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -16,7 +16,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 
 - Surface การกำหนดค่าจริงเพียงอย่างเดียวสำหรับโมดูลนี้คือ master ของ reason code (`/config/adjustment-type`, [master-data/adjustment-type](/th/inventory/master-data/adjustment-type)) ซึ่งเป็นหน้าจอ CRUD ธรรมดาสำหรับ `code`, `name`, `type` (`stock_in`/`stock_out`), `description`, `note`, `is_active` — ไม่มีฟิลด์บัญชี GL, ไม่มี flag บังคับแนบเอกสาร, ไม่มีการกำหนดค่า threshold ใด ๆ
 - การค้นหาทั่ว repo สำหรับ `threshold` ที่ขอบเขตของโมดูลนี้และ service ที่แชร์กันไม่พบผลลัพธ์ใด ๆ
-- การค้นหาทั่ว repo สำหรับการตรวจสอบแบ่งแยกหน้าที่ (เช่น การเปรียบเทียบ `buyer_id`/`created_by_id` ระหว่างใบรับกับ write-off) ไม่พบโค้ดที่ตรงกันใน `stock-in.service.ts` / `stock-out.service.ts`
+- การค้นหาทั่ว repo สำหรับการตรวจสอบแบ่งแยกหน้าที่ (เช่น การเปรียบเทียบ `buyer_id`/`created_by_id` ระหว่างใบรับกับ write-off หรือกฎ "ผู้ร่างห้าม commit") ไม่พบโค้ดที่ตรงกันใน `stock-in.service.ts` / `stock-out.service.ts` (ตรวจซ้ำ 2026-09-22 — เมธอด `commit()` ตัวใหม่ตรวจเพียง status, วันที่, บรรทัด และยอดคงเหลือเท่านั้น)
 - ไม่พบหน้าจอ lot-recall trace, หน้ายืนยันห่วง void หรือ audit-trail workspace เฉพาะของโมดูลนี้ใน route ของ frontend
 - E2E spec เดียวที่แตะ config surface ของโมดูลนี้คือ `031-adjustment-type.spec.ts` ซึ่งครอบคลุมเพียง CRUD ของ reason code ปกติ (code ไม่ซ้ำ, toggle active/inactive) — ไม่มีอะไรเกี่ยวกับ threshold หรือ GL
 

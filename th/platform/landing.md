@@ -2,7 +2,7 @@
 title: Landing
 description: หน้าการตลาดสาธารณะที่ / — redirect session ที่ authenticated แล้วไปยัง Dashboard และแสดงดัชนีโมดูล "Inside the console" แบบ hardcode ที่คลาดเคลื่อนจาก sidebar จริง
 published: true
-date: 2026-09-06T23:45:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: platform/landing, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-07-29T09:46:00.000Z
 # Landing
 
 > **At a Glance**
-> **หน้าจอ:** `Landing` (`/`) &nbsp;·&nbsp; **การเข้าถึง:** สาธารณะเต็มรูปแบบ — route ไม่มี wrapper `<PrivateRoute>` เลย แม้แต่แบบ authenticated-only เปล่า ๆ ที่ [Dashboard](/th/platform/dashboard) และ [Profile](/th/platform/profile) ใช้ &nbsp;·&nbsp; **พฤติกรรม:** redirect session ที่ authenticated แล้วไปยัง `/dashboard` แบบไม่มีเงื่อนไข — route guard ของ [Dashboard](/th/platform/dashboard) เองเป็นผู้ตัดสินใจต่อว่า session นั้นควรอยู่ที่นั่นจริงหรือไม่ (§4) &nbsp;·&nbsp; **เนื้อหา:** hero + CTA sign-in + ดัชนีโมดูล "Inside the console" แบบ hardcode สามกลุ่ม + footer version &nbsp;·&nbsp; **ความคลาดเคลื่อนที่ยืนยันแล้ว:** ดัชนีโมดูลยังระบุชื่อโมดูล Print Mapping ที่ถูกลบแล้ว และตอนนี้ขาดแถวจริงส่วนใหญ่ของ sidebar ไป (§4)
+> **หน้าจอ:** `Landing` (`/`) &nbsp;·&nbsp; **การเข้าถึง:** สาธารณะเต็มรูปแบบ — route ไม่มี wrapper `<PrivateRoute>` เลย แม้แต่แบบ authenticated-only เปล่า ๆ ที่ [Dashboard](/th/platform/dashboard) และ [Profile](/th/platform/profile) ใช้ &nbsp;·&nbsp; **พฤติกรรม:** redirect session ที่ authenticated แล้วไปยัง `/dashboard` แบบไม่มีเงื่อนไข — route guard ของ [Dashboard](/th/platform/dashboard) เองเป็นผู้ตัดสินใจต่อว่า session นั้นควรอยู่ที่นั่นจริงหรือไม่ (§4) &nbsp;·&nbsp; **เนื้อหา:** hero + CTA sign-in + ดัชนีโมดูล "Inside the console" แบบ hardcode สามกลุ่ม + footer version &nbsp;·&nbsp; **ความคลาดเคลื่อนที่ยืนยันแล้ว:** แถว Print Mapping ที่ตายแล้วถูกถอดออกในที่สุดเมื่อ 2026-09-07 แต่ดัชนีโมดูลยังขาดแถวจริงส่วนใหญ่ของ sidebar อยู่ (§4)
 
 ## 1. ภาพรวม
 
@@ -33,7 +33,7 @@ Landing คือจุดเริ่มต้นสำหรับผู้ท
 | กลุ่ม | รายการ (ตามที่แสดงบน Landing) |
 |---|---|
 | Organization | Clusters, Business Units, Users, Tenant Migrations |
-| Content | Report Templates, **Print Mapping**, News, Broadcasts |
+| Content | Report Templates, News, Broadcasts |
 | Platform | Applications, Roles & Access, Super Admins |
 
 ## 4. ความคลาดเคลื่อนที่ยืนยันแล้ว: ดัชนี vs. Sidebar จริง
@@ -44,7 +44,7 @@ Landing คือจุดเริ่มต้นสำหรับผู้ท
 |---|---|---|---|
 | Organization | Clusters, Business Units, Users, Tenant Migrations | + Tenant Imports | ขาด 1 จาก 5 |
 | License Management | *(ไม่มีกลุ่มนี้บน Landing)* | Licenses, License Feature Groups, License Features | ขาด 3 จาก 3 — ทั้งกลุ่มหายไป |
-| Content | Report Templates, **Print Mapping**, News, Broadcasts | Report Templates, Report Form Groups, News, Broadcasts | มีรายการที่ตายแล้ว; ขาด Form Groups |
+| Content | Report Templates, News, Broadcasts | Report Templates, Report Form Groups, News, Broadcasts | ขาด 1 จาก 4 (Form Groups) — แถว Print Mapping ที่ตายแล้วถูกลบออกในที่สุดเมื่อ 2026-09-07 |
 | Analytics | *(ไม่มีกลุ่มนี้บน Landing)* | Usage Analytics, Activity Events | ขาด 2 จาก 2 — ทั้งกลุ่มหายไป |
 | Scheduling | *(ไม่มีกลุ่มนี้บน Landing)* | Cronjobs | ขาด 1 จาก 1 — ทั้งกลุ่มหายไป |
 | Platform | Applications, Roles & Access, Super Admins | + Platform Config, Email Settings, User Platform, Feature Flags | ขาด 4 จาก 7 |
@@ -52,8 +52,8 @@ Landing คือจุดเริ่มต้นสำหรับผู้ท
 
 เป็นข้อความ:
 
-- **Print Mapping ยังอยู่ในรายการ Content** แม้ว่าโมดูล print-template-mapping — รวมถึงรายการ sidebar ของมัน — ถูกลบออกจาก carmen-platform เมื่อ 2026-07-24 (commit `de11377`) สำเนาของหน้า Landing เองไม่ถูกแตะต้องโดย commit การลบนั้น; ตรวจสอบแล้วว่ายังเป็นจริงอยู่ — `pages.landing.itemPrintMapping` ยังอยู่ในกลุ่ม Content แบบ hardcode ของ `Landing.tsx` ณ การตรวจสอบครั้งนี้
-- **Report Form Groups ขาดหายจาก Content** — ออกมาสัปดาห์เดียวกับการลบ Print Mapping (2026-07-24) และอยู่ในกลุ่ม Content ของ sidebar วันนี้ แต่รายการ Content ของ Landing ยังแสดงแค่สี่รายการก่อน 2026-07-24 เท่านั้น (หนึ่งในนั้นคือแถว Print Mapping ที่ตายไปแล้ว)
+- **Print Mapping ไม่อยู่ในรายการอีกต่อไป** — แถวที่ตายแล้วซึ่งหน้านี้เคยชี้ไว้ในการแก้ไขรอบ 2026-09-06 (โมดูล print-template-mapping ถูกลบเมื่อ 2026-07-24, commit `de11377` แต่สำเนา hardcode ของ Landing ยังเก็บรายการไว้) ถูกลบออกจากกลุ่ม Content ของ `Landing.tsx` เมื่อ 2026-09-07 (commit `344be13`, PR #283 ซึ่งลบคีย์ i18n `pages.landing.itemPrintMapping`/`descPrintMapping` ไปด้วย) ตอนนี้ Content แสดงสามรายการ และทุกรายการมีอยู่จริง
+- **Report Form Groups ยังคงขาดหายจาก Content** — ออกมาสัปดาห์เดียวกับการลบ Print Mapping (2026-07-24) และอยู่ในกลุ่ม Content ของ sidebar วันนี้ แต่ PR #283 ลบเฉพาะแถวที่ตายแล้ว ไม่ได้เพิ่มแถวที่ขาดไป
 - **กลุ่ม Platform ขาดไป 4 จาก 7 แถวปัจจุบัน**: User Platform (ส่วนหนึ่งของ [Platform RBAC](/th/platform/rbac)), SQL Workbench, และอีกสองแถวที่เพิ่มหลังจากหน้านี้ทบทวนครั้งล่าสุด — Platform Config กับ Email Settings (ทั้งคู่อยู่ `navGroup.platform`) — บวก Feature Flags ซึ่งแถว nav ของตัวเองมี permission (`feature_flag.manage`) แต่ตั้งใจไม่มีคีย์ `feature` เป็นของตัวเอง ตาม comment ใน `platformNav.ts`: "สวิตช์ที่ปิดตัวเองได้จะเปิดกลับไม่ได้อีกจากหน้าจอ" ตอนนี้ Feature Flags มีโมดูล wiki ของตัวเองแล้ว — [Feature Flags](/th/platform/feature-flags)
 - **สามกลุ่มทั้งหมดที่ sidebar ปัจจุบันใช้จัดงาน — License Management, Analytics, และ Scheduling — ไม่มีตัวแทนบน Landing เลย** ทั้งหมดเป็นโมดูลที่เพิ่มหลังจากหน้านี้ทบทวนครั้งล่าสุด: Licenses, License Feature Groups, และ License Features (License Management); Usage Analytics และ Activity Events (Analytics); Cronjobs (Scheduling)
 - **กลุ่ม Database ก็ขาดหายไปทั้งหมดเช่นกัน** รวมถึง SQL Workbench (ระบุไว้แล้วข้างต้น) บวก Platform Migrations และ Database Pools ซึ่งทั้งคู่เพิ่มหลังจากหน้านี้ทบทวนครั้งล่าสุด

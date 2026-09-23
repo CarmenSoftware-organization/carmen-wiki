@@ -2,7 +2,7 @@
 title: ประเภทธุรกิจผู้ขาย (Vendor Business Type)
 description: Flat lookup สำหรับจัดประเภทผู้ขายตามลักษณะธุรกิจ (ผู้ผลิต, ผู้จัดจำหน่าย, บริการ ฯลฯ) — อ้างอิงโดยระเบียนผู้ขายเพื่อรายงานและกรองข้อมูล
 published: true
-date: 2026-07-15T21:47:09.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: master-data, vendor-business-type, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -85,6 +85,7 @@ Draft ก่อนหน้าของหน้านี้อธิบาย�
 - **Lifecycle** `is_active = false` ซ่อนประเภทจาก picker; ผู้ขายยังคง JSON snapshot ไว้ไม่ว่ากรณีใด
 - **Rename propagation** การเปลี่ยนชื่อประเภทไม่ auto-update JSON `business_type` บนผู้ขาย — รัน maintenance refresh หลังการเปลี่ยนชื่อ
 - **การแปล** เก็บการแปลใน `info` JSON จนกว่าจะมีการ introduce ตาราง localisation
+- **Default sort** `GET /vendor-business-types` ที่ไม่มี `?sort=` คืน `name:asc, id:asc` (`vendor_business_type.service.ts`, `withDefaultSort`, 2026-09-13)
 
 ## 7. การอ้างอิงข้ามโมดูล
 
@@ -94,6 +95,7 @@ Draft ก่อนหน้าของหน้านี้อธิบาย�
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_vendor_business_type` (lines ~5229-5250); ฟิลด์ JSON `business_type` ของ `tb_vendor` (lines ~3500-3552, ไม่มีคอลัมน์ `business_type_id` เลย)
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_vendor_business_type` (line ~5836); ฟิลด์ JSON `business_type` ของ `tb_vendor` (~3859, ไม่มีคอลัมน์ `business_type_id` เลย)
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/029-business-type.spec.ts` + `docs/test-cases/gaps/029-business-type-gap.md`
 - **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/vendor_business_type/vendor_business_type.service.ts`
 - **Frontend:** `../carmen-inventory-frontend-react/routes/config/business-type/`

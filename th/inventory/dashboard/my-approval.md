@@ -1,8 +1,8 @@
 ---
 title: Widget My Approval แดชบอร์ด (My Approval Dashboard Widget)
-description: "ถูกลบแล้ว เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น — ไม่เคยถูก render บน /dashboard จริง: widget คิวงานอนุมัติส่วนตัวที่เสนอไว้ แสดงรายการเอกสาร PR/PO/SR ที่รอการอนุมัติของผู้ใช้ที่ล็อกอิน หน้าจริงที่ live คือหน้า My Approval ของโมดูล Procurement (/procurement/approval)"
+description: ถูกลบแล้ว เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น — widget คิวงานอนุมัติส่วนตัวที่เสนอไว้สำหรับ /dashboard ซึ่งไม่เคยถูก render; หน้าจริงที่ live คือหน้า My Approval ของโมดูล Procurement (/procurement/approval)
 published: true
-date: 2026-07-16T01:35:43.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: dashboard, my-approval, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -18,6 +18,8 @@ dateCreated: 2026-06-04T00:00:00.000Z
 **การอ้างสถานะ "Live" ของหน้านี้ก่อนหน้านี้ผิด** หน้านี้ document `dashboard-my-approval.tsx` (เดิมคือ `routes/dashboard/_components/dashboard-my-approval.tsx`) ซึ่ง render ตาราง approval ของ PR/PO/SR ที่จัดกลุ่มไว้ตามที่อธิบายด้านล่าง ฝังอยู่ภายใน `/dashboard` เมื่อตรวจสอบ `dashboard-component.tsx` (ทั้งเวอร์ชันปัจจุบันและเวอร์ชันก่อน cleanup 2026-06-27) พบว่าหน้า `/dashboard` จริงมี render แค่ header ทักทายกับกริด "Saved Widgets" เท่านั้นมาโดยตลอด — ไม่เคย import หรือ mount `dashboard-my-approval.tsx` เลย ไฟล์ component ถูกลบพร้อมไฟล์พี่น้องอีก 7 ไฟล์ใน commit `03891e3d` ("refactor(dashboard): convert to idiomatic structure, drop dead demo code", 2026-06-27) ซึ่ง commit message ยืนยันว่าเป็น dead code ที่ "no importers anywhere"
 
 hook `useApprovalPending` / `useApprovalPendingSummary` ที่หน้านี้ document (`hooks/use-approval.ts`) **เป็นของจริงและ live** — แต่มันขับเคลื่อนหน้า **My Approval** ของโมดูล Procurement ที่ `/procurement/approval` (หน้าจริงที่มี route; ดู [purchase-request/my-approval](/th/inventory/purchase-request/my-approval)) ไม่ใช่ส่วนใดของ `/dashboard` ลิงก์ "View All →" ของ widget ที่ถูกลบนี้ (อธิบายด้านล่าง) ชี้ไปยังหน้าจริงหน้าเดียวกันนี้ ซึ่งเป็นที่เดียวที่จะดูและดำเนินการ approval ที่รออยู่ได้จริง
+
+**ตรวจสอบซ้ำ 2026-09-22:** hook ที่ live ย้ายไป `routes/procurement/approval/use-approval.ts` (2026-08-28, `0d9757f3`) และเมื่อ 2026-09-16 (`9bd21427`, backend `bb0000283`) หน้า approval เปลี่ยนจากการเรียกสามครั้งต่อประเภทเป็น list รวมเดียว: `APPROVAL_PENDING` ตอนนี้คือ `GET /api/proxy/api/my-pending` (รองรับโดย tenant view `sys_v_my_pending`) ส่วน summary ยังอยู่ที่ `GET /api/proxy/api/my-approve/pending` path list `/api/my-approve` และการแบ่ง `root.purchase_requests / purchase_orders / store_requisitions` ที่อธิบายใน §3/§5 เป็นของ contract ก่อน 2026-09-16
 
 เนื้อหาอื่นๆ ด้านล่างทั้งหมดอธิบาย widget แดชบอร์ดที่ไม่เคยถูก mount และถูกลบไปแล้วนี้ — เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น ถือว่าทุกข้อความ "Live" / "mount แล้ว" / การอ้าง route ในส่วนที่เหลือของหน้านี้เป็นโมฆะ
 
@@ -97,7 +99,7 @@ widget นี้คือ summary ระดับแดชบอร์ดขอ�
 
 - **Component (ถูกลบเมื่อ 2026-06-27):** `routes/dashboard/_components/dashboard-my-approval.tsx` ใน `../carmen-inventory-frontend-react`
 - **Commit ที่ลบ:** `03891e3d` — "refactor(dashboard): convert to idiomatic structure, drop dead demo code"
-- **Hooks (ของจริงและ live แต่ขับเคลื่อน `/procurement/approval` — ไม่ใช่ `/dashboard`):** `../carmen-inventory-frontend-react/hooks/use-approval.ts` — `useApprovalPending`, `useApprovalPendingSummary`
+- **Hooks (ของจริงและ live แต่ขับเคลื่อน `/procurement/approval` — ไม่ใช่ `/dashboard`):** `../carmen-inventory-frontend-react/routes/procurement/approval/use-approval.ts` — `useApprovalPending` (`GET /api/my-pending` ตั้งแต่ 2026-09-16), `useApprovalPendingSummary` (ย้ายออกจาก `hooks/` เมื่อ 2026-08-28)
 - **Types:** `../carmen-inventory-frontend-react/types/approval.ts` — `ApprovalItem`, `ApprovalPendingSummary`, `RawApprovalPR`, `RawApprovalPO`, `RawApprovalSR`
 - **API constants:** `../carmen-inventory-frontend-react/constant/api-endpoints.ts` → `APPROVAL_PENDING`, `APPROVAL_PENDING_SUMMARY`
 - **Colour mapping:** `../carmen-inventory-frontend-react/constant/module-color-map.ts` → `getModuleColor`

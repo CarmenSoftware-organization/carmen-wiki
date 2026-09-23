@@ -2,7 +2,7 @@
 title: สินค้า (Product) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum สำหรับโมดูลสินค้า
 published: true
-date: 2026-07-16T09:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: product, data-model, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -11,9 +11,9 @@ dateCreated: 2026-05-15T15:30:00.000Z
 # สินค้า (Product) — Data Model
 
 > **At a Glance**
-> **ตาราง:** `tb_product` &nbsp;·&nbsp; `tb_product_category` → `tb_product_sub_category` → `tb_product_item_group` (การจำแนก 3 ระดับ) &nbsp;·&nbsp; `tb_unit` &nbsp;·&nbsp; `tb_unit_conversion` &nbsp;·&nbsp; `tb_product_location` &nbsp;·&nbsp; `tb_product_tb_vendor`
+> **ตาราง:** `tb_product` &nbsp;·&nbsp; `tb_product_category` → `tb_product_sub_category` → `tb_product_item_group` (การจำแนก 3 ระดับ) &nbsp;·&nbsp; `tb_unit` &nbsp;·&nbsp; `tb_unit_conversion` &nbsp;·&nbsp; `tb_product_location` (→ `tb_location_shelf`) &nbsp;·&nbsp; `tb_product_tb_vendor` &nbsp;·&nbsp; `tb_eco_label` / `tb_product_eco_label`
 > **กลุ่มผู้ใช้:** Developer / Auditor (อ้างอิงสำหรับ dev)
-> **FK สำคัญ:** product `→ tb_unit` (`inventory_unit_id`), `→ tb_product_item_group`, `→ tb_tax_profile`; unit-conversion `→ tb_product` + สอง `→ tb_unit`; product-location `→ tb_location` ถูกอ้างถึงโดยทุกตารางธุรกรรมปลายน้ำผ่าน `product_id` (PR / PO / GRN / SR / count / inventory ledger / recipe)
+> **FK สำคัญ:** product `→ tb_unit` (`inventory_unit_id`), `→ tb_product_item_group`, `→ tb_tax_profile`; unit-conversion `→ tb_product` + สอง `→ tb_unit`; product-location `→ tb_location` และ (นับจาก 2026-08-14) `→ tb_location_shelf` ถูกอ้างถึงโดยทุกตารางธุรกรรมปลายน้ำผ่าน `product_id` (PR / PO / GRN / SR / count / inventory ledger / recipe)
 > **รูปแบบ audit:** `created_*` / `updated_*` / `deleted_*` มาตรฐานเหมือนกันทุกเอนทิตี ความไม่ซ้ำกำหนดขอบเขตด้วย `deleted_at` **วิธีการคิดต้นทุนไม่ได้อยู่บน product** — อยู่ที่ `tb_business_unit.calculation_method`
 
 > **แหล่งความจริง:** Prisma schema ของ backend อ่านสิ่งเหล่านี้ก่อนเสมอเมื่อเขียนหรืออัปเดตหน้านี้:
@@ -26,9 +26,9 @@ dateCreated: 2026-05-15T15:30:00.000Z
 
 โมดูลสินค้าเป็น **system of record สำหรับแคตตาล็อกที่เอกสารธุรกรรมทุกใบอ้างอิง** ต่างจากโมดูลที่เน้นเอกสาร (PR, PO, GRN, SR) ที่มีเอกสาร workflow พร้อมต้นไม้ header → detail → comment ต้นไม้ของสินค้าเป็น **family ของตารางข้อมูลหลัก** ที่ยึดด้วย `tb_product` สินค้าแต่ละตัวระบุด้วย UUID `id` และ `code`/`name` ที่มนุษย์อ่านได้ อยู่ในห่วงโซ่การจำแนก (`tb_product_item_group → tb_product_sub_category → tb_product_category`) วัดด้วย `tb_unit` คลังฐาน มีการแปลงหน่วยที่เป็นทางเลือก (`tb_unit_conversion` พร้อม `enum_unit_type ∈ {order_unit, ingredient_unit}`) ถูกเปิดใช้ที่คลังจัดเก็บผ่าน `tb_product_location` (มี `min_qty` / `max_qty` / `re_order_qty` / `par_qty` ต่อคลัง) และอาจมีการ map ผู้ขายผ่าน `tb_product_tb_vendor` ตัว product เองมีฟิลด์ header ที่เล็กแต่สำคัญ: `code`, `name`, `local_name`, `description`, `inventory_unit_id`, `product_status_type` (`enum_product_status_type = active | inactive | discontinued`), `product_item_group_id`, `is_used_in_recipe`, `is_sold_directly`, `barcode`, `sku`, `price_deviation_limit`, `qty_deviation_limit`, `standard_cost`, `tax_profile_id` / `tax_profile_name` / `tax_rate`, `is_active` พร้อม JSON ส่วนขยาย (`info`, `dimension`, `certification`) thread ของ comment (`tb_product_comment` พร้อมตาราง comment คู่ขนานบนทุกระดับการจำแนก) ให้ surface ของบทสนทนาที่ตรวจสอบได้ที่ใช้ทุกที่ใน ERP
 
-โมดูลนี้อยู่ **ที่รากของ dependency ของทุกโมดูลธุรกรรม** บรรทัด PR ทุกบรรทัด บรรทัด PO บรรทัด GRN บรรทัด SR บรรทัดนับ วัตถุดิบในสูตร ธุรกรรมคลังสินค้า และแถวของ cost-layer มี reference `product_id` ไม่มีการ post ธุรกรรมบน product — วงจรชีวิตคือ `create → active → deprecated (inactive) → soft-deleted` มี gate ด้วยการตรวจสอบการใช้งาน (สินค้าที่มีคลังไม่เป็นศูนย์ มีเอกสารเปิด หรือถูกอ้างอิงโดยสูตร active ไม่สามารถ soft-delete) มีการเพิ่ม schema สองรายการนับตั้งแต่ sync ครั้งก่อนของหน้านี้ที่ขยายต้นไม้: `tb_product_eco_label` / `tb_product_master_eco_label` (§2.10 — ติดตามใบรับรอง มี frontend section จริง) และ `tb_product_account_code_mapping` (§2.11 — การ map account code ของ GL ต่อสินค้าหรือระดับการจำแนก ยืนยันแล้วบน API แต่ไม่พบ frontend surface) ต้นไม้การจำแนก (`category → sub-category → item-group`) มี tax-profile และ ค่าความคลาดเคลื่อน default ที่ cascade product สามารถ override ค่าระดับหมวดหมู่ได้แต่ส่วนใหญ่เก็บไว้ในการสืบทอดเพื่อให้แคตตาล็อกสอดคล้อง การแปลงหน่วยถูกตรวจสอบ **ความสอดคล้องสองทิศทาง** ที่ application layer (`from_unit_qty × conversion_factor = to_unit_qty` ต้อง round-trip) และ engine resolve qty ของบรรทัดเอกสารใด ๆ กลับเป็นหน่วยฐานโดยใช้แถว `tb_unit_conversion`
+โมดูลนี้อยู่ **ที่รากของ dependency ของทุกโมดูลธุรกรรม** บรรทัด PR ทุกบรรทัด บรรทัด PO บรรทัด GRN บรรทัด SR บรรทัดนับ วัตถุดิบในสูตร ธุรกรรมคลังสินค้า และแถวของ cost-layer มี reference `product_id` ไม่มีการ post ธุรกรรมบน product — วงจรชีวิตคือ `create → active → deprecated (inactive) → soft-deleted` **แก้ไข 2026-09-22:** gate การใช้งานตอน soft-delete ที่เวอร์ชันก่อนอธิบายไว้ (on-hand ไม่เป็นศูนย์ เอกสารเปิด การอ้างอิงจากสูตร) **ยังไม่ได้ implement** — `delete()` ของ `products.service.ts` เช็คแค่ `PRODUCT_NOT_FOUND` แล้วตั้ง `deleted_at` บนสินค้าและแถว unit-conversion ของมัน; ดู [02-business-rules](/th/inventory/product/02-business-rules) § 5.1 มีการเพิ่ม schema สามรายการนับตั้งแต่ 2026-06 ที่ขยายต้นไม้: `tb_product_eco_label` / `tb_eco_label` (§2.10 — ติดตามใบรับรอง มีแท็บ frontend จริง; master เปลี่ยนชื่อจาก `tb_product_master_eco_label` เมื่อ 2026-09-04), `tb_product_account_code_mapping` (§2.11 — การ map account code ของ GL ต่อสินค้าหรือระดับการจำแนก ยืนยันแล้วบน API แต่ไม่พบ frontend surface) และคอลัมน์ **shelf** บน `tb_product_location` (§2.7, 2026-08-14) ที่อ้างอิงข้อมูลหลัก [shelf](/th/inventory/master-data/shelf) ตัวใหม่ ต้นไม้การจำแนก (`category → sub-category → item-group`) มี tax-profile และ ค่าความคลาดเคลื่อน default ที่ cascade product สามารถ override ค่าระดับหมวดหมู่ได้แต่ส่วนใหญ่เก็บไว้ในการสืบทอดเพื่อให้แคตตาล็อกสอดคล้อง การแปลงหน่วยถูกตรวจสอบ **ความสอดคล้องสองทิศทาง** ที่ application layer (`from_unit_qty × conversion_factor = to_unit_qty` ต้อง round-trip) และ engine resolve qty ของบรรทัดเอกสารใด ๆ กลับเป็นหน่วยฐานโดยใช้แถว `tb_unit_conversion`
 
-จุดโครงสร้างหลายจุดควรย้ำตั้งแต่ต้น **ประการแรก** canonical schema **แบนและเรียบกว่าที่ carmen/docs PRD อธิบาย** — ไม่มีโมเดล `tb_product_variant`, ไม่มีตาราง key-value แบบมี type `tb_product_attribute`, และไม่มีโมเดล `tb_product_carbon_footprint` คุณสมบัติ ตัวแปร ข้อมูลความยั่งยืน และ certification ถูกเก็บใน **JSON extension bag** (`info`, `dimension`, `certification`) บน `tb_product` หรืออ้างอิงผ่าน JSON `attachments` อิสระบนตาราง comment (หมายเหตุ: คำกล่าวเดิมว่า "ไม่มี `tb_product_media`" แก้บางส่วนเมื่อ 2026-05-20 โดยตาราง gallery ใหม่ `tb_product_image` — ดู Section 2.9 — แม้ว่าเอกสาร / วิดีโอ / โมเดล 3D ที่ PRD อธิบายยังอยู่ใน JSON / comment pattern) Section 5 รวบรวมความแตกต่างเหล่านี้แบบครบ **ประการที่สอง** `tb_product_location` **ไม่ได้** มี on-hand qty — เป็น **แถวของนโยบายสต๊อก** เท่านั้น (min / max / par / reorder) on-hand qty derive จาก inventory cost-layer ledger (ดู [inventory/01-data-model](/th/inventory/inventory/01-data-model) § 5 รายการ 1) **ประการที่สาม** **วิธีการคิดต้นทุนไม่ได้อยู่บน product** — อยู่บน `tb_business_unit.calculation_method` (platform schema, `enum_calculation_method = average | fifo`) และใช้กับ product ทุกตัวที่ business unit นั้น product มี `standard_cost` (ต้นทุนอ้างอิงที่ใช้โดยวิธี count-costing `standard` และโดย recipe baselining) แต่ไม่ใช่ตัวเลือก FIFO / WA เอง
+จุดโครงสร้างหลายจุดควรย้ำตั้งแต่ต้น **ประการแรก** canonical schema **แบนและเรียบกว่าที่ carmen/docs PRD อธิบาย** — ไม่มีโมเดล `tb_product_variant`, ไม่มีตาราง key-value แบบมี type `tb_product_attribute`, และไม่มีโมเดล `tb_product_carbon_footprint` คุณสมบัติ ตัวแปร ข้อมูลความยั่งยืน และ certification ถูกเก็บใน **JSON extension bag** (`info`, `dimension`, `certification`) บน `tb_product` หรืออ้างอิงผ่าน JSON `attachments` อิสระบนตาราง comment (หมายเหตุ: คำกล่าวเดิมว่า "ไม่มี `tb_product_media`" แก้บางส่วนเมื่อ 2026-05-20 โดยตาราง gallery ใหม่ `tb_product_image` — ดู Section 2.9 — แม้ว่าเอกสาร / วิดีโอ / โมเดล 3D ที่ PRD อธิบายยังอยู่ใน JSON / comment pattern) Section 5 รวบรวมความแตกต่างเหล่านี้แบบครบ **ประการที่สอง** `tb_product_location` **ไม่ได้** มี on-hand qty — เป็น **แถวของนโยบายสต๊อก** เท่านั้น (min / max / par บวก shelf) on-hand qty derive จาก inventory cost-layer ledger (ดู [inventory/01-data-model](/th/inventory/inventory/01-data-model) § 5 รายการ 1) และนับจาก 2026-08-20 `re_order_qty` ก็เช่นกัน: `products.replenishment.ts` คำนวณเป็น `(max_qty if > 0 else par_qty) − on_hand` และ `GET /products/:id` คืน `on_hand_qty` / `re_order_qty` ต่อ location เฉพาะเมื่อผู้เรียกร้องขอ (`products.service.ts:326-335` — "re_order_qty's column still exists but nothing writes it any more") **ประการที่สาม** **วิธีการคิดต้นทุนไม่ได้อยู่บน product** — อยู่บน `tb_business_unit.calculation_method` (platform schema, `enum_calculation_method = average | fifo`) และใช้กับ product ทุกตัวที่ business unit นั้น product มี `standard_cost` (ต้นทุนอ้างอิงที่ใช้โดยวิธี count-costing `standard` และโดย recipe baselining) แต่ไม่ใช่ตัวเลือก FIFO / WA เอง
 
 ## 2. เอนทิตี
 
@@ -194,23 +194,27 @@ dateCreated: 2026-05-15T15:30:00.000Z
 
 ### 2.7 tb_product_location
 
-**แถวนโยบายสต๊อกต่อ product / ต่อ location** มี par / min / max / reorder qty ที่ใช้โดย logic ของ replenishment-suggestion และ over/under-stock alert **ไม่ได้** มี on-hand qty (derive จาก inventory cost-layer ledger)
+**แถวนโยบายสต๊อกต่อ product / ต่อ location** มี par / min / max qty ที่ใช้โดย logic ของ replenishment-suggestion และชั้นวางที่สินค้าวางอยู่ที่ location นั้น **ไม่ได้** มี on-hand qty (derive จาก inventory cost-layer ledger); `re_order_qty` ก็ derive ณ เวลาอ่านเช่นกันนับจาก 2026-08-20
 
 | ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key |
 | `product_id` | `String @db.Uuid` | No | FK ไปยัง `tb_product.id` |
 | `location_id` | `String? @db.Uuid` | Yes | FK ไปยัง `tb_location.id` |
+| `shelf_id` | `String? @db.Uuid` | Yes | FK ไปยัง `tb_location_shelf.id` (`onDelete: NoAction`, index `product_location_shelf_id_idx`) เพิ่มโดย `20260814150000_add_location_shelf` nullable เพราะไม่ใช่ทุก location ที่มีชั้นวาง ตรวจสอบตอน create/update สินค้า (`resolveShelfAssignments`, `products.service.ts:2035` / `:2244`) → `SHELF_NOT_FOUND` |
+| `shelf_code` / `shelf_name` | `String? @db.VarChar` | Yes | สำเนา denormalised ของชั้นวางที่ `shelfColumns()` เขียนทุกครั้งที่ตั้ง `shelf_id`; คือสิ่งที่ response ของ product detail คืนเป็น `shelf` (nested `{ id, code, name }` ใน `types/product.ts:30`) |
 | `min_qty` | `Decimal? @db.Decimal(20, 5)` | Yes | default `0` ต่ำกว่านี้ trigger replenishment alert |
 | `max_qty` | `Decimal? @db.Decimal(20, 5)` | Yes | default `0` สูงกว่านี้ trigger over-stock alert |
-| `re_order_qty` | `Decimal? @db.Decimal(20, 5)` | Yes | default `0` qty สั่งซื้อที่แนะนำเมื่อ on-hand ตกต่ำกว่า `min_qty` |
+| `re_order_qty` | `Decimal? @db.Decimal(20, 5)` | Yes | default `0` **คอลัมน์ legacy — ไม่มีอะไรเขียนมันอีกแล้ว** (comment ของ backend, `products.service.ts:326`) `re_order_qty` ของ API คำนวณต่อการอ่านจาก cost layer เป็นช่องว่างระหว่างระดับเป้าหมาย (`max_qty` ไม่งั้น `par_qty`) กับ on-hand; grid Location Assignment ของ frontend ไม่แสดงคอลัมน์ Reorder อีกต่อไป |
 | `par_qty` | `Decimal? @db.Decimal(20, 5)` | Yes | default `0` ระดับ par สำหรับการเก็บสต๊อก outlet (เป้าหมาย on-hand) |
 | `note` / `info` / `dimension` | various | Yes | มาตรฐาน |
 | `doc_version` | `Int` | No | default `0` counter optimistic-concurrency ใช้เมื่อผู้ใช้หลายคนแก้นโยบายพร้อมกัน |
 | audit | various | Yes | `created_at` / `created_by_id` / `updated_at` / `updated_by_id` / `deleted_at` / `deleted_by_id` มาตรฐาน |
 
-**Constraints:** `@id` บน `id` FK: `product_id → tb_product.id` (`NoAction`); `location_id → tb_location.id` (`NoAction`)
-**Indexes:** `@@unique([product_id, location_id, deleted_at])` เป็น `product_location_product_id_location_id_u`; `@@index([product_id, location_id])`
+**Constraints:** `@id` บน `id` FK: `product_id → tb_product.id` (`NoAction`); `location_id → tb_location.id` (`NoAction`); `shelf_id → tb_location_shelf.id` (`NoAction`)
+**Indexes:** `@@unique([product_id, location_id, deleted_at])` เป็น `product_location_product_id_location_id_u`; `@@index([product_id, location_id])`; `@@index([shelf_id])` เป็น `product_location_shelf_id_idx`
+
+ตัวข้อมูลหลักชั้นวางเอง (`tb_location_shelf`, line ~1441 — ระดับ BU ไม่ scope ตาม location แม้ชื่อจะบอกอย่างนั้น) มีเอกสารอยู่ที่ [master-data/shelf](/th/inventory/master-data/shelf)
 
 ### 2.8 tb_product_tb_vendor
 
@@ -252,14 +256,14 @@ dateCreated: 2026-05-15T15:30:00.000Z
 **Indexes:** `@@index([product_id, deleted_at])` (เส้นทาง gallery-fetch); `@@index([product_id, sort_order])` (render เรียงลำดับ)
 **Back-relation บน `tb_product`:** `tb_product_image[]` — list ใน reverse-relation block ที่ด้านล่างของ `tb_product`
 
-### 2.10 tb_product_master_eco_label / tb_product_eco_label
+### 2.10 tb_eco_label / tb_product_eco_label
 
-ฟีเจอร์ **ใบรับรอง eco-label** (เพิ่มเมื่อ 2026-06-01 ยืนยันผ่าน `git log -S` บน tenant schema — หลังจากหน้านี้ sync ครั้งก่อน) `tb_product_master_eco_label` คือแคตตาล็อกระดับ tenant ของ eco-label ที่รับรองได้ (เช่น "Energy Star", "USDA Organic") `tb_product_eco_label` คือ record ใบรับรองต่อสินค้า ทั้งสองมี frontend surface จริง: section "Eco Labels" บนหน้ารายละเอียดสินค้า (`pd-eco-label-section.tsx` + `pd-eco-label-dialog.tsx`) ที่ทำ CRUD **อิสระของตัวเอง** — Add / Edit / Delete ยิง API ทันทีและไม่ได้เป็นส่วนหนึ่งของปุ่ม Save บนฟอร์มสินค้า
+ฟีเจอร์ **ใบรับรอง eco-label** (เพิ่มเมื่อ 2026-06-01) ตาราง master ถูก**เปลี่ยนชื่อจาก `tb_product_master_eco_label` เป็น `tb_eco_label`** เมื่อ 2026-09-04 (`20260904133000_rename_eco_label_and_certificate`; index ตอนนี้คือ `eco_label_code_u` / `eco_label_name_u`; คอลัมน์และ path ของ API `api/config/:bu_code/product-master-eco-labels` / `product-eco-labels` ไม่เปลี่ยน) `tb_eco_label` คือแคตตาล็อกระดับ tenant ของ eco-label ที่รับรองได้ (เช่น "Energy Star", "USDA Organic") `tb_product_eco_label` คือ record ใบรับรองต่อสินค้า ทั้งสองมี frontend surface จริง: หน้าจอ master ย้ายจาก `/config/eco` ไป `/product-management/eco` (`routes/product-management/eco/`, 2026-09-03 `ac1e7c56`) และฟอร์มสินค้ามีแท็บ **Eco Labels** (`pd-tab-eco.tsx` + `pd-eco-label-dialog.tsx`, `pd-form.tsx:441-478`) ที่ทำ CRUD **อิสระของตัวเอง** — Add / Edit / Delete ยิง API ทันทีและไม่ได้เป็นส่วนหนึ่งของปุ่ม Save บนฟอร์มสินค้า การเรียง list เริ่มต้นของ master คือ `name:asc` ของแถวต่อสินค้าคือ `created_at:desc`
 
-| ฟิลด์ (`tb_product_master_eco_label`) | Prisma Type | คำอธิบาย |
+| ฟิลด์ (`tb_eco_label`) | Prisma Type | คำอธิบาย |
 | ----- | ----------- | ----------- |
 | `id` | `String @db.Uuid` | Primary key |
-| `code`, `name` | `String @db.VarChar` | ไม่ซ้ำตาม `product_master_eco_label_code_u` / `_name_u` |
+| `code`, `name` | `String @db.VarChar` | ไม่ซ้ำตาม `eco_label_code_u` / `eco_label_name_u` (ร่วมกับ `deleted_at`) |
 | `description`, `note` | `String? @db.VarChar` | ข้อความอิสระ |
 | `is_active` | `Boolean?` | default `true` |
 | `attachments` | `Json?` | default `[]` |
@@ -268,7 +272,7 @@ dateCreated: 2026-05-15T15:30:00.000Z
 | ----- | ----------- | ----------- |
 | `id` | `String @db.Uuid` | Primary key |
 | `product_id` | `String @db.Uuid` | FK ไปยัง `tb_product.id` |
-| `master_eco_label_id` | `String @db.Uuid` | FK ไปยัง `tb_product_master_eco_label.id` |
+| `master_eco_label_id` | `String @db.Uuid` | FK ไปยัง `tb_eco_label.id` (ชื่อคอลัมน์คงเดิม) |
 | `certificate_no` | `String? @db.VarChar` | เลขที่ใบรับรองที่แสดงบนตารางของ section |
 | `issued_date` / `expiry_date` | `DateTime? @db.Timestamptz(6)` | ช่วงเวลาที่ใบรับรองมีผล |
 | `attachments` | `Json?` | default `[]`; reference ไฟล์สแกน/PDF ใบรับรอง |
@@ -324,9 +328,10 @@ tb_unit_conversion        (product_id; unit_type ∈ {order_unit, ingredient_uni
     │
     │ 1 — *
     ▼
-tb_product_location       (product_id, location_id; min/max/par/reorder — ไม่มี on-hand)
+tb_product_location       (product_id, location_id; min/max/par + shelf_id — ไม่มี on-hand, re_order derive)
     │
-    └──► tb_location
+    ├──► tb_location
+    └──► tb_location_shelf   (ข้อมูลหลักชั้นวางระดับ BU; shelf_code/shelf_name snapshot บนแถว)
 
 tb_product
     │ 1 — *
@@ -348,7 +353,7 @@ tb_product ถูกอ้างถึง BY ทุกตารางธุร�
     tb_recipe_ingredient.product_id
     tb_inventory_transaction_detail.product_id (ไม่มี @relation — resolve ที่ application)
     tb_inventory_transaction_cost_layer.product_id (ไม่มี @relation — resolve ที่ application)
-    tb_period_snapshot.product_id (ไม่มี @relation — resolve ที่ application)
+    tb_inventory_period_snapshot.product_id (ไม่มี @relation — resolve ที่ application; ตารางเปลี่ยนชื่อจาก tb_period_snapshot เมื่อ 2026-09-16)
 ```
 
 หมายเหตุ:
@@ -358,7 +363,9 @@ tb_product ถูกอ้างถึง BY ทุกตารางธุร�
 - **ไม่มีโมเดล `tb_product_attribute`** คุณสมบัติ key-value แบบมี type (PRD `attributeType ∈ {text, number, boolean, date, select, multi-select, rich-text}`) ไม่ได้ถูกสร้าง model เป็นตาราง normalise พวกมันอยู่เป็น JSON ใน `tb_product.info` ข้อกำหนด / การสืบทอด attribute ระดับหมวดหมู่ถูก document ใน carmen/docs แต่ **ไม่ได้** บังคับใช้ที่ schema ดู Section 5 รายการ 2
 - **รูปภาพสินค้ามีตาราง first-class `tb_product_image` แล้ว** (เพิ่ม 2026-05-20 — ดู Section 2.9): `file_token`, `caption`, `alt_text`, `sort_order`, `is_primary` พร้อม cascade-delete จาก `tb_product` เอกสาร / วิดีโอ / โมเดล 3D ยังคงอยู่ใน array JSON `tb_product_comment.attachments` การ derive thumbnail และการ tag อัตโนมัติด้วย AI จาก PRD ยังคงเป็น application-layer / ถูกเลื่อน ดู Section 5 รายการ 3
 - **Soft-delete ใช้ทั่วโลก** ทุกเอนทิตีในโมดูลนี้มี `deleted_at` / `deleted_by_id` constraint unique รวม `deleted_at` (เช่น `product_code_name_u = (code, name, deleted_at)`) ดังนั้น code ของสินค้าที่ลบสามารถนำกลับมาใช้ได้ แถวที่ live guard ความไม่ซ้ำเฉพาะกับแถว live อื่น
-- **การประกาศ FK `@relation` ที่ชัดเจนทั้งหมดใช้ `onDelete: NoAction, onUpdate: NoAction`** — referential integrity ถูกรักษาโดย soft-delete ระดับ application และโดย in-use guard (สินค้าที่มี on-hand ไม่เป็นศูนย์หรือเอกสารเปิดไม่สามารถลบได้)
+- **การประกาศ FK `@relation` ที่ชัดเจนทั้งหมดใช้ `onDelete: NoAction, onUpdate: NoAction`** — referential integrity ถูกรักษาโดย soft-delete ระดับ application **ไม่มี** in-use guard ตอนลบสินค้า (ดู § 1); ต้นไม้การจำแนกมี guard (แต่ละระดับปฏิเสธการลบขณะที่ยังมีลูกโดยตรงที่ใช้งาน — `PRODUCT_CATEGORY_HAS_SUB_CATEGORY`, `PRODUCT_SUB_CATEGORY_HAS_ITEM_GROUP`, `PRODUCT_ITEM_GROUP_HAS_PRODUCTS`)
+- **รูปร่าง API (2026-09-17)** `GET /config/:bu_code/products` และ `/:id` ตอนนี้คืน foreign key เป็น nested object — `inventory_unit`, `tax_profile`, `product_category` / `product_sub_category` / `product_item_group`, `locations[].location`, `locations[].shelf`, `order_units[].from_unit` / `to_unit` (`types/product.ts`, backend `bb0ae46e1` / `ce2e1d473`) payload ตอนเขียนยังแบนอยู่ (`inventory_unit_id`, `locations.add[].location_id` / `shelf_id`, …) การเรียง list เริ่มต้นคือ `code:asc, id:asc` (`products.service.ts`, 2026-09-13)
+- **ตัวเลขต่อ location ที่ derive** `on_hand_qty` (ไม่เคยเป็นคอลัมน์) และ `re_order_qty` ถูกรวมจาก `tb_inventory_transaction_cost_layer` โดย `products.replenishment.ts` (`computeReplenishmentByLocation`) และแนบกับ `locations[]` ตามคำขอ; แหล่งเดียวกันป้อน `GET /:bu_code/products/:id/on-hand` และ `/on-order` ซึ่งนับจาก 2026-09-22 มี `last_price` ด้วย (`09f2e8d36`)
 
 ## 4. Enum
 
@@ -401,7 +408,11 @@ product-management PRD ของ carmen/docs (`PROD-PRD.md`) และ product-m
 
 ## 6. แหล่งอ้างอิง
 
-- **หลัก (แหล่งความจริง):** Prisma schema ที่ list ใน header callout — concretely `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` สำหรับเอนทิตี product (`tb_product`, `tb_product_category`, `tb_product_sub_category`, `tb_product_item_group`, `tb_unit`, `tb_unit_conversion`, `tb_product_location`, `tb_product_tb_vendor`, `tb_product_eco_label` / `tb_product_master_eco_label`, `tb_product_account_code_mapping` และตาราง comment คู่ขนาน) และ enum `enum_product_status_type`, `enum_unit_type`, `enum_account_type` platform schema `prisma-shared-schema-platform/prisma/schema.prisma` มี `tb_business_unit.calculation_method` และ `enum_calculation_method` อ้างจากมุมมอง costing
+- **หลัก (แหล่งความจริง):** Prisma schema ที่ list ใน header callout — concretely `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` สำหรับเอนทิตี product (`tb_product` ~1563, `tb_product_category` ~1801, `tb_product_sub_category` ~1952, `tb_product_item_group` ~1876, `tb_unit` ~3739, `tb_unit_conversion` ~3819, `tb_product_location` ~5334, `tb_location_shelf` ~1441, `tb_product_tb_vendor` ~2028, `tb_product_image` ~1634, `tb_eco_label` ~1727 / `tb_product_eco_label` ~1755, `tb_product_account_code_mapping` ~1692 และตาราง comment คู่ขนาน) และ enum `enum_product_status_type` (~165), `enum_unit_type` (~265), `enum_account_type` (~6781)
+- **Migrations นับจาก 2026-07-29:** `20260814150000_add_location_shelf`, `20260820120000_rename_location_shelf_to_shelf`, `20260904131500_rename_shelf_and_user_location`, `20260904133000_rename_eco_label_and_certificate`, `20260916141000_rename_tb_period_to_tb_inventory_period`
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/products/products.service.ts` (delete `:2661`, ตรวจสอบ shelf `:2035` / `:2244`), `products.replenishment.ts`, `master/shelf/shelf.helper.ts`; gateway `apps/backend-gateway/src/config/config_products/` (`@ExpandRefs` / `@Serialize`), `common/dto/product/product.serializer.ts`
+- **Frontend:** `../carmen-inventory-frontend-react/types/product.ts`, `routes/product-management/product/` (แท็บ: `pd-tab-general.tsx`, `pd-tab-unit-conversion.tsx`, `pd-tab-locations.tsx`, `pd-tab-eco.tsx`), `routes/product-management/eco/`
+- **Bruno:** `config/products/*` (13 request), `config/product-location/`, `config/location-product/`, `config/products-location-workflow/` (3), `master-data/products/*` (on-hand, on-order, last-purchase, inventory-movement, cost) platform schema `prisma-shared-schema-platform/prisma/schema.prisma` มี `tb_business_unit.calculation_method` และ `enum_calculation_method` อ้างจากมุมมอง costing
 - **รอง (cross-check แนวคิด):**
   - `../carmen/docs/product-management/PROD-PRD.md` — PRD หลักอธิบายชุดฟีเจอร์ product-management ความแตกต่างใน Section 5 (รายการ 1, 2, 3, 4, 5, 6, 8, 9, 11, 12, 13, 14)
   - `../carmen/docs/product-management/product-master-prd.md` — product-master PRD อธิบายโครงสร้าง UI (List page, Detail page พร้อม tab, Latest Purchase tab) และข้อกำหนดเชิงฟังก์ชัน ความแตกต่างใน Section 5 (รายการ 1, 6, 12)

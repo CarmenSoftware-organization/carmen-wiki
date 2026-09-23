@@ -2,7 +2,7 @@
 title: การปรับปรุงสต๊อก — โมเดลข้อมูล — ตารางคอมเมนต์
 description: ตารางคอมเมนต์ / ไฟล์แนบระดับเอกสารและระดับบรรทัดสำหรับโมดูลการปรับปรุงสต๊อก — ข้อความ, JSON ไฟล์แนบ, และ enum ประเภทคอมเมนต์ (user/system)
 published: true
-date: 2026-07-15T17:02:22.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: inventory-adjustment, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -84,5 +84,5 @@ updated_by_id       uuid / FK to tb_user
 
 - ส่วนคู่ขนาน: [01 — โมเดลข้อมูล](/th/inventory/inventory-adjustment/01-data-model) — ตาราง header / detail, ตัวจำแนกประเภท `tb_adjustment_type`, นิยาม enum (`enum_adjustment_type`, `enum_doc_status`, `enum_last_action`, `enum_comment_type`) และแคตตาล็อกหมายเหตุเกี่ยวกับ carmen/docs
 - ส่วนคู่ขนาน: [02 — กติกาทางธุรกิจ](/th/inventory/inventory-adjustment/02-business-rules) — กฎตรวจสอบจริงของโมดูล; ไม่มีกฎใดผูกคอมเมนต์/ไฟล์แนบกับ flag บังคับแนบเอกสาร (ดู § 1 ด้านบน)
-- ต้นทาง: [03 — User Flow](/th/inventory/inventory-adjustment/03-user-flow) — วงจรชีวิตเอกสาร; คอมเมนต์เป็นหลักฐาน optional ไม่ใช่ gate การ submit
+- ต้นทาง: [03 — User Flow](/th/inventory/inventory-adjustment/03-user-flow) — วงจรชีวิตเอกสาร (draft → commit → void ตั้งแต่ 2026-07-30); คอมเมนต์เป็นหลักฐาน optional ไม่ใช่ gate ของการ save หรือ commit
 - ต้นทาง: [ภาพรวมโมดูลการปรับปรุงสต๊อก](/th/inventory/inventory-adjustment) — หน้า landing ของโมดูล

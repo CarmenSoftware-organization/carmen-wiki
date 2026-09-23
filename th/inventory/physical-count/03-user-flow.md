@@ -2,7 +2,7 @@
 title: การนับสต๊อกประจำงวด (Physical Count) — User Flow
 description: วงจรชีวิตเอกสารและไฟล์ flow เฉพาะ persona ของการนับสต๊อกประจำงวด
 published: true
-date: 2026-07-15T17:56:09.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: physical-count, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -12,7 +12,7 @@ dateCreated: 2026-05-15T14:00:00.000Z
 
 > **At a Glance**
 > **โมดูล:** [physical-count](/th/inventory/physical-count) &nbsp;·&nbsp; **Persona:** role เดียวไม่แยกกลุ่ม gate ด้วย permission เดียว (`inventory_management.physical_count`) — สองไฟล์ที่ลิงก์ด้านล่างแบ่งการเดินทางของมันตามหน้าจอ (list เทียบกับ entry/review) ไม่ใช่ตาม role ที่ต่างกันจริง
-> **วงจรชีวิต workflow:** Period (`enum_physical_count_period_status`): `draft → counting → completed` (ไม่พบโค้ดที่ยืนยันแล้วเปลี่ยน `draft → counting`) Per-document (`enum_physical_count_status`): สร้างโดยตรงที่ `in_progress → completed` — `pending` เข้าถึงไม่ได้ผ่าน create path ที่ยืนยันแล้ว Submit สุดท้ายยิง variance rollup โดยตรงเข้า `tb_stock_in`/`tb_stock_out` (ดู [02-business-rules](/th/inventory/physical-count/02-business-rules) § 5)
+> **วงจรชีวิต workflow:** Period (`enum_physical_count_period_status`): `draft → counting → completed` (`draft → counting` ทำโดย **Start Period Close** บน `/inventory-management/period-end`, `POST /period-ends/start-counting`; `counting → completed` โดยการปิดงวด) Per-document (`enum_physical_count_status`): สร้างโดยตรงที่ `in_progress → completed` — `pending` เข้าถึงไม่ได้ผ่าน create path ที่ยืนยันแล้ว Submit สุดท้ายยิง variance rollup โดยตรงเข้า `tb_stock_in`/`tb_stock_out` (ดู [02-business-rules](/th/inventory/physical-count/02-business-rules) § 5)
 > **หน้าจอจริง:** `physical-count` (list) → `physical-count/:id/entry` (ป้อนบรรทัด) → `physical-count/:id/review` (review variance + submit สุดท้าย)
 
 ## 1. ภาพรวม
@@ -28,17 +28,17 @@ dateCreated: 2026-05-15T14:00:00.000Z
 ```mermaid
 stateDiagram-v2
     [*] --> draft : Auto-create โดย GET /physical-count-periods/current ครั้งแรกที่ถูกเรียกสำหรับงวดบัญชีที่เพิ่งเปิดใหม่ (physical-count-period.service.ts findCurrent())
-    draft --> counting : ไม่พบ code path ที่ยืนยันแล้วทั้ง frontend หรือ backend
-    counting --> completed : ทุก row tb_physical_count ลูกถึง completed (ระบบขับเคลื่อน; period ล็อก)
+    draft --> counting : POST /period-ends/start-counting (Start Period Close บน /inventory-management/period-end) — ถูกบล็อกขณะยังมีเอกสาร GRN / SI / SO / SR ที่ค้างอยู่ลงวันที่ในงวด
+    counting --> completed : PeriodEndService.closeCurrent mark รอบเป็น completed เมื่อปิดงวด
     completed --> [*]
 
     note right of draft
-        create() บน physical-count.service.ts reject แบบไม่มีเงื่อนไข
+        create() บน physical-count.service.ts reject
         ด้วย "Physical Count Period is not in counting status"
-        เว้นแต่ period จะเป็น counting อยู่แล้ว — วิธีเดียวที่ดูเหมือนจะ
-        ถึงสถานะนั้นได้คือการเรียก POST /physical-count-periods
-        โดยตรงพร้อมตั้งค่า status ใน request body เอง ไม่พบหน้าจอ
-        frontend ใดที่ทำสิ่งนี้
+        เว้นแต่ period จะเป็น counting อยู่แล้ว — ถึงได้ผ่านปุ่ม
+        Start Period Close ของ Period End เท่านั้น; หน้ารายการ (pc-component.tsx)
+        แสดง dialog "Counting has not started" พร้อมปุ่ม Go to Period End
+        ขณะที่รอบยังเป็น draft
     end note
 ```
 
@@ -64,9 +64,9 @@ stateDiagram-v2
 
 | From state | Action | To state | Allowed for | Pre-conditions |
 | ---------- | ------ | -------- | ----------- | -------------- |
-| `(none)` | `GET /physical-count-periods/current` auto-provision period สำหรับ `tb_period` ที่เปิดอยู่ปัจจุบันถ้ายังไม่มี | `draft` | ผู้ใช้ใดก็ตามที่มี permission ของโมดูล (โดยนัย ผ่านหน้ารายการ) | มี `tb_period` เปิดอยู่ |
-| `draft` | — | `counting` | ยังไม่ยืนยัน | ไม่พบ code path ใด ดูหมายเหตุ § 2 ข้างต้น |
-| `counting` | ทุก row `tb_physical_count` ลูกถึง `completed` | `completed` | ระบบ | ทุก `tb_physical_count` ภายใต้ period เป็น `completed` |
+| `(none)` | `GET /physical-count-periods/current` auto-provision period สำหรับ `tb_inventory_period` ที่เปิดอยู่ปัจจุบันถ้ายังไม่มี | `draft` | ผู้ใช้ใดก็ตามที่มี permission ของโมดูล (โดยนัย ผ่านหน้ารายการ) | มี `tb_inventory_period` เปิดอยู่ |
+| `draft` | **Start Period Close** (`POST /period-ends/start-counting`) | `counting` | ผู้ใช้ใดก็ตามที่มี `inventory_management.period_end.execute` | ไม่มี GRN นอก `{committed, voided}`, ไม่มี stock-in / stock-out นอก `{completed, cancelled, voided}`, ไม่มี SR ที่มีเลขที่แล้วที่ `draft`/`in_progress` ลงวันที่ในงวด; period เป็น `open` ทำซ้ำได้ (idempotent) เมื่อเป็น `counting` แล้ว |
+| `counting` | **Close Period** (`POST /period-ends`) | `completed` | ผู้ใช้ใดก็ตามที่มี `inventory_management.period_end.execute` | ทุกสถานที่ที่จำเป็นต้องนับมี `tb_physical_count` ที่ `completed` (gate การปิดงวด); จากนั้น `closeCurrent` mark รอบเป็น `completed` |
 
 ### 2.2 การเปลี่ยนสถานะระดับเอกสาร (`enum_physical_count_status`)
 
@@ -103,5 +103,5 @@ Draft ก่อนหน้าของโมดูลวิกินี้อ�
 
 - **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/physical-count/` (`pc-component.tsx`, `pc-entry-component.tsx`, `pc-review-component.tsx`)
 - **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts`, `.../physical-count-period/physical-count-period.service.ts`
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count; manual catalog `docs/test-cases/750-physical-count.md` (41 case, ตรวจทานซ้ำ 2026-09-20)
 - Flow ที่เกี่ยวข้อง: [inventory-adjustment/03-user-flow](/th/inventory/inventory-adjustment/03-user-flow) (โมดูลที่ rollup เขียนเข้า), [spot-check](/th/inventory/spot-check) (flow ลูกพี่ลูกน้องการนับบางส่วน)

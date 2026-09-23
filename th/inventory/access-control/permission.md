@@ -1,8 +1,8 @@
 ---
 title: สิทธิ์ (Permission)
-description: คู่ resource + action แบบ atomic ที่รวมเข้าใน application role เพื่อ RBAC; กลไก App ID client-allowlist แยกต่างหาก gate route ของ comment และ approval-workflow
+description: คู่ resource + action แบบ atomic ที่รวมเข้าใน application role เพื่อ RBAC; App ID allowlist และ licence feature ต่อ BU เป็นเลเยอร์แยก การเปลี่ยนแคตตาล็อกตั้งแต่ 2026-07-29: เปลี่ยนชื่อ inventory_period, ลบ query_dataset
 published: true
-date: 2026-07-15T23:46:09.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: access-control, permission, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,7 +11,15 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # สิทธิ์ (Permission)
 
 > **At a Glance**
-> **เจ้าของ:** จัดการโดย seed (release-time) &nbsp;·&nbsp; **ตาราง:** `tb_permission` &nbsp;·&nbsp; **ใช้โดย:** [access-control/application-role](/th/inventory/access-control/application-role) (consumer เดียว) &nbsp;·&nbsp; คู่ `(resource, action)` แบบ atomic — หน่วยเล็กที่สุดของการอนุญาต
+> **เจ้าของ:** จัดการโดย seed (release-time) &nbsp;·&nbsp; **ตาราง:** `tb_permission` &nbsp;·&nbsp; **ใช้โดย:** [access-control/application-role](/th/inventory/access-control/application-role) (consumer เดียว) &nbsp;·&nbsp; **Endpoint:** `GET api/config/:bu_code/permissions` (แคตตาล็อก, `KeycloakGuard` เท่านั้น), `GET /api/user/permission` (+ `/mobile`, `/platform`) &nbsp;·&nbsp; คู่ `(resource, action)` แบบ atomic — หน่วยเล็กที่สุดของการอนุญาต **มีเลเยอร์การอนุญาตสามชั้นอยู่ร่วมกันที่ HEAD:** RBAC (`@Permission` + `PermissionGuard` บน route decoration 38 จุด), App-ID client allowlist (`AppIdGuard` route ส่วนใหญ่) และ **licence** feature ต่อ BU (`LicenseInterceptor` ทุก route ที่ map ไว้)
+
+## สถานะการ implement (ตรวจสอบซ้ำ 2026-09-22)
+
+- **การเปลี่ยนแคตตาล็อกตั้งแต่ 2026-07-29** (`packages/prisma-shared-schema-platform/prisma/seed.permission.data.ts`): `system_admin.period` → **`system_admin.inventory_period`** (migration `20260916140000_rename_period_to_inventory_period` ทั้งสี่ action grant ของ role ถูกย้ายตาม); **`system_admin.query_dataset` ถูกลบ** (`7bebddaa7`, 2026-09-21 — SQL Workbench gate ด้วย platform permission เท่านั้น); เพิ่ม `configuration.chart_of_accounts` (เปลี่ยนชื่อจาก account code, 2026-08-27), `configuration.cost_center`, `configuration.cost_center_group`, `configuration.location_shelf`, resource `accounting.gl.*` (โมดูล GL), `system_admin.workflow.{purchase_request,purchase_order,store_requisition}` (grant workflow ต่อประเภท, 2026-09-03), `configuration.app_config`, `configuration.dimension`, `configuration.notification_template`, `system_admin.business_unit`, `system_admin.config_email`, `system_admin.user_activity` ตั้งใจ**ไม่มี resource `interface`** — หน้าจอ interface เป็น licence-only (`LICENSE_ONLY_RESOURCES`)
+- **Key ผีฝั่ง frontend ถูกลบ** (FE `b9e2de5f`, `91b2b274`, 2026-09-21): `constant/permissions.ts` เคยประกาศบล็อก `system_configuration.*` และ key อื่นที่ไม่เคยมีอยู่ใน `tb_permission`; ทุกรายการ `/system-admin/*` ตอนนี้ gate ด้วย resource จริง (`system_admin.business_unit`, `.inventory_period`, `.workflow[.<type>]`, `.role`, `.user`, `.running_code`, `.document`, `.user_activity`, `.activity_log`, `.config_email`, `dashboard.dataset`, `configuration.notification_template`) comment บนสุดของ `permissions.ts` ยังบอกว่ามัน mirror endpoint BE `/permissions` — ตอนนี้จริงแล้ว
+- **แก้ role picker** (FE `bad71662`, 2026-08-31): resource ระดับโมดูล (ไม่มีจุด — `procurement`, `configuration`, `inventory_management`, `dashboard`, `report`, `system_admin`, …) grant ได้แล้ว และ row ที่มี `audit.deleted` ถูกซ่อน query แคตตาล็อกเองกรอง `deleted_at: null` (`role_permission.service.ts:68-70`)
+- **Licence เป็นเลเยอร์ที่สาม ไม่ใช่ RBAC** ตั้งแต่ 2026-08 ทุก URL ของ request ถูก resolve เป็น licence feature (map `ROUTE_*` ใน `permission.route-map.ts` + `LICENSE_ROUTE_OVERRIDES`) และตรวจกับสัญญาของ BU โดย `LicenseInterceptor`; ไม่ผ่านจะได้ `403 LICENSE_REQUIRED` / `LICENSE_EXPIRED` (เฉพาะ write เมื่อหมดอายุ) พร้อม `bu_codes` / `bu_names` key ของ feature ใช้ชื่อ resource ของ permission ซ้ำ (`system_admin.workflow`, `configuration.location`, …) แต่อาจ*ละเอียดกว่า* RBAC — `configuration.email_profile` / `configuration.email_template` มีอยู่เป็น licence feature ขณะที่ RBAC ยังเห็นเป็น `configuration.app_config` / `system_admin.config_email` มุมมอง licence ของผู้ใช้คือ `GET /api/license` (`features[]`, `hidden_features[]`, `expired_features[]` ต่อ BU + union); `BU role = admin` **ไม่** bypass การตรวจ licence
+- **ความครอบคลุมของ `PermissionGuard` ยังบางส่วน** `@Permission(...)` ปรากฏบน route decoration 38 จุดที่ HEAD (เช่น `config_vendor-master-certificates.controller.ts:89-200`); ไม่ได้ลงทะเบียนเป็น `APP_GUARD` ระดับ global (`APP_GUARD` ตัวเดียวคือ `ThrottlerGuard`, `app.module.ts:227-228`) route ที่ไม่มี decorator — รวมทั้ง controller `config_application-roles`, `config_user-application-roles`, `config_permissions` และ `config_app-config` ทั้งชุด — **ไม่มีการตรวจ RBAC ต่อผู้ใช้**; ดู [access-control/application-role](/th/inventory/access-control/application-role) หัวข้อ 4
 
 ## 1. คืออะไรและใครใช้
 
@@ -53,7 +61,8 @@ App ID อื่น ๆ ที่พบบน route approval/workflow:
 
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
-| ดู catalogue permission | มีแค่ภายใน permission matrix ของหน้าจอ Role edit (`routes/system-admin/role/permission-matrix.tsx` + `permission-picker.tsx`) | ไม่มีหน้าจอ permission-list แบบ standalone ใน inventory frontend |
+| ดู catalogue permission | มีแค่ภายใน permission picker ของหน้าจอ Role edit (`routes/system-admin/role/permission-picker.tsx` จัดกลุ่มโดย `permission-catalog.ts`; `permission-matrix.tsx` ถูกลบเมื่อ 2026-08-20) | ไม่มีหน้าจอ permission-list แบบ standalone ใน inventory frontend; API `GET api/config/:bu_code/permissions` |
+| ดูว่า BU ถือ licence feature ใดบ้าง | `GET /api/license` | ไม่ใช่ permission — แต่ feature ที่ขาดจะบล็อก route ก่อน RBAC ทำงาน |
 | Bundle permission เข้า role | หน้าจอ edit [access-control/application-role](/th/inventory/access-control/application-role) | Checkbox grid; นี่คือเส้นทางปกติ |
 | เพิ่ม atom permission ใหม่ | Release migration / seed | `tb_permission` จัดการโดย seed ไม่แก้ผ่าน UI |
 | Rename / retire permission | Soft-delete + re-create | Constraint รวม `deleted_at` ดังนั้น `(resource, action)` re-use ได้ |
@@ -67,6 +76,8 @@ App ID อื่น ๆ ที่พบบน route approval/workflow:
 | Duplicate `(resource, action)` insert | Row ที่ไม่ถูก delete มีอยู่แล้ว | ใช้ row ที่มีอยู่แทน |
 | Feature เงียบปิดสำหรับทุกคน | Permission ถูก delete ขณะ code ยังอ้างอิง | Operational guard — restore ผ่าน migration |
 | Tooltip สับสนใน role editor | `description` ขาดหายหรือสั้น | Update seed; description ควรอธิบาย *สิ่งที่ permission ปลดล็อก* |
+| 401 เด้งไปหน้า login หลัง deploy ที่เปลี่ยนชื่อ `api_name` | ชื่อใน gateway `AppIdGuard` ถูกเปลี่ยนก่อน row ใน `tb_application_api` (เช่น `period.*` → `inventoryPeriod.*`) | Apply platform migration ก่อน; ดู [system-config/period](/th/inventory/system-config/period) |
+| `403 LICENSE_REQUIRED` ทั้งที่ role grant permission แล้ว | สัญญาของ BU ไม่มี licence feature ของ route นั้น | เลเยอร์ licence ไม่ใช่ RBAC — ซื้อ/ต่ออายุผ่าน Platform |
 
 ## 4. กรณีพิเศษ
 
@@ -112,5 +123,7 @@ App ID อื่น ๆ ที่พบบน route approval/workflow:
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_permission` (`model tb_permission`, บรรทัด 425)
 - **Seed:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/seed.permission.data.ts`, `seed.permission.ts`
-- **Backend guard:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/auth/decorators/permission.decorator.ts`, `.../auth/guards/permission.guard.ts` (RBAC); `.../common/guard/app-id.guard.ts`, `.../common/guard/app-allowlist.store.ts` (App ID client allowlist, หัวข้อ 1.1)
-- **Frontend:** Surface ภายใน role-edit ที่ `../carmen-inventory-frontend-react/routes/system-admin/role/permission-matrix.tsx` + `permission-picker.tsx` ไม่มี CRUD แบบ standalone แคตตาล็อก key ที่มี type สะท้อนที่ `../carmen-inventory-frontend-react/constant/permissions.ts`
+- **Backend guard:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/auth/decorators/permission.decorator.ts`, `.../auth/guards/permission.guard.ts` (RBAC); `.../common/guard/app-id.guard.ts`, `.../common/guard/app-allowlist.store.ts` (App ID client allowlist, หัวข้อ 1.1); `.../license/{license.interceptor,license-route-resolver,license.evaluator}.ts` + `packages/prisma-shared-schema-platform/prisma/permission.route-map.ts` (เลเยอร์ licence)
+- **Catalog endpoint:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_permissions/config_permissions.controller.ts` (`GET`, `:50`); service `apps/micro-business/src/authen/role_permission/role_permission.service.ts`; `apps/backend-gateway/src/application/user/user.controller.ts:242-322` (`/api/user/permission`, `/mobile`, `/platform`)
+- **Migrations:** `20260916140000_rename_period_to_inventory_period` (platform)
+- **Frontend:** Surface ภายใน role-edit ที่ `../carmen-inventory-frontend-react/routes/system-admin/role/permission-picker.tsx` + `permission-catalog.ts` ไม่มี CRUD แบบ standalone แคตตาล็อก key ที่มี type สะท้อนที่ `../carmen-inventory-frontend-react/constant/permissions.ts`; licence hook `hooks/use-license.ts`

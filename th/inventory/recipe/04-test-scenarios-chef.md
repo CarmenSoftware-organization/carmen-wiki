@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — Test Scenarios — Chef
 description: test case ของ Chef (happy path, permission, validation, edge case) สำหรับโมดูล recipe
 published: true
-date: 2026-07-29T04:45:21.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: recipe, test-scenarios, chef, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **At a Glance**
 > **Persona:** Chef (Chef / Kitchen Manager + Kitchen Staff read-only) &nbsp;·&nbsp; **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **scenario:** ~38
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **การครอบคลุม E2E:** ไม่มีในเวลานี้ — E2E ภายในสูตรเป็นช่องว่าง; spec อัตโนมัติเดียวของโมดูลคือ `tests/121-recipe-equipment-category.spec.ts` (master equipment-category ไม่ใช่หน้าจอสูตร)
+> **การครอบคลุม E2E:** ไม่มีสำหรับหน้าจอสูตร — catalog `docs/test-cases/120-recipe.md` (59 กรณี) เป็นเอกสารเท่านั้น; spec อัตโนมัติมีสำหรับหน้าจอ master-data (`110-op-category`, `111-cuisine`, `121-recipe-equipment-category`, `131-equipment-category`) ตรวจสอบซ้ำ 2026-09-22 — ดู [04-test-scenarios](/th/inventory/recipe/04-test-scenarios)
 
 > **สถานะการ implement (ตรวจสอบแล้ว 2026-07-15)** scenario ส่วนใหญ่ด้านล่างทดสอบฟีเจอร์ที่ยังไม่ได้ implement — publish gate (`REC_VAL_015`–`018` ไม่เคย fire), permission `recipe:*` (ไม่มีอยู่เลย; กลุ่มนี้ถูก gate สำหรับ admin ด้วย placeholder `operation_plan.view`), clone, การ persist วัตถุดิบ (grid เป็น preview-only), UI ของ prep-step, การแก้ yield-variant, versioning และ pricing history ที่รันได้จริงวันนี้: CRUD header + validation ฟิลด์จำเป็น (zod ฝั่ง client), การเปลี่ยนสถานะผ่าน dropdown พร้อมการ stamp timestamp, ความ unique ของ code (`RECIPE_ALREADY_EXISTS`), conflict `doc_version`, guard การลบ sub-recipe และการ sync image-gallery ให้ถือส่วนที่เหลือเป็นแผน acceptance ของดีไซน์
 

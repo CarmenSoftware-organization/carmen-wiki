@@ -33,3 +33,24 @@ Spot-checks (9 diff-untouched pages): 6 clean, 3 corrected (PO 01a comments miss
 Code findings worth tickets (documented on the pages, not fixed): FOC-only GRN commits and advances the PO FOC counter without a movement; PR `approve` skips the verify rules; COA create DTO requires `category` the FE never sends; role/permission controllers carry no AppIdGuard/@Permission; physical-count submit writes SI/SO rows but never posts; SR header commits `completed` before the on-hand check can throw; e2e 402/403 specs and FE copy still expect "Send to Vendor"/`SENT`; gateway swagger for widget `display` describes the old shape.
 
 Not done (by decision): TH mirrors (all edited pages now lag EN); screenshots; GL master/budget/JV/reports content; `/system-admin/interface` and platform cron-jobs pages; e2e case mirroring. Bruno gaps noted on pages (missing `stock-movements`/`ref` requests, misfiled `currencies/fleet-summary`, stale `location-shelves` body, internal `run-due` auth shape) belong to that repo.
+
+## TH round — 2026-09-23 (branch `docs/resync-th-2026-09-22`)
+
+Owner asked for the TH mirrors the same morning the EN PRs merged. All 247 EN
+pages changed by PRs #11 + #12 were mirrored into `th/` by 8 agents (one per
+module group): 244 full mirrors, 3 Platform sub-page stubs corrected in place
+(`business-units/{data-model,ui-screens}`, `clusters/ui-screens` — kept as
+stubs per the standing deferral), 5 pages created in Thai (`general-ledger`,
+`general-ledger/gl-posting`, `master-data/{shelf,chart-of-accounts,cost-center}`).
+EN/TH file parity restored: 320 / 320. Every TH twin carries
+`date: '2026-09-23T01:30:00.000Z'`, `dateCreated`/`tags` identical to EN,
+`## N.` heading counts equal to EN except the three stubs.
+
+Small EN defects found while translating and fixed in both locales in the
+same commits: spot-check e2e catalog count (32 → 44); Landing At-a-Glance
+still claiming Print Mapping was listed; inventory data-model intro still
+saying movements land in the current period regardless of document date; a
+stray `***Trigger:**`; vendor-pricelist test-scenarios "four screens" → five;
+SR mermaid edge "recipe auto-create" → stock-replenishment auto-create.
+Left as-is (identical in EN): two PO test-scenario rows with an unescaped `|`
+inside a code span.

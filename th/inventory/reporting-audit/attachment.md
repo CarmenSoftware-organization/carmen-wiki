@@ -1,8 +1,8 @@
 ---
 title: ไฟล์แนบ (Attachment)
-description: registry ของ metadata ไฟล์ที่ใช้โดยทุกโมดูลที่มีการอัปโหลดไฟล์ — tb_file_tag เก็บบน MinIO อยู่ในฐานข้อมูล file-service แยกต่างหาก ให้บริการโดย microservice micro-file ตาราง tb_attachment ใน tenant schema ไม่มีการอ้างอิงจากโค้ดเลยและถือว่าตายแล้ว
+description: registry ของ file-metadata ที่ทุกโมดูลที่มีการอัปโหลดใช้ — tb_file_tag เก็บบน MinIO ในฐานข้อมูล file-service แยกต่างหาก ให้บริการโดย micro-file ตาราง tb_attachment ของ tenant ไม่มีการอ้างอิงจากโค้ดเลยและตายแล้ว
 published: true
-date: 2026-07-22T00:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: reporting-audit, attachment, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -25,7 +25,7 @@ Registry ไฟล์ที่แท้จริงคือ `tb_file_tag` ห�
 
 แต่ละแถวของ `tb_file_tag` เก็บ MinIO object key (`object_name`), metadata ไฟล์ต้นฉบับ (`original_name`, `content_type`, `size`) และ tag แบบมีโครงสร้าง/อิสระ (`reference_type`/`reference_id`/`reference_no`, `tags` JSONB) สำหรับการค้นหา **ไม่มีคอลัมน์ `doc_version`/versioning สำหรับการ re-render บน `tb_file_tag`** — การอัปโหลด PDF ของเอกสารใหม่คือการอัปโหลดครั้งใหม่ธรรมดา ไม่ใช่ revision ที่มีเวอร์ชันของแถวเดิม
 
-**ดูแลโดย** flow การอัปโหลดของโมดูลเจ้าของ ผ่านคำสั่งของ `micro-file` (`files.upload` / `files.get` / `files.info` / `files.find-all` / `files.delete` / `files.presigned-url` / `files.update-tags`) **อ่านโดย** หน้ารายละเอียดของโมดูลเจ้าของ ซึ่ง resolve แต่ละ `fileToken` กลับเป็น MinIO URL ใหม่ที่มีเวลาจำกัด
+**ดูแลโดย** flow การอัปโหลดของโมดูลเจ้าของ ผ่านคำสั่ง RPC ของ `micro-file` (`Files.upload` / `get` / `info` / `findAll` / `summary` / `delete` / `presignedUrl` / `updateTags` / `uploadLegacy` — `micro-file/src/files/files.controller.ts`; RPC ตอนนี้รันแบบ HTTP-as-RPC ไม่ใช่ TCP) *(spot-check 2026-09-22: คอลัมน์ของ `tb_file_tag`, presigned TTL 3600 วินาที และ route fallback `/:filetoken/download` ล้วนตรงกับ HEAD; รายการคำสั่งข้างต้นเพิ่ม `summary` และ `uploadLegacy`)* **อ่านโดย** หน้ารายละเอียดของโมดูลเจ้าของ ซึ่ง resolve แต่ละ `fileToken` กลับเป็น MinIO URL ใหม่ที่มีเวลาจำกัด
 
 ### 1.1 การดึงไฟล์ — URL ที่บันทึกไว้ไม่เคยถูกไว้ใจ
 
@@ -128,5 +128,5 @@ Comment responses ยังจะ **ลบฟิลด์ผู้แต่ง�
 
 - **Prisma (file schema — registry ที่แท้จริง):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-file/prisma/schema.prisma` — `tb_file_tag` (บรรทัด ~19-49)
 - **Prisma (tenant schema — ตารางที่ตายแล้ว เพื่อเปรียบเทียบ):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_attachment` (บรรทัด ~4790)
-- **Backend gateway (ชั้น proxy):** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/document-management/document-management.controller.ts` + `.service.ts` — forward ไปยัง microservice `FILE_SERVICE` ผ่านคำสั่ง TCP `files.*`
+- **Backend gateway (ชั้น proxy):** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/document-management/document-management.controller.ts` (fallback `GET :filetoken/download`) + `.service.ts` — forward ไปยัง microservice `FILE_SERVICE` ผ่านคำสั่ง RPC `Files.*` (HTTP-as-RPC)
 - **Backend file microservice (การจัดเก็บและ registry ที่แท้จริง):** `../carmen-turborepo-backend-v2/apps/micro-file/src/files/files.controller.ts` + `files.service.ts` — MinIO client, CRUD ของ `tb_file_tag`

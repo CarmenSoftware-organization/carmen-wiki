@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check) — Test Scenarios — หน้า Entry & Review
 description: Test case หน้า entry และ review สำหรับโมดูลการสุ่มตรวจ
 published: true
-date: 2026-07-15T18:38:42.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: spot-check, test-scenarios, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T14:30:00.000Z
 > **At a Glance**
 > **หน้าจอ:** `spot-check/:id` (`sc-entry-component.tsx`), `spot-check/:id/review` (`sc-review-component.tsx`) &nbsp;·&nbsp; **โมดูล:** [spot-check](/th/inventory/spot-check) &nbsp;·&nbsp; **Role:** role เดียวกับ [04-test-scenarios-inventory-controller.md](/th/inventory/spot-check/04-test-scenarios-inventory-controller)
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **ความครอบคลุม E2E:** ไม่มี Playwright spec ของ `spot-check`; scenario เป็นการครอบคลุม manual/planned cross-reference กับ row `TC-SPC-06*`/`TC-SPC-07*` ของ `docs/test-cases/760-spot-check.md`
+> **ความครอบคลุมแบบ executable:** ไม่มี Playwright spec ของ `spot-check`; manual catalog `../carmen-inventory-frontend-e2e/docs/test-cases/760-spot-check.md` (44 cases, re-verify 2026-09-20; row `TC-SPC-06*` entry / `TC-SPC-07*` review) — ดู [04-test-scenarios](/th/inventory/spot-check/04-test-scenarios) § 5
 
 ## 1. ขอบเขต
 
@@ -65,5 +65,5 @@ Scenario ด้านล่างใช้ action ที่ catalogue ใน [sp
 
 - **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/sc-entry-component.tsx`, `sc-review-component.tsx`
 - **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts` (`saveItems`, `reviewItems`, `getReview`, `submit`)
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check; manual test-case catalog ที่ `docs/test-cases/760-spot-check.md` (`TC-SPC-06*`/`TC-SPC-07*`)
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check; manual test-case catalog `docs/test-cases/760-spot-check.md` (44 cases; `TC-SPC-06*`/`TC-SPC-07*`)
 - ที่เกี่ยวข้อง: [spot-check/03-user-flow-counter](/th/inventory/spot-check/03-user-flow-counter), [spot-check/02-business-rules](/th/inventory/spot-check/02-business-rules) (`SPC_VAL_007`–`008`, `SPC_POST_001`–`004`), [spot-check/04-test-scenarios](/th/inventory/spot-check/04-test-scenarios) (scenario end-to-end)

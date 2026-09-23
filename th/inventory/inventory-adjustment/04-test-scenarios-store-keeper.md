@@ -1,8 +1,8 @@
 ---
 title: การปรับสต๊อก (Inventory Adjustment) — Test Scenarios — Store Keeper
-description: Test cases สำหรับการกรอกเอกสาร Stock-In / Stock-Out ซึ่ง post ทันทีไม่ว่าจะกดปุ่มไหน
+description: Test cases สำหรับการกรอกเอกสาร Stock-In / Stock-Out — save draft, commit เพื่อ post พร้อม guard วันที่ในงวดและ on-hand
 published: true
-date: 2026-07-15T17:02:22.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: inventory-adjustment, test-scenarios, store-keeper, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -13,47 +13,49 @@ dateCreated: 2026-05-15T13:00:00.000Z
 > **At a Glance**
 > **Persona:** Store Keeper &nbsp;·&nbsp; **โมดูล:** [inventory-adjustment](/th/inventory/inventory-adjustment)
 > **หมวดหมู่:** Happy Path &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **E2E coverage:** ไม่มีที่เจาะจงหน้าจอนี้ — ดู [04-test-scenarios.md](./04-test-scenarios.md) § 5
-
-หน้านี้รวบรวม test scenario สำหรับการกรอกเอกสาร Stock-In หรือ Stock-Out ไม่มีส่วน permission ที่แตกต่างจากผู้ใช้อื่นของโมดูล (ดู [02-business-rules.md](./02-business-rules.md) § 4) และไม่มีสถานะรอ/อนุมัติให้ทดสอบ — ทุก scenario ด้านล่างจบด้วยเอกสารที่ `completed` แล้วและ post แล้ว หรือการเรียก create/void ถูกปฏิเสธไปเลย
+> **Executable coverage:** ไม่มีที่ automate — แคตตาล็อก manual `../carmen-inventory-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (60 เคส; TC-IADJ-03xxxx ฟอร์มใหม่, TC-IADJ-05xxxx items, TC-IADJ-06xxxx commit/void); ดู [04-test-scenarios](/th/inventory/inventory-adjustment/04-test-scenarios) § 5
 
 ## 1. Happy Path
 
 | # | Scenario | Pre-condition | ขั้นตอน | Expected |
 | - | -------- | -------------- | ------- | -------- |
-| SK-HP-01 | Stock-In สำหรับสินค้าที่มีอยู่ใช้ Average costing | สินค้า `P-1` มี on-hand ที่ `LOC-A` ต้นทุนเฉลี่ยปัจจุบัน `฿10.00` | 1. Add Stock-In 2. เลือก reason ทิศทาง `stock_in` 3. เลือก `LOC-A` 4. เพิ่มบรรทัด: `P-1`, `qty = 10`; `cost_per_unit` เติมเริ่มต้น `฿10.00` (แก้ไขได้) 5. กด **Save** | เอกสารถูกสร้างที่ `doc_status = completed`; `tb_inventory_transaction` ถูกเขียน (`inventory_doc_type = stock_in`); ค่าเฉลี่ยใหม่คำนวณผ่าน `calculateNewAverageCost`; on-hand ที่ `(LOC-A, P-1)` เพิ่มขึ้น 10 |
-| SK-HP-02 | Stock-In สำหรับสินค้าที่มีอยู่ กด Submit แทน Save | เหมือน SK-HP-01 แต่กด **Submit** แทน **Save** | ผลลัพธ์เหมือนกันทุกประการกับ SK-HP-01 — ทั้งสองปุ่มเรียก `create()` เดียวกัน และ backend ไม่สนใจ `doc_status` ที่ client ส่งมา (ดู [03-user-flow.md](./03-user-flow.md) § 2.1) |
-| SK-HP-03 | Stock-Out สำหรับของแตก สินค้าใช้ FIFO | สินค้า FIFO `P-2` มีสอง lot ที่ `LOC-A`: 5 หน่วยที่ `฿10.00` (`lot_seq_no=1`), 3 หน่วยที่ `฿12.00` (`lot_seq_no=2`) | 1. Add Stock-Out 2. เลือก reason ทิศทาง `stock_out` 3. เลือก `LOC-A` 4. เพิ่มบรรทัด: `P-2`, `qty = 6` — ไม่มีฟิลด์ต้นทุนแสดง 5. Save | เอกสาร `completed`; `createFifoConsumption` บริโภค 5 หน่วยจาก lot เก่า และ 1 หน่วยจาก lot ใหม่กว่า เขียนแถว cost-layer ขาออกสองแถว; `tb_stock_out_detail.cost_per_unit`/`total_cost` คงเป็น `0` (ไม่เคยเขียนโดย `create()` สำหรับ stock-out) |
-| SK-HP-04 | เอกสารหลายบรรทัด | สองสินค้าที่ location เดียวกัน ต่ำกว่าขีดจำกัด on-hand ใด ๆ | 1. เพิ่มบรรทัดสำหรับทั้งสองสินค้า 2. Save | หนึ่ง header, สองแถว detail, สอง (หรือมากกว่า) แถว `tb_inventory_transaction_detail` ภายใต้ `tb_inventory_transaction` เดียว — หนึ่งทรานแซกชันต่อบรรทัด detail ไม่ใช่หนึ่งต่อเอกสาร |
-| SK-HP-05 | ปริมาณเศษส่วนที่เท่ากับหรือมากกว่า 1 | สินค้าที่มีหน่วยแบบเศษส่วน (เช่น กก.) | บรรทัด `qty = 1.5` | ยอมรับ — `qty >= 1` ผ่าน ตรงข้ามกับ SK-VAL-02 ด้านล่าง |
+| SK-HP-01 | Stock-In draft แล้ว commit (BU แบบ Average) | สินค้า `P-1` ที่ `LOC-A` ต้นทุนปัจจุบัน `฿10.00`; `si_date` อยู่ในงวดปัจจุบัน | 1. Add Stock-In 2. Reason (`stock_in`), ตำแหน่ง `LOC-A` 3. เพิ่มบรรทัด `P-1`, `qty = 10`; `cost_per_unit` เติมเริ่มต้น `฿10.00` เปลี่ยนเป็น `฿12.00` 4. **Save** 5. **Commit** → ยืนยัน | ขั้นที่ 4: `POST /stock-ins` → `draft`, `si_no` ออกเลขจาก `si_date`, ไม่มี ledger rows ขั้นที่ 5: `PATCH /stock-ins/{id}/commit` → `completed`; หนึ่ง `tb_inventory_transaction` (`stock_in`), layer ขาเข้า `in_qty 10 @ ฿12.00`, lot `{code ของ LOC-A}{YYMM}{seq4}`, `average_cost_per_unit` ถูก restamp; on-hand +10 |
+| SK-HP-02 | Commit ตรงจากฟอร์มใหม่ | เหมือน SK-HP-01 แต่กด **Commit** โดยไม่ save | Frontend `POST` draft แล้ว commit ด้วย `doc_version` ที่คืนมา; สถานะปลายทางเหมือน SK-HP-01 |
+| SK-HP-03 | Stock-Out สำหรับของแตก สินค้า FIFO | BU แบบ FIFO; `P-2` ที่ `LOC-A`: 5 @ `฿10.00` (`lot_seq_no 1`), 3 @ `฿12.00` (`lot_seq_no 2`); `so_date` อยู่ในงวดปัจจุบัน | 1. Add Stock-Out, reason (`stock_out`), `LOC-A` 2. บรรทัด `P-2`, `qty = 6` (ไม่มีคอลัมน์ต้นทุน) 3. Save 4. Commit | `createFifoConsumption` บริโภค 5 จาก lot 1 และ 1 จาก lot 2 — layer ขาออกสองแถวที่ต้นทุนของ lot นั้น ๆ; `tb_stock_out_detail.cost_per_unit`/`total_cost` คงเป็น `0`; on-hand 8 → 2 |
+| SK-HP-04 | เอกสารหลายบรรทัด | สองสินค้าที่ location เดียวกัน | เพิ่มทั้งสองบรรทัด, Save, Commit | หนึ่ง header, สองแถว detail, หนึ่ง `tb_inventory_transaction` ต่อบรรทัดตอน commit |
+| SK-HP-05 | ปริมาณเศษส่วน | สินค้าที่มีหน่วยแบบเศษส่วน (กก.) | บรรทัด `qty = 1.5` | ยอมรับ (`qty ≥ 0`, `Decimal(20,5)`) |
+| SK-HP-06 | แก้ไข draft | draft จาก SK-HP-01 ก่อนขั้นที่ 5 | เปิด → **Edit** → เปลี่ยน qty → **Save** | `PATCH /stock-ins/{id}/save`; `doc_version` เพิ่มขึ้น; ยังเป็น `draft`; ไม่มี ledger rows |
 
 ## 2. Validation / Error
 
 | # | Scenario | Trigger | Error ที่คาดหวัง |
 | - | -------- | ------- | ------------------ |
-| SK-VAL-01 | ไม่มีตำแหน่ง | Submit โดย `location_id` ว่าง | Client ปฏิเสธก่อนจะ submit ได้ (Zod `.min(1)`); การเรียก API โดยตรงด้วย `location_id` ว่างคืน `"Location is required for stock in"` / `"...stock out"` |
-| SK-VAL-02 | ปริมาณเศษส่วนต่ำกว่า 1 | บรรทัด `qty = 0.5` | Client ปฏิเสธด้วยข้อความ `minNumber` — `qty` ต้อง `>= 1` ไม่ใช่แค่ `> 0` |
-| SK-VAL-03 | ไม่มีบรรทัดสินค้า | Submit โดยไม่มีบรรทัดเลย | Client ปฏิเสธ (`atLeastOneItem`); การเรียก API โดยตรงด้วย array `add` ว่างคืน `"Stock in detail items are required"` / `"...out..."` |
-| SK-VAL-04 | Product id ที่ไม่รู้จัก | บรรทัดอ้างอิง `product_id` ที่ไม่มีแถว `tb_product` ตรงกัน (เรียก API โดยตรง) | `"Product not found: <id>"` — การสร้างทั้งหมดถูกปฏิเสธ ไม่ใช่แค่บรรทัดที่ผิด |
-| SK-VAL-05 | ต้นทุนติดลบบน Stock-In | บรรทัด `cost_per_unit = -1` (bypass การเรียก API โดยตรง) | Client ปฏิเสธด้วยข้อความ `minZero`; ไม่เกี่ยวข้องกับ Stock-Out ซึ่งไม่แสดงฟิลด์ต้นทุนและไม่ persist อยู่แล้ว |
-| SK-VAL-06 | สต๊อกไม่พอบน Stock-Out (สินค้า Average) | `qty` ที่ขอเกิน on-hand ปัจจุบันที่ location | การสร้างทั้งหมดล้มเหลวด้วย `"Insufficient stock. Requested: <X>, Available: <Y>"` — แสดงต่อผู้ใช้ผ่าน path error-toast พิเศษ (`handleMutationError`) ที่แสดงข้อความดิบจาก server **ยืนยันเฉพาะสินค้าที่ใช้ Average costing** — พฤติกรรมของ FIFO ภายใต้เงื่อนไขเดียวกันยังไม่ได้ยืนยันแยกต่างหากในรอบนี้ |
-| SK-VAL-07 | วันที่นอกงวดปัจจุบัน | เลือกวันที่ก่อน `currentPeriod.start_at` หรือหลัง `currentPeriod.end_at` | Client ปฏิเสธด้วยข้อความ `dateOutsidePeriod` **ฝั่ง client เท่านั้น** — ไม่พบการตรวจสอบเทียบเท่าฝั่ง backend |
-| SK-VAL-08 | คำอธิบายว่าง | Submit โดย `description` ว่าง | ยอมรับ — `description` มี `.max(256)` แต่ไม่มี `.min()`; เป็น optional |
+| SK-VAL-01 | ไม่มีตำแหน่ง | Save โดย `location_id` ว่าง | Zod ฝั่ง client block; API โดยตรง → 400 `Location is required for stock in` / `…stock out` |
+| SK-VAL-02 | ปริมาณติดลบ | บรรทัด `qty = -1` | Client ปฏิเสธ (`min 0`) |
+| SK-VAL-03 | ไม่มีบรรทัดสินค้า | Save โดยไม่มีบรรทัดเลย | Client (`atLeastOneItem`); API โดยตรง → 400 `Stock in detail items are required` |
+| SK-VAL-04 | Product id ที่ไม่รู้จัก | API โดยตรงด้วย `product_id` ที่ไม่รู้จัก | Enrichment ปฏิเสธบรรทัด / `PRODUCT_NOT_FOUND` บน endpoint ของ detail |
+| SK-VAL-05 | ต้นทุนติดลบบน Stock-In | `cost_per_unit = -1` | Client ปฏิเสธ (`minZero`) |
+| SK-VAL-06 | สต๊อกไม่พอบน Stock-Out | qty ที่ขอ > on-hand ที่ location (วิธีคิดต้นทุนใดก็ตาม) | **Commit** → 400 `Insufficient stock for {product} at {location}: on hand {x}, requested {y}` (`STOCK_OUT_INSUFFICIENT_STOCK`); draft ยังอยู่ ไม่มีอะไร post |
+| SK-VAL-07 | Stock-in ลงวันที่ในงวดที่ปิดแล้ว | `si_date` ก่อนงวดเปิดที่เร็วสุด | Client `dateOutsidePeriod`; API โดยตรง → 422 `The stock-in date does not fall inside any open period` ตอน create **และ** ตอน commit |
+| SK-VAL-08 | Stock-out ลงวันที่นอกงวดปัจจุบัน | `so_date` ในงวดก่อนหน้า (แม้ยังเปิดอยู่) | 422 `Stock-outs can only be dated inside the current period ({period}: {start} to {end})` ตอน create และ commit; 422 `No inventory period is open…` เมื่อไม่มีงวดเปิดเลย |
+| SK-VAL-09 | คำอธิบายว่าง | Save โดย `description` ว่าง | ยอมรับ — optional |
+| SK-VAL-10 | Commit สองครั้ง | Commit เอกสารที่ completed แล้ว (API) | 400 `Only a draft Stock In can be committed` |
+| SK-VAL-11 | เปลี่ยนสถานะผ่าน save | `PATCH /save` ด้วย `doc_status: "completed"` | 400 `doc_status cannot be changed on save — use the commit or void endpoint` |
 
 ## 3. Edge Cases
 
 | # | Scenario | เงื่อนไข | Expected |
 | - | -------- | -------- | -------- |
-| SK-EDGE-01 | Reason/ทิศทางไม่ตรงกันผ่าน API โดยตรง | การเรียก create ของ `tb_stock_in` อ้างอิง `adjustment_type_id` ที่มี `type = stock_out` | ยังไม่ยืนยันว่าถูกปฏิเสธฝั่ง server — `validateAndEnrichHeader` ตรวจเพียงว่าแถวมีอยู่จริง ไม่ตรวจ `type` ถือว่ายังไม่ยืนยัน/มีแนวโน้มยอมรับ จนกว่าจะทดสอบตรงกับ backend ที่รันอยู่จริง |
-| SK-EDGE-02 | Location ประเภท Direct-cost ผ่าน API โดยตรง | การเรียก create อ้างอิง `location_id` ที่ `location_type` เป็น `direct` (ไม่ใช่ Inventory/Consignment) | ยังไม่ยืนยันว่าถูกปฏิเสธฝั่ง server — มีเพียง picker ที่กรองตามประเภทฝั่ง client |
-| SK-EDGE-03 | ข้อเสนอต้นทุน Stock-In สำหรับคู่สินค้า/ตำแหน่งใหม่ทั้งคู่ | `useProductCostByLocationQty` ไม่มีข้อมูลก่อนหน้าสำหรับคู่ `(product, location)` นั้น | พฤติกรรมของ `cost_per_unit` ที่เสนอในกรณีนี้ (ศูนย์ vs ว่าง vs error) ยังไม่ได้ยืนยันแยกต่างหากในรอบนี้ |
-| SK-EDGE-04 | Delete จากหน้ารายการบนเอกสารที่ completed แล้ว | คลิก Delete จากเมนูแถว → Confirm | Dialog ลบเปิดขึ้น (ปุ่มแสดงผลเสมอ); mutation คืน `"Cannot delete a completed Stock In — inventory has already been adjusted"` — 400 แสดงเป็น error toast และแถวยังคงอยู่ |
-| SK-EDGE-05 | พยายามเข้าถึงปุ่ม Edit หรือ Void | เปิดหน้ารายละเอียดของเอกสาร completed | ไม่มีปุ่มไหนแสดงผล — `isReadOnly` เป็น true เสมอสำหรับเอกสารที่ persist แล้ว ปุ่ม Edit (`isView && !isReadOnly`) จึงไม่ปรากฏ และ Void (ต้องการ `isEdit`) จึงเข้าไม่ถึงตามไปด้วย |
+| SK-EDGE-01 | Reason/ทิศทางไม่ตรงกันผ่าน API | create ของ stock-in อ้างอิง reason ประเภท `stock_out` | ไม่ถูกปฏิเสธฝั่ง server (enrichment ตรวจเพียงว่าแถวมีอยู่) |
+| SK-EDGE-02 | Location ประเภท Direct-cost ผ่าน API | `location_type = direct` | ไม่ถูกปฏิเสธฝั่ง server; มีเพียง picker ที่กรอง |
+| SK-EDGE-03 | ข้อเสนอต้นทุนสำหรับคู่สินค้า/ตำแหน่งใหม่ | ไม่มีข้อมูลต้นทุนก่อนหน้า | `useProductCostByLocationQty` ไม่คืนต้นทุน; ฟิลด์คงว่าง/0 และแก้ไขได้ |
+| SK-EDGE-04 | `expired_at` บนบรรทัด stock-in | ส่งผ่าน API เท่านั้น | Persist บน `tb_stock_in_detail.expired_at` และคืนโดย `GET /details`; ฟอร์มไม่มีช่องกรอก |
+| SK-EDGE-05 | draft ค้างอยู่ตอนปิดงวด | draft ลงวันที่ในงวด | Block **Start Period Close** จนกว่าจะ commit หรือลบ |
+| SK-EDGE-06 | Stock movements หลัง commit | เอกสารที่ completed | `GET /stock-ins/{id}/stock-movements` list แต่ละบรรทัดที่ post แล้วพร้อม lot, qty, ต้นทุน และ `transaction_type` |
 
 ## 4. แหล่งอ้างอิง
 
-- ภาพรวมหลัก: [04-test-scenarios.md](./04-test-scenarios.md) — scenario ข้ามขอบเขต (Save vs Submit, Edit/Void ที่ตายแล้ว, Delete ในหน้ารายการล้มเหลวเสมอ, void-ก็-soft-delete)
-- User flow: [03-user-flow-store-keeper.md](./03-user-flow-store-keeper.md)
-- กติกาทางธุรกิจ: [02-business-rules.md](./02-business-rules.md) — `ADJ_VAL_001`–`ADJ_VAL_013`, `ADJ_CALC_001`–`ADJ_CALC_007`, `ADJ_POST_001`
-- ที่เกี่ยวข้อง: [inventory](/th/inventory/inventory) — ผลกระทบฝั่ง ledger ของทุกการ post
-- ที่เกี่ยวข้อง: [costing](/th/inventory/costing) — การแก้ไขต้นทุน FIFO/Average
+- ภาพรวมหลัก: [04-test-scenarios](/th/inventory/inventory-adjustment/04-test-scenarios)
+- User flow: [03-user-flow-store-keeper](/th/inventory/inventory-adjustment/03-user-flow-store-keeper)
+- กติกาทางธุรกิจ: [02-business-rules](/th/inventory/inventory-adjustment/02-business-rules) — `ADJ_VAL_001`–`ADJ_VAL_015`, `ADJ_CALC_001`–`ADJ_CALC_009`, `ADJ_POST_001`–`ADJ_POST_003`
+- ที่เกี่ยวข้อง: [inventory](/th/inventory/inventory) — ผลกระทบฝั่ง ledger ของทุก commit; [costing](/th/inventory/costing) — การแก้ไขต้นทุน FIFO/Average

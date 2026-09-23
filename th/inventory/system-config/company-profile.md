@@ -1,8 +1,8 @@
 ---
 title: Company Profile & Default Setting
-description: สองหน้าจอ system-admin ที่แก้ไขกลุ่มฟิลด์ที่แยกกันของแถว tb_business_unit เดียวกัน — Company Profile (identity, address, branding, date/time/number format) และ Default Setting (config การทำงาน PR/SI/PO + การเลือก print-form template) /system-admin/business-setting คือ redirect ที่ตายแล้วไปยัง Company Profile
+description: สองหน้าจอ system-admin ที่แก้ไขกลุ่มฟิลด์ที่แยกกันของแถว tb_business_unit เดียวกัน — Company Profile (identity, address, format) และ Default Setting (config PR/SI/PO + print form) Permission system_admin.business_unit
 published: true
-date: 2026-07-29T10:52:30.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: system-config, business-unit, company-profile, default-setting, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T10:30:00.000Z
@@ -11,7 +11,14 @@ dateCreated: 2026-07-29T10:30:00.000Z
 # Company Profile & Default Setting
 
 > **สรุปโดยย่อ**
-> **Routes:** `/system-admin/company-profile`, `/system-admin/default-setting` &nbsp;·&nbsp; **Redirect:** `/system-admin/business-setting` → `/system-admin/company-profile` (`<Navigate replace>` ฝั่ง client ไม่มีหน้าจอของตัวเอง) &nbsp;·&nbsp; **ตาราง:** `tb_business_unit` (platform schema) — แถวเดียวกับ [master-data/business-unit](/th/inventory/master-data/business-unit) แต่กลุ่มฟิลด์แยกกัน &nbsp;·&nbsp; **Endpoint:** `GET`/`PATCH /api/business-units` (ไม่มี id ใน URL — resolve ฝั่ง server จาก token/BU context ของผู้เรียก) &nbsp;·&nbsp; **Permission:** `system_configuration.view` (ทั้งสองหน้าจอ; ไม่มี key เฉพาะของตัวเอง)
+> **Routes:** `/system-admin/company-profile`, `/system-admin/default-setting` &nbsp;·&nbsp; **Redirect:** `/system-admin/business-setting` → `/system-admin/company-profile` (`<Navigate replace>` ฝั่ง client ไม่มีหน้าจอของตัวเอง) &nbsp;·&nbsp; **ตาราง:** `tb_business_unit` (platform schema) — แถวเดียวกับ [master-data/business-unit](/th/inventory/master-data/business-unit) แต่กลุ่มฟิลด์แยกกัน &nbsp;·&nbsp; **Endpoint:** `GET`/`PATCH /api/business-units` (ไม่มี id ใน URL — resolve ฝั่ง server จาก token/BU context ของผู้เรียก; `AppIdGuard('userBusinessUnit.getCurrent' | 'patchCurrent')`, `user-business-units.controller.ts:122-245`) &nbsp;·&nbsp; **Permission:** `system_admin.business_unit.view` / `.update` (ทั้งสองหน้าจอ; `constant/permissions.ts` — key `system_configuration.view` ที่หน้านี้เคยอ้างเป็น ghost ของ frontend ที่ไม่เคยมีอยู่ใน `tb_permission` ถูกแทนที่เมื่อ 2026-09-21 โดย FE `b9e2de5f`) &nbsp;·&nbsp; **Licence:** `system_admin`
+
+## สถานะการ implement (ตรวจสอบซ้ำ 2026-09-22)
+
+- **`max_license_users` หายไปแล้ว** คอลัมน์ถูก drop จาก `tb_business_unit` (platform migration, BE `59c841346` 2026-08-21 ต่อจาก drop ที่ยังไม่ได้ apply `1280c2ce9`) เมื่อ seat licensing ย้ายไป `tb_business_unit_license` / seat pool ของ cluster; FE เอาฟิลด์ read-only ออกเมื่อ 2026-08-19 (`60d95cd9`) และ `types/business-unit.ts` ไม่ประกาศมันอีกแล้ว เหลือเพียง `calculation_method` เป็น `SettingField` read-only ใน section General (`company-profile-component.tsx:268-271`)
+- **แก้ permission key** ตามข้างต้น; sidebar entry ของทั้งสองหน้าจอ gate ด้วย `PERMISSIONS.system_admin.business_unit.view` พร้อม `licenseFeature: "system_admin"` (`module-list.ts:592-607`)
+- **403 ของ lookup ใน Default Setting ไม่บล็อกหน้าอีกต่อไป** (`ee8c75bf`, 2026-09-21): 403 จาก lookup print-form template render แบบ inline แทนที่จะเป็น modal ทับทั้งหน้าจอ
+- ทุกอย่างอื่นบนหน้านี้ (กลุ่มฟิลด์, registry `config[]`, diff-แล้ว-`PATCH` พร้อม `doc_version`) ตรวจซ้ำกับ `company-profile-config-registry.ts` และ `company-profile-component.tsx` ที่ HEAD — ไม่เปลี่ยน key ของ print-form คือ `print-form.<type>` (`lib/print-form-config.ts:26-28`)
 
 ## 1. คืออะไรและใครใช้
 
@@ -33,7 +40,7 @@ dateCreated: 2026-07-29T10:30:00.000Z
 | แก้ identity, ที่อยู่, หรือค่า format default ของ business unit | Company Profile → **Edit** → แก้ฟิลด์ → **Save** | ส่งเฉพาะฟิลด์ที่เปลี่ยนเป็น `PATCH` (diff กับ snapshot ล่าสุดที่โหลด) |
 | แก้ toggle การทำงานของ PR/SI/PO | Default Setting → **Edit** → เปลี่ยนค่า → **Save** | กลไก diff-and-`PATCH` เดียวกัน จำกัดเฉพาะ array `config` |
 | เลือก print form สำหรับประเภทเอกสาร | Default Setting → section Print Forms → เลือก template ต่อประเภท | Dropdown มาจาก catalog report-template ของ [reporting-audit](/th/inventory/reporting-audit) กรองตาม `report_group` ของเอกสารนั้น; ดู §6 |
-| ดู (ไม่แก้) costing method หรือ license cap | Company Profile → section General | `calculation_method` และ `max_license_users` render เป็น `SettingField` read-only — ไม่มี input ไม่ว่าจะอยู่โหมด edit หรือไม่ |
+| ดู (ไม่แก้) costing method | Company Profile → section General | `calculation_method` render เป็น `SettingField` read-only — ไม่มี input ไม่ว่าจะอยู่โหมด edit หรือไม่ ฟิลด์ `max_license_users` เดิมถูกเอาออกแล้ว (คอลัมน์ drop เมื่อ 2026-08-21) |
 | ยกเลิกการแก้ไขที่ยังไม่บันทึก | **Cancel** ตอนกำลังแก้ | แสดง confirm dialog (`useDiscardConfirm`) เฉพาะเมื่อฟอร์ม dirty |
 
 ## 3. การตรวจสอบและข้อผิดพลาด
@@ -65,14 +72,16 @@ Source: `types/business-unit.ts` (`BusinessUnitDetail`) เทียบกับ
 | Section | ฟิลด์ | แก้ที่นี่ได้ไหม |
 |---|---|---|
 | General | `name`, `alias_name`, `cluster_name`, `description`, `info`, `default_currency_id` | ได้ (ยกเว้น `cluster_name`) |
-| General (read-only) | `calculation_method`, `max_license_users` | ไม่ได้ — แสดงผลอย่างเดียว |
+| General (read-only) | `calculation_method` | ไม่ได้ — แสดงผลอย่างเดียว (`max_license_users` drop เมื่อ 2026-08-21) |
 | Hotel | `hotel_name`, `hotel_email`, `hotel_tel`, `hotel_address_line1/2`, `hotel_sub_district`, `hotel_district`, `hotel_city`, `hotel_province`, `hotel_postal_code`, `hotel_country` | ได้ |
 | Company | `company_name`, `branch_no`, `tax_no`, `company_email`, `company_tel`, `company_address_line1/2`, `company_sub_district`, `company_district`, `company_city`, `company_province`, `company_postal_code`, `company_country` | ได้ |
 | Branding | `logo`, `avatar` | ไม่ได้ — preview รูปแบบ read-only |
 | Date & Time | `timezone`, `date_format`, `date_time_format`, `time_format`, `short_time_format`, `long_time_format` | ได้ — ทั้งหมดเป็น `<select>` จาก option list ตายตัวใน `company-profile-options.ts` |
 | Number Formats | `amount_format`, `quantity_format`, `perpage_format`, `recipe_format` | ได้ — แต่ละตัวเป็นคู่ `{ locales, minimumIntegerDigits }` |
 
-ที่ไม่แสดงบนหน้าจอนี้เลย: `hotel_latitude/longitude`, `company_latitude/longitude`, `id`, `cluster_id`, `is_hq`, `is_active`, `db_connection`, `doc_version`, `audit` — มีอยู่ใน `BusinessUnitDetail` แต่ไม่มีฟิลด์บนหน้าจอในแอปทั้งสองเลย (บางตัวแก้ได้เฉพาะจาก platform admin console ของ `carmen-platform` — ดู [master-data/business-unit](/th/inventory/master-data/business-unit))
+ที่ไม่แสดงบนหน้าจอนี้เลย: `hotel_latitude/longitude`, `company_latitude/longitude`, `id`, `cluster_id`, `is_hq`, `is_active`, `doc_version`, `audit` — มีอยู่ใน `BusinessUnitDetail` แต่ไม่มีฟิลด์บนหน้าจอในแอปทั้งสองเลย (บางตัวแก้ได้เฉพาะจาก platform admin console ของ `carmen-platform` — ดู [master-data/business-unit](/th/inventory/master-data/business-unit)) หมายเหตุว่า `db_connection` ก็ไม่มีอยู่แล้วเช่นกัน: ตั้งแต่ BE `e54248d88` (2026-08-13) BU อ้างอิง **database pool + schema** ของ platform แทนการเก็บ credential ของตัวเอง และ endpoint เปิดเผย credential ถูกลบไปแล้ว
+
+Print-form key แต่ละตัวสร้างจาก `printFormConfigKey(type)` → `print-form.<type>` (เช่น `print-form.pr`; `lib/print-form-config.ts:26-28`)
 
 ### 5.2 Section ของ Default Setting (registry `config[]`)
 
@@ -84,8 +93,6 @@ Source: `types/business-unit.ts` (`BusinessUnitDetail`) เทียบกับ
 | `printForm` | Print Forms | 12 key ต่อประเภทเอกสาร: PR, PO, GRN, SR, CN, SI, SO, IA, PC, SC, RFP, EOP | enum (id ของ report-template มาจาก catalog template ของ [reporting-audit](/th/inventory/reporting-audit) กรองตาม `report_group`) |
 
 \* option `average` แสดงเฉพาะเมื่อ `tb_business_unit.calculation_method = average` (หรือถูกเลือกอยู่แล้ว)
-
-Print-form key แต่ละตัวสร้างจาก `printFormConfigKey(type)` (เช่น resolve เป็นอะไรทำนอง `print_form.pr`) — string constant ที่แน่นอนอยู่ใน `lib/print-form-config.ts` ไม่ขอ derive ซ้ำในที่นี้เพื่อเลี่ยงการ derive ค่าที่รวมศูนย์ไว้แล้วในไฟล์เดียว
 
 ## 6. กติกาทางธุรกิจ
 
@@ -109,4 +116,7 @@ Print-form key แต่ละตัวสร้างจาก `printFormConfig
 - **Frontend types:** `../carmen-inventory-frontend-react/types/business-unit.ts` — `BusinessUnitDetail`, `BusinessUnitEditable`, `BusinessUnitConfigItem`
 - **API endpoint:** `../carmen-inventory-frontend-react/constant/api-endpoints.ts` — `BUSINESS_UNIT: "/api/proxy/api/business-units"`
 - **ประวัติการออกแบบ:** `../carmen-inventory-frontend-react/docs/superpowers/specs/2026-07-10-default-setting-page-split-design.md` + `.../plans/2026-07-10-default-setting-page-split.md`, `.../specs/2026-07-09-business-setting-{pr,si,po}-config-section-design.md` + `.../plans/2026-07-09-business-setting-{pr,si,po}-config-section.md` — การแยกจากหน้า "Business Setting" เดียวมาเป็นสองหน้าจอนี้ (suffix `-design` เป็น convention เฉพาะของ `specs/` เท่านั้น; ไฟล์ `plans/` คู่กันใช้ basename เดียวกันแต่ไม่มี suffix นี้)
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_business_unit` (บรรทัด ~117); ดู [master-data/business-unit](/th/inventory/master-data/business-unit) §8 สำหรับการอ้างอิงเต็ม
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_business_unit`; ดู [master-data/business-unit](/th/inventory/master-data/business-unit) §8 สำหรับการอ้างอิงเต็ม คอลัมน์ที่ drop ตั้งแต่ baseline: `max_license_users` (`59c841346`), คอลัมน์ credential ถูกแทนด้วยการอ้างอิง database-pool (`e54248d88`)
+- **Gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/user-business-units/user-business-units.controller.ts` (`GET`/`PUT`/`PATCH /api/business-units`, `POST /api/business-units/default`)
+- **Nav / permission:** `../carmen-inventory-frontend-react/constant/module-list.ts:592-607`, `constant/permissions.ts` (`system_admin.business_unit`)
+- **E2E:** `../carmen-inventory-frontend-e2e/docs/test-cases/1114-company-profile.md` (29 case), `1115-default-setting.md` (30 case) — แคตตาล็อกเท่านั้น ไม่มี Playwright spec

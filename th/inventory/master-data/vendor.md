@@ -2,7 +2,7 @@
 title: ผู้ขาย (Vendor)
 description: ผู้ขายและที่อยู่ ผู้ติดต่อ และ taxonomy ของประเภทธุรกิจ — counterparty ของทุกเอกสารจัดซื้อ
 published: true
-date: 2026-07-15T21:47:09.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: master-data, vendor, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # ผู้ขาย (Vendor)
 
 > **At a Glance**
-> **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_vendor`, `tb_vendor_address`, `tb_vendor_contact`, `tb_vendor_business_type` &nbsp;·&nbsp; **ใช้โดย:** PR, PO, GRN, pricelist, RFQ &nbsp;·&nbsp; ระเบียนผู้ขาย — default tax profile, credit term และ currency ลงบนเอกสารจัดซื้อ
+> **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_vendor`, `tb_vendor_address`, `tb_vendor_contact`, `tb_vendor_business_type`, `tb_certificate` + `tb_vendor_certificate` &nbsp;·&nbsp; **ใช้โดย:** PR, PO, GRN, pricelist, RFQ &nbsp;·&nbsp; ระเบียนผู้ขาย — default tax profile, credit term และ currency ลงบนเอกสารจัดซื้อ
 
 ![ผู้ขาย (Vendor) screen](/screenshots/master-data/vendor.png)
 
@@ -73,6 +73,9 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | `tax_rate` | `Decimal? @db.Decimal(15, 5)` | Yes | อัตรา snapshot ณ เวลา link (default `0`) |
 | `is_active` | `Boolean?` | Yes | Active flag |
 | `latitude` / `longitude` | `Decimal? @db.Decimal(10,7)` / `Decimal? @db.Decimal(11,7)` | Yes | พิกัดของสถานที่ผู้ขาย; ไม่พบฟิลด์ frontend ใดที่อ่านหรือเขียนค่านี้ในรอบนี้ |
+| `tax_no` | `String? @db.VarChar` | Yes | เลขประจำตัวผู้เสียภาษี (ไทย 13 หลัก ไม่บังคับรูปแบบเพราะผู้ขายต่างประเทศแตกต่างกัน) มี index (`vendor_tax_no_idx`) เพิ่ม 2026-09-09 (`20260909203000_add_vendor_tax_branch_rating`) |
+| `branch_no` | `String? @db.VarChar` | Yes | เลขที่สาขา; `"00000"` = สำนักงานใหญ่ เก็บเป็น string เพราะเลขศูนย์นำหน้ามีความหมาย เพิ่ม 2026-09-09 |
+| `rating` | `Int?` | Yes | คะแนน 1–5 แบบกรอกเอง `null` = ยังไม่ให้คะแนน DB `CHECK "vendor_rating_chk" (rating BETWEEN 1 AND 5)` บวก DTO `z.number().int().min(1).max(5)` (`vendors.dto.ts:55`) เพิ่ม 2026-09-09 **ยังเป็น API เท่านั้น** — `types/vendor.ts` และ `routes/vendor-management/vendor/` ไม่มีฟิลด์สำหรับทั้งสามตัว (grep `tax_no|branch_no|rating` → 0 hit) |
 | `info`, `dimension` | `Json?` | Yes | Metadata มาตรฐาน |
 | `doc_version` | `Int` | No | เวอร์ชัน optimistic-lock (default `0`) |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*` |
@@ -122,6 +125,17 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 Flat lookup — `id`, `name`, `description`, `note`, `is_active`, metadata มาตรฐาน, audit columns App-enforce unique `name` ในแถว non-deleted
 
+### 5.5 `tb_certificate` / `tb_vendor_certificate` (certification)
+
+ฟีเจอร์ vendor-certification ย้ายเข้ามาใน UI ของโมดูลนี้เมื่อ 2026-09-03: หน้าจอ master ตอนนี้คือ `routes/vendor-management/certification/` (เดิม `routes/config/certification/`, frontend commit `ac1e7c56`) และตาราง master ถูกเปลี่ยนชื่อจาก `tb_vendor_master_certificate` เป็น `tb_certificate` เมื่อ 2026-09-04 (`20260904133000_rename_eco_label_and_certificate`; index `certificate_code_u`, `certificate_name_u`) path ของ API **ไม่ได้** เปลี่ยน: gateway `api/config/:bu_code/vendor-master-certificates` (master) และ `api/config/:bu_code/vendor-certificates` (แถวต่อผู้ขาย), Bruno `config/vendor-master-certificates/*` และ `config/vendor-certificates/*`
+
+| Table | วัตถุประสงค์ | ฟิลด์หลัก |
+| --- | --- | --- |
+| `tb_certificate` | แคตตาล็อกประเภทใบรับรองระดับ BU (ISO 9001, HACCP, …) | `code`, `name` (แต่ละตัว `@@unique` ร่วมกับ `deleted_at`), `description`, `note`, `is_active`, `attachments` JSON (`[]`), `info`, `dimension`, `doc_version`, audit |
+| `tb_vendor_certificate` | ใบรับรองหนึ่งใบที่ผู้ขายหนึ่งรายถือ | `vendor_id`, `master_certificate_id` → `tb_certificate`, `certificate_no`, `issued_date`, `expiry_date`, `attachments` JSON ของ `{originalName, fileToken, contentType}`, `is_active`, `description`, `note`, `info`, `dimension`, `doc_version`, audit |
+
+การเรียงลำดับ list เริ่มต้นของ master คือ `name:asc` (`vendor-master-certificate.service.ts`); ของแถวต่อผู้ขายคือ `created_at:desc` เป็นภาพสะท้อนของคู่ eco-label ฝั่งสินค้า (`tb_eco_label` / `tb_product_eco_label`, [product/01-data-model](/th/inventory/product/01-data-model) § 2.10)
+
 ## 6. กติกาทางธุรกิจ
 
 - **Uniqueness** `(code, name)` unique ในผู้ขาย non-deleted มากที่สุดหนึ่งของแต่ละ `address_type` ต่อผู้ขาย (DB-unique) `name` ของ contact unique ภายในผู้ขาย (DB-unique)
@@ -132,6 +146,8 @@ Flat lookup — `id`, `name`, `description`, `note`, `is_active`, metadata ม�
 - **การ propagate เปลี่ยน tax-profile** ไม่ retro-edit เอกสาร; snapshot ยังคงตามที่ posted
 - **การเปลี่ยนชื่อ business-type** ต้องมี maintenance job มา refresh JSON snapshot บนผู้ขาย
 - **Optimistic lock** PATCH header ผู้ขายต้องส่ง `doc_version`; client ต้อง echo `doc_version` ปัจจุบันตอน save มิฉะนั้นจะได้ `409 Conflict` และ version จะเพิ่มขึ้นเมื่อสำเร็จ ขอบเขตคือ header `tb_vendor` เท่านั้น — ตาราง child (`tb_vendor_address`, `tb_vendor_contact`) และ soft-delete ไม่ถูก guard
+- **ช่วงของ rating** `rating` เป็นคอลัมน์ผู้ขายเพียงตัวเดียวที่มี value constraint ระดับ DB (`CHECK 1..5`); ค่าที่อยู่นอกช่วงถูก DTO ปฏิเสธก่อนถึงฐานข้อมูล
+- **Default sort** `GET /vendors` ที่ไม่มี `?sort=` คืน `code:asc, id:asc` (`vendors.service.ts`, `withDefaultSort`, 2026-09-13)
 
 ## 7. การอ้างอิงข้ามโมดูล
 
@@ -144,5 +160,8 @@ Flat lookup — `id`, `name`, `description`, `note`, `is_active`, metadata ม�
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_vendor` (lines ~3500-3552), `tb_vendor_address` (lines ~3589-3626), `tb_vendor_contact` (lines ~3628-3658), `tb_vendor_business_type` (lines ~5229-5250), `enum_vendor_address_type` (lines ~262-266)
-- **Frontend:** `../carmen-inventory-frontend-react/routes/vendor-management/vendor/`
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_vendor` (line ~3859), `tb_vendor_address` (~3954), `tb_vendor_contact` (~3993), `tb_certificate` (~4025), `tb_vendor_certificate` (~4053), `tb_vendor_business_type` (~5836)
+- **Migrations:** `20260904133000_rename_eco_label_and_certificate`, `20260909203000_add_vendor_tax_branch_rating`
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/vendors/` (DTO `dto/vendors.dto.ts:53-55`), `master/vendor-master-certificate/`, `master/vendor-certificate/`
+- **Frontend:** `../carmen-inventory-frontend-react/routes/vendor-management/vendor/`, `routes/vendor-management/certification/`
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/043-certification.spec.ts` (19 กรณี) + `docs/test-cases/gaps/043-certification-gap.md` (29 กรณีที่ยังไม่ครอบคลุม)

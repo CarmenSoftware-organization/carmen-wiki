@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check) — Business Rules
 description: กฎการตรวจสอบ การคำนวณ การกำหนดสิทธิ์ การ post และกฎข้ามโมดูลของการสุ่มตรวจ
 published: true
-date: 2026-07-29T04:45:21.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: spot-check, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -31,7 +31,7 @@ Rule ID ใช้รูปแบบ `SPC_VAL_NNN`
 | `SPC_VAL_001` | `location_id` ต้องอ้างอิง `tb_location` ที่มีอยู่จริงและไม่ถูกลบ | สร้าง (`POST /spot-checks`) | Reject ด้วย `COMMON_LOCATION_NOT_FOUND` ไม่มีการตรวจ `location_type` หรือ `is_active` แยกภายใน `create()` เอง — หน้ารายการเสนอเฉพาะ location ที่กรองแล้วโดย `findCurrentByLocation()` (`location_type ∈ {inventory, consignment}`, `is_active = true`, และ — เว้นแต่ติ๊ก "Include Not Count" — `physical_count_type = yes`) |
 | `SPC_VAL_002` | eligible product pool (union ของ `tb_product_location` assignment กับสินค้าใดที่มีสต๊อกสุทธิไม่เป็นศูนย์ที่ location) ต้องไม่ว่างเปล่า | สร้าง | Reject ด้วย `"No products found at this location"` |
 | `SPC_VAL_003` | `method = manual` ต้องมี array `product_id[]` ไม่ว่างเปล่า หลังกรองให้เหลือเฉพาะสินค้าใน eligible pool จริง ต้องเหลืออย่างน้อยหนึ่งตัว | สร้าง | Reject ด้วย `"product_id is required for manual selection"` (array ว่าง/ไม่มี) หรือ `"None of the selected products were found at this location"` (กรองแล้วเหลือศูนย์) |
-| `SPC_VAL_004` | `method = high_value` ต้องมี `tb_period` อย่างน้อยหนึ่งแถวที่ `status ∈ {open, locked}` | สร้าง | Reject ด้วย `SPOT_CHECK_NO_ACTIVE_PERIOD` ("No active period found") ถ้าไม่มี |
+| `SPC_VAL_004` | `method = high_value` ต้องมี `tb_inventory_period` อย่างน้อยหนึ่งแถว (เปลี่ยนชื่อจาก `tb_period`, migration `20260916141000`; `spot-check.logic.ts` อ่าน `prisma.tb_inventory_period`) ที่ `status ∈ {open, locked}` | สร้าง | Reject ด้วย `SPOT_CHECK_NO_ACTIVE_PERIOD` ("No active period found") ถ้าไม่มี |
 | `SPC_VAL_005` | เอกสารที่ `doc_status = pending` เท่านั้นที่ update ได้ (`description`/`note` เท่านั้น — ไม่มีฟิลด์อื่นแก้ไขได้ผ่าน `update()`) | Update | Reject ด้วย `"Only pending spot checks can be updated"` **ไม่สามารถเข้าถึงได้ผ่านหน้าจอที่ shipped ใด ๆ** — ดู [spot-check](/th/inventory/spot-check) § 1; มีแค่การเรียก Bruno/API โดยตรงเท่านั้นที่ใช้ path นี้ |
 | `SPC_VAL_006` | `doc_status = void` หรือ `= completed` บล็อก Reset (`"Spot check is already void"` / `"Completed spot check cannot be reset"`) `pending`/`in_progress` เป็นสถานะเดียวที่ reset ได้ | Reset | Reject ด้วยข้อความที่ยกมาบน `void`/`completed`; อนุญาตนอกเหนือจากนั้น |
 | `SPC_VAL_007` | Save (`saveItems()`) ต้องมี array `items[]` ไม่ว่างเปล่า และเอกสารต้องเป็น `pending` หรือ `in_progress` | Save | Reject ด้วย `SPOT_CHECK_NO_ITEMS` ("No items to save") บน array ว่าง หรือ `"Cannot save items when spot check is <status>"` นอก `{pending, in_progress}` |
@@ -57,7 +57,7 @@ Rule ID ใช้รูปแบบ `SPC_AUTH_NNN`
 | Rule ID | กฎ |
 | ------- | ---- |
 | `SPC_AUTH_001` | ทุก action list, create, save, review, submit, reset, delete และ comment ในโมดูลนี้ถูกกำหนดสิทธิ์ด้วย permission key CRUD เดียว: `inventory_management.spot_check` (`constant/permissions.ts`) ไม่พบ permission variant แยกสำหรับ create-only, approve-only หรือ read-only |
-| `SPC_AUTH_002` | ไม่พบข้อจำกัดแบบ zone-based, location-scoped-to-user หรือ "assigned counter" ใน `spot-check.service.ts` — ผู้ใช้ใดที่มี permission ของโมดูลสามารถเปิด นับ และ submit spot check ที่ location ใดก็ได้ มีตาราง `tb_user_location` ทั่วไปอยู่ที่อื่นใน schema สำหรับ location-level access grant แต่ไม่พบการอ้างอิงถึงมันใน service code ของโมดูลนี้เอง |
+| `SPC_AUTH_002` | ไม่พบข้อจำกัดแบบ zone-based, location-scoped-to-user หรือ "assigned counter" ใน `spot-check.service.ts` — ผู้ใช้ใดที่มี permission ของโมดูลสามารถเปิด นับ และ submit spot check ที่ location ใดก็ได้ มีตาราง `tb_location_user` ทั่วไปอยู่ที่อื่นใน schema สำหรับ location-level access grant แต่ไม่พบการอ้างอิงถึงมันใน service code ของโมดูลนี้เอง |
 | `SPC_AUTH_003` | ไม่มี permission, route หรือ workflow stage ของ Approver/Finance Reviewer, Auditor หรือ Sysadmin สำหรับโมดูลนี้ — ไม่มีอะไรให้ review หรืออนุมัติ เพราะการ submit ขั้นสุดท้ายไม่มีเอกสารหรือผล ledger ปลายทางให้ gate |
 
 ## 5. กฎการ Posting
@@ -104,5 +104,5 @@ Rule ID ใช้รูปแบบ `SPC_XMOD_NNN`
 - **Primary:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts` (create/update/delete/reset/saveItems/reviewItems/getReview/submit), `spot-check.logic.ts` (sampling strategies)
 - **Secondary (ระดับวางแผน ยืนยันบางส่วน):** `../carmen-inventory-frontend-e2e/docs/persona-doc/System Process/tx-10-spot-check.md`
 - **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/` (`sc-component.tsx`, `sc-form.tsx`, `sc-entry-component.tsx`, `sc-review-component.tsx`); `constant/permissions.ts`
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check; manual test-case catalog ที่ `docs/test-cases/760-spot-check.md`
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check; manual test-case catalog `docs/test-cases/760-spot-check.md` (44 cases, re-verify 2026-09-20)
 - ชุดกฎที่เกี่ยวข้อง: [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_*` — คู่เทียบการนับเต็มที่อย่างน้อยยังสร้างแถว stock-in/out ที่ไม่ post ตอน submit), [inventory-adjustment/02-business-rules](/th/inventory/inventory-adjustment/02-business-rules) (`ADJ_*` — จุดที่ต้อง manual แก้ไขผลต่างที่ยืนยันแล้ว), [inventory/02-business-rules](/th/inventory/inventory/02-business-rules) (semantics ของ ledger — โมดูลนี้ไม่เคยไปถึงเลย)

@@ -2,7 +2,7 @@
 title: หมวดหมู่อุปกรณ์ (Equipment Category)
 description: การจัดกลุ่มตามฟังก์ชันสำหรับอุปกรณ์ครัว — preparation, cooking, holding, refrigeration, dispense, cleaning ฯลฯ
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: recipe, equipment, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **เจ้าของ:** Chef / Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_recipe_equipment_category` &nbsp;·&nbsp; **รูปทรง:** แบน (ไม่มี `parent_id`) &nbsp;·&nbsp; **ลูก:** [recipe/equipment](/th/inventory/recipe/equipment) ผ่าน `category_id` &nbsp;·&nbsp; **ใช้โดย:** filter ของ equipment picker, dashboard maintenance, checklist การ fit-out
 
 ![หมวดหมู่อุปกรณ์ (Equipment Category) screen](/screenshots/recipe/equipment-category.png)
+
+> **ตรวจสอบซ้ำ 2026-09-22** schema และกฎของ service ด้านล่างไม่เปลี่ยน `GET /api/config/{bu}/recipe-equipment-categories` default เป็น `sort=name:asc` (`928f3b950`) E2E: ทั้งสองหน้าจอเหนือตารางนี้ automate แล้ว — `tests/131-equipment-category.spec.ts` (12 test; เหลือ 4 กรณี manual ใน `docs/test-cases/gaps/131-equipment-category-gap.md`) และ `tests/121-recipe-equipment-category.spec.ts` (12 test; 3 กรณี manual ใน `gaps/121-recipe-equipment-category-gap.md`)
 
 ## 1. คืออะไรและใครใช้
 

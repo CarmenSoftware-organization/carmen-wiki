@@ -2,7 +2,7 @@
 title: News — หน้าจอ UI (UI Screens)
 description: การ์ด masthead NewsroomSummary + list NewsManagement (thumbnail, Target, Tags, filter สถานะ/tag, ส่งออก CSV, bulk publish/archive/delete) และฟอร์ม NewsEdit แบบ masthead — MarkdownEditor, ImageUpload, Tags, Publish rail — พร้อมการ validate และคีย์ลัด
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: book/platform, news, ui
 editor: markdown
 dateCreated: 2026-06-10T15:45:00.000Z
@@ -52,8 +52,8 @@ Header (`PageHeader`): หัวข้อ "News Management" / หัวข้อ
 | (รูปภาพ) | Thumbnail ของ `image_url` (fallback แบบ legacy `image`): `h-10`, กว้างสูงสุด 96 px, `object-contain` (รักษา aspect ratio), ขอบมน; ซ่อนตัวเองเมื่อโหลด error กล่อง placeholder `ImageIcon` แบบ muted เมื่อไม่มีรูป |
 | Title | ลิงก์ไป `/news/:id/edit`; `(untitled)` เมื่อว่าง |
 | Status | Badge — `published` → success (เขียว), `draft` (หรือไม่มี) → secondary, `archived` → outline; label ขึ้นต้นตัวพิมพ์ใหญ่ |
-| Target | `business_unit_ids` ไม่ว่าง → ไอคอน Building2 + "N BU(s)"; ว่าง/ไม่มี → badge แบบ outline พร้อมไอคอน Globe + "Global"; sort ไม่ได้ |
-| Tags | badge สูงสุด 3 ตัวบวก overflow "+N"; `-` เมื่อว่าง; sort ไม่ได้ |
+| Target | `business_unit_ids` ไม่ว่าง → ไอคอน Building2 + "N BU(s)"; ว่าง/ไม่มี → badge แบบ outline พร้อมไอคอน Globe + "Global"; **sort ได้ตั้งแต่ 2026-09-09** (PR #293) — Global ก่อน แล้วตามด้วยจำนวน BU คำนวณฝั่ง server (`JSON_SORT_KEYS` ใน `news.service.ts:44` ของ `micro-cluster` เพราะทั้งสองค่าอยู่ในคอลัมน์ JSON ที่ `orderBy` ของ Prisma เข้าไม่ถึง) การเปลี่ยน backend ครั้งเดียวกันแก้ `orderBy` แบบ hard-code ของ service ที่เคยทิ้ง `sort` ทุกตัวที่ผู้เรียกส่งมาบน endpoint นี้เงียบ ๆ |
+| Tags | badge สูงสุด 3 ตัวบวก overflow "+N"; `-` เมื่อว่าง; **sort ได้ตั้งแต่ 2026-09-09** ตามจำนวน tag (กลไก derived-key เดียวกับ Target) |
 | Published | `published_at` เป็น `YYYY-MM-DD HH:mm:ss` (เวลาท้องถิ่นของเบราว์เซอร์), ข้อความเล็กแบบ muted; `-` เมื่อไม่เคย publish |
 | Updated | `AuditMeta` variant "cell" ที่ใช้ร่วมกัน: เวลาสัมพัทธ์ (เช่น "5mo ago", hover เพื่อดู timestamp แบบ absolute) บรรทัดแรก, ชื่อ actor บรรทัดที่สอง; `-` เมื่อเรคคอร์ดไม่เคยถูกแก้ไขจริง (`everEdited` ของ `normalizeAudit` — เรคคอร์ดที่ `updated_at` เท่ากับ `created_at` เฉย ๆ ถือว่ายังไม่เคยแก้ ไม่ใช่ "updated แต่ไม่มีชื่อ"); sort ไม่ได้ |
 | (action) | dropdown `⋯` — ดู §2.6 |

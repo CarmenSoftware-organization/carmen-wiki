@@ -2,7 +2,7 @@
 title: Spot Check — Test Scenarios
 description: Test cases by screen, end-to-end scenarios, and the manual test-case catalog mapping for spot checks.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-23T01:30:00.000Z'
 tags: spot-check, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T14:30:00.000Z
 > **At a Glance**
 > **Module:** [spot-check](/en/inventory/spot-check) &nbsp;·&nbsp; **Scope:** one real permission-gated role split across two screen files (list/create; entry/review), plus a confirmed-absent third group
 > **Run order:** list/create-screen scenarios → entry/review-screen scenarios → end-to-end scenarios below
-> **E2E coverage:** no `spot-check` Playwright spec exists at `../carmen-inventory-frontend-e2e/tests/`; a manual test-case catalog exists at `docs/test-cases/760-spot-check.md` (32 cases, authored from the live component) — see § 5 for how it maps to, and diverges from, the real routing
+> **E2E coverage:** no `spot-check` Playwright spec exists at `../carmen-inventory-frontend-e2e/tests/`; a manual test-case catalog exists at `docs/test-cases/760-spot-check.md` (44 cases, re-verified against the live component 2026-09-20; the generated user stories `docs/user-stories/760-spot-check.md` hold 32) — see § 5 for how it maps to the real routing
 
 ## 1. Overview
 
@@ -60,5 +60,5 @@ Each row below is a full document lifecycle, anchored to the real state machine 
 
 - **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/`.
 - **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts`, `spot-check.logic.ts`.
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists; manual test-case catalog at `docs/test-cases/760-spot-check.md` (32 cases; two — `TC-SPC-040001`, `TC-SPC-050001` — describe an unreachable view/edit screen, see § 5).
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists; manual test-case catalog at `docs/test-cases/760-spot-check.md` (44 cases, re-verified 2026-09-20 — the earlier unreachable view/edit cases were resolved, see § 5) and user stories `docs/user-stories/760-spot-check.md` (32).
 - Related: [spot-check/03-user-flow](/en/inventory/spot-check/03-user-flow) (the state machine this page exercises), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_VAL_*` / `SPC_AUTH_*` / `SPC_POST_*`), [inventory-adjustment/04-test-scenarios](/en/inventory/inventory-adjustment/04-test-scenarios) (where a confirmed variance must be manually corrected).

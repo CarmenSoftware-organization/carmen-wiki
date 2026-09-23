@@ -2,7 +2,7 @@
 title: อุปกรณ์ (Equipment)
 description: ข้อมูลหลักของอุปกรณ์ครัว — อ้างอิงจากขั้นตอนการเตรียมในสูตรอาหารที่ต้องใช้เครื่องมือเฉพาะ (อ่าง sous-vide, deep fryer, smoker ฯลฯ)
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: recipe, equipment, master-data, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -16,6 +16,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 ![อุปกรณ์ (Equipment) screen](/screenshots/recipe/equipment.png)
 
 ![อุปกรณ์ (Equipment) detail screen](/screenshots/recipe/equipment-detail.png)
+
+> **ตรวจสอบซ้ำ 2026-09-22** schema และกฎของ service ด้านล่างไม่เปลี่ยน `GET /api/config/{bu}/recipe-equipment` default เป็น `sort=code:asc` (`b375b078b`); response serialize ผ่าน `RecipeEquipmentResponseSchema` ซึ่งคืน ref `category` `{ id, name }` **ควบคู่กับ** `category_id` / `category_name` แบบแบน (สตริง denormalise ยังคงเป็นสิ่งที่ list แสดง) ฟอร์มตอนนี้เป็นบล็อก `SettingSection` เจ็ดบล็อก (General → Specifications → Photo → Quantity & Settings → Instructions → Maintenance → Additional); สร้างแล้วกลับไป list ส่วนแก้ไขอยู่หน้าเดิม E2E: catalog เท่านั้น — `../carmen-inventory-frontend-e2e/docs/test-cases/130-equipment.md` (45 กรณี ไม่มี spec)
 
 ## 1. คืออะไรและใครใช้
 

@@ -2,7 +2,7 @@
 title: สินค้า (Product) — User Flow — Purchaser
 description: flow ของ Purchaser ในโมดูลสินค้า — การ lookup อ่านอย่างเดียว การอ้างอิง และเส้นทาง feedback
 published: true
-date: 2026-07-16T09:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: product, user-flow, purchaser, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -29,7 +29,7 @@ persona **Purchaser** เป็น **ผู้บริโภค read-only** ข
 
 1. **เปิด picker ของบรรทัด PR** จากภายใน line entry ของ [purchase-request](/th/inventory/purchase-request) คลิกฟิลด์สินค้าเพื่อเปิด picker Picker แสดงแคตตาล็อก active พร้อมคอลัมน์สำหรับ code, name, หน่วยฐาน, standard cost, ต้นทุนรับล่าสุด (derive ตาม `PRD_CALC_008`) และจำนวน vendor (จำนวน vendor ที่ map)
 2. **ค้นหา / filter** พิมพ์ code, name, local name, barcode หรือ SKU การค้นหาคือ full-text ตาม `TR-SEARCH-*` (carmen/docs PRD § 5.5) filter ตาม category / sub-category / item-group (dropdown การจำแนก) ตาม vendor (vendor scope) หรือตามคุณสมบัติอื่นที่แสดงผ่านคีย์ JSON `tb_product.info` การ filter เป็น read-only — Purchaser ไม่สามารถ save filter ลงใน master ได้เพียงแต่ใน saved-view ส่วนตัว (ฟีเจอร์ frontend-only)
-3. **ตรวจสอบรายละเอียดสินค้า (เป็นทางเลือก)** คลิกผ่านไปยังมุมมองรายละเอียดสินค้าเต็มสำหรับบริบทที่ลึกกว่า: เส้นทางการจำแนก (`PRD_CALC_001`), tax profile ที่สืบทอด (`PRD_CALC_002`), ค่าความคลาดเคลื่อน (`PRD_CALC_003`), การแปลงหน่วยที่นิยามทั้งหมด (แถว `tb_unit_conversion`), vendor mapping (แถว `tb_product_tb_vendor` พร้อม `vendor_product_code` cross-reference), นโยบายสต๊อกต่อ location (แถว `tb_product_location` — เพื่อแจ้งให้ทราบ; Purchaser ไม่แก้) และประวัติการซื้อล่าสุด (การรับ GRN ล่าสุดไม่กี่ครั้งพร้อม date / vendor / ต้นทุนต่อหน่วย) Tab Latest Purchase คือที่ที่ Purchaser ไปเพื่อ benchmark ราคา
+3. **ตรวจสอบรายละเอียดสินค้า (เป็นทางเลือก)** คลิกผ่านไปยังมุมมองรายละเอียดสินค้าเต็มสำหรับบริบทที่ลึกกว่า: เส้นทางการจำแนก (`PRD_CALC_001`), tax profile ที่สืบทอด (`PRD_CALC_002`), ค่าความคลาดเคลื่อน (`PRD_CALC_003`), การแปลงหน่วยที่นิยามทั้งหมด (แถว `tb_unit_conversion`), vendor mapping (แถว `tb_product_tb_vendor` พร้อม `vendor_product_code` cross-reference), นโยบายสต๊อกต่อ location บนแท็บ **Location Assignment** (แถว `tb_product_location` รวมถึง shelf — เพื่อแจ้งให้ทราบ; Purchaser ไม่แก้) และประวัติการซื้อล่าสุด (การรับ GRN ล่าสุดไม่กี่ครั้งพร้อม date / vendor / ต้นทุนต่อหน่วย) Tab Latest Purchase คือที่ที่ Purchaser ไปเพื่อ benchmark ราคา
 4. **เลือกสินค้า** เลือกแถวใน picker; บรรทัด PR / PO ถูก populate ด้วย `product_id`, `inventory_unit_id` (หน่วยฐานของสินค้า) และ **หน่วยสั่งซื้อ default** (แถว `tb_unit_conversion` ที่ `is_default = true`, `unit_type = order_unit`) Purchaser อาจ override หน่วยสั่งซื้อโดยเลือก conversion อื่นที่ตั้งค่า (เช่น สลับจาก `CASE` เป็น `EACH` สำหรับคำสั่งที่เล็ก); ตาม `PRD_XMOD_006` หน่วยที่ไม่นิยามใน `tb_unit_conversion` สำหรับสินค้าไม่สามารถใช้ได้ (picker แสดงเฉพาะ conversion ที่นิยาม)
 5. **กรอก qty และ unit-price** Qty ในหน่วยสั่งซื้อที่เลือก unit-price (โดยทั่วไป pre-populate จาก `tb_pricelist_detail` ล่าสุดหรือต้นทุน GRN ล่าสุด) ระบบคำนวณ qty หน่วยฐานตาม `PRD_CALC_005` (`order_unit_qty × conversion_factor = base_unit_qty`) สำหรับคลังและ costing ปลายน้ำ ค่าความคลาดเคลื่อนของราคา (`PRD_CALC_003` → `price_deviation_limit` ที่มีผล) อ่านที่จุดนี้; unit-price นอก tolerance flag สำหรับการอนุมัติเกินเกณฑ์ตาม `PR_VAL_*`
 6. **Save บรรทัด** บรรทัด PR / PO ถูกเพิ่ม; การโต้ตอบของ Purchaser กับ product master จบ ตัวสินค้าเองไม่เปลี่ยน (read-only)

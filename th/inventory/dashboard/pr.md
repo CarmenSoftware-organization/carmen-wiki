@@ -2,7 +2,7 @@
 title: แดชบอร์ดใบขอซื้อ (PR Dashboard)
 description: "ถูกลบแล้วเมื่อ 2026-06-27 เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น: tile สรุปใบขอซื้อ — pipeline ตาม stage, รายการที่ถูก send-back/reject, ค่าใช้จ่ายส่วนตัวเทียบกับแผนก และคิวงานของผู้อนุมัติ"
 published: true
-date: 2026-07-16T01:35:43.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: dashboard, purchase-request, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -16,6 +16,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 ## สถานะการ implement (ตรวจสอบเมื่อ 2026-07-16)
 
 หน้านี้ document `dashboard-pr.tsx` (เดิมคือ `routes/dashboard/_components/dashboard-pr.tsx`) และ fixture `mock/pr.ts` ของมัน `/dashboard/pr` ไม่เคยมีอยู่ใน `routes/router.tsx` — sidebar entry ของ Dashboard resolve ไปยัง component เดียวเท่านั้นเสมอมา คือหน้า [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) ในปัจจุบัน ไฟล์ demo นี้ถูกลบพร้อมไฟล์พี่น้องอีก 7 ไฟล์ใน commit `03891e3d` ("refactor(dashboard): convert to idiomatic structure, drop dead demo code", `carmen-inventory-frontend-react`, 2026-06-27) ซึ่ง commit message ระบุว่ามันและ mock fixture ของมัน "no importers anywhere" เนื้อหาด้านล่างทั้งหมดอธิบายหน้าจอ demo ที่ถูกลบและไม่เคยมี route จริงนี้ — เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น ถือว่าทุกข้อความ "ยังเป็น mock data ในปัจจุบัน", "เมื่อ live" และการอ้าง route ในส่วนที่เหลือของหน้านี้เป็นโมฆะ — จะไม่มีวัน live ภายใต้หน้านี้
+
+**ตรวจสอบซ้ำ 2026-09-22:** ยังคงไม่มีใน `routes/router.tsx` `useApprovalPending` ที่อ้างถึงด้านล่างตอนนี้อยู่ที่ `routes/procurement/approval/use-approval.ts` (ย้าย 2026-08-28, `0d9757f3`) และอ่าน view รวม `GET /api/my-pending` (2026-09-16, `9bd21427`) — มันขับเคลื่อน `/procurement/approval` เท่านั้น สิ่งที่ใกล้เคียง pipeline strip ที่สุดบน dashboard ที่ live คือ card status-group "PR summary (status pipeline)" บน [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) §1.2
 
 ![แดชบอร์ดใบขอซื้อ (PR Dashboard) screen](/screenshots/dashboard/pr.png)
 

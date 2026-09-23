@@ -1,8 +1,8 @@
 ---
 title: กิจกรรมผู้ใช้ (User Activity)
-description: Timeline login/logout ที่เน้น actor สร้างขึ้นทั้งหมดจากแถว tb_activity tb_user_login_session (ที่เคยบันทึกไว้ว่าเป็นครึ่งหนึ่งของโมเดลข้อมูล) เป็นตารางที่ตายแล้ว ไม่มีการอ้างอิงจากโค้ดนอกเหนือจาก schema เลย — JWT ที่ Keycloak ออกให้คือ mechanism session ที่แท้จริง ไม่มีตาราง session ในเครื่องรองรับ
+description: timeline การ login/logout ที่ยึด actor เป็นศูนย์กลาง สร้างขึ้นจากแถว tb_activity (entity_type = auth) tb_user_login_session เป็นตารางที่ตายแล้ว; JWT ที่ Keycloak ออกให้คือกลไก session จริง ไม่มีตาราง session ในเครื่องรองรับ
 published: true
-date: 2026-07-22T03:05:28.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: reporting-audit, activity, security, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -22,6 +22,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 สิ่งที่**ยืนยันแล้วว่ามีอยู่จริง**: `AuthService.login()` เรียก `logAuthActivity('login', ...)` เมื่อ authenticate สำเร็จ และ `AuthService.logout()` เรียก `logAuthActivity('logout', ...)` — ทั้งคู่เขียนแถว `tb_activity` (`entity_type: 'auth'`) ไปยัง business unit **เริ่มต้น**ของผู้ใช้เท่านั้น (แถว `tb_user_tb_business_unit` ที่ `is_default: true`; ถ้าผู้ใช้ไม่มี BU เริ่มต้น การเขียนจะถูกข้ามไปทั้งหมด และ log เป็นระดับ debug ไม่ใช่ error) ทั้งสองการเรียกถูกห่อด้วย try/catch ของตัวเองที่ log ความล้มเหลวโดยไม่ทำให้ request login/logout ล้มเหลวตาม
 
 **ยังไม่ยืนยันในรอบนี้:** การจับ failed-login (สาขาความล้มเหลวของ `login()` — rate-limited, user not found — return ก่อนเรียก `logAuthActivity` เลย ไม่มีแถว `tb_activity` เขียนสำหรับความพยายามที่ล้มเหลว), การ log "view" หน้าที่ละเอียดอ่อน (การค้นหาผู้เรียก `logTenantEvent`/`logEvents` ทั่ว repo พบเฉพาะ login/logout ของ auth และ event upload-delete รูปสินค้า/สูตรอาหาร — ไม่เคยมี `action: 'view'`), การติดตาม chain การ impersonation และ event MFA/การเปลี่ยน role ทั้งหมดนี้เคยถูกบันทึกไว้ว่ามีอยู่จริง และตอนนี้ถูกทำเครื่องหมายว่ายังไม่ยืนยัน/น่าจะไม่มีจริงด้านล่าง
+
+**ตรวจสอบซ้ำ 2026-09-22** สาระสำคัญไม่เปลี่ยน: `AuthService.login()` / `logout()` ยังเรียก `logAuthActivity()` เฉพาะเมื่อสำเร็จ โดย resolve BU default ของผู้ใช้ (`is_default: true`) — `auth.service.ts` บรรทัด ~86–140 มีสองสิ่งเพิ่มที่ควรรู้: (a) การสมัครสมาชิกด้วยตนเองและการยืนยันอีเมลตอนนี้เขียนแถว `tb_activity` ใน **platform scope** (`writeRegisterActivity()` — `action: create`, `entity_type: 'user'`; `writeVerifyEmailActivity()`) เพราะผู้ใช้เหล่านั้นยังไม่มี business unit — แถวเหล่านี้ไม่มีวันปรากฏบนหน้าจอ tenant นี้ แต่เป็นของ activity log ในเล่ม Platform (b) hook ของ frontend ย้ายจาก `hooks/use-user-activity.ts` ไป `routes/system-admin/user-activity/use-user-activity.ts` (2026-08-28, `0d9757f3`); filter Action ยังมีแค่ `login` / `logout` และ component ยังคง hard-set `entity_type = "auth"`
 
 ## 1. ภาพรวมและผู้ใช้งาน
 
@@ -100,4 +102,5 @@ User Activity คือ **timeline login/logout ต่อผู้ใช้** �
 - **Prisma platform (ตารางที่ตายแล้ว เพื่อเปรียบเทียบ):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_user_login_session` (บรรทัด ~567), `enum_token_type` (บรรทัด ~686)
 - **ผู้เขียนที่ยืนยันแล้ว:** `../carmen-turborepo-backend-v2/apps/micro-business/src/authen/auth/auth.service.ts` — `logAuthActivity()` (private method) เรียกจาก `login()` และ `logout()`
 - **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/user-activity/user-activity.route.tsx`, `user-activity-component.tsx` (ตั้งค่าคงที่ `entity_type = "auth"` ทุก query), `use-user-activity-table.tsx`
-- **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-user-activity.ts` — เรียก endpoint `API_ENDPOINTS.ACTIVITY_LOGS(buCode)` เดียวกับหน้าจอของ [reporting-audit/activity](/th/inventory/reporting-audit/activity)
+- **Frontend hook:** `../carmen-inventory-frontend-react/routes/system-admin/user-activity/use-user-activity.ts` (ย้ายออกจาก `hooks/` เมื่อ 2026-08-28) — เรียก endpoint `API_ENDPOINTS.ACTIVITY_LOGS(buCode)` เดียวกับหน้าจอของ [reporting-audit/activity](/th/inventory/reporting-audit/activity)
+- **ผู้เขียนใน platform scope (ไม่แสดงที่นี่):** `auth.service.ts` `writeRegisterActivity()`, `writeVerifyEmailActivity()` → `tb_activity` ของ platform

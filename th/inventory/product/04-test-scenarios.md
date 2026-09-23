@@ -2,7 +2,7 @@
 title: สินค้า (Product) — Test Scenarios
 description: test case ตาม persona, scenario ข้าม persona และ mapping ไปยัง E2E สำหรับ product
 published: true
-date: 2026-05-19T23:55:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: product, test-scenarios, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -15,11 +15,13 @@ dateCreated: 2026-05-15T15:30:00.000Z
 > **ลำดับการรัน:** การตั้งค่า Audit / Config → happy path ของ persona หลัก → scenario ข้าม persona
 > **drill-down ของแต่ละ persona อยู่ที่ `04-test-scenarios-<role>.md`**
 
+> **ความครอบคลุมที่รันได้จริง (2026-09-22):** รีโป e2e **ไม่มี `100-product.spec.ts`** — `/product-management/product` เป็นแถวแบบ catalog เท่านั้น (`📄 catalog`) ใน `../carmen-inventory-frontend-e2e/docs/test-cases/COVERAGE.md:148` หนุนด้วย `docs/test-cases/100-product.md` (52 กรณี ตรวจสอบซ้ำกับฟอร์ม React เมื่อ 2026-09-20) หน้าจอข้างเคียงมี spec: `tests/101-product-category.spec.ts` (23 กรณี; gap report `docs/test-cases/gaps/101-product-category-gap.md` ยังไม่ครอบคลุม 39) และ `tests/044-eco.spec.ts` (19 กรณี; `gaps/044-eco-gap.md` ยังไม่ครอบคลุม 29) หน้านี้ไม่ได้ mirror catalog เหล่านั้น
+
 ## 1. ภาพรวม
 
 หน้านี้เป็น **จุดเข้าภาพรวม** สำหรับชุด test-scenario ของโมดูล `product` รวบรวมการครอบคลุมตาม persona สามตัว (Product Administrator, Purchaser, Store Keeper) และแสดง scenario ข้าม persona / integration ขอบเขตถูกกำหนดโดย **ลักษณะ master-data** ของโมดูล — ไม่มี workflow เอกสาร `doc_status` พร้อม gate draft / submit / approve ไม่มี event posting พร้อม journal-entry fan-out ไม่มีหน้าต่าง period-end Test scenario จึงรวมไปที่ **CRUD + lifecycle** สำหรับ Product Administrator (persona ที่กว้าง) และ **lookup + กฎด้าน read** สำหรับ Purchaser และ Store Keeper (persona ผู้บริโภคที่แคบ)
 
-การครอบคลุม E2E สำหรับโมดูลนี้ **บางส่วนและทางอ้อม** Playwright spec ตรงเดียวคือ `101-product-category.spec.ts` (ครอบคลุม browse / expand / collapse หมวดหมู่) — ไม่มี `100-product.spec.ts` ครอบคลุม CRUD ของสินค้า ไม่มี `102-unit.spec.ts` ครอบคลุมการจัดการหน่วย / conversion และไม่มี `103-product-location.spec.ts` ครอบคลุม location-policy mapping การใช้งานส่วนใหญ่ของโมดูล product เป็นทางอ้อม — ทุก spec ของโมดูลธุรกรรม (PR, PO, GRN, SR, count, recipe, pricelist) บริโภค product picker และอ่านแถว `tb_product` ดังนั้น scenario ด้านผู้บริโภคถูก validate ผ่าน spec ต้นน้ำเหล่านั้น Surface CRUD ของ Product Administrator ส่วนใหญ่เป็น manual / planned testing Section 5 map การครอบคลุมที่เรามี
+การครอบคลุม E2E สำหรับโมดูลนี้ **บางส่วนและทางอ้อม** Playwright spec ตรงคือ `101-product-category.spec.ts` (23 กรณี — browse ต้นไม้ บวก CRUD หมวดหมู่ / หมวดหมู่ย่อย / กลุ่มสินค้า ตาม `docs/user-stories/101-product-category.md`) และ `044-eco.spec.ts` (ข้อมูลหลัก eco-label ตอนนี้อยู่ใต้ `/product-management/eco`); การจัดการหน่วยถูกครอบคลุมจากฝั่ง Configuration โดย `020-unit.spec.ts` ยังคงไม่มี `100-product.spec.ts` ครอบคลุม CRUD ของสินค้า (catalog `docs/test-cases/100-product.md` 52 กรณีเป็นเอกสารเท่านั้น) และไม่มี spec ครอบคลุม location-policy / การกำหนดชั้นวาง การใช้งานส่วนใหญ่ของโมดูล product เป็นทางอ้อม — ทุก spec ของโมดูลธุรกรรม (PR, PO, GRN, SR, count, recipe, pricelist) บริโภค product picker และอ่านแถว `tb_product` ดังนั้น scenario ด้านผู้บริโภคถูก validate ผ่าน spec ต้นน้ำเหล่านั้น Surface CRUD ของ Product Administrator ส่วนใหญ่เป็น manual / planned testing Section 5 map การครอบคลุมที่เรามี
 
 scenario ข้าม persona ใน Section 4 เป็นชั้น integration เหนือ suite ต่อ persona พวกเขาอธิบาย journey end-to-end ที่ข้าม boundary ของ handoff ที่บันทึกใน [03-user-flow.md](./03-user-flow.md) Section 4 — เช่น *Product Administrator สร้างสินค้าใหม่ → Purchaser พบบน PR picker → Store Keeper สแกนบาร์โค้ดระหว่างการรับ → Product Administrator update barcode mismatch ที่ flag ผ่าน comment* Section 5 map spec E2E กลับไปยัง journey เหล่านั้น; หมายเหตุว่า scenario ด้าน product หลายตัวถูก exercise ผ่าน spec โมดูลต้นน้ำเท่านั้น
 
@@ -42,12 +44,12 @@ scenario ข้าม persona ใน Section 4 เป็นชั้น integrat
 | # | Scenario | Persona ตามลำดับ | Pre-condition | สถานะสิ้นสุดที่คาดหวัง |
 | - | -------- | ----------------- | ------------- | ------------------ |
 | 1 | สินค้าใหม่สร้างและพร้อมใช้สำหรับผู้บริโภคทันที | Product Administrator → Purchaser → Store Keeper | ห่วงโซ่การจำแนก (category → sub-category → item-group) มีอยู่; หน่วยคลังฐานมีอยู่; tax profile ตั้งบนอย่างน้อยหนึ่งระดับการจำแนก | แถว `tb_product` insert ด้วย `product_status_type = active`, `is_active = true` Order-unit conversion และ vendor mapping ตั้งค่าแล้ว Purchaser เห็นสินค้าบน PR picker ทันที; Store Keeper สแกนบาร์โค้ดระหว่างการรับและ resolve เป็นสินค้าใหม่ ไม่มีการแจ้งเตือนยิง; picker อ่านเมื่อต้องการ |
-| 2 | Bulk import — dry-run, fix error, strict-mode commit | Product Administrator | ไฟล์ CSV / Excel พร้อม 500 แถวสินค้า; ผสมระหว่างถูกต้องและผิด (ขาดการจำแนก code ซ้ำ หน่วยผิด) | Dry-run รายงาน error การ validate ระดับแถวตาม `PRD_VAL_*`; Product Administrator ดาวน์โหลด error report fix source รัน dry-run ใหม่จนสะอาด Strict-mode commit insert ทั้ง 500 แถวใน transaction เดียว; `created_by_id` คือ Administrator Activity log บันทึก import job |
-| 3 | Bulk import — partial-success mode | Product Administrator | CSV พร้อม 100 แถว; 90 ถูกต้อง 10 ผิด Partial-success mode เปิด | 90 แถว commit; 10 แถวถูกรายงานใน error file พร้อมเหตุผลความล้มเหลวต่อแถว `created_by_id` คือ Administrator การ re-import 10 แถวที่แก้แล้วในภายหลังสำเร็จ |
+| 2 | Bulk import — dry-run, fix error, strict-mode commit | Product Administrator | — | **ทดสอบไม่ได้ — ไม่มี import อยู่จริง** (ยืนยัน 2026-09-22: ไม่มี route นำเข้าใน `config_products.controller.ts` ไม่มี Bruno request frontend มีแค่ export) เก็บไว้เป็น placeholder ที่มีหมายเลขเพื่อให้การอ้างอิงปลายน้ำยังคงเสถียร |
+| 3 | Bulk import — partial-success mode | Product Administrator | — | **ทดสอบไม่ได้ — ไม่มี import อยู่จริง** (ดู Scenario 2) |
 | 4 | การเปลี่ยน standard-cost เกินเกณฑ์ SoD route สำหรับการอนุมัติ | Product Administrator → Cost Controller / Finance | สินค้าที่ active; `standard_cost` ใหม่สูงกว่าปัจจุบัน 20% (เกินเกณฑ์ SoD ของ tenant) | การเปลี่ยน stage ใน activity log (หรือ hard-block ขึ้นอยู่กับการตั้งค่า workflow) ตาม `PRD_AUTH_012`; Cost Controller / Finance อนุมัติ การเปลี่ยน commit; activity log บันทึกทั้งผู้ submit และผู้อนุมัติ |
 | 5 | ปิดใช้สินค้าถูกบล็อกโดยบรรทัด PR / PO เปิด | Product Administrator | สินค้า active; บรรทัด `tb_purchase_request_detail` เปิดหนึ่งบรรทัดที่ `doc_status = in_progress` อ้างอิงสินค้า | ปิดใช้ถูกปฏิเสธตาม `PRD_LIFE_002` ด้วย `"Product is referenced by 1 open PR line and cannot be deactivated."`; Product Administrator ประสานกับ Purchaser เพื่อยกเลิก / void PR (หรือรอการเสร็จ) หลังจาก PR ย้ายไปยัง `completed` / `cancelled` ลองใหม่สำเร็จ |
 | 6 | ปิดใช้สินค้าที่ถูกอ้างอิงโดยสูตรที่ publish — soft-block พร้อม override | Product Administrator → Chef (เพื่อแจ้งให้ทราบ) | สินค้า active; สูตรที่ publish หนึ่งสูตรอ้างอิงเป็นวัตถุดิบ | ปิดใช้ soft-block ตาม `PRD_LIFE_002`; Product Administrator สามารถ override ด้วยข้อความเหตุผลใน activity log ใน override สูตรที่ได้รับผลกระทบถูก flag สำหรับ review อัตโนมัติ (Chef ได้รับการแจ้งเตือนตามโมดูล recipe) `product_status_type = inactive`; activity log บันทึก override + เหตุผล |
-| 7 | Soft-delete ถูกบล็อกโดย on-hand ไม่เป็นศูนย์ | Product Administrator → Store Keeper / Inventory Controller (เพื่อแจ้งให้ทราบ) | สินค้า inactive; on-hand ปัจจุบันที่ location หนึ่งคือ 25 หน่วย (derive ตาม `PRD_CALC_009`) | Soft-delete ปฏิเสธตาม `PRD_LIFE_004` ด้วย `"Cannot delete product with non-zero on-hand at Loc-A: 25 units."`; Product Administrator ประสานกับ Store Keeper / Inventory Controller เพื่อ drain (transfer หรือ write-off) หลัง drain ลองใหม่สำเร็จ |
+| 7 | Soft-delete โดยมี on-hand ไม่เป็นศูนย์ | Product Administrator → Store Keeper (เพื่อแจ้งให้ทราบ) | สินค้า inactive; on-hand ปัจจุบันที่ location หนึ่งคือ 25 หน่วย (derive ตาม `PRD_CALC_009`) | **design intent vs. พฤติกรรมจริง:** `PRD_LIFE_004` บอกให้ปฏิเสธ; `delete()` จริงไม่มี guard และ soft-delete **สำเร็จ** ทิ้ง 25 หน่วยของสินค้าที่ถูกลบไว้บน ledger (ยืนยัน 2026-09-22, [02-business-rules](/th/inventory/product/02-business-rules) § 5.1) test ที่เขียนวันนี้ต้องคาดหวังว่าสำเร็จและบันทึกยอดคงเหลือกำพร้าเป็น finding |
 | 8 | Purchaser flag entry แคตตาล็อกเก่าผ่าน comment | Purchaser → Product Administrator | สินค้า active ที่ `standard_cost = ฿100`; ใบเสนอราคา vendor คือ `฿140` — เบี่ยงอย่างมีนัยสำคัญ; Purchaser หา pricelist ที่ตรงล่าสุดไม่ได้ | Purchaser post `tb_product_comment` บนสินค้าด้วย attachment ใบเสนอราคา vendor; Product Administrator หยิบจากคิว comment, validate กับ pricelist vendor ปัจจุบัน update `standard_cost` (อาจ route สำหรับการอนุมัติ SoD ตาม Scenario 4) ตอบบน thread comment Purchaser ตรวจสอบใหม่และเพิ่มบรรทัด PR |
 | 9 | Store Keeper flag barcode ไม่ตรงผ่าน comment | Store Keeper → Product Administrator | สินค้าที่มีอยู่พร้อม `barcode = '8851234567890'` map กับ "Spring Water 500ml" ขวดทางกายภาพในมือคือ "Spring Water 1L" พร้อมบาร์โค้ดเดียวกัน | Store Keeper สแกน ได้สินค้าที่ resolve ผิด post comment ด้วยรูปของฉลากทางกายภาพ Product Administrator validate (กับ vendor catalog) รู้ว่ารุ่น 1L ขาดจากแคตตาล็อก สร้าง `tb_product` ใหม่พร้อมบาร์โค้ดที่ถูก (สินค้า 500ml เก่าได้ `barcode = null` หรือบาร์โค้ดใหม่ถ้าตัวเดิมผิด) ตอบบน comment; Store Keeper สแกนใหม่และ resolve ถูกต้อง |
 | 10 | สินค้าใหม่ต้องการ unit conversion ที่ยังไม่ตั้งค่า — Purchaser ถูกบล็อก | Purchaser → Product Administrator | สินค้า active ที่มี order-unit conversion `1 CASE = 12 EACH` เท่านั้น; vendor ต้องการออกใบแจ้งหนี้ใน `1 PALLET = 48 CASES` PR picker แสดงเฉพาะ conversion ที่ตั้งค่า | Purchaser ไม่สามารถเลือก `PALLET` บนบรรทัด PR ตาม `PRD_XMOD_006`; post comment ขอให้เพิ่ม conversion Product Administrator เพิ่มแถว `tb_unit_conversion` (และ `tb_unit` สำหรับ `PALLET` ถ้าไม่มี) validate ตาม `PRD_VAL_010` / `PRD_VAL_011` Purchaser เปิด picker ใหม่ เห็น `PALLET` เพิ่มบรรทัด |
@@ -65,16 +67,17 @@ scenario ข้าม persona ใน Section 4 เป็นชั้น integrat
 
 | Spec / describe block | scenario ข้าม persona ที่ครอบคลุม (Section 4) |
 | --------------------- | ------------------------------------------- |
-| [`101-product-category.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/101-product-category.spec.ts) | การครอบคลุมทางอ้อมของ Scenario 11 (การจำแนก — view / expand / collapse เท่านั้น; ไม่มี E2E re-organisation) การครอบคลุมโดยตรงของ surface UI ของต้นไม้หมวดหมู่ |
-| `300-pr.spec.ts` (purchase-request ถ้ามี) | การครอบคลุมทางอ้อมของ Scenario 1 (Purchaser พบสินค้าใหม่บน picker), Scenario 5 (บรรทัด PR เปิดบล็อกการปิดใช้ — สังเกตได้จากด้าน PR เป็นสินค้าที่ปรากฏบน PR), Scenario 10 (พฤติกรรมของ unit-conversion picker บนบรรทัด PR) |
-| `400-po.spec.ts` (purchase-order ถ้ามี) | การครอบคลุมทางอ้อมของ Scenario 16 (filter vendor-scope บน PO picker) |
-| [`501-grn.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts) | การครอบคลุมทางอ้อมของ Scenario 9 (barcode scan ระหว่างการรับ — happy path; flow comment ไม่ตรงไม่อยู่ใน GRN spec), Scenario 1 (Store Keeper เห็นสินค้าใหม่ระหว่างการรับ) |
-| `701-sr.spec.ts` (store-requisition) | การครอบคลุมทางอ้อมของ Scenario 1 (Store Keeper หยิบสินค้าใหม่ระหว่าง SR dispatch) |
+| `tests/101-product-category.spec.ts` (23 กรณี) | การครอบคลุมโดยตรงของ surface UI ของต้นไม้หมวดหมู่รวมถึง CRUD ทั้งสามระดับ; การครอบคลุมทางอ้อมของ Scenario 11 (ไม่มี E2E re-organisation) |
+| `tests/044-eco.spec.ts` (19 กรณี) | CRUD ข้อมูลหลัก eco-label ที่ `/product-management/eco` (ไม่ใช่ scenario ด้านบน) |
+| `tests/301-pr.spec.ts`, `302-…-creator`, `304-…-purchaser` | การครอบคลุมทางอ้อมของ Scenario 1 (Purchaser พบสินค้าใหม่บน picker), Scenario 10 (unit picker บนบรรทัด PR) Scenario 5 สังเกตไม่ได้ — ไม่มี guard การปิดใช้อยู่จริง |
+| `tests/401-po.spec.ts`, `402-…-purchaser` | การครอบคลุมทางอ้อมของ Scenario 16 (filter vendor-scope บน PO picker) |
+| `tests/501-grn.spec.ts` | การครอบคลุมทางอ้อมของ Scenario 1 (Store Keeper เห็นสินค้าใหม่ระหว่างการรับ) และของการเช็ค deviation-limit ของ GRN ที่บริโภค `price_deviation_limit` / `qty_deviation_limit` (`PRD_XMOD_007`) ไม่มีขั้นตอน barcode-scan ใน spec |
+| `tests/701-sr.spec.ts` | การครอบคลุมทางอ้อมของ Scenario 1 (Store Keeper หยิบสินค้าใหม่ระหว่าง SR dispatch) |
 
 ช่องว่างเทียบกับ Section 4:
 
-- **Scenario 1, 2, 3 (CRUD ของสินค้าและ bulk import)** — ไม่มี spec E2E ตรงสำหรับการสร้าง / แก้ / import สินค้า; manual / planned test
-- **Scenario 4, 6, 7 (gate ของ lifecycle และการเปลี่ยน cost ที่ SoD-route)** — ไม่มี E2E ตรงสำหรับการเปลี่ยน lifecycle; manual / planned
+- **Scenario 1 (CRUD ของสินค้า)** — ไม่มี spec E2E ตรง; catalog `docs/test-cases/100-product.md` 52 กรณีคือ checklist แบบ manual **Scenario 2, 3 (bulk import)** — ฟีเจอร์ไม่มีอยู่จริง
+- **Scenario 4, 6, 7 (gate ของ lifecycle และการเปลี่ยน cost ที่ SoD-route)** — gate เหล่านี้ยังไม่ได้ implement ([02-business-rules](/th/inventory/product/02-business-rules) § 5.1); E2E ใด ๆ จะ assert design intent เทียบกับพฤติกรรมจริงที่ขัดแย้งกัน
 - **Scenario 8, 9, 17 (thread Comment — feedback และการ resolve)** — ไม่มี E2E สำหรับ comment ของสินค้า; manual / planned
 - **Scenario 11, 12 (การจัดระเบียบใหม่ของการจำแนกและการ restore)** — ไม่มี E2E; manual / planned spec หมวดหมู่ครอบคลุม view-only
 - **Scenario 13 (Hard-disable)** — ไม่มี E2E; manual / planned
@@ -86,8 +89,10 @@ scenario ข้าม persona ใน Section 4 เป็นชั้น integrat
 
 ## 6. แหล่งอ้างอิง
 
-- [`../carmen-inventory-frontend-e2e/tests/101-product-category.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/101-product-category.spec.ts) — spec E2E ด้าน product ตรงเดียว; ครอบคลุมต้นไม้หมวดหมู่ view, expand / collapse, CRUD พื้นฐานบนหมวดหมู่
-- [`../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts) — spec GRN; การครอบคลุมด้าน product ทางอ้อมผ่าน barcode scan และ product picker
+- `../carmen-inventory-frontend-e2e/tests/101-product-category.spec.ts` (23 กรณี) + `docs/test-cases/gaps/101-product-category-gap.md` (39) — มุมมองต้นไม้หมวดหมู่และ CRUD สามระดับ
+- `../carmen-inventory-frontend-e2e/tests/044-eco.spec.ts` (19 กรณี) + `docs/test-cases/gaps/044-eco-gap.md` (29) — ข้อมูลหลัก eco-label
+- `../carmen-inventory-frontend-e2e/docs/test-cases/100-product.md` (52 กรณี catalog เท่านั้น ตรวจสอบซ้ำ 2026-09-20 — บันทึกชื่อแท็บจริง General / Unit / Location Assignment / Eco Labels, รหัสที่สร้างอัตโนมัติและถูกล็อก, ชุดฟิลด์บังคับ, toast แบบ warning ตอน submit ไม่ถูกต้อง และคอลัมน์ Shelf)
+- `../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts` — spec GRN; การครอบคลุมด้าน product ทางอ้อมผ่าน product picker
 - Sibling: [03-user-flow.md](./03-user-flow.md) Section 4 — handoff ข้าม persona ที่ขับเคลื่อน scenario integration ด้านบน
 - Sibling: [02-business-rules.md](./02-business-rules.md) — กฎ validation (`PRD_VAL_*`), calculation (`PRD_CALC_*`), authorization (`PRD_AUTH_*`), lifecycle (`PRD_LIFE_*`) และข้ามโมดูล (`PRD_XMOD_*`) ที่อ้างโดยทุก scenario ด้านบน
 - Sibling: [01-data-model.md](./01-data-model.md) — เอนทิตี canonical (`tb_product`, ห่วงโซ่การจำแนก, `tb_unit`, `tb_unit_conversion`, `tb_product_location`, `tb_product_tb_vendor`) และ enum (`enum_product_status_type`, `enum_unit_type`) อ้างทั่วทั้ง
