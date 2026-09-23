@@ -6,6 +6,12 @@
 #
 # Keys must match EXACTLY (case-sensitive).
 
+# Top-level pages shown above the books (build mode only).
+pages:
+  - slug: overview
+    label_en: "System Overview"
+    label_th: "ภาพรวมระบบ"
+
 books:
   inventory:
     label_en: "Carmen Inventory"

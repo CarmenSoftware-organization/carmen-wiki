@@ -653,10 +653,18 @@ def build_tree_from_config(
     then for each group: emit a group header followed by a link per module
     pointing to /<locale>/<book>/<module>. A divider separates
     consecutive books.
+
+    Optional top-level `pages:` entries (slug + labels) are emitted first
+    as links to /<locale>/<slug>, followed by a divider before the books.
     """
     label_key = f"label_{locale}"
     items: list[dict[str, Any]] = []
     books = config.get("books") or {}
+    pages = config.get("pages") or []
+    for page in pages:
+        items.append(_new_link(page[label_key], f"/{locale}/{page['slug']}"))
+    if pages and books:
+        items.append(_new_divider())
     for idx, (book_slug, book) in enumerate(books.items()):
         if idx > 0:
             items.append(_new_divider())
