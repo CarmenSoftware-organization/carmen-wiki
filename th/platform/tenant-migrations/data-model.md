@@ -2,7 +2,7 @@
 title: การย้ายเทแนนต์ — โมเดลข้อมูล (Data Model)
 description: ไม่มี entity สถานะ migration ที่ persist — ทุกสถานะบนหน้าจอนี้ถูก derive สด ๆ จาก tb_business_unit.db_schema บวกแถว tb_database_pool ที่ผูกไว้ ด้วยการเรียก Prisma CLI ไปยัง tenant connection ที่ resolve แล้ว และ parse text output ของมัน
 published: true
-date: '2026-09-06T19:00:00.000Z'
+date: '2026-09-23T01:30:00.000Z'
 tags: book/platform, tenant-migrations, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -81,7 +81,7 @@ URL ที่ได้ (`buildTenantUrl()`, `@repo/db-connection-utils`): `postg
 |---|---|---|
 | BU ยังไม่มี `database_pool_id` หรือ `db_schema` | `resolveConnection` throw "not linked to a database pool" / "has no database schema configured"; บนตาราง fleet จะโผล่เป็น error ต่อแถวตอน Check (ไม่มีการตรวจล่วงหน้าเหมือน `hasDbConnection` ของการ์ดต่อ BU) | `tenant.service.ts` |
 | pool ที่ BU ผูกไว้ถูก soft-delete หรือ `is_active: false` | error path เดียวกัน "has been deleted" / "is inactive" — pool ที่ถูก retire ทำให้ migration ของทุก BU ที่ยังชี้มาที่นี่พังเงียบ ๆ จนกว่าจะถูก repoint | `tenant.service.ts` |
-| `prisma migrate deploy` ล้มเหลวระหว่าง batch (`/deploy/all/stream`) | BU ที่ล้มเหลวถูกรายงานผ่าน `bu-complete` พร้อม `error`; loop เดินต่อไป BU ถัดไป — migration ที่ค้างจริง ๆ ในตาราง `_prisma_migrations` ของ tenant นั้นถูกทิ้งไว้ตามที่ Prisma CLI ทิ้งไว้เป๊ะ ไม่มีการแก้ไขผ่าน UI เลย (`resolve` ไม่มีผู้เรียกฝั่ง frontend, [หน้าลงจอด](/th/platform/tenant-migrations) §3.3) | `tenant_migration.service.ts:560-586` |
+| `prisma migrate deploy` ล้มเหลวระหว่าง batch (`/deploy/all/stream`) | BU ที่ล้มเหลวถูกรายงานผ่าน `bu-complete` พร้อม `error`; loop เดินต่อไป BU ถัดไป — migration ที่ค้างจริง ๆ ในตาราง `_prisma_migrations` ของ tenant นั้นถูกทิ้งไว้ตามที่ Prisma CLI ทิ้งไว้เป๊ะ ตั้งแต่ PR #297 ผู้ปฏิบัติงานล้างมันได้จากไอคอนประแจ Resolve บนแถวนั้น (หรือจากการ์ดต่อ BU) โดยไม่ต้องออกจากแอป ([หน้าลงจอด](/th/platform/tenant-migrations) §3.2a) | `tenant_migration.service.ts:560-586` |
 | ความล้มเหลวในการ resolve connection มาถึง `/deploy/stream` | ตกไปยัง mapping ข้อความที่ล้าสมัยของ gateway จนได้ HTTP 500 แทนที่จะเป็น 422 ตามเอกสาร — ตัวข้อความยังถูกต้อง มีแค่ status code ที่ผิด (ยืนยันว่าล้าสมัยตั้งแต่ commit `af2437074`, [หน้าลงจอด](/th/platform/tenant-migrations) §4.4) | `tenant-migrations.controller.ts` |
 | `TENANT_MIGRATION_API_ENABLED` ไม่ได้ตั้งค่า | ทุก endpoint 403 รวมถึง `status` — แยกไม่ออกจากปัญหา permission จาก UI นอกจากข้อความตัวอักษรล้วน ๆ | `config.env.ts:222` |
 
@@ -89,7 +89,7 @@ URL ที่ได้ (`buildTenantUrl()`, `@repo/db-connection-utils`): `postg
 
 - **แก้ regex ของ `resolvePreStreamErrorStatus()`** (หรือดีกว่านั้น ให้ `deployStream`/`_streamDeploy` ส่ง `ErrorCode` ต้นทางผ่านไปยัง pre-start error ของ stream แทนการ derive status จาก message text ซ้ำอีกครั้ง) เพื่อให้ความล้มเหลวในการ resolve connection บน stream path คืน 422 เดียวกับที่ endpoint `/deploy` แบบไม่ stream คืนอยู่แล้ว
 - **อัปเดต comment `db_connection` ที่ล้าสมัย** ใน `../carmen-platform/src/services/tenantMigrationService.ts` ให้บรรยายกลไก pool/schema เพื่อไม่ให้คนอ่านคนถัดไปไปตามหา column ที่ถูกถอดออกไปหลายเดือนแล้ว
-- **ต่อ `resolve()` เข้ากับ UI** แม้จะเป็นแบบขั้นต่ำ (เช่น action สำหรับ super-admin เท่านั้นบนแถวที่อยู่ใน error state อยู่แล้ว) เพื่อไม่ให้ migration ที่ค้างต้องเรียก API ตรง ๆ ถึงจะล้างได้
+- ~~**ต่อ `resolve()` เข้ากับ UI**~~ — **ทำแล้วใน `../carmen-platform` PR #297 (2026-09-16)** ในรูปแบบที่ข้อเสนอแนะนี้ขอไว้เป๊ะ: ไอคอนประแจสำหรับ super-admin เท่านั้นบนแถวที่อยู่ใน error state อยู่แล้ว บวก dialog เดียวกันบนการ์ดต่อ BU สิ่งที่ยังควรทดสอบคืออันตรายหนึ่งเดียวที่ dialog ป้องกันไม่ได้ — การเลือก `applied` ให้ migration ที่ SQL ไม่เคยรัน ซึ่งทิ้ง tenant schema ให้ล้าหลังเงียบ ๆ ตลอดไป
 - **พิจารณาบันทึกผลการรันล่าสุดแบบ persist** (bu id, ชื่อ migration, ผลลัพธ์, timestamp) หากคาดหวังให้หน้าจอนี้ตอบคำถาม "การพยายาม deploy ล่าสุดของ BU X เกิดอะไรขึ้น" ย้อนหลังได้ — ทุกวันนี้คำตอบนั้นมีอยู่แค่ใน application log กับตาราง `_prisma_migrations` ของ tenant เอง
 
 ## 7. แหล่งอ้างอิง

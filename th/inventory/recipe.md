@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe)
 description: สูตรอาหาร (รายการวัตถุดิบพร้อม yield) — สะพานเชื่อมระหว่างเมนูและการใช้คลังสินค้า
 published: true
-date: 2026-07-29T10:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: recipe, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -18,6 +18,8 @@ dateCreated: 2026-05-15T07:48:00.000Z
 ![สูตรอาหาร (Recipe) detail screen](/screenshots/recipe/detail.png)
 
 > **สถานะการ implement (ตรวจสอบกับซอร์สโค้ด 2026-07-15)** สิ่งที่ใช้งานได้จริงวันนี้คือ **recipe catalogue ระดับส่วนหัว**: list/detail/create/edit/delete ที่ `/operation-plan/recipe` รองรับโดย `POST/PUT/PATCH/DELETE /api/config/{bu_code}/recipes` (gateway `config_recipes.controller.ts` → micro-business `recipe.service.ts`) บวกรูปภาพสูตร (แกลเลอรี multipart), endpoint REST ของขั้นตอนเตรียม (`.../recipes/:recipe_id/preparation-steps` — มีเฉพาะ API ยังไม่มี UI ในฟอร์มสูตร) และหน้าจอ master data สี่หน้า (category, cuisine, equipment, equipment category) ส่วน ingredient grid บนฟอร์มสูตรเป็น **preview เท่านั้น** อย่างชัดเจน ("Preview only — ingredients are not yet persisted with the recipe", `messages/en.json` `ingredientsPreviewNote`) และไม่มี endpoint เขียนวัตถุดิบใน backend `tb_recipe_version`, `tb_recipe_pricing_history` และ `tb_recipe_yield_variant` มีอยู่ใน schema แต่วันนี้ยังไม่มี service ใดเขียนลงตารางเหล่านี้ ส่วน menu-item linkage, การใช้วัตถุดิบเชิงทฤษฎี, POS explosion, ความแปรปรวน food-cost, การ cascade ต้นทุนของ sub-recipe และ store requisition ที่ขับเคลื่อนโดยสูตร **ไม่มีโค้ดที่ไหนเลย** ทั้งใน frontend และ backend — section ด้านล่างที่บรรยายสิ่งเหล่านี้เป็นการบันทึกแนวคิดดีไซน์จาก `../carmen/docs/` ไม่ใช่พฤติกรรมปัจจุบัน
+
+> **ตรวจสอบซ้ำ 2026-09-22 (source 2026-07-29 → HEAD)** ไม่มีการเปลี่ยน schema หรือ business rule ในตาราง recipe; สามสิ่งที่ควรรู้: **(1)** response ของ API ตอนนี้ serialize ผ่าน `@Serialize(RecipeResponseSchema)` / `RecipeCategoryResponseSchema` (2026-09-17, `5d64f5dfd`, `a91a1ba92`) — recipe พก `category` และ `cuisine` เป็น ref `{ id, name }` (`category_id` / `cuisine_id` แบบแบนยังอยู่) และ recipe category คืน `parent: { id, name } | null` **แทน** `parent_id` ตอนอ่าน (DTO ฝั่งเขียนยังรับ `parent_id`; frontend แก้ที่ `768af593`) **(2)** `GET /api/config/{bu}/recipes`, `recipe-categories` และ `recipe-equipment` ตอนนี้ default เป็น `sort=code:asc` ส่วน `recipe-cuisines` และ `recipe-equipment-categories` เป็น `name:asc` เมื่อไม่ส่ง sort มา (2026-09-13, `b375b078b` / `928f3b950`) **(3)** race ชั้นที่สองใน `RecipeLogic` ถูกปิดแล้ว (2026-09-10, `278b9af16`): มันเคยเป็น singleton ที่ถือ `prismaService` ต่อ request ซึ่ง `RecipeService` เป็นคนตั้ง; ตอนนี้ทั้งคู่อยู่บน `TenantScopedService` การเปลี่ยนแปลงฝั่ง frontend ใน `routes/operation-plan` (39 commits) เป็นเรื่องรูปลักษณ์ — section ฟอร์มแบบ `SettingSection`, `ListCard`, `ListToolbar`, popover filter สไตล์ Linear, `useEntityForm`, คอลัมน์ Region แบบข้อความธรรมดาบน cuisine — และไม่เปลี่ยนพฤติกรรมใดที่บันทึกไว้ด้านล่าง Bruno `config/recipes/PATCH-patch-config-recipes.bru` ถูก regenerate เมื่อ 2026-09-07 ด้วยโครง body รูปแบบ preparation step (`title`, `duration`, `temperature`, …) ซึ่ง**ไม่**ตรงกับ DTO ของ recipe PATCH — ให้ถือ DTO ของ gateway เป็นหลัก
 
 ## 1. ภาพรวม
 
@@ -105,7 +107,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
   - [Outlet Manager](/th/inventory/recipe/03-user-flow-outlet-manager) — Outlet Manager: ผู้บริโภคด้าน demand ตั้ง SR จาก demand ของสูตร feedback ปัญหา
   - [Procurement / F&B Ops](/th/inventory/recipe/03-user-flow-procurement-fb-ops) — Procurement (การกำหนดขนาด PO การทดแทน) + F&B Ops (การอนุมัติ menu item linkage, menu engineering)
   - [Audit / Config](/th/inventory/recipe/03-user-flow-audit-config) — Sysadmin (config, RBAC, tenant policy, integration) + Auditor (อ่านอย่างเดียวสำหรับ versioning trace)
-- [04 — Test Scenarios](/th/inventory/recipe/04-test-scenarios) — scenario ข้าม persona + สถานะการครอบคลุม E2E (ยังไม่มี `recipe.spec.ts` เฉพาะ; E2E spec เดียวของโมดูลคือ `121-recipe-equipment-category.spec.ts`) พร้อมการเจาะลึกต่อ persona:
+- [04 — Test Scenarios](/th/inventory/recipe/04-test-scenarios) — scenario ข้าม persona + สถานะการครอบคลุม E2E (ยังไม่มี `recipe.spec.ts` เฉพาะ; มี spec สำหรับ category `110`, cuisine `111`, recipe-equipment-category `121` และ equipment-category `131`; catalog `120-recipe.md`, `130-equipment.md`) พร้อมการเจาะลึกต่อ persona:
   - [Chef scenarios](/th/inventory/recipe/04-test-scenarios-chef)
   - [Cost Controller scenarios](/th/inventory/recipe/04-test-scenarios-cost-controller)
   - [Outlet Manager scenarios](/th/inventory/recipe/04-test-scenarios-outlet-manager)
@@ -113,7 +115,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
   - [Audit / Config scenarios](/th/inventory/recipe/04-test-scenarios-audit-config)
 - [Operation Plan Dashboard](/th/inventory/recipe/operation-dashboard) — 10 tile KPI/chart ที่ hardcode ไว้ (recipe + equipment) ของหน้าจอ landing `/operation-plan` — ไม่ใช่ widget board ที่ผู้ใช้ปรับแต่งได้; ดูหน้านั้นสำหรับความต่างจากระบบ widget BU/personal จริง
 - หน้าย่อย master data (หน้าจอตั้งค่า Operation Plan):
-  - [Recipe Category](/th/inventory/recipe/category) — taxonomy แบบลำดับชั้น (`tb_recipe_category`), `/operation-plan/category`
-  - [Cuisine](/th/inventory/recipe/cuisine) — แคตตาล็อกแบบแบนที่ tag ภูมิภาค (`tb_recipe_cuisines`), `/operation-plan/cuisine`
+  - [Recipe Category](/th/inventory/recipe/category) — taxonomy แบบลำดับชั้น (`tb_recipe_category`), `/operation-plan/category` (E2E `110-op-category.spec.ts`)
+  - [Cuisine](/th/inventory/recipe/cuisine) — แคตตาล็อกแบบแบนที่ tag ภูมิภาค (`tb_recipe_cuisines`), `/operation-plan/cuisine` (E2E `111-cuisine.spec.ts`)
   - [Equipment](/th/inventory/recipe/equipment) — master อุปกรณ์ครัว (`tb_recipe_equipment`), `/operation-plan/equipment`
   - [Equipment Category](/th/inventory/recipe/equipment-category) — การจัดกลุ่มอุปกรณ์แบบแบน (`tb_recipe_equipment_category`), `/operation-plan/equipment-category` (บวกหน้าจอซ้ำ `/operation-plan/recipe-equipment-category` ที่ชี้ตารางเดียวกัน)

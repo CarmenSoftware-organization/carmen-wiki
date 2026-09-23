@@ -2,7 +2,7 @@
 title: Landing
 description: The public marketing page at / — redirects an authenticated session straight to Dashboard, and shows a hardcoded module index that has drifted from the real sidebar.
 published: true
-date: '2026-09-22T17:30:00.000Z'
+date: '2026-09-23T01:30:00.000Z'
 tags: platform/landing, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-07-29T09:46:00.000Z
 # Landing
 
 > **At a Glance**
-> **Screen:** `Landing` (`/`) &nbsp;·&nbsp; **Access:** fully public — the route carries no `<PrivateRoute>` wrapper at all, not even the bare authenticated-only kind [Dashboard](/en/platform/dashboard) and [Profile](/en/platform/profile) use &nbsp;·&nbsp; **Behaviour:** redirects an already-authenticated session straight to `/dashboard` unconditionally — [Dashboard](/en/platform/dashboard)'s own route guard then decides whether that session actually belongs there (§4) &nbsp;·&nbsp; **Content:** hero + sign-in CTA + a hardcoded three-group "Inside the console" module index + version footer &nbsp;·&nbsp; **Confirmed drift:** the module index still names the removed Print Mapping module and is now missing the majority of the sidebar's real rows (§4)
+> **Screen:** `Landing` (`/`) &nbsp;·&nbsp; **Access:** fully public — the route carries no `<PrivateRoute>` wrapper at all, not even the bare authenticated-only kind [Dashboard](/en/platform/dashboard) and [Profile](/en/platform/profile) use &nbsp;·&nbsp; **Behaviour:** redirects an already-authenticated session straight to `/dashboard` unconditionally — [Dashboard](/en/platform/dashboard)'s own route guard then decides whether that session actually belongs there (§4) &nbsp;·&nbsp; **Content:** hero + sign-in CTA + a hardcoded three-group "Inside the console" module index + version footer &nbsp;·&nbsp; **Confirmed drift:** the dead Print Mapping row was finally removed on 2026-09-07, but the module index is still missing the majority of the sidebar's real rows (§4)
 
 ## 1. Overview
 

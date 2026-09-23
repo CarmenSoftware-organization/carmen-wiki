@@ -2,7 +2,7 @@
 title: Broadcasts — หน้าจอ UI (UI Screens)
 description: สามหน้าจอของ Broadcasts — BroadcastManagement (list, filter, CSV export), BroadcastCompose (target, preset วันหมดอายุ, preview) และ BroadcastEdit
 published: true
-date: 2026-09-06T23:45:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: book/platform, broadcasts, ui
 editor: markdown
 dateCreated: 2026-06-10T16:00:00.000Z
@@ -41,7 +41,7 @@ Broadcasts เป็นโมดูลสามหน้าจอแล้วต
 |---|---|
 | Title | ลิงก์ไปยัง `/broadcasts/:id/edit`; message แสดงอยู่ด้านล่าง ตัดให้สั้นลง |
 | Scope | "System" หรือ "BU · `<code>`" |
-| Severity | Badge, สีอิงจาก `metadata.severity` ที่เป็นแค่ตกแต่งของผู้ส่ง (Critical→destructive, Warning→warning, Info→info, Maintenance→secondary); sort ไม่ได้ |
+| Severity | Badge, สีอิงจาก `metadata.severity` ที่เป็นแค่ตกแต่งของผู้ส่ง (Critical→destructive, Warning→warning, Info→info, Maintenance→secondary); sort ได้ด้วยการคลิกหัวคอลัมน์ตั้งแต่ 2026-09-09 (PR #293, sort key `severity`) — เช่นเดียวกับทุกคอลัมน์ "bucket B" ในงานชุดนั้น หัวคอลัมน์ถูกเปิดหลังจาก backend รับ key แล้วเท่านั้น จึงควรตรวจสอบบน environment ที่ gateway ใหม่กว่า 2026-09-09 |
 | Status | Badge — Active (success), Scheduled (info), Expired (secondary), Deleted (destructive) |
 | Scheduled Date | `YYYY-MM-DD HH:mm`, `-` เมื่อไม่ได้กำหนดเวลา |
 | Expires | รูปแบบเดียวกัน; แสดงเป็นสีอำพันเมื่อแถวเป็น `active`/`scheduled` และเหลือน้อยกว่า 24 ชั่วโมงก่อนหมดอายุ |

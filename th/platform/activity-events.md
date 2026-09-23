@@ -2,7 +2,7 @@
 title: บันทึกกิจกรรม (Activity Events)
 description: หน้า explorer ของ UI telemetry แบบรายอีเวนต์ที่ /activity-events — ทุกตัวกรองและคอลัมน์ สิทธิ์ activity_event.detail ที่ใช้ร่วมกัน (แต่ไม่ซ้ำกัน) กับ Usage Analytics และเหตุผลที่หน้านี้ไม่ใช่ audit trail ของ activity_log
 published: true
-date: '2026-09-06T02:14:23.000Z'
+date: '2026-09-23T01:30:00.000Z'
 tags: book/platform, activity-events
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -62,15 +62,15 @@ permission catalog ระบุความแตกต่างนี้ไว�
 | คอลัมน์ | ฟิลด์ | เรียงได้ | หมายเหตุ |
 | --- | --- | --- | --- |
 | Time | `server_ts` | ได้ | รูปแบบ `YYYY-MM-DD HH:MM:SS` ตามเวลาของเบราว์เซอร์ |
-| User | `user_name` (หรือ 8 ตัวอักษรแรกของ `user_id` ถ้า resolve ชื่อไม่ได้), `user_email` แสดงด้านล่างตัวเล็ก | ไม่ได้ | `user_name`/`user_email` resolve ฝั่ง server ไม่ได้เก็บอยู่ในแถว (ดู data model) |
-| BU | `bu_code` | ไม่ได้ | `-` เมื่อไม่มีค่า |
+| User | `user_name` (หรือ 8 ตัวอักษรแรกของ `user_id` ถ้า resolve ชื่อไม่ได้), `user_email` แสดงด้านล่างตัวเล็ก | **ได้** (ตั้งแต่ 2026-09-09) | `user_name`/`user_email` resolve ฝั่ง server ไม่ได้เก็บอยู่ในแถว (ดู data model); การเรียง join กับตารางชื่อผู้ใช้ที่ derive ขึ้นมา |
+| BU | `bu_code` | **ได้** (ตั้งแต่ 2026-09-09) | `-` เมื่อไม่มีค่า |
 | Type | badge `event_type` | ได้ | |
 | Page | `page_path` แบบ monospace ตัดสั้นพร้อม tooltip | ได้ | |
-| Element | `element_id` แบบ monospace ตัดสั้น; tooltip แสดง `element_text` หรือ `element_id` | ไม่ได้ | `-` สำหรับแถว `page_view` ซึ่งไม่มี element เลย |
-| App | `app_name` | ไม่ได้ | ซ่อนบน layout แบบการ์ด/มือถือ (`meta: { card: 'hidden' }`) |
+| Element | `element_id` แบบ monospace ตัดสั้น; tooltip แสดง `element_text` หรือ `element_id` | **ได้** (ตั้งแต่ 2026-09-09) | `-` สำหรับแถว `page_view` ซึ่งไม่มี element เลย |
+| App | `app_name` | **ได้** (ตั้งแต่ 2026-09-09) | ซ่อนบน layout แบบการ์ด/มือถือ (`meta: { card: 'hidden' }`) |
 | (actions) | — | ไม่ได้ | ไอคอนรูปตาเปิด detail sheet ของแถวนั้น |
 
-คอลัมน์ที่เรียงได้สี่ตัวตรงกับ whitelist การเรียงของ backend เป๊ะ (`SORTABLE`, `activity-event.service.ts:25-30`, `../carmen-turborepo-backend-v2`): `server_ts`, `client_ts`, `page_path`, `event_type` — ยกเว้น `client_ts` ไม่มีคอลัมน์ตารางเลยบนหน้านี้ (ปรากฏแค่ใน detail sheet, §3.3) จึงไม่มีทางเรียงผ่าน UI ได้ ทั้งที่ backend รองรับ ค่า `sort` ที่ไม่รู้จักหรือไม่อยู่ใน whitelist จะตกไปใช้ `server_ts:desc` ฝั่ง server เสมอ (`activity-event.service.ts:275-277`); ค่าที่เท่ากันจะตัดสินด้วย `id` ในทิศทางเดียวกันเสมอ (`activity-event.service.ts:284` คอมเมนต์ของตัวเอง: ทุกแถวที่ insert ในหนึ่ง batch มีค่า `server_ts` เท่ากันเป๊ะ เพราะค่า default `now()` ของ Postgres คำนวณที่เวลาเริ่ม transaction ไม่ใช่ต่อแถว จึง `server_ts` เพียงอย่างเดียวรับประกันขอบเขตการแบ่งหน้าที่เสถียรไม่ได้)
+ตอนนี้ทุกคอลัมน์ข้อมูลเรียงได้ ตรงกับ whitelist ของ backend แบบหนึ่งต่อหนึ่ง — `buildSortable()` (`activity-event.service.ts:62`, `../carmen-turborepo-backend-v2/apps/micro-business/src/log/activity-event/`) รับ `server_ts`, `client_ts`, `page_path`, `event_type`, `user_name`, `bu_code`, `element_id`, `app_name` สี่คอลัมน์ที่เปิดเมื่อ 2026-09-09 (`../carmen-platform` PR #293 ส่วนหนึ่งของงาน "sortable column headers" ทั้ง repo ซึ่งมี design doc ที่ `docs/superpowers/specs/2026-09-09-sortable-column-headers-design.md`) คือคอลัมน์ "bucket B" — ค่าที่ backend ต้องเรียนรู้วิธีเรียงเอง เพราะ `orderBy` ของ Prisma เข้าไม่ถึงชื่อผู้ใช้ที่ resolve แล้วหรือ BU code ที่ join มา — และ SPA ตั้งใจปล่อยออกหลังจาก backend ขึ้น DEV แล้วเท่านั้น เพราะ backend เก่าตอบ 500 กับ key ที่ไม่รู้จัก `client_ts` ยังคงไม่มีคอลัมน์ตารางบนหน้านี้ (ปรากฏแค่ใน detail sheet, §3.3) จึงไม่มีทางเรียงผ่าน UI ได้ ทั้งที่ backend รองรับ ค่า `sort` ที่ไม่รู้จักหรือไม่อยู่ใน whitelist จะตกไปใช้ `server_ts:desc` ฝั่ง server เสมอ; ค่าที่เท่ากันจะตัดสินด้วย `id` ในทิศทางเดียวกันเสมอ (`activity-event.service.ts:349` คอมเมนต์ของตัวเอง: ทุกแถวที่ insert ในหนึ่ง batch มีค่า `server_ts` เท่ากันเป๊ะ เพราะค่า default `now()` ของ Postgres คำนวณที่เวลาเริ่ม transaction ไม่ใช่ต่อแถว จึง `server_ts` เพียงอย่างเดียวรับประกันขอบเขตการแบ่งหน้าที่เสถียรไม่ได้)
 
 การคลิกหัวคอลัมน์จะวนสถานะ เรียงจากน้อยไปมาก → มากไปน้อย → ไม่เรียง; พอถึง "ไม่เรียง" ระบบจะรีเซ็ต query กลับไปเป็น `server_ts:desc` และ remount ตาราง (bump `sortResetKey`, `ActivityEventManagement.tsx:223-226`) เพื่อให้ลูกศรบนหัวตารางกับลำดับแถวจริงตรงกันเสมอ — `DataTable` เองไม่มีวิธี controlled สำหรับสถานะ "ไม่เรียง" คอมโพเนนต์จึงถูกรีเซ็ตโดยตั้งใจ แทนที่จะปล่อยให้ลูกศรค้างผิดสถานะ
 

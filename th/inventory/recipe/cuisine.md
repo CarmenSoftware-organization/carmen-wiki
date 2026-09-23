@@ -2,7 +2,7 @@
 title: ประเภทอาหาร (Cuisine Type)
 description: แคตตาล็อกประเภทอาหาร — label ตามภูมิภาค/สไตล์ที่ใช้กับสูตรอาหารสำหรับการแบ่งกลุ่มเมนู (ไทย อิตาเลียน ฝรั่งเศส ฟิวชัน ฯลฯ)
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: recipe, cuisine, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -16,6 +16,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 ![ประเภทอาหาร (Cuisine Type) screen](/screenshots/recipe/cuisine.png)
 
 ![ประเภทอาหาร (Cuisine Type) detail screen](/screenshots/recipe/cuisine-detail.png)
+
+> **ตรวจสอบซ้ำ 2026-09-22** schema, enum และกฎของ service ด้านล่างไม่เปลี่ยน `GET /api/config/{bu}/recipe-cuisines` ตอนนี้ default เป็น `sort=name:asc` (`928f3b950`, 2026-09-13); คอลัมน์ Region ของ list เป็นข้อความธรรมดาแทน badge หกสี (`3174e9df`) E2E: `tests/111-cuisine.spec.ts` (17 test, 2026-09-20)
 
 ## 1. คืออะไรและใครใช้
 

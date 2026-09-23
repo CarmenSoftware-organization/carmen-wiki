@@ -1,8 +1,8 @@
 ---
 title: Business Unit — Data Model
-description: Entity ของ BU, ledger ที่นั่ง tb_business_unit_license ที่แทนที่ max_license_users, ตัวชี้ database_pool_id/db_schema ที่แทนที่ db_connection, และ branding file token
+description: Entity ของ BU, ledger ที่นั่ง tb_business_unit_license ที่แทนที่ max_license_users, ledger interface licence tb_business_unit_interface_license (INF), ตัวชี้ database_pool_id/db_schema ที่แทนที่ db_connection, และ branding file token
 published: true
-date: 2026-09-05T07:40:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: book/platform, business-units, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -16,6 +16,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 - ที่อยู่ hotel/company ถูก restructure เป็น 10 คอลัมน์ต่อฝั่ง: `*_address_line1`, `*_address_line2`, `*_sub_district`, `*_district`, `*_city`, `*_province`, `*_postal_code`, `*_country`, `*_latitude`, `*_longitude`
 - ฟิลด์รูปแบบ (date, currency, decimal) และ timezone
 - **`max_license_users` ถูกถอดออกจากคอลัมน์จริงแล้ว** (migration `20260821000000_drop_bu_max_license_users`) — ที่นั่งตอนนี้เป็น ledger แบบมีวันที่ในตารางใหม่ `tb_business_unit_license` (หนึ่งแถวต่อสัญญาที่นั่ง) รวมผ่าน view `v_business_unit_seat`
+- **`tb_business_unit_interface_license` — ledger interface licence ต่อ BU (ตั้งแต่ 2026-09-10)**: หนึ่งแถวต่อ feature group ชนิด `interface` ต่อช่วงวันที่ เลขที่ขึ้นต้น `INF` เอกสารฉบับเต็มอยู่ที่ [Licenses — Data Model](/th/platform/licenses/data-model) §2.4; ตาราง entitlement แบบแบน `tb_business_unit_interface` ที่มันมาแทนถูก drop เมื่อ 2026-09-08 FK `license_feature_group_id → tb_license_feature_group.id` เป็นเส้นทางเดียวจาก BU ไปยัง catalog ของ licence ที่ไม่ผ่าน `tb_subscription_bu`
 - **`db_connection` (JSON blob) ถูกถอดออกจากคอลัมน์จริงแล้วเช่นกัน** — แทนที่ด้วย `database_pool_id` (FK ไปตารางใหม่ `tb_database_pool`) และ `db_schema` (ชื่อ schema ของ BU เอง) BU ไม่ถือ host/port/username/password ของตัวเองอีกต่อไป
 - Array `config[]` (คู่ key/value/datatype — ตอน save จะเก็บเฉพาะ row ที่มีทั้ง `key` และ `label`; ตัวเลือก datatype มี `enum` เพิ่มมาด้วย)
 - `doc_version Int @default(0)` — token optimistic-lock เพิ่มทั้ง platform schema เมื่อ 2026-07-16
@@ -25,7 +26,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 ## 2. References
 
-- ../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma — `model tb_business_unit`, `model tb_business_unit_license` (ledger ที่นั่งใหม่), `model tb_database_pool` (ตารางใหม่ที่ `db_connection` เดิมถูกแทนที่ด้วย)
+- ../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma — `model tb_business_unit`, `model tb_business_unit_license` (ledger ที่นั่งใหม่), `model tb_business_unit_interface_license` (ledger interface licence, 2026-09-10), `model tb_database_pool` (ตารางใหม่ที่ `db_connection` เดิมถูกแทนที่ด้วย)
 - ../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260821000000_drop_bu_max_license_users/ — migration ที่ลบ `max_license_users`
 - ../carmen-platform/src/types/index.ts — interface `BusinessUnit` (รวม `doc_version?: number`), `BusinessUnitConfig`, `BusinessUnitLicense`, `DatabasePool`, `PresignedImage`
 - ../carmen-platform/src/utils/{databasePool,buLicense}.ts — ตัวสุ่มชื่อ schema และการคำนวณ ledger ที่นั่ง
@@ -33,5 +34,5 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 ## 3. TODO
 
-- [ ] เขียนตารางฟิลด์ฉบับเต็มตาม en/platform/business-units/data-model (รวม `tb_business_unit_license`/`tb_database_pool` และการเปลี่ยน `code` เป็น unique ทั่วแพลตฟอร์ม)
+- [ ] เขียนตารางฟิลด์ฉบับเต็มตาม en/platform/business-units/data-model (รวม `tb_business_unit_license`/`tb_business_unit_interface_license`/`tb_database_pool` และการเปลี่ยน `code` เป็น unique ทั่วแพลตฟอร์ม)
 - [ ] Document namespace ของ key ใน config array

@@ -2,7 +2,7 @@
 title: Applications — หน้าจอ UI (UI Screens)
 description: list ApplicationManagement และฟอร์ม ApplicationEdit รวมถึง API Names selector แบบ accordion จัดกลุ่มและ fallback แบบ ChipInput ของมัน
 published: true
-date: 2026-09-05T18:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: book/platform, applications, ui
 editor: markdown
 dateCreated: 2026-06-10T15:15:00.000Z
@@ -46,7 +46,7 @@ response ยังมีจำนวน `deleted` (soft-deleted ทั้งท�
 | คอลัมน์ | การ render |
 |---|---|
 | Name | ซ้อนกันเล็ก ๆ: ชื่อ (ลิงก์ไป `/applications/:id/edit`) พร้อม `Badge` **Inactive** (warning) ข้างๆ แสดงเฉพาะเมื่อ `is_active` เป็น false; UUID ของเรคคอร์ดข้างล่างเป็น monospace สีจางพร้อมปุ่ม copy-to-clipboard แบบ inline (สลับไอคอน `Copy`/`Check`, ยืนยัน 2 วินาที, toast ตอน copy); และคำอธิบาย (ถ้ามี) ข้างล่างนั้นด้วยข้อความสีจางขนาดเล็กกว่า |
-| Access | **ไม่ใช่ badge ธรรมดาอีกต่อไป** `ApplicationReachCell` (ใหม่, `#254`): บาร์อิงขนาด catalog จริง บวกเศษส่วน `granted/catalogSize` (เช่น `207/900`) เปลี่ยนเป็นสีเตือนพร้อมไอคอนสามเหลี่ยมเมื่อ reach เท่ากับทั้ง catalog; `allow_all` วาดเป็น `n/n` บนไม้บรรทัดเดียวกัน ไม่ใช่คำว่า "All APIs" บรรทัดรองเล็กกว่าบอกจำนวนโมดูลที่เข้าถึง คอลัมน์ความกว้างคงที่ (`lg:w-56`) เพื่อให้บาร์ทุกแถวเทียบกันได้; sort ไม่ได้ ถ้าการ fetch ขนาด catalog ของ list เอง (แยกต่างหาก, best-effort) ล้มเหลวหรือยังไม่เสร็จ บาร์และตัวหารจะหายไปและ cell ถอยไปแสดงจำนวนที่ได้รับ grant เปล่าๆ — ไม่มี retry UI สำหรับ fetch นี้ |
+| Access | **ไม่ใช่ badge ธรรมดาอีกต่อไป** `ApplicationReachCell` (ใหม่, `#254`): บาร์อิงขนาด catalog จริง บวกเศษส่วน `granted/catalogSize` (เช่น `207/900`) เปลี่ยนเป็นสีเตือนพร้อมไอคอนสามเหลี่ยมเมื่อ reach เท่ากับทั้ง catalog; `allow_all` วาดเป็น `n/n` บนไม้บรรทัดเดียวกัน ไม่ใช่คำว่า "All APIs" บรรทัดรองเล็กกว่าบอกจำนวนโมดูลที่เข้าถึง คอลัมน์ความกว้างคงที่ (`lg:w-56`) เพื่อให้บาร์ทุกแถวเทียบกันได้; **sort ได้ตั้งแต่ 2026-09-09** (PR #293) ผ่าน key `access` ที่ backend derive ให้ — `DERIVED_SORT_KEYS = ['access']` ใน `application.service.ts:37` ของ `micro-cluster` ซึ่งแก้บั๊กที่การตรวจสอบ sortable-headers เจอไปพร้อมกันด้วย: service เคยวาง `orderBy` แบบ hard-code *ทับหลัง* query args ของผู้เรียก ทำให้ทุก `sort` ที่หัวตารางส่งมาถูกทิ้งเงียบ ๆ ถ้าการ fetch ขนาด catalog ของ list เอง (แยกต่างหาก, best-effort) ล้มเหลวหรือยังไม่เสร็จ บาร์และตัวหารจะหายไปและ cell ถอยไปแสดงจำนวนที่ได้รับ grant เปล่าๆ — ไม่มี retry UI สำหรับ fetch นี้ |
 | Device | ข้อความสีจางเงียบๆ ผ่าน `formatDevice(row.original.device || 'web')` (เช่น `POS`, `Mobile`) — fallback เป็น `web` เมื่อไม่มีค่าเหมือนเดิม; ไม่ใช่ `Badge` อีกต่อไป เพราะ `#254` เห็นว่า pill รายแถวซ้ำซ้อนกับ histogram อุปกรณ์ของแถบ Registry แล้ว |
 | ~~Status~~ | **ถูกถอดเป็นคอลัมน์แล้ว** ดู badge Inactive ในคอลัมน์ Name ข้างบน |
 | Created | render ผ่าน helper ที่ใช้ร่วมกัน `auditColumns()`/`AuditMeta` (ตั้งแต่ `a85a166`, 2026-08-22 — หนึ่งใน 5 ตารางหน้า Management ที่ย้ายออกจาก `fmt()` ของตัวเอง): relative time (เช่น "5mo ago") พร้อม timestamp เต็มเป็น tooltip `title` ชื่อ actor อยู่บรรทัดล่าง อ่านผ่าน `normalizeAudit()` ซึ่งลอง shape แบบ **nested** (`audit.created`) ก่อน แล้วถอยไปใช้คอลัมน์แบบ **flat** (`created_at`/`created_by_name`) เฉพาะเมื่อ nested ไม่มี |

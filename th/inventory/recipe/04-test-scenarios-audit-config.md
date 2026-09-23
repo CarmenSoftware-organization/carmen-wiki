@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — Test Scenarios — Audit & Config
 description: test case ของ System Administrator และ Auditor (config, RBAC, audit versioning, audit pricing-history, สุขภาพ integration) สำหรับโมดูล recipe
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: recipe, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **At a Glance**
 > **Persona:** Audit / Config (System Administrator config + Auditor read-only) &nbsp;·&nbsp; **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **scenario:** ~31
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **การครอบคลุม E2E:** ครึ่ง master-data ของ persona นี้เป็นส่วน **เดียว** ของโมดูล recipe ที่มีการครอบคลุมอัตโนมัติ — `tests/121-recipe-equipment-category.spec.ts` (smoke + CRUD ผ่าน dialog + กรณี security บน `/operation-plan/recipe-equipment-category`)
+> **การครอบคลุม E2E:** ครึ่ง master-data ของ persona นี้เป็นส่วนเดียวของโมดูล recipe ที่ automate แล้ว — `tests/110-op-category.spec.ts` (13), `tests/111-cuisine.spec.ts` (17), `tests/121-recipe-equipment-category.spec.ts` (12, + 3 กรณี manual ใน gap), `tests/131-equipment-category.spec.ts` (12, + 4 กรณี gap); ส่วน equipment เองมีแค่ catalog (`docs/test-cases/130-equipment.md`, 45 กรณี) ตรวจสอบซ้ำ 2026-09-22 — ดู [04-test-scenarios](/th/inventory/recipe/04-test-scenarios) สำหรับแผนที่ฉบับเต็ม
 
 > **สถานะการ implement (ตรวจสอบแล้ว 2026-07-15)** ผลตัดสินแบ่งเป็นสองส่วน **มีจริงและ test ได้:** หน้าจอ master-data ทั้งสี่ (category, cuisine, equipment, equipment-category) พร้อม guard ฝั่ง backend — ความ unique ของ code แบบ case-insensitive / `RECIPE_CATEGORY_CODE_ALREADY_EXISTS`, ความ unique ของชื่อ / `RECIPE_CUISINE_ALREADY_EXISTS` + `RECIPE_EQUIPMENT_CATEGORY_ALREADY_EXISTS`, การบล็อกลบเมื่อถูกใช้งาน (`RECIPE_CATEGORY_IN_USE`, `RECIPE_CATEGORY_HAS_SUBCATEGORIES`, `RECIPE_CUISINE_IN_USE`), การ validate parent + การคำนวณ `level`, การ lock ด้วย `doc_version` และ flow การ set-image **ไม่มีจริง:** การบริหาร RBAC `recipe:*` (ไม่มี permission เหล่านั้นอยู่), นโยบาย tenant สำหรับ publish-gate / un-publish / co-approval, การ wire integration (ไม่มี theoretical consumption หรือ SR auto-create) และทุก scenario ของ Auditor ที่อ่าน `tb_recipe_version` / `tb_recipe_pricing_history` (ไม่มีตัวเขียน — ตารางเหล่านั้นว่างเสมอ) นโยบาย soft-delete ตามช่วงเวลาการเก็บข้อมูลก็ยังไม่ได้ implement เช่นกัน (การลบทำได้ทุกสถานะ โดย guard ด้วยการถูกใช้เป็น sub-recipe เท่านั้น)
 

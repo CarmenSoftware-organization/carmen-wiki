@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — Test Scenarios — Cost Controller
 description: test case ของ Cost Controller (cost review, drift, co-approval, variance, pricing-history) สำหรับโมดูล recipe
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: recipe, test-scenarios, cost-controller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **At a Glance**
 > **Persona:** Cost Controller (+ Cost Control Department) &nbsp;·&nbsp; **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **scenario:** ~26
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **การครอบคลุม E2E:** ไม่มีในเวลานี้ — E2E ภายใน Cost-Controller เป็นช่องว่าง; spec อัตโนมัติเดียวของโมดูลคือ `tests/121-recipe-equipment-category.spec.ts`
+> **การครอบคลุม E2E:** ไม่มีสำหรับ flow ของ Cost-Controller — spec อัตโนมัติมีเฉพาะหน้าจอ master-data (`110-op-category`, `111-cuisine`, `121-recipe-equipment-category`, `131-equipment-category`); หน้าจอสูตรมีแค่ catalog (`docs/test-cases/120-recipe.md`) ตรวจสอบซ้ำ 2026-09-22 — ดู [04-test-scenarios](/th/inventory/recipe/04-test-scenarios)
 
 > **สถานะการ implement (ตรวจสอบแล้ว 2026-07-15)** ชุดฟีเจอร์ Cost Controller ที่ scenario เหล่านี้ทดสอบยังไม่มีอยู่จริง: ไม่มี permission `recipe:edit-cost` หรือโหมดแก้เฉพาะคอลัมน์ cost, ไม่มี gate co-approval, ไม่มี dashboard cost-drift หรือ variance, ไม่มีการเขียน `tb_recipe_pricing_history`, ไม่มี cost cascade สิ่งที่ test ได้วันนี้คือ sidebar cost ของฟอร์มสูตรที่ใช้ร่วมกัน — input cost ที่กรอกด้วยมือและตัวเลข derived ฝั่ง client (`use-recipe-cost-calc.ts` รวมถึงสูตร `actual_food_cost_percentage = ingredient cost / selling price` ของมัน) — ภายใต้ login แบบ admin ให้ถือส่วนที่เหลือเป็นแผน acceptance ของดีไซน์
 

@@ -2,7 +2,7 @@
 title: ไลเซนส์ — สิทธิ์ (Permissions)
 description: subscription.read กั้นการดู (รวมถึงเปิดหน้าแก้ไขแบบอ่านอย่างเดียว); subscription.manage เพียงตัวเดียวกั้นทุกการแก้ไข license.manage เป็นคีย์ของอีกโมดูลหนึ่ง ไม่ใช่ของโมดูลนี้
 published: true
-date: '2026-09-06T09:00:00.000Z'
+date: '2026-09-23T01:30:00.000Z'
 tags: book/platform, licenses, permissions
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -11,13 +11,13 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # ไลเซนส์ — สิทธิ์ (Permissions)
 
 > **At a Glance**
-> **มีแค่สองคีย์:** `subscription.read` (nav, ทุก route ของ list/detail และ — โดยตั้งใจ — ทั้งสอง route แก้ไขด้วย) และ `subscription.manage` (ทุก route create/update/delete/cancel และ action save/cancel-licence ในหน้า) &nbsp;·&nbsp; **`license.manage` ไม่ใช่คีย์ของโมดูลนี้** — คำอธิบายเดิมของหน้านี้เคยระบุว่ามันเป็นตัวกั้น CRUD ที่นี่; จริง ๆ แล้วมันกั้นสวิตช์ License Enforcement ที่ไม่เกี่ยวข้องกันบนหน้าจอ [Platform Config](/th/platform/platform-config) (แก้ไขแล้วด้านล่าง §1) &nbsp;·&nbsp; **Feature flag:** `licenses` ตรวจโดย `PrivateRoute` หลังด่าน permission &nbsp;·&nbsp; **การอ่านฝั่ง backend ไม่ถูกกั้นโดยตั้งใจ** — ทุก `GET` บน controller บัญชีซื้อ/สัญญาทั้งสามของโมดูลนี้ไม่มี `@RequirePlatformPermission` เลย ตรวจสอบด้วย scope ของ cluster ภายใน `micro-cluster` แทน &nbsp;·&nbsp; **cluster admin ไม่มีวันมาถึงโมดูลนี้เลย** — `subscription.read`/`subscription.manage` มาจาก `tb_user_tb_platform_role` เท่านั้น cluster admin แบบสมาชิกภาพไม่มีทั้งคู่ และใช้หน้าจอแบบอ่านอย่างเดียวแยกต่างหากแทน กั้นด้วยสมาชิกภาพของ cluster (`ClusterAdminRoute` ตรวจ `isClusterAdminOf(clusterId)`) ไม่ใช่คีย์ RBAC (กรณีพิเศษ 5, §4) &nbsp;·&nbsp; **ไม่มี e2e suite** — ทุกคำกล่าวอ้างด้านล่างมาจากการอ่าน implementation ของ `../carmen-platform` และ `../carmen-turborepo-backend-v2` โดยตรง
+> **มีแค่สองคีย์:** `subscription.read` (nav, ทุก route ของ list/detail และ — โดยตั้งใจ — route แก้ไขของฟอร์มซื้อทั้งสามและ route แก้ไข subscription ด้วย) และ `subscription.manage` (ทุก route create/update/delete/cancel และ action save/cancel-licence ในหน้า — route ของ interface licence ที่เพิ่มใน PR #287 ใช้สองคีย์นี้เป๊ะ ไม่มีการสร้างคีย์ใหม่) &nbsp;·&nbsp; **`license.manage` ไม่ใช่คีย์ของโมดูลนี้** — คำอธิบายเดิมของหน้านี้เคยระบุว่ามันเป็นตัวกั้น CRUD ที่นี่; จริง ๆ แล้วมันกั้นสวิตช์ License Enforcement ที่ไม่เกี่ยวข้องกันบนหน้าจอ [Platform Config](/th/platform/platform-config) (แก้ไขแล้วด้านล่าง §1) &nbsp;·&nbsp; **Feature flag:** `licenses` ตรวจโดย `PrivateRoute` หลังด่าน permission &nbsp;·&nbsp; **การอ่านฝั่ง backend ไม่ถูกกั้นโดยตั้งใจ** — ทุก `GET` บน controller บัญชีซื้อ/สัญญาทั้งสี่ของโมดูลนี้ไม่มี `@RequirePlatformPermission` เลย ตรวจสอบด้วย scope ของ cluster ภายใน `micro-cluster` แทน &nbsp;·&nbsp; **cluster admin ไม่มีวันมาถึงโมดูลนี้เลย** — `subscription.read`/`subscription.manage` มาจาก `tb_user_tb_platform_role` เท่านั้น cluster admin แบบสมาชิกภาพไม่มีทั้งคู่ และใช้หน้าจอแบบอ่านอย่างเดียวแยกต่างหากแทน กั้นด้วยสมาชิกภาพของ cluster (`ClusterAdminRoute` ตรวจ `isClusterAdminOf(clusterId)`) ไม่ใช่คีย์ RBAC (กรณีพิเศษ 5, §4) &nbsp;·&nbsp; **ไม่มี e2e suite** — ทุกคำกล่าวอ้างด้านล่างมาจากการอ่าน implementation ของ `../carmen-platform` และ `../carmen-turborepo-backend-v2` โดยตรง
 
 ## 1. ภาพรวม
 
 **คำแก้ไขต่อคำอธิบายเดิมของหน้านี้** ก่อนงานนี้ คำอธิบายใน frontmatter ของหน้านี้ระบุตัวกั้น CRUD ของโมดูลว่าเป็น "`subscription.manage` และ `license.manage`" นั่นผิด — การ grep ทั่ว `../carmen-platform/src` หา `license.manage` เจอแค่ที่เดียว คือ `PlatformConfigManagement.tsx:75` (`hasPermission('license.manage')`) และไฟล์ลูก `platformConfig/LicenseEnforcementCard.tsx` ทั้งคู่เป็นส่วนหนึ่งของโมดูล **[Platform Config](/th/platform/platform-config)** — กั้นสวิตช์ "บังคับใช้ขีดจำกัดใบอนุญาต" ซึ่งเป็นการตั้งค่าระดับแพลตฟอร์ม ไม่เกี่ยวข้องกับการซื้อหรือแก้ไขใบอนุญาต, subscription, หรือที่นั่งใด ๆ เลย ไม่มีที่ไหนใต้ `src/pages/licenses/` อ้างถึง `license.manage` เลยสักที่ โมดูลนี้มี permission key แค่สองตัว ทั้งคู่อยู่ใต้ resource `subscription.*` และหน้านี้เอกสารเฉพาะสองตัวนั้น
 
-รูปแบบที่เป็นเอกลักษณ์ของโมดูลนี้จริง ๆ คือ **`subscription.read` เพียงอย่างเดียวก็เปิดหน้าแก้ไขได้** — `/licenses/subscriptions/:id/edit`, `/licenses/seats/:id/edit`, และ `/licenses/bu-quota/:id/edit` ทั้งหมดต้องการ `subscription.read` ที่ระดับ route คีย์เดียวกับที่ list/detail แบบอ่านอย่างเดียวของมันต้องการ ขณะที่ route `/new` ทั้งสามพี่น้องต้องการ `subscription.manage` นี่ไม่ใช่ความไม่สอดคล้องของ route guard — ทุกฟิลด์บนทุกฟอร์มแก้ไขถูกกั้นแยกต่างหากภายใน component เอง (§3) session ที่มีแค่ `subscription.read` จึงเห็นเรคคอร์ดแต่แก้ไขไม่ได้
+รูปแบบที่เป็นเอกลักษณ์ของโมดูลนี้จริง ๆ คือ **`subscription.read` เพียงอย่างเดียวก็เปิดหน้าแก้ไขได้** — `/licenses/subscriptions/:id/edit`, `/licenses/seats/:id/edit`, `/licenses/bu-quota/:id/edit` และ `/licenses/interface/:id/edit` ทั้งหมดต้องการ `subscription.read` ที่ระดับ route คีย์เดียวกับที่ list/detail แบบอ่านอย่างเดียวของมันต้องการ ขณะที่ route `/new` ทั้งสี่พี่น้องต้องการ `subscription.manage` นี่ไม่ใช่ความไม่สอดคล้องของ route guard — ทุกฟิลด์บนทุกฟอร์มแก้ไขถูกกั้นแยกต่างหากภายใน component เอง (§3) session ที่มีแค่ `subscription.read` จึงเห็นเรคคอร์ดแต่แก้ไขไม่ได้
 
 ## 2. เมทริกซ์ของ gate
 
@@ -33,7 +33,9 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 | `/licenses/seats/:id/edit` | **`subscription.read`** | `licenses` | `App.tsx:222-229` |
 | `/licenses/bu-quota/new` | `subscription.manage` | `licenses` | `App.tsx:230-237` |
 | `/licenses/bu-quota/:id/edit` | **`subscription.read`** | `licenses` | `App.tsx:238-245` |
-| `/subscriptions`, `/subscriptions/new`, `/subscriptions/:id/edit` | (ไม่มี — redirect ล้วน) | ไม่มี | `App.tsx:246-249` |
+| `/licenses/interface/new` | `subscription.manage` | `licenses` | `App.tsx:246-253` (PR #287) |
+| `/licenses/interface/:id/edit` | **`subscription.read`** | `licenses` | `App.tsx:254-261` (PR #287) |
+| `/subscriptions`, `/subscriptions/new`, `/subscriptions/:id/edit` | (ไม่มี — redirect ล้วน) | ไม่มี | `App.tsx:263-265` |
 | Sidebar "Licenses" (กลุ่ม License Management) | `subscription.read` | `licenses` | `../carmen-platform/src/components/nav/platformNav.ts:20` |
 
 Gate แบบ `<Can>`/`hasPermission` ในหน้า ทั้งหมดอยู่บน `subscription.manage`:
@@ -43,7 +45,8 @@ Gate แบบ `<Can>`/`hasPermission` ในหน้า ทั้งหมด�
 | Save Changes (แก้ไข subscription, แถบ sticky) | `SubscriptionForm.tsx:591` |
 | ปุ่ม Submit ของฟอร์มสร้างและทุกฟิลด์ที่แก้ได้ (`editing={canEdit}`) | `SubscriptionCreateForm.tsx:254`, `SubscriptionForm.tsx:96` |
 | checkbox ของตัวเลือกกลุ่ม (`readOnly={!canEdit}`) | `GroupSelectionCard` ผ่าน `SubscriptionForm.tsx:569` |
-| Save Changes / Create License (ฟอร์มซื้อ seat หรือ BU-quota) | `LicensePurchaseForm.tsx:895,1020` |
+| Save Changes / Create License (ฟอร์มซื้อ seat, BU-quota หรือ interface) | `LicensePurchaseForm.tsx` (`canEdit`, `<Can permission="subscription.manage">` บนทั้งสองปุ่ม) |
+| ลิงก์ "Add interface license" / "New subscription" บนแท็บ Licenses ของหน้าแก้ไข BU | `BusinessUnitEdit.tsx:793,810` — `createHref` ถูกส่งมาเฉพาะเมื่อ `canCreateSubscription` (= `hasPermission('subscription.manage')`) คีย์เดียวกับที่ route ปลายทางตรวจ ลิงก์จึงไม่มีวันพาไป `<Forbidden>` |
 | Cancel this license (เฉพาะฟอร์มซื้อ BU-quota — `config.cancel` ไม่ใช่ null) | `LicensePurchaseForm.tsx:975` |
 | Add Subscription (header + empty state, `SubscriptionTable`) | `SubscriptionTable.tsx:467,650` |
 | action ต่อแถว Add/Edit/Cancel/Remove ของ `BuQuotaSection`/`SeatSection` | prop `canManage` คำนวณครั้งเดียวโดย `ClusterLicenseDetail.tsx:59` จาก `hasPermission('subscription.manage')` แล้วส่งลง — **ไม่** ถูกตรวจซ้ำต่อ section |
@@ -63,13 +66,18 @@ Gate แบบ `<Can>`/`hasPermission` ในหน้า ทั้งหมด�
 | `PATCH /api-system/business-units/:buId/licenses/:id` | `subscription.manage` | `platform_business-unit-licenses.controller.ts:160-162` |
 | `DELETE /api-system/business-units/:buId/licenses/:id` | `subscription.manage` | `platform_business-unit-licenses.controller.ts:201-203` |
 | `GET /api-system/platform/business-unit-licenses[/:id]` | `AppIdGuard` เท่านั้น | `platform_business-unit-licenses.controller.ts:274-275,310-311` |
+| `GET /api-system/business-units/:buId/interface-licenses` | `AppIdGuard('businessUnitInterfaceLicense.findAll')` เท่านั้น | `platform_business-unit-interface-licenses.controller.ts:100-101` |
+| `POST /api-system/business-units/:buId/interface-licenses` | `AppIdGuard` + `PlatformPermissionGuard`, `subscription.manage` | `platform_business-unit-interface-licenses.controller.ts:143-145` |
+| `PATCH /api-system/business-units/:buId/interface-licenses/:id` | เหมือนกัน, `subscription.manage` | `platform_business-unit-interface-licenses.controller.ts:189-191` |
+| `DELETE /api-system/business-units/:buId/interface-licenses/:id` | เหมือนกัน, `subscription.manage` | `platform_business-unit-interface-licenses.controller.ts:236-238` |
+| `GET /api-system/platform/interface-licenses[/:id]` | `AppIdGuard` เท่านั้น | `platform_business-unit-interface-licenses.controller.ts:315,354` (controller ระดับ fleet ไฟล์เดียวกัน) |
 | `GET .../subscriptions`, `.../subscriptions/summary`, `.../subscriptions/:id`, `.../license-features` | `subscription.read` | `platform_subscriptions.controller.ts:81-83,139-141,166-168,198-200` |
 | `POST .../subscriptions` | `subscription.manage` | `platform_subscriptions.controller.ts:226-228` |
 | `PATCH .../subscriptions/:id` | `subscription.manage` | `platform_subscriptions.controller.ts:263-265` |
 | `PUT .../subscriptions/:id/groups` | `subscription.manage` | `platform_subscriptions.controller.ts:304-306` |
 | `DELETE .../subscriptions/:id` | `subscription.manage` | `platform_subscriptions.controller.ts:349-351` |
 
-path ฝั่ง backend ทั้งหมดข้างบนคือ `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/{platform_cluster-licenses,platform_business-unit-licenses,platform_subscriptions}/*.controller.ts`
+path ฝั่ง backend ทั้งหมดข้างบนคือ `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/{platform_cluster-licenses,platform_business-unit-licenses,platform_business-unit-interface-licenses,platform_subscriptions}/*.controller.ts` คอมเมนต์หัวไฟล์ของ controller interface licence ให้เหตุผลเดียวกับอีกสองตัวในการปล่อยการอ่านไม่กั้น: `PlatformPermissionGuard` สร้างชุด permission จาก `tb_user_tb_platform_role` เท่านั้น คีย์ RBAC บน path อ่านจึงจะ 403 cluster admin แบบสมาชิกภาพที่ดูคลัสเตอร์ของตัวเอง
 
 ## 3. ทำไม route `:id/edit` ของฟอร์มซื้อทั้งสองแบบต้องการแค่ `subscription.read`
 
@@ -87,7 +95,8 @@ path ฝั่ง backend ทั้งหมดข้างบนคือ `../c
 |---|---|---|---|
 | 1 | session มีแค่ `subscription.read` | เปิด `/licenses`, `/licenses/:clusterId`, และ URL `:id/edit` ใดก็ได้; เห็นทุกฟิลด์เป็นข้อความอ่านอย่างเดียว ไม่มีปุ่ม Save/Cancel-licence/Create ไม่มีปุ่ม Add-subscription บนหน้ารายการ | ทำซ้ำได้โดยเปิด URL แก้ไขของใบอนุญาตใบหนึ่งตรง ๆ — หน้า render เต็ม แค่ไม่ทำอะไรได้เลย `SubscriptionForm.test.tsx` และ `SubscriptionTable.test.tsx` ทั้งคู่ pin เคสนี้ไว้เป๊ะ |
 | 2 | session มี `subscription.manage` แต่ไม่มี `subscription.read` | เข้า `/licenses` หรือ `/licenses/:clusterId` ไม่ได้เลย (`<Forbidden>`) — แต่**เข้าได้**ที่ `/licenses/subscriptions/new`, `/licenses/seats/new`, `/licenses/bu-quota/new` ตรง ๆ ผ่าน URL เพราะ route เหล่านั้นตรวจแค่ `subscription.manage` | รูปแบบ grant ที่ไม่ปกติ (manage โดยไม่มี read) เป็นไปได้ในหลักการเพราะสองคีย์เป็นแถว RBAC ที่เป็นอิสระต่อกัน ตัดสินตามแผนทดสอบว่าเป็น role จริงหรือความผิดพลาดในการตั้งค่า |
-| 3 | ใบที่นั่ง — พยายามยกเลิก | ไม่มีปุ่ม Cancel เลยไม่ว่าจากแถวในลิสต์หรือหน้าแก้ไขเฉพาะใบ — `config.cancel` เป็น `null` สำหรับ `SEAT_CONFIG` และไม่มี endpoint แบบนี้บน backend สำหรับ `tb_business_unit_license` เลย | อย่ามองปุ่มที่หายไปว่าเป็นปัญหาสิทธิ์ที่ต้อง escalate — มันเป็นความสามารถที่ไม่มีอยู่สำหรับประเภทการซื้อนี้ ยืนยันได้ทั้งระดับ schema (ไม่มีคอลัมน์ `cancelled_at`) และระดับ config |
+| 3 | ใบที่นั่งหรือ interface licence — พยายามยกเลิก | ไม่มีปุ่ม Cancel เลยไม่ว่าจากแถวในลิสต์หรือหน้าแก้ไขเฉพาะใบ — `config.cancel` เป็น `null` สำหรับ `SEAT_CONFIG` และ `INTERFACE_CONFIG` และไม่มี endpoint แบบนี้บน backend สำหรับทั้งสองตารางเลย | อย่ามองปุ่มที่หายไปว่าเป็นปัญหาสิทธิ์ที่ต้อง escalate — มันเป็นความสามารถที่ไม่มีอยู่สำหรับประเภทการซื้อเหล่านี้ ยืนยันได้ทั้งระดับ schema (ไม่มีคอลัมน์ `cancelled_at`) และระดับ config |
+| 3a | session ที่มี `subscription.manage` ผูกกลุ่มชนิด `interface` เข้ากับ subscription (`PUT .../subscriptions/:id/groups`) หรือกลุ่ม `standard` เข้ากับ interface licence (`POST .../interface-licenses`) | **400 จาก backend** ไม่ใช่การกรองเงียบ ๆ และไม่ใช่ 403 — permission ผ่าน แต่ payload ไม่ผ่าน SPA ไม่เคยเสนอทั้งสองแบบ (`GroupSelectionCard` ของฟอร์ม subscription ซ่อนกลุ่ม `interface`; ตัวเลือกของฟอร์มซื้อแสดงเฉพาะกลุ่ม `interface`) จึงเข้าถึงได้ผ่านการเรียก API ตรงเท่านั้น | 400 ตรงนี้คือกฎ kind ของกลุ่ม (`enum_license_feature_group_kind`, [Data Model](/th/platform/licenses/data-model) §5) ไม่ใช่ข้อบกพร่องของ gate; อย่ายื่นเป็นบั๊กของ RBAC |
 | 4 | ใบ BU-quota ที่ถูกยกเลิกแล้ว | ฟิลด์กลายเป็นอ่านอย่างเดียวถาวรบนหน้าแก้ไขของมัน (มี banner อธิบาย) แม้สำหรับ session ที่มี `subscription.manage`; ไม่มีทางย้อนกลับ — คืนความคุ้มครองต้องสร้างใบใหม่ | สถานะอ่านอย่างเดียวตรงนี้เป็นกฎธุรกิจ (§2 ของ [Data Model](/th/platform/licenses/data-model)) ไม่ใช่ permission gate — ยืนยันว่าปุ่ม Save หายไปเลย ไม่ใช่แค่ disabled พร้อม tooltip |
 | 5 | cluster admin (สมาชิกภาพเท่านั้น ไม่มี role RBAC) | เข้า `/licenses/*` route ไหนไม่ได้เลย — `hasPermission('subscription.read')` เป็น `false` เสมอสำหรับ session ที่ไม่มีแถว `tb_user_tb_platform_role` เลย ไม่ว่าจะมีสถานะ cluster admin หรือไม่ก็ตาม | cluster admin ใช้หน้าจอ `/cluster-admin/:clusterId/licenses` ที่แยกออกไปคนละหน้าแทน `ClusterAdminRoute` ตรวจ scope ก่อน feature flag เสมอ ตามลำดับนี้: authenticated → `adminScope` โหลดเสร็จ → ถ้าไม่มี `clusterId` หรือผู้เรียกไม่ใช่ `isClusterAdminOf` ของ cluster นั้น จะ render `<Forbidden>` — ผู้ที่ไม่ใช่สมาชิกของ cluster นั้นถูกกั้นตรงนี้ ก่อนที่ `feature="cluster_admin_licenses"` จะถูกตรวจด้วยซ้ำ ไม่มี **RBAC permission key** บน route นี้เลย (ต่างจากคีย์ `subscription.*` ของโมดูลนี้เอง) แต่สมาชิกภาพของ cluster เป็น gate จริงที่บังคับใช้อยู่ ไม่ใช่การไม่มี gate เลย — อย่าทดสอบ gate ของโมดูลนี้จาก session ของ cluster admin อยู่ดี มันจะ 403 ตั้งแต่ route `/licenses/*` แรกที่ลองเปิด |
 | 6 | Deep link ไปที่ `/licenses/subscriptions/:id/edit` ด้วย id ที่ไม่มีอยู่หรือถูกลบแล้ว | route guard ผ่าน (permission ถูกตรวจก่อนที่ id จะถูกดึงมาด้วยซ้ำ); หน้าจึงโหลด ได้ 404 จาก API แล้ว render `EmptyState` "Subscription not found" ของตัวเอง แทนที่จะเป็น error ดิบ | แยกความต่างระหว่าง permission 403 (ทั้งหน้าถูกแทนที่ด้วย `<Forbidden>`) กับ data-layer not-found (`PageHeader` render ปกติ มีแค่ body เป็น EmptyState) — สองอย่างนี้หน้าตาต่างกันและหมายความต่างกัน |

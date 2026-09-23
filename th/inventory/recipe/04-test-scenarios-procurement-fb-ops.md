@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — Test Scenarios — Procurement F&B Ops
 description: test case ของ Procurement และ F&B Ops (การขนาด PO, การทดแทน, การอนุมัติ menu-item linkage, menu engineering) สำหรับโมดูล recipe
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: recipe, test-scenarios, procurement-fb-ops, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **At a Glance**
 > **Persona:** Procurement / F&B Ops (Procurement Department + F&B Operations Manager) &nbsp;·&nbsp; **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **scenario:** ~25
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **การครอบคลุม E2E:** ไม่มีสำหรับภายในสูตร; spec อัตโนมัติเดียวของโมดูลคือ `tests/121-recipe-equipment-category.spec.ts` spec E2E ของ PO ครอบคลุม flow PR→PO ซึ่งไม่มี input จากสูตร
+> **การครอบคลุม E2E:** ไม่มีสำหรับภายในสูตร; spec อัตโนมัติมีเฉพาะหน้าจอ master-data (`110-op-category`, `111-cuisine`, `121-recipe-equipment-category`, `131-equipment-category`) spec E2E ของ PO ครอบคลุม flow PR→PO ซึ่งไม่มี input จากสูตร ตรวจสอบซ้ำ 2026-09-22 — ดู [04-test-scenarios](/th/inventory/recipe/04-test-scenarios)
 
 > **สถานะการ implement (ตรวจสอบแล้ว 2026-07-15)** ชุดฟีเจอร์ที่ scenario เหล่านี้ทดสอบยังไม่มีอยู่จริง: ไม่มี recipe explosion หรือการขนาด PO จากสูตร (บรรทัดวัตถุดิบยังไม่ถูก persist ด้วยซ้ำ), ไม่มีช่องคำขอทดแทน, ไม่มี entity menu-item หรือ permission `recipe:approve-menu-link` และไม่มีมุมมอง menu-engineering ให้ถือ scenario ด้านล่างเป็นแผน acceptance ของดีไซน์
 

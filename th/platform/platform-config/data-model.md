@@ -2,7 +2,7 @@
 title: การตั้งค่าแพลตฟอร์ม — โมเดลข้อมูล (Data Model)
 description: tb_platform_config ตารางแบบ namespace-ต่อ-แถว, PLATFORM_CONFIG_REGISTRY เต็มสิบคีย์ (แปดคีย์อยู่บนหน้าจอของโมดูลนี้เอง สองคีย์เป็นของโมดูลอื่น) และแผนที่ผู้อ่านหลายกระบวนการที่อยู่เบื้องหลังผลจริงของแต่ละคีย์
 published: true
-date: '2026-09-06T09:00:00.000Z'
+date: '2026-09-23T01:30:00.000Z'
 tags: book/platform, platform-config, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -52,7 +52,7 @@ Schema บรรทัด 1462 (`../carmen-turborepo-backend-v2/packages/prisma-
 | `password_reset` | `base_url: string (url)` = `http://localhost:3000`; `expiry_hours: int (1–720)` = `24` | ใช่ |
 | `notification_email` | `enabled: boolean` = `false`; `recipients: string[] (email)` = `[]`; `cc: string[] (email)` = `[]`; `subject_prefix: string (ยาวไม่เกิน 64)` = `''` | ใช่ — ดูข้อสังเกต "ยังไม่พบผู้อ่าน" ที่หน้าลงจอด §3.2 |
 | `license` | `enforcement_enabled: boolean` = `false` | ใช่ |
-| `expiry_thresholds` | `subscription_days: int (1–365)` = `30`; `bu_quota_days: int (1–365)` = `30`; `seat_days: int (1–365)` = `30` | ใช่ |
+| `expiry_thresholds` | `subscription_days: int (1–365)` = `30`; `bu_quota_days: int (1–365)` = `30`; `interface_days: int (1–365)` = `30` (เพิ่มเมื่อ 2026-09-09 สำหรับ INF licence — [Licenses](/th/platform/licenses) §3.6); `seat_days: int (1–365)` = `30` | ใช่ |
 | `platform_migration` | `api_enabled: boolean` = `false` | ใช่ |
 | `email_routing` | `default: string (uuid)`; `register`, `verify_email`, `invitation`, `forgot_password`, `notification`: `string (uuid)` ทั้งหมด optional | **ไม่** — แก้จากโมดูล Email Settings (หน้าลงจอด §3.5) |
 | `feature_flags` | `Record<string, 'active' \| 'inactive' \| 'hide'>` (ชุดคีย์แบบอิสระ) default `{}` | **ไม่** — เข้าถึงได้ผ่านคู่ `/api-system/platform/feature-flags` เฉพาะของตัวเองเท่านั้น (หน้าลงจอด §3.5) |
