@@ -15,7 +15,7 @@ instead, and content there counts toward whichever axis it serves. Symbols:
 ✅ complete · 🟡 partial/stub · ⬜ missing · — axis not applicable to this row.
 Tracks the **EN locale** (canonical); TH state is summarized in "Locale coverage."
 
-## Summary (full rewrite — as of 2026-09-06, against carmen-platform HEAD `157a65e`, 2026-09-04 17:51:42 +0700)
+## Summary (full rewrite as of 2026-09-06 against carmen-platform HEAD `157a65e`; **incrementally updated 2026-09-22 against HEAD `f1c69f1`, 2026-09-22 12:32:33 +0700** — 20 commits / 78 files of SPA drift folded in, rows 2.12–2.13, 9.10–9.11, 10.9–10.10, 16.7–16.8 added, several existing rows re-worded; EN only, TH deferred)
 
 This replaces the 2026-06-11-dated summary and its 2026-09-05 interim patch
 (86 → 78 sub-processes). Both prior numbers measured a June snapshot of the SPA
@@ -30,26 +30,26 @@ counted" below for method and the arithmetic reconciliation.
 |--------|--------------:|-----:|--------:|--------:|-----------:|
 | **Table A — modules with a sub-page folder** | | | | | |
 | Clusters | 10 | 10 | 0 | 0 | 100% |
-| Business Units | 11 | 11 | 0 | 0 | 100% |
+| Business Units | 13 | 13 | 0 | 0 | 100% |
 | Users | 10 | 10 | 0 | 0 | 100% |
 | Platform RBAC | 8 | 8 | 0 | 0 | 100% |
 | Applications | 9 | 9 | 0 | 0 | 100% |
 | Broadcasts | 12 | 12 | 0 | 0 | 100% |
 | News | 10 | 10 | 0 | 0 | 100% |
 | Report Templates | 11 | 11 | 0 | 0 | 100% |
-| Licenses | 9 | 9 | 0 | 0 | 100% |
-| License Catalog | 8 | 8 | 0 | 0 | 100% |
+| Licenses | 11 | 11 | 0 | 0 | 100% |
+| License Catalog | 10 | 10 | 0 | 0 | 100% |
 | Cluster Admin | 8 | 8 | 0 | 0 | 100% |
 | Platform Config | 9 | 9 | 0 | 0 | 100% |
 | Email Settings | 6 | 6 | 0 | 0 | 100% |
 | User Platform | 6 | 6 | 0 | 0 | 100% |
 | Feature Flags | 6 | 6 | 0 | 0 | 100% |
-| Tenant Migrations | 6 | 6 | 0 | 0 | 100% |
+| Tenant Migrations | 8 | 8 | 0 | 0 | 100% |
 | Tenant Imports | 7 | 7 | 0 | 0 | 100% |
 | Activity Events | 6 | 6 | 0 | 0 | 100% |
 | Database Pools | 7 | 7 | 0 | 0 | 100% |
 | Cronjobs | 8 | 8 | 0 | 0 | 100% |
-| **Table A subtotal** | **167** | **167** | **0** | **0** | **100%** |
+| **Table A subtotal** | **175** | **175** | **0** | **0** | **100%** |
 | **Table B — landing-only modules** | | | | | |
 | Platform Migrations | 7 | 7 | 0 | 0 | 100% |
 | Report Form Groups | 6 | 6 | 0 | 0 | 100% |
@@ -63,7 +63,7 @@ counted" below for method and the arithmetic reconciliation.
 | Profile | 3 | 3 | 0 | 0 | 100% |
 | SQL Workbench | 6 | 6 | 0 | 0 | 100% |
 | **Table C subtotal** | **18** | **18** | **0** | **0** | **100%** |
-| **Project total** | **211** | **211** | **0** | **0** | **100%** |
+| **Project total** | **219** | **219** | **0** | **0** | **100%** |
 
 **Read the 100% figures above as a full enumeration, checked on a sample:**
 every one of the 211 rows was enumerated from the current pages and given a
@@ -74,7 +74,7 @@ that all 211 rows were individually re-verified this pass. See "Depth of
 verification" under "How this was counted," immediately below, for the exact
 file list and what "checked at header level" did and did not confirm.
 
-Arithmetic check: 167 + 26 + 18 = 211, matching the "Project total" row; each
+Arithmetic check: 175 + 26 + 18 = 219 (was 167 + 26 + 18 = 211 before the 2026-09-22 update), matching the "Project total" row; each
 module's own Done+Partial+Not-yet also sums to its own Sub-processes count. No
 `print-template-mapping` row appears anywhere in this file — the module was
 deleted from the product on 2026-07-24 (`de11377`) and its wiki page removed in
@@ -200,12 +200,14 @@ Table B rows.
 | 3 | Edit: 6-tab document (General/Location/Formats/Technical/Users/Licenses) | ✅ | ✅ | ✅ | ✅ Done | [UI §4](/en/platform/business-units/ui-screens) |
 | 4 | Technical tab: database-pool/schema repoint (new — `db_connection` dropped) | ✅ | ✅ | — | ✅ Done | [DM §2.4](/en/platform/business-units/data-model) |
 | 5 | BU users tab: add/edit/remove | ✅ | ✅ | ✅ | ✅ Done | [UI §4.6](/en/platform/business-units/ui-screens) |
-| 6 | Licenses tab — split out of Users (PR #276), New Subscription button | ✅ | ✅ | ✅ | ✅ Done | [UI §4.7](/en/platform/business-units/ui-screens) |
+| 6 | Licenses tab — two cards since PR #287–#289: seats + this BU's subscriptions on a shared timeline, and interface (INF) licences with backend-computed `in_force` badges; New Subscription / Add interface license buttons on `subscription.manage` | ✅ | ✅ | ✅ | ✅ Done | [UI §4.7](/en/platform/business-units/ui-screens) |
 | 7 | Per-BU Tenant Migrations card (embedded; fleet-wide screen lives elsewhere) | — | ✅ | ✅ | ✅ Done | [Tenant Migrations sub-page](/en/platform/business-units/tenant-migrations) |
 | 8 | Soft delete | ✅ | ✅ | ✅ | ✅ Done | [UI §2.4, §5.4](/en/platform/business-units/ui-screens) |
 | 9 | Module activation join (`tb_business_unit_tb_module`) — schema-only | ✅ | — | — | ✅ Done | [DM §2.2](/en/platform/business-units/data-model) |
 | 10 | `cluster.*` key-reuse gotcha (no dedicated `business_unit.*` keys) | — | — | ✅ | ✅ Done | [Landing](/en/platform/business-units) |
 | 11 | Audit columns + View History (`activity_log.read`) | ✅ | ✅ | ✅ | ✅ Done | [UI §2.5](/en/platform/business-units/ui-screens) |
+| 12 | Interface Entitlement card removed (PR #286, 2026-09-08) — entitlement moved to `interface`-kind licence groups; Technical tab now holds two advanced cards, and the migration card gained an error panel + Resolve (PR #297) | ✅ | ✅ | ✅ | ✅ Done | [UI §4.5](/en/platform/business-units/ui-screens) |
+| 13 | List: stored-page snap-back when `page_business_units` is out of range (`outOfRangePage`, PR #298) + in-memory sortable headers on the Users card / Configuration section (PR #292) | — | ✅ | — | ✅ Done | [UI §2.1, §4.4, §4.6](/en/platform/business-units/ui-screens) |
 
 ### 3. Users — `en/platform/users/{data-model,lifecycle,ui-screens}.md`
 
@@ -311,14 +313,16 @@ following an August notification redesign.
 | # | Sub-process | DM | UI | PERM | Status | Doc link |
 |---|-------------|----|----|------|--------|----------|
 | 1 | `LicenseCenter` Fleet Capacity band | ✅ | ✅ | — | ✅ Done | [UI §2.1](/en/platform/licenses/ui-screens) |
-| 2 | Four-tab switch (By cluster / subscription / seat / BU quota) | ✅ | ✅ | — | ✅ Done | [UI §2.2](/en/platform/licenses/ui-screens) |
+| 2 | Five-tab switch (By cluster / subscription / seat / BU quota / interface) | ✅ | ✅ | — | ✅ Done | [UI §2.2](/en/platform/licenses/ui-screens) |
 | 3 | `ClusterLicenseDetail` (health strip + 3-tab shared timeline) | ✅ | ✅ | — | ✅ Done | [UI §3](/en/platform/licenses/ui-screens) |
 | 4 | `SubscriptionForm` (feature-group entitlements, not individual features) | ✅ | ✅ | ✅ | ✅ Done | [UI §4](/en/platform/licenses/ui-screens) |
-| 5 | `LicensePurchaseForm` (seat license / BU quota) | ✅ | ✅ | ✅ | ✅ Done | [UI §5](/en/platform/licenses/ui-screens) |
+| 5 | `LicensePurchaseForm` (seat license / BU quota / interface — `selector: 'amount' \| 'feature-group'`) | ✅ | ✅ | ✅ | ✅ Done | [UI §5](/en/platform/licenses/ui-screens) |
 | 6 | Legacy `/subscriptions*` redirects | — | ✅ | — | ✅ Done | [UI §6](/en/platform/licenses/ui-screens) |
 | 7 | Expiry thresholds (configurable window, cross-module) | ✅ | — | — | ✅ Done | [DM §6](/en/platform/licenses/data-model) |
 | 8 | Two capacity views (`v_cluster_bu_cap` vs `v_cluster_bu_quota`) | ✅ | — | — | ✅ Done | [DM §3](/en/platform/licenses/data-model) |
 | 9 | Permission gates (`subscription.read`/`.manage`; two purchase-form routes need only `.read`) | — | — | ✅ | ✅ Done | [PERM §3](/en/platform/licenses/permissions) |
+| 10 | Interface (INF) licence ledger — `tb_business_unit_interface_license`, group `kind`, union-of-windows rule, two-condition `in_force`, `GET /api/license` folding, the 2026-09-08 data loss and the 2026-09-10 guarded data migration | ✅ | ✅ | ✅ | ✅ Done | [Landing §3.6](/en/platform/licenses), [DM §2.4](/en/platform/licenses/data-model) |
+| 11 | Every-column header sorting on `/licenses` tables incl. server-side `status` key (PR #290) | ✅ | ✅ | — | ✅ Done | [UI §2.5](/en/platform/licenses/ui-screens) |
 
 ### 10. License Catalog — `en/platform/license-catalog/{data-model,ui-screens}.md`
 
@@ -332,6 +336,8 @@ following an August notification redesign.
 | 6 | n-tier tree shape + `sort_order` banding (2026-09-03 restructuring) | ✅ | — | — | ✅ Done | [DM §3](/en/platform/license-catalog/data-model) |
 | 7 | `affected_bu_count` computation (deliberately includes expired subscriptions) | ✅ | — | — | ✅ Done | [DM §6](/en/platform/license-catalog/data-model) |
 | 8 | Permission gates (two tab-specific pairs + cross-module dependency) | — | ✅ | ✅ | ✅ Done | [Landing §4](/en/platform/license-catalog) |
+| 9 | Bundle `kind` (`standard` \| `interface`) — create-only segmented control, locked on edit, Interface badge on the list, 400 on the wrong ledger pairing | ✅ | ✅ | — | ✅ Done | [Landing §3.4](/en/platform/license-catalog), [DM §2.2, §5](/en/platform/license-catalog/data-model) |
+| 10 | `LICENSE_ONLY_RESOURCES` generator set + re-verified counts 107/12/100/7 (+19/−2 since 2026-09-05, incl. `system_admin.period` → `inventory_period` rename) | ✅ | — | — | ✅ Done | [Landing §3.2](/en/platform/license-catalog), [DM §3](/en/platform/license-catalog/data-model) |
 
 ### 11. Cluster Admin — `en/platform/cluster-admin/{permissions,ui-screens}.md`
 
@@ -340,9 +346,9 @@ following an August notification redesign.
 | 1 | Entry/landing redirect logic (single-cluster vs. multi-cluster vs. zero) | — | ✅ | — | ✅ Done | [UI §2](/en/platform/cluster-admin/ui-screens) |
 | 2 | `ClusterProfile` — capacity strip, identity/branding, narrowed fields | — | ✅ | ✅ | ✅ Done | [UI §3](/en/platform/cluster-admin/ui-screens) |
 | 3 | `BusinessUnitList` — no create action, Over-limit rank badge | — | ✅ | ✅ | ✅ Done | [UI §4](/en/platform/cluster-admin/ui-screens) |
-| 4 | `BusinessUnitForm` — 5-tab document (Overview/People/Hotel/Company/Configuration) | — | ✅ | ✅ | ✅ Done | [UI §5](/en/platform/cluster-admin/ui-screens) |
+| 4 | `BusinessUnitForm` — 6-tab document (Overview/People/Hotel/Company/Configuration/Licenses — the last added PR #291 with two read-only cards, deep-linkable via `?tab=licenses`) | — | ✅ | ✅ | ✅ Done | [UI §5](/en/platform/cluster-admin/ui-screens) |
 | 5 | `ClusterUsers` — Members/Invitations tabs | — | ✅ | ✅ | ✅ Done | [UI §6](/en/platform/cluster-admin/ui-screens) |
-| 6 | `ClusterAdminLicenses` — confirmed read-only, no write path anywhere | — | ✅ | ✅ | ✅ Done | [UI §7](/en/platform/cluster-admin/ui-screens) |
+| 6 | `ClusterAdminLicenses` — still no write path; since PR #291 also shows Subscriptions and Interface-licence cards (membership-checked `/clusters/:id/subscriptions`; rows link within the shell) | — | ✅ | ✅ | ✅ Done | [UI §7](/en/platform/cluster-admin/ui-screens) |
 | 7 | No RBAC permission anywhere — membership (`isClusterAdminOf`) is the whole check | — | — | ✅ | ✅ Done | [PERM §3](/en/platform/cluster-admin/permissions) |
 | 8 | Mid-session 403 pattern (`ClusterAccessLost`) — 4 of 6 screens implement it | — | ✅ | ✅ | ✅ Done | [PERM §4](/en/platform/cluster-admin/permissions) |
 
@@ -355,7 +361,7 @@ following an August notification redesign.
 | 3 | Sign-up / Email Verification / Password Reset cards (`LinkConfigCard`) | ✅ | ✅ | ✅ | ✅ Done | [Landing §3.2](/en/platform/platform-config) |
 | 4 | Notification Email card — no confirmed consumer, flagged not asserted | ✅ | ✅ | ✅ | ✅ Done | [Landing §3.2](/en/platform/platform-config) |
 | 5 | License Enforcement card (platform-wide kill switch) | ✅ | ✅ | ✅ | ✅ Done | [Landing §3.2, §4.3](/en/platform/platform-config) |
-| 6 | Expiry Thresholds card (display-only; separate permission-free reader) | ✅ | ✅ | ✅ | ✅ Done | [Landing §4.4](/en/platform/platform-config) |
+| 6 | Expiry Thresholds card (display-only; separate permission-free reader; four keys since 2026-09-09 — `interface_days` added) | ✅ | ✅ | ✅ | ✅ Done | [Landing §4.4](/en/platform/platform-config) |
 | 7 | Platform Migration card (super-admin-only write; deploy-token machine path preserved) | ✅ | ✅ | ✅ | ✅ Done | [Landing §3.2](/en/platform/platform-config) |
 | 8 | `license.manage` conjunction (lives here, not in Licenses) | — | ✅ | ✅ | ✅ Done | [Landing §4.3](/en/platform/platform-config) |
 | 9 | Two registry keys never shown on this screen (`email_routing`, `feature_flags`) | ✅ | — | ✅ | ✅ Done | [Landing §3.5](/en/platform/platform-config) |
@@ -403,6 +409,8 @@ following an August notification redesign.
 | 4 | Migration-state derivation — no persisted status; Prisma CLI text-matched | ✅ | — | — | ✅ Done | [DM §2](/en/platform/tenant-migrations/data-model) |
 | 5 | Relationship to the embedded per-BU card (shared service, same gate) | — | ✅ | ✅ | ✅ Done | [Landing §3.5](/en/platform/tenant-migrations) |
 | 6 | Non-bypassable backend gate (super-admin or deploy-token; not RBAC) | — | — | ✅ | ✅ Done | [Landing §4.2](/en/platform/tenant-migrations) |
+| 7 | Resolve a stuck migration from the fleet table and the per-BU card (PR #297 — `TenantMigrationResolveDialog`, name pre-filled from Prisma's error text, `rolled-back` default); closes the "no frontend caller" gap recorded 2026-09-06 | ✅ | ✅ | ✅ | ✅ Done | [Landing §3.2a](/en/platform/tenant-migrations), [DM §6](/en/platform/tenant-migrations/data-model) |
+| 8 | Schema + pool column (PR #296); client-side sortable Status / Last checked (PR #292) | — | ✅ | — | ✅ Done | [Landing §3.1, §3.2b](/en/platform/tenant-migrations) |
 
 ### 17. Tenant Imports — `en/platform/tenant-imports/ui-screens.md`
 
@@ -420,7 +428,7 @@ following an August notification redesign.
 
 | # | Sub-process | DM | UI | PERM | Status | Doc link |
 |---|-------------|----|----|------|--------|----------|
-| 1 | Explorer screen: columns/sorting, filters/search, CSV export | — | ✅ | ✅ | ✅ Done | [Landing §3](/en/platform/activity-events) |
+| 1 | Explorer screen: columns/sorting (every data column since 2026-09-09 — backend whitelist of 8 keys), filters/search, CSV export | — | ✅ | ✅ | ✅ Done | [Landing §3](/en/platform/activity-events) |
 | 2 | Row detail sheet | — | ✅ | — | ✅ Done | [Landing §3.3](/en/platform/activity-events) |
 | 3 | Retention (365-day job) + daily rollup | ✅ | — | — | ✅ Done | [DM §4](/en/platform/activity-events/data-model) |
 | 4 | Enriched read-time fields (`user_name`/`user_email`/`app_name`) | ✅ | — | — | ✅ Done | [DM §3](/en/platform/activity-events/data-model) |
@@ -462,8 +470,8 @@ following an August notification redesign.
 |---|-------------|----|----|------|--------|----------|
 | 1 | Status/Deploy card (`prisma migrate deploy` against the platform DB) | ✅ | ✅ | ✅ | ✅ Done | [§1, §3.3](/en/platform/platform-migrations) |
 | 2 | Resolve-a-stuck-migration card | ✅ | ✅ | ✅ | ✅ Done | [§3.3](/en/platform/platform-migrations) |
-| 3 | Seed data catalog (8 seed operations, safety-to-rerun stated per op) | ✅ | ✅ | ✅ | ✅ Done | [§3.3](/en/platform/platform-migrations) |
-| 4 | Drift check catalog (5 read-only + 1 hidden, writing check) | ✅ | ✅ | ✅ | ✅ Done | [§3.3](/en/platform/platform-migrations) |
+| 3 | Seed data catalog (9 seed operations since 2026-09-07 — `seed-application-api` added; safety-to-rerun stated per op) | ✅ | ✅ | ✅ | ✅ Done | [§3.3](/en/platform/platform-migrations) |
+| 4 | Drift check catalog (6 read-only incl. `check-application-api` + 1 hidden, writing check) | ✅ | ✅ | ✅ | ✅ Done | [§3.3](/en/platform/platform-migrations) |
 | 5 | Multi-BU picker for `seed-role-permission` (tenant app-roles, not platform RBAC) | ✅ | ✅ | — | ✅ Done | [§3.4](/en/platform/platform-migrations) |
 | 6 | Two-authority gate (deploy-token or super-admin) behind `platform_migration.api_enabled` | — | — | ✅ | ✅ Done | [§3.1, §4](/en/platform/platform-migrations) |
 | 7 | Shared concurrency lock across migrations + seeds (per-process, not per-cluster) | ✅ | — | — | ✅ Done | [§3.2](/en/platform/platform-migrations) |
@@ -589,3 +597,10 @@ line count was treated as a stub and spot-read to confirm).
   against `../carmen-platform` before trusting any number in it.
 - carmen-platform moves fast — verify against `src/App.tsx` HEAD before
   trusting any row here; `SITEMAP.md` in that repo lags.
+- **2026-09-22 incremental update** (`.specs/resync-2026-09-22-progress.md`):
+  not a re-enumeration — only the 20 SPA commits between `157a65e` and
+  `f1c69f1` were diffed and folded in (interface-licence split, tenant-migration
+  Resolve/Schema column, sortable headers, Landing Print-Mapping removal,
+  `seed/check-application-api`, `interface_days`). Table A grew 167 → 175;
+  total 211 → 219. The "19 of 74 files read in full" caveat from 2026-09-06
+  still applies to every row this update did not touch.

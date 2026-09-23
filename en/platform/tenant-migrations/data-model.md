@@ -2,7 +2,7 @@
 title: Tenant Migrations — Data Model
 description: There is no persisted migration-status entity — every state is derived live from tb_business_unit.db_schema and the linked tb_database_pool row.
 published: true
-date: '2026-09-06T23:45:00.000Z'
+date: '2026-09-22T17:30:00.000Z'
 tags: book/platform, tenant-migrations, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -81,7 +81,7 @@ The resulting URL (`buildTenantUrl()`, `@repo/db-connection-utils`): `postgresql
 |---|---|---|
 | A BU has no `database_pool_id` or `db_schema` set yet | `resolveConnection` throws "not linked to a database pool" / "has no database schema configured"; on the fleet table this surfaces as a per-row error on Check (no pre-check, unlike the per-BU card's `hasDbConnection` gate) | `tenant.service.ts` |
 | A BU's linked pool is soft-deleted or `is_active: false` | Same error path, "has been deleted" / "is inactive" — a pool being retired silently breaks migrations for every BU still pointing at it until they are repointed | `tenant.service.ts` |
-| `prisma migrate deploy` fails partway through a batch (`/deploy/all/stream`) | The failing BU is reported via `bu-complete` with `error`; the loop continues to the next BU — a genuinely stuck migration in that tenant's `_prisma_migrations` table is left exactly as Prisma's own CLI leaves it, with no in-app remediation (`resolve` has no frontend caller, [landing page](/en/platform/tenant-migrations) §3.3) | `tenant_migration.service.ts:560-586` |
+| `prisma migrate deploy` fails partway through a batch (`/deploy/all/stream`) | The failing BU is reported via `bu-complete` with `error`; the loop continues to the next BU — a genuinely stuck migration in that tenant's `_prisma_migrations` table is left exactly as Prisma's own CLI leaves it. Since PR #297 the operator can clear it from the row's Resolve wrench (or the per-BU card) without leaving the app ([landing page](/en/platform/tenant-migrations) §3.2a) | `tenant_migration.service.ts:560-586` |
 | A resolve-connection failure reaches `/deploy/stream` | Falls through the gateway's stale message-pattern mapping to HTTP 500 instead of the documented 422 — the message text is still correct, only the status code is wrong (verified stale since commit `af2437074`, [landing page](/en/platform/tenant-migrations) §4.4) | `tenant-migrations.controller.ts` |
 | `TENANT_MIGRATION_API_ENABLED` unset | Every endpoint 403s, including `status` — indistinguishable in the UI from a permissions problem beyond the literal message text | `config.env.ts:222` |
 
@@ -89,7 +89,7 @@ The resulting URL (`buildTenantUrl()`, `@repo/db-connection-utils`): `postgresql
 
 - **Fix `resolvePreStreamErrorStatus()`'s regex** (or, better, have `deployStream`/`_streamDeploy` carry the originating `ErrorCode` through to the stream's pre-start error instead of re-deriving a status from message text a second time) so a connection-resolution failure on the stream path returns the same 422 the non-streaming `/deploy` endpoint already does.
 - **Update the stale `db_connection` comment** in `../carmen-platform/src/services/tenantMigrationService.ts` to describe the pool/schema mechanism, so the next person reading it does not go looking for a column that was removed months earlier.
-- **Wire `resolve()` into the UI**, even minimally (e.g. a super-admin-only action on a row already in an error state), so a stuck migration does not require a direct API call to clear.
+- ~~**Wire `resolve()` into the UI**~~ — **done in `../carmen-platform` PR #297 (2026-09-16)**, in exactly the shape this recommendation asked for: a super-admin-only wrench on rows already in an error state, plus the same dialog on the per-BU card. What remains worth testing is the one hazard the dialog cannot prevent — choosing `applied` for a migration whose SQL never ran, which leaves the tenant schema silently behind forever.
 - **Consider a persisted last-run record** (BU id, migration name, outcome, timestamp) if this screen is ever expected to answer "what happened to BU X's last deploy attempt" after the fact — today that answer only exists in application logs and the tenant's own `_prisma_migrations` table.
 
 ## 7. References

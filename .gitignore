@@ -30,3 +30,4 @@ graft/
 
 # Obsidian's per-user vault settings — personal, not part of the wiki.
 .obsidian/
+data-model.pdf

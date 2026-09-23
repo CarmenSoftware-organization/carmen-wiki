@@ -2,7 +2,7 @@
 title: News — UI Screens
 description: The NewsroomSummary masthead, NewsManagement list (filters, CSV export, bulk actions), and the masthead-based NewsEdit form with its Publish rail.
 published: true
-date: 2026-09-06T23:45:00.000Z
+date: '2026-09-22T17:30:00.000Z'
 tags: book/platform, news, ui
 editor: markdown
 dateCreated: 2026-06-10T13:00:00.000Z
@@ -52,8 +52,8 @@ Both groups translate into the `advance` query as `{ where: { status: { in: [...
 | (image) | Thumbnail of `image_url` (legacy `image` fallback): `h-10`, max 96 px wide, `object-contain` (aspect ratio preserved), rounded border; hides itself on load error. A muted `ImageIcon` placeholder box when no image |
 | Title | Link to `/news/:id/edit`; `(untitled)` when blank |
 | Status | Badge — `published` → success (green), `draft` (or missing) → secondary, `archived` → outline; label capitalized |
-| Target | `business_unit_ids` non-empty → Building2 icon + "N BU(s)"; empty/absent → outline badge with Globe icon + "Global"; not sortable |
-| Tags | Up to 3 `Badge` chips plus a "+N" overflow count; `-` when empty; not sortable |
+| Target | `business_unit_ids` non-empty → Building2 icon + "N BU(s)"; empty/absent → outline badge with Globe icon + "Global"; **sortable since 2026-09-09** (PR #293) — Global first, then by BU count, computed server-side (`JSON_SORT_KEYS` in `micro-cluster`'s `news.service.ts:44`, since both values live inside JSON columns Prisma's `orderBy` cannot reach). The same backend change fixed the service's hard-coded `orderBy` that had silently discarded every caller-sent `sort` on this endpoint |
+| Tags | Up to 3 `Badge` chips plus a "+N" overflow count; `-` when empty; **sortable since 2026-09-09** by tag count (same derived-key mechanism as Target) |
 | Published | `published_at` as `YYYY-MM-DD HH:mm:ss` (browser-local), muted small text; `-` when never published |
 | Updated | Shared `AuditMeta` "cell" variant: relative time (e.g. "5mo ago", hover for the absolute timestamp) on the first line, actor name on the second; `-` when the record has never actually been edited (`normalizeAudit`'s `everEdited` check — a record whose `updated_at` merely equals `created_at` counts as never-edited, not as "updated with no name"); not sortable |
 | (actions) | `⋯` dropdown — see §2.6 |

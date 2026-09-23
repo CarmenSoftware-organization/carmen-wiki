@@ -2,7 +2,7 @@
 title: Business Unit — UI Screens
 description: BusinessUnitManagement (list) and the six-tab BusinessUnitEdit — code auto-generation, the schema-name randomizer, and the Licenses tab split out of Users.
 published: true
-date: 2026-09-06T23:45:00.000Z
+date: '2026-09-22T17:30:00.000Z'
 tags: book/platform, business-units, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -26,7 +26,7 @@ The six tabs, in the order the strip renders them (`BU_TAB_IDS`, `businessUnitEd
 | **General** | Details group (Code — read-only, Alias, Cluster, Max users — read-only, Description), Calculation Settings section, Branding section | Always |
 | **Location** | Hotel group (11 fields), Company group (11 fields + Copy from hotel address), Tax group | Always |
 | **Formats** | Date & time group, Number Formats section | Always |
-| **Technical** | Configuration section, Database Connection section (pool + schema picker), the three advanced cards (Tenant Migrations/Tenant Seed/Interface Entitlement) | Always (advanced cards render content only when `!isNew`) |
+| **Technical** | Configuration section, Database Connection section (pool + schema picker), the two advanced cards (Tenant Migrations/Tenant Seed — Interface Entitlement was removed in PR #286) | Always (advanced cards render content only when `!isNew`) |
 | **Users** | Users card | `!isNew` only — the tab itself is omitted from the strip entirely while creating |
 | **Licenses** | User Licenses card | `!isNew` only — omitted from the strip while creating |
 
@@ -41,6 +41,8 @@ Note: although `tb_business_unit_tb_module` exists in the Prisma schema as a M:N
 ### 2.1 Layout
 
 The page renders inside `Layout` with a two-row header: a title/subtitle row ("Business Unit Management" / "Manage business units and departments") and an actions row with **Export** and **Add Business Unit** buttons (the button label shortens to "Add BU" on small screens). Below the header sits an **Overview** summary card (§2.1a), then a search-and-filters row inside a `Card`. The `DataTable` renders in server-side mode with pagination and 3 sticky-left columns.
+
+**Stored-page snap-back (PR #298, 2026-09-21).** The page number persists in `localStorage` (`page_business_units`, §6) and can outlive the result set it was valid for — rows deleted, a filter narrowed, `perpage` raised. The next visit then requests a page past the end, the backend answers `200` with `data: []`, and the page renders `ListEmptyState`, which replaces the **entire** `DataTable` including the pagination footer — leaving no control to press while the Overview strip above still counts rows. `outOfRangePage(page, perpage, total)` (`src/utils/pageRange.ts`) now detects this from `paginate.total` — pure arithmetic, not "did we get zero rows," so a backend that clamps server-side is corrected too — and re-requests the **last page that holds rows** (not page 1: someone paging through 12 pages of a set that shrank to 3 wants page 3). It stays out of the way for `perpage: -1`, for page 1, and for a genuinely empty list (`total = 0`), where the empty state is correct.
 
 ### 2.1a Overview strip
 
@@ -119,7 +121,7 @@ Unchanged in field shape. **Date & time** group (Timezone, Date format, Date-tim
 
 This tab absorbed the module's biggest structural change.
 
-**Configuration section** — unchanged: an editable list of `{ key, label, datatype, value }` rows (Data Type options `string`/`number`/`boolean`/`date`/`enum`/`json`), add/remove inline, no confirmation on delete.
+**Configuration section** — an editable list of `{ key, label, datatype, value }` rows (Data Type options `string`/`number`/`boolean`/`date`/`enum`/`json`), add/remove inline, no confirmation on delete. Since PR #292 (2026-09-09) the **Key** / **Label** / **Type** headers are `SortableTableHead` buttons (`src/components/SortableTableHead.tsx` — the same arrow icons `DataTable` uses, so the two table families look identical) cycling unsorted → asc → desc → unsorted in memory (`cycleSort`/`sortRows`, `src/utils/tableSort.ts`). This raw `<Table>` was deliberately not converted to `DataTable`: it has no pagination and no `#` column, and carries bespoke width lanes.
 
 **Database Connection section — completely rebuilt.** A BU no longer holds `host`/`port`/`database`/`user`/`password`/`ssl` at all (that whole hybrid editable form, including the guarded password-reveal button, is gone along with the Prisma column behind it — see [Data Model](/en/platform/business-units/data-model) §1, §2.4). In its place:
 
@@ -131,19 +133,20 @@ This tab absorbed the module's biggest structural change.
 
 **Advanced cards** (existing BUs only, rendering unconditional on `canEdit`/`isSuperAdmin` — see §4.5) render at the bottom of this tab, after Database Connection, unchanged in position relative to it.
 
-### 4.5 Advanced cards (Tenant Migrations / Tenant Seed / Interface Entitlement)
+### 4.5 Advanced cards (Tenant Migrations / Tenant Seed)
 
-Unchanged in behavior from the last sync — still rendered on the Technical tab whenever `!isNew`, regardless of `canEdit` or `isSuperAdmin`; `isSuperAdmin` is checked only inside each card as a `disabledReason` on that card's own action buttons:
+Two cards since PR #286 (2026-09-08), not three — still rendered on the Technical tab whenever `!isNew`, regardless of `canEdit` or `isSuperAdmin`; `isSuperAdmin` is checked only inside each card as a `disabledReason` on that card's own action buttons:
 
-- **Tenant Migrations** (`TenantMigrationCard`) — checks pending schema migrations for this BU's tenant database and applies them via a streamed deploy with a live applied/total readout, behind a confirm dialog. Both its status-check and Apply buttons are disabled (with a "Super-admin required." tooltip) for a non-super-admin, or when the BU has no pool/schema configured yet (`hasDbConnection={!!(database_pool_id && db_schema)}`).
+- **Tenant Migrations** (`TenantMigrationCard`) — checks pending schema migrations for this BU's tenant database and applies them via a streamed deploy with a live applied/total readout, behind a confirm dialog. Both its status-check and Apply buttons are disabled (with a "Super-admin required." tooltip) for a non-super-admin, or when the BU has no pool/schema configured yet (`hasDbConnection={!!(database_pool_id && db_schema)}`). **Since PR #297 (2026-09-16)** a failed status check is kept on the card — an **Error** badge plus the raw message in a `role="alert"` box — instead of being swallowed into a four-second toast that left the BU reading "Not checked" forever; beneath it a **Resolve** button opens the same `TenantMigrationResolveDialog` the fleet-wide [Tenant Migrations](/en/platform/tenant-migrations) screen uses (§3.2a there: migration name pre-filled from Prisma's error text, action defaulting to `rolled-back`). Every button in that dialog is `type="button"` because this card sits inside the edit page's `<form>` — a bare `<button>` would submit the BU.
 - **Tenant Seed** (`TenantSeedCard`) — same status-check/confirm/streamed-progress pattern for seed scripts, with a subset-selection option. Disabled the same two ways as Tenant Migrations.
-- **Interface Entitlement** (`InterfaceEntitlementCard`) — controls which named interface/brand this BU may show, keyed by `buCode` independently of the rest of the document (its own Save button). Empty selection = unrestricted. Skips its data fetch entirely (rather than just disabling a button) when not super-admin or before the BU has been saved once.
 
-None of these three cards existed before commits `8fc1124`/`88ae453`/`ccb0754`; each calls its own dedicated service, not `businessUnitService`.
+The former third card, **Interface Entitlement** (`InterfaceEntitlementCard`, with `interfaceEntitlementService` and `utils/interfaceCatalog.ts`), was deleted outright in PR #286 with no read-only replacement: the `tb_business_unit_interface` table it edited was dropped on 2026-09-08 (`20260908000000_drop_business_unit_interface`), and interface entitlement is now the `interface`-kind feature groups a BU holds through its interface licences — see §4.7 and [Licenses](/en/platform/licenses) §3.6. The design doc for that removal (`../carmen-platform/docs/superpowers/specs/2026-09-07-interface-entitlement-to-license-design.md`) also records that the card's own "empty selection = unrestricted" note had been false all along — the inventory app treated `[]` and `undefined` identically as "no interface visible."
+
+Neither surviving card existed before commits `8fc1124`/`88ae453`; each calls its own dedicated service, not `businessUnitService`.
 
 ### 4.6 Users tab
 
-Existing BUs only; the tab itself is omitted from the strip in create mode. Content is the Users card (`BusinessUnitUsersCard`), largely unchanged in shape from the last sync but with two additions:
+Existing BUs only; the tab itself is omitted from the strip in create mode. Content is the Users card (`BusinessUnitUsersCard`), largely unchanged in shape from the last sync but with three additions (the third, PR #292: **Name** / **Email** / **Username** / **BU Role** / **BU Status** headers are `SortableTableHead` buttons sorting in memory; the card's pre-existing fixed `.sort()` remains the order whenever no header is active):
 
 - **Cluster seat pool indicator.** When the parent cluster carries a `total_max_license_users` cap, the card shows "N / M cluster seats used" above the user table, turning destructive-colored (with a "deactivate N more users" hint) when the BU's active-user count would push the cluster over its pool. This is the **cluster's** shared seat pool, not this BU's own license ledger (§4.7) — a user active in several BUs of the same cluster still only consumes one seat of that shared pool.
 - **"Shared" badge.** A user row shows a small "Shared" badge (tooltip explains) when the user is active in this BU but `frees_seat === false` — meaning they hold membership in another BU of the same cluster too, so removing them from just this BU would not free a seat in the cluster pool. This flag is backend-optional (`frees_seat?: boolean` — absent, not `false`, when the backend hasn't populated it yet); the SPA never guesses a value for it.
@@ -152,16 +155,19 @@ Dialogs (Add User to BU, Edit BU User, Remove BU User) are unchanged from the la
 
 ### 4.7 Licenses tab — NEW, split out of Users (PR #276)
 
-Previously, seat information lived inside the Users tab/card. As of PR #276 it is its own tab, backed by `BusinessUnitLicensesCard` and the `tb_business_unit_license` ledger (see [Data Model](/en/platform/business-units/data-model) §2.3). The rationale, from the card's own source comment: seats and the user roster answer two different questions — seats come from a cluster-level contract, the roster is who is actually assigned — and conflating them in one tab made "how many seats do we have" and "who is using them" compete for the same screen.
+Previously, seat information lived inside the Users tab/card. As of PR #276 it is its own tab, backed by `BusinessUnitLicensesCard` and the `tb_business_unit_license` ledger (see [Data Model](/en/platform/business-units/data-model) §2.3). The rationale, from the card's own source comment: seats and the user roster answer two different questions — seats come from a cluster-level contract, the roster is who is actually assigned — and conflating them in one tab made "how many seats do we have" and "who is using them" compete for the same screen. Since PRs #287–#289 (2026-09-09) the tab holds **two cards** and its strip badge counts both ledgers (`licenses.length + interfaceLicenses.length`, `BusinessUnitEdit.tsx:152`).
 
-The card is **read-only summary + links** — there is no inline seat-editing form here:
+**Card 1 — `BusinessUnitLicensesCard`** is **read-only summary + links** — there is no inline seat-editing form here:
 
 - A summary line: "N seats from M active license(s)" (`sumActiveLicenses()`/count of rows where `licenseStatus() === 'active'`).
 - A cluster-pool line, mirroring the Users tab's own indicator (§4.6), same over-limit styling.
 - A warning badge per license that is expiring soon (`isExpiringSoon()`, threshold from `useExpiryThresholds()` — configurable per platform config, not hardcoded — showing "N days left").
+- **The BU's subscriptions (PR #288).** Every `tb_subscription` issued to this BU, newest `end_date` first, each row showing the number, its state badge (backend-computed), the feature count, the coverage range, a per-row `LicenseTimeline` bar, and an expiring-soon badge against `subscription_days`; every row links to `/licenses/subscriptions/:id/edit`. Above the rows a group-level `LicenseTimeline` (PR #289 — `businessUnitEdit/LicenseTimeline.tsx`, a wrapper over the shared `LicenseCoverageBar` with one month-rounded window for the whole tab) overlays every contract on one bar so gaps and overlaps are visible without reading dates. The list is fetched by `useBusinessUnitSubscriptions` — there is no per-BU subscription endpoint, so it filters `GET /platform/subscriptions` with a relation `advance.where` on `tb_subscription_bu`, and it **checks `subscription.read` before requesting, not just before rendering**: a session without it (a cluster admin opening this page through their own shell) would otherwise get a 401 that `tokenRefresh.ts` cannot tell apart from an expired token, and be logged out. The card renders the list only when the parent passes `subscriptions` at all — the cluster-admin shell passes them through the membership-checked `/clusters/:id/subscriptions` route and suppresses the row links.
 - **Manage licences** button — always shown, links to `/licenses/:clusterId#seats` (the License Center — a separate [Licenses](/en/platform/licenses) module). The href is supplied by the parent page, not built here, because this same card is reused in a shell (cluster-admin) that cannot reach `/licenses/*` at all (no `subscription.read`) — a caller that can't route there passes a fallback href.
 - **New subscription button — new since the last sync, PR #275.** Rendered only when the parent page supplies a `createHref` (which it does only when the session holds `subscription.manage` **and** a cluster is set on the BU — the button and the destination route `/licenses/subscriptions/new` are gated by the exact same permission, `subscription.manage`, deliberately not this page's own `canEdit`: editing a BU and selling it a licence are different authorities, and a cluster-admin session has the first without the second). The link pre-fills `cluster_id` and `business_unit_id` as query parameters so the full-page subscription form opens already scoped to this BU.
 - A footer note: "Seats are managed in the License Center" — reinforcing that this tab does not itself create or edit license rows.
+
+**Card 2 — `BusinessUnitInterfaceLicensesCard` (PR #287, PR #289)** lists the BU's interface licences (`tb_business_unit_interface_license` — one `interface`-kind feature group per row, see [Licenses — Data Model](/en/platform/licenses/data-model) §2.4). Its header reads "N of M licenses in force" and carries the same group-level `LicenseTimeline`; each row shows the licence number, the group name, the coverage range, a per-row timeline, and a badge. **Every badge comes from the backend** — `in_force` → Active; `state === 'active' && !in_force` → **Capped by contract** (with a hint naming the main contract's state: "some licenses are still within their dates, but the main contract is expired — interfaces stay off until it is renewed"); `scheduled`; `expired` — the card's own comment names the within-dates-but-capped row as "the point where this screen most easily lies" and forbids computing any of it from dates client-side. An expiring-soon badge fires only for `in_force` rows within `interface_days`. Rows link to `/licenses/interface/:id/edit` (`editHref`, supplied by the parent — the cluster-admin shell omits it because that route needs `subscription.read`); **Manage licences** links to `/licenses?tab=interface`; **Add interface license** appears only when the parent supplies `createHref`, which `BusinessUnitEdit` does only under `subscription.manage` — the same key `/licenses/interface/new` checks — pre-filling `?bu=` and `?ownerLabel=`.
 
 ## 5. Dialogs
 
@@ -229,7 +235,10 @@ The list page writes 6 keys to `localStorage`, unchanged from the last sync. `Bu
 - `../carmen-platform/src/pages/businessUnitEdit/sections/{CalculationSettingsSection,NumberFormatsSection,ConfigurationSection,DatabaseConnectionSection}.tsx` — the four remaining complex sections; `DatabaseConnectionSection` rebuilt around the database-pool picker (no more host/port/user/password fields — see §4.4).
 - `../carmen-platform/src/utils/databasePool.ts` — `generateSchemaName` (the randomizer), `poolDsn`/`isDerivedName` (address formatting shared with the Database Pools module).
 - `../carmen-platform/src/pages/businessUnitEdit/BusinessUnitLicensesCard.tsx`, `src/pages/licenses/useLicenseLedger.ts`, `src/utils/buLicense.ts` — the Licenses tab.
-- `../carmen-platform/src/components/{TenantMigrationCard,TenantSeedCard,InterfaceEntitlementCard}.tsx` — the three advanced cards.
+- `../carmen-platform/src/components/{TenantMigrationCard,TenantSeedCard,TenantMigrationResolveDialog}.tsx` — the two advanced cards and the shared Resolve dialog (§4.5).
+- `../carmen-platform/src/pages/businessUnitEdit/{BusinessUnitInterfaceLicensesCard,LicenseTimeline,useBusinessUnitSubscriptions}.ts(x)`, `src/services/businessUnitInterfaceLicenseService.ts` — the Licenses tab's second card, the shared timeline, and the subscription list (§4.7).
+- `../carmen-platform/src/components/SortableTableHead.tsx`, `src/utils/tableSort.ts` — the in-memory header sorting on the Users card and Configuration section (§4.4, §4.6).
+- `../carmen-platform/src/utils/pageRange.ts` — `outOfRangePage()`, the list page's stored-page snap-back (§2.1).
 - `../carmen-platform/src/services/{businessUnitService,businessUnitLicenseService,databasePoolService,currencyService}.ts` — REST clients.
 - `../carmen-platform/src/pages/businessUnitEdit/{BusinessUnitUsersCard,useBusinessUnitUsers}.ts(x)` — Users tab and its Add/Edit/Remove dialog logic; `frees_seat`/cluster-seat indicator additions.
 - `../carmen-platform/src/components/BrandingImageUpload.tsx` — shared upload control.

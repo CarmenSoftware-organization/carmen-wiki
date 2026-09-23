@@ -2,7 +2,7 @@
 title: Platform Config — Data Model
 description: tb_platform_config, a namespace-per-row key/value table; the full ten-key PLATFORM_CONFIG_REGISTRY (eight shown on this module's own screen, two owned by other modules); and the multi-process reader map behind each key's real-world effect.
 published: true
-date: '2026-09-06T09:00:00.000Z'
+date: '2026-09-22T17:30:00.000Z'
 tags: book/platform, platform-config, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -52,7 +52,7 @@ Defined once, `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/pla
 | `password_reset` | `base_url: string (url)` = `http://localhost:3000`; `expiry_hours: int (1–720)` = `24` | Yes |
 | `notification_email` | `enabled: boolean` = `false`; `recipients: string[] (email)` = `[]`; `cc: string[] (email)` = `[]`; `subject_prefix: string (max 64)` = `''` | Yes — see landing §3.2 for the "no confirmed reader" finding |
 | `license` | `enforcement_enabled: boolean` = `false` | Yes |
-| `expiry_thresholds` | `subscription_days: int (1–365)` = `30`; `bu_quota_days: int (1–365)` = `30`; `seat_days: int (1–365)` = `30` | Yes |
+| `expiry_thresholds` | `subscription_days: int (1–365)` = `30`; `bu_quota_days: int (1–365)` = `30`; `interface_days: int (1–365)` = `30` (added 2026-09-09 for INF licences — [Licenses](/en/platform/licenses) §3.6); `seat_days: int (1–365)` = `30` | Yes |
 | `platform_migration` | `api_enabled: boolean` = `false` | Yes |
 | `email_routing` | `default: string (uuid)`; `register`, `verify_email`, `invitation`, `forgot_password`, `notification`: `string (uuid)`, all optional | **No** — edited from the Email Settings module (landing §3.5) |
 | `feature_flags` | `Record<string, 'active' \| 'inactive' \| 'hide'>` (free-form key set), default `{}` | **No** — reachable only through its own dedicated `/api-system/platform/feature-flags` pair (landing §3.5) |
