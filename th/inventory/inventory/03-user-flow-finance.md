@@ -2,7 +2,7 @@
 title: คลังสินค้า (Inventory) — User Flow — Finance (แก้ไข/correction)
 description: หน้าแก้ไข — ไม่มี Finance role, GL reconciliation หรือ flow การ lock งวดอยู่จริงในโมดูล inventory; หน้านี้บันทึกสิ่งที่มาแทน draft ก่อนหน้า
 published: true
-date: 2026-07-15T09:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: inventory, user-flow, finance, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -19,9 +19,9 @@ dateCreated: 2026-05-15T12:00:00.000Z
 Draft ก่อนหน้าอธิบาย persona Finance Officer / Finance Manager ที่มีสี่สายงาน: cost-impact approval queue สำหรับ adjustment ที่เกิน threshold, inventory-to-GL reconciliation dashboard รายสัปดาห์, flow การ orchestrate ปิดงวดพร้อม reconciliation journal และความก้าวหน้าของ period-lock แบบ `closed → locked` การตรวจสอบเทียบกับ source ปัจจุบันไม่พบสิ่งใดเลย:
 
 - **ไม่มี Finance role อยู่จริง** `enum_stage_role` (Prisma tenant schema) คือ `{create, approve, purchase, issue, view_only}` — ไม่มี member `finance` และ permission catalogue (`carmen-inventory-frontend-react/constant/permissions.ts`) ไม่มี key ที่ scope ให้ finance
-- **ไม่มีโค้ด GL/journal อยู่จริง** การค้นหาทั่ว repo `carmen-turborepo-backend-v2` สำหรับการ post journal/ledger จาก inventory movement ไม่พบสิ่งใด (model Prisma `tb_jv_header`/`tb_jv_detail` ยังไม่ถูก wire — ดู [01-data-model](/th/inventory/inventory/01-data-model) § 1) ไม่มี reconciliation dashboard, tolerance หรือกลไก compensating-journal
+- **ไม่มีโค้ด inventory-to-GL อยู่จริง** แกน GL มาถึงในเดือน 2026-09 (ตาราง `tb_gl_jv*`, `apps/micro-business/src/gl/`, manual journal voucher ใต้ `/api/{bu}/gl-posting`) แต่การค้นหาทั่ว repo `carmen-turborepo-backend-v2` สำหรับการ post journal/GL *จาก inventory movement* ยังไม่พบสิ่งใด — ทั้งสองโมดูลไม่อ้างอิงถึงกัน (ดู [01-data-model](/th/inventory/inventory/01-data-model) § 1) ไม่มี reconciliation dashboard, tolerance หรือกลไก compensating-journal
 - **ไม่มี approval chain แบบอิง threshold อยู่จริง** พบ `threshold` ศูนย์รายการใน service ของ inventory / stock-in / stock-out / period-end (ดูการแก้ไขใน [02-business-rules](/th/inventory/inventory/02-business-rules) § 4)
-- **ไม่มี flow lock/reopen ในโมดูลนี้** `period-end.controller.ts` expose เพียง `find-all` / `find-current` / `close` / `find-review`; `enum_period_status.locked` ถูก set โดย period service ที่แยกต่างหากหลัง [system-config/period](/th/inventory/system-config/period)
+- **ไม่มี flow lock/reopen ในโมดูลนี้** `period-end.controller.ts` expose เพียง `find-all` / `find-current` / `find-review` / `start-counting` / `close`; `enum_period_status.locked` ถูก set โดย inventory-period service (`/api/{bu}/inventory-periods`) หลัง [system-config/period](/th/inventory/system-config/period)
 
 ข้อสรุปนี้สอดคล้องกับข้อค้นพบ Finance-persona แบบเดียวกันที่ยืนยันไปแล้วใน [purchase-order](/th/inventory/purchase-order/03-user-flow-finance), [good-receive-note](/th/inventory/good-receive-note/03-user-flow-finance) และ [store-requisition](/th/inventory/store-requisition)
 
@@ -30,7 +30,7 @@ Draft ก่อนหน้าอธิบาย persona Finance Officer / Finan
 | สิ่งที่เคยกล่าวอ้างในหน้านี้ | กลไกจริง | หน้า |
 |---|---|---|
 | Finance เป็นผู้ trigger การปิดงวด | ผู้ใช้ใดก็ตามที่มี `inventory_management.period_end.execute` คลิก **Close period** บน `/inventory-management/period-end/review` | [period-end](/th/inventory/inventory/period-end) |
-| Reconciliation เป็น gate ของการปิด | Gate จริงคือเอกสารที่ block (PR/PO/SR ที่ยังไม่จบ, GRN/CN ที่อยู่ mid-state) + physical count ที่เสร็จแล้ว | [02-business-rules](/th/inventory/inventory/02-business-rules) `INV_POST_009` |
+| Reconciliation เป็น gate ของการปิด | Gate จริงคือเอกสาร SR / GRN / CN / SI / SO ที่อยู่ mid-state + physical count ที่เสร็จแล้ว (PR/PO ไม่เป็น gate อีกต่อไป) โดยมี gate start-counting บนเอกสารเคลื่อนไหวสต๊อกที่ยังเปิดอยู่นำหน้า | [02-business-rules](/th/inventory/inventory/02-business-rules) `INV_POST_009` / `INV_POST_009a` |
 | การ lock งวดหลัง audit window | `locked` ถูกจัดการโดย period service ของ system-config ไม่ใช่ที่นี่ | [system-config/period](/th/inventory/system-config/period) |
 | การอนุมัติ cost-impact ของ adjustment | เอกสาร stock-in/stock-out อยู่ในโมดูล inventory-adjustment; ไม่มี Finance tier อยู่จริง | [inventory-adjustment](/th/inventory/inventory-adjustment) |
 

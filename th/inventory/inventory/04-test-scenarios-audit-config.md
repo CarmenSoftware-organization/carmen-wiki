@@ -2,7 +2,7 @@
 title: คลังสินค้า (Inventory) — Test Scenarios — Audit & Config
 description: หน้าแก้ไข — test suite ของ Audit/Config ที่เคยบันทึกไว้บนหน้านี้อ้างถึง audit workspace และ configuration console ที่ไม่มีอยู่จริง
 published: true
-date: 2026-07-15T09:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: inventory, test-scenarios, audit-config, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -15,7 +15,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 
 ## 1. เหตุผลที่ scenarios เหล่านี้ถูกตัดออก
 
-- **ไม่มี route ของ audit workspace หรือ configuration console** ใต้ `/inventory-management/` (`routes/router.tsx` list เพียง `transaction`, `period-end(/review)`, `inventory-adjustment`, `physical-count`, `spot-check`)
+- **ไม่มี route ของ audit workspace หรือ configuration console** ใต้ `/inventory-management/` (`routes/router.tsx` list เพียง dashboard หน้า index, `transaction`, `period-end(/review)`, `inventory-adjustment`, `physical-count`, `spot-check` — ตรวจซ้ำ 2026-09-22)
 - **ไม่มีกลไก threshold, impact-preview, configuration-history, หรือ dual-write** ใน backend inventory services
 - **Costing method ไม่ใช่รายสินค้า** — มันคือ `tb_business_unit.calculation_method` (setting ระดับ BU ฝั่ง platform); ไม่มีอะไรให้ config ใน UI ของผลิตภัณฑ์นี้ และไม่มี drain-guard อยู่จริง
 - **ไม่มีเครื่องมือ lot-trace หรือ snapshot-reconciliation เฉพาะทาง**; ข้อมูล lot lineage (`from_lot_no` / `current_lot_no` / `parent_lot_no`) มีจริง แต่ query ได้ผ่าน transaction list หรือ database เท่านั้น

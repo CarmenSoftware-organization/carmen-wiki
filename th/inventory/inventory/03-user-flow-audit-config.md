@@ -2,7 +2,7 @@
 title: คลังสินค้า (Inventory) — User Flow — Audit & Config (แก้ไข/correction)
 description: หน้าแก้ไข — ไม่มี inventory audit workspace หรือ configuration console อยู่จริง; configuration จริงอยู่ใน master-data, system-config และ access-control
 published: true
-date: 2026-07-15T09:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: inventory, user-flow, audit-config, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -18,7 +18,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 
 Draft ก่อนหน้าอธิบาย workspace เฉพาะทางสองตัว: หน้าจอ Auditor (audit-log query, lot-recall trace แบบ forward/backward, การกระทบยอด period-snapshot, การ export sensitive-field แบบมี watermark พร้อม co-approval) และ "inventory configuration console" ของ Sysadmin (panel สำหรับ location, costing method ต่อสินค้า, adjustment types, งวด, approval threshold, RBAC scope, การ cutover integration-endpoint แบบ dual-write พร้อม impact preview และ configuration history) การตรวจสอบเทียบกับ source ปัจจุบันไม่พบ route, component หรือ endpoint ที่ตรงกัน — เป็นรูปแบบการกุขึ้นแบบ config-workbench เดียวกับที่ยืนยันว่าไม่มีอยู่จริงไปแล้วในรอบ purchase-request, purchase-order, good-receive-note และ store-requisition รายละเอียด:
 
-- ไม่มี route ภายใต้ `/inventory-management/` นอกเหนือจาก `transaction`, `period-end(/review)`, `inventory-adjustment`, `physical-count`, `spot-check` (ดู `routes/router.tsx`)
+- ไม่มี route ภายใต้ `/inventory-management/` นอกเหนือจาก dashboard หน้า index (`inventory-dashboard.tsx`, มีเพียง KPI tile), `transaction`, `period-end(/review)`, `inventory-adjustment(/new, /:id)`, `physical-count(/new, /:id, /:id/entry, /:id/review)`, `spot-check(/location/:location_id, /:id, /:id/review)` (ดู `routes/router.tsx`, ตรวจซ้ำ 2026-09-22)
 - ไม่มี configuration `threshold` ที่ใดเลยใน backend inventory services; ไม่มี costing method ต่อสินค้าให้ตั้งค่า (method คือ `tb_business_unit.calculation_method` — เป็น setting ระดับ BU ของ platform)
 - ไม่มีเครื่องมือ lot-trace หรือ query กระทบยอด snapshot; *ข้อมูล* lot lineage เป็นของจริง (`from_lot_no` / `current_lot_no` / `parent_lot_no`) แต่ UI เดียวที่อยู่เหนือมันคือ transaction list
 - ไม่พบกลไก impact-preview, drain-requirement, dual-write หรือ configuration-history ใด ๆ

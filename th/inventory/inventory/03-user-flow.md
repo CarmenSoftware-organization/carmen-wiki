@@ -2,7 +2,7 @@
 title: คลังสินค้า (Inventory) — User Flow
 description: วงจรชีวิตของ movement และไฟล์ flow เฉพาะ persona สำหรับ inventory
 published: true
-date: 2026-07-15T09:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: inventory, user-flow, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -12,11 +12,11 @@ dateCreated: 2026-05-15T12:00:00.000Z
 
 > **At a Glance**
 > **โมดูล:** [inventory](/th/inventory/inventory) &nbsp;·&nbsp; **Personas:** Store Keeper (ตรวจสอบ ledger) &nbsp;·&nbsp; Inventory Controller (ปิดสิ้นงวด) &nbsp;·&nbsp; Finance + Audit / Config (หน้าแก้ไข — ไม่มี surface เหล่านั้นอยู่จริง)
-> **วงจรชีวิต workflow:** ขับเคลื่อนด้วย movement — แต่ละ `tb_inventory_transaction` ถูกเขียนแบบ posted แล้วโดยโมดูล source ของมัน (ไม่มี draft → committed บน movement) วงจรชีวิตต่องวดอยู่บน `tb_period.status`: `open` → `closed` ผ่าน action Close ที่นี่ (`locked` ถูก set ที่อื่น) การแก้ไขคือ transaction ใหม่ผ่านเอกสาร source ใหม่; row ไม่เคยถูกแก้ไข
+> **วงจรชีวิต workflow:** ขับเคลื่อนด้วย movement — แต่ละ `tb_inventory_transaction` ถูกเขียนแบบ posted แล้วโดยโมดูล source ของมัน (ไม่มี draft → committed บน movement) วงจรชีวิตต่องวดอยู่บน `tb_inventory_period.status`: `open` → (**Start Period Close** เปิดรอบการนับบน `tb_physical_count_period`) → `closed` ผ่าน **Close Period** ที่นี่ (`locked` ถูก set ที่อื่น) การแก้ไขคือ transaction ใหม่ผ่านเอกสาร source ใหม่; row ไม่เคยถูกแก้ไข
 
 ## 1. ภาพรวม
 
-หน้านี้คือ **จุดเข้าภาพรวม** สำหรับชุด user-flow ของโมดูล `inventory` Inventory ไม่ปกติเมื่อเทียบกับโมดูลเอกสารพี่น้อง — ไม่มีเอกสาร workflow ที่วงจรชีวิต draft → saved → committed เล่นบน พื้นผิว UI ของโมดูลมีเพียงสองหน้าจอพอดี: **Transaction Log** แบบ read-only (`/inventory-management/transaction`) และ **Period End** (`/inventory-management/period-end` + `/review`) ทุก ledger row ถูกเขียนโดยโมดูล source ต้นน้ำ ณ posting event ของมัน — GRN **save**, การ approve SR ที่ stage สุดท้าย, การ complete ของ inventory-adjustment, การ complete ของ credit-note — และการปิดงวดเองก็เขียน row `close`/`open` ลง ledger เดียวกัน
+หน้านี้คือ **จุดเข้าภาพรวม** สำหรับชุด user-flow ของโมดูล `inventory` Inventory ไม่ปกติเมื่อเทียบกับโมดูลเอกสารพี่น้อง — ไม่มีเอกสาร workflow ที่วงจรชีวิต draft → saved → committed เล่นบน พื้นผิว UI ของโมดูลมีเพียงสองหน้าจอพอดี: **Transaction Log** แบบ read-only (`/inventory-management/transaction`) และ **Period End** (`/inventory-management/period-end` + `/review`) ทุก ledger row ถูกเขียนโดยโมดูล source ต้นน้ำ ณ posting event ของมัน — GRN **save** (BU วิธี average) หรือ **commit** (BU แบบ FIFO), การ approve SR ที่ stage สุดท้าย, stock-in / stock-out **commit**, การ complete ของ credit-note — และการปิดงวดเองก็เขียน row `close`/`open` ลง ledger เดียวกัน
 
 Section 2 อธิบาย state machine สองอัน (ระดับ movement — degenerate; ระดับ period — อันที่มีสาระ) Section 3 เป็นสารบัญไฟล์ persona: สองไฟล์อธิบาย flow จริงเหนือสองหน้าจอ; อีกสองไฟล์เป็นหน้าแก้ไข (correction page) สำหรับ persona ที่ surface ที่เคยบันทึกไว้ก่อนหน้าได้รับการยืนยันแล้วว่าไม่มีอยู่ในผลิตภัณฑ์
 
@@ -26,7 +26,7 @@ Section 2 อธิบาย state machine สองอัน (ระดับ m
 
 | From state | Action | To state | อนุญาตสำหรับ | Pre-conditions |
 | ---------- | ------ | -------- | ----------- | -------------- |
-| `(none)` | post จากเอกสาร source | `posted` | Posting event ของโมดูล source (GRN save, การ approve SR ที่ stage สุดท้าย, Submit ของ inventory-adjustment, การ complete ของ credit-note, การปิดงวด) | เอกสาร source ไปถึงสถานะ posting ของมัน; การบริโภคขาออกผ่านการตรวจ balance (`Insufficient stock…` ยกเว้น path ของ credit-note ซึ่งบันทึก `diff_amount`); `at_period`/`period_id` ถูก stamp จาก **งวด open ปัจจุบัน** โดยไม่สนวันที่เอกสาร |
+| `(none)` | post จากเอกสาร source | `posted` | Posting event ของโมดูล source (GRN save บน BU แบบ average / commit บน BU แบบ FIFO, การ approve SR ที่ stage สุดท้าย, **Commit** ของ stock-in / stock-out, การ complete ของ credit-note, การปิดงวด) | เอกสาร source ไปถึงสถานะ posting ของมัน; วันที่เอกสารอยู่ในงวดที่เปิด (SI: งวด open/locked ใดก็ได้; SO: งวดปัจจุบัน; GRN: งวด open ใดก็ได้ — มิฉะนั้น create/commit ถูก reject ดู `INV_VAL_008`); การบริโภคขาออกผ่านการตรวจ balance (`Insufficient stock…` ยกเว้น path ของ credit-note ซึ่งบันทึก `diff_amount`); `at_period`/`period_id` ถูก stamp จากงวดของ**วันที่เอกสาร** |
 | `posted` | (ไม่มี action ต่อ) | `posted` | — | ปลายทางและ immutable ไม่มี endpoint reversal, ไม่มี endpoint แก้ไข; โค้ดปัจจุบันไม่เคย set `deleted_at` การแก้ไขคือ transaction **ใหม่** ที่ post โดยเอกสาร source ใหม่ (credit note, stock-in/stock-out) |
 
 ### 2.2 Transitions ระดับ Period
@@ -34,8 +34,9 @@ Section 2 อธิบาย state machine สองอัน (ระดับ m
 | From state | Action | To state | อนุญาตสำหรับ | Pre-conditions |
 | ---------- | ------ | -------- | ----------- | -------------- |
 | `(none)` | สร้างงวด | `open` | `ensureNextPeriod` ระหว่างการปิดครั้งก่อน หรือหน้าจอ admin ของงวด ([system-config/period](/th/inventory/system-config/period)) | หนึ่งงวดต่อ YYMM (`@@unique([fiscal_year, fiscal_month, deleted_at])`) |
-| `open` | รับ movements | `open` | Role ที่ทำธุรกรรมทั้งหมด (ผ่านโมดูล source) | ทุก movement ใหม่ stamp เข้างวดนี้ — รวมถึงแบบ "backdate" (ถูก re-date ไม่ใช่ reject) |
-| `open` (หรือ `locked`) | **Close period** บน `/period-end/review` | `closed` | ผู้ใช้ใดก็ได้ที่มี `inventory_management.period_end.execute` | Gate เอกสารที่ block เคลียร์ทั้งหมด (PR/PO/SR ไม่ `in_progress` กลาง workflow; GRN อยู่ใน `{draft, committed, voided}`; CN อยู่ใน `{draft, completed, cancelled, voided}`; ทุก location ที่กำหนดนับครบ) รันแบบ atomic ภายใต้ lock `FOR UPDATE` พร้อม re-validation; เขียนการยกยอด lot (`CLOSE-…`/`OPEN-…`) และ — เฉพาะ tenant แบบ average method — row `tb_period_snapshot`; provision งวด `open` ถัดไปอัตโนมัติ; mark row `tb_physical_count_period` เป็น completed |
+| `open` | รับ movements | `open` | Role ที่ทำธุรกรรมทั้งหมด (ผ่านโมดูล source) | Movement ที่วันที่เอกสารอยู่ในงวดนี้จะ post เข้างวดนี้; เอกสารที่ลงวันที่ในงวดที่ `closed` ถูก reject ตอน create/commit (date guard ของ SI/SO/GRN) |
+| `open` | **Start Period Close** บน `/period-end` | `open` (งวด) + `counting` (`tb_physical_count_period` ของงวด) | ผู้ใช้ใดก็ได้ที่มี `inventory_management.period_end.execute` | ไม่มี GRN ที่ลงวันที่ในงวดอยู่นอก `{committed, voided}`, ไม่มี SI/SO อยู่นอก `{completed, cancelled, voided}`, ไม่มี SR ที่มีเลขที่อยู่ที่ `draft`/`in_progress` (`listStartCountingBlockers`); PR/PO ไม่เคย block เป็น idempotent ตราบที่รอบยัง `counting`; 409 เมื่อรอบ `completed` แล้ว นี่คือ path เดียวที่ทำให้เปิด physical count ได้ |
+| `open` (หรือ `locked`) | **Close Period** บน `/period-end/review` | `closed` | ผู้ใช้ใดก็ได้ที่มี `inventory_management.period_end.execute` | Gate การปิดเคลียร์ทั้งหมด (SR ที่มีเลขที่ไม่ `in_progress` กลาง workflow; GRN อยู่ใน `{draft, committed, voided}`; CN อยู่ใน `{draft, completed, cancelled, voided}`; SI/SO ไม่ `in_progress`; ทุก location ที่กำหนดนับครบ — PR/PO ไม่เป็น gate อีกต่อไป) รันแบบ atomic ภายใต้ lock `FOR UPDATE` พร้อม re-validation; กวาดเฉพาะ lot ที่งวดมี `end_at ≤` งวดนี้; เขียนการยกยอด lot (lot ใหม่ `{location_code}{YYMM}{seq4}`) และ — เฉพาะ tenant แบบ average method — row `tb_inventory_period_snapshot`; provision งวด `open` ถัดไปอัตโนมัติ; mark row `tb_physical_count_period` เป็น completed |
 | `closed` | (ไม่มี transition ในโมดูลนี้) | — | — | ไม่มี endpoint reopen ที่นี่ |
 | any | lock / unlock | `locked` / — | Period service ที่อยู่หลัง [system-config/period](/th/inventory/system-config/period) | นอก scope ของโมดูลนี้; หมายเหตุ `findCurrent` ถือว่า `locked` เป็นงวดปัจจุบัน งวดที่ lock จึงยังแสดงและปิดได้จากที่นี่ |
 
@@ -52,8 +53,9 @@ Section 2 อธิบาย state machine สองอัน (ระดับ m
 | ---- | ------- | -- | ----------------------- |
 | ผู้ปฏิบัติงานโมดูล source (ผู้รับ GRN, ผู้อนุมัติ SR, ผู้ทำ adjustment) | Posting event fire | Store Keeper (การตรวจสอบ) | Ledger rows ถูกเขียนแล้ว; `parent_document_no` resolve ได้บน Transaction Log |
 | Inventory Controller | การ์ดเอกสารที่ block บนหน้า review เป็น incomplete | เจ้าของโมดูล source | เอกสารแสดงใน dialog ต่อโมดูล; งวดคง `open` จนกว่าจะแก้เสร็จ |
-| Inventory Controller | แถว physical-count เป็น incomplete | ผู้นับ | Deep-link ไป `/inventory-management/physical-count/{id}/entry` |
-| Inventory Controller | **Close period** สำเร็จ | ทุกคน | `tb_period.status = closed`; งวดถัดไป `open`; movement ใหม่ stamp เข้างวดนั้นอัตโนมัติ |
+| Inventory Controller | **Start Period Close** ถูก block (dialog "Finish these documents first") | เจ้าของ GRN / SI / SO / SR | payload 422 list เอกสารที่ block ทุกฉบับพร้อมลิงก์; รอบการนับคง `draft` |
+| Inventory Controller | การ์ด location ของ physical-count ยังไม่ completed | ผู้นับ | การคลิกการ์ดเปิดการนับของ location นั้น (สร้างให้ถ้ายังไม่มี, `openPhysicalCount`); การ์ดถูก disable จนกว่ารอบจะเป็น `counting` |
+| Inventory Controller | **Close Period** สำเร็จ | ทุกคน | `tb_inventory_period.status = closed`; งวดถัดไป `open`; เอกสารที่ลงวันที่ในงวดใหม่ post เข้างวดนั้น เอกสารที่ยังลงวันที่ในงวดที่ปิดแล้วถูก reject |
 
 ## 5. แหล่งอ้างอิง
 
