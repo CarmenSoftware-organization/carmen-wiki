@@ -2,7 +2,7 @@
 title: Carmen Inventory
 description: Carmen Inventory ERP — เอกสารอ้างอิงโมดูลสำหรับนักพัฒนาและทีมทดสอบ
 published: true
-date: 2026-07-29T06:11:01.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: book/inventory, home
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -52,6 +52,7 @@ dateCreated: 2026-05-19T00:00:00.000Z
 |---|---|
 | [Costing](/th/inventory/costing) | วิธีคิดต้นทุน FIFO Weighted Average |
 | [Reporting & Audit](/th/inventory/reporting-audit) | รายงานและ audit trail |
+| [General Ledger](/th/inventory/general-ledger) | ระบบย่อย GL (backend เท่านั้น ไม่มี UI) — เอกสารเฉพาะส่วนที่แตะ inventory; ยังไม่มีการ post จาก inventory→GL |
 
 ## 6. การดูแลระบบ
 

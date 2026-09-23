@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — User Flow — Audit & Config
 description: เส้นทางของ Auditor (activity log แบบ read-only) และ System Administrator (การตั้งค่า workflow / RBAC / numbering) สำหรับ purchase-order
 published: true
-date: 2026-07-29T05:45:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: purchase-order, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -23,7 +23,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 
 ## 1. บทบาทในโมดูลนี้
 
-**Auditor** เป็น role แบบ read-only surface เดียวที่ยืนยันได้คือ activity/history ของหน้า PO detail เอง — `workflow_history`, `history`, และ `tb_purchase_order_comment` — ซึ่ง user ใด ๆ ที่มีสิทธิ์อ่าน PO ก็เห็นได้อยู่แล้ว ส่วนว่า role "Auditor" ที่แยกต่างหาก หรือ cross-document query workspace เฉพาะจะมีอยู่เพิ่มเติมจากนั้นหรือไม่ ยังไม่ได้รับการยืนยันในรอบนี้ Auditor ไม่สามารถ approve, transmit, reject, close, หรือ edit lines ได้
+**Auditor** เป็น role แบบ read-only surface ที่ยืนยันได้คือ activity/history ของหน้า PO detail เอง — `workflow_history`, `history`, และ `tb_purchase_order_comment` — ซึ่ง user ใด ๆ ที่มีสิทธิ์อ่าน PO ก็เห็นได้อยู่แล้ว; endpoint ประวัติต่อบรรทัด `GET .../purchase-orders/detail/:detail_id/history` (ใหม่นับจาก baseline; ทุกการ save และ stage action บนบรรทัดเดียว แสดงผ่านปุ่ม history ของแถว); และตั้งแต่ 2026-09-08/14 แถว `tb_activity` ที่ PO service เขียนสำหรับการส่งถึง vendor — `action = email_sent` สำหรับทุกความพยายาม `send-email` (สำเร็จ **และ** ล้มเหลว พร้อมผู้รับ / รายการที่ถูกปฏิเสธ) และ `action = other` "Marked as sent to vendor" สำหรับ `mark-sent` — อ่านได้ผ่าน [reporting-audit/activity](/th/inventory/reporting-audit/activity) ส่วนว่า role "Auditor" ที่แยกต่างหาก หรือ cross-document query workspace เฉพาะจะมีอยู่เพิ่มเติมจากนั้นหรือไม่ ยังไม่ได้รับการยืนยันในรอบนี้ Auditor ไม่สามารถ approve, send, reject, close, หรือ edit lines ได้
 
 **System Administrator** ตั้งค่า workflow definition ที่ `tb_purchase_order.workflow_id` อ้างอิง (stages, `stage_role`, membership `user_action.execute[]`, และ — **ยืนยันแล้วในรอบนี้** — routing rules ตาม amount/department/category ผ่านแท็บ **Routing** ของ workflow, `PO_AUTH_004` — ทั้งหมดนี้คือ functionality system-config แบบ generic ที่ใช้ร่วมกันข้าม document type ไม่ใช่เฉพาะของ PO) และ running-code scheme ที่ generate `po_no` การ map RBAC role-to-permission ก็เป็นเรื่องของ system-config แบบ generic เช่นกัน ไม่พบ numbering template เฉพาะของ PO, หน้า integration-settings, หรือ PR-to-PO grouping-rule editor ใด ๆ
 
@@ -49,11 +49,13 @@ graph LR
 | Action | Auditor | System Administrator |
 |---|---|---|
 | อ่าน PO `workflow_history` / `tb_purchase_order_comment` | ✅ | ✅ |
+| อ่านประวัติต่อบรรทัด (`GET .../detail/:detail_id/history`) และ entry send / email ใน `tb_activity` | ✅ | ✅ |
 | อ่าน header / lines / snapshots | ✅ | ✅ |
 | เดิน PR→PO bridge (`tb_purchase_order_detail_tb_purchase_request_detail`) | ✅ | ✅ |
 | Edit workflow stages / `stage_role` / `user_action.execute[]` (generic system-config) | ❌ | ✅ |
 | Edit running-code scheme (`po_no`) (generic system-config) | ❌ | ✅ |
-| Edit RBAC permission map | ❌ | ✅ (ผ่าน generic system-config, ยังไม่ยืนยันว่าเป็นหน้าจอเฉพาะของ PO) |
+| Edit RBAC permission map | ❌ | ✅ (ผ่าน generic system-config, ยังไม่ยืนยันว่าเป็นหน้าจอเฉพาะของ PO) key ที่ SPA ประกาศ: `procurement.purchase_order` (resource แบบ view-only), `procurement.credit_note` (CRUD), `system_admin.workflow.purchase_order` (`constant/permissions.ts`); gateway บังคับเฉพาะ `procurement.purchase_order: create` บน `GET .../purchase-orders/grn/:id` |
+| ตั้งค่า BU email profile ที่ PO Send Email ใช้ | ❌ | ✅ ([system-config/config-email](/th/inventory/system-config/config-email); template PO / RFP seed ต่อ BU) |
 | Edit PO header / lines / vendor / qty | ❌ | ❌ |
 | Approve / Transmit / Send-back / Reject | ❌ | ❌ |
 | Close PO | ❌ | ❌ (escalate ไปยัง Procurement Manager หรือ Inventory Manager ภายใต้ `PO_AUTH_008`) |
@@ -64,7 +66,7 @@ graph LR
 
 **Entry point:** เปิดหน้า detail ของ PO → **Activity Log** / มุมมอง history **ยังไม่ยืนยัน:** query builder แบบ cross-document เฉพาะที่ span PR → PO → GRN
 
-**Flow ที่ยืนยันแล้ว:** เปิด PO อ่าน `workflow_history` (stage transitions, actor, timestamp) และ `tb_purchase_order_comment` (user และ system comments) เดิน PR→PO bridge สำหรับ PR-sourced POs เพื่อดู PR ต้นทาง ไม่มี PO state ใดถูกเปลี่ยนโดยสิ่งเหล่านี้
+**Flow ที่ยืนยันแล้ว:** เปิด PO อ่าน `workflow_history` (stage transitions, actor, timestamp — entry สุดท้ายของ `approved` มี `action = completed`) และ `tb_purchase_order_comment` (user และ system comments) สำหรับคำถาม "vendor ได้รับหรือยัง และเมื่อไหร่" ให้อ่าน `tb_activity` สำหรับ `entity_type = 'purchase_order'`: entry `email_sent` บันทึกแต่ละความพยายามส่งและผลลัพธ์ และ status `sent_or_print` ของ PO ยืนยันการส่งที่สำเร็จหรือ `mark-sent` เดิน PR→PO bridge สำหรับ PR-sourced POs เพื่อดู PR ต้นทาง (ปุ่ม **view source PR** บนหน้า detail) และ label GRN ต่อบรรทัด ไม่มี PO state ใดถูกเปลี่ยนโดยสิ่งเหล่านี้
 
 ### 2.2 System Administrator
 
@@ -75,7 +77,7 @@ graph LR
 ## 3. Decision Branches
 
 - **หาก Auditor พบช่องว่างใน workflow-history หรือ timestamp ที่ผิดลำดับ**: escalate ออกนอกโมดูล PO — ไม่มี feature "case file" หรือ flagging ระดับโมดูล PO ที่ยืนยันได้ feature activity-log หรือ audit trail แบบ generic ถ้ามีอยู่จริง จะบันทึกไว้ใน [reporting-audit](/th/inventory/reporting-audit) ไม่ใช่ที่นี่
-- **หาก Sysadmin ต้องการยุติ PO ที่ค้างอยู่** (เช่น ไม่มี approver ที่ eligible เหลืออยู่ที่ stage หนึ่งหลังจากเปลี่ยน RBAC): remediation ที่ยืนยันแล้วคือ action ของ Procurement Manager หรือ Inventory Manager (**Cancel**/**Close**/**Reject** ตามที่บันทึกไว้ใน [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md)) — ไม่มี override ระดับ Sysadmin ที่ยืนยันแล้วที่ mutate PO state โดยตรง
+- **หาก Sysadmin ต้องการยุติ PO ที่ค้างอยู่** (เช่น ไม่มี approver ที่ eligible เหลืออยู่ที่ stage หนึ่งหลังจากเปลี่ยน RBAC): remediation ที่ยืนยันแล้วคือ **Cancel** / **Close** (ไม่มี role gate) หรือ **Reject** ของ approver ที่ stage ปัจจุบัน ตามที่บันทึกไว้ใน [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md); platform super-admin ยัง **Delete** draft ที่ไม่ใช่ของตัวเองได้เพิ่มเติม (`remove()` branch `isSuperAdmin`) ไม่มี override ระดับ Sysadmin อื่นที่ mutate PO state โดยตรง สังเกตว่าการแก้ไข workflow definition ขณะที่เอกสารที่ใช้มันยัง `in_progress` ถูก block (`a1c435208`, 2026-08-14)
 
 ## 4. Exit Point / Handoffs
 

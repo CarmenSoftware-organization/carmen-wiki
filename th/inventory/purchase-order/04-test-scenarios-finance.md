@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — Test Scenarios — Finance
 description: เหตุผลที่ไม่มี test scenarios แบบ three-way-match / AP สำหรับ purchase-order ในซอร์สโค้ดปัจจุบัน และสิ่งที่ยืนยันได้แทน
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: purchase-order, test-scenarios, finance, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -13,6 +13,8 @@ dateCreated: 2026-05-15T10:00:00.000Z
 > **At a Glance**
 > **Persona:** Finance — **ยังไม่ยืนยันว่าเป็น persona แยกต่างหากในซอร์สโค้ดปัจจุบัน** &nbsp;·&nbsp; **Module:** [purchase-order](/th/inventory/purchase-order)
 > **E2E coverage:** ไม่มีที่ยืนยันได้ เวอร์ชันก่อนหน้าของหน้านี้อ้างถึง `403-po-finance-ap-match.spec.ts` ซึ่ง **ไม่มีอยู่จริง** ใน `../carmen-inventory-frontend-e2e/tests/`
+
+> **Executable coverage (2026-09-22):** ตรวจซ้ำ `../carmen-inventory-frontend-e2e/tests/` ที่ 809d8e3 — ยังไม่มี spec finance / AP / invoice; `docs/test-cases/COVERAGE.md` ไม่มี route แบบนั้น สิ่งที่รันได้ใกล้เคียงที่สุดคือ Credit Note suite (`docs/user-stories/601-cn.md`, 124 case, `tests/601-cn.spec.ts`; gap `docs/test-cases/gaps/601-cn-gap.md`, 65) — ฝั่ง inventory เท่านั้น ไม่มีการโพสต์ AP
 
 > ⚠️ **แก้ไขครั้งใหญ่ในรอบนี้** เวอร์ชันก่อนหน้าของหน้านี้ระบุ ~25 scenarios (FIN-HP-01 ถึง FIN-EDGE-05) ครอบคลุมขั้นตอน Finance Manager sign-off ก่อน transmission และ flow three-way-match / AP-posting ของ Finance Officer รวมถึง GL account entries เฉพาะ, การจัดการ purchase-price-variance, และ FX-adjustment postings ทั้งหมดนี้ไม่ตรงกับซอร์สโค้ดปัจจุบัน:
 > - Spec file ที่อ้างถึงคือ `403-po-finance-ap-match.spec.ts` ถูกตรวจสอบโดยตรงและ **ไม่มีอยู่จริง** ในไดเรกทอรี e2e test นั่นหมายความว่าทุกคำกล่าวอ้างเรื่อง "E2E coverage" บน scenarios ที่ถูกตัดออกนั้นถูกสร้างขึ้นเองพร้อมกับฟีเจอร์ที่ไม่มีจริง
@@ -33,7 +35,8 @@ dateCreated: 2026-05-15T10:00:00.000Z
 ## สิ่งที่ยืนยันได้แทน
 
 - User คนใดก็ได้ (ไม่ว่าจะมีตำแหน่งอะไร) สามารถถูก assign ไปยัง generic `approve` workflow stage ได้ — ดู [04-test-scenarios-procurement-manager.md](./04-test-scenarios-procurement-manager.md) สำหรับกลไกที่ยืนยันได้จริงและอิง e2e ของ stage approval, send-back, และ reject Tenant อาจตั้งชื่อ user ที่ assign ไปยัง stage นั้นว่า "Finance Manager" ก็ได้ แต่ไม่มีโค้ดใดปฏิบัติต่อพวกเขาต่างจาก approver คนอื่น
-- [Credit Note](/th/inventory/purchase-order/credit-note) เป็นเอกสารที่ implement จริงและใกล้เคียง AP โดยมี Prisma tables และ routes ที่ยืนยันได้ มันโพสต์ AP debit memo กับ GRN ก่อนหน้า ไม่ใช่ three-way match และไม่มีหน้า test-scenario เฉพาะในโมดูลนี้ (เป็นเอกสารพี่น้องคนละชนิด ไม่ใช่ persona ของโมดูล PO)
+- [Credit Note](/th/inventory/purchase-order/credit-note) เป็นเอกสารที่ implement จริงและใกล้เคียง AP โดยมี Prisma tables และ routes ที่ยืนยันได้ มันปรับยอดกับ GRN ก่อนหน้าฝั่ง **inventory** (คืนสต๊อกหรือ revalue ต้นทุน) — **ไม่ได้โพสต์ AP debit memo** (ตรวจซ้ำ 2026-09-22: ไม่มีการเขียน AP / GL ใน `credit-note.service.ts` / `credit-note.logic.ts`; เวอร์ชันก่อนหน้าของ bullet นี้บอกตรงข้าม); ไม่ใช่ three-way match และไม่มีหน้า test-scenario เฉพาะในโมดูลนี้ (เป็นเอกสารพี่น้องคนละชนิด ไม่ใช่ persona ของโมดูล PO)
+- สถานะ PO `approved` ที่เพิ่มเมื่อ 2026-09-14 **ไม่ใช่** state Finance sign-off — มันบอกจุดสิ้นสุดของ workflow stage ใดก็ตามที่ tenant ตั้งค่าไว้ เพื่อให้การส่ง (`sent_or_print`) บันทึกแยกต่างหากได้
 
 ## แหล่งอ้างอิง
 

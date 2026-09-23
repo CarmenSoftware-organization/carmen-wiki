@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — User Flow — Finance
 description: เส้นทางผู้ใช้งานของ Finance ภายในโมดูล purchase-order — persona ที่ยังไม่ยืนยัน; บันทึกสิ่งที่ยืนยันแล้วและยังไม่ยืนยันใน source ปัจจุบัน
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: purchase-order, user-flow, finance, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -18,7 +18,8 @@ dateCreated: 2026-05-15T10:00:00.000Z
 > - การค้นหาทั่ว repo ใน `carmen-turborepo-backend-v2` และ `carmen-inventory-frontend-react` สำหรับ `three-way`, `threeWay`, `vendor_invoice`, `VendorInvoice`, และ `tb_invoice` คืนผลลัพธ์ **ศูนย์รายการ** ไม่มีหน้า capture vendor invoice ไม่มี AP-posting endpoint และไม่มี match algorithm ใด ๆ ใน codebase ปัจจุบัน
 > - `enum_stage_role` (`create`, `approve`, `purchase`, `issue`, `view_only`) ไม่มี member เฉพาะสำหรับ `finance` — "Finance stage" จะเป็นเพียง generic `approve` stage ที่ assign ให้ user ที่ตั้งชื่อว่า Finance เหมือน approver อื่น ๆ
 > - หลักฐานประกอบชิ้นเดียวสำหรับ actor ที่เกี่ยวข้องกับ Finance คือ e2e fixture user `fc@blueledgers.com` ซึ่ง `04-test-scenarios.md` บันทึกว่าเป็น persona **Procurement Manager (FC Approver)** — กล่าวคือ test fixtures ปัจจุบันถือว่า "FC" และ "Procurement Manager" เป็น approval-stage actor เดียวกัน ไม่ใช่ Finance persona ที่แยกต่างหาก
-> - feature เดียวที่ **จริง** และเกี่ยวข้องกับ AP ในโมดูลนี้คือ [Credit Note](/th/inventory/purchase-order/credit-note) — เอกสารที่ implement จริง (`tb_credit_note`, Prisma line numbers จริง, routes จริง) ที่ post AP debit memo เทียบกับ GRN ก่อนหน้า มันไม่ใช่ three-way match และไม่เกี่ยวข้องกับการ capture vendor invoice
+> - feature เดียวที่ **จริง** และเกี่ยวข้องกับ AP ในโมดูลนี้คือ [Credit Note](/th/inventory/purchase-order/credit-note) — เอกสารที่ implement จริง (`tb_credit_note`, Prisma line numbers จริง, routes จริง) ที่ปรับยอดกับ GRN ก่อนหน้าและกลับรายการ / revalue cost layer ของสินค้าคงคลัง **มันไม่ post AP debit memo** — ตรวจซ้ำ 2026-09-22: ไม่มีการเขียน AP หรือ GL ที่ไหนเลยใน `credit-note.service.ts` / `credit-note.logic.ts` (เวอร์ชันก่อนหน้าของ bullet นี้บอกว่ามี) มันไม่ใช่ three-way match และไม่เกี่ยวข้องกับการ capture vendor invoice
+> - ตรวจซ้ำ 2026-09-22 กับ source HEAD: ยังคงศูนย์รายการสำหรับ `three-way`, `vendor_invoice`, `tb_invoice` ในทั้งสอง repo โค้ดที่เกี่ยวกับ finance ใหม่เพียงอย่างเดียวนับจาก baseline คืองาน GL core-master (`tb_gl_jv_*`, `tb_chart_of_accounts`, budget / JV template, 2026-08 → 2026-09) ซึ่ง **ไม่มี** hook จากโมดูล PO — ไม่มี PO status transition ใดเขียน journal
 >
 > หน้านี้ถูกเก็บไว้ (แทนที่จะลบ) เพราะชุด persona ของโมดูลตั้งชื่อ Finance ไว้ในตาราง legacy role ของหน้า landing; เนื้อหาด้านล่างบันทึกการแก้ไขแทนที่จะทำซ้ำ flow ที่ fabricated ดู module progress-log Discrepancy entry สำหรับ source-check trail เต็ม
 
@@ -31,7 +32,8 @@ dateCreated: 2026-05-15T10:00:00.000Z
 | AP liability posting / GL account entries (GRN-accrual, AP-Trade, VAT-input) | **ไม่ได้ implement** ไม่พบโมดูล AP หรือ code สำหรับ GL-posting ใน repo นี้ |
 | Purchase-price-variance (PPV) และ FX-adjustment postings บน invoice match | **ไม่ได้ implement** — ขึ้นอยู่กับ feature invoice/match ที่ไม่มีอยู่จริง |
 | `PO_AUTH_009` (สิทธิ์อ่าน report แบบ read-only) | เป็นไปได้ในฐานะ generic RBAC read grant แต่ไม่มี permission key เฉพาะของ Finance ที่ยืนยันได้ |
-| Credit Note ในฐานะเอกสารแก้ไข post-receipt ที่เกี่ยวข้องกับ AP | **ยืนยันว่ามีจริง** — ดู [Credit Note](/th/inventory/purchase-order/credit-note) |
+| Credit Note ในฐานะเอกสารแก้ไข post-receipt ที่เกี่ยวข้องกับ AP | **ยืนยันว่ามีจริง** (ฝั่ง inventory เท่านั้น; ไม่มีการโพสต์ AP) — ดู [Credit Note](/th/inventory/purchase-order/credit-note) |
+| สถานะ PO `approved` ในฐานะ state "Finance sign-off" | **ไม่ใช่แบบนั้น** `approved` (ใหม่ 2026-09-14) เป็นเพียงผลลัพธ์สุดท้ายของ workflow stage ใดก็ตามที่ tenant ตั้งค่าไว้; มันมีไว้เพื่อแยก "workflow เสร็จ" ออกจาก "vendor มีเอกสารแล้ว" (`sent_or_print`) ไม่ใช่เพื่อแทรกขั้นตอน Finance |
 
 ## 2. จะทำอย่างไรกับหน้านี้
 
