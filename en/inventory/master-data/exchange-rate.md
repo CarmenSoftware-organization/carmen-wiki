@@ -2,7 +2,7 @@
 title: Exchange Rate
 description: Dated history of currency-to-base-currency conversion rates — every transactional document snapshots the rate effective on its document date.
 published: true
-date: 2026-07-15T21:47:09.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: master-data, exchange-rate, currency, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -48,6 +48,7 @@ Exchange Rate stores the **dated history** of currency-to-base-currency rates. E
 - **"Current" cache vs. history.** `tb_currency.exchange_rate` is a *cache* of the most-recent `tb_exchange_rate` row. New documents resolve via the dated history first; only if no row matches the date does the cache act as fallback (with a warning on the document).
 - **Confirmed half-built feature — the "Update" bulk-sync button.** `ExchangeRateComponent`'s `useExternalExchangeRates` hook fetches `GET /api/exchange-rate?base=<currency-code>`, a route that was a Next.js API endpoint in a previous stack. A repo-wide search of the current NestJS gateway (`carmen-turborepo-backend-v2/apps/backend-gateway`) finds no matching route — only the CRUD `api/config/:bu_code/exchange-rates` controller exists. The hook's own code comments confirm this directly: `// TODO(phase-config): /api/exchange-rate was a Next route — move to backend or client-side fetch when the config module migrates`, and a second comment notes that on static hosting the SPA fallback returns `index.html` with a `200` status, so the endpoint degrades to an "Exchange rate endpoint is not available" error rather than crashing. The **Add Manual** single-row path is unaffected — it posts straight to the real `POST /exchange-rates` endpoint.
 - **No cron-driven feed exists.** A repo-wide search of `../micro-cronjobs` for `exchange`/`fx`/`currency` returned zero hits. There is no scheduled job that refreshes rates; the only two ways a rate row is created are the (currently broken) external-sync button and the manual single-row dialog.
+- **Still broken as of 2026-09-22.** `routes/config/shared/use-exchange-rate.ts:99-105` still fetches `/api/exchange-rate?base=…` with the same `TODO(phase-config)` comment, and frontend commit `651e9cd9` (2026-09-03) confirms in its message that the route exists neither in the SPA nor in the gateway. That commit only stopped the **currency** dialog from writing a fake `0.01` fallback rate when the fetch fails (see [master-data/currency](/en/inventory/master-data/currency)); the bulk **Update** button on this screen is unchanged.
 
 ---
 
@@ -82,6 +83,8 @@ Source: tenant schema.
 - **Snapshot semantics.** Once a document captures a resolved rate, it's frozen. Re-approving / re-routing / re-posting does NOT re-fetch automatically; the field stays user-editable, and re-selecting the currency on the document header re-populates it from the current `tb_currency.exchange_rate` cache — there is no dedicated "Refresh FX" action anywhere in the codebase.
 - **Currency inactivation.** Does NOT delete rate history. Soft-deleting a rate row removes it from new resolutions only.
 - **Backdated entry.** Allowed; does NOT retroactively update posted documents.
+- **Response shape (2026-09-17).** List and detail rows carry `currency: { id, code, name }` as a nested object — no flat `currency_id` / `currency_code` pair remains on the wire (`types/exchange-rate.ts:4-12`, frontend fix `75244fde`). The `currency_code` / `currency_name` snapshot columns in § 5.1 still exist in the table but are not what the UI reads.
+- **Default sort.** `GET /exchange-rates` with no `?sort=` returns `created_at:desc, id:asc` (`exchange-rate.service.ts`, `withDefaultSort`, 2026-09-13) — newest entry first, not newest `at_date`.
 
 ## 7. Cross-References
 
@@ -93,7 +96,8 @@ Source: tenant schema.
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_exchange_rate` (lines ~760-785).
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_exchange_rate` (line ~769).
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/041-exchange-rate.spec.ts` + `docs/test-cases/gaps/041-exchange-rate-gap.md`.
 - **Frontend:** `../carmen-inventory-frontend-react/routes/config/exchange-rate/` — `use-exchange-rate.ts`'s `useExternalExchangeRates` hook is the confirmed-broken external-sync call.
 - **Backend:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_exchange-rates/` (CRUD, incl. `createBulk`) and `apps/micro-business/src/master/exchange-rate/exchange-rate.service.ts`.
 - **Cron job:** none found. `../micro-cronjobs/` has zero hits for `exchange`/`fx`/`currency`; there is no scheduled FX feed.

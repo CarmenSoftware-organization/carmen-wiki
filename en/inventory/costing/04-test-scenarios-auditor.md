@@ -2,7 +2,7 @@
 title: Costing — Test Scenarios — Auditor (correction)
 description: Correction page — the Auditor test suite previously documented here targeted a chain-of-custody trace tool, snapshot verification tool, and shadow-drift audit that do not exist.
 published: true
-date: 2026-07-22T10:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: costing, test-scenarios, auditor, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -17,15 +17,15 @@ dateCreated: 2026-05-15T12:30:00.000Z
 
 - **No Auditor role or permission key exists** (`enum_stage_role` has no `auditor` member; no auditor-scoped key in `constant/permissions.ts`).
 - **No chain-of-custody trace tool, snapshot-verification tool, or shadow-drift tool exists anywhere in the frontend** — this mirrors the identical finding on [inventory/03-user-flow-audit-config](/en/inventory/inventory/03-user-flow-audit-config): "No dedicated audit-only screen or permission distinct from `inventory_management.view` was found."
-- **The GL and `COST_VAL_009` claims the audit checklist relied on do not exist** — see [02-business-rules](./02-business-rules.md) §§ 2, 4, 6.
+- **The GL and `COST_VAL_009` claims the audit checklist relied on do not exist** — see [02-business-rules](./02-business-rules.md) §§ 2, 4, 6. (Re-checked 2026-09-22: the new GL module is not fed by inventory.)
 
 ## 2. Where the testable behaviour lives now
 
 | Formerly tested here | Real test location |
 |---|---|
-| Cost-flow chain-of-custody trace | No in-app tool; the closest real screen is the read-only [inventory/transaction](/en/inventory/inventory/transaction) log |
-| Period-snapshot vs cost-layer reconciliation | Would be a manual query against [01-data-model](./01-data-model.md) § 2.1 / § 2.3 — no in-app tool found |
-| FIFO-vs-Average shadow-drift audit | The `average_cost_per_unit` shadow column is real (Section 2.6 of [01-data-model](./01-data-model.md)) but no drift-audit tool reads it |
+| Cost-flow chain-of-custody trace | No in-app tool; the closest real screens are the read-only [inventory/transaction](/en/inventory/inventory/transaction) log and, per receipt, the GRN Stock Movement tab (`GET …/good-received-notes/:id/stock-movements`, linked through `tb_inventory_transaction_detail.good_received_note_detail_item_id`) |
+| Period-snapshot vs cost-layer reconciliation | Would be a manual query against [01-data-model](./01-data-model.md) § 2.1 / § 2.3 (`tb_inventory_period_snapshot`) — no in-app tool found |
+| FIFO-vs-Average shadow-drift audit | There is no shadow average to audit — FIFO receipts write `average_cost_per_unit = 0` (corrected 2026-09-22); on average units the column is the product-wide average re-stamped on every layer |
 | Configuration-history audit | No configuration-history feed found for `calculation_method` in this pass |
 
 ## 3. References

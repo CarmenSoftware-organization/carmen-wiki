@@ -2,7 +2,7 @@
 title: Inventory — Data Model
 description: Entities, fields, relationships, and enums for the inventory module.
 published: true
-date: 2026-07-15T09:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: inventory, data-model, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -11,9 +11,9 @@ dateCreated: 2026-05-15T12:00:00.000Z
 # Inventory — Data Model
 
 > **At a Glance**
-> **Tables:** `tb_inventory_transaction` &nbsp;·&nbsp; `tb_inventory_transaction_detail` &nbsp;·&nbsp; `tb_inventory_transaction_cost_layer` &nbsp;·&nbsp; `tb_location` &nbsp;·&nbsp; `tb_product_location` &nbsp;·&nbsp; `tb_period` &nbsp;·&nbsp; `tb_period_snapshot`
+> **Tables:** `tb_inventory_transaction` &nbsp;·&nbsp; `tb_inventory_transaction_detail` &nbsp;·&nbsp; `tb_inventory_transaction_cost_layer` &nbsp;·&nbsp; `tb_location` &nbsp;·&nbsp; `tb_product_location` &nbsp;·&nbsp; `tb_inventory_period` &nbsp;·&nbsp; `tb_inventory_period_snapshot`
 > **Audience:** Developer / Auditor (dev reference)
-> **Key FKs:** `inventory_doc_no` is **polymorphic** (no `@relation`) — resolves to `tb_good_received_note` / `tb_store_requisition` / `tb_stock_in` / `tb_stock_out` / `tb_credit_note` / `tb_period` by `inventory_doc_type`; cost-layer `→ tb_period`; source-side modules reach back via UUID `inventory_transaction_id` columns
+> **Key FKs:** `inventory_doc_no` is **polymorphic** (no `@relation`) — resolves to `tb_good_received_note` / `tb_store_requisition` / `tb_stock_in` / `tb_stock_out` / `tb_credit_note` / `tb_inventory_period` by `inventory_doc_type`; cost-layer `→ tb_inventory_period`; source-side modules reach back via UUID `inventory_transaction_id` columns
 > **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*` on most tables; **`tb_inventory_transaction_detail` has no soft-delete** — reversal posts a compensating row. No `tb_stock_balance` — on-hand is derived from cost-layer rows since the latest snapshot
 
 > **Source of truth:** Backend Prisma schema. Always read these first when writing or updating this page:
@@ -24,13 +24,13 @@ dateCreated: 2026-05-15T12:00:00.000Z
 
 ## 1. Overview
 
-The Inventory module is the **system of record for stock movement and on-hand valuation** across the property. Unlike the document-centric modules ([purchase-request](/en/inventory/purchase-request), [purchase-order](/en/inventory/purchase-order), [good-receive-note](/en/inventory/good-receive-note)), inventory does not live on a single header → detail → comment tree. It is a **family of records linked by movement** — every quantity change in the system flows through `tb_inventory_transaction` (the movement header) and its child `tb_inventory_transaction_detail` (per-product / per-lot ledger lines), with the canonical cost-flow record persisted on `tb_inventory_transaction_cost_layer` (FIFO / weighted-average layers, keyed by `lot_no` and `lot_index`). Locations are configured on `tb_location` with a `location_type` (`inventory`, `direct`, or `consignment`) — `direct` receipts get an automatic offsetting self-issue at the same cost (net on-hand zero); `inventory` and `consignment` accrue normally (see § 5 items 7–8). Per-product / per-location stock parameters (par, min, max, reorder) live on `tb_product_location`. Period boundaries are anchored by `tb_period` (the accounting period) and `tb_period_snapshot` (the opening / closing bucket row per `period × location × product`, written only on the average-method close); the period status enum (`open` → `closed`, plus `locked`) determines which period new movements are stamped into — every movement lands in the current open period regardless of document date.
+The Inventory module is the **system of record for stock movement and on-hand valuation** across the property. Unlike the document-centric modules ([purchase-request](/en/inventory/purchase-request), [purchase-order](/en/inventory/purchase-order), [good-receive-note](/en/inventory/good-receive-note)), inventory does not live on a single header → detail → comment tree. It is a **family of records linked by movement** — every quantity change in the system flows through `tb_inventory_transaction` (the movement header) and its child `tb_inventory_transaction_detail` (per-product / per-lot ledger lines), with the canonical cost-flow record persisted on `tb_inventory_transaction_cost_layer` (FIFO / weighted-average layers, keyed by `lot_no` and `lot_index`). Locations are configured on `tb_location` with a `location_type` (`inventory`, `direct`, or `consignment`) — `direct` receipts get an automatic offsetting self-issue at the same cost (net on-hand zero); `inventory` and `consignment` accrue normally (see § 5 items 7–8). Per-product / per-location stock parameters (par, min, max, reorder) live on `tb_product_location`. Period boundaries are anchored by `tb_inventory_period` (the accounting period) and `tb_inventory_period_snapshot` (the opening / closing bucket row per `period × location × product`, written only on the average-method close); the period status enum (`open` → `closed`, plus `locked`) determines which period new movements are stamped into — every movement lands in the current open period regardless of document date.
 
 The module sits **at the centre of the procure-to-pay / requisition-to-consume chain**. It is downstream of [good-receive-note](/en/inventory/good-receive-note) (receipts post `enum_inventory_doc_type = good_received_note` transactions), [store-requisition](/en/inventory/store-requisition) (issues post `store_requisition` transactions), [physical-count](/en/inventory/physical-count) and [spot-check](/en/inventory/spot-check) (counts post adjustment_in / adjustment_out transactions), and [inventory-adjustment](/en/inventory/inventory-adjustment) (manual stock-in / stock-out transactions). It is upstream of [costing](/en/inventory/costing), which reads the cost-layer ledger to compute COGS and unit-cost feeds back into the source modules. The single-table-as-ledger design is deliberate: every owned-stock movement, regardless of source module, lands in `tb_inventory_transaction` so that a single forward-and-backward trace (movement → cost layer → period snapshot → on-hand) underpins both audit and recall.
 
 A noteworthy structural point: **there is no `tb_stock_balance` model in the canonical Prisma schema**. On-hand balance is derived — the actual service formula (`getLocationBalance` in `inventory-transaction.service.ts`) is the plain algebraic sum of **all** non-soft-deleted cost layers: `balance = Σ in_qty − Σ out_qty` at `(product_id, location_id)`, with no snapshot anchor or date cutoff. The period close keeps this plain sum correct across period boundaries mechanically: the `close` transaction zeroes each surviving lot with an `out_qty` row and the `open` transaction re-adds it with an `in_qty` row, so summing everything still yields the current balance. The `inventory-management-prd.md` and several derivative docs reference an `InventoryStatus` / `StockBalance` entity with `QuantityOnHand`, `LastUnitCost`, `TotalCost` columns — that interface is application-layer-derived, not a schema row. See Section 5 for this divergence.
 
-A second structural point, corrected in this pass: **no GL/journal-posting code was found anywhere in the inventory posting path.** `tb_jv_header` / `tb_jv_detail` (tenant schema, status enum `enum_jv_status = { draft, posted }`) do exist as Prisma models, but a repo-wide search of `carmen-turborepo-backend-v2` found exactly one non-schema reference to either table — an unrelated document-type-to-table string map in `workflows.service.ts` (`jv: 'tb_jv_header'`) — and zero code in `inventory-transaction.service.ts`, `period-end.service.ts`, or any GRN/SR service that creates a `tb_jv_header` / `tb_jv_detail` row from an inventory movement. This mirrors the identical, already-confirmed finding in [purchase-order](/en/inventory/purchase-order), [good-receive-note](/en/inventory/good-receive-note), and [store-requisition](/en/inventory/store-requisition): the tables exist for a separate (not-yet-wired) GL feature, and every "the movement posts a journal entry" claim elsewhere in this module's pages is a carmen/docs-derived design intent, not verified live behaviour.
+A second structural point: **no GL/journal-posting code exists anywhere in the inventory posting path.** Since 2026-09 the tenant schema carries a real GL core — `tb_gl_jv_prefix`, `tb_gl_jv_detail`, `tb_gl_balance`, `tb_gl_budget*`, `tb_gl_jv_template*`, `tb_gl_period`, `tb_gl_account_group` (migrations `20260909170000_gl_core_master`, `20260914030000_gl_core_jv_ledger`, `20260915043038_gl_core_budget_template`; the earlier `tb_jv_header` / `tb_jv_detail` placeholders are gone) served by `apps/micro-business/src/gl/` and the gateway's `gl-posting` / `gl-jv` controllers (manual journal vouchers: post, void, reverse, rebuild balances, close/reopen fiscal year). A grep of `apps/micro-business/src/inventory/` for `gl`, `journal`, `GlPosting` returns nothing, and a grep of `apps/micro-business/src/gl/` for `inventory_transaction`, `good_received_note`, `tb_stock_in`, `cost_layer` returns nothing either — the GL module and the inventory ledger do not reference each other. This mirrors the identical finding in [purchase-order](/en/inventory/purchase-order), [good-receive-note](/en/inventory/good-receive-note), and [store-requisition](/en/inventory/store-requisition): every "the movement posts a journal entry" claim in this module's pages is carmen/docs-derived design intent, not verified live behaviour.
 
 ## 2. Entities
 
@@ -102,8 +102,8 @@ The **cost-flow record** — the canonical store of FIFO / weighted-average stat
 | `lot_seq_no` | `Int` | Yes | FIFO ordering anchor within `(location_id, product_id)`; default `1`. Lower `lot_seq_no` is consumed first under FIFO. |
 | `product_id` | `String @db.Uuid` | Yes | FK reference to `tb_product.id`. |
 | `parent_lot_no` | `String @db.VarChar` | Yes | When the layer was created from a transfer / split / re-pack, the originating lot. |
-| `period_id` | `String @db.Uuid` | Yes | FK to `tb_period.id` — the accounting period containing this layer event. |
-| `at_period` | `String @db.VarChar` | Yes | Period in `YYMM` form (denormalised from `tb_period.period`). |
+| `period_id` | `String @db.Uuid` | Yes | FK to `tb_inventory_period.id` — the accounting period containing this layer event. |
+| `at_period` | `String @db.VarChar` | Yes | Period in `YYMM` form (denormalised from `tb_inventory_period.period`). |
 | `transaction_type` | `enum_transaction_type` | Yes | Classifier independent of `inventory_doc_type`: `good_received_note`, `transfer_in`, `transfer_out`, `issue`, `adjustment_in`, `adjustment_out`, `credit_note_amount`, `credit_note_quantity`, `eop_in`, `eop_out`, `close_period`, `open_period`. |
 | `in_qty` | `Decimal @db.Decimal(20, 5)` | Yes | Inbound qty; default `0`. Non-zero for inbound layer events. |
 | `out_qty` | `Decimal @db.Decimal(20, 5)` | Yes | Outbound qty; default `0`. Non-zero for outbound layer events. |
@@ -121,7 +121,7 @@ The **cost-flow record** — the canonical store of FIFO / weighted-average stat
 | `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | Soft-delete timestamp. |
 | `deleted_by_id` | `String @db.Uuid` | Yes | Soft-delete actor id. |
 
-**Constraints:** `@id` on `id`. FKs: `inventory_transaction_detail_id → tb_inventory_transaction_detail.id` (`NoAction`); `period_id → tb_period.id` (`NoAction`). Note: `location_id` and `product_id` are stored without `@relation`. The map name `tb_inventory_transaction_clos_inventory_transaction_detail_fkey` reflects an earlier "closing balance" naming.
+**Constraints:** `@id` on `id`. FKs: `inventory_transaction_detail_id → tb_inventory_transaction_detail.id` (`NoAction`); `period_id → tb_inventory_period.id` (`NoAction`). Note: `location_id` and `product_id` are stored without `@relation`. The map name `tb_inventory_transaction_clos_inventory_transaction_detail_fkey` reflects an earlier "closing balance" naming.
 **Indexes:** `@@unique([lot_no, lot_index])` as `inventorytransactionclosingbalance_lotno_lot_index_u` (lot identity); `@@index([lot_no, lot_index])` as `inventorytransactioncostlayer_lotno_lot_index_idx`.
 
 ### 2.4 tb_location
@@ -149,7 +149,7 @@ The **storage / cost-centre definition**. Locations are the second key (after `p
 | `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | Soft-delete timestamp. |
 | `deleted_by_id` | `String @db.Uuid` | Yes | Soft-delete actor id. |
 
-**Constraints:** `@id` on `id`. FK `delivery_point_id → tb_delivery_point.id` (`NoAction`). Back-relations span many downstream tables: `tb_good_received_note_detail`, `tb_purchase_request_detail`, `tb_stock_in`, `tb_stock_out`, `tb_count_stock`, `tb_spot_check`, `tb_physical_count`, `tb_product_location`, `tb_user_location`, `tb_credit_note_detail`, `tb_store_requisition_from`, `tb_store_requisition_to`, `tb_location_comment`, `tb_purchase_request_template_detail`, `tb_purchase_order_detail_tb_purchase_request_detail`.
+**Constraints:** `@id` on `id`. FK `delivery_point_id → tb_delivery_point.id` (`NoAction`). Back-relations span many downstream tables: `tb_good_received_note_detail`, `tb_purchase_request_detail`, `tb_stock_in`, `tb_stock_out`, `tb_count_stock`, `tb_spot_check`, `tb_physical_count`, `tb_product_location`, `tb_location_user` (renamed from `tb_user_location`, migration `20260904131500_rename_shelf_and_user_location`), `tb_location_shelf` (shelf master, `20260814150000_add_location_shelf` → `20260904131500`), `tb_credit_note_detail`, `tb_store_requisition_from`, `tb_store_requisition_to`, `tb_location_comment`, `tb_purchase_request_template_detail`, `tb_purchase_order_detail_tb_purchase_request_detail`.
 **Indexes:** `@@unique([name, deleted_at])` as `location_name_u`; `@@index([name])` as `location_name_idx`; `@@index([code])` as `location_code_idx`.
 
 ### 2.5 tb_product_location
@@ -179,9 +179,9 @@ The **per-product / per-location stock-policy row**. Holds par / min / max / reo
 **Constraints:** `@id` on `id`. FKs: `product_id → tb_product.id` (`NoAction`); `location_id → tb_location.id` (`NoAction`).
 **Indexes:** `@@unique([product_id, location_id, deleted_at])` as `product_location_product_id_location_id_u`; `@@index([product_id, location_id])` as `product_location_product_id_location_id_idx`.
 
-### 2.6 tb_period
+### 2.6 tb_inventory_period (renamed from `tb_period`)
 
-The **accounting period header** — the time-boundary primitive that the period-end process operates on. The period status enum (`open`, `closed`, `locked`) determines which period new movements stamp into (`resolveCurrentPeriod` picks the earliest `open`/`locked` period — backdated documents are re-dated into it, not rejected) and whether a lot's value is re-priceable by a Credit Note Amount (closed/locked receiving periods book `diff_amount` instead).
+The **accounting period header** — the time-boundary primitive that the period-end process operates on. Renamed from `tb_period` (with `tb_period_snapshot` → `tb_inventory_period_snapshot`, `tb_period_comment` → `tb_inventory_period_comment`) by migration `20260916141000_rename_tb_period_to_tb_inventory_period`; the admin API moved to `/api/{bu}/inventory-periods` (legacy `/periods` routes remain in `inventory-periods-legacy.controller.ts`) and the permission / licence key is `system_admin.inventory_period`. The period status enum (`open`, `closed`, `locked`) determines which period a movement may post into — since 2026-08-31 the ledger resolves the period from the **document date** (`findOpenPeriodForDate` in `inventory-period.helper.ts`; only `open`/`locked` periods qualify, so a document dated in a `closed` period is rejected at the source — `STOCK_IN_DATE_OUTSIDE_OPEN_PERIOD`, `STOCK_OUT_DATE_NOT_CURRENT_PERIOD`, GRN `No open period covers …`) — and whether a lot's value is re-priceable by a Credit Note Amount (closed/locked receiving periods book `diff_amount` instead).
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
@@ -202,17 +202,17 @@ The **accounting period header** — the time-boundary primitive that the period
 | `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | Soft-delete timestamp. |
 | `deleted_by_id` | `String @db.Uuid` | Yes | Soft-delete actor id. |
 
-**Constraints:** `@id` on `id`. Back-relations: many `tb_period_snapshot`, many `tb_inventory_transaction_cost_layer`, many `tb_period_comment`, many `tb_physical_count_period`.
+**Constraints:** `@id` on `id`. Back-relations: many `tb_inventory_period_snapshot`, many `tb_inventory_transaction_cost_layer`, many `tb_inventory_period_comment`, many `tb_physical_count_period`.
 **Indexes:** `@@unique([period, deleted_at])` as `period_period_u`; `@@unique([fiscal_year, fiscal_month, deleted_at])` as `period_fiscal_year_month_u`; `@@index([fiscal_year, fiscal_month])` as `period_fiscal_year_month_idx`; `@@index([period])` as `period_period_idx`.
 
-### 2.7 tb_period_snapshot
+### 2.7 tb_inventory_period_snapshot
 
 The **opening / closing balance row per period × location × product**. Written at period close **only when the business unit's `calculation_method = average`** (`processAverageClose` in `period-end.close-average.helper.ts` is the sole writer — one row per `(product, location)` bucket, `snapshot_at = period.end_at`); the FIFO close path writes lot carry-over transactions instead and leaves this table untouched. Carries opening / movement-bucket / closing qty and cost columns so reporting can read a period's net activity directly without re-walking the cost-layer ledger.
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key. |
-| `period_id` | `String @db.Uuid` | No | FK to `tb_period.id`. |
+| `period_id` | `String @db.Uuid` | No | FK to `tb_inventory_period.id`. |
 | `snapshot_at` | `DateTime @db.Timestamptz(6)` | No | Effective timestamp of the snapshot. |
 | `location_id` | `String @db.Uuid` | No | FK reference to `tb_location.id`. |
 | `location_code` | `String @db.VarChar` | Yes | Snapshot. |
@@ -249,7 +249,7 @@ The **opening / closing balance row per period × location × product**. Written
 | `deleted_at` | `DateTime @db.Timestamptz(6)` | Yes | Soft-delete timestamp. |
 | `deleted_by_id` | `String @db.Uuid` | Yes | Soft-delete actor id. |
 
-**Constraints:** `@id` on `id`. FK `period_id → tb_period.id` (`NoAction`). Note: `location_id` and `product_id` are stored without `@relation`.
+**Constraints:** `@id` on `id`. FK `period_id → tb_inventory_period.id` (`NoAction`). Note: `location_id` and `product_id` are stored without `@relation`.
 **Indexes:** `@@unique([period_id, snapshot_at, deleted_at])` as `periodsnapshot_period_id_snapshot_at_u`; `@@index([period_id, snapshot_at])` as `periodsnapshot_period_id_snapshot_at_idx`.
 
 ## 3. Relationships
@@ -264,7 +264,7 @@ tb_inventory_transaction        (movement header — polymorphic source)
     │       store_requisition  → tb_store_requisition.id
     │       stock_in           → tb_stock_in.id
     │       stock_out          → tb_stock_out.id
-    │       close / open       → tb_period.id
+    │       close / open       → tb_inventory_period.id
     │
     │ * inventory_transaction_id
     ▼
@@ -288,7 +288,7 @@ tb_inventory_transaction_cost_layer  (FIFO / weighted-average layer event —
     │  lot_no, lot_index, lot_seq_no (FIFO ordering anchor),
     │  parent_lot_no (transfer/split source)
     │
-    └──► tb_period   (period_id — accounting period containing the layer event)
+    └──► tb_inventory_period   (period_id — accounting period containing the layer event)
 
 
 tb_location ──1──*──► tb_product_location  (per-product stock policy:
@@ -297,7 +297,7 @@ tb_location ──1──*──► tb_product_location  (per-product stock poli
     └──► tb_delivery_point  (delivery_point_id)
 
 
-tb_period ──1──*──► tb_period_snapshot  (locked period × location × product × lot
+tb_inventory_period ──1──*──► tb_inventory_period_snapshot  (locked period × location × product × lot
                                           balance row — opening/closing anchor)
 
 
@@ -325,11 +325,11 @@ Notes:
 ## 4. Enums
 
 - **`enum_inventory_doc_type`**: source-module classifier on `tb_inventory_transaction.inventory_doc_type`. Seven values, no default declared on the column (every transaction must specify):
-  - `good_received_note` — receipt from [good-receive-note](/en/inventory/good-receive-note) **save** (`draft → saved` — the posting event; `commit` only locks the document).
+  - `good_received_note` — receipt from [good-receive-note](/en/inventory/good-receive-note): posted on **save** for average-method business units (and re-posted when quantities change) and on **commit** for FIFO business units (`postsInventoryAtSave`, `good-received-note.ledger.ts`, 2026-09-08).
   - `credit_note` — vendor credit-note adjustment (post-receipt correction; can be quantity-only or amount-only).
   - `store_requisition` — internal issue / transfer from [store-requisition](/en/inventory/store-requisition) approve / dispatch.
-  - `stock_in` — manual stock-in (`tb_stock_in` document — typically used for inventory-adjustment-in, found-stock, or count overage corrections).
-  - `stock_out` — manual stock-out (`tb_stock_out` document — typically write-off, breakage, count shortage corrections).
+  - `stock_in` — manual stock-in (`tb_stock_in` document, posted on `PATCH /stock-ins/{id}/commit` — `create` only writes a `draft` since 2026-07-30; also the reversal leg of a stock-out void).
+  - `stock_out` — manual stock-out (`tb_stock_out` document, posted on `PATCH /stock-outs/{id}/commit`; also written directly by the wastage write-off endpoint `POST /wastage-reporting`, and the reversal leg of a stock-in void). Physical-count variance rows are `tb_stock_out`/`tb_stock_in` rows too, but they are **not** posted to the ledger.
   - `close` — period-close rollforward (system-posted at period transition).
   - `open` — period-open rollforward (system-posted as the matching opening of the next period).
 - **`enum_location_type`**: eligibility / receipt-handling flag for `tb_location.location_type`. Default `inventory`. Three values (no confirmed GL posting for any of them — see § 1 and § 5 item 7/8):
@@ -349,10 +349,10 @@ Notes:
   - `eop_out` — end-of-period outbound rollforward.
   - `close_period` — period-close anchor row written to the period being closed.
   - `open_period` — period-open anchor row written to the next period.
-- **`enum_period_status`**: status of an accounting period on `tb_period.status`. Default `open`. Three values:
+- **`enum_period_status`**: status of an accounting period on `tb_inventory_period.status`. Default `open`. Three values:
   - `open` — accepting movements (current or future open period).
-  - `closed` — period-end close has run (lot carry-over written; snapshot rows only on the average path). The period never receives new rows afterwards because movements stamp into the current open period; a closed-period lot's value is protected from Credit-Note re-pricing (`isLotPeriodClosed` → current-period `diff_amount` instead).
-  - `locked` — set by the period service behind [system-config/period](/en/inventory/system-config/period), not by this module. Treated like `closed` for value protection, but `findCurrent` still counts a `locked` period as "current", so it is displayable and closable on the period-end screen.
+  - `closed` — period-end close has run (lot carry-over written; snapshot rows only on the average path). The period never receives new rows afterwards because a document dated inside it is rejected at create/commit (SI/SO/GRN date guards); a closed-period lot's value is protected from Credit-Note re-pricing (`isLotPeriodClosed` → current-period `diff_amount` instead).
+  - `locked` — set by the inventory-period service behind [system-config/period](/en/inventory/system-config/period) (`/api/{bu}/inventory-periods`), not by this module. Treated as an *open* period by the date-resolution helper (`OPEN_STATUSES = {open, locked}`) and by `findCurrent`, so a locked period still accepts postings dated inside it and is displayable and closable on the period-end screen; only **Start Period Close** insists on `open`.
 - **`enum_physical_count_type`**: count-eligibility flag on `tb_location.physical_count_type`. Default `no`. Two values:
   - `no` — location is **not** swept by the scheduled physical-count run (typically direct / consignment / staging locations).
   - `yes` — location **is** swept by the scheduled physical count.
@@ -367,7 +367,7 @@ The carmen/docs Inventory PRD (`inventory-management-prd.md`), the data-structur
 | 2 | Movement entity name and type values | PRD describes `StockMovement` with `type ∈ {RECEIPT, ISSUE, TRANSFER, ADJUSTMENT, RETURN, WRITE_OFF}` and a workflow status (`DRAFT → PENDING → IN_TRANSIT → COMPLETED → CANCELLED`). | Two-table model: `tb_inventory_transaction` carries `inventory_doc_type` (source-module classifier — `good_received_note`, `credit_note`, `store_requisition`, `stock_in`, `stock_out`, `close`, `open`), and `tb_inventory_transaction_cost_layer.transaction_type` (twelve cost-flow types listed in Section 4). **There is no `RETURN`, no `WRITE_OFF`, and no workflow status on the transaction itself** — the transaction is a posted ledger record, not a workflow document. Returns are modelled as credit notes (`credit_note_amount` / `credit_note_quantity`); write-offs are modelled as `tb_stock_out` with an appropriate `adjustment_type_id`. | Realign carmen/docs to describe two enums (`enum_inventory_doc_type` source-module classifier, `enum_transaction_type` cost-flow effect) rather than a single combined type field. Document that returns and write-offs are routed through credit-note / stock-out documents respectively. |
 | 3 | Stock movement workflow status | PRD §3 implies a multi-state workflow on the movement (`DRAFT → PENDING → IN_TRANSIT → COMPLETED → CANCELLED`). | `tb_inventory_transaction` has **no** `doc_status` enum, **no** `workflow_history`, **no** `workflow_current_stage`, and **no** `user_action`. Workflow lives on the source-module document (GRN's `enum_good_received_note_status`, SR's `enum_doc_status`, etc.); the inventory transaction is **posted-only** — it exists if and only if the source document is at a committed/posted state. Reversal is by writing a compensating transaction (or by the source document moving to a void/credit-note state that triggers the compensating write), not by a state change on the transaction row. | Drop the workflow-status claim from carmen/docs's inventory entity description. Note that the workflow lives on the source document and the inventory transaction is the immutable posted artefact. |
 | 4 | Valuation method on the product | PRD §3 cites `valuationMethod: FIFO | WEIGHTED_AVERAGE` configured per product. | **Corrected in this pass — the method is not per-product at all.** `tb_product` has no `costing_method` (or similarly-named) column. The costing method is a single **tenant / business-unit-wide** setting, `tb_business_unit.calculation_method enum_calculation_method { average, fifo }` (default `average`, platform schema). `InventoryTransactionService.getCalculationMethod(bu_code)` reads this one value and applies it to **every** product in the tenant uniformly — there is no per-product override and no code path that mixes FIFO and weighted-average within one business unit. No "block change with non-zero on-hand" guard was found either; changing the BU setting is a platform-level admin action outside this module. | Drop the per-product framing everywhere in this wiki module. Document the method as a BU-level setting the inventory posting engine reads once per GRN/transaction batch; move any per-product costing-method documentation to [product](/en/inventory/product) only if a future schema change actually adds the field. |
-| 5 | Period-end snapshot scope and shape | `inventory-management/period-end-process.md` describes a period-end snapshot as a procedural checklist outcome with reports (Inventory Valuation Report, Movement Report, Variance Report). | `tb_period_snapshot` is the persistent snapshot — one row per `(period_id, location_id, product_id)` bucket carrying opening / receipt / issue / adjustment / closing buckets in both qty and cost. **Written only by the average-method close path** (`period-end.close-average.helper.ts`); a FIFO business unit's close writes lot carry-over transactions (`CLOSE-…` / `OPEN-…` lots) instead and never populates this table. | Update carmen/docs to add the `tb_period_snapshot` entity definition and to note the method-dependence: snapshot rows exist only for average-method tenants. |
+| 5 | Period-end snapshot scope and shape | `inventory-management/period-end-process.md` describes a period-end snapshot as a procedural checklist outcome with reports (Inventory Valuation Report, Movement Report, Variance Report). | `tb_inventory_period_snapshot` is the persistent snapshot — one row per `(period_id, location_id, product_id)` bucket carrying opening / receipt / issue / adjustment / closing buckets in both qty and cost. **Written only by the average-method close path** (`period-end.close-average.helper.ts`); a FIFO business unit's close writes lot carry-over transactions (`{location_code}{YYMM}{seq4}` lots) instead and never populates this table. | Update carmen/docs to add the `tb_inventory_period_snapshot` entity definition and to note the method-dependence: snapshot rows exist only for average-method tenants. |
 | 6 | "Free / Allocated / Available / InTransit" qty columns | PRD §3 Key Concepts lists `onHand`, `allocated`, `available`, and `inTransit` as parallel columns on the stock balance. | None of the four are persisted on any inventory table. `onHand` is the derived sum (item 1 above). `allocated` and `available` are derived from open-document state: `allocated = Σ open store-requisition reservations` for the product/location; `available = onHand − allocated`. `inTransit` is `Σ store-requisition lines in transfer-dispatched-but-not-received state`. | Document the derivation rules in carmen/docs and the read-model that surfaces them; drop the "persisted column" framing. |
 | 7 | Direct-cost location not part of inventory | `location-type-and-financial-treatment.md` mentions Direct Location Inventory bypasses balance sheet ("No inventory asset recorded… Bypasses balance sheet entirely"). | **Corrected in this pass.** `InventoryTransactionService.createFifoTransaction` / `createAverageTransaction` (`inventory-transaction.service.ts`) write the normal inbound `tb_inventory_transaction_cost_layer` row for a `direct`-type receipt exactly as for an `inventory`-type one, **then** immediately call `createDirectExpenseOut()`, which writes a **second**, offsetting outbound detail + cost-layer row (`transaction_type = issue`) at the same cost so the net balance at the direct location is zero. Direct-location receipts therefore write **two** cost-layer rows, not zero — "bypasses the ledger" is wrong; "nets to zero via an automatic self-issue" is what the code does. No GL/journal write was found for either leg (see § 1). | Drop "no cost-layer row" everywhere in this module. Document the real mechanism: inbound layer + auto-generated offsetting outbound layer, net on-hand zero, no confirmed GL effect. |
 | 8 | Consignment inventory tracking | `location-type-and-financial-treatment.md`: consignment receipt is memo-only ("Receipt: No entry — memo record only"); consumption triggers `Dr COGS / Cr AP`. | **Corrected in this pass — no consignment-specific branching was found anywhere in `inventory-transaction.service.ts`.** A repo-wide search for `consignment` in the backend shows it used only as a `location_type` filter value grouped **together with** `inventory` (never singled out) in `period-end.service.ts`, `period-end.validate.ts`, `physical-count-period.service.ts`, and `spot-check.service.ts` — i.e. consignment locations are counted and balanced exactly like `inventory`-type locations. No memo-only receipt path, no dual COGS/AP posting, and no cost-layer "consignment flag" were found. | Mark the memo-only / dual-posting narrative **unconfirmed design intent**, not verified behaviour. Document what the code actually does: `consignment` behaves identically to `inventory` for cost-layer and balance purposes; only `direct` gets distinct treatment (item 7). |
@@ -378,11 +378,11 @@ The carmen/docs Inventory PRD (`inventory-management-prd.md`), the data-structur
 
 ## 6. References
 
-- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (all seven inventory entities: `tb_inventory_transaction`, `tb_inventory_transaction_detail`, `tb_inventory_transaction_cost_layer`, `tb_location`, `tb_product_location`, `tb_period`, `tb_period_snapshot`, plus the five enums `enum_inventory_doc_type`, `enum_location_type`, `enum_transaction_type`, `enum_period_status`, `enum_physical_count_type`) and `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (verified to contain no inventory models).
+- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (all seven inventory entities: `tb_inventory_transaction`, `tb_inventory_transaction_detail`, `tb_inventory_transaction_cost_layer`, `tb_location`, `tb_product_location`, `tb_inventory_period`, `tb_inventory_period_snapshot` (renamed 2026-09-16, migration `20260916141000_rename_tb_period_to_tb_inventory_period`), plus the five enums `enum_inventory_doc_type`, `enum_location_type`, `enum_transaction_type`, `enum_period_status`, `enum_physical_count_type`) and `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (verified to contain no inventory models).
 - **Secondary (concept cross-check):**
   - `../carmen/docs/Inventory/inventory-management-prd.md` — PRD describing `InventoryStatus` / `StockMovement` / valuation methods; divergences in Section 5 (items 1, 2, 3, 4, 6).
   - `../carmen/docs/Inventory/data-structure-trace.md` — data-structure trace describing the lot / location / delivery-point relationships; divergences in Section 5 (items 9, 11).
   - `../carmen/docs/Inventory/location-type-and-financial-treatment.md` — journal-entry breakdown per location type (inventory / direct / consignment); cross-checked against `enum_location_type` and the cost-layer ledger behaviour (items 7, 8).
   - `../carmen/docs/Inventory/stock-in-detail.md` — manual stock-in adjustment workflow; cross-referenced for the `enum_inventory_doc_type = stock_in` path.
-  - `../carmen/docs/inventory-management/period-end-process.md` — period-end checklist and snapshot framing; divergences in Section 5 (item 5 — `tb_period_snapshot` is the persistent anchor, not just a report output).
+  - `../carmen/docs/inventory-management/period-end-process.md` — period-end checklist and snapshot framing; divergences in Section 5 (item 5 — `tb_inventory_period_snapshot` is the persistent anchor, not just a report output).
 - Related modules: [good-receive-note](/en/inventory/good-receive-note) (receipts post `enum_inventory_doc_type = good_received_note` transactions; the cross-link to the inventory transaction lives on `tb_good_received_note_detail_item.inventory_transaction_id`), [store-requisition](/en/inventory/store-requisition) (issues / transfers; SR detail carries `inventory_transaction_id`), [physical-count](/en/inventory/physical-count) (count adjustments post `tb_stock_in` / `tb_stock_out` rows mapped to `adjustment_in` / `adjustment_out`), [spot-check](/en/inventory/spot-check) (partial counts; same posting path as physical-count), [inventory-adjustment](/en/inventory/inventory-adjustment) (manual stock-in / stock-out for non-count corrections), [costing](/en/inventory/costing) (consumes `tb_inventory_transaction_cost_layer.cost_per_unit` / `.average_cost_per_unit` for outbound cost picking and for COGS), [product](/en/inventory/product) (carries the costing-method configuration the cost-layer reads at post time), [vendor-pricelist](/en/inventory/vendor-pricelist) (price-variance against the receiving GRN's unit cost, indirectly via the inbound layer).

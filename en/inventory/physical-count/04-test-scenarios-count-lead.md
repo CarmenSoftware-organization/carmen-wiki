@@ -2,7 +2,7 @@
 title: Physical Count — Test Scenarios — List Screen
 description: List-screen test cases for the physical-count module.
 published: true
-date: 2026-07-15T17:56:09.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: physical-count, test-scenarios, count-lead, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T14:00:00.000Z
 > **At a Glance**
 > **Screen:** `physical-count` (`pc-component.tsx`) &nbsp;·&nbsp; **Module:** [physical-count](/en/inventory/physical-count) &nbsp;·&nbsp; **Role:** any user holding `inventory_management.physical_count` (same role as [04-test-scenarios-counter.md](/en/inventory/physical-count/04-test-scenarios-counter))
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **E2E coverage:** no `physical-count` Playwright spec exists; scenarios are manual/planned coverage.
+> **Executable coverage:** no `physical-count` Playwright spec exists; manual catalog `../carmen-inventory-frontend-e2e/docs/test-cases/750-physical-count.md` (41 cases; list-screen and "Counting has not started" rows) — see [04-test-scenarios](/en/inventory/physical-count/04-test-scenarios) § 5.
 
 ## 1. Scope
 
@@ -23,7 +23,7 @@ The scenarios below exercise the list screen's actions catalogued in [physical-c
 
 | # | Scenario | Pre-condition | Expected outcome |
 | - | -------- | ------------- | ---------------- |
-| L-F-01 | Load the list screen for a brand-new fiscal period | No `tb_physical_count_period` exists yet for the current open `tb_period`. | `GET /physical-count-periods/current` auto-creates one at `status: draft`; the location list renders. |
+| L-F-01 | Load the list screen for a brand-new fiscal period | No `tb_physical_count_period` exists yet for the current open `tb_inventory_period`. | `GET /physical-count-periods/current` auto-creates one at `status: draft`; the location list renders. |
 | L-F-02 | Start a count for a not-started, required location | Location has `location_type ∈ {inventory, consignment}`, `physical_count_type = yes`, `is_active = true`; no `tb_physical_count` for it this period; the physical-count period is already `counting`. | `POST /physical-counts` succeeds; document created at `in_progress`; navigates to `/:id/entry`. |
 | L-F-03 | Resume an in-progress location | Location already has a `tb_physical_count` at `in_progress`. | Navigates directly to `/:id/entry`; no new document created. |
 | L-F-04 | Filter by KPI tile | Click "In Progress" tile. | Only in-progress location cards remain visible. |
@@ -41,7 +41,7 @@ The scenarios below exercise the list screen's actions catalogued in [physical-c
 
 | # | Rule | Scenario | Expected error |
 | - | ---- | -------- | -------------- |
-| L-V-01 | `PHC_VAL_001` | Start a count while the physical-count period is still `draft` (the state it is auto-provisioned into). | `POST /physical-counts` rejects with `"Physical Count Period is not in counting status"` — see the confirmed gap noted in [03-user-flow.md](./03-user-flow.md) § 2 (no code path was found that transitions a period from `draft` to `counting`). |
+| L-V-01 | `PHC_VAL_001` | Start a count while the physical-count period is still `draft` (the state it is auto-provisioned into). | The list screen does not send `POST /physical-counts`; it opens the "Counting has not started" dialog with **Close** and **Go to Period End** (→ `/inventory-management/period-end`). A direct API call is rejected with `"Physical Count Period is not in counting status"`. After **Start Period Close** succeeds, the same Start button creates the count. |
 | L-V-02 | `PHC_VAL_002` | Start a count for a location that has since been soft-deleted. | Rejected with a location-not-found error. |
 
 ## 5. Edge Cases
@@ -56,5 +56,5 @@ The scenarios below exercise the list screen's actions catalogued in [physical-c
 
 - **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/physical-count/pc-component.tsx`.
 - **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (`create`), `.../physical-count-period/physical-count-period.service.ts` (`findCurrent`).
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists.
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists; manual catalog `docs/test-cases/750-physical-count.md`.
 - Related: [physical-count/03-user-flow-count-lead](/en/inventory/physical-count/03-user-flow-count-lead), [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) (`PHC_VAL_001`–`003`, `PHC_AUTH_001`), [physical-count/04-test-scenarios](/en/inventory/physical-count/04-test-scenarios) (end-to-end scenarios).

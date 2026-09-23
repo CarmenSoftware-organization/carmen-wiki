@@ -2,7 +2,7 @@
 title: Recipe Category
 description: Hierarchical category taxonomy for recipes — drives menu engineering, cost-band reporting, and recipe library navigation.
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: recipe, category, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -16,6 +16,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 ![Recipe Category screen](/screenshots/recipe/category.png)
 
 ![Recipe Category detail screen](/screenshots/recipe/category-detail.png)
+
+> **Re-verified 2026-09-22.** Schema and service rules below are unchanged. API contract changes: list/detail responses are serialized through `RecipeCategoryResponseSchema` (`config_recipe-categories/swagger/*`, 2026-09-17) — the parent comes back as `parent: { id, name } | null` and there is **no `parent_id` on the wire** on read (`types/recipe-category.ts`; the grid/form read it from the object since `768af593`); create/update/patch still send `parent_id`. Reads are enriched with an `audit` object instead of raw `created_*`/`updated_*`; `image_url` is included. `GET /api/config/{bu}/recipe-categories` defaults to `sort=code:asc` (`b375b078b`). E2E: `tests/110-op-category.spec.ts` (13 tests, 2026-09-20).
 
 ## 1. What & Who
 
@@ -95,5 +97,7 @@ Source: tenant schema.
 ## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_recipe_category` (lines ~5314-5350).
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/operation-plan/category/`.
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/operation-plan/category/` (`recipe-category-component.tsx`, `use-recipe-category-table.tsx`, `recipe-category-form-schema.ts`); types `types/recipe-category.ts`.
+- **Gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_recipe-categories/config_recipe-categories.controller.ts` (`@Serialize(RecipeCategoryResponseSchema)`, `@ExpandRefs` on write), `swagger/`.
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/110-op-category.spec.ts`.
 - **Concept docs:** `../carmen/docs/recipe/setup-pages-spec.md`.

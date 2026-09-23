@@ -1,8 +1,8 @@
 ---
 title: Attachment
-description: File-metadata registry used by every module with file uploads — MinIO-backed tb_file_tag in a separate file-service database, served by the micro-file microservice. The tenant schema's tb_attachment table has zero code references and is dead.
+description: File-metadata registry used by every module with uploads — MinIO-backed tb_file_tag in a separate file-service database served by micro-file. The tenant tb_attachment table has zero code references and is dead.
 published: true
-date: 2026-07-22T00:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: reporting-audit, attachment, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -25,7 +25,7 @@ The real file registry is `tb_file_tag`, one row per uploaded MinIO object, link
 
 Each `tb_file_tag` row carries the MinIO object key (`object_name`), original file metadata (`original_name`, `content_type`, `size`), and structured/free-form tags (`reference_type`/`reference_id`/`reference_no`, `tags` JSONB) for lookups. There is **no `doc_version`/re-render-versioning column on `tb_file_tag`** — re-uploading a document's PDF is a plain new upload, not a versioned revision of an existing row.
 
-**Maintained by** the owning module's upload flow, via `micro-file`'s commands (`files.upload` / `files.get` / `files.info` / `files.find-all` / `files.delete` / `files.presigned-url` / `files.update-tags`). **Read by** the owning module's detail screens, which resolve each `fileToken` back to a fresh, time-limited MinIO URL.
+**Maintained by** the owning module's upload flow, via `micro-file`'s RPC commands (`Files.upload` / `get` / `info` / `findAll` / `summary` / `delete` / `presignedUrl` / `updateTags` / `uploadLegacy` — `micro-file/src/files/files.controller.ts`; RPC now runs HTTP-as-RPC, not TCP). *(Spot-checked 2026-09-22: `tb_file_tag` columns, the 3600-second presigned TTL and the `/:filetoken/download` fallback route all match HEAD; the command list above gained `summary` and `uploadLegacy`.)* **Read by** the owning module's detail screens, which resolve each `fileToken` back to a fresh, time-limited MinIO URL.
 
 ### 1.1 File retrieval — the stored URL is never trusted
 
@@ -128,5 +128,5 @@ Source: **separate `prisma-shared-schema-file` database** — not the tenant sch
 
 - **Prisma (file schema — the real registry):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-file/prisma/schema.prisma` — `tb_file_tag` (lines ~19-49).
 - **Prisma (tenant schema — dead table, for contrast):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_attachment` (line ~4790).
-- **Backend gateway (proxy layer):** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/document-management/document-management.controller.ts` + `.service.ts` — forwards to the `FILE_SERVICE` microservice over `files.*` TCP commands.
+- **Backend gateway (proxy layer):** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/document-management/document-management.controller.ts` (`GET :filetoken/download` fallback) + `.service.ts` — forwards to the `FILE_SERVICE` microservice over `Files.*` RPC commands (HTTP-as-RPC).
 - **Backend file microservice (actual storage + registry):** `../carmen-turborepo-backend-v2/apps/micro-file/src/files/files.controller.ts` + `files.service.ts` — MinIO client, `tb_file_tag` CRUD.

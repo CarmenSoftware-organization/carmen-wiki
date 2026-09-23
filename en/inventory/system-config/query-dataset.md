@@ -1,8 +1,8 @@
 ---
 title: Query Dataset
-description: SQL Workbench — a real backend admin-SQL-console service whose UI lives in the Platform SPA, not this one, and whose execute endpoint runs any SQL (including DROP/ALTER/multi-statement) rather than the read-only surface previously documented here.
+description: SQL Workbench — backend admin-SQL service whose UI is the Platform SPA. All five routes gated by sql_workbench.read/manage platform permissions; execute runs any SQL. system_admin.query_dataset key removed 2026-09-21.
 published: true
-date: 2026-09-06T06:45:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: system-config, query, dataset, sql, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -13,7 +13,9 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **Owner:** Gated by two platform permissions — `sql_workbench.read` (browse) and `sql_workbench.manage` (run / save / drop), on **all five routes** since 2026-08-20 &nbsp;·&nbsp; **Storage:** PostgreSQL catalog (`pg_class`, `pg_proc`) in the tenant schema — **no `tb_query_dataset`** &nbsp;·&nbsp; **No screen in *this* product** — the console is the Platform SPA's [SQL Workbench](/en/platform/sql-workbench); no matching route/component/hook exists in `carmen-inventory-frontend-react` &nbsp;·&nbsp; **`execute` is NOT read-only** — it runs any SQL, including DDL and multiple statements.
 
-## Implementation status (verified 2026-07-16; permissions and UI re-verified 2026-09-06)
+## Implementation status (verified 2026-07-16; permissions and UI re-verified 2026-09-06 and 2026-09-22)
+
+**2026-09-22:** the five guards below are unchanged at HEAD (`config_sql-query.controller.ts:76-79`, `:125-128`, `:180-183`, `:215-218`, `:273-276` — `PlatformPermissionGuard` + `RequirePlatformPermission('sql_workbench.manage' | 'sql_workbench.read')`). One catalog change since 2026-09-06: **`system_admin.query_dataset` was removed from both the licence catalog and the permission catalog** (BE `7bebddaa7`, 2026-09-21; FE `02bfff7a` dropped it from `constant/permissions.ts` the same day). The commit's reasoning: every route is gated by platform permissions, none by BU RBAC, and the caller is the Platform SPA — so the BU-side key was a relic that `LicenseInterceptor` was still enforcing against BUs for a feature nobody sold. Nothing in `carmen-inventory-frontend-react` references `query_dataset` any more. The BU-scoped URL (`api/config/:bu_code/sql-query/*`) is unchanged; only the BU licence/permission requirement went away.
 
 Three claims in earlier versions of this page do not match current source and are corrected below. Items 1 and 2 were corrected on 2026-07-16; item 3 on 2026-09-06:
 
@@ -153,12 +155,13 @@ Click an existing view / procedure / function → fetch `pg_get_viewdef` or `pg_
 - [reporting-audit/report](/en/inventory/reporting-audit/report) — report templates are intended to bind to views created here; linkage not independently re-verified this pass.
 - [reporting-audit/widget](/en/inventory/reporting-audit/widget) — dashboard widgets reference code-registered `dataset_id`s (`tb_dashboard_bu_widget` / `tb_dashboard_personal_widget`), not ad-hoc SQL; a prior version's `tb_widget_workspace` claim was unbacked (no such table exists).
 - [reporting-audit/schedule](/en/inventory/reporting-audit/schedule) — scheduled reports consume the same views (unconfirmed this pass).
-- [system-config/period](/en/inventory/system-config/period) — period-close objects (`sp_close_period`, `v_period_snapshot`) typically live here (unconfirmed this pass).
+- [system-config/period](/en/inventory/system-config/period) — period-close objects (`sp_close_period`, `v_period_snapshot`) typically live here (unconfirmed — no such object is created by any migration; treat as an operator convention, not a shipped artefact).
 
 ## 8. References
 
 - **Backend service:** `../carmen-turborepo-backend-v2/apps/micro-business/src/sql-query/sql-query.service.ts` — `execute`, `saveDdl`, `listDbObjects`, `getDbObjectDefinition`, `dropDbObject`.
-- **Backend gateway controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_sql-query/config_sql-query.controller.ts` — re-read 2026-09-06: `PlatformPermissionGuard` + `RequirePlatformPermission` on **all five** routes (`execute` `:70-71`, `save` `:119-120`, `db-objects` `:174-175`, `db-objects/definition` `:209-210`, `DELETE db-objects` `:258-259`). No `AppIdGuard` anywhere in the file.
+- **Backend gateway controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_sql-query/config_sql-query.controller.ts` — re-read 2026-09-22: `PlatformPermissionGuard` + `RequirePlatformPermission` on **all five** routes (`execute` `:78-79`, `save` `:127-128`, `db-objects` `:182-183`, `db-objects/definition` `:217-218`, `DELETE db-objects` `:275-276`). No `AppIdGuard` anywhere in the file.
+- **Catalog removal:** BE `7bebddaa7` (2026-09-21) — `system_admin.query_dataset` dropped from `license-catalog.generated.ts` and the permission seed; FE `02bfff7a`.
 - **SQL safety validator:** `../carmen-turborepo-backend-v2/apps/micro-business/src/sql-query/sql-validator.ts` — `FORBIDDEN_LEADING` blocklist, `allowDangerous` bypass flag.
 - **Frontend:** none found. No `query-dataset` or `sql-query` file exists anywhere in `../carmen-inventory-frontend-react` (confirmed by repo-wide search); no route in `routes/router.tsx`.
 - **Related Prisma:** `tb_report_job` (line ~6101), `tb_report_schedule` (line ~6135), `tb_dashboard_bu_widget` (line ~6185), `tb_dashboard_personal_widget` (line ~6205).

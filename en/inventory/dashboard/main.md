@@ -2,7 +2,7 @@
 title: Main Dashboard
 description: "REMOVED 2026-06-27, historical reference only: landing dashboard surfacing top-level KPIs across PR, PO, GRN, Inventory, and SR — the single pane shown immediately after login."
 published: true
-date: 2026-07-16T01:35:43.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: dashboard, landing, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -16,6 +16,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 ## Implementation status (verified 2026-07-16)
 
 This page documents `dashboard-main.tsx` (formerly `routes/dashboard/_components/dashboard-main.tsx`) and its `mock/main.ts` fixture. `/dashboard/main` never existed in `routes/router.tsx` — the Dashboard sidebar entry has only ever resolved to one component, today's [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace). The demo file was deleted, with 7 siblings, in commit `03891e3d` ("refactor(dashboard): convert to idiomatic structure, drop dead demo code", `carmen-inventory-frontend-react`, 2026-06-27), whose message states it and its mock fixture had "no importers anywhere." Everything below describes that deleted, never-routed demo screen — kept only as historical reference. Treat every "mock-data today," "when live," and route claim in the rest of this page as void; none of it will go live under this page.
+
+**Re-verified 2026-09-22:** still absent from `routes/router.tsx`. The "live data path" named in §3 no longer exists either — `hooks/use-dashboard.ts` was deleted on 2026-08-31 (`02228125`) and `hooks/use-approval.ts` now lives at `routes/procurement/approval/use-approval.ts` (2026-08-28, `0d9757f3`), reading `GET /api/my-pending` (unified `sys_v_my_pending` view, 2026-09-16).
 
 ![Main Dashboard screen](/screenshots/dashboard/main.png)
 

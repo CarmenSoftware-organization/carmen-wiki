@@ -1,8 +1,8 @@
 ---
 title: Report Schedule
-description: Recurring report schedule — a create/list/delete-only screen backed by a generic cron-job table in the separate micro-cronjobs service, not by the tenant schema's tb_report_schedule (which has zero code references).
+description: Recurring report schedule — create/list/delete backed by the micro-cronjobs Cronjob table (not the dead tb_report_schedule); run time vs notify_at with a stored next-day offset ("+1") since 2026-09-03.
 published: true
-date: 2026-07-22T00:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: reporting-audit, schedule, automation, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -27,6 +27,10 @@ Report Schedule defines **when a report runs and who is notified**. The screen a
 
 Every schedule created through the UI delivers via a **viewer link, not a rendered file**: the create dialog hardcodes `format: "viewer_url"` and `delivery: { type: "viewer_url", viewer_endpoint: ... }` on every submit — there is no format picker. When the schedule fires, `micro-cronjobs`' `ReportExecutor` mints a fresh viewer URL (`POST .../report/viewer`) and pushes it to the selected recipients as an in-app/email notification (`POST .../api/internal/notifications`) — it does **not** render or attach a PDF/Excel/CSV file. A legacy "file" delivery code path exists in the executor (calls micro-report's `generate-async`) but is unreachable from the current UI, since nothing ever sets `delivery.type` to anything but `"viewer_url"`.
 
+### 1.1 Notify time (`notify_at`) — added 2026-08-24 / 2026-09-03
+
+A schedule now separates **when the report runs** (`schedule_config.time`) from **when recipients are told it is ready** (`notify_at`, `HH:mm`, optional). Omitted = notify as soon as the run finishes. A `notify_at` earlier in the day than the run time means the **next day**; the gateway resolves and stores `notify_day_offset` (`0` same day, `1` next day — `reports.service.ts` `resolveNotifyDayOffset()`) so a late run that overshoots its notify time still delivers immediately instead of being mistaken for a deliberate "+1". The create dialog shows a **"+1 day" badge** when `notify_at < time` (`schedule-notifications-field.tsx`, `2671e866`) and a hint when the gap is under 10 minutes (`NOTIFY_GAP_WARNING_MINUTES`, `5b8117b8` — a viewer-URL run only mints a link, so the gap is not processing headroom). Rules enforced by the gateway (400): `notify_at` cannot be combined with a raw `cron_expression` (no run time to place it against) and is only accepted for `delivery.type = "viewer_url"`. micro-cronjobs stores it as `Cronjob.notifyAt` + `notifyDayOffset` columns (`08d1181`, `8ebd27e`); the older `schedule_config.notify_time` is still read but deprecated. The list shows a **Notify at** column (`09:00 (+1)` or "immediately").
+
 **Audience:** any authenticated user with BU context can create and delete their own schedules through this screen — no distinct schedule-admin permission gate was found on the `reports.controller.ts` schedule endpoints (they carry the same `KeycloakGuard` + `X-App-Id` header as every other report endpoint, not a narrower role check).
 
 ## 2. Common Tasks
@@ -34,6 +38,7 @@ Every schedule created through the UI delivers via a **viewer link, not a render
 | Task | Where | Notes |
 |---|---|---|
 | Create a schedule | `/report/schedules` → **Create Schedule** | Pick a report template, frequency (daily / weekly / monthly) + time, optional per-template filters, notification channels (web / email checkboxes), and recipients (multi-select of users) |
+| Set the notify time | Create dialog → **Notifications** → Notify at | Optional `HH:mm`; earlier than the run time = next day (+1 badge); only for viewer-link delivery |
 | Set frequency | Create dialog → **Frequency** select + time picker | Weekly adds a Sun–Sat multi-toggle; monthly adds a 1–31 multi-toggle. There is **no raw cron-expression field** in the UI — the backend derives `cron_expression` from `schedule_config` when one isn't supplied |
 | Pick recipients | Create dialog → **Recipients** | A checkbox multi-select over `useAllUsers()` — plain user IDs, not typed `email`/`user`/`sftp` entries |
 | See last/next fire | List → **Last Run** / **Next Run** columns | Populated from the `Cronjob` row's `lastRunAt`/`nextRunAt` |
@@ -54,6 +59,8 @@ Every schedule created through the UI delivers via a **viewer link, not a render
 
 ## 4. Edge Cases
 
+- **`notify_day_offset` is stored, not inferred.** Computed once at create from `notify_at` vs `schedule_config.time`; the executor reads the stored offset so a late run does not re-derive a spurious "+1".
+- **Every gateway → micro-cronjobs call carries `x-internal-token`** (`318735d26`); a secret mismatch makes every schedule route answer 401.
 - **`is_active` is always `true` on create and never toggled.** `reports.service.ts`'s `createSchedule()` hardcodes `is_active: true` on every payload sent to `micro-cronjobs`; nothing in the reachable UI ever flips it.
 - **Recipients are plain user IDs.** The `recipients` array holds user UUIDs selected from the standard user picker — no `email`/`sftp` recipient type exists in the current schema or UI, despite the type definitions in `types/report-schedule.ts` allowing other `ReportFormat` string values that are never actually set by the create flow.
 - **The Redis lock is per job-execution, not per `(schedule_id, fire_timestamp)`.** `RedisLocker.Lock()` takes a single `key` argument (the job's gocron identity) and locks it with a 5-minute TTL via `SET NX` — there is no fire-timestamp component in the lock key.
@@ -78,6 +85,8 @@ Source: **`micro-cronjobs` service's own Postgres schema** (`"CRONJOBS"."Cronjob
 | `JobConfig` / `jobData` | `jsonb` | `ReportJobConfig`: `template_id`, `bu_codes`, `format`, `filters`, `recipients`, `user_id`, `options`, `delivery`, `notifications`. |
 | `SourceService` / `sourceService` | `string?` | `"micro-report"` for report schedules. |
 | `SourceID` / `sourceID` | `string?` | The report template id (or `report_type` fallback). |
+| `NotifyAt` / `notifyAt` | `string?` (`HH:mm`) | When recipients are told the report is ready; `null` = as soon as the run finishes. Moved out of `job_config.notify_time` on 2026-08-24. |
+| `NotifyDayOffset` / `notifyDayOffset` | `int` | Default `0`. Days after the run that `notifyAt` lands on (`1` = the "+1" case). Added 2026-09-03. |
 | `IsActive` / `isActive` | `bool` | Default `true`. Always `true` on create; no UI path flips it. |
 | `LastRunAt` / `lastRunAt`, `NextRunAt` / `nextRunAt` | `timestamp?` | Scheduler bookkeeping. |
 | `LastError` / `lastError` | `string?` | Populated on execution failure. |
@@ -90,7 +99,7 @@ Source: **`micro-cronjobs` service's own Postgres schema** (`"CRONJOBS"."Cronjob
 
 ### 5.2 `ReportJobConfig` (the `jobData`/`JobConfig` JSONB shape for `job_type = "report"`)
 
-`template_id`, `bu_codes: string[]`, `format`, `filters: map[string]string`, `recipients: string[]`, `user_id`, `options: map[string]any`, `delivery: { type, viewer_endpoint }`, `notifications: { web, email, mail_source }`.
+`template_id`, `bu_codes: string[]`, `format`, `filters: map[string]string`, `recipients: string[]`, `user_id`, `options: map[string]any`, `delivery: { type, viewer_endpoint }`, `notifications: { web, email, mail_source }`. (`notify_time` used to live here; it is now the `notifyAt` column and only read as a fallback.)
 
 ### 5.3 `tb_report_schedule` (tenant schema — dead table, kept for contrast)
 
@@ -99,6 +108,7 @@ Source: **`micro-cronjobs` service's own Postgres schema** (`"CRONJOBS"."Cronjob
 ## 6. Business Rules
 
 - **`Cronjob` (micro-cronjobs) is the real schedule store; `tb_report_schedule` is dead.** Confirmed by a repo-wide search across TypeScript and Go source.
+- **Notify time is optional and viewer-link only.** `notify_at` earlier than the run time rolls to the next day (`notify_day_offset = 1`); rejected with a raw `cron_expression` or a non-`viewer_url` delivery.
 - **Create-only lifecycle from the UI.** No update endpoint is exposed anywhere in `reports.controller.ts`'s schedule routes — only `POST /schedules` (create), `GET /schedules` (list), `DELETE /schedules/:id` (delete).
 - **Delivery is always `viewer_url` from this screen.** The legacy file-render delivery path exists in the executor but is unreachable from the current create dialog.
 - **Redis-locked, exactly-once execution.** `go-cron`'s distributed locker + a Redis `SET NX` key (`cronjob:lock:<job-id>`, 5-minute TTL) prevents double-fire across scheduler replicas.
@@ -115,7 +125,7 @@ Source: **`micro-cronjobs` service's own Postgres schema** (`"CRONJOBS"."Cronjob
 ## 8. References
 
 - **Real backing (Go, `micro-cronjobs`):** `../micro-cronjobs/internal/model/cronjob.go` (`CronJob`, `ReportJobConfig`, `ReportDelivery`, `ReportNotifications`), `../micro-cronjobs/internal/repository/cronjob_repo.go`, `../micro-cronjobs/internal/scheduler/scheduler.go` (poll loop, retry), `../micro-cronjobs/internal/scheduler/redis_locker.go` (distributed lock), `../micro-cronjobs/internal/executor/report.go` (`viewer_url` vs `file` delivery dispatch).
-- **Gateway (schedule CRUD proxy → micro-cronjobs):** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/reports/reports.controller.ts` (`@Post('schedules')`, `@Get('schedules')`, `@Delete('schedules/:schedule_id')`), `reports.service.ts` (`createSchedule`/`listSchedules`/`deleteSchedule`, `cronFromConfig()`).
+- **Gateway (schedule CRUD proxy → micro-cronjobs):** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/reports/reports.controller.ts` (`@Post('schedules')`, `@Get('schedules')`, `@Delete('schedules/:schedule_id')`), `reports.service.ts` (`createSchedule`/`listSchedules`/`deleteSchedule`, `cronFromConfig()`, `resolveNotifyDayOffset()`, `x-internal-token`), `swagger/request.ts` (`ScheduleCreateRequestDto.notify_at`; `schedule_config.notify_time` deprecated), `swagger/response.ts` (`notify_day_offset`).
 - **Prisma tenant (dead table, for contrast):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_report_schedule` (line ~6128).
 - **Frontend route:** `../carmen-inventory-frontend-react/routes/report/schedules/report-schedules.route.tsx`, `schedule-component.tsx`, `create-schedule-dialog.tsx`, `schedule-frequency-field.tsx`, `schedule-recipients-field.tsx`, `schedule-notifications-field.tsx`.
-- **Frontend hooks/types:** `../carmen-inventory-frontend-react/hooks/use-report-schedule.ts` (`useReportSchedules`, `useCreateReportSchedule`, `useDeleteReportSchedule` — no update hook exists), `types/report-schedule.ts`.
+- **Frontend hooks/types:** `../carmen-inventory-frontend-react/routes/report/schedules/use-report-schedule.ts` (`useReportSchedules`, `useCreateReportSchedule`, `useDeleteReportSchedule` — no update hook exists; moved out of `hooks/` on 2026-08-28), `types/report-schedule.ts` (`notify_at`, `notify_day_offset`), `routes/report/schedules/use-schedule-table.tsx` (Notify at column).

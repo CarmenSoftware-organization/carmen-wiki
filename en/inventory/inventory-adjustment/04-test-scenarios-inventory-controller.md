@@ -1,8 +1,8 @@
 ---
 title: Inventory Adjustment — Test Scenarios — Inventory Controller
-description: Test cases for the read-only historical view and the direct-API-only void endpoint — there is no approval queue to test.
+description: Test cases for reviewing drafts, committing, removing/voiding, and reading completed documents — no approval queue exists.
 published: true
-date: 2026-07-15T17:02:22.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: inventory-adjustment, test-scenarios, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -12,32 +12,35 @@ dateCreated: 2026-05-15T13:00:00.000Z
 
 > **At a Glance**
 > **Persona:** Inventory Controller (same permission/screen as Store Keeper) &nbsp;·&nbsp; **Module:** [inventory-adjustment](/en/inventory/inventory-adjustment)
-> **Categories:** Happy Path (read-only + direct-API void) &nbsp;·&nbsp; Edge Case
-> **E2E coverage:** none — see [04-test-scenarios.md](./04-test-scenarios.md) § 5
-
-This page previously catalogued ~30 approval/threshold/count-rollup scenarios for a Controller review queue that does not exist (see [03-user-flow-inventory-controller.md](./03-user-flow-inventory-controller.md)). What remains testable for this persona is: (a) the identical create flow already covered in [04-test-scenarios-store-keeper.md](./04-test-scenarios-store-keeper.md), (b) the read-only list/detail/print views, and (c) the real void endpoint, which is only reachable via a direct API call since its UI trigger never renders.
+> **Categories:** Happy Path (review, commit, void) &nbsp;·&nbsp; Edge Case
+> **Executable coverage:** none automated — manual catalog `../carmen-inventory-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (TC-IADJ-01xxxx list, TC-IADJ-02xxxx detail/read-only, TC-IADJ-06xxxx void/commit)
 
 ## 1. Happy Path
 
 | # | Scenario | Pre-condition | Steps | Expected |
 | - | -------- | ------------- | ----- | -------- |
-| IC-HP-01 | Read the posted document list | At least one Stock-In and one Stock-Out exist. | 1. Open Inventory Adjustment list. 2. Filter by type / status / date / search. | List renders both types merged (via the gateway's `inventory-adjustments` endpoint, which fetches all rows from both the stock-ins and stock-outs microservices and merges/sorts/paginates in memory). |
-| IC-HP-02 | Void a document via direct API call | A `completed` `tb_stock_in` at `LOC-A` for `P-1 qty=10`; sufficient on-hand at `(LOC-A, P-1)` to reverse it. | Direct `PATCH` to the stock-in endpoint with `doc_status: "voided"`, `void_reason`, and the current `doc_version` (the same payload `useVoidInventoryAdjustment` would send, if its UI trigger were reachable). | `voidStockIn()` runs: checks not-already-voided, checks sufficient on-hand to reverse, writes a reversing `executeAdjustmentOut` call per line, then sets `doc_status = voided` **and** `deleted_at` on the header in the same update. The document then disappears from the list and detail endpoints (both filter `deleted_at: null`). |
-| IC-HP-03 | Print a posted document | Any `completed` document. | Open detail → click **Print**. | Routes to the FastReport viewer via `inventory-adjustments.print-to-report`; the button always renders in view mode (`canPrint = isView && !!id`). |
-| IC-HP-04 | Attempt to void a document with insufficient on-hand to reverse | A `completed` `tb_stock_in` for `P-1 qty=10` at `LOC-A`, but on-hand at `(LOC-A, P-1)` has since dropped to 4 (consumed by later postings). | Direct void call. | Rejected: `"Cannot void: product P-1 has insufficient on-hand qty (4) at this location to reverse 10"` — confirmed for the stock-in void path; the stock-out void path's equivalent guard was not independently confirmed this pass. |
-| IC-HP-05 | Attempt to void an already-voided document | Document already `doc_status = voided`. | Direct void call again. | Rejected: `"Stock in is already voided"` / `"Stock out is already voided"`. |
+| IC-HP-01 | Read the merged list | Drafts and completed Stock-Ins and Stock-Outs exist | 1. Open the list. 2. Filter `adj_type` / status / date / search. | Both types merged by the gateway's `inventory-adjustments` service (fetch-all from both upstreams, sort, paginate in memory); status shown as icon + label (`draft` / `completed`; `voided` rows are soft-deleted and absent). |
+| IC-HP-02 | Commit a Store Keeper's draft | A draft Stock-Out; on-hand sufficient | 1. Open the draft. 2. **Commit** → confirm. | `PATCH /stock-outs/{id}/commit` → `completed`; ledger rows written; returns to the list. |
+| IC-HP-03 | Void a posted document via API | Completed Stock-In `P-1 qty 10` at `LOC-A`; on-hand ≥ 10 | `DELETE /{bu}/stock-ins/{id}/void` `{ void_reason }` with a valid token | `voidStockIn`: already-voided check, on-hand check, reversing `executeAdjustmentOut` per posted line, `doc_status = voided`, `deleted_at` set, `info.void_reason` stored; the document leaves list/detail. |
+| IC-HP-04 | Print a posted document | Any `completed` document | Detail → **Print** | `GET /stock-ins/{id}/print-viewer` (FastReport); the button renders in view mode (`canPrint = isView && !!id`). |
+| IC-HP-05 | Read stock movements | Any `completed` document | Detail → stock-movements panel | `GET /{id}/stock-movements` returns one line per posted detail with lot, qty, cost and `transaction_type` (`adjustment_in` / `adjustment_out`). |
+| IC-HP-06 | Void with insufficient on-hand | Completed Stock-In `qty 10`; on-hand since dropped to 4 | Direct void call | Rejected: `Cannot void: product P-1 has insufficient on-hand qty (4) at this location to reverse 10`. |
+| IC-HP-07 | Void an already-voided document | `doc_status = voided` | Direct void call | 400 `Stock in is already voided` / `Stock out is already voided`. |
 
 ## 2. Edge Cases
 
 | # | Scenario | Condition | Expected |
 | - | -------- | --------- | -------- |
-| IC-EDGE-01 | Void button unreachable in the UI | Open any `completed` document's detail view, click **Edit**. | The Edit button does not render (`isView && !isReadOnly` is false, since `isReadOnly` is always true for `completed`/`voided`), so edit mode is never entered and the Void button (which requires `isEdit`) never appears either. |
-| IC-EDGE-02 | List-view Delete on a completed document | Click Delete from the row menu. | Same as SK-EDGE-04 in the Store Keeper scenarios: always renders, always fails server-side with a 400. |
-| IC-EDGE-03 | Voided document disappears from reporting | After a successful direct-API void. | The document is gone from both the list and detail endpoints (they filter `deleted_at: null`, and void sets it) — there is no "Voided" badge state visible anywhere in the UI for this module, unlike GRN/PO/SR where a void leaves a visible, badge-flagged row. |
+| IC-EDGE-01 | Void button on a completed document | Open a completed document | No **Edit** (`isView && !isReadOnly` false) and therefore no **Void** (`canVoid = isEdit && …`); reversal is API-only. |
+| IC-EDGE-02 | Remove a completed document | Removal call via API (the detail view hides the button once `isReadOnly`) | 400 `Cannot delete a completed Stock In — inventory has already been adjusted`. |
+| IC-EDGE-03 | `In Progress` status filter | Select `In Progress` in the list filter | Returns nothing — no code path ever sets `in_progress` on `tb_stock_in`/`tb_stock_out`. |
+| IC-EDGE-04 | Physical-count rows in the list | A physical count was submitted with variances | Its `tb_stock_in`/`tb_stock_out` rows appear as `completed` with no reason and **no stock movements** (never posted). |
+| IC-EDGE-05 | Wastage write-off rows in the list | `POST /wastage-reporting` was called | One `completed` Stock-Out per location with the caller's reason; stock movements show `adjustment_out` from the named lots. |
+| IC-EDGE-06 | Stale `doc_version` | Two sessions edit the same draft | Second save/commit fails on the `doc_version` mismatch; reload and retry. |
 
 ## 3. References
 
-- Parent overview: [04-test-scenarios.md](./04-test-scenarios.md).
-- User flow: [03-user-flow-inventory-controller.md](./03-user-flow-inventory-controller.md).
-- Business rules: [02-business-rules.md](./02-business-rules.md) `ADJ_POST_004` (void), `ADJ_VAL_012` (void preconditions).
-- Cross-link: [inventory](/en/inventory/inventory) — the ledger effect of both posting and void.
+- Parent overview: [04-test-scenarios](/en/inventory/inventory-adjustment/04-test-scenarios).
+- User flow: [03-user-flow-inventory-controller](/en/inventory/inventory-adjustment/03-user-flow-inventory-controller).
+- Business rules: [02-business-rules](/en/inventory/inventory-adjustment/02-business-rules) `ADJ_POST_002`–`ADJ_POST_006`, `ADJ_VAL_010`–`ADJ_VAL_015`.
+- Cross-link: [inventory](/en/inventory/inventory) — the ledger effect of both commit and void; [inventory/period-end](/en/inventory/inventory/period-end) — drafts block Start Period Close.

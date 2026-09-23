@@ -2,7 +2,7 @@
 title: Spot Check — Test Scenarios — List & Create Screens
 description: List- and create-screen test cases for the spot-check module.
 published: true
-date: 2026-07-15T18:38:42.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: spot-check, test-scenarios, inventory-controller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T14:30:00.000Z
 > **At a Glance**
 > **Screens:** `spot-check` (`sc-component.tsx`), `spot-check/location/:location_id` (`sc-form.tsx`) &nbsp;·&nbsp; **Module:** [spot-check](/en/inventory/spot-check) &nbsp;·&nbsp; **Role:** any user holding `inventory_management.spot_check` (same role as [04-test-scenarios-counter.md](/en/inventory/spot-check/04-test-scenarios-counter))
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **E2E coverage:** no `spot-check` Playwright spec exists; scenarios are manual/planned coverage, cross-referenced against `docs/test-cases/760-spot-check.md`'s `TC-SPC-01*`/`TC-SPC-03*` rows.
+> **Executable coverage:** no `spot-check` Playwright spec exists; manual catalog `../carmen-inventory-frontend-e2e/docs/test-cases/760-spot-check.md` (44 cases, re-verified 2026-09-20; `TC-SPC-01*` list / `TC-SPC-03*` create rows) — see [04-test-scenarios](/en/inventory/spot-check/04-test-scenarios) § 5.
 
 ## 1. Scope
 
@@ -29,7 +29,7 @@ The scenarios below exercise the actions catalogued in [spot-check/03-user-flow-
 | L-F-04 | Search by location name/code | Type a partial match. | List narrows client-side. Corresponds to `TC-SPC-010004`. |
 | L-F-05 | Include Not Count | Check "Include Not Count". | Locations flagged `physical_count_type = no` are added to the list. Corresponds to `TC-SPC-010006`. |
 | L-F-06 | Start a spot check — Random | Location has no in-flight spot check; `items ≥ 1`. | `POST /spot-checks` succeeds; document created at `pending` with `size` random detail rows; navigates to `/:id`. Corresponds to `TC-SPC-030002`. |
-| L-F-07 | Start a spot check — High Value | Same, plus `items ≥ 1` and an open/locked `tb_period` exists. | Document created with the top-`items` products by value ranking. Corresponds to `TC-SPC-030003`. |
+| L-F-07 | Start a spot check — High Value | Same, plus `items ≥ 1` and an open/locked `tb_inventory_period` exists. | Document created with the top-`items` products by value ranking. Corresponds to `TC-SPC-030003`. |
 | L-F-08 | Start a spot check — Manual | Same, plus at least one product selected via the transfer picker. | Document created with exactly the selected products as detail rows. Corresponds to `TC-SPC-030004`. |
 | L-F-09 | Method picker switches visible fields | On the create screen, click each method card. | Random/High Value show an Items field (High Value adds Min Value); Manual shows the product transfer picker instead. Corresponds to `TC-SPC-030005`. |
 | L-F-10 | Product transfer (Manual) | Method = Manual. | Products move between Available/Selected columns; counters update; select-all and empty-search states work. Corresponds to `TC-SPC-030006`. |
@@ -51,7 +51,7 @@ The scenarios below exercise the actions catalogued in [spot-check/03-user-flow-
 | L-V-02 | `SPC_VAL_003` | Method = Manual; leave Products Selected empty; click Create. | Client-side error under the product transfer ("at least one product required"); backend would also reject with `"product_id is required for manual selection"`. Corresponds to `TC-SPC-200002`. |
 | L-V-03 | (client) | Method = Random or High Value; leave Items at `0`; click Create. | Client-side error requiring `items ≥ 1`. Corresponds to `TC-SPC-200001`. |
 | L-V-04 | (client) | Method = High Value; enter a negative Min Value; click Create. | Client-side error requiring `min_value ≥ 0`. Corresponds to `TC-SPC-200003`. |
-| L-V-05 | `SPC_VAL_004` | Method = High Value; no `tb_period` has `status ∈ {open, locked}`. | `SPOT_CHECK_NO_ACTIVE_PERIOD` ("No active period found"). |
+| L-V-05 | `SPC_VAL_004` | Method = High Value; no `tb_inventory_period` has `status ∈ {open, locked}`. | `SPOT_CHECK_NO_ACTIVE_PERIOD` ("No active period found"). |
 | L-V-06 | `SPC_VAL_006` | Click Reset on a spot check that is already `void` or `completed` — not reachable through the shipped UI (Reset is only rendered for `pending`/`in_progress` items), but a direct API retry would hit this. | `"Spot check is already void"` / `"Completed spot check cannot be reset"`. |
 
 ## 5. Edge Cases

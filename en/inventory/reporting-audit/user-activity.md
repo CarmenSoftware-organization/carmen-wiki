@@ -1,8 +1,8 @@
 ---
 title: User Activity
-description: Actor-centric login/logout timeline reconstructed entirely from tb_activity rows. tb_user_login_session (previously documented as half the data model) is a dead table with zero non-schema code references — Keycloak-issued JWTs are the real session mechanism, with no local session-table backing.
+description: Actor-centric login/logout timeline reconstructed from tb_activity rows (entity_type = auth). tb_user_login_session is a dead table; Keycloak-issued JWTs are the real session mechanism with no local session-table backing.
 published: true
-date: 2026-07-22T03:05:28.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: reporting-audit, activity, security, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -22,6 +22,8 @@ The previous version of this page described `tb_user_login_session` (platform sc
 What IS confirmed real: `AuthService.login()` calls `logAuthActivity('login', ...)` on successful authentication, and `AuthService.logout()` calls `logAuthActivity('logout', ...)` — both write a `tb_activity` row (`entity_type: 'auth'`) to the user's **default business unit only** (`tb_user_tb_business_unit` row where `is_default: true`; if the user has no default BU, the write is skipped entirely and logged at debug level, not raised as an error). Both calls are wrapped in their own try/catch that logs failures without failing the surrounding login/logout request.
 
 **Not confirmed by this pass:** failed-login capture (the `login()` method's failure branches — rate-limited, user-not-found — return before any `logAuthActivity` call; no `tb_activity` row is written for a failed attempt), sensitive-page "view" logging (a repo-wide search of `logTenantEvent`/`logEvents` callers found only auth login/logout and product/recipe image upload-delete events — never `action: 'view'`), impersonation-chain tracking, and MFA/role-change events. All of these were previously documented as real and are now marked unconfirmed/likely-absent below.
+
+**Re-verified 2026-09-22.** Unchanged in substance: `AuthService.login()` / `logout()` still call `logAuthActivity()` on success only, resolving the user's default BU (`is_default: true`) — `auth.service.ts` lines ~86–140. Two additions worth knowing: (a) self-registration and email verification now write a **platform-scope** `tb_activity` row (`writeRegisterActivity()` — `action: create`, `entity_type: 'user'`; `writeVerifyEmailActivity()`), because those users have no business unit yet — these rows never appear on this tenant screen; they belong to the Platform book's activity log. (b) The frontend hook moved from `hooks/use-user-activity.ts` to `routes/system-admin/user-activity/use-user-activity.ts` (2026-08-28, `0d9757f3`); the Action filter still offers exactly `login` / `logout` and the component still hard-sets `entity_type = "auth"`.
 
 ## 1. What & Who
 
@@ -100,4 +102,5 @@ See [reporting-audit/activity](/en/inventory/reporting-audit/activity) §5.1 for
 - **Prisma platform (dead table, for contrast):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_user_login_session` (line ~567), `enum_token_type` (line ~686).
 - **Confirmed writer:** `../carmen-turborepo-backend-v2/apps/micro-business/src/authen/auth/auth.service.ts` — `logAuthActivity()` (private method), called from `login()` and `logout()`.
 - **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/user-activity/user-activity.route.tsx`, `user-activity-component.tsx` (hard-sets `entity_type = "auth"` on every query), `use-user-activity-table.tsx`.
-- **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-user-activity.ts` — calls the same `API_ENDPOINTS.ACTIVITY_LOGS(buCode)` endpoint as [reporting-audit/activity](/en/inventory/reporting-audit/activity)'s screen.
+- **Frontend hook:** `../carmen-inventory-frontend-react/routes/system-admin/user-activity/use-user-activity.ts` (moved out of `hooks/` on 2026-08-28) — calls the same `API_ENDPOINTS.ACTIVITY_LOGS(buCode)` endpoint as [reporting-audit/activity](/en/inventory/reporting-audit/activity)'s screen.
+- **Platform-scope writers (not shown here):** `auth.service.ts` `writeRegisterActivity()`, `writeVerifyEmailActivity()` → platform `tb_activity`.

@@ -2,7 +2,7 @@
 title: Vendor
 description: Suppliers and their addresses, contacts, and business-type taxonomy — the counterparty on every procurement document.
 published: true
-date: 2026-07-15T21:47:09.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: master-data, vendor, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # Vendor
 
 > **At a Glance**
-> **Owner:** Product Admin &nbsp;·&nbsp; **Tables:** `tb_vendor`, `tb_vendor_address`, `tb_vendor_contact`, `tb_vendor_business_type` &nbsp;·&nbsp; **Used by:** PR, PO, GRN, pricelist, RFQ &nbsp;·&nbsp; The supplier record — defaults tax profile, credit term, and currency onto procurement documents.
+> **Owner:** Product Admin &nbsp;·&nbsp; **Tables:** `tb_vendor`, `tb_vendor_address`, `tb_vendor_contact`, `tb_vendor_business_type`, `tb_certificate` + `tb_vendor_certificate` &nbsp;·&nbsp; **Used by:** PR, PO, GRN, pricelist, RFQ &nbsp;·&nbsp; The supplier record — defaults tax profile, credit term, and currency onto procurement documents.
 
 ![Vendor screen](/screenshots/master-data/vendor.png)
 
@@ -73,6 +73,9 @@ Source: tenant schema.
 | `tax_rate` | `Decimal? @db.Decimal(15, 5)` | Yes | Snapshotted rate at link time (default `0`). |
 | `is_active` | `Boolean?` | Yes | Active flag. |
 | `latitude` / `longitude` | `Decimal? @db.Decimal(10,7)` / `Decimal? @db.Decimal(11,7)` | Yes | Vendor site coordinates; no frontend field found that reads or writes them this pass. |
+| `tax_no` | `String? @db.VarChar` | Yes | Tax identification number (Thai 13-digit, format not enforced because foreign vendors differ). Indexed (`vendor_tax_no_idx`). Added 2026-09-09 (`20260909203000_add_vendor_tax_branch_rating`). |
+| `branch_no` | `String? @db.VarChar` | Yes | Branch number; `"00000"` = head office. Kept as a string because leading zeros are significant. Added 2026-09-09. |
+| `rating` | `Int?` | Yes | Manual 1–5 rating, `null` = not rated. DB `CHECK "vendor_rating_chk" (rating BETWEEN 1 AND 5)` plus DTO `z.number().int().min(1).max(5)` (`vendors.dto.ts:55`). Added 2026-09-09. **API-only so far** — `types/vendor.ts` and `routes/vendor-management/vendor/` have no field for any of the three (grep `tax_no|branch_no|rating` → 0 hits). |
 | `info`, `dimension` | `Json?` | Yes | Standard metadata. |
 | `doc_version` | `Int` | No | Optimistic-lock version (default `0`). |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |
@@ -122,6 +125,17 @@ Source: tenant schema.
 
 Flat lookup — `id`, `name`, `description`, `note`, `is_active`, standard metadata, audit columns. App-enforced unique `name` among non-deleted rows.
 
+### 5.5 `tb_certificate` / `tb_vendor_certificate` (certification)
+
+The vendor-certification feature moved into this module's UI on 2026-09-03: the master screen is now `routes/vendor-management/certification/` (was `routes/config/certification/`, frontend commit `ac1e7c56`), and the master table was renamed from `tb_vendor_master_certificate` to `tb_certificate` on 2026-09-04 (`20260904133000_rename_eco_label_and_certificate`; indexes `certificate_code_u`, `certificate_name_u`). The API paths did **not** change: gateway `api/config/:bu_code/vendor-master-certificates` (master) and `api/config/:bu_code/vendor-certificates` (per-vendor rows), Bruno `config/vendor-master-certificates/*` and `config/vendor-certificates/*`.
+
+| Table | Purpose | Key fields |
+| --- | --- | --- |
+| `tb_certificate` | BU-wide catalogue of certificate types (ISO 9001, HACCP, …) | `code`, `name` (each `@@unique` with `deleted_at`), `description`, `note`, `is_active`, `attachments` JSON (`[]`), `info`, `dimension`, `doc_version`, audit |
+| `tb_vendor_certificate` | One certificate held by one vendor | `vendor_id`, `master_certificate_id` → `tb_certificate`, `certificate_no`, `issued_date`, `expiry_date`, `attachments` JSON of `{originalName, fileToken, contentType}`, `is_active`, `description`, `note`, `info`, `dimension`, `doc_version`, audit |
+
+Default list sort for the master is `name:asc` (`vendor-master-certificate.service.ts`); for per-vendor rows `created_at:desc`. This mirrors the product-side eco-label pair (`tb_eco_label` / `tb_product_eco_label`, [product/01-data-model](/en/inventory/product/01-data-model) § 2.10).
+
 ## 6. Business Rules
 
 - **Uniqueness.** `(code, name)` unique among non-deleted vendors. At most one of each `address_type` per vendor (DB-unique). Contact `name` unique within a vendor (DB-unique).
@@ -132,6 +146,8 @@ Flat lookup — `id`, `name`, `description`, `note`, `is_active`, standard metad
 - **Tax-profile change propagation.** Does not retro-edit documents; snapshots stay as posted.
 - **Business-type rename** requires a maintenance job to refresh JSON snapshots on vendors.
 - **Optimistic lock.** Vendor header PATCH carries a `doc_version`; the client must echo the current `doc_version` on save or receive a `409 Conflict`, and the version increments on success. Scope is the `tb_vendor` header only — child tables (`tb_vendor_address`, `tb_vendor_contact`) and soft-delete are not guarded.
+- **Rating range.** `rating` is the only vendor column with a DB-level value constraint (`CHECK 1..5`); a value outside it is rejected by the DTO before it reaches the database.
+- **Default sort.** `GET /vendors` with no `?sort=` returns `code:asc, id:asc` (`vendors.service.ts`, `withDefaultSort`, 2026-09-13).
 
 ## 7. Cross-References
 
@@ -144,5 +160,8 @@ Flat lookup — `id`, `name`, `description`, `note`, `is_active`, standard metad
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_vendor` (lines ~3500-3552), `tb_vendor_address` (lines ~3589-3626), `tb_vendor_contact` (lines ~3628-3658), `tb_vendor_business_type` (lines ~5229-5250), `enum_vendor_address_type` (lines ~262-266).
-- **Frontend:** `../carmen-inventory-frontend-react/routes/vendor-management/vendor/`.
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_vendor` (line ~3859), `tb_vendor_address` (~3954), `tb_vendor_contact` (~3993), `tb_certificate` (~4025), `tb_vendor_certificate` (~4053), `tb_vendor_business_type` (~5836).
+- **Migrations:** `20260904133000_rename_eco_label_and_certificate`, `20260909203000_add_vendor_tax_branch_rating`.
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/vendors/` (DTO `dto/vendors.dto.ts:53-55`), `master/vendor-master-certificate/`, `master/vendor-certificate/`.
+- **Frontend:** `../carmen-inventory-frontend-react/routes/vendor-management/vendor/`, `routes/vendor-management/certification/`.
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/043-certification.spec.ts` (19 cases) + `docs/test-cases/gaps/043-certification-gap.md` (29 uncovered cases).

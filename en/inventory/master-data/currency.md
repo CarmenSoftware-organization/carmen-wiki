@@ -2,7 +2,7 @@
 title: Currency
 description: Per-tenant currency catalogue, ISO reference list, and dated exchange-rate history — drives all FX conversion on POs, GRNs, pricelists, and costing.
 published: true
-date: 2026-07-15T21:47:09.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: master-data, currency, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -25,7 +25,7 @@ Each tenant chooses a subset of ISO currencies to enable. The BU's `default_curr
 
 | Task | Where | Notes |
 |---|---|---|
-| Enable a currency for the tenant | Configuration → Master Data → Currency → **New** | Pick `iso_code` from `tb_currency_iso`; sets `is_active = true` |
+| Enable a currency for the tenant | Configuration → Master Data → Currency → **New** | Pick the ISO code; the dialog auto-fills `name` / `symbol` / `description` from a **frontend-local ISO constant** (`components/lookup/lookup-currency-iso`), not from a `tb_currency_iso` API call. `exchange_rate` starts at `0` and stays there unless typed — frontend commit `651e9cd9` (2026-09-03) removed the fake `0.01` fallback that used to be written when the (non-existent) `/api/exchange-rate` fetch failed |
 | Override symbol or name | Edit dialog | Tenant copies in `tb_currency.symbol` / `name` override the ISO row |
 | Set BU default currency | [master-data/business-unit](/en/inventory/master-data/business-unit) detail | Must reference an active `tb_currency` row |
 | Maintain rates | See [master-data/exchange-rate](/en/inventory/master-data/exchange-rate) | Dated history lives there, not on this entity |
@@ -97,6 +97,7 @@ See [master-data/exchange-rate](/en/inventory/master-data/exchange-rate) for the
 - **Lifecycle.** Inactive currencies hidden from new-document pickers; historical documents render off the snapshot.
 - **Rate resolution.** Engine selects largest `at_date <= document_date` for `currency_id`; falls back to `tb_currency.exchange_rate` cache and flags the document.
 - **BU default invariant — unconfirmed.** No code was found that blocks inactivating a currency that is any BU's `default_currency_id`.
+- **Default sort.** `GET /currencies` with no `?sort=` returns `code:asc, name:asc, id:asc` (`currency.service.ts`, `withDefaultSort`, 2026-09-13).
 
 ## 7. Cross-References
 
@@ -108,6 +109,8 @@ See [master-data/exchange-rate](/en/inventory/master-data/exchange-rate) for the
 
 ## 8. References
 
-- **Prisma (tenant):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_currency` (lines ~553-596), `tb_exchange_rate` (lines ~760-785).
-- **Prisma (platform):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_currency_iso` (lines ~279-287).
+- **Prisma (tenant):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_currency` (line ~561), `tb_exchange_rate` (~769).
+- **Prisma (platform):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_currency_iso` (line ~323).
+- **Bruno:** `config/currencies/*`; `master-data/currencies/GET-find-all-iso-master-data-currencies.bru` (ISO list). Note: `master-data/currencies/GET-get-fleet-summary-master-data-currencies.bru` is a misfiled platform request (`/api-system/clusters/summary`) and has nothing to do with currency.
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/040-currency.spec.ts` + `docs/test-cases/gaps/040-currency-gap.md`.
 - **Frontend:** `../carmen-inventory-frontend-react/routes/config/currency/`.

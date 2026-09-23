@@ -2,7 +2,7 @@
 title: Purchase Request — Test Scenarios — Purchaser
 description: Purchaser's test cases (happy path, permission, validation, edge cases) for purchase-request.
 published: true
-date: 2026-07-15T10:50:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: purchase-request, test-scenarios, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -15,6 +15,8 @@ dateCreated: 2026-05-15T09:00:00.000Z
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** `tests/304-pr-purchaser-journey.spec.ts` (`TC-PR-0701xx`–`TC-PR-0709xx`, primary source), plus purchase-role blocks in `tests/301-pr.spec.ts` (`TC-PR-470xxx` edit pricing, `TC-PR-490xxx` submit after allocation, `TC-PR-600xxx` reject, `TC-PR-410xxx` convert to PO) in `../carmen-inventory-frontend-e2e/`
 
+> **Executable coverage (2026-09-22).** Spec `../carmen-inventory-frontend-e2e/tests/304-pr-purchaser-journey.spec.ts` (61 tests) + purchase blocks of `tests/301-pr.spec.ts` (197). Catalogued-but-unautomated cases: `docs/test-cases/gaps/304-pr-purchaser-journey-gap.md` (36 cases — it documents that the spec's Step 3 pricing blocks `purchaseTest.skip` when the item row is collapsed, so vendor / price / discount / tax edits are effectively unautomated today); story `docs/user-stories/304-pr-purchaser-journey.md`. Convert-to-PO now lives at `/procurement/purchase-order/from-pr` (`routes/procurement/purchase-order/from-pr/`), not a dialog. Added below: `PUR-VAL-05` (line-amount caps) and the last-purchase-price column in the comparison dialog.
+
 This page captures the test scenarios the Purchaser persona directly drives in the `purchase-request` module, split across the two things they actually do in the current build: (1) act at the `purchase`-role stage inside the PR's own approval chain — edit vendor / unit price / discount / tax profile, run **Auto Allocate**, then bulk Approve / Reject / Send for Review / Split, exactly like any other stage — and (2) separately, once a PR is `approved`, run the **Convert to PO** dialog from the Purchase Order module. See [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) for the full walkthrough of both.
 
 ## 1. Happy Path
@@ -24,7 +26,7 @@ This page captures the test scenarios the Purchaser persona directly drives in t
 | PUR-HP-01 | List loads, My Pending default; PR at Purchase stage visible | Purchaser logged in; a PR was submitted and HOD-approved so it now sits at a stage assigned to the Purchaser | Sidebar → Purchase Request. Confirm URL and My Pending tab (`TC-PR-070101`). | List loads at `/procurement/purchase-request`; My Pending tab selected when present. |
 | PUR-HP-02 | Detail loads with Items tab default; no standalone Approve/Reject buttons | PR seeded at the Purchase stage (`submitPRAsRequestor` + `approveAsHOD`) | Open the PR detail page (`TC-PR-070201`, `TC-PR-070203`). | Detail URL loads; Items tab selected when present; no standalone header-level Approve / Reject / Send-back buttons are visible (BRD discrepancy — bulk toolbar only). |
 | PUR-HP-03 | Enter Edit Mode → vendor / price / discount / tax become editable | Same PR, Edit button visible | Click **Edit**; check Vendor, Unit Price, Discount, Tax Profile inputs on the first line (`TC-PR-070301`–`TC-PR-070305`). | Vendor, Unit Price, Discount, Tax Profile inputs are editable; `Approved Qty` stays disabled/read-only (`TC-PR-070306`) because the HOD stage already set it. |
-| PUR-HP-04 | Auto Allocate fills vendor + price via scoring lookup | Edit Mode active, at least one line with product / unit / currency set | Click **Auto Allocate** (`TC-PR-070307`). | Request completes and the page stays on the PR detail URL; vendor, price, pricelist reference, and tax populate from the price-compare lookup for lines that resolved a match. |
+| PUR-HP-04 | Auto Allocate fills vendor + price via the price-compare lookup | Edit Mode active, at least one line with product / unit / currency set | Click **Auto Allocate** (`TC-PR-070307`). | Request completes and the page stays on the PR detail URL; vendor, price, `pricelist_detail_id`, `pricelist_no`, tax profile and exchange rate populate from `GET …/price-compare` (`product_id`, `unit_id`, `currency_id`, `at_date`, `qty`) for lines that resolved a match — preferred vendor first, then cheapest, at the MOQ tier the requested qty reaches; rows priced `0` are ignored. Opening **Price Comparison** on a line shows the same rows (vendor, pricelist no., unit, price + "best", effective) with an **Assign** button and, in the header, requested / approved qty and the product's **last purchase price** (`last_price.cost_per_unit`, 2026-09-22). |
 | PUR-HP-05 | Save edits persists vendor/price changes | Edit Mode with a changed Unit Price | Fill Unit Price, click **Save Draft** (`TC-PR-070309`). | Form returns to view mode; Edit button visible again; the new price is retained. |
 | PUR-HP-06 | Bulk Approve advances the PR | Edit Mode, all rows selected | Select all, click bulk **Approve**, confirm (`TC-PR-070401`, golden flow `TC-PR-070901`). | PR stays on its detail URL; stage advances (or `pr_status` flips `in_progress → approved` per `PR_POST_005` if this was the final stage). |
 | PUR-HP-07 | Bulk Reject with reason | Edit Mode, all rows selected | Select all, click bulk **Reject**, enter a reason, confirm (`TC-PR-070402`; also `TC-PR-600001` via the single-PR Reject button). | `pr_status` flips to `voided` (terminal); reason and rejecting user recorded on the audit trail. |
@@ -49,6 +51,7 @@ This page captures the test scenarios the Purchaser persona directly drives in t
 | PUR-VAL-01 | Submit-equivalent bulk action with a missing unit price | Bulk Approve attempted while a line has no `unit_price` / `pricelist_price` set (`TC-PR-490002`) | Reject — inline validation error surfaces; the Purchaser fills the price and retries. |
 | PUR-VAL-02 | Bulk action with an incomplete vendor selection | Bulk Approve attempted while a line has `vendor_id IS NULL` (`TC-PR-490003`) | Reject — inline validation error; the Purchaser runs Auto Allocate or picks a vendor manually and retries. |
 | PUR-VAL-03 | Reject with too-short a reason | Bulk/Reject reason shorter than the minimum length (`TC-PR-600002`) | Reject — error message that the reason is too short; Confirm stays blocked until corrected. |
+| PUR-VAL-05 | Discount or tax larger than the line value | Set `discount_amount` above the line sub-total (or `tax_amount` above the net) on a line and run **Approve**, or call `POST …/verify` with `verify_state = approve`, `stage_role = purchase` | Verify report lists `PR_ERROR.DISCOUNT_EXCEEDS_LINE_AMOUNT` / `TAX_EXCEEDS_LINE_AMOUNT` for the line (`PR_VAL_012`, `common/verify/amount.check.ts`). **Caveat:** `PATCH …/approve` itself does not run the check — if the client skips verify the line persists; record the outcome you observe. |
 | PUR-VAL-04 | Convert to PO with an invalid vendor on a group | Convert-to-PO attempted where a selected PR's line resolves to an invalid/unmatched vendor (`TC-PR-410002`) | Reject — error surfaces in the dialog; no PO is created; source PR `pr_status` unchanged. |
 
 ## 4. Edge Cases
@@ -64,7 +67,7 @@ This page captures the test scenarios the Purchaser persona directly drives in t
 
 - Parent overview: [04-test-scenarios.md](./04-test-scenarios.md)
 - User flow: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — happy-path source for Section 1 above; describes the `purchase`-stage edit + bulk-decide flow and the separate Convert-to-PO dialog
-- Business rules: [02-business-rules.md](./02-business-rules.md) Section 5 (`PR_POST_005` final approve → `approved`, `PR_POST_007` convert to PO → `completed`)
+- Business rules: [02-business-rules.md](./02-business-rules.md) Section 2 (`PR_VAL_011` purchase-stage references, `PR_VAL_012` line caps, `PR_VAL_017` verify), Section 5 (`PR_POST_005` final approve → `approved`, `PR_POST_007` convert to PO → `completed`)
 - Data model: [01-data-model.md](./01-data-model.md) Section 2 — bridge table `tb_purchase_order_detail_tb_purchase_request_detail`
 - E2E: `../carmen-inventory-frontend-e2e/tests/304-pr-purchaser-journey.spec.ts` (primary, persona-journey — `purchaseTest` fixture) and `../carmen-inventory-frontend-e2e/tests/301-pr.spec.ts` (purchase-role blocks: "PR — Edit pricing", "PR — Submit after vendor allocation", "PR — Reject by Purchase Staff", "PR — Convert to PO — Purchase Staff"). PR Template coverage adjacent to Purchaser scope is in `../carmen-inventory-frontend-e2e/tests/310-pr-template.spec.ts`.
 - Cross-link: [purchase-order](/en/inventory/purchase-order) — downstream module that receives the converted POs

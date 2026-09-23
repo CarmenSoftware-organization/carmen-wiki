@@ -1,8 +1,8 @@
 ---
 title: Permission
-description: Atomic resource + action pairs bundled into application roles for RBAC; a separate App ID client-allowlist mechanism gates comment and approval-workflow routes.
+description: Atomic resource + action pairs bundled into application roles for RBAC; App ID allowlist and per-BU licence features are separate layers. Catalog changes since 2026-07-29: inventory_period rename, query_dataset removed.
 published: true
-date: 2026-07-15T23:46:09.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: access-control, permission, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,7 +11,15 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # Permission
 
 > **At a Glance**
-> **Owner:** Seed-managed (release-time) &nbsp;·&nbsp; **Table:** `tb_permission` &nbsp;·&nbsp; **Used by:** [access-control/application-role](/en/inventory/access-control/application-role) (only consumer) &nbsp;·&nbsp; Atomic `(resource, action)` pairs — the smallest unit of authorisation.
+> **Owner:** Seed-managed (release-time) &nbsp;·&nbsp; **Table:** `tb_permission` &nbsp;·&nbsp; **Used by:** [access-control/application-role](/en/inventory/access-control/application-role) (only consumer) &nbsp;·&nbsp; **Endpoints:** `GET api/config/:bu_code/permissions` (catalog, `KeycloakGuard` only), `GET /api/user/permission` (+ `/mobile`, `/platform`) &nbsp;·&nbsp; Atomic `(resource, action)` pairs — the smallest unit of authorisation. **Three authorisation layers coexist at HEAD:** RBAC (`@Permission` + `PermissionGuard`, on 38 route decorations), App-ID client allowlist (`AppIdGuard`, most routes), and per-BU **licence** features (`LicenseInterceptor`, every mapped route).
+
+## Implementation status (re-verified 2026-09-22)
+
+- **Catalog changes since 2026-07-29** (`packages/prisma-shared-schema-platform/prisma/seed.permission.data.ts`): `system_admin.period` → **`system_admin.inventory_period`** (migration `20260916140000_rename_period_to_inventory_period`, all four actions, role grants carried over); **`system_admin.query_dataset` removed** (`7bebddaa7`, 2026-09-21 — SQL Workbench is gated by platform permissions only); added `configuration.chart_of_accounts` (renamed from account code, 2026-08-27), `configuration.cost_center`, `configuration.cost_center_group`, `configuration.location_shelf`, `accounting.gl.*` resources (GL module), `system_admin.workflow.{purchase_request,purchase_order,store_requisition}` (per-type workflow grants, 2026-09-03), `configuration.app_config`, `configuration.dimension`, `configuration.notification_template`, `system_admin.business_unit`, `system_admin.config_email`, `system_admin.user_activity`. There is deliberately **no `interface` resource** — the interface screen is licence-only (`LICENSE_ONLY_RESOURCES`).
+- **Frontend ghost keys removed** (FE `b9e2de5f`, `91b2b274`, 2026-09-21): `constant/permissions.ts` used to declare a `system_configuration.*` block and other keys that never existed in `tb_permission`; every `/system-admin/*` entry now gates on a real resource (`system_admin.business_unit`, `.inventory_period`, `.workflow[.<type>]`, `.role`, `.user`, `.running_code`, `.document`, `.user_activity`, `.activity_log`, `.config_email`, `dashboard.dataset`, `configuration.notification_template`). The comment at the top of `permissions.ts` still says it mirrors the BE `/permissions` endpoint — now true.
+- **Role picker fixes** (FE `bad71662`, 2026-08-31): module-level resources (no dot — `procurement`, `configuration`, `inventory_management`, `dashboard`, `report`, `system_admin`, …) are now grantable, and rows carrying `audit.deleted` are hidden. The catalog query itself filters `deleted_at: null` (`role_permission.service.ts:68-70`).
+- **Licence is a third layer, not RBAC.** Since 2026-08 every request URL is resolved to a licence feature (`permission.route-map.ts` `ROUTE_*` maps + `LICENSE_ROUTE_OVERRIDES`) and checked against the BU's contract by `LicenseInterceptor`; a miss is `403 LICENSE_REQUIRED` / `LICENSE_EXPIRED` (writes only, when expired) with `bu_codes` / `bu_names`. Feature keys reuse permission resource names (`system_admin.workflow`, `configuration.location`, …) but can be *finer* than RBAC — `configuration.email_profile` / `configuration.email_template` exist as licence features while RBAC still sees `configuration.app_config` / `system_admin.config_email`. The user's licence view is `GET /api/license` (`features[]`, `hidden_features[]`, `expired_features[]` per BU + union); `BU role = admin` does **not** bypass the licence check.
+- **`PermissionGuard` coverage is still partial.** `@Permission(...)` appears on 38 route decorations at HEAD (e.g. `config_vendor-master-certificates.controller.ts:89-200`); it is not registered as a global `APP_GUARD` (the only `APP_GUARD` is `ThrottlerGuard`, `app.module.ts:227-228`). Routes without the decorator — including the whole `config_application-roles`, `config_user-application-roles`, `config_permissions` and `config_app-config` controllers — have **no per-user RBAC check**; see [access-control/application-role](/en/inventory/access-control/application-role) §4.
 
 ## 1. What & Who
 
@@ -53,7 +61,8 @@ These API names are registered per client application via `tb_application_api`, 
 
 | Task | Where | Notes |
 |---|---|---|
-| View the permission catalogue | Only inside the Role edit screen's permission matrix (`routes/system-admin/role/permission-matrix.tsx` + `permission-picker.tsx`) | No standalone permission-list screen exists in the inventory frontend |
+| View the permission catalogue | Only inside the Role edit screen's permission picker (`routes/system-admin/role/permission-picker.tsx`, grouped by `permission-catalog.ts`; `permission-matrix.tsx` was deleted 2026-08-20) | No standalone permission-list screen exists in the inventory frontend; API `GET api/config/:bu_code/permissions` |
+| See which licence features a BU holds | `GET /api/license` | Not a permission — but a missing feature blocks the route before RBAC runs |
 | Bundle permissions into a role | [access-control/application-role](/en/inventory/access-control/application-role) edit screen | Checkbox grid; this is the normal path |
 | Add a new permission atom | Release migration / seed | `tb_permission` is seed-managed, not UI-editable |
 | Rename / retire a permission | Soft-delete + re-create | Constraint includes `deleted_at` so `(resource, action)` can be re-used |
@@ -67,6 +76,8 @@ These API names are registered per client application via `tb_application_api`, 
 | Duplicate `(resource, action)` insert | Existing non-deleted row | Use the existing row instead |
 | Feature silently disabled for everyone | Permission deleted while code still references it | Operational guard — restore via migration |
 | Confusing tooltip in role editor | Missing or terse `description` | Update seed; descriptions should explain *what the permission unlocks* |
+| 401 bounce to login after a deploy that renamed an `api_name` | Gateway `AppIdGuard` names renamed before `tb_application_api` rows were (e.g. `period.*` → `inventoryPeriod.*`) | Apply the platform migration first; see [system-config/period](/en/inventory/system-config/period) |
+| `403 LICENSE_REQUIRED` although the role grants the permission | BU's contract lacks the route's licence feature | Licence layer, not RBAC — buy/renew via the Platform |
 
 ## 4. Edge Cases
 
@@ -112,5 +123,7 @@ Source: platform schema.
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_permission` (`model tb_permission`, line 425).
 - **Seed:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/seed.permission.data.ts`, `seed.permission.ts`.
-- **Backend guard:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/auth/decorators/permission.decorator.ts`, `.../auth/guards/permission.guard.ts` (RBAC); `.../common/guard/app-id.guard.ts`, `.../common/guard/app-allowlist.store.ts` (App ID client allowlist, §1.1).
-- **Frontend:** Surfaced inside role-edit at `../carmen-inventory-frontend-react/routes/system-admin/role/permission-matrix.tsx` + `permission-picker.tsx`. No standalone CRUD. Typed key catalogue mirrored in `../carmen-inventory-frontend-react/constant/permissions.ts`.
+- **Backend guard:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/auth/decorators/permission.decorator.ts`, `.../auth/guards/permission.guard.ts` (RBAC); `.../common/guard/app-id.guard.ts`, `.../common/guard/app-allowlist.store.ts` (App ID client allowlist, §1.1); `.../license/{license.interceptor,license-route-resolver,license.evaluator}.ts` + `packages/prisma-shared-schema-platform/prisma/permission.route-map.ts` (licence layer).
+- **Catalog endpoint:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_permissions/config_permissions.controller.ts` (`GET`, `:50`); service `apps/micro-business/src/authen/role_permission/role_permission.service.ts`; `apps/backend-gateway/src/application/user/user.controller.ts:242-322` (`/api/user/permission`, `/mobile`, `/platform`).
+- **Migrations:** `20260916140000_rename_period_to_inventory_period` (platform).
+- **Frontend:** Surfaced inside role-edit at `../carmen-inventory-frontend-react/routes/system-admin/role/permission-picker.tsx` + `permission-catalog.ts`. No standalone CRUD. Typed key catalogue mirrored in `../carmen-inventory-frontend-react/constant/permissions.ts`; licence hook `hooks/use-license.ts`.

@@ -2,7 +2,7 @@
 title: Inventory Costing Methods: FIFO vs. Weighted Average
 description: Analysis of inventory costing methods: FIFO vs. Weighted Average for the Carmen Software platform
 published: true
-date: 2026-07-22T10:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: inventory, costing, fifo, weighted-average, carmen-software
 editor: markdown
 dateCreated: 2026-02-16T11:19:18.975Z
@@ -14,6 +14,7 @@ dateCreated: 2026-02-16T11:19:18.975Z
 > **Audience:** Inventory devs & QA &nbsp;·&nbsp; **Scope:** FIFO vs. Weighted Average — concept, formulas, COGS impact, trade-offs &nbsp;·&nbsp; Costing method is set once per business unit at setup; a 2026-07-22 code check found **no guard preventing a later change** even with non-zero on-hand — see [01-data-model](/en/inventory/costing/01-data-model) § 5 item 1 and [02-business-rules](/en/inventory/costing/02-business-rules) § 2.
 
 > **Note on this page's content:** this page is a **generic industry-pattern reference** (FIFO vs. Weighted Average concepts, formulas, and platform-design considerations), not a description of Carmen's own schema — it predates the rest of this module and uses generic table/field names (`inventory_lot`, `warehouse_id`, `organization_settings`) rather than the real Prisma model names. Where it diverges from the actual implementation — most notably § 6.1's per-product/per-category configuration scope, which does not exist; costing is a single value per business unit — [01-data-model](/en/inventory/costing/01-data-model) § 5 documents every divergence point-by-point. Read that section alongside this page rather than treating this page's pseudocode as Carmen's live schema.
+> **Three more divergences confirmed 2026-09-22** (details in [01-data-model](/en/inventory/costing/01-data-model) § 5 items 10–12 and [02-business-rules](/en/inventory/costing/02-business-rules) § 3): (1) the engine keeps the weighted average **per product across all locations**, not per warehouse as § 3 assumes; (2) unit costs on the ledger are rounded to **2 dp** (`Math.round(x × 100) / 100`), so § 3.6's "use high precision" advice is not what the code does; (3) the inbound cost is a **landed** cost — the GRN line's net amount plus its allocated share of the receipt's extra cost, spread over received **plus free-of-charge** units — persisted per layer as `extra_cost_amount`. Lot numbers are `<location_code><YYMM><4-digit run>`, not the `lot_id` surrogate used here.
 
 ## 1. Overview
 

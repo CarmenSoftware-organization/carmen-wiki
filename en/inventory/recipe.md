@@ -2,7 +2,7 @@
 title: Recipe
 description: Recipes (ingredient lists with yields) — the bridge between menu items and inventory consumption.
 published: true
-date: 2026-07-29T10:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: recipe, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -18,6 +18,8 @@ dateCreated: 2026-05-15T07:48:00.000Z
 ![Recipe detail screen](/screenshots/recipe/detail.png)
 
 > **Implementation status (verified against source 2026-07-15).** What is live today is a **header-level recipe catalogue**: list/detail/create/edit/delete at `/operation-plan/recipe` backed by `POST/PUT/PATCH/DELETE /api/config/{bu_code}/recipes` (gateway `config_recipes.controller.ts` → micro-business `recipe.service.ts`), plus recipe images (multipart gallery), preparation-step REST endpoints (`.../recipes/:recipe_id/preparation-steps` — API only, no UI in the recipe form yet), and the four master-data screens (category, cuisine, equipment, equipment category). The ingredient grid on the recipe form is explicitly **preview-only** ("Preview only — ingredients are not yet persisted with the recipe", `messages/en.json` `ingredientsPreviewNote`) and no ingredient write endpoint exists in the backend. `tb_recipe_version`, `tb_recipe_pricing_history`, and `tb_recipe_yield_variant` exist in the schema but no service writes them today. Menu-item linkage, theoretical consumption, POS explosion, food-cost variance, sub-recipe cost cascade, and recipe-driven store requisitions have **no code anywhere** in the frontend or backend — sections below describing them document the design concept from `../carmen/docs/`, not current behaviour.
+
+> **Re-verified 2026-09-22 (source 2026-07-29 → HEAD).** No schema or business-rule change in the recipe tables; three things to know: **(1)** API responses are now serialized through `@Serialize(RecipeResponseSchema)` / `RecipeCategoryResponseSchema` (2026-09-17, `5d64f5dfd`, `a91a1ba92`) — a recipe carries `category` and `cuisine` as `{ id, name }` refs (the flat `category_id` / `cuisine_id` remain), and a recipe category returns `parent: { id, name } | null` **instead of** `parent_id` on read (the write DTO still takes `parent_id`; frontend fix `768af593`). **(2)** `GET /api/config/{bu}/recipes`, `recipe-categories` and `recipe-equipment` now default to `sort=code:asc`, `recipe-cuisines` and `recipe-equipment-categories` to `name:asc` when no sort is supplied (2026-09-13, `b375b078b` / `928f3b950`). **(3)** A second-layer race in `RecipeLogic` was closed (2026-09-10, `278b9af16`): it was a singleton holding a per-request `prismaService` set by `RecipeService`; both now sit on `TenantScopedService`. Frontend changes in `routes/operation-plan` (39 commits) are cosmetic — `SettingSection` form sections, `ListCard`, `ListToolbar`, Linear-style popover filters, `useEntityForm`, plain-text Region column on cuisine — and change no behaviour documented below. Bruno `config/recipes/PATCH-patch-config-recipes.bru` was regenerated on 2026-09-07 with a preparation-step-shaped body skeleton (`title`, `duration`, `temperature`, …) that does **not** match the recipe PATCH DTO — treat the gateway DTO as authoritative.
 
 ## 1. Overview
 
@@ -105,7 +107,7 @@ The other major business function the module supports is **theoretical vs. actua
   - [Outlet Manager](/en/inventory/recipe/03-user-flow-outlet-manager) — Outlet Manager: demand-side consumer, raises SRs from recipe demand, feeds back issues.
   - [Procurement / F&B Ops](/en/inventory/recipe/03-user-flow-procurement-fb-ops) — Procurement (PO sizing, substitution) + F&B Ops (menu-item linkage approval, menu engineering).
   - [Audit / Config](/en/inventory/recipe/03-user-flow-audit-config) — Sysadmin (config, RBAC, tenant policy, integration) + Auditor (read-only versioning trace).
-- [04 — Test Scenarios](/en/inventory/recipe/04-test-scenarios) — Cross-persona scenarios + E2E coverage status (no dedicated `recipe.spec.ts`; the module's only E2E spec is `121-recipe-equipment-category.spec.ts`), with per-persona drill-downs:
+- [04 — Test Scenarios](/en/inventory/recipe/04-test-scenarios) — Cross-persona scenarios + E2E coverage status (no dedicated `recipe.spec.ts`; specs exist for category `110`, cuisine `111`, recipe-equipment-category `121` and equipment-category `131`; catalogs `120-recipe.md`, `130-equipment.md`), with per-persona drill-downs:
   - [Chef scenarios](/en/inventory/recipe/04-test-scenarios-chef)
   - [Cost Controller scenarios](/en/inventory/recipe/04-test-scenarios-cost-controller)
   - [Outlet Manager scenarios](/en/inventory/recipe/04-test-scenarios-outlet-manager)
@@ -113,7 +115,7 @@ The other major business function the module supports is **theoretical vs. actua
   - [Audit / Config scenarios](/en/inventory/recipe/04-test-scenarios-audit-config)
 - [Operation Plan Dashboard](/en/inventory/recipe/operation-dashboard) — the `/operation-plan` landing screen's 10 hardcoded KPI/chart tiles (recipe + equipment) — not a user-configurable widget board; see that page for the distinction from the real BU/personal widget system.
 - Master-data sub-pages (Operation Plan setup screens):
-  - [Recipe Category](/en/inventory/recipe/category) — hierarchical taxonomy (`tb_recipe_category`), `/operation-plan/category`.
-  - [Cuisine](/en/inventory/recipe/cuisine) — flat region-tagged catalogue (`tb_recipe_cuisines`), `/operation-plan/cuisine`.
+  - [Recipe Category](/en/inventory/recipe/category) — hierarchical taxonomy (`tb_recipe_category`), `/operation-plan/category` (E2E `110-op-category.spec.ts`).
+  - [Cuisine](/en/inventory/recipe/cuisine) — flat region-tagged catalogue (`tb_recipe_cuisines`), `/operation-plan/cuisine` (E2E `111-cuisine.spec.ts`).
   - [Equipment](/en/inventory/recipe/equipment) — kitchen equipment master (`tb_recipe_equipment`), `/operation-plan/equipment`.
   - [Equipment Category](/en/inventory/recipe/equipment-category) — flat equipment grouping (`tb_recipe_equipment_category`), `/operation-plan/equipment-category` (plus a duplicate `/operation-plan/recipe-equipment-category` screen against the same table).

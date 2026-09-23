@@ -2,7 +2,7 @@
 title: Equipment
 description: Kitchen equipment master — referenced from recipe preparation steps that require specific tools (sous-vide bath, deep fryer, smoker, etc.).
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: recipe, equipment, master-data, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -16,6 +16,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 ![Equipment screen](/screenshots/recipe/equipment.png)
 
 ![Equipment detail screen](/screenshots/recipe/equipment-detail.png)
+
+> **Re-verified 2026-09-22.** Schema and service rules below are unchanged. `GET /api/config/{bu}/recipe-equipment` defaults to `sort=code:asc` (`b375b078b`); responses are serialized through `RecipeEquipmentResponseSchema`, which returns a `category` `{ id, name }` ref **alongside** the flat `category_id` / `category_name` (the denormalised string is still what the list shows). The form is now seven `SettingSection` blocks (General → Specifications → Photo → Quantity & Settings → Instructions → Maintenance → Additional); create returns to the list, update stays on the page. E2E: catalog only — `../carmen-inventory-frontend-e2e/docs/test-cases/130-equipment.md` (45 cases, no spec).
 
 ## 1. What & Who
 

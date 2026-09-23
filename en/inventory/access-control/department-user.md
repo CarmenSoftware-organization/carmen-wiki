@@ -1,8 +1,8 @@
 ---
 title: Department User
-description: The user↔department membership pivot — declares which users belong to which departments, and marks the Head of Department (HOD) who drives approval routing on PRs and SRs.
+description: The user↔department membership pivot — which users belong to which departments, and the Head of Department (HOD) driving PR/SR approval routing. Since 2026-09-04 a user's department is also editable from the user screen.
 published: true
-date: 2026-07-16T01:26:05.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: access-control, department-user, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -11,7 +11,14 @@ dateCreated: 2026-06-04T00:00:00.000Z
 # Department User
 
 > **At a Glance**
-> **Owner:** Sysadmin / Product Admin &nbsp;·&nbsp; **Table:** `tb_department_user` &nbsp;·&nbsp; **Used by:** PR and SR approval routing, RBAC scope, cost-centre reporting &nbsp;·&nbsp; User↔department membership pivot — `is_hod = true` marks the Head of Department whose approval is required on departmental requisitions.
+> **Owner:** Sysadmin / Product Admin &nbsp;·&nbsp; **Table:** `tb_department_user` (tenant) &nbsp;·&nbsp; **Edited from:** the Department screen (`/config/department/:id`, members + HOD) **and**, since 2026-09-04, the User screen (`PATCH /api/config/:bu_code/users/:user_id { department_id }`) &nbsp;·&nbsp; **Endpoint:** `api/config/:bu_code/department-users` (`departmentUser.*` App IDs; licence `configuration.department`) &nbsp;·&nbsp; **Used by:** PR and SR approval routing (HOD stage, department routing rules), workflow assignee-impact reporting &nbsp;·&nbsp; User↔department membership pivot — `is_hod = true` marks the Head of Department whose approval is required on departmental requisitions.
+
+## Implementation status (re-verified 2026-09-22)
+
+- **User-side edit is real again.** The User Assign screen's Departments section was read-only at baseline; since BE `9a91d7f32` (2026-09-04) `PATCH /api/config/:bu_code/users/:user_id` accepts a single `department_id` and the screen exposes it as a `LookupDepartment` (`user-assigned-departments.tsx:38-40`, FE `39ae1bba`, 2026-09-07). The user endpoint returns `department: { id, name } | null` — a single value, consistent with the effectively-single-membership rule below. Errors: `USER_ACCESS_DEPARTMENT_NOT_FOUND`, `USER_ACCESS_DEPARTMENT_ALREADY_HOD` (the user is HOD of a department; moving them is refused so the HOD stage is not silently emptied — `catalog.ts:351-358`). The HOD flag itself is still set only from the Department screen (the user screen's HOD block was removed, `5684f93e`).
+- **Nested user refs (BE `5d64f5dfd`, 2026-09-17).** The department detail's `department_users[]` and `hod_users[]` now carry `user: { id }` instead of a flat `user_id` (no name sibling); the department form was fixed to read the object (`b55294b3`). `DepartmentUserResponseDto` on `api/config/:bu_code/department-users` is unchanged (`id`, `department_id`, `user_id`, `is_active`, `doc_version`, `audit`).
+- **Workflow impact.** `GET api/config/:bu_code/workflows/assignees/:target_user_id` (2026-09-03) lists the stages a user holds — call it before removing a user from a department; stages that draw actors from a department HOD or from a whole department are excluded because losing one member does not empty them. See [system-config/workflow](/en/inventory/system-config/workflow).
+- `findByUserId` still uses `findFirst` (`department-user.service.ts:85`) — one "member" department per user; the HOD / single-HOD findings below re-checked and unchanged.
 
 ## 1. What & Who
 
@@ -25,7 +32,7 @@ The HOD flag drives downstream workflow logic: when a [purchase-request](/en/inv
 
 | Task | Where | Notes |
 |---|---|---|
-| Assign a user to a department | **Department** edit screen (`/config/department/:id`) → **Members** panel → Transfer control (`department-form.tsx`) | Not on the user side — the User Assign screen's Departments section is read-only (see [access-control/user](/en/inventory/access-control/user)) |
+| Assign a user to a department | **Department** edit screen (`/config/department/:id`) → **Members** panel → Transfer control (`department-form.tsx`) — **or** User Assign screen (`/system-admin/user/:id`) → **Edit** → Department lookup → Save | The user side sends `PATCH …/users/:user_id { department_id }` (single value, not add/remove); refused with `USER_ACCESS_DEPARTMENT_ALREADY_HOD` if the user is an HOD somewhere |
 | Designate as Head of Department | Same Department edit screen → **HOD** panel → Transfer control | Independent Transfer widget from Members; add/remove is not blocked by any existing-HOD check |
 | Reassign HOD | HOD panel → move the old HOD back to Available, move the new one to Assigned → Save | Historical approvals keep the original signer; nothing clears a previous HOD automatically (see Edge Cases) |
 | Remove user from department | Members panel → move user back to Available → Save | Open PR/SR steps referencing this user are unaffected; future routing will find no HOD if this was the last one |
@@ -38,6 +45,8 @@ The HOD flag drives downstream workflow logic: when a [purchase-request](/en/inv
 | "Duplicate department assignment" | `(department_id, user_id)` unique constraint on non-deleted row | Remove the existing row first, or soft-delete and re-add |
 | Workflow cannot resolve HOD | No `is_hod = true` row for the department | Add a user to the department's HOD panel |
 | Approved step shows removed user | Past approval steps capture the signer at time of action | Expected — HOD change is not retroactive |
+| `USER_ACCESS_DEPARTMENT_ALREADY_HOD` on the user screen | Changing the department of a user who is HOD of one | Remove the HOD flag on the Department screen first |
+| `USER_ACCESS_DEPARTMENT_NOT_FOUND` | Unknown / deleted `department_id` | Pick an existing department |
 
 ## 4. Edge Cases
 
@@ -90,7 +99,9 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 ## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_department_user` (line 4771).
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/department-user/department-user.service.ts` (`findByUserId`, `hasHodInDepartment`, `getHodInDepartment`); `.../apps/micro-business/src/master/departments/departments.service.ts` (Members/HOD add-remove on department update); `.../apps/backend-gateway/src/config/config_department-users/` (gateway proxy).
-- **Docs:** `../carmen/docs/app/system-administration/user-management/DD-user-management.md` — `tb_department_user` entity detail and HOD index definitions.
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/department-user/department-user.service.ts` (`findByUserId`, `hasHodInDepartment`, `getHodInDepartment`); `.../apps/micro-business/src/master/departments/departments.service.ts` (Members/HOD add-remove on department update); `.../apps/backend-gateway/src/config/config_department-users/config_department-users.controller.ts` (`GET user/:user_id` `:71`, `GET :id`, `GET`, `POST`, `PUT :id`, `DELETE :id`); `.../apps/backend-gateway/src/config/config_users/` (user-side `department_id` PATCH); serializer `apps/backend-gateway/src/common/dto/department/department.serializer.ts`.
+- **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/config/department-user/`, `config/users/PATCH-patch-access-config-users.bru`.
+- **Docs:** `../carmen/docs/app/system-administration/user-management/DD-user-management.md` — `tb_department_user` entity detail and HOD index definitions (frozen 2026-04-27).
 - **Docs:** `../carmen/docs/app/system-administration/user-management/BR-user-management.md` — BR-002: HOD Designation business rule (design intent; not enforced in current code — see Edge Cases).
-- **Frontend:** `../carmen-inventory-frontend-react/routes/config/department/department-form.tsx` (Members + HOD Transfer widgets on the Department edit screen). The User Assign screen (`routes/system-admin/user/user-assigned-departments.tsx`) only *displays* membership read-only.
+- **Frontend:** `../carmen-inventory-frontend-react/routes/config/department/department-form.tsx` (Members + HOD Transfer widgets on the Department edit screen); `routes/system-admin/user/user-assigned-departments.tsx` (single-department lookup, editable since 2026-09-07).
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/010-department.spec.ts` (21 automated cases incl. assign user to Members and HOD) + `docs/test-cases/gaps/010-department-gap.md` (37 uncovered cases, `DEP` prefix); `docs/test-cases/1102-user.md` for the user side.

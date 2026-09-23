@@ -2,7 +2,7 @@
 title: Physical Count — Test Scenarios — Entry & Review Screens
 description: Entry- and review-screen test cases for the physical-count module.
 published: true
-date: 2026-07-15T17:56:09.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: physical-count, test-scenarios, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T14:00:00.000Z
 > **At a Glance**
 > **Screens:** `physical-count/:id/entry` (`pc-entry-component.tsx`), `physical-count/:id/review` (`pc-review-component.tsx`) &nbsp;·&nbsp; **Module:** [physical-count](/en/inventory/physical-count) &nbsp;·&nbsp; **Role:** same role as [04-test-scenarios-count-lead.md](/en/inventory/physical-count/04-test-scenarios-count-lead)
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **E2E coverage:** no `physical-count` Playwright spec exists; scenarios are manual/planned coverage.
+> **Executable coverage:** no `physical-count` Playwright spec exists; manual catalog `../carmen-inventory-frontend-e2e/docs/test-cases/750-physical-count.md` (41 cases; entry / review / submit rows) — see [04-test-scenarios](/en/inventory/physical-count/04-test-scenarios) § 5.
 
 ## 1. Scope
 
@@ -64,5 +64,5 @@ The scenarios below exercise the actions catalogued in [physical-count/03-user-f
 
 - **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/physical-count/pc-entry-component.tsx`, `pc-review-component.tsx`.
 - **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (`save`, `reviewItems`, `submit`, `refresh`, `delete`).
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists.
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists; manual catalog `docs/test-cases/750-physical-count.md`.
 - Related: [physical-count/03-user-flow-counter](/en/inventory/physical-count/03-user-flow-counter), [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) (`PHC_VAL_004`–`007`, `PHC_POST_001`–`004`), [physical-count/04-test-scenarios](/en/inventory/physical-count/04-test-scenarios) (end-to-end scenarios).

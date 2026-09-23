@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow — Requestor
 description: Requestor's flow within the purchase-request module.
 published: true
-date: 2026-05-20T00:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: purchase-request, user-flow, requestor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -11,12 +11,12 @@ dateCreated: 2026-05-15T09:00:00.000Z
 # Purchase Request — User Flow — Requestor
 
 > **At a Glance**
-> **Persona:** Requestor (hotel / department staff) &nbsp;·&nbsp; **Module:** [purchase-request](/en/inventory/purchase-request) &nbsp;·&nbsp; **Workflow stages:** draft → submit → in_progress (+ send-back re-entry, cancel from draft) &nbsp;·&nbsp; **Key permissions:** create/edit draft, attach, submit, cancel own draft, resubmit after send-back
+> **Persona:** Requestor (hotel / department staff) &nbsp;·&nbsp; **Module:** [purchase-request](/en/inventory/purchase-request) &nbsp;·&nbsp; **Workflow stages:** draft → submit → in_progress (+ send-back re-entry at the `create` stage, delete from draft) &nbsp;·&nbsp; **Key permissions:** `procurement.purchase_request.view` (+ `view_department` / `view_all` for list scope), create / edit / delete own draft, submit, resubmit after send-back &nbsp;·&nbsp; **Re-verified 2026-09-22** against `routes/procurement/purchase-request/` and `purchase-request.validate.ts` — this page was last written from the concept docs on 2026-05-20 and carried several screens that do not exist (PR type, Review tab, budget validation, `Alt+N`, auto-save); they are removed below
 > **What this persona does:** Originates the PR — fills header and line list, attaches supporting docs, submits for approval, and revises on send-back.
 
 ## 1. Role in This Module
 
-The **Requestor** is the hotel or department staff member who originates a Purchase Request — the upstream demand signal that authorises procurement before any external commitment is made to a vendor. They own the PR while it is in `draft`: they fill the header (PR type — `General Purchase`, `Market List`, `Asset` — department, currency, requestor, request and required delivery dates, job/cost code, delivery point, description and justification), build the line list (product or free-text description, store location, requested quantity, FOC quantity, unit of measure, estimated unit price, discount, tax treatment, line delivery date), attach supporting documents (quotations, specs, photos), and submit when the request is ready for approval. Their involvement does not end at submit: when an approver chooses **Send Back** the PR returns to `draft` and the Requestor re-enters the flow to revise and resubmit, and at any time while the PR is still in `draft` they may cancel it. They cannot edit a PR after submission and they are not part of the approval, vendor-allocation, or PO-conversion steps — those belong to the Approver chain, the Purchaser, and the Procurement Manager respectively (see [the module landing](/en/inventory/purchase-request) Section 4).
+The **Requestor** is the hotel or department staff member who originates a Purchase Request — the upstream demand signal that authorises procurement before any external commitment is made to a vendor. They own the PR while it is in `draft`: they fill the header (**workflow** — required, the only routing choice there is; **department**; **PR date**; description / note — there is *no* PR-type, job/cost-code or header delivery-date field, see [01-data-model](./01-data-model.md) §5), build the line grid (product, store location, delivery point, delivery date, requested quantity + unit, optional FOC quantity + unit, currency; unit price, vendor, discount and tax are the `purchase` stage's job), add comments / attachments, and **Submit** when the request is ready. Their involvement does not end at submit: when an approver chooses **Send Back** to the `create` stage the PR stays `in_progress` but its stage cursor returns to them, and they revise and resubmit; while the PR is still `draft` they may **Delete** it. They are not part of the approval, vendor-allocation, or PO-conversion steps — those belong to the Approver chain, the Purchaser, and the Procurement Manager respectively (see [the module landing](/en/inventory/purchase-request) Section 4).
 
 ### Workflow position (Requestor highlighted)
 
@@ -24,67 +24,66 @@ The **Requestor** is the hotel or department staff member who originates a Purch
 graph LR
     create["Create PR<br/>(Requestor)"]:::current --> draft(("draft")):::current
     draft -->|"Submit"| inprog(("in_progress"))
-    draft -->|"Cancel"| voided(("voided"))
-    inprog -->|"Send-back"| draft
+    draft -.->|"Delete (soft delete)"| gone[" "]
+    inprog -->|"Send-back to create stage<br/>(stays in_progress)"| inprog
     inprog -->|"Approve final"| approved(("approved"))
-    inprog -->|"Reject"| voided
+    inprog -->|"Reject"| voided(("voided"))
     approved -->|"Convert to PO"| completed(("completed"))
     classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
 ```
 
 ### Permission Matrix — Status × Action (Requestor)
 
-The Requestor is **the owner** of a PR only while it is in `draft`. Once it leaves `draft` (`in_progress`, `approved`, `completed`) or terminates (`voided`) the Requestor retains view-only access. Action availability is enforced server-side by `PR_AUTH_001` and the state-machine guards.
+The Requestor is **the owner** of a PR while it is in `draft` (`created_by_id` or `requestor_id` equals the signed-in user — `common/helpers/document-ownership.helper.ts`). After submit they can act again only when a send-back parks the PR at the `create` stage, which puts their id back into `user_action.execute[]`.
 
-| Action | draft (own) | in_progress | approved | completed | voided |
-|---|---|---|---|---|---|
-| View PR | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Edit header / lines | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Add / remove items | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Add attachments / comments | ✅ | ✅ (comment only) | ✅ (comment only) | ✅ (comment only) | ❌ |
-| Submit | ✅ (≥1 line + workflow selected) | ❌ | ❌ | ❌ | ❌ |
-| Cancel | ✅ | ❌ | ❌ | ❌ | — |
-| Resubmit (after Send-back) | ✅ (PR is in `draft` again) | ❌ | ❌ | ❌ | ❌ |
+| Action | draft (own) | in_progress (at `create` stage after send-back) | in_progress (other stage) | approved | completed | voided |
+|---|---|---|---|---|---|---|
+| View PR | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Edit header / lines | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Add / remove items | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Add comments | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Save with incomplete lines (qty `0`) | ✅ (since 2026-09-21) | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Submit | ✅ (≥1 line, each buying or FOC) | ✅ (resubmit) | ❌ | ❌ | ❌ | ❌ |
+| Delete | ✅ (soft delete; list row menu, detail **Delete**, or multi-select batch) | ❌ ("Only draft purchase requests can be deleted") | ❌ | ❌ | ❌ | — |
+| Duplicate | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ (any status — `/new?duplicate_id=`) |
 
-> ℹ️ **Send-back loop:** when an approver chooses *Send Back* the PR's `pr_status` returns to `draft` and the Requestor is once again the owner — every cell in the **draft (own)** column above re-applies. Revision history is preserved (`PR_POST_008`).
+> ℹ️ **Send-back loop:** `pr_status` never returns to `draft` after a send-back (`purchase-request.service.ts:2052` rewrites `in_progress`); what changes is `workflow_current_stage`. Revision history is preserved in `workflow_history` and the comment log (`PR_POST_008`).
 
 ## 2. Entry Point and Primary Flow
 
-**Entry point:** Sidebar → **Purchase Request** module → **PR list view** → **Create New PR** button (alternatively: **Create from Template** when reusing a saved template, or `Alt+N` from anywhere in the module).
+**Entry point:** Sidebar → **Purchase Request** → list (`/procurement/purchase-request`, default sort by date, tabs *My Pending* / *All*) → **New** (`pr-create-dialog.tsx`) → **Blank** (`/procurement/purchase-request/new`) or **From Template** (`/procurement/purchase-request/from-template`, see [templates/purchase-request](/en/inventory/templates/purchase-request)). A **Duplicate** action on any existing PR opens `/new?duplicate_id=<id>` pre-filled the same way.
 
 **Primary flow (happy path):**
 
-1. From the PR list view, click **Create New PR**. The system inserts a new header row with `pr_status = draft`, auto-generates the reference number, stamps `pr_date` with today's date, and pre-fills `requestor_id` from the logged-in user.
-2. Fill the header: select **PR type** (`General Purchase`, `Market List`, or `Asset`), confirm or change `department_id`, set the required **delivery date**, choose **currency** (exchange rate is fetched automatically), enter the **description / justification**, and select the target **workflow_id** for `purchase-request` scope. Save the header (auto-save also runs on connection loss).
-3. Open the **Items** tab and click **Add Item**. For each line: search the product catalog (or use the free-text description for non-catalog items), pick the **store location**, enter **requested quantity** and **unit of measure**, enter the **estimated unit price** (or accept the auto-filled pricelist price if the system has populated it), set any **FOC quantity**, line-level **discount**, **tax** treatment, and line **delivery date**. Add line notes if useful.
-4. Repeat step 3 until every required line is on the PR. Inline validation flags missing required fields on each line (rule reference: `PR_VAL_006` requires at least one non-deleted line at submit; per-line validations are enforced before the line can be saved).
-5. Review the **financial summary** on the header: subtotal, total discount, total tax, and grand total in both transaction and base currency. The system rolls these from line-level rounded values (3-dp quantity, 2-dp money, 5-dp exchange rate).
-6. Open the **Attachments** tab and upload supporting documents — vendor quotations, product specs, photos, internal approvals. Add a description and visibility setting per file.
-7. Optionally trigger **budget validation** from the header. The system runs an availability check against the requestor's department and cost-centre budget and surfaces an Available / Warning / Exceeded indicator with the breakdown (total budget, soft commitments from other PRs / open POs, hard commitments). The check is informational at this point — it does not block submit.
-8. Review the full PR in the **Review** tab: header, all lines, totals, attachments, and the workflow stages that will run after submit. Fix any issues in place.
-9. Click **Submit**. The system runs all submit-time validations (header required fields, at least one line, per-line validations, active workflow). On pass it transitions `pr_status` from `draft` to `in_progress`, advances `workflow_current_stage` to the first approval stage, creates the **soft budget commitment** on the relevant category, writes an audit entry, and routes notifications to the first approver (typically Department Head) and a copy back to the Requestor.
-10. Track progress from the **My PRs** dashboard or the PR detail page — the workflow stepper shows which stage the PR is at, who is the current approver, and the cumulative action history. The Requestor's primary path ends here for the happy case; they re-enter only on send-back (Section 3).
+1. Open the new-PR form. Nothing is written yet — the row is created on the first **Save** (`POST /:bu_code/purchase-requests`, `stage_role = create`), which generates `pr_no` server-side, stamps `pr_date` (today by default) and snapshots the requestor from the signed-in user.
+2. Fill the header: pick the **workflow** (required — the form blocks creation when no workflow is creatable for the user, "noCreatableWorkflow"), confirm the **department**, enter a **description**. Currency and exchange rate live on each line, not on the header.
+3. In the item grid click **Add Item** and, per line, pick the **product** (a hover / expand row shows on-hand, on-order and last receiving info live from [inventory](/en/inventory/inventory)), **location**, **delivery point**, **delivery date** (required), **requested qty + unit**, optional **FOC qty + unit**, and **currency**. A line may be saved with quantity `0` — the draft form only enforces required references (`pr-form-schema.ts`).
+4. Click **Save** whenever convenient; an incomplete draft saves (commit `a848865f`). Every save echoes `doc_version`; a stale version gets `409` ([system-config/doc-version](/en/inventory/system-config/doc-version)).
+5. Add **comments / attachments** from the comment sheet (`tb_purchase_request_comment`), and optionally **Print** / **Export**.
+6. Click **Submit**. The client first runs `findRowsMissingQty` — every line must have `requested_qty > 0` **or** `foc_qty > 0` — and shows an "incompleteItems" warning instead of the confirm dialog when a row fails. On confirm the client calls `PATCH …/:id/submit` (`stage_role = create`, `doc_version`). The server re-checks workflow / requestor / department / PR date / at-least-one-line / per-line quantity and unit rules (`purchase-request.validate.ts`), stops at the first failure, and on success flips `pr_status` to `in_progress`, sets `last_action = submitted`, initialises `workflow_current_stage` / `stages_status`, and fills `user_action.execute[]` for the first stage. To see *all* problems at once before submitting, the client (or a tester) can call `POST …/verify` with `verify_state = submit` (`PR_VAL_017`).
+7. Track progress from the list's **My Pending** tab, the detail page's status badge and **Workflow History** sheet, or the cross-module [My Approval](/en/inventory/purchase-request/my-approval) queue (which also lists the user's own drafts). The Requestor's primary path ends here; they re-enter only on send-back (Section 3).
 
 ## 3. Decision Branches
 
-- **If a required header field is missing or invalid at submit** (e.g. no `department_id`, no `pr_date`, no `workflow_id`, invalid currency or exchange rate): the submit action is blocked, the form scrolls to the first offending field, and an inline error message is shown. The PR remains in `draft`. Fix the field and retry submit.
-- **If the PR has no non-deleted lines at submit** (rule `PR_VAL_006`): submit is rejected with the message "At least one line is required". The PR remains in `draft`. Add at least one line and retry.
-- **If budget validation reports `Warning` or `Exceeded`**: the system surfaces the budget impact but does **not** block submit (the budget check is informational at submission). The Requestor decides whether to (a) reduce quantities or estimated prices and re-validate, (b) split the request into a smaller PR, or (c) proceed and let the Budget Controller approve or reject downstream.
-- **If an approver chooses Send Back** on a submitted PR (any stage): the PR transitions from `in_progress` back to `draft`, the soft budget commitment is released until re-submission, the approver's reason is attached to the activity log, and the Requestor is notified. The Requestor re-enters at Section 2 step 2 (revise header or lines per the comment) and resubmits at step 9. Revision history is preserved.
-- **If the Requestor wants to cancel a PR they have not yet submitted**: from the PR detail page or list view, choose **Cancel** while the PR is still `draft`. The system transitions to `voided`, releases any in-progress edits, and terminates the document. Submitted PRs (`in_progress`, `approved`) cannot be cancelled by the Requestor — only the workflow can reject them (transitions to `voided`) or an administrator can void them (transitions to `voided`).
-- **If the Requestor tries to edit a PR after submit** (`in_progress`, `approved`, `completed`, `voided`): all edit controls are read-only. The only way to change the content is to ask the current approver to send the PR back to `draft`. Once back in `draft`, the Requestor regains edit rights and the flow resumes at Section 2 step 2.
+- **If a required header field is missing at save** (`workflow_id`, `department_id`, `pr_date`, or a line without product / location / unit / currency / delivery point / delivery date): the Zod schema blocks the save and highlights the field; the PR (if it exists) stays `draft`.
+- **If a line has no quantity at submit** (`requested_qty = 0` and `foc_qty = 0`): the client toast names the incomplete rows and the confirm dialog does not open; the server would answer `"Detail line N: needs a requested_qty or a foc_qty"` (`PR_ERROR.LINE_ORDERS_NOTHING`). A **FOC-only** line (`requested_qty = 0`, `foc_qty > 0`, `foc_unit_id` set) is accepted.
+- **If the PR has no lines at submit** (`PR_VAL_006`): the client schema requires at least one item; the server answers `"PR must have at least one detail line"`.
+- **If an approver chooses Send Back to the create stage**: `workflow_current_stage` returns to the create stage, `last_action = reviewed`, the reason is appended to `workflow_history` and the comment log, and the Requestor's id is back in `user_action.execute[]`; the PR remains `in_progress`. The Requestor re-enters at Section 2 step 2 and resubmits at step 6.
+- **If the Requestor wants to abandon a PR they have not yet submitted**: **Delete** (detail page or list row / multi-select). The server soft-deletes the header and lines (`deleted_at`) — draft only, owner or super-admin (`PR_VAL_018`). There is no "cancel to `voided`" action; `voided` is reserved for an approver's Reject.
+- **If the Requestor tries to edit a PR after submit** while it sits at another stage: all edit controls are read-only. The only way back is an approver's Send Back to the create stage.
+- **If someone else's draft is opened**: view only — Edit / Delete / Submit are hidden, and a delete attempt is refused up front (`pr-ownership.ts`, commit `9fb747c2`).
+- *(A budget-validation branch and an "Available / Warning / Exceeded" indicator were asserted in earlier revisions — unconfirmed, no code path; see `PR_VAL_015`.)*
 
 ## 4. Exit Point / Handoffs
 
-The Requestor's primary involvement ends when the PR transitions from `draft` to `in_progress` at step 9 of Section 2. At that point the document leaves the Requestor's responsibility and is picked up by the first-stage approver in the configured workflow (typically Department Head; see [03-user-flow-approver.md](./03-user-flow-approver.md) when published). The document state at handoff is `in_progress` with `workflow_current_stage` pointing at the first approval stage and a soft budget commitment registered against the requestor's department.
+The Requestor's primary involvement ends when the PR transitions from `draft` to `in_progress` at step 6 of Section 2. The document is then picked up by the users named in `user_action.execute[]` for the first stage (see [03-user-flow-approver.md](./03-user-flow-approver.md)).
 
-A second handoff direction is **back to the Requestor on send-back**: any approver in the chain may return the PR to `draft` with a reason, releasing the soft commitment. This is not a true exit — the Requestor re-enters at Section 2 step 2 to revise the PR and resubmits. Cycles repeat until the PR is either approved (final stage), rejected or voided (`voided`).
+A second handoff direction is **back to the Requestor on send-back**: an approver may return the PR to the create stage with a reason. This is not a true exit — the Requestor revises and resubmits. Cycles repeat until the PR is either approved (final stage) or rejected (`voided`).
 
 Terminal exits for the Requestor (no further action possible by them) are:
 
-- **Cancelled by Requestor in draft** — `pr_status = voided`, terminal.
+- **Deleted in draft** — row soft-deleted; it disappears from every list and from the pending queue.
 - **Rejected by an approver** — `pr_status = voided`, terminal. Auditor reviews post-hoc.
-- **Voided by System Administrator** — `pr_status = voided`, terminal. Auditor reviews post-hoc.
 - **Approved and converted to PO** — `pr_status = completed`, terminal. The Purchaser owns the conversion; the Requestor sees the linked PO in the PR detail page for traceability.
 
 ## 5. References
@@ -94,5 +93,8 @@ Terminal exits for the Requestor (no further action possible by them) are:
 - `../carmen/docs/purchase-request-management/PR-Overview.md` — module overview, requestor role definition, integration points
 - `../carmen/docs/purchase-request-management/purchase-request-module-prd.md` — product requirements driving the Requestor flow
 - Sibling: [01-data-model.md](./01-data-model.md) — `tb_purchase_request`, `tb_purchase_request_detail`, `enum_purchase_request_doc_status`
-- Sibling: [02-business-rules.md](./02-business-rules.md) — `PR_VAL_006` (at-least-one-line) and other submit-time validations
+- Sibling: [02-business-rules.md](./02-business-rules.md) — `PR_VAL_006` (at-least-one-line), `PR_VAL_008` (buy-or-FOC per line), `PR_VAL_017` (verify), `PR_VAL_018` (delete)
+- Frontend: `../carmen-inventory-frontend-react/routes/procurement/purchase-request/` — `pr-create-dialog.tsx`, `pr-new-content.tsx`, `pr-form.tsx`, `pr-form-schema.ts`, `use-pr-form-actions.ts` (`handleSubmitPr`), `pr-ownership.ts`, `from-template/`
+- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/procurement/purchase-request/logic/purchase-request.validate.ts`, `purchase-request.service.ts` (`delete`, `deleteBatch`)
+- E2E: `../carmen-inventory-frontend-e2e/tests/302-pr-creator-journey.spec.ts`, gap report `docs/test-cases/gaps/302-pr-creator-journey-gap.md`
 - Sibling: [the module landing](/en/inventory/purchase-request) Section 4 — canonical Requestor role description

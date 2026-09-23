@@ -71,6 +71,11 @@ books:
           - slug: reporting-audit
             label_en: "Reporting & Audit"
             label_th: "Reporting & Audit"
+          # Added 2026-09-22: intentionally a stub module (inventory-touching GL only).
+          # EN page only for now — the TH link 404s until th/inventory/general-ledger.md exists.
+          - slug: general-ledger
+            label_en: "General Ledger"
+            label_th: "General Ledger"
       - label_en: "Administration"
         label_th: "การดูแลระบบ"
         modules:

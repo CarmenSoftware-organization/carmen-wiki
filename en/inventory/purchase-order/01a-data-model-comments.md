@@ -2,7 +2,7 @@
 title: Purchase Order — Data Model — Comment Tables
 description: Document-level and line-level comment / attachment tables for the Purchase Order module — message text, attachments JSON, and the user/system comment-type enum.
 published: true
-date: 2026-07-15T13:30:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: purchase-order, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -21,16 +21,17 @@ Every `*_comment` row in this module follows the same column layout:
 ```
 id                  uuid / PK
 <parent>_id         uuid / FK to header or detail row
-message             text (free-form, nullable)
-attachments         json — array of `{originalName, fileToken, contentType}` (nullable)
 type                enum_comment_type — `user` (default) | `system`
-created_at          timestamp
-created_by_id       uuid / FK to tb_user
-updated_at          timestamp
-updated_by_id       uuid / FK to tb_user
+user_id             uuid (author; null for system entries)
+message             text (free-form, nullable)
+attachments         json — array of `{originalName, fileToken, contentType}` (default [])
+doc_version         int (default 0) — optimistic-lock counter, same as every other tenant row
+created_at / created_by_id / updated_at / updated_by_id / deleted_at / deleted_by_id
 ```
 
-The same shape applies to header-level comments and detail-level comments; only the parent FK differs.
+The same shape applies to header-level comments and detail-level comments; only the parent FK differs. (Spot-checked against `schema.prisma` L2144-2177 and L2293-2326 on 2026-09-22: the `doc_version` column was missing from this page and is added below; no other drift.)
+
+Note that the workflow engine's own send / mark-sent / email events are **not** comment rows: `send-email` and `mark-sent` write `tb_activity` (`action = email_sent` / `other`, `entity_type = 'purchase_order'`), which the [reporting-audit/activity](/en/inventory/reporting-audit/activity) page documents. Comment rows remain the place for human notes, send-back / reject reasons, and attachments.
 
 ## 3. Tables
 
@@ -42,6 +43,7 @@ Workflow / activity-log entries attached to a PO header. As with PR, there is no
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key. |
 | `purchase_order_id` | `String @db.Uuid` | No | FK to `tb_purchase_order.id`. |
+| `doc_version` | `Int @db.Integer` | No | Optimistic-concurrency version; default `0`. |
 | `type` | `enum_comment_type` | No | `user` or `system`; default `user`. |
 | `user_id` | `String @db.Uuid` | Yes | Author user id (null for `system` entries). |
 | `message` | `String` | Yes | Free-text comment body. |
@@ -64,6 +66,7 @@ Line-level counterpart of `tb_purchase_order_comment`. Captures comments and sys
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key. |
 | `purchase_order_detail_id` | `String @db.Uuid` | No | FK to `tb_purchase_order_detail.id`. |
+| `doc_version` | `Int @db.Integer` | No | Optimistic-concurrency version; default `0`. |
 | `type` | `enum_comment_type` | No | `user` or `system`; default `user`. |
 | `user_id` | `String @db.Uuid` | Yes | Author user id (null for `system` entries). |
 | `message` | `String` | Yes | Free-text comment body. |

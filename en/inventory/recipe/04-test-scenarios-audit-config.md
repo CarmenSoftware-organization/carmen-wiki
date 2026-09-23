@@ -2,7 +2,7 @@
 title: Recipe — Test Scenarios — Audit & Config
 description: System Administrator and Auditor test cases (config, RBAC, versioning audit, pricing-history audit, integration health) for the recipe module.
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: recipe, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **At a Glance**
 > **Persona:** Audit / Config (System Administrator config + Auditor read-only) &nbsp;·&nbsp; **Module:** [recipe](/en/inventory/recipe) &nbsp;·&nbsp; **Scenarios:** ~31
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **E2E coverage:** the master-data half of this persona is the **only** part of the recipe module with automated coverage — `tests/121-recipe-equipment-category.spec.ts` (smoke + dialog CRUD + security cases on `/operation-plan/recipe-equipment-category`)
+> **E2E coverage:** the master-data half of this persona is the only automated part of the recipe module — `tests/110-op-category.spec.ts` (13), `tests/111-cuisine.spec.ts` (17), `tests/121-recipe-equipment-category.spec.ts` (12, + 3 manual gap cases), `tests/131-equipment-category.spec.ts` (12, + 4 gap cases); equipment itself is catalog-only (`docs/test-cases/130-equipment.md`, 45 cases). Re-verified 2026-09-22 — see [04-test-scenarios](/en/inventory/recipe/04-test-scenarios) for the full map
 
 > **Implementation status (verified 2026-07-15).** Split verdict. **Real and testable:** the four master-data screens (category, cuisine, equipment, equipment-category) with backend guards — case-insensitive code uniqueness / `RECIPE_CATEGORY_CODE_ALREADY_EXISTS`, name uniqueness / `RECIPE_CUISINE_ALREADY_EXISTS` + `RECIPE_EQUIPMENT_CATEGORY_ALREADY_EXISTS`, in-use delete blocks (`RECIPE_CATEGORY_IN_USE`, `RECIPE_CATEGORY_HAS_SUBCATEGORIES`, `RECIPE_CUISINE_IN_USE`), parent validation + `level` computation, `doc_version` locking, and set-image flows. **Not real:** `recipe:*` RBAC administration (no such permissions), publish-gate / un-publish / co-approval tenant policies, integration wiring (no theoretical consumption or SR auto-create), and every Auditor scenario reading `tb_recipe_version` / `tb_recipe_pricing_history` (no writers — those tables are always empty). Retention-period soft-delete policy is also unimplemented (delete is available at any status, guarded only by sub-recipe usage).
 

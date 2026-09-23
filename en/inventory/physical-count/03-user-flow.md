@@ -2,7 +2,7 @@
 title: Physical Count — User Flow
 description: Document lifecycle and persona-specific flow files for physical counts.
 published: true
-date: 2026-07-15T17:56:09.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: physical-count, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -12,7 +12,7 @@ dateCreated: 2026-05-15T14:00:00.000Z
 
 > **At a Glance**
 > **Module:** [physical-count](/en/inventory/physical-count) &nbsp;·&nbsp; **Persona:** one undifferentiated role, gated by a single permission (`inventory_management.physical_count`) — the two files linked below split its journey by screen (list vs. entry/review), not by a real role difference
-> **Workflow lifecycle:** Period (`enum_physical_count_period_status`): `draft → counting → completed` (no confirmed code transitions `draft → counting`). Per-document (`enum_physical_count_status`): created directly at `in_progress → completed` — `pending` is not reachable through the confirmed create path. Final Submit fires the variance rollup directly into `tb_stock_in`/`tb_stock_out` (see [02-business-rules](/en/inventory/physical-count/02-business-rules) § 5).
+> **Workflow lifecycle:** Period (`enum_physical_count_period_status`): `draft → counting → completed` (`draft → counting` is made by **Start Period Close** on `/inventory-management/period-end`, `POST /period-ends/start-counting`; `counting → completed` by the period close). Per-document (`enum_physical_count_status`): created directly at `in_progress → completed` — `pending` is not reachable through the confirmed create path. Final Submit fires the variance rollup directly into `tb_stock_in`/`tb_stock_out` (see [02-business-rules](/en/inventory/physical-count/02-business-rules) § 5).
 > **Real screens:** `physical-count` (list) → `physical-count/:id/entry` (line entry) → `physical-count/:id/review` (variance review + final submit)
 
 ## 1. Overview
@@ -28,17 +28,17 @@ Section 2 below describes the real document-lifecycle state machines for `tb_phy
 ```mermaid
 stateDiagram-v2
     [*] --> draft : Auto-created by GET /physical-count-periods/current the first time it is called for a newly-opened fiscal period (physical-count-period.service.ts findCurrent())
-    draft --> counting : No confirmed code path found anywhere in frontend or backend
-    counting --> completed : All child tb_physical_count rows reach completed (system-driven; period locked)
+    draft --> counting : POST /period-ends/start-counting (Start Period Close on /inventory-management/period-end) — blocked while open GRN / SI / SO / SR documents are dated in the period
+    counting --> completed : PeriodEndService.closeCurrent marks the round completed when the period closes
     completed --> [*]
 
     note right of draft
-        create() on physical-count.service.ts unconditionally rejects
+        create() on physical-count.service.ts rejects
         with "Physical Count Period is not in counting status" unless
-        the period is already counting — the only way to reach that
-        status appears to be an explicit POST /physical-count-periods
-        call with status set directly in the request body; no frontend
-        screen was found that does this.
+        the period is already counting — reached only through Period End's
+        Start Period Close button; the list screen (pc-component.tsx) shows a
+        "Counting has not started" dialog with a Go to Period End button
+        while the round is still draft.
     end note
 ```
 
@@ -64,9 +64,9 @@ stateDiagram-v2
 
 | From state | Action | To state | Allowed for | Pre-conditions |
 | ---------- | ------ | -------- | ----------- | -------------- |
-| `(none)` | `GET /physical-count-periods/current` auto-provisions a period for the currently-open `tb_period` if none exists | `draft` | Any user with the module permission (implicit, via the list screen) | An open `tb_period` exists. |
-| `draft` | — | `counting` | Unconfirmed | No code path found; see § 2 note above. |
-| `counting` | all child `tb_physical_count` rows reach `completed` | `completed` | System | Every `tb_physical_count` under the period is `completed`. |
+| `(none)` | `GET /physical-count-periods/current` auto-provisions a period for the currently-open `tb_inventory_period` if none exists | `draft` | Any user with the module permission (implicit, via the list screen) | An open `tb_inventory_period` exists. |
+| `draft` | **Start Period Close** (`POST /period-ends/start-counting`) | `counting` | Any user with `inventory_management.period_end.execute` | No GRN outside `{committed, voided}`, no stock-in / stock-out outside `{completed, cancelled, voided}`, no numbered SR at `draft`/`in_progress` dated in the period; period `open`. Idempotent once `counting`. |
+| `counting` | **Close Period** (`POST /period-ends`) | `completed` | Any user with `inventory_management.period_end.execute` | Every required location has a `completed` `tb_physical_count` (period-end close gate); `closeCurrent` then marks the round `completed`. |
 
 ### 2.2 Document-level transitions (`enum_physical_count_status`)
 
@@ -103,5 +103,5 @@ An earlier draft of this wiki module described a third persona group — Approve
 
 - **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/physical-count/` (`pc-component.tsx`, `pc-entry-component.tsx`, `pc-review-component.tsx`).
 - **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts`, `.../physical-count-period/physical-count-period.service.ts`.
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists.
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists; manual catalog `docs/test-cases/750-physical-count.md` (41 cases, re-verified 2026-09-20).
 - Related flow pages: [inventory-adjustment/03-user-flow](/en/inventory/inventory-adjustment/03-user-flow) (the module the rollup writes into), [spot-check](/en/inventory/spot-check) (partial-count cousin flow).

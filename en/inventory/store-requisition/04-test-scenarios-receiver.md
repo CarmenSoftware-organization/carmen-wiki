@@ -2,7 +2,7 @@
 title: Store Requisition — Test Scenarios — Receiver
 description: Receiver's test cases — unconfirmed persona; documents why the prior scenario set does not match current source.
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: store-requisition, test-scenarios, receiver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -12,6 +12,7 @@ dateCreated: 2026-05-15T13:30:00.000Z
 
 > **At a Glance**
 > **Persona:** Receiver — **unconfirmed as a distinct persona in current source** &nbsp;·&nbsp; **Module:** [store-requisition](/en/inventory/store-requisition)
+> **Executable coverage (2026-09-22):** see [04-test-scenarios](/en/inventory/store-requisition/04-test-scenarios) — `tests/701-sr.spec.ts`, `tests/720-stock-issue.spec.ts` and the gap reports `docs/test-cases/gaps/701-sr-gap.md` (62) / `720-stock-issue-gap.md` (44) in `../carmen-inventory-frontend-e2e/`; nothing in them targets this persona.
 > ⚠️ **Major correction this pass.** This page previously listed ~20 test scenarios (happy path, permission, validation, edge case) for a destination-outlet "Receiver" who acknowledges physical receipt, flags discrepancies, and escalates to an Inventory Controller. [03-user-flow-receiver.md](./03-user-flow-receiver.md) documents the full source-check trail: a repo-wide search of `carmen-turborepo-backend-v2` and `carmen-inventory-frontend-react` for `receiver` / `discrepancy` returned zero hits inside the `store-requisition` module, `enum_stage_role` has no `receiver` member, and there is no receiver-facing route or component. There is therefore nothing to write test scenarios against.
 
 ## 1. What Replaces These Scenarios

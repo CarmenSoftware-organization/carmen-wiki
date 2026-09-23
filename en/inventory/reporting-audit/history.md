@@ -2,7 +2,7 @@
 title: Report History
 description: Read-only list of tb_report_job rows — confirmed structurally orphaned under the current live system, since neither on-demand report runs, Print, nor scheduled fires write a job row through any reachable code path.
 published: true
-date: 2026-07-22T00:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: reporting-audit, history, archive, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -23,6 +23,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 - **Every "Print" button** (`lib/print-document.ts`'s `printDocument()`) resolves a print-template mapping and then calls the same `POST .../report/viewer` endpoint — also no job row.
 - **Scheduled report fires** (see [reporting-audit/schedule](/en/inventory/reporting-audit/schedule)) always deliver via `format: "viewer_url"` from the current create-schedule UI, which the executor dispatches through `executeViewerURL()` — again, no job row. Only the executor's legacy `executeFile()` branch (unreachable from the current UI) calls `POST .../report/generate-async`, the one endpoint that does write `tb_report_job`.
 - A repo-wide search of the frontend confirmed **zero callers of `generate-async`, `generateAsync`, or `job-status`/`jobStatus`** anywhere in `carmen-inventory-frontend-react`.
+
+**Re-verified 2026-09-22:** still zero frontend callers of `generate-async` / `job-status` (`routes`, `hooks`, `lib`, `constant` searched at HEAD); the gateway keeps `POST .../reports/generate-async` and `GET .../reports/jobs/:job_id` (Bruno `documents-and-reports/report/GET-get-job-status-…bru`, `GET-get-history-…bru`). Cosmetic change only: the status column is now an icon + badge (`73499174`), and the hook moved to `routes/report/history/use-report-history.ts` (2026-08-28).
 
 **Net effect:** under the currently reachable UI, nothing populates `tb_report_job`. The `/report/history` screen is real, wired correctly to a real table and a real backend endpoint, but is expected to be **empty in practice** unless some other caller (a direct API integration, a future UI change, or a schedule whose `delivery.type` was set to `"file"` outside the normal create-dialog flow) uses the async-job path. This page is corrected to describe the actual screen and the gap; the previous version's claims about "every report run" landing here, a "Re-run" action, and a "Print History" drawer per document are removed as unconfirmed/absent.
 
@@ -100,4 +102,5 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 - **Backend (real, but only reachable via the unreached legacy path):** `../micro-report/controller/report_controller.go` (`generateAsync`, `jobStatus`, `history` handlers), `../micro-report/db/report_job_repo.go`, `../micro-report/model/job.go`.
 - **Backend (the paths actually used — no job row):** `../micro-report/controller/report_controller.go`'s `viewReport` handler.
 - **Frontend route:** `../carmen-inventory-frontend-react/routes/report/history/report-history.route.tsx`, `history-component.tsx`, `use-history-table.tsx`.
-- **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-report-history.ts` — `useReportHistory` (list only; no re-run/detail hook exists).
+- **Frontend hook:** `../carmen-inventory-frontend-react/routes/report/history/use-report-history.ts` — `useReportHistory` (list only; no re-run/detail hook exists; moved out of `hooks/` on 2026-08-28).
+- **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/documents-and-reports/report/GET-get-history-documents-and-reports-report.bru`, `GET-get-job-status-documents-and-reports-report.bru`.

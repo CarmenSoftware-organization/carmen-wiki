@@ -2,7 +2,7 @@
 title: Purchase Request — Data Model
 description: Entities, fields, relationships, and enums for the purchase-request module.
 published: true
-date: 2026-06-09T00:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: purchase-request, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -28,6 +28,10 @@ The purchase-request module owns six tenant-schema entities: the document header
 
 **Concurrency:** updates to this document use [system-config/doc-version](/en/inventory/system-config/doc-version) optimistic locking — the client must echo the current `doc_version` on save or receive a `409 Conflict`.
 
+**API shape vs. column shape (2026-09-17):** the tables below are the persisted, denormalised columns (`product_id` + `product_name`, `vendor_id` + `vendor_name`, …). The gateway no longer exposes them flat — `@Serialize` collapses every reference into an object (`product: { id, name, local_name, code }`, `vendor: { id, name }`, `location: { id, name, code }`, `requested_unit` / `approved_unit` / `foc_unit` / `inventory_unit` / `tax_profile` / `delivery_point`: `{ id, name }`, `currency: { id, code }`, `pricelist_detail: { id }`, header `requestor` / `department` / `workflow: { id, name }`) and adds a computed `last_price` per line. See Section 2.5.
+
+**Pending-queue view:** `sys_v_my_pending` (migration `20260916030000_add_sys_v_my_pending`) projects `tb_purchase_request` rows that are still `draft` / `in_progress` into the cross-document queue documented in [my-approval](/en/inventory/purchase-request/my-approval); it adds a GIN index `ix_pr_user_action_execute` on `(user_action -> 'execute')`.
+
 The PR sits upstream of [purchase-order](/en/inventory/purchase-order) in the procure-to-pay chain. Approved PR lines are linked to the resulting PO line through the bridge table `tb_purchase_order_detail_tb_purchase_request_detail` (one PO line can fan in from many PR lines for consolidation; one PR line can fan out across multiple POs for partial conversion). PR detail rows also reference [product](/en/inventory/product), [vendor-pricelist](/en/inventory/vendor-pricelist), `tb_tax_profile`, `tb_currency`, `tb_unit`, `tb_location`, `tb_delivery_point`, and `tb_vendor`, denormalising lookup fields (codes, names, snapshot prices) onto the line at submission time so historical PR data remains stable even when master records change. All PR entities live in the tenant Prisma schema; the platform schema contains no purchase-request models.
 
 ## 2. Entities
@@ -48,7 +52,7 @@ PR document header. Carries reference number, requestor and department context, 
 | `workflow_current_stage` | `String @db.VarChar` | Yes | Slug of the stage currently holding the PR. |
 | `workflow_previous_stage` | `String @db.VarChar` | Yes | Slug of the stage that just released the PR. |
 | `workflow_next_stage` | `String @db.VarChar` | Yes | Slug of the next stage in the chain. |
-| `user_action` | `Json @db.JsonB` | Yes | Pending-action metadata, default `{}`. Typically `{ "execute": [{ "id": "<user-id>" }, ...] }` listing who can act next. |
+| `user_action` | `Json @db.JsonB` | Yes | Pending-action metadata, default `{}`. `{ "execute": [{ "user_id": "<user-id>" }, ...] }` listing who can act next — the pending-queue predicate matches `user_action -> 'execute' @> '[{"user_id": …}]'` (`my-pending.sql.ts`); the Prisma comment still shows the older `{ id }` key. |
 | `last_action` | `enum_last_action` | Yes | Last action taken on the document; default `submitted`. |
 | `last_action_at_date` | `DateTime @db.Timestamptz(6)` | Yes | Timestamp of `last_action`. |
 | `last_action_by_id` | `String @db.Uuid` | Yes | User id who performed `last_action`. |
@@ -82,7 +86,7 @@ PR line item. Carries product reference, qty / unit triples (requested, approved
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key. |
 | `purchase_request_id` | `String @db.Uuid` | Yes | FK to `tb_purchase_request.id`. Nullable to support draft lines unattached to a header. |
-| `sequence_no` | `Int` | Yes | Line ordering within the PR; default `1`. |
+| `sequence_no` | `Int` | Yes | Line ordering within the PR; default `1`. Every read of a PR returns its lines `orderBy: { sequence_no: 'asc' }` (`purchase-request.service.ts:163`, 2026-09-18). |
 | `location_id` | `String @db.Uuid` | Yes | Store / location needing the item. |
 | `location_code` | `String @db.VarChar` | Yes | Snapshot of location code. |
 | `location_name` | `String @db.VarChar` | Yes | Snapshot of location name. |
@@ -114,12 +118,12 @@ PR line item. Carries product reference, qty / unit triples (requested, approved
 | `requested_unit_name` | `String @db.VarChar` | Yes | Snapshot. |
 | `requested_unit_conversion_factor` | `Decimal @db.Decimal(20, 5)` | Yes | Conversion factor to inventory base UoM. |
 | `requested_base_qty` | `Decimal @db.Decimal(20, 5)` | Yes | `requested_qty × requested_unit_conversion_factor`. |
-| `approved_qty` | `Decimal @db.Decimal(20, 5)` | Yes | Qty in approved UoM; may differ from `requested_qty`. |
+| `approved_qty` | `Decimal @db.Decimal(20, 5)` | Yes | Qty in approved UoM; may differ from `requested_qty`. The server only rejects negative values (`verify-approve.ts:172-181`) — no upper bound. |
 | `approved_unit_id` | `String @db.Uuid` | Yes | UoM used for the approved qty. |
 | `approved_unit_name` | `String @db.VarChar` | Yes | Snapshot. |
 | `approved_unit_conversion_factor` | `Decimal @db.Decimal(20, 5)` | Yes | Conversion factor to base UoM. |
 | `approved_base_qty` | `Decimal @db.Decimal(20, 5)` | Yes | `approved_qty × approved_unit_conversion_factor`. |
-| `foc_qty` | `Decimal @db.Decimal(20, 5)` | Yes | Free-of-charge qty in FOC UoM; default `0`. |
+| `foc_qty` | `Decimal @db.Decimal(20, 5)` | Yes | Free-of-charge qty in FOC UoM; default `0`. A line may be FOC-only (`requested_qty = 0`, `foc_qty > 0`) — accepted at submit since 2026-09 (`purchase-request.validate.ts:105-131`). |
 | `foc_unit_id` | `String @db.Uuid` | Yes | UoM for FOC qty. |
 | `foc_unit_name` | `String @db.VarChar` | Yes | Snapshot. |
 | `foc_unit_conversion_factor` | `Decimal @db.Decimal(20, 5)` | Yes | Conversion factor to base UoM. |
@@ -158,6 +162,8 @@ PR line item. Carries product reference, qty / unit triples (requested, approved
 **Indexes:** `@@unique([purchase_request_id, product_id, location_id, dimension, deleted_at])` as `PR1_purchase_request_product_location_dimension_u`; `@@index([product_id])` as `PRD1_product_id_idx`; `@@index([location_id])` as `PRD1_location_id_idx`; `@@index([location_id, product_id])` as `PRD1_location_product_idx`; `@@index([purchase_request_id])` as `PRD1_purchase_request_id_idx`.
 
 Comment / attachment tables for this module are documented separately — see [01a — Data Model — Comment Tables](/en/inventory/purchase-request/01a-data-model-comments).
+
+**Delete semantics:** a PR is never hard-deleted. `DELETE /:bu_code/purchase-requests/:id` (and `DELETE …/batch`) stamps `deleted_at` on the header and on each detail row — duplicate-key detail rows get staggered timestamps so the partial unique index `PR1_purchase_request_product_location_dimension_u` is not violated (`purchase-request.service.ts:1688-1716`). Only `draft` rows can be deleted, and only by the owner (`created_by_id` or `requestor_id`, `common/helpers/document-ownership.helper.ts`) or a platform super-admin.
 
 ### 2.3 tb_purchase_request_template
 
@@ -244,6 +250,37 @@ Line item belonging to a PR template. Schema mirrors `tb_purchase_request_detail
 **Constraints:** `@id` on `id`. FKs: `purchase_request_template_id → tb_purchase_request_template.id`; `product_id → tb_product.id` (required); `currency_id → tb_currency.id`; `tax_profile_id → tb_tax_profile.id`; `location_id → tb_location.id`; two named `@relation` FKs into `tb_unit` for requested and FOC unit.
 **Indexes:** `@@unique([purchase_request_template_id, product_id, location_id, dimension, deleted_at])` as `PRT1_purchase_request_template_product_location_dimension_u`; `@@index([purchase_request_template_id, product_id, location_id])` as `PRT2_purchase_request_template_product_location_idx`; `@@index([purchase_request_template_id])` as `PRT2_purchase_request_template_idx`.
 
+### 2.5 API response shape (gateway serializer)
+
+`apps/backend-gateway/src/common/dto/purchase-request/purchase-request.serializer.ts` defines what the REST layer returns for a PR; it is **not** a 1:1 view of the columns above. Pseudo-shape of one detail line as returned by `GET /:bu_code/purchase-requests/:id`:
+
+```
+detail {
+  id, purchase_request: { id }, sequence_no,
+  location: { id, name, code }, location_type, delivery_point: { id, name }, delivery_date,
+  product: { id, name, local_name, code }, product_sku,
+  inventory_unit: { id, name }, description, comment,
+  vendor: { id, name }, pricelist_detail: { id }, pricelist_no, pricelist_unit,
+  pricelist_price, pricelist_type, last_price: { cost_per_unit, ... } | null,
+  currency: { id, code }, exchange_rate, exchange_rate_date,
+  requested_qty, requested_unit: { id, name },
+  approved_qty,  approved_unit:  { id, name },
+  foc_qty,       foc_unit:       { id, name },
+  tax_profile: { id, name }, tax_rate, tax_amount, is_tax_adjustment,
+  discount_rate, discount_amount, is_discount_adjustment,
+  sub_total_price, net_amount, total_price,
+  current_stage_status, history[], dimension, doc_version, created_at, updated_at
+}
+header {
+  id, pr_no, pr_date, pr_status, description, doc_version,
+  requestor: { id, name }, department: { id, name }, workflow: { id, name },
+  workflow_history[], workflow_current_stage, workflow_next_stage, workflow_previous_stage,
+  last_action, info, audit..., purchase_request_detail[]
+}
+```
+
+The frontend types mirror this (`../carmen-inventory-frontend-react/types/purchase-request.ts` — `product: EntityRef | null`, `vendor: EntityRef | null`, …; commit `f303dd96`, 2026-09-17). Create / save payloads still send the flat `*_id` fields; the gateway's `@ExpandRefs` resolves them. The same collapse applies to `tb_purchase_request_template` (Section 2.4): `workflow`, `product`, `location`, `requested_unit`, `foc_unit`, `currency`, `delivery_point`, `inventory_unit` are objects on the wire (commit `16069088`).
+
 ## 3. Relationships
 
 ```
@@ -301,7 +338,7 @@ Notes:
 
 ## 4. Enums
 
-- **`enum_purchase_request_doc_status`**: `draft` (`ร่าง` — initial editable state, no commitment), `in_progress` (`กำลังดำเนินการ` — submitted and traversing the approval chain), `voided` (`โมฆะ` / `ยกเลิก` — terminal terminated state; covers Requestor cancel on an unsubmitted draft, approver reject mid-chain, and Sysadmin void after submission — see [03-user-flow](./03-user-flow) § 2), `approved` (`อนุมัติ` — chain complete, ready for procurement conversion), `completed` (`เสร็จสิ้น` — fully converted to PO and closed). The previously-separate `cancelled` value was dropped in the May 2026 enum-cleanup pass; all termination paths now converge on `voided`.
+- **`enum_purchase_request_doc_status`**: `draft` (`ร่าง` — initial editable state, no commitment), `in_progress` (`กำลังดำเนินการ` — submitted and traversing the approval chain), `voided` (`โมฆะ` — terminal state; written **only** by the approver Reject path, `purchase-request.service.ts:2201`. A draft the requestor abandons is soft-deleted, not voided, and no administrative "void" endpoint exists — see [03-user-flow](./03-user-flow) § 2), `approved` (`อนุมัติ` — chain complete, ready for procurement conversion), `completed` (`เสร็จสิ้น` — fully converted to PO and closed). The previously-separate `cancelled` value was dropped in the May 2026 enum-cleanup pass; all termination paths now converge on `voided`.
 - **`enum_purchase_order_type`**: `manual` (PO created directly by procurement without an upstream PR), `purchase_request` (PO sourced from one or more PRs via the conversion flow — also the default value on `tb_purchase_order.po_type`, which is why PR-sourced is the standard procure-to-pay path).
 - **`enum_last_action`**: `submitted`, `approved`, `reviewed`, `rejected` — used by `tb_purchase_request.last_action` to capture the most recent workflow action.
 - **`enum_comment_type`**: `user` (human-authored comment), `system` (auto-generated activity-log entry written by the workflow engine).

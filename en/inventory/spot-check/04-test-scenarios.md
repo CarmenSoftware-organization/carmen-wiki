@@ -2,7 +2,7 @@
 title: Spot Check — Test Scenarios
 description: Test cases by screen, end-to-end scenarios, and the manual test-case catalog mapping for spot checks.
 published: true
-date: 2026-07-15T18:38:42.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: spot-check, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -40,7 +40,7 @@ Each row below is a full document lifecycle, anchored to the real state machine 
 | 1 | Random sample, no variance | Start (Random, `items = 10`) → count every line to match whatever `reviewItems()` computes → Save For Resume → Submit For Review → Submit Spot Check. | `tb_spot_check.doc_status = completed`; no other document created; every `diff_qty = 0`. |
 | 2 | High-value sample, mixed overage and shortage | Start (High Value, `items = 10`, no `minimum_cost`) with an open/locked fiscal period → count producing both positive and negative variance → Submit For Review → Submit. | `doc_status = completed`; review screen showed both overage and shortage tiles; no rollup document exists anywhere for either. |
 | 3 | Manual sample, triggered by a suspected discrepancy | Start (Manual) → pick 3 specific products via the transfer picker → count → Submit For Review → Submit. | Exactly 3 detail rows created and counted; `doc_status = completed`. |
-| 4 | High-value sample with no open fiscal period | Attempt Start (High Value) when no `tb_period` has `status ∈ {open, locked}`. | `POST /spot-checks` rejected with `SPOT_CHECK_NO_ACTIVE_PERIOD` (`SPC_VAL_004`); document not created. |
+| 4 | High-value sample with no open fiscal period | Attempt Start (High Value) when no `tb_inventory_period` has `status ∈ {open, locked}`. | `POST /spot-checks` rejected with `SPOT_CHECK_NO_ACTIVE_PERIOD` (`SPC_VAL_004`); document not created. |
 | 5 | Skip Save, go straight to Submit for Review | Start → count every line without ever clicking Save For Resume → Submit For Review (button available since `uncountedCount === 0`) → Submit. | `doc_status` never passes through `in_progress` — it goes `pending → completed` directly, since only Save performs that transition; the document still completes normally. |
 | 6 | Submit with uncounted lines | Start → leave several lines at their seeded `actual_qty = 0` → Submit For Review → Submit. | Both calls succeed — there is no server-side completeness check (`SPC_VAL_008`); the uncounted lines simply show `diff_qty = -on_hand_qty` (a full shortage) on the review screen. |
 | 7 | Reset an in-progress spot check | Start → Save a partial count → return to the list screen → click Reset → confirm. | `doc_status = void`; `tb_spot_check_detail` rows are **not** cleared (they still hold whatever was typed); the location falls back to the Not Started bucket. |
@@ -52,9 +52,9 @@ Each row below is a full document lifecycle, anchored to the real state machine 
 
 ## 5. Manual Test-Case Catalog Mapping
 
-No `spot-check` Playwright spec exists at `../carmen-inventory-frontend-e2e/tests/` (verified by `ls tests/ | grep -i 'spot\|check'`). A manual, documentation-only test-case catalog exists instead at `docs/test-cases/760-spot-check.md` — 32 cases (`TC-SPC-*`), explicitly authored by reading the live component, the closest thing to an executable spec this module has. Most of its scenarios match the routing and mechanics confirmed in this pass (locations/history toggle, KPI tiles, the three creation methods, entry-screen filters/notes/calculator, Submit For Review, the review screen's stat tiles, and the final Submit renaming `doc_status` to `completed`).
+**Executable coverage (2026-09-22):** no `spot-check` Playwright spec exists at `../carmen-inventory-frontend-e2e/tests/` (verified by `ls tests/ | grep -i 'spot\|check'`). The manual, documentation-only catalog `docs/test-cases/760-spot-check.md` (44 cases, re-verified against the live component 2026-09-20) and the generated stories `docs/user-stories/760-spot-check.md` (32) are the reference; write new automated coverage against the mechanics documented here.
 
-**Two scenarios in that catalog describe a screen this app's routing does not actually reach.** `TC-SPC-040001` ("edit a saved spot check: open detail in view mode, click Edit, edit description, Save") and `TC-SPC-050001` ("delete a saved spot check: open detail, click Edit, click Delete") both presuppose a view/edit detail screen distinct from the counting screen. Direct reading of `router.tsx` shows `spot-check/:id` always renders `sc-entry-component.tsx` (the counting UI) — never `sc-form.tsx` in view or edit mode. `ScForm`'s `isView`/`isEdit` branches, and the `useUpdateSpotCheck`/`useDeleteSpotCheck` hooks its Save/Delete buttons call, are only ever instantiated from the create screen (`spot-check-by-location-content.tsx`), always without an entity — so those branches are unreachable dead code from any real navigation path. Treat `TC-SPC-040001`/`TC-SPC-050001` as describing intended-but-unwired functionality rather than a confirmed, testable flow; the underlying `update()`/`delete()` backend endpoints are real and would work if exercised directly (e.g. via Bruno), just not from any button in the shipped UI.
+**Resolved:** the earlier catalog revision carried two scenarios (`TC-SPC-040001` edit a saved spot check, `TC-SPC-050001` delete a saved spot check) for a view/edit detail screen this app's routing never reached. The 2026-09-20 catalog revision removed them and now states up front that no view / edit / delete page exists (`/spot-check/:id` renders the counting screen), matching the frontend cleanup of 2026-09-04 (`0647b32e`) that deleted `ScForm`'s dead edit path. `update()` / `delete()` remain backend-only endpoints.
 
 ## 6. References
 

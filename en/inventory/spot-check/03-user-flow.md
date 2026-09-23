@@ -2,7 +2,7 @@
 title: Spot Check — User Flow
 description: Document lifecycle and persona-specific flow files for spot checks.
 published: true
-date: 2026-07-15T18:38:42.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: spot-check, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -56,7 +56,7 @@ stateDiagram-v2
 
 | From state | Action | To state | Allowed for | Pre-conditions |
 | ---------- | ------ | -------- | ----------- | -------------- |
-| `(none)` | Create (`POST /spot-checks`) for `(location, method, size or product_id[])` | `pending` | Any user with `inventory_management.spot_check` | Location exists (`SPC_VAL_001`); eligible product pool non-empty (`SPC_VAL_002`); `manual` requires a non-empty, pool-matching `product_id[]` (`SPC_VAL_003`); `high_value` requires an open/locked `tb_period` to exist (`SPC_VAL_004`). `on_hand_qty` snapshot captured per line at this moment. |
+| `(none)` | Create (`POST /spot-checks`) for `(location, method, size or product_id[])` | `pending` | Any user with `inventory_management.spot_check` | Location exists (`SPC_VAL_001`); eligible product pool non-empty (`SPC_VAL_002`); `manual` requires a non-empty, pool-matching `product_id[]` (`SPC_VAL_003`); `high_value` requires an open/locked `tb_inventory_period` to exist (`SPC_VAL_004`). `on_hand_qty` snapshot captured per line at this moment. |
 | `pending` | Save (`PATCH .../save`) | `in_progress` | Same user | Non-empty `items[]` (`SPC_VAL_007`). Stamps `counted_at`/`counted_by_id`; recomputes `diff_qty` against the currently-stored `on_hand_qty`. |
 | `in_progress` | Save (repeat) | `in_progress` | Same user | Same as above; repeatable. |
 | `pending` / `in_progress` | Submit for Review (`PATCH .../review`) | (no status change) | Same user | Recomputes `on_hand_qty`/`diff_qty` live for every line from the current ledger balance; stamps `counted_at`/`counted_by_id`; navigates to `/review`. Not blocked by an incomplete document. |
@@ -87,5 +87,5 @@ An earlier draft of this wiki module described a third persona group — an Inve
 
 - **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/` (`sc-component.tsx`, `sc-form.tsx`, `sc-entry-component.tsx`, `sc-review-component.tsx`).
 - **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts`.
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists; manual test-case catalog at `docs/test-cases/760-spot-check.md`.
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists; manual test-case catalog `docs/test-cases/760-spot-check.md` (44 cases, re-verified 2026-09-20).
 - Related flow pages: [inventory-adjustment/03-user-flow](/en/inventory/inventory-adjustment/03-user-flow) (where a confirmed variance must be manually corrected), [physical-count/03-user-flow](/en/inventory/physical-count/03-user-flow) (full-count counterpart flow).

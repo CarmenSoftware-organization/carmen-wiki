@@ -2,7 +2,7 @@
 title: Vendor Pricelist — User Flow — Audit & Config (Correction)
 description: Correction page — no dedicated Audit workspace or Configuration console exists in the vendor-pricelist module.
 published: true
-date: 2026-07-16T00:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: vendor-pricelist, user-flow, audit-config, inventory, carmen-software, correction
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -18,14 +18,15 @@ dateCreated: 2026-05-15T15:00:00.000Z
 | ----- | ------ |
 | A dedicated "Pricelist Activity Queries" audit workspace with saved query templates. | **Not implemented.** No such route or component exists. |
 | Segregation-of-duties verification (vendor-token holder ≠ approver; high-value editor ≠ approver). | **Not implemented.** No such cross-check exists in any service in this module. |
-| Portal-token policy configuration (expiration, IP allowlist, concurrent-session limit, suspicious-activity detection). | **Not implemented.** `check-price-list.service.ts`'s `checkPricelist()` never checks an expiry date, an IP address, or a session count. |
-| Per-invitation "Revoke Token" action. | **Not implemented.** No endpoint sets `pricelist_url_token` back to `NULL` anywhere in the backend; the token is written once at RFQ-create time. |
-| A dedicated pricelist-numbering / RBAC / email-integration / validation-rule-registry / FX-source configuration console. | **Not implemented as VPL-specific screens.** Generic numbering (`tb_config_running_code`, used by `generatePLNo()`), RBAC, and currency master data exist elsewhere in the product (see `system-config` and `master-data` books/modules), but there are no pricelist-specific configuration pages layered on top of them. |
+| Portal-token policy configuration (expiration, IP allowlist, concurrent-session limit, suspicious-activity detection). | **Expiration: implemented, not configurable (updated 2026-09-22)** — `UrlTokenGuard` rejects a token once `tb_shot_url.expired_at` (= the RFQ `end_date`) has passed; the JWT lifetime is the global `JWT_EXPIRES_IN`. No screen configures it. IP allowlist, session limit, suspicious-activity detection: **not implemented**. |
+| Per-invitation "Revoke Token" action. | **Not implemented.** No endpoint sets `pricelist_url_token` back to `NULL` or deletes the `tb_shot_url` row; the token is written once at RFQ-create time. Removing the vendor row from the RFQ (`vendors.remove`) soft-deletes the invitation but the token row remains. |
+| A dedicated pricelist-numbering / RBAC / email-integration / validation-rule-registry / FX-source configuration console. | **Not implemented as VPL-specific screens.** Generic numbering (`tb_config_running_code`, used by `generatePLNo()`), RBAC, currency master data, and — since 2026-09 — email profiles (app config `email_profiles`, consumed by the RFQ **Send email** dialog through `profile_id`) exist elsewhere in the product (see `system-config` and `master-data`), but there are no pricelist-specific configuration pages layered on top of them. |
 | Configuration changes snapshot cleanly for in-flight documents, with a rollback-capable configuration audit log. | **Not implemented.** There is no configuration-versioning mechanism in this module to snapshot or roll back in the first place. |
 
 ## What is real
 
 - The generic running-code pattern (`tb_config_running_code`, type `PRICE-LIST`) drives `pricelist_no` generation — this is the same generic numbering mechanism used across the product, not a pricelist-specific numbering console.
+- Portal events (`create` / `save` / `submit`) and RFQ `email_sent` actions are written to the shared `tb_activity` table (2026-09-11/16) and are readable through the ordinary Activity panel — the closest thing to an audit trail; still no query-builder workspace.
 - Comment tables exist and have their own manual CRUD endpoints per entity family, usable by any authorized user for free-text notes — but writing one is always a manual action, never an automatic audit-trail entry (see [01a-data-model-comments](/en/inventory/vendor-pricelist/01a-data-model-comments)).
 - If a dedicated audit query surface or a token-revocation action is wanted, it does not exist today and would be new-feature work, not a documentation gap.
 

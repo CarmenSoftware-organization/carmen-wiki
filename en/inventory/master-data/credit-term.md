@@ -2,7 +2,7 @@
 title: Credit Term
 description: Vendor payment terms (NET 30, COD, etc.) selected on purchase orders to drive due-date and accounts-payable schedules.
 published: true
-date: 2026-07-15T21:47:09.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: master-data, credit-term, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -73,6 +73,7 @@ Source: tenant schema.
 - **Validation — unconfirmed.** No non-negative check on `value` was found server-side; `name` is required.
 - **Lifecycle.** Inactive terms hidden from new-PO pickers; historical POs keep their assigned term.
 - **Snapshot semantics.** PO stores the term id; the due date is computed at PO creation and stored. Rate/value changes here do not retro-edit historical POs.
+- **Default sort.** `GET /credit-terms` with no `?sort=` returns `name:asc, id:asc` (`credit_term.service.ts`, `withDefaultSort`, 2026-09-13).
 
 ## 7. Cross-References
 
@@ -81,5 +82,6 @@ Source: tenant schema.
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_credit_term` (lines ~4920-4944).
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_credit_term` (line ~5527).
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/032-credit-term.spec.ts` + `docs/test-cases/gaps/032-credit-term-gap.md`.
 - **Frontend:** `../carmen-inventory-frontend-react/routes/config/credit-term/`.

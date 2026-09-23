@@ -2,7 +2,7 @@
 title: Inventory — User Flow
 description: Movement lifecycle and persona-specific flow files for inventory.
 published: true
-date: 2026-07-15T09:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: inventory, user-flow, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -12,11 +12,11 @@ dateCreated: 2026-05-15T12:00:00.000Z
 
 > **At a Glance**
 > **Module:** [inventory](/en/inventory/inventory) &nbsp;·&nbsp; **Personas:** Store Keeper (ledger verification) &nbsp;·&nbsp; Inventory Controller (period-end close) &nbsp;·&nbsp; Finance + Audit / Config (correction pages — no such surfaces exist)
-> **Workflow lifecycle:** Movement-driven — each `tb_inventory_transaction` is written already-posted by its source module (no draft → committed on the movement). Per-period lifecycle on `tb_period.status`: `open` → `closed` via the Close action here (`locked` is set elsewhere). Corrections are new transactions via new source documents; rows are never edited.
+> **Workflow lifecycle:** Movement-driven — each `tb_inventory_transaction` is written already-posted by its source module (no draft → committed on the movement). Per-period lifecycle on `tb_inventory_period.status`: `open` → (**Start Period Close** opens the counting round on `tb_physical_count_period`) → `closed` via **Close Period** here (`locked` is set elsewhere). Corrections are new transactions via new source documents; rows are never edited.
 
 ## 1. Overview
 
-This page is the **overview entry point** for the user-flow set of the `inventory` module. Inventory is unusual relative to its sibling document modules — there is no workflow document on which a draft → saved → committed lifecycle plays out. The module's UI surface is exactly two screens: the read-only **Transaction Log** (`/inventory-management/transaction`) and **Period End** (`/inventory-management/period-end` + `/review`). Every ledger row is written by an upstream source module at its posting event — GRN **save**, SR approve-at-final-stage, inventory-adjustment completion, credit-note completion — and the period close itself writes `close`/`open` rows onto the same ledger.
+This page is the **overview entry point** for the user-flow set of the `inventory` module. Inventory is unusual relative to its sibling document modules — there is no workflow document on which a draft → saved → committed lifecycle plays out. The module's UI surface is exactly two screens: the read-only **Transaction Log** (`/inventory-management/transaction`) and **Period End** (`/inventory-management/period-end` + `/review`). Every ledger row is written by an upstream source module at its posting event — GRN **save** (average-method BU) or **commit** (FIFO BU), SR approve-at-final-stage, stock-in / stock-out **commit**, credit-note completion — and the period close itself writes `close`/`open` rows onto the same ledger.
 
 Section 2 describes the two state machines (movement-level, degenerate; period-level, the substantive one). Section 3 indexes the persona files: two describe real flows over the two screens; two are correction pages for personas whose previously-documented surfaces were confirmed absent from the product.
 
@@ -26,7 +26,7 @@ Section 2 describes the two state machines (movement-level, degenerate; period-l
 
 | From state | Action | To state | Allowed for | Pre-conditions |
 | ---------- | ------ | -------- | ----------- | -------------- |
-| `(none)` | post from source document | `posted` | The source module's posting event (GRN save, SR final-stage approve, inventory-adjustment Submit, credit-note completion, period close) | Source document reaches its posting state; outbound consumption passes the balance check (`Insufficient stock…`, except credit-note paths which book `diff_amount`); `at_period`/`period_id` stamped from the **current open period** regardless of document date. |
+| `(none)` | post from source document | `posted` | The source module's posting event (GRN save on average BUs / commit on FIFO BUs, SR final-stage approve, stock-in / stock-out **Commit**, credit-note completion, period close) | Source document reaches its posting state; its document date falls inside an open period (SI: any open/locked period; SO: the current period; GRN: any open period — otherwise the create/commit is rejected, see `INV_VAL_008`); outbound consumption passes the balance check (`Insufficient stock…`, except credit-note paths which book `diff_amount`); `at_period`/`period_id` stamped from the **document date's** period. |
 | `posted` | (no further action) | `posted` | — | Terminal and immutable. No reversal endpoint, no edit endpoint; `deleted_at` is never set by current code. A correction is a **new** transaction posted by a new source document (credit note, stock-in/stock-out). |
 
 ### 2.2 Period-level transitions
@@ -34,8 +34,9 @@ Section 2 describes the two state machines (movement-level, degenerate; period-l
 | From state | Action | To state | Allowed for | Pre-conditions |
 | ---------- | ------ | -------- | ----------- | -------------- |
 | `(none)` | period created | `open` | `ensureNextPeriod` during the previous close, or the period admin screen ([system-config/period](/en/inventory/system-config/period)) | One period per YYMM (`@@unique([fiscal_year, fiscal_month, deleted_at])`). |
-| `open` | accept movements | `open` | All transactional roles (via source modules) | Every new movement stamps into this period — including "backdated" ones (re-dated, not rejected). |
-| `open` (or `locked`) | **Close period** on `/period-end/review` | `closed` | Any user with `inventory_management.period_end.execute` | All blocking-document gates clear (PR/PO/SR not `in_progress`-mid-workflow; GRN in `{draft, committed, voided}`; CN in `{draft, completed, cancelled, voided}`; all required locations counted). Runs atomically under a `FOR UPDATE` lock with re-validation; writes lot carry-over (`CLOSE-…`/`OPEN-…`) and — average-method tenants only — `tb_period_snapshot` rows; auto-provisions the next `open` period; marks `tb_physical_count_period` rows completed. |
+| `open` | accept movements | `open` | All transactional roles (via source modules) | Movements whose document date falls inside this period post into it; a document dated inside a `closed` period is rejected at create/commit (SI/SO/GRN date guards). |
+| `open` | **Start Period Close** on `/period-end` | `open` (period) + `counting` (its `tb_physical_count_period`) | Any user with `inventory_management.period_end.execute` | No GRN dated in the period outside `{committed, voided}`, no SI/SO outside `{completed, cancelled, voided}`, no numbered SR at `draft`/`in_progress` (`listStartCountingBlockers`); PR/PO never block. Idempotent while the round is `counting`; 409 once it is `completed`. This is the only path that lets a physical count be opened. |
+| `open` (or `locked`) | **Close Period** on `/period-end/review` | `closed` | Any user with `inventory_management.period_end.execute` | All close gates clear (numbered SR not `in_progress`-mid-workflow; GRN in `{draft, committed, voided}`; CN in `{draft, completed, cancelled, voided}`; SI/SO not `in_progress`; all required locations counted — PR/PO no longer gate). Runs atomically under a `FOR UPDATE` lock with re-validation; sweeps only lots whose period `end_at ≤` this period's; writes lot carry-over (new `{location_code}{YYMM}{seq4}` lots) and — average-method tenants only — `tb_inventory_period_snapshot` rows; auto-provisions the next `open` period; marks `tb_physical_count_period` rows completed. |
 | `closed` | (no transition in this module) | — | — | No reopen endpoint exists here. |
 | any | lock / unlock | `locked` / — | The period service behind [system-config/period](/en/inventory/system-config/period) | Out of this module's scope; note `findCurrent` treats `locked` as a current period, so a locked period is displayable and closable here. |
 
@@ -52,8 +53,9 @@ Section 2 describes the two state machines (movement-level, degenerate; period-l
 | ---- | ------- | -- | ----------------------- |
 | Source-module operators (GRN receiver, SR approver, adjuster) | Posting event fires | Store Keeper (verification) | Ledger rows written; `parent_document_no` resolvable on the Transaction Log. |
 | Inventory Controller | Blocking-document card incomplete on the review screen | Source-module owners | Documents listed in the per-module dialog; period stays `open` until resolved. |
-| Inventory Controller | Physical-count row incomplete | Counters | Deep-link to `/inventory-management/physical-count/{id}/entry`. |
-| Inventory Controller | **Close period** succeeds | Everyone | `tb_period.status = closed`; next period `open`; new movements stamp into it automatically. |
+| Inventory Controller | **Start Period Close** blocked ("Finish these documents first" dialog) | GRN / SI / SO / SR owners | The 422 payload lists every blocking document with a link; the counting round stays `draft`. |
+| Inventory Controller | Physical-count location card not completed | Counters | Clicking the card opens the location's count (creating it if none exists, `openPhysicalCount`); cards are disabled until the round is `counting`. |
+| Inventory Controller | **Close Period** succeeds | Everyone | `tb_inventory_period.status = closed`; next period `open`; documents dated in the new period post into it, documents still dated in the closed one are rejected. |
 
 ## 5. References
 

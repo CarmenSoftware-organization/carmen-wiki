@@ -2,7 +2,7 @@
 title: Purchase Order — User Flow — Finance
 description: Finance's flow within the purchase-order module — unconfirmed persona; documents what is and is not verified in current source.
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: purchase-order, user-flow, finance, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -18,7 +18,8 @@ dateCreated: 2026-05-15T10:00:00.000Z
 > - A repo-wide search of `carmen-turborepo-backend-v2` and `carmen-inventory-frontend-react` for `three-way`, `threeWay`, `vendor_invoice`, `VendorInvoice`, and `tb_invoice` returned **zero hits**. There is no vendor-invoice-capture screen, no AP-posting endpoint, and no match algorithm anywhere in the current codebase.
 > - `enum_stage_role` (`create`, `approve`, `purchase`, `issue`, `view_only`) has no `finance`-specific member — a "Finance stage" would just be a generic `approve` stage assigned to a Finance-titled user, same as any other approver.
 > - The one piece of corroborating evidence for a Finance-adjacent actor is the e2e fixture user `fc@blueledgers.com`, which `04-test-scenarios.md` documents as the **Procurement Manager (FC Approver)** persona — i.e. current test fixtures treat "FC" and "Procurement Manager" as the same approval-stage actor, not as a separate Finance persona.
-> - The one **real**, adjacent AP-touching feature in this module is [Credit Note](/en/inventory/purchase-order/credit-note) — a genuine, implemented document (`tb_credit_note`, real Prisma line numbers, real routes) that posts an AP debit memo against a prior GRN. It is not a three-way match and does not involve vendor-invoice capture.
+> - The one **real**, adjacent AP-touching feature in this module is [Credit Note](/en/inventory/purchase-order/credit-note) — a genuine, implemented document (`tb_credit_note`, real Prisma line numbers, real routes) that offsets a prior GRN and reverses / revalues its inventory cost layer. **It does not post an AP debit memo** — re-verified 2026-09-22: no AP or GL write exists anywhere in `credit-note.service.ts` / `credit-note.logic.ts` (a prior version of this bullet said it did). It is not a three-way match and does not involve vendor-invoice capture.
+> - Re-checked 2026-09-22 against source HEAD: still zero hits for `three-way`, `vendor_invoice`, `tb_invoice` in both repos. The only new finance-adjacent code since the baseline is the GL core-master work (`tb_gl_jv_*`, `tb_chart_of_accounts`, budget / JV templates, 2026-08 → 2026-09), which has **no** hook from the PO module — no PO status transition writes a journal.
 >
 > This page is kept (rather than deleted) because the module's persona set names Finance in the landing page's legacy role table; the content below documents the correction rather than repeating the fabricated flow. See the module progress-log Discrepancy entry for the full source-check trail.
 
@@ -31,7 +32,8 @@ dateCreated: 2026-05-15T10:00:00.000Z
 | AP liability posting / GL account entries (GRN-accrual, AP-Trade, VAT-input) | **Not implemented.** No AP module or GL-posting code found in this repo. |
 | Purchase-price-variance (PPV) and FX-adjustment postings on invoice match | **Not implemented** — depends on the non-existent invoice/match feature. |
 | `PO_AUTH_009` (read-only report access) | Plausible as a generic RBAC read grant, but no Finance-specific permission key was confirmed. |
-| Credit Note as an AP-adjacent, post-receipt correction document | **Confirmed real** — see [Credit Note](/en/inventory/purchase-order/credit-note). |
+| Credit Note as an AP-adjacent, post-receipt correction document | **Confirmed real** (inventory-side only; no AP posting) — see [Credit Note](/en/inventory/purchase-order/credit-note). |
+| PO `approved` status as a "Finance sign-off" state | **Not that.** `approved` (new 2026-09-14) is simply the terminal outcome of whatever workflow stages the tenant configured; it exists to separate "workflow finished" from "vendor has the document" (`sent_or_print`), not to insert a Finance step. |
 
 ## 2. What To Do With This Page
 

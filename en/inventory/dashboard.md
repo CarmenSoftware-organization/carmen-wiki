@@ -1,8 +1,8 @@
 ---
 title: Dashboard
-description: The single /dashboard landing page — a greeting header plus a personal, drag-and-drop "Saved Widgets" grid of dataset-backed KPI/pie cards that each user builds for themselves.
+description: The single /dashboard landing page — a greeting header plus a personal, drag-and-drop 12-column "Saved Widgets" grid of dataset-backed cards (KPI, gauge, pie, bar, line, table, status pipelines) that each user builds for themselves.
 published: true
-date: 2026-07-16T01:35:43.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: dashboard, kpi, reporting, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -15,7 +15,9 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ![Dashboard screen](/screenshots/dashboard/index.png)
 
-## Implementation status (verified 2026-07-16)
+## Implementation status (verified 2026-07-16, re-verified 2026-09-22)
+
+**2026-09-22 re-verification.** Still one route, one component. What changed since 2026-07-29: the sidebar entry now carries `licenseFeature: "dashboard.widget"` (`constant/module-list.ts`; backend license catalog maps `app:dashboard-widgets` → `dashboard.widget`); the grid became a 12-column layout with per-widget size, gauge cards, render switching, per-widget lazy loading, a parameter/display dialog and status-group cards (see [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) §1); and the dead `hooks/use-dashboard.ts` (`useMyPendingPrCount`/`PoCount`/`SrCount`) referenced below was finally **deleted** on 2026-08-31 (`02228125`, "ลบโค้ดตาย 17 ไฟล์"). `hooks/use-approval.ts` moved to `routes/procurement/approval/use-approval.ts` (2026-08-28, `0d9757f3`) and `/procurement/approval` now reads the unified `GET /api/my-pending` view instead of three per-type calls (2026-09-16, `9bd21427`).
 
 The Dashboard module is **one route with one component**, not a sidebar group of six domain pages. `constant/module-list.ts` registers a single top-level entry, `{ name: "dashboard", path: "/dashboard" }`, with no sub-modules; `routes/router.tsx` has exactly one nested route, `{ path: "dashboard", lazy: () => import("./dashboard/dashboard.route") }`, resolving to `DashboardComponent` (greeting + a "Saved Widgets" grid, `routes/dashboard/dashboard-component.tsx`).
 
@@ -28,7 +30,7 @@ Practical effect for this wiki: the sub-pages below are kept (file count unchang
 The Dashboard is the first screen every operator sees after login (root `/` redirects to `/dashboard`). It renders:
 
 - A **greeting header** — "Good Morning/Afternoon/Evening, {full name}" plus the current localized date, from the user's profile.
-- A **"Saved Widgets" section** — a personal, drag-and-drop grid of dataset-backed cards. Each user builds their own layout from scratch; there is no predefined or admin-curated layout on this page.
+- A **"Saved Widgets" section** — a personal, drag-and-drop 12-column grid of dataset-backed cards (KPI, gauge, pie, bar, line, area, table) plus full-width PR/PO/SR status-pipeline cards. Each card has its own size, parameters and display settings; each user builds their own layout from scratch — there is no predefined or admin-curated layout on this page.
 
 See [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) for the full page reference (layout, API calls, troubleshooting).
 
@@ -48,16 +50,17 @@ See [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) for t
 - [dashboard/grn](/en/inventory/dashboard/grn) — documented a deleted `dashboard-grn.tsx` demo (GRN KPIs, pending PO by day-band)
 - [dashboard/inventory](/en/inventory/dashboard/inventory) — documented a deleted `dashboard-inventory.tsx` demo (stock pipeline, replenishment, PST)
 - [dashboard/sr](/en/inventory/dashboard/sr) — documented a deleted `dashboard-sr.tsx` demo (SR pipeline, consumption charts)
-- [dashboard/my-pending](/en/inventory/dashboard/my-pending) — documented a deleted `dashboard-my-pending.tsx` widget (personal pending counts); the underlying hooks (`useMyPendingPrCount`/`PoCount`/`SrCount`) still exist in `hooks/use-dashboard.ts` but have zero call sites anywhere in the frontend
+- [dashboard/my-pending](/en/inventory/dashboard/my-pending) — documented a deleted `dashboard-my-pending.tsx` widget (personal pending counts); the underlying hooks (`useMyPendingPrCount`/`PoCount`/`SrCount`, `hooks/use-dashboard.ts`) were deleted as dead code on 2026-08-31 (`02228125`); only the `MY_PENDING_*_COUNT` endpoint constants remain declared
 - [dashboard/my-approval](/en/inventory/dashboard/my-approval) — documented a deleted `dashboard-my-approval.tsx` widget (personal approval queue); the real, live equivalent is the Procurement module's **My Approval** page — see [purchase-request/my-approval](/en/inventory/purchase-request/my-approval) (`/procurement/approval`)
 
 ---
 
 ## 3. Data Sources (Dev)
 
-- **Saved widgets (personal)** — `GET /api/proxy/api/me/dashboard-widgets?bu_code=` lists the signed-in user's pinned widgets; `POST`/`PATCH`/`DELETE` on the same path create, reorder/rename, and remove one. See [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) §5 for the full shape.
-- **Dataset catalog** — the "+ Add Widget" picker (`LookupDataset`) queries the code-registered dataset catalog served by **micro-data**; see [system-config/dashboard-dataset](/en/inventory/system-config/dashboard-dataset).
-- **Dead/unused endpoints found in source but not called from this page:** `GET /api/proxy/api/my-pending/{purchase-requests,purchase-orders,store-requisitions}/count` (hooks exist, zero importers) and the approval-queue endpoints consumed instead by `/procurement/approval` (see [purchase-request/my-approval](/en/inventory/purchase-request/my-approval)), not by `/dashboard`.
+- **Saved widgets (personal)** — `GET /api/proxy/api/me/dashboard-widgets?bu_code=` lists the signed-in user's pinned widgets; `POST`/`PATCH`/`DELETE` on the same path create, update (`title`, `order_index`, `params`, `widget_type`, `display`) and remove one. Served by **micro-data** (Go) through the gateway proxy with the `x-internal-token` header. See [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) §5 for the full shape.
+- **Widget values** — one lazy `GET /api/proxy/api/{bu}/dashboard-lab/widgets/{widget_id}/data?scope=personal` per card (executes the stored dataset + params); status-group cards use `POST .../dashboard-lab/datasets/document.{doc}-by-status`.
+- **Dataset catalog** — the "+ Add Widget" picker (`LookupDataset`) queries `GET /api/proxy/api/{bu}/dashboard-lab/datasets` (with `params[]` descriptors and `supported_renders[]`), the code-registered registry served by **micro-data**; see [system-config/dashboard-dataset](/en/inventory/system-config/dashboard-dataset).
+- **Unused endpoints still declared in `constant/api-endpoints.ts`:** `GET /api/proxy/api/my-pending/{purchase-requests,purchase-orders,store-requisitions}/count` (`MY_PENDING_*_COUNT` — their hooks were deleted 2026-08-31, zero callers). The approval queue is consumed by `/procurement/approval` (`GET /api/my-pending` + `GET /api/my-approve/pending`, see [purchase-request/my-approval](/en/inventory/purchase-request/my-approval)), not by `/dashboard`.
 
 ## 4. Related Modules
 
@@ -68,8 +71,9 @@ See [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) for t
 ## 5. Reference Sources
 
 - `../carmen-inventory-frontend-react/routes/router.tsx` — single route registration: `{ path: "dashboard", lazy: () => import("./dashboard/dashboard.route") }`
-- `../carmen-inventory-frontend-react/routes/dashboard/dashboard.route.tsx`, `dashboard-component.tsx`, `sortable-widget-item.tsx` — the entire live page (flattened out of `_components/` by the 2026-06-27 cleanup)
-- `../carmen-inventory-frontend-react/constant/module-list.ts` — single-entry sidebar registration (no sub-modules)
-- `../carmen-inventory-frontend-react/hooks/use-my-dashboard-widgets.ts` — personal-widget CRUD hooks actually used by the live page
-- `../carmen-inventory-frontend-react/hooks/use-dashboard.ts` — `useMyPendingPrCount`/`PoCount`/`SrCount`; retained in source, zero call sites found anywhere in the repo
+- `../carmen-inventory-frontend-react/routes/dashboard/dashboard.route.tsx`, `dashboard-component.tsx`, `sortable-widget-item.tsx`, `status-group.ts`, `status-group-card.tsx`, `widget-config-dialog.tsx`, `widget-param-fields.tsx`, `widget-display-fields.tsx`, `widget-shape.ts` — the entire live page
+- `../carmen-inventory-frontend-react/constant/module-list.ts` — single-entry sidebar registration (no sub-modules), `licenseFeature: "dashboard.widget"`
+- `../carmen-inventory-frontend-react/routes/dashboard/use-my-dashboard-widgets.ts` — personal-widget CRUD + per-widget data hooks actually used by the live page (moved from `hooks/` on 2026-08-28)
+- `../carmen-inventory-frontend-react/hooks/use-dashboard.ts` — **deleted 2026-08-31** (`02228125`); the `MY_PENDING_*_COUNT` constants it used remain in `constant/api-endpoints.ts` with no callers
+- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-widgets/`, `dashboard-lab/` and `../micro-data/` — backend (see [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) §8)
 - Deletion commit: `03891e3d` in `../carmen-inventory-frontend-react` ("refactor(dashboard): convert to idiomatic structure, drop dead demo code", 2026-06-27) — removed `_components/dashboard-{main,pr,po,grn,sr,inventory,my-pending,my-approval}.tsx` and `mock/{main,pr,po,grn,sr,inventory}.ts` (19 files, 6 insertions / 5,468 deletions)

@@ -2,7 +2,7 @@
 title: Adjustment Type
 description: Coded reasons for stock-in / stock-out adjustments — used by the inventory-adjustment module's manual postings; physical count and spot check do not set it.
 published: true
-date: 2026-07-15T21:47:09.000Z
+date: '2026-09-22T18:00:00.000Z'
 tags: master-data, adjustment-type, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -77,6 +77,7 @@ Source: tenant schema.
 - **Validation.** `code`, `name`, and `type` are required on create. `update()` does not block changing `type` after first use — confirmed absent, not just unconfirmed.
 - **Lifecycle.** Inactive reasons stay readable on historical adjustments; hidden from new-adjustment pickers.
 - **Direction filtering.** UI pickers filter by `type` — the discriminator never needs re-filtering downstream.
+- **Default sort.** `GET /adjustment-types` with no `?sort=` returns `code:asc, name:asc, id:asc` (`adjustment-type.service.ts`, `withDefaultSort`, 2026-09-13).
 
 ## 7. Cross-References
 
@@ -86,5 +87,6 @@ Source: tenant schema.
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_adjustment_type` (lines ~2807-2833), `enum_adjustment_type` (lines ~2800-2805).
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_adjustment_type` (line ~3166), `enum_adjustment_type` (~3159).
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/031-adjustment-type.spec.ts` + `docs/test-cases/gaps/031-adjustment-type-gap.md`.
 - **Frontend:** `../carmen-inventory-frontend-react/routes/config/adjustment-type/`.
