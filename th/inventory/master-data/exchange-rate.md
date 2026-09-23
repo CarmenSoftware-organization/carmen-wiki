@@ -2,7 +2,7 @@
 title: อัตราแลกเปลี่ยน (Exchange Rate)
 description: ประวัติอัตราแปลงสกุลเงินไปยังสกุลเงินฐานแบบมีวันที่ — เอกสารธุรกรรมทุกใบ snapshot อัตราที่มีผลในวันที่ของเอกสาร
 published: true
-date: 2026-07-15T21:47:09.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: master-data, exchange-rate, currency, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -48,6 +48,7 @@ Exchange Rate เก็บ **ประวัติอัตราแบบมี
 - **"Current" cache vs. history** `tb_currency.exchange_rate` เป็น *cache* ของ `tb_exchange_rate` ล่าสุด เอกสารใหม่ resolve ผ่านประวัติที่มีวันที่ก่อน; ถ้าไม่มีแถวที่ตรงวันเท่านั้น cache จึงทำหน้าที่เป็น fallback (พร้อม warning บนเอกสาร)
 - **ฟีเจอร์ที่ยืนยันว่าค้างครึ่งทาง — ปุ่ม "Update" แบบ bulk-sync** hook `useExternalExchangeRates` ของ `ExchangeRateComponent` เรียก `GET /api/exchange-rate?base=<รหัสสกุลเงิน>` ซึ่งเป็น route แบบ Next.js API จาก stack เดิม ค้นหาทั่ว repo ใน NestJS gateway ปัจจุบัน (`carmen-turborepo-backend-v2/apps/backend-gateway`) ไม่พบ route ที่ตรงกันเลย — มีแค่ controller CRUD `api/config/:bu_code/exchange-rates` เท่านั้น comment ในโค้ดของ hook เองยืนยันเรื่องนี้ตรง ๆ: `// TODO(phase-config): /api/exchange-rate was a Next route — move to backend or client-side fetch when the config module migrates` และอีก comment บอกว่าบน static hosting SPA fallback จะคืน `index.html` พร้อม status `200` ทำให้ endpoint นี้ตกไปเป็น error "Exchange rate endpoint is not available" แทนที่จะ crash เส้นทาง **Add Manual** แบบทีละแถวไม่ได้รับผลกระทบ — มัน POST ตรงไปยัง endpoint จริง `POST /exchange-rates`
 - **ไม่มี feed แบบ cron** ค้นหาทั่ว repo ใน `../micro-cronjobs` หา `exchange`/`fx`/`currency` ไม่พบเลย ไม่มี scheduled job ที่ refresh อัตรา วิธีเดียวที่แถวอัตราจะถูกสร้างคือปุ่ม external-sync (ที่เสียอยู่ตอนนี้) และ dialog แบบ manual ทีละแถว
+- **ยังเสียอยู่ ณ 2026-09-22** `routes/config/shared/use-exchange-rate.ts:99-105` ยัง fetch `/api/exchange-rate?base=…` พร้อม comment `TODO(phase-config)` เดิม และ frontend commit `651e9cd9` (2026-09-03) ยืนยันใน message ว่า route นี้ไม่มีทั้งใน SPA และใน gateway commit นั้นแค่หยุดไม่ให้ dialog **currency** เขียนอัตรา fallback ปลอม `0.01` เมื่อ fetch ล้มเหลว (ดู [master-data/currency](/th/inventory/master-data/currency)); ปุ่ม **Update** แบบ bulk บนหน้าจอนี้ไม่เปลี่ยนแปลง
 
 ---
 
@@ -82,6 +83,8 @@ Exchange Rate เก็บ **ประวัติอัตราแบบมี
 - **Snapshot semantics** เมื่อเอกสารบันทึกอัตราที่ resolve ได้แล้ว มันจะ frozen การ re-approving / re-routing / re-posting จะไม่ดึงค่าใหม่โดยอัตโนมัติ; ฟิลด์ยังแก้ไขได้โดยผู้ใช้ และการเลือกสกุลเงินใหม่บน header เอกสารจะเติมค่าใหม่จาก cache `tb_currency.exchange_rate` ปัจจุบัน — ไม่มี action "Refresh FX" แยกเฉพาะอยู่ที่ไหนในโค้ดเบสเลย
 - **Currency inactivation** ไม่ลบประวัติอัตรา การ soft-delete แถวอัตราจะลบออกจาก resolution ใหม่เท่านั้น
 - **Backdated entry** อนุญาต; ไม่อัปเดตเอกสารที่ posted ย้อนหลัง
+- **Response shape (2026-09-17)** แถว list และ detail มี `currency: { id, code, name }` เป็น nested object — ไม่เหลือคู่ `currency_id` / `currency_code` แบบแบนบน wire อีก (`types/exchange-rate.ts:4-12`, frontend fix `75244fde`) คอลัมน์ snapshot `currency_code` / `currency_name` ใน § 5.1 ยังมีอยู่ในตารางแต่ไม่ใช่สิ่งที่ UI อ่าน
+- **Default sort** `GET /exchange-rates` ที่ไม่มี `?sort=` คืน `created_at:desc, id:asc` (`exchange-rate.service.ts`, `withDefaultSort`, 2026-09-13) — รายการที่สร้างล่าสุดมาก่อน ไม่ใช่ `at_date` ล่าสุด
 
 ## 7. การอ้างอิงข้ามโมดูล
 
@@ -93,7 +96,8 @@ Exchange Rate เก็บ **ประวัติอัตราแบบมี
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_exchange_rate` (lines ~760-785)
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_exchange_rate` (line ~769)
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/041-exchange-rate.spec.ts` + `docs/test-cases/gaps/041-exchange-rate-gap.md`
 - **Frontend:** `../carmen-inventory-frontend-react/routes/config/exchange-rate/` — hook `useExternalExchangeRates` ใน `use-exchange-rate.ts` คือจุดที่ external-sync ยืนยันว่าเสีย
 - **Backend:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_exchange-rates/` (CRUD รวม `createBulk`) และ `apps/micro-business/src/master/exchange-rate/exchange-rate.service.ts`
 - **Cron job:** ไม่พบ `../micro-cronjobs/` ค้นหา `exchange`/`fx`/`currency` ไม่พบเลย ไม่มี FX feed แบบ scheduled

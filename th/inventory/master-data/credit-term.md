@@ -2,7 +2,7 @@
 title: เงื่อนไขการชำระเงิน (Credit Term)
 description: เงื่อนไขการชำระเงินกับผู้ขาย (NET 30, COD ฯลฯ) ที่เลือกบนใบสั่งซื้อเพื่อขับเคลื่อนวันครบกำหนดและตาราง accounts payable
 published: true
-date: 2026-07-15T21:47:09.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: master-data, credit-term, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -73,6 +73,7 @@ Credit term เข้ารหัสข้อตกลงการจ่าย�
 - **Validation — ยังไม่ยืนยัน** ไม่พบการเช็คค่าไม่ติดลบบน `value` ฝั่ง server; `name` บังคับ
 - **Lifecycle** เงื่อนไข inactive ซ่อนจาก picker PO ใหม่; PO ประวัติยังเก็บเงื่อนไขที่กำหนดไว้
 - **Snapshot semantics** PO เก็บ id ของ term; due date คำนวณ ณ การสร้าง PO และเก็บไว้ การเปลี่ยน rate/value ที่นี่ไม่ retro-edit PO ประวัติ
+- **Default sort** `GET /credit-terms` ที่ไม่มี `?sort=` คืน `name:asc, id:asc` (`credit_term.service.ts`, `withDefaultSort`, 2026-09-13)
 
 ## 7. การอ้างอิงข้ามโมดูล
 
@@ -81,5 +82,6 @@ Credit term เข้ารหัสข้อตกลงการจ่าย�
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_credit_term` (lines ~4920-4944)
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_credit_term` (line ~5527)
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/032-credit-term.spec.ts` + `docs/test-cases/gaps/032-credit-term-gap.md`
 - **Frontend:** `../carmen-inventory-frontend-react/routes/config/credit-term/`

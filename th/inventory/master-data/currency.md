@@ -2,7 +2,7 @@
 title: สกุลเงิน (Currency)
 description: แคตตาล็อกสกุลเงินต่อ tenant, รายการอ้างอิง ISO และประวัติอัตราแลกเปลี่ยนแบบมีวันที่ — ขับเคลื่อนการแปลง FX ทั้งหมดบน PO, GRN, pricelist และ costing
 published: true
-date: 2026-07-15T21:47:09.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: master-data, currency, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -25,7 +25,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
-| เปิดใช้งานสกุลเงินสำหรับ tenant | Configuration → Master Data → Currency → **New** | เลือก `iso_code` จาก `tb_currency_iso`; ตั้ง `is_active = true` |
+| เปิดใช้งานสกุลเงินสำหรับ tenant | Configuration → Master Data → Currency → **New** | เลือกรหัส ISO; dialog เติม `name` / `symbol` / `description` อัตโนมัติจาก **ค่าคงที่ ISO ในฝั่ง frontend** (`components/lookup/lookup-currency-iso`) ไม่ใช่จากการเรียก API `tb_currency_iso` ส่วน `exchange_rate` เริ่มที่ `0` และคงอยู่อย่างนั้นเว้นแต่จะพิมพ์ค่า — frontend commit `651e9cd9` (2026-09-03) ตัด fallback ปลอม `0.01` ที่เคยถูกเขียนเมื่อ fetch `/api/exchange-rate` (ซึ่งไม่มีอยู่จริง) ล้มเหลวออกไปแล้ว |
 | ทับศัพท์สัญลักษณ์หรือชื่อ | Edit dialog | สำเนา tenant ใน `tb_currency.symbol` / `name` ทับ ISO row |
 | ตั้ง default currency ของ BU | รายละเอียดของ [master-data/business-unit](/th/inventory/master-data/business-unit) | ต้องอ้างอิงแถว `tb_currency` ที่ active |
 | บริหารจัดการอัตรา | ดู [master-data/exchange-rate](/th/inventory/master-data/exchange-rate) | ประวัติแบบมีวันที่อยู่ที่นั่น ไม่ใช่บนเอนทิตีนี้ |
@@ -45,6 +45,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 - **"Current" cache vs. history** `tb_currency.exchange_rate` เป็น *cache* ของ `tb_exchange_rate` ล่าสุด เอกสารใหม่ resolve ผ่านประวัติที่มีวันที่ก่อน; cache เป็น fallback (พร้อม warning)
 - **การ inactivate ไม่ลบประวัติ** — เอกสารย้อนหลังยังคง render ตามอัตรา snapshot
 - **BU default invariant — ยังไม่ยืนยัน** ไม่พบโค้ดที่บล็อกการ inactivate สกุลเงินที่เป็น `default_currency_id` ของ BU; ถือเป็น design intent ไม่ใช่ guard ที่ทำงานจริง
+- **Default sort** `GET /currencies` ที่ไม่มี `?sort=` คืน `code:asc, name:asc, id:asc` (`currency.service.ts`, `withDefaultSort`, 2026-09-13)
 - **Override ระดับ tenant** — `tb_currency.name` / `symbol` ทับสำเนา ISO สำหรับการแสดงผล
 - **ไม่มีการเช็คข้าม ISO** `tb_currency.code` เป็น string ที่พิมพ์เองได้อย่างอิสระตอนสร้าง — ไม่มีอะไรบังคับให้ตรงกับแถว `tb_currency_iso.iso_code`
 - **Decimal places** `tb_currency.decimal_places` ควบคุมการ render เท่านั้น — storage เป็น `Decimal(15, 5)` สำหรับอัตรา และเงินปัดเศษเป็น 2 dp
@@ -108,6 +109,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma (tenant):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_currency` (lines ~553-596), `tb_exchange_rate` (lines ~760-785)
-- **Prisma (platform):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_currency_iso` (lines ~279-287)
+- **Prisma (tenant):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_currency` (line ~561), `tb_exchange_rate` (~769)
+- **Prisma (platform):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_currency_iso` (line ~323)
+- **Bruno:** `config/currencies/*`; `master-data/currencies/GET-find-all-iso-master-data-currencies.bru` (รายการ ISO) หมายเหตุ: `master-data/currencies/GET-get-fleet-summary-master-data-currencies.bru` เป็น request ของ platform ที่วางผิดที่ (`/api-system/clusters/summary`) และไม่เกี่ยวกับสกุลเงินเลย
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/040-currency.spec.ts` + `docs/test-cases/gaps/040-currency-gap.md`
 - **Frontend:** `../carmen-inventory-frontend-react/routes/config/currency/`

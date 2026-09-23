@@ -2,7 +2,7 @@
 title: หน่วยนับ (Unit)
 description: หน่วยนับและการแปลงระหว่างหน่วยที่ใช้โดยเอกสารธุรกรรมและระเบียนสินค้าทุกใบ
 published: true
-date: 2026-07-15T21:47:09.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: master-data, unit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -25,7 +25,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
-| เพิ่มหน่วย | Configuration → Master Data → Unit → **New** | บังคับ: `name`; `decimal_place` default `2` |
+| เพิ่มหน่วย | Configuration → Master Data → Unit → **New** | บังคับ: `name`; `decimal_place` default `2` และตอนนี้แก้ไขได้ใน dialog แล้ว (`components/share/unit-dialog.tsx`, frontend commit `7c53de65` — ก่อนหน้านั้นคอลัมน์นี้มีอยู่เฉพาะฝั่ง backend) |
 | ยกเลิกการใช้งาน | Toggle `is_active` | ซ่อนจากธุรกรรมใหม่; บรรทัดประวัติไม่เปลี่ยน |
 | เพิ่ม conversion แบบ global | Conversion matrix | `product_id = NULL`; เลือก `unit_type`, from-unit/qty, to-unit/qty |
 | เพิ่ม conversion ต่อสินค้า | Product detail → Conversions | ทับ global สำหรับสินค้านั้น |
@@ -101,6 +101,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 - **Validation** Conversion `from_unit_qty` และ `to_unit_qty` ต้อง `> 0` ทั้งคู่ คู่หน่วยเดียวกันต้อง qty เท่ากันเท่านั้น
 - **Lifecycle** หน่วย inactive มองเห็นบนเอกสารย้อนหลัง; ถูก lock จากธุรกรรมใหม่
 - **Decimal precision** `decimal_place` คือ rendering เท่านั้น; storage `Decimal(20,5)`
+- **Default sort** `GET /units` ที่ไม่มี `?sort=` คืน `name:asc, id:asc` (`units.service.ts`, `withDefaultSort`, 2026-09-13)
+- **Comments** หน่วยนับมี comment thread ของตัวเอง: `api/config/:bu_code/unit-comments` (+ `unit-comment-attachments`), Bruno `config/unit-comments/*` (6 request) — รูปแบบเดียวกับตาราง `*-comment` อื่นทุกตัว
 
 ## 7. การอ้างอิงข้ามโมดูล
 
@@ -116,5 +118,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_unit` (lines ~3380-3423), `tb_unit_conversion` (lines ~3460-3498), `enum_unit_type` (lines ~257-260)
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_unit` (line ~3739), `tb_unit_conversion` (~3819), `enum_unit_type` (~265)
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/units/units.service.ts`, `master/unit-conversion/`, `master/unit-comment/`
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/020-unit.spec.ts` (13 กรณี) + `docs/test-cases/gaps/020-unit-gap.md` (27 กรณีที่ยังไม่ครอบคลุม)
 - **Frontend:** `../carmen-inventory-frontend-react/routes/config/unit/`

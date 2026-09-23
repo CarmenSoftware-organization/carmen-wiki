@@ -2,7 +2,7 @@
 title: Profile ภาษี (Tax Profile)
 description: นิยามอัตราภาษีแบบมีชื่อที่ถูกอ้างอิงโดยผู้ขาย สินค้า และทุกบรรทัดเอกสารที่มีราคา
 published: true
-date: 2026-07-15T21:47:09.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: master-data, tax-profile, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -76,6 +76,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 - **Lifecycle** profile ที่ inactive ซ่อนจาก picker ใหม่; อ่านได้บนบรรทัดประวัติ
 - **Snapshot semantics** บรรทัดเอกสาร snapshot อัตรา; การแก้ที่นี่ไม่ retro-edit เอกสารประวัติ
 - **วินัยการเปลี่ยนอัตรา** สร้าง profile ใหม่เสมอเมื่อ headline rate เปลี่ยน
+- **Default sort** `GET /tax-profiles` ที่ไม่มี `?sort=` คืน `name:asc, tax_rate:asc, id:asc` (`tax_profile.service.ts`, `withDefaultSort`, 2026-09-13)
 
 ## 7. การอ้างอิงข้ามโมดูล
 
@@ -88,5 +89,6 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_tax_profile` (lines ~1433-1468), `enum_tax_type` (lines ~92-96) — หมายเหตุ `enum_tax_type` อยู่บนแต่ละบรรทัดเอกสาร ไม่ใช่บนเอนทิตีนี้
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_tax_profile` (line ~1491), `enum_tax_type` (~96) — หมายเหตุ `enum_tax_type` อยู่บนแต่ละบรรทัดเอกสาร ไม่ใช่บนเอนทิตีนี้
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/042-tax-profile.spec.ts` + `docs/test-cases/gaps/042-tax-profile-gap.md`
 - **Frontend:** `../carmen-inventory-frontend-react/routes/config/tax-profile/`

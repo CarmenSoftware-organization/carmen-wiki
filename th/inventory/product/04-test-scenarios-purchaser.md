@@ -2,7 +2,7 @@
 title: สินค้า (Product) — Test Scenarios — Purchaser
 description: test case ของ Purchaser (happy-path lookup, RBAC scope, validation ด้าน read, comment / feedback, edge case) สำหรับโมดูลสินค้า
 published: true
-date: 2026-07-16T09:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: product, test-scenarios, purchaser, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -13,7 +13,9 @@ dateCreated: 2026-05-15T15:30:00.000Z
 > **At a Glance**
 > **Persona:** Purchaser (ผู้บริโภคแคตตาล็อก read-only) &nbsp;·&nbsp; **โมดูล:** [product](/th/inventory/product) &nbsp;·&nbsp; **scenario:** ~33
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **การครอบคลุม E2E:** ทางอ้อม — exercise ผ่าน spec โมดูลต้นน้ำ (`300-pr.spec.ts`, `400-po.spec.ts`) ใน `../carmen-inventory-frontend-e2e/`
+> **การครอบคลุม E2E:** ทางอ้อม — exercise ผ่าน spec โมดูลต้นน้ำ (`tests/301-pr.spec.ts`, `302-pr-creator-journey.spec.ts`, `304-pr-purchaser-journey.spec.ts`, `401-po.spec.ts`, `402-po-purchaser-journey.spec.ts`) ใน `../carmen-inventory-frontend-e2e/`
+
+> **ความครอบคลุมที่รันได้จริง (2026-09-22):** รีโป e2e **ไม่มี `100-product.spec.ts`** — `/product-management/product` เป็นแถวแบบ catalog เท่านั้น (`📄 catalog`) ใน `../carmen-inventory-frontend-e2e/docs/test-cases/COVERAGE.md:148` หนุนด้วย `docs/test-cases/100-product.md` (52 กรณี ตรวจสอบซ้ำกับฟอร์ม React เมื่อ 2026-09-20) หน้าจอข้างเคียงมี spec: `tests/101-product-category.spec.ts` (23 กรณี; gap report `docs/test-cases/gaps/101-product-category-gap.md` ยังไม่ครอบคลุม 39) และ `tests/044-eco.spec.ts` (19 กรณี; `gaps/044-eco-gap.md` ยังไม่ครอบคลุม 29) หน้านี้ไม่ได้ mirror catalog เหล่านั้น
 
 หน้านี้บันทึก test scenario ที่ persona Purchaser ขับเคลื่อนในโมดูล `product` พวกเขาเป็น **ผู้บริโภค read-only** ของแคตตาล็อก — พวกเขาค้นหา filter ดู และเลือกสินค้าสำหรับการจัดทำ PR / PO; อ้างอิง standard cost, ต้นทุนรับล่าสุด (derive), การแปลงหน่วย และ vendor mapping; และ post comment สำหรับ entry ที่เก่าหรือคำขอสินค้าใหม่ เนื่องจาก persona เป็น lookup-only scenario รวมไปที่ **พฤติกรรม search / picker** (filter, scope, sort), **RBAC ด้าน read** (อะไรที่พวกเขาเห็นและไม่เห็นได้), **กฎ validation ที่พวกเขาพบในฐานะผู้บริโภค** (ความพยายามที่ถูกปฏิเสธในการเลือกสินค้า inactive ความพยายามที่ถูกปฏิเสธในการใช้หน่วยที่ไม่ตั้งค่า) และ **เส้นทาง comment / feedback** ที่ route ความกังวลของพวกเขากลับไปยัง Product Administrator ไม่มี scenario CRUD สำหรับ persona นี้; งานธุรกรรมของพวกเขา (การจัดทำ PR และ PO) อยู่ใน [purchase-request](/th/inventory/purchase-request) และ [purchase-order](/th/inventory/purchase-order) handoff ข้าม persona ที่ pivot จาก Purchaser (Scenario 1, 8, 10, 16 ใน parent overview) อยู่ใน [04-test-scenarios.md](./04-test-scenarios.md) ไม่ใช่ที่นี่
 
@@ -53,7 +55,7 @@ dateCreated: 2026-05-15T15:30:00.000Z
 | PR-VAL-01 | เลือกสินค้า inactive บนบรรทัด PR ใหม่ (`PRD_XMOD_001`) | Purchaser toggle filter "show inactive" และพยายามเลือกสินค้า inactive | **ปฏิเสธที่ line save** — `"Product <code> is inactive or deleted and cannot be added to new transactions."` `400 Bad Request` Picker ปกติ grey out แถว inactive เมื่อ toggle เปิด; การส่ง API ตรงตรวจสอบใหม่ Map ไปยังการจัดการสินค้า inactive |
 | PR-VAL-02 | เลือกหน่วยที่ไม่ตั้งค่าสำหรับสินค้า (`PRD_XMOD_006`) | สินค้ามี order-unit conversion `1 CASE = 5 KG` เท่านั้น; Purchaser พยายามกรอก qty ใน `BAG` ผ่าน API | **ปฏิเสธที่ line save** — `"No conversion factor defined for unit BAG → KG on product COF-001."` `400 Bad Request` Picker ปกติแสดงเฉพาะหน่วยที่ตั้งค่า; นี่คือการตรวจสอบ backend ป้องกัน การ resolve: post comment ขอ conversion ตาม parent Scenario 10 |
 | PR-VAL-03 | เลือกสินค้าที่ไม่ map กับ vendor ที่เลือกของ PO | PO scope ไปยัง vendor V1; สินค้า P1 ไม่มีแถว `tb_product_tb_vendor` สำหรับ V1 | **ปฏิเสธที่ line save** — `"Product P1 is not mapped to vendor V1."` `400 Bad Request` (ธรรมเนียม; ไม่ใช่กฎ schema แข็ง — บังคับใช้ที่ application) การ resolve: เปลี่ยน vendor ของ PO หรือ post comment ขอ mapping ตาม parent Scenario 16 |
-| PR-VAL-04 | Submit บรรทัด PR ด้วย unit-price เกิน `price_deviation_limit` | สินค้ามี `price_deviation_limit = 10`, `standard_cost = ฿100`; Purchaser กรอก unit-price = `฿120` (สูงกว่า standard 20% เกิน 10%) | **Soft-block** — บรรทัดยอมรับแต่ flag สำหรับการอนุมัติเกินเกณฑ์ตามกฎ validation ของ [purchase-request](/th/inventory/purchase-request) (กฎด้าน product ตาม `PRD_CALC_003` ป้อน gating) flag มองเห็นได้บน workflow การอนุมัติของ PR ตาม `PRD_XMOD_007` tolerance deviation คือ gate |
+| PR-VAL-04 | Submit บรรทัด PR ด้วย unit-price เกิน `price_deviation_limit` | สินค้ามี `price_deviation_limit = 10`; ราคา PO `฿100`; GRN ภายหลังรับที่ `฿120` (สูงกว่า 20% เกิน 10%) | **แก้ไข 2026-09-22 — การบังคับใช้เดียวที่ยืนยันได้อยู่ตอน save GRN** ไม่ใช่บนบรรทัด PR: `POST …/good-received-notes/:id/save` ปฏิเสธ GRN ทั้งใบด้วย `400 GRN_DEVIATION_LIMIT_EXCEEDED` (`good-received-note.deviation.ts` ขีดจำกัดระดับสินค้า เทียบราคาหน่วยฐานกับราคาที่สั่ง; การรับ*ต่ำกว่า*ราคาที่สั่งผ่าน) ไม่พบ soft-block / approval routing ฝั่ง PR; ให้ถือว่า flag บน PR ยังไม่ยืนยัน |
 | PR-VAL-05 | Comment พร้อม attachment ผิดรูปแบบ | Purchaser post comment พร้อม metadata attachment ขาด `fileToken` | **ปฏิเสธที่ submit** — รูปทรง attachment ของ comment บังคับใช้ตามธรรมเนียม tenant-comment; attachment ผิดรูปแบบ return `400 Bad Request` |
 
 ## 4. Edge Cases

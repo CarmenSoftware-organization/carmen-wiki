@@ -2,7 +2,7 @@
 title: ที่ตั้ง / สถานที่ (Location)
 description: สถานที่จัดเก็บและบริโภคที่จำแนกเป็น inventory, direct หรือ consignment — ขับเคลื่อนการ post สต๊อกและพฤติกรรมการ physical count
 published: true
-date: 2026-07-15T21:47:09.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: master-data, location, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -37,6 +37,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | ยกเลิกการใช้งาน | Toggle `is_active` | ซ่อนจาก picker; การ post ประวัติยังเก็บไว้ |
 | เปลี่ยน `location_type` | Edit dialog | **ไม่ได้ถูกบล็อกจริง** — `update()` ยอมรับค่าใหม่โดยไม่พบการเช็คการเคลื่อนไหวก่อนหน้า (guard ยังไม่ยืนยัน ดู Edge Cases); การเปลี่ยนหลังมี posting แล้วยังจะทำให้ความหมายของรายงานประวัติเสียหาย |
 | กำหนด inventory tree | หน้า location detail | จำกัดว่าสินค้าใดที่มองเห็นได้ที่ location นี้ |
+| วางสินค้าบนชั้นวางที่ location นี้ | API เท่านั้น — `products.add[] / products.update[]` มี `shelf_id` (`config_locations/swagger/request.ts:112-139`) | ตั้ง `tb_product_location.shelf_id` + `shelf_code` / `shelf_name` แบบ denormalised; `null` ล้างค่า transfer list สินค้าบนฟอร์ม location (`CreateLocationDto.products: TransferPayload`) ไม่มี shelf picker — picker อยู่บนแท็บ **Location Assignment** ของฟอร์มสินค้าแทน ([product/03-user-flow-product-admin](/th/inventory/product/03-user-flow-product-admin)) |
 
 ## 3. การตรวจสอบและข้อผิดพลาด
 
@@ -45,6 +46,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | "Code already in use" | `code` ซ้ำในแถว active | เลือก code อื่น |
 | **ยังไม่ยืนยัน** — ไม่พบ guard สำหรับการลบหรือเปลี่ยน location_type | `locations.service.ts`'s `delete()` เป็น soft-delete แบบไม่มีเงื่อนไข ไม่มีการเช็คยอด non-zero หรือ SR/GRN ที่เปิดอยู่; `update()` ยอมรับ `location_type` ใหม่โดยไม่เช็คการเคลื่อนไหวก่อนหน้า | เดิมหน้านี้ระบุว่า "cannot delete — non-zero balance", "cannot delete — referenced by open SR/GRN" และ "cannot change location_type after first movement" เป็น error ที่บังคับใช้จริง — ไม่พบทั้งสามในรอบนี้; ให้ถือว่า**ยังไม่ถูกบังคับใช้**จนกว่าจะตรวจสอบซ้ำ |
 | ชื่อจุดส่งของในรายงาน | snapshot `delivery_point_name` อาจไม่ตรงหากไม่ได้ sync | Query `delivery_point.name` ผ่าน join สำหรับค่าที่ถูกต้อง |
+| `404 SHELF_NOT_FOUND` ตอน update location | รายการ `products.add[]` / `products.update[]` ระบุ `shelf_id` ที่ไม่มีอยู่หรือถูก soft-delete (`locations.service.ts` → `resolveShelfAssignments`, `~1290`) | เลือกชั้นวางที่ยังใช้งานจาก `GET /api/config/:bu_code/shelves` หรือส่ง `shelf_id: null` |
 
 ## 4. Edge Cases
 
@@ -73,6 +75,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | `delivery_point_id` | `String? @db.Uuid` | Yes | FK ไปยัง `tb_delivery_point` (เลือกได้) |
 | `delivery_point_name` | `String? @db.VarChar` | Yes | สำเนาแสดงผลแบบ denormalised |
 | `physical_count_type` | `enum_physical_count_type` | No | `no` (default) — ข้าม; `yes` — รวม |
+| `department_account_code` | `String? @db.VarChar` | Yes | รหัสบัญชีแบบ free-text ที่ echo กลับตอน update (`locations.service.ts` `locationData`); ไม่พบผู้บริโภคในโค้ด GL ในรอบนี้ |
 | `is_active` | `Boolean?` | Yes | Active flag |
 | `note`, `info`, `dimension` | — | Yes | Metadata มาตรฐาน |
 | `doc_version` | `Int` | No | เวอร์ชัน optimistic-lock (default `0`) |
@@ -83,6 +86,14 @@ dateCreated: 2026-05-16T08:00:00.000Z
 `enum_location_type` values: `inventory`, `direct`, `consignment`
 `enum_physical_count_type` values: `no`, `yes`
 
+### 5.2 `tb_location_user` (เปลี่ยนชื่อ 2026-09-04)
+
+junction ผู้ใช้-กับ-location ถูกเปลี่ยนชื่อจาก `tb_user_location` เป็น `tb_location_user` โดย migration `20260904131500_rename_shelf_and_user_location` (index `location_user_user_id_location_id_u` / `_idx`; คอลัมน์ไม่เปลี่ยน: `user_id`, `location_id`, `note`, `info`, `doc_version`, audit) gateway ยังเปิดให้ใช้ผ่านสอง path — `api/config/:bu_code/locations-users` และ `api/config/:bu_code/user-locations` แบบเก่า — และ response ของ location detail ยังฝังมันเป็น `user_location[]` (`common/dto/location/location.serializer.ts:66`) ดังนั้นมีแค่ชื่อตารางเท่านั้นที่ย้าย
+
+### 5.3 คอลัมน์ shelf บน `tb_product_location`
+
+migration `20260814150000_add_location_shelf` เพิ่ม `shelf_id` (FK → `tb_location_shelf`, `onDelete: NoAction`, index `product_location_shelf_id_idx`), `shelf_code` และ `shelf_name` ลงบน junction product-location ชั้นวางเป็นข้อมูลหลักระดับ BU (ไม่ scope ตาม location) — ดู [master-data/shelf](/th/inventory/master-data/shelf)
+
 ## 6. กติกาทางธุรกิจ
 
 - **Uniqueness** `code` unique ในแถว active (app-enforced)
@@ -91,7 +102,9 @@ dateCreated: 2026-05-16T08:00:00.000Z
 - **Lifecycle** `is_active = false` ซ่อนจาก picker; รักษาการ post ประวัติ จุดส่งของที่ผูกไว้แล้วและถูก deactivate ในภายหลัง ยังคงแสดงชื่อในฟอร์มดู/แก้ไข location (ฟอร์มอ่าน `delivery_point.name` จาก nested object ไม่ใช่ snapshot field)
 - **ยกเว้นการนับ** `physical_count_type = no` ข้าม period count ไม่ใช่ spot check
 - **การจับคู่กับจุดส่งของ** ฟอร์ม location แสดงชื่อ live จาก `delivery_point.name` (nested object) ดังนั้น label ที่แสดงจึงเป็นปัจจุบันเสมอ คอลัมน์ `delivery_point_name` เป็น legacy snapshot field ที่ UI ไม่ได้ใช้สำหรับการแสดงผลอีกต่อไป
-- **Optimistic lock** PATCH location ต้องส่ง `doc_version`; client ต้อง echo `doc_version` ปัจจุบันตอน save มิฉะนั้นจะได้ `409 Conflict` และ version จะเพิ่มขึ้นเมื่อสำเร็จ ขอบเขตคือ header `tb_location` เท่านั้น — ตาราง junction sub-tables (`tb_user_location`, `tb_product_location`) ไม่ถูก guard
+- **Optimistic lock** PATCH location ต้องส่ง `doc_version`; client ต้อง echo `doc_version` ปัจจุบันตอน save มิฉะนั้นจะได้ `409 Conflict` และ version จะเพิ่มขึ้นเมื่อสำเร็จ ขอบเขตคือ header `tb_location` เท่านั้น — ตาราง junction sub-tables (`tb_location_user`, `tb_product_location`) ไม่ถูก guard
+- **การกำหนดชั้นวางถูกตรวจสอบ ไม่ใช่พิมพ์อิสระ** ทุก `shelf_id` ใน `products.add[]` / `products.update[]` ต้อง resolve ไปยังแถว `tb_location_shelf` ที่ยังใช้งาน มิฉะนั้น update ทั้งก้อนล้มเหลวด้วย `SHELF_NOT_FOUND` (`resolveShelfAssignments`, `master/shelf/shelf.helper.ts:109`); `code`/`name` ที่ resolve ได้ถูกคัดลอกลงแถว junction โดย `shelfColumns()`
+- **Default sort** `GET /locations` ที่ไม่มี `?sort=` คืน `code:asc, name:asc, id:asc` (`locations.service.ts`, `withDefaultSort`, 2026-09-13)
 
 ## 7. การอ้างอิงข้ามโมดูล
 
@@ -100,10 +113,14 @@ dateCreated: 2026-05-16T08:00:00.000Z
 - [store-requisition](/th/inventory/store-requisition) — `from_location` / `to_location` ในทุก issue/transfer
 - [physical-count](/th/inventory/physical-count) — การนับ scope ไปยัง location ที่ `physical_count_type = yes`
 - [spot-check](/th/inventory/spot-check) — เซสชัน enumerate location
+- [master-data/shelf](/th/inventory/master-data/shelf) — ลำดับการเดินนับของชั้นวางต่อแถว product-location
 - [purchase-request](/th/inventory/purchase-request) และ [purchase-order](/th/inventory/purchase-order) — บรรทัด detail อาจบรรจุ location ปลายทาง
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_location` (lines ~1328-1375), `enum_location_type` (lines ~222-226), `enum_physical_count_type` (lines ~51-54)
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_location` (line ~1354), `tb_location_shelf` (~1441), `tb_location_user` (~5428), `tb_product_location` (~5334), `enum_location_type` (~229), `enum_physical_count_type` (~51)
+- **Migrations:** `20260814150000_add_location_shelf`, `20260904131500_rename_shelf_and_user_location`
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/locations/locations.service.ts`; gateway `apps/backend-gateway/src/config/config_locations/` (+ `config_locations-users/`, `config_user-locations/`)
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/080-location.spec.ts` (17 กรณี) + `docs/test-cases/gaps/080-location-gap.md` (45 กรณีที่ยังไม่ครอบคลุม)
 - **Frontend:** `../carmen-inventory-frontend-react/routes/config/location/`
 - **carmen/docs:** `../carmen/docs/settings/locations.md` — wireframes

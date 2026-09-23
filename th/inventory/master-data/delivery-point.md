@@ -2,7 +2,7 @@
 title: จุดส่งของ (Delivery Point)
 description: จุดส่งของทางกายภาพสำหรับการจัดส่งของผู้ขาย — ถูกอ้างอิงโดย PO และ GRN และเชื่อมโยงกับ inventory location
 published: true
-date: 2026-07-15T21:47:09.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: master-data, delivery-point, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -71,6 +71,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 - **Validation** `name` บังคับ
 - **Lifecycle** จุดส่งของ inactive ยังอ่านได้บนเอกสารย้อนหลัง; ซ่อนจาก picker
 - **การ propagate การเปลี่ยนชื่อ** เอกสาร resolve ผ่าน FK; snapshot ชื่อบน `tb_location` ต้อง backfill
+- **FK บน PO header มีจริงแล้วนับจาก 2026-09-15** `tb_purchase_order.delivery_point_id` (FK `tb_purchase_order_delivery_point_id_fkey`) + `delivery_point_name` ถูกเพิ่มโดย `20260915120000_po_header_delivery_point`; flow `group-pr` / `confirm-pr` ของ PO รับจุดส่งของบน header (backend `c467a287d`) ก่อนหน้านั้นการอ้างอิงอยู่เฉพาะบน PR detail / แถว junction PO-PR เท่านั้น
+- **Default sort** `GET /delivery-points` ที่ไม่มี `?sort=` คืน `name:asc, id:asc` (`delivery-point.service.ts`, `withDefaultSort`, 2026-09-13)
 
 ## 7. การอ้างอิงข้ามโมดูล
 
@@ -81,5 +83,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_delivery_point` (lines ~633-657)
+- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_delivery_point` (line ~641)
+- **Migration:** `20260915120000_po_header_delivery_point`
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/079-delivery-point.spec.ts` + `docs/test-cases/gaps/079-delivery-point-gap.md` (30 กรณีที่ยังไม่ครอบคลุม)
 - **Frontend:** `../carmen-inventory-frontend-react/routes/config/delivery-point/`
