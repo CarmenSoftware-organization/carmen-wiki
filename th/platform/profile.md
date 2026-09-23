@@ -2,7 +2,7 @@
 title: โปรไฟล์ (Profile)
 description: หน้าจัดการตนเองสำหรับผู้ใช้ที่ล็อกอินอยู่ ดูและแก้ไขข้อมูลตัวตนของตน รวมถึงเปลี่ยนรหัสผ่าน mount อยู่สอง route ที่ใช้ component เดียวกัน
 published: true
-date: 2026-09-06T23:45:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: platform/profile, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** หน้าจัดการตนเองสำหรับผู้ใช้ที่ล็อกอินอยู่ใช้ดูและแก้ไขข้อมูลตัวตนของตน รวมถึงเปลี่ยนรหัสผ่าน &nbsp;·&nbsp; **กลุ่มผู้ใช้:** ผู้ใช้ที่ล็อกอินอยู่ (เจ้าของบัญชีเอง) &nbsp;·&nbsp; **การเข้าถึง:** authenticated-only — route `/profile` ไม่มี `requiredPermission` และไม่มีคีย์ `feature` &nbsp;·&nbsp; **Mount สองครั้ง:** `/profile` (มุมมอง platform) และ `/cluster-admin/:clusterId/profile` (มุมมอง cluster-admin) ทั้งคู่ render component `Profile` เดียวกันด้วยเนื้อหาและข้อมูลเหมือนกันทุกประการ — ต่างกันแค่ chrome (§1) &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `user`, `user_info`, `business_unit` (แสดงแบบอ่านอย่างเดียว) &nbsp;·&nbsp; **หน้าย่อย:** 0
+
+![โปรไฟล์ (Profile) screen](/screenshots/platform/profile/index.png)
 
 ## 1. ภาพรวม
 

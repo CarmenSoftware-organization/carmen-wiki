@@ -2,7 +2,7 @@
 title: ผู้ใช้แพลตฟอร์ม (User Platform)
 description: มอบ role แบบ RBAC — ทั้งแพลตฟอร์มหรือเฉพาะ cluster — ให้บัญชีผู้ใช้ที่มีอยู่แล้ว หน้าจอทะเบียนสิทธิ์ที่แยกออกมาจาก RBAC และ Users
 published: true
-date: '2026-09-06T23:45:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, user-platform
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **Component:** `UserPlatformManagement` (รายการ) &nbsp;·&nbsp; `UserPlatformEdit` (detail รายบุคคล) &nbsp;·&nbsp; **Route:** `/platform/user-platform` &nbsp;·&nbsp; `/platform/user-platform/:userId` — **สังเกตว่าพารามิเตอร์คือ `:userId` และไม่มี `/edit` ต่อท้าย** ต่างจาก edit route แทบทุกตัวในหนังสือเล่มนี้ &nbsp;·&nbsp; **Nav:** `permission: 'user_platform.read'`, `feature: 'user_platform'`, `groupKey: 'navGroup.platform'` (`platformNav.ts:43`) — **ไม่ใช่** `superAdminOnly` &nbsp;·&nbsp; **Permission key:** `user_platform.read` (ทั้งสอง route) + `user_platform.manage` (ทุกจุดที่เขียนได้บนทั้งสองหน้าจอ) &nbsp;·&nbsp; **ข้อพึ่งพาที่สองที่ไม่ได้ประกาศไว้:** ส่วนใหญ่ที่หน้า detail แสดงยังต้องการ `user.read` ด้วย ซึ่งเป็นคีย์ของโมดูล [Users](/th/platform/users) ที่ route guard ของโมดูลนี้เองไม่เคยตรวจ — ดู §4 และ [Permissions](/th/platform/user-platform/permissions) §3 สำหรับการไล่รอยแบบเต็ม &nbsp;·&nbsp; **e2e suite:** `user-platform` (2 specs) — มี coverage ต่างจากโมดูลส่วนใหญ่ในชุดนี้ แต่ทั้งสอง spec เล็งไปที่ UI ที่หน้าจอนี้ไม่มีแล้ว — ดู [UI Screens](/th/platform/user-platform/ui-screens) §4 &nbsp;·&nbsp; **หน้าย่อย:** 2
+
+![ผู้ใช้แพลตฟอร์ม (User Platform) screen](/screenshots/platform/user-platform/index.png)
 
 ## 1. ภาพรวม
 

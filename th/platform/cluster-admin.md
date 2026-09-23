@@ -2,7 +2,7 @@
 title: ผู้ดูแลคลัสเตอร์ (Cluster Admin)
 description: คอนโซลผู้ดูแลคลัสเตอร์ — nav และ persona ที่สองของแอป จำกัดขอบเขตอยู่ที่คลัสเตอร์เดียวต่อครั้ง เข้าที่ /cluster-admin/:clusterId/* ไม่มี RBAC permission key เลยในโมดูลนี้ — กั้นด้วยสมาชิกภาพของคลัสเตอร์ผ่าน isClusterAdminOf แทน ตรวจก่อน feature flag เสมอ
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, cluster-admin
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **คืออะไร:** **คอนโซลที่สอง** ไม่ใช่หน้าจอเพิ่มเติมของผลิตภัณฑ์ platform admin — มี nav ของตัวเอง มี shell ของตัวเอง และเป็น persona ของตัวเอง อยู่ทั้งหมดใต้ `/cluster-admin/:clusterId/*` &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับพื้นผิว "ผู้ดูแลคลัสเตอร์" ที่ลูกค้าใช้เอง — บทบาทที่พนักงานของลูกค้าถือได้โดยไม่ต้องมี RBAC grant ใด ๆ ของ platform เลย &nbsp;·&nbsp; **Route ทางเข้า:** `/cluster-admin` → `ClusterAdminEntry` กั้นด้วย `AuthedRoute` ที่ตรวจแค่การล็อกอิน &nbsp;·&nbsp; **Route ต่อคลัสเตอร์:** `/cluster-admin/:clusterId/{cluster,business-units,business-units/:buId/edit,users,licenses,profile}` ทั้งหมดกั้นด้วย `ClusterAdminRoute` &nbsp;·&nbsp; **ตัว gate:** **ไม่มี RBAC permission key — กั้นด้วยสมาชิกภาพของคลัสเตอร์ผ่าน `isClusterAdminOf` แทน** ตรวจก่อน feature flag เสมอ บนทุก route ทั้งห้าที่ผูกกับคลัสเตอร์ &nbsp;·&nbsp; **Nav:** `clusterAdminNav.ts` **ไม่มีการกรองด้วย permission เลย** — การผ่าน route guard มาได้คือด่านทั้งหมดอยู่แล้ว — และ feature key ทั้งสี่ตัว (`cluster_admin_cluster`, `cluster_admin_business_units`, `cluster_admin_licenses`, `cluster_admin_users`) เป็น **คนละชุด** จาก nav ฝั่ง platform แม้ป้ายเมนูจะซ้ำกัน &nbsp;·&nbsp; **Key entities/tables:** อ่าน `tb_cluster`, `tb_business_unit`, `tb_cluster_user`, `tb_cluster_license`, `tb_business_unit_license` และ — ตั้งแต่ PR #291 (2026-09-09) — `tb_subscription` กับ `tb_business_unit_interface_license` — ตารางชุดเดียวกับที่โมดูลฝั่ง platform อย่าง [Clusters](/th/platform/clusters), [Business Units](/th/platform/business-units), [Users](/th/platform/users) และ [Licenses](/th/platform/licenses) เป็นเจ้าของ — โมดูลนี้ไม่มี schema ของตัวเองเลย &nbsp;·&nbsp; **e2e suite:** **ไม่มี** — `../carmen-platform-e2e/tests/` ไม่มีไดเรกทอรี `cluster-admin` เลย ทุกคำกล่าวอ้างในหน้าของโมดูลนี้มาจากการอ่าน `../carmen-platform` (และสำหรับภาพสะท้อนฝั่ง backend ของ gate มาจาก `../carmen-turborepo-backend-v2`) โดยตรง &nbsp;·&nbsp; **หน้าย่อย:** 2
+
+![ผู้ดูแลคลัสเตอร์ (Cluster Admin) screen](/screenshots/platform/cluster-admin/index.png)
 
 ## 1. ภาพรวม
 

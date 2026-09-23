@@ -2,7 +2,7 @@
 title: My Pending Dashboard Widget
 description: "REMOVED, historical reference only — never actually rendered on /dashboard: a proposed personal pending-count widget showing the number of draft or in-progress documents awaiting the signed-in user's action across PR, PO, and SR."
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: dashboard, my-pending, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-06-04T00:00:00.000Z
 
 > **At a Glance**
 > **Route:** none — never rendered anywhere &nbsp;·&nbsp; **Status:** **Removed 2026-06-27; was dead code even before that** — this widget was never mounted on the live `/dashboard` page, despite this page's prior claim of "Live"
+
+![My Pending Dashboard Widget screen](/screenshots/dashboard/my-pending.png)
 
 ## Implementation status (verified 2026-07-16)
 

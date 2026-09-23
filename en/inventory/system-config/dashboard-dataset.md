@@ -2,7 +2,7 @@
 title: Dashboard Dataset
 description: Read-only admin catalog of code-registered data feeds in micro-data (62 definitions, seven shapes, per-shape supported_renders) that dashboard widgets pull from — distinct from widget layout and SQL-authored views.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: system-config, dashboard, dataset, widget, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-06-04T00:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Sysadmin (read-only catalog) &nbsp;·&nbsp; **Backing:** Code-registered in the **micro-data** service (`GET /api/dashboard/datasets`), proxied by backend-gateway over HTTP — **no dedicated tenant table** &nbsp;·&nbsp; **Used by:** [reporting-audit/widget](/en/inventory/reporting-audit/widget) (widget picker), dashboard tiles &nbsp;·&nbsp; **Permission / licence:** `dashboard.dataset.view` / `dashboard.dataset` (`module-list.ts:736-742`; licence routes `app:datasets`, `app:dashboard-lab`) &nbsp;·&nbsp; **62 registered definitions** (`ENTRIES` in `../micro-data/service/dashboard/registry.go`, counted 2026-09-22: 16 `scalar`, 9 `scalar_delta`, 6 `time_series`, 21 `categorical`, 7 `ranked`, 3 `matrix`) across inventory, workflow, document, procurement, product, vendor, recipe, and equipment categories; a seventh shape, `table`, exists in the model (`model/dashboard.go:17`) but no registry entry uses it yet. A prior version said 68.
+
+![Dashboard Dataset screen](/screenshots/system-config/dashboard-dataset.png)
 
 ## Implementation status (re-verified 2026-09-22)
 

@@ -2,7 +2,7 @@
 title: การย้ายเทแนนต์ (Tenant Migrations)
 description: หน้าจอระดับ fleet ที่ตรวจสอบและ apply schema migration ของฐานข้อมูล tenant ที่ค้างอยู่ทั่วทุก business unit ทุก action ถูกจำกัดเฉพาะ super-admin
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, tenant-migrations
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **หน้าจอ:** `TenantMigrationManagement` (+ `FleetSync`, `DeployConsole`) ที่ `/tenant-migrations` เพิ่มโดย `../carmen-platform` commit `c59bbba` (2026-06-30) &nbsp;·&nbsp; **Route gate:** `cluster.read` — reuse มาจาก [Clusters](/th/platform/clusters) key เดียวกับที่ gate [Business Units](/th/platform/business-units) ด้วย — บวก feature flag `tenant_migrations` ของโมดูลนี้เองบน `PrivateRoute` ตรวจหลัง permission gate &nbsp;·&nbsp; **Action gate:** ทุก action Check / Apply / Deploy-all / Resolve ถูกจำกัดเพิ่มเป็น `isSuperAdmin` ฝั่ง frontend และที่ backend `TenantMigrationGuard` ต้องมี session ระดับ super-admin **หรือ** header `x-deploy-token` ที่ตรงกัน &nbsp;·&nbsp; **ใหม่ตั้งแต่ 2026-09-16 (PRs #296, #297):** คอลัมน์ **Schema** (`db_schema` ของ tenant + ชื่อ pool) และ path **Resolve** ในแอปสำหรับ migration ที่ค้าง (`POST .../:bu_id/resolve`) ทั้งจากตารางนี้และการ์ดต่อ BU — ช่องว่าง "ไม่มีผู้เรียกฝั่ง frontend ของ `resolve`" ที่การแก้ไขรอบ 2026-09-06 ของหน้านี้บันทึกไว้ปิดแล้ว &nbsp;·&nbsp; **Sidebar:** มีรายการ "Tenant Migrations" เป็นของตัวเองในกลุ่ม Organization (`src/components/nav/platformNav.ts:14`) — ไม่ได้ซ้อนอยู่ใต้ Business Units หรือ Clusters แม้จะใช้ permission key ร่วมกัน &nbsp;·&nbsp; **สวิตช์ปิด/เปิด:** `TENANT_MIGRATION_API_ENABLED` เป็น env var ที่ **ปิดโดยดีฟอลต์** — ทุก endpoint รวมถึง status check จะ 403 จนกว่าจะตั้งเป็น `true` อย่างชัดเจน &nbsp;·&nbsp; **ความสัมพันธ์:** มุมมองตารางระดับ fleet ของความสามารถ backend เดียวกับที่การ์ด `TenantMigrationCard` ต่อ BU บน [Business Units — UI Screens](/th/platform/business-units/ui-screens) §4.5 ทำทีละ BU &nbsp;·&nbsp; **e2e suite:** ไม่มี — ทุกข้อความในหน้านี้มาจากการอ่าน source โดยตรง ไม่ใช่จาก test coverage
+
+![การย้ายเทแนนต์ (Tenant Migrations) screen](/screenshots/platform/tenant-migrations/index.png)
 
 ## 1. ภาพรวม
 

@@ -2,7 +2,7 @@
 title: My Approval Dashboard Widget
 description: REMOVED, historical reference only — a proposed personal approval task-queue widget for /dashboard that was never rendered; the real, live equivalent is the Procurement module's My Approval page (/procurement/approval).
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: dashboard, my-approval, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-06-04T00:00:00.000Z
 
 > **At a Glance**
 > **Route:** none — never rendered anywhere &nbsp;·&nbsp; **Status:** **Removed 2026-06-27; was dead code even before that** — this widget was never mounted on the live `/dashboard` page, despite this page's prior claim of "Live". The real, live personal approval inbox is a **different page**: [purchase-request/my-approval](/en/inventory/purchase-request/my-approval) (`/procurement/approval`)
+
+![My Approval Dashboard Widget screen](/screenshots/dashboard/my-approval.png)
 
 ## Implementation status (verified 2026-07-16)
 

@@ -2,7 +2,7 @@
 title: Platform Config
 description: One screen, nine cards, eight config keys — invitations, sign-up, legacy email verification, password reset, internal notification email, license enforcement, expiry-warning thresholds, and the platform-migration API switch.
 published: true
-date: '2026-09-22T17:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, platform-config
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -14,6 +14,8 @@ The **Platform Config** module is one screen, `PlatformConfigManagement` at `/pl
 
 > **At a Glance**
 > **Component:** `PlatformConfigManagement` &nbsp;·&nbsp; **Route:** `/platform/configs` &nbsp;·&nbsp; **Nav:** `permission: 'platform_config.read'`, `feature: 'platform_config'`, `groupKey: 'navGroup.platform'` (`platformNav.ts:38`) &nbsp;·&nbsp; **Base write gate:** `platform_config.manage`, required by the backend on every key's `PUT`/`PATCH` regardless of which screen calls it &nbsp;·&nbsp; **Two keys need a second gate to save:** `license` also needs `license.manage` (§4.3 — **not** a `licenses`-module key); `platform_migration` needs super-admin status outright, no permission string accepted &nbsp;·&nbsp; **Cards:** 9, mapped from 8 keys (`invitation` has two cards, §3.1) &nbsp;·&nbsp; **e2e suite:** **None** — `../carmen-platform-e2e/tests/` has no `platform-config`/`configs` directory; every claim below is sourced from `../carmen-platform` and `../carmen-turborepo-backend-v2` implementation directly &nbsp;·&nbsp; **Sub-pages:** 1
+
+![Platform Config screen](/screenshots/platform/platform-config/index.png)
 
 ## 1. Overview
 

@@ -2,7 +2,7 @@
 title: Broadcasts
 description: Broadcasts module overview — three screens covering push notifications with three target modes, a mandatory expiry, and a full sender-side lifecycle.
 published: true
-date: 2026-09-06T23:45:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: platform/broadcasts, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T13:15:00.000Z
@@ -16,6 +16,8 @@ The **Broadcasts** module pushes a notification to platform users: all of them, 
 
 > **At a Glance**
 > **Module purpose:** List, compose, schedule, edit (while scheduled), expire, and soft-delete push notifications — three target modes (`system_all` / `system_users` / `bu`), a sender-only severity label, and a mandatory expiry (`end_at`) &nbsp;·&nbsp; **Audience:** Developers and QA working on the Platform admin SPA, the backend-gateway notification module, and micro-notification &nbsp;·&nbsp; **Key entities/tables:** `tb_broadcast_notification` (scope/doc_type/event enums, `doc_version` now a real optimistic lock) + `tb_user_broadcast_action` (lazy read state); **targeted (`system_users`) sends fork into `tb_notification` instead and never appear on the List or Edit screens** &nbsp;·&nbsp; **Endpoints:** `POST /api/notifications/broadcasts/system` and `/bu` (send), `GET .../broadcasts` (admin list), `GET/PATCH/DELETE .../broadcasts/:id` — all under `/api`, **not** `/api-system` &nbsp;·&nbsp; **Permission keys:** `broadcast.read` (nav, list, Edit-page view) · `broadcast.send` (Compose route + Send) · `broadcast.update` (Edit action + PATCH) · `broadcast.delete` (Delete action + DELETE) — nav `feature: 'broadcasts'`, no `superAdminOnly` &nbsp;·&nbsp; **Sub-pages:** 3
+
+![Broadcasts screen](/screenshots/platform/broadcasts/index.png)
 
 ## 1. Overview
 

@@ -2,7 +2,7 @@
 title: ผู้ใช้ (Users)
 description: บัญชีผู้ใช้ระดับแพลตฟอร์ม — identity, avatar และการ assign cluster/BU ที่กำหนดขอบเขตว่าผู้ใช้เข้าถึงอะไรได้ใน inventory app ส่วนสิทธิ์เข้า Platform admin มอบผ่าน role assignment ของ RBAC
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: platform/users, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** หน้าจัดการบัญชีผู้ใช้ระดับแพลตฟอร์ม — หนึ่ง row ต่อหนึ่งคนที่ login ได้ เก็บ identity (`username`, `email`, ชื่อแบ่งส่วน, `alias_name`), avatar, flag `is_active` และมุมมอง read-only ของ cluster และ BU ที่ผู้ใช้ถูก assign อยู่ (การ assign จริงทำจากฝั่ง cluster หรือ — สำหรับ BU — จาก dialog Add-BU ในหน้านี้) ส่วนสิ่งที่บัญชี *ทำได้* ใน Platform admin SPA ไม่ได้เก็บที่นี่ — นั่นคือ role assignment ของโมดูล [RBAC](/th/platform/rbac) &nbsp;·&nbsp; **กลุ่มผู้ใช้:** ผู้ถือ permission key `user.read`/`user.create`/`user.update`/`user.delete` — โดยทั่วไปคือวิศวกร support ของ Carmen และ admin ฝั่งลูกค้า &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_user` + `tb_user_profile` (ฟิลด์ในฟอร์ม 7 ตัว: `username`, `email`, `alias_name`, `firstname`, `middlename`, `lastname`, `is_active`; พร้อม soft-delete trio `deleted_at`/`deleted_by_name` และ timestamp บวก `avatar_url` แบบ presigned ตอนอ่าน), `tb_cluster_user` (M:N join กับ cluster — อ่านอย่างเดียวที่นี่), BU-user join (M:N join กับ BU พร้อม `role` ระดับ BU เป็น `admin`/`user` และ flag `is_default`) &nbsp;·&nbsp; **หน้าย่อย:** 3
+
+![ผู้ใช้ (Users) screen](/screenshots/platform/users/index.png)
 
 ## 1. ภาพรวม
 

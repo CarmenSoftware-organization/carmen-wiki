@@ -2,7 +2,7 @@
 title: Widget Workspace แดชบอร์ด (Widget Workspace Dashboard)
 description: หน้า /dashboard ที่ live — workspace 12 คอลัมน์แบบ drag-and-drop ส่วนตัว ที่ผู้ใช้แต่ละคนปักหมุด widget ที่ขับเคลื่อนด้วย dataset (KPI, gauge, pie, bar, line, area, table) และ card pipeline สถานะ จาก catalog ของ micro-data
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: dashboard, widget-workspace, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-06-04T00:00:00.000Z
 
 > **At a Glance**
 > **Route:** `/dashboard` &nbsp;·&nbsp; **สำหรับ:** ทุก role ของผู้ปฏิบัติงานหลังเข้าระบบ &nbsp;·&nbsp; **สถานะ:** **Live** — ขับเคลื่อนด้วย API จริง; เนื้อหา dataset ขึ้นอยู่กับ dataset registry ของ micro-data &nbsp;·&nbsp; **ขอบเขต:** ส่วนบุคคล — layout widget ที่ user แต่ละคนบันทึกไว้ ต่อ business unit &nbsp;·&nbsp; **License feature:** `dashboard.widget` (`constant/module-list.ts`; license catalog `app:dashboard-widgets`)
+
+![Widget Workspace แดชบอร์ด (Widget Workspace Dashboard) screen](/screenshots/dashboard/widget-workspace.png)
 
 ## สถานะการ implement (ตรวจสอบซ้ำ 2026-09-22)
 

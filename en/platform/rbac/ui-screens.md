@@ -2,7 +2,7 @@
 title: Platform RBAC — UI Screens
 description: RoleManagement/RoleEdit with the catalog-anchored RolesAccessSummary and the resource-row PermissionGrid, the read-only Permission Catalog, and (summary-level) the redesigned Super Admins roster and User Platform assignment screens.
 published: true
-date: '2026-09-22T17:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, rbac, ui
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z
@@ -12,6 +12,10 @@ dateCreated: 2026-06-10T12:00:00.000Z
 
 > **At a Glance**
 > **Screens:** `RoleManagement` (`/platform/roles`) · `RoleEdit` (`/platform/roles/new`, `/platform/roles/:id/edit`) · `PermissionCatalog` (`/platform/category-permissions`) · `SuperAdminManagement` (`/platform/super-admins`) · `UserPlatformManagement` (`/platform/user-platform`) · `UserPlatformEdit` (`/platform/user-platform/:userId`) &nbsp;·&nbsp; **Standard pattern:** Roles and User Platform list use the server-side `DataTable`; Super Admins (rewritten again 2026-09-02) is a card-based roster, not a table; Permission Catalog is a read-only card grid &nbsp;·&nbsp; **Key component:** `PermissionGrid` — every catalog action shown as a per-resource row, toggle buttons in edit mode, withheld actions dimmed rather than hidden (replaced the accordion `PermissionPicker` on 2026-08-20) &nbsp;·&nbsp; **In-page gates:** Roles list/edit gate Add/Edit/Delete and the Edit toggle with `platform_role.*` keys; `<Can permission="user_platform.manage">` on the User Platform detail page &nbsp;·&nbsp; **Summary strips:** `RolesAccessSummary` on the Roles list (now catalog-anchored, since 2026-09-02), `PlatformAccessSummary` on the User Platform list
+
+![Platform RBAC — UI Screens screen](/screenshots/platform/rbac/ui-screens.png)
+
+![Platform RBAC — UI Screens form screen](/screenshots/platform/rbac/ui-screens-form.png)
 
 **Scope note:** this page verifies §2 (Roles) and §3 (Permission Catalog) against current source in full. §4 (Super Admins) and §5 (User Platform) are updated at a summary level only — see the scope note on the [module landing page](/en/platform/rbac).
 

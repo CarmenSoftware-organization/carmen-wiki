@@ -2,7 +2,7 @@
 title: Department User
 description: The user↔department membership pivot — which users belong to which departments, and the Head of Department (HOD) driving PR/SR approval routing. Since 2026-09-04 a user's department is also editable from the user screen.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: access-control, department-user, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-06-04T00:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Sysadmin / Product Admin &nbsp;·&nbsp; **Table:** `tb_department_user` (tenant) &nbsp;·&nbsp; **Edited from:** the Department screen (`/config/department/:id`, members + HOD) **and**, since 2026-09-04, the User screen (`PATCH /api/config/:bu_code/users/:user_id { department_id }`) &nbsp;·&nbsp; **Endpoint:** `api/config/:bu_code/department-users` (`departmentUser.*` App IDs; licence `configuration.department`) &nbsp;·&nbsp; **Used by:** PR and SR approval routing (HOD stage, department routing rules), workflow assignee-impact reporting &nbsp;·&nbsp; User↔department membership pivot — `is_hod = true` marks the Head of Department whose approval is required on departmental requisitions.
+
+![Department User screen](/screenshots/access-control/department-user.png)
 
 ## Implementation status (re-verified 2026-09-22)
 

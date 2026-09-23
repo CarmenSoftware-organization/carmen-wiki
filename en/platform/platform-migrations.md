@@ -2,7 +2,7 @@
 title: Platform Migrations
 description: A super-admin (or CI deploy-token) console for Prisma migrations against the shared platform database, plus a catalog of 8 seed operations and 6 drift checks that keep platform-wide reference and permission data in sync.
 published: true
-date: '2026-09-22T17:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, platform-migrations
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -14,6 +14,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **Component:** `PlatformMigrationManagement` &nbsp;·&nbsp; **Route:** `/platform/migrations`, guarded by `<PrivateRoute requireSuperAdmin feature="platform_migrations">` (`../carmen-platform/src/App.tsx:434-441`) &nbsp;·&nbsp; **Nav:** `superAdminOnly: true` — **that flag, not the absence of a permission key, is what gates this menu row** — `feature: 'platform_migrations'`, `groupKey: 'navGroup.database'`, no `permission` field at all (`platformNav.ts:53`) &nbsp;·&nbsp; **Backend authorities:** a matching `x-deploy-token` header (checked **first**) or a super-admin session (the fallback) — both sit behind one enable switch, `platform_migration.api_enabled` (§3.1, §4) &nbsp;·&nbsp; **Catalog:** 2 migration actions (Deploy, Resolve) + 14 seed/check operations, 13 of them visible in this console &nbsp;·&nbsp; **e2e suite:** **None** — `../carmen-platform-e2e/tests/` has no `platform-migrations` directory &nbsp;·&nbsp; **Sub-pages:** 0
+
+![Platform Migrations screen](/screenshots/platform/platform-migrations/index.png)
 
 ## 1. Overview
 

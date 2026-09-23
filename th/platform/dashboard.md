@@ -2,7 +2,7 @@
 title: Dashboard
 description: หน้า home hub สำหรับผู้ใช้ที่ signed-in (/dashboard) — activity stream รวมทั่ว 6 โดเมน บวกแถบสรุปจำนวน active/total ต่อโดเมนแบบ sticky ไม่มี requiredPermission ของตัวเอง ทุกโดเมนจะหลุดจากทั้งสองส่วนแบบเงียบ ๆ ถ้า session อ่านไม่ได้
 published: true
-date: 2026-09-06T12:00:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: platform/dashboard, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-07-29T09:46:00.000Z
 
 > **At a Glance**
 > **หน้าจอ:** `Dashboard` (`/dashboard`) &nbsp;·&nbsp; **การเข้าถึง:** authenticated เท่านั้น — route ไม่มี `requiredPermission` **และไม่มีคีย์ `feature`** (แถว nav เดียวใน `platformNav.ts` ที่ไม่มีทั้งสอง) เหมือนกับ [Profile](/th/platform/profile) จึงเห็นได้/เข้าถึงได้เสมอไม่ว่าจะมีสิทธิ์หรือสถานะ feature-flag อย่างไร &nbsp;·&nbsp; **Sidebar:** รายการ nav บนสุด ไม่ถูก gate อยู่เหนือทุกกลุ่ม `groupKey` (Organization, License Management, Content, Analytics, Scheduling, Platform, Database — ดู §4) &nbsp;·&nbsp; **เนื้อหา:** activity stream รวมทั่ว 6 โดเมน + แถบสรุป active/total แบบ sticky &nbsp;·&nbsp; **เข้าถึงจาก:** redirect หลัง login (จาก [Landing](/th/platform/landing) หรือ Login), สัญลักษณ์แบรนด์ใน sidebar, หรือรายการ nav "Dashboard" เอง — แม้ว่า cluster admin แบบ membership-only ที่มาถึงหน้านี้จะถูกส่งต่อไปที่ `/cluster-admin` ทันที (§5)
+
+![Dashboard screen](/screenshots/platform/dashboard/index.png)
 
 ## 1. ภาพรวม
 

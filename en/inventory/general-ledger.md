@@ -2,7 +2,7 @@
 title: General Ledger
 description: GL subsystem (backend + Bruno + cron only, no UI) documented only where it touches inventory. Today nothing in inventory posts to the ledger; GL master, budgets, JV templates and reports are a deliberate gap.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: general-ledger, inventory, carmen-software
 editor: markdown
 dateCreated: '2026-09-22T18:00:00.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-22T18:00:00.000Z'
 
 > **At a Glance**
 > **Module purpose:** A journal-voucher ledger (`tb_gl_jv_header` / `tb_gl_jv_detail` → `tb_gl_balance`) that arrived in the backend 2026-09-09..15 with **no frontend** — the React `routes/accounting` tree is a hard-coded mock &nbsp;·&nbsp; **Wiki scope:** documented **only where it touches inventory**; GL master data, budgets, JV templates and GL reports are an intentional gap (§ 1.1) &nbsp;·&nbsp; **Inventory→GL today:** **none** — no GRN, stock-in/out, credit note, store requisition, physical count, cost layer or inventory period-end writes a voucher (see [gl-posting](/en/inventory/general-ledger/gl-posting) § 2) &nbsp;·&nbsp; **Key entities/tables:** `tb_gl_jv_header`, `tb_gl_jv_detail`, `tb_gl_balance`, `tb_gl_period` (a separate calendar from `tb_inventory_period`) &nbsp;·&nbsp; **Sub-pages:** 1
+
+![General Ledger screen](/screenshots/general-ledger/index.png)
 
 ## 1. Overview
 

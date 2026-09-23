@@ -2,7 +2,7 @@
 title: บรอดแคสต์ (Broadcasts)
 description: ภาพรวมโมดูล Broadcasts — สามหน้าจอ (List, Compose, Edit) ครอบคลุม push notification พร้อมวันหมดอายุที่บังคับ และวงจรชีวิตฝั่งผู้ส่งแบบเต็ม
 published: true
-date: 2026-09-06T23:45:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: platform/broadcasts, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T16:00:00.000Z
@@ -16,6 +16,8 @@ dateCreated: 2026-06-10T16:00:00.000Z
 
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** แสดงรายการ, เขียน, กำหนดเวลา, แก้ไข (ระหว่างที่ยังกำหนดเวลาไว้), ต่ออายุให้หมด และลบแบบ soft สำหรับ push notification — target mode สามแบบ (`system_all` / `system_users` / `bu`), ป้าย severity ที่เป็นแค่ข้อมูลฝั่งผู้ส่ง และวันหมดอายุที่บังคับ (`end_at`) &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับ Platform admin SPA, โมดูล notification ของ backend-gateway และ micro-notification &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_broadcast_notification` (enum scope/doc_type/event, `doc_version` เป็น optimistic lock จริงแล้ว) + `tb_user_broadcast_action` (read state แบบ lazy); **การส่งแบบระบุผู้รับ (`system_users`) fork ไปที่ `tb_notification` แทน และไม่ปรากฏบน List หรือ Edit เลย** &nbsp;·&nbsp; **Endpoint:** `POST /api/notifications/broadcasts/system` และ `/bu` (ส่ง), `GET .../broadcasts` (list ฝั่งแอดมิน), `GET/PATCH/DELETE .../broadcasts/:id` — ทั้งหมดอยู่ใต้ `/api` **ไม่ใช่** `/api-system` &nbsp;·&nbsp; **Permission key:** `broadcast.read` (nav, list, ดูหน้า Edit) · `broadcast.send` (route Compose + ปุ่ม Send) · `broadcast.update` (action Edit + PATCH) · `broadcast.delete` (action Delete + DELETE) — nav `feature: 'broadcasts'`, ไม่มี `superAdminOnly` &nbsp;·&nbsp; **หน้าย่อย:** 3
+
+![บรอดแคสต์ (Broadcasts) screen](/screenshots/platform/broadcasts/index.png)
 
 ## 1. ภาพรวม
 

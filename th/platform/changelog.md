@@ -2,7 +2,7 @@
 title: บันทึกการเปลี่ยนแปลง (Changelog)
 description: บันทึกการเปลี่ยนแปลงของแพลตฟอร์มแบบมีเวอร์ชัน — ดึงข้อมูลจาก JSON, เปิดเป็นหน้า public /changelog (ตอนนี้ค้นหาได้แล้ว) เข้าถึงผ่าน version badge ในแถบด้านข้างและหน้า landing page
 published: true
-date: 2026-09-06T21:00:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: platform, changelog, versioning, carmen-software
 editor: markdown
 dateCreated: 2026-06-09T00:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-06-09T00:00:00.000Z
 
 > **สรุปภาพรวม**
 > **แหล่งข้อมูลหลัก:** `src/data/changelog.json` &nbsp;·&nbsp; **หน้าสาธารณะ:** `/changelog` (ไม่ต้องยืนยันตัวตน) ตอนนี้มีช่องค้นหาผ่านเวอร์ชัน/หมวดหมู่/รายการ &nbsp;·&nbsp; **จุดเข้าถึง:** `VersionBadge` ในส่วนท้ายของแถบด้านข้าง + landing page &nbsp;·&nbsp; **ไฟล์ที่สร้างอัตโนมัติ:** `CHANGELOG.md` (รูปแบบ Keep a Changelog) &nbsp;·&nbsp; **การปล่อยเวอร์ชัน:** `bun run build:bump [patch|minor|major]` — ตอนนี้เป็นสคริปต์ release เต็มรูปแบบ (`scripts/release.mjs`, 2026-08-05) มี guard ของ branch/working-tree/upstream/tag ประตู typecheck+lint+test และการ commit + tag แบบ annotated ใน git ไม่ใช่แค่ bump แล้ว build เฉย ๆ อีกต่อไป (§5)
+
+![บันทึกการเปลี่ยนแปลง (Changelog) screen](/screenshots/platform/changelog/index.png)
 
 ## 1. คืออะไร และใครใช้
 

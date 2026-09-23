@@ -2,7 +2,7 @@
 title: News — หน้าจอ UI (UI Screens)
 description: การ์ด masthead NewsroomSummary + list NewsManagement (thumbnail, Target, Tags, filter สถานะ/tag, ส่งออก CSV, bulk publish/archive/delete) และฟอร์ม NewsEdit แบบ masthead — MarkdownEditor, ImageUpload, Tags, Publish rail — พร้อมการ validate และคีย์ลัด
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, news, ui
 editor: markdown
 dateCreated: 2026-06-10T15:45:00.000Z
@@ -12,6 +12,10 @@ dateCreated: 2026-06-10T15:45:00.000Z
 
 > **At a Glance**
 > **หน้าจอ:** `NewsManagement` (`/news`) · `NewsEdit` (`/news/new`, `/news/:id/edit`) &nbsp;·&nbsp; **ส่วนเสริมของ list:** การ์ด pipeline + lead-story ของ `NewsroomSummary` (endpoint เฉพาะ `GET /api/news/summary` ตั้งแต่ 2026-08-24), การเลือก row แบบ checkbox, bulk Publish/Archive/Delete, **View History** ของ row &nbsp;·&nbsp; **Layout ของหน้า edit:** `NewsMasthead` (cover/สถานะ/reach/title) + การ์ด Article (เนื้อหา, URL, tags) + Publish rail แบบ sticky + การ์ด History (`AuditMeta` แบบเวลาสัมพัทธ์ ตั้งแต่ 2026-08-22) &nbsp;·&nbsp; **เพิ่มใหม่:** **View History** ในแถว header ของหน้า edit (ไม่ได้อยู่ใน masthead) &nbsp;·&nbsp; **UI เอกลักษณ์:** แท็บ Write/Preview ของ MarkdownEditor · drag-and-drop ของ ImageUpload (ตอนนี้อยู่ใน masthead) · ChipInput ของ tags พร้อม autocomplete · multi-select ของ BU หลัง checkbox "global" &nbsp;·&nbsp; **สถานะ UI ที่จดจำ:** key `localStorage` 6 ตัวบนหน้า list &nbsp;·&nbsp; **คีย์ลัด:** Ctrl/Cmd+S save · Escape cancel · Ctrl/Cmd+K โฟกัสช่องค้นหา
+
+![News — หน้าจอ UI (UI Screens) screen](/screenshots/platform/news/ui-screens.png)
+
+![News — หน้าจอ UI (UI Screens) form screen](/screenshots/platform/news/ui-screens-form.png)
 
 ## 1. ภาพรวม
 

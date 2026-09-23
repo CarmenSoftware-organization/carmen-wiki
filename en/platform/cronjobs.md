@@ -2,7 +2,7 @@
 title: Cronjobs
 description: The platform's scheduling console over the shared "CRONJOBS"."Cronjob" table — six job types, who runs them (../micro-cronjobs), and exactly where a failed run becomes visible.
 published: true
-date: '2026-09-06T23:10:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, cronjobs
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **Module purpose:** Platform-wide admin console over one shared table, `"CRONJOBS"."Cronjob"`, that this module and other backend services both write scheduled jobs into &nbsp;·&nbsp; **Screens:** `CronJobManagement` (list, `/cronjobs`) and `CronJobEdit`, used for both create (`/cronjobs/new`) and edit (`/cronjobs/:id/edit`) &nbsp;·&nbsp; **Backing service:** [`../micro-cronjobs`](#6-reference-sources) (Go) — a standalone scheduler/worker process with **no authentication of its own** &nbsp;·&nbsp; **Nav entry:** `permission: 'cronjob.read'`, its own nav group `navGroup.scheduling` — not folded into `navGroup.platform` &nbsp;·&nbsp; **Feature flag:** `cronjobs` &nbsp;·&nbsp; **Two-permission model:** `cronjob.read` (the **only** permission the frontend route guard checks on all three routes, including `/new` and `/:id/edit`) and `cronjob.manage` (every mutating action — start/stop/run-now/edit/delete/create — gated by `<Can>` **and** re-checked in the submit handler) &nbsp;·&nbsp; **Role assignment:** only the **Platform Admin** role holds any `cronjob.*` permission &nbsp;·&nbsp; **Job types:** 6 — `report`, `notification`, `cleanup`, `dashboard_refresh`, `activity_rollup`, `activity_retention` &nbsp;·&nbsp; **e2e suite:** **none** — `../carmen-platform-e2e/tests/` has no `cronjobs` directory &nbsp;·&nbsp; **Sub-pages:** 2
+
+![Cronjobs screen](/screenshots/platform/cronjobs/index.png)
 
 ## 1. Overview
 

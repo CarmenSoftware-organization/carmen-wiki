@@ -2,7 +2,7 @@
 title: การย้ายระบบแพลตฟอร์ม (Platform Migrations)
 description: คอนโซลสำหรับ super-admin (หรือ CI ผ่าน deploy-token) รัน Prisma migration ต่อฐานข้อมูลแพลตฟอร์มที่ใช้ร่วมกัน พร้อมทะเบียน seed 8 ตัวและ drift check 6 ตัวที่รักษาข้อมูลอ้างอิงและ permission ระดับแพลตฟอร์มให้ตรงกัน
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, platform-migrations
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -14,6 +14,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **Component:** `PlatformMigrationManagement` &nbsp;·&nbsp; **Route:** `/platform/migrations` กั้นด้วย `<PrivateRoute requireSuperAdmin feature="platform_migrations">` (`../carmen-platform/src/App.tsx:434-441`) &nbsp;·&nbsp; **Nav:** `superAdminOnly: true` — **ธงตัวนี้ ไม่ใช่การไม่มี permission key ต่างหากที่กั้นเมนูนี้** — `feature: 'platform_migrations'`, `groupKey: 'navGroup.database'`, ไม่มีฟิลด์ `permission` เลย (`platformNav.ts:53`) &nbsp;·&nbsp; **สองผู้มีสิทธิ์ฝั่ง backend:** header `x-deploy-token` ที่ตรงกัน (ตรวจ**ก่อน**) หรือ session ของ super-admin (ทางเลือกสำรอง) — ทั้งสองอยู่หลังสวิตช์เปิด/ปิดเดียวกัน `platform_migration.api_enabled` (§3.1, §4) &nbsp;·&nbsp; **ทะเบียน:** 2 การกระทำระดับ migration (Deploy, Resolve) + 14 operation ของ seed/check เห็นในคอนโซลนี้ 13 ตัว &nbsp;·&nbsp; **e2e suite:** **ไม่มี** — `../carmen-platform-e2e/tests/` ไม่มีโฟลเดอร์ `platform-migrations` &nbsp;·&nbsp; **หน้าย่อย:** 0
+
+![การย้ายระบบแพลตฟอร์ม (Platform Migrations) screen](/screenshots/platform/platform-migrations/index.png)
 
 ## 1. ภาพรวม
 

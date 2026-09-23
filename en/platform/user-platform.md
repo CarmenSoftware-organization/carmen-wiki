@@ -2,7 +2,7 @@
 title: User Platform
 description: Assigns RBAC platform roles — platform-wide or per-cluster — to existing user accounts, the privilege-registry screen split out of RBAC and Users.
 published: true
-date: '2026-09-06T23:45:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, user-platform
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **Components:** `UserPlatformManagement` (list) &nbsp;·&nbsp; `UserPlatformEdit` (per-user detail) &nbsp;·&nbsp; **Routes:** `/platform/user-platform` &nbsp;·&nbsp; `/platform/user-platform/:userId` — **note the param is `:userId`, and there is no `/edit` suffix**, unlike almost every other edit route in this book &nbsp;·&nbsp; **Nav:** `permission: 'user_platform.read'`, `feature: 'user_platform'`, `groupKey: 'navGroup.platform'` (`platformNav.ts:43`) — **not** `superAdminOnly` &nbsp;·&nbsp; **Permission keys:** `user_platform.read` (both routes) + `user_platform.manage` (every mutating affordance on both screens) &nbsp;·&nbsp; **A second, undeclared dependency:** most of what the detail screen shows also requires `user.read`, a [Users](/en/platform/users) module key this module's own route guard never checks — see §4 and [Permissions](/en/platform/user-platform/permissions) §3 for the exact trace &nbsp;·&nbsp; **e2e suite:** `user-platform` (2 specs) — has coverage, unlike most modules in this batch, but both specs target UI this screen no longer has; see [UI Screens](/en/platform/user-platform/ui-screens) §4 &nbsp;·&nbsp; **Sub-pages:** 2
+
+![User Platform screen](/screenshots/platform/user-platform/index.png)
 
 ## 1. Overview
 

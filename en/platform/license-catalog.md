@@ -2,7 +2,7 @@
 title: License Catalog
 description: One screen, two tabs, two nav rows — the sellable feature catalog (Features) and the curated bundles sold from it (Bundles) — each with its own permission pair and feature flag.
 published: true
-date: '2026-09-22T17:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, license-catalog
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -14,6 +14,8 @@ The **License Catalog** module is one screen, `LicenseCatalog`, rendered behind 
 
 > **At a Glance**
 > **Component:** `LicenseCatalog` (one component, `tab: 'bundles' | 'features'` prop) &nbsp;·&nbsp; **Routes:** `/license-features` → Features tab, `/license-feature-groups` → Bundles tab, `/license-feature-groups/new` and `/license-feature-groups/:id/edit` → `LicenseFeatureGroupEdit` &nbsp;·&nbsp; **Permission keys — two independent pairs:** Features tab `license_feature.read` (nav/read) + `license_feature.manage` (edit `state`); Bundles tab `license_feature_group.read` (nav/read) + `license_feature_group.manage` (create/edit/delete/set-features) &nbsp;·&nbsp; **Feature-flag keys:** `license_features` and `license_feature_groups`, one per tab &nbsp;·&nbsp; **Nav group:** `navGroup.licenseManagement` — two rows, "License Feature Groups" and "License Features" (sidebar labels), which land on tabs the shell itself calls "Bundles" and "Features" &nbsp;·&nbsp; **Catalog size (verified against generator data, not an in-source comment):** 107 rows across 12 root modules — 100 sellable (`active`), 7 reserved (`inactive`, `accounting.*` keys awaiting their backend endpoints); the 12th module, `interface`, arrived 2026-09-08 &nbsp;·&nbsp; **Group kind:** since 2026-09-10 every bundle has a `kind` (`standard` | `interface`), set at create only — `interface` bundles are sold on interface licences, never on subscriptions &nbsp;·&nbsp; **Cross-module gate to know about:** the Bundles tab's Features-composition divisor and the group-editor's whole feature picker both load through `GET /api-system/platform/license-features` (no `/all`), which is gated by `subscription.read` — a **different module's** permission key entirely (§4) &nbsp;·&nbsp; **e2e suite:** **None** — every claim on these pages is sourced from `../carmen-platform` and `../carmen-turborepo-backend-v2` implementation directly &nbsp;·&nbsp; **Sub-pages:** 2
+
+![License Catalog screen](/screenshots/platform/license-catalog/index.png)
 
 ## 1. Overview
 

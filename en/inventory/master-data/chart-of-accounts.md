@@ -2,7 +2,7 @@
 title: Chart of Accounts
 description: GL account codes (nature, type, category, use-in, cost-center flag) with file and Carmen GL import — renamed from Account Code on 2026-08-27; feeds the GL book and cost-center allow-lists.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: master-data, chart-of-accounts, general-ledger, configuration, carmen-software
 editor: markdown
 dateCreated: '2026-09-22T18:00:00.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-22T18:00:00.000Z'
 
 > **At a Glance**
 > **Owner:** Sysadmin / Finance &nbsp;·&nbsp; **Table:** `tb_chart_of_accounts` + `enum_chart_of_accounts_{nature,type,category,use_in}` &nbsp;·&nbsp; **Used by:** [general-ledger](/en/inventory/general-ledger) (JV lines, account groups), [cost-center](/en/inventory/master-data/cost-center) allow-lists &nbsp;·&nbsp; **Permission:** `configuration.chart_of_accounts.*` &nbsp;·&nbsp; **Licence key:** `configuration.chart_of_accounts` &nbsp;·&nbsp; The BU's account-code list, maintainable by dialog, file upload, or pull from Carmen GL.
+
+![Chart of Accounts screen](/screenshots/master-data/chart-of-accounts.png)
 
 ## 1. What & Who
 

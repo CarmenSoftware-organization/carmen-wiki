@@ -2,7 +2,7 @@
 title: งานตามกำหนดเวลา (Cronjobs)
 description: คอนโซลจัดตารางเวลาของแพลตฟอร์มบนตารางที่ใช้ร่วมกัน "CRONJOBS"."Cronjob" — งานหกประเภท ใครเป็นคนรัน (../micro-cronjobs) และจุดที่จะเห็นว่า run ไหนล้มเหลว
 published: true
-date: '2026-09-06T22:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, cronjobs
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **จุดประสงค์โมดูล:** คอนโซลดูแลระดับแพลตฟอร์มบนตารางเดียวที่ใช้ร่วมกัน `"CRONJOBS"."Cronjob"` ซึ่งทั้งโมดูลนี้และ service อื่นเขียนงานตามกำหนดเวลาลงไปด้วยกัน &nbsp;·&nbsp; **หน้าจอ:** `CronJobManagement` (รายการ, `/cronjobs`) และ `CronJobEdit` ใช้ทั้งสร้าง (`/cronjobs/new`) และแก้ไข (`/cronjobs/:id/edit`) &nbsp;·&nbsp; **Service เบื้องหลัง:** [`../micro-cronjobs`](#6-แหล่งอ้างอิง) (Go) — โปรเซส scheduler/worker แยกต่างหาก **ไม่มีการยืนยันตัวตนของตัวเอง** &nbsp;·&nbsp; **Sidebar:** `permission: 'cronjob.read'` อยู่กลุ่มของตัวเอง `navGroup.scheduling` — ไม่ถูกรวมเข้ากับ `navGroup.platform` &nbsp;·&nbsp; **Feature flag:** `cronjobs` &nbsp;·&nbsp; **โมเดลสอง permission:** `cronjob.read` (permission **เดียว** ที่ frontend route guard เช็คบนทั้งสามเส้นทาง รวมถึง `/new` และ `/:id/edit`) กับ `cronjob.manage` (ทุกการกระทำที่เขียนข้อมูล — start/stop/run-now/edit/delete/create — บังคับด้วย `<Can>` **และ** เช็คซ้ำใน submit handler) &nbsp;·&nbsp; **การกำหนด role:** มีเฉพาะ role **Platform Admin** เท่านั้นที่ถือ permission `cronjob.*` ใด ๆ &nbsp;·&nbsp; **ประเภทงาน:** 6 ประเภท — `report`, `notification`, `cleanup`, `dashboard_refresh`, `activity_rollup`, `activity_retention` &nbsp;·&nbsp; **e2e suite:** **ไม่มี** — `../carmen-platform-e2e/tests/` ไม่มีโฟลเดอร์ `cronjobs` &nbsp;·&nbsp; **หน้าย่อย:** 2
+
+![งานตามกำหนดเวลา (Cronjobs) screen](/screenshots/platform/cronjobs/index.png)
 
 ## 1. ภาพรวม
 

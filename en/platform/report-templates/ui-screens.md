@@ -2,7 +2,7 @@
 title: Report Template — UI Screens
 description: The report templates list (status/source/template-type filters, CSV export) and the two-pane edit form — identity, source, BU scope, and a tabbed XML editor with preview.
 published: true
-date: 2026-09-06T23:45:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, report-templates, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -12,6 +12,10 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 > **At a Glance**
 > **Screens:** `ReportTemplateManagement` (list, `/report-templates`) &nbsp;·&nbsp; `ReportTemplateEdit` create (`/report-templates/new`) &nbsp;·&nbsp; `ReportTemplateEdit` view/edit (`/report-templates/:id/edit`) &nbsp;·&nbsp; **Edit layout:** 2-pane — left: identity + BU scope + data source cards (sticky); right: 3-tab CodeMirror — Dialog XML · Content XML · Preview &nbsp;·&nbsp; **Dialogs:** Browse in BU probe · Soft Delete confirm &nbsp;·&nbsp; **Access:** routes gated by `report_template.read` / `.create` / `.update`; in-page `<Can>` gates on Add Template, row Edit, row Delete, row/hero View History (`activity_log.read`, new), and the Edit toggle (see [Permissions](/en/platform/report-templates/permissions)) &nbsp;·&nbsp; **Persisted UI state:** 7 `localStorage` keys on the list page + 1 on the edit page &nbsp;·&nbsp; **Since 2026-07-23:** `template_type` (List/Form select, required) drives conditional fields — `is_standard` for list templates, `is_default` + a fixed `report_group` dropdown for form templates; not-found gating and `doc_version` optimistic locking added to the edit page
+
+![Report Template — UI Screens screen](/screenshots/platform/report-templates/ui-screens.png)
+
+![Report Template — UI Screens form screen](/screenshots/platform/report-templates/ui-screens-form.png)
 
 ## 1. Overview
 

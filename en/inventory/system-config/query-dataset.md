@@ -2,7 +2,7 @@
 title: Query Dataset
 description: SQL Workbench — backend admin-SQL service whose UI is the Platform SPA. All five routes gated by sql_workbench.read/manage platform permissions; execute runs any SQL. system_admin.query_dataset key removed 2026-09-21.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: system-config, query, dataset, sql, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Gated by two platform permissions — `sql_workbench.read` (browse) and `sql_workbench.manage` (run / save / drop), on **all five routes** since 2026-08-20 &nbsp;·&nbsp; **Storage:** PostgreSQL catalog (`pg_class`, `pg_proc`) in the tenant schema — **no `tb_query_dataset`** &nbsp;·&nbsp; **No screen in *this* product** — the console is the Platform SPA's [SQL Workbench](/en/platform/sql-workbench); no matching route/component/hook exists in `carmen-inventory-frontend-react` &nbsp;·&nbsp; **`execute` is NOT read-only** — it runs any SQL, including DDL and multiple statements.
+
+![Query Dataset screen](/screenshots/system-config/query-dataset.png)
 
 ## Implementation status (verified 2026-07-16; permissions and UI re-verified 2026-09-06 and 2026-09-22)
 

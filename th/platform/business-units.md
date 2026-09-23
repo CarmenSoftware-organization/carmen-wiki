@@ -2,7 +2,7 @@
 title: หน่วยธุรกิจ (Business Units)
 description: เอนทิตีต่อ property/ต่อโรงแรม แก้ไขบนฟอร์มหกแท็บ (General/Location/Formats/Technical/Users/Licenses) ครอบคลุมข้อมูลระบุตัวตน รูปแบบ การผูก database pool และรายชื่อผู้ใช้/license ที่ผูกกับ BU
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: platform/business-units, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** หน้าจอ authoring ที่ใช้สร้างและตั้งค่าเอนทิตีปฏิบัติการที่ Carmen เรียกว่า **business unit** (BU) — หนึ่งแถวต่อหนึ่งโรงแรม/property/นิติบุคคล พร้อมฟิลด์ที่ขับเคลื่อนทั้งบริบทของ tenant ใน inventory app และการมอบหมาย role/license ของผู้ใช้ในแพลตฟอร์ม &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับ Platform admin SPA; การเข้าถึงของ operator ถูก gate ด้วย **permission key `cluster.*` ที่ reuse มา** ([rbac](/th/platform/rbac)) — ไม่มี key `business_unit.*` &nbsp;·&nbsp; **รายการใน Nav:** `permission: 'cluster.read'` — **ใช้ร่วมกับอีกสองรายการเมนู** ([clusters](/th/platform/clusters) และ [Tenant Migrations](/th/platform/tenant-migrations)) แทนที่จะมี key เป็นของตัวเอง ดังนั้นชื่อ permission จึงไม่บอกใบ้เลยว่ามันเปิดหน้าจอนี้ได้ด้วย &nbsp;·&nbsp; **Feature flag:** `business_units` ตรวจสอบบนทั้งสาม route หลัง permission gate &nbsp;·&nbsp; **`superAdminOnly`:** ไม่ &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `business_unit` (ฟิลด์ระบุตัวตน `code` — ตอนนี้ระบบสร้างให้เอง — `name`, `alias_name`, `is_hq`, `is_active`; บล็อกข้อมูลติดต่อสำหรับ hotel/company; ฟิลด์ภาษี; ฟิลด์รูปแบบวันที่/เวลา/ตัวเลข; `calculation_method`, `default_currency_id`; `database_pool_id`/`db_schema`; `config[]` แถว key/value; branding `logo_file_token`/`avatar_file_token`) บวกกับ `tb_business_unit_license` (ledger ที่นั่งต่อ BU ที่แทนที่ `max_license_users` เดิม) และตาราง join BU-to-user ที่ถือ `role` ระดับ BU เป็น `admin` หรือ `user` &nbsp;·&nbsp; **หน้าย่อย:** 3
+
+![หน่วยธุรกิจ (Business Units) screen](/screenshots/platform/business-units/index.png)
 
 ## 1. ภาพรวม
 

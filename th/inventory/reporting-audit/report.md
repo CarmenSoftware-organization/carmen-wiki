@@ -2,7 +2,7 @@
 title: รายงาน (Report)
 description: pipeline รายงาน — แคตตาล็อก report-template ของ platform (รายงานแบบรายการ + print form พร้อม default ต่อ group), endpoint print-viewer ต่อเอกสาร, export PDF สำหรับอีเมล และตาราง job/history ที่มีอยู่จริงแต่ยังไม่มีข้อมูล
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: reporting-audit, report, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Platform Admin (template) + BU admin (เลือก print form ใน Default Setting) &nbsp;·&nbsp; **ตาราง:** `tb_report_template` (platform — รายงานแบบรายการ **และ** print form, `template_type` + `is_default`), `tb_report_job` (tenant — มีอยู่จริงแต่ไม่มีข้อมูล) &nbsp;·&nbsp; **หายไปแล้ว:** `tb_print_template_mapping` (ลบเมื่อ 2026-07-23), `tb_report_schedule` (ตายแล้ว) &nbsp;·&nbsp; **ใช้โดย:** รายการรายงาน ("Run"), ทุกปุ่ม "Print" (endpoint `print-viewer` ต่อเอกสาร 11 ตัว), อีเมล PO/RFP พร้อม PDF, การ fire ตามเวลา — ไม่มีเส้นทางใดเขียนแถว job เลย
+
+![รายงาน (Report) screen](/screenshots/reporting-audit/report.png)
 
 ## สถานะการทำงานจริง (ตรวจสอบซ้ำเมื่อ 2026-09-22)
 

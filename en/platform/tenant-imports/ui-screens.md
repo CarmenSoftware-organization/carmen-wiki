@@ -2,7 +2,7 @@
 title: Tenant Imports — UI Screens
 description: TenantImportWizard's four-screen sequence — pick a business unit, upload Preconfig.xlsx, review the file check, then step through the import screens.
 published: true
-date: '2026-09-06T23:45:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, tenant-imports, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **Screen state machine:** `pick-bu` → `upload` → `check` → `steps` (`type Screen`, `TenantImportWizard.tsx`) &nbsp;·&nbsp; **Shared chrome:** `Layout`, `PageHeader` (title "Tenant Data Import"), a header button that opens the shared `BuSwitcher` command palette, a dev-only `DevDebugSheet` &nbsp;·&nbsp; **No back button:** once `steps` is reached there is no control that returns to `check` while keeping the loaded file — the only way back to `upload` is through `BuSwitcher`, which discards all client-side wizard progress (§6) &nbsp;·&nbsp; **e2e suite:** none — every behavior below is read directly from `../carmen-platform` source
+
+![Tenant Imports — UI Screens screen](/screenshots/platform/tenant-imports/ui-screens.png)
 
 ## 1. Overview
 

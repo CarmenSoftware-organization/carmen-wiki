@@ -2,7 +2,7 @@
 title: Business Units
 description: Per-property/per-hotel entity edited on a six-tab form (General/Location/Formats/Technical/Users/Licenses) covering identity, formats, database-pool assignment, and BU-scoped user and license rosters.
 published: true
-date: '2026-09-22T17:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: platform/business-units, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 > **At a Glance**
 > **Module purpose:** Authoring surface where the operational entity that Carmen calls a **business unit** (BU) is created and configured — one row per hotel/property/legal-entity, with the fields that drive both the inventory app's tenant context and the platform's user-role and license assignments &nbsp;·&nbsp; **Audience:** Developers and QA working on the Platform admin SPA; operator access is gated by **reused `cluster.*` permission keys** ([rbac](/en/platform/rbac)) — there are no `business_unit.*` keys &nbsp;·&nbsp; **Nav entry:** `permission: 'cluster.read'` — **shared with two other menu entries** ([clusters](/en/platform/clusters) and [Tenant Migrations](/en/platform/tenant-migrations)) rather than a key of its own, so the permission name gives no hint that it also opens this screen &nbsp;·&nbsp; **Feature flag:** `business_units`, checked on all three routes after the permission gate &nbsp;·&nbsp; **`superAdminOnly`:** No &nbsp;·&nbsp; **Key entities/tables:** `business_unit` (identity fields `code` — now server-generated — `name`, `alias_name`, `is_hq`, `is_active`; contact blocks for hotel/company; tax fields; date/time/number format fields; `calculation_method`, `default_currency_id`; `database_pool_id`/`db_schema`; `config[]` key/value rows; branding `logo_file_token`/`avatar_file_token`) plus `tb_business_unit_license` (the per-BU seat ledger that replaced `max_license_users`) and the BU-to-user join carrying a per-BU `role` of `admin` or `user` &nbsp;·&nbsp; **Sub-pages:** 3
+
+![Business Units screen](/screenshots/platform/business-units/index.png)
 
 ## 1. Overview
 

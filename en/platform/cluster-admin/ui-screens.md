@@ -2,7 +2,7 @@
 title: Cluster Admin — UI Screens
 description: ClusterAdminEntry, ClusterProfile, BusinessUnitList/BusinessUnitForm, ClusterUsers and the read-only ClusterAdminLicenses, plus the shared Profile screen — every one scoped to a single :clusterId and contrasted with its platform-side twin.
 published: true
-date: '2026-09-22T17:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, cluster-admin, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **Screens:** `ClusterAdminEntry` (`/cluster-admin`) &nbsp;·&nbsp; `ClusterProfile` (`/cluster-admin/:clusterId/cluster`) &nbsp;·&nbsp; `BusinessUnitList`/`BusinessUnitForm` (`/cluster-admin/:clusterId/business-units[/:buId/edit]`) &nbsp;·&nbsp; `ClusterUsers` (`/cluster-admin/:clusterId/users`) &nbsp;·&nbsp; `ClusterAdminLicenses` (`/cluster-admin/:clusterId/licenses`, fully read-only) &nbsp;·&nbsp; shared `Profile` (`/cluster-admin/:clusterId/profile`) &nbsp;·&nbsp; **Gate on every per-cluster screen:** no RBAC permission key — gated instead by cluster membership via `isClusterAdminOf`, checked before the feature flag (see [Permissions](/en/platform/cluster-admin/permissions)) &nbsp;·&nbsp; **In-page writes are gated only by having reached the route** — `ClusterProfile` and `BusinessUnitForm` compute `canEdit` from reachability alone, not from any permission or role check inside the component &nbsp;·&nbsp; **No e2e suite** — every claim below is sourced from `../carmen-platform` implementation directly
+
+![Cluster Admin — UI Screens screen](/screenshots/platform/cluster-admin/ui-screens.png)
 
 ## 1. Overview
 

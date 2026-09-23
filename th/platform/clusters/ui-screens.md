@@ -2,13 +2,17 @@
 title: Cluster — UI Screens
 description: หน้าจอ ClusterManagement (list) และ ClusterEdit (create/view/edit) — เลย์เอาต์แผ่นป้าย+แท็บ, แท็บ Licensing, filter, dialog และ persisted state
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, clusters, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
 ---
 
 # Cluster — UI Screens
+
+![Cluster — UI Screens screen](/screenshots/platform/clusters/ui-screens.png)
+
+![Cluster — UI Screens form screen](/screenshots/platform/clusters/ui-screens-form.png)
 
 ## 1. At a Glance
 

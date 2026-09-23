@@ -2,7 +2,7 @@
 title: Cronjobs — UI Screens
 description: CronJobManagement's list, filters, and summary stats; CronJobEdit's basics/schedule/execution/type-config cards; and CronScheduleField's six-mode schedule builder.
 published: true
-date: '2026-09-06T23:10:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, cronjobs, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -11,6 +11,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # Cronjobs — UI Screens
 
 > **Screens:** `CronJobManagement` (list, `/cronjobs`) &nbsp;·&nbsp; `CronJobEdit` — one component for both create (`/cronjobs/new`) and edit (`/cronjobs/:id/edit`) &nbsp;·&nbsp; **No tabs, no wizard** — four stacked cards on the edit form &nbsp;·&nbsp; **Sub-component:** `CronScheduleField`, a six-mode cron builder, plus six per-job-type config field components (`jobConfig/`) &nbsp;·&nbsp; **Dialogs:** Delete-job confirm (ownership-aware message) &nbsp;·&nbsp; **Persisted UI state:** one `localStorage` key (`perpage_cronjob`) &nbsp;·&nbsp; **Concurrency:** `doc_version` optimistic lock, sent only when the GET that loaded the form returned one &nbsp;·&nbsp; **Screenshots:** deferred per plan — no screenshot assets exist for this module
+
+![Cronjobs — UI Screens screen](/screenshots/platform/cronjobs/ui-screens.png)
 
 ## 1. Overview
 

@@ -2,7 +2,7 @@
 title: การตั้งค่าแพลตฟอร์ม (Platform Config)
 description: หน้าจอเดียว เก้าการ์ด แปดคีย์ config — คำเชิญ การสมัคร ยืนยันอีเมลเส้นทางเดิม ตั้งรหัสผ่านใหม่ อีเมลแจ้งเตือนภายใน การบังคับใช้ license เกณฑ์เตือนใกล้หมดอายุ และสวิตช์ API migration ของแพลตฟอร์ม
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, platform-config
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -14,6 +14,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **Component:** `PlatformConfigManagement` &nbsp;·&nbsp; **Route:** `/platform/configs` &nbsp;·&nbsp; **Nav:** `permission: 'platform_config.read'`, `feature: 'platform_config'`, `groupKey: 'navGroup.platform'` (`platformNav.ts:38`) &nbsp;·&nbsp; **ด่านเขียนพื้นฐาน:** `platform_config.manage` ที่ backend บังคับกับทุกคีย์ทั้ง `PUT`/`PATCH` ไม่ว่าจะเรียกจากหน้าจอไหน &nbsp;·&nbsp; **สองคีย์ที่ต้องมีด่านที่สองจึงจะบันทึกได้:** `license` ต้องมี `license.manage` เพิ่ม (§4.3 — **ไม่ใช่** คีย์ของโมดูล `licenses`); `platform_migration` ต้องเป็น super-admin เท่านั้น ไม่รับ permission string ใด ๆ &nbsp;·&nbsp; **การ์ด:** 9 ใบ จาก 8 คีย์ (`invitation` มีสองการ์ด, §3.1) &nbsp;·&nbsp; **e2e suite:** **ไม่มี** — `../carmen-platform-e2e/tests/` ไม่มีโฟลเดอร์ `platform-config`/`configs` ทุกคำกล่าวอ้างด้านล่างมาจากการอ่าน implementation ของ `../carmen-platform` และ `../carmen-turborepo-backend-v2` โดยตรง &nbsp;·&nbsp; **หน้าย่อย:** 1
+
+![การตั้งค่าแพลตฟอร์ม (Platform Config) screen](/screenshots/platform/platform-config/index.png)
 
 ## 1. ภาพรวม
 

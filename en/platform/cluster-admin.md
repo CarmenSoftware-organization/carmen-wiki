@@ -2,7 +2,7 @@
 title: Cluster Admin
 description: The cluster-administration console — a second navigation and persona scoped to one cluster, gated by cluster membership rather than any RBAC permission key.
 published: true
-date: '2026-09-22T17:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, cluster-admin
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **What this is:** A **second console**, not another screen of the platform admin product — its own navigation, its own layout chrome, and its own persona, mounted entirely under `/cluster-admin/:clusterId/*` &nbsp;·&nbsp; **Audience:** Developers and QA working on the Platform admin SPA's customer-facing "cluster administrator" surface — a role a customer's own staff can hold without any platform RBAC grant &nbsp;·&nbsp; **Entry route:** `/cluster-admin` → `ClusterAdminEntry`, guarded by the authentication-only `AuthedRoute` &nbsp;·&nbsp; **Per-cluster routes:** `/cluster-admin/:clusterId/{cluster,business-units,business-units/:buId/edit,users,licenses,profile}`, all guarded by `ClusterAdminRoute` &nbsp;·&nbsp; **The gate:** **no RBAC permission key — gated instead by cluster membership via `isClusterAdminOf`**, checked before the feature flag, on every one of the five per-cluster routes &nbsp;·&nbsp; **Nav:** `clusterAdminNav.ts` applies **no permission filtering at all** — clearing the route guard is the whole check — and its four feature keys (`cluster_admin_cluster`, `cluster_admin_business_units`, `cluster_admin_licenses`, `cluster_admin_users`) are a **separate namespace** from the platform nav's keys, despite sharing menu labels &nbsp;·&nbsp; **Key entities/tables:** reads `tb_cluster`, `tb_business_unit`, `tb_cluster_user`, `tb_cluster_license`, `tb_business_unit_license`, and — since PR #291 (2026-09-09) — `tb_subscription` and `tb_business_unit_interface_license` — the same tables the platform-side [Clusters](/en/platform/clusters), [Business Units](/en/platform/business-units), [Users](/en/platform/users) and [Licenses](/en/platform/licenses) modules own; this module owns no schema of its own &nbsp;·&nbsp; **e2e suite:** **None** — `../carmen-platform-e2e/tests/` has no `cluster-admin` directory; every claim on these pages is sourced from `../carmen-platform` (and, for the backend mirror of the gate, `../carmen-turborepo-backend-v2`) implementation directly &nbsp;·&nbsp; **Sub-pages:** 2
+
+![Cluster Admin screen](/screenshots/platform/cluster-admin/index.png)
 
 ## 1. Overview
 

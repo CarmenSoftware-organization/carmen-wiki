@@ -2,7 +2,7 @@
 title: Company Profile & Default Setting
 description: สองหน้าจอ system-admin ที่แก้ไขกลุ่มฟิลด์ที่แยกกันของแถว tb_business_unit เดียวกัน — Company Profile (identity, address, format) และ Default Setting (config PR/SI/PO + print form) Permission system_admin.business_unit
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: system-config, business-unit, company-profile, default-setting, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T10:30:00.000Z
@@ -19,6 +19,8 @@ dateCreated: 2026-07-29T10:30:00.000Z
 - **แก้ permission key** ตามข้างต้น; sidebar entry ของทั้งสองหน้าจอ gate ด้วย `PERMISSIONS.system_admin.business_unit.view` พร้อม `licenseFeature: "system_admin"` (`module-list.ts:592-607`)
 - **403 ของ lookup ใน Default Setting ไม่บล็อกหน้าอีกต่อไป** (`ee8c75bf`, 2026-09-21): 403 จาก lookup print-form template render แบบ inline แทนที่จะเป็น modal ทับทั้งหน้าจอ
 - ทุกอย่างอื่นบนหน้านี้ (กลุ่มฟิลด์, registry `config[]`, diff-แล้ว-`PATCH` พร้อม `doc_version`) ตรวจซ้ำกับ `company-profile-config-registry.ts` และ `company-profile-component.tsx` ที่ HEAD — ไม่เปลี่ยน key ของ print-form คือ `print-form.<type>` (`lib/print-form-config.ts:26-28`)
+
+![Company Profile & Default Setting screen](/screenshots/system-config/company-profile.png)
 
 ## 1. คืออะไรและใครใช้
 

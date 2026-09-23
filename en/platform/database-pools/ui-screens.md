@@ -2,7 +2,7 @@
 title: Database Pools — UI Screens
 description: DatabasePoolManagement's single-DSN-per-row list with copy-to-clipboard, and DatabasePoolEdit's record-style read view and create/edit form — including the masked, never-revealed password field.
 published: true
-date: '2026-09-06T21:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, database-pools, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -11,6 +11,10 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # Database Pools — UI Screens
 
 > **Screens:** `DatabasePoolManagement` (list, `/platform/database-pools`) &nbsp;·&nbsp; `DatabasePoolEdit` — one component for both create (`/platform/database-pools/new`) and edit (`/platform/database-pools/:id/edit`) &nbsp;·&nbsp; **No tabs, no wizard** — a single card in both create and edit mode &nbsp;·&nbsp; **Dialogs:** Delete-pool confirm &nbsp;·&nbsp; **Persisted UI state:** 5 `localStorage` keys on the list (search/filters/page/perpage/sort); the edit page persists nothing &nbsp;·&nbsp; **Concurrency:** `doc_version` optimistic lock, required on every save &nbsp;·&nbsp; **Screenshots:** deferred per plan — no screenshot assets exist for this module
+
+![Database Pools — UI Screens screen](/screenshots/platform/database-pools/ui-screens.png)
+
+![Database Pools — UI Screens form screen](/screenshots/platform/database-pools/ui-screens-form.png)
 
 ## 1. Overview
 

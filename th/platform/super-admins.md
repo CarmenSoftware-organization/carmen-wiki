@@ -2,7 +2,7 @@
 title: ผู้ดูแลระบบสูงสุด (Super Admins)
 description: บัญชีดำ god-mode ของแพลตฟอร์ม — SuperAdminManagement (/platform/super-admins) กั้นด้วย superAdminOnly โดยไม่มี RBAC permission key เลย พร้อมตาราง tb_platform_super_admin สองคอลัมน์ที่แท้จริง
 published: true
-date: '2026-09-06T22:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, super-admins
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **หน้าจอ:** `SuperAdminManagement` (`/platform/super-admins`) — ทะเบียนแบบการ์ด (หนึ่ง `<ul>`/`<li>` ต่อคน) ไม่ใช่ `DataTable` &nbsp;·&nbsp; **ตัว gate:** **ไม่มี RBAC permission key เลย** — ทั้งรายการใน nav และ route เป็น `superAdminOnly: true` ตรวจกับ `isSuperAdmin` (มาจาก `effectivePermissions.is_super_admin`) ไม่เคยตรวจกับ permission string เลย &nbsp;·&nbsp; **Nav:** `feature: 'super_admins'`, `dividerBefore: true` — เส้นคั่นบอกจุดที่ sidebar เปลี่ยนจากงานตั้งค่าประจำวันไปเป็น "ใครอีกบ้างที่เข้าถึงงานตั้งค่าได้" &nbsp;·&nbsp; **การบังคับใช้ฝั่ง backend:** ทั้งสาม endpoint (`GET`/`POST`/`DELETE /api-system/platform/super-admins`) อยู่หลัง `PlatformSuperAdminGuard` ซึ่ง resolve `is_super_admin` จากฐานข้อมูลใหม่ทุกครั้งที่มีคำขอ — ไม่มี cache เลยตลอดสาย &nbsp;·&nbsp; **ตาราง:** `tb_platform_super_admin` — มีคอลัมน์ที่มีความหมายจริงแค่สองคอลัมน์ (`user_id`, `is_active`) นอกเหนือจากคอลัมน์ audit บันทึกไว้ครบใน §5 ด้านล่างแทนที่จะแยกเป็นหน้า `data-model` &nbsp;·&nbsp; **ชุด e2e:** `super-admins` (1 spec, HEAD `bb8f671`, 2026-06-11) — เก่ากว่าการเขียนใหม่เป็นทะเบียนแบบการ์ดเมื่อ 2026-09-02 และพังตั้งแต่ fixture ของชุดทดสอบเอง ไม่ใช่แค่การ assert รายจุด (§6)
+
+![ผู้ดูแลระบบสูงสุด (Super Admins) screen](/screenshots/platform/super-admins/index.png)
 
 ## 1. ภาพรวม
 

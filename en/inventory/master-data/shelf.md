@@ -2,7 +2,7 @@
 title: Shelf
 description: BU-wide shelf master (walk order for counts) assigned per product-location row — added 2026-08, decoupled from location on 2026-08-20.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: master-data, shelf, location, configuration, carmen-software
 editor: markdown
 dateCreated: '2026-09-22T18:00:00.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-22T18:00:00.000Z'
 
 > **At a Glance**
 > **Owner:** Product Admin &nbsp;·&nbsp; **Table:** `tb_location_shelf` &nbsp;·&nbsp; **Used by:** product ↔ location assignment (`tb_product_location.shelf_*`) &nbsp;·&nbsp; **Permission:** `configuration.location_shelf.{view,create,update,delete}` &nbsp;·&nbsp; **Licence key:** `configuration.location_shelf` &nbsp;·&nbsp; A BU-wide list of shelves / racks with a `sequence_no` walk order; **not** scoped to a location despite the table name.
+
+![Shelf screen](/screenshots/master-data/shelf.png)
 
 ## 1. What & Who
 

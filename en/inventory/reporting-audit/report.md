@@ -2,7 +2,7 @@
 title: Report
 description: Report pipeline — platform report-template catalogue (list reports + print forms with a per-group default), per-document print-viewer endpoints, PDF export for email, and a job/history table that is real but still orphaned.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: reporting-audit, report, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Platform Admin (templates) + BU admin (print-form choice in Default Setting) &nbsp;·&nbsp; **Tables:** `tb_report_template` (platform — list reports **and** print forms, `template_type` + `is_default`), `tb_report_job` (tenant — real but orphaned) &nbsp;·&nbsp; **Gone:** `tb_print_template_mapping` (dropped 2026-07-23), `tb_report_schedule` (dead) &nbsp;·&nbsp; **Used by:** the report list ("Run"), every "Print" button (11 per-document `print-viewer` endpoints), PO/RFP email-with-PDF, scheduled fires — none write a job row.
+
+![Report screen](/screenshots/reporting-audit/report.png)
 
 ## Implementation status (re-verified 2026-09-22)
 

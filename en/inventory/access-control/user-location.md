@@ -2,7 +2,7 @@
 title: User Location (tb_location_user)
 description: Per-user location scoping inside a tenant — restricts a user to a subset of inventory locations. Table renamed tb_user_location → tb_location_user on 2026-09-04; edited via PATCH /api/config/:bu_code/users/:user_id.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: access-control, user-location, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Sysadmin / BU Admin &nbsp;·&nbsp; **Table:** `tb_location_user` (tenant; **renamed from `tb_user_location` on 2026-09-04**) &nbsp;·&nbsp; **Edited via:** `PATCH /api/config/:bu_code/users/:user_id { location_id: { add[], remove[] } }` (2026-09-04) or `PUT /api/config/:bu_code/locations-users/:userId` / `PUT …/user-locations/:locationId` &nbsp;·&nbsp; **Read by:** [inventory](/en/inventory/inventory), [store-requisition](/en/inventory/store-requisition), [physical-count](/en/inventory/physical-count), [spot-check](/en/inventory/spot-check), and the workflow product-location picker &nbsp;·&nbsp; Row-level location filter — restricts inventory rows visible to the user.
+
+![User Location (tb_location_user) screen](/screenshots/access-control/user-location.png)
 
 ## Rename notice (2026-09-04)
 

@@ -2,7 +2,7 @@
 title: ไลเซนส์ — หน้าจอ UI (UI Screens)
 description: ห้าแท็บของ LicenseCenter, สามส่วนของ ClusterLicenseDetail, SubscriptionForm และ LicensePurchaseForm สามชนิด (seats / BU quota / interface), และพฤติกรรมของ redirect เก่าจาก /subscriptions
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, licenses, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **หน้าจอ:** `LicenseCenter` (`/licenses`, 5 แท็บ) &nbsp;·&nbsp; `ClusterLicenseDetail` (`/licenses/:clusterId`, 3 แท็บ) &nbsp;·&nbsp; `SubscriptionForm` (`/licenses/subscriptions/{new,:id/edit}`) &nbsp;·&nbsp; `LicensePurchaseForm` — **component เดียว สามโหมด** สลับด้วย prop `config` (`/licenses/seats/*`, `/licenses/bu-quota/*`, `/licenses/interface/*`) &nbsp;·&nbsp; **ทุกคอลัมน์บนทุกตารางของ `/licenses` เรียงได้ด้วยการคลิกหัวคอลัมน์** (PR #290; Status เรียงฝั่ง server ผ่าน key `status` ของ backend) &nbsp;·&nbsp; **Route เก่า:** `/subscriptions*` redirect เข้า `/licenses/...` &nbsp;·&nbsp; **ภาพร่วม:** `LicenseCoverageBar` — เส้นเวลาแนวนอนแบบ div ล้วน (ไม่มี chart library) ของช่วงความคุ้มครอง ใช้ในทั้งสามแท็บของ `ClusterLicenseDetail` &nbsp;·&nbsp; **ไม่มี View History / Activity Trail** — ต่างจากโมดูลอื่นส่วนใหญ่ในแผนนี้ โมดูลนี้ไม่มี action "ดูประวัติ" ที่กั้นด้วย `activity_log.read` อยู่บนหน้าจอไหนเลย &nbsp;·&nbsp; **ไม่มี e2e suite** — ทุกคำกล่าวอ้างด้านล่างมาจาก implementation ไม่ใช่จาก test spec
+
+![ไลเซนส์ — หน้าจอ UI (UI Screens) screen](/screenshots/platform/licenses/ui-screens.png)
 
 ## 1. ภาพรวม
 

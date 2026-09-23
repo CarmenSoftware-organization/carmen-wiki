@@ -2,7 +2,7 @@
 title: News — UI Screens
 description: The NewsroomSummary masthead, NewsManagement list (filters, CSV export, bulk actions), and the masthead-based NewsEdit form with its Publish rail.
 published: true
-date: '2026-09-22T17:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, news, ui
 editor: markdown
 dateCreated: 2026-06-10T13:00:00.000Z
@@ -12,6 +12,10 @@ dateCreated: 2026-06-10T13:00:00.000Z
 
 > **At a Glance**
 > **Screens:** `NewsManagement` (`/news`) · `NewsEdit` (`/news/new`, `/news/:id/edit`) &nbsp;·&nbsp; **List extras:** `NewsroomSummary` pipeline + lead-story card (dedicated `GET /api/news/summary` endpoint since 2026-08-24), checkbox row selection, bulk Publish/Archive/Delete, row **View History** &nbsp;·&nbsp; **Edit layout:** `NewsMasthead` (cover/status/reach/title) + Article card (body, URL, tags) + sticky Publish rail + History card (relative-time `AuditMeta` since 2026-08-22) &nbsp;·&nbsp; **Also new:** header-row **View History** on the edit page (not in the masthead) &nbsp;·&nbsp; **Signature UI:** MarkdownEditor Write/Preview tabs · ImageUpload drag-and-drop (now inside the masthead) · ChipInput tags with autocomplete · BU multi-select behind a "global" checkbox &nbsp;·&nbsp; **Persisted UI state:** 6 `localStorage` keys on the list page &nbsp;·&nbsp; **Shortcuts:** Ctrl/Cmd+S save · Escape cancel · Ctrl/Cmd+K focus search
+
+![News — UI Screens screen](/screenshots/platform/news/ui-screens.png)
+
+![News — UI Screens form screen](/screenshots/platform/news/ui-screens-form.png)
 
 ## 1. Overview
 

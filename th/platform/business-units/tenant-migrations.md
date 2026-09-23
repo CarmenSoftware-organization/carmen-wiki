@@ -2,7 +2,7 @@
 title: หน่วยธุรกิจ — Tenant Migrations
 description: หน้าจอ fleet-wide /tenant-migrations ย้ายไปเป็นโมดูลระดับบนสุดของตัวเองแล้ว — หน้านี้เหลือเฉพาะส่วนที่ยังเฉพาะเจาะจงกับ Business Units จริง ๆ คือการ์ด TenantMigrationCard ต่อ BU ที่ฝังอยู่บนแท็บ Technical ของหน้าแก้ไข
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, business-units, tenant-migrations
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -11,6 +11,8 @@ dateCreated: 2026-07-29T09:46:00.000Z
 # หน่วยธุรกิจ — Tenant Migrations
 
 > **ย้ายแล้ว:** หน้าจอ `/tenant-migrations` ระดับ fleet (`TenantMigrationManagement` พร้อม route, nav entry, และ feature key `tenant_migrations` ของตัวเอง) ถูกบันทึกไว้อย่างเต็มรูปแบบที่ **[การย้ายเทแนนต์ (Tenant Migrations)](/th/platform/tenant-migrations)** และหน้าย่อย [Data Model](/th/platform/tenant-migrations/data-model) ของมัน หน้านี้เหลือเฉพาะส่วนเดียวของหน้าจอนั้นที่เฉพาะเจาะจงกับ Business Units จริง ๆ คือการ์ด `TenantMigrationCard` ต่อ BU ที่ฝังอยู่
+
+![หน่วยธุรกิจ — Tenant Migrations screen](/screenshots/platform/business-units/tenant-migrations.png)
 
 ## 1. การ์ดต่อ BU
 

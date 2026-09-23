@@ -2,7 +2,7 @@
 title: Changelog
 description: The platform's versioned changelog — a JSON-sourced, public /changelog page (now searchable) reached via a version badge in the sidebar and on the landing page.
 published: true
-date: 2026-09-06T21:00:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: platform, changelog, versioning, carmen-software
 editor: markdown
 dateCreated: 2026-06-09T00:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-06-09T00:00:00.000Z
 
 > **At a Glance**
 > **Source of truth:** `src/data/changelog.json` &nbsp;·&nbsp; **Public page:** `/changelog` (no auth), now with a search box over versions/categories/entries &nbsp;·&nbsp; **Discovery:** `VersionBadge` in the sidebar footer + landing page &nbsp;·&nbsp; **Generated artifact:** `CHANGELOG.md` (Keep a Changelog format) &nbsp;·&nbsp; **Release:** `bun run build:bump [patch|minor|major]` — now a full release script (`scripts/release.mjs`, 2026-08-05) with branch/tree/upstream/tag guards, typecheck+lint+test gates, and a git commit + annotated tag, not a bare bump-and-build (§5).
+
+![Changelog screen](/screenshots/platform/changelog/index.png)
 
 ## 1. What & Who
 

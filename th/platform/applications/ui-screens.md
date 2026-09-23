@@ -2,7 +2,7 @@
 title: Applications — หน้าจอ UI (UI Screens)
 description: list ApplicationManagement และฟอร์ม ApplicationEdit รวมถึง API Names selector แบบ accordion จัดกลุ่มและ fallback แบบ ChipInput ของมัน
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, applications, ui
 editor: markdown
 dateCreated: 2026-06-10T15:15:00.000Z
@@ -12,6 +12,10 @@ dateCreated: 2026-06-10T15:15:00.000Z
 
 > **At a Glance**
 > **หน้าจอ:** `ApplicationManagement` (`/applications`) · `ApplicationEdit` (`/applications/new`, `/applications/:id/edit`) &nbsp;·&nbsp; **ใหม่ตั้งแต่ sync ก่อนหน้า (2026-09-02, `#254`/`#255`):** คอลัมน์ Access และการ์ด hero/API-access ของหน้า edit ตอนนี้ใช้ไม้บรรทัดวัดรัศมีร่วมกัน (`reachOf()` ใน `utils/apiReach.ts`) — บาร์ + เศษส่วน `granted/catalogSize` เทียบกับ catalog จริง (900 key / 148 โมดูล ตาม commit `fa64299f1` ของ `../carmen-turborepo-backend-v2`, 2026-09-04) แทนที่ badge "All APIs"/"N APIs" เดิม; คอลัมน์ Status ของ list หายไป (ยุบเข้า badge Inactive แบบวาดเฉพาะข้อยกเว้นข้าง Name); Device เป็นข้อความเงียบแล้ว ไม่ใช่ badge; chip กริยา authority (`delete`/`approve`/`submit`/…) ถูกย้อมสีและเรียงก่อน; grant ที่ล้าสมัยและโมดูลที่ไม่เคยแตะถูกระบุตรงๆ แล้ว &nbsp;·&nbsp; **ใหม่ด้วย:** **View History** แบบ cross-cutting (`activity_log.read`, `PLATFORM_SCOPED_RECORD`) บน dropdown ของ row ในหน้า list และ hero ของหน้า edit; แถบ Registry อ่านจาก endpoint `GET /api-system/applications/summary` โดยเฉพาะ (2026-08-24) แทนการกวาดฝั่ง client; Created/Updated render ผ่าน `auditColumns()`/`AuditMeta` ที่ใช้ร่วมกัน (relative time + tooltip, การระงับด้วย `everEdited`) แทนสตริง timestamp ตายตัว; ทั้งสาม route ถือ flag `feature="applications"` &nbsp;·&nbsp; **Layout ของหน้า edit:** ยังคงเป็น toggle view/edit (ต่างจาก clusters/business-units ที่เขียนใหม่เป็น one-document) &nbsp;·&nbsp; **UI เอกลักษณ์:** API Names selector — accordion จัดกลุ่มตามโมดูล, ช่อง filter, All/None ต่อโมดูล, label ปุ่มแบบ action อย่างเดียว, การย้อมสีกริยา authority &nbsp;·&nbsp; **Fallback:** การกรอก free-text แบบ `ChipInput` เมื่อการ fetch catalog ล้มเหลว &nbsp;·&nbsp; **สถานะ UI ที่จดจำ:** key `localStorage` 6 ตัวบนหน้า list
+
+![Applications — หน้าจอ UI (UI Screens) screen](/screenshots/platform/applications/ui-screens.png)
+
+![Applications — หน้าจอ UI (UI Screens) form screen](/screenshots/platform/applications/ui-screens-form.png)
 
 ## 1. ภาพรวม
 

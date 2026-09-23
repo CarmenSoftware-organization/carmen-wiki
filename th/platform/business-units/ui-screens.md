@@ -2,13 +2,17 @@
 title: Business Unit — UI Screens
 description: BusinessUnitManagement (list) และ BusinessUnitEdit หกแท็บ — code สร้างอัตโนมัติ, ปุ่มสุ่มชื่อ schema, แท็บ Licenses สองการ์ด (ที่นั่ง+subscription, interface licence), การ์ด advanced สองใบหลังถอด Interface Entitlement
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, business-units, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
 ---
 
 # Business Unit — UI Screens
+
+![Business Unit — UI Screens screen](/screenshots/platform/business-units/ui-screens.png)
+
+![Business Unit — UI Screens form screen](/screenshots/platform/business-units/ui-screens-form.png)
 
 ## 1. At a Glance
 

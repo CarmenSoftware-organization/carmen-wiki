@@ -2,7 +2,7 @@
 title: แอปพลิเคชัน (Applications)
 description: ภาพรวมโมดูล Applications — API client ที่ลงทะเบียนของแพลตฟอร์ม, identity แบบ x-app-id และการมอบสิทธิ์เข้าถึงแบบ allow-all เทียบกับรายการ api_name แบบระบุชัด
 published: true
-date: 2026-09-05T18:00:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: platform/applications, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T15:15:00.000Z
@@ -14,6 +14,8 @@ dateCreated: 2026-06-10T15:15:00.000Z
 
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** ลงทะเบียน machine client และมอบสิทธิ์เข้าถึง API ให้พวกมัน — `allow_all` หรือรายการ `api_names` แบบระบุชัดที่เลือกจาก catalog ที่จัดกลุ่มตามโมดูล &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับ Platform admin SPA และการบังคับใช้ `AppIdGuard` ของ backend gateway &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_application` (ตัว client: `name`, `is_active`, `allow_all`), `tb_application_api` (grant row แบบ 1:N หนึ่ง `api_name` ต่อ row) &nbsp;·&nbsp; **Identity:** `id` ของเรคคอร์ด (UUID) **คือ** ค่า `x-app-id` — ไม่มี field app-id แยกต่างหาก &nbsp;·&nbsp; **Permission key** (`../carmen-platform/src/components/nav/platformNav.ts`): `application.read` (list/nav) + `application.create`/`application.update`/`application.delete` &nbsp;·&nbsp; **Feature-flag key:** `applications` (ตรวจหลัง permission gate บนทั้งสาม route และ sidebar entry) &nbsp;·&nbsp; **superAdminOnly:** ไม่ใช่ &nbsp;·&nbsp; **หน้าย่อย:** 3
+
+![แอปพลิเคชัน (Applications) screen](/screenshots/platform/applications/index.png)
 
 ## 1. ภาพรวม
 

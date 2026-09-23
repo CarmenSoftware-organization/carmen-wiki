@@ -2,7 +2,7 @@
 title: Widget
 description: เอนทิตี widget ของ dashboard — tile ต่อผู้ใช้ (และแบบ BU-scoped ที่มีเฉพาะ backend) ผูกกับแคตตาล็อก dataset ที่ลงทะเบียนในโค้ด ให้บริการโดย micro-data ผ่าน HTTP หลัง gateway; คอลัมน์ display, สลับ render, route config ของโมดูล (2026-09)
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: reporting-audit, widget, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** ผู้ใช้ปลายทาง (widget ส่วนตัว) &nbsp;·&nbsp; **ตาราง:** `tb_dashboard_bu_widget` + `tb_dashboard_personal_widget` (tenant schema) &nbsp;·&nbsp; **ใช้โดย:** หน้าจอ [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) ที่ `/dashboard` (ส่วนตัว) ตาราง BU มี CRUD ครบใน micro-data + gateway แต่ **ไม่มีผู้เรียกจาก frontend**; dashboard หน้าแรกของแต่ละโมดูลใช้ **system widget** แบบ hardcode ไม่ใช่แถว BU &nbsp;·&nbsp; **ให้บริการโดย:** micro-data (Go, HTTP + `x-internal-token`)
+
+![Widget screen](/screenshots/reporting-audit/widget.png)
 
 ## สถานะการทำงานจริง (ตรวจสอบซ้ำเมื่อ 2026-09-22)
 

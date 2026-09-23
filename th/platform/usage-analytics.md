@@ -2,7 +2,7 @@
 title: การวิเคราะห์การใช้งาน (Usage Analytics)
 description: หน้าแดชบอร์ด UI telemetry ที่ /analytics (module slug คือ usage-analytics) — ทุก StatCard, กราฟรายวัน, และ Top List ทั้งสองชุด นิยามจาก tb_activity_event พร้อมช่องว่างสิทธิ์ activity_event.read/activity_event.detail ที่คุมการ drill-down
 published: true
-date: '2026-09-06T01:40:06.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, usage-analytics
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -11,6 +11,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # การวิเคราะห์การใช้งาน (Usage Analytics)
 
 **Usage Analytics** คือหน้าเดียว `UsageAnalytics` ที่เข้าถึงได้ที่ route **`/analytics`** — สังเกตว่า route กับ slug ของโมดูลในวิกินี้เอง (`usage-analytics`) ไม่ตรงกัน ผู้อ่านที่ค้นหาคำใดคำหนึ่งจึงควรมาเจอหน้านี้ทั้งคู่ มันคือแดชบอร์ดสรุปแบบอ่านอย่างเดียวของ UI telemetry (การเปิดหน้าและการคลิกที่ตัว frontend เองบันทึกไว้) สร้างจากการเรียก backend ครั้งเดียว คือ `GET /api-system/platform/analytics/overview` มันมีโมดูลพี่น้องที่แคบกว่า คือ [Activity Events](/th/platform/activity-events) ที่ `/activity-events` ซึ่งแสดง telemetry ชุดเดียวกันแบบเป็นแถวรายบุคคลแทนที่จะเป็นตัวเลขสรุป — ทั้งสองหน้าถูก gate ด้วยสิทธิ์คนละคีย์ ดูรายละเอียดที่ §4
+
+![การวิเคราะห์การใช้งาน (Usage Analytics) screen](/screenshots/platform/usage-analytics/index.png)
 
 ## 1. ภาพรวม
 

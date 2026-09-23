@@ -2,7 +2,7 @@
 title: Dashboard
 description: The signed-in home hub (/dashboard) — a unified recent-activity stream across six domains plus a sticky per-domain active/total counts rail. No requiredPermission of its own; every domain silently drops out of both if the session can't read it.
 published: true
-date: 2026-09-06T12:00:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: platform/dashboard, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-07-29T09:46:00.000Z
 
 > **At a Glance**
 > **Screen:** `Dashboard` (`/dashboard`) &nbsp;·&nbsp; **Access:** authenticated-only — the route carries no `requiredPermission` **and no `feature` key** (`platformNav.ts`'s only nav row with neither), same as [Profile](/en/platform/profile), so it is always visible/reachable regardless of grants or feature-flag state &nbsp;·&nbsp; **Sidebar:** top nav item, ungated, above every `groupKey` group (Organization, License Management, Content, Analytics, Scheduling, Platform, Database — see §4) &nbsp;·&nbsp; **Content:** a merged recent-activity stream over 6 domains + a sticky active/total counts rail &nbsp;·&nbsp; **Reached from:** post-login redirect (from [Landing](/en/platform/landing) or Login), the sidebar brand mark, or the "Dashboard" nav item itself — though a membership-only cluster admin who lands here is immediately bounced onward to `/cluster-admin` (§5)
+
+![Dashboard screen](/screenshots/platform/dashboard/index.png)
 
 ## 1. Overview
 

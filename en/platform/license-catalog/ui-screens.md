@@ -2,7 +2,7 @@
 title: License Catalog — UI Screens
 description: The LicenseCatalog shell's tab mechanics in full, FeatureCatalogPanel (Features), GroupCatalogPanel (Bundles), LicenseFeatureGroupEdit, and the shared feature-picker/composition-bar components.
 published: true
-date: '2026-09-22T17:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, license-catalog, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **Shell:** `LicenseCatalog` (`/license-features`, `/license-feature-groups`) — one component, `tab` prop, tabs are routes not state &nbsp;·&nbsp; **Features tab:** `FeatureCatalogPanel` — read-mostly, per-row `state` toggle only, no create/delete &nbsp;·&nbsp; **Bundles tab:** `GroupCatalogPanel` — full CRUD list for `tb_license_feature_group` &nbsp;·&nbsp; **Editor:** `LicenseFeatureGroupEdit` (`/license-feature-groups/{new,:id/edit}`) — one component, two modes &nbsp;·&nbsp; **Shared picker:** `FeatureSelectionCard` — used **only** by the editor now, not by any sales screen &nbsp;·&nbsp; **No View History / Activity Trail** — a grep of `src/pages/licenseCatalog/`, `src/pages/licenseFeatures/`, `LicenseCatalog.tsx`, and `LicenseFeatureGroupEdit.tsx` for `activity_log.read`/`ActivityTrail`/`PLATFORM_SCOPED_RECORD` returns nothing &nbsp;·&nbsp; **No e2e suite** — every claim below is sourced from implementation, not a test spec
+
+![License Catalog — UI Screens screen](/screenshots/platform/license-catalog/ui-screens.png)
 
 ## 1. Overview
 

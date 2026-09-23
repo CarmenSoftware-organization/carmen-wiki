@@ -2,7 +2,7 @@
 title: User — UI Screens
 description: UserManagement (list) and UserEdit (BU assignment matrix).
 published: true
-date: 2026-09-05T14:00:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, users, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -12,6 +12,10 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 > **At a Glance**
 > **Screens:** `UserManagement` (list, `/users`) &nbsp;·&nbsp; `UserEdit` create (`/users/new`) &nbsp;·&nbsp; `UserEdit` view/edit (`/users/:id/edit`) &nbsp;·&nbsp; **New since last sync:** collapsed single-cell identity column + asymmetric Status column (list, #219), a 3-section always-visible-only-while-editing account form with required `firstname`/`lastname` (#220), a `GET /api-system/user/summary`-backed Directory strip, a **View History** action (`activity_log.read`, platform-scoped) on both the list row menu and the edit-page hero, `<Can>`-gated Change Password, per-BU-row audit meta in the Access tree &nbsp;·&nbsp; **Dialogs:** Add BU &nbsp;·&nbsp; Change Password &nbsp;·&nbsp; Soft Delete confirm (single + bulk) &nbsp;·&nbsp; Hard Delete typed-confirm (single + bulk random-code) &nbsp;·&nbsp; **Access:** routes guarded `user.read` / `user.create` / `user.update` (+ `feature="users"`); in-page `<Can>` gates on Add (`user.create`), Fetch Keycloak (`user.create`), View History (`activity_log.read`, platform-scoped), Edit + Change Password (`user.update`), Delete/Hard-Delete (`user.delete`); Add/Remove BU resolve `cluster.update` per-cluster &nbsp;·&nbsp; **Persisted UI state:** 6 `localStorage` keys on the list page
+
+![User — UI Screens screen](/screenshots/platform/users/ui-screens.png)
+
+![User — UI Screens form screen](/screenshots/platform/users/ui-screens-form.png)
 
 ## 1. Overview
 

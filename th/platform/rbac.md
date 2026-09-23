@@ -2,7 +2,7 @@
 title: RBAC ของแพลตฟอร์ม (Platform RBAC)
 description: การควบคุมการเข้าถึงแบบอิง permission สำหรับ Platform admin SPA — permission catalog, role, การ assign ผู้ใช้แบบมี scope และ super-admin bypass
 published: true
-date: 2026-09-06T23:45:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: platform/rbac, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T15:00:00.000Z
@@ -16,6 +16,8 @@ dateCreated: 2026-06-10T15:00:00.000Z
 
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** การควบคุมการเข้าถึงแบบอิง permission — catalog กำหนด key รูปแบบ `resource.action`, role รวม key เป็นชุด, assignment แบบมี scope ผูก role เข้ากับผู้ใช้, flag super-admin จะ bypass ทุกการตรวจสอบ &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับ Platform admin SPA และ authorization backend ของมัน &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_platform_permission`, `tb_platform_role`, `tb_platform_role_tb_permission`, `tb_user_tb_platform_role` (scope ผ่าน `cluster_id` ที่เป็น nullable), `tb_platform_super_admin` — ทั้งห้าตารางมี `doc_version` (การ rollout optimistic-lock ทั้งแพลตฟอร์มเมื่อ 2026-07-16) &nbsp;·&nbsp; **หน้าจอที่ครอบคลุมในหน้านี้:** Roles · Permission Catalog &nbsp;·&nbsp; **หน้าจอที่สรุปไว้ที่นี่ มีโมดูลเต็มอยู่ที่อื่น:** [Super Admins](/th/platform/super-admins) · [User Platform](/th/platform/user-platform) (ดูหมายเหตุขอบเขตด้านล่าง) &nbsp;·&nbsp; **หน้าย่อย:** 3 &nbsp;·&nbsp; **เปลี่ยนคีย์เมื่อ 2026-08-20:** `role.*` → `platform_role.*` ทุกจุด, คีย์ `rbac.read` แบบเดี่ยวที่บางหน้าเคยใช้ถูกยกเลิก, และ route ของ Permission Catalog ย้ายจาก `/platform/permissions` ไปเป็น `/platform/category-permissions` (commit `8df0b10` ใน repo `carmen-platform`) &nbsp;·&nbsp; **ตั้งแต่ 2026-09-02:** `RoleManagement`/`RoleEdit` วัดจำนวน permission ของ role เทียบกับ **ขนาด catalog** ไม่ใช่ role ที่กว้างที่สุด และตัวเลือก permission ของ `RoleEdit` กลายเป็น grid แบบแถวต่อ resource พร้อมปุ่ม toggle (`carmen-platform` PR #252/#253); `SuperAdminManagement` ถูกเขียนใหม่เป็นครั้งที่สอง จาก `DataTable` เป็นทะเบียนคนแบบการ์ด (`carmen-platform` PR #244)
+
+![RBAC ของแพลตฟอร์ม (Platform RBAC) screen](/screenshots/platform/rbac/index.png)
 
 **หมายเหตุขอบเขต (resync 2026-09-05):** หน้านี้ครอบคลุมหน้าจอ **Roles** และ **Permission Catalog** อย่างครบถ้วน ส่วน **User Platform** และ **Super Admins** ครอบคลุมเฉพาะระดับสรุปเท่านั้น — ทั้งสองมีโมดูล Platform ระดับบนสุดของตัวเองแล้ว คือ [User Platform](/th/platform/user-platform) และ [Super Admins](/th/platform/super-admins) แต่ละโมดูลมีรายการ nav, permission key และชุด e2e เป็นของตัวเองตามที่ระบุไว้ด้านล่าง พร้อมการตรวจสอบแบบละเอียดทุกบรรทัดของหน้าจอตัวเองแล้ว ข้อเท็จจริงที่ระบุด้านล่างเกี่ยวกับทั้งสองผ่านการตรวจสอบกับซอร์สปัจจุบันแล้ว แต่สำหรับเนื้อหาแบบละเอียด — หน้าจอ, คอลัมน์, endpoint — ให้ดูที่หน้าโมดูลของตัวเอง ไม่ใช่หน้านี้
 

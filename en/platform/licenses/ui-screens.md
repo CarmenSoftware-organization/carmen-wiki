@@ -2,7 +2,7 @@
 title: Licenses — UI Screens
 description: LicenseCenter's five tabs, ClusterLicenseDetail's three sections, the SubscriptionForm and the three-kind LicensePurchaseForm (seats / BU quota / interface), and the legacy /subscriptions redirect behaviour.
 published: true
-date: '2026-09-22T17:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, licenses, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -12,6 +12,8 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 > **At a Glance**
 > **Screens:** `LicenseCenter` (`/licenses`, 5 tabs) &nbsp;·&nbsp; `ClusterLicenseDetail` (`/licenses/:clusterId`, 3 tabs) &nbsp;·&nbsp; `SubscriptionForm` (`/licenses/subscriptions/{new,:id/edit}`) &nbsp;·&nbsp; `LicensePurchaseForm` — **one component, three modes**, switched by a `config` prop (`/licenses/seats/*`, `/licenses/bu-quota/*`, `/licenses/interface/*`) &nbsp;·&nbsp; **Every column on every `/licenses` table sorts by header click** (PR #290; Status sorts server-side via the backend's `status` key) &nbsp;·&nbsp; **Legacy:** `/subscriptions*` redirect into `/licenses/...` &nbsp;·&nbsp; **Shared visual:** `LicenseCoverageBar` — a div-based (no chart library) horizontal timeline of coverage intervals, used on all three `ClusterLicenseDetail` tabs &nbsp;·&nbsp; **No View History / Activity Trail** — unlike most other modules in this plan, this module has no `activity_log.read`-gated audit-trail action anywhere on its screens &nbsp;·&nbsp; **No e2e suite** — every claim below is sourced from implementation, not from a test spec
+
+![Licenses — UI Screens screen](/screenshots/platform/licenses/ui-screens.png)
 
 ## 1. Overview
 

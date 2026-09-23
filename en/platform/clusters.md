@@ -2,7 +2,7 @@
 title: Clusters
 description: Cluster module overview — the top-level tenant grouping that owns business units and licensed users, now backed by a dated licence ledger rather than static caps.
 published: true
-date: 2026-09-06T12:00:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: platform/clusters, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -14,6 +14,8 @@ The **Clusters** module is the entry point for the largest organizational contai
 
 > **At a Glance**
 > **Module purpose:** Tenant container that groups business units (BUs) and the users assigned to them, and links out to the licence ledger that now holds the BU-count and seat caps &nbsp;·&nbsp; **Audience:** Developers and QA working on the Platform admin SPA; operator access requires `cluster.*` permission grants ([rbac](/en/platform/rbac)) plus the `clusters` feature flag being enabled &nbsp;·&nbsp; **Key entities/tables:** `tb_cluster` (fields: `code`, `name`, `alias_name`, `logo_file_token`, `avatar_file_token`, `is_active`, `doc_version`, soft-delete trio — **no licence-cap column any more**), `tb_business_unit` (1:N), `tb_cluster_user` (M:N join with per-cluster role `admin`/`user` — **no longer carries a `parent_bu_id`**), `tb_cluster_license` (new — the cluster's BU-quota purchase ledger) &nbsp;·&nbsp; **Sub-pages:** 3 &nbsp;·&nbsp; **Permission key:** `cluster.read` (list/nav) + `cluster.create`/`cluster.update`/`cluster.delete` &nbsp;·&nbsp; **Feature-flag key:** `clusters` &nbsp;·&nbsp; **superAdminOnly:** No — gated by permission, not a super-admin-only flag (per `../carmen-platform/src/components/nav/platformNav.ts`)
+
+![Clusters screen](/screenshots/platform/clusters/index.png)
 
 ## 1. Overview
 

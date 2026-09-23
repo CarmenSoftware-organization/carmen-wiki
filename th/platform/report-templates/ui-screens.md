@@ -2,13 +2,17 @@
 title: Report Template — UI Screens
 description: Editor XML แบบ CodeMirror, แท็บ preview, chip input, แถบ action ติดล่าง, gate <Can> ของ report_template.* และฟิลด์ template_type/is_default ที่เพิ่มเมื่อ 2026-07-23
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, report-templates, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
 ---
 
 # Report Template — UI Screens
+
+![Report Template — UI Screens screen](/screenshots/platform/report-templates/ui-screens.png)
+
+![Report Template — UI Screens form screen](/screenshots/platform/report-templates/ui-screens-form.png)
 
 ## 1. At a Glance
 

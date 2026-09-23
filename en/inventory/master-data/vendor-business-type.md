@@ -2,7 +2,7 @@
 title: Vendor Business Type
 description: Flat lookup that classifies vendors by business type (manufacturer, distributor, service, etc.) — referenced by the vendor record for reporting and filtering.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: master-data, vendor-business-type, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-06-04T00:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Product Admin &nbsp;·&nbsp; **Table:** `tb_vendor_business_type` &nbsp;·&nbsp; **Used by:** vendor record (`tb_vendor.business_type` JSON array) &nbsp;·&nbsp; A flat lookup classifying suppliers by business nature (manufacturer, distributor, service provider, etc.).
+
+![Vendor Business Type screen](/screenshots/master-data/vendor-business-type.png)
 
 ## 1. What & Who
 

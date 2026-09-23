@@ -2,7 +2,7 @@
 title: ชุดข้อมูลแดชบอร์ด (Dashboard Dataset)
 description: แคตตาล็อก read-only ของ admin สำหรับ data feed ที่ลงทะเบียนในโค้ดใน micro-data (62 definition, เจ็ด shape, supported_renders ต่อ shape) ที่ widget บนแดชบอร์ดดึงข้อมูลจาก — แยกจาก layout ของ widget และ view ที่เขียนด้วย SQL
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: system-config, dashboard, dataset, widget, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-06-04T00:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Sysadmin (แคตตาล็อก read-only) &nbsp;·&nbsp; **Backing:** ลงทะเบียนไว้ในโค้ดบริการ **micro-data** (`GET /api/dashboard/datasets`) โดย backend-gateway เป็น proxy ผ่าน HTTP — **ไม่มีตาราง tenant เฉพาะ** &nbsp;·&nbsp; **ใช้โดย:** [reporting-audit/widget](/th/inventory/reporting-audit/widget) (widget picker), dashboard tile &nbsp;·&nbsp; **Permission / licence:** `dashboard.dataset.view` / `dashboard.dataset` (`module-list.ts:736-742`; licence route `app:datasets`, `app:dashboard-lab`) &nbsp;·&nbsp; **62 definition ที่ลงทะเบียน** (`ENTRIES` ใน `../micro-data/service/dashboard/registry.go` นับเมื่อ 2026-09-22: 16 `scalar`, 9 `scalar_delta`, 6 `time_series`, 21 `categorical`, 7 `ranked`, 3 `matrix`) ครอบคลุม inventory, workflow, document, procurement, product, vendor, recipe และ equipment; shape ที่เจ็ด `table` มีอยู่ใน model (`model/dashboard.go:17`) แต่ยังไม่มี entry ใน registry ใช้ ฉบับก่อนหน้าระบุ 68
+
+![ชุดข้อมูลแดชบอร์ด (Dashboard Dataset) screen](/screenshots/system-config/dashboard-dataset.png)
 
 ## สถานะการ implement (ตรวจสอบซ้ำ 2026-09-22)
 

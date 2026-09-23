@@ -2,7 +2,7 @@
 title: Notification
 description: Notification fan-out after the 2026-08 redesign — personal rows (doc_type + event), system/BU broadcasts with lazy per-user read state, the internal NotifyInput bridge, and BU-scoped platform news with a publish lifecycle.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: reporting-audit, notification, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Workflow runtime + micro-cronjobs/micro-report (writes) · Platform Admin (broadcasts `broadcast.send`, news) · BU admin (per-BU `tb_notification_template` for email/in-app copy) &nbsp;·&nbsp; **Tables (platform):** `tb_notification` (personal) + `tb_broadcast_notification` / `tb_user_broadcast_action` (broadcast) + `tb_news` &nbsp;·&nbsp; **Gone:** `tb_message_format` (dropped 2026-08-11) &nbsp;·&nbsp; **Used by:** every workflow stage transition, comments, scheduled-report delivery, platform bulletins.
+
+![Notification screen](/screenshots/reporting-audit/notification.png)
 
 ## Implementation status (re-verified 2026-09-22)
 

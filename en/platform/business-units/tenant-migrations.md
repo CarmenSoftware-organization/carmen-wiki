@@ -2,7 +2,7 @@
 title: Business Units — Tenant Migrations
 description: The fleet-wide /tenant-migrations screen now has its own top-level module — this page covers only what remains specific to Business Units, the embedded per-BU TenantMigrationCard on the edit page's Technical tab.
 published: true
-date: '2026-09-22T17:30:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: book/platform, business-units, tenant-migrations
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -11,6 +11,8 @@ dateCreated: 2026-07-29T09:46:00.000Z
 # Business Units — Tenant Migrations
 
 > **Moved:** the fleet-wide `/tenant-migrations` screen (`TenantMigrationManagement`, its own route, nav entry, and `tenant_migrations` feature key) is documented in full at **[Tenant Migrations](/en/platform/tenant-migrations)** and its [Data Model](/en/platform/tenant-migrations/data-model) sub-page. This page now covers only the one piece of that screen that is genuinely Business-Units-specific: the embedded per-BU `TenantMigrationCard`.
+
+![Business Units — Tenant Migrations screen](/screenshots/platform/business-units/tenant-migrations.png)
 
 ## 1. The per-BU card
 

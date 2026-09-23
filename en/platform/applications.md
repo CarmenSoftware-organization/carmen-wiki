@@ -2,7 +2,7 @@
 title: Applications
 description: Application module overview — registered API clients of the platform, their x-app-id identity, and allow-all vs explicit api_name access grants.
 published: true
-date: 2026-09-05T18:00:00.000Z
+date: 2026-09-23T10:06:26.000Z
 tags: platform/applications, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T12:30:00.000Z
@@ -14,6 +14,8 @@ The **Applications** module manages the platform's registered **API clients** �
 
 > **At a Glance**
 > **Module purpose:** Register machine clients and grant them API access — `allow_all` or an explicit `api_names` list selected from a catalog grouped by module &nbsp;·&nbsp; **Audience:** Developers and QA working on the Platform admin SPA and the backend gateway's `AppIdGuard` enforcement &nbsp;·&nbsp; **Key entities/tables:** `tb_application` (the client: `name`, `is_active`, `allow_all`), `tb_application_api` (1:N grant rows, one `api_name` each) &nbsp;·&nbsp; **Identity:** record `id` (UUID) **is** the `x-app-id` value — there is no separate app-id field &nbsp;·&nbsp; **Permission key** (`../carmen-platform/src/components/nav/platformNav.ts`): `application.read` (list/nav) + `application.create`/`application.update`/`application.delete` &nbsp;·&nbsp; **Feature-flag key:** `applications` (checked on all three routes and the sidebar entry, after the permission gate) &nbsp;·&nbsp; **superAdminOnly:** No &nbsp;·&nbsp; **Sub-pages:** 3
+
+![Applications screen](/screenshots/platform/applications/index.png)
 
 ## 1. Overview
 

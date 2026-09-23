@@ -2,7 +2,7 @@
 title: Business Unit User
 description: The per-BU membership pivot (tb_user_tb_business_unit) plus the cluster-scoped invitation flow (tb_user_invitation + _business_unit) that replaced the dropped tb_temp_bu_user on 2026-08-05; /api/auth/invite-user is gone.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-09-23T10:06:26.000Z
 tags: access-control, business-unit-user, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Platform / cluster admin (invite), user (accept), Sysadmin (membership rows) &nbsp;·&nbsp; **Tables:** `tb_user_tb_business_unit` (membership) + `tb_user_invitation` / `tb_user_invitation_business_unit` (invitations — **replaced `tb_temp_bu_user`, dropped 2026-08-05**) &nbsp;·&nbsp; **Endpoints:** `POST /api/business-units/default` (switch), `GET /api/business-units` (current), `api/invitations/{mine,:token,:token/accept,:token/accept-with-signup,:token/decline}`, Platform `api-system/clusters/:cluster_id/invitations` (create / list / revoke / resend) &nbsp;·&nbsp; **Used by:** every authenticated request (BU resolution) &nbsp;·&nbsp; The multi-tenant access pivot — declares which users may operate inside which BUs.
+
+![Business Unit User screen](/screenshots/access-control/business-unit-user.png)
 
 ## Implementation status (re-verified 2026-09-22)
 
