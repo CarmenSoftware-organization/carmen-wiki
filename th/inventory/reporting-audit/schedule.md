@@ -1,8 +1,8 @@
 ---
 title: กำหนดการรายงาน (Report Schedule)
-description: กำหนดการรายงานเกิดซ้ำ — หน้าจอที่ทำได้เพียง สร้าง/รายการ/ลบ เท่านั้น อยู่เบื้องหลังด้วยตาราง cron-job แบบ generic ใน service micro-cronjobs แยกต่างหาก ไม่ใช่ tb_report_schedule ของ tenant schema (ซึ่งไม่มีการอ้างอิงจากโค้ดเลย)
+description: กำหนดการรายงานเกิดซ้ำ — สร้าง/รายการ/ลบ อยู่เบื้องหลังด้วยตาราง Cronjob ของ micro-cronjobs (ไม่ใช่ tb_report_schedule ที่ตายแล้ว); เวลารันแยกจาก notify_at พร้อม offset วันถัดไป ("+1") ที่เก็บไว้ ตั้งแต่ 2026-09-03
 published: true
-date: 2026-07-22T00:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: reporting-audit, schedule, automation, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -27,6 +27,10 @@ Report Schedule กำหนด **เวลาที่รายงานจะ�
 
 Schedule ทุกตัวที่สร้างผ่าน UI ส่งมอบผ่าน **ลิงก์ viewer ไม่ใช่ไฟล์ที่ render แล้ว**: create dialog ตั้งค่าคงที่ `format: "viewer_url"` และ `delivery: { type: "viewer_url", viewer_endpoint: ... }` ทุกครั้งที่ submit — ไม่มีตัวเลือกรูปแบบไฟล์ เมื่อ schedule fire, `ReportExecutor` ของ `micro-cronjobs` จะสร้าง viewer URL ใหม่ (`POST .../report/viewer`) แล้วส่งไปยังผู้รับที่เลือกเป็นการแจ้งเตือน in-app/email (`POST .../api/internal/notifications`) — **ไม่** render หรือแนบไฟล์ PDF/Excel/CSV เส้นทางการส่งมอบแบบ "file" (legacy) มีอยู่จริงใน executor (เรียก `generate-async` ของ micro-report) แต่ไม่มี UI ปัจจุบันเข้าถึงได้ เพราะไม่มีที่ไหนตั้ง `delivery.type` เป็นอย่างอื่นนอกจาก `"viewer_url"`
 
+### 1.1 เวลาแจ้งเตือน (`notify_at`) — เพิ่มเมื่อ 2026-08-24 / 2026-09-03
+
+ตอนนี้ schedule แยก **เวลาที่รายงานรัน** (`schedule_config.time`) ออกจาก **เวลาที่ผู้รับได้รับแจ้งว่ารายงานพร้อมแล้ว** (`notify_at`, `HH:mm`, ไม่บังคับ) ถ้าเว้นว่าง = แจ้งทันทีที่รันเสร็จ `notify_at` ที่เร็วกว่าเวลารันในวันเดียวกันหมายถึง **วันถัดไป**; gateway จะ resolve และเก็บ `notify_day_offset` (`0` วันเดียวกัน, `1` วันถัดไป — `reports.service.ts` `resolveNotifyDayOffset()`) เพื่อให้การรันที่ล่าช้าจนเลยเวลาแจ้งเตือนยังส่งทันทีแทนที่จะถูกตีความผิดเป็น "+1" โดยตั้งใจ create dialog แสดง **badge "+1 day"** เมื่อ `notify_at < time` (`schedule-notifications-field.tsx`, `2671e866`) และแสดงคำใบ้เมื่อช่องว่างน้อยกว่า 10 นาที (`NOTIFY_GAP_WARNING_MINUTES`, `5b8117b8` — การรันแบบ viewer-URL แค่สร้างลิงก์ ช่องว่างจึงไม่ใช่เวลาเผื่อสำหรับประมวลผล) กติกาที่ gateway บังคับ (400): `notify_at` ใช้ร่วมกับ `cron_expression` ดิบไม่ได้ (ไม่มีเวลารันให้เทียบ) และรับเฉพาะ `delivery.type = "viewer_url"` micro-cronjobs เก็บเป็นคอลัมน์ `Cronjob.notifyAt` + `notifyDayOffset` (`08d1181`, `8ebd27e`); `schedule_config.notify_time` แบบเก่ายังถูกอ่านอยู่แต่ deprecated แล้ว รายการแสดงคอลัมน์ **Notify at** (`09:00 (+1)` หรือ "immediately")
+
 **กลุ่มผู้ใช้:** ผู้ใช้ที่ authenticate แล้วและมี BU context คนใดก็ได้สามารถสร้างและลบ schedule ของตนเองผ่านหน้าจอนี้ — ไม่พบสิทธิ์ schedule-admin ที่แยกออกมาบน endpoint schedule ของ `reports.controller.ts` (มี `KeycloakGuard` + header `X-App-Id` เหมือน endpoint report อื่น ๆ ไม่ใช่ role check ที่แคบกว่า)
 
 ## 2. งานที่พบบ่อย
@@ -34,6 +38,7 @@ Schedule ทุกตัวที่สร้างผ่าน UI ส่งม�
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
 | สร้าง schedule | `/report/schedules` → **Create Schedule** | เลือก report template, ความถี่ (รายวัน/รายสัปดาห์/รายเดือน) + เวลา, filter เฉพาะ template แบบเลือกได้, ช่องทางแจ้งเตือน (checkbox web/email) และผู้รับ (multi-select ของผู้ใช้) |
+| ตั้งเวลาแจ้งเตือน | Create dialog → **Notifications** → Notify at | `HH:mm` ไม่บังคับ; เร็วกว่าเวลารัน = วันถัดไป (badge +1); ใช้ได้เฉพาะการส่งมอบแบบลิงก์ viewer |
 | ตั้งความถี่ | Create dialog → select **Frequency** + ตัวเลือกเวลา | รายสัปดาห์เพิ่ม multi-toggle จันทร์–อาทิตย์; รายเดือนเพิ่ม multi-toggle 1–31 **ไม่มีช่อง cron expression ดิบ** ใน UI — backend derive `cron_expression` จาก `schedule_config` เมื่อไม่ได้ส่งมา |
 | เลือกผู้รับ | Create dialog → **Recipients** | checkbox multi-select บน `useAllUsers()` — user ID ธรรมดา ไม่ใช่ entry แบบมี type `email`/`user`/`sftp` |
 | ดูการ fire ล่าสุด/ครั้งหน้า | รายการ → คอลัมน์ **Last Run** / **Next Run** | เติมจาก `lastRunAt`/`nextRunAt` ของแถว `Cronjob` |
@@ -59,6 +64,8 @@ Schedule ทุกตัวที่สร้างผ่าน UI ส่งม�
 - **Redis lock เป็นต่อการ execute job ไม่ใช่ต่อ `(schedule_id, fire_timestamp)`** `RedisLocker.Lock()` รับ argument `key` เดียว (identity ของ job ใน gocron) แล้วล็อกด้วย `SET NX` TTL 5 นาที — ไม่มีส่วนประกอบ fire-timestamp ใน lock key
 - **Cron expression เป็นค่าที่ derive มา ไม่ใช่เขียนเอง** เมื่อ frontend ไม่ส่ง `cron_expression`, `cronFromConfig()` ของ gateway จะ derive จาก `schedule_config.frequency`/`time`/`days_of_week`/`days_of_month` — เช่น `daily` → `mm hh * * *`
 - **Schedule แบบเกิดซ้ำไม่เคยเขียนเข้า `tb_report_job`** เพราะทุก schedule ส่งมอบผ่าน `viewer_url` (ดู §1) เส้นทางการ fire จึงไม่เคยสร้างแถว report-job — ดู [reporting-audit/history](/th/inventory/reporting-audit/history) สำหรับช่องว่างที่เกิดขึ้น
+- **`notify_day_offset` ถูกเก็บไว้ ไม่ใช่อนุมานใหม่** คำนวณครั้งเดียวตอนสร้างจาก `notify_at` เทียบกับ `schedule_config.time`; executor อ่าน offset ที่เก็บไว้ การรันที่ล่าช้าจึงไม่ derive "+1" ปลอมขึ้นมาใหม่
+- **ทุกการเรียก gateway → micro-cronjobs แนบ `x-internal-token`** (`318735d26`); ถ้า secret ไม่ตรง ทุก route ของ schedule จะตอบ 401
 
 ---
 
@@ -78,6 +85,8 @@ Schedule ทุกตัวที่สร้างผ่าน UI ส่งม�
 | `JobConfig` / `jobData` | `jsonb` | `ReportJobConfig`: `template_id`, `bu_codes`, `format`, `filters`, `recipients`, `user_id`, `options`, `delivery`, `notifications` |
 | `SourceService` / `sourceService` | `string?` | `"micro-report"` สำหรับ schedule รายงาน |
 | `SourceID` / `sourceID` | `string?` | id ของ report template (หรือ `report_type` เป็น fallback) |
+| `NotifyAt` / `notifyAt` | `string?` (`HH:mm`) | เวลาที่ผู้รับได้รับแจ้งว่ารายงานพร้อม; `null` = ทันทีที่รันเสร็จ ย้ายออกจาก `job_config.notify_time` เมื่อ 2026-08-24 |
+| `NotifyDayOffset` / `notifyDayOffset` | `int` | default `0` จำนวนวันหลังการรันที่ `notifyAt` ตกอยู่ (`1` = กรณี "+1") เพิ่มเมื่อ 2026-09-03 |
 | `IsActive` / `isActive` | `bool` | Default `true` เป็น `true` เสมอตอนสร้าง; ไม่มี UI path ใด toggle |
 | `LastRunAt` / `lastRunAt`, `NextRunAt` / `nextRunAt` | `timestamp?` | bookkeeping ของ scheduler |
 | `LastError` / `lastError` | `string?` | populate เมื่อ execute ล้มเหลว |
@@ -90,7 +99,7 @@ Schedule ทุกตัวที่สร้างผ่าน UI ส่งม�
 
 ### 5.2 `ReportJobConfig` (รูปร่าง JSONB `jobData`/`JobConfig` สำหรับ `job_type = "report"`)
 
-`template_id`, `bu_codes: string[]`, `format`, `filters: map[string]string`, `recipients: string[]`, `user_id`, `options: map[string]any`, `delivery: { type, viewer_endpoint }`, `notifications: { web, email, mail_source }`
+`template_id`, `bu_codes: string[]`, `format`, `filters: map[string]string`, `recipients: string[]`, `user_id`, `options: map[string]any`, `delivery: { type, viewer_endpoint }`, `notifications: { web, email, mail_source }` (`notify_time` เคยอยู่ที่นี่; ตอนนี้เป็นคอลัมน์ `notifyAt` และถูกอ่านเป็น fallback เท่านั้น)
 
 ### 5.3 `tb_report_schedule` (tenant schema — ตารางที่ตายแล้ว เก็บไว้เพื่อเปรียบเทียบ)
 
@@ -104,6 +113,7 @@ Schedule ทุกตัวที่สร้างผ่าน UI ส่งม�
 - **Redis-locked, execute ครั้งเดียวแน่นอน** distributed locker ของ `go-cron` + Redis key `SET NX` (`cronjob:lock:<job-id>`, TTL 5 นาที) ป้องกันการ fire ซ้ำข้าม scheduler replica
 - **Poll-based ไม่ใช่ event-driven** scheduler poll แถว `Cronjob` ทุก 1 นาทีและ reconcile job `go-cron` ใน memory กับ DB — การแก้ `cron_expression` ตรง DB (ไม่มี UI path ทำแบบนี้) จะมีผลตอน poll ครั้งถัดไป
 - **ไม่มี misfire policy, ไม่มี timezone ต่อ schedule** ทั้งสองฟิลด์ไม่มีอยู่บน model `Cronjob` — ทั้งสองเคยถูกบันทึกไว้ว่าตั้งค่าได้และถูกแก้ไขในที่นี้ว่าไม่มีอยู่จริง
+- **เวลาแจ้งเตือนเป็นตัวเลือกและใช้ได้เฉพาะลิงก์ viewer** `notify_at` ที่เร็วกว่าเวลารันจะเลื่อนไปวันถัดไป (`notify_day_offset = 1`); ถูกปฏิเสธเมื่อใช้ร่วมกับ `cron_expression` ดิบหรือการส่งมอบที่ไม่ใช่ `viewer_url`
 
 ## 7. ความเชื่อมโยงข้ามโมดูล
 
@@ -115,7 +125,7 @@ Schedule ทุกตัวที่สร้างผ่าน UI ส่งม�
 ## 8. แหล่งอ้างอิง
 
 - **ที่เก็บจริง (Go, `micro-cronjobs`):** `../micro-cronjobs/internal/model/cronjob.go` (`CronJob`, `ReportJobConfig`, `ReportDelivery`, `ReportNotifications`), `../micro-cronjobs/internal/repository/cronjob_repo.go`, `../micro-cronjobs/internal/scheduler/scheduler.go` (poll loop, retry), `../micro-cronjobs/internal/scheduler/redis_locker.go` (distributed lock), `../micro-cronjobs/internal/executor/report.go` (การ dispatch แบบ `viewer_url` เทียบกับ `file`)
-- **Gateway (proxy CRUD schedule → micro-cronjobs):** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/reports/reports.controller.ts` (`@Post('schedules')`, `@Get('schedules')`, `@Delete('schedules/:schedule_id')`), `reports.service.ts` (`createSchedule`/`listSchedules`/`deleteSchedule`, `cronFromConfig()`)
+- **Gateway (proxy CRUD schedule → micro-cronjobs):** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/reports/reports.controller.ts` (`@Post('schedules')`, `@Get('schedules')`, `@Delete('schedules/:schedule_id')`), `reports.service.ts` (`createSchedule`/`listSchedules`/`deleteSchedule`, `cronFromConfig()`, `resolveNotifyDayOffset()`, `x-internal-token`), `swagger/request.ts` (`ScheduleCreateRequestDto.notify_at`; `schedule_config.notify_time` deprecated), `swagger/response.ts` (`notify_day_offset`)
 - **Prisma tenant (ตารางที่ตายแล้ว เพื่อเปรียบเทียบ):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_report_schedule` (บรรทัด ~6128)
 - **Frontend route:** `../carmen-inventory-frontend-react/routes/report/schedules/report-schedules.route.tsx`, `schedule-component.tsx`, `create-schedule-dialog.tsx`, `schedule-frequency-field.tsx`, `schedule-recipients-field.tsx`, `schedule-notifications-field.tsx`
-- **Frontend hook/type:** `../carmen-inventory-frontend-react/hooks/use-report-schedule.ts` (`useReportSchedules`, `useCreateReportSchedule`, `useDeleteReportSchedule` — ไม่มี update hook), `types/report-schedule.ts`
+- **Frontend hook/type:** `../carmen-inventory-frontend-react/routes/report/schedules/use-report-schedule.ts` (`useReportSchedules`, `useCreateReportSchedule`, `useDeleteReportSchedule` — ไม่มี update hook; ย้ายออกจาก `hooks/` เมื่อ 2026-08-28), `types/report-schedule.ts` (`notify_at`, `notify_day_offset`), `routes/report/schedules/use-schedule-table.tsx` (คอลัมน์ Notify at)

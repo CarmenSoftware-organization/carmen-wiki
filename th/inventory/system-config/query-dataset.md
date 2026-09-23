@@ -1,8 +1,8 @@
 ---
 title: Query Dataset
-description: SQL Workbench — backend admin-SQL-console service ที่มีจริง หน้าจอของมันอยู่ใน Platform SPA ไม่ใช่ผลิตภัณฑ์นี้ และ endpoint execute รัน SQL อะไรก็ได้ (รวมถึง DROP/ALTER/multi-statement) แทนที่จะเป็นพื้นผิว read-only ที่เอกสารเดิมเคยระบุไว้
+description: SQL Workbench — backend admin-SQL service ที่ UI คือ Platform SPA ทั้งห้า route gate ด้วยสิทธิ์ platform sql_workbench.read/manage; execute รัน SQL อะไรก็ได้ key system_admin.query_dataset ถูกลบเมื่อ 2026-09-21
 published: true
-date: 2026-09-06T06:45:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: system-config, query, dataset, sql, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -13,7 +13,9 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** Gate ด้วย platform permission สองตัว — `sql_workbench.read` (เรียกดู) และ `sql_workbench.manage` (รัน / บันทึก / drop) ครบ **ทั้ง 5 route** ตั้งแต่ 2026-08-20 &nbsp;·&nbsp; **การจัดเก็บ:** PostgreSQL catalog (`pg_class`, `pg_proc`) ใน tenant schema — **ไม่มี `tb_query_dataset`** &nbsp;·&nbsp; **ไม่มีหน้าจอใน*ผลิตภัณฑ์นี้*** — console อยู่ที่หน้าจอ [SQL Workbench](/th/platform/sql-workbench) ของ Platform SPA ไม่มี route/component/hook ที่ตรงกันใน `carmen-inventory-frontend-react` &nbsp;·&nbsp; **`execute` ไม่ใช่ read-only** — รัน SQL อะไรก็ได้ รวมถึง DDL และ multi-statement
 
-## สถานะการ implement (ตรวจสอบ 2026-07-16; ตรวจสอบ permission และ UI ใหม่ 2026-09-06)
+## สถานะการ implement (ตรวจสอบ 2026-07-16; ตรวจสอบ permission และ UI ใหม่ 2026-09-06 และ 2026-09-22)
+
+**2026-09-22:** guard ทั้งห้าด้านล่างไม่เปลี่ยนที่ HEAD (`config_sql-query.controller.ts:76-79`, `:125-128`, `:180-183`, `:215-218`, `:273-276` — `PlatformPermissionGuard` + `RequirePlatformPermission('sql_workbench.manage' | 'sql_workbench.read')`) มีการเปลี่ยนแคตตาล็อกหนึ่งข้อตั้งแต่ 2026-09-06: **`system_admin.query_dataset` ถูกลบออกจากทั้งแคตตาล็อก licence และแคตตาล็อก permission** (BE `7bebddaa7`, 2026-09-21; FE `02bfff7a` เอาออกจาก `constant/permissions.ts` วันเดียวกัน) เหตุผลใน commit: ทุก route gate ด้วยสิทธิ์ platform ไม่มีตัวไหน gate ด้วย BU RBAC และผู้เรียกคือ Platform SPA — key ฝั่ง BU จึงเป็นซากที่ `LicenseInterceptor` ยังบังคับใช้กับ BU สำหรับฟีเจอร์ที่ไม่มีใครขาย ไม่มีอะไรใน `carmen-inventory-frontend-react` อ้างถึง `query_dataset` อีกแล้ว URL ที่ scope ตาม BU (`api/config/:bu_code/sql-query/*`) ไม่เปลี่ยน; มีเพียงข้อกำหนด licence/permission ฝั่ง BU ที่หายไป
 
 สาม claim ในเวอร์ชันก่อนหน้าของหน้านี้ไม่ตรงกับ source ปัจจุบัน และถูกแก้ไขด้านล่าง ข้อ 1 และ 2 แก้เมื่อ 2026-07-16 ข้อ 3 แก้เมื่อ 2026-09-06:
 
@@ -153,12 +155,13 @@ Shape `DbObjectsResponse`:
 - [reporting-audit/report](/th/inventory/reporting-audit/report) — template รายงานมีเจตนา bind กับ view ที่สร้างที่นี่; ความเชื่อมโยงยังไม่ได้ re-verify แยกในรอบนี้
 - [reporting-audit/widget](/th/inventory/reporting-audit/widget) — Widget dashboard อ้างอิง `dataset_id` ที่ลงทะเบียนในโค้ด (`tb_dashboard_bu_widget` / `tb_dashboard_personal_widget`) ไม่ใช่ SQL ad-hoc; claim `tb_widget_workspace` ของเวอร์ชันก่อนหน้าไม่มีแหล่งรองรับ (ไม่มีตารางนั้นอยู่จริง)
 - [reporting-audit/schedule](/th/inventory/reporting-audit/schedule) — รายงานตามตารางเวลา consume view ตัวเดียวกัน (ยังไม่ยืนยันในรอบนี้)
-- [system-config/period](/th/inventory/system-config/period) — object การปิดงวด (`sp_close_period`, `v_period_snapshot`) โดยทั่วไปอยู่ที่นี่ (ยังไม่ยืนยันในรอบนี้)
+- [system-config/period](/th/inventory/system-config/period) — object การปิดงวด (`sp_close_period`, `v_period_snapshot`) โดยทั่วไปอยู่ที่นี่ (ยังไม่ยืนยัน — ไม่มี migration ใดสร้าง object แบบนั้น; ถือเป็น convention ของ operator ไม่ใช่ artefact ที่ ship แล้ว)
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
 - **Backend service:** `../carmen-turborepo-backend-v2/apps/micro-business/src/sql-query/sql-query.service.ts` — `execute`, `saveDdl`, `listDbObjects`, `getDbObjectDefinition`, `dropDbObject`
-- **Backend gateway controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_sql-query/config_sql-query.controller.ts` — อ่านซ้ำ 2026-09-06: มี `PlatformPermissionGuard` + `RequirePlatformPermission` ครบ **ทั้ง 5 route** (`execute` `:70-71`, `save` `:119-120`, `db-objects` `:174-175`, `db-objects/definition` `:209-210`, `DELETE db-objects` `:258-259`) ไม่มี `AppIdGuard` ที่ใดเลยในไฟล์นี้
+- **Backend gateway controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_sql-query/config_sql-query.controller.ts` — อ่านซ้ำ 2026-09-22: มี `PlatformPermissionGuard` + `RequirePlatformPermission` บน **ทั้งห้า** route (`execute` `:78-79`, `save` `:127-128`, `db-objects` `:182-183`, `db-objects/definition` `:217-218`, `DELETE db-objects` `:275-276`) ไม่มี `AppIdGuard` ที่ไหนในไฟล์เลย
+- **การลบออกจากแคตตาล็อก:** BE `7bebddaa7` (2026-09-21) — `system_admin.query_dataset` ถูกเอาออกจาก `license-catalog.generated.ts` และ permission seed; FE `02bfff7a`
 - **SQL safety validator:** `../carmen-turborepo-backend-v2/apps/micro-business/src/sql-query/sql-validator.ts` — blocklist `FORBIDDEN_LEADING`, flag `allowDangerous` สำหรับ bypass
 - **Frontend:** ไม่พบเลย ไม่มีไฟล์ `query-dataset` หรือ `sql-query` ที่ไหนใน `../carmen-inventory-frontend-react` (ยืนยันด้วยการค้นทั่ว repo); ไม่มี route ใน `routes/router.tsx`
 - **Prisma ที่เกี่ยวข้อง:** `tb_report_job` (line ~6101), `tb_report_schedule` (line ~6135), `tb_dashboard_bu_widget` (line ~6185), `tb_dashboard_personal_widget` (line ~6205)

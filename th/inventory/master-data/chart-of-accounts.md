@@ -11,7 +11,7 @@ dateCreated: '2026-09-22T18:00:00.000Z'
 # ผังบัญชี (Chart of Accounts)
 
 > **At a Glance**
-> **เจ้าของ:** Sysadmin / Finance &nbsp;·&nbsp; **ตาราง:** `tb_chart_of_accounts` + `enum_chart_of_accounts_{nature,type,category,use_in}` &nbsp;·&nbsp; **ใช้โดย:** [general-ledger](/en/inventory/general-ledger) (บรรทัด JV, account group), allow-list ของ [cost-center](/th/inventory/master-data/cost-center) &nbsp;·&nbsp; **Permission:** `configuration.chart_of_accounts.*` &nbsp;·&nbsp; **Licence key:** `configuration.chart_of_accounts` &nbsp;·&nbsp; รายการรหัสบัญชีของ BU ดูแลได้ผ่าน dialog, อัปโหลดไฟล์ หรือดึงจาก Carmen GL
+> **เจ้าของ:** Sysadmin / Finance &nbsp;·&nbsp; **ตาราง:** `tb_chart_of_accounts` + `enum_chart_of_accounts_{nature,type,category,use_in}` &nbsp;·&nbsp; **ใช้โดย:** [general-ledger](/th/inventory/general-ledger) (บรรทัด JV, account group), allow-list ของ [cost-center](/th/inventory/master-data/cost-center) &nbsp;·&nbsp; **Permission:** `configuration.chart_of_accounts.*` &nbsp;·&nbsp; **Licence key:** `configuration.chart_of_accounts` &nbsp;·&nbsp; รายการรหัสบัญชีของ BU ดูแลได้ผ่าน dialog, อัปโหลดไฟล์ หรือดึงจาก Carmen GL
 
 ## 1. คืออะไร / ใครใช้
 
@@ -106,7 +106,7 @@ enum_chart_of_accounts_use_in   { ap, ar, gl, ast }
 
 ## 7. การอ้างอิงข้ามโมดูล
 
-- [general-ledger](/en/inventory/general-ledger) — account group (`tb_gl_account_group`), JV prefix, GL period และกติกา JV posting ที่บริโภค `nature`, `use_in` และ `is_require_cost_center`
+- [general-ledger](/th/inventory/general-ledger) — account group (`tb_gl_account_group`), JV prefix, GL period และกติกา JV posting ที่บริโภค `nature`, `use_in` และ `is_require_cost_center`
 - [cost-center](/th/inventory/master-data/cost-center) — แถว allow-list `tb_cost_center_account` อ้างอิงตารางนี้
 - [product/01-data-model](/th/inventory/product/01-data-model) § 2.11 — `tb_product_account_code_mapping` แบบ free-text ที่ไม่เกี่ยวข้องกัน
 - [system-config/application-config](/th/inventory/system-config/application-config) — key `interface_accounting_carmen_gl` ที่ขับเคลื่อนการนำเข้าจาก GL

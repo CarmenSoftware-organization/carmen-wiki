@@ -104,7 +104,7 @@ response แบบ list และ detail บน config controller ไม่ส�
 
 ### 4.1 ข้อมูลหลัก General Ledger (ชี้ทางเท่านั้น)
 
-migration `gl_core_master` เมื่อ 2026-09-09 เพิ่มตารางข้อมูลหลัก GL ที่อยู่ใต้ prefix `api/config/:bu_code/*` เดียวกัน — `gl-account-groups` (`tb_gl_account_group`), `gl-jv-prefixes` (`tb_gl_jv_prefix`) และ `gl-periods` (`tb_gl_period` ซึ่งตั้งใจแยกจาก `tb_inventory_period`) ตารางเหล่านี้มีเอกสารอยู่ในส่วน [general-ledger](/en/inventory/general-ledger) ของ book ไม่ใช่ที่นี่; โมดูลนี้เป็นเจ้าของเฉพาะสองเอนทิตีที่ข้อมูลหลัก GL ต้องพึ่งพา — [chart-of-accounts](/th/inventory/master-data/chart-of-accounts) (`account_group_id` → `tb_gl_account_group`) และ [cost-center](/th/inventory/master-data/cost-center) (allow-list ที่บรรทัด JV ถูกตรวจสอบเทียบกับ)
+migration `gl_core_master` เมื่อ 2026-09-09 เพิ่มตารางข้อมูลหลัก GL ที่อยู่ใต้ prefix `api/config/:bu_code/*` เดียวกัน — `gl-account-groups` (`tb_gl_account_group`), `gl-jv-prefixes` (`tb_gl_jv_prefix`) และ `gl-periods` (`tb_gl_period` ซึ่งตั้งใจแยกจาก `tb_inventory_period`) ตารางเหล่านี้มีเอกสารอยู่ในส่วน [general-ledger](/th/inventory/general-ledger) ของ book ไม่ใช่ที่นี่; โมดูลนี้เป็นเจ้าของเฉพาะสองเอนทิตีที่ข้อมูลหลัก GL ต้องพึ่งพา — [chart-of-accounts](/th/inventory/master-data/chart-of-accounts) (`account_group_id` → `tb_gl_account_group`) และ [cost-center](/th/inventory/master-data/cost-center) (allow-list ที่บรรทัด JV ถูกตรวจสอบเทียบกับ)
 
 ## 5. แหล่งอ้างอิง
 

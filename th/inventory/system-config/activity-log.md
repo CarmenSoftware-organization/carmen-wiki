@@ -1,8 +1,8 @@
 ---
 title: Activity Log (หน้าจอ)
-description: หน้าจอ /system-admin/activity-log — list/grid view เหนือ tb_activity พร้อม filter action/entity-type/actor, export XLSX, print, และ detail sheet JSON before/after ดิบ ๆ โมเดลข้อมูลอยู่ที่ reporting-audit/activity — หน้านี้บันทึกเฉพาะหน้าจอ
+description: หน้าจอ /system-admin/activity-log — list/grid เหนือ tb_activity พร้อม filter action (ครบ 25 ค่า enum), entity-type และ actor, export XLSX, print, detail sheet JSON ดิบ Permission system_admin.activity_log
 published: true
-date: 2026-07-29T11:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: system-config, activity-log, audit, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T11:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-07-29T11:00:00.000Z
 # Activity Log (หน้าจอ)
 
 > **สรุปโดยย่อ**
-> **Route:** `/system-admin/activity-log` &nbsp;·&nbsp; **ชื่อบน sidebar:** "Activity Monitor" (`modules.activityLog`) ต่างจาก path segment ของ route เอง &nbsp;·&nbsp; **ตาราง:** `tb_activity` — โมเดลข้อมูลเต็มที่ [reporting-audit/activity](/th/inventory/reporting-audit/activity) &nbsp;·&nbsp; **Permission:** `system_configuration.view` &nbsp;·&nbsp; **หน้านี้บันทึกกลไกของหน้าจอเอง** (view mode, filter, export, detail sheet) — ดู [reporting-audit/activity](/th/inventory/reporting-audit/activity) สำหรับตาราง/enum/กติกาทางธุรกิจ และการยืนยันว่านี่คือ activity UI เดียวที่มีอยู่
+> **Route:** `/system-admin/activity-log` &nbsp;·&nbsp; **ชื่อบน sidebar:** "Activity Monitor" (`modules.activityLog`) ต่างจาก path segment ของ route เอง &nbsp;·&nbsp; **ตาราง:** `tb_activity` — โมเดลข้อมูลเต็มที่ [reporting-audit/activity](/th/inventory/reporting-audit/activity) &nbsp;·&nbsp; **Permission / licence:** `system_admin.activity_log.view` / `system_admin.activity_log` (`module-list.ts:729-732`; key `system_configuration.view` ที่หน้านี้อ้างถึงจนถึง 2026-09-22 เป็น ghost ของ frontend ที่ไม่เคยมีอยู่ใน `tb_permission` — ถูกแทนที่โดย FE `b9e2de5f` เมื่อ 2026-09-21; หน้าจอพี่น้อง `/system-admin/user-activity` gate ด้วย `system_admin.user_activity.view` ภายใต้ licence feature เดียวกัน) &nbsp;·&nbsp; **Endpoint:** `api/:bu_code/activity-logs` (licence route `app:activity-logs`) &nbsp;·&nbsp; **หน้านี้บันทึกกลไกของหน้าจอเอง** (view mode, filter, export, detail sheet) — ดู [reporting-audit/activity](/th/inventory/reporting-audit/activity) สำหรับตาราง/enum/กติกาทางธุรกิจ และการยืนยันว่านี่คือ activity UI เดียวที่มีอยู่
 
 ![Activity Log screen](/screenshots/activity-log/index.png)
 
@@ -28,8 +28,8 @@ dateCreated: 2026-07-29T11:00:00.000Z
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
 | สลับระหว่าง list กับ grid view | Toolbar → toggle icon list/grid | Desktop เท่านั้น — บนมือถือหน้าจอใช้ layout grid/card เสมอไม่ว่า toggle นี้จะเป็นอะไร |
-| กรองตาม action | Multi-select Action | 5 option ที่ curate ไว้ (`create`, `update`, `delete`, `login`, `logout`) จาก 20 ค่า enum — ดู [reporting-audit/activity](/th/inventory/reporting-audit/activity) §5.1 สำหรับ enum เต็ม |
-| กรองตาม entity type | Multi-select Entity Type (ค้นหาได้) | ~13 ค่าที่ curate ไว้; `entity_type` เองเป็น free-form ดังนั้นค่าอื่นอาจมีอยู่ในข้อมูลโดยไม่มี filter chip ตรงกัน |
+| กรองตาม action | Multi-select Action | **ครบ 25** ค่าของ `enum_activity_action` เรียงตาม schema แต่ละค่ามีไอคอนของตัวเอง (`ACTION_OPTIONS`, `activity-log-component.tsx:44`; FE `c07d6805`, 2026-09-08) — รวมสมาชิกใหม่ล่าสุด `email_sent` (PO / RFP ที่ส่งให้ vendor) หน้านี้ฉบับก่อนระบุ 5 option ที่ curate ไว้; ดู [reporting-audit/activity](/th/inventory/reporting-audit/activity) §5.1 สำหรับ enum |
+| กรองตาม entity type | Multi-select Entity Type (ค้นหาได้) | 13 ค่าที่ curate ไว้ (`ENTITY_TYPE_OPTIONS`, `:74`); `entity_type` เองเป็น free-form ดังนั้นค่าอื่นอาจมีอยู่ในข้อมูลโดยไม่มี filter chip ตรงกัน |
 | กรองตามผู้ใช้ (actor) | Multi-select User (ค้นหาได้) | มาจาก `useAllUsers()` — ผู้ใช้ทุกคนใน tenant ไม่ใช่แค่คนที่ปรากฏใน log |
 | ค้นหา free-text | ช่อง Search | รวมกับ filter สามแกน (query param ทั้งหมด merge เป็น request เดียว) |
 | Toggle คอลัมน์ตาราง (list view เท่านั้น) | ไอคอน Columns → popover column-visibility | ไม่มีใน grid view |
@@ -51,7 +51,8 @@ dateCreated: 2026-07-29T11:00:00.000Z
 - **มี list-rendering path สองแบบที่เป็นอิสระต่อกัน ไม่ใช่ component เดียวที่ใช้ร่วมกันพร้อม flag view-mode** List mode fetch ผ่าน `useActivityLog` (page param แบบคลาสสิก) *เฉพาะเมื่อ* `!useInfiniteScroll`; grid/mobile mode fetch ผ่าน `useGridPagination` (`loadMore` แบบ sentinel-trigger) *เฉพาะเมื่อ* `useInfiniteScroll` เป็นจริง — hook ทั้งสองยิงไปที่ endpoint เดียวกันแต่กลไก pagination ต่างกัน และ component render `<DataGrid>` หนึ่งตัว หรือ card grid หนึ่งตัวแบบมีเงื่อนไข ไม่เคย render ทั้งคู่พร้อมกัน
 - **Detail sheet แสดง JSON ดิบสองบล็อก ไม่ใช่ diff ที่คำนวณไว้** Sheet (`activity-log-detail-sheet.tsx`) pretty-print `old_data` และ `new_data` เคียงข้างกันผ่าน `JsonBlock` renderer ธรรมดา — ไม่มีการ highlight ระดับ field (ไม่พบการคำนวณ "ฟิลด์ที่เปลี่ยน" ใด ๆ) [reporting-audit/activity](/th/inventory/reporting-audit/activity) อธิบายสิ่งนี้ว่า "the closest equivalent to a diff old vs new view" — ถูกต้อง แต่ควรระบุให้ชัดว่าเป็นบล็อก JSON ดิบสองบล็อก ไม่ใช่ diff ที่คำนวณไว้
 - **Sidebar เรียก module นี้ว่า "Activity Monitor" ไม่ใช่ "Activity Log"** `modules.activityLog` ในไฟล์แปล resolve เป็น `"Activity Monitor"` — path segment ของ route (`/system-admin/activity-log`) และ title บนหน้า (`systemAdmin.activityLog.title` → ก็ `"Activity Monitor"` เช่นกัน) สอดคล้องกันเอง แต่ต่างจาก URL slug และชื่อของหน้า wiki นี้เอง ไม่มีผลต่อการทำงาน แค่บันทึกไว้เพื่อไม่ให้สับสนตอนอ้างอิง screenshot หรือ nav ข้าม
-- **ไม่มี permission ที่ละเอียดกว่า `system_configuration.view`** ทุก sidebar entry ของ `/system-admin/*` — รวมถึงตัวนี้ — gate ด้วย permission key เดียวกันตัวเดียว (`constant/module-list.ts`); ไม่มี permission อ่าน/export เฉพาะของ activity-log
+- **permission เดียวสำหรับหน้าจอ ไม่มีสำหรับ export** sidebar entry gate ด้วย `system_admin.activity_log.view` (`constant/module-list.ts:729-732`); ทุก entry ของ `/system-admin/*` ตอนนี้มี resource `tb_permission` จริงของตัวเอง (`system_admin.business_unit`, `.document`, `.running_code`, `.user_activity`, …) หลังการล้าง ghost key เมื่อ 2026-09-21 — ข้อความเดิม "ใช้ `system_configuration.view` ตัวเดียวแบบ generic สำหรับทุกอย่าง" ไม่เป็นจริงอีกต่อไป ยังคงไม่มี permission export เฉพาะของ activity-log
+- **chip ของ action ในรายการถูกเอาออก** (`72d6cd34`, 2026-09-04) — action แสดงเป็นไอคอน + ข้อความ chip เหลืออยู่เฉพาะใน card และ detail sheet (`86446384`)
 - **List filter ของ Actor ไม่ได้จำกัดเฉพาะ actor ที่ปรากฏใน log จริง** `useAllUsers()` คืนผู้ใช้ทุกคนใน tenant ดังนั้น filter Actor อาจแสดงชื่อที่ไม่มีแถว activity ตรงกันเลย
 
 ---
@@ -73,6 +74,8 @@ Type เฉพาะของหน้าจอที่ควรพูดถึ
 
 - **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/activity-log/activity-log.route.tsx`, `activity-log-component.tsx`, `activity-log-card.tsx`, `activity-log-detail-sheet.tsx`, `use-activity-log-table.tsx`
 - **Frontend hook/type:** `../carmen-inventory-frontend-react/hooks/use-activity-log.ts` — `useActivityLog()`, `useExportActivityLog()`; `types/activity-log.ts` — `ActivityLog`, `getLogCreatedAt()`
-- **Nav entry:** `../carmen-inventory-frontend-react/constant/module-list.ts` — `activityLog`, `permission: PERMISSIONS.system_configuration.view`
+- **Nav entry:** `../carmen-inventory-frontend-react/constant/module-list.ts:729-732` — `activityLog`, `permission: PERMISSIONS.system_admin.activity_log.view`, `licenseFeature: "system_admin.activity_log"`
+- **Backend:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/activity-logs/`; `enum_activity_action` (25 ค่า รวม `email_sent`) ใน `schema.prisma` ของ tenant
+- **E2E:** `../carmen-inventory-frontend-e2e/docs/test-cases/1109-activity-log.md` — แคตตาล็อกเท่านั้น
 - **Translations:** `../carmen-inventory-frontend-react/messages/en.json` — `systemAdmin.activityLog.*` (`title: "Activity Monitor"`), `modules.activityLog`
 - **ตาราง/enum/กติกา (ไม่ทำซ้ำที่นี่):** ดู [reporting-audit/activity](/th/inventory/reporting-audit/activity) §8 สำหรับการอ้างอิง Prisma/frontend/writer ของตัวเอง

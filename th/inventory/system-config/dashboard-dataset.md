@@ -1,8 +1,8 @@
 ---
 title: ชุดข้อมูลแดชบอร์ด (Dashboard Dataset)
-description: แคตตาล็อก read-only ของ admin สำหรับ data feed ที่ลงทะเบียนไว้ในโค้ด — แหล่งข้อมูลแบบมีชื่อและมี type ที่ widget บนแดชบอร์ดดึงข้อมูลจาก แยกออกจาก widget workspace layout ของผู้ใช้ และจาก view ที่เขียนด้วย SQL ใน query-dataset
+description: แคตตาล็อก read-only ของ admin สำหรับ data feed ที่ลงทะเบียนในโค้ดใน micro-data (62 definition, เจ็ด shape, supported_renders ต่อ shape) ที่ widget บนแดชบอร์ดดึงข้อมูลจาก — แยกจาก layout ของ widget และ view ที่เขียนด้วย SQL
 published: true
-date: 2026-07-16T05:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: system-config, dashboard, dataset, widget, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -11,7 +11,13 @@ dateCreated: 2026-06-04T00:00:00.000Z
 # ชุดข้อมูลแดชบอร์ด (Dashboard Dataset)
 
 > **At a Glance**
-> **เจ้าของ:** Sysadmin (แคตตาล็อก read-only) &nbsp;·&nbsp; **Backing:** ลงทะเบียนไว้ในโค้ดบริการ **micro-data** (`GET /api/dashboard/datasets`) โดย backend-gateway เป็น proxy ผ่าน HTTP — **ไม่มีตาราง tenant เฉพาะ** &nbsp;·&nbsp; **ใช้โดย:** [reporting-audit/widget](/th/inventory/reporting-audit/widget) (widget picker), dashboard tile &nbsp;·&nbsp; **68 feed แบบมี shape** (`scalar`, `scalar_delta`, `time_series`, `categorical`, `ranked`, `matrix`) ครอบคลุม inventory, workflow, procurement, product, vendor, recipe และ equipment
+> **เจ้าของ:** Sysadmin (แคตตาล็อก read-only) &nbsp;·&nbsp; **Backing:** ลงทะเบียนไว้ในโค้ดบริการ **micro-data** (`GET /api/dashboard/datasets`) โดย backend-gateway เป็น proxy ผ่าน HTTP — **ไม่มีตาราง tenant เฉพาะ** &nbsp;·&nbsp; **ใช้โดย:** [reporting-audit/widget](/th/inventory/reporting-audit/widget) (widget picker), dashboard tile &nbsp;·&nbsp; **Permission / licence:** `dashboard.dataset.view` / `dashboard.dataset` (`module-list.ts:736-742`; licence route `app:datasets`, `app:dashboard-lab`) &nbsp;·&nbsp; **62 definition ที่ลงทะเบียน** (`ENTRIES` ใน `../micro-data/service/dashboard/registry.go` นับเมื่อ 2026-09-22: 16 `scalar`, 9 `scalar_delta`, 6 `time_series`, 21 `categorical`, 7 `ranked`, 3 `matrix`) ครอบคลุม inventory, workflow, document, procurement, product, vendor, recipe และ equipment; shape ที่เจ็ด `table` มีอยู่ใน model (`model/dashboard.go:17`) แต่ยังไม่มี entry ใน registry ใช้ ฉบับก่อนหน้าระบุ 68
+
+## สถานะการ implement (ตรวจสอบซ้ำ 2026-09-22)
+
+- **`supported_renders` อยู่บน entry ของแคตตาล็อก** (BE `6dfe58992`, 2026-09-07; `swagger/response.ts:50-57`, FE `types/dashboard-dataset.ts:19`): backend เป็นเจ้าของรายการ widget render type ที่ shape หนึ่งวาดได้ (`dashboard.SupportedRenders(shape)` ใน `../micro-data/service/widget_service.go:94-114`) และ `PATCH` widget ด้วย `widget_type` นอกรายการนั้นถูกปฏิเสธเป็น `ErrInvalidWidget` แทนที่จะ render tile ที่พัง
+- **การเรียก Gateway → micro-data แนบ `x-internal-token`** ตั้งแต่ BE `c94a625ed` (2026-09-21) — ถ้าไม่มี ทั้ง dashboard ตอบ 401 หลัง middleware internal-token ของ micro-data ถูกเพิ่มเข้ามา สำหรับ browser ไม่มีอะไรเปลี่ยน ยังเรียก gateway เหมือนเดิม
+- tile KPI "pending" ของ PR/PO/SR/GRN ย้ายจาก function `fn_dash_*_pending` ต่อเอกสารไปเป็น entry `document.{pr,po,sr,grn}-pending` เหนือ view `v_dash_*_base` ที่ใช้ร่วมกัน (comment ใน registry `:20-25`); id รูปแบบ `workflow.<doc>-pending-approval` สำหรับสี่ตัวนั้นไม่มีอยู่แล้ว
 
 ## 1. คืออะไรและใครใช้
 
@@ -72,9 +78,10 @@ dataset แต่ละตัว execute ภายใน **read-only transaction
 | `id` | `string` | ตัวระบุแบบ dot-namespaced เช่น `inventory.low-stock-count` ใช้เป็น reference `dataset_id` ของ widget |
 | `name` | `string` | Label แบบอ่านได้ที่แสดงบน catalog card |
 | `description` | `string?` | คำอธิบายแบบยาวแบบ optional |
-| `shape` | `enum_dataset_shape` | หนึ่งใน: `scalar`, `scalar_delta`, `time_series`, `categorical`, `ranked`, `matrix` กำหนดโครงสร้าง payload ที่ widget renderer คาดหวัง |
-| `category` | `string` | การจัดกลุ่มเชิงฟังก์ชัน ค่าปัจจุบัน: `inventory`, `workflow`, `movement`, `spend`, `variance` |
+| `shape` | `enum_dataset_shape` | หนึ่งใน: `scalar`, `scalar_delta`, `time_series`, `categorical`, `ranked`, `matrix`, `table` (มีเฉพาะใน model ยังไม่ใช้ใน registry) กำหนดโครงสร้าง payload ที่ widget renderer คาดหวัง |
+| `category` | `string` | การจัดกลุ่มเชิงฟังก์ชัน ค่าที่พบใน registry: `inventory`, `workflow`, `document`, `movement`, `spend`, `variance`, … |
 | `unit` | `string?` | Hint แบบ display เท่านั้น เช่น `items`, `฿`, `%` |
+| `supported_renders` | `string[]?` | widget render type ที่ใช้ได้กับ shape นี้ (backend เป็นเจ้าของ; 2026-09-07) |
 
 ### 5.2 `enum_dataset_shape` — payload contract
 
@@ -86,6 +93,7 @@ dataset แต่ละตัว execute ภายใน **read-only transaction
 | `categorical` | `Array<{ label: string; value: number; color?: string }>` | Bar / pie / donut chart |
 | `ranked` | `Array<{ rank: number; label: string; value: number; extras?: … }>` | Ranked bar / data table |
 | `matrix` | `{ rows: string[]; cols: string[]; values: number[][] }` | Heatmap / cross-tab table |
+| `table` | `{ columns: [{ key, label, type? }]; rows: [{ <key>: <val> }] }` | ตารางข้อมูล (ประกาศใน `model/dashboard.go:17`; ยังไม่มี entry ใน registry) |
 
 ### 5.3 API endpoints
 
@@ -98,7 +106,7 @@ GET  /api/:bu_code/datasets/:dataset_id  → { meta: DatasetMeta, data: DatasetD
 
 ### 5.4 ที่ตั้งของ registry
 
-แคตตาล็อก dataset ลงทะเบียนไว้ในโค้ดของบริการ **micro-data** (Go): handler อยู่ใน `../micro-data/controller/dashboard_controller.go`, logic ของ dataset/widget อยู่ใน `../micro-data/service/dashboard/` และ `../micro-data/service/widget_service.go`, และ model อยู่ใน `../micro-data/model/dashboard.go` ณ เวลาที่เขียนนี้ แคตตาล็อกมี **68** dataset แบบมี shape ครอบคลุม inventory, procurement, product, vendor, recipe, equipment และ config
+แคตตาล็อก dataset ลงทะเบียนไว้ในโค้ดของบริการ **micro-data** (Go): handler อยู่ใน `../micro-data/controller/dashboard_controller.go`, logic ของ dataset/widget อยู่ใน `../micro-data/service/dashboard/` (`registry.go` `ENTRIES` บวก `document.go`, `ops.go`, `replenishment.go`, `visibility.go`, `windows.go`) และ `../micro-data/service/widget_service.go`, และ model อยู่ใน `../micro-data/model/dashboard.go` ที่ HEAD (2026-09-22) แคตตาล็อกมี **62** dataset แบบมี shape
 
 ## 6. กฎทางธุรกิจ
 
@@ -118,7 +126,9 @@ GET  /api/:bu_code/datasets/:dataset_id  → { meta: DatasetMeta, data: DatasetD
 ## 8. แหล่งข้อมูลอ้างอิง
 
 - **micro-data service (Go):** `../micro-data/` — dashboard datasets + widget CRUD. Handlers: `controller/dashboard_controller.go`; logic: `service/dashboard/`, `service/widget_service.go`; models: `model/dashboard.go`; routes: `routes/routes.go`; overview: `README.md`
-- **Gateway proxy:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-datasets/dashboard-datasets.service.ts` — HTTP proxy ไปยัง micro-data; controller `dashboard-datasets.controller.ts` เปิดเผย `GET /api/:bu_code/datasets` และ `GET /api/:bu_code/datasets/:dataset_id`
+- **Gateway proxy:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-datasets/dashboard-datasets.service.ts` — HTTP proxy ไปยัง micro-data (ส่ง `x-internal-token`, `c94a625ed`); controller `dashboard-datasets.controller.ts` เปิด `GET /api/:bu_code/datasets` และ `GET /api/:bu_code/datasets/:dataset_id`
+- **Nav / permission:** `../carmen-inventory-frontend-react/constant/module-list.ts:736-742` — `PERMISSIONS.dashboard.dataset.view`, `licenseFeature: "dashboard.dataset"`
+- **E2E:** `../carmen-inventory-frontend-e2e/docs/test-cases/1112-dashboard-dataset.md` — แคตตาล็อกเท่านั้น
 - **Swagger response DTOs:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-datasets/swagger/response.ts` — `DatasetMetaDto`, `DatasetListResponseDto`, `DatasetResponseDto`
 - **Platform enum:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `enum_dataset_shape` (บรรทัด ~815)
 - **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/dashboard-dataset/dashboard-dataset.route.tsx` + `dashboard-dataset-component.tsx`

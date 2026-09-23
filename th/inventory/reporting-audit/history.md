@@ -2,7 +2,7 @@
 title: ประวัติรายงาน (Report History)
 description: รายการอ่านอย่างเดียวของแถว tb_report_job — ยืนยันแล้วว่าไม่มีข้อมูลในเชิงโครงสร้างในระบบปัจจุบัน เพราะทั้งการรันรายงานแบบ on-demand, Print และการ fire ตามเวลาต่างไม่มีเส้นทางโค้ดที่เข้าถึงได้เขียนแถว job เลย
 published: true
-date: 2026-07-22T00:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: reporting-audit, history, archive, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -25,6 +25,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 - การค้นหาทั่ว frontend ยืนยันว่า **ไม่มีผู้เรียก `generate-async`, `generateAsync` หรือ `job-status`/`jobStatus`** เลยแม้แต่ที่เดียวใน `carmen-inventory-frontend-react`
 
 **ผลสุทธิ:** ภายใต้ UI ที่เข้าถึงได้ในปัจจุบัน ไม่มีอะไรเติมข้อมูลให้ `tb_report_job` เลย หน้าจอ `/report/history` มีอยู่จริง เชื่อมต่อถูกต้องกับตารางจริงและ backend endpoint จริง แต่คาดว่าจะ **ว่างเปล่าในทางปฏิบัติ** เว้นแต่จะมีผู้เรียกอื่น (การเชื่อมต่อ API โดยตรง, การเปลี่ยนแปลง UI ในอนาคต หรือ schedule ที่ `delivery.type` ถูกตั้งเป็น `"file"` นอกเหนือจาก create-dialog ปกติ) ใช้เส้นทาง async-job หน้านี้ถูกแก้ไขให้อธิบายหน้าจอจริงและช่องว่างที่พบ; ข้อกล่าวอ้างในฉบับก่อนหน้าเกี่ยวกับ "ทุกการรันรายงาน" ที่มาลงที่นี่, action "Re-run" และ drawer "Print History" ต่อเอกสารถูกลบออกในฐานะที่ยังไม่ยืนยัน/ไม่มีอยู่จริง
+
+**ตรวจสอบซ้ำ 2026-09-22:** ยังคงไม่มีผู้เรียก `generate-async` / `job-status` จาก frontend เลย (ค้นหาใน `routes`, `hooks`, `lib`, `constant` ที่ HEAD); gateway ยังคงมี `POST .../reports/generate-async` และ `GET .../reports/jobs/:job_id` (Bruno `documents-and-reports/report/GET-get-job-status-…bru`, `GET-get-history-…bru`) การเปลี่ยนแปลงมีเพียงด้านหน้าตา: คอลัมน์สถานะตอนนี้เป็นไอคอน + badge (`73499174`) และ hook ย้ายไป `routes/report/history/use-report-history.ts` (2026-08-28)
 
 ## 1. ภาพรวมและผู้ใช้งาน
 
@@ -100,4 +102,5 @@ Report History คือ log การ execute ของ `tb_report_job` — เ
 - **Backend (มีอยู่จริง แต่เข้าถึงได้เฉพาะผ่านเส้นทาง legacy ที่เข้าไม่ถึง):** `../micro-report/controller/report_controller.go` (handler `generateAsync`, `jobStatus`, `history`), `../micro-report/db/report_job_repo.go`, `../micro-report/model/job.go`
 - **Backend (เส้นทางที่ใช้จริง — ไม่มีแถว job):** handler `viewReport` ของ `../micro-report/controller/report_controller.go`
 - **Frontend route:** `../carmen-inventory-frontend-react/routes/report/history/report-history.route.tsx`, `history-component.tsx`, `use-history-table.tsx`
-- **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-report-history.ts` — `useReportHistory` (รายการเท่านั้น; ไม่มี hook re-run/detail)
+- **Frontend hook:** `../carmen-inventory-frontend-react/routes/report/history/use-report-history.ts` — `useReportHistory` (รายการเท่านั้น; ไม่มี hook re-run/detail; ย้ายออกจาก `hooks/` เมื่อ 2026-08-28)
+- **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/documents-and-reports/report/GET-get-history-documents-and-reports-report.bru`, `GET-get-job-status-documents-and-reports-report.bru`

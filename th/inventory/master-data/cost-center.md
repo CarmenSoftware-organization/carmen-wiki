@@ -11,7 +11,7 @@ dateCreated: '2026-09-22T18:00:00.000Z'
 # ศูนย์ต้นทุน (Cost Center)
 
 > **At a Glance**
-> **เจ้าของ:** Sysadmin / Finance &nbsp;·&nbsp; **ตาราง:** `tb_cost_center_group` → `tb_cost_center` → `tb_cost_center_account` &nbsp;·&nbsp; **ใช้โดย:** บรรทัด JV ของ [general-ledger](/en/inventory/general-ledger) บนบัญชีที่ flag `is_require_cost_center` &nbsp;·&nbsp; **Permissions:** `configuration.cost_center_group.*`, `configuration.cost_center.*` &nbsp;·&nbsp; **Licence keys:** `configuration.cost_center_group`, `configuration.cost_center` &nbsp;·&nbsp; **UI:** ไม่มี — API + Bruno เท่านั้น ณ 2026-09-22
+> **เจ้าของ:** Sysadmin / Finance &nbsp;·&nbsp; **ตาราง:** `tb_cost_center_group` → `tb_cost_center` → `tb_cost_center_account` &nbsp;·&nbsp; **ใช้โดย:** บรรทัด JV ของ [general-ledger](/th/inventory/general-ledger) บนบัญชีที่ flag `is_require_cost_center` &nbsp;·&nbsp; **Permissions:** `configuration.cost_center_group.*`, `configuration.cost_center.*` &nbsp;·&nbsp; **Licence keys:** `configuration.cost_center_group`, `configuration.cost_center` &nbsp;·&nbsp; **UI:** ไม่มี — API + Bruno เท่านั้น ณ 2026-09-22
 
 ## 1. คืออะไร / ใครใช้
 
@@ -49,7 +49,7 @@ dateCreated: '2026-09-22T18:00:00.000Z'
 - **การลบศูนย์ต้นทุนไม่ถูก guard** เฉพาะกลุ่มเท่านั้นที่มีการเช็ค in-use; ศูนย์ต้นทุนที่ถูกอ้างอิงโดยบรรทัด JV soft-delete ได้อย่างอิสระ (`cost-center.service.ts:266-290`) — ถือว่า "cannot delete — used on journals" **ไม่ถูกบังคับใช้**
 - **partial unique index อยู่ใน SQL เท่านั้น** index `*_live_u` ทั้งสาม (`WHERE deleted_at IS NULL`) ไม่อยู่ใน Prisma model; model แสดง unique แบบหลวมกว่า `(code, deleted_at)` / `(cost_center_id, chart_of_accounts_id, deleted_at)` การเปลี่ยนชื่อตารางต้องเขียน `ALTER INDEX … RENAME` ด้วยมือ (comment ใน schema)
 - **`color_tag` เป็นข้อความที่ไม่ถูกตรวจสอบ** string ใดก็เก็บได้; รูปแบบ `#RRGGBB` ในตัวอย่าง Bruno เป็นแค่ธรรมเนียม
-- **allow-list มีผลตรงไหน** กติกา "บรรทัด JV บนบัญชี `is_require_cost_center` ต้องมีศูนย์ต้นทุนที่อยู่ใน allow-list ของบัญชีนั้น" ถูกบันทึกไว้บน `tb_chart_of_accounts.is_require_cost_center` และบังคับใช้โดย GL JV service — ดู [general-ledger](/en/inventory/general-ledger); ไม่มีอะไรใน service ของโมดูลนี้ตรวจสอบบรรทัด JV
+- **allow-list มีผลตรงไหน** กติกา "บรรทัด JV บนบัญชี `is_require_cost_center` ต้องมีศูนย์ต้นทุนที่อยู่ใน allow-list ของบัญชีนั้น" ถูกบันทึกไว้บน `tb_chart_of_accounts.is_require_cost_center` และบังคับใช้โดย GL JV service — ดู [general-ledger](/th/inventory/general-ledger); ไม่มีอะไรใน service ของโมดูลนี้ตรวจสอบบรรทัด JV
 
 ---
 
@@ -115,7 +115,7 @@ dateCreated: '2026-09-22T18:00:00.000Z'
 ## 7. การอ้างอิงข้ามโมดูล
 
 - [chart-of-accounts](/th/inventory/master-data/chart-of-accounts) — เป้าหมายของ allow-list; `is_require_cost_center` คือ flag ที่ทำให้ศูนย์ต้นทุนกลายเป็นข้อบังคับ
-- [general-ledger](/en/inventory/general-ledger) — การตรวจสอบและ posting บรรทัด JV
+- [general-ledger](/th/inventory/general-ledger) — การตรวจสอบและ posting บรรทัด JV
 - [master-data/department](/th/inventory/master-data/department) — หน่วย*องค์กร*; ใช้แทนกันกับศูนย์ต้นทุนไม่ได้
 
 ## 8. แหล่งอ้างอิง

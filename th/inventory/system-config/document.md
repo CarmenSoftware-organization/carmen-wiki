@@ -1,8 +1,8 @@
 ---
 title: การจัดการเอกสาร (Document Management)
-description: Registry การจัดเก็บไฟล์ scope ตาม tenant backed ด้วย MinIO และตาราง tb_file_tag ในฐานข้อมูล file-service แยกต่างหาก — ไม่ใช่ tb_attachment ของ tenant schema ซึ่งเป็นตาราง dead ที่ไม่มีการอ้างอิงเลย Upload ไม่มีการ validate ขนาดหรือ MIME ฝั่ง server
+description: Registry ไฟล์ scope ตาม tenant backed ด้วย MinIO + tb_file_tag ในฐานข้อมูล file-service แยก (ไม่ใช่ tb_attachment ที่ตายแล้ว) endpoint storage summary ตั้งแต่ 2026-08-13; permission system_admin.document; ไม่เช็คขนาด/MIME ฝั่ง server
 published: true
-date: 2026-07-16T00:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: system-config, document, attachment, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -15,7 +15,14 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ![การจัดการเอกสาร (Document Management) screen](/screenshots/system-config/document.png)
 
-## สถานะการ implement (ตรวจสอบ 2026-07-16)
+## สถานะการ implement (ตรวจสอบ 2026-07-16; ตรวจสอบซ้ำ 2026-09-22)
+
+**การเปลี่ยนแปลงตั้งแต่ baseline (อ่าน `document-management.controller.ts` เมื่อ 2026-09-22):**
+
+- **`GET /api/:bu_code/documents/summary`** (`:263-264`, `AppIdGuard('documents.summary')`, BE `c8ca7bb0d` 2026-08-13; ประกาศก่อน `:filetoken` เพื่อไม่ให้ Nest ตีความ "summary" เป็น token) คืน `{ total_size, total_count, rows[{ reference_type, size, count }] }` (FE `types/document.ts:11-19`) หน้าจอ render เป็นแถบ storage summary เหนือรายการ (`document-summary-bar.tsx`: ขนาดรวม, จำนวนไฟล์, breakdown ต่อ reference type; `document-summary-sheet.tsx` สำหรับรายละเอียด) — reference type มี label ผ่าน `document-reference-labels.ts` โดย upload ตรงแสดงแยกต่างหาก
+- **`fileToken` ที่ไม่มี prefix `bu_code/` ถูก normalise** ก่อน gateway forward ไป `micro-file` (`bbd817833`) ดังนั้น token เปล่าจาก attachment เก่ายัง resolve ได้
+- ชื่อ guard ตอนนี้: `documents.upload` (`:85`), `documents.list` (`:188`), `documents.summary` (`:264`), `documents.get` (`:299`), `documents.download` (`:346`), `documents.info` (`:409`), `documents.presignedUrl` (`:461`), `documents.delete` (`:530`) Sidebar: `system_admin.document.view`, licence `system_admin.document` (`module-list.ts:714-717`; route `app:documents`)
+- ข้อค้นพบสองข้อจาก 2026-07-16 ด้านล่าง (ตาราง registry, ไม่มีการ validate ฝั่ง server) ตรวจซ้ำแล้วยังเป็นจริง — `uploadFile()` ของ `files.service.ts` ไม่เปลี่ยนนอกจากการ refactor RPC
 
 สองข้อแก้ไขสำหรับเวอร์ชันก่อนหน้าของหน้านี้:
 
@@ -37,6 +44,7 @@ Document Management คือ **registry surface การจัดเก็บ�
 | Download ไฟล์ | Action download ต่อ row | Presigned URL ผ่าน `GET /api/:bu_code/documents/:filetoken/download` |
 | แชร์ link แบบจำกัดเวลา | `GET /api/:bu_code/documents/:filetoken/presigned-url?expirySeconds=N` | ห้าม embed credentials การจัดเก็บถาวรใน browser |
 | Delete ไฟล์เก่า | Delete ต่อ row (Sysadmin เท่านั้น) | Dialog ยืนยัน; ลบ object ใน MinIO **และ** soft-delete (`deleted_at`) row ของ `tb_file_tag`; `fileToken` ที่ค้างจะ render เป็น "missing" บนเอกสารที่ผูก |
+| ดูว่า BU ใช้พื้นที่เก็บเท่าไรและอยู่ที่ไหน | แถบ summary ด้านบนของรายการ (ตั้งแต่ 2026-08-13) | `GET /api/:bu_code/documents/summary` — ขนาดรวมเป็น byte, จำนวนไฟล์ และ breakdown ต่อ `reference_type` |
 | แนบไฟล์กับ PR / PO / GRN | **ไม่ใช่ที่นี่** — ใช้หน้าจอธุรกรรม | หน้านี้คือ registry ไม่ใช่การจัดการ attachment ต่อเอกสาร |
 
 ## 3. การตรวจสอบและ Error
@@ -108,7 +116,7 @@ Document Management คือ **registry surface การจัดเก็บ�
 - **ขีดจำกัด upload 10 MB และ MIME allow-list เป็น frontend-only** ยืนยันว่าไม่มีการตรวจสอบฝั่ง server ใน `uploadFile()` ของ `files.service.ts`
 - **Scope ตาม BU** ทุก endpoint ภายใต้ `/api/:bu_code/documents/*`; object ใน MinIO และ row ของ `tb_file_tag` ทั้งคู่ partition ตาม `bu_code`
 - **Presigned URL** สำหรับ download / share — ห้าม embed credentials ถาวร
-- **AppId guards (ยืนยันจริง)** `documents.upload`, `documents.list`, `documents.get`, `documents.download`, `documents.info`, `documents.presignedUrl`, `documents.delete` — แต่ละอันคือ decorator `AppIdGuard(...)` ที่แยกกันบน `document-management.controller.ts` Non-admin = list / get / download เท่านั้น
+- **AppId guards (ยืนยันจริง)** `documents.upload`, `documents.list`, `documents.summary`, `documents.get`, `documents.download`, `documents.info`, `documents.presignedUrl`, `documents.delete` — แต่ละอันคือ decorator `AppIdGuard(...)` ที่แยกกันบน `document-management.controller.ts` RBAC resource `system_admin.document` Non-admin = list / get / download เท่านั้น
 - **Delete** การลบ object ใน MinIO ทันทีและกู้คืนไม่ได้; row ของ `tb_file_tag` ถูก soft-delete (`deleted_at`) แบบ best-effort (ถ้า DB ล้มเหลวจะแค่ log ไม่ throw) array `attachments` ต่อเอกสาร *ไม่* cascade
 - **Audit logging** ผ่าน `runWithAuditContext`/`AuditContext` ใน controller ของ `micro-file` (upload, delete, presigned-URL, tag update)
 - **ไม่มี versioning แบบ in-place** — overwrite ผ่าน delete + re-upload
@@ -127,6 +135,7 @@ Document Management คือ **registry surface การจัดเก็บ�
 - **Prisma (tenant schema — ตาราง dead เพื่อเปรียบเทียบ):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_attachment` (lines ~4797-4819); คอลัมน์ `attachments` JSONB ต่อเอกสารกระจายอยู่
 - **Backend gateway (ชั้น proxy):** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/document-management/document-management.controller.ts` + `document-management.service.ts` — forward ไปยัง microservice `FILE_SERVICE` ผ่าน TCP command `files.*`
 - **Backend file microservice (การจัดเก็บ + registry จริง):** `../carmen-turborepo-backend-v2/apps/micro-file/src/files/files.controller.ts` + `files.service.ts` — MinIO client, `tb_file_tag` CRUD
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/document/document.route.tsx` + `document-component.tsx`
-- **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-document.ts` — `useDocument`, `useUploadDocument`, `useDeleteDocument`
-- **Frontend type:** `../carmen-inventory-frontend-react/types/document.ts` — `DocumentFile`
+- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/document/document.route.tsx` + `document-component.tsx`, `document-summary-bar.tsx`, `document-summary-sheet.tsx`, `document-reference-labels.ts`, `document-card.tsx`, `use-document-table.tsx`
+- **Frontend hook:** `../carmen-inventory-frontend-react/routes/system-admin/document/use-document.ts` (ย้ายจาก `hooks/` เมื่อ 2026-08-28, `0d9757f3`) — `useDocument`, `useUploadDocument`, `useDeleteDocument`; `constant/api-endpoints.ts:108` `DOCUMENTS_SUMMARY`
+- **Frontend type:** `../carmen-inventory-frontend-react/types/document.ts` — `DocumentFile`, `DocumentSummary`
+- **E2E:** `../carmen-inventory-frontend-e2e/docs/test-cases/1107-document.md` — แคตตาล็อกเท่านั้น
