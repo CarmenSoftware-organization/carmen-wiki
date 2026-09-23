@@ -1,8 +1,8 @@
 ---
 title: ผู้ใช้ระดับแผนก (Department User)
-description: Pivot การเป็นสมาชิกของผู้ใช้กับแผนก — ประกาศว่าผู้ใช้คนใดอยู่ในแผนกใด และระบุ Head of Department (HOD) ที่ขับเคลื่อน approval routing บน PR และ SR
+description: Pivot การเป็นสมาชิกของผู้ใช้กับแผนก — ผู้ใช้คนใดอยู่ในแผนกใด และ Head of Department (HOD) ที่ขับเคลื่อน approval routing ของ PR/SR ตั้งแต่ 2026-09-04 แก้ไขแผนกของผู้ใช้จากหน้าจอ user ได้ด้วย
 published: true
-date: 2026-07-16T01:26:05.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: access-control, department-user, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -11,7 +11,14 @@ dateCreated: 2026-06-04T00:00:00.000Z
 # ผู้ใช้ระดับแผนก (Department User)
 
 > **At a Glance**
-> **เจ้าของ:** Sysadmin / Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_department_user` &nbsp;·&nbsp; **ใช้โดย:** approval routing ของ PR และ SR, RBAC scope, รายงาน cost-centre &nbsp;·&nbsp; Pivot การเป็นสมาชิกระหว่างผู้ใช้กับแผนก — `is_hod = true` ระบุ Head of Department ที่ต้องการการอนุมัติบน requisition ของแผนก
+> **เจ้าของ:** Sysadmin / Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_department_user` (tenant) &nbsp;·&nbsp; **แก้ไขจาก:** หน้าจอ Department (`/config/department/:id`, สมาชิก + HOD) **และ** ตั้งแต่ 2026-09-04 หน้าจอ User (`PATCH /api/config/:bu_code/users/:user_id { department_id }`) &nbsp;·&nbsp; **Endpoint:** `api/config/:bu_code/department-users` (App ID `departmentUser.*`; licence `configuration.department`) &nbsp;·&nbsp; **ใช้โดย:** approval routing ของ PR และ SR (ขั้น HOD, กฎ routing ตามแผนก), รายงานผลกระทบ assignee ของ workflow &nbsp;·&nbsp; Pivot การเป็นสมาชิกระหว่างผู้ใช้กับแผนก — `is_hod = true` ระบุ Head of Department ที่ต้องการการอนุมัติบน requisition ของแผนก
+
+## สถานะการ implement (ตรวจสอบซ้ำ 2026-09-22)
+
+- **แก้ไขจากฝั่ง user ทำได้จริงอีกครั้ง** ส่วน Departments ของหน้าจอ User Assign เป็นแบบอ่านอย่างเดียวที่ baseline; ตั้งแต่ BE `9a91d7f32` (2026-09-04) `PATCH /api/config/:bu_code/users/:user_id` รับ `department_id` ค่าเดียว และหน้าจอแสดงเป็น `LookupDepartment` (`user-assigned-departments.tsx:38-40`, FE `39ae1bba`, 2026-09-07) endpoint ของ user คืน `department: { id, name } | null` — ค่าเดียว สอดคล้องกับกฎ membership ที่ในทางปฏิบัติเป็นแผนกเดียวด้านล่าง Error: `USER_ACCESS_DEPARTMENT_NOT_FOUND`, `USER_ACCESS_DEPARTMENT_ALREADY_HOD` (ผู้ใช้เป็น HOD ของแผนกใดแผนกหนึ่ง; การย้ายถูกปฏิเสธเพื่อไม่ให้ขั้น HOD ว่างเปล่าโดยเงียบ ๆ — `catalog.ts:351-358`) flag HOD เองยังตั้งได้จากหน้าจอ Department เท่านั้น (บล็อก HOD ของหน้าจอ user ถูกถอดออก, `5684f93e`)
+- **การอ้างอิง user แบบ nested (BE `5d64f5dfd`, 2026-09-17)** `department_users[]` และ `hod_users[]` ของ detail แผนกตอนนี้มี `user: { id }` แทน `user_id` แบบ flat (ไม่มี name คู่กัน); ฟอร์มแผนกถูกแก้ให้อ่าน object (`b55294b3`) `DepartmentUserResponseDto` บน `api/config/:bu_code/department-users` ไม่เปลี่ยน (`id`, `department_id`, `user_id`, `is_active`, `doc_version`, `audit`)
+- **ผลกระทบต่อ workflow** `GET api/config/:bu_code/workflows/assignees/:target_user_id` (2026-09-03) list ขั้นที่ผู้ใช้ถืออยู่ — เรียกก่อนลบผู้ใช้ออกจากแผนก; ขั้นที่ดึง actor จาก HOD ของแผนกหรือจากทั้งแผนกถูกยกเว้น เพราะการเสียสมาชิกหนึ่งคนไม่ทำให้ขั้นว่าง ดู [system-config/workflow](/th/inventory/system-config/workflow)
+- `findByUserId` ยังใช้ `findFirst` (`department-user.service.ts:85`) — แผนก "สมาชิก" หนึ่งแผนกต่อผู้ใช้; ข้อค้นพบเรื่อง HOD / HOD เดียวด้านล่างตรวจสอบซ้ำแล้วและไม่เปลี่ยน
 
 ## 1. คืออะไรและใครใช้
 
@@ -25,7 +32,7 @@ Flag HOD ขับเคลื่อน logic workflow ปลายน้ำ: �
 
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
-| มอบหมายผู้ใช้ให้แผนก | หน้าจอ edit **Department** (`/config/department/:id`) → panel **Members** → Transfer control (`department-form.tsx`) | ไม่ใช่ฝั่ง user — ส่วน Departments ของหน้าจอ User Assign เป็นแบบอ่านอย่างเดียว (ดู [access-control/user](/th/inventory/access-control/user)) |
+| มอบหมายผู้ใช้ให้แผนก | หน้าจอ edit **Department** (`/config/department/:id`) → panel **Members** → Transfer control (`department-form.tsx`) — **หรือ** หน้าจอ User Assign (`/system-admin/user/:id`) → **Edit** → lookup Department → Save | ฝั่ง user ส่ง `PATCH …/users/:user_id { department_id }` (ค่าเดียว ไม่ใช่ add/remove); ถูกปฏิเสธด้วย `USER_ACCESS_DEPARTMENT_ALREADY_HOD` ถ้าผู้ใช้เป็น HOD ที่ไหนสักแห่ง |
 | กำหนดเป็น Head of Department | หน้าจอ edit Department เดียวกัน → panel **HOD** → Transfer control | Transfer widget แยกอิสระจาก Members; การเพิ่ม/ลบไม่ถูกบล็อกด้วยการตรวจสอบ HOD ที่มีอยู่แล้วใด ๆ |
 | เปลี่ยน HOD | Panel HOD → ย้าย HOD เก่ากลับ Available, ย้ายคนใหม่ไป Assigned → Save | การอนุมัติในอดีตยังคงใช้ผู้ลงนามเดิม; ไม่มีอะไรล้าง HOD คนก่อนหน้าโดยอัตโนมัติ (ดูกรณีพิเศษ) |
 | ลบผู้ใช้ออกจากแผนก | Panel Members → ย้ายผู้ใช้กลับ Available → Save | ขั้นตอน PR/SR ที่เปิดอยู่ซึ่งอ้างอิงผู้ใช้นี้ไม่ได้รับผลกระทบ; การ routing ในอนาคตจะไม่พบ HOD ถ้านี่คือคนสุดท้าย |
@@ -38,6 +45,8 @@ Flag HOD ขับเคลื่อน logic workflow ปลายน้ำ: �
 | "Duplicate department assignment" | Unique constraint `(department_id, user_id)` บน row ที่ไม่ถูกลบ | ลบ row ที่มีอยู่ก่อน หรือ soft-delete แล้วเพิ่มใหม่ |
 | Workflow ไม่สามารถ resolve HOD ได้ | ไม่มี row `is_hod = true` สำหรับแผนก | เพิ่มผู้ใช้ในหน้าจอ panel HOD ของแผนก |
 | ขั้นตอนที่อนุมัติแล้วแสดงผู้ใช้ที่ถูกลบออก | ขั้นตอน approval ในอดีตบันทึกผู้ลงนาม ณ เวลาที่ดำเนินการ | ถูกต้อง — การเปลี่ยน HOD ไม่ย้อนหลัง |
+| `USER_ACCESS_DEPARTMENT_ALREADY_HOD` บนหน้าจอ user | เปลี่ยนแผนกของผู้ใช้ที่เป็น HOD ของแผนกใดแผนกหนึ่ง | ถอด flag HOD บนหน้าจอ Department ก่อน |
+| `USER_ACCESS_DEPARTMENT_NOT_FOUND` | `department_id` ไม่รู้จัก / ถูกลบ | เลือกแผนกที่มีอยู่ |
 
 ## 4. กรณีพิเศษ
 
@@ -90,7 +99,9 @@ Flag HOD ขับเคลื่อน logic workflow ปลายน้ำ: �
 ## 8. แหล่งข้อมูลอ้างอิง
 
 - **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_department_user` (บรรทัด 4771)
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/department-user/department-user.service.ts` (`findByUserId`, `hasHodInDepartment`, `getHodInDepartment`); `.../apps/micro-business/src/master/departments/departments.service.ts` (Members/HOD add-remove ตอน update แผนก); `.../apps/backend-gateway/src/config/config_department-users/` (gateway proxy)
-- **Docs:** `../carmen/docs/app/system-administration/user-management/DD-user-management.md` — รายละเอียด entity `tb_department_user` และ definition ของ HOD index
+- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/department-user/department-user.service.ts` (`findByUserId`, `hasHodInDepartment`, `getHodInDepartment`); `.../apps/micro-business/src/master/departments/departments.service.ts` (Members/HOD add-remove ตอน update แผนก); `.../apps/backend-gateway/src/config/config_department-users/config_department-users.controller.ts` (`GET user/:user_id` `:71`, `GET :id`, `GET`, `POST`, `PUT :id`, `DELETE :id`); `.../apps/backend-gateway/src/config/config_users/` (PATCH `department_id` ฝั่ง user); serializer `apps/backend-gateway/src/common/dto/department/department.serializer.ts`
+- **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/config/department-user/`, `config/users/PATCH-patch-access-config-users.bru`
+- **Docs:** `../carmen/docs/app/system-administration/user-management/DD-user-management.md` — รายละเอียด entity `tb_department_user` และ definition ของ HOD index (frozen 2026-04-27)
 - **Docs:** `../carmen/docs/app/system-administration/user-management/BR-user-management.md` — BR-002: กฎทางธุรกิจ HOD Designation (design intent; ไม่ถูกบังคับใน code ปัจจุบัน — ดูกรณีพิเศษ)
-- **Frontend:** `../carmen-inventory-frontend-react/routes/config/department/department-form.tsx` (Transfer widget ของ Members + HOD บนหน้าจอ edit แผนก) หน้าจอ User Assign (`routes/system-admin/user/user-assigned-departments.tsx`) แค่ *แสดง* membership แบบอ่านอย่างเดียว
+- **Frontend:** `../carmen-inventory-frontend-react/routes/config/department/department-form.tsx` (Transfer widget ของ Members + HOD บนหน้าจอ edit แผนก); `routes/system-admin/user/user-assigned-departments.tsx` (lookup แผนกเดียว แก้ไขได้ตั้งแต่ 2026-09-07)
+- **E2E:** `../carmen-inventory-frontend-e2e/tests/010-department.spec.ts` (21 case อัตโนมัติ รวมการมอบหมายผู้ใช้เข้า Members และ HOD) + `docs/test-cases/gaps/010-department-gap.md` (37 case ที่ยังไม่ครอบคลุม prefix `DEP`); `docs/test-cases/1102-user.md` สำหรับฝั่ง user

@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูล purchase-request
 published: true
-date: 2026-06-09T00:00:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: purchase-request, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -28,6 +28,10 @@ dateCreated: 2026-05-15T09:00:00.000Z
 
 **Concurrency:** การแก้ไขเอกสารนี้ใช้ optimistic locking ผ่าน [system-config/doc-version](/th/inventory/system-config/doc-version) — client ต้องส่ง `doc_version` ปัจจุบันตอนบันทึก ไม่งั้นจะได้ `409 Conflict`
 
+**รูปแบบ API เทียบกับรูปแบบคอลัมน์ (2026-09-17):** ตารางด้านล่างคือคอลัมน์ที่ persist แบบ denormalise (`product_id` + `product_name`, `vendor_id` + `vendor_name`, …) gateway ไม่ expose แบบ flat แล้ว — `@Serialize` ยุบทุกการอ้างอิงเป็น object (`product: { id, name, local_name, code }`, `vendor: { id, name }`, `location: { id, name, code }`, `requested_unit` / `approved_unit` / `foc_unit` / `inventory_unit` / `tax_profile` / `delivery_point`: `{ id, name }`, `currency: { id, code }`, `pricelist_detail: { id }`, header `requestor` / `department` / `workflow: { id, name }`) และเพิ่ม `last_price` ที่คำนวณต่อบรรทัด ดูหัวข้อ 2.5
+
+**View คิว pending:** `sys_v_my_pending` (migration `20260916030000_add_sys_v_my_pending`) project row ของ `tb_purchase_request` ที่ยังเป็น `draft` / `in_progress` เข้าคิวข้ามเอกสารที่ documented ใน [my-approval](/th/inventory/purchase-request/my-approval); เพิ่ม GIN index `ix_pr_user_action_execute` บน `(user_action -> 'execute')`
+
 PR อยู่ต้นน้ำของ [purchase-order](/th/inventory/purchase-order) ในห่วงโซ่ procure-to-pay บรรทัดของ PR ที่อนุมัติแล้วจะถูก link ไปยังบรรทัด PO ที่เกิดขึ้นผ่านตาราง bridge `tb_purchase_order_detail_tb_purchase_request_detail` (PO line หนึ่งสามารถรวมจาก PR line หลายบรรทัดเพื่อ consolidate, PR line หนึ่งสามารถกระจายไปหลาย PO สำหรับการแปลงบางส่วน) แถวรายละเอียดของ PR ยังอ้างอิงถึง [product](/th/inventory/product), [vendor-pricelist](/th/inventory/vendor-pricelist), `tb_tax_profile`, `tb_currency`, `tb_unit`, `tb_location`, `tb_delivery_point`, และ `tb_vendor` โดย denormalize ฟิลด์ lookup (รหัส, ชื่อ, snapshot ของราคา) ลงบนบรรทัดตอน submit เพื่อให้ข้อมูล PR ในอดีตคงที่แม้ master record จะเปลี่ยน entity ของ PR ทั้งหมดอยู่ใน tenant Prisma schema ส่วน platform schema ไม่มี model ของ purchase-request
 
 ## 2. เอนทิตี
@@ -48,7 +52,7 @@ PR อยู่ต้นน้ำของ [purchase-order](/th/inventory/purcha
 | `workflow_current_stage` | `String @db.VarChar` | Yes | slug ของ stage ที่ PR อยู่ปัจจุบัน |
 | `workflow_previous_stage` | `String @db.VarChar` | Yes | slug ของ stage ที่เพิ่งปล่อย PR ออกมา |
 | `workflow_next_stage` | `String @db.VarChar` | Yes | slug ของ stage ถัดไปบน chain |
-| `user_action` | `Json @db.JsonB` | Yes | metadata ของ action ที่ค้างอยู่; default `{}` โดยทั่วไปเป็น `{ "execute": [{ "id": "<user-id>" }, ...] }` บอกว่าใครลงมือถัดไปได้ |
+| `user_action` | `Json @db.JsonB` | Yes | metadata ของ action ที่ค้างอยู่; default `{}` `{ "execute": [{ "user_id": "<user-id>" }, ...] }` บอกว่าใครลงมือถัดไปได้ — predicate ของคิว pending match `user_action -> 'execute' @> '[{"user_id": …}]'` (`my-pending.sql.ts`); comment ใน Prisma ยังแสดง key เก่า `{ id }` |
 | `last_action` | `enum_last_action` | Yes | action ล่าสุดที่ทำกับเอกสาร; default `submitted` |
 | `last_action_at_date` | `DateTime @db.Timestamptz(6)` | Yes | timestamp ของ `last_action` |
 | `last_action_by_id` | `String @db.Uuid` | Yes | user id ที่ทำ `last_action` |
@@ -82,7 +86,7 @@ PR อยู่ต้นน้ำของ [purchase-order](/th/inventory/purcha
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key |
 | `purchase_request_id` | `String @db.Uuid` | Yes | FK ไปยัง `tb_purchase_request.id` Nullable เพื่อรองรับ draft line ที่ยังไม่ผูกกับ header |
-| `sequence_no` | `Int` | Yes | ลำดับของบรรทัดภายใน PR; default `1` |
+| `sequence_no` | `Int` | Yes | ลำดับของบรรทัดภายใน PR; default `1` ทุกการอ่าน PR คืนบรรทัดแบบ `orderBy: { sequence_no: 'asc' }` (`purchase-request.service.ts:163`, 2026-09-18) |
 | `location_id` | `String @db.Uuid` | Yes | คลัง / สถานที่ที่ต้องการของ |
 | `location_code` | `String @db.VarChar` | Yes | snapshot ของรหัส location |
 | `location_name` | `String @db.VarChar` | Yes | snapshot ของชื่อ location |
@@ -114,12 +118,12 @@ PR อยู่ต้นน้ำของ [purchase-order](/th/inventory/purcha
 | `requested_unit_name` | `String @db.VarChar` | Yes | snapshot |
 | `requested_unit_conversion_factor` | `Decimal @db.Decimal(20, 5)` | Yes | factor การแปลงไปยังหน่วยฐาน inventory |
 | `requested_base_qty` | `Decimal @db.Decimal(20, 5)` | Yes | `requested_qty × requested_unit_conversion_factor` |
-| `approved_qty` | `Decimal @db.Decimal(20, 5)` | Yes | จำนวนในหน่วยที่อนุมัติ อาจต่างจาก `requested_qty` |
+| `approved_qty` | `Decimal @db.Decimal(20, 5)` | Yes | จำนวนในหน่วยที่อนุมัติ อาจต่างจาก `requested_qty` server ปฏิเสธเฉพาะค่าติดลบ (`verify-approve.ts:172-181`) — ไม่มีเพดาน |
 | `approved_unit_id` | `String @db.Uuid` | Yes | UoM ที่ใช้สำหรับจำนวนที่อนุมัติ |
 | `approved_unit_name` | `String @db.VarChar` | Yes | snapshot |
 | `approved_unit_conversion_factor` | `Decimal @db.Decimal(20, 5)` | Yes | factor การแปลงไปยังหน่วยฐาน |
 | `approved_base_qty` | `Decimal @db.Decimal(20, 5)` | Yes | `approved_qty × approved_unit_conversion_factor` |
-| `foc_qty` | `Decimal @db.Decimal(20, 5)` | Yes | จำนวน FOC ในหน่วย FOC; default `0` |
+| `foc_qty` | `Decimal @db.Decimal(20, 5)` | Yes | จำนวน FOC ในหน่วย FOC; default `0` บรรทัดอาจเป็น FOC-only (`requested_qty = 0`, `foc_qty > 0`) — รับตอน submit ได้ตั้งแต่ 2026-09 (`purchase-request.validate.ts:105-131`) |
 | `foc_unit_id` | `String @db.Uuid` | Yes | UoM ของจำนวน FOC |
 | `foc_unit_name` | `String @db.VarChar` | Yes | snapshot |
 | `foc_unit_conversion_factor` | `Decimal @db.Decimal(20, 5)` | Yes | factor การแปลงไปยังหน่วยฐาน |
@@ -158,6 +162,8 @@ PR อยู่ต้นน้ำของ [purchase-order](/th/inventory/purcha
 **Indexes:** `@@unique([purchase_request_id, product_id, location_id, dimension, deleted_at])` ชื่อ `PR1_purchase_request_product_location_dimension_u`; `@@index([product_id])` ชื่อ `PRD1_product_id_idx`; `@@index([location_id])` ชื่อ `PRD1_location_id_idx`; `@@index([location_id, product_id])` ชื่อ `PRD1_location_product_idx`; `@@index([purchase_request_id])` ชื่อ `PRD1_purchase_request_id_idx`
 
 ตารางคอมเมนต์ / ไฟล์แนบของโมดูลนี้ถูกแยกไปอีกหน้า — ดู [01a — โมเดลข้อมูล — ตารางคอมเมนต์](/th/inventory/purchase-request/01a-data-model-comments)
+
+**Semantics ของการลบ:** PR ไม่เคยถูก hard-delete `DELETE /:bu_code/purchase-requests/:id` (และ `DELETE …/batch`) ประทับ `deleted_at` บน header และบน detail row แต่ละแถว — detail row ที่ key ซ้ำได้ timestamp ที่เหลื่อมกันเพื่อไม่ละเมิด partial unique index `PR1_purchase_request_product_location_dimension_u` (`purchase-request.service.ts:1688-1716`) ลบได้เฉพาะ row สถานะ `draft` และเฉพาะโดยเจ้าของ (`created_by_id` หรือ `requestor_id`, `common/helpers/document-ownership.helper.ts`) หรือ platform super-admin
 
 ### 2.3 tb_purchase_request_template
 
@@ -244,6 +250,37 @@ PR อยู่ต้นน้ำของ [purchase-order](/th/inventory/purcha
 **Constraints:** `@id` บน `id` FK: `purchase_request_template_id → tb_purchase_request_template.id`; `product_id → tb_product.id` (required); `currency_id → tb_currency.id`; `tax_profile_id → tb_tax_profile.id`; `location_id → tb_location.id`; FK ที่ตั้งชื่อด้วย `@relation` สอง FK ไปยัง `tb_unit` สำหรับหน่วย requested และ FOC
 **Indexes:** `@@unique([purchase_request_template_id, product_id, location_id, dimension, deleted_at])` ชื่อ `PRT1_purchase_request_template_product_location_dimension_u`; `@@index([purchase_request_template_id, product_id, location_id])` ชื่อ `PRT2_purchase_request_template_product_location_idx`; `@@index([purchase_request_template_id])` ชื่อ `PRT2_purchase_request_template_idx`
 
+### 2.5 รูปแบบ API response (serializer ของ gateway)
+
+`apps/backend-gateway/src/common/dto/purchase-request/purchase-request.serializer.ts` นิยามสิ่งที่ REST layer คืนสำหรับ PR; มัน**ไม่ใช่** มุมมอง 1:1 ของคอลัมน์ด้านบน pseudo-shape ของ detail หนึ่งบรรทัดที่ `GET /:bu_code/purchase-requests/:id` คืน:
+
+```
+detail {
+  id, purchase_request: { id }, sequence_no,
+  location: { id, name, code }, location_type, delivery_point: { id, name }, delivery_date,
+  product: { id, name, local_name, code }, product_sku,
+  inventory_unit: { id, name }, description, comment,
+  vendor: { id, name }, pricelist_detail: { id }, pricelist_no, pricelist_unit,
+  pricelist_price, pricelist_type, last_price: { cost_per_unit, ... } | null,
+  currency: { id, code }, exchange_rate, exchange_rate_date,
+  requested_qty, requested_unit: { id, name },
+  approved_qty,  approved_unit:  { id, name },
+  foc_qty,       foc_unit:       { id, name },
+  tax_profile: { id, name }, tax_rate, tax_amount, is_tax_adjustment,
+  discount_rate, discount_amount, is_discount_adjustment,
+  sub_total_price, net_amount, total_price,
+  current_stage_status, history[], dimension, doc_version, created_at, updated_at
+}
+header {
+  id, pr_no, pr_date, pr_status, description, doc_version,
+  requestor: { id, name }, department: { id, name }, workflow: { id, name },
+  workflow_history[], workflow_current_stage, workflow_next_stage, workflow_previous_stage,
+  last_action, info, audit..., purchase_request_detail[]
+}
+```
+
+Type ฝั่ง frontend สะท้อนแบบเดียวกัน (`../carmen-inventory-frontend-react/types/purchase-request.ts` — `product: EntityRef | null`, `vendor: EntityRef | null`, …; commit `f303dd96`, 2026-09-17) payload สร้าง / บันทึกยังส่งฟิลด์ `*_id` แบบ flat; `@ExpandRefs` ของ gateway resolve ให้ การยุบแบบเดียวกันใช้กับ `tb_purchase_request_template` (หัวข้อ 2.4): `workflow`, `product`, `location`, `requested_unit`, `foc_unit`, `currency`, `delivery_point`, `inventory_unit` เป็น object บน wire (commit `16069088`)
+
 ## 3. ความสัมพันธ์
 
 ```
@@ -301,7 +338,7 @@ tb_purchase_request_template_detail
 
 ## 4. Enum
 
-- **`enum_purchase_request_doc_status`**: `draft` (`ร่าง` — สถานะแก้ไขได้เริ่มต้น ไม่มี commitment), `in_progress` (`กำลังดำเนินการ` — submit แล้วและกำลังเดิน chain อนุมัติ), `voided` (`โมฆะ` / `ยกเลิก` — สถานะปลายทางที่ยุติ ครอบคลุม Requestor cancel draft ที่ยังไม่ submit, approver reject กลาง chain และ Sysadmin void หลัง submit — ดู [03-user-flow](./03-user-flow) § 2), `approved` (`อนุมัติ` — chain เสร็จ พร้อมแปลงเป็น procurement), `completed` (`เสร็จสิ้น` — แปลงเป็น PO ครบและปิด) ค่า `cancelled` ที่เคยมีถูกตัดออกใน pass enum-cleanup พฤษภาคม 2026; เส้นทาง termination ทั้งหมดตอนนี้ converge ที่ `voided`
+- **`enum_purchase_request_doc_status`**: `draft` (`ร่าง` — สถานะแก้ไขได้เริ่มต้น ไม่มี commitment), `in_progress` (`กำลังดำเนินการ` — submit แล้วและกำลังเดิน chain อนุมัติ), `voided` (`โมฆะ` — สถานะปลายทาง; เขียน**เฉพาะ**โดยเส้นทาง Reject ของผู้อนุมัติ `purchase-request.service.ts:2201` draft ที่ผู้ขอทิ้งถูก soft-delete ไม่ใช่ void และไม่มี endpoint "void" โดยผู้ดูแลระบบ — ดู [03-user-flow](./03-user-flow) § 2), `approved` (`อนุมัติ` — chain เสร็จ พร้อมแปลงเป็น procurement), `completed` (`เสร็จสิ้น` — แปลงเป็น PO ครบและปิด) ค่า `cancelled` ที่เคยมีถูกตัดออกใน pass enum-cleanup พฤษภาคม 2026; เส้นทาง termination ทั้งหมดตอนนี้ converge ที่ `voided`
 - **`enum_purchase_order_type`**: `manual` (PO สร้างโดย procurement โดยตรงไม่มี PR ต้นน้ำ), `purchase_request` (PO ที่มาจาก PR หนึ่งใบหรือมากกว่าผ่าน flow การแปลง — และยังเป็นค่า default ของ `tb_purchase_order.po_type` ซึ่งเป็นเหตุผลที่ PR-sourced คือเส้นทาง procure-to-pay มาตรฐาน)
 - **`enum_last_action`**: `submitted`, `approved`, `reviewed`, `rejected` — ใช้โดย `tb_purchase_request.last_action` เพื่อจับ action ของ workflow ล่าสุด
 - **`enum_comment_type`**: `user` (comment ที่มนุษย์เขียน), `system` (entry ของ activity-log ที่ workflow engine สร้างอัตโนมัติ)

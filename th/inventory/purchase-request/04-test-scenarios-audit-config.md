@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — Test Scenarios — Audit & Config
 description: เหตุผลที่ไม่มี audit-workspace หรือ test scenarios การตั้งค่าเฉพาะ PR สำหรับ purchase-request ในซอร์สปัจจุบัน และสิ่งที่ยืนยันได้แทน
 published: true
-date: 2026-07-29T05:18:05.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: purchase-request, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -13,6 +13,8 @@ dateCreated: 2026-05-15T09:00:00.000Z
 > **At a Glance**
 > **Persona:** Audit / Config (Auditor + System Administrator) — **ไม่มี audit-workspace หรือ configuration workbench เฉพาะ PR ที่ยืนยันได้ในซอร์สปัจจุบัน** &nbsp;·&nbsp; **โมดูล:** [purchase-request](/th/inventory/purchase-request)
 > **E2E coverage:** ไม่มีที่ยืนยันได้สำหรับ workspace เฉพาะทาง; read path ของ `/system-admin/activity-log` แบบ generic ถูก exercise โดยบังเอิญผ่าน spec ของ persona อื่น ไม่ใช่ผ่าน dedicated audit-config journey spec
+
+> **Executable coverage (2026-09-22)** ไม่มี spec, gap report หรือ story สำหรับ PR audit / config ใน `../carmen-inventory-frontend-e2e/`; การตั้งค่า workflow ครอบคลุมโดย `docs/test-cases/1103-workflow.md` และ activity log โดย `docs/test-cases/1109-activity-log.md` (หน้า catalogue ของ system-config นอกโมดูลนี้) action เดียวที่เปลี่ยนสถานะ PR ซึ่งเคยระบุให้ persona นี้ — **void** ธุรการ — ตรวจสอบซ้ำรอบนี้แล้ว**ไม่มีอยู่** (ไม่มี route ใน `purchase-requests.controller.ts`; `voided` ถูกเขียนโดย Reject เท่านั้น) สิ่งที่ platform super-admin ทำ*ได้*คือลบ `draft` ของผู้ใช้อื่น (`PR_VAL_018`)
 
 > ⚠️ **แก้ไขใหญ่ในรอบนี้** เวอร์ชันก่อนหน้าของหน้านี้ระบุ scenario ประมาณสามสิบตัว (`AUD-HP-01` ถึง `AUD-EDGE-06`) ครอบคลุม audit workspace "PR Activity Queries" (audit template, drill-down trail, export-approval workflow, การ flag case file) และ "Configuration workspace" เฉพาะ PR (workflow-threshold editor พร้อม versioning `effective_from`, PR Type Defaults, Delegation Rules, Tax Codes, Currency Rates) ข้อค้นพบนี้ถูก settle เทียบกับซอร์สปัจจุบันใน `.specs/resync-2026-07-15-progress.md` (commit `df8ab13`) หลังจากอ่านทุก route ใน `router.tsx` และทุก screen component ใต้ `routes/system-admin/` และ `routes/config/` — ไม่มี audit หรือ configuration surface เฉพาะ PR อยู่จริง ดู [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) สำหรับการแก้ไขเต็ม, การ map screen-by-screen ที่แม่นยำ, และ search ที่รัน นี่คือ pattern เดียวกันที่พบและแก้ไขอย่างอิสระในโมดูล `purchase-order` — ดู [purchase-order/04-test-scenarios-audit-config.md](/th/inventory/purchase-order/04-test-scenarios-audit-config)
 
@@ -28,12 +30,12 @@ dateCreated: 2026-05-15T09:00:00.000Z
 
 - หน้า **`/system-admin/activity-log`** แบบ generic list event `action` / `entity_type` / `user` ข้ามทุกประเภทเอกสาร filter ได้แต่ไม่ใช่ query-template-driven; filter scope `purchase_request` เป็น equivalent ที่ใกล้ที่สุดของ "PR Activity Queries" ผู้ใช้ที่มีสิทธิ์อ่าน PR ยังเห็น `tb_purchase_request_comment` history ได้โดยตรงบนหน้า detail PR (แถว `type = system` immutable ตาม `PR_POST_008`) ยังไม่ยืนยันว่า role Auditor ที่แยกต่างหาก gate surface ใดต่างจากผู้อ่านคนอื่นหรือไม่
 - Workflow-stage definition (`stage_role`, `user_action.execute[]`), tax rate, currency และ exchange-rate master, และ RBAC user/role assignment แต่ละตัวตั้งค่าผ่าน screen generic ของตัวเอง — `/system-admin/workflow`, `/config/tax-profile`, `/config/currency` + `/config/exchange-rate`, `/system-admin/user` + `/system-admin/role` — ใช้ร่วมกันข้าม PR, PO, GRN และประเภทเอกสารอื่น ไม่ใช่ผ่าน screen เฉพาะ PR
-- Action เดียวที่เปลี่ยนสถานะ PR ที่ยืนยันได้ในแกน persona นี้คือ **void** ระดับสูงของ System Administrator (`PR_AUTH_007` → `PR_POST_006`): `pr_status` flip เป็น `voided`, budget soft-commitment ปล่อย และ comment เหตุผลบังคับ append สิ่งนี้ถูก exercise โดยบังเอิญในตาราง scenario ของ persona อื่น (เช่น [04-test-scenarios-approver.md](./04-test-scenarios-approver.md) `APP-VAL-10`, [04-test-scenarios-requestor.md](./04-test-scenarios-requestor.md) `REQ-PERM-06`) ไม่ใช่ใน audit-config scenario เฉพาะที่นี่
+- **แก้ไข (2026-09-22):** เอกสารรุ่นก่อนเรียก **void** ระดับสูงของ System Administrator (`PR_AUTH_007`) ว่า "action เดียวที่เปลี่ยนสถานะ PR ที่ยืนยันได้" ของแกน persona นี้ มันไม่ได้ยืนยัน: `purchase-requests.controller.ts` ไม่ expose route void, ฟอร์ม PR ไม่มี control Void และ `enum_purchase_request_doc_status.voided` ถูกเขียนโดยเส้นทาง Reject ของผู้อนุมัติเท่านั้น (`purchase-request.service.ts:2201`) action เฉพาะ super-admin เดียวบน PR คือ bypass กฎความเป็นเจ้าของตอน**ลบ `draft`** (การเช็ค `isSuperAdmin` ใน `purchase-request.service.ts:1677-1682`, `PR_VAL_018`) ซึ่ง soft-delete row โดยไม่แตะ `pr_status` `APP-VAL-10` และ `REQ-PERM-06` ในหน้าพี่น้องถูกแก้ตามแล้ว
 - การค้นหาทั่ว repo รอบแรกสำหรับคำ `threshold` และ `delegat` ทั้งฝั่ง frontend และ backend ไม่พบคำตรงกันสำหรับกลไกทั้งสอง การค้นหารอบตรวจสอบติดตาม (2026-07-29) ด้วยคำที่ implementation ใช้จริง (`routing_rules`, `total_amount`, component `WfRouting`, `evaluateCondition` ใน workflow orchestrator) พบว่า amount-threshold routing **เป็นจริงและ live** — `PR_AUTH_005` ใน [02-business-rules.md](./02-business-rules.md) ยืนยันแล้ว ในทางกลับกัน approval-delegation ไม่พบจากการค้นหาทั้งสองรอบ — `PR_AUTH_006` ยังคงเป็น design intent ที่ยังไม่ยืนยัน ทั้งรายการ business-rules และทุกหน้าอื่นในโมดูลนี้ที่อ้างถึงถูกแก้ไขในรอบตรวจสอบติดตามเดียวกันนี้แล้ว
 
 ## แหล่งอ้างอิง
 
 - Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — การแก้ไขเต็ม รวมถึง screen ที่อ่านจริงและ search ที่รัน
-- Sibling: [04-test-scenarios-approver.md](./04-test-scenarios-approver.md) — ที่ `PR_AUTH_007` void ที่ยืนยันแล้วถูก exercise เป็นเงื่อนไขก่อน แทนที่ scenario configuration ของ Sysadmin ที่ถูกตัดออก
+- Sibling: [04-test-scenarios-approver.md](./04-test-scenarios-approver.md) — `APP-VAL-10` ตอนนี้ใช้ Reject ของเพื่อนร่วม stage (ไม่ใช่ void ธุรการ) เป็นเงื่อนไขก่อน
 - เกี่ยวข้อง (generic config ไม่ใช่เฉพาะ PR): [system-config/workflow](/th/inventory/system-config/workflow)
 - Cross-link: [purchase-order/04-test-scenarios-audit-config.md](/th/inventory/purchase-order/04-test-scenarios-audit-config) — การแก้ไขแบบเดียวกันของโมดูลพี่น้อง พร้อมรายการ search ทั้งหมดที่รัน

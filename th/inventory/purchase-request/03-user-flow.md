@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — User Flow
 description: วงจรชีวิตของเอกสารและไฟล์ flow แยกตาม persona สำหรับโมดูล purchase-request
 published: true
-date: 2026-07-29T05:18:05.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: purchase-request, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -12,12 +12,12 @@ dateCreated: 2026-05-15T09:00:00.000Z
 
 > **At a Glance**
 > **โมดูล:** [purchase-request](/th/inventory/purchase-request) &nbsp;·&nbsp; **Persona:** Requestor &nbsp;·&nbsp; Approver &nbsp;·&nbsp; Procurement Manager &nbsp;·&nbsp; Purchaser &nbsp;·&nbsp; Audit / Config
-> **วงจรชีวิตของ workflow:** Draft → In Progress (อนุมัติหลายระดับ) → Approved → Completed (พร้อมเส้นทางย่อยไปยัง Cancelled / Voided)
+> **วงจรชีวิตของ workflow:** Draft → In Progress (อนุมัติหลายขั้นตอน; send-back คงอยู่ที่ `in_progress`) → Approved → Completed (Voided ได้เฉพาะผ่าน Reject ของผู้อนุมัติ; draft ถูก soft-delete) &nbsp;·&nbsp; **ตรวจสอบซ้ำ 2026-09-22** กับ `purchase-request.service.ts` / `logic/purchase-request.logic.ts`
 > **เจาะดูมุมมองแยกตาม persona ด้านล่างเพื่อรายละเอียดในระดับ action**
 
 ## 1. ภาพรวม
 
-หน้านี้เป็น **จุดเริ่มต้นภาพรวม** สำหรับชุด user-flow ของโมดูล `purchase-request` ครอบคลุมวงจรชีวิตของเอกสาร Purchase Request หนึ่งใบ — ส่วนหัวของ PR (`tb_purchase_request`) พร้อมกับรายการสินค้าหนึ่งรายการหรือมากกว่า (`tb_purchase_request_detail`) — ตั้งแต่ตอนที่ Requestor บันทึก draft ครั้งแรก ผ่านสายอนุมัติหลายระดับ ไปจนถึงการแปลงเป็นใบสั่งซื้อหรือการสิ้นสุดด้วยการ void / ยกเลิก persona ที่เกี่ยวข้องคือ **Requestor** (ผู้ตั้งและแก้ไข PR), สายอนุมัติ **Approver** (Department Head, Budget Controller, Finance และ stage escalation ใด ๆ), **Purchaser** (ผู้แปลง PR ที่อนุมัติแล้วเป็น PO), **Procurement Manager** (กำกับและอนุมัติ PR มูลค่าสูง) และบทบาท **Audit / Config** (Auditor สำหรับ review แบบอ่านอย่างเดียว, System Administrator สำหรับตั้งค่า workflow) แค็ตตาล็อก role อยู่ที่ [หน้าหลักโมดูล](/th/inventory/purchase-request) Section 4
+หน้านี้เป็น **จุดเริ่มต้นภาพรวม** สำหรับชุด user-flow ของโมดูล `purchase-request` ครอบคลุมวงจรชีวิตของเอกสาร Purchase Request หนึ่งใบ — ส่วนหัวของ PR (`tb_purchase_request`) พร้อมกับรายการสินค้าหนึ่งรายการหรือมากกว่า (`tb_purchase_request_detail`) — ตั้งแต่ตอนที่ Requestor บันทึก draft ครั้งแรก ผ่านสายอนุมัติหลายระดับ ไปจนถึงการแปลงเป็นใบสั่งซื้อหรือการสิ้นสุดด้วยการ void / ยกเลิก persona ที่เกี่ยวข้องคือ **Requestor** (ผู้ตั้งและแก้ไข PR), สายอนุมัติ **Approver** (ทุก stage role `approve` ที่ workflow กำหนด — "Department Head", "Budget Controller", "Finance" เป็นชื่อประกอบการอธิบาย; code ไม่มีการตรวจสอบงบประมาณ), **Purchaser** (ผู้แปลง PR ที่อนุมัติแล้วเป็น PO), **Procurement Manager** (กำกับและอนุมัติ PR มูลค่าสูง) และบทบาท **Audit / Config** (Auditor สำหรับ review แบบอ่านอย่างเดียว, System Administrator สำหรับตั้งค่า workflow) แค็ตตาล็อก role อยู่ที่ [หน้าหลักโมดูล](/th/inventory/purchase-request) Section 4
 
 Section 2 ด้านล่างเป็น **state machine ของระบบ** — รายการการ transition ตามมาตรฐานข้ามค่าของ `enum_purchase_request_doc_status` โดยไม่ขึ้นกับว่าใครเป็นคนลงมือ ไฟล์ของแต่ละ persona (link จาก Section 3) จะอธิบาย *เส้นทางที่ persona นั้นเดินผ่าน* state machine — จุดเริ่มต้น, action ที่ใช้ได้, แขนงการตัดสินใจ และ handoff ที่จบการมีส่วนร่วมของพวกเขา จากนั้น Section 4 จะสรุป handoff ข้าม persona ที่ร้อยเส้นทางแต่ละเส้นเข้าด้วยกัน อ่านภาพรวมนี้ก่อนเพื่อจับ lifecycle จากนั้นเจาะลงไปที่ไฟล์ persona ที่ตรงกับ role ของคุณ
 
@@ -30,15 +30,13 @@ stateDiagram-v2
     [*] --> draft: create (Requestor)
     draft --> draft: save / edit (Requestor)
     draft --> in_progress: submit (Requestor)
-    draft --> voided: cancel (Requestor, owner)
+    draft --> [*]: delete — soft delete, not a status (Requestor / super-admin)
     in_progress --> in_progress: approve intermediate stage
-    in_progress --> in_progress: escalate (threshold breach)
+    in_progress --> in_progress: routing rule skips / jumps a stage (threshold)
+    in_progress --> in_progress: send-back (review) — stage cursor moves back
     in_progress --> approved: approve final stage
-    in_progress --> draft: send-back (any approver)
     in_progress --> voided: reject (any approver)
-    in_progress --> voided: void (System Administrator)
     approved --> completed: convert to PO (Purchaser)
-    approved --> voided: void (System Administrator)
     voided --> [*]
     completed --> [*]
 ```
@@ -47,26 +45,24 @@ stateDiagram-v2
 | ---------- | ------ | -------- | ----------- | -------------- |
 | `(none)` | create | `draft` | Requestor | ฟิลด์ header ผ่านการตรวจสอบ (`requestor_id`, `department_id`, `pr_date`, `workflow_id`); ยังไม่ต้องมี line |
 | `draft` | save (edit) | `draft` | Requestor (เจ้าของ) | PR ยังเป็นของ requestor; ยังไม่มีการเลื่อน stage ของ workflow |
-| `draft` | submit | `in_progress` | Requestor (เจ้าของ) | มี line ที่ไม่ถูกลบอย่างน้อยหนึ่งบรรทัด (`PR_VAL_006`); ทุก validation ระดับ line ผ่าน; `workflow_id` ที่เลือก active สำหรับ scope `purchase-request` สร้าง soft budget commitment ตอน transition |
-| `draft` | cancel | `voided` | Requestor (เจ้าของ) | PR ยังไม่เคยถูก submit (ยังเป็นของ requestor); ยังไม่มีการเลื่อน stage ทิ้งการแก้ไขที่ค้างอยู่ |
+| `draft` | submit | `in_progress` | Requestor (เจ้าของ) | มี `workflow_id`, `requestor_id`, `department_id`, `pr_date`; มี line อย่างน้อยหนึ่งบรรทัด (`PR_VAL_006`); ทุกบรรทัดซื้อหรือรับ FOC (`PR_VAL_008`); `POST …/verify` (`verify_state = submit`) list ทุกกฎที่ไม่ผ่านล่วงหน้า (`PR_VAL_017`) |
+| `draft` | delete | *(row ถูก soft-delete)* | Requestor (เจ้าของ: `created_by_id` หรือ `requestor_id`) หรือ platform super-admin | `pr_status` ต้องเป็น `draft`; header และ line ได้ `deleted_at` (`PR_VAL_018` / `PR_POST_009`) **ไม่ใช่** transition ไป `voided` — เอกสารรุ่นก่อนผิด |
 | `in_progress` | approve (stage นี้, ไม่ใช่ final) | `in_progress` | ผู้อนุมัติ stage ปัจจุบัน | ผู้อนุมัติถูก assign ที่ `workflow_current_stage` ปัจจุบันด้วย `stage_role = approve`; `last_action` กลายเป็น `approved` และ cursor ของ stage เลื่อนไป |
-| `in_progress` | approve (stage สุดท้าย) | `approved` | ผู้อนุมัติ stage สุดท้าย | ผู้อนุมัติถูก assign ที่ stage อนุมัติสุดท้าย; ทุก stage ก่อนหน้าเซ็นแล้ว; soft budget commitment ยังคงอยู่รอการแปลงเป็น PO |
-| `in_progress` | send-back | `draft` | ผู้อนุมัติคนใดบน chain | ต้องมีข้อความเหตุผล; soft budget commitment ถูกปล่อยจนกว่าจะ submit ใหม่ มี audit comment เขียน |
-| `in_progress` | reject | `voided` | ผู้อนุมัติคนใดบน chain | ต้องมีข้อความเหตุผล; soft budget commitment ถูกปล่อย; workflow จบ ไม่อนุญาตให้ทำอะไรเพิ่ม |
-| `in_progress` | void | `voided` | System Administrator (หรือ role ระดับสูงอื่น) | ต้องมีข้อความเหตุผล; ใช้สำหรับ void เชิงธุรการหลัง submit (เช่น duplicate, ปัญหา compliance) soft budget commitment ถูกปล่อย |
-| `in_progress` | escalate (เกิน threshold) | `in_progress` | Workflow engine / ผู้อนุมัติ stage ปัจจุบัน | `base_total_amount` ของ header เกิน threshold ค่าสูงที่ตั้งไว้; ส่งต่อให้ Procurement Manager เป็น stage ถัดไป สถานะไม่เปลี่ยนแต่ cursor ของ stage กระโดด |
-| `approved` | convert to PO | `completed` | Purchaser | line ที่อนุมัติแล้วทั้งหมดถูก bridge เข้าสู่ `tb_purchase_order` หนึ่งใบหรือมากกว่า; PR ถูกปิดไม่ให้แปลงต่อ Soft commitment แข็งตัวเป็น PO commitment |
-| `approved` | void | `voided` | System Administrator | ใช้เมื่อ PR ที่อนุมัติแล้วต้องถูกถอนก่อนแปลง (พบไม่บ่อย; ต้องมีเหตุผล) |
+| `in_progress` | approve (stage สุดท้าย) | `approved` | ผู้อนุมัติ stage สุดท้าย | ผู้อนุมัติถูก assign ที่ stage อนุมัติสุดท้าย; ทุก stage ก่อนหน้าเซ็นแล้ว (`purchase-request.service.ts:1913`) |
+| `in_progress` | send-back (review) | `in_progress` | ผู้อนุมัติคนใดบน chain | ต้องมีเหตุผลและ stage เป้าหมาย; `workflow_current_stage` ย้ายไปเป้าหมาย, `last_action = reviewed`, `pr_status` ถูกเขียนใหม่เป็น `in_progress` (`purchase-request.service.ts:2052`) — PR ไม่กลับไป `draft` เลย มี audit comment เขียน |
+| `in_progress` | reject | `voided` | ผู้อนุมัติคนใดบน chain | ต้องมีข้อความเหตุผล; workflow จบ ไม่อนุญาตให้ทำอะไรเพิ่ม (`purchase-request.service.ts:2201` — ผู้เขียน `voided` เพียงจุดเดียว) |
+| `in_progress` | routing rule (threshold) | `in_progress` | Workflow engine | เงื่อนไขใน `tb_workflow.data.routing_rules` บน `total_amount` / `department` match ตอน submit หรือ approve; engine ข้ามหรือกระโดดไป stage ที่ระบุ (`PR_AUTH_005`) สถานะไม่เปลี่ยนแต่ cursor ของ stage กระโดด |
+| `approved` | convert to PO | `completed` | Purchaser (ไม่มีการบังคับ permission บน dialog) | line ที่อนุมัติแล้วทั้งหมดถูก bridge เข้าสู่ `tb_purchase_order` หนึ่งใบหรือมากกว่า; PR ถูกปิดไม่ให้แปลงต่อ |
 
 ## 3. ดัชนี Persona
 
 แต่ละ persona ด้านล่างมีไฟล์ drill-down ของตัวเองที่อธิบายจุดเริ่มต้น, flow หลัก, แขนงการตัดสินใจ และจุดออก slug ตรงกับ role ของ persona; คลิก link เพื่อเปิดมุมมองของแต่ละ persona
 
 - [Requestor](./03-user-flow-requestor.md) — สร้างและ submit PR ตอบสนองต่อ send-back ยกเลิก draft ของตัวเอง
-- [Approver](./03-user-flow-approver.md) — สายอนุมัติหลายระดับ (Department Head, Budget Controller, Finance Officer / Manager) พร้อม action approve / send-back / reject / split-reject ในแต่ละ stage
+- [Approver](./03-user-flow-approver.md) — ทุก stage role `approve` ของ chain (แสดงตัวอย่างเป็น Department Head → Budget Controller → Finance) พร้อม action approve / send-back / reject / split ในแต่ละ stage
 - [Purchaser](./03-user-flow-purchaser.md) — รับ PR ที่อนุมัติแล้ว ตรวจสอบการจัดสรรผู้ขายและราคา แล้วแปลงเป็นใบสั่งซื้อ
 - [Procurement Manager](./03-user-flow-procurement-manager.md) — กำกับฟังก์ชัน procurement, อนุมัติ PR มูลค่าสูงหรือที่ถูก escalate, ปรับ vendor ranking และกฎ Allocate Vendor
-- [Audit / Config](./03-user-flow-audit-config.md) — Auditor (review PR และ activity log แบบอ่านอย่างเดียว) และ System Administrator (ตั้งค่า stage ของ workflow, กฎ routing ตาม amount threshold; กฎ delegation ยังไม่ยืนยัน — ไม่พบกลไกที่ตรงกัน ดู `PR_AUTH_006`)
+- [Audit / Config](./03-user-flow-audit-config.md) — Auditor (review PR และ activity log แบบอ่านอย่างเดียว) และ System Administrator (ตั้งค่า stage ของ workflow, กฎ routing ตาม amount threshold; กฎ delegation และ void โดยผู้ดูแลระบบยังไม่ยืนยัน — ไม่พบกลไกหรือ endpoint ที่ตรงกัน ดู `PR_AUTH_006` / `PR_AUTH_007`)
 
 ## 4. Handoff ข้าม Persona
 
@@ -77,10 +73,10 @@ stateDiagram-v2
 | Requestor | Submit | ผู้อนุมัติ stage แรก (โดยทั่วไปคือ Department Head) | `in_progress` (cursor ของ stage อยู่ที่ stage อนุมัติแรก) |
 | Approver (stage N, ไม่ใช่ final) | Approve ที่ stage นี้ | Approver (stage N+1) | `in_progress` (cursor ของ stage เลื่อนไปยัง stage ถัดไป) |
 | Approver (stage สุดท้าย) | Approve ที่ stage สุดท้าย | Purchaser | `approved` |
-| Approver (stage ใด ๆ) | Send-back พร้อมเหตุผล | Requestor | `draft` (พร้อมประวัติการแก้ไขและ comment ของผู้อนุมัติที่เก็บไว้) |
-| ผู้อนุมัติ stage ปัจจุบัน | จำนวนเงิน header เกิน threshold ค่าสูง | Procurement Manager | `in_progress` (escalate; cursor อยู่ที่ stage Procurement Manager) |
+| Approver (stage ใด ๆ) | Send-back พร้อมเหตุผล (เป้าหมาย = stage create) | Requestor | `in_progress` ที่ stage `create` (ประวัติการแก้ไขและ comment ของผู้อนุมัติเก็บไว้; `pr_status` **ไม่**กลับไป `draft`) |
+| Workflow engine | Routing rule บน `total_amount` / `department` match | Stage เป้าหมาย (เช่น Procurement Manager) | `in_progress` (cursor ของ stage กระโดดไป stage เป้าหมายของ rule) |
 | Purchaser | Convert to PO | โมดูล Purchase Order (และโดยอ้อมไปยัง Receiver / GRN ปลายน้ำ) | `completed` (สร้าง `tb_purchase_order` หนึ่งใบหรือมากกว่า โดย link กลับมายัง PR) |
-| System Administrator | Void พร้อมเหตุผล | Auditor (review หลังเหตุการณ์เท่านั้น) | `voided` |
+
 | Approver | Reject พร้อมเหตุผล | Auditor (review หลังเหตุการณ์เท่านั้น) | `voided` |
 
 ## 5. แหล่งอ้างอิง

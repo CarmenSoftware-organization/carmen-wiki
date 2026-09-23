@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — User Flow — Audit & Config
 description: เส้นทางการใช้งานของ Auditor (read-only activity log) และ System Administrator (ตั้งค่า workflow / master data แบบ generic) ในโมดูล purchase-request — ไม่มี audit workspace หรือ configuration workbench เฉพาะ PR อยู่จริง
 published: true
-date: 2026-07-29T05:45:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: purchase-request, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 # ใบขอซื้อ (Purchase Request) — User Flow — Audit & Config
 
 > **At a Glance**
-> **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **โมดูล:** [purchase-request](/th/inventory/purchase-request) &nbsp;·&nbsp; **Surface ที่ยืนยันแล้ว:** activity log แบบ generic ต่อเอกสาร (Auditor, read-only — `/system-admin/activity-log`); workflow-stage editor แบบ generic ที่มีแท็บ **Routing** รองรับ amount/department/category-threshold routing (`/system-admin/workflow`), tax-profile (`/config/tax-profile`), currency + exchange-rate (`/config/currency`, `/config/exchange-rate`), และหน้า user / role (`/system-admin/user`, `/system-admin/role`) ที่ใช้ร่วมกันข้ามทุกประเภทเอกสาร ไม่ใช่เฉพาะ PR (System Administrator) &nbsp;·&nbsp; **ยังไม่ยืนยัน:** "Audit workspace" query builder เฉพาะ PR, "Configuration workspace" เฉพาะ PR, delegation window, หรือ default ต่อประเภท PR
+> **Persona:** Audit / Config (Auditor + System Administrator) &nbsp;·&nbsp; **โมดูล:** [purchase-request](/th/inventory/purchase-request) &nbsp;·&nbsp; **Surface ที่ยืนยันแล้ว:** activity log แบบ generic ต่อเอกสาร (Auditor, read-only — `/system-admin/activity-log`); workflow-stage editor แบบ generic ที่มีแท็บ **Routing** รองรับ amount/department/category-threshold routing (`/system-admin/workflow`), tax-profile (`/config/tax-profile`), currency + exchange-rate (`/config/currency`, `/config/exchange-rate`), และหน้า user / role (`/system-admin/user`, `/system-admin/role`) ที่ใช้ร่วมกันข้ามทุกประเภทเอกสาร ไม่ใช่เฉพาะ PR (System Administrator) &nbsp;·&nbsp; **ยังไม่ยืนยัน:** "Audit workspace" query builder เฉพาะ PR, "Configuration workspace" เฉพาะ PR, delegation window, default ต่อประเภท PR **หรือการ void PR โดยผู้ดูแลระบบ** (ตรวจสอบซ้ำ 2026-09-22: `purchase-requests.controller.ts` ไม่มี route void; `voided` ถูกเขียนโดย Reject เท่านั้น)
 
 > ⚠️ **แก้ไขใหญ่ในรอบนี้** เวอร์ชันก่อนหน้าของหน้านี้บรรยาย sidebar workspace **"Audit"** เฉพาะทาง พร้อม query builder **"PR Activity Queries"** (audit template, filter chip, การ flag case file, export-approval workflow) และ sidebar workspace **"Configuration"** เฉพาะทางพร้อมหน้าลูก — **PR Workflow Settings** (stage editor บวก panel Threshold Rules, panel preview/forecast, และ versioning ด้วย `effective_from`), **PR Type Defaults**, **Delegation Rules**, **Tax Codes**, และ **Currency Rates** ข้อค้นพบนี้ถูก settle เทียบกับซอร์สปัจจุบันใน `.specs/resync-2026-07-15-progress.md` (commit `df8ab13`, "settle PR audit-config deferral vs system-admin screens") ซึ่งอ่านทุก route ใน `router.tsx` และทุก screen component ใต้ `routes/system-admin/` และ `routes/config/`:
 > - **ไม่มี route หรือ component ใดตรงกับ "audit workspace," "PR Activity Queries," หรือ configuration workbench เฉพาะ PR อยู่เลย** ใน `carmen-inventory-frontend-react` และไม่มี "PR detail → Activity Log tab" ด้วย — หน้า detail ของ PR มีเฉพาะ comment sheet
@@ -27,7 +27,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 
 **Auditor** เป็น role read-only surface ที่ยืนยันได้มีเพียงหน้า **`/system-admin/activity-log`** แบบ generic — list ที่ filter ได้ของ event `action` / `entity_type` / `user` ข้ามทุกประเภทเอกสาร รวมถึงแถว `purchase_request` — บวก comment sheet ของหน้า detail PR เอง (`tb_purchase_request_comment`, immutable สำหรับแถว `type = system` ตาม `PR_POST_008`) ที่ผู้ใช้ที่มีสิทธิ์อ่าน PR เห็นได้อยู่แล้ว ยังไม่ยืนยันในรอบนี้ว่า role "Auditor" ที่แยกต่างหาก gate surface ใดต่างจากผู้อ่านคนอื่นหรือไม่ Auditor ไม่สามารถ approve, reject, send back, แก้บรรทัด หรือ void PR ได้
 
-**System Administrator** ตั้งค่า workflow definition ที่ PR อ้างอิงผ่าน `workflow_id` (stages, `stage_role`, การเป็นสมาชิกของ `user_action.execute[]`, และกฎ amount/department/category-threshold ในแท็บ **Routing** — เป็น system-config functionality แบบ generic ที่ใช้ร่วมกันข้ามประเภทเอกสารผ่าน `/system-admin/workflow` ไม่ใช่เฉพาะ PR), tax rate (`/config/tax-profile`), currency และ exchange-rate master (`/config/currency`, `/config/exchange-rate`), และ RBAC user/role assignment (`/system-admin/user`, `/system-admin/role`) ไม่พบ amount-threshold editor เฉพาะ PR (ตัวจริงเป็น generic ไม่ใช่เฉพาะ PR), delegation-window manager (ไม่มี equivalent อยู่เลย), หรือ screen default ต่อประเภท PR เฉพาะ PR ใดๆ แยกต่างหาก System Administrator (ร่วมกับ Finance) ถือสิทธิ์ **void** ระดับสูงตาม `PR_AUTH_007` ซึ่งเป็น action จริงที่ยืนยันแล้ว แยกจาก screen configuration ข้างต้นทั้งหมด
+**System Administrator** ตั้งค่า workflow definition ที่ PR อ้างอิงผ่าน `workflow_id` (stages, `stage_role`, การเป็นสมาชิกของ `user_action.execute[]`, และกฎ amount/department/category-threshold ในแท็บ **Routing** — เป็น system-config functionality แบบ generic ที่ใช้ร่วมกันข้ามประเภทเอกสารผ่าน `/system-admin/workflow` ไม่ใช่เฉพาะ PR), tax rate (`/config/tax-profile`), currency และ exchange-rate master (`/config/currency`, `/config/exchange-rate`), และ RBAC user/role assignment (`/system-admin/user`, `/system-admin/role`) ไม่พบ amount-threshold editor เฉพาะ PR (ตัวจริงเป็น generic ไม่ใช่เฉพาะ PR), delegation-window manager (ไม่มี equivalent อยู่เลย), หรือ screen default ต่อประเภท PR เฉพาะ PR ใดๆ *(สิทธิ์ **void** ระดับสูงตาม `PR_AUTH_007` ถูกอธิบายที่นี่ว่ายืนยันแล้วในเอกสารรุ่นก่อน — ไม่ใช่: ไม่มี endpoint void ใน `purchase-requests.controller.ts`, ไม่มี control Void ในฟอร์ม PR และ `enum_purchase_request_doc_status.voided` ถูกเขียนโดยเส้นทาง Reject ของผู้อนุมัติเท่านั้น `purchase-request.service.ts:2201` platform super-admin ทำได้เพียง bypass กฎ*ความเป็นเจ้าของ*ตอนลบ `draft` (`PR_VAL_018`))*
 
 ### ตำแหน่งเทียบกับ flow transactional
 
@@ -41,7 +41,7 @@ graph LR
     end
     auditor["Auditor<br/>(read-only activity log)"]:::audit -.->|"อ่าน /system-admin/activity-log,<br/>PR comments"| transactional
     sysadmin["System Administrator<br/>(generic system-config)"]:::cfg -.->|"Workflow / tax / currency / RBAC<br/>(shared config)"| transactional
-    sysadmin -.->|"Void (PR_AUTH_007)"| voided
+    sysadmin -.->|"Delete a draft as super-admin (PR_VAL_018)"| draft
     classDef audit fill:#eab308,color:#000,stroke:#eab308;
     classDef cfg fill:#7c3aed,color:#fff,stroke:#7c3aed;
 ```
@@ -60,7 +60,8 @@ graph LR
 | ตั้งค่า delegation window | **ยังไม่ยืนยันว่ามีอยู่จริง** | **ยังไม่ยืนยันว่ามีอยู่จริง** |
 | แก้ header / บรรทัด / vendor / pricing ของ PR | ❌ | ❌ |
 | Approve / Reject / Send-back / Split-Reject | ❌ | ❌ |
-| Void PR ที่ in-flight หรือ approved (`PR_AUTH_007`) | ❌ | ✅ |
+| Void PR ที่ in-flight หรือ approved (`PR_AUTH_007`) | **ยังไม่ยืนยันว่ามีอยู่** | **ยังไม่ยืนยันว่ามีอยู่** |
+| ลบ PR สถานะ `draft` ของผู้ใช้อื่น (super-admin bypass กฎความเป็นเจ้าของ, `PR_VAL_018`) | ❌ | ✅ (platform super-admin เท่านั้น) |
 
 ## 2. Entry Point และ Primary Flow
 
@@ -79,7 +80,7 @@ graph LR
 ## 3. Decision Branches
 
 - **หาก Auditor พบช่องว่างใน activity log หรือ entry ที่ผิดปกติ**: escalate นอกโมดูล — ไม่พบ feature "case file" หรือการ flag เฉพาะ PR ที่ยืนยันได้ feature activity-log หรือ audit-trail แบบ generic นอกเหนือจาก list ที่ filter ได้ ถ้ามีอยู่ document ไว้ใน [reporting-audit](/th/inventory/reporting-audit) ไม่ใช่ที่นี่
-- **หาก Sysadmin ต้องยุติ PR ที่ค้าง** (เช่น การแก้ workflow ทำให้ไม่มี approver ที่เหมาะสมเหลือที่ stage หนึ่งหลังการเปลี่ยน RBAC): remediation ที่ยืนยันได้คือ **void** ระดับสูงของ System Administrator เองตาม `PR_AUTH_007` หรือ escalate ไปยัง Finance ไม่มีกลไก delegation ที่ยืนยันได้สำหรับ reassign stage ที่ค้างชั่วคราว — การค้นหาทั่ว repo สำหรับ feature delegation-window ไม่พบสิ่งใด (ดู correction note ข้างต้น)
+- **หาก Sysadmin ต้องยุติ PR ที่ค้าง** (เช่น การแก้ workflow ทำให้ไม่มี approver ที่เหมาะสมเหลือที่ stage หนึ่งหลังการเปลี่ยน RBAC): **ไม่มี** void โดยผู้ดูแลระบบและไม่มีกลไก delegation remediation ที่ยืนยันได้มีเพียงการแก้ assigned user ของ stage ใน `/system-admin/workflow` เพื่อให้มีคน Reject หรือ Approve ได้ หรือ — เฉพาะ `draft` — ลบมันในฐานะ super-admin
 - **หาก Sysadmin แก้ tax rate, exchange rate, หรือ workflow stage ขณะที่ PR อยู่ in-flight ภายใต้ค่าเก่า**: การแก้ไม่ปรากฏว่าเขียนทับ field ที่ snapshot ไว้แล้วของ PR ที่ in-flight แบบย้อนหลัง (`exchange_rate`, `vat_rate` ฯลฯ ที่ capture ตอน submit — ดู [02-business-rules.md](./02-business-rules.md) Section 6) แต่ไม่พบ preview panel ฝั่ง configuration หรือจำนวน PR ที่ได้รับผลกระทบที่ยืนยันว่าสิ่งนี้ surface ให้ Sysadmin เห็นก่อน save
 
 ## 4. Exit Point / Handoffs
@@ -88,13 +89,13 @@ graph LR
 
 - **Auditor** — การอ่าน activity log ไม่เปลี่ยนสถานะเลย remediation ใดที่ review ของ Auditor surface ถูก handoff แบบ out-of-band ไปยัง Finance, Compliance, หรือ System Administrator
 - **System Administrator (configuration)** — การแก้ workflow / tax / currency / RBAC ถูก save และมีผลกับ PR ในอนาคตและ (สำหรับ RBAC) action ในอนาคต ไม่เคยเปลี่ยน `pr_status` ของ PR เอง
-- **System Administrator (void)** — action เดียวในแกน persona นี้ที่เปลี่ยนสถานะ PR จริง: `pr_status` flip เป็น `voided` (terminal) ตาม `PR_AUTH_007` / `PR_POST_006` ปล่อย budget soft-commitment และ append comment เหตุผลบังคับ Handoff ไปยัง Requestor (เห็น `voided` บน **My PRs**) และ Auditor (เห็น void ใน activity log เมื่อ query ครั้งถัดไป)
+- **System Administrator (ลบโดย super-admin)** — action เดียวที่กระทบ PR ซึ่งยืนยันได้สำหรับแกน persona นี้: soft-delete `draft` ของผู้ใช้อื่น (`PR_VAL_018` / `PR_POST_009`) ไม่เปลี่ยน `pr_status` — row แค่หายไป *(void โดยผู้ดูแลระบบตาม `PR_AUTH_007` เคยระบุในเอกสารรุ่นก่อน — ยังไม่ยืนยัน)*
 
 ## 5. แหล่งอ้างอิง
 
 - ภาพรวม parent: [03-user-flow.md](./03-user-flow.md)
-- กฎการให้สิทธิ์: [02-business-rules.md](./02-business-rules.md) Section 4 — `PR_AUTH_002` (ผู้ execute ต่อ stage), `PR_AUTH_007` (void ระดับสูง, ขอบเขต Finance / System Administrator), `PR_AUTH_008` (ความเป็นเจ้าของ `enum_stage_role` สำหรับ PO conversion) **`PR_AUTH_005`** (amount thresholds) เป็น live behavior ที่ยืนยันแล้วผ่านแท็บ **Routing** ของ `/system-admin/workflow` (ดู correction note ด้านบน) **`PR_AUTH_006`** (delegation) ยังคงไม่ยืนยัน — ไม่พบโค้ด delegation ที่ตรงกันเลย
-- กฎการ post: [02-business-rules.md](./02-business-rules.md) Section 5 — `PR_POST_006` (void), `PR_POST_008` (audit comment ที่ immutable)
+- กฎการให้สิทธิ์: [02-business-rules.md](./02-business-rules.md) Section 4 — `PR_AUTH_002` (ผู้ execute ต่อ stage), `PR_AUTH_007` (void ระดับสูง — **ยังไม่ยืนยัน**), `PR_AUTH_008` (ความเป็นเจ้าของ `enum_stage_role` สำหรับ PO conversion) **`PR_AUTH_005`** (amount thresholds) เป็น live behavior ที่ยืนยันแล้วผ่านแท็บ **Routing** ของ `/system-admin/workflow` (ดู correction note ด้านบน) **`PR_AUTH_006`** (delegation) ยังคงไม่ยืนยัน — ไม่พบโค้ด delegation ที่ตรงกันเลย
+- กฎการ post: [02-business-rules.md](./02-business-rules.md) Section 5 — `PR_POST_006` (reject), `PR_POST_009` (ลบ draft), `PR_POST_008` (audit comment ที่ immutable)
 - กฎ cross-module: [02-business-rules.md](./02-business-rules.md) Section 6 — snapshot semantics (`exchange_rate`, ฟิลด์ tax) ที่ capture ตอน submit เกี่ยวข้องกับสิ่งที่การแก้ master-data ของ Sysadmin มีผลย้อนหลังหรือไม่
 - เกี่ยวข้อง (generic config ไม่ใช่เฉพาะ PR): [system-config/workflow](/th/inventory/system-config/workflow)
 - Sibling: [03-user-flow-requestor.md](./03-user-flow-requestor.md) — persona ต้นน้ำที่ action ปรากฏใน activity log

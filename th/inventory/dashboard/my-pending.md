@@ -1,8 +1,8 @@
 ---
 title: Widget My Pending แดชบอร์ด (My Pending Dashboard Widget)
-description: "ถูกลบแล้ว เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น — ไม่เคยถูก render บน /dashboard จริง: widget นับจำนวนเอกสาร pending ส่วนตัวที่เสนอไว้ แสดงจำนวนร่างหรือเอกสารที่อยู่ระหว่างดำเนินการที่รอการทำงานของผู้ใช้ที่ล็อกอิน ครอบคลุม PR, PO และ SR"
+description: "ถูกลบแล้ว เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น — ไม่เคยถูก render บน /dashboard จริง: widget นับจำนวนเอกสาร pending ส่วนตัวที่เสนอไว้ แสดงจำนวนร่างหรือเอกสารระหว่างดำเนินการของผู้ใช้ที่ล็อกอิน ครอบคลุม PR, PO และ SR"
 published: true
-date: 2026-07-16T02:01:42.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: dashboard, my-pending, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -16,6 +16,8 @@ dateCreated: 2026-06-04T00:00:00.000Z
 ## สถานะการ implement (ตรวจสอบเมื่อ 2026-07-16)
 
 **การอ้างสถานะ "Live" ของหน้านี้ก่อนหน้านี้ผิด** หน้านี้ document `dashboard-my-pending.tsx` (เดิมคือ `routes/dashboard/_components/dashboard-my-pending.tsx`) ซึ่ง render card นับสามใบตามที่อธิบายด้านล่าง เมื่อตรวจสอบ `dashboard-component.tsx` (ทั้งเวอร์ชันปัจจุบันและเวอร์ชันก่อน cleanup 2026-06-27) พบว่าหน้า `/dashboard` จริงมี render แค่ header ทักทายกับกริด "Saved Widgets" เท่านั้นมาโดยตลอด — ไม่เคย import หรือ mount `dashboard-my-pending.tsx` เลย hook ที่อยู่เบื้องหลัง (`useMyPendingPrCount`, `useMyPendingPoCount`, `useMyPendingSrCount` ใน `hooks/use-dashboard.ts`) ยังคงอยู่ใน source code ปัจจุบัน และ endpoint ของมัน (`GET /api/proxy/api/my-pending/{purchase-requests,purchase-orders,store-requisitions}/count`) ยังถูกประกาศไว้ใน `constant/api-endpoints.ts` แต่การค้นหาทั่วทั้ง repo พบว่า **ไม่มี call site เลยแม้แต่แห่งเดียว** สำหรับ hook ทั้งสาม — ไม่ใช่บน `/dashboard`, ไม่ใช่ใน sidebar, ไม่มีที่ไหนเลย ไฟล์ component เองถูกลบพร้อมไฟล์พี่น้องอีก 7 ไฟล์ใน commit `03891e3d` ("refactor(dashboard): convert to idiomatic structure, drop dead demo code", 2026-06-27) ซึ่ง commit message ยืนยันว่าเป็น dead code ที่ "no importers anywhere"
+
+**ตรวจสอบซ้ำ 2026-09-22:** hook ที่ระบุด้านบนไม่ได้ "ยังคงอยู่" อีกแล้ว — `hooks/use-dashboard.ts` ถูกลบพร้อมไฟล์ตายอีก 16 ไฟล์เมื่อ 2026-08-31 (`02228125`, "ลบโค้ดตาย 17 ไฟล์ ~1,800 บรรทัด") เหลือเพียงค่าคงที่ `MY_PENDING_PURCHASE_REQUESTS_COUNT` / `MY_PENDING_PURCHASE_ORDERS_COUNT` / `MY_PENDING_STORE_REQUISITIONS_COUNT` ใน `constant/api-endpoints.ts` โดยไม่มีผู้เรียกเลย วิธีที่ live ในการดูจำนวน pending ส่วนตัวบน `/dashboard` วันนี้คือ card status-group ที่ใช้ preset "mine" (`owner_visibility = @current_user`) — ดู [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) §1.2
 
 เนื้อหาด้านล่างทั้งหมดอธิบาย widget ที่ไม่เคยถูก mount และถูกลบไปแล้วนี้ — เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น ถือว่าทุกข้อความ "Live" / "mount แล้ว" / การอ้าง route ในส่วนที่เหลือของหน้านี้เป็นโมฆะ
 
@@ -90,7 +92,7 @@ Pending หมายถึงเอกสารที่ยังไม่ถึ
 
 - **Component (ถูกลบเมื่อ 2026-06-27):** `routes/dashboard/_components/dashboard-my-pending.tsx` ใน `../carmen-inventory-frontend-react`
 - **Commit ที่ลบ:** `03891e3d` — "refactor(dashboard): convert to idiomatic structure, drop dead demo code"
-- **Hooks (ยังอยู่ แต่ไม่พบ call site เลย):** `../carmen-inventory-frontend-react/hooks/use-dashboard.ts` — `useMyPendingPrCount`, `useMyPendingPoCount`, `useMyPendingSrCount`
+- **Hooks (ถูกลบ 2026-08-31, `02228125`):** `../carmen-inventory-frontend-react/hooks/use-dashboard.ts` — `useMyPendingPrCount`, `useMyPendingPoCount`, `useMyPendingSrCount`
 - **API constants (ยังประกาศอยู่ แต่ไม่ถูกใช้):** `../carmen-inventory-frontend-react/constant/api-endpoints.ts` → `MY_PENDING_PURCHASE_REQUESTS_COUNT`, `MY_PENDING_PURCHASE_ORDERS_COUNT`, `MY_PENDING_STORE_REQUISITIONS_COUNT`
 - **Colour mapping:** `../carmen-inventory-frontend-react/constant/module-color-map.ts` → `getModuleColor`
 - **Cache config:** `../carmen-inventory-frontend-react/lib/cache-config.ts` → `CACHE_DYNAMIC`

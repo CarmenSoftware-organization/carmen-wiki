@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — Test Scenarios — Purchaser
 description: Test case ของ Purchaser (happy path, permission, validation, edge case) สำหรับโมดูล purchase-request
 published: true
-date: 2026-07-15T10:50:00.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: purchase-request, test-scenarios, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -15,6 +15,8 @@ dateCreated: 2026-05-15T09:00:00.000Z
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** `tests/304-pr-purchaser-journey.spec.ts` (`TC-PR-0701xx`–`TC-PR-0709xx`, แหล่งหลัก) บวก block ของ purchase-role ใน `tests/301-pr.spec.ts` (`TC-PR-470xxx` edit pricing, `TC-PR-490xxx` submit after allocation, `TC-PR-600xxx` reject, `TC-PR-410xxx` convert to PO) ใน `../carmen-inventory-frontend-e2e/`
 
+> **Executable coverage (2026-09-22)** Spec `../carmen-inventory-frontend-e2e/tests/304-pr-purchaser-journey.spec.ts` (61 test) + block purchase ของ `tests/301-pr.spec.ts` (197) case ที่ catalogue ไว้แต่ยังไม่ automate: `docs/test-cases/gaps/304-pr-purchaser-journey-gap.md` (36 case — ระบุว่า block ราคาของ Step 3 ใน spec `purchaseTest.skip` เมื่อ row รายการถูกพับ ดังนั้นการแก้ vendor / ราคา / ส่วนลด / ภาษีในทางปฏิบัติยังไม่ automate วันนี้); story `docs/user-stories/304-pr-purchaser-journey.md` Convert-to-PO ตอนนี้อยู่ที่ `/procurement/purchase-order/from-pr` (`routes/procurement/purchase-order/from-pr/`) ไม่ใช่ dialog เพิ่มด้านล่าง: `PUR-VAL-05` (เพดานยอดต่อบรรทัด) และคอลัมน์ราคาซื้อล่าสุดใน dialog เปรียบเทียบ
+
 หน้านี้จับ test scenario ที่ persona Purchaser ขับโดยตรงในโมดูล `purchase-request` แบ่งตามสองสิ่งที่พวกเขาทำจริงใน build ปัจจุบัน: (1) ทำหน้าที่ที่ stage role `purchase` ภายในสายอนุมัติของ PR เอง — แก้ vendor / ราคาต่อหน่วย / ส่วนลด / tax profile, รัน **Auto Allocate** แล้ว bulk Approve / Reject / Send for Review / Split เหมือน stage อื่นทุกประการ — และ (2) แยกต่างหาก เมื่อ PR เป็น `approved` แล้ว รัน dialog **Convert to PO** จากโมดูล Purchase Order ดู [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) สำหรับ walkthrough เต็มของทั้งสองอย่าง
 
 ## 1. Happy Path
@@ -24,7 +26,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 | PUR-HP-01 | List load, My Pending เป็น default; PR ที่ stage Purchase มองเห็น | Purchaser ล็อกอิน; PR ถูก submit และ HOD-approve แล้วจนลงที่ stage ที่มอบหมายให้ Purchaser | Sidebar → Purchase Request ยืนยัน URL และแท็บ My Pending (`TC-PR-070101`) | List load ที่ `/procurement/purchase-request`; แท็บ My Pending ถูกเลือกเมื่อมีอยู่ |
 | PUR-HP-02 | Detail load แท็บ Items เป็น default; ไม่มีปุ่ม Approve/Reject แบบ standalone | PR seed ที่ stage Purchase (`submitPRAsRequestor` + `approveAsHOD`) | เปิดหน้า PR detail (`TC-PR-070201`, `TC-PR-070203`) | Detail URL load; แท็บ Items ถูกเลือกเมื่อมีอยู่; ไม่มีปุ่ม Approve / Reject / Send-back แบบ standalone ระดับ header (ช่องว่างตาม BRD — bulk toolbar เท่านั้น) |
 | PUR-HP-03 | เข้า Edit Mode → vendor / ราคา / ส่วนลด / tax แก้ไขได้ | PR เดียวกัน, ปุ่ม Edit มองเห็น | คลิก **Edit**; ตรวจ input Vendor, Unit Price, Discount, Tax Profile บนบรรทัดแรก (`TC-PR-070301`–`TC-PR-070305`) | Input Vendor, Unit Price, Discount, Tax Profile แก้ได้; `Approved Qty` ยังคง disabled/read-only (`TC-PR-070306`) เพราะ stage HOD ตั้งไว้แล้ว |
-| PUR-HP-04 | Auto Allocate เติม vendor + ราคาผ่าน scoring lookup | Edit Mode active, มีบรรทัดอย่างน้อยหนึ่งที่ตั้งสินค้า / หน่วย / สกุลเงินแล้ว | คลิก **Auto Allocate** (`TC-PR-070307`) | Request เสร็จและหน้ายังอยู่ที่ URL detail เดิม; vendor, ราคา, pricelist reference และ tax เติมจาก price-compare lookup สำหรับบรรทัดที่ resolve ได้ |
+| PUR-HP-04 | Auto Allocate เติม vendor + ราคาผ่าน price-compare lookup | Edit Mode active, มีบรรทัดอย่างน้อยหนึ่งที่ตั้งสินค้า / หน่วย / สกุลเงินแล้ว | คลิก **Auto Allocate** (`TC-PR-070307`) | Request เสร็จและหน้ายังอยู่ที่ URL detail เดิม; vendor, ราคา, `pricelist_detail_id`, `pricelist_no`, tax profile และอัตราแลกเปลี่ยนเติมจาก `GET …/price-compare` (`product_id`, `unit_id`, `currency_id`, `at_date`, `qty`) สำหรับบรรทัดที่ resolve ได้ — vendor preferred ก่อน แล้วถูกที่สุด ที่ MOQ tier ซึ่งจำนวนที่ขอไปถึง; แถวราคา `0` ถูกข้าม การเปิด **Price Comparison** บนบรรทัดแสดงแถวเดียวกัน (vendor, เลขที่ pricelist, หน่วย, ราคา + "best", มีผล) พร้อมปุ่ม **Assign** และใน header จำนวนที่ขอ / ที่อนุมัติ และ**ราคาซื้อล่าสุด**ของสินค้า (`last_price.cost_per_unit`, 2026-09-22) |
 | PUR-HP-05 | Save edits เก็บการเปลี่ยน vendor/ราคา | Edit Mode ที่มีการแก้ Unit Price | เติม Unit Price, คลิก **Save Draft** (`TC-PR-070309`) | Form กลับไป view mode; ปุ่ม Edit มองเห็นอีกครั้ง; ราคาใหม่ถูกเก็บไว้ |
 | PUR-HP-06 | Bulk Approve เดินหน้า PR | Edit Mode, เลือกทุกแถว | เลือกทั้งหมด, คลิก bulk **Approve**, ยืนยัน (`TC-PR-070401`, golden flow `TC-PR-070901`) | PR อยู่ที่ URL detail เดิม; stage เดินหน้า (หรือ `pr_status` พลิก `in_progress → approved` ตาม `PR_POST_005` ถ้านี่เป็น stage สุดท้าย) |
 | PUR-HP-07 | Bulk Reject พร้อมเหตุผล | Edit Mode, เลือกทุกแถว | เลือกทั้งหมด, คลิก bulk **Reject**, กรอกเหตุผล, ยืนยัน (`TC-PR-070402`; ยังมี `TC-PR-600001` ผ่านปุ่ม Reject บน PR เดียว) | `pr_status` พลิกเป็น `voided` (terminal); เหตุผลและผู้ใช้ที่ reject ถูกบันทึกใน audit trail |
@@ -50,6 +52,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 | PUR-VAL-02 | Bulk action พร้อมการเลือก vendor ไม่ครบ | พยายาม bulk Approve ขณะบรรทัดหนึ่งมี `vendor_id IS NULL` (`TC-PR-490003`) | Reject — inline validation error; Purchaser รัน Auto Allocate หรือเลือก vendor ด้วยมือแล้วลองใหม่ |
 | PUR-VAL-03 | Reject ด้วยเหตุผลสั้นเกินไป | เหตุผลของ Bulk/Reject สั้นกว่าความยาวขั้นต่ำ (`TC-PR-600002`) | Reject — ข้อความ error ว่าเหตุผลสั้นเกินไป; Confirm ถูกบล็อกจนกว่าจะแก้ |
 | PUR-VAL-04 | Convert to PO ด้วย vendor ไม่ถูกต้องบน group | พยายาม Convert-to-PO ขณะบรรทัดของ PR ที่เลือก resolve เป็น vendor ไม่ตรง/ไม่พบ (`TC-PR-410002`) | Reject — error ปรากฏใน dialog; ไม่มีการสร้าง PO; `pr_status` ของ PR ต้นทางไม่เปลี่ยน |
+| PUR-VAL-05 | ส่วนลดหรือภาษีมากกว่ามูลค่าบรรทัด | ตั้ง `discount_amount` เกิน sub-total ของบรรทัด (หรือ `tax_amount` เกิน net) แล้วรัน **Approve** หรือเรียก `POST …/verify` ด้วย `verify_state = approve`, `stage_role = purchase` | รายงาน verify list `PR_ERROR.DISCOUNT_EXCEEDS_LINE_AMOUNT` / `TAX_EXCEEDS_LINE_AMOUNT` สำหรับบรรทัด (`PR_VAL_012`, `common/verify/amount.check.ts`) **ข้อควรระวัง:** `PATCH …/approve` เองไม่รันการเช็ค — ถ้า client ข้าม verify บรรทัดจะ persist; บันทึกผลที่สังเกตได้ |
 
 ## 4. Edge Case
 
@@ -64,7 +67,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 
 - ภาพรวมหลัก: [04-test-scenarios.md](./04-test-scenarios.md)
 - User flow: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — แหล่ง happy-path สำหรับ Section 1 ด้านบน; อธิบาย flow แก้ที่ stage `purchase` + bulk-decide และ dialog Convert-to-PO แยกต่างหาก
-- กฎทางธุรกิจ: [02-business-rules.md](./02-business-rules.md) Section 5 (`PR_POST_005` final approve → `approved`, `PR_POST_007` convert to PO → `completed`)
+- กฎทางธุรกิจ: [02-business-rules.md](./02-business-rules.md) Section 2 (`PR_VAL_011` การอ้างอิงที่ stage purchase, `PR_VAL_012` เพดานต่อบรรทัด, `PR_VAL_017` verify), Section 5 (`PR_POST_005` final approve → `approved`, `PR_POST_007` convert to PO → `completed`)
 - โมเดลข้อมูล: [01-data-model.md](./01-data-model.md) Section 2 — ตาราง bridge `tb_purchase_order_detail_tb_purchase_request_detail`
 - E2E: `../carmen-inventory-frontend-e2e/tests/304-pr-purchaser-journey.spec.ts` (แหล่งหลัก, persona-journey — fixture `purchaseTest`) และ `../carmen-inventory-frontend-e2e/tests/301-pr.spec.ts` (block purchase-role: "PR — Edit pricing", "PR — Submit after vendor allocation", "PR — Reject by Purchase Staff", "PR — Convert to PO — Purchase Staff") Coverage PR Template ที่ใกล้กับ scope Purchaser อยู่ใน `../carmen-inventory-frontend-e2e/tests/310-pr-template.spec.ts`
 - Cross-link: [purchase-order](/th/inventory/purchase-order) — โมดูลปลายน้ำที่รับ PO ที่แปลงแล้ว

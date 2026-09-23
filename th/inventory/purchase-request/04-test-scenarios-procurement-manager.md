@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — Test Scenarios — Procurement Manager
 description: Test case ของ Procurement Manager (อนุมัติมูลค่าสูงแบบ escalated) สำหรับโมดูล purchase-request
 published: true
-date: 2026-07-29T05:18:05.000Z
+date: '2026-09-23T01:30:00.000Z'
 tags: purchase-request, test-scenarios, procurement-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -15,6 +15,8 @@ dateCreated: 2026-05-15T09:00:00.000Z
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation
 > **E2E coverage:** ยังไม่มี persona-journey spec เฉพาะของ Procurement Manager; เส้นทาง escalation / มูลค่าสูงถูกทดสอบผ่าน fixture `gmTest` ใน `tests/301-pr.spec.ts` ใน `../carmen-inventory-frontend-e2e/`
 
+> **Executable coverage (2026-09-22)** มีเพียง block `gmTest` ของ `../carmen-inventory-frontend-e2e/tests/301-pr.spec.ts` (รวม 197 test) ที่แตะ persona นี้; case ที่ catalogue ไว้ใน gap อยู่ใน `docs/test-cases/gaps/301-pr-core-gap.md` (46 case) และ `gaps/303-pr-approver-journey-gap.md` (37 — UI เดียวกัน) ไม่มี spec, gap report หรือ story `3xx-pr-procurement-manager`
+
 หน้านี้จับ test scenario ที่ persona Procurement Manager ขับในโมดูล `purchase-request` ตามที่บันทึกใน [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md) source ปัจจุบันไม่มีหน้าจอเฉพาะของ Procurement Manager — persona นี้คือ stage role `approve` ใน workflow **เดียวกัน** กับ chain Approver พื้นฐาน โดยเข้าถึงผ่าน threshold-based escalation (`PR_AUTH_005`, ยืนยันแล้ว) หรือ workflow route ตรง Scenario ด้านล่างเป็น subset ระดับ stage-escalated ของ scenario Approver พื้นฐานใน [04-test-scenarios-approver.md](./04-test-scenarios-approver.md); scenario ระดับบรรทัดและ threshold-boundary ของหน้านั้นใช้ที่นี่ตรงตัวเช่นกัน *(scenario ด้าน delegation ของหน้านั้นไม่ใช้ — `PR_AUTH_006` ยังไม่ยืนยัน ดู correction note ที่หน้านั้น)*
 
 > ⚠️ **หมายเหตุความคลาดเคลื่อน:** เนื้อหารุ่นก่อนหน้าของหน้านี้อธิบาย "configurational surface" (scoring weight ของ Vendor Allocation Rules, override priority ต่อ vendor, bulk action Stuck PR Oversight) พร้อม scenario เพิ่มเติมอีก ~20 รายการ ไม่พบหน้าจอ, route หรือ endpoint ที่ตรงกันใน `../carmen-inventory-frontend-react/` หรือ `../carmen-turborepo-backend-v2/` ในรอบตรวจสอบนี้ — ดูรายการ discrepancy log ใน progress log ของการ resync scenario เหล่านั้นถูกลบออกแทนที่จะคงไว้เป็นเนื้อหาสมมติ
@@ -23,7 +25,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 
 | # | Scenario | Pre-condition | Steps | คาดหวัง |
 | - | -------- | ------------- | ----- | -------- |
-| PM-HP-01 | รับและ review PR ที่ escalated | PR `pr_status = in_progress`, route ไปยัง Procurement Manager เพราะ `base_total_amount` ข้าม threshold ที่ตั้ง (`PR_AUTH_005`) หรือผ่าน workflow route ตรง | เปิด **My Pending**; เปิด PR ที่ escalated; review header, บรรทัด, Budget Impact และ Activity Log (comment ของ Approver ต้นน้ำทั้งหมดมองเห็น) | หน้า PR detail load ด้วย UI read-mostly / Edit Mode เดียวกันกับ chain Approver พื้นฐาน; action bar แสดง bulk toolbar มาตรฐาน |
+| PM-HP-01 | รับและ review PR ที่ถูก route มา | PR `pr_status = in_progress`, route ไปยัง Procurement Manager เพราะเงื่อนไข `routing_rules` บน `total_amount` match (`PR_AUTH_005`) หรือผ่านการตั้งค่า workflow ตรง | เปิด **My Approval** (`/procurement/approval`) หรือแท็บ **My Pending** ของ list PR; เปิด PR; review header, บรรทัด, Workflow History และ comment *(panel Budget Impact — ยังไม่ยืนยัน ไม่มี code path)* | หน้า PR detail load ด้วย UI read-mostly / Edit Mode เดียวกันกับ chain Approver พื้นฐาน; footer แสดง Approve / Reject / Send Back, bulk toolbar แสดง Approve / Reject / Send for Review / Split |
 | PM-HP-02 | Approve PR ที่ escalated ที่ stage สุดท้าย | PR อยู่ที่ stage ของ Procurement Manager ซึ่งเป็น stage `approve`-role สุดท้ายของ chain | เข้า Edit Mode, เลือกทั้งหมด, bulk **Approve**, ยืนยัน | `PR_POST_005` fire: `pr_status` พลิก `in_progress → approved`; PR เข้าเกณฑ์สำหรับ dialog Convert-to-PO แยกต่างหาก |
 | PM-HP-03 | Reject PR มูลค่าสูงมาก | PR ถูกมอบหมายให้ Procurement Manager / General Manager เพื่ออนุมัติ (`TC-PR-060005`) | เปิด PR; คลิก **Reject**; กรอกเหตุผล; ยืนยัน | `pr_status` พลิกเป็น `voided`; requestor ได้รับแจ้ง; Auditor review เหตุผลได้ภายหลัง |
 | PM-HP-04 | ส่ง PR escalated กลับเพื่อแก้ไข | PR อยู่ที่ stage escalated; เหตุผลไม่เพียงพอ | Bulk **Send for Review** พร้อมเหตุผล | `workflow_current_stage` ย้ายกลับหนึ่ง step (หรือถึง create stage ของ Requestor ทั้งหมด ทำให้ `pr_status` กลับเป็น `draft` ขึ้นกับ workflow configuration) |
@@ -41,7 +43,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 | # | Scenario | Trigger | Error ที่คาด |
 | - | -------- | ------- | -------------- |
 | PM-VAL-01 | Reject / Send for Review โดยไม่มีเหตุผล | ทิ้งฟิลด์เหตุผลว่าง, คลิก Confirm | Reject — ปุ่ม Confirm ยังคง disabled หรือ server reject การเรียก; เหตุผลเป็น mandatory ทั้งสอง action |
-| PM-VAL-02 | ปรับ `approved_qty` เกิน `requested_qty` | ตั้ง `approved_qty` เกิน `requested_qty` บนบรรทัด, คลิก Approve | `PR_VAL_013` — reject ด้วย "Approved quantity must be positive and may not exceed requested quantity" |
+| PM-VAL-02 | ปรับ `approved_qty` เกิน `requested_qty` | ตั้ง `approved_qty` เกิน `requested_qty` บนบรรทัด, คลิก Approve | **ยอมรับ** — ไม่มีกฎฝั่ง client หรือ server ที่เปรียบเทียบสองค่านี้ (เพดานของ `PR_VAL_013` ยังไม่ยืนยัน) รายงานเฉพาะ `approved_qty` ติดลบ และเฉพาะโดย `POST …/verify` เอกสารรุ่นก่อนคาดว่าจะถูก reject — ไม่มี code path |
 
 ## 4. แหล่งอ้างอิง
 
