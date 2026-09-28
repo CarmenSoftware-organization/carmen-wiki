@@ -38,8 +38,8 @@ The vendor list search-and-filter shape, same generic pattern as every other mas
 
 ```mermaid
 flowchart TD
-    Start(["User enters search text"]) --> Debounce["Debounce"]
-    Debounce --> Query["Query vendors with combined search + filter params"]
+    Start(["User enters search text"]) --> Submit["Press Enter / click search"]
+    Submit --> Query["Query vendors with combined search + filter params"]
     Query --> Display["Display results"]
     Display --> UserAction{"User action"}
     UserAction -->|"Select vendor"| OpenProfile["Open vendor detail"]
@@ -47,7 +47,7 @@ flowchart TD
     UserAction -->|"New search"| Start
 ```
 
-> Diagram adapted from `carmen/docs/app/vendor-management/vendor-directory/FD-vendor-directory.md` · verified against `carmen-inventory-frontend-react/routes/vendor-management/vendor/vendor-component.tsx`, `use-vendor-table.tsx` (2026-09-28) · Changes: dropped the source's result caching, relevance-score ranking, permission-based row filtering, 100-result cap, and search-term highlighting — none evidenced; the real list uses the same generic `useDataGridState` search + filter pattern as every other master-data list.
+> Diagram adapted from `carmen/docs/app/vendor-management/vendor-directory/FD-vendor-directory.md` · verified against `carmen-inventory-frontend-react/routes/vendor-management/vendor/vendor-component.tsx:189-191`, `components/search-input.tsx:36-44` (2026-09-28) · Changes: dropped the source's result caching, relevance-score ranking, permission-based row filtering, 100-result cap, and search-term highlighting — none evidenced; replaced the source's "Debounce 300ms" with the real `SearchInput` behaviour (submits only on Enter or a click on the search button, no debounce); the real list uses the same generic `ListToolbar` / `useDataGridState` search + filter pattern as every other master-data list.
 
 ## 3. Validation & Errors
 

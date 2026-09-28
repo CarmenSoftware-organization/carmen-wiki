@@ -38,8 +38,8 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ```mermaid
 flowchart TD
-    Start(["ผู้ใช้พิมพ์ search text"]) --> Debounce["Debounce"]
-    Debounce --> Query["Query ผู้ขายด้วย search + filter param รวม"]
+    Start(["ผู้ใช้พิมพ์ search text"]) --> Submit["กด Enter / คลิกปุ่มค้นหา"]
+    Submit --> Query["Query ผู้ขายด้วย search + filter param รวม"]
     Query --> Display["แสดงผลลัพธ์"]
     Display --> UserAction{"การกระทำของผู้ใช้"}
     UserAction -->|"เลือกผู้ขาย"| OpenProfile["เปิดรายละเอียดผู้ขาย"]
@@ -47,7 +47,7 @@ flowchart TD
     UserAction -->|"ค้นหาใหม่"| Start
 ```
 
-> Diagram adapted from `carmen/docs/app/vendor-management/vendor-directory/FD-vendor-directory.md` · verified against `carmen-inventory-frontend-react/routes/vendor-management/vendor/vendor-component.tsx`, `use-vendor-table.tsx` (2026-09-28) · Changes: dropped the source's result caching, relevance-score ranking, permission-based row filtering, 100-result cap, and search-term highlighting — none evidenced; the real list uses the same generic `useDataGridState` search + filter pattern as every other master-data list.
+> Diagram adapted from `carmen/docs/app/vendor-management/vendor-directory/FD-vendor-directory.md` · verified against `carmen-inventory-frontend-react/routes/vendor-management/vendor/vendor-component.tsx:189-191`, `components/search-input.tsx:36-44` (2026-09-28) · Changes: dropped the source's result caching, relevance-score ranking, permission-based row filtering, 100-result cap, and search-term highlighting — none evidenced; replaced the source's "Debounce 300ms" with the real `SearchInput` behaviour (submits only on Enter or a click on the search button, no debounce); the real list uses the same generic `ListToolbar` / `useDataGridState` search + filter pattern as every other master-data list.
 
 ## 3. การตรวจสอบและข้อผิดพลาด
 

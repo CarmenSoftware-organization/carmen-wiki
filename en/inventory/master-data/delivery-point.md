@@ -54,15 +54,16 @@ flowchart TD
     A["Click New"] --> B["Open DeliveryPointDialog"]
     B --> C["Enter name"]
     C --> D["Toggle active status"]
-    D --> E{"Name valid?"}
-    E -->|"Yes"| F["Click Save"]
-    E -->|"No"| G["Save button disabled"]
-    F --> H["POST /delivery-points"]
+    D --> E["Click Save"]
+    E --> F{"Zod: name valid?"}
+    F -->|"No"| G["Show inline 'Name required' error"]
+    G --> C
+    F -->|"Yes"| H["POST /delivery-points"]
     H --> I["Close dialog"]
     I --> J["Refresh list"]
 ```
 
-> Diagram adapted from `carmen/docs/app/system-administration/delivery-points/FD-delivery-points.md` · verified against `carmen-inventory-frontend-react/routes/config/delivery-point/delivery-point-component.tsx` (2026-09-28) · Changes: named the real `DeliveryPointDialog` component and the real create endpoint in place of the source's generic "Create record".
+> Diagram adapted from `carmen/docs/app/system-administration/delivery-points/FD-delivery-points.md` · verified against `carmen-inventory-frontend-react/routes/config/delivery-point/delivery-point-component.tsx`, `components/templates/config-entity-dialog.tsx:222-226`, `components/share/delivery-point-dialog.tsx:15-22` (2026-09-28) · Changes: named the real `DeliveryPointDialog` component and the real create endpoint in place of the source's generic "Create record". Corrected the fix from the prior pass — the Save button is not disabled while the name is invalid (`config-entity-dialog.tsx:222-226` disables it only `while isPending`); an empty name is instead caught by the zod schema on submit (`delivery-point-dialog.tsx:15-22`), which shows an inline "Name required" field error.
 
 ```mermaid
 flowchart TD

@@ -34,11 +34,11 @@ persona **Purchaser** เป็น **ผู้บริโภค read-only** ข
 5. **กรอก qty และ unit-price** Qty ในหน่วยสั่งซื้อที่เลือก unit-price (โดยทั่วไป pre-populate จาก `tb_pricelist_detail` ล่าสุดหรือต้นทุน GRN ล่าสุด) ระบบคำนวณ qty หน่วยฐานตาม `PRD_CALC_005` (`order_unit_qty × conversion_factor = base_unit_qty`) สำหรับคลังและ costing ปลายน้ำ ค่าความคลาดเคลื่อนของราคา (`PRD_CALC_003` → `price_deviation_limit` ที่มีผล) อ่านที่จุดนี้; unit-price นอก tolerance flag สำหรับการอนุมัติเกินเกณฑ์ตาม `PR_VAL_*`
 6. **Save บรรทัด** บรรทัด PR / PO ถูกเพิ่ม; การโต้ตอบของ Purchaser กับ product master จบ ตัวสินค้าเองไม่เปลี่ยน (read-only)
 
-หน้า list และ picker บรรทัด PR / PO ที่ฝังอยู่ใช้ component ค้นหา-และ-filter ตัวเดียวกัน:
+รูปแบบ search-and-filter ของหน้า Products list (picker บรรทัด PR/PO ในขั้นตอนที่ 1 เป็น component แยกที่แคบกว่า — ดู Changes note):
 
 ```mermaid
 flowchart TD
-    Start(["เปิด list สินค้า / picker บรรทัด PR-PO"]) --> LoadInitial["โหลด list<br/>sort: code:asc, id:asc"]
+    Start(["เปิด list สินค้า"]) --> LoadInitial["โหลด list<br/>sort: code:asc, id:asc"]
     LoadInitial --> DisplayList["แสดง list พร้อม toolbar ค้นหา + filter"]
     DisplayList --> UserAction{"การกระทำของผู้ใช้"}
 
@@ -56,11 +56,11 @@ flowchart TD
 
     Query --> DisplayList
 
-    UserAction -->|"คลิกแถว"| Edit["เปิดสินค้าเพื่อแก้ไข"]
-    Edit --> End(["จบ"])
+    UserAction -->|"คลิกแถว"| View["เปิดสินค้า (view mode)"]
+    View --> End(["จบ"])
 ```
 
-> Diagram adapted from `carmen/docs/app/product-management/products/FD-products.md` · verified against `carmen-inventory-frontend-react/routes/product-management/product/pd-component.tsx`, `use-product-table.tsx` (2026-09-28) · Changes: dropped the "Is For Sale" / "Is Ingredient" toggles and price/cost range (not wired into `pd-component.tsx`'s `productFilterFields` — only Status, Category, Sub Category, and Item Group are); dropped the 300ms-debounce and search-term-highlight specifics (unconfirmed); corrected the default sort to `code:asc, id:asc` per [01-data-model](/th/inventory/product/01-data-model) § 3 API-shape note; corrected the Status filter to the two wired values (`active`, `inactive` — `discontinued` has no filter option in the UI today).
+> Diagram adapted from `carmen/docs/app/product-management/products/FD-products.md` · verified against `carmen-inventory-frontend-react/routes/product-management/product/pd-component.tsx:247`, `use-product-table.tsx` (2026-09-28) · Changes: dropped the "Is For Sale" / "Is Ingredient" toggles and price/cost range (not wired into `pd-component.tsx`'s `productFilterFields` — only Status, Category, Sub Category, and Item Group are); dropped the 300ms-debounce and search-term-highlight specifics (unconfirmed); corrected the default sort to `code:asc, id:asc` per [01-data-model](/th/inventory/product/01-data-model) § 3 API-shape note; corrected the Status filter to the two wired values (`active`, `inactive` — `discontinued` has no filter option in the UI today). Corrected the fix from the prior pass — this diagram is the Products **list** page only; `pd-component.tsx` (which holds `productFilterFields`) is used only by `product.route.tsx`, and the PR/PO line picker is the separate, simpler `components/lookup/lookup-product.tsx` (server-side search only, no Category / Sub Category / Item Group filters). Also corrected the row-click node — it navigates to `/product-management/product/:id`, which opens in view mode, not edit mode.
 
 flow **comment** คือเส้นทางรอง:
 

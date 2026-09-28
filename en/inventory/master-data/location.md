@@ -43,20 +43,18 @@ List sorting, the list/grid toggle, and the create flow:
 
 ```mermaid
 flowchart TD
-    Start(["User on location list"]) --> InitialSort["Default sort: code:asc, name:asc"]
-    InitialSort --> DisplayList["Display sorted list with sort indicator"]
+    Start(["User on location list"]) --> DisplayList["Display list, no sort indicator on first load"]
     DisplayList --> UserClick{"User clicks column header"}
-    UserClick -->|"Same column"| CheckDirection{"Current direction?"}
-    CheckDirection -->|"asc"| ReverseSort["Change to desc"]
-    CheckDirection -->|"desc"| ChangeToAsc["Change to asc"]
-    UserClick -->|"Different column"| NewSort["Change sort field, default asc"]
-    ReverseSort --> ReSort["Re-sort"]
-    ChangeToAsc --> ReSort
-    NewSort --> ReSort
+    UserClick -->|"Unsorted"| SetAsc["Sort ascending"]
+    UserClick -->|"Currently ascending"| SetDesc["Sort descending"]
+    UserClick -->|"Currently descending"| ClearSort["Clear sort<br/>(falls back to backend default)"]
+    SetAsc --> ReSort["Re-sort"]
+    SetDesc --> ReSort
+    ClearSort --> ReSort
     ReSort --> MaintainFilters["Filters remain active"]
 ```
 
-> Diagram adapted from `carmen/docs/app/system-administration/location-management/FD-location-management.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/master/locations/locations.service.ts` (2026-09-28) · Changes: corrected the default sort to `code:asc, name:asc` per `withDefaultSort`; dropped the source's "Shelves / Products / Users Count" sortable columns (not confirmed on the list).
+> Diagram adapted from `carmen/docs/app/system-administration/location-management/FD-location-management.md` · verified against `carmen-inventory-frontend-react/components/ui/data-grid/data-grid-column-header.tsx:67-75` (2026-09-28) · Changes: corrected the cycle from the prior pass — clicking a header cycles unsorted → ascending → descending → cleared (`handleSort`, `:67-75`), never descending → ascending directly, and the backend `locations.service.ts` cannot evidence header-click behaviour so the citation was moved to the real frontend file; dropped "with sort indicator on first load" — `location-component.tsx` passes no `defaultSort`, so no column shows a sort indicator until the user clicks one; dropped the source's "Shelves / Products / Users Count" sortable columns (not confirmed on the list).
 
 ```mermaid
 flowchart TD
@@ -70,7 +68,7 @@ flowchart TD
     Preserve --> ShowSameData["Display same filtered / sorted results in the new layout"]
 ```
 
-> Diagram adapted from `carmen/docs/app/system-administration/location-management/FD-location-management.md` · verified against `carmen-inventory-frontend-react/components/templates/config-list-template.tsx` (2026-09-28) · Changes: renamed "table"/"card" to the real `list` / `grid` `displayMode` values; dropped the source's "checkbox selection" claim in list view — no bulk multi-select was found.
+> Diagram adapted from `carmen/docs/app/system-administration/location-management/FD-location-management.md` · verified against `carmen-inventory-frontend-react/components/templates/config-list-template.tsx:407-424` (2026-09-28) · Changes: renamed "table"/"card" to the real `list` / `grid` `displayMode` values, each set by its own button (`:407-424` — not a single toggle); dropped the source's "checkbox selection" claim in list view — the template does add row/select-all checkboxes (`use-config-table.ts:85`), but nothing in the list consumes that selection for a bulk action. Grid mode switches to a separate infinite-scroll query (`:218-229`), so it re-fetches rather than only re-rendering.
 
 ```mermaid
 sequenceDiagram
@@ -79,7 +77,7 @@ sequenceDiagram
     participant V as Zod Validator
     participant API as Locations API
 
-    U->>F: Click "Create Location"
+    U->>F: Click "Add"
     F->>U: Display empty form
     U->>F: Fill form fields
     U->>F: Click "Save"
@@ -91,11 +89,11 @@ sequenceDiagram
         V->>F: Return valid data
         F->>API: POST /locations
         API-->>F: Created location
-        F->>U: Navigate to list with success message
+        F->>U: Navigate to the new location's detail page
     end
 ```
 
-> Diagram adapted from `carmen/docs/app/system-administration/location-management/TS-location-management.md` · verified against `carmen-inventory-frontend-react/routes/config/location/location-form-schema.ts`, `location-new.route.tsx` (2026-09-28) · Changes: replaced the source's "update mock state" step with the real `POST /locations` API call.
+> Diagram adapted from `carmen/docs/app/system-administration/location-management/TS-location-management.md` · verified against `carmen-inventory-frontend-react/routes/config/location/location-form-schema.ts`, `location-form.tsx:210-218` (2026-09-28) · Changes: replaced the source's "update mock state" step with the real `POST /locations` API call; corrected the fix from the prior pass — on success the form navigates to `/config/location/:id` (the new location's own detail page, per `location-form.tsx:214-217`), not back to the list; corrected the entry button label to "Add" (`t("add")`), not "Create Location".
 
 ## 3. Validation & Errors
 

@@ -46,24 +46,24 @@ stateDiagram-v2
     Inactive --> [*]: Delete (if no recipes/subcategories)
 ```
 
-> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/categories/FD-categories.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/master/recipe/recipe-category.service.ts` (2026-09-28) · Changes: dropped the source's `Draft` state — the source's own note flags it "Not used in current implementation"; categories are created directly `is_active = true` (see § 5.1).
+> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/categories/FD-categories.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/master/recipe-category/recipe-category.service.ts:387-406` (2026-09-28) · Changes: dropped the source's `Draft` state — the source's own note flags it "Not used in current implementation"; categories are created directly `is_active = true` (see § 5.1). Corrected the cited path (was wrongly given as `master/recipe/recipe-category.service.ts` — the real module directory is `master/recipe-category/`).
 
 ```mermaid
 sequenceDiagram
     participant U as User
-    participant UI as CategoryList
-    participant State as React State
-    participant Utils as Filter Utils
+    participant UI as ListToolbar
+    participant State as useDataGridState
+    participant API as Recipe Categories API
 
-    U->>UI: Type search term
-    UI->>State: Update searchTerm state
-    State->>Utils: Filter by name / code / description
-    Utils-->>State: Return filtered array
-    State->>UI: Re-render with filtered data
+    U->>UI: Type search term / pick Status or Parent filter
+    UI->>State: Update search / filter params
+    State->>API: GET recipe-categories?search=...&filter=...
+    API-->>State: Return matching categories
+    State->>UI: Re-render with results
     UI->>U: Display filtered results
 ```
 
-> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/categories/TS-categories.md` · verified against `carmen-inventory-frontend-react/routes/operation-plan/category/recipe-category-component.tsx` (2026-09-28) · Changes: dropped the source's "Advanced Filters panel", "quick filter", and "filter count badge" — not confirmed; the real list uses the shared `useDataGridState` search pattern with no advanced-filter UI found.
+> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/categories/TS-categories.md` · verified against `carmen-inventory-frontend-react/routes/operation-plan/category/recipe-category-component.tsx:57,73-132` (2026-09-28) · Changes: replaced the source's client-side "React State / Filter Utils" filtering with the real server-side query — `useDataGridState` (`:57`) feeds `useRecipeCategory(combinedParams)` (`:124-132`), which sends `search` and `filter` as request params; corrected the prior pass's Changes note, which wrongly claimed "no advanced-filter UI found" — the page has a real filter sheet with a Status (`is_active` true/false) and a Parent multi-select (`:73-116`).
 
 ## 3. Validation & Errors
 

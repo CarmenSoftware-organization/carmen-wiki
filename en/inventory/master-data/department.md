@@ -38,15 +38,18 @@ List-row actions and the department form's two user-assignment transfer lists:
 ```mermaid
 flowchart TD
     A["Department row"] --> B{"Action"}
-    B -->|"View"| C["Open department detail"]
-    B -->|"Edit"| D["Open edit form"]
-    B -->|"Delete"| E["Show confirmation dialog"]
-    E --> F{"Confirm?"}
-    F -->|"Yes"| G["Soft-delete department"]
-    F -->|"No"| H["Close dialog"]
+    B -->|"Click code / name"| C["Open detail page (view mode)"]
+    C --> D["Click Edit toggle"]
+    D --> E["Form becomes editable"]
+    B -->|"⋯ row menu"| F{"Menu item"}
+    F -->|"Activity"| G["Open activity log"]
+    F -->|"Delete"| H["Show confirmation dialog"]
+    H --> I{"Confirm?"}
+    I -->|"Yes"| J["Soft-delete department"]
+    I -->|"No"| K["Close dialog"]
 ```
 
-> Diagram adapted from `carmen/docs/app/finance/department-management/FD-department-management.md` · verified against `carmen-inventory-frontend-react/routes/config/department/department.route.tsx`, `department-edit.route.tsx` (2026-09-28) · Changes: replaced the source's client-router-push + local-array-removal framing with the real routed edit page and soft-delete API call (the delete has no reference guard — see § 3).
+> Diagram adapted from `carmen/docs/app/finance/department-management/FD-department-management.md` · verified against `carmen-inventory-frontend-react/components/ui/data-grid/use-config-table.ts:84-90`, `data-grid-row-actions.tsx:95-135`, `department-form.tsx:141,181` (2026-09-28) · Changes: corrected the fix from the prior pass — the row `⋯` menu has no separate View / Edit items (`useConfigTable` passes only `onDelete` to `actionColumn`, so the menu holds Activity + Delete only); clicking the code/name cell instead opens `/config/department/:id` in view mode, and Edit is a mode toggle inside that page's own toolbar, not a row action.
 
 ```mermaid
 flowchart TD

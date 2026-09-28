@@ -38,15 +38,18 @@ Action ของแถว list และ transfer list สองตัวขอ�
 ```mermaid
 flowchart TD
     A["แถวแผนก"] --> B{"Action"}
-    B -->|"View"| C["เปิดรายละเอียดแผนก"]
-    B -->|"Edit"| D["เปิดฟอร์มแก้ไข"]
-    B -->|"Delete"| E["แสดง dialog ยืนยัน"]
-    E --> F{"ยืนยัน?"}
-    F -->|"ใช่"| G["Soft-delete แผนก"]
-    F -->|"ไม่"| H["ปิด dialog"]
+    B -->|"คลิก code / name"| C["เปิดหน้ารายละเอียด (view mode)"]
+    C --> D["คลิก Edit toggle"]
+    D --> E["ฟอร์มกลายเป็นแก้ไขได้"]
+    B -->|"เมนู ⋯"| F{"รายการเมนู"}
+    F -->|"Activity"| G["เปิด activity log"]
+    F -->|"Delete"| H["แสดง dialog ยืนยัน"]
+    H --> I{"ยืนยัน?"}
+    I -->|"ใช่"| J["Soft-delete แผนก"]
+    I -->|"ไม่"| K["ปิด dialog"]
 ```
 
-> Diagram adapted from `carmen/docs/app/finance/department-management/FD-department-management.md` · verified against `carmen-inventory-frontend-react/routes/config/department/department.route.tsx`, `department-edit.route.tsx` (2026-09-28) · Changes: replaced the source's client-router-push + local-array-removal framing with the real routed edit page and soft-delete API call (the delete has no reference guard — see § 3).
+> Diagram adapted from `carmen/docs/app/finance/department-management/FD-department-management.md` · verified against `carmen-inventory-frontend-react/components/ui/data-grid/use-config-table.ts:84-90`, `data-grid-row-actions.tsx:95-135`, `department-form.tsx:141,181` (2026-09-28) · Changes: corrected the fix from the prior pass — the row `⋯` menu has no separate View / Edit items (`useConfigTable` passes only `onDelete` to `actionColumn`, so the menu holds Activity + Delete only); clicking the code/name cell instead opens `/config/department/:id` in view mode, and Edit is a mode toggle inside that page's own toolbar, not a row action.
 
 ```mermaid
 flowchart TD

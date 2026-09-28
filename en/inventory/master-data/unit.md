@@ -32,19 +32,21 @@ The companion table `tb_unit_conversion` stores **multipliers between two units*
 | Mark default conversion | Toggle `is_default` | Primary when multiple conversions exist for the same pair |
 | Identity conversion | Same from/to with equal qty | Permitted; otherwise from ≠ to required |
 
-The unit list, like other master-data lists, toggles between a table and a card layout without refetching:
+The unit list, like other master-data lists, switches between a list and a grid layout via two separate buttons:
 
 ```mermaid
 flowchart TD
-    Start(["User clicks list/grid toggle"]) --> CurrentMode{"Current mode?"}
-    CurrentMode -->|"list"| SetGrid["Set displayMode = grid"]
-    CurrentMode -->|"grid"| SetList["Set displayMode = list"]
-    SetGrid --> Preserve["Preserve filter + sort state"]
-    SetList --> Preserve
-    Preserve --> Render["Re-render same results in the new layout"]
+    Start(["User on unit list"]) --> DefaultView["Default: list view"]
+    DefaultView --> ShowToggle["Show list/grid toggle buttons"]
+    ShowToggle --> UserClick{"User clicks"}
+    UserClick -->|"List icon"| SwitchToList["Switch to list mode"]
+    UserClick -->|"Grid icon"| SwitchToGrid["Switch to grid mode"]
+    SwitchToList --> Preserve["Preserve filter + sort state"]
+    SwitchToGrid --> Preserve
+    Preserve --> ShowSameData["Display same filtered / sorted results in the new layout"]
 ```
 
-> Diagram adapted from `carmen/docs/app/product-management/units/FD-units.md` · verified against `carmen-inventory-frontend-react/components/templates/config-list-template.tsx` (2026-09-28) · Changes: renamed "table"/"cards" to the real `displayMode` values `list` / `grid`; dropped the source's `localStorage` persistence claim — not found in `config-list-template.tsx` (the toggle is plain `useState`, so it resets on reload).
+> Diagram adapted from `carmen/docs/app/product-management/units/FD-units.md` · verified against `carmen-inventory-frontend-react/components/templates/config-list-template.tsx:407-424` (2026-09-28) · Changes: corrected the fix from the prior pass — this is two separate buttons that each set a fixed `displayMode` (`:407-424`), not a single toggle that flips between "list" and "grid"; dropped the earlier lead-in's "without refetching" claim — grid mode disables the direct list query and switches to the infinite-scroll `useGridPagination` query (`:218-229`), so it does re-fetch. Also dropped the source's `localStorage` persistence claim — not found in `config-list-template.tsx` (the toggle is plain `useState`, so it resets on reload).
 
 ## 3. Validation & Errors
 

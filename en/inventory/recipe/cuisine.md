@@ -40,12 +40,13 @@ The cuisine's active/inactive lifecycle:
 ```mermaid
 stateDiagram-v2
     [*] --> Active: Create cuisine
-    Active --> Inactive: Deactivate (no active recipes)
+    Active --> Inactive: Deactivate
     Inactive --> Active: Reactivate
-    Inactive --> [*]: Delete (no active recipes)
+    Active --> [*]: Delete (if no recipes reference it)
+    Inactive --> [*]: Delete (if no recipes reference it)
 ```
 
-> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/cuisine-types/FD-cuisine-types.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/master/recipe/recipe-cuisine.service.ts` (2026-09-28) · Changes: dropped the source's `Draft` state — its own note says cuisines start `Active` in the current implementation; kept the recipe-reference guard on deactivate / delete per `RECIPE_CUISINE_IN_USE`.
+> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/cuisine-types/FD-cuisine-types.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/master/recipe-cuisine/recipe-cuisine.service.ts:150-171,280-300` (2026-09-28) · Changes: dropped the source's `Draft` state — its own note says cuisines start `Active` in the current implementation; corrected the fix from the prior pass — `update()` (deactivate) has no recipe-reference check at all (unguarded), and `delete()`'s `RECIPE_CUISINE_IN_USE` counts any non-deleted recipe, not specifically "active" ones, and applies whether the cuisine is `Active` or `Inactive`, so `Active --> [*]` was added. Corrected the cited path (was wrongly given as `master/recipe/recipe-cuisine.service.ts` — the real module directory is `master/recipe-cuisine/`).
 
 ## 3. Validation & Errors
 

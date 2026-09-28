@@ -34,11 +34,11 @@ The **Purchaser** persona is a **read-only consumer** of the product catalogue. 
 5. **Enter qty and unit-price.** Qty in the chosen order-unit, unit-price (typically pre-populated from the latest `tb_pricelist_detail` or last GRN cost). The system computes the base-unit qty per `PRD_CALC_005` (`order_unit_qty × conversion_factor = base_unit_qty`) for downstream inventory and costing. The price-deviation tolerance (`PRD_CALC_003` → effective `price_deviation_limit`) is read at this point; a unit-price outside tolerance flags for above-threshold approval per `PR_VAL_*`.
 6. **Save the line.** The PR / PO line is added; the Purchaser's interaction with the product master ends. The product itself is unchanged (read-only).
 
-The list page and the embedded PR / PO line picker share the same search-and-filter component:
+The Products list page's search-and-filter shape (step 1's PR/PO line picker is a separate, narrower component — see the Changes note):
 
 ```mermaid
 flowchart TD
-    Start(["Open Products list / PR-PO line picker"]) --> LoadInitial["Load list<br/>sort: code:asc, id:asc"]
+    Start(["Open Products list"]) --> LoadInitial["Load list<br/>sort: code:asc, id:asc"]
     LoadInitial --> DisplayList["Display list with search + filter toolbar"]
     DisplayList --> UserAction{"User action"}
 
@@ -56,11 +56,11 @@ flowchart TD
 
     Query --> DisplayList
 
-    UserAction -->|"clicks a row"| Edit["Open product for edit"]
-    Edit --> End(["End"])
+    UserAction -->|"clicks a row"| View["Open product (view mode)"]
+    View --> End(["End"])
 ```
 
-> Diagram adapted from `carmen/docs/app/product-management/products/FD-products.md` · verified against `carmen-inventory-frontend-react/routes/product-management/product/pd-component.tsx`, `use-product-table.tsx` (2026-09-28) · Changes: dropped the "Is For Sale" / "Is Ingredient" toggles and price/cost range (not wired into `pd-component.tsx`'s `productFilterFields` — only Status, Category, Sub Category, and Item Group are); dropped the 300ms-debounce and search-term-highlight specifics (unconfirmed); corrected the default sort to `code:asc, id:asc` per [01-data-model](/en/inventory/product/01-data-model) § 3 API-shape note; corrected the Status filter to the two wired values (`active`, `inactive` — `discontinued` has no filter option in the UI today).
+> Diagram adapted from `carmen/docs/app/product-management/products/FD-products.md` · verified against `carmen-inventory-frontend-react/routes/product-management/product/pd-component.tsx:247`, `use-product-table.tsx` (2026-09-28) · Changes: dropped the "Is For Sale" / "Is Ingredient" toggles and price/cost range (not wired into `pd-component.tsx`'s `productFilterFields` — only Status, Category, Sub Category, and Item Group are); dropped the 300ms-debounce and search-term-highlight specifics (unconfirmed); corrected the default sort to `code:asc, id:asc` per [01-data-model](/en/inventory/product/01-data-model) § 3 API-shape note; corrected the Status filter to the two wired values (`active`, `inactive` — `discontinued` has no filter option in the UI today). Corrected the fix from the prior pass — this diagram is the Products **list** page only; `pd-component.tsx` (which holds `productFilterFields`) is used only by `product.route.tsx`, and the PR/PO line picker is the separate, simpler `components/lookup/lookup-product.tsx` (server-side search only, no Category / Sub Category / Item Group filters). Also corrected the row-click node — it navigates to `/product-management/product/:id`, which opens in view mode, not edit mode.
 
 The **comment** flow is the secondary path:
 

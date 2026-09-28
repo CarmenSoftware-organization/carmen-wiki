@@ -36,13 +36,13 @@ dateCreated: 2026-05-16T15:00:00.000Z
 | ปลดประจำการอุปกรณ์ | edit → `is_active = false` (soft-delete) | ยังอ้างอิงได้บนสูตรในประวัติ ซ่อนจาก picker |
 | แนบคู่มือหรือรูป | หน้ารายละเอียด → `attachments` / `manuals_urls` | array JSON ของลิงก์ไฟล์ |
 
-การค้นหา/filter ของ list และ export:
+การค้นหา/filter ของ list:
 
 ```mermaid
 flowchart TD
     Start(["ผู้ใช้เริ่ม search/filter"]) --> InputType{"ประเภท input?"}
-    InputType -->|"Search text"| Debounce["Debounce"]
-    Debounce --> SearchFilter["Apply search filter"]
+    InputType -->|"Search text"| Submit["กด Enter / คลิกปุ่มค้นหา"]
+    Submit --> SearchFilter["Apply search filter"]
     InputType -->|"Category filter"| CategoryFilter["Filter by category_id"]
     InputType -->|"Status filter"| StatusFilter["Filter by is_active"]
     SearchFilter --> FilterChain["รวม filter ที่ active"]
@@ -52,20 +52,7 @@ flowchart TD
     ApplyToList --> UpdateDisplay["อัปเดต list ที่แสดง"]
 ```
 
-> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/equipment/FD-equipment.md` · verified against `carmen-inventory-frontend-react/routes/operation-plan/equipment/` (2026-09-28) · Changes: renamed the status filter to the real `is_active` field and the category filter to `category_id`; dropped the specific 300ms debounce timing and the "no results / suggest clearing filters" messaging — unconfirmed.
-
-```mermaid
-flowchart TD
-    Start(["ผู้ใช้คลิก Export"]) --> GatherData["รวบรวมข้อมูลอุปกรณ์ที่ filter แล้ว"]
-    GatherData --> CheckCount{"มีอุปกรณ์ให้ export หรือไม่?"}
-    CheckCount -->|"ไม่มี"| ShowWarning["แสดงคำเตือนไม่มีอะไร export"]
-    CheckCount -->|"มี"| PrepareExport["จัดรูปแบบข้อมูลสำหรับ export"]
-    PrepareExport --> GenerateFile["สร้างไฟล์ export"]
-    GenerateFile --> TriggerDownload["สั่งดาวน์โหลด"]
-    TriggerDownload --> ShowSuccess["แสดง toast สำเร็จ"]
-```
-
-> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/equipment/FD-equipment.md` · verified against `carmen-inventory-frontend-react/routes/operation-plan/equipment/` (2026-09-28) · Changes: none structural — matches the export-button pattern confirmed elsewhere in the app (e.g. product / currency list exports).
+> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/equipment/FD-equipment.md` · verified against `carmen-inventory-frontend-react/components/list-filter/list-toolbar.tsx:80,120`, `components/search-input.tsx:36-44` (2026-09-28) · Changes: renamed the status filter to the real `is_active` field and the category filter to `category_id`; replaced the source's "Debounce 300ms" with the real behaviour — `SearchInput` submits only on Enter or a click on the search button, there is no debounce; dropped the "no results / suggest clearing filters" messaging — unconfirmed.
 
 ## 3. การตรวจสอบและ Error
 
