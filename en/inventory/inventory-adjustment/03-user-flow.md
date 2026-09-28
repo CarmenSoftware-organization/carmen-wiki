@@ -64,9 +64,9 @@ Before opening a document, the user works the list screen: search, two filter fi
 ```mermaid
 flowchart TD
     Start(["User opens Inventory Adjustment list"]) --> Load["Load adjustments (paginated)"]
-    Load --> Table["Display table<br/>default sort: date"]
+    Load --> Table["Display table<br/>no default sort — server order"]
     Table --> Action{"User action"}
-    Action -->|"Type in search box"| Search["Debounced search query"]
+    Action -->|"Type in search box, press Enter or click search"| Search["Search on Enter / click<br/>(no live-as-you-type debounce)"]
     Action -->|"Open filter"| FilterMenu["Filter sheet/popover:<br/>Type (stock-in / stock-out),<br/>Status (draft / in_progress / completed / voided)"]
     Action -->|"Click a sortable column header"| Sort["Toggle sort direction on that column"]
     Action -->|"Click row"| Detail["Navigate to adjustment detail<br/>(stock-in or stock-out)"]
@@ -77,7 +77,7 @@ flowchart TD
     Detail --> End(["Show detail page"])
 ```
 
-> Diagram adapted from `carmen/docs/app/inventory-management/inventory-adjustments/TS-inventory-adjustments.md` · verified against `carmen-inventory-frontend-react/routes/inventory-management/inventory-adjustment/ia-component.tsx`, `carmen-inventory-frontend-react/routes/inventory-management/inventory-adjustment/use-ia-table.tsx` (2026-09-28) · Changes: replaced the generic mock-data search/filter description (and the near-identical variant in `FD-inventory-adjustments.md`, which claimed Status/Type/Location/Reason filters) with the two real filter fields — Type (`stock-in` / `stock-out`) and Status (`draft` / `in_progress` / `completed` / `voided`); no location or reason filter exists on this list — and the real detail route `/inventory-management/inventory-adjustment/{id}?type=...` (not `/adjustments/{id}`).
+> Diagram adapted from `carmen/docs/app/inventory-management/inventory-adjustments/TS-inventory-adjustments.md` · verified against `carmen-inventory-frontend-react/routes/inventory-management/inventory-adjustment/ia-component.tsx`, `carmen-inventory-frontend-react/routes/inventory-management/inventory-adjustment/use-ia-table.tsx`, `carmen-inventory-frontend-react/components/search-input.tsx`, `carmen-inventory-frontend-react/hooks/use-data-grid-state.ts` (2026-09-28) · Changes: replaced the generic mock-data search/filter description (and the near-identical variant in `FD-inventory-adjustments.md`, which claimed Status/Type/Location/Reason filters) with the two real filter fields — Type (`stock-in` / `stock-out`) and Status (`draft` / `in_progress` / `completed` / `voided`); no location or reason filter exists on this list — and the real detail route `/inventory-management/inventory-adjustment/{id}?type=...` (not `/adjustments/{id}`). **Fix round 1 (2026-09-28):** dropped the "default sort: date" claim — `ia-component.tsx` calls `useDataGridState()` with no `defaultSort` option, so `effectiveSort` is empty and the list has no client-imposed default order (server order only); replaced "Debounced search query" with the real Enter/click-triggered search — `SearchInput`'s `onSearch` fires only on Enter or the search-button click (`handleKeyDown` / `handleSearch`), and `ia-component.tsx` does not pass the `onInputChange` prop that would enable live-as-you-type filtering.
 
 ## 3. Persona Index
 

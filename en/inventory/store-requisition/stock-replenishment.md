@@ -30,7 +30,7 @@ flowchart TD
     CheckType -->|"Yes — inventory or consignment"| Included["Included — eligible for replenishment"]
 ```
 
-> Diagram adapted from `carmen/docs/app/store-operations/stock-replenishment/FD-stock-replenishment.md` (§7 "Destination Location Validation") · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/inventory/stock-replenishment/stock-replenishment.service.ts` (`selectBelowPar`) (2026-09-28) · Changes: replaced the fictional "user selects destination, validated interactively" framing with the real automatic backend filter (`location IS active AND location_type <> direct`) applied when scanning `tb_product_location` for the below-par list — there is no interactive destination-picker step in this screen.
+> Diagram adapted from `carmen/docs/app/store-operations/stock-replenishment/FD-stock-replenishment.md` (§7 "Destination Location Validation") · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/inventory/stock-replenishment/stock-replenishment.service.ts` (`findCandidatePairs()`'s `locationWhere`) (2026-09-28) · Changes: replaced the fictional "user selects destination, validated interactively" framing with the real automatic backend filter (`location IS active AND location_type <> direct`) applied when scanning `tb_product_location` for the below-par list — there is no interactive destination-picker step in this screen. **Fix round 1 (2026-09-28):** corrected the citation from `selectBelowPar()` (which only compares on-hand to par on already-fetched rows) to `findCandidatePairs()`, whose `locationWhere` actually carries the `is_active` / `location_type !== direct` filter.
 
 End to end, using the screen is a five-step journey:
 
@@ -42,13 +42,13 @@ graph LR
     Configure --> Submit["SUBMIT"]
 
     Discover --> Discover1["View Stock Replenishment screen —<br/>below-par rows grouped by location"]
-    Filter --> Filter1["Filter by location / search"]
+    Filter --> Filter1["Search by product name / code / category<br/>(free text; client-side only, not a location filter)"]
     Select --> Select1["Select rows via checkbox"]
     Configure --> Configure1["Choose Create PR or Create SR wizard;<br/>adjust quantities / pick source location"]
     Submit --> Submit1["Confirm — PR or SR draft created"]
 ```
 
-> Diagram adapted from `carmen/docs/app/store-operations/stock-replenishment/FD-stock-replenishment.md` (§8 "User Journey Flow") · verified against `carmen-inventory-frontend-react/routes/store-operation/stock-replenishment/stock-repl-component.tsx`, `stock-repl-pr-wizard.tsx`, `stock-repl-sr-wizard.tsx`, `use-stock-replenishment.ts` (2026-09-28) · Changes: replaced the generic "CONFIGURE source location and priority" step (no `priority` field exists in the schema or code) with the real two-wizard split (Create PR vs Create SR, each posting to its own endpoint); replaced "SUBMIT → SR Created" with "PR or SR draft created" since either document type can result.
+> Diagram adapted from `carmen/docs/app/store-operations/stock-replenishment/FD-stock-replenishment.md` (§8 "User Journey Flow") · verified against `carmen-inventory-frontend-react/routes/store-operation/stock-replenishment/stock-repl-component.tsx`, `stock-repl-pr-wizard.tsx`, `stock-repl-sr-wizard.tsx`, `use-stock-replenishment.ts` (2026-09-28) · Changes: replaced the generic "CONFIGURE source location and priority" step (no `priority` field exists in the schema or code) with the real two-wizard split (Create PR vs Create SR, each posting to its own endpoint); replaced "SUBMIT → SR Created" with "PR or SR draft created" since either document type can result. **Fix round 1 (2026-09-28):** replaced "Filter by location / search" — `filterLocations()` in `stock-repl-component.tsx` only matches the search term against product `name` / `code` / `local_name` / `category` / `sub_category` / `item_group`, hiding locations with no matching products; it does not filter by location, and the fetch (`use-stock-replenishment.ts`) sends no `location_id` or `search` query param at all (client-side filtering of the full fetched set only).
 
 - **Purchaser / Requester** — reviews the list, chooses PR vs SR, picks the workflow (and, for SR, the source location), edits quantities in the wizard, and submits the resulting draft from its own module.
 - **No service account, no cron** — nothing runs unattended.

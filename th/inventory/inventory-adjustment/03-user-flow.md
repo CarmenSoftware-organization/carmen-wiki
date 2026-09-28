@@ -64,9 +64,9 @@ stateDiagram-v2
 ```mermaid
 flowchart TD
     Start(["ผู้ใช้เปิดหน้ารายการ Inventory Adjustment"]) --> Load["โหลดรายการ adjustment (แบ่งหน้า)"]
-    Load --> Table["แสดงตาราง<br/>เรียงลำดับเริ่มต้น: วันที่"]
+    Load --> Table["แสดงตาราง<br/>ไม่มีการเรียงลำดับเริ่มต้น — ตามลำดับจาก server"]
     Table --> Action{"การกระทำของผู้ใช้"}
-    Action -->|"พิมพ์ในช่องค้นหา"| Search["คำค้นหาแบบ debounce"]
+    Action -->|"พิมพ์ในช่องค้นหา แล้วกด Enter หรือคลิกค้นหา"| Search["ค้นหาเมื่อกด Enter / คลิก<br/>(ไม่มี debounce แบบพิมพ์แล้วค้นหาทันที)"]
     Action -->|"เปิดตัวกรอง"| FilterMenu["แผง/popover ตัวกรอง:<br/>Type (stock-in / stock-out),<br/>Status (draft / in_progress / completed / voided)"]
     Action -->|"คลิกหัวคอลัมน์ที่เรียงได้"| Sort["สลับทิศทางการเรียงของคอลัมน์นั้น"]
     Action -->|"คลิกแถว"| Detail["ไปหน้ารายละเอียด adjustment<br/>(stock-in หรือ stock-out)"]
@@ -77,7 +77,7 @@ flowchart TD
     Detail --> End(["แสดงหน้ารายละเอียด"])
 ```
 
-> Diagram adapted from `carmen/docs/app/inventory-management/inventory-adjustments/TS-inventory-adjustments.md` · verified against `carmen-inventory-frontend-react/routes/inventory-management/inventory-adjustment/ia-component.tsx`, `carmen-inventory-frontend-react/routes/inventory-management/inventory-adjustment/use-ia-table.tsx` (2026-09-28) · Changes: replaced the generic mock-data search/filter description (and the near-identical variant in `FD-inventory-adjustments.md`, which claimed Status/Type/Location/Reason filters) with the two real filter fields — Type (`stock-in` / `stock-out`) and Status (`draft` / `in_progress` / `completed` / `voided`); no location or reason filter exists on this list — and the real detail route `/inventory-management/inventory-adjustment/{id}?type=...` (not `/adjustments/{id}`).
+> Diagram adapted from `carmen/docs/app/inventory-management/inventory-adjustments/TS-inventory-adjustments.md` · verified against `carmen-inventory-frontend-react/routes/inventory-management/inventory-adjustment/ia-component.tsx`, `carmen-inventory-frontend-react/routes/inventory-management/inventory-adjustment/use-ia-table.tsx`, `carmen-inventory-frontend-react/components/search-input.tsx`, `carmen-inventory-frontend-react/hooks/use-data-grid-state.ts` (2026-09-28) · Changes: replaced the generic mock-data search/filter description (and the near-identical variant in `FD-inventory-adjustments.md`, which claimed Status/Type/Location/Reason filters) with the two real filter fields — Type (`stock-in` / `stock-out`) and Status (`draft` / `in_progress` / `completed` / `voided`); no location or reason filter exists on this list — and the real detail route `/inventory-management/inventory-adjustment/{id}?type=...` (not `/adjustments/{id}`). **Fix round 1 (2026-09-28):** dropped the "default sort: date" claim — `ia-component.tsx` calls `useDataGridState()` with no `defaultSort` option, so `effectiveSort` is empty and the list has no client-imposed default order (server order only); replaced "Debounced search query" with the real Enter/click-triggered search — `SearchInput`'s `onSearch` fires only on Enter or the search-button click (`handleKeyDown` / `handleSearch`), and `ia-component.tsx` does not pass the `onInputChange` prop that would enable live-as-you-type filtering.
 
 ## 3. สารบัญ Persona
 
