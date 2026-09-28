@@ -7,7 +7,18 @@ Spec: `docs/superpowers/specs/2026-09-28-diagrams-from-carmen-design.md`
 ## Syntax allow-list
 
 <!-- ALLOW-LIST:START -->
-_Not recorded yet — filled in by the render check (spec §3)._
+Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). Failures are silent for erDiagram (blank box) and a "Syntax error in graph" bomb for flowcharts.
+
+- `graph TD|LR` — OK
+- `flowchart TD|LR` — OK
+- `subgraph S["title"] … end`, `classDef` / `class X y`, `<br/>` in quoted labels — OK
+- `A & B --> C`, `C:::cls` — OK
+- `stateDiagram-v2` incl. `note right of X : text` — OK
+- `sequenceDiagram` incl. `participant X as Y`, `alt/else/end` — OK
+- **Thai text in graph/flowchart MUST be inside double quotes** — node `A["ร่าง"]`, rhombus `B{"อนุมัติ?"}`, edge `-->|"ส่งอนุมัติ"|`. Unquoted Thai in a node or an edge label → Syntax error. (Matches every existing TH diagram.)
+- Thai text after `:` in `stateDiagram-v2` transitions — OK.
+- **`erDiagram` is effectively unusable for this wiki:** entity names containing `_` (every `tb_*` table) render a blank diagram; attribute blocks `{ … }` are silently dropped; `PK`/`FK` keys and attribute types with `_` blank the whole diagram. Rule: **rewrite every imported ER diagram as `graph LR`** — one node per table with the exact name quoted, e.g. `pr["tb_purchase_request"]`, and edges labelled with cardinality in quotes, e.g. `pr -->|"1 : N"| prd`. Keep it to relationships (columns are already in the page's tables). Record the rewrite in the source line's `Changes:` note.
+(verified on dev Wiki.js 2026-09-28, three probe rounds)
 <!-- ALLOW-LIST:END -->
 
 ## Summary
