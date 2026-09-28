@@ -2,7 +2,7 @@
 title: บทบาท (Application Role)
 description: นิยาม role ต่อ business unit บวกตาราง join role→permission และ user→role — หัวใจของ tenant RBAC List คืนจำนวน permission, detail คืนแคตตาล็อกเต็ม; role print; แก้ picker สำหรับ permission ระดับโมดูล
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: access-control, application-role, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -43,6 +43,44 @@ Application role คือ **bundle ที่ตั้งชื่อแล้�
 | ปลดระวาง role | ตั้ง `is_active = false` | การมอบหมายที่มีอยู่คงอยู่; permission หยุด grant ตอน eval ครั้งถัดไป |
 | ลบ role | Action ของ row ใน role list, หรือปุ่ม **Delete** บน Hero ของหน้าจอ detail | ถูกบล็อกถ้ามีการมอบหมายที่ active อยู่ ตาม การตรวจสอบและ Error ด้านล่าง |
 | ตรวจสอบการเปลี่ยนแปลง role | [reporting-audit/activity](/th/inventory/reporting-audit/activity) log | Filter โดย `entity_type = application_role` |
+
+### 2.1 ลำดับขั้นการสร้าง Role
+
+ฟอร์มสร้างขอแค่ name, description, และ permissions เท่านั้น — ไม่มี role hierarchy ให้ตั้งค่า
+
+```mermaid
+flowchart TD
+    Start(["Sysadmin: สร้าง Role"]) --> Navigate["ไปที่ /system-admin/role/new"]
+    Navigate --> EnterName["กรอกชื่อ Role"]
+    EnterName --> EnterDesc["กรอกคำอธิบาย"]
+    EnterDesc --> SelectPerms["เลือก Permission (Permission Picker)"]
+    SelectPerms --> Save{"บันทึก?"}
+    Save -->|"ใช่"| CreateRole["POST .../application-roles"]
+    CreateRole --> ShowSuccess["แจ้งเตือน: สำเร็จ"]
+    ShowSuccess --> ReturnList["กลับไปหน้ารายการ Role"]
+    Save -->|"ไม่"| Cancel["ยกเลิก"]
+    Cancel --> ReturnList
+```
+
+> Diagram adapted from `carmen/docs/app/system-administration/permission-management/roles/FD-roles.md` · verified against `carmen-inventory-frontend-react/routes/system-admin/role/role-form.tsx`, `role-new.route.tsx` (2026-09-28) · Changes: dropped the "Set hierarchy" / "Select parent roles" steps (`tb_application_role` has no parent-role field); replaced the source's local-state `currentView` navigation with the real route (`/system-admin/role/new`) and API call.
+
+### 2.2 ลำดับขั้นการลบ Role
+
+```mermaid
+flowchart TD
+    Start(["Sysadmin: ลบ Role"]) --> ClickDelete["กด Delete (แถวในรายการ หรือปุ่ม Hero ในหน้า detail)"]
+    ClickDelete --> CheckUsers{"มีการมอบหมายที่ active อยู่หรือไม่?"}
+    CheckUsers -->|"ใช่"| ShowError["ถูกบล็อก: ยังมีการมอบหมายที่ active"]
+    ShowError --> End1(["แนะนำให้ Soft-delete หรือ Deactivate แทน"])
+    CheckUsers -->|"ไม่"| Confirm["แสดงกล่องยืนยัน"]
+    Confirm --> UserConfirms{"ผู้ใช้ยืนยันหรือไม่?"}
+    UserConfirms -->|"ไม่"| Cancel["ยกเลิก"]
+    UserConfirms -->|"ใช่"| DeleteRole["DELETE .../application-roles/:id"]
+    DeleteRole --> LogAudit["บันทึกลง reporting-audit/activity"]
+    LogAudit --> Success["แจ้งเตือน: สำเร็จ"]
+```
+
+> Diagram adapted from `carmen/docs/app/system-administration/permission-management/FD-permission-management.md` · verified against `carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_application-roles/config_application-roles.controller.ts` (`DELETE :id` `:320`), `en/inventory/access-control/application-role.md` (2026-09-28) · Changes: dropped the "Is System Role?" and "Has Child Roles?" checks (`tb_application_role` has no system-role flag or role hierarchy); kept the active-assignment guard, which matches the documented delete block.
 
 ## 3. การตรวจสอบและ Error
 

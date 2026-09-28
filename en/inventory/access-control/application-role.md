@@ -2,7 +2,7 @@
 title: Application Role
 description: Per-business-unit role definitions plus the role→permission and user→role join tables — the heart of tenant RBAC. List returns a permission count, detail the full catalog; role print; picker fix for module-level permissions.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: access-control, application-role, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -43,6 +43,44 @@ Application roles are the **named bundles of [access-control/permission](/en/inv
 | Retire a role | Set `is_active = false` | Existing assignments persist; permissions stop granting on next eval |
 | Delete a role | Role list row action, or Hero **Delete** button on the detail screen | Blocked if active assignments exist per Validation & Errors below |
 | Audit role changes | [reporting-audit/activity](/en/inventory/reporting-audit/activity) log | Filter by `entity_type = application_role` |
+
+### 2.1 Create Role Flow
+
+The create form asks for name, description, and permissions only — there is no role hierarchy to configure.
+
+```mermaid
+flowchart TD
+    Start(["Sysadmin: Create Role"]) --> Navigate["Navigate to /system-admin/role/new"]
+    Navigate --> EnterName["Enter Role Name"]
+    EnterName --> EnterDesc["Enter Description"]
+    EnterDesc --> SelectPerms["Select Permissions (Permission Picker)"]
+    SelectPerms --> Save{"Save?"}
+    Save -->|"Yes"| CreateRole["POST .../application-roles"]
+    CreateRole --> ShowSuccess["Toast: Success"]
+    ShowSuccess --> ReturnList["Return to Role List"]
+    Save -->|"No"| Cancel["Cancel"]
+    Cancel --> ReturnList
+```
+
+> Diagram adapted from `carmen/docs/app/system-administration/permission-management/roles/FD-roles.md` · verified against `carmen-inventory-frontend-react/routes/system-admin/role/role-form.tsx`, `role-new.route.tsx` (2026-09-28) · Changes: dropped the "Set hierarchy" / "Select parent roles" steps (`tb_application_role` has no parent-role field); replaced the source's local-state `currentView` navigation with the real route (`/system-admin/role/new`) and API call.
+
+### 2.2 Delete Role Flow
+
+```mermaid
+flowchart TD
+    Start(["Sysadmin: Delete Role"]) --> ClickDelete["Click Delete (list row or detail Hero)"]
+    ClickDelete --> CheckUsers{"Has Active Assignments?"}
+    CheckUsers -->|"Yes"| ShowError["Blocked: Active Assignments Exist"]
+    ShowError --> End1(["Suggest Soft-Delete / Deactivate Instead"])
+    CheckUsers -->|"No"| Confirm["Show Confirmation Dialog"]
+    Confirm --> UserConfirms{"User Confirms?"}
+    UserConfirms -->|"No"| Cancel["Cancel"]
+    UserConfirms -->|"Yes"| DeleteRole["DELETE .../application-roles/:id"]
+    DeleteRole --> LogAudit["Log to reporting-audit/activity"]
+    LogAudit --> Success["Toast: Success"]
+```
+
+> Diagram adapted from `carmen/docs/app/system-administration/permission-management/FD-permission-management.md` · verified against `carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_application-roles/config_application-roles.controller.ts` (`DELETE :id` `:320`), `en/inventory/access-control/application-role.md` (2026-09-28) · Changes: dropped the "Is System Role?" and "Has Child Roles?" checks (`tb_application_role` has no system-role flag or role hierarchy); kept the active-assignment guard, which matches the documented delete block.
 
 ## 3. Validation & Errors
 

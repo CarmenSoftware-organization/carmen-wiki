@@ -2,7 +2,7 @@
 title: Business Unit User
 description: The per-BU membership pivot (tb_user_tb_business_unit) plus the cluster-scoped invitation flow (tb_user_invitation + _business_unit) that replaced the dropped tb_temp_bu_user on 2026-08-05; /api/auth/invite-user is gone.
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: 2026-09-28T12:00:00.000Z
 tags: access-control, business-unit-user, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -110,6 +110,23 @@ Source: platform schema.
 | `role` | `enum_user_business_unit_role` | No | Default `user`. Becomes `tb_user_tb_business_unit.role`. |
 | `is_default` | `Boolean` | No | Default `false`. Becomes `tb_user_tb_business_unit.is_default`. |
 | `doc_version` + audit columns | — | Mixed | Standard. |
+
+### 5.4 Invitation Status Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> pending : Invitation Created
+    pending --> accepted : User Accepts
+    pending --> declined : User Declines
+    pending --> revoked : Admin Revokes
+    pending --> pending : Resend — new token, same status
+    accepted --> [*]
+    declined --> [*]
+    revoked --> [*]
+    note right of pending : "expired" is derived from expires_at, not a stored status
+```
+
+> Diagram adapted from `carmen/docs/app/system-administration/user-management/FD-user-management.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (`enum_user_invitation_status`), `carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/user-invitation/user-invitation.service.ts` (2026-09-28) · Changes: renamed "Rejected" → `declined` and all states to lowercase enum values; removed "Expired" as a stored state (`expired` is derived from `expires_at`, never persisted) and its resend transition since `resendInvitation` rejects any invitation whose `status` is not `pending` (`INVITATION_NOT_PENDING`); removed the "Revoked → Pending" transition for the same reason.
 
 ## 6. Business Rules
 
