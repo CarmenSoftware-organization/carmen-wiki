@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — User Flow
 description: วงจรชีวิตของเอกสารและไฟล์ flow แยกตาม persona สำหรับ purchase-order
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: purchase-order, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -83,6 +83,38 @@ stateDiagram-v2
 - [Receiver](./03-user-flow-receiver.md) — Receiver / Store Keeper + Inventory Manager รับสินค้าจริง สร้าง GRN เทียบกับ PO ที่ `approved` / `sent_or_print` / `partial` ทีละบรรทัด และ trigger receipt-state transitions `→ partial → completed`
 - [Finance](./03-user-flow-finance.md) — ถูกระบุไว้ในเอกสารออกแบบรุ่นเก่าว่าเป็นผู้ review ก่อนส่งและเจ้าของ AP หลังรับของ; **ยังไม่ยืนยัน** ใน source ปัจจุบัน (ไม่พบ stage role แยกต่างหาก, การบันทึก invoice, หรือโค้ด AP-matching)
 - [Audit / Config](./03-user-flow-audit-config.md) — Auditor (read-only review ของ POs, amendments, และ activity log) และ System Administrator (workflow stage configuration, RBAC, การเรียงเลข)
+
+### 3.1 ภาพรวม Actor / Use Case
+
+```mermaid
+graph TB
+    subgraph Actors["Actors"]
+        PS["Purchaser"]
+        AP["Approver<br/>(workflow stage)"]
+        RS["Receiver"]
+        V["Vendor"]
+    end
+
+    subgraph UC["Use Case ของ Purchase Order"]
+        UC1["สร้าง PO<br/>(manual / จาก PR / จาก price list)"]
+        UC2["Submit เพื่อขออนุมัติ"]
+        UC3["Approve / Reject / Send Back"]
+        UC4["ส่งให้ Vendor<br/>(send-email / mark-sent)"]
+        UC5["Cancel / Close PO"]
+        UC6["View / ติดตาม PO"]
+    end
+
+    PS --> UC1
+    PS --> UC2
+    PS --> UC4
+    PS --> UC5
+    PS --> UC6
+    AP --> UC3
+    RS --> UC6
+    UC4 -.->|"sends PO"| V
+```
+
+> Diagram adapted from `carmen/docs/app/procurement/purchase-orders/UC-purchase-orders.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/procurement/purchase-order/purchase-order.service.ts`, `purchase-order.logic.ts` (`performApprove`), `carmen-inventory-frontend-react/routes/procurement/purchase-order/` (2026-09-28) · Changes: dropped the source's fabricated "Download QR Code" use case (no QR feature found in the frontend) and the "Purchasing Manager" actor (approval is workflow-stage-based, not a fixed role); added the Approver actor and the Approve/Reject/Send-Back use case the source omitted entirely; renamed actors to match this wiki's persona terminology (Receiver, not "Receiving Staff").
 
 ## 4. Handoffs ข้าม Persona
 

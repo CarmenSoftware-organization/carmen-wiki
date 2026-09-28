@@ -2,7 +2,7 @@
 title: Price List Template
 description: Reusable RFQ / pricelist scaffold defining currency, validity, vendor instructions, and a per-product MOQ list — the source template Request for Pricing rounds are issued from.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: templates, price-list, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -66,6 +66,17 @@ Claims **not** backed by any code found in this pass, previously documented as i
 
 Source: tenant schema.
 
+The template's three real relationships — to currency, to its own line items, and to the product catalog:
+
+```mermaid
+graph LR
+    cur["tb_currency"] -->|"1 : N"| plt["tb_pricelist_template"]
+    plt -->|"1 : N"| pltd["tb_pricelist_template_detail"]
+    prod["tb_product"] -->|"1 : N"| pltd
+```
+
+> Diagram adapted from `carmen/docs/app/vendor-management/pricelist-templates/FD-pricelist-templates.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (`tb_pricelist_template` L4912, `tb_pricelist_template_detail` L4989) (2026-09-28) · Changes: rewrote the source `erDiagram` as `graph LR` per the Wiki.js allow-list (`erDiagram` renders blank for `tb_*` table names); dropped the column list (already in §5.1/§5.2 below) — the three relationships (currency → template, template → detail, product → detail) are unchanged and match the schema.
+
 ### 5.1 `tb_pricelist_template`
 
 | Field | Prisma Type | Nullable | Description |
@@ -88,6 +99,24 @@ Source: tenant schema.
 **Constraints:** Primary key on `id`. `@@unique([name, deleted_at], map: "pricelist_template_name_deletedat_u")` — this is a real DB-level constraint, not application-only. FK on `currency_id` `onDelete: NoAction`. Reverse relations to `tb_pricelist_template_detail`, `tb_pricelist_template_comment`, and `tb_request_for_pricing`.
 
 **`enum_pricelist_template_status`:** `draft` (default), `active`, `inactive`.
+
+`status` is a plain field, not a workflow — any value can be set from any other value through the same edit-and-save form:
+
+```mermaid
+stateDiagram-v2
+    [*] --> draft: create() (default)
+    draft --> active: Status select → active
+    active --> inactive: Status select → inactive
+    inactive --> active: Status select → active
+    active --> draft: Status select → draft
+    draft --> inactive: Status select → inactive
+    inactive --> draft: Status select → draft
+    draft --> [*]: delete() — soft, forces status = inactive
+    active --> [*]: delete() — soft, forces status = inactive
+    inactive --> [*]: delete() — soft, forces status = inactive
+```
+
+> Diagram adapted from `carmen/docs/app/vendor-management/pricelist-templates/FD-pricelist-templates.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/master/price-list-template/price-list-template.service.ts:660-694` (`remove()`), `carmen-inventory-frontend-react/routes/vendor-management/price-list-template/plt-form.tsx:307-341`, `plt-form-schema.ts:19` (status `<Select>`, `z.enum(["draft","active","inactive"])`), `packages/prisma-shared-schema-tenant/prisma/schema.prisma` (`enum_pricelist_template_status`) (2026-09-28) · Changes: `status` is a plain 3-value `<Select>` (`draft`/`active`/`inactive`) with no workflow guard, so every state can reach every other state directly — replaced the source's one-directional Draft→Active→Inactive workflow with the six real edit transitions; removed the fictitious "Clone to New Draft" self-loop (Clone is confirmed removed — see `160-pl-template.spec.ts`'s "Clone (removed)" suite) and the "Archive" step gated behind Inactive (`remove()` is unconditional and immediately sets `status = inactive` + `deleted_at` from any state, not only from Inactive).
 
 ### 5.2 `tb_pricelist_template_detail`
 

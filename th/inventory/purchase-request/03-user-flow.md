@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — User Flow
 description: วงจรชีวิตของเอกสารและไฟล์ flow แยกตาม persona สำหรับโมดูล purchase-request
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: purchase-request, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -18,6 +18,24 @@ dateCreated: 2026-05-15T09:00:00.000Z
 ## 1. ภาพรวม
 
 หน้านี้เป็น **จุดเริ่มต้นภาพรวม** สำหรับชุด user-flow ของโมดูล `purchase-request` ครอบคลุมวงจรชีวิตของเอกสาร Purchase Request หนึ่งใบ — ส่วนหัวของ PR (`tb_purchase_request`) พร้อมกับรายการสินค้าหนึ่งรายการหรือมากกว่า (`tb_purchase_request_detail`) — ตั้งแต่ตอนที่ Requestor บันทึก draft ครั้งแรก ผ่านสายอนุมัติหลายระดับ ไปจนถึงการแปลงเป็นใบสั่งซื้อหรือการสิ้นสุดด้วยการ void / ยกเลิก persona ที่เกี่ยวข้องคือ **Requestor** (ผู้ตั้งและแก้ไข PR), สายอนุมัติ **Approver** (ทุก stage role `approve` ที่ workflow กำหนด — "Department Head", "Budget Controller", "Finance" เป็นชื่อประกอบการอธิบาย; code ไม่มีการตรวจสอบงบประมาณ), **Purchaser** (ผู้แปลง PR ที่อนุมัติแล้วเป็น PO), **Procurement Manager** (กำกับและอนุมัติ PR มูลค่าสูง) และบทบาท **Audit / Config** (Auditor สำหรับ review แบบอ่านอย่างเดียว, System Administrator สำหรับตั้งค่า workflow) แค็ตตาล็อก role อยู่ที่ [หน้าหลักโมดูล](/th/inventory/purchase-request) Section 4
+
+### 1.1 Flow สร้างจาก Template
+
+Requestor สามารถเริ่ม PR จาก template ที่บันทึกไว้ได้เช่นกัน flow จริงเป็นหน้าสองขั้นตอน (ค้นหา/เลือก แล้วตามด้วยขั้นตอนกรอกจำนวน) ไม่ใช่การคัดลอกด้วยคลิกเดียว:
+
+```mermaid
+flowchart TD
+    Start(["Requestor คลิก New from Template"]) --> Select["ค้นหา / เลือก template"]
+    Select --> Qty["ขั้นตอนกรอกจำนวน (QtyStep)<br/>กรอกจำนวนต่อรายการ; 0 = ไม่เอารายการนี้"]
+    Qty --> Nav["Navigate ไปยัง /procurement/purchase-request/new<br/>พร้อม template items ที่กรองแล้วเป็น route state"]
+    Nav --> Prefill["ฟอร์ม PR ใหม่ pre-fill จาก template state"]
+    Prefill --> Review["Requestor ตรวจสอบ / แก้ไขราคา หน่วย วันที่ส่งของ"]
+    Review --> Save{"Save"}
+    Save -->|"Save"| Draft["สร้าง PR — pr_status = draft"]
+    Save -->|"Submit"| Submitted["Submit PR — pr_status = in_progress"]
+```
+
+> Diagram adapted from `carmen/docs/app/procurement/purchase-requests/FD-purchase-requests.md` · verified against `carmen-inventory-frontend-react/routes/procurement/purchase-request/from-template/from-template-content.tsx`, `from-template/qty-step.tsx` (2026-09-28) · Changes: replaced the source's single-shot "copy template → auto-fill → submit" flow with the real two-step flow (template search/select, then the `QtyStep` quantity-entry screen that drops zero-qty items) and the actual `/new`-route-state hand-off; removed unconfirmed auto-fill-date/department/location claims.
 
 Section 2 ด้านล่างเป็น **state machine ของระบบ** — รายการการ transition ตามมาตรฐานข้ามค่าของ `enum_purchase_request_doc_status` โดยไม่ขึ้นกับว่าใครเป็นคนลงมือ ไฟล์ของแต่ละ persona (link จาก Section 3) จะอธิบาย *เส้นทางที่ persona นั้นเดินผ่าน* state machine — จุดเริ่มต้น, action ที่ใช้ได้, แขนงการตัดสินใจ และ handoff ที่จบการมีส่วนร่วมของพวกเขา จากนั้น Section 4 จะสรุป handoff ข้าม persona ที่ร้อยเส้นทางแต่ละเส้นเข้าด้วยกัน อ่านภาพรวมนี้ก่อนเพื่อจับ lifecycle จากนั้นเจาะลงไปที่ไฟล์ persona ที่ตรงกับ role ของคุณ
 
@@ -63,6 +81,37 @@ stateDiagram-v2
 - [Purchaser](./03-user-flow-purchaser.md) — รับ PR ที่อนุมัติแล้ว ตรวจสอบการจัดสรรผู้ขายและราคา แล้วแปลงเป็นใบสั่งซื้อ
 - [Procurement Manager](./03-user-flow-procurement-manager.md) — กำกับฟังก์ชัน procurement, อนุมัติ PR มูลค่าสูงหรือที่ถูก escalate, ปรับ vendor ranking และกฎ Allocate Vendor
 - [Audit / Config](./03-user-flow-audit-config.md) — Auditor (review PR และ activity log แบบอ่านอย่างเดียว) และ System Administrator (ตั้งค่า stage ของ workflow, กฎ routing ตาม amount threshold; กฎ delegation และ void โดยผู้ดูแลระบบยังไม่ยืนยัน — ไม่พบกลไกหรือ endpoint ที่ตรงกัน ดู `PR_AUTH_006` / `PR_AUTH_007`)
+
+### 3.1 Use Case ของ Requestor
+
+```mermaid
+graph LR
+    Requestor(["Requestor"])
+
+    subgraph PRS["ระบบ Purchase Request"]
+        UC001(("สร้าง PR"))
+        UC101(("สร้างเลขอ้างอิง<br/>อัตโนมัติ"))
+        UC102(("คำนวณ<br/>ยอดรวม"))
+        UC013(("ใช้ Template"))
+        UC014(("สร้างพร้อม<br/>ข้อมูล Inventory"))
+    end
+
+    Requestor --- UC001
+    UC001 -.->|"include"| UC101
+    UC001 -.->|"include"| UC102
+    UC013 -.->|"extend"| UC001
+    UC014 -.->|"extend"| UC001
+
+    classDef actor fill:#ffe6e6,stroke:#cc0000,stroke-width:2px
+    classDef usecase fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
+    classDef system fill:#f0f0f0,stroke:#666666,stroke-width:2px
+
+    class Requestor actor
+    class UC001,UC013,UC014 usecase
+    class UC101,UC102 system
+```
+
+> Diagram adapted from `carmen/docs/app/procurement/purchase-requests/UC-purchase-requests.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/procurement/purchase-request/purchase-request.service.ts` (`PR_VAL_001` ref-number generation, `PR_CALC` roll-ups), `carmen-inventory-frontend-react/routes/procurement/purchase-request/from-template/` (Use Template), `pr-inventory-row.tsx` (Inventory Context) (2026-09-28) · Changes: removed the decorative emoji glyph and quoted labels for Wiki.js allow-list compliance; no structural changes.
 
 ## 4. Handoff ข้าม Persona
 

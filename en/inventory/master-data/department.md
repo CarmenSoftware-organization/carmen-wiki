@@ -2,7 +2,7 @@
 title: Department
 description: Organisational departments and their user assignments — used as cost-centre and approval scope on requisition and PR documents.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: master-data, department, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -32,6 +32,39 @@ Departments model the **cost-centre / requesting-unit** dimension of the propert
 | Assign user to department | Department form → **Members** transfer list (`routes/config/department/department-form.tsx:64-81`) | Sends `department_users: { add[], remove[] }`; writes `tb_department_user` — **corrected this pass:** there is no "User-admin → Department tab"; membership is edited on the department itself |
 | Set HOD | Department form → **Head of Department** transfer list | Sends `hod_users: { add[], remove[] }` → `is_hod = true` on the junction row. The form is a plain multi-select; no single-HOD guard was found in `departments.service.ts` |
 | Reassign HOD | Remove from HOD list, add the new user | Past approvals retain the original signer |
+
+Row actions on the department list:
+
+```mermaid
+flowchart TD
+    A["Department row"] --> B{"Action"}
+    B -->|"Click code / name"| C["Open detail page (view mode)"]
+    C --> D["Click Edit toggle"]
+    D --> E["Form becomes editable"]
+    B -->|"⋯ row menu"| F{"Menu item"}
+    F -->|"Activity"| G["Open activity log"]
+    F -->|"Delete"| H["Show confirmation dialog"]
+    H --> I{"Confirm?"}
+    I -->|"Yes"| J["Soft-delete department"]
+    I -->|"No"| K["Close dialog"]
+```
+
+> Diagram adapted from `carmen/docs/app/finance/department-management/FD-department-management.md` · verified against `carmen-inventory-frontend-react/components/ui/data-grid/use-config-table.ts:84-90`, `data-grid-row-actions.tsx:95-135`, `department-form.tsx:226` (2026-09-28) · Changes: the row `⋯` menu has no separate View / Edit items (`useConfigTable` passes only `onDelete` to `actionColumn`, so the menu holds Activity + Delete only); clicking the code/name cell instead opens `/config/department/:id` in view mode, and Edit is a mode toggle inside that page's own toolbar (`onEdit={f.handleEdit}` on `FormToolbar`, `department-form.tsx:226`), not a row action.
+
+The department form's two user-assignment transfer lists:
+
+```mermaid
+flowchart TD
+    A["Open department form"] --> B["Members transfer list<br/>(assigned vs. available users)"]
+    A --> C["Head of Department transfer list"]
+    B --> D["Search assigned / available"]
+    D --> E["Move user between lists"]
+    E --> F["Sends department_users: add[], remove[]"]
+    C --> G["Move user between lists"]
+    G --> H["Sends hod_users: add[], remove[] -> is_hod = true"]
+```
+
+> Diagram adapted from `carmen/docs/app/finance/department-management/FD-department-management.md` · verified against `carmen-inventory-frontend-react/routes/config/department/department-form.tsx:64-81` (2026-09-28) · Changes: split the source's single generic "Users Tab" dual-pane picker into the two real transfer lists — Members and Head of Department — confirmed in `department-form.tsx`; dropped the sibling "Locations Tab" (no location assignment exists on Department).
 
 ## 3. Validation & Errors
 

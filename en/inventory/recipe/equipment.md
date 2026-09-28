@@ -2,7 +2,7 @@
 title: Equipment
 description: Kitchen equipment master — referenced from recipe preparation steps that require specific tools (sous-vide bath, deep fryer, smoker, etc.).
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: recipe, equipment, master-data, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -35,6 +35,24 @@ Recipe **preparation steps** reference equipment so the kitchen workflow planner
 | Adjust on-property count | Detail page → `total_qty` / `available_qty` | Both are plain integer fields the user edits directly — no checkout flow decrements `available_qty` automatically |
 | Retire equipment | Edit → `is_active = false` (soft-delete) | Stays referenceable on historical recipes; hidden from picker |
 | Attach manuals or photos | Detail page → `attachments` / `manuals_urls` | JSON arrays of file links |
+
+List search/filter:
+
+```mermaid
+flowchart TD
+    Start(["User initiates search/filter"]) --> InputType{"Input type?"}
+    InputType -->|"Search text"| Submit["Press Enter / click search"]
+    Submit --> SearchFilter["Apply search filter"]
+    InputType -->|"Category filter"| CategoryFilter["Filter by category_id"]
+    InputType -->|"Status filter"| StatusFilter["Filter by is_active"]
+    SearchFilter --> FilterChain["Combine active filters"]
+    CategoryFilter --> FilterChain
+    StatusFilter --> FilterChain
+    FilterChain --> ApplyToList["Filter equipment list"]
+    ApplyToList --> UpdateDisplay["Update displayed list"]
+```
+
+> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/equipment/FD-equipment.md` · verified against `carmen-inventory-frontend-react/components/list-filter/list-toolbar.tsx:80,120`, `components/search-input.tsx:36-44` (2026-09-28) · Changes: renamed the status filter to the real `is_active` field and the category filter to `category_id`; replaced the source's "Debounce 300ms" with the real behaviour — `SearchInput` submits only on Enter or a click on the search button, there is no debounce; dropped the "no results / suggest clearing filters" messaging — unconfirmed.
 
 ## 3. Validation & Errors
 

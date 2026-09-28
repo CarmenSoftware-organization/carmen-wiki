@@ -2,7 +2,7 @@
 title: สินค้า (Product) — Business Rules
 description: การตรวจสอบความถูกต้อง การคำนวณ การกำหนดสิทธิ์ วงจรชีวิต และกฎข้ามโมดูลสำหรับข้อมูลหลักของสินค้า
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: product, business-rules, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -103,17 +103,24 @@ Rule ID ตามรูปแบบ `PRD_LIFE_NNN`
 | `PRD_LIFE_009` | Restore จาก soft-delete | Product Administrator อาจ restore สินค้าที่ soft-deleted (ล้าง `deleted_at` และ `deleted_by_id`) Validation รันใหม่ที่ restore — ถ้า `(code, name)` ถูก re-use โดยสินค้า live อื่นในระหว่างนั้น restore ถูกปฏิเสธด้วย `"A live product with this code/name already exists. Restore is blocked."` `409 Conflict` |
 | `PRD_LIFE_010` | การจัดระเบียบการจำแนกใหม่ | การย้ายสินค้าระหว่าง item-group (กล่าวคือ update `tb_product.product_item_group_id`) ได้รับอนุญาตแต่ update default ที่สืบทอดสำหรับ tax-profile และ ค่าความคลาดเคลื่อนตาม `PRD_CALC_002` / `PRD_CALC_003` การเปลี่ยนเป็น **prospective** — เอกสารเปิดที่ snapshot tax-profile เก่าเก็บ snapshot; เอกสารใหม่อ่านค่าสืบทอดใหม่ Activity log บันทึก reclassification |
 
-State diagram (เรียบง่าย สามสถานะ):
+State diagram:
 
+```mermaid
+stateDiagram-v2
+    [*] --> active: สร้าง
+    active --> inactive: ปิดใช้งาน
+    inactive --> active: เปิดใช้งานอีกครั้ง
+    active --> discontinued: เลิกผลิต
+    inactive --> discontinued: เลิกผลิต
+    discontinued --> inactive: จัดหมวดใหม่
+    discontinued --> active: เปิดใช้งานอีกครั้ง (ไม่แนะนำ)
+    active --> soft_deleted: ลบ
+    inactive --> soft_deleted: ลบ
+    discontinued --> soft_deleted: ลบ
+    note right of soft_deleted : terminal — delete() ไม่มีเงื่อนไขและตั้งสถานะเป็น inactive; ไม่มี restore code path (PRD_LIFE_009)
 ```
-[*] ──create──► active ◄──reactivate── inactive
-                │                          │
-                ├──deactivate──────────────┘
-                │
-                └──delete──► soft-deleted ──restore──► active
 
-(soft-deleted คือ terminal ในการใช้งานปกติ; restore เป็น action พิเศษของ Product Administrator)
-```
+> Diagram adapted from `carmen/docs/app/product-management/products/FD-products.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (`enum_product_status_type`), `apps/micro-business/src/master/products/products.service.ts:2663-2695` (`delete()`) (2026-09-28) · Changes: dropped `DRAFT` (not a value of `enum_product_status_type`; create goes straight to `active` per `PRD_LIFE_001`), renamed states to the lowercase enum values, added the `discontinued` transitions per `PRD_VAL_015`, and kept `soft_deleted` as the pseudo-state (not a real enum value — represents `deleted_at` set) already used by the three-state diagram this replaces. Removed the `soft_deleted --> active: restore` edge — `products.service.ts` has no `restore` handler and no route calls one (`PRD_LIFE_009`: no code path); added `discontinued --> soft_deleted: delete` — `delete()` (`products.service.ts:2663-2695`) is unconditional and sets `product_status_type = inactive` / `deleted_at` from any current status, including `discontinued`.
 
 ### 5.1 สถานะการบังคับใช้ — ตรวจสอบกับ HEAD เมื่อ 2026-09-22
 

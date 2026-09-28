@@ -2,7 +2,7 @@
 title: รายการราคาผู้ขาย (Vendor Pricelist) — User Flow
 description: Lifecycle ของเอกสารและไฟล์ flow ตาม persona สำหรับ vendor-pricelist
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: vendor-pricelist, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -37,6 +37,20 @@ Section 2 ด้านล่างระบุฟิลด์ status จริ�
 - [Vendor](./03-user-flow-vendor.md) — บุคคลภายนอกที่ไม่มี Carmen login เปิดลิงก์ portal จาก email ก่อนหมดอายุ ตั้งราคาสินค้า (tax profile และ order unit ต่อบรรทัด) save, import sheet Excel ถ้าต้องการ และ submit
 
 โน้ต: **Finance** และ **Audit / Config** เคยถูกบันทึกเป็น persona แยกต่างหากใน draft ก่อนหน้า ทั้งสองไม่มีโค้ดตรงกันในโมดูลนี้เลย — ดู [03-user-flow-finance.md](./03-user-flow-finance.md) และ [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) ทั้งสองถูกเขียนใหม่เป็นหน้า correction ในรอบนี้
+
+### 3.1 Purchaser: ลบ Request for Pricing
+
+```mermaid
+flowchart TD
+    Start(["Purchaser คลิก Delete บน Request for Pricing"]) --> Confirm["แสดง dialog ยืนยัน"]
+    Confirm --> Choice{"ผู้ใช้ยืนยันหรือไม่?"}
+    Choice -->|"Cancel"| Close(["ปิด dialog — ไม่มีการเปลี่ยนแปลง"])
+    Choice -->|"Confirm"| Delete["DELETE request-for-pricing<br/>(soft delete, deleted_at)"]
+    Delete --> Refresh["Refresh รายการ Request for Pricing"]
+    Refresh --> Toast(["แสดง toast สำเร็จ"])
+```
+
+> Diagram adapted from `carmen/docs/app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/master/request-for-pricing/request-for-pricing.service.ts` (`remove()`), `carmen-inventory-frontend-react/routes/vendor-management/request-price-list/rfp-component.tsx` (`DeleteDialog`) (2026-09-28) · Changes: renamed "Campaign" to "Request for Pricing" (this wiki uses the Prisma entity name; "Campaign" is narrative-only, see [01-data-model](/en/inventory/vendor-pricelist/01-data-model) §5); clarified the delete is a soft delete (`deleted_at`), not a hard delete.
 
 ## 4. Handoff ข้าม Persona
 

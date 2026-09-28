@@ -2,7 +2,7 @@
 title: Product — Business Rules
 description: Validation, calculation, authorization, lifecycle, and cross-module rules for the product master.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: product, business-rules, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -103,17 +103,24 @@ Rule IDs follow `PRD_LIFE_NNN`.
 | `PRD_LIFE_009` | Restore from soft-delete | The Product Administrator MAY restore a soft-deleted product (clear `deleted_at` and `deleted_by_id`). Validation re-runs at restore — if the `(code, name)` has been re-used by another live product in the meantime, restore is rejected with `"A live product with this code/name already exists. Restore is blocked."` `409 Conflict`. |
 | `PRD_LIFE_010` | Classification re-organisation | Moving a product between item-groups (i.e. updating `tb_product.product_item_group_id`) is permitted but updates the inherited defaults for tax-profile and deviation-tolerance per `PRD_CALC_002` / `PRD_CALC_003`. The change is **prospective** — open documents that snapshotted the old tax-profile keep their snapshot; new documents read the new inherited value. The activity log records the reclassification. |
 
-State diagram (simple, three-state):
+State diagram:
 
+```mermaid
+stateDiagram-v2
+    [*] --> active: create
+    active --> inactive: deactivate
+    inactive --> active: reactivate
+    active --> discontinued: discontinue
+    inactive --> discontinued: discontinue
+    discontinued --> inactive: recategorize
+    discontinued --> active: reactivate (discouraged)
+    active --> soft_deleted: delete
+    inactive --> soft_deleted: delete
+    discontinued --> soft_deleted: delete
+    note right of soft_deleted : terminal — delete() is unconditional and sets status = inactive; no restore code path exists (PRD_LIFE_009)
 ```
-[*] ──create──► active ◄──reactivate── inactive
-                │                          │
-                ├──deactivate──────────────┘
-                │
-                └──delete──► soft-deleted ──restore──► active
 
-(soft-deleted is terminal in normal use; restore is an exceptional Product Administrator action)
-```
+> Diagram adapted from `carmen/docs/app/product-management/products/FD-products.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (`enum_product_status_type`), `apps/micro-business/src/master/products/products.service.ts:2663-2695` (`delete()`) (2026-09-28) · Changes: dropped `DRAFT` (not a value of `enum_product_status_type`; create goes straight to `active` per `PRD_LIFE_001`), renamed states to the lowercase enum values, added the `discontinued` transitions per `PRD_VAL_015`, and kept `soft_deleted` as the pseudo-state (not a real enum value — represents `deleted_at` set) already used by the three-state diagram this replaces. Removed the `soft_deleted --> active: restore` edge — `products.service.ts` has no `restore` handler and no route calls one (`PRD_LIFE_009`: no code path); added `discontinued --> soft_deleted: delete` — `delete()` (`products.service.ts:2663-2695`) is unconditional and sets `product_status_type = inactive` / `deleted_at` from any current status, including `discontinued`.
 
 ### 5.1 Enforcement status — verified against HEAD on 2026-09-22
 

@@ -2,7 +2,7 @@
 title: ประเภทอาหาร (Cuisine Type)
 description: แคตตาล็อกประเภทอาหาร — label ตามภูมิภาค/สไตล์ที่ใช้กับสูตรอาหารสำหรับการแบ่งกลุ่มเมนู (ไทย อิตาเลียน ฝรั่งเศส ฟิวชัน ฯลฯ)
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: recipe, cuisine, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -34,6 +34,19 @@ dateCreated: 2026-05-16T15:00:00.000Z
 | เปลี่ยนชื่อ cuisine | หน้า edit (`/operation-plan/cuisine/:id`) → `name` | สูตรเก็บ ID ดังนั้นการแสดงผลรีเฟรชอัตโนมัติ |
 | ปลดประจำการ cuisine | หน้า edit → `is_active = false` | สูตรในประวัติยังแสดง ซ่อนจาก picker |
 | ย้าย cuisine ไปยัง region อื่น | หน้า edit → `region` | region อยู่บนแถว cuisine เท่านั้น — ไม่ cascade |
+
+วงจรชีวิต active/inactive ของ cuisine:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Active: สร้าง cuisine
+    Active --> Inactive: ปิดใช้งาน
+    Inactive --> Active: เปิดใช้งานอีกครั้ง
+    Active --> [*]: ลบ (ถ้าไม่มีสูตรอ้างอิง)
+    Inactive --> [*]: ลบ (ถ้าไม่มีสูตรอ้างอิง)
+```
+
+> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/cuisine-types/FD-cuisine-types.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/master/recipe-cuisine/recipe-cuisine.service.ts:150-171,280-300` (2026-09-28) · Changes: dropped the source's `Draft` state — its own note says cuisines start `Active` in the current implementation; `update()` (deactivate) has no recipe-reference check at all (unguarded), and `delete()`'s `RECIPE_CUISINE_IN_USE` counts any non-deleted recipe, not specifically "active" ones, and applies whether the cuisine is `Active` or `Inactive`, so `Active --> [*]` was added.
 
 ## 3. การตรวจสอบและ Error
 

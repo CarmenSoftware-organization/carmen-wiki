@@ -2,7 +2,7 @@
 title: สกุลเงิน (Currency)
 description: แคตตาล็อกสกุลเงินต่อ tenant, รายการอ้างอิง ISO และประวัติอัตราแลกเปลี่ยนแบบมีวันที่ — ขับเคลื่อนการแปลง FX ทั้งหมดบน PO, GRN, pricelist และ costing
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: master-data, currency, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -31,6 +31,25 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | บริหารจัดการอัตรา | ดู [master-data/exchange-rate](/th/inventory/master-data/exchange-rate) | ประวัติแบบมีวันที่อยู่ที่นั่น ไม่ใช่บนเอนทิตีนี้ |
 | ยกเลิกการใช้งานสกุลเงิน | Toggle `is_active` | ถูกบล็อกถ้าเป็น `default_currency_id` ของ BU ใดก็ตาม |
 | Seed รหัส ISO ใหม่ | Platform DB migration | tenant ไม่สามารถเขียน `tb_currency_iso` ได้ |
+
+List ของสกุลเงินใช้ filter สถานะและ text filter ก่อน render:
+
+```mermaid
+flowchart TD
+    A["สกุลเงินทั้งหมด"] --> B{"Status filter"}
+    B -->|"All"| C["แสดงผลลัพธ์ทั้งหมด"]
+    B -->|"Active"| D["แสดง is_active = true"]
+    B -->|"Inactive"| E["แสดง is_active = false"]
+    C --> F{"มี search term?"}
+    D --> F
+    E --> F
+    F -->|"ใช่"| G["match code / name"]
+    F -->|"ไม่"| H["ไม่มี text filter"]
+    G --> I["แสดงผลลัพธ์ที่ filter แล้ว"]
+    H --> I
+```
+
+> Diagram adapted from `carmen/docs/app/finance/currency-management/FD-currency-management.md` · verified against `carmen-inventory-frontend-react/routes/config/currency/currency-filter-fields.ts`, `carmen-turborepo-backend-v2/apps/micro-business/src/master/currency/currency.service.ts:81` (2026-09-28) · Changes: there is no "Show active only?" yes/no toggle; the real Status filter (`currency-filter-fields.ts`) is All / Active / Inactive, matching the delivery-point pattern. Corrected the text-match fields to `code` / `name` only per `defaultSearchFields = ['code', 'name']` (`currency.service.ts:81`) — `description` is not a search field.
 
 ## 3. การตรวจสอบและข้อผิดพลาด
 

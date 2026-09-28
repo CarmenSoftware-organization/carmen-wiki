@@ -2,7 +2,7 @@
 title: ผู้ขาย (Vendor)
 description: ผู้ขายและที่อยู่ ผู้ติดต่อ และ taxonomy ของประเภทธุรกิจ — counterparty ของทุกเอกสารจัดซื้อ
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: master-data, vendor, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -33,6 +33,21 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | บริหารจัดการประเภทธุรกิจ | Master Data → Vendor Business Type | หน้ารายการแยก; การอ้างอิงเก็บเป็น JSON `[{id, name}]` บนผู้ขาย |
 | ยกเลิกการใช้งาน | Toggle `is_active` | ซ่อนจาก picker ใหม่; เอกสารย้อนหลังไม่เปลี่ยน |
 | เปลี่ยน tax profile | Edit dialog | Snapshot `tax_rate` ใหม่; ไม่ retro-edit เอกสารย้อนหลัง |
+
+รูปแบบ search-and-filter ของ list ผู้ขาย เหมือน pattern ทั่วไปของ list ข้อมูลหลักอื่น ๆ:
+
+```mermaid
+flowchart TD
+    Start(["ผู้ใช้พิมพ์ search text"]) --> Submit["กด Enter / คลิกปุ่มค้นหา"]
+    Submit --> Query["Query ผู้ขายด้วย search + filter param รวม"]
+    Query --> Display["แสดงผลลัพธ์"]
+    Display --> UserAction{"การกระทำของผู้ใช้"}
+    UserAction -->|"เลือกผู้ขาย"| OpenProfile["เปิดรายละเอียดผู้ขาย"]
+    UserAction -->|"เปลี่ยน filter"| Query
+    UserAction -->|"ค้นหาใหม่"| Start
+```
+
+> Diagram adapted from `carmen/docs/app/vendor-management/vendor-directory/FD-vendor-directory.md` · verified against `carmen-inventory-frontend-react/routes/vendor-management/vendor/vendor-component.tsx:189-191`, `components/search-input.tsx:36-44` (2026-09-28) · Changes: dropped the source's result caching, relevance-score ranking, permission-based row filtering, 100-result cap, and search-term highlighting — none evidenced; replaced the source's "Debounce 300ms" with the real `SearchInput` behaviour (submits only on Enter or a click on the search button, no debounce); the real list uses the same generic `ListToolbar` / `useDataGridState` search + filter pattern as every other master-data list.
 
 ## 3. การตรวจสอบและข้อผิดพลาด
 

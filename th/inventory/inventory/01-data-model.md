@@ -2,7 +2,7 @@
 title: คลังสินค้า (Inventory) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูล inventory
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: inventory, data-model, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -33,6 +33,32 @@ dateCreated: 2026-05-15T12:00:00.000Z
 จุดโครงสร้างประการที่สอง: **ไม่มีโค้ด GL/journal-posting ที่ใดเลยในเส้นทาง posting ของ inventory** ตั้งแต่เดือน 2026-09 tenant schema มีแกน GL จริง — `tb_gl_jv_prefix`, `tb_gl_jv_detail`, `tb_gl_balance`, `tb_gl_budget*`, `tb_gl_jv_template*`, `tb_gl_period`, `tb_gl_account_group` (migrations `20260909170000_gl_core_master`, `20260914030000_gl_core_jv_ledger`, `20260915043038_gl_core_budget_template`; placeholder `tb_jv_header` / `tb_jv_detail` เดิมหายไปแล้ว) ให้บริการโดย `apps/micro-business/src/gl/` และ controller `gl-posting` / `gl-jv` ของ gateway (manual journal voucher: post, void, reverse, rebuild balances, close/reopen fiscal year) การ grep `apps/micro-business/src/inventory/` หา `gl`, `journal`, `GlPosting` ไม่พบอะไร และการ grep `apps/micro-business/src/gl/` หา `inventory_transaction`, `good_received_note`, `tb_stock_in`, `cost_layer` ก็ไม่พบเช่นกัน — โมดูล GL กับ ledger ของ inventory ไม่อ้างอิงถึงกัน ตรงกับ finding เดียวกันใน [purchase-order](/th/inventory/purchase-order), [good-receive-note](/th/inventory/good-receive-note) และ [store-requisition](/th/inventory/store-requisition): ทุกคำกล่าว "movement post journal entry" ในหน้าของโมดูลนี้เป็น design intent ที่มาจาก carmen/docs ไม่ใช่พฤติกรรมจริงที่ตรวจสอบแล้ว
 
 ## 2. เอนทิตี
+
+ความสัมพันธ์ระหว่างเอนทิตีของโมดูล คีย์ด้วยลิงก์ polymorphic `inventory_doc_type` / `inventory_doc_no` บน header ของ transaction และการผูก cost-layer → period:
+
+```mermaid
+graph LR
+    it["tb_inventory_transaction"]
+    itd["tb_inventory_transaction_detail"]
+    itcl["tb_inventory_transaction_cost_layer"]
+    grndi["tb_good_received_note_detail_item"]
+    sid["tb_stock_in_detail"]
+    sod["tb_stock_out_detail"]
+    srd["tb_store_requisition_detail"]
+    cnd["tb_credit_note_detail"]
+    ip["tb_inventory_period"]
+
+    it -->|"1 : N"| itd
+    itd -->|"1 : N"| itcl
+    it -->|"1 : N"| grndi
+    it -->|"1 : N"| sid
+    it -->|"1 : N"| sod
+    it -->|"1 : N"| srd
+    it -->|"1 : N"| cnd
+    itcl -->|"N : 1"| ip
+```
+
+> Diagram adapted from `carmen/docs/app/inventory-management/transactions/DD-inventory-transactions.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (2026-09-28) · Changes: rewrote `erDiagram` as `graph LR` with quoted table names and cardinality labels per the allow-list; renamed `tb_good_received_note_detail` → `tb_good_received_note_detail_item` (the table that actually carries the FK); removed the `tb_stock_take_detail` link (no such table/FK exists in the schema); renamed `tb_period` → `tb_inventory_period` (migration `20260916141000_rename_tb_period_to_tb_inventory_period`).
 
 ### 2.1 tb_inventory_transaction
 

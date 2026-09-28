@@ -2,7 +2,7 @@
 title: Purchase Order — Data Model
 description: Entities, fields, relationships, and enums for the purchase-order module.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: purchase-order, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -36,6 +36,36 @@ The header carries vendor, currency, exchange-rate, credit-term and — since 20
 **Concurrency:** updates to this document use [system-config/doc-version](/en/inventory/system-config/doc-version) optimistic locking — the client must echo the current `doc_version` on save or receive a `409 Conflict`.
 
 ## 2. Entities
+
+The relationships below mirror §3 (`tb_*` tables, exact names, cardinality) — start here for the shape before reading the column tables per entity.
+
+```mermaid
+graph LR
+    wf["tb_workflow"]
+    po["tb_purchase_order"]
+    pod["tb_purchase_order_detail"]
+    poc["tb_purchase_order_comment"]
+    podc["tb_purchase_order_detail_comment"]
+    ven["tb_vendor"]
+    cur["tb_currency"]
+    ct["tb_credit_term"]
+    dp["tb_delivery_point"]
+    prd["tb_purchase_request_detail"]
+    grnd["tb_good_received_note_detail"]
+
+    wf -.->|"workflow_id (no FK)"| po
+    po -->|"1 : N"| pod
+    po -->|"1 : N"| poc
+    pod -->|"1 : N"| podc
+    po -->|"N : 1"| ven
+    po -->|"N : 1"| cur
+    po -->|"N : 1"| ct
+    po -->|"N : 1"| dp
+    prd -->|"N : N"| pod
+    pod -->|"1 : N"| grnd
+```
+
+> Diagram adapted from `carmen/docs/app/procurement/purchase-orders/DD-purchase-orders.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (2026-09-28) · Changes: rewritten as `graph LR` per allow-list (`erDiagram` renders blank on this wiki); replaced the source's conceptual entities (`PURCHASE_ORDERS`, `PURCHASE_ORDER_LINE_ITEMS`, `PURCHASE_ORDER_BUDGET_ALLOCATIONS`, `PURCHASE_ORDER_DOCUMENTS`, `PURCHASE_ORDER_HISTORY`, `BUDGET_ACCOUNTS`, `GOODS_RECEIPT_NOTE_LINE_ITEMS`) with the actual `tb_*` tables from this page's own §3 Relationships; dropped the budget-allocation/document/history tables (no such Prisma models — history is an inline JSON column, no budget module exists) and added the PR↔PO bridge and the header's `workflow_id` (stored but no Prisma `@relation`, shown dashed).
 
 ### 2.1 tb_purchase_order
 

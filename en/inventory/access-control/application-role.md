@@ -2,7 +2,7 @@
 title: Application Role
 description: Per-business-unit role definitions plus the role→permission and user→role join tables — the heart of tenant RBAC. List returns a permission count, detail the full catalog; role print; picker fix for module-level permissions.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: access-control, application-role, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -35,14 +35,53 @@ Application roles are the **named bundles of [access-control/permission](/en/inv
 
 | Task | Where | Notes |
 |---|---|---|
-| Create a role for a BU | `/system-admin/role/new` → **Name**, Description + permission picker → Save | No BU picker on this form — the role is created inside the caller's active BU context; `POST …/application-roles { name, description, permissions: { add } }` |
+| Create a role for a BU | `/system-admin/role/new` → **Name** + permission picker → Save | No description field on this form (`role-form-schema.ts`'s `roleSchema` has only `application_role_name` + `permissions`) and no BU picker — the role is created inside the caller's active BU context. `POST …/application-roles { name, permissions: { add } }`; the DTO accepts an optional `description`, but the UI never sends one |
 | Add permissions to a role | Role edit → permission picker (`permission-picker.tsx`) | One row per resource with a Toggle pill per real action; "Grant all" per category and select-all per row; module-level "Module access" row first in each category |
 | Print a role's grants | Role detail → **Print** | `use-role-print.ts` — per-module grant summary, hotel-style document header |
-| Assign a user to a role | **Not on the Role screen** — done from `/system-admin/user/:id` → **Edit** → tick roles → Save (`PATCH /api/config/:bu_code/users/:user_id { application_role_id: { add, remove } }`) | The Role edit screen has only Name + Description + Permissions; there is no Users tab (confirmed against `role-form.tsx` and the e2e test-case catalog `1101-role.md`) |
+| Assign a user to a role | **Not on the Role screen** — done from `/system-admin/user/:id` → **Edit** → tick roles → Save (`PATCH /api/config/:bu_code/users/:user_id { application_role_id: { add, remove } }`) | The Role edit screen has only Name + Permissions (no description field, no Users tab) — confirmed against `role-form.tsx` and the e2e test-case catalog `1101-role.md` |
 | See who holds which role | `/system-admin/user` → **Print** / **Export** | User × role matrix from `GET /api/config/:bu_code/user-application-roles` |
 | Retire a role | Set `is_active = false` | Existing assignments persist; permissions stop granting on next eval |
 | Delete a role | Role list row action, or Hero **Delete** button on the detail screen | Blocked if active assignments exist per Validation & Errors below |
 | Audit role changes | [reporting-audit/activity](/en/inventory/reporting-audit/activity) log | Filter by `entity_type = application_role` |
+
+### 2.1 Create Role Flow
+
+The create form asks for name and permissions only — there is no description field or role hierarchy to configure.
+
+```mermaid
+flowchart TD
+    Start(["Sysadmin: Create Role"]) --> Navigate["Navigate to /system-admin/role/new"]
+    Navigate --> EnterName["Enter Role Name"]
+    EnterName --> SelectPerms["Select Permissions (Permission Picker)"]
+    SelectPerms --> Save{"Save?"}
+    Save -->|"Yes"| CreateRole["POST .../application-roles"]
+    CreateRole --> ShowSuccess["Toast: Success"]
+    ShowSuccess --> ReturnList["Return to Role List"]
+    Save -->|"No"| Cancel["Cancel"]
+    Cancel --> ReturnList
+```
+
+> Diagram adapted from `carmen/docs/app/system-administration/permission-management/roles/FD-roles.md` · verified against `carmen-inventory-frontend-react/routes/system-admin/role/role-form.tsx`, `role-form-schema.ts`, `role-new.route.tsx` (2026-09-28) · Changes: dropped the "Set hierarchy" / "Select parent roles" steps (`tb_application_role` has no parent-role field); dropped the "Enter Description" step (`role-form-schema.ts`'s `roleSchema` has only `application_role_name` + `permissions` — no description field anywhere in `role-form.tsx`); replaced the source's local-state `currentView` navigation with the real route (`/system-admin/role/new`) and API call.
+
+### 2.2 Delete Role Flow
+
+The active-assignment check runs server-side, after the user confirms — not as a client-side pre-check — and the delete itself is a hard delete, not a soft-delete/deactivate suggestion.
+
+```mermaid
+flowchart TD
+    Start(["Sysadmin: Delete Role"]) --> ClickDelete["Click Delete (list row or detail Hero)"]
+    ClickDelete --> Confirm["Show Confirmation Dialog"]
+    Confirm --> UserConfirms{"User Confirms?"}
+    UserConfirms -->|"No"| Cancel["Close Dialog"]
+    UserConfirms -->|"Yes"| DeleteReq["DELETE .../application-roles/:id"]
+    DeleteReq --> CheckUsers{"Active Assignment Exists?"}
+    CheckUsers -->|"Yes"| ShowError["Toast Error: Cannot delete role assigned to users"]
+    CheckUsers -->|"No"| DeleteRole["Delete Role + Permission Links (hard delete)"]
+    DeleteRole --> Success["Toast: Success"]
+    Success --> ReturnList["Return to Role List"]
+```
+
+> Diagram adapted from `carmen/docs/app/system-administration/permission-management/FD-permission-management.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/authen/role_permission/role_permission.service.ts` (`remove()` `:378-409` — assignment check against `tb_user_tb_application_role`, then a literal `tb_application_role.delete()`, not a soft-delete), `packages/error-catalog/src/catalog.ts` (`ROLE_PERMISSION_ASSIGNED_CANNOT_DELETE`), gateway `apps/backend-gateway/src/config/config_application-roles/config_application-roles.controller.ts` (`DELETE :id` `:320`) (2026-09-28) · Changes: dropped the "Is System Role?" and "Has Child Roles?" checks (`tb_application_role` has no system-role flag or role hierarchy); moved the active-assignment check to run server-side after confirmation (the confirmation dialog opens unconditionally on click — there is no client-side pre-check); replaced "Suggest Soft-Delete / Deactivate Instead" with the actual generic error toast, since the guarded delete is a real hard delete (`tb_application_role.delete()`), not a soft-delete; removed the unverified "Log Deletion to Audit Trail" step — no explicit audit-log call was found in `remove()`.
 
 ## 3. Validation & Errors
 
@@ -50,7 +89,7 @@ Application roles are the **named bundles of [access-control/permission](/en/inv
 |---|---|---|
 | "Role name already exists in this BU" | Duplicate `(business_unit_id, name)` among non-deleted | Pick a different name or reactivate the existing role |
 | "User has no access to this BU" | Missing `tb_user_tb_business_unit` row | Grant BU access first via [access-control/business-unit-user](/en/inventory/access-control/business-unit-user) |
-| Cannot delete role | Active assignments exist | Soft-delete or set `is_active = false` instead |
+| Cannot delete role | Active assignments exist | Hard delete only — no soft-delete fallback. Remove the role from every assigned user first (`tb_user_tb_application_role`), then delete |
 | User still sees old permissions | Cached session | Wait for refresh or force re-login |
 
 ## 4. Edge Cases
@@ -110,7 +149,7 @@ Source: platform schema.
 
 - **Uniqueness.** `(business_unit_id, name)` is unique among non-deleted roles. A user holds each role at most once per BU.
 - **BU scoping.** A role can only be assigned to a user with an active `tb_user_tb_business_unit` row for the same BU (application-enforced).
-- **Deletion guards.** Hard-delete blocked if any active assignment exists. Soft-delete allowed; assignments persist but no permissions granted.
+- **Deletion guards.** Hard-delete blocked if any active assignment exists; there is no soft-delete alternative — unassign every user from the role first, then delete.
 - **Inactivation cascade.** `is_active = false` revokes permissions on next re-evaluation; cached sessions may continue until refresh.
 - **Live, not snapshot.** Permission checks evaluate the current join state — no document-side snapshot.
 

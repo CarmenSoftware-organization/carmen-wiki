@@ -2,7 +2,7 @@
 title: Purchase Request — Data Model
 description: Entities, fields, relationships, and enums for the purchase-request module.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: purchase-request, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -35,6 +35,37 @@ The purchase-request module owns six tenant-schema entities: the document header
 The PR sits upstream of [purchase-order](/en/inventory/purchase-order) in the procure-to-pay chain. Approved PR lines are linked to the resulting PO line through the bridge table `tb_purchase_order_detail_tb_purchase_request_detail` (one PO line can fan in from many PR lines for consolidation; one PR line can fan out across multiple POs for partial conversion). PR detail rows also reference [product](/en/inventory/product), [vendor-pricelist](/en/inventory/vendor-pricelist), `tb_tax_profile`, `tb_currency`, `tb_unit`, `tb_location`, `tb_delivery_point`, and `tb_vendor`, denormalising lookup fields (codes, names, snapshot prices) onto the line at submission time so historical PR data remains stable even when master records change. All PR entities live in the tenant Prisma schema; the platform schema contains no purchase-request models.
 
 ## 2. Entities
+
+The relationships below mirror §3 (`tb_*` tables, exact names, cardinality) — start here for the shape before reading the column tables per entity.
+
+```mermaid
+graph LR
+    wf["tb_workflow"]
+    pr["tb_purchase_request"]
+    prd["tb_purchase_request_detail"]
+    prc["tb_purchase_request_comment"]
+    prdc["tb_purchase_request_detail_comment"]
+    prt["tb_purchase_request_template"]
+    prtd["tb_purchase_request_template_detail"]
+    prod["tb_product"]
+    ven["tb_vendor"]
+    pld["tb_pricelist_detail"]
+    pod["tb_purchase_order_detail"]
+
+    wf -->|"1 : N"| pr
+    pr -->|"1 : N"| prd
+    pr -->|"1 : N"| prc
+    prd -->|"1 : N"| prdc
+    prd -->|"N : 1"| prod
+    prd -->|"N : 1"| ven
+    prd -->|"N : 1"| pld
+    prd -->|"N : N"| pod
+    wf -->|"1 : N"| prt
+    prt -->|"1 : N"| prtd
+    prtd -->|"N : 1"| prod
+```
+
+> Diagram adapted from `carmen/docs/app/procurement/purchase-requests/DD-purchase-requests.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (2026-09-28) · Changes: rewritten as `graph LR` per allow-list (`erDiagram` renders blank on this wiki); replaced the source's conceptual entities (`PURCHASE_REQUESTS`, `PURCHASE_REQUEST_ITEMS`, `PR_APPROVALS`, `PR_ATTACHMENTS`, `PR_COMMENTS`, `APPROVAL_STAGES`, `DEPARTMENTS`, `LOCATIONS`, `USERS`, `CURRENCIES`, `INVENTORY_ITEMS`) with the actual `tb_*` tables from this page's own §3 Relationships; dropped `PR_APPROVALS`/`APPROVAL_STAGES` (approvals are inline JSON on the header, not a separate table) and `PR_ATTACHMENTS`/`INVENTORY_ITEMS` (no PR-specific attachment table; inventory is a live read, not a stored FK); added the PR↔PO bridge and the template lines already documented on this page.
 
 ### 2.1 tb_purchase_request
 

@@ -2,7 +2,7 @@
 title: คลังสินค้า (Inventory) — User Flow — Store Keeper
 description: Flow ของ Store Keeper ในโมดูล inventory — อ่าน transaction ledger เพื่อตรวจสอบว่าการ post จากเอกสาร source ลงอย่างถูกต้อง
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: inventory, user-flow, store-keeper, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -35,6 +35,24 @@ Persona **Store Keeper** คือผู้ปฏิบัติงานที�
 3. **หาแถว** ที่ `parent_document_no` ตรงกับเอกสาร source ที่เพิ่ง post ไป
 4. **ตรวจทิศทางและจำนวน** Qty In สีเขียว, Qty Out สีแดง; GRN receipt แบบ direct-location แสดงทั้งสองขา (receipt และ issue หักล้างอัตโนมัติ) ภายใต้ transaction เดียวกัน
 5. **Escalate ความไม่ตรงกันผ่านเอกสาร source** Ledger ไม่มีปุ่มแก้ไข — การ post ที่ผิดถูกแก้ด้วย credit note (ต้นทางจาก GRN) หรือ stock-in / stock-out ใน [inventory-adjustment](/th/inventory/inventory-adjustment) ไม่ใช่โดยการแก้ row
+
+### 2.1 ตัวกรองช่วงวันที่แบบด่วน
+
+Preset ช่วงวันที่สี่ปุ่มที่กล่าวถึงในขั้นตอนที่ 2 ข้างต้นเป็นกลุ่มปุ่ม toggle เดียวกัน; การคลิก preset ที่ active อยู่ซ้ำจะล้างค่านั้นแทนที่จะกรองซ้ำสอง:
+
+```mermaid
+flowchart TD
+    A["คลิก preset: Today / 7d / 30d / This Month"] --> B{"Preset นี้ active อยู่แล้วหรือไม่?"}
+    B -->|"ใช่"| C["ล้าง preset (toggle off)"]
+    B -->|"ไม่ใช่"| D["คำนวณ from/to ของ preset"]
+    D --> E["สร้าง filter clause: created_at daterange(from, to)"]
+    E --> F["รวมเข้ากับ URL query params"]
+    C --> F
+    F --> G["useTransaction() ดึงรายการใหม่"]
+    G --> H["ตาราง Transaction Log render ใหม่"]
+```
+
+> Diagram adapted from `carmen/docs/app/inventory-management/transactions/FD-inventory-transactions.md` · verified against `carmen-inventory-frontend-react/routes/inventory-management/transaction/date-range-filter.tsx`, `carmen-inventory-frontend-react/routes/inventory-management/transaction/transaction-component.tsx`, `carmen-inventory-frontend-react/routes/inventory-management/transaction/use-transaction.ts` (2026-09-28) · Changes: replaced the source doc's client-side mock-data re-filter framing with the real toggle-then-`daterange` filter-clause flow (`transaction-component.tsx` computes `from`/`to` and builds the clause; `date-range-filter.tsx` is a stateless toggle group; `useTransaction()` refetches from the API via URL-backed params — there is no client-side record loop).
 
 ## 3. กิ่งการตัดสินใจ
 

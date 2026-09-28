@@ -2,7 +2,7 @@
 title: อุปกรณ์ (Equipment)
 description: ข้อมูลหลักของอุปกรณ์ครัว — อ้างอิงจากขั้นตอนการเตรียมในสูตรอาหารที่ต้องใช้เครื่องมือเฉพาะ (อ่าง sous-vide, deep fryer, smoker ฯลฯ)
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: recipe, equipment, master-data, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -35,6 +35,24 @@ dateCreated: 2026-05-16T15:00:00.000Z
 | ปรับจำนวนนับใน property | หน้ารายละเอียด → `total_qty` / `available_qty` | ทั้งสองเป็นฟิลด์ integer ธรรมดาที่ผู้ใช้แก้ตรง ๆ — ไม่มี flow checkout ที่ลด `available_qty` อัตโนมัติ |
 | ปลดประจำการอุปกรณ์ | edit → `is_active = false` (soft-delete) | ยังอ้างอิงได้บนสูตรในประวัติ ซ่อนจาก picker |
 | แนบคู่มือหรือรูป | หน้ารายละเอียด → `attachments` / `manuals_urls` | array JSON ของลิงก์ไฟล์ |
+
+การค้นหา/filter ของ list:
+
+```mermaid
+flowchart TD
+    Start(["ผู้ใช้เริ่ม search/filter"]) --> InputType{"ประเภท input?"}
+    InputType -->|"Search text"| Submit["กด Enter / คลิกปุ่มค้นหา"]
+    Submit --> SearchFilter["Apply search filter"]
+    InputType -->|"Category filter"| CategoryFilter["Filter by category_id"]
+    InputType -->|"Status filter"| StatusFilter["Filter by is_active"]
+    SearchFilter --> FilterChain["รวม filter ที่ active"]
+    CategoryFilter --> FilterChain
+    StatusFilter --> FilterChain
+    FilterChain --> ApplyToList["Filter equipment list"]
+    ApplyToList --> UpdateDisplay["อัปเดต list ที่แสดง"]
+```
+
+> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/equipment/FD-equipment.md` · verified against `carmen-inventory-frontend-react/components/list-filter/list-toolbar.tsx:80,120`, `components/search-input.tsx:36-44` (2026-09-28) · Changes: renamed the status filter to the real `is_active` field and the category filter to `category_id`; replaced the source's "Debounce 300ms" with the real behaviour — `SearchInput` submits only on Enter or a click on the search button, there is no debounce; dropped the "no results / suggest clearing filters" messaging — unconfirmed.
 
 ## 3. การตรวจสอบและ Error
 

@@ -2,7 +2,7 @@
 title: Stock Replenishment
 description: Below-par list driven by par / max thresholds on tb_product_location, with wizards that raise PR or SR drafts — real API since 2026-08; no scheduled sweep.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: store-requisition, replenishment, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -20,6 +20,35 @@ dateCreated: 2026-05-16T15:00:00.000Z
 ## 1. What & Who
 
 Stock Replenishment is the **policy-driven front door to [store-requisition](/en/inventory/store-requisition) and [purchase-request](/en/inventory/purchase-request)**. `GET /api/{bu}/stock-replenishment` scans every `tb_product_location` row with `par_qty > 0` whose location is active and not `direct`, sums on-hand per `(location, product)`, and returns the rows whose on-hand is below par, grouped by location and ranked by reorder quantity. From the screen (`/store-operation/stock-replenishment`) the user ticks rows and opens one of two wizards: **Create PR** (`POST …/pr`, buys the shortfall in) or **Create SR** (`POST …/sr`, pulls it from another location). The created documents are ordinary drafts that then run the normal PR / SR workflows.
+
+Only one eligibility filter decides what reaches that below-par list:
+
+```mermaid
+flowchart TD
+    Scan["GET /api/{bu}/stock-replenishment scans<br/>tb_product_location WHERE par_qty > 0"] --> CheckType{"Location active<br/>and not direct?"}
+    CheckType -->|"No — direct or inactive"| Excluded["Excluded from the below-par list"]
+    CheckType -->|"Yes — inventory or consignment"| Included["Included — eligible for replenishment"]
+```
+
+> Diagram adapted from `carmen/docs/app/store-operations/stock-replenishment/FD-stock-replenishment.md` (§7 "Destination Location Validation") · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/inventory/stock-replenishment/stock-replenishment.service.ts` (`findCandidatePairs()`'s `locationWhere`) (2026-09-28) · Changes: replaced the fictional "user selects destination, validated interactively" framing with the real automatic backend filter (`location IS active AND location_type <> direct`) applied when scanning `tb_product_location` for the below-par list — there is no interactive destination-picker step in this screen; cites `findCandidatePairs()`, not `selectBelowPar()` (which only compares on-hand to par on already-fetched rows) — `findCandidatePairs()`'s `locationWhere` carries the `is_active` / `location_type !== direct` filter.
+
+End to end, using the screen is a five-step journey:
+
+```mermaid
+graph LR
+    Discover["DISCOVER"] --> Filter["FILTER"]
+    Filter --> Select["SELECT"]
+    Select --> Configure["CONFIGURE"]
+    Configure --> Submit["SUBMIT"]
+
+    Discover --> Discover1["View Stock Replenishment screen —<br/>below-par rows grouped by location"]
+    Filter --> Filter1["Search by product name / code / category<br/>(free text; client-side only, not a location filter)"]
+    Select --> Select1["Select rows via checkbox"]
+    Configure --> Configure1["Choose Create PR or Create SR wizard;<br/>adjust quantities / pick source location"]
+    Submit --> Submit1["Confirm — PR or SR draft created"]
+```
+
+> Diagram adapted from `carmen/docs/app/store-operations/stock-replenishment/FD-stock-replenishment.md` (§8 "User Journey Flow") · verified against `carmen-inventory-frontend-react/routes/store-operation/stock-replenishment/stock-repl-component.tsx`, `stock-repl-pr-wizard.tsx`, `stock-repl-sr-wizard.tsx`, `use-stock-replenishment.ts` (2026-09-28) · Changes: replaced the generic "CONFIGURE source location and priority" step (no `priority` field exists in the schema or code) with the real two-wizard split (Create PR vs Create SR, each posting to its own endpoint); replaced "SUBMIT → SR Created" with "PR or SR draft created" since either document type can result; replaced "Filter by location / search" — `filterLocations()` in `stock-repl-component.tsx` only matches the search term against product `name` / `code` / `local_name` / `category` / `sub_category` / `item_group`, hiding locations with no matching products; it does not filter by location, and the fetch (`use-stock-replenishment.ts`) sends no `location_id` or `search` query param at all (client-side filtering of the full fetched set only).
 
 - **Purchaser / Requester** — reviews the list, chooses PR vs SR, picks the workflow (and, for SR, the source location), edits quantities in the wizard, and submits the resulting draft from its own module.
 - **No service account, no cron** — nothing runs unattended.
@@ -51,6 +80,21 @@ Stock Replenishment is the **policy-driven front door to [store-requisition](/en
 ## 4. Edge Cases
 
 - **Status bands are ratios of on-hand to par** (`stock-replenishment.helper.ts`): `on_hand / par_qty ≤ 0.25` → `critical`; `≤ 0.5` → `warning`; otherwise `low`. A negative ledger balance is clamped to zero for the ratio and the reorder formula, while `on_hand_qty` in the response still shows the raw (possibly negative) figure.
+
+```mermaid
+flowchart TD
+    Item["For each below-par (location, product) row"] --> Calc["ratio = max(on_hand, 0) / par_qty"]
+    Calc --> Check{"ratio"}
+    Check -->|"<= 0.25"| Critical["status = critical"]
+    Check -->|"<= 0.5"| Warning["status = warning"]
+    Check -->|"> 0.5"| Low["status = low"]
+    Critical --> Display["Shown in the location group with a status badge"]
+    Warning --> Display
+    Low --> Display
+```
+
+> Diagram adapted from `carmen/docs/app/store-operations/stock-replenishment/FD-stock-replenishment.md` (§2 "Urgency Classification Flow") · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/inventory/stock-replenishment/stock-replenishment.helper.ts` (`toReplenishmentStatus`, `RATIO_CRITICAL = 0.25`, `RATIO_WARNING = 0.5`) (2026-09-28) · Changes: replaced the invented `currentStock / parLevel × 100` thresholds (<30% critical, 30–60% warning, >60% low) with the real ratio thresholds and the real clamp-to-zero rule for a negative on-hand balance; renamed "Urgency Classification" to the real `status` field (`critical` / `warning` / `low`).
+
 - **Reorder level prefers `max_qty`.** `reorder_level = max_qty > 0 ? max_qty : par_qty`; `reorder_qty = max(reorder_level − on_hand, 0)`. `min_qty` is returned for display only.
 - **No `on_order` term.** Open POs and in-flight SR transfers do not reduce the shortfall; the pending-documents endpoint is the manual substitute.
 - **No cron, no idempotency, no period gate.** Every wizard run creates fresh drafts; nothing checks the inventory period here (the SR's own submit/issue date rules apply later — see [store-requisition/02-business-rules](/en/inventory/store-requisition/02-business-rules) `SR_VAL_014`).

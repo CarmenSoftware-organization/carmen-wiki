@@ -2,7 +2,7 @@
 title: Currency
 description: Per-tenant currency catalogue, ISO reference list, and dated exchange-rate history — drives all FX conversion on POs, GRNs, pricelists, and costing.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: master-data, currency, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -31,6 +31,25 @@ Each tenant chooses a subset of ISO currencies to enable. The BU's `default_curr
 | Maintain rates | See [master-data/exchange-rate](/en/inventory/master-data/exchange-rate) | Dated history lives there, not on this entity |
 | Deactivate a currency | Toggle `is_active` | Blocked if it is any BU's `default_currency_id` |
 | Seed a new ISO code | Platform DB migration | Tenants cannot write `tb_currency_iso` |
+
+The currency list applies a status filter and a text filter before rendering:
+
+```mermaid
+flowchart TD
+    A["All currencies"] --> B{"Status filter"}
+    B -->|"All"| C["Show all results"]
+    B -->|"Active"| D["Show is_active = true"]
+    B -->|"Inactive"| E["Show is_active = false"]
+    C --> F{"Search term entered?"}
+    D --> F
+    E --> F
+    F -->|"Yes"| G["Match code / name"]
+    F -->|"No"| H["No text filter"]
+    G --> I["Display filtered list"]
+    H --> I
+```
+
+> Diagram adapted from `carmen/docs/app/finance/currency-management/FD-currency-management.md` · verified against `carmen-inventory-frontend-react/routes/config/currency/currency-filter-fields.ts`, `carmen-turborepo-backend-v2/apps/micro-business/src/master/currency/currency.service.ts:81` (2026-09-28) · Changes: there is no "Show active only?" yes/no toggle; the real Status filter (`currency-filter-fields.ts`) is All / Active / Inactive, matching the delivery-point pattern. Corrected the text-match fields to `code` / `name` only per `defaultSearchFields = ['code', 'name']` (`currency.service.ts:81`) — `description` is not a search field.
 
 ## 3. Validation & Errors
 

@@ -2,7 +2,7 @@
 title: Vendor Pricelist — User Flow
 description: Document lifecycle and persona-specific flow files for vendor-pricelist.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: vendor-pricelist, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -37,6 +37,20 @@ Section 2 below lists the real status fields and what actually changes them. Sec
 - [Vendor](./03-user-flow-vendor.md) — external party with no Carmen login. Opens the emailed portal link before it expires, prices the products (tax profile and order unit per line), saves, imports an Excel sheet if preferred, and submits.
 
 Note: **Finance** and **Audit / Config** were documented as distinct personas in the previous draft. Neither has any matching code in this module — see [03-user-flow-finance.md](./03-user-flow-finance.md) and [03-user-flow-audit-config.md](./03-user-flow-audit-config.md), both rewritten as correction pages this pass.
+
+### 3.1 Purchaser: Delete a Request for Pricing
+
+```mermaid
+flowchart TD
+    Start(["Purchaser clicks Delete on a Request for Pricing"]) --> Confirm["Show confirmation dialog"]
+    Confirm --> Choice{"User confirms?"}
+    Choice -->|"Cancel"| Close(["Dialog closed — no change"])
+    Choice -->|"Confirm"| Delete["DELETE request-for-pricing<br/>(soft delete, deleted_at)"]
+    Delete --> Refresh["Refresh the Request for Pricing list"]
+    Refresh --> Toast(["Show success toast"])
+```
+
+> Diagram adapted from `carmen/docs/app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/master/request-for-pricing/request-for-pricing.service.ts` (`remove()`), `carmen-inventory-frontend-react/routes/vendor-management/request-price-list/rfp-component.tsx` (`DeleteDialog`) (2026-09-28) · Changes: renamed "Campaign" to "Request for Pricing" (this wiki uses the Prisma entity name; "Campaign" is narrative-only, see [01-data-model](/en/inventory/vendor-pricelist/01-data-model) §5); clarified the delete is a soft delete (`deleted_at`), not a hard delete.
 
 ## 4. Cross-Persona Handoffs
 

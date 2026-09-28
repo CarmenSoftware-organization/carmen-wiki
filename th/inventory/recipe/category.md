@@ -2,7 +2,7 @@
 title: หมวดหมู่สูตรอาหาร (Recipe Category)
 description: taxonomy หมวดหมู่เชิงลำดับชั้นสำหรับสูตรอาหาร — ขับเคลื่อน menu engineering, รายงาน cost-band และการนำทาง recipe library
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: recipe, category, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -34,6 +34,19 @@ dateCreated: 2026-05-16T15:00:00.000Z
 | แก้ % food-cost เป้าหมายของหมวดหมู่ | หน้า edit (`/operation-plan/category/:id`) → **Default Cost Settings** | กระทบเฉพาะสูตร *ใหม่* — ไม่อัปเดตสูตรเดิม (ไม่มี code path ที่อ่าน default ของหมวดหมู่กลับเข้าแถว `tb_recipe` ที่มีอยู่แล้ว) |
 | ปลดประจำการหมวดหมู่ | หน้า edit → ตั้ง `is_active = false` | สูตรในประวัติยังอ่านได้ ซ่อนจาก picker |
 | Hard-delete หมวดหมู่ | ไม่อนุญาตถ้ามีลูกหรือสูตรอ้างอิง | ใช้ soft-delete + inactive แทน |
+
+วงจรชีวิต active/inactive ของหมวดหมู่:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Active: สร้างหมวดหมู่
+    Active --> Inactive: ปิดใช้งาน
+    Inactive --> Active: เปิดใช้งานอีกครั้ง
+    Active --> [*]: ลบ (ถ้าไม่มีสูตร/หมวดหมู่ย่อย)
+    Inactive --> [*]: ลบ (ถ้าไม่มีสูตร/หมวดหมู่ย่อย)
+```
+
+> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/categories/FD-categories.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/master/recipe-category/recipe-category.service.ts:387-406` (2026-09-28) · Changes: dropped the source's `Draft` state — the source's own note flags it "Not used in current implementation"; categories are created directly `is_active = true` (see § 5.1). Corrected the cited path (was wrongly given as `master/recipe/recipe-category.service.ts` — the real module directory is `master/recipe-category/`).
 
 ## 3. การตรวจสอบและ Error
 
