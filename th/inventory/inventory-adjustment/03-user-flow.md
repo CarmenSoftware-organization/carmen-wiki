@@ -2,7 +2,7 @@
 title: การปรับสต๊อก (Inventory Adjustment) — User Flow
 description: วงจรชีวิตเอกสาร (draft → commit → completed, void) และไฟล์ flow เฉพาะ persona สำหรับการปรับสต๊อก stock-in / stock-out ด้วยมือ
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: inventory-adjustment, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -56,6 +56,28 @@ stateDiagram-v2
 4. ประทับ `inventory_transaction_id` ของบรรทัด detail; `GET /{id}/stock-movements` (2026-09-17) แสดงบรรทัดเหล่านี้กลับบนเอกสารพอดี
 
 ไม่มี journal entry ทางบัญชี GL ใด ๆ ถูกสร้างในการกระจายผลนี้เลย
+
+### 2.3 รายการ ค้นหา กรอง และเรียงลำดับ
+
+ก่อนเปิดเอกสาร ผู้ใช้ทำงานที่หน้ารายการ: ค้นหา ตัวกรองสองฟิลด์ และการเรียงลำดับที่หัวคอลัมน์
+
+```mermaid
+flowchart TD
+    Start(["ผู้ใช้เปิดหน้ารายการ Inventory Adjustment"]) --> Load["โหลดรายการ adjustment (แบ่งหน้า)"]
+    Load --> Table["แสดงตาราง<br/>เรียงลำดับเริ่มต้น: วันที่"]
+    Table --> Action{"การกระทำของผู้ใช้"}
+    Action -->|"พิมพ์ในช่องค้นหา"| Search["คำค้นหาแบบ debounce"]
+    Action -->|"เปิดตัวกรอง"| FilterMenu["แผง/popover ตัวกรอง:<br/>Type (stock-in / stock-out),<br/>Status (draft / in_progress / completed / voided)"]
+    Action -->|"คลิกหัวคอลัมน์ที่เรียงได้"| Sort["สลับทิศทางการเรียงของคอลัมน์นั้น"]
+    Action -->|"คลิกแถว"| Detail["ไปหน้ารายละเอียด adjustment<br/>(stock-in หรือ stock-out)"]
+    Search --> Update["แสดงตารางใหม่ตามคำค้นหา + ตัวกรอง + การเรียงปัจจุบัน"]
+    FilterMenu --> Update
+    Sort --> Update
+    Update --> Action
+    Detail --> End(["แสดงหน้ารายละเอียด"])
+```
+
+> Diagram adapted from `carmen/docs/app/inventory-management/inventory-adjustments/TS-inventory-adjustments.md` · verified against `carmen-inventory-frontend-react/routes/inventory-management/inventory-adjustment/ia-component.tsx`, `carmen-inventory-frontend-react/routes/inventory-management/inventory-adjustment/use-ia-table.tsx` (2026-09-28) · Changes: replaced the generic mock-data search/filter description (and the near-identical variant in `FD-inventory-adjustments.md`, which claimed Status/Type/Location/Reason filters) with the two real filter fields — Type (`stock-in` / `stock-out`) and Status (`draft` / `in_progress` / `completed` / `voided`); no location or reason filter exists on this list — and the real detail route `/inventory-management/inventory-adjustment/{id}?type=...` (not `/adjustments/{id}`).
 
 ## 3. สารบัญ Persona
 
