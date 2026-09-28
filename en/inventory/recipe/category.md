@@ -2,7 +2,7 @@
 title: Recipe Category
 description: Hierarchical category taxonomy for recipes — drives menu engineering, cost-band reporting, and recipe library navigation.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: recipe, category, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -34,6 +34,36 @@ Distinct from [recipe/cuisine](/en/inventory/recipe/cuisine) (flat regional labe
 | Edit target food-cost % for a category | Edit page (`/operation-plan/category/:id`) → **Default Cost Settings** | Affects *new* recipes only — does NOT update existing (no code path reads category defaults back into an existing `tb_recipe` row) |
 | Retire a category | Edit page → set `is_active = false` | Keeps historical recipes readable; hides from picker |
 | Hard-delete a category | Not allowed if it has children or recipes | Use soft-delete + inactive instead |
+
+The category's active/inactive lifecycle and its list search:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Active: Create category
+    Active --> Inactive: Deactivate
+    Inactive --> Active: Reactivate
+    Active --> [*]: Delete (if no recipes/subcategories)
+    Inactive --> [*]: Delete (if no recipes/subcategories)
+```
+
+> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/categories/FD-categories.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/master/recipe/recipe-category.service.ts` (2026-09-28) · Changes: dropped the source's `Draft` state — the source's own note flags it "Not used in current implementation"; categories are created directly `is_active = true` (see § 5.1).
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant UI as CategoryList
+    participant State as React State
+    participant Utils as Filter Utils
+
+    U->>UI: Type search term
+    UI->>State: Update searchTerm state
+    State->>Utils: Filter by name / code / description
+    Utils-->>State: Return filtered array
+    State->>UI: Re-render with filtered data
+    UI->>U: Display filtered results
+```
+
+> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/categories/TS-categories.md` · verified against `carmen-inventory-frontend-react/routes/operation-plan/category/recipe-category-component.tsx` (2026-09-28) · Changes: dropped the source's "Advanced Filters panel", "quick filter", and "filter count badge" — not confirmed; the real list uses the shared `useDataGridState` search pattern with no advanced-filter UI found.
 
 ## 3. Validation & Errors
 

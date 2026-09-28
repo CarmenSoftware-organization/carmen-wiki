@@ -2,7 +2,7 @@
 title: Cuisine
 description: Cuisine catalogue — regional / style label applied to recipes for menu segmentation (Thai, Italian, French, fusion, etc.).
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: recipe, cuisine, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -34,6 +34,18 @@ Distinct from [recipe/category](/en/inventory/recipe/category) which is *functio
 | Rename a cuisine | Edit page (`/operation-plan/cuisine/:id`) → `name` | Recipes store the ID, so display refreshes automatically |
 | Retire a cuisine | Edit page → `is_active = false` | Historical recipes keep rendering; hidden from picker |
 | Move a cuisine to a different region | Edit page → `region` | Region lives on the cuisine row only — no cascade |
+
+The cuisine's active/inactive lifecycle:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Active: Create cuisine
+    Active --> Inactive: Deactivate (no active recipes)
+    Inactive --> Active: Reactivate
+    Inactive --> [*]: Delete (no active recipes)
+```
+
+> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/cuisine-types/FD-cuisine-types.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/master/recipe/recipe-cuisine.service.ts` (2026-09-28) · Changes: dropped the source's `Draft` state — its own note says cuisines start `Active` in the current implementation; kept the recipe-reference guard on deactivate / delete per `RECIPE_CUISINE_IN_USE`.
 
 ## 3. Validation & Errors
 

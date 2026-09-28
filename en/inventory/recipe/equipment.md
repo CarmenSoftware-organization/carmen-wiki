@@ -2,7 +2,7 @@
 title: Equipment
 description: Kitchen equipment master — referenced from recipe preparation steps that require specific tools (sous-vide bath, deep fryer, smoker, etc.).
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: recipe, equipment, master-data, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -35,6 +35,37 @@ Recipe **preparation steps** reference equipment so the kitchen workflow planner
 | Adjust on-property count | Detail page → `total_qty` / `available_qty` | Both are plain integer fields the user edits directly — no checkout flow decrements `available_qty` automatically |
 | Retire equipment | Edit → `is_active = false` (soft-delete) | Stays referenceable on historical recipes; hidden from picker |
 | Attach manuals or photos | Detail page → `attachments` / `manuals_urls` | JSON arrays of file links |
+
+List search/filter and export:
+
+```mermaid
+flowchart TD
+    Start(["User initiates search/filter"]) --> InputType{"Input type?"}
+    InputType -->|"Search text"| Debounce["Debounce"]
+    Debounce --> SearchFilter["Apply search filter"]
+    InputType -->|"Category filter"| CategoryFilter["Filter by category_id"]
+    InputType -->|"Status filter"| StatusFilter["Filter by is_active"]
+    SearchFilter --> FilterChain["Combine active filters"]
+    CategoryFilter --> FilterChain
+    StatusFilter --> FilterChain
+    FilterChain --> ApplyToList["Filter equipment list"]
+    ApplyToList --> UpdateDisplay["Update displayed list"]
+```
+
+> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/equipment/FD-equipment.md` · verified against `carmen-inventory-frontend-react/routes/operation-plan/equipment/` (2026-09-28) · Changes: renamed the status filter to the real `is_active` field and the category filter to `category_id`; dropped the specific 300ms debounce timing and the "no results / suggest clearing filters" messaging — unconfirmed.
+
+```mermaid
+flowchart TD
+    Start(["User clicks Export"]) --> GatherData["Gather filtered equipment data"]
+    GatherData --> CheckCount{"Any equipment to export?"}
+    CheckCount -->|"No"| ShowWarning["Show nothing-to-export warning"]
+    CheckCount -->|"Yes"| PrepareExport["Format data for export"]
+    PrepareExport --> GenerateFile["Generate export file"]
+    GenerateFile --> TriggerDownload["Trigger browser download"]
+    TriggerDownload --> ShowSuccess["Show export success toast"]
+```
+
+> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/equipment/FD-equipment.md` · verified against `carmen-inventory-frontend-react/routes/operation-plan/equipment/` (2026-09-28) · Changes: none structural — matches the export-button pattern confirmed elsewhere in the app (e.g. product / currency list exports).
 
 ## 3. Validation & Errors
 

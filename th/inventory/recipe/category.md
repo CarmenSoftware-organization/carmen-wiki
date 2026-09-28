@@ -2,7 +2,7 @@
 title: หมวดหมู่สูตรอาหาร (Recipe Category)
 description: taxonomy หมวดหมู่เชิงลำดับชั้นสำหรับสูตรอาหาร — ขับเคลื่อน menu engineering, รายงาน cost-band และการนำทาง recipe library
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: recipe, category, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -34,6 +34,36 @@ dateCreated: 2026-05-16T15:00:00.000Z
 | แก้ % food-cost เป้าหมายของหมวดหมู่ | หน้า edit (`/operation-plan/category/:id`) → **Default Cost Settings** | กระทบเฉพาะสูตร *ใหม่* — ไม่อัปเดตสูตรเดิม (ไม่มี code path ที่อ่าน default ของหมวดหมู่กลับเข้าแถว `tb_recipe` ที่มีอยู่แล้ว) |
 | ปลดประจำการหมวดหมู่ | หน้า edit → ตั้ง `is_active = false` | สูตรในประวัติยังอ่านได้ ซ่อนจาก picker |
 | Hard-delete หมวดหมู่ | ไม่อนุญาตถ้ามีลูกหรือสูตรอ้างอิง | ใช้ soft-delete + inactive แทน |
+
+วงจรชีวิต active/inactive ของหมวดหมู่ และการค้นหาใน list:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Active: สร้างหมวดหมู่
+    Active --> Inactive: ปิดใช้งาน
+    Inactive --> Active: เปิดใช้งานอีกครั้ง
+    Active --> [*]: ลบ (ถ้าไม่มีสูตร/หมวดหมู่ย่อย)
+    Inactive --> [*]: ลบ (ถ้าไม่มีสูตร/หมวดหมู่ย่อย)
+```
+
+> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/categories/FD-categories.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/master/recipe/recipe-category.service.ts` (2026-09-28) · Changes: dropped the source's `Draft` state — the source's own note flags it "Not used in current implementation"; categories are created directly `is_active = true` (see § 5.1).
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant UI as CategoryList
+    participant State as React State
+    participant Utils as Filter Utils
+
+    U->>UI: พิมพ์ search term
+    UI->>State: อัปเดต searchTerm state
+    State->>Utils: Filter by name / code / description
+    Utils-->>State: ส่ง array ที่ filter แล้วกลับ
+    State->>UI: Re-render ด้วยข้อมูลที่ filter แล้ว
+    UI->>U: แสดงผลลัพธ์ที่ filter แล้ว
+```
+
+> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/categories/TS-categories.md` · verified against `carmen-inventory-frontend-react/routes/operation-plan/category/recipe-category-component.tsx` (2026-09-28) · Changes: dropped the source's "Advanced Filters panel", "quick filter", and "filter count badge" — not confirmed; the real list uses the shared `useDataGridState` search pattern with no advanced-filter UI found.
 
 ## 3. การตรวจสอบและ Error
 
