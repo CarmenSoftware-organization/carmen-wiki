@@ -33,9 +33,9 @@ Enrich existing **Inventory book** pages with Mermaid diagrams sourced from `../
 
 ### 1.5 Success criteria
 
-1. Every source block has a final status in `.specs/diagram-catalog.md` (`imported`, `duplicate`, `out-of-scope`, or `rejected: <reason>`); none left `candidate` or `unmapped`.
+1. Every source block has a final status in `.specs/diagram-catalog.md` (`imported`, `duplicate of …`, `out-of-scope`, or `rejected: <reason>`); none left `candidate` or `unmapped`.
 2. Every imported diagram carries a source + verification line and matches the cited implementation.
-3. EN and TH pages have identical Mermaid blocks (parity check passes).
+3. EN and TH pages have identical Mermaid blocks (parity check passes, excluding mismatches recorded in the pre-work baseline).
 4. Every diagram type used renders on the dev Wiki.js (`http://dev.blueledgers.com:3987/`).
 
 ### 1.6 Out of scope
@@ -56,9 +56,9 @@ source      = path relative to carmen/docs
 line        = starting line number
 heading     = nearest preceding markdown heading
 type        = first keyword (flowchart | graph | stateDiagram-v2 | erDiagram | sequenceDiagram | ...)
-node_count  = approximate node count
+stmts       = statement lines (non-blank, non-comment, excluding subgraph/end/classDef/style lines) — a rough size signal
 module      = wiki module from the static folder map (§2.2), or none
-status      = candidate | duplicate | out-of-scope
+status      = candidate | duplicate of <source:line> | out-of-scope | unmapped | rejected: unclosed (fence never closed)
 ```
 
 ### 2.2 Folder → module map
@@ -78,7 +78,9 @@ system-administration/permission-management       -> access-control
 ...
 ```
 
-Out-of-scope folders (marked `out-of-scope`): `documents/vm`, `vendor-management/vendor-directory`, `vendor-management/requests-for-pricing`, `operational-planning/menu-engineering`, `operational-planning/demand-forecasting`, `procurement/my-approvals`, `template-guide`, `documents/module-spec-template.md`, `documents/MERMAID-TEST.md`. Any folder the map does not cover is listed as `unmapped` for manual decision rather than silently dropped.
+Vendor sources are **in scope** (corrected 2026-09-28): `documents/vm`, `vendor-management/requests-for-pricing`, `vendor-management/vendor-portal` → `vendor-pricelist`; `vendor-management/vendor-directory` → `master-data` (wiki has `master-data/vendor.md`, `vendor-pricelist/request-price-list.md`, `vendor-pricelist/vendor-dashboard.md`).
+
+Out-of-scope folders (marked `out-of-scope`): `operational-planning/menu-engineering`, `operational-planning/demand-forecasting`, `procurement/my-approvals`, `template-guide`, `documents/module-spec-template.md`, `documents/MERMAID-TEST.md`. Any folder the map does not cover is listed as `unmapped` for manual decision rather than silently dropped.
 
 ### 2.3 Deduplication
 
@@ -92,7 +94,13 @@ Blocks with identical normalized hashes form a group; one survivor stays `candid
 | id | source:line | type | heading | candidate wiki page | status |
 ```
 
-The catalog is both the tracker and the evidence that all blocks were considered.
+The catalog is both the tracker and the evidence that all blocks were considered. It is **generated** — never hand-edited. Human/subagent decisions live in `.specs/diagram-decisions/<module>.tsv`, one line per decided block:
+
+```
+<id>	<status>	<wiki page path, or ->
+```
+
+where status is `imported` or `rejected: diverges|covered|unverifiable|too-large|render|page-full`. Every rebuild re-applies these files, so decisions survive re-runs; an unknown id or invalid status aborts the build. Unmapped folders are resolved by editing the script's folder map, not by decision lines. The allow-list block (between `<!-- ALLOW-LIST:START -->` / `<!-- ALLOW-LIST:END -->`) is preserved across rebuilds.
 
 ### 2.5 Checkpoint
 
@@ -155,6 +163,7 @@ After each group finishes, the orchestrator personally re-verifies 2 imported di
 | `03-user-flow*.md` | `flowchart` / `sequenceDiagram` | Under the matching flow heading; if none matches, add a sub-heading continuing the numbering |
 | `<module>.md` landing | at most one overview `graph` | In `## 5. Related Modules`, only for a verified cross-module relation |
 | `04-test-scenarios*.md` | none | — |
+| Flat entity page (e.g. `master-data/location.md`, `system-config/workflow.md`, `access-control/permission.md`) | `stateDiagram-v2` / `flowchart` / `erDiagram` as fits | In the section describing that entity's lifecycle, flow, or fields; if none, add a sub-heading continuing the numbering |
 
 ### 5.2 Format rules
 
@@ -169,7 +178,7 @@ After each group finishes, the orchestrator personally re-verifies 2 imported di
 - The Mermaid block in `th/inventory/...` is byte-identical to EN; the source line is identical English.
 - New lead-ins and headings on TH pages are written in Thai, matching that page's style.
 - Placement mirrors EN (same section number).
-- `scripts/diagram_catalog.py --check-parity` compares, per page pair, the count and hashes of Mermaid blocks in EN vs TH and exits non-zero on mismatch.
+- `scripts/diagram_catalog.py --check-parity` compares, per page pair, the count and hashes of Mermaid blocks in EN vs TH and exits non-zero on mismatch. Before any page edit, its output on the untouched branch is saved as `.specs/diagram-parity-baseline.txt`; `--baseline` suppresses those pre-existing mismatches so only new ones fail.
 
 ## 6. Execution
 
@@ -192,7 +201,7 @@ Branch `docs/diagrams-from-carmen`; implementation runs in a separate git worktr
 | G5 Master & product | product, master-data, recipe |
 | G6 Admin | access-control, system-config, templates |
 
-Each subagent receives this spec, the allow-list, its catalog rows, and verification repo paths; is told explicitly **not to write tests**; commits per module as `docs(<module>): diagrams from carmen/docs (EN+TH)`; updates only its own catalog rows; touches no files outside its group.
+Each subagent receives this spec, the allow-list, its catalog rows, and verification repo paths; is told explicitly **not to write tests**; edits only its group's EN+TH pages and writes decisions only to `.specs/diagram-decisions/<module>.tsv` for its own modules; **does not run git** (six agents committing in one worktree collide on `index.lock`). After spot-checking a group, the orchestrator rebuilds the catalog and commits that group per module as `docs(<module>): diagrams from carmen/docs (EN+TH)`.
 
 4. **Phase 2** (orchestrator): spot-checks (§4.5), `--check-parity`, confirm no `candidate` rows remain.
 5. **Phase 3**: push changed pages to dev Wiki.js with `scripts/push_pages.py`; open at least one page per diagram type in Chrome to confirm real rendering (Wiki.js fails silently on bad Mermaid).
@@ -205,7 +214,7 @@ Each subagent receives this spec, the allow-list, its catalog rows, and verifica
 | Subagent fails midway | Catalog shows remaining `candidate` rows; dispatch a fresh subagent for just those |
 | Diagram fails to render on Wiki.js | Fix per allow-list; if still broken, mark `rejected: render` and remove from pages |
 | Unmapped source folder | Listed as `unmapped` for manual decision, never silently dropped |
-| Catalog row conflicts between groups | Prevented by construction — groups own disjoint modules and write only their own catalog sections |
+| Concurrent writes between groups | Prevented by construction — groups own disjoint pages and per-module decision files; only the orchestrator rebuilds the catalog and commits |
 
 ## 7. Edge Cases
 
