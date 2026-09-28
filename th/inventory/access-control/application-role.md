@@ -35,10 +35,10 @@ Application role คือ **bundle ที่ตั้งชื่อแล้�
 
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
-| สร้าง role สำหรับ BU | `/system-admin/role/new` → **Name**, Description + permission picker → Save | ไม่มี BU picker บนฟอร์มนี้ — role ถูกสร้างภายใน BU context ที่ active ของผู้เรียก; `POST …/application-roles { name, description, permissions: { add } }` |
+| สร้าง role สำหรับ BU | `/system-admin/role/new` → **Name** + permission picker → Save | ฟอร์มนี้ไม่มีฟิลด์ description (`role-form-schema.ts`'s `roleSchema` มีแค่ `application_role_name` + `permissions`) และไม่มี BU picker — role ถูกสร้างภายใน BU context ที่ active ของผู้เรียก `POST …/application-roles { name, permissions: { add } }`; DTO รองรับ `description` แบบ optional แต่ UI ไม่เคยส่งค่านี้ |
 | เพิ่ม permission ให้ role | Role edit → permission picker (`permission-picker.tsx`) | หนึ่ง row ต่อ resource พร้อม Toggle pill ต่อ action จริง; "Grant all" ต่อ category และ select-all ต่อ row; row ระดับโมดูล "Module access" อยู่แถวแรกของแต่ละ category |
 | Print grant ของ role | Role detail → **Print** | `use-role-print.ts` — สรุป grant ต่อโมดูล header เอกสารสไตล์โรงแรม |
-| มอบหมายผู้ใช้ให้ role | **ไม่ได้อยู่บนหน้าจอ Role** — ทำจาก `/system-admin/user/:id` → **Edit** → ติ๊ก role → Save (`PATCH /api/config/:bu_code/users/:user_id { application_role_id: { add, remove } }`) | หน้าจอ Role edit มีแค่ Name + Description + Permissions; ไม่มีแท็บ Users (ยืนยันจาก `role-form.tsx` และแคตตาล็อก test-case e2e `1101-role.md`) |
+| มอบหมายผู้ใช้ให้ role | **ไม่ได้อยู่บนหน้าจอ Role** — ทำจาก `/system-admin/user/:id` → **Edit** → ติ๊ก role → Save (`PATCH /api/config/:bu_code/users/:user_id { application_role_id: { add, remove } }`) | หน้าจอ Role edit มีแค่ Name + Permissions (ไม่มีฟิลด์ description, ไม่มีแท็บ Users) — ยืนยันจาก `role-form.tsx` และแคตตาล็อก test-case e2e `1101-role.md` |
 | ดูว่าใครถือ role ไหน | `/system-admin/user` → **Print** / **Export** | Matrix ผู้ใช้ × role จาก `GET /api/config/:bu_code/user-application-roles` |
 | ปลดระวาง role | ตั้ง `is_active = false` | การมอบหมายที่มีอยู่คงอยู่; permission หยุด grant ตอน eval ครั้งถัดไป |
 | ลบ role | Action ของ row ใน role list, หรือปุ่ม **Delete** บน Hero ของหน้าจอ detail | ถูกบล็อกถ้ามีการมอบหมายที่ active อยู่ ตาม การตรวจสอบและ Error ด้านล่าง |
@@ -89,7 +89,7 @@ flowchart TD
 |---|---|---|
 | "Role name already exists in this BU" | `(business_unit_id, name)` ซ้ำในกลุ่มที่ไม่ถูก delete | เลือกชื่ออื่นหรือ reactivate role ที่มีอยู่ |
 | "User has no access to this BU" | ไม่มี row `tb_user_tb_business_unit` | Grant การเข้าถึง BU ก่อนผ่าน [access-control/business-unit-user](/th/inventory/access-control/business-unit-user) |
-| ไม่สามารถ delete role | มีการมอบหมายที่ active อยู่ | Soft-delete หรือตั้ง `is_active = false` แทน |
+| ไม่สามารถ delete role | มีการมอบหมายที่ active อยู่ | Hard delete เท่านั้น — ไม่มี soft-delete สำรอง ต้องถอด role ออกจากผู้ใช้ที่ถูกมอบหมายทุกคนก่อน (`tb_user_tb_application_role`) แล้วจึงลบ |
 | User ยังเห็น permission เก่า | Session ที่ cached | รอ refresh หรือบังคับ re-login |
 
 ## 4. กรณีพิเศษ
@@ -149,7 +149,7 @@ flowchart TD
 
 - **ความเป็นหนึ่งเดียว** `(business_unit_id, name)` unique ในกลุ่ม role ที่ไม่ถูก delete User ถือแต่ละ role อย่างมากที่สุดหนึ่งครั้งต่อ BU
 - **BU scoping** Role สามารถมอบให้ user ที่มี row `tb_user_tb_business_unit` ที่ active สำหรับ BU เดียวกันเท่านั้น (บังคับฝั่งแอปพลิเคชัน)
-- **การ์ดการลบ** Hard-delete ถูกบล็อกถ้ามีการมอบหมายที่ active Soft-delete อนุญาต; การมอบหมายคงอยู่แต่ไม่มี permission ที่ grant
+- **การ์ดการลบ** Hard-delete ถูกบล็อกถ้ามีการมอบหมายที่ active อยู่; ไม่มี soft-delete ทางเลือก — ต้องถอด role ออกจากผู้ใช้ทุกคนก่อน แล้วจึงลบ
 - **Cascade การ inactivate** `is_active = false` revoke permission ตอน re-evaluation ครั้งถัดไป; session ที่ cached อาจคงอยู่จนกว่าจะ refresh
 - **Live ไม่ใช่ snapshot** การตรวจสอบ permission evaluate state join ปัจจุบัน — ไม่มี snapshot ฝั่งเอกสาร
 

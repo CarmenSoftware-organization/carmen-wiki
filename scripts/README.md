@@ -107,8 +107,11 @@ Design: [`docs/superpowers/specs/2026-09-28-diagrams-from-carmen-design.md`](../
 
 ```bash
 python3 scripts/diagram_catalog.py                  # rebuild .specs/diagram-catalog.md
+python3 scripts/diagram_catalog.py --summary        # print status counts only, write nothing
 python3 scripts/diagram_catalog.py --require-done   # exit 1 while candidate/unmapped rows remain
 python3 scripts/diagram_catalog.py --check-parity --baseline .specs/diagram-parity-baseline.txt
 ```
+
+`--summary` prints the same status-count table as a full rebuild but never writes `.specs/diagram-catalog.md`. **Use it instead of a plain run whenever more than one curator/subagent may be working from decision TSVs at the same time** — each subagent owns disjoint pages and its own per-module `.tsv` files, but a plain rebuild is a write to the one shared catalog file, and two rebuilds racing concurrently can clobber each other's output. Only the orchestrator (after a group finishes) runs the script without `--summary` to actually rewrite the catalog.
 
 Unmapped source folders are resolved by editing `MODULE_MAP` in the script.

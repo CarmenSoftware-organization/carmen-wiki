@@ -118,7 +118,7 @@ stateDiagram-v2
     [*] --> pending : สร้างคำเชิญ
     pending --> accepted : ผู้ใช้ตอบรับคำเชิญ
     pending --> declined : ผู้ใช้ปฏิเสธคำเชิญ
-    pending --> revoked : ผู้ดูแลคลัสเตอร์ยกเลิกคำเชิญ
+    pending --> revoked : ผู้ดูแลคลัสเตอร์ยกเลิกคำเชิญ / ถูกแทนที่เมื่อเชิญซ้ำ
     pending --> pending : ส่งคำเชิญซ้ำ (resend) — ออก token ใหม่ สถานะยังเป็น pending เดิม
     accepted --> [*]
     declined --> [*]
@@ -126,7 +126,7 @@ stateDiagram-v2
     note right of pending : "expired" คำนวณจาก expires_at ไม่ใช่สถานะที่ถูกบันทึกจริง
 ```
 
-> Diagram adapted from `carmen/docs/app/system-administration/user-management/FD-user-management.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (`enum_user_invitation_status`), `carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/user-invitation/user-invitation.service.ts` (2026-09-28) · Changes: renamed "Rejected" → `declined` and all states to lowercase enum values; removed "Expired" as a stored state (`expired` is derived from `expires_at`, never persisted) and its resend transition since `resendInvitation` rejects any invitation whose `status` is not `pending` (`INVITATION_NOT_PENDING`); removed the "Revoked → Pending" transition for the same reason.
+> Diagram adapted from `carmen/docs/app/system-administration/user-management/FD-user-management.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (`enum_user_invitation_status`), `carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/user-invitation/user-invitation.service.ts` (2026-09-28) · Changes: renamed "Rejected" → `declined` and all states to lowercase enum values; removed "Expired" as a stored state (`expired` is derived from `expires_at`, never persisted) and its resend transition since `resendInvitation` rejects any invitation whose `status` is not `pending` (`INVITATION_NOT_PENDING`); removed the "Revoked → Pending" transition for the same reason; labelled `pending --> revoked` to also cover the automatic revoke — `createInvitation()` revokes any existing pending invitation for the same `(cluster_id, email)` before creating the new one (`user-invitation.service.ts:455-470`), not only an explicit admin revoke action.
 
 ## 6. กฎทางธุรกิจ
 

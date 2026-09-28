@@ -46,7 +46,7 @@ stateDiagram-v2
     Inactive --> [*]: ลบ (ถ้าไม่มีสูตรอ้างอิง)
 ```
 
-> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/cuisine-types/FD-cuisine-types.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/master/recipe-cuisine/recipe-cuisine.service.ts:150-171,280-300` (2026-09-28) · Changes: dropped the source's `Draft` state — its own note says cuisines start `Active` in the current implementation; corrected the fix from the prior pass — `update()` (deactivate) has no recipe-reference check at all (unguarded), and `delete()`'s `RECIPE_CUISINE_IN_USE` counts any non-deleted recipe, not specifically "active" ones, and applies whether the cuisine is `Active` or `Inactive`, so `Active --> [*]` was added. Corrected the cited path (was wrongly given as `master/recipe/recipe-cuisine.service.ts` — the real module directory is `master/recipe-cuisine/`).
+> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/cuisine-types/FD-cuisine-types.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/master/recipe-cuisine/recipe-cuisine.service.ts:150-171,280-300` (2026-09-28) · Changes: dropped the source's `Draft` state — its own note says cuisines start `Active` in the current implementation; `update()` (deactivate) has no recipe-reference check at all (unguarded), and `delete()`'s `RECIPE_CUISINE_IN_USE` counts any non-deleted recipe, not specifically "active" ones, and applies whether the cuisine is `Active` or `Inactive`, so `Active --> [*]` was added.
 
 ## 3. การตรวจสอบและ Error
 

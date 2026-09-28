@@ -30,7 +30,7 @@ A property typically has a handful of delivery points (Main Dock, Banquet Dock, 
 | Tag a location's default | [master-data/location](/en/inventory/master-data/location) detail | Sets `tb_location.delivery_point_id` |
 | Override on GRN | GRN header field | GRN inherits from PO but may override on receipt |
 
-The list, create, and delete flows on this simple two-field entity:
+Filtering and sorting the delivery-point list:
 
 ```mermaid
 flowchart TD
@@ -49,6 +49,8 @@ flowchart TD
 
 > Diagram adapted from `carmen/docs/app/system-administration/delivery-points/FD-delivery-points.md` · verified against `carmen-inventory-frontend-react/routes/config/delivery-point/delivery-point-component.tsx` (2026-09-28) · Changes: renamed `isActive` to the real `is_active` column.
 
+Creating a delivery point:
+
 ```mermaid
 flowchart TD
     A["Click New"] --> B["Open DeliveryPointDialog"]
@@ -63,7 +65,9 @@ flowchart TD
     I --> J["Refresh list"]
 ```
 
-> Diagram adapted from `carmen/docs/app/system-administration/delivery-points/FD-delivery-points.md` · verified against `carmen-inventory-frontend-react/routes/config/delivery-point/delivery-point-component.tsx`, `components/templates/config-entity-dialog.tsx:222-226`, `components/share/delivery-point-dialog.tsx:15-22` (2026-09-28) · Changes: named the real `DeliveryPointDialog` component and the real create endpoint in place of the source's generic "Create record". Corrected the fix from the prior pass — the Save button is not disabled while the name is invalid (`config-entity-dialog.tsx:222-226` disables it only `while isPending`); an empty name is instead caught by the zod schema on submit (`delivery-point-dialog.tsx:15-22`), which shows an inline "Name required" field error.
+> Diagram adapted from `carmen/docs/app/system-administration/delivery-points/FD-delivery-points.md` · verified against `carmen-inventory-frontend-react/routes/config/delivery-point/delivery-point-component.tsx`, `components/templates/config-entity-dialog.tsx:222-226`, `components/share/delivery-point-dialog.tsx:15-22` (2026-09-28) · Changes: named the real `DeliveryPointDialog` component and the real create endpoint in place of the source's generic "Create record". The Save button is not disabled while the name is invalid (`config-entity-dialog.tsx:222-226` disables it only while `isPending`); an empty name is instead caught by the zod schema on submit (`delivery-point-dialog.tsx:15-22`), which shows an inline "Name required" field error.
+
+Deleting a delivery point (no reference guard — see § 3):
 
 ```mermaid
 flowchart TD

@@ -156,6 +156,7 @@ NOTE_END = re.compile(r"^end note\b")
 QUOTED = re.compile(r'"[^"]*"')
 EDGE_LABEL = re.compile(r"\|[^|]*\|")
 BRACKETED = re.compile(r"\[[^\[\]]*\]|\([^()]*\)|\{[^{}]*\}")
+CLASS_SHORTHAND = re.compile(r":::(\w+)")
 PARTICIPANT_AS = re.compile(r"^(participant|actor)(\s+\S+)\s+as\s+.*$")
 SUBGRAPH_LINE = re.compile(r"^subgraph\s+(\S+)")
 ENTITY_KEY = re.compile(r"^(PK|FK|UK)$")
@@ -219,10 +220,20 @@ def block_shape(body):
     A TH block whose only differences from its EN counterpart are translated
     labels hashes equal; a changed node id / edge / state / participant /
     entity does not.
+
+    `:::cls` class-shorthand (flowchart/graph only) is normalized to a
+    colon-free marker *before* the colon-truncation step below, so a class
+    assignment on a node (`A:::cls --> B`) can't make the truncation eat the
+    rest of the line — otherwise `A:::cls --> B` and `A:::cls --> C` would
+    hash equal, hiding a real edge-target change. Colon-truncation itself
+    only applies to `stateDiagram*` / `sequenceDiagram` lines (transition /
+    message labels); a bare `:` has no label-truncation meaning in
+    graph/flowchart/erDiagram once class-shorthand is normalized away.
     """
     lines = body_lines(body)
     dtype = lines[0].split()[0] if lines else "?"
     er = dtype == "erDiagram"
+    truncate_colon = dtype.startswith("stateDiagram") or dtype == "sequenceDiagram"
     out = []
     skipping = False
     in_entity = False
@@ -237,6 +248,7 @@ def block_shape(body):
             continue
         entering = er and line.endswith("{")
         exiting = er and (line == "}" or line.startswith("}"))
+        line = CLASS_SHORTHAND.sub(lambda m: f" CLASSREF={m.group(1)}", line)
         s = QUOTED.sub('""', line)
         if not er:
             s = EDGE_LABEL.sub("||", s)
@@ -244,9 +256,10 @@ def block_shape(body):
             while prev != s:
                 prev = s
                 s = BRACKETED.sub(lambda m: m.group(0)[0] + m.group(0)[-1], s)
-        idx = s.find(":")
-        if idx != -1:
-            s = s[:idx + 1]
+        if truncate_colon:
+            idx = s.find(":")
+            if idx != -1:
+                s = s[:idx + 1]
         m = PARTICIPANT_AS.match(s)
         if m:
             s = m.group(1) + m.group(2)
@@ -308,7 +321,10 @@ def load_decisions(ddir):
             parts = raw.split("\t")
             if len(parts) != 3 or not DECISION.match(parts[1]):
                 sys.exit(f"{f}:{n}: expected '<id>\\t<status>\\t<page>' with a valid status, got {raw!r}")
-            out[parts[0]] = (parts[1], parts[2], f"{f}:{n}")
+            rid = parts[0]
+            if rid in out:
+                sys.exit(f"duplicate decision id {rid!r} at {f}:{n} and {out[rid][2]}")
+            out[rid] = (parts[1], parts[2], f"{f}:{n}")
     return out
 
 

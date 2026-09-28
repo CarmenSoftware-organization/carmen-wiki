@@ -33,7 +33,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | ตั้ง HOD | ฟอร์ม Department → transfer list **Head of Department** | ส่ง `hod_users: { add[], remove[] }` → `is_hod = true` บนแถว junction ฟอร์มเป็น multi-select ธรรมดา; ไม่พบ guard แบบ HOD เดียวใน `departments.service.ts` |
 | เปลี่ยน HOD | เอาออกจากรายการ HOD แล้วเพิ่มผู้ใช้คนใหม่ | การอนุมัติในอดีตยังเก็บผู้เซ็นจริง |
 
-Action ของแถว list และ transfer list สองตัวของฟอร์ม department สำหรับกำหนดผู้ใช้:
+Action ของแถวใน department list:
 
 ```mermaid
 flowchart TD
@@ -49,7 +49,9 @@ flowchart TD
     I -->|"ไม่"| K["ปิด dialog"]
 ```
 
-> Diagram adapted from `carmen/docs/app/finance/department-management/FD-department-management.md` · verified against `carmen-inventory-frontend-react/components/ui/data-grid/use-config-table.ts:84-90`, `data-grid-row-actions.tsx:95-135`, `department-form.tsx:226` (2026-09-28) · Changes: corrected the fix from the prior pass — the row `⋯` menu has no separate View / Edit items (`useConfigTable` passes only `onDelete` to `actionColumn`, so the menu holds Activity + Delete only); clicking the code/name cell instead opens `/config/department/:id` in view mode, and Edit is a mode toggle inside that page's own toolbar (`onEdit={f.handleEdit}` on `FormToolbar`, `department-form.tsx:226`), not a row action.
+> Diagram adapted from `carmen/docs/app/finance/department-management/FD-department-management.md` · verified against `carmen-inventory-frontend-react/components/ui/data-grid/use-config-table.ts:84-90`, `data-grid-row-actions.tsx:95-135`, `department-form.tsx:226` (2026-09-28) · Changes: the row `⋯` menu has no separate View / Edit items (`useConfigTable` passes only `onDelete` to `actionColumn`, so the menu holds Activity + Delete only); clicking the code/name cell instead opens `/config/department/:id` in view mode, and Edit is a mode toggle inside that page's own toolbar (`onEdit={f.handleEdit}` on `FormToolbar`, `department-form.tsx:226`), not a row action.
+
+Transfer list สองตัวของฟอร์ม department สำหรับกำหนดผู้ใช้:
 
 ```mermaid
 flowchart TD

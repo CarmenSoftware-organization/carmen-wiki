@@ -35,10 +35,10 @@ Application roles are the **named bundles of [access-control/permission](/en/inv
 
 | Task | Where | Notes |
 |---|---|---|
-| Create a role for a BU | `/system-admin/role/new` → **Name**, Description + permission picker → Save | No BU picker on this form — the role is created inside the caller's active BU context; `POST …/application-roles { name, description, permissions: { add } }` |
+| Create a role for a BU | `/system-admin/role/new` → **Name** + permission picker → Save | No description field on this form (`role-form-schema.ts`'s `roleSchema` has only `application_role_name` + `permissions`) and no BU picker — the role is created inside the caller's active BU context. `POST …/application-roles { name, permissions: { add } }`; the DTO accepts an optional `description`, but the UI never sends one |
 | Add permissions to a role | Role edit → permission picker (`permission-picker.tsx`) | One row per resource with a Toggle pill per real action; "Grant all" per category and select-all per row; module-level "Module access" row first in each category |
 | Print a role's grants | Role detail → **Print** | `use-role-print.ts` — per-module grant summary, hotel-style document header |
-| Assign a user to a role | **Not on the Role screen** — done from `/system-admin/user/:id` → **Edit** → tick roles → Save (`PATCH /api/config/:bu_code/users/:user_id { application_role_id: { add, remove } }`) | The Role edit screen has only Name + Description + Permissions; there is no Users tab (confirmed against `role-form.tsx` and the e2e test-case catalog `1101-role.md`) |
+| Assign a user to a role | **Not on the Role screen** — done from `/system-admin/user/:id` → **Edit** → tick roles → Save (`PATCH /api/config/:bu_code/users/:user_id { application_role_id: { add, remove } }`) | The Role edit screen has only Name + Permissions (no description field, no Users tab) — confirmed against `role-form.tsx` and the e2e test-case catalog `1101-role.md` |
 | See who holds which role | `/system-admin/user` → **Print** / **Export** | User × role matrix from `GET /api/config/:bu_code/user-application-roles` |
 | Retire a role | Set `is_active = false` | Existing assignments persist; permissions stop granting on next eval |
 | Delete a role | Role list row action, or Hero **Delete** button on the detail screen | Blocked if active assignments exist per Validation & Errors below |
@@ -89,7 +89,7 @@ flowchart TD
 |---|---|---|
 | "Role name already exists in this BU" | Duplicate `(business_unit_id, name)` among non-deleted | Pick a different name or reactivate the existing role |
 | "User has no access to this BU" | Missing `tb_user_tb_business_unit` row | Grant BU access first via [access-control/business-unit-user](/en/inventory/access-control/business-unit-user) |
-| Cannot delete role | Active assignments exist | Soft-delete or set `is_active = false` instead |
+| Cannot delete role | Active assignments exist | Hard delete only — no soft-delete fallback. Remove the role from every assigned user first (`tb_user_tb_application_role`), then delete |
 | User still sees old permissions | Cached session | Wait for refresh or force re-login |
 
 ## 4. Edge Cases
@@ -149,7 +149,7 @@ Source: platform schema.
 
 - **Uniqueness.** `(business_unit_id, name)` is unique among non-deleted roles. A user holds each role at most once per BU.
 - **BU scoping.** A role can only be assigned to a user with an active `tb_user_tb_business_unit` row for the same BU (application-enforced).
-- **Deletion guards.** Hard-delete blocked if any active assignment exists. Soft-delete allowed; assignments persist but no permissions granted.
+- **Deletion guards.** Hard-delete blocked if any active assignment exists; there is no soft-delete alternative — unassign every user from the role first, then delete.
 - **Inactivation cascade.** `is_active = false` revokes permissions on next re-evaluation; cached sessions may continue until refresh.
 - **Live, not snapshot.** Permission checks evaluate the current join state — no document-side snapshot.
 

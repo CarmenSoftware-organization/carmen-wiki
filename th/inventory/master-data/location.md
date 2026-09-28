@@ -39,7 +39,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | กำหนด inventory tree | หน้า location detail | จำกัดว่าสินค้าใดที่มองเห็นได้ที่ location นี้ |
 | วางสินค้าบนชั้นวางที่ location นี้ | API เท่านั้น — `products.add[] / products.update[]` มี `shelf_id` (`config_locations/swagger/request.ts:112-139`) | ตั้ง `tb_product_location.shelf_id` + `shelf_code` / `shelf_name` แบบ denormalised; `null` ล้างค่า transfer list สินค้าบนฟอร์ม location (`CreateLocationDto.products: TransferPayload`) ไม่มี shelf picker — picker อยู่บนแท็บ **Location Assignment** ของฟอร์มสินค้าแทน ([product/03-user-flow-product-admin](/th/inventory/product/03-user-flow-product-admin)) |
 
-การ sort list, toggle list/grid, และ flow การสร้าง location:
+การคลิก column header จะวนสถานะการ sort:
 
 ```mermaid
 flowchart TD
@@ -54,7 +54,9 @@ flowchart TD
     ReSort --> MaintainFilters["Filter ยังคงทำงาน"]
 ```
 
-> Diagram adapted from `carmen/docs/app/system-administration/location-management/FD-location-management.md` · verified against `carmen-inventory-frontend-react/components/ui/data-grid/data-grid-column-header.tsx:67-75` (2026-09-28) · Changes: corrected the cycle from the prior pass — clicking a header cycles unsorted → ascending → descending → cleared (`handleSort`, `:67-75`), never descending → ascending directly, and the backend `locations.service.ts` cannot evidence header-click behaviour so the citation was moved to the real frontend file; dropped "with sort indicator on first load" — `location-component.tsx` passes no `defaultSort`, so no column shows a sort indicator until the user clicks one; dropped the source's "Shelves / Products / Users Count" sortable columns (not confirmed on the list).
+> Diagram adapted from `carmen/docs/app/system-administration/location-management/FD-location-management.md` · verified against `carmen-inventory-frontend-react/components/ui/data-grid/data-grid-column-header.tsx:67-75` (2026-09-28) · Changes: clicking a header cycles unsorted → ascending → descending → cleared (`handleSort`, `:67-75`), never descending → ascending directly; the backend `locations.service.ts` cannot evidence header-click behaviour, so the citation is the real frontend file; dropped "with sort indicator on first load" — `location-component.tsx` passes no `defaultSort`, so no column shows a sort indicator until the user clicks one; dropped the source's "Shelves / Products / Users Count" sortable columns (not confirmed on the list).
+
+การสลับมุมมอง list และ grid ยังคงตัวกรองและการ sort ที่ใช้งานอยู่:
 
 ```mermaid
 flowchart TD
@@ -69,6 +71,8 @@ flowchart TD
 ```
 
 > Diagram adapted from `carmen/docs/app/system-administration/location-management/FD-location-management.md` · verified against `carmen-inventory-frontend-react/components/templates/config-list-template.tsx:407-424` (2026-09-28) · Changes: renamed "table"/"card" to the real `list` / `grid` `displayMode` values, each set by its own button (`:407-424` — not a single toggle); dropped the source's "checkbox selection" claim in list view — the template does add row/select-all checkboxes (`use-config-table.ts:85`), but nothing in the list consumes that selection for a bulk action. Grid mode switches to a separate infinite-scroll query (`:218-229`), so it re-fetches rather than only re-rendering.
+
+การสร้าง location ใหม่เป็นไปตาม flow การตรวจสอบและส่งข้อมูลนี้:
 
 ```mermaid
 sequenceDiagram
@@ -93,7 +97,7 @@ sequenceDiagram
     end
 ```
 
-> Diagram adapted from `carmen/docs/app/system-administration/location-management/TS-location-management.md` · verified against `carmen-inventory-frontend-react/routes/config/location/location-form-schema.ts`, `location-form.tsx:210-218` (2026-09-28) · Changes: replaced the source's "update mock state" step with the real `POST /locations` API call; corrected the fix from the prior pass — on success the form navigates to `/config/location/:id` (the new location's own detail page, per `location-form.tsx:214-217`), not back to the list; corrected the entry button label to "Add" (`t("add")`), not "Create Location".
+> Diagram adapted from `carmen/docs/app/system-administration/location-management/TS-location-management.md` · verified against `carmen-inventory-frontend-react/routes/config/location/location-form-schema.ts`, `location-form.tsx:210-218` (2026-09-28) · Changes: replaced the source's "update mock state" step with the real `POST /locations` API call; on success the form navigates to `/config/location/:id` (the new location's own detail page, per `location-form.tsx:214-217`), not back to the list; corrected the entry button label to "Add" (`t("add")`), not "Create Location".
 
 ## 3. การตรวจสอบและข้อผิดพลาด
 

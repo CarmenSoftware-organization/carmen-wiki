@@ -49,7 +49,7 @@ flowchart TD
     H --> I
 ```
 
-> Diagram adapted from `carmen/docs/app/finance/currency-management/FD-currency-management.md` · verified against `carmen-inventory-frontend-react/routes/config/currency/currency-filter-fields.ts`, `carmen-turborepo-backend-v2/apps/micro-business/src/master/currency/currency.service.ts:81` (2026-09-28) · Changes: corrected the fix from the prior pass — there is no "Show active only?" yes/no toggle; the real Status filter (`currency-filter-fields.ts`) is All / Active / Inactive, matching the delivery-point pattern. Corrected the text-match fields to `code` / `name` only per `defaultSearchFields = ['code', 'name']` (`currency.service.ts:81`) — `description` is not a search field.
+> Diagram adapted from `carmen/docs/app/finance/currency-management/FD-currency-management.md` · verified against `carmen-inventory-frontend-react/routes/config/currency/currency-filter-fields.ts`, `carmen-turborepo-backend-v2/apps/micro-business/src/master/currency/currency.service.ts:81` (2026-09-28) · Changes: there is no "Show active only?" yes/no toggle; the real Status filter (`currency-filter-fields.ts`) is All / Active / Inactive, matching the delivery-point pattern. Corrected the text-match fields to `code` / `name` only per `defaultSearchFields = ['code', 'name']` (`currency.service.ts:81`) — `description` is not a search field.
 
 ## 3. Validation & Errors
 

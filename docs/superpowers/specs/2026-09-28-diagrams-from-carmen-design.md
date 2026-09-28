@@ -231,4 +231,4 @@ Each subagent receives this spec, the allow-list, its catalog rows, and verifica
 ## 8. Recommendations
 
 - Keep `scripts/diagram_catalog.py` for future re-syncs: re-running it after `carmen/docs` changes surfaces new blocks by hash.
-- Consider a Thai-label pass only if Thai readers report English labels as a barrier.
+- The Thai-label pass decided at the Task 3 checkpoint (§1.2) is done — every imported diagram's descriptive label text is translated to Thai on the `th/inventory/` mirror. A future re-sync should keep applying that same rule to newly imported diagrams, not revisit it as an open question.
