@@ -74,7 +74,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | `max_license_users` | `Int?` | Yes | License cap แบบ legacy นับจาก 2026-09 seat pool ที่บังคับใช้จริงอ่านจาก platform view `v_business_unit_seat` เหนือแถว `tb_business_unit_license` แบบมีวันที่ และ interface entitlement อยู่ใน `tb_business_unit_interface_license` (`3aab07ea1`); ข้อมูล licence เสิร์ฟผ่าน `GET /api/license` ไม่ใช่ `GET /api/user/profile` อีกต่อไป (2026-09-09) |
 | Company info: `branch_no`, `company_name`, `company_address`, `company_email`, `company_tel`, `company_zip_code`, `tax_no` | `String?` | Yes | Identity ทางกฎหมาย |
 | Hotel info: `hotel_name`, `hotel_address`, `hotel_email`, `hotel_tel`, `hotel_zip_code` | `String?` | Yes | Identity ปฏิบัติการ |
-| Format settings: `date_format`, `date_time_format`, `time_format`, `short_time_format`, `long_time_format`, `timezone`, `amount_format`, `quantity_format`, `perpage_format`, `recipe_format` | mixed | Yes | UI default `timezone` default `Asia/Bangkok` |
+| Format settings: `date_format`, `date_time_format`, `time_format`, `short_time_format`, `long_time_format`, `timezone`, `amount_format`, `quantity_format`, `recipe_format` | mixed | Yes | UI default `timezone` default `Asia/Bangkok` |
 | `doc_version` | `Int` | No | เวอร์ชัน optimistic-lock (default `0`) |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*` |
 
