@@ -49,7 +49,7 @@ flowchart TD
     I -->|"ไม่"| K["ปิด dialog"]
 ```
 
-> Diagram adapted from `carmen/docs/app/finance/department-management/FD-department-management.md` · verified against `carmen-inventory-frontend-react/components/ui/data-grid/use-config-table.ts:84-90`, `data-grid-row-actions.tsx:95-135`, `department-form.tsx:141,181` (2026-09-28) · Changes: corrected the fix from the prior pass — the row `⋯` menu has no separate View / Edit items (`useConfigTable` passes only `onDelete` to `actionColumn`, so the menu holds Activity + Delete only); clicking the code/name cell instead opens `/config/department/:id` in view mode, and Edit is a mode toggle inside that page's own toolbar, not a row action.
+> Diagram adapted from `carmen/docs/app/finance/department-management/FD-department-management.md` · verified against `carmen-inventory-frontend-react/components/ui/data-grid/use-config-table.ts:84-90`, `data-grid-row-actions.tsx:95-135`, `department-form.tsx:226` (2026-09-28) · Changes: corrected the fix from the prior pass — the row `⋯` menu has no separate View / Edit items (`useConfigTable` passes only `onDelete` to `actionColumn`, so the menu holds Activity + Delete only); clicking the code/name cell instead opens `/config/department/:id` in view mode, and Edit is a mode toggle inside that page's own toolbar (`onEdit={f.handleEdit}` on `FormToolbar`, `department-form.tsx:226`), not a row action.
 
 ```mermaid
 flowchart TD

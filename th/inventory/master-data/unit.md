@@ -32,22 +32,6 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | ตั้ง conversion default | Toggle `is_default` | Primary เมื่อมีหลาย conversion สำหรับคู่เดียวกัน |
 | Identity conversion | from/to เหมือนกันด้วย qty เท่ากัน | อนุญาต; มิฉะนั้นต้อง from ≠ to |
 
-List ของหน่วยนับ เหมือนกับ list ข้อมูลหลักอื่น สลับระหว่าง list กับ grid ด้วยปุ่มแยกกันสองปุ่ม:
-
-```mermaid
-flowchart TD
-    Start(["ผู้ใช้อยู่ที่ unit list"]) --> DefaultView["Default: list view"]
-    DefaultView --> ShowToggle["แสดงปุ่ม toggle list/grid"]
-    ShowToggle --> UserClick{"ผู้ใช้คลิก"}
-    UserClick -->|"List icon"| SwitchToList["สลับเป็น list mode"]
-    UserClick -->|"Grid icon"| SwitchToGrid["สลับเป็น grid mode"]
-    SwitchToList --> Preserve["คงสถานะ filter + sort"]
-    SwitchToGrid --> Preserve
-    Preserve --> ShowSameData["แสดงผลลัพธ์ filter/sort เดิมใน layout ใหม่"]
-```
-
-> Diagram adapted from `carmen/docs/app/product-management/units/FD-units.md` · verified against `carmen-inventory-frontend-react/components/templates/config-list-template.tsx:407-424` (2026-09-28) · Changes: corrected the fix from the prior pass — this is two separate buttons that each set a fixed `displayMode` (`:407-424`), not a single toggle that flips between "list" and "grid"; dropped the earlier lead-in's "without refetching" claim — grid mode disables the direct list query and switches to the infinite-scroll `useGridPagination` query (`:218-229`), so it does re-fetch. Also dropped the source's `localStorage` persistence claim — not found in `config-list-template.tsx` (the toggle is plain `useState`, so it resets on reload).
-
 ## 3. การตรวจสอบและข้อผิดพลาด
 
 | อาการ / ข้อความ | สาเหตุ | การจัดการ |
