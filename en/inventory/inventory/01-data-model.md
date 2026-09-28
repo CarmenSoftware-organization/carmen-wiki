@@ -2,7 +2,7 @@
 title: Inventory — Data Model
 description: Entities, fields, relationships, and enums for the inventory module.
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: inventory, data-model, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -33,6 +33,32 @@ A noteworthy structural point: **there is no `tb_stock_balance` model in the can
 A second structural point: **no GL/journal-posting code exists anywhere in the inventory posting path.** Since 2026-09 the tenant schema carries a real GL core — `tb_gl_jv_prefix`, `tb_gl_jv_detail`, `tb_gl_balance`, `tb_gl_budget*`, `tb_gl_jv_template*`, `tb_gl_period`, `tb_gl_account_group` (migrations `20260909170000_gl_core_master`, `20260914030000_gl_core_jv_ledger`, `20260915043038_gl_core_budget_template`; the earlier `tb_jv_header` / `tb_jv_detail` placeholders are gone) served by `apps/micro-business/src/gl/` and the gateway's `gl-posting` / `gl-jv` controllers (manual journal vouchers: post, void, reverse, rebuild balances, close/reopen fiscal year). A grep of `apps/micro-business/src/inventory/` for `gl`, `journal`, `GlPosting` returns nothing, and a grep of `apps/micro-business/src/gl/` for `inventory_transaction`, `good_received_note`, `tb_stock_in`, `cost_layer` returns nothing either — the GL module and the inventory ledger do not reference each other. This mirrors the identical finding in [purchase-order](/en/inventory/purchase-order), [good-receive-note](/en/inventory/good-receive-note), and [store-requisition](/en/inventory/store-requisition): every "the movement posts a journal entry" claim in this module's pages is carmen/docs-derived design intent, not verified live behaviour.
 
 ## 2. Entities
+
+The relationships among the module's entities, keyed by the polymorphic `inventory_doc_type` / `inventory_doc_no` link on the transaction header and the cost-layer → period tie:
+
+```mermaid
+graph LR
+    it["tb_inventory_transaction"]
+    itd["tb_inventory_transaction_detail"]
+    itcl["tb_inventory_transaction_cost_layer"]
+    grndi["tb_good_received_note_detail_item"]
+    sid["tb_stock_in_detail"]
+    sod["tb_stock_out_detail"]
+    srd["tb_store_requisition_detail"]
+    cnd["tb_credit_note_detail"]
+    ip["tb_inventory_period"]
+
+    it -->|"1 : N"| itd
+    itd -->|"1 : N"| itcl
+    it -->|"1 : N"| grndi
+    it -->|"1 : N"| sid
+    it -->|"1 : N"| sod
+    it -->|"1 : N"| srd
+    it -->|"1 : N"| cnd
+    itcl -->|"N : 1"| ip
+```
+
+> Diagram adapted from `carmen/docs/app/inventory-management/transactions/DD-inventory-transactions.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (2026-09-28) · Changes: rewrote `erDiagram` as `graph LR` with quoted table names and cardinality labels per the allow-list; renamed `tb_good_received_note_detail` → `tb_good_received_note_detail_item` (the table that actually carries the FK); removed the `tb_stock_take_detail` link (no such table/FK exists in the schema); renamed `tb_period` → `tb_inventory_period` (migration `20260916141000_rename_tb_period_to_tb_inventory_period`).
 
 ### 2.1 tb_inventory_transaction
 

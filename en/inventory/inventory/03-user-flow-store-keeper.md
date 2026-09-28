@@ -2,7 +2,7 @@
 title: Inventory — User Flow — Store Keeper
 description: Store Keeper's flow within the inventory module — reading the transaction ledger to verify that source-document postings landed correctly.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: inventory, user-flow, store-keeper, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -35,6 +35,24 @@ There is no per-location posting scope, threshold, or approval routing in this m
 3. **Locate the row** whose `parent_document_no` matches the source document just posted.
 4. **Check direction and quantities.** Qty In is green, Qty Out red; a direct-location GRN receipt shows both legs (the receipt and the automatic offsetting issue) under the same transaction.
 5. **Escalate a mismatch via a source document.** The ledger has no edit affordance — a wrong posting is corrected by a credit note (GRN-sourced) or a stock-in / stock-out in [inventory-adjustment](/en/inventory/inventory-adjustment), never by editing the row.
+
+### 2.1 Quick Date-Range Filter
+
+The four date-range presets named in step 2 above are one toggle button group; clicking the active preset again clears it rather than filtering by it twice:
+
+```mermaid
+flowchart TD
+    A["Click a preset: Today / 7d / 30d / This Month"] --> B{"Preset already active?"}
+    B -->|"Yes"| C["Clear preset (toggle off)"]
+    B -->|"No"| D["Compute from/to for the preset"]
+    D --> E["Build filter clause: created_at daterange(from, to)"]
+    E --> F["Merge into URL query params"]
+    C --> F
+    F --> G["useTransaction() refetches the list"]
+    G --> H["Transaction Log table re-renders"]
+```
+
+> Diagram adapted from `carmen/docs/app/inventory-management/transactions/FD-inventory-transactions.md` · verified against `carmen-inventory-frontend-react/routes/inventory-management/transaction/date-range-filter.tsx`, `carmen-inventory-frontend-react/routes/inventory-management/transaction/transaction-component.tsx`, `carmen-inventory-frontend-react/routes/inventory-management/transaction/use-transaction.ts` (2026-09-28) · Changes: replaced the source doc's client-side mock-data re-filter framing with the real toggle-then-`daterange` filter-clause flow (`transaction-component.tsx` computes `from`/`to` and builds the clause; `date-range-filter.tsx` is a stateless toggle group; `useTransaction()` refetches from the API via URL-backed params — there is no client-side record loop).
 
 ## 3. Decision Branches
 
