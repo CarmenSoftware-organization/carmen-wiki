@@ -2,7 +2,7 @@
 title: Purchase Order — User Flow
 description: Document lifecycle and persona-specific flow files for purchase-order.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: purchase-order, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -83,6 +83,38 @@ Each persona below has a dedicated drill-down file describing their entry point,
 - [Receiver](./03-user-flow-receiver.md) — Receiver / Store Keeper + Inventory Manager. Physically accepts goods, raises the GRN against an `approved` / `sent_or_print` / `partial` PO line by line, and triggers the `→ partial → completed` receipt-state transitions.
 - [Finance](./03-user-flow-finance.md) — Named in legacy design docs as a pre-transmission reviewer and post-receipt AP owner; **unconfirmed** in current source (no distinct stage role, invoice capture, or AP-matching code found).
 - [Audit / Config](./03-user-flow-audit-config.md) — Auditor (read-only review of POs, amendments, and activity log) and System Administrator (workflow stage configuration, RBAC, numbering).
+
+### 3.1 Actor / Use-Case Overview
+
+```mermaid
+graph TB
+    subgraph Actors["Actors"]
+        PS["Purchaser"]
+        AP["Approver<br/>(workflow stage)"]
+        RS["Receiver"]
+        V["Vendor"]
+    end
+
+    subgraph UC["Purchase Order Use Cases"]
+        UC1["Create PO<br/>(manual / from PR / from price list)"]
+        UC2["Submit for Approval"]
+        UC3["Approve / Reject / Send Back"]
+        UC4["Send to Vendor<br/>(send-email / mark-sent)"]
+        UC5["Cancel / Close PO"]
+        UC6["View / Track PO"]
+    end
+
+    PS --> UC1
+    PS --> UC2
+    PS --> UC4
+    PS --> UC5
+    PS --> UC6
+    AP --> UC3
+    RS --> UC6
+    UC4 -.->|"sends PO"| V
+```
+
+> Diagram adapted from `carmen/docs/app/procurement/purchase-orders/UC-purchase-orders.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/procurement/purchase-order/purchase-order.service.ts`, `purchase-order.logic.ts` (`performApprove`), `carmen-inventory-frontend-react/routes/procurement/purchase-order/` (2026-09-28) · Changes: dropped the source's fabricated "Download QR Code" use case (no QR feature found in the frontend) and the "Purchasing Manager" actor (approval is workflow-stage-based, not a fixed role); added the Approver actor and the Approve/Reject/Send-Back use case the source omitted entirely; renamed actors to match this wiki's persona terminology (Receiver, not "Receiving Staff").
 
 ## 4. Cross-Persona Handoffs
 
