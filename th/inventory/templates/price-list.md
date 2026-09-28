@@ -2,7 +2,7 @@
 title: เทมเพลตรายการราคา (Price List Template)
 description: scaffold RFQ / pricelist ที่ใช้ซ้ำได้ นิยาม currency, validity, คำแนะนำ vendor, และรายการสินค้า/MOQ — template ต้นทางที่รอบ Request for Pricing ถูกออกจากมัน
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: templates, price-list, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -66,6 +66,15 @@ Claim ที่ **ไม่มี** โค้ดรองรับในรอ�
 
 แหล่ง: tenant schema
 
+```mermaid
+graph LR
+    cur["tb_currency"] -->|"1 : N"| plt["tb_pricelist_template"]
+    plt -->|"1 : N"| pltd["tb_pricelist_template_detail"]
+    prod["tb_product"] -->|"1 : N"| pltd
+```
+
+> Diagram adapted from `carmen/docs/app/vendor-management/pricelist-templates/FD-pricelist-templates.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (`tb_pricelist_template` L4832, `tb_pricelist_template_detail` L4909) (2026-09-28) · Changes: rewrote the source `erDiagram` as `graph LR` per the Wiki.js allow-list (`erDiagram` renders blank for `tb_*` table names); dropped the column list (มีอยู่แล้วใน §5.1/§5.2 ด้านล่าง) — ความสัมพันธ์ทั้งสาม (currency → template, template → detail, product → detail) ไม่เปลี่ยนแปลงและตรงกับ schema
+
 ### 5.1 `tb_pricelist_template`
 
 | ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
@@ -88,6 +97,24 @@ Claim ที่ **ไม่มี** โค้ดรองรับในรอ�
 **Constraints:** Primary key บน `id` `@@unique([name, deleted_at], map: "pricelist_template_name_deletedat_u")` — เป็น constraint ระดับ DB จริง ไม่ใช่แค่ระดับแอป FK บน `currency_id` `onDelete: NoAction` reverse relation ไป `tb_pricelist_template_detail`, `tb_pricelist_template_comment`, และ `tb_request_for_pricing`
 
 **`enum_pricelist_template_status`:** `draft` (default), `active`, `inactive`
+
+`status` เป็นฟิลด์ธรรมดา ไม่ใช่ workflow — ตั้งค่าจากค่าไหนไปค่าไหนก็ได้ผ่านฟอร์ม edit-and-save เดียวกัน:
+
+```mermaid
+stateDiagram-v2
+    [*] --> draft: create() (ค่าเริ่มต้น)
+    draft --> active: แก้ไขผ่าน Status select → active
+    active --> inactive: แก้ไขผ่าน Status select → inactive
+    inactive --> active: แก้ไขผ่าน Status select → active
+    active --> draft: แก้ไขผ่าน Status select → draft
+    draft --> inactive: แก้ไขผ่าน Status select → inactive
+    inactive --> draft: แก้ไขผ่าน Status select → draft
+    draft --> [*]: delete() — soft, บังคับ status = inactive
+    active --> [*]: delete() — soft, บังคับ status = inactive
+    inactive --> [*]: delete() — soft, บังคับ status = inactive
+```
+
+> Diagram adapted from `carmen/docs/app/vendor-management/pricelist-templates/FD-pricelist-templates.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/master/price-list-template/price-list-template.service.ts`, `en/inventory/templates/price-list.md` (2026-09-28) · Changes: `status` เป็น `<Select>` 3 ค่าธรรมดา (`draft`/`active`/`inactive`) ไม่มี workflow guard ดังนั้นทุก state ไปหากันได้โดยตรงทุกคู่ — แทนที่ workflow ทางเดียว Draft→Active→Inactive ของต้นฉบับด้วยทั้งหกทิศทางการแก้ไขจริง; ตัด self-loop "Clone to New Draft" ที่ไม่มีจริงออก (Clone ยืนยันแล้วว่าถูกถอดออก — ดู suite "Clone (removed)" ใน `160-pl-template.spec.ts`) และตัดขั้นตอน "Archive" ที่ผูกไว้กับ Inactive ออก (`remove()` ไม่มีเงื่อนไขและ set `status = inactive` + `deleted_at` ทันทีจาก state ไหนก็ได้ ไม่ใช่แค่จาก Inactive)
 
 ### 5.2 `tb_pricelist_template_detail`
 
