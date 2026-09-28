@@ -25,11 +25,15 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 
 | status | count |
 |---|---|
-| candidate | 451 |
 | duplicate | 152 |
+| imported | 35 |
 | out-of-scope | 305 |
 | out-of-scope (filter) | 947 |
+| rejected: covered | 39 |
+| rejected: diverges | 202 |
+| rejected: page-full | 28 |
 | rejected: unclosed | 2 |
+| rejected: unverifiable | 147 |
 
 ## access-control
 
@@ -38,36 +42,36 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 | ac9e3bce81 | app/system-administration/permission-management/DD-permission-management.md:272 | erDiagram | 32 | 4.2 ERD Diagram | - | out-of-scope (filter: stmts > 25) |
 | 7398fdf77b | app/system-administration/permission-management/FD-permission-management.md:38 | flowchart | 30 | Flow Diagram | - | out-of-scope (filter: stmts > 25) |
 | 7980115270 | app/system-administration/permission-management/FD-permission-management.md:112 | flowchart | 33 | Flow Diagram | - | out-of-scope (filter: stmts > 25) |
-| 416c190178 | app/system-administration/permission-management/FD-permission-management.md:187 | flowchart | 24 | Flow Diagram | access-control/(choose) | candidate |
+| 416c190178 | app/system-administration/permission-management/FD-permission-management.md:187 | flowchart | 24 | Flow Diagram | access-control/application-role | imported |
 | 5242daed9c | app/system-administration/permission-management/FD-permission-management.md:249 | flowchart | 35 | Flow Diagram | - | out-of-scope (filter: stmts > 25) |
 | 4c6bfd6801 | app/system-administration/permission-management/FD-permission-management.md:328 | flowchart | 29 | Flow Diagram | - | out-of-scope (filter: stmts > 25) |
-| 403489407a | app/system-administration/permission-management/FD-permission-management.md:401 | flowchart | 22 | Flow Diagram | access-control/(choose) | candidate |
+| 403489407a | app/system-administration/permission-management/FD-permission-management.md:401 | flowchart | 22 | Flow Diagram | - | rejected: diverges |
 | e7dc31fab9 | app/system-administration/permission-management/FD-permission-management.md:467 | flowchart | 32 | Flow Diagram | - | out-of-scope (filter: stmts > 25) |
 | 7f105c74d9 | app/system-administration/permission-management/FD-permission-management.md:533 | flowchart | 35 | Flow Diagram | - | out-of-scope (filter: stmts > 25) |
 | 77064b6267 | app/system-administration/permission-management/TS-permission-management.md:523 | graph | 26 | Page Hierarchy | - | out-of-scope (filter: prototype heading) |
 | b22e78fbca | app/system-administration/permission-management/policies/FD-policies.md:14 | graph | 6 | Page Navigation | - | out-of-scope (filter: prototype heading) |
-| ffb11df4b5 | app/system-administration/permission-management/policies/FD-policies.md:28 | graph | 10 | Filter Flow | access-control/(choose) | candidate |
-| 77d623f701 | app/system-administration/permission-management/policies/FD-policies.md:46 | graph | 14 | Create Policy Flow | access-control/(choose) | candidate |
-| a4d538d9c1 | app/system-administration/permission-management/policies/FD-policies.md:68 | graph | 10 | Edit Policy Flow | access-control/(choose) | candidate |
-| 0d025f44ab | app/system-administration/permission-management/policies/FD-policies.md:86 | graph | 6 | Policy Type Toggle | access-control/(choose) | candidate |
-| eac431b6d4 | app/system-administration/permission-management/policies/FD-policies.md:100 | graph | 10 | Test Policy Flow | access-control/(choose) | candidate |
+| ffb11df4b5 | app/system-administration/permission-management/policies/FD-policies.md:28 | graph | 10 | Filter Flow | - | rejected: unverifiable |
+| 77d623f701 | app/system-administration/permission-management/policies/FD-policies.md:46 | graph | 14 | Create Policy Flow | - | rejected: unverifiable |
+| a4d538d9c1 | app/system-administration/permission-management/policies/FD-policies.md:68 | graph | 10 | Edit Policy Flow | - | rejected: unverifiable |
+| 0d025f44ab | app/system-administration/permission-management/policies/FD-policies.md:86 | graph | 6 | Policy Type Toggle | - | rejected: unverifiable |
+| eac431b6d4 | app/system-administration/permission-management/policies/FD-policies.md:100 | graph | 10 | Test Policy Flow | - | rejected: unverifiable |
 | 4f2c7dd821 | app/system-administration/permission-management/policies/TS-policies.md:14 | graph | 7 | Architecture | - | out-of-scope (filter: prototype heading) |
 | 2feec9dab3 | app/system-administration/permission-management/roles/FD-roles.md:14 | graph | 12 | View Mode Navigation | - | out-of-scope (filter: prototype heading) |
-| c39477b61b | app/system-administration/permission-management/roles/FD-roles.md:34 | graph | 16 | Create Role Flow | access-control/(choose) | candidate |
-| 0367829540 | app/system-administration/permission-management/roles/FD-roles.md:58 | graph | 13 | Edit Role Flow | access-control/(choose) | candidate |
-| b30854eb85 | app/system-administration/permission-management/roles/FD-roles.md:79 | graph | 8 | View Role Detail Flow | access-control/(choose) | candidate |
-| bb822a46aa | app/system-administration/permission-management/roles/FD-roles.md:95 | graph | 5 | Toggle View Mode | access-control/(choose) | candidate |
-| 71c89699fb | app/system-administration/permission-management/roles/FD-roles.md:108 | graph | 11 | Role Save Flow | access-control/(choose) | candidate |
+| c39477b61b | app/system-administration/permission-management/roles/FD-roles.md:34 | graph | 16 | Create Role Flow | access-control/application-role | imported |
+| 0367829540 | app/system-administration/permission-management/roles/FD-roles.md:58 | graph | 13 | Edit Role Flow | - | rejected: covered |
+| b30854eb85 | app/system-administration/permission-management/roles/FD-roles.md:79 | graph | 8 | View Role Detail Flow | - | rejected: diverges |
+| bb822a46aa | app/system-administration/permission-management/roles/FD-roles.md:95 | graph | 5 | Toggle View Mode | - | rejected: diverges |
+| 71c89699fb | app/system-administration/permission-management/roles/FD-roles.md:108 | graph | 11 | Role Save Flow | - | rejected: covered |
 | 6436ee16a7 | app/system-administration/permission-management/roles/TS-roles.md:14 | graph | 6 | Architecture | - | out-of-scope (filter: prototype heading) |
-| 6bea63e716 | app/system-administration/permission-management/subscription/FD-subscription.md:15 | graph | 6 | Current Page Flow | access-control/(choose) | candidate |
-| ff8cdd0058 | app/system-administration/permission-management/subscription/FD-subscription.md:29 | graph | 7 | Planned Flow: View Subscription (Future) | access-control/(choose) | candidate |
-| d97d7c1d29 | app/system-administration/permission-management/subscription/FD-subscription.md:44 | graph | 9 | Planned Flow: Upgrade Package (Future) | access-control/(choose) | candidate |
-| f91c277a63 | app/system-administration/permission-management/subscription/FD-subscription.md:61 | graph | 6 | Planned Flow: Feature Toggle (Future) | access-control/(choose) | candidate |
+| 6bea63e716 | app/system-administration/permission-management/subscription/FD-subscription.md:15 | graph | 6 | Current Page Flow | - | rejected: unverifiable |
+| ff8cdd0058 | app/system-administration/permission-management/subscription/FD-subscription.md:29 | graph | 7 | Planned Flow: View Subscription (Future) | - | rejected: unverifiable |
+| d97d7c1d29 | app/system-administration/permission-management/subscription/FD-subscription.md:44 | graph | 9 | Planned Flow: Upgrade Package (Future) | - | rejected: unverifiable |
+| f91c277a63 | app/system-administration/permission-management/subscription/FD-subscription.md:61 | graph | 6 | Planned Flow: Feature Toggle (Future) | - | rejected: unverifiable |
 | 881e46707a | app/system-administration/permission-management/subscription/TS-subscription.md:15 | graph | 4 | Current Architecture | - | out-of-scope (filter: prototype heading) |
 | b7e042f440 | app/system-administration/user-management/DD-user-management.md:15 | erDiagram | 49 | Entity Relationship Diagram | - | out-of-scope (filter: stmts > 25) |
 | 3b3248ab20 | app/system-administration/user-management/FD-user-management.md:35 | flowchart | 46 | Overview | - | out-of-scope (filter: stmts > 25) |
 | 914a2e58fe | app/system-administration/user-management/FD-user-management.md:119 | flowchart | 47 | Overview | - | out-of-scope (filter: stmts > 25) |
-| ad6e191cff | app/system-administration/user-management/FD-user-management.md:184 | stateDiagram-v2 | 8 | Status Transitions | access-control/(choose) | candidate |
+| ad6e191cff | app/system-administration/user-management/FD-user-management.md:184 | stateDiagram-v2 | 8 | Status Transitions | - | rejected: diverges |
 | eb9423b48a | app/system-administration/user-management/FD-user-management.md:203 | flowchart | 28 | Overview | - | out-of-scope (filter: stmts > 25) |
 | 78527781cb | app/system-administration/user-management/FD-user-management.md:257 | flowchart | 37 | Overview | - | out-of-scope (filter: stmts > 25) |
 | 435a00f07c | app/system-administration/user-management/FD-user-management.md:316 | flowchart | 41 | Overview | - | out-of-scope (filter: stmts > 25) |
@@ -76,14 +80,14 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 | fe0c552d4d | app/system-administration/user-management/FD-user-management.md:521 | pie | 4 | Bulk Operation Results | - | out-of-scope (filter: type pie) |
 | 864c955dba | app/system-administration/user-management/FD-user-management.md:536 | flowchart | 44 | Overview | - | out-of-scope (filter: stmts > 25) |
 | 03a303b8d7 | app/system-administration/user-management/FD-user-management.md:601 | flowchart | 42 | Overview | - | out-of-scope (filter: stmts > 25) |
-| 1af16741df | app/system-administration/user-management/FD-user-management.md:659 | stateDiagram-v2 | 9 | Invitation States | access-control/(choose) | candidate |
+| 1af16741df | app/system-administration/user-management/FD-user-management.md:659 | stateDiagram-v2 | 9 | Invitation States | access-control/business-unit-user | imported |
 | 97a4e4b4ea | app/system-administration/user-management/FD-user-management.md:679 | flowchart | 34 | Overview | - | out-of-scope (filter: stmts > 25) |
-| b8d9766028 | app/system-administration/user-management/FD-user-management.md:725 | graph | 9 | Permission Evaluation | access-control/(choose) | candidate |
+| b8d9766028 | app/system-administration/user-management/FD-user-management.md:725 | graph | 9 | Permission Evaluation | - | rejected: diverges |
 | b80d38112c | app/system-administration/user-management/TS-user-management.md:13 | graph | 18 | High-Level Architecture | - | out-of-scope (filter: prototype heading) |
 | fd32df4676 | app/system-administration/user-management/TS-user-management.md:46 | graph | 11 | Component Hierarchy | - | out-of-scope (filter: prototype heading) |
-| 048a714d27 | app/system-administration/user-management/TS-user-management.md:344 | sequenceDiagram | 24 | User Creation Flow | access-control/(choose) | candidate |
-| 85325ab434 | app/system-administration/user-management/TS-user-management.md:375 | sequenceDiagram | 22 | User Edit Flow | access-control/(choose) | candidate |
-| 4f5b979969 | app/system-administration/user-management/TS-user-management.md:404 | sequenceDiagram | 23 | Bulk Operation Flow | access-control/(choose) | candidate |
+| 048a714d27 | app/system-administration/user-management/TS-user-management.md:344 | sequenceDiagram | 24 | User Creation Flow | - | rejected: diverges |
+| 85325ab434 | app/system-administration/user-management/TS-user-management.md:375 | sequenceDiagram | 22 | User Edit Flow | - | rejected: diverges |
+| 4f5b979969 | app/system-administration/user-management/TS-user-management.md:404 | sequenceDiagram | 23 | Bulk Operation Flow | - | rejected: unverifiable |
 
 ## costing
 
@@ -93,17 +97,17 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 | 2d76a995cd | app/shared-methods/inventory-valuation/FD-inventory-valuation.md:78 | flowchart | 31 | Trigger | - | out-of-scope (filter: stmts > 25) |
 | 74bc6eaa16 | app/shared-methods/inventory-valuation/FD-inventory-valuation.md:192 | flowchart | 30 | Trigger | - | out-of-scope (filter: stmts > 25) |
 | 136db2f7c7 | app/shared-methods/inventory-valuation/FD-inventory-valuation.md:320 | flowchart | 30 | Trigger | - | out-of-scope (filter: stmts > 25) |
-| 4c30addbdb | app/shared-methods/inventory-valuation/FD-inventory-valuation.md:447 | flowchart | 18 | Trigger | costing/03-user-flow | candidate |
+| 4c30addbdb | app/shared-methods/inventory-valuation/FD-inventory-valuation.md:447 | flowchart | 18 | Trigger | - | rejected: diverges |
 | 92fa34ac3c | app/shared-methods/inventory-valuation/FD-inventory-valuation.md:496 | sequenceDiagram | 26 | Event Flow Sequence | - | out-of-scope (filter: stmts > 25) |
-| d57248618b | app/shared-methods/inventory-valuation/FD-inventory-valuation.md:567 | graph | 25 | Trigger | costing/03-user-flow | candidate |
+| d57248618b | app/shared-methods/inventory-valuation/FD-inventory-valuation.md:567 | graph | 25 | Trigger | - | rejected: diverges |
 | cc69e04d05 | app/shared-methods/inventory-valuation/FD-inventory-valuation.md:690 | flowchart | 27 | Trigger | - | out-of-scope (filter: stmts > 25) |
 | 0d99ae35b3 | app/shared-methods/inventory-valuation/FD-inventory-valuation.md:831 | flowchart | 38 | Trigger | - | out-of-scope (filter: stmts > 25) |
 | 886ef85dcf | app/shared-methods/inventory-valuation/FD-inventory-valuation.md:968 | flowchart | 32 | Trigger | - | out-of-scope (filter: stmts > 25) |
 | 5e86816a70 | app/shared-methods/inventory-valuation/FD-inventory-valuation.md:1037 | sequenceDiagram | 29 | Sequence Diagram: Valuation Request | - | out-of-scope (filter: stmts > 25) |
 | fd0ac69aa2 | app/shared-methods/inventory-valuation/FD-inventory-valuation.md:1113 | flowchart | 28 | Trigger | - | out-of-scope (filter: stmts > 25) |
 | e0e035beaa | app/shared-methods/inventory-valuation/FD-inventory-valuation.md:1212 | flowchart | 32 | Trigger | - | out-of-scope (filter: stmts > 25) |
-| 343cda7e8c | app/shared-methods/inventory-valuation/FD-inventory-valuation.md:1323 | stateDiagram-v2 | 17 | Entity | costing/02-business-rules | candidate |
-| f8f9fc53ac | app/shared-methods/inventory-valuation/FD-inventory-valuation.md:1417 | stateDiagram-v2 | 20 | Entity | costing/02-business-rules | candidate |
+| 343cda7e8c | app/shared-methods/inventory-valuation/FD-inventory-valuation.md:1323 | stateDiagram-v2 | 17 | Entity | - | rejected: diverges |
+| f8f9fc53ac | app/shared-methods/inventory-valuation/FD-inventory-valuation.md:1417 | stateDiagram-v2 | 20 | Entity | - | rejected: diverges |
 | c1cc748f76 | architecture/fifo-calc.md:17 | erDiagram | 44 | Core Data Architecture | - | out-of-scope (filter: not docs/app) |
 | fdbfb50c30 | architecture/fifo-calc.md:69 | flowchart | 10 | Initial Receipt Process | - | out-of-scope (filter: not docs/app) |
 | aad9e58192 | architecture/fifo-calc.md:92 | flowchart | 20 | GRN Modification Process (Open Period Only) | - | out-of-scope (filter: not docs/app) |
@@ -132,48 +136,48 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 | id | source:line | type | stmts | heading | wiki page | status |
 |---|---|---|---|---|---|---|
 | 344e74bca1 | app/finance/account-code-mapping/FD-account-code-mapping.md:34 | graph | 9 | 1. Component Architecture | - | out-of-scope (filter: prototype heading) |
-| b0ebac81a1 | app/finance/account-code-mapping/FD-account-code-mapping.md:51 | graph | 8 | 2. View Selection Flow | general-ledger/(choose) | candidate |
-| ad2c71a9e1 | app/finance/account-code-mapping/FD-account-code-mapping.md:67 | graph | 9 | 3. Search Filter Flow | general-ledger/(choose) | candidate |
-| 5f110e46af | app/finance/account-code-mapping/FD-account-code-mapping.md:84 | graph | 14 | 4. Create Mapping Flow | general-ledger/(choose) | candidate |
-| 8e0dee98d3 | app/finance/account-code-mapping/FD-account-code-mapping.md:106 | graph | 10 | 5. View Mapping Flow | general-ledger/(choose) | candidate |
-| 183dc717aa | app/finance/account-code-mapping/FD-account-code-mapping.md:124 | graph | 15 | 6. Edit Mapping Flow | general-ledger/(choose) | candidate |
-| 038f21f1f1 | app/finance/account-code-mapping/FD-account-code-mapping.md:147 | graph | 10 | 7. Delete Mapping Flow | general-ledger/(choose) | candidate |
-| acbb6f6b6a | app/finance/account-code-mapping/FD-account-code-mapping.md:165 | graph | 8 | 8. Duplicate Mapping Flow | general-ledger/(choose) | candidate |
-| f43e6e0518 | app/finance/account-code-mapping/FD-account-code-mapping.md:181 | graph | 9 | 9. Action Toolbar Flow | general-ledger/(choose) | candidate |
+| b0ebac81a1 | app/finance/account-code-mapping/FD-account-code-mapping.md:51 | graph | 8 | 2. View Selection Flow | - | rejected: diverges |
+| ad2c71a9e1 | app/finance/account-code-mapping/FD-account-code-mapping.md:67 | graph | 9 | 3. Search Filter Flow | - | rejected: diverges |
+| 5f110e46af | app/finance/account-code-mapping/FD-account-code-mapping.md:84 | graph | 14 | 4. Create Mapping Flow | - | rejected: diverges |
+| 8e0dee98d3 | app/finance/account-code-mapping/FD-account-code-mapping.md:106 | graph | 10 | 5. View Mapping Flow | - | rejected: diverges |
+| 183dc717aa | app/finance/account-code-mapping/FD-account-code-mapping.md:124 | graph | 15 | 6. Edit Mapping Flow | - | rejected: diverges |
+| 038f21f1f1 | app/finance/account-code-mapping/FD-account-code-mapping.md:147 | graph | 10 | 7. Delete Mapping Flow | - | rejected: diverges |
+| acbb6f6b6a | app/finance/account-code-mapping/FD-account-code-mapping.md:165 | graph | 8 | 8. Duplicate Mapping Flow | - | rejected: diverges |
+| f43e6e0518 | app/finance/account-code-mapping/FD-account-code-mapping.md:181 | graph | 9 | 9. Action Toolbar Flow | - | rejected: diverges |
 | 3dbce0c518 | app/finance/account-code-mapping/FD-account-code-mapping.md:199 | stateDiagram-v2 | 12 | 10. State Management Flow | - | out-of-scope (filter: prototype heading) |
-| 4d492a4d4c | app/finance/account-code-mapping/FD-account-code-mapping.md:223 | graph | 8 | 11. Dialog State Cleanup | general-ledger/(choose) | candidate |
-| f830beb876 | app/finance/account-code-mapping/FD-account-code-mapping.md:242 | graph | 18 | 12. AP vs GL Table Comparison | general-ledger/(choose) | candidate |
+| 4d492a4d4c | app/finance/account-code-mapping/FD-account-code-mapping.md:223 | graph | 8 | 11. Dialog State Cleanup | - | rejected: diverges |
+| f830beb876 | app/finance/account-code-mapping/FD-account-code-mapping.md:242 | graph | 18 | 12. AP vs GL Table Comparison | - | rejected: diverges |
 | afc68d7fbb | app/finance/account-code-mapping/FD-account-code-mapping.md:273 | graph | 28 | 13. Data Flow Overview | - | out-of-scope (filter: stmts > 25) |
-| 7d9e3cdf62 | app/finance/account-code-mapping/FD-account-code-mapping.md:319 | graph | 7 | 14. Page Layout Structure | general-ledger/(choose) | candidate |
-| cc96e89bc3 | app/finance/account-code-mapping/FD-account-code-mapping.md:337 | graph | 10 | 15. Row Actions Menu Flow | general-ledger/(choose) | candidate |
+| 7d9e3cdf62 | app/finance/account-code-mapping/FD-account-code-mapping.md:319 | graph | 7 | 14. Page Layout Structure | - | rejected: diverges |
+| cc96e89bc3 | app/finance/account-code-mapping/FD-account-code-mapping.md:337 | graph | 10 | 15. Row Actions Menu Flow | - | rejected: diverges |
 | 8c050760e5 | app/system-administration/account-code-mapping/FD-account-code-mapping.md:35 | graph | 5 | Page Load Flow | - | out-of-scope (filter: prototype heading) |
-| 6485d8c2a2 | app/system-administration/account-code-mapping/FD-account-code-mapping.md:48 | graph | 8 | View Switching Flow | general-ledger/(choose) | candidate |
-| 4c51587f54 | app/system-administration/account-code-mapping/FD-account-code-mapping.md:64 | graph | 12 | Search Flow | general-ledger/(choose) | candidate |
-| 68ab536adf | app/system-administration/account-code-mapping/FD-account-code-mapping.md:84 | graph | 20 | Create Mapping Flow | general-ledger/(choose) | candidate |
-| 34690c78c1 | app/system-administration/account-code-mapping/FD-account-code-mapping.md:112 | graph | 17 | Edit Mapping Flow | general-ledger/(choose) | candidate |
-| 8b81d178b1 | app/system-administration/account-code-mapping/FD-account-code-mapping.md:137 | graph | 11 | Delete Mapping Flow | general-ledger/(choose) | candidate |
-| e27b2a1eff | app/system-administration/account-code-mapping/FD-account-code-mapping.md:156 | graph | 10 | Duplicate Mapping Flow | general-ledger/(choose) | candidate |
-| 05d37a9e36 | app/system-administration/account-code-mapping/FD-account-code-mapping.md:174 | graph | 12 | View Details Flow | general-ledger/(choose) | candidate |
+| 6485d8c2a2 | app/system-administration/account-code-mapping/FD-account-code-mapping.md:48 | graph | 8 | View Switching Flow | - | rejected: diverges |
+| 4c51587f54 | app/system-administration/account-code-mapping/FD-account-code-mapping.md:64 | graph | 12 | Search Flow | - | rejected: diverges |
+| 68ab536adf | app/system-administration/account-code-mapping/FD-account-code-mapping.md:84 | graph | 20 | Create Mapping Flow | - | rejected: diverges |
+| 34690c78c1 | app/system-administration/account-code-mapping/FD-account-code-mapping.md:112 | graph | 17 | Edit Mapping Flow | - | rejected: diverges |
+| 8b81d178b1 | app/system-administration/account-code-mapping/FD-account-code-mapping.md:137 | graph | 11 | Delete Mapping Flow | - | rejected: diverges |
+| e27b2a1eff | app/system-administration/account-code-mapping/FD-account-code-mapping.md:156 | graph | 10 | Duplicate Mapping Flow | - | rejected: diverges |
+| 05d37a9e36 | app/system-administration/account-code-mapping/FD-account-code-mapping.md:174 | graph | 12 | View Details Flow | - | rejected: diverges |
 | 78f8263fd8 | app/system-administration/account-code-mapping/FD-account-code-mapping.md:194 | sequenceDiagram | 20 | Component Interaction | - | out-of-scope (filter: prototype heading) |
 | 30eaf83700 | app/system-administration/account-code-mapping/TS-account-code-mapping.md:37 | graph | 14 | System Architecture | - | out-of-scope (filter: prototype heading) |
 | 6946d7632e | app/system-administration/account-code-mapping/TS-account-code-mapping.md:111 | graph | 16 | Component Hierarchy | - | out-of-scope (filter: prototype heading) |
-| 7364a248ac | app/system-administration/account-code-mapping/TS-account-code-mapping.md:153 | stateDiagram-v2 | 19 | State Flow | general-ledger/(choose) | candidate |
+| 7364a248ac | app/system-administration/account-code-mapping/TS-account-code-mapping.md:153 | stateDiagram-v2 | 19 | State Flow | - | rejected: diverges |
 
 ## good-receive-note
 
 | id | source:line | type | stmts | heading | wiki page | status |
 |---|---|---|---|---|---|---|
-| 5f53d060ac | app/procurement/goods-received-notes/FD-goods-received-note.md:71 | flowchart | 23 | PO-Based GRN Creation Flow | good-receive-note/03-user-flow | candidate |
-| 2ff51c43ec | app/procurement/goods-received-notes/FD-goods-received-note.md:171 | flowchart | 25 | Manual GRN Creation Flow | good-receive-note/03-user-flow | candidate |
-| 52d1b5957a | app/procurement/goods-received-notes/FD-goods-received-note.md:258 | stateDiagram-v2 | 10 | GRN State Transition Diagram | good-receive-note/02-business-rules | candidate |
+| 5f53d060ac | app/procurement/goods-received-notes/FD-goods-received-note.md:71 | flowchart | 23 | PO-Based GRN Creation Flow | - | rejected: diverges |
+| 2ff51c43ec | app/procurement/goods-received-notes/FD-goods-received-note.md:171 | flowchart | 25 | Manual GRN Creation Flow | - | rejected: diverges |
+| 52d1b5957a | app/procurement/goods-received-notes/FD-goods-received-note.md:258 | stateDiagram-v2 | 10 | GRN State Transition Diagram | - | rejected: diverges |
 | 69f6295066 | app/procurement/goods-received-notes/FD-goods-received-note.md:333 | flowchart | 15 | Hierarchical Items View Flow | - | out-of-scope (filter: prototype heading) |
-| 05f8fa245a | app/procurement/goods-received-notes/FD-goods-received-note.md:389 | flowchart | 9 | Item Detail Form Flow | good-receive-note/03-user-flow | candidate |
-| db5a40ec24 | app/procurement/goods-received-notes/FD-goods-received-note.md:454 | flowchart | 16 | Location Type Processing Flow | good-receive-note/03-user-flow | candidate |
+| 05f8fa245a | app/procurement/goods-received-notes/FD-goods-received-note.md:389 | flowchart | 9 | Item Detail Form Flow | - | rejected: diverges |
+| db5a40ec24 | app/procurement/goods-received-notes/FD-goods-received-note.md:454 | flowchart | 16 | Location Type Processing Flow | - | rejected: diverges |
 | 75bc5b40b6 | app/procurement/goods-received-notes/FD-goods-received-note.md:519 | flowchart | 26 | GRN Commitment Workflow | - | out-of-scope (filter: stmts > 25) |
-| af42ab7576 | app/procurement/goods-received-notes/FD-goods-received-note.md:612 | flowchart | 17 | Extra Cost Distribution Flow | good-receive-note/03-user-flow | candidate |
+| af42ab7576 | app/procurement/goods-received-notes/FD-goods-received-note.md:612 | flowchart | 17 | Extra Cost Distribution Flow | - | rejected: diverges |
 | 0e11e9ed26 | app/procurement/goods-received-notes/FD-goods-received-note.md:675 | sequenceDiagram | 38 | System Integration Flow | - | out-of-scope (filter: stmts > 25) |
-| 94027fd457 | app/procurement/goods-received-notes/GAP-ANALYSIS-BR-vs-MOBILE.md:715 | graph | 20 | 6.1 Desktop Workflow (BR) | good-receive-note/03-user-flow | candidate |
-| 2efd4b9d25 | app/procurement/goods-received-notes/GAP-ANALYSIS-BR-vs-MOBILE.md:750 | graph | 22 | 6.2 Mobile Workflow (Actual) | good-receive-note/03-user-flow | candidate |
+| 94027fd457 | app/procurement/goods-received-notes/GAP-ANALYSIS-BR-vs-MOBILE.md:715 | graph | 20 | 6.1 Desktop Workflow (BR) | - | rejected: diverges |
+| 2efd4b9d25 | app/procurement/goods-received-notes/GAP-ANALYSIS-BR-vs-MOBILE.md:750 | graph | 22 | 6.2 Mobile Workflow (Actual) | - | rejected: unverifiable |
 | 537584dc28 | app/procurement/goods-received-notes/MOBILE-RECEIVING-PROCESS-ANALYSIS.md:96 | graph | 27 | 3.1 Complete Workflow Overview | - | out-of-scope (filter: stmts > 25) |
 | 1a12ae6f6c | app/procurement/goods-received-notes/TS-goods-received-note.md:455 | graph | 28 | Enhanced Page Hierarchy | - | out-of-scope (filter: prototype heading) |
 | 16cbbeaed1 | app/procurement/goods-received-notes/TS-goods-received-note.md:1034 | graph | 46 | Navigation Flow Diagram | - | out-of-scope (filter: prototype heading) |
@@ -209,78 +213,78 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 | 5833dd6b37 | Inventory/Overview/Stock-Card/stock-card-prd.md:258 | graph | 32 | 3.4.2 Filter and Search Flow | - | out-of-scope (filter: not docs/app) |
 | 25eacc3aa7 | Inventory/Overview/Stock-Card/stock-card-prd.md:307 | graph | 25 | 3.4.3 Transaction Drill-Down Flow | - | out-of-scope (filter: not docs/app) |
 | 3e9be94b03 | Inventory/stock-in-detail.md:199 | stateDiagram-v2 | 10 | B. Processing Flow | - | out-of-scope (filter: not docs/app) |
-| 9332934a33 | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:41 | graph | 5 | 1.3 Notation Legend | inventory/03-user-flow | candidate |
+| 9332934a33 | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:41 | graph | 5 | 1.3 Notation Legend | - | rejected: unverifiable |
 | 801bd102ac | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:71 | graph | 25 | 2.1 Component Architecture | - | out-of-scope (filter: prototype heading) |
 | e961f2f999 | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:127 | graph | 23 | 2.2 Data Flow Architecture | - | out-of-scope (filter: prototype heading) |
-| 7fe50488c4 | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:182 | flowchart | 20 | 3.1 Fractional Item Configuration | inventory/03-user-flow | candidate |
+| 7fe50488c4 | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:182 | flowchart | 20 | 3.1 Fractional Item Configuration | - | rejected: unverifiable |
 | 214ecfd175 | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:231 | flowchart | 29 | 3.2 Split Conversion Workflow (Whole → Portions) | - | out-of-scope (filter: stmts > 25) |
 | 265b9745a9 | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:301 | flowchart | 29 | 3.3 Combine Conversion Workflow (Portions → Whole) | - | out-of-scope (filter: stmts > 25) |
 | d640859033 | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:371 | flowchart | 27 | 3.4 Quality Monitoring Workflow | - | out-of-scope (filter: stmts > 25) |
 | 209af7e520 | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:436 | flowchart | 30 | 3.5 Alert Generation Workflow | - | out-of-scope (filter: stmts > 25) |
-| 8a0d5d53fd | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:520 | flowchart | 16 | 4.1 Stock List Filtering | inventory/03-user-flow | candidate |
-| 00af0442c6 | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:558 | flowchart | 13 | 4.2 Conversion History Search | inventory/03-user-flow | candidate |
+| 8a0d5d53fd | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:520 | flowchart | 16 | 4.1 Stock List Filtering | - | rejected: unverifiable |
+| 00af0442c6 | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:558 | flowchart | 13 | 4.2 Conversion History Search | - | rejected: unverifiable |
 | e71e73ffa2 | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:595 | stateDiagram-v2 | 35 | 5.1 Stock State Lifecycle | - | out-of-scope (filter: stmts > 25) |
 | 3c13cf4be8 | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:652 | stateDiagram-v2 | 26 | 5.2 Quality Grade Lifecycle | - | out-of-scope (filter: stmts > 25) |
 | e1a31b105f | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:699 | stateDiagram-v2 | 30 | 5.3 Alert Status Lifecycle | - | out-of-scope (filter: stmts > 25) |
-| 18fd6a24e4 | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:752 | flowchart | 19 | 6.1 Integration with Standard Inventory | inventory/03-user-flow | candidate |
-| 084da18cc9 | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:804 | flowchart | 22 | 6.2 Integration with Order Management | inventory/03-user-flow | candidate |
-| b4832b5355 | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:859 | flowchart | 25 | 6.3 Integration with Recommendation Engine | inventory/03-user-flow | candidate |
-| a90e3c7082 | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:923 | flowchart | 23 | 7.1 Alert Notification Flow | inventory/03-user-flow | candidate |
+| 18fd6a24e4 | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:752 | flowchart | 19 | 6.1 Integration with Standard Inventory | - | rejected: unverifiable |
+| 084da18cc9 | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:804 | flowchart | 22 | 6.2 Integration with Order Management | - | rejected: unverifiable |
+| b4832b5355 | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:859 | flowchart | 25 | 6.3 Integration with Recommendation Engine | - | rejected: unverifiable |
+| a90e3c7082 | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:923 | flowchart | 23 | 7.1 Alert Notification Flow | - | rejected: unverifiable |
 | 72e21e7154 | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:982 | flowchart | 30 | 8.1 Conversion Failure Recovery | - | out-of-scope (filter: stmts > 25) |
-| 039624dd0c | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:1052 | flowchart | 18 | 9.1 Query Optimization Flow | inventory/03-user-flow | candidate |
+| 039624dd0c | app/inventory-management/fractional-inventory/FD-fractional-inventory.md:1052 | flowchart | 18 | 9.1 Query Optimization Flow | - | rejected: unverifiable |
 | 2a75ba7d12 | app/inventory-management/fractional-inventory/TS-fractional-inventory.md:755 | graph | 26 | Page Hierarchy | - | out-of-scope (filter: prototype heading) |
 | 383505a5cb | app/inventory-management/inventory-overview/DD-inventory-overview.md:34 | erDiagram | 134 | Entity-Relationship Diagram | - | out-of-scope (filter: stmts > 25) |
-| b64771b5b6 | app/inventory-management/inventory-overview/FD-inventory-overview.md:62 | flowchart | 19 | 1. Dashboard Customization Flow | inventory/03-user-flow | candidate |
-| 94a359d727 | app/inventory-management/inventory-overview/FD-inventory-overview.md:115 | flowchart | 21 | 2. Location Filter Selection Flow | inventory/03-user-flow | candidate |
+| b64771b5b6 | app/inventory-management/inventory-overview/FD-inventory-overview.md:62 | flowchart | 19 | 1. Dashboard Customization Flow | - | rejected: unverifiable |
+| 94a359d727 | app/inventory-management/inventory-overview/FD-inventory-overview.md:115 | flowchart | 21 | 2. Location Filter Selection Flow | - | rejected: unverifiable |
 | 6f5d990961 | app/inventory-management/inventory-overview/FD-inventory-overview.md:173 | stateDiagram-v2 | 34 | 3. Tab Navigation Flow | - | out-of-scope (filter: prototype heading) |
 | 5802c801b2 | app/inventory-management/inventory-overview/FD-inventory-overview.md:250 | flowchart | 12 | 4. Quick Navigation Flow | - | out-of-scope (filter: prototype heading) |
-| 1ca0eba1ba | app/inventory-management/inventory-overview/FD-inventory-overview.md:299 | flowchart | 19 | 5. Dashboard Data Loading Flow | inventory/03-user-flow | candidate |
-| 79b05dc089 | app/inventory-management/inventory-overview/FD-inventory-overview.md:351 | flowchart | 11 | 6. Multi-Location Aggregation Flow | inventory/03-user-flow | candidate |
-| 12c1278f7f | app/inventory-management/inventory-overview/FD-inventory-overview.md:400 | flowchart | 16 | 7. Performance Calculation Flow | inventory/03-user-flow | candidate |
+| 1ca0eba1ba | app/inventory-management/inventory-overview/FD-inventory-overview.md:299 | flowchart | 19 | 5. Dashboard Data Loading Flow | - | rejected: unverifiable |
+| 79b05dc089 | app/inventory-management/inventory-overview/FD-inventory-overview.md:351 | flowchart | 11 | 6. Multi-Location Aggregation Flow | - | rejected: unverifiable |
+| 12c1278f7f | app/inventory-management/inventory-overview/FD-inventory-overview.md:400 | flowchart | 16 | 7. Performance Calculation Flow | - | rejected: unverifiable |
 | 31444a663c | app/inventory-management/inventory-overview/FD-inventory-overview.md:458 | flowchart | 26 | 8. Transfer Suggestion Generation Flow | - | out-of-scope (filter: stmts > 25) |
 | 69095a65a7 | app/inventory-management/inventory-overview/FD-inventory-overview.md:534 | flowchart | 40 | 9. Alert Generation and Management Flow | - | out-of-scope (filter: stmts > 25) |
-| 28f4aaba8b | app/inventory-management/inventory-overview/FD-inventory-overview.md:636 | flowchart | 21 | 10. Auto-Refresh Mechanism Flow | inventory/03-user-flow | candidate |
+| 28f4aaba8b | app/inventory-management/inventory-overview/FD-inventory-overview.md:636 | flowchart | 21 | 10. Auto-Refresh Mechanism Flow | - | rejected: unverifiable |
 | eaedbd3784 | app/inventory-management/inventory-overview/FD-inventory-overview.md:704 | flowchart | 27 | 11. Permission-Based Filtering Flow | - | out-of-scope (filter: stmts > 25) |
-| c61e45d259 | app/inventory-management/inventory-overview/FD-inventory-overview.md:780 | flowchart | 25 | 12. Chart Data Preparation Flow | inventory/03-user-flow | candidate |
+| c61e45d259 | app/inventory-management/inventory-overview/FD-inventory-overview.md:780 | flowchart | 25 | 12. Chart Data Preparation Flow | - | rejected: unverifiable |
 | d5b207530b | app/inventory-management/inventory-overview/TS-inventory-overview.md:39 | graph | 29 | High-Level System Architecture | - | out-of-scope (filter: prototype heading) |
 | 52d9195fa9 | app/inventory-management/inventory-overview/TS-inventory-overview.md:130 | graph | 9 | Page Hierarchy | - | out-of-scope (filter: prototype heading) |
-| 9336e256ff | app/inventory-management/inventory-overview/TS-inventory-overview.md:298 | flowchart | 19 | Dashboard Customization Flow | inventory/03-user-flow | candidate |
+| 9336e256ff | app/inventory-management/inventory-overview/TS-inventory-overview.md:298 | flowchart | 19 | Dashboard Customization Flow | - | rejected: unverifiable |
 | 41deb0921a | app/inventory-management/inventory-overview/TS-inventory-overview.md:330 | flowchart | 31 | Multi-Location Stock Analysis Flow | - | out-of-scope (filter: stmts > 25) |
 | 3e93bb61ee | app/inventory-management/inventory-overview/TS-inventory-overview.md:383 | flowchart | 26 | Performance Comparison Flow | - | out-of-scope (filter: stmts > 25) |
-| e16adc3766 | app/inventory-management/inventory-overview/TS-inventory-overview.md:428 | flowchart | 25 | Transfer Suggestion Generation Flow | inventory/03-user-flow | candidate |
+| e16adc3766 | app/inventory-management/inventory-overview/TS-inventory-overview.md:428 | flowchart | 25 | Transfer Suggestion Generation Flow | - | rejected: unverifiable |
 | b44294feb7 | app/inventory-management/inventory-overview/TS-inventory-overview.md:485 | graph | 28 | Enhanced Page Hierarchy | - | out-of-scope (filter: prototype heading) |
-| 7071584b6a | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:67 | stateDiagram-v2 | 22 | 1.1 Transactions WITHOUT Approval Workflow | inventory/02-business-rules | candidate |
+| 7071584b6a | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:67 | stateDiagram-v2 | 22 | 1.1 Transactions WITHOUT Approval Workflow | - | rejected: diverges |
 | 06bcf5f0cb | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:114 | stateDiagram-v2 | 35 | 1.2 Transactions WITH Approval Workflow | - | out-of-scope (filter: stmts > 25) |
-| 5bdd8bfd1c | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:183 | flowchart | 17 | 2. GRN (Goods Receipt) Posting Flow | inventory/03-user-flow | candidate |
-| 568111f5c7 | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:233 | flowchart | 22 | 3. Store Requisition (Issue) Flow | inventory/03-user-flow | candidate |
-| 0cf2c76fae | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:293 | flowchart | 19 | 4. Stock Transfer Flow | inventory/03-user-flow | candidate |
-| b6faef0058 | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:351 | flowchart | 24 | 5. Stock Adjustment Flow | inventory/03-user-flow | candidate |
-| ebffc66c66 | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:415 | flowchart | 17 | 6. Vendor Return Flow | inventory/03-user-flow | candidate |
+| 5bdd8bfd1c | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:183 | flowchart | 17 | 2. GRN (Goods Receipt) Posting Flow | - | rejected: diverges |
+| 568111f5c7 | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:233 | flowchart | 22 | 3. Store Requisition (Issue) Flow | - | rejected: diverges |
+| 0cf2c76fae | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:293 | flowchart | 19 | 4. Stock Transfer Flow | - | rejected: diverges |
+| b6faef0058 | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:351 | flowchart | 24 | 5. Stock Adjustment Flow | - | rejected: diverges |
+| ebffc66c66 | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:415 | flowchart | 17 | 6. Vendor Return Flow | - | rejected: diverges |
 | 07eef4509e | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:467 | sequenceDiagram | 32 | 7. Valuation Service Integration | - | out-of-scope (filter: stmts > 25) |
 | db59ded2e8 | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:533 | flowchart | 19 | 8. FIFO Layer Consumption (FIFO Method) | - | out-of-scope (filter: prototype heading) |
-| 4cd916b38a | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:592 | flowchart | 19 | 9. Periodic Average Cost Retrieval | inventory/03-user-flow | candidate |
+| 4cd916b38a | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:592 | flowchart | 19 | 9. Periodic Average Cost Retrieval | - | rejected: diverges |
 | 3d5e5a80a9 | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:650 | sequenceDiagram | 32 | 10. General Ledger Posting Sequence | - | out-of-scope (filter: stmts > 25) |
 | ae84190413 | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:715 | flowchart | 31 | 11. Transaction Reversal Process | - | out-of-scope (filter: stmts > 25) |
 | b966a035d8 | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:795 | flowchart | 29 | 12. Inventory Balance Update Flow | - | out-of-scope (filter: stmts > 25) |
-| ab808c7d33 | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:869 | flowchart | 23 | 13. Stock Allocation Management | inventory/03-user-flow | candidate |
+| ab808c7d33 | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:869 | flowchart | 23 | 13. Stock Allocation Management | - | rejected: diverges |
 | 9170104f55 | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:931 | sequenceDiagram | 26 | 14. Concurrent Transaction Handling | - | out-of-scope (filter: stmts > 25) |
-| a075a38d82 | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:997 | flowchart | 4 | Color Coding | inventory/03-user-flow | candidate |
-| c730377a4a | app/inventory-management/period-end/FD-period-end.md:25 | stateDiagram-v2 | 6 | 2. Period Status Lifecycle | inventory/02-business-rules | candidate |
+| a075a38d82 | app/inventory-management/inventory-transactions/FD-inventory-transactions.md:997 | flowchart | 4 | Color Coding | - | rejected: diverges |
+| c730377a4a | app/inventory-management/period-end/FD-period-end.md:25 | stateDiagram-v2 | 6 | 2. Period Status Lifecycle | - | rejected: diverges |
 | 84bfefd90b | app/inventory-management/period-end/FD-period-end.md:52 | graph | 9 | 3. Page Navigation Flow | - | out-of-scope (filter: prototype heading) |
-| 690ed25d99 | app/inventory-management/period-end/FD-period-end.md:72 | graph | 24 | 4. Period Close Workflow | inventory/03-user-flow | candidate |
+| 690ed25d99 | app/inventory-management/period-end/FD-period-end.md:72 | graph | 24 | 4. Period Close Workflow | - | rejected: diverges |
 | 7e9c0dbf7c | app/inventory-management/period-end/FD-period-end.md:115 | graph | 29 | 5. 3-Stage Validation Flow | - | out-of-scope (filter: stmts > 25) |
 | 3c0292236d | app/inventory-management/period-end/FD-period-end.md:162 | graph | 10 | 6. Component Hierarchy | - | out-of-scope (filter: prototype heading) |
-| e79223d48a | app/inventory-management/period-end/FD-period-end.md:188 | graph | 17 | 7. Validation Checklist UI Flow | inventory/03-user-flow | candidate |
-| 22d724a956 | app/inventory-management/period-end/FD-period-end.md:221 | graph | 15 | 8. Transaction Validation Detail | inventory/03-user-flow | candidate |
-| 9d0524c367 | app/inventory-management/period-end/FD-period-end.md:252 | graph | 12 | 9. Period List Page Flow | inventory/03-user-flow | candidate |
-| 7558cbe96f | app/inventory-management/period-end/FD-period-end.md:277 | graph | 15 | 10. Period Detail Page Flow | inventory/03-user-flow | candidate |
-| a4e0007701 | app/inventory-management/period-end/FD-period-end.md:305 | graph | 19 | 11. Data Flow Summary | inventory/03-user-flow | candidate |
+| e79223d48a | app/inventory-management/period-end/FD-period-end.md:188 | graph | 17 | 7. Validation Checklist UI Flow | - | rejected: diverges |
+| 22d724a956 | app/inventory-management/period-end/FD-period-end.md:221 | graph | 15 | 8. Transaction Validation Detail | - | rejected: diverges |
+| 9d0524c367 | app/inventory-management/period-end/FD-period-end.md:252 | graph | 12 | 9. Period List Page Flow | - | rejected: diverges |
+| 7558cbe96f | app/inventory-management/period-end/FD-period-end.md:277 | graph | 15 | 10. Period Detail Page Flow | - | rejected: diverges |
+| a4e0007701 | app/inventory-management/period-end/FD-period-end.md:305 | graph | 19 | 11. Data Flow Summary | - | rejected: diverges |
 | 058a35b91e | app/inventory-management/period-end/TS-period-end.md:23 | graph | 29 | 2. System Architecture | - | out-of-scope (filter: prototype heading) |
 | 98fc1e827e | app/inventory-management/period-end/TS-period-end.md:73 | graph | 5 | 3. Page Hierarchy | - | out-of-scope (filter: prototype heading) |
-| 6e555c7737 | app/inventory-management/period-end/TS-period-end.md:165 | graph | 9 | 6.1 Period Management Flow | inventory/03-user-flow | candidate |
+| 6e555c7737 | app/inventory-management/period-end/TS-period-end.md:165 | graph | 9 | 6.1 Period Management Flow | - | rejected: diverges |
 | df063b7bb8 | app/inventory-management/period-end/TS-period-end.md:180 | graph | 13 | 6.2 Close Workflow Navigation | - | out-of-scope (filter: prototype heading) |
-| aa41f8f703 | app/inventory-management/period-end/TS-period-end.md:201 | graph | 19 | 7.1 Validation Sequence | inventory/03-user-flow | candidate |
-| 43daf2951b | app/inventory-management/stock-in/FD-stock-in.md:51 | graph | 20 | 1. High-Level Process Flow | inventory/03-user-flow | candidate |
+| aa41f8f703 | app/inventory-management/period-end/TS-period-end.md:201 | graph | 19 | 7.1 Validation Sequence | - | rejected: diverges |
+| 43daf2951b | app/inventory-management/stock-in/FD-stock-in.md:51 | graph | 20 | 1. High-Level Process Flow | - | rejected: diverges |
 | 7e6f992560 | app/inventory-management/stock-in/FD-stock-in.md:88 | flowchart | 28 | 2. Create Transaction Flow | - | out-of-scope (filter: stmts > 25) |
 | 780099a3e1 | app/inventory-management/stock-in/FD-stock-in.md:136 | flowchart | 31 | 3. Add Line Items Flow | - | out-of-scope (filter: stmts > 25) |
 | 699d6bcf02 | app/inventory-management/stock-in/FD-stock-in.md:186 | flowchart | 36 | 4. Commit Transaction Flow | - | out-of-scope (filter: stmts > 25) |
@@ -314,109 +318,109 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 | b44294feb7 | app/inventory-management/stock-overview/TS-stock-overview.md:485 | graph | 28 | Enhanced Page Hierarchy | - | duplicate of app/inventory-management/inventory-overview/TS-inventory-overview.md:485 |
 | 1f0b2716c0 | app/inventory-management/stock-overview/inventory-aging/DD-inventory-aging.md:32 | erDiagram | 39 | Entity-Relationship Diagram | - | out-of-scope (filter: stmts > 25) |
 | 79ab34821a | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:22 | graph | 18 | 1. Page Load Flow | - | out-of-scope (filter: prototype heading) |
-| 8870374c25 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:50 | graph | 12 | 2. Age Calculation Flow | inventory/03-user-flow | candidate |
-| 891976e529 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:72 | graph | 13 | 3. Expiry Status Calculation Flow | inventory/03-user-flow | candidate |
-| 4a7bc0ab8c | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:95 | graph | 13 | 4. Alert Generation Flow | inventory/03-user-flow | candidate |
-| a084fff6bb | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:118 | graph | 10 | 5. Value at Risk Calculation Flow | inventory/03-user-flow | candidate |
-| a1f5f50781 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:138 | graph | 17 | 6. Filter Application Flow | inventory/03-user-flow | candidate |
+| 8870374c25 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:50 | graph | 12 | 2. Age Calculation Flow | - | rejected: unverifiable |
+| 891976e529 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:72 | graph | 13 | 3. Expiry Status Calculation Flow | - | rejected: unverifiable |
+| 4a7bc0ab8c | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:95 | graph | 13 | 4. Alert Generation Flow | - | rejected: unverifiable |
+| a084fff6bb | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:118 | graph | 10 | 5. Value at Risk Calculation Flow | - | rejected: unverifiable |
+| a1f5f50781 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:138 | graph | 17 | 6. Filter Application Flow | - | rejected: unverifiable |
 | b41a11ef6a | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:165 | graph | 6 | 7. Tab Navigation Flow | - | out-of-scope (filter: prototype heading) |
-| bde80c3cc2 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:182 | graph | 10 | 8. Group By Selection Flow | inventory/03-user-flow | candidate |
-| f64b1196d6 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:202 | graph | 10 | 9. Group by Location Flow | inventory/03-user-flow | candidate |
-| 3d1cfc93ce | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:220 | graph | 11 | 10. Group by Age Bucket Flow | inventory/03-user-flow | candidate |
-| 170cd8a90b | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:239 | graph | 13 | 11. Expiry Timeline Chart Flow | inventory/03-user-flow | candidate |
-| 63e78dbe43 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:262 | graph | 11 | 12. Age Bucket Distribution Chart Flow | inventory/03-user-flow | candidate |
-| 7129d72023 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:283 | graph | 9 | 13. Expiry Status Distribution Chart Flow | inventory/03-user-flow | candidate |
-| c84d650cbd | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:302 | graph | 11 | 14. Location Aging Performance Chart Flow | inventory/03-user-flow | candidate |
-| 44fe593e3b | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:323 | graph | 12 | 15. Category Aging Analysis Flow | inventory/03-user-flow | candidate |
-| 7c28b659a8 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:345 | graph | 9 | 16. Action Center Value at Risk Panel Flow | inventory/03-user-flow | candidate |
-| 9452f28dfa | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:364 | graph | 10 | 17. Critical Items List Flow | inventory/03-user-flow | candidate |
-| 7c4c92f282 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:384 | graph | 7 | 18. Oldest Items List Flow | inventory/03-user-flow | candidate |
-| de6708ea24 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:401 | graph | 15 | 19. Recommended Actions Flow | inventory/03-user-flow | candidate |
-| bb6d5e53a9 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:426 | graph | 10 | 20. Disposal Action Flow | inventory/03-user-flow | candidate |
-| 83195a07b9 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:444 | graph | 9 | 21. FIFO Transfer Flow | inventory/03-user-flow | candidate |
-| 161846c980 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:461 | graph | 9 | 22. Summary Statistics Update Flow | inventory/03-user-flow | candidate |
-| 8164a9ad56 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:480 | graph | 13 | 23. Permission Check Flow | inventory/03-user-flow | candidate |
+| bde80c3cc2 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:182 | graph | 10 | 8. Group By Selection Flow | - | rejected: unverifiable |
+| f64b1196d6 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:202 | graph | 10 | 9. Group by Location Flow | - | rejected: unverifiable |
+| 3d1cfc93ce | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:220 | graph | 11 | 10. Group by Age Bucket Flow | - | rejected: unverifiable |
+| 170cd8a90b | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:239 | graph | 13 | 11. Expiry Timeline Chart Flow | - | rejected: unverifiable |
+| 63e78dbe43 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:262 | graph | 11 | 12. Age Bucket Distribution Chart Flow | - | rejected: unverifiable |
+| 7129d72023 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:283 | graph | 9 | 13. Expiry Status Distribution Chart Flow | - | rejected: unverifiable |
+| c84d650cbd | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:302 | graph | 11 | 14. Location Aging Performance Chart Flow | - | rejected: unverifiable |
+| 44fe593e3b | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:323 | graph | 12 | 15. Category Aging Analysis Flow | - | rejected: unverifiable |
+| 7c28b659a8 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:345 | graph | 9 | 16. Action Center Value at Risk Panel Flow | - | rejected: unverifiable |
+| 9452f28dfa | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:364 | graph | 10 | 17. Critical Items List Flow | - | rejected: unverifiable |
+| 7c4c92f282 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:384 | graph | 7 | 18. Oldest Items List Flow | - | rejected: unverifiable |
+| de6708ea24 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:401 | graph | 15 | 19. Recommended Actions Flow | - | rejected: unverifiable |
+| bb6d5e53a9 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:426 | graph | 10 | 20. Disposal Action Flow | - | rejected: unverifiable |
+| 83195a07b9 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:444 | graph | 9 | 21. FIFO Transfer Flow | - | rejected: unverifiable |
+| 161846c980 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:461 | graph | 9 | 22. Summary Statistics Update Flow | - | rejected: unverifiable |
+| 8164a9ad56 | app/inventory-management/stock-overview/inventory-aging/FD-inventory-aging.md:480 | graph | 13 | 23. Permission Check Flow | - | rejected: unverifiable |
 | 6d19d88817 | app/inventory-management/stock-overview/inventory-aging/TS-inventory-aging.md:22 | graph | 17 | 1. System Architecture | - | out-of-scope (filter: prototype heading) |
 | 9b036238ad | app/inventory-management/stock-overview/inventory-aging/TS-inventory-aging.md:56 | graph | 4 | 2. Page Hierarchy | - | out-of-scope (filter: prototype heading) |
-| bcbc4fb868 | app/inventory-management/stock-overview/inventory-aging/TS-inventory-aging.md:221 | sequenceDiagram | 21 | 6. Data Flow | inventory/03-user-flow | candidate |
+| bcbc4fb868 | app/inventory-management/stock-overview/inventory-aging/TS-inventory-aging.md:221 | sequenceDiagram | 21 | 6. Data Flow | - | rejected: unverifiable |
 | 211736d675 | app/inventory-management/stock-overview/inventory-balance/DD-inventory-balance.md:32 | erDiagram | 39 | Entity-Relationship Diagram | - | out-of-scope (filter: stmts > 25) |
 | af30de1227 | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:22 | flowchart | 13 | 1. Page Load Flow | - | out-of-scope (filter: prototype heading) |
-| 6d04073c3b | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:43 | flowchart | 15 | 2. Filter Application Flow | inventory/03-user-flow | candidate |
-| 18cfebc311 | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:66 | flowchart | 7 | 3. Filter Reset Flow | inventory/03-user-flow | candidate |
+| 6d04073c3b | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:43 | flowchart | 15 | 2. Filter Application Flow | - | rejected: unverifiable |
+| 18cfebc311 | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:66 | flowchart | 7 | 3. Filter Reset Flow | - | rejected: unverifiable |
 | 38fb939007 | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:81 | flowchart | 13 | 4. Data Hierarchy Expansion Flow | - | out-of-scope (filter: prototype heading) |
-| 22d0040e86 | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:102 | flowchart | 10 | 5. Inventory Status Calculation Flow | inventory/03-user-flow | candidate |
+| 22d0040e86 | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:102 | flowchart | 10 | 5. Inventory Status Calculation Flow | - | rejected: unverifiable |
 | 201f14818b | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:122 | flowchart | 5 | 6. Tab Navigation Flow | - | out-of-scope (filter: prototype heading) |
-| 1cf6b9cff5 | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:136 | flowchart | 9 | 7. Movement History Load Flow | inventory/03-user-flow | candidate |
-| ec99281d5e | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:153 | flowchart | 13 | 8. Movement Filter Flow | inventory/03-user-flow | candidate |
-| 5c0e585f4c | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:176 | flowchart | 6 | 9. Transaction Type Badge Flow | inventory/03-user-flow | candidate |
-| 8801fe5442 | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:194 | flowchart | 9 | 10. Reference Type Badge Flow | inventory/03-user-flow | candidate |
-| daab416b92 | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:213 | flowchart | 13 | 11. Pagination Flow | inventory/03-user-flow | candidate |
-| fc28eab5fd | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:236 | flowchart | 9 | 12. Export Flow | inventory/03-user-flow | candidate |
-| 38449ea048 | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:253 | flowchart | 13 | 13. Permission Check Flow | inventory/03-user-flow | candidate |
-| a6f577feda | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:274 | flowchart | 5 | 14. Navigate to Stock Card Flow | inventory/03-user-flow | candidate |
-| 3bbbc48a25 | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:287 | flowchart | 14 | 15. Movement Summary Calculation Flow | inventory/03-user-flow | candidate |
-| 783afe7dbb | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:309 | flowchart | 7 | 16. Quantity Change Display Flow | inventory/03-user-flow | candidate |
+| 1cf6b9cff5 | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:136 | flowchart | 9 | 7. Movement History Load Flow | - | rejected: unverifiable |
+| ec99281d5e | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:153 | flowchart | 13 | 8. Movement Filter Flow | - | rejected: unverifiable |
+| 5c0e585f4c | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:176 | flowchart | 6 | 9. Transaction Type Badge Flow | - | rejected: unverifiable |
+| 8801fe5442 | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:194 | flowchart | 9 | 10. Reference Type Badge Flow | - | rejected: unverifiable |
+| daab416b92 | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:213 | flowchart | 13 | 11. Pagination Flow | - | rejected: unverifiable |
+| fc28eab5fd | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:236 | flowchart | 9 | 12. Export Flow | - | rejected: unverifiable |
+| 38449ea048 | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:253 | flowchart | 13 | 13. Permission Check Flow | - | rejected: unverifiable |
+| a6f577feda | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:274 | flowchart | 5 | 14. Navigate to Stock Card Flow | - | rejected: unverifiable |
+| 3bbbc48a25 | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:287 | flowchart | 14 | 15. Movement Summary Calculation Flow | - | rejected: unverifiable |
+| 783afe7dbb | app/inventory-management/stock-overview/inventory-balance/FD-inventory-balance.md:309 | flowchart | 7 | 16. Quantity Change Display Flow | - | rejected: unverifiable |
 | 404bd7f1c6 | app/inventory-management/stock-overview/inventory-balance/TS-inventory-balance.md:22 | graph | 17 | 1. System Architecture | - | out-of-scope (filter: prototype heading) |
 | 529238d31f | app/inventory-management/stock-overview/inventory-balance/TS-inventory-balance.md:56 | graph | 3 | 2. Page Hierarchy | - | out-of-scope (filter: prototype heading) |
-| 8b9a48b600 | app/inventory-management/stock-overview/inventory-balance/TS-inventory-balance.md:438 | sequenceDiagram | 19 | 6. Data Flow | inventory/03-user-flow | candidate |
+| 8b9a48b600 | app/inventory-management/stock-overview/inventory-balance/TS-inventory-balance.md:438 | sequenceDiagram | 19 | 6. Data Flow | - | rejected: unverifiable |
 | eaa924110e | app/inventory-management/stock-overview/slow-moving/DD-slow-moving.md:32 | erDiagram | 36 | Entity-Relationship Diagram | - | out-of-scope (filter: stmts > 25) |
 | f3f68b8221 | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:22 | flowchart | 14 | 1. Page Load Flow | - | out-of-scope (filter: prototype heading) |
-| df25c036ae | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:46 | flowchart | 11 | 2. Risk Level Calculation Flow | inventory/03-user-flow | candidate |
-| c44bb8140b | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:67 | flowchart | 13 | 3. Alert Generation Flow | inventory/03-user-flow | candidate |
-| f0b9e6ebfc | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:90 | flowchart | 9 | 4. Summary Statistics Calculation Flow | inventory/03-user-flow | candidate |
-| 270eae619a | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:109 | flowchart | 16 | 5. Filter Application Flow | inventory/03-user-flow | candidate |
+| df25c036ae | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:46 | flowchart | 11 | 2. Risk Level Calculation Flow | - | rejected: unverifiable |
+| c44bb8140b | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:67 | flowchart | 13 | 3. Alert Generation Flow | - | rejected: unverifiable |
+| f0b9e6ebfc | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:90 | flowchart | 9 | 4. Summary Statistics Calculation Flow | - | rejected: unverifiable |
+| 270eae619a | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:109 | flowchart | 16 | 5. Filter Application Flow | - | rejected: unverifiable |
 | f801c56c7a | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:135 | flowchart | 6 | 6. Tab Navigation Flow | - | out-of-scope (filter: prototype heading) |
-| 018f40fb13 | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:152 | flowchart | 10 | 7. Analytics Chart Generation Flow | inventory/03-user-flow | candidate |
-| 5da6c3ce63 | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:174 | flowchart | 11 | 8. Category Breakdown Flow | inventory/03-user-flow | candidate |
-| 41ba57d548 | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:195 | flowchart | 12 | 9. Location Breakdown Flow | inventory/03-user-flow | candidate |
-| 72016306af | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:217 | flowchart | 13 | 10. Quick Actions Flow | inventory/03-user-flow | candidate |
-| 3d6e90ee13 | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:244 | flowchart | 13 | 11. Recommended Actions by Risk Flow | inventory/03-user-flow | candidate |
-| 077e90aaac | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:269 | flowchart | 7 | 12. View Mode Switch Flow | inventory/03-user-flow | candidate |
-| 87801b4f8b | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:286 | flowchart | 10 | 13. Permission Check Flow | inventory/03-user-flow | candidate |
-| 6884219be0 | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:304 | flowchart | 7 | 14. Export Flow | inventory/03-user-flow | candidate |
-| 168c37da31 | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:319 | flowchart | 8 | 15. Grouped View Expand/Collapse Flow | inventory/03-user-flow | candidate |
-| 842ac5cc59 | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:335 | flowchart | 8 | 16. Risk Distribution Chart Render Flow | inventory/03-user-flow | candidate |
-| 1e6671fe2c | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:353 | flowchart | 8 | 17. Aging Distribution Chart Render Flow | inventory/03-user-flow | candidate |
-| 076ee359fd | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:371 | flowchart | 9 | 18. Action Summary Cards Flow | inventory/03-user-flow | candidate |
+| 018f40fb13 | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:152 | flowchart | 10 | 7. Analytics Chart Generation Flow | - | rejected: unverifiable |
+| 5da6c3ce63 | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:174 | flowchart | 11 | 8. Category Breakdown Flow | - | rejected: unverifiable |
+| 41ba57d548 | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:195 | flowchart | 12 | 9. Location Breakdown Flow | - | rejected: unverifiable |
+| 72016306af | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:217 | flowchart | 13 | 10. Quick Actions Flow | - | rejected: unverifiable |
+| 3d6e90ee13 | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:244 | flowchart | 13 | 11. Recommended Actions by Risk Flow | - | rejected: unverifiable |
+| 077e90aaac | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:269 | flowchart | 7 | 12. View Mode Switch Flow | - | rejected: unverifiable |
+| 87801b4f8b | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:286 | flowchart | 10 | 13. Permission Check Flow | - | rejected: unverifiable |
+| 6884219be0 | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:304 | flowchart | 7 | 14. Export Flow | - | rejected: unverifiable |
+| 168c37da31 | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:319 | flowchart | 8 | 15. Grouped View Expand/Collapse Flow | - | rejected: unverifiable |
+| 842ac5cc59 | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:335 | flowchart | 8 | 16. Risk Distribution Chart Render Flow | - | rejected: unverifiable |
+| 1e6671fe2c | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:353 | flowchart | 8 | 17. Aging Distribution Chart Render Flow | - | rejected: unverifiable |
+| 076ee359fd | app/inventory-management/stock-overview/slow-moving/FD-slow-moving.md:371 | flowchart | 9 | 18. Action Summary Cards Flow | - | rejected: unverifiable |
 | dc513fa854 | app/inventory-management/stock-overview/slow-moving/TS-slow-moving.md:22 | graph | 17 | 1. System Architecture | - | out-of-scope (filter: prototype heading) |
 | b28763ab1a | app/inventory-management/stock-overview/slow-moving/TS-slow-moving.md:59 | graph | 4 | 2. Page Hierarchy | - | out-of-scope (filter: prototype heading) |
-| d61e02c76e | app/inventory-management/stock-overview/slow-moving/TS-slow-moving.md:440 | sequenceDiagram | 22 | 10. Data Flow | inventory/03-user-flow | candidate |
+| d61e02c76e | app/inventory-management/stock-overview/slow-moving/TS-slow-moving.md:440 | sequenceDiagram | 22 | 10. Data Flow | - | rejected: unverifiable |
 | fa8d075644 | app/inventory-management/stock-overview/stock-cards/DD-stock-cards.md:32 | erDiagram | 32 | Entity-Relationship Diagram | - | out-of-scope (filter: stmts > 25) |
 | cbe86e9531 | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:22 | flowchart | 11 | 1. Page Load Flow | - | out-of-scope (filter: prototype heading) |
-| 3235d59fff | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:43 | flowchart | 11 | 2. Analytics Data Calculation Flow | inventory/03-user-flow | candidate |
-| 422ce84adf | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:64 | flowchart | 11 | 3. Movement Trend Calculation Flow | inventory/03-user-flow | candidate |
-| cb47884c65 | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:85 | flowchart | 18 | 4. Alert Generation Flow | inventory/03-user-flow | candidate |
-| 12627e8fc7 | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:113 | flowchart | 8 | 5. Stock Status Calculation Flow | inventory/03-user-flow | candidate |
-| 19758eb348 | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:131 | flowchart | 15 | 6. Days of Supply Calculation Flow | inventory/03-user-flow | candidate |
+| 3235d59fff | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:43 | flowchart | 11 | 2. Analytics Data Calculation Flow | - | rejected: unverifiable |
+| 422ce84adf | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:64 | flowchart | 11 | 3. Movement Trend Calculation Flow | - | rejected: unverifiable |
+| cb47884c65 | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:85 | flowchart | 18 | 4. Alert Generation Flow | - | rejected: unverifiable |
+| 12627e8fc7 | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:113 | flowchart | 8 | 5. Stock Status Calculation Flow | - | rejected: unverifiable |
+| 19758eb348 | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:131 | flowchart | 15 | 6. Days of Supply Calculation Flow | - | rejected: unverifiable |
 | 22bcbec98f | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:156 | flowchart | 13 | 7. Tab Navigation Flow | - | out-of-scope (filter: prototype heading) |
-| d93b4dee1f | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:180 | flowchart | 10 | 8. Location Distribution Calculation Flow | inventory/03-user-flow | candidate |
-| e55c9a8551 | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:200 | flowchart | 19 | 9. Lot Status Distribution Flow | inventory/03-user-flow | candidate |
-| f1038ce933 | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:229 | flowchart | 19 | 10. Summary Cards Render Flow | inventory/03-user-flow | candidate |
-| 1e516826b5 | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:263 | flowchart | 10 | 11. Quick Actions Flow | inventory/03-user-flow | candidate |
-| 4fddd2f3e7 | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:286 | flowchart | 14 | 12. Recommended Actions Flow | inventory/03-user-flow | candidate |
-| 82125a7f93 | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:310 | flowchart | 10 | 13. Header Actions Flow | inventory/03-user-flow | candidate |
-| 3557b18e81 | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:328 | flowchart | 9 | 14. Loading State Flow | inventory/03-user-flow | candidate |
-| 4a6b0dc1c6 | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:347 | flowchart | 7 | 15. Error State Flow | inventory/03-user-flow | candidate |
-| 4cf315dc95 | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:364 | flowchart | 10 | 16. Movement by Type Calculation Flow | inventory/03-user-flow | candidate |
+| d93b4dee1f | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:180 | flowchart | 10 | 8. Location Distribution Calculation Flow | - | rejected: unverifiable |
+| e55c9a8551 | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:200 | flowchart | 19 | 9. Lot Status Distribution Flow | - | rejected: unverifiable |
+| f1038ce933 | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:229 | flowchart | 19 | 10. Summary Cards Render Flow | - | rejected: unverifiable |
+| 1e516826b5 | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:263 | flowchart | 10 | 11. Quick Actions Flow | - | rejected: unverifiable |
+| 4fddd2f3e7 | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:286 | flowchart | 14 | 12. Recommended Actions Flow | - | rejected: unverifiable |
+| 82125a7f93 | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:310 | flowchart | 10 | 13. Header Actions Flow | - | rejected: unverifiable |
+| 3557b18e81 | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:328 | flowchart | 9 | 14. Loading State Flow | - | rejected: unverifiable |
+| 4a6b0dc1c6 | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:347 | flowchart | 7 | 15. Error State Flow | - | rejected: unverifiable |
+| 4cf315dc95 | app/inventory-management/stock-overview/stock-cards/FD-stock-cards.md:364 | flowchart | 10 | 16. Movement by Type Calculation Flow | - | rejected: unverifiable |
 | c7a458ae87 | app/inventory-management/stock-overview/stock-cards/TS-stock-cards.md:22 | graph | 21 | 1. System Architecture | - | out-of-scope (filter: prototype heading) |
 | c04e6bf579 | app/inventory-management/stock-overview/stock-cards/TS-stock-cards.md:63 | graph | 7 | 2. Page Hierarchy | - | out-of-scope (filter: prototype heading) |
-| b7803b43db | app/inventory-management/stock-overview/stock-cards/TS-stock-cards.md:487 | sequenceDiagram | 14 | 10. Data Flow | inventory/03-user-flow | candidate |
-| c2c4784b21 | app/inventory-management/transactions/DD-inventory-transactions.md:281 | erDiagram | 9 | 5. Entity Relationships | inventory/01-data-model | candidate |
+| b7803b43db | app/inventory-management/stock-overview/stock-cards/TS-stock-cards.md:487 | sequenceDiagram | 14 | 10. Data Flow | - | rejected: unverifiable |
+| c2c4784b21 | app/inventory-management/transactions/DD-inventory-transactions.md:281 | erDiagram | 9 | 5. Entity Relationships | inventory/01-data-model | imported |
 | 32a626d9ec | app/inventory-management/transactions/FD-inventory-transactions.md:21 | flowchart | 15 | 1. Page Load Flow | - | out-of-scope (filter: prototype heading) |
-| 294b2d832b | app/inventory-management/transactions/FD-inventory-transactions.md:46 | flowchart | 16 | 2. Filter Application Flow | inventory/03-user-flow | candidate |
-| 0d53e8f42d | app/inventory-management/transactions/FD-inventory-transactions.md:72 | flowchart | 22 | 3. Transaction Type Flow | inventory/03-user-flow | candidate |
-| 60e7ad4831 | app/inventory-management/transactions/FD-inventory-transactions.md:112 | flowchart | 10 | 4. Sorting Flow | inventory/03-user-flow | candidate |
-| 3eeff33543 | app/inventory-management/transactions/FD-inventory-transactions.md:132 | flowchart | 14 | 5. Pagination Flow | inventory/03-user-flow | candidate |
-| 7787c1b627 | app/inventory-management/transactions/FD-inventory-transactions.md:159 | flowchart | 11 | 6. CSV Export Flow | inventory/03-user-flow | candidate |
+| 294b2d832b | app/inventory-management/transactions/FD-inventory-transactions.md:46 | flowchart | 16 | 2. Filter Application Flow | - | rejected: diverges |
+| 0d53e8f42d | app/inventory-management/transactions/FD-inventory-transactions.md:72 | flowchart | 22 | 3. Transaction Type Flow | - | rejected: diverges |
+| 60e7ad4831 | app/inventory-management/transactions/FD-inventory-transactions.md:112 | flowchart | 10 | 4. Sorting Flow | - | rejected: diverges |
+| 3eeff33543 | app/inventory-management/transactions/FD-inventory-transactions.md:132 | flowchart | 14 | 5. Pagination Flow | - | rejected: diverges |
+| 7787c1b627 | app/inventory-management/transactions/FD-inventory-transactions.md:159 | flowchart | 11 | 6. CSV Export Flow | - | rejected: diverges |
 | a711f295d0 | app/inventory-management/transactions/FD-inventory-transactions.md:180 | flowchart | 4 | 7. Tab Navigation Flow | - | out-of-scope (filter: prototype heading) |
-| 9cb67e59e7 | app/inventory-management/transactions/FD-inventory-transactions.md:195 | flowchart | 16 | 8. Location Access Control Flow | inventory/03-user-flow | candidate |
-| f8eae4b91e | app/inventory-management/transactions/FD-inventory-transactions.md:221 | flowchart | 8 | 9. Analytics Rendering Flow | inventory/03-user-flow | candidate |
-| 6874758c4e | app/inventory-management/transactions/FD-inventory-transactions.md:239 | flowchart | 11 | 10. Quick Date Filter Flow | inventory/03-user-flow | candidate |
-| 77f9b10c22 | app/inventory-management/transactions/FD-inventory-transactions.md:260 | flowchart | 13 | 11. Search Filter Flow | inventory/03-user-flow | candidate |
-| d1b4a00bf3 | app/inventory-management/transactions/FD-inventory-transactions.md:283 | flowchart | 18 | 12. Summary Calculation Flow | inventory/03-user-flow | candidate |
+| 9cb67e59e7 | app/inventory-management/transactions/FD-inventory-transactions.md:195 | flowchart | 16 | 8. Location Access Control Flow | - | rejected: diverges |
+| f8eae4b91e | app/inventory-management/transactions/FD-inventory-transactions.md:221 | flowchart | 8 | 9. Analytics Rendering Flow | - | rejected: diverges |
+| 6874758c4e | app/inventory-management/transactions/FD-inventory-transactions.md:239 | flowchart | 11 | 10. Quick Date Filter Flow | inventory/03-user-flow-store-keeper | imported |
+| 77f9b10c22 | app/inventory-management/transactions/FD-inventory-transactions.md:260 | flowchart | 13 | 11. Search Filter Flow | - | rejected: diverges |
+| d1b4a00bf3 | app/inventory-management/transactions/FD-inventory-transactions.md:283 | flowchart | 18 | 12. Summary Calculation Flow | - | rejected: diverges |
 | 9551edf1c4 | app/inventory-management/transactions/TS-inventory-transactions.md:21 | graph | 20 | 1. System Architecture | - | out-of-scope (filter: prototype heading) |
 | e409259e32 | app/inventory-management/transactions/TS-inventory-transactions.md:58 | graph | 3 | 2. Page Hierarchy | - | out-of-scope (filter: prototype heading) |
-| 87e72e8d3f | app/inventory-management/transactions/TS-inventory-transactions.md:208 | sequenceDiagram | 16 | 4. Data Flow | inventory/03-user-flow | candidate |
+| 87e72e8d3f | app/inventory-management/transactions/TS-inventory-transactions.md:208 | sequenceDiagram | 16 | 4. Data Flow | - | rejected: diverges |
 | 765e74e50d | documents/inv/inventory-management-sitemap.md:8 | graph | 108 | Document History | - | out-of-scope (filter: not docs/app) |
 | 1ea51d3c82 | documents/inv/inventory-management-sitemap.md:177 | flowchart | 23 | Module Navigation Flow | - | out-of-scope (filter: not docs/app) |
 | 1650bf0eec | documents/inv/inventory-management-sitemap.md:218 | sequenceDiagram | 24 | Data Flow Patterns | - | out-of-scope (filter: not docs/app) |
@@ -498,36 +502,36 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 | id | source:line | type | stmts | heading | wiki page | status |
 |---|---|---|---|---|---|---|
 | bd8d935733 | app/inventory-management/inventory-adjustments/DD-inventory-adjustments.md:69 | erDiagram | 100 | Entity-Relationship Diagram | - | out-of-scope (filter: stmts > 25) |
-| 7da5e5a68d | app/inventory-management/inventory-adjustments/FD-inventory-adjustments.md:76 | flowchart | 22 | 1. Adjustment List Search/Filter/Sort Flow | inventory-adjustment/03-user-flow | candidate |
+| 7da5e5a68d | app/inventory-management/inventory-adjustments/FD-inventory-adjustments.md:76 | flowchart | 22 | 1. Adjustment List Search/Filter/Sort Flow | - | rejected: covered |
 | be229dfedd | app/inventory-management/inventory-adjustments/FD-inventory-adjustments.md:139 | flowchart | 24 | 2. Adjustment Detail View Navigation Flow | - | out-of-scope (filter: prototype heading) |
 | f444ab7618 | app/inventory-management/inventory-adjustments/FD-inventory-adjustments.md:204 | stateDiagram-v2 | 36 | 3. Tab Navigation Flow | - | out-of-scope (filter: prototype heading) |
 | 4d91ac01c1 | app/inventory-management/inventory-adjustments/FD-inventory-adjustments.md:283 | flowchart | 39 | 4. Status Action Flow | - | out-of-scope (filter: stmts > 25) |
 | 4ed8175ae9 | app/inventory-management/inventory-adjustments/FD-inventory-adjustments.md:380 | flowchart | 45 | 5. Adjustment Creation Flow | - | out-of-scope (filter: stmts > 25) |
 | cf244c1865 | app/inventory-management/inventory-adjustments/FD-inventory-adjustments.md:499 | flowchart | 28 | 6. Journal Entry Generation Flow | - | out-of-scope (filter: stmts > 25) |
-| c7b922ecc8 | app/inventory-management/inventory-adjustments/FD-inventory-adjustments.md:599 | flowchart | 25 | 7. Stock Balance Update Flow | inventory-adjustment/03-user-flow | candidate |
-| 7c56dd46c4 | app/inventory-management/inventory-adjustments/FD-inventory-adjustments.md:716 | flowchart | 17 | 8. Lot-Level Tracking Flow | inventory-adjustment/03-user-flow | candidate |
+| c7b922ecc8 | app/inventory-management/inventory-adjustments/FD-inventory-adjustments.md:599 | flowchart | 25 | 7. Stock Balance Update Flow | - | rejected: diverges |
+| 7c56dd46c4 | app/inventory-management/inventory-adjustments/FD-inventory-adjustments.md:716 | flowchart | 17 | 8. Lot-Level Tracking Flow | - | rejected: diverges |
 | 13ded576ce | app/inventory-management/inventory-adjustments/FD-inventory-adjustments.md:824 | stateDiagram-v2 | 51 | 9. Status State Machine Flow | - | out-of-scope (filter: stmts > 25) |
 | 147593e083 | app/inventory-management/inventory-adjustments/FD-inventory-adjustments.md:918 | flowchart | 35 | 10. Post Adjustment Workflow | - | out-of-scope (filter: stmts > 25) |
 | 5751159acf | app/inventory-management/inventory-adjustments/FD-inventory-adjustments.md:1011 | flowchart | 36 | 11. Void Adjustment Workflow | - | out-of-scope (filter: stmts > 25) |
 | 49c185bc54 | app/inventory-management/inventory-adjustments/FD-inventory-adjustments.md:1105 | flowchart | 31 | 12. Permission-Based Access Flow | - | out-of-scope (filter: stmts > 25) |
 | 5dc1b340af | app/inventory-management/inventory-adjustments/TS-inventory-adjustments.md:71 | graph | 43 | High-Level System Architecture | - | out-of-scope (filter: prototype heading) |
 | d80d033781 | app/inventory-management/inventory-adjustments/TS-inventory-adjustments.md:193 | graph | 15 | Page Hierarchy | - | out-of-scope (filter: prototype heading) |
-| 6b41be8117 | app/inventory-management/inventory-adjustments/TS-inventory-adjustments.md:419 | flowchart | 20 | Adjustment List Search/Filter/Sort Flow | inventory-adjustment/03-user-flow | candidate |
+| 6b41be8117 | app/inventory-management/inventory-adjustments/TS-inventory-adjustments.md:419 | flowchart | 20 | Adjustment List Search/Filter/Sort Flow | inventory-adjustment/03-user-flow | imported |
 | bead0d7a0c | app/inventory-management/inventory-adjustments/TS-inventory-adjustments.md:452 | flowchart | 38 | Adjustment Detail View Flow | - | out-of-scope (filter: stmts > 25) |
-| 85c42576f6 | app/inventory-management/inventory-adjustments/TS-inventory-adjustments.md:513 | flowchart | 20 | Status Workflow State Machine | inventory-adjustment/03-user-flow | candidate |
+| 85c42576f6 | app/inventory-management/inventory-adjustments/TS-inventory-adjustments.md:513 | flowchart | 20 | Status Workflow State Machine | - | rejected: diverges |
 | 858410c541 | app/inventory-management/inventory-adjustments/TS-inventory-adjustments.md:555 | flowchart | 32 | Journal Entry Generation Flow | - | out-of-scope (filter: stmts > 25) |
 | 0cf20eb3b2 | app/inventory-management/inventory-adjustments/TS-inventory-adjustments.md:616 | graph | 25 | Enhanced Page Hierarchy | - | out-of-scope (filter: prototype heading) |
 | 465a020d4c | app/inventory-management/transaction-categories/DD-transaction-categories.md:28 | erDiagram | 27 | Data Model Overview | - | out-of-scope (filter: stmts > 25) |
 | 527cb4dbc8 | app/inventory-management/transaction-categories/FD-transaction-categories.md:28 | flowchart | 26 | 1. Category List Page Flow | - | out-of-scope (filter: stmts > 25) |
 | a83c084849 | app/inventory-management/transaction-categories/FD-transaction-categories.md:77 | flowchart | 29 | 2. Create Category Flow | - | out-of-scope (filter: stmts > 25) |
 | 3e1e9f73d9 | app/inventory-management/transaction-categories/FD-transaction-categories.md:128 | flowchart | 37 | 3. Category Detail Page Flow | - | out-of-scope (filter: stmts > 25) |
-| 1ae97bb467 | app/inventory-management/transaction-categories/FD-transaction-categories.md:192 | flowchart | 13 | 4. Filter Pipeline Flow | inventory-adjustment/03-user-flow | candidate |
-| 007ffb41a0 | app/inventory-management/transaction-categories/FD-transaction-categories.md:222 | flowchart | 15 | 5. Category-Reason Selection in Adjustments | inventory-adjustment/03-user-flow | candidate |
-| af6ef20ffa | app/inventory-management/transaction-categories/FD-transaction-categories.md:257 | flowchart | 8 | 6. GL Account Mapping Flow | inventory-adjustment/03-user-flow | candidate |
-| c83a61c5a7 | app/inventory-management/transaction-categories/FD-transaction-categories.md:279 | stateDiagram-v2 | 17 | 7. Status State Diagram | inventory-adjustment/02-business-rules | candidate |
-| 16fdceb843 | app/inventory-management/transaction-categories/FD-transaction-categories.md:313 | flowchart | 19 | 8. Permission Flow | inventory-adjustment/03-user-flow | candidate |
-| 5b009a4592 | app/inventory-management/transaction-categories/TS-transaction-categories.md:30 | graph | 10 | Module Integration | inventory-adjustment/03-user-flow | candidate |
-| 571a689456 | app/inventory-management/transaction-categories/TS-transaction-categories.md:55 | flowchart | 7 | Data Flow | inventory-adjustment/03-user-flow | candidate |
+| 1ae97bb467 | app/inventory-management/transaction-categories/FD-transaction-categories.md:192 | flowchart | 13 | 4. Filter Pipeline Flow | - | rejected: diverges |
+| 007ffb41a0 | app/inventory-management/transaction-categories/FD-transaction-categories.md:222 | flowchart | 15 | 5. Category-Reason Selection in Adjustments | - | rejected: diverges |
+| af6ef20ffa | app/inventory-management/transaction-categories/FD-transaction-categories.md:257 | flowchart | 8 | 6. GL Account Mapping Flow | - | rejected: diverges |
+| c83a61c5a7 | app/inventory-management/transaction-categories/FD-transaction-categories.md:279 | stateDiagram-v2 | 17 | 7. Status State Diagram | - | rejected: diverges |
+| 16fdceb843 | app/inventory-management/transaction-categories/FD-transaction-categories.md:313 | flowchart | 19 | 8. Permission Flow | - | rejected: diverges |
+| 5b009a4592 | app/inventory-management/transaction-categories/TS-transaction-categories.md:30 | graph | 10 | Module Integration | - | rejected: diverges |
+| 571a689456 | app/inventory-management/transaction-categories/TS-transaction-categories.md:55 | flowchart | 7 | Data Flow | - | rejected: diverges |
 | 3fa384e7a1 | app/inventory-management/transaction-categories/TS-transaction-categories.md:107 | graph | 20 | Component Hierarchy | - | out-of-scope (filter: prototype heading) |
 | eecabc618d | app/inventory-management/transaction-categories/TS-transaction-categories.md:197 | sequenceDiagram | 10 | List to Detail Navigation | - | out-of-scope (filter: prototype heading) |
 | 48128d4259 | app/inventory-management/transaction-categories/TS-transaction-categories.md:214 | sequenceDiagram | 10 | Create Category Navigation | - | out-of-scope (filter: prototype heading) |
@@ -567,91 +571,91 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 
 | id | source:line | type | stmts | heading | wiki page | status |
 |---|---|---|---|---|---|---|
-| 33cd8dc70b | app/finance/currency-management/FD-currency-management.md:51 | flowchart | 17 | FD-CUR-001: Currency List Display | master-data/(choose) | candidate |
-| 25659afee8 | app/finance/currency-management/FD-currency-management.md:80 | flowchart | 9 | FD-CUR-002: Filter Logic | master-data/(choose) | candidate |
-| 3d068f4081 | app/finance/currency-management/FD-currency-management.md:102 | flowchart | 17 | FD-CUR-003: Create New Currency | master-data/(choose) | candidate |
-| 25f47b5941 | app/finance/currency-management/FD-currency-management.md:128 | stateDiagram-v2 | 9 | FD-CUR-004: Create Dialog State Flow | master-data/(choose) | candidate |
-| f731cf6079 | app/finance/currency-management/FD-currency-management.md:147 | flowchart | 16 | FD-CUR-005: Edit Existing Currency | master-data/(choose) | candidate |
-| aeabc110ef | app/finance/currency-management/FD-currency-management.md:177 | flowchart | 6 | FD-CUR-006: Single Delete | master-data/(choose) | candidate |
-| 35c7558b9e | app/finance/currency-management/FD-currency-management.md:191 | flowchart | 9 | FD-CUR-007: Bulk Delete | master-data/(choose) | candidate |
+| 33cd8dc70b | app/finance/currency-management/FD-currency-management.md:51 | flowchart | 17 | FD-CUR-001: Currency List Display | - | rejected: diverges |
+| 25659afee8 | app/finance/currency-management/FD-currency-management.md:80 | flowchart | 9 | FD-CUR-002: Filter Logic | master-data/currency | imported |
+| 3d068f4081 | app/finance/currency-management/FD-currency-management.md:102 | flowchart | 17 | FD-CUR-003: Create New Currency | - | rejected: diverges |
+| 25f47b5941 | app/finance/currency-management/FD-currency-management.md:128 | stateDiagram-v2 | 9 | FD-CUR-004: Create Dialog State Flow | - | rejected: diverges |
+| f731cf6079 | app/finance/currency-management/FD-currency-management.md:147 | flowchart | 16 | FD-CUR-005: Edit Existing Currency | - | rejected: diverges |
+| aeabc110ef | app/finance/currency-management/FD-currency-management.md:177 | flowchart | 6 | FD-CUR-006: Single Delete | - | rejected: diverges |
+| 35c7558b9e | app/finance/currency-management/FD-currency-management.md:191 | flowchart | 9 | FD-CUR-007: Bulk Delete | - | rejected: unverifiable |
 | c5bc957f29 | app/finance/currency-management/FD-currency-management.md:212 | flowchart | 27 | FD-CUR-008: UI Component Structure | - | out-of-scope (filter: prototype heading) |
-| 92fde79cbd | app/finance/currency-management/FD-currency-management.md:256 | flowchart | 15 | FD-CUR-009: State Relationships | master-data/(choose) | candidate |
-| 4bf831a8fe | app/finance/currency-management/FD-currency-management.md:294 | flowchart | 20 | FD-CUR-010: Data Flow | master-data/(choose) | candidate |
-| 9aeff324c3 | app/finance/currency-management/FD-currency-management.md:334 | flowchart | 25 | FD-CUR-011: Complete User Journey | master-data/(choose) | candidate |
+| 92fde79cbd | app/finance/currency-management/FD-currency-management.md:256 | flowchart | 15 | FD-CUR-009: State Relationships | - | rejected: unverifiable |
+| 4bf831a8fe | app/finance/currency-management/FD-currency-management.md:294 | flowchart | 20 | FD-CUR-010: Data Flow | - | rejected: diverges |
+| 9aeff324c3 | app/finance/currency-management/FD-currency-management.md:334 | flowchart | 25 | FD-CUR-011: Complete User Journey | - | rejected: diverges |
 | 2c79cbfd7a | app/finance/department-management/FD-department-management.md:54 | flowchart | 23 | FD-DEPT-001: Module Navigation | - | out-of-scope (filter: prototype heading) |
-| 2587822081 | app/finance/department-management/FD-department-management.md:94 | flowchart | 10 | FD-DEPT-002: List Page Display | master-data/(choose) | candidate |
-| b666b95292 | app/finance/department-management/FD-department-management.md:112 | flowchart | 10 | FD-DEPT-003: List Actions | master-data/(choose) | candidate |
-| b7f949a177 | app/finance/department-management/FD-department-management.md:135 | flowchart | 20 | FD-DEPT-004: Create New Department | master-data/(choose) | candidate |
-| 6a35c09048 | app/finance/department-management/FD-department-management.md:167 | flowchart | 14 | FD-DEPT-005: Form Sections | master-data/(choose) | candidate |
-| daabc83c61 | app/finance/department-management/FD-department-management.md:195 | flowchart | 22 | FD-DEPT-006: Edit Existing Department | master-data/(choose) | candidate |
-| 13dde3dcbf | app/finance/department-management/FD-department-management.md:231 | flowchart | 10 | FD-DEPT-007: Delete Confirmation | master-data/(choose) | candidate |
-| 08ec7270e9 | app/finance/department-management/FD-department-management.md:255 | flowchart | 23 | FD-DEPT-008: Dual-Pane User Picker | master-data/(choose) | candidate |
-| 7c0c5fb0de | app/finance/department-management/FD-department-management.md:292 | stateDiagram-v2 | 11 | FD-DEPT-009: User Selection State | master-data/(choose) | candidate |
-| 017ad7d2de | app/finance/department-management/FD-department-management.md:317 | flowchart | 19 | FD-DEPT-010: Dual-Pane Location Picker | master-data/(choose) | candidate |
+| 2587822081 | app/finance/department-management/FD-department-management.md:94 | flowchart | 10 | FD-DEPT-002: List Page Display | - | rejected: covered |
+| b666b95292 | app/finance/department-management/FD-department-management.md:112 | flowchart | 10 | FD-DEPT-003: List Actions | master-data/department | imported |
+| b7f949a177 | app/finance/department-management/FD-department-management.md:135 | flowchart | 20 | FD-DEPT-004: Create New Department | - | rejected: diverges |
+| 6a35c09048 | app/finance/department-management/FD-department-management.md:167 | flowchart | 14 | FD-DEPT-005: Form Sections | - | rejected: diverges |
+| daabc83c61 | app/finance/department-management/FD-department-management.md:195 | flowchart | 22 | FD-DEPT-006: Edit Existing Department | - | rejected: diverges |
+| 13dde3dcbf | app/finance/department-management/FD-department-management.md:231 | flowchart | 10 | FD-DEPT-007: Delete Confirmation | - | rejected: diverges |
+| 08ec7270e9 | app/finance/department-management/FD-department-management.md:255 | flowchart | 23 | FD-DEPT-008: Dual-Pane User Picker | master-data/department | imported |
+| 7c0c5fb0de | app/finance/department-management/FD-department-management.md:292 | stateDiagram-v2 | 11 | FD-DEPT-009: User Selection State | - | rejected: unverifiable |
+| 017ad7d2de | app/finance/department-management/FD-department-management.md:317 | flowchart | 19 | FD-DEPT-010: Dual-Pane Location Picker | - | rejected: diverges |
 | a2cb8bfb31 | app/finance/department-management/FD-department-management.md:353 | flowchart | 23 | FD-DEPT-011: State Management | - | out-of-scope (filter: prototype heading) |
-| 63498c3a44 | app/finance/department-management/FD-department-management.md:396 | flowchart | 18 | FD-DEPT-012: Data Flow | master-data/(choose) | candidate |
+| 63498c3a44 | app/finance/department-management/FD-department-management.md:396 | flowchart | 18 | FD-DEPT-012: Data Flow | - | rejected: diverges |
 | e4c07dbb72 | app/finance/exchange-rate-management/FD-exchange-rate-management.md:51 | graph | 5 | Page Load Flow | - | out-of-scope (filter: prototype heading) |
-| 9d14115be1 | app/finance/exchange-rate-management/FD-exchange-rate-management.md:66 | graph | 15 | Add Rate Flow | master-data/(choose) | candidate |
-| e469d1e248 | app/finance/exchange-rate-management/FD-exchange-rate-management.md:96 | graph | 15 | Edit Rate Flow | master-data/(choose) | candidate |
-| 49a6aa2e74 | app/finance/exchange-rate-management/FD-exchange-rate-management.md:128 | graph | 7 | Delete Rate Flow | master-data/(choose) | candidate |
-| f07c2affb8 | app/finance/exchange-rate-management/FD-exchange-rate-management.md:150 | graph | 8 | Search Flow | master-data/(choose) | candidate |
+| 9d14115be1 | app/finance/exchange-rate-management/FD-exchange-rate-management.md:66 | graph | 15 | Add Rate Flow | - | rejected: diverges |
+| e469d1e248 | app/finance/exchange-rate-management/FD-exchange-rate-management.md:96 | graph | 15 | Edit Rate Flow | - | rejected: diverges |
+| 49a6aa2e74 | app/finance/exchange-rate-management/FD-exchange-rate-management.md:128 | graph | 7 | Delete Rate Flow | - | rejected: diverges |
+| f07c2affb8 | app/finance/exchange-rate-management/FD-exchange-rate-management.md:150 | graph | 8 | Search Flow | - | rejected: diverges |
 | e27e84b103 | app/finance/exchange-rate-management/FD-exchange-rate-management.md:174 | sequenceDiagram | 16 | Component Interaction | - | out-of-scope (filter: prototype heading) |
-| 81a49ddbb3 | app/finance/exchange-rate-management/FD-exchange-rate-management.md:201 | stateDiagram-v2 | 12 | State Transitions | master-data/(choose) | candidate |
-| f0c431e236 | app/finance/exchange-rate-management/FD-exchange-rate-management.md:225 | graph | 5 | Print Flow | master-data/(choose) | candidate |
+| 81a49ddbb3 | app/finance/exchange-rate-management/FD-exchange-rate-management.md:201 | stateDiagram-v2 | 12 | State Transitions | - | rejected: diverges |
+| f0c431e236 | app/finance/exchange-rate-management/FD-exchange-rate-management.md:225 | graph | 5 | Print Flow | - | rejected: diverges |
 | e289aaa8ac | app/finance/exchange-rate-management/TS-exchange-rate-management.md:39 | graph | 11 | System Architecture | - | out-of-scope (filter: prototype heading) |
 | 0e799951ed | app/finance/exchange-rate-management/TS-exchange-rate-management.md:112 | graph | 19 | Component Hierarchy | - | out-of-scope (filter: prototype heading) |
-| 9c65688e3c | app/finance/exchange-rate-management/TS-exchange-rate-management.md:156 | stateDiagram-v2 | 9 | State Flow | master-data/(choose) | candidate |
+| 9c65688e3c | app/finance/exchange-rate-management/TS-exchange-rate-management.md:156 | stateDiagram-v2 | 9 | State Flow | - | rejected: diverges |
 | 308a784f32 | app/product-management/units/FD-units.md:69 | erDiagram | 61 | Unit Entity Relationships | - | out-of-scope (filter: stmts > 25) |
-| f749b2e928 | app/product-management/units/FD-units.md:189 | flowchart | 23 | High-Level List View Process | master-data/(choose) | candidate |
+| f749b2e928 | app/product-management/units/FD-units.md:189 | flowchart | 23 | High-Level List View Process | - | rejected: diverges |
 | 47501545c8 | app/product-management/units/FD-units.md:262 | flowchart | 27 | Unit Creation Process Flow | - | out-of-scope (filter: stmts > 25) |
 | 2e7bfccc82 | app/product-management/units/FD-units.md:348 | flowchart | 34 | Unit Modification Process Flow | - | out-of-scope (filter: stmts > 25) |
 | e72a59e260 | app/product-management/units/FD-units.md:450 | flowchart | 31 | Unit Soft-Delete Process Flow | - | out-of-scope (filter: stmts > 25) |
 | 1127b5739b | app/product-management/units/FD-units.md:554 | flowchart | 31 | Real-Time Search and Filter Process | - | out-of-scope (filter: stmts > 25) |
-| 13e98e694a | app/product-management/units/FD-units.md:676 | flowchart | 11 | Table/Card View Switching | master-data/(choose) | candidate |
+| 13e98e694a | app/product-management/units/FD-units.md:676 | flowchart | 11 | Table/Card View Switching | - | rejected: diverges |
 | 0600b551df | app/product-management/units/FD-units.md:733 | stateDiagram-v2 | 26 | Unit Status State Transitions | - | out-of-scope (filter: stmts > 25) |
 | efd20c9b43 | app/product-management/units/FD-units.md:869 | flowchart | 39 | Frontend Component Communication Flow | - | out-of-scope (filter: prototype heading) |
 | 4a8bbfdb2b | app/product-management/units/FD-units.md:1003 | flowchart | 11 | Level 0: Context Diagram | - | out-of-scope (filter: prototype heading) |
 | 4fefc1bc6d | app/product-management/units/FD-units.md:1043 | flowchart | 39 | Level 1: System Decomposition | - | out-of-scope (filter: stmts > 25) |
 | 6561bcb06e | app/product-management/units/FD-units.md:1132 | sequenceDiagram | 29 | Product Management Integration | - | out-of-scope (filter: stmts > 25) |
 | f170921b36 | app/product-management/units/FD-units.md:1185 | sequenceDiagram | 28 | Recipe Management Integration | - | out-of-scope (filter: stmts > 25) |
-| ac120f54d1 | app/product-management/units/FD-units.md:1239 | sequenceDiagram | 22 | Inventory Management Integration | master-data/(choose) | candidate |
+| ac120f54d1 | app/product-management/units/FD-units.md:1239 | sequenceDiagram | 22 | Inventory Management Integration | - | rejected: diverges |
 | 7efb4b7cfa | app/product-management/units/FD-units.md:1281 | sequenceDiagram | 27 | Procurement Integration | - | out-of-scope (filter: stmts > 25) |
 | 1d19c092d4 | app/product-management/units/FD-units.md:1332 | flowchart | 45 | Comprehensive Error Detection and Recovery | - | out-of-scope (filter: stmts > 25) |
 | df73422378 | app/product-management/units/TS-units.md:52 | graph | 26 | Page Hierarchy | - | out-of-scope (filter: prototype heading) |
 | e1f02a3454 | app/system-administration/delivery-points/FD-delivery-points.md:14 | graph | 3 | Page Load Flow | - | out-of-scope (filter: prototype heading) |
-| 6ee3b26058 | app/system-administration/delivery-points/FD-delivery-points.md:25 | graph | 11 | Search and Filter Flow | master-data/(choose) | candidate |
-| 6fea8b5a3c | app/system-administration/delivery-points/FD-delivery-points.md:44 | graph | 9 | Create Flow | master-data/(choose) | candidate |
-| 0e20e9b226 | app/system-administration/delivery-points/FD-delivery-points.md:61 | graph | 9 | Edit Flow | master-data/(choose) | candidate |
-| b1f6f556b4 | app/system-administration/delivery-points/FD-delivery-points.md:78 | graph | 6 | Delete Flow | master-data/(choose) | candidate |
-| 1fce9314c5 | app/system-administration/delivery-points/FD-delivery-points.md:92 | graph | 6 | Sort Flow | master-data/(choose) | candidate |
+| 6ee3b26058 | app/system-administration/delivery-points/FD-delivery-points.md:25 | graph | 11 | Search and Filter Flow | master-data/delivery-point | imported |
+| 6fea8b5a3c | app/system-administration/delivery-points/FD-delivery-points.md:44 | graph | 9 | Create Flow | master-data/delivery-point | imported |
+| 0e20e9b226 | app/system-administration/delivery-points/FD-delivery-points.md:61 | graph | 9 | Edit Flow | - | rejected: covered |
+| b1f6f556b4 | app/system-administration/delivery-points/FD-delivery-points.md:78 | graph | 6 | Delete Flow | master-data/delivery-point | imported |
+| 1fce9314c5 | app/system-administration/delivery-points/FD-delivery-points.md:92 | graph | 6 | Sort Flow | - | rejected: page-full |
 | 3b4e3482a2 | app/system-administration/delivery-points/TS-delivery-points.md:14 | graph | 9 | Architecture | - | out-of-scope (filter: prototype heading) |
 | 6294470606 | app/system-administration/location-management/DD-location-management.md:388 | erDiagram | 70 | Entity Relationship Diagram | - | out-of-scope (filter: stmts > 25) |
-| 2ecb968a9b | app/system-administration/location-management/FD-location-management.md:25 | flowchart | 16 | FD-001: Create Location Flow | master-data/(choose) | candidate |
-| 84721bc965 | app/system-administration/location-management/FD-location-management.md:54 | flowchart | 25 | FD-002: Edit Location Flow | master-data/(choose) | candidate |
-| c74bcb9891 | app/system-administration/location-management/FD-location-management.md:92 | flowchart | 25 | FD-003: View Location Detail Flow | master-data/(choose) | candidate |
-| b82fbbb995 | app/system-administration/location-management/FD-location-management.md:137 | flowchart | 11 | FD-004: Delete Location Flow | master-data/(choose) | candidate |
+| 2ecb968a9b | app/system-administration/location-management/FD-location-management.md:25 | flowchart | 16 | FD-001: Create Location Flow | - | rejected: diverges |
+| 84721bc965 | app/system-administration/location-management/FD-location-management.md:54 | flowchart | 25 | FD-002: Edit Location Flow | - | rejected: diverges |
+| c74bcb9891 | app/system-administration/location-management/FD-location-management.md:92 | flowchart | 25 | FD-003: View Location Detail Flow | - | rejected: diverges |
+| b82fbbb995 | app/system-administration/location-management/FD-location-management.md:137 | flowchart | 11 | FD-004: Delete Location Flow | - | rejected: diverges |
 | 3240962942 | app/system-administration/location-management/FD-location-management.md:161 | flowchart | 26 | FD-005: Search and Filter Flow | - | out-of-scope (filter: stmts > 25) |
-| 1f7bf8f604 | app/system-administration/location-management/FD-location-management.md:206 | flowchart | 16 | FD-006: Sort Location List Flow | master-data/(choose) | candidate |
-| 1fd4bf8ca8 | app/system-administration/location-management/FD-location-management.md:235 | flowchart | 17 | FD-007: Toggle View Mode Flow | master-data/(choose) | candidate |
+| 1f7bf8f604 | app/system-administration/location-management/FD-location-management.md:206 | flowchart | 16 | FD-006: Sort Location List Flow | master-data/location | imported |
+| 1fd4bf8ca8 | app/system-administration/location-management/FD-location-management.md:235 | flowchart | 17 | FD-007: Toggle View Mode Flow | master-data/location | imported |
 | 7461eb6e38 | app/system-administration/location-management/FD-location-management.md:266 | flowchart | 26 | FD-008: Shelf Management Flow | - | out-of-scope (filter: stmts > 25) |
 | 63bd24c7b6 | app/system-administration/location-management/FD-location-management.md:305 | flowchart | 26 | FD-009: User Assignment Flow | - | out-of-scope (filter: stmts > 25) |
-| 94c87d1115 | app/system-administration/location-management/FD-location-management.md:342 | flowchart | 23 | FD-010: Product Assignment Flow | master-data/(choose) | candidate |
+| 94c87d1115 | app/system-administration/location-management/FD-location-management.md:342 | flowchart | 23 | FD-010: Product Assignment Flow | - | rejected: diverges |
 | 495f50c0e9 | app/system-administration/location-management/FD-location-management.md:376 | flowchart | 28 | FD-011: Delivery Point Management Flow | - | out-of-scope (filter: stmts > 25) |
-| 203a42bfc0 | app/system-administration/location-management/FD-location-management.md:417 | flowchart | 25 | FD-012: Bulk Actions Flow | master-data/(choose) | candidate |
+| 203a42bfc0 | app/system-administration/location-management/FD-location-management.md:417 | flowchart | 25 | FD-012: Bulk Actions Flow | - | rejected: unverifiable |
 | d91008f512 | app/system-administration/location-management/TS-location-management.md:21 | graph | 15 | Component Hierarchy | - | out-of-scope (filter: prototype heading) |
 | d457897976 | app/system-administration/location-management/TS-location-management.md:55 | graph | 6 | Navigation Flow | - | out-of-scope (filter: prototype heading) |
 | fca422f64c | app/system-administration/location-management/TS-location-management.md:108 | graph | 6 | 1. LocationList Component | - | out-of-scope (filter: prototype heading) |
-| 3a222d90af | app/system-administration/location-management/TS-location-management.md:400 | sequenceDiagram | 16 | Create Location Flow | master-data/(choose) | candidate |
-| be7593075f | app/system-administration/location-management/TS-location-management.md:424 | sequenceDiagram | 13 | Edit Location Flow | master-data/(choose) | candidate |
-| 1ef333feec | app/system-administration/location-management/TS-location-management.md:444 | sequenceDiagram | 13 | Search and Filter Flow | master-data/(choose) | candidate |
+| 3a222d90af | app/system-administration/location-management/TS-location-management.md:400 | sequenceDiagram | 16 | Create Location Flow | master-data/location | imported |
+| be7593075f | app/system-administration/location-management/TS-location-management.md:424 | sequenceDiagram | 13 | Edit Location Flow | - | rejected: diverges |
+| 1ef333feec | app/system-administration/location-management/TS-location-management.md:444 | sequenceDiagram | 13 | Search and Filter Flow | - | rejected: diverges |
 | 1097f8fd61 | app/vendor-management/vendor-directory/FD-vendor-directory.md:33 | graph | 30 | 2.1 High-Level Architecture | - | out-of-scope (filter: prototype heading) |
-| c82a8230e5 | app/vendor-management/vendor-directory/FD-vendor-directory.md:88 | graph | 13 | 3.1 Vendor Data Flow | master-data/(choose) | candidate |
-| 79d55e3326 | app/vendor-management/vendor-directory/FD-vendor-directory.md:111 | graph | 14 | 3.2 Document Upload Flow | master-data/(choose) | candidate |
+| c82a8230e5 | app/vendor-management/vendor-directory/FD-vendor-directory.md:88 | graph | 13 | 3.1 Vendor Data Flow | - | rejected: diverges |
+| 79d55e3326 | app/vendor-management/vendor-directory/FD-vendor-directory.md:111 | graph | 14 | 3.2 Document Upload Flow | - | rejected: unverifiable |
 | 06e1a05da9 | app/vendor-management/vendor-directory/FD-vendor-directory.md:139 | flowchart | 32 | 4.1 Vendor Creation Workflow | - | out-of-scope (filter: stmts > 25) |
 | 3e48dd901c | app/vendor-management/vendor-directory/FD-vendor-directory.md:187 | flowchart | 42 | 4.2 Vendor Approval Workflow | - | out-of-scope (filter: stmts > 25) |
 | 3d66aaee10 | app/vendor-management/vendor-directory/FD-vendor-directory.md:248 | flowchart | 35 | 4.3 Vendor Edit Workflow | - | out-of-scope (filter: stmts > 25) |
 | 827d5a3164 | app/vendor-management/vendor-directory/FD-vendor-directory.md:299 | flowchart | 42 | 4.4 Document Upload Workflow | - | out-of-scope (filter: stmts > 25) |
-| b738e89ac3 | app/vendor-management/vendor-directory/FD-vendor-directory.md:366 | flowchart | 23 | 5.1 Vendor Search Workflow | master-data/(choose) | candidate |
+| b738e89ac3 | app/vendor-management/vendor-directory/FD-vendor-directory.md:366 | flowchart | 23 | 5.1 Vendor Search Workflow | master-data/vendor | imported |
 | 573c6a5057 | app/vendor-management/vendor-directory/FD-vendor-directory.md:402 | flowchart | 28 | 5.2 Advanced Filter Workflow | - | out-of-scope (filter: stmts > 25) |
 | c8dbe6d493 | app/vendor-management/vendor-directory/FD-vendor-directory.md:448 | flowchart | 33 | 6.1 Automated Performance Calculation | - | out-of-scope (filter: stmts > 25) |
 | 109000e908 | app/vendor-management/vendor-directory/FD-vendor-directory.md:497 | flowchart | 28 | 6.2 Manual Performance Review | - | out-of-scope (filter: stmts > 25) |
@@ -660,13 +664,13 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 | a34cf7d155 | app/vendor-management/vendor-directory/FD-vendor-directory.md:681 | flowchart | 37 | 8.1 Add Contact Workflow | - | out-of-scope (filter: stmts > 25) |
 | 218ecdb104 | app/vendor-management/vendor-directory/FD-vendor-directory.md:733 | flowchart | 30 | 8.2 Address Management Workflow (Asian International Format) | - | out-of-scope (filter: stmts > 25) |
 | 61a1d9196b | app/vendor-management/vendor-directory/FD-vendor-directory.md:786 | flowchart | 31 | 9.1 Add Certification Workflow | - | out-of-scope (filter: stmts > 25) |
-| 910cea424e | app/vendor-management/vendor-directory/FD-vendor-directory.md:835 | flowchart | 23 | 9.2 Edit Certification Workflow | master-data/(choose) | candidate |
-| d348a78077 | app/vendor-management/vendor-directory/FD-vendor-directory.md:873 | flowchart | 9 | 9.3 Delete Certification Workflow | master-data/(choose) | candidate |
-| 2cdfb22b12 | app/vendor-management/vendor-directory/FD-vendor-directory.md:890 | flowchart | 10 | 9.4 Certification Status Auto-Calculation Flow | master-data/(choose) | candidate |
-| 766acc8206 | app/vendor-management/vendor-directory/FD-vendor-directory.md:914 | graph | 16 | 9.5 Certification Types Reference | master-data/(choose) | candidate |
+| 910cea424e | app/vendor-management/vendor-directory/FD-vendor-directory.md:835 | flowchart | 23 | 9.2 Edit Certification Workflow | - | rejected: diverges |
+| d348a78077 | app/vendor-management/vendor-directory/FD-vendor-directory.md:873 | flowchart | 9 | 9.3 Delete Certification Workflow | - | rejected: diverges |
+| 2cdfb22b12 | app/vendor-management/vendor-directory/FD-vendor-directory.md:890 | flowchart | 10 | 9.4 Certification Status Auto-Calculation Flow | - | rejected: diverges |
+| 766acc8206 | app/vendor-management/vendor-directory/FD-vendor-directory.md:914 | graph | 16 | 9.5 Certification Types Reference | - | rejected: diverges |
 | e44e40cfb0 | app/vendor-management/vendor-directory/FD-vendor-directory.md:948 | flowchart | 36 | 10.1 Vendor Selection in Purchase Order | - | out-of-scope (filter: stmts > 25) |
 | a04f89741c | app/vendor-management/vendor-directory/FD-vendor-directory.md:999 | flowchart | 31 | 10.2 Performance Data Update from GRN | - | out-of-scope (filter: stmts > 25) |
-| cfad1cf7d7 | app/vendor-management/vendor-directory/FD-vendor-directory.md:1049 | flowchart | 24 | 11.1 Document Expiry Alert Workflow | master-data/(choose) | candidate |
+| cfad1cf7d7 | app/vendor-management/vendor-directory/FD-vendor-directory.md:1049 | flowchart | 24 | 11.1 Document Expiry Alert Workflow | - | rejected: unverifiable |
 | 23e4716eeb | app/vendor-management/vendor-directory/FD-vendor-directory.md:1085 | flowchart | 30 | 11.2 Approval Notification Workflow | - | out-of-scope (filter: stmts > 25) |
 | 761130315c | app/vendor-management/vendor-directory/TS-vendor-directory.md:393 | graph | 62 | Page Hierarchy | - | out-of-scope (filter: prototype heading) |
 
@@ -674,32 +678,32 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 
 | id | source:line | type | stmts | heading | wiki page | status |
 |---|---|---|---|---|---|---|
-| 3ba3deac50 | app/inventory-management/physical-count-management/FD-physical-count-management.md:19 | stateDiagram-v2 | 24 | 2. Physical Count Status Lifecycle | physical-count/02-business-rules | candidate |
+| 3ba3deac50 | app/inventory-management/physical-count-management/FD-physical-count-management.md:19 | stateDiagram-v2 | 24 | 2. Physical Count Status Lifecycle | - | rejected: diverges |
 | f08c110759 | app/inventory-management/physical-count-management/FD-physical-count-management.md:59 | flowchart | 40 | 3. Create Physical Count Wizard Flow | - | out-of-scope (filter: stmts > 25) |
 | 726c35e511 | app/inventory-management/physical-count-management/FD-physical-count-management.md:118 | flowchart | 48 | 4. Physical Count Counting Process (Mobile-First Interface) | - | out-of-scope (filter: stmts > 25) |
-| 2ce8d36c3b | app/inventory-management/physical-count-management/FD-physical-count-management.md:192 | stateDiagram-v2 | 12 | 5. Item Status Flow | physical-count/02-business-rules | candidate |
-| ec8386a4b6 | app/inventory-management/physical-count-management/FD-physical-count-management.md:217 | flowchart | 20 | 6. Variance Review and Approval Flow | physical-count/03-user-flow | candidate |
-| 7900ae54f5 | app/inventory-management/physical-count-management/FD-physical-count-management.md:252 | flowchart | 18 | 7. Finalization and Posting Flow | physical-count/03-user-flow | candidate |
-| 8d07741899 | app/inventory-management/physical-count-management/FD-physical-count-management.md:283 | flowchart | 13 | 8. Count Cancellation Flow | physical-count/03-user-flow | candidate |
+| 2ce8d36c3b | app/inventory-management/physical-count-management/FD-physical-count-management.md:192 | stateDiagram-v2 | 12 | 5. Item Status Flow | - | rejected: unverifiable |
+| ec8386a4b6 | app/inventory-management/physical-count-management/FD-physical-count-management.md:217 | flowchart | 20 | 6. Variance Review and Approval Flow | - | rejected: diverges |
+| 7900ae54f5 | app/inventory-management/physical-count-management/FD-physical-count-management.md:252 | flowchart | 18 | 7. Finalization and Posting Flow | - | rejected: diverges |
+| 8d07741899 | app/inventory-management/physical-count-management/FD-physical-count-management.md:283 | flowchart | 13 | 8. Count Cancellation Flow | - | rejected: unverifiable |
 | e741e0941f | app/inventory-management/physical-count-management/FD-physical-count-management.md:307 | flowchart | 33 | 9. Dashboard Data Flow | - | out-of-scope (filter: stmts > 25) |
-| 9bfb8a3ed5 | app/inventory-management/physical-count-management/FD-physical-count-management.md:353 | flowchart | 18 | 10. Recount Process Flow | physical-count/03-user-flow | candidate |
+| 9bfb8a3ed5 | app/inventory-management/physical-count-management/FD-physical-count-management.md:353 | flowchart | 18 | 10. Recount Process Flow | - | rejected: unverifiable |
 | 35bdab9eaf | app/inventory-management/physical-count/DD-physical-count.md:15 | erDiagram | 32 | 2. Data Model Overview | - | out-of-scope (filter: stmts > 25) |
-| 58441d7dda | app/inventory-management/physical-count/FD-physical-count.md:15 | stateDiagram-v2 | 15 | 2. Count Status Lifecycle | physical-count/02-business-rules | candidate |
+| 58441d7dda | app/inventory-management/physical-count/FD-physical-count.md:15 | stateDiagram-v2 | 15 | 2. Count Status Lifecycle | - | rejected: diverges |
 | aca71605cd | app/inventory-management/physical-count/FD-physical-count.md:36 | graph | 30 | 3. Creation Wizard Flow | - | out-of-scope (filter: stmts > 25) |
-| 342557e31b | app/inventory-management/physical-count/FD-physical-count.md:88 | graph | 23 | 4. Active Counting Flow | physical-count/03-user-flow | candidate |
-| cb66f8d6a8 | app/inventory-management/physical-count/FD-physical-count.md:122 | graph | 17 | 5. Item Counting Detail Flow | physical-count/03-user-flow | candidate |
-| 8ccb1f75a0 | app/inventory-management/physical-count/FD-physical-count.md:145 | graph | 17 | 6. Dashboard View Flow | physical-count/03-user-flow | candidate |
+| 342557e31b | app/inventory-management/physical-count/FD-physical-count.md:88 | graph | 23 | 4. Active Counting Flow | - | rejected: diverges |
+| cb66f8d6a8 | app/inventory-management/physical-count/FD-physical-count.md:122 | graph | 17 | 5. Item Counting Detail Flow | - | rejected: diverges |
+| 8ccb1f75a0 | app/inventory-management/physical-count/FD-physical-count.md:145 | graph | 17 | 6. Dashboard View Flow | - | rejected: unverifiable |
 | 1d391fc422 | app/inventory-management/physical-count/FD-physical-count.md:173 | graph | 27 | 7. Variance Analysis Flow | - | out-of-scope (filter: stmts > 25) |
-| c160d11362 | app/inventory-management/physical-count/FD-physical-count.md:212 | graph | 25 | 8. Location Selection Detail | physical-count/03-user-flow | candidate |
-| 49f69801a1 | app/inventory-management/physical-count/FD-physical-count.md:248 | graph | 8 | 9. Resume Paused Count Flow | physical-count/03-user-flow | candidate |
-| d253151eb9 | app/inventory-management/physical-count/FD-physical-count.md:262 | graph | 18 | 10. Data Flow Summary | physical-count/03-user-flow | candidate |
+| c160d11362 | app/inventory-management/physical-count/FD-physical-count.md:212 | graph | 25 | 8. Location Selection Detail | - | rejected: diverges |
+| 49f69801a1 | app/inventory-management/physical-count/FD-physical-count.md:248 | graph | 8 | 9. Resume Paused Count Flow | - | rejected: unverifiable |
+| d253151eb9 | app/inventory-management/physical-count/FD-physical-count.md:262 | graph | 18 | 10. Data Flow Summary | - | rejected: diverges |
 | e52d3801d9 | app/inventory-management/physical-count/TS-physical-count.md:15 | graph | 26 | 2. System Architecture | - | out-of-scope (filter: prototype heading) |
 | caa4ea9a0b | app/inventory-management/physical-count/TS-physical-count.md:61 | graph | 5 | 3. Page Hierarchy | - | out-of-scope (filter: prototype heading) |
-| f00396e48b | app/inventory-management/physical-count/TS-physical-count.md:162 | graph | 7 | 6.1 Count Creation Flow | physical-count/03-user-flow | candidate |
-| 47a6549bdc | app/inventory-management/physical-count/TS-physical-count.md:175 | graph | 9 | 6.2 Active Count Flow | physical-count/03-user-flow | candidate |
-| 79b05edce3 | app/inventory-management/physical-count/TS-physical-count.md:192 | sequenceDiagram | 9 | 7.1 Location to Items Flow | physical-count/03-user-flow | candidate |
-| b75b1fc6c0 | app/inventory-management/physical-count/TS-physical-count.md:208 | sequenceDiagram | 10 | 7.2 Item Counting Flow | physical-count/03-user-flow | candidate |
-| f979a79959 | app/inventory-management/physical-count/UC-physical-count.md:385 | graph | 17 | 4. Use Case Relationships | physical-count/03-user-flow | candidate |
+| f00396e48b | app/inventory-management/physical-count/TS-physical-count.md:162 | graph | 7 | 6.1 Count Creation Flow | - | rejected: diverges |
+| 47a6549bdc | app/inventory-management/physical-count/TS-physical-count.md:175 | graph | 9 | 6.2 Active Count Flow | - | rejected: diverges |
+| 79b05edce3 | app/inventory-management/physical-count/TS-physical-count.md:192 | sequenceDiagram | 9 | 7.1 Location to Items Flow | - | rejected: unverifiable |
+| b75b1fc6c0 | app/inventory-management/physical-count/TS-physical-count.md:208 | sequenceDiagram | 10 | 7.2 Item Counting Flow | - | rejected: unverifiable |
+| f979a79959 | app/inventory-management/physical-count/UC-physical-count.md:385 | graph | 17 | 4. Use Case Relationships | - | rejected: unverifiable |
 | 924da67ea8 | documents/pc/physical-count-sitemap.md:10 | graph | 34 | Main Site Map Flow | - | out-of-scope (filter: not docs/app) |
 | c47e45f11a | documents/pc/physical-count-sitemap.md:58 | graph | 18 | Detailed Page Navigation Flow | - | out-of-scope (filter: not docs/app) |
 | 9b294fba4c | documents/pc/physical-count-sitemap.md:93 | graph | 15 | Modal and Dialog Flow | - | out-of-scope (filter: not docs/app) |
@@ -719,42 +723,42 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 | 2984cccaaa | app/product-management/categories/FD-categories.md:398 | flowchart | 32 | 4. Drag-and-Drop Reorder Process | - | out-of-scope (filter: stmts > 25) |
 | 834301ac18 | app/product-management/categories/FD-categories.md:467 | flowchart | 28 | 5. Hierarchy Navigation Flow | - | out-of-scope (filter: prototype heading) |
 | 1bd4d8e9d3 | app/product-management/categories/FD-categories.md:529 | flowchart | 29 | 1. Category CRUD Data Flow | - | out-of-scope (filter: stmts > 25) |
-| 28a09a77a2 | app/product-management/categories/FD-categories.md:597 | flowchart | 13 | 2. Item Count Aggregation Data Flow | product/03-user-flow | candidate |
+| 28a09a77a2 | app/product-management/categories/FD-categories.md:597 | flowchart | 13 | 2. Item Count Aggregation Data Flow | - | rejected: unverifiable |
 | 207bd648c3 | app/product-management/categories/FD-categories.md:641 | sequenceDiagram | 40 | 1. Create Category Sequence | - | out-of-scope (filter: stmts > 25) |
 | a63ccbbb5c | app/product-management/categories/FD-categories.md:699 | sequenceDiagram | 47 | 2. Update Category with Children Sequence | - | out-of-scope (filter: stmts > 25) |
 | ab4d9fc6d2 | app/product-management/categories/FD-categories.md:767 | sequenceDiagram | 39 | 3. Soft Delete with Cascade Sequence | - | out-of-scope (filter: stmts > 25) |
 | 9afa3bb21f | app/product-management/categories/FD-categories.md:828 | stateDiagram-v2 | 35 | Category Lifecycle State Diagram | - | out-of-scope (filter: stmts > 25) |
 | d6a427eb8a | app/product-management/categories/FD-categories.md:890 | flowchart | 55 | Category Management Workflow | - | out-of-scope (filter: stmts > 25) |
 | 05108ebf18 | app/product-management/categories/FD-categories.md:988 | flowchart | 33 | 1. Categories ↔ Products Integration | - | out-of-scope (filter: stmts > 25) |
-| 6375c64e4b | app/product-management/categories/FD-categories.md:1063 | flowchart | 21 | 2. Categories ↔ User Management Integration | product/03-user-flow | candidate |
+| 6375c64e4b | app/product-management/categories/FD-categories.md:1063 | flowchart | 21 | 2. Categories ↔ User Management Integration | - | rejected: unverifiable |
 | 53146e5d0b | app/product-management/categories/FD-categories.md:1125 | flowchart | 37 | Category Creation Across Roles | - | out-of-scope (filter: stmts > 25) |
-| 2fa21cd537 | app/product-management/categories/FD-categories.md:1199 | flowchart | 15 | Category Deletion Decision Tree | product/03-user-flow | candidate |
-| d672e1a43d | app/product-management/categories/FD-categories.md:1241 | flowchart | 23 | Category Update Validation Decision Tree | product/03-user-flow | candidate |
+| 2fa21cd537 | app/product-management/categories/FD-categories.md:1199 | flowchart | 15 | Category Deletion Decision Tree | - | rejected: diverges |
+| d672e1a43d | app/product-management/categories/FD-categories.md:1241 | flowchart | 23 | Category Update Validation Decision Tree | - | rejected: diverges |
 | d681fcd4d5 | app/product-management/categories/FD-categories.md:1301 | flowchart | 53 | User Activity: Managing Categories End-to-End | - | out-of-scope (filter: stmts > 25) |
 | 51f816b4a2 | app/product-management/categories/FD-categories.md:1386 | flowchart | 41 | Frontend Component Interaction | - | out-of-scope (filter: prototype heading) |
 | 8533aeaa5a | app/product-management/categories/FD-categories.md:1474 | flowchart | 43 | Category Validation Error Handling | - | out-of-scope (filter: stmts > 25) |
 | 2cc19b91e8 | app/product-management/categories/TS-categories.md:67 | graph | 26 | Page Hierarchy | - | out-of-scope (filter: prototype heading) |
-| d040fefa43 | app/product-management/products/DD-products.md:35 | erDiagram | 9 | 2.1 Entity Relationship Overview | product/01-data-model | candidate |
+| d040fefa43 | app/product-management/products/DD-products.md:35 | erDiagram | 9 | 2.1 Entity Relationship Overview | product/01-data-model | imported |
 | c398c987fe | app/product-management/products/FD-products.md:35 | flowchart | 26 | 2.1 Create New Product Workflow | - | out-of-scope (filter: stmts > 25) |
-| a30764984b | app/product-management/products/FD-products.md:73 | flowchart | 10 | 2.2 Product Creation Data Flow | product/03-user-flow | candidate |
+| a30764984b | app/product-management/products/FD-products.md:73 | flowchart | 10 | 2.2 Product Creation Data Flow | - | rejected: diverges |
 | bf44d60af4 | app/product-management/products/FD-products.md:95 | flowchart | 27 | 3.1 Edit Product Workflow | - | out-of-scope (filter: stmts > 25) |
 | c16b51d7e1 | app/product-management/products/FD-products.md:138 | flowchart | 29 | 4.1 Add Unit Conversion Workflow | - | out-of-scope (filter: stmts > 25) |
-| 22ab8c5482 | app/product-management/products/FD-products.md:180 | flowchart | 12 | 4.2 Unit Conversion Calculator Flow | product/03-user-flow | candidate |
+| 22ab8c5482 | app/product-management/products/FD-products.md:180 | flowchart | 12 | 4.2 Unit Conversion Calculator Flow | - | rejected: diverges |
 | 1c3caca980 | app/product-management/products/FD-products.md:203 | flowchart | 31 | 5.1 Assign Product to Location Workflow | - | out-of-scope (filter: stmts > 25) |
-| cac1644e05 | app/product-management/products/FD-products.md:246 | flowchart | 18 | 5.2 Location Tag Management Workflow | product/03-user-flow | candidate |
-| 78cc5a3834 | app/product-management/products/FD-products.md:274 | flowchart | 14 | 5.3 Add/Remove Tags on Assignment Workflow | product/03-user-flow | candidate |
-| 54ad4c5188 | app/product-management/products/FD-products.md:303 | flowchart | 24 | 6.1 Product List Search Workflow | product/03-user-flow | candidate |
-| 466945b8d7 | app/product-management/products/FD-products.md:341 | graph | 23 | 6.2 Product List Data Flow | product/03-user-flow | candidate |
-| 5f24283910 | app/product-management/products/FD-products.md:385 | stateDiagram-v2 | 8 | 7.1 Product Status State Diagram | product/02-business-rules | candidate |
+| cac1644e05 | app/product-management/products/FD-products.md:246 | flowchart | 18 | 5.2 Location Tag Management Workflow | - | rejected: unverifiable |
+| 78cc5a3834 | app/product-management/products/FD-products.md:274 | flowchart | 14 | 5.3 Add/Remove Tags on Assignment Workflow | - | rejected: unverifiable |
+| 54ad4c5188 | app/product-management/products/FD-products.md:303 | flowchart | 24 | 6.1 Product List Search Workflow | product/03-user-flow-purchaser | imported |
+| 466945b8d7 | app/product-management/products/FD-products.md:341 | graph | 23 | 6.2 Product List Data Flow | - | rejected: covered |
+| 5f24283910 | app/product-management/products/FD-products.md:385 | stateDiagram-v2 | 8 | 7.1 Product Status State Diagram | product/02-business-rules | imported |
 | 8b609ee2b5 | app/product-management/products/FD-products.md:412 | flowchart | 37 | 7.2 Status Change Workflow | - | out-of-scope (filter: stmts > 25) |
 | 746942146e | app/product-management/products/FD-products.md:468 | flowchart | 27 | 8.1 Product Detail Page Navigation | - | out-of-scope (filter: prototype heading) |
 | 0a64f916ec | app/product-management/products/FD-products.md:515 | flowchart | 29 | 9.1 Bulk Product Import Workflow | - | out-of-scope (filter: stmts > 25) |
-| 9ce036e4ae | app/product-management/products/FD-products.md:560 | graph | 18 | 10.1 Product-Procurement Integration | product/03-user-flow | candidate |
-| 8182c90d06 | app/product-management/products/FD-products.md:592 | graph | 18 | 10.2 Product-Inventory Integration | product/03-user-flow | candidate |
-| 54b33faa99 | app/product-management/products/FD-products.md:624 | graph | 10 | 10.3 Product-Recipe Integration | product/03-user-flow | candidate |
-| 5b9e723709 | app/product-management/products/FD-products.md:651 | flowchart | 15 | 11.1 Validation Error Handling | product/03-user-flow | candidate |
-| 489bb88fcb | app/product-management/products/FD-products.md:674 | flowchart | 18 | 11.2 Database Error Handling | product/03-user-flow | candidate |
-| 884a2bbca5 | app/product-management/products/FD-products.md:706 | flowchart | 12 | 12.1 Activity Logging Workflow | product/03-user-flow | candidate |
+| 9ce036e4ae | app/product-management/products/FD-products.md:560 | graph | 18 | 10.1 Product-Procurement Integration | - | rejected: diverges |
+| 8182c90d06 | app/product-management/products/FD-products.md:592 | graph | 18 | 10.2 Product-Inventory Integration | - | rejected: diverges |
+| 54b33faa99 | app/product-management/products/FD-products.md:624 | graph | 10 | 10.3 Product-Recipe Integration | - | rejected: diverges |
+| 5b9e723709 | app/product-management/products/FD-products.md:651 | flowchart | 15 | 11.1 Validation Error Handling | product/03-user-flow-product-admin | imported |
+| 489bb88fcb | app/product-management/products/FD-products.md:674 | flowchart | 18 | 11.2 Database Error Handling | - | rejected: unverifiable |
+| 884a2bbca5 | app/product-management/products/FD-products.md:706 | flowchart | 12 | 12.1 Activity Logging Workflow | - | rejected: unverifiable |
 | 55863593dd | app/product-management/products/TS-products.md:52 | graph | 26 | Page Hierarchy | - | out-of-scope (filter: prototype heading) |
 | c2c3f72a9d | documents/pm/product-management-sitemap.md:8 | graph | 175 | Document History | - | out-of-scope (filter: not docs/app) |
 | ac973123eb | documents/pm/product-management-sitemap.md:240 | flowchart | 21 | Module Navigation Flow | - | out-of-scope (filter: not docs/app) |
@@ -768,23 +772,23 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 |---|---|---|---|---|---|---|
 | 00ff334db7 | app/procurement/credit-note/FD-credit-note.md:63 | flowchart | 36 | Quantity Return Credit Note Creation Flow | - | out-of-scope (filter: stmts > 25) |
 | 672d878cd0 | app/procurement/credit-note/FD-credit-note.md:183 | flowchart | 33 | Amount Discount Credit Note Creation Flow | - | out-of-scope (filter: stmts > 25) |
-| c0372fd201 | app/procurement/credit-note/FD-credit-note.md:278 | stateDiagram-v2 | 6 | Credit Note State Transition Diagram | purchase-order/02-business-rules | candidate |
+| c0372fd201 | app/procurement/credit-note/FD-credit-note.md:278 | stateDiagram-v2 | 6 | Credit Note State Transition Diagram | - | rejected: diverges |
 | d9722742fb | app/procurement/credit-note/FD-credit-note.md:342 | flowchart | 44 | Commitment Workflow | - | out-of-scope (filter: stmts > 25) |
-| 62d8e22a48 | app/procurement/credit-note/FD-credit-note.md:489 | flowchart | 23 | Inventory Costing Calculation Flow | purchase-order/03-user-flow | candidate |
+| 62d8e22a48 | app/procurement/credit-note/FD-credit-note.md:489 | flowchart | 23 | Inventory Costing Calculation Flow | - | rejected: diverges |
 | 04eb657296 | app/procurement/credit-note/FD-credit-note.md:590 | flowchart | 29 | System Integration Flow | - | out-of-scope (filter: stmts > 25) |
 | abf7c665f2 | app/procurement/credit-note/FD-credit-note.md:697 | flowchart | 52 | Server Action CRUD Flow | - | out-of-scope (filter: stmts > 25) |
 | 38044e8093 | app/procurement/credit-note/FD-credit-note.md:796 | flowchart | 46 | Commitment Transaction Flow | - | out-of-scope (filter: stmts > 25) |
 | 52ed6e62e4 | app/procurement/credit-note/FD-credit-note.md:884 | flowchart | 39 | Void Transaction Flow | - | out-of-scope (filter: stmts > 25) |
 | 861bab3b5f | app/procurement/credit-note/FD-credit-note.md:961 | flowchart | 31 | Vendor and GRN Fetch Flow | - | out-of-scope (filter: stmts > 25) |
-| 47eb7106cb | app/procurement/credit-note/FD-credit-note.md:1036 | flowchart | 21 | Audit Logging Flow | purchase-order/03-user-flow | candidate |
+| 47eb7106cb | app/procurement/credit-note/FD-credit-note.md:1036 | flowchart | 21 | Audit Logging Flow | - | rejected: diverges |
 | ab42b2521a | app/procurement/credit-note/TS-credit-note.md:55 | graph | 26 | Page Hierarchy | - | out-of-scope (filter: prototype heading) |
-| bea137aa1b | app/procurement/purchase-orders/DD-purchase-orders.md:49 | erDiagram | 14 | Entity Relationship Diagram | purchase-order/01-data-model | candidate |
+| bea137aa1b | app/procurement/purchase-orders/DD-purchase-orders.md:49 | erDiagram | 14 | Entity Relationship Diagram | purchase-order/01-data-model | imported |
 | 6aad9daffe | app/procurement/purchase-orders/FD-purchase-orders.md:49 | graph | 34 | 1. Purchase Order Creation Process Flow | - | out-of-scope (filter: stmts > 25) |
 | f598078a39 | app/procurement/purchase-orders/FD-purchase-orders.md:100 | graph | 37 | 2. Send Purchase Order to Vendor | - | out-of-scope (filter: stmts > 25) |
 | fee9c56f9e | app/procurement/purchase-orders/FD-purchase-orders.md:157 | graph | 37 | 3. Purchase Order Change Order Process | - | out-of-scope (filter: stmts > 25) |
 | 25b89ea7d9 | app/procurement/purchase-orders/FD-purchase-orders.md:218 | graph | 47 | 4. Purchase Order Cancellation Process | - | out-of-scope (filter: stmts > 25) |
 | 5df13a718c | app/procurement/purchase-orders/FD-purchase-orders.md:287 | stateDiagram-v2 | 26 | 5. Purchase Order Status State Transition Diagram | - | out-of-scope (filter: stmts > 25) |
-| c27042cfdb | app/procurement/purchase-orders/FD-purchase-orders.md:380 | graph | 20 | 6. Budget Integration Data Flow | purchase-order/03-user-flow | candidate |
+| c27042cfdb | app/procurement/purchase-orders/FD-purchase-orders.md:380 | graph | 20 | 6. Budget Integration Data Flow | - | rejected: unverifiable |
 | 0ec69d14eb | app/procurement/purchase-orders/FD-purchase-orders.md:420 | sequenceDiagram | 34 | 7. Vendor Communication Sequence Diagram | - | out-of-scope (filter: stmts > 25) |
 | 7f49e254e6 | app/procurement/purchase-orders/FD-purchase-orders.md:470 | graph | 31 | 8. Goods Receipt Integration Flow | - | out-of-scope (filter: stmts > 25) |
 | c9ff8d2881 | app/procurement/purchase-orders/FD-purchase-orders.md:522 | graph | 34 | 9. Line Item Details View Flow | - | out-of-scope (filter: stmts > 25) |
@@ -794,12 +798,12 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 | fbf0cb025c | app/procurement/purchase-orders/TS-purchase-orders.md:103 | graph | 8 | Page Hierarchy and Structure | - | out-of-scope (filter: prototype heading) |
 | fe280455c0 | app/procurement/purchase-orders/TS-purchase-orders.md:354 | graph | 67 | Enhanced Page Hierarchy | - | out-of-scope (filter: prototype heading) |
 | 835d9c31b0 | app/procurement/purchase-orders/TS-purchase-orders.md:954 | flowchart | 83 | Navigation Flow Diagram | - | out-of-scope (filter: prototype heading) |
-| 951361e7c9 | app/procurement/purchase-orders/TS-purchase-orders.md:1323 | flowchart | 25 | 1. Create Purchase Order from PR Flow | purchase-order/03-user-flow | candidate |
+| 951361e7c9 | app/procurement/purchase-orders/TS-purchase-orders.md:1323 | flowchart | 25 | 1. Create Purchase Order from PR Flow | - | rejected: diverges |
 | 829a4d441a | app/procurement/purchase-orders/TS-purchase-orders.md:1376 | flowchart | 27 | 2. Send PO to Vendor Flow | - | out-of-scope (filter: stmts > 25) |
 | b1f50ba254 | app/procurement/purchase-orders/TS-purchase-orders.md:1442 | flowchart | 27 | 3. Receive Goods Flow (Goods Receipt Note Creation) | - | out-of-scope (filter: stmts > 25) |
-| 3b34ce6ed4 | app/procurement/purchase-orders/UC-purchase-orders.md:72 | graph | 24 | Primary Actor Use Cases | purchase-order/03-user-flow | candidate |
-| 20973ceda4 | app/procurement/purchase-orders/UC-purchase-orders.md:112 | graph | 21 | System and Integration Use Cases | purchase-order/03-user-flow | candidate |
-| 35c377a9dd | app/procurement/purchase-orders/UC-purchase-orders.md:152 | graph | 22 | Use Case Relationships | purchase-order/03-user-flow | candidate |
+| 3b34ce6ed4 | app/procurement/purchase-orders/UC-purchase-orders.md:72 | graph | 24 | Primary Actor Use Cases | purchase-order/03-user-flow | imported |
+| 20973ceda4 | app/procurement/purchase-orders/UC-purchase-orders.md:112 | graph | 21 | System and Integration Use Cases | - | rejected: diverges |
+| 35c377a9dd | app/procurement/purchase-orders/UC-purchase-orders.md:152 | graph | 22 | Use Case Relationships | - | rejected: diverges |
 | 1c2e8c28f3 | cn/CN-User-Flow-Diagram.md:28 | flowchart | 2 | Credit Note Lifecycle Flow | - | out-of-scope (filter: not docs/app) |
 | 828bd91041 | cn/CN-User-Flow-Diagram.md:38 | flowchart | 8 | Credit Note Creation Flow | - | out-of-scope (filter: not docs/app) |
 | 749003ea3a | cn/CN-User-Flow-Diagram.md:54 | flowchart | 12 | Credit Note Processing Flow | - | out-of-scope (filter: not docs/app) |
@@ -846,111 +850,111 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 
 | id | source:line | type | stmts | heading | wiki page | status |
 |---|---|---|---|---|---|---|
-| 1a908b25ee | app/procurement/purchase-requests/DD-purchase-requests.md:70 | erDiagram | 16 | Entity Relationship Diagram | purchase-request/01-data-model | candidate |
+| 1a908b25ee | app/procurement/purchase-requests/DD-purchase-requests.md:70 | erDiagram | 16 | Entity Relationship Diagram | purchase-request/01-data-model | imported |
 | 314f1a7656 | app/procurement/purchase-requests/FD-purchase-requests.md:90 | flowchart | 34 | 2.1 Create Purchase Request - Main Flow | - | out-of-scope (filter: stmts > 25) |
-| 3f5ba7c1f6 | app/procurement/purchase-requests/FD-purchase-requests.md:146 | flowchart | 12 | 2.2 Use Template to Create PR | purchase-request/03-user-flow | candidate |
+| 3f5ba7c1f6 | app/procurement/purchase-requests/FD-purchase-requests.md:146 | flowchart | 12 | 2.2 Use Template to Create PR | purchase-request/03-user-flow | imported |
 | 5f59eac0ad | app/procurement/purchase-requests/FD-purchase-requests.md:173 | flowchart | 28 | 2.3 Edit Purchase Request | - | out-of-scope (filter: stmts > 25) |
 | 1a9df19c3e | app/procurement/purchase-requests/FD-purchase-requests.md:221 | flowchart | 35 | 2.4 Create PR with Inventory Context Flow | - | out-of-scope (filter: stmts > 25) |
-| 5d0718f9ff | app/procurement/purchase-requests/FD-purchase-requests.md:277 | flowchart | 25 | 2.5 Create PR with Item Delivery Details Flow | purchase-request/03-user-flow | candidate |
+| 5d0718f9ff | app/procurement/purchase-requests/FD-purchase-requests.md:277 | flowchart | 25 | 2.5 Create PR with Item Delivery Details Flow | - | rejected: page-full |
 | 874ab9a515 | app/procurement/purchase-requests/FD-purchase-requests.md:321 | flowchart | 38 | 2.6 Approve PR with Enhanced Pricing Visibility Flow | - | out-of-scope (filter: stmts > 25) |
 | fbc08b7ec5 | app/procurement/purchase-requests/FD-purchase-requests.md:382 | flowchart | 54 | 2.7 Purchasing Staff Edit Mode - Vendor Pricing Flow | - | out-of-scope (filter: stmts > 25) |
-| ecbe46e262 | app/procurement/purchase-requests/FD-purchase-requests.md:460 | flowchart | 23 | Calculation Flow Detail | purchase-request/03-user-flow | candidate |
+| ecbe46e262 | app/procurement/purchase-requests/FD-purchase-requests.md:460 | flowchart | 23 | Calculation Flow Detail | - | rejected: page-full |
 | adc459dd15 | app/procurement/purchase-requests/FD-purchase-requests.md:501 | flowchart | 42 | 2.8 Workflow Action Buttons Flow | - | out-of-scope (filter: stmts > 25) |
-| 50456e7f0d | app/procurement/purchase-requests/FD-purchase-requests.md:574 | graph | 7 | Button Display Matrix | purchase-request/03-user-flow | candidate |
-| 5ec7c3d4b5 | app/procurement/purchase-requests/FD-purchase-requests.md:617 | flowchart | 14 | 2.9.1 Main Selection Flow | purchase-request/03-user-flow | candidate |
-| d356b804de | app/procurement/purchase-requests/FD-purchase-requests.md:642 | flowchart | 22 | 2.9.2 Bulk Approve Flow | purchase-request/03-user-flow | candidate |
+| 50456e7f0d | app/procurement/purchase-requests/FD-purchase-requests.md:574 | graph | 7 | Button Display Matrix | - | rejected: page-full |
+| 5ec7c3d4b5 | app/procurement/purchase-requests/FD-purchase-requests.md:617 | flowchart | 14 | 2.9.1 Main Selection Flow | - | rejected: diverges |
+| d356b804de | app/procurement/purchase-requests/FD-purchase-requests.md:642 | flowchart | 22 | 2.9.2 Bulk Approve Flow | - | rejected: diverges |
 | cb99c065a5 | app/procurement/purchase-requests/FD-purchase-requests.md:676 | flowchart | 26 | 2.9.3 Bulk Reject Flow | - | out-of-scope (filter: stmts > 25) |
 | aa56cbe9fc | app/procurement/purchase-requests/FD-purchase-requests.md:715 | flowchart | 26 | 2.9.4 Bulk Return Flow | - | out-of-scope (filter: stmts > 25) |
 | bb07e0731a | app/procurement/purchase-requests/FD-purchase-requests.md:754 | flowchart | 26 | 2.9.5 Split Items Flow | - | out-of-scope (filter: stmts > 25) |
-| fe7d15440f | app/procurement/purchase-requests/FD-purchase-requests.md:793 | flowchart | 16 | 2.9.5.1 Approver Split by Approval Status Flow | purchase-request/03-user-flow | candidate |
-| 07c243a04f | app/procurement/purchase-requests/FD-purchase-requests.md:823 | flowchart | 20 | 2.9.6 Set Date Required Flow | purchase-request/03-user-flow | candidate |
-| 354b4c7182 | app/procurement/purchase-requests/FD-purchase-requests.md:854 | graph | 13 | Role-Based Action Availability Matrix | purchase-request/03-user-flow | candidate |
-| f5b3307427 | app/procurement/purchase-requests/FD-purchase-requests.md:892 | flowchart | 13 | 2.10.1 View Budget Tab Flow | purchase-request/03-user-flow | candidate |
+| fe7d15440f | app/procurement/purchase-requests/FD-purchase-requests.md:793 | flowchart | 16 | 2.9.5.1 Approver Split by Approval Status Flow | - | rejected: diverges |
+| 07c243a04f | app/procurement/purchase-requests/FD-purchase-requests.md:823 | flowchart | 20 | 2.9.6 Set Date Required Flow | - | rejected: page-full |
+| 354b4c7182 | app/procurement/purchase-requests/FD-purchase-requests.md:854 | graph | 13 | Role-Based Action Availability Matrix | - | rejected: page-full |
+| f5b3307427 | app/procurement/purchase-requests/FD-purchase-requests.md:892 | flowchart | 13 | 2.10.1 View Budget Tab Flow | - | rejected: unverifiable |
 | b555ec4dc3 | app/procurement/purchase-requests/FD-purchase-requests.md:917 | flowchart | 28 | 2.10.2 Add Budget Allocation Flow | - | out-of-scope (filter: stmts > 25) |
 | bab966bb76 | app/procurement/purchase-requests/FD-purchase-requests.md:959 | flowchart | 26 | 2.10.3 Edit Budget Allocation Flow | - | out-of-scope (filter: stmts > 25) |
-| aeae4139b8 | app/procurement/purchase-requests/FD-purchase-requests.md:997 | flowchart | 13 | 2.10.4 Delete Budget Allocation Flow | purchase-request/03-user-flow | candidate |
-| 6252c7ad8a | app/procurement/purchase-requests/FD-purchase-requests.md:1019 | flowchart | 19 | 2.10.5 Budget Calculation Flow | purchase-request/03-user-flow | candidate |
-| a5b07b6348 | app/procurement/purchase-requests/FD-purchase-requests.md:1055 | graph | 8 | Budget Tab Role Access Matrix | purchase-request/03-user-flow | candidate |
-| 3ee07bc749 | app/procurement/purchase-requests/FD-purchase-requests.md:1087 | flowchart | 21 | 2.11.1 Main Auto-Pricing Flow | purchase-request/03-user-flow | candidate |
-| 6efde5e2bf | app/procurement/purchase-requests/FD-purchase-requests.md:1123 | flowchart | 20 | 2.11.2 Vendor Scoring Algorithm | purchase-request/03-user-flow | candidate |
-| 46563a3e7d | app/procurement/purchase-requests/FD-purchase-requests.md:1159 | flowchart | 20 | 2.11.3 Unit Conversion & Price Normalization | purchase-request/03-user-flow | candidate |
-| 8c5a9618a6 | app/procurement/purchase-requests/FD-purchase-requests.md:1195 | flowchart | 15 | 2.11.4 MOQ Validation Flow | purchase-request/03-user-flow | candidate |
-| 6da1e1d5bf | app/procurement/purchase-requests/FD-purchase-requests.md:1223 | flowchart | 23 | 2.11.5 Enhanced Price Comparison UI Flow | purchase-request/03-user-flow | candidate |
-| 80d33c0185 | app/procurement/purchase-requests/FD-purchase-requests.md:1265 | flowchart | 13 | 2.11.6 MOQ Warning Banner Flow | purchase-request/03-user-flow | candidate |
-| a5eafe4e85 | app/procurement/purchase-requests/FD-purchase-requests.md:1291 | graph | 10 | Auto-Pricing Role Access Matrix | purchase-request/03-user-flow | candidate |
-| b8b5f65574 | app/procurement/purchase-requests/FD-purchase-requests.md:1326 | flowchart | 11 | 2.12.1 Currency Display Decision Flow | purchase-request/03-user-flow | candidate |
-| 202f6d8bc1 | app/procurement/purchase-requests/FD-purchase-requests.md:1350 | graph | 11 | 2.12.2 Currency Conversion Display Pattern | purchase-request/03-user-flow | candidate |
-| 2a1821d55c | app/procurement/purchase-requests/FD-purchase-requests.md:1375 | flowchart | 21 | 2.12.3 Currency Selection Flow (Requestor & Purchasing Staff) | purchase-request/03-user-flow | candidate |
+| aeae4139b8 | app/procurement/purchase-requests/FD-purchase-requests.md:997 | flowchart | 13 | 2.10.4 Delete Budget Allocation Flow | - | rejected: unverifiable |
+| 6252c7ad8a | app/procurement/purchase-requests/FD-purchase-requests.md:1019 | flowchart | 19 | 2.10.5 Budget Calculation Flow | - | rejected: unverifiable |
+| a5b07b6348 | app/procurement/purchase-requests/FD-purchase-requests.md:1055 | graph | 8 | Budget Tab Role Access Matrix | - | rejected: unverifiable |
+| 3ee07bc749 | app/procurement/purchase-requests/FD-purchase-requests.md:1087 | flowchart | 21 | 2.11.1 Main Auto-Pricing Flow | - | rejected: page-full |
+| 6efde5e2bf | app/procurement/purchase-requests/FD-purchase-requests.md:1123 | flowchart | 20 | 2.11.2 Vendor Scoring Algorithm | - | rejected: page-full |
+| 46563a3e7d | app/procurement/purchase-requests/FD-purchase-requests.md:1159 | flowchart | 20 | 2.11.3 Unit Conversion & Price Normalization | - | rejected: page-full |
+| 8c5a9618a6 | app/procurement/purchase-requests/FD-purchase-requests.md:1195 | flowchart | 15 | 2.11.4 MOQ Validation Flow | - | rejected: page-full |
+| 6da1e1d5bf | app/procurement/purchase-requests/FD-purchase-requests.md:1223 | flowchart | 23 | 2.11.5 Enhanced Price Comparison UI Flow | - | rejected: page-full |
+| 80d33c0185 | app/procurement/purchase-requests/FD-purchase-requests.md:1265 | flowchart | 13 | 2.11.6 MOQ Warning Banner Flow | - | rejected: page-full |
+| a5eafe4e85 | app/procurement/purchase-requests/FD-purchase-requests.md:1291 | graph | 10 | Auto-Pricing Role Access Matrix | - | rejected: page-full |
+| b8b5f65574 | app/procurement/purchase-requests/FD-purchase-requests.md:1326 | flowchart | 11 | 2.12.1 Currency Display Decision Flow | - | rejected: page-full |
+| 202f6d8bc1 | app/procurement/purchase-requests/FD-purchase-requests.md:1350 | graph | 11 | 2.12.2 Currency Conversion Display Pattern | - | rejected: page-full |
+| 2a1821d55c | app/procurement/purchase-requests/FD-purchase-requests.md:1375 | flowchart | 21 | 2.12.3 Currency Selection Flow (Requestor & Purchasing Staff) | - | rejected: page-full |
 | 8d10f9747c | app/procurement/purchase-requests/FD-purchase-requests.md:1415 | flowchart | 28 | 2.12.4 Summary Total Currency Display | - | out-of-scope (filter: stmts > 25) |
-| 2c04064047 | app/procurement/purchase-requests/FD-purchase-requests.md:1473 | graph | 6 | Currency Visibility Matrix | purchase-request/03-user-flow | candidate |
+| 2c04064047 | app/procurement/purchase-requests/FD-purchase-requests.md:1473 | graph | 6 | Currency Visibility Matrix | - | rejected: page-full |
 | abe8541737 | app/procurement/purchase-requests/FD-purchase-requests.md:1497 | flowchart | 9 | 3.1 Level 0 - Context Diagram | - | out-of-scope (filter: prototype heading) |
-| 7951d5fd82 | app/procurement/purchase-requests/FD-purchase-requests.md:1512 | flowchart | 14 | 3.2 Level 1 - Main Processes | purchase-request/03-user-flow | candidate |
-| 3da6c2e2f0 | app/procurement/purchase-requests/FD-purchase-requests.md:1537 | flowchart | 11 | 3.3 Level 2 - Create PR Process Detail | purchase-request/03-user-flow | candidate |
+| 7951d5fd82 | app/procurement/purchase-requests/FD-purchase-requests.md:1512 | flowchart | 14 | 3.2 Level 1 - Main Processes | - | rejected: page-full |
+| 3da6c2e2f0 | app/procurement/purchase-requests/FD-purchase-requests.md:1537 | flowchart | 11 | 3.3 Level 2 - Create PR Process Detail | - | rejected: page-full |
 | 32d4a7e193 | app/procurement/purchase-requests/FD-purchase-requests.md:1562 | sequenceDiagram | 41 | 4.1 Create and Submit Purchase Request | - | out-of-scope (filter: stmts > 25) |
 | 48cd017261 | app/procurement/purchase-requests/FD-purchase-requests.md:1623 | sequenceDiagram | 38 | 4.2 Approve Purchase Request | - | out-of-scope (filter: stmts > 25) |
 | 533eb253de | app/procurement/purchase-requests/FD-purchase-requests.md:1676 | sequenceDiagram | 28 | 4.3 Convert PR to Purchase Order | - | out-of-scope (filter: stmts > 25) |
 | 9c44af79d8 | app/procurement/purchase-requests/FD-purchase-requests.md:1724 | sequenceDiagram | 38 | 4.4 Void Purchase Request (Rejection) | - | out-of-scope (filter: stmts > 25) |
-| 318e48732b | app/procurement/purchase-requests/FD-purchase-requests.md:1789 | stateDiagram-v2 | 20 | 5.1 Purchase Request Status Lifecycle | purchase-request/02-business-rules | candidate |
-| e0540b4dd3 | app/procurement/purchase-requests/FD-purchase-requests.md:1829 | stateDiagram | 21 | 5.2 Approval Status Lifecycle | purchase-request/02-business-rules | candidate |
-| 349b2ad2b3 | app/procurement/purchase-requests/FD-purchase-requests.md:1872 | flowchart | 20 | 6.1 Multi-Stage Sequential Approval Workflow | purchase-request/03-user-flow | candidate |
-| 85f2102cd4 | app/procurement/purchase-requests/FD-purchase-requests.md:1911 | flowchart | 24 | 6.2 Parallel Approval Workflow | purchase-request/03-user-flow | candidate |
-| b3cffb45c5 | app/procurement/purchase-requests/FD-purchase-requests.md:1953 | flowchart | 9 | 7.1 Budget System Integration | purchase-request/03-user-flow | candidate |
-| 62c3193cb6 | app/procurement/purchase-requests/FD-purchase-requests.md:1971 | flowchart | 8 | 7.2 Product Master Integration | purchase-request/03-user-flow | candidate |
-| 7173c5e577 | app/procurement/purchase-requests/FD-purchase-requests.md:1987 | flowchart | 10 | 7.3 Approval Notification Flow | purchase-request/03-user-flow | candidate |
+| 318e48732b | app/procurement/purchase-requests/FD-purchase-requests.md:1789 | stateDiagram-v2 | 20 | 5.1 Purchase Request Status Lifecycle | - | rejected: diverges |
+| e0540b4dd3 | app/procurement/purchase-requests/FD-purchase-requests.md:1829 | stateDiagram | 21 | 5.2 Approval Status Lifecycle | - | rejected: diverges |
+| 349b2ad2b3 | app/procurement/purchase-requests/FD-purchase-requests.md:1872 | flowchart | 20 | 6.1 Multi-Stage Sequential Approval Workflow | - | rejected: diverges |
+| 85f2102cd4 | app/procurement/purchase-requests/FD-purchase-requests.md:1911 | flowchart | 24 | 6.2 Parallel Approval Workflow | - | rejected: diverges |
+| b3cffb45c5 | app/procurement/purchase-requests/FD-purchase-requests.md:1953 | flowchart | 9 | 7.1 Budget System Integration | - | rejected: unverifiable |
+| 62c3193cb6 | app/procurement/purchase-requests/FD-purchase-requests.md:1971 | flowchart | 8 | 7.2 Product Master Integration | - | rejected: page-full |
+| 7173c5e577 | app/procurement/purchase-requests/FD-purchase-requests.md:1987 | flowchart | 10 | 7.3 Approval Notification Flow | - | rejected: page-full |
 | 8ba754922c | app/procurement/purchase-requests/FD-purchase-requests.md:2010 | flowchart | 30 | 8.1 End-to-End PR Process | - | out-of-scope (filter: stmts > 25) |
 | 7aed9db888 | app/procurement/purchase-requests/FD-purchase-requests.md:2060 | flowchart | 72 | 8.2 Multi-Level Approval Workflow with Decision Points | - | out-of-scope (filter: stmts > 25) |
-| 7123c56693 | app/procurement/purchase-requests/FD-purchase-requests.md:2169 | flowchart | 23 | 9.1 Workflow Engine Approval Determination | purchase-request/03-user-flow | candidate |
-| e9514b7dd7 | app/procurement/purchase-requests/FD-purchase-requests.md:2227 | flowchart | 19 | 9.2 Status Transition Logic | purchase-request/03-user-flow | candidate |
+| 7123c56693 | app/procurement/purchase-requests/FD-purchase-requests.md:2169 | flowchart | 23 | 9.1 Workflow Engine Approval Determination | - | rejected: diverges |
+| e9514b7dd7 | app/procurement/purchase-requests/FD-purchase-requests.md:2227 | flowchart | 19 | 9.2 Status Transition Logic | - | rejected: diverges |
 | 9a3a491aba | app/procurement/purchase-requests/FD-purchase-requests.md:2261 | flowchart | 28 | 10.1 Concurrent Item Processing | - | out-of-scope (filter: stmts > 25) |
-| ea5a95e0bb | app/procurement/purchase-requests/FD-purchase-requests.md:2301 | flowchart | 20 | 10.2 Batch Approval Processing | purchase-request/03-user-flow | candidate |
+| ea5a95e0bb | app/procurement/purchase-requests/FD-purchase-requests.md:2301 | flowchart | 20 | 10.2 Batch Approval Processing | - | rejected: page-full |
 | 1d1ccebad3 | app/procurement/purchase-requests/FD-purchase-requests.md:2339 | flowchart | 27 | 11.1 PR Submission Error Handling | - | out-of-scope (filter: stmts > 25) |
-| 5a61dff16a | app/procurement/purchase-requests/FD-purchase-requests.md:2377 | flowchart | 19 | 11.2 Concurrent Edit Conflict Resolution | purchase-request/03-user-flow | candidate |
-| 98b41bab78 | app/procurement/purchase-requests/FD-purchase-requests.md:2412 | flowchart | 12 | 12.1 Lazy Loading PR List | purchase-request/03-user-flow | candidate |
-| 2443ae2dc5 | app/procurement/purchase-requests/FD-purchase-requests.md:2433 | flowchart | 12 | 12.2 Caching Strategy | purchase-request/03-user-flow | candidate |
+| 5a61dff16a | app/procurement/purchase-requests/FD-purchase-requests.md:2377 | flowchart | 19 | 11.2 Concurrent Edit Conflict Resolution | - | rejected: page-full |
+| 98b41bab78 | app/procurement/purchase-requests/FD-purchase-requests.md:2412 | flowchart | 12 | 12.1 Lazy Loading PR List | - | rejected: page-full |
+| 2443ae2dc5 | app/procurement/purchase-requests/FD-purchase-requests.md:2433 | flowchart | 12 | 12.2 Caching Strategy | - | rejected: page-full |
 | 3d0fab298c | app/procurement/purchase-requests/TS-purchase-requests.md:63 | graph | 23 | High-Level System Architecture | - | out-of-scope (filter: prototype heading) |
 | ff89f867a2 | app/procurement/purchase-requests/TS-purchase-requests.md:147 | graph | 7 | Page Hierarchy | - | out-of-scope (filter: prototype heading) |
-| cdae6f0e39 | app/procurement/purchase-requests/TS-purchase-requests.md:1407 | flowchart | 24 | Create Purchase Request Flow | purchase-request/03-user-flow | candidate |
+| cdae6f0e39 | app/procurement/purchase-requests/TS-purchase-requests.md:1407 | flowchart | 24 | Create Purchase Request Flow | - | rejected: page-full |
 | 852c88363f | app/procurement/purchase-requests/TS-purchase-requests.md:1449 | flowchart | 22 | Approval Workflow Navigation | - | out-of-scope (filter: prototype heading) |
-| 4183c802cb | app/procurement/purchase-requests/TS-purchase-requests.md:1487 | flowchart | 22 | Convert PR to PO Flow | purchase-request/03-user-flow | candidate |
+| 4183c802cb | app/procurement/purchase-requests/TS-purchase-requests.md:1487 | flowchart | 22 | Convert PR to PO Flow | - | rejected: page-full |
 | 60b47ea0a9 | app/procurement/purchase-requests/TS-purchase-requests.md:1538 | graph | 61 | Enhanced Page Hierarchy | - | out-of-scope (filter: prototype heading) |
 | 180d5b90ca | app/procurement/purchase-requests/TS-purchase-requests.md:2062 | flowchart | 83 | Navigation Flow Diagram | - | out-of-scope (filter: prototype heading) |
 | f4c0597bd3 | app/procurement/purchase-requests/TS-purchase-requests.md:2999 | erDiagram | 213 | Entity Relationship Diagram (ERD) | - | out-of-scope (filter: stmts > 25) |
 | 01588226cb | app/procurement/purchase-requests/TS-purchase-requests.md:3293 | classDiagram | 343 | Class Diagram | - | out-of-scope (filter: type classDiagram) |
 | c3eb6c07e3 | app/procurement/purchase-requests/UC-purchase-requests.md:79 | graph | 64 | 2. Use Case Diagram (Standard UML Format) | - | out-of-scope (filter: stmts > 25) |
-| 316816d4cc | app/procurement/purchase-requests/UC-purchase-requests.md:190 | graph | 11 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| 4f59398f07 | app/procurement/purchase-requests/UC-purchase-requests.md:413 | graph | 13 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| 9e54ba15bb | app/procurement/purchase-requests/UC-purchase-requests.md:649 | graph | 9 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| f075c35f73 | app/procurement/purchase-requests/UC-purchase-requests.md:769 | graph | 9 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| bf3ba3517d | app/procurement/purchase-requests/UC-purchase-requests.md:879 | graph | 15 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| 10cc2ea1dc | app/procurement/purchase-requests/UC-purchase-requests.md:1021 | graph | 11 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| d130a7407c | app/procurement/purchase-requests/UC-purchase-requests.md:1124 | graph | 5 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| c88ab70517 | app/procurement/purchase-requests/UC-purchase-requests.md:1216 | graph | 7 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| d00724aef6 | app/procurement/purchase-requests/UC-purchase-requests.md:1305 | graph | 5 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| de3566e407 | app/procurement/purchase-requests/UC-purchase-requests.md:1407 | graph | 9 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| f3c685893d | app/procurement/purchase-requests/UC-purchase-requests.md:1520 | graph | 5 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| de2f872b28 | app/procurement/purchase-requests/UC-purchase-requests.md:1634 | graph | 11 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| 7df48d8458 | app/procurement/purchase-requests/UC-purchase-requests.md:1961 | graph | 7 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| 887c7a8de5 | app/procurement/purchase-requests/UC-purchase-requests.md:2336 | graph | 7 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| a926f657f8 | app/procurement/purchase-requests/UC-purchase-requests.md:2483 | graph | 5 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| 941ef40755 | app/procurement/purchase-requests/UC-purchase-requests.md:2626 | graph | 11 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| 6faab4bbb0 | app/procurement/purchase-requests/UC-purchase-requests.md:2804 | graph | 7 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| 0d5bbdc455 | app/procurement/purchase-requests/UC-purchase-requests.md:2986 | graph | 13 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| b591ccac70 | app/procurement/purchase-requests/UC-purchase-requests.md:3120 | graph | 7 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| e4ae0cef6f | app/procurement/purchase-requests/UC-purchase-requests.md:3242 | graph | 5 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| 3bd21c77a1 | app/procurement/purchase-requests/UC-purchase-requests.md:3360 | graph | 21 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| a4a65bb1ea | app/procurement/purchase-requests/UC-purchase-requests.md:3667 | graph | 19 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| 061e15f9b6 | app/procurement/purchase-requests/UC-purchase-requests.md:3940 | graph | 7 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| 94bd2eaffe | app/procurement/purchase-requests/UC-purchase-requests.md:4107 | graph | 3 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| 4dc46eccbb | app/procurement/purchase-requests/UC-purchase-requests.md:4189 | graph | 5 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| a00c41cfe6 | app/procurement/purchase-requests/UC-purchase-requests.md:4278 | graph | 3 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| 2dd19cfb83 | app/procurement/purchase-requests/UC-purchase-requests.md:4381 | graph | 3 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| 6c4abde8f7 | app/procurement/purchase-requests/UC-purchase-requests.md:4479 | graph | 7 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| a08a9e63ad | app/procurement/purchase-requests/UC-purchase-requests.md:4579 | graph | 5 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| 33ec8b1398 | app/procurement/purchase-requests/UC-purchase-requests.md:4676 | graph | 5 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| ee400f5f50 | app/procurement/purchase-requests/UC-purchase-requests.md:4778 | graph | 3 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| 046b2530a7 | app/procurement/purchase-requests/UC-purchase-requests.md:4861 | graph | 3 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| ac0a1da7b3 | app/procurement/purchase-requests/UC-purchase-requests.md:4941 | graph | 1 | Use Case Diagram | purchase-request/03-user-flow | candidate |
-| df282e10c7 | app/procurement/purchase-requests/UC-purchase-requests.md:5036 | flowchart | 20 | 8. Use Case Dependencies | purchase-request/03-user-flow | candidate |
+| 316816d4cc | app/procurement/purchase-requests/UC-purchase-requests.md:190 | graph | 11 | Use Case Diagram | purchase-request/03-user-flow | imported |
+| 4f59398f07 | app/procurement/purchase-requests/UC-purchase-requests.md:413 | graph | 13 | Use Case Diagram | - | rejected: covered |
+| 9e54ba15bb | app/procurement/purchase-requests/UC-purchase-requests.md:649 | graph | 9 | Use Case Diagram | - | rejected: covered |
+| f075c35f73 | app/procurement/purchase-requests/UC-purchase-requests.md:769 | graph | 9 | Use Case Diagram | - | rejected: covered |
+| bf3ba3517d | app/procurement/purchase-requests/UC-purchase-requests.md:879 | graph | 15 | Use Case Diagram | - | rejected: covered |
+| 10cc2ea1dc | app/procurement/purchase-requests/UC-purchase-requests.md:1021 | graph | 11 | Use Case Diagram | - | rejected: covered |
+| d130a7407c | app/procurement/purchase-requests/UC-purchase-requests.md:1124 | graph | 5 | Use Case Diagram | - | rejected: covered |
+| c88ab70517 | app/procurement/purchase-requests/UC-purchase-requests.md:1216 | graph | 7 | Use Case Diagram | - | rejected: covered |
+| d00724aef6 | app/procurement/purchase-requests/UC-purchase-requests.md:1305 | graph | 5 | Use Case Diagram | - | rejected: covered |
+| de3566e407 | app/procurement/purchase-requests/UC-purchase-requests.md:1407 | graph | 9 | Use Case Diagram | - | rejected: covered |
+| f3c685893d | app/procurement/purchase-requests/UC-purchase-requests.md:1520 | graph | 5 | Use Case Diagram | - | rejected: covered |
+| de2f872b28 | app/procurement/purchase-requests/UC-purchase-requests.md:1634 | graph | 11 | Use Case Diagram | - | rejected: covered |
+| 7df48d8458 | app/procurement/purchase-requests/UC-purchase-requests.md:1961 | graph | 7 | Use Case Diagram | - | rejected: covered |
+| 887c7a8de5 | app/procurement/purchase-requests/UC-purchase-requests.md:2336 | graph | 7 | Use Case Diagram | - | rejected: covered |
+| a926f657f8 | app/procurement/purchase-requests/UC-purchase-requests.md:2483 | graph | 5 | Use Case Diagram | - | rejected: covered |
+| 941ef40755 | app/procurement/purchase-requests/UC-purchase-requests.md:2626 | graph | 11 | Use Case Diagram | - | rejected: covered |
+| 6faab4bbb0 | app/procurement/purchase-requests/UC-purchase-requests.md:2804 | graph | 7 | Use Case Diagram | - | rejected: covered |
+| 0d5bbdc455 | app/procurement/purchase-requests/UC-purchase-requests.md:2986 | graph | 13 | Use Case Diagram | - | rejected: covered |
+| b591ccac70 | app/procurement/purchase-requests/UC-purchase-requests.md:3120 | graph | 7 | Use Case Diagram | - | rejected: covered |
+| e4ae0cef6f | app/procurement/purchase-requests/UC-purchase-requests.md:3242 | graph | 5 | Use Case Diagram | - | rejected: covered |
+| 3bd21c77a1 | app/procurement/purchase-requests/UC-purchase-requests.md:3360 | graph | 21 | Use Case Diagram | - | rejected: covered |
+| a4a65bb1ea | app/procurement/purchase-requests/UC-purchase-requests.md:3667 | graph | 19 | Use Case Diagram | - | rejected: covered |
+| 061e15f9b6 | app/procurement/purchase-requests/UC-purchase-requests.md:3940 | graph | 7 | Use Case Diagram | - | rejected: covered |
+| 94bd2eaffe | app/procurement/purchase-requests/UC-purchase-requests.md:4107 | graph | 3 | Use Case Diagram | - | rejected: covered |
+| 4dc46eccbb | app/procurement/purchase-requests/UC-purchase-requests.md:4189 | graph | 5 | Use Case Diagram | - | rejected: covered |
+| a00c41cfe6 | app/procurement/purchase-requests/UC-purchase-requests.md:4278 | graph | 3 | Use Case Diagram | - | rejected: covered |
+| 2dd19cfb83 | app/procurement/purchase-requests/UC-purchase-requests.md:4381 | graph | 3 | Use Case Diagram | - | rejected: covered |
+| 6c4abde8f7 | app/procurement/purchase-requests/UC-purchase-requests.md:4479 | graph | 7 | Use Case Diagram | - | rejected: covered |
+| a08a9e63ad | app/procurement/purchase-requests/UC-purchase-requests.md:4579 | graph | 5 | Use Case Diagram | - | rejected: covered |
+| 33ec8b1398 | app/procurement/purchase-requests/UC-purchase-requests.md:4676 | graph | 5 | Use Case Diagram | - | rejected: covered |
+| ee400f5f50 | app/procurement/purchase-requests/UC-purchase-requests.md:4778 | graph | 3 | Use Case Diagram | - | rejected: covered |
+| 046b2530a7 | app/procurement/purchase-requests/UC-purchase-requests.md:4861 | graph | 3 | Use Case Diagram | - | rejected: covered |
+| ac0a1da7b3 | app/procurement/purchase-requests/UC-purchase-requests.md:4941 | graph | 1 | Use Case Diagram | - | rejected: covered |
+| df282e10c7 | app/procurement/purchase-requests/UC-purchase-requests.md:5036 | flowchart | 20 | 8. Use Case Dependencies | - | rejected: page-full |
 | 6403ae083f | documents/pr/purchase-request-component-map.md:7 | graph | 25 | File Structure Map | - | out-of-scope (filter: not docs/app) |
 | 22e9e795f9 | documents/pr/purchase-request-component-map.md:44 | graph | 43 | Component Hierarchy Detailed Map | - | out-of-scope (filter: not docs/app) |
 | 8b87f1b400 | documents/pr/purchase-request-component-map.md:113 | flowchart | 17 | Component Interaction Flow | - | out-of-scope (filter: not docs/app) |
@@ -1042,44 +1046,44 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 | 3f1b284c0f | app/operational-planning/recipe-management/categories/FD-categories.md:193 | flowchart | 30 | 4. Search and Filter Workflow | - | out-of-scope (filter: stmts > 25) |
 | 2634ebee23 | app/operational-planning/recipe-management/categories/FD-categories.md:240 | flowchart | 33 | 5. Hierarchy Expansion Workflow | - | out-of-scope (filter: prototype heading) |
 | 8d406c801b | app/operational-planning/recipe-management/categories/FD-categories.md:293 | flowchart | 42 | 6. Bulk Selection and Actions Workflow | - | out-of-scope (filter: stmts > 25) |
-| 6e84ec62ed | app/operational-planning/recipe-management/categories/FD-categories.md:355 | flowchart | 23 | 7. Metric Calculation Workflow | recipe/03-user-flow | candidate |
-| 17dba5a04c | app/operational-planning/recipe-management/categories/FD-categories.md:401 | stateDiagram-v2 | 18 | 8. Category Status Lifecycle | recipe/02-business-rules | candidate |
+| 6e84ec62ed | app/operational-planning/recipe-management/categories/FD-categories.md:355 | flowchart | 23 | 7. Metric Calculation Workflow | - | rejected: diverges |
+| 17dba5a04c | app/operational-planning/recipe-management/categories/FD-categories.md:401 | stateDiagram-v2 | 18 | 8. Category Status Lifecycle | recipe/category | imported |
 | 4c1b1b2fdf | app/operational-planning/recipe-management/categories/FD-categories.md:433 | flowchart | 33 | 9. Permission-Based Action Flow | - | out-of-scope (filter: stmts > 25) |
 | 494696992c | app/operational-planning/recipe-management/categories/FD-categories.md:488 | flowchart | 36 | 10. Error Recovery Flow | - | out-of-scope (filter: stmts > 25) |
 | 1debb42b54 | app/operational-planning/recipe-management/categories/TS-categories.md:21 | graph | 22 | 1.1 Architecture Overview | - | out-of-scope (filter: prototype heading) |
 | 425bd0a416 | app/operational-planning/recipe-management/categories/TS-categories.md:124 | graph | 19 | 2.2 Component Hierarchy | - | out-of-scope (filter: prototype heading) |
-| 72ca236cdb | app/operational-planning/recipe-management/categories/TS-categories.md:187 | sequenceDiagram | 14 | 4.1 Load Categories Flow | recipe/03-user-flow | candidate |
+| 72ca236cdb | app/operational-planning/recipe-management/categories/TS-categories.md:187 | sequenceDiagram | 14 | 4.1 Load Categories Flow | - | rejected: unverifiable |
 | b16a1e78b7 | app/operational-planning/recipe-management/categories/TS-categories.md:211 | sequenceDiagram | 28 | 4.2 Create Category Flow | - | out-of-scope (filter: stmts > 25) |
 | 11892257fc | app/operational-planning/recipe-management/categories/TS-categories.md:247 | sequenceDiagram | 31 | 4.3 Edit Category Flow | - | out-of-scope (filter: stmts > 25) |
 | 487c4cfcdd | app/operational-planning/recipe-management/categories/TS-categories.md:287 | sequenceDiagram | 42 | 4.4 Delete Category Flow | - | out-of-scope (filter: stmts > 25) |
-| c6c7990efa | app/operational-planning/recipe-management/categories/TS-categories.md:337 | sequenceDiagram | 23 | 4.5 Filter and Search Flow | recipe/03-user-flow | candidate |
+| c6c7990efa | app/operational-planning/recipe-management/categories/TS-categories.md:337 | sequenceDiagram | 23 | 4.5 Filter and Search Flow | - | rejected: diverges |
 | 9ab3ac4ef2 | app/operational-planning/recipe-management/categories/TS-categories.md:1077 | graph | 26 | Page Hierarchy | - | out-of-scope (filter: prototype heading) |
 | 227f529028 | app/operational-planning/recipe-management/categories/VAL-categories.md:36 | graph | 7 | 1.2 Validation Layers | - | out-of-scope (filter: prototype heading) |
 | 327b6b4d3c | app/operational-planning/recipe-management/cuisine-types/DD-cuisine-types.md:256 | erDiagram | 32 | 3.1 Relationship Diagram | - | out-of-scope (filter: stmts > 25) |
 | 101b17314f | app/operational-planning/recipe-management/cuisine-types/FD-cuisine-types.md:21 | flowchart | 30 | 1. Create Cuisine Workflow | - | out-of-scope (filter: stmts > 25) |
 | b414779442 | app/operational-planning/recipe-management/cuisine-types/FD-cuisine-types.md:73 | flowchart | 40 | 2. Edit Cuisine Workflow | - | out-of-scope (filter: stmts > 25) |
 | 7711141573 | app/operational-planning/recipe-management/cuisine-types/FD-cuisine-types.md:135 | flowchart | 32 | 3. Delete Cuisine Workflow | - | out-of-scope (filter: stmts > 25) |
-| 7144533bdb | app/operational-planning/recipe-management/cuisine-types/FD-cuisine-types.md:190 | flowchart | 25 | 4. Search and Filter Workflow | recipe/03-user-flow | candidate |
+| 7144533bdb | app/operational-planning/recipe-management/cuisine-types/FD-cuisine-types.md:190 | flowchart | 25 | 4. Search and Filter Workflow | - | rejected: diverges |
 | 58b6c9de9d | app/operational-planning/recipe-management/cuisine-types/FD-cuisine-types.md:235 | flowchart | 45 | 5. Bulk Operations Workflow | - | out-of-scope (filter: stmts > 25) |
-| f40394f63f | app/operational-planning/recipe-management/cuisine-types/FD-cuisine-types.md:301 | stateDiagram-v2 | 19 | 6. Cuisine Status Lifecycle | recipe/02-business-rules | candidate |
-| 1f25d42e5c | app/operational-planning/recipe-management/cuisine-types/FD-cuisine-types.md:334 | flowchart | 18 | 7. Permission-Based Action Flow | recipe/03-user-flow | candidate |
+| f40394f63f | app/operational-planning/recipe-management/cuisine-types/FD-cuisine-types.md:301 | stateDiagram-v2 | 19 | 6. Cuisine Status Lifecycle | recipe/cuisine | imported |
+| 1f25d42e5c | app/operational-planning/recipe-management/cuisine-types/FD-cuisine-types.md:334 | flowchart | 18 | 7. Permission-Based Action Flow | - | rejected: unverifiable |
 | 781abdd808 | app/operational-planning/recipe-management/cuisine-types/FD-cuisine-types.md:371 | flowchart | 35 | 8. Error Recovery Flow | - | out-of-scope (filter: stmts > 25) |
 | 231158ca13 | app/operational-planning/recipe-management/cuisine-types/TS-cuisine-types.md:29 | graph | 18 | 1.2 Architecture Diagram | - | out-of-scope (filter: prototype heading) |
 | 645324ec8e | app/operational-planning/recipe-management/cuisine-types/TS-cuisine-types.md:324 | sequenceDiagram | 31 | 4.1 Create Cuisine Flow | - | out-of-scope (filter: stmts > 25) |
 | 2858c98a2d | app/operational-planning/recipe-management/cuisine-types/TS-cuisine-types.md:370 | sequenceDiagram | 28 | 4.2 Edit Cuisine Flow | - | out-of-scope (filter: stmts > 25) |
 | 019a2b0394 | app/operational-planning/recipe-management/cuisine-types/TS-cuisine-types.md:413 | sequenceDiagram | 37 | 4.3 Delete Cuisine Flow | - | out-of-scope (filter: stmts > 25) |
-| a0bed89663 | app/operational-planning/recipe-management/cuisine-types/TS-cuisine-types.md:459 | graph | 9 | 4.4 Filter & Search Flow | recipe/03-user-flow | candidate |
+| a0bed89663 | app/operational-planning/recipe-management/cuisine-types/TS-cuisine-types.md:459 | graph | 9 | 4.4 Filter & Search Flow | - | rejected: diverges |
 | 804a33e003 | app/operational-planning/recipe-management/cuisine-types/TS-cuisine-types.md:1198 | graph | 26 | Page Hierarchy | - | out-of-scope (filter: prototype heading) |
 | a681277a91 | app/operational-planning/recipe-management/equipment/DD-equipment.md:372 | erDiagram | 28 | 6.1 Entity Relationships | - | out-of-scope (filter: stmts > 25) |
 | 35bfda4a94 | app/operational-planning/recipe-management/equipment/FD-equipment.md:19 | flowchart | 30 | 1. Create Equipment Workflow | - | out-of-scope (filter: stmts > 25) |
 | c67e1f4127 | app/operational-planning/recipe-management/equipment/FD-equipment.md:71 | flowchart | 36 | 2. Edit Equipment Workflow | - | out-of-scope (filter: stmts > 25) |
-| 7d1b3ab2ae | app/operational-planning/recipe-management/equipment/FD-equipment.md:128 | flowchart | 25 | 3. Delete Equipment Workflow | recipe/03-user-flow | candidate |
-| a1a6ad5692 | app/operational-planning/recipe-management/equipment/FD-equipment.md:174 | flowchart | 17 | 4. Search and Filter Workflow | recipe/03-user-flow | candidate |
+| 7d1b3ab2ae | app/operational-planning/recipe-management/equipment/FD-equipment.md:128 | flowchart | 25 | 3. Delete Equipment Workflow | - | rejected: unverifiable |
+| a1a6ad5692 | app/operational-planning/recipe-management/equipment/FD-equipment.md:174 | flowchart | 17 | 4. Search and Filter Workflow | recipe/equipment | imported |
 | 9c5439edd6 | app/operational-planning/recipe-management/equipment/FD-equipment.md:211 | stateDiagram-v2 | 27 | 5. Equipment Status Lifecycle | - | out-of-scope (filter: stmts > 25) |
-| 76d3eaa63d | app/operational-planning/recipe-management/equipment/FD-equipment.md:258 | flowchart | 15 | 6. Bulk Selection Workflow | recipe/03-user-flow | candidate |
-| d9dec413a6 | app/operational-planning/recipe-management/equipment/FD-equipment.md:290 | flowchart | 20 | 7. Maintenance Log Workflow | recipe/03-user-flow | candidate |
-| 5633a0908a | app/operational-planning/recipe-management/equipment/FD-equipment.md:330 | flowchart | 10 | 8. Export Equipment Workflow | recipe/03-user-flow | candidate |
-| 26dfb440f3 | app/operational-planning/recipe-management/equipment/FD-equipment.md:355 | flowchart | 18 | 9. Permission-Based Action Flow | recipe/03-user-flow | candidate |
+| 76d3eaa63d | app/operational-planning/recipe-management/equipment/FD-equipment.md:258 | flowchart | 15 | 6. Bulk Selection Workflow | - | rejected: unverifiable |
+| d9dec413a6 | app/operational-planning/recipe-management/equipment/FD-equipment.md:290 | flowchart | 20 | 7. Maintenance Log Workflow | - | rejected: diverges |
+| 5633a0908a | app/operational-planning/recipe-management/equipment/FD-equipment.md:330 | flowchart | 10 | 8. Export Equipment Workflow | - | rejected: diverges |
+| 26dfb440f3 | app/operational-planning/recipe-management/equipment/FD-equipment.md:355 | flowchart | 18 | 9. Permission-Based Action Flow | - | rejected: unverifiable |
 | fbea483e09 | app/operational-planning/recipe-management/equipment/FD-equipment.md:392 | flowchart | 30 | 10. Error Recovery Flow | - | out-of-scope (filter: stmts > 25) |
 | d7ef348edf | app/operational-planning/recipe-management/equipment/TS-equipment.md:36 | graph | 18 | 2.2 Component Hierarchy | - | out-of-scope (filter: prototype heading) |
 | 4e24e107e0 | app/operational-planning/recipe-management/equipment/UC-equipment.md:34 | graph | 33 | 2. Use Case Diagram | - | out-of-scope (filter: stmts > 25) |
@@ -1092,24 +1096,24 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 | ca3ac312d4 | app/operational-planning/recipe-management/recipes/FD-recipes.md:593 | flowchart | 62 | 6. Search and Filter Workflow | - | out-of-scope (filter: stmts > 25) |
 | d3cd1be2d8 | app/operational-planning/recipe-management/recipes/FD-recipes.md:676 | flowchart | 54 | 7. Clone Recipe Workflow | - | out-of-scope (filter: stmts > 25) |
 | 23bbd6eb96 | app/operational-planning/recipe-management/recipes/FD-recipes.md:753 | flowchart | 91 | 8. Bulk Operations Workflow | - | out-of-scope (filter: stmts > 25) |
-| 2965ea87ac | app/operational-planning/recipe-management/recipes/FD-recipes.md:868 | stateDiagram-v2 | 24 | 9. Recipe Status Lifecycle | recipe/02-business-rules | candidate |
+| 2965ea87ac | app/operational-planning/recipe-management/recipes/FD-recipes.md:868 | stateDiagram-v2 | 24 | 9. Recipe Status Lifecycle | - | rejected: diverges |
 | dfd045f350 | app/operational-planning/recipe-management/recipes/FD-recipes.md:906 | flowchart | 81 | 10. Yield Variant Configuration Workflow | - | out-of-scope (filter: stmts > 25) |
 | e2e1d89273 | app/operational-planning/recipe-management/recipes/FD-recipes.md:1014 | flowchart | 34 | 11. Permission-Based Action Flow | - | out-of-scope (filter: stmts > 25) |
 | 45ce1ee15e | app/operational-planning/recipe-management/recipes/FD-recipes.md:1072 | flowchart | 101 | 12. Error Recovery Flow | - | out-of-scope (filter: stmts > 25) |
 | 99b9c8e568 | app/operational-planning/recipe-management/recipes/TS-recipes.md:23 | graph | 35 | 1.1 Architecture Overview | - | out-of-scope (filter: prototype heading) |
 | 9e146fbccc | app/operational-planning/recipe-management/recipes/TS-recipes.md:153 | sequenceDiagram | 31 | 3.1 Recipe Creation Flow | - | out-of-scope (filter: stmts > 25) |
 | fb2541c849 | app/operational-planning/recipe-management/recipes/TS-recipes.md:192 | sequenceDiagram | 28 | 3.2 Recipe Edit Flow | - | out-of-scope (filter: stmts > 25) |
-| cf9011bbe5 | app/operational-planning/recipe-management/recipes/TS-recipes.md:229 | sequenceDiagram | 20 | 3.3 Cost Calculation Flow | recipe/03-user-flow | candidate |
+| cf9011bbe5 | app/operational-planning/recipe-management/recipes/TS-recipes.md:229 | sequenceDiagram | 20 | 3.3 Cost Calculation Flow | - | rejected: diverges |
 | feea42095e | app/operational-planning/recipe-management/recipes/TS-recipes.md:1146 | graph | 26 | Page Hierarchy | - | out-of-scope (filter: prototype heading) |
 | 25aaba54f0 | app/operational-planning/recipe-management/units/DD-units.md:267 | erDiagram | 36 | 6.1 Entity Relationships | - | out-of-scope (filter: stmts > 25) |
 | 67574b7ccd | app/operational-planning/recipe-management/units/FD-units.md:19 | flowchart | 27 | 1. Create Custom Unit Workflow | - | out-of-scope (filter: stmts > 25) |
 | b6842a01ba | app/operational-planning/recipe-management/units/FD-units.md:67 | flowchart | 37 | 2. Edit Unit Workflow | - | out-of-scope (filter: stmts > 25) |
 | 3c2db95d37 | app/operational-planning/recipe-management/units/FD-units.md:128 | flowchart | 27 | 3. Delete Unit Workflow | - | out-of-scope (filter: stmts > 25) |
-| 2dc8be3e0d | app/operational-planning/recipe-management/units/FD-units.md:178 | flowchart | 18 | 4. Search Workflow | recipe/03-user-flow | candidate |
-| 9cd0229bff | app/operational-planning/recipe-management/units/FD-units.md:214 | flowchart | 15 | 5. Bulk Selection Workflow | recipe/03-user-flow | candidate |
-| 1ccf32a982 | app/operational-planning/recipe-management/units/FD-units.md:246 | flowchart | 16 | 6. Unit Precision Application Flow | recipe/03-user-flow | candidate |
-| 3532fb38d7 | app/operational-planning/recipe-management/units/FD-units.md:279 | flowchart | 24 | 7. Unit Conversion Flow | recipe/03-user-flow | candidate |
-| 5436b30e07 | app/operational-planning/recipe-management/units/FD-units.md:324 | flowchart | 25 | 8. Permission-Based Action Flow | recipe/03-user-flow | candidate |
+| 2dc8be3e0d | app/operational-planning/recipe-management/units/FD-units.md:178 | flowchart | 18 | 4. Search Workflow | - | rejected: unverifiable |
+| 9cd0229bff | app/operational-planning/recipe-management/units/FD-units.md:214 | flowchart | 15 | 5. Bulk Selection Workflow | - | rejected: unverifiable |
+| 1ccf32a982 | app/operational-planning/recipe-management/units/FD-units.md:246 | flowchart | 16 | 6. Unit Precision Application Flow | - | rejected: unverifiable |
+| 3532fb38d7 | app/operational-planning/recipe-management/units/FD-units.md:279 | flowchart | 24 | 7. Unit Conversion Flow | - | rejected: unverifiable |
+| 5436b30e07 | app/operational-planning/recipe-management/units/FD-units.md:324 | flowchart | 25 | 8. Permission-Based Action Flow | - | rejected: unverifiable |
 | abfc83e650 | app/operational-planning/recipe-management/units/FD-units.md:371 | flowchart | 30 | 9. Error Recovery Flow | - | out-of-scope (filter: stmts > 25) |
 | b13bc192e6 | app/operational-planning/recipe-management/units/TS-units.md:36 | graph | 18 | 2.2 Component Hierarchy | - | out-of-scope (filter: prototype heading) |
 | 548a6033cd | app/operational-planning/recipe-management/units/UC-units.md:33 | graph | 26 | 2. Use Case Diagram | - | out-of-scope (filter: stmts > 25) |
@@ -1119,10 +1123,10 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 | id | source:line | type | stmts | heading | wiki page | status |
 |---|---|---|---|---|---|---|
 | 9ad20eadbb | app/system-administration/notification-preferences/FD-notification-preferences.md:14 | graph | 7 | Page Navigation | - | out-of-scope (filter: prototype heading) |
-| a51e05ef45 | app/system-administration/notification-preferences/FD-notification-preferences.md:29 | graph | 8 | Configure Defaults Flow | reporting-audit/(choose) | candidate |
-| 814d29432a | app/system-administration/notification-preferences/FD-notification-preferences.md:45 | graph | 8 | Edit Template Flow | reporting-audit/(choose) | candidate |
-| cde6ddbb17 | app/system-administration/notification-preferences/FD-notification-preferences.md:61 | graph | 7 | Bulk Enable Flow | reporting-audit/(choose) | candidate |
-| 9cd65799bc | app/system-administration/notification-preferences/FD-notification-preferences.md:76 | graph | 7 | Channel Toggle Flow | reporting-audit/(choose) | candidate |
+| a51e05ef45 | app/system-administration/notification-preferences/FD-notification-preferences.md:29 | graph | 8 | Configure Defaults Flow | - | rejected: unverifiable |
+| 814d29432a | app/system-administration/notification-preferences/FD-notification-preferences.md:45 | graph | 8 | Edit Template Flow | - | rejected: diverges |
+| cde6ddbb17 | app/system-administration/notification-preferences/FD-notification-preferences.md:61 | graph | 7 | Bulk Enable Flow | - | rejected: unverifiable |
+| 9cd65799bc | app/system-administration/notification-preferences/FD-notification-preferences.md:76 | graph | 7 | Channel Toggle Flow | - | rejected: unverifiable |
 | d0af16be54 | app/system-administration/notification-preferences/TS-notification-preferences.md:14 | graph | 7 | Architecture | - | out-of-scope (filter: prototype heading) |
 | 31c4c17c25 | documents/sa/features/notification-settings/guides/implementation-guide.md:225 | graph | 6 | Data Loading Flow | - | out-of-scope (filter: not docs/app) |
 | f7f83d7f17 | documents/sa/features/notification-settings/guides/implementation-guide.md:237 | graph | 11 | Data Saving Flow | - | out-of-scope (filter: not docs/app) |
@@ -1132,18 +1136,18 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 | id | source:line | type | stmts | heading | wiki page | status |
 |---|---|---|---|---|---|---|
 | cd93e8ed97 | app/inventory-management/spot-check/FD-spot-check.md:40 | flowchart | 29 | Complete Spot Check Lifecycle | - | out-of-scope (filter: stmts > 25) |
-| 59ab2663a5 | app/inventory-management/spot-check/FD-spot-check.md:100 | flowchart | 14 | 2-Step Wizard Process | spot-check/03-user-flow | candidate |
+| 59ab2663a5 | app/inventory-management/spot-check/FD-spot-check.md:100 | flowchart | 14 | 2-Step Wizard Process | - | rejected: diverges |
 | 5260333a12 | app/inventory-management/spot-check/FD-spot-check.md:126 | flowchart | 10 | Wizard Navigation | - | out-of-scope (filter: prototype heading) |
 | 6d4da9623e | app/inventory-management/spot-check/FD-spot-check.md:146 | stateDiagram-v2 | 29 | Spot Check Status Transitions | - | out-of-scope (filter: stmts > 25) |
-| 6b36941941 | app/inventory-management/spot-check/FD-spot-check.md:201 | stateDiagram-v2 | 19 | Item Check Status Transitions | spot-check/02-business-rules | candidate |
+| 6b36941941 | app/inventory-management/spot-check/FD-spot-check.md:201 | stateDiagram-v2 | 19 | Item Check Status Transitions | - | rejected: unverifiable |
 | 3ad460abed | app/inventory-management/spot-check/FD-spot-check.md:241 | flowchart | 39 | Single Item Mode | - | out-of-scope (filter: stmts > 25) |
 | 9af36edce7 | app/inventory-management/spot-check/FD-spot-check.md:304 | flowchart | 31 | Application Navigation | - | out-of-scope (filter: prototype heading) |
 | 8377936cef | app/inventory-management/spot-check/FD-spot-check.md:358 | flowchart | 27 | Spot Check Data Flow | - | out-of-scope (filter: stmts > 25) |
-| 0631299b95 | app/inventory-management/spot-check/FD-spot-check.md:408 | flowchart | 24 | Active Spot Checks Management | spot-check/03-user-flow | candidate |
+| 0631299b95 | app/inventory-management/spot-check/FD-spot-check.md:408 | flowchart | 24 | Active Spot Checks Management | - | rejected: diverges |
 | 68e040aa91 | app/inventory-management/spot-check/FD-spot-check.md:448 | flowchart | 26 | Completed Spot Checks Management | - | out-of-scope (filter: stmts > 25) |
-| bc50a39216 | app/inventory-management/spot-check/FD-spot-check.md:494 | flowchart | 12 | Real-Time Variance Calculation | spot-check/03-user-flow | candidate |
-| b4b5dcb753 | app/inventory-management/spot-check/FD-spot-check.md:522 | sequenceDiagram | 14 | Cancellation Process | spot-check/03-user-flow | candidate |
-| 95dd38acb7 | app/inventory-management/spot-check/FD-spot-check.md:547 | flowchart | 19 | Dashboard Data Aggregation | spot-check/03-user-flow | candidate |
+| bc50a39216 | app/inventory-management/spot-check/FD-spot-check.md:494 | flowchart | 12 | Real-Time Variance Calculation | - | rejected: diverges |
+| b4b5dcb753 | app/inventory-management/spot-check/FD-spot-check.md:522 | sequenceDiagram | 14 | Cancellation Process | - | rejected: unverifiable |
+| 95dd38acb7 | app/inventory-management/spot-check/FD-spot-check.md:547 | flowchart | 19 | Dashboard Data Aggregation | - | rejected: unverifiable |
 | ddeac0010f | documents/sc/spot-check-sitemap.md:10 | graph | 31 | Module Navigation Structure | - | out-of-scope (filter: not docs/app) |
 | 88977306c7 | documents/sc/spot-check-sitemap.md:64 | graph | 14 | Data Flow Diagram | - | out-of-scope (filter: not docs/app) |
 | 04d5224949 | documents/sc/spot-check-sitemap.md:93 | journey | 26 | User Flow Paths | - | out-of-scope (filter: not docs/app) |
@@ -1155,16 +1159,16 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 
 | id | source:line | type | stmts | heading | wiki page | status |
 |---|---|---|---|---|---|---|
-| 139cc6561b | app/store-operations/stock-replenishment/DD-stock-replenishment.md:70 | erDiagram | 12 | 2. Entity Relationship Diagram | store-requisition/01-data-model | candidate |
-| 9097fd256e | app/store-operations/stock-replenishment/FD-stock-replenishment.md:5 | graph | 14 | 1. High-Level System Flow | store-requisition/03-user-flow | candidate |
-| 80ee108f06 | app/store-operations/stock-replenishment/FD-stock-replenishment.md:25 | graph | 8 | 2. Urgency Classification Flow | store-requisition/03-user-flow | candidate |
-| 4f846037f5 | app/store-operations/stock-replenishment/FD-stock-replenishment.md:39 | graph | 15 | 3. Replenishment Request Creation Flow | store-requisition/03-user-flow | candidate |
-| edf8e626cb | app/store-operations/stock-replenishment/FD-stock-replenishment.md:66 | graph | 8 | 4. Workflow Type Determination Flow | store-requisition/03-user-flow | candidate |
-| ae3aca494b | app/store-operations/stock-replenishment/FD-stock-replenishment.md:80 | graph | 9 | 5. Source Availability Check Flow | store-requisition/03-user-flow | candidate |
-| 68c22db2ab | app/store-operations/stock-replenishment/FD-stock-replenishment.md:95 | graph | 11 | 6. Document Generation Flow | store-requisition/03-user-flow | candidate |
-| 3c2152ce28 | app/store-operations/stock-replenishment/FD-stock-replenishment.md:129 | graph | 3 | Destination Location Validation | store-requisition/03-user-flow | candidate |
-| dff5576a5c | app/store-operations/stock-replenishment/FD-stock-replenishment.md:138 | graph | 9 | 8. User Journey Flow | store-requisition/03-user-flow | candidate |
-| 8b91fa5ac4 | app/store-operations/stock-replenishment/FD-stock-replenishment.md:154 | stateDiagram-v2 | 9 | 9. State Transition Diagram | store-requisition/02-business-rules | candidate |
+| 139cc6561b | app/store-operations/stock-replenishment/DD-stock-replenishment.md:70 | erDiagram | 12 | 2. Entity Relationship Diagram | - | rejected: diverges |
+| 9097fd256e | app/store-operations/stock-replenishment/FD-stock-replenishment.md:5 | graph | 14 | 1. High-Level System Flow | - | rejected: diverges |
+| 80ee108f06 | app/store-operations/stock-replenishment/FD-stock-replenishment.md:25 | graph | 8 | 2. Urgency Classification Flow | store-requisition/stock-replenishment | imported |
+| 4f846037f5 | app/store-operations/stock-replenishment/FD-stock-replenishment.md:39 | graph | 15 | 3. Replenishment Request Creation Flow | - | rejected: covered |
+| edf8e626cb | app/store-operations/stock-replenishment/FD-stock-replenishment.md:66 | graph | 8 | 4. Workflow Type Determination Flow | - | rejected: diverges |
+| ae3aca494b | app/store-operations/stock-replenishment/FD-stock-replenishment.md:80 | graph | 9 | 5. Source Availability Check Flow | - | rejected: diverges |
+| 68c22db2ab | app/store-operations/stock-replenishment/FD-stock-replenishment.md:95 | graph | 11 | 6. Document Generation Flow | - | rejected: diverges |
+| 3c2152ce28 | app/store-operations/stock-replenishment/FD-stock-replenishment.md:129 | graph | 3 | Destination Location Validation | store-requisition/stock-replenishment | imported |
+| dff5576a5c | app/store-operations/stock-replenishment/FD-stock-replenishment.md:138 | graph | 9 | 8. User Journey Flow | store-requisition/stock-replenishment | imported |
+| 8b91fa5ac4 | app/store-operations/stock-replenishment/FD-stock-replenishment.md:154 | stateDiagram-v2 | 9 | 9. State Transition Diagram | - | rejected: diverges |
 | 750203d053 | app/store-operations/store-requisitions/BR-store-requisitions.md:1465 | graph | 23 | 10.10 Backend Architecture Diagram | - | out-of-scope (filter: prototype heading) |
 | a6aa030ec2 | app/store-operations/store-requisitions/FD-store-requisitions.md:83 | flowchart | 37 | High-Level Process Flow | - | out-of-scope (filter: stmts > 25) |
 | bdd3cabe50 | app/store-operations/store-requisitions/FD-store-requisitions.md:183 | flowchart | 49 | Requisition Creation Flow | - | out-of-scope (filter: stmts > 25) |
@@ -1176,21 +1180,21 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 | bf1a44512f | app/store-operations/store-requisitions/FD-store-requisitions.md:718 | sequenceDiagram | 34 | Create Requisition Sequence | - | out-of-scope (filter: stmts > 25) |
 | 8069442c22 | app/store-operations/store-requisitions/FD-store-requisitions.md:790 | sequenceDiagram | 39 | Approval Sequence Diagram | - | out-of-scope (filter: stmts > 25) |
 | 080919351a | app/store-operations/store-requisitions/FD-store-requisitions.md:857 | sequenceDiagram | 52 | Issuance Sequence Diagram | - | out-of-scope (filter: stmts > 25) |
-| b77758f841 | app/store-operations/store-requisitions/FD-store-requisitions.md:969 | stateDiagram-v2 | 11 | Requisition Status State Diagram | store-requisition/02-business-rules | candidate |
-| 6310ddfcce | app/store-operations/store-requisitions/FD-store-requisitions.md:1058 | stateDiagram-v2 | 11 | Line Item Status State Diagram | store-requisition/02-business-rules | candidate |
-| e9fd73d45c | app/store-operations/store-requisitions/FD-store-requisitions.md:1127 | flowchart | 24 | Inventory Integration Flow | store-requisition/03-user-flow | candidate |
+| b77758f841 | app/store-operations/store-requisitions/FD-store-requisitions.md:969 | stateDiagram-v2 | 11 | Requisition Status State Diagram | store-requisition/02-business-rules | imported |
+| 6310ddfcce | app/store-operations/store-requisitions/FD-store-requisitions.md:1058 | stateDiagram-v2 | 11 | Line Item Status State Diagram | - | rejected: diverges |
+| e9fd73d45c | app/store-operations/store-requisitions/FD-store-requisitions.md:1127 | flowchart | 24 | Inventory Integration Flow | - | rejected: diverges |
 | aa2c0c5fef | app/store-operations/store-requisitions/FD-store-requisitions.md:1224 | flowchart | 32 | Workflow Engine Integration | - | out-of-scope (filter: stmts > 25) |
 | ae53a37642 | app/store-operations/store-requisitions/FD-store-requisitions.md:1334 | flowchart | 60 | Error Processing Flow | - | out-of-scope (filter: stmts > 25) |
 | a8096bb9b0 | app/store-operations/store-requisitions/TS-store-requisitions.md:37 | graph | 29 | 1.1 Architecture Overview | - | out-of-scope (filter: prototype heading) |
-| c53922f33e | app/store-operations/store-requisitions/TS-store-requisitions.md:123 | graph | 11 | 2.1 Route Structure | store-requisition/03-user-flow | candidate |
+| c53922f33e | app/store-operations/store-requisitions/TS-store-requisitions.md:123 | graph | 11 | 2.1 Route Structure | - | rejected: diverges |
 | 106edffcdb | app/store-operations/store-requisitions/TS-store-requisitions.md:260 | sequenceDiagram | 27 | 2.3 Navigation Flow | - | out-of-scope (filter: prototype heading) |
 | 738b0c9dfc | app/store-operations/store-requisitions/TS-store-requisitions.md:302 | graph | 33 | 3.1 Component Hierarchy | - | out-of-scope (filter: prototype heading) |
 | b2b71cf5fc | app/store-operations/store-requisitions/TS-store-requisitions.md:756 | sequenceDiagram | 56 | 4.1 Data Flow Diagram | - | out-of-scope (filter: stmts > 25) |
-| 250e36aded | app/store-operations/store-requisitions/TS-store-requisitions.md:1221 | sequenceDiagram | 19 | 5.1 Inventory Management Module Integration | store-requisition/03-user-flow | candidate |
-| 6ba779b3f3 | app/store-operations/store-requisitions/TS-store-requisitions.md:1277 | sequenceDiagram | 21 | 5.2 Workflow Engine Integration | store-requisition/03-user-flow | candidate |
-| c73d39044c | app/store-operations/store-requisitions/TS-store-requisitions.md:1348 | sequenceDiagram | 16 | 5.3 User Management Integration | store-requisition/03-user-flow | candidate |
+| 250e36aded | app/store-operations/store-requisitions/TS-store-requisitions.md:1221 | sequenceDiagram | 19 | 5.1 Inventory Management Module Integration | - | rejected: unverifiable |
+| 6ba779b3f3 | app/store-operations/store-requisitions/TS-store-requisitions.md:1277 | sequenceDiagram | 21 | 5.2 Workflow Engine Integration | - | rejected: unverifiable |
+| c73d39044c | app/store-operations/store-requisitions/TS-store-requisitions.md:1348 | sequenceDiagram | 16 | 5.3 User Management Integration | - | rejected: unverifiable |
 | 7abd62ef46 | app/store-operations/store-requisitions/TS-store-requisitions.md:1636 | graph | 26 | Page Hierarchy | - | out-of-scope (filter: prototype heading) |
-| 329c6bc217 | app/store-operations/store-requisitions/UC-store-requisitions.md:1513 | graph | 14 | 5. Use Case Dependencies | store-requisition/03-user-flow | candidate |
+| 329c6bc217 | app/store-operations/store-requisitions/UC-store-requisitions.md:1513 | graph | 14 | 5. Use Case Dependencies | - | rejected: unverifiable |
 | 99d1188b5d | documents/so/store-operations-sitemap.md:8 | graph | 74 | Document History | - | out-of-scope (filter: not docs/app) |
 | 15e8396b58 | documents/so/store-operations-sitemap.md:133 | flowchart | 16 | Navigation Flow | - | out-of-scope (filter: not docs/app) |
 | 6e241082ac | documents/so/store-operations-sitemap.md:165 | sequenceDiagram | 22 | User Interaction Patterns | - | out-of-scope (filter: not docs/app) |
@@ -1287,7 +1291,7 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 | 158ff2d8c7 | app/system-administration/FD-system-administration.md:748 | flowchart | 75 | Permission Cache Flow | - | out-of-scope (filter: stmts > 25) |
 | c40ea9af85 | app/system-administration/FD-system-administration.md:873 | flowchart | 16 | Level 0: Context Diagram | - | out-of-scope (filter: prototype heading) |
 | 128e12a948 | app/system-administration/FD-system-administration.md:927 | flowchart | 26 | Level 1: System Decomposition | - | out-of-scope (filter: stmts > 25) |
-| d3c8e07b53 | app/system-administration/FD-system-administration.md:1032 | sequenceDiagram | 22 | Sequence 1: Access Request with Cache Hit | system-config/(choose) | candidate |
+| d3c8e07b53 | app/system-administration/FD-system-administration.md:1032 | sequenceDiagram | 22 | Sequence 1: Access Request with Cache Hit | - | rejected: unverifiable |
 | ef4dc5d285 | app/system-administration/FD-system-administration.md:1076 | sequenceDiagram | 35 | Sequence 2: Access Request with Cache Miss | - | out-of-scope (filter: stmts > 25) |
 | 42ee08d637 | app/system-administration/FD-system-administration.md:1139 | sequenceDiagram | 41 | Sequence 3: User Role Assignment | - | out-of-scope (filter: stmts > 25) |
 | 298d93f280 | app/system-administration/FD-system-administration.md:1213 | stateDiagram-v2 | 27 | State 1: Policy Status Transitions | - | out-of-scope (filter: stmts > 25) |
@@ -1297,7 +1301,7 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 | a39b47430d | app/system-administration/TS-system-administration.md:53 | graph | 26 | Page Hierarchy | - | out-of-scope (filter: prototype heading) |
 | 8f32a94e6b | app/system-administration/settings/DD-settings.md:952 | erDiagram | 78 | 5.1 Entity Relationship Diagram | - | out-of-scope (filter: stmts > 25) |
 | aac1f8f7a7 | app/system-administration/settings/FD-settings.md:28 | flowchart | 43 | 2.1 Configure Company Settings | - | out-of-scope (filter: stmts > 25) |
-| 122751f130 | app/system-administration/settings/FD-settings.md:94 | flowchart | 23 | 2.2 Upload Company Logo | system-config/(choose) | candidate |
+| 122751f130 | app/system-administration/settings/FD-settings.md:94 | flowchart | 23 | 2.2 Upload Company Logo | - | rejected: diverges |
 | b3421727a4 | app/system-administration/settings/FD-settings.md:137 | flowchart | 54 | 3.1 Update Security Policies | - | out-of-scope (filter: stmts > 25) |
 | 08038c84ca | app/system-administration/settings/FD-settings.md:219 | flowchart | 35 | 4.1 Create Email Template | - | out-of-scope (filter: stmts > 25) |
 | 1ea4cd5ff6 | app/system-administration/settings/FD-settings.md:274 | flowchart | 48 | 4.2 Configure Notification Routing Rule | - | out-of-scope (filter: stmts > 25) |
@@ -1327,34 +1331,34 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 
 | id | source:line | type | stmts | heading | wiki page | status |
 |---|---|---|---|---|---|---|
-| 15469a31c3 | app/procurement/purchase-request-templates/FD-purchase-request-templates.md:36 | flowchart | 17 | 1. Template Creation Workflow | templates/(choose) | candidate |
-| f1911e4569 | app/procurement/purchase-request-templates/FD-purchase-request-templates.md:70 | flowchart | 21 | 2. Add Item to Template Workflow | templates/(choose) | candidate |
-| e0b819ea05 | app/procurement/purchase-request-templates/FD-purchase-request-templates.md:114 | flowchart | 19 | 3. Set Default Template Workflow | templates/(choose) | candidate |
+| 15469a31c3 | app/procurement/purchase-request-templates/FD-purchase-request-templates.md:36 | flowchart | 17 | 1. Template Creation Workflow | - | rejected: diverges |
+| f1911e4569 | app/procurement/purchase-request-templates/FD-purchase-request-templates.md:70 | flowchart | 21 | 2. Add Item to Template Workflow | - | rejected: diverges |
+| e0b819ea05 | app/procurement/purchase-request-templates/FD-purchase-request-templates.md:114 | flowchart | 19 | 3. Set Default Template Workflow | - | rejected: unverifiable |
 | 8942883960 | app/procurement/purchase-request-templates/FD-purchase-request-templates.md:156 | flowchart | 27 | 4. Template to Purchase Request Conversion | - | out-of-scope (filter: stmts > 25) |
-| a4c3d200ac | app/procurement/purchase-request-templates/FD-purchase-request-templates.md:205 | flowchart | 23 | 5. Delete Template Workflow | templates/(choose) | candidate |
-| d2434966c8 | app/procurement/purchase-request-templates/FD-purchase-request-templates.md:254 | flowchart | 13 | 6. Clone Template Workflow | templates/(choose) | candidate |
-| 3db0bda0c3 | app/procurement/purchase-request-templates/FD-purchase-request-templates.md:281 | flowchart | 24 | 7. Bulk Operations Workflow | templates/(choose) | candidate |
-| 17d80b1feb | app/procurement/purchase-request-templates/FD-purchase-request-templates.md:332 | stateDiagram-v2 | 18 | Template Lifecycle States | templates/(choose) | candidate |
-| 8b10bb1b59 | app/procurement/purchase-request-templates/FD-purchase-request-templates.md:379 | flowchart | 17 | 9. Edit Template Workflow | templates/(choose) | candidate |
-| 04725dd580 | app/procurement/purchase-request-templates/FD-purchase-request-templates.md:413 | flowchart | 14 | 10. Filter and Search Workflow | templates/(choose) | candidate |
+| a4c3d200ac | app/procurement/purchase-request-templates/FD-purchase-request-templates.md:205 | flowchart | 23 | 5. Delete Template Workflow | - | rejected: diverges |
+| d2434966c8 | app/procurement/purchase-request-templates/FD-purchase-request-templates.md:254 | flowchart | 13 | 6. Clone Template Workflow | - | rejected: unverifiable |
+| 3db0bda0c3 | app/procurement/purchase-request-templates/FD-purchase-request-templates.md:281 | flowchart | 24 | 7. Bulk Operations Workflow | - | rejected: unverifiable |
+| 17d80b1feb | app/procurement/purchase-request-templates/FD-purchase-request-templates.md:332 | stateDiagram-v2 | 18 | Template Lifecycle States | - | rejected: diverges |
+| 8b10bb1b59 | app/procurement/purchase-request-templates/FD-purchase-request-templates.md:379 | flowchart | 17 | 9. Edit Template Workflow | - | rejected: diverges |
+| 04725dd580 | app/procurement/purchase-request-templates/FD-purchase-request-templates.md:413 | flowchart | 14 | 10. Filter and Search Workflow | - | rejected: diverges |
 | 7da30b34b8 | app/procurement/purchase-request-templates/TS-purchase-request-templates.md:49 | graph | 26 | Page Hierarchy | - | out-of-scope (filter: prototype heading) |
 | 816c69854a | app/procurement/purchase-request-templates/UC-purchase-request-templates.md:73 | flowchart | 50 | Use Case Diagram | - | out-of-scope (filter: stmts > 25) |
 | 6451086a85 | app/procurement/purchase-request-templates/UC-purchase-request-templates.md:157 | flowchart | 44 | Use Case Diagram - Actor Responsibilities | - | out-of-scope (filter: stmts > 25) |
 | 8e96a38dc9 | app/procurement/purchase-request-templates/UC-purchase-request-templates.md:2014 | flowchart | 33 | Use Case to Requirements Traceability | - | out-of-scope (filter: stmts > 25) |
 | 6c283785e2 | app/vendor-management/pricelist-templates/FD-pricelist-templates.md:33 | graph | 22 | 2.1 High-Level Architecture | - | out-of-scope (filter: prototype heading) |
-| abff6532a7 | app/vendor-management/pricelist-templates/FD-pricelist-templates.md:77 | erDiagram | 3 | 3.1 Core Entities | templates/(choose) | candidate |
-| 951e0fd845 | app/vendor-management/pricelist-templates/FD-pricelist-templates.md:125 | stateDiagram-v2 | 18 | 4.1 Template Status Workflow | templates/(choose) | candidate |
+| abff6532a7 | app/vendor-management/pricelist-templates/FD-pricelist-templates.md:77 | erDiagram | 3 | 3.1 Core Entities | templates/price-list | imported |
+| 951e0fd845 | app/vendor-management/pricelist-templates/FD-pricelist-templates.md:125 | stateDiagram-v2 | 18 | 4.1 Template Status Workflow | templates/price-list | imported |
 | 925c7205e6 | app/vendor-management/pricelist-templates/FD-pricelist-templates.md:162 | flowchart | 45 | 5.1 Template Creation Workflow (3-Step Wizard) | - | out-of-scope (filter: stmts > 25) |
 | 70c3ad6345 | app/vendor-management/pricelist-templates/FD-pricelist-templates.md:226 | flowchart | 27 | 5.2 Product Assignment Workflow (Hierarchical Selection) | - | out-of-scope (filter: prototype heading) |
-| 342ecf2716 | app/vendor-management/pricelist-templates/FD-pricelist-templates.md:274 | flowchart | 25 | 5.3 Template Cloning Workflow | templates/(choose) | candidate |
+| 342ecf2716 | app/vendor-management/pricelist-templates/FD-pricelist-templates.md:274 | flowchart | 25 | 5.3 Template Cloning Workflow | - | rejected: diverges |
 | 0e177cbf07 | app/vendor-management/pricelist-templates/FD-pricelist-templates.md:314 | flowchart | 28 | 5.4 Template Status Change Workflow | - | out-of-scope (filter: stmts > 25) |
 | dc075d727b | app/vendor-management/pricelist-templates/FD-pricelist-templates.md:361 | flowchart | 31 | 6.1 Template Search Workflow | - | out-of-scope (filter: stmts > 25) |
-| e369b39b93 | app/vendor-management/pricelist-templates/FD-pricelist-templates.md:415 | flowchart | 17 | 7.1 Price List Module Integration | templates/(choose) | candidate |
-| 843b321400 | app/vendor-management/pricelist-templates/FD-pricelist-templates.md:444 | flowchart | 15 | 7.2 Product Management Integration | templates/(choose) | candidate |
-| 201c6002fa | app/vendor-management/pricelist-templates/FD-pricelist-templates.md:474 | graph | 12 | 8.1 Template Creation Data Flow | templates/(choose) | candidate |
-| bb87e8d149 | app/vendor-management/pricelist-templates/FD-pricelist-templates.md:497 | graph | 14 | 8.2 Template Read Data Flow | templates/(choose) | candidate |
+| e369b39b93 | app/vendor-management/pricelist-templates/FD-pricelist-templates.md:415 | flowchart | 17 | 7.1 Price List Module Integration | - | rejected: diverges |
+| 843b321400 | app/vendor-management/pricelist-templates/FD-pricelist-templates.md:444 | flowchart | 15 | 7.2 Product Management Integration | - | rejected: diverges |
+| 201c6002fa | app/vendor-management/pricelist-templates/FD-pricelist-templates.md:474 | graph | 12 | 8.1 Template Creation Data Flow | - | rejected: diverges |
+| bb87e8d149 | app/vendor-management/pricelist-templates/FD-pricelist-templates.md:497 | graph | 14 | 8.2 Template Read Data Flow | - | rejected: diverges |
 | ace1d0a62b | app/vendor-management/pricelist-templates/TS-pricelist-templates.md:65 | graph | 11 | 2.1 Navigation Structure | - | out-of-scope (filter: prototype heading) |
-| 8603dbf5c4 | app/vendor-management/pricelist-templates/TS-pricelist-templates.md:483 | flowchart | 14 | 4.1 Primary User Flows | templates/(choose) | candidate |
+| 8603dbf5c4 | app/vendor-management/pricelist-templates/TS-pricelist-templates.md:483 | flowchart | 14 | 4.1 Primary User Flows | - | rejected: diverges |
 | 4f22c58b09 | documents/prt/README.md:53 | graph | 25 | 🗺️ Module Site Map | - | out-of-scope (filter: not docs/app) |
 | 74fb6add07 | documents/prt/README.md:187 | flowchart | 12 | Data Flow | - | out-of-scope (filter: not docs/app) |
 | ea7d067c4b | documents/prt/README.md:222 | stateDiagram-v2 | 7 | 🔄 Template Lifecycle | - | out-of-scope (filter: not docs/app) |
@@ -1367,45 +1371,45 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 | e4381339df | app/vendor-management/price-lists/FD-price-lists.md:35 | graph | 13 | 2.1 High-Level Architecture | - | out-of-scope (filter: prototype heading) |
 | 7730c69a7b | app/vendor-management/price-lists/FD-price-lists.md:67 | graph | 5 | 3.1 Module Navigation | - | out-of-scope (filter: prototype heading) |
 | 108510c3ce | app/vendor-management/price-lists/FD-price-lists.md:85 | graph | 10 | 3.2 Page Navigation Flow | - | out-of-scope (filter: prototype heading) |
-| c64749ce26 | app/vendor-management/price-lists/FD-price-lists.md:101 | graph | 10 | 3.3 Staff Creation Wizard Flow | vendor-pricelist/03-user-flow | candidate |
+| c64749ce26 | app/vendor-management/price-lists/FD-price-lists.md:101 | graph | 10 | 3.3 Staff Creation Wizard Flow | - | rejected: diverges |
 | e18ee0f634 | app/vendor-management/price-lists/FD-price-lists.md:121 | graph | 33 | 4.1 View Price Lists Flow | - | out-of-scope (filter: stmts > 25) |
-| 97f7771496 | app/vendor-management/price-lists/FD-price-lists.md:165 | graph | 14 | 4.2 Filter Logic Flow | vendor-pricelist/03-user-flow | candidate |
+| 97f7771496 | app/vendor-management/price-lists/FD-price-lists.md:165 | graph | 14 | 4.2 Filter Logic Flow | - | rejected: diverges |
 | 8e39638c6b | app/vendor-management/price-lists/FD-price-lists.md:196 | graph | 28 | 5.1 Main Creation Flow | - | out-of-scope (filter: stmts > 25) |
-| 7ad8f17c6c | app/vendor-management/price-lists/FD-price-lists.md:235 | graph | 23 | 5.2 Form Validation Flow | vendor-pricelist/03-user-flow | candidate |
+| 7ad8f17c6c | app/vendor-management/price-lists/FD-price-lists.md:235 | graph | 23 | 5.2 Form Validation Flow | - | rejected: diverges |
 | 823795590e | app/vendor-management/price-lists/FD-price-lists.md:277 | graph | 27 | 6.1 View Detail Flow | - | out-of-scope (filter: stmts > 25) |
-| 310fc34888 | app/vendor-management/price-lists/FD-price-lists.md:316 | graph | 14 | 6.2 Actions Menu Flow | vendor-pricelist/03-user-flow | candidate |
-| da10124dcd | app/vendor-management/price-lists/FD-price-lists.md:342 | graph | 11 | 7.1 Duplicate Flow | vendor-pricelist/03-user-flow | candidate |
-| 0dfbf6ba35 | app/vendor-management/price-lists/FD-price-lists.md:363 | graph | 16 | 8.1 Filter State Flow | vendor-pricelist/03-user-flow | candidate |
-| 51d309753a | app/vendor-management/price-lists/FD-price-lists.md:389 | graph | 14 | 8.2 Form State Flow | vendor-pricelist/03-user-flow | candidate |
+| 310fc34888 | app/vendor-management/price-lists/FD-price-lists.md:316 | graph | 14 | 6.2 Actions Menu Flow | - | rejected: diverges |
+| da10124dcd | app/vendor-management/price-lists/FD-price-lists.md:342 | graph | 11 | 7.1 Duplicate Flow | - | rejected: diverges |
+| 0dfbf6ba35 | app/vendor-management/price-lists/FD-price-lists.md:363 | graph | 16 | 8.1 Filter State Flow | - | rejected: diverges |
+| 51d309753a | app/vendor-management/price-lists/FD-price-lists.md:389 | graph | 14 | 8.2 Form State Flow | - | rejected: diverges |
 | c58b33214a | app/vendor-management/price-lists/FD-price-lists.md:417 | graph | 22 | 9.1 Price List Page Components | - | out-of-scope (filter: prototype heading) |
 | b07c266cfb | app/vendor-management/price-lists/FD-price-lists.md:452 | graph | 22 | 9.2 Add Page Components | - | out-of-scope (filter: prototype heading) |
 | 7a3b6ff853 | app/vendor-management/price-lists/FD-price-lists.md:483 | graph | 26 | 9.3 Detail Page Components | - | out-of-scope (filter: prototype heading) |
-| 15ee7cfd69 | app/vendor-management/price-lists/FD-price-lists.md:523 | graph | 13 | 10.1 Status Badge Rendering | vendor-pricelist/03-user-flow | candidate |
-| ed6115214d | app/vendor-management/price-lists/FD-price-lists.md:549 | graph | 14 | 11.1 Form Error Flow | vendor-pricelist/03-user-flow | candidate |
-| c945736377 | app/vendor-management/price-lists/FD-price-lists.md:573 | graph | 7 | 11.2 Data Loading Error Flow | vendor-pricelist/03-user-flow | candidate |
+| 15ee7cfd69 | app/vendor-management/price-lists/FD-price-lists.md:523 | graph | 13 | 10.1 Status Badge Rendering | - | rejected: diverges |
+| ed6115214d | app/vendor-management/price-lists/FD-price-lists.md:549 | graph | 14 | 11.1 Form Error Flow | - | rejected: diverges |
+| c945736377 | app/vendor-management/price-lists/FD-price-lists.md:573 | graph | 7 | 11.2 Data Loading Error Flow | - | rejected: diverges |
 | 8eca7728f8 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:34 | graph | 29 | 2.1 High-Level Architecture | - | out-of-scope (filter: prototype heading) |
-| c2b0918a94 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:85 | stateDiagram-v2 | 10 | 3.1 Campaign Status States | vendor-pricelist/02-business-rules | candidate |
-| 563355eeed | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:105 | flowchart | 7 | 3.2 Status Transitions with Actions | vendor-pricelist/03-user-flow | candidate |
+| c2b0918a94 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:85 | stateDiagram-v2 | 10 | 3.1 Campaign Status States | - | rejected: diverges |
+| 563355eeed | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:105 | flowchart | 7 | 3.2 Status Transitions with Actions | - | rejected: diverges |
 | badd880e08 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:124 | flowchart | 33 | 4.1 Campaign List Workflow (FR-RFP-001) | - | out-of-scope (filter: stmts > 25) |
 | 977d7f4282 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:175 | flowchart | 48 | 4.2 Campaign Creation Wizard Workflow (FR-RFP-002) | - | out-of-scope (filter: stmts > 25) |
 | 789a110b1e | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:244 | flowchart | 35 | 4.3 Campaign Detail View Workflow (FR-RFP-005) | - | out-of-scope (filter: stmts > 25) |
 | 45e690d5b9 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:296 | flowchart | 30 | 4.4 Vendor Selection Workflow (FR-RFP-010) | - | out-of-scope (filter: stmts > 25) |
-| fb3ab6af16 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:341 | flowchart | 20 | 4.5 Progress Tracking Workflow (FR-RFP-006) | vendor-pricelist/03-user-flow | candidate |
-| a6662645c1 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:376 | flowchart | 18 | 5.1 Campaign Creation Data Flow | vendor-pricelist/03-user-flow | candidate |
-| 0506e4c7f0 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:404 | flowchart | 14 | 5.2 Campaign List Data Flow | vendor-pricelist/03-user-flow | candidate |
-| 58864b9179 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:428 | flowchart | 17 | 5.3 Vendor Selection Data Flow | vendor-pricelist/03-user-flow | candidate |
+| fb3ab6af16 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:341 | flowchart | 20 | 4.5 Progress Tracking Workflow (FR-RFP-006) | - | rejected: diverges |
+| a6662645c1 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:376 | flowchart | 18 | 5.1 Campaign Creation Data Flow | - | rejected: diverges |
+| 0506e4c7f0 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:404 | flowchart | 14 | 5.2 Campaign List Data Flow | - | rejected: diverges |
+| 58864b9179 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:428 | flowchart | 17 | 5.3 Vendor Selection Data Flow | - | rejected: diverges |
 | a7e0087ae6 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:462 | flowchart | 13 | 6.1 Campaign Module Navigation | - | out-of-scope (filter: prototype heading) |
 | 65002cc042 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:485 | flowchart | 12 | 6.2 Campaign Create Wizard Navigation | - | out-of-scope (filter: prototype heading) |
 | b321394b00 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:506 | flowchart | 10 | 6.3 Campaign Detail Tabs Navigation | - | out-of-scope (filter: prototype heading) |
-| 9fe5bcb1bb | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:529 | flowchart | 9 | 7.1 Duplicate Campaign Workflow | vendor-pricelist/03-user-flow | candidate |
-| 90f346376e | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:544 | flowchart | 10 | 7.2 Send Reminder Workflow | vendor-pricelist/03-user-flow | candidate |
-| cf1868d6d9 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:562 | flowchart | 8 | 7.3 Delete Campaign Workflow | vendor-pricelist/03-user-flow | candidate |
-| 6fa8bda42b | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:582 | flowchart | 16 | 8.1 Reminder Schedule Configuration | vendor-pricelist/03-user-flow | candidate |
+| 9fe5bcb1bb | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:529 | flowchart | 9 | 7.1 Duplicate Campaign Workflow | - | rejected: diverges |
+| 90f346376e | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:544 | flowchart | 10 | 7.2 Send Reminder Workflow | - | rejected: diverges |
+| cf1868d6d9 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:562 | flowchart | 8 | 7.3 Delete Campaign Workflow | vendor-pricelist/03-user-flow | imported |
+| 6fa8bda42b | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:582 | flowchart | 16 | 8.1 Reminder Schedule Configuration | - | rejected: diverges |
 | ea360da6a9 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:611 | flowchart | 26 | 8.2 Recurring Pattern Configuration | - | out-of-scope (filter: stmts > 25) |
-| bd02dc04d7 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:654 | sequenceDiagram | 15 | 9.1 Template Integration Flow | vendor-pricelist/03-user-flow | candidate |
-| 3f363d4fdf | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:676 | sequenceDiagram | 16 | 9.2 Vendor Directory Integration Flow | vendor-pricelist/03-user-flow | candidate |
-| 15215c9303 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:703 | flowchart | 11 | 10.1 Form Validation Error Flow | vendor-pricelist/03-user-flow | candidate |
-| 97bcb96f8f | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:723 | flowchart | 16 | 10.2 API Error Flow | vendor-pricelist/03-user-flow | candidate |
+| bd02dc04d7 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:654 | sequenceDiagram | 15 | 9.1 Template Integration Flow | - | rejected: diverges |
+| 3f363d4fdf | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:676 | sequenceDiagram | 16 | 9.2 Vendor Directory Integration Flow | - | rejected: diverges |
+| 15215c9303 | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:703 | flowchart | 11 | 10.1 Form Validation Error Flow | - | rejected: diverges |
+| 97bcb96f8f | app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md:723 | flowchart | 16 | 10.2 API Error Flow | - | rejected: diverges |
 | e76fd66d7e | app/vendor-management/vendor-portal/FD-vendor-portal.md:86 | graph | 25 | 2.1 Portal Component Overview | - | out-of-scope (filter: prototype heading) |
 | f37f3c77a8 | app/vendor-management/vendor-portal/FD-vendor-portal.md:141 | flowchart | 60 | 3.1 Token-Based Portal Access | - | out-of-scope (filter: stmts > 25) |
 | 91555c93dd | app/vendor-management/vendor-portal/FD-vendor-portal.md:220 | flowchart | 89 | 3.2 Online Price Submission | - | out-of-scope (filter: stmts > 25) |
@@ -1416,7 +1420,7 @@ Dev Wiki.js renders with **mermaid 8.8.2** (shown in its syntax-error banner). F
 | a49e1ca9b6 | app/vendor-management/vendor-portal/FD-vendor-portal.md:694 | flowchart | 47 | 4.3 Quality Score Calculation | - | out-of-scope (filter: stmts > 25) |
 | c47596fe7d | app/vendor-management/vendor-portal/FD-vendor-portal.md:755 | flowchart | 36 | 5.1 Token Expiration Checker | - | out-of-scope (filter: stmts > 25) |
 | ccc97ef61c | app/vendor-management/vendor-portal/FD-vendor-portal.md:801 | flowchart | 45 | 5.2 Submission Confirmation Email Flow | - | out-of-scope (filter: stmts > 25) |
-| 2ccd667c67 | app/vendor-management/vendor-portal/VAL-vendor-portal.md:92 | graph | 15 | 1.4 Validation Strategy | vendor-pricelist/03-user-flow | candidate |
+| 2ccd667c67 | app/vendor-management/vendor-portal/VAL-vendor-portal.md:92 | graph | 15 | 1.4 Validation Strategy | - | rejected: diverges |
 | 2979305f79 | documents/vm/CAMPAIGNS.md:70 | flowchart | 2 | Action Flows | - | out-of-scope (filter: not docs/app) |
 | edb6b0e667 | documents/vm/CAMPAIGNS.md:77 | flowchart | 2 | Action Flows | - | out-of-scope (filter: not docs/app) |
 | 13884f8c4d | documents/vm/CAMPAIGNS.md:84 | flowchart | 2 | Action Flows | - | out-of-scope (filter: not docs/app) |

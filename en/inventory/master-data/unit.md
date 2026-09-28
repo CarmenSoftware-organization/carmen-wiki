@@ -2,7 +2,7 @@
 title: Unit
 description: Units of measure and inter-unit conversions used by every transactional document and product record.
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: '2026-09-22T18:00:00.000Z'
 tags: master-data, unit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z

@@ -2,7 +2,7 @@
 title: หน่วยนับ (Unit)
 description: หน่วยนับและการแปลงระหว่างหน่วยที่ใช้โดยเอกสารธุรกรรมและระเบียนสินค้าทุกใบ
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: '2026-09-23T01:30:00.000Z'
 tags: master-data, unit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
