@@ -2,7 +2,7 @@
 title: สินค้า (Product) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum สำหรับโมดูลสินค้า
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: product, data-model, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -31,6 +31,26 @@ dateCreated: 2026-05-15T15:30:00.000Z
 จุดโครงสร้างหลายจุดควรย้ำตั้งแต่ต้น **ประการแรก** canonical schema **แบนและเรียบกว่าที่ carmen/docs PRD อธิบาย** — ไม่มีโมเดล `tb_product_variant`, ไม่มีตาราง key-value แบบมี type `tb_product_attribute`, และไม่มีโมเดล `tb_product_carbon_footprint` คุณสมบัติ ตัวแปร ข้อมูลความยั่งยืน และ certification ถูกเก็บใน **JSON extension bag** (`info`, `dimension`, `certification`) บน `tb_product` หรืออ้างอิงผ่าน JSON `attachments` อิสระบนตาราง comment (หมายเหตุ: คำกล่าวเดิมว่า "ไม่มี `tb_product_media`" แก้บางส่วนเมื่อ 2026-05-20 โดยตาราง gallery ใหม่ `tb_product_image` — ดู Section 2.9 — แม้ว่าเอกสาร / วิดีโอ / โมเดล 3D ที่ PRD อธิบายยังอยู่ใน JSON / comment pattern) Section 5 รวบรวมความแตกต่างเหล่านี้แบบครบ **ประการที่สอง** `tb_product_location` **ไม่ได้** มี on-hand qty — เป็น **แถวของนโยบายสต๊อก** เท่านั้น (min / max / par บวก shelf) on-hand qty derive จาก inventory cost-layer ledger (ดู [inventory/01-data-model](/th/inventory/inventory/01-data-model) § 5 รายการ 1) และนับจาก 2026-08-20 `re_order_qty` ก็เช่นกัน: `products.replenishment.ts` คำนวณเป็น `(max_qty if > 0 else par_qty) − on_hand` และ `GET /products/:id` คืน `on_hand_qty` / `re_order_qty` ต่อ location เฉพาะเมื่อผู้เรียกร้องขอ (`products.service.ts:326-335` — "re_order_qty's column still exists but nothing writes it any more") **ประการที่สาม** **วิธีการคิดต้นทุนไม่ได้อยู่บน product** — อยู่บน `tb_business_unit.calculation_method` (platform schema, `enum_calculation_method = average | fifo`) และใช้กับ product ทุกตัวที่ business unit นั้น product มี `standard_cost` (ต้นทุนอ้างอิงที่ใช้โดยวิธี count-costing `standard` และโดย recipe baselining) แต่ไม่ใช่ตัวเลือก FIFO / WA เอง
 
 ## 2. เอนทิตี
+
+ต้นไม้ของสินค้ายึดด้วย `tb_product` อยู่ใต้ห่วงโซ่การจำแนก 3 ระดับ และป้อนเข้าสู่ location, vendor, และ unit-conversion mapping:
+
+```mermaid
+graph LR
+    cat["tb_product_category"] -->|"1 : N"| subcat["tb_product_sub_category"]
+    subcat -->|"1 : N"| ig["tb_product_item_group"]
+    ig -->|"1 : N"| p["tb_product"]
+    p -->|"N : 1"| unit["tb_unit"]
+    p -->|"N : 1"| tax["tb_tax_profile"]
+    p -->|"1 : N"| uc["tb_unit_conversion"]
+    uc -->|"N : 1"| unit
+    p -->|"1 : N"| pl["tb_product_location"]
+    pl -->|"N : 1"| loc["tb_location"]
+    pl -->|"N : 1"| shelf["tb_location_shelf"]
+    p -->|"1 : N"| pv["tb_product_tb_vendor"]
+    pv -->|"N : 1"| vendor["tb_vendor"]
+```
+
+> Diagram adapted from `carmen/docs/app/product-management/products/DD-products.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (2026-09-28) · Changes: rewritten from `erDiagram` to `graph LR` per the wiki's Mermaid allow-list (erDiagram renders blank on this Wiki.js); renamed generic entity names to real `tb_*` tables; dropped `PRODUCT_ACTIVITY_LOG` (no such table exists — see § 1) and `PRODUCT_UNIT` (replaced by `tb_unit_conversion`); added the `tb_tax_profile`, `tb_location_shelf`, and `tb_product_tb_vendor` relations already described in § 3.
 
 ### 2.1 tb_product
 

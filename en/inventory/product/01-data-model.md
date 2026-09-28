@@ -2,7 +2,7 @@
 title: Product — Data Model
 description: Entities, fields, relationships, and enums for the product module.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: product, data-model, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -31,6 +31,26 @@ The module sits **at the dependency root of every transactional module**. Every 
 A few structural points are worth restating up front. **First**, the canonical schema is **flatter and simpler than the carmen/docs PRD describes** — there is no `tb_product_variant` model, no `tb_product_attribute` typed key-value table, and no `tb_product_carbon_footprint` model. Attributes, variants, sustainability data, and certification are persisted on the **JSON extension bags** (`info`, `dimension`, `certification`) on `tb_product` or referenced via free-form `attachments` JSON on the comment tables. (Note: an earlier "no `tb_product_media`" call-out was partially resolved on 2026-05-20 by the new `tb_product_image` gallery table — see Section 2.9 — though documents / videos / 3D models the PRD also describes still live in the JSON / comment pattern.) Section 5 catalogues these divergences in full. **Second**, `tb_product_location` does **not** carry on-hand qty — it is the **stock-policy row** only (min / max / par, plus shelf). On-hand qty is derived from the inventory cost-layer ledger (see [inventory/01-data-model](/en/inventory/inventory/01-data-model) § 5 item 1), and since 2026-08-20 so is `re_order_qty`: `products.replenishment.ts` computes it as `(max_qty if > 0 else par_qty) − on_hand`, and `GET /products/:id` returns `on_hand_qty` / `re_order_qty` per location only when the caller asks (`products.service.ts:326-335` — "re_order_qty's column still exists but nothing writes it any more"). **Third**, the **costing method is not on the product** — it lives on `tb_business_unit.calculation_method` (platform schema, `enum_calculation_method = average | fifo`) and applies to every product at that business unit. The product carries `standard_cost` (the reference cost used by the `standard` count-costing method and by recipe baselining) but not the FIFO / WA selector itself.
 
 ## 2. Entities
+
+The product tree is anchored by `tb_product`, sitting beneath a three-level classification chain and feeding location, vendor, and unit-conversion mappings:
+
+```mermaid
+graph LR
+    cat["tb_product_category"] -->|"1 : N"| subcat["tb_product_sub_category"]
+    subcat -->|"1 : N"| ig["tb_product_item_group"]
+    ig -->|"1 : N"| p["tb_product"]
+    p -->|"N : 1"| unit["tb_unit"]
+    p -->|"N : 1"| tax["tb_tax_profile"]
+    p -->|"1 : N"| uc["tb_unit_conversion"]
+    uc -->|"N : 1"| unit
+    p -->|"1 : N"| pl["tb_product_location"]
+    pl -->|"N : 1"| loc["tb_location"]
+    pl -->|"N : 1"| shelf["tb_location_shelf"]
+    p -->|"1 : N"| pv["tb_product_tb_vendor"]
+    pv -->|"N : 1"| vendor["tb_vendor"]
+```
+
+> Diagram adapted from `carmen/docs/app/product-management/products/DD-products.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (2026-09-28) · Changes: rewritten from `erDiagram` to `graph LR` per the wiki's Mermaid allow-list (erDiagram renders blank on this Wiki.js); renamed generic entity names to real `tb_*` tables; dropped `PRODUCT_ACTIVITY_LOG` (no such table exists — see § 1) and `PRODUCT_UNIT` (replaced by `tb_unit_conversion`); added the `tb_tax_profile`, `tb_location_shelf`, and `tb_product_tb_vendor` relations already described in § 3.
 
 ### 2.1 tb_product
 

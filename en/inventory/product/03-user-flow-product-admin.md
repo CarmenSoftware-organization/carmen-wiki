@@ -2,7 +2,7 @@
 title: Product — User Flow — Product Admin
 description: Product Administrator's flow within the product module — full CRUD on master data, classification, units, conversions, location and vendor mapping, lifecycle, and bulk import/export.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: product, user-flow, product-admin, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -42,6 +42,28 @@ The **Product Administrator** persona is the **owner of the catalogue**. Within 
    - **Location assignment (`tb_product_location`):** On the **Location Assignment** tab (`pd-tab-locations.tsx`; the tab is labelled *Location Assignment*, not *Locations*, and carries a row-count badge) add a location and set `min_qty` / `max_qty` / `par_qty` and, optionally, a **Shelf** from the shelf master (`LookupShelf`, active shelves only; the picker resets when the location is changed). The grid has no Reorder column any more — `re_order_qty` is derived by the API from on-hand vs. `max_qty` / `par_qty` ([01-data-model](/en/inventory/product/01-data-model) § 2.7). The Product Administrator both creates the row and sets the values here — there is no separate "Inventory Controller" surface. Each `shelf_id` is validated server-side (`SHELF_NOT_FOUND`). Zero values mean "not configured".
    - **Vendor mapping (`tb_product_tb_vendor`):** **Not on the product form** — the tabs are General / Unit / Location Assignment / Eco Labels (`pd-form.tsx:422-478`). The junction exists in the schema and has its own API (Bruno `master-data/vendor-product/*`, five requests), so per `PRD_VAL_013` each (`vendor_id`, `product_id`) pair is unique, but the vendor-side mapping UI is documented under [master-data/vendor](/en/inventory/master-data/vendor) / [vendor-pricelist](/en/inventory/vendor-pricelist), not here.
 10. **Save.** Submit. If any required field is missing (name, local name, category, sub-category, item group, inventory unit, price ≥ 0), the form shows a **warning** toast "Some details are missing — jumped to the field to fix.", puts a red dot on the offending tab, and switches to the first tab that has an error (`pd-form.tsx` `onInvalid`, frontend `2026-07-30` save-validation change). On a valid submit the payload writes `tb_product` with `product_status_type = active`, `is_active = true`, plus the associated `tb_unit_conversion` and `tb_product_location` rows, then navigates to `/product-management/product/:id`. The product is immediately visible on every downstream picker (per `PRD_AUTH_009`); no notification is emitted.
+
+Step 10 (Save) resolves through two validation layers before the product is written:
+
+```mermaid
+flowchart TD
+    Submit["User clicks Save"] --> ClientValidate{"Zod schema valid?<br/>(createProductSchema)"}
+    ClientValidate -->|"No"| Toast["Toast: 'Some details are missing —<br/>jumped to the field to fix.'<br/>red dot on offending tab"]
+    Toast --> JumpTab["Switch to first tab with an error"]
+    JumpTab --> Submit
+
+    ClientValidate -->|"Yes"| SendRequest["POST / PATCH request"]
+    SendRequest --> ServerValidate{"Server validation<br/>(PRD_VAL_001 .. PRD_VAL_018)"}
+    ServerValidate -->|"duplicate code/name"| Err409["409 Conflict:<br/>Product code already exists"]
+    ServerValidate -->|"other rule failed"| Err400["400 Bad Request"]
+    Err409 --> Submit
+    Err400 --> Submit
+
+    ServerValidate -->|"all pass"| Save["Write tb_product + child rows"]
+    Save --> End(["Navigate to product detail"])
+```
+
+> Diagram adapted from `carmen/docs/app/product-management/products/FD-products.md` · verified against `carmen-inventory-frontend-react/routes/product-management/product/pd-form.tsx` (2026-09-28) · Changes: replaced the generic "inline errors" step with the real toast + red-dot-tab-switch behaviour (`pd-form.tsx` `onInvalid`, 2026-07-30 change — see step 10 above); replaced the generic server-error messages with the real `PRD_VAL_001` duplicate-code 409 example; dropped the transaction-rollback framing (not evidenced in the product service).
 
 There is **no bulk-import flow** (corrected 2026-09-22 — see [02-business-rules](/en/inventory/product/02-business-rules) § 5.1); the earlier dry-run / strict-commit description on this page had no code behind it.
 

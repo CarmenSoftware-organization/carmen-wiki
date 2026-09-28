@@ -1,0 +1,18 @@
+d040fefa43	imported	product/01-data-model
+5f24283910	imported	product/02-business-rules
+54ad4c5188	imported	product/03-user-flow-purchaser
+5b9e723709	imported	product/03-user-flow-product-admin
+28a09a77a2	rejected: unverifiable	-
+6375c64e4b	rejected: unverifiable	-
+2fa21cd537	rejected: diverges	-
+d672e1a43d	rejected: diverges	-
+a30764984b	rejected: diverges	-
+22ab8c5482	rejected: diverges	-
+cac1644e05	rejected: unverifiable	-
+78cc5a3834	rejected: unverifiable	-
+466945b8d7	rejected: covered	-
+9ce036e4ae	rejected: diverges	-
+8182c90d06	rejected: diverges	-
+54b33faa99	rejected: diverges	-
+489bb88fcb	rejected: unverifiable	-
+884a2bbca5	rejected: unverifiable	-

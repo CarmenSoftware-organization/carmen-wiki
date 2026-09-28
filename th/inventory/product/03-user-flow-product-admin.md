@@ -2,7 +2,7 @@
 title: สินค้า (Product) — User Flow — Product Admin
 description: flow ของ Product Administrator ในโมดูลสินค้า — CRUD เต็มบนข้อมูลหลัก การจำแนก หน่วย การแปลง location และ vendor mapping วงจรชีวิต และ bulk import/export
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: product, user-flow, product-admin, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -42,6 +42,28 @@ persona **Product Administrator** เป็น **เจ้าของแคต�
    - **Location assignment (`tb_product_location`):** บนแท็บ **Location Assignment** (`pd-tab-locations.tsx`; แท็บมี label ว่า *Location Assignment* ไม่ใช่ *Locations* และมี badge นับจำนวนแถว) เพิ่ม location และตั้ง `min_qty` / `max_qty` / `par_qty` และเลือกได้ว่าจะกำหนด **Shelf** จากข้อมูลหลักชั้นวาง (`LookupShelf` เฉพาะชั้นวางที่ active; picker รีเซ็ตเมื่อเปลี่ยน location) grid ไม่มีคอลัมน์ Reorder อีกต่อไป — `re_order_qty` ถูก API derive จาก on-hand เทียบกับ `max_qty` / `par_qty` ([01-data-model](/th/inventory/product/01-data-model) § 2.7) Product Administrator ทั้งสร้างแถวและตั้งค่าที่นี่ — ไม่มี surface "Inventory Controller" แยกต่างหาก แต่ละ `shelf_id` ถูกตรวจสอบฝั่ง server (`SHELF_NOT_FOUND`) ค่าศูนย์หมายถึง "ไม่ได้ตั้งค่า"
    - **Vendor mapping (`tb_product_tb_vendor`):** **ไม่อยู่บนฟอร์มสินค้า** — แท็บมีแค่ General / Unit / Location Assignment / Eco Labels (`pd-form.tsx:422-478`) junction มีอยู่ใน schema และมี API ของตัวเอง (Bruno `master-data/vendor-product/*` ห้า request) ดังนั้นตาม `PRD_VAL_013` แต่ละคู่ (`vendor_id`, `product_id`) ไม่ซ้ำ แต่ UI การ map ฝั่ง vendor มีเอกสารอยู่ใต้ [master-data/vendor](/th/inventory/master-data/vendor) / [vendor-pricelist](/th/inventory/vendor-pricelist) ไม่ใช่ที่นี่
 10. **Save** Submit ถ้าฟิลด์บังคับใดขาดไป (name, local name, category, sub-category, item group, inventory unit, price ≥ 0) ฟอร์มแสดง toast แบบ **warning** "Some details are missing — jumped to the field to fix." ใส่จุดแดงบนแท็บที่มีปัญหา และสลับไปยังแท็บแรกที่มี error (`pd-form.tsx` `onInvalid`, การเปลี่ยน save-validation ของ frontend `2026-07-30`) เมื่อ submit ถูกต้อง payload เขียน `tb_product` ด้วย `product_status_type = active`, `is_active = true` พร้อมแถว `tb_unit_conversion` และ `tb_product_location` ที่เกี่ยวข้อง แล้ว navigate ไป `/product-management/product/:id` สินค้าปรากฏทันทีบนทุก picker ปลายน้ำ (ตาม `PRD_AUTH_009`); ไม่มีการแจ้งเตือนปล่อย
+
+ขั้นตอนที่ 10 (Save) ผ่าน validation สองชั้นก่อนที่สินค้าจะถูกเขียน:
+
+```mermaid
+flowchart TD
+    Submit["ผู้ใช้คลิก Save"] --> ClientValidate{"Zod schema valid?<br/>(createProductSchema)"}
+    ClientValidate -->|"No"| Toast["Toast: 'Some details are missing —<br/>jumped to the field to fix.'<br/>จุดแดงบนแท็บที่มีปัญหา"]
+    Toast --> JumpTab["สลับไปยังแท็บแรกที่มี error"]
+    JumpTab --> Submit
+
+    ClientValidate -->|"Yes"| SendRequest["ส่ง request POST / PATCH"]
+    SendRequest --> ServerValidate{"Server validation<br/>(PRD_VAL_001 .. PRD_VAL_018)"}
+    ServerValidate -->|"code/name ซ้ำ"| Err409["409 Conflict:<br/>Product code already exists"]
+    ServerValidate -->|"กฎอื่นไม่ผ่าน"| Err400["400 Bad Request"]
+    Err409 --> Submit
+    Err400 --> Submit
+
+    ServerValidate -->|"ผ่านทั้งหมด"| Save["เขียน tb_product + แถวลูก"]
+    Save --> End(["Navigate ไปหน้ารายละเอียดสินค้า"])
+```
+
+> Diagram adapted from `carmen/docs/app/product-management/products/FD-products.md` · verified against `carmen-inventory-frontend-react/routes/product-management/product/pd-form.tsx` (2026-09-28) · Changes: replaced the generic "inline errors" step with the real toast + red-dot-tab-switch behaviour (`pd-form.tsx` `onInvalid`, 2026-07-30 change — see step 10 above); replaced the generic server-error messages with the real `PRD_VAL_001` duplicate-code 409 example; dropped the transaction-rollback framing (not evidenced in the product service).
 
 **ไม่มี flow bulk-import** (แก้ไข 2026-09-22 — ดู [02-business-rules](/th/inventory/product/02-business-rules) § 5.1); คำอธิบาย dry-run / strict-commit ที่เคยอยู่บนหน้านี้ไม่มีโค้ดรองรับ
 

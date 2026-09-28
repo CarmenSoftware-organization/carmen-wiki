@@ -2,7 +2,7 @@
 title: Product — User Flow — Purchaser
 description: Purchaser's flow within the product module — read-only lookup, reference, and feedback paths.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: product, user-flow, purchaser, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -33,6 +33,34 @@ The **Purchaser** persona is a **read-only consumer** of the product catalogue. 
 4. **Select the product.** Choose the row in the picker; the PR / PO line is populated with `product_id`, `inventory_unit_id` (the product's base unit), and the **default order-unit** (the `tb_unit_conversion` row with `is_default = true`, `unit_type = order_unit`). The Purchaser may override the order-unit by picking another configured conversion (e.g. switch from `CASE` to `EACH` for a smaller order); per `PRD_XMOD_006`, a unit not defined in `tb_unit_conversion` for the product cannot be used (the picker only shows defined conversions).
 5. **Enter qty and unit-price.** Qty in the chosen order-unit, unit-price (typically pre-populated from the latest `tb_pricelist_detail` or last GRN cost). The system computes the base-unit qty per `PRD_CALC_005` (`order_unit_qty × conversion_factor = base_unit_qty`) for downstream inventory and costing. The price-deviation tolerance (`PRD_CALC_003` → effective `price_deviation_limit`) is read at this point; a unit-price outside tolerance flags for above-threshold approval per `PR_VAL_*`.
 6. **Save the line.** The PR / PO line is added; the Purchaser's interaction with the product master ends. The product itself is unchanged (read-only).
+
+The list page and the embedded PR / PO line picker share the same search-and-filter component:
+
+```mermaid
+flowchart TD
+    Start(["Open Products list / PR-PO line picker"]) --> LoadInitial["Load list<br/>sort: code:asc, id:asc"]
+    LoadInitial --> DisplayList["Display list with search + filter toolbar"]
+    DisplayList --> UserAction{"User action"}
+
+    UserAction -->|"types in search"| Search["Search box"]
+    Search --> Query["Re-query with combined filter params"]
+
+    UserAction -->|"opens filter panel"| Filters["Pick filters:<br/>Status (active / inactive)<br/>Category / Sub Category / Item Group (multi-select)"]
+    Filters --> Query
+
+    UserAction -->|"clicks column header"| Sort["Toggle sort direction"]
+    Sort --> Query
+
+    UserAction -->|"clicks pagination"| Page["Load requested page"]
+    Page --> Query
+
+    Query --> DisplayList
+
+    UserAction -->|"clicks a row"| Edit["Open product for edit"]
+    Edit --> End(["End"])
+```
+
+> Diagram adapted from `carmen/docs/app/product-management/products/FD-products.md` · verified against `carmen-inventory-frontend-react/routes/product-management/product/pd-component.tsx`, `use-product-table.tsx` (2026-09-28) · Changes: dropped the "Is For Sale" / "Is Ingredient" toggles and price/cost range (not wired into `pd-component.tsx`'s `productFilterFields` — only Status, Category, Sub Category, and Item Group are); dropped the 300ms-debounce and search-term-highlight specifics (unconfirmed); corrected the default sort to `code:asc, id:asc` per [01-data-model](/en/inventory/product/01-data-model) § 3 API-shape note; corrected the Status filter to the two wired values (`active`, `inactive` — `discontinued` has no filter option in the UI today).
 
 The **comment** flow is the secondary path:
 
