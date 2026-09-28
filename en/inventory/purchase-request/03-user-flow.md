@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow
 description: Document lifecycle and persona-specific flow files for purchase-request.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: purchase-request, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -18,6 +18,24 @@ dateCreated: 2026-05-15T09:00:00.000Z
 ## 1. Overview
 
 This page is the **overview entry point** for the user-flow set of the `purchase-request` module. It covers the lifecycle of a single Purchase Request document — a PR header (`tb_purchase_request`) together with one or more PR detail lines (`tb_purchase_request_detail`) — from the moment a Requestor first saves a draft, through the multi-stage approval chain, to either conversion into a purchase order or termination by void / cancellation. The personas involved are the **Requestor** (who originates and revises the PR), the **Approver** chain (every `approve`-role stage the workflow defines — "Department Head", "Budget Controller", "Finance" are illustrative labels; the code has no budget check), the **Purchaser** (who converts the approved PR to a PO), the **Procurement Manager** (oversight and high-value approval), and the **Audit / Config** roles (Auditor for read-only review, System Administrator for workflow configuration). The role catalogue itself is defined in [the module landing](/en/inventory/purchase-request) Section 4.
+
+### 1.1 Create-from-Template Flow
+
+A Requestor can also start a PR from a saved template. The real flow is a two-step page (search/select, then a quantity-entry step), not a single-click copy:
+
+```mermaid
+flowchart TD
+    Start(["Requestor clicks New from Template"]) --> Select["Search / select a template"]
+    Select --> Qty["Quantity step (QtyStep)<br/>enter qty per item; 0 = drop the item"]
+    Qty --> Nav["Navigate to /procurement/purchase-request/new<br/>with the filtered template items as route state"]
+    Nav --> Prefill["New PR form pre-filled from the template state"]
+    Prefill --> Review["Requestor reviews / edits prices, units, delivery dates"]
+    Review --> Save{"Save"}
+    Save -->|"Save"| Draft["PR created — pr_status = draft"]
+    Save -->|"Submit"| Submitted["PR submitted — pr_status = in_progress"]
+```
+
+> Diagram adapted from `carmen/docs/app/procurement/purchase-requests/FD-purchase-requests.md` · verified against `carmen-inventory-frontend-react/routes/procurement/purchase-request/from-template/from-template-content.tsx`, `from-template/qty-step.tsx` (2026-09-28) · Changes: replaced the source's single-shot "copy template → auto-fill → submit" flow with the real two-step flow (template search/select, then the `QtyStep` quantity-entry screen that drops zero-qty items) and the actual `/new`-route-state hand-off; removed unconfirmed auto-fill-date/department/location claims.
 
 Section 2 below is the **global state machine** — the canonical list of transitions across `enum_purchase_request_doc_status` values, independent of who acts. Each per-persona file (linked from Section 3) describes that persona's *path through* the state machine — their entry point, the actions available to them, the decision branches they face, and the handoff that ends their involvement. Section 4 then summarises the cross-persona handoffs that stitch the individual paths together. Read this overview first to anchor the lifecycle, then drill into the persona file that matches your role.
 
@@ -63,6 +81,37 @@ Each persona below has a dedicated drill-down file describing their entry point,
 - [Purchaser](./03-user-flow-purchaser.md) — Picks up approved PRs, validates vendor allocation and pricing, and converts them to purchase orders.
 - [Procurement Manager](./03-user-flow-procurement-manager.md) — Oversees the procurement function, approves high-value or escalated PRs, tunes vendor ranking and Allocate Vendor rules.
 - [Audit / Config](./03-user-flow-audit-config.md) — Auditor (read-only review of PRs and activity log) and System Administrator (workflow stage configuration, amount-threshold routing rules; delegation rules and an administrative void are unconfirmed — no matching mechanism or endpoint found, see `PR_AUTH_006` / `PR_AUTH_007`).
+
+### 3.1 Requestor Use Cases
+
+```mermaid
+graph LR
+    Requestor(["Requestor"])
+
+    subgraph PRS["Purchase Request System"]
+        UC001(("Create PR"))
+        UC101(("Auto-generate<br/>Ref Number"))
+        UC102(("Calculate<br/>Totals"))
+        UC013(("Use Template"))
+        UC014(("Create with<br/>Inventory Context"))
+    end
+
+    Requestor --- UC001
+    UC001 -.->|"include"| UC101
+    UC001 -.->|"include"| UC102
+    UC013 -.->|"extend"| UC001
+    UC014 -.->|"extend"| UC001
+
+    classDef actor fill:#ffe6e6,stroke:#cc0000,stroke-width:2px
+    classDef usecase fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
+    classDef system fill:#f0f0f0,stroke:#666666,stroke-width:2px
+
+    class Requestor actor
+    class UC001,UC013,UC014 usecase
+    class UC101,UC102 system
+```
+
+> Diagram adapted from `carmen/docs/app/procurement/purchase-requests/UC-purchase-requests.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/procurement/purchase-request/purchase-request.service.ts` (`PR_VAL_001` ref-number generation, `PR_CALC` roll-ups), `carmen-inventory-frontend-react/routes/procurement/purchase-request/from-template/` (Use Template), `pr-inventory-row.tsx` (Inventory Context) (2026-09-28) · Changes: removed the decorative emoji glyph and quoted labels for Wiki.js allow-list compliance; no structural changes.
 
 ## 4. Cross-Persona Handoffs
 
