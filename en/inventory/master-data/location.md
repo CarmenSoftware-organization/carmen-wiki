@@ -2,7 +2,7 @@
 title: Location
 description: Storage and consumption locations classified as inventory, direct, or consignment — drives stock posting and physical-count behaviour.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: master-data, location, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -38,6 +38,64 @@ The same record configures period-end count behaviour (`physical_count_type` = `
 | Change `location_type` | Edit dialog | **Not actually blocked** — `update()` accepts a new value with no prior-movement check found (unconfirmed guard, see Edge Cases); doing so after postings exist would still corrupt the meaning of historical reporting |
 | Assign inventory tree | Location detail screen | Restricts which products are visible at this location |
 | Put a product on a shelf at this location | API only — `products.add[] / products.update[]` carry `shelf_id` (`config_locations/swagger/request.ts:112-139`) | Sets `tb_product_location.shelf_id` + denormalised `shelf_code` / `shelf_name`; `null` clears it. The location form's product transfer list (`CreateLocationDto.products: TransferPayload`) does not expose a shelf picker — the picker lives on the product form's **Location Assignment** tab instead ([product/03-user-flow-product-admin](/en/inventory/product/03-user-flow-product-admin)) |
+
+List sorting, the list/grid toggle, and the create flow:
+
+```mermaid
+flowchart TD
+    Start(["User on location list"]) --> InitialSort["Default sort: code:asc, name:asc"]
+    InitialSort --> DisplayList["Display sorted list with sort indicator"]
+    DisplayList --> UserClick{"User clicks column header"}
+    UserClick -->|"Same column"| CheckDirection{"Current direction?"}
+    CheckDirection -->|"asc"| ReverseSort["Change to desc"]
+    CheckDirection -->|"desc"| ChangeToAsc["Change to asc"]
+    UserClick -->|"Different column"| NewSort["Change sort field, default asc"]
+    ReverseSort --> ReSort["Re-sort"]
+    ChangeToAsc --> ReSort
+    NewSort --> ReSort
+    ReSort --> MaintainFilters["Filters remain active"]
+```
+
+> Diagram adapted from `carmen/docs/app/system-administration/location-management/FD-location-management.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/master/locations/locations.service.ts` (2026-09-28) · Changes: corrected the default sort to `code:asc, name:asc` per `withDefaultSort`; dropped the source's "Shelves / Products / Users Count" sortable columns (not confirmed on the list).
+
+```mermaid
+flowchart TD
+    Start(["User on location list"]) --> DefaultView["Default: list view"]
+    DefaultView --> ShowToggle["Show list/grid toggle buttons"]
+    ShowToggle --> UserClick{"User clicks"}
+    UserClick -->|"List icon"| SwitchToList["Switch to list mode"]
+    UserClick -->|"Grid icon"| SwitchToGrid["Switch to grid mode"]
+    SwitchToList --> Preserve["Preserve filter + sort state"]
+    SwitchToGrid --> Preserve
+    Preserve --> ShowSameData["Display same filtered / sorted results in the new layout"]
+```
+
+> Diagram adapted from `carmen/docs/app/system-administration/location-management/FD-location-management.md` · verified against `carmen-inventory-frontend-react/components/templates/config-list-template.tsx` (2026-09-28) · Changes: renamed "table"/"card" to the real `list` / `grid` `displayMode` values; dropped the source's "checkbox selection" claim in list view — no bulk multi-select was found.
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as LocationForm
+    participant V as Zod Validator
+    participant API as Locations API
+
+    U->>F: Click "Create Location"
+    F->>U: Display empty form
+    U->>F: Fill form fields
+    U->>F: Click "Save"
+    F->>V: Validate form data
+    alt Validation fails
+        V->>F: Return errors
+        F->>U: Show inline errors
+    else Validation passes
+        V->>F: Return valid data
+        F->>API: POST /locations
+        API-->>F: Created location
+        F->>U: Navigate to list with success message
+    end
+```
+
+> Diagram adapted from `carmen/docs/app/system-administration/location-management/TS-location-management.md` · verified against `carmen-inventory-frontend-react/routes/config/location/location-form-schema.ts`, `location-new.route.tsx` (2026-09-28) · Changes: replaced the source's "update mock state" step with the real `POST /locations` API call.
 
 ## 3. Validation & Errors
 

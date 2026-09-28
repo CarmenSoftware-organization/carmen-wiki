@@ -2,7 +2,7 @@
 title: Vendor
 description: Suppliers and their addresses, contacts, and business-type taxonomy — the counterparty on every procurement document.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: master-data, vendor, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -33,6 +33,21 @@ The vendor record snapshots the **tax profile** at the vendor level so documents
 | Maintain business types | Master Data → Vendor Business Type | Separate list screen; references stored as JSON `[{id, name}]` on the vendor |
 | Deactivate | Toggle `is_active` | Hidden from new pickers; historical docs unchanged |
 | Change tax profile | Edit dialog | Snapshots new `tax_rate`; does NOT retro-edit historical documents |
+
+The vendor list search-and-filter shape, same generic pattern as every other master-data list:
+
+```mermaid
+flowchart TD
+    Start(["User enters search text"]) --> Debounce["Debounce"]
+    Debounce --> Query["Query vendors with combined search + filter params"]
+    Query --> Display["Display results"]
+    Display --> UserAction{"User action"}
+    UserAction -->|"Select vendor"| OpenProfile["Open vendor detail"]
+    UserAction -->|"Change filters"| Query
+    UserAction -->|"New search"| Start
+```
+
+> Diagram adapted from `carmen/docs/app/vendor-management/vendor-directory/FD-vendor-directory.md` · verified against `carmen-inventory-frontend-react/routes/vendor-management/vendor/vendor-component.tsx`, `use-vendor-table.tsx` (2026-09-28) · Changes: dropped the source's result caching, relevance-score ranking, permission-based row filtering, 100-result cap, and search-term highlighting — none evidenced; the real list uses the same generic `useDataGridState` search + filter pattern as every other master-data list.
 
 ## 3. Validation & Errors
 

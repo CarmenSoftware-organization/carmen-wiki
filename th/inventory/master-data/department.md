@@ -2,7 +2,7 @@
 title: แผนก (Department)
 description: แผนกขององค์กรและการกำหนดผู้ใช้ — ใช้เป็น cost-centre และ scope การอนุมัติบนเอกสาร requisition และ PR
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: master-data, department, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -32,6 +32,34 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | กำหนดผู้ใช้ให้กับแผนก | ฟอร์ม Department → transfer list **Members** (`routes/config/department/department-form.tsx:64-81`) | ส่ง `department_users: { add[], remove[] }`; เขียนไปยัง `tb_department_user` — **แก้ไขในรอบนี้:** ไม่มี "User-admin → Department tab"; สมาชิกภาพแก้ไขบนตัวแผนกเอง |
 | ตั้ง HOD | ฟอร์ม Department → transfer list **Head of Department** | ส่ง `hod_users: { add[], remove[] }` → `is_hod = true` บนแถว junction ฟอร์มเป็น multi-select ธรรมดา; ไม่พบ guard แบบ HOD เดียวใน `departments.service.ts` |
 | เปลี่ยน HOD | เอาออกจากรายการ HOD แล้วเพิ่มผู้ใช้คนใหม่ | การอนุมัติในอดีตยังเก็บผู้เซ็นจริง |
+
+Action ของแถว list และ transfer list สองตัวของฟอร์ม department สำหรับกำหนดผู้ใช้:
+
+```mermaid
+flowchart TD
+    A["แถวแผนก"] --> B{"Action"}
+    B -->|"View"| C["เปิดรายละเอียดแผนก"]
+    B -->|"Edit"| D["เปิดฟอร์มแก้ไข"]
+    B -->|"Delete"| E["แสดง dialog ยืนยัน"]
+    E --> F{"ยืนยัน?"}
+    F -->|"ใช่"| G["Soft-delete แผนก"]
+    F -->|"ไม่"| H["ปิด dialog"]
+```
+
+> Diagram adapted from `carmen/docs/app/finance/department-management/FD-department-management.md` · verified against `carmen-inventory-frontend-react/routes/config/department/department.route.tsx`, `department-edit.route.tsx` (2026-09-28) · Changes: replaced the source's client-router-push + local-array-removal framing with the real routed edit page and soft-delete API call (the delete has no reference guard — see § 3).
+
+```mermaid
+flowchart TD
+    A["เปิดฟอร์ม department"] --> B["Transfer list Members<br/>(assigned เทียบ available users)"]
+    A --> C["Transfer list Head of Department"]
+    B --> D["ค้นหา assigned / available"]
+    D --> E["ย้ายผู้ใช้ระหว่าง list"]
+    E --> F["ส่ง department_users: add[], remove[]"]
+    C --> G["ย้ายผู้ใช้ระหว่าง list"]
+    G --> H["ส่ง hod_users: add[], remove[] -> is_hod = true"]
+```
+
+> Diagram adapted from `carmen/docs/app/finance/department-management/FD-department-management.md` · verified against `carmen-inventory-frontend-react/routes/config/department/department-form.tsx:64-81` (2026-09-28) · Changes: split the source's single generic "Users Tab" dual-pane picker into the two real transfer lists — Members and Head of Department — confirmed in `department-form.tsx`; dropped the sibling "Locations Tab" (no location assignment exists on Department).
 
 ## 3. การตรวจสอบและข้อผิดพลาด
 

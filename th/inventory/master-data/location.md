@@ -2,7 +2,7 @@
 title: ที่ตั้ง / สถานที่ (Location)
 description: สถานที่จัดเก็บและบริโภคที่จำแนกเป็น inventory, direct หรือ consignment — ขับเคลื่อนการ post สต๊อกและพฤติกรรมการ physical count
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: master-data, location, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -38,6 +38,64 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | เปลี่ยน `location_type` | Edit dialog | **ไม่ได้ถูกบล็อกจริง** — `update()` ยอมรับค่าใหม่โดยไม่พบการเช็คการเคลื่อนไหวก่อนหน้า (guard ยังไม่ยืนยัน ดู Edge Cases); การเปลี่ยนหลังมี posting แล้วยังจะทำให้ความหมายของรายงานประวัติเสียหาย |
 | กำหนด inventory tree | หน้า location detail | จำกัดว่าสินค้าใดที่มองเห็นได้ที่ location นี้ |
 | วางสินค้าบนชั้นวางที่ location นี้ | API เท่านั้น — `products.add[] / products.update[]` มี `shelf_id` (`config_locations/swagger/request.ts:112-139`) | ตั้ง `tb_product_location.shelf_id` + `shelf_code` / `shelf_name` แบบ denormalised; `null` ล้างค่า transfer list สินค้าบนฟอร์ม location (`CreateLocationDto.products: TransferPayload`) ไม่มี shelf picker — picker อยู่บนแท็บ **Location Assignment** ของฟอร์มสินค้าแทน ([product/03-user-flow-product-admin](/th/inventory/product/03-user-flow-product-admin)) |
+
+การ sort list, toggle list/grid, และ flow การสร้าง location:
+
+```mermaid
+flowchart TD
+    Start(["ผู้ใช้อยู่ที่ location list"]) --> InitialSort["Default sort: code:asc, name:asc"]
+    InitialSort --> DisplayList["แสดง list ที่ sort แล้วพร้อม sort indicator"]
+    DisplayList --> UserClick{"ผู้ใช้คลิก column header"}
+    UserClick -->|"column เดิม"| CheckDirection{"ทิศทางปัจจุบัน?"}
+    CheckDirection -->|"asc"| ReverseSort["เปลี่ยนเป็น desc"]
+    CheckDirection -->|"desc"| ChangeToAsc["เปลี่ยนเป็น asc"]
+    UserClick -->|"column ใหม่"| NewSort["เปลี่ยน sort field, default asc"]
+    ReverseSort --> ReSort["Re-sort"]
+    ChangeToAsc --> ReSort
+    NewSort --> ReSort
+    ReSort --> MaintainFilters["Filter ยังคงทำงาน"]
+```
+
+> Diagram adapted from `carmen/docs/app/system-administration/location-management/FD-location-management.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/master/locations/locations.service.ts` (2026-09-28) · Changes: corrected the default sort to `code:asc, name:asc` per `withDefaultSort`; dropped the source's "Shelves / Products / Users Count" sortable columns (not confirmed on the list).
+
+```mermaid
+flowchart TD
+    Start(["ผู้ใช้อยู่ที่ location list"]) --> DefaultView["Default: list view"]
+    DefaultView --> ShowToggle["แสดงปุ่ม toggle list/grid"]
+    ShowToggle --> UserClick{"ผู้ใช้คลิก"}
+    UserClick -->|"List icon"| SwitchToList["สลับเป็น list mode"]
+    UserClick -->|"Grid icon"| SwitchToGrid["สลับเป็น grid mode"]
+    SwitchToList --> Preserve["คงสถานะ filter + sort"]
+    SwitchToGrid --> Preserve
+    Preserve --> ShowSameData["แสดงผลลัพธ์ filter/sort เดิมใน layout ใหม่"]
+```
+
+> Diagram adapted from `carmen/docs/app/system-administration/location-management/FD-location-management.md` · verified against `carmen-inventory-frontend-react/components/templates/config-list-template.tsx` (2026-09-28) · Changes: renamed "table"/"card" to the real `list` / `grid` `displayMode` values; dropped the source's "checkbox selection" claim in list view — no bulk multi-select was found.
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as LocationForm
+    participant V as Zod Validator
+    participant API as Locations API
+
+    U->>F: คลิก "Create Location"
+    F->>U: แสดงฟอร์มเปล่า
+    U->>F: กรอกฟิลด์ฟอร์ม
+    U->>F: คลิก "Save"
+    F->>V: Validate ข้อมูลฟอร์ม
+    alt Validation fails
+        V->>F: ส่ง error กลับ
+        F->>U: แสดง error แบบ inline
+    else Validation passes
+        V->>F: ส่งข้อมูลที่ valid กลับ
+        F->>API: POST /locations
+        API-->>F: Location ที่ถูกสร้าง
+        F->>U: Navigate ไปยัง list พร้อมข้อความสำเร็จ
+    end
+```
+
+> Diagram adapted from `carmen/docs/app/system-administration/location-management/TS-location-management.md` · verified against `carmen-inventory-frontend-react/routes/config/location/location-form-schema.ts`, `location-new.route.tsx` (2026-09-28) · Changes: replaced the source's "update mock state" step with the real `POST /locations` API call.
 
 ## 3. การตรวจสอบและข้อผิดพลาด
 

@@ -2,7 +2,7 @@
 title: Unit
 description: Units of measure and inter-unit conversions used by every transactional document and product record.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: master-data, unit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -31,6 +31,20 @@ The companion table `tb_unit_conversion` stores **multipliers between two units*
 | Add a per-product conversion | Product detail → Conversions | Overrides global for that product |
 | Mark default conversion | Toggle `is_default` | Primary when multiple conversions exist for the same pair |
 | Identity conversion | Same from/to with equal qty | Permitted; otherwise from ≠ to required |
+
+The unit list, like other master-data lists, toggles between a table and a card layout without refetching:
+
+```mermaid
+flowchart TD
+    Start(["User clicks list/grid toggle"]) --> CurrentMode{"Current mode?"}
+    CurrentMode -->|"list"| SetGrid["Set displayMode = grid"]
+    CurrentMode -->|"grid"| SetList["Set displayMode = list"]
+    SetGrid --> Preserve["Preserve filter + sort state"]
+    SetList --> Preserve
+    Preserve --> Render["Re-render same results in the new layout"]
+```
+
+> Diagram adapted from `carmen/docs/app/product-management/units/FD-units.md` · verified against `carmen-inventory-frontend-react/components/templates/config-list-template.tsx` (2026-09-28) · Changes: renamed "table"/"cards" to the real `displayMode` values `list` / `grid`; dropped the source's `localStorage` persistence claim — not found in `config-list-template.tsx` (the toggle is plain `useState`, so it resets on reload).
 
 ## 3. Validation & Errors
 

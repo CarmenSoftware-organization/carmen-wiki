@@ -2,7 +2,7 @@
 title: จุดส่งของ (Delivery Point)
 description: จุดส่งของทางกายภาพสำหรับการจัดส่งของผู้ขาย — ถูกอ้างอิงโดย PO และ GRN และเชื่อมโยงกับ inventory location
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: master-data, delivery-point, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -29,6 +29,52 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | ยกเลิกการใช้งาน | Toggle `is_active` | ซ่อนจาก picker PO/GRN; เอกสารย้อนหลังยัง resolve ได้ |
 | Tag default ของ location | รายละเอียดของ [master-data/location](/th/inventory/master-data/location) | ตั้ง `tb_location.delivery_point_id` |
 | Override บน GRN | ฟิลด์ header ของ GRN | GRN inherit จาก PO แต่อาจ override ตอนรับ |
+
+flow list, create, และ delete บนเอนทิตีสองฟิลด์ที่เรียบง่ายนี้:
+
+```mermaid
+flowchart TD
+    A["ผู้ใช้พิมพ์ search text"] --> B["Filter by name contains"]
+    C["ผู้ใช้เลือก status filter"] --> D{"Status filter"}
+    D -->|"All"| E["แสดงผลลัพธ์ทั้งหมด"]
+    D -->|"Active"| F["แสดง is_active = true"]
+    D -->|"Inactive"| G["แสดง is_active = false"]
+    B --> H["รวม filter"]
+    E --> H
+    F --> H
+    G --> H
+    H --> I["Apply sort"]
+    I --> J["แสดงผลลัพธ์"]
+```
+
+> Diagram adapted from `carmen/docs/app/system-administration/delivery-points/FD-delivery-points.md` · verified against `carmen-inventory-frontend-react/routes/config/delivery-point/delivery-point-component.tsx` (2026-09-28) · Changes: renamed `isActive` to the real `is_active` column.
+
+```mermaid
+flowchart TD
+    A["คลิก New"] --> B["เปิด DeliveryPointDialog"]
+    B --> C["กรอก name"]
+    C --> D["Toggle active status"]
+    D --> E{"Name valid?"}
+    E -->|"ใช่"| F["คลิก Save"]
+    E -->|"ไม่"| G["ปุ่ม Save disabled"]
+    F --> H["POST /delivery-points"]
+    H --> I["ปิด dialog"]
+    I --> J["Refresh list"]
+```
+
+> Diagram adapted from `carmen/docs/app/system-administration/delivery-points/FD-delivery-points.md` · verified against `carmen-inventory-frontend-react/routes/config/delivery-point/delivery-point-component.tsx` (2026-09-28) · Changes: named the real `DeliveryPointDialog` component and the real create endpoint in place of the source's generic "Create record".
+
+```mermaid
+flowchart TD
+    A["คลิกเมนูของแถว"] --> B["เลือก Delete"]
+    B --> C["แสดง DeleteDialog ยืนยัน"]
+    C --> D{"ผู้ใช้ยืนยัน?"}
+    D -->|"ใช่"| E["Soft-delete record<br/>(ไม่มี reference guard — ดู § 3)"]
+    D -->|"ไม่"| F["ปิด dialog"]
+    E --> G["เอาออกจาก list"]
+```
+
+> Diagram adapted from `carmen/docs/app/system-administration/delivery-points/FD-delivery-points.md` · verified against `carmen-inventory-frontend-react/components/templates/config-list-template.tsx` (2026-09-28) · Changes: named the real `DeleteDialog` component in place of the source's generic "Show confirmation", and noted the unconfirmed delete guard per § 3.
 
 ## 3. การตรวจสอบและข้อผิดพลาด
 

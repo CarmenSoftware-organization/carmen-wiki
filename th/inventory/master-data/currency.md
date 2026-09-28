@@ -2,7 +2,7 @@
 title: สกุลเงิน (Currency)
 description: แคตตาล็อกสกุลเงินต่อ tenant, รายการอ้างอิง ISO และประวัติอัตราแลกเปลี่ยนแบบมีวันที่ — ขับเคลื่อนการแปลง FX ทั้งหมดบน PO, GRN, pricelist และ costing
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: master-data, currency, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -31,6 +31,23 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | บริหารจัดการอัตรา | ดู [master-data/exchange-rate](/th/inventory/master-data/exchange-rate) | ประวัติแบบมีวันที่อยู่ที่นั่น ไม่ใช่บนเอนทิตีนี้ |
 | ยกเลิกการใช้งานสกุลเงิน | Toggle `is_active` | ถูกบล็อกถ้าเป็น `default_currency_id` ของ BU ใดก็ตาม |
 | Seed รหัส ISO ใหม่ | Platform DB migration | tenant ไม่สามารถเขียน `tb_currency_iso` ได้ |
+
+List ของสกุลเงินใช้ toggle active-only และ text filter ก่อน render:
+
+```mermaid
+flowchart TD
+    A["สกุลเงินทั้งหมด"] --> B{"แสดงเฉพาะ active?"}
+    B -->|"ใช่"| C["Filter: is_active = true"]
+    B -->|"ไม่"| D["รวมทุกสกุลเงิน"]
+    C --> E{"มี search term?"}
+    D --> E
+    E -->|"ใช่"| F["match code / name / description"]
+    E -->|"ไม่"| G["ไม่มี text filter"]
+    F --> H["แสดงผลลัพธ์ที่ filter แล้ว"]
+    G --> H
+```
+
+> Diagram adapted from `carmen/docs/app/finance/currency-management/FD-currency-management.md` · verified against `carmen-inventory-frontend-react/routes/config/currency/currency-component.tsx` (2026-09-28) · Changes: renamed the source's `showActive` / `active` fields to the real `is_active` flag; broadened the text-match target from "code OR description" to "code / name / description" since the exact search-field scope of the shared list template is not independently confirmed.
 
 ## 3. การตรวจสอบและข้อผิดพลาด
 

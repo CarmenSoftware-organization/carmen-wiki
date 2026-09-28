@@ -2,7 +2,7 @@
 title: Delivery Point
 description: Physical drop-off points for vendor deliveries — referenced by purchase orders and GRNs and joined to inventory locations.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: master-data, delivery-point, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -29,6 +29,52 @@ A property typically has a handful of delivery points (Main Dock, Banquet Dock, 
 | Deactivate | Toggle `is_active` | Hidden from PO/GRN pickers; historical docs still resolve |
 | Tag a location's default | [master-data/location](/en/inventory/master-data/location) detail | Sets `tb_location.delivery_point_id` |
 | Override on GRN | GRN header field | GRN inherits from PO but may override on receipt |
+
+The list, create, and delete flows on this simple two-field entity:
+
+```mermaid
+flowchart TD
+    A["User enters search text"] --> B["Filter by name contains"]
+    C["User selects status filter"] --> D{"Status filter"}
+    D -->|"All"| E["Show all results"]
+    D -->|"Active"| F["Show is_active = true"]
+    D -->|"Inactive"| G["Show is_active = false"]
+    B --> H["Combine filters"]
+    E --> H
+    F --> H
+    G --> H
+    H --> I["Apply sort"]
+    I --> J["Display results"]
+```
+
+> Diagram adapted from `carmen/docs/app/system-administration/delivery-points/FD-delivery-points.md` · verified against `carmen-inventory-frontend-react/routes/config/delivery-point/delivery-point-component.tsx` (2026-09-28) · Changes: renamed `isActive` to the real `is_active` column.
+
+```mermaid
+flowchart TD
+    A["Click New"] --> B["Open DeliveryPointDialog"]
+    B --> C["Enter name"]
+    C --> D["Toggle active status"]
+    D --> E{"Name valid?"}
+    E -->|"Yes"| F["Click Save"]
+    E -->|"No"| G["Save button disabled"]
+    F --> H["POST /delivery-points"]
+    H --> I["Close dialog"]
+    I --> J["Refresh list"]
+```
+
+> Diagram adapted from `carmen/docs/app/system-administration/delivery-points/FD-delivery-points.md` · verified against `carmen-inventory-frontend-react/routes/config/delivery-point/delivery-point-component.tsx` (2026-09-28) · Changes: named the real `DeliveryPointDialog` component and the real create endpoint in place of the source's generic "Create record".
+
+```mermaid
+flowchart TD
+    A["Click row menu"] --> B["Select Delete"]
+    B --> C["Show DeleteDialog confirmation"]
+    C --> D{"User confirms?"}
+    D -->|"Yes"| E["Soft-delete record<br/>(no reference guard — see § 3)"]
+    D -->|"No"| F["Close dialog"]
+    E --> G["Remove from list"]
+```
+
+> Diagram adapted from `carmen/docs/app/system-administration/delivery-points/FD-delivery-points.md` · verified against `carmen-inventory-frontend-react/components/templates/config-list-template.tsx` (2026-09-28) · Changes: named the real `DeleteDialog` component in place of the source's generic "Show confirmation", and noted the unconfirmed delete guard per § 3.
 
 ## 3. Validation & Errors
 

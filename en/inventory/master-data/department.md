@@ -2,7 +2,7 @@
 title: Department
 description: Organisational departments and their user assignments — used as cost-centre and approval scope on requisition and PR documents.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: master-data, department, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -32,6 +32,34 @@ Departments model the **cost-centre / requesting-unit** dimension of the propert
 | Assign user to department | Department form → **Members** transfer list (`routes/config/department/department-form.tsx:64-81`) | Sends `department_users: { add[], remove[] }`; writes `tb_department_user` — **corrected this pass:** there is no "User-admin → Department tab"; membership is edited on the department itself |
 | Set HOD | Department form → **Head of Department** transfer list | Sends `hod_users: { add[], remove[] }` → `is_hod = true` on the junction row. The form is a plain multi-select; no single-HOD guard was found in `departments.service.ts` |
 | Reassign HOD | Remove from HOD list, add the new user | Past approvals retain the original signer |
+
+List-row actions and the department form's two user-assignment transfer lists:
+
+```mermaid
+flowchart TD
+    A["Department row"] --> B{"Action"}
+    B -->|"View"| C["Open department detail"]
+    B -->|"Edit"| D["Open edit form"]
+    B -->|"Delete"| E["Show confirmation dialog"]
+    E --> F{"Confirm?"}
+    F -->|"Yes"| G["Soft-delete department"]
+    F -->|"No"| H["Close dialog"]
+```
+
+> Diagram adapted from `carmen/docs/app/finance/department-management/FD-department-management.md` · verified against `carmen-inventory-frontend-react/routes/config/department/department.route.tsx`, `department-edit.route.tsx` (2026-09-28) · Changes: replaced the source's client-router-push + local-array-removal framing with the real routed edit page and soft-delete API call (the delete has no reference guard — see § 3).
+
+```mermaid
+flowchart TD
+    A["Open department form"] --> B["Members transfer list<br/>(assigned vs. available users)"]
+    A --> C["Head of Department transfer list"]
+    B --> D["Search assigned / available"]
+    D --> E["Move user between lists"]
+    E --> F["Sends department_users: add[], remove[]"]
+    C --> G["Move user between lists"]
+    G --> H["Sends hod_users: add[], remove[] -> is_hod = true"]
+```
+
+> Diagram adapted from `carmen/docs/app/finance/department-management/FD-department-management.md` · verified against `carmen-inventory-frontend-react/routes/config/department/department-form.tsx:64-81` (2026-09-28) · Changes: split the source's single generic "Users Tab" dual-pane picker into the two real transfer lists — Members and Head of Department — confirmed in `department-form.tsx`; dropped the sibling "Locations Tab" (no location assignment exists on Department).
 
 ## 3. Validation & Errors
 

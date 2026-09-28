@@ -1,0 +1,54 @@
+25659afee8	imported	master-data/currency
+33cd8dc70b	rejected: diverges	-
+3d068f4081	rejected: diverges	-
+25f47b5941	rejected: diverges	-
+f731cf6079	rejected: diverges	-
+aeabc110ef	rejected: diverges	-
+35c7558b9e	rejected: unverifiable	-
+92fde79cbd	rejected: unverifiable	-
+4bf831a8fe	rejected: diverges	-
+9aeff324c3	rejected: diverges	-
+b666b95292	imported	master-data/department
+08ec7270e9	imported	master-data/department
+2587822081	rejected: covered	-
+b7f949a177	rejected: diverges	-
+6a35c09048	rejected: diverges	-
+daabc83c61	rejected: diverges	-
+13dde3dcbf	rejected: diverges	-
+7c0c5fb0de	rejected: unverifiable	-
+017ad7d2de	rejected: diverges	-
+63498c3a44	rejected: diverges	-
+9d14115be1	rejected: diverges	-
+e469d1e248	rejected: diverges	-
+49a6aa2e74	rejected: diverges	-
+f07c2affb8	rejected: diverges	-
+81a49ddbb3	rejected: diverges	-
+f0c431e236	rejected: diverges	-
+9c65688e3c	rejected: diverges	-
+13e98e694a	imported	master-data/unit
+f749b2e928	rejected: diverges	-
+ac120f54d1	rejected: diverges	-
+6ee3b26058	imported	master-data/delivery-point
+6fea8b5a3c	imported	master-data/delivery-point
+b1f6f556b4	imported	master-data/delivery-point
+0e20e9b226	rejected: covered	-
+1fce9314c5	rejected: page-full	-
+1f7bf8f604	imported	master-data/location
+1fd4bf8ca8	imported	master-data/location
+3a222d90af	imported	master-data/location
+2ecb968a9b	rejected: diverges	-
+84721bc965	rejected: diverges	-
+c74bcb9891	rejected: diverges	-
+b82fbbb995	rejected: diverges	-
+94c87d1115	rejected: diverges	-
+203a42bfc0	rejected: unverifiable	-
+be7593075f	rejected: diverges	-
+1ef333feec	rejected: diverges	-
+b738e89ac3	imported	master-data/vendor
+c82a8230e5	rejected: diverges	-
+79d55e3326	rejected: unverifiable	-
+910cea424e	rejected: diverges	-
+d348a78077	rejected: diverges	-
+2cdfb22b12	rejected: diverges	-
+766acc8206	rejected: diverges	-
+cfad1cf7d7	rejected: unverifiable	-

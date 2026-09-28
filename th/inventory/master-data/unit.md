@@ -2,7 +2,7 @@
 title: หน่วยนับ (Unit)
 description: หน่วยนับและการแปลงระหว่างหน่วยที่ใช้โดยเอกสารธุรกรรมและระเบียนสินค้าทุกใบ
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: master-data, unit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -31,6 +31,20 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | เพิ่ม conversion ต่อสินค้า | Product detail → Conversions | ทับ global สำหรับสินค้านั้น |
 | ตั้ง conversion default | Toggle `is_default` | Primary เมื่อมีหลาย conversion สำหรับคู่เดียวกัน |
 | Identity conversion | from/to เหมือนกันด้วย qty เท่ากัน | อนุญาต; มิฉะนั้นต้อง from ≠ to |
+
+List ของหน่วยนับ เหมือนกับ list ข้อมูลหลักอื่น สลับระหว่าง layout ตารางและการ์ดโดยไม่ fetch ใหม่:
+
+```mermaid
+flowchart TD
+    Start(["ผู้ใช้คลิก toggle list/grid"]) --> CurrentMode{"โหมดปัจจุบัน?"}
+    CurrentMode -->|"list"| SetGrid["ตั้ง displayMode = grid"]
+    CurrentMode -->|"grid"| SetList["ตั้ง displayMode = list"]
+    SetGrid --> Preserve["คงสถานะ filter + sort"]
+    SetList --> Preserve
+    Preserve --> Render["render ผลลัพธ์เดิมใน layout ใหม่"]
+```
+
+> Diagram adapted from `carmen/docs/app/product-management/units/FD-units.md` · verified against `carmen-inventory-frontend-react/components/templates/config-list-template.tsx` (2026-09-28) · Changes: renamed "table"/"cards" to the real `displayMode` values `list` / `grid`; dropped the source's `localStorage` persistence claim — not found in `config-list-template.tsx` (the toggle is plain `useState`, so it resets on reload).
 
 ## 3. การตรวจสอบและข้อผิดพลาด
 

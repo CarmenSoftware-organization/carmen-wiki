@@ -2,7 +2,7 @@
 title: Currency
 description: Per-tenant currency catalogue, ISO reference list, and dated exchange-rate history — drives all FX conversion on POs, GRNs, pricelists, and costing.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: master-data, currency, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -31,6 +31,23 @@ Each tenant chooses a subset of ISO currencies to enable. The BU's `default_curr
 | Maintain rates | See [master-data/exchange-rate](/en/inventory/master-data/exchange-rate) | Dated history lives there, not on this entity |
 | Deactivate a currency | Toggle `is_active` | Blocked if it is any BU's `default_currency_id` |
 | Seed a new ISO code | Platform DB migration | Tenants cannot write `tb_currency_iso` |
+
+The currency list applies an active-only toggle and a text filter before rendering:
+
+```mermaid
+flowchart TD
+    A["All currencies"] --> B{"Show active only?"}
+    B -->|"Yes"| C["Filter: is_active = true"]
+    B -->|"No"| D["Include all currencies"]
+    C --> E{"Search term entered?"}
+    D --> E
+    E -->|"Yes"| F["Match code / name / description"]
+    E -->|"No"| G["No text filter"]
+    F --> H["Display filtered list"]
+    G --> H
+```
+
+> Diagram adapted from `carmen/docs/app/finance/currency-management/FD-currency-management.md` · verified against `carmen-inventory-frontend-react/routes/config/currency/currency-component.tsx` (2026-09-28) · Changes: renamed the source's `showActive` / `active` fields to the real `is_active` flag; broadened the text-match target from "code OR description" to "code / name / description" since the exact search-field scope of the shared list template is not independently confirmed.
 
 ## 3. Validation & Errors
 
