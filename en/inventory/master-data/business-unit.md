@@ -74,7 +74,7 @@ Source: platform schema (`packages/prisma-shared-schema-platform/prisma/schema.p
 | `max_license_users` | `Int?` | Yes | Legacy license cap. Since 2026-09 the enforced seat pool is read from the platform view `v_business_unit_seat` over dated `tb_business_unit_license` rows, and interface entitlements live in `tb_business_unit_interface_license` (`3aab07ea1`); licence data is served by `GET /api/license`, no longer by `GET /api/user/profile` (2026-09-09). |
 | Company info: `branch_no`, `company_name`, `company_address`, `company_email`, `company_tel`, `company_zip_code`, `tax_no` | `String?` | Yes | Legal-entity identity. |
 | Hotel info: `hotel_name`, `hotel_address`, `hotel_email`, `hotel_tel`, `hotel_zip_code` | `String?` | Yes | Operating identity. |
-| Format settings: `date_format`, `date_time_format`, `time_format`, `short_time_format`, `long_time_format`, `timezone`, `amount_format`, `quantity_format`, `perpage_format`, `recipe_format` | mixed | Yes | UI defaults. `timezone` defaults `Asia/Bangkok`. |
+| Format settings: `date_format`, `date_time_format`, `time_format`, `short_time_format`, `long_time_format`, `timezone`, `amount_format`, `quantity_format`, `recipe_format` | mixed | Yes | UI defaults. `timezone` defaults `Asia/Bangkok`. |
 | `doc_version` | `Int` | No | Optimistic-lock version (default `0`). |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |
 
