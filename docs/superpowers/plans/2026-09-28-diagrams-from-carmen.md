@@ -16,7 +16,7 @@
 - Import and adapt only — never draw a diagram without a source block.
 - Precedence: E2E tests and implementation beat `carmen/docs`.
 - Max **3 diagrams per page**, ~25 nodes per diagram; none on `04-test-scenarios*.md`.
-- TH Mermaid block is byte-identical to EN; labels stay English; TH lead-ins/headings in Thai.
+- TH Mermaid block has the same structure as EN; descriptive label text translated to Thai, identifiers stay English (revised at Task 3 checkpoint, spec §5.3); TH lead-ins/headings in Thai.
 - Source line under every imported diagram (English in both locales): `> Diagram adapted from \`carmen/docs/<path>\` · verified against \`<repo>/<path>\`[, …] (2026-09-28)` plus `· Changes: …` when adapted.
 - Never renumber existing sections; update frontmatter `date` on every edited page; never touch `dateCreated`.
 - Decision statuses: `imported` | `rejected: diverges|covered|unverifiable|too-large|render|page-full`.
@@ -799,7 +799,9 @@ FOR EACH row with status `candidate` in your modules' sections:
    never renumber sections, lead-in sentence + block + source line:
    > Diagram adapted from `carmen/docs/<source>` · verified against `<repo>/<path>`[, `<repo>/<path>`] (2026-09-28)
    Append ` · Changes: <what you changed and why>` when adapted.
-   Mirror into th/inventory/<same path>: byte-identical mermaid block and source line; Thai lead-in/heading; same section number.
+   Mirror into th/inventory/<same path>: same diagram structure (node ids, edges, states, participants, entities) with descriptive label text translated to Thai
+   (keep identifiers English: status/enum values, table/column names, endpoints, HTTP methods, UI button names); look at an existing
+   th/inventory/*/03-user-flow*.md diagram for the style. Source line identical English; Thai lead-in/heading; same section number.
    If the TH page does not exist, do NOT create it — record the diagram as imported anyway and list the missing TH page in your report.
    Update frontmatter `date:` to '2026-09-28T12:00:00.000Z' on every page you edit (keep the existing quoting style); never touch dateCreated.
 5. Append one line to .specs/diagram-decisions/<module>.tsv (TAB-separated, no header):
@@ -835,10 +837,10 @@ For each finished group, in turn:
 
 - [ ] **Step 1: Spot-check two imported diagrams personally**
 
-Pick two `imported` lines from the group's TSVs (prefer one adapted, one erDiagram/stateDiagram). For each: open the page, open every file named in its source line, and confirm each node/state/column/endpoint in the diagram exists there. Confirm the TH block is identical:
+Pick two `imported` lines from the group's TSVs (prefer one adapted, one erDiagram/stateDiagram). For each: open the page, open every file named in its source line, and confirm each node/state/column/endpoint in the diagram exists there. Confirm the TH block has the same structure (the parity check in Step 2 compares label-stripped shapes); eyeball that only label text differs:
 
 ```bash
-diff <(sed -n '/```mermaid/,/```$/p' en/inventory/<page>.md) <(sed -n '/```mermaid/,/```$/p' th/inventory/<page>.md) && echo identical
+diff <(sed -n '/```mermaid/,/```$/p' en/inventory/<page>.md) <(sed -n '/```mermaid/,/```$/p' th/inventory/<page>.md)   # expect label-text-only differences
 ```
 
 If either check fails, send the agent (SendMessage) the concrete defect and re-check after the fix; if both of two fail, spot-check two more.

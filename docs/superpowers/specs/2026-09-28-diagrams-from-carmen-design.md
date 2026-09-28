@@ -16,7 +16,7 @@ Enrich existing **Inventory book** pages with Mermaid diagrams sourced from `../
 |---|---|
 | Purpose | Enrich existing pages (not a gallery, not a verbatim bulk copy) |
 | Diagram disagrees with code | Adapt it to match current implementation; if it cannot be adapted, do not import it |
-| Thai pages | Mirror every imported diagram into `th/inventory/`; labels stay English, surrounding prose is Thai |
+| Thai pages | Mirror every imported diagram into `th/inventory/`; descriptive label text translated to Thai (identifiers stay English), matching existing TH pages — revised at the Task 3 checkpoint 2026-09-28 |
 | Approach | Module-by-module curation, preceded by a catalog of all source diagrams |
 
 ### 1.3 Assumptions
@@ -35,12 +35,12 @@ Enrich existing **Inventory book** pages with Mermaid diagrams sourced from `../
 
 1. Every source block has a final status in `.specs/diagram-catalog.md` (`imported`, `duplicate of …`, `out-of-scope`, or `rejected: <reason>`); none left `candidate` or `unmapped`.
 2. Every imported diagram carries a source + verification line and matches the cited implementation.
-3. EN and TH pages have identical Mermaid blocks (parity check passes, excluding mismatches recorded in the pre-work baseline).
+3. EN and TH pages have structurally identical Mermaid blocks — same count, same shape once label text is stripped (parity check passes, excluding mismatches recorded in the pre-work baseline).
 4. Every diagram type used renders on the dev Wiki.js (`http://dev.blueledgers.com:3987/`).
 
 ### 1.6 Out of scope
 
-Platform book; drawing diagrams with no source; translating diagram labels to Thai; diagrams on `04-test-scenarios*` pages; changes to `.specs/process-coverage-checklist.md`.
+Platform book; drawing diagrams with no source; diagrams on `04-test-scenarios*` pages; changes to `.specs/process-coverage-checklist.md`.
 
 ## 2. Phase 0 — Catalog
 
@@ -103,6 +103,8 @@ The catalog is both the tracker and the evidence that all blocks were considered
 where status is `imported` or `rejected: diverges|covered|unverifiable|too-large|render|page-full`. Every rebuild re-applies these files, so decisions survive re-runs; an unknown id or invalid status aborts the build. Unmapped folders are resolved by editing the script's folder map, not by decision lines. The allow-list block (between `<!-- ALLOW-LIST:START -->` / `<!-- ALLOW-LIST:END -->`) is preserved across rebuilds.
 
 ### 2.5 Checkpoint
+
+**Outcome (2026-09-28):** 1,378 candidates. The user chose the filter: `docs/app/` sources only; types `flowchart`, `graph`, `stateDiagram(-v2)`, `erDiagram`, `sequenceDiagram`; drop headings describing prototype architecture (architecture, component/page hierarchy, page load, context diagram / level 0, deployment, tech stack, navigation, state management, layer); `stmts` ≤ 25. Filtered survivors become `out-of-scope (filter: <reason>)`. Unmapped folders mapped as proposed at the checkpoint.
 
 After Phase 0, report the candidate count to the user. **If more than ~400 candidates remain, stop and agree on extra filtering before Phase 1.**
 
@@ -175,10 +177,10 @@ After each group finishes, the orchestrator personally re-verifies 2 imported di
 
 ### 5.3 Thai mirror
 
-- The Mermaid block in `th/inventory/...` is byte-identical to EN; the source line is identical English.
+- The Mermaid block in `th/inventory/...` has the same structure as EN (same node ids, edges, states, participants, entities, attributes); descriptive label text — node labels, edge labels, transition/message text, notes, subgraph titles — is translated to Thai, while identifiers (status/enum values, table/column names, endpoints, HTTP methods, UI button names quoted from the app) stay English. This matches the existing TH user-flow diagrams (decision at the Task 3 checkpoint, 2026-09-28). The source line stays identical English.
 - New lead-ins and headings on TH pages are written in Thai, matching that page's style.
 - Placement mirrors EN (same section number).
-- `scripts/diagram_catalog.py --check-parity` compares, per page pair, the count and hashes of Mermaid blocks in EN vs TH and exits non-zero on mismatch. Before any page edit, its output on the untouched branch is saved as `.specs/diagram-parity-baseline.txt`; `--baseline` suppresses those pre-existing mismatches so only new ones fail.
+- `scripts/diagram_catalog.py --check-parity` compares, per page pair, the count and **shape hashes** of Mermaid blocks in EN vs TH (shape = block with label text stripped) and exits non-zero on mismatch. Before any page edit, its output on the untouched branch is saved as `.specs/diagram-parity-baseline.txt`; `--baseline` suppresses those pre-existing mismatches so only new ones fail.
 
 ## 6. Execution
 
