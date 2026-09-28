@@ -2,7 +2,7 @@
 title: ใบเบิกของสโตร์ (Store Requisition) — Business Rules
 description: กฎ validation, calculation, authorization, posting และข้ามโมดูลของ store-requisition
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: store-requisition, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -135,12 +135,25 @@ Rule ID ใช้ `SR_POST_NNN`
 
 State diagram (ยืนยันแล้วกับ `store-requisition.service.ts` ในรอบนี้):
 
+```mermaid
+stateDiagram-v2
+    [*] --> draft : create()
+    draft --> in_progress : submit()
+    draft --> [*] : delete() — soft-delete เฉพาะเจ้าของ (SR_POST_011)
+    in_progress --> in_progress : review() — ส่งกลับไปขั้นก่อนหน้า (last_action = reviewed, SR_POST_004)
+    in_progress --> completed : final workflow-stage advance — approve() เมื่อ workflow_next_stage = '-' (SR_POST_005)
+    in_progress --> voided : reject() — ผู้ถือขั้นปัจจุบันคนใดก็ได้ (SR_POST_010)
+    completed --> [*]
+    voided --> [*]
+
+    note right of completed
+        completed และ voided เป็นจุดสิ้นสุด
+        cancelled ประกาศไว้บน enum_doc_status
+        แต่ไม่มี service method ใดกำหนดค่านี้ (SR_POST_009)
+    end note
 ```
-[*] → draft → in_progress → completed
-  |               |
-  (soft-delete,   voided (whole-document reject,
-   draft only)     any current-stage actor)
-```
+
+> Diagram adapted from `carmen/docs/app/store-operations/store-requisitions/FD-store-requisitions.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/inventory/store-requisition/store-requisition.service.ts`, `logic/store-requisition.logic.ts`, `packages/prisma-shared-schema-tenant/prisma/schema.prisma` (`enum_doc_status`) (2026-09-28) · Changes: dropped `in_progress → cancelled` (`cancelled` is never assigned by any service method — SR_POST_009); changed `in_progress → draft` ("Approver returns for revision") to a self-loop on `in_progress` (a send-back keeps `doc_status = in_progress` per SR_POST_004 — only `workflow_current_stage` moves); dropped `completed → voided` (`reject()` requires `doc_status = in_progress` — SR_POST_010); generalized "Admin voids" to "any current-stage actor" (SR_AUTH_013); omitted the unreachable `cancelled` state. Replaces the plain-text pseudo-diagram previously in this section.
 
 `cancelled` ประกาศไว้ใน enum แต่ไม่มี service method ใดในปัจจุบันเข้าถึงได้ — ตัดออกจาก diagram `completed` และ `voided` เป็นจุดสิ้นสุด `draft` ยอมรับ soft-delete (เจ้าของเท่านั้น) การ send-back ทิ้งเอกสารไว้ที่ `in_progress` พร้อม `last_action = reviewed`; `submit()` รับสถานะนั้นเป็น resubmit (คง `sr_no` และ `sr_date` ไว้)
 

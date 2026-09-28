@@ -2,7 +2,7 @@
 title: การเติมสต๊อก (Stock Replenishment)
 description: รายการที่ต่ำกว่า par ขับโดย threshold par / max บน tb_product_location พร้อม wizard สร้าง draft PR หรือ SR — เป็น API จริงตั้งแต่ 2026-08; ไม่มี scheduled sweep
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-09-28T12:00:00.000Z'
 tags: store-requisition, replenishment, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -20,6 +20,35 @@ dateCreated: 2026-05-16T15:00:00.000Z
 ## 1. ภาพรวมและผู้ใช้งาน
 
 Stock Replenishment คือ **ประตูหน้าที่ขับโดยนโยบายสู่ [store-requisition](/th/inventory/store-requisition) และ [purchase-request](/th/inventory/purchase-request)** `GET /api/{bu}/stock-replenishment` สแกนทุกแถว `tb_product_location` ที่ `par_qty > 0` ซึ่งสถานที่ active และไม่ใช่ `direct` รวม on-hand ต่อคู่ `(location, product)` และคืนแถวที่ on-hand ต่ำกว่า par โดยจัดกลุ่มตามสถานที่และเรียงตามปริมาณสั่งเติม จากหน้าจอ (`/store-operation/stock-replenishment`) ผู้ใช้ติ๊กแถวแล้วเปิดหนึ่งในสอง wizard: **Create PR** (`POST …/pr` ซื้อส่วนที่ขาดเข้ามา) หรือ **Create SR** (`POST …/sr` ดึงจากสถานที่อื่น) เอกสารที่สร้างเป็น draft ธรรมดาที่จากนั้นวิ่งผ่าน workflow PR / SR ปกติ
+
+มีตัวกรองสิทธิ์เข้าเงื่อนไขเพียงตัวเดียวที่ตัดสินว่าอะไรจะเข้ารายการที่ต่ำกว่า par นี้:
+
+```mermaid
+flowchart TD
+    Scan["GET /api/{bu}/stock-replenishment สแกน<br/>tb_product_location WHERE par_qty > 0"] --> CheckType{"สถานที่ active<br/>และไม่ใช่ direct?"}
+    CheckType -->|"ไม่ — direct หรือ inactive"| Excluded["ตัดออกจากรายการที่ต่ำกว่า par"]
+    CheckType -->|"ใช่ — inventory หรือ consignment"| Included["รวมไว้ — เข้าเงื่อนไขให้เติมสต๊อก"]
+```
+
+> Diagram adapted from `carmen/docs/app/store-operations/stock-replenishment/FD-stock-replenishment.md` (§7 "Destination Location Validation") · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/inventory/stock-replenishment/stock-replenishment.service.ts` (`selectBelowPar`) (2026-09-28) · Changes: replaced the fictional "user selects destination, validated interactively" framing with the real automatic backend filter (`location IS active AND location_type <> direct`) applied when scanning `tb_product_location` for the below-par list — there is no interactive destination-picker step in this screen.
+
+ตั้งแต่ต้นจนจบ การใช้หน้าจอนี้คือเส้นทางห้าขั้น:
+
+```mermaid
+graph LR
+    Discover["DISCOVER"] --> Filter["FILTER"]
+    Filter --> Select["SELECT"]
+    Select --> Configure["CONFIGURE"]
+    Configure --> Submit["SUBMIT"]
+
+    Discover --> Discover1["ดูหน้าจอ Stock Replenishment —<br/>แถวที่ต่ำกว่า par จัดกลุ่มตามสถานที่"]
+    Filter --> Filter1["กรองตามสถานที่ / ค้นหา"]
+    Select --> Select1["เลือกแถวด้วย checkbox"]
+    Configure --> Configure1["เลือก wizard Create PR หรือ Create SR;<br/>ปรับปริมาณ / เลือกสถานที่ต้นทาง"]
+    Submit --> Submit1["ยืนยัน — สร้าง draft PR หรือ SR"]
+```
+
+> Diagram adapted from `carmen/docs/app/store-operations/stock-replenishment/FD-stock-replenishment.md` (§8 "User Journey Flow") · verified against `carmen-inventory-frontend-react/routes/store-operation/stock-replenishment/stock-repl-component.tsx`, `stock-repl-pr-wizard.tsx`, `stock-repl-sr-wizard.tsx`, `use-stock-replenishment.ts` (2026-09-28) · Changes: replaced the generic "CONFIGURE source location and priority" step (no `priority` field exists in the schema or code) with the real two-wizard split (Create PR vs Create SR, each posting to its own endpoint); replaced "SUBMIT → SR Created" with "PR or SR draft created" since either document type can result.
 
 - **Purchaser / Requester** — review รายการ เลือก PR หรือ SR เลือก workflow (และสำหรับ SR เลือกสถานที่ต้นทาง) แก้ปริมาณใน wizard และ submit draft ที่ได้จากโมดูลของมันเอง
 - **ไม่มี service account ไม่มี cron** — ไม่มีสิ่งใด run โดยไม่มีคนดูแล
@@ -51,6 +80,21 @@ Stock Replenishment คือ **ประตูหน้าที่ขับโ
 ## 4. กรณีพิเศษ
 
 - **Status band เป็นอัตราส่วน on-hand ต่อ par** (`stock-replenishment.helper.ts`): `on_hand / par_qty ≤ 0.25` → `critical`; `≤ 0.5` → `warning`; อื่น ๆ → `low` ยอด ledger ติดลบถูก clamp เป็นศูนย์สำหรับอัตราส่วนและสูตร reorder ขณะที่ `on_hand_qty` ใน response ยังแสดงตัวเลขดิบ (ซึ่งอาจติดลบ)
+
+```mermaid
+flowchart TD
+    Item["สำหรับแต่ละแถว (location, product) ที่ต่ำกว่า par"] --> Calc["ratio = max(on_hand, 0) / par_qty"]
+    Calc --> Check{"ratio"}
+    Check -->|"<= 0.25"| Critical["status = critical"]
+    Check -->|"<= 0.5"| Warning["status = warning"]
+    Check -->|"> 0.5"| Low["status = low"]
+    Critical --> Display["แสดงในกลุ่มสถานที่พร้อม status badge"]
+    Warning --> Display
+    Low --> Display
+```
+
+> Diagram adapted from `carmen/docs/app/store-operations/stock-replenishment/FD-stock-replenishment.md` (§2 "Urgency Classification Flow") · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/inventory/stock-replenishment/stock-replenishment.helper.ts` (`toReplenishmentStatus`, `RATIO_CRITICAL = 0.25`, `RATIO_WARNING = 0.5`) (2026-09-28) · Changes: replaced the invented `currentStock / parLevel × 100` thresholds (<30% critical, 30–60% warning, >60% low) with the real ratio thresholds and the real clamp-to-zero rule for a negative on-hand balance; renamed "Urgency Classification" to the real `status` field (`critical` / `warning` / `low`).
+
 - **Reorder level เลือก `max_qty` ก่อน** `reorder_level = max_qty > 0 ? max_qty : par_qty`; `reorder_qty = max(reorder_level − on_hand, 0)` `min_qty` ถูกคืนเพื่อแสดงผลเท่านั้น
 - **ไม่มี term `on_order`** PO ที่เปิดอยู่และ SR transfer ที่กำลังดำเนินการไม่ลดส่วนที่ขาด; endpoint pending-documents คือสิ่งทดแทนแบบ manual
 - **ไม่มี cron ไม่มี idempotency ไม่มี period gate** ทุกรอบ wizard สร้าง draft ใหม่; ไม่มีสิ่งใดตรวจ inventory period ที่นี่ (กฎวันที่ submit/issue ของ SR เองใช้บังคับภายหลัง — ดู [store-requisition/02-business-rules](/th/inventory/store-requisition/02-business-rules) `SR_VAL_014`)
