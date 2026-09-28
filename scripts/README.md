@@ -97,3 +97,18 @@ For each EN nav item, the TH label is resolved in this order:
 | `conftest.py` | Shared pytest fixtures |
 | `nav-overrides.yaml` | Manual label overrides (committed) |
 | `requirements.txt` | Pinned Python dependencies |
+
+## diagram_catalog.py
+
+Catalogs every Mermaid block in `../carmen/docs`, maps it to an Inventory wiki
+module, dedups, and applies decisions from `.specs/diagram-decisions/<module>.tsv`
+(`<id>\t<status>\t<page>`; status `imported` or `rejected: <reason>`).
+Design: [`docs/superpowers/specs/2026-09-28-diagrams-from-carmen-design.md`](../docs/superpowers/specs/2026-09-28-diagrams-from-carmen-design.md).
+
+```bash
+python3 scripts/diagram_catalog.py                  # rebuild .specs/diagram-catalog.md
+python3 scripts/diagram_catalog.py --require-done   # exit 1 while candidate/unmapped rows remain
+python3 scripts/diagram_catalog.py --check-parity --baseline .specs/diagram-parity-baseline.txt
+```
+
+Unmapped source folders are resolved by editing `MODULE_MAP` in the script.
