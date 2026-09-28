@@ -6,7 +6,7 @@ Spec: docs/superpowers/specs/2026-09-28-diagrams-from-carmen-design.md §2, §5.
   python3 scripts/diagram_catalog.py                 # (re)build .specs/diagram-catalog.md
   python3 scripts/diagram_catalog.py --summary       # print status counts, write nothing
   python3 scripts/diagram_catalog.py --require-done  # exit 1 while any candidate/unmapped remains
-  python3 scripts/diagram_catalog.py --check-parity [--baseline FILE]
+  python3 scripts/diagram_catalog.py --check-parity [--baseline FILE]  # label-stripped EN/TH shapes
 
 Decisions live in .specs/diagram-decisions/<module>.tsv as `<id>\t<status>\t<page>`
 and override the automatic status on every rebuild, so re-running never loses a
@@ -34,6 +34,7 @@ MODULE_MAP = {
     "app/finance/currency-management": "master-data",
     "app/finance/department-management": "master-data",
     "app/finance/exchange-rate-management": "master-data",
+    "app/guides": OUT,
     "app/inventory-management/fractional-inventory": "inventory",
     "app/inventory-management/inventory-adjustments": "inventory-adjustment",
     "app/inventory-management/inventory-overview": "inventory",
@@ -49,6 +50,7 @@ MODULE_MAP = {
     "app/inventory-management/transactions": "inventory",
     "app/operational-planning/recipe-management": "recipe",
     "app/operational-planning/demand-forecasting": OUT,
+    "app/operational-planning/inventory-planning": OUT,
     "app/operational-planning/menu-engineering": OUT,
     "app/procurement/credit-note": "purchase-order",
     "app/procurement/goods-received-notes": "good-receive-note",
@@ -59,20 +61,27 @@ MODULE_MAP = {
     "app/product-management/categories": "product",
     "app/product-management/products": "product",
     "app/product-management/units": "master-data",
+    "app/reference": OUT,
     "app/shared-methods/inventory-valuation": "costing",
+    "app/store-operations/sales-consumption": OUT,
     "app/store-operations/stock-replenishment": "store-requisition",
     "app/store-operations/store-requisitions": "store-requisition",
     "app/store-operations/wastage-reporting": "inventory-adjustment",
+    "app/system-administration": "system-config",              # root FD/TS files only; deeper keys still win
     "app/system-administration/account-code-mapping": "general-ledger",
+    "app/system-administration/business-rules": OUT,
+    "app/system-administration/certifications": OUT,
     "app/system-administration/delivery-points": "master-data",
     "app/system-administration/location-management": "master-data",
     "app/system-administration/monitoring": OUT,
     "app/system-administration/notification-preferences": "reporting-audit",
     "app/system-administration/permission-management": "access-control",
     "app/system-administration/settings": "system-config",
+    "app/system-administration/system-integrations": OUT,       # POS integration, no wiki module
     "app/system-administration/user-management": "access-control",
     "app/system-administration/workflow": "system-config",
     "app/template-guide": OUT,
+    "app/vendor-management/ARC-2025-001-vendor-management-redesign.md": OUT,
     "app/vendor-management/price-lists": "vendor-pricelist",
     "app/vendor-management/pricelist-templates": "templates",
     "app/vendor-management/requests-for-pricing": "vendor-pricelist",
@@ -90,6 +99,7 @@ MODULE_MAP = {
     "documents/po": "purchase-order",
     "documents/pr": "purchase-request",
     "documents/prt": "templates",
+    "documents/sa/features/notification-settings": "reporting-audit",
     "documents/sc": "spot-check",
     "documents/so": "store-requisition",
     "documents/sr": "store-requisition",
@@ -100,10 +110,12 @@ MODULE_MAP = {
     "documents/MERMAID-TEST.md": OUT,
     "documents/SYSTEM-DOCUMENTATION-INDEX.md": OUT,
     "documents/SYSTEM-GAPS-AND-ROADMAP.md": OUT,
+    "documents/carmen-erp-system-requirements-documentation.md": OUT,
     "documents/module-spec-template.md": OUT,
     # loose top-level folders
     "Inventory": "inventory",
     "architecture/fifo-calc.md": "costing",
+    "carmen-recreation-docs": OUT,                              # prototype screen specifications
     "cn": "purchase-order",
     "good-recive-note-managment": "good-receive-note",
     "inventory-adjustment": "inventory-adjustment",
@@ -113,6 +125,8 @@ MODULE_MAP = {
     "purchase-request-management": "purchase-request",
     "store-requisitions": "store-requisition",
     "system-overview/Procurement-Process-Flow.md": "purchase-request",
+    "technical-specifications/procurement": OUT,                # older duplicate of app/procurement TS
+    "use-cases/procurement": "purchase-request",
     "vendor-pricelist-management": "vendor-pricelist",
     "mobile-app": OUT,
     "recipe-module/mobile-app.md": OUT,
@@ -129,6 +143,22 @@ DECISION = re.compile(r"^(imported|rejected: (diverges|covered|unverifiable|too-
 PAGE_BY_TYPE = {"erDiagram": "01-data-model", "stateDiagram-v2": "02-business-rules",
                 "stateDiagram": "02-business-rules"}
 ALLOW_START, ALLOW_END = "<!-- ALLOW-LIST:START -->", "<!-- ALLOW-LIST:END -->"
+
+# spec §2.5 checkpoint: candidate filter applied after dedup, before decisions.
+FILTER_TYPES = {"flowchart", "graph", "stateDiagram-v2", "stateDiagram", "erDiagram", "sequenceDiagram"}
+PROTOTYPE_HEADING = re.compile(
+    r"architecture|component|hierarch|page ?load|context diagram|level 0|deployment|tech stack|navigation|state management|layer")
+MAX_STMTS = 25
+
+# spec §5.3 shape hash: constructs stripped to compare EN/TH structure with labels ignored.
+NOTE_START = re.compile(r"^note\b")
+NOTE_END = re.compile(r"^end note\b")
+QUOTED = re.compile(r'"[^"]*"')
+EDGE_LABEL = re.compile(r"\|[^|]*\|")
+BRACKETED = re.compile(r"\[[^\[\]]*\]|\([^()]*\)|\{[^{}]*\}")
+PARTICIPANT_AS = re.compile(r"^(participant|actor)(\s+\S+)\s+as\s+.*$")
+SUBGRAPH_LINE = re.compile(r"^subgraph\s+(\S+)")
+ENTITY_KEY = re.compile(r"^(PK|FK|UK)$")
 
 
 @dataclass
@@ -172,6 +202,63 @@ def mermaid_blocks(text):
 
 def block_id(body):
     return hashlib.sha1(" ".join(body.split()).encode()).hexdigest()[:10]
+
+
+def _strip_entity_attr(s):
+    """erDiagram attribute line: keep only type + name plus any PK/FK/UK keys."""
+    toks = s.split()
+    if len(toks) < 2:
+        return s
+    keys = [t for t in toks[2:] if ENTITY_KEY.match(t.rstrip(","))]
+    return " ".join(toks[:2] + keys)
+
+
+def block_shape(body):
+    """Hash `body` after stripping human-readable label text (spec §5.3).
+
+    A TH block whose only differences from its EN counterpart are translated
+    labels hashes equal; a changed node id / edge / state / participant /
+    entity does not.
+    """
+    lines = body_lines(body)
+    dtype = lines[0].split()[0] if lines else "?"
+    er = dtype == "erDiagram"
+    out = []
+    skipping = False
+    in_entity = False
+    for line in lines:
+        if skipping:
+            if NOTE_END.match(line):
+                skipping = False
+            continue
+        if NOTE_START.match(line) and ":" not in line:
+            out.append("note")
+            skipping = True
+            continue
+        entering = er and line.endswith("{")
+        exiting = er and (line == "}" or line.startswith("}"))
+        s = QUOTED.sub('""', line)
+        if not er:
+            s = EDGE_LABEL.sub("||", s)
+            prev = None
+            while prev != s:
+                prev = s
+                s = BRACKETED.sub(lambda m: m.group(0)[0] + m.group(0)[-1], s)
+        idx = s.find(":")
+        if idx != -1:
+            s = s[:idx + 1]
+        m = PARTICIPANT_AS.match(s)
+        if m:
+            s = m.group(1) + m.group(2)
+        m = SUBGRAPH_LINE.match(s)
+        if m:
+            s = f"subgraph {m.group(1)}"
+        if er and in_entity and not entering and not exiting:
+            s = _strip_entity_attr(s)
+        out.append(" ".join(s.split()))
+        if er:
+            in_entity = False if exiting else (True if entering else in_entity)
+    return hashlib.sha1(" ".join(out).encode()).hexdigest()[:10]
 
 
 def body_lines(body):
@@ -260,6 +347,20 @@ def build(docs, ddir, wiki_root):
         survivors[rid] = g[0]
         for r in g[1:]:
             r.status, r.page = f"duplicate of {g[0].source}:{g[0].line}", "-"
+    for r in survivors.values():
+        if r.status != "candidate":
+            continue
+        if not r.source.startswith("app/"):
+            reason = "not docs/app"
+        elif r.dtype not in FILTER_TYPES:
+            reason = f"type {r.dtype}"
+        elif PROTOTYPE_HEADING.search(r.heading.lower()):
+            reason = "prototype heading"
+        elif r.stmts > MAX_STMTS:
+            reason = f"stmts > {MAX_STMTS}"
+        else:
+            continue
+        r.status, r.page = f"out-of-scope (filter: {reason})", "-"
     for rid, (status, page, where) in load_decisions(ddir).items():
         if rid not in survivors:
             sys.exit(f"{where}: unknown or duplicate-only id {rid}")
@@ -268,7 +369,11 @@ def build(docs, ddir, wiki_root):
 
 
 def status_key(status):
-    return "duplicate" if status.startswith("duplicate of") else status
+    if status.startswith("duplicate of"):
+        return "duplicate"
+    if status.startswith("out-of-scope (filter:"):
+        return "out-of-scope (filter)"
+    return status
 
 
 def summary(rows):
@@ -323,12 +428,12 @@ def check_parity(wiki_root, baseline):
         if not en.is_file():
             continue
         rel = en.relative_to(en_root).as_posix()
-        eh = [block_id(b) for _, _, b in mermaid_blocks(en.read_text(encoding="utf-8")) if b is not None]
+        eh = [block_shape(b) for _, _, b in mermaid_blocks(en.read_text(encoding="utf-8")) if b is not None]
         th = wiki_root / "th" / rel
         if not th.is_file():
             line = f"NO-TH  {rel} (en={len(eh)})" if eh else None
         else:
-            thh = [block_id(b) for _, _, b in mermaid_blocks(th.read_text(encoding="utf-8")) if b is not None]
+            thh = [block_shape(b) for _, _, b in mermaid_blocks(th.read_text(encoding="utf-8")) if b is not None]
             line = None if eh == thh else f"DIFF   {rel} (en={len(eh)} th={len(thh)})"
         if line:
             print(("known  " if line in known else "") + line)
