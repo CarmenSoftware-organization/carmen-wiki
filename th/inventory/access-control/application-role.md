@@ -46,14 +46,13 @@ Application role คือ **bundle ที่ตั้งชื่อแล้�
 
 ### 2.1 ลำดับขั้นการสร้าง Role
 
-ฟอร์มสร้างขอแค่ name, description, และ permissions เท่านั้น — ไม่มี role hierarchy ให้ตั้งค่า
+ฟอร์มสร้างขอแค่ name และ permissions เท่านั้น — ไม่มีฟิลด์ description และไม่มี role hierarchy ให้ตั้งค่า
 
 ```mermaid
 flowchart TD
     Start(["Sysadmin: สร้าง Role"]) --> Navigate["ไปที่ /system-admin/role/new"]
     Navigate --> EnterName["กรอกชื่อ Role"]
-    EnterName --> EnterDesc["กรอกคำอธิบาย"]
-    EnterDesc --> SelectPerms["เลือก Permission (Permission Picker)"]
+    EnterName --> SelectPerms["เลือก Permission (Permission Picker)"]
     SelectPerms --> Save{"บันทึก?"}
     Save -->|"ใช่"| CreateRole["POST .../application-roles"]
     CreateRole --> ShowSuccess["แจ้งเตือน: สำเร็จ"]
@@ -62,25 +61,27 @@ flowchart TD
     Cancel --> ReturnList
 ```
 
-> Diagram adapted from `carmen/docs/app/system-administration/permission-management/roles/FD-roles.md` · verified against `carmen-inventory-frontend-react/routes/system-admin/role/role-form.tsx`, `role-new.route.tsx` (2026-09-28) · Changes: dropped the "Set hierarchy" / "Select parent roles" steps (`tb_application_role` has no parent-role field); replaced the source's local-state `currentView` navigation with the real route (`/system-admin/role/new`) and API call.
+> Diagram adapted from `carmen/docs/app/system-administration/permission-management/roles/FD-roles.md` · verified against `carmen-inventory-frontend-react/routes/system-admin/role/role-form.tsx`, `role-form-schema.ts`, `role-new.route.tsx` (2026-09-28) · Changes: dropped the "Set hierarchy" / "Select parent roles" steps (`tb_application_role` has no parent-role field); dropped the "Enter Description" step (`role-form-schema.ts`'s `roleSchema` has only `application_role_name` + `permissions` — no description field anywhere in `role-form.tsx`); replaced the source's local-state `currentView` navigation with the real route (`/system-admin/role/new`) and API call.
 
 ### 2.2 ลำดับขั้นการลบ Role
+
+การเช็คว่ามีการมอบหมายที่ active อยู่หรือไม่เกิดขึ้นฝั่ง server หลังผู้ใช้ยืนยันแล้ว — ไม่ใช่การเช็คฝั่ง client ก่อนแสดงกล่องยืนยัน — และตัวลบเองเป็น hard delete ไม่ใช่การแนะนำให้ soft-delete/deactivate
 
 ```mermaid
 flowchart TD
     Start(["Sysadmin: ลบ Role"]) --> ClickDelete["กด Delete (แถวในรายการ หรือปุ่ม Hero ในหน้า detail)"]
-    ClickDelete --> CheckUsers{"มีการมอบหมายที่ active อยู่หรือไม่?"}
-    CheckUsers -->|"ใช่"| ShowError["ถูกบล็อก: ยังมีการมอบหมายที่ active"]
-    ShowError --> End1(["แนะนำให้ Soft-delete หรือ Deactivate แทน"])
-    CheckUsers -->|"ไม่"| Confirm["แสดงกล่องยืนยัน"]
+    ClickDelete --> Confirm["แสดงกล่องยืนยัน"]
     Confirm --> UserConfirms{"ผู้ใช้ยืนยันหรือไม่?"}
-    UserConfirms -->|"ไม่"| Cancel["ยกเลิก"]
-    UserConfirms -->|"ใช่"| DeleteRole["DELETE .../application-roles/:id"]
-    DeleteRole --> LogAudit["บันทึกลง reporting-audit/activity"]
-    LogAudit --> Success["แจ้งเตือน: สำเร็จ"]
+    UserConfirms -->|"ไม่"| Cancel["ปิดกล่องยืนยัน"]
+    UserConfirms -->|"ใช่"| DeleteReq["DELETE .../application-roles/:id"]
+    DeleteReq --> CheckUsers{"มีการมอบหมายที่ active อยู่หรือไม่?"}
+    CheckUsers -->|"ใช่"| ShowError["แจ้งเตือน Error: Cannot delete role assigned to users"]
+    CheckUsers -->|"ไม่"| DeleteRole["ลบ Role + Permission Link (hard delete)"]
+    DeleteRole --> Success["แจ้งเตือน: สำเร็จ"]
+    Success --> ReturnList["กลับไปหน้ารายการ Role"]
 ```
 
-> Diagram adapted from `carmen/docs/app/system-administration/permission-management/FD-permission-management.md` · verified against `carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_application-roles/config_application-roles.controller.ts` (`DELETE :id` `:320`), `en/inventory/access-control/application-role.md` (2026-09-28) · Changes: dropped the "Is System Role?" and "Has Child Roles?" checks (`tb_application_role` has no system-role flag or role hierarchy); kept the active-assignment guard, which matches the documented delete block.
+> Diagram adapted from `carmen/docs/app/system-administration/permission-management/FD-permission-management.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/authen/role_permission/role_permission.service.ts` (`remove()` `:378-409` — assignment check against `tb_user_tb_application_role`, then a literal `tb_application_role.delete()`, not a soft-delete), `packages/error-catalog/src/catalog.ts` (`ROLE_PERMISSION_ASSIGNED_CANNOT_DELETE`), gateway `apps/backend-gateway/src/config/config_application-roles/config_application-roles.controller.ts` (`DELETE :id` `:320`) (2026-09-28) · Changes: dropped the "Is System Role?" and "Has Child Roles?" checks (`tb_application_role` has no system-role flag or role hierarchy); moved the active-assignment check to run server-side after confirmation (the confirmation dialog opens unconditionally on click — there is no client-side pre-check); replaced "Suggest Soft-Delete / Deactivate Instead" with the actual generic error toast, since the guarded delete is a real hard delete (`tb_application_role.delete()`), not a soft-delete; removed the unverified "Log Deletion to Audit Trail" step — no explicit audit-log call was found in `remove()`.
 
 ## 3. การตรวจสอบและ Error
 

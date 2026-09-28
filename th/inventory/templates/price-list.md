@@ -66,6 +66,8 @@ Claim ที่ **ไม่มี** โค้ดรองรับในรอ�
 
 แหล่ง: tenant schema
 
+ความสัมพันธ์จริงทั้งสามของ template — กับ currency, กับรายการของตัวเอง, และกับแคตตาล็อกสินค้า:
+
 ```mermaid
 graph LR
     cur["tb_currency"] -->|"1 : N"| plt["tb_pricelist_template"]
@@ -73,7 +75,7 @@ graph LR
     prod["tb_product"] -->|"1 : N"| pltd
 ```
 
-> Diagram adapted from `carmen/docs/app/vendor-management/pricelist-templates/FD-pricelist-templates.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (`tb_pricelist_template` L4832, `tb_pricelist_template_detail` L4909) (2026-09-28) · Changes: rewrote the source `erDiagram` as `graph LR` per the Wiki.js allow-list (`erDiagram` renders blank for `tb_*` table names); dropped the column list (มีอยู่แล้วใน §5.1/§5.2 ด้านล่าง) — ความสัมพันธ์ทั้งสาม (currency → template, template → detail, product → detail) ไม่เปลี่ยนแปลงและตรงกับ schema
+> Diagram adapted from `carmen/docs/app/vendor-management/pricelist-templates/FD-pricelist-templates.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (`tb_pricelist_template` L4912, `tb_pricelist_template_detail` L4989) (2026-09-28) · Changes: rewrote the source `erDiagram` as `graph LR` per the Wiki.js allow-list (`erDiagram` renders blank for `tb_*` table names); dropped the column list (มีอยู่แล้วใน §5.1/§5.2 ด้านล่าง) — ความสัมพันธ์ทั้งสาม (currency → template, template → detail, product → detail) ไม่เปลี่ยนแปลงและตรงกับ schema
 
 ### 5.1 `tb_pricelist_template`
 

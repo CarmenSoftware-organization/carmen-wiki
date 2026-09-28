@@ -66,6 +66,8 @@ Claims **not** backed by any code found in this pass, previously documented as i
 
 Source: tenant schema.
 
+The template's three real relationships — to currency, to its own line items, and to the product catalog:
+
 ```mermaid
 graph LR
     cur["tb_currency"] -->|"1 : N"| plt["tb_pricelist_template"]
@@ -73,7 +75,7 @@ graph LR
     prod["tb_product"] -->|"1 : N"| pltd
 ```
 
-> Diagram adapted from `carmen/docs/app/vendor-management/pricelist-templates/FD-pricelist-templates.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (`tb_pricelist_template` L4832, `tb_pricelist_template_detail` L4909) (2026-09-28) · Changes: rewrote the source `erDiagram` as `graph LR` per the Wiki.js allow-list (`erDiagram` renders blank for `tb_*` table names); dropped the column list (already in §5.1/§5.2 below) — the three relationships (currency → template, template → detail, product → detail) are unchanged and match the schema.
+> Diagram adapted from `carmen/docs/app/vendor-management/pricelist-templates/FD-pricelist-templates.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (`tb_pricelist_template` L4912, `tb_pricelist_template_detail` L4989) (2026-09-28) · Changes: rewrote the source `erDiagram` as `graph LR` per the Wiki.js allow-list (`erDiagram` renders blank for `tb_*` table names); dropped the column list (already in §5.1/§5.2 below) — the three relationships (currency → template, template → detail, product → detail) are unchanged and match the schema.
 
 ### 5.1 `tb_pricelist_template`
 
