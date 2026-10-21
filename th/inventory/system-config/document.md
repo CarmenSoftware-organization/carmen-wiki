@@ -31,7 +31,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ## 1. คืออะไรและใครใช้
 
-Document Management คือ **registry surface การจัดเก็บไฟล์** ที่ `/system-admin/document` — index ที่ scope ตาม BU ของทุกไฟล์ที่ upload เข้า Carmen แต่ละ row คือ object หนึ่งใน MinIO storage บวกกับ metadata สำหรับแสดงผลใน `tb_file_tag` ไฟล์เดียวกันนี้ปรากฏที่อื่นในรูปของ attachment บนเอกสาร PR / PO / GRN / SR / IA / pricelist / count โดยแต่ละตารางธุรกรรมจะพกพา `attachments` JSONB ที่อ้างอิง **file token** จาก registry นี้
+Document Management คือ **registry surface การจัดเก็บไฟล์** ที่ `/system-admin/document` — index ที่ scope ตาม BU ของทุกไฟล์ที่ upload เข้า Carmen Blue แต่ละ row คือ object หนึ่งใน MinIO storage บวกกับ metadata สำหรับแสดงผลใน `tb_file_tag` ไฟล์เดียวกันนี้ปรากฏที่อื่นในรูปของ attachment บนเอกสาร PR / PO / GRN / SR / IA / pricelist / count โดยแต่ละตารางธุรกรรมจะพกพา `attachments` JSONB ที่อ้างอิง **file token** จาก registry นี้
 
 **กลุ่มเป้าหมาย:** Sysadmin จัดการ upload / delete ที่นี่; role ที่ไม่ใช่ admin โดยทั่วไปมี list / get / download แต่ไม่มี delete File microservice (`micro-file`, commands `files.upload` / `files.get` / `files.info` / `files.find-all` (list) / `files.delete` / `files.presigned-url` / `files.update-tags`) เป็นเจ้าของการจัดเก็บและ metadata registry; module `document-management` ของ gateway proxy REST surface ไปให้มันผ่าน TCP
 

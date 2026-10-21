@@ -62,7 +62,7 @@ This page captures the test scenarios the Purchaser drives across the module's f
 
 | # | Scenario | Expected |
 | - | -------- | -------- |
-| VPL-PUR-EDGE-01 | Concurrent edits on the same pricelist from two sessions | First save wins (matches on `doc_version`); the second's `update()` call affects zero rows, matching the general Carmen `doc_version` optimistic-lock pattern used across every module in this pass. |
+| VPL-PUR-EDGE-01 | Concurrent edits on the same pricelist from two sessions | First save wins (matches on `doc_version`); the second's `update()` call affects zero rows, matching the general Carmen Blue `doc_version` optimistic-lock pattern used across every module in this pass. |
 | VPL-PUR-EDGE-02 | Multi-MOQ-tier pricing on one product, multiple rows | Accepted — `@@unique([pricelist_id, product_id, unit_id, moq_qty, deleted_at])` permits one row per distinct `moq_qty`. |
 | VPL-PUR-EDGE-03 | Soft-delete a pricelist, then create a new one reusing the same `pricelist_no` | Accepted — the unique index includes `deleted_at`. |
 | VPL-PUR-EDGE-04 | Two vendors both marked `is_preferred = true` for the same product/currency | Both rows persist independently — nothing enforces "exactly one preferred row"; `price-compare`'s sort (`is_preferred desc, price asc`) picks whichever has the lower price as `selected` when both are preferred. |

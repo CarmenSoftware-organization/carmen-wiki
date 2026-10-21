@@ -1,6 +1,6 @@
 ---
 title: รายการราคาผู้ขาย (Vendor Pricelist) — User Flow — Vendor
-description: Flow ของ Vendor ภายในโมดูล vendor-pricelist — external party ที่มีการเข้าถึง portal-token (ไม่มี Carmen system login); เปิด ตั้งราคา save import submit; ลิงก์หมดอายุที่ end date ของ RFQ
+description: Flow ของ Vendor ภายในโมดูล vendor-pricelist — external party ที่มีการเข้าถึง portal-token (ไม่มี Carmen Blue system login); เปิด ตั้งราคา save import submit; ลิงก์หมดอายุที่ end date ของ RFQ
 published: true
 date: '2026-09-23T01:30:00.000Z'
 tags: vendor-pricelist, user-flow, vendor, inventory, carmen-software
@@ -11,12 +11,12 @@ dateCreated: 2026-05-15T15:00:00.000Z
 # รายการราคาผู้ขาย (Vendor Pricelist) — User Flow — Vendor
 
 > **At a Glance**
-> **Persona:** Vendor (external — portal ที่ authenticate ด้วย token, ไม่มี Carmen login) &nbsp;·&nbsp; **โมดูล:** [vendor-pricelist](/th/inventory/vendor-pricelist)
+> **Persona:** Vendor (external — portal ที่ authenticate ด้วย token, ไม่มี Carmen Blue login) &nbsp;·&nbsp; **โมดูล:** [vendor-pricelist](/th/inventory/vendor-pricelist)
 > **Re-sync 2026-09-22:** gap เรื่อง Save/Submit ที่รายงานเมื่อ 2026-07-16 **ปิดแล้ว** — `PATCH /api/pricelist-external/:url_token` และ `POST …/:url_token/submit` มีอยู่จริง (`pricelist-external.controller.ts`), ลิงก์หมดอายุที่ `end_date` ของ RFQ (`UrlTokenGuard`) และทุก action ของ portal ถูก log ลง `tb_activity`
 
 ## 1. Role ในโมดูลนี้
 
-**Vendor** เป็น external party ที่ไม่มี Carmen login ได้รับ email (ส่งจากแถว vendor ของ RFQ — `POST …/request-for-pricings/:id/send-email`) ที่มี link รูปแบบ `/pl/:url_token` (route `routes/external/pl/price-list-external.route.tsx` → `price-list-external-component.tsx`) โดย token คือ `pricelist_url_token` ที่ถูกสร้างสำหรับแถว invitation ของตน เมื่อ Purchaser สร้าง [Request for Pricing](/th/inventory/vendor-pricelist/request-price-list) token map ผ่านตาราง platform `tb_shot_url` ไปยัง JWT ที่บรรจุ `{ bu, vendor_id, rfp_detail_id }` และ `expired_at` เท่ากับ `end_date` ของ RFQ; `UrlTokenGuard` ของ gateway รับ token แทน Keycloak session และปฏิเสธด้วย 401 เมื่อหมดอายุ ต่างจาก pattern "ไม่มี portal เฉพาะ" ของ vendor ภายนอกในโมดูลอื่น (เช่น vendor บนโมดูล [purchase-order](/th/inventory/purchase-order)) โมดูลนี้ให้ vendor มีหน้าจริงที่อ่านและเขียน pricelist ของตนเอง
+**Vendor** เป็น external party ที่ไม่มี Carmen Blue login ได้รับ email (ส่งจากแถว vendor ของ RFQ — `POST …/request-for-pricings/:id/send-email`) ที่มี link รูปแบบ `/pl/:url_token` (route `routes/external/pl/price-list-external.route.tsx` → `price-list-external-component.tsx`) โดย token คือ `pricelist_url_token` ที่ถูกสร้างสำหรับแถว invitation ของตน เมื่อ Purchaser สร้าง [Request for Pricing](/th/inventory/vendor-pricelist/request-price-list) token map ผ่านตาราง platform `tb_shot_url` ไปยัง JWT ที่บรรจุ `{ bu, vendor_id, rfp_detail_id }` และ `expired_at` เท่ากับ `end_date` ของ RFQ; `UrlTokenGuard` ของ gateway รับ token แทน Keycloak session และปฏิเสธด้วย 401 เมื่อหมดอายุ ต่างจาก pattern "ไม่มี portal เฉพาะ" ของ vendor ภายนอกในโมดูลอื่น (เช่น vendor บนโมดูล [purchase-order](/th/inventory/purchase-order)) โมดูลนี้ให้ vendor มีหน้าจริงที่อ่านและเขียน pricelist ของตนเอง
 
 ## 2. จุดเข้าและ Primary Flow
 

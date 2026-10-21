@@ -11,12 +11,12 @@ dateCreated: 2026-05-15T15:00:00.000Z
 # Vendor Pricelist — User Flow — Vendor
 
 > **At a Glance**
-> **Persona:** Vendor (external — token-authenticated portal, no Carmen login) &nbsp;·&nbsp; **Module:** [vendor-pricelist](/en/inventory/vendor-pricelist)
+> **Persona:** Vendor (external — token-authenticated portal, no Carmen Blue login) &nbsp;·&nbsp; **Module:** [vendor-pricelist](/en/inventory/vendor-pricelist)
 > **Re-synced 2026-09-22:** the Save/Submit gap reported on 2026-07-16 is **closed** — `PATCH /api/pricelist-external/:url_token` and `POST …/:url_token/submit` exist (`pricelist-external.controller.ts`), the link expires at the RFQ `end_date` (`UrlTokenGuard`), and every portal action is logged to `tb_activity`.
 
 ## 1. Role in This Module
 
-The **Vendor** is an external party with no Carmen login. They receive an email (sent from the RFQ's vendor row — `POST …/request-for-pricings/:id/send-email`) containing a link of the form `/pl/:url_token` (route `routes/external/pl/price-list-external.route.tsx` → `price-list-external-component.tsx`), where the token is the `pricelist_url_token` generated for their invitation row when a Purchaser created a [Request for Pricing](/en/inventory/vendor-pricelist/request-price-list). The token maps, through the platform table `tb_shot_url`, to a JWT carrying `{ bu, vendor_id, rfp_detail_id }` and an `expired_at` equal to the RFQ `end_date`; the gateway's `UrlTokenGuard` accepts the token in place of a Keycloak session and rejects it with 401 once it has expired. Unlike the "no dedicated portal" pattern for external vendors in other modules (e.g. the [purchase-order](/en/inventory/purchase-order) vendor), this module gives the vendor a real page that reads and writes their own pricelist.
+The **Vendor** is an external party with no Carmen Blue login. They receive an email (sent from the RFQ's vendor row — `POST …/request-for-pricings/:id/send-email`) containing a link of the form `/pl/:url_token` (route `routes/external/pl/price-list-external.route.tsx` → `price-list-external-component.tsx`), where the token is the `pricelist_url_token` generated for their invitation row when a Purchaser created a [Request for Pricing](/en/inventory/vendor-pricelist/request-price-list). The token maps, through the platform table `tb_shot_url`, to a JWT carrying `{ bu, vendor_id, rfp_detail_id }` and an `expired_at` equal to the RFQ `end_date`; the gateway's `UrlTokenGuard` accepts the token in place of a Keycloak session and rejects it with 401 once it has expired. Unlike the "no dedicated portal" pattern for external vendors in other modules (e.g. the [purchase-order](/en/inventory/purchase-order) vendor), this module gives the vendor a real page that reads and writes their own pricelist.
 
 ## 2. Entry Point and Primary Flow
 

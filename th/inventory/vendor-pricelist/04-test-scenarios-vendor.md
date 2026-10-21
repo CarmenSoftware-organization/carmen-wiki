@@ -15,7 +15,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 > **Executable coverage (2026-09-22):** ไม่มี Playwright spec สำหรับ portal; catalog แบบเอกสารเท่านั้น `../carmen-inventory-frontend-e2e/docs/test-cases/1002-external-price-list.md` (42 case `TC-EPL-*`: โหลด, header, ตารางสินค้า, sub-table MOQ, ตัวเลือก tax-profile / unit, save, Excel import, submit, หน้าจอหมดอายุ) เป็น oracle ที่ใกล้ที่สุด หน้านี้ไม่ mirror มัน
 > **Re-sync 2026-09-22:** ข้อค้นพบ "Save/Submit ยืนยันแล้วว่าไม่ทำงาน" ของรอบ 2026-07-16 ล้าสมัยแล้ว — `PATCH /api/pricelist-external/:url_token` และ `POST …/submit` มีอยู่จริง; ลิงก์หมดอายุที่ `end_date` ของ RFQ
 
-หน้านี้จับ test scenario ที่ exercise การ interact ของ persona **Vendor** กับ `/pl/:url_token` เพราะ vendor ไม่มี Carmen login section Permission / Authorization จึงลดลงเป็นแถว N/A เดียว
+หน้านี้จับ test scenario ที่ exercise การ interact ของ persona **Vendor** กับ `/pl/:url_token` เพราะ vendor ไม่มี Carmen Blue login section Permission / Authorization จึงลดลงเป็นแถว N/A เดียว
 
 ## 1. Happy Path
 
@@ -33,7 +33,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 
 | # | Scenario | พฤติกรรมที่คาด |
 | - | -------- | ------------------ |
-| VPL-VND-PERM-01 | Vendor เป็น external party ที่ไม่มี Carmen login; RBAC ใน-ระบบเป็น N/A | N/A — ไม่มี login, ไม่มี role และไม่มี permission matrix ให้ test gate เดียวคือ `UrlTokenGuard` (`VPL_VAL_027`): token ที่ถูกต้องและยังไม่หมดอายุ → scope `{ bu, vendor_id, rfp_detail_id }` ของ JWT; guard ไม่มีการตรวจ IP หรือ session |
+| VPL-VND-PERM-01 | Vendor เป็น external party ที่ไม่มี Carmen Blue login; RBAC ใน-ระบบเป็น N/A | N/A — ไม่มี login, ไม่มี role และไม่มี permission matrix ให้ test gate เดียวคือ `UrlTokenGuard` (`VPL_VAL_027`): token ที่ถูกต้องและยังไม่หมดอายุ → scope `{ bu, vendor_id, rfp_detail_id }` ของ JWT; guard ไม่มีการตรวจ IP หรือ session |
 
 ## 3. Validation / Error
 

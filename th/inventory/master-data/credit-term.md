@@ -43,7 +43,7 @@ Credit term เข้ารหัสข้อตกลงการจ่าย�
 - **การเปลี่ยนชื่อหรือ value** มีผลกับ PO **ใหม่** เท่านั้น; due date ถูก **คำนวณและเก็บ** บน PO ณ การสร้าง
 - **เงื่อนไขที่ soft-deleted** ยัง resolve ได้บน PO ประวัติ
 - **COD = `value = 0`** เป็นธรรมเนียมมาตรฐาน; due date เดียวกันวัน
-- **Vendor default** อยู่ที่ app-layer — Carmen seed เงื่อนไขลงบน PO ณ การเลือกผู้ขาย แต่ user ยัง override ได้
+- **Vendor default** อยู่ที่ app-layer — Carmen Blue seed เงื่อนไขลงบน PO ณ การเลือกผู้ขาย แต่ user ยัง override ได้
 
 ---
 

@@ -23,7 +23,7 @@ dateCreated: 2026-05-16T16:00:00.000Z
 
 ## 1. ภาพรวม
 
-เทมเพลตใน Carmen เป็น configuration ไม่ใช่เอกสาร transactional — ทั้งสองแบบไม่เข้า workflow หรือ post ไปยัง ledger เอง จุดประสงค์คือ prefill record transactional ใหม่ (PR draft, รอบ RFQ pricelist) ด้วยค่าที่ผู้ปฏิบัติงานต้องกรอกใหม่ทุกครั้ง นอกเหนือจากจุดประสงค์ร่วมนี้ ทั้งสอง implementation ต่างกันในแบบที่หน้านี้เอกสารไว้ตรง ๆ แทนที่จะกลบเกลื่อน: record ใหม่เก็บ link กลับไปยัง template หรือไม่, delete เป็น hard หรือ soft, และ "lifecycle" เป็น boolean เดียวหรือ enum status จริง
+เทมเพลตใน Carmen Blue เป็น configuration ไม่ใช่เอกสาร transactional — ทั้งสองแบบไม่เข้า workflow หรือ post ไปยัง ledger เอง จุดประสงค์คือ prefill record transactional ใหม่ (PR draft, รอบ RFQ pricelist) ด้วยค่าที่ผู้ปฏิบัติงานต้องกรอกใหม่ทุกครั้ง นอกเหนือจากจุดประสงค์ร่วมนี้ ทั้งสอง implementation ต่างกันในแบบที่หน้านี้เอกสารไว้ตรง ๆ แทนที่จะกลบเกลื่อน: record ใหม่เก็บ link กลับไปยัง template หรือไม่, delete เป็น hard หรือ soft, และ "lifecycle" เป็น boolean เดียวหรือ enum status จริง
 
 ## 2. กลไกที่ใช้ร่วมกัน
 

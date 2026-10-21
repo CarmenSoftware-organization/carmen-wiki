@@ -49,7 +49,7 @@ Vendor pricelist ให้ procurement มี system-of-record สำหรั�
 | Role | ความรับผิดชอบ |
 |------|----------------|
 | Purchaser | ดูแล master data ของผู้ขายและ certification master, สร้างและแก้ไข price list template และ price list โดยตรง, สร้าง RFQ ที่ระบุ template และกลุ่มผู้ขาย, ส่ง email ลิงก์ portal ให้ผู้ขายแต่ละราย และเมื่อ pricelist ของผู้ขายกลับมาเป็น `submitted` (หรือคีย์ sheet จาก email/CSV เข้า) review แล้วตั้ง `status = active` ไม่มีขั้นตอนอนุมัติแยกต่างหากหรือ gate เฉพาะ Manager — ใครก็ตามที่มีสิทธิ์แก้ไขบนหน้าจอสามารถเปลี่ยน `status` ได้ |
-| Vendor | บุคคลภายนอกที่ไม่มี login ของ Carmen เปิด `/pl/:url_token` จาก invitation ทาง email ก่อน `end_date` ของ RFQ; portal จะ auto-create draft pricelist จาก template ให้ ให้ผู้ขายเลือก tax profile และ order unit ต่อสินค้า (`GET …/check-pricelist/:token/tax-profiles`, `…/units`), บันทึก draft (`PATCH …/pricelist-external/:token`), import sheet Excel และ **Submit** (`POST …/submit` → `submitted`) หลัง submit portal เป็นแบบอ่านอย่างเดียว |
+| Vendor | บุคคลภายนอกที่ไม่มี login ของ Carmen Blue เปิด `/pl/:url_token` จาก invitation ทาง email ก่อน `end_date` ของ RFQ; portal จะ auto-create draft pricelist จาก template ให้ ให้ผู้ขายเลือก tax profile และ order unit ต่อสินค้า (`GET …/check-pricelist/:token/tax-profiles`, `…/units`), บันทึก draft (`PATCH …/pricelist-external/:token`), import sheet Excel และ **Submit** (`POST …/submit` → `submitted`) หลัง submit portal เป็นแบบอ่านอย่างเดียว |
 | Receiver / Store Keeper | ผู้บริโภคทางอ้อม — การ post GRN สามารถเปรียบเทียบราคาที่รับกับ pricelist active ได้ ([good-receive-note](/th/inventory/good-receive-note)) ไม่มี write surface ที่นี่ |
 
 ไม่มี persona Finance หรือ Audit/Config ที่แยกต่างหากในโมดูลนี้ — ดู [03-user-flow-finance](/th/inventory/vendor-pricelist/03-user-flow-finance) และ [03-user-flow-audit-config](/th/inventory/vendor-pricelist/03-user-flow-audit-config) สำหรับสิ่งที่เคยถูกบันทึกไว้ก่อนหน้านี้และเหตุผลที่มันไม่ตรงกับ source ปัจจุบัน
@@ -92,7 +92,7 @@ Vendor pricelist ให้ procurement มี system-of-record สำหรั�
   - [vendor-pricelist/03-user-flow-audit-config](/th/inventory/vendor-pricelist/03-user-flow-audit-config) — หน้า correction: ไม่มี workspace Audit เฉพาะหรือ console Configuration เฉพาะในโมดูลนี้
 - [vendor-pricelist/04-test-scenarios](/th/inventory/vendor-pricelist/04-test-scenarios) — ภาพรวม test-scenario + scenario ข้าม persona ที่ยึดกับหน้าจอ CRUD จริง + coverage E2E จริง
   - [vendor-pricelist/04-test-scenarios-purchaser](/th/inventory/vendor-pricelist/04-test-scenarios-purchaser) — scenario Purchaser
-  - [vendor-pricelist/04-test-scenarios-vendor](/th/inventory/vendor-pricelist/04-test-scenarios-vendor) — scenario Vendor (portal save / submit / หมดอายุ); section Permission เป็น N/A เพราะ vendor ไม่มี Carmen RBAC matrix
+  - [vendor-pricelist/04-test-scenarios-vendor](/th/inventory/vendor-pricelist/04-test-scenarios-vendor) — scenario Vendor (portal save / submit / หมดอายุ); section Permission เป็น N/A เพราะ vendor ไม่มี Carmen Blue RBAC matrix
   - [vendor-pricelist/04-test-scenarios-finance](/th/inventory/vendor-pricelist/04-test-scenarios-finance) — หน้า correction
   - [vendor-pricelist/04-test-scenarios-audit-config](/th/inventory/vendor-pricelist/04-test-scenarios-audit-config) — หน้า correction
 - [Request Price List](/th/inventory/vendor-pricelist/request-price-list) — เอกสาร RFQ ขาออก (`tb_request_for_pricing` + แถว invitation ต่อผู้ขายพร้อม `pricelist_url_token`) action Send-email ต่อผู้ขาย, การหมดอายุของลิงก์ และข้อค้นพบที่ยังคงเป็นจริงเรื่องไม่มีสถานะ/ไม่มี reminder

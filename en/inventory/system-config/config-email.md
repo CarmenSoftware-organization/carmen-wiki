@@ -105,7 +105,7 @@ Source: tenant schema. **No dedicated table** — two `tb_application_config` ro
         "password": "***ENCRYPTED***"        // encrypted at rest, masked on read
       },
       "from_email": "purchasing@example.com",
-      "from_name": "Carmen Purchasing",
+      "from_name": "Carmen Blue Purchasing",
       "reply_to": "", "default_cc": [], "subject_template": "", "body_template": "", "note": ""
                                              // accepted with defaults; no longer edited by the form
     }

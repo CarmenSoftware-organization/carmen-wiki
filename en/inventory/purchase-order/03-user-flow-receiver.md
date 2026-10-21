@@ -84,7 +84,7 @@ Either entry routes into the same posting screen; the PO-side effects below are 
 
 ## 4. Exit Point / Handoffs
 
-The Receiver's involvement on a given PO ends on **GRN post**. From that point the document state on Carmen is one of:
+The Receiver's involvement on a given PO ends on **GRN post**. From that point the document state on Carmen Blue is one of:
 
 - `partial` — at least one PO line still has open balance; the Receiver may re-enter the flow when the next shipment arrives.
 - `completed` — every line is fully received; the PO is at its terminal receipt state and is read-only for inventory purposes. **Unconfirmed:** no downstream vendor-invoice-match or AP-posting feature was found in current source — see [03-user-flow-finance.md](./03-user-flow-finance.md) for the correction. Post-receipt vendor credits go through [Credit Note](/en/inventory/purchase-order/credit-note), which anchors on the GRN and can credit each product on a receipt once.

@@ -24,7 +24,7 @@ Scope of testing on the vendor-pricelist module: **functional coverage** of crea
 ## 2. Personas in Scope
 
 - **Purchaser** — Owns all four CRUD screens end-to-end: Vendor, Price List, Price List Template, Request for Pricing. No Manager-elevation tier exists (there is nothing for one to gate). See [04-test-scenarios-purchaser.md](./04-test-scenarios-purchaser.md).
-- **Vendor** — External party; token-authenticated portal (open, tax-profile/unit pickers, save, Excel import, submit; 401 after the RFQ `end_date`). Permission section reduced to a single N/A row (no Carmen login). See [04-test-scenarios-vendor.md](./04-test-scenarios-vendor.md).
+- **Vendor** — External party; token-authenticated portal (open, tax-profile/unit pickers, save, Excel import, submit; 401 after the RFQ `end_date`). Permission section reduced to a single N/A row (no Carmen Blue login). See [04-test-scenarios-vendor.md](./04-test-scenarios-vendor.md).
 
 Finance and Audit/Config are documented as correction pages ([04-test-scenarios-finance.md](./04-test-scenarios-finance.md), [04-test-scenarios-audit-config.md](./04-test-scenarios-audit-config.md)) — neither is a distinct persona in this module.
 

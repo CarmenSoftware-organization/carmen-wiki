@@ -105,7 +105,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
         "password": "***ENCRYPTED***"        // เข้ารหัสตอนเก็บ mask ตอนอ่าน
       },
       "from_email": "purchasing@example.com",
-      "from_name": "Carmen Purchasing",
+      "from_name": "Carmen Blue Purchasing",
       "reply_to": "", "default_cc": [], "subject_template": "", "body_template": "", "note": ""
                                              // รับพร้อม default; ฟอร์มไม่แก้ไขอีกแล้ว
     }

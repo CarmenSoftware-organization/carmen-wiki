@@ -62,7 +62,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 
 | # | Scenario | คาด |
 | - | -------- | -------- |
-| VPL-PUR-EDGE-01 | การแก้พร้อมกันบน pricelist เดียวกันจากสอง session | Save แรกชนะ (จับคู่ตาม `doc_version`); การเรียก `update()` ของตัวที่สองส่งผลต่อศูนย์แถว ตรงกับ pattern optimistic-lock `doc_version` ทั่วไปของ Carmen ที่ใช้ข้ามทุกโมดูลในรอบนี้ |
+| VPL-PUR-EDGE-01 | การแก้พร้อมกันบน pricelist เดียวกันจากสอง session | Save แรกชนะ (จับคู่ตาม `doc_version`); การเรียก `update()` ของตัวที่สองส่งผลต่อศูนย์แถว ตรงกับ pattern optimistic-lock `doc_version` ทั่วไปของ Carmen Blue ที่ใช้ข้ามทุกโมดูลในรอบนี้ |
 | VPL-PUR-EDGE-02 | ราคาแบบ multi-MOQ-tier บนสินค้าเดียว หลายแถว | ยอมรับ — `@@unique([pricelist_id, product_id, unit_id, moq_qty, deleted_at])` อนุญาตหนึ่งแถวต่อ `moq_qty` ที่แตกต่างกัน |
 | VPL-PUR-EDGE-03 | Soft-delete pricelist แล้วสร้างใหม่โดยใช้ `pricelist_no` เดิมซ้ำ | ยอมรับ — unique index รวม `deleted_at` |
 | VPL-PUR-EDGE-04 | Vendor สองรายถูก mark `is_preferred = true` พร้อมกันสำหรับสินค้า/สกุลเงินเดียวกัน | ทั้งสองแถว persist อย่างอิสระ — ไม่มีอะไรบังคับ "แถว preferred เดียวเท่านั้น"; การเรียง (`is_preferred desc, price asc`) ของ `price-compare` เลือกตัวที่ราคาต่ำกว่าเป็น `selected` เมื่อทั้งคู่เป็น preferred |

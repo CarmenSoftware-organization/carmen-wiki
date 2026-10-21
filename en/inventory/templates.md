@@ -23,7 +23,7 @@ dateCreated: 2026-05-16T16:00:00.000Z
 
 ## 1. Overview
 
-Templates in Carmen are configuration, not transactional documents — neither variant enters a workflow or posts to a ledger itself. Their purpose is to prefill a new transactional record (a PR draft, an RFQ pricelist round) with values the operator would otherwise re-enter every time. Beyond that shared purpose, the two implementations differ in ways the rest of this page documents rather than glosses over: whether the new record retains any link to the template, whether deletion is hard or soft, and whether "lifecycle" is a single boolean or a real status enum.
+Templates in Carmen Blue are configuration, not transactional documents — neither variant enters a workflow or posts to a ledger itself. Their purpose is to prefill a new transactional record (a PR draft, an RFQ pricelist round) with values the operator would otherwise re-enter every time. Beyond that shared purpose, the two implementations differ in ways the rest of this page documents rather than glosses over: whether the new record retains any link to the template, whether deletion is hard or soft, and whether "lifecycle" is a single boolean or a real status enum.
 
 ## 2. Shared Mechanics
 

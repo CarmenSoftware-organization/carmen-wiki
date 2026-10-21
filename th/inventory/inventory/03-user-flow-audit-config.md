@@ -29,7 +29,7 @@ Draft ก่อนหน้าอธิบาย workspace เฉพาะทา
 |---|---|
 | นิยาม location (`location_type`, `physical_count_type`) | [master-data/location](/th/inventory/master-data/location) (`/config/location`) |
 | Reason code ของ adjustment (`tb_adjustment_type`) | โมดูล Config (`/config/adjustment-type`) — ดู [inventory-adjustment](/th/inventory/inventory-adjustment) |
-| Costing method | `tb_business_unit.calculation_method` — setting ระดับ BU ของ platform (Carmen Platform) ไม่สามารถตั้งค่าใน UI ของผลิตภัณฑ์นี้ |
+| Costing method | `tb_business_unit.calculation_method` — setting ระดับ BU ของ platform (Carmen Blue Platform) ไม่สามารถตั้งค่าใน UI ของผลิตภัณฑ์นี้ |
 | นิยามงวด / การ lock | [system-config/period](/th/inventory/system-config/period) (`/system-admin/period`) |
 | Scope ของ user/role/permission | [access-control](/th/inventory/access-control) (`/system-admin/user`, `/role`, permission keys) |
 | Activity / audit log | [reporting-audit/activity](/th/inventory/reporting-audit/activity) (`/system-admin/activity-log`) และ ledger อ่านอย่างเดียว [transaction](/th/inventory/inventory/transaction) |

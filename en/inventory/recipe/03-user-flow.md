@@ -56,7 +56,7 @@ Each persona below has a dedicated drill-down file describing their entry point,
 
 ## 4. Cross-Persona Handoffs
 
-The table below captures the moments where, in the target operating model, responsibility for a recipe (or a recipe-related decision) moves from one persona to another. **None of these handoffs is mediated by the system today** — there are no co-approval flags, drift alerts, substitution requests, auto-generated SRs, or theoretical-consumption posts in code; where they happen at all, they happen outside Carmen. Each handoff is anchored to the recipe state at the point of transfer or to the event that triggers the handoff.
+The table below captures the moments where, in the target operating model, responsibility for a recipe (or a recipe-related decision) moves from one persona to another. **None of these handoffs is mediated by the system today** — there are no co-approval flags, drift alerts, substitution requests, auto-generated SRs, or theoretical-consumption posts in code; where they happen at all, they happen outside Carmen Blue. Each handoff is anchored to the recipe state at the point of transfer or to the event that triggers the handoff.
 
 | From persona | Trigger | To persona | Recipe state at handoff |
 | ------------ | ------- | ---------- | ----------------------- |

@@ -31,7 +31,7 @@ Two corrections to the previous version of this page:
 
 ## 1. What & Who
 
-Document Management is the **file-storage registry surface** at `/system-admin/document` — the BU-scoped index of every file uploaded into Carmen. Each row is one object in MinIO storage plus its display metadata in `tb_file_tag`. The same files surface elsewhere as attachments on PR / PO / GRN / SR / IA / pricelist / count documents, where each transactional table carries an `attachments` JSONB referencing **file tokens** from this registry.
+Document Management is the **file-storage registry surface** at `/system-admin/document` — the BU-scoped index of every file uploaded into Carmen Blue. Each row is one object in MinIO storage plus its display metadata in `tb_file_tag`. The same files surface elsewhere as attachments on PR / PO / GRN / SR / IA / pricelist / count documents, where each transactional table carries an `attachments` JSONB referencing **file tokens** from this registry.
 
 **Audience:** Sysadmin manages uploads / deletes here; non-admin roles typically have list / get / download but not delete. The file microservice (`micro-file`, commands `files.upload` / `files.get` / `files.info` / `files.find-all` (list) / `files.delete` / `files.presigned-url` / `files.update-tags`) owns storage and the metadata registry; the gateway's `document-management` module proxies the REST surface to it over TCP.
 

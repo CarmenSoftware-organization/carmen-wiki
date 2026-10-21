@@ -11,12 +11,12 @@ dateCreated: 2026-05-15T10:00:00.000Z
 # ใบสั่งซื้อ (Purchase Order) — User Flow — Vendor
 
 > **At a Glance**
-> **Persona:** Vendor (ภายนอก — ไม่มี Carmen login) &nbsp;·&nbsp; **Module:** [purchase-order](/th/inventory/purchase-order) &nbsp;·&nbsp; **Workflow stages:** sent_or_print (จุดสัมผัส) → partial / completed / closed &nbsp;·&nbsp; **สิทธิ์สำคัญ:** ไม่มีโดยตรง — events บันทึกโดย Purchaser / Receiver แทน vendor
+> **Persona:** Vendor (ภายนอก — ไม่มี Carmen Blue login) &nbsp;·&nbsp; **Module:** [purchase-order](/th/inventory/purchase-order) &nbsp;·&nbsp; **Workflow stages:** sent_or_print (จุดสัมผัส) → partial / completed / closed &nbsp;·&nbsp; **สิทธิ์สำคัญ:** ไม่มีโดยตรง — events บันทึกโดย Purchaser / Receiver แทน vendor
 > **Persona นี้ทำอะไร:** รับ PO ทางอีเมล (พร้อม PDF แบบ optional) หรือการส่งมอบแบบพิมพ์ / แฟกซ์ที่ Purchaser บันทึกด้วย `mark-sent` จากนั้น fulfil การส่งของ — ทุก system effect ถูก capture โดย internal persona Re-sync 2026-09-22
 
 ## 1. บทบาทในโมดูลนี้
 
-**Vendor** คือ **ฝ่ายภายนอกที่ไม่มี Carmen system login** Vendor รับ PO และ fulfil การส่งของตามที่ตกลง — system-side effect ที่ยืนยันแล้วของสิ่งนี้คือการ post GRN ของ **Receiver** ซึ่ง flip `po_status` เป็น `partial` หรือ `completed` ผ่าน `PO_POST_006` / `PO_POST_007` การส่งตอนนี้เป็น system event ที่ชัดเจนและยืนยันแล้ว (`PO_POST_004b`, 2026-09-08/14): Purchaser ส่งอีเมล PO ผ่าน BU email profile (`POST .../purchase-orders/:id/send-email` พร้อม PDF ที่ render ฝั่งเซิร์ฟเวอร์แบบ optional, template EN/TH ที่ seed ไว้) หรือบันทึกการส่งมอบแบบพิมพ์ / แฟกซ์ / โทรด้วย `POST .../purchase-orders/:id/mark-sent`; ทั้งสองย้าย PO `approved → sent_or_print` และเขียน entry ใน `tb_activity` (`email_sent` พร้อมผู้รับและผลลัพธ์ หรือ "Marked as sent to vendor") PO ที่เป็นเพียง `approved` อาจถูกรับของกับมันได้แล้ว — vendor ส่งของตามคำสั่งปากเปล่าก่อนอีเมลออกได้ **ยังไม่ยืนยันในรอบนี้:** ว่า acknowledgement ของ vendor ถูก capture ที่ไหนหรือไม่ (comment, portal callback, หรืออื่น ๆ) และว่า feature vendor-invoice / three-way-match ใด ๆ มีอยู่ downstream ของ receipt หรือไม่ — การค้นหาทั่ว repo สำหรับ `three-way`, `vendor_invoice`, และ `tb_invoice` ไม่พบ match ใดทั้งใน frontend และ backend ถือว่าขั้นตอน acknowledgement และ invoice/AP ด้านล่างเป็น documented design intent ที่สืบทอดมาจาก `carmen/docs` ไม่ใช่ confirmed live behavior; ดู [03-user-flow-finance.md](./03-user-flow-finance.md) สำหรับการแก้ไขที่สมบูรณ์กว่า
+**Vendor** คือ **ฝ่ายภายนอกที่ไม่มี Carmen Blue system login** Vendor รับ PO และ fulfil การส่งของตามที่ตกลง — system-side effect ที่ยืนยันแล้วของสิ่งนี้คือการ post GRN ของ **Receiver** ซึ่ง flip `po_status` เป็น `partial` หรือ `completed` ผ่าน `PO_POST_006` / `PO_POST_007` การส่งตอนนี้เป็น system event ที่ชัดเจนและยืนยันแล้ว (`PO_POST_004b`, 2026-09-08/14): Purchaser ส่งอีเมล PO ผ่าน BU email profile (`POST .../purchase-orders/:id/send-email` พร้อม PDF ที่ render ฝั่งเซิร์ฟเวอร์แบบ optional, template EN/TH ที่ seed ไว้) หรือบันทึกการส่งมอบแบบพิมพ์ / แฟกซ์ / โทรด้วย `POST .../purchase-orders/:id/mark-sent`; ทั้งสองย้าย PO `approved → sent_or_print` และเขียน entry ใน `tb_activity` (`email_sent` พร้อมผู้รับและผลลัพธ์ หรือ "Marked as sent to vendor") PO ที่เป็นเพียง `approved` อาจถูกรับของกับมันได้แล้ว — vendor ส่งของตามคำสั่งปากเปล่าก่อนอีเมลออกได้ **ยังไม่ยืนยันในรอบนี้:** ว่า acknowledgement ของ vendor ถูก capture ที่ไหนหรือไม่ (comment, portal callback, หรืออื่น ๆ) และว่า feature vendor-invoice / three-way-match ใด ๆ มีอยู่ downstream ของ receipt หรือไม่ — การค้นหาทั่ว repo สำหรับ `three-way`, `vendor_invoice`, และ `tb_invoice` ไม่พบ match ใดทั้งใน frontend และ backend ถือว่าขั้นตอน acknowledgement และ invoice/AP ด้านล่างเป็น documented design intent ที่สืบทอดมาจาก `carmen/docs` ไม่ใช่ confirmed live behavior; ดู [03-user-flow-finance.md](./03-user-flow-finance.md) สำหรับการแก้ไขที่สมบูรณ์กว่า
 
 ### ตำแหน่งใน Workflow (เน้นจุดสัมผัสของ Vendor)
 
@@ -35,7 +35,7 @@ graph LR
 
 ### ตารางสิทธิ์ — Vendor Event × System Effect (บันทึกโดย internal persona, เมื่อยืนยันได้)
 
-Vendor มี **สิทธิ์เขียนโดยตรงไม่มี** ใน Carmen ตารางด้านล่าง map แต่ละ event ฝั่ง vendor ไปยังสิ่งที่เกิดขึ้นจริงฝั่ง PO พร้อม flag ว่าอะไรยืนยันแล้วและอะไรยังไม่ยืนยัน
+Vendor มี **สิทธิ์เขียนโดยตรงไม่มี** ใน Carmen Blue ตารางด้านล่าง map แต่ละ event ฝั่ง vendor ไปยังสิ่งที่เกิดขึ้นจริงฝั่ง PO พร้อม flag ว่าอะไรยืนยันแล้วและอะไรยังไม่ยืนยัน
 
 | Vendor event | System surface | Effect ของ `po_status` |
 |---|---|---|
@@ -54,8 +54,8 @@ Vendor มี **สิทธิ์เขียนโดยตรงไม่ม�
 
 **Primary flow (เชิงแนวคิด — confirmed system effects เท่านั้น):**
 
-1. **ตอบรับการรับ PO** (ยังไม่ยืนยันว่า Carmen บันทึกสิ่งนี้หรือไม่)
-2. **เตรียมและส่งสินค้าตามวันส่งที่ตกลง** **System effect:** ไม่มี — การเคลื่อนไหวจริงมองไม่เห็นใน Carmen จนกว่า Receiver จะเปิดที่ dock
+1. **ตอบรับการรับ PO** (ยังไม่ยืนยันว่า Carmen Blue บันทึกสิ่งนี้หรือไม่)
+2. **เตรียมและส่งสินค้าตามวันส่งที่ตกลง** **System effect:** ไม่มี — การเคลื่อนไหวจริงมองไม่เห็นใน Carmen Blue จนกว่า Receiver จะเปิดที่ dock
 3. **ส่งสินค้าไปยัง receiving location** **System effect:** ไม่มีโดยตรง — persona **Receiver** raise GRN ในโมดูล [good-receive-note](/th/inventory/good-receive-note) ปลายน้ำ ซึ่งจริง ๆ flip `po_status` (`sent → partial` หรือ `sent → completed`)
 4. **ออก invoice** — **ไม่ได้ implement** ใน source ปัจจุบัน ดู [03-user-flow-finance.md](./03-user-flow-finance.md) สำหรับการแก้ไขเต็มว่าทำไมไม่พบ feature invoice / AP-matching
 
@@ -68,7 +68,7 @@ Vendor มี **สิทธิ์เขียนโดยตรงไม่ม�
 
 ## 4. Exit Point / Handoffs
 
-การมีส่วนร่วมของ vendor บน PO ที่กำหนดจบที่ **การส่งของจริง** (ยืนยันแล้ว) — invoice issuance เป็น documented design intent ไม่ใช่ confirmed system interaction จากจุดนั้น document state บน Carmen เป็นหนึ่งใน:
+การมีส่วนร่วมของ vendor บน PO ที่กำหนดจบที่ **การส่งของจริง** (ยืนยันแล้ว) — invoice issuance เป็น documented design intent ไม่ใช่ confirmed system interaction จากจุดนั้น document state บน Carmen Blue เป็นหนึ่งใน:
 
 - `approved` — workflow เสร็จแล้ว ยังไม่ส่งอีเมล; ของอาจถูกรับกับมันได้อยู่ดี
 - `sent_or_print` — PO transmit แล้วแต่ยังไม่ได้ post GRN (vendor ยังไม่ส่งของ หรือ delivery ระหว่าง transit)

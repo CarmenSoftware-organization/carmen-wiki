@@ -24,7 +24,7 @@ dateCreated: 2026-07-29T10:30:00.000Z
 
 ## 1. คืออะไรและใครใช้
 
-นี่คือสองหน้าจอแยกกันที่ทั้งคู่อ่านและแก้ไข **แถว `tb_business_unit` ของ business unit ปัจจุบันเอง** — ตารางเดียวกับที่ [master-data/business-unit](/th/inventory/master-data/business-unit) บันทึกไว้จากมุมของ platform admin console หน้านั้นครอบคลุมฟอร์ม edit ของ `carmen-platform` (identity, สกุลเงิน, costing method, module enablement, tenant DB connection) ส่วนสองหน้าจอนี้คือ**ฝั่ง tenant ภายในแอป** ที่ Sysadmin เข้าถึงได้จากใน Carmen Inventory เอง และแก้ไข subset ของฟิลด์ในแถวเดียวกันที่**ไม่ทับซ้อนกัน**:
+นี่คือสองหน้าจอแยกกันที่ทั้งคู่อ่านและแก้ไข **แถว `tb_business_unit` ของ business unit ปัจจุบันเอง** — ตารางเดียวกับที่ [master-data/business-unit](/th/inventory/master-data/business-unit) บันทึกไว้จากมุมของ platform admin console หน้านั้นครอบคลุมฟอร์ม edit ของ `carmen-platform` (identity, สกุลเงิน, costing method, module enablement, tenant DB connection) ส่วนสองหน้าจอนี้คือ**ฝั่ง tenant ภายในแอป** ที่ Sysadmin เข้าถึงได้จากใน Carmen Blue เอง และแก้ไข subset ของฟิลด์ในแถวเดียวกันที่**ไม่ทับซ้อนกัน**:
 
 - **Company Profile** (`/system-admin/company-profile`) — identity (ชื่อ, alias, description, info), ฟิลด์ costing/licensing แบบ read-only, สกุลเงิน default, ที่อยู่ hotel property, ที่อยู่ company legal, branding (logo/avatar, read-only), และค่า default ของ date/time/number-format
 - **Default Setting** (`/system-admin/default-setting`) — array JSONB `config` ในแถวเดียวกัน: toggle การทำงานของ PR, SI, และ PO บวก selector ของ print-form template ต่อประเภทเอกสาร
