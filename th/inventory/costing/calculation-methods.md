@@ -1,6 +1,6 @@
 ---
 title: วิธีคำนวณต้นทุนสินค้าคงคลัง: FIFO vs. Weighted Average (Inventory Costing Methods)
-description: การวิเคราะห์วิธีคำนวณต้นทุนสินค้าคงคลัง FIFO vs. Weighted Average สำหรับแพลตฟอร์ม CarmenSoftware
+description: การวิเคราะห์วิธีคำนวณต้นทุนสินค้าคงคลัง FIFO vs. Weighted Average สำหรับแพลตฟอร์ม Carmen Blue
 published: true
 date: '2026-09-23T01:30:00.000Z'
 tags: inventory, costing, fifo, weighted-average, carmen-software

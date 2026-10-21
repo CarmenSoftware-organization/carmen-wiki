@@ -1,6 +1,6 @@
 # carmen-wiki
 
-User manual for developers and QA engineers working on the **CarmenSoftware** hospitality supply chain platform. Content is organised into two books:
+User manual for developers and QA engineers working on the **Carmen Blue** hospitality supply chain platform. Content is organised into two books:
 
 - **Carmen Blue** — the inventory ERP slice (costing, GRN, physical count, requisitions, etc.). Pages document the data model, business rules, user flows by persona, and test scenarios at a level useful for building features and verifying them against the BRD and the live UI.
 - **Carmen Blue Platform** — the platform admin product (clusters, business units, users, RBAC, news, broadcasts, applications, report/print templates). Pages document the SPA's data model, UI screens, lifecycle, and permission model.
