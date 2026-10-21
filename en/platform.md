@@ -1,6 +1,6 @@
 ---
-title: Carmen Platform
-description: Overview of the Carmen Platform admin product — entry point for the book, organized by the ungrouped Dashboard row and the SPA's own seven sidebar `groupKey` groups (eight sections in total), plus the separate cluster-admin persona.
+title: Carmen Blue Platform
+description: Overview of the Carmen Blue Platform admin product — entry point for the book, organized by the ungrouped Dashboard row and the SPA's own seven sidebar `groupKey` groups (eight sections in total), plus the separate cluster-admin persona.
 published: true
 date: 2026-09-06T23:30:00.000Z
 tags: book/platform, home
@@ -8,9 +8,9 @@ editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
 ---
 
-# Carmen Platform
+# Carmen Blue Platform
 
-Reference manual for developers and QA engineers working on the Carmen Platform admin product — tenancy (clusters and business units), licensing, identity and access, content delivery, analytics, scheduling, platform-wide configuration, and shared databases.
+Reference manual for developers and QA engineers working on the Carmen Blue Platform admin product — tenancy (clusters and business units), licensing, identity and access, content delivery, analytics, scheduling, platform-wide configuration, and shared databases.
 
 The module list below reads top to bottom in the same order as the sidebar a reader just came from: the ungrouped Dashboard row, then the seven `groupKey` groups the SPA itself builds its navigation from (`../carmen-platform/src/components/nav/platformNav.ts`) — eight sections in total — then a final section for the cluster-admin console: a separate persona with its own nav file, not a ninth menu group.
 

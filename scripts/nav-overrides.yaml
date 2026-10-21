@@ -14,8 +14,8 @@ pages:
 
 books:
   inventory:
-    label_en: "Carmen Inventory"
-    label_th: "Carmen Inventory"
+    label_en: "Carmen Blue"
+    label_th: "Carmen Blue"
     groups:
       - label_en: "Overview"
         label_th: "ภาพรวม"
@@ -96,8 +96,8 @@ books:
             label_th: "Templates"
 
   platform:
-    label_en: "Carmen Platform"
-    label_th: "Carmen Platform"
+    label_en: "Carmen Blue Platform"
+    label_th: "Carmen Blue Platform"
     groups:
       # Groups below mirror the SPA's own eight nav-group sections as
       # documented on en/platform.md (Task 29 rebuild), which in turn mirror

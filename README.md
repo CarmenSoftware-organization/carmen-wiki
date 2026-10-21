@@ -1,9 +1,9 @@
 # carmen-wiki
 
-User manual for developers and QA engineers working on the **Carmen Software** hospitality supply chain platform. Content is organised into two books:
+User manual for developers and QA engineers working on the **CarmenSoftware** hospitality supply chain platform. Content is organised into two books:
 
-- **Carmen Inventory** — the inventory ERP slice (costing, GRN, physical count, requisitions, etc.). Pages document the data model, business rules, user flows by persona, and test scenarios at a level useful for building features and verifying them against the BRD and the live UI.
-- **Carmen Platform** — the platform admin product (clusters, business units, users, RBAC, news, broadcasts, applications, report/print templates). Pages document the SPA's data model, UI screens, lifecycle, and permission model.
+- **Carmen Blue** — the inventory ERP slice (costing, GRN, physical count, requisitions, etc.). Pages document the data model, business rules, user flows by persona, and test scenarios at a level useful for building features and verifying them against the BRD and the live UI.
+- **Carmen Blue Platform** — the platform admin product (clusters, business units, users, RBAC, news, broadcasts, applications, report/print templates). Pages document the SPA's data model, UI screens, lifecycle, and permission model.
 
 This repo is the **source of truth** for the Wiki.js content; the rendered site is what users actually read.
 
@@ -19,7 +19,7 @@ carmen-wiki/
 ├── en/                            # Canonical English content (rendered by Wiki.js)
 │   ├── home.md                    # Locale landing (URL: /en/home) — two-card book picker
 │   ├── inventory.md               # Book landing (sibling of inventory/)
-│   ├── inventory/                 # Carmen Inventory book
+│   ├── inventory/                 # Carmen Blue book
 │   │   ├── costing.md             # Module landing (sibling of costing/)
 │   │   ├── costing/               # One folder per module
 │   │   │   ├── 01-data-model.md
@@ -30,7 +30,7 @@ carmen-wiki/
 │   │   │   └── 04-test-scenarios-<role>.md
 │   │   └── ...                    # good-receive-note, physical-count, etc.
 │   ├── platform.md                # Book landing (sibling of platform/)
-│   └── platform/                  # Carmen Platform book
+│   └── platform/                  # Carmen Blue Platform book
 │       ├── clusters.md            # Module landing
 │       ├── clusters/              # Topical sub-pages (no numeric prefix)
 │       │   ├── data-model.md
@@ -60,7 +60,7 @@ Top-level locale directories `en/` and `th/` are self-contained: each tree carri
 
 The two books share the same "module landing → sub-pages elaborate beneath" shape, but the sub-page set differs by book.
 
-### Carmen Inventory — numeric prefix, persona-split
+### Carmen Blue — numeric prefix, persona-split
 
 Inventory modules document a workflow with multiple personas, so sub-pages are numbered to fix a reading order and split per role:
 
@@ -74,7 +74,7 @@ Inventory modules document a workflow with multiple personas, so sub-pages are n
 | `04-test-scenarios.md` | Cross-persona scope, E2E mapping |
 | `04-test-scenarios-<role>.md` | Per-persona scenarios: happy path / permission / validation / edge cases, mapped to rule IDs and E2E specs |
 
-### Carmen Platform — topical, no numeric prefix
+### Carmen Blue Platform — topical, no numeric prefix
 
 Platform modules describe an admin SPA without per-persona workflows, so sub-pages are named topically. Full convention in [`.specs/platform-sub-page-template.md`](./.specs/platform-sub-page-template.md):
 
@@ -129,7 +129,7 @@ Conventions to follow when editing (full list in [`CLAUDE.md`](./CLAUDE.md)):
 
 ## Reference Sources
 
-Content is synthesised from these sibling repos under the Carmen Software organisation:
+Content is synthesised from these sibling repos under the CarmenSoftware organisation:
 
 | Path (sibling to this repo) | Use for |
 | --- | --- |
@@ -146,4 +146,4 @@ When in doubt about what the system actually does: implementation (frontend/back
 
 ## License
 
-Internal documentation for Carmen Software. Not currently licensed for external use.
+Internal documentation for CarmenSoftware. Not currently licensed for external use.

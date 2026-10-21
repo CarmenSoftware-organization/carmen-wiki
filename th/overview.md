@@ -1,6 +1,6 @@
 ---
 title: ภาพรวมระบบ
-description: Carmen คืออะไร ทำไมต้องมี requirement ของระบบ tech stack และ architecture diagram — จุดเริ่มต้นสำหรับนักพัฒนาและทีมทดสอบที่เพิ่งเข้ามา
+description: Carmen Blue คืออะไร ทำไมต้องมี requirement ของระบบ tech stack และ architecture diagram — จุดเริ่มต้นสำหรับนักพัฒนาและทีมทดสอบที่เพิ่งเข้ามา
 published: true
 date: 2026-09-23T08:30:00.000Z
 tags: overview, architecture, landing
@@ -10,13 +10,13 @@ dateCreated: 2026-09-23T08:30:00.000Z
 
 # ภาพรวมระบบ
 
-หน้าเดียวสำหรับทำความเข้าใจระบบก่อนเข้าไปอ่าน [Inventory](/th/inventory) หรือ [Platform](/th/platform) book ว่า Carmen ทำอะไร ทำไมต้องมี ต้องตอบ requirement อะไร สร้างด้วยอะไร และแต่ละส่วนเชื่อมกันอย่างไร
+หน้าเดียวสำหรับทำความเข้าใจระบบก่อนเข้าไปอ่าน [Inventory](/th/inventory) หรือ [Platform](/th/platform) book ว่า Carmen Blue ทำอะไร ทำไมต้องมี ต้องตอบ requirement อะไร สร้างด้วยอะไร และแต่ละส่วนเชื่อมกันอย่างไร
 
-> **สรุปสั้น** — Carmen เป็น ERP แบบ multi-tenant SaaS ที่ดูแลห่วงโซ่ จัดซื้อ → รับสินค้า → คลัง → ต้นทุน ให้โรงแรมและร้านอาหารในประเทศไทย เบราว์เซอร์คุยกับ **backend gateway** (NestJS) เพียงจุดเดียว ซึ่งกระจายงานไปยัง domain microservices และ Go sidecar services บน PostgreSQL ที่มี **platform schema** หนึ่งชุด และ **tenant schema แยกต่อ business unit**
+> **สรุปสั้น** — Carmen Blue เป็น ERP แบบ multi-tenant SaaS ที่ดูแลห่วงโซ่ จัดซื้อ → รับสินค้า → คลัง → ต้นทุน ให้โรงแรมและร้านอาหารในประเทศไทย เบราว์เซอร์คุยกับ **backend gateway** (NestJS) เพียงจุดเดียว ซึ่งกระจายงานไปยัง domain microservices และ Go sidecar services บน PostgreSQL ที่มี **platform schema** หนึ่งชุด และ **tenant schema แยกต่อ business unit**
 
-## 1. Carmen คืออะไร
+## 1. Carmen Blue คืออะไร
 
-Carmen คือ ERP ด้านจัดซื้อถึงคลังสินค้าสำหรับธุรกิจ hospitality — โรงแรม รีสอร์ต และกลุ่มร้านอาหารที่มีหลาย outlet หรือหลาย property ครอบคลุม:
+Carmen Blue คือ ERP ด้านจัดซื้อถึงคลังสินค้าสำหรับธุรกิจ hospitality — โรงแรม รีสอร์ต และกลุ่มร้านอาหารที่มีหลาย outlet หรือหลาย property ครอบคลุม:
 
 | ด้าน | สิ่งที่ดูแล | Book |
 |------|-----------|------|
@@ -32,9 +32,9 @@ Carmen คือ ERP ด้านจัดซื้อถึงคลังส�
 
 ## 2. ทำไมต้องมีระบบนี้
 
-การจัดซื้อในธุรกิจโรงแรมและร้านอาหารมีปริมาณสูง สินค้าเน่าเสียง่าย และกระจายอยู่หลาย outlet ถ้าไม่มีระบบกลาง แต่ละ property จะซื้อ รับ และนับสต็อกด้วยวิธีของตัวเอง และรู้ต้นทุนอาหารก็ต่อเมื่อปิดเดือนไปแล้ว Carmen มีขึ้นเพื่อปิดช่องว่างนี้
+การจัดซื้อในธุรกิจโรงแรมและร้านอาหารมีปริมาณสูง สินค้าเน่าเสียง่าย และกระจายอยู่หลาย outlet ถ้าไม่มีระบบกลาง แต่ละ property จะซื้อ รับ และนับสต็อกด้วยวิธีของตัวเอง และรู้ต้นทุนอาหารก็ต่อเมื่อปิดเดือนไปแล้ว Carmen Blue มีขึ้นเพื่อปิดช่องว่างนี้
 
-| ปัญหาทางธุรกิจ | Carmen แก้อย่างไร |
+| ปัญหาทางธุรกิจ | Carmen Blue แก้อย่างไร |
 |---------------|------------------|
 | การจัดซื้อไม่มีการควบคุม — ใครก็สั่งจากผู้ขายรายไหนก็ได้ ในราคาเท่าไรก็ได้ | Purchase request ต้องผ่าน **workflow** อนุมัติที่ตั้งค่าได้ (stage ใน `tb_workflow`) ก่อนกลายเป็น purchase order และราคาอ้างอิงจาก vendor price list |
 | มองไม่เห็นต้นทุนอาหารและเครื่องดื่มจนกว่าจะปิดเดือน | ทุกการรับและเบิกสร้าง inventory transaction พร้อม **cost layer** จึงรู้มูลค่าสต็อกและต้นทุนทุกครั้งที่มีการเคลื่อนไหว |
@@ -241,7 +241,7 @@ graph LR
 
 ## 7. อ่านต่อ
 
-- [Carmen Inventory book](/th/inventory) — คู่มือรายโมดูลของคลังสินค้า จัดซื้อ และต้นทุน
-- [Carmen Platform book](/th/platform) — cluster, business unit, ผู้ใช้, RBAC และ report template
+- [Carmen Blue book](/th/inventory) — คู่มือรายโมดูลของคลังสินค้า จัดซื้อ และต้นทุน
+- [Carmen Blue Platform book](/th/platform) — cluster, business unit, ผู้ใช้, RBAC และ report template
 - [Costing](/th/inventory/costing) — วิธีคำนวณ cost layer แบบ FIFO และ weighted average
 - [Access Control](/th/inventory/access-control) — permission ทำงานอย่างไรภายใน business unit

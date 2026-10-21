@@ -1,6 +1,6 @@
 ---
-title: Carmen Inventory
-description: Carmen Inventory ERP — เอกสารอ้างอิงโมดูลสำหรับนักพัฒนาและทีมทดสอบ
+title: Carmen Blue
+description: Carmen Blue ERP — เอกสารอ้างอิงโมดูลสำหรับนักพัฒนาและทีมทดสอบ
 published: true
 date: '2026-09-23T01:30:00.000Z'
 tags: book/inventory, home
@@ -8,9 +8,9 @@ editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
 ---
 
-# Carmen Inventory
+# Carmen Blue
 
-คู่มืออ้างอิงสำหรับนักพัฒนาและ QA ที่ทำงานกับ Carmen Inventory ERP — ระบบ supply chain สำหรับโรงแรม
+คู่มืออ้างอิงสำหรับนักพัฒนาและ QA ที่ทำงานกับ Carmen Blue ERP — ระบบ supply chain สำหรับโรงแรม
 
 ## 1. ภาพรวม
 
