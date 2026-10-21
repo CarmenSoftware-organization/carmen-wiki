@@ -17,7 +17,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 1. ภาพรวม
 
-Cluster Admin คือประตูหน้าที่สองของ Carmen Platform ทุกโมดูลอื่นในหนังสือเล่มนี้ — Clusters, Business Units, Users, Licenses, RBAC — เข้าถึงผ่าน sidebar ของ platform admin เอง และกั้นด้วย RBAC permission key จาก `tb_user_tb_platform_role` โมดูลนี้เข้าผ่าน sidebar คนละตัวเลย สร้างด้วยฟังก์ชันคนละตัว (`buildClusterAdminNav()`, `../carmen-platform/src/components/nav/clusterAdminNav.ts`) และกั้นด้วยแกนคนละแกนไปเลย: **สมาชิกภาพของคลัสเตอร์** — แถวใน `tb_cluster_user` ที่มี `role: 'admin'` ไม่ใช่ permission grant
+Cluster Admin คือประตูหน้าที่สองของ Carmen Blue Platform ทุกโมดูลอื่นในหนังสือเล่มนี้ — Clusters, Business Units, Users, Licenses, RBAC — เข้าถึงผ่าน sidebar ของ platform admin เอง และกั้นด้วย RBAC permission key จาก `tb_user_tb_platform_role` โมดูลนี้เข้าผ่าน sidebar คนละตัวเลย สร้างด้วยฟังก์ชันคนละตัว (`buildClusterAdminNav()`, `../carmen-platform/src/components/nav/clusterAdminNav.ts`) และกั้นด้วยแกนคนละแกนไปเลย: **สมาชิกภาพของคลัสเตอร์** — แถวใน `tb_cluster_user` ที่มี `role: 'admin'` ไม่ใช่ permission grant
 
 จุดเข้าคือ `/cluster-admin` ต่อกับ `ClusterAdminEntry` อยู่ใน `AuthedRoute` (`../carmen-platform/src/App.tsx:578-581`) `AuthedRoute` ตรวจแค่ว่าผู้เรียกล็อกอินอยู่หรือไม่ — ไม่มี permission ไม่มีการตรวจสมาชิกภาพเลยตรงนี้ (`../carmen-platform/src/components/AuthedRoute.tsx:6-27`) คอมเมนต์ของมันเองอธิบายว่าทำไมต้องบางขนาดนี้: `PrivateRoute` ของฝั่ง platform จะ redirect ผู้ดูแลคลัสเตอร์ที่มีแค่สมาชิกภาพ *ไปที่* `/cluster-admin` เมื่อมันตัดสินว่าคนนั้นไม่มีอำนาจระดับแพลตฟอร์ม (`../carmen-platform/src/components/PrivateRoute.tsx:60-81`) ดังนั้นถ้าห่อ `/cluster-admin` เองด้วย `PrivateRoute` ก็จะ redirect วนกลับมาที่ตัวเองไม่มีที่สิ้นสุด `ClusterAdminEntry` (`../carmen-platform/src/pages/clusterAdmin/ClusterAdminEntry.tsx`) จัดการที่เหลือเองจาก `adminScope`: มีคลัสเตอร์ที่ดูแลอยู่พอดีหนึ่งคลัสเตอร์ (และไม่ใช่ super admin) จะ redirect เข้าไปเลยทันที; นอกนั้น — ไม่มีคลัสเตอร์เลย, มีหลายคลัสเตอร์, หรือเป็น super admin ที่ดูแลทุกอย่าง — จะแสดง picker หรือ (กรณีไม่มีคลัสเตอร์เลย) `EmptyState` ที่คอมเมนต์ของ component เองบรรยายไว้ว่า "ไม่ใช่ 403 โดยเนื้อแท้… ผู้ใช้ล็อกอินอยู่ แค่ไม่ได้ดูแลอะไรเลย" (บรรทัด 10-13)
 
@@ -27,7 +27,7 @@ Shell เองคือ `ClusterAdminLayout` (`../carmen-platform/src/component
 
 ## 2. บริบททางธุรกิจ
 
-Carmen ขายคลัสเตอร์ของ business unit ให้ลูกค้าโรงแรม/ธุรกิจบริการ และลูกค้ามักมีคนในทีมของตัวเอง — หัวหน้าฝ่าย IT ผู้จัดการฝ่ายปฏิบัติการระดับภูมิภาค — ที่ต้องเห็นและดูแลคลัสเตอร์ของตัวเองเบา ๆ โดยไม่ต้องกลายเป็นผู้ปฏิบัติการของ Carmen เอง การให้ role RBAC (`tb_user_tb_platform_role`) กับคนนั้นจะผิดรูปสองต่อ: ต้องให้ทีมซัพพอร์ตของ Carmen จัดสรรและตรวจสอบ grant ฝั่งแพลตฟอร์มให้ผู้ดูแลของลูกค้าทุกราย และ — เพราะ role ระดับแพลตฟอร์มไม่ได้ผูกขอบเขตกับคลัสเตอร์ในแบบที่ความสัมพันธ์นี้ต้องการ — จะเสี่ยงให้ผู้ดูแลนั้นเข้าถึงคลัสเตอร์ที่ไม่ใช่ของตัวเอง
+Carmen Blue ขายคลัสเตอร์ของ business unit ให้ลูกค้าโรงแรม/ธุรกิจบริการ และลูกค้ามักมีคนในทีมของตัวเอง — หัวหน้าฝ่าย IT ผู้จัดการฝ่ายปฏิบัติการระดับภูมิภาค — ที่ต้องเห็นและดูแลคลัสเตอร์ของตัวเองเบา ๆ โดยไม่ต้องกลายเป็นผู้ปฏิบัติการของ Carmen Blue เอง การให้ role RBAC (`tb_user_tb_platform_role`) กับคนนั้นจะผิดรูปสองต่อ: ต้องให้ทีมซัพพอร์ตของ Carmen Blue จัดสรรและตรวจสอบ grant ฝั่งแพลตฟอร์มให้ผู้ดูแลของลูกค้าทุกราย และ — เพราะ role ระดับแพลตฟอร์มไม่ได้ผูกขอบเขตกับคลัสเตอร์ในแบบที่ความสัมพันธ์นี้ต้องการ — จะเสี่ยงให้ผู้ดูแลนั้นเข้าถึงคลัสเตอร์ที่ไม่ใช่ของตัวเอง
 
 คำตอบของผลิตภัณฑ์คือแถวสมาชิกภาพแทน: `tb_cluster_user.role = 'admin'` ระบุว่าใครเป็นผู้ดูแลของคลัสเตอร์ที่ระบุหนึ่งตัว เป็นอิสระจาก RBAC grant ใด ๆ แถวเดียวนี้แหละที่ทั้ง `isClusterAdminOf` (ฝั่ง frontend, `AuthContext.tsx`) และ `ClusterAdminAuthzService.isClusterAdmin` (ฝั่ง backend, §3.2) ใช้ตัดสิน คนหนึ่งคนถือสถานะนี้ได้กับศูนย์ หนึ่ง หรือหลายคลัสเตอร์ ถือ RBAC authority ระดับแพลตฟอร์มไปพร้อมกันได้หรือไม่ก็ได้ และสองระบบนี้ไม่เคยถามกันเลย
 
@@ -64,7 +64,7 @@ Carmen ขายคลัสเตอร์ของ business unit ให้ล�
 
 ### 3.5 สมาชิกภาพ กับ RBAC — สองแกนที่ไม่เคยตัดกัน
 
-บัญชีผู้ใช้หนึ่งบัญชีเป็นได้อิสระต่อกัน: เป็น platform admin ที่มี RBAC grant (เข้า sidebar ฝั่ง platform ได้ ขึ้นกับ permission key ของ [RBAC](/th/platform/rbac)), เป็น cluster admin ผ่านสมาชิกภาพ `tb_cluster_user` (เข้าคอนโซลนี้ได้สำหรับคลัสเตอร์ที่ดูแลอยู่), เป็นทั้งสองอย่างพร้อมกัน หรือไม่เป็นเลยทั้งคู่ ไม่มีระบบไหนตรวจอีกระบบหนึ่งเลย กรณีจริงที่พบบ่อยที่สุดสำหรับคอนโซลนี้คือแบบที่สองล้วน ๆ — พนักงานของลูกค้าที่ไม่มี role ระดับแพลตฟอร์มของ Carmen เลย
+บัญชีผู้ใช้หนึ่งบัญชีเป็นได้อิสระต่อกัน: เป็น platform admin ที่มี RBAC grant (เข้า sidebar ฝั่ง platform ได้ ขึ้นกับ permission key ของ [RBAC](/th/platform/rbac)), เป็น cluster admin ผ่านสมาชิกภาพ `tb_cluster_user` (เข้าคอนโซลนี้ได้สำหรับคลัสเตอร์ที่ดูแลอยู่), เป็นทั้งสองอย่างพร้อมกัน หรือไม่เป็นเลยทั้งคู่ ไม่มีระบบไหนตรวจอีกระบบหนึ่งเลย กรณีจริงที่พบบ่อยที่สุดสำหรับคอนโซลนี้คือแบบที่สองล้วน ๆ — พนักงานของลูกค้าที่ไม่มี role ระดับแพลตฟอร์มของ Carmen Blue เลย
 
 ### 3.6 `ClusterAccessLost` — สมาชิกภาพถูกถอนกลางเซสชัน
 

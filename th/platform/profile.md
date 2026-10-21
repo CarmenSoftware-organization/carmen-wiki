@@ -17,7 +17,7 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 ## 1. ภาพรวม
 
-Profile คือหน้าบัญชีส่วนตัวของผลิตภัณฑ์ Carmen Platform admin ผู้ใช้ที่ผ่านการพิสูจน์ตัวตนทุกคนจะเข้าถึงหน้านี้ได้จากเมนู avatar ที่ด้านล่างของแถบเมนูข้าง — ไม่มีรายการนำทางระดับบนสำหรับ `/profile` หน้านี้แสดงข้อมูลตัวตนปัจจุบันของผู้ใช้ (alias name, ชื่อจริง/ชื่อกลาง/นามสกุล, เบอร์โทรศัพท์, อีเมล, รหัสบัญชี, วันที่เป็นสมาชิก) และในการ์ดแบบอ่านอย่างเดียวอีกใบหนึ่ง แสดงรายการ business unit ที่ถูกกำหนดให้บัญชีนั้น การ์ด Profile Overview จะ render badge ของ role เล็ก ๆ เฉพาะเมื่อ API response มี string `role` เท่านั้น; การแสดง `platform_role` รุ่นเก่าถูกถอดออกเมื่อ SPA ย้ายไปใช้ RBAC แบบ permission-based ([rbac](/th/platform/rbac))
+Profile คือหน้าบัญชีส่วนตัวของผลิตภัณฑ์ Carmen Blue Platform admin ผู้ใช้ที่ผ่านการพิสูจน์ตัวตนทุกคนจะเข้าถึงหน้านี้ได้จากเมนู avatar ที่ด้านล่างของแถบเมนูข้าง — ไม่มีรายการนำทางระดับบนสำหรับ `/profile` หน้านี้แสดงข้อมูลตัวตนปัจจุบันของผู้ใช้ (alias name, ชื่อจริง/ชื่อกลาง/นามสกุล, เบอร์โทรศัพท์, อีเมล, รหัสบัญชี, วันที่เป็นสมาชิก) และในการ์ดแบบอ่านอย่างเดียวอีกใบหนึ่ง แสดงรายการ business unit ที่ถูกกำหนดให้บัญชีนั้น การ์ด Profile Overview จะ render badge ของ role เล็ก ๆ เฉพาะเมื่อ API response มี string `role` เท่านั้น; การแสดง `platform_role` รุ่นเก่าถูกถอดออกเมื่อ SPA ย้ายไปใช้ RBAC แบบ permission-based ([rbac](/th/platform/rbac))
 
 รองรับการเขียนข้อมูลสองรูปแบบ ทั้งคู่ส่งเป็น `PATCH /api/user/profile` แบบแรกคือการแก้ไขฟิลด์ตัวตน — alias name, ชื่อจริง, ชื่อกลาง, นามสกุล, เบอร์โทรศัพท์; การ์ด Profile Information เปิดมาแบบอ่านอย่างเดียว และปุ่ม **Edit** สลับเข้าโหมดแก้ไข (พร้อมปุ่มคู่ Save Changes / Cancel และ guard การเปลี่ยนแปลงที่ยังไม่ได้บันทึก) อีเมลไม่สามารถแก้ไขจากหน้านี้ได้ แบบที่สองคือการเปลี่ยนรหัสผ่านบัญชีผ่าน modal dialog **Change Password** ที่ต้องกรอกรหัสผ่านปัจจุบันพร้อมรหัสผ่านใหม่ความยาวอย่างน้อยหกตัวอักษรและค่ายืนยันที่ตรงกัน การบันทึก identity edit จะ re-fetch ข้อมูลโปรไฟล์และ refresh local auth context ทำให้ avatar และชื่อที่แสดงในแถบเมนูข้างอัปเดตทันที การเปลี่ยน password ไม่ได้ refresh auth context — dialog เพียงแค่ปิดลงเมื่อสำเร็จ
 
@@ -35,7 +35,7 @@ Profile คือหน้าบัญชีส่วนตัวของผล
 |---|---|---|
 | Route guard | `<PrivateRoute>` เปล่า ๆ — ไม่มี `requiredPermission`, ไม่มี `feature` (§4) | `<ClusterAdminRoute>` — ไม่ส่ง prop `feature` จึงไม่มี feature gate เช่นกัน; ต้องการ `isClusterAdminOf(clusterId)` (§4) |
 | Nav ของ sidebar | platform nav เต็มรูปแบบ (`buildPlatformNav()`) ถ้า session มี platform authority | cluster-admin nav (`buildClusterAdminNav()`) จำกัดเฉพาะคลัสเตอร์เดียวนั้น |
-| ตัวตนของแบรนด์ | แบรนด์ผลิตภัณฑ์ "Carmen Platform" | ชื่อ/code/โลโก้ของคลัสเตอร์ที่ดูแลอยู่ |
+| ตัวตนของแบรนด์ | แบรนด์ผลิตภัณฑ์ "Carmen Blue Platform" | ชื่อ/code/โลโก้ของคลัสเตอร์ที่ดูแลอยู่ |
 | ปลายทางของสัญลักษณ์แบรนด์ | `/dashboard` | `/cluster-admin/:clusterId/cluster` |
 | ส่วนเสริมของ header | ไม่มี | `ClusterSwitcher` สำหรับสลับไปคลัสเตอร์อื่นที่ดูแลอยู่ |
 

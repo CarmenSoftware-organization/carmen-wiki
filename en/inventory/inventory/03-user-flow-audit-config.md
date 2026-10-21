@@ -29,7 +29,7 @@ An earlier draft described two dedicated workspaces: an Auditor screen (audit-lo
 |---|---|
 | Location definition (`location_type`, `physical_count_type`) | [master-data/location](/en/inventory/master-data/location) (`/config/location`) |
 | Adjustment reason codes (`tb_adjustment_type`) | Config module (`/config/adjustment-type`) — see [inventory-adjustment](/en/inventory/inventory-adjustment) |
-| Costing method | `tb_business_unit.calculation_method` — platform-level BU setting (Carmen Platform), not configurable in this product's UI |
+| Costing method | `tb_business_unit.calculation_method` — platform-level BU setting (Carmen Blue Platform), not configurable in this product's UI |
 | Period definitions / lock | [system-config/period](/en/inventory/system-config/period) (`/system-admin/period`) |
 | User/role/permission scope | [access-control](/en/inventory/access-control) (`/system-admin/user`, `/role`, permission keys) |
 | Activity / audit log | [reporting-audit/activity](/en/inventory/reporting-audit/activity) (`/system-admin/activity-log`) and the read-only [transaction](/en/inventory/inventory/transaction) ledger |

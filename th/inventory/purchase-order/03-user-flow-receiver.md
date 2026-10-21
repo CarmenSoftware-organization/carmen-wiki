@@ -84,7 +84,7 @@ Store Keeper ขับเคลื่อน GRN ต่อ shipment; Inventory Ma
 
 ## 4. Exit Point / Handoffs
 
-การ involve ของ Receiver บน PO ที่กำหนดจบที่ **GRN post** จากจุดนั้น document state บน Carmen เป็นหนึ่งใน:
+การ involve ของ Receiver บน PO ที่กำหนดจบที่ **GRN post** จากจุดนั้น document state บน Carmen Blue เป็นหนึ่งใน:
 
 - `partial` — อย่างน้อย PO line หนึ่งยังมี open balance; Receiver อาจ re-enter flow เมื่อ shipment ถัดไปมาถึง
 - `completed` — ทุกบรรทัดรับครบ; PO อยู่ที่ terminal receipt state และเป็น read-only สำหรับวัตถุประสงค์ inventory **ยังไม่ยืนยัน:** ไม่พบ feature vendor-invoice-match หรือ AP-posting downstream ใด ๆ ใน source ปัจจุบัน — ดู [03-user-flow-finance.md](./03-user-flow-finance.md) สำหรับการแก้ไข การลดหนี้จาก vendor หลังรับของทำผ่าน [Credit Note](/th/inventory/purchase-order/credit-note) ซึ่งอิง GRN และลดหนี้แต่ละสินค้าบนใบรับได้ครั้งเดียว

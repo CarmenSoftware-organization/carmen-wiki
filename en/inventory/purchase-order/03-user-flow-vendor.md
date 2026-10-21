@@ -11,12 +11,12 @@ dateCreated: 2026-05-15T10:00:00.000Z
 # Purchase Order — User Flow — Vendor
 
 > **At a Glance**
-> **Persona:** Vendor (external — no Carmen login) &nbsp;·&nbsp; **Module:** [purchase-order](/en/inventory/purchase-order) &nbsp;·&nbsp; **Workflow stages:** sent_or_print (touch points) → partial / completed / closed &nbsp;·&nbsp; **Key permissions:** none direct — events recorded by Purchaser / Receiver on vendor's behalf
+> **Persona:** Vendor (external — no Carmen Blue login) &nbsp;·&nbsp; **Module:** [purchase-order](/en/inventory/purchase-order) &nbsp;·&nbsp; **Workflow stages:** sent_or_print (touch points) → partial / completed / closed &nbsp;·&nbsp; **Key permissions:** none direct — events recorded by Purchaser / Receiver on vendor's behalf
 > **What this persona does:** Receives the PO by email (optionally with PDF) or by a print / fax handover that the Purchaser records with `mark-sent`, then fulfils delivery — every system effect captured by an internal persona. Re-synced 2026-09-22.
 
 ## 1. Role in This Module
 
-The **Vendor** is an **external party with no Carmen system login**. The vendor receives the PO and fulfils the agreed delivery — the confirmed system-side effect of this is the **Receiver**'s GRN posting, which flips `po_status` to `partial` or `completed` via `PO_POST_006` / `PO_POST_007`. Transmission is now an explicit, confirmed system event (`PO_POST_004b`, 2026-09-08/14): the Purchaser emails the PO through a BU email profile (`POST .../purchase-orders/:id/send-email`, with an optional server-rendered PDF, seeded EN/TH templates), or records a print / fax / phone handover with `POST .../purchase-orders/:id/mark-sent`; either moves the PO `approved → sent_or_print` and writes a `tb_activity` entry (`email_sent` with recipients and outcome, or "Marked as sent to vendor"). A PO that is only `approved` may already be received against — the vendor can deliver against a verbal order before the email goes out. **Unconfirmed this pass:** whether the vendor's acknowledgement is captured anywhere (comment, portal callback, or otherwise), and whether any vendor-invoice / three-way-match feature exists downstream of receipt — a repo-wide search for `three-way`, `vendor_invoice`, and `tb_invoice` found no matches in either the frontend or backend. Treat the acknowledgement and invoice/AP steps below as documented design intent carried over from `carmen/docs`, not confirmed live behavior; see [03-user-flow-finance.md](./03-user-flow-finance.md) for the fuller correction.
+The **Vendor** is an **external party with no Carmen Blue system login**. The vendor receives the PO and fulfils the agreed delivery — the confirmed system-side effect of this is the **Receiver**'s GRN posting, which flips `po_status` to `partial` or `completed` via `PO_POST_006` / `PO_POST_007`. Transmission is now an explicit, confirmed system event (`PO_POST_004b`, 2026-09-08/14): the Purchaser emails the PO through a BU email profile (`POST .../purchase-orders/:id/send-email`, with an optional server-rendered PDF, seeded EN/TH templates), or records a print / fax / phone handover with `POST .../purchase-orders/:id/mark-sent`; either moves the PO `approved → sent_or_print` and writes a `tb_activity` entry (`email_sent` with recipients and outcome, or "Marked as sent to vendor"). A PO that is only `approved` may already be received against — the vendor can deliver against a verbal order before the email goes out. **Unconfirmed this pass:** whether the vendor's acknowledgement is captured anywhere (comment, portal callback, or otherwise), and whether any vendor-invoice / three-way-match feature exists downstream of receipt — a repo-wide search for `three-way`, `vendor_invoice`, and `tb_invoice` found no matches in either the frontend or backend. Treat the acknowledgement and invoice/AP steps below as documented design intent carried over from `carmen/docs`, not confirmed live behavior; see [03-user-flow-finance.md](./03-user-flow-finance.md) for the fuller correction.
 
 ### Workflow position (Vendor touch points highlighted)
 
@@ -35,7 +35,7 @@ graph LR
 
 ### Permission Matrix — Vendor Event × System Effect (recorded by internal persona, where confirmed)
 
-The Vendor has **no direct write access** in Carmen. The table below maps each vendor-side event to what actually happens on the PO side, flagging what is confirmed vs. unconfirmed.
+The Vendor has **no direct write access** in Carmen Blue. The table below maps each vendor-side event to what actually happens on the PO side, flagging what is confirmed vs. unconfirmed.
 
 | Vendor event | System surface | `po_status` effect |
 |---|---|---|
@@ -54,8 +54,8 @@ The Vendor has **no direct write access** in Carmen. The table below maps each v
 
 **Primary flow (conceptual — confirmed system effects only):**
 
-1. **Acknowledge receipt of the PO** (unconfirmed whether Carmen records this at all).
-2. **Prepare and ship the goods against the agreed delivery date.** **System effect:** none — the physical movement is invisible to Carmen until the Receiver opens it at the dock.
+1. **Acknowledge receipt of the PO** (unconfirmed whether Carmen Blue records this at all).
+2. **Prepare and ship the goods against the agreed delivery date.** **System effect:** none — the physical movement is invisible to Carmen Blue until the Receiver opens it at the dock.
 3. **Deliver the goods to the receiving location.** **System effect:** none directly — the **Receiver** persona raises the GRN in the downstream [good-receive-note](/en/inventory/good-receive-note) module, which actually flips `po_status` (`sent → partial` or `sent → completed`).
 4. **Issue the invoice** — **not implemented** in current source. See [03-user-flow-finance.md](./03-user-flow-finance.md) for the full correction on why no invoice / AP-matching feature was found.
 
@@ -68,7 +68,7 @@ The Vendor has **no direct write access** in Carmen. The table below maps each v
 
 ## 4. Exit Point / Handoffs
 
-The vendor's involvement on a given PO ends at **physical delivery** (confirmed) — invoice issuance is documented design intent, not a confirmed system interaction. From that point the document state on Carmen is one of:
+The vendor's involvement on a given PO ends at **physical delivery** (confirmed) — invoice issuance is documented design intent, not a confirmed system interaction. From that point the document state on Carmen Blue is one of:
 
 - `approved` — workflow finished, not yet emailed; goods may nonetheless be received against it.
 - `sent_or_print` — PO transmitted but no GRN posted yet (vendor has not delivered, or delivery is in transit).

@@ -25,7 +25,7 @@ SKIP_PAGES = {
     "inventory/costing", "inventory/costing/calculation-methods",
     "inventory/general-ledger/gl-posting", "inventory/system-config/doc-version",
     "platform/users/lifecycle", "platform/report-templates/xml-spec",
-    # No screen in Carmen Inventory: the SQL Workbench UI moved to the Platform SPA on 2026-07-09.
+    # No screen in Carmen Blue: the SQL Workbench UI moved to the Platform SPA on 2026-07-09.
     "inventory/system-config/query-dataset",
 }
 # Suffixes that mark a second image of the same page: detail/edit screen, create form.

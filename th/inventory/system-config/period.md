@@ -39,7 +39,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 1. คืออะไรและใครใช้
 
-Inventory period นิยามปฏิทินบัญชีที่ ledger สินค้าคงคลังของ Carmen ดำเนินงานบน — หนึ่ง row ต่อเดือนการเงิน ระบุโดย `YYMM` บวก integer `fiscal_year` / `fiscal_month` และช่วงวัน `[start_at, end_at]` ทุกงวดมีสถานะ (`open`, `closed`, `locked`) ที่ควบคุมว่าเอกสารที่มีวันที่ใดสามารถออกเลขและ post ได้ Period คือหน่วยที่ปิดต้นทุนสต๊อกและทำ snapshot: เมื่อ finance ปิดมกราคม จะไม่มี GRN / stock-in ของเดือนมกราคมเพิ่มเติมที่จะ post และยอดปิดกลายเป็นยอดเปิดของเดือนกุมภาพันธ์
+Inventory period นิยามปฏิทินบัญชีที่ ledger สินค้าคงคลังของ Carmen Blue ดำเนินงานบน — หนึ่ง row ต่อเดือนการเงิน ระบุโดย `YYMM` บวก integer `fiscal_year` / `fiscal_month` และช่วงวัน `[start_at, end_at]` ทุกงวดมีสถานะ (`open`, `closed`, `locked`) ที่ควบคุมว่าเอกสารที่มีวันที่ใดสามารถออกเลขและ post ได้ Period คือหน่วยที่ปิดต้นทุนสต๊อกและทำ snapshot: เมื่อ finance ปิดมกราคม จะไม่มี GRN / stock-in ของเดือนมกราคมเพิ่มเติมที่จะ post และยอดปิดกลายเป็นยอดเปิดของเดือนกุมภาพันธ์
 
 `tb_inventory_period_snapshot` เก็บ snapshot สต๊อกต่อ location / ต่อ product / ต่อ lot ณ เวลาหนึ่ง — สร้างโดย engine ต้นทุนและใช้สำหรับ trial balance และ roll-forward ไม่มีหน้าจอใดในโมดูลนี้ render มัน (ดูสถานะการ implement) — มันถูกเขียนและอ่านโดย engine ต้นทุนเท่านั้น
 

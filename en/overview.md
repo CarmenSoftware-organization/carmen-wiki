@@ -1,6 +1,6 @@
 ---
 title: System Overview
-description: What Carmen is, why it exists, its requirements, tech stack and architecture diagrams — the starting point for new developers and testers.
+description: What Carmen Blue is, why it exists, its requirements, tech stack and architecture diagrams — the starting point for new developers and testers.
 published: true
 date: 2026-09-23T08:30:00.000Z
 tags: overview, architecture, landing
@@ -10,13 +10,13 @@ dateCreated: 2026-09-23T08:30:00.000Z
 
 # System Overview
 
-One page to orient yourself before diving into the [Inventory](/en/inventory) or [Platform](/en/platform) books: what Carmen does, why it exists, what it must satisfy, what it is built with, and how the pieces connect.
+One page to orient yourself before diving into the [Inventory](/en/inventory) or [Platform](/en/platform) books: what Carmen Blue does, why it exists, what it must satisfy, what it is built with, and how the pieces connect.
 
-> **At a glance** — Carmen is a multi-tenant SaaS ERP that runs the procurement → receiving → inventory → costing chain for hotels and restaurants in Thailand. Browsers talk to one NestJS **backend gateway**, which fans out to domain microservices and Go sidecar services over PostgreSQL with one **platform schema** plus one **tenant schema per business unit**.
+> **At a glance** — Carmen Blue is a multi-tenant SaaS ERP that runs the procurement → receiving → inventory → costing chain for hotels and restaurants in Thailand. Browsers talk to one NestJS **backend gateway**, which fans out to domain microservices and Go sidecar services over PostgreSQL with one **platform schema** plus one **tenant schema per business unit**.
 
-## 1. What Carmen Is
+## 1. What Carmen Blue Is
 
-Carmen is a procurement-to-inventory ERP for hospitality operators — hotels, resorts and restaurant groups with several outlets or properties. It covers:
+Carmen Blue is a procurement-to-inventory ERP for hospitality operators — hotels, resorts and restaurant groups with several outlets or properties. It covers:
 
 | Area | What it manages | Book |
 |------|-----------------|------|
@@ -32,9 +32,9 @@ Currency throughout is Thai Baht (฿).
 
 ## 2. Why It Exists
 
-Hospitality purchasing is high-volume, perishable and spread across many outlets. Without one system, each property buys, receives and counts stock in its own way, and food cost is only known after month-end. Carmen exists to close that gap.
+Hospitality purchasing is high-volume, perishable and spread across many outlets. Without one system, each property buys, receives and counts stock in its own way, and food cost is only known after month-end. Carmen Blue exists to close that gap.
 
-| Business problem | How Carmen addresses it |
+| Business problem | How Carmen Blue addresses it |
 |------------------|-------------------------|
 | Purchasing without control — anyone can order from any vendor at any price | Purchase requests go through a configurable approval **workflow** (`tb_workflow` stages) before becoming purchase orders; vendor price lists drive the price |
 | Food and beverage cost is invisible until month-end | Every receipt and issue creates an inventory transaction with a **cost layer**, so stock value and cost are known per movement |
@@ -241,7 +241,7 @@ Adjacent systems outside this wiki's scope: the Knowledge Base / AI chat (`knowl
 
 ## 7. Where to Go Next
 
-- [Carmen Inventory book](/en/inventory) — module-by-module reference for inventory, procurement and costing
-- [Carmen Platform book](/en/platform) — clusters, business units, users, RBAC and report templates
+- [Carmen Blue book](/en/inventory) — module-by-module reference for inventory, procurement and costing
+- [Carmen Blue Platform book](/en/platform) — clusters, business units, users, RBAC and report templates
 - [Costing](/en/inventory/costing) — how FIFO and weighted-average cost layers are calculated
 - [Access Control](/en/inventory/access-control) — how permissions apply inside a business unit

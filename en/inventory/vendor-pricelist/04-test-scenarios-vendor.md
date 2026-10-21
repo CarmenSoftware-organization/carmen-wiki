@@ -15,7 +15,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 > **Executable coverage (2026-09-22):** no Playwright spec for the portal; the documentation-only catalog `../carmen-inventory-frontend-e2e/docs/test-cases/1002-external-price-list.md` (42 `TC-EPL-*` cases: load, header, product table, MOQ sub-table, tax-profile / unit pickers, save, Excel import, submit, expired screen) is the closest oracle. This page does not mirror it.
 > **Re-synced 2026-09-22:** the 2026-07-16 "Save/Submit confirmed non-functional" finding is obsolete — `PATCH /api/pricelist-external/:url_token` and `POST …/submit` exist; the link expires at the RFQ `end_date`.
 
-This page captures the test scenarios that exercise the **Vendor** persona's interaction with `/pl/:url_token`. Because there is no Carmen login for the vendor, the Permission / Authorization section is a single N/A row.
+This page captures the test scenarios that exercise the **Vendor** persona's interaction with `/pl/:url_token`. Because there is no Carmen Blue login for the vendor, the Permission / Authorization section is a single N/A row.
 
 ## 1. Happy Path
 
@@ -33,7 +33,7 @@ This page captures the test scenarios that exercise the **Vendor** persona's int
 
 | # | Scenario | Expected behaviour |
 | - | -------- | ------------------ |
-| VPL-VND-PERM-01 | Vendor is an external party with no Carmen login; in-system RBAC is N/A. | N/A — there is no login, no role, and no permission matrix to test. The only gate is `UrlTokenGuard` (`VPL_VAL_027`): valid, unexpired token → the JWT's `{ bu, vendor_id, rfp_detail_id }` scope; the guard has no IP or session check. |
+| VPL-VND-PERM-01 | Vendor is an external party with no Carmen Blue login; in-system RBAC is N/A. | N/A — there is no login, no role, and no permission matrix to test. The only gate is `UrlTokenGuard` (`VPL_VAL_027`): valid, unexpired token → the JWT's `{ bu, vendor_id, rfp_detail_id }` scope; the guard has no IP or session check. |
 
 ## 3. Validation / Error
 

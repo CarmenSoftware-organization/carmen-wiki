@@ -24,7 +24,7 @@ Scope ของการ test บนโมดูล vendor-pricelist: **coverage
 ## 2. Persona ใน Scope
 
 - **Purchaser** — เป็นเจ้าของทั้งสี่หน้าจอ CRUD end-to-end: Vendor, Price List, Price List Template, Request for Pricing ไม่มี tier ยกระดับ Manager (ไม่มีอะไรให้ gate) ดู [04-test-scenarios-purchaser.md](./04-test-scenarios-purchaser.md)
-- **Vendor** — External party; portal ที่ authenticate ด้วย token (เปิด, ตัวเลือก tax-profile/unit, save, Excel import, submit; 401 หลัง `end_date` ของ RFQ) section Permission ลดลงเป็นแถว N/A เดียว (ไม่มี Carmen login) ดู [04-test-scenarios-vendor.md](./04-test-scenarios-vendor.md)
+- **Vendor** — External party; portal ที่ authenticate ด้วย token (เปิด, ตัวเลือก tax-profile/unit, save, Excel import, submit; 401 หลัง `end_date` ของ RFQ) section Permission ลดลงเป็นแถว N/A เดียว (ไม่มี Carmen Blue login) ดู [04-test-scenarios-vendor.md](./04-test-scenarios-vendor.md)
 
 Finance และ Audit/Config ถูกบันทึกเป็นหน้า correction ([04-test-scenarios-finance.md](./04-test-scenarios-finance.md), [04-test-scenarios-audit-config.md](./04-test-scenarios-audit-config.md)) — ทั้งสองไม่ใช่ persona ที่แยกต่างหากในโมดูลนี้
 

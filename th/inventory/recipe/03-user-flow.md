@@ -56,7 +56,7 @@ Section 2 ด้านล่างเป็น **state machine ระดับ g
 
 ## 4. Handoff ข้าม Persona
 
-ตารางด้านล่างจับช่วงเวลาที่ ใน operating model เป้าหมาย ความรับผิดชอบสำหรับสูตร (หรือการตัดสินใจที่เกี่ยวกับสูตร) ย้ายจาก persona หนึ่งไปยังอีกตัว **วันนี้ไม่มี handoff ใดในตารางนี้ที่ระบบเป็นตัวกลาง** — ไม่มี flag co-approval, alert cost drift, คำขอทดแทนวัตถุดิบ, SR ที่สร้างอัตโนมัติ หรือการ post theoretical-consumption ในโค้ด; ถ้าเกิดขึ้นจริงก็เกิดนอก Carmen แต่ละ handoff ถูก anchor กับสถานะของสูตรที่จุดการถ่ายโอนหรือกับ event ที่ trigger handoff
+ตารางด้านล่างจับช่วงเวลาที่ ใน operating model เป้าหมาย ความรับผิดชอบสำหรับสูตร (หรือการตัดสินใจที่เกี่ยวกับสูตร) ย้ายจาก persona หนึ่งไปยังอีกตัว **วันนี้ไม่มี handoff ใดในตารางนี้ที่ระบบเป็นตัวกลาง** — ไม่มี flag co-approval, alert cost drift, คำขอทดแทนวัตถุดิบ, SR ที่สร้างอัตโนมัติ หรือการ post theoretical-consumption ในโค้ด; ถ้าเกิดขึ้นจริงก็เกิดนอก Carmen Blue แต่ละ handoff ถูก anchor กับสถานะของสูตรที่จุดการถ่ายโอนหรือกับ event ที่ trigger handoff
 
 | จาก persona | Trigger | ไป persona | สถานะของสูตรที่ handoff |
 | ------------ | ------- | ---------- | ----------------------- |

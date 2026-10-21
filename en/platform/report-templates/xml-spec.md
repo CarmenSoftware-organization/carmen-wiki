@@ -86,7 +86,7 @@ Because the SPA imposes no structural constraints beyond well-formedness, there 
 
 ### 3.2 `.frx` file upload
 
-The Content tab's upload accept list is `.frx,.xml,.txt`. The `.frx` extension is FastReport's native format — an XML-based template definition used in earlier versions of Carmen before the Go-based report runtime. The SPA performs **no conversion** on upload: it reads the file as UTF-8 text (`FileReader.readAsText`), runs the content through `formatXml()` to indent it, and stores the result directly in the `content` field. The Go runtime is responsible for interpreting `.frx` content.
+The Content tab's upload accept list is `.frx,.xml,.txt`. The `.frx` extension is FastReport's native format — an XML-based template definition used in earlier versions of Carmen Blue before the Go-based report runtime. The SPA performs **no conversion** on upload: it reads the file as UTF-8 text (`FileReader.readAsText`), runs the content through `formatXml()` to indent it, and stores the result directly in the `content` field. The Go runtime is responsible for interpreting `.frx` content.
 
 The Dialog tab's upload accept list is `.xml,.txt` only — `.frx` is not accepted there because Dialog XML must conform to the `<Dialog>` root structure and FastReport definitions do not.
 

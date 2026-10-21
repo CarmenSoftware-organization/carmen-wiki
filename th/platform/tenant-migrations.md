@@ -23,7 +23,7 @@ Tenant Migrations คือคอนโซลระดับ fleet ของแ�
 
 ## 2. บริบททางธุรกิจ
 
-การ deploy ของ Carmen หนึ่งชุดรัน schema ที่ Prisma จัดการหนึ่งชุดต่อหนึ่ง business unit (property/โรงแรม) ทุกชุดใช้ migration history ร่วมกันชุดเดียวที่นิยามไว้ใน package `@repo/prisma-shared-schema-tenant` เดียว เมื่อใดก็ตามที่ package นั้นได้ migration ใหม่ ทุก tenant schema ในทุก cluster ต้องรัน `prisma migrate deploy` ก่อนที่โค้ดแอปพลิเคชันที่สอดคล้องกันจะพึ่งพา column/table ใหม่ได้ — และผู้ให้บริการโรงแรมหนึ่งรายอาจมีหลายสิบ property ที่ rollout คนละจังหวะกัน หากไม่มีมุมมองระดับ fleet operator ต้องเปิดหน้าแก้ไขของแต่ละ BU แล้วเช็คแท็บ Technical ทีละตัว หน้าจอนี้จึงมีไว้เพื่อตอบคำถาม "tenant ตัวไหนตามหลัง และตามหลังแค่ไหน" ในมุมมองเดียว (`FleetSync`, §3.1) และให้ super-admin (หรือ pipeline CI/CD ผ่าน deploy token, §4.2) ผลักดันทุกตัวไปข้างหน้า — หรือไล่ทั้ง fleet ในครั้งเดียว — โดยไม่ต้องออกจากหน้า
+การ deploy ของ Carmen Blue หนึ่งชุดรัน schema ที่ Prisma จัดการหนึ่งชุดต่อหนึ่ง business unit (property/โรงแรม) ทุกชุดใช้ migration history ร่วมกันชุดเดียวที่นิยามไว้ใน package `@repo/prisma-shared-schema-tenant` เดียว เมื่อใดก็ตามที่ package นั้นได้ migration ใหม่ ทุก tenant schema ในทุก cluster ต้องรัน `prisma migrate deploy` ก่อนที่โค้ดแอปพลิเคชันที่สอดคล้องกันจะพึ่งพา column/table ใหม่ได้ — และผู้ให้บริการโรงแรมหนึ่งรายอาจมีหลายสิบ property ที่ rollout คนละจังหวะกัน หากไม่มีมุมมองระดับ fleet operator ต้องเปิดหน้าแก้ไขของแต่ละ BU แล้วเช็คแท็บ Technical ทีละตัว หน้าจอนี้จึงมีไว้เพื่อตอบคำถาม "tenant ตัวไหนตามหลัง และตามหลังแค่ไหน" ในมุมมองเดียว (`FleetSync`, §3.1) และให้ super-admin (หรือ pipeline CI/CD ผ่าน deploy token, §4.2) ผลักดันทุกตัวไปข้างหน้า — หรือไล่ทั้ง fleet ในครั้งเดียว — โดยไม่ต้องออกจากหน้า
 
 ## 3. แนวคิดสำคัญ
 

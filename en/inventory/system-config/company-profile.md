@@ -24,7 +24,7 @@ dateCreated: 2026-07-29T10:30:00.000Z
 
 ## 1. What & Who
 
-These are two separate screens that both read and partially edit the **current business unit's own `tb_business_unit` row** — the same table [master-data/business-unit](/en/inventory/master-data/business-unit) documents from the platform-admin console's angle. Where that page covers the platform admin's `carmen-platform` edit form (identity, currency, costing method, module enablement, tenant DB connection), these two screens are the **tenant-side, in-app** equivalents that a Sysadmin reaches from inside Carmen Inventory itself, and they edit a **different, non-overlapping subset** of the same row:
+These are two separate screens that both read and partially edit the **current business unit's own `tb_business_unit` row** — the same table [master-data/business-unit](/en/inventory/master-data/business-unit) documents from the platform-admin console's angle. Where that page covers the platform admin's `carmen-platform` edit form (identity, currency, costing method, module enablement, tenant DB connection), these two screens are the **tenant-side, in-app** equivalents that a Sysadmin reaches from inside Carmen Blue itself, and they edit a **different, non-overlapping subset** of the same row:
 
 - **Company Profile** (`/system-admin/company-profile`) — identity (name, alias, description, info), read-only costing/licensing fields, default currency, hotel property address, company legal address, branding (logo/avatar, read-only), and date/time/number-format defaults.
 - **Default Setting** (`/system-admin/default-setting`) — the `config` JSONB array on the same row: PR, SI, and PO operational toggles, plus a per-document-type print-form template selector.

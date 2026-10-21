@@ -1,6 +1,6 @@
 ---
-title: Carmen Inventory
-description: Carmen Inventory ERP — module reference for developers and testers.
+title: Carmen Blue
+description: Carmen Blue ERP — module reference for developers and testers.
 published: true
 date: '2026-09-22T18:00:00.000Z'
 tags: book/inventory, home
@@ -8,9 +8,9 @@ editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
 ---
 
-# Carmen Inventory
+# Carmen Blue
 
-Reference manual for developers and QA engineers working on the Carmen Inventory ERP — a hospitality supply chain product.
+Reference manual for developers and QA engineers working on the Carmen Blue ERP — a hospitality supply chain product.
 
 ## 1. Overview
 

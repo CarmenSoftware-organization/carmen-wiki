@@ -177,7 +177,7 @@ Until 2026-06-10 the schema defined a 7-value `enum_platform_role` (`super_admin
 
 ### `enum_cluster_user_role` — 2 values
 
-Carried on `tb_cluster_user.role`. Controls what the user can do within a specific cluster. Independent from the platform-level RBAC assignments — a Carmen support engineer could have cluster `admin` rights on one cluster and cluster `user` rights on another.
+Carried on `tb_cluster_user.role`. Controls what the user can do within a specific cluster. Independent from the platform-level RBAC assignments — a Carmen Blue support engineer could have cluster `admin` rights on one cluster and cluster `user` rights on another.
 
 | Value | Meaning |
 | ----- | ------- |

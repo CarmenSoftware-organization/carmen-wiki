@@ -17,7 +17,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 1. What & Who
 
-**Units** catalogue every unit of measure used for quantities, prices, and balances — both **inventory/ingredient** units (kg, L, each) and **order/purchase** units (case-of-12, sack-25kg). Every priced or counted line in Carmen carries one or more unit references, so this is the smallest piece of master data that touches every transactional module.
+**Units** catalogue every unit of measure used for quantities, prices, and balances — both **inventory/ingredient** units (kg, L, each) and **order/purchase** units (case-of-12, sack-25kg). Every priced or counted line in Carmen Blue carries one or more unit references, so this is the smallest piece of master data that touches every transactional module.
 
 The companion table `tb_unit_conversion` stores **multipliers between two units**, optionally scoped per product. Conversions power purchase-to-inventory translation in GRN, recipe yield calc, and pricelist comparison across vendors quoting different pack sizes. **Without correct conversions, every downstream costing and balance number is wrong.** Maintained by Product Admin; read by every transactional path.
 

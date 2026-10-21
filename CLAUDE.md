@@ -4,21 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Nature
 
-**carmen-wiki** is a **user manual for developers and testers** of the Carmen **inventory ERP** product. Content is Markdown rendered by [Wiki.js](https://js.wiki/). There is no application code, no package manager, no build pipeline, and no test suite in this repo — tasks here are always content edits.
+**carmen-wiki** is a **user manual for developers and testers** of the Carmen Blue **inventory ERP** product. Content is Markdown rendered by [Wiki.js](https://js.wiki/). There is no application code, no package manager, no build pipeline, and no test suite in this repo — tasks here are always content edits.
 
 Audience and scope:
 - Readers are developers building inventory features and QA engineers testing them — not end users, not architects designing greenfield platforms.
 - Inventory ERP topics are in scope: costing methods, GRN/receiving flow, physical count, spot check, valuation, transaction edge cases, data models, algorithms.
-- Other Carmen modules (PR Approval, vendor catalogs, business unit management) are out of scope **unless** they directly interact with inventory.
+- Other Carmen Blue modules (PR Approval, vendor catalogs, business unit management) are out of scope **unless** they directly interact with inventory.
 - Useful page shapes: developer how-tos, test scenarios, expected behaviors, edge-case matrices, algorithm pseudo-code, data-model references.
 
-Work is organized as `<locale>/<book>/<module>/`. Two books are defined: **Carmen Inventory** (existing content — costing, GRN, physical count, etc.) and **Carmen Platform** (admin product — clusters, business units, users, report templates). The language-root pages `en/home.md` and `th/home.md` (Wiki.js URL `/en/home`, `/th/home` — locale roots must live inside their locale folder for Wiki.js git-storage to assign them the correct locale) are the two-card landings; each book has its own `<book>.md` sibling page (e.g. `en/inventory.md` beside `en/inventory/`) that opens the book. Each `.md` file is a standalone wiki page. Wiki.js handles the language toggle natively across the locale trees, so individual pages should not include inline cross-locale links. The `.specs/` directory is hidden meta and stays at the repo root.
+Work is organized as `<locale>/<book>/<module>/`. Two books are defined: **Carmen Blue** (existing content — costing, GRN, physical count, etc.) and **Carmen Blue Platform** (admin product — clusters, business units, users, report templates). The language-root pages `en/home.md` and `th/home.md` (Wiki.js URL `/en/home`, `/th/home` — locale roots must live inside their locale folder for Wiki.js git-storage to assign them the correct locale) are the two-card landings; each book has its own `<book>.md` sibling page (e.g. `en/inventory.md` beside `en/inventory/`) that opens the book. Each `.md` file is a standalone wiki page. Wiki.js handles the language toggle natively across the locale trees, so individual pages should not include inline cross-locale links. The `.specs/` directory is hidden meta and stays at the repo root.
 
 ## Multi-book layout
 
 | Book | Location | Audience |
 |------|----------|----------|
-| Inventory | `en/inventory/`, `th/inventory/` | Developers and QA working on Carmen Inventory ERP |
+| Inventory | `en/inventory/`, `th/inventory/` | Developers and QA working on Carmen Blue ERP |
 | Platform | `en/platform/`, `th/platform/` | Developers and support working on the platform admin product |
 
 Screenshots live under `assets/screenshots/<book>/<module>/<slug>.png`.
@@ -50,12 +50,12 @@ Conventions established by the existing wiki content — match them when adding 
 - **Numbered section hierarchy**: top-level sections use `## 1. Title`, `## 2. Title`, with `### 2.1`, `### 2.2` subsections. Keeps cross-references stable.
 - **Comparison tables** for design trade-offs (advantages/disadvantages, FIFO vs. Weighted Average, etc.) — prefer tables over prose bullet lists when comparing options.
 - **Pseudo-code blocks** (language-agnostic, fenced as ``` with no language tag) for algorithms and data models, rather than real TypeScript/SQL. The wiki documents *platform design*, not implementation in any single repo's stack.
-- **Currency in examples**: Thai Baht (`฿`) — Carmen is a Thailand-based hospitality platform.
+- **Currency in examples**: Thai Baht (`฿`) — Carmen Blue is a Thailand-based hospitality platform.
 - **Edge-case sections**: design docs typically end with an "Edge Cases" table and a "Recommendations" section. Preserve this structure.
 
 ## Project Context
 
-**carmen-wiki** documents the inventory ERP slice of the Carmen Software platform, a hospitality supply chain management system. The wiki is the reference manual that developers and testers consult while working on inventory features across the repos below.
+**carmen-wiki** documents the inventory ERP slice of the CarmenSoftware platform, a hospitality supply chain management system. The wiki is the reference manual that developers and testers consult while working on inventory features across the repos below.
 
 ### Reference Repositories (source of truth — always consult before writing)
 

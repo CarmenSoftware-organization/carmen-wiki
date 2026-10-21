@@ -10,7 +10,7 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 # คลัสเตอร์ (Clusters)
 
-โมดูล **Clusters** เป็นจุดเริ่มต้นของ container ระดับองค์กรที่ใหญ่ที่สุดใน Carmen Platform โดย cluster หนึ่ง ๆ จะรวม business unit (BU) และ user ที่ผูกกับ BU เหล่านั้นเข้าด้วยกัน ลิมิตไลเซนส์ — จำนวน BU สูงสุดที่ cluster มีได้ และจำนวน named user ที่ครอบคลุม — แต่เดิมเป็นคอลัมน์ static บน record ของ cluster/BU แต่ตั้งแต่มีการปรับระบบไลเซนส์ระหว่าง 2026-07-29 ถึง 2026-09-04 ค่าเหล่านี้กลายเป็นแถวที่ "ชนะ" ของ ledger การซื้อแบบมีช่วงวันที่แทน (ดู §3) route และ action ที่แก้ไขข้อมูลในโมดูลนี้ถูก gate ด้วย permission key `cluster.*` **และ** feature flag `clusters` (ดู [Platform RBAC](/th/platform/rbac) และ [Permissions](/th/platform/clusters/permissions))
+โมดูล **Clusters** เป็นจุดเริ่มต้นของ container ระดับองค์กรที่ใหญ่ที่สุดใน Carmen Blue Platform โดย cluster หนึ่ง ๆ จะรวม business unit (BU) และ user ที่ผูกกับ BU เหล่านั้นเข้าด้วยกัน ลิมิตไลเซนส์ — จำนวน BU สูงสุดที่ cluster มีได้ และจำนวน named user ที่ครอบคลุม — แต่เดิมเป็นคอลัมน์ static บน record ของ cluster/BU แต่ตั้งแต่มีการปรับระบบไลเซนส์ระหว่าง 2026-07-29 ถึง 2026-09-04 ค่าเหล่านี้กลายเป็นแถวที่ "ชนะ" ของ ledger การซื้อแบบมีช่วงวันที่แทน (ดู §3) route และ action ที่แก้ไขข้อมูลในโมดูลนี้ถูก gate ด้วย permission key `cluster.*` **และ** feature flag `clusters` (ดู [Platform RBAC](/th/platform/rbac) และ [Permissions](/th/platform/clusters/permissions))
 
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** container ของ tenant ที่รวม business unit (BU) และ user ที่ผูกกับ BU เหล่านั้น และลิงก์ไปยัง licence ledger ที่ปัจจุบันเป็นที่เก็บ cap ของจำนวน BU และจำนวนที่นั่ง &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับ Platform admin SPA; การเข้าถึงของ operator ต้องได้รับ grant permission `cluster.*` ([rbac](/th/platform/rbac)) และ feature flag `clusters` ต้องเปิดอยู่ &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_cluster` (ฟิลด์: `code`, `name`, `alias_name`, `logo_file_token`, `avatar_file_token`, `is_active`, `doc_version`, soft-delete trio — **ไม่มีคอลัมน์ licence-cap อีกต่อไป**), `tb_business_unit` (1:N), `tb_cluster_user` (M:N join ที่ถือ role per-cluster เป็น `admin`/`user` — **ไม่มี `parent_bu_id` แล้ว**), `tb_cluster_license` (ใหม่ — ledger การซื้อโควตา BU ของ cluster) &nbsp;·&nbsp; **หน้าย่อย:** 3 &nbsp;·&nbsp; **Permission key:** `cluster.read` (list/nav) + `cluster.create`/`cluster.update`/`cluster.delete` &nbsp;·&nbsp; **Feature-flag key:** `clusters` &nbsp;·&nbsp; **superAdminOnly:** ไม่ใช่ — gate ด้วย permission ไม่ใช่ flag แบบ super-admin-only (อ้างอิง `../carmen-platform/src/components/nav/platformNav.ts`)
@@ -31,13 +31,13 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 ## 2. บริบททางธุรกิจ
 
-โดยทั่วไป cluster จะแทนองค์กรลูกค้าหนึ่งรายหรือเครือโรงแรมที่ทำสัญญา Carmen Platform หนึ่งฉบับ สัญญากำหนดว่าลูกค้ามีสิทธิ์ใช้ BU ได้กี่ตัวและมีสิทธิ์มีที่นั่งกี่ที่ — cap เหล่านี้ตอนนี้เป็น **แถวใบซื้อที่มีวันที่** ไม่ใช่ field แบบ static บน record cluster/BU เองแล้ว:
+โดยทั่วไป cluster จะแทนองค์กรลูกค้าหนึ่งรายหรือเครือโรงแรมที่ทำสัญญา Carmen Blue Platform หนึ่งฉบับ สัญญากำหนดว่าลูกค้ามีสิทธิ์ใช้ BU ได้กี่ตัวและมีสิทธิ์มีที่นั่งกี่ที่ — cap เหล่านี้ตอนนี้เป็น **แถวใบซื้อที่มีวันที่** ไม่ใช่ field แบบ static บน record cluster/BU เองแล้ว:
 
 - **โควตา BU** มาจาก `tb_cluster_license` — ledger การซื้อโควตา BU ต่อ cluster โควตาที่มีผลคือ **ใบที่ชนะใบเดียว** (ครอบคลุม "ตอนนี้" และยังไม่ถูกยกเลิก) ไม่ใช่ผลรวมของทุกใบที่เคยซื้อ ไม่มีใบที่ชนะ = โควตา `0` ซึ่งเป็นศูนย์จริง ไม่ใช่ "ไม่จำกัด"
 - **ที่นั่ง** มาจาก `tb_business_unit_license` — ledger ต่อ BU ที่รวมยอดจากทุก BU ในคลัสเตอร์ที่ยังคุ้มครองอยู่ ต่างจากโควตา BU ตรงที่ `null`/ไม่มีใบคุ้มครองยังหมายถึง "ไม่จำกัด" สำหรับมิตินี้
 - ปุ่ม **Add BU** บนหน้า edit cluster จะ disable ตัวเองเมื่อ `business_units.length >= bu_cap` พร้อม tooltip ("License limit reached (N/M)") การเกินโควตา BU ด้วยวิธีอื่น (เช่นซื้อใบใหม่ที่โควตาน้อยลงกว่าจำนวน BU ปัจจุบัน) จะไม่ลบหรือบล็อก BU ที่มีอยู่ — แต่จะติดป้าย "Over limit" ตามอันดับแทน (ดู [UI Screens](/th/platform/clusters/ui-screens) §4.3)
 - Dialog **Add User** ตอนนี้เช็ค cap แบบทั้งคลัสเตอร์ ไม่ใช่ต่อ BU แล้ว — dialog ไม่ถาม BU ของสมาชิกใหม่อีกต่อไป เพราะไม่มี field ที่ผูกกับ BU บน membership ของ cluster-user แล้ว
-- เมื่อรวม cluster + BU ภายใต้สังกัด คือกลไกที่ Carmen ใช้กำหนดว่า user คนหนึ่งสลับเข้าใช้ BU ใดได้บ้าง
+- เมื่อรวม cluster + BU ภายใต้สังกัด คือกลไกที่ Carmen Blue ใช้กำหนดว่า user คนหนึ่งสลับเข้าใช้ BU ใดได้บ้าง
 - **การป้องกันการลบ (deletion guard):** action Delete ของแถวในหน้า list จะถูกบล็อกฝั่ง client เมื่อ cluster เป้าหมายยังมี `bu_count > 0` — การลบ cluster ไม่ cascade ไปยัง business unit ของมันที่ฝั่ง backend
 - การซื้อ ต่ออายุ หรือยกเลิกใบโควตา BU/ที่นั่งทำในโมดูล **licenses** (License Center) ทั้งหมด — หน้าของโมดูลนี้ลิงก์ไปที่นั่นแต่ไม่ได้บันทึก CRUD เต็มรูปแบบของ ledger ดู [Data Model](/th/platform/clusters/data-model) §2.4–2.5
 

@@ -34,7 +34,7 @@ Section 2 below lists the real status fields and what actually changes them. Sec
 ## 3. Persona Index
 
 - [Purchaser](./03-user-flow-purchaser.md) — the only internal persona with a write surface: maintains Vendor master data and the Certification master, creates/edits Price List Templates and Price Lists directly, creates RFQs and emails each vendor its link, and activates the `submitted` pricelist a vendor returns (or keys in an emailed/CSV sheet).
-- [Vendor](./03-user-flow-vendor.md) — external party with no Carmen login. Opens the emailed portal link before it expires, prices the products (tax profile and order unit per line), saves, imports an Excel sheet if preferred, and submits.
+- [Vendor](./03-user-flow-vendor.md) — external party with no Carmen Blue login. Opens the emailed portal link before it expires, prices the products (tax profile and order unit per line), saves, imports an Excel sheet if preferred, and submits.
 
 Note: **Finance** and **Audit / Config** were documented as distinct personas in the previous draft. Neither has any matching code in this module — see [03-user-flow-finance.md](./03-user-flow-finance.md) and [03-user-flow-audit-config.md](./03-user-flow-audit-config.md), both rewritten as correction pages this pass.
 

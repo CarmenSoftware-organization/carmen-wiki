@@ -43,7 +43,7 @@ The entity is intentionally minimal — `name`, `value` (days), and an `is_activ
 - **Renaming or value-changes** affect only **new** POs; the due date is **computed and stored** on the PO at creation.
 - **Soft-deleted terms** stay resolvable on historical POs.
 - **COD = `value = 0`** is the standard convention; same-day due.
-- **Vendor default** is app-layer — Carmen seeds the term onto the PO at vendor selection, but the user can still override.
+- **Vendor default** is app-layer — Carmen Blue seeds the term onto the PO at vendor selection, but the user can still override.
 
 ---
 

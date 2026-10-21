@@ -21,7 +21,7 @@ Landing is the signed-out entry point at `/` — a single static marketing page 
 
 For a genuinely signed-out visitor, the page renders:
 
-- **Header** — a "C" mark + "Carmen Platform / Operations console" wordmark, and a **Sign in** button linking to `/login`.
+- **Header** — a "C" mark + "Carmen Blue Platform / Operations console" wordmark, and a **Sign in** button linking to `/login`.
 - **Hero** — a left-aligned headline ("Run the whole operation from one console."), one sentence of positioning copy, a **Sign in** call-to-action button, and a **"See what's new"** text link to `/changelog` (the one other fully public route, documented on its own page — [Changelog](/en/platform/changelog)).
 - **"Inside the console" module index** — three groups of named items rendered as a plain three-column list (no links — each item is inert text, not a navigable tile). See §3 for the exact contents and §4 for how they compare to the real sidebar.
 - **Footer** — the shared `VersionBadge` (the same component the sidebar footer uses, documented in [Changelog](/en/platform/changelog) §3), an optional environment label (`REACT_APP_ENV`), a copyright line, and an optional build-date stamp (`REACT_APP_BUILD_DATE`).

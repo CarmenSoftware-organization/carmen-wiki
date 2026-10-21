@@ -20,7 +20,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 ## 1. Overview
 
-`tb_business_unit` is the operational tenant unit in the Carmen Platform — the level at which inventory operations, user assignments, and module activations take place. Every BU belongs to exactly one cluster (via `cluster_id`, a non-nullable FK to `tb_cluster.id`). The cluster is the licensable grouping and billing entity; the BU is the working unit that inventory users log into and that accumulates stock transactions, purchase requests, and store requisitions. The relationship to [clusters](/en/platform/clusters) is therefore M:1 — many BUs beneath one cluster.
+`tb_business_unit` is the operational tenant unit in the Carmen Blue Platform — the level at which inventory operations, user assignments, and module activations take place. Every BU belongs to exactly one cluster (via `cluster_id`, a non-nullable FK to `tb_cluster.id`). The cluster is the licensable grouping and billing entity; the BU is the working unit that inventory users log into and that accumulates stock transactions, purchase requests, and store requisitions. The relationship to [clusters](/en/platform/clusters) is therefore M:1 — many BUs beneath one cluster.
 
 Two structural changes landed since the last sync, both confirmed directly against the current Prisma schema and the SPA source that consumes it:
 
@@ -285,7 +285,7 @@ Carried on `tb_business_unit.calculation_method`. Determines the costing method 
 | `average` | Weighted average cost method (default). Each receipt adjusts the running average cost of inventory items |
 | `fifo` | First-In First-Out method. Issues are costed at the price of the oldest stock layer |
 
-The default is `average`. Both values match the costing methods documented in the Carmen Inventory ERP ([calculation-methods](/en/inventory/costing/calculation-methods)).
+The default is `average`. Both values match the costing methods documented in the Carmen Blue ERP ([calculation-methods](/en/inventory/costing/calculation-methods)).
 
 ## 5. The `config` and `info` JSON columns
 

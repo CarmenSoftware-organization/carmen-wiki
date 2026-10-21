@@ -11,7 +11,7 @@ dateCreated: 2026-05-19T00:00:00.000Z
 # ผู้ใช้ (Users)
 
 > **At a Glance**
-> **วัตถุประสงค์ของโมดูล:** หน้าจัดการบัญชีผู้ใช้ระดับแพลตฟอร์ม — หนึ่ง row ต่อหนึ่งคนที่ login ได้ เก็บ identity (`username`, `email`, ชื่อแบ่งส่วน, `alias_name`), avatar, flag `is_active` และมุมมอง read-only ของ cluster และ BU ที่ผู้ใช้ถูก assign อยู่ (การ assign จริงทำจากฝั่ง cluster หรือ — สำหรับ BU — จาก dialog Add-BU ในหน้านี้) ส่วนสิ่งที่บัญชี *ทำได้* ใน Platform admin SPA ไม่ได้เก็บที่นี่ — นั่นคือ role assignment ของโมดูล [RBAC](/th/platform/rbac) &nbsp;·&nbsp; **กลุ่มผู้ใช้:** ผู้ถือ permission key `user.read`/`user.create`/`user.update`/`user.delete` — โดยทั่วไปคือวิศวกร support ของ Carmen และ admin ฝั่งลูกค้า &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_user` + `tb_user_profile` (ฟิลด์ในฟอร์ม 7 ตัว: `username`, `email`, `alias_name`, `firstname`, `middlename`, `lastname`, `is_active`; พร้อม soft-delete trio `deleted_at`/`deleted_by_name` และ timestamp บวก `avatar_url` แบบ presigned ตอนอ่าน), `tb_cluster_user` (M:N join กับ cluster — อ่านอย่างเดียวที่นี่), BU-user join (M:N join กับ BU พร้อม `role` ระดับ BU เป็น `admin`/`user` และ flag `is_default`) &nbsp;·&nbsp; **หน้าย่อย:** 3
+> **วัตถุประสงค์ของโมดูล:** หน้าจัดการบัญชีผู้ใช้ระดับแพลตฟอร์ม — หนึ่ง row ต่อหนึ่งคนที่ login ได้ เก็บ identity (`username`, `email`, ชื่อแบ่งส่วน, `alias_name`), avatar, flag `is_active` และมุมมอง read-only ของ cluster และ BU ที่ผู้ใช้ถูก assign อยู่ (การ assign จริงทำจากฝั่ง cluster หรือ — สำหรับ BU — จาก dialog Add-BU ในหน้านี้) ส่วนสิ่งที่บัญชี *ทำได้* ใน Platform admin SPA ไม่ได้เก็บที่นี่ — นั่นคือ role assignment ของโมดูล [RBAC](/th/platform/rbac) &nbsp;·&nbsp; **กลุ่มผู้ใช้:** ผู้ถือ permission key `user.read`/`user.create`/`user.update`/`user.delete` — โดยทั่วไปคือวิศวกร support ของ Carmen Blue และ admin ฝั่งลูกค้า &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_user` + `tb_user_profile` (ฟิลด์ในฟอร์ม 7 ตัว: `username`, `email`, `alias_name`, `firstname`, `middlename`, `lastname`, `is_active`; พร้อม soft-delete trio `deleted_at`/`deleted_by_name` และ timestamp บวก `avatar_url` แบบ presigned ตอนอ่าน), `tb_cluster_user` (M:N join กับ cluster — อ่านอย่างเดียวที่นี่), BU-user join (M:N join กับ BU พร้อม `role` ระดับ BU เป็น `admin`/`user` และ flag `is_default`) &nbsp;·&nbsp; **หน้าย่อย:** 3
 
 ![ผู้ใช้ (Users) screen](/screenshots/platform/users/index.png)
 
@@ -73,7 +73,7 @@ route ทั้งสามของ user ห่อด้วย `PrivateRoute` �
 
 | Persona | Key ที่มักถือ | งานที่ทำที่นี่บ่อย |
 |---|---|---|
-| วิศวกร support ของ Carmen / admin ฝั่งลูกค้า | `user.read` + `user.create`/`user.update`/`user.delete` | Onboard user ลูกค้าใหม่, reset รหัสผ่าน, อัพเดทข้อมูล contact ของพนักงาน, จัดการ roster ของ BU |
+| วิศวกร support ของ Carmen Blue / admin ฝั่งลูกค้า | `user.read` + `user.create`/`user.update`/`user.delete` | Onboard user ลูกค้าใหม่, reset รหัสผ่าน, อัพเดทข้อมูล contact ของพนักงาน, จัดการ roster ของ BU |
 | Auditor แบบอ่านอย่างเดียว | `user.read` เท่านั้น | เปิดดูได้แค่หน้า list — ลิงก์ username ชี้ไป `/users/:id/edit` ซึ่ง route guard `user.update` block ด้วย `Forbidden` (ไม่มี route detail แบบ read-only); Add User, Edit/Delete ของ row และ toggle Edit จะไม่ render |
 
 ## 5. โมดูลที่เกี่ยวข้อง

@@ -30,7 +30,7 @@ route ของฟอร์มซื้อทั้งสามแบบใน�
 
 ## 2. บริบททางธุรกิจ
 
-Carmen ขายลูกค้าโรงแรม/ธุรกิจบริการเป็น cluster ของ business unit และความสัมพันธ์เชิงพาณิชย์นั้นมีสี่มิติที่ซื้อแยกจากกันได้:
+Carmen Blue ขายลูกค้าโรงแรม/ธุรกิจบริการเป็น cluster ของ business unit และความสัมพันธ์เชิงพาณิชย์นั้นมีสี่มิติที่ซื้อแยกจากกันได้:
 
 1. **cluster หนึ่งสร้าง business unit ได้กี่หน่วย** — โควตาระดับ cluster ซื้อเป็นแถว `tb_cluster_license` และถูกใช้โดยหน้าสร้าง/แก้ของ [Clusters](/th/platform/clusters)
 2. **business unit หนึ่งเติมที่นั่งผู้ใช้ได้กี่ที่** — โควตาระดับ BU ซื้อเป็นแถว `tb_business_unit_license` และถูกใช้โดยแท็บ Users ของ [Business Units](/th/platform/business-units)

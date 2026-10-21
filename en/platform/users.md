@@ -11,7 +11,7 @@ dateCreated: 2026-05-19T00:00:00.000Z
 # Users
 
 > **At a Glance**
-> **Module purpose:** Authoring surface for the platform-level user account — one row per person who can sign in, holding the identity fields (`username`, `email`, name parts, `alias_name`), the avatar, the `is_active` flag, and the read-only views of which clusters and BUs the user is assigned to (assignments themselves are mutated from the cluster side or, for BUs, from the Add-BU dialog inside this page). What the account can *do* in the Platform admin SPA is not stored here — that is the [RBAC](/en/platform/rbac) module's role assignments &nbsp;·&nbsp; **Audience:** Holders of the `user.read`/`user.create`/`user.update`/`user.delete` permission keys — typically Carmen support engineers and customer-side admins &nbsp;·&nbsp; **Key entities/tables:** `tb_user` + `tb_user_profile` (7 form fields: `username`, `email`, `alias_name`, `firstname`, `middlename`, `lastname`, `is_active`; plus soft-delete trio `deleted_at`/`deleted_by_name`/timestamps and a presigned `avatar_url` on read), `tb_cluster_user` (M:N cluster join — read-only here), BU-user join (M:N BU assignment with per-BU `role` of `admin`/`user` and an `is_default` flag) &nbsp;·&nbsp; **Sub-pages:** 3
+> **Module purpose:** Authoring surface for the platform-level user account — one row per person who can sign in, holding the identity fields (`username`, `email`, name parts, `alias_name`), the avatar, the `is_active` flag, and the read-only views of which clusters and BUs the user is assigned to (assignments themselves are mutated from the cluster side or, for BUs, from the Add-BU dialog inside this page). What the account can *do* in the Platform admin SPA is not stored here — that is the [RBAC](/en/platform/rbac) module's role assignments &nbsp;·&nbsp; **Audience:** Holders of the `user.read`/`user.create`/`user.update`/`user.delete` permission keys — typically Carmen Blue support engineers and customer-side admins &nbsp;·&nbsp; **Key entities/tables:** `tb_user` + `tb_user_profile` (7 form fields: `username`, `email`, `alias_name`, `firstname`, `middlename`, `lastname`, `is_active`; plus soft-delete trio `deleted_at`/`deleted_by_name`/timestamps and a presigned `avatar_url` on read), `tb_cluster_user` (M:N cluster join — read-only here), BU-user join (M:N BU assignment with per-BU `role` of `admin`/`user` and an `is_default` flag) &nbsp;·&nbsp; **Sub-pages:** 3
 
 ![Users screen](/screenshots/platform/users/index.png)
 
@@ -73,7 +73,7 @@ Not gated in-page (visible to anyone who passes the route guard): **Export** onl
 
 | Persona | Typical keys | What they typically do here |
 |---|---|---|
-| Carmen support engineer / customer-side admin | `user.read` + `user.create`/`user.update`/`user.delete` | Onboard new customer users, reset passwords, update staff contact info, manage the BU roster |
+| Carmen Blue support engineer / customer-side admin | `user.read` + `user.create`/`user.update`/`user.delete` | Onboard new customer users, reset passwords, update staff contact info, manage the BU roster |
 | Read-only auditor | `user.read` only | Browse the list only — the username link targets `/users/:id/edit`, which the `user.update` route guard blocks with `Forbidden` (no read-only detail route exists); Add User, row Edit/Delete, and the Edit toggle do not render |
 
 ## 5. Related Modules

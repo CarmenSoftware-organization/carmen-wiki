@@ -34,7 +34,7 @@ Section 2 ด้านล่างระบุฟิลด์ status จริ�
 ## 3. Index ของ Persona
 
 - [Purchaser](./03-user-flow-purchaser.md) — persona ภายในเดียวที่มี write surface: ดูแล Vendor master data และ Certification master, สร้าง/แก้ Price List Template และ Price List โดยตรง, สร้าง RFQ และส่ง email ลิงก์ให้ vendor แต่ละราย และ activate pricelist `submitted` ที่ vendor ส่งกลับมา (หรือคีย์ sheet จาก email/CSV เข้า)
-- [Vendor](./03-user-flow-vendor.md) — บุคคลภายนอกที่ไม่มี Carmen login เปิดลิงก์ portal จาก email ก่อนหมดอายุ ตั้งราคาสินค้า (tax profile และ order unit ต่อบรรทัด) save, import sheet Excel ถ้าต้องการ และ submit
+- [Vendor](./03-user-flow-vendor.md) — บุคคลภายนอกที่ไม่มี Carmen Blue login เปิดลิงก์ portal จาก email ก่อนหมดอายุ ตั้งราคาสินค้า (tax profile และ order unit ต่อบรรทัด) save, import sheet Excel ถ้าต้องการ และ submit
 
 โน้ต: **Finance** และ **Audit / Config** เคยถูกบันทึกเป็น persona แยกต่างหากใน draft ก่อนหน้า ทั้งสองไม่มีโค้ดตรงกันในโมดูลนี้เลย — ดู [03-user-flow-finance.md](./03-user-flow-finance.md) และ [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) ทั้งสองถูกเขียนใหม่เป็นหน้า correction ในรอบนี้
 
