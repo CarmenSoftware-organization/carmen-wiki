@@ -17,7 +17,7 @@ dateCreated: 2026-06-09T00:00:00.000Z
 
 ## 1. What & Who
 
-The Changelog is a versioned, **public** record of what shipped in the Carmen Platform admin product. A single JSON file (`src/data/changelog.json`) is the source of truth; the React app imports it statically (no runtime fetch) to render the `/changelog` page, and a Node script regenerates a human-readable `CHANGELOG.md` (Keep a Changelog format) at the repo root. `CHANGELOG.md` is **never hand-edited** — edit the JSON.
+The Changelog is a versioned, **public** record of what shipped in the Carmen Blue Platform admin product. A single JSON file (`src/data/changelog.json`) is the source of truth; the React app imports it statically (no runtime fetch) to render the `/changelog` page, and a Node script regenerates a human-readable `CHANGELOG.md` (Keep a Changelog format) at the repo root. `CHANGELOG.md` is **never hand-edited** — edit the JSON.
 
 **Authored by** developers (under the `unreleased` buffer as they work). **Read by** anyone — the page is public.
 

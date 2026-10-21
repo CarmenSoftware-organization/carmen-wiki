@@ -21,7 +21,7 @@ Landing คือจุดเริ่มต้นสำหรับผู้ท
 
 สำหรับผู้เยี่ยมชมที่ signed-out จริง ๆ หน้านี้ render:
 
-- **Header** — สัญลักษณ์ "C" + wordmark "Carmen Platform / Operations console" และปุ่ม **Sign in** ที่ลิงก์ไป `/login`
+- **Header** — สัญลักษณ์ "C" + wordmark "Carmen Blue Platform / Operations console" และปุ่ม **Sign in** ที่ลิงก์ไป `/login`
 - **Hero** — หัวข้อชิดซ้าย ("Run the whole operation from one console.") ข้อความวางตำแหน่งหนึ่งประโยค ปุ่ม call-to-action **Sign in** และลิงก์ข้อความ **"See what's new"** ไป `/changelog` (อีก route สาธารณะเต็มรูปแบบเดียว บันทึกไว้ในหน้าของตัวเอง — [Changelog](/th/platform/changelog))
 - **ดัชนีโมดูล "Inside the console"** — สามกลุ่มของรายการที่ตั้งชื่อ render เป็น list สามคอลัมน์ธรรมดา (ไม่มีลิงก์ — แต่ละรายการเป็นข้อความเฉย ๆ ไม่ใช่ tile ที่ navigate ได้) ดู §3 สำหรับเนื้อหาที่แน่นอนและ §4 สำหรับการเทียบกับ sidebar จริง
 - **Footer** — `VersionBadge` ที่ใช้ร่วมกัน (component เดียวกับที่ footer ของ sidebar ใช้ บันทึกไว้ใน [Changelog](/th/platform/changelog) §3) label environment แบบ optional (`REACT_APP_ENV`) บรรทัด copyright และ build-date stamp แบบ optional (`REACT_APP_BUILD_DATE`)

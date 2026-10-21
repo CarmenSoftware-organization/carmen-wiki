@@ -30,7 +30,7 @@ All three purchase-form routes' `:id/edit` variants are guarded by `subscription
 
 ## 2. Business Context
 
-Carmen sells hospitality customers a cluster of business units, and that commercial relationship has four independently-purchasable dimensions:
+Carmen Blue sells hospitality customers a cluster of business units, and that commercial relationship has four independently-purchasable dimensions:
 
 1. **How many business units a cluster may create** — a cluster-level quota, purchased as a `tb_cluster_license` row and consumed by [Clusters](/en/platform/clusters)' create/edit screens.
 2. **How many user seats a business unit may fill** — a per-BU quota, purchased as a `tb_business_unit_license` row and consumed by [Business Units](/en/platform/business-units)' Users tab.
