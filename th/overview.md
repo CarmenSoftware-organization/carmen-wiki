@@ -242,6 +242,6 @@ graph LR
 ## 7. อ่านต่อ
 
 - [Carmen Blue book](/th/inventory) — คู่มือรายโมดูลของคลังสินค้า จัดซื้อ และต้นทุน
-- [Carmen Blue Platform book](/th/platform) — cluster, business unit, ผู้ใช้, RBAC และ report template
+- [Carmen Blue Backstage book](/th/platform) — cluster, business unit, ผู้ใช้, RBAC และ report template
 - [Costing](/th/inventory/costing) — วิธีคำนวณ cost layer แบบ FIFO และ weighted average
 - [Access Control](/th/inventory/access-control) — permission ทำงานอย่างไรภายใน business unit

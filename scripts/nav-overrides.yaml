@@ -96,8 +96,8 @@ books:
             label_th: "Templates"
 
   platform:
-    label_en: "Carmen Blue Platform"
-    label_th: "Carmen Blue Platform"
+    label_en: "Carmen Blue Backstage"
+    label_th: "Carmen Blue Backstage"
     groups:
       # Groups below mirror the SPA's own eight nav-group sections as
       # documented on en/platform.md (Task 29 rebuild), which in turn mirror

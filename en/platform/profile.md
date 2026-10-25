@@ -17,7 +17,7 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 ## 1. Overview
 
-Profile is the personal-account page of the Carmen Blue Platform admin product. Every authenticated user reaches it from the avatar menu at the bottom of the sidebar — there is no top-level navigation entry for `/profile`. The page shows the user's current identity (alias name, first/middle/last name, telephone, email, account ID, member-since date) and, in a separate read-only card, the list of business units assigned to that account. The Profile Overview card renders a small role badge only when the API response carries a `role` string; the legacy `platform_role` display was removed when the SPA moved to permission-based RBAC ([rbac](/en/platform/rbac)).
+Profile is the personal-account page of the Carmen Blue Backstage admin product. Every authenticated user reaches it from the avatar menu at the bottom of the sidebar — there is no top-level navigation entry for `/profile`. The page shows the user's current identity (alias name, first/middle/last name, telephone, email, account ID, member-since date) and, in a separate read-only card, the list of business units assigned to that account. The Profile Overview card renders a small role badge only when the API response carries a `role` string; the legacy `platform_role` display was removed when the SPA moved to permission-based RBAC ([rbac](/en/platform/rbac)).
 
 Two write operations are supported, both sent as `PATCH /api/user/profile`. The first edits the identity fields — alias name, first name, middle name, last name, telephone; the Profile Information card opens read-only and an **Edit** button switches it into edit mode (with a Save Changes / Cancel pair and an unsaved-changes guard). Email cannot be changed from this page. The second changes the account password through a **Change Password** modal dialog that requires the current password plus a new password of at least six characters and a matching confirmation. Saving an identity edit re-fetches the profile and refreshes the local auth context, so the sidebar avatar and display name update immediately. Password changes do not refresh the auth context — the dialog just closes on success.
 
@@ -35,7 +35,7 @@ What *does* differ is the chrome each `Shell` supplies:
 |---|---|---|
 | Route guard | Bare `<PrivateRoute>` — no `requiredPermission`, no `feature` (§4) | `<ClusterAdminRoute>` — no `feature` prop passed, so no feature gate; requires `isClusterAdminOf(clusterId)` (§4) |
 | Sidebar nav | The full platform nav (`buildPlatformNav()`), if the session has platform authority | The cluster-admin nav (`buildClusterAdminNav()`), scoped to that one cluster |
-| Brand identity | "Carmen Blue Platform" product brand | The administered cluster's own name/code/logo |
+| Brand identity | "Carmen Blue Backstage" product brand | The administered cluster's own name/code/logo |
 | Brand-mark destination | `/dashboard` | `/cluster-admin/:clusterId/cluster` |
 | Header extra | none | A `ClusterSwitcher` for jumping to another administered cluster |
 

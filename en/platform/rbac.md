@@ -10,7 +10,7 @@ dateCreated: 2026-06-10T12:00:00.000Z
 
 # Platform RBAC
 
-The **Platform RBAC** module is the access-control system of the Carmen Blue Platform admin SPA. It replaces the legacy single-value role enum with a permission-based model: a backend-owned **permission catalog** defines `resource.action` keys, **roles** bundle those keys, **assignments** bind a role to a user at platform-wide or per-cluster scope, and a separate **super-admin flag** bypasses every check. Every route guard, sidebar entry, and in-page action gate in the SPA resolves against this system.
+The **Platform RBAC** module is the access-control system of the Carmen Blue Backstage admin SPA. It replaces the legacy single-value role enum with a permission-based model: a backend-owned **permission catalog** defines `resource.action` keys, **roles** bundle those keys, **assignments** bind a role to a user at platform-wide or per-cluster scope, and a separate **super-admin flag** bypasses every check. Every route guard, sidebar entry, and in-page action gate in the SPA resolves against this system.
 
 > **Permission key, feature key, superAdminOnly** (`src/components/nav/platformNav.ts`): the **Platform Roles** nav row (labelled "Platform Roles", not "Roles") carries `permission: 'platform_role.read'`, `feature: 'platform_roles'`, no `superAdminOnly`. Permission Catalog has **no nav row at all** — see §1.
 

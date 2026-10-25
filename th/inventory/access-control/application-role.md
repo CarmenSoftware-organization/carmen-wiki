@@ -27,7 +27,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 1. คืออะไรและใครใช้
 
-Application role คือ **bundle ที่ตั้งชื่อแล้วของ [access-control/permission](/th/inventory/access-control/permission)** ที่มอบให้ผู้ใช้ภายใน [master-data/business-unit](/th/inventory/master-data/business-unit) เป็นเลเยอร์การอนุญาตฝั่ง tenant แบบละเอียดที่ควบคุม *สิ่งที่ผู้ใช้แต่ละคนทำได้ในแต่ละ BU* แยกจาก role ระดับ platform (`tb_platform_role` ระบบ relational ที่ scope ตาม cluster แยกต่างหาก เป็นของ Carmen Blue Platform admin — ดูหัวข้อกรณีพิเศษใน [access-control/user](/th/inventory/access-control/user); คอลัมน์ enum `tb_user.platform_role` เดิมที่ระบบนี้มาแทนถูกลบไปแล้วเมื่อ 2026-06-10) ทุก action UI ธุรกรรม — submit PR, อนุมัติ GRN, post adjustment — ถูก gate โดยการตรวจสอบว่า user ที่ active ถือ application role ที่รวม atom permission ที่ตรงกับ BU ที่ active หรือไม่
+Application role คือ **bundle ที่ตั้งชื่อแล้วของ [access-control/permission](/th/inventory/access-control/permission)** ที่มอบให้ผู้ใช้ภายใน [master-data/business-unit](/th/inventory/master-data/business-unit) เป็นเลเยอร์การอนุญาตฝั่ง tenant แบบละเอียดที่ควบคุม *สิ่งที่ผู้ใช้แต่ละคนทำได้ในแต่ละ BU* แยกจาก role ระดับ platform (`tb_platform_role` ระบบ relational ที่ scope ตาม cluster แยกต่างหาก เป็นของ Carmen Blue Backstage admin — ดูหัวข้อกรณีพิเศษใน [access-control/user](/th/inventory/access-control/user); คอลัมน์ enum `tb_user.platform_role` เดิมที่ระบบนี้มาแทนถูกลบไปแล้วเมื่อ 2026-06-10) ทุก action UI ธุรกรรม — submit PR, อนุมัติ GRN, post adjustment — ถูก gate โดยการตรวจสอบว่า user ที่ active ถือ application role ที่รวม atom permission ที่ตรงกับ BU ที่ active หรือไม่
 
 **บำรุงรักษาโดย** Sysadmin (ต่อ BU) **อ่านโดย** ทุก API endpoint ตอน request time
 
