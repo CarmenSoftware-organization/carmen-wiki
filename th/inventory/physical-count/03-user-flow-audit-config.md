@@ -19,7 +19,7 @@ Draft ก่อนหน้าของโมดูลวิกินี้อ�
 
 ## 2. สิ่งที่ Source แสดงจริง
 
-การค้นแบบตรงเป้าหมายในทั้ง frontend (`../carmen-inventory-frontend-react/`), backend (`../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count*`), และ Bruno API collection (`../carmen-turborepo-backend-bruno/collections/carmen-inventory/inventory/physical-count*`) ไม่พบ route, permission key, workflow stage หรือหน้าจอ configuration ใดที่ตรงกับสาม sub-role ที่อ้างไว้เลย
+การค้นแบบตรงเป้าหมายในทั้ง frontend (`../carmen-frontend/`), backend (`../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count*`), และ Bruno API collection (`../carmen-turborepo-backend-bruno/collections/carmen-inventory/inventory/physical-count*`) ไม่พบ route, permission key, workflow stage หรือหน้าจอ configuration ใดที่ตรงกับสาม sub-role ที่อ้างไว้เลย
 
 | Claim | Status | Source แสดงอย่างไร |
 |---|---|---|
@@ -37,7 +37,7 @@ Draft ก่อนหน้าของโมดูลวิกินี้อ�
 
 ## 4. แหล่งอ้างอิง
 
-- **Frontend:** `../carmen-inventory-frontend-react/constant/permissions.ts`; `routes/inventory-management/physical-count/`
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts`
+- **Frontend:** `../carmen-frontend/constant/permissions.ts`; `routes/inventory-management/physical-count/`
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts`
 - **API contracts:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/inventory/physical-count*/`
 - ที่เกี่ยวข้อง: [physical-count/03-user-flow](/th/inventory/physical-count/03-user-flow) (overview), [physical-count/04-test-scenarios-audit-config](/th/inventory/physical-count/04-test-scenarios-audit-config) (หน้า correction คู่ขนานฝั่ง test-scenarios)

@@ -18,8 +18,8 @@ dateCreated: 2026-05-15T12:00:00.000Z
 
 Draft ก่อนหน้าอธิบาย persona Finance Officer / Finance Manager ที่มีสี่สายงาน: cost-impact approval queue สำหรับ adjustment ที่เกิน threshold, inventory-to-GL reconciliation dashboard รายสัปดาห์, flow การ orchestrate ปิดงวดพร้อม reconciliation journal และความก้าวหน้าของ period-lock แบบ `closed → locked` การตรวจสอบเทียบกับ source ปัจจุบันไม่พบสิ่งใดเลย:
 
-- **ไม่มี Finance role อยู่จริง** `enum_stage_role` (Prisma tenant schema) คือ `{create, approve, purchase, issue, view_only}` — ไม่มี member `finance` และ permission catalogue (`carmen-inventory-frontend-react/constant/permissions.ts`) ไม่มี key ที่ scope ให้ finance
-- **ไม่มีโค้ด inventory-to-GL อยู่จริง** แกน GL มาถึงในเดือน 2026-09 (ตาราง `tb_gl_jv*`, `apps/micro-business/src/gl/`, manual journal voucher ใต้ `/api/{bu}/gl-posting`) แต่การค้นหาทั่ว repo `carmen-turborepo-backend-v2` สำหรับการ post journal/GL *จาก inventory movement* ยังไม่พบสิ่งใด — ทั้งสองโมดูลไม่อ้างอิงถึงกัน (ดู [01-data-model](/th/inventory/inventory/01-data-model) § 1) ไม่มี reconciliation dashboard, tolerance หรือกลไก compensating-journal
+- **ไม่มี Finance role อยู่จริง** `enum_stage_role` (Prisma tenant schema) คือ `{create, approve, purchase, issue, view_only}` — ไม่มี member `finance` และ permission catalogue (`carmen-frontend/constant/permissions.ts`) ไม่มี key ที่ scope ให้ finance
+- **ไม่มีโค้ด inventory-to-GL อยู่จริง** แกน GL มาถึงในเดือน 2026-09 (ตาราง `tb_gl_jv*`, `apps/micro-business/src/gl/`, manual journal voucher ใต้ `/api/{bu}/gl-posting`) แต่การค้นหาทั่ว repo `carmen-turborepo-backend` สำหรับการ post journal/GL *จาก inventory movement* ยังไม่พบสิ่งใด — ทั้งสองโมดูลไม่อ้างอิงถึงกัน (ดู [01-data-model](/th/inventory/inventory/01-data-model) § 1) ไม่มี reconciliation dashboard, tolerance หรือกลไก compensating-journal
 - **ไม่มี approval chain แบบอิง threshold อยู่จริง** พบ `threshold` ศูนย์รายการใน service ของ inventory / stock-in / stock-out / period-end (ดูการแก้ไขใน [02-business-rules](/th/inventory/inventory/02-business-rules) § 4)
 - **ไม่มี flow lock/reopen ในโมดูลนี้** `period-end.controller.ts` expose เพียง `find-all` / `find-current` / `find-review` / `start-counting` / `close`; `enum_period_status.locked` ถูก set โดย inventory-period service (`/api/{bu}/inventory-periods`) หลัง [system-config/period](/th/inventory/system-config/period)
 
@@ -36,6 +36,6 @@ Draft ก่อนหน้าอธิบาย persona Finance Officer / Finan
 
 ## 3. แหล่งอ้างอิง
 
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/period-end/period-end.controller.ts` (endpoint surface ที่ครบถ้วน), `.../inventory-transaction/inventory-transaction.service.ts` (ไม่มี GL fan-out)
-- Frontend: `../carmen-inventory-frontend-react/constant/permissions.ts` (`inventory_management.period_end.view` / `.execute`)
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/period-end/period-end.controller.ts` (endpoint surface ที่ครบถ้วน), `.../inventory-transaction/inventory-transaction.service.ts` (ไม่มี GL fan-out)
+- Frontend: `../carmen-frontend/constant/permissions.ts` (`inventory_management.period_end.view` / `.execute`)
 - ภาพรวม parent: [03-user-flow](/th/inventory/inventory/03-user-flow)

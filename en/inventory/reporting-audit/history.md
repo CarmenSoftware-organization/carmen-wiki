@@ -22,7 +22,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 - **"Run a report" on the report list** (`report-component.tsx` → `useRunReportMutation` → `POST /reports/viewer`) calls the `viewReport` handler, which mints a viewer URL directly and returns it — it never calls `ReportJobRepo.Create`.
 - **Every "Print" button** (`lib/print-document.ts`'s `printDocument()`) resolves a print-template mapping and then calls the same `POST .../report/viewer` endpoint — also no job row.
 - **Scheduled report fires** (see [reporting-audit/schedule](/en/inventory/reporting-audit/schedule)) always deliver via `format: "viewer_url"` from the current create-schedule UI, which the executor dispatches through `executeViewerURL()` — again, no job row. Only the executor's legacy `executeFile()` branch (unreachable from the current UI) calls `POST .../report/generate-async`, the one endpoint that does write `tb_report_job`.
-- A repo-wide search of the frontend confirmed **zero callers of `generate-async`, `generateAsync`, or `job-status`/`jobStatus`** anywhere in `carmen-inventory-frontend-react`.
+- A repo-wide search of the frontend confirmed **zero callers of `generate-async`, `generateAsync`, or `job-status`/`jobStatus`** anywhere in `carmen-frontend`.
 
 **Re-verified 2026-09-22:** still zero frontend callers of `generate-async` / `job-status` (`routes`, `hooks`, `lib`, `constant` searched at HEAD); the gateway keeps `POST .../reports/generate-async` and `GET .../reports/jobs/:job_id` (Bruno `documents-and-reports/report/GET-get-job-status-…bru`, `GET-get-history-…bru`). Cosmetic change only: the status column is now an icon + badge (`73499174`), and the hook moved to `routes/report/history/use-report-history.ts` (2026-08-28).
 
@@ -98,9 +98,9 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 
 ## 8. References
 
-- **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_report_job` (line ~6094), `enum_report_job_status` (line ~6086), `enum_report_format` (line ~6070), `enum_report_category` (line ~6077).
+- **Prisma tenant:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_report_job` (line ~6094), `enum_report_job_status` (line ~6086), `enum_report_format` (line ~6070), `enum_report_category` (line ~6077).
 - **Backend (real, but only reachable via the unreached legacy path):** `../micro-report/controller/report_controller.go` (`generateAsync`, `jobStatus`, `history` handlers), `../micro-report/db/report_job_repo.go`, `../micro-report/model/job.go`.
 - **Backend (the paths actually used — no job row):** `../micro-report/controller/report_controller.go`'s `viewReport` handler.
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/report/history/report-history.route.tsx`, `history-component.tsx`, `use-history-table.tsx`.
-- **Frontend hook:** `../carmen-inventory-frontend-react/routes/report/history/use-report-history.ts` — `useReportHistory` (list only; no re-run/detail hook exists; moved out of `hooks/` on 2026-08-28).
+- **Frontend route:** `../carmen-frontend/routes/report/history/report-history.route.tsx`, `history-component.tsx`, `use-history-table.tsx`.
+- **Frontend hook:** `../carmen-frontend/routes/report/history/use-report-history.ts` — `useReportHistory` (list only; no re-run/detail hook exists; moved out of `hooks/` on 2026-08-28).
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/documents-and-reports/report/GET-get-history-documents-and-reports-report.bru`, `GET-get-job-status-documents-and-reports-report.bru`.

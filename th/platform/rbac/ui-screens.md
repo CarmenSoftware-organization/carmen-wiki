@@ -21,11 +21,11 @@ dateCreated: 2026-06-10T15:00:00.000Z
 
 ## 1. ภาพรวม
 
-**Roles** ทำตามรูปแบบ Management/Edit มาตรฐานของ Platform SPA: list แบบ `DataTable` ฝั่ง server พร้อมการค้นหาแบบ debounce, filter แบบ Sheet, ส่งออก CSV, แถบสรุป `RolesAccessSummary` รวมถึงหน้า create/view/edit ที่นำด้วยการ์ด `RoleIdentityHero` **permission key เปลี่ยนจาก `role.*` เป็น `platform_role.*` และ route ของ Permission Catalog ย้ายไปเป็น `/platform/category-permissions` เมื่อ 2026-08-20** (`carmen-platform` commit `8df0b10`) — ดู[หน้า landing ของโมดูล](/th/platform/rbac) และ [Permissions](/th/platform/rbac/permissions) สำหรับการเปลี่ยนชื่อฉบับเต็ม
+**Roles** ทำตามรูปแบบ Management/Edit มาตรฐานของ Platform SPA: list แบบ `DataTable` ฝั่ง server พร้อมการค้นหาแบบ debounce, filter แบบ Sheet, ส่งออก CSV, แถบสรุป `RolesAccessSummary` รวมถึงหน้า create/view/edit ที่นำด้วยการ์ด `RoleIdentityHero` **permission key เปลี่ยนจาก `role.*` เป็น `platform_role.*` และ route ของ Permission Catalog ย้ายไปเป็น `/platform/category-permissions` เมื่อ 2026-08-20** (`carmen-backstage` commit `8df0b10`) — ดู[หน้า landing ของโมดูล](/th/platform/rbac) และ [Permissions](/th/platform/rbac/permissions) สำหรับการเปลี่ยนชื่อฉบับเต็ม
 
 **Permission Catalog** เป็นหน้าอ้างอิงแบบ read-only: grid ของ card แบบ responsive จัดกลุ่มตาม resource ไม่มีตาราง ไม่มี mutation เข้าถึงได้จากปุ่ม header บนหน้า list ของ Roles เท่านั้น ไม่มีรายการ sidebar และ — ต่างจากทุกหน้าจอในโมดูลนี้ — **ไม่มี permission gate ที่ระดับ route ของ SPA เลย** ผู้ใช้ platform ที่ login แล้วคนใดก็นำทางไปหน้านี้ได้โดยตรง การดึงข้อมูลของหน้ายังคงถูกบังคับที่ฝั่ง backend ด้วย `platform_role.read` (§3)
 
-**User Platform** และ **Super Admins** สรุปไว้ใน §4/§5 ตามหมายเหตุขอบเขตข้างบน ทั้งคู่ผ่านการเขียนใหม่ต่ออีกครั้งตั้งแต่ sync ครั้งก่อน (`carmen-platform` PR #244/#250/#251 ทั้งหมดเมื่อ 2026-09-02) ที่ไม่ได้ตรวจสอบบรรทัดต่อบรรทัดในหน้านี้
+**User Platform** และ **Super Admins** สรุปไว้ใน §4/§5 ตามหมายเหตุขอบเขตข้างบน ทั้งคู่ผ่านการเขียนใหม่ต่ออีกครั้งตั้งแต่ sync ครั้งก่อน (`carmen-backstage` PR #244/#250/#251 ทั้งหมดเมื่อ 2026-09-02) ที่ไม่ได้ตรวจสอบบรรทัดต่อบรรทัดในหน้านี้
 
 ทั้งหกหน้าจอมาพร้อม **Debug Sheet** เฉพาะ dev ของ SPA — ปุ่มลอยสีเหลืองอำพัน (มุมขวาล่าง) ที่เปิด JSON ดิบของ API response ของหน้าจอนั้น (เฉพาะ `import.meta.env.DEV` ไม่มีใน production build) บน `RoleEdit` มีสอง tab คือ Role และ Catalog เปิดเผย payload ของทั้งสอง endpoint — เป็นวิธีที่เร็วที่สุดสำหรับ QA ในการตรวจสอบการซ้อนของ envelope และ shape ของ audit จริง ๆ ตามที่อธิบายด้านล่าง
 
@@ -35,7 +35,7 @@ dateCreated: 2026-06-10T15:00:00.000Z
 
 แถว header: title "Roles" / subtitle "Manage platform roles and their permissions" และ header action สามตัวจากซ้ายไปขวา — **Permission Catalog** (นำทางไป `/platform/category-permissions`), **Export** (CSV ฝั่ง client ของหน้าที่โหลดอยู่: Name, Description, Permissions, Active, Created At/By, Updated At/By — ผ่าน `auditCsvFields(normalizeAudit(r))`; ไฟล์ `roles-<YYYY-MM-DD>.csv`; disable ขณะกำลังโหลดหรือว่างเปล่า) และ **Add Role** (นำทางไป `/platform/roles/new`, ห่อด้วย `<Can permission="platform_role.create">`)
 
-ใต้ header มีแถบ **`RolesAccessSummary`** (`roleManagement/RolesAccessSummary.tsx`) ดึงจาก endpoint เฉพาะทาง `GET /api-system/platform/roles/summary` (`roleService.getAccessSummary()` — ทั้งระบบ ไม่สนใจ search/filter ของตาราง คงตัวเลขล่าสุดไว้และหรี่ตัวเองเมื่อ refresh ล้มเหลวแทนที่จะว่างเปล่า) แสดงจำนวน role รวมพร้อม breakdown active/inactive/**deleted** (จำนวนที่ถูก soft-delete เป็นข้อมูลใหม่ที่มีในระบบแต่ไม่เคยแสดงมาก่อน) บวกสาม role ที่มีขอบเขต permission กว้างที่สุด **ตั้งแต่ 2026-09-02 (`carmen-platform` PR #252) แท่ง "broadest roles" วัดเทียบกับขนาดของ permission catalog ไม่ใช่เทียบกับ role ที่กว้างที่สุดในสามตัวที่แสดง** — role ที่มอบ permission ครบทุกตัวใน catalog จะได้แท่งสีอำพันพร้อมไอคอนเตือน (ตรงกับถ้อยคำ "Full access" ของ `RoleIdentityHero`) และหัวข้อของ section จะระบุ "of `N`" เมื่อทราบขนาด catalog แล้ว; ถ้าไม่ทราบ (catalog กำลังโหลดหรือล้มเหลว) แท่งจะถูกตัดออกทั้งหมดแทนที่จะวาดเทียบตัวหารที่ไม่มีความหมาย
+ใต้ header มีแถบ **`RolesAccessSummary`** (`roleManagement/RolesAccessSummary.tsx`) ดึงจาก endpoint เฉพาะทาง `GET /api-system/platform/roles/summary` (`roleService.getAccessSummary()` — ทั้งระบบ ไม่สนใจ search/filter ของตาราง คงตัวเลขล่าสุดไว้และหรี่ตัวเองเมื่อ refresh ล้มเหลวแทนที่จะว่างเปล่า) แสดงจำนวน role รวมพร้อม breakdown active/inactive/**deleted** (จำนวนที่ถูก soft-delete เป็นข้อมูลใหม่ที่มีในระบบแต่ไม่เคยแสดงมาก่อน) บวกสาม role ที่มีขอบเขต permission กว้างที่สุด **ตั้งแต่ 2026-09-02 (`carmen-backstage` PR #252) แท่ง "broadest roles" วัดเทียบกับขนาดของ permission catalog ไม่ใช่เทียบกับ role ที่กว้างที่สุดในสามตัวที่แสดง** — role ที่มอบ permission ครบทุกตัวใน catalog จะได้แท่งสีอำพันพร้อมไอคอนเตือน (ตรงกับถ้อยคำ "Full access" ของ `RoleIdentityHero`) และหัวข้อของ section จะระบุ "of `N`" เมื่อทราบขนาด catalog แล้ว; ถ้าไม่ทราบ (catalog กำลังโหลดหรือล้มเหลว) แท่งจะถูกตัดออกทั้งหมดแทนที่จะวาดเทียบตัวหารที่ไม่มีความหมาย
 
 ด้านล่างคือแถวค้นหาและ filter มาตรฐาน: input ค้นหาแบบ debounce (400 ms) เหนือ `name`/`description` และ Sheet **Filters** ที่มีกลุ่ม Status กลุ่มเดียว (ปุ่ม toggle Active / Inactive → query `advance` `{ where: { is_active } }` เมื่อเลือกเพียงค่าเดียว) chip ของ filter ที่ active แสดงใต้แถวค้นหา
 
@@ -69,7 +69,7 @@ dateCreated: 2026-06-10T15:00:00.000Z
 - **โหมด create หรือขณะแก้ไข:** hero กลับไปใช้ `permissionSummary()` แบบง่ายของตัวเอง — "No permissions granted yet" หรือ "`N` permission(s) across `M` resource(s)" — คำนวณใหม่แบบ live ตาม toggle ที่เปลี่ยน
 - **ทั้งสองโหมด เมื่อจำนวน key ที่มอบให้ role ถึงขนาดของ catalog:** ทั้งสองรูปแบบถูกแทนที่ด้วย "Full access to every permission" สีอำพันพร้อมสามเหลี่ยมเตือน — สถานะที่ audit-worthy ที่สุด จึงชนะเสมอ
 
-ใต้ hero ฟอร์มเป็น grid สองคอลัมน์ **เฉพาะขณะแก้ไขเท่านั้น** (`lg:grid-cols-[1fr_minmax(300px,340px)]`); ในโหมด view จะยุบเหลือคอลัมน์เดียว **Permissions** เป็นการ์ดซ้าย/กว้างในทั้งสองโหมด เป็นที่อยู่ของ `PermissionGrid` (§2.6) **Settings** — `name` (จำเป็น), `description` (textarea) และ checkbox/badge `is_active` — เป็น rail ขวา/แคบแบบ sticky แต่ **ตั้งแต่ 2026-09-02 (`carmen-platform` PR #253) แสดงเฉพาะขณะแก้ไขเท่านั้น**: ในโหมด view ไม่มีการ์ด "Settings" หรือ "Role Details" แยกต่างหากอีกต่อไป เพราะสองข้อเท็จจริงที่มันเคยซ้ำ (ชื่อเป็น `<h1>`, สถานะเป็น badge) อยู่ใน hero อยู่แล้ว และข้อเท็จจริงเดียวที่มันถืออยู่คนเดียว (description) ก็ย้ายไปที่ hero ด้วย รูปแบบนี้คือ pattern เดียวกับที่โมดูล `users` เจอ — การ์ด detail ของโหมด read ถูกดูดซับเข้า identity hero
+ใต้ hero ฟอร์มเป็น grid สองคอลัมน์ **เฉพาะขณะแก้ไขเท่านั้น** (`lg:grid-cols-[1fr_minmax(300px,340px)]`); ในโหมด view จะยุบเหลือคอลัมน์เดียว **Permissions** เป็นการ์ดซ้าย/กว้างในทั้งสองโหมด เป็นที่อยู่ของ `PermissionGrid` (§2.6) **Settings** — `name` (จำเป็น), `description` (textarea) และ checkbox/badge `is_active` — เป็น rail ขวา/แคบแบบ sticky แต่ **ตั้งแต่ 2026-09-02 (`carmen-backstage` PR #253) แสดงเฉพาะขณะแก้ไขเท่านั้น**: ในโหมด view ไม่มีการ์ด "Settings" หรือ "Role Details" แยกต่างหากอีกต่อไป เพราะสองข้อเท็จจริงที่มันเคยซ้ำ (ชื่อเป็น `<h1>`, สถานะเป็น badge) อยู่ใน hero อยู่แล้ว และข้อเท็จจริงเดียวที่มันถืออยู่คนเดียว (description) ก็ย้ายไปที่ hero ด้วย รูปแบบนี้คือ pattern เดียวกับที่โมดูล `users` เจอ — การ์ด detail ของโหมด read ถูกดูดซับเข้า identity hero
 
 ### 2.3 `RoleEdit` — โหมด create (`/platform/roles/new`)
 
@@ -87,7 +87,7 @@ Title มาจาก hero (ชื่อว่างแสดง "(unnamed role)
 
 Render เฉพาะขณะ `editing = true` ตาม pattern เดียวกับ clusters/business-units/users/applications/report-templates: bar แบบ `fixed bottom-0` มีตัวบ่งชี้การเปลี่ยนแปลงที่ยังไม่บันทึก (จุดสีอำพันกระพริบ + "Unsaved changes" หรือ "No changes" ด้วยข้อความสีจาง) ทางซ้าย และ **Cancel** (ซ่อนในโหมด create; disable ขณะบันทึก) + **Create Role**/**Save Changes** (disable ขณะบันทึก หรือในโหมด edit เมื่อไม่มีการเปลี่ยนแปลง) ทางขวา
 
-### 2.6 `PermissionGrid` (แทนที่ accordion `PermissionPicker` เมื่อ 2026-08-20, `carmen-platform` commit `42eeafe`)
+### 2.6 `PermissionGrid` (แทนที่ accordion `PermissionPicker` เมื่อ 2026-08-20, `carmen-backstage` commit `42eeafe`)
 
 `roleEdit/PermissionGrid.tsx` คือ component เดียวที่ทั้งสองโหมดใช้ร่วมกัน — read และ edit render เหมือนกันทุกประการยกเว้น affordance ดังนั้นการกด Edit จะไม่ขยับอะไรบนหน้าจอเลย แถวเรียงหนึ่งต่อ `resource` ตามลำดับ `resourceRank()` (ลำดับที่ derive จาก nav ของ `platformNav.ts` — ดู [Permissions](/th/platform/rbac/permissions)); ภายในแถว action เรียงตาม `actionRank()` (`utils/permissionOrder.ts`: `['read', 'create', 'update', 'delete', 'manage']` verb ที่ไม่อยู่ในรายการเรียงท้ายสุดตามลำดับ catalog) แทนที่จะเป็นลำดับตัวอักษรของ catalog เอง ซึ่งจะทำให้ `create`/`delete` มาก่อน `read`
 
@@ -121,20 +121,20 @@ response ของ list ยังคงซ้อน envelope `{ data }` หล�
 
 ## 6. แหล่งข้อมูลอ้างอิง
 
-- `../carmen-platform/src/App.tsx` — การลงทะเบียน route ของสี่ route Roles/Permission-Catalog (บรรทัด 402–432 รวม `<PrivateRoute>` เปล่า ๆ ของ `/platform/category-permissions`); route ของ User Platform และ Super Admins อยู่ที่อื่นในไฟล์เดียวกัน
-- `../carmen-platform/src/pages/RoleManagement.tsx` — คอลัมน์ของ list (name+description รวมกัน, `RoleReachCell`), gate ด้วยคีย์ `platform_role.*`, ส่งออก CSV รวม audit, key ที่จดจำไว้
-- `../carmen-platform/src/pages/roleManagement/RolesAccessSummary.tsx`, `.../RoleReachCell.tsx` — แถบสรุปและแท่งของ cell ที่วัดเทียบ catalog (2026-09-02)
-- `../carmen-platform/src/pages/RoleEdit.tsx` — เลย์เอาต์ hero + `PermissionGrid` (rail ของ Settings เฉพาะโหมดแก้ไข), not-found gating, `doc_version`, การ fallback audit จาก list endpoint (`fetchAudit`), การคำนวณ permission delta (`handleSubmit`)
-- `../carmen-platform/src/pages/roleEdit/RoleIdentityHero.tsx` — การ์ด hero, ข้อความสรุป `permissionSummary()` และบรรทัด audit-actor
-- `../carmen-platform/src/pages/roleEdit/PermissionGrid.tsx` — grid มอบสิทธิ์แบบแถวต่อ resource (แทนที่ `PermissionPicker` เมื่อ 2026-08-20, `42eeafe`; component accordion เดิมไม่มีอยู่แล้ว)
-- `../carmen-platform/src/utils/permissionOrder.ts` — `ACTION_ORDER`/`actionRank()`
-- `../carmen-platform/src/components/nav/platformNav.ts` — `resourceRank()`/`NAV_RESOURCE_ORDER` ที่ `RoleEdit.tsx` ใช้
-- `../carmen-platform/src/pages/PermissionCatalog.tsx` — grid card ของ resource แบบ read-only, บรรทัด audit ต่อ item
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform-permissions/platform-permissions.controller.ts` — การบังคับ `platform_role.read` บน endpoint ของ catalog
-- `../carmen-platform/src/pages/SuperAdminManagement.tsx` — การเขียนใหม่เป็นทะเบียนแบบการ์ด (2026-09-02, `#244`), การไล่ลง envelope ด้วย `extractArray`, self-removal guard, typeahead `UserPicker`
-- `../carmen-platform/src/components/UserPicker.tsx` — typeahead ของผู้ใช้ฝั่ง server ที่ dialog Add ของ Super Admins ใช้
-- `../carmen-platform/src/pages/UserPlatformManagement.tsx`, `.../UserPlatformEdit.tsx` — การเขียนใหม่เป็นทะเบียนสิทธิ์ (2026-09-02, `#250`/`#251`); ไม่ได้ตรวจสอบบรรทัดต่อบรรทัดในหน้านี้ (ดูหมายเหตุขอบเขตใน §1)
-- `../carmen-platform/src/components/Can.tsx` — wrapper สำหรับ render ที่ gate ด้วย permission
-- `../carmen-platform/src/pages/Forbidden.tsx` — หน้า 403 render เมื่อ route guard ไม่ผ่าน (ดู [Permissions](/th/platform/rbac/permissions))
+- `../carmen-backstage/src/App.tsx` — การลงทะเบียน route ของสี่ route Roles/Permission-Catalog (บรรทัด 402–432 รวม `<PrivateRoute>` เปล่า ๆ ของ `/platform/category-permissions`); route ของ User Platform และ Super Admins อยู่ที่อื่นในไฟล์เดียวกัน
+- `../carmen-backstage/src/pages/RoleManagement.tsx` — คอลัมน์ของ list (name+description รวมกัน, `RoleReachCell`), gate ด้วยคีย์ `platform_role.*`, ส่งออก CSV รวม audit, key ที่จดจำไว้
+- `../carmen-backstage/src/pages/roleManagement/RolesAccessSummary.tsx`, `.../RoleReachCell.tsx` — แถบสรุปและแท่งของ cell ที่วัดเทียบ catalog (2026-09-02)
+- `../carmen-backstage/src/pages/RoleEdit.tsx` — เลย์เอาต์ hero + `PermissionGrid` (rail ของ Settings เฉพาะโหมดแก้ไข), not-found gating, `doc_version`, การ fallback audit จาก list endpoint (`fetchAudit`), การคำนวณ permission delta (`handleSubmit`)
+- `../carmen-backstage/src/pages/roleEdit/RoleIdentityHero.tsx` — การ์ด hero, ข้อความสรุป `permissionSummary()` และบรรทัด audit-actor
+- `../carmen-backstage/src/pages/roleEdit/PermissionGrid.tsx` — grid มอบสิทธิ์แบบแถวต่อ resource (แทนที่ `PermissionPicker` เมื่อ 2026-08-20, `42eeafe`; component accordion เดิมไม่มีอยู่แล้ว)
+- `../carmen-backstage/src/utils/permissionOrder.ts` — `ACTION_ORDER`/`actionRank()`
+- `../carmen-backstage/src/components/nav/platformNav.ts` — `resourceRank()`/`NAV_RESOURCE_ORDER` ที่ `RoleEdit.tsx` ใช้
+- `../carmen-backstage/src/pages/PermissionCatalog.tsx` — grid card ของ resource แบบ read-only, บรรทัด audit ต่อ item
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform-permissions/platform-permissions.controller.ts` — การบังคับ `platform_role.read` บน endpoint ของ catalog
+- `../carmen-backstage/src/pages/SuperAdminManagement.tsx` — การเขียนใหม่เป็นทะเบียนแบบการ์ด (2026-09-02, `#244`), การไล่ลง envelope ด้วย `extractArray`, self-removal guard, typeahead `UserPicker`
+- `../carmen-backstage/src/components/UserPicker.tsx` — typeahead ของผู้ใช้ฝั่ง server ที่ dialog Add ของ Super Admins ใช้
+- `../carmen-backstage/src/pages/UserPlatformManagement.tsx`, `.../UserPlatformEdit.tsx` — การเขียนใหม่เป็นทะเบียนสิทธิ์ (2026-09-02, `#250`/`#251`); ไม่ได้ตรวจสอบบรรทัดต่อบรรทัดในหน้านี้ (ดูหมายเหตุขอบเขตใน §1)
+- `../carmen-backstage/src/components/Can.tsx` — wrapper สำหรับ render ที่ gate ด้วย permission
+- `../carmen-backstage/src/pages/Forbidden.tsx` — หน้า 403 render เมื่อ route guard ไม่ผ่าน (ดู [Permissions](/th/platform/rbac/permissions))
 
 **Cross-link:** [หน้า landing ของ Platform RBAC](/th/platform/rbac) &nbsp;·&nbsp; [Data Model](/th/platform/rbac/data-model) &nbsp;·&nbsp; [Permissions](/th/platform/rbac/permissions)

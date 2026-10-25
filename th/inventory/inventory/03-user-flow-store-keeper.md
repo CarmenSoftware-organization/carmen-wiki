@@ -52,7 +52,7 @@ flowchart TD
     G --> H["ตาราง Transaction Log render ใหม่"]
 ```
 
-> Diagram adapted from `carmen/docs/app/inventory-management/transactions/FD-inventory-transactions.md` · verified against `carmen-inventory-frontend-react/routes/inventory-management/transaction/date-range-filter.tsx`, `carmen-inventory-frontend-react/routes/inventory-management/transaction/transaction-component.tsx`, `carmen-inventory-frontend-react/routes/inventory-management/transaction/use-transaction.ts` (2026-09-28) · Changes: replaced the source doc's client-side mock-data re-filter framing with the real toggle-then-`daterange` filter-clause flow (`transaction-component.tsx` computes `from`/`to` and builds the clause; `date-range-filter.tsx` is a stateless toggle group; `useTransaction()` refetches from the API via URL-backed params — there is no client-side record loop).
+> Diagram adapted from `carmen/docs/app/inventory-management/transactions/FD-inventory-transactions.md` · verified against `carmen-frontend/routes/inventory-management/transaction/date-range-filter.tsx`, `carmen-frontend/routes/inventory-management/transaction/transaction-component.tsx`, `carmen-frontend/routes/inventory-management/transaction/use-transaction.ts` (2026-09-28) · Changes: replaced the source doc's client-side mock-data re-filter framing with the real toggle-then-`daterange` filter-clause flow (`transaction-component.tsx` computes `from`/`to` and builds the clause; `date-range-filter.tsx` is a stateless toggle group; `useTransaction()` refetches from the API via URL-backed params — there is no client-side record loop).
 
 ## 3. กิ่งการตัดสินใจ
 
@@ -71,5 +71,5 @@ flowchart TD
 - ภาพรวม parent: [03-user-flow](/th/inventory/inventory/03-user-flow)
 - Sibling: [transaction](/th/inventory/inventory/transaction) — data-model และ event matrix ฉบับเต็มของหน้าจอที่ flow นี้ใช้
 - Sibling: [02-business-rules](/th/inventory/inventory/02-business-rules) — `INV_VAL_005` (insufficient stock), `INV_VAL_008` (การ stamp งวด), `INV_POST_001`–`INV_POST_003` (แต่ละการ post เขียนอะไรบ้าง)
-- Frontend: `../carmen-inventory-frontend-react/routes/inventory-management/transaction/` (`transaction-component.tsx`, `use-transaction-table.tsx`, `transaction-summary.tsx`)
+- Frontend: `../carmen-frontend/routes/inventory-management/transaction/` (`transaction-component.tsx`, `use-transaction-table.tsx`, `transaction-summary.tsx`)
 - ที่เกี่ยวข้อง: [inventory-adjustment](/th/inventory/inventory-adjustment), [good-receive-note](/th/inventory/good-receive-note), [store-requisition](/th/inventory/store-requisition), [physical-count](/th/inventory/physical-count), [spot-check](/th/inventory/spot-check)

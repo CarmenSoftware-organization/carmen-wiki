@@ -13,7 +13,7 @@ editor: markdown
 > **At a Glance**
 > **What this page documents:** why the previously-described "Audit / Config" flow (a GRN-specific configuration console with lot-number-format, RBAC, tax/currency/reason-code, and integration panels, plus a dedicated Auditor lot-recall tool with sensitive-field export approval) does not match current source, and what is actually confirmed.
 
-> ⚠️ **Major correction this pass (2026-07-15).** The previous version of this page described a "GRN configuration console" (Sysadmin panels for lot-number format, RBAC roles and approval thresholds, tax / currency / reason codes, and PO / Inventory / Finance / Vendor integration endpoints) and an Auditor lot-recall trace tool with a Controller/DPO sensitive-field-export approval workflow. No matching route, frontend component, or backend endpoint was found in `carmen-inventory-frontend-react` or `carmen-turborepo-backend-v2`, and no such route appears in `.specs/resync-2026-07-15-routes-inventory.txt`.
+> ⚠️ **Major correction this pass (2026-07-15).** The previous version of this page described a "GRN configuration console" (Sysadmin panels for lot-number format, RBAC roles and approval thresholds, tax / currency / reason codes, and PO / Inventory / Finance / Vendor integration endpoints) and an Auditor lot-recall trace tool with a Controller/DPO sensitive-field-export approval workflow. No matching route, frontend component, or backend endpoint was found in `carmen-frontend` or `carmen-turborepo-backend`, and no such route appears in `.specs/resync-2026-07-15-routes-inventory.txt`.
 
 ## What is and is not confirmed
 

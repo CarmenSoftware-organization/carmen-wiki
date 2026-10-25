@@ -32,5 +32,5 @@ dateCreated: 2026-05-15T12:30:00.000Z
 
 ## 3. References
 
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/stock-in/stock-in.service.ts`, `.../stock-out/stock-out.service.ts`
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/stock-in/stock-in.service.ts`, `.../stock-out/stock-out.service.ts`
 - Parent overview: [04-test-scenarios](./04-test-scenarios.md); คู่กัน user-flow: [03-user-flow-inventory-controller](./03-user-flow-inventory-controller.md)

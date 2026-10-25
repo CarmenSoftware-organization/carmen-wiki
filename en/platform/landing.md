@@ -72,12 +72,12 @@ No authentication and no permission grant of any kind is required to view this p
 
 ## 7. Reference Sources
 
-- `../carmen-platform/src/pages/Landing.tsx` — the page: auth-redirect effect, loading state, hero, the hardcoded `groups` array, footer.
-- `../carmen-platform/src/pages/Login.tsx` — the sibling public route with the identical already-authenticated redirect pattern.
-- `../carmen-platform/src/components/nav/platformNav.ts` — `ALL_PLATFORM_NAV_ITEMS`, the live sidebar list this page's index was compared against in §4. `Layout.tsx` no longer defines nav rows itself — it only calls `buildPlatformNav()`.
-- `../carmen-platform/src/components/PrivateRoute.tsx` — the platform-authority/cluster-admin resolution branch quoted in §1, documented in full on [Dashboard](/en/platform/dashboard) §5.
-- `../carmen-platform/src/App.tsx:99` — the unwrapped `<Route path="/" element={<Landing />} />` (no `<PrivateRoute>`).
-- `../carmen-platform/src/components/VersionBadge.tsx` — the shared version-badge component, documented in full in [Changelog](/en/platform/changelog) §3.
+- `../carmen-backstage/src/pages/Landing.tsx` — the page: auth-redirect effect, loading state, hero, the hardcoded `groups` array, footer.
+- `../carmen-backstage/src/pages/Login.tsx` — the sibling public route with the identical already-authenticated redirect pattern.
+- `../carmen-backstage/src/components/nav/platformNav.ts` — `ALL_PLATFORM_NAV_ITEMS`, the live sidebar list this page's index was compared against in §4. `Layout.tsx` no longer defines nav rows itself — it only calls `buildPlatformNav()`.
+- `../carmen-backstage/src/components/PrivateRoute.tsx` — the platform-authority/cluster-admin resolution branch quoted in §1, documented in full on [Dashboard](/en/platform/dashboard) §5.
+- `../carmen-backstage/src/App.tsx:99` — the unwrapped `<Route path="/" element={<Landing />} />` (no `<PrivateRoute>`).
+- `../carmen-backstage/src/components/VersionBadge.tsx` — the shared version-badge component, documented in full in [Changelog](/en/platform/changelog) §3.
 
 ## 8. Pages in This Module
 

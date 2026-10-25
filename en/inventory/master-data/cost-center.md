@@ -120,9 +120,9 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_cost_center_group` (line ~2976), `tb_cost_center` (~3005), `tb_cost_center_account` (~3037).
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_cost_center_group` (line ~2976), `tb_cost_center` (~3005), `tb_cost_center_account` (~3037).
 - **Migration:** `20260904103000_add_cost_center`.
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/cost-center/cost-center.service.ts` (`setAccounts` `:221`, `delete` `:266`), `master/cost-center-group/cost-center-group.service.ts`; gateway `apps/backend-gateway/src/config/config_cost-centers/` (`@Controller('api/config/:bu_code/cost-centers')`, `PUT :cost_center_id/accounts` `:396`), `config_cost-center-groups/`.
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/cost-center/cost-center.service.ts` (`setAccounts` `:221`, `delete` `:266`), `master/cost-center-group/cost-center-group.service.ts`; gateway `apps/backend-gateway/src/config/config_cost-centers/` (`@Controller('api/config/:bu_code/cost-centers')`, `PUT :cost_center_id/accounts` `:396`), `config_cost-center-groups/`.
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/config/cost-centers/*.bru` (7 incl. `PUT-set-accounts-*`), `config/cost-center-groups/*.bru` (6).
 - **Frontend:** none.
 - **E2E:** none.

@@ -23,10 +23,10 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 ## 2. References
 
-- ../carmen-platform/src/pages/UserManagement.tsx, userManagement/UserDirectorySummary.tsx
-- ../carmen-platform/src/pages/UserEdit.tsx, userEdit/{UserIdentityHero,UserAccessTree}.tsx
-- ../carmen-platform/src/utils/audit.ts, src/components/{auditColumns.tsx,AuditMeta.tsx}
-- ../carmen-platform/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail}.tsx
+- ../carmen-backstage/src/pages/UserManagement.tsx, userManagement/UserDirectorySummary.tsx
+- ../carmen-backstage/src/pages/UserEdit.tsx, userEdit/{UserIdentityHero,UserAccessTree}.tsx
+- ../carmen-backstage/src/utils/audit.ts, src/components/{auditColumns.tsx,AuditMeta.tsx}
+- ../carmen-backstage/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail}.tsx
 
 ## 3. TODO
 

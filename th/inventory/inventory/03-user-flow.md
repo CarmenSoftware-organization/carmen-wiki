@@ -62,6 +62,6 @@ Section 2 อธิบาย state machine สองอัน (ระดับ m
 - Sibling: [01-data-model](/th/inventory/inventory/01-data-model) — enums แบบ canonical และ catalogue ของความแตกต่าง (รวมการแก้ไข no-GL และ costing-method ระดับ BU ที่หน้านี้พึ่งพา)
 - Sibling: [02-business-rules](/th/inventory/inventory/02-business-rules) — `INV_VAL_005`/`INV_VAL_008` (balance และการ stamp งวด), `INV_POST_009`/`INV_POST_010` (close/open), `INV_AUTH_008` (`period_end.execute`)
 - Sibling: [transaction](/th/inventory/inventory/transaction) และ [period-end](/th/inventory/inventory/period-end) — สองหน้าจอที่ persona ด้านบนใช้งาน
-- Frontend: `../carmen-inventory-frontend-react/routes/inventory-management/` (`transaction/`, `period-end/`); routes ลงทะเบียนใน `routes/router.tsx`
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/` (`inventory-transaction/`, `period-end/`)
+- Frontend: `../carmen-frontend/routes/inventory-management/` (`transaction/`, `period-end/`); routes ลงทะเบียนใน `routes/router.tsx`
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/` (`inventory-transaction/`, `period-end/`)
 - carmen/docs: `../carmen/docs/Inventory/inventory-management-prd.md`, `../carmen/docs/inventory-management/period-end-process.md` — เอกสาร concept; ที่ใดขัดแย้งกับ implementation ที่อธิบายไว้ที่นี่ ให้ implementation ชนะ

@@ -118,7 +118,7 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_unit` (line ~3739), `tb_unit_conversion` (~3819), `enum_unit_type` (~265).
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/units/units.service.ts`, `master/unit-conversion/`, `master/unit-comment/`.
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/020-unit.spec.ts` (13 cases) + `docs/test-cases/gaps/020-unit-gap.md` (27 uncovered cases).
-- **Frontend:** `../carmen-inventory-frontend-react/routes/config/unit/`.
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_unit` (line ~3739), `tb_unit_conversion` (~3819), `enum_unit_type` (~265).
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/units/units.service.ts`, `master/unit-conversion/`, `master/unit-comment/`.
+- **E2E:** `../carmen-frontend-e2e/tests/020-unit.spec.ts` (13 cases) + `docs/test-cases/gaps/020-unit-gap.md` (27 uncovered cases).
+- **Frontend:** `../carmen-frontend/routes/config/unit/`.

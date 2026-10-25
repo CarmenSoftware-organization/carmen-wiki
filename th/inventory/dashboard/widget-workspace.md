@@ -17,7 +17,7 @@ dateCreated: 2026-06-04T00:00:00.000Z
 
 ## สถานะการ implement (ตรวจสอบซ้ำ 2026-09-22)
 
-ตรวจสอบซ้ำกับ `carmen-inventory-frontend-react`, `carmen-turborepo-backend-v2` และ `micro-data` ที่ HEAD ตั้งแต่รอบ 2026-07 หน้านี้เพิ่มฟีเจอร์สี่อย่าง live ทั้งหมด: **(1)** การสลับ render ต่อ widget (`widget_type` บน `PATCH` ซึ่ง micro-data validate กับ shape ของ dataset, 2026-09-07 `74e3c795`), **(2)** card แบบ gauge บวก **กริด 12 คอลัมน์พร้อมขนาดต่อ widget** เก็บในคอลัมน์ JSONB ใหม่ `display` (2026-09-07 `493c78f0`; tenant migration `20260907143700_add_dashboard_widget_display`, micro-data migration `130_dash_widget_display`), **(3)** lazy loading ต่อ widget — แต่ละ card fetch ค่าของตัวเองเมื่อ scroll เข้ามาในสายตาเท่านั้น (`db046517`) และ **(4)** **dialog parameter/display** ของ widget บวก **card status-group** แบบเต็มความกว้าง (`f72f951c`) แก้ไขหนึ่งจุดจากเวอร์ชันก่อนของหน้านี้: backend ที่ให้บริการหน้านี้คือ **micro-data (Go, HTTP)** ไม่ใช่ `micro-cluster` ผ่าน TCP — ดู §5
+ตรวจสอบซ้ำกับ `carmen-frontend`, `carmen-turborepo-backend` และ `micro-data` ที่ HEAD ตั้งแต่รอบ 2026-07 หน้านี้เพิ่มฟีเจอร์สี่อย่าง live ทั้งหมด: **(1)** การสลับ render ต่อ widget (`widget_type` บน `PATCH` ซึ่ง micro-data validate กับ shape ของ dataset, 2026-09-07 `74e3c795`), **(2)** card แบบ gauge บวก **กริด 12 คอลัมน์พร้อมขนาดต่อ widget** เก็บในคอลัมน์ JSONB ใหม่ `display` (2026-09-07 `493c78f0`; tenant migration `20260907143700_add_dashboard_widget_display`, micro-data migration `130_dash_widget_display`), **(3)** lazy loading ต่อ widget — แต่ละ card fetch ค่าของตัวเองเมื่อ scroll เข้ามาในสายตาเท่านั้น (`db046517`) และ **(4)** **dialog parameter/display** ของ widget บวก **card status-group** แบบเต็มความกว้าง (`f72f951c`) แก้ไขหนึ่งจุดจากเวอร์ชันก่อนของหน้านี้: backend ที่ให้บริการหน้านี้คือ **micro-data (Go, HTTP)** ไม่ใช่ `micro-cluster` ผ่าน TCP — ดู §5
 
 ## 1. คืออะไรและสำหรับใคร
 
@@ -136,14 +136,14 @@ Widget Workspace ไม่มีชุด tile ตายตัว — กริ�
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Route:** `../carmen-inventory-frontend-react/routes/dashboard/dashboard.route.tsx`
-- **Composition:** `../carmen-inventory-frontend-react/routes/dashboard/dashboard-component.tsx` (กริด, dnd, ชุด lazy visibility, handler add/config/type-switch)
+- **Route:** `../carmen-frontend/routes/dashboard/dashboard.route.tsx`
+- **Composition:** `../carmen-frontend/routes/dashboard/dashboard-component.tsx` (กริด, dnd, ชุด lazy visibility, handler add/config/type-switch)
 - **Card และ helper:** `routes/dashboard/sortable-widget-item.tsx` (drag handle, dropdown render, gear, delete), `status-group.ts` + `status-group-card.tsx`, `widget-config-dialog.tsx` + `widget-param-fields.tsx` + `widget-display-fields.tsx`, `widget-shape.ts`; `components/dashboard-widget/widget-display.ts` (ขนาดกริด, gauge range, thresholds), `render-support.ts` (shape ↔ render), `dashboard-widget-grid.tsx` (`WidgetRouter`, card, `LazyWidget`)
 - **Hooks:** `routes/dashboard/use-my-dashboard-widgets.ts` (ย้ายออกจาก `hooks/` เมื่อ 2026-08-28, `0d9757f3`), `hooks/use-dashboard-dataset.ts`
 - **Types:** `types/dashboard-widget.ts` (`WidgetConfig`, `WidgetDisplay`, `DatasetParam`, `TableColumn`, shape guard), `types/dashboard-dataset.ts` (`supported_renders`)
 - **API constants:** `constant/api-endpoints.ts` → `MY_DASHBOARD_WIDGETS`, `MY_DASHBOARD_WIDGET_BY_ID`, `DASHBOARD_LAB_DATASETS`, `DASHBOARD_LAB_DATASET_EXEC`, `DASHBOARD_LAB_WIDGET_DATA`
-- **Gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-widgets/dashboard-personal-widgets.controller.ts` + `.service.ts` (HTTP proxy, `x-internal-token`), `swagger/response.ts` (`WidgetUpdateRequestDto.widget_type`/`display`), `dashboard-lab/dashboard-lab.controller.ts` (`GET widgets/:widget_id/data`)
+- **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/dashboard-widgets/dashboard-personal-widgets.controller.ts` + `.service.ts` (HTTP proxy, `x-internal-token`), `swagger/response.ts` (`WidgetUpdateRequestDto.widget_type`/`display`), `dashboard-lab/dashboard-lab.controller.ts` (`GET widgets/:widget_id/data`)
 - **micro-data:** `../micro-data/controller/dashboard_controller.go`, `service/widget_service.go` (`validateRender`, `validateDisplay`, cap 8 KB), `service/dashboard/dashboard.go` (`SupportedRenders`), `service/dashboard/lab.go` (catalog พร้อม `params`/`supported_renders`), `service/dashboard/document.go` (dataset `document.*`, row ตารางพร้อม `id`), `model/dashboard.go`, `migrations/tenant/130_dash_widget_display.up.sql`
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_dashboard_personal_widget`, `tb_dashboard_bu_widget`, `enum_dashboard_widget_type`; migration `20260907143700_add_dashboard_widget_display`
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_dashboard_personal_widget`, `tb_dashboard_bu_widget`, `enum_dashboard_widget_type`; migration `20260907143700_add_dashboard_widget_display`
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/_uncategorized/dashboard-lab/*`, `_uncategorized/dashboard-widgets/*` (`GET-me`, `PATCH-reorder`, `PATCH-update`, `POST-create`, `GET-module-config`)
-- **Backend design (ประวัติศาสตร์):** `../carmen-turborepo-backend-v2/docs/superpowers/archive/widget/2026-05-12-widget-backend-design.md`
+- **Backend design (ประวัติศาสตร์):** `../carmen-turborepo-backend/docs/superpowers/archive/widget/2026-05-12-widget-backend-design.md`

@@ -17,9 +17,9 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 1. ภาพรวม
 
-User Platform คือจุดที่ role แบบ [RBAC](/th/platform/rbac) — ทั้งแพลตฟอร์ม หรือเฉพาะ cluster เดียว — ถูกผูกเข้ากับบัญชีผู้ใช้ที่มีอยู่แล้ว มันถูกแยกออกจากหน้าจอของโมดูล RBAC เองมาเป็นรายการ nav และ component คู่ของตัวเอง และทั้งคู่ถูกเขียนใหม่ในวันเดียวกัน 2026-09-02 ให้เป็นสิ่งที่ commit message ของมันเองเรียกว่า "ทะเบียนสิทธิ์" (privilege registry) ไม่ใช่ตาราง CRUD ทั่วไป: `UserPlatformManagement` (`../carmen-platform` commit `fc690cb`, PR #250) และ `UserPlatformEdit` (`f6e91c9`, PR #251)
+User Platform คือจุดที่ role แบบ [RBAC](/th/platform/rbac) — ทั้งแพลตฟอร์ม หรือเฉพาะ cluster เดียว — ถูกผูกเข้ากับบัญชีผู้ใช้ที่มีอยู่แล้ว มันถูกแยกออกจากหน้าจอของโมดูล RBAC เองมาเป็นรายการ nav และ component คู่ของตัวเอง และทั้งคู่ถูกเขียนใหม่ในวันเดียวกัน 2026-09-02 ให้เป็นสิ่งที่ commit message ของมันเองเรียกว่า "ทะเบียนสิทธิ์" (privilege registry) ไม่ใช่ตาราง CRUD ทั่วไป: `UserPlatformManagement` (`../carmen-backstage` commit `fc690cb`, PR #250) และ `UserPlatformEdit` (`f6e91c9`, PR #251)
 
-`/platform/user-platform` แสดงรายการผู้ใช้ทุกคนที่ถือ role แพลตฟอร์มอย่างน้อยหนึ่งตัว — คนที่ไม่มีเลยจะถูกกรองออกฝั่ง backend และไม่ปรากฏที่นี่เลย การคลิกชื่อในแถว (เป็น `<a>` ผ่าน react-router `Link` ไม่ใช่ปุ่ม) หรือ action "Manage roles" จะพาไปที่ `/platform/user-platform/:userId` — **id เป็น path segment ธรรมดา ไม่มี `/edit` ต่อท้าย** ผู้อ่านที่จับรูปแบบมาจาก `/users/:id/edit`, `/clusters/:id/edit`, `/applications/:id/edit` และ detail route อื่น ๆ แทบทุกตัวในหนังสือเล่มนี้ อาจพิมพ์ `/platform/user-platform/:userId/edit` แล้วเจอ 404 — route แบบนั้นไม่มีอยู่จริง (`../carmen-platform/src/App.tsx:458-465`) หน้า detail เองก็ไม่มีสวิตช์อ่าน/แก้ด้วย มันเป็นหน้าเดียวที่เพิ่มและลบ role โดยตรง ไม่ใช่ฟอร์มที่มีปุ่ม Save
+`/platform/user-platform` แสดงรายการผู้ใช้ทุกคนที่ถือ role แพลตฟอร์มอย่างน้อยหนึ่งตัว — คนที่ไม่มีเลยจะถูกกรองออกฝั่ง backend และไม่ปรากฏที่นี่เลย การคลิกชื่อในแถว (เป็น `<a>` ผ่าน react-router `Link` ไม่ใช่ปุ่ม) หรือ action "Manage roles" จะพาไปที่ `/platform/user-platform/:userId` — **id เป็น path segment ธรรมดา ไม่มี `/edit` ต่อท้าย** ผู้อ่านที่จับรูปแบบมาจาก `/users/:id/edit`, `/clusters/:id/edit`, `/applications/:id/edit` และ detail route อื่น ๆ แทบทุกตัวในหนังสือเล่มนี้ อาจพิมพ์ `/platform/user-platform/:userId/edit` แล้วเจอ 404 — route แบบนั้นไม่มีอยู่จริง (`../carmen-backstage/src/App.tsx:458-465`) หน้า detail เองก็ไม่มีสวิตช์อ่าน/แก้ด้วย มันเป็นหน้าเดียวที่เพิ่มและลบ role โดยตรง ไม่ใช่ฟอร์มที่มีปุ่ม Save
 
 ทั้งสอง route ถูกกั้นเหมือนกันที่ระดับ route — `requiredPermission="user_platform.read"`, `feature="user_platform"` (`App.tsx:453,461`) — การถือคีย์อ่านอย่างเดียวก็เพียงพอที่จะ*นำทาง*ไปหน้า detail ของผู้ใช้คนไหนก็ได้ ส่วนว่าหน้านั้นจะแสดงอะไรที่เป็นประโยชน์เมื่อไปถึงหรือไม่ เป็นคำถามแยกต่างหาก ตอบไว้ใน §4
 
@@ -78,7 +78,7 @@ type ฝั่ง frontend ของฟิลด์นี้เป็น optiona
 
 ## 6. แหล่งอ้างอิง
 
-path ทั้งหมดด้านล่างคือ `../carmen-platform` (HEAD `157a65e`, 2026-09-04) ยกเว้นที่ขึ้นต้นด้วย `../carmen-turborepo-backend-v2` (HEAD `937cf5ac4`, 2026-09-06) หรือ `../carmen-platform-e2e` (HEAD `a8e3b31`, 2026-08-25)
+path ทั้งหมดด้านล่างคือ `../carmen-backstage` (HEAD `157a65e`, 2026-09-04) ยกเว้นที่ขึ้นต้นด้วย `../carmen-turborepo-backend` (HEAD `937cf5ac4`, 2026-09-06) หรือ `../carmen-backstage-e2e` (HEAD `a8e3b31`, 2026-08-25)
 
 - `src/pages/UserPlatformManagement.tsx` — หน้ารายการ/ทะเบียน (commit `fc690cb`, PR #250, 2026-09-02)
 - `src/pages/UserPlatformEdit.tsx` — หน้า detail รายบุคคล (commit `f6e91c9`, PR #251, 2026-09-02) รวม field `UserDetailRecord.email_verified_at` (บรรทัด 43) และ badge ที่คำนวณจากมัน (บรรทัด 195)
@@ -86,12 +86,12 @@ path ทั้งหมดด้านล่างคือ `../carmen-platform`
 - `src/services/userPlatformService.ts`, `src/services/userRoleService.ts` — REST client สองตัวที่โมดูลนี้เรียกตรง
 - `src/components/nav/platformNav.ts:43`, `src/App.tsx:451-465` — รายการ nav และการลงทะเบียน route
 - `src/types/index.ts:544-603` — `Scope`, `PlatformUserScope`, `PlatformUserRoleAssignment`, `PlatformUserRow`, `PlatformUserRegistrySummary`, `PlatformUsersResponse`
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/user-platform-roles/user-platform-roles.controller.ts` — พื้นผิว REST และ permission decorator ของทุก route (§4)
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/user-platform-roles/user-platform-roles.service.ts:140-148` — ตรรกะ forward `summary` (§3.1)
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/authen/user_platform_role/user_platform_role.service.ts` — `assign`/`assignBulk`/`remove`/`listPlatformUsers`/`buildRegistrySummary` (§3.1, §3.2)
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/authen/auth/auth.service.ts` — `createVerifiedUser` (บรรทัด 919-933), `verifyEmail` (1244-1302), `resendVerificationEmail` (1329-1375), ด่าน login (บรรทัด 498) (§3.3)
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma:485-487` — คอลัมน์ยืนยันอีเมลสามตัวของ `tb_user`; migration `20260804000000_user_email_verification`
-- `../carmen-platform-e2e/tests/user-platform/{user-platform-list,user-platform-config}.spec.ts` และ `pages/UserPlatform{ManagementPage,EditPage}.ts` — ดู [UI Screens](/th/platform/user-platform/ui-screens) §4 สำหรับจุดที่ suite นี้ไม่ตรงกับ source ปัจจุบันแล้ว
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/user-platform-roles/user-platform-roles.controller.ts` — พื้นผิว REST และ permission decorator ของทุก route (§4)
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/user-platform-roles/user-platform-roles.service.ts:140-148` — ตรรกะ forward `summary` (§3.1)
+- `../carmen-turborepo-backend/apps/micro-business/src/authen/user_platform_role/user_platform_role.service.ts` — `assign`/`assignBulk`/`remove`/`listPlatformUsers`/`buildRegistrySummary` (§3.1, §3.2)
+- `../carmen-turborepo-backend/apps/micro-business/src/authen/auth/auth.service.ts` — `createVerifiedUser` (บรรทัด 919-933), `verifyEmail` (1244-1302), `resendVerificationEmail` (1329-1375), ด่าน login (บรรทัด 498) (§3.3)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma:485-487` — คอลัมน์ยืนยันอีเมลสามตัวของ `tb_user`; migration `20260804000000_user_email_verification`
+- `../carmen-backstage-e2e/tests/user-platform/{user-platform-list,user-platform-config}.spec.ts` และ `pages/UserPlatform{ManagementPage,EditPage}.ts` — ดู [UI Screens](/th/platform/user-platform/ui-screens) §4 สำหรับจุดที่ suite นี้ไม่ตรงกับ source ปัจจุบันแล้ว
 
 ## 7. หน้าในโมดูลนี้
 

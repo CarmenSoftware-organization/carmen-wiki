@@ -62,13 +62,13 @@ route `/dashboard` ถูกห่อด้วย `<PrivateRoute>` เปล่�
 
 ## 7. แหล่งข้อมูลอ้างอิง
 
-- `../carmen-platform/src/pages/Dashboard.tsx` — หน้า: การโหลด count และ activity แบบขนาน, layout
-- `../carmen-platform/src/pages/dashboard/activity.ts` — `ACTIVITY_SOURCES` (หกโดเมนตามลำดับที่แสดง), `fetchActivity`, `toActivityItem`, `deriveVerb`, `mergeAndSort`
-- `../carmen-platform/src/pages/dashboard/ActivityStream.tsx` — filter chip, การจัดกลุ่มตามวัน, การ render timeline, state loading/error/empty
-- `../carmen-platform/src/pages/dashboard/CountsRail.tsx` — ยอดรวม Estate และแถว active/total ต่อโดเมน
-- `../carmen-platform/src/App.tsx:103-109` — `<PrivateRoute>` เปล่า ๆ (ไม่มี `requiredPermission`, ไม่มี `feature`) บน `/dashboard`
-- `../carmen-platform/src/components/PrivateRoute.tsx:66-84` — branch การตัดสินใจ platform-authority/cluster-admin ที่อธิบายใน §5 (`effectivePermissions`, `hasClusterAdminScope`, การ redirect ไป `/cluster-admin`, และ fall-through ของแอดมิน bootstrap)
-- `../carmen-platform/src/components/nav/platformNav.ts` — `ALL_PLATFORM_NAV_ITEMS` รายการ sidebar จริงที่ §4 ใช้เทียบ แถว `/dashboard` ที่ไม่ถูก gate และไม่มี feature อยู่นอกทุกกลุ่ม `groupKey` `Layout.tsx` เองไม่ได้กำหนดแถว nav แล้ว — มันแค่เรียก `buildPlatformNav()` (`Layout.tsx:107`) และคำนวณปลายทางของสัญลักษณ์แบรนด์ (`Layout.tsx:111`, `hasPlatformAuthority ? '/dashboard' : '/cluster-admin'` — ดังนั้นกรอบ "เข้าถึงได้จากทุกที่" ใน §1 จะเป็นจริงเฉพาะ session ที่มี platform authority)
+- `../carmen-backstage/src/pages/Dashboard.tsx` — หน้า: การโหลด count และ activity แบบขนาน, layout
+- `../carmen-backstage/src/pages/dashboard/activity.ts` — `ACTIVITY_SOURCES` (หกโดเมนตามลำดับที่แสดง), `fetchActivity`, `toActivityItem`, `deriveVerb`, `mergeAndSort`
+- `../carmen-backstage/src/pages/dashboard/ActivityStream.tsx` — filter chip, การจัดกลุ่มตามวัน, การ render timeline, state loading/error/empty
+- `../carmen-backstage/src/pages/dashboard/CountsRail.tsx` — ยอดรวม Estate และแถว active/total ต่อโดเมน
+- `../carmen-backstage/src/App.tsx:103-109` — `<PrivateRoute>` เปล่า ๆ (ไม่มี `requiredPermission`, ไม่มี `feature`) บน `/dashboard`
+- `../carmen-backstage/src/components/PrivateRoute.tsx:66-84` — branch การตัดสินใจ platform-authority/cluster-admin ที่อธิบายใน §5 (`effectivePermissions`, `hasClusterAdminScope`, การ redirect ไป `/cluster-admin`, และ fall-through ของแอดมิน bootstrap)
+- `../carmen-backstage/src/components/nav/platformNav.ts` — `ALL_PLATFORM_NAV_ITEMS` รายการ sidebar จริงที่ §4 ใช้เทียบ แถว `/dashboard` ที่ไม่ถูก gate และไม่มี feature อยู่นอกทุกกลุ่ม `groupKey` `Layout.tsx` เองไม่ได้กำหนดแถว nav แล้ว — มันแค่เรียก `buildPlatformNav()` (`Layout.tsx:107`) และคำนวณปลายทางของสัญลักษณ์แบรนด์ (`Layout.tsx:111`, `hasPlatformAuthority ? '/dashboard' : '/cluster-admin'` — ดังนั้นกรอบ "เข้าถึงได้จากทุกที่" ใน §1 จะเป็นจริงเฉพาะ session ที่มี platform authority)
 
 ## 8. หน้าในโมดูลนี้
 

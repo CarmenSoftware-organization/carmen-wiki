@@ -94,7 +94,7 @@ Terminal exits for the Requestor (no further action possible by them) are:
 - `../carmen/docs/purchase-request-management/purchase-request-module-prd.md` — product requirements driving the Requestor flow
 - Sibling: [01-data-model.md](./01-data-model.md) — `tb_purchase_request`, `tb_purchase_request_detail`, `enum_purchase_request_doc_status`
 - Sibling: [02-business-rules.md](./02-business-rules.md) — `PR_VAL_006` (at-least-one-line), `PR_VAL_008` (buy-or-FOC per line), `PR_VAL_017` (verify), `PR_VAL_018` (delete)
-- Frontend: `../carmen-inventory-frontend-react/routes/procurement/purchase-request/` — `pr-create-dialog.tsx`, `pr-new-content.tsx`, `pr-form.tsx`, `pr-form-schema.ts`, `use-pr-form-actions.ts` (`handleSubmitPr`), `pr-ownership.ts`, `from-template/`
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/procurement/purchase-request/logic/purchase-request.validate.ts`, `purchase-request.service.ts` (`delete`, `deleteBatch`)
-- E2E: `../carmen-inventory-frontend-e2e/tests/302-pr-creator-journey.spec.ts`, gap report `docs/test-cases/gaps/302-pr-creator-journey-gap.md`
+- Frontend: `../carmen-frontend/routes/procurement/purchase-request/` — `pr-create-dialog.tsx`, `pr-new-content.tsx`, `pr-form.tsx`, `pr-form-schema.ts`, `use-pr-form-actions.ts` (`handleSubmitPr`), `pr-ownership.ts`, `from-template/`
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/procurement/purchase-request/logic/purchase-request.validate.ts`, `purchase-request.service.ts` (`delete`, `deleteBatch`)
+- E2E: `../carmen-frontend-e2e/tests/302-pr-creator-journey.spec.ts`, gap report `docs/test-cases/gaps/302-pr-creator-journey-gap.md`
 - Sibling: [the module landing](/en/inventory/purchase-request) Section 4 — canonical Requestor role description

@@ -111,14 +111,14 @@ Source: tenant schema.
 
 ## 8. References
 
-- **Frontend routes:** `../carmen-inventory-frontend-react/routes/system-admin/notification-template/notification-template.route.tsx`, `notification-template-new.route.tsx`, `notification-template-edit.route.tsx`, `noti-tmpl.tsx` (list, `filter=type:app`), `noti-tmpl-form.tsx` + `noti-tmpl-edit-content.tsx` (create/view/edit), `noti-tmpl-form-schema.ts`, `noti-tmpl-variables.ts` (`NOTIFICATION_VARIABLES`, `splitTemplate`, `unknownVariables`), `noti-tmpl-variable-chips.tsx`, `noti-tmpl-preview.tsx`, `use-noti-tmpl-table.tsx`.
-- **Frontend type:** `../carmen-inventory-frontend-react/types/noti-tmpl.ts` (`NotificationTemplateType = "app" | "email" | "line" | "sms"` — kept at four values on purpose so legacy rows load).
-- **Frontend lookup (consumer):** `../carmen-inventory-frontend-react/components/lookup/lookup-noti-tmpl.tsx` — `LookupNotificationTemplate`, filtered by `channelType`.
-- **Frontend workflow-editor consumer:** `../carmen-inventory-frontend-react/routes/system-admin/workflow/wf-stage-notifications.tsx` — `WfChannel = "app"` (`:11`).
-- **Nav / permission:** `../carmen-inventory-frontend-react/constant/module-list.ts:656-659` — child of the Workflows group, `licenseFeature: "configuration.notification_template"`, `PERMISSIONS.configuration.notification_template.view`.
-- **E2E:** `../carmen-inventory-frontend-e2e/docs/test-cases/1104-notification-template.md` — catalog only.
-- **Backend service:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/notification-template/notification-template.service.ts` (CRUD + duplicate-name/channel validation), `.controller.ts`.
-- **Backend gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_notification-templates/config_notification-templates.controller.ts` — `api/config/:bu_code/notification-templates`.
-- **Dispatcher:** `../carmen-turborepo-backend-v2/apps/micro-business/src/common/workflow/workflow-notification-dispatcher.service.ts` — `WorkflowNotificationDispatcher.dispatch()`, `render()`.
-- **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_notification_template`, `enum_notification_channel` (four values, unchanged).
-- **Translations:** `../carmen-inventory-frontend-react/messages/en.json` — `systemAdmin.notificationTemplate.*` (namespace confirms "Manage reusable notification templates for workflow events").
+- **Frontend routes:** `../carmen-frontend/routes/system-admin/notification-template/notification-template.route.tsx`, `notification-template-new.route.tsx`, `notification-template-edit.route.tsx`, `noti-tmpl.tsx` (list, `filter=type:app`), `noti-tmpl-form.tsx` + `noti-tmpl-edit-content.tsx` (create/view/edit), `noti-tmpl-form-schema.ts`, `noti-tmpl-variables.ts` (`NOTIFICATION_VARIABLES`, `splitTemplate`, `unknownVariables`), `noti-tmpl-variable-chips.tsx`, `noti-tmpl-preview.tsx`, `use-noti-tmpl-table.tsx`.
+- **Frontend type:** `../carmen-frontend/types/noti-tmpl.ts` (`NotificationTemplateType = "app" | "email" | "line" | "sms"` — kept at four values on purpose so legacy rows load).
+- **Frontend lookup (consumer):** `../carmen-frontend/components/lookup/lookup-noti-tmpl.tsx` — `LookupNotificationTemplate`, filtered by `channelType`.
+- **Frontend workflow-editor consumer:** `../carmen-frontend/routes/system-admin/workflow/wf-stage-notifications.tsx` — `WfChannel = "app"` (`:11`).
+- **Nav / permission:** `../carmen-frontend/constant/module-list.ts:656-659` — child of the Workflows group, `licenseFeature: "configuration.notification_template"`, `PERMISSIONS.configuration.notification_template.view`.
+- **E2E:** `../carmen-frontend-e2e/docs/test-cases/1104-notification-template.md` — catalog only.
+- **Backend service:** `../carmen-turborepo-backend/apps/micro-business/src/master/notification-template/notification-template.service.ts` (CRUD + duplicate-name/channel validation), `.controller.ts`.
+- **Backend gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_notification-templates/config_notification-templates.controller.ts` — `api/config/:bu_code/notification-templates`.
+- **Dispatcher:** `../carmen-turborepo-backend/apps/micro-business/src/common/workflow/workflow-notification-dispatcher.service.ts` — `WorkflowNotificationDispatcher.dispatch()`, `render()`.
+- **Prisma tenant:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_notification_template`, `enum_notification_channel` (four values, unchanged).
+- **Translations:** `../carmen-frontend/messages/en.json` — `systemAdmin.notificationTemplate.*` (namespace confirms "Manage reusable notification templates for workflow events").

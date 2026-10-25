@@ -16,13 +16,13 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 > - `../micro-cronjobs/internal/executor/{executor.go,report.go,notification.go,cleanup.go,dashboard.go,activity_rollup.go,activity_retention.go}` — the six dispatch targets (read in full)
 > - `../micro-cronjobs/internal/scheduler/scheduler.go`, `cmd/server/main.go` — polling, retry, timezone (read in full)
 > - `../micro-cronjobs/internal/handler/cronjob_handler.go`, `internal/repository/cronjob_repo.go` — the REST surface and the row-level write path (read in full)
-> - `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_cronjobs/{platform_cronjobs.controller.ts,platform_cronjobs.service.ts}` — the only permission gate in front of the above (read in full)
+> - `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform_cronjobs/{platform_cronjobs.controller.ts,platform_cronjobs.service.ts}` — the only permission gate in front of the above (read in full)
 >
-> Verified against `carmen-platform` HEAD `157a65e` (2026-09-04), `carmen-turborepo-backend-v2` HEAD `937cf5ac4` (2026-09-06), and `micro-cronjobs` HEAD `d17d8eb9bc3` (2026-09-04). Each hash confirmed with `git -C <repo> cat-file -e <hash>`.
+> Verified against `carmen-backstage` HEAD `157a65e` (2026-09-04), `carmen-turborepo-backend` HEAD `937cf5ac4` (2026-09-06), and `micro-cronjobs` HEAD `d17d8eb9bc3` (2026-09-04). Each hash confirmed with `git -C <repo> cat-file -e <hash>`.
 
 ## 1. Overview
 
-The seeded skeleton for this page pointed at `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` as the source for this table. **That is wrong, and worth stating plainly rather than quietly fixing:** grepping the platform's Prisma schema for `Cronjob`/`CRONJOBS` returns nothing. The table is not a Prisma model at all — it is owned entirely by `../micro-cronjobs`'s own hand-written SQL migrations, in its own Postgres schema (`"CRONJOBS"`), read and written through `gorm`, not Prisma. Every claim on this page traces back to that repository's migrations and Go source, not to the platform's shared schema.
+The seeded skeleton for this page pointed at `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` as the source for this table. **That is wrong, and worth stating plainly rather than quietly fixing:** grepping the platform's Prisma schema for `Cronjob`/`CRONJOBS` returns nothing. The table is not a Prisma model at all — it is owned entirely by `../micro-cronjobs`'s own hand-written SQL migrations, in its own Postgres schema (`"CRONJOBS"`), read and written through `gorm`, not Prisma. Every claim on this page traces back to that repository's migrations and Go source, not to the platform's shared schema.
 
 `"CRONJOBS"."Cronjob"` is also a **shared** table in a second sense: rows are written both by this module's own create/edit form and by other backend services acting on a business unit's behalf (most notably recurring report schedules — see the landing page §2). One row, one job; nothing here associates a job with the business unit it might logically belong to except whatever `bu_codes` happen to sit inside that row's own `job_config`.
 
@@ -67,7 +67,7 @@ The table has been renamed and restructured twice since its first migration, ent
 
 ## 3. Job Types and Their Configs
 
-`job_config` is a discriminated-by-`job_type` JSON blob with no shared shape across the six types (the frontend's own `CronJobConfig` union has almost no overlapping property names — `../carmen-platform/src/types/index.ts:1691-1697`). Every field below is optional at the Go struct level; the executor is what actually enforces which ones are required at run time.
+`job_config` is a discriminated-by-`job_type` JSON blob with no shared shape across the six types (the frontend's own `CronJobConfig` union has almost no overlapping property names — `../carmen-backstage/src/types/index.ts:1691-1697`). Every field below is optional at the Go struct level; the executor is what actually enforces which ones are required at run time.
 
 ### 3.1 `report`
 
@@ -209,7 +209,7 @@ The list page's summary band shows **"Active in Scheduler"** from `GET /api/cron
 - `../micro-cronjobs/internal/repository/cronjob_repo.go` (207 lines) — `UpdateLastRun`, optimistic-lock `Update`, `FindActive`/`FindBySource`.
 - `../micro-cronjobs/cmd/server/main.go` (166 lines) — wiring, timezone resolution.
 - `../micro-cronjobs/migrations/{20260405120000,20260406010000,20260406135707,20260610120000,20260730092930,20260730093731,20260824100000,20260902104533,20260903100000}_*.up.sql` — all nine migration files, read in full.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_cronjobs/platform_cronjobs.service.ts` — the ownership-check removal comments (§6, edge cases).
-- `../carmen-platform/src/types/index.ts:1660-1746` — frontend type shapes, cross-checked against the Go struct field-for-field.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform_cronjobs/platform_cronjobs.service.ts` — the ownership-check removal comments (§6, edge cases).
+- `../carmen-backstage/src/types/index.ts:1660-1746` — frontend type shapes, cross-checked against the Go struct field-for-field.
 - [Activity Events — Data Model](/en/platform/activity-events/data-model) §4 — the `activity_rollup`/`activity_retention` account this page agrees with.
 - [Database Pools — Data Model](/en/platform/database-pools/data-model) §2 — the sibling module's name-uniqueness enforcement, contrasted in §2 above.

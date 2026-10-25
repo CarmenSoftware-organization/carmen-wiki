@@ -124,9 +124,9 @@ Running code คือ **กฎ document-numbering** สำหรับทุก
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_config_running_code` (lines ~4864-4883)
-- **Backend pattern logic:** `../carmen-turborepo-backend-v2/apps/micro-business/src/common/helpers/running-code.helper.ts` — `GenerateCode`, `getPattern`; preset `apps/micro-business/src/master/running-code/const/running-code.const.ts` (`RUNNING_CODE_PRESET`); service `apps/micro-business/src/master/running-code/running-code.service.ts` (`update` guard ด้วย `doc_version`, `:301`)
-- **Gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_running-codes/` — `api/config/:bu_code/running-codes`; licence `system_admin.running_code` (`permission.route-map.ts:121`)
-- **Seed:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/seed-data-a01/tb_config_running_code.json`; `packages/prisma-shared-schema-tenant/src/seed-data/running-code.ts` (รวม `GL-JV`)
-- **Frontend:** `../carmen-inventory-frontend-react/routes/system-admin/running-code/` — `running-code-component.tsx` (list), `running-code-dialog.tsx` (สร้าง/แก้ไข), `running-code-config-fields.tsx` (part editor + preview), `running-code-config.ts` (`parseConfig`, `serializeConfig`, `previewCode`, `slotName`), `running-code-form-schema.ts`
-- **E2E:** `../carmen-inventory-frontend-e2e/docs/test-cases/1110-running-code.md` — แคตตาล็อกเท่านั้น
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_config_running_code` (lines ~4864-4883)
+- **Backend pattern logic:** `../carmen-turborepo-backend/apps/micro-business/src/common/helpers/running-code.helper.ts` — `GenerateCode`, `getPattern`; preset `apps/micro-business/src/master/running-code/const/running-code.const.ts` (`RUNNING_CODE_PRESET`); service `apps/micro-business/src/master/running-code/running-code.service.ts` (`update` guard ด้วย `doc_version`, `:301`)
+- **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_running-codes/` — `api/config/:bu_code/running-codes`; licence `system_admin.running_code` (`permission.route-map.ts:121`)
+- **Seed:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/seed-data-a01/tb_config_running_code.json`; `packages/prisma-shared-schema-tenant/src/seed-data/running-code.ts` (รวม `GL-JV`)
+- **Frontend:** `../carmen-frontend/routes/system-admin/running-code/` — `running-code-component.tsx` (list), `running-code-dialog.tsx` (สร้าง/แก้ไข), `running-code-config-fields.tsx` (part editor + preview), `running-code-config.ts` (`parseConfig`, `serializeConfig`, `previewCode`, `slotName`), `running-code-form-schema.ts`
+- **E2E:** `../carmen-frontend-e2e/docs/test-cases/1110-running-code.md` — แคตตาล็อกเท่านั้น

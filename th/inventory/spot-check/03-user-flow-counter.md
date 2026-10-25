@@ -77,7 +77,7 @@ graph LR
 
 ## 6. แหล่งอ้างอิง
 
-- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/sc-entry-component.tsx`, `sc-review-component.tsx`, `sc-entry-header.tsx`, `sc-entry-notes-dialog.tsx`
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts` (`saveItems`, `reviewItems`, `getReview`, `submit`)
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check; manual test-case catalog `docs/test-cases/760-spot-check.md` (44 cases; `TC-SPC-06*` entry, `TC-SPC-07*` review)
+- **Frontend:** `../carmen-frontend/routes/inventory-management/spot-check/sc-entry-component.tsx`, `sc-review-component.tsx`, `sc-entry-header.tsx`, `sc-entry-notes-dialog.tsx`
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/spot-check/spot-check.service.ts` (`saveItems`, `reviewItems`, `getReview`, `submit`)
+- **E2E:** `../carmen-frontend-e2e/tests/` — ยังไม่มี spec spot-check; manual test-case catalog `docs/test-cases/760-spot-check.md` (44 cases; `TC-SPC-06*` entry, `TC-SPC-07*` review)
 - ที่เกี่ยวข้อง: [spot-check/03-user-flow](/th/inventory/spot-check/03-user-flow) (overview), [spot-check/02-business-rules](/th/inventory/spot-check/02-business-rules) (`SPC_VAL_007`–`008`, `SPC_POST_001`–`004`), [spot-check/03-user-flow-inventory-controller](/th/inventory/spot-check/03-user-flow-inventory-controller) (การเดินทางหน้ารายการ/สร้างของ role เดียวกัน)

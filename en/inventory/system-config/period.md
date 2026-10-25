@@ -159,10 +159,10 @@ Every route is `KeycloakGuard` + `AppIdGuard('inventoryPeriod.<verb>')`; RBAC re
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `enum_period_status` (line 1223), `tb_inventory_period` (1229-1261), `tb_inventory_period_comment` (1263-1296), `tb_inventory_period_snapshot` (1298-1351).
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `enum_period_status` (line 1223), `tb_inventory_period` (1229-1261), `tb_inventory_period_comment` (1263-1296), `tb_inventory_period_snapshot` (1298-1351).
 - **Migrations:** tenant `20260916141000_rename_tb_period_to_tb_inventory_period`; platform `20260916140000_rename_period_to_inventory_period`, `20260916150000_fix_license_group_item_inventory_period_key`.
-- **Gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/inventory-periods/inventory-periods.controller.ts` (+ `inventory-periods-legacy.controller.ts` alias).
-- **Service / guards:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/inventory-period/inventory-period.service.ts`; `.../inventory/inventory-period.helper.ts` (`findOpenPeriodForDate`, `findCurrentOpenPeriod`, `assertDateInOpenPeriod`, `assertDateInCurrentPeriod`).
-- **Frontend:** `../carmen-inventory-frontend-react/routes/system-admin/inventory-period/`; `types/inventory-period.ts`; footer `components/footer/status-bar.tsx`, `hooks/use-backend-version.ts`.
+- **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/inventory-periods/inventory-periods.controller.ts` (+ `inventory-periods-legacy.controller.ts` alias).
+- **Service / guards:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/inventory-period/inventory-period.service.ts`; `.../inventory/inventory-period.helper.ts` (`findOpenPeriodForDate`, `findCurrentOpenPeriod`, `assertDateInOpenPeriod`, `assertDateInCurrentPeriod`).
+- **Frontend:** `../carmen-frontend/routes/system-admin/inventory-period/`; `types/inventory-period.ts`; footer `components/footer/status-bar.tsx`, `hooks/use-backend-version.ts`.
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/master-data/period/` (URLs already `/inventory-periods`), `config/period-comment/`.
-- **E2E:** `../carmen-inventory-frontend-e2e/docs/test-cases/1105-system-period.md` — catalog only (32 cases, re-audited against `routes/system-admin/inventory-period` on 2026-09-20; no Playwright spec).
+- **E2E:** `../carmen-frontend-e2e/docs/test-cases/1105-system-period.md` — catalog only (32 cases, re-audited against `routes/system-admin/inventory-period` on 2026-09-20; no Playwright spec).

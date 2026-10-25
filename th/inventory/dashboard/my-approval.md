@@ -99,9 +99,9 @@ widget นี้คือ summary ระดับแดชบอร์ดขอ�
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Component (ถูกลบเมื่อ 2026-06-27):** `routes/dashboard/_components/dashboard-my-approval.tsx` ใน `../carmen-inventory-frontend-react`
+- **Component (ถูกลบเมื่อ 2026-06-27):** `routes/dashboard/_components/dashboard-my-approval.tsx` ใน `../carmen-frontend`
 - **Commit ที่ลบ:** `03891e3d` — "refactor(dashboard): convert to idiomatic structure, drop dead demo code"
-- **Hooks (ของจริงและ live แต่ขับเคลื่อน `/procurement/approval` — ไม่ใช่ `/dashboard`):** `../carmen-inventory-frontend-react/routes/procurement/approval/use-approval.ts` — `useApprovalPending` (`GET /api/my-pending` ตั้งแต่ 2026-09-16), `useApprovalPendingSummary` (ย้ายออกจาก `hooks/` เมื่อ 2026-08-28)
-- **Types:** `../carmen-inventory-frontend-react/types/approval.ts` — `ApprovalItem`, `ApprovalPendingSummary`, `RawApprovalPR`, `RawApprovalPO`, `RawApprovalSR`
-- **API constants:** `../carmen-inventory-frontend-react/constant/api-endpoints.ts` → `APPROVAL_PENDING`, `APPROVAL_PENDING_SUMMARY`
-- **Colour mapping:** `../carmen-inventory-frontend-react/constant/module-color-map.ts` → `getModuleColor`
+- **Hooks (ของจริงและ live แต่ขับเคลื่อน `/procurement/approval` — ไม่ใช่ `/dashboard`):** `../carmen-frontend/routes/procurement/approval/use-approval.ts` — `useApprovalPending` (`GET /api/my-pending` ตั้งแต่ 2026-09-16), `useApprovalPendingSummary` (ย้ายออกจาก `hooks/` เมื่อ 2026-08-28)
+- **Types:** `../carmen-frontend/types/approval.ts` — `ApprovalItem`, `ApprovalPendingSummary`, `RawApprovalPR`, `RawApprovalPO`, `RawApprovalSR`
+- **API constants:** `../carmen-frontend/constant/api-endpoints.ts` → `APPROVAL_PENDING`, `APPROVAL_PENDING_SUMMARY`
+- **Colour mapping:** `../carmen-frontend/constant/module-color-map.ts` → `getModuleColor`

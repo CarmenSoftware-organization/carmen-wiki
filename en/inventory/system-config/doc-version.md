@@ -80,7 +80,7 @@ Also unrelated: `micro-cronjobs` added its own `docVersion` column + audit user 
 
 ## 6. References
 
-- **Client extension:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/src/client.ts` — `update` extension, `OptimisticLockError` (`code = 'DOC_VERSION_CONFLICT'`).
-- **HTTP mapping:** `../carmen-turborepo-backend-v2/apps/micro-business/src/common/decorators/try-catch.decorator.ts` (`isOptimisticLockError` → 409).
-- **Error catalog:** `../carmen-turborepo-backend-v2/packages/error-catalog/src/catalog.ts` — `COMMON_DOC_VERSION_REQUIRED` (`:18`).
-- **Schema:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `doc_version Int @default(0) @db.Integer` on 157 of 159 models.
+- **Client extension:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/src/client.ts` — `update` extension, `OptimisticLockError` (`code = 'DOC_VERSION_CONFLICT'`).
+- **HTTP mapping:** `../carmen-turborepo-backend/apps/micro-business/src/common/decorators/try-catch.decorator.ts` (`isOptimisticLockError` → 409).
+- **Error catalog:** `../carmen-turborepo-backend/packages/error-catalog/src/catalog.ts` — `COMMON_DOC_VERSION_REQUIRED` (`:18`).
+- **Schema:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `doc_version Int @default(0) @db.Integer` on 157 of 159 models.

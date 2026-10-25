@@ -11,10 +11,10 @@ dateCreated: 2026-06-10T17:00:00.000Z
 # Report Templates — แบบจำลองข้อมูล (Data Model)
 
 > **At a Glance**
-> **ตาราง:** `tb_report_template` (หลัก) &nbsp;·&nbsp; **ตารางพี่น้องเดิม:** `tb_print_template_mapping` — **ถูก drop เมื่อ 2026-07-23** (migration `20260723120000_print_form_default`) บทบาท `is_default` ของมันถูกดูดซับมาที่ตารางนี้แล้ว โมดูล print-template-mapping ที่เคยเป็นเจ้าของตารางนี้ถูกลบออกจากผลิตภัณฑ์เมื่อ 2026-07-24 (carmen-platform commit `de11377`; ดู §7 Cross-link) &nbsp;·&nbsp; **Payload JSON:** `dialog` (XML, non-nullable), `content` (XML, non-nullable), `source_params` (`{ params: [...] }`), `signature_config` (`{ blocks: [...] }`) &nbsp;·&nbsp; **การผูก source:** `source_type` (String ธรรมดา: `view` / `function` / `procedure`) + `source_name` + `source_params` &nbsp;·&nbsp; **ขอบเขต BU:** `allow_business_unit` / `deny_business_unit` เก็บเป็น `Json?`; serialise เป็น string แบบ CSV ในฟอร์มของ SPA &nbsp;·&nbsp; **Flag วงจรชีวิต:** `is_standard`, `is_default` (เฉพาะ form template ใหม่เมื่อ 2026-07-23), `is_active`, `doc_version`
+> **ตาราง:** `tb_report_template` (หลัก) &nbsp;·&nbsp; **ตารางพี่น้องเดิม:** `tb_print_template_mapping` — **ถูก drop เมื่อ 2026-07-23** (migration `20260723120000_print_form_default`) บทบาท `is_default` ของมันถูกดูดซับมาที่ตารางนี้แล้ว โมดูล print-template-mapping ที่เคยเป็นเจ้าของตารางนี้ถูกลบออกจากผลิตภัณฑ์เมื่อ 2026-07-24 (carmen-backstage commit `de11377`; ดู §7 Cross-link) &nbsp;·&nbsp; **Payload JSON:** `dialog` (XML, non-nullable), `content` (XML, non-nullable), `source_params` (`{ params: [...] }`), `signature_config` (`{ blocks: [...] }`) &nbsp;·&nbsp; **การผูก source:** `source_type` (String ธรรมดา: `view` / `function` / `procedure`) + `source_name` + `source_params` &nbsp;·&nbsp; **ขอบเขต BU:** `allow_business_unit` / `deny_business_unit` เก็บเป็น `Json?`; serialise เป็น string แบบ CSV ในฟอร์มของ SPA &nbsp;·&nbsp; **Flag วงจรชีวิต:** `is_standard`, `is_default` (เฉพาะ form template ใหม่เมื่อ 2026-07-23), `is_active`, `doc_version`
 
 > **Source of truth:** Prisma platform schema ฝั่ง backend อ่านไฟล์นี้ก่อนเสมอเมื่อเขียนหรืออัพเดทหน้านี้:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > ไฟล์ `generated/client/schema.prisma` เป็นสำเนาที่ generate อัตโนมัติ ไม่ใช่ไฟล์อ้างอิงหลัก
 
@@ -24,7 +24,7 @@ dateCreated: 2026-06-10T17:00:00.000Z
 
 เทมเพลตรายงานเป็น tenant-global — ไม่ scope ต่อ cluster และไม่มี FK ไป `tb_cluster` คอลัมน์ขอบเขต BU (`allow_business_unit`, `deny_business_unit`) เป็นรายการกรองแบบ opt-in ที่จำกัดว่า business unit ใดมองเห็นเทมเพลตได้; มันไม่ได้ผูก row เข้ากับ cluster ใดเป็นการเฉพาะ จุดนี้ทำให้ surface ของ report-templates ต่างจากหน้า [clusters](/th/platform/clusters) และ [business-units](/th/platform/business-units) ซึ่ง document ลำดับชั้น cluster/BU ไว้ BU code ที่อ้างอิงใน chip list ตรงกับค่า `tb_business_unit.code` แต่ไม่มี FK constraint — การอ้างอิงเป็น convention ระดับ application
 
-คอลัมน์ `template_type` (เปลี่ยนชื่อจาก `kind` โดย migration `20260723120000_print_form_default`, 2026-07-23) แยกการใช้งานสองแบบของตารางนี้ออกจากกัน: row แบบ `"list"` (เดิม `"report"`) คือรายงานเชิงวิเคราะห์แบบตารางที่ผู้ใช้มองเห็น; row แบบ `"form"` (เดิม `"print"`) คือ layout เอกสารเดี่ยว จนถึง 2026-07-23 ตาราง `tb_print_template_mapping` แยกต่างหากเคย map document type (PO, GRN, SR, …) เข้ากับ row แบบ `kind="print"` ที่นี่; ตอนนี้ตารางนั้น **ถูก drop แล้ว** หน้าที่ของมัน — การเลือก template default หนึ่งตัวที่ business unit จะได้สำหรับกลุ่มหนึ่ง ๆ — ตอนนี้ทำโดยคอลัมน์ `is_default` ของตารางนี้เอง กำหนดขอบเขตด้วย `report_group` และบังคับด้วย partial unique index (§2.1) โมดูล print-template-mapping ที่เคยเป็นเจ้าของตารางนี้ถูกลบออกจากผลิตภัณฑ์เมื่อ 2026-07-24 เช่นกัน (carmen-platform commit `de11377`) — ดู §7 Cross-link สำหรับ timeline การถูกลบฉบับเต็ม หน้านี้ครอบคลุมเฉพาะ `tb_report_template`
+คอลัมน์ `template_type` (เปลี่ยนชื่อจาก `kind` โดย migration `20260723120000_print_form_default`, 2026-07-23) แยกการใช้งานสองแบบของตารางนี้ออกจากกัน: row แบบ `"list"` (เดิม `"report"`) คือรายงานเชิงวิเคราะห์แบบตารางที่ผู้ใช้มองเห็น; row แบบ `"form"` (เดิม `"print"`) คือ layout เอกสารเดี่ยว จนถึง 2026-07-23 ตาราง `tb_print_template_mapping` แยกต่างหากเคย map document type (PO, GRN, SR, …) เข้ากับ row แบบ `kind="print"` ที่นี่; ตอนนี้ตารางนั้น **ถูก drop แล้ว** หน้าที่ของมัน — การเลือก template default หนึ่งตัวที่ business unit จะได้สำหรับกลุ่มหนึ่ง ๆ — ตอนนี้ทำโดยคอลัมน์ `is_default` ของตารางนี้เอง กำหนดขอบเขตด้วย `report_group` และบังคับด้วย partial unique index (§2.1) โมดูล print-template-mapping ที่เคยเป็นเจ้าของตารางนี้ถูกลบออกจากผลิตภัณฑ์เมื่อ 2026-07-24 เช่นกัน (carmen-backstage commit `de11377`) — ดู §7 Cross-link สำหรับ timeline การถูกลบฉบับเต็ม หน้านี้ครอบคลุมเฉพาะ `tb_report_template`
 
 ## 2. เอนทิตี
 
@@ -87,7 +87,7 @@ tb_report_template  self-FK  updated_by_id  → tb_user.id  (audit; no Prisma @r
 tb_report_template  self-FK  deleted_by_id  → tb_user.id  (audit; no Prisma @relation)
 ```
 
-**ถูกลบเมื่อ 2026-07-23:** `tb_report_template 1 ─── M tb_print_template_mapping` ไม่มีอยู่แล้ว — ตาราง mapping ถูก drop ไปเลย ไม่ใช่แค่ตัดการเชื่อมต่อ (migration `20260723120000_print_form_default`); โมดูล print-template-mapping เองถูกลบออกจากผลิตภัณฑ์วันถัดมาคือ 2026-07-24 (carmen-platform commit `de11377`) — ดู §7 Cross-link
+**ถูกลบเมื่อ 2026-07-23:** `tb_report_template 1 ─── M tb_print_template_mapping` ไม่มีอยู่แล้ว — ตาราง mapping ถูก drop ไปเลย ไม่ใช่แค่ตัดการเชื่อมต่อ (migration `20260723120000_print_form_default`); โมดูล print-template-mapping เองถูกลบออกจากผลิตภัณฑ์วันถัดมาคือ 2026-07-24 (carmen-backstage commit `de11377`) — ดู §7 Cross-link
 
 สิ่งที่จงใจไม่มี:
 
@@ -182,9 +182,9 @@ Shape:
 
 `signature_config` ไม่ปรากฏใน interface `ReportTemplateFormData` ปัจจุบันของ SPA — มันถูกจัดการแยกจากฟอร์ม edit หลัก
 
-## 6. ความแตกต่างจาก shape ของ carmen-platform SPA
+## 6. ความแตกต่างจาก shape ของ carmen-backstage SPA
 
-interface `ReportTemplate` ใน `../carmen-platform/src/services/reportTemplateService.ts` (บรรทัด 19–44) และ interface `ReportTemplateFormData` ใน `../carmen-platform/src/pages/ReportTemplateEdit.tsx` (บรรทัด 44–60) ถูกเทียบกับ Prisma model `tb_report_template` ที่น่าสังเกตคือ TS interface `ReportTemplate` อยู่ใน `src/services/reportTemplateService.ts` ไม่ใช่ `src/types/index.ts` ที่ interface ของโมดูล Platform ตัวอื่น (`Cluster`, `BusinessUnit`, `User`) อยู่ — นักพัฒนาที่ค้นหา TS shape ฉบับ canonical ควรดูในไฟล์ service
+interface `ReportTemplate` ใน `../carmen-backstage/src/services/reportTemplateService.ts` (บรรทัด 19–44) และ interface `ReportTemplateFormData` ใน `../carmen-backstage/src/pages/ReportTemplateEdit.tsx` (บรรทัด 44–60) ถูกเทียบกับ Prisma model `tb_report_template` ที่น่าสังเกตคือ TS interface `ReportTemplate` อยู่ใน `src/services/reportTemplateService.ts` ไม่ใช่ `src/types/index.ts` ที่ interface ของโมดูล Platform ตัวอื่น (`Cluster`, `BusinessUnit`, `User`) อยู่ — นักพัฒนาที่ค้นหา TS shape ฉบับ canonical ควรดูในไฟล์ service
 
 **แก้ไขแล้วเมื่อ 2026-07-23 (ไม่ใช่ความแตกต่างอีกต่อไป):** `kind`/`template_type` และ `is_default` ตอนนี้ตรงกันทั้งสองฝั่ง `ReportTemplateFormData` มี `template_type: '' | 'form' | 'list'` (จำเป็น เปิดเผยเป็น select) และ `is_default: boolean` — รายการที่ 1 ของ sync ครั้งก่อน ("`kind` ไม่มีในฟอร์ม") ล้าสมัยแล้ว ฟิลด์นี้ไม่เพียงมีอยู่แต่ยังจำเป็นตอน submit ด้วย
 
@@ -202,20 +202,20 @@ interface `ReportTemplate` ใน `../carmen-platform/src/services/reportTemplat
 ## 7. แหล่งข้อมูลอ้างอิง
 
 **หลัก (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `model tb_report_template` (บรรทัด 806 — แก้จาก "บรรทัด 734" ของ sync ครั้งก่อน ไฟล์ขยายขึ้นเหนือ model นี้ตั้งแต่ sync ครั้งล่าสุด)
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260723120000_print_form_default/migration.sql` — data migration ที่มากับการเปลี่ยนชื่อ `kind`→`template_type`, การเพิ่ม `is_default`, unique index และการ drop `tb_print_template_mapping`
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `model tb_report_template` (บรรทัด 806 — แก้จาก "บรรทัด 734" ของ sync ครั้งก่อน ไฟล์ขยายขึ้นเหนือ model นี้ตั้งแต่ sync ครั้งล่าสุด)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260723120000_print_form_default/migration.sql` — data migration ที่มากับการเปลี่ยนชื่อ `kind`→`template_type`, การเพิ่ม `is_default`, unique index และการ drop `tb_print_template_mapping`
 
 **รอง (shape ฝั่ง consumer):**
-- `../carmen-platform/src/pages/ReportTemplateEdit.tsx` — interface `ReportTemplateFormData` (บรรทัด 44–60); interface `SourceParamRow` (บรรทัด 38–42); load path รวม `toCsv` (บรรทัด 196–262); save path รวมการประกอบ payload `source_params`/`template_type` (บรรทัด 302–368)
-- `../carmen-platform/src/pages/ReportTemplateManagement.tsx` — view list ของเทมเพลตรายงาน
-- `../carmen-platform/src/pages/ReportFormGroupManagement.tsx` — หน้าจอ Form Groups ที่แก้ไข `is_default` ต่อ `report_group`
-- `../carmen-platform/src/constants/reportGroups.ts` — `FORM_REPORT_GROUPS` รายการ code คงที่ 12 ตัวที่ SPA จำกัด `report_group` ไว้สำหรับ form template
-- `../carmen-platform/src/services/reportTemplateService.ts` — interface `ReportTemplate` (บรรทัด 19–44); type `ReportSourceType`, `ReportSourceParam`, `ReportSourceParams` (บรรทัด 5–17); `setGroupDefault` (บรรทัด 89–107)
-- `../carmen-platform/src/types/index.ts` — ไม่มี type `ReportTemplate` นิยามไว้ที่นี่; type อยู่ในไฟล์ service
+- `../carmen-backstage/src/pages/ReportTemplateEdit.tsx` — interface `ReportTemplateFormData` (บรรทัด 44–60); interface `SourceParamRow` (บรรทัด 38–42); load path รวม `toCsv` (บรรทัด 196–262); save path รวมการประกอบ payload `source_params`/`template_type` (บรรทัด 302–368)
+- `../carmen-backstage/src/pages/ReportTemplateManagement.tsx` — view list ของเทมเพลตรายงาน
+- `../carmen-backstage/src/pages/ReportFormGroupManagement.tsx` — หน้าจอ Form Groups ที่แก้ไข `is_default` ต่อ `report_group`
+- `../carmen-backstage/src/constants/reportGroups.ts` — `FORM_REPORT_GROUPS` รายการ code คงที่ 12 ตัวที่ SPA จำกัด `report_group` ไว้สำหรับ form template
+- `../carmen-backstage/src/services/reportTemplateService.ts` — interface `ReportTemplate` (บรรทัด 19–44); type `ReportSourceType`, `ReportSourceParam`, `ReportSourceParams` (บรรทัด 5–17); `setGroupDefault` (บรรทัด 89–107)
+- `../carmen-backstage/src/types/index.ts` — ไม่มี type `ReportTemplate` นิยามไว้ที่นี่; type อยู่ในไฟล์ service
 
 **Cross-link:**
 - [report-templates](/th/platform/report-templates) — หน้า landing ของโมดูล
-- **Print Template Mapping** — ถูกลบออกจากผลิตภัณฑ์เมื่อ 2026-07-24 (carmen-platform commit `de11377`); เคยเป็นเจ้าของ `tb_print_template_mapping` ที่ถูก drop โดย migration `20260723120000_print_form_default` เดียวกับที่เพิ่ม `is_default` ที่นี่ หน้าที่ของมันตอนนี้ทำโดย `template_type = "form"` + `report_group` + `is_default` บนตารางนี้ แสดงผลผ่านโมดูล [กลุ่มฟอร์มรายงาน (Report Form Groups)](/th/platform/report-form-groups) แบบ standalone
+- **Print Template Mapping** — ถูกลบออกจากผลิตภัณฑ์เมื่อ 2026-07-24 (carmen-backstage commit `de11377`); เคยเป็นเจ้าของ `tb_print_template_mapping` ที่ถูก drop โดย migration `20260723120000_print_form_default` เดียวกับที่เพิ่ม `is_default` ที่นี่ หน้าที่ของมันตอนนี้ทำโดย `template_type = "form"` + `report_group` + `is_default` บนตารางนี้ แสดงผลผ่านโมดูล [กลุ่มฟอร์มรายงาน (Report Form Groups)](/th/platform/report-form-groups) แบบ standalone
 - [business-units](/th/platform/business-units) — BU code ที่อ้างอิงใน chip list ของ allow/deny ตรงกับ `tb_business_unit.code`
 - [clusters](/th/platform/clusters) — surface พี่น้องของ Platform; เทมเพลตรายงานเป็น tenant-global และไม่ scope ต่อ cluster
 - [Permissions](/th/platform/report-templates/permissions) — การควบคุมการเข้าถึงของ surface การจัดการ report-templates

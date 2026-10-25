@@ -32,5 +32,5 @@ This mirrors the confirmed-fabricated approval-queue findings on [inventory-adju
 
 ## 3. References
 
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/stock-in/stock-in.service.ts`, `.../stock-out/stock-out.service.ts`.
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/stock-in/stock-in.service.ts`, `.../stock-out/stock-out.service.ts`.
 - Parent overview: [04-test-scenarios](./04-test-scenarios.md); user-flow counterpart: [03-user-flow-inventory-controller](./03-user-flow-inventory-controller.md).

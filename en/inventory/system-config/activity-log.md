@@ -72,10 +72,10 @@ The one screen-specific type worth noting: the frontend's `ActivityLog` interfac
 
 ## 7. References
 
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/activity-log/activity-log.route.tsx`, `activity-log-component.tsx`, `activity-log-card.tsx`, `activity-log-detail-sheet.tsx`, `use-activity-log-table.tsx`.
-- **Frontend hook/type:** `../carmen-inventory-frontend-react/hooks/use-activity-log.ts` — `useActivityLog()`, `useExportActivityLog()`; `types/activity-log.ts` — `ActivityLog`, `getLogCreatedAt()`.
-- **Nav entry:** `../carmen-inventory-frontend-react/constant/module-list.ts:729-732` — `activityLog`, `permission: PERMISSIONS.system_admin.activity_log.view`, `licenseFeature: "system_admin.activity_log"`.
-- **Backend:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/activity-logs/`; `enum_activity_action` (25 values incl. `email_sent`) in the tenant `schema.prisma`.
-- **E2E:** `../carmen-inventory-frontend-e2e/docs/test-cases/1109-activity-log.md` — catalog only.
-- **Translations:** `../carmen-inventory-frontend-react/messages/en.json` — `systemAdmin.activityLog.*` (`title: "Activity Monitor"`), `modules.activityLog`.
+- **Frontend route:** `../carmen-frontend/routes/system-admin/activity-log/activity-log.route.tsx`, `activity-log-component.tsx`, `activity-log-card.tsx`, `activity-log-detail-sheet.tsx`, `use-activity-log-table.tsx`.
+- **Frontend hook/type:** `../carmen-frontend/hooks/use-activity-log.ts` — `useActivityLog()`, `useExportActivityLog()`; `types/activity-log.ts` — `ActivityLog`, `getLogCreatedAt()`.
+- **Nav entry:** `../carmen-frontend/constant/module-list.ts:729-732` — `activityLog`, `permission: PERMISSIONS.system_admin.activity_log.view`, `licenseFeature: "system_admin.activity_log"`.
+- **Backend:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/activity-logs/`; `enum_activity_action` (25 values incl. `email_sent`) in the tenant `schema.prisma`.
+- **E2E:** `../carmen-frontend-e2e/docs/test-cases/1109-activity-log.md` — catalog only.
+- **Translations:** `../carmen-frontend/messages/en.json` — `systemAdmin.activityLog.*` (`title: "Activity Monitor"`), `modules.activityLog`.
 - **Table/enum/rules (not repeated here):** see [reporting-audit/activity](/en/inventory/reporting-audit/activity) §8 for its own Prisma/frontend/writer citations.

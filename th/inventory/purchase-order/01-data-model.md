@@ -18,8 +18,8 @@ dateCreated: 2026-05-15T10:00:00.000Z
 > **Re-sync 2026-09-22:** status enum `sent` → `sent_or_print` + เพิ่ม `approved` (migration `20260914080000`, `20260914080100`); header `delivery_point_id/name` (`20260915120000`); bridge `pr_detail_foc_qty` / `foc_received_qty` (`20260916030000`); รูปแบบ API response ตอนนี้หนึ่งแถว = หนึ่ง location พร้อม entity object ซ้อน (§ 2.4)
 
 > **แหล่งอ้างอิง:** Prisma schema ฝั่ง backend อ่านที่นี่ก่อนเสมอเมื่อเขียนหรือแก้ไขหน้านี้:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > ไฟล์ `generated/client/schema.prisma` ภายในแต่ละ package เป็นสำเนา auto-generate ไม่ใช่แหล่งทางการ
 
@@ -65,7 +65,7 @@ graph LR
     pod -->|"1 : N"| grnd
 ```
 
-> Diagram adapted from `carmen/docs/app/procurement/purchase-orders/DD-purchase-orders.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (2026-09-28) · Changes: rewritten as `graph LR` per allow-list (`erDiagram` renders blank on this wiki); replaced the source's conceptual entities (`PURCHASE_ORDERS`, `PURCHASE_ORDER_LINE_ITEMS`, `PURCHASE_ORDER_BUDGET_ALLOCATIONS`, `PURCHASE_ORDER_DOCUMENTS`, `PURCHASE_ORDER_HISTORY`, `BUDGET_ACCOUNTS`, `GOODS_RECEIPT_NOTE_LINE_ITEMS`) with the actual `tb_*` tables from this page's own §3 Relationships; dropped the budget-allocation/document/history tables (no such Prisma models — history is an inline JSON column, no budget module exists) and added the PR↔PO bridge and the header's `workflow_id` (stored but no Prisma `@relation`, shown dashed).
+> Diagram adapted from `carmen/docs/app/procurement/purchase-orders/DD-purchase-orders.md` · verified against `carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (2026-09-28) · Changes: rewritten as `graph LR` per allow-list (`erDiagram` renders blank on this wiki); replaced the source's conceptual entities (`PURCHASE_ORDERS`, `PURCHASE_ORDER_LINE_ITEMS`, `PURCHASE_ORDER_BUDGET_ALLOCATIONS`, `PURCHASE_ORDER_DOCUMENTS`, `PURCHASE_ORDER_HISTORY`, `BUDGET_ACCOUNTS`, `GOODS_RECEIPT_NOTE_LINE_ITEMS`) with the actual `tb_*` tables from this page's own §3 Relationships; dropped the budget-allocation/document/history tables (no such Prisma models — history is an inline JSON column, no budget module exists) and added the PR↔PO bridge and the header's `workflow_id` (stored but no Prisma `@relation`, shown dashed).
 
 ### 2.1 tb_purchase_order
 
@@ -231,7 +231,7 @@ Line item ของ PO — สินค้าหนึ่งตัวสำห�
 
 ### 2.4 รูปแบบ API response (`GET .../purchase-orders/:id`) — หนึ่งแถว = หนึ่ง location พร้อม entity ref ซ้อน
 
-รูปแบบบน wire แยกออกจากตารางสองครั้งนับจาก 2026-07-29 และ type ฝั่ง React (`carmen-inventory-frontend-react/types/purchase-order.ts`) คือบันทึกที่รันได้จริงของมัน:
+รูปแบบบน wire แยกออกจากตารางสองครั้งนับจาก 2026-07-29 และ type ฝั่ง React (`carmen-frontend/types/purchase-order.ts`) คือบันทึกที่รันได้จริงของมัน:
 
 ```
 PurchaseOrder
@@ -332,8 +332,8 @@ tb_purchase_order_detail ──1──*──► tb_good_received_note_detail
 
 ## 6. แหล่งอ้างอิง
 
-- **Primary (source of truth):** Prisma schemas ที่ list ใน callout ของ header — โดยเฉพาะ `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (ทุก PO models และ enum ทั้งสอง) และ `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (ตรวจสอบแล้วว่าไม่มี PO models) migration นับจาก baseline: `20260914080000_po_status_add_approved`, `20260914080100_po_status_backfill_and_rename_sent`, `20260915120000_po_header_delivery_point`, `20260916030000_po_junction_foc_ordered_vs_received` (ทั้งหมดอยู่ใต้ `prisma/migrations/`)
-- **Wire contract:** `../carmen-turborepo-backend-v2/apps/micro-business/src/procurement/purchase-order/dto/purchase-order.serializer.ts` (response) และ `dto/create-purchase-order.dto.ts` (payload); `../carmen-inventory-frontend-react/types/purchase-order.ts` (mirror ฝั่ง client พร้อม change note ที่อ้างใน § 2.4)
+- **Primary (source of truth):** Prisma schemas ที่ list ใน callout ของ header — โดยเฉพาะ `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (ทุก PO models และ enum ทั้งสอง) และ `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (ตรวจสอบแล้วว่าไม่มี PO models) migration นับจาก baseline: `20260914080000_po_status_add_approved`, `20260914080100_po_status_backfill_and_rename_sent`, `20260915120000_po_header_delivery_point`, `20260916030000_po_junction_foc_ordered_vs_received` (ทั้งหมดอยู่ใต้ `prisma/migrations/`)
+- **Wire contract:** `../carmen-turborepo-backend/apps/micro-business/src/procurement/purchase-order/dto/purchase-order.serializer.ts` (response) และ `dto/create-purchase-order.dto.ts` (payload); `../carmen-frontend/types/purchase-order.ts` (mirror ฝั่ง client พร้อม change note ที่อ้างใน § 2.4)
 - **Secondary (cross-check แนวคิด):** `../carmen/docs/purchase-order-management/purchase-order-module.md` — เอกสาร business-analysis ระดับสูง; ความแตกต่าง capture ใน Section 5
 - **Sibling reference:** `en/purchase-request/01-data-model.md` — อธิบายฝั่ง PR ของ PR↔PO bridge อย่า duplicate เนื้อหานั้นที่นี่
 - โมดูลที่เกี่ยวข้อง: [purchase-request](/th/inventory/purchase-request) (ต้นทาง upstream), [good-receive-note](/th/inventory/good-receive-note) (fulfilment ปลายน้ำผ่าน `received_qty`), [product](/th/inventory/product) (อ้างอิงสินค้าบรรทัด), [vendor-pricelist](/th/inventory/vendor-pricelist) (snapshot ราคา ณ เวลา PR-to-PO conversion), [inventory](/th/inventory/inventory) (context on-hand)

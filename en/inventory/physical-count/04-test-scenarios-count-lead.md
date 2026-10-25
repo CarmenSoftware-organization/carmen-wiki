@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T14:00:00.000Z
 > **At a Glance**
 > **Screen:** `physical-count` (`pc-component.tsx`) &nbsp;·&nbsp; **Module:** [physical-count](/en/inventory/physical-count) &nbsp;·&nbsp; **Role:** any user holding `inventory_management.physical_count` (same role as [04-test-scenarios-counter.md](/en/inventory/physical-count/04-test-scenarios-counter))
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **Executable coverage:** no `physical-count` Playwright spec exists; manual catalog `../carmen-inventory-frontend-e2e/docs/test-cases/750-physical-count.md` (41 cases; list-screen and "Counting has not started" rows) — see [04-test-scenarios](/en/inventory/physical-count/04-test-scenarios) § 5.
+> **Executable coverage:** no `physical-count` Playwright spec exists; manual catalog `../carmen-frontend-e2e/docs/test-cases/750-physical-count.md` (41 cases; list-screen and "Counting has not started" rows) — see [04-test-scenarios](/en/inventory/physical-count/04-test-scenarios) § 5.
 
 ## 1. Scope
 
@@ -54,7 +54,7 @@ The scenarios below exercise the list screen's actions catalogued in [physical-c
 
 ## 6. References
 
-- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/physical-count/pc-component.tsx`.
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (`create`), `.../physical-count-period/physical-count-period.service.ts` (`findCurrent`).
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists; manual catalog `docs/test-cases/750-physical-count.md`.
+- **Frontend:** `../carmen-frontend/routes/inventory-management/physical-count/pc-component.tsx`.
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (`create`), `.../physical-count-period/physical-count-period.service.ts` (`findCurrent`).
+- **E2E:** `../carmen-frontend-e2e/tests/` — no physical-count spec currently exists; manual catalog `docs/test-cases/750-physical-count.md`.
 - Related: [physical-count/03-user-flow-count-lead](/en/inventory/physical-count/03-user-flow-count-lead), [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) (`PHC_VAL_001`–`003`, `PHC_AUTH_001`), [physical-count/04-test-scenarios](/en/inventory/physical-count/04-test-scenarios) (end-to-end scenarios).

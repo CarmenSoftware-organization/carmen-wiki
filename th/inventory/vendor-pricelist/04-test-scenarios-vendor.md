@@ -12,7 +12,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 
 > **At a Glance**
 > **Persona:** Vendor (external party — portal ที่ authenticate ด้วย token เท่านั้น) &nbsp;·&nbsp; **โมดูล:** [vendor-pricelist](/th/inventory/vendor-pricelist)
-> **Executable coverage (2026-09-22):** ไม่มี Playwright spec สำหรับ portal; catalog แบบเอกสารเท่านั้น `../carmen-inventory-frontend-e2e/docs/test-cases/1002-external-price-list.md` (42 case `TC-EPL-*`: โหลด, header, ตารางสินค้า, sub-table MOQ, ตัวเลือก tax-profile / unit, save, Excel import, submit, หน้าจอหมดอายุ) เป็น oracle ที่ใกล้ที่สุด หน้านี้ไม่ mirror มัน
+> **Executable coverage (2026-09-22):** ไม่มี Playwright spec สำหรับ portal; catalog แบบเอกสารเท่านั้น `../carmen-frontend-e2e/docs/test-cases/1002-external-price-list.md` (42 case `TC-EPL-*`: โหลด, header, ตารางสินค้า, sub-table MOQ, ตัวเลือก tax-profile / unit, save, Excel import, submit, หน้าจอหมดอายุ) เป็น oracle ที่ใกล้ที่สุด หน้านี้ไม่ mirror มัน
 > **Re-sync 2026-09-22:** ข้อค้นพบ "Save/Submit ยืนยันแล้วว่าไม่ทำงาน" ของรอบ 2026-07-16 ล้าสมัยแล้ว — `PATCH /api/pricelist-external/:url_token` และ `POST …/submit` มีอยู่จริง; ลิงก์หมดอายุที่ `end_date` ของ RFQ
 
 หน้านี้จับ test scenario ที่ exercise การ interact ของ persona **Vendor** กับ `/pl/:url_token` เพราะ vendor ไม่มี Carmen Blue login section Permission / Authorization จึงลดลงเป็นแถว N/A เดียว
@@ -58,6 +58,6 @@ dateCreated: 2026-05-15T15:00:00.000Z
 - ภาพรวม parent: [04-test-scenarios.md](./04-test-scenarios.md)
 - User flow: [03-user-flow-vendor.md](./03-user-flow-vendor.md) — flow ของ portal ทีละขั้นตอน
 - กติกาทางธุรกิจ: [02-business-rules.md](./02-business-rules.md) § 5.4, `VPL_VAL_023`, `VPL_VAL_027`, `VPL_VAL_028`
-- Backend: `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/pricelists/check-pricelist.controller.ts`, `pricelist-external.controller.ts`, `apps/backend-gateway/src/auth/guards/url-token.guard.ts`; `apps/micro-business/src/master/check-price-list/check-price-list.service.ts`
-- Frontend: `../carmen-inventory-frontend-react/routes/external/pl/` (`use-price-list-external.ts`, `price-list-external-import-dialog.tsx`, `price-list-external-expired.tsx`)
+- Backend: `../carmen-turborepo-backend/apps/backend-gateway/src/application/pricelists/check-pricelist.controller.ts`, `pricelist-external.controller.ts`, `apps/backend-gateway/src/auth/guards/url-token.guard.ts`; `apps/micro-business/src/master/check-price-list/check-price-list.service.ts`
+- Frontend: `../carmen-frontend/routes/external/pl/` (`use-price-list-external.ts`, `price-list-external-import-dialog.tsx`, `price-list-external-expired.tsx`)
 - Sibling: [04-test-scenarios-purchaser.md](./04-test-scenarios-purchaser.md) — วิธีที่ Purchaser ส่ง email ลิงก์และ activate pricelist ที่ submit แล้ว

@@ -18,8 +18,8 @@ dateCreated: 2026-05-15T13:30:00.000Z
 > **ตรวจสอบซ้ำ 2026-09-22** เทียบกับ `schema.prisma` ที่ backend HEAD `cd2e07f60`: ไม่มีคอลัมน์ SR ถูกเพิ่มหรือลบตั้งแต่ 2026-07-29 แต่ `sr_type` ตอนนี้ถูก derive ฝั่ง server, `sr_date` / `sr_no` ถูกกำหนดขั้นสุดท้ายตอน submit และ response ของ detail endpoint ย้ายไปเป็น nested entity objects (`workflow`, `requestor`, `department`, `from_location`, `to_location`, `issue_by`, `product` — `@ExpandRefs`, 2026-09-17); list endpoint ยังคืนสตริง `*_name` แบบ flat (`types/store-requisition.ts`)
 
 > **Source of truth:** Prisma schema ฝั่ง backend ให้อ่านสิ่งเหล่านี้ก่อนเสมอเมื่อจะเขียนหรือแก้หน้านี้:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > ไฟล์ `generated/client/schema.prisma` ในแต่ละ package เป็นสำเนาที่ถูก generate อัตโนมัติและไม่ใช่ของจริง
 
@@ -215,8 +215,8 @@ tb_store_requisition_detail ──1──*──► tb_inventory_transaction_det
 
 ## 6. แหล่งอ้างอิง
 
-- **Backend logic ที่อ้างถึงด้านบน:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/store-requisition/store-requisition.service.ts` (`create`, `submit`, `approve`, `saveStageRoleDetails`, `generateSRNo`), `logic/sr-type.helper.ts`, `logic/sr-date.helper.ts`, `logic/sr-department.helper.ts`, `dto/store-requisition.dto.ts` (`StoreRequisitionCreateSchema`, `ValidateSRBeforeSubmitSchema`), `dto/store-requisition-detail.dto.ts`; error codes ใน `packages/error-catalog/src/catalog.ts`; migration `20260619120000_sr_issue_fields`
-- **Primary (source of truth):** Prisma schemas ที่ระบุใน header callout — โดยเฉพาะ `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (โมเดล SR ทั้งสี่, `enum_sr_type` เฉพาะ SR, `enum_doc_status` / `enum_inventory_doc_type` / `enum_comment_type` / `enum_last_action` ที่ใช้ร่วม และตระกูล `tb_inventory_transaction*` ที่เกี่ยวข้อง) และ `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (ตรวจสอบแล้วว่าไม่มีโมเดล SR)
+- **Backend logic ที่อ้างถึงด้านบน:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/store-requisition/store-requisition.service.ts` (`create`, `submit`, `approve`, `saveStageRoleDetails`, `generateSRNo`), `logic/sr-type.helper.ts`, `logic/sr-date.helper.ts`, `logic/sr-department.helper.ts`, `dto/store-requisition.dto.ts` (`StoreRequisitionCreateSchema`, `ValidateSRBeforeSubmitSchema`), `dto/store-requisition-detail.dto.ts`; error codes ใน `packages/error-catalog/src/catalog.ts`; migration `20260619120000_sr_issue_fields`
+- **Primary (source of truth):** Prisma schemas ที่ระบุใน header callout — โดยเฉพาะ `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (โมเดล SR ทั้งสี่, `enum_sr_type` เฉพาะ SR, `enum_doc_status` / `enum_inventory_doc_type` / `enum_comment_type` / `enum_last_action` ที่ใช้ร่วม และตระกูล `tb_inventory_transaction*` ที่เกี่ยวข้อง) และ `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (ตรวจสอบแล้วว่าไม่มีโมเดล SR)
 - **Secondary (cross-check แนวคิด):**
   - `../carmen/docs/store-requisitions/SR-Overview.md` — วัตถุประสงค์โมดูล บริบทธุรกิจ ฟีเจอร์สำคัญ user roles; จุดที่ต่างในส่วนที่ 5 (ข้อ 2, 3, 4)
   - `../carmen/docs/store-requisitions/SR-Technical-Specification.md` — โมเดล interface TypeScript, enum `RequisitionItem.approvalStatus`, interface `StockMovement` / `JournalEntry`, validation rules; จุดที่ต่างในส่วนที่ 5 (ข้อ 1, 2, 3, 4, 5, 6, 7, 8)

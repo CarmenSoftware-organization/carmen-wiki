@@ -70,10 +70,10 @@ Dashboard คือหน้าจอแรกที่ผู้ปฏิบั�
 
 ## 5. แหล่งข้อมูลอ้างอิง
 
-- `../carmen-inventory-frontend-react/routes/router.tsx` — การลงทะเบียน route เดียว: `{ path: "dashboard", lazy: () => import("./dashboard/dashboard.route") }`
-- `../carmen-inventory-frontend-react/routes/dashboard/dashboard.route.tsx`, `dashboard-component.tsx`, `sortable-widget-item.tsx`, `status-group.ts`, `status-group-card.tsx`, `widget-config-dialog.tsx`, `widget-param-fields.tsx`, `widget-display-fields.tsx`, `widget-shape.ts` — หน้า live ทั้งหมด
-- `../carmen-inventory-frontend-react/constant/module-list.ts` — การลงทะเบียน sidebar แบบ entry เดียว (ไม่มี sub-module), `licenseFeature: "dashboard.widget"`
-- `../carmen-inventory-frontend-react/routes/dashboard/use-my-dashboard-widgets.ts` — hook CRUD ของ widget ส่วนตัว + hook ข้อมูลต่อ widget ที่หน้า live ใช้จริง (ย้ายจาก `hooks/` เมื่อ 2026-08-28)
-- `../carmen-inventory-frontend-react/hooks/use-dashboard.ts` — **ถูกลบ 2026-08-31** (`02228125`); ค่าคงที่ `MY_PENDING_*_COUNT` ที่มันใช้ยังอยู่ใน `constant/api-endpoints.ts` โดยไม่มีผู้เรียก
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-widgets/`, `dashboard-lab/` และ `../micro-data/` — backend (ดู [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) §8)
-- Commit ที่ลบ: `03891e3d` ใน `../carmen-inventory-frontend-react` ("refactor(dashboard): convert to idiomatic structure, drop dead demo code", 2026-06-27) — ลบ `_components/dashboard-{main,pr,po,grn,sr,inventory,my-pending,my-approval}.tsx` และ `mock/{main,pr,po,grn,sr,inventory}.ts` (19 ไฟล์, เพิ่ม 6 บรรทัด / ลบ 5,468 บรรทัด)
+- `../carmen-frontend/routes/router.tsx` — การลงทะเบียน route เดียว: `{ path: "dashboard", lazy: () => import("./dashboard/dashboard.route") }`
+- `../carmen-frontend/routes/dashboard/dashboard.route.tsx`, `dashboard-component.tsx`, `sortable-widget-item.tsx`, `status-group.ts`, `status-group-card.tsx`, `widget-config-dialog.tsx`, `widget-param-fields.tsx`, `widget-display-fields.tsx`, `widget-shape.ts` — หน้า live ทั้งหมด
+- `../carmen-frontend/constant/module-list.ts` — การลงทะเบียน sidebar แบบ entry เดียว (ไม่มี sub-module), `licenseFeature: "dashboard.widget"`
+- `../carmen-frontend/routes/dashboard/use-my-dashboard-widgets.ts` — hook CRUD ของ widget ส่วนตัว + hook ข้อมูลต่อ widget ที่หน้า live ใช้จริง (ย้ายจาก `hooks/` เมื่อ 2026-08-28)
+- `../carmen-frontend/hooks/use-dashboard.ts` — **ถูกลบ 2026-08-31** (`02228125`); ค่าคงที่ `MY_PENDING_*_COUNT` ที่มันใช้ยังอยู่ใน `constant/api-endpoints.ts` โดยไม่มีผู้เรียก
+- `../carmen-turborepo-backend/apps/backend-gateway/src/application/dashboard-widgets/`, `dashboard-lab/` และ `../micro-data/` — backend (ดู [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) §8)
+- Commit ที่ลบ: `03891e3d` ใน `../carmen-frontend` ("refactor(dashboard): convert to idiomatic structure, drop dead demo code", 2026-06-27) — ลบ `_components/dashboard-{main,pr,po,grn,sr,inventory,my-pending,my-approval}.tsx` และ `mock/{main,pr,po,grn,sr,inventory}.ts` (19 ไฟล์, เพิ่ม 6 บรรทัด / ลบ 5,468 บรรทัด)

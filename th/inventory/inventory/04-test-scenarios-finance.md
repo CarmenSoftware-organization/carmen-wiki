@@ -33,5 +33,5 @@ dateCreated: 2026-05-15T12:00:00.000Z
 
 ## 3. แหล่งอ้างอิง
 
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/period-end/period-end.controller.ts`, `.../inventory-transaction/inventory-transaction.service.ts`
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/period-end/period-end.controller.ts`, `.../inventory-transaction/inventory-transaction.service.ts`
 - ภาพรวม parent: [04-test-scenarios](/th/inventory/inventory/04-test-scenarios); คู่ user-flow: [03-user-flow-finance](/th/inventory/inventory/03-user-flow-finance)

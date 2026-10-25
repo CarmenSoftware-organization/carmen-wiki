@@ -54,7 +54,7 @@ flowchart TD
     ReSort --> MaintainFilters["Filters remain active"]
 ```
 
-> Diagram adapted from `carmen/docs/app/system-administration/location-management/FD-location-management.md` · verified against `carmen-inventory-frontend-react/components/ui/data-grid/data-grid-column-header.tsx:67-75` (2026-09-28) · Changes: clicking a header cycles unsorted → ascending → descending → cleared (`handleSort`, `:67-75`), never descending → ascending directly; the backend `locations.service.ts` cannot evidence header-click behaviour, so the citation is the real frontend file; dropped "with sort indicator on first load" — `location-component.tsx` passes no `defaultSort`, so no column shows a sort indicator until the user clicks one; dropped the source's "Shelves / Products / Users Count" sortable columns (not confirmed on the list).
+> Diagram adapted from `carmen/docs/app/system-administration/location-management/FD-location-management.md` · verified against `carmen-frontend/components/ui/data-grid/data-grid-column-header.tsx:67-75` (2026-09-28) · Changes: clicking a header cycles unsorted → ascending → descending → cleared (`handleSort`, `:67-75`), never descending → ascending directly; the backend `locations.service.ts` cannot evidence header-click behaviour, so the citation is the real frontend file; dropped "with sort indicator on first load" — `location-component.tsx` passes no `defaultSort`, so no column shows a sort indicator until the user clicks one; dropped the source's "Shelves / Products / Users Count" sortable columns (not confirmed on the list).
 
 Switching between list and grid view preserves the active filters and sort:
 
@@ -70,7 +70,7 @@ flowchart TD
     Preserve --> ShowSameData["Display same filtered / sorted results in the new layout"]
 ```
 
-> Diagram adapted from `carmen/docs/app/system-administration/location-management/FD-location-management.md` · verified against `carmen-inventory-frontend-react/components/templates/config-list-template.tsx:407-424` (2026-09-28) · Changes: renamed "table"/"card" to the real `list` / `grid` `displayMode` values, each set by its own button (`:407-424` — not a single toggle); dropped the source's "checkbox selection" claim in list view — the template does add row/select-all checkboxes (`use-config-table.ts:85`), but nothing in the list consumes that selection for a bulk action. Grid mode switches to a separate infinite-scroll query (`:218-229`), so it re-fetches rather than only re-rendering.
+> Diagram adapted from `carmen/docs/app/system-administration/location-management/FD-location-management.md` · verified against `carmen-frontend/components/templates/config-list-template.tsx:407-424` (2026-09-28) · Changes: renamed "table"/"card" to the real `list` / `grid` `displayMode` values, each set by its own button (`:407-424` — not a single toggle); dropped the source's "checkbox selection" claim in list view — the template does add row/select-all checkboxes (`use-config-table.ts:85`), but nothing in the list consumes that selection for a bulk action. Grid mode switches to a separate infinite-scroll query (`:218-229`), so it re-fetches rather than only re-rendering.
 
 Creating a new location follows this validation and submission flow:
 
@@ -97,7 +97,7 @@ sequenceDiagram
     end
 ```
 
-> Diagram adapted from `carmen/docs/app/system-administration/location-management/TS-location-management.md` · verified against `carmen-inventory-frontend-react/routes/config/location/location-form-schema.ts`, `location-form.tsx:210-218` (2026-09-28) · Changes: replaced the source's "update mock state" step with the real `POST /locations` API call; on success the form navigates to `/config/location/:id` (the new location's own detail page, per `location-form.tsx:214-217`), not back to the list; corrected the entry button label to "Add" (`t("add")`), not "Create Location".
+> Diagram adapted from `carmen/docs/app/system-administration/location-management/TS-location-management.md` · verified against `carmen-frontend/routes/config/location/location-form-schema.ts`, `location-form.tsx:210-218` (2026-09-28) · Changes: replaced the source's "update mock state" step with the real `POST /locations` API call; on success the form navigates to `/config/location/:id` (the new location's own detail page, per `location-form.tsx:214-217`), not back to the list; corrected the entry button label to "Add" (`t("add")`), not "Create Location".
 
 ## 3. Validation & Errors
 
@@ -178,9 +178,9 @@ Migration `20260814150000_add_location_shelf` added `shelf_id` (FK → `tb_locat
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_location` (line ~1354), `tb_location_shelf` (~1441), `tb_location_user` (~5428), `tb_product_location` (~5334), `enum_location_type` (~229), `enum_physical_count_type` (~51).
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_location` (line ~1354), `tb_location_shelf` (~1441), `tb_location_user` (~5428), `tb_product_location` (~5334), `enum_location_type` (~229), `enum_physical_count_type` (~51).
 - **Migrations:** `20260814150000_add_location_shelf`, `20260904131500_rename_shelf_and_user_location`.
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/locations/locations.service.ts`; gateway `apps/backend-gateway/src/config/config_locations/` (+ `config_locations-users/`, `config_user-locations/`).
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/080-location.spec.ts` (17 cases) + `docs/test-cases/gaps/080-location-gap.md` (45 uncovered cases).
-- **Frontend:** `../carmen-inventory-frontend-react/routes/config/location/`.
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/locations/locations.service.ts`; gateway `apps/backend-gateway/src/config/config_locations/` (+ `config_locations-users/`, `config_user-locations/`).
+- **E2E:** `../carmen-frontend-e2e/tests/080-location.spec.ts` (17 cases) + `docs/test-cases/gaps/080-location-gap.md` (45 uncovered cases).
+- **Frontend:** `../carmen-frontend/routes/config/location/`.
 - **carmen/docs:** `../carmen/docs/settings/locations.md` — wireframes.

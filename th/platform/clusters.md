@@ -13,7 +13,7 @@ dateCreated: 2026-05-19T00:00:00.000Z
 โมดูล **Clusters** เป็นจุดเริ่มต้นของ container ระดับองค์กรที่ใหญ่ที่สุดใน Carmen Blue โดย cluster หนึ่ง ๆ จะรวม business unit (BU) และ user ที่ผูกกับ BU เหล่านั้นเข้าด้วยกัน ลิมิตไลเซนส์ — จำนวน BU สูงสุดที่ cluster มีได้ และจำนวน named user ที่ครอบคลุม — แต่เดิมเป็นคอลัมน์ static บน record ของ cluster/BU แต่ตั้งแต่มีการปรับระบบไลเซนส์ระหว่าง 2026-07-29 ถึง 2026-09-04 ค่าเหล่านี้กลายเป็นแถวที่ "ชนะ" ของ ledger การซื้อแบบมีช่วงวันที่แทน (ดู §3) route และ action ที่แก้ไขข้อมูลในโมดูลนี้ถูก gate ด้วย permission key `cluster.*` **และ** feature flag `clusters` (ดู [Platform RBAC](/th/platform/rbac) และ [Permissions](/th/platform/clusters/permissions))
 
 > **At a Glance**
-> **วัตถุประสงค์ของโมดูล:** container ของ tenant ที่รวม business unit (BU) และ user ที่ผูกกับ BU เหล่านั้น และลิงก์ไปยัง licence ledger ที่ปัจจุบันเป็นที่เก็บ cap ของจำนวน BU และจำนวนที่นั่ง &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับ Platform admin SPA; การเข้าถึงของ operator ต้องได้รับ grant permission `cluster.*` ([rbac](/th/platform/rbac)) และ feature flag `clusters` ต้องเปิดอยู่ &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_cluster` (ฟิลด์: `code`, `name`, `alias_name`, `logo_file_token`, `avatar_file_token`, `is_active`, `doc_version`, soft-delete trio — **ไม่มีคอลัมน์ licence-cap อีกต่อไป**), `tb_business_unit` (1:N), `tb_cluster_user` (M:N join ที่ถือ role per-cluster เป็น `admin`/`user` — **ไม่มี `parent_bu_id` แล้ว**), `tb_cluster_license` (ใหม่ — ledger การซื้อโควตา BU ของ cluster) &nbsp;·&nbsp; **หน้าย่อย:** 3 &nbsp;·&nbsp; **Permission key:** `cluster.read` (list/nav) + `cluster.create`/`cluster.update`/`cluster.delete` &nbsp;·&nbsp; **Feature-flag key:** `clusters` &nbsp;·&nbsp; **superAdminOnly:** ไม่ใช่ — gate ด้วย permission ไม่ใช่ flag แบบ super-admin-only (อ้างอิง `../carmen-platform/src/components/nav/platformNav.ts`)
+> **วัตถุประสงค์ของโมดูล:** container ของ tenant ที่รวม business unit (BU) และ user ที่ผูกกับ BU เหล่านั้น และลิงก์ไปยัง licence ledger ที่ปัจจุบันเป็นที่เก็บ cap ของจำนวน BU และจำนวนที่นั่ง &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับ Platform admin SPA; การเข้าถึงของ operator ต้องได้รับ grant permission `cluster.*` ([rbac](/th/platform/rbac)) และ feature flag `clusters` ต้องเปิดอยู่ &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_cluster` (ฟิลด์: `code`, `name`, `alias_name`, `logo_file_token`, `avatar_file_token`, `is_active`, `doc_version`, soft-delete trio — **ไม่มีคอลัมน์ licence-cap อีกต่อไป**), `tb_business_unit` (1:N), `tb_cluster_user` (M:N join ที่ถือ role per-cluster เป็น `admin`/`user` — **ไม่มี `parent_bu_id` แล้ว**), `tb_cluster_license` (ใหม่ — ledger การซื้อโควตา BU ของ cluster) &nbsp;·&nbsp; **หน้าย่อย:** 3 &nbsp;·&nbsp; **Permission key:** `cluster.read` (list/nav) + `cluster.create`/`cluster.update`/`cluster.delete` &nbsp;·&nbsp; **Feature-flag key:** `clusters` &nbsp;·&nbsp; **superAdminOnly:** ไม่ใช่ — gate ด้วย permission ไม่ใช่ flag แบบ super-admin-only (อ้างอิง `../carmen-backstage/src/components/nav/platformNav.ts`)
 
 ![คลัสเตอร์ (Clusters) screen](/screenshots/platform/clusters/index.png)
 
@@ -84,16 +84,16 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 ## 6. แหล่งข้อมูลอ้างอิง
 
-- `../carmen-platform/src/App.tsx` — การต่อสาย `PrivateRoute` พร้อม key `requiredPermission` + `feature` ของทั้งสาม route ของ cluster
-- `../carmen-platform/src/components/PrivateRoute.tsx` — guard แบบเป็นชั้น: auth → resolve platform-authority/cluster-admin → permission → super-admin → feature flag
-- `../carmen-platform/src/components/nav/platformNav.ts` — รายการ nav ของ Clusters/Business Units/Tenant Migrations (permission, feature, group)
-- `../carmen-platform/src/pages/ClusterManagement.tsx` — หน้า list, แถบ Fleet Capacity (อ่านจาก `GET /clusters/summary` แล้ว), filter รวม Quota-expiring, ส่งออก CSV, การจัดการ soft-delete, row action ที่ gate ด้วย `<Can>` รวม View History
-- `../carmen-platform/src/pages/ClusterEdit.tsx` — หน้า orchestrator แบบ create/view/edit: `ClusterPlate`/`ClusterDraftPlate`, เนื้อหา 3 แท็บ, optimistic locking ด้วย `doc_version`, dialog เพิ่ม user, action View History ที่หัวหน้า
-- `../carmen-platform/src/pages/clusterEdit/{ClusterPlate,ClusterDraftPlate,PlateField,clusterTabs}.ts(x)` และ `sections/{BusinessUnitsSection,UsersSection,SubscriptionCard}.tsx` — แผ่นป้าย, นิยามแท็บ และเนื้อหาแต่ละแท็บปัจจุบัน
-- `../carmen-platform/src/pages/clusterManagement/{FleetCapacity,CapacityGauge,CapacityMeter,ClusterCreateForm,ClusterIdentityFields}.tsx` และ `../carmen-platform/src/utils/capacity.ts` — สูตรคำนวณ capacity และฟอร์ม create แบบสองการ์ด
-- `../carmen-platform/src/utils/businessUnitRank.ts` — การจัดอันดับ "Over limit" ที่ใช้ร่วมกับหน้า BU list ของฝั่ง cluster-admin
-- `../carmen-platform/src/services/clusterService.ts` — REST client (`/api-system/clusters`, `/api-system/clusters/summary`, endpoint อัปโหลด `/logo` และ `/avatar`)
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — model `tb_cluster`, `tb_cluster_user`, `tb_cluster_license`, `tb_business_unit_license` (ดูเลขบรรทัดที่แน่นอนใน [Data Model](/th/platform/clusters/data-model) §6)
+- `../carmen-backstage/src/App.tsx` — การต่อสาย `PrivateRoute` พร้อม key `requiredPermission` + `feature` ของทั้งสาม route ของ cluster
+- `../carmen-backstage/src/components/PrivateRoute.tsx` — guard แบบเป็นชั้น: auth → resolve platform-authority/cluster-admin → permission → super-admin → feature flag
+- `../carmen-backstage/src/components/nav/platformNav.ts` — รายการ nav ของ Clusters/Business Units/Tenant Migrations (permission, feature, group)
+- `../carmen-backstage/src/pages/ClusterManagement.tsx` — หน้า list, แถบ Fleet Capacity (อ่านจาก `GET /clusters/summary` แล้ว), filter รวม Quota-expiring, ส่งออก CSV, การจัดการ soft-delete, row action ที่ gate ด้วย `<Can>` รวม View History
+- `../carmen-backstage/src/pages/ClusterEdit.tsx` — หน้า orchestrator แบบ create/view/edit: `ClusterPlate`/`ClusterDraftPlate`, เนื้อหา 3 แท็บ, optimistic locking ด้วย `doc_version`, dialog เพิ่ม user, action View History ที่หัวหน้า
+- `../carmen-backstage/src/pages/clusterEdit/{ClusterPlate,ClusterDraftPlate,PlateField,clusterTabs}.ts(x)` และ `sections/{BusinessUnitsSection,UsersSection,SubscriptionCard}.tsx` — แผ่นป้าย, นิยามแท็บ และเนื้อหาแต่ละแท็บปัจจุบัน
+- `../carmen-backstage/src/pages/clusterManagement/{FleetCapacity,CapacityGauge,CapacityMeter,ClusterCreateForm,ClusterIdentityFields}.tsx` และ `../carmen-backstage/src/utils/capacity.ts` — สูตรคำนวณ capacity และฟอร์ม create แบบสองการ์ด
+- `../carmen-backstage/src/utils/businessUnitRank.ts` — การจัดอันดับ "Over limit" ที่ใช้ร่วมกับหน้า BU list ของฝั่ง cluster-admin
+- `../carmen-backstage/src/services/clusterService.ts` — REST client (`/api-system/clusters`, `/api-system/clusters/summary`, endpoint อัปโหลด `/logo` และ `/avatar`)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — model `tb_cluster`, `tb_cluster_user`, `tb_cluster_license`, `tb_business_unit_license` (ดูเลขบรรทัดที่แน่นอนใน [Data Model](/th/platform/clusters/data-model) §6)
 
 ## 7. หน้าในโมดูลนี้
 

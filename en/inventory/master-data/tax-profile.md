@@ -89,6 +89,6 @@ Source: tenant schema.
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_tax_profile` (line ~1491), `enum_tax_type` (~96) — note that `enum_tax_type` lives on each document line, not on this entity.
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/042-tax-profile.spec.ts` + `docs/test-cases/gaps/042-tax-profile-gap.md`.
-- **Frontend:** `../carmen-inventory-frontend-react/routes/config/tax-profile/`.
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_tax_profile` (line ~1491), `enum_tax_type` (~96) — note that `enum_tax_type` lives on each document line, not on this entity.
+- **E2E:** `../carmen-frontend-e2e/tests/042-tax-profile.spec.ts` + `docs/test-cases/gaps/042-tax-profile-gap.md`.
+- **Frontend:** `../carmen-frontend/routes/config/tax-profile/`.

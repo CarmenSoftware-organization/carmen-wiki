@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 > **At a Glance**
 > **โมดูล:** [vendor-pricelist](/th/inventory/vendor-pricelist) &nbsp;·&nbsp; **Persona ครอบคลุม:** Purchaser, Vendor (portal ภายนอก — save/submit ทำงานได้ตั้งแต่ 2026-08/09)
 > **Drill-down ของแต่ละ persona คือ `04-test-scenarios-<role>.md`**
-> **Executable coverage (2026-09-22):** `../carmen-inventory-frontend-e2e/tests/150-vendor.spec.ts` (31 case, 2 fixme) + `docs/test-cases/gaps/150-vendor-gap.md` (54), `tests/159-pl.spec.ts` (28, 4 fixme) + `gaps/159-pl-gap.md` (65), `tests/160-pl-template.spec.ts` (33) + `gaps/160-pl-template-gap.md` (58), `tests/043-certification.spec.ts` (6) + `gaps/043-certification-gap.md` (29); vendor portal: catalog แบบเอกสารเท่านั้น `docs/test-cases/1002-external-price-list.md` (42 ไม่มี spec); Request for Pricing: ไม่มี spec หน้านี้ไม่ mirror case เหล่านั้น
+> **Executable coverage (2026-09-22):** `../carmen-frontend-e2e/tests/150-vendor.spec.ts` (31 case, 2 fixme) + `docs/test-cases/gaps/150-vendor-gap.md` (54), `tests/159-pl.spec.ts` (28, 4 fixme) + `gaps/159-pl-gap.md` (65), `tests/160-pl-template.spec.ts` (33) + `gaps/160-pl-template-gap.md` (58), `tests/043-certification.spec.ts` (6) + `gaps/043-certification-gap.md` (29); vendor portal: catalog แบบเอกสารเท่านั้น `docs/test-cases/1002-external-price-list.md` (42 ไม่มี spec); Request for Pricing: ไม่มี spec หน้านี้ไม่ mirror case เหล่านั้น
 
 ## 1. ภาพรวม
 
@@ -51,15 +51,15 @@ Scenario ที่อธิบาย high-value approval เฉพาะ Manager
 
 มี Playwright spec จริงสำหรับสี่ในห้าหน้าจอ (ดู coverage note ด้านบนสำหรับจำนวน):
 
-- `../carmen-inventory-frontend-e2e/tests/150-vendor.spec.ts` — CRUD เต็ม, การนำทาง tab (address/contact/info), validation (required field, max-length, duplicate code) และ coverage admin-BU สำหรับหน้าจอ **Vendor**; ยังไม่มีอะไรสำหรับ section certificates หรือ `tax_no` / `branch_no` / `rating` ที่มีเฉพาะ backend
-- `../carmen-inventory-frontend-e2e/tests/043-certification.spec.ts` — master **Certification** (CRUD แบบ dialog) ใต้ `/vendor-management/certification`
-- `../carmen-inventory-frontend-e2e/tests/159-pl.spec.ts` — list/search/filter, create, view detail, edit และ Export สำหรับ **Price List** section Duplicate และ "Mark as Expired" ของมันใช้ assertion แบบ loose/best-effort (`.catch(() => {})`, `expect(true).toBe(true)`) และอ้างอิง action ที่ไม่พบใน list component จริง (row action ของ `use-pl-table.tsx` มีแค่ Edit + Delete บวกปุ่ม Export ฝั่ง client) — ถือว่าสองส่วนนี้เป็น test-plan scaffolding เชิงคาดหวัง ไม่ใช่ feature ที่ยืนยันแล้ว
-- `../carmen-inventory-frontend-e2e/tests/160-pl-template.spec.ts` — coverage ของ **Price List Template**
+- `../carmen-frontend-e2e/tests/150-vendor.spec.ts` — CRUD เต็ม, การนำทาง tab (address/contact/info), validation (required field, max-length, duplicate code) และ coverage admin-BU สำหรับหน้าจอ **Vendor**; ยังไม่มีอะไรสำหรับ section certificates หรือ `tax_no` / `branch_no` / `rating` ที่มีเฉพาะ backend
+- `../carmen-frontend-e2e/tests/043-certification.spec.ts` — master **Certification** (CRUD แบบ dialog) ใต้ `/vendor-management/certification`
+- `../carmen-frontend-e2e/tests/159-pl.spec.ts` — list/search/filter, create, view detail, edit และ Export สำหรับ **Price List** section Duplicate และ "Mark as Expired" ของมันใช้ assertion แบบ loose/best-effort (`.catch(() => {})`, `expect(true).toBe(true)`) และอ้างอิง action ที่ไม่พบใน list component จริง (row action ของ `use-pl-table.tsx` มีแค่ Edit + Delete บวกปุ่ม Export ฝั่ง client) — ถือว่าสองส่วนนี้เป็น test-plan scaffolding เชิงคาดหวัง ไม่ใช่ feature ที่ยืนยันแล้ว
+- `../carmen-frontend-e2e/tests/160-pl-template.spec.ts` — coverage ของ **Price List Template**
 - **ยังไม่มี spec** สำหรับ Request for Pricing (รวม Send email) หรือสำหรับ vendor portal ภายนอก — portal มี catalog แบบเอกสารเท่านั้น `docs/test-cases/1002-external-price-list.md` (42 case `TC-EPL-*`)
 
 การบริโภคปลายน้ำถูก exercise ทางอ้อมโดย:
 
-- `../carmen-inventory-frontend-e2e/tests/402-po-purchaser-journey.spec.ts` (TC-PO-060205..TC-PO-060208) — wizard PO From-Price-List
+- `../carmen-frontend-e2e/tests/402-po-purchaser-journey.spec.ts` (TC-PO-060205..TC-PO-060208) — wizard PO From-Price-List
 
 ## 6. แหล่งอ้างอิง
 

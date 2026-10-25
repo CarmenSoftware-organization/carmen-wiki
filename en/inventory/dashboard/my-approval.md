@@ -99,9 +99,9 @@ Items are sorted by `doc_date` descending from the API. The widget shows up to `
 
 ## 8. Reference Sources
 
-- **Component (deleted 2026-06-27):** `routes/dashboard/_components/dashboard-my-approval.tsx` in `../carmen-inventory-frontend-react`
+- **Component (deleted 2026-06-27):** `routes/dashboard/_components/dashboard-my-approval.tsx` in `../carmen-frontend`
 - **Deletion commit:** `03891e3d` — "refactor(dashboard): convert to idiomatic structure, drop dead demo code"
-- **Hooks (real and live, but power `/procurement/approval` — not `/dashboard`):** `../carmen-inventory-frontend-react/routes/procurement/approval/use-approval.ts` — `useApprovalPending` (`GET /api/my-pending` since 2026-09-16), `useApprovalPendingSummary` (moved out of `hooks/` on 2026-08-28)
-- **Types:** `../carmen-inventory-frontend-react/types/approval.ts` — `ApprovalItem`, `ApprovalPendingSummary`, `RawApprovalPR`, `RawApprovalPO`, `RawApprovalSR`
-- **API constants:** `../carmen-inventory-frontend-react/constant/api-endpoints.ts` → `APPROVAL_PENDING`, `APPROVAL_PENDING_SUMMARY`
-- **Colour mapping:** `../carmen-inventory-frontend-react/constant/module-color-map.ts` → `getModuleColor`
+- **Hooks (real and live, but power `/procurement/approval` — not `/dashboard`):** `../carmen-frontend/routes/procurement/approval/use-approval.ts` — `useApprovalPending` (`GET /api/my-pending` since 2026-09-16), `useApprovalPendingSummary` (moved out of `hooks/` on 2026-08-28)
+- **Types:** `../carmen-frontend/types/approval.ts` — `ApprovalItem`, `ApprovalPendingSummary`, `RawApprovalPR`, `RawApprovalPO`, `RawApprovalSR`
+- **API constants:** `../carmen-frontend/constant/api-endpoints.ts` → `APPROVAL_PENDING`, `APPROVAL_PENDING_SUMMARY`
+- **Colour mapping:** `../carmen-frontend/constant/module-color-map.ts` → `getModuleColor`

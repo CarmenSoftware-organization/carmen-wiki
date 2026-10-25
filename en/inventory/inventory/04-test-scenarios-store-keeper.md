@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 > **At a Glance**
 > **Persona:** Store Keeper &nbsp;·&nbsp; **Module:** [inventory](/en/inventory/inventory) &nbsp;·&nbsp; **Surface:** the read-only Transaction Log (`/inventory-management/transaction`)
 > **Correction (2026-07-15):** the previous ~29 scenarios (threshold auto-approve, new-lot Controller routing, lot pickers, perishable expiry validation, SoD write-off blocks, negative-balance submit errors on manual documents) described a stock-in/stock-out authoring flow that does not exist in this module — no threshold or lot-entry UI exists anywhere, and lot numbers are system-generated. Manual adjustments belong to [inventory-adjustment](/en/inventory/inventory-adjustment)'s own test pages.
-> **Executable coverage (2026-09-22):** no Playwright spec exercises `/inventory-management/transaction`; the manual catalog `../carmen-inventory-frontend-e2e/docs/test-cases/740-stock-transaction.md` (38 cases, re-verified 2026-09-20) is the reference. Posting effects are asserted upstream in `tests/501-grn.spec.ts`, `tests/701-sr.spec.ts`, `tests/601-cn.spec.ts`.
+> **Executable coverage (2026-09-22):** no Playwright spec exercises `/inventory-management/transaction`; the manual catalog `../carmen-frontend-e2e/docs/test-cases/740-stock-transaction.md` (38 cases, re-verified 2026-09-20) is the reference. Posting effects are asserted upstream in `tests/501-grn.spec.ts`, `tests/701-sr.spec.ts`, `tests/601-cn.spec.ts`.
 
 ## 1. Happy Path
 
@@ -54,5 +54,5 @@ dateCreated: 2026-05-15T12:00:00.000Z
 - User flow: [03-user-flow-store-keeper](/en/inventory/inventory/03-user-flow-store-keeper).
 - Screen reference: [transaction](/en/inventory/inventory/transaction).
 - Business rules: [02-business-rules](/en/inventory/inventory/02-business-rules) — `INV_VAL_005`, `INV_VAL_008`, `INV_POST_001`–`INV_POST_003`.
-- Frontend: `../carmen-inventory-frontend-react/routes/inventory-management/transaction/`; backend list/search/sort logic in `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/inventory-transaction/inventory-transaction.service.ts` (`findAll`).
-- E2E: no spec exercises this screen directly yet; manual catalog `../carmen-inventory-frontend-e2e/docs/test-cases/740-stock-transaction.md` (38 cases); posting effects assert via `501-grn.spec.ts` / `701-sr.spec.ts` / `601-cn.spec.ts`.
+- Frontend: `../carmen-frontend/routes/inventory-management/transaction/`; backend list/search/sort logic in `../carmen-turborepo-backend/apps/micro-business/src/inventory/inventory-transaction/inventory-transaction.service.ts` (`findAll`).
+- E2E: no spec exercises this screen directly yet; manual catalog `../carmen-frontend-e2e/docs/test-cases/740-stock-transaction.md` (38 cases); posting effects assert via `501-grn.spec.ts` / `701-sr.spec.ts` / `601-cn.spec.ts`.

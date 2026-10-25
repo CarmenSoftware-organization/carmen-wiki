@@ -123,9 +123,9 @@ Source: platform schema.
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_permission` (`model tb_permission`, line 425).
-- **Seed:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/seed.permission.data.ts`, `seed.permission.ts`.
-- **Backend guard:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/auth/decorators/permission.decorator.ts`, `.../auth/guards/permission.guard.ts` (RBAC); `.../common/guard/app-id.guard.ts`, `.../common/guard/app-allowlist.store.ts` (App ID client allowlist, §1.1); `.../license/{license.interceptor,license-route-resolver,license.evaluator}.ts` + `packages/prisma-shared-schema-platform/prisma/permission.route-map.ts` (licence layer).
-- **Catalog endpoint:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_permissions/config_permissions.controller.ts` (`GET`, `:50`); service `apps/micro-business/src/authen/role_permission/role_permission.service.ts`; `apps/backend-gateway/src/application/user/user.controller.ts:242-322` (`/api/user/permission`, `/mobile`, `/platform`).
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_permission` (`model tb_permission`, line 425).
+- **Seed:** `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/seed.permission.data.ts`, `seed.permission.ts`.
+- **Backend guard:** `../carmen-turborepo-backend/apps/backend-gateway/src/auth/decorators/permission.decorator.ts`, `.../auth/guards/permission.guard.ts` (RBAC); `.../common/guard/app-id.guard.ts`, `.../common/guard/app-allowlist.store.ts` (App ID client allowlist, §1.1); `.../license/{license.interceptor,license-route-resolver,license.evaluator}.ts` + `packages/prisma-shared-schema-platform/prisma/permission.route-map.ts` (licence layer).
+- **Catalog endpoint:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_permissions/config_permissions.controller.ts` (`GET`, `:50`); service `apps/micro-business/src/authen/role_permission/role_permission.service.ts`; `apps/backend-gateway/src/application/user/user.controller.ts:242-322` (`/api/user/permission`, `/mobile`, `/platform`).
 - **Migrations:** `20260916140000_rename_period_to_inventory_period` (platform).
-- **Frontend:** Surfaced inside role-edit at `../carmen-inventory-frontend-react/routes/system-admin/role/permission-picker.tsx` + `permission-catalog.ts`. No standalone CRUD. Typed key catalogue mirrored in `../carmen-inventory-frontend-react/constant/permissions.ts`; licence hook `hooks/use-license.ts`.
+- **Frontend:** Surfaced inside role-edit at `../carmen-frontend/routes/system-admin/role/permission-picker.tsx` + `permission-catalog.ts`. No standalone CRUD. Typed key catalogue mirrored in `../carmen-frontend/constant/permissions.ts`; licence hook `hooks/use-license.ts`.

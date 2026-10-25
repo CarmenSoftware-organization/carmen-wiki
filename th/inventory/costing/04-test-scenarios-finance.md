@@ -16,7 +16,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 ## 1. ทำไม scenarios เหล่านี้ถูกลบ
 
 - **ไม่มี Finance role หรือ permission key อยู่จริง** (`enum_stage_role` ไม่มีสมาชิก `finance`; ไม่มี key เฉพาะ finance ใน `constant/permissions.ts`)
-- **ไม่มีโค้ดโพสต์จาก inventory เข้า GL, reconciliation หรือ tolerance อยู่จริง** (ตรวจซ้ำ 2026-09-22) ตอนนี้มีโมดูล GL แล้ว (`apps/micro-business/src/gl/`) แต่ `GlPostingService.post()` โพสต์เฉพาะ journal voucher และไม่มีส่วนใดในโค้ด inventory, GRN หรือ period-end เรียกมัน — เอกสารออกแบบระดับวางแผน (`../carmen-inventory-frontend-e2e/docs/persona-doc/System Process/proc-03-cost-calculation.md`) ยังอธิบายความจริงได้ถูกต้อง: "does not generate GL journal entries"
+- **ไม่มีโค้ดโพสต์จาก inventory เข้า GL, reconciliation หรือ tolerance อยู่จริง** (ตรวจซ้ำ 2026-09-22) ตอนนี้มีโมดูล GL แล้ว (`apps/micro-business/src/gl/`) แต่ `GlPostingService.post()` โพสต์เฉพาะ journal voucher และไม่มีส่วนใดในโค้ด inventory, GRN หรือ period-end เรียกมัน — เอกสารออกแบบระดับวางแผน (`../carmen-frontend-e2e/docs/persona-doc/System Process/proc-03-cost-calculation.md`) ยังอธิบายความจริงได้ถูกต้อง: "does not generate GL journal entries"
 - **ไม่มี guard "method locked, ต้อง drain ก่อนเปลี่ยน" ที่ code บังคับอยู่จริง** — ดู [02-business-rules](./02-business-rules.md) § 2 (`COST_VAL_009` ถูกลบ)
 - **ไม่มี lock/re-open endpoint ในโมดูลนี้** (`period-end.controller.ts`: `find-all` / `find-current` / `close` / `find-review` เท่านั้น)
 
@@ -34,5 +34,5 @@ dateCreated: 2026-05-15T12:30:00.000Z
 
 ## 3. References
 
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/period-end/period-end.controller.ts`, `.../inventory-transaction/inventory-transaction.service.ts`
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/period-end/period-end.controller.ts`, `.../inventory-transaction/inventory-transaction.service.ts`
 - Parent overview: [04-test-scenarios](./04-test-scenarios.md); คู่กัน user-flow: [03-user-flow-finance](./03-user-flow-finance.md)

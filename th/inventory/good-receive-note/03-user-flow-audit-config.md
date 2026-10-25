@@ -13,7 +13,7 @@ editor: markdown
 > **At a Glance**
 > **หน้านี้เอกสารอะไร:** เหตุผลที่ flow "Audit / Config" เดิม (GRN configuration console พร้อม panel รูปแบบเลข lot, RBAC, tax/currency/reason-code, integration บวกเครื่องมือ lot-recall ของ Auditor พร้อมการอนุมัติ export แบบ sensitive) ไม่ตรงกับซอร์สปัจจุบัน และสิ่งที่ยืนยันได้จริง
 
-> ⚠️ **แก้ไขใหญ่ในรอบนี้ (2026-07-15)** เวอร์ชันก่อนหน้าของหน้านี้บรรยาย "GRN configuration console" (panel ของ Sysadmin สำหรับรูปแบบเลข lot, บทบาท RBAC และเกณฑ์อนุมัติ, รหัสภาษี / สกุลเงิน / เหตุผล, และ endpoint integration ไปยัง PO / Inventory / Finance / Vendor) และเครื่องมือ lot-recall trace ของ Auditor พร้อม workflow การอนุมัติ export แบบ sensitive-field จาก Controller/DPO ไม่พบ route, component ฝั่ง frontend หรือ endpoint ฝั่ง backend ที่ตรงกันใน `carmen-inventory-frontend-react` หรือ `carmen-turborepo-backend-v2` และไม่พบ route ดังกล่าวใน `.specs/resync-2026-07-15-routes-inventory.txt`
+> ⚠️ **แก้ไขใหญ่ในรอบนี้ (2026-07-15)** เวอร์ชันก่อนหน้าของหน้านี้บรรยาย "GRN configuration console" (panel ของ Sysadmin สำหรับรูปแบบเลข lot, บทบาท RBAC และเกณฑ์อนุมัติ, รหัสภาษี / สกุลเงิน / เหตุผล, และ endpoint integration ไปยัง PO / Inventory / Finance / Vendor) และเครื่องมือ lot-recall trace ของ Auditor พร้อม workflow การอนุมัติ export แบบ sensitive-field จาก Controller/DPO ไม่พบ route, component ฝั่ง frontend หรือ endpoint ฝั่ง backend ที่ตรงกันใน `carmen-frontend` หรือ `carmen-turborepo-backend` และไม่พบ route ดังกล่าวใน `.specs/resync-2026-07-15-routes-inventory.txt`
 
 ## สิ่งที่ยืนยันได้และยังไม่ยืนยัน
 

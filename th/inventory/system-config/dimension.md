@@ -17,13 +17,13 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ตรวจซ้ำที่ HEAD เมื่อ 2026-09-22: `grep -rl "tb_dimension" apps/` ใน backend ยังคืนเฉพาะ `apps/micro-business/src/master/dimension-comment/dimension-comment.service.ts`; gateway ยังมีแค่ `config/config_dimension-comments/`; ไม่มี route `dimension` ใต้ `routes/system-admin/` หรือใน `routes/router.tsx` ข้อเท็จจริงใหม่หนึ่งข้อตั้งแต่ baseline คือมี **permission resource `configuration.dimension`** ถูก seed ใน `tb_permission` (`seed.permission.data.ts`, เพิ่มเมื่อ 2026-07-23 ตอนจัดทำแคตตาล็อก endpoint ที่ scope ตาม BU) — มัน map ไปยัง route ของ comment (`config:dimension-comments`) และไม่มีอะไรอื่น; ไม่มี entry `dimension` ใน object `PERMISSIONS` ของ frontend
 
-การค้นทั่วทั้ง repo (`carmen-inventory-frontend-react`, `carmen-turborepo-backend-v2`) **ไม่พบ route, component, controller หรือ service ใดเลย** ที่สร้าง แก้ไข แสดงรายการ หรือลบ row ของ `tb_dimension` หรือ `tb_dimension_display_in`:
+การค้นทั่วทั้ง repo (`carmen-frontend`, `carmen-turborepo-backend`) **ไม่พบ route, component, controller หรือ service ใดเลย** ที่สร้าง แก้ไข แสดงรายการ หรือลบ row ของ `tb_dimension` หรือ `tb_dimension_display_in`:
 
 - **ไม่มี frontend route** `/system-admin` ไม่มี path `dimension` ใน `routes/router.tsx` และไม่มี directory ชื่อ `dimension` ใต้ `routes/system-admin/` หน้า System Admin landing (`landing-types.ts`) ก็ไม่มีโมดูล Dimensions อยู่ในทั้ง 5 chapter
 - **ไม่มี backend CRUD** `tb_dimension` ถูกอ้างถึงในไฟล์ non-schema เพียงไฟล์เดียวคือ `dimension-comment.service.ts` — และใช้แค่ตรวจสอบ `findFirst` ว่ามี row อยู่ก่อนสร้าง comment ไม่มี `dimension.service.ts`, `dimension.controller.ts` หรือ Bruno folder `config/dimension/*` (มีแค่ `config/dimension-comment/*` ซึ่งเป็น comment thread บน row ที่ต้องมีอยู่แล้วโดยวิธีอื่น — insert ตรงเข้าฐานข้อมูลหรือ seed data ซึ่งไม่พบที่ไหนเลยในโค้ด)
 - **`tb_dimension_display_in` ไม่มีการอ้างอิงนอก schema เลยแม้แต่จุดเดียว** — แม้แต่ฟีเจอร์ comment ก็ไม่แตะตารางนี้
 - **คอลัมน์ `dimension` JSONB มีจริงแต่ไม่มีชีวิต** ตาราง tenant 65 ตารางมีคอลัมน์ `dimension Json?` (ยืนยันด้วยการนับ grep กับ Prisma schema) รวมถึง `tb_purchase_request`, `tb_workflow` และตารางธุรกรรม/master ส่วนใหญ่ — แต่การค้นในโมดูล Purchase Request (โมดูลที่ "การอ้างอิงข้าม" ด้านล่างทุกจุดชี้ไปหา) ไม่พบการอ่านหรือเขียน `.dimension` เลยในฟอร์ม hook หรือ service ใดๆ ของมัน คอลัมน์นี้คือ capacity ที่ provision ไว้ใน schema ไม่ใช่ฟีเจอร์ที่ต่อสายไว้แล้ว
-- ทุกจุดที่เจอคำว่า `dimension` เปล่าๆ ใน `carmen-inventory-frontend-react` (นอกเหนือจาก dead code path นี้) กลายเป็นฟิลด์ physical-dimension ที่ไม่เกี่ยวข้อง — ความยาว-กว้าง-สูงของ equipment/product/unit ไม่ใช่แนวคิด custom field นี้
+- ทุกจุดที่เจอคำว่า `dimension` เปล่าๆ ใน `carmen-frontend` (นอกเหนือจาก dead code path นี้) กลายเป็นฟิลด์ physical-dimension ที่ไม่เกี่ยวข้อง — ความยาว-กว้าง-สูงของ equipment/product/unit ไม่ใช่แนวคิด custom field นี้
 
 เนื้อหาที่เหลือของหน้านี้อธิบาย **เจตนาการออกแบบ** ตามที่ปรากฏใน schema (เก็บไว้เพราะตารางและคอลัมน์มีอยู่จริงและอาจถูกสร้างต่อในอนาคต) ไม่ใช่ฟีเจอร์ที่ ship แล้ว ถือว่าทุก task/workflow ที่กล่าวถึงด้านล่าง **ยังไม่ยืนยัน / ยังไม่ implement** เว้นแต่จะระบุไว้เป็นอย่างอื่น
 
@@ -121,6 +121,6 @@ Dimension คือ **ระบบ custom field ที่ผู้ใช้ข�
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_dimension` (lines ~4981-5006), `tb_dimension_display_in` (lines ~5045-5065), `enum_dimension_display_in` (line ~164)
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/dimension-comment/dimension-comment.service.ts` — โค้ด non-schema เพียงจุดเดียวที่แตะ `tb_dimension` (ตรวจสอบ `findFirst` ก่อนเขียน comment) ไม่มี `dimension.service.ts` / `dimension.controller.ts`
-- **Frontend:** ไม่พบเลย ไม่มี path `dimension` ใน `../carmen-inventory-frontend-react/routes/router.tsx` และไม่มี directory ชื่อ `dimension` ใต้ `../carmen-inventory-frontend-react/routes/system-admin/`
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_dimension` (lines ~4981-5006), `tb_dimension_display_in` (lines ~5045-5065), `enum_dimension_display_in` (line ~164)
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/dimension-comment/dimension-comment.service.ts` — โค้ด non-schema เพียงจุดเดียวที่แตะ `tb_dimension` (ตรวจสอบ `findFirst` ก่อนเขียน comment) ไม่มี `dimension.service.ts` / `dimension.controller.ts`
+- **Frontend:** ไม่พบเลย ไม่มี path `dimension` ใน `../carmen-frontend/routes/router.tsx` และไม่มี directory ชื่อ `dimension` ใต้ `../carmen-frontend/routes/system-admin/`

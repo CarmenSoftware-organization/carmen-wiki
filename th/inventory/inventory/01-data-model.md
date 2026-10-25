@@ -17,8 +17,8 @@ dateCreated: 2026-05-15T12:00:00.000Z
 > **รูปแบบ audit:** `created_*` / `updated_*` / `deleted_*` มาตรฐานบนตารางส่วนใหญ่; **`tb_inventory_transaction_detail` ไม่มี soft-delete** — การกลับรายการ post compensating row แทน ไม่มี `tb_stock_balance` — on-hand derive จาก cost-layer rows ตั้งแต่ snapshot ล่าสุด
 
 > **Source of truth:** Prisma schema ของ Backend ต้องอ่านเหล่านี้ก่อนเสมอเมื่อเขียนหรืออัปเดตหน้านี้:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > ไฟล์ `generated/client/schema.prisma` ใต้แต่ละ package เป็น auto-generated copies และไม่ใช่ของจริง
 
@@ -58,7 +58,7 @@ graph LR
     itcl -->|"N : 1"| ip
 ```
 
-> Diagram adapted from `carmen/docs/app/inventory-management/transactions/DD-inventory-transactions.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (2026-09-28) · Changes: rewrote `erDiagram` as `graph LR` with quoted table names and cardinality labels per the allow-list; renamed `tb_good_received_note_detail` → `tb_good_received_note_detail_item` (the table that actually carries the FK); removed the `tb_stock_take_detail` link (no such table/FK exists in the schema); renamed `tb_period` → `tb_inventory_period` (migration `20260916141000_rename_tb_period_to_tb_inventory_period`).
+> Diagram adapted from `carmen/docs/app/inventory-management/transactions/DD-inventory-transactions.md` · verified against `carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (2026-09-28) · Changes: rewrote `erDiagram` as `graph LR` with quoted table names and cardinality labels per the allow-list; renamed `tb_good_received_note_detail` → `tb_good_received_note_detail_item` (the table that actually carries the FK); removed the `tb_stock_take_detail` link (no such table/FK exists in the schema); renamed `tb_period` → `tb_inventory_period` (migration `20260916141000_rename_tb_period_to_tb_inventory_period`).
 
 ### 2.1 tb_inventory_transaction
 
@@ -404,7 +404,7 @@ Inventory PRD ของ carmen/docs (`inventory-management-prd.md`), data-struct
 
 ## 6. แหล่งอ้างอิง
 
-- **หลัก (source of truth):** Prisma schemas ที่ระบุใน header callout — เป็นรูปธรรม `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (เอนทิตี inventory ทั้งเจ็ด: `tb_inventory_transaction`, `tb_inventory_transaction_detail`, `tb_inventory_transaction_cost_layer`, `tb_location`, `tb_product_location`, `tb_inventory_period`, `tb_inventory_period_snapshot` (เปลี่ยนชื่อ 2026-09-16, migration `20260916141000_rename_tb_period_to_tb_inventory_period`) พร้อม enum ห้าตัว `enum_inventory_doc_type`, `enum_location_type`, `enum_transaction_type`, `enum_period_status`, `enum_physical_count_type`) และ `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (ตรวจสอบแล้วไม่มี model inventory)
+- **หลัก (source of truth):** Prisma schemas ที่ระบุใน header callout — เป็นรูปธรรม `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (เอนทิตี inventory ทั้งเจ็ด: `tb_inventory_transaction`, `tb_inventory_transaction_detail`, `tb_inventory_transaction_cost_layer`, `tb_location`, `tb_product_location`, `tb_inventory_period`, `tb_inventory_period_snapshot` (เปลี่ยนชื่อ 2026-09-16, migration `20260916141000_rename_tb_period_to_tb_inventory_period`) พร้อม enum ห้าตัว `enum_inventory_doc_type`, `enum_location_type`, `enum_transaction_type`, `enum_period_status`, `enum_physical_count_type`) และ `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (ตรวจสอบแล้วไม่มี model inventory)
 - **รอง (cross-check แนวคิด):**
   - `../carmen/docs/Inventory/inventory-management-prd.md` — PRD อธิบาย `InventoryStatus` / `StockMovement` / valuation methods; ความแตกต่างใน Section 5 (items 1, 2, 3, 4, 6)
   - `../carmen/docs/Inventory/data-structure-trace.md` — data-structure trace อธิบาย relationship lot / location / delivery-point; ความแตกต่างใน Section 5 (items 9, 11)

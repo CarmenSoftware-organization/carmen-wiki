@@ -21,11 +21,11 @@ dateCreated: 2026-06-10T12:00:00.000Z
 
 ## 1. Overview
 
-**Roles** follows the Platform SPA's standard Management/Edit pattern: a server-side `DataTable` list with debounced search, Sheet filters, CSV export, a `RolesAccessSummary` strip, plus a create/view/edit page led by a `RoleIdentityHero` card. **Permission keys renamed from `role.*` to `platform_role.*` and the Permission Catalog route moved to `/platform/category-permissions` on 2026-08-20** (`carmen-platform` commit `8df0b10`) — see the [module landing](/en/platform/rbac) and [Permissions](/en/platform/rbac/permissions) for the full rename.
+**Roles** follows the Platform SPA's standard Management/Edit pattern: a server-side `DataTable` list with debounced search, Sheet filters, CSV export, a `RolesAccessSummary` strip, plus a create/view/edit page led by a `RoleIdentityHero` card. **Permission keys renamed from `role.*` to `platform_role.*` and the Permission Catalog route moved to `/platform/category-permissions` on 2026-08-20** (`carmen-backstage` commit `8df0b10`) — see the [module landing](/en/platform/rbac) and [Permissions](/en/platform/rbac/permissions) for the full rename.
 
 **Permission Catalog** is a read-only reference: a responsive grid of cards grouped by resource, no table, no mutations, reached only from a header button on the Roles list. It has no sidebar entry and, unlike every other screen in this module, **no permission gate at the SPA route level at all** — any authenticated platform user can navigate to it directly. Its data fetch is still backend-enforced on `platform_role.read` (§3).
 
-**User Platform** and **Super Admins** are summarized in §4/§5 per the scope note above; both went through further redesigns since the module's last full sync (`carmen-platform` PRs #244/#250/#251, all 2026-09-02) that are not verified line-by-line here.
+**User Platform** and **Super Admins** are summarized in §4/§5 per the scope note above; both went through further redesigns since the module's last full sync (`carmen-backstage` PRs #244/#250/#251, all 2026-09-02) that are not verified line-by-line here.
 
 All six screens ship the SPA's dev-only **Debug Sheet** — the amber floating button (bottom-right) that opens the raw JSON of the screen's API responses (`import.meta.env.DEV` only, never in production builds). On `RoleEdit` it carries two tabs, Role and Catalog, exposing both endpoint payloads — the fastest way for QA to inspect the actual envelope nesting and audit shapes described below.
 
@@ -35,7 +35,7 @@ All six screens ship the SPA's dev-only **Debug Sheet** — the amber floating b
 
 Header row: title "Roles" / subtitle "Manage platform roles and their permissions", and three header actions left to right — **Permission Catalog** (navigates to `/platform/category-permissions`), **Export** (client-side CSV of the loaded page: Name, Description, Permissions, Active, Created At/By, Updated At/By — via `auditCsvFields(normalizeAudit(r))`; file `roles-<YYYY-MM-DD>.csv`; disabled while loading or empty), and **Add Role** (navigates to `/platform/roles/new`, wrapped in `<Can permission="platform_role.create">`).
 
-Below the header sits a **`RolesAccessSummary`** strip (`roleManagement/RolesAccessSummary.tsx`), fetched from a dedicated `GET /api-system/platform/roles/summary` endpoint (`roleService.getAccessSummary()` — fleet-wide, ignores the table's search/filters, keeps its last-known numbers and dims itself on a failed refresh rather than blanking). It shows the total role count with active/inactive/**deleted** breakdown (the soft-deleted count is new on the wire since the last sync and was not rendered before) plus up to three roles with the broadest permission grant. **Since 2026-09-02 (`carmen-platform` PR #252), the "broadest roles" bars are scaled against the permission catalog's size, not the widest of the three roles shown** — a role that holds every catalog permission gets a warning-coloured bar and an alert icon (matching the `RoleIdentityHero`'s own "Full access" wording), and the section header states "of `N`" once the catalog size is known; without it (catalog still loading/failed) the bars are dropped entirely rather than drawn against a meaningless denominator.
+Below the header sits a **`RolesAccessSummary`** strip (`roleManagement/RolesAccessSummary.tsx`), fetched from a dedicated `GET /api-system/platform/roles/summary` endpoint (`roleService.getAccessSummary()` — fleet-wide, ignores the table's search/filters, keeps its last-known numbers and dims itself on a failed refresh rather than blanking). It shows the total role count with active/inactive/**deleted** breakdown (the soft-deleted count is new on the wire since the last sync and was not rendered before) plus up to three roles with the broadest permission grant. **Since 2026-09-02 (`carmen-backstage` PR #252), the "broadest roles" bars are scaled against the permission catalog's size, not the widest of the three roles shown** — a role that holds every catalog permission gets a warning-coloured bar and an alert icon (matching the `RoleIdentityHero`'s own "Full access" wording), and the section header states "of `N`" once the catalog size is known; without it (catalog still loading/failed) the bars are dropped entirely rather than drawn against a meaningless denominator.
 
 Below that sits the standard search-and-filters row: a debounced (400 ms) search input over `name`/`description`, and a **Filters** Sheet with a single Status group (Active / Inactive toggle buttons → `advance` query `{ where: { is_active } }` when exactly one is selected). Active filter chips render below the search row.
 
@@ -69,7 +69,7 @@ The reach summary has two distinct forms depending on mode:
 - **Create mode, or while editing:** the hero falls back to its own simpler `permissionSummary()` — "No permissions granted yet", or "`N` permission(s) across `M` resource(s)" — recomputed live as toggles change.
 - **Either mode, whenever the role's granted-key count reaches the catalog size:** both forms are overridden by "Full access to every permission" in amber with a warning triangle — the single most audit-worthy state, so it always wins.
 
-Below the hero, the form is a two-column grid **only while editing** (`lg:grid-cols-[1fr_minmax(300px,340px)]`); in view mode it collapses to one column. **Permissions** is the left/wide card in both modes, hosting the `PermissionGrid` (§2.6). **Settings** — `name` (required), `description` (textarea), and an `is_active` checkbox/badge — is the right/narrow sticky rail, but **since 2026-09-02 (`carmen-platform` PR #253) it renders only while editing**: in view mode there is no separate "Settings" or "Role Details" card at all, because the two facts it used to duplicate (name as an `<h1>`, status as a badge) already sit in the hero, and the one fact it carried alone (description) moved into the hero too. This mirrors the pattern the `users` module went through — a read-mode details card absorbed into the identity hero.
+Below the hero, the form is a two-column grid **only while editing** (`lg:grid-cols-[1fr_minmax(300px,340px)]`); in view mode it collapses to one column. **Permissions** is the left/wide card in both modes, hosting the `PermissionGrid` (§2.6). **Settings** — `name` (required), `description` (textarea), and an `is_active` checkbox/badge — is the right/narrow sticky rail, but **since 2026-09-02 (`carmen-backstage` PR #253) it renders only while editing**: in view mode there is no separate "Settings" or "Role Details" card at all, because the two facts it used to duplicate (name as an `<h1>`, status as a badge) already sit in the hero, and the one fact it carried alone (description) moved into the hero too. This mirrors the pattern the `users` module went through — a read-mode details card absorbed into the identity hero.
 
 ### 2.3 `RoleEdit` — create mode (`/platform/roles/new`)
 
@@ -87,7 +87,7 @@ Saving computes the **permission delta** against the key set captured at fetch t
 
 Rendered only while `editing = true`, mirroring the pattern used across clusters/business-units/users/applications/report-templates: a `fixed bottom-0` bar with an unsaved-changes indicator (pulsing amber dot + "Unsaved changes", or "No changes" in muted text) on the left, and **Cancel** (hidden in create mode; disabled while saving) + **Create Role**/**Save Changes** (disabled while saving, or in edit mode when there are no changes) on the right.
 
-### 2.6 `PermissionGrid` (replaced the accordion `PermissionPicker` on 2026-08-20, `carmen-platform` commit `42eeafe`)
+### 2.6 `PermissionGrid` (replaced the accordion `PermissionPicker` on 2026-08-20, `carmen-backstage` commit `42eeafe`)
 
 `roleEdit/PermissionGrid.tsx` is the one component both modes share — read and edit render identically except for the affordance, so pressing Edit cannot move anything on screen. Rows are one per `resource`, ordered by `resourceRank()` (`platformNav.ts`'s nav-derived order — see [Permissions](/en/platform/rbac/permissions)); within a row, actions are ordered by `actionRank()` (`utils/permissionOrder.ts`: `['read', 'create', 'update', 'delete', 'manage']`, unlisted verbs sort last in catalog order) rather than the catalog's own alphabetical order, which would otherwise put `create`/`delete` ahead of `read`.
 
@@ -121,20 +121,20 @@ Given the depth of this redesign, a full section-by-section rewrite of §4/§5 (
 
 ## 6. References
 
-- `../carmen-platform/src/App.tsx` — route registrations for the four Roles/Permission-Catalog routes (lines 402–432, incl. `/platform/category-permissions`'s bare `<PrivateRoute>`); User Platform and Super Admins routes are elsewhere in the same file.
-- `../carmen-platform/src/pages/RoleManagement.tsx` — list columns (name+description merged, `RoleReachCell`), `platform_role.*` gates, CSV export incl. audit columns, persisted keys.
-- `../carmen-platform/src/pages/roleManagement/RolesAccessSummary.tsx`, `.../RoleReachCell.tsx` — the catalog-anchored reach summary strip and list-cell bar (2026-09-02).
-- `../carmen-platform/src/pages/RoleEdit.tsx` — hero + `PermissionGrid` layout (Settings rail edit-mode-only), not-found gating, `doc_version`, the list-endpoint audit fallback (`fetchAudit`), permission delta computation (`handleSubmit`).
-- `../carmen-platform/src/pages/roleEdit/RoleIdentityHero.tsx` — the hero card, `permissionSummary()` reach text, and the audit-actor line.
-- `../carmen-platform/src/pages/roleEdit/PermissionGrid.tsx` — the resource-row grant grid (replaced `PermissionPicker` on 2026-08-20, `42eeafe`; the old accordion component no longer exists).
-- `../carmen-platform/src/utils/permissionOrder.ts` — `ACTION_ORDER`/`actionRank()`.
-- `../carmen-platform/src/components/nav/platformNav.ts` — `resourceRank()`/`NAV_RESOURCE_ORDER`, consumed by `RoleEdit.tsx`.
-- `../carmen-platform/src/pages/PermissionCatalog.tsx` — read-only resource card grid, per-item audit line.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform-permissions/platform-permissions.controller.ts` — `platform_role.read` enforcement on the catalog endpoint.
-- `../carmen-platform/src/pages/SuperAdminManagement.tsx` — the roster-list rewrite (2026-09-02, `#244`), `extractArray` envelope descent, self-removal guard, `UserPicker` typeahead.
-- `../carmen-platform/src/components/UserPicker.tsx` — server-side user typeahead used by Super Admins' Add dialog.
-- `../carmen-platform/src/pages/UserPlatformManagement.tsx`, `.../UserPlatformEdit.tsx` — the privilege-registry redesign (2026-09-02, `#250`/`#251`); not verified line-by-line here (see §1 scope note).
-- `../carmen-platform/src/components/Can.tsx` — the permission-gated render wrapper.
-- `../carmen-platform/src/pages/Forbidden.tsx` — the 403 page rendered on a failed route guard (see [Permissions](/en/platform/rbac/permissions)).
+- `../carmen-backstage/src/App.tsx` — route registrations for the four Roles/Permission-Catalog routes (lines 402–432, incl. `/platform/category-permissions`'s bare `<PrivateRoute>`); User Platform and Super Admins routes are elsewhere in the same file.
+- `../carmen-backstage/src/pages/RoleManagement.tsx` — list columns (name+description merged, `RoleReachCell`), `platform_role.*` gates, CSV export incl. audit columns, persisted keys.
+- `../carmen-backstage/src/pages/roleManagement/RolesAccessSummary.tsx`, `.../RoleReachCell.tsx` — the catalog-anchored reach summary strip and list-cell bar (2026-09-02).
+- `../carmen-backstage/src/pages/RoleEdit.tsx` — hero + `PermissionGrid` layout (Settings rail edit-mode-only), not-found gating, `doc_version`, the list-endpoint audit fallback (`fetchAudit`), permission delta computation (`handleSubmit`).
+- `../carmen-backstage/src/pages/roleEdit/RoleIdentityHero.tsx` — the hero card, `permissionSummary()` reach text, and the audit-actor line.
+- `../carmen-backstage/src/pages/roleEdit/PermissionGrid.tsx` — the resource-row grant grid (replaced `PermissionPicker` on 2026-08-20, `42eeafe`; the old accordion component no longer exists).
+- `../carmen-backstage/src/utils/permissionOrder.ts` — `ACTION_ORDER`/`actionRank()`.
+- `../carmen-backstage/src/components/nav/platformNav.ts` — `resourceRank()`/`NAV_RESOURCE_ORDER`, consumed by `RoleEdit.tsx`.
+- `../carmen-backstage/src/pages/PermissionCatalog.tsx` — read-only resource card grid, per-item audit line.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform-permissions/platform-permissions.controller.ts` — `platform_role.read` enforcement on the catalog endpoint.
+- `../carmen-backstage/src/pages/SuperAdminManagement.tsx` — the roster-list rewrite (2026-09-02, `#244`), `extractArray` envelope descent, self-removal guard, `UserPicker` typeahead.
+- `../carmen-backstage/src/components/UserPicker.tsx` — server-side user typeahead used by Super Admins' Add dialog.
+- `../carmen-backstage/src/pages/UserPlatformManagement.tsx`, `.../UserPlatformEdit.tsx` — the privilege-registry redesign (2026-09-02, `#250`/`#251`); not verified line-by-line here (see §1 scope note).
+- `../carmen-backstage/src/components/Can.tsx` — the permission-gated render wrapper.
+- `../carmen-backstage/src/pages/Forbidden.tsx` — the 403 page rendered on a failed route guard (see [Permissions](/en/platform/rbac/permissions)).
 
 **Cross-links:** [Platform RBAC landing](/en/platform/rbac) &nbsp;·&nbsp; [Data Model](/en/platform/rbac/data-model) &nbsp;·&nbsp; [Permissions](/en/platform/rbac/permissions)

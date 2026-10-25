@@ -17,7 +17,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 
 ## 1. ภาพรวม
 
-> **Executable coverage (e2e, `../carmen-inventory-frontend-e2e/` @ 809d8e3, 2026-09-20):** Playwright suite คือ executable spec — หน้านี้ไม่ได้ mirror มัน Catalog: `docs/user-stories/401-po.md` (60 case — spec `tests/401-po.spec.ts`), `docs/user-stories/402-po-purchaser-journey.md` (32 case — `tests/402-po-purchaser-journey.spec.ts`), `docs/user-stories/403-po-approver-journey.md` (19 case — `tests/403-po-approver-journey.spec.ts`), `docs/user-stories/201-my-approvals.md` (20 case — `tests/201-my-approvals.spec.ts`) Gap report (case ที่ spec **ไม่** cover): `docs/test-cases/gaps/401-po-create-flows-gap.md` (29), `gaps/402-po-purchaser-journey-gap.md` (39), `gaps/403-po-approver-journey-gap.md` (49), `gaps/201-my-approvals-gap.md` (34) Credit-note: `docs/user-stories/601-cn.md` (124 case, `tests/601-cn.spec.ts` — skip 82, oracle จริง ~6 ตาม `gaps/601-cn-gap.md`, gap 65 case) และ `602-cn-reason` (18 / 27) **spec ที่ล้าหลัง source HEAD ที่รู้แล้ว:** spec 402/403 ยังหาปุ่ม **Send to Vendor** และ status `SENT`; ที่ HEAD ปุ่มคือ **Send Email** และ status คือ `approved` → `sent_or_print` (2026-09-14) ข้อความใน approve-dialog ของ FE ยังอ่านว่า "Once approved, the PO will be sent to the vendor" (`messages/en.json` L3899) แม้การอนุมัติจะไม่ส่งอีกต่อไป
+> **Executable coverage (e2e, `../carmen-frontend-e2e/` @ 809d8e3, 2026-09-20):** Playwright suite คือ executable spec — หน้านี้ไม่ได้ mirror มัน Catalog: `docs/user-stories/401-po.md` (60 case — spec `tests/401-po.spec.ts`), `docs/user-stories/402-po-purchaser-journey.md` (32 case — `tests/402-po-purchaser-journey.spec.ts`), `docs/user-stories/403-po-approver-journey.md` (19 case — `tests/403-po-approver-journey.spec.ts`), `docs/user-stories/201-my-approvals.md` (20 case — `tests/201-my-approvals.spec.ts`) Gap report (case ที่ spec **ไม่** cover): `docs/test-cases/gaps/401-po-create-flows-gap.md` (29), `gaps/402-po-purchaser-journey-gap.md` (39), `gaps/403-po-approver-journey-gap.md` (49), `gaps/201-my-approvals-gap.md` (34) Credit-note: `docs/user-stories/601-cn.md` (124 case, `tests/601-cn.spec.ts` — skip 82, oracle จริง ~6 ตาม `gaps/601-cn-gap.md`, gap 65 case) และ `602-cn-reason` (18 / 27) **spec ที่ล้าหลัง source HEAD ที่รู้แล้ว:** spec 402/403 ยังหาปุ่ม **Send to Vendor** และ status `SENT`; ที่ HEAD ปุ่มคือ **Send Email** และ status คือ `approved` → `sent_or_print` (2026-09-14) ข้อความใน approve-dialog ของ FE ยังอ่านว่า "Once approved, the PO will be sent to the vendor" (`messages/en.json` L3899) แม้การอนุมัติจะไม่ส่งอีกต่อไป
 
 หน้านี้คือ **จุดเริ่มต้นภาพรวม** สำหรับชุด test-scenario ของโมดูล `purchase-order` วงจรชีวิตของ PO ครอบคลุมหก personas — Purchaser, Procurement Manager, Vendor, Receiver, Finance และ Audit / Config — และ test coverage แบ่งตาม: แต่ละ persona มีไฟล์เฉพาะ (link ใน Section 3) ที่ enumerate scenarios functional, authorization, validation, edge และ golden-journey ของ persona นั้น ไฟล์ภาพรวมนี้ให้ภาพ global: ใครอยู่ในขอบเขต, tests ของแต่ละ persona ครอบคลุมอะไรที่ระดับ headline, scenarios cross-persona handoff ที่เย็บ journeys ส่วนตัวเป็น flow end-to-end สมบูรณ์ และ mapping จากแต่ละ scenario กลับไปยังไฟล์ Playwright spec ที่ exercise
 
@@ -63,7 +63,7 @@ Scenarios ด้านล่าง trace PO ข้าม personas หลาย�
 
 ## 5. E2E Test Mapping
 
-มี Playwright specs สามตัวสำหรับโมดูล PO ภายใต้ `../carmen-inventory-frontend-e2e/tests/` (บวก `201-my-approvals.spec.ts` สำหรับคิว approval ที่ใช้ร่วมกัน และ `601-cn` / `602-cn-reason` สำหรับ Credit Note) เฉพาะ Purchaser และ Procurement Manager (FC Approver) personas เท่านั้นที่มี specs เฉพาะวันนี้ ไฟล์ persona Vendor, Receiver, Finance และ Audit / Config note "ไม่มี E2E spec เฉพาะ — ดู `401-po.spec.ts` ที่ใช้ร่วมกันสำหรับ PO list coverage ทั่วไป" และพึ่งพา cross-persona scenarios ใน Section 4 เพื่อ anchor expected behaviour สำหรับ automation ปลายน้ำ จำนวน case ด้านล่างมาจาก `docs/user-stories/*.md`; ไฟล์คู่ใน `gaps/` ระบุสิ่งที่ยังไม่ cover
+มี Playwright specs สามตัวสำหรับโมดูล PO ภายใต้ `../carmen-frontend-e2e/tests/` (บวก `201-my-approvals.spec.ts` สำหรับคิว approval ที่ใช้ร่วมกัน และ `601-cn` / `602-cn-reason` สำหรับ Credit Note) เฉพาะ Purchaser และ Procurement Manager (FC Approver) personas เท่านั้นที่มี specs เฉพาะวันนี้ ไฟล์ persona Vendor, Receiver, Finance และ Audit / Config note "ไม่มี E2E spec เฉพาะ — ดู `401-po.spec.ts` ที่ใช้ร่วมกันสำหรับ PO list coverage ทั่วไป" และพึ่งพา cross-persona scenarios ใน Section 4 เพื่อ anchor expected behaviour สำหรับ automation ปลายน้ำ จำนวน case ด้านล่างมาจาก `docs/user-stories/*.md`; ไฟล์คู่ใน `gaps/` ระบุสิ่งที่ยังไม่ cover
 
 ### 5.1 `401-po.spec.ts` — General / shared coverage (60 case; gap report `gaps/401-po-create-flows-gap.md`, 29)
 
@@ -103,10 +103,10 @@ Cross-persona coverage: X-PO-01 / X-PO-02 (approval leg), X-PO-06 (rejection), X
 
 ## 6. แหล่งอ้างอิง
 
-- `../carmen-inventory-frontend-e2e/tests/401-po.spec.ts`
-- `../carmen-inventory-frontend-e2e/tests/402-po-purchaser-journey.spec.ts`
-- `../carmen-inventory-frontend-e2e/tests/403-po-approver-journey.spec.ts`
-- `../carmen-inventory-frontend-e2e/tests/201-my-approvals.spec.ts`, `tests/601-cn.spec.ts`, `tests/602-cn-reason.spec.ts`
-- `../carmen-inventory-frontend-e2e/docs/user-stories/{401-po,402-po-purchaser-journey,403-po-approver-journey,201-my-approvals,601-cn,602-cn-reason}.md` และ `docs/test-cases/gaps/{401-po-create-flows,402-po-purchaser-journey,403-po-approver-journey,201-my-approvals,601-cn,602-cn-reason}-gap.md`; `docs/test-cases/COVERAGE.md` แถว `/procurement/purchase-order`, `/procurement/approval`, `/procurement/credit-note`
+- `../carmen-frontend-e2e/tests/401-po.spec.ts`
+- `../carmen-frontend-e2e/tests/402-po-purchaser-journey.spec.ts`
+- `../carmen-frontend-e2e/tests/403-po-approver-journey.spec.ts`
+- `../carmen-frontend-e2e/tests/201-my-approvals.spec.ts`, `tests/601-cn.spec.ts`, `tests/602-cn-reason.spec.ts`
+- `../carmen-frontend-e2e/docs/user-stories/{401-po,402-po-purchaser-journey,403-po-approver-journey,201-my-approvals,601-cn,602-cn-reason}.md` และ `docs/test-cases/gaps/{401-po-create-flows,402-po-purchaser-journey,403-po-approver-journey,201-my-approvals,601-cn,602-cn-reason}-gap.md`; `docs/test-cases/COVERAGE.md` แถว `/procurement/purchase-order`, `/procurement/approval`, `/procurement/credit-note`
 - Sibling: [03-user-flow.md](./03-user-flow.md) Section 4 (แหล่ง handoff)
 - Sibling: [02-business-rules.md](./02-business-rules.md) Section 5 (posting rules — กฎ three-way-match ที่นั่นระบุว่ายังไม่ implement)

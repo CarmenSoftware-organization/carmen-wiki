@@ -17,13 +17,13 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 Re-checked at HEAD on 2026-09-22: `grep -rl "tb_dimension" apps/` in the backend still returns only `apps/micro-business/src/master/dimension-comment/dimension-comment.service.ts`; the gateway still has only `config/config_dimension-comments/`; no `dimension` route exists under `routes/system-admin/` or in `routes/router.tsx`. The one new fact since baseline is that a **permission resource `configuration.dimension`** is seeded in `tb_permission` (`seed.permission.data.ts`, added 2026-07-23 when BU-scoped endpoints were catalogued) — it maps to the comment routes (`config:dimension-comments`) and nothing else; there is no `dimension` entry in the frontend `PERMISSIONS` object.
 
-A repo-wide search (`carmen-inventory-frontend-react`, `carmen-turborepo-backend-v2`) found **no route, component, controller, or service** that creates, edits, lists, or deletes a `tb_dimension` or `tb_dimension_display_in` row:
+A repo-wide search (`carmen-frontend`, `carmen-turborepo-backend`) found **no route, component, controller, or service** that creates, edits, lists, or deletes a `tb_dimension` or `tb_dimension_display_in` row:
 
 - **No frontend route.** `/system-admin` has no `dimension` path in `routes/router.tsx`, and no `dimension`-named directory exists under `routes/system-admin/`. The System Admin landing page (`landing-types.ts`) does not list a Dimensions module in any of its five chapters.
 - **No backend CRUD.** `tb_dimension` is referenced in exactly one non-schema file: `dimension-comment.service.ts` — and only as a `findFirst` existence check before creating a comment row. There is no `dimension.service.ts`, `dimension.controller.ts`, or Bruno `config/dimension/*` folder (only `config/dimension-comment/*`, a comment thread on rows that must already exist by some other means — direct DB insert or seed data, not observed anywhere).
 - **`tb_dimension_display_in` has zero non-schema references at all** — not even the comment feature touches it.
 - **The `dimension` JSONB column is real but inert.** 65 tenant tables carry a `dimension Json?` column (confirmed by grep count against the Prisma schema), including `tb_purchase_request`, `tb_workflow`, and most other transactional/master tables — but a search of the Purchase Request module (the module every other "cross-reference" below points at) found zero reads or writes of `.dimension` anywhere in its forms, hooks, or services. The column is schema-provisioned capacity, not a wired-up feature.
-- Every hit for the bare word `dimension` inside `carmen-inventory-frontend-react` (outside this dead code path) turns out to be an unrelated physical-dimension field — equipment/product/unit length-width-height — not this custom-field concept.
+- Every hit for the bare word `dimension` inside `carmen-frontend` (outside this dead code path) turns out to be an unrelated physical-dimension field — equipment/product/unit length-width-height — not this custom-field concept.
 
 The rest of this page describes the **design intent** as captured in the schema (kept because the tables and column are real and may be built out later), not a shipped feature. Treat every task/workflow claim below as **unconfirmed / not yet implemented** unless restated otherwise.
 
@@ -121,6 +121,6 @@ The modules below do **not** currently reference dimensions in any way that was 
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_dimension` (lines ~4981-5006), `tb_dimension_display_in` (lines ~5045-5065), `enum_dimension_display_in` (line ~164).
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/dimension-comment/dimension-comment.service.ts` — the only non-schema code that touches `tb_dimension` (as a `findFirst` existence check before writing a comment). No `dimension.service.ts` / `dimension.controller.ts` exists.
-- **Frontend:** none found. No `dimension` path exists in `../carmen-inventory-frontend-react/routes/router.tsx`, and no `dimension`-named route directory exists under `../carmen-inventory-frontend-react/routes/system-admin/`.
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_dimension` (lines ~4981-5006), `tb_dimension_display_in` (lines ~5045-5065), `enum_dimension_display_in` (line ~164).
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/dimension-comment/dimension-comment.service.ts` — the only non-schema code that touches `tb_dimension` (as a `findFirst` existence check before writing a comment). No `dimension.service.ts` / `dimension.controller.ts` exists.
+- **Frontend:** none found. No `dimension` path exists in `../carmen-frontend/routes/router.tsx`, and no `dimension`-named route directory exists under `../carmen-frontend/routes/system-admin/`.

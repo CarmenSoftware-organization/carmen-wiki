@@ -17,7 +17,7 @@ dateCreated: 2026-06-04T00:00:00.000Z
 
 ## Implementation status (re-verified 2026-09-22)
 
-Re-verified against `carmen-inventory-frontend-react`, `carmen-turborepo-backend-v2` and `micro-data` at HEAD. Since the 2026-07 pass the page grew four features, all live: **(1)** per-widget render switching (`widget_type` on `PATCH`, validated by micro-data against the dataset's shape, 2026-09-07 `74e3c795`), **(2)** a gauge card plus a **12-column grid with a per-widget size** stored in a new `display` JSONB column (2026-09-07 `493c78f0`; tenant migration `20260907143700_add_dashboard_widget_display`, micro-data migration `130_dash_widget_display`), **(3)** per-widget lazy loading — each card fetches its own value only when scrolled into view (`db046517`), and **(4)** a widget **parameter/display dialog** plus full-width **status-group cards** (`f72f951c`). One correction to the previous version of this page: the backend that serves this page is **micro-data (Go, HTTP)**, not `micro-cluster` over TCP — see §5.
+Re-verified against `carmen-frontend`, `carmen-turborepo-backend` and `micro-data` at HEAD. Since the 2026-07 pass the page grew four features, all live: **(1)** per-widget render switching (`widget_type` on `PATCH`, validated by micro-data against the dataset's shape, 2026-09-07 `74e3c795`), **(2)** a gauge card plus a **12-column grid with a per-widget size** stored in a new `display` JSONB column (2026-09-07 `493c78f0`; tenant migration `20260907143700_add_dashboard_widget_display`, micro-data migration `130_dash_widget_display`), **(3)** per-widget lazy loading — each card fetches its own value only when scrolled into view (`db046517`), and **(4)** a widget **parameter/display dialog** plus full-width **status-group cards** (`f72f951c`). One correction to the previous version of this page: the backend that serves this page is **micro-data (Go, HTTP)**, not `micro-cluster` over TCP — see §5.
 
 ## 1. What & Who
 
@@ -136,14 +136,14 @@ All personal-widget calls carry `?bu_code=` because the rows live in the selecte
 
 ## 8. Reference Sources
 
-- **Route:** `../carmen-inventory-frontend-react/routes/dashboard/dashboard.route.tsx`
-- **Composition:** `../carmen-inventory-frontend-react/routes/dashboard/dashboard-component.tsx` (grid, dnd, lazy visibility set, add/config/type-switch handlers)
+- **Route:** `../carmen-frontend/routes/dashboard/dashboard.route.tsx`
+- **Composition:** `../carmen-frontend/routes/dashboard/dashboard-component.tsx` (grid, dnd, lazy visibility set, add/config/type-switch handlers)
 - **Cards & helpers:** `routes/dashboard/sortable-widget-item.tsx` (drag handle, render dropdown, gear, delete), `status-group.ts` + `status-group-card.tsx`, `widget-config-dialog.tsx` + `widget-param-fields.tsx` + `widget-display-fields.tsx`, `widget-shape.ts`; `components/dashboard-widget/widget-display.ts` (grid sizes, gauge range, thresholds), `render-support.ts` (shape ↔ render), `dashboard-widget-grid.tsx` (`WidgetRouter`, cards, `LazyWidget`)
 - **Hooks:** `routes/dashboard/use-my-dashboard-widgets.ts` (moved out of `hooks/` on 2026-08-28, `0d9757f3`), `hooks/use-dashboard-dataset.ts`
 - **Types:** `types/dashboard-widget.ts` (`WidgetConfig`, `WidgetDisplay`, `DatasetParam`, `TableColumn`, shape guards), `types/dashboard-dataset.ts` (`supported_renders`)
 - **API constants:** `constant/api-endpoints.ts` → `MY_DASHBOARD_WIDGETS`, `MY_DASHBOARD_WIDGET_BY_ID`, `DASHBOARD_LAB_DATASETS`, `DASHBOARD_LAB_DATASET_EXEC`, `DASHBOARD_LAB_WIDGET_DATA`
-- **Gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-widgets/dashboard-personal-widgets.controller.ts` + `.service.ts` (HTTP proxy, `x-internal-token`), `swagger/response.ts` (`WidgetUpdateRequestDto.widget_type`/`display`), `dashboard-lab/dashboard-lab.controller.ts` (`GET widgets/:widget_id/data`)
+- **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/dashboard-widgets/dashboard-personal-widgets.controller.ts` + `.service.ts` (HTTP proxy, `x-internal-token`), `swagger/response.ts` (`WidgetUpdateRequestDto.widget_type`/`display`), `dashboard-lab/dashboard-lab.controller.ts` (`GET widgets/:widget_id/data`)
 - **micro-data:** `../micro-data/controller/dashboard_controller.go`, `service/widget_service.go` (`validateRender`, `validateDisplay`, 8 KB cap), `service/dashboard/dashboard.go` (`SupportedRenders`), `service/dashboard/lab.go` (catalog with `params`/`supported_renders`), `service/dashboard/document.go` (`document.*` datasets, table rows with `id`), `model/dashboard.go`, `migrations/tenant/130_dash_widget_display.up.sql`
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_dashboard_personal_widget`, `tb_dashboard_bu_widget`, `enum_dashboard_widget_type`; migration `20260907143700_add_dashboard_widget_display`
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_dashboard_personal_widget`, `tb_dashboard_bu_widget`, `enum_dashboard_widget_type`; migration `20260907143700_add_dashboard_widget_display`
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/_uncategorized/dashboard-lab/*`, `_uncategorized/dashboard-widgets/*` (`GET-me`, `PATCH-reorder`, `PATCH-update`, `POST-create`, `GET-module-config`)
-- **Backend design (historical):** `../carmen-turborepo-backend-v2/docs/superpowers/archive/widget/2026-05-12-widget-backend-design.md`
+- **Backend design (historical):** `../carmen-turborepo-backend/docs/superpowers/archive/widget/2026-05-12-widget-backend-design.md`

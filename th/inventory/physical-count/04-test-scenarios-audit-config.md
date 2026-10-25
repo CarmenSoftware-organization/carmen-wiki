@@ -29,6 +29,6 @@ Draft ก่อนหน้าของโมดูลวิกินี้ cata
 
 ## 4. แหล่งอ้างอิง
 
-- **Frontend:** `../carmen-inventory-frontend-react/constant/permissions.ts`
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts`
+- **Frontend:** `../carmen-frontend/constant/permissions.ts`
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts`
 - ที่เกี่ยวข้อง: [physical-count/03-user-flow-audit-config](/th/inventory/physical-count/03-user-flow-audit-config) (หน้า correction คู่ขนานฝั่ง user-flow)

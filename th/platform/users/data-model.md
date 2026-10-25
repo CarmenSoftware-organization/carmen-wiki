@@ -18,15 +18,15 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 - BU assignment ต่อ cluster ผ่าน `tb_user_tb_business_unit` (`role`: `admin`/`user`, flag `is_default`)
 - **`tb_cluster_user.parent_bu_id` ถูกถอดออกจาก schema แล้ว** (migration `20260825000000_drop_cluster_user_parent_bu`) — ไม่เคยมี service ใดอ่านค่านี้; membership ของ BU จริงอยู่ที่ `tb_user_tb_business_unit` เท่านั้น
 - สิทธิ์เข้า Platform admin **ไม่ได้เก็บบนตารางเหล่านี้** — อยู่ในตาราง RBAC assignment ([rbac](/th/platform/rbac))
-- หมายเหตุเชิงประวัติ: จนถึง 2026-06-10 `tb_user` เคยมีคอลัมน์ enum `platform_role` (7 ค่า) ที่ขับเคลื่อนทุก gate ใน SPA — ทั้งคอลัมน์และ `enum_platform_role` ถูกถอดออกจาก schema แล้ว (commit `6091ffc`, `5f629f2` ใน `carmen-platform`) แทนที่ด้วย role assignment ของ RBAC
+- หมายเหตุเชิงประวัติ: จนถึง 2026-06-10 `tb_user` เคยมีคอลัมน์ enum `platform_role` (7 ค่า) ที่ขับเคลื่อนทุก gate ใน SPA — ทั้งคอลัมน์และ `enum_platform_role` ถูกถอดออกจาก schema แล้ว (commit `6091ffc`, `5f629f2` ใน `carmen-backstage`) แทนที่ด้วย role assignment ของ RBAC
 
 ## 2. References
 
-- ../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma (backend HEAD `3bae0679d`) — `tb_cluster_user` (บรรทัด 299), `tb_user_profile` (บรรทัด 564), `tb_user_tb_business_unit` (บรรทัด 612), `tb_user` (บรรทัด 476)
-- ../carmen-platform/src/pages/UserEdit.tsx — interface `UserFormData` (7 ฟิลด์, บรรทัด 71–79)
-- ../carmen-platform/src/utils/audit.ts — `normalizeAudit()`, `latestActor()`, `auditCsvFields()`
-- ../carmen-platform/src/utils/docVersion.ts — helper optimistic-lock
-- ../carmen-platform/src/types/index.ts — interface `User`, `Audit`/`AuditEntry`
+- ../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma (backend HEAD `3bae0679d`) — `tb_cluster_user` (บรรทัด 299), `tb_user_profile` (บรรทัด 564), `tb_user_tb_business_unit` (บรรทัด 612), `tb_user` (บรรทัด 476)
+- ../carmen-backstage/src/pages/UserEdit.tsx — interface `UserFormData` (7 ฟิลด์, บรรทัด 71–79)
+- ../carmen-backstage/src/utils/audit.ts — `normalizeAudit()`, `latestActor()`, `auditCsvFields()`
+- ../carmen-backstage/src/utils/docVersion.ts — helper optimistic-lock
+- ../carmen-backstage/src/types/index.ts — interface `User`, `Audit`/`AuditEntry`
 
 ## 3. TODO
 

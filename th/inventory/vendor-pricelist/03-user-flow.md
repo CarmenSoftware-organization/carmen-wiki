@@ -50,7 +50,7 @@ flowchart TD
     Refresh --> Toast(["แสดง toast สำเร็จ"])
 ```
 
-> Diagram adapted from `carmen/docs/app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/master/request-for-pricing/request-for-pricing.service.ts` (`remove()`), `carmen-inventory-frontend-react/routes/vendor-management/request-price-list/rfp-component.tsx` (`DeleteDialog`) (2026-09-28) · Changes: renamed "Campaign" to "Request for Pricing" (this wiki uses the Prisma entity name; "Campaign" is narrative-only, see [01-data-model](/en/inventory/vendor-pricelist/01-data-model) §5); clarified the delete is a soft delete (`deleted_at`), not a hard delete.
+> Diagram adapted from `carmen/docs/app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md` · verified against `carmen-turborepo-backend/apps/micro-business/src/master/request-for-pricing/request-for-pricing.service.ts` (`remove()`), `carmen-frontend/routes/vendor-management/request-price-list/rfp-component.tsx` (`DeleteDialog`) (2026-09-28) · Changes: renamed "Campaign" to "Request for Pricing" (this wiki uses the Prisma entity name; "Campaign" is narrative-only, see [01-data-model](/en/inventory/vendor-pricelist/01-data-model) §5); clarified the delete is a soft delete (`deleted_at`), not a hard delete.
 
 ## 4. Handoff ข้าม Persona
 
@@ -69,5 +69,5 @@ flowchart TD
 
 - Sibling: [01-data-model.md](./01-data-model.md) — การอ้างอิงเอนทิตี / enum canonical
 - Sibling: [02-business-rules.md](./02-business-rules.md) — ตาราง confirmed-vs-design-target ที่ข้อกล่าวอ้างของหน้านี้อ้างอิงมา
-- Frontend: `../carmen-inventory-frontend-react/routes/vendor-management/`, `routes/external/pl/`
+- Frontend: `../carmen-frontend/routes/vendor-management/`, `routes/external/pl/`
 - โมดูลที่เกี่ยวข้อง: [purchase-request](/th/inventory/purchase-request), [purchase-order](/th/inventory/purchase-order), [good-receive-note](/th/inventory/good-receive-note), [product](/th/inventory/product)

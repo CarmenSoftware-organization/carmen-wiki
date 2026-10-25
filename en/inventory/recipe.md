@@ -27,7 +27,7 @@ A **Recipe** is the standardised, costed formula for producing a single output o
 
 Ingredients can be either **products** drawn from the inventory catalogue or **sub-recipes** — other published recipes used as components of a parent recipe (a "mother sauce" used in three mains, a pastry base used in two desserts); this is the `tb_recipe_ingredient` two-FK model (`product_id` / `sub_recipe_id` with `enum_ingredient_type` discriminator), and the one sub-recipe rule enforced in code today is the delete guard — a recipe referenced as a sub-recipe cannot be deleted (`RECIPE_USED_AS_SUB_RECIPE`, `recipe.service.ts`). The automatic parent re-cost when a sub-recipe's cost changes is a design goal with no implementation yet. Recipes are deliberately distinct from **menu items**: a recipe is the production formula and the source of truth for cost; a menu item is the sellable POS entry, which links to one or more recipes (and to add-ons, modifiers, and pricing). One recipe can underpin multiple menu items (a single "House Burger" recipe sold as both a single and a combo); one menu item can compose several recipes (a "Steak Plate" combining a steak recipe, a sauce sub-recipe, and a side recipe).
 
-In the target design (`../carmen/docs/recipe-module/`), recipes are the bridge between menu sales and inventory consumption: when a menu item is sold, the system explodes each linked recipe by the sold quantity, multiplies through the ingredient lines (applying wastage and unit conversion), and posts the resulting **theoretical consumption** as stock OUT movements against the outlet's inventory, driving food-cost reporting, theoretical-vs-actual variance analysis, and recipe-generated store requisitions. **None of this pipeline exists in code today** — there is no menu-item table, no POS integration, no theoretical-consumption write, and no recipe→SR generation anywhere in `carmen-turborepo-backend-v2` or the frontend; the recipe module currently ends at the costed formula record itself.
+In the target design (`../carmen/docs/recipe-module/`), recipes are the bridge between menu sales and inventory consumption: when a menu item is sold, the system explodes each linked recipe by the sold quantity, multiplies through the ingredient lines (applying wastage and unit conversion), and posts the resulting **theoretical consumption** as stock OUT movements against the outlet's inventory, driving food-cost reporting, theoretical-vs-actual variance analysis, and recipe-generated store requisitions. **None of this pipeline exists in code today** — there is no menu-item table, no POS integration, no theoretical-consumption write, and no recipe→SR generation anywhere in `carmen-turborepo-backend` or the frontend; the recipe module currently ends at the costed formula record itself.
 
 ## 2. Business Context
 
@@ -92,10 +92,10 @@ The other major business function the module supports is **theoretical vs. actua
 
 - Concepts (PRD/requirements): `../carmen/docs/recipe-module/`
 - Concepts (UI/page specs): `../carmen/docs/recipe/`
-- Frontend: `../carmen-inventory-frontend-react/`
-- Backend: `../carmen-turborepo-backend-v2/`
+- Frontend: `../carmen-frontend/`
+- Backend: `../carmen-turborepo-backend/`
 - API contracts: `../carmen-turborepo-backend-bruno/`
-- E2E tests: `../carmen-inventory-frontend-e2e/`
+- E2E tests: `../carmen-frontend-e2e/`
 
 ## 7. Pages in This Module
 

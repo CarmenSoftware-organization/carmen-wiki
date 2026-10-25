@@ -29,6 +29,6 @@ dateCreated: 2026-05-15T14:30:00.000Z
 
 ## 4. แหล่งอ้างอิง
 
-- **Frontend:** `../carmen-inventory-frontend-react/constant/permissions.ts`
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts`
+- **Frontend:** `../carmen-frontend/constant/permissions.ts`
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/spot-check/spot-check.service.ts`
 - ที่เกี่ยวข้อง: [spot-check/03-user-flow-audit-config](/th/inventory/spot-check/03-user-flow-audit-config) (หน้า correction คู่ขนานฝั่ง user-flow)

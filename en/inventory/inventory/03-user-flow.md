@@ -62,6 +62,6 @@ Section 2 describes the two state machines (movement-level, degenerate; period-l
 - Sibling: [01-data-model](/en/inventory/inventory/01-data-model) — canonical enums and the divergence catalogue (incl. the no-GL and BU-level-costing-method corrections this page relies on).
 - Sibling: [02-business-rules](/en/inventory/inventory/02-business-rules) — `INV_VAL_005`/`INV_VAL_008` (balance and period stamping), `INV_POST_009`/`INV_POST_010` (close/open), `INV_AUTH_008` (`period_end.execute`).
 - Sibling: [transaction](/en/inventory/inventory/transaction) and [period-end](/en/inventory/inventory/period-end) — the two screens the personas above traverse.
-- Frontend: `../carmen-inventory-frontend-react/routes/inventory-management/` (`transaction/`, `period-end/`); routes registered in `routes/router.tsx`.
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/` (`inventory-transaction/`, `period-end/`).
+- Frontend: `../carmen-frontend/routes/inventory-management/` (`transaction/`, `period-end/`); routes registered in `routes/router.tsx`.
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/` (`inventory-transaction/`, `period-end/`).
 - carmen/docs: `../carmen/docs/Inventory/inventory-management-prd.md`, `../carmen/docs/inventory-management/period-end-process.md` — concept docs; where they conflict with the implementation described here, the implementation wins.

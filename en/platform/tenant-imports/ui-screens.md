@@ -11,7 +11,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # Tenant Imports — UI Screens
 
 > **At a Glance**
-> **Screen state machine:** `pick-bu` → `upload` → `check` → `steps` (`type Screen`, `TenantImportWizard.tsx`) &nbsp;·&nbsp; **Shared chrome:** `Layout`, `PageHeader` (title "Tenant Data Import"), a header button that opens the shared `BuSwitcher` command palette, a dev-only `DevDebugSheet` &nbsp;·&nbsp; **No back button:** once `steps` is reached there is no control that returns to `check` while keeping the loaded file — the only way back to `upload` is through `BuSwitcher`, which discards all client-side wizard progress (§6) &nbsp;·&nbsp; **e2e suite:** none — every behavior below is read directly from `../carmen-platform` source
+> **Screen state machine:** `pick-bu` → `upload` → `check` → `steps` (`type Screen`, `TenantImportWizard.tsx`) &nbsp;·&nbsp; **Shared chrome:** `Layout`, `PageHeader` (title "Tenant Data Import"), a header button that opens the shared `BuSwitcher` command palette, a dev-only `DevDebugSheet` &nbsp;·&nbsp; **No back button:** once `steps` is reached there is no control that returns to `check` while keeping the loaded file — the only way back to `upload` is through `BuSwitcher`, which discards all client-side wizard progress (§6) &nbsp;·&nbsp; **e2e suite:** none — every behavior below is read directly from `../carmen-backstage` source
 
 ![Tenant Imports — UI Screens screen](/screenshots/platform/tenant-imports/ui-screens.png)
 
@@ -33,7 +33,7 @@ The four screens run strictly forward. Nothing on this page is reachable out of 
 
 ## 3. Screen 2 — Upload Workbook (`upload`)
 
-**What it asks for:** one `.xlsx` file, via `WorkbookDropzone` (`../carmen-platform/src/pages/tenantImport/WorkbookDropzone.tsx`) — drag-and-drop or click-to-browse, built on plain DOM drag events (the component's own comment: the repo does not carry `react-dropzone` and this feature must not add the dependency).
+**What it asks for:** one `.xlsx` file, via `WorkbookDropzone` (`../carmen-backstage/src/pages/tenantImport/WorkbookDropzone.tsx`) — drag-and-drop or click-to-browse, built on plain DOM drag events (the component's own comment: the repo does not carry `react-dropzone` and this feature must not add the dependency).
 
 **What it validates, and where:**
 
@@ -48,7 +48,7 @@ While the check request (`preconfigImportService.check()`) is in flight, the pan
 
 ## 4. Screen 3 — File Check (`check`)
 
-**What it shows:** `FileCheckPanel` (`../carmen-platform/src/pages/tenantImport/FileCheckPanel.tsx`) — a header line ("`{sheets}` sheets found · `{ready}` of `{total}` steps ready," `pages.tenantImport.fileSummary`) and a table, one row per catalog step, columns Step / Sheet / Rows / Missing / Status. A step not `ready` still appears here rather than disappearing silently (component's own comment) — this is the one place a tester sees **why** a step never reaches the rail: `sheet_missing` (the workbook has no matching sheet) or `columns_missing` (the sheet exists but is missing a `required` column; a missing *optional* column does not block readiness and simply appears in the Missing cell for visibility).
+**What it shows:** `FileCheckPanel` (`../carmen-backstage/src/pages/tenantImport/FileCheckPanel.tsx`) — a header line ("`{sheets}` sheets found · `{ready}` of `{total}` steps ready," `pages.tenantImport.fileSummary`) and a table, one row per catalog step, columns Step / Sheet / Rows / Missing / Status. A step not `ready` still appears here rather than disappearing silently (component's own comment) — this is the one place a tester sees **why** a step never reaches the rail: `sheet_missing` (the workbook has no matching sheet) or `columns_missing` (the sheet exists but is missing a `required` column; a missing *optional* column does not block readiness and simply appears in the Missing cell for visibility).
 
 **What it validates:** nothing new here — this screen only **renders** the `CheckReport` the `upload` screen's `check` call already produced. No request is made from this screen itself.
 
@@ -126,7 +126,7 @@ Selecting the Company Profile step in the rail renders `CompanyProfilePanel` ins
 
 ## 8. Reference Sources
 
-All paths `../carmen-platform` (HEAD `157a65e`) unless prefixed `../carmen-turborepo-backend-v2` (HEAD `937cf5ac4`).
+All paths `../carmen-backstage` (HEAD `157a65e`) unless prefixed `../carmen-turborepo-backend` (HEAD `937cf5ac4`).
 
 - `src/pages/TenantImportWizard.tsx` — the four-screen state machine, the parallel BU-list/catalog fetch, per-step generation tokens, and the abort/reset paths cited in §6.
 - `src/pages/tenantImport/WorkbookDropzone.tsx:26-29` — the client-side `.xlsx` extension check (§3).
@@ -137,7 +137,7 @@ All paths `../carmen-platform` (HEAD `157a65e`) unless prefixed `../carmen-turbo
 - `src/services/preconfigImportService.ts` — `check`/`preview`/`importStream` request shapes.
 - `src/i18n/en.ts:3188-3283` (`tenantImport` namespace) — every quoted UI string on this page.
 - `src/types/index.ts:20-24` (`ApiListResponse`) — the unread `total`/`paginate` fields cited in §2.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/preconfig-imports/preconfig-imports.controller.ts:11,29-36` — `MAX_FILE_SIZE_BYTES`, `assertXlsx()` (§3).
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/preconfig-import/preconfig-import.service.ts` — row coercion/lookup/related-row validation invoked by Preview and Import (§5.2, §5.4).
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/preconfig-imports/preconfig-imports.controller.ts:11,29-36` — `MAX_FILE_SIZE_BYTES`, `assertXlsx()` (§3).
+- `../carmen-turborepo-backend/apps/micro-business/src/preconfig-import/preconfig-import.service.ts` — row coercion/lookup/related-row validation invoked by Preview and Import (§5.2, §5.4).
 
 **Cross-links:** [Tenant Imports landing](/en/platform/tenant-imports) &nbsp;·&nbsp; [Business Units](/en/platform/business-units) &nbsp;·&nbsp; [Tenant Migrations](/en/platform/tenant-migrations)

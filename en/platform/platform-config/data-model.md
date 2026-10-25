@@ -14,11 +14,11 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 > **`tb_platform_config`** — one row per config *namespace* (a JSON object), never a single scalar value &nbsp;·&nbsp; **`PLATFORM_CONFIG_REGISTRY`** (micro-cluster) — the single source of truth for which keys exist, their Zod read/write schemas, and their defaults; ten keys total, eight rendered by this module's own screen (§3) &nbsp;·&nbsp; **Validated twice, independently:** the gateway controller checks the `:config_key` path segment against a regex before it reaches any service; micro-cluster's `PlatformConfigService` separately checks registry membership and the value against the key's own Zod schema &nbsp;·&nbsp; **Concurrency:** `doc_version` exists as a column but is **not** enforced as an optimistic lock by any write path today &nbsp;·&nbsp; **No cache on the admin screen itself** — `GET /api-system/platform/configs` always reads live; the 60-second caches documented on the [landing page](/en/platform/platform-config) §3.2 belong to three specific *downstream enforcement readers*, not to this table's own read/write service
 
 > **Source of truth:** the backend Prisma platform schema and the micro-cluster registry that defines every key. Always read these first when writing or updating this page:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts`
-> - `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/platform-config/platform-config.service.ts`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts`
+> - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/platform-config/platform-config.service.ts`
 >
-> Verified against `carmen-turborepo-backend-v2` HEAD `937cf5ac4` (2026-09-06) and `carmen-platform` HEAD `157a65e` (2026-09-04).
+> Verified against `carmen-turborepo-backend` HEAD `937cf5ac4` (2026-09-06) and `carmen-backstage` HEAD `157a65e` (2026-09-04).
 
 ## 1. Overview
 
@@ -26,7 +26,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 2. Entity: `tb_platform_config`
 
-Schema line 1462 (`../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma:1462-1477`).
+Schema line 1462 (`../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma:1462-1477`).
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
@@ -42,7 +42,7 @@ Schema line 1462 (`../carmen-turborepo-backend-v2/packages/prisma-shared-schema-
 
 ## 3. `PLATFORM_CONFIG_REGISTRY` — every key, in full
 
-Defined once, `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts:260-369`. Ten keys total; the last two are never rendered by this module's own screen (see the landing page §3.5 for why, and which module owns each instead).
+Defined once, `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts:260-369`. Ten keys total; the last two are never rendered by this module's own screen (see the landing page §3.5 for why, and which module owns each instead).
 
 | Key | Fields — type (bounds), default | Shown on this screen? |
 | --- | --- | --- |
@@ -110,16 +110,16 @@ Both paths perform their **own** independent unknown-key check (`isPlatformConfi
 
 ## 8. References
 
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_platform_config` (line 1462).
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts` — `PLATFORM_CONFIG_REGISTRY`, every key's schema/default (§3), `toWriteSchema()` (§3, §5).
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/platform-config/platform-config.service.ts` — `findAll`/`findOne`/`upsert`/`patch`/`writeValue`/`getInvitationConfig` (§2, §5).
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_configs/{platform_configs.controller.ts,platform_configs.service.ts}` — the gateway proxy, RBAC gates, `KEY_REGEX` (§5).
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/license/{license.service.ts,license.interceptor.ts}` — the `license` key's backend-gateway reader (§4).
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/common/{seat-enforcement-flag.service.ts,expiry-thresholds.service.ts}` — the `license`/`expiry_thresholds` keys' micro-cluster readers (§4).
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/auth/guards/platform-migration.guard.ts` — the `platform_migration` key's reader (§4).
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/authen/auth/auth.service.ts` (lines 273-350, 389-397) — `signup`/`email_verification`/`password_reset` readers (§4).
-- `../carmen-turborepo-backend-v2/apps/micro-notification/src/platform-email/platform-email.service.ts`, `apps/micro-notification/CLAUDE.md` — the `email_routing`/`notification_email` consumer search (§4).
-- `../carmen-platform/src/services/platformConfigService.ts` — the frontend REST client, including the `doc_version` note (§5).
-- `../carmen-platform/src/context/ExpiryThresholdContext.tsx` — the frontend's own `expiry_thresholds` reader and its fallback behavior (§4).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_platform_config` (line 1462).
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts` — `PLATFORM_CONFIG_REGISTRY`, every key's schema/default (§3), `toWriteSchema()` (§3, §5).
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/platform-config/platform-config.service.ts` — `findAll`/`findOne`/`upsert`/`patch`/`writeValue`/`getInvitationConfig` (§2, §5).
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform_configs/{platform_configs.controller.ts,platform_configs.service.ts}` — the gateway proxy, RBAC gates, `KEY_REGEX` (§5).
+- `../carmen-turborepo-backend/apps/backend-gateway/src/license/{license.service.ts,license.interceptor.ts}` — the `license` key's backend-gateway reader (§4).
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/common/{seat-enforcement-flag.service.ts,expiry-thresholds.service.ts}` — the `license`/`expiry_thresholds` keys' micro-cluster readers (§4).
+- `../carmen-turborepo-backend/apps/backend-gateway/src/auth/guards/platform-migration.guard.ts` — the `platform_migration` key's reader (§4).
+- `../carmen-turborepo-backend/apps/micro-business/src/authen/auth/auth.service.ts` (lines 273-350, 389-397) — `signup`/`email_verification`/`password_reset` readers (§4).
+- `../carmen-turborepo-backend/apps/micro-notification/src/platform-email/platform-email.service.ts`, `apps/micro-notification/CLAUDE.md` — the `email_routing`/`notification_email` consumer search (§4).
+- `../carmen-backstage/src/services/platformConfigService.ts` — the frontend REST client, including the `doc_version` note (§5).
+- `../carmen-backstage/src/context/ExpiryThresholdContext.tsx` — the frontend's own `expiry_thresholds` reader and its fallback behavior (§4).
 
 **Cross-links:** [Platform Config landing](/en/platform/platform-config) &nbsp;·&nbsp; [Licenses](/en/platform/licenses)

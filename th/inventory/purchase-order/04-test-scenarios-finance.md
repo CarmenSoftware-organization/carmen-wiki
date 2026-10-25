@@ -12,13 +12,13 @@ dateCreated: 2026-05-15T10:00:00.000Z
 
 > **At a Glance**
 > **Persona:** Finance — **ยังไม่ยืนยันว่าเป็น persona แยกต่างหากในซอร์สโค้ดปัจจุบัน** &nbsp;·&nbsp; **Module:** [purchase-order](/th/inventory/purchase-order)
-> **E2E coverage:** ไม่มีที่ยืนยันได้ เวอร์ชันก่อนหน้าของหน้านี้อ้างถึง `403-po-finance-ap-match.spec.ts` ซึ่ง **ไม่มีอยู่จริง** ใน `../carmen-inventory-frontend-e2e/tests/`
+> **E2E coverage:** ไม่มีที่ยืนยันได้ เวอร์ชันก่อนหน้าของหน้านี้อ้างถึง `403-po-finance-ap-match.spec.ts` ซึ่ง **ไม่มีอยู่จริง** ใน `../carmen-frontend-e2e/tests/`
 
-> **Executable coverage (2026-09-22):** ตรวจซ้ำ `../carmen-inventory-frontend-e2e/tests/` ที่ 809d8e3 — ยังไม่มี spec finance / AP / invoice; `docs/test-cases/COVERAGE.md` ไม่มี route แบบนั้น สิ่งที่รันได้ใกล้เคียงที่สุดคือ Credit Note suite (`docs/user-stories/601-cn.md`, 124 case, `tests/601-cn.spec.ts`; gap `docs/test-cases/gaps/601-cn-gap.md`, 65) — ฝั่ง inventory เท่านั้น ไม่มีการโพสต์ AP
+> **Executable coverage (2026-09-22):** ตรวจซ้ำ `../carmen-frontend-e2e/tests/` ที่ 809d8e3 — ยังไม่มี spec finance / AP / invoice; `docs/test-cases/COVERAGE.md` ไม่มี route แบบนั้น สิ่งที่รันได้ใกล้เคียงที่สุดคือ Credit Note suite (`docs/user-stories/601-cn.md`, 124 case, `tests/601-cn.spec.ts`; gap `docs/test-cases/gaps/601-cn-gap.md`, 65) — ฝั่ง inventory เท่านั้น ไม่มีการโพสต์ AP
 
 > ⚠️ **แก้ไขครั้งใหญ่ในรอบนี้** เวอร์ชันก่อนหน้าของหน้านี้ระบุ ~25 scenarios (FIN-HP-01 ถึง FIN-EDGE-05) ครอบคลุมขั้นตอน Finance Manager sign-off ก่อน transmission และ flow three-way-match / AP-posting ของ Finance Officer รวมถึง GL account entries เฉพาะ, การจัดการ purchase-price-variance, และ FX-adjustment postings ทั้งหมดนี้ไม่ตรงกับซอร์สโค้ดปัจจุบัน:
 > - Spec file ที่อ้างถึงคือ `403-po-finance-ap-match.spec.ts` ถูกตรวจสอบโดยตรงและ **ไม่มีอยู่จริง** ในไดเรกทอรี e2e test นั่นหมายความว่าทุกคำกล่าวอ้างเรื่อง "E2E coverage" บน scenarios ที่ถูกตัดออกนั้นถูกสร้างขึ้นเองพร้อมกับฟีเจอร์ที่ไม่มีจริง
-> - การค้นทั่ว repo ของ `carmen-turborepo-backend-v2` และ `carmen-inventory-frontend-react` สำหรับ `three-way`, `vendor_invoice`, `VendorInvoice`, และ `tb_invoice` ไม่พบผลลัพธ์ใด ๆ เลย
+> - การค้นทั่ว repo ของ `carmen-turborepo-backend` และ `carmen-frontend` สำหรับ `three-way`, `vendor_invoice`, `VendorInvoice`, และ `tb_invoice` ไม่พบผลลัพธ์ใด ๆ เลย
 > - ดู [03-user-flow-finance.md](./03-user-flow-finance.md) สำหรับคำแก้ไขฉบับเต็มและหลักฐานที่ตรวจสอบ
 >
 > หน้านี้ยังคงเก็บไว้ ไม่ได้ลบทิ้ง เพื่อบันทึกคำแก้ไขและชี้ไปยังสิ่งที่มีอยู่จริง ไม่มีการสร้างตาราง scenario ขึ้นมาใหม่ที่นี่ เพราะไม่มีฟีเจอร์ที่ยืนยันได้ให้เขียน test scenario เทียบด้วย

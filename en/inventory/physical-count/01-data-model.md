@@ -17,9 +17,9 @@ dateCreated: 2026-05-15T14:00:00.000Z
 > **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*`; three-level hierarchy (period → document → detail) — count itself does **not** write to the inventory ledger; the rollup at final submit creates already-`completed` stock-in/out documents that also do not write to the ledger (see § 3)
 
 > **Source of truth:** Backend Prisma schema plus the service methods that read/write it. Always read both first when updating this page:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts`
-> - `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count-period/physical-count-period.service.ts`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts`
+> - `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count-period/physical-count-period.service.ts`
 >
 > The `generated/client/schema.prisma` file under the Prisma package is an auto-generated copy and not authoritative.
 
@@ -96,9 +96,9 @@ No `carmen/docs` source folder exists for this module. Two aspirational planning
 
 ## 6. References
 
-- **Primary (source of truth):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — six entities (`tb_physical_count_period`, `tb_physical_count_period_comment`, `tb_physical_count`, `tb_physical_count_comment`, `tb_physical_count_detail`, `tb_physical_count_detail_comment`); four enums (`enum_physical_count_period_status`, `enum_physical_count_status`, `enum_physical_count_type`, `enum_physical_count_costing_method`).
-- **Service layer:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (create/refresh/save/reviewItems/submit/delete/update); `.../physical-count-period/physical-count-period.service.ts` (findCurrent/create/update); `.../period-end/period-end.validate.ts` (`validatePhysicalCount`, the period-close gate).
-- **Secondary (aspirational, not implemented):** `../carmen-inventory-frontend-e2e/docs/persona-doc/System Process/tx-08-physical-stocktake.md`.
-- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/physical-count/` (`pc-component.tsx`, `pc-entry-component.tsx`, `pc-review-component.tsx`); `types/physical-count.ts`; `hooks/use-physical-count.ts`, `hooks/use-physical-count-period.ts`.
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no physical-count spec currently exists.
+- **Primary (source of truth):** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — six entities (`tb_physical_count_period`, `tb_physical_count_period_comment`, `tb_physical_count`, `tb_physical_count_comment`, `tb_physical_count_detail`, `tb_physical_count_detail_comment`); four enums (`enum_physical_count_period_status`, `enum_physical_count_status`, `enum_physical_count_type`, `enum_physical_count_costing_method`).
+- **Service layer:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (create/refresh/save/reviewItems/submit/delete/update); `.../physical-count-period/physical-count-period.service.ts` (findCurrent/create/update); `.../period-end/period-end.validate.ts` (`validatePhysicalCount`, the period-close gate).
+- **Secondary (aspirational, not implemented):** `../carmen-frontend-e2e/docs/persona-doc/System Process/tx-08-physical-stocktake.md`.
+- **Frontend:** `../carmen-frontend/routes/inventory-management/physical-count/` (`pc-component.tsx`, `pc-entry-component.tsx`, `pc-review-component.tsx`); `types/physical-count.ts`; `hooks/use-physical-count.ts`, `hooks/use-physical-count-period.ts`.
+- **E2E:** `../carmen-frontend-e2e/tests/` — no physical-count spec currently exists.
 - Related modules: [inventory](/en/inventory/inventory) (ledger that a *normal* inventory-adjustment posting writes to — not reached by this module's own rollup), [inventory-adjustment](/en/inventory/inventory-adjustment) (the tables the rollup writes into, bypassing that module's service layer), [spot-check](/en/inventory/spot-check) (partial-count cousin using a separate document tree).

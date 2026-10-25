@@ -35,7 +35,7 @@ flowchart TD
     Save -->|"Submit"| Submitted["Submit PR — pr_status = in_progress"]
 ```
 
-> Diagram adapted from `carmen/docs/app/procurement/purchase-requests/FD-purchase-requests.md` · verified against `carmen-inventory-frontend-react/routes/procurement/purchase-request/from-template/from-template-content.tsx`, `from-template/qty-step.tsx` (2026-09-28) · Changes: replaced the source's single-shot "copy template → auto-fill → submit" flow with the real two-step flow (template search/select, then the `QtyStep` quantity-entry screen that drops zero-qty items) and the actual `/new`-route-state hand-off; removed unconfirmed auto-fill-date/department/location claims.
+> Diagram adapted from `carmen/docs/app/procurement/purchase-requests/FD-purchase-requests.md` · verified against `carmen-frontend/routes/procurement/purchase-request/from-template/from-template-content.tsx`, `from-template/qty-step.tsx` (2026-09-28) · Changes: replaced the source's single-shot "copy template → auto-fill → submit" flow with the real two-step flow (template search/select, then the `QtyStep` quantity-entry screen that drops zero-qty items) and the actual `/new`-route-state hand-off; removed unconfirmed auto-fill-date/department/location claims.
 
 Section 2 ด้านล่างเป็น **state machine ของระบบ** — รายการการ transition ตามมาตรฐานข้ามค่าของ `enum_purchase_request_doc_status` โดยไม่ขึ้นกับว่าใครเป็นคนลงมือ ไฟล์ของแต่ละ persona (link จาก Section 3) จะอธิบาย *เส้นทางที่ persona นั้นเดินผ่าน* state machine — จุดเริ่มต้น, action ที่ใช้ได้, แขนงการตัดสินใจ และ handoff ที่จบการมีส่วนร่วมของพวกเขา จากนั้น Section 4 จะสรุป handoff ข้าม persona ที่ร้อยเส้นทางแต่ละเส้นเข้าด้วยกัน อ่านภาพรวมนี้ก่อนเพื่อจับ lifecycle จากนั้นเจาะลงไปที่ไฟล์ persona ที่ตรงกับ role ของคุณ
 
@@ -111,7 +111,7 @@ graph LR
     class UC101,UC102 system
 ```
 
-> Diagram adapted from `carmen/docs/app/procurement/purchase-requests/UC-purchase-requests.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/procurement/purchase-request/purchase-request.service.ts` (`PR_VAL_001` ref-number generation, `PR_CALC` roll-ups), `carmen-inventory-frontend-react/routes/procurement/purchase-request/from-template/` (Use Template), `pr-inventory-row.tsx` (Inventory Context) (2026-09-28) · Changes: removed the decorative emoji glyph and quoted labels for Wiki.js allow-list compliance; no structural changes.
+> Diagram adapted from `carmen/docs/app/procurement/purchase-requests/UC-purchase-requests.md` · verified against `carmen-turborepo-backend/apps/micro-business/src/procurement/purchase-request/purchase-request.service.ts` (`PR_VAL_001` ref-number generation, `PR_CALC` roll-ups), `carmen-frontend/routes/procurement/purchase-request/from-template/` (Use Template), `pr-inventory-row.tsx` (Inventory Context) (2026-09-28) · Changes: removed the decorative emoji glyph and quoted labels for Wiki.js allow-list compliance; no structural changes.
 
 ## 4. Handoff ข้าม Persona
 

@@ -107,7 +107,7 @@ action **Cancel this license** (สไตล์ destructive อยู่ท้�
 
 ## 7. แหล่งข้อมูลอ้างอิง
 
-path ทั้งหมดคือ `../carmen-platform` ยกเว้นที่ระบุไว้เป็นอย่างอื่น
+path ทั้งหมดคือ `../carmen-backstage` ยกเว้นที่ระบุไว้เป็นอย่างอื่น
 
 - `src/pages/licenses/LicenseCenter.tsx` — หน้าจอลงจอดห้าแท็บ, แถบ Fleet Capacity, การจำแท็บ
 - `src/pages/licenses/ClusterLicenseTable.tsx`, `src/pages/licenses/SubscriptionTable.tsx`, `src/pages/licenses/PurchaseLicenseTable.tsx` — เนื้อหาของห้าแท็บ (ตัวสุดท้ายให้บริการสามแท็บ)

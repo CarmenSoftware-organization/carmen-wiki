@@ -18,7 +18,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 > **ตรวจสอบซ้ำ 2026-09-22** เทียบกับ `schema.prisma` ที่ backend HEAD `180bd19c3`: `enum_pricelist_status` มีห้าค่า (`submitted` แทรกก่อน `active`, migration `20260721105944`), `submitted_at` ถูกเขียนแล้ว, `tb_vendor` เพิ่ม `tax_no` / `branch_no` / `rating` (`20260909203000`), `tb_vendor_master_certificate` → `tb_certificate` (`20260904133000`) และ detail response expand การอ้างอิงเป็น object (`vendor`, `currency`, `product`, `unit`, `tax_profile`, `currency` ของ template, `vendor` / `pricelist` / `pricelist_template` ของ RFQ — `@ExpandRefs`, 2026-09-17)
 
 > **แหล่งความจริง:** Backend Prisma schema อ่านนี่ก่อนเสมอเมื่อเขียนหรืออัปเดตหน้านี้:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
 >
 > Platform schema ไม่มีโมเดล vendor-pricelist; เอนทิตีทั้งหมดอยู่ใน tenant schema ไฟล์ `generated/client/schema.prisma` เป็นสำเนา auto-generated และไม่ใช่ authoritative
 
@@ -301,7 +301,7 @@ design ของ carmen/docs ภายใต้ `vendor-pricelist-management/` (
 
 ## 6. แหล่งอ้างอิง
 
-- **Primary (แหล่งความจริง):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — vendor-pricelist model ทั้งสิบ, `tb_vendor`, `tb_certificate`, `tb_vendor_certificate` และ enum module-local สามตัว (`enum_pricelist_template_status`, `enum_pricelist_status`, `pricelist_submission_method`) บวก `enum_pricelist_compare_type` และ `enum_comment_type` ที่ใช้ร่วม; platform schema `packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_shot_url` Migrations `20260721105944_add_submitted_pricelist_status`, `20260904133000_rename_eco_label_and_certificate`, `20260908120000_add_email_sent_activity_action`, `20260909203000_add_vendor_tax_branch_rating`
+- **Primary (แหล่งความจริง):** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — vendor-pricelist model ทั้งสิบ, `tb_vendor`, `tb_certificate`, `tb_vendor_certificate` และ enum module-local สามตัว (`enum_pricelist_template_status`, `enum_pricelist_status`, `pricelist_submission_method`) บวก `enum_pricelist_compare_type` และ `enum_comment_type` ที่ใช้ร่วม; platform schema `packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_shot_url` Migrations `20260721105944_add_submitted_pricelist_status`, `20260904133000_rename_eco_label_and_certificate`, `20260908120000_add_email_sent_activity_action`, `20260909203000_add_vendor_tax_branch_rating`
 - **Secondary (ตรวจสอบแนวคิด):** `../carmen/docs/vendor-pricelist-management/` — เอกสาร design / requirements แปดฉบับ:
   - `design.md` — สถาปัตยกรรม 6-phase, component breakdown, TypeScript data-model interface (ใช้เป็น carmen/docs basis สำหรับตาราง divergence ใน Section 5)
   - `requirements.md` — 30+ functional requirement ครอบคลุม vendor CRUD, template setup, การจัดการ campaign, UX portal, multi-currency, validation, audit

@@ -35,7 +35,7 @@ An earlier draft described a strictly-read-only Auditor persona running three de
 
 ## 3. References
 
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/` — no audit-specific controller found for cost-layer data.
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/` — no audit-specific controller found for cost-layer data.
 - Parent overview: [03-user-flow](./03-user-flow.md).
 - Cross-link: [inventory/03-user-flow-audit-config](/en/inventory/inventory/03-user-flow-audit-config) — the identical correction already made on the sibling module.
 - Cross-link: [reporting-audit](/en/inventory/reporting-audit) — the real activity-log surface, generically permissioned.

@@ -226,15 +226,15 @@ Where to look when this wiki is not enough. Implementation and E2E tests are the
 
 | Repository | Source of truth for |
 |------------|---------------------|
-| `carmen-inventory-frontend-react` | Inventory screens, routes and client-side validation |
-| `carmen-platform` | Platform admin screens (clusters, BUs, users, RBAC, report templates) |
-| `carmen-inventory-mobile` | Mobile screens |
-| `carmen-turborepo-backend-v2` | Gateway routes and guards, domain logic, Prisma schemas (`packages/prisma-shared-schema-platform`, `-tenant`), nginx and k8s config |
+| `carmen-frontend` | Inventory screens, routes and client-side validation |
+| `carmen-backstage` | Platform admin screens (clusters, BUs, users, RBAC, report templates) |
+| `carmen-mobile` | Mobile screens |
+| `carmen-turborepo-backend` | Gateway routes and guards, domain logic, Prisma schemas (`packages/prisma-shared-schema-platform`, `-tenant`), nginx and k8s config |
 | `micro-report`, `report-render` | Report data building and `.frx` rendering |
 | `micro-cronjobs` | Scheduled jobs (scheduled reports, GL template runs, cleanup) |
 | `micro-data` | Dataset execution for dashboards and widgets |
 | `carmen-turborepo-backend-bruno` | Exact API request and response shapes |
-| `carmen-inventory-frontend-e2e`, `carmen-platform-e2e` | Executable expected behaviour (Playwright) |
+| `carmen-frontend-e2e`, `carmen-backstage-e2e` | Executable expected behaviour (Playwright) |
 | `carmen/docs` | Design concepts and business requirements |
 
 Adjacent systems outside this wiki's scope: the Knowledge Base / AI chat (`knowledge-base-carmen`) and the planned accounting modules beyond GL (AP, AR, fixed assets, tax — `carmen-accounting-concept`).

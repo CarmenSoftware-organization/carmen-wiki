@@ -148,18 +148,18 @@ A stale `doc_version` on update returns a 409; the SPA shows "This record was ch
 
 ## 4. References
 
-- `../carmen-platform/src/pages/NewsManagement.tsx`, `src/pages/newsManagement/NewsroomSummary.tsx` — columns, status/tag filter Sheet, CSV export, bulk toolbar + dialog, `<Can>` gates (incl. row View History), the dedicated summary endpoint, persisted keys.
-- `../carmen-platform/src/pages/NewsEdit.tsx`, `src/pages/newsEdit/NewsMasthead.tsx` — masthead + two-column form, mode toggle, validation, save payload, shortcuts, the header-row View History button, the `AuditMeta`-based History card.
-- `../carmen-platform/src/utils/audit.ts` — `normalizeAudit()` (nested-then-flat precedence, `everEdited` suppression), `AuditMeta` cell/header variants (relative time + absolute-time tooltip).
-- `../carmen-platform/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` — the View History feature; `AUDIT_RECORDING_STARTED_ON_PHASE_2` (2026-08-31).
-- `../carmen-platform/src/utils/permissions.ts` — `PLATFORM_SCOPED_RECORD`, the sentinel `clusterId` the View History gate uses.
-- `../carmen-platform/src/components/MarkdownEditor.tsx` — Write/Preview tabs, GFM preview, read-only rendering.
-- `../carmen-platform/src/components/ImageUpload.tsx` — drop zone, accept list, 5 MB cap, local preview/remove semantics.
-- `../carmen-platform/src/components/ui/chip-input.tsx` — tag chip parsing/joining, suggestion filtering, keyboard commit rules.
-- `../carmen-platform/src/components/BusinessUnitMultiSelect.tsx` — BU loading, search, badge selection.
-- `../carmen-platform/src/components/ReadOnlyField.tsx` — the shared read-only field renderer used across the redesigned edit pages.
-- `../carmen-platform/src/services/newsService.ts` — `buildNewsFormData`, `getTags`, the multipart `Content-Type` note, envelope walking.
-- `../carmen-platform/src/utils/docVersion.ts` — optimistic-lock helpers.
-- `../carmen-platform/src/components/KeyboardShortcuts.tsx` — Ctrl/Cmd+S, Ctrl/Cmd+K, Escape bindings.
+- `../carmen-backstage/src/pages/NewsManagement.tsx`, `src/pages/newsManagement/NewsroomSummary.tsx` — columns, status/tag filter Sheet, CSV export, bulk toolbar + dialog, `<Can>` gates (incl. row View History), the dedicated summary endpoint, persisted keys.
+- `../carmen-backstage/src/pages/NewsEdit.tsx`, `src/pages/newsEdit/NewsMasthead.tsx` — masthead + two-column form, mode toggle, validation, save payload, shortcuts, the header-row View History button, the `AuditMeta`-based History card.
+- `../carmen-backstage/src/utils/audit.ts` — `normalizeAudit()` (nested-then-flat precedence, `everEdited` suppression), `AuditMeta` cell/header variants (relative time + absolute-time tooltip).
+- `../carmen-backstage/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` — the View History feature; `AUDIT_RECORDING_STARTED_ON_PHASE_2` (2026-08-31).
+- `../carmen-backstage/src/utils/permissions.ts` — `PLATFORM_SCOPED_RECORD`, the sentinel `clusterId` the View History gate uses.
+- `../carmen-backstage/src/components/MarkdownEditor.tsx` — Write/Preview tabs, GFM preview, read-only rendering.
+- `../carmen-backstage/src/components/ImageUpload.tsx` — drop zone, accept list, 5 MB cap, local preview/remove semantics.
+- `../carmen-backstage/src/components/ui/chip-input.tsx` — tag chip parsing/joining, suggestion filtering, keyboard commit rules.
+- `../carmen-backstage/src/components/BusinessUnitMultiSelect.tsx` — BU loading, search, badge selection.
+- `../carmen-backstage/src/components/ReadOnlyField.tsx` — the shared read-only field renderer used across the redesigned edit pages.
+- `../carmen-backstage/src/services/newsService.ts` — `buildNewsFormData`, `getTags`, the multipart `Content-Type` note, envelope walking.
+- `../carmen-backstage/src/utils/docVersion.ts` — optimistic-lock helpers.
+- `../carmen-backstage/src/components/KeyboardShortcuts.tsx` — Ctrl/Cmd+S, Ctrl/Cmd+K, Escape bindings.
 
 **Cross-links:** [News landing](/en/platform/news) &nbsp;·&nbsp; [Data Model](/en/platform/news/data-model) &nbsp;·&nbsp; [Permissions](/en/platform/news/permissions)

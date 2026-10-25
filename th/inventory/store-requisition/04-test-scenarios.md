@@ -14,7 +14,7 @@ dateCreated: 2026-05-15T13:30:00.000Z
 > **โมดูล:** [store-requisition](/th/inventory/store-requisition) &nbsp;·&nbsp; **Scenario รวม:** scenario ข้าม persona (แก้ไขรอบนี้ หลายรายการถูกลบเพราะยังไม่ยืนยัน) + การเจาะลึกต่อ persona &nbsp;·&nbsp; **Persona ที่ครอบคลุม:** Requester, Approver, Fulfiller ยืนยันแล้ว; "Receiver" และ "Audit / Config" ยังไม่ยืนยัน (เป็น correction stub)
 > **ลำดับ run:** happy path ของ persona หลัก → scenario ข้าม persona
 > **การเจาะลึกของแต่ละ persona อยู่ที่ `04-test-scenarios-<role>.md`**
-> **Executable coverage (2026-09-22):** `../carmen-inventory-frontend-e2e/tests/701-sr.spec.ts` (46 case ที่ run แต่มี `expect()` จริงเพียง 2 — ดู `docs/test-cases/gaps/701-sr-gap.md`, 62 gap case) และ `tests/720-stock-issue.spec.ts` (list / header / ปุ่ม Issue / แท็บ Stock Movement; `docs/test-cases/gaps/720-stock-issue-gap.md`, 44 gap case); narrative ที่ generate ใน `docs/user-stories/701-sr.md` และ `720-stock-issue.md` Stock replenishment: `tests/711-stock-replenishment.spec.ts` (33 case) หน้านี้ไม่ mirror case เหล่านั้น
+> **Executable coverage (2026-09-22):** `../carmen-frontend-e2e/tests/701-sr.spec.ts` (46 case ที่ run แต่มี `expect()` จริงเพียง 2 — ดู `docs/test-cases/gaps/701-sr-gap.md`, 62 gap case) และ `tests/720-stock-issue.spec.ts` (list / header / ปุ่ม Issue / แท็บ Stock Movement; `docs/test-cases/gaps/720-stock-issue-gap.md`, 44 gap case); narrative ที่ generate ใน `docs/user-stories/701-sr.md` และ `720-stock-issue.md` Stock replenishment: `tests/711-stock-replenishment.spec.ts` (33 case) หน้านี้ไม่ mirror case เหล่านั้น
 
 ## 1. ภาพรวม
 
@@ -87,7 +87,7 @@ Gap เทียบกับส่วนที่ 4 ที่แก้ไขแ�
 
 ## 6. แหล่งอ้างอิง
 
-- [`../carmen-inventory-frontend-e2e/tests/701-sr.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/701-sr.spec.ts) — Playwright E2E spec canonical (multi-role auth, ทุกกลุ่ม TC-SR-0xxxxx)
+- [`../carmen-frontend-e2e/tests/701-sr.spec.ts`](../../../carmen-frontend-e2e/tests/701-sr.spec.ts) — Playwright E2E spec canonical (multi-role auth, ทุกกลุ่ม TC-SR-0xxxxx)
 - Sibling: [03-user-flow.md](./03-user-flow.md) Section 4 — handoff ข้าม persona ที่ขับเคลื่อน scenario integration ข้างบน
 - Sibling: [02-business-rules.md](./02-business-rules.md) Section 5 — กฎ posting ที่ถูก invoke ที่การเดินขั้น workflow สุดท้ายและข้าม handoff การอนุมัติ
 - รายละเอียดต่อ persona: [Requester](./04-test-scenarios-requester.md), [Approver](./04-test-scenarios-approver.md), [Fulfiller](./04-test-scenarios-fulfiller.md), [Receiver](./04-test-scenarios-receiver.md), [Audit / Config](./04-test-scenarios-audit-config.md)

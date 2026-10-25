@@ -148,18 +148,18 @@ render เมื่อ `normalizeAudit()` บนเรคคอร์ดที�
 
 ## 4. แหล่งข้อมูลอ้างอิง
 
-- `../carmen-platform/src/pages/NewsManagement.tsx`, `src/pages/newsManagement/NewsroomSummary.tsx` — คอลัมน์, Sheet ของ filter สถานะ/tag, ส่งออก CSV, bulk toolbar + dialog, gate `<Can>` (รวม View History ของ row), endpoint summary เฉพาะทาง, key ที่จดจำ
-- `../carmen-platform/src/pages/NewsEdit.tsx`, `src/pages/newsEdit/NewsMasthead.tsx` — ฟอร์มแบบ masthead + สองคอลัมน์, toggle โหมด, การ validate, payload ของการ save, คีย์ลัด, ปุ่ม View History ในแถว header, การ์ด History ที่ใช้ `AuditMeta`
-- `../carmen-platform/src/utils/audit.ts` — `normalizeAudit()` (ลำดับ nested-ก่อน-แบน, การซ่อนด้วย `everEdited`), variant cell/header ของ `AuditMeta` (เวลาสัมพัทธ์ + tooltip แบบ absolute)
-- `../carmen-platform/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` — ฟีเจอร์ View History; `AUDIT_RECORDING_STARTED_ON_PHASE_2` (2026-08-31)
-- `../carmen-platform/src/utils/permissions.ts` — `PLATFORM_SCOPED_RECORD` sentinel `clusterId` ที่ gate ของ View History ใช้
-- `../carmen-platform/src/components/MarkdownEditor.tsx` — แท็บ Write/Preview, preview แบบ GFM, การ render แบบ read-only
-- `../carmen-platform/src/components/ImageUpload.tsx` — โซน drop, รายการ accept, เพดาน 5 MB, semantics ของ preview/remove ในเครื่อง
-- `../carmen-platform/src/components/ui/chip-input.tsx` — การ parse/join chip ของ tag, การกรอง suggestion, กฎการ commit ด้วยคีย์บอร์ด
-- `../carmen-platform/src/components/BusinessUnitMultiSelect.tsx` — การโหลด BU, การค้นหา, การเลือกแบบ badge
-- `../carmen-platform/src/components/ReadOnlyField.tsx` — ตัว render field แบบ read-only ที่ใช้ร่วมกันในหน้า edit ที่ redesign แล้ว
-- `../carmen-platform/src/services/newsService.ts` — `buildNewsFormData`, `getTags`, หมายเหตุ `Content-Type` แบบ multipart, การเดิน envelope
-- `../carmen-platform/src/utils/docVersion.ts` — helper ของ optimistic-lock
-- `../carmen-platform/src/components/KeyboardShortcuts.tsx` — binding ของ Ctrl/Cmd+S, Ctrl/Cmd+K, Escape
+- `../carmen-backstage/src/pages/NewsManagement.tsx`, `src/pages/newsManagement/NewsroomSummary.tsx` — คอลัมน์, Sheet ของ filter สถานะ/tag, ส่งออก CSV, bulk toolbar + dialog, gate `<Can>` (รวม View History ของ row), endpoint summary เฉพาะทาง, key ที่จดจำ
+- `../carmen-backstage/src/pages/NewsEdit.tsx`, `src/pages/newsEdit/NewsMasthead.tsx` — ฟอร์มแบบ masthead + สองคอลัมน์, toggle โหมด, การ validate, payload ของการ save, คีย์ลัด, ปุ่ม View History ในแถว header, การ์ด History ที่ใช้ `AuditMeta`
+- `../carmen-backstage/src/utils/audit.ts` — `normalizeAudit()` (ลำดับ nested-ก่อน-แบน, การซ่อนด้วย `everEdited`), variant cell/header ของ `AuditMeta` (เวลาสัมพัทธ์ + tooltip แบบ absolute)
+- `../carmen-backstage/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` — ฟีเจอร์ View History; `AUDIT_RECORDING_STARTED_ON_PHASE_2` (2026-08-31)
+- `../carmen-backstage/src/utils/permissions.ts` — `PLATFORM_SCOPED_RECORD` sentinel `clusterId` ที่ gate ของ View History ใช้
+- `../carmen-backstage/src/components/MarkdownEditor.tsx` — แท็บ Write/Preview, preview แบบ GFM, การ render แบบ read-only
+- `../carmen-backstage/src/components/ImageUpload.tsx` — โซน drop, รายการ accept, เพดาน 5 MB, semantics ของ preview/remove ในเครื่อง
+- `../carmen-backstage/src/components/ui/chip-input.tsx` — การ parse/join chip ของ tag, การกรอง suggestion, กฎการ commit ด้วยคีย์บอร์ด
+- `../carmen-backstage/src/components/BusinessUnitMultiSelect.tsx` — การโหลด BU, การค้นหา, การเลือกแบบ badge
+- `../carmen-backstage/src/components/ReadOnlyField.tsx` — ตัว render field แบบ read-only ที่ใช้ร่วมกันในหน้า edit ที่ redesign แล้ว
+- `../carmen-backstage/src/services/newsService.ts` — `buildNewsFormData`, `getTags`, หมายเหตุ `Content-Type` แบบ multipart, การเดิน envelope
+- `../carmen-backstage/src/utils/docVersion.ts` — helper ของ optimistic-lock
+- `../carmen-backstage/src/components/KeyboardShortcuts.tsx` — binding ของ Ctrl/Cmd+S, Ctrl/Cmd+K, Escape
 
 **Cross-link:** [หน้า landing ของ News](/th/platform/news) &nbsp;·&nbsp; [Data Model](/th/platform/news/data-model) &nbsp;·&nbsp; [Permissions](/th/platform/news/permissions)

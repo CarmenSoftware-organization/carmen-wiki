@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 > **At a Glance**
 > **Persona:** Store Keeper &nbsp;·&nbsp; **โมดูล:** [inventory-adjustment](/th/inventory/inventory-adjustment)
 > **หมวดหมู่:** Happy Path &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **Executable coverage:** ไม่มีที่ automate — แคตตาล็อก manual `../carmen-inventory-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (60 เคส; TC-IADJ-03xxxx ฟอร์มใหม่, TC-IADJ-05xxxx items, TC-IADJ-06xxxx commit/void); ดู [04-test-scenarios](/th/inventory/inventory-adjustment/04-test-scenarios) § 5
+> **Executable coverage:** ไม่มีที่ automate — แคตตาล็อก manual `../carmen-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (60 เคส; TC-IADJ-03xxxx ฟอร์มใหม่, TC-IADJ-05xxxx items, TC-IADJ-06xxxx commit/void); ดู [04-test-scenarios](/th/inventory/inventory-adjustment/04-test-scenarios) § 5
 
 ## 1. Happy Path
 

@@ -79,19 +79,19 @@ filter `published_at <= now()` หมายความว่าผู้เข�
 
 ## 6. แหล่งข้อมูลอ้างอิง
 
-- `../carmen-platform/src/App.tsx` — route guard `news.*` ทั้งสาม
-- `../carmen-platform/src/components/nav/platformNav.ts` — รายการ sidebar "News" (บรรทัด 27: กลุ่ม Content, ไอคอน Newspaper, `news.read`, `feature: 'news'`, `dividerBefore: true`) ไม่ใช่ `Layout.tsx` ซึ่งไม่ได้กำหนดรายการ nav ใด ๆ แล้ว
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/news/news.controller.ts` — `PlatformPermissionGuard`/`RequirePlatformPermission` บน route เขียนสามตัว (เพิ่มเมื่อ 2026-08-20) และ route `/summary` (เพิ่มเมื่อ 2026-08-24)
-- `../carmen-platform/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` — ฟีเจอร์ View History; `AUDIT_RECORDING_STARTED_ON_PHASE_2` (2026-08-31)
-- `../carmen-platform/src/utils/permissions.ts` — `PLATFORM_SCOPED_RECORD` sentinel `clusterId` ที่ gate ของ View History ใช้
-- `../carmen-platform/src/pages/NewsManagement.tsx`, `src/pages/newsManagement/NewsroomSummary.tsx` — หน้า list: คอลัมน์ thumbnail/Target/Tags, filter สถานะ/tag, ส่งออก CSV, bulk toolbar, gate `<Can>`
-- `../carmen-platform/src/pages/NewsEdit.tsx`, `src/pages/newsEdit/NewsMasthead.tsx` — layout แบบ masthead + สองคอลัมน์ของ create/view/edit และการ validate
-- `../carmen-platform/src/services/newsService.ts` — REST client, ตัวสร้าง multipart, `getTags`
-- `../carmen-platform/src/components/MarkdownEditor.tsx`, `ImageUpload.tsx`, `BusinessUnitMultiSelect.tsx`, `ui/chip-input.tsx`, `ReadOnlyField.tsx` — component ของฟอร์มในโมดูล
-- `../carmen-platform/src/utils/docVersion.ts` — helper ของ optimistic-lock (`getDocVersion`/`isVersionConflict`/`notifyVersionConflict`)
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_news` (บรรทัด 884), `enum_news_status` (บรรทัด 798)
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/news/` — `news.controller.ts` (guard, multipart, `GET tags`), `news.service.ts` (อัพโหลดไฟล์/rollback/cleanup), `news-image.helper.ts` (presigned `image_url`), `news-body.parser.ts`, `public-news.controller.ts` / `public-news.service.ts` (การส่งมอบแบบ anonymous)
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/news/news.service.ts` — ชั้น persistence: การตรวจสอบ BU, การ normalize tag, การประทับ `published_at`, optimistic lock ของ `doc_version`, การ filter soft-delete, filter การมองเห็นฝั่ง public
+- `../carmen-backstage/src/App.tsx` — route guard `news.*` ทั้งสาม
+- `../carmen-backstage/src/components/nav/platformNav.ts` — รายการ sidebar "News" (บรรทัด 27: กลุ่ม Content, ไอคอน Newspaper, `news.read`, `feature: 'news'`, `dividerBefore: true`) ไม่ใช่ `Layout.tsx` ซึ่งไม่ได้กำหนดรายการ nav ใด ๆ แล้ว
+- `../carmen-turborepo-backend/apps/backend-gateway/src/application/news/news.controller.ts` — `PlatformPermissionGuard`/`RequirePlatformPermission` บน route เขียนสามตัว (เพิ่มเมื่อ 2026-08-20) และ route `/summary` (เพิ่มเมื่อ 2026-08-24)
+- `../carmen-backstage/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` — ฟีเจอร์ View History; `AUDIT_RECORDING_STARTED_ON_PHASE_2` (2026-08-31)
+- `../carmen-backstage/src/utils/permissions.ts` — `PLATFORM_SCOPED_RECORD` sentinel `clusterId` ที่ gate ของ View History ใช้
+- `../carmen-backstage/src/pages/NewsManagement.tsx`, `src/pages/newsManagement/NewsroomSummary.tsx` — หน้า list: คอลัมน์ thumbnail/Target/Tags, filter สถานะ/tag, ส่งออก CSV, bulk toolbar, gate `<Can>`
+- `../carmen-backstage/src/pages/NewsEdit.tsx`, `src/pages/newsEdit/NewsMasthead.tsx` — layout แบบ masthead + สองคอลัมน์ของ create/view/edit และการ validate
+- `../carmen-backstage/src/services/newsService.ts` — REST client, ตัวสร้าง multipart, `getTags`
+- `../carmen-backstage/src/components/MarkdownEditor.tsx`, `ImageUpload.tsx`, `BusinessUnitMultiSelect.tsx`, `ui/chip-input.tsx`, `ReadOnlyField.tsx` — component ของฟอร์มในโมดูล
+- `../carmen-backstage/src/utils/docVersion.ts` — helper ของ optimistic-lock (`getDocVersion`/`isVersionConflict`/`notifyVersionConflict`)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_news` (บรรทัด 884), `enum_news_status` (บรรทัด 798)
+- `../carmen-turborepo-backend/apps/backend-gateway/src/application/news/` — `news.controller.ts` (guard, multipart, `GET tags`), `news.service.ts` (อัพโหลดไฟล์/rollback/cleanup), `news-image.helper.ts` (presigned `image_url`), `news-body.parser.ts`, `public-news.controller.ts` / `public-news.service.ts` (การส่งมอบแบบ anonymous)
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/news/news.service.ts` — ชั้น persistence: การตรวจสอบ BU, การ normalize tag, การประทับ `published_at`, optimistic lock ของ `doc_version`, การ filter soft-delete, filter การมองเห็นฝั่ง public
 - `../carmen-turborepo-backend-bruno/collections/carmen-inventory/master-data/news/` — สัญญา request/response รวมถึงคู่ `public/` และ `GET-find-tags-master-data-news.bru`
 
 ## 7. หน้าในโมดูลนี้

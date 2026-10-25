@@ -14,7 +14,7 @@ dateCreated: 2026-06-10T13:15:00.000Z
 > **Tables:** `tb_broadcast_notification` (one row per `system_all`/`bu` broadcast) + `tb_user_broadcast_action` (lazy per-user read state, unique per broadcast×user) &nbsp;·&nbsp; **Targeted fork:** `system_users` sends (`userIds`) skip both tables and fan out into `tb_notification` (one personal row per recipient) — invisible to the admin List/Edit screens &nbsp;·&nbsp; **Enums, not varchar:** `scope` (`enum_broadcast_scope`), `doc_type`/`event` (`enum_notification_doc_type`/`enum_notification_event`, shared with `tb_notification`) replaced the old `category`/`type` varchar columns &nbsp;·&nbsp; **No severity column:** the sender's Info/Warning/Critical/Maintenance/Other… label lives only in `metadata.severity`; `event` is hardcoded `info` on every broadcast &nbsp;·&nbsp; **`end_at` is mandatory** and drives the derived `status` (never a stored column) &nbsp;·&nbsp; **`doc_version` is a real optimistic lock** now, checked by both `PATCH` and `DELETE` &nbsp;·&nbsp; **Endpoints:** `POST /api/notifications/broadcasts/system` / `/bu` (send) plus `GET`/`GET :id`/`PATCH :id`/`DELETE :id` — `/api`, **not** `/api-system`
 
 > **Source of truth:** Backend Prisma platform schema. Always read this first when writing or updating this page:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > The `generated/client/schema.prisma` file is an auto-generated copy and not authoritative.
 
@@ -111,7 +111,7 @@ The personal-notification table (schema line 332). **Reshaped by the same redesi
 
 There is **no `severity` column anywhere** in either table. The sender's Info/Warning/Critical/Maintenance/Other… choice is a client-side-only convenience, persisted purely as a string inside `metadata.severity` and echoed back by `BroadcastAdminService.toRow()` as the wire-level `severity` field so the admin list/edit UI can render its own badges. It has no effect on what a recipient sees: every broadcast's `event` is `info`, and the client's own preview panel says so directly ("Colour and label are an internal categorisation — recipients see a standard notification"). Custom Other… tokens are validated client-side only (`[A-Z0-9_]+`, ≤50 chars, auto-uppercased); the server accepts any string in `metadata`.
 
-## 5. Divergences from carmen-platform SPA shape
+## 5. Divergences from carmen-backstage SPA shape
 
 | SPA shape | SPA source | Prisma storage | Notes |
 | --------- | ---------- | -------------- | ----- |
@@ -146,14 +146,14 @@ REST surface (backend-gateway), all under `/api/notifications/...` — **not** `
 No Bruno collection exists for the broadcast endpoints (verified still absent) — the Swagger annotations on the gateway controller are the closest contract document.
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_notification` (line 332), `tb_broadcast_notification` (line 369), `tb_user_broadcast_action` (line 403), enums (lines 112–131).
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260810000000_notification_redesign_additive/`, `20260811000000_notification_redesign_drop_legacy/migration.sql` — the enum introduction, backfill, and column drops.
-- `../carmen-turborepo-backend-v2/apps/micro-notification/src/notification/broadcast.service.ts` (create, recipient resolution), `broadcast-admin.service.ts` (list/get/update/delete, `deriveStatus`), `notification-write.service.ts` (single write entry point), `schedule.worker.ts` (due-notification push, `tb_notification` only).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_notification` (line 332), `tb_broadcast_notification` (line 369), `tb_user_broadcast_action` (line 403), enums (lines 112–131).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260810000000_notification_redesign_additive/`, `20260811000000_notification_redesign_drop_legacy/migration.sql` — the enum introduction, backfill, and column drops.
+- `../carmen-turborepo-backend/apps/micro-notification/src/notification/broadcast.service.ts` (create, recipient resolution), `broadcast-admin.service.ts` (list/get/update/delete, `deriveStatus`), `notification-write.service.ts` (single write entry point), `schedule.worker.ts` (due-notification push, `tb_notification` only).
 
 **Secondary (gateway + consumer shape):**
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/notification/notification.controller.ts` — all six broadcast routes, payload builders, TCP forwarding.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/common/dto/notification/notification.dto.ts` — `SystemBroadcastCreateSchema`/`BuBroadcastCreateSchema` (`end_at` required), `BroadcastListQuerySchema`.
-- `../carmen-turborepo-backend-v2/packages/error-catalog/src/catalog.ts` — `COMMON_BUSINESS_UNIT_NOT_FOUND` (`http_status: 404`).
-- `../carmen-platform/src/types/index.ts` — `BroadcastTargetMode`, `BroadcastTypePreset`, `BroadcastListItem`, `BroadcastStatus`, `BroadcastUpdatePayload`, `BroadcastSummary`; `src/services/broadcastService.ts` — the six calls.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/notification/notification.controller.ts` — all six broadcast routes, payload builders, TCP forwarding.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/common/dto/notification/notification.dto.ts` — `SystemBroadcastCreateSchema`/`BuBroadcastCreateSchema` (`end_at` required), `BroadcastListQuerySchema`.
+- `../carmen-turborepo-backend/packages/error-catalog/src/catalog.ts` — `COMMON_BUSINESS_UNIT_NOT_FOUND` (`http_status: 404`).
+- `../carmen-backstage/src/types/index.ts` — `BroadcastTargetMode`, `BroadcastTypePreset`, `BroadcastListItem`, `BroadcastStatus`, `BroadcastUpdatePayload`, `BroadcastSummary`; `src/services/broadcastService.ts` — the six calls.
 
 **Cross-links:** [Broadcasts landing](/en/platform/broadcasts) &nbsp;·&nbsp; [UI Screens](/en/platform/broadcasts/ui-screens) &nbsp;·&nbsp; [Permissions](/en/platform/broadcasts/permissions) &nbsp;·&nbsp; [Business Units — Data Model](/en/platform/business-units/data-model) (the `scope_id` target) &nbsp;·&nbsp; [Users — Data Model](/en/platform/users/data-model) (recipients and read-state rows)

@@ -20,7 +20,7 @@ editor: markdown
 - `enum_stage_role` has no `finance` member.
 - The `501-grn.spec.ts` E2E spec (76 cases) has no describe block for invoice matching, AP posting, or period close; its "Financial Summary" group (`TC-GRN-1300xx`) only exercises a read-only totals tab on the GRN detail page, with no assertions tying it to a three-way match or a journal entry.
 
-> **Executable coverage:** `../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts` groups `GRN — Extra Costs` (`TC-GRN-1000xx`) and `GRN — Financial Summary` (`TC-GRN-1300xx`); gap report `docs/test-cases/gaps/501-grn-core-gap.md` (tax / discount section). No AP or GL spec exists.
+> **Executable coverage:** `../carmen-frontend-e2e/tests/501-grn.spec.ts` groups `GRN — Extra Costs` (`TC-GRN-1000xx`) and `GRN — Financial Summary` (`TC-GRN-1300xx`); gap report `docs/test-cases/gaps/501-grn-core-gap.md` (tax / discount section). No AP or GL spec exists.
 
 | Previously-claimed scenario group | Finding |
 | --- | --- |
@@ -39,4 +39,4 @@ Extra-cost storage (`tb_extra_cost` / `tb_extra_cost_detail`, the three-mode `al
 - Parent overview: [04-test-scenarios.md](./04-test-scenarios.md) — corrected cross-persona scenario table.
 - Sibling: [03-user-flow-finance.md](./03-user-flow-finance.md) — the fuller correction and the searches run.
 - Sibling: [04-test-scenarios-receiver.md](./04-test-scenarios-receiver.md) — extra-cost entry as part of the Receiver's save flow.
-- E2E spec: `../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts` — `GRN — Extra Costs` (`TC-GRN-1000xx`) and `GRN — Financial Summary` (`TC-GRN-1300xx`) describe blocks are the closest real coverage; neither exercises invoice matching or AP posting.
+- E2E spec: `../carmen-frontend-e2e/tests/501-grn.spec.ts` — `GRN — Extra Costs` (`TC-GRN-1000xx`) and `GRN — Financial Summary` (`TC-GRN-1300xx`) describe blocks are the closest real coverage; neither exercises invoice matching or AP posting.

@@ -17,9 +17,9 @@ dateCreated: 2026-05-15T14:00:00.000Z
 > **รูปแบบการตรวจสอบ:** มาตรฐาน `created_*` / `updated_*` / `deleted_*`; ลำดับชั้นสามระดับ (period → document → detail) — การนับเองไม่เขียนลง inventory ledger; rollup ตอน submit สุดท้ายสร้างเอกสาร stock-in/out ที่ `completed` แล้วซึ่งก็ไม่เขียนลง ledger เช่นกัน (ดู § 3)
 
 > **Source of truth:** Prisma schema ฝั่ง backend รวมถึง service method ที่อ่าน/เขียนมัน อ่านทั้งสองอย่างก่อนเสมอเมื่ออัปเดตหน้านี้:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts`
-> - `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count-period/physical-count-period.service.ts`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts`
+> - `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count-period/physical-count-period.service.ts`
 >
 > ไฟล์ `generated/client/schema.prisma` ใน package เป็น copy ที่ auto-generate และไม่ถือเป็น authoritative
 
@@ -96,9 +96,9 @@ tb_stock_out (doc_status = completed ทันที; adjustment_type_id = null)
 
 ## 6. แหล่งอ้างอิง
 
-- **Primary (source of truth):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — เอนทิตีหกตัว (`tb_physical_count_period`, `tb_physical_count_period_comment`, `tb_physical_count`, `tb_physical_count_comment`, `tb_physical_count_detail`, `tb_physical_count_detail_comment`); enum สี่ตัว (`enum_physical_count_period_status`, `enum_physical_count_status`, `enum_physical_count_type`, `enum_physical_count_costing_method`)
-- **Service layer:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (create/refresh/save/reviewItems/submit/delete/update); `.../physical-count-period/physical-count-period.service.ts` (findCurrent/create/update); `.../period-end/period-end.validate.ts` (`validatePhysicalCount`, gate การปิดงวด)
-- **Secondary (วางแผน ยังไม่ implement):** `../carmen-inventory-frontend-e2e/docs/persona-doc/System Process/tx-08-physical-stocktake.md`
-- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/physical-count/` (`pc-component.tsx`, `pc-entry-component.tsx`, `pc-review-component.tsx`); `types/physical-count.ts`; `hooks/use-physical-count.ts`, `hooks/use-physical-count-period.ts`
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count
+- **Primary (source of truth):** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — เอนทิตีหกตัว (`tb_physical_count_period`, `tb_physical_count_period_comment`, `tb_physical_count`, `tb_physical_count_comment`, `tb_physical_count_detail`, `tb_physical_count_detail_comment`); enum สี่ตัว (`enum_physical_count_period_status`, `enum_physical_count_status`, `enum_physical_count_type`, `enum_physical_count_costing_method`)
+- **Service layer:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (create/refresh/save/reviewItems/submit/delete/update); `.../physical-count-period/physical-count-period.service.ts` (findCurrent/create/update); `.../period-end/period-end.validate.ts` (`validatePhysicalCount`, gate การปิดงวด)
+- **Secondary (วางแผน ยังไม่ implement):** `../carmen-frontend-e2e/docs/persona-doc/System Process/tx-08-physical-stocktake.md`
+- **Frontend:** `../carmen-frontend/routes/inventory-management/physical-count/` (`pc-component.tsx`, `pc-entry-component.tsx`, `pc-review-component.tsx`); `types/physical-count.ts`; `hooks/use-physical-count.ts`, `hooks/use-physical-count-period.ts`
+- **E2E:** `../carmen-frontend-e2e/tests/` — ยังไม่มี spec physical-count
 - โมดูลที่เกี่ยวข้อง: [inventory](/th/inventory/inventory) (ledger ที่การ post inventory-adjustment *ปกติ* เขียนลง — ไม่ถูกแตะโดย rollup ของโมดูลนี้เอง), [inventory-adjustment](/th/inventory/inventory-adjustment) (ตารางที่ rollup เขียนเข้า โดยข้าม service layer ของโมดูลนั้น), [spot-check](/th/inventory/spot-check) (ลูกพี่ลูกน้องการนับบางส่วนที่ใช้ต้นไม้เอกสารแยก)

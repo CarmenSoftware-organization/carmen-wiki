@@ -72,23 +72,23 @@ Enum: `enum_jv_status` (schema 140) `draft, in_review, scheduled, posted, void` 
 
 ## 4. ยังไม่มี frontend
 
-`carmen-inventory-frontend-react/routes/accounting/` ปรากฏใน commit `4a72884d` (2026-07-31, "feat(accounting): add accounting document routes and dashboard") และที่ FE `0713cbc9` (2026-09-22) **เป็น mock**:
+`carmen-frontend/routes/accounting/` ปรากฏใน commit `4a72884d` (2026-07-31, "feat(accounting): add accounting document routes and dashboard") และที่ FE `0713cbc9` (2026-09-22) **เป็น mock**:
 
 - `accounting-documents.ts:100` `documentsFor()` ประดิษฐ์ 8 แถวต่อประเภทเอกสาร (`JV2607-0001…`, คำอธิบาย/คู่ค้าคงที่, `amount = 10000 + index × 3750`); `accounting-detail.tsx` / `accounting-list.tsx` render แถวเหล่านั้น ประกาศไว้เก้าประเภท: journal, template, recurring, allocation voucher, รายงานการเงิน, AP invoice/payment, AR invoice/receipt
 - `accounting.dashboard.tsx:143` ห่อ object `data` แบบ hardcode ใน `useQuery({ queryFn: async () => data, initialData: data, staleTime: Infinity })` — ไม่มีการเรียก HTTP
 - ไม่มีไฟล์ใต้ `hooks/`, `types/` หรือ `routes/` อ้างถึง `/gl-jv`, `/gl-posting` หรือ `tb_gl_*` router (`routes/router.tsx:770-800`) และ tile ของโมดูล (`constant/module-list.ts:403-425`, licence feature `accounting.gl` / `accounting.gl.jv_template`) เป็นการเชื่อมต่อจริงเพียงอย่างเดียว
-- E2E: `../carmen-inventory-frontend-e2e/docs/test-cases/COVERAGE.md:21-28` ระบุทุก URL `/accounting/*` เป็น "none" และ `1204-section-landing.md:15` บันทึกเหตุผลที่ไม่เขียน case (dashboard hardcode ทั้งหกวิดเจ็ตและไม่เรียก API)
+- E2E: `../carmen-frontend-e2e/docs/test-cases/COVERAGE.md:21-28` ระบุทุก URL `/accounting/*` เป็น "none" และ `1204-section-landing.md:15` บันทึกเหตุผลที่ไม่เขียน case (dashboard hardcode ทั้งหกวิดเจ็ตและไม่เรียก API)
 
 จึงไม่มีหน้าจอให้บันทึก ไม่มี Playwright spec ให้เชื่อม และไม่มี screenshot ให้จับ อย่าเขียนหน้า user-flow หรือ test-scenario สำหรับโมดูลนี้จนกว่า UI จริงจะมาถึง
 
 ## 5. แหล่งอ้างอิง
 
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/gl/` (`gl-account-group`, `gl-balance`, `gl-budget`, `gl-jv`, `gl-jv-prefix`, `gl-jv-template`, `gl-period`, `gl-posting`); gateway `apps/backend-gateway/src/application/{gl-jv,gl-posting,gl-reports,gl-budgets,gl-jv-templates}/` และ `config/config_{chart-of-accounts,cost-centers,cost-center-groups,gl-account-groups,gl-jv-prefixes,gl-periods}/`; RPC contract `packages/rpc-contract/src/contracts/gl-posting.ts`
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/gl/` (`gl-account-group`, `gl-balance`, `gl-budget`, `gl-jv`, `gl-jv-prefix`, `gl-jv-template`, `gl-period`, `gl-posting`); gateway `apps/backend-gateway/src/application/{gl-jv,gl-posting,gl-reports,gl-budgets,gl-jv-templates}/` และ `config/config_{chart-of-accounts,cost-centers,cost-center-groups,gl-account-groups,gl-jv-prefixes,gl-periods}/`; RPC contract `packages/rpc-contract/src/contracts/gl-posting.ts`
 - Prisma: `packages/prisma-shared-schema-tenant/prisma/schema.prisma` และ migration `20260909170000_gl_core_master`, `20260914030000_gl_core_jv_ledger`, `20260915010000_fix_gl_jv_guard_search_path`, `20260915043038_gl_core_budget_template`
 - Cron: `../micro-cronjobs/internal/executor/gl_run_due.go`, `internal/model/cronjob.go:141-149`, `README.md:254`
 - API contract: `../carmen-turborepo-backend-bruno/collections/carmen-inventory/_uncategorized/{gl-jv,gl-posting,gl-reports,gl-budgets,gl-jv-templates}/`
-- Frontend (mock เท่านั้น): `../carmen-inventory-frontend-react/routes/accounting/`
-- E2E: ไม่มี (`../carmen-inventory-frontend-e2e/docs/test-cases/COVERAGE.md` § Accounting)
+- Frontend (mock เท่านั้น): `../carmen-frontend/routes/accounting/`
+- E2E: ไม่มี (`../carmen-frontend-e2e/docs/test-cases/COVERAGE.md` § Accounting)
 - carmen/docs: freeze เมื่อ 2026-04-27 และ **ขัดแย้งกับ HEAD** ในหัวข้อนี้ — `app/inventory-management/inventory-transactions/BR-inventory-transactions.md:21,31,143,162,214` และ `store-requisitions/SR-API-JournalEntry-Endpoints.md` อธิบายการเชื่อม GL อัตโนมัติที่ไม่มีอยู่จริง; อย่าอ้างอิง
 
 ## 6. หน้าในโมดูลนี้

@@ -54,4 +54,4 @@ The **Purchaser** is the only internal persona with a write surface in this modu
 - Sibling: [03-user-flow-vendor.md](./03-user-flow-vendor.md) — the external counterparty whose portal submit produces the `submitted` pricelist this file's Step 5 activates.
 - Sibling: [03-user-flow-finance.md](./03-user-flow-finance.md) / [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — correction pages; neither persona exists distinctly in this module.
 - Cross-link: [purchase-request](/en/inventory/purchase-request), [purchase-order](/en/inventory/purchase-order), [good-receive-note](/en/inventory/good-receive-note), [product](/en/inventory/product).
-- Frontend: `../carmen-inventory-frontend-react/routes/vendor-management/`.
+- Frontend: `../carmen-frontend/routes/vendor-management/`.

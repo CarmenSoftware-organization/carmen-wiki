@@ -30,10 +30,10 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 ## 2. References
 
-- ../carmen-platform/src/pages/BusinessUnitManagement.tsx, businessUnitManagement/BuSummary.tsx
-- ../carmen-platform/src/pages/BusinessUnitEdit.tsx, businessUnitEdit/{BusinessUnitDocument,BusinessUnitTabs,HeroName,BusinessUnitLicensesCard,BusinessUnitInterfaceLicensesCard,LicenseTimeline,useBusinessUnitSubscriptions,types}.ts(x), sections/{CalculationSettingsSection,DatabaseConnectionSection,ConfigurationSection,NumberFormatsSection}.tsx
-- ../carmen-platform/src/utils/{databasePool,buLicense,pageRange}.ts — ตัวสุ่มชื่อ schema, การคำนวณ ledger ที่นั่ง, `outOfRangePage()` (PR #298)
-- ../carmen-platform/src/components/{TenantMigrationCard,TenantSeedCard,TenantMigrationResolveDialog,SortableTableHead,BrandingImageUpload}.tsx — `InterfaceEntitlementCard.tsx` ถูกลบใน PR #286
+- ../carmen-backstage/src/pages/BusinessUnitManagement.tsx, businessUnitManagement/BuSummary.tsx
+- ../carmen-backstage/src/pages/BusinessUnitEdit.tsx, businessUnitEdit/{BusinessUnitDocument,BusinessUnitTabs,HeroName,BusinessUnitLicensesCard,BusinessUnitInterfaceLicensesCard,LicenseTimeline,useBusinessUnitSubscriptions,types}.ts(x), sections/{CalculationSettingsSection,DatabaseConnectionSection,ConfigurationSection,NumberFormatsSection}.tsx
+- ../carmen-backstage/src/utils/{databasePool,buLicense,pageRange}.ts — ตัวสุ่มชื่อ schema, การคำนวณ ledger ที่นั่ง, `outOfRangePage()` (PR #298)
+- ../carmen-backstage/src/components/{TenantMigrationCard,TenantSeedCard,TenantMigrationResolveDialog,SortableTableHead,BrandingImageUpload}.tsx — `InterfaceEntitlementCard.tsx` ถูกลบใน PR #286
 
 ## 3. TODO
 

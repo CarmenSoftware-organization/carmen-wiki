@@ -52,7 +52,7 @@ flowchart TD
     G --> H["Transaction Log table re-renders"]
 ```
 
-> Diagram adapted from `carmen/docs/app/inventory-management/transactions/FD-inventory-transactions.md` · verified against `carmen-inventory-frontend-react/routes/inventory-management/transaction/date-range-filter.tsx`, `carmen-inventory-frontend-react/routes/inventory-management/transaction/transaction-component.tsx`, `carmen-inventory-frontend-react/routes/inventory-management/transaction/use-transaction.ts` (2026-09-28) · Changes: replaced the source doc's client-side mock-data re-filter framing with the real toggle-then-`daterange` filter-clause flow (`transaction-component.tsx` computes `from`/`to` and builds the clause; `date-range-filter.tsx` is a stateless toggle group; `useTransaction()` refetches from the API via URL-backed params — there is no client-side record loop).
+> Diagram adapted from `carmen/docs/app/inventory-management/transactions/FD-inventory-transactions.md` · verified against `carmen-frontend/routes/inventory-management/transaction/date-range-filter.tsx`, `carmen-frontend/routes/inventory-management/transaction/transaction-component.tsx`, `carmen-frontend/routes/inventory-management/transaction/use-transaction.ts` (2026-09-28) · Changes: replaced the source doc's client-side mock-data re-filter framing with the real toggle-then-`daterange` filter-clause flow (`transaction-component.tsx` computes `from`/`to` and builds the clause; `date-range-filter.tsx` is a stateless toggle group; `useTransaction()` refetches from the API via URL-backed params — there is no client-side record loop).
 
 ## 3. Decision Branches
 
@@ -71,5 +71,5 @@ flowchart TD
 - Parent overview: [03-user-flow](/en/inventory/inventory/03-user-flow).
 - Sibling: [transaction](/en/inventory/inventory/transaction) — full data-model and event matrix for the screen this flow uses.
 - Sibling: [02-business-rules](/en/inventory/inventory/02-business-rules) — `INV_VAL_005` (insufficient stock), `INV_VAL_008` (period stamping), `INV_POST_001`–`INV_POST_003` (what each posting writes).
-- Frontend: `../carmen-inventory-frontend-react/routes/inventory-management/transaction/` (`transaction-component.tsx`, `use-transaction-table.tsx`, `transaction-summary.tsx`).
+- Frontend: `../carmen-frontend/routes/inventory-management/transaction/` (`transaction-component.tsx`, `use-transaction-table.tsx`, `transaction-summary.tsx`).
 - Related: [inventory-adjustment](/en/inventory/inventory-adjustment), [good-receive-note](/en/inventory/good-receive-note), [store-requisition](/en/inventory/store-requisition), [physical-count](/en/inventory/physical-count), [spot-check](/en/inventory/spot-check).

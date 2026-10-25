@@ -14,7 +14,7 @@ dateCreated: 2026-06-10T12:00:00.000Z
 > **Tables:** `tb_platform_permission` &nbsp;·&nbsp; `tb_platform_role` &nbsp;·&nbsp; `tb_platform_role_tb_permission` &nbsp;·&nbsp; `tb_user_tb_platform_role` &nbsp;·&nbsp; `tb_platform_super_admin` &nbsp;·&nbsp; **Enums:** none — `resource`/`action` are free-form VarChar &nbsp;·&nbsp; **Scope:** nullable `cluster_id` on the assignment row (`null` = platform-wide) &nbsp;·&nbsp; **Audit columns:** standard `created_*`/`updated_*`/`deleted_*` trio on every table, plus `doc_version Int @default(0)` on all five (added 2026-07-16, platform-wide optimistic-lock rollout) &nbsp;·&nbsp; **Soft-delete uniques:** every uniqueness constraint includes `deleted_at`, so deleted rows can be re-created
 
 > **Source of truth:** Backend Prisma platform schema. Always read this first when writing or updating this page:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > The `generated/client/schema.prisma` file is an auto-generated copy and not authoritative.
 
@@ -180,9 +180,9 @@ This module defines **no enums**. The two places where an enum might be expected
 
 The legacy 7-value role enum that previously lived on the user row has been removed from the schema entirely — see the migration section of the [module landing](/en/platform/rbac).
 
-## 5. Divergences from carmen-platform SPA shape
+## 5. Divergences from carmen-backstage SPA shape
 
-The SPA types live in `../carmen-platform/src/types/index.ts` (`Role`, `PermissionCatalogItem`, `UserRoleAssignment`, `Scope`, `EffectivePermissions`). The API flattens the Prisma graph considerably:
+The SPA types live in `../carmen-backstage/src/types/index.ts` (`Role`, `PermissionCatalogItem`, `UserRoleAssignment`, `Scope`, `EffectivePermissions`). The API flattens the Prisma graph considerably:
 
 | SPA shape | SPA source | Prisma storage | Notes |
 | --------- | ---------- | -------------- | ----- |
@@ -223,15 +223,15 @@ REST surface consumed by the SPA services (`roleService.ts`, `permissionService.
 ## 6. References
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (backend HEAD `2378c3b`, 2026-09-05) — models `tb_platform_permission` (line 1007), `tb_platform_role` (line 1026), `tb_platform_role_tb_permission` (line 1046), `tb_user_tb_platform_role` (line 1067), `tb_platform_super_admin` (line 1090). Field lists are unchanged since the last sync — only line numbers shifted, from tables other modules added earlier in the file.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (backend HEAD `2378c3b`, 2026-09-05) — models `tb_platform_permission` (line 1007), `tb_platform_role` (line 1026), `tb_platform_role_tb_permission` (line 1046), `tb_user_tb_platform_role` (line 1067), `tb_platform_super_admin` (line 1090). Field lists are unchanged since the last sync — only line numbers shifted, from tables other modules added earlier in the file.
 
 **Secondary (consumer shape):**
-- `../carmen-platform/src/types/index.ts` — `Role`, `PermissionCatalogItem`, `UserRoleAssignment`, `Scope`, `EffectivePermissions`, `RolesSummaryData`.
-- `../carmen-platform/src/services/roleService.ts` — `RoleWriteData` delta shape, roles endpoints, `getAccessSummary()`.
-- `../carmen-platform/src/services/permissionService.ts` — catalog mapping (key derivation), effective-permissions fetch.
-- `../carmen-platform/src/pages/RoleEdit.tsx` — `fetchAudit()`, the list-endpoint audit fallback for the detail page.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform-permissions/platform-permissions.controller.ts` — `RequirePlatformPermission('platform_role.read')` on the catalog endpoint.
-- `../carmen-platform/src/services/superAdminService.ts` and `src/pages/SuperAdminManagement.tsx` — super-admin endpoints and the envelope-descending `extractArray`.
-- `../carmen-platform/src/services/userRoleService.ts` — assignment endpoints and envelope descent.
+- `../carmen-backstage/src/types/index.ts` — `Role`, `PermissionCatalogItem`, `UserRoleAssignment`, `Scope`, `EffectivePermissions`, `RolesSummaryData`.
+- `../carmen-backstage/src/services/roleService.ts` — `RoleWriteData` delta shape, roles endpoints, `getAccessSummary()`.
+- `../carmen-backstage/src/services/permissionService.ts` — catalog mapping (key derivation), effective-permissions fetch.
+- `../carmen-backstage/src/pages/RoleEdit.tsx` — `fetchAudit()`, the list-endpoint audit fallback for the detail page.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform-permissions/platform-permissions.controller.ts` — `RequirePlatformPermission('platform_role.read')` on the catalog endpoint.
+- `../carmen-backstage/src/services/superAdminService.ts` and `src/pages/SuperAdminManagement.tsx` — super-admin endpoints and the envelope-descending `extractArray`.
+- `../carmen-backstage/src/services/userRoleService.ts` — assignment endpoints and envelope descent.
 
 **Cross-links:** [Platform RBAC landing](/en/platform/rbac) &nbsp;·&nbsp; [UI Screens](/en/platform/rbac/ui-screens) &nbsp;·&nbsp; [Permissions](/en/platform/rbac/permissions) &nbsp;·&nbsp; [users data-model](/en/platform/users/data-model) (the `tb_user` rows assignments point at)

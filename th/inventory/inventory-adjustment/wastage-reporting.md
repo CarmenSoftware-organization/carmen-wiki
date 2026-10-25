@@ -73,7 +73,7 @@ Response ของ write-off: header `tb_stock_out` ที่สร้าง —
 
 ## 7. แหล่งอ้างอิง
 
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/wastage-reporting/` (`wastage-reporting.service.ts` — `findNearExpiry`, `resolveLotsByDetailItemIds`; `wastage-reporting.logic.ts` — `WastageReportingLogic.writeOff`, `groupWriteOffByLocation`; `dto/wastage-reporting.dto.ts`, `dto/wastage-reporting.serializer.ts`); gateway `apps/backend-gateway/src/application/wastage-reporting/wastage-reporting.controller.ts` (`@Controller('api/:bu_code/wastage-reporting')`)
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/wastage-reporting/` (`wastage-reporting.service.ts` — `findNearExpiry`, `resolveLotsByDetailItemIds`; `wastage-reporting.logic.ts` — `WastageReportingLogic.writeOff`, `groupWriteOffByLocation`; `dto/wastage-reporting.dto.ts`, `dto/wastage-reporting.serializer.ts`); gateway `apps/backend-gateway/src/application/wastage-reporting/wastage-reporting.controller.ts` (`@Controller('api/:bu_code/wastage-reporting')`)
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/_uncategorized/wastage-reporting/` (`GET-find-near-expiry-wastage-reporting.bru`, `POST-write-off-wastage-reporting.bru`)
-- **Frontend:** `../carmen-inventory-frontend-react/routes/store-operation/wastage-reporting/` (`wr-component.tsx`, `use-wr-table.tsx`, `use-wastage-report.ts`); gate ของ nav ใน `constant/module-list.ts`
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/710-wastage-reporting.spec.ts` (20 เทส, user story ที่ generate `docs/user-stories/710-wastage-reporting.md`) — พฤติกรรมของรายการ, สรุป และลิงก์ GRN; ไม่มี coverage ของ write-off เพราะ UI ไม่มี
+- **Frontend:** `../carmen-frontend/routes/store-operation/wastage-reporting/` (`wr-component.tsx`, `use-wr-table.tsx`, `use-wastage-report.ts`); gate ของ nav ใน `constant/module-list.ts`
+- **E2E:** `../carmen-frontend-e2e/tests/710-wastage-reporting.spec.ts` (20 เทส, user story ที่ generate `docs/user-stories/710-wastage-reporting.md`) — พฤติกรรมของรายการ, สรุป และลิงก์ GRN; ไม่มี coverage ของ write-off เพราะ UI ไม่มี

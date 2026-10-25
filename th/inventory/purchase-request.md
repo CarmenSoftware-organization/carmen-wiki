@@ -82,10 +82,10 @@ PR เป็นสัญญาณความต้องการต้นน�
 ## 6. แหล่งอ้างอิง
 
 - Concepts: `../carmen/docs/purchase-request-management/`
-- Frontend: `../carmen-inventory-frontend-react/`
-- Backend: `../carmen-turborepo-backend-v2/`
+- Frontend: `../carmen-frontend/`
+- Backend: `../carmen-turborepo-backend/`
 - API contracts: `../carmen-turborepo-backend-bruno/`
-- E2E tests: `../carmen-inventory-frontend-e2e/`
+- E2E tests: `../carmen-frontend-e2e/`
 
 ## 7. หน้าในโมดูลนี้
 
@@ -107,7 +107,7 @@ PR เป็นสัญญาณความต้องการต้นน�
 
 ## 8. API Surface (ตรวจสอบแล้ว 2026-09-22)
 
-Route ทั้งหมดอยู่ใน `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/purchase-requests/purchase-requests.controller.ts` (`@Controller('api')`); guard คือ `AppIdGuard('purchaseRequest.<verb>')` บวก `@Permission({ 'procurement.purchase_request': ['view'] })` บน endpoint แบบ list Bruno: `../carmen-turborepo-backend-bruno/collections/carmen-inventory/procurement/purchase-request/`
+Route ทั้งหมดอยู่ใน `../carmen-turborepo-backend/apps/backend-gateway/src/application/purchase-requests/purchase-requests.controller.ts` (`@Controller('api')`); guard คือ `AppIdGuard('purchaseRequest.<verb>')` บวก `@Permission({ 'procurement.purchase_request': ['view'] })` บน endpoint แบบ list Bruno: `../carmen-turborepo-backend-bruno/collections/carmen-inventory/procurement/purchase-request/`
 
 | Verb + path | วัตถุประสงค์ | หมายเหตุ |
 |---|---|---|

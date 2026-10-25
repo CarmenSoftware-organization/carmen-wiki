@@ -97,7 +97,7 @@ This is a **loose, app-enforced reference only** — there is no foreign key, so
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_vendor_business_type` (line ~5836); `tb_vendor`'s `business_type` JSON field (~3859, no `business_type_id` column exists).
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/029-business-type.spec.ts` + `docs/test-cases/gaps/029-business-type-gap.md`.
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/vendor_business_type/vendor_business_type.service.ts`.
-- **Frontend:** `../carmen-inventory-frontend-react/routes/config/business-type/`.
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_vendor_business_type` (line ~5836); `tb_vendor`'s `business_type` JSON field (~3859, no `business_type_id` column exists).
+- **E2E:** `../carmen-frontend-e2e/tests/029-business-type.spec.ts` + `docs/test-cases/gaps/029-business-type-gap.md`.
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/vendor_business_type/vendor_business_type.service.ts`.
+- **Frontend:** `../carmen-frontend/routes/config/business-type/`.

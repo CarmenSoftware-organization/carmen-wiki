@@ -102,4 +102,4 @@ Persona Receiver ครอบคลุมสอง sub-role เชิงหน�
 - Related: [purchase-order](/th/inventory/purchase-order) — โมดูลต้นทาง; ตอน commit GRN เลื่อน `tb_purchase_order_detail.received_qty` และเปลี่ยน `po_status` เป็น `partial` / `completed`
 - Related: [inventory](/th/inventory/inventory) — โมดูลปลายทาง; ledger บรรจุข้อมูล lot และ cost-layer และ on-hand เพิ่มด้วย `received_base_qty + foc_base_qty`
 - Related: [costing](/th/inventory/costing) — การสร้าง FIFO / average cost-layer ตอน commit (หรือตอน save บน BU แบบ average) โดย landed cost รวม extra cost ที่จัดสรร
-- Frontend: `../carmen-inventory-frontend-react/routes/procurement/goods-receive-note/` — `use-grn-form-actions.ts`, `grn-header.tsx`, `grn-footer-action.tsx`, `grn-stock-table.tsx`, `from-po/`
+- Frontend: `../carmen-frontend/routes/procurement/goods-receive-note/` — `use-grn-form-actions.ts`, `grn-header.tsx`, `grn-footer-action.tsx`, `grn-stock-table.tsx`, `from-po/`

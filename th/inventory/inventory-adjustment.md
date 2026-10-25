@@ -71,10 +71,10 @@ Persona Finance แบบเจาะจง, workbench การตั้งค�
 ## 6. แหล่งอ้างอิง
 
 - Concepts: `../carmen/docs/inventory-adjustment/` (freeze 2026-04-27; ออกแบบเป็น entity เดียว, GL-posting, อนุมัติตาม threshold — ถูกแทนที่โดยโค้ดแล้ว)
-- Frontend: `../carmen-inventory-frontend-react/routes/inventory-management/inventory-adjustment/`
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/stock-in/`, `.../stock-out/`, `.../inventory-transaction/`; gateway `apps/backend-gateway/src/application/stock-ins/`, `stock-outs/`, `inventory-adjustments/`
+- Frontend: `../carmen-frontend/routes/inventory-management/inventory-adjustment/`
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/stock-in/`, `.../stock-out/`, `.../inventory-transaction/`; gateway `apps/backend-gateway/src/application/stock-ins/`, `stock-outs/`, `inventory-adjustments/`
 - API contracts: `../carmen-turborepo-backend-bruno/collections/carmen-inventory/inventory/stock-in/`, `inventory/stock-out/` (create, update, **commit**, void, remove, by-id, list, print-viewer, `details/`), `inventory/inventory-adjustment/` (รายการรวม, by-id, print)
-- E2E tests: ไม่มี Playwright spec; แคตตาล็อก manual `../carmen-inventory-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (60 เคส, ตรวจซ้ำกับฟอร์มรอบ 2026-09 — Commit, Void ต้องอยู่ในโหมด Edit, Delete ในโหมด view), user story ที่ generate `docs/user-stories/730-inventory-adjustment.md` (32); `tests/031-adjustment-type.spec.ts` ครอบคลุมเฉพาะ master ของ reason code
+- E2E tests: ไม่มี Playwright spec; แคตตาล็อก manual `../carmen-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (60 เคส, ตรวจซ้ำกับฟอร์มรอบ 2026-09 — Commit, Void ต้องอยู่ในโหมด Edit, Delete ในโหมด view), user story ที่ generate `docs/user-stories/730-inventory-adjustment.md` (32); `tests/031-adjustment-type.spec.ts` ครอบคลุมเฉพาะ master ของ reason code
 
 ## 7. หน้าในโมดูลนี้
 

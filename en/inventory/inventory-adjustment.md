@@ -71,10 +71,10 @@ A dedicated Finance persona, a System Administrator config workbench, and an Aud
 ## 6. Reference Sources
 
 - Concepts: `../carmen/docs/inventory-adjustment/` (frozen 2026-04-27; single-entity, GL-posting, threshold-approval design — superseded by the code)
-- Frontend: `../carmen-inventory-frontend-react/routes/inventory-management/inventory-adjustment/`
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/stock-in/`, `.../stock-out/`, `.../inventory-transaction/`; gateway `apps/backend-gateway/src/application/stock-ins/`, `stock-outs/`, `inventory-adjustments/`
+- Frontend: `../carmen-frontend/routes/inventory-management/inventory-adjustment/`
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/stock-in/`, `.../stock-out/`, `.../inventory-transaction/`; gateway `apps/backend-gateway/src/application/stock-ins/`, `stock-outs/`, `inventory-adjustments/`
 - API contracts: `../carmen-turborepo-backend-bruno/collections/carmen-inventory/inventory/stock-in/`, `inventory/stock-out/` (create, update, **commit**, void, remove, by-id, list, print-viewer, `details/`), `inventory/inventory-adjustment/` (merged list, by-id, print)
-- E2E tests: no Playwright spec; manual catalog `../carmen-inventory-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (60 cases, re-verified against the 2026-09 form — Commit, Void-needs-Edit, Delete-in-view), generated stories `docs/user-stories/730-inventory-adjustment.md` (32); `tests/031-adjustment-type.spec.ts` covers the reason-code master only
+- E2E tests: no Playwright spec; manual catalog `../carmen-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (60 cases, re-verified against the 2026-09 form — Commit, Void-needs-Edit, Delete-in-view), generated stories `docs/user-stories/730-inventory-adjustment.md` (32); `tests/031-adjustment-type.spec.ts` covers the reason-code master only
 
 ## 7. Pages in This Module
 

@@ -12,7 +12,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 
 > **At a Glance**
 > **Persona:** Inventory Controller (ผู้ดำเนินการ period-end) &nbsp;·&nbsp; **โมดูล:** [inventory](/th/inventory/inventory) &nbsp;·&nbsp; **พื้นผิว:** `/inventory-management/period-end` + `/review`
-> **E2E:** `../carmen-inventory-frontend-e2e/tests/900-period-end.spec.ts` — เทสหน้า list รันได้; describes ของ close-workflow ถูกทำเครื่องหมายว่า "Feature pending" แคตตาล็อก gap แบบ manual `docs/test-cases/gaps/900-period-end-gap.md` (43 เคส: TC-PE-01 list, TC-PE-02 review, TC-PE-03 start counting, TC-PE-04 close, TC-PE-31 physical-count unlock, TC-PE-32 document links)
+> **E2E:** `../carmen-frontend-e2e/tests/900-period-end.spec.ts` — เทสหน้า list รันได้; describes ของ close-workflow ถูกทำเครื่องหมายว่า "Feature pending" แคตตาล็อก gap แบบ manual `docs/test-cases/gaps/900-period-end-gap.md` (43 เคส: TC-PE-01 list, TC-PE-02 review, TC-PE-03 start counting, TC-PE-04 close, TC-PE-31 physical-count unlock, TC-PE-32 document links)
 > **Correction (2026-07-15):** ~26 scenarios เดิม (queue อนุมัติ adjustment, การ commit count-variance, editor ของ stock-policy, การเซ็นรับรอง variance) อธิบายพื้นผิวที่ไม่มีอยู่ในโมดูลนี้; scenarios ด้านล่างครอบคลุม flow review/close ที่มีอยู่จริง
 
 ## 1. Happy Path
@@ -62,5 +62,5 @@ dateCreated: 2026-05-15T12:00:00.000Z
 
 - User flow: [03-user-flow-inventory-controller](/th/inventory/inventory/03-user-flow-inventory-controller); screen reference: [period-end](/th/inventory/inventory/period-end)
 - Business rules: [02-business-rules](/th/inventory/inventory/02-business-rules) — `INV_POST_009`/`INV_POST_010`, `INV_CALC_008`/`INV_CALC_009`, `INV_AUTH_008`
-- E2E: `../carmen-inventory-frontend-e2e/tests/900-period-end.spec.ts` (TC-PE-01xxxx รันได้; TC-PE-02/03/04xxxx "Feature pending"); แคตตาล็อก gap แบบ manual `docs/test-cases/gaps/900-period-end-gap.md`; user stories `docs/user-stories/900-period-end.md`
-- Backend specs: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/period-end/*.spec.ts`
+- E2E: `../carmen-frontend-e2e/tests/900-period-end.spec.ts` (TC-PE-01xxxx รันได้; TC-PE-02/03/04xxxx "Feature pending"); แคตตาล็อก gap แบบ manual `docs/test-cases/gaps/900-period-end-gap.md`; user stories `docs/user-stories/900-period-end.md`
+- Backend specs: `../carmen-turborepo-backend/apps/micro-business/src/inventory/period-end/*.spec.ts`

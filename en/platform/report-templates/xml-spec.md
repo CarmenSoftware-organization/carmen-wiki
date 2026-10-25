@@ -143,7 +143,7 @@ Validation runs in `src/utils/xml.ts:validateXml()` using the browser's native `
 
 ## 6. Worked example
 
-The following is a minimal complete Dialog + Content pair for a date-range and vendor lookup report using a PostgreSQL function as its data source. The Dialog XML was constructed from the element catalogue in §2.2; no sample was found in the carmen-platform codebase outside of design documentation. The field names (`DateFrom`, `DateTo`, `VendorCode`) correspond to a matching `source_params` configuration shown below.
+The following is a minimal complete Dialog + Content pair for a date-range and vendor lookup report using a PostgreSQL function as its data source. The Dialog XML was constructed from the element catalogue in §2.2; no sample was found in the carmen-backstage codebase outside of design documentation. The field names (`DateFrom`, `DateTo`, `VendorCode`) correspond to a matching `source_params` configuration shown below.
 
 ```xml
 <!-- Dialog XML — stored in tb_report_template.dialog -->
@@ -196,7 +196,7 @@ The Content XML column for this template would contain the Go report runtime's l
 </Content>
 ```
 
-**Note:** The `<Content>` structure above is illustrative. The Go runtime's actual element names and attributes are defined in the `micro-report` service, not in the carmen-platform SPA.
+**Note:** The `<Content>` structure above is illustrative. The Go runtime's actual element names and attributes are defined in the `micro-report` service, not in the carmen-backstage SPA.
 
 ## 7. References
 

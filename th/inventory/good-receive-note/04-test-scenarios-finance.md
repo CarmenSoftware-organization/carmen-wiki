@@ -20,7 +20,7 @@ editor: markdown
 - `enum_stage_role` ไม่มีสมาชิก `finance`
 - Spec E2E ของ `501-grn.spec.ts` (76 case) ไม่มี describe block สำหรับการจับคู่ใบกำกับ, การ post AP หรือการปิดงวด; กลุ่ม "Financial Summary" (`TC-GRN-1300xx`) ใช้งานเพียงแท็บยอดรวมแบบอ่านอย่างเดียวบนหน้ารายละเอียด GRN โดยไม่มี assertion ที่ผูกกับ three-way match หรือ journal entry
 
-> **ความครอบคลุมที่รันได้:** กลุ่ม `GRN — Extra Costs` (`TC-GRN-1000xx`) และ `GRN — Financial Summary` (`TC-GRN-1300xx`) ใน `../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts`; gap report `docs/test-cases/gaps/501-grn-core-gap.md` (ส่วน tax / discount) ไม่มี spec AP หรือ GL
+> **ความครอบคลุมที่รันได้:** กลุ่ม `GRN — Extra Costs` (`TC-GRN-1000xx`) และ `GRN — Financial Summary` (`TC-GRN-1300xx`) ใน `../carmen-frontend-e2e/tests/501-grn.spec.ts`; gap report `docs/test-cases/gaps/501-grn-core-gap.md` (ส่วน tax / discount) ไม่มี spec AP หรือ GL
 
 | กลุ่ม scenario ที่เคยกล่าวอ้าง | ข้อสรุป |
 | --- | --- |
@@ -39,4 +39,4 @@ editor: markdown
 - ภาพรวม parent: [04-test-scenarios.md](./04-test-scenarios.md) — ตาราง scenario ข้าม persona ที่แก้ไขแล้ว
 - Sibling: [03-user-flow-finance.md](./03-user-flow-finance.md) — การแก้ไขฉบับเต็มและการค้นหาที่ดำเนินการ
 - Sibling: [04-test-scenarios-receiver.md](./04-test-scenarios-receiver.md) — การกรอก extra-cost ในฐานะส่วนหนึ่งของ flow save ของ Receiver
-- E2E spec: `../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts` — describe block `GRN — Extra Costs` (`TC-GRN-1000xx`) และ `GRN — Financial Summary` (`TC-GRN-1300xx`) เป็นความครอบคลุมจริงที่ใกล้เคียงที่สุด; ไม่มีตัวใดทดสอบการจับคู่ใบกำกับหรือการ post AP
+- E2E spec: `../carmen-frontend-e2e/tests/501-grn.spec.ts` — describe block `GRN — Extra Costs` (`TC-GRN-1000xx`) และ `GRN — Financial Summary` (`TC-GRN-1300xx`) เป็นความครอบคลุมจริงที่ใกล้เคียงที่สุด; ไม่มีตัวใดทดสอบการจับคู่ใบกำกับหรือการ post AP

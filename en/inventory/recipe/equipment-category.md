@@ -88,7 +88,7 @@ Source: tenant schema.
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_recipe_equipment_category` (lines ~5226-5247).
-- **Frontend routes:** `../carmen-inventory-frontend-react/routes/operation-plan/equipment-category/` (nav-linked, `constant/module-list.ts`); `../carmen-inventory-frontend-react/routes/operation-plan/recipe-equipment-category/` (routed in `router.tsx`, not nav-linked — confirmed same REST endpoint via `constant/api-endpoints.ts`).
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/121-recipe-equipment-category.spec.ts` — the module's only E2E spec; targets `/operation-plan/recipe-equipment-category` (the non-nav-linked duplicate), admin-only smoke + CRUD.
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_recipe_equipment_category` (lines ~5226-5247).
+- **Frontend routes:** `../carmen-frontend/routes/operation-plan/equipment-category/` (nav-linked, `constant/module-list.ts`); `../carmen-frontend/routes/operation-plan/recipe-equipment-category/` (routed in `router.tsx`, not nav-linked — confirmed same REST endpoint via `constant/api-endpoints.ts`).
+- **E2E:** `../carmen-frontend-e2e/tests/121-recipe-equipment-category.spec.ts` — the module's only E2E spec; targets `/operation-plan/recipe-equipment-category` (the non-nav-linked duplicate), admin-only smoke + CRUD.
 - **Concept docs:** `../carmen/docs/recipe/setup-pages-spec.md`.

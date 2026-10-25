@@ -12,7 +12,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 หน้านี้บันทึก `tb_activity_event` ตาราง UI telemetry แบบ append-only ที่อยู่เบื้องหลัง [Activity Events](/th/platform/activity-events) และโมดูลพี่น้องที่เป็นตัวสรุป [Usage Analytics](/th/platform/usage-analytics) มันไม่ใช่ `tb_activity` ตาราง change-history/audit ที่อยู่เบื้องหลังปุ่ม "View History" ที่อื่นในผลิตภัณฑ์ — ดูความแตกต่างเต็ม ๆ ที่ §2 ของหน้าหลัก ไม่มีเนื้อหาส่วนไหนในหน้านี้พูดถึง `tb_activity`
 
-โมเดลนี้นิยามอยู่ที่ `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma:1489-1509` (HEAD `937cf5ac4`, 2026-09-06) คอมเมนต์หัวไฟล์ของมันเองระบุเจตนาการออกแบบไว้ตรง ๆ และเส้นทาง write/retention ด้านล่างก็ยืนยันสิ่งนี้ ไม่ใช่แค่พูดซ้ำ: "Raw UI telemetry (append-only) — ไม่มี soft delete / audit columns โดยตั้งใจ: ปริมาณสูง ไม่แก้ไขราย row มีแต่ retention job ลบเป็นชุด (micro-cronjobs)" (`schema.prisma:1487-1488`)
+โมเดลนี้นิยามอยู่ที่ `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma:1489-1509` (HEAD `937cf5ac4`, 2026-09-06) คอมเมนต์หัวไฟล์ของมันเองระบุเจตนาการออกแบบไว้ตรง ๆ และเส้นทาง write/retention ด้านล่างก็ยืนยันสิ่งนี้ ไม่ใช่แค่พูดซ้ำ: "Raw UI telemetry (append-only) — ไม่มี soft delete / audit columns โดยตั้งใจ: ปริมาณสูง ไม่แก้ไขราย row มีแต่ retention job ลบเป็นชุด (micro-cronjobs)" (`schema.prisma:1487-1488`)
 
 ## 1. เรคคอร์ด (Record)
 
@@ -40,7 +40,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 มีสองจุดที่อ่านผิดง่ายถ้าดูแค่ type `AnalyticsEvent`/`ActivityEvent` ฝั่ง frontend เพียงอย่างเดียว จึงขอระบุตรง ๆ ที่นี่ แต่ละจุดยืนยันจากการอ่าน source จริงของฟิลด์นั้น ไม่ใช่เดาจาก type definition:
 
-- **`user_id` ไม่เคยอยู่ใน payload ของ client เลย** interface `AnalyticsEvent` ฝั่ง frontend เอง (`../carmen-inventory-frontend-react/lib/analytics.ts:32-42`) ไม่มีฟิลด์ `user_id` และ Zod schema ต่อ event ฝั่ง backend (`ActivityEventSchema`, `activity-event.dto.ts:9-46`) ก็ไม่มีฟิลด์นี้เช่นกัน มันถูกอ่านจาก request ที่ authenticate แล้ว (`ExtractRequestHeader(req)` ใน `analytics-events.controller.ts:87`) แล้วส่งลงมาเป็นพารามิเตอร์ `user_id` แยกต่างหาก ประทับเหมือนกันทุก event ใน batch โดย `createBatch()` (`activity-event.service.ts:92-96`) client จึงอ้างว่าเป็นผู้ใช้คนอื่นนอกเหนือจาก Bearer token ของตัวเองไม่ได้
+- **`user_id` ไม่เคยอยู่ใน payload ของ client เลย** interface `AnalyticsEvent` ฝั่ง frontend เอง (`../carmen-frontend/lib/analytics.ts:32-42`) ไม่มีฟิลด์ `user_id` และ Zod schema ต่อ event ฝั่ง backend (`ActivityEventSchema`, `activity-event.dto.ts:9-46`) ก็ไม่มีฟิลด์นี้เช่นกัน มันถูกอ่านจาก request ที่ authenticate แล้ว (`ExtractRequestHeader(req)` ใน `analytics-events.controller.ts:87`) แล้วส่งลงมาเป็นพารามิเตอร์ `user_id` แยกต่างหาก ประทับเหมือนกันทุก event ใน batch โดย `createBatch()` (`activity-event.service.ts:92-96`) client จึงอ้างว่าเป็นผู้ใช้คนอื่นนอกเหนือจาก Bearer token ของตัวเองไม่ได้
 - **`app_id`, `domain`, และ `user_agent` ก็ไม่เคยอยู่ใน payload ต่อ event เช่นกัน** — ทั้งสามเป็น "client context" ชุดเดียวต่อหนึ่ง HTTP request ดึงมาจาก header โดย `ExtractClientContext()` (`extract_client_context.ts` เต็ม 62 บรรทัด) แล้วประทับเหมือนกันทุก event ใน batch นั้น (`activity-event.service.ts:98-101` คอมเมนต์ของตัวเอง: "client context เหมือนกันทุกแถว — batch หนึ่งมาจาก request เดียว") `ExtractClientContext()` ไม่ throw เลยแม้ header จะผิดรูป (คอมเมนต์ของตัวเอง: "header ที่ผิดรูปต้องไม่ทำให้คำขอที่ผ่าน guard มาแล้วล้ม") — มันจะลดค่าฟิลด์นั้นเป็น `null` แทน
 
 ## 3. ฟิลด์ที่เพิ่มเข้ามาเฉพาะตอนอ่าน (ไม่ได้เก็บจริง)
@@ -84,7 +84,7 @@ WHERE id IN (
 
 `tb_activity_event_daily` **ไม่เคยถูกลบ** โดยงานทั้งสองนี้ หรือโดยสิ่งอื่นใดที่พบ: การ grep ประวัติ migration/model ทั้งหมดหาคำว่า `tb_activity_event_daily` นอกเหนือจากตอนสร้างตารางเองกับ `INSERT` ของ rollup เจอ `DELETE` อยู่แค่จุดเดียว และมันไม่ใช่กลไก retention — เป็นคำสั่งครั้งเดียวที่มี guard อยู่ใน schema migration ตัวหนึ่ง (`20260731000000_activity_event_client_context/migration.sql`) ที่ล้างตาราง *เฉพาะเมื่อ* unique index ของมันยังไม่มีคอลัมน์ `domain`/`app_id` ที่กำลังถูกเพิ่มใน migration เดียวกัน เพื่อป้องกันไม่ให้ rollup รอบถัดไปนับซ้ำภายใต้ key แบบเก่า มันรันได้อย่างมากแค่ครั้งเดียว เป็น no-op บนฐานข้อมูลใดก็ตามที่ apply ไปแล้ว และไม่เกี่ยวข้องกับ retention 365 วันของแถวดิบที่รันต่อเนื่องอยู่เลย
 
-**ไม่พบผู้อ่าน `tb_activity_event_daily` เลย** การค้นหาในทุก repository ที่ใช้อ้างอิงสำหรับวิกินี้ — `../carmen-turborepo-backend-v2`, `../micro-cronjobs`, `../micro-report`, `../micro-data` — หา `SELECT`/query ใด ๆ ต่อตารางนี้ นอกเหนือจาก `INSERT ... ON CONFLICT` ของ rollup เอง ไม่พบเลย [Usage Analytics](/th/platform/usage-analytics) คำนวณการแบ่งกลุ่มรายวันของตัวเองสด ๆ จากแถวดิบ `tb_activity_event` ภายในหน้าต่างเวลาของ query (จำกัดที่ 90 วัน) แทนที่จะอ่านตารางนี้ ข้อความนี้เป็นข้อค้นพบจาก repository ที่มีอยู่เท่านั้น ไม่ใช่การพิสูจน์ว่าไม่มีผู้บริโภคข้อมูลนี้อยู่ที่ไหนเลย — อาจมีผู้อ่านอยู่ใน repository นอกเหนือจากชุดอ้างอิงของวิกินี้ก็ได้
+**ไม่พบผู้อ่าน `tb_activity_event_daily` เลย** การค้นหาในทุก repository ที่ใช้อ้างอิงสำหรับวิกินี้ — `../carmen-turborepo-backend`, `../micro-cronjobs`, `../micro-report`, `../micro-data` — หา `SELECT`/query ใด ๆ ต่อตารางนี้ นอกเหนือจาก `INSERT ... ON CONFLICT` ของ rollup เอง ไม่พบเลย [Usage Analytics](/th/platform/usage-analytics) คำนวณการแบ่งกลุ่มรายวันของตัวเองสด ๆ จากแถวดิบ `tb_activity_event` ภายในหน้าต่างเวลาของ query (จำกัดที่ 90 วัน) แทนที่จะอ่านตารางนี้ ข้อความนี้เป็นข้อค้นพบจาก repository ที่มีอยู่เท่านั้น ไม่ใช่การพิสูจน์ว่าไม่มีผู้บริโภคข้อมูลนี้อยู่ที่ไหนเลย — อาจมีผู้อ่านอยู่ใน repository นอกเหนือจากชุดอ้างอิงของวิกินี้ก็ได้
 
 ## 5. โมดูลที่เกี่ยวข้อง
 
@@ -95,17 +95,17 @@ WHERE id IN (
 
 ## 6. แหล่งอ้างอิง
 
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma:1479-1529` (HEAD `937cf5ac4`, 2026-09-06) — `enum_activity_event_type`, `tb_activity_event`, `tb_activity_event_daily`, และคอมเมนต์หัวไฟล์ของแต่ละตัว
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/common/dto/activity-event/activity-event.dto.ts` (เต็ม) — `ActivityEventSchema`/`ActivityEventBatchSchema`, เพดานความยาวของทุกฟิลด์และเพดาน batch 1–100 event
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/common/helpers/extract_client_context.ts` (เต็ม 62 บรรทัด) — `ExtractClientContext()`, การประทับ `app_id`/`domain`/`user_agent` พร้อมเพดาน/ค่า fallback
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/analytics-events/analytics-events.controller.ts` (เต็ม) — `POST api/analytics-events`, `ExtractRequestHeader` สำหรับ `user_id`, guard ต่าง ๆ
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/analytics-events/analytics-events.service.ts` (เต็ม) — ตัว proxy จาก gateway ไป microservice
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/log/activity-event/activity-event.service.ts:82-112,246-347` — `createBatch()` (การ insert) และ `findEvents()` (การเติมชื่อผู้ใช้/แอปตอนอ่าน)
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_cronjobs/platform_cronjobs.service.ts:7-30` — `CronJobRow` ยืนยันว่าหน้า Cronjobs ของแพลตฟอร์มกับงาน retention/rollup ที่ seed ไว้ใช้ตารางเดียวกัน
-- `../carmen-inventory-frontend-react/lib/analytics.ts:30-42` (HEAD `72d6cd340`, 2026-09-04) — รูปร่าง `AnalyticsEvent` ฝั่ง client (ยืนยันว่าไม่มี `user_id` อยู่ในนั้น)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma:1479-1529` (HEAD `937cf5ac4`, 2026-09-06) — `enum_activity_event_type`, `tb_activity_event`, `tb_activity_event_daily`, และคอมเมนต์หัวไฟล์ของแต่ละตัว
+- `../carmen-turborepo-backend/apps/backend-gateway/src/common/dto/activity-event/activity-event.dto.ts` (เต็ม) — `ActivityEventSchema`/`ActivityEventBatchSchema`, เพดานความยาวของทุกฟิลด์และเพดาน batch 1–100 event
+- `../carmen-turborepo-backend/apps/backend-gateway/src/common/helpers/extract_client_context.ts` (เต็ม 62 บรรทัด) — `ExtractClientContext()`, การประทับ `app_id`/`domain`/`user_agent` พร้อมเพดาน/ค่า fallback
+- `../carmen-turborepo-backend/apps/backend-gateway/src/application/analytics-events/analytics-events.controller.ts` (เต็ม) — `POST api/analytics-events`, `ExtractRequestHeader` สำหรับ `user_id`, guard ต่าง ๆ
+- `../carmen-turborepo-backend/apps/backend-gateway/src/application/analytics-events/analytics-events.service.ts` (เต็ม) — ตัว proxy จาก gateway ไป microservice
+- `../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/activity-event.service.ts:82-112,246-347` — `createBatch()` (การ insert) และ `findEvents()` (การเติมชื่อผู้ใช้/แอปตอนอ่าน)
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform_cronjobs/platform_cronjobs.service.ts:7-30` — `CronJobRow` ยืนยันว่าหน้า Cronjobs ของแพลตฟอร์มกับงาน retention/rollup ที่ seed ไว้ใช้ตารางเดียวกัน
+- `../carmen-frontend/lib/analytics.ts:30-42` (HEAD `72d6cd340`, 2026-09-04) — รูปร่าง `AnalyticsEvent` ฝั่ง client (ยืนยันว่าไม่มี `user_id` อยู่ในนั้น)
 - `../micro-cronjobs/internal/executor/activity_retention.go` (เต็ม, HEAD `d17d8eb9bc3`, 2026-09-04) — executor การลบแบบ batch สำหรับ retention
 - `../micro-cronjobs/internal/executor/activity_rollup.go` (เต็ม 80 บรรทัด) — executor การ upsert รายวันสำหรับ rollup
 - `../micro-cronjobs/internal/executor/executor.go:68-84` — switch การ dispatch ตาม `job.JobType` ยืนยันว่า job type ทั้งสองต่อเข้ากับ executor ของตัวเองจริง
 - `../micro-cronjobs/migrations/20260730093731_seed_activity_retention_job.up.sql` — cron entry retention ที่ seed ไว้และ active (365 วัน, 04:00 ทุกวัน)
 - `../micro-cronjobs/migrations/20260730092930_seed_activity_rollup_job.up.sql` — cron entry rollup ที่ seed ไว้และ active (03:30 ทุกวัน, ย้อนหลัง 2 วัน)
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260731000000_activity_event_client_context/migration.sql` — การล้าง `tb_activity_event_daily` แบบครั้งเดียวที่มี guard ผูกกับการเปลี่ยน dimension key `domain`/`app_id` ไม่ใช่กลไก retention
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260731000000_activity_event_client_context/migration.sql` — การล้าง `tb_activity_event_daily` แบบครั้งเดียวที่มี guard ผูกกับการเปลี่ยน dimension key `domain`/`app_id` ไม่ใช่กลไก retention

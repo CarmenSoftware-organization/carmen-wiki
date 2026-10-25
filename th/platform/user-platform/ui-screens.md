@@ -11,7 +11,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # ผู้ใช้แพลตฟอร์ม — หน้าจอ UI (UI Screens)
 
 > **At a Glance**
-> **หน้าจอ:** `UserPlatformManagement` (`/platform/user-platform`) &nbsp;·&nbsp; `UserPlatformEdit` (`/platform/user-platform/:userId` ไม่มี `/edit` ต่อท้าย — ดู [Landing](/th/platform/user-platform) §1) &nbsp;·&nbsp; **เปลือกที่ใช้ร่วมกัน:** `Layout`, `PageHeader`, `DevDebugSheet` เฉพาะตอน dev บนทั้งสองหน้าจอ, `useGlobalShortcuts` &nbsp;·&nbsp; **e2e suite:** `user-platform` (2 specs, `../carmen-platform-e2e`, HEAD `a8e3b31`, 2026-08-25) — **ทั้งสอง spec มีมาก่อนการเขียนใหม่เมื่อ 2026-09-02 และไม่ตรงกับ markup ปัจจุบันแล้ว** — ดู §4
+> **หน้าจอ:** `UserPlatformManagement` (`/platform/user-platform`) &nbsp;·&nbsp; `UserPlatformEdit` (`/platform/user-platform/:userId` ไม่มี `/edit` ต่อท้าย — ดู [Landing](/th/platform/user-platform) §1) &nbsp;·&nbsp; **เปลือกที่ใช้ร่วมกัน:** `Layout`, `PageHeader`, `DevDebugSheet` เฉพาะตอน dev บนทั้งสองหน้าจอ, `useGlobalShortcuts` &nbsp;·&nbsp; **e2e suite:** `user-platform` (2 specs, `../carmen-backstage-e2e`, HEAD `a8e3b31`, 2026-08-25) — **ทั้งสอง spec มีมาก่อนการเขียนใหม่เมื่อ 2026-09-02 และไม่ตรงกับ markup ปัจจุบันแล้ว** — ดู §4
 
 ![ผู้ใช้แพลตฟอร์ม — หน้าจอ UI (UI Screens) screen](/screenshots/platform/user-platform/ui-screens.png)
 
@@ -49,17 +49,17 @@ chrome มาตรฐานด้านล่างนั้น: ช่อง�
 
 ## 4. e2e suite มีมาก่อน UI นี้ — สองจุดไม่ตรงที่ชัดเจน ไม่ใช่คำเตือนลอย ๆ
 
-`../carmen-platform-e2e/tests/user-platform/` มีสอง spec แก้ล่าสุดที่ `a8e3b31` (2026-08-25) — แปดวันก่อนการเขียนใหม่เมื่อ 2026-09-02 (`fc690cb`/`f6e91c9`) ที่หน้านี้บันทึกไว้ ตามกฎยืนของแผนนี้ e2e suite ไม่ใช่หลักฐานโดยอัตโนมัติ การอ่าน page object เทียบกับ source ปัจจุบันยืนยันสองจุดที่ชัดเจนว่าล้าสมัย ไม่ใช่แค่คำเตือนทั่วไปว่า "อาจจะ" ล้าสมัย:
+`../carmen-backstage-e2e/tests/user-platform/` มีสอง spec แก้ล่าสุดที่ `a8e3b31` (2026-08-25) — แปดวันก่อนการเขียนใหม่เมื่อ 2026-09-02 (`fc690cb`/`f6e91c9`) ที่หน้านี้บันทึกไว้ ตามกฎยืนของแผนนี้ e2e suite ไม่ใช่หลักฐานโดยอัตโนมัติ การอ่าน page object เทียบกับ source ปัจจุบันยืนยันสองจุดที่ชัดเจนว่าล้าสมัย ไม่ใช่แค่คำเตือนทั่วไปว่า "อาจจะ" ล้าสมัย:
 
 - **`user-platform-list.spec.ts` ระบุเองใน annotation ว่า "no Add button by design"** และ page object ของมัน (`pages/UserPlatformManagementPage.ts`) มีคอมเมนต์: "NO Add button (users are created on /users; this page only assigns roles) The inherited `addButton`/`clickAdd` must never be used" source ปัจจุบันมีปุ่ม **Grant Access** (ไอคอน `<Plus>` ทั้งใน header และ empty state, §2 ด้านบน) กั้นด้วย `<Can permission="user_platform.manage">` suite นี้ล็อกอินเป็น super admin (เงื่อนไขก่อนของมันเอง) และ `hasPermission()` (`AuthContext.tsx:268-272`) ก็ delegate ไปที่ `checkPermission()` ซึ่งตรวจก่อนอันดับแรกว่า `if (eff?.is_super_admin) return true` (`utils/permissions.ts:56`) — session นั้นจึงเห็นปุ่มนี้ render ทดสอบไม่ได้ assert ว่าปุ่มนี้*ไม่มี* จึงไม่ fail ตรงจุดนี้เพียงจุดเดียว — แต่คำอธิบายที่ระบุไว้ไม่ตรงกับ source ปัจจุบันแล้ว
 - **page object ตัวเดียวกันให้ `openUser`/`openFirstNonLoginUser` คลิก `row.locator('button').first()` โดยสมมติว่า cell ของ username คือ "a BUTTON... not an `<a>`"** source ปัจจุบัน render username เป็น react-router `<Link>` (แท็ก `<a>`, `UserPlatformManagement.tsx:316-321`) องค์ประกอบ `<button>` จริงตัวเดียวในหนึ่งแถวข้อมูลคือปุ่มเปิดเมนู kebab ของ row-actions (ยืนยันจากการอ่าน `data-table.tsx`: cell แสดงลำดับแถวเป็นข้อความล้วน ไม่มี checkbox เลือกแถวเปิดใช้งานบนตารางนี้ และปุ่ม sort อยู่ใน `<thead>` นอกขอบเขตของแถว) การคลิก `row.locator('button').first()` วันนี้จะเปิด dropdown menu นั้น ไม่ได้พาไปหน้า detail เลย — ทั้ง spec ที่พึ่ง helper ตัวนี้ (การนำทางใน `user-platform-list.spec.ts` และทั้งไฟล์ `user-platform-config.spec.ts` ซึ่งไปหน้า detail ผ่าน helper นี้ทางเดียว) จะ fail ตรงขั้นตอนนี้เลย ไม่ใช่ทีหลัง
 - **page object ของ `user-platform-config.spec.ts` (`pages/UserPlatformEditPage.ts`) คาดว่า "Add Role" จะเปิดแผงแบบ inline** `div.rounded-md.border.p-3.space-y-3` ที่มี `<select>` ของ Role/Scope อยู่ข้างในตรง ๆ source ปัจจุบัน `AddRoleSheet` เป็น `Sheet` (`side="right"`, `className="w-full p-4 sm:max-w-sm sm:p-6"`) โดยมี div เนื้อหาข้างในเป็น `mt-6 space-y-4 px-1` — ไม่มี element ที่ตรงกับ `rounded-md border p-3 space-y-3` อยู่เลย locator `addPanel` ของ page object จึงไม่จับอะไรได้กับ markup ปัจจุบัน ทำให้ `roleSelect`/`scopeSelect` (ทั้งคู่อยู่ใต้ `addPanel`) หาไม่เจอ และ `assignFirstAvailableRole()` จะ timeout ไม่ใช่แค่แสดงผลต่างไป
 
-ผลรวม: การทดสอบ smoke "renders title and a non-empty user table" ใน `user-platform-list.spec.ts` น่าจะยังผ่านอยู่ (heading, จำนวนแถว, chrome ของ search/filter/export ไม่เปลี่ยน) แต่ทุก test อื่นในทั้งสองไฟล์พึ่ง helper ที่เสียไปแล้วตัวใดตัวหนึ่งจากสองตัวข้างบน ให้ถือว่า suite นี้**ใช้เป็นหลักฐานปัจจุบันไม่ได้**สำหรับพฤติกรรมเชิงโต้ตอบของทั้งสองหน้าจอ ทุกคำกล่าวอ้างบนหน้านี้และ [Permissions](/th/platform/user-platform/permissions) มาจากการอ่าน implementation ของ `../carmen-platform`/`../carmen-turborepo-backend-v2` โดยตรง ไม่ใช่จาก suite นี้
+ผลรวม: การทดสอบ smoke "renders title and a non-empty user table" ใน `user-platform-list.spec.ts` น่าจะยังผ่านอยู่ (heading, จำนวนแถว, chrome ของ search/filter/export ไม่เปลี่ยน) แต่ทุก test อื่นในทั้งสองไฟล์พึ่ง helper ที่เสียไปแล้วตัวใดตัวหนึ่งจากสองตัวข้างบน ให้ถือว่า suite นี้**ใช้เป็นหลักฐานปัจจุบันไม่ได้**สำหรับพฤติกรรมเชิงโต้ตอบของทั้งสองหน้าจอ ทุกคำกล่าวอ้างบนหน้านี้และ [Permissions](/th/platform/user-platform/permissions) มาจากการอ่าน implementation ของ `../carmen-backstage`/`../carmen-turborepo-backend` โดยตรง ไม่ใช่จาก suite นี้
 
 ## 5. แหล่งอ้างอิง
 
-path ทั้งหมดด้านล่างคือ `../carmen-platform` (HEAD `157a65e`) ยกเว้นที่ขึ้นต้นด้วย `../carmen-turborepo-backend-v2` (HEAD `937cf5ac4`) หรือ `../carmen-platform-e2e` (HEAD `a8e3b31`)
+path ทั้งหมดด้านล่างคือ `../carmen-backstage` (HEAD `157a65e`) ยกเว้นที่ขึ้นต้นด้วย `../carmen-turborepo-backend` (HEAD `937cf5ac4`) หรือ `../carmen-backstage-e2e` (HEAD `a8e3b31`)
 
 - `src/pages/UserPlatformManagement.tsx` (commit `fc690cb`) — หน้ารายการ คอลัมน์ filter export loop revoke-all (บรรทัด 248-262)
 - `src/pages/userPlatformManagement/{PlatformAccessSummary,roleChips,GrantAccessDialog}.tsx` — แถบสรุป, `ScopeRail`/`RoleChips`, dialog มอบสิทธิ์
@@ -67,7 +67,7 @@ path ทั้งหมดด้านล่างคือ `../carmen-platform`
 - `src/pages/userPlatformEdit/{AccessReachBand,RoleGrantList,MembershipCard,AddRoleSheet}.tsx` — reach band, รายการ grant พร้อมที่มา, การ์ด membership, sheet เพิ่ม role
 - `src/components/ui/data-table.tsx:181-230,325-395` — โครงสร้างแถว/คอลัมน์ที่ใช้อ้างอิงใน §4 เพื่อยืนยันว่า element ไหนเป็น `<button>` จริง
 - `src/components/Can.tsx`, `src/context/AuthContext.tsx:268-272`, `src/utils/permissions.ts:56` — พฤติกรรม render-nothing-on-false ของ `<Can>` และทางลัด super-admin ที่อ้างใน §4
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/authen/user_platform_role/user_platform_role.service.ts` — `assign`/`assignBulk`/`remove` ที่หนุนหลังทุกการเขียนบนทั้งสองหน้าจอ
-- `../carmen-platform-e2e/tests/user-platform/{user-platform-list,user-platform-config}.spec.ts`, `pages/UserPlatform{ManagementPage,EditPage}.ts` — suite ที่ล้าสมัยตามที่กล่าวใน §4
+- `../carmen-turborepo-backend/apps/micro-business/src/authen/user_platform_role/user_platform_role.service.ts` — `assign`/`assignBulk`/`remove` ที่หนุนหลังทุกการเขียนบนทั้งสองหน้าจอ
+- `../carmen-backstage-e2e/tests/user-platform/{user-platform-list,user-platform-config}.spec.ts`, `pages/UserPlatform{ManagementPage,EditPage}.ts` — suite ที่ล้าสมัยตามที่กล่าวใน §4
 
 **Cross-links:** [ผู้ใช้แพลตฟอร์ม (landing)](/th/platform/user-platform) &nbsp;·&nbsp; [Permissions](/th/platform/user-platform/permissions) &nbsp;·&nbsp; [Users](/th/platform/users) &nbsp;·&nbsp; [Platform RBAC](/th/platform/rbac)

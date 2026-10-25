@@ -83,6 +83,6 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_credit_note_reason` (line ~312)
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/procurement/credit-note-reason/credit-note-reason.service.ts` (อยู่ใต้ `procurement` ไม่ใช่ `master` ใน layout ของโมดูล backend เอง)
-- **Frontend:** `../carmen-inventory-frontend-react/routes/config/credit-note-reason/`
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_credit_note_reason` (line ~312)
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/procurement/credit-note-reason/credit-note-reason.service.ts` (อยู่ใต้ `procurement` ไม่ใช่ `master` ใน layout ของโมดูล backend เอง)
+- **Frontend:** `../carmen-frontend/routes/config/credit-note-reason/`

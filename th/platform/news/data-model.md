@@ -14,7 +14,7 @@ dateCreated: 2026-06-10T15:45:00.000Z
 > **ตาราง:** `tb_news` — ตารางเดียว, **ไม่มีความสัมพันธ์ FK, ไม่มี unique constraint นอกเหนือจาก PK** &nbsp;·&nbsp; **Enum:** `enum_news_status` (draft · published · archived) &nbsp;·&nbsp; **การกำหนดเป้าหมาย:** `business_unit_ids Json @default("[]")` — array ของ UUID แบบ JSONB ไม่ใช่ join table; `[]` = global &nbsp;·&nbsp; **Tags:** `tags Json @default("[]")` — array ของ string แบบ JSONB ที่ถูก lowercase/dedupe/จำกัดจำนวนฝั่ง server &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` — จำเป็นทุก `PUT`, บังคับใช้ optimistic locking &nbsp;·&nbsp; **รูปภาพ:** จัดเก็บเป็น `image_file_token` (MinIO); response ของ API แทนที่มันด้วย presigned `image_url` (หมดอายุ 1 ชั่วโมง) &nbsp;·&nbsp; **Endpoint:** `/api/news` (CRUD แบบ authenticated) + `/api/news/tags` + `/api/news/summary` (เพิ่มเมื่อ 2026-08-24) + `/api/public/news` (anonymous) — `/api` **ไม่ใช่** `/api-system` &nbsp;·&nbsp; **การบังคับใช้:** route เขียนทั้งสามตรวจสอบ permission `news.*` ของผู้เรียกเองฝั่ง server (`PlatformPermissionGuard` เพิ่มเมื่อ 2026-08-20); route `GET` ทั้งสี่ตรวจสอบเฉพาะ `x-app-id` — ไม่มีการตรวจสอบ permission ของผู้ใช้ โดยตั้งใจ (§6)
 
 > **Source of truth:** Prisma platform schema ฝั่ง backend อ่านไฟล์นี้ก่อนเสมอเมื่อเขียนหรืออัพเดทหน้านี้:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > ไฟล์ `generated/client/schema.prisma` เป็นสำเนาที่ generate อัตโนมัติ ไม่ใช่ไฟล์อ้างอิงหลัก
 
@@ -130,9 +130,9 @@ UPDATE tb_news SET ... WHERE id = :id AND doc_version = :doc_version
 
 การ transition ไม่มีข้อจำกัดทั้งใน SPA (select ธรรมดา) และ backend (ไม่มี transition guard) — สถานะใดก็ย้ายไปสถานะอื่นใดได้
 
-## 5. ความแตกต่างจาก shape ของ carmen-platform SPA
+## 5. ความแตกต่างจาก shape ของ carmen-backstage SPA
 
-type ของ SPA คือ `News` ใน `../carmen-platform/src/types/index.ts`; ชั้นการแปลคือ `src/services/newsService.ts` บวกตัวจัดรูป response ฝั่ง gateway สองตัว (`news-image.helper.ts` และ interceptor `EnrichAuditUsers`)
+type ของ SPA คือ `News` ใน `../carmen-backstage/src/types/index.ts`; ชั้นการแปลคือ `src/services/newsService.ts` บวกตัวจัดรูป response ฝั่ง gateway สองตัว (`news-image.helper.ts` และ interceptor `EnrichAuditUsers`)
 
 | Shape ของ SPA | แหล่งที่มาใน SPA | การจัดเก็บใน Prisma | หมายเหตุ |
 | --------- | ---------- | -------------- | ----- |
@@ -167,14 +167,14 @@ REST surface (backend-gateway) **สังเกต prefix: `/api/news` ไม�
 รายละเอียดรูปแบบ multipart (create/update): field `image` ถือ binary; `validateImageUpload` ของ gateway บังคับ MIME `image/jpeg`/`png`/`webp`, ≤5 MB และ ≤2048×2048 px (parse ล้มเหลว → 400 `BAD_DIMENSIONS`) field ที่เป็นข้อความมาถึงเป็น string; `business_unit_ids` และ `tags` เท่านั้นที่ถูก decode จาก JSON
 
 **หลัก (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_news` (บรรทัด 884), `enum_news_status` (บรรทัด 798)
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/news/news.service.ts` — การตรวจสอบ BU, การ normalize tag, การประทับ `published_at`, optimistic lock ของ `doc_version`, filter soft-delete, filter ฝั่ง public, การ override sort เป็น `updated_at`
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_news` (บรรทัด 884), `enum_news_status` (บรรทัด 798)
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/news/news.service.ts` — การตรวจสอบ BU, การ normalize tag, การประทับ `published_at`, optimistic lock ของ `doc_version`, filter soft-delete, filter ฝั่ง public, การ override sort เป็น `updated_at`
 
 **รอง (gateway + shape ฝั่ง consumer):**
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/news/` — `news.controller.ts` (`PlatformPermissionGuard` บน route เขียนสามตัวเท่านั้น — ดู §6 ด้านบน), `news.service.ts` (อัพโหลด/rollback/cleanup; เป็น RPC proxy ไปยัง `micro-cluster` ไม่ได้เข้าถึง Prisma ตรง ๆ), `news-image.helper.ts`, `news-body.parser.ts`, `public-news.controller.ts`
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/common/helpers/image-upload.validator.ts` — ขีดจำกัดรูปภาพฝั่ง server
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/src/index.ts` — `OptimisticLockError` (`DOC_VERSION_CONFLICT`)
-- `../carmen-platform/src/types/index.ts` — `News`, `NewsStatus`, `Audit`, `AuditEntry`; `src/services/newsService.ts` — ตัวสร้าง multipart, `getTags`, การเดิน envelope; `src/utils/docVersion.ts` — helper ของ conflict
+- `../carmen-turborepo-backend/apps/backend-gateway/src/application/news/` — `news.controller.ts` (`PlatformPermissionGuard` บน route เขียนสามตัวเท่านั้น — ดู §6 ด้านบน), `news.service.ts` (อัพโหลด/rollback/cleanup; เป็น RPC proxy ไปยัง `micro-cluster` ไม่ได้เข้าถึง Prisma ตรง ๆ), `news-image.helper.ts`, `news-body.parser.ts`, `public-news.controller.ts`
+- `../carmen-turborepo-backend/apps/backend-gateway/src/common/helpers/image-upload.validator.ts` — ขีดจำกัดรูปภาพฝั่ง server
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/src/index.ts` — `OptimisticLockError` (`DOC_VERSION_CONFLICT`)
+- `../carmen-backstage/src/types/index.ts` — `News`, `NewsStatus`, `Audit`, `AuditEntry`; `src/services/newsService.ts` — ตัวสร้าง multipart, `getTags`, การเดิน envelope; `src/utils/docVersion.ts` — helper ของ conflict
 - `../carmen-turborepo-backend-bruno/collections/carmen-inventory/master-data/news/` — สัญญาที่ execute ได้ รวมถึงคู่ `public/` และ `GET-find-tags-master-data-news.bru`
 
 **Cross-link:** [หน้า landing ของ News](/th/platform/news) &nbsp;·&nbsp; [UI Screens](/th/platform/news/ui-screens) &nbsp;·&nbsp; [Permissions](/th/platform/news/permissions) &nbsp;·&nbsp; [Business Units data-model](/th/platform/business-units/data-model) (id ที่ถูกกำหนดเป้าหมาย)

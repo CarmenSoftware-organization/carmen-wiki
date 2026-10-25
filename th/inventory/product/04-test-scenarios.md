@@ -15,7 +15,7 @@ dateCreated: 2026-05-15T15:30:00.000Z
 > **ลำดับการรัน:** การตั้งค่า Audit / Config → happy path ของ persona หลัก → scenario ข้าม persona
 > **drill-down ของแต่ละ persona อยู่ที่ `04-test-scenarios-<role>.md`**
 
-> **ความครอบคลุมที่รันได้จริง (2026-09-22):** รีโป e2e **ไม่มี `100-product.spec.ts`** — `/product-management/product` เป็นแถวแบบ catalog เท่านั้น (`📄 catalog`) ใน `../carmen-inventory-frontend-e2e/docs/test-cases/COVERAGE.md:148` หนุนด้วย `docs/test-cases/100-product.md` (52 กรณี ตรวจสอบซ้ำกับฟอร์ม React เมื่อ 2026-09-20) หน้าจอข้างเคียงมี spec: `tests/101-product-category.spec.ts` (23 กรณี; gap report `docs/test-cases/gaps/101-product-category-gap.md` ยังไม่ครอบคลุม 39) และ `tests/044-eco.spec.ts` (19 กรณี; `gaps/044-eco-gap.md` ยังไม่ครอบคลุม 29) หน้านี้ไม่ได้ mirror catalog เหล่านั้น
+> **ความครอบคลุมที่รันได้จริง (2026-09-22):** รีโป e2e **ไม่มี `100-product.spec.ts`** — `/product-management/product` เป็นแถวแบบ catalog เท่านั้น (`📄 catalog`) ใน `../carmen-frontend-e2e/docs/test-cases/COVERAGE.md:148` หนุนด้วย `docs/test-cases/100-product.md` (52 กรณี ตรวจสอบซ้ำกับฟอร์ม React เมื่อ 2026-09-20) หน้าจอข้างเคียงมี spec: `tests/101-product-category.spec.ts` (23 กรณี; gap report `docs/test-cases/gaps/101-product-category-gap.md` ยังไม่ครอบคลุม 39) และ `tests/044-eco.spec.ts` (19 กรณี; `gaps/044-eco-gap.md` ยังไม่ครอบคลุม 29) หน้านี้ไม่ได้ mirror catalog เหล่านั้น
 
 ## 1. ภาพรวม
 
@@ -89,10 +89,10 @@ scenario ข้าม persona ใน Section 4 เป็นชั้น integrat
 
 ## 6. แหล่งอ้างอิง
 
-- `../carmen-inventory-frontend-e2e/tests/101-product-category.spec.ts` (23 กรณี) + `docs/test-cases/gaps/101-product-category-gap.md` (39) — มุมมองต้นไม้หมวดหมู่และ CRUD สามระดับ
-- `../carmen-inventory-frontend-e2e/tests/044-eco.spec.ts` (19 กรณี) + `docs/test-cases/gaps/044-eco-gap.md` (29) — ข้อมูลหลัก eco-label
-- `../carmen-inventory-frontend-e2e/docs/test-cases/100-product.md` (52 กรณี catalog เท่านั้น ตรวจสอบซ้ำ 2026-09-20 — บันทึกชื่อแท็บจริง General / Unit / Location Assignment / Eco Labels, รหัสที่สร้างอัตโนมัติและถูกล็อก, ชุดฟิลด์บังคับ, toast แบบ warning ตอน submit ไม่ถูกต้อง และคอลัมน์ Shelf)
-- `../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts` — spec GRN; การครอบคลุมด้าน product ทางอ้อมผ่าน product picker
+- `../carmen-frontend-e2e/tests/101-product-category.spec.ts` (23 กรณี) + `docs/test-cases/gaps/101-product-category-gap.md` (39) — มุมมองต้นไม้หมวดหมู่และ CRUD สามระดับ
+- `../carmen-frontend-e2e/tests/044-eco.spec.ts` (19 กรณี) + `docs/test-cases/gaps/044-eco-gap.md` (29) — ข้อมูลหลัก eco-label
+- `../carmen-frontend-e2e/docs/test-cases/100-product.md` (52 กรณี catalog เท่านั้น ตรวจสอบซ้ำ 2026-09-20 — บันทึกชื่อแท็บจริง General / Unit / Location Assignment / Eco Labels, รหัสที่สร้างอัตโนมัติและถูกล็อก, ชุดฟิลด์บังคับ, toast แบบ warning ตอน submit ไม่ถูกต้อง และคอลัมน์ Shelf)
+- `../carmen-frontend-e2e/tests/501-grn.spec.ts` — spec GRN; การครอบคลุมด้าน product ทางอ้อมผ่าน product picker
 - Sibling: [03-user-flow.md](./03-user-flow.md) Section 4 — handoff ข้าม persona ที่ขับเคลื่อน scenario integration ด้านบน
 - Sibling: [02-business-rules.md](./02-business-rules.md) — กฎ validation (`PRD_VAL_*`), calculation (`PRD_CALC_*`), authorization (`PRD_AUTH_*`), lifecycle (`PRD_LIFE_*`) และข้ามโมดูล (`PRD_XMOD_*`) ที่อ้างโดยทุก scenario ด้านบน
 - Sibling: [01-data-model.md](./01-data-model.md) — เอนทิตี canonical (`tb_product`, ห่วงโซ่การจำแนก, `tb_unit`, `tb_unit_conversion`, `tb_product_location`, `tb_product_tb_vendor`) และ enum (`enum_product_status_type`, `enum_unit_type`) อ้างทั่วทั้ง

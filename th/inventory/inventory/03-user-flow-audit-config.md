@@ -42,6 +42,6 @@ Draft ก่อนหน้าอธิบาย workspace เฉพาะทา
 
 ## 4. แหล่งอ้างอิง
 
-- Frontend routes: `../carmen-inventory-frontend-react/routes/router.tsx` (รายการ route ของ inventory-management ที่ definitive)
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/` (ไม่มี audit/config service ใน scope นี้)
+- Frontend routes: `../carmen-frontend/routes/router.tsx` (รายการ route ของ inventory-management ที่ definitive)
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/` (ไม่มี audit/config service ใน scope นี้)
 - ภาพรวม parent: [03-user-flow](/th/inventory/inventory/03-user-flow)

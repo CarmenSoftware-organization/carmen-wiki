@@ -92,9 +92,9 @@ Pending หมายถึงเอกสารที่ยังไม่ถึ
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Component (ถูกลบเมื่อ 2026-06-27):** `routes/dashboard/_components/dashboard-my-pending.tsx` ใน `../carmen-inventory-frontend-react`
+- **Component (ถูกลบเมื่อ 2026-06-27):** `routes/dashboard/_components/dashboard-my-pending.tsx` ใน `../carmen-frontend`
 - **Commit ที่ลบ:** `03891e3d` — "refactor(dashboard): convert to idiomatic structure, drop dead demo code"
-- **Hooks (ถูกลบ 2026-08-31, `02228125`):** `../carmen-inventory-frontend-react/hooks/use-dashboard.ts` — `useMyPendingPrCount`, `useMyPendingPoCount`, `useMyPendingSrCount`
-- **API constants (ยังประกาศอยู่ แต่ไม่ถูกใช้):** `../carmen-inventory-frontend-react/constant/api-endpoints.ts` → `MY_PENDING_PURCHASE_REQUESTS_COUNT`, `MY_PENDING_PURCHASE_ORDERS_COUNT`, `MY_PENDING_STORE_REQUISITIONS_COUNT`
-- **Colour mapping:** `../carmen-inventory-frontend-react/constant/module-color-map.ts` → `getModuleColor`
-- **Cache config:** `../carmen-inventory-frontend-react/lib/cache-config.ts` → `CACHE_DYNAMIC`
+- **Hooks (ถูกลบ 2026-08-31, `02228125`):** `../carmen-frontend/hooks/use-dashboard.ts` — `useMyPendingPrCount`, `useMyPendingPoCount`, `useMyPendingSrCount`
+- **API constants (ยังประกาศอยู่ แต่ไม่ถูกใช้):** `../carmen-frontend/constant/api-endpoints.ts` → `MY_PENDING_PURCHASE_REQUESTS_COUNT`, `MY_PENDING_PURCHASE_ORDERS_COUNT`, `MY_PENDING_STORE_REQUISITIONS_COUNT`
+- **Colour mapping:** `../carmen-frontend/constant/module-color-map.ts` → `getModuleColor`
+- **Cache config:** `../carmen-frontend/lib/cache-config.ts` → `CACHE_DYNAMIC`

@@ -14,7 +14,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 
 ## What was checked
 
-- A repo-wide search of `carmen-turborepo-backend-v2` and `carmen-inventory-frontend-react` for `journal`, `ledger`, and GL-posting code in the stock-in/stock-out module found no hits (re-run 2026-09-22). A GL core (`tb_gl_jv*`, `apps/micro-business/src/gl/`, manual journal vouchers) arrived in 2026-09, but nothing in `stock-in/` / `stock-out/` references it.
+- A repo-wide search of `carmen-turborepo-backend` and `carmen-frontend` for `journal`, `ledger`, and GL-posting code in the stock-in/stock-out module found no hits (re-run 2026-09-22). A GL core (`tb_gl_jv*`, `apps/micro-business/src/gl/`, manual journal vouchers) arrived in 2026-09, but nothing in `stock-in/` / `stock-out/` references it.
 - `tb_adjustment_type` has no GL-account field, no document-required flag, no quality-check flag — only `code`, `name`, `type`, `description`, `is_active`, `note`.
 - `enum_stage_role` (the platform's workflow-role enum) is `{create, approve, purchase, issue, view_only}` — it has no `finance` member, and this module's `create()`/`update()`/`void*()` methods never call a workflow orchestrator at all.
 - A repo-wide search for `threshold` scoped to the inventory/stock-in/stock-out modules found zero relevant hits.

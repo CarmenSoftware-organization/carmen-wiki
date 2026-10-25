@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 > **At a Glance**
 > **Persona:** Store Keeper &nbsp;·&nbsp; **โมดูล:** [inventory](/th/inventory/inventory) &nbsp;·&nbsp; **พื้นผิว:** Transaction Log แบบ read-only (`/inventory-management/transaction`)
 > **Correction (2026-07-15):** ~29 scenarios เดิม (threshold auto-approve, การ route new-lot ไปยัง Controller, lot pickers, การ validate expiry ของ perishable, SoD write-off blocks, submit error แบบ negative-balance บนเอกสาร manual) อธิบาย flow การสร้าง stock-in/stock-out ที่ไม่มีอยู่ในโมดูลนี้ — ไม่มี UI สำหรับ threshold หรือ lot-entry ที่ใดเลย และเลข lot ถูก generate โดยระบบ manual adjustments เป็นของหน้าเทสของ [inventory-adjustment](/th/inventory/inventory-adjustment) เอง
-> **Executable coverage (2026-09-22):** ไม่มี Playwright spec ที่ exercise `/inventory-management/transaction`; แคตตาล็อก manual `../carmen-inventory-frontend-e2e/docs/test-cases/740-stock-transaction.md` (38 เคส, ตรวจซ้ำ 2026-09-20) คือแหล่งอ้างอิง ผลการ posting ถูก assert ที่ต้นทางใน `tests/501-grn.spec.ts`, `tests/701-sr.spec.ts`, `tests/601-cn.spec.ts`
+> **Executable coverage (2026-09-22):** ไม่มี Playwright spec ที่ exercise `/inventory-management/transaction`; แคตตาล็อก manual `../carmen-frontend-e2e/docs/test-cases/740-stock-transaction.md` (38 เคส, ตรวจซ้ำ 2026-09-20) คือแหล่งอ้างอิง ผลการ posting ถูก assert ที่ต้นทางใน `tests/501-grn.spec.ts`, `tests/701-sr.spec.ts`, `tests/601-cn.spec.ts`
 
 ## 1. Happy Path
 
@@ -54,5 +54,5 @@ dateCreated: 2026-05-15T12:00:00.000Z
 - User flow: [03-user-flow-store-keeper](/th/inventory/inventory/03-user-flow-store-keeper)
 - Screen reference: [transaction](/th/inventory/inventory/transaction)
 - Business rules: [02-business-rules](/th/inventory/inventory/02-business-rules) — `INV_VAL_005`, `INV_VAL_008`, `INV_POST_001`–`INV_POST_003`
-- Frontend: `../carmen-inventory-frontend-react/routes/inventory-management/transaction/`; ตรรกะ list/search/sort ฝั่ง backend ใน `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/inventory-transaction/inventory-transaction.service.ts` (`findAll`)
-- E2E: ยังไม่มี spec ที่ exercise หน้าจอนี้โดยตรง; แคตตาล็อก manual `../carmen-inventory-frontend-e2e/docs/test-cases/740-stock-transaction.md` (38 เคส); ผลการ posting assert ผ่าน `501-grn.spec.ts` / `701-sr.spec.ts` / `601-cn.spec.ts`
+- Frontend: `../carmen-frontend/routes/inventory-management/transaction/`; ตรรกะ list/search/sort ฝั่ง backend ใน `../carmen-turborepo-backend/apps/micro-business/src/inventory/inventory-transaction/inventory-transaction.service.ts` (`findAll`)
+- E2E: ยังไม่มี spec ที่ exercise หน้าจอนี้โดยตรง; แคตตาล็อก manual `../carmen-frontend-e2e/docs/test-cases/740-stock-transaction.md` (38 เคส); ผลการ posting assert ผ่าน `501-grn.spec.ts` / `701-sr.spec.ts` / `601-cn.spec.ts`

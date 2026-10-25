@@ -14,10 +14,10 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 > **Purchase ledgers:** `tb_cluster_license` (BU quota, per cluster, cancellable) &nbsp;·&nbsp; `tb_business_unit_license` (seats, per BU, not cancellable) &nbsp;·&nbsp; `tb_business_unit_interface_license` (interface/INF, per BU, one `kind = 'interface'` feature group per row, not cancellable — since migration `20260910010000`) &nbsp;·&nbsp; **Contract:** `tb_subscription` (one row per cluster+BU pair) → `tb_subscription_bu` → `tb_subscription_bu_group` (feature-group entitlements, replace-on-save) &nbsp;·&nbsp; **Views:** `v_cluster_bu_cap` (one row per **cluster** — the winning licence's cap) and `v_cluster_bu_quota` (one row per **business unit** — rank + the cap borrowed from the first view) are two different grains answering two different questions — do not conflate them &nbsp;·&nbsp; `v_business_unit_seat` (one row per BU — summed, not winner-take-all) &nbsp;·&nbsp; **No view for INF licences** — their `state`/`in_force`/`contract_state` are computed per request by the service, never stored and never client-derived &nbsp;·&nbsp; **Group kind:** `tb_license_feature_group.kind` (`standard` | `interface`), set at create only; `interface` groups attach only to INF licences, `standard` groups only to subscriptions (400 either way) &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` on all four purchase/contract tables, optimistic lock on every write &nbsp;·&nbsp; **Expiry thresholds:** four independent day-counts (`subscription_days`, `bu_quota_days`, `seat_days`, `interface_days`), default 30 each, editable from Platform Config, read with no permission required
 
 > **Source of truth:** Backend Prisma platform schema and its hand-written migration SQL. Always read these first when writing or updating this page:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260822000000_add_cluster_license/migration.sql`, `20260824000000_add_cap_end_date_to_view/migration.sql`, `20260901020000_cluster_license_cancel/migration.sql`, `20260819000000_bu_user_license/migration.sql`, `20260821130000_subscription_one_bu/migration.sql`, `20260910000000_license_feature_group_kind/migration.sql`, `20260910010000_business_unit_interface_license/migration.sql`, `20260910020000_migrate_interface_groups_to_inf_license/migration.sql`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260822000000_add_cluster_license/migration.sql`, `20260824000000_add_cap_end_date_to_view/migration.sql`, `20260901020000_cluster_license_cancel/migration.sql`, `20260819000000_bu_user_license/migration.sql`, `20260821130000_subscription_one_bu/migration.sql`, `20260910000000_license_feature_group_kind/migration.sql`, `20260910010000_business_unit_interface_license/migration.sql`, `20260910020000_migrate_interface_groups_to_inf_license/migration.sql`
 >
-> The `generated/client/schema.prisma` file is an auto-generated copy and not authoritative. Verified against `carmen-turborepo-backend-v2` HEAD `ef4d6f08f` (2026-09-22) and `carmen-platform` HEAD `f1c69f1` (2026-09-22).
+> The `generated/client/schema.prisma` file is an auto-generated copy and not authoritative. Verified against `carmen-turborepo-backend` HEAD `ef4d6f08f` (2026-09-22) and `carmen-backstage` HEAD `f1c69f1` (2026-09-22).
 
 ## 1. Overview
 
@@ -82,7 +82,7 @@ Since migration `20260821130000_subscription_one_bu`, a subscription binds to **
 
 ### 2.4 `tb_business_unit_interface_license` — interface (INF) licence ledger
 
-Added by `20260910010000_business_unit_interface_license` (schema line 1149) as the fourth licence shape, deliberately a sibling of `tb_business_unit_license` rather than a `type` column on `tb_subscription` — the design spec (`../carmen-platform/docs/superpowers/specs/2026-09-09-interface-license-split-design.md` §2) rejected the column because every subscription query, summary and the one-BU-one-contract partial unique index would each have needed a `WHERE type = 'contract'` that one forgotten call site could silently omit.
+Added by `20260910010000_business_unit_interface_license` (schema line 1149) as the fourth licence shape, deliberately a sibling of `tb_business_unit_license` rather than a `type` column on `tb_subscription` — the design spec (`../carmen-backstage/docs/superpowers/specs/2026-09-09-interface-license-split-design.md` §2) rejected the column because every subscription query, summary and the one-BU-one-contract partial unique index would each have needed a `WHERE type = 'contract'` that one forgotten call site could silently omit.
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
@@ -100,7 +100,7 @@ Added by `20260910010000_business_unit_interface_license` (schema line 1149) as 
 
 **No `cancelled_at` columns** — like seats, an INF licence is edited or hard-deleted, never cancelled.
 
-**Three server-computed fields travel with every row and are not stored anywhere** (`business-unit-interface-license.service.ts` `serialize()`, `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/business-unit-interface-license/`):
+**Three server-computed fields travel with every row and are not stored anywhere** (`business-unit-interface-license.service.ts` `serialize()`, `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/business-unit-interface-license/`):
 
 ```
 state          = 'scheduled' | 'active' | 'expired'   from this row's own start/end vs now
@@ -228,7 +228,7 @@ Four independent, backend-configurable day-counts decide when this module's scre
 - **Seat:** `isExpiringSoon(lic, days)` — `false` for anything not currently `'active'`; seats have no perpetual concept at all (§2.2), so every active seat licence is eligible to eventually warn.
 - **Interface:** the "N days left" badge fires only when the row is `in_force` **and** `end_date - now <= interface_days` — a licence that is within its dates but capped by an expired main contract shows "Capped by contract," never "expiring soon," because it is not granting anything to expire.
 
-## 7. Divergences from carmen-platform SPA shape
+## 7. Divergences from carmen-backstage SPA shape
 
 | SPA shape | SPA source | Prisma storage | Notes |
 | --------- | ---------- | -------------- | ----- |
@@ -266,20 +266,20 @@ REST surface consumed by this module's services:
 | `GET /api/license` (inventory gateway, not `/api-system`) | The consumer of all of the above: a BU's `state`, `end_date`, `features[]`, `hidden_features[]`, `expired_features[]` — INF groups unioned into `features[]` only while the main contract is `active` (§2.4) | Bearer + `x-app-id`; no RBAC. Since `feat(user)!` (2026-09) licence data is **no longer on `GET /api/user/profile`** — see the Inventory book |
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_subscription` (452), `enum_subscription_status` (723), `enum_license_feature_group_kind` (747), `tb_business_unit_license` (1133), `tb_business_unit_interface_license` (1149), `tb_cluster_license` (1168), `tb_license_feature` (1214), `tb_subscription_bu` (1257), `tb_license_feature_group` (1284, `kind` at 1308), `tb_subscription_bu_group` (1336).
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260910000000_license_feature_group_kind`, `20260910010000_business_unit_interface_license`, `20260910020000_migrate_interface_groups_to_inf_license/migration.sql`, and `prisma/check.interface-license-migration.ts` — the INF schema, its data migration, and the mandatory preflight/snapshot/verify gate around it (§2.4).
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/business-unit-interface-license/business-unit-interface-license.service.ts` — `serialize()` (`state`/`in_force`/`contract_state`), the `kind = 'interface'` group check, `takeSortKey(…, ['status'])`.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/license/{license.service.ts,license.types.ts}` — how `GET /api/license` folds INF licences into `features[]`/`expired_features[]`.
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260819000000_bu_user_license/migration.sql` — `tb_business_unit_license`, `v_business_unit_seat`.
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260822000000_add_cluster_license/migration.sql` (lines 36, 55), `20260824000000_add_cap_end_date_to_view/migration.sql`, `20260901020000_cluster_license_cancel/migration.sql` — `tb_cluster_license`, `v_cluster_bu_cap`, `v_cluster_bu_quota`.
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260821130000_subscription_one_bu/migration.sql`, `20260831000000_subscription_bu_group/migration.sql`, `20260901000000_drop_subscription_bu_feature/migration.sql` — the one-BU-per-subscription model and the feature→group migration for entitlements.
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/src/index.ts` — `deriveSubscriptionState()`, the single shared `state`-derivation function (§5).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_subscription` (452), `enum_subscription_status` (723), `enum_license_feature_group_kind` (747), `tb_business_unit_license` (1133), `tb_business_unit_interface_license` (1149), `tb_cluster_license` (1168), `tb_license_feature` (1214), `tb_subscription_bu` (1257), `tb_license_feature_group` (1284, `kind` at 1308), `tb_subscription_bu_group` (1336).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260910000000_license_feature_group_kind`, `20260910010000_business_unit_interface_license`, `20260910020000_migrate_interface_groups_to_inf_license/migration.sql`, and `prisma/check.interface-license-migration.ts` — the INF schema, its data migration, and the mandatory preflight/snapshot/verify gate around it (§2.4).
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/business-unit-interface-license/business-unit-interface-license.service.ts` — `serialize()` (`state`/`in_force`/`contract_state`), the `kind = 'interface'` group check, `takeSortKey(…, ['status'])`.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/license/{license.service.ts,license.types.ts}` — how `GET /api/license` folds INF licences into `features[]`/`expired_features[]`.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260819000000_bu_user_license/migration.sql` — `tb_business_unit_license`, `v_business_unit_seat`.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260822000000_add_cluster_license/migration.sql` (lines 36, 55), `20260824000000_add_cap_end_date_to_view/migration.sql`, `20260901020000_cluster_license_cancel/migration.sql` — `tb_cluster_license`, `v_cluster_bu_cap`, `v_cluster_bu_quota`.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260821130000_subscription_one_bu/migration.sql`, `20260831000000_subscription_bu_group/migration.sql`, `20260901000000_drop_subscription_bu_feature/migration.sql` — the one-BU-per-subscription model and the feature→group migration for entitlements.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/src/index.ts` — `deriveSubscriptionState()`, the single shared `state`-derivation function (§5).
 
 **Secondary (consumer shape):**
-- `../carmen-platform/src/pages/licenses/licenseKindConfig.ts` — `SEAT_CONFIG`/`BU_QUOTA_CONFIG`/`INTERFACE_CONFIG`.
-- `../carmen-platform/src/utils/clusterLicense.ts`, `src/utils/buLicense.ts`, `src/utils/subscriptionState.ts` — the three independent status/expiry-soon formulas.
-- `../carmen-platform/src/utils/businessUnitRank.ts` — `rankBusinessUnits()`/`countOverLimit()`, must match `v_cluster_bu_quota`'s `ORDER BY` exactly.
-- `../carmen-platform/src/context/ExpiryThresholdContext.tsx`, `src/services/expiryThresholdService.ts` — threshold delivery (§6).
-- `../carmen-platform/src/types/index.ts` — `ClusterLicense`, `BusinessUnitLicense`, `InterfaceLicense` (1703), `LicenseFeatureGroupKind`, `Subscription`, `SubscriptionDetail`, `ExpiryThresholdsConfig`.
+- `../carmen-backstage/src/pages/licenses/licenseKindConfig.ts` — `SEAT_CONFIG`/`BU_QUOTA_CONFIG`/`INTERFACE_CONFIG`.
+- `../carmen-backstage/src/utils/clusterLicense.ts`, `src/utils/buLicense.ts`, `src/utils/subscriptionState.ts` — the three independent status/expiry-soon formulas.
+- `../carmen-backstage/src/utils/businessUnitRank.ts` — `rankBusinessUnits()`/`countOverLimit()`, must match `v_cluster_bu_quota`'s `ORDER BY` exactly.
+- `../carmen-backstage/src/context/ExpiryThresholdContext.tsx`, `src/services/expiryThresholdService.ts` — threshold delivery (§6).
+- `../carmen-backstage/src/types/index.ts` — `ClusterLicense`, `BusinessUnitLicense`, `InterfaceLicense` (1703), `LicenseFeatureGroupKind`, `Subscription`, `SubscriptionDetail`, `ExpiryThresholdsConfig`.
 
 **Cross-links:** [Licenses landing](/en/platform/licenses) &nbsp;·&nbsp; [UI Screens](/en/platform/licenses/ui-screens) &nbsp;·&nbsp; [Permissions](/en/platform/licenses/permissions) &nbsp;·&nbsp; [License Catalog](/en/platform/license-catalog) &nbsp;·&nbsp; [Platform Config](/en/platform/platform-config)

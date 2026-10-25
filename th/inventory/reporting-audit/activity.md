@@ -136,15 +136,15 @@ changes: {
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_activity`, `enum_activity_action`; migration `20260727120000_add_activity_action_comment_submit_review`, `20260908120000_add_email_sent_activity_action`
-- **การ redact:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/src/client.ts` — `sensitiveFields`
-- **Diff:** `../carmen-turborepo-backend-v2/packages/log-events-library/src/activity/activity-diff.ts` — `buildActivityDiff()`; ผู้บริโภค `apps/micro-business/src/log/activity-log/activity-log.service.ts` `findOneDetail()`
-- **Gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/activity-logs/activity-logs.controller.ts`
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_activity`, `enum_activity_action`; migration `20260727120000_add_activity_action_comment_submit_review`, `20260908120000_add_email_sent_activity_action`
+- **การ redact:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/src/client.ts` — `sensitiveFields`
+- **Diff:** `../carmen-turborepo-backend/packages/log-events-library/src/activity/activity-diff.ts` — `buildActivityDiff()`; ผู้บริโภค `apps/micro-business/src/log/activity-log/activity-log.service.ts` `findOneDetail()`
+- **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/activity-logs/activity-logs.controller.ts`
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/documents-and-reports/activity-log/*.bru` (list, by-id, find-by-entity, find-by-entity-id, find-one-detail, delete สี่แบบ)
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/activity-log/activity-log.route.tsx`, `activity-log-component.tsx` (`ACTION_OPTIONS`, `ENTITY_TYPE_OPTIONS`), `activity-log-detail-sheet.tsx`
-- **Frontend sheet:** `../carmen-inventory-frontend-react/components/share/activity-sheet.tsx`, `activity-sheet-host.tsx` (`openActivity()`, mount ใน `routes/root-layout.tsx`)
-- **Frontend hook/type:** `../carmen-inventory-frontend-react/hooks/use-activity-log.ts` (`useActivityLog`, `useActivityLogByRecord`, `useActivityLogDetail`, `useExportActivityLog`), `types/activity-log.ts` (`ActivityLog`, `ActivityLogDetail`, `ActivityFieldChange`, `ActivityChildChange`)
-- **ผู้เขียน (ตัวอย่าง):** `../carmen-turborepo-backend-v2/apps/micro-business/src/authen/auth/auth.service.ts` — `logAuthActivity()` (`login`/`logout`, เฉพาะ BU default); `apps/micro-business/src/procurement/purchase-order/purchase-order.service.ts` — `email_sent`
+- **Frontend route:** `../carmen-frontend/routes/system-admin/activity-log/activity-log.route.tsx`, `activity-log-component.tsx` (`ACTION_OPTIONS`, `ENTITY_TYPE_OPTIONS`), `activity-log-detail-sheet.tsx`
+- **Frontend sheet:** `../carmen-frontend/components/share/activity-sheet.tsx`, `activity-sheet-host.tsx` (`openActivity()`, mount ใน `routes/root-layout.tsx`)
+- **Frontend hook/type:** `../carmen-frontend/hooks/use-activity-log.ts` (`useActivityLog`, `useActivityLogByRecord`, `useActivityLogDetail`, `useExportActivityLog`), `types/activity-log.ts` (`ActivityLog`, `ActivityLogDetail`, `ActivityFieldChange`, `ActivityChildChange`)
+- **ผู้เขียน (ตัวอย่าง):** `../carmen-turborepo-backend/apps/micro-business/src/authen/auth/auth.service.ts` — `logAuthActivity()` (`login`/`logout`, เฉพาะ BU default); `apps/micro-business/src/procurement/purchase-order/purchase-order.service.ts` — `email_sent`
 
 ## 9. ไม่ใช่ตารางนี้ — UI telemetry
 

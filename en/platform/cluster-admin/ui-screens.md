@@ -11,7 +11,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # Cluster Admin — UI Screens
 
 > **At a Glance**
-> **Screens:** `ClusterAdminEntry` (`/cluster-admin`) &nbsp;·&nbsp; `ClusterProfile` (`/cluster-admin/:clusterId/cluster`) &nbsp;·&nbsp; `BusinessUnitList`/`BusinessUnitForm` (`/cluster-admin/:clusterId/business-units[/:buId/edit]`) &nbsp;·&nbsp; `ClusterUsers` (`/cluster-admin/:clusterId/users`) &nbsp;·&nbsp; `ClusterAdminLicenses` (`/cluster-admin/:clusterId/licenses`, fully read-only) &nbsp;·&nbsp; shared `Profile` (`/cluster-admin/:clusterId/profile`) &nbsp;·&nbsp; **Gate on every per-cluster screen:** no RBAC permission key — gated instead by cluster membership via `isClusterAdminOf`, checked before the feature flag (see [Permissions](/en/platform/cluster-admin/permissions)) &nbsp;·&nbsp; **In-page writes are gated only by having reached the route** — `ClusterProfile` and `BusinessUnitForm` compute `canEdit` from reachability alone, not from any permission or role check inside the component &nbsp;·&nbsp; **No e2e suite** — every claim below is sourced from `../carmen-platform` implementation directly
+> **Screens:** `ClusterAdminEntry` (`/cluster-admin`) &nbsp;·&nbsp; `ClusterProfile` (`/cluster-admin/:clusterId/cluster`) &nbsp;·&nbsp; `BusinessUnitList`/`BusinessUnitForm` (`/cluster-admin/:clusterId/business-units[/:buId/edit]`) &nbsp;·&nbsp; `ClusterUsers` (`/cluster-admin/:clusterId/users`) &nbsp;·&nbsp; `ClusterAdminLicenses` (`/cluster-admin/:clusterId/licenses`, fully read-only) &nbsp;·&nbsp; shared `Profile` (`/cluster-admin/:clusterId/profile`) &nbsp;·&nbsp; **Gate on every per-cluster screen:** no RBAC permission key — gated instead by cluster membership via `isClusterAdminOf`, checked before the feature flag (see [Permissions](/en/platform/cluster-admin/permissions)) &nbsp;·&nbsp; **In-page writes are gated only by having reached the route** — `ClusterProfile` and `BusinessUnitForm` compute `canEdit` from reachability alone, not from any permission or role check inside the component &nbsp;·&nbsp; **No e2e suite** — every claim below is sourced from `../carmen-backstage` implementation directly
 
 ![Cluster Admin — UI Screens screen](/screenshots/platform/cluster-admin/ui-screens.png)
 
@@ -123,7 +123,7 @@ The same `Profile` component the platform mounts at `/profile`. [Profile](/en/pl
 
 ## 10. References
 
-All paths `../carmen-platform` (HEAD `f1c69f1`, 2026-09-22).
+All paths `../carmen-backstage` (HEAD `f1c69f1`, 2026-09-22).
 
 - `src/pages/clusterAdmin/ClusterAdminEntry.tsx` (§2)
 - `src/pages/clusterAdmin/ClusterProfile.tsx`, `src/pages/clusterAdmin/{CapacityStrip,ClusterBusinessUnitsCard,ClusterPeopleCard,SummaryCardHeader}.tsx` (§3)

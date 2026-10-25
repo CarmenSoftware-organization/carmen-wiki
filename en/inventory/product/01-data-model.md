@@ -17,8 +17,8 @@ dateCreated: 2026-05-15T15:30:00.000Z
 > **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*` universal across all entities; uniqueness scoped to `deleted_at`. **Costing method is NOT on the product** — lives at `tb_business_unit.calculation_method`
 
 > **Source of truth:** Backend Prisma schema. Always read these first when writing or updating this page:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > The `generated/client/schema.prisma` files under each package are auto-generated copies and not authoritative.
 
@@ -50,7 +50,7 @@ graph LR
     pv -->|"N : 1"| vendor["tb_vendor"]
 ```
 
-> Diagram adapted from `carmen/docs/app/product-management/products/DD-products.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (2026-09-28) · Changes: rewritten from `erDiagram` to `graph LR` per the wiki's Mermaid allow-list (erDiagram renders blank on this Wiki.js); renamed generic entity names to real `tb_*` tables; dropped `PRODUCT_ACTIVITY_LOG` (no such table exists — see § 1) and `PRODUCT_UNIT` (replaced by `tb_unit_conversion`); added the `tb_tax_profile`, `tb_location_shelf`, and `tb_product_tb_vendor` relations already described in § 3.
+> Diagram adapted from `carmen/docs/app/product-management/products/DD-products.md` · verified against `carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (2026-09-28) · Changes: rewritten from `erDiagram` to `graph LR` per the wiki's Mermaid allow-list (erDiagram renders blank on this Wiki.js); renamed generic entity names to real `tb_*` tables; dropped `PRODUCT_ACTIVITY_LOG` (no such table exists — see § 1) and `PRODUCT_UNIT` (replaced by `tb_unit_conversion`); added the `tb_tax_profile`, `tb_location_shelf`, and `tb_product_tb_vendor` relations already described in § 3.
 
 ### 2.1 tb_product
 
@@ -315,7 +315,7 @@ The **GL-account-code mapping** table (added 2026-06-22, confirmed via `git log 
 
 **Constraints:** one `@@unique` per owner column, each scoped to `(owner_id, account_type, deleted_at)` — at most one active mapping per account type per owner level.
 
-**Confirmed API surface, no frontend UI found:** the `account_codes: { add[], update[], remove[] }` block is a real, documented field on the create/update Bruno requests for `config/products`, `config/product-category`, `config/product-sub-category`, and `config/product-item-group` (`applyAccountCodesWrite` / `resolveEffectiveAccountCodes` in `apps/micro-business/src/common/account-code/account-code.helper.ts`), and the read side returns `account_codes` on the product detail response — but a repo-wide search of `carmen-inventory-frontend-react` found no component or hook referencing `account_codes` / `accountCodeMapping` anywhere. Treat this as a backend/API-only feature until a UI surface is found.
+**Confirmed API surface, no frontend UI found:** the `account_codes: { add[], update[], remove[] }` block is a real, documented field on the create/update Bruno requests for `config/products`, `config/product-category`, `config/product-sub-category`, and `config/product-item-group` (`applyAccountCodesWrite` / `resolveEffectiveAccountCodes` in `apps/micro-business/src/common/account-code/account-code.helper.ts`), and the read side returns `account_codes` on the product detail response — but a repo-wide search of `carmen-frontend` found no component or hook referencing `account_codes` / `accountCodeMapping` anywhere. Treat this as a backend/API-only feature until a UI surface is found.
 
 ### 2.12 Comment tables (tb_product_comment, tb_product_category_comment, tb_product_sub_category_comment, tb_product_item_group_comment, tb_unit_comment)
 
@@ -428,10 +428,10 @@ The carmen/docs product-management PRD (`PROD-PRD.md`) and product-master PRD (`
 
 ## 6. References
 
-- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` for the product entities (`tb_product` ~1563, `tb_product_category` ~1801, `tb_product_sub_category` ~1952, `tb_product_item_group` ~1876, `tb_unit` ~3739, `tb_unit_conversion` ~3819, `tb_product_location` ~5334, `tb_location_shelf` ~1441, `tb_product_tb_vendor` ~2028, `tb_product_image` ~1634, `tb_eco_label` ~1727 / `tb_product_eco_label` ~1755, `tb_product_account_code_mapping` ~1692, and the parallel comment tables) and the enums `enum_product_status_type` (~165), `enum_unit_type` (~265), `enum_account_type` (~6781).
+- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` for the product entities (`tb_product` ~1563, `tb_product_category` ~1801, `tb_product_sub_category` ~1952, `tb_product_item_group` ~1876, `tb_unit` ~3739, `tb_unit_conversion` ~3819, `tb_product_location` ~5334, `tb_location_shelf` ~1441, `tb_product_tb_vendor` ~2028, `tb_product_image` ~1634, `tb_eco_label` ~1727 / `tb_product_eco_label` ~1755, `tb_product_account_code_mapping` ~1692, and the parallel comment tables) and the enums `enum_product_status_type` (~165), `enum_unit_type` (~265), `enum_account_type` (~6781).
 - **Migrations since 2026-07-29:** `20260814150000_add_location_shelf`, `20260820120000_rename_location_shelf_to_shelf`, `20260904131500_rename_shelf_and_user_location`, `20260904133000_rename_eco_label_and_certificate`, `20260916141000_rename_tb_period_to_tb_inventory_period`.
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/products/products.service.ts` (delete `:2661`, shelf validation `:2035` / `:2244`), `products.replenishment.ts`, `master/shelf/shelf.helper.ts`; gateway `apps/backend-gateway/src/config/config_products/` (`@ExpandRefs` / `@Serialize`), `common/dto/product/product.serializer.ts`.
-- **Frontend:** `../carmen-inventory-frontend-react/types/product.ts`, `routes/product-management/product/` (tabs: `pd-tab-general.tsx`, `pd-tab-unit-conversion.tsx`, `pd-tab-locations.tsx`, `pd-tab-eco.tsx`), `routes/product-management/eco/`.
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/products/products.service.ts` (delete `:2661`, shelf validation `:2035` / `:2244`), `products.replenishment.ts`, `master/shelf/shelf.helper.ts`; gateway `apps/backend-gateway/src/config/config_products/` (`@ExpandRefs` / `@Serialize`), `common/dto/product/product.serializer.ts`.
+- **Frontend:** `../carmen-frontend/types/product.ts`, `routes/product-management/product/` (tabs: `pd-tab-general.tsx`, `pd-tab-unit-conversion.tsx`, `pd-tab-locations.tsx`, `pd-tab-eco.tsx`), `routes/product-management/eco/`.
 - **Bruno:** `config/products/*` (13 requests), `config/product-location/`, `config/location-product/`, `config/products-location-workflow/` (3), `master-data/products/*` (on-hand, on-order, last-purchase, inventory-movement, cost). The platform schema `prisma-shared-schema-platform/prisma/schema.prisma` carries `tb_business_unit.calculation_method` and `enum_calculation_method` referenced from the costing perspective.
 - **Secondary (concept cross-check):**
   - `../carmen/docs/product-management/PROD-PRD.md` — primary PRD describing the product-management feature set; divergences in Section 5 (items 1, 2, 3, 4, 5, 6, 8, 9, 11, 12, 13, 14).

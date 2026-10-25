@@ -12,7 +12,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 
 > **At a Glance**
 > **Persona:** Inventory Controller (period-end operator) &nbsp;·&nbsp; **Module:** [inventory](/en/inventory/inventory) &nbsp;·&nbsp; **Surface:** `/inventory-management/period-end` + `/review`
-> **E2E:** `../carmen-inventory-frontend-e2e/tests/900-period-end.spec.ts` — list-page tests runnable; close-workflow describes marked "Feature pending". Manual gap catalog `docs/test-cases/gaps/900-period-end-gap.md` (43 cases: TC-PE-01 list, TC-PE-02 review, TC-PE-03 start counting, TC-PE-04 close, TC-PE-31 physical-count unlock, TC-PE-32 document links).
+> **E2E:** `../carmen-frontend-e2e/tests/900-period-end.spec.ts` — list-page tests runnable; close-workflow describes marked "Feature pending". Manual gap catalog `docs/test-cases/gaps/900-period-end-gap.md` (43 cases: TC-PE-01 list, TC-PE-02 review, TC-PE-03 start counting, TC-PE-04 close, TC-PE-31 physical-count unlock, TC-PE-32 document links).
 > **Correction (2026-07-15):** the previous ~26 scenarios (adjustment approval queue, count-variance commit, stock-policy editor, variance sign-off) described surfaces that do not exist in this module; the scenarios below cover the real review/close flow.
 
 ## 1. Happy Path
@@ -62,5 +62,5 @@ dateCreated: 2026-05-15T12:00:00.000Z
 
 - User flow: [03-user-flow-inventory-controller](/en/inventory/inventory/03-user-flow-inventory-controller); screen reference: [period-end](/en/inventory/inventory/period-end).
 - Business rules: [02-business-rules](/en/inventory/inventory/02-business-rules) — `INV_POST_009`/`INV_POST_010`, `INV_CALC_008`/`INV_CALC_009`, `INV_AUTH_008`.
-- E2E: `../carmen-inventory-frontend-e2e/tests/900-period-end.spec.ts` (TC-PE-01xxxx runnable; TC-PE-02/03/04xxxx "Feature pending"); manual gap catalog `docs/test-cases/gaps/900-period-end-gap.md`; user stories `docs/user-stories/900-period-end.md`.
-- Backend specs: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/period-end/*.spec.ts`.
+- E2E: `../carmen-frontend-e2e/tests/900-period-end.spec.ts` (TC-PE-01xxxx runnable; TC-PE-02/03/04xxxx "Feature pending"); manual gap catalog `docs/test-cases/gaps/900-period-end-gap.md`; user stories `docs/user-stories/900-period-end.md`.
+- Backend specs: `../carmen-turborepo-backend/apps/micro-business/src/inventory/period-end/*.spec.ts`.

@@ -93,10 +93,10 @@ Source: `apps/backend-gateway/src/application/dashboard-widgets/system-widgets.c
 
 ## 8. แหล่งอ้างอิง
 
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/operation-plan/operation-plan.route.tsx` → `operation-dashboard.tsx`
-- **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-dashboard-widgets.ts` — `useOperationPlanWidgets()` → `useDashboardWidgetConfigs("operation-plan")`; `dashboardDatasetDataQueryOptions()` ต่อ tile ใน `hooks/use-dashboard-dataset.ts`
-- **Frontend shared cards:** `../carmen-inventory-frontend-react/components/dashboard-widget/dashboard-widget-grid.tsx` — `LazyWidget`, `KpiCard`, `BarCard`, `PieCard`, `LineCard`, `WidgetSkeleton` (ใช้ซ้ำโดย layout เฉพาะของหน้าจอนี้ ไม่ใช่ wrapper `DashboardWidgetGrid` ที่ใช้ร่วมกัน); `widget-display.ts` — `gridClasses()`
-- **Gateway controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-widgets/system-widgets.controller.ts` — `DashboardSystemWidgetsController`, `@Get(':module/config')` (2026-09-07) และ `@Get('operation-plan')` แบบรวมชุด Bruno: `_uncategorized/dashboard-widgets/GET-module-config-dashboard-widgets.bru`, `GET-operation-plan-dashboard-widgets.bru`
-- **Gateway config:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-widgets/system-widgets.config.ts` — `OPERATION_PLAN_WIDGETS`, `getSystemWidgets()`
+- **Frontend route:** `../carmen-frontend/routes/operation-plan/operation-plan.route.tsx` → `operation-dashboard.tsx`
+- **Frontend hook:** `../carmen-frontend/hooks/use-dashboard-widgets.ts` — `useOperationPlanWidgets()` → `useDashboardWidgetConfigs("operation-plan")`; `dashboardDatasetDataQueryOptions()` ต่อ tile ใน `hooks/use-dashboard-dataset.ts`
+- **Frontend shared cards:** `../carmen-frontend/components/dashboard-widget/dashboard-widget-grid.tsx` — `LazyWidget`, `KpiCard`, `BarCard`, `PieCard`, `LineCard`, `WidgetSkeleton` (ใช้ซ้ำโดย layout เฉพาะของหน้าจอนี้ ไม่ใช่ wrapper `DashboardWidgetGrid` ที่ใช้ร่วมกัน); `widget-display.ts` — `gridClasses()`
+- **Gateway controller:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/dashboard-widgets/system-widgets.controller.ts` — `DashboardSystemWidgetsController`, `@Get(':module/config')` (2026-09-07) และ `@Get('operation-plan')` แบบรวมชุด Bruno: `_uncategorized/dashboard-widgets/GET-module-config-dashboard-widgets.bru`, `GET-operation-plan-dashboard-widgets.bru`
+- **Gateway config:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/dashboard-widgets/system-widgets.config.ts` — `OPERATION_PLAN_WIDGETS`, `getSystemWidgets()`
 - **Dataset registry:** `../micro-data/service/dashboard/registry.go` — entry `recipe.*` (บรรทัด ~150-165), `equipment.*` (บรรทัด ~166-169)
-- **Translations:** `../carmen-inventory-frontend-react/messages/en.json` — `operationPlan.dashboard.title`/`.description`, `dashboardWidget.section*`
+- **Translations:** `../carmen-frontend/messages/en.json` — `operationPlan.dashboard.title`/`.description`, `dashboardWidget.section*`

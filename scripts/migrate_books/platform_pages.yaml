@@ -15,7 +15,7 @@ pages:
       - One-to-many with Business Units
       - License limit fields
     references:
-      - "../carmen-platform/docs/OVERVIEW.md (Entities)"
+      - "../carmen-backstage/docs/OVERVIEW.md (Entities)"
     todo:
       - Document each field
       - Add an entity diagram
@@ -29,8 +29,8 @@ pages:
       - ClusterManagement — DataTable, filters, CSV export
       - ClusterEdit — view/edit modes, BU and user assignment panels
     references:
-      - "../carmen-platform/src/pages/ClusterManagement.tsx"
-      - "../carmen-platform/src/pages/ClusterEdit.tsx"
+      - "../carmen-backstage/src/pages/ClusterManagement.tsx"
+      - "../carmen-backstage/src/pages/ClusterEdit.tsx"
     todo:
       - Capture screenshots into assets/screenshots/platform/clusters/
       - Document each tab and action
@@ -46,7 +46,7 @@ pages:
       - "support_staff: full"
       - "other roles: AccessDenied"
     references:
-      - "../carmen-platform/SITEMAP.md (Access column)"
+      - "../carmen-backstage/SITEMAP.md (Access column)"
     todo:
       - Cross-link to auth-roles/index.md for role definitions
 
@@ -62,7 +62,7 @@ pages:
       - DB connection block
       - Config array (key/value pairs)
     references:
-      - "../carmen-platform/docs/OVERVIEW.md"
+      - "../carmen-backstage/docs/OVERVIEW.md"
     todo:
       - Document the config array key namespaces
 
@@ -75,7 +75,7 @@ pages:
       - List page conventions
       - Collapsible form sections in the Edit page
     references:
-      - "../carmen-platform/src/pages/BusinessUnitEdit.tsx"
+      - "../carmen-backstage/src/pages/BusinessUnitEdit.tsx"
     todo:
       - Screenshot each form section
 
@@ -90,7 +90,7 @@ pages:
       - Status (active, disabled, deleted)
       - Per-cluster BU assignments
     references:
-      - "../carmen-platform/docs/OVERVIEW.md"
+      - "../carmen-backstage/docs/OVERVIEW.md"
     todo:
       - Document the BU-assignment shape
 
@@ -103,7 +103,7 @@ pages:
       - List page filters
       - Edit page BU assignment matrix
     references:
-      - "../carmen-platform/src/pages/UserEdit.tsx"
+      - "../carmen-backstage/src/pages/UserEdit.tsx"
     todo:
       - Screenshot BU assignment workflow
 
@@ -117,7 +117,7 @@ pages:
       - Disable vs delete (soft vs hard)
       - Password reset (admin-initiated)
     references:
-      - "../carmen-platform/src/pages/UserEdit.tsx"
+      - "../carmen-backstage/src/pages/UserEdit.tsx"
     todo:
       - Document the password reset email flow if any
 
@@ -131,7 +131,7 @@ pages:
       - Content root element and child structure
       - "<Label> + <Date> / <Lookup> pairing"
     references:
-      - "../carmen-platform/src/pages/ReportTemplateEdit.tsx"
+      - "../carmen-backstage/src/pages/ReportTemplateEdit.tsx"
     todo:
       - Add a fully-valid example template
       - List validation error categories
@@ -148,7 +148,7 @@ pages:
       - BU allow/deny chip inputs
       - Sticky bottom action bar with unsaved-changes indicator
     references:
-      - "../carmen-platform/src/pages/ReportTemplateEdit.tsx"
+      - "../carmen-backstage/src/pages/ReportTemplateEdit.tsx"
     todo:
       - Screenshot each tab
 
@@ -162,8 +162,8 @@ pages:
       - Reuses report_template.* permissions and its own report_form_groups feature key
       - Replaces print-template-mapping's grouped-card list (removed 2026-07-24)
     references:
-      - "../carmen-platform/src/pages/ReportFormGroupManagement.tsx"
-      - "../carmen-platform/src/components/nav/platformNav.ts"
+      - "../carmen-backstage/src/pages/ReportFormGroupManagement.tsx"
+      - "../carmen-backstage/src/components/nav/platformNav.ts"
     todo:
       - Already written in full as part of Task 9 — no further action
 
@@ -178,12 +178,12 @@ pages:
       - Backs the tb_cluster_license (BU-quota) and tb_business_unit_license (seat) ledgers referenced from Clusters and Business Units
       - Legacy /subscriptions* routes redirect into this module
     references:
-      - "../carmen-platform/src/pages/LicenseCenter.tsx"
-      - "../carmen-platform/src/pages/licenses/"
-      - "../carmen-platform/src/services/subscriptionService.ts"
-      - "../carmen-platform/src/services/clusterLicenseService.ts"
-      - "../carmen-platform/src/services/businessUnitLicenseService.ts"
-      - "../carmen-platform/src/services/expiryThresholdService.ts"
+      - "../carmen-backstage/src/pages/LicenseCenter.tsx"
+      - "../carmen-backstage/src/pages/licenses/"
+      - "../carmen-backstage/src/services/subscriptionService.ts"
+      - "../carmen-backstage/src/services/clusterLicenseService.ts"
+      - "../carmen-backstage/src/services/businessUnitLicenseService.ts"
+      - "../carmen-backstage/src/services/expiryThresholdService.ts"
     todo:
       - Fill from source in Task 13
 
@@ -197,10 +197,10 @@ pages:
       - tb_business_unit_license — per-BU seat purchase ledger
       - Subscription and expiry-threshold entities
     references:
-      - "../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma"
-      - "../carmen-platform/src/services/subscriptionService.ts"
-      - "../carmen-platform/src/services/clusterLicenseService.ts"
-      - "../carmen-platform/src/services/businessUnitLicenseService.ts"
+      - "../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma"
+      - "../carmen-backstage/src/services/subscriptionService.ts"
+      - "../carmen-backstage/src/services/clusterLicenseService.ts"
+      - "../carmen-backstage/src/services/businessUnitLicenseService.ts"
     todo:
       - Fill from source in Task 13
 
@@ -214,10 +214,10 @@ pages:
       - ClusterLicenseDetail — per-cluster subscriptions, seats, BU-quota detail
       - SubscriptionForm / LicensePurchaseForm — purchase and edit forms
     references:
-      - "../carmen-platform/src/pages/LicenseCenter.tsx"
-      - "../carmen-platform/src/pages/licenses/ClusterLicenseDetail.tsx"
-      - "../carmen-platform/src/pages/licenses/SubscriptionForm.tsx"
-      - "../carmen-platform/src/pages/licenses/LicensePurchaseForm.tsx"
+      - "../carmen-backstage/src/pages/LicenseCenter.tsx"
+      - "../carmen-backstage/src/pages/licenses/ClusterLicenseDetail.tsx"
+      - "../carmen-backstage/src/pages/licenses/SubscriptionForm.tsx"
+      - "../carmen-backstage/src/pages/licenses/LicensePurchaseForm.tsx"
     todo:
       - Fill from source in Task 13
 
@@ -231,8 +231,8 @@ pages:
       - subscription.manage / license.manage — CRUD gates on purchase and edit forms
       - No dedicated e2e suite — verify against implementation only
     references:
-      - "../carmen-platform/src/components/nav/platformNav.ts"
-      - "../carmen-platform/src/pages/LicenseCenter.tsx"
+      - "../carmen-backstage/src/components/nav/platformNav.ts"
+      - "../carmen-backstage/src/pages/LicenseCenter.tsx"
     todo:
       - Fill from source in Task 13
 
@@ -247,11 +247,11 @@ pages:
       - Features and Groups tabs keep separate nav rows, permission pairs and feature keys
       - Groups tab creates/edits via LicenseFeatureGroupEdit
     references:
-      - "../carmen-platform/src/pages/LicenseCatalog.tsx"
-      - "../carmen-platform/src/pages/licenseCatalog/"
-      - "../carmen-platform/src/pages/LicenseFeatureGroupEdit.tsx"
-      - "../carmen-platform/src/services/licenseFeatureService.ts"
-      - "../carmen-platform/src/services/licenseFeatureGroupService.ts"
+      - "../carmen-backstage/src/pages/LicenseCatalog.tsx"
+      - "../carmen-backstage/src/pages/licenseCatalog/"
+      - "../carmen-backstage/src/pages/LicenseFeatureGroupEdit.tsx"
+      - "../carmen-backstage/src/services/licenseFeatureService.ts"
+      - "../carmen-backstage/src/services/licenseFeatureGroupService.ts"
     todo:
       - Fill from source in Task 14
 
@@ -265,9 +265,9 @@ pages:
       - License feature group entity — named bundles of features
       - Referenced by subscriptionService.ts when composing a subscription
     references:
-      - "../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma"
-      - "../carmen-platform/src/services/licenseFeatureService.ts"
-      - "../carmen-platform/src/services/licenseFeatureGroupService.ts"
+      - "../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma"
+      - "../carmen-backstage/src/services/licenseFeatureService.ts"
+      - "../carmen-backstage/src/services/licenseFeatureGroupService.ts"
     todo:
       - Fill from source in Task 14
 
@@ -281,10 +281,10 @@ pages:
       - GroupCatalogPanel — group list tab, links to LicenseFeatureGroupEdit
       - LicenseFeatureGroupEdit — create/edit screen for one feature group
     references:
-      - "../carmen-platform/src/pages/LicenseCatalog.tsx"
-      - "../carmen-platform/src/pages/licenseCatalog/FeatureCatalogPanel.tsx"
-      - "../carmen-platform/src/pages/licenseCatalog/GroupCatalogPanel.tsx"
-      - "../carmen-platform/src/pages/LicenseFeatureGroupEdit.tsx"
+      - "../carmen-backstage/src/pages/LicenseCatalog.tsx"
+      - "../carmen-backstage/src/pages/licenseCatalog/FeatureCatalogPanel.tsx"
+      - "../carmen-backstage/src/pages/licenseCatalog/GroupCatalogPanel.tsx"
+      - "../carmen-backstage/src/pages/LicenseFeatureGroupEdit.tsx"
     todo:
       - Fill from source in Task 14
 
@@ -299,10 +299,10 @@ pages:
       - ClusterAdminRoute gates on cluster membership, not a permission string
       - Mirrors Cluster, Business Units, Users, Licenses and Profile for one :clusterId
     references:
-      - "../carmen-platform/src/pages/clusterAdmin/ClusterAdminEntry.tsx"
-      - "../carmen-platform/src/pages/clusterAdmin/"
-      - "../carmen-platform/src/services/clusterAdminService.ts"
-      - "../carmen-platform/src/components/nav/clusterAdminNav.ts"
+      - "../carmen-backstage/src/pages/clusterAdmin/ClusterAdminEntry.tsx"
+      - "../carmen-backstage/src/pages/clusterAdmin/"
+      - "../carmen-backstage/src/services/clusterAdminService.ts"
+      - "../carmen-backstage/src/components/nav/clusterAdminNav.ts"
     todo:
       - Fill from source in Task 15
 
@@ -316,11 +316,11 @@ pages:
       - BusinessUnitList / BusinessUnitForm — cluster-admin's BU list and edit form
       - ClusterUsers / ClusterAdminLicenses — cluster-admin's users and licenses views
     references:
-      - "../carmen-platform/src/pages/clusterAdmin/ClusterProfile.tsx"
-      - "../carmen-platform/src/pages/clusterAdmin/BusinessUnitList.tsx"
-      - "../carmen-platform/src/pages/clusterAdmin/BusinessUnitForm.tsx"
-      - "../carmen-platform/src/pages/clusterAdmin/ClusterUsers.tsx"
-      - "../carmen-platform/src/pages/clusterAdmin/ClusterAdminLicenses.tsx"
+      - "../carmen-backstage/src/pages/clusterAdmin/ClusterProfile.tsx"
+      - "../carmen-backstage/src/pages/clusterAdmin/BusinessUnitList.tsx"
+      - "../carmen-backstage/src/pages/clusterAdmin/BusinessUnitForm.tsx"
+      - "../carmen-backstage/src/pages/clusterAdmin/ClusterUsers.tsx"
+      - "../carmen-backstage/src/pages/clusterAdmin/ClusterAdminLicenses.tsx"
     todo:
       - Fill from source in Task 15
 
@@ -334,8 +334,8 @@ pages:
       - clusterAdminNav.ts applies no permission filtering at all
       - Contrast with the platform-side RBAC gates in rbac/permissions.md
     references:
-      - "../carmen-platform/src/components/ClusterAdminRoute.tsx"
-      - "../carmen-platform/src/components/nav/clusterAdminNav.ts"
+      - "../carmen-backstage/src/components/ClusterAdminRoute.tsx"
+      - "../carmen-backstage/src/components/nav/clusterAdminNav.ts"
     todo:
       - Fill from source in Task 15
 
@@ -350,9 +350,9 @@ pages:
       - platform_config.read gates the nav/route; platform_config.manage gates every card save
       - feature key platform_config
     references:
-      - "../carmen-platform/src/pages/PlatformConfigManagement.tsx"
-      - "../carmen-platform/src/pages/platformConfig/"
-      - "../carmen-platform/src/services/platformConfigService.ts"
+      - "../carmen-backstage/src/pages/PlatformConfigManagement.tsx"
+      - "../carmen-backstage/src/pages/platformConfig/"
+      - "../carmen-backstage/src/services/platformConfigService.ts"
     todo:
       - Fill from source in Task 16
 
@@ -365,8 +365,8 @@ pages:
       - Config entity read and written by platformConfigService.ts
       - Card-to-key mapping used by PlatformConfigManagement's per-domain cards
     references:
-      - "../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma"
-      - "../carmen-platform/src/services/platformConfigService.ts"
+      - "../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma"
+      - "../carmen-backstage/src/services/platformConfigService.ts"
     todo:
       - Fill from source in Task 16
 
@@ -381,9 +381,9 @@ pages:
       - email_setting.read gates the nav/route; email_setting.manage gates saves
       - feature key email_settings
     references:
-      - "../carmen-platform/src/pages/EmailSettingManagement.tsx"
-      - "../carmen-platform/src/pages/emailSettings/"
-      - "../carmen-platform/src/services/emailSettingService.ts"
+      - "../carmen-backstage/src/pages/EmailSettingManagement.tsx"
+      - "../carmen-backstage/src/pages/emailSettings/"
+      - "../carmen-backstage/src/services/emailSettingService.ts"
     todo:
       - Fill from source in Task 17
 
@@ -396,8 +396,8 @@ pages:
       - Email setting entity fields (SMTP host, credentials, sender identity)
       - Routing-lane entity consumed by RoutingPanel/EmailRoutingCard
     references:
-      - "../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma"
-      - "../carmen-platform/src/services/emailSettingService.ts"
+      - "../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma"
+      - "../carmen-backstage/src/services/emailSettingService.ts"
     todo:
       - Fill from source in Task 17
 
@@ -412,11 +412,11 @@ pages:
       - UserPlatformEdit — per-user role/cluster assignment editor
       - e2e suite user-platform (has coverage, unlike most modules in this batch)
     references:
-      - "../carmen-platform/src/pages/UserPlatformManagement.tsx"
-      - "../carmen-platform/src/pages/UserPlatformEdit.tsx"
-      - "../carmen-platform/src/pages/userPlatformManagement/"
-      - "../carmen-platform/src/pages/userPlatformEdit/"
-      - "../carmen-platform/src/services/userPlatformService.ts"
+      - "../carmen-backstage/src/pages/UserPlatformManagement.tsx"
+      - "../carmen-backstage/src/pages/UserPlatformEdit.tsx"
+      - "../carmen-backstage/src/pages/userPlatformManagement/"
+      - "../carmen-backstage/src/pages/userPlatformEdit/"
+      - "../carmen-backstage/src/services/userPlatformService.ts"
     todo:
       - Fill from source in Task 18
 
@@ -429,11 +429,11 @@ pages:
       - UserPlatformManagement — filter-consistent summary, inline role chips, CSV export
       - UserPlatformEdit — Access Reach Band, Membership Card, Revoke-all-access action
     references:
-      - "../carmen-platform/src/pages/UserPlatformManagement.tsx"
-      - "../carmen-platform/src/pages/userPlatformManagement/PlatformAccessSummary.tsx"
-      - "../carmen-platform/src/pages/UserPlatformEdit.tsx"
-      - "../carmen-platform/src/pages/userPlatformEdit/AccessReachBand.tsx"
-      - "../carmen-platform/src/pages/userPlatformEdit/MembershipCard.tsx"
+      - "../carmen-backstage/src/pages/UserPlatformManagement.tsx"
+      - "../carmen-backstage/src/pages/userPlatformManagement/PlatformAccessSummary.tsx"
+      - "../carmen-backstage/src/pages/UserPlatformEdit.tsx"
+      - "../carmen-backstage/src/pages/userPlatformEdit/AccessReachBand.tsx"
+      - "../carmen-backstage/src/pages/userPlatformEdit/MembershipCard.tsx"
     todo:
       - Fill from source in Task 18
 
@@ -447,8 +447,8 @@ pages:
       - user_platform.manage — assignment-edit gate
       - e2e suite user-platform
     references:
-      - "../carmen-platform/src/components/nav/platformNav.ts"
-      - "../carmen-platform/src/pages/UserPlatformEdit.tsx"
+      - "../carmen-backstage/src/components/nav/platformNav.ts"
+      - "../carmen-backstage/src/pages/UserPlatformEdit.tsx"
     todo:
       - Fill from source in Task 18
 
@@ -464,9 +464,9 @@ pages:
       - Self-removal guard; UserPicker typeahead to add a member
       - e2e suite super-admins (has coverage, unlike most modules in this batch)
     references:
-      - "../carmen-platform/src/pages/SuperAdminManagement.tsx"
-      - "../carmen-platform/src/services/superAdminService.ts"
-      - "../carmen-platform/src/components/nav/platformNav.ts"
+      - "../carmen-backstage/src/pages/SuperAdminManagement.tsx"
+      - "../carmen-backstage/src/services/superAdminService.ts"
+      - "../carmen-backstage/src/components/nav/platformNav.ts"
     todo:
       - Fill from source in Task 19
 
@@ -481,9 +481,9 @@ pages:
       - feature_flag.manage — single gate, no separate .read key
       - Deliberately has no feature key of its own — a switch that hides itself could never be restored from the UI
     references:
-      - "../carmen-platform/src/pages/FeatureFlagManagement.tsx"
-      - "../carmen-platform/src/services/featureFlagService.ts"
-      - "../carmen-platform/src/components/nav/platformNav.ts"
+      - "../carmen-backstage/src/pages/FeatureFlagManagement.tsx"
+      - "../carmen-backstage/src/services/featureFlagService.ts"
+      - "../carmen-backstage/src/components/nav/platformNav.ts"
     todo:
       - Fill from source in Task 20
 
@@ -496,8 +496,8 @@ pages:
       - Feature flag entity read/written by featureFlagService.ts
       - States consumed by PrivateRoute's feature-flag check across every gated route
     references:
-      - "../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma"
-      - "../carmen-platform/src/services/featureFlagService.ts"
+      - "../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma"
+      - "../carmen-backstage/src/services/featureFlagService.ts"
     todo:
       - Fill from source in Task 20
 
@@ -517,10 +517,10 @@ pages:
       - Route reuses cluster.read (shares the Clusters resource); actions are additionally super-admin gated
       - "Content currently exists at business-units/tenant-migrations.md — see cross-module note"
     references:
-      - "../carmen-platform/src/pages/TenantMigrationManagement.tsx"
-      - "../carmen-platform/src/pages/tenantMigration/DeployConsole.tsx"
-      - "../carmen-platform/src/pages/tenantMigration/FleetSync.tsx"
-      - "../carmen-platform/src/services/tenantMigrationService.ts"
+      - "../carmen-backstage/src/pages/TenantMigrationManagement.tsx"
+      - "../carmen-backstage/src/pages/tenantMigration/DeployConsole.tsx"
+      - "../carmen-backstage/src/pages/tenantMigration/FleetSync.tsx"
+      - "../carmen-backstage/src/services/tenantMigrationService.ts"
       - en/platform/business-units/tenant-migrations.md (existing content pending relocation decision)
     todo:
       - Decide whether to relocate content from business-units/tenant-migrations.md or keep both — see cross-module note in .specs/resync-platform-2026-09-05-progress.md
@@ -535,9 +535,9 @@ pages:
       - Per-BU migration status/run entity
       - Read by the same businessUnitService.ts list the Business Units module uses
     references:
-      - "../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma"
-      - "../carmen-platform/src/services/tenantMigrationService.ts"
-      - "../carmen-platform/src/services/businessUnitService.ts"
+      - "../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma"
+      - "../carmen-backstage/src/services/tenantMigrationService.ts"
+      - "../carmen-backstage/src/services/businessUnitService.ts"
     todo:
       - Fill from source in Task 21
 
@@ -552,10 +552,10 @@ pages:
       - data_import.manage — sole gate on the nav/route
       - feature key tenant_imports
     references:
-      - "../carmen-platform/src/pages/TenantImportWizard.tsx"
-      - "../carmen-platform/src/pages/tenantImport/"
-      - "../carmen-platform/src/services/preconfigImportService.ts"
-      - "../carmen-platform/src/services/businessUnitService.ts"
+      - "../carmen-backstage/src/pages/TenantImportWizard.tsx"
+      - "../carmen-backstage/src/pages/tenantImport/"
+      - "../carmen-backstage/src/services/preconfigImportService.ts"
+      - "../carmen-backstage/src/services/businessUnitService.ts"
     todo:
       - Fill from source in Task 22
 
@@ -569,11 +569,11 @@ pages:
       - WorkbookDropzone / FileCheckPanel — file upload and validation steps
       - Resulting business unit(s) created via businessUnitService.ts
     references:
-      - "../carmen-platform/src/pages/TenantImportWizard.tsx"
-      - "../carmen-platform/src/pages/tenantImport/StepRail.tsx"
-      - "../carmen-platform/src/pages/tenantImport/CompanyProfilePanel.tsx"
-      - "../carmen-platform/src/pages/tenantImport/WorkbookDropzone.tsx"
-      - "../carmen-platform/src/pages/tenantImport/FileCheckPanel.tsx"
+      - "../carmen-backstage/src/pages/TenantImportWizard.tsx"
+      - "../carmen-backstage/src/pages/tenantImport/StepRail.tsx"
+      - "../carmen-backstage/src/pages/tenantImport/CompanyProfilePanel.tsx"
+      - "../carmen-backstage/src/pages/tenantImport/WorkbookDropzone.tsx"
+      - "../carmen-backstage/src/pages/tenantImport/FileCheckPanel.tsx"
     todo:
       - Fill from source in Task 22
 
@@ -588,9 +588,9 @@ pages:
       - activity_event.read gates the screen; activity_event.detail gates drill-down
       - feature key usage_analytics
     references:
-      - "../carmen-platform/src/pages/UsageAnalytics.tsx"
-      - "../carmen-platform/src/pages/usageAnalytics/"
-      - "../carmen-platform/src/services/analyticsService.ts"
+      - "../carmen-backstage/src/pages/UsageAnalytics.tsx"
+      - "../carmen-backstage/src/pages/usageAnalytics/"
+      - "../carmen-backstage/src/services/analyticsService.ts"
     todo:
       - Fill from source in Task 23
 
@@ -605,9 +605,9 @@ pages:
       - EventDetailSheet — per-event detail view
       - Backs the activity_log.read View History action referenced from Clusters, Business Units, Users and other modules
     references:
-      - "../carmen-platform/src/pages/ActivityEventManagement.tsx"
-      - "../carmen-platform/src/pages/activityEvents/EventDetailSheet.tsx"
-      - "../carmen-platform/src/services/analyticsService.ts"
+      - "../carmen-backstage/src/pages/ActivityEventManagement.tsx"
+      - "../carmen-backstage/src/pages/activityEvents/EventDetailSheet.tsx"
+      - "../carmen-backstage/src/services/analyticsService.ts"
     todo:
       - Fill from source in Task 24
 
@@ -620,8 +620,8 @@ pages:
       - Activity event entity — actor, action, target, timestamp
       - The PLATFORM_SCOPED_RECORD sentinel referenced by other modules' View History gate
     references:
-      - "../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma"
-      - "../carmen-platform/src/services/analyticsService.ts"
+      - "../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma"
+      - "../carmen-backstage/src/services/analyticsService.ts"
     todo:
       - Fill from source in Task 24
 
@@ -636,10 +636,10 @@ pages:
       - Gated by superAdminOnly:true, not a permission key
       - feature key platform_migrations
     references:
-      - "../carmen-platform/src/pages/PlatformMigrationManagement.tsx"
-      - "../carmen-platform/src/pages/platformMigration/"
-      - "../carmen-platform/src/services/platformMigrationService.ts"
-      - "../carmen-platform/src/services/platformSeedService.ts"
+      - "../carmen-backstage/src/pages/PlatformMigrationManagement.tsx"
+      - "../carmen-backstage/src/pages/platformMigration/"
+      - "../carmen-backstage/src/services/platformMigrationService.ts"
+      - "../carmen-backstage/src/services/platformSeedService.ts"
     todo:
       - Fill from source in Task 25
 
@@ -654,9 +654,9 @@ pages:
       - database_pool.read gates the nav/list; database_pool.manage gates create/edit/delete
       - Referenced by Business Units' database_pool_id field (replaced db_connection)
     references:
-      - "../carmen-platform/src/pages/DatabasePoolManagement.tsx"
-      - "../carmen-platform/src/pages/DatabasePoolEdit.tsx"
-      - "../carmen-platform/src/services/databasePoolService.ts"
+      - "../carmen-backstage/src/pages/DatabasePoolManagement.tsx"
+      - "../carmen-backstage/src/pages/DatabasePoolEdit.tsx"
+      - "../carmen-backstage/src/services/databasePoolService.ts"
     todo:
       - Fill from source in Task 26
 
@@ -669,8 +669,8 @@ pages:
       - tb_database_pool — connection pool entity (host, credentials, schema strategy)
       - Referenced by tb_business_unit.database_pool_id
     references:
-      - "../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma"
-      - "../carmen-platform/src/services/databasePoolService.ts"
+      - "../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma"
+      - "../carmen-backstage/src/services/databasePoolService.ts"
     todo:
       - Fill from source in Task 26
 
@@ -683,8 +683,8 @@ pages:
       - DatabasePoolManagement — list, filters (verify exact columns against source)
       - DatabasePoolEdit — create/edit form for one connection pool
     references:
-      - "../carmen-platform/src/pages/DatabasePoolManagement.tsx"
-      - "../carmen-platform/src/pages/DatabasePoolEdit.tsx"
+      - "../carmen-backstage/src/pages/DatabasePoolManagement.tsx"
+      - "../carmen-backstage/src/pages/DatabasePoolEdit.tsx"
     todo:
       - Fill from source in Task 26
 
@@ -699,10 +699,10 @@ pages:
       - cronjob.read gates the nav/list; cronjob.manage gates create/edit/delete
       - feature key cronjobs
     references:
-      - "../carmen-platform/src/pages/CronJobManagement.tsx"
-      - "../carmen-platform/src/pages/CronJobEdit.tsx"
-      - "../carmen-platform/src/pages/cronjobs/"
-      - "../carmen-platform/src/services/cronjobService.ts"
+      - "../carmen-backstage/src/pages/CronJobManagement.tsx"
+      - "../carmen-backstage/src/pages/CronJobEdit.tsx"
+      - "../carmen-backstage/src/pages/cronjobs/"
+      - "../carmen-backstage/src/services/cronjobService.ts"
     todo:
       - Fill from source in Task 27
 
@@ -715,8 +715,8 @@ pages:
       - Cron job entity fields (schedule expression, target, enabled state)
       - Read/written by cronjobService.ts
     references:
-      - "../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma"
-      - "../carmen-platform/src/services/cronjobService.ts"
+      - "../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma"
+      - "../carmen-backstage/src/services/cronjobService.ts"
     todo:
       - Fill from source in Task 27
 
@@ -729,10 +729,10 @@ pages:
       - CronJobManagement — list with CronJobFilterSheet
       - CronJobEdit — create/edit form with CronScheduleField cron-expression input
     references:
-      - "../carmen-platform/src/pages/CronJobManagement.tsx"
-      - "../carmen-platform/src/pages/CronJobEdit.tsx"
-      - "../carmen-platform/src/pages/cronjobs/CronJobFilterSheet.tsx"
-      - "../carmen-platform/src/pages/cronjobs/CronScheduleField.tsx"
+      - "../carmen-backstage/src/pages/CronJobManagement.tsx"
+      - "../carmen-backstage/src/pages/CronJobEdit.tsx"
+      - "../carmen-backstage/src/pages/cronjobs/CronJobFilterSheet.tsx"
+      - "../carmen-backstage/src/pages/cronjobs/CronScheduleField.tsx"
     todo:
       - Fill from source in Task 27
 
@@ -751,9 +751,9 @@ pages:
       - Reuses report_template.read; carries its own report_form_groups feature key
       - "Content currently lives at report-templates/form-groups.md — see cross-module note"
     references:
-      - "../carmen-platform/src/pages/ReportFormGroupManagement.tsx"
-      - "../carmen-platform/src/pages/reportFormGroups/GroupCard.tsx"
-      - "../carmen-platform/src/components/nav/platformNav.ts"
+      - "../carmen-backstage/src/pages/ReportFormGroupManagement.tsx"
+      - "../carmen-backstage/src/pages/reportFormGroups/GroupCard.tsx"
+      - "../carmen-backstage/src/components/nav/platformNav.ts"
       - en/platform/report-templates/form-groups.md (existing content pending relocation decision)
     todo:
       - Decide whether to relocate content from report-templates/form-groups.md or keep both — see cross-module note in .specs/resync-platform-2026-09-05-progress.md

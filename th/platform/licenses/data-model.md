@@ -14,10 +14,10 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 > **บัญชีซื้อ:** `tb_cluster_license` (BU quota, ระดับ cluster, ยกเลิกได้) &nbsp;·&nbsp; `tb_business_unit_license` (seats, ระดับ BU, ยกเลิกไม่ได้) &nbsp;·&nbsp; `tb_business_unit_interface_license` (interface/INF, ระดับ BU, feature group `kind = 'interface'` หนึ่งกลุ่มต่อแถว, ยกเลิกไม่ได้ — ตั้งแต่ migration `20260910010000`) &nbsp;·&nbsp; **สัญญา:** `tb_subscription` (หนึ่งแถวต่อคู่ cluster+BU) → `tb_subscription_bu` → `tb_subscription_bu_group` (feature-group entitlement แทนที่ทั้งชุดทุกครั้งที่บันทึก) &nbsp;·&nbsp; **View:** `v_cluster_bu_cap` (หนึ่งแถวต่อ **cluster** — เพดานของใบที่ชนะ) กับ `v_cluster_bu_quota` (หนึ่งแถวต่อ **business unit** — อันดับ + เพดานที่ยืมมาจาก view แรก) เป็นสอง grain ที่ตอบคนละคำถาม อย่าเอามาปนกัน &nbsp;·&nbsp; `v_business_unit_seat` (หนึ่งแถวต่อ BU — ผลรวม ไม่ใช่ใบชนะใบเดียว) &nbsp;·&nbsp; **ไม่มี view สำหรับ INF licence** — `state`/`in_force`/`contract_state` ของมันคำนวณต่อ request โดย service ไม่เคยเก็บและไม่เคยให้ client derive &nbsp;·&nbsp; **Kind ของกลุ่ม:** `tb_license_feature_group.kind` (`standard` | `interface`) ตั้งได้ตอนสร้างเท่านั้น; กลุ่ม `interface` ผูกกับ INF licence เท่านั้น กลุ่ม `standard` ผูกกับ subscription เท่านั้น (400 ไม่ว่าทางไหน) &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` บนทั้งสี่ตารางบัญชี/สัญญา ล็อกแบบ optimistic ทุกการเขียน &nbsp;·&nbsp; **เกณฑ์ใกล้หมดอายุ:** จำนวนวันตั้งค่าได้อิสระสี่ค่า (`subscription_days`, `bu_quota_days`, `seat_days`, `interface_days`) ค่าเริ่มต้น 30 ทั้งหมด แก้ได้จาก Platform Config อ่านได้โดยไม่ต้องมีสิทธิ์
 
 > **แหล่งความจริง:** Prisma schema ฝั่ง backend platform และ migration SQL ที่เขียนด้วยมือ อ่านไฟล์เหล่านี้ก่อนเสมอเมื่อจะเขียนหรืออัปเดตหน้านี้:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260822000000_add_cluster_license/migration.sql`, `20260824000000_add_cap_end_date_to_view/migration.sql`, `20260901020000_cluster_license_cancel/migration.sql`, `20260819000000_bu_user_license/migration.sql`, `20260821130000_subscription_one_bu/migration.sql`, `20260910000000_license_feature_group_kind/migration.sql`, `20260910010000_business_unit_interface_license/migration.sql`, `20260910020000_migrate_interface_groups_to_inf_license/migration.sql`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260822000000_add_cluster_license/migration.sql`, `20260824000000_add_cap_end_date_to_view/migration.sql`, `20260901020000_cluster_license_cancel/migration.sql`, `20260819000000_bu_user_license/migration.sql`, `20260821130000_subscription_one_bu/migration.sql`, `20260910000000_license_feature_group_kind/migration.sql`, `20260910010000_business_unit_interface_license/migration.sql`, `20260910020000_migrate_interface_groups_to_inf_license/migration.sql`
 >
-> ไฟล์ `generated/client/schema.prisma` เป็นสำเนาที่ generate อัตโนมัติ ไม่ใช่แหล่งความจริง ตรวจสอบแล้วกับ `carmen-turborepo-backend-v2` HEAD `ef4d6f08f` (2026-09-22) และ `carmen-platform` HEAD `f1c69f1` (2026-09-22)
+> ไฟล์ `generated/client/schema.prisma` เป็นสำเนาที่ generate อัตโนมัติ ไม่ใช่แหล่งความจริง ตรวจสอบแล้วกับ `carmen-turborepo-backend` HEAD `ef4d6f08f` (2026-09-22) และ `carmen-backstage` HEAD `f1c69f1` (2026-09-22)
 
 ## 1. ภาพรวม
 
@@ -82,7 +82,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ### 2.4 `tb_business_unit_interface_license` — บัญชี interface (INF) licence
 
-เพิ่มโดย `20260910010000_business_unit_interface_license` (schema บรรทัด 1149) เป็นรูปแบบ licence ที่สี่ ตั้งใจให้เป็นพี่น้องของ `tb_business_unit_license` ไม่ใช่คอลัมน์ `type` บน `tb_subscription` — สเปกการออกแบบ (`../carmen-platform/docs/superpowers/specs/2026-09-09-interface-license-split-design.md` §2) ปฏิเสธคอลัมน์เพราะทุก query ของ subscription, summary และ partial unique index หนึ่ง-BU-หนึ่ง-สัญญา ต่างต้องมี `WHERE type = 'contract'` ที่จุดเรียกใดจุดหนึ่งที่ลืมอาจละไปเงียบ ๆ
+เพิ่มโดย `20260910010000_business_unit_interface_license` (schema บรรทัด 1149) เป็นรูปแบบ licence ที่สี่ ตั้งใจให้เป็นพี่น้องของ `tb_business_unit_license` ไม่ใช่คอลัมน์ `type` บน `tb_subscription` — สเปกการออกแบบ (`../carmen-backstage/docs/superpowers/specs/2026-09-09-interface-license-split-design.md` §2) ปฏิเสธคอลัมน์เพราะทุก query ของ subscription, summary และ partial unique index หนึ่ง-BU-หนึ่ง-สัญญา ต่างต้องมี `WHERE type = 'contract'` ที่จุดเรียกใดจุดหนึ่งที่ลืมอาจละไปเงียบ ๆ
 
 | ฟิลด์ | ชนิด Prisma | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | ----------- |
@@ -100,7 +100,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 **ไม่มีคอลัมน์ `cancelled_at`** — เหมือนที่นั่ง INF licence ถูกแก้ไขหรือลบทิ้ง ไม่เคยถูกยกเลิก
 
-**ฟิลด์ที่ server คำนวณสามตัวเดินทางไปกับทุกแถวและไม่ได้เก็บที่ไหนเลย** (`serialize()` ใน `business-unit-interface-license.service.ts`, `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/business-unit-interface-license/`):
+**ฟิลด์ที่ server คำนวณสามตัวเดินทางไปกับทุกแถวและไม่ได้เก็บที่ไหนเลย** (`serialize()` ใน `business-unit-interface-license.service.ts`, `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/business-unit-interface-license/`):
 
 ```
 state          = 'scheduled' | 'active' | 'expired'   จาก start/end ของแถวนี้เองเทียบกับ now
@@ -228,7 +228,7 @@ SPA ถูกกำชับไม่ให้คำนวณสิ่งนี�
 - **Seat:** `isExpiringSoon(lic, days)` — เป็น `false` สำหรับใบที่ไม่ `'active'`; ที่นั่งไม่มีแนวคิด perpetual เลย (§2.2) ดังนั้นใบที่นั่งที่ active ทุกใบมีสิทธิ์เตือนได้ในที่สุด
 - **Interface:** ป้าย "เหลืออีก N วัน" ขึ้นเฉพาะเมื่อแถว `in_force` **และ** `end_date - now <= interface_days` — licence ที่ยังอยู่ในช่วงวันที่แต่ถูกสัญญาหลักที่หมดอายุจำกัดไว้จะแสดง "Capped by contract" ไม่เคยแสดง "ใกล้หมดอายุ" เพราะมันไม่ได้ให้สิทธิ์อะไรที่จะหมดอายุได้
 
-## 7. ความแตกต่างจาก shape ของ carmen-platform SPA
+## 7. ความแตกต่างจาก shape ของ carmen-backstage SPA
 
 | Shape ของ SPA | แหล่งที่มาใน SPA | การเก็บใน Prisma | หมายเหตุ |
 | --------- | ---------- | -------------- | ----- |
@@ -266,20 +266,20 @@ REST surface ที่ service ของโมดูลนี้ใช้:
 | `GET /api/license` (inventory gateway ไม่ใช่ `/api-system`) | ผู้บริโภคของทั้งหมดข้างบน: `state`, `end_date`, `features[]`, `hidden_features[]`, `expired_features[]` ของ BU — กลุ่ม INF ถูก union เข้า `features[]` เฉพาะเมื่อสัญญาหลัก `active` (§2.4) | Bearer + `x-app-id`; ไม่มี RBAC ตั้งแต่ `feat(user)!` (2026-09) ข้อมูล licence **ไม่อยู่บน `GET /api/user/profile` อีกต่อไป** — ดูเล่ม Inventory |
 
 **หลัก (แหล่งความจริง):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_subscription` (452), `enum_subscription_status` (723), `enum_license_feature_group_kind` (747), `tb_business_unit_license` (1133), `tb_business_unit_interface_license` (1149), `tb_cluster_license` (1168), `tb_license_feature` (1214), `tb_subscription_bu` (1257), `tb_license_feature_group` (1284, `kind` ที่ 1308), `tb_subscription_bu_group` (1336)
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260910000000_license_feature_group_kind`, `20260910010000_business_unit_interface_license`, `20260910020000_migrate_interface_groups_to_inf_license/migration.sql` และ `prisma/check.interface-license-migration.ts` — schema ของ INF, data migration ของมัน และด่าน preflight/snapshot/verify ที่บังคับรอบมัน (§2.4)
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/business-unit-interface-license/business-unit-interface-license.service.ts` — `serialize()` (`state`/`in_force`/`contract_state`), การตรวจกลุ่ม `kind = 'interface'`, `takeSortKey(…, ['status'])`
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/license/{license.service.ts,license.types.ts}` — วิธีที่ `GET /api/license` พับ INF licence เข้า `features[]`/`expired_features[]`
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260819000000_bu_user_license/migration.sql` — `tb_business_unit_license`, `v_business_unit_seat`
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260822000000_add_cluster_license/migration.sql` (บรรทัด 36, 55), `20260824000000_add_cap_end_date_to_view/migration.sql`, `20260901020000_cluster_license_cancel/migration.sql` — `tb_cluster_license`, `v_cluster_bu_cap`, `v_cluster_bu_quota`
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260821130000_subscription_one_bu/migration.sql`, `20260831000000_subscription_bu_group/migration.sql`, `20260901000000_drop_subscription_bu_feature/migration.sql` — โมเดลหนึ่ง-BU-ต่อหนึ่ง-subscription และการย้าย feature→group ของ entitlement
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/src/index.ts` — `deriveSubscriptionState()` ฟังก์ชันคำนวณ `state` ตัวเดียวที่ใช้ร่วมกัน (§5)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_subscription` (452), `enum_subscription_status` (723), `enum_license_feature_group_kind` (747), `tb_business_unit_license` (1133), `tb_business_unit_interface_license` (1149), `tb_cluster_license` (1168), `tb_license_feature` (1214), `tb_subscription_bu` (1257), `tb_license_feature_group` (1284, `kind` ที่ 1308), `tb_subscription_bu_group` (1336)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260910000000_license_feature_group_kind`, `20260910010000_business_unit_interface_license`, `20260910020000_migrate_interface_groups_to_inf_license/migration.sql` และ `prisma/check.interface-license-migration.ts` — schema ของ INF, data migration ของมัน และด่าน preflight/snapshot/verify ที่บังคับรอบมัน (§2.4)
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/business-unit-interface-license/business-unit-interface-license.service.ts` — `serialize()` (`state`/`in_force`/`contract_state`), การตรวจกลุ่ม `kind = 'interface'`, `takeSortKey(…, ['status'])`
+- `../carmen-turborepo-backend/apps/backend-gateway/src/license/{license.service.ts,license.types.ts}` — วิธีที่ `GET /api/license` พับ INF licence เข้า `features[]`/`expired_features[]`
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260819000000_bu_user_license/migration.sql` — `tb_business_unit_license`, `v_business_unit_seat`
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260822000000_add_cluster_license/migration.sql` (บรรทัด 36, 55), `20260824000000_add_cap_end_date_to_view/migration.sql`, `20260901020000_cluster_license_cancel/migration.sql` — `tb_cluster_license`, `v_cluster_bu_cap`, `v_cluster_bu_quota`
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260821130000_subscription_one_bu/migration.sql`, `20260831000000_subscription_bu_group/migration.sql`, `20260901000000_drop_subscription_bu_feature/migration.sql` — โมเดลหนึ่ง-BU-ต่อหนึ่ง-subscription และการย้าย feature→group ของ entitlement
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/src/index.ts` — `deriveSubscriptionState()` ฟังก์ชันคำนวณ `state` ตัวเดียวที่ใช้ร่วมกัน (§5)
 
 **รอง (shape ฝั่งผู้บริโภค):**
-- `../carmen-platform/src/pages/licenses/licenseKindConfig.ts` — `SEAT_CONFIG`/`BU_QUOTA_CONFIG`/`INTERFACE_CONFIG`
-- `../carmen-platform/src/utils/clusterLicense.ts`, `src/utils/buLicense.ts`, `src/utils/subscriptionState.ts` — สามสูตร status/expiring-soon ที่เป็นอิสระต่อกัน
-- `../carmen-platform/src/utils/businessUnitRank.ts` — `rankBusinessUnits()`/`countOverLimit()` ต้องตรงกับ `ORDER BY` ของ `v_cluster_bu_quota` เป๊ะ
-- `../carmen-platform/src/context/ExpiryThresholdContext.tsx`, `src/services/expiryThresholdService.ts` — การส่งค่าเกณฑ์ (§6)
-- `../carmen-platform/src/types/index.ts` — `ClusterLicense`, `BusinessUnitLicense`, `InterfaceLicense` (1703), `LicenseFeatureGroupKind`, `Subscription`, `SubscriptionDetail`, `ExpiryThresholdsConfig`
+- `../carmen-backstage/src/pages/licenses/licenseKindConfig.ts` — `SEAT_CONFIG`/`BU_QUOTA_CONFIG`/`INTERFACE_CONFIG`
+- `../carmen-backstage/src/utils/clusterLicense.ts`, `src/utils/buLicense.ts`, `src/utils/subscriptionState.ts` — สามสูตร status/expiring-soon ที่เป็นอิสระต่อกัน
+- `../carmen-backstage/src/utils/businessUnitRank.ts` — `rankBusinessUnits()`/`countOverLimit()` ต้องตรงกับ `ORDER BY` ของ `v_cluster_bu_quota` เป๊ะ
+- `../carmen-backstage/src/context/ExpiryThresholdContext.tsx`, `src/services/expiryThresholdService.ts` — การส่งค่าเกณฑ์ (§6)
+- `../carmen-backstage/src/types/index.ts` — `ClusterLicense`, `BusinessUnitLicense`, `InterfaceLicense` (1703), `LicenseFeatureGroupKind`, `Subscription`, `SubscriptionDetail`, `ExpiryThresholdsConfig`
 
 **ลิงก์ข้าม:** [หน้าลงจอด Licenses](/th/platform/licenses) &nbsp;·&nbsp; [UI Screens](/th/platform/licenses/ui-screens) &nbsp;·&nbsp; [Permissions](/th/platform/licenses/permissions) &nbsp;·&nbsp; [License Catalog](/th/platform/license-catalog) &nbsp;·&nbsp; [Platform Config](/th/platform/platform-config)

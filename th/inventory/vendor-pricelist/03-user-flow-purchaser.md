@@ -54,4 +54,4 @@ dateCreated: 2026-05-15T15:00:00.000Z
 - Sibling: [03-user-flow-vendor.md](./03-user-flow-vendor.md) — คู่กรณีภายนอกที่การ submit บน portal ผลิต pricelist `submitted` ที่ Step 5 ของไฟล์นี้ activate
 - Sibling: [03-user-flow-finance.md](./03-user-flow-finance.md) / [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — หน้า correction; ไม่มี persona ใดมีอยู่แยกต่างหากจริงในโมดูลนี้
 - Cross-link: [purchase-request](/th/inventory/purchase-request), [purchase-order](/th/inventory/purchase-order), [good-receive-note](/th/inventory/good-receive-note), [product](/th/inventory/product)
-- Frontend: `../carmen-inventory-frontend-react/routes/vendor-management/`
+- Frontend: `../carmen-frontend/routes/vendor-management/`

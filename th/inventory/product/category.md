@@ -143,9 +143,9 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_product_category` (line ~1801), `tb_product_sub_category` (~1952), `tb_product_item_group` (~1876), `tb_product_category_comment` (~1841)
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/product-category/`, `product-sub-category/`, `product-item-group/` (delete guard); ผู้บริโภค deviation `apps/micro-business/src/inventory/good-received-note/good-received-note.deviation.ts`
-- **Frontend:** `../carmen-inventory-frontend-react/routes/product-management/category/` (`category-form-schema.ts`, `use-category-tree.ts`)
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/101-product-category.spec.ts` (23 กรณี) + `docs/test-cases/gaps/101-product-category-gap.md` (39 กรณีที่ยังไม่ครอบคลุม)
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_product_category` (line ~1801), `tb_product_sub_category` (~1952), `tb_product_item_group` (~1876), `tb_product_category_comment` (~1841)
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/product-category/`, `product-sub-category/`, `product-item-group/` (delete guard); ผู้บริโภค deviation `apps/micro-business/src/inventory/good-received-note/good-received-note.deviation.ts`
+- **Frontend:** `../carmen-frontend/routes/product-management/category/` (`category-form-schema.ts`, `use-category-tree.ts`)
+- **E2E:** `../carmen-frontend-e2e/tests/101-product-category.spec.ts` (23 กรณี) + `docs/test-cases/gaps/101-product-category-gap.md` (39 กรณีที่ยังไม่ครอบคลุม)
 - **carmen/docs:** `../carmen/docs/product-management/PROD-API-Endpoints-Categories.md`; `../carmen/docs/product-management/PROD-Overview.md`
 - **Module landing:** [product](/th/inventory/product) § 3 (แนวคิดสำคัญ Product Category)

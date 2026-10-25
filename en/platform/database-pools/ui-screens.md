@@ -18,7 +18,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 1. Overview
 
-This module has two screens and no in-between states beyond loading/not-found/error, unlike the tabbed, multi-card edit pages elsewhere in this book ([Business Units](/en/platform/business-units/ui-screens), [Clusters](/en/platform/clusters/ui-screens)). `DatabasePoolManagement.tsx` (`../carmen-platform/src/pages/DatabasePoolManagement.tsx`, 467 lines) is a standard server-paginated `DataTable`. `DatabasePoolEdit.tsx` (`../carmen-platform/src/pages/DatabasePoolEdit.tsx`, 672 lines) is the create form and the single-record edit page in one component, following the same read-view/edit-mode toggle pattern this SPA uses elsewhere, but rendered as a plain labeled record (`RecordRow`) in read mode rather than a form with disabled inputs.
+This module has two screens and no in-between states beyond loading/not-found/error, unlike the tabbed, multi-card edit pages elsewhere in this book ([Business Units](/en/platform/business-units/ui-screens), [Clusters](/en/platform/clusters/ui-screens)). `DatabasePoolManagement.tsx` (`../carmen-backstage/src/pages/DatabasePoolManagement.tsx`, 467 lines) is a standard server-paginated `DataTable`. `DatabasePoolEdit.tsx` (`../carmen-backstage/src/pages/DatabasePoolEdit.tsx`, 672 lines) is the create form and the single-record edit page in one component, following the same read-view/edit-mode toggle pattern this SPA uses elsewhere, but rendered as a plain labeled record (`RecordRow`) in read mode rather than a form with disabled inputs.
 
 ## 2. `DatabasePoolManagement` — list page (`/platform/database-pools`)
 
@@ -103,10 +103,10 @@ The edit page persists nothing to `localStorage`; its only client-side state tha
 
 ## 7. References
 
-- `../carmen-platform/src/pages/DatabasePoolManagement.tsx` — read in full (467 lines).
-- `../carmen-platform/src/pages/DatabasePoolEdit.tsx` — read in full (672 lines).
-- `../carmen-platform/src/services/databasePoolService.ts` — REST client.
-- `../carmen-platform/src/utils/databasePool.ts` — `poolDsn()`, `isDerivedName()`.
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/database-pool/database-pool.service.ts:80` — `defaultSearchFields`, cross-checked against the frontend's own citing comment.
-- `../carmen-platform-e2e/tests/` — listed directly; **no `database-pools` directory exists**, confirming the [landing page](/en/platform/database-pools) §1's "no e2e suite" claim.
+- `../carmen-backstage/src/pages/DatabasePoolManagement.tsx` — read in full (467 lines).
+- `../carmen-backstage/src/pages/DatabasePoolEdit.tsx` — read in full (672 lines).
+- `../carmen-backstage/src/services/databasePoolService.ts` — REST client.
+- `../carmen-backstage/src/utils/databasePool.ts` — `poolDsn()`, `isDerivedName()`.
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/database-pool/database-pool.service.ts:80` — `defaultSearchFields`, cross-checked against the frontend's own citing comment.
+- `../carmen-backstage-e2e/tests/` — listed directly; **no `database-pools` directory exists**, confirming the [landing page](/en/platform/database-pools) §1's "no e2e suite" claim.
 - No screenshot assets exist for this module (`assets/screenshots/platform/database-pools/`) — deferred per the resync plan, consistent with every other newly-written module in this batch.

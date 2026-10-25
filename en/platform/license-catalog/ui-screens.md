@@ -85,7 +85,7 @@ One component serves both create and edit, distinguished only by whether `:id` i
 
 ## 7. References
 
-All paths are `../carmen-platform` unless prefixed otherwise.
+All paths are `../carmen-backstage` unless prefixed otherwise.
 
 - `src/pages/LicenseCatalog.tsx` — the shell, `TAB_PATH`/`TAB_GATE`/`TAB_ORDER`, and the three behaviours in §2.
 - `src/pages/licenseCatalog/FeatureCatalogPanel.tsx` — the Features tab (§3).

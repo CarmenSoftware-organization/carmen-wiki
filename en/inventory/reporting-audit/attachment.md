@@ -17,7 +17,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## Implementation status (verified 2026-07-22)
 
-The previous version of this page described `tb_attachment` (tenant schema) as the live, shared file-metadata catalogue, with an S3-backed `s3_token`/`s3_folder` shape and a `doc_version` "re-render counter... incremented on re-render; older versions retained for audit." A repo-wide search of `carmen-turborepo-backend-v2/apps` found **zero references to `tb_attachment` outside its own Prisma model declaration** — no service, controller, repository, or DTO reads or writes it anywhere. `tb_attachment.doc_version` is likewise never incremented or read by any code path; it is inert schema, not a working re-render counter. This mirrors the already-confirmed [system-config/document](/en/inventory/system-config/document) finding for the same table.
+The previous version of this page described `tb_attachment` (tenant schema) as the live, shared file-metadata catalogue, with an S3-backed `s3_token`/`s3_folder` shape and a `doc_version` "re-render counter... incremented on re-render; older versions retained for audit." A repo-wide search of `carmen-turborepo-backend/apps` found **zero references to `tb_attachment` outside its own Prisma model declaration** — no service, controller, repository, or DTO reads or writes it anywhere. `tb_attachment.doc_version` is likewise never incremented or read by any code path; it is inert schema, not a working re-render counter. This mirrors the already-confirmed [system-config/document](/en/inventory/system-config/document) finding for the same table.
 
 The real file-storage path is the **`micro-file`** microservice (`micro-file/src/files/files.service.ts`), which writes to **MinIO** object storage and to **`tb_file_tag`** — a table in a wholly separate `@repo/prisma-shared-schema-file` database (the `CARMEN_FILE` schema), not the tenant or platform schema. This page is corrected to describe that mechanism. See [system-config/document](/en/inventory/system-config/document) for the full admin-screen walkthrough (`/system-admin/document`) — this page focuses on the entity as consumed by other modules.
 
@@ -128,7 +128,7 @@ Source: **separate `prisma-shared-schema-file` database** — not the tenant sch
 
 ## 8. References
 
-- **Prisma (file schema — the real registry):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-file/prisma/schema.prisma` — `tb_file_tag` (lines ~19-49).
-- **Prisma (tenant schema — dead table, for contrast):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_attachment` (line ~4790).
-- **Backend gateway (proxy layer):** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/document-management/document-management.controller.ts` (`GET :filetoken/download` fallback) + `.service.ts` — forwards to the `FILE_SERVICE` microservice over `Files.*` RPC commands (HTTP-as-RPC).
-- **Backend file microservice (actual storage + registry):** `../carmen-turborepo-backend-v2/apps/micro-file/src/files/files.controller.ts` + `files.service.ts` — MinIO client, `tb_file_tag` CRUD.
+- **Prisma (file schema — the real registry):** `../carmen-turborepo-backend/packages/prisma-shared-schema-file/prisma/schema.prisma` — `tb_file_tag` (lines ~19-49).
+- **Prisma (tenant schema — dead table, for contrast):** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_attachment` (line ~4790).
+- **Backend gateway (proxy layer):** `../carmen-turborepo-backend/apps/backend-gateway/src/application/document-management/document-management.controller.ts` (`GET :filetoken/download` fallback) + `.service.ts` — forwards to the `FILE_SERVICE` microservice over `Files.*` RPC commands (HTTP-as-RPC).
+- **Backend file microservice (actual storage + registry):** `../carmen-turborepo-backend/apps/micro-file/src/files/files.controller.ts` + `files.service.ts` — MinIO client, `tb_file_tag` CRUD.

@@ -85,7 +85,7 @@ An earlier draft of this wiki module described a third persona group — an Inve
 
 ## 5. References
 
-- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/` (`sc-component.tsx`, `sc-form.tsx`, `sc-entry-component.tsx`, `sc-review-component.tsx`).
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts`.
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists; manual test-case catalog `docs/test-cases/760-spot-check.md` (44 cases, re-verified 2026-09-20).
+- **Frontend:** `../carmen-frontend/routes/inventory-management/spot-check/` (`sc-component.tsx`, `sc-form.tsx`, `sc-entry-component.tsx`, `sc-review-component.tsx`).
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/spot-check/spot-check.service.ts`.
+- **E2E:** `../carmen-frontend-e2e/tests/` — no spot-check spec currently exists; manual test-case catalog `docs/test-cases/760-spot-check.md` (44 cases, re-verified 2026-09-20).
 - Related flow pages: [inventory-adjustment/03-user-flow](/en/inventory/inventory-adjustment/03-user-flow) (where a confirmed variance must be manually corrected), [physical-count/03-user-flow](/en/inventory/physical-count/03-user-flow) (full-count counterpart flow).

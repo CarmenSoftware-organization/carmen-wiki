@@ -16,7 +16,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 > **แก้ไข (ยืนยันแล้ว 2026-07-22):** ~102 scenarios ที่เคยกระจายอยู่บนหน้านี้และสามหน้า per-persona (Finance, Inventory Controller, Auditor) เล็งไปที่หน้าจอที่ไม่มีอยู่จริง — valuation-policy console, GL reconciliation dashboard, cost-pick-preview approval queue, audit workspace ถูกลบออกแทนการกุขึ้นใหม่; สามหน้า per-persona ตอนนี้เป็นหน้าแก้ไข (Section 2)
 > **ตรวจสอบซ้ำ 2026-09-22:** แก้ไข scenario 2, 5, 6, 10 (ค่าเฉลี่ยต่อสินค้าที่ 2 ตำแหน่งและโพสต์ตอน GRN **save**; เปลี่ยนชื่อตาราง snapshot; direct receipt); เพิ่ม scenario 12–14 (landed cost พร้อม extra cost + FOC; การถอน GRN บน BU แบบ average; การ resolve งวดตาม `grn_date`)
 
-> **Executable coverage (E2E repo `../carmen-inventory-frontend-e2e/`):** **ไม่มี** catalog page, gap report หรือ spec ของ `costing` — `docs/test-cases/COVERAGE.md` ไม่มี route costing coverage ที่รันได้ใกล้เคียงที่สุดคือ `tests/501-grn.spec.ts` (76 case; กลุ่ม Stock Movements), `tests/601-cn.spec.ts`, `tests/701-sr.spec.ts`, `tests/900-period-end.spec.ts` และ gap report `docs/test-cases/gaps/501-grn-core-gap.md` (62) / `501-grn-from-po-gap.md` (24) ไม่มีอันไหน assert ค่า cost-layer หน้านี้ไม่ได้ mirror สิ่งเหล่านั้น
+> **Executable coverage (E2E repo `../carmen-frontend-e2e/`):** **ไม่มี** catalog page, gap report หรือ spec ของ `costing` — `docs/test-cases/COVERAGE.md` ไม่มี route costing coverage ที่รันได้ใกล้เคียงที่สุดคือ `tests/501-grn.spec.ts` (76 case; กลุ่ม Stock Movements), `tests/601-cn.spec.ts`, `tests/701-sr.spec.ts`, `tests/900-period-end.spec.ts` และ gap report `docs/test-cases/gaps/501-grn-core-gap.md` (62) / `501-grn-from-po-gap.md` (24) ไม่มีอันไหน assert ค่า cost-layer หน้านี้ไม่ได้ mirror สิ่งเหล่านั้น
 
 ## 1. ภาพรวม
 
@@ -55,17 +55,17 @@ dateCreated: 2026-05-15T12:30:00.000Z
 
 | Spec | Engine scenarios covered (Section 3) |
 | ---- | ------------------------------------- |
-| [`900-period-end.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/900-period-end.spec.ts) | มี list/permission/validation coverage สำหรับ period-end; ตามที่รอบนี้อ่าน spec file describe block **Close workflow**, **Close action**, และ **Detail page** ถูกระบุชัดเจนว่า `Feature pending` / `Backend only` ใน spec เอง — mechanics การ rollforward แบบ FIFO-vs-Average (Scenario 5, 6) **ไม่** ถูก exercise แบบ end-to-end โดย spec นี้วันนี้ มีแค่พื้นผิว list/permission ที่ถูกทดสอบ |
-| [`501-grn.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts) | Inbound cost-layer write บน GRN commit ถูก exercise โดยอ้อมผ่าน Stock Movements describe block (Scenario 2, 10, 12 — แท็บแสดงเฉพาะ GRN ที่ `committed` และเรียก `GET …/stock-movements` จริง); 57 จาก 76 case ของ spec ไม่มี assertion (`docs/test-cases/SPEC-HEALTH.md`) จึงไม่มี per-lot cost assertion |
-| [`701-sr.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/701-sr.spec.ts) | SR-driven outbound (Scenario 1, 11) ถูก exercise โดยอ้อม; ไม่ยืนยัน cost-layer assertion ในรอบนี้ |
-| [`601-cn.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/601-cn.spec.ts) | Credit-note inventory effect (Scenario 3) ถูก exercise โดยอ้อม; ไม่ยืนยัน `diff_amount` assertion ในรอบนี้ |
+| [`900-period-end.spec.ts`](../../../carmen-frontend-e2e/tests/900-period-end.spec.ts) | มี list/permission/validation coverage สำหรับ period-end; ตามที่รอบนี้อ่าน spec file describe block **Close workflow**, **Close action**, และ **Detail page** ถูกระบุชัดเจนว่า `Feature pending` / `Backend only` ใน spec เอง — mechanics การ rollforward แบบ FIFO-vs-Average (Scenario 5, 6) **ไม่** ถูก exercise แบบ end-to-end โดย spec นี้วันนี้ มีแค่พื้นผิว list/permission ที่ถูกทดสอบ |
+| [`501-grn.spec.ts`](../../../carmen-frontend-e2e/tests/501-grn.spec.ts) | Inbound cost-layer write บน GRN commit ถูก exercise โดยอ้อมผ่าน Stock Movements describe block (Scenario 2, 10, 12 — แท็บแสดงเฉพาะ GRN ที่ `committed` และเรียก `GET …/stock-movements` จริง); 57 จาก 76 case ของ spec ไม่มี assertion (`docs/test-cases/SPEC-HEALTH.md`) จึงไม่มี per-lot cost assertion |
+| [`701-sr.spec.ts`](../../../carmen-frontend-e2e/tests/701-sr.spec.ts) | SR-driven outbound (Scenario 1, 11) ถูก exercise โดยอ้อม; ไม่ยืนยัน cost-layer assertion ในรอบนี้ |
+| [`601-cn.spec.ts`](../../../carmen-frontend-e2e/tests/601-cn.spec.ts) | Credit-note inventory effect (Scenario 3) ถูก exercise โดยอ้อม; ไม่ยืนยัน `diff_amount` assertion ในรอบนี้ |
 
 ให้ปฏิบัติกับทุกแถว "exercised โดยอ้อม" ข้างบนว่า **ยังไม่ยืนยัน** ที่ระดับ assertion ของ cost-layer — spec ที่อ้างถึงมีอยู่จริงและครอบคลุม flow ของเอกสารต้นทางเอง แต่ไม่มีอันไหนทำ assertion เฉพาะ cost-layer (ค่า `cost_per_unit`, `lot_seq_no`, `extra_cost_amount`, `diff_amount` ที่แน่นอน) ตรวจสอบซ้ำก่อนอ้างว่าอันไหน "tested" ใน QA plan Scenario 4, 7, 8, 9, 12, 13, 14 ไม่มี E2E coverage เลย — ถือว่าเป็น manual / ระดับ API (`GET …/good-received-notes/:id/stock-movements` และ `GET …/cost/products/:id/last-cost` คือ read path ที่ใช้ assert)
 
 ## 5. References
 
-- [`../carmen-inventory-frontend-e2e/tests/900-period-end.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/900-period-end.spec.ts) — period-end E2E; หลาย describe block ถูกระบุ pending ใน spec file เอง
-- [`../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts), [`601-cn.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/601-cn.spec.ts), [`701-sr.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/701-sr.spec.ts) — spec ของเอกสารต้นทางที่ describe block ผลกระทบ Stock Movements/inventory ของมันเชื่อม engine โดยอ้อม
+- [`../carmen-frontend-e2e/tests/900-period-end.spec.ts`](../../../carmen-frontend-e2e/tests/900-period-end.spec.ts) — period-end E2E; หลาย describe block ถูกระบุ pending ใน spec file เอง
+- [`../carmen-frontend-e2e/tests/501-grn.spec.ts`](../../../carmen-frontend-e2e/tests/501-grn.spec.ts), [`601-cn.spec.ts`](../../../carmen-frontend-e2e/tests/601-cn.spec.ts), [`701-sr.spec.ts`](../../../carmen-frontend-e2e/tests/701-sr.spec.ts) — spec ของเอกสารต้นทางที่ describe block ผลกระทบ Stock Movements/inventory ของมันเชื่อม engine โดยอ้อม
 - Sibling: [03-user-flow.md](./03-user-flow.md) — lifecycle ที่แก้ไขแล้วและหมายเหตุแก้ไขสำหรับสามหน้า persona เดิม
 - Sibling: [02-business-rules.md](./02-business-rules.md) — กฎ validation, calculation, และ posting ที่แต่ละ scenario ข้างบนตรวจสอบ
 - Sibling: [calculation-methods.md](./calculation-methods.md) — FIFO และ Average algorithm pseudocode พร้อมตัวอย่างตัวเลข ตัวอย่างที่ทำงานใน [02-business-rules.md](./02-business-rules.md) § 3.1 / 3.2 สอดคล้องกับเนื้อหา calculation-methods

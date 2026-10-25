@@ -104,7 +104,7 @@ Transitions ที่ driven โดย receipt (`{approved, sent_or_print} → p
 
 - ภาพรวม parent: [03-user-flow.md](./03-user-flow.md) — global PO state machine และตาราง cross-persona handoff
 - ตาราง Bridge: [01-data-model.md](./01-data-model.md) Section 2.3 — `tb_purchase_order_detail_tb_purchase_request_detail` (linkage PO↔PR line many-to-many ที่รองรับ PR consolidation และ partial conversion; FOC ที่สั่งเทียบกับที่รับ); Section 2.4 — รูปแบบ response แบบหนึ่งแถวหนึ่ง location
-- Frontend: `../carmen-inventory-frontend-react/routes/procurement/purchase-order/` — `po-create-dialog.tsx`, `from-pr/`, `from-price-list/`, `po-header.tsx` (ปุ่ม Send Email / Close / Cancel / Delete, `SEND_EMAIL_STATUSES`), `po-send-email-dialog.tsx`, `po-footer-action.tsx`, `po-item-cells/`
+- Frontend: `../carmen-frontend/routes/procurement/purchase-order/` — `po-create-dialog.tsx`, `from-pr/`, `from-price-list/`, `po-header.tsx` (ปุ่ม Send Email / Close / Cancel / Delete, `SEND_EMAIL_STATUSES`), `po-send-email-dialog.tsx`, `po-footer-action.tsx`, `po-item-cells/`
 - กฎ Validation: [02-business-rules.md](./02-business-rules.md) Section 2 — `PO_VAL_001`–`PO_VAL_016` (header, line, และ submit-time checks ที่อ้างอิงตลอด flow นี้)
 - กฎการคำนวณ: [02-business-rules.md](./02-business-rules.md) Section 3 — `PO_CALC_001`–`PO_CALC_012` (line และ header roll-ups, FOC handling, base-currency dual-posting, rounding)
 - กฎ Authorization: [02-business-rules.md](./02-business-rules.md) Section 4 — `PO_AUTH_001`–`PO_AUTH_003` (Purchaser create/edit/submit), `PO_AUTH_005` (ลบ draft ของตัวเอง), `PO_AUTH_006` (send email / mark sent), `PO_AUTH_007` (reject, corrected)

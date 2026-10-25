@@ -33,5 +33,5 @@ This mirrors the confirmed-fabricated Finance persona findings in the purchase-o
 
 ## 3. References
 
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/period-end/period-end.controller.ts`, `.../inventory-transaction/inventory-transaction.service.ts`.
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/period-end/period-end.controller.ts`, `.../inventory-transaction/inventory-transaction.service.ts`.
 - Parent overview: [04-test-scenarios](/en/inventory/inventory/04-test-scenarios); user-flow counterpart: [03-user-flow-finance](/en/inventory/inventory/03-user-flow-finance).

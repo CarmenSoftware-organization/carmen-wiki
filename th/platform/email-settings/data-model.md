@@ -14,11 +14,11 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 > **`tb_email_sender_profile`** — หนึ่งแถวต่อหนึ่งผู้ส่ง SMTP ที่ตั้งชื่อได้ เป็นของ `micro-cluster`, `doc_version` **บังคับใช้จริง** เป็น optimistic lock ทุกครั้งที่อัปเดต (§5) &nbsp;·&nbsp; **`email_routing`** — แถวหนึ่งของ `tb_platform_config` (**ไม่ใช่**คอลัมน์บนตารางนี้) ที่ micro-notification resolve สดทุกครั้งสำหรับทุกเส้นทางขาออก (หน้า landing §3.2-3.3) &nbsp;·&nbsp; **รหัสผ่าน:** `enc:v1` (AES-256-GCM) ตอนเก็บ มาสก์เสมอ (`••••••`) ในทุกการตอบกลับ API ถอดรหัสเฉพาะข้างใน micro-notification ตอนส่งจริงเท่านั้น &nbsp;·&nbsp; **ความไม่ซ้ำอยู่ที่ `name` ไม่ใช่ purpose** — คำบรรยาย Swagger ของ controller ยังบอกตรงข้ามอยู่ (§5) &nbsp;·&nbsp; **ปรับดีไซน์ครั้งเดียว:** migration `20260808130000_email_profile_master_and_routing` (2026-08-08) แยกตารางแบบหนึ่ง-purpose-ต่อ-หนึ่งแถว ออกเป็นรายการที่ตั้งชื่อได้นี้ บวก mapping `email_routing` แยกต่างหาก
 
 > **แหล่งความจริง:** Prisma schema ฝั่งแพลตฟอร์ม สอง migration ที่ปรับรูปตารางนี้ และสอง service (`micro-cluster` สำหรับ CRUD, `micro-notification` สำหรับ resolve/ส่ง) อ่านสิ่งเหล่านี้ก่อนเสมอเมื่อเขียนหรืออัปเดตหน้านี้:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/email-sender-profile/email-sender-profile.service.ts`
-> - `../carmen-turborepo-backend-v2/apps/micro-notification/src/platform-email/platform-email.service.ts`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/email-sender-profile/email-sender-profile.service.ts`
+> - `../carmen-turborepo-backend/apps/micro-notification/src/platform-email/platform-email.service.ts`
 >
-> ตรวจสอบกับ `carmen-turborepo-backend-v2` HEAD `937cf5ac4` (2026-09-06) และ `carmen-platform` HEAD `157a65e` (2026-09-04)
+> ตรวจสอบกับ `carmen-turborepo-backend` HEAD `937cf5ac4` (2026-09-06) และ `carmen-backstage` HEAD `157a65e` (2026-09-04)
 
 ## 1. ภาพรวม
 
@@ -26,7 +26,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 2. Entity: `tb_email_sender_profile`
 
-Schema บรรทัด 1433-1460 (`../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`)
+Schema บรรทัด 1433-1460 (`../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`)
 
 | ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | ----------- |
@@ -123,16 +123,16 @@ CRUD อยู่ทั้งหมดใน `EmailSenderProfileService` (micro-
 
 ## 8. แหล่งอ้างอิง
 
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (บรรทัด 1415-1460) — `enum_email_sender_purpose`, `tb_email_sender_profile`
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260729000000_email_sender_profile/migration.sql` — การสร้างตารางแบบ purpose-enum ดั้งเดิม
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260808120000_email_sender_purpose_per_flow/migration.sql` — เพิ่มค่าห้าชื่อเส้นทางเข้าไปใน `enum_email_sender_purpose` หนึ่งชั่วโมงก่อนการปรับดีไซน์ด้านล่าง (§2.1)
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260808130000_email_profile_master_and_routing/migration.sql` — การปรับดีไซน์: เปลี่ยนชื่อ, ย้ายความไม่ซ้ำ, ลบ `purpose`, seed `email_routing`
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/email-sender-profile/email-sender-profile.service.ts` (บรรทัด 58-60) — CRUD, การบังคับใช้ `doc_version`, `passwordPatch()`, ความไม่ซ้ำของชื่อ (§5), และ JSDoc ระดับ class ที่ล้าสมัย (§2.1)
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_email-settings/platform_email-settings.controller.ts` (บรรทัด 144) — คำบรรยาย Swagger "purpose" ที่ล้าสมัย (§5)
-- `../carmen-turborepo-backend-v2/apps/micro-notification/src/platform-email/platform-email.service.ts` — `resolveProfile`/`toEmailConfig`/`send`/`sendTest`/`resolveSmtpConfig` (§4)
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts` — entry ของ registry `email_routing` และ default placeholder ของมัน (§3)
-- `../carmen-turborepo-backend-v2/packages/error-catalog/src/catalog.ts` (บรรทัด 513-514) — `EMAIL_SENDER_PROFILE_NOT_FOUND`/`EMAIL_SENDER_PROFILE_NAME_EXISTS`
-- `../carmen-platform/src/services/emailSettingService.ts` (บรรทัด 7-9) — คอมเมนต์เหตุผล `PERPAGE` ที่ล้าสมัย (§6)
-- `../carmen-platform/src/pages/emailSettings/{PasswordField.tsx,EmailRoutingCard.tsx}` — ความหมาย UI ของ password-patch (§5) และการเรียก save ของ routing (§4 ของหน้า landing)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (บรรทัด 1415-1460) — `enum_email_sender_purpose`, `tb_email_sender_profile`
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260729000000_email_sender_profile/migration.sql` — การสร้างตารางแบบ purpose-enum ดั้งเดิม
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260808120000_email_sender_purpose_per_flow/migration.sql` — เพิ่มค่าห้าชื่อเส้นทางเข้าไปใน `enum_email_sender_purpose` หนึ่งชั่วโมงก่อนการปรับดีไซน์ด้านล่าง (§2.1)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260808130000_email_profile_master_and_routing/migration.sql` — การปรับดีไซน์: เปลี่ยนชื่อ, ย้ายความไม่ซ้ำ, ลบ `purpose`, seed `email_routing`
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/email-sender-profile/email-sender-profile.service.ts` (บรรทัด 58-60) — CRUD, การบังคับใช้ `doc_version`, `passwordPatch()`, ความไม่ซ้ำของชื่อ (§5), และ JSDoc ระดับ class ที่ล้าสมัย (§2.1)
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform_email-settings/platform_email-settings.controller.ts` (บรรทัด 144) — คำบรรยาย Swagger "purpose" ที่ล้าสมัย (§5)
+- `../carmen-turborepo-backend/apps/micro-notification/src/platform-email/platform-email.service.ts` — `resolveProfile`/`toEmailConfig`/`send`/`sendTest`/`resolveSmtpConfig` (§4)
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts` — entry ของ registry `email_routing` และ default placeholder ของมัน (§3)
+- `../carmen-turborepo-backend/packages/error-catalog/src/catalog.ts` (บรรทัด 513-514) — `EMAIL_SENDER_PROFILE_NOT_FOUND`/`EMAIL_SENDER_PROFILE_NAME_EXISTS`
+- `../carmen-backstage/src/services/emailSettingService.ts` (บรรทัด 7-9) — คอมเมนต์เหตุผล `PERPAGE` ที่ล้าสมัย (§6)
+- `../carmen-backstage/src/pages/emailSettings/{PasswordField.tsx,EmailRoutingCard.tsx}` — ความหมาย UI ของ password-patch (§5) และการเรียก save ของ routing (§4 ของหน้า landing)
 
 **Cross-links:** [หน้าลงจอด Email Settings](/th/platform/email-settings) &nbsp;·&nbsp; [Platform Config](/th/platform/platform-config)

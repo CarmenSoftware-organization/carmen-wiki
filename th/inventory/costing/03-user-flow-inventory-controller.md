@@ -36,8 +36,8 @@ dateCreated: 2026-05-15T12:30:00.000Z
 
 ## 3. References
 
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/stock-in/stock-in.service.ts` (`create()` → `draft` `:418`; `commit()` `:471-575`), `.../stock-out/stock-out.service.ts`, `.../period-end/`
-- Frontend: `../carmen-inventory-frontend-react/routes/inventory-management/inventory-adjustment/`, `.../period-end/`
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/stock-in/stock-in.service.ts` (`create()` → `draft` `:418`; `commit()` `:471-575`), `.../stock-out/stock-out.service.ts`, `.../period-end/`
+- Frontend: `../carmen-frontend/routes/inventory-management/inventory-adjustment/`, `.../period-end/`
 - Parent overview: [03-user-flow](./03-user-flow.md)
 - Cross-link: [inventory-adjustment](/th/inventory/inventory-adjustment) — โมดูลที่เป็นเจ้าของ `tb_stock_in`/`tb_stock_out` จริง ๆ ที่ฉบับร่างก่อนหน้าของหน้านี้อธิบายผิด
 - Cross-link: [inventory/03-user-flow-inventory-controller](/th/inventory/inventory/03-user-flow-inventory-controller) — flow การปิดงวด period-end ที่มีอยู่จริง

@@ -18,8 +18,8 @@ dateCreated: 2026-05-15T10:00:00.000Z
 > **Re-synced 2026-09-22:** status enum `sent` → `sent_or_print` + new `approved` (migrations `20260914080000`, `20260914080100`); header `delivery_point_id/name` (`20260915120000`); bridge `pr_detail_foc_qty` / `foc_received_qty` (`20260916030000`); API response shape now one row = one location with nested entity objects (§ 2.4).
 
 > **Source of truth:** Backend Prisma schema. Always read these first when writing or updating this page:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > The `generated/client/schema.prisma` files under each package are auto-generated copies and not authoritative.
 
@@ -65,7 +65,7 @@ graph LR
     pod -->|"1 : N"| grnd
 ```
 
-> Diagram adapted from `carmen/docs/app/procurement/purchase-orders/DD-purchase-orders.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (2026-09-28) · Changes: rewritten as `graph LR` per allow-list (`erDiagram` renders blank on this wiki); replaced the source's conceptual entities (`PURCHASE_ORDERS`, `PURCHASE_ORDER_LINE_ITEMS`, `PURCHASE_ORDER_BUDGET_ALLOCATIONS`, `PURCHASE_ORDER_DOCUMENTS`, `PURCHASE_ORDER_HISTORY`, `BUDGET_ACCOUNTS`, `GOODS_RECEIPT_NOTE_LINE_ITEMS`) with the actual `tb_*` tables from this page's own §3 Relationships; dropped the budget-allocation/document/history tables (no such Prisma models — history is an inline JSON column, no budget module exists) and added the PR↔PO bridge and the header's `workflow_id` (stored but no Prisma `@relation`, shown dashed).
+> Diagram adapted from `carmen/docs/app/procurement/purchase-orders/DD-purchase-orders.md` · verified against `carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (2026-09-28) · Changes: rewritten as `graph LR` per allow-list (`erDiagram` renders blank on this wiki); replaced the source's conceptual entities (`PURCHASE_ORDERS`, `PURCHASE_ORDER_LINE_ITEMS`, `PURCHASE_ORDER_BUDGET_ALLOCATIONS`, `PURCHASE_ORDER_DOCUMENTS`, `PURCHASE_ORDER_HISTORY`, `BUDGET_ACCOUNTS`, `GOODS_RECEIPT_NOTE_LINE_ITEMS`) with the actual `tb_*` tables from this page's own §3 Relationships; dropped the budget-allocation/document/history tables (no such Prisma models — history is an inline JSON column, no budget module exists) and added the PR↔PO bridge and the header's `workflow_id` (stored but no Prisma `@relation`, shown dashed).
 
 ### 2.1 tb_purchase_order
 
@@ -231,7 +231,7 @@ Bridge table linking a PO detail row to one or more originating PR detail rows. 
 
 ### 2.4 API response shape (`GET .../purchase-orders/:id`) — one row = one location, nested entity refs
 
-The wire shape diverged from the tables twice since 2026-07-29, and the React types (`carmen-inventory-frontend-react/types/purchase-order.ts`) are the executable record of it:
+The wire shape diverged from the tables twice since 2026-07-29, and the React types (`carmen-frontend/types/purchase-order.ts`) are the executable record of it:
 
 ```
 PurchaseOrder
@@ -332,8 +332,8 @@ The legacy `purchase-order-module.md` describes a high-level data dictionary (a 
 
 ## 6. References
 
-- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (all PO models and both enums) and `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (verified to contain no PO models). Migrations since baseline: `20260914080000_po_status_add_approved`, `20260914080100_po_status_backfill_and_rename_sent`, `20260915120000_po_header_delivery_point`, `20260916030000_po_junction_foc_ordered_vs_received` (all under `prisma/migrations/`).
-- **Wire contract:** `../carmen-turborepo-backend-v2/apps/micro-business/src/procurement/purchase-order/dto/purchase-order.serializer.ts` (response) and `dto/create-purchase-order.dto.ts` (payload); `../carmen-inventory-frontend-react/types/purchase-order.ts` (client-side mirror, with the change notes quoted in § 2.4).
+- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (all PO models and both enums) and `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (verified to contain no PO models). Migrations since baseline: `20260914080000_po_status_add_approved`, `20260914080100_po_status_backfill_and_rename_sent`, `20260915120000_po_header_delivery_point`, `20260916030000_po_junction_foc_ordered_vs_received` (all under `prisma/migrations/`).
+- **Wire contract:** `../carmen-turborepo-backend/apps/micro-business/src/procurement/purchase-order/dto/purchase-order.serializer.ts` (response) and `dto/create-purchase-order.dto.ts` (payload); `../carmen-frontend/types/purchase-order.ts` (client-side mirror, with the change notes quoted in § 2.4).
 - **Secondary (concept cross-check):** `../carmen/docs/purchase-order-management/purchase-order-module.md` — high-level business-analysis document; divergences captured in Section 5.
 - **Sibling reference:** `en/purchase-request/01-data-model.md` — describes the PR side of the PR↔PO bridge; do not duplicate that material here.
 - Related modules: [purchase-request](/en/inventory/purchase-request) (upstream source), [good-receive-note](/en/inventory/good-receive-note) (downstream fulfilment via `received_qty`), [product](/en/inventory/product) (line product reference), [vendor-pricelist](/en/inventory/vendor-pricelist) (price snapshot at PR-to-PO conversion time), [inventory](/en/inventory/inventory) (on-hand context).

@@ -151,16 +151,16 @@ Body ของ PATCH ส่งแค่**ฟิลด์ที่เปลี่
 
 ## 5. แหล่งอ้างอิง
 
-- `../carmen-platform/src/pages/BroadcastManagement.tsx`, `src/pages/broadcastManagement/{BroadcastSummary,BroadcastFilters,broadcastColumns}.tsx` — หน้าจอ List
-- `../carmen-platform/src/pages/BroadcastCompose.tsx` — ค่าคงที่ (`TITLE_MAX`, `MESSAGE_MAX`, `TYPE_CUSTOM_RE`), `resolveSeverity`, payload builder, `validate`, หัวข้อ/คำอธิบาย confirm
-- `../carmen-platform/src/pages/BroadcastEdit.tsx` — `contentEditable`, confirm dialog ของ past/reschedule, ตัวสร้าง patch แบบฟิลด์ที่เปลี่ยนเท่านั้น
-- `../carmen-platform/src/components/BroadcastPreview.tsx` — `severityStyle`, `reachSummary`, คำเตือนการจัดหมวดหมู่ภายใน
-- `../carmen-platform/src/utils/broadcastExpiry.ts` — `resolveExpiryIso()`, preset 7/30/90 วัน
-- `../carmen-platform/src/components/UserMultiSelect.tsx` — debounce, ขนาดหน้า, การถอยไปใช้ชื่อสำรอง
-- `../carmen-platform/src/services/broadcastService.ts` — `sendSystem`/`sendBu`/`getAll`/`getById`/`update`/`remove`
-- `../carmen-platform/src/utils/audit.ts` — `normalizeAudit()` (รูปแบบแบน `created_by: { id, name }` ที่ broadcast ใช้ — ถูกเอ่ยชื่อตรง ๆ ใน comment ของ source ไฟล์นี้เองว่าเป็นหนึ่งใน endpoint ที่ไม่มีรูปแบบ `audit.*` แบบ nested)
-- `../carmen-platform/src/utils/docVersion.ts` — `isVersionConflict`/`notifyVersionConflict`/`getDocVersion`
-- `../carmen-platform/src/components/KeyboardShortcuts.tsx`, `src/hooks/useUnsavedChanges.ts` — shortcut และ navigation guard
-- `../carmen-platform/src/App.tsx` (สาม route), `src/components/nav/platformNav.ts` (รายการ nav "Broadcasts")
+- `../carmen-backstage/src/pages/BroadcastManagement.tsx`, `src/pages/broadcastManagement/{BroadcastSummary,BroadcastFilters,broadcastColumns}.tsx` — หน้าจอ List
+- `../carmen-backstage/src/pages/BroadcastCompose.tsx` — ค่าคงที่ (`TITLE_MAX`, `MESSAGE_MAX`, `TYPE_CUSTOM_RE`), `resolveSeverity`, payload builder, `validate`, หัวข้อ/คำอธิบาย confirm
+- `../carmen-backstage/src/pages/BroadcastEdit.tsx` — `contentEditable`, confirm dialog ของ past/reschedule, ตัวสร้าง patch แบบฟิลด์ที่เปลี่ยนเท่านั้น
+- `../carmen-backstage/src/components/BroadcastPreview.tsx` — `severityStyle`, `reachSummary`, คำเตือนการจัดหมวดหมู่ภายใน
+- `../carmen-backstage/src/utils/broadcastExpiry.ts` — `resolveExpiryIso()`, preset 7/30/90 วัน
+- `../carmen-backstage/src/components/UserMultiSelect.tsx` — debounce, ขนาดหน้า, การถอยไปใช้ชื่อสำรอง
+- `../carmen-backstage/src/services/broadcastService.ts` — `sendSystem`/`sendBu`/`getAll`/`getById`/`update`/`remove`
+- `../carmen-backstage/src/utils/audit.ts` — `normalizeAudit()` (รูปแบบแบน `created_by: { id, name }` ที่ broadcast ใช้ — ถูกเอ่ยชื่อตรง ๆ ใน comment ของ source ไฟล์นี้เองว่าเป็นหนึ่งใน endpoint ที่ไม่มีรูปแบบ `audit.*` แบบ nested)
+- `../carmen-backstage/src/utils/docVersion.ts` — `isVersionConflict`/`notifyVersionConflict`/`getDocVersion`
+- `../carmen-backstage/src/components/KeyboardShortcuts.tsx`, `src/hooks/useUnsavedChanges.ts` — shortcut และ navigation guard
+- `../carmen-backstage/src/App.tsx` (สาม route), `src/components/nav/platformNav.ts` (รายการ nav "Broadcasts")
 
 **Cross-links:** [หน้าแรก Broadcasts](/th/platform/broadcasts) &nbsp;·&nbsp; [Data Model](/th/platform/broadcasts/data-model) &nbsp;·&nbsp; [Permissions](/th/platform/broadcasts/permissions)

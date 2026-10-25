@@ -23,10 +23,10 @@ gate ทุกตัว resolve ผ่าน resolver `hasPermission` ตัว�
 
 | Surface | กลไก | Key | แหล่งที่มา |
 |---|---|---|---|
-| `/applications` | `PrivateRoute requiredPermission` + `feature` | `application.read` + `feature="applications"` | `../carmen-platform/src/App.tsx` |
-| `/applications/new` | `PrivateRoute requiredPermission` + `feature` | `application.create` + `feature="applications"` | `../carmen-platform/src/App.tsx` |
-| `/applications/:id/edit` | `PrivateRoute requiredPermission` + `feature` | `application.update` + `feature="applications"` | `../carmen-platform/src/App.tsx` |
-| sidebar "Applications" (กลุ่ม Platform) | nav filter | `application.read`, `feature: 'applications'` | `../carmen-platform/src/components/nav/platformNav.ts` (บรรทัด 40) — **ไม่ใช่** `Layout.tsx` ซึ่งไม่นิยาม nav row อีกต่อไป |
+| `/applications` | `PrivateRoute requiredPermission` + `feature` | `application.read` + `feature="applications"` | `../carmen-backstage/src/App.tsx` |
+| `/applications/new` | `PrivateRoute requiredPermission` + `feature` | `application.create` + `feature="applications"` | `../carmen-backstage/src/App.tsx` |
+| `/applications/:id/edit` | `PrivateRoute requiredPermission` + `feature` | `application.update` + `feature="applications"` | `../carmen-backstage/src/App.tsx` |
+| sidebar "Applications" (กลุ่ม Platform) | nav filter | `application.read`, `feature: 'applications'` | `../carmen-backstage/src/components/nav/platformNav.ts` (บรรทัด 40) — **ไม่ใช่** `Layout.tsx` ซึ่งไม่นิยาม nav row อีกต่อไป |
 | Add Application (header ของหน้า list **และ** empty state) | `<Can>` | `application.create` | `ApplicationManagement.tsx` |
 | Edit ของ row (dropdown action) | `<Can>` | `application.update` | `ApplicationManagement.tsx` |
 | Delete ของ row (dropdown action) | `<Can>` | `application.delete` | `ApplicationManagement.tsx` |
@@ -34,7 +34,7 @@ gate ทุกตัว resolve ผ่าน resolver `hasPermission` ตัว�
 | toggle Edit (actions slot ของ hero) | `<Can>` | `application.update` | `ApplicationEdit.tsx` (ปุ่ม render โดย `ApplicationIdentityHero.tsx` แล้ว) |
 | **View History** ของ hero (หน้า edit, ใหม่) | `<Can>` | `activity_log.read`, `clusterId={PLATFORM_SCOPED_RECORD}` | `ApplicationEdit.tsx` — แสดงเสมอ ไม่ขึ้นกับโหมด edit |
 
-`PLATFORM_SCOPED_RECORD` เป็นนามแฝงของ `UNRESOLVED_CLUSTER_ID` (`../carmen-platform/src/utils/permissions.ts`): sentinel `clusterId` ที่บังคับให้กิ่ง scoped ของ `checkPermission` ประเมินเป็น false สำหรับทุก cluster จริง เหลือเพียง grant `activity_log.read` ระดับแพลตฟอร์มเป็นทางเดียวไปสู่ `true` — รูปแบบที่ถูกต้องสำหรับ record ประเภทที่ไม่มี cluster ของตัวเอง (application) การบันทึกเริ่มตั้งแต่ 2026-08-31 (`AUDIT_RECORDING_STARTED_ON_PHASE_2`); application ที่สร้างก่อนหน้านั้นจะเห็นประวัติว่างเปล่า ไม่ใช่ประวัติที่พัง
+`PLATFORM_SCOPED_RECORD` เป็นนามแฝงของ `UNRESOLVED_CLUSTER_ID` (`../carmen-backstage/src/utils/permissions.ts`): sentinel `clusterId` ที่บังคับให้กิ่ง scoped ของ `checkPermission` ประเมินเป็น false สำหรับทุก cluster จริง เหลือเพียง grant `activity_log.read` ระดับแพลตฟอร์มเป็นทางเดียวไปสู่ `true` — รูปแบบที่ถูกต้องสำหรับ record ประเภทที่ไม่มี cluster ของตัวเอง (application) การบันทึกเริ่มตั้งแต่ 2026-08-31 (`AUDIT_RECORDING_STARTED_ON_PHASE_2`); application ที่สร้างก่อนหน้านั้นจะเห็นประวัติว่างเปล่า ไม่ใช่ประวัติที่พัง
 
 **Feature flag** ทั้งสาม route และ sidebar entry ยังต้องการ feature flag `applications` ซึ่ง `PrivateRoute` ตรวจ**หลัง**การตรวจ permission session ที่ไม่มี `application.*` key ที่ถูกต้องยังเห็น `<Forbidden>` เหมือนเดิมไม่ว่า flag จะเป็นอย่างไร; session ที่มี key นั้นจะเห็น `NotFound` หรือหน้า "Coming Soon" แทนหน้าจริง ถ้า flag ถูกตั้งเป็น `hide`/`inactive` จากหน้าจอ [Feature Flags](/th/platform/feature-flags) ของ platform (`/platform/features`)
 
@@ -92,5 +92,5 @@ header ทั้งสองเดินทางไปด้วยกันบ�
 - **เลือกใช้รายการระบุชัดแทน `allow_all` นอก dev** `allow_all` คือ super-admin ฉบับ machine — มีประโยชน์สำหรับ bootstrap และ tooling ภายใน แต่มันทำให้รายการ grant ไร้ความหมายและซ่อน defect แบบ missing-grant เหมือนกับการทดสอบ RBAC จาก session ของ super-admin เป๊ะ ๆ
 - ~~ปิดช่องว่างของ gate บน empty-state ที่ต้นทาง~~ **เสร็จแล้ว** — CTA ของ `EmptyState` ถูกห่อด้วย `<Can permission="application.create">` แล้ว ตรงกับปุ่ม header ไม่ต้องดำเนินการเพิ่มเติมตรงนี้
 
-**แหล่งข้อมูลอ้างอิง:** path ทั้งหมดคือ `../carmen-platform` เว้นแต่ระบุไว้ `src/App.tsx` (route guard `application.*` ทั้งสาม แต่ละตัวมี `feature="applications"` ด้วย) · `src/components/nav/platformNav.ts` (รายการ sidebar, บรรทัด 40 — ไม่ใช่ `Layout.tsx` ซึ่งไม่นิยาม nav row อีกต่อไป) · `src/pages/ApplicationManagement.tsx` (gate `<Can>`, empty state, View History ของ row) · `src/pages/ApplicationEdit.tsx` (gate ของ toggle Edit, View History ของ hero) · `src/utils/permissions.ts` (`PLATFORM_SCOPED_RECORD`) · `src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` (ฟีเจอร์ View History; `AUDIT_RECORDING_STARTED_ON_PHASE_2` = 2026-08-31) · `../carmen-turborepo-backend-v2/scripts/generate-app-api-catalog/run.ts` (การ generate catalog)
+**แหล่งข้อมูลอ้างอิง:** path ทั้งหมดคือ `../carmen-backstage` เว้นแต่ระบุไว้ `src/App.tsx` (route guard `application.*` ทั้งสาม แต่ละตัวมี `feature="applications"` ด้วย) · `src/components/nav/platformNav.ts` (รายการ sidebar, บรรทัด 40 — ไม่ใช่ `Layout.tsx` ซึ่งไม่นิยาม nav row อีกต่อไป) · `src/pages/ApplicationManagement.tsx` (gate `<Can>`, empty state, View History ของ row) · `src/pages/ApplicationEdit.tsx` (gate ของ toggle Edit, View History ของ hero) · `src/utils/permissions.ts` (`PLATFORM_SCOPED_RECORD`) · `src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` (ฟีเจอร์ View History; `AUDIT_RECORDING_STARTED_ON_PHASE_2` = 2026-08-31) · `../carmen-turborepo-backend/scripts/generate-app-api-catalog/run.ts` (การ generate catalog)
 **Cross-link:** [หน้า landing ของ Applications](/th/platform/applications) &nbsp;·&nbsp; [Data Model](/th/platform/applications/data-model) &nbsp;·&nbsp; [UI Screens](/th/platform/applications/ui-screens) &nbsp;·&nbsp; [Platform RBAC — Permissions](/th/platform/rbac/permissions)

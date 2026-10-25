@@ -17,9 +17,9 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 1. Overview
 
-User Platform is where a [RBAC](/en/platform/rbac) platform role — platform-wide, or scoped to one cluster — gets attached to an existing user account. It was split out of the RBAC module's own screens into its own nav row and its own pair of components, and both were rewritten the same day, 2026-09-02, into what their own commit messages call a "privilege registry" rather than a generic CRUD table: `UserPlatformManagement` (`../carmen-platform` commit `fc690cb`, PR #250) and `UserPlatformEdit` (`f6e91c9`, PR #251).
+User Platform is where a [RBAC](/en/platform/rbac) platform role — platform-wide, or scoped to one cluster — gets attached to an existing user account. It was split out of the RBAC module's own screens into its own nav row and its own pair of components, and both were rewritten the same day, 2026-09-02, into what their own commit messages call a "privilege registry" rather than a generic CRUD table: `UserPlatformManagement` (`../carmen-backstage` commit `fc690cb`, PR #250) and `UserPlatformEdit` (`f6e91c9`, PR #251).
 
-`/platform/user-platform` lists every user who holds at least one platform-role assignment — someone with none is excluded server-side and never appears here. Clicking a row's name (an `<a>` via react-router's `Link`, not a button) or its "Manage roles" action navigates to `/platform/user-platform/:userId` — **the id is a plain path segment, with no `/edit` suffix.** A reader who pattern-matches from `/users/:id/edit`, `/clusters/:id/edit`, `/applications/:id/edit`, and nearly every other detail route in this book will construct `/platform/user-platform/:userId/edit` and get a 404 — that route does not exist (`../carmen-platform/src/App.tsx:458-465`). The detail screen itself has no read/edit-mode toggle either: it is one page that assigns and removes role grants directly, not a form with a Save button.
+`/platform/user-platform` lists every user who holds at least one platform-role assignment — someone with none is excluded server-side and never appears here. Clicking a row's name (an `<a>` via react-router's `Link`, not a button) or its "Manage roles" action navigates to `/platform/user-platform/:userId` — **the id is a plain path segment, with no `/edit` suffix.** A reader who pattern-matches from `/users/:id/edit`, `/clusters/:id/edit`, `/applications/:id/edit`, and nearly every other detail route in this book will construct `/platform/user-platform/:userId/edit` and get a 404 — that route does not exist (`../carmen-backstage/src/App.tsx:458-465`). The detail screen itself has no read/edit-mode toggle either: it is one page that assigns and removes role grants directly, not a form with a Save button.
 
 Both routes are gated identically at the route level — `requiredPermission="user_platform.read"`, `feature="user_platform"` (`App.tsx:453,461`) — so holding the read key alone is enough to *navigate* to any user's detail page. Whether that page shows anything useful once you're there is a separate question, answered in §4.
 
@@ -78,7 +78,7 @@ This module's own write-side gating is unusually clean compared to two other mod
 
 ## 6. Reference Sources
 
-All paths `../carmen-platform` (HEAD `157a65e`, 2026-09-04) unless prefixed `../carmen-turborepo-backend-v2` (HEAD `937cf5ac4`, 2026-09-06) or `../carmen-platform-e2e` (HEAD `a8e3b31`, 2026-08-25).
+All paths `../carmen-backstage` (HEAD `157a65e`, 2026-09-04) unless prefixed `../carmen-turborepo-backend` (HEAD `937cf5ac4`, 2026-09-06) or `../carmen-backstage-e2e` (HEAD `a8e3b31`, 2026-08-25).
 
 - `src/pages/UserPlatformManagement.tsx` — the list/registry screen (commit `fc690cb`, PR #250, 2026-09-02).
 - `src/pages/UserPlatformEdit.tsx` — the per-user detail screen (commit `f6e91c9`, PR #251, 2026-09-02), including the `UserDetailRecord.email_verified_at` field (line 43) and its derived badge (line 195).
@@ -86,12 +86,12 @@ All paths `../carmen-platform` (HEAD `157a65e`, 2026-09-04) unless prefixed `../
 - `src/services/userPlatformService.ts`, `src/services/userRoleService.ts` — the two REST clients this module calls directly.
 - `src/components/nav/platformNav.ts:43`, `src/App.tsx:451-465` — nav entry and route registration.
 - `src/types/index.ts:544-603` — `Scope`, `PlatformUserScope`, `PlatformUserRoleAssignment`, `PlatformUserRow`, `PlatformUserRegistrySummary`, `PlatformUsersResponse`.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/user-platform-roles/user-platform-roles.controller.ts` — the REST surface and every route's permission decorator (§4).
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/user-platform-roles/user-platform-roles.service.ts:140-148` — the `summary` forwarding logic (§3.1).
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/authen/user_platform_role/user_platform_role.service.ts` — `assign`/`assignBulk`/`remove`/`listPlatformUsers`/`buildRegistrySummary` (§3.1, §3.2).
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/authen/auth/auth.service.ts` — `createVerifiedUser` (lines 919-933), `verifyEmail` (1244-1302), `resendVerificationEmail` (1329-1375), the login gate (line 498) (§3.3).
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma:485-487` — the three `tb_user` email-verification columns; migration `20260804000000_user_email_verification`.
-- `../carmen-platform-e2e/tests/user-platform/{user-platform-list,user-platform-config}.spec.ts` and `pages/UserPlatform{ManagementPage,EditPage}.ts` — see [UI Screens](/en/platform/user-platform/ui-screens) §4 for the specific ways this suite no longer matches current source.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/user-platform-roles/user-platform-roles.controller.ts` — the REST surface and every route's permission decorator (§4).
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/user-platform-roles/user-platform-roles.service.ts:140-148` — the `summary` forwarding logic (§3.1).
+- `../carmen-turborepo-backend/apps/micro-business/src/authen/user_platform_role/user_platform_role.service.ts` — `assign`/`assignBulk`/`remove`/`listPlatformUsers`/`buildRegistrySummary` (§3.1, §3.2).
+- `../carmen-turborepo-backend/apps/micro-business/src/authen/auth/auth.service.ts` — `createVerifiedUser` (lines 919-933), `verifyEmail` (1244-1302), `resendVerificationEmail` (1329-1375), the login gate (line 498) (§3.3).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma:485-487` — the three `tb_user` email-verification columns; migration `20260804000000_user_email_verification`.
+- `../carmen-backstage-e2e/tests/user-platform/{user-platform-list,user-platform-config}.spec.ts` and `pages/UserPlatform{ManagementPage,EditPage}.ts` — see [UI Screens](/en/platform/user-platform/ui-screens) §4 for the specific ways this suite no longer matches current source.
 
 ## 7. Pages in This Module
 

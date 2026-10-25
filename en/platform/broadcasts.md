@@ -80,20 +80,20 @@ Four permission keys now gate the module, through [Platform RBAC](/en/platform/r
 
 ## 6. Reference Sources
 
-- `../carmen-platform/src/App.tsx` — the three route guards (`broadcast.read`, `broadcast.send`, `broadcast.read`) and `feature="broadcasts"`.
-- `../carmen-platform/src/components/nav/platformNav.ts` — the "Broadcasts" nav entry (`permission: 'broadcast.read'`, `feature: 'broadcasts'`, no `superAdminOnly`).
-- `../carmen-platform/src/pages/BroadcastManagement.tsx`, `src/pages/broadcastManagement/{BroadcastSummary,BroadcastFilters,broadcastColumns}.tsx` — the List screen.
-- `../carmen-platform/src/pages/BroadcastCompose.tsx` — the Compose screen: tabs, validation, payload builders, expiry presets, confirm dialog, shortcuts.
-- `../carmen-platform/src/pages/BroadcastEdit.tsx` — the Edit screen: content lock, schedule/expiry editing, past/reschedule confirmations.
-- `../carmen-platform/src/components/BroadcastPreview.tsx` — the live preview shared by Compose and Edit (`severityStyle`, `reachSummary`).
-- `../carmen-platform/src/utils/broadcastExpiry.ts` — `resolveExpiryIso()`, the 7/30/90-day presets.
-- `../carmen-platform/src/services/broadcastService.ts` — `sendSystem`/`sendBu`/`getAll`/`getById`/`update`/`remove`; `src/types/index.ts` — `BroadcastTargetMode`, `BroadcastTypePreset`, `BroadcastListItem`, `BroadcastStatus`, `BroadcastUpdatePayload`, `BroadcastSummary`.
-- `../carmen-platform/src/utils/permissions.ts` — the `PERMISSIONS.BROADCAST.SEND` constant.
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_notification` (line 332), `tb_broadcast_notification` (line 369), `tb_user_broadcast_action` (line 403); enums `enum_broadcast_scope`, `enum_notification_doc_type`, `enum_notification_event` (lines 112–131).
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260810000000_notification_redesign_additive/`, `20260811000000_notification_redesign_drop_legacy/` — the redesign that dropped `type`/`category`/`is_sent` and added `scope`/`doc_type`/`event`/`pushed_at`.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/notification/notification.controller.ts` — all six broadcast routes and their guards.
-- `../carmen-turborepo-backend-v2/apps/micro-notification/src/notification/broadcast.service.ts` (create path), `broadcast-admin.service.ts` (list/get/update/delete, status derivation), `schedule.worker.ts` (the 30-second due-notification push worker, `tb_notification` only).
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts`, `seed.platform-role-permission.data.ts` — the four `broadcast.*` keys and their per-role assignment.
+- `../carmen-backstage/src/App.tsx` — the three route guards (`broadcast.read`, `broadcast.send`, `broadcast.read`) and `feature="broadcasts"`.
+- `../carmen-backstage/src/components/nav/platformNav.ts` — the "Broadcasts" nav entry (`permission: 'broadcast.read'`, `feature: 'broadcasts'`, no `superAdminOnly`).
+- `../carmen-backstage/src/pages/BroadcastManagement.tsx`, `src/pages/broadcastManagement/{BroadcastSummary,BroadcastFilters,broadcastColumns}.tsx` — the List screen.
+- `../carmen-backstage/src/pages/BroadcastCompose.tsx` — the Compose screen: tabs, validation, payload builders, expiry presets, confirm dialog, shortcuts.
+- `../carmen-backstage/src/pages/BroadcastEdit.tsx` — the Edit screen: content lock, schedule/expiry editing, past/reschedule confirmations.
+- `../carmen-backstage/src/components/BroadcastPreview.tsx` — the live preview shared by Compose and Edit (`severityStyle`, `reachSummary`).
+- `../carmen-backstage/src/utils/broadcastExpiry.ts` — `resolveExpiryIso()`, the 7/30/90-day presets.
+- `../carmen-backstage/src/services/broadcastService.ts` — `sendSystem`/`sendBu`/`getAll`/`getById`/`update`/`remove`; `src/types/index.ts` — `BroadcastTargetMode`, `BroadcastTypePreset`, `BroadcastListItem`, `BroadcastStatus`, `BroadcastUpdatePayload`, `BroadcastSummary`.
+- `../carmen-backstage/src/utils/permissions.ts` — the `PERMISSIONS.BROADCAST.SEND` constant.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_notification` (line 332), `tb_broadcast_notification` (line 369), `tb_user_broadcast_action` (line 403); enums `enum_broadcast_scope`, `enum_notification_doc_type`, `enum_notification_event` (lines 112–131).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260810000000_notification_redesign_additive/`, `20260811000000_notification_redesign_drop_legacy/` — the redesign that dropped `type`/`category`/`is_sent` and added `scope`/`doc_type`/`event`/`pushed_at`.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/notification/notification.controller.ts` — all six broadcast routes and their guards.
+- `../carmen-turborepo-backend/apps/micro-notification/src/notification/broadcast.service.ts` (create path), `broadcast-admin.service.ts` (list/get/update/delete, status derivation), `schedule.worker.ts` (the 30-second due-notification push worker, `tb_notification` only).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts`, `seed.platform-role-permission.data.ts` — the four `broadcast.*` keys and their per-role assignment.
 
 ## 7. Pages in This Module
 

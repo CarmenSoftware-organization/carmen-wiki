@@ -147,13 +147,13 @@ One `localStorage` key: `perpage_cronjob`, the list page's rows-per-page choice.
 
 ## 7. References
 
-- `../carmen-platform/src/pages/cronjobs/CronJobManagement.tsx` — list page, read in full.
-- `../carmen-platform/src/pages/cronjobs/CronJobEdit.tsx` — create/edit page, read in full.
-- `../carmen-platform/src/pages/cronjobs/CronJobFilterSheet.tsx`, `CronScheduleField.tsx` — read in full.
-- `../carmen-platform/src/pages/cronjobs/jobConfig/{index.tsx,ReportConfigFields.tsx,NotificationConfigFields.tsx,CleanupConfigFields.tsx,DashboardRefreshConfigFields.tsx,ActivityRollupConfigFields.tsx,ActivityRetentionConfigFields.tsx}` — all six type-specific config components plus the dispatcher, read in full.
-- `../carmen-platform/src/services/cronjobService.ts` — REST client, filter-encoding comment (§2.2).
-- `../carmen-platform/src/utils/cronExpression.ts`, `cronSchedule.ts` — `describeCron`, `nextRuns`, `parseCron`, `buildCron`.
-- `../carmen-platform/src/components/Can.tsx` — permission-gated render helper referenced throughout.
+- `../carmen-backstage/src/pages/cronjobs/CronJobManagement.tsx` — list page, read in full.
+- `../carmen-backstage/src/pages/cronjobs/CronJobEdit.tsx` — create/edit page, read in full.
+- `../carmen-backstage/src/pages/cronjobs/CronJobFilterSheet.tsx`, `CronScheduleField.tsx` — read in full.
+- `../carmen-backstage/src/pages/cronjobs/jobConfig/{index.tsx,ReportConfigFields.tsx,NotificationConfigFields.tsx,CleanupConfigFields.tsx,DashboardRefreshConfigFields.tsx,ActivityRollupConfigFields.tsx,ActivityRetentionConfigFields.tsx}` — all six type-specific config components plus the dispatcher, read in full.
+- `../carmen-backstage/src/services/cronjobService.ts` — REST client, filter-encoding comment (§2.2).
+- `../carmen-backstage/src/utils/cronExpression.ts`, `cronSchedule.ts` — `describeCron`, `nextRuns`, `parseCron`, `buildCron`.
+- `../carmen-backstage/src/components/Can.tsx` — permission-gated render helper referenced throughout.
 - [Data Model](/en/platform/cronjobs/data-model) — the field table and scheduler mechanics this page's screen tour points back to throughout.
 - [Cronjobs landing page](/en/platform/cronjobs) §4 — the permission gates behind every button referenced here.
-- Verified against `carmen-platform` HEAD `157a65e` (2026-09-04).
+- Verified against `carmen-backstage` HEAD `157a65e` (2026-09-04).

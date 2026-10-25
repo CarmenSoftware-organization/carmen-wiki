@@ -88,7 +88,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_recipe_equipment_category` (lines ~5226-5247)
-- **Frontend routes:** `../carmen-inventory-frontend-react/routes/operation-plan/equipment-category/` (ลิงก์จาก nav, `constant/module-list.ts`); `../carmen-inventory-frontend-react/routes/operation-plan/recipe-equipment-category/` (มี route ใน `router.tsx` ไม่ลิงก์จาก nav — ยืนยันแล้วว่าใช้ REST endpoint เดียวกันผ่าน `constant/api-endpoints.ts`)
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/121-recipe-equipment-category.spec.ts` — E2E spec ตัวเดียวของโมดูล ทดสอบ `/operation-plan/recipe-equipment-category` (ตัวซ้ำที่ไม่ลิงก์จาก nav) smoke + CRUD เฉพาะ admin
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_recipe_equipment_category` (lines ~5226-5247)
+- **Frontend routes:** `../carmen-frontend/routes/operation-plan/equipment-category/` (ลิงก์จาก nav, `constant/module-list.ts`); `../carmen-frontend/routes/operation-plan/recipe-equipment-category/` (มี route ใน `router.tsx` ไม่ลิงก์จาก nav — ยืนยันแล้วว่าใช้ REST endpoint เดียวกันผ่าน `constant/api-endpoints.ts`)
+- **E2E:** `../carmen-frontend-e2e/tests/121-recipe-equipment-category.spec.ts` — E2E spec ตัวเดียวของโมดูล ทดสอบ `/operation-plan/recipe-equipment-category` (ตัวซ้ำที่ไม่ลิงก์จาก nav) smoke + CRUD เฉพาะ admin
 - **Concept docs:** `../carmen/docs/recipe/setup-pages-spec.md`

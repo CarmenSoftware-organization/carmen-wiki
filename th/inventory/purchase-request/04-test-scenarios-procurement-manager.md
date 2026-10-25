@@ -13,13 +13,13 @@ dateCreated: 2026-05-15T09:00:00.000Z
 > **At a Glance**
 > **Persona:** Procurement Manager / General Manager (stage approve แบบ escalated / มูลค่าสูง — UI เดียวกับ chain Approver พื้นฐาน) &nbsp;·&nbsp; **โมดูล:** [purchase-request](/th/inventory/purchase-request) &nbsp;·&nbsp; **Scenario:** ~7
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation
-> **E2E coverage:** ยังไม่มี persona-journey spec เฉพาะของ Procurement Manager; เส้นทาง escalation / มูลค่าสูงถูกทดสอบผ่าน fixture `gmTest` ใน `tests/301-pr.spec.ts` ใน `../carmen-inventory-frontend-e2e/`
+> **E2E coverage:** ยังไม่มี persona-journey spec เฉพาะของ Procurement Manager; เส้นทาง escalation / มูลค่าสูงถูกทดสอบผ่าน fixture `gmTest` ใน `tests/301-pr.spec.ts` ใน `../carmen-frontend-e2e/`
 
-> **Executable coverage (2026-09-22)** มีเพียง block `gmTest` ของ `../carmen-inventory-frontend-e2e/tests/301-pr.spec.ts` (รวม 197 test) ที่แตะ persona นี้; case ที่ catalogue ไว้ใน gap อยู่ใน `docs/test-cases/gaps/301-pr-core-gap.md` (46 case) และ `gaps/303-pr-approver-journey-gap.md` (37 — UI เดียวกัน) ไม่มี spec, gap report หรือ story `3xx-pr-procurement-manager`
+> **Executable coverage (2026-09-22)** มีเพียง block `gmTest` ของ `../carmen-frontend-e2e/tests/301-pr.spec.ts` (รวม 197 test) ที่แตะ persona นี้; case ที่ catalogue ไว้ใน gap อยู่ใน `docs/test-cases/gaps/301-pr-core-gap.md` (46 case) และ `gaps/303-pr-approver-journey-gap.md` (37 — UI เดียวกัน) ไม่มี spec, gap report หรือ story `3xx-pr-procurement-manager`
 
 หน้านี้จับ test scenario ที่ persona Procurement Manager ขับในโมดูล `purchase-request` ตามที่บันทึกใน [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md) source ปัจจุบันไม่มีหน้าจอเฉพาะของ Procurement Manager — persona นี้คือ stage role `approve` ใน workflow **เดียวกัน** กับ chain Approver พื้นฐาน โดยเข้าถึงผ่าน threshold-based escalation (`PR_AUTH_005`, ยืนยันแล้ว) หรือ workflow route ตรง Scenario ด้านล่างเป็น subset ระดับ stage-escalated ของ scenario Approver พื้นฐานใน [04-test-scenarios-approver.md](./04-test-scenarios-approver.md); scenario ระดับบรรทัดและ threshold-boundary ของหน้านั้นใช้ที่นี่ตรงตัวเช่นกัน *(scenario ด้าน delegation ของหน้านั้นไม่ใช้ — `PR_AUTH_006` ยังไม่ยืนยัน ดู correction note ที่หน้านั้น)*
 
-> ⚠️ **หมายเหตุความคลาดเคลื่อน:** เนื้อหารุ่นก่อนหน้าของหน้านี้อธิบาย "configurational surface" (scoring weight ของ Vendor Allocation Rules, override priority ต่อ vendor, bulk action Stuck PR Oversight) พร้อม scenario เพิ่มเติมอีก ~20 รายการ ไม่พบหน้าจอ, route หรือ endpoint ที่ตรงกันใน `../carmen-inventory-frontend-react/` หรือ `../carmen-turborepo-backend-v2/` ในรอบตรวจสอบนี้ — ดูรายการ discrepancy log ใน progress log ของการ resync scenario เหล่านั้นถูกลบออกแทนที่จะคงไว้เป็นเนื้อหาสมมติ
+> ⚠️ **หมายเหตุความคลาดเคลื่อน:** เนื้อหารุ่นก่อนหน้าของหน้านี้อธิบาย "configurational surface" (scoring weight ของ Vendor Allocation Rules, override priority ต่อ vendor, bulk action Stuck PR Oversight) พร้อม scenario เพิ่มเติมอีก ~20 รายการ ไม่พบหน้าจอ, route หรือ endpoint ที่ตรงกันใน `../carmen-frontend/` หรือ `../carmen-turborepo-backend/` ในรอบตรวจสอบนี้ — ดูรายการ discrepancy log ใน progress log ของการ resync scenario เหล่านั้นถูกลบออกแทนที่จะคงไว้เป็นเนื้อหาสมมติ
 
 ## 1. Happy Path
 
@@ -51,5 +51,5 @@ dateCreated: 2026-05-15T09:00:00.000Z
 - User flow: [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md)
 - กฎทางธุรกิจ: [02-business-rules.md](./02-business-rules.md) Section 4 (`PR_AUTH_005` routing ตาม threshold, ยืนยันแล้ว; `PR_AUTH_006` delegation, ยังไม่ยืนยัน), Section 5 (`PR_POST_003`, `PR_POST_005`, `PR_POST_006`)
 - หน้าพี่น้อง: [04-test-scenarios-approver.md](./04-test-scenarios-approver.md) — scenario Approver พื้นฐานที่ชุดนี้ extend ตรงตัว (validation ระดับบรรทัด, edge case threshold-boundary; scenario ด้าน delegation ของหน้านั้นถูก flag ว่ายังไม่ยืนยัน)
-- E2E: **ช่องว่าง** — ยังไม่มี `30X-pr-procurement-manager-journey.spec.ts` เฉพาะ Scenario escalation / มูลค่าสูงถูกทดสอบผ่าน fixture `gmTest` ใน `../carmen-inventory-frontend-e2e/tests/301-pr.spec.ts` (เช่น `TC-PR-060005`)
+- E2E: **ช่องว่าง** — ยังไม่มี `30X-pr-procurement-manager-journey.spec.ts` เฉพาะ Scenario escalation / มูลค่าสูงถูกทดสอบผ่าน fixture `gmTest` ใน `../carmen-frontend-e2e/tests/301-pr.spec.ts` (เช่น `TC-PR-060005`)
 - Cross-link: [purchase-order](/th/inventory/purchase-order) — โมดูลปลายน้ำที่รับ PR ที่ final-approved สำหรับการแปลง

@@ -82,10 +82,10 @@ Financial accuracy is enforced at the calculation layer: line and header amounts
 ## 6. Reference Sources
 
 - Concepts: `../carmen/docs/purchase-request-management/`
-- Frontend: `../carmen-inventory-frontend-react/`
-- Backend: `../carmen-turborepo-backend-v2/`
+- Frontend: `../carmen-frontend/`
+- Backend: `../carmen-turborepo-backend/`
 - API contracts: `../carmen-turborepo-backend-bruno/`
-- E2E tests: `../carmen-inventory-frontend-e2e/`
+- E2E tests: `../carmen-frontend-e2e/`
 
 ## 7. Pages in This Module
 
@@ -107,7 +107,7 @@ Financial accuracy is enforced at the calculation layer: line and header amounts
 
 ## 8. API Surface (verified 2026-09-22)
 
-All routes live in `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/purchase-requests/purchase-requests.controller.ts` (`@Controller('api')`); guards are `AppIdGuard('purchaseRequest.<verb>')` plus `@Permission({ 'procurement.purchase_request': ['view'] })` on the list endpoints. Bruno: `../carmen-turborepo-backend-bruno/collections/carmen-inventory/procurement/purchase-request/`.
+All routes live in `../carmen-turborepo-backend/apps/backend-gateway/src/application/purchase-requests/purchase-requests.controller.ts` (`@Controller('api')`); guards are `AppIdGuard('purchaseRequest.<verb>')` plus `@Permission({ 'procurement.purchase_request': ['view'] })` on the list endpoints. Bruno: `../carmen-turborepo-backend-bruno/collections/carmen-inventory/procurement/purchase-request/`.
 
 | Verb + path | Purpose | Notes |
 |---|---|---|

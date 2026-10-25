@@ -42,6 +42,6 @@ An earlier draft described two dedicated workspaces: an Auditor screen (audit-lo
 
 ## 4. References
 
-- Frontend routes: `../carmen-inventory-frontend-react/routes/router.tsx` (the definitive inventory-management route list).
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/` (no audit/config service exists in this scope).
+- Frontend routes: `../carmen-frontend/routes/router.tsx` (the definitive inventory-management route list).
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/` (no audit/config service exists in this scope).
 - Parent overview: [03-user-flow](/en/inventory/inventory/03-user-flow).

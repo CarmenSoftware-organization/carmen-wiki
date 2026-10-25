@@ -47,7 +47,7 @@ flowchart TD
     UserAction -->|"ค้นหาใหม่"| Start
 ```
 
-> Diagram adapted from `carmen/docs/app/vendor-management/vendor-directory/FD-vendor-directory.md` · verified against `carmen-inventory-frontend-react/routes/vendor-management/vendor/vendor-component.tsx:189-191`, `components/search-input.tsx:36-44` (2026-09-28) · Changes: dropped the source's result caching, relevance-score ranking, permission-based row filtering, 100-result cap, and search-term highlighting — none evidenced; replaced the source's "Debounce 300ms" with the real `SearchInput` behaviour (submits only on Enter or a click on the search button, no debounce); the real list uses the same generic `ListToolbar` / `useDataGridState` search + filter pattern as every other master-data list.
+> Diagram adapted from `carmen/docs/app/vendor-management/vendor-directory/FD-vendor-directory.md` · verified against `carmen-frontend/routes/vendor-management/vendor/vendor-component.tsx:189-191`, `components/search-input.tsx:36-44` (2026-09-28) · Changes: dropped the source's result caching, relevance-score ranking, permission-based row filtering, 100-result cap, and search-term highlighting — none evidenced; replaced the source's "Debounce 300ms" with the real `SearchInput` behaviour (submits only on Enter or a click on the search button, no debounce); the real list uses the same generic `ListToolbar` / `useDataGridState` search + filter pattern as every other master-data list.
 
 ## 3. การตรวจสอบและข้อผิดพลาด
 
@@ -175,8 +175,8 @@ Flat lookup — `id`, `name`, `description`, `note`, `is_active`, metadata ม�
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_vendor` (line ~3859), `tb_vendor_address` (~3954), `tb_vendor_contact` (~3993), `tb_certificate` (~4025), `tb_vendor_certificate` (~4053), `tb_vendor_business_type` (~5836)
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_vendor` (line ~3859), `tb_vendor_address` (~3954), `tb_vendor_contact` (~3993), `tb_certificate` (~4025), `tb_vendor_certificate` (~4053), `tb_vendor_business_type` (~5836)
 - **Migrations:** `20260904133000_rename_eco_label_and_certificate`, `20260909203000_add_vendor_tax_branch_rating`
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/vendors/` (DTO `dto/vendors.dto.ts:53-55`), `master/vendor-master-certificate/`, `master/vendor-certificate/`
-- **Frontend:** `../carmen-inventory-frontend-react/routes/vendor-management/vendor/`, `routes/vendor-management/certification/`
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/043-certification.spec.ts` (19 กรณี) + `docs/test-cases/gaps/043-certification-gap.md` (29 กรณีที่ยังไม่ครอบคลุม)
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/vendors/` (DTO `dto/vendors.dto.ts:53-55`), `master/vendor-master-certificate/`, `master/vendor-certificate/`
+- **Frontend:** `../carmen-frontend/routes/vendor-management/vendor/`, `routes/vendor-management/certification/`
+- **E2E:** `../carmen-frontend-e2e/tests/043-certification.spec.ts` (19 กรณี) + `docs/test-cases/gaps/043-certification-gap.md` (29 กรณีที่ยังไม่ครอบคลุม)

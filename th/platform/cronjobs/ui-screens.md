@@ -147,13 +147,13 @@ render `AuditMeta` — เฉพาะ `created_at`/`created_by_id`/`updated_at`
 
 ## 7. อ้างอิง
 
-- `../carmen-platform/src/pages/cronjobs/CronJobManagement.tsx` — หน้ารายการ อ่านแบบเต็ม
-- `../carmen-platform/src/pages/cronjobs/CronJobEdit.tsx` — หน้าสร้าง/แก้ไข อ่านแบบเต็ม
-- `../carmen-platform/src/pages/cronjobs/CronJobFilterSheet.tsx`, `CronScheduleField.tsx` — อ่านแบบเต็ม
-- `../carmen-platform/src/pages/cronjobs/jobConfig/{index.tsx,ReportConfigFields.tsx,NotificationConfigFields.tsx,CleanupConfigFields.tsx,DashboardRefreshConfigFields.tsx,ActivityRollupConfigFields.tsx,ActivityRetentionConfigFields.tsx}` — คอมโพเนนต์ config เฉพาะทั้งหกตัวบวก dispatcher อ่านแบบเต็ม
-- `../carmen-platform/src/services/cronjobService.ts` — REST client, comment เรื่องการ encode filter (§2.2)
-- `../carmen-platform/src/utils/cronExpression.ts`, `cronSchedule.ts` — `describeCron`, `nextRuns`, `parseCron`, `buildCron`
-- `../carmen-platform/src/components/Can.tsx` — helper render ตามสิทธิ์ที่อ้างถึงตลอดทั้งหน้า
+- `../carmen-backstage/src/pages/cronjobs/CronJobManagement.tsx` — หน้ารายการ อ่านแบบเต็ม
+- `../carmen-backstage/src/pages/cronjobs/CronJobEdit.tsx` — หน้าสร้าง/แก้ไข อ่านแบบเต็ม
+- `../carmen-backstage/src/pages/cronjobs/CronJobFilterSheet.tsx`, `CronScheduleField.tsx` — อ่านแบบเต็ม
+- `../carmen-backstage/src/pages/cronjobs/jobConfig/{index.tsx,ReportConfigFields.tsx,NotificationConfigFields.tsx,CleanupConfigFields.tsx,DashboardRefreshConfigFields.tsx,ActivityRollupConfigFields.tsx,ActivityRetentionConfigFields.tsx}` — คอมโพเนนต์ config เฉพาะทั้งหกตัวบวก dispatcher อ่านแบบเต็ม
+- `../carmen-backstage/src/services/cronjobService.ts` — REST client, comment เรื่องการ encode filter (§2.2)
+- `../carmen-backstage/src/utils/cronExpression.ts`, `cronSchedule.ts` — `describeCron`, `nextRuns`, `parseCron`, `buildCron`
+- `../carmen-backstage/src/components/Can.tsx` — helper render ตามสิทธิ์ที่อ้างถึงตลอดทั้งหน้า
 - [Data Model](/th/platform/cronjobs/data-model) — ตารางฟิลด์และกลไก scheduler ที่การพาชมหน้าจอนี้ชี้กลับไปตลอด
 - [หน้า landing ของ Cronjobs](/th/platform/cronjobs) §4 — ด่านสิทธิ์เบื้องหลังทุกปุ่มที่อ้างถึงในหน้านี้
-- ยืนยันกับ `carmen-platform` HEAD `157a65e` (2026-09-04)
+- ยืนยันกับ `carmen-backstage` HEAD `157a65e` (2026-09-04)

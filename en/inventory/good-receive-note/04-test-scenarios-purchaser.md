@@ -13,10 +13,10 @@ editor: markdown
 > **At a Glance**
 > **Persona:** Purchaser (Procurement Officer + Department Manager) &nbsp;·&nbsp; **Module:** [good-receive-note](/en/inventory/good-receive-note) &nbsp;·&nbsp; **Scenarios:** ~12
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **E2E coverage:** maps to `501-grn.spec.ts` in `../carmen-inventory-frontend-e2e/`
+> **E2E coverage:** maps to `501-grn.spec.ts` in `../carmen-frontend-e2e/`
 > **Re-verified 2026-09-22:** the PO advances at **commit**, not at save; PO statuses are `approved` / `sent_or_print` / `partial` / `completed`; a price-deviation check against the **PO price** now exists at save (`GRN_VAL_007`) — there is still no pricelist check, no `accepted_qty`, no three-way match, and no segregation of duties.
 
-> **Executable coverage:** `../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts` (76 cases; Purchaser-relevant groups listed in §5) and `docs/test-cases/gaps/501-grn-core-gap.md` (62) — permission-denial cases use the Requestor-role fixture.
+> **Executable coverage:** `../carmen-frontend-e2e/tests/501-grn.spec.ts` (76 cases; Purchaser-relevant groups listed in §5) and `docs/test-cases/gaps/501-grn-core-gap.md` (62) — permission-denial cases use the Requestor-role fixture.
 
 This page captures the test scenarios that the Purchaser persona (the **Purchaser / Procurement Officer** who raised the upstream PO, plus the **Department Manager** subset) directly drives in the `good-receive-note` module. The Purchaser is a **review-only** participant on the GRN — they do **not** create the GRN at the dock, do **not** save it, and do **not** commit (commit is what posts inventory and advances the PO — see [04-test-scenarios-receiver.md](./04-test-scenarios-receiver.md)). "Own PO" scoping below is a working convention — the backend does not filter the GRN list by `buyer_id`.
 
@@ -61,4 +61,4 @@ This page captures the test scenarios that the Purchaser persona (the **Purchase
 - Sibling: [04-test-scenarios-finance.md](./04-test-scenarios-finance.md) — correction page: why no credit-note / three-way-match handoff test scenarios exist.
 - Business rules being verified: [02-business-rules.md](./02-business-rules.md) — segregation-of-duties (`GRN_AUTH_010`, marked unconfirmed this pass) referenced in PUR-PERM-03, PUR-VAL-01, PUR-VAL-02.
 - Cross-link: [purchase-order](/en/inventory/purchase-order) — upstream module owned by this persona; the source of `order_price`, `po_status` (`approved` / `sent_or_print` / `partial` / `completed`), and the activity log.
-- E2E spec: `../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts` (76 cases). Purchaser-relevant groups: **TC-GRN-010001** (View GRN List), **TC-GRN-010003** (Insufficient Permissions), **TC-GRN-080005** (Edit Line Item — denial), **TC-GRN-110002** (No Permission to Commit), **TC-GRN-040002 / 040004** (Create from Multiple POs — stubs; real wizard cases are in `docs/test-cases/gaps/501-grn-from-po-gap.md`).
+- E2E spec: `../carmen-frontend-e2e/tests/501-grn.spec.ts` (76 cases). Purchaser-relevant groups: **TC-GRN-010001** (View GRN List), **TC-GRN-010003** (Insufficient Permissions), **TC-GRN-080005** (Edit Line Item — denial), **TC-GRN-110002** (No Permission to Commit), **TC-GRN-040002 / 040004** (Create from Multiple POs — stubs; real wizard cases are in `docs/test-cases/gaps/501-grn-from-po-gap.md`).

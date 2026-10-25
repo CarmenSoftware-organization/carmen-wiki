@@ -101,7 +101,7 @@ Draft ก่อนหน้าของโมดูลวิกินี้อ�
 
 ## 5. แหล่งอ้างอิง
 
-- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/physical-count/` (`pc-component.tsx`, `pc-entry-component.tsx`, `pc-review-component.tsx`)
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts`, `.../physical-count-period/physical-count-period.service.ts`
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count; manual catalog `docs/test-cases/750-physical-count.md` (41 case, ตรวจทานซ้ำ 2026-09-20)
+- **Frontend:** `../carmen-frontend/routes/inventory-management/physical-count/` (`pc-component.tsx`, `pc-entry-component.tsx`, `pc-review-component.tsx`)
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts`, `.../physical-count-period/physical-count-period.service.ts`
+- **E2E:** `../carmen-frontend-e2e/tests/` — ยังไม่มี spec physical-count; manual catalog `docs/test-cases/750-physical-count.md` (41 case, ตรวจทานซ้ำ 2026-09-20)
 - Flow ที่เกี่ยวข้อง: [inventory-adjustment/03-user-flow](/th/inventory/inventory-adjustment/03-user-flow) (โมดูลที่ rollup เขียนเข้า), [spot-check](/th/inventory/spot-check) (flow ลูกพี่ลูกน้องการนับบางส่วน)

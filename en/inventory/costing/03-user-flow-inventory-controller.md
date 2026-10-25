@@ -36,8 +36,8 @@ This mirrors the identical finding already confirmed in [inventory-adjustment/03
 
 ## 3. References
 
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/stock-in/stock-in.service.ts` (`create()` → `draft` `:418`; `commit()` `:471-575`), `.../stock-out/stock-out.service.ts`, `.../period-end/`.
-- Frontend: `../carmen-inventory-frontend-react/routes/inventory-management/inventory-adjustment/`, `.../period-end/`.
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/stock-in/stock-in.service.ts` (`create()` → `draft` `:418`; `commit()` `:471-575`), `.../stock-out/stock-out.service.ts`, `.../period-end/`.
+- Frontend: `../carmen-frontend/routes/inventory-management/inventory-adjustment/`, `.../period-end/`.
 - Parent overview: [03-user-flow](./03-user-flow.md).
 - Cross-link: [inventory-adjustment](/en/inventory/inventory-adjustment) — the module that actually owns the `tb_stock_in`/`tb_stock_out` documents this page's earlier draft mis-described.
 - Cross-link: [inventory/03-user-flow-inventory-controller](/en/inventory/inventory/03-user-flow-inventory-controller) — the real period-end close flow.

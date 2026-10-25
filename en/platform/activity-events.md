@@ -44,7 +44,7 @@ This screen exists so an operator holding the narrower of the two analytics perm
 | Permission keys | `activity_event.read` (aggregate dashboard), `activity_event.detail` (this page) | `activity_log.read` (timeline), `activity_log.detail` (old/new field values) |
 | Screens | `/analytics`, `/activity-events` | "View History" on `BusinessUnitManagement`, `ClusterManagement`, `UserManagement`, `ReportTemplateEdit`, and others |
 
-The permission catalog states the split directly, in four adjacent rows (`seed.platform-permission.data.ts:95-100`, `../carmen-turborepo-backend-v2`):
+The permission catalog states the split directly, in four adjacent rows (`seed.platform-permission.data.ts:95-100`, `../carmen-turborepo-backend`):
 
 | Resource | Action | Catalog description |
 | --- | --- | --- |
@@ -55,7 +55,7 @@ The permission catalog states the split directly, in four adjacent rows (`seed.p
 
 A source comment sits directly between the two resources' rows: "Record audit trail (`tb_activity`) — a different table from `activity_event` above, which is UI telemetry" (line 97). This is independently confirmed by how the two tables are wired, not merely by the comment: `LogEventsModule`, the generic audit-logging module described in its own comment as being for "manual audit logging (login/logout, avatar, etc.)" writing to `tb_activity`, explicitly **excludes** `tb_activity`, `tb_activity_event`, and `tb_activity_event_daily` from whatever generic model-tracking list it otherwise applies to (`apps/micro-business/src/app.module.ts:211-222`, `excludeModels` array) — the two systems are kept from feeding into each other by name, in code that has nothing to do with either page's permission strings.
 
-No prior conceptual documentation for this module exists in `../carmen/docs` (searched for `activity_event`, `activity event`, `ui telemetry`, `activity-events` — no hits). Everything on this page and its data-model sub-page is sourced from `../carmen-platform`, `../carmen-turborepo-backend-v2`, `../carmen-inventory-frontend-react`, and `../micro-cronjobs` implementation directly.
+No prior conceptual documentation for this module exists in `../carmen/docs` (searched for `activity_event`, `activity event`, `ui telemetry`, `activity-events` — no hits). Everything on this page and its data-model sub-page is sourced from `../carmen-backstage`, `../carmen-turborepo-backend`, `../carmen-frontend`, and `../micro-cronjobs` implementation directly.
 
 ## 3. The Explorer Screen
 
@@ -72,7 +72,7 @@ No prior conceptual documentation for this module exists in `../carmen/docs` (se
 | App | `app_name` | **Yes** (since 2026-09-09) | Hidden on the card/mobile layout (`meta: { card: 'hidden' }`) |
 | (actions) | — | No | An eye icon opens the detail sheet for that row |
 
-Every data column now sorts, matching the backend's whitelist one-for-one — `buildSortable()` (`activity-event.service.ts:62`, `../carmen-turborepo-backend-v2/apps/micro-business/src/log/activity-event/`) accepts `server_ts`, `client_ts`, `page_path`, `event_type`, `user_name`, `bu_code`, `element_id`, `app_name`. The four that opened on 2026-09-09 (`../carmen-platform` PR #293, part of the repo-wide "sortable column headers" pass whose design doc is `docs/superpowers/specs/2026-09-09-sortable-column-headers-design.md`) were the "bucket B" columns — values the backend had to learn to order by because Prisma's `orderBy` could not reach a resolved user name or a joined BU code — and the SPA deliberately shipped them only after the backend was on DEV, since the old backend answered 500 to an unknown key. `client_ts` still has no table column on this screen (it only appears in the detail sheet, §3.3) and so cannot be reached as a sort by any UI control, even though the backend would honor it. An unrecognized or non-whitelisted `sort` value falls back to `server_ts:desc` server-side; ties always break on `id` in the same direction (`activity-event.service.ts:349`, its own comment: every row inserted in one batch shares the same `server_ts` because Postgres's `now()` default resolves to transaction-start time, so `server_ts` alone cannot guarantee a stable page boundary).
+Every data column now sorts, matching the backend's whitelist one-for-one — `buildSortable()` (`activity-event.service.ts:62`, `../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/`) accepts `server_ts`, `client_ts`, `page_path`, `event_type`, `user_name`, `bu_code`, `element_id`, `app_name`. The four that opened on 2026-09-09 (`../carmen-backstage` PR #293, part of the repo-wide "sortable column headers" pass whose design doc is `docs/superpowers/specs/2026-09-09-sortable-column-headers-design.md`) were the "bucket B" columns — values the backend had to learn to order by because Prisma's `orderBy` could not reach a resolved user name or a joined BU code — and the SPA deliberately shipped them only after the backend was on DEV, since the old backend answered 500 to an unknown key. `client_ts` still has no table column on this screen (it only appears in the detail sheet, §3.3) and so cannot be reached as a sort by any UI control, even though the backend would honor it. An unrecognized or non-whitelisted `sort` value falls back to `server_ts:desc` server-side; ties always break on `id` in the same direction (`activity-event.service.ts:349`, its own comment: every row inserted in one batch shares the same `server_ts` because Postgres's `now()` default resolves to transaction-start time, so `server_ts` alone cannot guarantee a stable page boundary).
 
 Clicking a column header cycles the table through ascending → descending → unsorted; landing on "unsorted" resets the query to `server_ts:desc` and remounts the table (a `sortResetKey` bump, `ActivityEventManagement.tsx:223-226`) so the header arrow and the actual row order stay in agreement — `DataTable` itself has no controlled way to represent "no sort," so the component is deliberately reset rather than left showing a stale arrow.
 
@@ -93,7 +93,7 @@ Clicking a row's eye icon opens `EventDetailSheet` (`src/pages/activityEvents/Ev
 
 ### 3.4 Who writes these rows
 
-Neither this screen nor `carmen-platform` writes any `tb_activity_event` rows — confirmed by grepping `../carmen-platform/src` for any call to the ingestion endpoint or a tracking client; there is none. The rows this page reads are written by a *different* application: `../carmen-inventory-frontend-react`'s `lib/analytics.ts` (full), a click/page-view telemetry batcher that runs only inside that app's authenticated shell (`components/analytics-bridge.tsx`, mounted in `RootLayout`/`ProtectedShell`, so nothing is queued before login). It captures every click on `[data-track], button, a, [role="button"]` and every route change, batches up to 50 events per request (queue-capped at 500, flushed every 10s, on reaching 20 queued events, or immediately with `keepalive` on tab hide), and POSTs to `/api/analytics-events` — proxied through the gateway's `POST api/analytics-events` (`analytics-events.controller.ts`, `../carmen-turborepo-backend-v2`), guarded by `KeycloakGuard` and `AppIdGuard('analyticsEvent.create')`, into `ActivityEventService.createBatch()` (`../carmen-turborepo-backend-v2/apps/micro-business/src/log/activity-event/activity-event.service.ts:82-112`), which inserts via `createMany({ skipDuplicates: true })` keyed on the client-generated `event_id` for retry-safe idempotency. Full field-by-field detail — including which of these fields the client can set and which are stamped server-side — is on the [Data Model](/en/platform/activity-events/data-model) page.
+Neither this screen nor `carmen-backstage` writes any `tb_activity_event` rows — confirmed by grepping `../carmen-backstage/src` for any call to the ingestion endpoint or a tracking client; there is none. The rows this page reads are written by a *different* application: `../carmen-frontend`'s `lib/analytics.ts` (full), a click/page-view telemetry batcher that runs only inside that app's authenticated shell (`components/analytics-bridge.tsx`, mounted in `RootLayout`/`ProtectedShell`, so nothing is queued before login). It captures every click on `[data-track], button, a, [role="button"]` and every route change, batches up to 50 events per request (queue-capped at 500, flushed every 10s, on reaching 20 queued events, or immediately with `keepalive` on tab hide), and POSTs to `/api/analytics-events` — proxied through the gateway's `POST api/analytics-events` (`analytics-events.controller.ts`, `../carmen-turborepo-backend`), guarded by `KeycloakGuard` and `AppIdGuard('analyticsEvent.create')`, into `ActivityEventService.createBatch()` (`../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/activity-event.service.ts:82-112`), which inserts via `createMany({ skipDuplicates: true })` keyed on the client-generated `event_id` for retry-safe idempotency. Full field-by-field detail — including which of these fields the client can set and which are stamped server-side — is on the [Data Model](/en/platform/activity-events/data-model) page.
 
 ## 4. Roles and Permissions
 
@@ -109,45 +109,45 @@ Neither this screen nor `carmen-platform` writes any `tb_activity_event` rows �
 
 ### 4.2 What `activity_event.detail` alone means for this page
 
-Holding `activity_event.detail` opens this screen outright — a caller does not need `activity_event.read` as well. Per the role-bundle seed (`seed.platform-role-permission.data.ts:11-52`, `../carmen-turborepo-backend-v2`, independently re-read for this page — see §6): **Platform Admin** holds both keys via `activity_event.*` (line 14); **Support Manager** holds `activity_event.read` only (line 40) and therefore cannot open this page at all (sees `<Forbidden />` at the route, and no nav row); **Support Staff** and **Security Officer** hold neither key. This matches, and does not differ from, what [Usage Analytics §4.4](/en/platform/usage-analytics) documents for the same two keys.
+Holding `activity_event.detail` opens this screen outright — a caller does not need `activity_event.read` as well. Per the role-bundle seed (`seed.platform-role-permission.data.ts:11-52`, `../carmen-turborepo-backend`, independently re-read for this page — see §6): **Platform Admin** holds both keys via `activity_event.*` (line 14); **Support Manager** holds `activity_event.read` only (line 40) and therefore cannot open this page at all (sees `<Forbidden />` at the route, and no nav row); **Support Staff** and **Security Officer** hold neither key. This matches, and does not differ from, what [Usage Analytics §4.4](/en/platform/usage-analytics) documents for the same two keys.
 
 ### 4.3 e2e coverage: none
 
-`../carmen-platform-e2e/tests/` (HEAD `a8e3b31`, 2026-08-25) has no `activity-events` directory, confirmed by listing the repository directly — matching the Task 1 source map's no-e2e list for this module. Every behavioral claim on this page and its data-model sub-page is sourced from reading `../carmen-platform`, `../carmen-turborepo-backend-v2`, `../carmen-inventory-frontend-react`, and `../micro-cronjobs` implementation, not from an executable spec.
+`../carmen-backstage-e2e/tests/` (HEAD `a8e3b31`, 2026-08-25) has no `activity-events` directory, confirmed by listing the repository directly — matching the Task 1 source map's no-e2e list for this module. Every behavioral claim on this page and its data-model sub-page is sourced from reading `../carmen-backstage`, `../carmen-turborepo-backend`, `../carmen-frontend`, and `../micro-cronjobs` implementation, not from an executable spec.
 
 ## 5. Related Modules
 
 - [Usage Analytics](/en/platform/usage-analytics) — the aggregate dashboard sibling at `/analytics`, gated by `activity_event.read`; owns the full permission/guard/cluster-scoping writeup this page's §4 defers to.
 - [Platform RBAC](/en/platform/rbac) — the permission catalog and role-bundle definitions referenced in §2 and §4.
 - [Business Units](/en/platform/business-units) and [Applications](/en/platform/applications) — supply the BU and Application filter dropdowns (§3.2); this page does not own either list.
-- [Cronjobs](/en/platform/cronjobs) — the platform's own scheduled-job admin screen, which (per the same `"CRONJOBS"."Cronjob"` table `../carmen-turborepo-backend-v2`'s `platform_cronjobs.service.ts` reads and writes) is the same store that holds the retention and rollup job definitions documented on the [Data Model](/en/platform/activity-events/data-model) page.
+- [Cronjobs](/en/platform/cronjobs) — the platform's own scheduled-job admin screen, which (per the same `"CRONJOBS"."Cronjob"` table `../carmen-turborepo-backend`'s `platform_cronjobs.service.ts` reads and writes) is the same store that holds the retention and rollup job definitions documented on the [Data Model](/en/platform/activity-events/data-model) page.
 
 ## 6. Reference Sources
 
-All paths below are `../carmen-platform` (the Platform admin SPA, HEAD `157a65e`, 2026-09-04) unless prefixed otherwise.
+All paths below are `../carmen-backstage` (the Platform admin SPA, HEAD `157a65e`, 2026-09-04) unless prefixed otherwise.
 
-- `../carmen-platform/src/pages/ActivityEventManagement.tsx` (full, 434 lines) — the screen: filters (`fetchEvents`), columns, sorting/pagination handlers, CSV export, dev debug panel.
-- `../carmen-platform/src/pages/activityEvents/EventDetailSheet.tsx` (full, 78 lines) — the per-row detail sheet and "View this entire session" handoff.
-- `../carmen-platform/src/services/analyticsService.ts` — `getEvents()`, shared with Usage Analytics.
-- `../carmen-platform/src/types/index.ts:1367-1386` — the `ActivityEvent` frontend type.
-- `../carmen-platform/src/App.tsx:483-489` — the `/activity-events` route registration.
-- `../carmen-platform/src/components/nav/platformNav.ts:32-33` — the two contiguous Analytics nav rows.
-- `../carmen-platform/src/i18n/en.ts:4142-4191` and `src/i18n/th.ts:3151` onward — page copy quoted in §1/§3.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform-analytics/platform-analytics.controller.ts:147-259` (HEAD `937cf5ac4`, 2026-09-06) — the `GET /records` route, its guards, and the ad-blocker naming-trap comment governing the URL (`analytics/records`, never `analytics/event*`).
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform-analytics/analytics-scope.ts` (full) — `ACTIVITY_EVENT_DETAIL`, `resolveAllowedClusterIds()`.
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/log/activity-event/activity-event.service.ts:82-112,246-347` — `createBatch()` (the insert path, §3.4) and `findEvents()` (the sort-tiebreak comment, user/application name resolution).
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/log/activity-event/activity-event.query.ts` (full) — `buildWhere()`'s `ILIKE` search clause.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/analytics-events/analytics-events.controller.ts` (full) — `POST api/analytics-events`, its guards (`KeycloakGuard`, `AppIdGuard('analyticsEvent.create')`), and its 100-event cap.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/analytics-events/analytics-events.service.ts` (full) — the gateway-to-microservice proxy calling `ActivityEvents.createBatch`.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/common/dto/activity-event/activity-event.dto.ts` (full) — the Zod validation schema (per-field length caps, the 1–100 event batch cap) documented on the data-model page.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/common/helpers/extract_client_context.ts` (full) — how `app_id`/`domain`/`user_agent` are stamped server-side from headers, documented on the data-model page.
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma:907-929,1479-1529` — `tb_activity` and `tb_activity_event`/`tb_activity_event_daily`, read side by side for §2's table.
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts:93-101` — the four permission-catalog rows quoted in §2.
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/seed.platform-role-permission.data.ts:11-52` (full) — role-bundle assignment, re-verified independently for §4.2.
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/app.module.ts:211-222` — `LogEventsModule`'s `excludeModels`, the independent confirmation cited in §2.
-- `../carmen-inventory-frontend-react/lib/analytics.ts` (full, HEAD `72d6cd340`, 2026-09-04) — the telemetry batcher: `enqueue`, `deriveElementId`, `collectTrackProps`, `flush`, batching/retry/disable rules.
-- `../carmen-inventory-frontend-react/components/analytics-bridge.tsx` (full) — where and when tracking starts.
-- `../carmen-platform-e2e/tests/` (HEAD `a8e3b31`, 2026-08-25) — listed directly to confirm no `activity-events` suite exists (§4.3).
+- `../carmen-backstage/src/pages/ActivityEventManagement.tsx` (full, 434 lines) — the screen: filters (`fetchEvents`), columns, sorting/pagination handlers, CSV export, dev debug panel.
+- `../carmen-backstage/src/pages/activityEvents/EventDetailSheet.tsx` (full, 78 lines) — the per-row detail sheet and "View this entire session" handoff.
+- `../carmen-backstage/src/services/analyticsService.ts` — `getEvents()`, shared with Usage Analytics.
+- `../carmen-backstage/src/types/index.ts:1367-1386` — the `ActivityEvent` frontend type.
+- `../carmen-backstage/src/App.tsx:483-489` — the `/activity-events` route registration.
+- `../carmen-backstage/src/components/nav/platformNav.ts:32-33` — the two contiguous Analytics nav rows.
+- `../carmen-backstage/src/i18n/en.ts:4142-4191` and `src/i18n/th.ts:3151` onward — page copy quoted in §1/§3.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform-analytics/platform-analytics.controller.ts:147-259` (HEAD `937cf5ac4`, 2026-09-06) — the `GET /records` route, its guards, and the ad-blocker naming-trap comment governing the URL (`analytics/records`, never `analytics/event*`).
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform-analytics/analytics-scope.ts` (full) — `ACTIVITY_EVENT_DETAIL`, `resolveAllowedClusterIds()`.
+- `../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/activity-event.service.ts:82-112,246-347` — `createBatch()` (the insert path, §3.4) and `findEvents()` (the sort-tiebreak comment, user/application name resolution).
+- `../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/activity-event.query.ts` (full) — `buildWhere()`'s `ILIKE` search clause.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/application/analytics-events/analytics-events.controller.ts` (full) — `POST api/analytics-events`, its guards (`KeycloakGuard`, `AppIdGuard('analyticsEvent.create')`), and its 100-event cap.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/application/analytics-events/analytics-events.service.ts` (full) — the gateway-to-microservice proxy calling `ActivityEvents.createBatch`.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/common/dto/activity-event/activity-event.dto.ts` (full) — the Zod validation schema (per-field length caps, the 1–100 event batch cap) documented on the data-model page.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/common/helpers/extract_client_context.ts` (full) — how `app_id`/`domain`/`user_agent` are stamped server-side from headers, documented on the data-model page.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma:907-929,1479-1529` — `tb_activity` and `tb_activity_event`/`tb_activity_event_daily`, read side by side for §2's table.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts:93-101` — the four permission-catalog rows quoted in §2.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/seed.platform-role-permission.data.ts:11-52` (full) — role-bundle assignment, re-verified independently for §4.2.
+- `../carmen-turborepo-backend/apps/micro-business/src/app.module.ts:211-222` — `LogEventsModule`'s `excludeModels`, the independent confirmation cited in §2.
+- `../carmen-frontend/lib/analytics.ts` (full, HEAD `72d6cd340`, 2026-09-04) — the telemetry batcher: `enqueue`, `deriveElementId`, `collectTrackProps`, `flush`, batching/retry/disable rules.
+- `../carmen-frontend/components/analytics-bridge.tsx` (full) — where and when tracking starts.
+- `../carmen-backstage-e2e/tests/` (HEAD `a8e3b31`, 2026-08-25) — listed directly to confirm no `activity-events` suite exists (§4.3).
 
 ## 7. Pages in This Module
 

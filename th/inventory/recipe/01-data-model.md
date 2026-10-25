@@ -17,8 +17,8 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **รูปแบบ audit:** `created_*` / `updated_*` / `deleted_*` มาตรฐาน; **ไม่มี `tb_recipe_comment` และไม่มี workflow** — audit มาจาก snapshot `tb_recipe_version` + `tb_recipe_pricing_history`; วงจรชีวิต 3 สถานะ `DRAFT / PUBLISHED / ARCHIVED`
 
 > **แหล่งความจริง:** Prisma schema ของ backend อ่านสิ่งเหล่านี้ก่อนเสมอเมื่อเขียนหรืออัปเดตหน้านี้:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > ไฟล์ `generated/client/schema.prisma` ใต้แต่ละแพ็กเกจเป็นสำเนาที่สร้างอัตโนมัติ ไม่ใช่ฉบับทางการ
 
@@ -389,8 +389,8 @@ tb_recipe_equipment_category ──1──*──► tb_recipe_equipment
 
 ## 6. แหล่งอ้างอิง
 
-- **หลัก (แหล่งความจริง):** Prisma schema ที่ list ใน header callout — concretely `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (โมเดล recipe ทั้งสิบสองที่ lines 5578–6073 บวก enum เฉพาะ recipe สี่ตัวที่ lines 5552–5572 และ `enum_cuisine_region` ที่ lines 5543–5550 และ flag `tb_product.is_used_in_recipe` ที่ line 1518) และ `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (verify ว่าไม่มีโมเดล recipe)
-- **Backend implementation:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/recipe/` (recipe CRUD, sub-service ของ prep-step + image), `.../master/recipe-category/`, `.../master/recipe-cuisine/`, `.../master/recipe-equipment/`, `.../master/recipe-equipment-category/`; REST surface ของ gateway ใน `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_recipes/` (และ dir พี่น้อง `config_recipe-*`)
+- **หลัก (แหล่งความจริง):** Prisma schema ที่ list ใน header callout — concretely `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (โมเดล recipe ทั้งสิบสองที่ lines 5578–6073 บวก enum เฉพาะ recipe สี่ตัวที่ lines 5552–5572 และ `enum_cuisine_region` ที่ lines 5543–5550 และ flag `tb_product.is_used_in_recipe` ที่ line 1518) และ `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (verify ว่าไม่มีโมเดล recipe)
+- **Backend implementation:** `../carmen-turborepo-backend/apps/micro-business/src/master/recipe/` (recipe CRUD, sub-service ของ prep-step + image), `.../master/recipe-category/`, `.../master/recipe-cuisine/`, `.../master/recipe-equipment/`, `.../master/recipe-equipment-category/`; REST surface ของ gateway ใน `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_recipes/` (และ dir พี่น้อง `config_recipe-*`)
 - **API contracts:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/config/recipe/` (recipe CRUD ที่ `/api/config/{bu_code}/recipes`), `.../config/recipes/` (endpoint preparation-steps + step-image) และโฟลเดอร์ `recipe-categories` / `recipe-cuisines` / `recipe-equipment` / `recipe-equipment-categories`
 - **รอง (cross-check แนวคิด):**
   - `../carmen/docs/recipe-module/RECIPE-Overview.md` — วัตถุประสงค์ของโมดูล ฟีเจอร์สำคัญ บทบาท user; ความแตกต่างใน Section 5 (รายการ 1, 4, 5, 8)

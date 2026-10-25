@@ -95,7 +95,7 @@ if (effectivePermissions !== null && !hasPlatformAuthority) {
 }
 ```
 
-`hasPlatformAuthority` (`../carmen-platform/src/utils/permissions.ts`, `checkPlatformAuthority`) is `true` for a super-admin, for any platform-wide permission grant, or for **any** cluster-scoped grant — deliberately **not** true for a user whose only standing is a `tb_cluster_user.role = 'admin'` membership (that role, §4 of [Data Model](/en/platform/clusters/data-model), is a tenant-membership attribute, not platform authority). A session with a resolved permission payload and no platform authority at all is redirected to `/cluster-admin` if it has that scope (a distinct persona and route tree — see [business-units](/en/platform/business-units) and the source map's `cluster-admin` row); if it has neither authority, the check falls through to the ordinary `requiredPermission` gate below it, which will then 403 it exactly as before. This branch exists so a pure cluster-admin member is routed to the surface built for them instead of hitting a confusing 403 on the platform-admin list, and so it does not change the *outcome* for a genuinely permission-less session — only for one with legitimate cluster-admin-only standing.
+`hasPlatformAuthority` (`../carmen-backstage/src/utils/permissions.ts`, `checkPlatformAuthority`) is `true` for a super-admin, for any platform-wide permission grant, or for **any** cluster-scoped grant — deliberately **not** true for a user whose only standing is a `tb_cluster_user.role = 'admin'` membership (that role, §4 of [Data Model](/en/platform/clusters/data-model), is a tenant-membership attribute, not platform authority). A session with a resolved permission payload and no platform authority at all is redirected to `/cluster-admin` if it has that scope (a distinct persona and route tree — see [business-units](/en/platform/business-units) and the source map's `cluster-admin` row); if it has neither authority, the check falls through to the ordinary `requiredPermission` gate below it, which will then 403 it exactly as before. This branch exists so a pure cluster-admin member is routed to the surface built for them instead of hitting a confusing 403 on the platform-admin list, and so it does not change the *outcome* for a genuinely permission-less session — only for one with legitimate cluster-admin-only standing.
 
 ## 6. Forbidden (403) behaviour
 
@@ -144,15 +144,15 @@ Two tester-relevant consequences, both carried forward unchanged: the cluster-us
 ## 9. References
 
 **Primary sources (read these before updating this page):**
-- `../carmen-platform/src/App.tsx` — the three cluster routes with `requiredPermission` + `feature` props.
-- `../carmen-platform/src/components/PrivateRoute.tsx` — auth-fail redirect, platform-authority/cluster-admin resolution (§5, new), permission-fail `<Forbidden />`, `requireSuperAdmin`, and the feature-flag check (§2), in that order.
-- `../carmen-platform/src/context/AuthContext.tsx` — `hasPermission`, `hasPlatformAuthority`, `userCount` state, `fetchUserCount`, login permission gate.
-- `../carmen-platform/src/utils/permissions.ts` — pure `checkPermission` resolution, `checkPlatformAuthority`, and the `UNRESOLVED_CLUSTER_ID`/`PLATFORM_SCOPED_RECORD` sentinels used by other modules' `activity_log.read` call sites (not needed for clusters itself, since a cluster row always has a resolvable id).
-- `../carmen-platform/src/context/FeatureFlagContext.tsx` — `flagOf`/`isReady`, consumed by `PrivateRoute`'s `feature` check.
-- `../carmen-platform/src/components/PrivateRoute.tsx`, `src/pages/Forbidden.tsx`, `src/pages/NotFound.tsx`, `src/pages/ComingSoon.tsx` — the three possible route-guard outcomes.
-- `../carmen-platform/src/components/Can.tsx` — the in-page gate component (`permission`, optional `clusterId`, optional `fallback`) — unchanged.
-- `../carmen-platform/src/components/nav/platformNav.ts` — nav item definitions (Clusters, Business Units, Tenant Migrations), including `permission`/`feature`/`groupKey`/`superAdminOnly`.
-- `../carmen-platform/src/pages/ClusterManagement.tsx` / `ClusterEdit.tsx` and `clusterEdit/sections/*.tsx` — the `<Can>`/`canEdit` call sites listed in §8, including the new `activity_log.read` sites.
+- `../carmen-backstage/src/App.tsx` — the three cluster routes with `requiredPermission` + `feature` props.
+- `../carmen-backstage/src/components/PrivateRoute.tsx` — auth-fail redirect, platform-authority/cluster-admin resolution (§5, new), permission-fail `<Forbidden />`, `requireSuperAdmin`, and the feature-flag check (§2), in that order.
+- `../carmen-backstage/src/context/AuthContext.tsx` — `hasPermission`, `hasPlatformAuthority`, `userCount` state, `fetchUserCount`, login permission gate.
+- `../carmen-backstage/src/utils/permissions.ts` — pure `checkPermission` resolution, `checkPlatformAuthority`, and the `UNRESOLVED_CLUSTER_ID`/`PLATFORM_SCOPED_RECORD` sentinels used by other modules' `activity_log.read` call sites (not needed for clusters itself, since a cluster row always has a resolvable id).
+- `../carmen-backstage/src/context/FeatureFlagContext.tsx` — `flagOf`/`isReady`, consumed by `PrivateRoute`'s `feature` check.
+- `../carmen-backstage/src/components/PrivateRoute.tsx`, `src/pages/Forbidden.tsx`, `src/pages/NotFound.tsx`, `src/pages/ComingSoon.tsx` — the three possible route-guard outcomes.
+- `../carmen-backstage/src/components/Can.tsx` — the in-page gate component (`permission`, optional `clusterId`, optional `fallback`) — unchanged.
+- `../carmen-backstage/src/components/nav/platformNav.ts` — nav item definitions (Clusters, Business Units, Tenant Migrations), including `permission`/`feature`/`groupKey`/`superAdminOnly`.
+- `../carmen-backstage/src/pages/ClusterManagement.tsx` / `ClusterEdit.tsx` and `clusterEdit/sections/*.tsx` — the `<Can>`/`canEdit` call sites listed in §8, including the new `activity_log.read` sites.
 
 **Cross-links:**
 - [rbac](/en/platform/rbac) — the permission model: catalog, roles, scoped assignments, super-admin flag, and the legacy-model migration table (§5)

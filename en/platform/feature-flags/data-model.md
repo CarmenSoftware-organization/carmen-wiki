@@ -14,11 +14,11 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 > **Storage:** one row of the shared `tb_platform_config` table, `key = 'feature_flags'` — the entity itself is documented in full on [Platform Config](/en/platform/platform-config/data-model) §2; this page covers only what is specific to this key &nbsp;·&nbsp; **Shape:** a free-form `Record<string, 'active' | 'inactive' | 'hide'>` (`FeatureFlagsConfigSchema`, a Zod `record`, not an object) — the **only** registry key with no fixed field list, which is also why it is the only key that can never be `PATCH`ed (§4) &nbsp;·&nbsp; **Source of truth for *what exists*:** `FEATURE_CATALOG` in the frontend (`src/constants/featureFlags.ts`), 28 entries — the backend stores states only, never validates key names against any catalog &nbsp;·&nbsp; **Reachable only through its own pair:** `GET`/`PUT /api-system/platform/feature-flags`, never the generic `/api-system/platform/configs` surface (§4)
 
 > **Source of truth:** the frontend catalog that defines what can be gated, and the backend schema/controller that store and serve it. Always read these first when writing or updating this page:
-> - `../carmen-platform/src/constants/featureFlags.ts`
-> - `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts`
-> - `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/feature_flags/feature_flags.controller.ts`
+> - `../carmen-backstage/src/constants/featureFlags.ts`
+> - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts`
+> - `../carmen-turborepo-backend/apps/backend-gateway/src/platform/feature_flags/feature_flags.controller.ts`
 >
-> Verified against `carmen-turborepo-backend-v2` HEAD `937cf5ac4` (2026-09-06) and `carmen-platform` HEAD `157a65e` (2026-09-04).
+> Verified against `carmen-turborepo-backend` HEAD `937cf5ac4` (2026-09-06) and `carmen-backstage` HEAD `157a65e` (2026-09-04).
 
 ## 1. Overview
 
@@ -35,7 +35,7 @@ Two things back this key, owned by two different sides of the stack. The **shape
 
 ## 3. `FEATURE_CATALOG` — every key, in full
 
-Defined once, `../carmen-platform/src/constants/featureFlags.ts:47-84`. 28 entries — confirmed by direct count of the array, and cross-checked against the union of every `feature:` value used across `platformNav.ts` (24 keys) and `clusterAdminNav.ts` (4 keys): the two sets are identical, so nothing in either nav file references a key the catalog does not define, and the catalog defines nothing an actual menu row does not use. All 28 default to `active` — the file's own comment states this is deliberate: "a deploy must never hide anything on its own" (line 36-37).
+Defined once, `../carmen-backstage/src/constants/featureFlags.ts:47-84`. 28 entries — confirmed by direct count of the array, and cross-checked against the union of every `feature:` value used across `platformNav.ts` (24 keys) and `clusterAdminNav.ts` (4 keys): the two sets are identical, so nothing in either nav file references a key the catalog does not define, and the catalog defines nothing an actual menu row does not use. All 28 default to `active` — the file's own comment states this is deliberate: "a deploy must never hide anything on its own" (line 36-37).
 
 | # | Key | Menu label | Console | `groupKey` |
 | - | --- | --- | --- | --- |
@@ -114,17 +114,17 @@ No consumer of this data caches it beyond the lifetime described below; every st
 
 ## 8. References
 
-- `../carmen-platform/src/constants/featureFlags.ts` — `FeatureState`, `FeatureDefinition`, `FEATURE_CATALOG` (§3), `isFeatureKey`, `DEFAULT_FEATURE_STATES`.
-- `../carmen-platform/src/context/FeatureFlagContext.tsx` — fetch timing, fallback-on-failure, `flagOf` (§5).
-- `../carmen-platform/src/components/nav/platformNav.ts` (lines 85-103) and `src/components/nav/clusterAdminNav.ts` (lines 10-26) — the two independent `hide`/`inactive` filters (§5).
-- `../carmen-platform/src/components/Sidebar.tsx` (lines 105-114 and the `comingSoon` render branch) — consecutive-run grouping and the non-`<Link>` disabled row (§5).
-- `../carmen-platform/src/components/PrivateRoute.tsx` (lines 84-102) — route-level enforcement ordering and outcomes (§5).
-- `../carmen-platform/src/pages/ComingSoon.tsx` — the no-status-code design note (§5).
-- `../carmen-platform/src/pages/FeatureFlagManagement.tsx` (lines 44-47, 58-66, 152-169) — orphan detection, settings-page grouping, draft-only removal (§6).
-- `../carmen-platform/src/services/featureFlagService.ts` — the REST client, including the `doc_version` warning (§4).
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/feature_flags/feature_flags.controller.ts` — the dedicated `GET`/`PUT` pair, guards, and double validation (§4).
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts` (lines 242-246, 360-369, 452-456) — `FeatureFlagsConfigSchema`, the registry entry, and the empty-`fields`-means-PATCH-refused mechanism (§4).
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (line 1462) — `tb_platform_config`, documented in full on [Platform Config — Data Model](/en/platform/platform-config/data-model).
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts` (line 43) — the `feature_flag.manage` catalog entry, cited on the landing page §4.
+- `../carmen-backstage/src/constants/featureFlags.ts` — `FeatureState`, `FeatureDefinition`, `FEATURE_CATALOG` (§3), `isFeatureKey`, `DEFAULT_FEATURE_STATES`.
+- `../carmen-backstage/src/context/FeatureFlagContext.tsx` — fetch timing, fallback-on-failure, `flagOf` (§5).
+- `../carmen-backstage/src/components/nav/platformNav.ts` (lines 85-103) and `src/components/nav/clusterAdminNav.ts` (lines 10-26) — the two independent `hide`/`inactive` filters (§5).
+- `../carmen-backstage/src/components/Sidebar.tsx` (lines 105-114 and the `comingSoon` render branch) — consecutive-run grouping and the non-`<Link>` disabled row (§5).
+- `../carmen-backstage/src/components/PrivateRoute.tsx` (lines 84-102) — route-level enforcement ordering and outcomes (§5).
+- `../carmen-backstage/src/pages/ComingSoon.tsx` — the no-status-code design note (§5).
+- `../carmen-backstage/src/pages/FeatureFlagManagement.tsx` (lines 44-47, 58-66, 152-169) — orphan detection, settings-page grouping, draft-only removal (§6).
+- `../carmen-backstage/src/services/featureFlagService.ts` — the REST client, including the `doc_version` warning (§4).
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/feature_flags/feature_flags.controller.ts` — the dedicated `GET`/`PUT` pair, guards, and double validation (§4).
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts` (lines 242-246, 360-369, 452-456) — `FeatureFlagsConfigSchema`, the registry entry, and the empty-`fields`-means-PATCH-refused mechanism (§4).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (line 1462) — `tb_platform_config`, documented in full on [Platform Config — Data Model](/en/platform/platform-config/data-model).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts` (line 43) — the `feature_flag.manage` catalog entry, cited on the landing page §4.
 
 **Cross-links:** [Feature Flags landing](/en/platform/feature-flags) &nbsp;·&nbsp; [Platform Config — Data Model](/en/platform/platform-config/data-model)

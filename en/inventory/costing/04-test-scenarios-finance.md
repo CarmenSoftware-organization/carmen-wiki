@@ -16,7 +16,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 ## 1. Why these scenarios were removed
 
 - **No Finance role or permission key exists** (`enum_stage_role` has no `finance` member; no finance-scoped key in `constant/permissions.ts`).
-- **No inventory-to-GL posting, reconciliation, or tolerance code exists** (re-checked 2026-09-22). A GL module now exists (`apps/micro-business/src/gl/`), but `GlPostingService.post()` posts journal vouchers only and nothing in the inventory, GRN, or period-end code calls it — the planning-stage design doc (`../carmen-inventory-frontend-e2e/docs/persona-doc/System Process/proc-03-cost-calculation.md`) still describes reality: it "does not generate GL journal entries."
+- **No inventory-to-GL posting, reconciliation, or tolerance code exists** (re-checked 2026-09-22). A GL module now exists (`apps/micro-business/src/gl/`), but `GlPostingService.post()` posts journal vouchers only and nothing in the inventory, GRN, or period-end code calls it — the planning-stage design doc (`../carmen-frontend-e2e/docs/persona-doc/System Process/proc-03-cost-calculation.md`) still describes reality: it "does not generate GL journal entries."
 - **No code-enforced "method locked, drain required" guard exists** — see [02-business-rules](./02-business-rules.md) § 2 (`COST_VAL_009` removed).
 - **No lock/re-open endpoint exists in this module** (`period-end.controller.ts`: `find-all` / `find-current` / `close` / `find-review` only).
 
@@ -34,5 +34,5 @@ This mirrors the confirmed-fabricated Finance persona findings in [inventory/04-
 
 ## 3. References
 
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/period-end/period-end.controller.ts`, `.../inventory-transaction/inventory-transaction.service.ts`.
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/period-end/period-end.controller.ts`, `.../inventory-transaction/inventory-transaction.service.ts`.
 - Parent overview: [04-test-scenarios](./04-test-scenarios.md); user-flow counterpart: [03-user-flow-finance](./03-user-flow-finance.md).
