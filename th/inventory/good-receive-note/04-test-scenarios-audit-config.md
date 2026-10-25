@@ -13,7 +13,7 @@ editor: markdown
 > **At a Glance**
 > **สถานะ:** หน้าแก้ไข — ไม่พบ GRN configuration console เฉพาะทาง, panel RBAC, หรือเครื่องมือ lot-recall สำหรับ good-receive-note ในซอร์สปัจจุบัน
 
-> ⚠️ **แก้ไขใหญ่ในรอบนี้ (2026-07-15)** เวอร์ชันก่อนหน้าของหน้านี้ list scenario ประมาณ 29 รายการ ครอบคลุม "GRN configuration console" ของ Sysadmin (ตัวแก้ไขรูปแบบเลข lot, panel บทบาท RBAC/เกณฑ์อนุมัติ, การดูแลรหัสภาษี/สกุลเงิน/เหตุผล, การ cutover integration ไปยัง PO/Inventory/Finance/Vendor) และเครื่องมือ lot-recall trace ของ Auditor พร้อมการอนุมัติ export แบบ sensitive-field จาก Controller/DPO ไม่พบ route, component ฝั่ง frontend หรือ endpoint ฝั่ง backend ที่ตรงกันใน `carmen-inventory-frontend-react` หรือ `carmen-turborepo-backend-v2` และไม่พบ route ดังกล่าวใน `.specs/resync-2026-07-15-routes-inventory.txt`
+> ⚠️ **แก้ไขใหญ่ในรอบนี้ (2026-07-15)** เวอร์ชันก่อนหน้าของหน้านี้ list scenario ประมาณ 29 รายการ ครอบคลุม "GRN configuration console" ของ Sysadmin (ตัวแก้ไขรูปแบบเลข lot, panel บทบาท RBAC/เกณฑ์อนุมัติ, การดูแลรหัสภาษี/สกุลเงิน/เหตุผล, การ cutover integration ไปยัง PO/Inventory/Finance/Vendor) และเครื่องมือ lot-recall trace ของ Auditor พร้อมการอนุมัติ export แบบ sensitive-field จาก Controller/DPO ไม่พบ route, component ฝั่ง frontend หรือ endpoint ฝั่ง backend ที่ตรงกันใน `carmen-frontend` หรือ `carmen-turborepo-backend` และไม่พบ route ดังกล่าวใน `.specs/resync-2026-07-15-routes-inventory.txt`
 
 | กลุ่ม scenario ที่เคยกล่าวอ้าง | ข้อสรุป |
 | --- | --- |
@@ -22,7 +22,7 @@ editor: markdown
 | AUD-PERM-01..07, AUD-VAL-01..08, AUD-EDGE-01..06 | ทั้งหมดสร้างขึ้นบนพื้นฐาน configuration console / เครื่องมือ lot-recall ที่ยังไม่ยืนยันเดียวกัน; ไม่ได้สร้างใหม่ |
 | การ co-authorisation post-commit void ของ `GRN_POST_010` (Inventory Manager + Finance) ที่อ้างตลอดทั้งหน้า | **ยังไม่ implement — การ void หลัง commit ถูกปฏิเสธทันที** (`GRN_COMMITTED_NOT_VOIDABLE`, `good-received-note.service.ts:2254-2256`); ดู [02-business-rules.md](./02-business-rules.md) `GRN_POST_010` และ [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) |
 
-> **ความครอบคลุมที่รันได้:** block permission-denial ใน `../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts` (fixture บทบาท Requestor, ผู้ใช้ `carmensoftware.dev`, BU `GR2VYNKQ`); ส่วนสถานะ / สิทธิ์ของ `docs/test-cases/gaps/501-grn-core-gap.md`
+> **ความครอบคลุมที่รันได้:** block permission-denial ใน `../carmen-frontend-e2e/tests/501-grn.spec.ts` (fixture บทบาท Requestor, ผู้ใช้ `carmensoftware.dev`, BU `GR2VYNKQ`); ส่วนสถานะ / สิทธิ์ของ `docs/test-cases/gaps/501-grn-core-gap.md`
 
 ## สิ่งที่ควรทดสอบแทน
 
@@ -36,4 +36,4 @@ editor: markdown
 - ภาพรวม parent: [04-test-scenarios.md](./04-test-scenarios.md) — ตาราง scenario ข้าม persona ที่แก้ไขแล้ว
 - Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — การแก้ไขฉบับเต็มและการค้นหาที่ดำเนินการ
 - Sibling: [04-test-scenarios-receiver.md](./04-test-scenarios-receiver.md) — การสร้าง lot ในฐานะส่วนหนึ่งของ flow commit ของ Receiver
-- E2E spec: `../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts` — pattern permission-denial (fixture บทบาท Requestor) คือความครอบคลุมจริงที่ใกล้เคียงขอบเขต "Auditor read-only" ที่สุด; ไม่มี describe block สำหรับ lot-recall หรือ configuration console ในไฟล์นี้
+- E2E spec: `../carmen-frontend-e2e/tests/501-grn.spec.ts` — pattern permission-denial (fixture บทบาท Requestor) คือความครอบคลุมจริงที่ใกล้เคียงขอบเขต "Auditor read-only" ที่สุด; ไม่มี describe block สำหรับ lot-recall หรือ configuration console ในไฟล์นี้

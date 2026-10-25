@@ -82,6 +82,6 @@ Credit term เข้ารหัสข้อตกลงการจ่าย�
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_credit_term` (line ~5527)
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/032-credit-term.spec.ts` + `docs/test-cases/gaps/032-credit-term-gap.md`
-- **Frontend:** `../carmen-inventory-frontend-react/routes/config/credit-term/`
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_credit_term` (line ~5527)
+- **E2E:** `../carmen-frontend-e2e/tests/032-credit-term.spec.ts` + `docs/test-cases/gaps/032-credit-term-gap.md`
+- **Frontend:** `../carmen-frontend/routes/config/credit-term/`

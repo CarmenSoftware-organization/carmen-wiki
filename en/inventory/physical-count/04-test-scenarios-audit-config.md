@@ -29,6 +29,6 @@ See [03-user-flow-audit-config.md](/en/inventory/physical-count/03-user-flow-aud
 
 ## 4. References
 
-- **Frontend:** `../carmen-inventory-frontend-react/constant/permissions.ts`.
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts`.
+- **Frontend:** `../carmen-frontend/constant/permissions.ts`.
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts`.
 - Related: [physical-count/03-user-flow-audit-config](/en/inventory/physical-count/03-user-flow-audit-config) (parallel correction page on the user-flow side).

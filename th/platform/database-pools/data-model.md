@@ -11,13 +11,13 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # พูลฐานข้อมูล — โมเดลข้อมูล (Data Model)
 
 > **Source of truth:** อ่านสิ่งเหล่านี้ก่อนแก้ไขหน้านี้
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma:1382-1411` — `model tb_database_pool`
-> - `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/database-pool/database-pool.service.ts` — `POOL_SELECT`, `maskPassword`, `passwordPatch`, `create`, `update`, `delete` (อ่านครบ)
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrate.database-pool.ts` — สคริปต์ backfill `db_connection` → pool ครั้งเดียว (อ่านครบ)
-> - `../carmen-turborepo-backend-v2/packages/secret-crypto/src/crypto.util.ts` — `encryptSecret`/`decryptSecret`
-> - `../carmen-turborepo-backend-v2/packages/db-connection-utils/src/tenant-url.ts` — `buildTenantUrl`/`resolveTenantUrl`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma:1382-1411` — `model tb_database_pool`
+> - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/database-pool/database-pool.service.ts` — `POOL_SELECT`, `maskPassword`, `passwordPatch`, `create`, `update`, `delete` (อ่านครบ)
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrate.database-pool.ts` — สคริปต์ backfill `db_connection` → pool ครั้งเดียว (อ่านครบ)
+> - `../carmen-turborepo-backend/packages/secret-crypto/src/crypto.util.ts` — `encryptSecret`/`decryptSecret`
+> - `../carmen-turborepo-backend/packages/db-connection-utils/src/tenant-url.ts` — `buildTenantUrl`/`resolveTenantUrl`
 >
-> ยืนยันกับ `carmen-platform` HEAD `157a65e` (2026-09-04) และ `carmen-turborepo-backend-v2` HEAD `937cf5ac4` (2026-09-06)
+> ยืนยันกับ `carmen-backstage` HEAD `157a65e` (2026-09-04) และ `carmen-turborepo-backend` HEAD `937cf5ac4` (2026-09-06)
 
 ## 1. ภาพรวม
 
@@ -34,7 +34,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 | `port` | `Int @default(5432) @db.Integer` | ไม่ | TCP port ฟอร์มสร้าง/แก้ไขตรวจสอบฝั่ง client ว่าเป็นจำนวนเต็ม 1–65535 และตั้งเป็น 5432 โดยดีฟอลต์ถ้าปล่อยว่างตอน submit |
 | `database` | `String @db.VarChar` | ไม่ | ชื่อฐานข้อมูลบนเซิร์ฟเวอร์นั้น |
 | `username` | `String @db.VarChar` | ไม่ | Username สำหรับเชื่อมต่อ — เป็น login ฐานข้อมูลดิบ ไม่ถูกตรวจว่าเป็นอีเมล (case `validateField('username')` ที่แชร์กัน เขียนไว้สำหรับโมดูล Users จงใจไม่ถูกนำมาใช้ซ้ำที่นี่) |
-| `password` | `String @db.VarChar` | ไม่ | Ciphertext จาก `encryptSecret()` (AES-256-GCM, `enc:v1:<iv_b64>:<authTag_b64>:<ciphertext_b64>`, `../carmen-turborepo-backend-v2/packages/secret-crypto/src/crypto.util.ts`) ดู §4 สำหรับวงจรเต็ม — **ค่า plaintext ของมันไม่เคยปรากฏใน response ของ API, ในหน้านี้ หรือในวิกินี้เลย** |
+| `password` | `String @db.VarChar` | ไม่ | Ciphertext จาก `encryptSecret()` (AES-256-GCM, `enc:v1:<iv_b64>:<authTag_b64>:<ciphertext_b64>`, `../carmen-turborepo-backend/packages/secret-crypto/src/crypto.util.ts`) ดู §4 สำหรับวงจรเต็ม — **ค่า plaintext ของมันไม่เคยปรากฏใน response ของ API, ในหน้านี้ หรือในวิกินี้เลย** |
 | `is_active` | `Boolean @default(true) @db.Boolean` | ไม่ | ดู §3 สำหรับผลของมันต่อ picker ของ Business Units และการ resolve connection |
 | `note` | `String?` | ใช่ | คนละคอลัมน์กับ `description` (`schema.prisma:1398`) สคริปต์ backfill เดิมเขียนค่าตายตัว `'สร้างอัตโนมัติจาก tb_business_unit.db_connection'` ลงไปโดยอัตโนมัติ (`migrate.database-pool.ts:412`) บนทุก pool ที่มันสร้างจาก connection blob เดิมของ BU — เป็นสัญญาณว่าแถวนั้นไม่ได้ถูกตั้งค่าด้วยมือ ไม่ใช่ช่องคอมเมนต์อเนกประสงค์ แม้ว่าฟอร์มสร้าง/แก้ไขจะให้ผู้ดูแลตั้งหรือเปลี่ยนค่านี้เองในภายหลังได้อย่างอิสระก็ตาม |
 | `doc_version` | `Int @default(0) @db.Integer` | ไม่ | ตัวนับ optimistic lock **จำเป็นต้องส่งทุกครั้งที่ `PUT` ไม่มีข้อยกเว้น** — `DatabasePoolUpdateDto` ไม่มีค่า default และ backend ปฏิเสธการอัปเดตที่ `data.doc_version` ไม่ใช่ตัวเลข (`COMMON_DOC_VERSION_REQUIRED`) ต่างจาก entity พี่น้องบางตัวที่ตีความ token ที่หายไปว่า "ข้ามการเช็ค conflict" |
@@ -61,7 +61,7 @@ tb_database_pool  1 ─── M  tb_business_unit   (ผ่าน tb_business_un
 2. **ตอนเก็บ** `encryptSecret()` สร้าง `enc:v1:<iv>:<authTag>:<ciphertext>` ภายใต้ `SECRET_ENCRYPTION_KEY` (32 ไบต์ hex หรือ base64 อ่านครั้งเดียวแล้ว cache ไว้ต่อ process) key นี้ไม่มีค่า default ระดับโค้ด: `getKey()` throw ทันทีถ้า env var ไม่ถูกตั้ง และทั้ง `config.env.ts` ของ `micro-cluster` และ `micro-business` ประกาศให้เป็น string ที่จำเป็นและห้ามว่างเปล่าตอน startup ไม่ใช่ตัวเลือกที่มี fallback
 3. **ในทุก API response** `maskPassword()` (`database-pool.service.ts:40-42`) แทนที่ ciphertext ด้วยสตริงตายตัว `••••••` ก่อนที่แถวจะออกจาก service เลย — list, get และแถวที่คืนจาก create/update ถูกมาสก์เหมือนกันหมด **ไม่มี endpoint ใดในโค้ดชุดนี้เปิดเผยค่าที่ถอดรหัสแล้ว หรือแม้แต่ ciphertext เลย**
 4. **ตอนอัปเดต** `passwordPatch()` (`database-pool.service.ts:50-54`) ตีความค่าที่ส่งเข้ามาเป็น `undefined` **หรือสตริงมาสก์เป๊ะ ๆ** ว่า "ไม่เปลี่ยนแปลง" (คืน `{}` ปล่อย ciphertext เดิมไว้) ค่าว่างเปล่าหรือค่าที่ไม่ใช่ string ถูกปฏิเสธว่าไม่ถูกต้อง มีแต่ plaintext ใหม่ที่ต่างจากเดิมจริง ๆ เท่านั้นที่จะถูกเข้ารหัสใหม่แล้วเก็บ นี่คือสิ่งที่ทำให้ฟอร์มแก้ไขส่งค่าที่มาสก์หรือว่างกลับไปได้เสมอโดยไม่เสี่ยงเขียนทับรหัสผ่านจริงด้วยตัวมาสก์เองโดยไม่ตั้งใจ
-5. **ตอนใช้งานจริง** ไม่มีอะไรในโมดูลนี้ถอดรหัสรหัสผ่านของ pool เอง — สิ่งนั้นเกิดขึ้นก็ต่อเมื่อ *ผู้บริโภค* resolve connection ของ tenant [Tenant Migrations](/th/platform/tenant-migrations/data-model) §3 บันทึกเส้นทางนั้นไว้: `resolveTenantUrl()` (`../carmen-turborepo-backend-v2/packages/db-connection-utils/src/tenant-url.ts`) เรียก `decryptSecret()` แล้ว throw เมื่อล้มเหลว แทนที่จะถอยไปเดาว่าเป็น plaintext — "ไม่มี fallback โดยตั้งใจ" ตาม comment ของฟังก์ชันนั้นเอง — จากนั้น `buildTenantUrl()` ประกอบ `postgresql://{user}:{password}@{host}:{port}/{database}?schema={db_schema}` โดย `host`/`port` ถูกตรวจสอบ (`isSafeHost`/`isSafePort`) และส่วนอื่นทุกส่วนถูก percent-encode
+5. **ตอนใช้งานจริง** ไม่มีอะไรในโมดูลนี้ถอดรหัสรหัสผ่านของ pool เอง — สิ่งนั้นเกิดขึ้นก็ต่อเมื่อ *ผู้บริโภค* resolve connection ของ tenant [Tenant Migrations](/th/platform/tenant-migrations/data-model) §3 บันทึกเส้นทางนั้นไว้: `resolveTenantUrl()` (`../carmen-turborepo-backend/packages/db-connection-utils/src/tenant-url.ts`) เรียก `decryptSecret()` แล้ว throw เมื่อล้มเหลว แทนที่จะถอยไปเดาว่าเป็น plaintext — "ไม่มี fallback โดยตั้งใจ" ตาม comment ของฟังก์ชันนั้นเอง — จากนั้น `buildTenantUrl()` ประกอบ `postgresql://{user}:{password}@{host}:{port}/{database}?schema={db_schema}` โดย `host`/`port` ถูกตรวจสอบ (`isSafeHost`/`isSafePort`) และส่วนอื่นทุกส่วนถูก percent-encode
 6. **ที่มาของการ backfill** สคริปต์ครั้งเดียว `migrate.database-pool.ts` (§1) เป็นจุดเดียวในโค้ดชุดนี้ที่เคยอ่านรหัสผ่านแบบ plaintext จาก `db_connection` ตรง ๆ เป็น dry-run โดยดีฟอลต์ ต้องใส่ `--apply` ถึงจะเขียนจริง และมีโหมด `--verify` แยกต่างหากที่ถอดรหัสผ่านของทุก pool ที่ยังไม่ถูกลบแล้วรายงานว่า pool *ชื่อ* ไหน (ไม่เคย log ciphertext หรือ plaintext) ถอดรหัสไม่ผ่านภายใต้ key ที่ตั้งค่าอยู่ปัจจุบัน — ตั้งใจให้รันครั้งเดียวก่อน migration ที่ลบ `db_connection` จะรัน สคริปต์นี้รันเส้นทาง scan/backfill ไม่ได้อีกแล้ววันนี้: มันต้องพึ่งคอลัมน์ `db_connection` ที่ migration `7f825bb20` ลบไปแล้ว มันยังอยู่ในโปรเจกต์แค่เป็นบันทึกว่าการย้ายข้อมูลครั้งเดียวนั้นทำอย่างไร ตามที่ comment หัวไฟล์ของมันเองระบุ
 
 ไม่พบรหัสผ่าน, connection string หรือ encryption key ที่ฝังไว้แบบ hardcode ที่ใดเลยในฝั่ง frontend, backend หรือสคริปต์ backfill ของโมดูลนี้ — ตรวจแล้วทั้ง `emptyForm`/`buildPayload` ของ `DatabasePoolEdit.tsx` (มีแต่สตริงว่างเปล่า ไม่มี credential ที่ฝังไว้), `database-pool.service.ts` (เข้ารหัสสิ่งที่ส่งเข้ามาเท่านั้น ไม่มีค่า fallback) และ `crypto.util.ts` (throw แทนที่จะใช้ค่า default) เรื่องนี้ควรพูดให้ชัดเพราะโมดูลพี่น้องในวิกินี้เคยถูกแก้ไขจากการกล่าวอ้างแบบนี้พอดี: ดู [Platform Migrations](/th/platform/platform-migrations) §3.1 ที่ `PLATFORM_DEPLOY_TOKEN` ของมัน**มี** ค่า default เป็น string ว่างใน `config.env.ts` จริง
@@ -93,13 +93,13 @@ tb_database_pool  1 ─── M  tb_business_unit   (ผ่าน tb_business_un
 
 ## 8. แหล่งอ้างอิง
 
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma:1382-1411` — `model tb_database_pool`
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/database-pool/database-pool.service.ts` — อ่านครบ
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/database-pool/database-pool.controller.ts` — RPC message handler อ่านครบ
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_database-pools/platform_database-pools.service.ts` — RPC proxy จาก gateway
-- `../carmen-turborepo-backend-v2/packages/error-catalog/src/catalog.ts:515-517`
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260813000000_database_pool_additive/` (commit `343b8c16b`) และ `.../20260813010000_database_pool_drop_db_connection/` (commit `7f825bb20`)
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrate.database-pool.ts` — อ่านครบ
-- `../carmen-turborepo-backend-v2/packages/secret-crypto/src/crypto.util.ts`, `../carmen-turborepo-backend-v2/packages/db-connection-utils/src/tenant-url.ts`
-- `../carmen-platform/src/pages/DatabasePoolEdit.tsx`, `src/utils/databasePool.ts`
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma:1382-1411` — `model tb_database_pool`
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/database-pool/database-pool.service.ts` — อ่านครบ
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/database-pool/database-pool.controller.ts` — RPC message handler อ่านครบ
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform_database-pools/platform_database-pools.service.ts` — RPC proxy จาก gateway
+- `../carmen-turborepo-backend/packages/error-catalog/src/catalog.ts:515-517`
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260813000000_database_pool_additive/` (commit `343b8c16b`) และ `.../20260813010000_database_pool_drop_db_connection/` (commit `7f825bb20`)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrate.database-pool.ts` — อ่านครบ
+- `../carmen-turborepo-backend/packages/secret-crypto/src/crypto.util.ts`, `../carmen-turborepo-backend/packages/db-connection-utils/src/tenant-url.ts`
+- `../carmen-backstage/src/pages/DatabasePoolEdit.tsx`, `src/utils/databasePool.ts`
 - [Business Units — Data Model](/th/platform/business-units/data-model) §2.4; [Tenant Migrations — Data Model](/th/platform/tenant-migrations/data-model) §3 — ตรวจสอบไขว้กันใน §5 ข้างบน

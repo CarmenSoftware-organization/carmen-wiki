@@ -46,7 +46,7 @@ stateDiagram-v2
     Inactive --> [*]: ลบ (ถ้าไม่มีสูตร/หมวดหมู่ย่อย)
 ```
 
-> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/categories/FD-categories.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/master/recipe-category/recipe-category.service.ts:387-406` (2026-09-28) · Changes: dropped the source's `Draft` state — the source's own note flags it "Not used in current implementation"; categories are created directly `is_active = true` (see § 5.1).
+> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/categories/FD-categories.md` · verified against `carmen-turborepo-backend/apps/micro-business/src/master/recipe-category/recipe-category.service.ts:387-406` (2026-09-28) · Changes: dropped the source's `Draft` state — the source's own note flags it "Not used in current implementation"; categories are created directly `is_active = true` (see § 5.1).
 
 ## 3. การตรวจสอบและ Error
 
@@ -109,8 +109,8 @@ stateDiagram-v2
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_recipe_category` (lines ~5314-5350)
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/operation-plan/category/` (`recipe-category-component.tsx`, `use-recipe-category-table.tsx`, `recipe-category-form-schema.ts`); type `types/recipe-category.ts`
-- **Gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_recipe-categories/config_recipe-categories.controller.ts` (`@Serialize(RecipeCategoryResponseSchema)`, `@ExpandRefs` ตอนเขียน), `swagger/`
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/110-op-category.spec.ts`
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_recipe_category` (lines ~5314-5350)
+- **Frontend route:** `../carmen-frontend/routes/operation-plan/category/` (`recipe-category-component.tsx`, `use-recipe-category-table.tsx`, `recipe-category-form-schema.ts`); type `types/recipe-category.ts`
+- **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_recipe-categories/config_recipe-categories.controller.ts` (`@Serialize(RecipeCategoryResponseSchema)`, `@ExpandRefs` ตอนเขียน), `swagger/`
+- **E2E:** `../carmen-frontend-e2e/tests/110-op-category.spec.ts`
 - **Concept docs:** `../carmen/docs/recipe/setup-pages-spec.md`

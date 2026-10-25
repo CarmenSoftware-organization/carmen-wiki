@@ -19,7 +19,7 @@ An earlier draft of this wiki module described a third persona group for spot ch
 
 ## 2. What the Source Actually Shows
 
-A targeted search of the frontend (`../carmen-inventory-frontend-react/routes/inventory-management/spot-check/`), backend (`../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check*`), and the Bruno API collection (`../carmen-turborepo-backend-bruno/collections/carmen-inventory/inventory/spot-check*`) found no matching route, permission key, workflow stage, or configuration screen for any of the claimed sub-roles.
+A targeted search of the frontend (`../carmen-frontend/routes/inventory-management/spot-check/`), backend (`../carmen-turborepo-backend/apps/micro-business/src/inventory/spot-check*`), and the Bruno API collection (`../carmen-turborepo-backend-bruno/collections/carmen-inventory/inventory/spot-check*`) found no matching route, permission key, workflow stage, or configuration screen for any of the claimed sub-roles.
 
 | Claim | Status | What the source shows |
 |---|---|---|
@@ -37,7 +37,7 @@ A targeted search of the frontend (`../carmen-inventory-frontend-react/routes/in
 
 ## 4. References
 
-- **Frontend:** `../carmen-inventory-frontend-react/constant/permissions.ts`; `routes/inventory-management/spot-check/`.
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts`.
+- **Frontend:** `../carmen-frontend/constant/permissions.ts`; `routes/inventory-management/spot-check/`.
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/spot-check/spot-check.service.ts`.
 - **API contracts:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/inventory/spot-check/`.
 - Related: [spot-check/03-user-flow](/en/inventory/spot-check/03-user-flow) (overview), [spot-check/04-test-scenarios-audit-config](/en/inventory/spot-check/04-test-scenarios-audit-config) (parallel correction page on the test-scenarios side).

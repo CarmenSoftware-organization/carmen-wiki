@@ -74,10 +74,10 @@ The system defines no inventory-module roles — access is by permission key (`c
 
 - Concepts: `../carmen/docs/inventory-management/`
 - Concepts: `../carmen/docs/Inventory/`
-- Frontend: `../carmen-inventory-frontend-react/`
-- Backend: `../carmen-turborepo-backend-v2/`
+- Frontend: `../carmen-frontend/`
+- Backend: `../carmen-turborepo-backend/`
 - API contracts: `../carmen-turborepo-backend-bruno/`
-- E2E tests: `../carmen-inventory-frontend-e2e/`
+- E2E tests: `../carmen-frontend-e2e/`
 
 ## 7. Pages in This Module
 

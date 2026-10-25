@@ -13,10 +13,10 @@ editor: markdown
 > **At a Glance**
 > **Persona:** Purchaser (Procurement Officer + Department Manager) &nbsp;·&nbsp; **โมดูล:** [good-receive-note](/th/inventory/good-receive-note) &nbsp;·&nbsp; **จำนวน scenario:** ~12
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **ความครอบคลุม E2E:** map ไปยัง `501-grn.spec.ts` ใน `../carmen-inventory-frontend-e2e/`
+> **ความครอบคลุม E2E:** map ไปยัง `501-grn.spec.ts` ใน `../carmen-frontend-e2e/`
 > **ตรวจสอบซ้ำ 2026-09-22:** PO เลื่อนตอน **commit** ไม่ใช่ตอน save; สถานะ PO คือ `approved` / `sent_or_print` / `partial` / `completed`; ตอนนี้มีการตรวจ price-deviation เทียบ **ราคา PO** ตอน save (`GRN_VAL_007`) — ยังไม่มีการตรวจ pricelist ไม่มี `accepted_qty` ไม่มี three-way match และไม่มี segregation of duties
 
-> **ความครอบคลุมที่รันได้:** `../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts` (76 case; กลุ่มที่เกี่ยวกับ Purchaser list ใน §5) และ `docs/test-cases/gaps/501-grn-core-gap.md` (62) — case permission-denial ใช้ fixture บทบาท Requestor
+> **ความครอบคลุมที่รันได้:** `../carmen-frontend-e2e/tests/501-grn.spec.ts` (76 case; กลุ่มที่เกี่ยวกับ Purchaser list ใน §5) และ `docs/test-cases/gaps/501-grn-core-gap.md` (62) — case permission-denial ใช้ fixture บทบาท Requestor
 
 หน้านี้จับ test scenario ที่ persona Purchaser (**Purchaser / Procurement Officer** ที่ออก PO ต้นทาง บวก subset **Department Manager**) ขับโดยตรงในโมดูล `good-receive-note` Purchaser เป็นผู้มีส่วนร่วมแบบ **review-only** บน GRN — **ไม่** สร้าง GRN ที่ dock, **ไม่** save และ **ไม่** commit (commit คือสิ่งที่โพสต์ inventory และเลื่อน PO — ดู [04-test-scenarios-receiver.md](./04-test-scenarios-receiver.md)) การ scope "PO ของตัวเอง" ด้านล่างเป็นธรรมเนียมการทำงาน — backend ไม่ได้กรอง list GRN ตาม `buyer_id`
 
@@ -61,4 +61,4 @@ editor: markdown
 - Sibling: [04-test-scenarios-finance.md](./04-test-scenarios-finance.md) — หน้าแก้ไข: เหตุผลที่ไม่มี test scenario สำหรับ handoff credit-note / three-way-match
 - กฎธุรกิจที่ตรวจสอบ: [02-business-rules.md](./02-business-rules.md) — การแยกหน้าที่ (`GRN_AUTH_010` ทำเครื่องหมายว่ายังไม่ยืนยันในรอบนี้) อ้างใน PUR-PERM-03, PUR-VAL-01, PUR-VAL-02
 - Cross-link: [purchase-order](/th/inventory/purchase-order) — โมดูลต้นทางที่ persona นี้เป็นเจ้าของ; แหล่งของ `order_price`, `po_status` (`approved` / `sent_or_print` / `partial` / `completed`) และ activity log
-- E2E spec: `../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts` (76 case) กลุ่มที่เกี่ยวกับ Purchaser: **TC-GRN-010001** (View GRN List), **TC-GRN-010003** (Insufficient Permissions), **TC-GRN-080005** (Edit Line Item — denial), **TC-GRN-110002** (No Permission to Commit), **TC-GRN-040002 / 040004** (Create from Multiple POs — stub; case จริงของ wizard อยู่ใน `docs/test-cases/gaps/501-grn-from-po-gap.md`)
+- E2E spec: `../carmen-frontend-e2e/tests/501-grn.spec.ts` (76 case) กลุ่มที่เกี่ยวกับ Purchaser: **TC-GRN-010001** (View GRN List), **TC-GRN-010003** (Insufficient Permissions), **TC-GRN-080005** (Edit Line Item — denial), **TC-GRN-110002** (No Permission to Commit), **TC-GRN-040002 / 040004** (Create from Multiple POs — stub; case จริงของ wizard อยู่ใน `docs/test-cases/gaps/501-grn-from-po-gap.md`)

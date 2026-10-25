@@ -30,6 +30,6 @@ dateCreated: 2026-05-15T12:30:00.000Z
 
 ## 3. References
 
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/` — ไม่พบ controller เฉพาะ audit สำหรับข้อมูล cost-layer
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/` — ไม่พบ controller เฉพาะ audit สำหรับข้อมูล cost-layer
 - Parent overview: [04-test-scenarios](./04-test-scenarios.md); คู่กัน user-flow: [03-user-flow-auditor](./03-user-flow-auditor.md)
 - Cross-link: [inventory/04-test-scenarios-audit-config](/th/inventory/inventory/04-test-scenarios-audit-config) — การแก้ไขเดียวกันที่ทำแล้วบนโมดูลพี่น้อง

@@ -26,7 +26,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 Two corrections to the previous version of this page:
 
-1. **The metadata table is `tb_file_tag`, not `tb_attachment`.** A repo-wide search found **zero references to `tb_attachment`** anywhere in `carmen-turborepo-backend-v2/apps` outside its own Prisma model declaration — no service, controller, or DTO reads or writes it. The actual file-upload path (`micro-file/src/files/files.service.ts`) uses `PrismaClient_FILE` from a wholly separate `@repo/prisma-shared-schema-file` database (the `CARMEN_FILE` schema) and writes one row per upload to **`tb_file_tag`** (`bu_code`, `file_token`, `object_name`, `original_name`, `content_type`, `size`, `reference_type`/`reference_id`/`reference_no`, free-form `tags` JSONB) — storage itself is **MinIO**, addressed via `minioClient.putObject`/`getObject`/`removeObject`/`presignedGetObject`, not a generic "S3-compatible" claim tied to `tb_attachment`. §5 below is corrected to describe `tb_file_tag`.
+1. **The metadata table is `tb_file_tag`, not `tb_attachment`.** A repo-wide search found **zero references to `tb_attachment`** anywhere in `carmen-turborepo-backend/apps` outside its own Prisma model declaration — no service, controller, or DTO reads or writes it. The actual file-upload path (`micro-file/src/files/files.service.ts`) uses `PrismaClient_FILE` from a wholly separate `@repo/prisma-shared-schema-file` database (the `CARMEN_FILE` schema) and writes one row per upload to **`tb_file_tag`** (`bu_code`, `file_token`, `object_name`, `original_name`, `content_type`, `size`, `reference_type`/`reference_id`/`reference_no`, free-form `tags` JSONB) — storage itself is **MinIO**, addressed via `minioClient.putObject`/`getObject`/`removeObject`/`presignedGetObject`, not a generic "S3-compatible" claim tied to `tb_attachment`. §5 below is corrected to describe `tb_file_tag`.
 2. **No server-side size or MIME validation.** `files.service.ts`'s `uploadFile()` calls `minioClient.putObject` with the client-supplied `mimetype` and buffer directly — there is no file-size check and no MIME/extension allow-list anywhere in that method. The 10 MB cap (`MAX_FILE_SIZE = 10 * 1024 * 1024` in `document-component.tsx`) and the picker's `accept` attribute are **frontend-only**; a caller that bypasses the browser (direct API call) can upload a larger file of any type. The claimed "defence-in-depth MIME sniffing server-side" was not found in code.
 
 ## 1. What & Who
@@ -131,11 +131,11 @@ Every transactional table that supports attachments (`tb_purchase_request`, `tb_
 
 ## 8. References
 
-- **Prisma (file schema — the real registry):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-file/prisma/schema.prisma` — `tb_file_tag` (lines ~19-49).
-- **Prisma (tenant schema — dead table, for contrast):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_attachment` (lines ~4797-4819); per-document `attachments` JSONB columns throughout.
-- **Backend gateway (proxy layer):** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/document-management/document-management.controller.ts` + `document-management.service.ts` — forwards to the `FILE_SERVICE` microservice over `files.*` TCP commands.
-- **Backend file microservice (actual storage + registry):** `../carmen-turborepo-backend-v2/apps/micro-file/src/files/files.controller.ts` + `files.service.ts` — MinIO client, `tb_file_tag` CRUD.
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/document/document.route.tsx` + `document-component.tsx`, `document-summary-bar.tsx`, `document-summary-sheet.tsx`, `document-reference-labels.ts`, `document-card.tsx`, `use-document-table.tsx`.
-- **Frontend hook:** `../carmen-inventory-frontend-react/routes/system-admin/document/use-document.ts` (moved from `hooks/` on 2026-08-28, `0d9757f3`) — `useDocument`, `useUploadDocument`, `useDeleteDocument`; `constant/api-endpoints.ts:108` `DOCUMENTS_SUMMARY`.
-- **Frontend type:** `../carmen-inventory-frontend-react/types/document.ts` — `DocumentFile`, `DocumentSummary`.
-- **E2E:** `../carmen-inventory-frontend-e2e/docs/test-cases/1107-document.md` — catalog only.
+- **Prisma (file schema — the real registry):** `../carmen-turborepo-backend/packages/prisma-shared-schema-file/prisma/schema.prisma` — `tb_file_tag` (lines ~19-49).
+- **Prisma (tenant schema — dead table, for contrast):** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_attachment` (lines ~4797-4819); per-document `attachments` JSONB columns throughout.
+- **Backend gateway (proxy layer):** `../carmen-turborepo-backend/apps/backend-gateway/src/application/document-management/document-management.controller.ts` + `document-management.service.ts` — forwards to the `FILE_SERVICE` microservice over `files.*` TCP commands.
+- **Backend file microservice (actual storage + registry):** `../carmen-turborepo-backend/apps/micro-file/src/files/files.controller.ts` + `files.service.ts` — MinIO client, `tb_file_tag` CRUD.
+- **Frontend route:** `../carmen-frontend/routes/system-admin/document/document.route.tsx` + `document-component.tsx`, `document-summary-bar.tsx`, `document-summary-sheet.tsx`, `document-reference-labels.ts`, `document-card.tsx`, `use-document-table.tsx`.
+- **Frontend hook:** `../carmen-frontend/routes/system-admin/document/use-document.ts` (moved from `hooks/` on 2026-08-28, `0d9757f3`) — `useDocument`, `useUploadDocument`, `useDeleteDocument`; `constant/api-endpoints.ts:108` `DOCUMENTS_SUMMARY`.
+- **Frontend type:** `../carmen-frontend/types/document.ts` — `DocumentFile`, `DocumentSummary`.
+- **E2E:** `../carmen-frontend-e2e/docs/test-cases/1107-document.md` — catalog only.

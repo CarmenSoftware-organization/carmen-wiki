@@ -78,7 +78,7 @@ graph LR
 
 ## 6. แหล่งอ้างอิง
 
-- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/physical-count/pc-entry-component.tsx`, `pc-review-component.tsx`, `pc-entry-header.tsx`, `pc-entry-notes-dialog.tsx`; `routes/inventory-management/shared/entry-item-row.tsx`, `review-component.tsx`
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (`save`, `reviewItems`, `submit`, `refresh`)
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count; manual catalog `docs/test-cases/750-physical-count.md` (case ของหน้า entry / review, ตรวจทานซ้ำ 2026-09-20)
+- **Frontend:** `../carmen-frontend/routes/inventory-management/physical-count/pc-entry-component.tsx`, `pc-review-component.tsx`, `pc-entry-header.tsx`, `pc-entry-notes-dialog.tsx`; `routes/inventory-management/shared/entry-item-row.tsx`, `review-component.tsx`
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (`save`, `reviewItems`, `submit`, `refresh`)
+- **E2E:** `../carmen-frontend-e2e/tests/` — ยังไม่มี spec physical-count; manual catalog `docs/test-cases/750-physical-count.md` (case ของหน้า entry / review, ตรวจทานซ้ำ 2026-09-20)
 - ที่เกี่ยวข้อง: [physical-count/03-user-flow](/th/inventory/physical-count/03-user-flow) (overview), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_VAL_004`–`007`, `PHC_POST_001`–`004`), [physical-count/03-user-flow-count-lead](/th/inventory/physical-count/03-user-flow-count-lead) (การเดินทางฝั่งหน้ารายการของ role เดียวกัน)

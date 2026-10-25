@@ -14,7 +14,7 @@ dateCreated: 2026-05-15T13:30:00.000Z
 > **Module:** [store-requisition](/en/inventory/store-requisition) &nbsp;·&nbsp; **Total scenarios:** cross-persona scenarios (corrected this pass, several removed as unconfirmed) + per-persona drill-downs &nbsp;·&nbsp; **Personas covered:** Requester, Approver, Fulfiller confirmed; "Receiver" and "Audit / Config" unconfirmed (correction stubs)
 > **Run order:** primary persona happy paths → cross-persona scenarios
 > **Each persona's drill-down is `04-test-scenarios-<role>.md`**
-> **Executable coverage (2026-09-22):** `../carmen-inventory-frontend-e2e/tests/701-sr.spec.ts` (46 executed cases, but only 2 real `expect()`s — see `docs/test-cases/gaps/701-sr-gap.md`, 62 gap cases) and `tests/720-stock-issue.spec.ts` (list / header / Issue button / Stock Movement tab; `docs/test-cases/gaps/720-stock-issue-gap.md`, 44 gap cases); generated narrative in `docs/user-stories/701-sr.md` and `720-stock-issue.md`. Stock replenishment: `tests/711-stock-replenishment.spec.ts` (33 cases). This page does not mirror those cases.
+> **Executable coverage (2026-09-22):** `../carmen-frontend-e2e/tests/701-sr.spec.ts` (46 executed cases, but only 2 real `expect()`s — see `docs/test-cases/gaps/701-sr-gap.md`, 62 gap cases) and `tests/720-stock-issue.spec.ts` (list / header / Issue button / Stock Movement tab; `docs/test-cases/gaps/720-stock-issue-gap.md`, 44 gap cases); generated narrative in `docs/user-stories/701-sr.md` and `720-stock-issue.md`. Stock replenishment: `tests/711-stock-replenishment.spec.ts` (33 cases). This page does not mirror those cases.
 
 ## 1. Overview
 
@@ -87,7 +87,7 @@ Gaps relative to the corrected Section 4: Scenario 12 (recipe-driven auto-create
 
 ## 6. References
 
-- [`../carmen-inventory-frontend-e2e/tests/701-sr.spec.ts`](../../../carmen-inventory-frontend-e2e/tests/701-sr.spec.ts) — canonical Playwright E2E spec (multi-role auth, all TC-SR-0xxxxx groups).
+- [`../carmen-frontend-e2e/tests/701-sr.spec.ts`](../../../carmen-frontend-e2e/tests/701-sr.spec.ts) — canonical Playwright E2E spec (multi-role auth, all TC-SR-0xxxxx groups).
 - Sibling: [03-user-flow.md](./03-user-flow.md) Section 4 — cross-persona handoffs that drive the integration scenarios above.
 - Sibling: [02-business-rules.md](./02-business-rules.md) Section 5 — posting rules invoked at the final workflow-stage advance and across approval handoffs.
 - Per-persona detail: [Requester](./04-test-scenarios-requester.md), [Approver](./04-test-scenarios-approver.md), [Fulfiller](./04-test-scenarios-fulfiller.md), [Receiver](./04-test-scenarios-receiver.md), [Audit / Config](./04-test-scenarios-audit-config.md).

@@ -64,9 +64,9 @@ Sysadmin การนิยามเวิร์กโฟลว์อาจม�
 
 ## 5. แหล่งข้อมูลอ้างอิง
 
-- **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
+- **Prisma tenant:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
 - **carmen/docs:** `../carmen/docs/workflow-permissions-system.md` (ประเภทของ role ในเวิร์กโฟลว์และ matrix ของสิทธิ์ที่บริโภคโดย [system-config/workflow](/th/inventory/system-config/workflow)) freeze ตั้งแต่ 2026-04-27 — implementation มีน้ำหนักกว่า
-- **Seed data:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/seed-data-a01/` — `tb_workflow.json`, `tb_config_running_code.json`, `tb_application_config.json`; `packages/prisma-shared-schema-tenant/src/seed-data/{running-code,email-templates}.ts`
+- **Seed data:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/seed-data-a01/` — `tb_workflow.json`, `tb_config_running_code.json`, `tb_application_config.json`; `packages/prisma-shared-schema-tenant/src/seed-data/{running-code,email-templates}.ts`
 - **Design spec:** `.specs/2026-05-16-master-config-design.md`
 - **Plan:** `.specs/2026-05-16-master-config-plan.md`
 

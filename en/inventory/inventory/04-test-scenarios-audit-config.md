@@ -35,5 +35,5 @@ This mirrors the confirmed-absent config-workbench pattern from the purchase-req
 
 ## 3. References
 
-- Frontend routes: `../carmen-inventory-frontend-react/routes/router.tsx`.
+- Frontend routes: `../carmen-frontend/routes/router.tsx`.
 - Parent overview: [04-test-scenarios](/en/inventory/inventory/04-test-scenarios); user-flow counterpart: [03-user-flow-audit-config](/en/inventory/inventory/03-user-flow-audit-config).

@@ -72,10 +72,10 @@ Type เฉพาะของหน้าจอที่ควรพูดถึ
 
 ## 7. แหล่งอ้างอิง
 
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/activity-log/activity-log.route.tsx`, `activity-log-component.tsx`, `activity-log-card.tsx`, `activity-log-detail-sheet.tsx`, `use-activity-log-table.tsx`
-- **Frontend hook/type:** `../carmen-inventory-frontend-react/hooks/use-activity-log.ts` — `useActivityLog()`, `useExportActivityLog()`; `types/activity-log.ts` — `ActivityLog`, `getLogCreatedAt()`
-- **Nav entry:** `../carmen-inventory-frontend-react/constant/module-list.ts:729-732` — `activityLog`, `permission: PERMISSIONS.system_admin.activity_log.view`, `licenseFeature: "system_admin.activity_log"`
-- **Backend:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/activity-logs/`; `enum_activity_action` (25 ค่า รวม `email_sent`) ใน `schema.prisma` ของ tenant
-- **E2E:** `../carmen-inventory-frontend-e2e/docs/test-cases/1109-activity-log.md` — แคตตาล็อกเท่านั้น
-- **Translations:** `../carmen-inventory-frontend-react/messages/en.json` — `systemAdmin.activityLog.*` (`title: "Activity Monitor"`), `modules.activityLog`
+- **Frontend route:** `../carmen-frontend/routes/system-admin/activity-log/activity-log.route.tsx`, `activity-log-component.tsx`, `activity-log-card.tsx`, `activity-log-detail-sheet.tsx`, `use-activity-log-table.tsx`
+- **Frontend hook/type:** `../carmen-frontend/hooks/use-activity-log.ts` — `useActivityLog()`, `useExportActivityLog()`; `types/activity-log.ts` — `ActivityLog`, `getLogCreatedAt()`
+- **Nav entry:** `../carmen-frontend/constant/module-list.ts:729-732` — `activityLog`, `permission: PERMISSIONS.system_admin.activity_log.view`, `licenseFeature: "system_admin.activity_log"`
+- **Backend:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/activity-logs/`; `enum_activity_action` (25 ค่า รวม `email_sent`) ใน `schema.prisma` ของ tenant
+- **E2E:** `../carmen-frontend-e2e/docs/test-cases/1109-activity-log.md` — แคตตาล็อกเท่านั้น
+- **Translations:** `../carmen-frontend/messages/en.json` — `systemAdmin.activityLog.*` (`title: "Activity Monitor"`), `modules.activityLog`
 - **ตาราง/enum/กติกา (ไม่ทำซ้ำที่นี่):** ดู [reporting-audit/activity](/th/inventory/reporting-audit/activity) §8 สำหรับการอ้างอิง Prisma/frontend/writer ของตัวเอง

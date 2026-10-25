@@ -44,7 +44,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 | คีย์สิทธิ์ | `activity_event.read` (แดชบอร์ดสรุป), `activity_event.detail` (หน้านี้) | `activity_log.read` (timeline), `activity_log.detail` (ค่าฟิลด์ก่อน/หลัง) |
 | หน้าจอ | `/analytics`, `/activity-events` | "View History" บน `BusinessUnitManagement`, `ClusterManagement`, `UserManagement`, `ReportTemplateEdit` และอื่น ๆ |
 
-permission catalog ระบุความแตกต่างนี้ไว้ตรง ๆ ในสี่แถวติดกัน (`seed.platform-permission.data.ts:95-100`, `../carmen-turborepo-backend-v2`):
+permission catalog ระบุความแตกต่างนี้ไว้ตรง ๆ ในสี่แถวติดกัน (`seed.platform-permission.data.ts:95-100`, `../carmen-turborepo-backend`):
 
 | Resource | Action | คำอธิบายใน catalog |
 | --- | --- | --- |
@@ -55,7 +55,7 @@ permission catalog ระบุความแตกต่างนี้ไว�
 
 มีคอมเมนต์ในซอร์สคั่นอยู่ระหว่างแถวของสอง resource นี้พอดี: "Record audit trail (`tb_activity`) — คนละตารางกับ `activity_event` ข้างบนซึ่งเป็น UI telemetry" (บรรทัด 97) สิ่งนี้ถูกยืนยันอย่างอิสระอีกชั้นด้วยวิธีที่ทั้งสองตารางถูกต่อสายไว้ ไม่ใช่แค่จากคอมเมนต์: `LogEventsModule` ซึ่งเป็นโมดูล audit-logging ทั่วไปที่คอมเมนต์ของตัวเองระบุว่ามีไว้สำหรับ "manual audit logging (login/logout, avatar, etc.)" เขียนลง `tb_activity` นั้น **ยกเว้น** `tb_activity`, `tb_activity_event`, และ `tb_activity_event_daily` ออกจาก list ของโมเดลที่มันติดตามโดยทั่วไปอย่างชัดเจน (`apps/micro-business/src/app.module.ts:211-222`, array `excludeModels`) — สองระบบนี้ถูกกันไม่ให้ป้อนเข้าหากันโดยระบุชื่อตรง ๆ ในโค้ดที่ไม่เกี่ยวอะไรกับสตริงสิทธิ์ของหน้าไหนเลย
 
-ไม่มีเอกสารเชิงแนวคิดของโมดูลนี้ใน `../carmen/docs` มาก่อน (ค้นด้วยคำว่า `activity_event`, `activity event`, `ui telemetry`, `activity-events` — ไม่พบ) ทุกอย่างในหน้านี้และหน้าย่อย data model มาจากการอ่าน implementation ของ `../carmen-platform`, `../carmen-turborepo-backend-v2`, `../carmen-inventory-frontend-react`, และ `../micro-cronjobs` โดยตรง
+ไม่มีเอกสารเชิงแนวคิดของโมดูลนี้ใน `../carmen/docs` มาก่อน (ค้นด้วยคำว่า `activity_event`, `activity event`, `ui telemetry`, `activity-events` — ไม่พบ) ทุกอย่างในหน้านี้และหน้าย่อย data model มาจากการอ่าน implementation ของ `../carmen-backstage`, `../carmen-turborepo-backend`, `../carmen-frontend`, และ `../micro-cronjobs` โดยตรง
 
 ## 3. หน้าจอ Explorer
 
@@ -72,7 +72,7 @@ permission catalog ระบุความแตกต่างนี้ไว�
 | App | `app_name` | **ได้** (ตั้งแต่ 2026-09-09) | ซ่อนบน layout แบบการ์ด/มือถือ (`meta: { card: 'hidden' }`) |
 | (actions) | — | ไม่ได้ | ไอคอนรูปตาเปิด detail sheet ของแถวนั้น |
 
-ตอนนี้ทุกคอลัมน์ข้อมูลเรียงได้ ตรงกับ whitelist ของ backend แบบหนึ่งต่อหนึ่ง — `buildSortable()` (`activity-event.service.ts:62`, `../carmen-turborepo-backend-v2/apps/micro-business/src/log/activity-event/`) รับ `server_ts`, `client_ts`, `page_path`, `event_type`, `user_name`, `bu_code`, `element_id`, `app_name` สี่คอลัมน์ที่เปิดเมื่อ 2026-09-09 (`../carmen-platform` PR #293 ส่วนหนึ่งของงาน "sortable column headers" ทั้ง repo ซึ่งมี design doc ที่ `docs/superpowers/specs/2026-09-09-sortable-column-headers-design.md`) คือคอลัมน์ "bucket B" — ค่าที่ backend ต้องเรียนรู้วิธีเรียงเอง เพราะ `orderBy` ของ Prisma เข้าไม่ถึงชื่อผู้ใช้ที่ resolve แล้วหรือ BU code ที่ join มา — และ SPA ตั้งใจปล่อยออกหลังจาก backend ขึ้น DEV แล้วเท่านั้น เพราะ backend เก่าตอบ 500 กับ key ที่ไม่รู้จัก `client_ts` ยังคงไม่มีคอลัมน์ตารางบนหน้านี้ (ปรากฏแค่ใน detail sheet, §3.3) จึงไม่มีทางเรียงผ่าน UI ได้ ทั้งที่ backend รองรับ ค่า `sort` ที่ไม่รู้จักหรือไม่อยู่ใน whitelist จะตกไปใช้ `server_ts:desc` ฝั่ง server เสมอ; ค่าที่เท่ากันจะตัดสินด้วย `id` ในทิศทางเดียวกันเสมอ (`activity-event.service.ts:349` คอมเมนต์ของตัวเอง: ทุกแถวที่ insert ในหนึ่ง batch มีค่า `server_ts` เท่ากันเป๊ะ เพราะค่า default `now()` ของ Postgres คำนวณที่เวลาเริ่ม transaction ไม่ใช่ต่อแถว จึง `server_ts` เพียงอย่างเดียวรับประกันขอบเขตการแบ่งหน้าที่เสถียรไม่ได้)
+ตอนนี้ทุกคอลัมน์ข้อมูลเรียงได้ ตรงกับ whitelist ของ backend แบบหนึ่งต่อหนึ่ง — `buildSortable()` (`activity-event.service.ts:62`, `../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/`) รับ `server_ts`, `client_ts`, `page_path`, `event_type`, `user_name`, `bu_code`, `element_id`, `app_name` สี่คอลัมน์ที่เปิดเมื่อ 2026-09-09 (`../carmen-backstage` PR #293 ส่วนหนึ่งของงาน "sortable column headers" ทั้ง repo ซึ่งมี design doc ที่ `docs/superpowers/specs/2026-09-09-sortable-column-headers-design.md`) คือคอลัมน์ "bucket B" — ค่าที่ backend ต้องเรียนรู้วิธีเรียงเอง เพราะ `orderBy` ของ Prisma เข้าไม่ถึงชื่อผู้ใช้ที่ resolve แล้วหรือ BU code ที่ join มา — และ SPA ตั้งใจปล่อยออกหลังจาก backend ขึ้น DEV แล้วเท่านั้น เพราะ backend เก่าตอบ 500 กับ key ที่ไม่รู้จัก `client_ts` ยังคงไม่มีคอลัมน์ตารางบนหน้านี้ (ปรากฏแค่ใน detail sheet, §3.3) จึงไม่มีทางเรียงผ่าน UI ได้ ทั้งที่ backend รองรับ ค่า `sort` ที่ไม่รู้จักหรือไม่อยู่ใน whitelist จะตกไปใช้ `server_ts:desc` ฝั่ง server เสมอ; ค่าที่เท่ากันจะตัดสินด้วย `id` ในทิศทางเดียวกันเสมอ (`activity-event.service.ts:349` คอมเมนต์ของตัวเอง: ทุกแถวที่ insert ในหนึ่ง batch มีค่า `server_ts` เท่ากันเป๊ะ เพราะค่า default `now()` ของ Postgres คำนวณที่เวลาเริ่ม transaction ไม่ใช่ต่อแถว จึง `server_ts` เพียงอย่างเดียวรับประกันขอบเขตการแบ่งหน้าที่เสถียรไม่ได้)
 
 การคลิกหัวคอลัมน์จะวนสถานะ เรียงจากน้อยไปมาก → มากไปน้อย → ไม่เรียง; พอถึง "ไม่เรียง" ระบบจะรีเซ็ต query กลับไปเป็น `server_ts:desc` และ remount ตาราง (bump `sortResetKey`, `ActivityEventManagement.tsx:223-226`) เพื่อให้ลูกศรบนหัวตารางกับลำดับแถวจริงตรงกันเสมอ — `DataTable` เองไม่มีวิธี controlled สำหรับสถานะ "ไม่เรียง" คอมโพเนนต์จึงถูกรีเซ็ตโดยตั้งใจ แทนที่จะปล่อยให้ลูกศรค้างผิดสถานะ
 
@@ -93,7 +93,7 @@ permission catalog ระบุความแตกต่างนี้ไว�
 
 ### 3.4 ใครเป็นคนเขียนแถวเหล่านี้
 
-ทั้งหน้านี้และ `carmen-platform` เองไม่ได้เขียนแถว `tb_activity_event` เลย — ยืนยันด้วยการ grep `../carmen-platform/src` หาการเรียก ingestion endpoint หรือ tracking client ใด ๆ ไม่พบเลยสักที่ แถวที่หน้านี้อ่านถูกเขียนโดยแอปพลิเคชัน *อื่น*: `lib/analytics.ts` ของ `../carmen-inventory-frontend-react` (เต็ม) ตัว batcher telemetry คลิก/page-view ที่ทำงานเฉพาะภายใน shell ที่ล็อกอินแล้วของแอปนั้น (`components/analytics-bridge.tsx`, mount ใน `RootLayout`/`ProtectedShell` จึงไม่มีอะไรถูก queue ก่อนล็อกอิน) มันดัก click ทุกครั้งบน `[data-track], button, a, [role="button"]` และทุกการเปลี่ยน route, batch สูงสุด 50 event ต่อ request (คิวจำกัดที่ 500, flush ทุก 10 วินาที, เมื่อคิวถึง 20 รายการ, หรือทันทีด้วย `keepalive` ตอนแท็บถูกซ่อน) แล้ว POST ไปที่ `/api/analytics-events` — ส่งต่อผ่าน `POST api/analytics-events` ของ gateway (`analytics-events.controller.ts`, `../carmen-turborepo-backend-v2`) ที่ guard ด้วย `KeycloakGuard` และ `AppIdGuard('analyticsEvent.create')` เข้าสู่ `ActivityEventService.createBatch()` (`../carmen-turborepo-backend-v2/apps/micro-business/src/log/activity-event/activity-event.service.ts:82-112`) ซึ่ง insert ผ่าน `createMany({ skipDuplicates: true })` โดยใช้ `event_id` ที่ client สร้างเป็น key เพื่อความ idempotent เมื่อ retry รายละเอียดครบทุกฟิลด์ — รวมถึงฟิลด์ไหนที่ client กำหนดได้และฟิลด์ไหนถูกประทับฝั่ง server — อยู่ที่หน้า [Data Model](/th/platform/activity-events/data-model)
+ทั้งหน้านี้และ `carmen-backstage` เองไม่ได้เขียนแถว `tb_activity_event` เลย — ยืนยันด้วยการ grep `../carmen-backstage/src` หาการเรียก ingestion endpoint หรือ tracking client ใด ๆ ไม่พบเลยสักที่ แถวที่หน้านี้อ่านถูกเขียนโดยแอปพลิเคชัน *อื่น*: `lib/analytics.ts` ของ `../carmen-frontend` (เต็ม) ตัว batcher telemetry คลิก/page-view ที่ทำงานเฉพาะภายใน shell ที่ล็อกอินแล้วของแอปนั้น (`components/analytics-bridge.tsx`, mount ใน `RootLayout`/`ProtectedShell` จึงไม่มีอะไรถูก queue ก่อนล็อกอิน) มันดัก click ทุกครั้งบน `[data-track], button, a, [role="button"]` และทุกการเปลี่ยน route, batch สูงสุด 50 event ต่อ request (คิวจำกัดที่ 500, flush ทุก 10 วินาที, เมื่อคิวถึง 20 รายการ, หรือทันทีด้วย `keepalive` ตอนแท็บถูกซ่อน) แล้ว POST ไปที่ `/api/analytics-events` — ส่งต่อผ่าน `POST api/analytics-events` ของ gateway (`analytics-events.controller.ts`, `../carmen-turborepo-backend`) ที่ guard ด้วย `KeycloakGuard` และ `AppIdGuard('analyticsEvent.create')` เข้าสู่ `ActivityEventService.createBatch()` (`../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/activity-event.service.ts:82-112`) ซึ่ง insert ผ่าน `createMany({ skipDuplicates: true })` โดยใช้ `event_id` ที่ client สร้างเป็น key เพื่อความ idempotent เมื่อ retry รายละเอียดครบทุกฟิลด์ — รวมถึงฟิลด์ไหนที่ client กำหนดได้และฟิลด์ไหนถูกประทับฝั่ง server — อยู่ที่หน้า [Data Model](/th/platform/activity-events/data-model)
 
 ## 4. บทบาทและสิทธิ์
 
@@ -109,45 +109,45 @@ permission catalog ระบุความแตกต่างนี้ไว�
 
 ### 4.2 ความหมายของ `activity_event.detail` เพียงลำพังสำหรับหน้านี้
 
-การถือ `activity_event.detail` เปิดหน้านี้ได้เลย — ผู้เรียกไม่จำเป็นต้องมี `activity_event.read` ด้วย ตาม role bundle ที่ seed ไว้ (`seed.platform-role-permission.data.ts:11-52`, `../carmen-turborepo-backend-v2`, อ่านซ้ำอย่างอิสระสำหรับหน้านี้ — ดู §6): **Platform Admin** ถือทั้งสองคีย์ผ่าน `activity_event.*` (บรรทัด 14); **Support Manager** ถือแค่ `activity_event.read` (บรรทัด 40) จึงเปิดหน้านี้ไม่ได้เลย (เจอ `<Forbidden />` ที่ route และไม่มีแถว nav ให้เห็นด้วยซ้ำ); **Support Staff** และ **Security Officer** ไม่ถือคีย์ไหนเลย ผลนี้ตรงกับที่ [Usage Analytics §4.4](/th/platform/usage-analytics) บันทึกไว้สำหรับสองคีย์เดียวกันทุกประการ ไม่มีจุดที่ต่างกัน
+การถือ `activity_event.detail` เปิดหน้านี้ได้เลย — ผู้เรียกไม่จำเป็นต้องมี `activity_event.read` ด้วย ตาม role bundle ที่ seed ไว้ (`seed.platform-role-permission.data.ts:11-52`, `../carmen-turborepo-backend`, อ่านซ้ำอย่างอิสระสำหรับหน้านี้ — ดู §6): **Platform Admin** ถือทั้งสองคีย์ผ่าน `activity_event.*` (บรรทัด 14); **Support Manager** ถือแค่ `activity_event.read` (บรรทัด 40) จึงเปิดหน้านี้ไม่ได้เลย (เจอ `<Forbidden />` ที่ route และไม่มีแถว nav ให้เห็นด้วยซ้ำ); **Support Staff** และ **Security Officer** ไม่ถือคีย์ไหนเลย ผลนี้ตรงกับที่ [Usage Analytics §4.4](/th/platform/usage-analytics) บันทึกไว้สำหรับสองคีย์เดียวกันทุกประการ ไม่มีจุดที่ต่างกัน
 
 ### 4.3 ชุดทดสอบ e2e: ไม่มี
 
-`../carmen-platform-e2e/tests/` (HEAD `a8e3b31`, 2026-08-25) ไม่มีโฟลเดอร์ `activity-events` เลย — ยืนยันโดย list โครงสร้าง repository ตรง ๆ ตรงกับ source map ของ Task 1 ที่ระบุว่าโมดูลนี้ไม่มี e2e รองรับ ทุกข้อความเชิงพฤติกรรมบนหน้านี้และหน้าย่อย data model มาจากการอ่าน implementation ของ `../carmen-platform`, `../carmen-turborepo-backend-v2`, `../carmen-inventory-frontend-react`, และ `../micro-cronjobs` ไม่ใช่จาก spec ที่รันได้จริง
+`../carmen-backstage-e2e/tests/` (HEAD `a8e3b31`, 2026-08-25) ไม่มีโฟลเดอร์ `activity-events` เลย — ยืนยันโดย list โครงสร้าง repository ตรง ๆ ตรงกับ source map ของ Task 1 ที่ระบุว่าโมดูลนี้ไม่มี e2e รองรับ ทุกข้อความเชิงพฤติกรรมบนหน้านี้และหน้าย่อย data model มาจากการอ่าน implementation ของ `../carmen-backstage`, `../carmen-turborepo-backend`, `../carmen-frontend`, และ `../micro-cronjobs` ไม่ใช่จาก spec ที่รันได้จริง
 
 ## 5. โมดูลที่เกี่ยวข้อง
 
 - [Usage Analytics](/th/platform/usage-analytics) — โมดูลพี่น้องที่เป็นแดชบอร์ดสรุปที่ `/analytics` gate ด้วย `activity_event.read`; เป็นเจ้าของการอธิบายสิทธิ์/guard/การจำกัดขอบเขตตาม cluster แบบเต็มที่ §4 ของหน้านี้อ้างถึง
 - [Platform RBAC](/th/platform/rbac) — permission catalog และนิยาม role bundle ที่อ้างถึงใน §2 และ §4
 - [Business Units](/th/platform/business-units) และ [Applications](/th/platform/applications) — เป็นแหล่งข้อมูลของ dropdown ตัวกรอง BU และ Application (§3.2) หน้านี้ไม่ได้เป็นเจ้าของ list ทั้งสอง
-- [Cronjobs](/th/platform/cronjobs) — หน้าจัดการ scheduled job ของแพลตฟอร์มเอง ซึ่ง (ตามที่ `platform_cronjobs.service.ts` ของ `../carmen-turborepo-backend-v2` อ่านและเขียนตาราง `"CRONJOBS"."Cronjob"` เดียวกัน) เป็น store เดียวกับที่เก็บนิยามงาน retention และ rollup ที่บันทึกไว้ในหน้า [Data Model](/th/platform/activity-events/data-model)
+- [Cronjobs](/th/platform/cronjobs) — หน้าจัดการ scheduled job ของแพลตฟอร์มเอง ซึ่ง (ตามที่ `platform_cronjobs.service.ts` ของ `../carmen-turborepo-backend` อ่านและเขียนตาราง `"CRONJOBS"."Cronjob"` เดียวกัน) เป็น store เดียวกับที่เก็บนิยามงาน retention และ rollup ที่บันทึกไว้ในหน้า [Data Model](/th/platform/activity-events/data-model)
 
 ## 6. แหล่งอ้างอิง
 
-path ทั้งหมดด้านล่างเป็น `../carmen-platform` (Platform admin SPA, HEAD `157a65e`, 2026-09-04) เว้นแต่จะระบุเป็นอย่างอื่น
+path ทั้งหมดด้านล่างเป็น `../carmen-backstage` (Platform admin SPA, HEAD `157a65e`, 2026-09-04) เว้นแต่จะระบุเป็นอย่างอื่น
 
-- `../carmen-platform/src/pages/ActivityEventManagement.tsx` (เต็ม 434 บรรทัด) — ตัวหน้า: ตัวกรอง (`fetchEvents`), คอลัมน์, handler การเรียงลำดับ/แบ่งหน้า, การ export CSV, panel debug
-- `../carmen-platform/src/pages/activityEvents/EventDetailSheet.tsx` (เต็ม 78 บรรทัด) — detail sheet รายแถวและปุ่ม "View this entire session"
-- `../carmen-platform/src/services/analyticsService.ts` — `getEvents()` ใช้ร่วมกับ Usage Analytics
-- `../carmen-platform/src/types/index.ts:1367-1386` — type `ActivityEvent` ฝั่ง frontend
-- `../carmen-platform/src/App.tsx:483-489` — การลงทะเบียน route `/activity-events`
-- `../carmen-platform/src/components/nav/platformNav.ts:32-33` — สองแถว nav ของ Analytics ที่อยู่ติดกัน
-- `../carmen-platform/src/i18n/en.ts:4142-4191` และ `src/i18n/th.ts:3151` เป็นต้นไป — ข้อความหน้าที่ยกมาใน §1/§3
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform-analytics/platform-analytics.controller.ts:147-259` (HEAD `937cf5ac4`, 2026-09-06) — route `GET /records`, guard ของมัน, และคอมเมนต์กับดักตัวบล็อกโฆษณาที่คุม URL (`analytics/records` เท่านั้น ห้ามเป็น `analytics/event*`)
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform-analytics/analytics-scope.ts` (เต็ม) — `ACTIVITY_EVENT_DETAIL`, `resolveAllowedClusterIds()`
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/log/activity-event/activity-event.service.ts:82-112,246-347` — `createBatch()` (เส้นทาง insert, §3.4) และ `findEvents()` (คอมเมนต์เรื่องตัดสินความเท่ากันตอนเรียงลำดับ, การ resolve ชื่อผู้ใช้/แอป)
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/log/activity-event/activity-event.query.ts` (เต็ม) — เงื่อนไข `ILIKE` ของ `buildWhere()`
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/analytics-events/analytics-events.controller.ts` (เต็ม) — `POST api/analytics-events`, guard ของมัน (`KeycloakGuard`, `AppIdGuard('analyticsEvent.create')`), และเพดาน 100 event
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/analytics-events/analytics-events.service.ts` (เต็ม) — ตัว proxy จาก gateway ไป microservice ที่เรียก `ActivityEvents.createBatch`
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/common/dto/activity-event/activity-event.dto.ts` (เต็ม) — schema validate ด้วย Zod (เพดานความยาวแต่ละฟิลด์, เพดาน batch 1–100 event) ที่บันทึกไว้ในหน้า data model
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/common/helpers/extract_client_context.ts` (เต็ม) — วิธีประทับ `app_id`/`domain`/`user_agent` ฝั่ง server จาก header ที่บันทึกไว้ในหน้า data model
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma:907-929,1479-1529` — `tb_activity` และ `tb_activity_event`/`tb_activity_event_daily` อ่านคู่กันสำหรับตารางใน §2
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts:93-101` — สี่แถว permission catalog ที่ยกมาใน §2
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/seed.platform-role-permission.data.ts:11-52` (เต็ม) — การมอบสิทธิ์ตาม role bundle ตรวจซ้ำอย่างอิสระสำหรับ §4.2
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/app.module.ts:211-222` — `excludeModels` ของ `LogEventsModule` การยืนยันอิสระที่ยกมาใน §2
-- `../carmen-inventory-frontend-react/lib/analytics.ts` (เต็ม, HEAD `72d6cd340`, 2026-09-04) — ตัว batcher telemetry: `enqueue`, `deriveElementId`, `collectTrackProps`, `flush`, กฎการ batch/retry/ปิดใช้งาน
-- `../carmen-inventory-frontend-react/components/analytics-bridge.tsx` (เต็ม) — จุดและเวลาที่การ tracking เริ่มทำงาน
-- `../carmen-platform-e2e/tests/` (HEAD `a8e3b31`, 2026-08-25) — list ตรง ๆ เพื่อยืนยันว่าไม่มีชุดทดสอบ `activity-events` (§4.3)
+- `../carmen-backstage/src/pages/ActivityEventManagement.tsx` (เต็ม 434 บรรทัด) — ตัวหน้า: ตัวกรอง (`fetchEvents`), คอลัมน์, handler การเรียงลำดับ/แบ่งหน้า, การ export CSV, panel debug
+- `../carmen-backstage/src/pages/activityEvents/EventDetailSheet.tsx` (เต็ม 78 บรรทัด) — detail sheet รายแถวและปุ่ม "View this entire session"
+- `../carmen-backstage/src/services/analyticsService.ts` — `getEvents()` ใช้ร่วมกับ Usage Analytics
+- `../carmen-backstage/src/types/index.ts:1367-1386` — type `ActivityEvent` ฝั่ง frontend
+- `../carmen-backstage/src/App.tsx:483-489` — การลงทะเบียน route `/activity-events`
+- `../carmen-backstage/src/components/nav/platformNav.ts:32-33` — สองแถว nav ของ Analytics ที่อยู่ติดกัน
+- `../carmen-backstage/src/i18n/en.ts:4142-4191` และ `src/i18n/th.ts:3151` เป็นต้นไป — ข้อความหน้าที่ยกมาใน §1/§3
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform-analytics/platform-analytics.controller.ts:147-259` (HEAD `937cf5ac4`, 2026-09-06) — route `GET /records`, guard ของมัน, และคอมเมนต์กับดักตัวบล็อกโฆษณาที่คุม URL (`analytics/records` เท่านั้น ห้ามเป็น `analytics/event*`)
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform-analytics/analytics-scope.ts` (เต็ม) — `ACTIVITY_EVENT_DETAIL`, `resolveAllowedClusterIds()`
+- `../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/activity-event.service.ts:82-112,246-347` — `createBatch()` (เส้นทาง insert, §3.4) และ `findEvents()` (คอมเมนต์เรื่องตัดสินความเท่ากันตอนเรียงลำดับ, การ resolve ชื่อผู้ใช้/แอป)
+- `../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/activity-event.query.ts` (เต็ม) — เงื่อนไข `ILIKE` ของ `buildWhere()`
+- `../carmen-turborepo-backend/apps/backend-gateway/src/application/analytics-events/analytics-events.controller.ts` (เต็ม) — `POST api/analytics-events`, guard ของมัน (`KeycloakGuard`, `AppIdGuard('analyticsEvent.create')`), และเพดาน 100 event
+- `../carmen-turborepo-backend/apps/backend-gateway/src/application/analytics-events/analytics-events.service.ts` (เต็ม) — ตัว proxy จาก gateway ไป microservice ที่เรียก `ActivityEvents.createBatch`
+- `../carmen-turborepo-backend/apps/backend-gateway/src/common/dto/activity-event/activity-event.dto.ts` (เต็ม) — schema validate ด้วย Zod (เพดานความยาวแต่ละฟิลด์, เพดาน batch 1–100 event) ที่บันทึกไว้ในหน้า data model
+- `../carmen-turborepo-backend/apps/backend-gateway/src/common/helpers/extract_client_context.ts` (เต็ม) — วิธีประทับ `app_id`/`domain`/`user_agent` ฝั่ง server จาก header ที่บันทึกไว้ในหน้า data model
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma:907-929,1479-1529` — `tb_activity` และ `tb_activity_event`/`tb_activity_event_daily` อ่านคู่กันสำหรับตารางใน §2
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts:93-101` — สี่แถว permission catalog ที่ยกมาใน §2
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/seed.platform-role-permission.data.ts:11-52` (เต็ม) — การมอบสิทธิ์ตาม role bundle ตรวจซ้ำอย่างอิสระสำหรับ §4.2
+- `../carmen-turborepo-backend/apps/micro-business/src/app.module.ts:211-222` — `excludeModels` ของ `LogEventsModule` การยืนยันอิสระที่ยกมาใน §2
+- `../carmen-frontend/lib/analytics.ts` (เต็ม, HEAD `72d6cd340`, 2026-09-04) — ตัว batcher telemetry: `enqueue`, `deriveElementId`, `collectTrackProps`, `flush`, กฎการ batch/retry/ปิดใช้งาน
+- `../carmen-frontend/components/analytics-bridge.tsx` (เต็ม) — จุดและเวลาที่การ tracking เริ่มทำงาน
+- `../carmen-backstage-e2e/tests/` (HEAD `a8e3b31`, 2026-08-25) — list ตรง ๆ เพื่อยืนยันว่าไม่มีชุดทดสอบ `activity-events` (§4.3)
 
 ## 7. หน้าย่อยของโมดูลนี้
 

@@ -14,7 +14,7 @@ dateCreated: 2026-06-10T15:00:00.000Z
 > **ตาราง:** `tb_platform_permission` &nbsp;·&nbsp; `tb_platform_role` &nbsp;·&nbsp; `tb_platform_role_tb_permission` &nbsp;·&nbsp; `tb_user_tb_platform_role` &nbsp;·&nbsp; `tb_platform_super_admin` &nbsp;·&nbsp; **Enum:** ไม่มี — `resource`/`action` เป็น VarChar รูปแบบอิสระ &nbsp;·&nbsp; **Scope:** `cluster_id` แบบ nullable บน assignment row (`null` = ทั้งแพลตฟอร์ม) &nbsp;·&nbsp; **คอลัมน์ audit:** trio มาตรฐาน `created_*`/`updated_*`/`deleted_*` บนทุกตาราง บวก `doc_version Int @default(0)` บนทั้งห้าตาราง (เพิ่มเมื่อ 2026-07-16, การ rollout optimistic-lock ทั้งแพลตฟอร์ม) &nbsp;·&nbsp; **Unique แบบ soft-delete:** uniqueness constraint ทุกตัวรวม `deleted_at` ดังนั้น row ที่ถูกลบสามารถสร้างใหม่ได้
 
 > **Source of truth:** Prisma platform schema ฝั่ง backend อ่านไฟล์นี้ก่อนเสมอเมื่อเขียนหรืออัพเดทหน้านี้:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > ไฟล์ `generated/client/schema.prisma` เป็นสำเนาที่ generate อัตโนมัติ ไม่ใช่ไฟล์อ้างอิงหลัก
 
@@ -180,9 +180,9 @@ FK relation ที่ประกาศไว้ (ทั้งคู่เป็
 
 enum role 7 ค่าแบบเดิมที่เคยอยู่บน row ของ user ถูกถอดออกจาก schema ทั้งหมดแล้ว — ดูส่วน migration ของ[หน้า landing ของโมดูล](/th/platform/rbac)
 
-## 5. ความแตกต่างจาก shape ของ carmen-platform SPA
+## 5. ความแตกต่างจาก shape ของ carmen-backstage SPA
 
-type ของ SPA อยู่ใน `../carmen-platform/src/types/index.ts` (`Role`, `PermissionCatalogItem`, `UserRoleAssignment`, `Scope`, `EffectivePermissions`) API flatten กราฟ Prisma ลงไปมาก:
+type ของ SPA อยู่ใน `../carmen-backstage/src/types/index.ts` (`Role`, `PermissionCatalogItem`, `UserRoleAssignment`, `Scope`, `EffectivePermissions`) API flatten กราฟ Prisma ลงไปมาก:
 
 | Shape ของ SPA | แหล่งที่มาใน SPA | การจัดเก็บใน Prisma | หมายเหตุ |
 | --------- | ---------- | -------------- | ----- |
@@ -223,15 +223,15 @@ REST surface ที่ service ของ SPA ใช้ (`roleService.ts`, `permi
 ## 6. แหล่งข้อมูลอ้างอิง
 
 **หลัก (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (backend HEAD `2378c3b`, 2026-09-05) — model `tb_platform_permission` (บรรทัด 1007), `tb_platform_role` (บรรทัด 1026), `tb_platform_role_tb_permission` (บรรทัด 1046), `tb_user_tb_platform_role` (บรรทัด 1067), `tb_platform_super_admin` (บรรทัด 1090) รายการ field ไม่เปลี่ยนตั้งแต่ sync ครั้งก่อน — เปลี่ยนแค่เลขบรรทัดจากตารางของโมดูลอื่นที่เพิ่มเข้ามาก่อนหน้านี้ในไฟล์
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (backend HEAD `2378c3b`, 2026-09-05) — model `tb_platform_permission` (บรรทัด 1007), `tb_platform_role` (บรรทัด 1026), `tb_platform_role_tb_permission` (บรรทัด 1046), `tb_user_tb_platform_role` (บรรทัด 1067), `tb_platform_super_admin` (บรรทัด 1090) รายการ field ไม่เปลี่ยนตั้งแต่ sync ครั้งก่อน — เปลี่ยนแค่เลขบรรทัดจากตารางของโมดูลอื่นที่เพิ่มเข้ามาก่อนหน้านี้ในไฟล์
 
 **รอง (shape ฝั่ง consumer):**
-- `../carmen-platform/src/types/index.ts` — `Role`, `PermissionCatalogItem`, `UserRoleAssignment`, `Scope`, `EffectivePermissions`, `RolesSummaryData`
-- `../carmen-platform/src/services/roleService.ts` — shape delta `RoleWriteData`, endpoint ของ roles, `getAccessSummary()`
-- `../carmen-platform/src/services/permissionService.ts` — การ map catalog (การ derive key), การ fetch effective-permissions
-- `../carmen-platform/src/pages/RoleEdit.tsx` — `fetchAudit()`, การ fallback audit จาก endpoint แบบ list สำหรับหน้า detail
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform-permissions/platform-permissions.controller.ts` — `RequirePlatformPermission('platform_role.read')` บน endpoint ของ catalog
-- `../carmen-platform/src/services/superAdminService.ts` และ `src/pages/SuperAdminManagement.tsx` — endpoint ของ super-admin และ `extractArray` ที่ไล่ลง envelope
-- `../carmen-platform/src/services/userRoleService.ts` — endpoint ของ assignment และการไล่ลง envelope
+- `../carmen-backstage/src/types/index.ts` — `Role`, `PermissionCatalogItem`, `UserRoleAssignment`, `Scope`, `EffectivePermissions`, `RolesSummaryData`
+- `../carmen-backstage/src/services/roleService.ts` — shape delta `RoleWriteData`, endpoint ของ roles, `getAccessSummary()`
+- `../carmen-backstage/src/services/permissionService.ts` — การ map catalog (การ derive key), การ fetch effective-permissions
+- `../carmen-backstage/src/pages/RoleEdit.tsx` — `fetchAudit()`, การ fallback audit จาก endpoint แบบ list สำหรับหน้า detail
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform-permissions/platform-permissions.controller.ts` — `RequirePlatformPermission('platform_role.read')` บน endpoint ของ catalog
+- `../carmen-backstage/src/services/superAdminService.ts` และ `src/pages/SuperAdminManagement.tsx` — endpoint ของ super-admin และ `extractArray` ที่ไล่ลง envelope
+- `../carmen-backstage/src/services/userRoleService.ts` — endpoint ของ assignment และการไล่ลง envelope
 
 **Cross-link:** [หน้า landing ของ Platform RBAC](/th/platform/rbac) &nbsp;·&nbsp; [UI Screens](/th/platform/rbac/ui-screens) &nbsp;·&nbsp; [Permissions](/th/platform/rbac/permissions) &nbsp;·&nbsp; [data-model ของ users](/th/platform/users/data-model) (row ของ `tb_user` ที่ assignment ชี้ไป)

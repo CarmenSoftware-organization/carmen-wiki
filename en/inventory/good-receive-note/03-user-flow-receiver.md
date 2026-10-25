@@ -102,4 +102,4 @@ The Receiver's involvement on a given GRN ends at one of two boundaries:
 - Related: [purchase-order](/en/inventory/purchase-order) — upstream module; at commit the GRN advances `tb_purchase_order_detail.received_qty` and flips `po_status` to `partial` / `completed`.
 - Related: [inventory](/en/inventory/inventory) — downstream module; the ledger carries the lot and cost-layer data, and on-hand is incremented by `received_base_qty + foc_base_qty`.
 - Related: [costing](/en/inventory/costing) — FIFO / average cost-layer creation at commit (or at save on average-costed units), with landed cost including the allocated extra cost.
-- Frontend: `../carmen-inventory-frontend-react/routes/procurement/goods-receive-note/` — `use-grn-form-actions.ts`, `grn-header.tsx`, `grn-footer-action.tsx`, `grn-stock-table.tsx`, `from-po/`.
+- Frontend: `../carmen-frontend/routes/procurement/goods-receive-note/` — `use-grn-form-actions.ts`, `grn-header.tsx`, `grn-footer-action.tsx`, `grn-stock-table.tsx`, `from-po/`.

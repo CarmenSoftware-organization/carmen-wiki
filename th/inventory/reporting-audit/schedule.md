@@ -17,7 +17,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ## สถานะการทำงานจริง (ตรวจสอบเมื่อ 2026-07-22)
 
-หน้านี้ฉบับก่อนหน้าบันทึก `tb_report_schedule` (tenant schema) ว่าเป็นตารางที่เก็บ schedule จริง พร้อมหน้ารายละเอียดที่มี cron-expression builder, Active toggle, action Test Run และ recipients picker แบบมี type (`email`/`user`/`sftp`) การค้นหาโค้ดทั่ว `carmen-turborepo-backend-v2/apps` พบว่า **ไม่มีการอ้างอิง `tb_report_schedule` เลย** นอกเหนือจากการประกาศ Prisma model ของมันเอง — เป็นตารางที่ตายแล้ว รูปแบบเดียวกับที่ยืนยันแล้วสำหรับ `tb_attachment` และตระกูล `tb_widget_*` เดิม
+หน้านี้ฉบับก่อนหน้าบันทึก `tb_report_schedule` (tenant schema) ว่าเป็นตารางที่เก็บ schedule จริง พร้อมหน้ารายละเอียดที่มี cron-expression builder, Active toggle, action Test Run และ recipients picker แบบมี type (`email`/`user`/`sftp`) การค้นหาโค้ดทั่ว `carmen-turborepo-backend/apps` พบว่า **ไม่มีการอ้างอิง `tb_report_schedule` เลย** นอกเหนือจากการประกาศ Prisma model ของมันเอง — เป็นตารางที่ตายแล้ว รูปแบบเดียวกับที่ยืนยันแล้วสำหรับ `tb_attachment` และตระกูล `tb_widget_*` เดิม
 
 ที่เก็บจริงคือคอมเมนต์ในโค้ดของ `reports.service.ts` เอง: *"micro-report no longer owns schedules; they live in micro-cronjob as rows in the Cronjob table with `job_type="report"` and `source_service="micro-report"`."* `Cronjob` เป็นตาราง scheduler แบบ **generic** (ใช้ร่วมกับ `job_type = "notification"`, `"cleanup"`, `"dashboard_refresh"` ด้วย) อยู่ใน Postgres schema/database ของตัวเองแยกต่างหากทั้งหมดจาก tenant และ platform Prisma schema ทุกข้อกล่าวอ้างระดับ UI ด้านล่างถูกตรวจสอบเทียบกับ `schedule-component.tsx`, `create-schedule-dialog.tsx` และ hook `hooks/use-report-schedule.ts` — frontend **ไม่มีหน้ารายละเอียด, ไม่มี endpoint แก้ไข/อัปเดต, ไม่มี pause toggle และไม่มี test-run** เลย
 
@@ -103,7 +103,7 @@ Schedule ทุกตัวที่สร้างผ่าน UI ส่งม�
 
 ### 5.3 `tb_report_schedule` (tenant schema — ตารางที่ตายแล้ว เก็บไว้เพื่อเปรียบเทียบ)
 
-`id` / `name` / `report_type` / `report_template_id` / `format` / `cron_expression` / `schedule_config` / `filters` / `options` / `recipients` / `is_active` / `last_run_at` / `next_run_at` / คอลัมน์ audit มีรูปร่างใกล้เคียงกับคู่ `Cronjob` + `ReportJobConfig` ที่แท้จริงข้างต้นมาก แต่ **ไม่พบการอ้างอิงจากโค้ดเลย** ทั่วทั้ง `carmen-turborepo-backend-v2/apps` หรือ `micro-report`/`micro-cronjobs`
+`id` / `name` / `report_type` / `report_template_id` / `format` / `cron_expression` / `schedule_config` / `filters` / `options` / `recipients` / `is_active` / `last_run_at` / `next_run_at` / คอลัมน์ audit มีรูปร่างใกล้เคียงกับคู่ `Cronjob` + `ReportJobConfig` ที่แท้จริงข้างต้นมาก แต่ **ไม่พบการอ้างอิงจากโค้ดเลย** ทั่วทั้ง `carmen-turborepo-backend/apps` หรือ `micro-report`/`micro-cronjobs`
 
 ## 6. กติกาทางธุรกิจ
 
@@ -125,7 +125,7 @@ Schedule ทุกตัวที่สร้างผ่าน UI ส่งม�
 ## 8. แหล่งอ้างอิง
 
 - **ที่เก็บจริง (Go, `micro-cronjobs`):** `../micro-cronjobs/internal/model/cronjob.go` (`CronJob`, `ReportJobConfig`, `ReportDelivery`, `ReportNotifications`), `../micro-cronjobs/internal/repository/cronjob_repo.go`, `../micro-cronjobs/internal/scheduler/scheduler.go` (poll loop, retry), `../micro-cronjobs/internal/scheduler/redis_locker.go` (distributed lock), `../micro-cronjobs/internal/executor/report.go` (การ dispatch แบบ `viewer_url` เทียบกับ `file`)
-- **Gateway (proxy CRUD schedule → micro-cronjobs):** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/reports/reports.controller.ts` (`@Post('schedules')`, `@Get('schedules')`, `@Delete('schedules/:schedule_id')`), `reports.service.ts` (`createSchedule`/`listSchedules`/`deleteSchedule`, `cronFromConfig()`, `resolveNotifyDayOffset()`, `x-internal-token`), `swagger/request.ts` (`ScheduleCreateRequestDto.notify_at`; `schedule_config.notify_time` deprecated), `swagger/response.ts` (`notify_day_offset`)
-- **Prisma tenant (ตารางที่ตายแล้ว เพื่อเปรียบเทียบ):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_report_schedule` (บรรทัด ~6128)
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/report/schedules/report-schedules.route.tsx`, `schedule-component.tsx`, `create-schedule-dialog.tsx`, `schedule-frequency-field.tsx`, `schedule-recipients-field.tsx`, `schedule-notifications-field.tsx`
-- **Frontend hook/type:** `../carmen-inventory-frontend-react/routes/report/schedules/use-report-schedule.ts` (`useReportSchedules`, `useCreateReportSchedule`, `useDeleteReportSchedule` — ไม่มี update hook; ย้ายออกจาก `hooks/` เมื่อ 2026-08-28), `types/report-schedule.ts` (`notify_at`, `notify_day_offset`), `routes/report/schedules/use-schedule-table.tsx` (คอลัมน์ Notify at)
+- **Gateway (proxy CRUD schedule → micro-cronjobs):** `../carmen-turborepo-backend/apps/backend-gateway/src/application/reports/reports.controller.ts` (`@Post('schedules')`, `@Get('schedules')`, `@Delete('schedules/:schedule_id')`), `reports.service.ts` (`createSchedule`/`listSchedules`/`deleteSchedule`, `cronFromConfig()`, `resolveNotifyDayOffset()`, `x-internal-token`), `swagger/request.ts` (`ScheduleCreateRequestDto.notify_at`; `schedule_config.notify_time` deprecated), `swagger/response.ts` (`notify_day_offset`)
+- **Prisma tenant (ตารางที่ตายแล้ว เพื่อเปรียบเทียบ):** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_report_schedule` (บรรทัด ~6128)
+- **Frontend route:** `../carmen-frontend/routes/report/schedules/report-schedules.route.tsx`, `schedule-component.tsx`, `create-schedule-dialog.tsx`, `schedule-frequency-field.tsx`, `schedule-recipients-field.tsx`, `schedule-notifications-field.tsx`
+- **Frontend hook/type:** `../carmen-frontend/routes/report/schedules/use-report-schedule.ts` (`useReportSchedules`, `useCreateReportSchedule`, `useDeleteReportSchedule` — ไม่มี update hook; ย้ายออกจาก `hooks/` เมื่อ 2026-08-28), `types/report-schedule.ts` (`notify_at`, `notify_day_offset`), `routes/report/schedules/use-schedule-table.tsx` (คอลัมน์ Notify at)

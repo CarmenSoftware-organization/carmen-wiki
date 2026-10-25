@@ -17,8 +17,8 @@ dateCreated: 2026-05-15T15:30:00.000Z
 > **รูปแบบ audit:** `created_*` / `updated_*` / `deleted_*` มาตรฐานเหมือนกันทุกเอนทิตี ความไม่ซ้ำกำหนดขอบเขตด้วย `deleted_at` **วิธีการคิดต้นทุนไม่ได้อยู่บน product** — อยู่ที่ `tb_business_unit.calculation_method`
 
 > **แหล่งความจริง:** Prisma schema ของ backend อ่านสิ่งเหล่านี้ก่อนเสมอเมื่อเขียนหรืออัปเดตหน้านี้:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > ไฟล์ `generated/client/schema.prisma` ใต้แต่ละแพ็กเกจเป็นสำเนาที่สร้างอัตโนมัติ ไม่ใช่ฉบับทางการ
 
@@ -50,7 +50,7 @@ graph LR
     pv -->|"N : 1"| vendor["tb_vendor"]
 ```
 
-> Diagram adapted from `carmen/docs/app/product-management/products/DD-products.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (2026-09-28) · Changes: rewritten from `erDiagram` to `graph LR` per the wiki's Mermaid allow-list (erDiagram renders blank on this Wiki.js); renamed generic entity names to real `tb_*` tables; dropped `PRODUCT_ACTIVITY_LOG` (no such table exists — see § 1) and `PRODUCT_UNIT` (replaced by `tb_unit_conversion`); added the `tb_tax_profile`, `tb_location_shelf`, and `tb_product_tb_vendor` relations already described in § 3.
+> Diagram adapted from `carmen/docs/app/product-management/products/DD-products.md` · verified against `carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (2026-09-28) · Changes: rewritten from `erDiagram` to `graph LR` per the wiki's Mermaid allow-list (erDiagram renders blank on this Wiki.js); renamed generic entity names to real `tb_*` tables; dropped `PRODUCT_ACTIVITY_LOG` (no such table exists — see § 1) and `PRODUCT_UNIT` (replaced by `tb_unit_conversion`); added the `tb_tax_profile`, `tb_location_shelf`, and `tb_product_tb_vendor` relations already described in § 3.
 
 ### 2.1 tb_product
 
@@ -315,7 +315,7 @@ graph LR
 
 **Constraints:** หนึ่ง `@@unique` ต่อคอลัมน์เจ้าของ แต่ละอันกำหนดขอบเขตด้วย `(owner_id, account_type, deleted_at)` — มี mapping ที่ active ได้อย่างมากหนึ่งรายการต่อ account type ต่อระดับเจ้าของ
 
-**ยืนยัน API surface จริง แต่ไม่พบ frontend UI:** block `account_codes: { add[], update[], remove[] }` เป็นฟิลด์จริงที่ document ไว้บน Bruno request สำหรับ create/update ของ `config/products`, `config/product-category`, `config/product-sub-category`, และ `config/product-item-group` (`applyAccountCodesWrite` / `resolveEffectiveAccountCodes` ใน `apps/micro-business/src/common/account-code/account-code.helper.ts`) และฝั่ง read คืนค่า `account_codes` บน response รายละเอียดสินค้า — แต่การค้นหาทั่ว repo ของ `carmen-inventory-frontend-react` ไม่พบ component หรือ hook ที่อ้างอิง `account_codes` / `accountCodeMapping` ที่ใดเลย ถือว่าเป็นฟีเจอร์ backend/API-only จนกว่าจะพบ UI surface
+**ยืนยัน API surface จริง แต่ไม่พบ frontend UI:** block `account_codes: { add[], update[], remove[] }` เป็นฟิลด์จริงที่ document ไว้บน Bruno request สำหรับ create/update ของ `config/products`, `config/product-category`, `config/product-sub-category`, และ `config/product-item-group` (`applyAccountCodesWrite` / `resolveEffectiveAccountCodes` ใน `apps/micro-business/src/common/account-code/account-code.helper.ts`) และฝั่ง read คืนค่า `account_codes` บน response รายละเอียดสินค้า — แต่การค้นหาทั่ว repo ของ `carmen-frontend` ไม่พบ component หรือ hook ที่อ้างอิง `account_codes` / `accountCodeMapping` ที่ใดเลย ถือว่าเป็นฟีเจอร์ backend/API-only จนกว่าจะพบ UI surface
 
 ### 2.12 ตาราง Comment (tb_product_comment, tb_product_category_comment, tb_product_sub_category_comment, tb_product_item_group_comment, tb_unit_comment)
 
@@ -428,10 +428,10 @@ product-management PRD ของ carmen/docs (`PROD-PRD.md`) และ product-m
 
 ## 6. แหล่งอ้างอิง
 
-- **หลัก (แหล่งความจริง):** Prisma schema ที่ list ใน header callout — concretely `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` สำหรับเอนทิตี product (`tb_product` ~1563, `tb_product_category` ~1801, `tb_product_sub_category` ~1952, `tb_product_item_group` ~1876, `tb_unit` ~3739, `tb_unit_conversion` ~3819, `tb_product_location` ~5334, `tb_location_shelf` ~1441, `tb_product_tb_vendor` ~2028, `tb_product_image` ~1634, `tb_eco_label` ~1727 / `tb_product_eco_label` ~1755, `tb_product_account_code_mapping` ~1692 และตาราง comment คู่ขนาน) และ enum `enum_product_status_type` (~165), `enum_unit_type` (~265), `enum_account_type` (~6781)
+- **หลัก (แหล่งความจริง):** Prisma schema ที่ list ใน header callout — concretely `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` สำหรับเอนทิตี product (`tb_product` ~1563, `tb_product_category` ~1801, `tb_product_sub_category` ~1952, `tb_product_item_group` ~1876, `tb_unit` ~3739, `tb_unit_conversion` ~3819, `tb_product_location` ~5334, `tb_location_shelf` ~1441, `tb_product_tb_vendor` ~2028, `tb_product_image` ~1634, `tb_eco_label` ~1727 / `tb_product_eco_label` ~1755, `tb_product_account_code_mapping` ~1692 และตาราง comment คู่ขนาน) และ enum `enum_product_status_type` (~165), `enum_unit_type` (~265), `enum_account_type` (~6781)
 - **Migrations นับจาก 2026-07-29:** `20260814150000_add_location_shelf`, `20260820120000_rename_location_shelf_to_shelf`, `20260904131500_rename_shelf_and_user_location`, `20260904133000_rename_eco_label_and_certificate`, `20260916141000_rename_tb_period_to_tb_inventory_period`
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/products/products.service.ts` (delete `:2661`, ตรวจสอบ shelf `:2035` / `:2244`), `products.replenishment.ts`, `master/shelf/shelf.helper.ts`; gateway `apps/backend-gateway/src/config/config_products/` (`@ExpandRefs` / `@Serialize`), `common/dto/product/product.serializer.ts`
-- **Frontend:** `../carmen-inventory-frontend-react/types/product.ts`, `routes/product-management/product/` (แท็บ: `pd-tab-general.tsx`, `pd-tab-unit-conversion.tsx`, `pd-tab-locations.tsx`, `pd-tab-eco.tsx`), `routes/product-management/eco/`
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/products/products.service.ts` (delete `:2661`, ตรวจสอบ shelf `:2035` / `:2244`), `products.replenishment.ts`, `master/shelf/shelf.helper.ts`; gateway `apps/backend-gateway/src/config/config_products/` (`@ExpandRefs` / `@Serialize`), `common/dto/product/product.serializer.ts`
+- **Frontend:** `../carmen-frontend/types/product.ts`, `routes/product-management/product/` (แท็บ: `pd-tab-general.tsx`, `pd-tab-unit-conversion.tsx`, `pd-tab-locations.tsx`, `pd-tab-eco.tsx`), `routes/product-management/eco/`
 - **Bruno:** `config/products/*` (13 request), `config/product-location/`, `config/location-product/`, `config/products-location-workflow/` (3), `master-data/products/*` (on-hand, on-order, last-purchase, inventory-movement, cost) platform schema `prisma-shared-schema-platform/prisma/schema.prisma` มี `tb_business_unit.calculation_method` และ `enum_calculation_method` อ้างจากมุมมอง costing
 - **รอง (cross-check แนวคิด):**
   - `../carmen/docs/product-management/PROD-PRD.md` — PRD หลักอธิบายชุดฟีเจอร์ product-management ความแตกต่างใน Section 5 (รายการ 1, 2, 3, 4, 5, 6, 8, 9, 11, 12, 13, 14)

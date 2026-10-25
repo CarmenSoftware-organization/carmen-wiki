@@ -12,7 +12,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 This page documents `tb_activity_event`, the append-only UI-telemetry table behind [Activity Events](/en/platform/activity-events) and its aggregate sibling [Usage Analytics](/en/platform/usage-analytics). It is **not** `tb_activity`, the change-history/audit table behind the "View History" action elsewhere in the product — see the parent page's §2 for that distinction; nothing on this page describes `tb_activity`.
 
-The model is defined in `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma:1489-1509` (HEAD `937cf5ac4`, 2026-09-06). Its own header comment states the design intent directly, and the write/retention paths below confirm it rather than merely repeat it: "Raw UI telemetry (append-only) — no soft-delete/audit columns by design: high volume, rows are never edited, only a retention job deletes them in bulk (micro-cronjobs)" (`schema.prisma:1487-1488`).
+The model is defined in `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma:1489-1509` (HEAD `937cf5ac4`, 2026-09-06). Its own header comment states the design intent directly, and the write/retention paths below confirm it rather than merely repeat it: "Raw UI telemetry (append-only) — no soft-delete/audit columns by design: high volume, rows are never edited, only a retention job deletes them in bulk (micro-cronjobs)" (`schema.prisma:1487-1488`).
 
 ## 1. The Record
 
@@ -40,7 +40,7 @@ No column is ever updated after insert, and there is no soft-delete column (`del
 
 Two boundaries are easy to misread from the frontend `AnalyticsEvent`/`ActivityEvent` type shapes alone, so they are stated explicitly here, each confirmed by reading the field's actual source rather than assuming from the type definition:
 
-- **`user_id` is never part of the client's payload.** The frontend's own `AnalyticsEvent` interface (`../carmen-inventory-frontend-react/lib/analytics.ts:32-42`) has no `user_id` field, and the backend's per-event Zod schema (`ActivityEventSchema`, `activity-event.dto.ts:9-46`) has no `user_id` field either. It is read from the authenticated request (`ExtractRequestHeader(req)` in `analytics-events.controller.ts:87`) and passed down as a separate `user_id` parameter, stamped identically onto every event in the batch by `createBatch()` (`activity-event.service.ts:92-96`). A client cannot claim to be a different user than its own Bearer token.
+- **`user_id` is never part of the client's payload.** The frontend's own `AnalyticsEvent` interface (`../carmen-frontend/lib/analytics.ts:32-42`) has no `user_id` field, and the backend's per-event Zod schema (`ActivityEventSchema`, `activity-event.dto.ts:9-46`) has no `user_id` field either. It is read from the authenticated request (`ExtractRequestHeader(req)` in `analytics-events.controller.ts:87`) and passed down as a separate `user_id` parameter, stamped identically onto every event in the batch by `createBatch()` (`activity-event.service.ts:92-96`). A client cannot claim to be a different user than its own Bearer token.
 - **`app_id`, `domain`, and `user_agent` are never part of the per-event payload either** — they are one shared "client context" per HTTP request, extracted from headers by `ExtractClientContext()` (`extract_client_context.ts`, full, 62 lines) and stamped onto every event in that batch identically (`activity-event.service.ts:98-101`, its own comment: "client context is the same for every row — one batch comes from one request"). `ExtractClientContext()` never throws on a malformed header (its own doc comment: "a malformed header must not fail a request that already passed the guards") — it degrades to `null` for that field instead.
 
 ## 3. Fields added only when the row is read (not stored)
@@ -84,7 +84,7 @@ Before retention runs each day, a second job aggregates recent raw rows into `tb
 
 `tb_activity_event_daily` is **never deleted** by either job, or by anything else found: a grep of the entire migration/model history for `tb_activity_event_daily` outside its own creation and the rollup's insert turns up exactly one `DELETE`, and it is not a retention mechanism — a one-time, guarded statement in a schema migration (`20260731000000_activity_event_client_context/migration.sql`) that clears the table *only if* its unique index still lacks the `domain`/`app_id` columns being added in that same migration, to prevent the next rollup from double-counting under the old key shape. It runs at most once, is a no-op on any database where it has already applied, and is unrelated to the ongoing 365-day raw-row retention.
 
-**No reader of `tb_activity_event_daily` was found.** A search of every repository consulted for this book — `../carmen-turborepo-backend-v2`, `../micro-cronjobs`, `../micro-report`, `../micro-data` — for any `SELECT`/query against this table, outside the rollup job's own `INSERT ... ON CONFLICT`, returns nothing. [Usage Analytics](/en/platform/usage-analytics) computes its own daily bucketing live from raw `tb_activity_event` rows within its (capped 90-day) query window rather than reading this table. This is stated as a finding from the repositories available, not as proof no consumer exists anywhere — a reader could exist in a repository outside this book's reference set.
+**No reader of `tb_activity_event_daily` was found.** A search of every repository consulted for this book — `../carmen-turborepo-backend`, `../micro-cronjobs`, `../micro-report`, `../micro-data` — for any `SELECT`/query against this table, outside the rollup job's own `INSERT ... ON CONFLICT`, returns nothing. [Usage Analytics](/en/platform/usage-analytics) computes its own daily bucketing live from raw `tb_activity_event` rows within its (capped 90-day) query window rather than reading this table. This is stated as a finding from the repositories available, not as proof no consumer exists anywhere — a reader could exist in a repository outside this book's reference set.
 
 ## 5. Related Modules
 
@@ -95,17 +95,17 @@ Before retention runs each day, a second job aggregates recent raw rows into `tb
 
 ## 6. Reference Sources
 
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma:1479-1529` (HEAD `937cf5ac4`, 2026-09-06) — `enum_activity_event_type`, `tb_activity_event`, `tb_activity_event_daily`, and their header comments.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/common/dto/activity-event/activity-event.dto.ts` (full) — `ActivityEventSchema`/`ActivityEventBatchSchema`, every per-field length cap and the 1–100 event batch cap.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/common/helpers/extract_client_context.ts` (full, 62 lines) — `ExtractClientContext()`, the `app_id`/`domain`/`user_agent` stamping and their caps/fallbacks.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/analytics-events/analytics-events.controller.ts` (full) — `POST api/analytics-events`, `ExtractRequestHeader` for `user_id`, guards.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/analytics-events/analytics-events.service.ts` (full) — the gateway-to-microservice proxy.
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/log/activity-event/activity-event.service.ts:82-112,246-347` — `createBatch()` (the insert) and `findEvents()` (the read-time user/app-name enrichment).
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_cronjobs/platform_cronjobs.service.ts:7-30` — `CronJobRow`, confirming the platform's Cronjobs module and the seeded retention/rollup jobs share one table.
-- `../carmen-inventory-frontend-react/lib/analytics.ts:30-42` (HEAD `72d6cd340`, 2026-09-04) — the `AnalyticsEvent` client-side shape (confirms `user_id` is absent from it).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma:1479-1529` (HEAD `937cf5ac4`, 2026-09-06) — `enum_activity_event_type`, `tb_activity_event`, `tb_activity_event_daily`, and their header comments.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/common/dto/activity-event/activity-event.dto.ts` (full) — `ActivityEventSchema`/`ActivityEventBatchSchema`, every per-field length cap and the 1–100 event batch cap.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/common/helpers/extract_client_context.ts` (full, 62 lines) — `ExtractClientContext()`, the `app_id`/`domain`/`user_agent` stamping and their caps/fallbacks.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/application/analytics-events/analytics-events.controller.ts` (full) — `POST api/analytics-events`, `ExtractRequestHeader` for `user_id`, guards.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/application/analytics-events/analytics-events.service.ts` (full) — the gateway-to-microservice proxy.
+- `../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/activity-event.service.ts:82-112,246-347` — `createBatch()` (the insert) and `findEvents()` (the read-time user/app-name enrichment).
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform_cronjobs/platform_cronjobs.service.ts:7-30` — `CronJobRow`, confirming the platform's Cronjobs module and the seeded retention/rollup jobs share one table.
+- `../carmen-frontend/lib/analytics.ts:30-42` (HEAD `72d6cd340`, 2026-09-04) — the `AnalyticsEvent` client-side shape (confirms `user_id` is absent from it).
 - `../micro-cronjobs/internal/executor/activity_retention.go` (full, HEAD `d17d8eb9bc3`, 2026-09-04) — the batched-delete retention executor.
 - `../micro-cronjobs/internal/executor/activity_rollup.go` (full, 80 lines) — the daily upsert rollup executor.
 - `../micro-cronjobs/internal/executor/executor.go:68-84` — the `job.JobType` dispatch switch, confirming both job types are wired to their executors.
 - `../micro-cronjobs/migrations/20260730093731_seed_activity_retention_job.up.sql` — the seeded, active retention cron entry (365 days, 04:00 daily).
 - `../micro-cronjobs/migrations/20260730092930_seed_activity_rollup_job.up.sql` — the seeded, active rollup cron entry (03:30 daily, 2 days back).
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260731000000_activity_event_client_context/migration.sql` — the one-time, guarded `tb_activity_event_daily` clear tied to the `domain`/`app_id` dimension-key change, not a retention mechanism.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260731000000_activity_event_client_context/migration.sql` — the one-time, guarded `tb_activity_event_daily` clear tied to the `domain`/`app_id` dimension-key change, not a retention mechanism.

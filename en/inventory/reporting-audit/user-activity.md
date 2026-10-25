@@ -17,7 +17,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ## Implementation status (verified 2026-07-22)
 
-The previous version of this page described `tb_user_login_session` (platform schema) as one of two tables composing this surface, with a detailed field table and "Row insert = session opened... deletion/expiry = session closed" semantics. A repo-wide code search found **zero references to `tb_user_login_session` anywhere in `carmen-turborepo-backend-v2/apps`** outside its own Prisma model declaration — it is dead, the same pattern already confirmed for `tb_attachment`, `tb_report_schedule`, and the old `tb_widget_*` family. This system authenticates through **Keycloak** (`KEYCLOAK_SERVICE` client proxy in `micro-business`'s `AuthService`) and issues JWT access/refresh tokens directly — there is no local session-table backing to a login at all.
+The previous version of this page described `tb_user_login_session` (platform schema) as one of two tables composing this surface, with a detailed field table and "Row insert = session opened... deletion/expiry = session closed" semantics. A repo-wide code search found **zero references to `tb_user_login_session` anywhere in `carmen-turborepo-backend/apps`** outside its own Prisma model declaration — it is dead, the same pattern already confirmed for `tb_attachment`, `tb_report_schedule`, and the old `tb_widget_*` family. This system authenticates through **Keycloak** (`KEYCLOAK_SERVICE` client proxy in `micro-business`'s `AuthService`) and issues JWT access/refresh tokens directly — there is no local session-table backing to a login at all.
 
 What IS confirmed real: `AuthService.login()` calls `logAuthActivity('login', ...)` on successful authentication, and `AuthService.logout()` calls `logAuthActivity('logout', ...)` — both write a `tb_activity` row (`entity_type: 'auth'`) to the user's **default business unit only** (`tb_user_tb_business_unit` row where `is_default: true`; if the user has no default BU, the write is skipped entirely and logged at debug level, not raised as an error). Both calls are wrapped in their own try/catch that logs failures without failing the surrounding login/logout request.
 
@@ -81,7 +81,7 @@ See [reporting-audit/activity](/en/inventory/reporting-audit/activity) §5.1 for
 
 ### 5.2 `tb_user_login_session` (platform schema — dead table, kept for contrast)
 
-`id`, `token`, `token_type` (`enum_token_type`: `access_token`/`refresh_token`), `user_id`, `expired_on` (default `now() + 1 day`). Shaped like a session table, but **zero non-schema code references were found anywhere** in `carmen-turborepo-backend-v2/apps`. This system authenticates via Keycloak-issued JWTs — there is no local session-table backing.
+`id`, `token`, `token_type` (`enum_token_type`: `access_token`/`refresh_token`), `user_id`, `expired_on` (default `now() + 1 day`). Shaped like a session table, but **zero non-schema code references were found anywhere** in `carmen-turborepo-backend/apps`. This system authenticates via Keycloak-issued JWTs — there is no local session-table backing.
 
 ## 6. Business Rules
 
@@ -98,9 +98,9 @@ See [reporting-audit/activity](/en/inventory/reporting-audit/activity) §5.1 for
 
 ## 8. References
 
-- **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_activity` (line ~280), `enum_activity_action` (line ~56).
-- **Prisma platform (dead table, for contrast):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_user_login_session` (line ~567), `enum_token_type` (line ~686).
-- **Confirmed writer:** `../carmen-turborepo-backend-v2/apps/micro-business/src/authen/auth/auth.service.ts` — `logAuthActivity()` (private method), called from `login()` and `logout()`.
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/user-activity/user-activity.route.tsx`, `user-activity-component.tsx` (hard-sets `entity_type = "auth"` on every query), `use-user-activity-table.tsx`.
-- **Frontend hook:** `../carmen-inventory-frontend-react/routes/system-admin/user-activity/use-user-activity.ts` (moved out of `hooks/` on 2026-08-28) — calls the same `API_ENDPOINTS.ACTIVITY_LOGS(buCode)` endpoint as [reporting-audit/activity](/en/inventory/reporting-audit/activity)'s screen.
+- **Prisma tenant:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_activity` (line ~280), `enum_activity_action` (line ~56).
+- **Prisma platform (dead table, for contrast):** `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_user_login_session` (line ~567), `enum_token_type` (line ~686).
+- **Confirmed writer:** `../carmen-turborepo-backend/apps/micro-business/src/authen/auth/auth.service.ts` — `logAuthActivity()` (private method), called from `login()` and `logout()`.
+- **Frontend route:** `../carmen-frontend/routes/system-admin/user-activity/user-activity.route.tsx`, `user-activity-component.tsx` (hard-sets `entity_type = "auth"` on every query), `use-user-activity-table.tsx`.
+- **Frontend hook:** `../carmen-frontend/routes/system-admin/user-activity/use-user-activity.ts` (moved out of `hooks/` on 2026-08-28) — calls the same `API_ENDPOINTS.ACTIVITY_LOGS(buCode)` endpoint as [reporting-audit/activity](/en/inventory/reporting-audit/activity)'s screen.
 - **Platform-scope writers (not shown here):** `auth.service.ts` `writeRegisterActivity()`, `writeVerifyEmailActivity()` → platform `tb_activity`.

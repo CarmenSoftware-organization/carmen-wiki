@@ -75,10 +75,10 @@ Vendor pricelist ให้ procurement มี system-of-record สำหรั�
 ## 6. แหล่งอ้างอิง
 
 - Concepts: `../carmen/docs/vendor-pricelist-management/`
-- Frontend: `../carmen-inventory-frontend-react/`
-- Backend: `../carmen-turborepo-backend-v2/`
+- Frontend: `../carmen-frontend/`
+- Backend: `../carmen-turborepo-backend/`
 - API contracts: `../carmen-turborepo-backend-bruno/`
-- E2E tests: `../carmen-inventory-frontend-e2e/`
+- E2E tests: `../carmen-frontend-e2e/`
 
 ## 7. หน้าในโมดูลนี้
 
@@ -98,4 +98,4 @@ Vendor pricelist ให้ procurement มี system-of-record สำหรั�
 - [Request Price List](/th/inventory/vendor-pricelist/request-price-list) — เอกสาร RFQ ขาออก (`tb_request_for_pricing` + แถว invitation ต่อผู้ขายพร้อม `pricelist_url_token`) action Send-email ต่อผู้ขาย, การหมดอายุของลิงก์ และข้อค้นพบที่ยังคงเป็นจริงเรื่องไม่มีสถานะ/ไม่มี reminder
 - [Vendor Dashboard](/th/inventory/vendor-pricelist/vendor-dashboard) — 10 tile KPI/chart ที่ hardcode ไว้ (vendor + pricelist + RFP) ของหน้าจอ landing `/vendor-management` — ไม่ใช่ widget board ที่ผู้ใช้ปรับแต่งได้
 
-> **สถานะ (ตรวจสอบซ้ำ 2026-09-22):** การเขียนใหม่รอบ 2026-07-16 ที่ตัด workflow campaign, quality scoring, validation engine, threshold Manager/Finance และการ revoke token ออกยังคงใช้ได้ "gap ที่ยืนยันแล้ว" สองข้อของรอบนั้นถูกปิดโดยโค้ดแล้วและแก้ไขทั่วหน้าย่อย: route Save/Submit ของ portal (`pricelist-external.controller.ts`, 2026-08/09) และการหมดอายุของ token (`UrlTokenGuard` + `tb_shot_url.expired_at`) ใหม่ตั้งแต่นั้น: สถานะ `submitted`, RFQ send-email, คอลัมน์ tax/rating ของผู้ขาย, การเปลี่ยนชื่อ `tb_certificate`, `can_use`, `price-compare` `qty`, event ของ portal ใน `tb_activity` **E2E coverage:** `150-vendor.spec.ts` (31 case), `159-pl.spec.ts` (28), `160-pl-template.spec.ts` (33), `043-certification.spec.ts` (6) ใน `../carmen-inventory-frontend-e2e/tests/` พร้อมรายงาน gap ใต้ `docs/test-cases/gaps/` (54 / 65 / 58 / 29 case); portal ภายนอกมี catalog แบบเอกสารเท่านั้น `docs/test-cases/1002-external-price-list.md` (42 case ไม่มี spec); ยังไม่มี spec สำหรับ Request for Pricing
+> **สถานะ (ตรวจสอบซ้ำ 2026-09-22):** การเขียนใหม่รอบ 2026-07-16 ที่ตัด workflow campaign, quality scoring, validation engine, threshold Manager/Finance และการ revoke token ออกยังคงใช้ได้ "gap ที่ยืนยันแล้ว" สองข้อของรอบนั้นถูกปิดโดยโค้ดแล้วและแก้ไขทั่วหน้าย่อย: route Save/Submit ของ portal (`pricelist-external.controller.ts`, 2026-08/09) และการหมดอายุของ token (`UrlTokenGuard` + `tb_shot_url.expired_at`) ใหม่ตั้งแต่นั้น: สถานะ `submitted`, RFQ send-email, คอลัมน์ tax/rating ของผู้ขาย, การเปลี่ยนชื่อ `tb_certificate`, `can_use`, `price-compare` `qty`, event ของ portal ใน `tb_activity` **E2E coverage:** `150-vendor.spec.ts` (31 case), `159-pl.spec.ts` (28), `160-pl-template.spec.ts` (33), `043-certification.spec.ts` (6) ใน `../carmen-frontend-e2e/tests/` พร้อมรายงาน gap ใต้ `docs/test-cases/gaps/` (54 / 65 / 58 / 29 case); portal ภายนอกมี catalog แบบเอกสารเท่านั้น `docs/test-cases/1002-external-price-list.md` (42 case ไม่มี spec); ยังไม่มี spec สำหรับ Request for Pricing

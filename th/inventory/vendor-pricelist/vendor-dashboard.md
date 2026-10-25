@@ -83,10 +83,10 @@ Source: `apps/backend-gateway/src/application/dashboard-widgets/system-widgets.c
 
 ## 7. แหล่งอ้างอิง
 
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/vendor-management/vendor-management.route.tsx` → `vendor-dashboard.tsx`
-- **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-dashboard-widgets.ts` — `useVendorWidgets()`
-- **Frontend shared component:** `../carmen-inventory-frontend-react/components/dashboard-widget/dashboard-widget-grid-lazy.tsx` (lazy wrapper) → `dashboard-widget-grid.tsx` ของ `DashboardWidgetGrid`
-- **Gateway controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-widgets/system-widgets.controller.ts` — `DashboardSystemWidgetsController`, `@Get('vendor-management')`
-- **Gateway config:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-widgets/system-widgets.config.ts` — `VENDOR_MANAGEMENT_WIDGETS`, `getSystemWidgets()`
+- **Frontend route:** `../carmen-frontend/routes/vendor-management/vendor-management.route.tsx` → `vendor-dashboard.tsx`
+- **Frontend hook:** `../carmen-frontend/hooks/use-dashboard-widgets.ts` — `useVendorWidgets()`
+- **Frontend shared component:** `../carmen-frontend/components/dashboard-widget/dashboard-widget-grid-lazy.tsx` (lazy wrapper) → `dashboard-widget-grid.tsx` ของ `DashboardWidgetGrid`
+- **Gateway controller:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/dashboard-widgets/system-widgets.controller.ts` — `DashboardSystemWidgetsController`, `@Get('vendor-management')`
+- **Gateway config:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/dashboard-widgets/system-widgets.config.ts` — `VENDOR_MANAGEMENT_WIDGETS`, `getSystemWidgets()`
 - **Dataset registry:** `../micro-data/service/dashboard/registry.go` — entry vendor/pricelist/RFP (บรรทัด ~127-147)
-- **Translations:** `../carmen-inventory-frontend-react/messages/en.json` — `vendorManagement.dashboard.title`/`.description`
+- **Translations:** `../carmen-frontend/messages/en.json` — `vendorManagement.dashboard.title`/`.description`

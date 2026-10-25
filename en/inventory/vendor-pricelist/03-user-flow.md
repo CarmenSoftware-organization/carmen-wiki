@@ -50,7 +50,7 @@ flowchart TD
     Refresh --> Toast(["Show success toast"])
 ```
 
-> Diagram adapted from `carmen/docs/app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/master/request-for-pricing/request-for-pricing.service.ts` (`remove()`), `carmen-inventory-frontend-react/routes/vendor-management/request-price-list/rfp-component.tsx` (`DeleteDialog`) (2026-09-28) · Changes: renamed "Campaign" to "Request for Pricing" (this wiki uses the Prisma entity name; "Campaign" is narrative-only, see [01-data-model](/en/inventory/vendor-pricelist/01-data-model) §5); clarified the delete is a soft delete (`deleted_at`), not a hard delete.
+> Diagram adapted from `carmen/docs/app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md` · verified against `carmen-turborepo-backend/apps/micro-business/src/master/request-for-pricing/request-for-pricing.service.ts` (`remove()`), `carmen-frontend/routes/vendor-management/request-price-list/rfp-component.tsx` (`DeleteDialog`) (2026-09-28) · Changes: renamed "Campaign" to "Request for Pricing" (this wiki uses the Prisma entity name; "Campaign" is narrative-only, see [01-data-model](/en/inventory/vendor-pricelist/01-data-model) §5); clarified the delete is a soft delete (`deleted_at`), not a hard delete.
 
 ## 4. Cross-Persona Handoffs
 
@@ -69,5 +69,5 @@ Every cross-persona flow involving a Manager approval gate, a Finance Manager co
 
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical entity / enum reference.
 - Sibling: [02-business-rules.md](./02-business-rules.md) — the confirmed-vs-design-target status table this page's claims are drawn from.
-- Frontend: `../carmen-inventory-frontend-react/routes/vendor-management/`, `routes/external/pl/`.
+- Frontend: `../carmen-frontend/routes/vendor-management/`, `routes/external/pl/`.
 - Related modules: [purchase-request](/en/inventory/purchase-request), [purchase-order](/en/inventory/purchase-order), [good-receive-note](/en/inventory/good-receive-note), [product](/en/inventory/product).

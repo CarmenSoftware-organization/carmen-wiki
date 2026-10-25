@@ -12,7 +12,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 > **At a Glance**
 > **Module purpose:** Per-transaction valuation engine that picks `cost_per_unit` for every outbound stock movement and refreshes `average_cost_per_unit` for every inbound, under a single FIFO-or-Average method set **per business unit** &nbsp;·&nbsp; **Audience:** developers/testers working on inventory valuation — the module has no distinct in-app persona, just the generic `inventory_management.*` permission gates &nbsp;·&nbsp; **Key entities/tables:** `tb_inventory_transaction_cost_layer` (the cost-flow ledger, now with `extra_cost_amount`), `tb_inventory_period_snapshot` (renamed from `tb_period_snapshot` on 2026-09-16; average-method periods only), `tb_business_unit.calculation_method`, [costing/calculation-methods](/en/inventory/costing/calculation-methods) &nbsp;·&nbsp; **Sub-pages:** 11
-> **Re-verified 2026-09-22** against `carmen-turborepo-backend-v2` HEAD. Changes since 2026-07-29: extra cost is allocated into landed cost (`20260910130000_add_cost_layer_extra_cost`); FOC quantity enters stock; average-costed units post a GRN's movement at **save** (FIFO at commit); `tb_period*` → `tb_inventory_period*`; lot numbers are `<location_code><YYMM><run>`; a GL module exists but is not wired to inventory (see §1).
+> **Re-verified 2026-09-22** against `carmen-turborepo-backend` HEAD. Changes since 2026-07-29: extra cost is allocated into landed cost (`20260910130000_add_cost_layer_extra_cost`); FOC quantity enters stock; average-costed units post a GRN's movement at **save** (FIFO at commit); `tb_period*` → `tb_inventory_period*`; lot numbers are `<location_code><YYMM><run>`; a GL module exists but is not wired to inventory (see §1).
 
 ## 1. Overview
 
@@ -68,10 +68,10 @@ Operationally, costing is where **food cost control** lives. Plate cost, recipe 
 ## 6. Reference Sources
 
 - Concepts: `../carmen/docs/costing/enhanced-costing-engine.md` (frozen 2026-04-27 — recipe/portion costing, not the inventory engine)
-- Frontend: `../carmen-inventory-frontend-react/` — no costing screen; `routes/accounting/` is mock data
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/inventory-transaction/inventory-transaction.service.ts` (engine), `apps/micro-business/src/common/helpers/{inventory-cost.formula,fifo-cost-split.helper,lot-number.helper}.ts`, `apps/micro-business/src/inventory/good-received-note/good-received-note.{ledger,extra-cost}.ts` (inbound feed), `apps/micro-business/src/inventory/period-end/` (close), `apps/micro-business/src/inventory/costing/` (cost read endpoints), gateway `apps/backend-gateway/src/application/cost/`
+- Frontend: `../carmen-frontend/` — no costing screen; `routes/accounting/` is mock data
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/inventory-transaction/inventory-transaction.service.ts` (engine), `apps/micro-business/src/common/helpers/{inventory-cost.formula,fifo-cost-split.helper,lot-number.helper}.ts`, `apps/micro-business/src/inventory/good-received-note/good-received-note.{ledger,extra-cost}.ts` (inbound feed), `apps/micro-business/src/inventory/period-end/` (close), `apps/micro-business/src/inventory/costing/` (cost read endpoints), gateway `apps/backend-gateway/src/application/cost/`
 - API contracts: `../carmen-turborepo-backend-bruno/collections/carmen-inventory/_uncategorized/cost/` (4 requests)
-- E2E tests: `../carmen-inventory-frontend-e2e/` — no dedicated costing spec (see [04-test-scenarios](/en/inventory/costing/04-test-scenarios) § 4)
+- E2E tests: `../carmen-frontend-e2e/` — no dedicated costing spec (see [04-test-scenarios](/en/inventory/costing/04-test-scenarios) § 4)
 
 ## 7. Pages in This Module
 

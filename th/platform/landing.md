@@ -72,12 +72,12 @@ Landing คือจุดเริ่มต้นสำหรับผู้ท
 
 ## 7. แหล่งข้อมูลอ้างอิง
 
-- `../carmen-platform/src/pages/Landing.tsx` — หน้า: auth-redirect effect, loading state, hero, array `groups` แบบ hardcode, footer
-- `../carmen-platform/src/pages/Login.tsx` — route สาธารณะพี่น้องที่มี pattern redirect เมื่อ authenticated แล้วเหมือนกัน
-- `../carmen-platform/src/components/nav/platformNav.ts` — `ALL_PLATFORM_NAV_ITEMS` รายการ sidebar จริงที่ดัชนีของหน้านี้ถูกเทียบด้วยใน §4 `Layout.tsx` เองไม่ได้กำหนดแถว nav แล้ว มันแค่เรียก `buildPlatformNav()`
-- `../carmen-platform/src/components/PrivateRoute.tsx` — branch การตัดสินใจ platform-authority/cluster-admin ที่ยกมาใน §1 บันทึกไว้ครบถ้วนใน [Dashboard](/th/platform/dashboard) §5
-- `../carmen-platform/src/App.tsx:99` — `<Route path="/" element={<Landing />} />` ที่ไม่ถูกห่อ (ไม่มี `<PrivateRoute>`)
-- `../carmen-platform/src/components/VersionBadge.tsx` — component version-badge ที่ใช้ร่วมกัน บันทึกไว้ครบถ้วนใน [Changelog](/th/platform/changelog) §3
+- `../carmen-backstage/src/pages/Landing.tsx` — หน้า: auth-redirect effect, loading state, hero, array `groups` แบบ hardcode, footer
+- `../carmen-backstage/src/pages/Login.tsx` — route สาธารณะพี่น้องที่มี pattern redirect เมื่อ authenticated แล้วเหมือนกัน
+- `../carmen-backstage/src/components/nav/platformNav.ts` — `ALL_PLATFORM_NAV_ITEMS` รายการ sidebar จริงที่ดัชนีของหน้านี้ถูกเทียบด้วยใน §4 `Layout.tsx` เองไม่ได้กำหนดแถว nav แล้ว มันแค่เรียก `buildPlatformNav()`
+- `../carmen-backstage/src/components/PrivateRoute.tsx` — branch การตัดสินใจ platform-authority/cluster-admin ที่ยกมาใน §1 บันทึกไว้ครบถ้วนใน [Dashboard](/th/platform/dashboard) §5
+- `../carmen-backstage/src/App.tsx:99` — `<Route path="/" element={<Landing />} />` ที่ไม่ถูกห่อ (ไม่มี `<PrivateRoute>`)
+- `../carmen-backstage/src/components/VersionBadge.tsx` — component version-badge ที่ใช้ร่วมกัน บันทึกไว้ครบถ้วนใน [Changelog](/th/platform/changelog) §3
 
 ## 8. หน้าในโมดูลนี้
 

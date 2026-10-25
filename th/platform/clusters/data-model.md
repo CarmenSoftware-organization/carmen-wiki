@@ -22,14 +22,14 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 ## 2. References
 
-- ../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma — `model tb_business_unit` (บรรทัด 176), `model tb_cluster` (บรรทัด 270), `model tb_cluster_user` (บรรทัด 299), `model tb_business_unit_license` (บรรทัด 1133), `model tb_cluster_license` (บรรทัด 1168), `enum enum_cluster_user_role` (บรรทัด 718) — เลขบรรทัด ณ 2026-09-05 (source HEAD ของ repo `carmen-turborepo-backend-v2` คือ `e0f7d0b`; ต่างจาก HEAD ของ `carmen-platform` คือ `157a65e` ที่อ้างในหน้า en — คนละ repo กัน ทั้งคู่ถูกต้อง)
-- ../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260822000000_add_cluster_license/migration.sql — `CREATE VIEW "v_cluster_bu_cap"` (คำนวณ cap จากใบที่ชนะ) และ `CREATE VIEW "v_cluster_bu_quota"` (จัดอันดับ BU รายตัว โดยยืม cap มาจาก view แรก)
-- ../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260901020000_cluster_license_cancel/migration.sql — เพิ่ม `cancelled_at` และ `CREATE OR REPLACE VIEW "v_cluster_bu_cap"` ให้กรอง `cancelled_at IS NULL`
-- ../carmen-platform/src/types/index.ts — interface `Cluster` (บรรทัด 26–51, มี `bu_cap`/`bu_used`/`bu_cap_end_date`/`doc_version` — ไม่มี `max_license_bu` แล้ว), `ClusterUser` (บรรทัด 448–464, ไม่มี `parent_bu_id`), `PresignedImage`, `Audit`/`AuditEntry`
-- ../carmen-platform/src/utils/docVersion.ts — helper `getDocVersion`/`isVersionConflict`/`notifyVersionConflict`
-- ../carmen-platform/src/utils/capacity.ts — `utilization()` (กฎ null/0 = ไม่จำกัด ยังใช้กับมิติที่นั่ง) เทียบกับ `seatUtilization()` (กฎ finite เสมอ ใช้กับโควตา BU ตอนนี้)
-- ../carmen-platform/src/utils/businessUnitRank.ts — การจัดอันดับ BU (`is_hq DESC, created_at ASC, id ASC`) ที่ต้องตรงกับ view `v_cluster_bu_quota`
-- ../carmen-platform/src/services/clusterService.ts — REST client (`/api-system/clusters`, `/api-system/clusters/summary`)
+- ../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma — `model tb_business_unit` (บรรทัด 176), `model tb_cluster` (บรรทัด 270), `model tb_cluster_user` (บรรทัด 299), `model tb_business_unit_license` (บรรทัด 1133), `model tb_cluster_license` (บรรทัด 1168), `enum enum_cluster_user_role` (บรรทัด 718) — เลขบรรทัด ณ 2026-09-05 (source HEAD ของ repo `carmen-turborepo-backend` คือ `e0f7d0b`; ต่างจาก HEAD ของ `carmen-backstage` คือ `157a65e` ที่อ้างในหน้า en — คนละ repo กัน ทั้งคู่ถูกต้อง)
+- ../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260822000000_add_cluster_license/migration.sql — `CREATE VIEW "v_cluster_bu_cap"` (คำนวณ cap จากใบที่ชนะ) และ `CREATE VIEW "v_cluster_bu_quota"` (จัดอันดับ BU รายตัว โดยยืม cap มาจาก view แรก)
+- ../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260901020000_cluster_license_cancel/migration.sql — เพิ่ม `cancelled_at` และ `CREATE OR REPLACE VIEW "v_cluster_bu_cap"` ให้กรอง `cancelled_at IS NULL`
+- ../carmen-backstage/src/types/index.ts — interface `Cluster` (บรรทัด 26–51, มี `bu_cap`/`bu_used`/`bu_cap_end_date`/`doc_version` — ไม่มี `max_license_bu` แล้ว), `ClusterUser` (บรรทัด 448–464, ไม่มี `parent_bu_id`), `PresignedImage`, `Audit`/`AuditEntry`
+- ../carmen-backstage/src/utils/docVersion.ts — helper `getDocVersion`/`isVersionConflict`/`notifyVersionConflict`
+- ../carmen-backstage/src/utils/capacity.ts — `utilization()` (กฎ null/0 = ไม่จำกัด ยังใช้กับมิติที่นั่ง) เทียบกับ `seatUtilization()` (กฎ finite เสมอ ใช้กับโควตา BU ตอนนี้)
+- ../carmen-backstage/src/utils/businessUnitRank.ts — การจัดอันดับ BU (`is_hq DESC, created_at ASC, id ASC`) ที่ต้องตรงกับ view `v_cluster_bu_quota`
+- ../carmen-backstage/src/services/clusterService.ts — REST client (`/api-system/clusters`, `/api-system/clusters/summary`)
 
 ## 3. TODO
 

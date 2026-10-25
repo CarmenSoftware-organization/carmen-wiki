@@ -65,7 +65,7 @@ graph LR
 
 ## 6. แหล่งอ้างอิง
 
-- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/physical-count/pc-component.tsx`, `routes/inventory-management/shared/pc-location-card.tsx`
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (`create`), `.../physical-count-period/physical-count-period.service.ts` (`findCurrent`)
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count; manual catalog `docs/test-cases/750-physical-count.md` (รายการ TC-PC-01xxxx, `TC-PC-900002`–`900004` dialog "Counting has not started")
+- **Frontend:** `../carmen-frontend/routes/inventory-management/physical-count/pc-component.tsx`, `routes/inventory-management/shared/pc-location-card.tsx`
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (`create`), `.../physical-count-period/physical-count-period.service.ts` (`findCurrent`)
+- **E2E:** `../carmen-frontend-e2e/tests/` — ยังไม่มี spec physical-count; manual catalog `docs/test-cases/750-physical-count.md` (รายการ TC-PC-01xxxx, `TC-PC-900002`–`900004` dialog "Counting has not started")
 - ที่เกี่ยวข้อง: [physical-count/03-user-flow](/th/inventory/physical-count/03-user-flow) (overview), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_VAL_001`–`003`, `PHC_AUTH_001`), [physical-count/03-user-flow-counter](/th/inventory/physical-count/03-user-flow-counter) (การเดินทางฝั่ง entry/review ของ role เดียวกัน)

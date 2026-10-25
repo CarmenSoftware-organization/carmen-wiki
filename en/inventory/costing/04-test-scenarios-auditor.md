@@ -30,6 +30,6 @@ dateCreated: 2026-05-15T12:30:00.000Z
 
 ## 3. References
 
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/` — no audit-specific controller found for cost-layer data.
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/` — no audit-specific controller found for cost-layer data.
 - Parent overview: [04-test-scenarios](./04-test-scenarios.md); user-flow counterpart: [03-user-flow-auditor](./03-user-flow-auditor.md).
 - Cross-link: [inventory/04-test-scenarios-audit-config](/en/inventory/inventory/04-test-scenarios-audit-config) — the identical correction already made on the sibling module.

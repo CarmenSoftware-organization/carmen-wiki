@@ -18,8 +18,8 @@ dateCreated: 2026-05-15T12:30:00.000Z
 > **รูปแบบ audit:** มาตรฐาน `created_*` / `updated_*` / `deleted_*` บน cost-layer และ snapshot; **`tb_inventory_transaction_detail` ไม่มี soft-delete** — การกลับรายการ post compensating row แทน
 
 > **แหล่งข้อมูลอ้างอิงหลัก:** Prisma schema ฝั่ง backend อ่านไฟล์เหล่านี้ก่อนเสมอเมื่อเขียนหรือปรับปรุงหน้านี้:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > ไฟล์ `generated/client/schema.prisma` ในแต่ละ package เป็นไฟล์ที่ถูกสร้างขึ้นอัตโนมัติ ไม่ใช่แหล่งอ้างอิง
 
@@ -256,9 +256,9 @@ Carmen/docs costing reference (`../carmen/docs/costing/enhanced-costing-engine.m
 ## 6. References
 
 - **Primary (source of truth):**
-  - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — tenant entities (`tb_inventory_transaction_cost_layer` `:1177-1221`, `tb_inventory_transaction_detail` `:1122-1155`, `tb_inventory_period_snapshot` `:1298`, `tb_product`), tenant enums (`enum_business_unit_config_key`, `enum_physical_count_costing_method`, `enum_transaction_type`); migration `20260910130000_add_cost_layer_extra_cost`, `20260810180000_move_grn_lot_link_to_ledger`, `20260916141000_rename_tb_period_to_tb_inventory_period`
-  - `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/inventory-transaction/inventory-transaction.service.ts` (`createFromGoodReceivedNote` `:841`, `createFifoTransaction` `:893`, `createAverageTransaction` `:1051`, `getNetTotals` `:1487`, `restampAverageCostForProducts` `:1521`), `apps/micro-business/src/common/helpers/inventory-cost.formula.ts`, `lot-number.helper.ts`, `fifo-cost-split.helper.ts`
-  - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — platform entity `tb_business_unit.calculation_method` และ platform enum `enum_calculation_method`
+  - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — tenant entities (`tb_inventory_transaction_cost_layer` `:1177-1221`, `tb_inventory_transaction_detail` `:1122-1155`, `tb_inventory_period_snapshot` `:1298`, `tb_product`), tenant enums (`enum_business_unit_config_key`, `enum_physical_count_costing_method`, `enum_transaction_type`); migration `20260910130000_add_cost_layer_extra_cost`, `20260810180000_move_grn_lot_link_to_ledger`, `20260916141000_rename_tb_period_to_tb_inventory_period`
+  - `../carmen-turborepo-backend/apps/micro-business/src/inventory/inventory-transaction/inventory-transaction.service.ts` (`createFromGoodReceivedNote` `:841`, `createFifoTransaction` `:893`, `createAverageTransaction` `:1051`, `getNetTotals` `:1487`, `restampAverageCostForProducts` `:1521`), `apps/micro-business/src/common/helpers/inventory-cost.formula.ts`, `lot-number.helper.ts`, `fifo-cost-split.helper.ts`
+  - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — platform entity `tb_business_unit.calculation_method` และ platform enum `enum_calculation_method`
 - **Secondary (concept cross-check):**
   - `../carmen/docs/costing/enhanced-costing-engine.md`
   - Sibling: [calculation-methods.md](./calculation-methods.md)

@@ -14,7 +14,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 > **Tables:** `tb_business_unit` (primary) &nbsp;·&nbsp; `tb_business_unit_tb_module` (M:N modules activation) &nbsp;·&nbsp; `tb_business_unit_license` (per-BU seat-purchase ledger, replaces the old `max_license_users` column) &nbsp;·&nbsp; `tb_business_unit_interface_license` (per-BU interface-licence ledger, since 2026-09-10 — documented in [Licenses — Data Model](/en/platform/licenses/data-model) §2.4; `tb_business_unit_interface`, the flat entitlement table it replaces, was dropped on 2026-09-08) &nbsp;·&nbsp; `tb_database_pool` (referenced — shared DB server a BU's tenant schema lives in) &nbsp;·&nbsp; `tb_user_tb_business_unit` (M:N user-join, full doc in [users](/en/platform/users)) &nbsp;·&nbsp; `tb_module` (referenced, full catalog out of scope) &nbsp;·&nbsp; **Enums:** `enum_user_business_unit_role` (admin/user) &nbsp;·&nbsp; `enum_calculation_method` (average/fifo) &nbsp;·&nbsp; **Schema features:** formatting/locale block (date/time/currency/decimal/timezone) &nbsp;·&nbsp; `config` JSON column (key/value config pairs managed via SPA) &nbsp;·&nbsp; `info` JSON column (free-form metadata, no SPA path) &nbsp;·&nbsp; structured hotel/company address columns (10 fields each) &nbsp;·&nbsp; **Branding:** `logo_file_token` / `avatar_file_token`, resolved to embedded presigned `logo`/`avatar` objects &nbsp;·&nbsp; **Removed since the last sync:** `max_license_users` (column physically dropped) and `db_connection` (JSON blob physically dropped, replaced by `database_pool_id` + `db_schema`) &nbsp;·&nbsp; **`code` is now platform-wide unique**, not cluster-scoped, and is server-generated — see §2.1 &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` (added 2026-07-16), enforced as an optimistic lock on `PUT`
 
 > **Source of truth:** Backend Prisma platform schema. Always read this first when writing or updating this page:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (read at commit `1aaab3c`, 2026-09-05)
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (read at commit `1aaab3c`, 2026-09-05)
 >
 > The `generated/client/schema.prisma` file is an auto-generated copy and not authoritative.
 
@@ -313,9 +313,9 @@ Because the keys are operator-defined, this page cannot enumerate them. If your 
 
 `info` is stored as `Json?` in Prisma but has **no representation in the SPA at all**: the field has been dropped from the `BusinessUnit` TS interface (it previously appeared as `info?: unknown`), and there is no edit path for it in `BusinessUnitEdit.tsx` or its extracted sections — the SPA does not read or write any key under `info` for the BU. The column appears to be reserved for future extensibility, analogous to the `info Json? @db.Json` column on `tb_cluster` which is also documented as a free-form metadata blob with no currently documented key structure.
 
-## 6. Divergences from carmen-platform SPA shape
+## 6. Divergences from carmen-backstage SPA shape
 
-The `BusinessUnit` interface in `../carmen-platform/src/types/index.ts` and the `BusinessUnitFormData` interface in `../carmen-platform/src/pages/businessUnitEdit/types.ts` were compared against the current Prisma `tb_business_unit` model.
+The `BusinessUnit` interface in `../carmen-backstage/src/types/index.ts` and the `BusinessUnitFormData` interface in `../carmen-backstage/src/pages/businessUnitEdit/types.ts` were compared against the current Prisma `tb_business_unit` model.
 
 | # | Item | Prisma has | SPA expects | Notes |
 | - | ---- | ---------- | ----------- | ----- |
@@ -335,19 +335,19 @@ All core identity, hotel info, company info, format, locale, and soft-delete fie
 ## 7. References
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (commit `1aaab3c`, 2026-09-05) — `model tb_business_unit`, `model tb_business_unit_tb_module`, `model tb_business_unit_license` (line 1133), `model tb_database_pool` (line 1382), `model tb_module`, `model tb_user_tb_business_unit`, `enum enum_user_business_unit_role`, `enum enum_calculation_method`. Line numbers shift often on this file (licensing models keep growing) — search by model name rather than trusting a cached line number.
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260821000000_drop_bu_max_license_users/` — drops `max_license_users`.
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260904000000_business_unit_code_global_unique/` and `.../20260904010000_business_unit_cluster_name_unique/` — the two partial-unique indexes that actually enforce code/name uniqueness (§2.1 Constraints).
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/business-unit/business-unit.service.ts` — `createBusinessUnit()`: the BU-quota pre-flight check, the name-keyed duplicate-submission guard, and the `code`-generation retry loop.
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/business-unit/business-unit-code.helper.ts` — `generateBusinessUnitCode()` (Crockford base32, 8 chars, `randomBytes`-backed).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (commit `1aaab3c`, 2026-09-05) — `model tb_business_unit`, `model tb_business_unit_tb_module`, `model tb_business_unit_license` (line 1133), `model tb_database_pool` (line 1382), `model tb_module`, `model tb_user_tb_business_unit`, `enum enum_user_business_unit_role`, `enum enum_calculation_method`. Line numbers shift often on this file (licensing models keep growing) — search by model name rather than trusting a cached line number.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260821000000_drop_bu_max_license_users/` — drops `max_license_users`.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260904000000_business_unit_code_global_unique/` and `.../20260904010000_business_unit_cluster_name_unique/` — the two partial-unique indexes that actually enforce code/name uniqueness (§2.1 Constraints).
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/business-unit/business-unit.service.ts` — `createBusinessUnit()`: the BU-quota pre-flight check, the name-keyed duplicate-submission guard, and the `code`-generation retry loop.
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/business-unit/business-unit-code.helper.ts` — `generateBusinessUnitCode()` (Crockford base32, 8 chars, `randomBytes`-backed).
 
 **Secondary (consumer shape):**
-- `../carmen-platform/src/pages/BusinessUnitEdit.tsx` — orchestrator: tab state, `buildPayload` (strips `code`, diffs `database_pool_id`/`db_schema` against the last-saved snapshot before including them), `doc_version` wiring, logo/avatar upload handlers, the pool-repoint confirm gate.
-- `../carmen-platform/src/pages/businessUnitEdit/types.ts` — `BusinessUnitFormData` interface and `initialFormData` defaults.
-- `../carmen-platform/src/pages/businessUnitEdit/BusinessUnitLicensesCard.tsx`, `useLicenseLedger` (`src/pages/licenses/useLicenseLedger.ts`), `src/utils/buLicense.ts` (`licenseStatus`, `sumActiveLicenses`, `isExpiringSoon`) — the Licenses tab's read model.
-- `../carmen-platform/src/pages/businessUnitEdit/sections/DatabaseConnectionSection.tsx`, `src/utils/databasePool.ts` (`generateSchemaName`) — the pool picker and schema-name randomizer.
-- `../carmen-platform/src/services/businessUnitService.ts`, `businessUnitLicenseService.ts`, `databasePoolService.ts` — REST clients.
-- `../carmen-platform/src/types/index.ts` — `BusinessUnit`, `BusinessUnitConfig`, `BusinessUnitLicense`, `DatabasePool`, `PresignedImage`, `Audit`/`AuditEntry`.
+- `../carmen-backstage/src/pages/BusinessUnitEdit.tsx` — orchestrator: tab state, `buildPayload` (strips `code`, diffs `database_pool_id`/`db_schema` against the last-saved snapshot before including them), `doc_version` wiring, logo/avatar upload handlers, the pool-repoint confirm gate.
+- `../carmen-backstage/src/pages/businessUnitEdit/types.ts` — `BusinessUnitFormData` interface and `initialFormData` defaults.
+- `../carmen-backstage/src/pages/businessUnitEdit/BusinessUnitLicensesCard.tsx`, `useLicenseLedger` (`src/pages/licenses/useLicenseLedger.ts`), `src/utils/buLicense.ts` (`licenseStatus`, `sumActiveLicenses`, `isExpiringSoon`) — the Licenses tab's read model.
+- `../carmen-backstage/src/pages/businessUnitEdit/sections/DatabaseConnectionSection.tsx`, `src/utils/databasePool.ts` (`generateSchemaName`) — the pool picker and schema-name randomizer.
+- `../carmen-backstage/src/services/businessUnitService.ts`, `businessUnitLicenseService.ts`, `databasePoolService.ts` — REST clients.
+- `../carmen-backstage/src/types/index.ts` — `BusinessUnit`, `BusinessUnitConfig`, `BusinessUnitLicense`, `DatabasePool`, `PresignedImage`, `Audit`/`AuditEntry`.
 
 **Cross-links:**
 - [business-units](/en/platform/business-units) — module landing page

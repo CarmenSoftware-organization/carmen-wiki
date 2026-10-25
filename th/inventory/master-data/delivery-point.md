@@ -47,7 +47,7 @@ flowchart TD
     I --> J["แสดงผลลัพธ์"]
 ```
 
-> Diagram adapted from `carmen/docs/app/system-administration/delivery-points/FD-delivery-points.md` · verified against `carmen-inventory-frontend-react/routes/config/delivery-point/delivery-point-component.tsx` (2026-09-28) · Changes: renamed `isActive` to the real `is_active` column.
+> Diagram adapted from `carmen/docs/app/system-administration/delivery-points/FD-delivery-points.md` · verified against `carmen-frontend/routes/config/delivery-point/delivery-point-component.tsx` (2026-09-28) · Changes: renamed `isActive` to the real `is_active` column.
 
 การสร้างจุดส่งของ:
 
@@ -65,7 +65,7 @@ flowchart TD
     I --> J["Refresh list"]
 ```
 
-> Diagram adapted from `carmen/docs/app/system-administration/delivery-points/FD-delivery-points.md` · verified against `carmen-inventory-frontend-react/routes/config/delivery-point/delivery-point-component.tsx`, `components/templates/config-entity-dialog.tsx:222-226`, `components/share/delivery-point-dialog.tsx:15-22` (2026-09-28) · Changes: named the real `DeliveryPointDialog` component and the real create endpoint in place of the source's generic "Create record". The Save button is not disabled while the name is invalid (`config-entity-dialog.tsx:222-226` disables it only while `isPending`); an empty name is instead caught by the zod schema on submit (`delivery-point-dialog.tsx:15-22`), which shows an inline "Name required" field error.
+> Diagram adapted from `carmen/docs/app/system-administration/delivery-points/FD-delivery-points.md` · verified against `carmen-frontend/routes/config/delivery-point/delivery-point-component.tsx`, `components/templates/config-entity-dialog.tsx:222-226`, `components/share/delivery-point-dialog.tsx:15-22` (2026-09-28) · Changes: named the real `DeliveryPointDialog` component and the real create endpoint in place of the source's generic "Create record". The Save button is not disabled while the name is invalid (`config-entity-dialog.tsx:222-226` disables it only while `isPending`); an empty name is instead caught by the zod schema on submit (`delivery-point-dialog.tsx:15-22`), which shows an inline "Name required" field error.
 
 การลบจุดส่งของ (ไม่มี reference guard — ดู § 3):
 
@@ -79,7 +79,7 @@ flowchart TD
     E --> G["เอาออกจาก list"]
 ```
 
-> Diagram adapted from `carmen/docs/app/system-administration/delivery-points/FD-delivery-points.md` · verified against `carmen-inventory-frontend-react/components/templates/config-list-template.tsx` (2026-09-28) · Changes: named the real `DeleteDialog` component in place of the source's generic "Show confirmation", and noted the unconfirmed delete guard per § 3.
+> Diagram adapted from `carmen/docs/app/system-administration/delivery-points/FD-delivery-points.md` · verified against `carmen-frontend/components/templates/config-list-template.tsx` (2026-09-28) · Changes: named the real `DeleteDialog` component in place of the source's generic "Show confirmation", and noted the unconfirmed delete guard per § 3.
 
 ## 3. การตรวจสอบและข้อผิดพลาด
 
@@ -134,7 +134,7 @@ flowchart TD
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_delivery_point` (line ~641)
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_delivery_point` (line ~641)
 - **Migration:** `20260915120000_po_header_delivery_point`
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/079-delivery-point.spec.ts` + `docs/test-cases/gaps/079-delivery-point-gap.md` (30 กรณีที่ยังไม่ครอบคลุม)
-- **Frontend:** `../carmen-inventory-frontend-react/routes/config/delivery-point/`
+- **E2E:** `../carmen-frontend-e2e/tests/079-delivery-point.spec.ts` + `docs/test-cases/gaps/079-delivery-point-gap.md` (30 กรณีที่ยังไม่ครอบคลุม)
+- **Frontend:** `../carmen-frontend/routes/config/delivery-point/`

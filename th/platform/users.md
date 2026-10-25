@@ -50,7 +50,7 @@ header บนหน้า edit ยังเปิดเผยปุ่ม **Chan
 
 ## 4. บทบาทและ Persona
 
-route ทั้งสามของ user ห่อด้วย `PrivateRoute` พร้อม prop `requiredPermission` และ flag `feature="users"` — ยืนยันจากการอ่าน `../carmen-platform/src/App.tsx` (block ของ route บรรทัด 267–289) **แก้ไขการอ้างอิง:** รายการ nav "Users" (พร้อม key `feature: 'users'`) ย้ายไปอยู่ที่ `src/components/nav/platformNav.ts` (บรรทัด 16, กลุ่ม `navGroup.organization`) แล้ว ไม่ใช่ `Layout.tsx` อีกต่อไป — nav definition แยกออกมาเป็นไฟล์ของตัวเองตั้งแต่ sync ก่อนหน้า mutation ภายในหน้าถูกห่อเพิ่มด้วย gate `<Can>` หรือ (สำหรับสอง action ของ BU ใน access tree) boolean ที่มาจาก permission ที่คำนวณใน `UserEdit.tsx` (`canAddBU`) หรือ `<Can>` ตรงบนแถว (`UserAccessTree.tsx`) ต่างจากหน้า Clusters และ Business Units ตรงที่ route/header/row gate ไม่ส่ง `clusterId` — แต่สอง action ของ BU-assignment ใน `UserAccessTree` resolve กับ `cluster.update` ที่ scope ต่อ cluster และ action View History ใหม่ resolve กับ sentinel ระดับแพลตฟอร์ม ไม่ใช่ cluster ใดคลัสเตอร์หนึ่ง
+route ทั้งสามของ user ห่อด้วย `PrivateRoute` พร้อม prop `requiredPermission` และ flag `feature="users"` — ยืนยันจากการอ่าน `../carmen-backstage/src/App.tsx` (block ของ route บรรทัด 267–289) **แก้ไขการอ้างอิง:** รายการ nav "Users" (พร้อม key `feature: 'users'`) ย้ายไปอยู่ที่ `src/components/nav/platformNav.ts` (บรรทัด 16, กลุ่ม `navGroup.organization`) แล้ว ไม่ใช่ `Layout.tsx` อีกต่อไป — nav definition แยกออกมาเป็นไฟล์ของตัวเองตั้งแต่ sync ก่อนหน้า mutation ภายในหน้าถูกห่อเพิ่มด้วย gate `<Can>` หรือ (สำหรับสอง action ของ BU ใน access tree) boolean ที่มาจาก permission ที่คำนวณใน `UserEdit.tsx` (`canAddBU`) หรือ `<Can>` ตรงบนแถว (`UserAccessTree.tsx`) ต่างจากหน้า Clusters และ Business Units ตรงที่ route/header/row gate ไม่ส่ง `clusterId` — แต่สอง action ของ BU-assignment ใน `UserAccessTree` resolve กับ `cluster.update` ที่ scope ต่อ cluster และ action View History ใหม่ resolve กับ sentinel ระดับแพลตฟอร์ม ไม่ใช่ cluster ใดคลัสเตอร์หนึ่ง
 
 | Surface | Gate |
 |---|---|
@@ -85,15 +85,15 @@ route ทั้งสามของ user ห่อด้วย `PrivateRoute` �
 
 ## 6. แหล่งข้อมูลอ้างอิง
 
-- `../carmen-platform/src/App.tsx` — การต่อสาย `PrivateRoute` (block ของ route บรรทัด 267–289); key `requiredPermission` คือ `user.read`/`user.create`/`user.update` บวก `feature="users"` บน user route ทั้งสาม (`SITEMAP.md` ใน repo เดียวกันยังแสดง row "Authenticated" ก่อนยุค RBAC และตามหลังโค้ด)
-- `../carmen-platform/src/components/nav/platformNav.ts` (บรรทัด 16) — รายการ nav "Users" (`permission: 'user.read'`, `feature: 'users'`) — nav definition อยู่ที่นี่ ไม่ใช่ `Layout.tsx`
-- `../carmen-platform/src/pages/UserManagement.tsx` และ `userManagement/UserDirectorySummary.tsx` — หน้า list: คอลัมน์ identity ที่ยุบรวมแล้วและคอลัมน์ Status แบบไม่สมมาตร (`fd1f6ae`, #219), แถบสรุป Directory ที่อ่านจาก `getDirectorySummary()`, `getNameDisplay`, คอลัมน์จำนวน BU, filter status/show-deleted, ส่งออก CSV, `<Can>`-gated Fetch Keycloak/Add/Edit/View History/Delete, dialog delete/hard-delete ทั้งแบบเดี่ยวและ bulk (super-admin)
-- `../carmen-platform/src/pages/UserEdit.tsx` และ `userEdit/{UserIdentityHero,UserAccessTree}.tsx` — หน้า create/view/edit: การ์ดฟอร์มแบบมีหัวข้อที่แสดงเฉพาะตอน `editing` (`d21c57c`, #220), บรรทัด audit + ปุ่ม View History ใน Hero, `<Can permission="user.update">` บนทั้ง toggle Edit และ Change Password, การตรวจ permission `canAddBU`/scoped-Remove, dialog Add BU, การเดินสาย `doc_version`, ค่าคงที่ `BU_ROLES`, interface `UserFormData` (7 ฟิลด์)
-- `../carmen-platform/src/utils/audit.ts` — `normalizeAudit()` (ลอง nested ก่อน, flat เป็น fallback), `latestActor()`, `auditCsvFields()`
-- `../carmen-platform/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail}.tsx` และ `src/utils/permissions.ts` (`PLATFORM_SCOPED_RECORD`) — ฟีเจอร์ View History
-- `../carmen-platform/src/utils/docVersion.ts` — helper optimistic-lock
-- `../carmen-platform/src/services/userService.ts` — REST client (`/api-system/user`), `getDirectorySummary`, `fetchKeycloakUsers`, `resetPassword`, `delete`, `hardDelete`
-- `../carmen-platform/src/components/Can.tsx` และ `src/context/AuthContext.tsx` — component gate ภายในหน้า และ resolver `hasPermission` ที่อยู่เบื้องหลังทุก gate ข้างต้น
+- `../carmen-backstage/src/App.tsx` — การต่อสาย `PrivateRoute` (block ของ route บรรทัด 267–289); key `requiredPermission` คือ `user.read`/`user.create`/`user.update` บวก `feature="users"` บน user route ทั้งสาม (`SITEMAP.md` ใน repo เดียวกันยังแสดง row "Authenticated" ก่อนยุค RBAC และตามหลังโค้ด)
+- `../carmen-backstage/src/components/nav/platformNav.ts` (บรรทัด 16) — รายการ nav "Users" (`permission: 'user.read'`, `feature: 'users'`) — nav definition อยู่ที่นี่ ไม่ใช่ `Layout.tsx`
+- `../carmen-backstage/src/pages/UserManagement.tsx` และ `userManagement/UserDirectorySummary.tsx` — หน้า list: คอลัมน์ identity ที่ยุบรวมแล้วและคอลัมน์ Status แบบไม่สมมาตร (`fd1f6ae`, #219), แถบสรุป Directory ที่อ่านจาก `getDirectorySummary()`, `getNameDisplay`, คอลัมน์จำนวน BU, filter status/show-deleted, ส่งออก CSV, `<Can>`-gated Fetch Keycloak/Add/Edit/View History/Delete, dialog delete/hard-delete ทั้งแบบเดี่ยวและ bulk (super-admin)
+- `../carmen-backstage/src/pages/UserEdit.tsx` และ `userEdit/{UserIdentityHero,UserAccessTree}.tsx` — หน้า create/view/edit: การ์ดฟอร์มแบบมีหัวข้อที่แสดงเฉพาะตอน `editing` (`d21c57c`, #220), บรรทัด audit + ปุ่ม View History ใน Hero, `<Can permission="user.update">` บนทั้ง toggle Edit และ Change Password, การตรวจ permission `canAddBU`/scoped-Remove, dialog Add BU, การเดินสาย `doc_version`, ค่าคงที่ `BU_ROLES`, interface `UserFormData` (7 ฟิลด์)
+- `../carmen-backstage/src/utils/audit.ts` — `normalizeAudit()` (ลอง nested ก่อน, flat เป็น fallback), `latestActor()`, `auditCsvFields()`
+- `../carmen-backstage/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail}.tsx` และ `src/utils/permissions.ts` (`PLATFORM_SCOPED_RECORD`) — ฟีเจอร์ View History
+- `../carmen-backstage/src/utils/docVersion.ts` — helper optimistic-lock
+- `../carmen-backstage/src/services/userService.ts` — REST client (`/api-system/user`), `getDirectorySummary`, `fetchKeycloakUsers`, `resetPassword`, `delete`, `hardDelete`
+- `../carmen-backstage/src/components/Can.tsx` และ `src/context/AuthContext.tsx` — component gate ภายในหน้า และ resolver `hasPermission` ที่อยู่เบื้องหลังทุก gate ข้างต้น
 
 ## 7. หน้าในโมดูลนี้
 

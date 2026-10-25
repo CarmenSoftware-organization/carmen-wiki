@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T14:30:00.000Z
 > **At a Glance**
 > **โมดูล:** [spot-check](/th/inventory/spot-check) &nbsp;·&nbsp; **ขอบเขต:** role เดียวที่มีสิทธิ์จริง แบ่งเป็นสองไฟล์หน้าจอ (list/create; entry/review) บวกกลุ่มที่สามที่ยืนยันแล้วว่าไม่มีอยู่จริง
 > **ลำดับการรัน:** scenario หน้ารายการ/สร้าง → scenario หน้า entry/review → scenario end-to-end ด้านล่าง
-> **ความครอบคลุม E2E:** ไม่มี Playwright spec ของ `spot-check` ที่ `../carmen-inventory-frontend-e2e/tests/`; มี manual test-case catalog ที่ `docs/test-cases/760-spot-check.md` (44 case ตรวจซ้ำกับ live component เมื่อ 2026-09-20; user stories ที่ generate ไว้ `docs/user-stories/760-spot-check.md` มี 32) — ดู § 5 ว่า map เข้ากับ routing จริงอย่างไร
+> **ความครอบคลุม E2E:** ไม่มี Playwright spec ของ `spot-check` ที่ `../carmen-frontend-e2e/tests/`; มี manual test-case catalog ที่ `docs/test-cases/760-spot-check.md` (44 case ตรวจซ้ำกับ live component เมื่อ 2026-09-20; user stories ที่ generate ไว้ `docs/user-stories/760-spot-check.md` มี 32) — ดู § 5 ว่า map เข้ากับ routing จริงอย่างไร
 
 ## 1. ภาพรวม
 
@@ -52,13 +52,13 @@ dateCreated: 2026-05-15T14:30:00.000Z
 
 ## 5. การ Map กับ Manual Test-Case Catalog
 
-**ความครอบคลุมแบบ executable (2026-09-22):** ยังไม่มี Playwright spec ของ `spot-check` ที่ `../carmen-inventory-frontend-e2e/tests/` (ยืนยันโดย `ls tests/ | grep -i 'spot\|check'`) manual catalog เอกสารล้วน `docs/test-cases/760-spot-check.md` (44 cases, re-verify กับ live component เมื่อ 2026-09-20) และ stories ที่ generate แล้ว `docs/user-stories/760-spot-check.md` (32) คือเอกสารอ้างอิง; เขียน automated coverage ใหม่ตามกลไกที่บันทึกไว้ในหน้านี้
+**ความครอบคลุมแบบ executable (2026-09-22):** ยังไม่มี Playwright spec ของ `spot-check` ที่ `../carmen-frontend-e2e/tests/` (ยืนยันโดย `ls tests/ | grep -i 'spot\|check'`) manual catalog เอกสารล้วน `docs/test-cases/760-spot-check.md` (44 cases, re-verify กับ live component เมื่อ 2026-09-20) และ stories ที่ generate แล้ว `docs/user-stories/760-spot-check.md` (32) คือเอกสารอ้างอิง; เขียน automated coverage ใหม่ตามกลไกที่บันทึกไว้ในหน้านี้
 
 **แก้ไขแล้ว:** catalog revision ก่อนหน้ามีสอง scenario (`TC-SPC-040001` แก้ไข spot check ที่บันทึกแล้ว, `TC-SPC-050001` ลบ spot check ที่บันทึกแล้ว) สำหรับหน้า detail view/edit ที่ routing ของแอปนี้ไม่เคยไปถึง catalog revision 2026-09-20 ลบทั้งสองออกแล้วและระบุไว้ตั้งแต่ต้นว่าไม่มีหน้า view / edit / delete (`/spot-check/:id` render หน้า counting) สอดคล้องกับการ cleanup ฝั่ง frontend เมื่อ 2026-09-04 (`0647b32e`) ที่ลบ edit path ที่ตายแล้วของ `ScForm` ออก `update()` / `delete()` ยังคงเป็น endpoint ฝั่ง backend เท่านั้น
 
 ## 6. แหล่งอ้างอิง
 
-- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/`
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts`, `spot-check.logic.ts`
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check; manual test-case catalog ที่ `docs/test-cases/760-spot-check.md` (44 case ตรวจซ้ำ 2026-09-20 — case หน้าจอ view/edit ที่เคยเข้าถึงไม่ได้ถูกแก้แล้ว ดู § 5) และ user stories `docs/user-stories/760-spot-check.md` (32)
+- **Frontend:** `../carmen-frontend/routes/inventory-management/spot-check/`
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/spot-check/spot-check.service.ts`, `spot-check.logic.ts`
+- **E2E:** `../carmen-frontend-e2e/tests/` — ยังไม่มี spec spot-check; manual test-case catalog ที่ `docs/test-cases/760-spot-check.md` (44 case ตรวจซ้ำ 2026-09-20 — case หน้าจอ view/edit ที่เคยเข้าถึงไม่ได้ถูกแก้แล้ว ดู § 5) และ user stories `docs/user-stories/760-spot-check.md` (32)
 - ที่เกี่ยวข้อง: [spot-check/03-user-flow](/th/inventory/spot-check/03-user-flow) (state machine ที่หน้านี้ใช้), [spot-check/02-business-rules](/th/inventory/spot-check/02-business-rules) (`SPC_VAL_*` / `SPC_AUTH_*` / `SPC_POST_*`), [inventory-adjustment/04-test-scenarios](/th/inventory/inventory-adjustment/04-test-scenarios) (จุดที่ต้อง manual แก้ไขผลต่างที่ยืนยันแล้ว)

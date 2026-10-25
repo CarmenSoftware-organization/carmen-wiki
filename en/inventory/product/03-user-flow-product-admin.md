@@ -63,7 +63,7 @@ flowchart TD
     Save --> End(["Navigate to product detail"])
 ```
 
-> Diagram adapted from `carmen/docs/app/product-management/products/FD-products.md` · verified against `carmen-inventory-frontend-react/routes/product-management/product/pd-form.tsx` (2026-09-28) · Changes: replaced the generic "inline errors" step with the real toast + red-dot-tab-switch behaviour (`pd-form.tsx` `onInvalid`, 2026-07-30 change — see step 10 above); replaced the generic server-error messages with the real `PRD_VAL_001` duplicate-code 409 example; dropped the transaction-rollback framing (not evidenced in the product service).
+> Diagram adapted from `carmen/docs/app/product-management/products/FD-products.md` · verified against `carmen-frontend/routes/product-management/product/pd-form.tsx` (2026-09-28) · Changes: replaced the generic "inline errors" step with the real toast + red-dot-tab-switch behaviour (`pd-form.tsx` `onInvalid`, 2026-07-30 change — see step 10 above); replaced the generic server-error messages with the real `PRD_VAL_001` duplicate-code 409 example; dropped the transaction-rollback framing (not evidenced in the product service).
 
 There is **no bulk-import flow** (corrected 2026-09-22 — see [02-business-rules](/en/inventory/product/02-business-rules) § 5.1); the earlier dry-run / strict-commit description on this page had no code behind it.
 

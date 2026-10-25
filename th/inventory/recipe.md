@@ -27,7 +27,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 วัตถุดิบสามารถเป็นได้ทั้ง **สินค้า** ที่ดึงจากแคตตาล็อกคลังสินค้าหรือ **sub-recipe** — สูตรที่ publish แล้วอื่นที่ใช้เป็นส่วนประกอบของสูตรหลัก ("mother sauce" ที่ใช้ในเมนูหลักสามจาน base ขนมที่ใช้ในของหวานสองรายการ) นี่คือโมเดลสอง FK ของ `tb_recipe_ingredient` (`product_id` / `sub_recipe_id` พร้อม discriminator `enum_ingredient_type`) และกฎ sub-recipe เดียวที่บังคับในโค้ดวันนี้คือ delete guard — สูตรที่ถูกอ้างอิงเป็น sub-recipe จะลบไม่ได้ (`RECIPE_USED_AS_SUB_RECIPE`, `recipe.service.ts`) ส่วนการคิดต้นทุนสูตรแม่ใหม่อัตโนมัติเมื่อต้นทุนของ sub-recipe เปลี่ยนเป็นเป้าหมายดีไซน์ที่ยังไม่มีการ implement สูตรอาหารถูกแยกอย่างจงใจจาก **menu item**: สูตรคือสูตรการผลิตและแหล่งความจริงสำหรับต้นทุน menu item คือรายการที่ขายได้บน POS ซึ่งเชื่อมไปยังสูตรหนึ่งหรือหลายสูตร (และไปยัง add-on, modifier และการกำหนดราคา) สูตรหนึ่งสามารถรองรับ menu item หลายรายการได้ (สูตร "House Burger" เดียวขายเป็นทั้งเดี่ยวและเป็นชุดคอมโบ) menu item หนึ่งสามารถประกอบจากหลายสูตร ("Steak Plate" ที่รวมสูตรสเต็ก sub-recipe ของซอส และสูตรเครื่องเคียง)
 
-ในดีไซน์เป้าหมาย (`../carmen/docs/recipe-module/`) สูตรอาหารเป็นสะพานเชื่อมระหว่างยอดขายเมนูและการใช้คลังสินค้า: เมื่อ menu item ถูกขาย ระบบจะ explode สูตรที่เชื่อมไว้แต่ละตัวด้วยปริมาณที่ขาย คูณผ่านบรรทัดวัตถุดิบ (ใช้ wastage และการแปลงหน่วย) และ post **การใช้วัตถุดิบเชิงทฤษฎี** ที่ได้เป็น stock OUT movement ต่อ inventory ของ outlet ขับเคลื่อนรายงาน food-cost การวิเคราะห์ความแปรปรวนทฤษฎีกับจริง และ store requisition ที่สร้างจากสูตร **pipeline ทั้งหมดนี้ยังไม่มีในโค้ดวันนี้** — ไม่มีตาราง menu item ไม่มีการเชื่อมต่อ POS ไม่มีการเขียนการใช้วัตถุดิบเชิงทฤษฎี และไม่มีการสร้างสูตร→SR ที่ไหนเลยใน `carmen-turborepo-backend-v2` หรือ frontend โมดูล recipe ปัจจุบันจบที่ตัวเรคคอร์ดสูตรที่คิดต้นทุนแล้วนั่นเอง
+ในดีไซน์เป้าหมาย (`../carmen/docs/recipe-module/`) สูตรอาหารเป็นสะพานเชื่อมระหว่างยอดขายเมนูและการใช้คลังสินค้า: เมื่อ menu item ถูกขาย ระบบจะ explode สูตรที่เชื่อมไว้แต่ละตัวด้วยปริมาณที่ขาย คูณผ่านบรรทัดวัตถุดิบ (ใช้ wastage และการแปลงหน่วย) และ post **การใช้วัตถุดิบเชิงทฤษฎี** ที่ได้เป็น stock OUT movement ต่อ inventory ของ outlet ขับเคลื่อนรายงาน food-cost การวิเคราะห์ความแปรปรวนทฤษฎีกับจริง และ store requisition ที่สร้างจากสูตร **pipeline ทั้งหมดนี้ยังไม่มีในโค้ดวันนี้** — ไม่มีตาราง menu item ไม่มีการเชื่อมต่อ POS ไม่มีการเขียนการใช้วัตถุดิบเชิงทฤษฎี และไม่มีการสร้างสูตร→SR ที่ไหนเลยใน `carmen-turborepo-backend` หรือ frontend โมดูล recipe ปัจจุบันจบที่ตัวเรคคอร์ดสูตรที่คิดต้นทุนแล้วนั่นเอง
 
 ## 2. บริบททางธุรกิจ
 
@@ -92,10 +92,10 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 - Concepts (PRD/requirements): `../carmen/docs/recipe-module/`
 - Concepts (UI/page specs): `../carmen/docs/recipe/`
-- Frontend: `../carmen-inventory-frontend-react/`
-- Backend: `../carmen-turborepo-backend-v2/`
+- Frontend: `../carmen-frontend/`
+- Backend: `../carmen-turborepo-backend/`
 - API contracts: `../carmen-turborepo-backend-bruno/`
-- E2E tests: `../carmen-inventory-frontend-e2e/`
+- E2E tests: `../carmen-frontend-e2e/`
 
 ## 7. หน้าในโมดูลนี้
 

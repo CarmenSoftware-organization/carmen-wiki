@@ -26,7 +26,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
 | สร้าง BU | Platform admin → BU listing → **New** | บังคับ: `cluster_id`, `code`, `name`, `calculation_method` |
-| ตั้ง default currency | BU detail → Identity tab | `default_currency_id` render เป็น `<select>` ที่ **disabled** ใน `carmen-platform` (`CalculationSettingsSection.tsx:68`) — แก้ไขจาก admin UI ไม่ได้ในรอบนี้; ต้องอ้างอิงแถว active ใน [master-data/currency](/th/inventory/master-data/currency) ตามธรรมเนียมเท่านั้น |
+| ตั้ง default currency | BU detail → Identity tab | `default_currency_id` render เป็น `<select>` ที่ **disabled** ใน `carmen-backstage` (`CalculationSettingsSection.tsx:68`) — แก้ไขจาก admin UI ไม่ได้ในรอบนี้; ต้องอ้างอิงแถว active ใน [master-data/currency](/th/inventory/master-data/currency) ตามธรรมเนียมเท่านั้น |
 | สลับ costing method | BU detail → Costing tab | บล็อกกลางงวด; ต้อง snapshot สิ้นงวด + recost — ดู Edge Cases |
 | เปิด / ปิด module | BU detail → Modules tab | เขียนไปยัง `tb_business_unit_tb_module`; ซ่อน UI แต่รักษาข้อมูล |
 | Mark HQ | ตั้ง `is_hq = true` | หนึ่ง HQ ต่อ cluster (app invariant) |
@@ -38,13 +38,13 @@ dateCreated: 2026-05-16T08:00:00.000Z
 |---|---|---|
 | "Code already in use" | `code` ซ้ำ**ที่ใดก็ได้บน platform** — partial unique index `business_unit_code_global_u` (`(code) WHERE deleted_at IS NULL`, platform migration `20260904000000_business_unit_code_global_unique`); นับจาก backend PR #497 (`56d4871e9`) platform สร้างรหัส BU เองและฟอร์มไม่รับค่า | ให้ platform กำหนดรหัสเอง |
 | "Name already in use in cluster" | `name` ซ้ำใน `cluster_id` เดียวกัน — partial unique index `business_unit_cluster_name_u` (`20260904010000_business_unit_cluster_name_unique`) | เลือกชื่ออื่น |
-| **ยังไม่ยืนยัน** — ฟอร์มแก้ไขไม่มีข้อจำกัดฝั่ง client | `CalculationSettingsSection.tsx` ของ `carmen-platform` render `calculation_method` เป็น `<select>` (`average`/`fifo`) ที่แก้ไขได้เสมอ ไม่มี disabled state, warning หรือการเช็คกลางงวดที่พบใน component; ยังไม่ได้ตรวจสอบว่า backend microservice command `business-units.update` บังคับ block หรือไม่ในรอบนี้ | เดิมหน้านี้ระบุว่า "cannot change calculation method mid-period" เป็น error ที่บังคับใช้จริง; ให้ถือว่า**ยังไม่ยืนยัน** ไม่ใช่ guard ที่รับประกันแน่นอน |
+| **ยังไม่ยืนยัน** — ฟอร์มแก้ไขไม่มีข้อจำกัดฝั่ง client | `CalculationSettingsSection.tsx` ของ `carmen-backstage` render `calculation_method` เป็น `<select>` (`average`/`fifo`) ที่แก้ไขได้เสมอ ไม่มี disabled state, warning หรือการเช็คกลางงวดที่พบใน component; ยังไม่ได้ตรวจสอบว่า backend microservice command `business-units.update` บังคับ block หรือไม่ในรอบนี้ | เดิมหน้านี้ระบุว่า "cannot change calculation method mid-period" เป็น error ที่บังคับใช้จริง; ให้ถือว่า**ยังไม่ยืนยัน** ไม่ใช่ guard ที่รับประกันแน่นอน |
 | "Default currency must be active" — **ยังไม่ยืนยัน** | ไม่พบ disabled state หรือ validation ที่ผูก `default_currency_id` กับ flag `is_active` ของสกุลเงินเป้าหมายในฟอร์มแก้ไขรอบนี้ | ให้ถือว่ายังไม่ยืนยัน |
 | "Cannot delete BU — active users / open documents / non-zero balances" — **ยังไม่ยืนยัน** | `deleteBusinessUnit` ใน gateway เป็น proxy บาง ๆ ไปยัง microservice command `business-units.delete`; guard ถ้ามี ยังไม่ได้ตรวจสอบในรอบนี้ | ให้ถือว่ายังไม่ยืนยัน ไม่ใช่การบล็อกที่รับประกันแน่นอน |
 
 ## 4. Edge Cases
 
-- **การสลับ calculation-method — guard ยังไม่ยืนยัน** การพลิก `average` ↔ `fifo` จะทำลาย valuation ประวัติย้อนหลังในทางหลักการ แต่ฟอร์มแก้ไขของ `carmen-platform` ไม่มี disabled state หรือ warning บนฟิลด์นี้เลย และยังไม่ได้ตรวจสอบว่า backend microservice บล็อกกลางงวดหรือไม่ในรอบนี้ ให้ถือว่า "ระบบปฏิเสธกลางงวด" เป็น design intent ไม่ใช่ guard ที่ยืนยันแล้ว
+- **การสลับ calculation-method — guard ยังไม่ยืนยัน** การพลิก `average` ↔ `fifo` จะทำลาย valuation ประวัติย้อนหลังในทางหลักการ แต่ฟอร์มแก้ไขของ `carmen-backstage` ไม่มี disabled state หรือ warning บนฟิลด์นี้เลย และยังไม่ได้ตรวจสอบว่า backend microservice บล็อกกลางงวดหรือไม่ในรอบนี้ ให้ถือว่า "ระบบปฏิเสธกลางงวด" เป็น design intent ไม่ใช่ guard ที่ยืนยันแล้ว
 - **`is_hq` invariant** หนึ่ง BU ต่อ cluster บรรจุ `is_hq = true` — บังคับใช้ระดับ app ไม่ใช่ DB
 - **การปิด module รักษาข้อมูล** การลบ module ผ่าน `tb_business_unit_tb_module` ซ่อน UI; ข้อมูลธุรกรรมพื้นฐานไม่ถูกแตะ
 - **การ inactivate สกุลเงิน — ยังไม่ยืนยัน** ยังไม่ได้ตรวจสอบว่า platform บล็อกการ inactivate สกุลเงินที่เป็น `default_currency_id` ของ BU หรือไม่ในรอบนี้ (การเช็คที่เทียบเท่ากันฝั่ง Inventory ยืนยันแล้วว่า**ไม่มีอยู่**บน path การอัปเดต `tb_currency` เอง — ดู [master-data/currency](/th/inventory/master-data/currency))
@@ -99,7 +99,7 @@ enum enum_calculation_method {
 - **Deletion guards — ยังไม่ยืนยัน** `deleteBusinessUnit` ของ gateway เป็น proxy บาง ๆ ไปยัง microservice command `business-units.delete`; ยังไม่ได้ตรวจสอบว่าผู้ใช้ที่ active, เอกสารที่เปิดอยู่ หรือยอด non-zero บล็อกการลบจริงหรือไม่ในรอบนี้
 - **Validation** `cluster_id`, `code`, `name`, `calculation_method` บังคับ
 - **Lifecycle** `is_active = false` บล็อก login, รักษาข้อมูล
-- **การเปลี่ยน calculation method** — **design intent, guard ยังไม่ยืนยัน** การพลิก `average` ↔ `fifo` ตามหลักการควรตามวินัย period-close + recost แต่ตามที่ระบุใน Section 4 (Edge Cases; และ Section 3 การตรวจสอบและข้อผิดพลาด) ฟอร์มแก้ไขของ `carmen-platform` ไม่มี disabled state หรือข้อจำกัดกลางงวดบนฟิลด์นี้เลย และยังไม่ได้ตรวจสอบว่า backend microservice บังคับใช้หรือไม่ในรอบนี้ — ให้ถือว่า "ต้องตามวินัย period-close + recost" เป็น design intent ไม่ใช่ guard ที่ยืนยันแล้ว
+- **การเปลี่ยน calculation method** — **design intent, guard ยังไม่ยืนยัน** การพลิก `average` ↔ `fifo` ตามหลักการควรตามวินัย period-close + recost แต่ตามที่ระบุใน Section 4 (Edge Cases; และ Section 3 การตรวจสอบและข้อผิดพลาด) ฟอร์มแก้ไขของ `carmen-backstage` ไม่มี disabled state หรือข้อจำกัดกลางงวดบนฟิลด์นี้เลย และยังไม่ได้ตรวจสอบว่า backend microservice บังคับใช้หรือไม่ในรอบนี้ — ให้ถือว่า "ต้องตามวินัย period-close + recost" เป็น design intent ไม่ใช่ guard ที่ยืนยันแล้ว
 - **`is_hq` invariant** หนึ่ง HQ ต่อ cluster
 
 ## 7. การอ้างอิงข้ามโมดูล
@@ -112,7 +112,7 @@ enum enum_calculation_method {
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_business_unit` (line ~176), `enum_calculation_method` (~133), `tb_currency_iso` (~323)
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_business_unit` (line ~176), `enum_calculation_method` (~133), `tb_currency_iso` (~323)
 - **Platform migrations:** `20260904000000_business_unit_code_global_unique`, `20260904010000_business_unit_cluster_name_unique`
-- **Frontend:** `../carmen-platform/src/pages/BusinessUnitEdit.tsx` + `businessUnitEdit/sections/CalculationSettingsSection.tsx` (platform admin dashboard)
-- **Backend:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_business-units/platform_business-units.service.ts` (proxy บาง ๆ ไปยัง microservice `business-units` ที่ยังไม่ได้ตรวจสอบในรอบนี้)
+- **Frontend:** `../carmen-backstage/src/pages/BusinessUnitEdit.tsx` + `businessUnitEdit/sections/CalculationSettingsSection.tsx` (platform admin dashboard)
+- **Backend:** `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform_business-units/platform_business-units.service.ts` (proxy บาง ๆ ไปยัง microservice `business-units` ที่ยังไม่ได้ตรวจสอบในรอบนี้)

@@ -14,7 +14,7 @@ dateCreated: 2026-06-10T15:15:00.000Z
 > **ตาราง:** `tb_application` &nbsp;·&nbsp; `tb_application_api` (grant row แบบ 1:N) &nbsp;·&nbsp; **Enum:** ไม่มี — `api_name` เป็น VarChar รูปแบบอิสระ &nbsp;·&nbsp; **Identity:** `tb_application.id` (UUID) คือค่า `x-app-id`; ไม่มีคอลัมน์ app-id แยกต่างหาก &nbsp;·&nbsp; **ทางแยกของ grant:** boolean `allow_all` — เมื่อเป็น true, row ของ `tb_application_api` ไม่มีความหมาย &nbsp;·&nbsp; **Shape การเขียน:** ไม่สมมาตร — การอ่านคืน `api_names: string[]` แบบแบน การเขียนส่ง `details.add[]` ด้วย **semantics แบบ replace** &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` บนทั้งสองตาราง (เพิ่มเมื่อ 2026-06-12) บังคับใช้เป็น optimistic lock บน `PUT`/`POST` &nbsp;·&nbsp; **Catalog:** ไม่ใช่ตาราง — ไฟล์ที่ generate ขึ้นใน backend-gateway เสิร์ฟผ่าน `/api-system/applications/api-catalog`
 
 > **Source of truth:** Prisma platform schema ฝั่ง backend อ่านไฟล์นี้ก่อนเสมอเมื่อเขียนหรืออัพเดทหน้านี้:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > ไฟล์ `generated/client/schema.prisma` เป็นสำเนาที่ generate อัตโนมัติ ไม่ใช่ไฟล์อ้างอิงหลัก
 
@@ -96,9 +96,9 @@ tb_application_api.created_by_id / updated_by_id  ──>  tb_user.id  (audit ac
 
 โมดูลนี้ **ไม่กำหนด enum ใด ๆ** `api_name` เป็น `VarChar` รูปแบบอิสระ: คลังศัพท์ที่ valid เป็นข้อมูลปลายเปิด ขยายทุกครั้งที่การเรียก `AppIdGuard('...')` ตัวใหม่ลงใน backend gateway และ catalog ถูก regenerate — ไม่มีการเปลี่ยน schema เข้ามาเกี่ยวข้อง โหมดของ grant เป็น boolean ธรรมดา `allow_all` ไม่ใช่ enum ของโหมด คอลัมน์ `device` ก็เป็น `VarChar` รูปแบบอิสระเช่นกัน (default `"web"`) **ไม่ใช่** enum ของ DB: ฐานข้อมูลรับ string ใด ๆ ก็ได้ ขณะที่ SPA จำกัดค่าไว้ที่ชุดคงที่ `mobile` / `web` / `desktop` / `pos` ผ่าน union `DeviceType` และ `DEVICE_OPTIONS`
 
-## 5. ความแตกต่างจาก shape ของ carmen-platform SPA
+## 5. ความแตกต่างจาก shape ของ carmen-backstage SPA
 
-type ของ SPA อยู่ใน `../carmen-platform/src/types/index.ts` (`Application`, `ApplicationWritePayload`, `ApiCatalogGroup`); ชั้นการแปลคือ `src/services/applicationService.ts` model การอ่านและการเขียนจงใจ**ไม่สมมาตร**:
+type ของ SPA อยู่ใน `../carmen-backstage/src/types/index.ts` (`Application`, `ApplicationWritePayload`, `ApiCatalogGroup`); ชั้นการแปลคือ `src/services/applicationService.ts` model การอ่านและการเขียนจงใจ**ไม่สมมาตร**:
 
 | Shape ของ SPA | แหล่งที่มาใน SPA | การจัดเก็บใน Prisma | หมายเหตุ |
 | --------- | ---------- | -------------- | ----- |
@@ -135,19 +135,19 @@ REST surface ที่ `applicationService.ts` ใช้:
 | `GET /api-system/applications/api-catalog` | catalog ของ `api_name` ที่เลือกได้ | `{ api_names, groups? }`, ทนทานต่อ envelope; มี fallback การจัดกลุ่มฝั่ง client |
 | `GET /api-system/applications/summary` | Aggregate สำหรับแถบ Registry ของหน้า list | ไม่กรอง — อธิบายทั้งทะเบียน ไม่ใช่มุมมอง search/advance ปัจจุบัน; ไม่มี block `paginate` ใหม่ตั้งแต่ sync ก่อนหน้า (ก่อน 2026-08-24 เป็นการกวาดฝั่ง client ด้วย `perpage: -1`) |
 
-การอ้างอิง commit/PR ข้ามฝั่งด้านบนทั้งหมดอยู่ใน `../carmen-turborepo-backend-v2` หรือ `../carmen-platform` ตามที่ระบุไว้แล้วตรงจุดอ้างอิงแต่ละแห่ง; ส่วนข้างล่างนี้แยก primary/secondary สำหรับรายการอ้างอิงของหน้านี้เอง
+การอ้างอิง commit/PR ข้ามฝั่งด้านบนทั้งหมดอยู่ใน `../carmen-turborepo-backend` หรือ `../carmen-backstage` ตามที่ระบุไว้แล้วตรงจุดอ้างอิงแต่ละแห่ง; ส่วนข้างล่างนี้แยก primary/secondary สำหรับรายการอ้างอิงของหน้านี้เอง
 
 **หลัก (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_application` (บรรทัด 65), `tb_application_api` (บรรทัด 90); ตระกูลที่มีเฉพาะใน schema ที่บรรทัด 19, 44, 591 ตรวจซ้ำ 2026-09-05 ด้วยการอ่าน source โดยตรงกับ checkout ปัจจุบันของ repo (HEAD `a48904d2`) — ทั้งเลขบรรทัดข้างต้นและทุก field ยืนยันแล้วว่าไม่เปลี่ยนตั้งแต่ 2026-07-29 ตัวเนื้อหาตารางเองเปลี่ยนล่าสุดโดย `35c2d67c9` (2026-06-16, เพิ่ม `device`) และ `8e53bbe` (2026-06-12, เพิ่ม `doc_version`) — ระบุวันที่ด้วย `git log -L`, แก้ไข "2026-07-16" ที่หน้านี้เคยระบุผิดสำหรับ commit ของ `doc_version`
-- `../carmen-turborepo-backend-v2/scripts/generate-app-api-catalog/run.ts` — generator ของ catalog (การสแกน `AppIdGuard`, กฎการจัดกลุ่ม, path ของ output)
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/applications/app-api-catalog.generated.ts` — catalog ที่ generate จริง: 900 key ใน 148 กลุ่มโมดูล ตาม commit `fa64299f1` (2026-09-04, `chore(applications): regenerate app-api catalog หลังเพิ่ม configUser.getAccess`) เพิ่มขึ้นจาก 788/125 ในการ sync ก่อนหน้า
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_application` (บรรทัด 65), `tb_application_api` (บรรทัด 90); ตระกูลที่มีเฉพาะใน schema ที่บรรทัด 19, 44, 591 ตรวจซ้ำ 2026-09-05 ด้วยการอ่าน source โดยตรงกับ checkout ปัจจุบันของ repo (HEAD `a48904d2`) — ทั้งเลขบรรทัดข้างต้นและทุก field ยืนยันแล้วว่าไม่เปลี่ยนตั้งแต่ 2026-07-29 ตัวเนื้อหาตารางเองเปลี่ยนล่าสุดโดย `35c2d67c9` (2026-06-16, เพิ่ม `device`) และ `8e53bbe` (2026-06-12, เพิ่ม `doc_version`) — ระบุวันที่ด้วย `git log -L`, แก้ไข "2026-07-16" ที่หน้านี้เคยระบุผิดสำหรับ commit ของ `doc_version`
+- `../carmen-turborepo-backend/scripts/generate-app-api-catalog/run.ts` — generator ของ catalog (การสแกน `AppIdGuard`, กฎการจัดกลุ่ม, path ของ output)
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/applications/app-api-catalog.generated.ts` — catalog ที่ generate จริง: 900 key ใน 148 กลุ่มโมดูล ตาม commit `fa64299f1` (2026-09-04, `chore(applications): regenerate app-api catalog หลังเพิ่ม configUser.getAccess`) เพิ่มขึ้นจาก 788/125 ในการ sync ก่อนหน้า
 
 **รอง (shape ฝั่ง consumer):**
-- `../carmen-platform/src/types/index.ts` — `Application` (รวม `doc_version?: number`), `ApplicationWritePayload`, `ApiCatalogGroup`, `ApplicationSummaryData`, `DeviceCount`
-- `../carmen-platform/src/services/applicationService.ts` — `toWritePayload` (รวม `doc_version`), การจัดการ envelope ของ `getApiCatalog` และ fallback การจัดกลุ่ม, `getRegistrySummary()`
-- `../carmen-platform/src/utils/apiCatalog.ts` — `moduleOf`, `actionOf`, `groupApiNames` บวก (ใหม่) `verbOf`/`isAuthorityAction`/`countAuthority`
-- `../carmen-platform/src/utils/apiReach.ts` — `reachOf()` ฟังก์ชันคำนวณรัศมีตัวเดียวที่ `ApplicationReachCell` (list) และ `ApplicationIdentityHero` (edit) ใช้ร่วมกัน
-- `../carmen-platform/src/utils/audit.ts` — `normalizeAudit()` (ลอง nested ก่อน flat เป็นทางถอย; `updated` ถูกกำหนดด้วย `everEdited`) ที่ list ของโมดูลนี้ใช้ตั้งแต่ 2026-08-22
-- `../carmen-platform/src/utils/docVersion.ts` — helper optimistic-lock `getDocVersion`/`isVersionConflict`/`notifyVersionConflict` ที่ `ApplicationEdit.tsx` ใช้
+- `../carmen-backstage/src/types/index.ts` — `Application` (รวม `doc_version?: number`), `ApplicationWritePayload`, `ApiCatalogGroup`, `ApplicationSummaryData`, `DeviceCount`
+- `../carmen-backstage/src/services/applicationService.ts` — `toWritePayload` (รวม `doc_version`), การจัดการ envelope ของ `getApiCatalog` และ fallback การจัดกลุ่ม, `getRegistrySummary()`
+- `../carmen-backstage/src/utils/apiCatalog.ts` — `moduleOf`, `actionOf`, `groupApiNames` บวก (ใหม่) `verbOf`/`isAuthorityAction`/`countAuthority`
+- `../carmen-backstage/src/utils/apiReach.ts` — `reachOf()` ฟังก์ชันคำนวณรัศมีตัวเดียวที่ `ApplicationReachCell` (list) และ `ApplicationIdentityHero` (edit) ใช้ร่วมกัน
+- `../carmen-backstage/src/utils/audit.ts` — `normalizeAudit()` (ลอง nested ก่อน flat เป็นทางถอย; `updated` ถูกกำหนดด้วย `everEdited`) ที่ list ของโมดูลนี้ใช้ตั้งแต่ 2026-08-22
+- `../carmen-backstage/src/utils/docVersion.ts` — helper optimistic-lock `getDocVersion`/`isVersionConflict`/`notifyVersionConflict` ที่ `ApplicationEdit.tsx` ใช้
 
 **Cross-link:** [หน้า landing ของ Applications](/th/platform/applications) &nbsp;·&nbsp; [UI Screens](/th/platform/applications/ui-screens) &nbsp;·&nbsp; [Permissions](/th/platform/applications/permissions) &nbsp;·&nbsp; [Platform RBAC data-model](/th/platform/rbac/data-model) (จุดเทียบของการเขียนแบบ delta)

@@ -13,7 +13,7 @@ dateCreated: 2026-05-19T00:00:00.000Z
 The **Clusters** module is the entry point for the largest organizational container in Carmen Blue. A cluster groups business units (BUs) and the users assigned to them. Licence limits — how many BUs a cluster may have, and how many named users it may cover — used to live as static columns on the cluster/BU rows; as of the 2026-07-29→2026-09-04 licensing rework they are now the *effective* rows of a dated purchase ledger (see §3). Routes and mutating actions in this module are gated by `cluster.*` permission keys **and** a `clusters` feature flag (see [Platform RBAC](/en/platform/rbac) and [Permissions](/en/platform/clusters/permissions)).
 
 > **At a Glance**
-> **Module purpose:** Tenant container that groups business units (BUs) and the users assigned to them, and links out to the licence ledger that now holds the BU-count and seat caps &nbsp;·&nbsp; **Audience:** Developers and QA working on the Platform admin SPA; operator access requires `cluster.*` permission grants ([rbac](/en/platform/rbac)) plus the `clusters` feature flag being enabled &nbsp;·&nbsp; **Key entities/tables:** `tb_cluster` (fields: `code`, `name`, `alias_name`, `logo_file_token`, `avatar_file_token`, `is_active`, `doc_version`, soft-delete trio — **no licence-cap column any more**), `tb_business_unit` (1:N), `tb_cluster_user` (M:N join with per-cluster role `admin`/`user` — **no longer carries a `parent_bu_id`**), `tb_cluster_license` (new — the cluster's BU-quota purchase ledger) &nbsp;·&nbsp; **Sub-pages:** 3 &nbsp;·&nbsp; **Permission key:** `cluster.read` (list/nav) + `cluster.create`/`cluster.update`/`cluster.delete` &nbsp;·&nbsp; **Feature-flag key:** `clusters` &nbsp;·&nbsp; **superAdminOnly:** No — gated by permission, not a super-admin-only flag (per `../carmen-platform/src/components/nav/platformNav.ts`)
+> **Module purpose:** Tenant container that groups business units (BUs) and the users assigned to them, and links out to the licence ledger that now holds the BU-count and seat caps &nbsp;·&nbsp; **Audience:** Developers and QA working on the Platform admin SPA; operator access requires `cluster.*` permission grants ([rbac](/en/platform/rbac)) plus the `clusters` feature flag being enabled &nbsp;·&nbsp; **Key entities/tables:** `tb_cluster` (fields: `code`, `name`, `alias_name`, `logo_file_token`, `avatar_file_token`, `is_active`, `doc_version`, soft-delete trio — **no licence-cap column any more**), `tb_business_unit` (1:N), `tb_cluster_user` (M:N join with per-cluster role `admin`/`user` — **no longer carries a `parent_bu_id`**), `tb_cluster_license` (new — the cluster's BU-quota purchase ledger) &nbsp;·&nbsp; **Sub-pages:** 3 &nbsp;·&nbsp; **Permission key:** `cluster.read` (list/nav) + `cluster.create`/`cluster.update`/`cluster.delete` &nbsp;·&nbsp; **Feature-flag key:** `clusters` &nbsp;·&nbsp; **superAdminOnly:** No — gated by permission, not a super-admin-only flag (per `../carmen-backstage/src/components/nav/platformNav.ts`)
 
 ![Clusters screen](/screenshots/platform/clusters/index.png)
 
@@ -84,16 +84,16 @@ Three things to note. First, a session with no platform-wide or cluster-scoped g
 
 ## 6. Reference Sources
 
-- `../carmen-platform/src/App.tsx` — `PrivateRoute` wiring with `requiredPermission` + `feature` keys for all three cluster routes.
-- `../carmen-platform/src/components/PrivateRoute.tsx` — the layered guard: auth → platform-authority/cluster-admin resolution → permission → super-admin → feature flag.
-- `../carmen-platform/src/components/nav/platformNav.ts` — the Clusters/Business Units/Tenant Migrations nav rows (permission, feature, group).
-- `../carmen-platform/src/pages/ClusterManagement.tsx` — list page, Fleet Capacity band (now backed by `GET /clusters/summary`), filters incl. Quota-expiring, CSV export, soft-delete handling, `<Can>`-gated row actions incl. View History.
-- `../carmen-platform/src/pages/ClusterEdit.tsx` — create/view/edit orchestrator: `ClusterPlate`/`ClusterDraftPlate`, 3-tab body, `doc_version` optimistic locking, Add User dialog, Activity Trail header action.
-- `../carmen-platform/src/pages/clusterEdit/{ClusterPlate,ClusterDraftPlate,PlateField,clusterTabs}.ts(x)` and `sections/{BusinessUnitsSection,UsersSection,SubscriptionCard}.tsx` — the current plate, tab definitions, and per-tab bodies.
-- `../carmen-platform/src/pages/clusterManagement/{FleetCapacity,CapacityGauge,CapacityMeter,ClusterCreateForm,ClusterIdentityFields}.tsx` and `../carmen-platform/src/utils/capacity.ts` — capacity-gauge math and the two-card create form.
-- `../carmen-platform/src/utils/businessUnitRank.ts` — the "Over limit" ranking shared with the cluster-admin persona's own BU list.
-- `../carmen-platform/src/services/clusterService.ts` — REST client (`/api-system/clusters`, `/api-system/clusters/summary`, plus the `/logo` and `/avatar` upload endpoints).
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_cluster`, `tb_cluster_user`, `tb_cluster_license`, `tb_business_unit_license` models (see [Data Model](/en/platform/clusters/data-model) §6 for exact line numbers).
+- `../carmen-backstage/src/App.tsx` — `PrivateRoute` wiring with `requiredPermission` + `feature` keys for all three cluster routes.
+- `../carmen-backstage/src/components/PrivateRoute.tsx` — the layered guard: auth → platform-authority/cluster-admin resolution → permission → super-admin → feature flag.
+- `../carmen-backstage/src/components/nav/platformNav.ts` — the Clusters/Business Units/Tenant Migrations nav rows (permission, feature, group).
+- `../carmen-backstage/src/pages/ClusterManagement.tsx` — list page, Fleet Capacity band (now backed by `GET /clusters/summary`), filters incl. Quota-expiring, CSV export, soft-delete handling, `<Can>`-gated row actions incl. View History.
+- `../carmen-backstage/src/pages/ClusterEdit.tsx` — create/view/edit orchestrator: `ClusterPlate`/`ClusterDraftPlate`, 3-tab body, `doc_version` optimistic locking, Add User dialog, Activity Trail header action.
+- `../carmen-backstage/src/pages/clusterEdit/{ClusterPlate,ClusterDraftPlate,PlateField,clusterTabs}.ts(x)` and `sections/{BusinessUnitsSection,UsersSection,SubscriptionCard}.tsx` — the current plate, tab definitions, and per-tab bodies.
+- `../carmen-backstage/src/pages/clusterManagement/{FleetCapacity,CapacityGauge,CapacityMeter,ClusterCreateForm,ClusterIdentityFields}.tsx` and `../carmen-backstage/src/utils/capacity.ts` — capacity-gauge math and the two-card create form.
+- `../carmen-backstage/src/utils/businessUnitRank.ts` — the "Over limit" ranking shared with the cluster-admin persona's own BU list.
+- `../carmen-backstage/src/services/clusterService.ts` — REST client (`/api-system/clusters`, `/api-system/clusters/summary`, plus the `/logo` and `/avatar` upload endpoints).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_cluster`, `tb_cluster_user`, `tb_cluster_license`, `tb_business_unit_license` models (see [Data Model](/en/platform/clusters/data-model) §6 for exact line numbers).
 
 ## 7. Pages in This Module
 

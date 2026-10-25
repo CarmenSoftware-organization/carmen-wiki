@@ -93,10 +93,10 @@ Titles are hardcoded strings on the config entry (in Thai in the current source)
 
 ## 8. References
 
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/operation-plan/operation-plan.route.tsx` → `operation-dashboard.tsx`.
-- **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-dashboard-widgets.ts` — `useOperationPlanWidgets()` → `useDashboardWidgetConfigs("operation-plan")`; per-tile `dashboardDatasetDataQueryOptions()` in `hooks/use-dashboard-dataset.ts`.
-- **Frontend shared cards:** `../carmen-inventory-frontend-react/components/dashboard-widget/dashboard-widget-grid.tsx` — `LazyWidget`, `KpiCard`, `BarCard`, `PieCard`, `LineCard`, `WidgetSkeleton` (reused by this screen's bespoke layout, not the shared `DashboardWidgetGrid` wrapper); `widget-display.ts` — `gridClasses()`.
-- **Gateway controller:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-widgets/system-widgets.controller.ts` — `DashboardSystemWidgetsController`, `@Get(':module/config')` (2026-09-07) and the bundled `@Get('operation-plan')`. Bruno: `_uncategorized/dashboard-widgets/GET-module-config-dashboard-widgets.bru`, `GET-operation-plan-dashboard-widgets.bru`.
-- **Gateway config:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-widgets/system-widgets.config.ts` — `OPERATION_PLAN_WIDGETS`, `getSystemWidgets()`.
+- **Frontend route:** `../carmen-frontend/routes/operation-plan/operation-plan.route.tsx` → `operation-dashboard.tsx`.
+- **Frontend hook:** `../carmen-frontend/hooks/use-dashboard-widgets.ts` — `useOperationPlanWidgets()` → `useDashboardWidgetConfigs("operation-plan")`; per-tile `dashboardDatasetDataQueryOptions()` in `hooks/use-dashboard-dataset.ts`.
+- **Frontend shared cards:** `../carmen-frontend/components/dashboard-widget/dashboard-widget-grid.tsx` — `LazyWidget`, `KpiCard`, `BarCard`, `PieCard`, `LineCard`, `WidgetSkeleton` (reused by this screen's bespoke layout, not the shared `DashboardWidgetGrid` wrapper); `widget-display.ts` — `gridClasses()`.
+- **Gateway controller:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/dashboard-widgets/system-widgets.controller.ts` — `DashboardSystemWidgetsController`, `@Get(':module/config')` (2026-09-07) and the bundled `@Get('operation-plan')`. Bruno: `_uncategorized/dashboard-widgets/GET-module-config-dashboard-widgets.bru`, `GET-operation-plan-dashboard-widgets.bru`.
+- **Gateway config:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/dashboard-widgets/system-widgets.config.ts` — `OPERATION_PLAN_WIDGETS`, `getSystemWidgets()`.
 - **Dataset registry:** `../micro-data/service/dashboard/registry.go` — `recipe.*` (lines ~150-165), `equipment.*` (lines ~166-169) entries.
-- **Translations:** `../carmen-inventory-frontend-react/messages/en.json` — `operationPlan.dashboard.title`/`.description`, `dashboardWidget.section*`.
+- **Translations:** `../carmen-frontend/messages/en.json` — `operationPlan.dashboard.title`/`.description`, `dashboardWidget.section*`.

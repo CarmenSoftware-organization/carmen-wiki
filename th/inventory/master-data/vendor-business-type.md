@@ -97,7 +97,7 @@ Draft ก่อนหน้าของหน้านี้อธิบาย�
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_vendor_business_type` (line ~5836); ฟิลด์ JSON `business_type` ของ `tb_vendor` (~3859, ไม่มีคอลัมน์ `business_type_id` เลย)
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/029-business-type.spec.ts` + `docs/test-cases/gaps/029-business-type-gap.md`
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/vendor_business_type/vendor_business_type.service.ts`
-- **Frontend:** `../carmen-inventory-frontend-react/routes/config/business-type/`
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_vendor_business_type` (line ~5836); ฟิลด์ JSON `business_type` ของ `tb_vendor` (~3859, ไม่มีคอลัมน์ `business_type_id` เลย)
+- **E2E:** `../carmen-frontend-e2e/tests/029-business-type.spec.ts` + `docs/test-cases/gaps/029-business-type-gap.md`
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/vendor_business_type/vendor_business_type.service.ts`
+- **Frontend:** `../carmen-frontend/routes/config/business-type/`

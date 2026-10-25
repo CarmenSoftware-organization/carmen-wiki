@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T14:30:00.000Z
 > **At a Glance**
 > **Screens:** `spot-check/:id` (`sc-entry-component.tsx`), `spot-check/:id/review` (`sc-review-component.tsx`) &nbsp;·&nbsp; **Module:** [spot-check](/en/inventory/spot-check) &nbsp;·&nbsp; **Role:** same role as [04-test-scenarios-inventory-controller.md](/en/inventory/spot-check/04-test-scenarios-inventory-controller)
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **Executable coverage:** no `spot-check` Playwright spec exists; manual catalog `../carmen-inventory-frontend-e2e/docs/test-cases/760-spot-check.md` (44 cases, re-verified 2026-09-20; `TC-SPC-06*` entry / `TC-SPC-07*` review rows) — see [04-test-scenarios](/en/inventory/spot-check/04-test-scenarios) § 5.
+> **Executable coverage:** no `spot-check` Playwright spec exists; manual catalog `../carmen-frontend-e2e/docs/test-cases/760-spot-check.md` (44 cases, re-verified 2026-09-20; `TC-SPC-06*` entry / `TC-SPC-07*` review rows) — see [04-test-scenarios](/en/inventory/spot-check/04-test-scenarios) § 5.
 
 ## 1. Scope
 
@@ -63,7 +63,7 @@ The scenarios below exercise the actions catalogued in [spot-check/03-user-flow-
 
 ## 6. References
 
-- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/sc-entry-component.tsx`, `sc-review-component.tsx`.
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts` (`saveItems`, `reviewItems`, `getReview`, `submit`).
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists; manual test-case catalog `docs/test-cases/760-spot-check.md` (44 cases; `TC-SPC-06*`/`TC-SPC-07*`).
+- **Frontend:** `../carmen-frontend/routes/inventory-management/spot-check/sc-entry-component.tsx`, `sc-review-component.tsx`.
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/spot-check/spot-check.service.ts` (`saveItems`, `reviewItems`, `getReview`, `submit`).
+- **E2E:** `../carmen-frontend-e2e/tests/` — no spot-check spec currently exists; manual test-case catalog `docs/test-cases/760-spot-check.md` (44 cases; `TC-SPC-06*`/`TC-SPC-07*`).
 - Related: [spot-check/03-user-flow-counter](/en/inventory/spot-check/03-user-flow-counter), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_VAL_007`–`008`, `SPC_POST_001`–`004`), [spot-check/04-test-scenarios](/en/inventory/spot-check/04-test-scenarios) (end-to-end scenarios).

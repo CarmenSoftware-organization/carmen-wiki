@@ -151,16 +151,16 @@ The same glassy `.unsaved-bar` as Compose appears only while editing, showing Ca
 
 ## 5. References
 
-- `../carmen-platform/src/pages/BroadcastManagement.tsx`, `src/pages/broadcastManagement/{BroadcastSummary,BroadcastFilters,broadcastColumns}.tsx` — the List screen.
-- `../carmen-platform/src/pages/BroadcastCompose.tsx` — constants (`TITLE_MAX`, `MESSAGE_MAX`, `TYPE_CUSTOM_RE`), `resolveSeverity`, payload builders, `validate`, confirm title/description.
-- `../carmen-platform/src/pages/BroadcastEdit.tsx` — `contentEditable`, the past/reschedule confirm dialogs, the changed-fields-only patch builder.
-- `../carmen-platform/src/components/BroadcastPreview.tsx` — `severityStyle`, `reachSummary`, the internal-categorisation disclaimer.
-- `../carmen-platform/src/utils/broadcastExpiry.ts` — `resolveExpiryIso()`, the 7/30/90-day presets.
-- `../carmen-platform/src/components/UserMultiSelect.tsx` — debounce, page size, display-name fallback.
-- `../carmen-platform/src/services/broadcastService.ts` — `sendSystem`/`sendBu`/`getAll`/`getById`/`update`/`remove`.
-- `../carmen-platform/src/utils/audit.ts` — `normalizeAudit()` (the flat `created_by: { id, name }` shape broadcasts use, named directly in this file's own source comment as one of the endpoints without a nested `audit.*` shape).
-- `../carmen-platform/src/utils/docVersion.ts` — `isVersionConflict`/`notifyVersionConflict`/`getDocVersion`.
-- `../carmen-platform/src/components/KeyboardShortcuts.tsx`, `src/hooks/useUnsavedChanges.ts` — shortcuts and the navigation guard.
-- `../carmen-platform/src/App.tsx` (three routes), `src/components/nav/platformNav.ts` ("Broadcasts" nav entry).
+- `../carmen-backstage/src/pages/BroadcastManagement.tsx`, `src/pages/broadcastManagement/{BroadcastSummary,BroadcastFilters,broadcastColumns}.tsx` — the List screen.
+- `../carmen-backstage/src/pages/BroadcastCompose.tsx` — constants (`TITLE_MAX`, `MESSAGE_MAX`, `TYPE_CUSTOM_RE`), `resolveSeverity`, payload builders, `validate`, confirm title/description.
+- `../carmen-backstage/src/pages/BroadcastEdit.tsx` — `contentEditable`, the past/reschedule confirm dialogs, the changed-fields-only patch builder.
+- `../carmen-backstage/src/components/BroadcastPreview.tsx` — `severityStyle`, `reachSummary`, the internal-categorisation disclaimer.
+- `../carmen-backstage/src/utils/broadcastExpiry.ts` — `resolveExpiryIso()`, the 7/30/90-day presets.
+- `../carmen-backstage/src/components/UserMultiSelect.tsx` — debounce, page size, display-name fallback.
+- `../carmen-backstage/src/services/broadcastService.ts` — `sendSystem`/`sendBu`/`getAll`/`getById`/`update`/`remove`.
+- `../carmen-backstage/src/utils/audit.ts` — `normalizeAudit()` (the flat `created_by: { id, name }` shape broadcasts use, named directly in this file's own source comment as one of the endpoints without a nested `audit.*` shape).
+- `../carmen-backstage/src/utils/docVersion.ts` — `isVersionConflict`/`notifyVersionConflict`/`getDocVersion`.
+- `../carmen-backstage/src/components/KeyboardShortcuts.tsx`, `src/hooks/useUnsavedChanges.ts` — shortcuts and the navigation guard.
+- `../carmen-backstage/src/App.tsx` (three routes), `src/components/nav/platformNav.ts` ("Broadcasts" nav entry).
 
 **Cross-links:** [Broadcasts landing](/en/platform/broadcasts) &nbsp;·&nbsp; [Data Model](/en/platform/broadcasts/data-model) &nbsp;·&nbsp; [Permissions](/en/platform/broadcasts/permissions)

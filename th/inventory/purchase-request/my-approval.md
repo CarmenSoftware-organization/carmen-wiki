@@ -116,8 +116,8 @@ LIMIT / OFFSET                                    -- perpage = -1 fetches everyt
 
 ## 8. แหล่งอ้างอิง
 
-- **View + index:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/migrations/20260916030000_add_sys_v_my_pending/migration.sql`
-- **Backend:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/my-pending/unified/` (controller, service, `swagger/response.ts`), `.../my-pending/my-approve/` (จำนวนสรุป), `.../apps/micro-business/src/my-pending/` (`my-pending.sql.ts` predicate / allowlist / sort default, `my-pending.service.ts` การ merge หลาย unit)
-- **Frontend:** `../carmen-inventory-frontend-react/routes/procurement/approval/` (`approval.route.tsx`, `approval-component.tsx`, `approve-queue-list.tsx`, `use-approval.ts`), `types/approval.ts` (`RawApprovalUnified`, `ApprovalItem`, `ApprovalPendingSummary`)
+- **View + index:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/migrations/20260916030000_add_sys_v_my_pending/migration.sql`
+- **Backend:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/my-pending/unified/` (controller, service, `swagger/response.ts`), `.../my-pending/my-approve/` (จำนวนสรุป), `.../apps/micro-business/src/my-pending/` (`my-pending.sql.ts` predicate / allowlist / sort default, `my-pending.service.ts` การ merge หลาย unit)
+- **Frontend:** `../carmen-frontend/routes/procurement/approval/` (`approval.route.tsx`, `approval-component.tsx`, `approve-queue-list.tsx`, `use-approval.ts`), `types/approval.ts` (`RawApprovalUnified`, `ApprovalItem`, `ApprovalPendingSummary`)
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/my-pending/` (`my-approve/`, `purchase-request/`, `purchase-order/`, `store-requisition/`)
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/201-my-approvals.spec.ts` (21 test), gap report `docs/test-cases/gaps/201-my-approvals-gap.md` (34 case ที่ catalogue ไว้), story ที่ generate `docs/user-stories/201-my-approvals.md`
+- **E2E:** `../carmen-frontend-e2e/tests/201-my-approvals.spec.ts` (21 test), gap report `docs/test-cases/gaps/201-my-approvals-gap.md` (34 case ที่ catalogue ไว้), story ที่ generate `docs/user-stories/201-my-approvals.md`

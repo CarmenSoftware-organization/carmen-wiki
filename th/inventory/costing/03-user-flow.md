@@ -28,7 +28,7 @@ Section 2 ข้างล่างอธิบาย **cost-flow lifecycle** —
 
 ### 2.0 ลำดับ Transaction → Cost Engine
 
-Costing ไม่มี per-document state machine (ไม่มี `draft → saved → committed` lifecycle) Cost engine ถูก invoke โดย inventory-affecting transactions Diagram ข้างล่างตรวจสอบใหม่โดยตรงกับ `inventory-transaction.service.ts` และ `period-end.close-transaction.helper.ts` / `period-end.close-average.helper.ts`; มัน mirror เจตนาการออกแบบของ Process Execution Swim Lane ที่บันทึกในเอกสารวางแผนจริงที่ `../carmen-inventory-frontend-e2e/docs/persona-doc/System Process/INDEX.md` และ `proc-03-cost-calculation.md` (เอกสาร requirements-gathering ไม่ใช่ test spec ที่ยืนยันแล้ว — ฉบับร่างก่อนหน้าอ้างเอกสารชุดเดียวกันนี้ด้วย path ที่ไม่มีอยู่จริง `Test_case/System_Process/` พร้อม capture date ที่กุขึ้นเอง ดู [02-business-rules](/th/inventory/costing/02-business-rules) § 5.1 สำหรับการแก้ไข)
+Costing ไม่มี per-document state machine (ไม่มี `draft → saved → committed` lifecycle) Cost engine ถูก invoke โดย inventory-affecting transactions Diagram ข้างล่างตรวจสอบใหม่โดยตรงกับ `inventory-transaction.service.ts` และ `period-end.close-transaction.helper.ts` / `period-end.close-average.helper.ts`; มัน mirror เจตนาการออกแบบของ Process Execution Swim Lane ที่บันทึกในเอกสารวางแผนจริงที่ `../carmen-frontend-e2e/docs/persona-doc/System Process/INDEX.md` และ `proc-03-cost-calculation.md` (เอกสาร requirements-gathering ไม่ใช่ test spec ที่ยืนยันแล้ว — ฉบับร่างก่อนหน้าอ้างเอกสารชุดเดียวกันนี้ด้วย path ที่ไม่มีอยู่จริง `Test_case/System_Process/` พร้อม capture date ที่กุขึ้นเอง ดู [02-business-rules](/th/inventory/costing/02-business-rules) § 5.1 สำหรับการแก้ไข)
 
 ```mermaid
 sequenceDiagram

@@ -19,7 +19,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 ## 1. ภาพรวม
 
-**การนับสต๊อกประจำงวด (Physical Count)** คือการนับทุกรายการที่สถานที่หนึ่งสำหรับงวดนับปัจจุบัน ใช้กระทบยอด book balance ของระบบเข้ากับของจริงบนชั้น การ implement จริง (`../carmen-inventory-frontend-react/routes/inventory-management/physical-count/`) เป็น flow ต่อเนื่องเดียวโดยไม่มีการส่งต่อระหว่าง persona: ผู้ใช้เปิดรายการสถานที่ของงวดปัจจุบัน (`physical-count`) เริ่มหรือทำต่อการนับที่สถานที่หนึ่ง (`physical-count/:id/entry`) ป้อน `actual_qty` ทีละบรรทัดสินค้า submit sheet เพื่อ review (`physical-count/:id/review`) แล้วยืนยัน submit สุดท้าย — ซึ่งเป็นขั้นตอนเดียวกันกับที่กระทบยอดทุกบรรทัดที่มี variance ไม่เป็นศูนย์เข้าสู่เอกสาร stock-in/stock-out คู่หนึ่ง ทุก action ใน flow นี้ถูก gate ด้วย permission key เดียว `inventory_management.physical_count` (`constant/permissions.ts`) — ไม่พบ role, route, หรือ permission แยกสำหรับผู้อนุมัติ ผู้ตรวจสอบ หรือผู้ตั้งค่า configuration ใด ๆ ทั้งใน frontend, backend หรือ Bruno collection สำหรับโมดูลนี้
+**การนับสต๊อกประจำงวด (Physical Count)** คือการนับทุกรายการที่สถานที่หนึ่งสำหรับงวดนับปัจจุบัน ใช้กระทบยอด book balance ของระบบเข้ากับของจริงบนชั้น การ implement จริง (`../carmen-frontend/routes/inventory-management/physical-count/`) เป็น flow ต่อเนื่องเดียวโดยไม่มีการส่งต่อระหว่าง persona: ผู้ใช้เปิดรายการสถานที่ของงวดปัจจุบัน (`physical-count`) เริ่มหรือทำต่อการนับที่สถานที่หนึ่ง (`physical-count/:id/entry`) ป้อน `actual_qty` ทีละบรรทัดสินค้า submit sheet เพื่อ review (`physical-count/:id/review`) แล้วยืนยัน submit สุดท้าย — ซึ่งเป็นขั้นตอนเดียวกันกับที่กระทบยอดทุกบรรทัดที่มี variance ไม่เป็นศูนย์เข้าสู่เอกสาร stock-in/stock-out คู่หนึ่ง ทุก action ใน flow นี้ถูก gate ด้วย permission key เดียว `inventory_management.physical_count` (`constant/permissions.ts`) — ไม่พบ role, route, หรือ permission แยกสำหรับผู้อนุมัติ ผู้ตรวจสอบ หรือผู้ตั้งค่า configuration ใด ๆ ทั้งใน frontend, backend หรือ Bruno collection สำหรับโมดูลนี้
 
 มีสอง route ที่ยังผูกอยู่ใน router แต่ **ไม่สามารถเข้าถึงได้จากเส้นทาง navigation จริงใด ๆ**: `physical-count/new` และ `physical-count/:id` ทั้งคู่ render `PcForm` (`pc-form.tsx`) ซึ่งเป็นฟอร์มสร้าง/แก้ไขจากก่อน refactor ที่มีฟิลด์เดียวคือ `department_id` — type ที่ฟอร์มนี้แก้ไขถูก comment ไว้ชัดเจนว่า `// Legacy type (used by old form)` ใน `types/physical-count.ts` ไม่มีปุ่มใดในหน้ารายการที่ลิงก์ไป `/new` และ action สร้างจริง (`pc-component.tsx`'s `handleAction`) สร้างการนับโดยตรงผ่าน `POST /physical-counts` แล้ว navigate ตรงไป `/:id/entry` ไม่เคยไปที่ `/:id` เลย ให้ถือว่าสอง route นี้และ hook `use-pc-table.tsx` ที่รองรับอยู่เป็นโค้ดจากก่อน refactor ที่ถูกทิ้งไว้ (orphaned)
 
@@ -61,10 +61,10 @@ dateCreated: 2026-05-15T07:48:00.000Z
 ## 6. แหล่งอ้างอิง
 
 - Concepts: ไม่มีโฟลเดอร์ source ใน carmen/docs สำหรับโมดูลนี้; มีเอกสารวางแผนสองฉบับใน E2E repo แต่ไม่ตรงกับ implementation ปัจจุบัน — ดูรายละเอียด discrepancy ใน [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) § 5.1
-- Frontend: `../carmen-inventory-frontend-react/routes/inventory-management/physical-count/` (`pc-component.tsx`, `pc-entry-component.tsx`, `pc-review-component.tsx`)
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/` และ `physical-count-period/`
+- Frontend: `../carmen-frontend/routes/inventory-management/physical-count/` (`pc-component.tsx`, `pc-entry-component.tsx`, `pc-review-component.tsx`)
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/` และ `physical-count-period/`
 - API contracts: `../carmen-turborepo-backend-bruno/collections/carmen-inventory/inventory/physical-count*/`
-- E2E tests: `../carmen-inventory-frontend-e2e/` — ยังไม่มี Playwright spec สำหรับโมดูลนี้; manual catalog `docs/test-cases/750-physical-count.md` (41 case, ตรวจทานซ้ำกับ component จริงเมื่อ 2026-09-20 — รวม dialog "Counting has not started" และเงื่อนไขก่อนหน้า Start Period Close), generated stories `docs/user-stories/750-physical-count.md` (33); gap catalog ของ period-end `docs/test-cases/gaps/900-period-end-gap.md` ครอบคลุมการ unlock (TC-PE-31xxxx)
+- E2E tests: `../carmen-frontend-e2e/` — ยังไม่มี Playwright spec สำหรับโมดูลนี้; manual catalog `docs/test-cases/750-physical-count.md` (41 case, ตรวจทานซ้ำกับ component จริงเมื่อ 2026-09-20 — รวม dialog "Counting has not started" และเงื่อนไขก่อนหน้า Start Period Close), generated stories `docs/user-stories/750-physical-count.md` (33); gap catalog ของ period-end `docs/test-cases/gaps/900-period-end-gap.md` ครอบคลุมการ unlock (TC-PE-31xxxx)
 
 ## 7. หน้าในโมดูลนี้
 

@@ -70,10 +70,10 @@ See [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) for t
 
 ## 5. Reference Sources
 
-- `../carmen-inventory-frontend-react/routes/router.tsx` — single route registration: `{ path: "dashboard", lazy: () => import("./dashboard/dashboard.route") }`
-- `../carmen-inventory-frontend-react/routes/dashboard/dashboard.route.tsx`, `dashboard-component.tsx`, `sortable-widget-item.tsx`, `status-group.ts`, `status-group-card.tsx`, `widget-config-dialog.tsx`, `widget-param-fields.tsx`, `widget-display-fields.tsx`, `widget-shape.ts` — the entire live page
-- `../carmen-inventory-frontend-react/constant/module-list.ts` — single-entry sidebar registration (no sub-modules), `licenseFeature: "dashboard.widget"`
-- `../carmen-inventory-frontend-react/routes/dashboard/use-my-dashboard-widgets.ts` — personal-widget CRUD + per-widget data hooks actually used by the live page (moved from `hooks/` on 2026-08-28)
-- `../carmen-inventory-frontend-react/hooks/use-dashboard.ts` — **deleted 2026-08-31** (`02228125`); the `MY_PENDING_*_COUNT` constants it used remain in `constant/api-endpoints.ts` with no callers
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-widgets/`, `dashboard-lab/` and `../micro-data/` — backend (see [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) §8)
-- Deletion commit: `03891e3d` in `../carmen-inventory-frontend-react` ("refactor(dashboard): convert to idiomatic structure, drop dead demo code", 2026-06-27) — removed `_components/dashboard-{main,pr,po,grn,sr,inventory,my-pending,my-approval}.tsx` and `mock/{main,pr,po,grn,sr,inventory}.ts` (19 files, 6 insertions / 5,468 deletions)
+- `../carmen-frontend/routes/router.tsx` — single route registration: `{ path: "dashboard", lazy: () => import("./dashboard/dashboard.route") }`
+- `../carmen-frontend/routes/dashboard/dashboard.route.tsx`, `dashboard-component.tsx`, `sortable-widget-item.tsx`, `status-group.ts`, `status-group-card.tsx`, `widget-config-dialog.tsx`, `widget-param-fields.tsx`, `widget-display-fields.tsx`, `widget-shape.ts` — the entire live page
+- `../carmen-frontend/constant/module-list.ts` — single-entry sidebar registration (no sub-modules), `licenseFeature: "dashboard.widget"`
+- `../carmen-frontend/routes/dashboard/use-my-dashboard-widgets.ts` — personal-widget CRUD + per-widget data hooks actually used by the live page (moved from `hooks/` on 2026-08-28)
+- `../carmen-frontend/hooks/use-dashboard.ts` — **deleted 2026-08-31** (`02228125`); the `MY_PENDING_*_COUNT` constants it used remain in `constant/api-endpoints.ts` with no callers
+- `../carmen-turborepo-backend/apps/backend-gateway/src/application/dashboard-widgets/`, `dashboard-lab/` and `../micro-data/` — backend (see [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) §8)
+- Deletion commit: `03891e3d` in `../carmen-frontend` ("refactor(dashboard): convert to idiomatic structure, drop dead demo code", 2026-06-27) — removed `_components/dashboard-{main,pr,po,grn,sr,inventory,my-pending,my-approval}.tsx` and `mock/{main,pr,po,grn,sr,inventory}.ts` (19 files, 6 insertions / 5,468 deletions)

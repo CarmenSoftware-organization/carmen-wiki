@@ -226,15 +226,15 @@ graph LR
 
 | Repository | เป็นแหล่งความจริงของ |
 |------------|---------------------|
-| `carmen-inventory-frontend-react` | หน้าจอ, route และ validation ฝั่ง client ของ Inventory |
-| `carmen-platform` | หน้าจอ Platform admin (cluster, BU, ผู้ใช้, RBAC, report template) |
-| `carmen-inventory-mobile` | หน้าจอ mobile |
-| `carmen-turborepo-backend-v2` | Route และ guard ของ gateway, domain logic, Prisma schema (`packages/prisma-shared-schema-platform`, `-tenant`), config ของ nginx และ k8s |
+| `carmen-frontend` | หน้าจอ, route และ validation ฝั่ง client ของ Inventory |
+| `carmen-backstage` | หน้าจอ Platform admin (cluster, BU, ผู้ใช้, RBAC, report template) |
+| `carmen-mobile` | หน้าจอ mobile |
+| `carmen-turborepo-backend` | Route และ guard ของ gateway, domain logic, Prisma schema (`packages/prisma-shared-schema-platform`, `-tenant`), config ของ nginx และ k8s |
 | `micro-report`, `report-render` | การเตรียมข้อมูลรายงานและการ render `.frx` |
 | `micro-cronjobs` | งานตามกำหนดเวลา (รายงานตามรอบ, การรัน GL template, cleanup) |
 | `micro-data` | การรัน dataset สำหรับ dashboard และ widget |
 | `carmen-turborepo-backend-bruno` | รูปแบบ request และ response ของ API ที่แน่นอน |
-| `carmen-inventory-frontend-e2e`, `carmen-platform-e2e` | พฤติกรรมที่คาดหวังในรูปที่รันได้ (Playwright) |
+| `carmen-frontend-e2e`, `carmen-backstage-e2e` | พฤติกรรมที่คาดหวังในรูปที่รันได้ (Playwright) |
 | `carmen/docs` | แนวคิดการออกแบบและ business requirement |
 
 ระบบข้างเคียงที่อยู่นอก scope ของ wiki นี้: Knowledge Base / AI chat (`knowledge-base-carmen`) และโมดูลบัญชีที่อยู่ในแผนนอกเหนือจาก GL (AP, AR, สินทรัพย์ถาวร, ภาษี — `carmen-accounting-concept`)

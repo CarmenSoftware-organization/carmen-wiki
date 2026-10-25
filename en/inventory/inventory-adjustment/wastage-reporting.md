@@ -73,7 +73,7 @@ Write-off response: the created `tb_stock_out` header(s) — `{ id, so_no, doc_s
 
 ## 7. References
 
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/wastage-reporting/` (`wastage-reporting.service.ts` — `findNearExpiry`, `resolveLotsByDetailItemIds`; `wastage-reporting.logic.ts` — `WastageReportingLogic.writeOff`, `groupWriteOffByLocation`; `dto/wastage-reporting.dto.ts`, `dto/wastage-reporting.serializer.ts`); gateway `apps/backend-gateway/src/application/wastage-reporting/wastage-reporting.controller.ts` (`@Controller('api/:bu_code/wastage-reporting')`).
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/wastage-reporting/` (`wastage-reporting.service.ts` — `findNearExpiry`, `resolveLotsByDetailItemIds`; `wastage-reporting.logic.ts` — `WastageReportingLogic.writeOff`, `groupWriteOffByLocation`; `dto/wastage-reporting.dto.ts`, `dto/wastage-reporting.serializer.ts`); gateway `apps/backend-gateway/src/application/wastage-reporting/wastage-reporting.controller.ts` (`@Controller('api/:bu_code/wastage-reporting')`).
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/_uncategorized/wastage-reporting/` (`GET-find-near-expiry-wastage-reporting.bru`, `POST-write-off-wastage-reporting.bru`).
-- **Frontend:** `../carmen-inventory-frontend-react/routes/store-operation/wastage-reporting/` (`wr-component.tsx`, `use-wr-table.tsx`, `use-wastage-report.ts`); nav gate in `constant/module-list.ts`.
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/710-wastage-reporting.spec.ts` (20 tests, generated stories `docs/user-stories/710-wastage-reporting.md`) — list, summary and GRN-link behaviour; no write-off coverage because the UI has none.
+- **Frontend:** `../carmen-frontend/routes/store-operation/wastage-reporting/` (`wr-component.tsx`, `use-wr-table.tsx`, `use-wastage-report.ts`); nav gate in `constant/module-list.ts`.
+- **E2E:** `../carmen-frontend-e2e/tests/710-wastage-reporting.spec.ts` (20 tests, generated stories `docs/user-stories/710-wastage-reporting.md`) — list, summary and GRN-link behaviour; no write-off coverage because the UI has none.

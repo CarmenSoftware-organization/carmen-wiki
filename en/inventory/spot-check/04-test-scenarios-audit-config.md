@@ -29,6 +29,6 @@ See [03-user-flow-audit-config.md](/en/inventory/spot-check/03-user-flow-audit-c
 
 ## 4. References
 
-- **Frontend:** `../carmen-inventory-frontend-react/constant/permissions.ts`.
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts`.
+- **Frontend:** `../carmen-frontend/constant/permissions.ts`.
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/spot-check/spot-check.service.ts`.
 - Related: [spot-check/03-user-flow-audit-config](/en/inventory/spot-check/03-user-flow-audit-config) (parallel correction page on the user-flow side).

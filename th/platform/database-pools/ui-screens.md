@@ -18,7 +18,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 1. ภาพรวม
 
-โมดูลนี้มีสองหน้าจอและไม่มีสถานะระหว่างกลางนอกเหนือจากกำลังโหลด/ไม่พบข้อมูล/error ต่างจากหน้าแก้ไขแบบหลายแท็บหลายการ์ดที่อื่นในวิกินี้ ([Business Units](/th/platform/business-units/ui-screens), [Clusters](/th/platform/clusters/ui-screens)) `DatabasePoolManagement.tsx` (`../carmen-platform/src/pages/DatabasePoolManagement.tsx`, 467 บรรทัด) เป็น `DataTable` แบบแบ่งหน้าฝั่ง server มาตรฐาน `DatabasePoolEdit.tsx` (`../carmen-platform/src/pages/DatabasePoolEdit.tsx`, 672 บรรทัด) เป็นทั้งฟอร์มสร้างใหม่และหน้าแก้ไขระเบียนเดียวในตัวเดียวกัน ตามรูปแบบสลับโหมดอ่าน/แก้ไขที่ SPA นี้ใช้ที่อื่น แต่ render เป็นบันทึกแบบมีป้ายกำกับธรรมดา (`RecordRow`) ในโหมดอ่าน ไม่ใช่ฟอร์มที่มีช่องกรอกถูก disable
+โมดูลนี้มีสองหน้าจอและไม่มีสถานะระหว่างกลางนอกเหนือจากกำลังโหลด/ไม่พบข้อมูล/error ต่างจากหน้าแก้ไขแบบหลายแท็บหลายการ์ดที่อื่นในวิกินี้ ([Business Units](/th/platform/business-units/ui-screens), [Clusters](/th/platform/clusters/ui-screens)) `DatabasePoolManagement.tsx` (`../carmen-backstage/src/pages/DatabasePoolManagement.tsx`, 467 บรรทัด) เป็น `DataTable` แบบแบ่งหน้าฝั่ง server มาตรฐาน `DatabasePoolEdit.tsx` (`../carmen-backstage/src/pages/DatabasePoolEdit.tsx`, 672 บรรทัด) เป็นทั้งฟอร์มสร้างใหม่และหน้าแก้ไขระเบียนเดียวในตัวเดียวกัน ตามรูปแบบสลับโหมดอ่าน/แก้ไขที่ SPA นี้ใช้ที่อื่น แต่ render เป็นบันทึกแบบมีป้ายกำกับธรรมดา (`RecordRow`) ในโหมดอ่าน ไม่ใช่ฟอร์มที่มีช่องกรอกถูก disable
 
 ## 2. `DatabasePoolManagement` — หน้ารายการ (`/platform/database-pools`)
 
@@ -103,10 +103,10 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 7. แหล่งอ้างอิง
 
-- `../carmen-platform/src/pages/DatabasePoolManagement.tsx` — อ่านครบ (467 บรรทัด)
-- `../carmen-platform/src/pages/DatabasePoolEdit.tsx` — อ่านครบ (672 บรรทัด)
-- `../carmen-platform/src/services/databasePoolService.ts` — REST client
-- `../carmen-platform/src/utils/databasePool.ts` — `poolDsn()`, `isDerivedName()`
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/database-pool/database-pool.service.ts:80` — `defaultSearchFields` ตรวจไขว้กับ comment ของ frontend ที่อ้างถึง
-- `../carmen-platform-e2e/tests/` — ตรวจดูตรง ๆ **ไม่มีโฟลเดอร์ `database-pools`** ยืนยันคำกล่าวอ้าง "ไม่มี e2e suite" ของ[หน้าหลัก](/th/platform/database-pools) §1
+- `../carmen-backstage/src/pages/DatabasePoolManagement.tsx` — อ่านครบ (467 บรรทัด)
+- `../carmen-backstage/src/pages/DatabasePoolEdit.tsx` — อ่านครบ (672 บรรทัด)
+- `../carmen-backstage/src/services/databasePoolService.ts` — REST client
+- `../carmen-backstage/src/utils/databasePool.ts` — `poolDsn()`, `isDerivedName()`
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/database-pool/database-pool.service.ts:80` — `defaultSearchFields` ตรวจไขว้กับ comment ของ frontend ที่อ้างถึง
+- `../carmen-backstage-e2e/tests/` — ตรวจดูตรง ๆ **ไม่มีโฟลเดอร์ `database-pools`** ยืนยันคำกล่าวอ้าง "ไม่มี e2e suite" ของ[หน้าหลัก](/th/platform/database-pools) §1
 - ไม่มี asset ภาพหน้าจอสำหรับโมดูลนี้ (`assets/screenshots/platform/database-pools/`) — เลื่อนออกไปตามแผน ตรงกับทุกโมดูลที่เขียนใหม่ในชุดนี้

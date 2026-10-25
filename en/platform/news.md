@@ -79,19 +79,19 @@ As in Applications, `news.delete` has **no SPA route that requires it** — dele
 
 ## 6. Reference Sources
 
-- `../carmen-platform/src/App.tsx` — the three `news.*` route guards.
-- `../carmen-platform/src/components/nav/platformNav.ts` — "News" sidebar entry (line 27: Content group, Newspaper icon, `news.read`, `feature: 'news'`, `dividerBefore: true`). Not `Layout.tsx`, which defines no nav rows.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/news/news.controller.ts` — `PlatformPermissionGuard`/`RequirePlatformPermission` on the three write routes (added 2026-08-20) and the `/summary` route (added 2026-08-24).
-- `../carmen-platform/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` — the View History feature; `AUDIT_RECORDING_STARTED_ON_PHASE_2` (2026-08-31).
-- `../carmen-platform/src/utils/permissions.ts` — `PLATFORM_SCOPED_RECORD`, the sentinel `clusterId` the View History gate uses.
-- `../carmen-platform/src/pages/NewsManagement.tsx`, `src/pages/newsManagement/NewsroomSummary.tsx` — list page: thumbnail/Target/Tags columns, status/tag filters, CSV export, bulk toolbar, `<Can>` gates.
-- `../carmen-platform/src/pages/NewsEdit.tsx`, `src/pages/newsEdit/NewsMasthead.tsx` — masthead + two-column create/view/edit layout and validation.
-- `../carmen-platform/src/services/newsService.ts` — REST client, multipart builder, `getTags`.
-- `../carmen-platform/src/components/MarkdownEditor.tsx`, `ImageUpload.tsx`, `BusinessUnitMultiSelect.tsx`, `ui/chip-input.tsx`, `ReadOnlyField.tsx` — the module's form components.
-- `../carmen-platform/src/utils/docVersion.ts` — `getDocVersion`/`isVersionConflict`/`notifyVersionConflict` optimistic-lock helpers.
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_news` (line 884), `enum_news_status` (line 798).
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/news/` — `news.controller.ts` (guards, multipart, `GET tags`), `news.service.ts` (file upload/rollback/cleanup), `news-image.helper.ts` (presigned `image_url`), `news-body.parser.ts`, `public-news.controller.ts` / `public-news.service.ts` (anonymous delivery).
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/news/news.service.ts` — persistence: BU validation, tag normalization, `published_at` stamping, the `doc_version` optimistic lock, soft-delete filtering, public visibility filters.
+- `../carmen-backstage/src/App.tsx` — the three `news.*` route guards.
+- `../carmen-backstage/src/components/nav/platformNav.ts` — "News" sidebar entry (line 27: Content group, Newspaper icon, `news.read`, `feature: 'news'`, `dividerBefore: true`). Not `Layout.tsx`, which defines no nav rows.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/application/news/news.controller.ts` — `PlatformPermissionGuard`/`RequirePlatformPermission` on the three write routes (added 2026-08-20) and the `/summary` route (added 2026-08-24).
+- `../carmen-backstage/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` — the View History feature; `AUDIT_RECORDING_STARTED_ON_PHASE_2` (2026-08-31).
+- `../carmen-backstage/src/utils/permissions.ts` — `PLATFORM_SCOPED_RECORD`, the sentinel `clusterId` the View History gate uses.
+- `../carmen-backstage/src/pages/NewsManagement.tsx`, `src/pages/newsManagement/NewsroomSummary.tsx` — list page: thumbnail/Target/Tags columns, status/tag filters, CSV export, bulk toolbar, `<Can>` gates.
+- `../carmen-backstage/src/pages/NewsEdit.tsx`, `src/pages/newsEdit/NewsMasthead.tsx` — masthead + two-column create/view/edit layout and validation.
+- `../carmen-backstage/src/services/newsService.ts` — REST client, multipart builder, `getTags`.
+- `../carmen-backstage/src/components/MarkdownEditor.tsx`, `ImageUpload.tsx`, `BusinessUnitMultiSelect.tsx`, `ui/chip-input.tsx`, `ReadOnlyField.tsx` — the module's form components.
+- `../carmen-backstage/src/utils/docVersion.ts` — `getDocVersion`/`isVersionConflict`/`notifyVersionConflict` optimistic-lock helpers.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_news` (line 884), `enum_news_status` (line 798).
+- `../carmen-turborepo-backend/apps/backend-gateway/src/application/news/` — `news.controller.ts` (guards, multipart, `GET tags`), `news.service.ts` (file upload/rollback/cleanup), `news-image.helper.ts` (presigned `image_url`), `news-body.parser.ts`, `public-news.controller.ts` / `public-news.service.ts` (anonymous delivery).
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/news/news.service.ts` — persistence: BU validation, tag normalization, `published_at` stamping, the `doc_version` optimistic lock, soft-delete filtering, public visibility filters.
 - `../carmen-turborepo-backend-bruno/collections/carmen-inventory/master-data/news/` — request/response contracts, including the `public/` pair and `GET-find-tags-master-data-news.bru`.
 
 ## 7. Pages in This Module

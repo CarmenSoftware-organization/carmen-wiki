@@ -111,14 +111,14 @@ Source: tenant schema
 
 ## 8. แหล่งอ้างอิง
 
-- **Frontend routes:** `../carmen-inventory-frontend-react/routes/system-admin/notification-template/notification-template.route.tsx`, `notification-template-new.route.tsx`, `notification-template-edit.route.tsx`, `noti-tmpl.tsx` (list, `filter=type:app`), `noti-tmpl-form.tsx` + `noti-tmpl-edit-content.tsx` (create/view/edit), `noti-tmpl-form-schema.ts`, `noti-tmpl-variables.ts` (`NOTIFICATION_VARIABLES`, `splitTemplate`, `unknownVariables`), `noti-tmpl-variable-chips.tsx`, `noti-tmpl-preview.tsx`, `use-noti-tmpl-table.tsx`
-- **Frontend type:** `../carmen-inventory-frontend-react/types/noti-tmpl.ts` (`NotificationTemplateType = "app" | "email" | "line" | "sms"` — คงไว้สี่ค่าโดยตั้งใจเพื่อให้แถว legacy โหลดได้)
-- **Frontend lookup (ผู้บริโภค):** `../carmen-inventory-frontend-react/components/lookup/lookup-noti-tmpl.tsx` — `LookupNotificationTemplate` กรองด้วย `channelType`
-- **Frontend workflow-editor consumer:** `../carmen-inventory-frontend-react/routes/system-admin/workflow/wf-stage-notifications.tsx` — `WfChannel = "app"` (`:11`)
-- **Nav / permission:** `../carmen-inventory-frontend-react/constant/module-list.ts:656-659` — ลูกของกลุ่ม Workflows, `licenseFeature: "configuration.notification_template"`, `PERMISSIONS.configuration.notification_template.view`
-- **E2E:** `../carmen-inventory-frontend-e2e/docs/test-cases/1104-notification-template.md` — แคตตาล็อกเท่านั้น
-- **Backend service:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/notification-template/notification-template.service.ts` (CRUD + validate duplicate-name/channel), `.controller.ts`
-- **Backend gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_notification-templates/config_notification-templates.controller.ts` — `api/config/:bu_code/notification-templates`
-- **Dispatcher:** `../carmen-turborepo-backend-v2/apps/micro-business/src/common/workflow/workflow-notification-dispatcher.service.ts` — `WorkflowNotificationDispatcher.dispatch()`, `render()`
-- **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_notification_template`, `enum_notification_channel` (สี่ค่า ไม่เปลี่ยน)
-- **Translations:** `../carmen-inventory-frontend-react/messages/en.json` — `systemAdmin.notificationTemplate.*` (namespace ยืนยัน "Manage reusable notification templates for workflow events")
+- **Frontend routes:** `../carmen-frontend/routes/system-admin/notification-template/notification-template.route.tsx`, `notification-template-new.route.tsx`, `notification-template-edit.route.tsx`, `noti-tmpl.tsx` (list, `filter=type:app`), `noti-tmpl-form.tsx` + `noti-tmpl-edit-content.tsx` (create/view/edit), `noti-tmpl-form-schema.ts`, `noti-tmpl-variables.ts` (`NOTIFICATION_VARIABLES`, `splitTemplate`, `unknownVariables`), `noti-tmpl-variable-chips.tsx`, `noti-tmpl-preview.tsx`, `use-noti-tmpl-table.tsx`
+- **Frontend type:** `../carmen-frontend/types/noti-tmpl.ts` (`NotificationTemplateType = "app" | "email" | "line" | "sms"` — คงไว้สี่ค่าโดยตั้งใจเพื่อให้แถว legacy โหลดได้)
+- **Frontend lookup (ผู้บริโภค):** `../carmen-frontend/components/lookup/lookup-noti-tmpl.tsx` — `LookupNotificationTemplate` กรองด้วย `channelType`
+- **Frontend workflow-editor consumer:** `../carmen-frontend/routes/system-admin/workflow/wf-stage-notifications.tsx` — `WfChannel = "app"` (`:11`)
+- **Nav / permission:** `../carmen-frontend/constant/module-list.ts:656-659` — ลูกของกลุ่ม Workflows, `licenseFeature: "configuration.notification_template"`, `PERMISSIONS.configuration.notification_template.view`
+- **E2E:** `../carmen-frontend-e2e/docs/test-cases/1104-notification-template.md` — แคตตาล็อกเท่านั้น
+- **Backend service:** `../carmen-turborepo-backend/apps/micro-business/src/master/notification-template/notification-template.service.ts` (CRUD + validate duplicate-name/channel), `.controller.ts`
+- **Backend gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_notification-templates/config_notification-templates.controller.ts` — `api/config/:bu_code/notification-templates`
+- **Dispatcher:** `../carmen-turborepo-backend/apps/micro-business/src/common/workflow/workflow-notification-dispatcher.service.ts` — `WorkflowNotificationDispatcher.dispatch()`, `render()`
+- **Prisma tenant:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_notification_template`, `enum_notification_channel` (สี่ค่า ไม่เปลี่ยน)
+- **Translations:** `../carmen-frontend/messages/en.json` — `systemAdmin.notificationTemplate.*` (namespace ยืนยัน "Manage reusable notification templates for workflow events")

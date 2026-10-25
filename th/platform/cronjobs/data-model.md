@@ -16,13 +16,13 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 > - `../micro-cronjobs/internal/executor/{executor.go,report.go,notification.go,cleanup.go,dashboard.go,activity_rollup.go,activity_retention.go}` — เป้าหมาย dispatch ทั้งหก (อ่านแบบเต็ม)
 > - `../micro-cronjobs/internal/scheduler/scheduler.go`, `cmd/server/main.go` — polling, retry, timezone (อ่านแบบเต็ม)
 > - `../micro-cronjobs/internal/handler/cronjob_handler.go`, `internal/repository/cronjob_repo.go` — REST surface และเส้นทางเขียนระดับแถว (อ่านแบบเต็ม)
-> - `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_cronjobs/{platform_cronjobs.controller.ts,platform_cronjobs.service.ts}` — ด่านสิทธิ์เดียวที่อยู่หน้าสิ่งข้างต้น (อ่านแบบเต็ม)
+> - `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform_cronjobs/{platform_cronjobs.controller.ts,platform_cronjobs.service.ts}` — ด่านสิทธิ์เดียวที่อยู่หน้าสิ่งข้างต้น (อ่านแบบเต็ม)
 >
-> ยืนยันกับ `carmen-platform` HEAD `157a65e` (2026-09-04), `carmen-turborepo-backend-v2` HEAD `937cf5ac4` (2026-09-06) และ `micro-cronjobs` HEAD `d17d8eb9bc3` (2026-09-04) แต่ละ hash ยืนยันด้วย `git -C <repo> cat-file -e <hash>`
+> ยืนยันกับ `carmen-backstage` HEAD `157a65e` (2026-09-04), `carmen-turborepo-backend` HEAD `937cf5ac4` (2026-09-06) และ `micro-cronjobs` HEAD `d17d8eb9bc3` (2026-09-04) แต่ละ hash ยืนยันด้วย `git -C <repo> cat-file -e <hash>`
 
 ## 1. ภาพรวม
 
-skeleton ที่ seed ไว้ของหน้านี้ชี้ไปที่ `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` เป็นแหล่งข้อมูลของตารางนี้ **นั่นผิด และควรพูดตรง ๆ แทนที่จะแก้เงียบ ๆ:** การ grep หา `Cronjob`/`CRONJOBS` ใน Prisma schema ของแพลตฟอร์มไม่พบอะไรเลย ตารางนี้ไม่ใช่ Prisma model เลยด้วยซ้ำ — เป็นของ `../micro-cronjobs` เองทั้งหมด ผ่าน SQL migration ที่เขียนเอง ใน Postgres schema ของตัวเอง (`"CRONJOBS"`) อ่านและเขียนผ่าน `gorm` ไม่ใช่ Prisma ทุก claim ในหน้านี้อ้างอิงกลับไปที่ migration และซอร์สโค้ด Go ของ repo นั้น ไม่ใช่ shared schema ของแพลตฟอร์ม
+skeleton ที่ seed ไว้ของหน้านี้ชี้ไปที่ `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` เป็นแหล่งข้อมูลของตารางนี้ **นั่นผิด และควรพูดตรง ๆ แทนที่จะแก้เงียบ ๆ:** การ grep หา `Cronjob`/`CRONJOBS` ใน Prisma schema ของแพลตฟอร์มไม่พบอะไรเลย ตารางนี้ไม่ใช่ Prisma model เลยด้วยซ้ำ — เป็นของ `../micro-cronjobs` เองทั้งหมด ผ่าน SQL migration ที่เขียนเอง ใน Postgres schema ของตัวเอง (`"CRONJOBS"`) อ่านและเขียนผ่าน `gorm` ไม่ใช่ Prisma ทุก claim ในหน้านี้อ้างอิงกลับไปที่ migration และซอร์สโค้ด Go ของ repo นั้น ไม่ใช่ shared schema ของแพลตฟอร์ม
 
 `"CRONJOBS"."Cronjob"` ยังเป็นตาราง **ที่ใช้ร่วมกัน** ในอีกความหมายหนึ่งด้วย: แถวถูกเขียนทั้งจากฟอร์มสร้าง/แก้ไขของโมดูลนี้เอง และจาก backend service อื่นที่ทำงานในนามของ business unit หนึ่ง (ที่เด่นชัดที่สุดคือกำหนดการรายงานแบบทำซ้ำ — ดูหน้า landing §2) หนึ่งแถวคือหนึ่งงาน ไม่มีอะไรในตารางนี้ที่ผูกงานเข้ากับ business unit ที่มันน่าจะเป็นของ นอกจาก `bu_codes` ที่บังเอิญอยู่ใน `job_config` ของแถวนั้นเอง
 
@@ -67,7 +67,7 @@ skeleton ที่ seed ไว้ของหน้านี้ชี้ไป�
 
 ## 3. ประเภทงานและ Config ของแต่ละแบบ
 
-`job_config` คือ JSON blob ที่แยกตาม `job_type` โดยไม่มีรูปร่างร่วมกันเลยระหว่างหกประเภท (union `CronJobConfig` ฝั่ง frontend เองแทบไม่มีชื่อฟิลด์ซ้ำกัน — `../carmen-platform/src/types/index.ts:1691-1697`) ทุกฟิลด์ด้านล่างเป็น optional ในระดับ struct ของ Go; executor ต่างหากที่บังคับว่าฟิลด์ไหนจำเป็นจริง ๆ ตอนรัน
+`job_config` คือ JSON blob ที่แยกตาม `job_type` โดยไม่มีรูปร่างร่วมกันเลยระหว่างหกประเภท (union `CronJobConfig` ฝั่ง frontend เองแทบไม่มีชื่อฟิลด์ซ้ำกัน — `../carmen-backstage/src/types/index.ts:1691-1697`) ทุกฟิลด์ด้านล่างเป็น optional ในระดับ struct ของ Go; executor ต่างหากที่บังคับว่าฟิลด์ไหนจำเป็นจริง ๆ ตอนรัน
 
 ### 3.1 `report`
 
@@ -209,7 +209,7 @@ executor ของ `dashboard_refresh` ถือว่า HTTP call ไป `micr
 - `../micro-cronjobs/internal/repository/cronjob_repo.go` (207 บรรทัด) — `UpdateLastRun`, `Update` แบบ optimistic-lock, `FindActive`/`FindBySource`
 - `../micro-cronjobs/cmd/server/main.go` (166 บรรทัด) — การประกอบระบบ การ resolve timezone
 - `../micro-cronjobs/migrations/{20260405120000,20260406010000,20260406135707,20260610120000,20260730092930,20260730093731,20260824100000,20260902104533,20260903100000}_*.up.sql` — migration ทั้งเก้าไฟล์ อ่านแบบเต็ม
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_cronjobs/platform_cronjobs.service.ts` — comment เรื่องการถอดการตรวจความเป็นเจ้าของ (§6, กรณีขอบ)
-- `../carmen-platform/src/types/index.ts:1660-1746` — รูปร่างชนิดข้อมูลฝั่ง frontend เทียบกับ struct ของ Go ทีละฟิลด์
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform_cronjobs/platform_cronjobs.service.ts` — comment เรื่องการถอดการตรวจความเป็นเจ้าของ (§6, กรณีขอบ)
+- `../carmen-backstage/src/types/index.ts:1660-1746` — รูปร่างชนิดข้อมูลฝั่ง frontend เทียบกับ struct ของ Go ทีละฟิลด์
 - [Activity Events — Data Model](/th/platform/activity-events/data-model) §4 — ข้อมูล `activity_rollup`/`activity_retention` ที่หน้านี้เห็นตรงกัน
 - [Database Pools — Data Model](/th/platform/database-pools/data-model) §2 — การบังคับความไม่ซ้ำของชื่อของโมดูลพี่น้อง เทียบกับที่ §2 ด้านบน

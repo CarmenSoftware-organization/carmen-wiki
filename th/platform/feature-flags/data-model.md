@@ -14,11 +14,11 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 > **ที่เก็บข้อมูล:** หนึ่งแถวของตาราง `tb_platform_config` ที่ใช้ร่วมกัน `key = 'feature_flags'` — ตัว entity เองบันทึกไว้แบบเต็มที่[Platform Config](/th/platform/platform-config/data-model) §2 หน้านี้ครอบคลุมเฉพาะส่วนที่เจาะจงกับคีย์นี้ &nbsp;·&nbsp; **รูปร่าง:** `Record<string, 'active' | 'inactive' | 'hide'>` แบบฟรีฟอร์ม (`FeatureFlagsConfigSchema` เป็น Zod `record` ไม่ใช่ object) — คีย์เดียวใน registry ที่ไม่มีรายชื่อฟิลด์ตายตัว และนั่นคือเหตุผลว่าทำไมมันเป็นคีย์เดียวที่ `PATCH` ไม่ได้เลย (§4) &nbsp;·&nbsp; **แหล่งความจริงว่า *มีอะไรบ้าง*:** `FEATURE_CATALOG` ฝั่ง frontend (`src/constants/featureFlags.ts`) 28 รายการ — backend เก็บแค่สถานะ ไม่เคยตรวจชื่อคีย์กับแค็ตตาล็อกใดเลย &nbsp;·&nbsp; **เข้าถึงได้ผ่านคู่ของตัวเองเท่านั้น:** `GET`/`PUT /api-system/platform/feature-flags` ไม่ใช่ผ่าน `/api-system/platform/configs` ทั่วไป (§4)
 
 > **Source of truth:** แค็ตตาล็อกฝั่ง frontend ที่นิยามว่ามีอะไร gate ได้บ้าง และ schema/controller ฝั่ง backend ที่เก็บและให้บริการมัน อ่านสิ่งเหล่านี้ก่อนเสมอเมื่อเขียนหรืออัปเดตหน้านี้:
-> - `../carmen-platform/src/constants/featureFlags.ts`
-> - `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts`
-> - `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/feature_flags/feature_flags.controller.ts`
+> - `../carmen-backstage/src/constants/featureFlags.ts`
+> - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts`
+> - `../carmen-turborepo-backend/apps/backend-gateway/src/platform/feature_flags/feature_flags.controller.ts`
 >
-> ยืนยันกับ `carmen-turborepo-backend-v2` HEAD `937cf5ac4` (2026-09-06) และ `carmen-platform` HEAD `157a65e` (2026-09-04)
+> ยืนยันกับ `carmen-turborepo-backend` HEAD `937cf5ac4` (2026-09-06) และ `carmen-backstage` HEAD `157a65e` (2026-09-04)
 
 ## 1. ภาพรวม
 
@@ -35,7 +35,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 3. `FEATURE_CATALOG` — ทุกคีย์ แบบเต็ม
 
-นิยามไว้ที่เดียว `../carmen-platform/src/constants/featureFlags.ts:47-84` มี 28 รายการ — ยืนยันโดยนับจากอาร์เรย์จริง และตรวจไขว้กับ union ของทุกค่า `feature:` ที่ใช้ทั้งใน `platformNav.ts` (24 คีย์) และ `clusterAdminNav.ts` (4 คีย์): ทั้งสองชุดตรงกันเป๊ะ จึงไม่มีอะไรในไฟล์ nav ทั้งสองที่อ้างคีย์ที่แค็ตตาล็อกไม่นิยาม และแค็ตตาล็อกก็ไม่มีคีย์ที่ไม่มีแถวเมนูจริงใช้เลย ทั้ง 28 คีย์ default เป็น `active` — คอมเมนต์ของไฟล์เองระบุว่านี่เป็นความตั้งใจ: "a deploy must never hide anything on its own" (บรรทัด 36-37)
+นิยามไว้ที่เดียว `../carmen-backstage/src/constants/featureFlags.ts:47-84` มี 28 รายการ — ยืนยันโดยนับจากอาร์เรย์จริง และตรวจไขว้กับ union ของทุกค่า `feature:` ที่ใช้ทั้งใน `platformNav.ts` (24 คีย์) และ `clusterAdminNav.ts` (4 คีย์): ทั้งสองชุดตรงกันเป๊ะ จึงไม่มีอะไรในไฟล์ nav ทั้งสองที่อ้างคีย์ที่แค็ตตาล็อกไม่นิยาม และแค็ตตาล็อกก็ไม่มีคีย์ที่ไม่มีแถวเมนูจริงใช้เลย ทั้ง 28 คีย์ default เป็น `active` — คอมเมนต์ของไฟล์เองระบุว่านี่เป็นความตั้งใจ: "a deploy must never hide anything on its own" (บรรทัด 36-37)
 
 | # | คีย์ | ป้ายชื่อเมนู | Console | `groupKey` |
 | - | --- | --- | --- | --- |
@@ -114,17 +114,17 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 8. อ้างอิง
 
-- `../carmen-platform/src/constants/featureFlags.ts` — `FeatureState`, `FeatureDefinition`, `FEATURE_CATALOG` (§3), `isFeatureKey`, `DEFAULT_FEATURE_STATES`
-- `../carmen-platform/src/context/FeatureFlagContext.tsx` — จังหวะการดึงข้อมูล, การ fallback เมื่อล้มเหลว, `flagOf` (§5)
-- `../carmen-platform/src/components/nav/platformNav.ts` (บรรทัด 85-103) และ `src/components/nav/clusterAdminNav.ts` (บรรทัด 10-26) — filter `hide`/`inactive` สองตัวที่แยกกัน (§5)
-- `../carmen-platform/src/components/Sidebar.tsx` (บรรทัด 105-114 และ branch render ของ `comingSoon`) — การจัดกลุ่มแบบ consecutive-run และแถวที่ปิดใช้งานแบบไม่ใช่ `<Link>` (§5)
-- `../carmen-platform/src/components/PrivateRoute.tsx` (บรรทัด 84-102) — ลำดับการบังคับใช้ระดับ route และผลลัพธ์ (§5)
-- `../carmen-platform/src/pages/ComingSoon.tsx` — หมายเหตุออกแบบเรื่องไม่มีรหัสสถานะ (§5)
-- `../carmen-platform/src/pages/FeatureFlagManagement.tsx` (บรรทัด 44-47, 58-66, 152-169) — การตรวจจับคีย์กำพร้า, การจัดกลุ่มของหน้าตั้งค่า, การลบแบบ draft-only (§6)
-- `../carmen-platform/src/services/featureFlagService.ts` — REST client รวมถึงคำเตือนเรื่อง `doc_version` (§4)
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/feature_flags/feature_flags.controller.ts` — คู่ `GET`/`PUT` เฉพาะทาง, guard, และการตรวจสองครั้ง (§4)
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts` (บรรทัด 242-246, 360-369, 452-456) — `FeatureFlagsConfigSchema`, entry ใน registry, และกลไก fields-ว่าง-แปลว่า-PATCH-ถูกปฏิเสธ (§4)
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (บรรทัด 1462) — `tb_platform_config` บันทึกไว้แบบเต็มที่[Platform Config — Data Model](/th/platform/platform-config/data-model)
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts` (บรรทัด 43) — entry catalog ของ `feature_flag.manage` อ้างถึงในหน้า landing §4
+- `../carmen-backstage/src/constants/featureFlags.ts` — `FeatureState`, `FeatureDefinition`, `FEATURE_CATALOG` (§3), `isFeatureKey`, `DEFAULT_FEATURE_STATES`
+- `../carmen-backstage/src/context/FeatureFlagContext.tsx` — จังหวะการดึงข้อมูล, การ fallback เมื่อล้มเหลว, `flagOf` (§5)
+- `../carmen-backstage/src/components/nav/platformNav.ts` (บรรทัด 85-103) และ `src/components/nav/clusterAdminNav.ts` (บรรทัด 10-26) — filter `hide`/`inactive` สองตัวที่แยกกัน (§5)
+- `../carmen-backstage/src/components/Sidebar.tsx` (บรรทัด 105-114 และ branch render ของ `comingSoon`) — การจัดกลุ่มแบบ consecutive-run และแถวที่ปิดใช้งานแบบไม่ใช่ `<Link>` (§5)
+- `../carmen-backstage/src/components/PrivateRoute.tsx` (บรรทัด 84-102) — ลำดับการบังคับใช้ระดับ route และผลลัพธ์ (§5)
+- `../carmen-backstage/src/pages/ComingSoon.tsx` — หมายเหตุออกแบบเรื่องไม่มีรหัสสถานะ (§5)
+- `../carmen-backstage/src/pages/FeatureFlagManagement.tsx` (บรรทัด 44-47, 58-66, 152-169) — การตรวจจับคีย์กำพร้า, การจัดกลุ่มของหน้าตั้งค่า, การลบแบบ draft-only (§6)
+- `../carmen-backstage/src/services/featureFlagService.ts` — REST client รวมถึงคำเตือนเรื่อง `doc_version` (§4)
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/feature_flags/feature_flags.controller.ts` — คู่ `GET`/`PUT` เฉพาะทาง, guard, และการตรวจสองครั้ง (§4)
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts` (บรรทัด 242-246, 360-369, 452-456) — `FeatureFlagsConfigSchema`, entry ใน registry, และกลไก fields-ว่าง-แปลว่า-PATCH-ถูกปฏิเสธ (§4)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (บรรทัด 1462) — `tb_platform_config` บันทึกไว้แบบเต็มที่[Platform Config — Data Model](/th/platform/platform-config/data-model)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts` (บรรทัด 43) — entry catalog ของ `feature_flag.manage` อ้างถึงในหน้า landing §4
 
 **Cross-links:** [Feature Flags landing](/th/platform/feature-flags) &nbsp;·&nbsp; [Platform Config — Data Model](/th/platform/platform-config/data-model)

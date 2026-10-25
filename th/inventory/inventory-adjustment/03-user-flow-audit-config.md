@@ -33,4 +33,4 @@ dateCreated: 2026-05-15T13:00:00.000Z
 - [master-data/adjustment-type](/th/inventory/master-data/adjustment-type) — หน้าจอ CRUD reason code ที่แท้จริง
 - [03 — User Flow](/th/inventory/inventory-adjustment/03-user-flow) — วงจรชีวิตเอกสารจริงของโมดูลนี้
 - [02 — กติกาทางธุรกิจ](/th/inventory/inventory-adjustment/02-business-rules) — กฎจริงของโมดูล ไม่มีห่วงการกำหนดสิทธิ์
-- E2E: `../carmen-inventory-frontend-e2e/tests/031-adjustment-type.spec.ts` — spec CRUD reason code จริง
+- E2E: `../carmen-frontend-e2e/tests/031-adjustment-type.spec.ts` — spec CRUD reason code จริง

@@ -14,7 +14,7 @@ dateCreated: 2026-06-10T13:00:00.000Z
 > **Tables:** `tb_news` — single table, **no FK relations, no unique constraints beyond the PK** &nbsp;·&nbsp; **Enums:** `enum_news_status` (draft · published · archived) &nbsp;·&nbsp; **Targeting:** `business_unit_ids Json @default("[]")` — a JSONB UUID array, not a join table; `[]` = global &nbsp;·&nbsp; **Tags:** `tags Json @default("[]")` — a JSONB string array, lowercased/deduped/capped server-side &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` — required on every `PUT`, enforces optimistic locking &nbsp;·&nbsp; **Image:** stored as `image_file_token` (MinIO); API responses replace it with a presigned `image_url` (1-hour expiry) &nbsp;·&nbsp; **Endpoints:** `/api/news` (authenticated CRUD) + `/api/news/tags` + `/api/news/summary` (added 2026-08-24) + `/api/public/news` (anonymous) — `/api`, **not** `/api-system` &nbsp;·&nbsp; **Enforcement:** the three write routes check the caller's own `news.*` permission server-side (`PlatformPermissionGuard`, added 2026-08-20); all four `GET` routes check only `x-app-id` — no user-permission check, by design (§6)
 
 > **Source of truth:** Backend Prisma platform schema. Always read this first when writing or updating this page:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > The `generated/client/schema.prisma` file is an auto-generated copy and not authoritative.
 
@@ -130,9 +130,9 @@ via Prisma's `update({ where: { id, doc_version } })`. If another write changed 
 
 Transitions are unrestricted in both the SPA (plain select) and the backend (no transition guard) — any status can move to any other.
 
-## 5. Divergences from carmen-platform SPA shape
+## 5. Divergences from carmen-backstage SPA shape
 
-The SPA type is `News` in `../carmen-platform/src/types/index.ts`; the translation layer is `src/services/newsService.ts` plus two gateway-side response shapers (`news-image.helper.ts`, the `EnrichAuditUsers` interceptor).
+The SPA type is `News` in `../carmen-backstage/src/types/index.ts`; the translation layer is `src/services/newsService.ts` plus two gateway-side response shapers (`news-image.helper.ts`, the `EnrichAuditUsers` interceptor).
 
 | SPA shape | SPA source | Prisma storage | Notes |
 | --------- | ---------- | -------------- | ----- |
@@ -167,14 +167,14 @@ REST surface (backend-gateway). **Note the prefix: `/api/news`, not `/api-system
 Multipart format details (create/update): field `image` carries the binary; the gateway's `validateImageUpload` enforces MIME `image/jpeg`/`png`/`webp`, ≤5 MB, and ≤2048×2048 px (parse failure → 400 `BAD_DIMENSIONS`). Text fields arrive as strings; `business_unit_ids` and `tags` are JSON-decoded.
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_news` (line 884), `enum_news_status` (line 798).
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/news/news.service.ts` — BU validation, tag normalization, `published_at` stamping, the `doc_version` optimistic lock, soft-delete filtering, public filters, the `updated_at` sort override.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_news` (line 884), `enum_news_status` (line 798).
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/news/news.service.ts` — BU validation, tag normalization, `published_at` stamping, the `doc_version` optimistic lock, soft-delete filtering, public filters, the `updated_at` sort override.
 
 **Secondary (gateway + consumer shape):**
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/news/` — `news.controller.ts` (`PlatformPermissionGuard` on the three write routes only — see §6 above), `news.service.ts` (upload/rollback/cleanup; RPC proxy to `micro-cluster`, not direct Prisma access), `news-image.helper.ts`, `news-body.parser.ts`, `public-news.controller.ts`.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/common/helpers/image-upload.validator.ts` — server-side image limits.
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/src/index.ts` — `OptimisticLockError` (`DOC_VERSION_CONFLICT`).
-- `../carmen-platform/src/types/index.ts` — `News`, `NewsStatus`, `Audit`, `AuditEntry`; `src/services/newsService.ts` — multipart builder, `getTags`, envelope walking; `src/utils/docVersion.ts` — conflict helpers.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/application/news/` — `news.controller.ts` (`PlatformPermissionGuard` on the three write routes only — see §6 above), `news.service.ts` (upload/rollback/cleanup; RPC proxy to `micro-cluster`, not direct Prisma access), `news-image.helper.ts`, `news-body.parser.ts`, `public-news.controller.ts`.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/common/helpers/image-upload.validator.ts` — server-side image limits.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/src/index.ts` — `OptimisticLockError` (`DOC_VERSION_CONFLICT`).
+- `../carmen-backstage/src/types/index.ts` — `News`, `NewsStatus`, `Audit`, `AuditEntry`; `src/services/newsService.ts` — multipart builder, `getTags`, envelope walking; `src/utils/docVersion.ts` — conflict helpers.
 - `../carmen-turborepo-backend-bruno/collections/carmen-inventory/master-data/news/` — executable contracts including the `public/` pair and `GET-find-tags-master-data-news.bru`.
 
 **Cross-links:** [News landing](/en/platform/news) &nbsp;·&nbsp; [UI Screens](/en/platform/news/ui-screens) &nbsp;·&nbsp; [Permissions](/en/platform/news/permissions) &nbsp;·&nbsp; [Business Units data-model](/en/platform/business-units/data-model) (the targeted ids)

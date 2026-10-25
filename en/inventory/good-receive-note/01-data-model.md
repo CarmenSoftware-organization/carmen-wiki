@@ -18,8 +18,8 @@ dateCreated: 2026-05-15T11:00:00.000Z
 > **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*` across all five tables; per-line workflow signatures + `workflow_history` JSON on header
 
 > **Source of truth:** Backend Prisma schema. Always read these first when writing or updating this page:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > The `generated/client/schema.prisma` files under each package are auto-generated copies and not authoritative.
 
@@ -281,7 +281,7 @@ The `GRN-Technical-Specification.md` describes a TypeScript interface model (wit
 
 ## 6. References
 
-- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (all five GRN models, both enums, and the related `tb_extra_cost` / `tb_inventory_transaction*` models) and `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (verified to contain no GRN models).
+- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (all five GRN models, both enums, and the related `tb_extra_cost` / `tb_inventory_transaction*` models) and `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (verified to contain no GRN models).
 - **Secondary (concept cross-check):**
   - `../carmen/docs/good-recive-note-managment/GRN-Technical-Specification.md` — TypeScript interface model and calculation rules; divergences in Section 5 (items 1, 2, 4, 5, 9).
   - `../carmen/docs/good-recive-note-managment/grn-master-prd.md` — PRD with header field list, FOC behaviour, and 3-state lifecycle prose; divergences in Section 5 (items 1, 3, 6, 7, 8, 10).

@@ -114,7 +114,7 @@ graph TB
     UC4 -.->|"sends PO"| V
 ```
 
-> Diagram adapted from `carmen/docs/app/procurement/purchase-orders/UC-purchase-orders.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/procurement/purchase-order/purchase-order.service.ts`, `purchase-order.logic.ts` (`performApprove`), `carmen-inventory-frontend-react/routes/procurement/purchase-order/` (2026-09-28) · Changes: dropped the source's fabricated "Download QR Code" use case (no QR feature found in the frontend) and the "Purchasing Manager" actor (approval is workflow-stage-based, not a fixed role); added the Approver actor and the Approve/Reject/Send-Back use case the source omitted entirely; renamed actors to match this wiki's persona terminology (Receiver, not "Receiving Staff").
+> Diagram adapted from `carmen/docs/app/procurement/purchase-orders/UC-purchase-orders.md` · verified against `carmen-turborepo-backend/apps/micro-business/src/procurement/purchase-order/purchase-order.service.ts`, `purchase-order.logic.ts` (`performApprove`), `carmen-frontend/routes/procurement/purchase-order/` (2026-09-28) · Changes: dropped the source's fabricated "Download QR Code" use case (no QR feature found in the frontend) and the "Purchasing Manager" actor (approval is workflow-stage-based, not a fixed role); added the Approver actor and the Approve/Reject/Send-Back use case the source omitted entirely; renamed actors to match this wiki's persona terminology (Receiver, not "Receiving Staff").
 
 ## 4. Cross-Persona Handoffs
 

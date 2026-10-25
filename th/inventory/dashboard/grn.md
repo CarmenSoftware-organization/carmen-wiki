@@ -15,7 +15,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ## สถานะการ implement (ตรวจสอบเมื่อ 2026-07-16)
 
-หน้านี้ document `dashboard-grn.tsx` (เดิมคือ `routes/dashboard/_components/dashboard-grn.tsx`) และ fixture `mock/grn.ts` ของมัน `/dashboard/grn` ไม่เคยมีอยู่ใน `routes/router.tsx` — sidebar entry ของ Dashboard resolve ไปยัง component เดียวเท่านั้นเสมอมา คือหน้า [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) ในปัจจุบัน ไฟล์ demo นี้ถูกลบพร้อมไฟล์พี่น้องอีก 7 ไฟล์ใน commit `03891e3d` ("refactor(dashboard): convert to idiomatic structure, drop dead demo code", `carmen-inventory-frontend-react`, 2026-06-27) ซึ่ง commit message ระบุว่ามันและ mock fixture ของมัน "no importers anywhere" เนื้อหาด้านล่างทั้งหมดอธิบายหน้าจอ demo ที่ถูกลบและไม่เคยมี route จริงนี้ — เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น ถือว่าทุกข้อความ "ยังเป็น mock data ในปัจจุบัน", "เมื่อ live" และการอ้าง route ในส่วนที่เหลือของหน้านี้เป็นโมฆะ — จะไม่มีวัน live ภายใต้หน้านี้
+หน้านี้ document `dashboard-grn.tsx` (เดิมคือ `routes/dashboard/_components/dashboard-grn.tsx`) และ fixture `mock/grn.ts` ของมัน `/dashboard/grn` ไม่เคยมีอยู่ใน `routes/router.tsx` — sidebar entry ของ Dashboard resolve ไปยัง component เดียวเท่านั้นเสมอมา คือหน้า [dashboard/widget-workspace](/th/inventory/dashboard/widget-workspace) ในปัจจุบัน ไฟล์ demo นี้ถูกลบพร้อมไฟล์พี่น้องอีก 7 ไฟล์ใน commit `03891e3d` ("refactor(dashboard): convert to idiomatic structure, drop dead demo code", `carmen-frontend`, 2026-06-27) ซึ่ง commit message ระบุว่ามันและ mock fixture ของมัน "no importers anywhere" เนื้อหาด้านล่างทั้งหมดอธิบายหน้าจอ demo ที่ถูกลบและไม่เคยมี route จริงนี้ — เก็บไว้เป็นข้อมูลอ้างอิงเชิงประวัติศาสตร์เท่านั้น ถือว่าทุกข้อความ "ยังเป็น mock data ในปัจจุบัน", "เมื่อ live" และการอ้าง route ในส่วนที่เหลือของหน้านี้เป็นโมฆะ — จะไม่มีวัน live ภายใต้หน้านี้
 
 ![แดชบอร์ดใบรับสินค้า (GRN Dashboard) screen](/screenshots/dashboard/grn.png)
 
@@ -94,7 +94,7 @@ mock แบบ static ในปัจจุบัน เมื่อ wire แล
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Page shell / composition (ถูกลบเมื่อ 2026-06-27):** `routes/dashboard/_components/dashboard-grn.tsx` ใน `../carmen-inventory-frontend-react`
-- **Mock data (ถูกลบเมื่อ 2026-06-27):** `routes/dashboard/mock/grn.ts` ใน `../carmen-inventory-frontend-react`
+- **Page shell / composition (ถูกลบเมื่อ 2026-06-27):** `routes/dashboard/_components/dashboard-grn.tsx` ใน `../carmen-frontend`
+- **Mock data (ถูกลบเมื่อ 2026-06-27):** `routes/dashboard/mock/grn.ts` ใน `../carmen-frontend`
 - **Commit ที่ลบ:** `03891e3d` — "refactor(dashboard): convert to idiomatic structure, drop dead demo code"
 - **i18n key ที่ยังอยู่แต่ไม่ถูกใช้:** `messages/en.json` → `dashboard.grn.title` = "Goods Receive Note Dashboard"

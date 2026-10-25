@@ -85,7 +85,7 @@ stateDiagram-v2
 
 ## 5. แหล่งอ้างอิง
 
-- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/` (`sc-component.tsx`, `sc-form.tsx`, `sc-entry-component.tsx`, `sc-review-component.tsx`)
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts`
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check; manual test-case catalog `docs/test-cases/760-spot-check.md` (44 cases, re-verify 2026-09-20)
+- **Frontend:** `../carmen-frontend/routes/inventory-management/spot-check/` (`sc-component.tsx`, `sc-form.tsx`, `sc-entry-component.tsx`, `sc-review-component.tsx`)
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/spot-check/spot-check.service.ts`
+- **E2E:** `../carmen-frontend-e2e/tests/` — ยังไม่มี spec spot-check; manual test-case catalog `docs/test-cases/760-spot-check.md` (44 cases, re-verify 2026-09-20)
 - หน้า flow ที่เกี่ยวข้อง: [inventory-adjustment/03-user-flow](/th/inventory/inventory-adjustment/03-user-flow) (จุดที่ต้อง manual แก้ไขผลต่างที่ยืนยันแล้ว), [physical-count/03-user-flow](/th/inventory/physical-count/03-user-flow) (flow คู่เทียบการนับเต็ม)

@@ -26,11 +26,11 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 ## 2. References
 
-- ../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma — `model tb_business_unit`, `model tb_business_unit_license` (ledger ที่นั่งใหม่), `model tb_business_unit_interface_license` (ledger interface licence, 2026-09-10), `model tb_database_pool` (ตารางใหม่ที่ `db_connection` เดิมถูกแทนที่ด้วย)
-- ../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260821000000_drop_bu_max_license_users/ — migration ที่ลบ `max_license_users`
-- ../carmen-platform/src/types/index.ts — interface `BusinessUnit` (รวม `doc_version?: number`), `BusinessUnitConfig`, `BusinessUnitLicense`, `DatabasePool`, `PresignedImage`
-- ../carmen-platform/src/utils/{databasePool,buLicense}.ts — ตัวสุ่มชื่อ schema และการคำนวณ ledger ที่นั่ง
-- ../carmen-platform/src/services/businessUnitService.ts — REST client (`/api-system/business-units`) — **`revealDbPassword` ไม่มีอยู่แล้ว** เพราะ `db_connection`/password ถูกถอดออกทั้งบล็อก
+- ../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma — `model tb_business_unit`, `model tb_business_unit_license` (ledger ที่นั่งใหม่), `model tb_business_unit_interface_license` (ledger interface licence, 2026-09-10), `model tb_database_pool` (ตารางใหม่ที่ `db_connection` เดิมถูกแทนที่ด้วย)
+- ../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260821000000_drop_bu_max_license_users/ — migration ที่ลบ `max_license_users`
+- ../carmen-backstage/src/types/index.ts — interface `BusinessUnit` (รวม `doc_version?: number`), `BusinessUnitConfig`, `BusinessUnitLicense`, `DatabasePool`, `PresignedImage`
+- ../carmen-backstage/src/utils/{databasePool,buLicense}.ts — ตัวสุ่มชื่อ schema และการคำนวณ ledger ที่นั่ง
+- ../carmen-backstage/src/services/businessUnitService.ts — REST client (`/api-system/business-units`) — **`revealDbPassword` ไม่มีอยู่แล้ว** เพราะ `db_connection`/password ถูกถอดออกทั้งบล็อก
 
 ## 3. TODO
 

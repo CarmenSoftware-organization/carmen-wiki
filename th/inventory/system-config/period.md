@@ -159,10 +159,10 @@ DELETE api/:bu_code/inventory-periods/:period_id
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `enum_period_status` (line 1223), `tb_inventory_period` (1229-1261), `tb_inventory_period_comment` (1263-1296), `tb_inventory_period_snapshot` (1298-1351)
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `enum_period_status` (line 1223), `tb_inventory_period` (1229-1261), `tb_inventory_period_comment` (1263-1296), `tb_inventory_period_snapshot` (1298-1351)
 - **Migrations:** tenant `20260916141000_rename_tb_period_to_tb_inventory_period`; platform `20260916140000_rename_period_to_inventory_period`, `20260916150000_fix_license_group_item_inventory_period_key`
-- **Gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/inventory-periods/inventory-periods.controller.ts` (+ alias `inventory-periods-legacy.controller.ts`)
-- **Service / guards:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/inventory-period/inventory-period.service.ts`; `.../inventory/inventory-period.helper.ts` (`findOpenPeriodForDate`, `findCurrentOpenPeriod`, `assertDateInOpenPeriod`, `assertDateInCurrentPeriod`)
-- **Frontend:** `../carmen-inventory-frontend-react/routes/system-admin/inventory-period/`; `types/inventory-period.ts`; footer `components/footer/status-bar.tsx`, `hooks/use-backend-version.ts`
+- **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/inventory-periods/inventory-periods.controller.ts` (+ alias `inventory-periods-legacy.controller.ts`)
+- **Service / guards:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/inventory-period/inventory-period.service.ts`; `.../inventory/inventory-period.helper.ts` (`findOpenPeriodForDate`, `findCurrentOpenPeriod`, `assertDateInOpenPeriod`, `assertDateInCurrentPeriod`)
+- **Frontend:** `../carmen-frontend/routes/system-admin/inventory-period/`; `types/inventory-period.ts`; footer `components/footer/status-bar.tsx`, `hooks/use-backend-version.ts`
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/master-data/period/` (URL เป็น `/inventory-periods` แล้ว), `config/period-comment/`
-- **E2E:** `../carmen-inventory-frontend-e2e/docs/test-cases/1105-system-period.md` — แคตตาล็อกเท่านั้น (32 case ตรวจสอบซ้ำกับ `routes/system-admin/inventory-period` เมื่อ 2026-09-20; ไม่มี Playwright spec)
+- **E2E:** `../carmen-frontend-e2e/docs/test-cases/1105-system-period.md` — แคตตาล็อกเท่านั้น (32 case ตรวจสอบซ้ำกับ `routes/system-admin/inventory-period` เมื่อ 2026-09-20; ไม่มี Playwright spec)

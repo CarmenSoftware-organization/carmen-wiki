@@ -13,7 +13,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 โมดูล **Email Settings** คือหน้าจอเดียว `EmailSettingManagement` ที่ `/platform/email-settings` ซึ่งดูแลสองสิ่งที่เคยเป็นเรื่องเดียวกัน: รายการหลักที่ตั้งชื่อได้ของโปรไฟล์ผู้ส่ง SMTP ขาออก (`tb_email_sender_profile`) กับแผนที่เส้นทาง (`email_routing` ซึ่งเป็นคีย์หนึ่งของ `tb_platform_config` — ตาราง config **เดียวกัน** กับที่โมดูล [Platform Config](/th/platform/platform-config) แก้ไข) ที่ตัดสินว่าโปรไฟล์ไหนส่งอีเมลขาออกทั้งห้าเส้นทาง ได้แก่ สมัคร/บัญชีมีอยู่แล้ว, ยืนยันอีเมล, คำเชิญ, ลืมรหัสผ่าน, และแจ้งเตือน ทั้งสองสิ่งเคยเป็นเรื่องเดียวกัน — หนึ่งแถวโปรไฟล์ต่อหนึ่งค่า enum `purpose` ที่ตายตัว — จนกระทั่ง migration `20260808130000_email_profile_master_and_routing` แยกออกจากกัน โดยมีเป้าหมายชัดเจนให้ผู้ดูแลเพิ่มผู้ส่งใหม่ หรือเปลี่ยนว่าเส้นทางไหนใช้โปรไฟล์ไหน ได้จากหน้าจอ แทนที่จะต้องแก้ enum แล้ว deploy ใหม่ (§2)
 
 > **At a Glance**
-> **Component:** `EmailSettingManagement` &nbsp;·&nbsp; **Route:** `/platform/email-settings` &nbsp;·&nbsp; **Nav:** `permission: 'email_setting.read'`, `feature: 'email_settings'`, `groupKey: 'navGroup.platform'` (`platformNav.ts:39`) &nbsp;·&nbsp; **ด่านของโมดูลนี้เอง:** `email_setting.read` (ดู) / `email_setting.manage` (สร้าง/แก้/ลบโปรไฟล์ผู้ส่ง, ส่งอีเมลทดสอบ) — สอดคล้องกันทั้งฝั่ง frontend และ backend สำหรับทุก endpoint **ของโมดูลนี้เอง** (§4.1) &nbsp;·&nbsp; **จุดเดียวที่ไม่ใช่ด่านของโมดูลนี้เอง:** การ์ด Email Routing ซึ่งอ่านและเขียนแถว `platform_config` ผ่าน endpoint ที่ใช้ร่วมกับโมดูล Platform Config — ดู §4.2 ความไม่ตรงกันที่หน้านี้ถูกขอให้ไล่ตามให้ครบวงจรโดยเฉพาะ &nbsp;·&nbsp; **e2e suite:** **ไม่มี** — `../carmen-platform-e2e/tests/` ไม่มีโฟลเดอร์ `email-settings` ทุกคำกล่าวอ้างด้านล่างมาจากการอ่าน implementation ของ `../carmen-platform` และ `../carmen-turborepo-backend-v2` โดยตรง &nbsp;·&nbsp; **หน้าย่อย:** 1
+> **Component:** `EmailSettingManagement` &nbsp;·&nbsp; **Route:** `/platform/email-settings` &nbsp;·&nbsp; **Nav:** `permission: 'email_setting.read'`, `feature: 'email_settings'`, `groupKey: 'navGroup.platform'` (`platformNav.ts:39`) &nbsp;·&nbsp; **ด่านของโมดูลนี้เอง:** `email_setting.read` (ดู) / `email_setting.manage` (สร้าง/แก้/ลบโปรไฟล์ผู้ส่ง, ส่งอีเมลทดสอบ) — สอดคล้องกันทั้งฝั่ง frontend และ backend สำหรับทุก endpoint **ของโมดูลนี้เอง** (§4.1) &nbsp;·&nbsp; **จุดเดียวที่ไม่ใช่ด่านของโมดูลนี้เอง:** การ์ด Email Routing ซึ่งอ่านและเขียนแถว `platform_config` ผ่าน endpoint ที่ใช้ร่วมกับโมดูล Platform Config — ดู §4.2 ความไม่ตรงกันที่หน้านี้ถูกขอให้ไล่ตามให้ครบวงจรโดยเฉพาะ &nbsp;·&nbsp; **e2e suite:** **ไม่มี** — `../carmen-backstage-e2e/tests/` ไม่มีโฟลเดอร์ `email-settings` ทุกคำกล่าวอ้างด้านล่างมาจากการอ่าน implementation ของ `../carmen-backstage` และ `../carmen-turborepo-backend` โดยตรง &nbsp;·&nbsp; **หน้าย่อย:** 1
 
 ![การตั้งค่าอีเมล (Email Settings) screen](/screenshots/platform/email-settings/index.png)
 
@@ -50,7 +50,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ### 3.2 ห้าเส้นทางอีเมล — อะไรกระตุ้น, ค่าตั้งอะไรควบคุม, และส่งจริงจากไหน
 
-`src/constants/emailFlows.ts` นิยามรายการห้าเส้นทางตายตัวที่เส้นทางหนึ่งกำหนดปลายทางได้ (`EMAIL_FLOWS`, ใช้ render ทั้งเลนของ `RoutingPanel` และ label/เมนูของ `FlowChip` แต่ละใบ) รายการนี้คือ*แคตตาล็อกปลายทาง*ฝั่ง UI เท่านั้น ตัวกระตุ้นจริง ค่าตั้งอายุลิงก์ และคำสั่งส่งจริงของแต่ละเส้นทางอยู่ที่ backend แยกกันเป็นสอง service ใน `../carmen-turborepo-backend-v2`:
+`src/constants/emailFlows.ts` นิยามรายการห้าเส้นทางตายตัวที่เส้นทางหนึ่งกำหนดปลายทางได้ (`EMAIL_FLOWS`, ใช้ render ทั้งเลนของ `RoutingPanel` และ label/เมนูของ `FlowChip` แต่ละใบ) รายการนี้คือ*แคตตาล็อกปลายทาง*ฝั่ง UI เท่านั้น ตัวกระตุ้นจริง ค่าตั้งอายุลิงก์ และคำสั่งส่งจริงของแต่ละเส้นทางอยู่ที่ backend แยกกันเป็นสอง service ใน `../carmen-turborepo-backend`:
 
 | เส้นทาง | กระตุ้นโดย | คีย์ `platform_config` ที่ควบคุม | ส่งจากที่ไหน |
 | --- | --- | --- | --- |
@@ -121,24 +121,24 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 6. แหล่งอ้างอิง
 
-path ทั้งหมดด้านล่างคือ `../carmen-platform` (SPA ของ Platform admin, HEAD `157a65e`, 2026-09-04) ยกเว้นที่ขึ้นต้นด้วย `../carmen-turborepo-backend-v2` (backend monorepo, HEAD `937cf5ac4`, 2026-09-06)
+path ทั้งหมดด้านล่างคือ `../carmen-backstage` (SPA ของ Platform admin, HEAD `157a65e`, 2026-09-04) ยกเว้นที่ขึ้นต้นด้วย `../carmen-turborepo-backend` (backend monorepo, HEAD `937cf5ac4`, 2026-09-06)
 
-- `../carmen-platform/src/pages/EmailSettingManagement.tsx` — เปลือกของหน้า, state machine ของ `editingPurpose`, การต่อสาย permission
-- `../carmen-platform/src/pages/emailSettings/{EmailSettingCard,EmailRoutingCard,PasswordField,TestEmailDialog,routingLanes,RoutingPanel}.ts(x)` — component รายโปรไฟล์ทั้งห้า และโครงข้อมูลของ routing lane
-- `../carmen-platform/src/constants/emailFlows.ts` — `EMAIL_FLOWS` แคตตาล็อกห้าเส้นทางที่ UI routing render
-- `../carmen-platform/src/services/emailSettingService.ts`, `src/hooks/useEmailRouting.ts` — REST client ของโปรไฟล์และตัวโหลด routing map ที่ใช้ร่วมกัน
-- `../carmen-platform/src/components/nav/platformNav.ts` (บรรทัด 39), `src/App.tsx` (บรรทัด 491-494) — รายการ nav และการลงทะเบียน route
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_email-settings/{platform_email-settings.controller.ts,platform_email-settings.service.ts}` — REST surface ของโมดูลนี้เองและ RPC proxy ไป micro-cluster/micro-notification
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/email-sender-profile/email-sender-profile.service.ts` — CRUD โปรไฟล์, การบังคับความไม่ซ้ำของชื่อ, การมาสก์/เข้ารหัสรหัสผ่าน
-- `../carmen-turborepo-backend-v2/apps/micro-notification/src/platform-email/platform-email.service.ts` — `resolveProfile`/`resolveSmtpConfig`/`send`/`sendTest`, resolver ที่ทุกเส้นทางไปจบ
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/authen/auth/auth.service.ts` (บรรทัด 322-350, 1329-1481, 1648+, 2923-3151) — ตัวกระตุ้นและผู้ส่งของ `register`/`verify_email`/`forgot_password`
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/user-invitation/user-invitation.service.ts` (บรรทัด 303-370, 1254-1335, 1336-1470) — ตัวกระตุ้นและผู้ส่งของ `invitation`
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_configs/platform_configs.controller.ts` (บรรทัด 198-200, 236-238, 285-287, 145-159) — ด่านอ่าน/เขียนของ `email_routing` ที่ใช้ร่วมกับ [Platform Config](/th/platform/platform-config)
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts` — entry ของ registry `email_routing` และ default placeholder ของมัน
-- `../carmen-turborepo-backend-v2/packages/rpc-contract/src/contracts/notifications.ts` (บรรทัด 31) — RPC contract `platformEmailSend` ที่การส่งของทุกเส้นทางผ่าน
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (บรรทัด 1415-1460) — `enum_email_sender_purpose` (ที่ถูกทิ้งร้าง), `tb_email_sender_profile`
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/{20260729000000_email_sender_profile,20260808130000_email_profile_master_and_routing}/migration.sql` — การปรับดีไซน์จาก purpose-enum เป็นรายการที่ตั้งชื่อได้
-- `../carmen-turborepo-backend-v2/packages/error-catalog/src/catalog.ts` (บรรทัด 513-514) — `EMAIL_SENDER_PROFILE_NOT_FOUND` (404), `EMAIL_SENDER_PROFILE_NAME_EXISTS` (409)
+- `../carmen-backstage/src/pages/EmailSettingManagement.tsx` — เปลือกของหน้า, state machine ของ `editingPurpose`, การต่อสาย permission
+- `../carmen-backstage/src/pages/emailSettings/{EmailSettingCard,EmailRoutingCard,PasswordField,TestEmailDialog,routingLanes,RoutingPanel}.ts(x)` — component รายโปรไฟล์ทั้งห้า และโครงข้อมูลของ routing lane
+- `../carmen-backstage/src/constants/emailFlows.ts` — `EMAIL_FLOWS` แคตตาล็อกห้าเส้นทางที่ UI routing render
+- `../carmen-backstage/src/services/emailSettingService.ts`, `src/hooks/useEmailRouting.ts` — REST client ของโปรไฟล์และตัวโหลด routing map ที่ใช้ร่วมกัน
+- `../carmen-backstage/src/components/nav/platformNav.ts` (บรรทัด 39), `src/App.tsx` (บรรทัด 491-494) — รายการ nav และการลงทะเบียน route
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform_email-settings/{platform_email-settings.controller.ts,platform_email-settings.service.ts}` — REST surface ของโมดูลนี้เองและ RPC proxy ไป micro-cluster/micro-notification
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/email-sender-profile/email-sender-profile.service.ts` — CRUD โปรไฟล์, การบังคับความไม่ซ้ำของชื่อ, การมาสก์/เข้ารหัสรหัสผ่าน
+- `../carmen-turborepo-backend/apps/micro-notification/src/platform-email/platform-email.service.ts` — `resolveProfile`/`resolveSmtpConfig`/`send`/`sendTest`, resolver ที่ทุกเส้นทางไปจบ
+- `../carmen-turborepo-backend/apps/micro-business/src/authen/auth/auth.service.ts` (บรรทัด 322-350, 1329-1481, 1648+, 2923-3151) — ตัวกระตุ้นและผู้ส่งของ `register`/`verify_email`/`forgot_password`
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/user-invitation/user-invitation.service.ts` (บรรทัด 303-370, 1254-1335, 1336-1470) — ตัวกระตุ้นและผู้ส่งของ `invitation`
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform_configs/platform_configs.controller.ts` (บรรทัด 198-200, 236-238, 285-287, 145-159) — ด่านอ่าน/เขียนของ `email_routing` ที่ใช้ร่วมกับ [Platform Config](/th/platform/platform-config)
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts` — entry ของ registry `email_routing` และ default placeholder ของมัน
+- `../carmen-turborepo-backend/packages/rpc-contract/src/contracts/notifications.ts` (บรรทัด 31) — RPC contract `platformEmailSend` ที่การส่งของทุกเส้นทางผ่าน
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (บรรทัด 1415-1460) — `enum_email_sender_purpose` (ที่ถูกทิ้งร้าง), `tb_email_sender_profile`
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/{20260729000000_email_sender_profile,20260808130000_email_profile_master_and_routing}/migration.sql` — การปรับดีไซน์จาก purpose-enum เป็นรายการที่ตั้งชื่อได้
+- `../carmen-turborepo-backend/packages/error-catalog/src/catalog.ts` (บรรทัด 513-514) — `EMAIL_SENDER_PROFILE_NOT_FOUND` (404), `EMAIL_SENDER_PROFILE_NAME_EXISTS` (409)
 
 ## 7. หน้าย่อยของโมดูลนี้
 

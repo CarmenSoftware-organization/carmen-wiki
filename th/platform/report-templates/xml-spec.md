@@ -18,7 +18,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 ## 2. References
 
-- ../carmen-platform/src/pages/ReportTemplateEdit.tsx
+- ../carmen-backstage/src/pages/ReportTemplateEdit.tsx
 
 ## 3. TODO
 

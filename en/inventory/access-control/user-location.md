@@ -116,7 +116,7 @@ Licence routes `config:locations-users`, `config:user-locations`, `app:user-loca
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_location_user`; migration `20260904131500_rename_shelf_and_user_location`.
-- **Gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_users/config_users.controller.ts` (`:64-150`, swagger `request.ts` `ConfigUserAccessPatchRequest`, `response.ts` `ConfigUserAccessLocationDto`); `config/config_locations-users/`, `config/config_user-locations/`; `application/user-locations/`.
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_location_user`; migration `20260904131500_rename_shelf_and_user_location`.
+- **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_users/config_users.controller.ts` (`:64-150`, swagger `request.ts` `ConfigUserAccessPatchRequest`, `response.ts` `ConfigUserAccessLocationDto`); `config/config_locations-users/`, `config/config_user-locations/`; `application/user-locations/`.
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/config/users/{GET-get-access,PATCH-patch-access}-config-users.bru`, `config/locations-user/`, `config/user-location/`.
-- **Frontend:** `../carmen-inventory-frontend-react/routes/system-admin/user/user-assigned-locations.tsx` (DataGrid + checkbox), `user-assigned-form.tsx`, `user-assigned-form-schema.ts` (`buildUserPatch`), `types/user.ts` (`UserLocation`, `UpdateUserPayload`).
+- **Frontend:** `../carmen-frontend/routes/system-admin/user/user-assigned-locations.tsx` (DataGrid + checkbox), `user-assigned-form.tsx`, `user-assigned-form-schema.ts` (`buildUserPatch`), `types/user.ts` (`UserLocation`, `UpdateUserPayload`).

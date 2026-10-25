@@ -17,7 +17,7 @@ SAMPLE_SPEC = PageSpec(
     description="Cluster mgmt.",
     tags=["book/platform", "clusters"],
     at_a_glance=["What a cluster is"],
-    references=["../carmen-platform/SITEMAP.md"],
+    references=["../carmen-backstage/SITEMAP.md"],
     todo=["Document permissions"],
 )
 
@@ -49,7 +49,7 @@ def test_render_page_has_three_numbered_sections():
 
 def test_render_page_lists_references_and_todo():
     out = render_page(SAMPLE_SPEC, locale="en", today_iso="2026-05-19T00:00:00.000Z")
-    assert "../carmen-platform/SITEMAP.md" in out
+    assert "../carmen-backstage/SITEMAP.md" in out
     assert "Document permissions" in out
 
 

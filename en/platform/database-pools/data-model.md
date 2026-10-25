@@ -11,13 +11,13 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # Database Pools — Data Model
 
 > **Source of truth:** read these before updating this page.
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma:1382-1411` — `model tb_database_pool`
-> - `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/database-pool/database-pool.service.ts` — `POOL_SELECT`, `maskPassword`, `passwordPatch`, `create`, `update`, `delete` (read in full)
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrate.database-pool.ts` — the one-off `db_connection` → pool backfill (read in full)
-> - `../carmen-turborepo-backend-v2/packages/secret-crypto/src/crypto.util.ts` — `encryptSecret`/`decryptSecret`
-> - `../carmen-turborepo-backend-v2/packages/db-connection-utils/src/tenant-url.ts` — `buildTenantUrl`/`resolveTenantUrl`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma:1382-1411` — `model tb_database_pool`
+> - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/database-pool/database-pool.service.ts` — `POOL_SELECT`, `maskPassword`, `passwordPatch`, `create`, `update`, `delete` (read in full)
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrate.database-pool.ts` — the one-off `db_connection` → pool backfill (read in full)
+> - `../carmen-turborepo-backend/packages/secret-crypto/src/crypto.util.ts` — `encryptSecret`/`decryptSecret`
+> - `../carmen-turborepo-backend/packages/db-connection-utils/src/tenant-url.ts` — `buildTenantUrl`/`resolveTenantUrl`
 >
-> Verified against `carmen-platform` HEAD `157a65e` (2026-09-04) and `carmen-turborepo-backend-v2` HEAD `937cf5ac4` (2026-09-06).
+> Verified against `carmen-backstage` HEAD `157a65e` (2026-09-04) and `carmen-turborepo-backend` HEAD `937cf5ac4` (2026-09-06).
 
 ## 1. Overview
 
@@ -34,7 +34,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 | `port` | `Int @default(5432) @db.Integer` | No | TCP port; the create/edit form validates it client-side as an integer 1–65535 and defaults to 5432 if left blank on submit. |
 | `database` | `String @db.VarChar` | No | Database name on that server. |
 | `username` | `String @db.VarChar` | No | Connection username — a raw database login, not validated as an email (the shared `validateField('username')` case, written for the Users module, is deliberately not reused here). |
-| `password` | `String @db.VarChar` | No | Ciphertext from `encryptSecret()` (AES-256-GCM, `enc:v1:<iv_b64>:<authTag_b64>:<ciphertext_b64>`, `../carmen-turborepo-backend-v2/packages/secret-crypto/src/crypto.util.ts`). See §4 for the full lifecycle — **its plaintext value never appears in any API response, in this page, or in this wiki.** |
+| `password` | `String @db.VarChar` | No | Ciphertext from `encryptSecret()` (AES-256-GCM, `enc:v1:<iv_b64>:<authTag_b64>:<ciphertext_b64>`, `../carmen-turborepo-backend/packages/secret-crypto/src/crypto.util.ts`). See §4 for the full lifecycle — **its plaintext value never appears in any API response, in this page, or in this wiki.** |
 | `is_active` | `Boolean @default(true) @db.Boolean` | No | See §3 for its effect on the Business Units picker and on connection resolution. |
 | `note` | `String?` | Yes | Distinct column from `description` (`schema.prisma:1398`). Set automatically by the legacy backfill script to the fixed, Thai-language value `'สร้างอัตโนมัติจาก tb_business_unit.db_connection'` ("auto-created from `tb_business_unit.db_connection`") on every pool it created from an old BU's connection blob (`migrate.database-pool.ts:412`) — a flag that the record was not hand-configured, not a general-purpose comment field, though the create/edit form does let an operator set or change it freely afterward. |
 | `doc_version` | `Int @default(0) @db.Integer` | No | Optimistic-lock counter. **Required, not optional, on every `PUT`** — `DatabasePoolUpdateDto` has no default and the backend rejects an update where `data.doc_version` is not a number (`COMMON_DOC_VERSION_REQUIRED`), unlike some sibling entities where an absent token is read as "skip the conflict check." |
@@ -61,7 +61,7 @@ tb_database_pool  1 ─── M  tb_business_unit   (via tb_business_unit.databa
 2. **At rest.** `encryptSecret()` produces `enc:v1:<iv>:<authTag>:<ciphertext>` under `SECRET_ENCRYPTION_KEY` (32 bytes, hex or base64, read once and cached per process). The key has no code-level default: `getKey()` throws immediately if the env var is unset, and both `micro-cluster`'s and `micro-business`'s `config.env.ts` declare it as a required non-empty string at startup, not an optional one with a fallback.
 3. **In every API response.** `maskPassword()` (`database-pool.service.ts:40-42`) replaces the ciphertext with the literal string `••••••` before the row ever leaves the service — list, get, and the row returned by create/update all mask it identically. **No endpoint in this codebase reveals the decrypted or even the encrypted value.**
 4. **On update.** `passwordPatch()` (`database-pool.service.ts:50-54`) treats an `undefined` incoming value **or the exact mask string** as "no change" (returns `{}`, leaving the stored ciphertext untouched); an empty string or any non-string value is rejected as invalid; only a genuinely different plaintext string is re-encrypted and stored. This is what makes it safe for the edit form to always send back whatever masked/blank value it holds without accidentally overwriting a real password with the mask itself.
-5. **On use.** Nothing in this module decrypts a pool's password — that happens only when a *consumer* resolves a tenant connection. [Tenant Migrations](/en/platform/tenant-migrations/data-model) §3 documents that path: `resolveTenantUrl()` (`../carmen-turborepo-backend-v2/packages/db-connection-utils/src/tenant-url.ts`) calls `decryptSecret()` and, on failure, throws rather than falling back to any plaintext guess — "no fallback on purpose," per that function's own comment — then `buildTenantUrl()` assembles `postgresql://{user}:{password}@{host}:{port}/{database}?schema={db_schema}` with `host`/`port` validated (`isSafeHost`/`isSafePort`) and every other part percent-encoded.
+5. **On use.** Nothing in this module decrypts a pool's password — that happens only when a *consumer* resolves a tenant connection. [Tenant Migrations](/en/platform/tenant-migrations/data-model) §3 documents that path: `resolveTenantUrl()` (`../carmen-turborepo-backend/packages/db-connection-utils/src/tenant-url.ts`) calls `decryptSecret()` and, on failure, throws rather than falling back to any plaintext guess — "no fallback on purpose," per that function's own comment — then `buildTenantUrl()` assembles `postgresql://{user}:{password}@{host}:{port}/{database}?schema={db_schema}` with `host`/`port` validated (`isSafeHost`/`isSafePort`) and every other part percent-encoded.
 6. **Backfill provenance.** The one-off `migrate.database-pool.ts` script (§1) is the only place in the codebase that ever read a plaintext password from `db_connection` directly; it is dry-run by default, requires `--apply` to write, and has a separate `--verify` mode that decrypts every live pool's password and reports which pool *names* (never ciphertext or plaintext) fail to decrypt under the currently configured key — meant to be run once, immediately before the `db_connection`-dropping migration lands. The script is unable to run its scan/backfill path today: it depends on the `db_connection` column that migration `7f825bb20` already removed. It remains in the repository only as a record of how the one-time migration was performed, per its own header comment.
 
 No hardcoded default password, connection string, or encryption key was found anywhere in this module's frontend, backend, or the backfill script — checked `DatabasePoolEdit.tsx`'s `emptyForm`/`buildPayload` (empty strings only, no literal credential), `database-pool.service.ts` (encrypts whatever is supplied, no fallback value), and `crypto.util.ts` (throws rather than defaulting). This is worth stating explicitly because a sibling module in this book was corrected for exactly this kind of claim: see [Platform Migrations](/en/platform/platform-migrations) §3.1, whose `PLATFORM_DEPLOY_TOKEN` **does** default to an empty string in `config.env.ts`.
@@ -93,13 +93,13 @@ Both sibling pages already describe this table, each to the depth their own read
 
 ## 8. References
 
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma:1382-1411` — `model tb_database_pool`.
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/database-pool/database-pool.service.ts` — read in full.
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/database-pool/database-pool.controller.ts` — RPC message handlers, read in full.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_database-pools/platform_database-pools.service.ts` — RPC proxy from the gateway.
-- `../carmen-turborepo-backend-v2/packages/error-catalog/src/catalog.ts:515-517`.
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260813000000_database_pool_additive/` (commit `343b8c16b`) and `.../20260813010000_database_pool_drop_db_connection/` (commit `7f825bb20`).
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrate.database-pool.ts` — read in full.
-- `../carmen-turborepo-backend-v2/packages/secret-crypto/src/crypto.util.ts`, `../carmen-turborepo-backend-v2/packages/db-connection-utils/src/tenant-url.ts`.
-- `../carmen-platform/src/pages/DatabasePoolEdit.tsx`, `src/utils/databasePool.ts`.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma:1382-1411` — `model tb_database_pool`.
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/database-pool/database-pool.service.ts` — read in full.
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/database-pool/database-pool.controller.ts` — RPC message handlers, read in full.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform_database-pools/platform_database-pools.service.ts` — RPC proxy from the gateway.
+- `../carmen-turborepo-backend/packages/error-catalog/src/catalog.ts:515-517`.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260813000000_database_pool_additive/` (commit `343b8c16b`) and `.../20260813010000_database_pool_drop_db_connection/` (commit `7f825bb20`).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrate.database-pool.ts` — read in full.
+- `../carmen-turborepo-backend/packages/secret-crypto/src/crypto.util.ts`, `../carmen-turborepo-backend/packages/db-connection-utils/src/tenant-url.ts`.
+- `../carmen-backstage/src/pages/DatabasePoolEdit.tsx`, `src/utils/databasePool.ts`.
 - [Business Units — Data Model](/en/platform/business-units/data-model) §2.4; [Tenant Migrations — Data Model](/en/platform/tenant-migrations/data-model) §3 — cross-checked in §5 above.

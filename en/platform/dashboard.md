@@ -62,13 +62,13 @@ The `/dashboard` route is wrapped in a plain `<PrivateRoute>` with no `requiredP
 
 ## 7. Reference Sources
 
-- `../carmen-platform/src/pages/Dashboard.tsx` — the page: parallel count-loading, activity-loading, layout.
-- `../carmen-platform/src/pages/dashboard/activity.ts` — `ACTIVITY_SOURCES` (the six domains, in display order), `fetchActivity`, `toActivityItem`, `deriveVerb`, `mergeAndSort`.
-- `../carmen-platform/src/pages/dashboard/ActivityStream.tsx` — filter chips, day grouping, timeline rendering, loading/error/empty states.
-- `../carmen-platform/src/pages/dashboard/CountsRail.tsx` — the Estate total and per-domain active/total rows.
-- `../carmen-platform/src/App.tsx:103-109` — the bare `<PrivateRoute>` (no `requiredPermission`, no `feature`) on `/dashboard`.
-- `../carmen-platform/src/components/PrivateRoute.tsx:66-84` — the platform-authority/cluster-admin resolution branch described in §5 (`effectivePermissions`, `hasClusterAdminScope`, the redirect to `/cluster-admin`, and the bootstrap-admin fall-through).
-- `../carmen-platform/src/components/nav/platformNav.ts` — `ALL_PLATFORM_NAV_ITEMS`, the live sidebar list §4 is compared against; the ungated, feature-less `/dashboard` row sits outside every `groupKey` group. `Layout.tsx` itself no longer defines nav rows — it only calls `buildPlatformNav()` (`Layout.tsx:107`) and computes the brand-mark's destination (`Layout.tsx:111`, `hasPlatformAuthority ? '/dashboard' : '/cluster-admin'` — so the brand mark's "reached from anywhere" framing in §1 holds only for a session with platform authority).
+- `../carmen-backstage/src/pages/Dashboard.tsx` — the page: parallel count-loading, activity-loading, layout.
+- `../carmen-backstage/src/pages/dashboard/activity.ts` — `ACTIVITY_SOURCES` (the six domains, in display order), `fetchActivity`, `toActivityItem`, `deriveVerb`, `mergeAndSort`.
+- `../carmen-backstage/src/pages/dashboard/ActivityStream.tsx` — filter chips, day grouping, timeline rendering, loading/error/empty states.
+- `../carmen-backstage/src/pages/dashboard/CountsRail.tsx` — the Estate total and per-domain active/total rows.
+- `../carmen-backstage/src/App.tsx:103-109` — the bare `<PrivateRoute>` (no `requiredPermission`, no `feature`) on `/dashboard`.
+- `../carmen-backstage/src/components/PrivateRoute.tsx:66-84` — the platform-authority/cluster-admin resolution branch described in §5 (`effectivePermissions`, `hasClusterAdminScope`, the redirect to `/cluster-admin`, and the bootstrap-admin fall-through).
+- `../carmen-backstage/src/components/nav/platformNav.ts` — `ALL_PLATFORM_NAV_ITEMS`, the live sidebar list §4 is compared against; the ungated, feature-less `/dashboard` row sits outside every `groupKey` group. `Layout.tsx` itself no longer defines nav rows — it only calls `buildPlatformNav()` (`Layout.tsx:107`) and computes the brand-mark's destination (`Layout.tsx:111`, `hasPlatformAuthority ? '/dashboard' : '/cluster-admin'` — so the brand mark's "reached from anywhere" framing in §1 holds only for a session with platform authority).
 
 ## 8. Pages in This Module
 

@@ -13,7 +13,7 @@ editor: markdown
 > **At a Glance**
 > **Status:** Correction page — no dedicated GRN configuration console, RBAC panel, or lot-recall tool was confirmed for good-receive-note in current source.
 
-> ⚠️ **Major correction this pass (2026-07-15).** The previous version of this page listed roughly 29 scenarios covering a Sysadmin "GRN configuration console" (lot-number-format editor, RBAC role/approval-threshold panel, tax/currency/reason-code maintenance, PO/Inventory/Finance/Vendor integration cutover) and an Auditor lot-recall trace tool with Controller/DPO sensitive-field-export approval. No matching route, frontend component, or backend endpoint was found in `carmen-inventory-frontend-react` or `carmen-turborepo-backend-v2`, and no such route appears in `.specs/resync-2026-07-15-routes-inventory.txt`.
+> ⚠️ **Major correction this pass (2026-07-15).** The previous version of this page listed roughly 29 scenarios covering a Sysadmin "GRN configuration console" (lot-number-format editor, RBAC role/approval-threshold panel, tax/currency/reason-code maintenance, PO/Inventory/Finance/Vendor integration cutover) and an Auditor lot-recall trace tool with Controller/DPO sensitive-field-export approval. No matching route, frontend component, or backend endpoint was found in `carmen-frontend` or `carmen-turborepo-backend`, and no such route appears in `.specs/resync-2026-07-15-routes-inventory.txt`.
 
 | Previously-claimed scenario group | Finding |
 | --- | --- |
@@ -22,7 +22,7 @@ editor: markdown
 | AUD-PERM-01..07, AUD-VAL-01..08, AUD-EDGE-01..06 | All built on the same unconfirmed configuration-console / lot-recall-tool foundation; not reconstructed. |
 | `GRN_POST_010` post-commit-void co-authorisation (Inventory Manager + Finance) referenced throughout | **Not implemented — post-commit void is refused outright** (`GRN_COMMITTED_NOT_VOIDABLE`, `good-received-note.service.ts:2254-2256`); see [02-business-rules.md](./02-business-rules.md) `GRN_POST_010` and [03-user-flow-audit-config.md](./03-user-flow-audit-config.md). |
 
-> **Executable coverage:** permission-denial blocks in `../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts` (Requestor-role fixture, `carmensoftware.dev` users, BU `GR2VYNKQ`); status / permission sections of `docs/test-cases/gaps/501-grn-core-gap.md`.
+> **Executable coverage:** permission-denial blocks in `../carmen-frontend-e2e/tests/501-grn.spec.ts` (Requestor-role fixture, `carmensoftware.dev` users, BU `GR2VYNKQ`); status / permission sections of `docs/test-cases/gaps/501-grn-core-gap.md`.
 
 ## What to test instead
 
@@ -36,4 +36,4 @@ editor: markdown
 - Parent overview: [04-test-scenarios.md](./04-test-scenarios.md) — corrected cross-persona scenario table.
 - Sibling: [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) — the fuller correction and the searches run.
 - Sibling: [04-test-scenarios-receiver.md](./04-test-scenarios-receiver.md) — lot generation as part of the Receiver's commit flow.
-- E2E spec: `../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts` — permission-denial pattern (Requestor-role fixture) is the closest real coverage to the "Auditor read-only" boundary; no lot-recall or configuration-console describe block exists in this file.
+- E2E spec: `../carmen-frontend-e2e/tests/501-grn.spec.ts` — permission-denial pattern (Requestor-role fixture) is the closest real coverage to the "Auditor read-only" boundary; no lot-recall or configuration-console describe block exists in this file.

@@ -18,7 +18,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 > **Re-verified 2026-09-22** against `schema.prisma` at backend HEAD `180bd19c3`: `enum_pricelist_status` has five values (`submitted` inserted before `active`, migration `20260721105944`), `submitted_at` is now written, `tb_vendor` gained `tax_no` / `branch_no` / `rating` (`20260909203000`), `tb_vendor_master_certificate` → `tb_certificate` (`20260904133000`), and detail responses expand references to objects (`vendor`, `currency`, `product`, `unit`, `tax_profile`, template `currency`, RFQ `vendor` / `pricelist` / `pricelist_template` — `@ExpandRefs`, 2026-09-17).
 
 > **Source of truth:** Backend Prisma schema. Always read this first when writing or updating this page:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
 >
 > The platform schema contains no vendor-pricelist models; all entities live in the tenant schema. The `generated/client/schema.prisma` files are auto-generated copies and not authoritative.
 
@@ -301,7 +301,7 @@ The carmen/docs design under `vendor-pricelist-management/` (`design.md`, `requi
 
 ## 6. References
 
-- **Primary (source of truth):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — all ten vendor-pricelist models, `tb_vendor`, `tb_certificate`, `tb_vendor_certificate`, and the three module-local enums (`enum_pricelist_template_status`, `enum_pricelist_status`, `pricelist_submission_method`), plus the shared `enum_pricelist_compare_type` and `enum_comment_type`; platform schema `packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_shot_url`. Migrations `20260721105944_add_submitted_pricelist_status`, `20260904133000_rename_eco_label_and_certificate`, `20260908120000_add_email_sent_activity_action`, `20260909203000_add_vendor_tax_branch_rating`.
+- **Primary (source of truth):** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — all ten vendor-pricelist models, `tb_vendor`, `tb_certificate`, `tb_vendor_certificate`, and the three module-local enums (`enum_pricelist_template_status`, `enum_pricelist_status`, `pricelist_submission_method`), plus the shared `enum_pricelist_compare_type` and `enum_comment_type`; platform schema `packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_shot_url`. Migrations `20260721105944_add_submitted_pricelist_status`, `20260904133000_rename_eco_label_and_certificate`, `20260908120000_add_email_sent_activity_action`, `20260909203000_add_vendor_tax_branch_rating`.
 - **Secondary (concept cross-check):** `../carmen/docs/vendor-pricelist-management/` — eight design / requirements documents:
   - `design.md` — 6-phase architecture, component breakdown, TypeScript data-model interfaces (used as the carmen/docs basis for the divergence table in Section 5).
   - `requirements.md` — 30+ functional requirements covering vendor CRUD, template setup, campaign management, portal UX, multi-currency, validation, audit.

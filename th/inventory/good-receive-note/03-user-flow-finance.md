@@ -38,7 +38,7 @@ editor: markdown
 
 - ภาพรวม parent: [03-user-flow.md](./03-user-flow.md) — วงจรชีวิต 4 สถานะ; เหตุการณ์โพสต์คือ `saved → committed` (BU แบบ average โพสต์สต๊อกตอน save)
 - Sibling: [03-user-flow-receiver.md](./03-user-flow-receiver.md) — persona ที่การ commit โพสต์ inventory และเลื่อน PO; ไม่มีการส่งต่อปลายน้ำไปยัง persona Finance
-- โมดูล GL (เอกสารบนหน้า wiki ของตัวเอง ไม่ใช่ที่นี่): `../carmen-turborepo-backend-v2/apps/micro-business/src/gl/`, gateway `apps/backend-gateway/src/application/{gl-jv,gl-posting,gl-reports}/`
+- โมดูล GL (เอกสารบนหน้า wiki ของตัวเอง ไม่ใช่ที่นี่): `../carmen-turborepo-backend/apps/micro-business/src/gl/`, gateway `apps/backend-gateway/src/application/{gl-jv,gl-posting,gl-reports}/`
 - Sibling: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — เป็นเจ้าของการแก้ไขฝั่ง vendor สำหรับ variance การรับ; การเจรจา credit note ใดๆ เกิดขึ้นนอกเอกสาร
 - Sibling: [02-business-rules.md](./02-business-rules.md) §5 / §6 — ตาราง posting-rule ที่แก้ไขแล้ว (`GRN_POST_006`–`GRN_POST_009`, `GRN_XMOD_007` ทำเครื่องหมายว่ายังไม่ implement)
 - `../carmen/docs/good-recive-note-managment/grn-master-prd.md` — แหล่ง design เก่าสำหรับแนวคิด three-way-match / AP; ถือเป็นเจตนาการออกแบบ ไม่ใช่พฤติกรรมที่ยืนยันแล้ว

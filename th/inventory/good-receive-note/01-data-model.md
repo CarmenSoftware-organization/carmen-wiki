@@ -18,8 +18,8 @@ dateCreated: 2026-05-15T11:00:00.000Z
 > **รูปแบบ Audit:** `created_*` / `updated_*` / `deleted_*` มาตรฐานบนทั้งห้าตาราง; ลายเซ็น workflow ต่อบรรทัด + `workflow_history` JSON บน header
 
 > **แหล่งความจริง:** Prisma schema ของ backend อ่านสิ่งเหล่านี้ก่อนเสมอเมื่อเขียนหรืออัปเดตหน้านี้:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > ไฟล์ `generated/client/schema.prisma` ใต้แต่ละ package เป็น copy ที่สร้างอัตโนมัติ ไม่ใช่ตัวอ้างอิงหลัก
 
@@ -281,7 +281,7 @@ tb_purchase_order_detail ──1──*──► tb_good_received_note_detail
 
 ## 6. แหล่งอ้างอิง
 
-- **Primary (source of truth):** Prisma schema ที่ list ใน header callout — เฉพาะ `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (model GRN ทั้งห้า, ทั้งสอง enum, model `tb_extra_cost` / `tb_inventory_transaction*` ที่เกี่ยวข้อง) และ `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (ยืนยันว่าไม่มี model GRN)
+- **Primary (source of truth):** Prisma schema ที่ list ใน header callout — เฉพาะ `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (model GRN ทั้งห้า, ทั้งสอง enum, model `tb_extra_cost` / `tb_inventory_transaction*` ที่เกี่ยวข้อง) และ `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (ยืนยันว่าไม่มี model GRN)
 - **Secondary (concept cross-check):**
   - `../carmen/docs/good-recive-note-managment/GRN-Technical-Specification.md` — TypeScript interface model และกฎการคำนวณ; ความแตกต่างในส่วน 5 (รายการ 1, 2, 4, 5, 9)
   - `../carmen/docs/good-recive-note-managment/grn-master-prd.md` — PRD พร้อม list ฟิลด์ header, พฤติกรรม FOC และ prose วงจรชีวิต 3 สถานะ; ความแตกต่างในส่วน 5 (รายการ 1, 3, 6, 7, 8, 10)

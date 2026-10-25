@@ -51,6 +51,6 @@ Persona **Inventory Controller** เป็นเจ้าของความ�
 - ภาพรวม parent: [03-user-flow](/th/inventory/inventory/03-user-flow)
 - Sibling: [period-end](/th/inventory/inventory/period-end) — ตาราง gate เต็ม, error strings และรายละเอียดกระบวนการระดับ dev
 - Sibling: [02-business-rules](/th/inventory/inventory/02-business-rules) — `INV_POST_009` / `INV_POST_010` (close/open), `INV_CALC_008` / `INV_CALC_009` (การปิดแบบ FIFO vs average), `INV_AUTH_008` (gate `period_end.execute`)
-- Frontend: `../carmen-inventory-frontend-react/routes/inventory-management/period-end/` (`pe-component.tsx`, `pe-review.tsx`, `pe-documents-dialog.tsx`, `pe-start-blocked-dialog.tsx`, `pe-history.tsx`, `use-period-end.ts`)
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/period-end/`
+- Frontend: `../carmen-frontend/routes/inventory-management/period-end/` (`pe-component.tsx`, `pe-review.tsx`, `pe-documents-dialog.tsx`, `pe-start-blocked-dialog.tsx`, `pe-history.tsx`, `use-period-end.ts`)
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/period-end/`
 - ที่เกี่ยวข้อง: [physical-count](/th/inventory/physical-count) (gate การนับ), [inventory-adjustment](/th/inventory/inventory-adjustment) (การแก้ไขยอด), [system-config/period](/th/inventory/system-config/period) (นิยามงวดและการ lock)

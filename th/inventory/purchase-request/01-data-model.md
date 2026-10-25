@@ -17,8 +17,8 @@ dateCreated: 2026-05-15T09:00:00.000Z
 > **Audit pattern:** มาตรฐาน `created_*` / `updated_*` / `deleted_*`; สามจำนวนต่อบรรทัด (`requested` / `approved` / FOC); JSON `history` / `stages_status` ต่อบรรทัดสำหรับ workflow
 
 > **Source of truth:** Prisma schema ฝั่ง backend อ่านไฟล์เหล่านี้ก่อนเขียนหรือแก้ไขหน้านี้ทุกครั้ง:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > ไฟล์ `generated/client/schema.prisma` ใต้ package แต่ละตัวเป็น copy ที่ generate อัตโนมัติและไม่ถือว่าเป็นต้นฉบับ
 
@@ -65,7 +65,7 @@ graph LR
     prtd -->|"N : 1"| prod
 ```
 
-> Diagram adapted from `carmen/docs/app/procurement/purchase-requests/DD-purchase-requests.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (2026-09-28) · Changes: rewritten as `graph LR` per allow-list (`erDiagram` renders blank on this wiki); replaced the source's conceptual entities (`PURCHASE_REQUESTS`, `PURCHASE_REQUEST_ITEMS`, `PR_APPROVALS`, `PR_ATTACHMENTS`, `PR_COMMENTS`, `APPROVAL_STAGES`, `DEPARTMENTS`, `LOCATIONS`, `USERS`, `CURRENCIES`, `INVENTORY_ITEMS`) with the actual `tb_*` tables from this page's own §3 Relationships; dropped `PR_APPROVALS`/`APPROVAL_STAGES` (approvals are inline JSON on the header, not a separate table) and `PR_ATTACHMENTS`/`INVENTORY_ITEMS` (no PR-specific attachment table; inventory is a live read, not a stored FK); added the PR↔PO bridge and the template lines already documented on this page.
+> Diagram adapted from `carmen/docs/app/procurement/purchase-requests/DD-purchase-requests.md` · verified against `carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (2026-09-28) · Changes: rewritten as `graph LR` per allow-list (`erDiagram` renders blank on this wiki); replaced the source's conceptual entities (`PURCHASE_REQUESTS`, `PURCHASE_REQUEST_ITEMS`, `PR_APPROVALS`, `PR_ATTACHMENTS`, `PR_COMMENTS`, `APPROVAL_STAGES`, `DEPARTMENTS`, `LOCATIONS`, `USERS`, `CURRENCIES`, `INVENTORY_ITEMS`) with the actual `tb_*` tables from this page's own §3 Relationships; dropped `PR_APPROVALS`/`APPROVAL_STAGES` (approvals are inline JSON on the header, not a separate table) and `PR_ATTACHMENTS`/`INVENTORY_ITEMS` (no PR-specific attachment table; inventory is a live read, not a stored FK); added the PR↔PO bridge and the template lines already documented on this page.
 
 ### 2.1 tb_purchase_request
 
@@ -310,7 +310,7 @@ header {
 }
 ```
 
-Type ฝั่ง frontend สะท้อนแบบเดียวกัน (`../carmen-inventory-frontend-react/types/purchase-request.ts` — `product: EntityRef | null`, `vendor: EntityRef | null`, …; commit `f303dd96`, 2026-09-17) payload สร้าง / บันทึกยังส่งฟิลด์ `*_id` แบบ flat; `@ExpandRefs` ของ gateway resolve ให้ การยุบแบบเดียวกันใช้กับ `tb_purchase_request_template` (หัวข้อ 2.4): `workflow`, `product`, `location`, `requested_unit`, `foc_unit`, `currency`, `delivery_point`, `inventory_unit` เป็น object บน wire (commit `16069088`)
+Type ฝั่ง frontend สะท้อนแบบเดียวกัน (`../carmen-frontend/types/purchase-request.ts` — `product: EntityRef | null`, `vendor: EntityRef | null`, …; commit `f303dd96`, 2026-09-17) payload สร้าง / บันทึกยังส่งฟิลด์ `*_id` แบบ flat; `@ExpandRefs` ของ gateway resolve ให้ การยุบแบบเดียวกันใช้กับ `tb_purchase_request_template` (หัวข้อ 2.4): `workflow`, `product`, `location`, `requested_unit`, `foc_unit`, `currency`, `delivery_point`, `inventory_unit` เป็น object บน wire (commit `16069088`)
 
 ## 3. ความสัมพันธ์
 
@@ -393,6 +393,6 @@ tb_purchase_request_template_detail
 
 ## 6. แหล่งอ้างอิง
 
-- **หลัก (source of truth):** Prisma schema ตามที่ระบุใน callout ส่วนหัว — โดยเฉพาะ `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (model PR ทั้งหมด) และ `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (ตรวจแล้วว่าไม่มี model ของ PR)
+- **หลัก (source of truth):** Prisma schema ตามที่ระบุใน callout ส่วนหัว — โดยเฉพาะ `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (model PR ทั้งหมด) และ `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (ตรวจแล้วว่าไม่มี model ของ PR)
 - **รอง (cross-check ระดับแนวคิด):** `../carmen/docs/purchase-request-management/data-models.md` — interface ของ TypeScript ฝั่ง front-end; ความต่างจับไว้ใน Section 5
 - โมดูลที่เกี่ยวข้อง: [purchase-order](/th/inventory/purchase-order) (เป้าหมายของการแปลง), [product](/th/inventory/product) (reference สินค้าของบรรทัด), [vendor-pricelist](/th/inventory/vendor-pricelist) (แหล่ง snapshot ราคา + ภาษี), [inventory](/th/inventory/inventory) (บริบท on-hand สำหรับ requestor)

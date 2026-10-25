@@ -39,7 +39,7 @@ Report Templates เป็น surface สำหรับ authoring ภายใ�
 - **Route guard ตรวจสอบโดยไม่มี `clusterId`** `PrivateRoute` เรียก `hasPermission(requiredPermission)` โดยไม่มี options ผ่าน branch แบบกว้าง "scope ใดก็มอบให้ได้" เนื่องจาก gate `<Can>` ภายในหน้าบน surface นี้ก็ละเว้น `clusterId` เช่นกัน (§7) role assignment ที่ scope ไปยัง cluster เดียวซึ่ง role รวม key `report_template.*` จึงผ่านได้ทุกที่ — ไม่มีการจำกัดต่อ cluster ที่ใดเลยบน surface นี้ ซึ่งสอดคล้องกับ data model: เทมเพลตรายงานเป็น tenant-global และไม่มี cluster FK ([Data Model](/th/platform/report-templates/data-model) §3)
 - **ไม่มี route ใดต้องการ `report_template.delete`** การลบเข้าถึงได้ทาง row action ของหน้า list เท่านั้น gate ภายในหน้า (§7)
 - **ไม่มีการใช้ key ซ้ำข้ามโมดูล** key `report_template.*` gate เฉพาะโมดูลนี้ (รวม Form Groups แล้วตอนนี้) — ต่างจาก route ของ Business Units ที่ใช้ key `cluster.*` ซ้ำ (ดู [Clusters Permissions](/th/platform/clusters/permissions) §2)
-- **ถูกลบเมื่อ 2026-07-24** (carmen-platform commit `de11377`; key `print_template_mapping.*` ถูกลบออกจาก permission-catalog seed ก่อนหน้าหนึ่งวันคือ 2026-07-23, carmen-turborepo-backend-v2 commit `c135bb21e`): โมดูล print-template-mapping พี่น้องและ key ของมันไม่มีอยู่แล้ว — โมดูลนั้นถูกลบไปเลย ไม่ใช่แค่ตัดการเชื่อมโยงจากโมดูลนี้
+- **ถูกลบเมื่อ 2026-07-24** (carmen-backstage commit `de11377`; key `print_template_mapping.*` ถูกลบออกจาก permission-catalog seed ก่อนหน้าหนึ่งวันคือ 2026-07-23, carmen-turborepo-backend commit `c135bb21e`): โมดูล print-template-mapping พี่น้องและ key ของมันไม่มีอยู่แล้ว — โมดูลนั้นถูกลบไปเลย ไม่ใช่แค่ตัดการเชื่อมโยงจากโมดูลนี้
 
 ## 3. เมทริกซ์ effective access
 
@@ -75,7 +75,7 @@ Report Templates เป็น surface สำหรับ authoring ภายใ�
 
 ## 6. Filter ของ sidebar
 
-**แก้ citation ที่ล้าสมัย:** array ของ nav sidebar ถูกนิยามใน `../carmen-platform/src/components/nav/platformNav.ts` (`ALL_PLATFORM_NAV_ITEMS`) ไม่ใช่ `Layout.tsx` — `Layout.tsx` ไม่ได้นิยาม nav row ใดเลยในปัจจุบัน มันแค่ import `buildPlatformNav()` จาก `platformNav.ts` แล้วเรียกใช้ รายการ Report Templates ในกลุ่ม "Content" คือ:
+**แก้ citation ที่ล้าสมัย:** array ของ nav sidebar ถูกนิยามใน `../carmen-backstage/src/components/nav/platformNav.ts` (`ALL_PLATFORM_NAV_ITEMS`) ไม่ใช่ `Layout.tsx` — `Layout.tsx` ไม่ได้นิยาม nav row ใดเลยในปัจจุบัน มันแค่ import `buildPlatformNav()` จาก `platformNav.ts` แล้วเรียกใช้ รายการ Report Templates ในกลุ่ม "Content" คือ:
 
 ```
 { path: '/report-templates', labelKey: 'nav.reportTemplates', icon: FileText, permission: 'report_template.read', groupKey: 'navGroup.content', feature: 'report_templates' }
@@ -126,7 +126,7 @@ return ALL_PLATFORM_NAV_ITEMS.filter(
 | **หน้าจอ Form Groups** (`/report-form-groups`) — set group default | ไม่ใช้ `<Can>` ที่นี่; action "Set default" ใช้ได้กับผู้ถือ `report_template.update` คนใดก็ได้ (การมองเห็นปุ่มขับเคลื่อนด้วย `hasPermission` ไม่ใช่ wrapper `<Can>`) — **เพิ่มเมื่อ 2026-07-23** gate ด้วย key permission ตระกูลเดียวกับส่วนที่เหลือของโมดูลนี้ |
 | **หน้าจอ Form Groups** — ปุ่ม "New Form Template" | แสดงเฉพาะเมื่อถือ `report_template.create` |
 
-`PLATFORM_SCOPED_RECORD` เป็น alias ของ `UNRESOLVED_CLUSTER_ID` (`../carmen-platform/src/utils/permissions.ts`): sentinel `clusterId` ที่บังคับให้ branch แบบ scoped ของ `checkPermission` ประเมินเป็น false สำหรับ cluster จริงทุกตัว เหลือแค่ grant `activity_log.read` ระดับแพลตฟอร์มเป็นทางเดียวที่จะได้ `true` — shape ที่ถูกต้องสำหรับ record type (report template) ที่ไม่มี cluster ของตัวเอง การบันทึก activity เริ่มเมื่อ 2026-08-31 (`AUDIT_RECORDING_STARTED_ON_PHASE_2`); เทมเพลตที่สร้างก่อนหน้านั้นจะเห็น history ว่างเปล่า ไม่ใช่ที่พัง
+`PLATFORM_SCOPED_RECORD` เป็น alias ของ `UNRESOLVED_CLUSTER_ID` (`../carmen-backstage/src/utils/permissions.ts`): sentinel `clusterId` ที่บังคับให้ branch แบบ scoped ของ `checkPermission` ประเมินเป็น false สำหรับ cluster จริงทุกตัว เหลือแค่ grant `activity_log.read` ระดับแพลตฟอร์มเป็นทางเดียวที่จะได้ `true` — shape ที่ถูกต้องสำหรับ record type (report template) ที่ไม่มี cluster ของตัวเอง การบันทึก activity เริ่มเมื่อ 2026-08-31 (`AUDIT_RECORDING_STARTED_ON_PHASE_2`); เทมเพลตที่สร้างก่อนหน้านั้นจะเห็น history ว่างเปล่า ไม่ใช่ที่พัง
 
 จุดที่เรียกใช้: gate ของหน้า list ใน `ReportTemplateManagement.tsx` (`<Can>` ของ Edit/Delete/View History ของ row ใน definition ของคอลัมน์ `actions`, Add Template ใน `actions` ของ `PageHeader`); toggle Edit และ View History ของหน้า edit ใน `ReportTemplateEdit.tsx` (`actions` ของ header)
 
@@ -135,20 +135,20 @@ return ALL_PLATFORM_NAV_ITEMS.filter(
 ## 8. แหล่งข้อมูลอ้างอิง
 
 **แหล่งข้อมูลหลัก (อ่านสิ่งเหล่านี้ก่อนอัพเดทหน้านี้):**
-- `../carmen-platform/src/App.tsx` — route ของ report-templates + Form Groups พร้อม prop `requiredPermission`
-- `../carmen-platform/src/context/AuthContext.tsx` — `hasPermission`, state `userCount`, gate permission ตอน login
-- `../carmen-platform/src/utils/permissions.ts` — การ resolve `checkPermission` แบบ pure (super-admin → key ระดับแพลตฟอร์ม → key ระดับ cluster)
-- `../carmen-platform/src/components/PrivateRoute.tsx` — redirect ของ auth-fail, การ render permission-fail (รวม 40 บรรทัด)
-- `../carmen-platform/src/pages/Forbidden.tsx` — หน้า 403 ที่เปลี่ยนชื่อแล้ว
-- `../carmen-platform/src/components/Can.tsx` — component gate ภายในหน้า (`permission`, `clusterId` แบบ optional, `fallback` แบบ optional)
-- `../carmen-platform/src/components/nav/platformNav.ts` — `ALL_PLATFORM_NAV_ITEMS` (Report Templates บรรทัด 24, Form Groups บรรทัด 25 — ทั้งคู่ `permission: 'report_template.read'` แต่ `feature` key แยกกัน) และ `buildPlatformNav()` ฟังก์ชัน filter; `src/components/Layout.tsx` ไม่ได้นิยาม nav row แล้ว มันแค่เรียก `buildPlatformNav()`
-- `../carmen-platform/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` — ฟีเจอร์ View History (`PLATFORM_SCOPED_RECORD` นิยามใน `src/utils/permissions.ts` ด้านบน); `AUDIT_RECORDING_STARTED_ON_PHASE_2` = 2026-08-31
-- `../carmen-platform/src/pages/ReportTemplateManagement.tsx` / `ReportTemplateEdit.tsx` / `ReportFormGroupManagement.tsx` — จุดเรียกใช้ `<Can>` / `hasPermission` ตามรายการใน §7
+- `../carmen-backstage/src/App.tsx` — route ของ report-templates + Form Groups พร้อม prop `requiredPermission`
+- `../carmen-backstage/src/context/AuthContext.tsx` — `hasPermission`, state `userCount`, gate permission ตอน login
+- `../carmen-backstage/src/utils/permissions.ts` — การ resolve `checkPermission` แบบ pure (super-admin → key ระดับแพลตฟอร์ม → key ระดับ cluster)
+- `../carmen-backstage/src/components/PrivateRoute.tsx` — redirect ของ auth-fail, การ render permission-fail (รวม 40 บรรทัด)
+- `../carmen-backstage/src/pages/Forbidden.tsx` — หน้า 403 ที่เปลี่ยนชื่อแล้ว
+- `../carmen-backstage/src/components/Can.tsx` — component gate ภายในหน้า (`permission`, `clusterId` แบบ optional, `fallback` แบบ optional)
+- `../carmen-backstage/src/components/nav/platformNav.ts` — `ALL_PLATFORM_NAV_ITEMS` (Report Templates บรรทัด 24, Form Groups บรรทัด 25 — ทั้งคู่ `permission: 'report_template.read'` แต่ `feature` key แยกกัน) และ `buildPlatformNav()` ฟังก์ชัน filter; `src/components/Layout.tsx` ไม่ได้นิยาม nav row แล้ว มันแค่เรียก `buildPlatformNav()`
+- `../carmen-backstage/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` — ฟีเจอร์ View History (`PLATFORM_SCOPED_RECORD` นิยามใน `src/utils/permissions.ts` ด้านบน); `AUDIT_RECORDING_STARTED_ON_PHASE_2` = 2026-08-31
+- `../carmen-backstage/src/pages/ReportTemplateManagement.tsx` / `ReportTemplateEdit.tsx` / `ReportFormGroupManagement.tsx` — จุดเรียกใช้ `<Can>` / `hasPermission` ตามรายการใน §7
 
 **Cross-link:**
 - [rbac](/th/platform/rbac) — model ของ permission: catalog, role, assignment แบบมี scope, flag super-admin และตาราง migration จาก model legacy (§5)
 - [rbac permissions](/th/platform/rbac/permissions) — เมทริกซ์ gate ทั่วทั้ง SPA และอัลกอริทึมการ resolve permission ฉบับเต็ม
 - [users](/th/platform/users) — row ตัวตนผู้ใช้ที่ role assignment ชี้ไป
 - [Clusters Permissions](/th/platform/clusters/permissions) — หน้า permissions พี่น้อง; document ตัวแปร `<Can clusterId>` แบบ scope ต่อ cluster ที่ surface นี้*ไม่*ใช้
-- **Print Template Mapping** — ถูกลบออกจากผลิตภัณฑ์เมื่อ 2026-07-24 (carmen-platform commit `de11377`); เคยเป็นโมดูลพี่น้องในกลุ่ม Content ที่มี key `print_template_mapping.*` ของตัวเอง ถูกลบออกจาก permission catalog ก่อนหน้าหนึ่งวัน (carmen-turborepo-backend-v2 commit `c135bb21e`, 2026-07-23) — ไม่มีสิ่งใดเหลืออยู่แล้ววันนี้
+- **Print Template Mapping** — ถูกลบออกจากผลิตภัณฑ์เมื่อ 2026-07-24 (carmen-backstage commit `de11377`); เคยเป็นโมดูลพี่น้องในกลุ่ม Content ที่มี key `print_template_mapping.*` ของตัวเอง ถูกลบออกจาก permission catalog ก่อนหน้าหนึ่งวัน (carmen-turborepo-backend commit `c135bb21e`, 2026-07-23) — ไม่มีสิ่งใดเหลืออยู่แล้ววันนี้
 - [Data Model](/th/platform/report-templates/data-model) &nbsp;·&nbsp; [UI Screens](/th/platform/report-templates/ui-screens) &nbsp;·&nbsp; [XML Spec](/th/platform/report-templates/xml-spec) — หน้าย่อยพี่น้อง

@@ -12,7 +12,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 
 > **At a Glance**
 > **Persona:** Purchaser &nbsp;·&nbsp; **Module:** [vendor-pricelist](/en/inventory/vendor-pricelist)
-> **Executable coverage (2026-09-22):** `../carmen-inventory-frontend-e2e/tests/150-vendor.spec.ts` (31) + `docs/test-cases/gaps/150-vendor-gap.md` (54); `tests/159-pl.spec.ts` (28) + `gaps/159-pl-gap.md` (65); `tests/160-pl-template.spec.ts` (33) + `gaps/160-pl-template-gap.md` (58); `tests/043-certification.spec.ts` (6) + `gaps/043-certification-gap.md` (29); no spec for Request for Pricing.
+> **Executable coverage (2026-09-22):** `../carmen-frontend-e2e/tests/150-vendor.spec.ts` (31) + `docs/test-cases/gaps/150-vendor-gap.md` (54); `tests/159-pl.spec.ts` (28) + `gaps/159-pl-gap.md` (65); `tests/160-pl-template.spec.ts` (33) + `gaps/160-pl-template-gap.md` (58); `tests/043-certification.spec.ts` (6) + `gaps/043-certification-gap.md` (29); no spec for Request for Pricing.
 > **Verified 2026-07-16, re-checked 2026-09-22:** no Manager-elevation tier, no high-value threshold, no quality-score gate — none of these have matching code. New rows below cover Send email, `submitted`, certification, and the vendor tax/rating columns.
 
 This page captures the test scenarios the Purchaser drives across the module's five screens. There is no distinct Manager tier — every scenario below is reachable by any user holding the relevant screen's edit permission.
@@ -75,5 +75,5 @@ This page captures the test scenarios the Purchaser drives across the module's f
 - Parent overview: [04-test-scenarios.md](./04-test-scenarios.md).
 - User flow: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md).
 - Business rules: [02-business-rules.md](./02-business-rules.md) § 2 (confirmed-vs-design-target validation), § 5 (status rules).
-- E2E: `../carmen-inventory-frontend-e2e/tests/150-vendor.spec.ts`, `159-pl.spec.ts`, `160-pl-template.spec.ts`, `043-certification.spec.ts` and their gap reports under `docs/test-cases/gaps/`.
+- E2E: `../carmen-frontend-e2e/tests/150-vendor.spec.ts`, `159-pl.spec.ts`, `160-pl-template.spec.ts`, `043-certification.spec.ts` and their gap reports under `docs/test-cases/gaps/`.
 - Cross-link: [purchase-request](/en/inventory/purchase-request), [purchase-order](/en/inventory/purchase-order), [good-receive-note](/en/inventory/good-receive-note), [product](/en/inventory/product).

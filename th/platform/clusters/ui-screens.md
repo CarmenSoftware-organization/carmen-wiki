@@ -24,17 +24,17 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 ## 2. References
 
-- ../carmen-platform/src/pages/ClusterManagement.tsx
-- ../carmen-platform/src/pages/ClusterEdit.tsx
-- ../carmen-platform/src/pages/clusterEdit/{ClusterPlate,ClusterDraftPlate,PlateField,clusterTabs,useClusterUsers,TableToolbar,BulkActionBar,InlineCell}.ts(x), sections/{BusinessUnitsSection,UsersSection,SubscriptionCard}.tsx — component ปัจจุบัน (`ClusterEditNav`/`useScrollSpy`/`DetailsSection`/`BrandingSection` ยังอยู่ในโค้ดแต่ตอนนี้เป็นของหน้า cluster-admin แล้ว ไม่ใช่หน้านี้)
-- ../carmen-platform/src/pages/clusterManagement/{FleetCapacity,CapacityGauge,CapacityMeter,ClusterCreateForm,ClusterIdentityFields}.tsx, ../carmen-platform/src/utils/capacity.ts
-- ../carmen-platform/src/utils/businessUnitRank.ts — ตรรกะป้าย "Over limit"
-- ../carmen-platform/src/components/SortableTableHead.tsx, ../carmen-platform/src/utils/tableSort.ts — การเรียงหัวคอลัมน์ใน memory ของแท็บ Business Units และ Users (PR #292)
-- ../carmen-platform/src/components/BrandingImageUpload.tsx
-- ../carmen-platform/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail}.tsx — แผ่นประวัติที่ใช้ร่วมกันของทั้งสองหน้าจอ
+- ../carmen-backstage/src/pages/ClusterManagement.tsx
+- ../carmen-backstage/src/pages/ClusterEdit.tsx
+- ../carmen-backstage/src/pages/clusterEdit/{ClusterPlate,ClusterDraftPlate,PlateField,clusterTabs,useClusterUsers,TableToolbar,BulkActionBar,InlineCell}.ts(x), sections/{BusinessUnitsSection,UsersSection,SubscriptionCard}.tsx — component ปัจจุบัน (`ClusterEditNav`/`useScrollSpy`/`DetailsSection`/`BrandingSection` ยังอยู่ในโค้ดแต่ตอนนี้เป็นของหน้า cluster-admin แล้ว ไม่ใช่หน้านี้)
+- ../carmen-backstage/src/pages/clusterManagement/{FleetCapacity,CapacityGauge,CapacityMeter,ClusterCreateForm,ClusterIdentityFields}.tsx, ../carmen-backstage/src/utils/capacity.ts
+- ../carmen-backstage/src/utils/businessUnitRank.ts — ตรรกะป้าย "Over limit"
+- ../carmen-backstage/src/components/SortableTableHead.tsx, ../carmen-backstage/src/utils/tableSort.ts — การเรียงหัวคอลัมน์ใน memory ของแท็บ Business Units และ Users (PR #292)
+- ../carmen-backstage/src/components/BrandingImageUpload.tsx
+- ../carmen-backstage/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail}.tsx — แผ่นประวัติที่ใช้ร่วมกันของทั้งสองหน้าจอ
 
 ## 3. TODO
 
 - [ ] Capture screenshots เข้า assets/screenshots/platform/clusters/ (เลย์เอาต์เปลี่ยนเป็นแผ่นป้าย+3 แท็บแล้วตั้งแต่ 2026-08-23 — capture ใหม่ต้องรอเลย์เอาต์นี้ ไม่ใช่ scrollspy เดิม)
 - [ ] เขียนเนื้อหาฉบับเต็มตาม en/platform/clusters/ui-screens (filter, dialog, persisted state ทั้ง 7 key, แท็บ Licensing, ฟอร์ม create แบบสองการ์ด)
-- [ ] หมายเหตุ e2e: `../carmen-platform-e2e/tests/clusters/` (แก้ล่าสุด 2026-06-26/2026-08-22) เก่ากว่าการเขียนใหม่วันที่ 2026-08-23 — page object ยังอ้างปุ่ม Edit ระดับหน้าที่ไม่มีอยู่แล้ว และ fillForm() ไม่กรอก `licensed_bus`/`license_end_date` ที่ตอนนี้จำเป็น — ต้องปรับปรุงก่อนใช้เป็นหลักฐานพฤติกรรม
+- [ ] หมายเหตุ e2e: `../carmen-backstage-e2e/tests/clusters/` (แก้ล่าสุด 2026-06-26/2026-08-22) เก่ากว่าการเขียนใหม่วันที่ 2026-08-23 — page object ยังอ้างปุ่ม Edit ระดับหน้าที่ไม่มีอยู่แล้ว และ fillForm() ไม่กรอก `licensed_bus`/`license_end_date` ที่ตอนนี้จำเป็น — ต้องปรับปรุงก่อนใช้เป็นหลักฐานพฤติกรรม

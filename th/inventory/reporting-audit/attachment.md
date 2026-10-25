@@ -17,7 +17,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## สถานะการทำงานจริง (ตรวจสอบเมื่อ 2026-07-22)
 
-หน้านี้ฉบับก่อนหน้าบันทึก `tb_attachment` (tenant schema) ว่าเป็นแคตตาล็อกไฟล์-metadata ที่ใช้ร่วมกันและใช้งานจริง เก็บบน S3 ด้วยรูปแบบ `s3_token`/`s3_folder` และมี `doc_version` เป็น "ตัวนับการ re-render... เพิ่มเมื่อ re-render; เวอร์ชันเก่าคงไว้สำหรับ audit" การค้นหาทั่ว `carmen-turborepo-backend-v2/apps` พบว่า **ไม่มีการอ้างอิง `tb_attachment` เลยนอกเหนือจากการประกาศ Prisma model ของมันเอง** — ไม่มี service, controller, repository หรือ DTO ใดอ่านหรือเขียนตารางนี้เลย `tb_attachment.doc_version` เองก็ไม่เคยถูกเพิ่มค่าหรืออ่านโดยโค้ดใด ๆ เช่นกัน — เป็น schema เฉย ๆ ไม่ใช่ตัวนับการ re-render ที่ทำงานจริง ผลนี้สอดคล้องกับสิ่งที่ยืนยันไว้แล้วใน [system-config/document](/th/inventory/system-config/document)
+หน้านี้ฉบับก่อนหน้าบันทึก `tb_attachment` (tenant schema) ว่าเป็นแคตตาล็อกไฟล์-metadata ที่ใช้ร่วมกันและใช้งานจริง เก็บบน S3 ด้วยรูปแบบ `s3_token`/`s3_folder` และมี `doc_version` เป็น "ตัวนับการ re-render... เพิ่มเมื่อ re-render; เวอร์ชันเก่าคงไว้สำหรับ audit" การค้นหาทั่ว `carmen-turborepo-backend/apps` พบว่า **ไม่มีการอ้างอิง `tb_attachment` เลยนอกเหนือจากการประกาศ Prisma model ของมันเอง** — ไม่มี service, controller, repository หรือ DTO ใดอ่านหรือเขียนตารางนี้เลย `tb_attachment.doc_version` เองก็ไม่เคยถูกเพิ่มค่าหรืออ่านโดยโค้ดใด ๆ เช่นกัน — เป็น schema เฉย ๆ ไม่ใช่ตัวนับการ re-render ที่ทำงานจริง ผลนี้สอดคล้องกับสิ่งที่ยืนยันไว้แล้วใน [system-config/document](/th/inventory/system-config/document)
 
 เส้นทางการจัดเก็บไฟล์ที่แท้จริงคือ microservice **`micro-file`** (`micro-file/src/files/files.service.ts`) ซึ่งเขียนไปที่ **MinIO** object storage และไปที่ **`tb_file_tag`** — ตารางในฐานข้อมูล `@repo/prisma-shared-schema-file` แยกต่างหากทั้งหมด (schema `CARMEN_FILE`) ไม่ใช่ tenant หรือ platform schema หน้านี้ถูกแก้ไขให้อธิบาย mechanism นี้ ดู [system-config/document](/th/inventory/system-config/document) สำหรับ UI walkthrough แบบเต็มของหน้าจอ admin (`/system-admin/document`) — หน้านี้เน้นที่เอนทิตีในแง่ที่ถูกโมดูลอื่นใช้งาน
 
@@ -128,7 +128,7 @@ Comment responses ยังจะ **ลบฟิลด์ผู้แต่ง�
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma (file schema — registry ที่แท้จริง):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-file/prisma/schema.prisma` — `tb_file_tag` (บรรทัด ~19-49)
-- **Prisma (tenant schema — ตารางที่ตายแล้ว เพื่อเปรียบเทียบ):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_attachment` (บรรทัด ~4790)
-- **Backend gateway (ชั้น proxy):** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/document-management/document-management.controller.ts` (fallback `GET :filetoken/download`) + `.service.ts` — forward ไปยัง microservice `FILE_SERVICE` ผ่านคำสั่ง RPC `Files.*` (HTTP-as-RPC)
-- **Backend file microservice (การจัดเก็บและ registry ที่แท้จริง):** `../carmen-turborepo-backend-v2/apps/micro-file/src/files/files.controller.ts` + `files.service.ts` — MinIO client, CRUD ของ `tb_file_tag`
+- **Prisma (file schema — registry ที่แท้จริง):** `../carmen-turborepo-backend/packages/prisma-shared-schema-file/prisma/schema.prisma` — `tb_file_tag` (บรรทัด ~19-49)
+- **Prisma (tenant schema — ตารางที่ตายแล้ว เพื่อเปรียบเทียบ):** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_attachment` (บรรทัด ~4790)
+- **Backend gateway (ชั้น proxy):** `../carmen-turborepo-backend/apps/backend-gateway/src/application/document-management/document-management.controller.ts` (fallback `GET :filetoken/download`) + `.service.ts` — forward ไปยัง microservice `FILE_SERVICE` ผ่านคำสั่ง RPC `Files.*` (HTTP-as-RPC)
+- **Backend file microservice (การจัดเก็บและ registry ที่แท้จริง):** `../carmen-turborepo-backend/apps/micro-file/src/files/files.controller.ts` + `files.service.ts` — MinIO client, CRUD ของ `tb_file_tag`

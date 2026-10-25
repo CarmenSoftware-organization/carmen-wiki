@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T14:00:00.000Z
 > **At a Glance**
 > **หน้าจอ:** `physical-count` (`pc-component.tsx`) &nbsp;·&nbsp; **โมดูล:** [physical-count](/th/inventory/physical-count) &nbsp;·&nbsp; **Role:** ผู้ใช้ใดก็ตามที่ถือ `inventory_management.physical_count` (role เดียวกับ [04-test-scenarios-counter.md](/th/inventory/physical-count/04-test-scenarios-counter))
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **ความครอบคลุมที่รันได้:** ไม่มี Playwright spec ของ `physical-count`; manual catalog `../carmen-inventory-frontend-e2e/docs/test-cases/750-physical-count.md` (41 case; แถวของหน้ารายการและ "Counting has not started") — ดู [04-test-scenarios](/th/inventory/physical-count/04-test-scenarios) § 5
+> **ความครอบคลุมที่รันได้:** ไม่มี Playwright spec ของ `physical-count`; manual catalog `../carmen-frontend-e2e/docs/test-cases/750-physical-count.md` (41 case; แถวของหน้ารายการและ "Counting has not started") — ดู [04-test-scenarios](/th/inventory/physical-count/04-test-scenarios) § 5
 
 ## 1. ขอบเขต
 
@@ -54,7 +54,7 @@ Scenario ด้านล่างใช้ action ของหน้าราย
 
 ## 6. แหล่งอ้างอิง
 
-- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/physical-count/pc-component.tsx`
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (`create`), `.../physical-count-period/physical-count-period.service.ts` (`findCurrent`)
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec physical-count; manual catalog `docs/test-cases/750-physical-count.md`
+- **Frontend:** `../carmen-frontend/routes/inventory-management/physical-count/pc-component.tsx`
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (`create`), `.../physical-count-period/physical-count-period.service.ts` (`findCurrent`)
+- **E2E:** `../carmen-frontend-e2e/tests/` — ยังไม่มี spec physical-count; manual catalog `docs/test-cases/750-physical-count.md`
 - ที่เกี่ยวข้อง: [physical-count/03-user-flow-count-lead](/th/inventory/physical-count/03-user-flow-count-lead), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_VAL_001`–`003`, `PHC_AUTH_001`), [physical-count/04-test-scenarios](/th/inventory/physical-count/04-test-scenarios) (scenario end-to-end)

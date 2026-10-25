@@ -30,7 +30,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 แดชบอร์ดนี้มีอยู่เพื่อให้ operator เห็นว่าคอนโซล Platform admin (และแอปอื่นที่บันทึก telemetry ผ่านท่อเดียวกันโดยแชร์ `app_id`) ถูกใช้งานจริงอย่างไร — หน้าไหนถูกเปิด ปุ่มไหนถูกกด กี่ session กี่ผู้ใช้ที่ไม่ซ้ำกัน — โดยไม่ต้องให้สิทธิ์เข้าถึงแถวดิบรายบุคคลที่อยู่เบื้องหลังตัวเลขเหล่านั้น ความแตกต่างนี้ตั้งใจและถูกบังคับด้วยสิทธิ์สองคีย์แยกกัน (§4) ไม่ใช่มุมมองสองแบบของสิทธิ์เดียวกัน
 
-ไม่มีเอกสารเชิงแนวคิดของโมดูลนี้มาก่อน การค้นหาใน `../carmen/docs` ด้วยคำว่า usage analytics / activity_event เจอแค่ bullet ที่ไม่เกี่ยวข้อง ("Permission usage analytics") ใน `workflow-permissions-system.md` ซึ่งไม่ได้พูดถึงหน้านี้ ทุกอย่างในหน้านี้มาจากการอ่าน implementation ของ `../carmen-platform` และ `../carmen-turborepo-backend-v2` โดยตรง
+ไม่มีเอกสารเชิงแนวคิดของโมดูลนี้มาก่อน การค้นหาใน `../carmen/docs` ด้วยคำว่า usage analytics / activity_event เจอแค่ bullet ที่ไม่เกี่ยวข้อง ("Permission usage analytics") ใน `workflow-permissions-system.md` ซึ่งไม่ได้พูดถึงหน้านี้ ทุกอย่างในหน้านี้มาจากการอ่าน implementation ของ `../carmen-backstage` และ `../carmen-turborepo-backend` โดยตรง
 
 ## 3. ตัวเลขแต่ละตัว — นับอะไร มาจากไหน และช่วงเวลาใด
 
@@ -101,7 +101,7 @@ Top Elements กดไม่ได้เลยสำหรับทุกคน:
 
 ### 4.1 สองคีย์ — แต่ละคีย์ให้สิทธิ์อะไร และเปิดหน้าไหน
 
-permission catalog ระบุความต่างระหว่างสอง action ของ `activity_event` ไว้ตรง ๆ (`seed.platform-permission.data.ts:95-96`, `../carmen-turborepo-backend-v2`):
+permission catalog ระบุความต่างระหว่างสอง action ของ `activity_event` ไว้ตรง ๆ (`seed.platform-permission.data.ts:95-96`, `../carmen-turborepo-backend`):
 
 | คีย์ | คำอธิบายใน catalog | เปิดหน้าไหน |
 | --- | --- | --- |
@@ -130,7 +130,7 @@ permission catalog ระบุความต่างระหว่างส�
 
 ### 4.3 การบังคับใช้ฝั่ง backend และการจำกัดขอบเขตตาม cluster
 
-`platform-analytics.controller.ts` (`../carmen-turborepo-backend-v2`) ซ้อน guard สามชั้นในแต่ละ route:
+`platform-analytics.controller.ts` (`../carmen-turborepo-backend`) ซ้อน guard สามชั้นในแต่ละ route:
 
 | Route | Guards | สิทธิ์ที่ต้องมี |
 | --- | --- | --- |
@@ -166,7 +166,7 @@ permission catalog seed action ของ resource `activity_event` ไว้แ�
 
 ### 4.5 ชุดทดสอบ e2e: ไม่มี
 
-`../carmen-platform-e2e/tests/` (HEAD `a8e3b31`, 2026-08-25) ไม่มีโฟลเดอร์ `usage-analytics`, `analytics`, หรือ `activity-events` เลย — ยืนยันโดย list โครงสร้าง repository นั้นตรง ๆ ร่องรอยเดียวของหน้านี้ใน repository นั้นคือไฟล์ screenshot จากการรันด้วยมือครั้งหนึ่ง `runs/screens/2026-08-25_10-37-26/images/analytics.png` ซึ่งไม่ใช่เทสต์ ทุกข้อความเชิงพฤติกรรมบนหน้านี้มาจากการอ่าน implementation ของ `../carmen-platform` และ `../carmen-turborepo-backend-v2` ไม่ใช่จาก spec ที่รันได้จริง
+`../carmen-backstage-e2e/tests/` (HEAD `a8e3b31`, 2026-08-25) ไม่มีโฟลเดอร์ `usage-analytics`, `analytics`, หรือ `activity-events` เลย — ยืนยันโดย list โครงสร้าง repository นั้นตรง ๆ ร่องรอยเดียวของหน้านี้ใน repository นั้นคือไฟล์ screenshot จากการรันด้วยมือครั้งหนึ่ง `runs/screens/2026-08-25_10-37-26/images/analytics.png` ซึ่งไม่ใช่เทสต์ ทุกข้อความเชิงพฤติกรรมบนหน้านี้มาจากการอ่าน implementation ของ `../carmen-backstage` และ `../carmen-turborepo-backend` ไม่ใช่จาก spec ที่รันได้จริง
 
 ## 5. โมดูลที่เกี่ยวข้อง
 
@@ -177,34 +177,34 @@ permission catalog seed action ของ resource `activity_event` ไว้แ�
 
 ## 6. แหล่งอ้างอิง
 
-path ทั้งหมดด้านล่างเป็น `../carmen-platform` (Platform admin SPA, HEAD `157a65e`, 2026-09-04) เว้นแต่จะขึ้นต้นด้วย `../carmen-turborepo-backend-v2` (backend monorepo, HEAD `937cf5ac4`, 2026-09-06) หรือ `../carmen-platform-e2e` (HEAD `a8e3b31`, 2026-08-25)
+path ทั้งหมดด้านล่างเป็น `../carmen-backstage` (Platform admin SPA, HEAD `157a65e`, 2026-09-04) เว้นแต่จะขึ้นต้นด้วย `../carmen-turborepo-backend` (backend monorepo, HEAD `937cf5ac4`, 2026-09-06) หรือ `../carmen-backstage-e2e` (HEAD `a8e3b31`, 2026-08-25)
 
-- `../carmen-platform/src/pages/UsageAnalytics.tsx` (เต็ม 251 บรรทัด) — ตัวหน้า, `fetchOverview`, `goToEvents` (93-99), `handleExport` (101-118), `isEmpty` (120), การ drill-down ของ Top Pages ที่ห่อด้วย `<Can>` (184-236)
-- `../carmen-platform/src/pages/usageAnalytics/StatCards.tsx`, `TopList.tsx`, `UsageChart.tsx` — การ์ด KPI ห้าใบและกฎขีดแทนเมื่อล้มเหลว; การ render แถวกดได้/กดไม่ได้; กราฟพื้นที่สองเส้น (sessions/users)
-- `../carmen-platform/src/services/analyticsService.ts` — `getOverview`/`getEvents`, คอมเมนต์เรื่องเปลี่ยนชื่อเป็น `filter_bu_code` (§3.1), คอมเมนต์เรื่องตั้งชื่อ `analytics/records` เทียบ `analytics/event*` เพื่อเลี่ยงตัวบล็อกโฆษณา
-- `../carmen-platform/src/types/index.ts:1327-1365` — `AnalyticsSummary`, `AnalyticsDaily`, `AnalyticsTopPage`, `AnalyticsTopElement`, `AnalyticsOverview` อยู่ใต้หัวข้อ `tb_activity_event` ของไฟล์เอง
-- `../carmen-platform/src/utils/analyticsRange.ts` (เต็ม) — `ANALYTICS_TZ`, `MAX_RANGE_DAYS`, `TZ_OFFSET_MS` และคอมเมนต์เรื่อง lockstep กับ backend, `presetRange`/`customRange`/`rangeSpanDays`
-- `../carmen-platform/src/components/analytics/DateRangeFilter.tsx` — UI preset/กำหนดเอง, การตรวจเพดานช่วงฝั่ง client
-- `../carmen-platform/src/hooks/useAnalyticsFilterOptions.ts` — การโหลด dropdown BU/Application, เพดาน 100 แถว, เหตุผลของ `Promise.allSettled`
-- `../carmen-platform/src/utils/csvExport.ts:1-13` — `neutraliseFormulaPrefix()` และ `isValidNegativeNumber()` อ่านจากตัวฟังก์ชันตรง ๆ (ข้อค้นพบเรื่องเครื่องหมายลบใน §3.3); `generateCSV`, `downloadCSV`
-- `../carmen-platform/src/components/Can.tsx`, `src/components/PrivateRoute.tsx` (ทั้งคู่แบบเต็ม) — ลำดับการ gate สิทธิ์ก่อน feature flag; ผลลัพธ์ `Forbidden`/`ComingSoon`/`NotFound`
-- `../carmen-platform/src/context/AuthContext.tsx:268-272`, `src/utils/permissions.ts` (เต็ม) — bootstrap escape hatch ของ `hasPermission` และความหมายของ `checkPermission` แบบมี/ไม่มี `clusterId` (§4.2)
-- `../carmen-platform/src/App.tsx:475-489` — การลงทะเบียน route `/analytics` และ `/activity-events`
-- `../carmen-platform/src/components/nav/platformNav.ts:30-33` — สองแถว nav (32-33) และคอมเมนต์เรื่อง contiguity เหนือแถว (30-31)
-- `../carmen-platform/src/constants/featureFlags.ts:64` — entry ของ feature catalog `usage_analytics`
-- `../carmen-platform/src/i18n/en.ts` (บรรทัด 99-102, 4089-4116) และ `src/i18n/th.ts` (บรรทัด 3112-3129) — ข้อความหน้าที่ยกมาอ้างใน §3.2/§3.3/§3.7
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform-analytics/platform-analytics.controller.ts` (เต็ม) — ทั้งสอง route, guard ของแต่ละตัว, และคอมเมนต์เรื่องกับดักการตั้งชื่อทุกจุดที่อ้างใน §3.1/§4.3
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform-analytics/platform-analytics.service.ts` — ตัว proxy จาก gateway ไป microservice และรูปร่าง `IAnalyticsQuery`
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform-analytics/analytics-range.ts` (เต็ม) — `parseRange`, `MAX_RANGE_DAYS`
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform-analytics/analytics-scope.ts` (เต็ม) — `ACTIVITY_EVENT_READ`/`ACTIVITY_EVENT_DETAIL`, ตารางการตัดสินของ `resolveAllowedClusterIds()`
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/auth/guards/platform-permission.guard.ts` (เต็ม) — กลไก coarse-gate, super-admin short-circuit, สาขา fail-open ของ route ที่ไม่มี decorator
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/common/guard/app-id.guard.ts` (เต็ม) — กลไก `x-app-id`/allowlist (§4.3)
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/log/activity-event/activity-event.service.ts` (เต็ม 348 บรรทัด) — สี่ query SQL ดิบของ `getOverview()`, `resolveBuScope()`, `findEvents()`
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/log/activity-event/activity-event.types.ts` (เต็ม) — `ANALYTICS_TZ`, รูปร่างแถว, คอมเมนต์เรื่องความหมาย `allowed_cluster_ids` แบบ null/`[]`/`undefined`
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/log/activity-event/activity-event.query.ts` (เต็ม) — `buildWhere()` (ช่วง `server_ts`), `NEVER_MATCH`, `buildBuCodeScope()` (การตัด BU ที่ถูกลบ/bu_code เป็น NULL), `buildScopedWhere()`
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts:93-99` — คำอธิบาย catalog ของ `activity_event.read`/`.detail` และคอมเมนต์แยกจาก `activity_log`
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/seed.platform-role-permission.data.ts:11-52` (เต็ม) — อาร์เรย์สิทธิ์ที่แน่นอนของทั้งสี่ role bundle
-- `../carmen-platform-e2e/tests/` — list ตรง ๆ เพื่อยืนยันว่าไม่มีชุดทดสอบ `usage-analytics`/`analytics`/`activity-events` (§4.5)
+- `../carmen-backstage/src/pages/UsageAnalytics.tsx` (เต็ม 251 บรรทัด) — ตัวหน้า, `fetchOverview`, `goToEvents` (93-99), `handleExport` (101-118), `isEmpty` (120), การ drill-down ของ Top Pages ที่ห่อด้วย `<Can>` (184-236)
+- `../carmen-backstage/src/pages/usageAnalytics/StatCards.tsx`, `TopList.tsx`, `UsageChart.tsx` — การ์ด KPI ห้าใบและกฎขีดแทนเมื่อล้มเหลว; การ render แถวกดได้/กดไม่ได้; กราฟพื้นที่สองเส้น (sessions/users)
+- `../carmen-backstage/src/services/analyticsService.ts` — `getOverview`/`getEvents`, คอมเมนต์เรื่องเปลี่ยนชื่อเป็น `filter_bu_code` (§3.1), คอมเมนต์เรื่องตั้งชื่อ `analytics/records` เทียบ `analytics/event*` เพื่อเลี่ยงตัวบล็อกโฆษณา
+- `../carmen-backstage/src/types/index.ts:1327-1365` — `AnalyticsSummary`, `AnalyticsDaily`, `AnalyticsTopPage`, `AnalyticsTopElement`, `AnalyticsOverview` อยู่ใต้หัวข้อ `tb_activity_event` ของไฟล์เอง
+- `../carmen-backstage/src/utils/analyticsRange.ts` (เต็ม) — `ANALYTICS_TZ`, `MAX_RANGE_DAYS`, `TZ_OFFSET_MS` และคอมเมนต์เรื่อง lockstep กับ backend, `presetRange`/`customRange`/`rangeSpanDays`
+- `../carmen-backstage/src/components/analytics/DateRangeFilter.tsx` — UI preset/กำหนดเอง, การตรวจเพดานช่วงฝั่ง client
+- `../carmen-backstage/src/hooks/useAnalyticsFilterOptions.ts` — การโหลด dropdown BU/Application, เพดาน 100 แถว, เหตุผลของ `Promise.allSettled`
+- `../carmen-backstage/src/utils/csvExport.ts:1-13` — `neutraliseFormulaPrefix()` และ `isValidNegativeNumber()` อ่านจากตัวฟังก์ชันตรง ๆ (ข้อค้นพบเรื่องเครื่องหมายลบใน §3.3); `generateCSV`, `downloadCSV`
+- `../carmen-backstage/src/components/Can.tsx`, `src/components/PrivateRoute.tsx` (ทั้งคู่แบบเต็ม) — ลำดับการ gate สิทธิ์ก่อน feature flag; ผลลัพธ์ `Forbidden`/`ComingSoon`/`NotFound`
+- `../carmen-backstage/src/context/AuthContext.tsx:268-272`, `src/utils/permissions.ts` (เต็ม) — bootstrap escape hatch ของ `hasPermission` และความหมายของ `checkPermission` แบบมี/ไม่มี `clusterId` (§4.2)
+- `../carmen-backstage/src/App.tsx:475-489` — การลงทะเบียน route `/analytics` และ `/activity-events`
+- `../carmen-backstage/src/components/nav/platformNav.ts:30-33` — สองแถว nav (32-33) และคอมเมนต์เรื่อง contiguity เหนือแถว (30-31)
+- `../carmen-backstage/src/constants/featureFlags.ts:64` — entry ของ feature catalog `usage_analytics`
+- `../carmen-backstage/src/i18n/en.ts` (บรรทัด 99-102, 4089-4116) และ `src/i18n/th.ts` (บรรทัด 3112-3129) — ข้อความหน้าที่ยกมาอ้างใน §3.2/§3.3/§3.7
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform-analytics/platform-analytics.controller.ts` (เต็ม) — ทั้งสอง route, guard ของแต่ละตัว, และคอมเมนต์เรื่องกับดักการตั้งชื่อทุกจุดที่อ้างใน §3.1/§4.3
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform-analytics/platform-analytics.service.ts` — ตัว proxy จาก gateway ไป microservice และรูปร่าง `IAnalyticsQuery`
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform-analytics/analytics-range.ts` (เต็ม) — `parseRange`, `MAX_RANGE_DAYS`
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform-analytics/analytics-scope.ts` (เต็ม) — `ACTIVITY_EVENT_READ`/`ACTIVITY_EVENT_DETAIL`, ตารางการตัดสินของ `resolveAllowedClusterIds()`
+- `../carmen-turborepo-backend/apps/backend-gateway/src/auth/guards/platform-permission.guard.ts` (เต็ม) — กลไก coarse-gate, super-admin short-circuit, สาขา fail-open ของ route ที่ไม่มี decorator
+- `../carmen-turborepo-backend/apps/backend-gateway/src/common/guard/app-id.guard.ts` (เต็ม) — กลไก `x-app-id`/allowlist (§4.3)
+- `../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/activity-event.service.ts` (เต็ม 348 บรรทัด) — สี่ query SQL ดิบของ `getOverview()`, `resolveBuScope()`, `findEvents()`
+- `../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/activity-event.types.ts` (เต็ม) — `ANALYTICS_TZ`, รูปร่างแถว, คอมเมนต์เรื่องความหมาย `allowed_cluster_ids` แบบ null/`[]`/`undefined`
+- `../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/activity-event.query.ts` (เต็ม) — `buildWhere()` (ช่วง `server_ts`), `NEVER_MATCH`, `buildBuCodeScope()` (การตัด BU ที่ถูกลบ/bu_code เป็น NULL), `buildScopedWhere()`
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts:93-99` — คำอธิบาย catalog ของ `activity_event.read`/`.detail` และคอมเมนต์แยกจาก `activity_log`
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/seed.platform-role-permission.data.ts:11-52` (เต็ม) — อาร์เรย์สิทธิ์ที่แน่นอนของทั้งสี่ role bundle
+- `../carmen-backstage-e2e/tests/` — list ตรง ๆ เพื่อยืนยันว่าไม่มีชุดทดสอบ `usage-analytics`/`analytics`/`activity-events` (§4.5)
 
 ## 7. หน้าย่อยของโมดูลนี้
 

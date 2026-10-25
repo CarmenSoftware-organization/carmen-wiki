@@ -23,12 +23,12 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 ## 2. References
 
-- ../carmen-platform/src/App.tsx — route ทั้งสามของ cluster พร้อม prop `requiredPermission` + `feature`
-- ../carmen-platform/src/components/PrivateRoute.tsx — guard แบบเป็นชั้น: auth → resolve platform-authority/cluster-admin (ใหม่) → permission → super-admin → feature flag
-- ../carmen-platform/src/components/Can.tsx, ../carmen-platform/src/context/AuthContext.tsx, ../carmen-platform/src/utils/permissions.ts (รวม `checkPlatformAuthority`)
-- ../carmen-platform/src/context/FeatureFlagContext.tsx — `flagOf`/`isReady` ที่ `PrivateRoute` ใช้เช็ค feature flag
-- ../carmen-platform/src/components/nav/platformNav.ts — รายการ nav ของ Clusters (permission, feature, group)
-- ../carmen-platform/src/pages/Forbidden.tsx, ../carmen-platform/src/pages/NotFound.tsx, ../carmen-platform/src/pages/ComingSoon.tsx
+- ../carmen-backstage/src/App.tsx — route ทั้งสามของ cluster พร้อม prop `requiredPermission` + `feature`
+- ../carmen-backstage/src/components/PrivateRoute.tsx — guard แบบเป็นชั้น: auth → resolve platform-authority/cluster-admin (ใหม่) → permission → super-admin → feature flag
+- ../carmen-backstage/src/components/Can.tsx, ../carmen-backstage/src/context/AuthContext.tsx, ../carmen-backstage/src/utils/permissions.ts (รวม `checkPlatformAuthority`)
+- ../carmen-backstage/src/context/FeatureFlagContext.tsx — `flagOf`/`isReady` ที่ `PrivateRoute` ใช้เช็ค feature flag
+- ../carmen-backstage/src/components/nav/platformNav.ts — รายการ nav ของ Clusters (permission, feature, group)
+- ../carmen-backstage/src/pages/Forbidden.tsx, ../carmen-backstage/src/pages/NotFound.tsx, ../carmen-backstage/src/pages/ComingSoon.tsx
 
 ## 3. TODO
 

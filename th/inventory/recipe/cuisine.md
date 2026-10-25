@@ -46,7 +46,7 @@ stateDiagram-v2
     Inactive --> [*]: ลบ (ถ้าไม่มีสูตรอ้างอิง)
 ```
 
-> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/cuisine-types/FD-cuisine-types.md` · verified against `carmen-turborepo-backend-v2/apps/micro-business/src/master/recipe-cuisine/recipe-cuisine.service.ts:150-171,280-300` (2026-09-28) · Changes: dropped the source's `Draft` state — its own note says cuisines start `Active` in the current implementation; `update()` (deactivate) has no recipe-reference check at all (unguarded), and `delete()`'s `RECIPE_CUISINE_IN_USE` counts any non-deleted recipe, not specifically "active" ones, and applies whether the cuisine is `Active` or `Inactive`, so `Active --> [*]` was added.
+> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/cuisine-types/FD-cuisine-types.md` · verified against `carmen-turborepo-backend/apps/micro-business/src/master/recipe-cuisine/recipe-cuisine.service.ts:150-171,280-300` (2026-09-28) · Changes: dropped the source's `Draft` state — its own note says cuisines start `Active` in the current implementation; `update()` (deactivate) has no recipe-reference check at all (unguarded), and `delete()`'s `RECIPE_CUISINE_IN_USE` counts any non-deleted recipe, not specifically "active" ones, and applies whether the cuisine is `Active` or `Inactive`, so `Active --> [*]` was added.
 
 ## 3. การตรวจสอบและ Error
 
@@ -110,6 +110,6 @@ stateDiagram-v2
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_recipe_cuisines` (lines ~5192-5224), enum `enum_cuisine_region` (lines ~5157-5164)
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/operation-plan/cuisine/`
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_recipe_cuisines` (lines ~5192-5224), enum `enum_cuisine_region` (lines ~5157-5164)
+- **Frontend route:** `../carmen-frontend/routes/operation-plan/cuisine/`
 - **Concept docs:** `../carmen/docs/recipe/setup-pages-spec.md`

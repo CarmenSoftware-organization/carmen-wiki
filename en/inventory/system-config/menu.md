@@ -15,7 +15,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## Implementation status (verified 2026-07-16; re-verified 2026-09-22 — unchanged)
 
-A repo-wide search for `tb_menu` across `carmen-turborepo-backend-v2/apps` and `carmen-turborepo-backend-v2/packages` returns **only the Prisma schema declaration and its migration SQL** — zero hits in any `.service.ts`, `.controller.ts`, or DTO file (re-run 2026-09-22, still zero). There is no `menu.service.ts`, no `menu.controller.ts`, no Bruno `config/menu/*` folder, and no `menu` route anywhere under `../carmen-inventory-frontend-react/routes/`.
+A repo-wide search for `tb_menu` across `carmen-turborepo-backend/apps` and `carmen-turborepo-backend/packages` returns **only the Prisma schema declaration and its migration SQL** — zero hits in any `.service.ts`, `.controller.ts`, or DTO file (re-run 2026-09-22, still zero). There is no `menu.service.ts`, no `menu.controller.ts`, no Bruno `config/menu/*` folder, and no `menu` route anywhere under `../carmen-frontend/routes/`.
 
 The app shell's actual navigation is **hard-coded in the frontend**, not data-driven: the System Admin landing page renders from a compile-time `CHAPTERS` array (`routes/system-admin/landing-types.ts:43-140`) with five chapters — `access` (roles, assign), `process` (`inventoryPeriod` → `/system-admin/inventory-period`, workflows, docs), `observe` (userActivity, monitor), `config` (interface, notifyTemplate, code), `data` (dataset) — and the main sidebar is the static `constant/module-list.ts` tree. What *does* vary per property at runtime is **visibility by licence and permission**, not by this table: each `module-list.ts` entry carries a `licenseFeature` and a `permission` key, and `hooks/use-license.ts` (`isLicensed`, `isHidden`, `canWrite`) hides retired features and locks unlicensed ones (FE `2addc658`, 2026-08-31). Adding or renaming an entry still requires a **frontend code change and redeploy** — there is no admin screen, and no runtime row, that controls it.
 
@@ -91,5 +91,5 @@ No module was found to read `tb_menu`. Cross-links removed — there is nothing 
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_menu` (lines ~1412-1430).
-- **Frontend (the real, static navigation, for comparison):** `../carmen-inventory-frontend-react/routes/system-admin/landing-types.ts` (`CHAPTERS` — the System Admin hub's module list), `constant/module-list.ts` (sidebar tree with `licenseFeature` / `permission` per entry), `hooks/use-license.ts` (runtime hide/lock), and `routes/router.tsx` (the full static route tree). None reads `tb_menu`.
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_menu` (lines ~1412-1430).
+- **Frontend (the real, static navigation, for comparison):** `../carmen-frontend/routes/system-admin/landing-types.ts` (`CHAPTERS` — the System Admin hub's module list), `constant/module-list.ts` (sidebar tree with `licenseFeature` / `permission` per entry), `hooks/use-license.ts` (runtime hide/lock), and `routes/router.tsx` (the full static route tree). None reads `tb_menu`.

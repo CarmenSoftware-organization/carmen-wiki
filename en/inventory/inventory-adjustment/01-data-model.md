@@ -17,8 +17,8 @@ dateCreated: 2026-05-15T13:00:00.000Z
 > **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*`; **two parallel document trees, no shared `tb_inventory_adjustment` parent** — direction gated by `tb_adjustment_type.type ∈ {stock_in, stock_out}`
 
 > **Source of truth:** Backend Prisma schema. Always read these first when writing or updating this page:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > The `generated/client/schema.prisma` files under each package are auto-generated copies and not authoritative.
 
@@ -294,10 +294,10 @@ Notes:
 
 ## 6. References
 
-- **Primary (source of truth):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (`tb_adjustment_type`, `tb_stock_in`, `tb_stock_in_detail`, `tb_stock_in_comment`, `tb_stock_in_detail_comment`, `tb_stock_out`, `tb_stock_out_detail`, `tb_stock_out_comment`, `tb_stock_out_detail_comment`; enums `enum_adjustment_type`, `enum_doc_status`, `enum_last_action`, `enum_comment_type`).
+- **Primary (source of truth):** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (`tb_adjustment_type`, `tb_stock_in`, `tb_stock_in_detail`, `tb_stock_in_comment`, `tb_stock_in_detail_comment`, `tb_stock_out`, `tb_stock_out_detail`, `tb_stock_out_comment`, `tb_stock_out_detail_comment`; enums `enum_adjustment_type`, `enum_doc_status`, `enum_last_action`, `enum_comment_type`).
 - **Backend services:** `apps/micro-business/src/inventory/stock-in/stock-in.service.ts`, `.../stock-out/stock-out.service.ts` (`create` → draft, `update` → `/save`, `commit`, `voidStockIn` / `voidStockOut`, `getStockMovements`), `.../inventory-period.helper.ts` (date guards), `.../inventory-transaction/inventory-transaction.service.ts` (`executeAdjustmentIn`/`executeAdjustmentOut`), `apps/backend-gateway/src/application/stock-ins/`, `stock-outs/` (`GET /`, `GET /:id`, `GET /:id/stock-movements`, `POST /`, `PATCH /:id/save`, `PATCH /:id/commit`, `…/:id/void`, `GET /:id/print-viewer`, `…/details` CRUD), `inventory-adjustments/` (read-only gateway merge of stock-in + stock-out for the list view and print viewer).
-- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/inventory-adjustment/` (`ia-form.tsx`, `ia-form-hero.tsx`, `ia-form-schema.ts`, `ia-item-fields.tsx`, `use-ia-item-table.tsx`, `use-inventory-adjustment.ts`, `ia-component.tsx`), `constant/inventory-adjustment.ts` (`IA_STATUS_CONFIG`: draft / in_progress / completed / voided icons).
+- **Frontend:** `../carmen-frontend/routes/inventory-management/inventory-adjustment/` (`ia-form.tsx`, `ia-form-hero.tsx`, `ia-form-schema.ts`, `ia-item-fields.tsx`, `use-ia-item-table.tsx`, `use-inventory-adjustment.ts`, `ia-component.tsx`), `constant/inventory-adjustment.ts` (`IA_STATUS_CONFIG`: draft / in_progress / completed / voided icons).
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/inventory/stock-in/`, `inventory/stock-out/`, `inventory/inventory-adjustment/`.
 - **Secondary (concept cross-check, superseded by the code — see § 5):** `../carmen/docs/inventory-adjustment/INV-ADJ-Overview.md`, `INV-ADJ-PRD.md`, `INV-ADJ-Business-Requirements.md`, `INV-ADJ-Business-Logic.md`, `INV-ADJ-Component-Structure.md`.
-- E2E: no dedicated `inventory-adjustment` spec exists; manual catalog `../carmen-inventory-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (60 cases); `tests/031-adjustment-type.spec.ts` covers only the reason-code master-data screen.
+- E2E: no dedicated `inventory-adjustment` spec exists; manual catalog `../carmen-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (60 cases); `tests/031-adjustment-type.spec.ts` covers only the reason-code master-data screen.
 - Related modules: [inventory](/en/inventory/inventory) (shared ledger — `tb_inventory_transaction` / `tb_inventory_transaction_detail` / `tb_inventory_transaction_cost_layer`), [costing](/en/inventory/costing) (FIFO layer creation on Stock-In, FIFO consumption / weighted-average recompute on Stock-Out), [physical-count](/en/inventory/physical-count) (creates `tb_stock_in`/`tb_stock_out` rows directly on variance commit — see the module landing page § 2), [product](/en/inventory/product).

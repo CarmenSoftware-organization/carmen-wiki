@@ -14,11 +14,11 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 > **`tb_email_sender_profile`** — one row per named SMTP sender, `micro-cluster`-owned, `doc_version` **actively enforced** as an optimistic lock on every update (§5) &nbsp;·&nbsp; **`email_routing`** — a `tb_platform_config` row (**not** a column on this table), resolved live by micro-notification for every outbound flow (landing page §3.2-3.3) &nbsp;·&nbsp; **Passwords:** `enc:v1` (AES-256-GCM) at rest, always masked (`••••••`) in every API response, decrypted only inside micro-notification at send time &nbsp;·&nbsp; **Uniqueness is on `name`, not on a purpose** — a stale controller Swagger description still says otherwise (§5) &nbsp;·&nbsp; **Redesigned once:** migration `20260808130000_email_profile_master_and_routing` (2026-08-08) split a one-purpose-per-row table into this named list plus the separate `email_routing` map
 
 > **Source of truth:** the platform Prisma schema, the two migrations that shaped this table, and the two services (`micro-cluster` for CRUD, `micro-notification` for resolution/send). Always read these first when writing or updating this page:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/email-sender-profile/email-sender-profile.service.ts`
-> - `../carmen-turborepo-backend-v2/apps/micro-notification/src/platform-email/platform-email.service.ts`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/email-sender-profile/email-sender-profile.service.ts`
+> - `../carmen-turborepo-backend/apps/micro-notification/src/platform-email/platform-email.service.ts`
 >
-> Verified against `carmen-turborepo-backend-v2` HEAD `937cf5ac4` (2026-09-06) and `carmen-platform` HEAD `157a65e` (2026-09-04).
+> Verified against `carmen-turborepo-backend` HEAD `937cf5ac4` (2026-09-06) and `carmen-backstage` HEAD `157a65e` (2026-09-04).
 
 ## 1. Overview
 
@@ -26,7 +26,7 @@ Two things back this screen, and they live in two different tables owned by two 
 
 ## 2. Entity: `tb_email_sender_profile`
 
-Schema lines 1433-1460 (`../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`).
+Schema lines 1433-1460 (`../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`).
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
@@ -123,16 +123,16 @@ CRUD lives entirely in `EmailSenderProfileService` (micro-cluster), proxied by t
 
 ## 8. References
 
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (lines 1415-1460) — `enum_email_sender_purpose`, `tb_email_sender_profile`.
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260729000000_email_sender_profile/migration.sql` — original purpose-enum table creation.
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260808120000_email_sender_purpose_per_flow/migration.sql` — added the five flow-name values onto `enum_email_sender_purpose`, one hour before the redesign below (§2.1).
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260808130000_email_profile_master_and_routing/migration.sql` — the redesign: rename, re-key uniqueness, drop `purpose`, seed `email_routing`.
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/email-sender-profile/email-sender-profile.service.ts` (lines 58-60) — CRUD, `doc_version` enforcement, `passwordPatch()`, name-uniqueness (§5), and the stale class-level JSDoc (§2.1).
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_email-settings/platform_email-settings.controller.ts` (line 144) — the stale "purpose" Swagger description (§5).
-- `../carmen-turborepo-backend-v2/apps/micro-notification/src/platform-email/platform-email.service.ts` — `resolveProfile`/`toEmailConfig`/`send`/`sendTest`/`resolveSmtpConfig` (§4).
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts` — the `email_routing` registry entry and placeholder default (§3).
-- `../carmen-turborepo-backend-v2/packages/error-catalog/src/catalog.ts` (lines 513-514) — `EMAIL_SENDER_PROFILE_NOT_FOUND`/`EMAIL_SENDER_PROFILE_NAME_EXISTS`.
-- `../carmen-platform/src/services/emailSettingService.ts` (lines 7-9) — the stale `PERPAGE` justification comment (§6).
-- `../carmen-platform/src/pages/emailSettings/{PasswordField.tsx,EmailRoutingCard.tsx}` — password-patch UI semantics (§5) and the routing save call (§4 of the landing page).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (lines 1415-1460) — `enum_email_sender_purpose`, `tb_email_sender_profile`.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260729000000_email_sender_profile/migration.sql` — original purpose-enum table creation.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260808120000_email_sender_purpose_per_flow/migration.sql` — added the five flow-name values onto `enum_email_sender_purpose`, one hour before the redesign below (§2.1).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260808130000_email_profile_master_and_routing/migration.sql` — the redesign: rename, re-key uniqueness, drop `purpose`, seed `email_routing`.
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/email-sender-profile/email-sender-profile.service.ts` (lines 58-60) — CRUD, `doc_version` enforcement, `passwordPatch()`, name-uniqueness (§5), and the stale class-level JSDoc (§2.1).
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform_email-settings/platform_email-settings.controller.ts` (line 144) — the stale "purpose" Swagger description (§5).
+- `../carmen-turborepo-backend/apps/micro-notification/src/platform-email/platform-email.service.ts` — `resolveProfile`/`toEmailConfig`/`send`/`sendTest`/`resolveSmtpConfig` (§4).
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts` — the `email_routing` registry entry and placeholder default (§3).
+- `../carmen-turborepo-backend/packages/error-catalog/src/catalog.ts` (lines 513-514) — `EMAIL_SENDER_PROFILE_NOT_FOUND`/`EMAIL_SENDER_PROFILE_NAME_EXISTS`.
+- `../carmen-backstage/src/services/emailSettingService.ts` (lines 7-9) — the stale `PERPAGE` justification comment (§6).
+- `../carmen-backstage/src/pages/emailSettings/{PasswordField.tsx,EmailRoutingCard.tsx}` — password-patch UI semantics (§5) and the routing save call (§4 of the landing page).
 
 **Cross-links:** [Email Settings landing](/en/platform/email-settings) &nbsp;·&nbsp; [Platform Config](/en/platform/platform-config)

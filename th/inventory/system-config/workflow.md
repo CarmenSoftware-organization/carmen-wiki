@@ -170,11 +170,11 @@ Licence: ทุก route `config:workflows` resolve ไป `system_admin.workflo
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_workflow`, `enum_workflow_type` (lines 276-281), `enum_stage_role`
-- **Seed:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/seed-data-a01/tb_workflow.json`
-- **Backend gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_workflows/config_workflows.controller.ts`; `apps/backend-gateway/src/application/workflows/workflows.controller.ts`
-- **Backend service:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/workflows/` — `workflows.service.ts` (`getEditAvailability` `:799-850`, นับเอกสาร `:858-920`, ล็อก `:1296-1310`), `workflow-edit-scope.helper.ts` (อะไรนับเป็นการเปลี่ยนโครง), `workflow-stage-role.helper.ts`, `workflow-products.helper.ts`, `workflows.navagation.service.ts` (routing rule)
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_workflow`, `enum_workflow_type` (lines 276-281), `enum_stage_role`
+- **Seed:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/seed-data-a01/tb_workflow.json`
+- **Backend gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_workflows/config_workflows.controller.ts`; `apps/backend-gateway/src/application/workflows/workflows.controller.ts`
+- **Backend service:** `../carmen-turborepo-backend/apps/micro-business/src/master/workflows/` — `workflows.service.ts` (`getEditAvailability` `:799-850`, นับเอกสาร `:858-920`, ล็อก `:1296-1310`), `workflow-edit-scope.helper.ts` (อะไรนับเป็นการเปลี่ยนโครง), `workflow-stage-role.helper.ts`, `workflow-products.helper.ts`, `workflows.navagation.service.ts` (routing rule)
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/config/workflows/` — `GET-find-all-{purchase-request,purchase-order,store-requisition}-…`, `GET-find-assignee-impact-…`, `POST-handover-assignee-…`, `GET-find-product-locations-…`, `GET-get-edit-availability-…`
 - **carmen/docs:** `../carmen/docs/workflow-permissions-system.md` — semantics ของ role-type (freeze เมื่อ 2026-04-27; ก่อนมีหน้าต่อ type, routing rule และการล็อกโครง)
-- **Frontend:** `../carmen-inventory-frontend-react/routes/system-admin/workflow/` — `workflow-doc-type.route.tsx` (รายการต่อ type), `wf-component.tsx`, `wf-new-form.tsx`, `wf-edit-content.tsx`, `wf-stages.tsx` / `wf-stage-*.tsx`, `wf-routing*.tsx`, `wf-products*.tsx`, `wf-form-schema.ts` (shape ของ data), `wf-validate.ts` (code กฎฝั่ง client), `wf-signature-limit.ts`, `use-wf-availability.ts`, `wf-structure-lock-notice.tsx`; `constant/module-list.ts:619-652`
-- **E2E:** `../carmen-inventory-frontend-e2e/docs/test-cases/1103-workflow.md` — แคตตาล็อกเท่านั้น (ไม่มี Playwright spec)
+- **Frontend:** `../carmen-frontend/routes/system-admin/workflow/` — `workflow-doc-type.route.tsx` (รายการต่อ type), `wf-component.tsx`, `wf-new-form.tsx`, `wf-edit-content.tsx`, `wf-stages.tsx` / `wf-stage-*.tsx`, `wf-routing*.tsx`, `wf-products*.tsx`, `wf-form-schema.ts` (shape ของ data), `wf-validate.ts` (code กฎฝั่ง client), `wf-signature-limit.ts`, `use-wf-availability.ts`, `wf-structure-lock-notice.tsx`; `constant/module-list.ts:619-652`
+- **E2E:** `../carmen-frontend-e2e/docs/test-cases/1103-workflow.md` — แคตตาล็อกเท่านั้น (ไม่มี Playwright spec)

@@ -33,4 +33,4 @@ dateCreated: 2026-05-15T13:00:00.000Z
 - [master-data/adjustment-type](/en/inventory/master-data/adjustment-type) — the real reason-code CRUD screen.
 - [03 — User Flow](/en/inventory/inventory-adjustment/03-user-flow) — the actual document lifecycle for this module.
 - [02 — Business Rules](/en/inventory/inventory-adjustment/02-business-rules) — the module's real rules, with no authorization ladder.
-- E2E: `../carmen-inventory-frontend-e2e/tests/031-adjustment-type.spec.ts` — the real reason-code CRUD spec.
+- E2E: `../carmen-frontend-e2e/tests/031-adjustment-type.spec.ts` — the real reason-code CRUD spec.

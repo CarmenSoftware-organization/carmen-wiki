@@ -14,11 +14,11 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 > **`tb_platform_config`** — หนึ่งแถวต่อหนึ่ง config *namespace* (ออบเจกต์ JSON) ไม่เคยเป็นสเกลาร์เดี่ยว &nbsp;·&nbsp; **`PLATFORM_CONFIG_REGISTRY`** (micro-cluster) — แหล่งความจริงเดียวว่ามีคีย์อะไรบ้าง schema ฝั่งอ่าน/เขียนของแต่ละคีย์เป็น Zod แบบไหน และ default คืออะไร รวมสิบคีย์ แปดคีย์ render โดยหน้าจอของโมดูลนี้เอง (§3) &nbsp;·&nbsp; **ตรวจสองชั้นอิสระต่อกัน:** controller ฝั่ง gateway ตรวจส่วน `:config_key` ของ path ด้วย regex ก่อนถึงชั้น service ใด ๆ; `PlatformConfigService` ของ micro-cluster ตรวจการเป็นสมาชิกของ registry และค่ากับ Zod schema ของคีย์นั้นแยกต่างหากอีกที &nbsp;·&nbsp; **Concurrency:** `doc_version` มีเป็นคอลัมน์แต่**ไม่มี**เส้นทางเขียนไหนบังคับใช้เป็น optimistic lock ในวันนี้ &nbsp;·&nbsp; **หน้าจอเองไม่มี cache** — `GET /api-system/platform/configs` อ่านสดเสมอ ส่วน cache 60 วินาทีที่เอกสารไว้ใน [หน้าลงจอด](/th/platform/platform-config) §3.2 เป็นของ*ผู้อ่านฝั่งบังคับใช้*สามตัวที่เฉพาะเจาะจง ไม่ใช่ของ service อ่าน/เขียนตารางนี้เอง
 
 > **Source of truth:** Prisma schema ฝั่ง backend และ registry ของ micro-cluster ที่นิยามทุกคีย์ อ่านสองไฟล์นี้ก่อนเสมอเมื่อจะเขียนหรือปรับหน้านี้:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts`
-> - `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/platform-config/platform-config.service.ts`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts`
+> - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/platform-config/platform-config.service.ts`
 >
-> ยืนยันกับ `carmen-turborepo-backend-v2` HEAD `937cf5ac4` (2026-09-06) และ `carmen-platform` HEAD `157a65e` (2026-09-04)
+> ยืนยันกับ `carmen-turborepo-backend` HEAD `937cf5ac4` (2026-09-06) และ `carmen-backstage` HEAD `157a65e` (2026-09-04)
 
 ## 1. ภาพรวม
 
@@ -26,7 +26,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 2. Entity: `tb_platform_config`
 
-Schema บรรทัด 1462 (`../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma:1462-1477`)
+Schema บรรทัด 1462 (`../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma:1462-1477`)
 
 | ฟิลด์ | ชนิด Prisma | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | ----------- |
@@ -42,7 +42,7 @@ Schema บรรทัด 1462 (`../carmen-turborepo-backend-v2/packages/prisma-
 
 ## 3. `PLATFORM_CONFIG_REGISTRY` — ทุกคีย์ ครบทุกตัว
 
-นิยามไว้ที่เดียว `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts:260-369` รวมสิบคีย์ สองคีย์สุดท้ายไม่เคย render โดยหน้าจอของโมดูลนี้เอง (ดู §3.5 ของหน้าลงจอดว่าทำไม และใครเป็นเจ้าของแทน)
+นิยามไว้ที่เดียว `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts:260-369` รวมสิบคีย์ สองคีย์สุดท้ายไม่เคย render โดยหน้าจอของโมดูลนี้เอง (ดู §3.5 ของหน้าลงจอดว่าทำไม และใครเป็นเจ้าของแทน)
 
 | คีย์ | ฟิลด์ — ชนิด (ขอบเขต), default | อยู่บนหน้าจอนี้ไหม |
 | --- | --- | --- |
@@ -110,16 +110,16 @@ Schema บรรทัด 1462 (`../carmen-turborepo-backend-v2/packages/prisma-
 
 ## 8. แหล่งอ้างอิง
 
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_platform_config` (บรรทัด 1462)
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts` — `PLATFORM_CONFIG_REGISTRY` schema/default ของทุกคีย์ (§3), `toWriteSchema()` (§3, §5)
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/platform-config/platform-config.service.ts` — `findAll`/`findOne`/`upsert`/`patch`/`writeValue`/`getInvitationConfig` (§2, §5)
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_configs/{platform_configs.controller.ts,platform_configs.service.ts}` — ตัวส่งต่อของ gateway ด่าน RBAC `KEY_REGEX` (§5)
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/license/{license.service.ts,license.interceptor.ts}` — ผู้อ่านคีย์ `license` ฝั่ง backend-gateway (§4)
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/common/{seat-enforcement-flag.service.ts,expiry-thresholds.service.ts}` — ผู้อ่านคีย์ `license`/`expiry_thresholds` ฝั่ง micro-cluster (§4)
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/auth/guards/platform-migration.guard.ts` — ผู้อ่านคีย์ `platform_migration` (§4)
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/authen/auth/auth.service.ts` (บรรทัด 273-350, 389-397) — ผู้อ่าน `signup`/`email_verification`/`password_reset` (§4)
-- `../carmen-turborepo-backend-v2/apps/micro-notification/src/platform-email/platform-email.service.ts`, `apps/micro-notification/CLAUDE.md` — การค้นหาผู้อ่านของ `email_routing`/`notification_email` (§4)
-- `../carmen-platform/src/services/platformConfigService.ts` — REST client ฝั่ง frontend รวมข้อสังเกตเรื่อง `doc_version` (§5)
-- `../carmen-platform/src/context/ExpiryThresholdContext.tsx` — ผู้อ่าน `expiry_thresholds` ของ frontend เองและพฤติกรรม fallback ของมัน (§4)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_platform_config` (บรรทัด 1462)
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts` — `PLATFORM_CONFIG_REGISTRY` schema/default ของทุกคีย์ (§3), `toWriteSchema()` (§3, §5)
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/platform-config/platform-config.service.ts` — `findAll`/`findOne`/`upsert`/`patch`/`writeValue`/`getInvitationConfig` (§2, §5)
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform_configs/{platform_configs.controller.ts,platform_configs.service.ts}` — ตัวส่งต่อของ gateway ด่าน RBAC `KEY_REGEX` (§5)
+- `../carmen-turborepo-backend/apps/backend-gateway/src/license/{license.service.ts,license.interceptor.ts}` — ผู้อ่านคีย์ `license` ฝั่ง backend-gateway (§4)
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/common/{seat-enforcement-flag.service.ts,expiry-thresholds.service.ts}` — ผู้อ่านคีย์ `license`/`expiry_thresholds` ฝั่ง micro-cluster (§4)
+- `../carmen-turborepo-backend/apps/backend-gateway/src/auth/guards/platform-migration.guard.ts` — ผู้อ่านคีย์ `platform_migration` (§4)
+- `../carmen-turborepo-backend/apps/micro-business/src/authen/auth/auth.service.ts` (บรรทัด 273-350, 389-397) — ผู้อ่าน `signup`/`email_verification`/`password_reset` (§4)
+- `../carmen-turborepo-backend/apps/micro-notification/src/platform-email/platform-email.service.ts`, `apps/micro-notification/CLAUDE.md` — การค้นหาผู้อ่านของ `email_routing`/`notification_email` (§4)
+- `../carmen-backstage/src/services/platformConfigService.ts` — REST client ฝั่ง frontend รวมข้อสังเกตเรื่อง `doc_version` (§5)
+- `../carmen-backstage/src/context/ExpiryThresholdContext.tsx` — ผู้อ่าน `expiry_thresholds` ของ frontend เองและพฤติกรรม fallback ของมัน (§4)
 
 **Cross-links:** [หน้าลงจอด Platform Config](/th/platform/platform-config) &nbsp;·&nbsp; [Licenses](/th/platform/licenses)

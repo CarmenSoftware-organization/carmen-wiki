@@ -19,7 +19,7 @@ An earlier draft of this wiki module described a third persona group for physica
 
 ## 2. What the Source Actually Shows
 
-A targeted search of the frontend (`../carmen-inventory-frontend-react/`), backend (`../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count*`), and the Bruno API collection (`../carmen-turborepo-backend-bruno/collections/carmen-inventory/inventory/physical-count*`) found no matching route, permission key, workflow stage, or configuration screen for any of the three claimed sub-roles.
+A targeted search of the frontend (`../carmen-frontend/`), backend (`../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count*`), and the Bruno API collection (`../carmen-turborepo-backend-bruno/collections/carmen-inventory/inventory/physical-count*`) found no matching route, permission key, workflow stage, or configuration screen for any of the three claimed sub-roles.
 
 | Claim | Status | What the source shows |
 |---|---|---|
@@ -37,7 +37,7 @@ A targeted search of the frontend (`../carmen-inventory-frontend-react/`), backe
 
 ## 4. References
 
-- **Frontend:** `../carmen-inventory-frontend-react/constant/permissions.ts`; `routes/inventory-management/physical-count/`.
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/physical-count/physical-count.service.ts`.
+- **Frontend:** `../carmen-frontend/constant/permissions.ts`; `routes/inventory-management/physical-count/`.
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts`.
 - **API contracts:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/inventory/physical-count*/`.
 - Related: [physical-count/03-user-flow](/en/inventory/physical-count/03-user-flow) (overview), [physical-count/04-test-scenarios-audit-config](/en/inventory/physical-count/04-test-scenarios-audit-config) (parallel correction page on the test-scenarios side).

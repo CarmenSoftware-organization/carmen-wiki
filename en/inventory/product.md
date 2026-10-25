@@ -73,10 +73,10 @@ This module is therefore the system of record for the *definition* of an item, n
 ## 6. Reference Sources
 
 - Concepts: `../carmen/docs/product-management/`
-- Frontend: `../carmen-inventory-frontend-react/`
-- Backend: `../carmen-turborepo-backend-v2/`
+- Frontend: `../carmen-frontend/`
+- Backend: `../carmen-turborepo-backend/`
 - API contracts: `../carmen-turborepo-backend-bruno/`
-- E2E tests: `../carmen-inventory-frontend-e2e/`
+- E2E tests: `../carmen-frontend-e2e/`
 
 ## 7. Pages in This Module
 

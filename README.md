@@ -134,12 +134,12 @@ Content is synthesised from these sibling repos under the CarmenSoftware organis
 | Path (sibling to this repo) | Use for |
 | --- | --- |
 | `../carmen/docs/` | Primary concept and design references for every Inventory module |
-| `../carmen-inventory-frontend-react/` | Vite + React SPA inventory UI — source of truth for Inventory screen behaviour |
-| `../carmen-platform/` | React/TypeScript SPA — source of truth for the Platform book |
-| `../carmen-turborepo-backend-v2/` | Turborepo monorepo, REST API surface. Platform Prisma schema lives at `packages/prisma-shared-schema-platform/`. |
+| `../carmen-frontend/` | Vite + React SPA inventory UI — source of truth for Inventory screen behaviour |
+| `../carmen-backstage/` | React/TypeScript SPA — source of truth for the Platform book |
+| `../carmen-turborepo-backend/` | Turborepo monorepo, REST API surface. Platform Prisma schema lives at `packages/prisma-shared-schema-platform/`. |
 | `../micro-report/`, `../micro-cronjobs/` | Go microservices for reporting and scheduled jobs |
 | `../carmen-turborepo-backend-bruno/` | Bruno API collections, exact request/response shapes |
-| `../carmen-inventory-frontend-e2e/` | Playwright suite — executable spec for Inventory behaviour |
+| `../carmen-frontend-e2e/` | Playwright suite — executable spec for Inventory behaviour |
 | `~/GitHub/Test_case/` | Screen-level and process-level test artefacts cited by discrepancy callouts |
 
 When in doubt about what the system actually does: implementation (frontend/backend) and E2E tests beat `../carmen/docs/`; `../carmen/docs/` beats memory or speculation.

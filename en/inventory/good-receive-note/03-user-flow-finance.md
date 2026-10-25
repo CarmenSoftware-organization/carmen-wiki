@@ -38,7 +38,7 @@ Until an invoicing / AP feature is wired to GRN (the GL module is the likely lan
 
 - Parent overview: [03-user-flow.md](./03-user-flow.md) — the four-state lifecycle; the posting event is `saved → committed` (average units post stock at save).
 - Sibling: [03-user-flow-receiver.md](./03-user-flow-receiver.md) — the persona whose commit posts inventory and advances the PO; no downstream handoff to a Finance persona.
-- GL module (documented on its own wiki page, not here): `../carmen-turborepo-backend-v2/apps/micro-business/src/gl/`, gateway `apps/backend-gateway/src/application/{gl-jv,gl-posting,gl-reports}/`.
+- GL module (documented on its own wiki page, not here): `../carmen-turborepo-backend/apps/micro-business/src/gl/`, gateway `apps/backend-gateway/src/application/{gl-jv,gl-posting,gl-reports}/`.
 - Sibling: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — owns vendor-side resolution for receiving variance; any credit-note negotiation happens off-document.
 - Sibling: [02-business-rules.md](./02-business-rules.md) §5 / §6 — the corrected posting-rule table (`GRN_POST_006`–`GRN_POST_009`, `GRN_XMOD_007` marked not implemented).
 - `../carmen/docs/good-recive-note-managment/grn-master-prd.md` — legacy design source for the three-way-match / AP concept; treat as design intent, not verified current behavior.

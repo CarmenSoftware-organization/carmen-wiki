@@ -12,7 +12,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 
 > **At a Glance**
 > **Persona:** Purchaser &nbsp;·&nbsp; **โมดูล:** [vendor-pricelist](/th/inventory/vendor-pricelist)
-> **Executable coverage (2026-09-22):** `../carmen-inventory-frontend-e2e/tests/150-vendor.spec.ts` (31) + `docs/test-cases/gaps/150-vendor-gap.md` (54); `tests/159-pl.spec.ts` (28) + `gaps/159-pl-gap.md` (65); `tests/160-pl-template.spec.ts` (33) + `gaps/160-pl-template-gap.md` (58); `tests/043-certification.spec.ts` (6) + `gaps/043-certification-gap.md` (29); ยังไม่มี spec สำหรับ Request for Pricing
+> **Executable coverage (2026-09-22):** `../carmen-frontend-e2e/tests/150-vendor.spec.ts` (31) + `docs/test-cases/gaps/150-vendor-gap.md` (54); `tests/159-pl.spec.ts` (28) + `gaps/159-pl-gap.md` (65); `tests/160-pl-template.spec.ts` (33) + `gaps/160-pl-template-gap.md` (58); `tests/043-certification.spec.ts` (6) + `gaps/043-certification-gap.md` (29); ยังไม่มี spec สำหรับ Request for Pricing
 > **ยืนยันแล้ว 2026-07-16 ตรวจซ้ำ 2026-09-22:** ไม่มี tier ยกระดับ Manager, ไม่มีขีดจำกัด high-value, ไม่มี quality-score gate — ไม่มีตัวไหนมี code ตรงกัน แถวใหม่ด้านล่างครอบคลุม Send email, `submitted`, certification และคอลัมน์ tax/rating ของ vendor
 
 หน้านี้จับ test scenario ที่ Purchaser ขับข้ามห้าหน้าจอของโมดูล ไม่มี tier Manager ที่แยกต่างหาก — ทุก scenario ด้านล่างเข้าถึงได้โดย user ใดก็ตามที่ถือสิทธิ์ edit ของหน้าจอที่เกี่ยวข้อง
@@ -75,5 +75,5 @@ dateCreated: 2026-05-15T15:00:00.000Z
 - ภาพรวม parent: [04-test-scenarios.md](./04-test-scenarios.md)
 - User flow: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md)
 - กติกาทางธุรกิจ: [02-business-rules.md](./02-business-rules.md) § 2 (confirmed-vs-design-target validation), § 5 (กติกาสถานะ)
-- E2E: `../carmen-inventory-frontend-e2e/tests/150-vendor.spec.ts`, `159-pl.spec.ts`, `160-pl-template.spec.ts`, `043-certification.spec.ts` และรายงาน gap ของแต่ละไฟล์ใต้ `docs/test-cases/gaps/`
+- E2E: `../carmen-frontend-e2e/tests/150-vendor.spec.ts`, `159-pl.spec.ts`, `160-pl-template.spec.ts`, `043-certification.spec.ts` และรายงาน gap ของแต่ละไฟล์ใต้ `docs/test-cases/gaps/`
 - Cross-link: [purchase-request](/th/inventory/purchase-request), [purchase-order](/th/inventory/purchase-order), [good-receive-note](/th/inventory/good-receive-note), [product](/th/inventory/product)

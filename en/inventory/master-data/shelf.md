@@ -108,9 +108,9 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_location_shelf` (line ~1441), `tb_product_location` (~5334).
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_location_shelf` (line ~1441), `tb_product_location` (~5334).
 - **Migrations:** `20260814150000_add_location_shelf`, `20260820120000_rename_location_shelf_to_shelf`, `20260904131500_rename_shelf_and_user_location`.
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/shelf/shelf.service.ts`, `shelf.helper.ts`; gateway `apps/backend-gateway/src/config/config_shelves/` (`@Controller('api/config/:bu_code/shelves')`), DTO `common/dto/shelf/`.
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/shelf/shelf.service.ts`, `shelf.helper.ts`; gateway `apps/backend-gateway/src/config/config_shelves/` (`@Controller('api/config/:bu_code/shelves')`), DTO `common/dto/shelf/`.
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/config/location-shelves/*.bru` (6 requests, URL `/api/config/{{bu_code}}/shelves`).
-- **Frontend:** `../carmen-inventory-frontend-react/routes/config/shelf/`, `components/lookup/lookup-shelf.tsx`, `types/shelf.ts`; menu `constant/module-list.ts` (`/config/shelf`).
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/083-shelf.spec.ts` (2 executable + deferred CRUD), `docs/user-stories/083-shelf.md` (8 cases).
+- **Frontend:** `../carmen-frontend/routes/config/shelf/`, `components/lookup/lookup-shelf.tsx`, `types/shelf.ts`; menu `constant/module-list.ts` (`/config/shelf`).
+- **E2E:** `../carmen-frontend-e2e/tests/083-shelf.spec.ts` (2 executable + deferred CRUD), `docs/user-stories/083-shelf.md` (8 cases).

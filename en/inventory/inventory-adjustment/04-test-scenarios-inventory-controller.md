@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 > **At a Glance**
 > **Persona:** Inventory Controller (same permission/screen as Store Keeper) &nbsp;·&nbsp; **Module:** [inventory-adjustment](/en/inventory/inventory-adjustment)
 > **Categories:** Happy Path (review, commit, void) &nbsp;·&nbsp; Edge Case
-> **Executable coverage:** none automated — manual catalog `../carmen-inventory-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (TC-IADJ-01xxxx list, TC-IADJ-02xxxx detail/read-only, TC-IADJ-06xxxx void/commit)
+> **Executable coverage:** none automated — manual catalog `../carmen-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (TC-IADJ-01xxxx list, TC-IADJ-02xxxx detail/read-only, TC-IADJ-06xxxx void/commit)
 
 ## 1. Happy Path
 

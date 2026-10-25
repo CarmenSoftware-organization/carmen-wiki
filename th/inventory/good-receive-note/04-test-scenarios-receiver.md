@@ -13,10 +13,10 @@ editor: markdown
 > **At a Glance**
 > **Persona:** Receiver (Store Keeper / Receiving Clerk + Inventory Manager) &nbsp;·&nbsp; **โมดูล:** [good-receive-note](/th/inventory/good-receive-note) &nbsp;·&nbsp; **จำนวน scenario:** ~24
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **ความครอบคลุม E2E:** map ไปยัง `501-grn.spec.ts` ใน `../carmen-inventory-frontend-e2e/`
+> **ความครอบคลุม E2E:** map ไปยัง `501-grn.spec.ts` ใน `../carmen-frontend-e2e/`
 > **ตรวจสอบซ้ำ 2026-09-22:** จังหวะการเปลี่ยนแปลงระบบถูกแก้ไขอีกครั้ง — **commit** (`saved → committed`) โพสต์ inventory และเลื่อน PO; บน **business unit แบบ average** save โพสต์ inventory ไว้แล้ว (PO ยังเลื่อนตอน commit); void/reject ถอนการเคลื่อนไหวล่วงหน้านั้นออก rule ID ด้านล่างเดินตาม [02-business-rules.md](./02-business-rules.md) §2 ที่เขียนใหม่ (`GRN_VAL_002`, `006`–`014`)
 
-> **ความครอบคลุมที่รันได้:** spec `../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts` (76 case; 57 case ไม่มี assertion ตาม `docs/test-cases/SPEC-HEALTH.md`); gap report `docs/test-cases/gaps/501-grn-core-gap.md` (62 case ที่มี oracle ที่ fail ได้) และ `docs/test-cases/gaps/501-grn-from-po-gap.md` (24 case ของ wizard) ไม่มีหน้า catalog `501-grn-core.md` scenario ด้านล่างไม่ได้ mirror ไว้ที่นั่น
+> **ความครอบคลุมที่รันได้:** spec `../carmen-frontend-e2e/tests/501-grn.spec.ts` (76 case; 57 case ไม่มี assertion ตาม `docs/test-cases/SPEC-HEALTH.md`); gap report `docs/test-cases/gaps/501-grn-core-gap.md` (62 case ที่มี oracle ที่ fail ได้) และ `docs/test-cases/gaps/501-grn-from-po-gap.md` (24 case ของ wizard) ไม่มีหน้า catalog `501-grn-core.md` scenario ด้านล่างไม่ได้ mirror ไว้ที่นั่น
 
 หน้านี้จับ test scenario ที่ persona Receiver (**Store Keeper / Receiving Clerk** ที่ dock บวก **Store Manager / Inventory Manager** ที่ commit) ขับโดยตรงในโมดูล `good-receive-note` การมีส่วนร่วมของ Receiver เริ่มเมื่อ PO มาถึงที่ `po_status ∈ {approved, sent_or_print, partial}` (หรือสำหรับ `doc_type = manual` เมื่อเกิดการรับแบบ ad-hoc) และจบเมื่อ GRN ออกจากโซนของ receiver — ผ่าน `committed` (โพสต์และล็อกแล้ว), `voided` จาก `draft` / `saved` หรือ variance ที่ถูกทำเครื่องหมายส่งต่อไปยัง Purchaser scenario จัดกลุ่มเป็น **happy path** (การเดินสถานะ `draft → saved → committed` บน BU แบบ FIFO และ average, GRN แบบ manual, GRN บางส่วน, การบันทึก expiry, การรับของขาด, void พร้อมถอนการเคลื่อนไหว), **RBAC** (permission key), **validation** (negative test เทียบ checklist จริงของ save / commit / void) และ **edge case** (boundary ของ deviation, ความแม่นยำทศนิยม, commit พร้อมกัน, การรวมหลาย PO)
 
@@ -79,7 +79,7 @@ editor: markdown
 - ภาพรวม parent: [04-test-scenarios.md](./04-test-scenarios.md) — handoff ข้าม persona ที่ pivot บน Receiver
 - User flow: [03-user-flow-receiver.md](./03-user-flow-receiver.md) — แหล่ง happy-path สำหรับส่วน 1 ข้างต้น (ตรวจสอบซ้ำ 2026-09-22)
 - กฎทางธุรกิจที่ตรวจสอบ: [02-business-rules.md](./02-business-rules.md) ส่วน 2 — `GRN_VAL_001`–`GRN_VAL_014` ตามที่เขียนใหม่จากโค้ด; ส่วน 5 — `GRN_POST_002`–`GRN_POST_005`, `GRN_POST_010`, `GRN_POST_013`
-- E2E: `../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts` (76 case), `docs/test-cases/gaps/501-grn-core-gap.md` (62), `docs/test-cases/gaps/501-grn-from-po-gap.md` (24)
+- E2E: `../carmen-frontend-e2e/tests/501-grn.spec.ts` (76 case), `docs/test-cases/gaps/501-grn-core-gap.md` (62), `docs/test-cases/gaps/501-grn-from-po-gap.md` (24)
 - Cross-link: [purchase-order](/th/inventory/purchase-order) — โมดูลต้นทาง; commit เลื่อน `tb_purchase_order_detail.received_qty` และเปลี่ยน `po_status` (`approved` / `sent_or_print → partial → completed`)
 - Cross-link: [inventory](/th/inventory/inventory) — โมดูลปลายทาง; ledger บรรจุข้อมูล lot และ cost-layer และ on-hand เพิ่มด้วย `received_base_qty + foc_base_qty`
 - Cross-link: [costing](/th/inventory/costing) — การสร้าง FIFO / average cost-layer ทดสอบตอน commit (RCV-HP-03) และบน BU แบบ average ตอน save (RCV-HP-02b); landed cost พร้อม extra cost ใน RCV-EDGE-02

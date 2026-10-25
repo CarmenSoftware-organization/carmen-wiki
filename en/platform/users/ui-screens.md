@@ -83,14 +83,14 @@ A session holding only `user.read` sees a dropdown with none of these four items
 
 ### 2.5 Audit columns
 
-Two audit columns are always shown, now rendered by the shared `auditColumns()` factory (`../carmen-platform/src/components/auditColumns.tsx`) instead of a page-local formatter:
+Two audit columns are always shown, now rendered by the shared `auditColumns()` factory (`../carmen-backstage/src/components/auditColumns.tsx`) instead of a page-local formatter:
 
 | Column header | Fields rendered |
 |---|---|
 | Created | `AuditMeta variant="cell"` — relative time (e.g. "5mo ago") on the first line, actor name on the second, with the absolute `YYYY-MM-DD HH:mm:ss` timestamp available as a `title` tooltip on hover, not printed inline |
 | Updated | Same rendering, sourced from `normalizeAudit(row).updated` — renders `-` when that entry is absent |
 
-Both columns read through `normalizeAudit()` (`../carmen-platform/src/utils/audit.ts`), which tries the **nested** `audit.created`/`audit.updated` shape first and falls back to the flat `created_at`/`created_by_name` columns only when the nested entry is missing — not the reverse. The Updated column is not suppressed by a plain `updated_at === created_at` comparison; `normalizeAudit()` omits `updated` from its result unless `everEdited` is true (the resolved updated actor has a `name`, or — absent a name — its timestamp differs from `created.at`), so a row that was edited by an unresolved/unnamed actor still shows an Updated value as long as the timestamps differ.
+Both columns read through `normalizeAudit()` (`../carmen-backstage/src/utils/audit.ts`), which tries the **nested** `audit.created`/`audit.updated` shape first and falls back to the flat `created_at`/`created_by_name` columns only when the nested entry is missing — not the reverse. The Updated column is not suppressed by a plain `updated_at === created_at` comparison; `normalizeAudit()` omits `updated` from its result unless `everEdited` is true (the resolved updated actor has a `name`, or — absent a name — its timestamp differs from `created.at`), so a row that was edited by an unresolved/unnamed actor still shows an Updated value as long as the timestamps differ.
 
 When the "Show soft-deleted users" filter toggle is on, a third audit column is appended:
 
@@ -219,11 +219,11 @@ The list page writes 6 keys to `localStorage` so the filter and pagination state
 
 ## 8. References
 
-- `../carmen-platform/src/App.tsx` — `requiredPermission` + `feature="users"` guards on the three user routes (route block, lines 267–289). (`SITEMAP.md` still shows the pre-RBAC "Authenticated" rows and lags the code.)
-- `../carmen-platform/src/pages/UserManagement.tsx` and `userManagement/UserDirectorySummary.tsx` — list page: the collapsed identity column and asymmetric Status column (`fd1f6ae`, #219), Directory summary strip reading `getDirectorySummary()`, `getNameDisplay`, BU-count column, filters, header actions (`<Can>`-gated Fetch Keycloak/Add User, ungated Export), `<Can>`-gated row action menu (Edit / View History / Delete / Hard Delete), super-admin bulk soft/hard-delete with row selection, audit columns.
-- `../carmen-platform/src/pages/UserEdit.tsx` and `userEdit/{UserIdentityHero,UserAccessTree}.tsx` — create/view/edit page: the sectioned account-details card rendered only while `editing` (`d21c57c`, #220), Hero audit line + View History button, `<Can>`-gated Edit toggle and Change Password, `canAddBU`/scoped-Remove permission checks, Add BU dialog, `doc_version` wiring, `username` disabled-in-edit behaviour.
-- `../carmen-platform/src/utils/audit.ts` and `src/components/{auditColumns.tsx,AuditMeta.tsx}` — `normalizeAudit()`/`latestActor()` and the relative-time-with-tooltip cell renderer used throughout this page.
-- `../carmen-platform/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail}.tsx` and `src/utils/permissions.ts` (`PLATFORM_SCOPED_RECORD`) — the View History feature.
-- `../carmen-platform/src/utils/docVersion.ts` — optimistic-lock helpers.
-- `../carmen-platform/src/services/userService.ts` — API surface: all endpoints referenced in this page, including `getDirectorySummary` (`GET /api-system/user/summary`).
+- `../carmen-backstage/src/App.tsx` — `requiredPermission` + `feature="users"` guards on the three user routes (route block, lines 267–289). (`SITEMAP.md` still shows the pre-RBAC "Authenticated" rows and lags the code.)
+- `../carmen-backstage/src/pages/UserManagement.tsx` and `userManagement/UserDirectorySummary.tsx` — list page: the collapsed identity column and asymmetric Status column (`fd1f6ae`, #219), Directory summary strip reading `getDirectorySummary()`, `getNameDisplay`, BU-count column, filters, header actions (`<Can>`-gated Fetch Keycloak/Add User, ungated Export), `<Can>`-gated row action menu (Edit / View History / Delete / Hard Delete), super-admin bulk soft/hard-delete with row selection, audit columns.
+- `../carmen-backstage/src/pages/UserEdit.tsx` and `userEdit/{UserIdentityHero,UserAccessTree}.tsx` — create/view/edit page: the sectioned account-details card rendered only while `editing` (`d21c57c`, #220), Hero audit line + View History button, `<Can>`-gated Edit toggle and Change Password, `canAddBU`/scoped-Remove permission checks, Add BU dialog, `doc_version` wiring, `username` disabled-in-edit behaviour.
+- `../carmen-backstage/src/utils/audit.ts` and `src/components/{auditColumns.tsx,AuditMeta.tsx}` — `normalizeAudit()`/`latestActor()` and the relative-time-with-tooltip cell renderer used throughout this page.
+- `../carmen-backstage/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail}.tsx` and `src/utils/permissions.ts` (`PLATFORM_SCOPED_RECORD`) — the View History feature.
+- `../carmen-backstage/src/utils/docVersion.ts` — optimistic-lock helpers.
+- `../carmen-backstage/src/services/userService.ts` — API surface: all endpoints referenced in this page, including `getDirectorySummary` (`GET /api-system/user/summary`).
 - Cross-links: [users](/en/platform/users) (landing), [Data Model](/en/platform/users/data-model) (schema view), [Lifecycle](/en/platform/users/lifecycle) (operations view), [rbac permissions](/en/platform/rbac/permissions) (gate composition), [clusters](/en/platform/clusters) (mutates `tb_cluster_user`), [business-units](/en/platform/business-units) (the other surface mutating `tb_user_tb_business_unit`).

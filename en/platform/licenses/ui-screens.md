@@ -107,7 +107,7 @@ All three use `replace: true`, so the redirect does not leave an extra entry in 
 
 ## 7. References
 
-All paths are `../carmen-platform` unless prefixed otherwise.
+All paths are `../carmen-backstage` unless prefixed otherwise.
 
 - `src/pages/licenses/LicenseCenter.tsx` — the five-tab landing screen, Fleet Capacity band, tab persistence.
 - `src/pages/licenses/ClusterLicenseTable.tsx`, `src/pages/licenses/SubscriptionTable.tsx`, `src/pages/licenses/PurchaseLicenseTable.tsx` — the five tab bodies (the last serves three tabs).

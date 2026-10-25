@@ -12,7 +12,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 
 > **At a Glance**
 > **Persona:** Vendor (external — token-authenticated portal only) &nbsp;·&nbsp; **Module:** [vendor-pricelist](/en/inventory/vendor-pricelist)
-> **Executable coverage (2026-09-22):** no Playwright spec for the portal; the documentation-only catalog `../carmen-inventory-frontend-e2e/docs/test-cases/1002-external-price-list.md` (42 `TC-EPL-*` cases: load, header, product table, MOQ sub-table, tax-profile / unit pickers, save, Excel import, submit, expired screen) is the closest oracle. This page does not mirror it.
+> **Executable coverage (2026-09-22):** no Playwright spec for the portal; the documentation-only catalog `../carmen-frontend-e2e/docs/test-cases/1002-external-price-list.md` (42 `TC-EPL-*` cases: load, header, product table, MOQ sub-table, tax-profile / unit pickers, save, Excel import, submit, expired screen) is the closest oracle. This page does not mirror it.
 > **Re-synced 2026-09-22:** the 2026-07-16 "Save/Submit confirmed non-functional" finding is obsolete — `PATCH /api/pricelist-external/:url_token` and `POST …/submit` exist; the link expires at the RFQ `end_date`.
 
 This page captures the test scenarios that exercise the **Vendor** persona's interaction with `/pl/:url_token`. Because there is no Carmen Blue login for the vendor, the Permission / Authorization section is a single N/A row.
@@ -58,6 +58,6 @@ This page captures the test scenarios that exercise the **Vendor** persona's int
 - Parent overview: [04-test-scenarios.md](./04-test-scenarios.md).
 - User flow: [03-user-flow-vendor.md](./03-user-flow-vendor.md) — step-by-step portal flow.
 - Business rules: [02-business-rules.md](./02-business-rules.md) § 5.4, `VPL_VAL_023`, `VPL_VAL_027`, `VPL_VAL_028`.
-- Backend: `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/pricelists/check-pricelist.controller.ts`, `pricelist-external.controller.ts`, `apps/backend-gateway/src/auth/guards/url-token.guard.ts`; `apps/micro-business/src/master/check-price-list/check-price-list.service.ts`.
-- Frontend: `../carmen-inventory-frontend-react/routes/external/pl/` (`use-price-list-external.ts`, `price-list-external-import-dialog.tsx`, `price-list-external-expired.tsx`).
+- Backend: `../carmen-turborepo-backend/apps/backend-gateway/src/application/pricelists/check-pricelist.controller.ts`, `pricelist-external.controller.ts`, `apps/backend-gateway/src/auth/guards/url-token.guard.ts`; `apps/micro-business/src/master/check-price-list/check-price-list.service.ts`.
+- Frontend: `../carmen-frontend/routes/external/pl/` (`use-price-list-external.ts`, `price-list-external-import-dialog.tsx`, `price-list-external-expired.tsx`).
 - Sibling: [04-test-scenarios-purchaser.md](./04-test-scenarios-purchaser.md) — how a Purchaser emails the link and activates the submitted pricelist.

@@ -72,23 +72,23 @@ Summarised from [gl-posting](/en/inventory/general-ledger/gl-posting):
 
 ## 4. No frontend yet
 
-`carmen-inventory-frontend-react/routes/accounting/` appeared in commit `4a72884d` (2026-07-31, "feat(accounting): add accounting document routes and dashboard") and, as of FE `0713cbc9` (2026-09-22), **is a mock**:
+`carmen-frontend/routes/accounting/` appeared in commit `4a72884d` (2026-07-31, "feat(accounting): add accounting document routes and dashboard") and, as of FE `0713cbc9` (2026-09-22), **is a mock**:
 
 - `accounting-documents.ts:100` `documentsFor()` fabricates 8 rows per document kind (`JV2607-0001…`, fixed descriptions/parties, `amount = 10000 + index × 3750`); `accounting-detail.tsx` / `accounting-list.tsx` render those rows. Nine kinds are declared: journal, template, recurring, allocation vouchers, financial reports, AP invoice/payment, AR invoice/receipt.
 - `accounting.dashboard.tsx:143` wraps a hard-coded `data` object in `useQuery({ queryFn: async () => data, initialData: data, staleTime: Infinity })` — no HTTP call.
 - No file under `hooks/`, `types/` or `routes/` references `/gl-jv`, `/gl-posting` or `tb_gl_*`. The router (`routes/router.tsx:770-800`) and the module tile (`constant/module-list.ts:403-425`, licence features `accounting.gl` / `accounting.gl.jv_template`) are the only real wiring.
-- E2E: `../carmen-inventory-frontend-e2e/docs/test-cases/COVERAGE.md:21-28` lists every `/accounting/*` URL as "none", and `1204-section-landing.md:15` records why no case was written (the dashboard hard-codes all six widgets and does not hit an API).
+- E2E: `../carmen-frontend-e2e/docs/test-cases/COVERAGE.md:21-28` lists every `/accounting/*` URL as "none", and `1204-section-landing.md:15` records why no case was written (the dashboard hard-codes all six widgets and does not hit an API).
 
 There is therefore no screen to document, no Playwright spec to cross-link, and no screenshot to capture. Do not write user-flow or test-scenario pages for this module until a real UI lands.
 
 ## 5. Reference Sources
 
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/gl/` (`gl-account-group`, `gl-balance`, `gl-budget`, `gl-jv`, `gl-jv-prefix`, `gl-jv-template`, `gl-period`, `gl-posting`); gateway `apps/backend-gateway/src/application/{gl-jv,gl-posting,gl-reports,gl-budgets,gl-jv-templates}/` and `config/config_{chart-of-accounts,cost-centers,cost-center-groups,gl-account-groups,gl-jv-prefixes,gl-periods}/`; RPC contract `packages/rpc-contract/src/contracts/gl-posting.ts`.
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/gl/` (`gl-account-group`, `gl-balance`, `gl-budget`, `gl-jv`, `gl-jv-prefix`, `gl-jv-template`, `gl-period`, `gl-posting`); gateway `apps/backend-gateway/src/application/{gl-jv,gl-posting,gl-reports,gl-budgets,gl-jv-templates}/` and `config/config_{chart-of-accounts,cost-centers,cost-center-groups,gl-account-groups,gl-jv-prefixes,gl-periods}/`; RPC contract `packages/rpc-contract/src/contracts/gl-posting.ts`.
 - Prisma: `packages/prisma-shared-schema-tenant/prisma/schema.prisma` and migrations `20260909170000_gl_core_master`, `20260914030000_gl_core_jv_ledger`, `20260915010000_fix_gl_jv_guard_search_path`, `20260915043038_gl_core_budget_template`.
 - Cron: `../micro-cronjobs/internal/executor/gl_run_due.go`, `internal/model/cronjob.go:141-149`, `README.md:254`.
 - API contracts: `../carmen-turborepo-backend-bruno/collections/carmen-inventory/_uncategorized/{gl-jv,gl-posting,gl-reports,gl-budgets,gl-jv-templates}/`.
-- Frontend (mock only): `../carmen-inventory-frontend-react/routes/accounting/`.
-- E2E: none (`../carmen-inventory-frontend-e2e/docs/test-cases/COVERAGE.md` § Accounting).
+- Frontend (mock only): `../carmen-frontend/routes/accounting/`.
+- E2E: none (`../carmen-frontend-e2e/docs/test-cases/COVERAGE.md` § Accounting).
 - carmen/docs: frozen 2026-04-27 and **contradicted by HEAD** on this topic — `app/inventory-management/inventory-transactions/BR-inventory-transactions.md:21,31,143,162,214` and `store-requisitions/SR-API-JournalEntry-Endpoints.md` describe automatic GL integration that does not exist; do not cite them.
 
 ## 6. Pages in This Module

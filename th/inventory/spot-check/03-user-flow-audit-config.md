@@ -19,7 +19,7 @@ dateCreated: 2026-05-15T14:30:00.000Z
 
 ## 2. สิ่งที่ Source แสดงจริง
 
-การค้นเป้าหมายใน frontend (`../carmen-inventory-frontend-react/routes/inventory-management/spot-check/`), backend (`../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check*`), และ Bruno API collection (`../carmen-turborepo-backend-bruno/collections/carmen-inventory/inventory/spot-check*`) ไม่พบ route, permission key, workflow stage หรือ configuration screen ที่ตรงกับ sub-role ใดที่กล่าวอ้าง
+การค้นเป้าหมายใน frontend (`../carmen-frontend/routes/inventory-management/spot-check/`), backend (`../carmen-turborepo-backend/apps/micro-business/src/inventory/spot-check*`), และ Bruno API collection (`../carmen-turborepo-backend-bruno/collections/carmen-inventory/inventory/spot-check*`) ไม่พบ route, permission key, workflow stage หรือ configuration screen ที่ตรงกับ sub-role ใดที่กล่าวอ้าง
 
 | ข้อกล่าวอ้าง | Status | Source แสดงอะไร |
 |---|---|---|
@@ -37,7 +37,7 @@ dateCreated: 2026-05-15T14:30:00.000Z
 
 ## 4. แหล่งอ้างอิง
 
-- **Frontend:** `../carmen-inventory-frontend-react/constant/permissions.ts`; `routes/inventory-management/spot-check/`
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts`
+- **Frontend:** `../carmen-frontend/constant/permissions.ts`; `routes/inventory-management/spot-check/`
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/spot-check/spot-check.service.ts`
 - **API contracts:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/inventory/spot-check/`
 - ที่เกี่ยวข้อง: [spot-check/03-user-flow](/th/inventory/spot-check/03-user-flow) (overview), [spot-check/04-test-scenarios-audit-config](/th/inventory/spot-check/04-test-scenarios-audit-config) (หน้า correction คู่ขนานฝั่ง test-scenarios)

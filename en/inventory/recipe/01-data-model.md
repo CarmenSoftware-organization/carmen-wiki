@@ -17,8 +17,8 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*`; **no `tb_recipe_comment` and no workflow** — audit comes from `tb_recipe_version` snapshots + `tb_recipe_pricing_history`; 3-state lifecycle `DRAFT / PUBLISHED / ARCHIVED`
 
 > **Source of truth:** Backend Prisma schema. Always read these first when writing or updating this page:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > The `generated/client/schema.prisma` files under each package are auto-generated copies and not authoritative.
 
@@ -389,8 +389,8 @@ The `RECIPE-Overview.md`, `RECIPE-PRD.md`, `RECIPE-Business-Requirements.md`, `R
 
 ## 6. References
 
-- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (all twelve recipe models at lines 5578–6073, plus the four recipe-specific enums at lines 5552–5572 and `enum_cuisine_region` at lines 5543–5550, and the `tb_product.is_used_in_recipe` flag at line 1518) and `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (verified to contain no recipe models).
-- **Backend implementation:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/recipe/` (recipe CRUD, prep-step + image sub-services), `.../master/recipe-category/`, `.../master/recipe-cuisine/`, `.../master/recipe-equipment/`, `.../master/recipe-equipment-category/`; gateway REST surface in `../carmen-turborepo-backend-v2/apps/backend-gateway/src/config/config_recipes/` (and sibling `config_recipe-*` dirs).
+- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (all twelve recipe models at lines 5578–6073, plus the four recipe-specific enums at lines 5552–5572 and `enum_cuisine_region` at lines 5543–5550, and the `tb_product.is_used_in_recipe` flag at line 1518) and `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (verified to contain no recipe models).
+- **Backend implementation:** `../carmen-turborepo-backend/apps/micro-business/src/master/recipe/` (recipe CRUD, prep-step + image sub-services), `.../master/recipe-category/`, `.../master/recipe-cuisine/`, `.../master/recipe-equipment/`, `.../master/recipe-equipment-category/`; gateway REST surface in `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_recipes/` (and sibling `config_recipe-*` dirs).
 - **API contracts:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/config/recipe/` (recipe CRUD at `/api/config/{bu_code}/recipes`), `.../config/recipes/` (preparation-steps + step-image endpoints), and the `recipe-categories` / `recipe-cuisines` / `recipe-equipment` / `recipe-equipment-categories` folders.
 - **Secondary (concept cross-check):**
   - `../carmen/docs/recipe-module/RECIPE-Overview.md` — module purpose, key features, user roles; divergences in Section 5 (items 1, 4, 5, 8).

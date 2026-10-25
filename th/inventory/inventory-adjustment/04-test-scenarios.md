@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 > **At a Glance**
 > **โมดูล:** [inventory-adjustment](/th/inventory/inventory-adjustment) &nbsp;·&nbsp; **Persona ที่ครอบคลุม:** Store Keeper, Inventory Controller (หน้าจอเดียวกันที่ไม่แตกต่างกัน); Finance และ Audit/Config ไม่มี surface ที่ตรงกัน — ดูหน้าของแต่ละตัว
 > **ข้อเท็จจริงหลักที่กำหนดทุก scenario ด้านล่าง:** การสร้างเขียน `draft`; **Commit** post; **Void** กลับรายการ (UI: เฉพาะ draft; เอกสารที่ post แล้วผ่าน API)
-> **Executable coverage (2026-09-22):** ไม่มี Playwright spec ที่ exercise หน้าจอนี้ แคตตาล็อก manual `../carmen-inventory-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (60 เคส, ตรวจซ้ำกับฟอร์มที่ออกแบบใหม่ 2026-09-20 — ครอบคลุม Commit, Void ต้องอยู่ในโหมด Edit, Delete ในโหมด view, filter สถานะ) และ user story ที่ generate `docs/user-stories/730-inventory-adjustment.md` (32) `tests/031-adjustment-type.spec.ts` ครอบคลุมเฉพาะ master ของ reason code
+> **Executable coverage (2026-09-22):** ไม่มี Playwright spec ที่ exercise หน้าจอนี้ แคตตาล็อก manual `../carmen-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (60 เคส, ตรวจซ้ำกับฟอร์มที่ออกแบบใหม่ 2026-09-20 — ครอบคลุม Commit, Void ต้องอยู่ในโหมด Edit, Delete ในโหมด view, filter สถานะ) และ user story ที่ generate `docs/user-stories/730-inventory-adjustment.md` (32) `tests/031-adjustment-type.spec.ts` ครอบคลุมเฉพาะ master ของ reason code
 
 ## 1. ภาพรวม
 
@@ -50,9 +50,9 @@ dateCreated: 2026-05-15T13:00:00.000Z
 
 | Spec / แคตตาล็อก | Coverage |
 | ---- | -------- |
-| `../carmen-inventory-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (แคตตาล็อก, 60) | หน้ารายการ (คอลัมน์, badge `Type`, filter สถานะรวมถึง `In Progress` ที่ไม่เคย match), ฟอร์มใหม่/แก้ไข, การ gate ของ Commit / Void / Delete, เอกสาร completed แบบ read-only ยังไม่ automate |
-| `../carmen-inventory-frontend-e2e/tests/031-adjustment-type.spec.ts` | CRUD master data ของ reason code (`tb_adjustment_type`) เท่านั้น |
-| `../carmen-inventory-frontend-e2e/tests/900-period-end.spec.ts` + `docs/test-cases/gaps/900-period-end-gap.md` | การ์ดและลิงก์ SI/SO บน review ของ period-end (`TC-PE-320102`), SI/SO ที่เป็น draft เป็นตัว block การเริ่มนับ |
+| `../carmen-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (แคตตาล็อก, 60) | หน้ารายการ (คอลัมน์, badge `Type`, filter สถานะรวมถึง `In Progress` ที่ไม่เคย match), ฟอร์มใหม่/แก้ไข, การ gate ของ Commit / Void / Delete, เอกสาร completed แบบ read-only ยังไม่ automate |
+| `../carmen-frontend-e2e/tests/031-adjustment-type.spec.ts` | CRUD master data ของ reason code (`tb_adjustment_type`) เท่านั้น |
+| `../carmen-frontend-e2e/tests/900-period-end.spec.ts` + `docs/test-cases/gaps/900-period-end-gap.md` | การ์ดและลิงก์ SI/SO บน review ของ period-end (`TC-PE-320102`), SI/SO ที่เป็น draft เป็นตัว block การเริ่มนับ |
 
 ช่องว่าง: ไม่มี automated test สำหรับ Save/Commit/Void, guard วันที่, การตรวจ on-hand ล่วงหน้า หรือแผง stock-movements
 

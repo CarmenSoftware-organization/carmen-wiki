@@ -27,4 +27,4 @@ action Add/Edit ของทั้งสองหน้าจอไปจบท�
 - [กลุ่มฟอร์มรายงาน (Report Form Groups)](/th/platform/report-form-groups) — เอกสารฉบับเต็มของหน้าจอ
 - [Report Templates](/th/platform/report-templates) §3 — นิยามฟิลด์ `template_type`/`report_group`/`is_default` ของโมดูลนี้เอง
 - [Permissions](/th/platform/report-templates/permissions) — matrix gate `report_template.*` ฉบับเต็มที่ทั้งสองหน้าจอใช้ร่วมกัน
-- `../carmen-platform/src/pages/ReportTemplateEdit.tsx` — หน้า Edit ที่ใช้ร่วมกัน ซึ่ง action Add/Edit ของทั้งสองหน้าจอเปิด
+- `../carmen-backstage/src/pages/ReportTemplateEdit.tsx` — หน้า Edit ที่ใช้ร่วมกัน ซึ่ง action Add/Edit ของทั้งสองหน้าจอเปิด

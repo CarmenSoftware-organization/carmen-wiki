@@ -11,7 +11,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # การนำเข้าเทแนนต์ — หน้าจอ UI (UI Screens)
 
 > **At a Glance**
-> **State machine ของหน้าจอ:** `pick-bu` → `upload` → `check` → `steps` (`type Screen`, `TenantImportWizard.tsx`) &nbsp;·&nbsp; **เปลือกที่ใช้ร่วมกัน:** `Layout`, `PageHeader` (หัวข้อ "Tenant Data Import"), ปุ่มบน header ที่เปิด command palette `BuSwitcher` ที่ใช้ร่วมกัน, `DevDebugSheet` เฉพาะตอน dev &nbsp;·&nbsp; **ไม่มีปุ่มย้อนกลับ:** เมื่อถึง `steps` แล้วไม่มีปุ่มไหนย้อนกลับไป `check` โดยที่ไฟล์ที่โหลดไว้ยังอยู่ — ทางเดียวที่จะย้อนกลับไป `upload` คือผ่าน `BuSwitcher` ซึ่งทิ้งความคืบหน้าทั้งหมดของ wizard ฝั่ง client (§6) &nbsp;·&nbsp; **e2e suite:** ไม่มี — พฤติกรรมทุกอย่างด้านล่างอ่านตรงจาก source ของ `../carmen-platform`
+> **State machine ของหน้าจอ:** `pick-bu` → `upload` → `check` → `steps` (`type Screen`, `TenantImportWizard.tsx`) &nbsp;·&nbsp; **เปลือกที่ใช้ร่วมกัน:** `Layout`, `PageHeader` (หัวข้อ "Tenant Data Import"), ปุ่มบน header ที่เปิด command palette `BuSwitcher` ที่ใช้ร่วมกัน, `DevDebugSheet` เฉพาะตอน dev &nbsp;·&nbsp; **ไม่มีปุ่มย้อนกลับ:** เมื่อถึง `steps` แล้วไม่มีปุ่มไหนย้อนกลับไป `check` โดยที่ไฟล์ที่โหลดไว้ยังอยู่ — ทางเดียวที่จะย้อนกลับไป `upload` คือผ่าน `BuSwitcher` ซึ่งทิ้งความคืบหน้าทั้งหมดของ wizard ฝั่ง client (§6) &nbsp;·&nbsp; **e2e suite:** ไม่มี — พฤติกรรมทุกอย่างด้านล่างอ่านตรงจาก source ของ `../carmen-backstage`
 
 ![การนำเข้าเทแนนต์ — หน้าจอ UI (UI Screens) screen](/screenshots/platform/tenant-imports/ui-screens.png)
 
@@ -33,7 +33,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 3. หน้าจอที่ 2 — อัปโหลดไฟล์ (`upload`)
 
-**ถามอะไร:** ไฟล์ `.xlsx` หนึ่งไฟล์ ผ่าน `WorkbookDropzone` (`../carmen-platform/src/pages/tenantImport/WorkbookDropzone.tsx`) — ลากวางหรือคลิกเพื่อเลือก สร้างจาก DOM drag event ธรรมดา (คอมเมนต์ของ component เอง: repo ไม่มี `react-dropzone` และฟีเจอร์นี้ต้องไม่เพิ่ม dependency)
+**ถามอะไร:** ไฟล์ `.xlsx` หนึ่งไฟล์ ผ่าน `WorkbookDropzone` (`../carmen-backstage/src/pages/tenantImport/WorkbookDropzone.tsx`) — ลากวางหรือคลิกเพื่อเลือก สร้างจาก DOM drag event ธรรมดา (คอมเมนต์ของ component เอง: repo ไม่มี `react-dropzone` และฟีเจอร์นี้ต้องไม่เพิ่ม dependency)
 
 **ตรวจอะไร และตรวจที่ไหน:**
 
@@ -48,7 +48,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 4. หน้าจอที่ 3 — ผลตรวจไฟล์ (`check`)
 
-**แสดงอะไร:** `FileCheckPanel` (`../carmen-platform/src/pages/tenantImport/FileCheckPanel.tsx`) — บรรทัดหัว ("`{sheets}` sheets found · `{ready}` of `{total}` steps ready," `pages.tenantImport.fileSummary`) และตารางหนึ่งแถวต่อหนึ่งขั้นตอนในแคตตาล็อก คอลัมน์ Step / Sheet / Rows / Missing / Status ขั้นตอนที่ไม่ `ready` ยังปรากฏที่นี่แทนที่จะหายไปเงียบ ๆ (คอมเมนต์ของ component เอง) — นี่คือจุดเดียวที่ผู้ทดสอบเห็น**สาเหตุ**ที่ขั้นตอนหนึ่งไม่ไปถึง rail: `sheet_missing` (ไฟล์ไม่มีชีตที่ตรงกัน) หรือ `columns_missing` (มีชีตแต่ขาดคอลัมน์ `required`; คอลัมน์ *ไม่บังคับ* ที่ขาดไม่กันความพร้อมและปรากฏในช่อง Missing เพื่อให้เห็นเฉย ๆ)
+**แสดงอะไร:** `FileCheckPanel` (`../carmen-backstage/src/pages/tenantImport/FileCheckPanel.tsx`) — บรรทัดหัว ("`{sheets}` sheets found · `{ready}` of `{total}` steps ready," `pages.tenantImport.fileSummary`) และตารางหนึ่งแถวต่อหนึ่งขั้นตอนในแคตตาล็อก คอลัมน์ Step / Sheet / Rows / Missing / Status ขั้นตอนที่ไม่ `ready` ยังปรากฏที่นี่แทนที่จะหายไปเงียบ ๆ (คอมเมนต์ของ component เอง) — นี่คือจุดเดียวที่ผู้ทดสอบเห็น**สาเหตุ**ที่ขั้นตอนหนึ่งไม่ไปถึง rail: `sheet_missing` (ไฟล์ไม่มีชีตที่ตรงกัน) หรือ `columns_missing` (มีชีตแต่ขาดคอลัมน์ `required`; คอลัมน์ *ไม่บังคับ* ที่ขาดไม่กันความพร้อมและปรากฏในช่อง Missing เพื่อให้เห็นเฉย ๆ)
 
 **ตรวจอะไร:** ไม่มีอะไรใหม่ที่นี่ — หน้าจอนี้แค่**แสดงผล** `CheckReport` ที่คำขอ `check` ของหน้าจอ `upload` สร้างไว้แล้ว ไม่มีคำขอเกิดขึ้นจากหน้าจอนี้เอง
 
@@ -126,7 +126,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 8. แหล่งอ้างอิง
 
-ทุก path เป็น `../carmen-platform` (HEAD `157a65e`) ยกเว้นที่ระบุ `../carmen-turborepo-backend-v2` (HEAD `937cf5ac4`)
+ทุก path เป็น `../carmen-backstage` (HEAD `157a65e`) ยกเว้นที่ระบุ `../carmen-turborepo-backend` (HEAD `937cf5ac4`)
 
 - `src/pages/TenantImportWizard.tsx` — state machine สี่หน้าจอ, การดึง BU list/แคตตาล็อกพร้อมกัน, generation token ต่อขั้นตอน, และเส้นทาง abort/reset ที่อ้างใน §6
 - `src/pages/tenantImport/WorkbookDropzone.tsx:26-29` — การตรวจนามสกุล `.xlsx` ฝั่ง client (§3)
@@ -137,7 +137,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 - `src/services/preconfigImportService.ts` — รูปแบบคำขอ `check`/`preview`/`importStream`
 - `src/i18n/en.ts:3188-3283` (namespace `tenantImport`) — ทุกข้อความ UI ที่อ้างในหน้านี้
 - `src/types/index.ts:20-24` (`ApiListResponse`) — ฟิลด์ `total`/`paginate` ที่ไม่ถูกอ่าน อ้างใน §2
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/preconfig-imports/preconfig-imports.controller.ts:11,29-36` — `MAX_FILE_SIZE_BYTES`, `assertXlsx()` (§3)
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/preconfig-import/preconfig-import.service.ts` — การตรวจสอบค่า/lookup/แถวลูกที่ Preview และ Import เรียกใช้ (§5.2, §5.4)
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/preconfig-imports/preconfig-imports.controller.ts:11,29-36` — `MAX_FILE_SIZE_BYTES`, `assertXlsx()` (§3)
+- `../carmen-turborepo-backend/apps/micro-business/src/preconfig-import/preconfig-import.service.ts` — การตรวจสอบค่า/lookup/แถวลูกที่ Preview และ Import เรียกใช้ (§5.2, §5.4)
 
 **ลิงก์เชื่อมโยง:** [หน้า landing ของ Tenant Imports](/th/platform/tenant-imports) &nbsp;·&nbsp; [Business Units](/th/platform/business-units) &nbsp;·&nbsp; [Tenant Migrations](/th/platform/tenant-migrations)

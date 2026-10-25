@@ -13,10 +13,10 @@ editor: markdown
 > **At a Glance**
 > **Persona:** Receiver (Store Keeper / Receiving Clerk + Inventory Manager) &nbsp;·&nbsp; **Module:** [good-receive-note](/en/inventory/good-receive-note) &nbsp;·&nbsp; **Scenarios:** ~24
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **E2E coverage:** maps to `501-grn.spec.ts` in `../carmen-inventory-frontend-e2e/`
+> **E2E coverage:** maps to `501-grn.spec.ts` in `../carmen-frontend-e2e/`
 > **Re-verified 2026-09-22:** mutation timing corrected again — **commit** (`saved → committed`) posts inventory and advances the PO; on **average-costed business units** save already posts inventory (PO still at commit); void/reject unwind that early movement. Rule IDs below follow the rewritten [02-business-rules.md](./02-business-rules.md) §2 (`GRN_VAL_002`, `006`–`014`).
 
-> **Executable coverage:** spec `../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts` (76 cases; 57 without assertions per `docs/test-cases/SPEC-HEALTH.md`); gap reports `docs/test-cases/gaps/501-grn-core-gap.md` (62 cases with failing oracles) and `docs/test-cases/gaps/501-grn-from-po-gap.md` (24 wizard cases). No `501-grn-core.md` catalog page exists. The scenarios below are not mirrored there.
+> **Executable coverage:** spec `../carmen-frontend-e2e/tests/501-grn.spec.ts` (76 cases; 57 without assertions per `docs/test-cases/SPEC-HEALTH.md`); gap reports `docs/test-cases/gaps/501-grn-core-gap.md` (62 cases with failing oracles) and `docs/test-cases/gaps/501-grn-from-po-gap.md` (24 wizard cases). No `501-grn-core.md` catalog page exists. The scenarios below are not mirrored there.
 
 This page captures the test scenarios that the Receiver persona (the **Store Keeper / Receiving Clerk** at the dock plus the **Store Manager / Inventory Manager** who commits) directly drives in the `good-receive-note` module. The Receiver's involvement begins when a PO arrives at `po_status ∈ {approved, sent_or_print, partial}` (or, for `doc_type = manual`, when an ad-hoc receipt occurs) and ends when the GRN leaves the receiver zone — through `committed` (posted and locked), `voided` from `draft` / `saved`, or a flagged variance handed off to the Purchaser. Scenarios are grouped into **happy paths** (the state walk `draft → saved → committed` on FIFO and average units, manual GRN, partial GRN, expiry capture, short receipt, void with unwind), **RBAC** (permission keys), **validation** (negative tests against the real save / commit / void checklists), and **edge cases** (deviation boundaries, decimal precision, concurrent commits, multi-PO consolidation).
 
@@ -79,7 +79,7 @@ This page captures the test scenarios that the Receiver persona (the **Store Kee
 - Parent overview: [04-test-scenarios.md](./04-test-scenarios.md) — cross-persona handoffs that pivot off the Receiver.
 - User flow: [03-user-flow-receiver.md](./03-user-flow-receiver.md) — happy-path source for Section 1 above (re-verified 2026-09-22).
 - Business rules being verified: [02-business-rules.md](./02-business-rules.md) Section 2 — `GRN_VAL_001`–`GRN_VAL_014` as rewritten from the code; Section 5 — `GRN_POST_002`–`GRN_POST_005`, `GRN_POST_010`, `GRN_POST_013`.
-- E2E: `../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts` (76 cases), `docs/test-cases/gaps/501-grn-core-gap.md` (62), `docs/test-cases/gaps/501-grn-from-po-gap.md` (24).
+- E2E: `../carmen-frontend-e2e/tests/501-grn.spec.ts` (76 cases), `docs/test-cases/gaps/501-grn-core-gap.md` (62), `docs/test-cases/gaps/501-grn-from-po-gap.md` (24).
 - Cross-link: [purchase-order](/en/inventory/purchase-order) — upstream module; the commit advances `tb_purchase_order_detail.received_qty` and flips `po_status` (`approved` / `sent_or_print → partial → completed`).
 - Cross-link: [inventory](/en/inventory/inventory) — downstream module; the ledger carries lot and cost-layer data, and on-hand is incremented by `received_base_qty + foc_base_qty`.
 - Cross-link: [costing](/en/inventory/costing) — FIFO / average cost-layer creation tested at commit (RCV-HP-03) and, on average units, at save (RCV-HP-02b); landed cost with extra cost in RCV-EDGE-02.

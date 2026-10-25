@@ -14,7 +14,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 
 ## สิ่งที่ตรวจสอบแล้ว
 
-- การค้นหาทั่ว repo `carmen-turborepo-backend-v2` และ `carmen-inventory-frontend-react` สำหรับ `journal`, `ledger` และโค้ดลงบัญชี GL ในโมดูล stock-in/stock-out ไม่พบผลลัพธ์ใด ๆ (ตรวจซ้ำ 2026-09-22) แกน GL (`tb_gl_jv*`, `apps/micro-business/src/gl/`, manual journal voucher) มาถึงในเดือน 2026-09 แต่ไม่มีอะไรใน `stock-in/` / `stock-out/` อ้างอิงถึงมัน
+- การค้นหาทั่ว repo `carmen-turborepo-backend` และ `carmen-frontend` สำหรับ `journal`, `ledger` และโค้ดลงบัญชี GL ในโมดูล stock-in/stock-out ไม่พบผลลัพธ์ใด ๆ (ตรวจซ้ำ 2026-09-22) แกน GL (`tb_gl_jv*`, `apps/micro-business/src/gl/`, manual journal voucher) มาถึงในเดือน 2026-09 แต่ไม่มีอะไรใน `stock-in/` / `stock-out/` อ้างอิงถึงมัน
 - `tb_adjustment_type` ไม่มีฟิลด์บัญชี GL, ไม่มี flag บังคับแนบเอกสาร, ไม่มี flag ตรวจสอบคุณภาพ — มีเพียง `code`, `name`, `type`, `description`, `is_active`, `note`
 - `enum_stage_role` (enum role ของ workflow ในระดับ platform) คือ `{create, approve, purchase, issue, view_only}` — ไม่มีสมาชิก `finance` และเมธอด `create()`/`update()`/`void*()` ของโมดูลนี้ไม่เคยเรียก workflow orchestrator เลย
 - การค้นหาทั่ว repo สำหรับ `threshold` ที่ขอบเขตของโมดูล inventory/stock-in/stock-out ไม่พบผลลัพธ์ที่เกี่ยวข้องเลย

@@ -93,7 +93,7 @@ Store Keeper ขับเคลื่อน GRN ต่อ shipment; Inventory Ma
 ## 5. แหล่งอ้างอิง
 
 - ภาพรวม parent: [03-user-flow.md](./03-user-flow.md) — global PO state machine และตาราง cross-persona handoff; row `{approved, sent_or_print} → partial → completed` และ row `partial → closed` เป็นพื้นที่ของ persona นี้
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/procurement/purchase-order/purchase-order.service.ts` (`findAllForGrn` L1351-1622 พร้อม `can_use`, `findOnePoForGrn` L1195-1215); `apps/micro-business/src/inventory/good-received-note/good-received-note.logic.ts` (`updatePoStatuses`); Bruno `GET-find-vendors-for-grn`, `GET-find-all-for-grn-by-vendor`, `GET-find-all-for-grn`, `GET-build-grn-draft-from-po`
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/procurement/purchase-order/purchase-order.service.ts` (`findAllForGrn` L1351-1622 พร้อม `can_use`, `findOnePoForGrn` L1195-1215); `apps/micro-business/src/inventory/good-received-note/good-received-note.logic.ts` (`updatePoStatuses`); Bruno `GET-find-vendors-for-grn`, `GET-find-all-for-grn-by-vendor`, `GET-find-all-for-grn`, `GET-build-grn-draft-from-po`
 - Sibling: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — internal persona ต้นน้ำที่ส่ง PO และแจ้งเตือนเรื่องความคลาดเคลื่อนที่ dock สำหรับ amendment / return / credit-note follow-up
 - Sibling: [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md) — ถือ close / void override authority และ review การตัดสินใจ `partial → closed` ร่วมกับ Inventory Manager
 - Sibling: [03-user-flow-vendor.md](./03-user-flow-vendor.md) — ฝ่ายภายนอกที่ persona นี้รับการส่งของจริงที่ dock

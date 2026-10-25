@@ -17,8 +17,8 @@ dateCreated: 2026-05-15T12:00:00.000Z
 > **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*` on most tables; **`tb_inventory_transaction_detail` has no soft-delete** — reversal posts a compensating row. No `tb_stock_balance` — on-hand is derived from cost-layer rows since the latest snapshot
 
 > **Source of truth:** Backend Prisma schema. Always read these first when writing or updating this page:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > The `generated/client/schema.prisma` files under each package are auto-generated copies and not authoritative.
 
@@ -58,7 +58,7 @@ graph LR
     itcl -->|"N : 1"| ip
 ```
 
-> Diagram adapted from `carmen/docs/app/inventory-management/transactions/DD-inventory-transactions.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (2026-09-28) · Changes: rewrote `erDiagram` as `graph LR` with quoted table names and cardinality labels per the allow-list; renamed `tb_good_received_note_detail` → `tb_good_received_note_detail_item` (the table that actually carries the FK); removed the `tb_stock_take_detail` link (no such table/FK exists in the schema); renamed `tb_period` → `tb_inventory_period` (migration `20260916141000_rename_tb_period_to_tb_inventory_period`).
+> Diagram adapted from `carmen/docs/app/inventory-management/transactions/DD-inventory-transactions.md` · verified against `carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (2026-09-28) · Changes: rewrote `erDiagram` as `graph LR` with quoted table names and cardinality labels per the allow-list; renamed `tb_good_received_note_detail` → `tb_good_received_note_detail_item` (the table that actually carries the FK); removed the `tb_stock_take_detail` link (no such table/FK exists in the schema); renamed `tb_period` → `tb_inventory_period` (migration `20260916141000_rename_tb_period_to_tb_inventory_period`).
 
 ### 2.1 tb_inventory_transaction
 
@@ -404,7 +404,7 @@ The carmen/docs Inventory PRD (`inventory-management-prd.md`), the data-structur
 
 ## 6. References
 
-- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (all seven inventory entities: `tb_inventory_transaction`, `tb_inventory_transaction_detail`, `tb_inventory_transaction_cost_layer`, `tb_location`, `tb_product_location`, `tb_inventory_period`, `tb_inventory_period_snapshot` (renamed 2026-09-16, migration `20260916141000_rename_tb_period_to_tb_inventory_period`), plus the five enums `enum_inventory_doc_type`, `enum_location_type`, `enum_transaction_type`, `enum_period_status`, `enum_physical_count_type`) and `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (verified to contain no inventory models).
+- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (all seven inventory entities: `tb_inventory_transaction`, `tb_inventory_transaction_detail`, `tb_inventory_transaction_cost_layer`, `tb_location`, `tb_product_location`, `tb_inventory_period`, `tb_inventory_period_snapshot` (renamed 2026-09-16, migration `20260916141000_rename_tb_period_to_tb_inventory_period`), plus the five enums `enum_inventory_doc_type`, `enum_location_type`, `enum_transaction_type`, `enum_period_status`, `enum_physical_count_type`) and `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (verified to contain no inventory models).
 - **Secondary (concept cross-check):**
   - `../carmen/docs/Inventory/inventory-management-prd.md` — PRD describing `InventoryStatus` / `StockMovement` / valuation methods; divergences in Section 5 (items 1, 2, 3, 4, 6).
   - `../carmen/docs/Inventory/data-structure-trace.md` — data-structure trace describing the lot / location / delivery-point relationships; divergences in Section 5 (items 9, 11).

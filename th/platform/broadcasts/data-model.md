@@ -14,7 +14,7 @@ dateCreated: 2026-06-10T16:00:00.000Z
 > **ตาราง:** `tb_broadcast_notification` (หนึ่ง row ต่อหนึ่ง broadcast แบบ `system_all`/`bu`) + `tb_user_broadcast_action` (read state รายผู้ใช้แบบ lazy, unique ต่อ broadcast×user) &nbsp;·&nbsp; **ทางแยกของการกำหนดเป้าหมาย:** การส่งแบบ `system_users` (`userIds`) ข้ามทั้งสองตารางและ fan out ลง `tb_notification` (row ส่วนบุคคลหนึ่งตัวต่อผู้รับ) — มองไม่เห็นจากหน้า List/Edit ฝั่งแอดมิน &nbsp;·&nbsp; **เป็น enum ไม่ใช่ varchar:** `scope` (`enum_broadcast_scope`), `doc_type`/`event` (`enum_notification_doc_type`/`enum_notification_event`, ใช้ร่วมกับ `tb_notification`) แทนที่คอลัมน์ `category`/`type` แบบ varchar เดิม &nbsp;·&nbsp; **ไม่มีคอลัมน์ severity:** ป้าย Info/Warning/Critical/Maintenance/Other… ของผู้ส่งอยู่ใน `metadata.severity` เท่านั้น; `event` ถูก hardcode เป็น `info` ทุก broadcast &nbsp;·&nbsp; **`end_at` บังคับแล้ว** และเป็นตัวขับ `status` ที่คำนวณได้ (ไม่เคยเป็นคอลัมน์ที่เก็บจริง) &nbsp;·&nbsp; **`doc_version` เป็น optimistic lock จริง** แล้ว ทั้ง `PATCH` และ `DELETE` ตรวจสอบมัน &nbsp;·&nbsp; **Endpoint:** `POST /api/notifications/broadcasts/system` / `/bu` (ส่ง) บวก `GET`/`GET :id`/`PATCH :id`/`DELETE :id` — `/api` **ไม่ใช่** `/api-system`
 
 > **Source of truth:** Prisma platform schema ฝั่ง backend อ่านไฟล์นี้ก่อนเสมอเมื่อเขียนหรืออัพเดทหน้านี้:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > ไฟล์ `generated/client/schema.prisma` เป็นสำเนาที่ generate อัตโนมัติ ไม่ใช่ไฟล์อ้างอิงหลัก
 
@@ -111,7 +111,7 @@ Row ถูกเขียนโดยแค่สองเส้นทางใ�
 
 **ไม่มีคอลัมน์ `severity` เลยในตารางไหนทั้งนั้น** ตัวเลือก Info/Warning/Critical/Maintenance/Other… ของผู้ส่งเป็นความสะดวกฝั่ง client เท่านั้น เก็บเป็นสตริงล้วน ๆ ใน `metadata.severity` และถูกส่งกลับโดย `BroadcastAdminService.toRow()` เป็นฟิลด์ `severity` บน wire เพื่อให้ UI ของ list/edit ฝั่งแอดมิน render badge ของตัวเอง มันไม่มีผลใด ๆ ต่อสิ่งที่ผู้รับเห็น: `event` ของทุก broadcast คือ `info` และ preview panel ของฝั่ง client เองก็บอกตรง ๆ ว่า ("สีและป้ายเป็นการจัดหมวดหมู่ภายในเท่านั้น — ผู้รับเห็นแค่การแจ้งเตือนแบบมาตรฐาน") token ของ Other… ที่กำหนดเองถูกตรวจสอบแค่ฝั่ง client (`[A-Z0-9_]+`, ≤50 ตัวอักษร, อัพเปอร์เคสอัตโนมัติ); server รับสตริงอะไรก็ได้ใน `metadata`
 
-## 5. ความแตกต่างจากรูปแบบ SPA ของ carmen-platform
+## 5. ความแตกต่างจากรูปแบบ SPA ของ carmen-backstage
 
 | รูปแบบ SPA | แหล่งที่มาใน SPA | การเก็บใน Prisma | หมายเหตุ |
 | --------- | ---------- | -------------- | ----- |
@@ -146,14 +146,14 @@ REST surface (backend-gateway) ทั้งหมดอยู่ใต้ `/api/
 ไม่มี Bruno collection สำหรับ broadcast endpoint เลย (ตรวจสอบแล้วว่ายังไม่มี) — annotation ของ Swagger บน gateway controller คือเอกสาร contract ที่ใกล้เคียงที่สุด
 
 **หลัก (source of truth):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_notification` (บรรทัด 332), `tb_broadcast_notification` (บรรทัด 369), `tb_user_broadcast_action` (บรรทัด 403), enum (บรรทัด 112–131)
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260810000000_notification_redesign_additive/`, `20260811000000_notification_redesign_drop_legacy/migration.sql` — การเพิ่ม enum, backfill และการ drop คอลัมน์
-- `../carmen-turborepo-backend-v2/apps/micro-notification/src/notification/broadcast.service.ts` (สร้าง, resolve ผู้รับ), `broadcast-admin.service.ts` (list/get/update/delete, `deriveStatus`), `notification-write.service.ts` (จุดเขียนเดียว), `schedule.worker.ts` (push ของ due-notification, เฉพาะ `tb_notification`)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_notification` (บรรทัด 332), `tb_broadcast_notification` (บรรทัด 369), `tb_user_broadcast_action` (บรรทัด 403), enum (บรรทัด 112–131)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260810000000_notification_redesign_additive/`, `20260811000000_notification_redesign_drop_legacy/migration.sql` — การเพิ่ม enum, backfill และการ drop คอลัมน์
+- `../carmen-turborepo-backend/apps/micro-notification/src/notification/broadcast.service.ts` (สร้าง, resolve ผู้รับ), `broadcast-admin.service.ts` (list/get/update/delete, `deriveStatus`), `notification-write.service.ts` (จุดเขียนเดียว), `schedule.worker.ts` (push ของ due-notification, เฉพาะ `tb_notification`)
 
 **รอง (รูปร่างฝั่ง gateway + consumer):**
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/notification/notification.controller.ts` — ทั้งหกเส้นทางของ broadcast, payload builder, TCP forwarding
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/common/dto/notification/notification.dto.ts` — `SystemBroadcastCreateSchema`/`BuBroadcastCreateSchema` (`end_at` บังคับ), `BroadcastListQuerySchema`
-- `../carmen-turborepo-backend-v2/packages/error-catalog/src/catalog.ts` — `COMMON_BUSINESS_UNIT_NOT_FOUND` (`http_status: 404`)
-- `../carmen-platform/src/types/index.ts` — `BroadcastTargetMode`, `BroadcastTypePreset`, `BroadcastListItem`, `BroadcastStatus`, `BroadcastUpdatePayload`, `BroadcastSummary`; `src/services/broadcastService.ts` — ทั้งหกเรียก
+- `../carmen-turborepo-backend/apps/backend-gateway/src/notification/notification.controller.ts` — ทั้งหกเส้นทางของ broadcast, payload builder, TCP forwarding
+- `../carmen-turborepo-backend/apps/backend-gateway/src/common/dto/notification/notification.dto.ts` — `SystemBroadcastCreateSchema`/`BuBroadcastCreateSchema` (`end_at` บังคับ), `BroadcastListQuerySchema`
+- `../carmen-turborepo-backend/packages/error-catalog/src/catalog.ts` — `COMMON_BUSINESS_UNIT_NOT_FOUND` (`http_status: 404`)
+- `../carmen-backstage/src/types/index.ts` — `BroadcastTargetMode`, `BroadcastTypePreset`, `BroadcastListItem`, `BroadcastStatus`, `BroadcastUpdatePayload`, `BroadcastSummary`; `src/services/broadcastService.ts` — ทั้งหกเรียก
 
 **Cross-links:** [หน้าแรก Broadcasts](/th/platform/broadcasts) &nbsp;·&nbsp; [UI Screens](/th/platform/broadcasts/ui-screens) &nbsp;·&nbsp; [Permissions](/th/platform/broadcasts/permissions) &nbsp;·&nbsp; [Business Units — Data Model](/th/platform/business-units/data-model) (เป้าหมายของ `scope_id`) &nbsp;·&nbsp; [Users — Data Model](/th/platform/users/data-model) (ผู้รับและ read-state row)

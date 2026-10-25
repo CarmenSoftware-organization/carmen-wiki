@@ -101,7 +101,7 @@ books:
     groups:
       # Groups below mirror the SPA's own eight nav-group sections as
       # documented on en/platform.md (Task 29 rebuild), which in turn mirror
-      # `../carmen-platform/src/components/nav/platformNav.ts` groupKey order.
+      # `../carmen-backstage/src/components/nav/platformNav.ts` groupKey order.
       # `sql-workbench` and `dashboard` are intentionally not nav-overrides
       # entries (pre-existing state, unchanged by this task).
       - label_en: "Organization"

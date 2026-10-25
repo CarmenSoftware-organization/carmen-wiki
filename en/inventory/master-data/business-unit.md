@@ -26,7 +26,7 @@ A **Business Unit (BU)** is the top-level scope every document, user role, and r
 | Task | Where | Notes |
 |---|---|---|
 | Create a BU | Platform admin → BU listing → **New** | Required: `cluster_id`, `code`, `name`, `calculation_method` |
-| Set default currency | BU detail → Identity tab | `default_currency_id` renders as a **disabled** `<select>` in `carmen-platform` (`CalculationSettingsSection.tsx:68`) — not editable from the admin UI this pass; must reference an active row in [master-data/currency](/en/inventory/master-data/currency) by convention only |
+| Set default currency | BU detail → Identity tab | `default_currency_id` renders as a **disabled** `<select>` in `carmen-backstage` (`CalculationSettingsSection.tsx:68`) — not editable from the admin UI this pass; must reference an active row in [master-data/currency](/en/inventory/master-data/currency) by convention only |
 | Switch costing method | BU detail → Costing tab | Blocked mid-period; requires period-end snapshot + recost — see Edge Cases |
 | Enable / disable a module | BU detail → Modules tab | Writes to `tb_business_unit_tb_module`; hides UI but preserves data |
 | Mark HQ | Set `is_hq = true` | Exactly one HQ per cluster (app invariant) |
@@ -38,13 +38,13 @@ A **Business Unit (BU)** is the top-level scope every document, user role, and r
 |---|---|---|
 | "Code already in use" | Duplicate `code` **anywhere on the platform** — partial unique index `business_unit_code_global_u` (`(code) WHERE deleted_at IS NULL`, platform migration `20260904000000_business_unit_code_global_unique`); since backend PR #497 (`56d4871e9`) the platform generates the BU code itself and the form does not accept one | Let the platform assign the code |
 | "Name already in use in cluster" | Duplicate `name` within the same `cluster_id` — partial unique index `business_unit_cluster_name_u` (`20260904010000_business_unit_cluster_name_unique`) | Pick a different name |
-| **Unconfirmed** — the edit form imposes no client-side restriction | `carmen-platform`'s `CalculationSettingsSection.tsx` renders `calculation_method` as a plain, always-editable `<select>` (`average`/`fifo`) with no disabled state, warning, or mid-period check found in the component; whether the backend `business-units.update` microservice command enforces a block was not traced this pass | A prior version of this page asserted "cannot change calculation method mid-period" as an enforced error; treat it as **unconfirmed** rather than a guaranteed guard |
+| **Unconfirmed** — the edit form imposes no client-side restriction | `carmen-backstage`'s `CalculationSettingsSection.tsx` renders `calculation_method` as a plain, always-editable `<select>` (`average`/`fifo`) with no disabled state, warning, or mid-period check found in the component; whether the backend `business-units.update` microservice command enforces a block was not traced this pass | A prior version of this page asserted "cannot change calculation method mid-period" as an enforced error; treat it as **unconfirmed** rather than a guaranteed guard |
 | "Default currency must be active" — **unconfirmed** | No disabled-state or validation tying `default_currency_id` to the target currency's `is_active` flag was found in the edit form this pass | Treat as unconfirmed |
 | "Cannot delete BU — active users / open documents / non-zero balances" — **unconfirmed** | `deleteBusinessUnit` in the gateway is a thin proxy to a `business-units.delete` microservice command; the guard, if any, was not traced this pass | Treat as unconfirmed rather than a guaranteed block |
 
 ## 4. Edge Cases
 
-- **Calculation-method switch — unconfirmed guard.** Flipping `average` ↔ `fifo` would retro-actively break historical valuation in principle, but `carmen-platform`'s edit form has no disabled state or warning on this field, and whether the backend microservice blocks it mid-period was not traced this pass. Treat "system rejects mid-period" as design intent, not a confirmed guard.
+- **Calculation-method switch — unconfirmed guard.** Flipping `average` ↔ `fifo` would retro-actively break historical valuation in principle, but `carmen-backstage`'s edit form has no disabled state or warning on this field, and whether the backend microservice blocks it mid-period was not traced this pass. Treat "system rejects mid-period" as design intent, not a confirmed guard.
 - **`is_hq` invariant.** Exactly one BU per cluster carries `is_hq = true` — app-enforced, not DB.
 - **Module disable preserves data.** Removing a module via `tb_business_unit_tb_module` hides UI; underlying transactional data is untouched.
 - **Currency inactivation — unconfirmed.** Whether the platform blocks inactivating a currency that is a BU's `default_currency_id` was not traced this pass (the equivalent check was directly confirmed **absent** on the Inventory side's own `tb_currency` update path — see [master-data/currency](/en/inventory/master-data/currency)).
@@ -99,7 +99,7 @@ Note: same enum name in tenant schema uses `FIFO` / `AVG`; the platform definiti
 - **Deletion guards — unconfirmed.** The gateway's `deleteBusinessUnit` is a thin proxy to a `business-units.delete` microservice command; whether active users, open documents, or non-zero balances actually block deletion was not traced this pass.
 - **Validation.** `cluster_id`, `code`, `name`, `calculation_method` required.
 - **Lifecycle.** `is_active = false` blocks logins, preserves data.
-- **Calculation method change** — **design intent, unconfirmed guard.** Flipping `average` ↔ `fifo` should in principle follow period-close + recost discipline, but as noted in Section 4 (Edge Cases; also Section 3 Validation & Errors), `carmen-platform`'s edit form imposes no disabled state or mid-period restriction on this field, and whether the backend microservice enforces one was not traced this pass — treat "must follow period-close + recost discipline" as design intent, not a confirmed guard.
+- **Calculation method change** — **design intent, unconfirmed guard.** Flipping `average` ↔ `fifo` should in principle follow period-close + recost discipline, but as noted in Section 4 (Edge Cases; also Section 3 Validation & Errors), `carmen-backstage`'s edit form imposes no disabled state or mid-period restriction on this field, and whether the backend microservice enforces one was not traced this pass — treat "must follow period-close + recost discipline" as design intent, not a confirmed guard.
 - **`is_hq` invariant.** Exactly one HQ per cluster.
 
 ## 7. Cross-References
@@ -112,7 +112,7 @@ Note: same enum name in tenant schema uses `FIFO` / `AVG`; the platform definiti
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_business_unit` (line ~176), `enum_calculation_method` (~133), `tb_currency_iso` (~323).
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_business_unit` (line ~176), `enum_calculation_method` (~133), `tb_currency_iso` (~323).
 - **Platform migrations:** `20260904000000_business_unit_code_global_unique`, `20260904010000_business_unit_cluster_name_unique`.
-- **Frontend:** `../carmen-platform/src/pages/BusinessUnitEdit.tsx` + `businessUnitEdit/sections/CalculationSettingsSection.tsx` (platform admin dashboard).
-- **Backend:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_business-units/platform_business-units.service.ts` (thin proxy to a `business-units` microservice not traced this pass).
+- **Frontend:** `../carmen-backstage/src/pages/BusinessUnitEdit.tsx` + `businessUnitEdit/sections/CalculationSettingsSection.tsx` (platform admin dashboard).
+- **Backend:** `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform_business-units/platform_business-units.service.ts` (thin proxy to a `business-units` microservice not traced this pass).

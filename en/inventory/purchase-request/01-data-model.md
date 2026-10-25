@@ -17,8 +17,8 @@ dateCreated: 2026-05-15T09:00:00.000Z
 > **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*`; three-qty per line (`requested` / `approved` / FOC); per-line `history` / `stages_status` JSON for workflow
 
 > **Source of truth:** Backend Prisma schema. Always read these first when writing or updating this page:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > The `generated/client/schema.prisma` files under each package are auto-generated copies and not authoritative.
 
@@ -65,7 +65,7 @@ graph LR
     prtd -->|"N : 1"| prod
 ```
 
-> Diagram adapted from `carmen/docs/app/procurement/purchase-requests/DD-purchase-requests.md` · verified against `carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (2026-09-28) · Changes: rewritten as `graph LR` per allow-list (`erDiagram` renders blank on this wiki); replaced the source's conceptual entities (`PURCHASE_REQUESTS`, `PURCHASE_REQUEST_ITEMS`, `PR_APPROVALS`, `PR_ATTACHMENTS`, `PR_COMMENTS`, `APPROVAL_STAGES`, `DEPARTMENTS`, `LOCATIONS`, `USERS`, `CURRENCIES`, `INVENTORY_ITEMS`) with the actual `tb_*` tables from this page's own §3 Relationships; dropped `PR_APPROVALS`/`APPROVAL_STAGES` (approvals are inline JSON on the header, not a separate table) and `PR_ATTACHMENTS`/`INVENTORY_ITEMS` (no PR-specific attachment table; inventory is a live read, not a stored FK); added the PR↔PO bridge and the template lines already documented on this page.
+> Diagram adapted from `carmen/docs/app/procurement/purchase-requests/DD-purchase-requests.md` · verified against `carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (2026-09-28) · Changes: rewritten as `graph LR` per allow-list (`erDiagram` renders blank on this wiki); replaced the source's conceptual entities (`PURCHASE_REQUESTS`, `PURCHASE_REQUEST_ITEMS`, `PR_APPROVALS`, `PR_ATTACHMENTS`, `PR_COMMENTS`, `APPROVAL_STAGES`, `DEPARTMENTS`, `LOCATIONS`, `USERS`, `CURRENCIES`, `INVENTORY_ITEMS`) with the actual `tb_*` tables from this page's own §3 Relationships; dropped `PR_APPROVALS`/`APPROVAL_STAGES` (approvals are inline JSON on the header, not a separate table) and `PR_ATTACHMENTS`/`INVENTORY_ITEMS` (no PR-specific attachment table; inventory is a live read, not a stored FK); added the PR↔PO bridge and the template lines already documented on this page.
 
 ### 2.1 tb_purchase_request
 
@@ -310,7 +310,7 @@ header {
 }
 ```
 
-The frontend types mirror this (`../carmen-inventory-frontend-react/types/purchase-request.ts` — `product: EntityRef | null`, `vendor: EntityRef | null`, …; commit `f303dd96`, 2026-09-17). Create / save payloads still send the flat `*_id` fields; the gateway's `@ExpandRefs` resolves them. The same collapse applies to `tb_purchase_request_template` (Section 2.4): `workflow`, `product`, `location`, `requested_unit`, `foc_unit`, `currency`, `delivery_point`, `inventory_unit` are objects on the wire (commit `16069088`).
+The frontend types mirror this (`../carmen-frontend/types/purchase-request.ts` — `product: EntityRef | null`, `vendor: EntityRef | null`, …; commit `f303dd96`, 2026-09-17). Create / save payloads still send the flat `*_id` fields; the gateway's `@ExpandRefs` resolves them. The same collapse applies to `tb_purchase_request_template` (Section 2.4): `workflow`, `product`, `location`, `requested_unit`, `foc_unit`, `currency`, `delivery_point`, `inventory_unit` are objects on the wire (commit `16069088`).
 
 ## 3. Relationships
 
@@ -393,6 +393,6 @@ The legacy `data-models.md` document describes TypeScript front-end interfaces (
 
 ## 6. References
 
-- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (all PR models) and `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (verified to contain no PR models).
+- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (all PR models) and `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (verified to contain no PR models).
 - **Secondary (concept cross-check):** `../carmen/docs/purchase-request-management/data-models.md` — TypeScript front-end interfaces; divergences captured in Section 5.
 - Related modules: [purchase-order](/en/inventory/purchase-order) (conversion target), [product](/en/inventory/product) (line product reference), [vendor-pricelist](/en/inventory/vendor-pricelist) (price + tax snapshot source), [inventory](/en/inventory/inventory) (on-hand context for the requestor).

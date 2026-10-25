@@ -17,7 +17,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ![อุปกรณ์ (Equipment) detail screen](/screenshots/recipe/equipment-detail.png)
 
-> **ตรวจสอบซ้ำ 2026-09-22** schema และกฎของ service ด้านล่างไม่เปลี่ยน `GET /api/config/{bu}/recipe-equipment` default เป็น `sort=code:asc` (`b375b078b`); response serialize ผ่าน `RecipeEquipmentResponseSchema` ซึ่งคืน ref `category` `{ id, name }` **ควบคู่กับ** `category_id` / `category_name` แบบแบน (สตริง denormalise ยังคงเป็นสิ่งที่ list แสดง) ฟอร์มตอนนี้เป็นบล็อก `SettingSection` เจ็ดบล็อก (General → Specifications → Photo → Quantity & Settings → Instructions → Maintenance → Additional); สร้างแล้วกลับไป list ส่วนแก้ไขอยู่หน้าเดิม E2E: catalog เท่านั้น — `../carmen-inventory-frontend-e2e/docs/test-cases/130-equipment.md` (45 กรณี ไม่มี spec)
+> **ตรวจสอบซ้ำ 2026-09-22** schema และกฎของ service ด้านล่างไม่เปลี่ยน `GET /api/config/{bu}/recipe-equipment` default เป็น `sort=code:asc` (`b375b078b`); response serialize ผ่าน `RecipeEquipmentResponseSchema` ซึ่งคืน ref `category` `{ id, name }` **ควบคู่กับ** `category_id` / `category_name` แบบแบน (สตริง denormalise ยังคงเป็นสิ่งที่ list แสดง) ฟอร์มตอนนี้เป็นบล็อก `SettingSection` เจ็ดบล็อก (General → Specifications → Photo → Quantity & Settings → Instructions → Maintenance → Additional); สร้างแล้วกลับไป list ส่วนแก้ไขอยู่หน้าเดิม E2E: catalog เท่านั้น — `../carmen-frontend-e2e/docs/test-cases/130-equipment.md` (45 กรณี ไม่มี spec)
 
 ## 1. คืออะไรและใครใช้
 
@@ -52,7 +52,7 @@ flowchart TD
     ApplyToList --> UpdateDisplay["อัปเดต list ที่แสดง"]
 ```
 
-> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/equipment/FD-equipment.md` · verified against `carmen-inventory-frontend-react/components/list-filter/list-toolbar.tsx:80,120`, `components/search-input.tsx:36-44` (2026-09-28) · Changes: renamed the status filter to the real `is_active` field and the category filter to `category_id`; replaced the source's "Debounce 300ms" with the real behaviour — `SearchInput` submits only on Enter or a click on the search button, there is no debounce; dropped the "no results / suggest clearing filters" messaging — unconfirmed.
+> Diagram adapted from `carmen/docs/app/operational-planning/recipe-management/equipment/FD-equipment.md` · verified against `carmen-frontend/components/list-filter/list-toolbar.tsx:80,120`, `components/search-input.tsx:36-44` (2026-09-28) · Changes: renamed the status filter to the real `is_active` field and the category filter to `category_id`; replaced the source's "Debounce 300ms" with the real behaviour — `SearchInput` submits only on Enter or a click on the search button, there is no debounce; dropped the "no results / suggest clearing filters" messaging — unconfirmed.
 
 ## 3. การตรวจสอบและ Error
 
@@ -123,6 +123,6 @@ flowchart TD
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_recipe_equipment` (lines ~5249-5312)
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/operation-plan/equipment/`
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_recipe_equipment` (lines ~5249-5312)
+- **Frontend route:** `../carmen-frontend/routes/operation-plan/equipment/`
 - **Concept docs:** `../carmen/docs/recipe/setup-pages-spec.md`

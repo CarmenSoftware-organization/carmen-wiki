@@ -64,13 +64,13 @@ Sibling directories under `/Users/samutpra/GitHub/carmensoftware-organize/`. Bef
 | Role | Path | Use for |
 |------|------|---------|
 | **Concepts / design docs** | `../carmen/docs/` | Canonical concept reference. Topic folders for inventory-management, costing, recipe, purchase-request/order-management, GRN, store-requisitions, vendor-pricelist, product-management, workflow-permissions, business-rules, API/technical specs, prd, use-cases, mobile-app, prisma-schema, etc. Carmen-wiki pages should synthesize from here. |
-| **Frontend** | `../carmen-inventory-frontend-react/` | Vite + React SPA inventory UI — React Router, TypeScript, Tailwind, Bun, Vitest, Playwright. Source of truth for screen/component behavior. Has its own `CLAUDE.md` and `DESIGN.md`. |
-| **Platform admin** | `../carmen-platform/` | React/TypeScript SPA for cluster/BU/user/report-template management — source of truth for the Platform book |
-| **Backend (main)** | `../carmen-turborepo-backend-v2/` | Turborepo monorepo (`apps/`, `packages/`, Bun, Docker, k8s). REST API surface. |
+| **Frontend** | `../carmen-frontend/` | Vite + React SPA inventory UI — React Router, TypeScript, Tailwind, Bun, Vitest, Playwright. Source of truth for screen/component behavior. Has its own `CLAUDE.md` and `DESIGN.md`. |
+| **Platform admin** | `../carmen-backstage/` | React/TypeScript SPA for cluster/BU/user/report-template management — source of truth for the Platform book |
+| **Backend (main)** | `../carmen-turborepo-backend/` | Turborepo monorepo (`apps/`, `packages/`, Bun, Docker, k8s). REST API surface. |
 | **Backend (reports)** | `../micro-report/` | Go microservice for reporting (controllers, services, queues, migrations). |
 | **Backend (cron)** | `../micro-cronjobs/` | Go microservice for scheduled inventory jobs. |
 | **API contracts** | `../carmen-turborepo-backend-bruno/` | Bruno API collections — verify exact request/response shapes here, not by guessing. |
-| **E2E tests** | `../carmen-inventory-frontend-e2e/` | Playwright suite. Existing tests are the executable spec — consult before writing test-scenario or expected-behavior pages. |
+| **E2E tests** | `../carmen-frontend-e2e/` | Playwright suite. Existing tests are the executable spec — consult before writing test-scenario or expected-behavior pages. |
 
 When in doubt about what the system actually does: implementation (frontend/backend) and E2E tests beat `../carmen/docs/`; `../carmen/docs/` beats memory or speculation.
 

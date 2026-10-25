@@ -35,5 +35,5 @@ dateCreated: 2026-05-15T12:00:00.000Z
 
 ## 3. แหล่งอ้างอิง
 
-- Frontend routes: `../carmen-inventory-frontend-react/routes/router.tsx`
+- Frontend routes: `../carmen-frontend/routes/router.tsx`
 - ภาพรวม parent: [04-test-scenarios](/th/inventory/inventory/04-test-scenarios); คู่ user-flow: [03-user-flow-audit-config](/th/inventory/inventory/03-user-flow-audit-config)

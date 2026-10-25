@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T14:30:00.000Z
 > **At a Glance**
 > **หน้าจอ:** `spot-check` (`sc-component.tsx`), `spot-check/location/:location_id` (`sc-form.tsx`) &nbsp;·&nbsp; **โมดูล:** [spot-check](/th/inventory/spot-check) &nbsp;·&nbsp; **Role:** ผู้ใช้ใดก็ตามที่มีสิทธิ์ `inventory_management.spot_check` (role เดียวกับ [04-test-scenarios-counter.md](/th/inventory/spot-check/04-test-scenarios-counter))
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **ความครอบคลุมแบบ executable:** ไม่มี Playwright spec ของ `spot-check`; manual catalog `../carmen-inventory-frontend-e2e/docs/test-cases/760-spot-check.md` (44 cases, re-verify 2026-09-20; row `TC-SPC-01*` list / `TC-SPC-03*` create) — ดู [04-test-scenarios](/th/inventory/spot-check/04-test-scenarios) § 5
+> **ความครอบคลุมแบบ executable:** ไม่มี Playwright spec ของ `spot-check`; manual catalog `../carmen-frontend-e2e/docs/test-cases/760-spot-check.md` (44 cases, re-verify 2026-09-20; row `TC-SPC-01*` list / `TC-SPC-03*` create) — ดู [04-test-scenarios](/th/inventory/spot-check/04-test-scenarios) § 5
 
 ## 1. ขอบเขต
 
@@ -64,7 +64,7 @@ Scenario ด้านล่างใช้ action ที่ catalogue ใน [sp
 
 ## 6. แหล่งอ้างอิง
 
-- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/sc-component.tsx`, `sc-form.tsx`
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts` (`create`, `reset`, `findCurrentByLocation`), `spot-check.logic.ts`
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — ยังไม่มี spec spot-check; manual test-case catalog ที่ `docs/test-cases/760-spot-check.md` (`TC-SPC-01*`/`TC-SPC-03*`/`TC-SPC-06*`/`TC-SPC-10*`/`TC-SPC-20*`)
+- **Frontend:** `../carmen-frontend/routes/inventory-management/spot-check/sc-component.tsx`, `sc-form.tsx`
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/spot-check/spot-check.service.ts` (`create`, `reset`, `findCurrentByLocation`), `spot-check.logic.ts`
+- **E2E:** `../carmen-frontend-e2e/tests/` — ยังไม่มี spec spot-check; manual test-case catalog ที่ `docs/test-cases/760-spot-check.md` (`TC-SPC-01*`/`TC-SPC-03*`/`TC-SPC-06*`/`TC-SPC-10*`/`TC-SPC-20*`)
 - ที่เกี่ยวข้อง: [spot-check/03-user-flow-inventory-controller](/th/inventory/spot-check/03-user-flow-inventory-controller), [spot-check/02-business-rules](/th/inventory/spot-check/02-business-rules) (`SPC_VAL_001`–`004`, `SPC_VAL_006`, `SPC_AUTH_001`), [spot-check/04-test-scenarios](/th/inventory/spot-check/04-test-scenarios) (scenario end-to-end)

@@ -17,7 +17,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ## สถานะการทำงานจริง (ตรวจสอบเมื่อ 2026-07-22)
 
-หน้านี้ฉบับก่อนหน้าบันทึก `tb_user_login_session` (platform schema) ว่าเป็นหนึ่งในสองตารางที่ประกอบ surface นี้ พร้อมตาราง field แบบละเอียดและ semantic "การ insert แถว = session เปิด... การลบ/หมดอายุ = session ปิด" การค้นหาโค้ดทั่ว `carmen-turborepo-backend-v2/apps` พบว่า **ไม่มีการอ้างอิง `tb_user_login_session` เลย** นอกเหนือจากการประกาศ Prisma model ของมันเอง — ตายแล้ว รูปแบบเดียวกับที่ยืนยันแล้วสำหรับ `tb_attachment`, `tb_report_schedule` และตระกูล `tb_widget_*` เดิม ระบบนี้ authenticate ผ่าน **Keycloak** (`KEYCLOAK_SERVICE` client proxy ใน `AuthService` ของ `micro-business`) และออก JWT access/refresh token โดยตรง — ไม่มีตาราง session ในเครื่องรองรับการ login เลย
+หน้านี้ฉบับก่อนหน้าบันทึก `tb_user_login_session` (platform schema) ว่าเป็นหนึ่งในสองตารางที่ประกอบ surface นี้ พร้อมตาราง field แบบละเอียดและ semantic "การ insert แถว = session เปิด... การลบ/หมดอายุ = session ปิด" การค้นหาโค้ดทั่ว `carmen-turborepo-backend/apps` พบว่า **ไม่มีการอ้างอิง `tb_user_login_session` เลย** นอกเหนือจากการประกาศ Prisma model ของมันเอง — ตายแล้ว รูปแบบเดียวกับที่ยืนยันแล้วสำหรับ `tb_attachment`, `tb_report_schedule` และตระกูล `tb_widget_*` เดิม ระบบนี้ authenticate ผ่าน **Keycloak** (`KEYCLOAK_SERVICE` client proxy ใน `AuthService` ของ `micro-business`) และออก JWT access/refresh token โดยตรง — ไม่มีตาราง session ในเครื่องรองรับการ login เลย
 
 สิ่งที่**ยืนยันแล้วว่ามีอยู่จริง**: `AuthService.login()` เรียก `logAuthActivity('login', ...)` เมื่อ authenticate สำเร็จ และ `AuthService.logout()` เรียก `logAuthActivity('logout', ...)` — ทั้งคู่เขียนแถว `tb_activity` (`entity_type: 'auth'`) ไปยัง business unit **เริ่มต้น**ของผู้ใช้เท่านั้น (แถว `tb_user_tb_business_unit` ที่ `is_default: true`; ถ้าผู้ใช้ไม่มี BU เริ่มต้น การเขียนจะถูกข้ามไปทั้งหมด และ log เป็นระดับ debug ไม่ใช่ error) ทั้งสองการเรียกถูกห่อด้วย try/catch ของตัวเองที่ log ความล้มเหลวโดยไม่ทำให้ request login/logout ล้มเหลวตาม
 
@@ -81,7 +81,7 @@ User Activity คือ **timeline login/logout ต่อผู้ใช้** �
 
 ### 5.2 `tb_user_login_session` (platform schema — ตารางที่ตายแล้ว เก็บไว้เพื่อเปรียบเทียบ)
 
-`id`, `token`, `token_type` (`enum_token_type`: `access_token`/`refresh_token`), `user_id`, `expired_on` (default `now() + 1 day`) มีรูปร่างเหมือนตาราง session แต่ **ไม่พบการอ้างอิงจากโค้ดเลยแม้แต่ตัวเดียว** ทั่ว `carmen-turborepo-backend-v2/apps` ระบบนี้ authenticate ผ่าน JWT ที่ Keycloak ออกให้ — ไม่มีตาราง session ในเครื่องรองรับเลย
+`id`, `token`, `token_type` (`enum_token_type`: `access_token`/`refresh_token`), `user_id`, `expired_on` (default `now() + 1 day`) มีรูปร่างเหมือนตาราง session แต่ **ไม่พบการอ้างอิงจากโค้ดเลยแม้แต่ตัวเดียว** ทั่ว `carmen-turborepo-backend/apps` ระบบนี้ authenticate ผ่าน JWT ที่ Keycloak ออกให้ — ไม่มีตาราง session ในเครื่องรองรับเลย
 
 ## 6. กติกาทางธุรกิจ
 
@@ -98,9 +98,9 @@ User Activity คือ **timeline login/logout ต่อผู้ใช้** �
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_activity` (บรรทัด ~280), `enum_activity_action` (บรรทัด ~56)
-- **Prisma platform (ตารางที่ตายแล้ว เพื่อเปรียบเทียบ):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_user_login_session` (บรรทัด ~567), `enum_token_type` (บรรทัด ~686)
-- **ผู้เขียนที่ยืนยันแล้ว:** `../carmen-turborepo-backend-v2/apps/micro-business/src/authen/auth/auth.service.ts` — `logAuthActivity()` (private method) เรียกจาก `login()` และ `logout()`
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/user-activity/user-activity.route.tsx`, `user-activity-component.tsx` (ตั้งค่าคงที่ `entity_type = "auth"` ทุก query), `use-user-activity-table.tsx`
-- **Frontend hook:** `../carmen-inventory-frontend-react/routes/system-admin/user-activity/use-user-activity.ts` (ย้ายออกจาก `hooks/` เมื่อ 2026-08-28) — เรียก endpoint `API_ENDPOINTS.ACTIVITY_LOGS(buCode)` เดียวกับหน้าจอของ [reporting-audit/activity](/th/inventory/reporting-audit/activity)
+- **Prisma tenant:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_activity` (บรรทัด ~280), `enum_activity_action` (บรรทัด ~56)
+- **Prisma platform (ตารางที่ตายแล้ว เพื่อเปรียบเทียบ):** `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_user_login_session` (บรรทัด ~567), `enum_token_type` (บรรทัด ~686)
+- **ผู้เขียนที่ยืนยันแล้ว:** `../carmen-turborepo-backend/apps/micro-business/src/authen/auth/auth.service.ts` — `logAuthActivity()` (private method) เรียกจาก `login()` และ `logout()`
+- **Frontend route:** `../carmen-frontend/routes/system-admin/user-activity/user-activity.route.tsx`, `user-activity-component.tsx` (ตั้งค่าคงที่ `entity_type = "auth"` ทุก query), `use-user-activity-table.tsx`
+- **Frontend hook:** `../carmen-frontend/routes/system-admin/user-activity/use-user-activity.ts` (ย้ายออกจาก `hooks/` เมื่อ 2026-08-28) — เรียก endpoint `API_ENDPOINTS.ACTIVITY_LOGS(buCode)` เดียวกับหน้าจอของ [reporting-audit/activity](/th/inventory/reporting-audit/activity)
 - **ผู้เขียนใน platform scope (ไม่แสดงที่นี่):** `auth.service.ts` `writeRegisterActivity()`, `writeVerifyEmailActivity()` → `tb_activity` ของ platform

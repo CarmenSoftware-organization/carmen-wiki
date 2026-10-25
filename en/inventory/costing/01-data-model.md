@@ -18,8 +18,8 @@ dateCreated: 2026-05-15T12:30:00.000Z
 > **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*` on cost-layer and snapshot; **`tb_inventory_transaction_detail` has no soft-delete** — reversal posts a compensating row instead
 
 > **Source of truth:** Backend Prisma schema. Always read these first when writing or updating this page:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 >
 > The `generated/client/schema.prisma` files under each package are auto-generated copies and not authoritative.
 
@@ -256,9 +256,9 @@ The carmen/docs costing reference (`../carmen/docs/costing/enhanced-costing-engi
 ## 6. References
 
 - **Primary (source of truth):**
-  - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — tenant entities (`tb_inventory_transaction_cost_layer` `:1177-1221`, `tb_inventory_transaction_detail` `:1122-1155`, `tb_inventory_period_snapshot` `:1298`, `tb_product`), tenant enums (`enum_business_unit_config_key`, `enum_physical_count_costing_method`, `enum_transaction_type`); migrations `20260910130000_add_cost_layer_extra_cost`, `20260810180000_move_grn_lot_link_to_ledger`, `20260916141000_rename_tb_period_to_tb_inventory_period`.
-  - `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/inventory-transaction/inventory-transaction.service.ts` (`createFromGoodReceivedNote` `:841`, `createFifoTransaction` `:893`, `createAverageTransaction` `:1051`, `getNetTotals` `:1487`, `restampAverageCostForProducts` `:1521`), `apps/micro-business/src/common/helpers/inventory-cost.formula.ts`, `lot-number.helper.ts`, `fifo-cost-split.helper.ts`.
-  - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — platform entity `tb_business_unit.calculation_method` and platform enum `enum_calculation_method` (the canonical costing-method configuration).
+  - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — tenant entities (`tb_inventory_transaction_cost_layer` `:1177-1221`, `tb_inventory_transaction_detail` `:1122-1155`, `tb_inventory_period_snapshot` `:1298`, `tb_product`), tenant enums (`enum_business_unit_config_key`, `enum_physical_count_costing_method`, `enum_transaction_type`); migrations `20260910130000_add_cost_layer_extra_cost`, `20260810180000_move_grn_lot_link_to_ledger`, `20260916141000_rename_tb_period_to_tb_inventory_period`.
+  - `../carmen-turborepo-backend/apps/micro-business/src/inventory/inventory-transaction/inventory-transaction.service.ts` (`createFromGoodReceivedNote` `:841`, `createFifoTransaction` `:893`, `createAverageTransaction` `:1051`, `getNetTotals` `:1487`, `restampAverageCostForProducts` `:1521`), `apps/micro-business/src/common/helpers/inventory-cost.formula.ts`, `lot-number.helper.ts`, `fifo-cost-split.helper.ts`.
+  - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — platform entity `tb_business_unit.calculation_method` and platform enum `enum_calculation_method` (the canonical costing-method configuration).
 - **Secondary (concept cross-check):**
   - `../carmen/docs/costing/enhanced-costing-engine.md` — recipe / portion / dynamic-pricing layer built on top of inventory cost-flow; divergence in Section 5 item 8.
   - Sibling: [calculation-methods.md](./calculation-methods.md) — FIFO vs WA analysis and algorithms; divergences in Section 5 items 1, 2, 3, 5, 6, 7, 9, 10.

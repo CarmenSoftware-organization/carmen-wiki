@@ -27,4 +27,4 @@ The two screens also share a permission key worth restating from this side: `/re
 - [Report Form Groups](/en/platform/report-form-groups) — the full screen documentation.
 - [Report Templates](/en/platform/report-templates) §3 — this module's own `template_type`/`report_group`/`is_default` field definitions.
 - [Permissions](/en/platform/report-templates/permissions) — the full `report_template.*` gate matrix both screens share.
-- `../carmen-platform/src/pages/ReportTemplateEdit.tsx` — the shared Edit page both screens' Add/Edit actions open.
+- `../carmen-backstage/src/pages/ReportTemplateEdit.tsx` — the shared Edit page both screens' Add/Edit actions open.

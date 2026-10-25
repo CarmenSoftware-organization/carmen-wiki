@@ -80,20 +80,20 @@ News และ Broadcasts ยังคงแบ่งปัญหาการป
 
 ## 6. แหล่งอ้างอิง
 
-- `../carmen-platform/src/App.tsx` — สาม route guard (`broadcast.read`, `broadcast.send`, `broadcast.read`) และ `feature="broadcasts"`
-- `../carmen-platform/src/components/nav/platformNav.ts` — รายการ nav "Broadcasts" (`permission: 'broadcast.read'`, `feature: 'broadcasts'`, ไม่มี `superAdminOnly`)
-- `../carmen-platform/src/pages/BroadcastManagement.tsx`, `src/pages/broadcastManagement/{BroadcastSummary,BroadcastFilters,broadcastColumns}.tsx` — หน้า List
-- `../carmen-platform/src/pages/BroadcastCompose.tsx` — หน้า Compose: แท็บ, validation, payload builder, preset วันหมดอายุ, confirm dialog, shortcut
-- `../carmen-platform/src/pages/BroadcastEdit.tsx` — หน้า Edit: content lock, การแก้ schedule/วันหมดอายุ, confirm ของ past/reschedule
-- `../carmen-platform/src/components/BroadcastPreview.tsx` — preview แบบ live ที่ใช้ร่วมกันระหว่าง Compose และ Edit (`severityStyle`, `reachSummary`)
-- `../carmen-platform/src/utils/broadcastExpiry.ts` — `resolveExpiryIso()`, preset 7/30/90 วัน
-- `../carmen-platform/src/services/broadcastService.ts` — `sendSystem`/`sendBu`/`getAll`/`getById`/`update`/`remove`; `src/types/index.ts` — `BroadcastTargetMode`, `BroadcastTypePreset`, `BroadcastListItem`, `BroadcastStatus`, `BroadcastUpdatePayload`, `BroadcastSummary`
-- `../carmen-platform/src/utils/permissions.ts` — ค่าคงที่ `PERMISSIONS.BROADCAST.SEND`
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_notification` (บรรทัด 332), `tb_broadcast_notification` (บรรทัด 369), `tb_user_broadcast_action` (บรรทัด 403); enum `enum_broadcast_scope`, `enum_notification_doc_type`, `enum_notification_event` (บรรทัด 112–131)
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/20260810000000_notification_redesign_additive/`, `20260811000000_notification_redesign_drop_legacy/` — การปรับใหญ่ที่ลบ `type`/`category`/`is_sent` และเพิ่ม `scope`/`doc_type`/`event`/`pushed_at`
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/notification/notification.controller.ts` — ทั้งหกเส้นทางของ broadcast และ guard ของมัน
-- `../carmen-turborepo-backend-v2/apps/micro-notification/src/notification/broadcast.service.ts` (เส้นทางสร้าง), `broadcast-admin.service.ts` (list/get/update/delete, การคำนวณ status), `schedule.worker.ts` (worker push ที่ทำงานทุก 30 วินาที เฉพาะ `tb_notification`)
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts`, `seed.platform-role-permission.data.ts` — สี่ key `broadcast.*` และการมอบสิทธิ์ตาม role
+- `../carmen-backstage/src/App.tsx` — สาม route guard (`broadcast.read`, `broadcast.send`, `broadcast.read`) และ `feature="broadcasts"`
+- `../carmen-backstage/src/components/nav/platformNav.ts` — รายการ nav "Broadcasts" (`permission: 'broadcast.read'`, `feature: 'broadcasts'`, ไม่มี `superAdminOnly`)
+- `../carmen-backstage/src/pages/BroadcastManagement.tsx`, `src/pages/broadcastManagement/{BroadcastSummary,BroadcastFilters,broadcastColumns}.tsx` — หน้า List
+- `../carmen-backstage/src/pages/BroadcastCompose.tsx` — หน้า Compose: แท็บ, validation, payload builder, preset วันหมดอายุ, confirm dialog, shortcut
+- `../carmen-backstage/src/pages/BroadcastEdit.tsx` — หน้า Edit: content lock, การแก้ schedule/วันหมดอายุ, confirm ของ past/reschedule
+- `../carmen-backstage/src/components/BroadcastPreview.tsx` — preview แบบ live ที่ใช้ร่วมกันระหว่าง Compose และ Edit (`severityStyle`, `reachSummary`)
+- `../carmen-backstage/src/utils/broadcastExpiry.ts` — `resolveExpiryIso()`, preset 7/30/90 วัน
+- `../carmen-backstage/src/services/broadcastService.ts` — `sendSystem`/`sendBu`/`getAll`/`getById`/`update`/`remove`; `src/types/index.ts` — `BroadcastTargetMode`, `BroadcastTypePreset`, `BroadcastListItem`, `BroadcastStatus`, `BroadcastUpdatePayload`, `BroadcastSummary`
+- `../carmen-backstage/src/utils/permissions.ts` — ค่าคงที่ `PERMISSIONS.BROADCAST.SEND`
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_notification` (บรรทัด 332), `tb_broadcast_notification` (บรรทัด 369), `tb_user_broadcast_action` (บรรทัด 403); enum `enum_broadcast_scope`, `enum_notification_doc_type`, `enum_notification_event` (บรรทัด 112–131)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260810000000_notification_redesign_additive/`, `20260811000000_notification_redesign_drop_legacy/` — การปรับใหญ่ที่ลบ `type`/`category`/`is_sent` และเพิ่ม `scope`/`doc_type`/`event`/`pushed_at`
+- `../carmen-turborepo-backend/apps/backend-gateway/src/notification/notification.controller.ts` — ทั้งหกเส้นทางของ broadcast และ guard ของมัน
+- `../carmen-turborepo-backend/apps/micro-notification/src/notification/broadcast.service.ts` (เส้นทางสร้าง), `broadcast-admin.service.ts` (list/get/update/delete, การคำนวณ status), `schedule.worker.ts` (worker push ที่ทำงานทุก 30 วินาที เฉพาะ `tb_notification`)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts`, `seed.platform-role-permission.data.ts` — สี่ key `broadcast.*` และการมอบสิทธิ์ตาม role
 
 ## 7. หน้าในโมดูลนี้
 

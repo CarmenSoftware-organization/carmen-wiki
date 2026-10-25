@@ -75,10 +75,10 @@ Note: this module has **no workflow engine** — `status` on `tb_pricelist` / `t
 ## 6. Reference Sources
 
 - Concepts: `../carmen/docs/vendor-pricelist-management/`
-- Frontend: `../carmen-inventory-frontend-react/`
-- Backend: `../carmen-turborepo-backend-v2/`
+- Frontend: `../carmen-frontend/`
+- Backend: `../carmen-turborepo-backend/`
 - API contracts: `../carmen-turborepo-backend-bruno/`
-- E2E tests: `../carmen-inventory-frontend-e2e/`
+- E2E tests: `../carmen-frontend-e2e/`
 
 ## 7. Pages in This Module
 
@@ -98,4 +98,4 @@ Note: this module has **no workflow engine** — `status` on `tb_pricelist` / `t
 - [Request Price List](/en/inventory/vendor-pricelist/request-price-list) — the outbound RFQ document (`tb_request_for_pricing` + per-vendor invitation rows with `pricelist_url_token`s), the per-vendor Send-email action, link expiry, and the still-true no-status/no-reminder findings.
 - [Vendor Dashboard](/en/inventory/vendor-pricelist/vendor-dashboard) — the `/vendor-management` landing screen's 10 hardcoded KPI/chart tiles (vendor + pricelist + RFP) — not a user-configurable widget board.
 
-> **Status (re-verified 2026-09-22):** the 2026-07-16 rewrite that removed the campaign workflow, quality scoring, validation engine, Manager/Finance thresholds and token revocation still holds. Two of its "confirmed gaps" have since been closed by code and are corrected across the sub-pages: the portal Save/Submit routes (`pricelist-external.controller.ts`, 2026-08/09) and token expiry (`UrlTokenGuard` + `tb_shot_url.expired_at`). New since then: `submitted` status, RFQ send-email, vendor tax/rating columns, `tb_certificate` rename, `can_use`, `price-compare` `qty`, portal `tb_activity` events. **E2E coverage:** `150-vendor.spec.ts` (31 cases), `159-pl.spec.ts` (28), `160-pl-template.spec.ts` (33), `043-certification.spec.ts` (6) in `../carmen-inventory-frontend-e2e/tests/`, with gap reports under `docs/test-cases/gaps/` (54 / 65 / 58 / 29 cases); the external portal has a documentation-only catalog `docs/test-cases/1002-external-price-list.md` (42 cases, no spec); still no spec for Request for Pricing.
+> **Status (re-verified 2026-09-22):** the 2026-07-16 rewrite that removed the campaign workflow, quality scoring, validation engine, Manager/Finance thresholds and token revocation still holds. Two of its "confirmed gaps" have since been closed by code and are corrected across the sub-pages: the portal Save/Submit routes (`pricelist-external.controller.ts`, 2026-08/09) and token expiry (`UrlTokenGuard` + `tb_shot_url.expired_at`). New since then: `submitted` status, RFQ send-email, vendor tax/rating columns, `tb_certificate` rename, `can_use`, `price-compare` `qty`, portal `tb_activity` events. **E2E coverage:** `150-vendor.spec.ts` (31 cases), `159-pl.spec.ts` (28), `160-pl-template.spec.ts` (33), `043-certification.spec.ts` (6) in `../carmen-frontend-e2e/tests/`, with gap reports under `docs/test-cases/gaps/` (54 / 65 / 58 / 29 cases); the external portal has a documentation-only catalog `docs/test-cases/1002-external-price-list.md` (42 cases, no spec); still no spec for Request for Pricing.

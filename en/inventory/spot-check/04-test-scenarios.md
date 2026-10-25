@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T14:30:00.000Z
 > **At a Glance**
 > **Module:** [spot-check](/en/inventory/spot-check) &nbsp;·&nbsp; **Scope:** one real permission-gated role split across two screen files (list/create; entry/review), plus a confirmed-absent third group
 > **Run order:** list/create-screen scenarios → entry/review-screen scenarios → end-to-end scenarios below
-> **E2E coverage:** no `spot-check` Playwright spec exists at `../carmen-inventory-frontend-e2e/tests/`; a manual test-case catalog exists at `docs/test-cases/760-spot-check.md` (44 cases, re-verified against the live component 2026-09-20; the generated user stories `docs/user-stories/760-spot-check.md` hold 32) — see § 5 for how it maps to the real routing
+> **E2E coverage:** no `spot-check` Playwright spec exists at `../carmen-frontend-e2e/tests/`; a manual test-case catalog exists at `docs/test-cases/760-spot-check.md` (44 cases, re-verified against the live component 2026-09-20; the generated user stories `docs/user-stories/760-spot-check.md` hold 32) — see § 5 for how it maps to the real routing
 
 ## 1. Overview
 
@@ -52,13 +52,13 @@ Each row below is a full document lifecycle, anchored to the real state machine 
 
 ## 5. Manual Test-Case Catalog Mapping
 
-**Executable coverage (2026-09-22):** no `spot-check` Playwright spec exists at `../carmen-inventory-frontend-e2e/tests/` (verified by `ls tests/ | grep -i 'spot\|check'`). The manual, documentation-only catalog `docs/test-cases/760-spot-check.md` (44 cases, re-verified against the live component 2026-09-20) and the generated stories `docs/user-stories/760-spot-check.md` (32) are the reference; write new automated coverage against the mechanics documented here.
+**Executable coverage (2026-09-22):** no `spot-check` Playwright spec exists at `../carmen-frontend-e2e/tests/` (verified by `ls tests/ | grep -i 'spot\|check'`). The manual, documentation-only catalog `docs/test-cases/760-spot-check.md` (44 cases, re-verified against the live component 2026-09-20) and the generated stories `docs/user-stories/760-spot-check.md` (32) are the reference; write new automated coverage against the mechanics documented here.
 
 **Resolved:** the earlier catalog revision carried two scenarios (`TC-SPC-040001` edit a saved spot check, `TC-SPC-050001` delete a saved spot check) for a view/edit detail screen this app's routing never reached. The 2026-09-20 catalog revision removed them and now states up front that no view / edit / delete page exists (`/spot-check/:id` renders the counting screen), matching the frontend cleanup of 2026-09-04 (`0647b32e`) that deleted `ScForm`'s dead edit path. `update()` / `delete()` remain backend-only endpoints.
 
 ## 6. References
 
-- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/spot-check/`.
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/spot-check/spot-check.service.ts`, `spot-check.logic.ts`.
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/` — no spot-check spec currently exists; manual test-case catalog at `docs/test-cases/760-spot-check.md` (44 cases, re-verified 2026-09-20 — the earlier unreachable view/edit cases were resolved, see § 5) and user stories `docs/user-stories/760-spot-check.md` (32).
+- **Frontend:** `../carmen-frontend/routes/inventory-management/spot-check/`.
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/spot-check/spot-check.service.ts`, `spot-check.logic.ts`.
+- **E2E:** `../carmen-frontend-e2e/tests/` — no spot-check spec currently exists; manual test-case catalog at `docs/test-cases/760-spot-check.md` (44 cases, re-verified 2026-09-20 — the earlier unreachable view/edit cases were resolved, see § 5) and user stories `docs/user-stories/760-spot-check.md` (32).
 - Related: [spot-check/03-user-flow](/en/inventory/spot-check/03-user-flow) (the state machine this page exercises), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_VAL_*` / `SPC_AUTH_*` / `SPC_POST_*`), [inventory-adjustment/04-test-scenarios](/en/inventory/inventory-adjustment/04-test-scenarios) (where a confirmed variance must be manually corrected).

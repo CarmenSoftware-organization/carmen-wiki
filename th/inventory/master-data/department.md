@@ -49,7 +49,7 @@ flowchart TD
     I -->|"ไม่"| K["ปิด dialog"]
 ```
 
-> Diagram adapted from `carmen/docs/app/finance/department-management/FD-department-management.md` · verified against `carmen-inventory-frontend-react/components/ui/data-grid/use-config-table.ts:84-90`, `data-grid-row-actions.tsx:95-135`, `department-form.tsx:226` (2026-09-28) · Changes: the row `⋯` menu has no separate View / Edit items (`useConfigTable` passes only `onDelete` to `actionColumn`, so the menu holds Activity + Delete only); clicking the code/name cell instead opens `/config/department/:id` in view mode, and Edit is a mode toggle inside that page's own toolbar (`onEdit={f.handleEdit}` on `FormToolbar`, `department-form.tsx:226`), not a row action.
+> Diagram adapted from `carmen/docs/app/finance/department-management/FD-department-management.md` · verified against `carmen-frontend/components/ui/data-grid/use-config-table.ts:84-90`, `data-grid-row-actions.tsx:95-135`, `department-form.tsx:226` (2026-09-28) · Changes: the row `⋯` menu has no separate View / Edit items (`useConfigTable` passes only `onDelete` to `actionColumn`, so the menu holds Activity + Delete only); clicking the code/name cell instead opens `/config/department/:id` in view mode, and Edit is a mode toggle inside that page's own toolbar (`onEdit={f.handleEdit}` on `FormToolbar`, `department-form.tsx:226`), not a row action.
 
 Transfer list สองตัวของฟอร์ม department สำหรับกำหนดผู้ใช้:
 
@@ -64,7 +64,7 @@ flowchart TD
     G --> H["ส่ง hod_users: add[], remove[] -> is_hod = true"]
 ```
 
-> Diagram adapted from `carmen/docs/app/finance/department-management/FD-department-management.md` · verified against `carmen-inventory-frontend-react/routes/config/department/department-form.tsx:64-81` (2026-09-28) · Changes: split the source's single generic "Users Tab" dual-pane picker into the two real transfer lists — Members and Head of Department — confirmed in `department-form.tsx`; dropped the sibling "Locations Tab" (no location assignment exists on Department).
+> Diagram adapted from `carmen/docs/app/finance/department-management/FD-department-management.md` · verified against `carmen-frontend/routes/config/department/department-form.tsx:64-81` (2026-09-28) · Changes: split the source's single generic "Users Tab" dual-pane picker into the two real transfer lists — Members and Head of Department — confirmed in `department-form.tsx`; dropped the sibling "Locations Tab" (no location assignment exists on Department).
 
 ## 3. การตรวจสอบและข้อผิดพลาด
 
@@ -136,7 +136,7 @@ flowchart TD
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_department` (line ~703), `tb_department_user` (~5378)
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/master/departments/departments.service.ts`, `master/department-user/`; gateway `config_departments/`, `config_department-users/`
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/010-department.spec.ts` (21 กรณี) + `docs/test-cases/gaps/010-department-gap.md` (37 กรณีที่ยังไม่ครอบคลุม)
-- **Frontend:** `../carmen-inventory-frontend-react/routes/config/department/`
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_department` (line ~703), `tb_department_user` (~5378)
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/departments/departments.service.ts`, `master/department-user/`; gateway `config_departments/`, `config_department-users/`
+- **E2E:** `../carmen-frontend-e2e/tests/010-department.spec.ts` (21 กรณี) + `docs/test-cases/gaps/010-department-gap.md` (37 กรณีที่ยังไม่ครอบคลุม)
+- **Frontend:** `../carmen-frontend/routes/config/department/`

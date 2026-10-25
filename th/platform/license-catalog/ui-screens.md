@@ -85,7 +85,7 @@ component เดียวให้บริการทั้งสร้าง�
 
 ## 7. แหล่งข้อมูลอ้างอิง
 
-path ทั้งหมดคือ `../carmen-platform` ยกเว้นที่ระบุไว้เป็นอย่างอื่น
+path ทั้งหมดคือ `../carmen-backstage` ยกเว้นที่ระบุไว้เป็นอย่างอื่น
 
 - `src/pages/LicenseCatalog.tsx` — shell, `TAB_PATH`/`TAB_GATE`/`TAB_ORDER`, และสามพฤติกรรมใน §2
 - `src/pages/licenseCatalog/FeatureCatalogPanel.tsx` — แท็บ Features (§3)

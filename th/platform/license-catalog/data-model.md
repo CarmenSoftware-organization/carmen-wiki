@@ -14,11 +14,11 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 > **`tb_license_feature`** — แคตตาล็อกความสามารถที่ขายได้ แถวมาจาก generator ฝั่ง backend**เท่านั้น** ผู้ดูแลแพลตฟอร์มแก้ได้แค่ `state` &nbsp;·&nbsp; **`tb_license_feature_group`** — bundle ที่ผู้ดูแลจัดเอง ข้าม module ได้อย่างอิสระ &nbsp;·&nbsp; **`tb_license_feature_group_item`** — ตารางเชื่อม `feature_key` อ้างอิง**ด้วยค่า ไม่มี FK** โดยเจตนา &nbsp;·&nbsp; **โครงต้นไม้:** n ชั้นตั้งแต่ 2026-09-03 (`parent_key` = prefix ที่ยาวที่สุดที่มีอยู่จริง ไม่ใช่ "ข้อความก่อนจุดแรก") &nbsp;·&nbsp; **ขนาดแคตตาล็อกที่ยืนยันแล้ว:** 107 แถว / 12 module ราก / active 100 / inactive 7 (เดิม 89/11/79/10 เมื่อ 2026-09-06 — +19/−2: module `interface`, คีย์ `configuration.*` ห้าตัวและ `accounting.gl.*` สองตัว, `system_admin.period` เปลี่ยนชื่อเป็น `system_admin.inventory_period`, `system_admin.query_dataset` ถูกลบ; ดูหน้าลงจอด §3.2) — แก้ไขคอมเมนต์ในซอร์สที่ล้าสมัยซึ่งอ้าง 76/10/66 (§3) &nbsp;·&nbsp; **`kind` ของกลุ่ม:** `standard` | `interface`, `NOT NULL DEFAULT 'standard'` ตั้งได้ตอนสร้างเท่านั้น (§2.2, §5) &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` บนทั้งสองตาราง ล็อกแบบ optimistic บนทุกการเขียน
 
 > **แหล่งความจริง:** Prisma schema ฝั่ง backend และไฟล์ผลลัพธ์ของ generator เอง ต้องอ่านสองไฟล์นี้ก่อนเสมอเวลาเขียนหรือปรับหน้านี้:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/seed.license-feature.data.ts` (ไฟล์ที่ generate มา — ห้ามแก้มือ แต่เป็นเนื้อหาแคตตาล็อกปัจจุบันที่น่าเชื่อถือ)
-> - `../carmen-turborepo-backend-v2/scripts/generate-license-catalog/run.ts`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/seed.license-feature.data.ts` (ไฟล์ที่ generate มา — ห้ามแก้มือ แต่เป็นเนื้อหาแคตตาล็อกปัจจุบันที่น่าเชื่อถือ)
+> - `../carmen-turborepo-backend/scripts/generate-license-catalog/run.ts`
 >
-> ยืนยันกับ `carmen-turborepo-backend-v2` HEAD `937cf5ac4` (2026-09-06) และ `carmen-platform` HEAD `157a65e` (2026-09-04)
+> ยืนยันกับ `carmen-turborepo-backend` HEAD `937cf5ac4` (2026-09-06) และ `carmen-backstage` HEAD `157a65e` (2026-09-04)
 
 ## 1. ภาพรวม
 
@@ -100,7 +100,7 @@ grep -c '"key": "interface' seed.license-feature.data.ts   → 12
 
 (นับใหม่เมื่อ 2026-09-22 เทียบกับ backend HEAD `ef4d6f08f`; ตัวเลขเมื่อ 2026-09-06 คือ 89 / 11 / 79 / 10) **107 แถวทั้งหมด, 12 module ราก** (`accounting`, `configuration`, `dashboard`, `interface`, `inventory_management`, `operation_plan`, `procurement`, `product_management`, `report`, `store_operations`, `system_admin`, `vendor_management`), **95 แถวที่ไม่ใช่รากกระจายอยู่ได้ถึงสามชั้น**, **100 แถวขายได้ตอนนี้** (`active`) และ **7 แถวจองไว้แต่ยังขายไม่ได้** (`inactive` — ทั้งหมดเป็นคีย์ `accounting.*` ที่ลงทะเบียนในเฟส C ก่อนมี endpoint จริง §2.4 ของสเปกอธิบายไว้ตรง ๆ ว่าทำไมถึง seed เป็น `inactive` แทนค่า default `active` ของ schema เอง: feature ที่ยังไม่มี route รองรับต้องไม่ขายได้ตั้งแต่วันแรก บั๊กแบบเดียวกับที่คอมเมนต์ในโค้ดของ generator บอกว่าเคยเกิดมาแล้วกับ `report.schedule`) module `interface` (12 แถว สามชั้น: `interface` → `interface.{accounting,pos,pms}` → ใบ brand แปดใบ) เป็น module แรกที่คีย์**ไม่มี permission และไม่มี route เลย** — เข้าแคตตาล็อกผ่าน `LICENSE_ONLY_RESOURCES` ใน `permission.route-map.ts` (2026-09-08) เพราะมันถูกขายและบังคับใช้โดย inventory frontend ไม่ใช่โดย `LicenseInterceptor`; ดู[หน้าลงจอด](/th/platform/license-catalog) §3.2 ว่าทำไมชุด `PLANNED_LICENSE_RESOURCES` เดิมรองรับมันไม่ได้
 
-**ความเสี่ยงที่โครงต้นไม้แบบนี้สร้างขึ้น — การซ่อนชั้นกลางทำลายสิทธิ์ของลูกหลานทุกตัวแบบมองไม่เห็นบนหน้านี้** evaluator สิทธิ์ตอน runtime (`license.evaluator.ts` ใน `carmen-turborepo-backend-v2` ตามสเปก §2.2/§4.5) ตัดคีย์ที่ `state='hide'` ออกจากชุด `features` ที่มีผลจริงของ business unit **ก่อน**ตรวจว่าบรรพบุรุษของคีย์ที่ถืออยู่ครบทุกตัวไหม การตั้งค่า `hide` ให้ feature ชั้นกลางจึงทำให้การตรวจบรรพบุรุษของลูกหลานทุกตัวล้มเหลวแบบเงียบ ๆ สำหรับทุก business unit ที่ถือมันอยู่ — แม้ว่าลูกหลานเหล่านั้นจะยังขึ้นเป็น `active` บนหน้าจอนี้อยู่ก็ตาม เพราะ `state` ของแถวตัวเองไม่เคยเปลี่ยน กล่องยืนยันการซ่อนของ `FeatureCatalogPanel` จึงต่อท้ายด้วยจำนวนลูกหลานก็เพราะความเสี่ยงนี้เป๊ะ (ดู [UI Screens](/th/platform/license-catalog/ui-screens) §3); นี่คือความเสี่ยงที่ตั้งใจและถูกเขียนไว้ในการออกแบบ ไม่ใช่สิ่งที่หน้านี้กำลังรายงานว่าเป็นบั๊ก
+**ความเสี่ยงที่โครงต้นไม้แบบนี้สร้างขึ้น — การซ่อนชั้นกลางทำลายสิทธิ์ของลูกหลานทุกตัวแบบมองไม่เห็นบนหน้านี้** evaluator สิทธิ์ตอน runtime (`license.evaluator.ts` ใน `carmen-turborepo-backend` ตามสเปก §2.2/§4.5) ตัดคีย์ที่ `state='hide'` ออกจากชุด `features` ที่มีผลจริงของ business unit **ก่อน**ตรวจว่าบรรพบุรุษของคีย์ที่ถืออยู่ครบทุกตัวไหม การตั้งค่า `hide` ให้ feature ชั้นกลางจึงทำให้การตรวจบรรพบุรุษของลูกหลานทุกตัวล้มเหลวแบบเงียบ ๆ สำหรับทุก business unit ที่ถือมันอยู่ — แม้ว่าลูกหลานเหล่านั้นจะยังขึ้นเป็น `active` บนหน้าจอนี้อยู่ก็ตาม เพราะ `state` ของแถวตัวเองไม่เคยเปลี่ยน กล่องยืนยันการซ่อนของ `FeatureCatalogPanel` จึงต่อท้ายด้วยจำนวนลูกหลานก็เพราะความเสี่ยงนี้เป๊ะ (ดู [UI Screens](/th/platform/license-catalog/ui-screens) §3); นี่คือความเสี่ยงที่ตั้งใจและถูกเขียนไว้ในการออกแบบ ไม่ใช่สิ่งที่หน้านี้กำลังรายงานว่าเป็นบั๊ก
 
 ## 4. ความสัมพันธ์
 
@@ -125,17 +125,17 @@ tb_subscription_bu_group.group_id          ──>  tb_license_feature_group.id 
 ## 7. แหล่งข้อมูลอ้างอิง
 
 **หลัก (แหล่งความจริง):**
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_license_feature` (1214), `tb_license_feature_group` (1284), `tb_license_feature_group_item` (1313), `enum_license_feature_state` (740)
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/seed.license-feature.data.ts` — ผลลัพธ์ปัจจุบันของ generator เอง ที่มาของจำนวนที่ยืนยันแล้วใน §3
-- `../carmen-turborepo-backend-v2/scripts/generate-license-catalog/run.ts` — ผู้เขียนแถว `tb_license_feature` เพียงรายเดียว
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/license-feature/license-feature.service.ts` — `listAll()`, `countAffectedBusinessUnits()` (§6), `setState()`
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/license-feature-group/license-feature-group.service.ts` — `list()`/`get()`/`create()`/`update()`/`setFeatures()`/`delete()`, กฎ "ลูกลากพ่อ", การป้องกันลบขณะยังมีสัญญาอ้างอยู่
-- `../carmen-platform/docs/superpowers/specs/2026-09-03-license-feature-tree-design.md` — การออกแบบต้นไม้ n ชั้นและโพรบยืนยันของมัน (§3)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_license_feature` (1214), `tb_license_feature_group` (1284), `tb_license_feature_group_item` (1313), `enum_license_feature_state` (740)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/seed.license-feature.data.ts` — ผลลัพธ์ปัจจุบันของ generator เอง ที่มาของจำนวนที่ยืนยันแล้วใน §3
+- `../carmen-turborepo-backend/scripts/generate-license-catalog/run.ts` — ผู้เขียนแถว `tb_license_feature` เพียงรายเดียว
+- `../carmen-turborepo-backend/apps/micro-business/src/license-feature/license-feature.service.ts` — `listAll()`, `countAffectedBusinessUnits()` (§6), `setState()`
+- `../carmen-turborepo-backend/apps/micro-business/src/license-feature-group/license-feature-group.service.ts` — `list()`/`get()`/`create()`/`update()`/`setFeatures()`/`delete()`, กฎ "ลูกลากพ่อ", การป้องกันลบขณะยังมีสัญญาอ้างอยู่
+- `../carmen-backstage/docs/superpowers/specs/2026-09-03-license-feature-tree-design.md` — การออกแบบต้นไม้ n ชั้นและโพรบยืนยันของมัน (§3)
 
 **รอง (รูปทรงฝั่งผู้ใช้):**
-- `../carmen-platform/src/utils/featureTree.ts` — `ancestorsOf()`, `descendantKeys()`, `flattenDescendants()`
-- `../carmen-platform/src/pages/licenses/subscriptionEdit/featureSelection.ts` — `moduleOf()`, `toggleFeature()`, `setModuleSelection()`, `groupCatalog()`
-- `../carmen-platform/src/types/index.ts` — `LicenseFeature`, `LicenseFeatureAdminRow`, `LicenseFeatureGroup`, `LicenseFeatureGroupDetail`, `LicenseFeatureGroupWriteInput`
-- `../carmen-platform/src/constants/featureFlags.ts` — `FeatureState`, `FEATURE_STATES` (ชนิดของสัญญาสายข้อมูลที่ใช้ร่วมกัน, §5)
+- `../carmen-backstage/src/utils/featureTree.ts` — `ancestorsOf()`, `descendantKeys()`, `flattenDescendants()`
+- `../carmen-backstage/src/pages/licenses/subscriptionEdit/featureSelection.ts` — `moduleOf()`, `toggleFeature()`, `setModuleSelection()`, `groupCatalog()`
+- `../carmen-backstage/src/types/index.ts` — `LicenseFeature`, `LicenseFeatureAdminRow`, `LicenseFeatureGroup`, `LicenseFeatureGroupDetail`, `LicenseFeatureGroupWriteInput`
+- `../carmen-backstage/src/constants/featureFlags.ts` — `FeatureState`, `FEATURE_STATES` (ชนิดของสัญญาสายข้อมูลที่ใช้ร่วมกัน, §5)
 
 **Cross-links:** [หน้าลงจอด License Catalog](/th/platform/license-catalog) &nbsp;·&nbsp; [UI Screens](/th/platform/license-catalog/ui-screens) &nbsp;·&nbsp; [Licenses](/th/platform/licenses)

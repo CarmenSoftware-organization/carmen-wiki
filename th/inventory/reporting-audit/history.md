@@ -22,7 +22,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 - **"Run รายงาน" บนรายการรายงาน** (`report-component.tsx` → `useRunReportMutation` → `POST /reports/viewer`) เรียก handler `viewReport` ซึ่งสร้าง viewer URL โดยตรงและคืนกลับมา — ไม่เคยเรียก `ReportJobRepo.Create` เลย
 - **ปุ่ม "Print" ทุกตัว** (`printDocument()` ของ `lib/print-document.ts`) resolve print-template mapping แล้วเรียก endpoint `POST .../report/viewer` ตัวเดียวกัน — ก็ไม่มีแถว job เช่นกัน
 - **การ fire ของ schedule ตามเวลา** (ดู [reporting-audit/schedule](/th/inventory/reporting-audit/schedule)) ส่งมอบผ่าน `format: "viewer_url"` เสมอจาก UI สร้าง schedule ปัจจุบัน ซึ่ง executor dispatch ผ่าน `executeViewerURL()` — ก็ไม่มีแถว job อีกเช่นกัน มีเพียงสาขา `executeFile()` แบบ legacy ของ executor (ซึ่ง UI ปัจจุบันเข้าไม่ถึง) เท่านั้นที่เรียก `POST .../report/generate-async` ซึ่งเป็น endpoint เดียวที่เขียน `tb_report_job`
-- การค้นหาทั่ว frontend ยืนยันว่า **ไม่มีผู้เรียก `generate-async`, `generateAsync` หรือ `job-status`/`jobStatus`** เลยแม้แต่ที่เดียวใน `carmen-inventory-frontend-react`
+- การค้นหาทั่ว frontend ยืนยันว่า **ไม่มีผู้เรียก `generate-async`, `generateAsync` หรือ `job-status`/`jobStatus`** เลยแม้แต่ที่เดียวใน `carmen-frontend`
 
 **ผลสุทธิ:** ภายใต้ UI ที่เข้าถึงได้ในปัจจุบัน ไม่มีอะไรเติมข้อมูลให้ `tb_report_job` เลย หน้าจอ `/report/history` มีอยู่จริง เชื่อมต่อถูกต้องกับตารางจริงและ backend endpoint จริง แต่คาดว่าจะ **ว่างเปล่าในทางปฏิบัติ** เว้นแต่จะมีผู้เรียกอื่น (การเชื่อมต่อ API โดยตรง, การเปลี่ยนแปลง UI ในอนาคต หรือ schedule ที่ `delivery.type` ถูกตั้งเป็น `"file"` นอกเหนือจาก create-dialog ปกติ) ใช้เส้นทาง async-job หน้านี้ถูกแก้ไขให้อธิบายหน้าจอจริงและช่องว่างที่พบ; ข้อกล่าวอ้างในฉบับก่อนหน้าเกี่ยวกับ "ทุกการรันรายงาน" ที่มาลงที่นี่, action "Re-run" และ drawer "Print History" ต่อเอกสารถูกลบออกในฐานะที่ยังไม่ยืนยัน/ไม่มีอยู่จริง
 
@@ -98,9 +98,9 @@ Report History คือ log การ execute ของ `tb_report_job` — เ
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma tenant:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_report_job` (บรรทัด ~6094), `enum_report_job_status` (บรรทัด ~6086), `enum_report_format` (บรรทัด ~6070), `enum_report_category` (บรรทัด ~6077)
+- **Prisma tenant:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_report_job` (บรรทัด ~6094), `enum_report_job_status` (บรรทัด ~6086), `enum_report_format` (บรรทัด ~6070), `enum_report_category` (บรรทัด ~6077)
 - **Backend (มีอยู่จริง แต่เข้าถึงได้เฉพาะผ่านเส้นทาง legacy ที่เข้าไม่ถึง):** `../micro-report/controller/report_controller.go` (handler `generateAsync`, `jobStatus`, `history`), `../micro-report/db/report_job_repo.go`, `../micro-report/model/job.go`
 - **Backend (เส้นทางที่ใช้จริง — ไม่มีแถว job):** handler `viewReport` ของ `../micro-report/controller/report_controller.go`
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/report/history/report-history.route.tsx`, `history-component.tsx`, `use-history-table.tsx`
-- **Frontend hook:** `../carmen-inventory-frontend-react/routes/report/history/use-report-history.ts` — `useReportHistory` (รายการเท่านั้น; ไม่มี hook re-run/detail; ย้ายออกจาก `hooks/` เมื่อ 2026-08-28)
+- **Frontend route:** `../carmen-frontend/routes/report/history/report-history.route.tsx`, `history-component.tsx`, `use-history-table.tsx`
+- **Frontend hook:** `../carmen-frontend/routes/report/history/use-report-history.ts` — `useReportHistory` (รายการเท่านั้น; ไม่มี hook re-run/detail; ย้ายออกจาก `hooks/` เมื่อ 2026-08-28)
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/documents-and-reports/report/GET-get-history-documents-and-reports-report.bru`, `GET-get-job-status-documents-and-reports-report.bru`

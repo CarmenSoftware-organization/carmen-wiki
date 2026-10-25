@@ -18,8 +18,8 @@ dateCreated: 2026-05-15T12:00:00.000Z
 
 An earlier draft described a Finance Officer / Finance Manager persona with four flows: a cost-impact approval queue for above-threshold adjustments, a weekly inventory-to-GL reconciliation dashboard, a period-end orchestration flow with a reconciliation journal, and a `closed → locked` period-lock progression. Verification against current source found none of it:
 
-- **No Finance role exists.** `enum_stage_role` (Prisma tenant schema) is `{create, approve, purchase, issue, view_only}` — no `finance` member. The permission catalogue (`carmen-inventory-frontend-react/constant/permissions.ts`) has no finance-scoped key.
-- **No inventory-to-GL code exists.** A GL core arrived in 2026-09 (`tb_gl_jv*` tables, `apps/micro-business/src/gl/`, manual journal vouchers under `/api/{bu}/gl-posting`), but a repo-wide search of `carmen-turborepo-backend-v2` for journal/GL posting *from inventory movements* still finds nothing — neither module references the other (see [01-data-model](/en/inventory/inventory/01-data-model) § 1). There is no reconciliation dashboard, tolerance, or compensating-journal mechanism.
+- **No Finance role exists.** `enum_stage_role` (Prisma tenant schema) is `{create, approve, purchase, issue, view_only}` — no `finance` member. The permission catalogue (`carmen-frontend/constant/permissions.ts`) has no finance-scoped key.
+- **No inventory-to-GL code exists.** A GL core arrived in 2026-09 (`tb_gl_jv*` tables, `apps/micro-business/src/gl/`, manual journal vouchers under `/api/{bu}/gl-posting`), but a repo-wide search of `carmen-turborepo-backend` for journal/GL posting *from inventory movements* still finds nothing — neither module references the other (see [01-data-model](/en/inventory/inventory/01-data-model) § 1). There is no reconciliation dashboard, tolerance, or compensating-journal mechanism.
 - **No threshold-based approval chain exists.** Zero `threshold` hits in the inventory / stock-in / stock-out / period-end services ([02-business-rules](/en/inventory/inventory/02-business-rules) § 4 correction).
 - **No lock/reopen flow exists in this module.** `period-end.controller.ts` exposes only `find-all` / `find-current` / `find-review` / `start-counting` / `close`. `enum_period_status.locked` is set by the inventory-period service (`/api/{bu}/inventory-periods`) behind [system-config/period](/en/inventory/system-config/period).
 
@@ -36,6 +36,6 @@ This mirrors the identical Finance-persona findings already confirmed in [purcha
 
 ## 3. References
 
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/period-end/period-end.controller.ts` (the complete endpoint surface), `.../inventory-transaction/inventory-transaction.service.ts` (no GL fan-out).
-- Frontend: `../carmen-inventory-frontend-react/constant/permissions.ts` (`inventory_management.period_end.view` / `.execute`).
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/period-end/period-end.controller.ts` (the complete endpoint surface), `.../inventory-transaction/inventory-transaction.service.ts` (no GL fan-out).
+- Frontend: `../carmen-frontend/constant/permissions.ts` (`inventory_management.period_end.view` / `.execute`).
 - Parent overview: [03-user-flow](/en/inventory/inventory/03-user-flow).

@@ -13,7 +13,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 The **Feature Flags** module is one screen, `FeatureFlagManagement` at `/platform/features`, that sets a three-way visibility switch — `active`, `inactive`, or `hide` — for every gated menu row in both the Platform admin sidebar and the separate Cluster-admin sidebar. It is the mechanism every other module in this book states a feature key for, and the one module whose own menu row deliberately carries no feature key of its own (§2). Nothing else in the product resembles this page: it has no table, no search, no pagination, and edits nothing a person created — it edits a fixed catalog baked into the frontend build (§3.3).
 
 > **At a Glance**
-> **Component:** `FeatureFlagManagement` &nbsp;·&nbsp; **Route:** `/platform/features` &nbsp;·&nbsp; **Nav:** `permission: 'feature_flag.manage'`, **no `feature` key** — deliberately not gated by a feature flag (§2) &nbsp;·&nbsp; **Read gate:** none — `GET` is open to every signed-in user (§4.2) &nbsp;·&nbsp; **Write gate:** `feature_flag.manage` alone, held only by the `Platform Admin` role bundle among the four seeded platform roles (§4.1) &nbsp;·&nbsp; **Scope:** 28 flag keys total — 24 for the Platform console, 4 for the separate Cluster-admin console (§3.3) &nbsp;·&nbsp; **e2e suite:** **none** — `../carmen-platform-e2e/tests/` has no `feature-flags` directory; every claim below is sourced from `../carmen-platform` and `../carmen-turborepo-backend-v2` implementation directly (§4.4) &nbsp;·&nbsp; **Sub-pages:** 1
+> **Component:** `FeatureFlagManagement` &nbsp;·&nbsp; **Route:** `/platform/features` &nbsp;·&nbsp; **Nav:** `permission: 'feature_flag.manage'`, **no `feature` key** — deliberately not gated by a feature flag (§2) &nbsp;·&nbsp; **Read gate:** none — `GET` is open to every signed-in user (§4.2) &nbsp;·&nbsp; **Write gate:** `feature_flag.manage` alone, held only by the `Platform Admin` role bundle among the four seeded platform roles (§4.1) &nbsp;·&nbsp; **Scope:** 28 flag keys total — 24 for the Platform console, 4 for the separate Cluster-admin console (§3.3) &nbsp;·&nbsp; **e2e suite:** **none** — `../carmen-backstage-e2e/tests/` has no `feature-flags` directory; every claim below is sourced from `../carmen-backstage` and `../carmen-turborepo-backend` implementation directly (§4.4) &nbsp;·&nbsp; **Sub-pages:** 1
 
 ![Feature Flags screen](/screenshots/platform/feature-flags/index.png)
 
@@ -70,7 +70,7 @@ All 28 keys `FEATURE_CATALOG` defines, the menu each one controls, and which con
 
 ### 4.2 Backend enforcement
 
-`../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/feature_flags/feature_flags.controller.ts`, HEAD `937cf5ac4` (2026-09-06):
+`../carmen-turborepo-backend/apps/backend-gateway/src/platform/feature_flags/feature_flags.controller.ts`, HEAD `937cf5ac4` (2026-09-06):
 
 | Route | Guard | Source |
 | --- | --- | --- |
@@ -91,7 +91,7 @@ The practical consequence for a tester: setting a route's feature to `hide` or `
 
 ### 4.4 e2e coverage: none
 
-`../carmen-platform-e2e/tests/` has no `feature-flags` (or similarly named) directory — confirmed by listing the repository's `tests/` tree directly. Every behavioral claim on this page and its data model sub-page is sourced from reading `../carmen-platform` and `../carmen-turborepo-backend-v2` implementation, not from an executable spec.
+`../carmen-backstage-e2e/tests/` has no `feature-flags` (or similarly named) directory — confirmed by listing the repository's `tests/` tree directly. Every behavioral claim on this page and its data model sub-page is sourced from reading `../carmen-backstage` and `../carmen-turborepo-backend` implementation, not from an executable spec.
 
 ## 5. Related Modules
 
@@ -101,19 +101,19 @@ The practical consequence for a tester: setting a route's feature to `hide` or `
 
 ## 6. Reference Sources
 
-All paths below are `../carmen-platform` (the Platform admin SPA, HEAD `157a65e`, 2026-09-04) unless prefixed `../carmen-turborepo-backend-v2` (the backend monorepo, HEAD `937cf5ac4`, 2026-09-06).
+All paths below are `../carmen-backstage` (the Platform admin SPA, HEAD `157a65e`, 2026-09-04) unless prefixed `../carmen-turborepo-backend` (the backend monorepo, HEAD `937cf5ac4`, 2026-09-06).
 
-- `../carmen-platform/src/pages/FeatureFlagManagement.tsx` — the page component, its own "Config page, not Management" doc-comment (§1).
-- `../carmen-platform/src/constants/featureFlags.ts` — `FEATURE_CATALOG`, the ungated-pages comment (§2), the contiguity-rule comment.
-- `../carmen-platform/src/components/nav/platformNav.ts` (lines 9-56, 47-49, 91-103) and `src/components/nav/clusterAdminNav.ts` (lines 10-26) — the nav row itself, `buildPlatformNav()`/`buildClusterAdminNav()` (§2, §3).
-- `../carmen-platform/src/components/Sidebar.tsx` (lines 105-114) — the consecutive-run grouping this page's contiguity claims are checked against (§3.2).
-- `../carmen-platform/src/App.tsx` (lines 99-106, 555-561, 563-575, 606) — every route cited in §2 and §4.1.
-- `../carmen-platform/src/pages/ComingSoon.tsx` — the no-status-code design note (§4.3).
-- `../carmen-platform/src/i18n/en.ts` (lines 15-43, 965-985) — nav labels and the page's own copy (§4.3).
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/feature_flags/feature_flags.controller.ts` — the dedicated `GET`/`PUT` pair and guards (§4.2).
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/auth/guards/platform-permission.guard.ts` — the super-admin short-circuit shared by every `@RequirePlatformPermission` route (§4.2).
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts` and `seed.platform-role-permission.data.ts` — the `feature_flag.manage` catalog entry and its single role assignment (§4.1, §4.3).
-- `../carmen-platform-e2e/tests/` — listed directly to confirm no `feature-flags` suite exists (§4.4).
+- `../carmen-backstage/src/pages/FeatureFlagManagement.tsx` — the page component, its own "Config page, not Management" doc-comment (§1).
+- `../carmen-backstage/src/constants/featureFlags.ts` — `FEATURE_CATALOG`, the ungated-pages comment (§2), the contiguity-rule comment.
+- `../carmen-backstage/src/components/nav/platformNav.ts` (lines 9-56, 47-49, 91-103) and `src/components/nav/clusterAdminNav.ts` (lines 10-26) — the nav row itself, `buildPlatformNav()`/`buildClusterAdminNav()` (§2, §3).
+- `../carmen-backstage/src/components/Sidebar.tsx` (lines 105-114) — the consecutive-run grouping this page's contiguity claims are checked against (§3.2).
+- `../carmen-backstage/src/App.tsx` (lines 99-106, 555-561, 563-575, 606) — every route cited in §2 and §4.1.
+- `../carmen-backstage/src/pages/ComingSoon.tsx` — the no-status-code design note (§4.3).
+- `../carmen-backstage/src/i18n/en.ts` (lines 15-43, 965-985) — nav labels and the page's own copy (§4.3).
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/feature_flags/feature_flags.controller.ts` — the dedicated `GET`/`PUT` pair and guards (§4.2).
+- `../carmen-turborepo-backend/apps/backend-gateway/src/auth/guards/platform-permission.guard.ts` — the super-admin short-circuit shared by every `@RequirePlatformPermission` route (§4.2).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts` and `seed.platform-role-permission.data.ts` — the `feature_flag.manage` catalog entry and its single role assignment (§4.1, §4.3).
+- `../carmen-backstage-e2e/tests/` — listed directly to confirm no `feature-flags` suite exists (§4.4).
 
 ## 7. Pages in This Module
 

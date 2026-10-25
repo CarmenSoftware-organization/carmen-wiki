@@ -13,7 +13,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 The **Email Settings** module is one screen, `EmailSettingManagement` at `/platform/email-settings`, that manages two things which used to be one: a named master list of outbound SMTP sender profiles (`tb_email_sender_profile`), and a routing map (`email_routing`, a `tb_platform_config` key — the **same** shared config table the [Platform Config](/en/platform/platform-config) module edits) that decides which profile sends each of five outbound mail flows: sign-up/account-exists, email verification, invitation, forgot-password, and notification. The two used to be one thing — one profile row per hard-coded `purpose` enum value — until migration `20260808130000_email_profile_master_and_routing` split them apart specifically so an operator could add a new sender, or repoint a flow to a different one, from a screen instead of an enum change and a deploy (§2).
 
 > **At a Glance**
-> **Component:** `EmailSettingManagement` &nbsp;·&nbsp; **Route:** `/platform/email-settings` &nbsp;·&nbsp; **Nav:** `permission: 'email_setting.read'`, `feature: 'email_settings'`, `groupKey: 'navGroup.platform'` (`platformNav.ts:39`) &nbsp;·&nbsp; **This module's own gate:** `email_setting.read` (view) / `email_setting.manage` (create/update/delete sender profiles, send a test email) — consistent on both frontend and backend for every one of its **own** endpoints (§4.2) &nbsp;·&nbsp; **The one surface that is *not* this module's own gate:** the Email Routing card, which reads and writes a `platform_config` row through the Platform Config module's shared endpoint — see §4.3, the mismatch this page was specifically asked to trace end to end &nbsp;·&nbsp; **e2e suite:** **None** — `../carmen-platform-e2e/tests/` has no `email-settings` directory; every claim below is sourced from `../carmen-platform` and `../carmen-turborepo-backend-v2` implementation directly &nbsp;·&nbsp; **Sub-pages:** 1
+> **Component:** `EmailSettingManagement` &nbsp;·&nbsp; **Route:** `/platform/email-settings` &nbsp;·&nbsp; **Nav:** `permission: 'email_setting.read'`, `feature: 'email_settings'`, `groupKey: 'navGroup.platform'` (`platformNav.ts:39`) &nbsp;·&nbsp; **This module's own gate:** `email_setting.read` (view) / `email_setting.manage` (create/update/delete sender profiles, send a test email) — consistent on both frontend and backend for every one of its **own** endpoints (§4.2) &nbsp;·&nbsp; **The one surface that is *not* this module's own gate:** the Email Routing card, which reads and writes a `platform_config` row through the Platform Config module's shared endpoint — see §4.3, the mismatch this page was specifically asked to trace end to end &nbsp;·&nbsp; **e2e suite:** **None** — `../carmen-backstage-e2e/tests/` has no `email-settings` directory; every claim below is sourced from `../carmen-backstage` and `../carmen-turborepo-backend` implementation directly &nbsp;·&nbsp; **Sub-pages:** 1
 
 ![Email Settings screen](/screenshots/platform/email-settings/index.png)
 
@@ -50,7 +50,7 @@ Sender profiles (§4 of the data model) and mail-flow routing (this section) are
 
 ### 3.2 The five email flows — trigger, controlling setting, and where the send actually happens
 
-`src/constants/emailFlows.ts` defines the fixed list of five flows a route can be assigned to (`EMAIL_FLOWS`, used to render both `RoutingPanel`'s lanes and each `FlowChip`'s label/menu). The list is a UI-facing *catalog* of destinations; the actual trigger, link-lifetime setting, and send call for each flow live in the backend, split across two services in `../carmen-turborepo-backend-v2`:
+`src/constants/emailFlows.ts` defines the fixed list of five flows a route can be assigned to (`EMAIL_FLOWS`, used to render both `RoutingPanel`'s lanes and each `FlowChip`'s label/menu). The list is a UI-facing *catalog* of destinations; the actual trigger, link-lifetime setting, and send call for each flow live in the backend, split across two services in `../carmen-turborepo-backend`:
 
 | Flow | Triggered by | Controlling `platform_config` key | Sent from |
 | --- | --- | --- | --- |
@@ -121,24 +121,24 @@ The read gate's veto over the button (§4.2) means "grant `email_setting.*` alon
 
 ## 6. Reference Sources
 
-All paths below are `../carmen-platform` (the Platform admin SPA, HEAD `157a65e`, 2026-09-04) unless prefixed `../carmen-turborepo-backend-v2` (the backend monorepo, HEAD `937cf5ac4`, 2026-09-06).
+All paths below are `../carmen-backstage` (the Platform admin SPA, HEAD `157a65e`, 2026-09-04) unless prefixed `../carmen-turborepo-backend` (the backend monorepo, HEAD `937cf5ac4`, 2026-09-06).
 
-- `../carmen-platform/src/pages/EmailSettingManagement.tsx` — the page shell, `editingPurpose` state machine, permission wiring.
-- `../carmen-platform/src/pages/emailSettings/{EmailSettingCard,EmailRoutingCard,PasswordField,TestEmailDialog,routingLanes,RoutingPanel}.ts(x)` — the five per-purpose components and the routing-lane data shape.
-- `../carmen-platform/src/constants/emailFlows.ts` — `EMAIL_FLOWS`, the five-flow catalog rendered by the routing UI.
-- `../carmen-platform/src/services/emailSettingService.ts`, `src/hooks/useEmailRouting.ts` — REST clients for profiles and the shared routing-map loader.
-- `../carmen-platform/src/components/nav/platformNav.ts` (line 39), `src/App.tsx` (lines 491-494) — nav entry and route registration.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_email-settings/{platform_email-settings.controller.ts,platform_email-settings.service.ts}` — this module's own REST surface and RPC proxy to micro-cluster/micro-notification.
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/email-sender-profile/email-sender-profile.service.ts` — profile CRUD, name-uniqueness enforcement, password masking/encryption.
-- `../carmen-turborepo-backend-v2/apps/micro-notification/src/platform-email/platform-email.service.ts` — `resolveProfile`/`resolveSmtpConfig`/`send`/`sendTest`, the routing resolver every flow ends at.
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/authen/auth/auth.service.ts` (lines 322-350, 1329-1481, 1648+, 2923-3151) — `register`/`verify_email`/`forgot_password` triggers and senders.
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/user-invitation/user-invitation.service.ts` (lines 303-370, 1254-1335, 1336-1470) — `invitation` triggers and senders.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform_configs/platform_configs.controller.ts` (lines 198-200, 236-238, 285-287, 145-159) — the `email_routing` read/write gates, shared with [Platform Config](/en/platform/platform-config).
-- `../carmen-turborepo-backend-v2/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts` — the `email_routing` registry entry and its placeholder default.
-- `../carmen-turborepo-backend-v2/packages/rpc-contract/src/contracts/notifications.ts` (line 31) — the `platformEmailSend` RPC contract every flow's send goes through.
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` (lines 1415-1460) — `enum_email_sender_purpose` (orphaned), `tb_email_sender_profile`.
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/migrations/{20260729000000_email_sender_profile,20260808130000_email_profile_master_and_routing}/migration.sql` — the purpose-enum-to-named-list redesign.
-- `../carmen-turborepo-backend-v2/packages/error-catalog/src/catalog.ts` (lines 513-514) — `EMAIL_SENDER_PROFILE_NOT_FOUND` (404), `EMAIL_SENDER_PROFILE_NAME_EXISTS` (409).
+- `../carmen-backstage/src/pages/EmailSettingManagement.tsx` — the page shell, `editingPurpose` state machine, permission wiring.
+- `../carmen-backstage/src/pages/emailSettings/{EmailSettingCard,EmailRoutingCard,PasswordField,TestEmailDialog,routingLanes,RoutingPanel}.ts(x)` — the five per-purpose components and the routing-lane data shape.
+- `../carmen-backstage/src/constants/emailFlows.ts` — `EMAIL_FLOWS`, the five-flow catalog rendered by the routing UI.
+- `../carmen-backstage/src/services/emailSettingService.ts`, `src/hooks/useEmailRouting.ts` — REST clients for profiles and the shared routing-map loader.
+- `../carmen-backstage/src/components/nav/platformNav.ts` (line 39), `src/App.tsx` (lines 491-494) — nav entry and route registration.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform_email-settings/{platform_email-settings.controller.ts,platform_email-settings.service.ts}` — this module's own REST surface and RPC proxy to micro-cluster/micro-notification.
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/email-sender-profile/email-sender-profile.service.ts` — profile CRUD, name-uniqueness enforcement, password masking/encryption.
+- `../carmen-turborepo-backend/apps/micro-notification/src/platform-email/platform-email.service.ts` — `resolveProfile`/`resolveSmtpConfig`/`send`/`sendTest`, the routing resolver every flow ends at.
+- `../carmen-turborepo-backend/apps/micro-business/src/authen/auth/auth.service.ts` (lines 322-350, 1329-1481, 1648+, 2923-3151) — `register`/`verify_email`/`forgot_password` triggers and senders.
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/user-invitation/user-invitation.service.ts` (lines 303-370, 1254-1335, 1336-1470) — `invitation` triggers and senders.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform_configs/platform_configs.controller.ts` (lines 198-200, 236-238, 285-287, 145-159) — the `email_routing` read/write gates, shared with [Platform Config](/en/platform/platform-config).
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/platform-config/platform-config.schema.ts` — the `email_routing` registry entry and its placeholder default.
+- `../carmen-turborepo-backend/packages/rpc-contract/src/contracts/notifications.ts` (line 31) — the `platformEmailSend` RPC contract every flow's send goes through.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (lines 1415-1460) — `enum_email_sender_purpose` (orphaned), `tb_email_sender_profile`.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/{20260729000000_email_sender_profile,20260808130000_email_profile_master_and_routing}/migration.sql` — the purpose-enum-to-named-list redesign.
+- `../carmen-turborepo-backend/packages/error-catalog/src/catalog.ts` (lines 513-514) — `EMAIL_SENDER_PROFILE_NOT_FOUND` (404), `EMAIL_SENDER_PROFILE_NAME_EXISTS` (409).
 
 ## 7. Pages in This Module
 

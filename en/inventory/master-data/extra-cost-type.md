@@ -110,8 +110,8 @@ Source: tenant schema.
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_extra_cost_type` (line ~5811), `tb_extra_cost` (~5675), `enum_allocate_extra_cost_type` (~109).
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_extra_cost_type` (line ~5811), `tb_extra_cost` (~5675), `enum_allocate_extra_cost_type` (~109).
 - **Migration:** `20260910130000_add_cost_layer_extra_cost` (`tb_inventory_transaction_cost_layer.extra_cost_amount DECIMAL(20,5) DEFAULT 0`).
-- **Backend:** `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/good-received-note/good-received-note.extra-cost.ts` (`allocateExtraCost`), `good-received-note.ledger.ts` (`base_extra_cost_amount`), `apps/micro-business/src/inventory/inventory-transaction/inventory-transaction.service.ts:91`.
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/030-extra-cost.spec.ts` + `docs/test-cases/gaps/030-extra-cost-gap.md`.
-- **Frontend:** `../carmen-inventory-frontend-react/routes/config/extra-cost-type/` (catalogue); `../carmen-inventory-frontend-react/routes/procurement/goods-receive-note/grn-extra-cost-fields.tsx` (GRN instance form).
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/good-received-note/good-received-note.extra-cost.ts` (`allocateExtraCost`), `good-received-note.ledger.ts` (`base_extra_cost_amount`), `apps/micro-business/src/inventory/inventory-transaction/inventory-transaction.service.ts:91`.
+- **E2E:** `../carmen-frontend-e2e/tests/030-extra-cost.spec.ts` + `docs/test-cases/gaps/030-extra-cost-gap.md`.
+- **Frontend:** `../carmen-frontend/routes/config/extra-cost-type/` (catalogue); `../carmen-frontend/routes/procurement/goods-receive-note/grn-extra-cost-fields.tsx` (GRN instance form).

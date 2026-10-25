@@ -15,7 +15,7 @@ dateCreated: 2026-05-15T15:30:00.000Z
 > **Run order:** Audit / Config setup → primary persona happy paths → cross-persona scenarios
 > **Each persona's drill-down is `04-test-scenarios-<role>.md`**
 
-> **Executable coverage (2026-09-22):** the e2e repo has **no `100-product.spec.ts`** — `/product-management/product` is a catalog-only row (`📄 catalog`) in `../carmen-inventory-frontend-e2e/docs/test-cases/COVERAGE.md:148`, backed by `docs/test-cases/100-product.md` (52 cases, re-audited against the React form on 2026-09-20). Adjacent screens do have specs: `tests/101-product-category.spec.ts` (23 cases; gap report `docs/test-cases/gaps/101-product-category-gap.md`, 39 uncovered) and `tests/044-eco.spec.ts` (19 cases; `gaps/044-eco-gap.md`, 29 uncovered). This page does not mirror those catalogs.
+> **Executable coverage (2026-09-22):** the e2e repo has **no `100-product.spec.ts`** — `/product-management/product` is a catalog-only row (`📄 catalog`) in `../carmen-frontend-e2e/docs/test-cases/COVERAGE.md:148`, backed by `docs/test-cases/100-product.md` (52 cases, re-audited against the React form on 2026-09-20). Adjacent screens do have specs: `tests/101-product-category.spec.ts` (23 cases; gap report `docs/test-cases/gaps/101-product-category-gap.md`, 39 uncovered) and `tests/044-eco.spec.ts` (19 cases; `gaps/044-eco-gap.md`, 29 uncovered). This page does not mirror those catalogs.
 
 ## 1. Overview
 
@@ -89,10 +89,10 @@ The gap is structural: the **product module is a master-data backbone** with a C
 
 ## 6. References
 
-- `../carmen-inventory-frontend-e2e/tests/101-product-category.spec.ts` (23 cases) + `docs/test-cases/gaps/101-product-category-gap.md` (39) — category tree view and three-level CRUD.
-- `../carmen-inventory-frontend-e2e/tests/044-eco.spec.ts` (19 cases) + `docs/test-cases/gaps/044-eco-gap.md` (29) — eco-label master.
-- `../carmen-inventory-frontend-e2e/docs/test-cases/100-product.md` (52 cases, catalog only, re-audited 2026-09-20 — records the real tab names General / Unit / Location Assignment / Eco Labels, the locked auto-generated Code, the required-field set, the warning toast on invalid submit, and the Shelf column).
-- `../carmen-inventory-frontend-e2e/tests/501-grn.spec.ts` — GRN spec; indirect product-side coverage via the product picker.
+- `../carmen-frontend-e2e/tests/101-product-category.spec.ts` (23 cases) + `docs/test-cases/gaps/101-product-category-gap.md` (39) — category tree view and three-level CRUD.
+- `../carmen-frontend-e2e/tests/044-eco.spec.ts` (19 cases) + `docs/test-cases/gaps/044-eco-gap.md` (29) — eco-label master.
+- `../carmen-frontend-e2e/docs/test-cases/100-product.md` (52 cases, catalog only, re-audited 2026-09-20 — records the real tab names General / Unit / Location Assignment / Eco Labels, the locked auto-generated Code, the required-field set, the warning toast on invalid submit, and the Shelf column).
+- `../carmen-frontend-e2e/tests/501-grn.spec.ts` — GRN spec; indirect product-side coverage via the product picker.
 - Sibling: [03-user-flow.md](./03-user-flow.md) Section 4 — cross-persona handoffs that drive the integration scenarios above.
 - Sibling: [02-business-rules.md](./02-business-rules.md) — validation (`PRD_VAL_*`), calculation (`PRD_CALC_*`), authorization (`PRD_AUTH_*`), lifecycle (`PRD_LIFE_*`), and cross-module (`PRD_XMOD_*`) rules invoked by every scenario above.
 - Sibling: [01-data-model.md](./01-data-model.md) — canonical entities (`tb_product`, classification chain, `tb_unit`, `tb_unit_conversion`, `tb_product_location`, `tb_product_tb_vendor`) and enums (`enum_product_status_type`, `enum_unit_type`) referenced throughout.

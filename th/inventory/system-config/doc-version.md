@@ -80,7 +80,7 @@ function update(id, payload):
 
 ## 6. แหล่งอ้างอิง
 
-- **Client extension:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/src/client.ts` — extension `update`, `OptimisticLockError` (`code = 'DOC_VERSION_CONFLICT'`)
-- **การ map เป็น HTTP:** `../carmen-turborepo-backend-v2/apps/micro-business/src/common/decorators/try-catch.decorator.ts` (`isOptimisticLockError` → 409)
-- **Error catalog:** `../carmen-turborepo-backend-v2/packages/error-catalog/src/catalog.ts` — `COMMON_DOC_VERSION_REQUIRED` (`:18`)
-- **Schema:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `doc_version Int @default(0) @db.Integer` บน 157 จาก 159 model
+- **Client extension:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/src/client.ts` — extension `update`, `OptimisticLockError` (`code = 'DOC_VERSION_CONFLICT'`)
+- **การ map เป็น HTTP:** `../carmen-turborepo-backend/apps/micro-business/src/common/decorators/try-catch.decorator.ts` (`isOptimisticLockError` → 409)
+- **Error catalog:** `../carmen-turborepo-backend/packages/error-catalog/src/catalog.ts` — `COMMON_DOC_VERSION_REQUIRED` (`:18`)
+- **Schema:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `doc_version Int @default(0) @db.Integer` บน 157 จาก 159 model

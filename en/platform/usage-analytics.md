@@ -30,7 +30,7 @@ Every value on the page comes from one response shape, `AnalyticsOverview` (`src
 
 This dashboard exists so an operator can see how the Platform admin console (and, via the shared `app_id`/telemetry table, other applications logging through the same pipe) is actually being used — which pages get opened, which buttons get clicked, by how many distinct sessions and users — without granting access to the raw, per-individual rows behind those numbers. That distinction is deliberate and enforced by two separate permission keys (§4), not by two views of the same permission.
 
-No prior conceptual documentation exists for this module. A search of `../carmen/docs` for `usage analytics` / `activity_event` returns only an unrelated bullet ("Permission usage analytics") in `workflow-permissions-system.md` that is not about this screen. Everything on this page is sourced from `../carmen-platform` and `../carmen-turborepo-backend-v2` implementation directly.
+No prior conceptual documentation exists for this module. A search of `../carmen/docs` for `usage analytics` / `activity_event` returns only an unrelated bullet ("Permission usage analytics") in `workflow-permissions-system.md` that is not about this screen. Everything on this page is sourced from `../carmen-backstage` and `../carmen-turborepo-backend` implementation directly.
 
 ## 3. Metrics — What Each Number Counts, Its Source, and Its Window
 
@@ -101,7 +101,7 @@ Top Elements is never clickable, for anyone: `TopList.tsx` only makes a row a `<
 
 ### 4.1 The two keys — what each grants, and which screen each opens
 
-The permission catalog states the distinction between the two `activity_event` actions directly (`seed.platform-permission.data.ts:95-96`, `../carmen-turborepo-backend-v2`):
+The permission catalog states the distinction between the two `activity_event` actions directly (`seed.platform-permission.data.ts:95-96`, `../carmen-turborepo-backend`):
 
 | Key | Catalog description | Opens |
 | --- | --- | --- |
@@ -130,7 +130,7 @@ This drill-down is itself wrapped in `<Can permission="activity_event.detail">` 
 
 ### 4.3 Backend enforcement and cluster scoping
 
-`platform-analytics.controller.ts` (`../carmen-turborepo-backend-v2`) stacks three guards on each route:
+`platform-analytics.controller.ts` (`../carmen-turborepo-backend`) stacks three guards on each route:
 
 | Route | Guards | Permission required |
 | --- | --- | --- |
@@ -166,7 +166,7 @@ A source comment above Platform Admin's grant states the reasoning for Support M
 
 ### 4.5 e2e coverage: none
 
-`../carmen-platform-e2e/tests/` (HEAD `a8e3b31`, 2026-08-25) has no `usage-analytics`, `analytics`, or `activity-events` directory — confirmed by listing the repository directly. The only trace of this screen in that repository is a single screenshot artifact from a manual run, `runs/screens/2026-08-25_10-37-26/images/analytics.png`, which is not a test. Every behavioral claim on this page is sourced from reading `../carmen-platform` and `../carmen-turborepo-backend-v2` implementation, not from an executable spec.
+`../carmen-backstage-e2e/tests/` (HEAD `a8e3b31`, 2026-08-25) has no `usage-analytics`, `analytics`, or `activity-events` directory — confirmed by listing the repository directly. The only trace of this screen in that repository is a single screenshot artifact from a manual run, `runs/screens/2026-08-25_10-37-26/images/analytics.png`, which is not a test. Every behavioral claim on this page is sourced from reading `../carmen-backstage` and `../carmen-turborepo-backend` implementation, not from an executable spec.
 
 ## 5. Related Modules
 
@@ -177,34 +177,34 @@ A source comment above Platform Admin's grant states the reasoning for Support M
 
 ## 6. Reference Sources
 
-All paths below are `../carmen-platform` (the Platform admin SPA, HEAD `157a65e`, 2026-09-04) unless prefixed `../carmen-turborepo-backend-v2` (the backend monorepo, HEAD `937cf5ac4`, 2026-09-06) or `../carmen-platform-e2e` (HEAD `a8e3b31`, 2026-08-25).
+All paths below are `../carmen-backstage` (the Platform admin SPA, HEAD `157a65e`, 2026-09-04) unless prefixed `../carmen-turborepo-backend` (the backend monorepo, HEAD `937cf5ac4`, 2026-09-06) or `../carmen-backstage-e2e` (HEAD `a8e3b31`, 2026-08-25).
 
-- `../carmen-platform/src/pages/UsageAnalytics.tsx` (full, 251 lines) — the screen, `fetchOverview`, `goToEvents` (93-99), `handleExport` (101-118), `isEmpty` (120), the `<Can>`-wrapped Top Pages drill-down (184-236).
-- `../carmen-platform/src/pages/usageAnalytics/StatCards.tsx`, `TopList.tsx`, `UsageChart.tsx` — the five KPI cards and their em-dash-on-failure rule; the clickable/non-clickable row rendering; the two-series (sessions/users) area chart.
-- `../carmen-platform/src/services/analyticsService.ts` — `getOverview`/`getEvents`, the `filter_bu_code` rename comment (§3.1), the `analytics/records` vs. `analytics/event*` ad-blocker naming comment.
-- `../carmen-platform/src/types/index.ts:1327-1365` — `AnalyticsSummary`, `AnalyticsDaily`, `AnalyticsTopPage`, `AnalyticsTopElement`, `AnalyticsOverview`, under the file's own `tb_activity_event` section header.
-- `../carmen-platform/src/utils/analyticsRange.ts` (full) — `ANALYTICS_TZ`, `MAX_RANGE_DAYS`, `TZ_OFFSET_MS` and its lockstep-with-backend comment, `presetRange`/`customRange`/`rangeSpanDays`.
-- `../carmen-platform/src/components/analytics/DateRangeFilter.tsx` — preset/custom UI, client-side range-cap validation.
-- `../carmen-platform/src/hooks/useAnalyticsFilterOptions.ts` — BU/Application dropdown load, the 100-row cap, `Promise.allSettled` reasoning.
-- `../carmen-platform/src/utils/csvExport.ts:1-13` — `neutraliseFormulaPrefix()` and `isValidNegativeNumber()`, read directly (§3.3's hyphen finding); `generateCSV`, `downloadCSV`.
-- `../carmen-platform/src/components/Can.tsx`, `src/components/PrivateRoute.tsx` (both full) — permission-then-feature-flag gate order; `Forbidden`/`ComingSoon`/`NotFound` outcomes.
-- `../carmen-platform/src/context/AuthContext.tsx:268-272`, `src/utils/permissions.ts` (full) — `hasPermission`'s bootstrap escape hatch and `checkPermission`'s with/without-`clusterId` semantics (§4.2).
-- `../carmen-platform/src/App.tsx:475-489` — the `/analytics` and `/activity-events` route registrations.
-- `../carmen-platform/src/components/nav/platformNav.ts:30-33` — the two nav rows (32-33) and the contiguity comment above them (30-31).
-- `../carmen-platform/src/constants/featureFlags.ts:64` — the `usage_analytics` feature-catalog entry.
-- `../carmen-platform/src/i18n/en.ts` (lines 99-102, 4089-4116) and `src/i18n/th.ts` (lines 3112-3129) — page copy quoted in §3.2/§3.3/§3.7.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform-analytics/platform-analytics.controller.ts` (full) — both routes, their guards, and every naming-trap comment cited in §3.1/§4.3.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform-analytics/platform-analytics.service.ts` — the gateway-to-microservice proxy and `IAnalyticsQuery` shape.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform-analytics/analytics-range.ts` (full) — `parseRange`, `MAX_RANGE_DAYS`.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/platform-analytics/analytics-scope.ts` (full) — `ACTIVITY_EVENT_READ`/`ACTIVITY_EVENT_DETAIL`, `resolveAllowedClusterIds()`'s decision table.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/auth/guards/platform-permission.guard.ts` (full) — the coarse-gate mechanism, super-admin short-circuit, undecorated-route fail-open branch.
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/common/guard/app-id.guard.ts` (full) — the `x-app-id`/allowlist mechanism (§4.3).
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/log/activity-event/activity-event.service.ts` (full, 348 lines) — `getOverview()`'s four raw-SQL queries, `resolveBuScope()`, `findEvents()`.
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/log/activity-event/activity-event.types.ts` (full) — `ANALYTICS_TZ`, row shapes, the `allowed_cluster_ids` null/`[]`/`undefined` semantics comment.
-- `../carmen-turborepo-backend-v2/apps/micro-business/src/log/activity-event/activity-event.query.ts` (full) — `buildWhere()` (the `server_ts` window), `NEVER_MATCH`, `buildBuCodeScope()` (the deleted-BU/NULL-bu_code exclusion), `buildScopedWhere()`.
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts:93-99` — the `activity_event.read`/`.detail` catalog descriptions and the `activity_log` distinction comment.
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/seed.platform-role-permission.data.ts:11-52` (full) — the four role bundles' exact permission arrays.
-- `../carmen-platform-e2e/tests/` — listed directly to confirm no `usage-analytics`/`analytics`/`activity-events` suite exists (§4.5).
+- `../carmen-backstage/src/pages/UsageAnalytics.tsx` (full, 251 lines) — the screen, `fetchOverview`, `goToEvents` (93-99), `handleExport` (101-118), `isEmpty` (120), the `<Can>`-wrapped Top Pages drill-down (184-236).
+- `../carmen-backstage/src/pages/usageAnalytics/StatCards.tsx`, `TopList.tsx`, `UsageChart.tsx` — the five KPI cards and their em-dash-on-failure rule; the clickable/non-clickable row rendering; the two-series (sessions/users) area chart.
+- `../carmen-backstage/src/services/analyticsService.ts` — `getOverview`/`getEvents`, the `filter_bu_code` rename comment (§3.1), the `analytics/records` vs. `analytics/event*` ad-blocker naming comment.
+- `../carmen-backstage/src/types/index.ts:1327-1365` — `AnalyticsSummary`, `AnalyticsDaily`, `AnalyticsTopPage`, `AnalyticsTopElement`, `AnalyticsOverview`, under the file's own `tb_activity_event` section header.
+- `../carmen-backstage/src/utils/analyticsRange.ts` (full) — `ANALYTICS_TZ`, `MAX_RANGE_DAYS`, `TZ_OFFSET_MS` and its lockstep-with-backend comment, `presetRange`/`customRange`/`rangeSpanDays`.
+- `../carmen-backstage/src/components/analytics/DateRangeFilter.tsx` — preset/custom UI, client-side range-cap validation.
+- `../carmen-backstage/src/hooks/useAnalyticsFilterOptions.ts` — BU/Application dropdown load, the 100-row cap, `Promise.allSettled` reasoning.
+- `../carmen-backstage/src/utils/csvExport.ts:1-13` — `neutraliseFormulaPrefix()` and `isValidNegativeNumber()`, read directly (§3.3's hyphen finding); `generateCSV`, `downloadCSV`.
+- `../carmen-backstage/src/components/Can.tsx`, `src/components/PrivateRoute.tsx` (both full) — permission-then-feature-flag gate order; `Forbidden`/`ComingSoon`/`NotFound` outcomes.
+- `../carmen-backstage/src/context/AuthContext.tsx:268-272`, `src/utils/permissions.ts` (full) — `hasPermission`'s bootstrap escape hatch and `checkPermission`'s with/without-`clusterId` semantics (§4.2).
+- `../carmen-backstage/src/App.tsx:475-489` — the `/analytics` and `/activity-events` route registrations.
+- `../carmen-backstage/src/components/nav/platformNav.ts:30-33` — the two nav rows (32-33) and the contiguity comment above them (30-31).
+- `../carmen-backstage/src/constants/featureFlags.ts:64` — the `usage_analytics` feature-catalog entry.
+- `../carmen-backstage/src/i18n/en.ts` (lines 99-102, 4089-4116) and `src/i18n/th.ts` (lines 3112-3129) — page copy quoted in §3.2/§3.3/§3.7.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform-analytics/platform-analytics.controller.ts` (full) — both routes, their guards, and every naming-trap comment cited in §3.1/§4.3.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform-analytics/platform-analytics.service.ts` — the gateway-to-microservice proxy and `IAnalyticsQuery` shape.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform-analytics/analytics-range.ts` (full) — `parseRange`, `MAX_RANGE_DAYS`.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform-analytics/analytics-scope.ts` (full) — `ACTIVITY_EVENT_READ`/`ACTIVITY_EVENT_DETAIL`, `resolveAllowedClusterIds()`'s decision table.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/auth/guards/platform-permission.guard.ts` (full) — the coarse-gate mechanism, super-admin short-circuit, undecorated-route fail-open branch.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/common/guard/app-id.guard.ts` (full) — the `x-app-id`/allowlist mechanism (§4.3).
+- `../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/activity-event.service.ts` (full, 348 lines) — `getOverview()`'s four raw-SQL queries, `resolveBuScope()`, `findEvents()`.
+- `../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/activity-event.types.ts` (full) — `ANALYTICS_TZ`, row shapes, the `allowed_cluster_ids` null/`[]`/`undefined` semantics comment.
+- `../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/activity-event.query.ts` (full) — `buildWhere()` (the `server_ts` window), `NEVER_MATCH`, `buildBuCodeScope()` (the deleted-BU/NULL-bu_code exclusion), `buildScopedWhere()`.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts:93-99` — the `activity_event.read`/`.detail` catalog descriptions and the `activity_log` distinction comment.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/seed.platform-role-permission.data.ts:11-52` (full) — the four role bundles' exact permission arrays.
+- `../carmen-backstage-e2e/tests/` — listed directly to confirm no `usage-analytics`/`analytics`/`activity-events` suite exists (§4.5).
 
 ## 7. Pages in This Module
 

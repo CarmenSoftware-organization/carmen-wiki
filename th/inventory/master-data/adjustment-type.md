@@ -87,6 +87,6 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_adjustment_type` (line ~3166), `enum_adjustment_type` (~3159)
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/031-adjustment-type.spec.ts` + `docs/test-cases/gaps/031-adjustment-type-gap.md`
-- **Frontend:** `../carmen-inventory-frontend-react/routes/config/adjustment-type/`
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_adjustment_type` (line ~3166), `enum_adjustment_type` (~3159)
+- **E2E:** `../carmen-frontend-e2e/tests/031-adjustment-type.spec.ts` + `docs/test-cases/gaps/031-adjustment-type-gap.md`
+- **Frontend:** `../carmen-frontend/routes/config/adjustment-type/`

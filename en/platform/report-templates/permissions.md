@@ -39,7 +39,7 @@ Four things to note:
 - **Route guards check without a `clusterId`.** `PrivateRoute` calls `hasPermission(requiredPermission)` with no options, taking the broad "any scope grants it" branch. Because the in-page `<Can>` gates on this surface also omit `clusterId` (§7), a role assignment scoped to a single cluster whose role bundles `report_template.*` keys passes everywhere — there is no per-cluster narrowing anywhere on this surface. That is consistent with the data model: report templates are tenant-global and carry no cluster FK ([Data Model](/en/platform/report-templates/data-model) §3).
 - **No route requires `report_template.delete`.** Deletion is reachable only through the list page's row action, gated in-page (§7).
 - **No key reuse.** The `report_template.*` keys gate only this module (now including Form Groups) — unlike the Business Units routes, which reuse the `cluster.*` keys (see [Clusters Permissions](/en/platform/clusters/permissions) §2).
-- **Removed 2026-07-24** (carmen-platform commit `de11377`; its `print_template_mapping.*` keys were dropped from the permission-catalog seed the day before, 2026-07-23, carmen-turborepo-backend-v2 commit `c135bb21e`): the sibling print-template-mapping module and its keys no longer exist — that module was deleted outright, not merely disconnected from this one.
+- **Removed 2026-07-24** (carmen-backstage commit `de11377`; its `print_template_mapping.*` keys were dropped from the permission-catalog seed the day before, 2026-07-23, carmen-turborepo-backend commit `c135bb21e`): the sibling print-template-mapping module and its keys no longer exist — that module was deleted outright, not merely disconnected from this one.
 
 ## 3. Effective access matrix
 
@@ -75,7 +75,7 @@ Permission-fail users remain inside the SPA shell, can still use the sidebar to 
 
 ## 6. Sidebar filter
 
-**Stale citation fixed:** the sidebar nav array is defined in `../carmen-platform/src/components/nav/platformNav.ts` (`ALL_PLATFORM_NAV_ITEMS`), not `Layout.tsx` — `Layout.tsx` defines no nav rows at all today; it only imports `buildPlatformNav()` from `platformNav.ts` and calls it. The Report Templates entry, in the "Content" group, is:
+**Stale citation fixed:** the sidebar nav array is defined in `../carmen-backstage/src/components/nav/platformNav.ts` (`ALL_PLATFORM_NAV_ITEMS`), not `Layout.tsx` — `Layout.tsx` defines no nav rows at all today; it only imports `buildPlatformNav()` from `platformNav.ts` and calls it. The Report Templates entry, in the "Content" group, is:
 
 ```
 { path: '/report-templates', labelKey: 'nav.reportTemplates', icon: FileText, permission: 'report_template.read', groupKey: 'navGroup.content', feature: 'report_templates' }
@@ -126,7 +126,7 @@ Unlike the legacy model, passing the route guard no longer unlocks every button 
 | **Form Groups screen** (`/report-form-groups`) — set group default | `<Can>` not used here; the "Set default" action is available to any `report_template.update` holder (button visibility on the screen is driven by `hasPermission`, not a `<Can>` wrapper) — **added 2026-07-23**, gated by the same permission-key family as the rest of this module |
 | **Form Groups screen** — "New Form Template" button | Visible only when `report_template.create` is held |
 
-`PLATFORM_SCOPED_RECORD` is an alias of `UNRESOLVED_CLUSTER_ID` (`../carmen-platform/src/utils/permissions.ts`): a sentinel `clusterId` that forces `checkPermission`'s scoped branch to evaluate false for every real cluster, leaving only a platform-wide `activity_log.read` grant as a path to `true` — the correct shape for a record type (report template) that has no cluster of its own. Activity recording started 2026-08-31 (`AUDIT_RECORDING_STARTED_ON_PHASE_2`); a template created earlier shows an empty history, not a broken one.
+`PLATFORM_SCOPED_RECORD` is an alias of `UNRESOLVED_CLUSTER_ID` (`../carmen-backstage/src/utils/permissions.ts`): a sentinel `clusterId` that forces `checkPermission`'s scoped branch to evaluate false for every real cluster, leaving only a platform-wide `activity_log.read` grant as a path to `true` — the correct shape for a record type (report template) that has no cluster of its own. Activity recording started 2026-08-31 (`AUDIT_RECORDING_STARTED_ON_PHASE_2`); a template created earlier shows an empty history, not a broken one.
 
 Call sites: list-page gates in `ReportTemplateManagement.tsx` (row Edit/Delete/View History `<Can>` wraps in the `actions` column definition, Add Template in the `PageHeader` actions); edit-page Edit toggle and View History in `ReportTemplateEdit.tsx` (header `actions`).
 
@@ -135,20 +135,20 @@ Tester-relevant consequences. First, a `report_template.read`-only session sees 
 ## 8. References
 
 **Primary sources (read these before updating this page):**
-- `../carmen-platform/src/App.tsx` — the report-templates + Form Groups routes with `requiredPermission` props.
-- `../carmen-platform/src/context/AuthContext.tsx` — `hasPermission`, `userCount` state, login permission gate.
-- `../carmen-platform/src/utils/permissions.ts` — pure `checkPermission` resolution (super-admin → platform keys → cluster keys).
-- `../carmen-platform/src/components/PrivateRoute.tsx` — auth-fail redirect, permission-fail render (40 lines total).
-- `../carmen-platform/src/pages/Forbidden.tsx` — the renamed 403 page.
-- `../carmen-platform/src/components/Can.tsx` — the in-page gate component (`permission`, optional `clusterId`, optional `fallback`).
-- `../carmen-platform/src/components/nav/platformNav.ts` — `ALL_PLATFORM_NAV_ITEMS` (Report Templates line 24, Form Groups line 25 — both `permission: 'report_template.read'`, distinct `feature` keys) and `buildPlatformNav()`, the filter function; `src/components/Layout.tsx` no longer defines nav rows, it only calls `buildPlatformNav()`.
-- `../carmen-platform/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` — the View History feature (`PLATFORM_SCOPED_RECORD` is defined in `src/utils/permissions.ts`, above); `AUDIT_RECORDING_STARTED_ON_PHASE_2` = 2026-08-31.
-- `../carmen-platform/src/pages/ReportTemplateManagement.tsx` / `ReportTemplateEdit.tsx` / `ReportFormGroupManagement.tsx` — the `<Can>` / `hasPermission` call sites listed in §7.
+- `../carmen-backstage/src/App.tsx` — the report-templates + Form Groups routes with `requiredPermission` props.
+- `../carmen-backstage/src/context/AuthContext.tsx` — `hasPermission`, `userCount` state, login permission gate.
+- `../carmen-backstage/src/utils/permissions.ts` — pure `checkPermission` resolution (super-admin → platform keys → cluster keys).
+- `../carmen-backstage/src/components/PrivateRoute.tsx` — auth-fail redirect, permission-fail render (40 lines total).
+- `../carmen-backstage/src/pages/Forbidden.tsx` — the renamed 403 page.
+- `../carmen-backstage/src/components/Can.tsx` — the in-page gate component (`permission`, optional `clusterId`, optional `fallback`).
+- `../carmen-backstage/src/components/nav/platformNav.ts` — `ALL_PLATFORM_NAV_ITEMS` (Report Templates line 24, Form Groups line 25 — both `permission: 'report_template.read'`, distinct `feature` keys) and `buildPlatformNav()`, the filter function; `src/components/Layout.tsx` no longer defines nav rows, it only calls `buildPlatformNav()`.
+- `../carmen-backstage/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` — the View History feature (`PLATFORM_SCOPED_RECORD` is defined in `src/utils/permissions.ts`, above); `AUDIT_RECORDING_STARTED_ON_PHASE_2` = 2026-08-31.
+- `../carmen-backstage/src/pages/ReportTemplateManagement.tsx` / `ReportTemplateEdit.tsx` / `ReportFormGroupManagement.tsx` — the `<Can>` / `hasPermission` call sites listed in §7.
 
 **Cross-links:**
 - [rbac](/en/platform/rbac) — the permission model: catalog, roles, scoped assignments, super-admin flag, and the legacy-model migration table (§5)
 - [rbac permissions](/en/platform/rbac/permissions) — SPA-wide gate matrix and the full permission-resolution algorithm
 - [users](/en/platform/users) — user identity rows that role assignments point at
 - [Clusters Permissions](/en/platform/clusters/permissions) — sibling permissions page; documents the cluster-scoped `<Can clusterId>` variant this surface does *not* use
-- **Print Template Mapping** — removed from the product 2026-07-24 (carmen-platform commit `de11377`); used to be a sibling Content-group module with its own `print_template_mapping.*` keys, dropped from the permission catalog the day before (carmen-turborepo-backend-v2 commit `c135bb21e`, 2026-07-23) — none of it survives today
+- **Print Template Mapping** — removed from the product 2026-07-24 (carmen-backstage commit `de11377`); used to be a sibling Content-group module with its own `print_template_mapping.*` keys, dropped from the permission catalog the day before (carmen-turborepo-backend commit `c135bb21e`, 2026-07-23) — none of it survives today
 - [Data Model](/en/platform/report-templates/data-model) &nbsp;·&nbsp; [UI Screens](/en/platform/report-templates/ui-screens) &nbsp;·&nbsp; [XML Spec](/en/platform/report-templates/xml-spec) — sibling sub-pages

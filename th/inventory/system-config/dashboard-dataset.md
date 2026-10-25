@@ -128,11 +128,11 @@ GET  /api/:bu_code/datasets/:dataset_id  → { meta: DatasetMeta, data: DatasetD
 ## 8. แหล่งข้อมูลอ้างอิง
 
 - **micro-data service (Go):** `../micro-data/` — dashboard datasets + widget CRUD. Handlers: `controller/dashboard_controller.go`; logic: `service/dashboard/`, `service/widget_service.go`; models: `model/dashboard.go`; routes: `routes/routes.go`; overview: `README.md`
-- **Gateway proxy:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-datasets/dashboard-datasets.service.ts` — HTTP proxy ไปยัง micro-data (ส่ง `x-internal-token`, `c94a625ed`); controller `dashboard-datasets.controller.ts` เปิด `GET /api/:bu_code/datasets` และ `GET /api/:bu_code/datasets/:dataset_id`
-- **Nav / permission:** `../carmen-inventory-frontend-react/constant/module-list.ts:736-742` — `PERMISSIONS.dashboard.dataset.view`, `licenseFeature: "dashboard.dataset"`
-- **E2E:** `../carmen-inventory-frontend-e2e/docs/test-cases/1112-dashboard-dataset.md` — แคตตาล็อกเท่านั้น
-- **Swagger response DTOs:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/dashboard-datasets/swagger/response.ts` — `DatasetMetaDto`, `DatasetListResponseDto`, `DatasetResponseDto`
-- **Platform enum:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `enum_dataset_shape` (บรรทัด ~815)
-- **Frontend route:** `../carmen-inventory-frontend-react/routes/system-admin/dashboard-dataset/dashboard-dataset.route.tsx` + `dashboard-dataset-component.tsx`
-- **Frontend hook:** `../carmen-inventory-frontend-react/hooks/use-dashboard-dataset.ts` — `useDashboardDatasets()`, `useDashboardDatasetDetail(id)`
-- **Frontend type:** `../carmen-inventory-frontend-react/types/dashboard-dataset.ts` — `DashboardDataset`, `DashboardDatasetShape`, `DashboardDatasetCategory`
+- **Gateway proxy:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/dashboard-datasets/dashboard-datasets.service.ts` — HTTP proxy ไปยัง micro-data (ส่ง `x-internal-token`, `c94a625ed`); controller `dashboard-datasets.controller.ts` เปิด `GET /api/:bu_code/datasets` และ `GET /api/:bu_code/datasets/:dataset_id`
+- **Nav / permission:** `../carmen-frontend/constant/module-list.ts:736-742` — `PERMISSIONS.dashboard.dataset.view`, `licenseFeature: "dashboard.dataset"`
+- **E2E:** `../carmen-frontend-e2e/docs/test-cases/1112-dashboard-dataset.md` — แคตตาล็อกเท่านั้น
+- **Swagger response DTOs:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/dashboard-datasets/swagger/response.ts` — `DatasetMetaDto`, `DatasetListResponseDto`, `DatasetResponseDto`
+- **Platform enum:** `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `enum_dataset_shape` (บรรทัด ~815)
+- **Frontend route:** `../carmen-frontend/routes/system-admin/dashboard-dataset/dashboard-dataset.route.tsx` + `dashboard-dataset-component.tsx`
+- **Frontend hook:** `../carmen-frontend/hooks/use-dashboard-dataset.ts` — `useDashboardDatasets()`, `useDashboardDatasetDetail(id)`
+- **Frontend type:** `../carmen-frontend/types/dashboard-dataset.ts` — `DashboardDataset`, `DashboardDatasetShape`, `DashboardDatasetCategory`

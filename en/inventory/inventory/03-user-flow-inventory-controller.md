@@ -51,6 +51,6 @@ The **Inventory Controller** persona owns balance accuracy at period boundaries.
 - Parent overview: [03-user-flow](/en/inventory/inventory/03-user-flow).
 - Sibling: [period-end](/en/inventory/inventory/period-end) — full gate table, error strings, and dev-level process detail.
 - Sibling: [02-business-rules](/en/inventory/inventory/02-business-rules) — `INV_POST_009` / `INV_POST_010` (close/open), `INV_CALC_008` / `INV_CALC_009` (FIFO vs average close), `INV_AUTH_008` (the `period_end.execute` gate).
-- Frontend: `../carmen-inventory-frontend-react/routes/inventory-management/period-end/` (`pe-component.tsx`, `pe-review.tsx`, `pe-documents-dialog.tsx`, `pe-start-blocked-dialog.tsx`, `pe-history.tsx`, `use-period-end.ts`).
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/period-end/`.
+- Frontend: `../carmen-frontend/routes/inventory-management/period-end/` (`pe-component.tsx`, `pe-review.tsx`, `pe-documents-dialog.tsx`, `pe-start-blocked-dialog.tsx`, `pe-history.tsx`, `use-period-end.ts`).
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/period-end/`.
 - Related: [physical-count](/en/inventory/physical-count) (the count gate), [inventory-adjustment](/en/inventory/inventory-adjustment) (corrections), [system-config/period](/en/inventory/system-config/period) (period definitions and lock).

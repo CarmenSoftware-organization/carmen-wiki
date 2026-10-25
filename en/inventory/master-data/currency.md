@@ -49,7 +49,7 @@ flowchart TD
     H --> I
 ```
 
-> Diagram adapted from `carmen/docs/app/finance/currency-management/FD-currency-management.md` · verified against `carmen-inventory-frontend-react/routes/config/currency/currency-filter-fields.ts`, `carmen-turborepo-backend-v2/apps/micro-business/src/master/currency/currency.service.ts:81` (2026-09-28) · Changes: there is no "Show active only?" yes/no toggle; the real Status filter (`currency-filter-fields.ts`) is All / Active / Inactive, matching the delivery-point pattern. Corrected the text-match fields to `code` / `name` only per `defaultSearchFields = ['code', 'name']` (`currency.service.ts:81`) — `description` is not a search field.
+> Diagram adapted from `carmen/docs/app/finance/currency-management/FD-currency-management.md` · verified against `carmen-frontend/routes/config/currency/currency-filter-fields.ts`, `carmen-turborepo-backend/apps/micro-business/src/master/currency/currency.service.ts:81` (2026-09-28) · Changes: there is no "Show active only?" yes/no toggle; the real Status filter (`currency-filter-fields.ts`) is All / Active / Inactive, matching the delivery-point pattern. Corrected the text-match fields to `code` / `name` only per `defaultSearchFields = ['code', 'name']` (`currency.service.ts:81`) — `description` is not a search field.
 
 ## 3. Validation & Errors
 
@@ -128,8 +128,8 @@ See [master-data/exchange-rate](/en/inventory/master-data/exchange-rate) for the
 
 ## 8. References
 
-- **Prisma (tenant):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_currency` (line ~561), `tb_exchange_rate` (~769).
-- **Prisma (platform):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_currency_iso` (line ~323).
+- **Prisma (tenant):** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_currency` (line ~561), `tb_exchange_rate` (~769).
+- **Prisma (platform):** `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_currency_iso` (line ~323).
 - **Bruno:** `config/currencies/*`; `master-data/currencies/GET-find-all-iso-master-data-currencies.bru` (ISO list). Note: `master-data/currencies/GET-get-fleet-summary-master-data-currencies.bru` is a misfiled platform request (`/api-system/clusters/summary`) and has nothing to do with currency.
-- **E2E:** `../carmen-inventory-frontend-e2e/tests/040-currency.spec.ts` + `docs/test-cases/gaps/040-currency-gap.md`.
-- **Frontend:** `../carmen-inventory-frontend-react/routes/config/currency/`.
+- **E2E:** `../carmen-frontend-e2e/tests/040-currency.spec.ts` + `docs/test-cases/gaps/040-currency-gap.md`.
+- **Frontend:** `../carmen-frontend/routes/config/currency/`.

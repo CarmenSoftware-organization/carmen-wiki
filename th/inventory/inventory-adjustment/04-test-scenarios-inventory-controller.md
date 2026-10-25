@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 > **At a Glance**
 > **Persona:** Inventory Controller (permission/หน้าจอเดียวกับ Store Keeper) &nbsp;·&nbsp; **โมดูล:** [inventory-adjustment](/th/inventory/inventory-adjustment)
 > **หมวดหมู่:** Happy Path (review, commit, void) &nbsp;·&nbsp; Edge Case
-> **Executable coverage:** ไม่มีที่ automate — แคตตาล็อก manual `../carmen-inventory-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (TC-IADJ-01xxxx หน้ารายการ, TC-IADJ-02xxxx รายละเอียด/read-only, TC-IADJ-06xxxx void/commit)
+> **Executable coverage:** ไม่มีที่ automate — แคตตาล็อก manual `../carmen-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (TC-IADJ-01xxxx หน้ารายการ, TC-IADJ-02xxxx รายละเอียด/read-only, TC-IADJ-06xxxx void/commit)
 
 ## 1. Happy Path
 

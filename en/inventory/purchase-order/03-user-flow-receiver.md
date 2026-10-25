@@ -93,7 +93,7 @@ The Receiver's involvement on a given PO ends on **GRN post**. From that point t
 ## 5. References
 
 - Parent overview: [03-user-flow.md](./03-user-flow.md) — global PO state machine and cross-persona handoff table; the `{approved, sent_or_print} → partial → completed` rows and the `partial → closed` row are this persona's territory.
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/procurement/purchase-order/purchase-order.service.ts` (`findAllForGrn` L1351-1622 with `can_use`, `findOnePoForGrn` L1195-1215); `apps/micro-business/src/inventory/good-received-note/good-received-note.logic.ts` (`updatePoStatuses`); Bruno `GET-find-vendors-for-grn`, `GET-find-all-for-grn-by-vendor`, `GET-find-all-for-grn`, `GET-build-grn-draft-from-po`.
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/procurement/purchase-order/purchase-order.service.ts` (`findAllForGrn` L1351-1622 with `can_use`, `findOnePoForGrn` L1195-1215); `apps/micro-business/src/inventory/good-received-note/good-received-note.logic.ts` (`updatePoStatuses`); Bruno `GET-find-vendors-for-grn`, `GET-find-all-for-grn-by-vendor`, `GET-find-all-for-grn`, `GET-build-grn-draft-from-po`.
 - Sibling: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — upstream internal persona that transmits the PO and is notified of discrepancies at the dock for amendment / return / credit-note follow-up.
 - Sibling: [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md) — holds the close override authority and reviews `partial → closed` decisions alongside the Inventory Manager.
 - Sibling: [03-user-flow-vendor.md](./03-user-flow-vendor.md) — external party whose physical delivery this persona accepts at the dock.

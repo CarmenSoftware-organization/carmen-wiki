@@ -31,9 +31,9 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 ## 2. References
 
-- ../carmen-platform/src/pages/ReportTemplateEdit.tsx
-- ../carmen-platform/src/pages/ReportTemplateManagement.tsx
-- ../carmen-platform/src/components/nav/platformNav.ts (รายการ sidebar — ไม่ใช่ Layout.tsx)
+- ../carmen-backstage/src/pages/ReportTemplateEdit.tsx
+- ../carmen-backstage/src/pages/ReportTemplateManagement.tsx
+- ../carmen-backstage/src/components/nav/platformNav.ts (รายการ sidebar — ไม่ใช่ Layout.tsx)
 
 ## 3. TODO
 

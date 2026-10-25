@@ -12,7 +12,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** เอนจินตีมูลค่าระดับธุรกรรมที่เลือก `cost_per_unit` ให้ทุกการเคลื่อนไหวขาออกและปรับปรุง `average_cost_per_unit` ให้ทุกการเคลื่อนไหวขาเข้า ภายใต้วิธี FIFO-หรือ-Average เดียวที่ตั้งค่า **ต่อ business unit** &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนา/QA ที่ทำงานกับการตีมูลค่าสินค้าคงคลัง — โมดูลนี้ไม่มี persona แยกในแอป มีแต่ permission gate ทั่วไปแบบ `inventory_management.*` &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_inventory_transaction_cost_layer` (ledger การไหลของต้นทุน ตอนนี้มี `extra_cost_amount` แล้ว), `tb_inventory_period_snapshot` (เปลี่ยนชื่อจาก `tb_period_snapshot` เมื่อ 2026-09-16; เฉพาะงวดที่ใช้วิธี average), `tb_business_unit.calculation_method`, [costing/calculation-methods](/th/inventory/costing/calculation-methods) &nbsp;·&nbsp; **หน้าย่อย:** 11
-> **ตรวจสอบซ้ำ 2026-09-22** กับ `carmen-turborepo-backend-v2` HEAD สิ่งที่เปลี่ยนตั้งแต่ 2026-07-29: extra cost ถูกจัดสรรเข้า landed cost (`20260910130000_add_cost_layer_extra_cost`); ปริมาณ FOC เข้าสต๊อก; business unit แบบ average โพสต์การเคลื่อนไหวของ GRN ตอน **save** (FIFO ตอน commit); `tb_period*` → `tb_inventory_period*`; หมายเลข lot เป็น `<location_code><YYMM><run>`; มีโมดูล GL แล้วแต่ยังไม่เชื่อมกับ inventory (ดู §1)
+> **ตรวจสอบซ้ำ 2026-09-22** กับ `carmen-turborepo-backend` HEAD สิ่งที่เปลี่ยนตั้งแต่ 2026-07-29: extra cost ถูกจัดสรรเข้า landed cost (`20260910130000_add_cost_layer_extra_cost`); ปริมาณ FOC เข้าสต๊อก; business unit แบบ average โพสต์การเคลื่อนไหวของ GRN ตอน **save** (FIFO ตอน commit); `tb_period*` → `tb_inventory_period*`; หมายเลข lot เป็น `<location_code><YYMM><run>`; มีโมดูล GL แล้วแต่ยังไม่เชื่อมกับ inventory (ดู §1)
 
 ## 1. ภาพรวม
 
@@ -68,10 +68,10 @@ Output ลงที่สองที่: ตัวแถว cost-layer เอ�
 ## 6. แหล่งข้อมูลอ้างอิง
 
 - Concepts: `../carmen/docs/costing/enhanced-costing-engine.md` (หยุดอัปเดตตั้งแต่ 2026-04-27 — เป็น recipe/portion costing ไม่ใช่เอนจิน inventory)
-- Frontend: `../carmen-inventory-frontend-react/` — ไม่มีหน้าจอ costing; `routes/accounting/` เป็น mock data
-- Backend: `../carmen-turborepo-backend-v2/apps/micro-business/src/inventory/inventory-transaction/inventory-transaction.service.ts` (เอนจิน), `apps/micro-business/src/common/helpers/{inventory-cost.formula,fifo-cost-split.helper,lot-number.helper}.ts`, `apps/micro-business/src/inventory/good-received-note/good-received-note.{ledger,extra-cost}.ts` (ขาเข้า), `apps/micro-business/src/inventory/period-end/` (ปิดงวด), `apps/micro-business/src/inventory/costing/` (endpoint อ่านต้นทุน), gateway `apps/backend-gateway/src/application/cost/`
+- Frontend: `../carmen-frontend/` — ไม่มีหน้าจอ costing; `routes/accounting/` เป็น mock data
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/inventory-transaction/inventory-transaction.service.ts` (เอนจิน), `apps/micro-business/src/common/helpers/{inventory-cost.formula,fifo-cost-split.helper,lot-number.helper}.ts`, `apps/micro-business/src/inventory/good-received-note/good-received-note.{ledger,extra-cost}.ts` (ขาเข้า), `apps/micro-business/src/inventory/period-end/` (ปิดงวด), `apps/micro-business/src/inventory/costing/` (endpoint อ่านต้นทุน), gateway `apps/backend-gateway/src/application/cost/`
 - API contracts: `../carmen-turborepo-backend-bruno/collections/carmen-inventory/_uncategorized/cost/` (4 request)
-- E2E tests: `../carmen-inventory-frontend-e2e/` — ไม่มี spec เฉพาะ costing (ดู [04-test-scenarios](/th/inventory/costing/04-test-scenarios) § 4)
+- E2E tests: `../carmen-frontend-e2e/` — ไม่มี spec เฉพาะ costing (ดู [04-test-scenarios](/th/inventory/costing/04-test-scenarios) § 4)
 
 ## 7. หน้าในโมดูลนี้
 

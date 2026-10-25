@@ -17,8 +17,8 @@ dateCreated: 2026-05-15T13:00:00.000Z
 > **รูปแบบ audit:** มาตรฐาน `created_*` / `updated_*` / `deleted_*`; **สองต้นเอกสารคู่ขนาน ไม่มี parent `tb_inventory_adjustment` ร่วม**
 
 > **แหล่งความจริง:** Prisma schema ของ backend อ่านไฟล์เหล่านี้ก่อนเสมอเมื่อเขียนหรืออัปเดตหน้านี้:
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
 
 ## 1. ภาพรวม
 
@@ -292,10 +292,10 @@ tb_inventory_transaction  (header: inventory_doc_type ∈ {stock_in, stock_out},
 
 ## 6. แหล่งอ้างอิง
 
-- **หลัก (แหล่งความจริง):** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (`tb_adjustment_type`, `tb_stock_in`, `tb_stock_in_detail`, `tb_stock_in_comment`, `tb_stock_in_detail_comment`, `tb_stock_out`, `tb_stock_out_detail`, `tb_stock_out_comment`, `tb_stock_out_detail_comment`; enums `enum_adjustment_type`, `enum_doc_status`, `enum_last_action`, `enum_comment_type`)
+- **หลัก (แหล่งความจริง):** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (`tb_adjustment_type`, `tb_stock_in`, `tb_stock_in_detail`, `tb_stock_in_comment`, `tb_stock_in_detail_comment`, `tb_stock_out`, `tb_stock_out_detail`, `tb_stock_out_comment`, `tb_stock_out_detail_comment`; enums `enum_adjustment_type`, `enum_doc_status`, `enum_last_action`, `enum_comment_type`)
 - **Backend services:** `apps/micro-business/src/inventory/stock-in/stock-in.service.ts`, `.../stock-out/stock-out.service.ts` (`create` → draft, `update` → `/save`, `commit`, `voidStockIn` / `voidStockOut`, `getStockMovements`), `.../inventory-period.helper.ts` (guard วันที่), `.../inventory-transaction/inventory-transaction.service.ts` (`executeAdjustmentIn`/`executeAdjustmentOut`), `apps/backend-gateway/src/application/stock-ins/`, `stock-outs/` (`GET /`, `GET /:id`, `GET /:id/stock-movements`, `POST /`, `PATCH /:id/save`, `PATCH /:id/commit`, `…/:id/void`, `GET /:id/print-viewer`, CRUD ของ `…/details`), `inventory-adjustments/` (gateway read-only ที่รวม stock-in + stock-out สำหรับหน้ารายการและ print viewer)
-- **Frontend:** `../carmen-inventory-frontend-react/routes/inventory-management/inventory-adjustment/` (`ia-form.tsx`, `ia-form-hero.tsx`, `ia-form-schema.ts`, `ia-item-fields.tsx`, `use-ia-item-table.tsx`, `use-inventory-adjustment.ts`, `ia-component.tsx`), `constant/inventory-adjustment.ts` (`IA_STATUS_CONFIG`: icon ของ draft / in_progress / completed / voided)
+- **Frontend:** `../carmen-frontend/routes/inventory-management/inventory-adjustment/` (`ia-form.tsx`, `ia-form-hero.tsx`, `ia-form-schema.ts`, `ia-item-fields.tsx`, `use-ia-item-table.tsx`, `use-inventory-adjustment.ts`, `ia-component.tsx`), `constant/inventory-adjustment.ts` (`IA_STATUS_CONFIG`: icon ของ draft / in_progress / completed / voided)
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/inventory/stock-in/`, `inventory/stock-out/`, `inventory/inventory-adjustment/`
 - **รอง (การตรวจสอบไขว้แนวคิด แทนที่ด้วยโค้ด — ดู § 5):** `../carmen/docs/inventory-adjustment/INV-ADJ-Overview.md`, `INV-ADJ-PRD.md`, `INV-ADJ-Business-Requirements.md`, `INV-ADJ-Business-Logic.md`, `INV-ADJ-Component-Structure.md`
-- E2E: ไม่มี spec `inventory-adjustment` เฉพาะ; แคตตาล็อก manual `../carmen-inventory-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (60 เคส); `tests/031-adjustment-type.spec.ts` ครอบคลุมเฉพาะหน้าจอ master data ของ reason code
+- E2E: ไม่มี spec `inventory-adjustment` เฉพาะ; แคตตาล็อก manual `../carmen-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (60 เคส); `tests/031-adjustment-type.spec.ts` ครอบคลุมเฉพาะหน้าจอ master data ของ reason code
 - โมดูลที่เกี่ยวข้อง: [inventory](/th/inventory/inventory) (ledger ร่วม — `tb_inventory_transaction` / `tb_inventory_transaction_detail` / `tb_inventory_transaction_cost_layer`), [costing](/th/inventory/costing) (การสร้าง FIFO layer บน Stock-In, การบริโภค FIFO / คำนวณค่าเฉลี่ยถ่วงน้ำหนักใหม่บน Stock-Out), [physical-count](/th/inventory/physical-count) (สร้างแถว `tb_stock_in`/`tb_stock_out` โดยตรงตอน commit ผลต่าง — ดู landing page § 2), [product](/th/inventory/product)

@@ -24,7 +24,7 @@ dateCreated: 2026-07-29T10:30:00.000Z
 
 ## 1. คืออะไรและใครใช้
 
-นี่คือสองหน้าจอแยกกันที่ทั้งคู่อ่านและแก้ไข **แถว `tb_business_unit` ของ business unit ปัจจุบันเอง** — ตารางเดียวกับที่ [master-data/business-unit](/th/inventory/master-data/business-unit) บันทึกไว้จากมุมของ platform admin console หน้านั้นครอบคลุมฟอร์ม edit ของ `carmen-platform` (identity, สกุลเงิน, costing method, module enablement, tenant DB connection) ส่วนสองหน้าจอนี้คือ**ฝั่ง tenant ภายในแอป** ที่ Sysadmin เข้าถึงได้จากใน Carmen Blue เอง และแก้ไข subset ของฟิลด์ในแถวเดียวกันที่**ไม่ทับซ้อนกัน**:
+นี่คือสองหน้าจอแยกกันที่ทั้งคู่อ่านและแก้ไข **แถว `tb_business_unit` ของ business unit ปัจจุบันเอง** — ตารางเดียวกับที่ [master-data/business-unit](/th/inventory/master-data/business-unit) บันทึกไว้จากมุมของ platform admin console หน้านั้นครอบคลุมฟอร์ม edit ของ `carmen-backstage` (identity, สกุลเงิน, costing method, module enablement, tenant DB connection) ส่วนสองหน้าจอนี้คือ**ฝั่ง tenant ภายในแอป** ที่ Sysadmin เข้าถึงได้จากใน Carmen Blue เอง และแก้ไข subset ของฟิลด์ในแถวเดียวกันที่**ไม่ทับซ้อนกัน**:
 
 - **Company Profile** (`/system-admin/company-profile`) — identity (ชื่อ, alias, description, info), ฟิลด์ costing/licensing แบบ read-only, สกุลเงิน default, ที่อยู่ hotel property, ที่อยู่ company legal, branding (logo/avatar, read-only), และค่า default ของ date/time/number-format
 - **Default Setting** (`/system-admin/default-setting`) — array JSONB `config` ในแถวเดียวกัน: toggle การทำงานของ PR, SI, และ PO บวก selector ของ print-form template ต่อประเภทเอกสาร
@@ -81,7 +81,7 @@ Source: `types/business-unit.ts` (`BusinessUnitDetail`) เทียบกับ
 | Date & Time | `timezone`, `date_format`, `date_time_format`, `time_format`, `short_time_format`, `long_time_format` | ได้ — ทั้งหมดเป็น `<select>` จาก option list ตายตัวใน `company-profile-options.ts` |
 | Number Formats | `amount_format`, `quantity_format`, `recipe_format` | ได้ — แต่ละตัวเป็นคู่ `{ locales, minimumIntegerDigits }` |
 
-ที่ไม่แสดงบนหน้าจอนี้เลย: `hotel_latitude/longitude`, `company_latitude/longitude`, `id`, `cluster_id`, `is_hq`, `is_active`, `doc_version`, `audit` — มีอยู่ใน `BusinessUnitDetail` แต่ไม่มีฟิลด์บนหน้าจอในแอปทั้งสองเลย (บางตัวแก้ได้เฉพาะจาก platform admin console ของ `carmen-platform` — ดู [master-data/business-unit](/th/inventory/master-data/business-unit)) หมายเหตุว่า `db_connection` ก็ไม่มีอยู่แล้วเช่นกัน: ตั้งแต่ BE `e54248d88` (2026-08-13) BU อ้างอิง **database pool + schema** ของ platform แทนการเก็บ credential ของตัวเอง และ endpoint เปิดเผย credential ถูกลบไปแล้ว
+ที่ไม่แสดงบนหน้าจอนี้เลย: `hotel_latitude/longitude`, `company_latitude/longitude`, `id`, `cluster_id`, `is_hq`, `is_active`, `doc_version`, `audit` — มีอยู่ใน `BusinessUnitDetail` แต่ไม่มีฟิลด์บนหน้าจอในแอปทั้งสองเลย (บางตัวแก้ได้เฉพาะจาก platform admin console ของ `carmen-backstage` — ดู [master-data/business-unit](/th/inventory/master-data/business-unit)) หมายเหตุว่า `db_connection` ก็ไม่มีอยู่แล้วเช่นกัน: ตั้งแต่ BE `e54248d88` (2026-08-13) BU อ้างอิง **database pool + schema** ของ platform แทนการเก็บ credential ของตัวเอง และ endpoint เปิดเผย credential ถูกลบไปแล้ว
 
 Print-form key แต่ละตัวสร้างจาก `printFormConfigKey(type)` → `print-form.<type>` (เช่น `print-form.pr`; `lib/print-form-config.ts:26-28`)
 
@@ -105,20 +105,20 @@ Print-form key แต่ละตัวสร้างจาก `printFormConfig
 
 ## 7. ความเชื่อมโยงข้ามโมดูล
 
-- [master-data/business-unit](/th/inventory/master-data/business-unit) — โมเดลข้อมูล `tb_business_unit` ที่เป็นทางการ (platform schema) และ edit surface ของ platform admin console `carmen-platform` เองสำหรับฟิลด์ที่สองหน้าจอนี้ไม่ได้แสดง
+- [master-data/business-unit](/th/inventory/master-data/business-unit) — โมเดลข้อมูล `tb_business_unit` ที่เป็นทางการ (platform schema) และ edit surface ของ platform admin console `carmen-backstage` เองสำหรับฟิลด์ที่สองหน้าจอนี้ไม่ได้แสดง
 - [system-config](/th/inventory/system-config) — module แม่; หน้าจอทั้งสองนี้อยู่ข้าง [system-config/workflow](/th/inventory/system-config/workflow), [system-config/period](/th/inventory/system-config/period) ฯลฯ ในฐานะ configuration ที่ Sysadmin ใช้
 - [reporting-audit](/th/inventory/reporting-audit) — แหล่งของ catalog report-template ที่ section Print Forms ของ Default Setting เลือกจาก
 - [purchase-request](/th/inventory/purchase-request), [purchase-order](/th/inventory/purchase-order), [inventory-adjustment](/th/inventory/inventory-adjustment) — module ที่ config item ของ Default Setting ตั้งใจจะขับพฤติกรรมการพิมพ์/ตั้งราคา (การใช้งานจริงไม่ได้ re-trace อย่างเป็นอิสระในรอบนี้)
 
 ## 8. แหล่งอ้างอิง
 
-- **Frontend routes:** `../carmen-inventory-frontend-react/routes/system-admin/company-profile/company-profile.route.tsx` + `company-profile-component.tsx`; `routes/system-admin/default-setting/default-setting.route.tsx` + `default-setting-component.tsx`; redirect ที่ `routes/router.tsx` (`business-setting` → `<Navigate>`)
-- **Form/registry ที่ใช้ร่วมกัน (import โดยทั้งสองหน้าจอ):** `../carmen-inventory-frontend-react/routes/system-admin/company-profile/company-profile-form-schema.ts`, `company-profile-config-registry.ts`, `company-profile-ui.tsx`, `company-profile-options.ts`
-- **Frontend hooks:** `../carmen-inventory-frontend-react/hooks/use-business-unit.ts` — `useBusinessUnit()`, `useUpdateBusinessUnit()`
-- **Frontend types:** `../carmen-inventory-frontend-react/types/business-unit.ts` — `BusinessUnitDetail`, `BusinessUnitEditable`, `BusinessUnitConfigItem`
-- **API endpoint:** `../carmen-inventory-frontend-react/constant/api-endpoints.ts` — `BUSINESS_UNIT: "/api/proxy/api/business-units"`
-- **ประวัติการออกแบบ:** `../carmen-inventory-frontend-react/docs/superpowers/specs/2026-07-10-default-setting-page-split-design.md` + `.../plans/2026-07-10-default-setting-page-split.md`, `.../specs/2026-07-09-business-setting-{pr,si,po}-config-section-design.md` + `.../plans/2026-07-09-business-setting-{pr,si,po}-config-section.md` — การแยกจากหน้า "Business Setting" เดียวมาเป็นสองหน้าจอนี้ (suffix `-design` เป็น convention เฉพาะของ `specs/` เท่านั้น; ไฟล์ `plans/` คู่กันใช้ basename เดียวกันแต่ไม่มี suffix นี้)
-- **Prisma:** `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_business_unit`; ดู [master-data/business-unit](/th/inventory/master-data/business-unit) §8 สำหรับการอ้างอิงเต็ม คอลัมน์ที่ drop ตั้งแต่ baseline: `max_license_users` (`59c841346`), คอลัมน์ credential ถูกแทนด้วยการอ้างอิง database-pool (`e54248d88`)
-- **Gateway:** `../carmen-turborepo-backend-v2/apps/backend-gateway/src/application/user-business-units/user-business-units.controller.ts` (`GET`/`PUT`/`PATCH /api/business-units`, `POST /api/business-units/default`)
-- **Nav / permission:** `../carmen-inventory-frontend-react/constant/module-list.ts:592-607`, `constant/permissions.ts` (`system_admin.business_unit`)
-- **E2E:** `../carmen-inventory-frontend-e2e/docs/test-cases/1114-company-profile.md` (29 case), `1115-default-setting.md` (30 case) — แคตตาล็อกเท่านั้น ไม่มี Playwright spec
+- **Frontend routes:** `../carmen-frontend/routes/system-admin/company-profile/company-profile.route.tsx` + `company-profile-component.tsx`; `routes/system-admin/default-setting/default-setting.route.tsx` + `default-setting-component.tsx`; redirect ที่ `routes/router.tsx` (`business-setting` → `<Navigate>`)
+- **Form/registry ที่ใช้ร่วมกัน (import โดยทั้งสองหน้าจอ):** `../carmen-frontend/routes/system-admin/company-profile/company-profile-form-schema.ts`, `company-profile-config-registry.ts`, `company-profile-ui.tsx`, `company-profile-options.ts`
+- **Frontend hooks:** `../carmen-frontend/hooks/use-business-unit.ts` — `useBusinessUnit()`, `useUpdateBusinessUnit()`
+- **Frontend types:** `../carmen-frontend/types/business-unit.ts` — `BusinessUnitDetail`, `BusinessUnitEditable`, `BusinessUnitConfigItem`
+- **API endpoint:** `../carmen-frontend/constant/api-endpoints.ts` — `BUSINESS_UNIT: "/api/proxy/api/business-units"`
+- **ประวัติการออกแบบ:** `../carmen-frontend/docs/superpowers/specs/2026-07-10-default-setting-page-split-design.md` + `.../plans/2026-07-10-default-setting-page-split.md`, `.../specs/2026-07-09-business-setting-{pr,si,po}-config-section-design.md` + `.../plans/2026-07-09-business-setting-{pr,si,po}-config-section.md` — การแยกจากหน้า "Business Setting" เดียวมาเป็นสองหน้าจอนี้ (suffix `-design` เป็น convention เฉพาะของ `specs/` เท่านั้น; ไฟล์ `plans/` คู่กันใช้ basename เดียวกันแต่ไม่มี suffix นี้)
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_business_unit`; ดู [master-data/business-unit](/th/inventory/master-data/business-unit) §8 สำหรับการอ้างอิงเต็ม คอลัมน์ที่ drop ตั้งแต่ baseline: `max_license_users` (`59c841346`), คอลัมน์ credential ถูกแทนด้วยการอ้างอิง database-pool (`e54248d88`)
+- **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/user-business-units/user-business-units.controller.ts` (`GET`/`PUT`/`PATCH /api/business-units`, `POST /api/business-units/default`)
+- **Nav / permission:** `../carmen-frontend/constant/module-list.ts:592-607`, `constant/permissions.ts` (`system_admin.business_unit`)
+- **E2E:** `../carmen-frontend-e2e/docs/test-cases/1114-company-profile.md` (29 case), `1115-default-setting.md` (30 case) — แคตตาล็อกเท่านั้น ไม่มี Playwright spec

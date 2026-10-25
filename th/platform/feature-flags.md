@@ -13,7 +13,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 โมดูล **Feature Flags** คือหน้าเดียว `FeatureFlagManagement` ที่ `/platform/features` ซึ่งตั้งสวิตช์การมองเห็นสามสถานะ — `active`, `inactive`, หรือ `hide` — ให้กับทุกแถวเมนูที่ถูก gate ไว้ ทั้งใน sidebar ของ Platform admin และ sidebar ของ Cluster-admin ที่แยกต่างหาก มันคือกลไกที่ทุกโมดูลอื่นในวิกินี้ระบุ feature key ไว้ และเป็นโมดูลเดียวที่แถวเมนูของตัวเองตั้งใจไม่มี feature key เลย (§2) ไม่มีหน้าจอไหนในผลิตภัณฑ์คล้ายหน้านี้: ไม่มีตาราง ไม่มีการค้นหา ไม่มีการแบ่งหน้า และไม่ได้แก้ไขอะไรที่คนสร้างขึ้น — มันแก้ไขแค็ตตาล็อกคงที่ที่ฝังไว้ในตัว build ของ frontend (§3.3)
 
 > **At a Glance**
-> **Component:** `FeatureFlagManagement` &nbsp;·&nbsp; **Route:** `/platform/features` &nbsp;·&nbsp; **Nav:** `permission: 'feature_flag.manage'` **ไม่มี `feature` key** — ตั้งใจไม่ gate ด้วย feature flag (§2) &nbsp;·&nbsp; **ด่านอ่าน:** ไม่มี — `GET` เปิดให้ทุกคนที่ล็อกอินแล้ว (§4.2) &nbsp;·&nbsp; **ด่านเขียน:** `feature_flag.manage` เท่านั้น มีเฉพาะ role bundle `Platform Admin` ในบรรดา role แพลตฟอร์มที่ seed ไว้ทั้งสี่ (§4.1) &nbsp;·&nbsp; **ขอบเขต:** flag key ทั้งหมด 28 ตัว — 24 ตัวสำหรับ Platform console และ 4 ตัวสำหรับ Cluster-admin console ที่แยกต่างหาก (§3.3) &nbsp;·&nbsp; **ชุดทดสอบ e2e:** **ไม่มี** — `../carmen-platform-e2e/tests/` ไม่มีโฟลเดอร์ `feature-flags` เลย ทุกข้อความในหน้านี้มาจากการอ่าน implementation ของ `../carmen-platform` และ `../carmen-turborepo-backend-v2` โดยตรง (§4.4) &nbsp;·&nbsp; **หน้าย่อย:** 1
+> **Component:** `FeatureFlagManagement` &nbsp;·&nbsp; **Route:** `/platform/features` &nbsp;·&nbsp; **Nav:** `permission: 'feature_flag.manage'` **ไม่มี `feature` key** — ตั้งใจไม่ gate ด้วย feature flag (§2) &nbsp;·&nbsp; **ด่านอ่าน:** ไม่มี — `GET` เปิดให้ทุกคนที่ล็อกอินแล้ว (§4.2) &nbsp;·&nbsp; **ด่านเขียน:** `feature_flag.manage` เท่านั้น มีเฉพาะ role bundle `Platform Admin` ในบรรดา role แพลตฟอร์มที่ seed ไว้ทั้งสี่ (§4.1) &nbsp;·&nbsp; **ขอบเขต:** flag key ทั้งหมด 28 ตัว — 24 ตัวสำหรับ Platform console และ 4 ตัวสำหรับ Cluster-admin console ที่แยกต่างหาก (§3.3) &nbsp;·&nbsp; **ชุดทดสอบ e2e:** **ไม่มี** — `../carmen-backstage-e2e/tests/` ไม่มีโฟลเดอร์ `feature-flags` เลย ทุกข้อความในหน้านี้มาจากการอ่าน implementation ของ `../carmen-backstage` และ `../carmen-turborepo-backend` โดยตรง (§4.4) &nbsp;·&nbsp; **หน้าย่อย:** 1
 
 ![แฟล็กฟีเจอร์ (Feature Flags) screen](/screenshots/platform/feature-flags/index.png)
 
@@ -70,7 +70,7 @@ filter ของ `buildPlatformNav()` เอง (`platformNav.ts:91-98`) คื�
 
 ### 4.2 การบังคับใช้ฝั่ง backend
 
-`../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/feature_flags/feature_flags.controller.ts`, HEAD `937cf5ac4` (2026-09-06):
+`../carmen-turborepo-backend/apps/backend-gateway/src/platform/feature_flags/feature_flags.controller.ts`, HEAD `937cf5ac4` (2026-09-06):
 
 | Route | Guard | ที่มา |
 | --- | --- | --- |
@@ -91,7 +91,7 @@ filter ของ `buildPlatformNav()` เอง (`platformNav.ts:91-98`) คื�
 
 ### 4.4 ชุดทดสอบ e2e: ไม่มี
 
-`../carmen-platform-e2e/tests/` ไม่มีโฟลเดอร์ `feature-flags` (หรือชื่อใกล้เคียง) เลย — ยืนยันโดย list โครงสร้าง `tests/` ของ repository นั้นตรง ๆ ทุกข้อความเชิงพฤติกรรมในหน้านี้และหน้า data model ย่อยของมันมาจากการอ่าน implementation ของ `../carmen-platform` และ `../carmen-turborepo-backend-v2` ไม่ใช่จาก spec ที่รันได้จริง
+`../carmen-backstage-e2e/tests/` ไม่มีโฟลเดอร์ `feature-flags` (หรือชื่อใกล้เคียง) เลย — ยืนยันโดย list โครงสร้าง `tests/` ของ repository นั้นตรง ๆ ทุกข้อความเชิงพฤติกรรมในหน้านี้และหน้า data model ย่อยของมันมาจากการอ่าน implementation ของ `../carmen-backstage` และ `../carmen-turborepo-backend` ไม่ใช่จาก spec ที่รันได้จริง
 
 ## 5. โมดูลที่เกี่ยวข้อง
 
@@ -101,19 +101,19 @@ filter ของ `buildPlatformNav()` เอง (`platformNav.ts:91-98`) คื�
 
 ## 6. แหล่งอ้างอิง
 
-ทุก path ด้านล่างเป็น `../carmen-platform` (Platform admin SPA, HEAD `157a65e`, 2026-09-04) เว้นแต่จะขึ้นต้นด้วย `../carmen-turborepo-backend-v2` (backend monorepo, HEAD `937cf5ac4`, 2026-09-06)
+ทุก path ด้านล่างเป็น `../carmen-backstage` (Platform admin SPA, HEAD `157a65e`, 2026-09-04) เว้นแต่จะขึ้นต้นด้วย `../carmen-turborepo-backend` (backend monorepo, HEAD `937cf5ac4`, 2026-09-06)
 
-- `../carmen-platform/src/pages/FeatureFlagManagement.tsx` — ตัว component และ doc-comment "Config page, not Management" ของมันเอง (§1)
-- `../carmen-platform/src/constants/featureFlags.ts` — `FEATURE_CATALOG`, คอมเมนต์เรื่อง route ที่ไม่ gate (§2), คอมเมนต์กฎ contiguity
-- `../carmen-platform/src/components/nav/platformNav.ts` (บรรทัด 9-56, 47-49, 91-103) และ `src/components/nav/clusterAdminNav.ts` (บรรทัด 10-26) — แถว nav เอง, `buildPlatformNav()`/`buildClusterAdminNav()` (§2, §3)
-- `../carmen-platform/src/components/Sidebar.tsx` (บรรทัด 105-114) — การจัดกลุ่มแบบ consecutive-run ที่ข้อความเรื่อง contiguity ของหน้านี้ถูกตรวจสอบด้วย (§3.2)
-- `../carmen-platform/src/App.tsx` (บรรทัด 99-106, 555-561, 563-575, 606) — ทุก route ที่อ้างถึงใน §2 และ §4.1
-- `../carmen-platform/src/pages/ComingSoon.tsx` — หมายเหตุออกแบบเรื่องไม่มีรหัสสถานะ (§4.3)
-- `../carmen-platform/src/i18n/en.ts` (บรรทัด 15-43, 965-985) — ป้ายชื่อ nav และข้อความของหน้าเอง (§4.3)
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/platform/feature_flags/feature_flags.controller.ts` — คู่ `GET`/`PUT` เฉพาะทางและ guard ของมัน (§4.2)
-- `../carmen-turborepo-backend-v2/apps/backend-gateway/src/auth/guards/platform-permission.guard.ts` — super-admin short-circuit ที่ทุก route ซึ่งมี `@RequirePlatformPermission` ใช้ร่วมกัน (§4.2)
-- `../carmen-turborepo-backend-v2/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts` และ `seed.platform-role-permission.data.ts` — entry catalog ของ `feature_flag.manage` และการมอบให้ role เดียว (§4.1, §4.3)
-- `../carmen-platform-e2e/tests/` — list ตรง ๆ เพื่อยืนยันว่าไม่มีชุดทดสอบ `feature-flags` (§4.4)
+- `../carmen-backstage/src/pages/FeatureFlagManagement.tsx` — ตัว component และ doc-comment "Config page, not Management" ของมันเอง (§1)
+- `../carmen-backstage/src/constants/featureFlags.ts` — `FEATURE_CATALOG`, คอมเมนต์เรื่อง route ที่ไม่ gate (§2), คอมเมนต์กฎ contiguity
+- `../carmen-backstage/src/components/nav/platformNav.ts` (บรรทัด 9-56, 47-49, 91-103) และ `src/components/nav/clusterAdminNav.ts` (บรรทัด 10-26) — แถว nav เอง, `buildPlatformNav()`/`buildClusterAdminNav()` (§2, §3)
+- `../carmen-backstage/src/components/Sidebar.tsx` (บรรทัด 105-114) — การจัดกลุ่มแบบ consecutive-run ที่ข้อความเรื่อง contiguity ของหน้านี้ถูกตรวจสอบด้วย (§3.2)
+- `../carmen-backstage/src/App.tsx` (บรรทัด 99-106, 555-561, 563-575, 606) — ทุก route ที่อ้างถึงใน §2 และ §4.1
+- `../carmen-backstage/src/pages/ComingSoon.tsx` — หมายเหตุออกแบบเรื่องไม่มีรหัสสถานะ (§4.3)
+- `../carmen-backstage/src/i18n/en.ts` (บรรทัด 15-43, 965-985) — ป้ายชื่อ nav และข้อความของหน้าเอง (§4.3)
+- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/feature_flags/feature_flags.controller.ts` — คู่ `GET`/`PUT` เฉพาะทางและ guard ของมัน (§4.2)
+- `../carmen-turborepo-backend/apps/backend-gateway/src/auth/guards/platform-permission.guard.ts` — super-admin short-circuit ที่ทุก route ซึ่งมี `@RequirePlatformPermission` ใช้ร่วมกัน (§4.2)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts` และ `seed.platform-role-permission.data.ts` — entry catalog ของ `feature_flag.manage` และการมอบให้ role เดียว (§4.1, §4.3)
+- `../carmen-backstage-e2e/tests/` — list ตรง ๆ เพื่อยืนยันว่าไม่มีชุดทดสอบ `feature-flags` (§4.4)
 
 ## 7. หน้าย่อยของโมดูลนี้
 
