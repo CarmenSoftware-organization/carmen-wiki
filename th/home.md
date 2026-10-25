@@ -20,7 +20,7 @@ dateCreated: 2026-05-16T14:00:00.000Z
 
 [เปิด Inventory book →](/th/inventory)
 
-## 2. Carmen Blue Platform
+## 2. Carmen Blue Backstage
 
 Platform admin — clusters, business units, users และ report templates ที่เป็นรากฐานของทุก Carmen Blue deployment
 

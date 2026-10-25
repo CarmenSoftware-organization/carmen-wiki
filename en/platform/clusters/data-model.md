@@ -20,7 +20,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 ## 1. Overview
 
-`tb_cluster` is the top-level tenant container in the Carmen Blue Platform. Every business unit and every cluster-scoped user membership hangs beneath a cluster row. Clusters represent a licensable grouping of business units — typically one hotel brand, hotel group, or company entity.
+`tb_cluster` is the top-level tenant container in Carmen Blue. Every business unit and every cluster-scoped user membership hangs beneath a cluster row. Clusters represent a licensable grouping of business units — typically one hotel brand, hotel group, or company entity.
 
 **Licensing was reworked between 2026-07-29 and 2026-09-04** (Tasks 2–13 of the licensing feature, `../carmen-platform` history). Two static caps that earlier revisions of this page documented as columns on `tb_cluster`/`tb_business_unit` **no longer exist**:
 

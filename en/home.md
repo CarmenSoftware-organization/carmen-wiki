@@ -20,7 +20,7 @@ Inventory ERP for hospitality — costing, GRN, physical count, spot check, valu
 
 [Open the Inventory book →](/en/inventory)
 
-## 2. Carmen Blue Platform
+## 2. Carmen Blue Backstage
 
 Platform admin — clusters, business units, users, and report templates that underlie every Carmen Blue deployment.
 

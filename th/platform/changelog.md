@@ -17,7 +17,7 @@ dateCreated: 2026-06-09T00:00:00.000Z
 
 ## 1. คืออะไร และใครใช้
 
-Changelog คือบันทึกที่มีเวอร์ชันและเปิดเป็น **public** สำหรับสิ่งที่เผยแพร่ในผลิตภัณฑ์ Carmen Blue Platform admin ไฟล์ JSON เดียวคือ (`src/data/changelog.json`) คือแหล่งข้อมูลหลัก โดย React app นำเข้าแบบ static (ไม่มีการดึงข้อมูลขณะ runtime) เพื่อแสดงหน้า `/changelog` และสคริปต์ Node จะสร้าง `CHANGELOG.md` ที่อ่านได้ (รูปแบบ Keep a Changelog) ไว้ที่รูทของ repo ใหม่ทุกครั้ง `CHANGELOG.md` **ห้ามแก้ไขด้วยมือ** — ให้แก้ไขที่ JSON เท่านั้น
+Changelog คือบันทึกที่มีเวอร์ชันและเปิดเป็น **public** สำหรับสิ่งที่เผยแพร่ในผลิตภัณฑ์ Carmen Blue Backstage admin ไฟล์ JSON เดียวคือ (`src/data/changelog.json`) คือแหล่งข้อมูลหลัก โดย React app นำเข้าแบบ static (ไม่มีการดึงข้อมูลขณะ runtime) เพื่อแสดงหน้า `/changelog` และสคริปต์ Node จะสร้าง `CHANGELOG.md` ที่อ่านได้ (รูปแบบ Keep a Changelog) ไว้ที่รูทของ repo ใหม่ทุกครั้ง `CHANGELOG.md` **ห้ามแก้ไขด้วยมือ** — ให้แก้ไขที่ JSON เท่านั้น
 
 **ผู้เขียน:** นักพัฒนา (เพิ่มรายการใต้บัฟเฟอร์ `unreleased` ระหว่างการทำงาน) **ผู้อ่าน:** ทุกคน — หน้านี้เปิดสาธารณะ
 

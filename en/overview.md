@@ -242,6 +242,6 @@ Adjacent systems outside this wiki's scope: the Knowledge Base / AI chat (`knowl
 ## 7. Where to Go Next
 
 - [Carmen Blue book](/en/inventory) — module-by-module reference for inventory, procurement and costing
-- [Carmen Blue Platform book](/en/platform) — clusters, business units, users, RBAC and report templates
+- [Carmen Blue Backstage book](/en/platform) — clusters, business units, users, RBAC and report templates
 - [Costing](/en/inventory/costing) — how FIFO and weighted-average cost layers are calculated
 - [Access Control](/en/inventory/access-control) — how permissions apply inside a business unit

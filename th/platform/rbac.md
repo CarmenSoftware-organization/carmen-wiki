@@ -10,7 +10,7 @@ dateCreated: 2026-06-10T15:00:00.000Z
 
 # RBAC ของแพลตฟอร์ม (Platform RBAC)
 
-โมดูล **Platform RBAC** คือระบบควบคุมการเข้าถึงของ Carmen Blue Platform admin SPA โมดูลนี้แทนที่ role enum ค่าเดียวแบบเดิมด้วยแบบจำลองที่อิง permission: **permission catalog** ที่ backend เป็นเจ้าของกำหนด key รูปแบบ `resource.action`, **role** รวม key เหล่านั้นเป็นชุด, **assignment** ผูก role เข้ากับผู้ใช้ที่ scope ระดับทั้งแพลตฟอร์มหรือเฉพาะ cluster และ **flag super-admin** ที่แยกต่างหากจะ bypass ทุกการตรวจสอบ route guard, รายการ sidebar และ gate ของ action ในหน้าทุกตัวใน SPA ล้วน resolve กับระบบนี้
+โมดูล **Platform RBAC** คือระบบควบคุมการเข้าถึงของ Carmen Blue Backstage admin SPA โมดูลนี้แทนที่ role enum ค่าเดียวแบบเดิมด้วยแบบจำลองที่อิง permission: **permission catalog** ที่ backend เป็นเจ้าของกำหนด key รูปแบบ `resource.action`, **role** รวม key เหล่านั้นเป็นชุด, **assignment** ผูก role เข้ากับผู้ใช้ที่ scope ระดับทั้งแพลตฟอร์มหรือเฉพาะ cluster และ **flag super-admin** ที่แยกต่างหากจะ bypass ทุกการตรวจสอบ route guard, รายการ sidebar และ gate ของ action ในหน้าทุกตัวใน SPA ล้วน resolve กับระบบนี้
 
 > **Permission key, feature key, superAdminOnly** (`src/components/nav/platformNav.ts`): รายการ nav **Platform Roles** (ป้ายชื่อ "Platform Roles" ไม่ใช่ "Roles" อีกต่อไป) มี `permission: 'platform_role.read'`, `feature: 'platform_roles'`, ไม่มี `superAdminOnly` ส่วน Permission Catalog **ไม่มีรายการ nav เลย** — ดู §1
 
