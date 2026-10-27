@@ -2,7 +2,7 @@
 title: Recipe Category
 description: Hierarchical category taxonomy for recipes — drives menu engineering, cost-band reporting, and recipe library navigation.
 published: true
-date: '2026-09-28T16:00:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: recipe, category, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # Recipe Category
 
 > **At a Glance**
-> **Owner:** Chef / Product Admin &nbsp;·&nbsp; **Table:** `tb_recipe_category` &nbsp;·&nbsp; **Shape:** Hierarchical tree (self-FK on `parent_id`) &nbsp;·&nbsp; **Used by:** [recipe](/en/inventory/recipe) header, menu engineering, cost-band reports &nbsp;·&nbsp; **Seeds:** `default_cost_settings` + `default_margins` onto new recipes
+> **Owner:** Chef / Product Admin &nbsp;·&nbsp; **Table:** `tb_recipe_category` &nbsp;·&nbsp; **Shape:** Hierarchical tree (self-FK on `parent_id`) &nbsp;·&nbsp; **Used by:** [recipe](/en/inventory/recipe) header, menu engineering, cost-band reports &nbsp;·&nbsp; **Seeds:** the recipe form's target food-cost % (from `default_cost_settings`); other defaults are shown for comparison only
 
 ![Recipe Category screen](/screenshots/recipe/category.png)
 
@@ -19,9 +19,11 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **Re-verified 2026-09-22.** Schema and service rules below are unchanged. API contract changes: list/detail responses are serialized through `RecipeCategoryResponseSchema` (`config_recipe-categories/swagger/*`, 2026-09-17) — the parent comes back as `parent: { id, name } | null` and there is **no `parent_id` on the wire** on read (`types/recipe-category.ts`; the grid/form read it from the object since `768af593`); create/update/patch still send `parent_id`. Reads are enriched with an `audit` object instead of raw `created_*`/`updated_*`; `image_url` is included. `GET /api/config/{bu}/recipe-categories` defaults to `sort=code:asc` (`b375b078b`). E2E: `tests/110-op-category.spec.ts` (13 tests, 2026-09-20).
 
+> **Re-verified 2026-10-27.** No backend change to categories. Frontend (`d443837c`, `4e950086`, `8e0d16d8`): the list gains **Food cost** and **Margin** columns and merges the parent into the name column; the edit page replaces the separate cost / margin blocks with one **Pricing** section — food cost %, labor %, overhead %, minimum and target profit margin — plus a stacked bar splitting 100 % of the selling price into food cost │ labor │ overhead │ remaining profit with markers for the minimum / target margin (`recipe-category-price-breakdown.tsx`; it only warns when the three costs overrun the margin markers, never blocks saving). Stored keys: `default_cost_settings.{target_food_cost_percentage, labor_cost_percentage, overhead_percentage}` and `default_margins.{minimum_profit_margin, target_profit_margin}`. **What a recipe inherits:** only `target_food_cost_percentage`, copied into the recipe form when the user changes the recipe's category and the target is still empty (`use-recipe-category-defaults.ts`, `6638a022`) — the other values are shown for comparison on the recipe's costing sheet and are not written; existing recipes are not touched.
+
 ## 1. What & Who
 
-Recipe Category is the **functional classification** over the recipe master, arranged as a tree (e.g. `Food > Main Course > Pasta`). Each category carries **default cost settings** and **default margins** that new recipes inherit at creation — so a property says "all Main Course recipes target 30% food-cost" once, not per recipe.
+Recipe Category is the **functional classification** over the recipe master, arranged as a tree (e.g. `Food > Main Course > Pasta`). Each category carries **default cost settings** and **default margins**; when a user picks the category on a recipe whose target food-cost % is still empty, that target is copied in — so a property says "all Main Course recipes target 30% food-cost" once, not per recipe. Labor, overhead and margin defaults are displayed on the recipe's costing sheet but not copied.
 
 Distinct from [recipe/cuisine](/en/inventory/recipe/cuisine) (flat regional label) and `Course Type` (per-recipe enum). **Maintained by Chef** (or **Product Admin** in some tenants) under Operation Plan → Recipe Category.
 
@@ -84,8 +86,8 @@ Source: tenant schema.
 | `is_active` | `Boolean?` | Yes | Active flag, defaults `true`. |
 | `parent_id` | `String? @db.Uuid` | Yes | Self-FK to parent (null = root). |
 | `level` | `Int` | No | Depth from root, defaults `1`. Materialised. |
-| `default_cost_settings` | `Json @db.JsonB` | No | Target food-cost %, rounding, labor/overhead — seeds new recipes. |
-| `default_margins` | `Json @db.JsonB` | No | Default gross-margin targets. |
+| `default_cost_settings` | `Json @db.JsonB` | No | Keys used by the UI: `target_food_cost_percentage` (copied to a recipe's target), `labor_cost_percentage`, `overhead_percentage` (display only). |
+| `default_margins` | `Json @db.JsonB` | No | Keys used by the UI: `minimum_profit_margin`, `target_profit_margin` (display only). |
 | `info`, `dimension` | `Json?` | Yes | Standard metadata. |
 | `doc_version` | `Int` | No | Optimistic-lock version. |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |

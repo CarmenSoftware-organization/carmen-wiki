@@ -2,7 +2,7 @@
 title: Equipment
 description: Kitchen equipment master — referenced from recipe preparation steps that require specific tools (sous-vide bath, deep fryer, smoker, etc.).
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: recipe, equipment, master-data, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -19,6 +19,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **Re-verified 2026-09-22.** Schema and service rules below are unchanged. `GET /api/config/{bu}/recipe-equipment` defaults to `sort=code:asc` (`b375b078b`); responses are serialized through `RecipeEquipmentResponseSchema`, which returns a `category` `{ id, name }` ref **alongside** the flat `category_id` / `category_name` (the denormalised string is still what the list shows). The form is now seven `SettingSection` blocks (General → Specifications → Photo → Quantity & Settings → Instructions → Maintenance → Additional); create returns to the list, update stays on the page. E2E: catalog only — `../carmen-frontend-e2e/docs/test-cases/130-equipment.md` (45 cases, no spec).
 
+> **Re-verified 2026-10-27.** No backend change to equipment since 2026-09-22. Frontend only (`3c93ea06`, `1cd157b1`): the list and detail now show a **thumbnail**, an **availability** cell `available / total` (`eq-availability.tsx`; the available figure turns red at 0 when units exist, `—` when no quantity is set), the maintenance badge described below, a read-mode summary strip (picture · maintenance state · availability · station), and read mode hides the empty photo block. `available_qty` / `total_qty` remain plain counters with no checkout flow.
+
 ## 1. What & Who
 
 Equipment is the master of kitchen tools and appliances — from hand tools (whisks, mandolins) through large appliances (combi-ovens, blast chillers, sous-vide) to portable mise-en-place gear. Each row carries **identification** (`code`, `name`, `brand`, `model`, `serial_no`), **specs** (capacity, power), **operational text** (operation / safety / cleaning), **maintenance schedule + dates**, **station assignment**, and **quantity counters** (`total_qty`, `available_qty`).
@@ -30,7 +32,7 @@ Recipe **preparation steps** reference equipment so the kitchen workflow planner
 | Task | Where | Notes |
 |---|---|---|
 | Add a new piece of equipment | Operation Plan → Equipment → **+ New** | Pick `category_id`, fill code + name (required) |
-| Update maintenance dates after service | Detail page → Maintenance section | Plain date fields; no overdue indicator was found in source |
+| Update maintenance dates after service | Detail page → Maintenance section | Date fields; the list/detail now show a **maintenance badge** from `next_maintenance_date` (`eq-maintenance.ts`): `overdue` (date before today), `due-soon` (0–14 days ahead, `MAINTENANCE_DUE_SOON_DAYS`), `ok`, or `unset`. Comparison is by local calendar day. Display only — no notification, no validation |
 | Mark equipment portable | Detail page → `is_portable` | Indicates it can move between stations |
 | Adjust on-property count | Detail page → `total_qty` / `available_qty` | Both are plain integer fields the user edits directly — no checkout flow decrements `available_qty` automatically |
 | Retire equipment | Edit → `is_active = false` (soft-delete) | Stays referenceable on historical recipes; hidden from picker |
@@ -71,7 +73,7 @@ flowchart TD
 - **`category_name` is denormalised** for display and refreshed only on the equipment row's own save. Treat the FK (`category_id`) as source of truth; the string is a cache with no rename fan-out from the category side.
 - **Checkout flow not implemented** — `available_qty` / `total_qty` are schema-supported but no consuming UI or cross-field validation is wired today; nothing prevents `available_qty` exceeding `total_qty`.
 - **Equipment on preparation steps is denormalised** onto `tb_recipe_preparation_step.equipment` payload, not a join table (see [recipe/01-data-model](/en/inventory/recipe/01-data-model)). Note the current recipe create/edit screen (`recipe-form.tsx`) has no UI that reads or writes preparation steps at all, so this equipment-on-step linkage is not currently reachable from the recipe form.
-- **No "overdue" badge found.** `last_maintenance_date` / `next_maintenance_date` are plain date fields on the equipment form; no overdue-comparison logic was found in the frontend components or backend service — this callout should be treated as aspirational until a maintenance-status indicator is located in source.
+- **Maintenance badge is display-only.** `next_maintenance_date` drives an `overdue` / `due-soon` (≤ 14 days) / `ok` / `unset` badge on the list and in the detail summary (`eq-maintenance.ts`, `eq-maintenance-badge.tsx`, 2026-10); nothing is validated or notified, and `last_maintenance_date` / `next_maintenance_date` still have no cross-field check in the service or zod DTOs.
 
 ---
 

@@ -2,7 +2,7 @@
 title: Recipe — User Flow
 description: Recipe lifecycle and persona-specific flow files for the recipe module.
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: recipe, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -15,7 +15,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **Workflow lifecycle:** DRAFT ⇄ PUBLISHED ⇄ ARCHIVED — in the current app all transitions are a free status dropdown with timestamp side effects only; the RBAC gates / versioning audit trail described below are design targets
 > **Drill into per-persona views below for action-level detail**
 
-> **Implementation status (verified 2026-07-15).** The flow that exists today is a single admin-gated CRUD journey: recipe list (`/operation-plan/recipe`, search + status/cuisine/category/difficulty filters, list/grid toggle) → detail/edit or new form (header fields, preview-only ingredient grid, image gallery, client-side cost calculator) → save with `doc_version` optimistic locking → optional delete (blocked only by sub-recipe usage). Status is a toolbar dropdown with no gate. There are no per-persona permissions (`operation_plan.view` placeholder gates the whole group), no publish/co-approval mechanics, no versioning or pricing-history writes, and no menu/POS/SR/variance integrations. Persona files linked below describe the target operating model; each carries this same caveat.
+> **Implementation status (re-verified 2026-10-27).** The flow that exists today is the recipe list (`/operation-plan/recipe` — a cost-control catalogue with cost per portion, selling price and food-cost vs target; search + status/cuisine/category/difficulty filters; row menu with Edit) → **cook mode** (`/operation-plan/recipe/:id`, read-only tablet view with step-by-step method and an ingredient checklist) → **edit form** (`/:id/edit` or new: header, costing sheet, product / sub-recipe ingredient lines saved and costed on the server with a Recalculate dialog, editable prep steps, plating / storage notes, image gallery, comments and history) → save with `doc_version` optimistic locking (ingredients are saved first; if that fails the header is not saved) → optional delete (blocked while the recipe is used as a sub-recipe). Status is a toolbar dropdown with no gate. Permissions are the generic `operation_plan.recipe.{view,create,update,delete}` set, not per persona. Beyond the catalogue, POS sales reach stock through [Import POS](/en/inventory/recipe/import-pos) and [Sales Consumption](/en/inventory/recipe/sales-consumption). Still absent: publish / co-approval mechanics, versioning or pricing-history writes, recipe→SR generation, and variance reporting. Persona files linked below describe the target operating model; each carries a matching caveat.
 
 ## 1. Overview
 

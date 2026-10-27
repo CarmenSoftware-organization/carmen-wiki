@@ -2,7 +2,7 @@
 title: Recipe — User Flow — Procurement F&B Ops
 description: Procurement and F&B Operations Manager flow within the recipe module — sizes POs from recipe demand, validates ingredient availability, approves menu-item linkages, signs off menu engineering.
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: recipe, user-flow, procurement-fb-ops, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -14,7 +14,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **Persona:** Procurement Department + F&B Operations Manager &nbsp;·&nbsp; **Module:** [recipe](/en/inventory/recipe) &nbsp;·&nbsp; **Workflow stages:** off-path — strategic upstream (menu-item linkage approve) + purchasing downstream (PO sizing) &nbsp;·&nbsp; **Key permissions (design-target — see status note):** read recipes, approve-menu-link (F&B Ops), raise substitution requests (Procurement)
 > **What this persona does:** Procurement sizes POs from recipe demand and surfaces substitution requests; F&B Ops approves menu-item linkages and runs menu engineering.
 
-> **Implementation status (verified 2026-07-15).** No `recipe:read` / `recipe:approve-menu-link` permission exists (admin-only `operation_plan.view` placeholder), no recipe-explosion or PO-sizing computation exists anywhere (and ingredient lines are not even persisted, so an explosion has nothing to explode), no substitution-request channel exists in the system, and there is no menu-item entity to link. Purchase orders themselves are real ([purchase-order](/en/inventory/purchase-order)) but are sized from PRs, not from recipes. The flow below is the carmen/docs target operating model.
+> **Implementation status (re-verified 2026-10-27).** No `recipe:read` / `recipe:approve-menu-link` permission exists (generic `operation_plan.recipe.*` only). Ingredient lines are now persisted, and a recipe explosion exists for POS sales ([Sales Consumption](/en/inventory/recipe/sales-consumption) — it explodes only for deduction, not for PO sizing), but there is no PO-sizing computation from recipes, no substitution-request channel, and no menu-item entity (the only link is the POS item mapping `tb_pos_item.recipe_id`). Purchase orders themselves are real ([purchase-order](/en/inventory/purchase-order)) but are sized from PRs, not from recipes. The flow below is the carmen/docs target operating model.
 
 ## 1. Role in This Module
 

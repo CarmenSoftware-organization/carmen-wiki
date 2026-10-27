@@ -2,7 +2,7 @@
 title: Cuisine
 description: Cuisine catalogue — regional / style label applied to recipes for menu segmentation (Thai, Italian, French, fusion, etc.).
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: recipe, cuisine, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -18,6 +18,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 ![Cuisine detail screen](/screenshots/recipe/cuisine-detail.png)
 
 > **Re-verified 2026-09-22.** Schema, enum and service rules below are unchanged. `GET /api/config/{bu}/recipe-cuisines` now defaults to `sort=name:asc` (`928f3b950`, 2026-09-13); the list's Region column is plain text rather than a six-colour badge (`3174e9df`). E2E: `tests/111-cuisine.spec.ts` (17 tests, 2026-09-20).
+
+> **Re-verified 2026-10-27.** Backend: `GET .../recipe-cuisines` (list only) returns **`recipe_count`** — non-deleted recipes using the cuisine. Frontend (`a86eb398`, `a96f2cfe`): Region is again shown with a **colour dot + label** (`cuisine-region-label.tsx`; unknown region values render raw with a neutral dot), popular dishes / key ingredients render as chips in an Info table, and the detail page has a **Recipes** section listing up to 8 recipes that use this cuisine (`filter=cuisine_id|string:<id>`, sorted by name; the remainder shown as a count; each links to the recipe's cook view `/operation-plan/recipe/:id`) — useful before deactivating or deleting (the in-use delete block, `RECIPE_CUISINE_IN_USE`, is unchanged). The 2026-09-22 note that Region is plain text is superseded.
 
 ## 1. What & Who
 

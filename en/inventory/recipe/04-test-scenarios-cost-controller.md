@@ -2,7 +2,7 @@
 title: Recipe — Test Scenarios — Cost Controller
 description: Cost Controller's test cases (cost review, drift, co-approval, variance, pricing-history) for the recipe module.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: recipe, test-scenarios, cost-controller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -13,9 +13,9 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **At a Glance**
 > **Persona:** Cost Controller (+ Cost Control Department) &nbsp;·&nbsp; **Module:** [recipe](/en/inventory/recipe) &nbsp;·&nbsp; **Scenarios:** ~26
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **E2E coverage:** none for Cost-Controller flows — automated specs exist only for the master-data screens (`110-op-category`, `111-cuisine`, `121-recipe-equipment-category`, `131-equipment-category`); the recipe screen has a catalog only (`docs/test-cases/120-recipe.md`). Re-verified 2026-09-22 — see [04-test-scenarios](/en/inventory/recipe/04-test-scenarios)
+> **E2E coverage:** none for Cost-Controller flows — automated specs exist only for the master-data screens (`110-op-category`, `111-cuisine`, `121-recipe-equipment-category`, `131-equipment-category`); the recipe screen has a catalog only (`docs/test-cases/120-recipe.md`). Re-verified 2026-10-27 (no new specs since 2026-09-22) — see [04-test-scenarios](/en/inventory/recipe/04-test-scenarios)
 
-> **Implementation status (verified 2026-07-15).** The Cost Controller feature set these scenarios test does not exist: no `recipe:edit-cost` permission or cost-columns-only edit mode, no co-approval gate, no cost-drift or variance dashboards, no `tb_recipe_pricing_history` writes, no cost cascades. What is testable today is the shared recipe form's cost sidebar — manually-entered cost inputs and the client-side derived figures (`use-recipe-cost-calc.ts`, including its `actual_food_cost_percentage = ingredient cost / selling price` formula) — under an admin login. Treat the rest as the design acceptance plan.
+> **Implementation status (re-verified 2026-10-27).** The Cost Controller feature set these scenarios test does not exist: no `recipe:edit-cost` permission or cost-columns-only edit mode, no co-approval gate, no cost-drift or variance dashboards, no `tb_recipe_pricing_history` writes, no cost cascades. What is testable today is the shared recipe form's costing sheet — server-costed ingredient total, typed labor / overhead, and the client-side derived figures (`use-recipe-cost-calc.ts`: `actual_food_cost_percentage = ingredient cost per portion / selling price`, recommended price = ingredient cost per portion / target %, minimum price from the food-cost ceiling) — under a user holding `operation_plan.recipe.*`. Treat the rest as the design acceptance plan.
 
 This page captures the test scenarios that the Cost Controller persona (Cost Controller + Cost Control Department) directly drives in the `recipe` module. The Cost Controller is read across the recipe library and writes on cost / pricing columns only (per `REC_AUTH_006`); their primary work is cost drift monitoring, co-approval of off-target publishes (per `REC_AUTH_007`), and theoretical-vs-actual variance investigation. Scenarios are grouped into **happy paths** (cost-only edit; co-approval at off-target publish; sub-recipe cascade verification; variance dashboard; category-level target adjustment), **RBAC** (cost controller without `recipe:edit-cost`; attempted ingredient edits; auditor read-only side), **validation** (negative tests against `REC_VAL_008` cost percentage bounds, pricing-history integrity), and **edge cases** around high-fanout ingredient drift, sub-recipe deep cascade, currency precision, multi-tenant target settings. Cross-persona handoffs that pivot off the Cost Controller (Scenarios 2, 3, 13 in the parent overview) live in [04-test-scenarios.md](./04-test-scenarios.md), not here.
 
