@@ -1,8 +1,8 @@
 ---
 title: บันทึกกิจกรรม (Activity)
-description: บันทึก activity ระดับ tenant — ทุกการเปลี่ยนสถานะเป็นหนึ่งแถวพร้อม actor, entity, snapshot ก่อน/หลัง, IP และ user agent; อ่านผ่าน /system-admin/activity-log และตั้งแต่ 2026-08 ผ่าน Activity sheet ต่อระเบียนบนทุกหน้ารายการและหน้า detail
+description: บันทึก activity ระดับ tenant — ทุกการเปลี่ยนสถานะเป็นหนึ่งแถวพร้อม actor, entity, snapshot ก่อน/หลัง, IP และ user agent; อ่านผ่าน /system-admin/activity-log และ Activity sheet ต่อระเบียน
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: reporting-audit, activity, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -15,7 +15,15 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ![บันทึกกิจกรรม (Activity) screen](/screenshots/reporting-audit/activity.png)
 
-## สถานะการทำงานจริง (ตรวจสอบซ้ำเมื่อ 2026-09-22)
+## สถานะการทำงานจริง (ตรวจสอบซ้ำเมื่อ 2026-10-27)
+
+**การเปลี่ยนแปลง 2026-10-27** (backend `ef4d6f08f..c9d788829`, `micro-business/src/log/activity-log/`):
+
+1. **ฟิลด์ราคาของ PR/PO ถูกซ่อนในแถว activity** สำหรับผู้เรียกที่ไม่มีสิทธิ์เห็นราคา (`c031d8dac`, 2026-10-22) `ActivityLogService.maskPrices` รัน `maskActivityRows` (`activity-price-mask.ts`) บนทุกเส้นทางอ่าน — list, record timeline, detail — และ `changes` diff ของ endpoint detail คำนวณ **จาก snapshot ที่ถูก mask แล้ว** ราคาที่ซ่อนจึงรั่วผ่าน diff ไม่ได้ ขอบเขต: `entity_type` เป็น `purchase_request`, `purchase_request_detail`, `purchase_order`, `purchase_order_detail`, `purchase_order_detail_tb_purchase_request_detail`; ใช้รายการ key ชุดเดียวกับ document API (`PR_LINE_PRICE_KEYS`, `PR_HEADER_PRICE_KEYS`, `po-price-mask.ts`) กลุ่ม `price_per_unit` และ `total_price` การตัดสินใช้ stage workflow **ปัจจุบัน** ของเอกสารแม่และผู้เรียก (`WorkflowOrchestratorService.resolveHiddenPriceFields`) ไม่ใช่ stage ตอนที่เขียนแถว; key ที่ถูก mask จะ **ถูกตัดออก** จาก snapshot (ไม่ใช่ตั้งเป็น null) รวมถึงภายในตารางลูกซ้อนและ array `data` ของ `createMany` แถวที่ snapshot ไม่ระบุเอกสารแม่ (เช่น log การลบ) จะจับคู่ผ่าน `entity_id` ของบรรทัด รวมถึงบรรทัดที่ถูก soft-delete (`dd0a1d58e`, `a1335a0db`) entity type อื่น (GRN, CN, SR, ...) ไม่ถูก mask ดูกฎ stage ที่ [purchase-request](/th/inventory/purchase-request)
+2. **Filter หลาย actor** `actor_id` บนรายการรับรายการคั่นด้วยจุลภาค (`actor_id=a,b`) เปรียบเทียบแบบ `IN` หลังตัดค่าซ้ำ; ค่าเดียวเป็นการเทียบเท่า (`52f03ff8d`, 2026-10-02)
+3. **เปลี่ยนชื่อ** audit trail ของ Backstage ตอนนี้คือ `api-system/backstage/activity-logs` (controller `backstage-activity-logs.controller.ts`)
+
+**การตรวจสอบ 2026-09-22 (คงไว้)**
 
 การแก้ไขสามข้อจากหน้านี้ฉบับ 2026-07-22:
 
@@ -73,7 +81,7 @@ changes: {
 
 - **Append-only จากโค้ดแอปพลิเคชัน** ผู้เขียนไม่อัปเดตแถวเลย — `updated_*` มีไว้เพื่อความสมมาตรเท่านั้น endpoint soft/hard delete มีอยู่บน gateway (ดู §2) สำหรับการล้างตาม retention; ไม่มี UI path เรียกใช้
 - **ไม่มีการบังคับ FK บน `entity_id`** เป็น polymorphic ข้ามหลายตาราง; แถวค้างเป็นความตั้งใจ (ยังมีค่าสำหรับ audit ของ entity ที่ถูกลบ)
-- **Actor ข้าม schema** `actor_id` อ้างอิง `tb_user.id` ของแพลตฟอร์มโดยไม่มี relation ที่บังคับใช้ `NULL` = actor ของระบบ
+- **Actor ข้าม schema** `actor_id` อ้างอิง `tb_user.id` ของ Backstage โดยไม่มี relation ที่บังคับใช้ `NULL` = actor ของระบบ
 - **`email_sent` ถูกเขียนแม้ตอนล้มเหลวด้วย** `purchase-order.service.ts` บันทึกแถว `email_sent` หนึ่งแถวต่อความพยายามส่งอีเมล PO หนึ่งครั้ง ไม่ว่าสำเร็จหรือล้มเหลว (`1897b4fc1`); การส่งอีเมล RFP ก็ทำเช่นเดียวกัน (`request-for-pricing.service.ts`)
 - **Retention** ขับโดยนโยบายของ tenant; schema ไม่กำหนดเพดาน ไม่มี job ล้างตามเวลาสำหรับ `tb_activity` ใน `micro-cronjobs` (job `activity_retention` ของมันเล็งไปที่ `tb_activity_event` ซึ่งเป็นตาราง telemetry — §9)
 
@@ -114,7 +122,7 @@ changes: {
 | `GET /:activity_log_id` | `activityLog.findOne` | หนึ่งแถว |
 | `DELETE /:id`, `DELETE /batch/soft`, `DELETE /:id/hard`, `DELETE /batch/hard` | `activityLog.delete` / `deleteMany` / `hardDelete` / `hardDeleteMany` | ไม่พบผู้เรียกจาก frontend |
 
-ระเบียนของ platform (cluster, business unit, user, report template) มี audit trail ของตัวเองใน `tb_activity` ของ **platform** ผ่าน `api-system/platform/activity-logs/record/:entity_id` และ `/:id/detail` (สิทธิ์ platform `activity_log.read` / `activity_log.detail`, `platform-activity-logs.controller.ts`, 2026-08-31) — บันทึกไว้ในเล่ม Platform ไม่ใช่ที่นี่
+ระเบียนของ Backstage (cluster, business unit, user, report template) มี audit trail ของตัวเองใน `tb_activity` ของ **Backstage** ผ่าน `api-system/backstage/activity-logs/record/:entity_id` และ `/:id/detail` (สิทธิ์ Backstage `activity_log.read` / `activity_log.detail`, `backstage-activity-logs.controller.ts`, 2026-08-31; เปลี่ยนชื่อจาก `platform` ใน 2026-10) — บันทึกไว้ในเล่ม Platform ไม่ใช่ที่นี่
 
 ## 6. กติกาทางธุรกิจ
 
@@ -148,4 +156,4 @@ changes: {
 
 ## 9. ไม่ใช่ตารางนี้ — UI telemetry
 
-event การคลิกและ page-view ที่ frontend จับไว้ (`lib/analytics.ts`: batch ละไม่เกิน 50, flush ทุก 10 วินาที, `POST /api/analytics-events`, สูงสุด 100 event ต่อ request, dedup ด้วย `event_id`, ประทับ user/app/domain ฝั่งเซิร์ฟเวอร์) ลงที่ตาราง **platform** `tb_activity_event`, ถูก roll up ทุกคืนเข้า `tb_activity_event_daily` โดย job `activity_rollup` ของ `micro-cronjobs` และถูกลบทิ้งหลัง 365 วันโดย `activity_retention` (ทั้งคู่ 2026-07-30) pipeline นั้นไม่เกี่ยวอะไรกับ `tb_activity` เลย — บันทึกไว้ในเล่ม Platform: [Activity Events](/th/platform/activity-events) (explorer ต่อ event, `activity_event.detail`) และ [Usage Analytics](/th/platform/usage-analytics) (dashboard, `activity_event.read`)
+event การคลิกและ page-view ที่ frontend จับไว้ (`lib/analytics.ts`: batch ละไม่เกิน 50, flush ทุก 10 วินาที, `POST /api/analytics-events`, สูงสุด 100 event ต่อ request, dedup ด้วย `event_id`, ประทับ user/app/domain ฝั่งเซิร์ฟเวอร์) ลงที่ตาราง **Backstage** `tb_activity_event`, ถูก roll up ทุกคืนเข้า `tb_activity_event_daily` โดย job `activity_rollup` ของ `micro-cronjobs` และถูกลบทิ้งหลัง 365 วันโดย `activity_retention` (ทั้งคู่ 2026-07-30) pipeline นั้นไม่เกี่ยวอะไรกับ `tb_activity` เลย — บันทึกไว้ในเล่ม Platform: [Activity Events](/th/platform/activity-events) (explorer ต่อ event, `activity_event.detail`) และ [Usage Analytics](/th/platform/usage-analytics) (dashboard, `activity_event.read`)

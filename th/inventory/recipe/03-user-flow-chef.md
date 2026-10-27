@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — User Flow — Chef
 description: flow ของ Chef ในโมดูลสูตรอาหาร — สร้างและปรับปรุงสูตร ดูแล sub-recipe publish และ archive
 published: true
-date: 2026-07-29T04:45:21.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: recipe, user-flow, chef, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -14,7 +14,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **Persona:** Chef / Kitchen Manager (+ Kitchen Staff read-only) &nbsp;·&nbsp; **โมดูล:** [recipe](/th/inventory/recipe) &nbsp;·&nbsp; **ขั้นตอน workflow:** DRAFT → PUBLISHED → ARCHIVED (+ un-publish round-trip) &nbsp;·&nbsp; **สิทธิ์สำคัญ (เป้าหมายการออกแบบ — ดูหมายเหตุสถานะ):** create, edit, publish, archive, edit-published (พร้อม versioning), clone
 > **persona นี้ทำอะไร:** Author และดูแล recipe library — วัตถุดิบ ขั้นตอน yield variant sub-recipe — และเป็นเจ้าของอำนาจ publish และ archive
 
-> **สถานะการติดตั้งใช้งานจริง (ตรวจสอบกับซอร์ส 2026-07-15).** ไม่มี permission `recipe:*` ใด ๆ — ทั้งกลุ่ม `/operation-plan/*` ถูก gate ด้วยสิทธิ์ admin ผ่าน placeholder `operation_plan.view` ที่มีเฉพาะฝั่ง frontend ดังนั้นวันนี้ไม่มี role Chef แยกต่างหากในระบบ ใน journey ด้านล่างสิ่งที่มีจริง: create/edit ผ่าน recipe form เดียว (`recipe-form.tsx` — field ส่วน header, `total_ingredient_cost` / `labor_cost` / `overhead_cost` ที่กรอกด้วยมือ, pricing ที่คำนวณฝั่ง client, gallery รูปภาพแบบ multipart) และการลบ (ถูก block เฉพาะเมื่อถูกใช้เป็น sub-recipe) สิ่งที่ยังไม่ implement: clone, picker สินค้า/sub-recipe (grid วัตถุดิบเป็น preview เท่านั้นและไม่เคยถูก save), UI ขั้นตอนการเตรียม (มี REST endpoint แต่ไม่มีหน้าจอ), editor ของ yield variant, publish gate (`Publish` เป็นเพียง dropdown สถานะ; ไม่มี check `REC_VAL_015`–`018` ยิง), co-approval ของ Cost Controller, versioning (`tb_recipe_version` ไม่มีตัวเขียน) และการเขียน pricing-history ขั้นตอนที่อ้างถึง feature เหล่านั้นคือ flow เป้าหมายของ carmen/docs
+> **สถานะการติดตั้งใช้งานจริง (ตรวจสอบซ้ำ 2026-10-27).** ไม่มี role Chef แยกต่างหาก: การเข้าถึงใช้ชุด permission ทั่วไป `operation_plan.recipe.{view,create,update,delete}` (placeholder `operation_plan.view` ที่มีเฉพาะฝั่ง frontend ถูกเอาออกแล้ว) สิ่งที่มีจริง: create/edit ผ่าน recipe form (`recipe-form.tsx`) — field ส่วน header, **grid วัตถุดิบแบบสินค้า / sub-recipe ที่ถูก save จริง** (`PUT .../ingredients`) และคิดต้นทุนจากสต็อก, ขั้นตอนการเตรียมที่แก้ไขได้, โน้ต plating และการจัดเก็บ, `labor_cost` / `overhead_cost` ที่กรอกด้วยมือ, pricing และเพดาน food-cost ที่คำนวณฝั่ง client, gallery รูปภาพแบบ multipart, comment, ประวัติกิจกรรม — มุมมองแท็บเล็ต **cook mode** ที่ `/operation-plan/recipe/:id` และการลบ (ถูก block ขณะถูกใช้เป็น sub-recipe) สิ่งที่ยังไม่ implement: clone, editor ของ yield variant, publish gate (`Publish` เป็นเพียง dropdown สถานะ; ไม่มี check `REC_VAL_015`–`018` ยิง), co-approval ของ Cost Controller, versioning (`tb_recipe_version` ไม่มีตัวเขียน) และการเขียน pricing-history ขั้นตอนที่อ้างถึง feature เหล่านั้นคือ flow เป้าหมายของ carmen/docs
 
 ## 1. บทบาทในโมดูลนี้
 

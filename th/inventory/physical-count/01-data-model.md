@@ -2,7 +2,7 @@
 title: การนับสต๊อกประจำงวด (Physical Count) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูลการนับสต๊อกประจำงวด
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: physical-count, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -13,8 +13,8 @@ dateCreated: 2026-05-15T14:00:00.000Z
 > **At a Glance**
 > **ตาราง:** `tb_physical_count_period` &nbsp;·&nbsp; `tb_physical_count` &nbsp;·&nbsp; `tb_physical_count_detail` &nbsp;·&nbsp; ตาราง `_comment` ต่อระดับ (สามตาราง)
 > **กลุ่มผู้ใช้:** นักพัฒนา / ผู้ตรวจสอบ (อ้างอิงเชิงพัฒนา)
-> **FK สำคัญ:** period `→ tb_inventory_period`; count `→ tb_location` และ `→ tb_physical_count_period`; detail `→ tb_product` และ `→ tb_unit` (`inventory_unit_id`) การเชื่อม variance rollup ไปยัง [inventory-adjustment](/th/inventory/inventory-adjustment) **ไม่มี FK และไม่มีฟิลด์เชื่อม JSON เลย** — row `tb_stock_in`/`tb_stock_out` ที่สร้างขึ้นพกพาแค่ข้อความ description แบบ human-readable ที่ใช้ร่วมกัน
-> **รูปแบบการตรวจสอบ:** มาตรฐาน `created_*` / `updated_*` / `deleted_*`; ลำดับชั้นสามระดับ (period → document → detail) — การนับเองไม่เขียนลง inventory ledger; rollup ตอน submit สุดท้ายสร้างเอกสาร stock-in/out ที่ `completed` แล้วซึ่งก็ไม่เขียนลง ledger เช่นกัน (ดู § 3)
+> **FK สำคัญ:** period `→ tb_inventory_period`; count `→ tb_location` และ `→ tb_physical_count_period`; detail `→ tb_product` และ `→ tb_unit` (`inventory_unit_id`) การเชื่อม variance rollup ไปยัง [inventory-adjustment](/th/inventory/inventory-adjustment) **ไม่มี FK และไม่มีฟิลด์เชื่อม JSON เลย** — row `tb_stock_in`/`tb_stock_out` ที่สร้างขึ้นพกพา adjustment type แบบ EOP และข้อความ description แบบ human-readable ที่ใช้ร่วมกัน
+> **รูปแบบการตรวจสอบ:** มาตรฐาน `created_*` / `updated_*` / `deleted_*`; ลำดับชั้นสามระดับ (period → document → detail) — บรรทัดการนับเองไม่แตะ ledger; rollup ตอน submit สุดท้ายสร้างเอกสาร stock-in/out ที่ `completed` แล้ว (adjustment type แบบ EOP) **และ post แต่ละบรรทัดเข้า ledger** ใน transaction เดียวกัน (ดู § 3)
 
 > **Source of truth:** Prisma schema ฝั่ง backend รวมถึง service method ที่อ่าน/เขียนมัน อ่านทั้งสองอย่างก่อนเสมอเมื่ออัปเดตหน้านี้:
 > - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
@@ -27,7 +27,7 @@ dateCreated: 2026-05-15T14:00:00.000Z
 
 โมดูล Physical Count persist ต้นไม้เอกสารสามระดับภายใต้ลำดับชั้น **`tb_physical_count_period` → `tb_physical_count` → `tb_physical_count_detail`**: period header รวบรวมเอกสารการนับทุกฉบับที่เปิดในงวดบัญชีเดียวกัน (`tb_inventory_period`) แต่ละเอกสาร count แทนการจับคู่หนึ่ง `(period, location)` และแต่ละ row ของ detail คือหนึ่งบรรทัดสินค้าบนการนับนั้น โดยมี `on_hand_qty` (book), `actual_qty` (counted) และ `diff_qty` (variance) Comment และ attachment ห้อยอยู่บนทั้งสามระดับ (`tb_physical_count_period_comment`, `tb_physical_count_comment`, `tb_physical_count_detail_comment`); ตาราง comment ระดับ detail คือตัวเดียวที่ live UI ใช้งานจริง ผ่าน dialog "Add Notes" ต่อบรรทัดบนหน้า entry (photo + ข้อความอิสระ)
 
-โมดูลอยู่ **เหนือ [inventory-adjustment](/th/inventory/inventory-adjustment)** เพียงในชื่อ: เมื่อการ **Submit** สุดท้ายของเอกสารการนับยิง (`physical-count.service.ts` `submit()`) service จะ insert บรรทัด variance โดยตรงเข้า row `tb_stock_in` (overage) และ/หรือ `tb_stock_out` (shortage) ใหม่ — แต่ทำผ่าน Prisma transaction ดิบ ๆ ที่ไม่เคย import หรือเรียก `InventoryTransactionService`, `executeAdjustmentIn`, หรือ `executeAdjustmentOut` ซึ่งเป็น helper ที่ `stock-in.service.ts`/`stock-out.service.ts` เรียกทุกครั้งสำหรับบรรทัด detail ของตัวเอง ผลที่ตามมาโดยตรง: ไม่มี row `tb_inventory_transaction` ถูกสร้างโดย rollup นี้ `adjustment_type_id` ถูกปล่อยเป็น `null` บน header ทั้งสองที่สร้างขึ้น (ไม่มี reason code) และไม่มีฟิลด์ `info` JSON ของทั้ง header หรือบรรทัด detail ใดถูกใส่ back-reference กลับไปยัง `tb_physical_count.id` ต้นทาง — ร่องรอยเดียวที่เชื่อมสองเอกสารเข้าด้วยกันคือข้อความ description แบบ human-readable ที่ใช้ร่วมกัน (`"Physical Count Adjustment - Period: <start> to <end>"`) และข้อความ `note` ต่อบรรทัด ข้อมูล lot บน count detail บางเบา — `tb_physical_count_detail` พกพาเพียง `on_hand_qty` / `actual_qty` ต่อสินค้าต่อสถานที่ (ไม่มีคอลัมน์ `lot_no`) — และเนื่องจาก rollup ไม่เคยไปถึง code path ของ inventory-transaction/cost-layer เลย จึงไม่มี lot ใดถูกสร้างหรือบริโภคโดยการนับสต๊อกประจำงวดใน implementation ปัจจุบัน
+โมดูลอยู่ **เหนือ [inventory-adjustment](/th/inventory/inventory-adjustment)**: เมื่อการ **Submit** สุดท้ายของเอกสารการนับยิง (`physical-count.service.ts` `submit()`) service จะ insert บรรทัด variance เข้า row `tb_stock_in` (overage) และ/หรือ `tb_stock_out` (shortage) ใหม่ที่สร้างตรงที่ `completed` — และตั้งแต่โค้ดรอบ 2026-10 มัน **post แต่ละบรรทัดเข้า ledger เอง** ผ่าน `InventoryTransactionService.executeAdjustmentIn` / `executeAdjustmentOut` (`postAdjustmentIn` / `postAdjustmentOut` แบบ private) โดยเขียน `inventory_transaction_id` ที่ได้กลับลงแถว detail ทั้งหมดภายใน transaction ของ submit (การ post ล้มเหลวจะ rollback submit ทั้งหมด) เอกสารเหล่านี้ข้าม `stock-in.service.ts` / `stock-out.service.ts` (ไม่มี hop Save/Commit) แต่ไปถึง helper ของ ledger ตัวเดียวกับที่ service เหล่านั้นเรียกตอน commit มันมี adjustment type **`eop_in` / `eop_out`** ที่ active ของ BU (`adjustment_type_id` + `adjustment_type_code`), ลงวันที่ `end_at` ของงวดที่นับ และไม่มีฟิลด์ `info` JSON ของทั้ง header หรือบรรทัด detail ใดถูกใส่ back-reference กลับไปยัง `tb_physical_count.id` ต้นทาง — ร่องรอยเดียวที่เชื่อมสองเอกสารเข้าด้วยกันคือข้อความ description แบบ human-readable ที่ใช้ร่วมกัน (`"Physical Count Adjustment - Period yyyy-MM"`) และข้อความ `note` ต่อบรรทัด ข้อมูล lot บน count detail บางเบา — `tb_physical_count_detail` พกพาเพียง `on_hand_qty` / `actual_qty` ต่อสินค้าต่อสถานที่ (ไม่มีคอลัมน์ `lot_no`); การ post เข้า ledger สร้าง / บริโภค lot เหมือนที่ adjustment แบบ manual ทำ (`adjustment_in` สร้าง layer ที่ต้นทุนของบรรทัด; `adjustment_out` ดึง lot แบบ FIFO หรือใช้ค่าเฉลี่ย)
 
 ## 2. เอนทิตี
 
@@ -59,27 +59,28 @@ tb_inventory_period
                             ├─1──*──► tb_physical_count_comment  (ไม่ถูกใช้โดย UI ปัจจุบัน)
                             │
                             └─1──*──► tb_physical_count_detail
-                                        │   (on_hand_qty คงเป็น 0 จนกว่า Submit for Review;
+                                        │   (on_hand_qty คงเป็น 0 จนกว่า Submit for Review แล้วเป็นยอด cost-layer ของงวดที่นับ;
                                         │    actual_qty / diff_qty; counted_at / counted_by_id
-                                        │    stamp เฉพาะโดย Save; ไม่มีคอลัมน์ lot_no)
+                                        │    stamp โดย Save และโดย Submit for Review ครั้งแรก; ไม่มีคอลัมน์ lot_no)
                                         │
                                         └─1──*──► tb_physical_count_detail_comment  (ของจริง: photo/notes)
 
 ที่ Submit สุดท้าย backend จัดกลุ่มบรรทัดที่ diff_qty ไม่เป็นศูนย์ตามเครื่องหมาย
-แล้ว insert เอกสารกำพร้าที่ไม่มีฟิลด์เชื่อมกลับไปยังการนับเลย ในหนึ่ง transaction:
+แล้วใน transaction เดียว insert เอกสารที่ไม่มีฟิลด์เชื่อมกลับไปยังการนับเลย และ post มัน:
     ▼
-tb_stock_in  (doc_status = completed ทันที; adjustment_type_id = null)   สำหรับบรรทัด diff_qty > 0
-tb_stock_out (doc_status = completed ทันที; adjustment_type_id = null)   สำหรับบรรทัด diff_qty < 0
+tb_stock_in  (doc_status = completed ทันที; adjustment_type = eop_in ที่ active)   สำหรับบรรทัด diff_qty > 0
+tb_stock_out (doc_status = completed ทันที; adjustment_type = eop_out ที่ active)  สำหรับบรรทัด diff_qty < 0
     │
-    └── description / detail.note = ข้อความอิสระ "Physical Count Adjustment - Period: …" เท่านั้น
+    └── description / detail.note = ข้อความอิสระ "Physical Count Adjustment - Period yyyy-MM …" เท่านั้น
     │
-    └── ไม่มี row tb_inventory_transaction ถูกสร้างโดย action นี้ (ไม่มีการเรียก executeAdjustmentIn/Out)
+    └── ต่อบรรทัด: executeAdjustmentIn / executeAdjustmentOut -> tb_inventory_transaction (+ detail, cost layer);
+        detail.inventory_transaction_id ถูก stamp (บรรทัดส่วนขาดได้ cost_per_unit / total_cost ที่ post แล้วด้วย)
 ```
 
 หมายเหตุ:
 
 - **ลำดับชั้นสามระดับ แต่มีเพียงสองระดับล่างที่มี UI จริง** Period header มีไว้เพื่อจัดกลุ่มสถานที่ภายใต้งวดบัญชีเดียว; หน้ารายการของ frontend (`physical-count`) อ่านมันผ่าน `GET /physical-count-periods/current` โดย auto-provision period ที่ `draft` ในครั้งแรกที่ถูกร้องขอสำหรับงวดบัญชีที่เพิ่งเปิดใหม่
-- **ไม่มี FK และไม่มีฟิลด์เชื่อม JSON แบบ structured สำหรับ variance rollup** Draft ก่อนหน้าของหน้านี้อธิบาย convention `info.countId` / `info.countPeriodId` บน row `tb_stock_in`/`tb_stock_out` ที่สร้างขึ้น การอ่าน method `submit()` ของ `physical-count.service.ts` โดยตรง (บรรทัด ~934-1036) แสดงว่าไม่มี field `info` ของ header หรือบรรทัด detail ใดถูกเขียนเลย — ร่องรอยเดียวของ rollup ที่ย้อนกลับไปยังการนับต้นทางคือข้อความ description แบบไม่มีโครงสร้าง การสร้าง "การนับใดที่ทำให้เกิด stock-in/out นี้" จากฝั่ง ledger จึงเป็นไปไม่ได้ผ่านฟิลด์ที่ index ใด ๆ
+- **ไม่มี FK และไม่มีฟิลด์เชื่อม JSON แบบ structured สำหรับ variance rollup** Draft ก่อนหน้าของหน้านี้อธิบาย convention `info.countId` / `info.countPeriodId` บน row `tb_stock_in`/`tb_stock_out` ที่สร้างขึ้น การอ่าน method `submit()` ของ `physical-count.service.ts` โดยตรง (อ่านซ้ำ 2026-10-27) แสดงว่าไม่มี field `info` ของ header หรือบรรทัด detail ใดถูกเขียนเลย — ร่องรอยเดียวของ rollup ที่ย้อนกลับไปยังการนับต้นทางคือข้อความ description แบบไม่มีโครงสร้าง การสร้าง "การนับใดที่ทำให้เกิด stock-in/out นี้" จากฝั่ง ledger จึงเป็นไปไม่ได้ผ่านฟิลด์ที่ index ใด ๆ
 - **`@relation` FK declaration ที่ระบุชัดเจนทั้งหมดใช้ `onDelete: NoAction` หรือ `onDelete: Cascade`** — รักษาความหมาย soft-delete (`deleted_at`)
 
 ## 4. Enum
@@ -88,7 +89,7 @@ tb_stock_out (doc_status = completed ทันที; adjustment_type_id = null)
 - **`enum_physical_count_status`** — วงจรชีวิตระดับเอกสาร สามค่า: `pending`, `in_progress`, `completed` `pending` ถูกประกาศไว้บน enum แต่เข้าถึงไม่ได้ผ่าน `create()` path ที่ยืนยันแล้ว (ทุกเอกสารถูกสร้างที่ `in_progress` โดยตรง)
 - **`enum_physical_count_type`** — สองค่า `yes` / `no` ประกาศทั้งบน `tb_location` (default `no`; flag admin ระดับสถานที่ "สถานที่นี้จำเป็นต้องนับหรือไม่" ตั้งค่าบนฟอร์ม config ของสถานที่เอง) และ `tb_physical_count` (default `yes`; ไม่เคยถูกตั้งค่าโดย `create()` เลย ดังนั้นจึงคงค่า default บนทุกเอกสารจริง) ไม่มี behavioural branch ของ frozen-vs-live ใด ๆ ในโค้ดที่เกี่ยวข้องกับ enum นี้ — ดู [physical-count](/th/inventory/physical-count) § 3
 - **`enum_physical_count_costing_method`** — enum ระดับบนสุดแยกต่างหาก (`standard`, `last`, `average`, `last_receiving`) ที่ **ไม่** ปรากฏเป็นฟิลด์บนตาราง physical-count ใด ๆ มันถูกอ่านครั้งเดียวต่อการ `submit()` สุดท้าย เป็น **ค่า tenant config ระดับ business-unit** (`enum_business_unit_config_key.physical_count_costing_method`, fallback default `last_receiving` ถ้าไม่ตั้งค่าหรือไม่ถูกต้อง) ผ่าน `TenantService.getBuConfig()` และนำไปใช้อย่างสม่ำเสมอกับ `cost_per_unit` ของทุกบรรทัด variance สำหรับ submit นั้น ไม่พบหน้าจอ frontend ใดที่ให้ผู้ใช้ตั้งค่า config key นี้
-- **`enum_transaction_type`** — ที่ระดับ inventory ledger `physical-count` ไม่ใช่ค่าบน enum นี้ และ — ตาม § 1/§ 3 ข้างต้น — ค่า `adjustment_in`/`adjustment_out` ที่การ post inventory-adjustment ปกติจะสร้างนั้นไม่เคยถูกเขียนโดย rollup ของโมดูลนี้เองเลย เนื่องจากไม่มี row `tb_inventory_transaction` ถูกสร้าง
+- **`enum_transaction_type`** — ที่ระดับ inventory ledger `physical-count` ไม่ใช่ค่าบน enum นี้ และ — ตาม § 1/§ 3 ข้างต้น — ledger rows ของ rollup ใช้ค่าปกติ `adjustment_in` / `adjustment_out` (เหมือน stock-in / stock-out แบบ manual ที่ commit แล้ว) จึงแยกการแก้ไขจากการนับออกจาก adjustment แบบ manual ด้วย transaction type ไม่ได้ — ให้ filter ด้วย adjustment type `eop_in` / `eop_out` ของเอกสารแทน
 
 ## 5. ความแตกต่างจาก carmen/docs
 
@@ -100,5 +101,5 @@ tb_stock_out (doc_status = completed ทันที; adjustment_type_id = null)
 - **Service layer:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (create/refresh/save/reviewItems/submit/delete/update); `.../physical-count-period/physical-count-period.service.ts` (findCurrent/create/update); `.../period-end/period-end.validate.ts` (`validatePhysicalCount`, gate การปิดงวด)
 - **Secondary (วางแผน ยังไม่ implement):** `../carmen-frontend-e2e/docs/persona-doc/System Process/tx-08-physical-stocktake.md`
 - **Frontend:** `../carmen-frontend/routes/inventory-management/physical-count/` (`pc-component.tsx`, `pc-entry-component.tsx`, `pc-review-component.tsx`); `types/physical-count.ts`; `hooks/use-physical-count.ts`, `hooks/use-physical-count-period.ts`
-- **E2E:** `../carmen-frontend-e2e/tests/` — ยังไม่มี spec physical-count
-- โมดูลที่เกี่ยวข้อง: [inventory](/th/inventory/inventory) (ledger ที่การ post inventory-adjustment *ปกติ* เขียนลง — ไม่ถูกแตะโดย rollup ของโมดูลนี้เอง), [inventory-adjustment](/th/inventory/inventory-adjustment) (ตารางที่ rollup เขียนเข้า โดยข้าม service layer ของโมดูลนั้น), [spot-check](/th/inventory/spot-check) (ลูกพี่ลูกน้องการนับบางส่วนที่ใช้ต้นไม้เอกสารแยก)
+- **E2E:** `../carmen-frontend-e2e/tests/` — ไม่มี spec `750-physical-count` โดยเฉพาะ แต่การนับถูก exercise ผ่านหน้าจอจริงโดย spec period-close แบบ opt-in `921-period-close-count.spec.ts` และ `922-period-close-verify.spec.ts` (TC-PE-51xxxx / 52xxxx: นับทุก location, เอกสารชดเชย EOP-IN / EOP-OUT ลงวันที่วันสุดท้ายของงวด, ต้นทุนเทียบกับ `si.cost-from` ของ BU, system quantity = ยอด ณ สิ้นงวดที่นับ); รันด้วย `bun run test:period-close` (ดู [inventory/period-end](/th/inventory/inventory/period-end) § 8)
+- โมดูลที่เกี่ยวข้อง: [inventory](/th/inventory/inventory) (ledger ที่ rollup post เข้าผ่าน `executeAdjustmentIn/Out`), [inventory-adjustment](/th/inventory/inventory-adjustment) (ตารางที่ rollup เขียนลง โดยข้ามเส้นทาง Save/Commit ของโมดูลนั้น), [spot-check](/th/inventory/spot-check) (โมดูลญาติแบบนับบางส่วนที่ใช้ document tree แยก)

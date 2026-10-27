@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check) — User Flow
 description: วงจรชีวิตเอกสารและไฟล์ flow เฉพาะ persona ของการสุ่มตรวจ
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: spot-check, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -59,7 +59,7 @@ stateDiagram-v2
 | `(none)` | สร้าง (`POST /spot-checks`) สำหรับ `(location, method, size หรือ product_id[])` | `pending` | ผู้ใช้ใดก็ตามที่มี `inventory_management.spot_check` | Location มีอยู่ (`SPC_VAL_001`); eligible product pool ไม่ว่างเปล่า (`SPC_VAL_002`); `manual` ต้องมี `product_id[]` ไม่ว่างเปล่าและตรงกับ pool (`SPC_VAL_003`); `high_value` ต้องมี `tb_inventory_period` ที่เปิดอยู่/ล็อกอยู่ (`SPC_VAL_004`) จับ snapshot `on_hand_qty` ต่อบรรทัด ณ จุดนี้ |
 | `pending` | Save (`PATCH .../save`) | `in_progress` | ผู้ใช้เดิม | `items[]` ไม่ว่างเปล่า (`SPC_VAL_007`) Stamp `counted_at`/`counted_by_id`; คำนวณ `diff_qty` ใหม่เทียบกับ `on_hand_qty` ที่เก็บอยู่ปัจจุบัน |
 | `in_progress` | Save (ซ้ำ) | `in_progress` | ผู้ใช้เดิม | เหมือนข้างต้น; ทำซ้ำได้ |
-| `pending` / `in_progress` | Submit for Review (`PATCH .../review`) | (ไม่เปลี่ยนสถานะ) | ผู้ใช้เดิม | คำนวณ `on_hand_qty`/`diff_qty` สดใหม่ทุกบรรทัดจากยอด ledger ปัจจุบัน; stamp `counted_at`/`counted_by_id`; navigate ไป `/review` ไม่ถูกบล็อกโดยเอกสารที่ไม่ครบ |
+| `pending` / `in_progress` | Submit for Review (`PATCH .../review`) | (ไม่เปลี่ยนสถานะ) | ผู้ใช้เดิม | คำนวณ `on_hand_qty`/`diff_qty` สดใหม่ทุกบรรทัดจากยอด cost-layer ของงวดที่ active; stamp `counted_at`/`counted_by_id`; navigate ไป `/review` ไม่ถูกบล็อกโดยเอกสารที่ไม่ครบ |
 | `pending` / `in_progress` | Submit (`PATCH .../submit`, จาก `/review`) | `completed` | ผู้ใช้เดิม | ไม่มีการตรวจความครบถ้วน (`SPC_VAL_008`) — สำเร็จแม้มีบรรทัดที่ยังไม่นับ Stamp `end_date` Terminal; ไม่มีผลต่อเอกสารหรือ ledger อื่น |
 | `pending` / `in_progress` | Reset (`POST .../reset`) | `void` | ผู้ใช้เดิม จาก section Resume ของหน้ารายการ | Reject ถ้าเป็น `void` หรือ `completed` อยู่แล้ว (`SPC_VAL_006`) ไม่ล้างแถว detail |
 | `completed` / `void` | ดูเท่านั้น | (ไม่เปลี่ยน) | ผู้ใช้ใดก็ตามที่มี permission ของโมดูล (อ่าน) | เข้าถึงได้จาก tab History ไม่ว่างสถานะใด; หน้า entry render เหมือนเดิม แม้ Save จะถูกบล็อกโดย `SPC_VAL_007` และ Submit ขั้นสุดท้ายถูกบล็อกโดย `SPC_VAL_008` — แต่ Submit for Review **ไม่** ถูกบล็อกและจะเขียนทับแถว detail เงียบ ๆ ถ้าถูก trigger อีก (ดู [02-business-rules.md](/th/inventory/spot-check/02-business-rules) `SPC_POST_004`) |

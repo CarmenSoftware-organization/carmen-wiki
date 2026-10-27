@@ -2,7 +2,7 @@
 title: รายการราคาผู้ขาย (Vendor Pricelist) — User Flow
 description: Lifecycle ของเอกสารและไฟล์ flow ตาม persona สำหรับ vendor-pricelist
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: vendor-pricelist, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -14,6 +14,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 > **โมดูล:** [vendor-pricelist](/th/inventory/vendor-pricelist) &nbsp;·&nbsp; **Persona:** Purchaser &nbsp;·&nbsp; Vendor (portal ภายนอก — save และ submit ทำงานได้ตั้งแต่ 2026-08/09)
 > **หน้าจอจริง:** Vendor, Certification, Price List, Price List Template, Request for Pricing (RFQ) — ห้าหน้า CRUD อิสระ ไม่มี workspace รวม ไม่มี workflow engine
 > **Re-sync 2026-09-22:** route Save/Submit ของ portal มีอยู่และผลิต pricelist `submitted`; ลิงก์หมดอายุที่ `end_date` ของ RFQ; RFQ มี action Send-email ต่อ vendor; Certification ย้ายมาใต้ Vendor Management
+> **Re-sync 2026-10-27:** ตอนนี้ price list สามารถ **void** ได้ (ต้องระบุเหตุผล ย้อนกลับได้ด้วย Restore และเป็น read-only ระหว่างนั้น) และมีเพียง BU admin ที่ลบถาวรได้ — และเฉพาะเมื่อไม่มีบรรทัด PR, credit note หรือบรรทัด RFQ อ้างอิง; หน้าจอ Price List แบ่ง list เป็น Current / Expired / All; ราคาบรรทัดกรอก **ก่อนภาษี**; ลิสต์ RFQ แสดงจำนวนการตอบกลับและ badge ช่วงเวลา Upcoming / Open / Closed; portal สลับระหว่างไทยและอังกฤษได้
 > **ตรวจสอบเมื่อ 2026-07-16:** Finance และ Audit/Config ไม่ใช่ persona แยกต่างหากในโมดูลนี้ — ดู [03-user-flow-finance](/th/inventory/vendor-pricelist/03-user-flow-finance) และ [03-user-flow-audit-config](/th/inventory/vendor-pricelist/03-user-flow-audit-config)
 
 ## 1. ภาพรวม
@@ -28,7 +29,7 @@ Section 2 ด้านล่างระบุฟิลด์ status จริ�
 | ----- | ----- | ------ | ---------------- |
 | `tb_pricelist_template` | `status` | `draft`, `active`, `inactive` (`enum_pricelist_template_status`) | Control status ของฟอร์มแก้ไข template หรือการเรียก `PATCH :id/status` โดยตรง — ไม่ว่าทางใด เป็นการเขียนฟิลด์เปล่า ๆ โดยไม่มี validation gate (ไม่มีการตรวจ "ต้องมีสินค้า ≥1" ไม่มี re-activation guard) |
 | `tb_request_for_pricing` | *(ไม่มี)* | — | ไม่มีคอลัมน์ status และไม่มี state ที่ derive ที่ใดในโค้ด สัญญาณต่อ vendor ที่ใกล้เคียงที่สุดคือ `has_submitted: !!pricelist_id` บนแต่ละแถว invitation |
-| `tb_pricelist` | `status` | `draft`, `submitted`, `active`, `inactive`, `expired` (`enum_pricelist_status`) | Control status ของฟอร์มแก้ไข Price List (ผ่านการเรียก update ปกติ — ไม่มี transition guard, ไม่มี action approve/reject, `expired` ไม่เคยถูก assign) **หรือ** Submit บน portal ของ vendor (`draft → submitted`) ขอบ `draft → submitted` stamp `submitted_at` และลบแถวที่ไม่มีราคา |
+| `tb_pricelist` | `status` | `draft`, `submitted`, `active`, `inactive`, `expired`, `voided` (`enum_pricelist_status`) | Control status ของฟอร์มแก้ไข Price List (ผ่านการเรียก update ปกติ — ไม่มี transition guard, ไม่มี action approve/reject, `expired` ไม่เคยถูก assign, รายการสถานะของฟอร์มไม่มี `voided`) **หรือ** Submit บน portal ของ vendor (`draft → submitted`) **หรือ** action **Void** / **Restore** (`voided` ↔ `draft`) ขอบ `draft → submitted` stamp `submitted_at` และลบแถวที่ไม่มีราคา |
 | External portal | `tb_pricelist.status`, `submitted_at`; event ใน `tb_activity` | `draft` → `submitted` | `POST /api/check-pricelist/:url_token` auto-create หรือ return draft; `PATCH /api/pricelist-external/:url_token` บันทึกการแก้ไข (ยังคง `draft`); `POST …/submit` ตั้ง `submitted` ทั้งสามอยู่หลัง `UrlTokenGuard` (401 หลัง `end_date` ของ RFQ) event `create` / `save` / `submit` ถูก log ลง `tb_activity` |
 
 ## 3. Index ของ Persona
@@ -38,7 +39,26 @@ Section 2 ด้านล่างระบุฟิลด์ status จริ�
 
 โน้ต: **Finance** และ **Audit / Config** เคยถูกบันทึกเป็น persona แยกต่างหากใน draft ก่อนหน้า ทั้งสองไม่มีโค้ดตรงกันในโมดูลนี้เลย — ดู [03-user-flow-finance.md](./03-user-flow-finance.md) และ [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) ทั้งสองถูกเขียนใหม่เป็นหน้า correction ในรอบนี้
 
-### 3.1 Purchaser: ลบ Request for Pricing
+### 3.1 Purchaser: Void หรือ restore Price List
+
+```mermaid
+flowchart TD
+    Open(["Purchaser เปิด Price List (โหมด view)"]) --> St{"status = voided?"}
+    St -->|"ไม่"| VoidBtn["คลิก Void (ต้องมี permission delete)"]
+    VoidBtn --> Reason["Dialog: ระบุเหตุผล (1-500 ตัวอักษร)"]
+    Reason --> Post["POST pricelists/:id/void"]
+    Post --> Voided(["status = voided<br/>banner: เวลา + เหตุผล<br/>ซ่อน Edit ไม่เสนอราคาอีก"])
+    St -->|"ใช่"| Restore["คลิก Restore"]
+    Restore --> Post2["POST pricelists/:id/restore"]
+    Post2 --> Draft(["status = draft<br/>เหตุผล / เวลาถูกเก็บเป็นประวัติ"])
+    Voided --> Admin{"BU admin และไม่มี PR, credit note<br/>หรือ RFQ อ้างอิง list?"}
+    Admin -->|"ใช่"| Del(["Delete = hard delete ถาวร"])
+    Admin -->|"ไม่"| Keep(["Delete ถูกซ่อน / ปฏิเสธ<br/>PRICE_LIST_IN_USE หรือ ADMIN_ONLY"])
+```
+
+> ตรวจสอบเมื่อ 2026-10-27 เทียบกับ `pl-form.tsx` (`canVoidOrRestore`, `isAdmin`), `config_pricelists.controller.ts` (`void`, `restore`, `remove`) และ `price-list.service.ts` (`voidPriceList`, `restorePriceList`, `remove`) Hard delete พยายามได้จากทุกสถานะ; แผนภาพแสดงเส้นทางปกติ
+
+### 3.2 Purchaser: ลบ Request for Pricing
 
 ```mermaid
 flowchart TD
@@ -50,7 +70,7 @@ flowchart TD
     Refresh --> Toast(["แสดง toast สำเร็จ"])
 ```
 
-> Diagram adapted from `carmen/docs/app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md` · verified against `carmen-turborepo-backend/apps/micro-business/src/master/request-for-pricing/request-for-pricing.service.ts` (`remove()`), `carmen-frontend/routes/vendor-management/request-price-list/rfp-component.tsx` (`DeleteDialog`) (2026-09-28) · Changes: renamed "Campaign" to "Request for Pricing" (this wiki uses the Prisma entity name; "Campaign" is narrative-only, see [01-data-model](/en/inventory/vendor-pricelist/01-data-model) §5); clarified the delete is a soft delete (`deleted_at`), not a hard delete.
+> Diagram adapted from `carmen/docs/app/vendor-management/requests-for-pricing/FD-requests-for-pricing.md` · verified against `carmen-turborepo-backend/apps/micro-business/src/master/request-for-pricing/request-for-pricing.service.ts` (`remove()`), `carmen-frontend/routes/vendor-management/request-price-list/rfp-component.tsx` (`DeleteDialog`) (2026-09-28) · Changes: renamed "Campaign" to "Request for Pricing" (this wiki uses the Prisma entity name; "Campaign" is narrative-only, see [01-data-model](/th/inventory/vendor-pricelist/01-data-model) §5); clarified the delete is a soft delete (`deleted_at`), not a hard delete.
 
 ## 4. Handoff ข้าม Persona
 

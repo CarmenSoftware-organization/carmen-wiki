@@ -2,7 +2,7 @@
 title: รายการราคาผู้ขาย (Vendor Pricelist) — Test Scenarios — Vendor
 description: Test case ของ Vendor สำหรับ vendor-pricelist External party — เปิด / save / submit / หมดอายุของ portal; section Permission / Authorization ลดลงเป็นแถว N/A เดียว
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: vendor-pricelist, test-scenarios, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -13,6 +13,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 > **At a Glance**
 > **Persona:** Vendor (external party — portal ที่ authenticate ด้วย token เท่านั้น) &nbsp;·&nbsp; **โมดูล:** [vendor-pricelist](/th/inventory/vendor-pricelist)
 > **Executable coverage (2026-09-22):** ไม่มี Playwright spec สำหรับ portal; catalog แบบเอกสารเท่านั้น `../carmen-frontend-e2e/docs/test-cases/1002-external-price-list.md` (42 case `TC-EPL-*`: โหลด, header, ตารางสินค้า, sub-table MOQ, ตัวเลือก tax-profile / unit, save, Excel import, submit, หน้าจอหมดอายุ) เป็น oracle ที่ใกล้ที่สุด หน้านี้ไม่ mirror มัน
+> **Re-sync 2026-10-27:** ราคาถูกพิมพ์ก่อนภาษี (Tax Rate แบบ read-only, Total ที่คำนวณ), Excel import จับคู่ด้วย Row ID ที่ซ่อนอยู่ และหน้ามีตัวสลับภาษาไทย / อังกฤษ (แถว HP-06, HP-08)
 > **Re-sync 2026-09-22:** ข้อค้นพบ "Save/Submit ยืนยันแล้วว่าไม่ทำงาน" ของรอบ 2026-07-16 ล้าสมัยแล้ว — `PATCH /api/pricelist-external/:url_token` และ `POST …/submit` มีอยู่จริง; ลิงก์หมดอายุที่ `end_date` ของ RFQ
 
 หน้านี้จับ test scenario ที่ exercise การ interact ของ persona **Vendor** กับ `/pl/:url_token` เพราะ vendor ไม่มี Carmen Blue login section Permission / Authorization จึงลดลงเป็นแถว N/A เดียว
@@ -26,7 +27,9 @@ dateCreated: 2026-05-15T15:00:00.000Z
 | VPL-VND-HP-03 | เลือก tax profile และ order unit ต่อบรรทัด | ต่อจาก HP-01; BU มี tax profile ≥ 2; สินค้าหนึ่งมี order unit ≥ 2 | Toggle โหมด Edit; เปลี่ยน tax profile และ unit บนหนึ่งบรรทัด | ตัวเลือกมาจาก `GET …/check-pricelist/:url_token/tax-profiles` และ `…/units` (unit default มี flag); `tax_rate` / `tax_amt` ของบรรทัดคำนวณใหม่ฝั่ง client |
 | VPL-VND-HP-04 | Save draft | ต่อจาก HP-03; พิมพ์ราคาบนสองบรรทัด | คลิก **Save** | `PATCH …/pricelist-external/:url_token` พร้อม `{ note, pricelist_detail: { update: [...] } }` → 200; pricelist ยังคง `draft`; reload ลิงก์แสดงราคาที่บันทึก; `tb_activity` มี entry `vendor.pricelist.draft_saved` พร้อม snapshot ก่อน/หลัง |
 | VPL-VND-HP-05 | เพิ่ม MOQ tier อีกอันสำหรับสินค้า | ต่อจาก HP-04 | ใน sub-table MOQ เพิ่ม tier (`moq_qty = 50` ราคาต่ำกว่า); Save | `pricelist_detail.add[]` สร้างแถว `(product, unit, moq_qty)` ใหม่; unique key อนุญาต |
-| VPL-VND-HP-06 | Import ราคาจาก Excel | ต่อจาก HP-01; sheet ในรูปแบบ download ของ portal | **Import** → เลือกไฟล์ → ยืนยัน | `price-list-external-excel.ts` parse sheet เข้าฟอร์ม; แถว match ด้วย product code + unit + MOQ; แถวที่ไม่ match ถูกรายงานใน dialog; ไม่มีอะไร persist จนกว่าจะ **Save** |
+| VPL-VND-HP-06 | Import ราคาจาก Excel | ต่อจาก HP-01; sheet ในรูปแบบ download ของ portal | **Import** → เลือกไฟล์ → ยืนยัน | `price-list-external-excel.ts` parse sheet เข้าฟอร์ม; แถว match ด้วย **Row ID** ที่ซ่อนอยู่ + รหัสสินค้า จากนั้น No. + รหัสสินค้า แล้วจึงรหัสสินค้าอย่างเดียวเฉพาะเมื่อไม่ซ้ำ; รหัสซ้ำที่ไม่มี key ที่ใช้ได้ถูกข้ามและนับ ไม่ใช่เดา (สอง MOQ tier ของสินค้าเดียวกันคงราคาของตัวเอง); แถวที่ไม่ match ถูกรายงานใน dialog; ไม่มีอะไร persist จนกว่าจะ **Save** |
+| VPL-VND-HP-08 | สลับภาษาของ portal — **เพิ่ม 2026-10-27** | ต่อจาก HP-01 | ใช้ตัวสลับภาษาในส่วนหัวหน้า (มีบนหน้าลิงก์หมดอายุด้วย) | label, ปุ่ม และ toast สลับระหว่างไทยและอังกฤษ (ข้อความ `priceListPortal`); หัวคอลัมน์ Excel ที่ export คงเป็นอังกฤษเพราะ import จับคู่ด้วยหัวเหล่านั้น |
+| VPL-VND-HP-09 | ตั้งราคาบรรทัดก่อนภาษี — **เพิ่ม 2026-10-27** | ต่อจาก HP-03; บรรทัดที่มี tax profile 7 % | พิมพ์ `Price = 100` | Tax Rate แสดง `7%` (read-only), Tax Amount `฿7.00`, Total `฿107.00`; PATCH ส่ง `price = 100`, `price_without_tax = 100`, `tax_amt = 7` บรรทัดที่ไม่มี tax profile แสดง Tax Rate `—` และ total = price |
 | VPL-VND-HP-07 | Submit | ต่อจาก HP-04; หนึ่งบรรทัดยังเป็น `price = 0` | คลิก **Submit** → ยืนยัน | `POST …/pricelist-external/:url_token/submit` → `status = submitted`, `submitted_at = now()`; บรรทัดราคาศูนย์ถูกลบ; activity `submit` ถูก log; หน้าเปลี่ยนเป็นอ่านอย่างเดียว; แถว RFQ ของ Purchaser แสดง `has_submitted = true`, `pricelist.status = submitted` |
 
 ## 2. Permission / Authorization

@@ -192,7 +192,7 @@ books:
           - slug: feature-flags
             label_en: "Feature Flags"
             label_th: "Feature Flags"
-      # Added 2026-10-27. EN page only — TH link 404s until th/platform/ai-providers.md exists.
+      # Added 2026-10-27 (EN + TH).
       - label_en: "AI"
         label_th: "AI"
         modules:

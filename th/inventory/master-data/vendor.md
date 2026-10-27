@@ -2,7 +2,7 @@
 title: ผู้ขาย (Vendor)
 description: ผู้ขายและที่อยู่ ผู้ติดต่อ และ taxonomy ของประเภทธุรกิจ — counterparty ของทุกเอกสารจัดซื้อ
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: master-data, vendor, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -33,6 +33,11 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | บริหารจัดการประเภทธุรกิจ | Master Data → Vendor Business Type | หน้ารายการแยก; การอ้างอิงเก็บเป็น JSON `[{id, name}]` บนผู้ขาย |
 | ยกเลิกการใช้งาน | Toggle `is_active` | ซ่อนจาก picker ใหม่; เอกสารย้อนหลังไม่เปลี่ยน |
 | เปลี่ยน tax profile | Edit dialog | Snapshot `tax_rate` ใหม่; ไม่ retro-edit เอกสารย้อนหลัง |
+| ตั้ง rating, tax ID, branch no. | ฟอร์มผู้ขาย (`vendor-rating.tsx`, General) | `rating` 1-5 (null = ไม่ได้ให้คะแนน), `tax_no` (สูงสุด 20 ตัวอักษรในฟอร์ม), `branch_no` (สูงสุด 10); การ sort list ตาม rating วาง NULL ไว้ท้ายสุด |
+| ตั้งบัญชี AP posting | ฟอร์มผู้ขาย -> AP account picker | `ap_chart_of_accounts_id`; ส่งเฉพาะเมื่อมีการเปลี่ยน ต้องเป็นแถว [chart-of-accounts](/th/inventory/master-data/chart-of-accounts) ที่ active และ postable มิฉะนั้น `422 GL_ACCOUNT_NOT_POSTABLE` (แสดงใต้ฟิลด์) account mapping ไม่อ่านมัน (แถว AP ใช้ override ของตัวเองเท่านั้น) |
+| ตั้งสกุลเงิน / credit term เริ่มต้น | **API เท่านั้น** - `default_currency_id`, `credit_term_id` ตอน create/update | server ค้นหาสกุลเงิน / credit term (`CURRENCY_NOT_FOUND`, `CREDIT_TERM_NOT_FOUND`) และเขียนทับคอลัมน์ snapshot `default_currency_code`, `credit_term_name`, `credit_term_days` (snapshot ที่ client ส่งมาถูกละเลยเมื่อให้ id; `null` ล้างค่า) ฟอร์มไม่มีฟิลด์สำหรับสิ่งเหล่านี้ |
+| คอมเมนต์ / แนบไฟล์ | Vendor detail -> comment sheet (`EntityCommentSheet`, `use-vendor-comments.ts`) | แสดงเฉพาะผู้ขายที่มีอยู่แล้ว |
+| พิมพ์ | ปุ่ม **Print** บนฟอร์มผู้ขาย (`PrintDocumentButton`, template `VENDOR_DETAIL_TEMPLATE_ID`) | Vendor Detail Report ของผู้ขายรายนั้น |
 
 รูปแบบ search-and-filter ของ list ผู้ขาย เหมือน pattern ทั่วไปของ list ข้อมูลหลักอื่น ๆ:
 
@@ -53,7 +58,7 @@ flowchart TD
 
 | อาการ / ข้อความ | สาเหตุ | การจัดการ |
 |---|---|---|
-| "Code/name already in use" | `(code, name)` ซ้ำบนแถว non-deleted | เลือก identifier อื่น |
+| `409 VENDOR_CODE_ALREADY_EXISTS` - "Vendor code already exists" | รหัสผู้ขายซ้ำตอน create หรือ update (เป็น error-catalog code ตั้งแต่ 2026-10) | เลือก code อื่น |
 | "Address type already exists for this vendor" | พยายามเพิ่มที่อยู่ที่สองของ `address_type` เดียวกัน (DB-unique บน `(vendor_id, address_type, deleted_at)`) | แก้ที่อยู่ที่มีอยู่แทน |
 | **ยังไม่ยืนยัน** — ไม่พบ delete guard | `vendors.service.ts`'s `delete()` เป็น soft-delete แบบไม่มีเงื่อนไข (ใน transaction ที่บรรทัดการ cascade-delete ไปยัง vendor-contact/address ถูก comment ไว้) ไม่มีการเช็ค PR/PO/GRN/pricelist ที่อ้างอิง | เดิมหน้านี้ระบุว่า "cannot delete — referenced by documents" เป็น error ที่บังคับใช้จริง; ให้ถือว่า**ยังไม่ถูกบังคับใช้**จนกว่าจะตรวจสอบซ้ำ |
 | Warning "Vendor has no active contact" | ผู้ติดต่อทั้งหมด inactive หรือ deleted | เพิ่มหรือ reactivate อย่างน้อยหนึ่งผู้ติดต่อ |
@@ -91,6 +96,9 @@ flowchart TD
 | `tax_no` | `String? @db.VarChar` | Yes | เลขประจำตัวผู้เสียภาษี (ไทย 13 หลัก ไม่บังคับรูปแบบเพราะผู้ขายต่างประเทศแตกต่างกัน) มี index (`vendor_tax_no_idx`) เพิ่ม 2026-09-09 (`20260909203000_add_vendor_tax_branch_rating`) |
 | `branch_no` | `String? @db.VarChar` | Yes | เลขที่สาขา; `"00000"` = สำนักงานใหญ่ เก็บเป็น string เพราะเลขศูนย์นำหน้ามีความหมาย เพิ่ม 2026-09-09 |
 | `rating` | `Int?` | Yes | คะแนน 1–5 แบบกรอกเอง `null` = ยังไม่ให้คะแนน DB `CHECK "vendor_rating_chk" (rating BETWEEN 1 AND 5)` บวก DTO `z.number().int().min(1).max(5)` (`vendors.dto.ts:55`) เพิ่ม 2026-09-09 **ยังเป็น API เท่านั้น** — `types/vendor.ts` และ `routes/vendor-management/vendor/` ไม่มีฟิลด์สำหรับทั้งสามตัว (grep `tax_no|branch_no|rating` → 0 hit) |
+| `default_currency_id`, `default_currency_code` | `UUID?`, `VarChar(3)?` | Yes | สกุลเงินเริ่มต้นและ snapshot ของรหัส (API เท่านั้น) |
+| `credit_term_id`, `credit_term_name`, `credit_term_days` | `UUID?`, `VarChar?`, `Int?` | Yes | credit term เริ่มต้นและ snapshot ชื่อ / จำนวนวัน (API เท่านั้น) |
+| `ap_chart_of_accounts_id` | `UUID?` | Yes | บัญชี AP posting; ไม่มี FK, validate ว่า postable ตอนเขียน |
 | `info`, `dimension` | `Json?` | Yes | Metadata มาตรฐาน |
 | `doc_version` | `Int` | No | เวอร์ชัน optimistic-lock (default `0`) |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*` |

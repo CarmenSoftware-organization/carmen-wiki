@@ -57,7 +57,7 @@ Profile is a self-service maintenance page; it has no external business driver b
 - **Inline field validation**: Alias Name and Telephone validate on blur via the shared `validateField` helper — Alias Name against `^[a-zA-Z0-9]{0,3}$` ("Alias must be 1-3 alphanumeric characters"), Telephone against `^\+?[\d\s\-()]{8,20}$` ("Invalid phone number format"). Errors render inline in edit mode only and clear as soon as the field changes; both checks pass silently on an empty value (neither field is required).
 - **Fetch-failure visibility**: A failed initial `GET /api/user/profile` now surfaces a visible error banner ("Failed to load profile: …") in addition to the existing dev-console log — previously a failed fetch left the page silently stuck with no data and no on-screen explanation.
 
-## 3.1 Related auth routes: `/login/callback` and `/403`
+### 3.1 Related auth routes: `/login/callback` and `/403`
 
 These two routes sit next to Profile in `App.tsx` but are not Profile screens.
 

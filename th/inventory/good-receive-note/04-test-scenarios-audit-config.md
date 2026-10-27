@@ -2,7 +2,7 @@
 title: ใบรับสินค้า (Goods Receive Note) — Test Scenarios — Audit & Config
 description: เหตุผลที่ไม่มี test scenario สำหรับ GRN configuration console หรือเครื่องมือ lot-recall สำหรับ good-receive-note ในซอร์สปัจจุบัน และสิ่งที่ยืนยันได้แทน
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 dateCreated: 2026-05-15T11:00:00.000Z
 tags: good-receive-note, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
@@ -20,7 +20,7 @@ editor: markdown
 | AUD-HP-01..04 (การ query activity log ของ Auditor, การเจาะลึก GRN, lot-recall trace, การ export sensitive-field พร้อมการอนุมัติรอง) | ไม่พบ route audit-module เฉพาะทางหรือ workflow การอนุมัติ export ข้อมูลที่รองรับ (`workflow_history` JSON, linkage ผ่าน `inventory_transaction_id`) เป็นจริง แต่ไม่พบ screen ที่สร้างขึ้นมาเฉพาะเพื่ออ่านมัน |
 | AUD-HP-05..08 (การเปลี่ยนรูปแบบ lot ของ Sysadmin, การปรับ RBAC, การดูแลรหัสภาษี/เหตุผล, การ cutover integration) | การสร้างหมายเลข lot มีจริงแต่ hardcode — **แก้ไข 2026-09-22:** `<location_code><YYMM><ลำดับ 4 หลัก>` จาก `buildLotNo()` (`common/helpers/lot-number.helper.ts`) เลขลำดับ = `lot_seq_no` ที่นับตามงวด; ตั้งค่าผ่าน panel ใดไม่ได้ การตั้งค่าภาษี/สกุลเงิน/running-code มีจริงแต่อยู่ในโมดูลทั่วไป [system-config](/th/inventory/system-config) / [master-data](/th/inventory/master-data) ไม่ใช่ console เฉพาะ GRN ไม่พบ panel RBAC-threshold หรือ integration-endpoint |
 | AUD-PERM-01..07, AUD-VAL-01..08, AUD-EDGE-01..06 | ทั้งหมดสร้างขึ้นบนพื้นฐาน configuration console / เครื่องมือ lot-recall ที่ยังไม่ยืนยันเดียวกัน; ไม่ได้สร้างใหม่ |
-| การ co-authorisation post-commit void ของ `GRN_POST_010` (Inventory Manager + Finance) ที่อ้างตลอดทั้งหน้า | **ยังไม่ implement — การ void หลัง commit ถูกปฏิเสธทันที** (`GRN_COMMITTED_NOT_VOIDABLE`, `good-received-note.service.ts:2254-2256`); ดู [02-business-rules.md](./02-business-rules.md) `GRN_POST_010` และ [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) |
+| การ co-authorisation post-commit void ของ `GRN_POST_010` (Inventory Manager + Finance) ที่อ้างตลอดทั้งหน้า | **ยังไม่ implement — การ void หลัง commit ถูกปฏิเสธทันที** (`GRN_COMMITTED_NOT_VOIDABLE`, `good-received-note.service.ts:2344-2358`); ดู [02-business-rules.md](./02-business-rules.md) `GRN_POST_010` และ [03-user-flow-audit-config.md](./03-user-flow-audit-config.md) |
 
 > **ความครอบคลุมที่รันได้:** block permission-denial ใน `../carmen-frontend-e2e/tests/501-grn.spec.ts` (fixture บทบาท Requestor, ผู้ใช้ `carmensoftware.dev`, BU `GR2VYNKQ`); ส่วนสถานะ / สิทธิ์ของ `docs/test-cases/gaps/501-grn-core-gap.md`
 

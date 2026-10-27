@@ -2,7 +2,7 @@
 title: คลังสินค้า (Inventory) — User Flow
 description: วงจรชีวิตของ movement และไฟล์ flow เฉพาะ persona สำหรับ inventory
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: inventory, user-flow, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -12,7 +12,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 
 > **At a Glance**
 > **โมดูล:** [inventory](/th/inventory/inventory) &nbsp;·&nbsp; **Personas:** Store Keeper (ตรวจสอบ ledger) &nbsp;·&nbsp; Inventory Controller (ปิดสิ้นงวด) &nbsp;·&nbsp; Finance + Audit / Config (หน้าแก้ไข — ไม่มี surface เหล่านั้นอยู่จริง)
-> **วงจรชีวิต workflow:** ขับเคลื่อนด้วย movement — แต่ละ `tb_inventory_transaction` ถูกเขียนแบบ posted แล้วโดยโมดูล source ของมัน (ไม่มี draft → committed บน movement) วงจรชีวิตต่องวดอยู่บน `tb_inventory_period.status`: `open` → (**Start Period Close** เปิดรอบการนับบน `tb_physical_count_period`) → `closed` ผ่าน **Close Period** ที่นี่ (`locked` ถูก set ที่อื่น) การแก้ไขคือ transaction ใหม่ผ่านเอกสาร source ใหม่; row ไม่เคยถูกแก้ไข
+> **วงจรชีวิต workflow:** ขับเคลื่อนด้วย movement — แต่ละ `tb_inventory_transaction` ถูกเขียนแบบ posted แล้วโดยโมดูล source ของมัน (ไม่มี draft → committed บน movement) วงจรชีวิตต่องวดอยู่บน `tb_inventory_period.status`: `open` → (**Start Period Close** เปิดรอบการนับบน `tb_physical_count_period`) → `closed` ผ่าน **Close Period** ที่นี่ (`locked` ถูก set ที่อื่น และยังนับเป็นงวดที่ active) การแก้ไขคือ transaction ใหม่ผ่านเอกสาร source ใหม่; row ไม่เคยถูกแก้ไข
 
 ## 1. ภาพรวม
 
@@ -35,7 +35,7 @@ Section 2 อธิบาย state machine สองอัน (ระดับ m
 | ---------- | ------ | -------- | ----------- | -------------- |
 | `(none)` | สร้างงวด | `open` | `ensureNextPeriod` ระหว่างการปิดครั้งก่อน หรือหน้าจอ admin ของงวด ([system-config/period](/th/inventory/system-config/period)) | หนึ่งงวดต่อ YYMM (`@@unique([fiscal_year, fiscal_month, deleted_at])`) |
 | `open` | รับ movements | `open` | Role ที่ทำธุรกรรมทั้งหมด (ผ่านโมดูล source) | Movement ที่วันที่เอกสารอยู่ในงวดนี้จะ post เข้างวดนี้; เอกสารที่ลงวันที่ในงวดที่ `closed` ถูก reject ตอน create/commit (date guard ของ SI/SO/GRN) |
-| `open` | **Start Period Close** บน `/period-end` | `open` (งวด) + `counting` (`tb_physical_count_period` ของงวด) | ผู้ใช้ใดก็ได้ที่มี `inventory_management.period_end.execute` | ไม่มี GRN ที่ลงวันที่ในงวดอยู่นอก `{committed, voided}`, ไม่มี SI/SO อยู่นอก `{completed, cancelled, voided}`, ไม่มี SR ที่มีเลขที่อยู่ที่ `draft`/`in_progress` (`listStartCountingBlockers`); PR/PO ไม่เคย block เป็น idempotent ตราบที่รอบยัง `counting`; 409 เมื่อรอบ `completed` แล้ว นี่คือ path เดียวที่ทำให้เปิด physical count ได้ |
+| `open` | **Start Period Close** บน `/period-end` | `open` (งวด) + `counting` (`tb_physical_count_period` ของงวด) | ผู้ใช้ใดก็ได้ที่มี `inventory_management.period_end.execute` | ไม่มี GRN ที่ลงวันที่ในงวดอยู่นอก `{committed, voided}`, ไม่มี SI/SO อยู่นอก `{completed, cancelled, voided}`, ไม่มี SR ที่มีเลขที่อยู่ที่ `draft`/`in_progress` (`listStartCountingBlockers`); PR/PO ไม่เคย block ใช้กับงวดที่ active (`open`/`locked` ที่เก่าสุด); เป็น idempotent ตราบที่รอบยัง `counting`; 409 เมื่อรอบ `completed` แล้ว นี่คือ path เดียวที่ทำให้เปิด physical count ได้ |
 | `open` (หรือ `locked`) | **Close Period** บน `/period-end/review` | `closed` | ผู้ใช้ใดก็ได้ที่มี `inventory_management.period_end.execute` | Gate การปิดเคลียร์ทั้งหมด (SR ที่มีเลขที่ไม่ `in_progress` กลาง workflow; GRN อยู่ใน `{draft, committed, voided}`; CN อยู่ใน `{draft, completed, cancelled, voided}`; SI/SO ไม่ `in_progress`; ทุก location ที่กำหนดนับครบ — PR/PO ไม่เป็น gate อีกต่อไป) รันแบบ atomic ภายใต้ lock `FOR UPDATE` พร้อม re-validation; กวาดเฉพาะ lot ที่งวดมี `end_at ≤` งวดนี้; เขียนการยกยอด lot (lot ใหม่ `{location_code}{YYMM}{seq4}`) และ — เฉพาะ tenant แบบ average method — row `tb_inventory_period_snapshot`; provision งวด `open` ถัดไปอัตโนมัติ; mark row `tb_physical_count_period` เป็น completed |
 | `closed` | (ไม่มี transition ในโมดูลนี้) | — | — | ไม่มี endpoint reopen ที่นี่ |
 | any | lock / unlock | `locked` / — | Period service ที่อยู่หลัง [system-config/period](/th/inventory/system-config/period) | นอก scope ของโมดูลนี้; หมายเหตุ `findCurrent` ถือว่า `locked` เป็นงวดปัจจุบัน งวดที่ lock จึงยังแสดงและปิดได้จากที่นี่ |

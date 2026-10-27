@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check) — User Flow — หน้ารายการ & สร้าง
 description: หน้ารายการตำแหน่งและหน้าสร้างที่ใช้เริ่ม กำหนด scope และสุ่มตัวอย่างการสุ่มตรวจ
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: spot-check, user-flow, inventory-controller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -33,12 +33,12 @@ graph LR
 
 ### สิ่งที่หน้ารายการแสดง
 
-- **ปุ่มสลับ Locations / History** — มุมมอง **Locations** (`GET /spot-check/current`) จัดกลุ่มทุกตำแหน่งที่ eligible เป็น **Resume** (มี spot check `pending`/`in_progress`) หรือ **Not Started** (ไม่มี); มุมมอง **History** (`GET /spot-checks`, แบ่งหน้า) แสดง spot check ทุกฉบับที่เคยสร้าง สถานะใดก็ได้ พร้อม filter ตาม location/status/method
-- **KPI tiles** (เฉพาะมุมมอง Locations) — จำนวน All / Resume / Not Started แต่ละอันคลิกเป็น filter ได้
+- **ปุ่มสลับ Locations / History** (`ScViewToggle`) — เป็นลิงก์สองอัน ไม่ใช่ state ฝั่ง client: **Locations** คือ `/inventory-management/spot-check` (`GET /spot-check/current` จัดกลุ่มทุกตำแหน่งที่ eligible เป็น **Resume** — มี spot check `pending`/`in_progress` — หรือ **Not Started**), **History** เป็น route ของตัวเอง `/inventory-management/spot-check/history` (`GET /spot-checks`) — data-grid ของ spot check ทุกฉบับที่เคยสร้าง สถานะใดก็ได้ การ filter ค้นหา และเรียงลำดับทำ**ฝั่ง server** และหน้าโหลดทีละหน้า (ฉบับก่อนหน้าดึงทั้งชุด) ตัวกรอง (`sc-history-filter-fields.ts`): status (`pending` / `in_progress` / `completed` / `void` เท่านั้น — `voided`/`cancelled` มีอยู่ใน type ฝั่ง FE แต่คำขอที่มีค่าเหล่านี้ถูกปฏิเสธ 400), method (random / high_value / manual), location (รวมตำแหน่งที่ inactive), ช่วงวันที่เริ่ม การกดกลับจาก spot check ไปยัง path ใดที่เปิดมันขึ้นมา
+- **Status strip** (เฉพาะมุมมอง Locations) — จำนวน All / Resume / Not Started แต่ละอันคลิกเป็น filter ได้ พร้อม metric ของรายการที่นับแล้ว (Σ `counted` / Σ `size` ของตำแหน่ง Resume)
 - **Checkbox "Include Not Count"** — toggle `include_not_count` บนการเรียก `/current`; ไม่ติ๊ก (default) แสดงเฉพาะตำแหน่งที่ `physical_count_type = yes` (flag ระดับตำแหน่งเดียวกับที่ [physical-count](/th/inventory/physical-count) ใช้สำหรับ period-end gate ของตัวเอง — spot check เองไม่ใช่ period-end gate); ติ๊กแล้วเพิ่มตำแหน่งที่ flag `no`
-- **ช่องค้นหา** — filter card ตำแหน่ง/history ที่มองเห็นตามชื่อ/รหัส (Locations) หรือหมายเลข spot-check/ตำแหน่ง (History) ฝั่ง client
-- **Card ตำแหน่ง** (`ScLocationCard`) — หนึ่งต่อตำแหน่ง; ตำแหน่ง "Not Started" แสดงปุ่ม **Start**; ตำแหน่งที่มี spot check ค้างแสดง panel ข้อมูล resume (หมายเลข spot-check, badge method, ความคืบหน้า counted/total, badge สถานะ) พร้อมปุ่ม **Resume** และ **Reset**
-- **Card History** (`ScHistoryCard`) — หนึ่งต่อ spot check ในประวัติ คลิกเพื่อเปิด (route ไปยังหน้า entry เดียวกันที่บันทึกใน [03-user-flow-counter.md](/th/inventory/spot-check/03-user-flow-counter) ไม่ว่างสถานะใดของ spot check)
+- **ช่องค้นหา** — filter แถวตำแหน่งที่มองเห็นตามชื่อ/รหัสฝั่ง client (มุมมอง Locations); ใน History การค้นหาเป็นส่วนหนึ่งของ query ฝั่ง server
+- **แถวตำแหน่ง** (`ScLocationRow` แทนที่ `ScLocationCard`) — หนึ่งต่อตำแหน่ง; ตำแหน่ง "Not Started" แสดงปุ่ม **Start**; ตำแหน่งที่มี spot check ค้างแสดง panel ข้อมูล resume (หมายเลข spot-check, badge method, ความคืบหน้า counted/total, badge สถานะ) พร้อมปุ่ม **Resume** และ **Reset**
+- **แถว History** (data-grid `use-sc-history-table.tsx` แทนที่ `ScHistoryCard`) — หนึ่งต่อ spot check ในประวัติ คลิกเพื่อเปิด (route ไปยังหน้า entry เดียวกันที่บันทึกใน [03-user-flow-counter.md](/th/inventory/spot-check/03-user-flow-counter) ไม่ว่าสถานะใดของ spot check)
 
 ### สิ่งที่หน้าสร้างแสดง (`sc-form.tsx` เป็นฟอร์มสร้างอย่างเดียวตั้งแต่ 2026-09-04 — branch view/edit ที่ตายแล้วถูกลบใน `0647b32e`)
 
@@ -82,7 +82,7 @@ graph LR
 
 ## 6. แหล่งอ้างอิง
 
-- **Frontend:** `../carmen-frontend/routes/inventory-management/spot-check/sc-component.tsx`, `sc-form.tsx`, `sc-location-card.tsx`, `sc-history-card.tsx`, `sc-method-picker.tsx`, `sc-reset-dialog.tsx`
+- **Frontend:** `../carmen-frontend/routes/inventory-management/spot-check/sc-component.tsx`, `sc-form.tsx`, `sc-location-row.tsx`, `sc-history-component.tsx`, `use-sc-history-table.tsx`, `sc-history-filter-fields.ts`, `sc-view-toggle.tsx`, `sc-paths.ts`, `sc-method-picker.tsx`, `sc-reset-dialog.tsx`
 - **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/spot-check/spot-check.service.ts` (`create`, `reset`, `findCurrentByLocation`), `spot-check.logic.ts` (sampling)
 - **E2E:** `../carmen-frontend-e2e/tests/` — ยังไม่มี spec spot-check; manual test-case catalog `docs/test-cases/760-spot-check.md` (44 cases; `TC-SPC-01*` list, `TC-SPC-03*` create)
 - ที่เกี่ยวข้อง: [spot-check/03-user-flow](/th/inventory/spot-check/03-user-flow) (overview), [spot-check/02-business-rules](/th/inventory/spot-check/02-business-rules) (`SPC_VAL_001`–`004`, `SPC_VAL_006`, `SPC_AUTH_001`), [spot-check/03-user-flow-counter](/th/inventory/spot-check/03-user-flow-counter) (การเดินทางหน้า entry/review ของ role เดียวกัน)

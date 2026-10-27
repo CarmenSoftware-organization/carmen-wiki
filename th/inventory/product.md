@@ -2,7 +2,7 @@
 title: สินค้า (Product)
 description: ข้อมูลหลักของสินค้า — หมวดหมู่ หน่วยนับ คลังจัดเก็บและชั้นวาง eco label และการส่งออก — แคตตาล็อกที่เอกสารคลังทุกใบอ้างอิง
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: product, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -33,7 +33,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 
 ## 3. แนวคิดสำคัญ
 
-- **Product Category**: โหนดการจำแนกประเภทเชิงลำดับชั้น (หมวดหมู่ → หมวดหมู่ย่อย → กลุ่มสินค้า สามระดับคงที่) ใช้สำหรับการจัดระเบียบ การ roll-up เพื่อรายงาน และการสืบทอดค่า default (tax profile, ค่าความคลาดเคลื่อน, flag recipe / sold-directly) ดู [category](/th/inventory/product/category) ว่าต้นไม้บังคับใช้อะไรจริง
+- **Product Category**: โหนดการจำแนกประเภทเชิงลำดับชั้น (หมวดหมู่ → หมวดหมู่ย่อย → กลุ่มสินค้า สามระดับคงที่) ใช้สำหรับการจัดระเบียบ การ roll-up เพื่อรายงาน และการสืบทอดค่า default (tax profile, ค่าความคลาดเคลื่อน, flag recipe / sold-directly และ**บัญชี GL แบบ Inventory / Direct** ที่ [account mapping](/th/inventory/master-data/chart-of-account-mapping) resolve) การแก้ไขโหนดอาจเขียนทับค่าเดียวกันบนทุก descendant และสินค้าหลังจาก dialog ยืนยัน; code ของ sub-category, item-group และสินค้าไม่ซ้ำกันทั้ง BU ดู [category](/th/inventory/product/category) ว่าต้นไม้บังคับใช้อะไรจริง
 - **Base Unit**: หน่วยคลังมาตรฐานสำหรับสินค้า (เช่น `KG`, `LITRE`, `EACH`) ยอดสต๊อก ต้นทุน และการประเมินมูลค่าทั้งหมดถูกเก็บในหน่วยฐาน ทุกหน่วยอื่นที่ผูกกับสินค้าถูกนิยามสัมพันธ์กับมันด้วย conversion factor
 - **Conversion Factor**: ตัวคูณที่แปลงปริมาณที่แสดงในหน่วยสั่งซื้อหรือหน่วยสูตรอาหารเป็นหน่วยฐาน (เช่น 1 `CASE` = 12 `EACH`) การแปลงถูกตรวจสอบความสอดคล้องสองทิศทาง ต้องหลีกเลี่ยงวงกลม และกระจายไปยังบรรทัด PR/PO/GRN/recipe เพื่อให้ระบบ resolve ปริมาณทางกายภาพเดียวกันได้เสมอไม่ว่าจะกรอกอย่างไร
 - **Location Mapping**: การกำหนดสินค้ากับคลังจัดเก็บหนึ่งคลังหรือหลายคลัง (warehouse, store, kitchen) แต่ละคลังมี threshold `min_qty` / `max_qty` / `par_qty` แบบเลือกได้ และเลือกได้ว่าจะมี **ชั้นวาง** (`tb_product_location.shelf_id` + snapshot `shelf_code` / `shelf_name` ตรวจสอบกับข้อมูลหลักชั้นวาง — ไม่เช่นนั้น `SHELF_NOT_FOUND`) แท็บ **Location Assignment** ของสินค้าเป็น UI เดียวที่ตั้งชั้นวาง `re_order_qty` ไม่ใช่การตั้งค่าอีกต่อไป: API คำนวณมัน (และ `on_hand_qty`) จาก cost layer ณ เวลาอ่าน (`products.replenishment.ts`)
@@ -65,7 +65,7 @@ dateCreated: 2026-05-15T07:48:00.000Z
 **Master configuration:**
 - [master-data/unit](/th/inventory/master-data/unit) — หน่วยฐาน หน่วยสั่งซื้อ และหน่วยสูตรอาหาร พร้อม conversion factor
 - [master-data/location](/th/inventory/master-data/location) และ [master-data/shelf](/th/inventory/master-data/shelf) — แถว location ที่สินค้าถูกกำหนดไว้ และข้อมูลหลักชั้นวางที่แถวเหล่านั้นอาจอ้างอิง
-- Eco label — ข้อมูลหลัก `tb_eco_label` (เปลี่ยนชื่อจาก `tb_product_master_eco_label` เมื่อ 2026-09-04) ดูแลที่ `/product-management/eco` (`routes/product-management/eco/` ย้ายออกจาก `/config` เมื่อ 2026-09-03); ใบรับรองต่อสินค้าแก้ไขบนแท็บ **Eco Labels** ของฟอร์มสินค้า ดู [01-data-model](/th/inventory/product/01-data-model) § 2.10
+- Eco label — ข้อมูลหลัก `tb_eco_label` (เปลี่ยนชื่อจาก `tb_product_master_eco_label` เมื่อ 2026-09-04) ดูแลที่ `/product-management/eco` (คอลัมน์ใน list คือ **Code** - เดิมมี label ว่า "ISO" - และ **Description**) (`routes/product-management/eco/` ย้ายออกจาก `/config` เมื่อ 2026-09-03); ใบรับรองต่อสินค้าแก้ไขบนแท็บ **Eco Labels** ของฟอร์มสินค้า ดู [01-data-model](/th/inventory/product/01-data-model) § 2.10
 - [system-config/application-config](/th/inventory/system-config/application-config) — ค่า default ระดับ tenant (ค่าความคลาดเคลื่อน นโยบายบาร์โค้ด schema คุณสมบัติ)
 - [reporting-audit/activity](/th/inventory/reporting-audit/activity) — log วงจรชีวิตของสินค้าและการนำเข้าเป็นชุดสำหรับการตรวจสอบ
 - [reporting-audit/attachment](/th/inventory/reporting-audit/attachment) — รูปภาพสินค้า เอกสารสเปก และใบรับรองที่แนบกับแต่ละสินค้า

@@ -2,7 +2,7 @@
 title: สกุลเงิน (Currency)
 description: แคตตาล็อกสกุลเงินต่อ tenant, รายการอ้างอิง ISO และประวัติอัตราแลกเปลี่ยนแบบมีวันที่ — ขับเคลื่อนการแปลง FX ทั้งหมดบน PO, GRN, pricelist และ costing
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: master-data, currency, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -17,7 +17,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 1. คืออะไร / ใครใช้
 
-ข้อมูลหลักของ Currency ครอบคลุม **สามตารางใน schema สองชุด** ได้แก่ **platform ISO reference** (`tb_currency_iso`), **tenant enabled-currencies catalogue** (`tb_currency`) พร้อม cache อัตรา "ปัจจุบัน" และ **ประวัติอัตราที่มีวันที่ระดับ tenant** (`tb_exchange_rate`) เมื่อรวมกันแล้วทำให้เอกสารที่มีราคาทุกใบสามารถถูกแสดงเป็นสกุลเงินใดก็ได้ที่ tenant เปิดใช้งาน และทำให้ costing engine สามารถเลือกอัตราที่ถูกต้องสำหรับวันที่ของเอกสารได้
+ข้อมูลหลักของ Currency ครอบคลุม **สามตารางใน schema สองชุด** ได้แก่ **ISO reference ใน backstage schema** (`tb_currency_iso` เดิมคือ schema "platform"), **tenant enabled-currencies catalogue** (`tb_currency`) พร้อม cache อัตรา "ปัจจุบัน" และ **ประวัติอัตราที่มีวันที่ระดับ tenant** (`tb_exchange_rate`) เมื่อรวมกันแล้วทำให้เอกสารที่มีราคาทุกใบสามารถถูกแสดงเป็นสกุลเงินใดก็ได้ที่ tenant เปิดใช้งาน และทำให้ costing engine สามารถเลือกอัตราที่ถูกต้องสำหรับวันที่ของเอกสารได้
 
 แต่ละ tenant เลือก subset ของสกุลเงิน ISO ที่จะเปิดใช้งาน `default_currency_id` ของ BU (ดู [master-data/business-unit](/th/inventory/master-data/business-unit)) ชี้ไปยังหนึ่งในแถวที่เปิดใช้งานนี้ **บริหารจัดการโดย** Sysadmin (ISO seed) และ Product Admin (tenant catalogue); **อ่านโดย** developer ในเส้นทาง FX / costing และ tester ในการทดสอบเอกสารที่มี FX
 
@@ -30,7 +30,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | ตั้ง default currency ของ BU | รายละเอียดของ [master-data/business-unit](/th/inventory/master-data/business-unit) | ต้องอ้างอิงแถว `tb_currency` ที่ active |
 | บริหารจัดการอัตรา | ดู [master-data/exchange-rate](/th/inventory/master-data/exchange-rate) | ประวัติแบบมีวันที่อยู่ที่นั่น ไม่ใช่บนเอนทิตีนี้ |
 | ยกเลิกการใช้งานสกุลเงิน | Toggle `is_active` | ถูกบล็อกถ้าเป็น `default_currency_id` ของ BU ใดก็ตาม |
-| Seed รหัส ISO ใหม่ | Platform DB migration | tenant ไม่สามารถเขียน `tb_currency_iso` ได้ |
+| Seed รหัส ISO ใหม่ | Backstage DB migration | tenant ไม่สามารถเขียน `tb_currency_iso` ได้ |
 
 List ของสกุลเงินใช้ filter สถานะและ text filter ก่อน render:
 
@@ -73,9 +73,9 @@ flowchart TD
 
 ## 5. โมเดลข้อมูล (Dev)
 
-แหล่งที่มาแบบผสม: tenant + platform
+แหล่งที่มาแบบผสม: tenant + backstage schema (เปลี่ยนชื่อจาก "platform" เมื่อ 2026-10)
 
-### 5.1 `tb_currency_iso` (platform)
+### 5.1 `tb_currency_iso` (backstage schema)
 
 | Field | Prisma Type | Nullable | คำอธิบาย |
 | --- | --- | --- | --- |
@@ -129,7 +129,7 @@ flowchart TD
 ## 8. แหล่งอ้างอิง
 
 - **Prisma (tenant):** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_currency` (line ~561), `tb_exchange_rate` (~769)
-- **Prisma (platform):** `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_currency_iso` (line ~323)
+- **Prisma (backstage):** `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_currency_iso` (line ~428)
 - **Bruno:** `config/currencies/*`; `master-data/currencies/GET-find-all-iso-master-data-currencies.bru` (รายการ ISO) หมายเหตุ: `master-data/currencies/GET-get-fleet-summary-master-data-currencies.bru` เป็น request ของ platform ที่วางผิดที่ (`/api-system/clusters/summary`) และไม่เกี่ยวกับสกุลเงินเลย
 - **E2E:** `../carmen-frontend-e2e/tests/040-currency.spec.ts` + `docs/test-cases/gaps/040-currency-gap.md`
 - **Frontend:** `../carmen-frontend/routes/config/currency/`

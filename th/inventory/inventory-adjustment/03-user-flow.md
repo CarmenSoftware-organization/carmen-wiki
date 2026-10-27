@@ -2,7 +2,7 @@
 title: การปรับสต๊อก (Inventory Adjustment) — User Flow
 description: วงจรชีวิตเอกสาร (draft → commit → completed, void) และไฟล์ flow เฉพาะ persona สำหรับการปรับสต๊อก stock-in / stock-out ด้วยมือ
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: inventory-adjustment, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -44,9 +44,9 @@ stateDiagram-v2
 | ------------- | -------- | ------------ | --- |
 | **Save** (ฟอร์มใหม่) | `POST /{bu}/stock-ins` \| `/stock-outs` | ฟอร์ม Zod ผ่าน; `si_date`/`so_date` อยู่ในงวดที่เปิด (SI) / งวดปัจจุบัน (SO) — ตรวจฝั่ง server ด้วย | สร้าง header + บรรทัดที่ `draft`; จัดสรร `si_no`/`so_no` จากวันที่เอกสาร; แอปคงอยู่ที่เอกสาร (`/{id}?type=stock-in|stock-out`) ในโหมด view |
 | **Save** (draft ที่มีอยู่) | `PATCH /{id}/save` | `doc_status = draft`; `doc_version` ตรงกัน | ใช้ฟิลด์ header และการเพิ่ม/แก้/ลบบรรทัด; `doc_version` เพิ่มขึ้น การส่ง `doc_status` ใดที่ไม่ใช่ `draft` ถูกปฏิเสธ (`STOCK_IN_STATUS_CHANGE_NOT_ALLOWED`: "doc_status cannot be changed on save — use the commit or void endpoint") |
-| **Commit** | (`POST` ก่อนถ้ายังไม่เคย save) แล้ว `PATCH /{id}/commit` พร้อม `{ doc_version }` | ฟอร์มผ่าน (validate ก่อน confirm dialog เปิด); `doc_status = draft` (`STOCK_IN_ONLY_DRAFT_COMMITTABLE`); มีตำแหน่ง + ≥ 1 บรรทัด; วันที่อยู่ในงวด; stock-out: on-hand ≥ ที่ขอต่อสินค้า | ต่อบรรทัด `executeAdjustmentIn` / `executeAdjustmentOut` เขียน ledger rows และ stamp `inventory_transaction_id`; header → `completed`, `doc_version + 1`; navigate กลับไปหน้ารายการ |
+| **Commit** | (`POST` ก่อนถ้ายังไม่เคย save) แล้ว `PATCH /{id}/commit` พร้อม `{ doc_version }` | ฟอร์มผ่าน (validate ก่อน confirm dialog เปิด); `doc_status = draft` (`STOCK_IN_ONLY_DRAFT_COMMITTABLE`); มีตำแหน่ง + ≥ 1 บรรทัด; มีวันที่และอยู่ในงวด; stock-in แบบ FIFO ไม่ลงวันที่ก่อนการรับล่าสุดที่ post แล้ว; stock-out: จำนวนที่ดึงได้ ณ วันที่เอกสาร ≥ ที่ขอต่อสินค้า | ต่อบรรทัด `executeAdjustmentIn` / `executeAdjustmentOut` เขียน ledger rows และ stamp `inventory_transaction_id` (บรรทัด stock-out ได้ต้นทุนที่ post แล้วด้วย; stock-in ของ BU แบบ average ที่ลงวันที่ในงวดถัดไปจะถูกพักและ post โดยการปิดงวด); header → `completed`, `doc_version + 1`; navigate กลับไปหน้ารายการ |
 | **Delete** | `DELETE /{id}` | `doc_status = draft` (โหมด view ก็พอ — ไม่ต้อง Edit, `ed37e6b0`) | Soft-delete; เอกสารที่ completed ตอบ `STOCK_IN_COMPLETED_NO_DELETE` ("Cannot delete a completed Stock In — inventory has already been adjusted") |
-| **Void** | `DELETE /{id}/void` พร้อมเหตุผล | เอกสารเปิดในโหมด **Edit** (`canVoid = isEdit && !isReadOnly`) — จึงเท่ากับ `draft` ในทางปฏิบัติ; เอกสารที่ post แล้ว void ได้ผ่าน API | บรรทัดที่ post แล้วถูกกลับรายการด้วย adjustment ขาตรงข้ามที่ต้นทุนปัจจุบัน (void ของ stock-in ตรวจก่อนว่า on-hand รองรับการกลับรายการได้); header → `voided`, ตั้ง `deleted_at`, เก็บ `info.void_reason` แถวจึงหายจาก query ของ list/detail (filter `deleted_at: null`) |
+| **Void** | `DELETE /{id}/void` พร้อมเหตุผล | เอกสารเปิดในโหมด **Edit** (`canVoid = isEdit && !isReadOnly`) — จึงเท่ากับ `draft` ในทางปฏิบัติ; เอกสารที่ post แล้ว void ได้ผ่าน API | บรรทัดที่ post แล้วถูกกลับรายการด้วย adjustment ขาตรงข้ามที่ต้นทุนปัจจุบัน (void ของ stock-in ตรวจก่อนว่าสต๊อกที่ดึงได้ตั้งแต่วันที่เอกสารรองรับการกลับรายการได้; stock-out ของ Sales Consumption ปฏิเสธ void ด้วย 409 `STOCK_OUT_VOID_VIA_SALES_CONSUMPTION` — ให้ void จาก [Sales Consumption](/th/inventory/recipe/sales-consumption)); header → `voided`, ตั้ง `deleted_at`, เก็บ `info.void_reason` แถวจึงหายจาก query ของ list/detail (filter `deleted_at: null`) |
 
 ### 2.2 การกระจายผลของการ Posting (เกิดขึ้นตอน commit ต่อบรรทัด)
 
@@ -90,7 +90,7 @@ flowchart TD
 
 ## 4. หมายเหตุข้ามโมดูล
 
-- [physical-count](/th/inventory/physical-count) — `PhysicalCountService.submit()` เขียนแถว `tb_stock_in`/`tb_stock_out` โดยตรงที่ `completed` โดยไม่มี reason code เป็นบันทึก audit ของบรรทัดผลต่างการนับ — และ**ไม่**เรียก `executeAdjustmentIn/Out` (ยืนยัน 2026-09-22: ไม่มีการอ้างอิง `inventoryTransactionService` ใน `physical-count/*.ts`) แถวเหล่านั้นปรากฏในหน้ารายการของโมดูลนี้เป็นเอกสาร completed ที่ไม่เคยขยับสต๊อก
+- [physical-count](/th/inventory/physical-count) — `PhysicalCountService.submit()` เขียนแถว `tb_stock_in`/`tb_stock_out` โดยตรงที่ `completed` พร้อม type `eop_in` / `eop_out` ของ BU ลงวันที่สิ้นสุดของงวดที่นับ และ**post** ผ่าน `executeAdjustmentIn/Out` (ตรวจซ้ำ 2026-10-27; กลับผลสรุป 2026-09-22) แถวเหล่านั้นปรากฏในหน้ารายการของโมดูลนี้โดยมีป้าย `eop_in` / `eop_out` พร้อม stock movements
 - [inventory-adjustment/wastage-reporting](/th/inventory/inventory-adjustment/wastage-reporting) — `POST /wastage-reporting` สร้าง `tb_stock_out` หนึ่งฉบับต่อ location และ commit ในการเรียกเดียวกัน (draft → `executeAdjustmentOut` → `completed`)
 - [inventory/period-end](/th/inventory/inventory/period-end) — stock-in / stock-out ที่เป็น `draft` และลงวันที่ในงวด block **Start Period Close**; gate การปิดนับเฉพาะ SI/SO ที่ `in_progress` (ซึ่งไม่เคยถูกสร้างที่นี่)
 - [inventory](/th/inventory/inventory) — ทุก commit เรียก `InventoryTransactionService` ตัวเดียวกับที่ GRN, SR และ period-end เรียก

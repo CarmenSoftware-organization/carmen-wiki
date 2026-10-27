@@ -2,7 +2,7 @@
 title: การคำนวณต้นทุน (Costing) — Test Scenarios — Inventory Controller (แก้ไข)
 description: หน้าแก้ไข — ชุด test ของ Inventory Controller ที่เคยเอกสารไว้ที่นี่เล็งไปที่ cost-pick-preview adjustment-approval queue ที่ไม่มีอยู่จริง
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: costing, test-scenarios, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -15,7 +15,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 
 ## 1. ทำไม scenarios เหล่านี้ถูกลบ
 
-- **ไม่มี approval queue สำหรับ `tb_stock_in` / `tb_stock_out`** อัปเดต 2026-09-22: ตอนนี้การสร้างเขียน `doc_status = draft` (`stock-in.service.ts:418`) และการโพสต์เกิดที่ `PATCH …/commit` (`:471-575`) — แต่ผู้ถือ permission เดียวกันเป็นคน commit จึงยังคงไม่มีสถานะที่ทวนได้สำหรับผู้อนุมัติแยกและไม่มี cost-pick preview
+- **ไม่มี approval queue สำหรับ `tb_stock_in` / `tb_stock_out`** อัปเดต 2026-09-22: ตอนนี้การสร้างเขียน `doc_status = draft` (`stock-in.service.ts:534`) และการโพสต์เกิดที่ `PATCH …/commit` (`:596`) — แต่ผู้ถือ permission เดียวกันเป็นคน commit จึงยังคงไม่มีสถานะที่ทวนได้สำหรับผู้อนุมัติแยกและไม่มี cost-pick preview
 - **ไม่มีหน้าจอ "cost-pick preview" อยู่จริง**
 - **ไม่มีการแยก Inventory-Controller-vs-Store-Keeper ในโมดูลนี้** — ทั้งคู่ gate ด้วย permission ทั่วไปเดียวคือ `inventory_management.view`
 - **ไม่มี Finance persona ให้ escalate variance ไปหา** — ดู [03-user-flow-finance](./03-user-flow-finance.md) (แก้ไข)

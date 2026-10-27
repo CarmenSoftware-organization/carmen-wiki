@@ -2,7 +2,7 @@
 title: การปรับสต๊อก (Inventory Adjustment) — User Flow — Inventory Controller
 description: Review draft ก่อน commit, void ความผิดพลาด และอ่านเอกสารที่ completed, stock movements และผลพิมพ์ — หน้าจอและสิทธิ์เดียวกับ Store Keeper
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: inventory-adjustment, user-flow, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -46,10 +46,10 @@ graph LR
 1. **กรองหน้ารายการเป็น `Draft`** (และทิศทางที่สนใจ)
 2. **เปิด draft** ตรวจ reason, ตำแหน่ง, วันที่ (ต้องอยู่ในงวด), บรรทัด และ — สำหรับ stock-in — `cost_per_unit` ที่กรอก
 3. **แก้ไขหรือทิ้งถ้าจำเป็น** **Edit** → แก้ header/บรรทัด → **Save** (`PATCH /{id}/save`, ตรวจ `doc_version`); หรือ **Delete** (โหมด view, `DELETE /{id}`); หรือ **Edit** → **Void** พร้อมเหตุผล (`DELETE /{id}/void` — บน draft นี่เพียง mark เป็น `voided` + soft-delete ไม่มีอะไรให้กลับรายการ)
-4. **Commit** **Commit** → confirm dialog → `PATCH /{id}/commit` พร้อม `doc_version` ปัจจุบัน Stock-out: service ตรวจ on-hand ต่อสินค้าก่อน (`STOCK_OUT_INSUFFICIENT_STOCK`); ทั้งสองทิศทาง re-check วันที่เอกสารเทียบกับงวด เมื่อสำเร็จ ledger rows มีอยู่แล้ว `inventory_transaction_id` ถูก stamp บนแต่ละบรรทัด และเอกสารเป็น `completed`
+4. **Commit** **Commit** → confirm dialog → `PATCH /{id}/commit` พร้อม `doc_version` ปัจจุบัน Stock-out: service ตรวจก่อนว่าจำนวนที่ดึงได้ ณ วันที่เอกสารพอต่อสินค้าแต่ละตัว (`STOCK_OUT_INSUFFICIENT_STOCK` ซึ่งระบุวันที่และวันที่ยอดคงเหลือต่ำสุด); ทั้งสองทิศทาง re-check วันที่เอกสารเทียบกับงวด และ stock-in แบบ FIFO จะถูกปฏิเสธถ้าลงวันที่ก่อนการรับล่าสุดของสินค้า/location นั้น (`STOCK_IN_DATE_BEFORE_LATEST_RECEIPT`) เมื่อสำเร็จ ledger rows มีอยู่แล้ว `inventory_transaction_id` ถูก stamp บนแต่ละบรรทัด และเอกสารเป็น `completed`
 5. **ตรวจสอบ** เปิดเอกสารอีกครั้ง → **Stock movements** แสดง lot และ layer `adjustment_in` / `adjustment_out`; Transaction Log ([inventory/transaction](/th/inventory/inventory/transaction)) แสดง rows เดียวกันภายใต้เลข SI / SO
 
-**การกลับรายการเอกสารที่ post แล้ว (API):** `DELETE /{bu}/stock-ins/{id}/void` (`{ void_reason }`) — `voidStockIn` ตรวจก่อนว่า on-hand ที่ตำแหน่งนั้นรองรับการกลับรายการของทุกบรรทัดที่ post แล้ว (`Cannot void: product … has insufficient on-hand qty (…) to reverse …`) แล้ว post `adjustment_out` ต่อบรรทัดที่ต้นทุนที่ ledger แก้ไขตอนนี้ และ mark header เป็น `voided` + `deleted_at` `voidStockOut` ทำแบบเดียวกันด้วยขา `adjustment_in` เอกสารจึงหายจาก query ของ list/detail
+**การกลับรายการเอกสารที่ post แล้ว (API):** `DELETE /{bu}/stock-ins/{id}/void` (`{ void_reason }`) — `voidStockIn` ตรวจก่อนว่าสต๊อกที่ดึงได้ตั้งแต่วันที่ของเอกสารเป็นต้นไปรองรับการกลับรายการของทุกบรรทัดที่ post แล้ว (422 `STOCK_IN_VOID_INSUFFICIENT_STOCK`: `Cannot void: {product} at {location} has only {on_hand} from {date} on … to take back the {requested} received`) แล้ว post `adjustment_out` ต่อบรรทัดที่ต้นทุนที่ ledger แก้ไขตอนนี้ และ mark header เป็น `voided` + `deleted_at` `voidStockOut` ทำแบบเดียวกันด้วยขา `adjustment_in` เอกสารจึงหายจาก query ของ list/detail
 
 ## 3. Decision Branches
 

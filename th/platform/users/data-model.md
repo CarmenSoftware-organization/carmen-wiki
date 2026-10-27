@@ -2,7 +2,7 @@
 title: User — Data Model
 description: Entity ของ user, ส่วนขยาย profile (avatar), สถานะ และ BU assignment ต่อ cluster — สิทธิ์แพลตฟอร์มอยู่ใน RBAC
 published: true
-date: 2026-09-05T13:15:00.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: book/platform, users, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -22,8 +22,8 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 ## 2. References
 
-- ../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma (backend HEAD `3bae0679d`) — `tb_cluster_user` (บรรทัด 299), `tb_user_profile` (บรรทัด 564), `tb_user_tb_business_unit` (บรรทัด 612), `tb_user` (บรรทัด 476)
-- ../carmen-backstage/src/pages/UserEdit.tsx — interface `UserFormData` (7 ฟิลด์, บรรทัด 71–79)
+- ../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma (backend HEAD `3bae0679d`) — `tb_cluster_user` (บรรทัด 299), `tb_user_profile` (บรรทัด 564), `tb_user_tb_business_unit` (บรรทัด 612), `tb_user` (บรรทัด 476)
+- ../carmen-backstage/src/pages/UserEdit.tsx — interface `UserFormData` (7 ฟิลด์, บรรทัด 73–81)
 - ../carmen-backstage/src/utils/audit.ts — `normalizeAudit()`, `latestActor()`, `auditCsvFields()`
 - ../carmen-backstage/src/utils/docVersion.ts — helper optimistic-lock
 - ../carmen-backstage/src/types/index.ts — interface `User`, `Audit`/`AuditEntry`

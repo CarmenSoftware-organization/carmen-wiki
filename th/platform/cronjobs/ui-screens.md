@@ -2,7 +2,7 @@
 title: งานตามกำหนดเวลา — หน้าจอ UI (UI Screens)
 description: หน้ารายการ ตัวกรอง และสถิติสรุปของ CronJobManagement การ์ด basics/schedule/execution/type-config ของ CronJobEdit และตัวสร้างตารางเวลาหกโหมดของ CronScheduleField
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: book/platform, cronjobs, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -10,7 +10,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 # งานตามกำหนดเวลา — หน้าจอ UI (UI Screens)
 
-> **หน้าจอ:** `CronJobManagement` (รายการ, `/cronjobs`) &nbsp;·&nbsp; `CronJobEdit` — คอมโพเนนต์เดียวใช้ทั้งสร้าง (`/cronjobs/new`) และแก้ไข (`/cronjobs/:id/edit`) &nbsp;·&nbsp; **ไม่มีแท็บ ไม่มี wizard** — การ์ดสี่อันเรียงกันบนฟอร์มแก้ไข &nbsp;·&nbsp; **คอมโพเนนต์ย่อย:** `CronScheduleField` ตัวสร้าง cron หกโหมด บวกคอมโพเนนต์ฟิลด์ config เฉพาะประเภทหกตัว (`jobConfig/`) &nbsp;·&nbsp; **Dialog:** ยืนยันการลบงาน (ข้อความรับรู้ความเป็นเจ้าของ) &nbsp;·&nbsp; **State ที่จำไว้:** `localStorage` key เดียว (`perpage_cronjob`) &nbsp;·&nbsp; **Concurrency:** optimistic lock `doc_version` ส่งเฉพาะเมื่อ GET ที่โหลดฟอร์มคืนค่ามาให้ &nbsp;·&nbsp; **Screenshot:** เลื่อนออกไปตามแผน — ยังไม่มี asset screenshot สำหรับโมดูลนี้
+> **หน้าจอ:** `CronJobManagement` (รายการ, `/cronjobs`) &nbsp;·&nbsp; `CronJobEdit` — คอมโพเนนต์เดียวใช้ทั้งสร้าง (`/cronjobs/new`) และแก้ไข (`/cronjobs/:id/edit`) &nbsp;·&nbsp; **ไม่มีแท็บ ไม่มี wizard** — การ์ดสี่อันเรียงกันบนฟอร์มแก้ไข &nbsp;·&nbsp; **คอมโพเนนต์ย่อย:** `CronScheduleField` ตัวสร้าง cron หกโหมด บวกคอมโพเนนต์ฟิลด์ config เฉพาะประเภทหกตัว (`jobConfig/`) &nbsp;·&nbsp; **Dialog:** ยืนยันการลบงาน (ข้อความรับรู้ความเป็นเจ้าของ) &nbsp;·&nbsp; **State ที่จำไว้:** `localStorage` key เดียว (`perpage_cronjob`) &nbsp;·&nbsp; **Concurrency:** optimistic lock `doc_version` ส่งเฉพาะเมื่อ GET ที่โหลดฟอร์มคืนค่ามาให้ &nbsp;·&nbsp; **Screenshot:** `assets/screenshots/platform/cronjobs/` (`index.png`, `ui-screens.png`)
 
 ![งานตามกำหนดเวลา — หน้าจอ UI (UI Screens) screen](/screenshots/platform/cronjobs/ui-screens.png)
 
@@ -39,7 +39,7 @@ caption ใต้แถบมีอยู่เพราะเหตุผลเ
 
 - **การค้นหา** เป็นการค้นแบบ free-text ฝั่ง server แบบ debounce (300ms) กับ `name`, `description`, `job_type`, `cron_expression`, และ `source_service` (`defaultSearchFields` ของ `cronjobService.ts`)
 - **ตัวกรอง** เปิด side sheet (`CronJobFilterSheet`) มี Select แบบตายตัวสองตัว: **Job Type** (ทั้งหกประเภทบวก "All") และ **Status** (Running / Stopped / "All") ไม่มีไวยากรณ์ filter แบบขั้นสูงหรือพิมพ์เอง
-- เคยมีตัวกรอง **Owner** ("All" กับ "Platform-owned only") อยู่ และถูกเอาออกไป เหตุผลคือข้อจำกัดของ backend ไม่ใช่การเปลี่ยนดีไซน์: ตัว parser query string ที่ gateway ใช้ร่วมกัน (`parseFilterString`, `apps/backend-gateway/src/shared-dto/paginate.dto.ts`) ตัดคู่ `key:value` ที่ค่าเป็น empty string ทิ้งก่อนที่ `platform_cronjobs.service.ts` จะเห็นด้วยซ้ำ — ดังนั้นตัวกรอง "Platform-owned only" ซึ่งต้องส่ง `source_service:` (ว่าง) จึงตรงกับทุกอย่างโดยเงียบ ๆ แทนที่จะกรองงาน foreign-owned ออก comment ของคอมโพเนนต์เองสรุปไว้ตรง ๆ: "Select ที่กรองไม่ได้แย่กว่าการไม่มี Select เลย"
+- เคยมีตัวกรอง **Owner** ("All" กับ "Backstage-owned only") อยู่ และถูกเอาออกไป เหตุผลคือข้อจำกัดของ backend ไม่ใช่การเปลี่ยนดีไซน์: ตัว parser query string ที่ gateway ใช้ร่วมกัน (`parseFilterString`, `apps/backend-gateway/src/shared-dto/paginate.dto.ts`) ตัดคู่ `key:value` ที่ค่าเป็น empty string ทิ้งก่อนที่ `backstage_cronjobs.service.ts` จะเห็นด้วยซ้ำ — ดังนั้นตัวกรอง "Backstage-owned only" ซึ่งต้องส่ง `source_service:` (ว่าง) จึงตรงกับทุกอย่างโดยเงียบ ๆ แทนที่จะกรองงาน foreign-owned ออก comment ของคอมโพเนนต์เองสรุปไว้ตรง ๆ: "Select ที่กรองไม่ได้แย่กว่าการไม่มี Select เลย"
 
 ### 2.3 คอลัมน์
 
@@ -50,7 +50,7 @@ caption ใต้แถบมีอยู่เพราะเหตุผลเ
 | Business Unit | ไม่ได้ (ค่าอยู่ใน JSON ของ `job_config` ไม่ใช่คอลัมน์ที่ server เรียงได้) | แสดงเฉพาะ `report`/`dashboard_refresh` (สองประเภทที่ผูกกับ BU) แสดง `bu_codes` สองตัวแรกบวก overflow `+N`, "All" สำหรับ `dashboard_refresh` ที่ว่าง, หรือขีดกลางสำหรับประเภทอื่น/`report` ที่ `bu_codes` ว่าง (`bu_codes` ว่างของงาน `report` คือ config ผิดพลาด ไม่ใช่ "ทุกหน่วยธุรกิจ" — คอลัมน์นี้ตั้งใจไม่ปนสองความหมายนี้เข้าด้วยกัน) |
 | Schedule | ไม่ได้ | cron expression ดิบบวกคำอธิบายภาษาธรรมดาด้านล่าง (`describeCron`) |
 | Status | ได้ | badge Running / Stopped จาก `is_active` |
-| Owner | ไม่ได้ | badge `source_service` หรือ "Platform" ถ้าไม่ตั้งค่า |
+| Owner | ไม่ได้ | badge `source_service` หรือ "Backstage" ถ้าไม่ตั้งค่า (`cronjob.owner.backstage`; label เดิมเขียนว่า "Platform" ก่อน rename ใน 2026-10) |
 | Last Run | ได้ | เวลาสัมพัทธ์; ไอคอนสามเหลี่ยมเตือนพร้อม tooltip error ดิบเมื่อ `last_error` มีค่า — ดู [Data Model](/th/platform/cronjobs/data-model) §5.2 |
 | Next Run | ได้ | timestamp แบบเต็ม |
 | Runs | ได้ | `run_count` ชิดขวาแบบตัวเลข |
@@ -69,7 +69,7 @@ caption ใต้แถบมีอยู่เพราะเหตุผลเ
 
 ### 2.5 Export CSV
 
-export **เฉพาะหน้าที่โหลดอยู่เท่านั้น** — comment ของคอมโพเนนต์เองระบุว่า `perpage: -1` endpoint นี้ไม่รองรับ (คืน 10 แถวเงียบ ๆ เสมอ) จึงไม่เคยเป็นการ export ทั้งตาราง สิบคอลัมน์: ชื่อ, description, label ประเภท, label business unit, cron expression, label สถานะ, label owner, last run, next run, run count
+export **เฉพาะหน้าที่โหลดอยู่เท่านั้น** — comment ของคอมโพเนนต์เองระบุว่า `perpage: -1` endpoint นี้ไม่รองรับ (คืน 10 แถวเงียบ ๆ เสมอ และตอนนี้ gateway ปฏิเสธ `perpage` ของ client ใด ๆ ที่อยู่นอกช่วงจำนวนเต็ม 1 ถึง 100 ด้วย `INVALID_PERPAGE`) จึงไม่เคยเป็นการ export ทั้งตาราง สิบคอลัมน์: ชื่อ, description, label ประเภท, label business unit, cron expression, label สถานะ, label owner, last run, next run, run count
 
 ### 2.6 Dev-only debug panel
 
@@ -96,12 +96,12 @@ export **เฉพาะหน้าที่โหลดอยู่เท่�
 
 ### 3.4 Type Config
 
-render หนึ่งในหกคอมโพเนนต์ (`jobConfig/`) เลือกตาม `job_type` แต่ละตัวรองรับฟิลด์ใน [Data Model](/th/platform/cronjobs/data-model) §3:
+render หนึ่งในหกคอมโพเนนต์ (`jobConfig/`) เลือกตาม `job_type` (คอนโซลไม่มีสำหรับ `gl_run_due` หรือ `pos_simphony_pull`; ดู [หน้า landing](/th/platform/cronjobs) §3.1) แต่ละตัวรองรับฟิลด์ใน [Data Model](/th/platform/cronjobs/data-model) §3:
 
 | `job_type` | คอมโพเนนต์ | พฤติกรรม UI ที่น่าสังเกต |
 |---|---|---|
-| `report` | `ReportConfigFields` | โหลดเทมเพลตรายงานและผู้ใช้แบบสดสำหรับสอง picker (dropdown เทมเพลต, multi-select ค้นหาได้ของผู้รับตามชื่อ/email — ไม่ใช่ช่องพิมพ์เอง); Select **Delivery Type** (`file`/`viewer_url`); **ไม่มีช่องสำหรับ endpoint ของ `viewer_url` เลย** โดยตั้งใจ (ดู SSRF note ที่ [Data Model](/th/platform/cronjobs/data-model) §3.1) |
-| `notification` | `NotificationConfigFields` | รูปแบบ multi-select ค้นหาได้แบบเดียวกันสำหรับ `user_ids`; hint ระบุว่าฟิลด์นี้จำเป็น แก้จาก hint เดิมที่คัดลอกมาจาก `dashboard_refresh` ซึ่งบอกผิด ๆ ว่าว่างคือ "ทุกคน" |
+| `report` | `ReportConfigFields` | โหลดเทมเพลตรายงานและผู้ใช้แบบสดสำหรับสอง picker (dropdown เทมเพลต, multi-select ค้นหาได้ของผู้รับตามชื่อ/email — ไม่ใช่ช่องพิมพ์เอง) ทั้งสองรายการถูกดึงด้วย `fetchAllPages` (ขนาดหน้า 100, สูงสุด 10 หน้า; ผู้ใช้เรียง `username:asc`) แทนการเรียก `perpage: 200` ครั้งเดียวที่ทิ้งทุกอย่างหลังแถวที่ 200 เงียบ ๆ — เกิน 1,000 แถวตัวโหลดจะหยุดและ log คำเตือนตอน dev; Select **Delivery Type** (`file`/`viewer_url`); **ไม่มีช่องสำหรับ endpoint ของ `viewer_url` เลย** โดยตั้งใจ (ดู SSRF note ที่ [Data Model](/th/platform/cronjobs/data-model) §3.1) |
+| `notification` | `NotificationConfigFields` | รูปแบบ multi-select ค้นหาได้แบบเดียวกันสำหรับ `user_ids` (ตัวโหลดผู้ใช้ `fetchAllPages` เดียวกัน); hint ระบุว่าฟิลด์นี้จำเป็น แก้จาก hint เดิมที่คัดลอกมาจาก `dashboard_refresh` ซึ่งบอกผิด ๆ ว่าว่างคือ "ทุกคน" |
 | `cleanup` | `CleanupConfigFields` | ช่องพิมพ์เองสามช่อง (`action`, `type`, `older_than`) ไม่มีการ validate — ตรงกับฝั่ง backend ที่ก็ไม่ validate อะไรเช่นกัน |
 | `dashboard_refresh` | `DashboardRefreshConfigFields` | multi-select business unit (ว่างหมายถึง "ทุก BU ที่ active" จริง — ประเภทเดียวที่ hint นี้ถูกต้อง) และ Select Tier (`operational`/`breakdown`/`matrix`/"All") |
 | `activity_rollup` | `ActivityRollupConfigFields` | ช่องตัวเลขหนึ่งช่อง `days_back` (default 2) |
@@ -138,12 +138,12 @@ render `AuditMeta` — เฉพาะ `created_at`/`created_by_id`/`updated_at`
 
 สองรูปแบบข้อความ เลือกตามว่างานเป้าหมายมี `source_service` หรือไม่:
 
-- **Platform-owned:** ข้อความ "ลบงานนี้หรือไม่?" ธรรมดา ระบุชื่องาน
+- **Backstage-owned:** ข้อความ "ลบงานนี้หรือไม่?" ธรรมดา ระบุชื่องาน
 - **Foreign-owned:** ระบุทั้งชื่องานและ service เจ้าของ วางกรอบว่าเป็นการลบกำหนดการของ business unit นั้นถาวร เพราะสร้างกลับคืนจากหน้าจอนี้ไม่ได้
 
 ## 6. State ของ UI ที่จำไว้
 
-`localStorage` key เดียว: `perpage_cronjob` ตัวเลือกจำนวนแถวต่อหน้าของหน้ารายการ การค้นหา ตัวกรอง การเรียงลำดับ และเลขหน้าไม่ถูกจำไว้ข้ามการเข้าชม
+`localStorage` key เดียว: `perpage_cronjob` ตัวเลือกจำนวนแถวต่อหน้าของหน้ารายการ อ่านผ่าน `readStoredPerpage('perpage_cronjob', 10)` (เฉพาะจำนวนเต็ม 1 ถึง 100 ไม่งั้นใช้ค่าเริ่มต้น 10) การค้นหา ตัวกรอง การเรียงลำดับ และเลขหน้าไม่ถูกจำไว้ข้ามการเข้าชม
 
 ## 7. อ้างอิง
 

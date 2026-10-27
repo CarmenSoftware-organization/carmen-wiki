@@ -1,8 +1,8 @@
 ---
 title: การวิเคราะห์การใช้งาน (Usage Analytics)
-description: หน้าแดชบอร์ด UI telemetry ที่ /analytics (module slug คือ usage-analytics) — ทุก StatCard, กราฟรายวัน, และ Top List ทั้งสองชุด นิยามจาก tb_activity_event พร้อมช่องว่างสิทธิ์ activity_event.read/activity_event.detail ที่คุมการ drill-down
+description: แดชบอร์ด UI telemetry ที่ /analytics (slug usage-analytics) — StatCard, กราฟรายวัน และ Top List ทั้งสองชุด นิยามจาก tb_activity_event พร้อมช่องว่างสิทธิ์ activity_event.read/detail ที่คุม drill-down
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: book/platform, usage-analytics
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -10,7 +10,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 # การวิเคราะห์การใช้งาน (Usage Analytics)
 
-**Usage Analytics** คือหน้าเดียว `UsageAnalytics` ที่เข้าถึงได้ที่ route **`/analytics`** — สังเกตว่า route กับ slug ของโมดูลในวิกินี้เอง (`usage-analytics`) ไม่ตรงกัน ผู้อ่านที่ค้นหาคำใดคำหนึ่งจึงควรมาเจอหน้านี้ทั้งคู่ มันคือแดชบอร์ดสรุปแบบอ่านอย่างเดียวของ UI telemetry (การเปิดหน้าและการคลิกที่ตัว frontend เองบันทึกไว้) สร้างจากการเรียก backend ครั้งเดียว คือ `GET /api-system/platform/analytics/overview` มันมีโมดูลพี่น้องที่แคบกว่า คือ [Activity Events](/th/platform/activity-events) ที่ `/activity-events` ซึ่งแสดง telemetry ชุดเดียวกันแบบเป็นแถวรายบุคคลแทนที่จะเป็นตัวเลขสรุป — ทั้งสองหน้าถูก gate ด้วยสิทธิ์คนละคีย์ ดูรายละเอียดที่ §4
+**Usage Analytics** คือหน้าเดียว `UsageAnalytics` ที่เข้าถึงได้ที่ route **`/analytics`** — สังเกตว่า route กับ slug ของโมดูลในวิกินี้เอง (`usage-analytics`) ไม่ตรงกัน ผู้อ่านที่ค้นหาคำใดคำหนึ่งจึงควรมาเจอหน้านี้ทั้งคู่ มันคือแดชบอร์ดสรุปแบบอ่านอย่างเดียวของ UI telemetry (การเปิดหน้าและการคลิกที่ตัว frontend เองบันทึกไว้) สร้างจากการเรียก backend ครั้งเดียว คือ `GET /api-system/backstage/analytics/overview` มันมีโมดูลพี่น้องที่แคบกว่า คือ [Activity Events](/th/platform/activity-events) ที่ `/activity-events` ซึ่งแสดง telemetry ชุดเดียวกันแบบเป็นแถวรายบุคคลแทนที่จะเป็นตัวเลขสรุป — ทั้งสองหน้าถูก gate ด้วยสิทธิ์คนละคีย์ ดูรายละเอียดที่ §4
 
 ![การวิเคราะห์การใช้งาน (Usage Analytics) screen](/screenshots/platform/usage-analytics/index.png)
 
@@ -24,7 +24,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 4. การ์ดสถิติ **StatCards** ห้าใบ (`events`, `clicks`, `page_views`, `sessions`, `users`)
 5. ด้านล่างนั้น เลือกแสดงอย่างใดอย่างหนึ่งจากสองแบบ: การ์ด **empty-state** เมื่อช่วงที่เลือกไม่มี event เลย หรือ **กราฟพื้นที่รายวัน** พร้อมการ์ด **Top List** สองใบ (Top Pages, Top Elements)
 
-ทุกค่าบนหน้านี้มาจาก response รูปเดียว `AnalyticsOverview` (`src/types/index.ts:1360-1365` อยู่ใต้หัวข้อ `// ==================== Usage Analytics (tb_activity_event) ====================` ของไฟล์เอง) — `summary`, `daily[]`, `top_pages[]`, `top_elements[]` ทั้งสี่ชุดคำนวณจากการเรียก backend ครั้งเดียวรอบเดียว ไม่มี endpoint แยกต่อวิดเจ็ต
+ทุกค่าบนหน้านี้มาจาก response รูปเดียว `AnalyticsOverview` (`src/types/index.ts:1526-1531` อยู่ใต้หัวข้อ `// ==================== Usage Analytics (tb_activity_event) ====================` ของไฟล์เอง) — `summary`, `daily[]`, `top_pages[]`, `top_elements[]` ทั้งสี่ชุดคำนวณจากการเรียก backend ครั้งเดียวรอบเดียว ไม่มี endpoint แยกต่อวิดเจ็ต
 
 ## 2. บริบททางธุรกิจ
 
@@ -37,10 +37,10 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 ### 3.1 ช่วงเวลาและตัวกรอง
 
 - backend บังคับให้ต้องมี `from`/`to` เป็น ISO 8601 UTC และถือว่าช่วงเป็นแบบ **half-open**: `server_ts >= from AND server_ts < to` (`buildWhere()` ใน `activity-event.query.ts`) คอลัมน์ที่ใช้ตัดคือ `server_ts` — เวลาที่ platform database บันทึกตอนเขียนแถว — ไม่ใช่ `client_ts` ซึ่งเป็นเวลาที่เบราว์เซอร์รายงานว่า event เกิดขึ้นจริง
-- ช่วงถูกจำกัดไว้ที่ **90 วัน** (`MAX_RANGE_DAYS`, `analytics-range.ts`) บังคับโดย `parseRange()` ซึ่งตอบ `400 Bad Request` ถ้ากว้างเกินนั้น (`analytics-range.ts:16-32`) ฝั่ง frontend มีค่าคงที่เดียวกันสะท้อนไว้ (`utils/analyticsRange.ts:14` คอมเมนต์ "ต้องตรงกับ MAX_RANGE_DAYS ฝั่ง backend") เพื่อปฏิเสธช่วงกำหนดเองที่กว้างเกินตั้งแต่ฝั่ง client ก่อนที่จะยิง request ที่ server จะตอบ 400 อยู่แล้ว
+- ช่วงถูกจำกัดไว้ที่ **90 วัน** (`MAX_RANGE_DAYS`, `analytics-range.ts`) บังคับโดย `parseRange()` ซึ่งตอบ `400 Bad Request` ถ้ากว้างเกินนั้น (`analytics-range.ts:17-33`) ฝั่ง frontend มีค่าคงที่เดียวกันสะท้อนไว้ (`utils/analyticsRange.ts:14` คอมเมนต์ "ต้องตรงกับ MAX_RANGE_DAYS ฝั่ง backend") เพื่อปฏิเสธช่วงกำหนดเองที่กว้างเกินตั้งแต่ฝั่ง client ก่อนที่จะยิง request ที่ server จะตอบ 400 อยู่แล้ว
 - ค่าเริ่มต้นตอนโหลดคือ **7 วันล่าสุด** คำนวณจาก `presetRange(7)` (`UsageAnalytics.tsx:30`) ขอบของ preset ถูกตัดที่ **เที่ยงคืนเวลาไทย** ไม่ใช่เที่ยงคืน UTC (`presetRange()`/`tzMidnightToUtc()`, `analyticsRange.ts:72-93`) — คอมเมนต์หัวไฟล์ของมันเองระบุเหตุผล (`analyticsRange.ts:1-7`): ถ้าตัดที่เที่ยงคืน UTC วันแรกและวันสุดท้ายในกราฟจะโผล่มาเป็นวันที่ไม่เต็ม เพราะการจัดกลุ่มรายวันฝั่ง backend ก็กลุ่มตามวันเวลาไทยเช่นกัน (§3.3)
 - มีตัวกรองอีกสามตัวที่ทำให้ช่วงเดียวกัน **แคบลงเท่านั้น ไม่ขยาย**: **Business Unit**, **Application**, และ **Event type** (`click`/`page_view`) dropdown ของ BU และ Application โหลดครั้งเดียวตอน mount จาก `businessUnitService`/`applicationService` จำกัดไว้ที่ `perpage: 100` ทั้งคู่ (`useAnalyticsFilterOptions.ts:32-33`) — fleet ที่มี business unit หรือ application เกิน 100 รายการจะไม่เห็นตัวเลือกครบใน dropdown ทั้งสองนี้ นี่คือขีดจำกัดเชิงโครงสร้างในตัว hook ไม่ใช่ความล้มเหลวขณะทำงาน และไม่ได้ตรวจสอบกับจำนวนจริงของ deployment ใด ๆ
-- บน wire ตัวกรอง BU ถูกส่งเป็น `filter_bu_code` ไม่ใช่ `bu_code` — ตั้งใจ คอมเมนต์ของ `analyticsService.ts` เองอธิบายว่า `KeycloakGuard` (ที่ครอบทั้ง controller) จะสาขาตาม *การมีอยู่* ของ query parameter ที่ชื่อ `bu_code` เป๊ะ ๆ แล้วบังคับว่าผู้เรียกต้องเป็นสมาชิกของ BU นั้นหรือเป็น super-admin ไม่งั้นโยน `401` — ซึ่งจะทำให้ทุกการเรียกของ `support_manager` ที่กรองตาม BU โดน 401 และทำให้ทุกคน (แม้แต่ super-admin) ที่พิมพ์รหัสไม่ตรง BU จริงโดน 401 ด้วย ฝั่ง backend controller ก็เขียนคำเตือนเดียวกันซ้ำเหนือพารามิเตอร์ของตัวเอง (`platform-analytics.controller.ts` คอมเมนต์เหนือ `filter_bu_code` ทั้งสอง route): "อย่า 'จัดระเบียบ' กลับ" เป็น `bu_code`
+- บน wire ตัวกรอง BU ถูกส่งเป็น `filter_bu_code` ไม่ใช่ `bu_code` — ตั้งใจ คอมเมนต์ของ `analyticsService.ts` เองอธิบายว่า `KeycloakGuard` (ที่ครอบทั้ง controller) จะสาขาตาม *การมีอยู่* ของ query parameter ที่ชื่อ `bu_code` เป๊ะ ๆ แล้วบังคับว่าผู้เรียกต้องเป็นสมาชิกของ BU นั้นหรือเป็น super-admin ไม่งั้นโยน `401` — ซึ่งจะทำให้ทุกการเรียกของ `support_manager` ที่กรองตาม BU โดน 401 และทำให้ทุกคน (แม้แต่ super-admin) ที่พิมพ์รหัสไม่ตรง BU จริงโดน 401 ด้วย ฝั่ง backend controller ก็เขียนคำเตือนเดียวกันซ้ำเหนือพารามิเตอร์ของตัวเอง (`backstage-analytics.controller.ts` คอมเมนต์เหนือ `filter_bu_code` ทั้งสอง route): "อย่า 'จัดระเบียบ' กลับ" เป็น `bu_code`
 
 ### 3.2 การ์ดสถิติทั้งห้าใบ (`summary`)
 
@@ -101,7 +101,7 @@ Top Elements กดไม่ได้เลยสำหรับทุกคน:
 
 ### 4.1 สองคีย์ — แต่ละคีย์ให้สิทธิ์อะไร และเปิดหน้าไหน
 
-permission catalog ระบุความต่างระหว่างสอง action ของ `activity_event` ไว้ตรง ๆ (`seed.platform-permission.data.ts:95-96`, `../carmen-turborepo-backend`):
+permission catalog ระบุความต่างระหว่างสอง action ของ `activity_event` ไว้ตรง ๆ (`seed.backstage-permission.data.ts:249-258`, `../carmen-turborepo-backend`):
 
 | คีย์ | คำอธิบายใน catalog | เปิดหน้าไหน |
 | --- | --- | --- |
@@ -114,11 +114,11 @@ permission catalog ระบุความต่างระหว่างส�
 | --- | --- | --- |
 | แถว nav ใน sidebar | `permission: 'activity_event.read'`, `feature: 'usage_analytics'`, `groupKey: 'navGroup.analytics'` | `permission: 'activity_event.detail'`, `feature: 'activity_events'`, กลุ่มเดียวกัน |
 | Route (`PrivateRoute`) | `requiredPermission="activity_event.read"` `feature="usage_analytics"` | `requiredPermission="activity_event.detail"` `feature="activity_events"` |
-| Backend endpoint | `GET .../analytics/overview` — `@RequirePlatformPermission('activity_event.read')` | `GET .../analytics/records` — `@RequirePlatformPermission('activity_event.detail')` |
+| Backend endpoint | `GET .../analytics/overview` — `@RequireBackstagePermission('activity_event.read')` | `GET .../analytics/records` — `@RequireBackstagePermission('activity_event.detail')` |
 
-ที่มา: `platformNav.ts:30-33` (สองแถวอยู่ที่บรรทัด 32-33 ตั้งใจให้อยู่ติดกัน ตามคอมเมนต์ที่บรรทัด 30-31 ซึ่งระบุว่าถ้าแยกออกจากกันจะทำให้ sidebar ขึ้นหัวข้อ "Analytics" สองอัน); `App.tsx:475-489`; `platform-analytics.controller.ts` (`@RequirePlatformPermission` บน `overview()` และ `events()`) ทั้งสองแถวไม่มี `superAdminOnly`
+ที่มา: `backstageNav.ts:35-38` (สองแถวอยู่ที่บรรทัด 37-38 ตั้งใจให้อยู่ติดกัน ตามคอมเมนต์ที่บรรทัด 35-36 ซึ่งระบุว่าถ้าแยกออกจากกันจะทำให้ sidebar ขึ้นหัวข้อ "Analytics" สองอัน); `App.tsx:521-536`; `backstage-analytics.controller.ts` (`@RequireBackstagePermission` บน `overview()` และ `events()`) ทั้งสองแถวไม่มี `superAdminOnly`
 
-`PrivateRoute.tsx` (อ่านแบบเต็ม) ตรวจสิทธิ์ **ก่อน** feature flag เสมอ: session ที่ไม่มีคีย์ที่ต้องการจะเห็น `<Forbidden />` ไม่ว่า flag จะเป็นอะไร มีแค่ session ที่ผ่านการตรวจสิทธิ์แล้วเท่านั้นที่จะไปเจอ `hide` (→ `<NotFound />`) หรือ `inactive` (→ `<ComingSoon />`) ของ feature key `usage_analytics` (`src/constants/featureFlags.ts:64`, `groupKey: 'navGroup.analytics'`, `defaultState: 'active'`)
+`PrivateRoute.tsx` (อ่านแบบเต็ม) ตรวจสิทธิ์ **ก่อน** feature flag เสมอ: session ที่ไม่มีคีย์ที่ต้องการจะเห็น `<Forbidden />` ไม่ว่า flag จะเป็นอะไร มีแค่ session ที่ผ่านการตรวจสิทธิ์แล้วเท่านั้นที่จะไปเจอ `hide` (→ `<NotFound />`) หรือ `inactive` (→ `<ComingSoon />`) ของ feature key `usage_analytics` (`src/constants/featureFlags.ts:68`, `groupKey: 'navGroup.analytics'`, `defaultState: 'active'`)
 
 ### 4.2 `activity_event.detail` ยังคุมการ drill-down ภายในหน้านี้ด้วย
 
@@ -130,16 +130,16 @@ permission catalog ระบุความต่างระหว่างส�
 
 ### 4.3 การบังคับใช้ฝั่ง backend และการจำกัดขอบเขตตาม cluster
 
-`platform-analytics.controller.ts` (`../carmen-turborepo-backend`) ซ้อน guard สามชั้นในแต่ละ route:
+`backstage-analytics.controller.ts` (`../carmen-turborepo-backend`) ซ้อน guard สามชั้นในแต่ละ route:
 
 | Route | Guards | สิทธิ์ที่ต้องมี |
 | --- | --- | --- |
-| `GET /api-system/platform/analytics/overview` | `KeycloakGuard` (ระดับ class) + `AppIdGuard('analytics.overview')` + `PlatformPermissionGuard` | `activity_event.read` |
-| `GET /api-system/platform/analytics/records` | `KeycloakGuard` (ระดับ class) + `AppIdGuard('analytics.events')` + `PlatformPermissionGuard` | `activity_event.detail` |
+| `GET /api-system/backstage/analytics/overview` | `KeycloakGuard` (ระดับ class) + `AppIdGuard('analytics.overview')` + `BackstagePermissionGuard` | `activity_event.read` |
+| `GET /api-system/backstage/analytics/records` | `KeycloakGuard` (ระดับ class) + `AppIdGuard('analytics.events')` + `BackstagePermissionGuard` | `activity_event.detail` |
 
-`AppIdGuard` (`apps/backend-gateway/src/common/guard/app-id.guard.ts` อ่านแบบเต็ม) ตรวจแค่ว่า header `x-app-id` เป็น UUID ที่อยู่ใน allowlist ในหน่วยความจำสำหรับ `api_name` นั้น (`appAllowlistStore.isAllowed(appId, this.api_name)`) — ไม่เคยอ่าน `request.user` หรือสิทธิ์ใด ๆ เลย มันตอบว่า "แอปตัวนี้เรียก API นี้ได้ไหม" ไม่ใช่ "ผู้ใช้คนนี้เข้าถึงได้ไหม" client `api.ts` ที่ใช้ร่วมกันฝั่ง frontend (อ่านตรง บรรทัด 1-23) แนบ `x-app-id` จาก env var ตอน build ไปกับทุก request (บรรทัด 8) และแนบ token `Bearer` จาก `localStorage` ทับไปอีกชั้นผ่าน request interceptor (บรรทัด 23) — นี่คือ session ของผู้ใช้จริงที่อยู่ใต้ด่านตรวจ app-identity ไม่ใช่การเรียกแบบ service-to-service ที่ `AppIdGuard` เพียงอย่างเดียวจะเหมาะกับการ gate
+`AppIdGuard` (`apps/backend-gateway/src/common/guard/app-id.guard.ts` อ่านแบบเต็ม) ตรวจแค่ว่า header `x-app-id` เป็น UUID ที่อยู่ใน allowlist ในหน่วยความจำสำหรับ `api_name` นั้น (`appAllowlistStore.isAllowed(appId, this.api_name)`) — ไม่เคยอ่าน `request.user` หรือสิทธิ์ใด ๆ เลย มันตอบว่า "แอปตัวนี้เรียก API นี้ได้ไหม" ไม่ใช่ "ผู้ใช้คนนี้เข้าถึงได้ไหม" client `api.ts` ที่ใช้ร่วมกันฝั่ง frontend (อ่านตรง บรรทัด 1-30) แนบ `x-app-id` จาก env var ตอน build ไปกับทุก request (บรรทัด 10) และแนบ token `Bearer` จาก `localStorage` ทับไปอีกชั้นผ่าน request interceptor (บรรทัด 22-26) — นี่คือ session ของผู้ใช้จริงที่อยู่ใต้ด่านตรวจ app-identity ไม่ใช่การเรียกแบบ service-to-service ที่ `AppIdGuard` เพียงอย่างเดียวจะเหมาะกับการ gate
 
-`PlatformPermissionGuard.canActivate()` (`auth/guards/platform-permission.guard.ts` อ่านแบบเต็ม) ถูกระบุไว้ในคอมเมนต์หัวไฟล์ของตัวเองว่าเป็น **"coarse-grained platform RBAC gate"** (ด่านตรวจ RBAC ระดับแพลตฟอร์มแบบหยาบ): มันผ่านถ้าคีย์ที่ต้องการมีอยู่ใน scope ระดับ platform ของผู้เรียก **หรือใน cluster scope ใดก็ได้แม้แต่อันเดียว** (บรรทัด 13) แนบ object `EffectivePlatformPermissions` ที่ resolve แล้วเข้ากับ request ไม่ว่าผลจะเป็นอย่างไร และ short-circuit เป็น `true` ทันทีสำหรับ `is_super_admin === true` ก่อนตรวจคีย์เลยด้วยซ้ำ ทั้งสอง route ของ analytics มี `@RequirePlatformPermission` ครบถูกต้อง จึงไม่เข้าสาขา fail-open ของ guard สำหรับ route ที่ *ไม่มี decorator* (ซึ่งไม่งั้นจะ log คำเตือนแล้วปล่อยผ่านทุกคนโดย default ตามไฟล์เดียวกัน)
+`BackstagePermissionGuard.canActivate()` (`auth/guards/backstage-permission.guard.ts` อ่านแบบเต็ม) ถูกระบุไว้ในคอมเมนต์หัวไฟล์ของตัวเองว่าเป็น **"coarse-grained backstage RBAC gate"** (ด่านตรวจ RBAC ระดับแพลตฟอร์มแบบหยาบ): มันผ่านถ้าคีย์ที่ต้องการมีอยู่ใน scope ระดับ backstage ของผู้เรียก **หรือใน cluster scope ใดก็ได้แม้แต่อันเดียว** (บรรทัด 13) แนบ object `EffectiveBackstagePermissions` ที่ resolve แล้วเข้ากับ request ไม่ว่าผลจะเป็นอย่างไร และ short-circuit เป็น `true` ทันทีสำหรับ `is_super_admin === true` ก่อนตรวจคีย์เลยด้วยซ้ำ ทั้งสอง route ของ analytics มี `@RequireBackstagePermission` ครบถูกต้อง จึงไม่เข้าสาขา fail-open ของ guard สำหรับ route ที่ *ไม่มี decorator* (ซึ่งไม่งั้นจะ log คำเตือนแล้วปล่อยผ่านทุกคนโดย default ตามไฟล์เดียวกัน)
 
 controller จำกัดขอบเขตต่ออีกชั้นต่อ request ด้วย `resolveAllowedClusterIds()` (`analytics-scope.ts` อ่านแบบเต็ม) — และที่สำคัญคือใช้ **คีย์ที่คุม endpoint นั้นจริง ๆ** ไม่ใช่ค่า default ที่ใช้ร่วมกัน: `overview()` resolve ขอบเขตด้วย `ACTIVITY_EVENT_READ`; `events()` resolve ด้วย `ACTIVITY_EVENT_DETAIL` (พารามิเตอร์ `required` ของฟังก์ชันไม่มีค่า default โดยเจตนา ตามคอมเมนต์ของมันเอง เพื่อไม่ให้ endpoint ที่เพิ่มมาทีหลัง "สืบทอด" คีย์ผิดตัวไปเงียบ ๆ) ผลลัพธ์เป็นหนึ่งในสามรูปแบบ ถูกส่งเข้าไปในทุก query ของ `getOverview()` เหมือนกันหมด (`buildScopedWhere()` ใน `activity-event.query.ts`):
 
@@ -151,18 +151,18 @@ controller จำกัดขอบเขตต่ออีกชั้นต่
 
 ### 4.4 การมอบสิทธิ์ตาม role bundle
 
-permission catalog seed action ของ resource `activity_event` ไว้แค่สองตัว คือ `read` และ `detail` (`seed.platform-permission.data.ts:95-96`) และคอมเมนต์ของมันเองแยก resource นี้ออกจาก `activity_log` (`tb_activity` ตาราง audit trail/"View History" แยกต่างหากที่ใช้ที่อื่นในผลิตภัณฑ์): "คนละตารางกับ activity_event ข้างบนซึ่งเป็น UI telemetry" (บรรทัด 97) ทั้งสองเป็นกลไกที่ไม่เกี่ยวข้องกันแต่บังเอิญมีคำว่า "activity" ร่วมกัน ผู้อ่านไม่ควรสรุปว่าสิทธิ์ audit trail (`activity_log.read`) มีผลอะไรกับหน้านี้
+permission catalog seed action ของ resource `activity_event` ไว้แค่สองตัว คือ `read` และ `detail` (`seed.backstage-permission.data.ts:249-258`) และคอมเมนต์ของมันเองแยก resource นี้ออกจาก `activity_log` (`tb_activity` ตาราง audit trail/"View History" แยกต่างหากที่ใช้ที่อื่นในผลิตภัณฑ์): "คนละตารางกับ activity_event ข้างบนซึ่งเป็น UI telemetry" (`seed.backstage-permission.data.ts:259`) ทั้งสองเป็นกลไกที่ไม่เกี่ยวข้องกันแต่บังเอิญมีคำว่า "activity" ร่วมกัน ผู้อ่านไม่ควรสรุปว่าสิทธิ์ audit trail (`activity_log.read`) มีผลอะไรกับหน้านี้
 
-จาก role bundle ที่ seed ไว้ทั้งสี่ตัวของแพลตฟอร์ม (`seed.platform-role-permission.data.ts:11-52` อ่านแบบเต็ม):
+จาก role bundle ที่ seed ไว้ทั้งสี่ตัวของแพลตฟอร์ม (`seed.backstage-role-permission.data.ts:11-52` อ่านแบบเต็ม):
 
 | Role | `activity_event.read` (หน้านี้) | `activity_event.detail` (drill-down / `/activity-events`) |
 | --- | --- | --- |
-| Platform Admin | มี — ผ่าน `activity_event.*` (บรรทัด 14) | มี — ผ่าน `activity_event.*` |
-| Support Manager | มี — `activity_event.read` ระบุตรง ๆ (บรรทัด 40) | **ไม่มี** |
+| Backstage Admin | มี — ผ่าน `activity_event.*` (บรรทัด 31) | มี — ผ่าน `activity_event.*` |
+| Support Manager | มี — `activity_event.read` ระบุตรง ๆ (บรรทัด 76) | **ไม่มี** |
 | Support Staff | ไม่มี | ไม่มี |
 | Security Officer | ไม่มี | ไม่มี |
 
-คอมเมนต์ในซอร์สเหนือสิทธิ์ของ Platform Admin ระบุเหตุผลของการให้ Support Manager แคบกว่าไว้ตรง ๆ ในบริบทของ resource พี่น้อง `activity_log.*` แต่บรรยายรูปแบบการแยก read/detail แบบเดียวกัน: การให้แค่ `.read` "พอสำหรับตอบลูกค้า" โดยไม่ต้องเปิดเผยแถวดิบรายบุคคลที่อยู่เบื้องหลัง พูดให้เป็นรูปธรรม: Support Manager เปิดแดชบอร์ดนี้และเห็นทุกตัวเลขสรุปได้ แต่เปิด `/activity-events` ไม่ได้ และคลิกผ่านจาก Top Pages ไม่ได้ เพราะถือแค่ `.read` ไม่มี `.detail` ส่วน Support Staff และ Security Officer ไม่ถือคีย์ไหนเลย จึงเข้าหน้าไหนไม่ได้ทั้งคู่
+คอมเมนต์ในซอร์สเหนือสิทธิ์ของ Backstage Admin ระบุเหตุผลของการให้ Support Manager แคบกว่าไว้ตรง ๆ ในบริบทของ resource พี่น้อง `activity_log.*` แต่บรรยายรูปแบบการแยก read/detail แบบเดียวกัน: การให้แค่ `.read` "พอสำหรับตอบลูกค้า" โดยไม่ต้องเปิดเผยแถวดิบรายบุคคลที่อยู่เบื้องหลัง พูดให้เป็นรูปธรรม: Support Manager เปิดแดชบอร์ดนี้และเห็นทุกตัวเลขสรุปได้ แต่เปิด `/activity-events` ไม่ได้ และคลิกผ่านจาก Top Pages ไม่ได้ เพราะถือแค่ `.read` ไม่มี `.detail` ส่วน Support Staff และ Security Officer ไม่ถือคีย์ไหนเลย จึงเข้าหน้าไหนไม่ได้ทั้งคู่
 
 ### 4.5 ชุดทดสอบ e2e: ไม่มี
 
@@ -177,33 +177,33 @@ permission catalog seed action ของ resource `activity_event` ไว้แ�
 
 ## 6. แหล่งอ้างอิง
 
-path ทั้งหมดด้านล่างเป็น `../carmen-backstage` (Platform admin SPA, HEAD `157a65e`, 2026-09-04) เว้นแต่จะขึ้นต้นด้วย `../carmen-turborepo-backend` (backend monorepo, HEAD `937cf5ac4`, 2026-09-06) หรือ `../carmen-backstage-e2e` (HEAD `a8e3b31`, 2026-08-25)
+path ทั้งหมดด้านล่างเป็น `../carmen-backstage` (Backstage admin SPA, HEAD `8405788ff`, 2026-10-27) เว้นแต่จะขึ้นต้นด้วย `../carmen-turborepo-backend` (backend monorepo, HEAD `937cf5ac4`, 2026-09-06) หรือ `../carmen-backstage-e2e` (HEAD `a8e3b31`, 2026-08-25)
 
 - `../carmen-backstage/src/pages/UsageAnalytics.tsx` (เต็ม 251 บรรทัด) — ตัวหน้า, `fetchOverview`, `goToEvents` (93-99), `handleExport` (101-118), `isEmpty` (120), การ drill-down ของ Top Pages ที่ห่อด้วย `<Can>` (184-236)
 - `../carmen-backstage/src/pages/usageAnalytics/StatCards.tsx`, `TopList.tsx`, `UsageChart.tsx` — การ์ด KPI ห้าใบและกฎขีดแทนเมื่อล้มเหลว; การ render แถวกดได้/กดไม่ได้; กราฟพื้นที่สองเส้น (sessions/users)
 - `../carmen-backstage/src/services/analyticsService.ts` — `getOverview`/`getEvents`, คอมเมนต์เรื่องเปลี่ยนชื่อเป็น `filter_bu_code` (§3.1), คอมเมนต์เรื่องตั้งชื่อ `analytics/records` เทียบ `analytics/event*` เพื่อเลี่ยงตัวบล็อกโฆษณา
-- `../carmen-backstage/src/types/index.ts:1327-1365` — `AnalyticsSummary`, `AnalyticsDaily`, `AnalyticsTopPage`, `AnalyticsTopElement`, `AnalyticsOverview` อยู่ใต้หัวข้อ `tb_activity_event` ของไฟล์เอง
+- `../carmen-backstage/src/types/index.ts:1495-1531` — `AnalyticsSummary`, `AnalyticsDaily`, `AnalyticsTopPage`, `AnalyticsTopElement`, `AnalyticsOverview` อยู่ใต้หัวข้อ `tb_activity_event` ของไฟล์เอง
 - `../carmen-backstage/src/utils/analyticsRange.ts` (เต็ม) — `ANALYTICS_TZ`, `MAX_RANGE_DAYS`, `TZ_OFFSET_MS` และคอมเมนต์เรื่อง lockstep กับ backend, `presetRange`/`customRange`/`rangeSpanDays`
 - `../carmen-backstage/src/components/analytics/DateRangeFilter.tsx` — UI preset/กำหนดเอง, การตรวจเพดานช่วงฝั่ง client
 - `../carmen-backstage/src/hooks/useAnalyticsFilterOptions.ts` — การโหลด dropdown BU/Application, เพดาน 100 แถว, เหตุผลของ `Promise.allSettled`
 - `../carmen-backstage/src/utils/csvExport.ts:1-13` — `neutraliseFormulaPrefix()` และ `isValidNegativeNumber()` อ่านจากตัวฟังก์ชันตรง ๆ (ข้อค้นพบเรื่องเครื่องหมายลบใน §3.3); `generateCSV`, `downloadCSV`
 - `../carmen-backstage/src/components/Can.tsx`, `src/components/PrivateRoute.tsx` (ทั้งคู่แบบเต็ม) — ลำดับการ gate สิทธิ์ก่อน feature flag; ผลลัพธ์ `Forbidden`/`ComingSoon`/`NotFound`
-- `../carmen-backstage/src/context/AuthContext.tsx:268-272`, `src/utils/permissions.ts` (เต็ม) — bootstrap escape hatch ของ `hasPermission` และความหมายของ `checkPermission` แบบมี/ไม่มี `clusterId` (§4.2)
-- `../carmen-backstage/src/App.tsx:475-489` — การลงทะเบียน route `/analytics` และ `/activity-events`
-- `../carmen-backstage/src/components/nav/platformNav.ts:30-33` — สองแถว nav (32-33) และคอมเมนต์เรื่อง contiguity เหนือแถว (30-31)
-- `../carmen-backstage/src/constants/featureFlags.ts:64` — entry ของ feature catalog `usage_analytics`
-- `../carmen-backstage/src/i18n/en.ts` (บรรทัด 99-102, 4089-4116) และ `src/i18n/th.ts` (บรรทัด 3112-3129) — ข้อความหน้าที่ยกมาอ้างใน §3.2/§3.3/§3.7
-- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform-analytics/platform-analytics.controller.ts` (เต็ม) — ทั้งสอง route, guard ของแต่ละตัว, และคอมเมนต์เรื่องกับดักการตั้งชื่อทุกจุดที่อ้างใน §3.1/§4.3
-- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform-analytics/platform-analytics.service.ts` — ตัว proxy จาก gateway ไป microservice และรูปร่าง `IAnalyticsQuery`
-- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform-analytics/analytics-range.ts` (เต็ม) — `parseRange`, `MAX_RANGE_DAYS`
-- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform-analytics/analytics-scope.ts` (เต็ม) — `ACTIVITY_EVENT_READ`/`ACTIVITY_EVENT_DETAIL`, ตารางการตัดสินของ `resolveAllowedClusterIds()`
-- `../carmen-turborepo-backend/apps/backend-gateway/src/auth/guards/platform-permission.guard.ts` (เต็ม) — กลไก coarse-gate, super-admin short-circuit, สาขา fail-open ของ route ที่ไม่มี decorator
+- `../carmen-backstage/src/context/AuthContext.tsx:354-358`, `src/utils/permissions.ts` (เต็ม) — bootstrap escape hatch ของ `hasPermission` และความหมายของ `checkPermission` แบบมี/ไม่มี `clusterId` (§4.2)
+- `../carmen-backstage/src/App.tsx:521-536` — การลงทะเบียน route `/analytics` และ `/activity-events`
+- `../carmen-backstage/src/components/nav/backstageNav.ts:35-38` — สองแถว nav (32-33) และคอมเมนต์เรื่อง contiguity เหนือแถว (30-31)
+- `../carmen-backstage/src/constants/featureFlags.ts:68` — entry ของ feature catalog `usage_analytics`
+- `../carmen-backstage/src/i18n/en.ts` (บรรทัด 31-32, 110-111, 4728-4781) และ `src/i18n/th.ts` (บรรทัด 3727-3745) — ข้อความหน้าที่ยกมาอ้างใน §3.2/§3.3/§3.7
+- `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage-analytics/backstage-analytics.controller.ts` (เต็ม) — ทั้งสอง route, guard ของแต่ละตัว, และคอมเมนต์เรื่องกับดักการตั้งชื่อทุกจุดที่อ้างใน §3.1/§4.3
+- `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage-analytics/backstage-analytics.service.ts` — ตัว proxy จาก gateway ไป microservice และรูปร่าง `IAnalyticsQuery`
+- `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage-analytics/analytics-range.ts` (เต็ม) — `parseRange`, `MAX_RANGE_DAYS`
+- `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage-analytics/analytics-scope.ts` (เต็ม) — `ACTIVITY_EVENT_READ`/`ACTIVITY_EVENT_DETAIL`, ตารางการตัดสินของ `resolveAllowedClusterIds()`
+- `../carmen-turborepo-backend/apps/backend-gateway/src/auth/guards/backstage-permission.guard.ts` (เต็ม) — กลไก coarse-gate, super-admin short-circuit, สาขา fail-open ของ route ที่ไม่มี decorator
 - `../carmen-turborepo-backend/apps/backend-gateway/src/common/guard/app-id.guard.ts` (เต็ม) — กลไก `x-app-id`/allowlist (§4.3)
 - `../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/activity-event.service.ts` (เต็ม 348 บรรทัด) — สี่ query SQL ดิบของ `getOverview()`, `resolveBuScope()`, `findEvents()`
 - `../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/activity-event.types.ts` (เต็ม) — `ANALYTICS_TZ`, รูปร่างแถว, คอมเมนต์เรื่องความหมาย `allowed_cluster_ids` แบบ null/`[]`/`undefined`
 - `../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/activity-event.query.ts` (เต็ม) — `buildWhere()` (ช่วง `server_ts`), `NEVER_MATCH`, `buildBuCodeScope()` (การตัด BU ที่ถูกลบ/bu_code เป็น NULL), `buildScopedWhere()`
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts:93-99` — คำอธิบาย catalog ของ `activity_event.read`/`.detail` และคอมเมนต์แยกจาก `activity_log`
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/seed.platform-role-permission.data.ts:11-52` (เต็ม) — อาร์เรย์สิทธิ์ที่แน่นอนของทั้งสี่ role bundle
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/seed.backstage-permission.data.ts:249-258` — คำอธิบาย catalog ของ `activity_event.read`/`.detail` และคอมเมนต์แยกจาก `activity_log`
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/seed.backstage-role-permission.data.ts:10-121` (เต็ม) — อาร์เรย์สิทธิ์ที่แน่นอนของทั้งสี่ role bundle
 - `../carmen-backstage-e2e/tests/` — list ตรง ๆ เพื่อยืนยันว่าไม่มีชุดทดสอบ `usage-analytics`/`analytics`/`activity-events` (§4.5)
 
 ## 7. หน้าย่อยของโมดูลนี้

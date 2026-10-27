@@ -2,7 +2,7 @@
 title: สูตรอาหาร (Recipe) — User Flow
 description: วงจรชีวิตของสูตรอาหารและไฟล์ flow เฉพาะ persona สำหรับโมดูล recipe
 published: true
-date: 2026-07-16T04:00:00.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: recipe, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -15,7 +15,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **วงจรชีวิตของ workflow:** DRAFT ⇄ PUBLISHED ⇄ ARCHIVED — ในแอปปัจจุบันการเปลี่ยนสถานะทั้งหมดเป็น dropdown สถานะแบบอิสระที่มีผลข้างเคียงเพียง timestamp เท่านั้น; RBAC gate / audit trail versioning ที่อธิบายด้านล่างเป็นเป้าหมายการออกแบบ
 > **เจาะลงในมุมมองต่อ persona ด้านล่างสำหรับรายละเอียดระดับ action**
 
-> **สถานะการติดตั้งใช้งานจริง (ตรวจสอบกับซอร์ส 2026-07-15).** flow ที่มีอยู่จริงวันนี้คือ CRUD journey เดียวที่ gate ด้วยสิทธิ์ admin: recipe list (`/operation-plan/recipe`, ค้นหา + filter สถานะ/ประเภทอาหาร/หมวดหมู่/ความยาก, สลับ list/grid) → form รายละเอียด/แก้ไขหรือสร้างใหม่ (field ส่วน header, grid วัตถุดิบแบบ preview เท่านั้น, gallery รูปภาพ, เครื่องคำนวณต้นทุนฝั่ง client) → save พร้อม optimistic locking ด้วย `doc_version` → ลบได้ตามต้องการ (ถูก block เฉพาะเมื่อถูกใช้เป็น sub-recipe) สถานะเป็น dropdown บน toolbar ที่ไม่มี gate ไม่มี permission ต่อ persona (placeholder `operation_plan.view` gate ทั้งกลุ่ม) ไม่มีกลไก publish/co-approval ไม่มีการเขียน versioning หรือ pricing-history และไม่มี integration กับ menu/POS/SR/variance ไฟล์ persona ที่ link ด้านล่างอธิบาย operating model เป้าหมาย; แต่ละไฟล์มี caveat เดียวกันนี้
+> **สถานะการติดตั้งใช้งานจริง (ตรวจสอบซ้ำ 2026-10-27).** flow ที่มีอยู่จริงวันนี้คือ recipe list (`/operation-plan/recipe` — catalogue ควบคุมต้นทุนที่แสดงต้นทุนต่อ portion, ราคาขาย และ food-cost เทียบเป้าหมาย; ค้นหา + filter สถานะ/ประเภทอาหาร/หมวดหมู่/ความยาก; เมนูแถวมี Edit) → **cook mode** (`/operation-plan/recipe/:id` มุมมองแท็บเล็ตแบบอ่านอย่างเดียว พร้อมวิธีทำทีละขั้นและ checklist วัตถุดิบ) → **edit form** (`/:id/edit` หรือสร้างใหม่: header, costing sheet, บรรทัดวัตถุดิบแบบสินค้า / sub-recipe ที่ save และคิดต้นทุนฝั่ง server พร้อม dialog Recalculate, ขั้นตอนการเตรียมที่แก้ไขได้, โน้ต plating / การจัดเก็บ, gallery รูปภาพ, comment และประวัติ) → save พร้อม optimistic locking ด้วย `doc_version` (บันทึกวัตถุดิบก่อน; หากล้มเหลวจะไม่บันทึก header) → ลบได้ตามต้องการ (ถูก block ขณะสูตรถูกใช้เป็น sub-recipe) สถานะเป็น dropdown บน toolbar ที่ไม่มี gate permission ใช้ชุดทั่วไป `operation_plan.recipe.{view,create,update,delete}` ไม่แยกตาม persona นอกจาก catalogue แล้ว ยอดขาย POS เข้าสู่สต็อกผ่าน [Import POS](/th/inventory/recipe/import-pos) และ [Sales Consumption](/th/inventory/recipe/sales-consumption) สิ่งที่ยังไม่มี: กลไก publish / co-approval, การเขียน versioning หรือ pricing-history, การสร้าง SR จากสูตร และรายงาน variance ไฟล์ persona ที่ link ด้านล่างอธิบาย operating model เป้าหมาย; แต่ละไฟล์มี caveat ที่สอดคล้องกัน
 
 ## 1. ภาพรวม
 

@@ -2,7 +2,7 @@
 title: แผนก (Department)
 description: แผนกขององค์กรและการกำหนดผู้ใช้ — ใช้เป็น cost-centre และ scope การอนุมัติบนเอกสาร requisition และ PR
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: master-data, department, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -70,7 +70,7 @@ flowchart TD
 
 | อาการ / ข้อความ | สาเหตุ | การจัดการ |
 |---|---|---|
-| "Code already in use" | `code` ซ้ำบนแถว non-deleted | เลือก code อื่น |
+| `409 DEPARTMENT_ALREADY_EXISTS` — "Department already exists" | `code` ซ้ำบนแถว non-deleted (ทั้ง create และ update; ตอนนี้เป็น error-catalog code ที่ฟอร์มแสดงใต้ฟิลด์ **Code**) | เลือก code อื่น |
 | "Department-name typo conflict" | `(code, name)` ชนกับแถวที่มีอยู่ | แก้ชื่อหรือ reactivate แถวที่มี |
 | "Code / name required" | Form ส่งว่าง | เพิ่มทั้งคู่ |
 | **ยังไม่ยืนยัน** — ไม่พบ delete guard | `departments.service.ts`'s `delete()` เป็น soft-delete แบบไม่มีเงื่อนไข (`is_active: false` + `deleted_at`) โดยไม่มีการเช็ค PR/SR ที่เปิดอยู่ หรือแถว `tb_department_user` ที่มีอยู่ | เดิมหน้านี้ระบุว่า "cannot delete — referenced by open PR/SR" เป็น error ที่บังคับใช้จริง; ให้ถือว่า**ยังไม่ถูกบังคับใช้**จนกว่าจะตรวจสอบซ้ำ |

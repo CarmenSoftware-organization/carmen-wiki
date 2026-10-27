@@ -2,7 +2,7 @@
 title: หมวดหมู่สูตรอาหาร (Recipe Category)
 description: taxonomy หมวดหมู่เชิงลำดับชั้นสำหรับสูตรอาหาร — ขับเคลื่อน menu engineering, รายงาน cost-band และการนำทาง recipe library
 published: true
-date: '2026-09-28T16:00:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: recipe, category, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # หมวดหมู่สูตรอาหาร (Recipe Category)
 
 > **At a Glance**
-> **เจ้าของ:** Chef / Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_recipe_category` &nbsp;·&nbsp; **รูปทรง:** ต้นไม้เชิงลำดับชั้น (self-FK บน `parent_id`) &nbsp;·&nbsp; **ใช้โดย:** ส่วนหัวของ [recipe](/th/inventory/recipe), menu engineering, รายงาน cost-band &nbsp;·&nbsp; **Seed:** `default_cost_settings` + `default_margins` ลงในสูตรใหม่
+> **เจ้าของ:** Chef / Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_recipe_category` &nbsp;·&nbsp; **รูปทรง:** ต้นไม้เชิงลำดับชั้น (self-FK บน `parent_id`) &nbsp;·&nbsp; **ใช้โดย:** ส่วนหัวของ [recipe](/th/inventory/recipe), menu engineering, รายงาน cost-band &nbsp;·&nbsp; **Seed:** food-cost % เป้าหมายของ form สูตร (จาก `default_cost_settings`); ค่า default อื่นแสดงเพื่อเปรียบเทียบเท่านั้น
 
 ![หมวดหมู่สูตรอาหาร (Recipe Category) screen](/screenshots/recipe/category.png)
 
@@ -19,9 +19,11 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **ตรวจสอบซ้ำ 2026-09-22** schema และกฎของ service ด้านล่างไม่เปลี่ยน การเปลี่ยนแปลงของสัญญา API: response ของ list/detail serialize ผ่าน `RecipeCategoryResponseSchema` (`config_recipe-categories/swagger/*`, 2026-09-17) — parent กลับมาเป็น `parent: { id, name } | null` และ**ไม่มี `parent_id` บนสาย**ตอนอ่าน (`types/recipe-category.ts`; grid/ฟอร์มอ่านจาก object ตั้งแต่ `768af593`); create/update/patch ยังส่ง `parent_id` การอ่านถูกเสริมด้วย object `audit` แทน `created_*`/`updated_*` ดิบ; มี `image_url` รวมอยู่ `GET /api/config/{bu}/recipe-categories` default เป็น `sort=code:asc` (`b375b078b`) E2E: `tests/110-op-category.spec.ts` (13 test, 2026-09-20)
 
+> **ตรวจสอบซ้ำ 2026-10-27** ไม่มีการเปลี่ยนแปลง backend ของ category Frontend (`d443837c`, `4e950086`, `8e0d16d8`): list เพิ่มคอลัมน์ **Food cost** และ **Margin** และรวม parent เข้าไปในคอลัมน์ชื่อ; หน้า edit แทนที่บล็อก cost / margin แยกกันด้วย section **Pricing** เดียว — food cost %, labor %, overhead %, margin กำไรขั้นต่ำและเป้าหมาย — บวกแท่งกราฟซ้อนที่แบ่ง 100 % ของราคาขายเป็น food cost │ labor │ overhead │ กำไรที่เหลือ พร้อมเครื่องหมาย margin ขั้นต่ำ / เป้าหมาย (`recipe-category-price-breakdown.tsx`; เตือนเมื่อสามต้นทุนเกินเครื่องหมาย margin เท่านั้น ไม่เคย block การ save) Key ที่เก็บ: `default_cost_settings.{target_food_cost_percentage, labor_cost_percentage, overhead_percentage}` และ `default_margins.{minimum_profit_margin, target_profit_margin}` **สิ่งที่สูตรสืบทอด:** เฉพาะ `target_food_cost_percentage` ที่คัดลอกเข้า form สูตรเมื่อผู้ใช้เปลี่ยนหมวดหมู่ของสูตรและเป้าหมายยังว่าง (`use-recipe-category-defaults.ts`, `6638a022`) — ค่าอื่นแสดงบน costing sheet ของสูตรเพื่อเปรียบเทียบและไม่ได้เขียน; สูตรเดิมไม่ถูกแตะ
+
 ## 1. คืออะไรและใครใช้
 
-หมวดหมู่สูตรอาหารคือ **การจำแนกประเภทตามฟังก์ชัน** เหนือข้อมูลหลักของสูตรอาหาร จัดเรียงเป็นต้นไม้ (เช่น `Food > Main Course > Pasta`) แต่ละหมวดหมู่มี **การตั้งค่าต้นทุน default** และ **margin default** ที่สูตรใหม่สืบทอดตอนสร้าง — ดังนั้น property บอกว่า "สูตร Main Course ทุกตัวเป้าหมาย food-cost 30%" ครั้งเดียว ไม่ใช่ต่อสูตร
+หมวดหมู่สูตรอาหารคือ **การจำแนกประเภทตามฟังก์ชัน** เหนือข้อมูลหลักของสูตรอาหาร จัดเรียงเป็นต้นไม้ (เช่น `Food > Main Course > Pasta`) แต่ละหมวดหมู่มี **การตั้งค่าต้นทุน default** และ **margin default** ; เมื่อผู้ใช้เลือกหมวดหมู่บนสูตรที่ food-cost % เป้าหมายยังว่าง เป้าหมายนั้นจะถูกคัดลอกเข้าไป — ดังนั้น property บอกว่า "สูตร Main Course ทุกตัวเป้าหมาย food-cost 30%" ครั้งเดียว ไม่ใช่ต่อสูตร ค่า default ของ labor, overhead และ margin แสดงบน costing sheet ของสูตรแต่ไม่ถูกคัดลอก
 
 แตกต่างจาก [recipe/cuisine](/th/inventory/recipe/cuisine) (label ตามภูมิภาคแบน) และ `Course Type` (enum ต่อสูตร) **ดูแลโดย Chef** (หรือ **Product Admin** ใน tenant บางตัว) ภายใต้ Operation Plan → Recipe Category
 
@@ -84,8 +86,8 @@ stateDiagram-v2
 | `is_active` | `Boolean?` | Yes | flag active, default `true` |
 | `parent_id` | `String? @db.Uuid` | Yes | Self-FK ไปยัง parent (null = root) |
 | `level` | `Int` | No | ความลึกจาก root, default `1` Materialised |
-| `default_cost_settings` | `Json @db.JsonB` | No | % food-cost เป้าหมาย, การปัดเศษ, labor/overhead — seed สูตรใหม่ |
-| `default_margins` | `Json @db.JsonB` | No | เป้าหมาย gross-margin default |
+| `default_cost_settings` | `Json @db.JsonB` | No | Key ที่ UI ใช้: `target_food_cost_percentage` (คัดลอกเป็นเป้าหมายของสูตร), `labor_cost_percentage`, `overhead_percentage` (แสดงเท่านั้น) |
+| `default_margins` | `Json @db.JsonB` | No | Key ที่ UI ใช้: `minimum_profit_margin`, `target_profit_margin` (แสดงเท่านั้น) |
 | `info`, `dimension` | `Json?` | Yes | metadata มาตรฐาน |
 | `doc_version` | `Int` | No | เวอร์ชัน optimistic-lock |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*` |

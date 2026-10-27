@@ -2,7 +2,7 @@
 title: คลังสินค้า (Inventory) — Test Scenarios
 description: Test cases ตาม persona, scenarios ข้าม persona และการ map E2E สำหรับ inventory
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: inventory, test-scenarios, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -64,7 +64,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 | `601-cn.spec.ts` | 5, 6 (พื้นผิวของ credit-note) |
 | Backend unit specs (`inventory-transaction.service.spec.ts`, `period-end.close-transaction.helper.spec.ts`, `period-end.close-average.helper.spec.ts`, `period-end.validate.spec.ts`) | 2–7, 9–12 (assertions ที่เป็น authoritative สำหรับคณิตศาสตร์ costing/close) |
 
-Gaps: ไม่มี E2E ที่ exercise หน้าจอ Transaction Log เอง (แคตตาล็อก manual `740-stock-transaction.md`, 38 เคส); E2E ของ close workflow ถูกระบุชัดว่า "Feature pending"
+Gaps: ไม่มี E2E ที่ exercise หน้าจอ Transaction Log เอง (แคตตาล็อก manual `740-stock-transaction.md`, 38 เคส); E2E ของ close workflow ถูกระบุชัดว่า "Feature pending" project `period-close` แบบ opt-in (`bun run test:period-close`, specs `910`–`924`, TC-PE-4xxxxx–54xxxxx; เฟสที่ย้อนกลับไม่ได้ถูก gate ด้วย `E2E_ALLOW_IRREVERSIBLE=<BU>:<period>`) ตอนนี้ exercise pre-step, blockers, start gate, held receipts, กฎ active-period, counting + compensation และการปิดงวดจริง — ดู [period-end](/th/inventory/inventory/period-end) § 8
 
 ## 6. แหล่งอ้างอิง
 

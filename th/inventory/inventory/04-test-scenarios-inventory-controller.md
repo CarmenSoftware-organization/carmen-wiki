@@ -2,7 +2,7 @@
 title: คลังสินค้า (Inventory) — Test Scenarios — Inventory Controller
 description: Test cases ของ Inventory Controller สำหรับการ review และการ close ปิดงวด
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: inventory, test-scenarios, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -62,5 +62,5 @@ dateCreated: 2026-05-15T12:00:00.000Z
 
 - User flow: [03-user-flow-inventory-controller](/th/inventory/inventory/03-user-flow-inventory-controller); screen reference: [period-end](/th/inventory/inventory/period-end)
 - Business rules: [02-business-rules](/th/inventory/inventory/02-business-rules) — `INV_POST_009`/`INV_POST_010`, `INV_CALC_008`/`INV_CALC_009`, `INV_AUTH_008`
-- E2E: `../carmen-frontend-e2e/tests/900-period-end.spec.ts` (TC-PE-01xxxx รันได้; TC-PE-02/03/04xxxx "Feature pending"); แคตตาล็อก gap แบบ manual `docs/test-cases/gaps/900-period-end-gap.md`; user stories `docs/user-stories/900-period-end.md`
+- E2E: `../carmen-frontend-e2e/tests/900-period-end.spec.ts` (TC-PE-01xxxx รันได้; TC-PE-02/03/04xxxx "Feature pending"); แคตตาล็อก gap แบบ manual `docs/test-cases/gaps/900-period-end-gap.md`; user stories `docs/user-stories/900-period-end.md` ส่วน project `period-close` แบบ opt-in (`bun run test:period-close`, specs `910`–`924`, TC-PE-4xxxxx–54xxxxx; เฟสที่ย้อนกลับไม่ได้ถูก gate ด้วย `E2E_ALLOW_IRREVERSIBLE=<BU>:<period>`) ตอนนี้ exercise pre-step, blockers, start gate, held receipts, กฎ active-period, counting + compensation และการปิดงวดจริง — ดู [period-end](/th/inventory/inventory/period-end) § 8
 - Backend specs: `../carmen-turborepo-backend/apps/micro-business/src/inventory/period-end/*.spec.ts`

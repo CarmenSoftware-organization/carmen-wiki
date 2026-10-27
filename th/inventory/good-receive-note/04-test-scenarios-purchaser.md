@@ -2,7 +2,7 @@
 title: ใบรับสินค้า (Goods Receive Note) — Test Scenarios — Purchaser
 description: เคสทดสอบของ Purchaser (happy path, permission, validation, edge case) สำหรับ good-receive-note
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 dateCreated: 2026-05-15T11:00:00.000Z
 tags: good-receive-note, test-scenarios, purchaser, inventory, carmen-software
 editor: markdown
@@ -14,7 +14,7 @@ editor: markdown
 > **Persona:** Purchaser (Procurement Officer + Department Manager) &nbsp;·&nbsp; **โมดูล:** [good-receive-note](/th/inventory/good-receive-note) &nbsp;·&nbsp; **จำนวน scenario:** ~12
 > **หมวด:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **ความครอบคลุม E2E:** map ไปยัง `501-grn.spec.ts` ใน `../carmen-frontend-e2e/`
-> **ตรวจสอบซ้ำ 2026-09-22:** PO เลื่อนตอน **commit** ไม่ใช่ตอน save; สถานะ PO คือ `approved` / `sent_or_print` / `partial` / `completed`; ตอนนี้มีการตรวจ price-deviation เทียบ **ราคา PO** ตอน save (`GRN_VAL_007`) — ยังไม่มีการตรวจ pricelist ไม่มี `accepted_qty` ไม่มี three-way match และไม่มี segregation of duties
+> **ตรวจสอบซ้ำ 2026-10-27 (ไม่เปลี่ยนตั้งแต่ 2026-09-22 ยกเว้นตามที่ระบุใน PUR-VAL-02 / PUR-PERM-03):** PO เลื่อนตอน **commit** ไม่ใช่ตอน save; สถานะ PO คือ `approved` / `sent_or_print` / `partial` / `completed`; ตอนนี้มีการตรวจ price-deviation เทียบ **ราคา PO** ตอน save (`GRN_VAL_007`) — ยังไม่มีการตรวจ pricelist ไม่มี `accepted_qty` ไม่มี three-way match และไม่มี segregation of duties
 
 > **ความครอบคลุมที่รันได้:** `../carmen-frontend-e2e/tests/501-grn.spec.ts` (76 case; กลุ่มที่เกี่ยวกับ Purchaser list ใน §5) และ `docs/test-cases/gaps/501-grn-core-gap.md` (62) — case permission-denial ใช้ fixture บทบาท Requestor
 
@@ -35,7 +35,7 @@ editor: markdown
 | - | -------- | --------------------------------------- |
 | PUR-PERM-01 | Purchaser เปิด GRN ในโหมด read | **Allow** ด้วย `procurement.goods_received_note.view` (`GET …/:id`, guard `goodReceivedNote.findOne`) header, บรรทัด, Stock Movement (เมื่อ committed แล้ว), ไฟล์แนบ และ activity log มองเห็นได้; ปุ่ม edit / save / commit / void ถูกซ่อนเมื่อผู้ใช้ไม่มี `.update` / `.commit` / `.delete` Maps to TC-GRN-010001 |
 | PUR-PERM-02 | Purchaser พยายามเปิด GRN ที่ PO ต้นทางตนเอง**ไม่ได้**เป็นเจ้าของ | **backend อนุญาต** — ไม่มี scope `buyer_id` บน `findAll` / `findOne` (ตรวจซ้ำ 2026-09-22) ผู้ใช้ที่**ไม่มี** `procurement.goods_received_note.view` ได้ `403` จาก gateway guard และ route list redirect Maps to TC-GRN-010003 (permission denial ไม่ใช่ ownership) |
-| PUR-PERM-03 | Purchaser พยายามแก้ไข header / บรรทัดของ GRN | **Deny ด้วย permission key เท่านั้น** หากไม่มี `.update` `PATCH …/:id` และ endpoint detail คืน `403`; ไม่มีข้อความตามชื่อ role และไม่มีกฎ segregation-of-duties — Purchaser ที่ถือ `.update` ด้วยสามารถแก้ `draft` ได้ Maps to TC-GRN-080005 |
+| PUR-PERM-03 | Purchaser พยายามแก้ไข header / บรรทัดของ GRN | **Deny ด้วย permission key เท่านั้น** หากไม่มี `.update` `PATCH …/:id` และ endpoint detail คืน `403`; ไม่มีข้อความตามชื่อ role และไม่มีกฎ segregation-of-duties — Purchaser ที่ถือ `.update` ด้วยสามารถแก้ `draft` หรือ (ภายใต้ข้อจำกัด `GRN_VAL_021`–`023`) GRN ที่ `saved` ได้ Maps to TC-GRN-080005 |
 | PUR-PERM-04 | Purchaser พยายามสร้าง GRN | **Deny ด้วย permission key** (`goodReceivedNote.create` → `403`); ปุ่ม **New** ถูกซ่อนหากไม่มี `.create` |
 | PUR-PERM-05 | Purchaser พยายาม save หรือ commit GRN ที่ `saved` | **Deny ด้วย permission key** — ทั้ง `PATCH …/save` และ `PATCH …/commit` อยู่หลัง `goodReceivedNote.commit` (`403` หากไม่มี) ไม่มีข้อความ "Inventory Manager role" Maps to TC-GRN-110002 |
 
@@ -44,7 +44,7 @@ editor: markdown
 | # | Scenario | Trigger | ข้อผิดพลาดที่คาด |
 | - | -------- | ------- | -------------- |
 | PUR-VAL-01 | Purchaser ที่ไม่มี commit key เรียก endpoint commit โดยตรง | GRN ที่ `saved` อยู่บน PO ของตัวเอง `PO-X`; Purchaser (ไม่มี `procurement.goods_received_note.commit`) เรียก `PATCH …/commit` | **Reject 403** จาก `AppIdGuard('goodReceivedNote.commit')`; `doc_status` คงเป็น `saved` Maps to TC-GRN-110002 |
-| PUR-VAL-02 | Purchaser พยายามแก้บรรทัดบน GRN ที่ `saved` | GRN ที่ `saved` มี `received_qty = 10`; Purchaser เรียก `PATCH …/:id/details/:detail_id` (หรือ delete detail) | **Reject** — `GRN_NON_DRAFT_NO_UPDATE_DETAIL` / `_DELETE_DETAIL` (400) ไม่ว่าจะมีสิทธิ์หรือไม่ เพราะ endpoint detail เป็น `draft`-only; เส้นทางที่ถูกต้องคือ comment และขอให้ Receiver void แล้วออกใหม่ (หรือหลัง commit ให้ออก credit note) |
+| PUR-VAL-02 | Purchaser พยายามแก้บรรทัดบน GRN ที่ `saved` | GRN ที่ `saved` มี `received_qty = 10`; Purchaser ถือ `.update` และเรียก `DELETE …/:id/details/:detail_id` หรือ `PATCH …/:id` พร้อมบรรทัดที่เปลี่ยน | การลบ detail ถูก **ปฏิเสธ** — `GRN_NON_DRAFT_NO_DELETE_DETAIL` (400) ไม่ว่าจะมีสิทธิ์หรือไม่ (ไม่มี endpoint PATCH รายบรรทัดอีกแล้ว) `PATCH …/:id` **ถูกรับ** บน GRN ที่ `saved` เว้นแต่บรรทัดถูก stock-lock (lot ถูกดึงหรือออก credit note → `GRN_LINE_STOCK_LOCKED`, 409); แนวปฏิบัติที่ใช้อยู่ยังคงเป็น comment และขอให้ Receiver (หรือหลัง commit ให้ออก credit note) |
 
 ## 4. Edge Case
 

@@ -2,7 +2,7 @@
 title: คลังสินค้า (Inventory) — User Flow — Finance (แก้ไข/correction)
 description: หน้าแก้ไข — ไม่มี Finance role, GL reconciliation หรือ flow การ lock งวดอยู่จริงในโมดูล inventory; หน้านี้บันทึกสิ่งที่มาแทน draft ก่อนหน้า
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: inventory, user-flow, finance, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -21,7 +21,7 @@ Draft ก่อนหน้าอธิบาย persona Finance Officer / Finan
 - **ไม่มี Finance role อยู่จริง** `enum_stage_role` (Prisma tenant schema) คือ `{create, approve, purchase, issue, view_only}` — ไม่มี member `finance` และ permission catalogue (`carmen-frontend/constant/permissions.ts`) ไม่มี key ที่ scope ให้ finance
 - **ไม่มีโค้ด inventory-to-GL อยู่จริง** แกน GL มาถึงในเดือน 2026-09 (ตาราง `tb_gl_jv*`, `apps/micro-business/src/gl/`, manual journal voucher ใต้ `/api/{bu}/gl-posting`) แต่การค้นหาทั่ว repo `carmen-turborepo-backend` สำหรับการ post journal/GL *จาก inventory movement* ยังไม่พบสิ่งใด — ทั้งสองโมดูลไม่อ้างอิงถึงกัน (ดู [01-data-model](/th/inventory/inventory/01-data-model) § 1) ไม่มี reconciliation dashboard, tolerance หรือกลไก compensating-journal
 - **ไม่มี approval chain แบบอิง threshold อยู่จริง** พบ `threshold` ศูนย์รายการใน service ของ inventory / stock-in / stock-out / period-end (ดูการแก้ไขใน [02-business-rules](/th/inventory/inventory/02-business-rules) § 4)
-- **ไม่มี flow lock/reopen ในโมดูลนี้** `period-end.controller.ts` expose เพียง `find-all` / `find-current` / `find-review` / `start-counting` / `close`; `enum_period_status.locked` ถูก set โดย inventory-period service (`/api/{bu}/inventory-periods`) หลัง [system-config/period](/th/inventory/system-config/period)
+- **ไม่มี flow lock/reopen ในโมดูลนี้** `period-end.controller.ts` expose เพียง `find-all` / `find-current` / `find-review` / `start-counting` / `close` (บวกการตรวจ `has-movement-in-open-period` ผ่าน micro-RPC เท่านั้นที่เพิ่มเมื่อ 2026-10 ซึ่ง gateway ไม่ expose); `enum_period_status.locked` ถูก set โดย inventory-period service (`/api/{bu}/inventory-periods`) หลัง [system-config/period](/th/inventory/system-config/period)
 
 ข้อสรุปนี้สอดคล้องกับข้อค้นพบ Finance-persona แบบเดียวกันที่ยืนยันไปแล้วใน [purchase-order](/th/inventory/purchase-order/03-user-flow-finance), [good-receive-note](/th/inventory/good-receive-note/03-user-flow-finance) และ [store-requisition](/th/inventory/store-requisition)
 

@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check) — User Flow — หน้า Entry & Review
 description: หน้าป้อนบรรทัดและ review ผลต่างที่ใช้นับและ submit การสุ่มตรวจจริง
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: spot-check, user-flow, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -59,7 +59,7 @@ graph LR
 | ป้อน/แก้ไข `actual_qty` บนบรรทัด | สถานะใดก็ได้ | Local state เท่านั้น จนกว่าจะ Save หรือ Submit for Review | ไม่พบขั้นต่ำฝั่ง client (ต่างจาก entry row ของ physical-count ที่ clamp `≥ 0`) |
 | แนบ note/photo ให้บรรทัด | เวลาใดก็ได้ | `POST /spot-check-detail-comment/:detailId` (multipart: `message`, `type`, `files`) | รองรับโดย `tb_spot_check_detail_comment`; component dialog notes แชร์เดียวกับที่ physical-count ใช้ |
 | Save For Resume | อย่างน้อยหนึ่งบรรทัดมีค่า; เอกสาร `pending` หรือ `in_progress` | `PATCH .../save` — stamp `counted_at`/`counted_by_id` และคำนวณ `diff_qty` ใหม่บนบรรทัดที่ส่งเทียบกับ `on_hand_qty` ที่เก็บอยู่ปัจจุบัน; call แรกยังพลิก `pending → in_progress`; ต้องส่ง `doc_version` | Reject นอก `{pending, in_progress}` (`SPC_VAL_007`) |
-| Submit For Review | ทุกบรรทัดมีค่ากรอกในเครื่อง (`uncountedCount === 0`, gate ฝั่ง client เท่านั้น) | `PATCH .../review` — คำนวณ `on_hand_qty`/`diff_qty` ใหม่ทุกบรรทัดจากยอด ledger สด; stamp `counted_at`/`counted_by_id`; navigate ไป `/review` | **ไม่** เปลี่ยน `doc_status`; **ไม่มี** guard สถานะเลย — รันกับเอกสารที่ `completed`/`void` ก็ได้ถ้าถูก trigger (เช่นผ่าน tab History) |
+| Submit For Review | ทุกบรรทัดมีค่ากรอกในเครื่อง (`uncountedCount === 0`, gate ฝั่ง client เท่านั้น) | `PATCH .../review` — คำนวณ `on_hand_qty`/`diff_qty` ใหม่ทุกบรรทัดจากยอด cost-layer ของงวดที่ active; stamp `counted_at`/`counted_by_id`; navigate ไป `/review` | **ไม่** เปลี่ยน `doc_status`; **ไม่มี** guard สถานะเลย — รันกับเอกสารที่ `completed`/`void` ก็ได้ถ้าถูก trigger (เช่นผ่าน tab History) |
 | Submit (ขั้นสุดท้าย จาก `/review`) | เอกสารยังไม่ `completed`/`void` | `PATCH .../submit` — `doc_status → completed`; stamp `end_date` | ไม่มีการตรวจความครบถ้วน (`SPC_VAL_008`) Terminal; ไม่มี rollup ไม่มีผลต่อ ledger |
 
 ## 4. Decision Points

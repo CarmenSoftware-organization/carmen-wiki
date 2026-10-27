@@ -2,7 +2,7 @@
 title: รายงานของเสีย (Wastage Reporting)
 description: รายการ lot ใกล้หมดอายุและ API write-off ภายใต้ Store Operations — backend จริงตั้งแต่ 2026-08-10; write-off สร้าง Stock Out ที่ completed หนึ่งฉบับต่อ location และ post ไป ledger
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: inventory-adjustment, wastage, loss, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,9 +11,11 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # รายงานของเสีย (Wastage Reporting)
 
 > **At a Glance**
-> **ตำแหน่ง:** Store Operations → Wastage Reporting (`/store-operation/wastage-reporting`, สิทธิ์ nav `inventory_management.stock_out.view`) — อ้างอิงไขว้จาก Inventory Adjustment เพราะ write-off ของมัน*คือ* `tb_stock_out` &nbsp;·&nbsp; **สถานะ:** **API จริงตั้งแต่ 2026-08-10** (`c9348f667`; frontend เลิกใช้ mock เมื่อ 2026-08-20 `061a0f3f`) &nbsp;·&nbsp; **Endpoints:** `GET /api/{bu}/wastage-reporting` (lot ใกล้หมดอายุ) และ `POST /api/{bu}/wastage-reporting` (write-off) &nbsp;·&nbsp; **Backend:** `apps/micro-business/src/inventory/wastage-reporting/` — ไม่มีตารางของตัวเอง; อ่าน lot ของ GRN และเขียน `tb_stock_out` &nbsp;·&nbsp; **UI วันนี้:** รายการเท่านั้น — endpoint write-off ไม่มีปุ่มใน frontend ที่ ship
+> **ตำแหน่ง:** Store Operations → Wastage Reporting (`/store-operation/wastage-reporting`, สิทธิ์ nav `inventory_management.stock_out.view`, licence feature `store_operations.wastage_reporting`) — อ้างอิงไขว้จาก Inventory Adjustment เพราะ write-off ของมัน*คือ* `tb_stock_out` &nbsp;·&nbsp; **สถานะ:** **API จริงตั้งแต่ 2026-08-10** (`c9348f667`; frontend เลิกใช้ mock เมื่อ 2026-08-20 `061a0f3f`) &nbsp;·&nbsp; **Endpoints:** `GET /api/{bu}/wastage-reporting` (lot ใกล้หมดอายุ) และ `POST /api/{bu}/wastage-reporting` (write-off) &nbsp;·&nbsp; **Backend:** `apps/micro-business/src/inventory/wastage-reporting/` — ไม่มีตารางของตัวเอง; อ่าน lot ของ GRN และเขียน `tb_stock_out` &nbsp;·&nbsp; **UI วันนี้:** รายการเท่านั้น — endpoint write-off ไม่มีปุ่มใน frontend ที่ ship
 
 ![Wastage Reporting screen](/screenshots/inventory-adjustment/wastage-reporting.png)
+
+> **Re-sync 2026-10-27 (backend `c9d788829`, frontend `391062b5`):** หน้ารายการถูกสร้างใหม่ (ตัวกรองแบบ segmented Expired / Expiring พร้อมจำนวน, คอลัมน์ความเร่งด่วน, ไม่มี saved view) และ write-off ตอนนี้ยึด**งวด inventory ที่ active** — `so_date` ตั้งค่าเริ่มต้นเป็นวันภายในงวดที่ active และต้องอยู่ในงวดนั้น, การตรวจสต๊อกทำ*ณ วัน* `so_date`, เลข Stock Out ถูกจองภายใน transaction ที่ insert และแต่ละบรรทัดของ Stock Out ได้ต้นทุนที่ ledger post จริง ยังไม่มีปุ่ม write-off ใน UI
 
 ## 1. คืออะไรและใครใช้
 
@@ -27,9 +29,10 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 | งาน | ตำแหน่ง | หมายเหตุ |
 |---|---|---|
-| ดู lot ที่ใกล้หมดอายุ | Store Operation → Wastage Reporting | `GET /wastage-reporting?days=30` (ช่วงเริ่มต้น `DEFAULT_EXPIRY_WINDOW_DAYS = 30`); optional `include_expired`, `status=expiring|expired`, `location_id`, `product_id`, ค้นหา + แบ่งหน้า แถบสรุป: จำนวน item, จำนวนหมดอายุแล้ว, จำนวนใกล้หมดอายุ, qty ที่เสี่ยง, มูลค่าที่เสี่ยง |
+| ดู lot ที่ใกล้หมดอายุ | Store Operation → Wastage Reporting | `GET /wastage-reporting?days=30` (ช่วงเริ่มต้น `DEFAULT_EXPIRY_WINDOW_DAYS = 30`); optional `include_expired`, `status=expiring|expired`, `location_id`, `product_id`, ค้นหา + แบ่งหน้า หน้าจอส่ง `days=30` (`WASTAGE_WINDOW_DAYS`) เสมอ และเก็บสถานะใน URL เป็น `?status=` — endpoint ไม่สนใจพารามิเตอร์ `filter` ทั่วไปที่เมนู Filter เดิมเคยส่ง แถบบน: segmented control **All / Expired / Expiring (≤ 30 days)** พร้อมจำนวนบนแต่ละ segment (จำนวนมาจาก summary ที่ไม่กรอง ดึงซ้ำด้วยหนึ่งแถวเมื่อมีสถานะที่ active) และ**มูลค่าที่เสี่ยง**ของแถวที่กำลังดู; summary ของ API ยังมี `total_qty_at_risk` แต่หน้าจอไม่แสดงแล้วเพราะ lot ต่างหน่วยกัน การค้นหาเป็นตัวควบคุมอื่นเพียงอย่างเดียว (เมนู Filter และ saved view ถูกลบแล้ว) |
 | กระโดดไปยังใบรับ | คลิกเลข GRN | เปิด `/procurement/goods-receive-note/{grn_id}` |
-| Write off lot (API) | `POST /wastage-reporting` ด้วย `{ so_date?, adjustment_type_id, description?, note?, items: [{ grn_detail_item_id, qty, note? }] }` | บรรทัดถูกจัดกลุ่มตาม location; สำหรับแต่ละ location สร้าง `tb_stock_out` หนึ่งฉบับที่ `draft`, post ทุกบรรทัดผ่าน `executeAdjustmentOut` แล้วตั้ง header เป็น `completed` — ทั้งหมดในทรานแซกชันเดียว (`wastage-reporting.logic.ts`) `so_date` default เป็นวันนี้และต้องผ่านกฎงวดของ stock-out |
+| อ่านวันหมดอายุ | คอลัมน์ Expiry (แทนที่ชุดสามคอลัมน์เดิม Expiry Date / Days Left / Status) | ข้อความก่อน — "N days overdue" (สีแดง), "expires today" / "N days left" (สีเหลืองอำพันเมื่อ ≤ `WASTAGE_URGENT_DAYS` = 7, ไม่เช่นนั้นเป็นกลาง) โดยมีวันที่อยู่ข้างใต้ (`expiry-urgency.tsx`) บนมือถือแต่ละแถวเป็นเซลล์สามบรรทัดเดียว |
+| Write off lot (API) | `POST /wastage-reporting` ด้วย `{ so_date?, adjustment_type_id, description?, note?, items: [{ grn_detail_item_id, qty, note? }] }` | บรรทัดถูกจัดกลุ่มตาม location; สำหรับแต่ละ location สร้าง `tb_stock_out` หนึ่งฉบับที่ `draft`, post ทุกบรรทัดผ่าน `executeAdjustmentOut` แล้วตั้ง header เป็น `completed` — ทั้งหมดในทรานแซกชันเดียว (`wastage-reporting.logic.ts`); ส่ง `available_as_of = so_date` ให้ `executeAdjustmentOut` เพื่อให้ guard ของการ post ใช้วันที่เดียวกัน และแต่ละบรรทัด `tb_stock_out_detail` ถูก stamp `inventory_transaction_id` **และ** `cost_per_unit` / `total_cost` ที่ post แล้ว (`getPostedCost`) — บรรทัดถูกสร้างโดยไม่มีราคา ดังนั้นก่อน 2026-10 เอกสารและรายงาน stock-out แสดง 0 ขณะที่ ledger บันทึกต้นทุนของ lot `so_date` เมื่อไม่ระบุ จะ default เป็น **วันนี้ถ้าวันนี้อยู่ในงวดที่ active ไม่เช่นนั้นเป็นวันขอบงวดที่ active ที่ใกล้ที่สุด** (`defaultDateInPeriod`; ไม่เคยเป็นเดือนถัดไปที่ generate ล่วงหน้า) และ `so_date` ที่ส่งมาต้องอยู่ในงวดที่ active (guard เดียวกับ `StockOutService.create`) เลข Stock Out (running code `STOCK-OUT`, เดือนของ `so_date`) ถูกจองภายใน transaction ที่ insert เอกสาร |
 
 ## 3. การตรวจสอบและข้อผิดพลาด
 
@@ -37,8 +40,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 |---|---|---|
 | รายการว่าง | ไม่มีบรรทัด GRN ที่ commit แล้วมี `expired_at` ในช่วง (`tb_good_received_note_detail_item.expired_at`, migration `20260731120000_add_inflow_price_expiry`) หรือ lot ผู้สมัครทุกตัวมี qty คงเหลือ ≤ 0 | ขยาย `days` หรือตรวจว่าใบรับมีวันหมดอายุ |
 | `WASTAGE_ITEMS_REQUIRED` | `items` ว่าง | ส่งอย่างน้อยหนึ่งบรรทัด |
-| Write-off ถูกปฏิเสธเรื่องปริมาณ | `qty` เกิน balance คงเหลือของ lot (`remaining_qty` = `in_qty` ของ layer − การบริโภคผ่าน `parent_lot_no`) หรือ on-hand ของ location | ลด `qty` |
-| `STOCK_OUT_DATE_NOT_CURRENT_PERIOD` (422) | `so_date` นอกงวด inventory ปัจจุบัน — write-off สืบทอด guard วันที่ของ stock-out | ลงวันที่ใหม่ |
+| Write-off ถูกปฏิเสธเรื่องปริมาณ | `qty` เกิน balance คงเหลือของ lot (`remaining_qty` = `in_qty` ของ layer − การบริโภคผ่าน `parent_lot_no`) หรือยอดรวมของสินค้าตลอดคำขอเกินที่ location จัดหาได้ **ณ `so_date`** (`getDrawableQtyAsOf`: สต๊อกยกมาของงวดบวก movement ถึงวันนั้น โดยไม่ยอมให้วันหลังจากนั้นติดลบ) | ลด `qty` หรือลงวันที่ใหม่ error คือ `STOCK_OUT_INSUFFICIENT_STOCK` พร้อม product, location, จำนวนที่มี, จำนวนที่ขอ, วันที่ และวันที่ยอดคงเหลือต่ำสุด |
+| `STOCK_OUT_DATE_NOT_CURRENT_PERIOD` (422) / `STOCK_OUT_NO_OPEN_PERIOD` (422) | `so_date` อยู่นอกงวด inventory ที่ **active** (`open`/`locked` ที่เก่าสุด — ข้อความระบุงวดนั้น) หรือไม่มีงวดเปิดเลย | ลงวันที่ใหม่ในงวดที่ active หรือเปิดงวด |
 
 ## 4. Edge Cases
 
@@ -46,7 +49,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 - **นับเฉพาะใบรับที่ commit แล้ว** (`doc_status = committed` ทั้งบน GRN และ path ของ detail); GRN ที่เป็น draft หรือ void ไม่เคยปรากฏ
 - **`days_to_expiry` เป็นจำนวนเต็มมีเครื่องหมาย** — ติดลบสำหรับ lot ที่หมดอายุแล้ว (`status = expired`); รายการเรียงตาม `expired_at` จากน้อยไปมาก
 - **หนึ่ง Stock Out ต่อ location ไม่ใช่ต่อการเรียก** write-off ที่ครอบสาม location สร้างเอกสาร `tb_stock_out` สามฉบับ แต่ละฉบับมี `so_no` ของตัวเอง ทั้งหมด tag ด้วย `adjustment_type_id` และ `description` ของผู้เรียก
-- **ไม่มี UI สำหรับ write-off** `routes/store-operation/wastage-reporting/` มีเพียง `use-wastage-report.ts` (GET), `use-wr-table.tsx` และ `wr-component.tsx`; ไฟล์ฟอร์ม / mock ถูกลบเมื่อ 2026-08-20 การ void Stock Out ของ wastage ทำจากหน้าจอ Inventory Adjustment เหมือน stock-out อื่น ๆ
+- **ไม่มี UI สำหรับ write-off** `routes/store-operation/wastage-reporting/` มีเพียง `use-wastage-report.ts` (GET), `use-wr-table.tsx`, `wr-component.tsx`, `wr-summary-bar.tsx` และ `expiry-urgency.tsx`; ไฟล์ฟอร์ม / mock ถูกลบเมื่อ 2026-08-20 การ void Stock Out ของ wastage ทำจากหน้าจอ Inventory Adjustment เหมือน stock-out อื่น ๆ
 - **Permission เป็นของจริงแต่หยาบ** nav entry ถูก gate ด้วย `inventory_management.stock_out.view` (`constant/module-list.ts`); guard ของ gateway คือ `wastageReporting.findAll` / `wastageReporting.writeOff`
 
 ## 5. รูปทรงข้อมูล (API response)
@@ -73,7 +76,7 @@ Response ของ write-off: header `tb_stock_out` ที่สร้าง —
 
 ## 7. แหล่งอ้างอิง
 
-- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/wastage-reporting/` (`wastage-reporting.service.ts` — `findNearExpiry`, `resolveLotsByDetailItemIds`; `wastage-reporting.logic.ts` — `WastageReportingLogic.writeOff`, `groupWriteOffByLocation`; `dto/wastage-reporting.dto.ts`, `dto/wastage-reporting.serializer.ts`); gateway `apps/backend-gateway/src/application/wastage-reporting/wastage-reporting.controller.ts` (`@Controller('api/:bu_code/wastage-reporting')`)
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/wastage-reporting/` (`wastage-reporting.service.ts` — `findNearExpiry`, `resolveLotsByDetailItemIds`; `wastage-reporting.logic.ts` — `WastageReportingLogic.writeOff` (period guard, `getDrawableQtyAsOf`, `reserveStockDocumentNumbers`, `getPostedCost`), `groupWriteOffByLocation`; `dto/wastage-reporting.dto.ts`, `dto/wastage-reporting.serializer.ts`); gateway `apps/backend-gateway/src/application/wastage-reporting/wastage-reporting.controller.ts` (`@Controller('api/:bu_code/wastage-reporting')`)
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/_uncategorized/wastage-reporting/` (`GET-find-near-expiry-wastage-reporting.bru`, `POST-write-off-wastage-reporting.bru`)
-- **Frontend:** `../carmen-frontend/routes/store-operation/wastage-reporting/` (`wr-component.tsx`, `use-wr-table.tsx`, `use-wastage-report.ts`); gate ของ nav ใน `constant/module-list.ts`
+- **Frontend:** `../carmen-frontend/routes/store-operation/wastage-reporting/` (`wr-component.tsx`, `wr-summary-bar.tsx`, `expiry-urgency.tsx`, `use-wr-table.tsx`, `use-wastage-report.ts`; constants ใน `constant/wastage-reporting.ts`); gate ของ nav ใน `constant/module-list.ts`
 - **E2E:** `../carmen-frontend-e2e/tests/710-wastage-reporting.spec.ts` (20 เทส, user story ที่ generate `docs/user-stories/710-wastage-reporting.md`) — พฤติกรรมของรายการ, สรุป และลิงก์ GRN; ไม่มี coverage ของ write-off เพราะ UI ไม่มี

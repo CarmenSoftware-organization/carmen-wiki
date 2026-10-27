@@ -2,7 +2,7 @@
 title: หน่วยธุรกิจ (Business Unit)
 description: หน่วยปฏิบัติการ / นิติบุคคล (property หรือ BU) ที่กำหนด scope ของทุกธุรกรรม — เป็นเจ้าของ calculation method, default currency และ module subscription
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: master-data, business-unit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,21 +11,21 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # หน่วยธุรกิจ (Business Unit)
 
 > **At a Glance**
-> **เจ้าของ:** Sysadmin &nbsp;·&nbsp; **ตาราง:** `tb_business_unit` (platform) &nbsp;·&nbsp; **ใช้โดย:** เอกสารธุรกรรมทุกใบ &nbsp;·&nbsp; Scope บนสุด — เป็นเจ้าของวิธี costing, default currency และการเปิดใช้งาน module
+> **เจ้าของ:** Sysadmin &nbsp;·&nbsp; **ตาราง:** `tb_business_unit` (backstage schema เดิมชื่อ "platform") &nbsp;·&nbsp; **ใช้โดย:** เอกสารธุรกรรมทุกใบ &nbsp;·&nbsp; Scope บนสุด — เป็นเจ้าของวิธี costing, default currency และการเปิดใช้งาน module
 
 ![หน่วยธุรกิจ (Business Unit) screen](/screenshots/master-data/business-unit.png)
 
 ## 1. คืออะไร / ใครใช้
 
-**Business Unit (BU)** คือ scope บนสุดที่เอกสาร, user role และรายงานทุกตัวผูกอยู่ — โดยทั่วไปคือหนึ่ง **property** (โรงแรม) ใน **cluster** (กลุ่ม) ที่สำคัญที่สุดคือ BU เป็นเจ้าของ **calculation method ของ costing** (`average` หรือ `fifo`) ที่ขับเคลื่อน valuation ของทุกการเคลื่อนไหวสต๊อก BU ยังเป็นเจ้าของ default currency, identity ของบริษัท/โรงแรม, format default (date, time, money, qty), metadata การ connection และการเปิดใช้งาน module
+**Business Unit (BU)** คือ scope บนสุดที่เอกสาร, user role และรายงานทุกตัวผูกอยู่ — โดยทั่วไปคือหนึ่ง **property** (โรงแรม) ใน **cluster** (กลุ่ม) ที่สำคัญที่สุดคือ BU เป็นเจ้าของ **calculation method ของ costing** (`average`, `fifo` หรือ `average_per_location` - ค่าที่สามเพิ่มหลังรอบ 2026-09-22; ดู [costing](/th/inventory/costing)) ที่ขับเคลื่อน valuation ของทุกการเคลื่อนไหวสต๊อก BU ยังเป็นเจ้าของ default currency, identity ของบริษัท/โรงแรม, format default (date, time, money, qty), pointer ไปยังฐานข้อมูล tenant (`database_pool_id` + `db_schema`) และการเปิดใช้งาน module
 
-**บริหารจัดการโดย** Sysadmin ที่ platform admin console **อ่านโดย** ทุก backend service (ทุก query มี BU-scoped) และโดยเฉพาะ costing engine
+**บริหารจัดการโดย** Sysadmin ใน Backstage admin console (`carmen-backstage`) **อ่านโดย** ทุก backend service (ทุก query มี BU-scoped) และโดยเฉพาะ costing engine
 
 ## 2. งานที่พบบ่อย
 
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
-| สร้าง BU | Platform admin → BU listing → **New** | บังคับ: `cluster_id`, `code`, `name`, `calculation_method` |
+| สร้าง BU | Backstage admin → BU listing → **New** | บังคับ: `cluster_id`, `code`, `name`, `calculation_method` |
 | ตั้ง default currency | BU detail → Identity tab | `default_currency_id` render เป็น `<select>` ที่ **disabled** ใน `carmen-backstage` (`CalculationSettingsSection.tsx:68`) — แก้ไขจาก admin UI ไม่ได้ในรอบนี้; ต้องอ้างอิงแถว active ใน [master-data/currency](/th/inventory/master-data/currency) ตามธรรมเนียมเท่านั้น |
 | สลับ costing method | BU detail → Costing tab | บล็อกกลางงวด; ต้อง snapshot สิ้นงวด + recost — ดู Edge Cases |
 | เปิด / ปิด module | BU detail → Modules tab | เขียนไปยัง `tb_business_unit_tb_module`; ซ่อน UI แต่รักษาข้อมูล |
@@ -36,25 +36,25 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 | อาการ / ข้อความ | สาเหตุ | การจัดการ |
 |---|---|---|
-| "Code already in use" | `code` ซ้ำ**ที่ใดก็ได้บน platform** — partial unique index `business_unit_code_global_u` (`(code) WHERE deleted_at IS NULL`, platform migration `20260904000000_business_unit_code_global_unique`); นับจาก backend PR #497 (`56d4871e9`) platform สร้างรหัส BU เองและฟอร์มไม่รับค่า | ให้ platform กำหนดรหัสเอง |
+| "Code already in use" | `code` ซ้ำ**ที่ใดก็ได้ในระบบ** — partial unique index `business_unit_code_global_u` (`(code) WHERE deleted_at IS NULL`, backstage-schema migration `20260904000000_business_unit_code_global_unique`); นับจาก backend PR #497 (`56d4871e9`) backend สร้างรหัส BU เองและฟอร์มไม่รับค่า | ให้ platform กำหนดรหัสเอง |
 | "Name already in use in cluster" | `name` ซ้ำใน `cluster_id` เดียวกัน — partial unique index `business_unit_cluster_name_u` (`20260904010000_business_unit_cluster_name_unique`) | เลือกชื่ออื่น |
-| **ยังไม่ยืนยัน** — ฟอร์มแก้ไขไม่มีข้อจำกัดฝั่ง client | `CalculationSettingsSection.tsx` ของ `carmen-backstage` render `calculation_method` เป็น `<select>` (`average`/`fifo`) ที่แก้ไขได้เสมอ ไม่มี disabled state, warning หรือการเช็คกลางงวดที่พบใน component; ยังไม่ได้ตรวจสอบว่า backend microservice command `business-units.update` บังคับ block หรือไม่ในรอบนี้ | เดิมหน้านี้ระบุว่า "cannot change calculation method mid-period" เป็น error ที่บังคับใช้จริง; ให้ถือว่า**ยังไม่ยืนยัน** ไม่ใช่ guard ที่รับประกันแน่นอน |
+| **ยังไม่ยืนยัน** — ฟอร์มแก้ไขไม่มีข้อจำกัดฝั่ง client | `CalculationSettingsSection.tsx` ของ `carmen-backstage` render `calculation_method` เป็น `<select>` (`average` / `fifo` / `average_per_location`) ที่แก้ไขได้เสมอ ไม่มี disabled state, warning หรือการเช็คกลางงวดที่พบใน component; ยังไม่ได้ตรวจสอบว่า backend microservice command `business-units.update` บังคับ block หรือไม่ในรอบนี้ | เดิมหน้านี้ระบุว่า "cannot change calculation method mid-period" เป็น error ที่บังคับใช้จริง; ให้ถือว่า**ยังไม่ยืนยัน** ไม่ใช่ guard ที่รับประกันแน่นอน |
 | "Default currency must be active" — **ยังไม่ยืนยัน** | ไม่พบ disabled state หรือ validation ที่ผูก `default_currency_id` กับ flag `is_active` ของสกุลเงินเป้าหมายในฟอร์มแก้ไขรอบนี้ | ให้ถือว่ายังไม่ยืนยัน |
 | "Cannot delete BU — active users / open documents / non-zero balances" — **ยังไม่ยืนยัน** | `deleteBusinessUnit` ใน gateway เป็น proxy บาง ๆ ไปยัง microservice command `business-units.delete`; guard ถ้ามี ยังไม่ได้ตรวจสอบในรอบนี้ | ให้ถือว่ายังไม่ยืนยัน ไม่ใช่การบล็อกที่รับประกันแน่นอน |
 
 ## 4. Edge Cases
 
-- **การสลับ calculation-method — guard ยังไม่ยืนยัน** การพลิก `average` ↔ `fifo` จะทำลาย valuation ประวัติย้อนหลังในทางหลักการ แต่ฟอร์มแก้ไขของ `carmen-backstage` ไม่มี disabled state หรือ warning บนฟิลด์นี้เลย และยังไม่ได้ตรวจสอบว่า backend microservice บล็อกกลางงวดหรือไม่ในรอบนี้ ให้ถือว่า "ระบบปฏิเสธกลางงวด" เป็น design intent ไม่ใช่ guard ที่ยืนยันแล้ว
+- **การสลับ calculation-method — guard ยังไม่ยืนยัน** การพลิก method (เช่น `average` ↔ `fifo`) จะทำลาย valuation ประวัติย้อนหลังในทางหลักการ แต่ฟอร์มแก้ไขของ `carmen-backstage` ไม่มี disabled state หรือ warning บนฟิลด์นี้เลย และยังไม่ได้ตรวจสอบว่า backend microservice บล็อกกลางงวดหรือไม่ในรอบนี้ ให้ถือว่า "ระบบปฏิเสธกลางงวด" เป็น design intent ไม่ใช่ guard ที่ยืนยันแล้ว
 - **`is_hq` invariant** หนึ่ง BU ต่อ cluster บรรจุ `is_hq = true` — บังคับใช้ระดับ app ไม่ใช่ DB
 - **การปิด module รักษาข้อมูล** การลบ module ผ่าน `tb_business_unit_tb_module` ซ่อน UI; ข้อมูลธุรกรรมพื้นฐานไม่ถูกแตะ
-- **การ inactivate สกุลเงิน — ยังไม่ยืนยัน** ยังไม่ได้ตรวจสอบว่า platform บล็อกการ inactivate สกุลเงินที่เป็น `default_currency_id` ของ BU หรือไม่ในรอบนี้ (การเช็คที่เทียบเท่ากันฝั่ง Inventory ยืนยันแล้วว่า**ไม่มีอยู่**บน path การอัปเดต `tb_currency` เอง — ดู [master-data/currency](/th/inventory/master-data/currency))
-- **Tenant DB connection** `db_connection` JSON ชี้ BU ไปยัง tenant schema; การตั้งค่าผิดทำให้ BU ทั้งหมด offline
+- **การ inactivate สกุลเงิน — ยังไม่ยืนยัน** ยังไม่ได้ตรวจสอบว่าฝั่ง backstage บล็อกการ inactivate สกุลเงินที่เป็น `default_currency_id` ของ BU หรือไม่ในรอบนี้ (การเช็คที่เทียบเท่ากันฝั่ง Inventory ยืนยันแล้วว่า**ไม่มีอยู่**บน path การอัปเดต `tb_currency` เอง — ดู [master-data/currency](/th/inventory/master-data/currency))
+- **Tenant DB pointer** `database_pool_id` (FK → `tb_database_pool`) บวก `db_schema` ระบุ tenant schema ของ BU; การตั้งค่าผิดทำให้ BU ทั้งหมด offline (หน้านี้เวอร์ชันก่อนเคยอธิบายคอลัมน์ JSON `db_connection` - ไม่มีคอลัมน์ดังกล่าวใน model)
 
 ---
 
 ## 5. โมเดลข้อมูล (Dev)
 
-แหล่งที่มา: platform schema (`packages/prisma-shared-schema-platform/prisma/schema.prisma`) BU อยู่ที่ระดับ platform เพราะ user และ cluster ครอบคลุมข้าม tenant
+แหล่งที่มา: backstage schema (`packages/prisma-shared-schema-backstage/prisma/schema.prisma`; package เคยชื่อ `prisma-shared-schema-platform` จนถึงการเปลี่ยนชื่อเมื่อ 2026-10) BU อยู่ที่นั่นแทนที่จะอยู่ใน tenant schema เพราะ user และ cluster ครอบคลุมข้าม tenant
 
 ### 5.1 `tb_business_unit`
 
@@ -68,10 +68,11 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | `description`, `info` | — | Yes | Free text / JSON metadata |
 | `is_hq` | `Boolean?` | Yes | Mark HQ BU ใน cluster (default `true`) |
 | `is_active` | `Boolean?` | Yes | Active flag |
-| `db_connection`, `config` | `Json?` | Yes | Tenant DB connection / per-BU config blobs |
+| `database_pool_id`, `db_schema` | `UUID?`, `VarChar?` | Yes | FK → `tb_database_pool` และชื่อ schema ที่ระบุข้อมูล tenant |
+| `config` | `Json?` | Yes | config blob ต่อ BU |
 | `default_currency_id` | `String? @db.Uuid` | Yes | Default currency (tenant currency catalogue) |
-| `calculation_method` | `enum_calculation_method` | No | `average` (default) หรือ `fifo` **แหล่งความจริงสำหรับ costing** |
-| `max_license_users` | `Int?` | Yes | License cap แบบ legacy นับจาก 2026-09 seat pool ที่บังคับใช้จริงอ่านจาก platform view `v_business_unit_seat` เหนือแถว `tb_business_unit_license` แบบมีวันที่ และ interface entitlement อยู่ใน `tb_business_unit_interface_license` (`3aab07ea1`); ข้อมูล licence เสิร์ฟผ่าน `GET /api/license` ไม่ใช่ `GET /api/user/profile` อีกต่อไป (2026-09-09) |
+| `calculation_method` | `enum_calculation_method` | No | `average` (default), `fifo` หรือ `average_per_location` **แหล่งความจริงสำหรับ costing** |
+| *(ข้อมูล licence)* | - | - | `max_license_users` ไม่มีอยู่แล้ว: ถูกถอดออกจาก model และ drop คอลัมน์ (migration `20260821000000_drop_bu_max_license_users`) seat pool อ่านจาก view `v_business_unit_seat` เหนือแถว `tb_business_unit_license` แบบมีวันที่ และ interface entitlement อยู่ใน `tb_business_unit_interface_license`; ข้อมูล licence เสิร์ฟผ่าน `GET /api/license` ไม่ใช่ `GET /api/user/profile` อีกต่อไป (2026-09-09) |
 | Company info: `branch_no`, `company_name`, `company_address`, `company_email`, `company_tel`, `company_zip_code`, `tax_no` | `String?` | Yes | Identity ทางกฎหมาย |
 | Hotel info: `hotel_name`, `hotel_address`, `hotel_email`, `hotel_tel`, `hotel_zip_code` | `String?` | Yes | Identity ปฏิบัติการ |
 | Format settings: `date_format`, `date_time_format`, `time_format`, `short_time_format`, `long_time_format`, `timezone`, `amount_format`, `quantity_format`, `recipe_format` | mixed | Yes | UI default `timezone` default `Asia/Bangkok` |
@@ -88,14 +89,15 @@ dateCreated: 2026-05-16T08:00:00.000Z
 enum enum_calculation_method {
   average
   fifo
+  average_per_location
 }
 ```
 
-หมายเหตุ: enum ชื่อเดียวกันใน tenant schema ใช้ `FIFO` / `AVG`; นิยาม platform เป็น authoritative สำหรับคอลัมน์นี้
+tenant schema เคยมี enum ชื่อเดียวกันที่ใช้ `FIFO` / `AVG`; ไม่มีการใช้งานและถูก drop โดย tenant migration `20260928130000_drop_unused_calculation_method_enum` ตอนนี้จึงมีเฉพาะนิยามใน backstage
 
 ## 6. กติกาทางธุรกิจ
 
-- **Uniqueness (แก้ไข 2026-09-22)** `code` unique **ทั้ง platform** และ server สร้างให้ (`business_unit_code_global_u`, 2026-09-04); `name` unique ภายใน cluster (`business_unit_cluster_name_u`) ทั้งคู่เป็น partial unique index ที่ประกาศไว้ใน migration SQL เท่านั้น — Prisma model ยังแสดง `@@unique([cluster_id, code, deleted_at])` แบบเดิม (`business_unit_cluster_code_deleted_at_u`) อยู่เคียงข้างกัน
+- **Uniqueness (แก้ไข 2026-09-22)** `code` unique **ทั้งระบบ (ข้ามทุก BU)** และ server สร้างให้ (`business_unit_code_global_u`, 2026-09-04); `name` unique ภายใน cluster (`business_unit_cluster_name_u`) ทั้งคู่เป็น partial unique index ที่ประกาศไว้ใน migration SQL เท่านั้น — Prisma model ยังแสดง `@@unique([cluster_id, code, deleted_at])` แบบเดิม (`business_unit_cluster_code_deleted_at_u`) อยู่เคียงข้างกัน
 - **Deletion guards — ยังไม่ยืนยัน** `deleteBusinessUnit` ของ gateway เป็น proxy บาง ๆ ไปยัง microservice command `business-units.delete`; ยังไม่ได้ตรวจสอบว่าผู้ใช้ที่ active, เอกสารที่เปิดอยู่ หรือยอด non-zero บล็อกการลบจริงหรือไม่ในรอบนี้
 - **Validation** `cluster_id`, `code`, `name`, `calculation_method` บังคับ
 - **Lifecycle** `is_active = false` บล็อก login, รักษาข้อมูล
@@ -112,7 +114,7 @@ enum enum_calculation_method {
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_business_unit` (line ~176), `enum_calculation_method` (~133), `tb_currency_iso` (~323)
-- **Platform migrations:** `20260904000000_business_unit_code_global_unique`, `20260904010000_business_unit_cluster_name_unique`
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_business_unit` (line ~213), `enum_calculation_method` (~169), `tb_currency_iso` (~428)
+- **Backstage-schema migrations:** `20260904000000_business_unit_code_global_unique`, `20260904010000_business_unit_cluster_name_unique`
 - **Frontend:** `../carmen-backstage/src/pages/BusinessUnitEdit.tsx` + `businessUnitEdit/sections/CalculationSettingsSection.tsx` (platform admin dashboard)
-- **Backend:** `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform_business-units/platform_business-units.service.ts` (proxy บาง ๆ ไปยัง microservice `business-units` ที่ยังไม่ได้ตรวจสอบในรอบนี้)
+- **Backend:** `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage_business-units/backstage_business-units.service.ts` (proxy บาง ๆ ไปยัง microservice `business-units` ที่ยังไม่ได้ตรวจสอบในรอบนี้)

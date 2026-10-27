@@ -2,7 +2,7 @@
 title: การปรับสต๊อก (Inventory Adjustment) — Test Scenarios
 description: Test cases สำหรับวงจรชีวิต draft → commit → void ของการปรับสต๊อก บวก pointer ไปยัง E2E coverage
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: inventory-adjustment, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 > **At a Glance**
 > **โมดูล:** [inventory-adjustment](/th/inventory/inventory-adjustment) &nbsp;·&nbsp; **Persona ที่ครอบคลุม:** Store Keeper, Inventory Controller (หน้าจอเดียวกันที่ไม่แตกต่างกัน); Finance และ Audit/Config ไม่มี surface ที่ตรงกัน — ดูหน้าของแต่ละตัว
 > **ข้อเท็จจริงหลักที่กำหนดทุก scenario ด้านล่าง:** การสร้างเขียน `draft`; **Commit** post; **Void** กลับรายการ (UI: เฉพาะ draft; เอกสารที่ post แล้วผ่าน API)
-> **Executable coverage (2026-09-22):** ไม่มี Playwright spec ที่ exercise หน้าจอนี้ แคตตาล็อก manual `../carmen-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (60 เคส, ตรวจซ้ำกับฟอร์มที่ออกแบบใหม่ 2026-09-20 — ครอบคลุม Commit, Void ต้องอยู่ในโหมด Edit, Delete ในโหมด view, filter สถานะ) และ user story ที่ generate `docs/user-stories/730-inventory-adjustment.md` (32) `tests/031-adjustment-type.spec.ts` ครอบคลุมเฉพาะ master ของ reason code
+> **Executable coverage (2026-10-27):** spec แบบ opt-in หนึ่งรายการในชุด movement `tests/730-inventory-adjustment-doc-flow.spec.ts` (`bun run test:movement`; TC-IADJ-70xxxx Stock In / 71xxxx Stock Out บน CARMEN-AVG) ไล่ตั้งแต่เปิดฟอร์ม → draft → view → edit → delete → สร้างใหม่ + Commit; `tests/92x-period-close-*` ก็สร้างและ commit adjustment เป็น fixture ของสถานการณ์เช่นกัน แคตตาล็อก manual `../carmen-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (60 เคส, ตรวจซ้ำกับฟอร์มที่ออกแบบใหม่ 2026-09-20 — ครอบคลุม Commit, Void ต้องอยู่ในโหมด Edit, Delete ในโหมด view, filter สถานะ) และ user story ที่ generate `docs/user-stories/730-inventory-adjustment.md` (32) `tests/031-adjustment-type.spec.ts` ครอบคลุมเฉพาะ master ของ reason code
 
 ## 1. ภาพรวม
 
@@ -54,7 +54,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 | `../carmen-frontend-e2e/tests/031-adjustment-type.spec.ts` | CRUD master data ของ reason code (`tb_adjustment_type`) เท่านั้น |
 | `../carmen-frontend-e2e/tests/900-period-end.spec.ts` + `docs/test-cases/gaps/900-period-end-gap.md` | การ์ดและลิงก์ SI/SO บน review ของ period-end (`TC-PE-320102`), SI/SO ที่เป็น draft เป็นตัว block การเริ่มนับ |
 
-ช่องว่าง: ไม่มี automated test สำหรับ Save/Commit/Void, guard วันที่, การตรวจ on-hand ล่วงหน้า หรือแผง stock-movements
+ช่องว่าง: ไม่มี automated test สำหรับ Void, guard วันที่ (รวมลำดับการรับของ FIFO และ stock-in แบบ average ที่ถูกพัก), การตรวจความพร้อมของสต๊อกตามวันที่, แถวที่ติดป้าย EOP ในหน้ารายการ หรือแผง stock-movements; บั๊กสองรายการถูกตรึงด้วย `test.fail()` ใน spec 730 (TC-IADJ-710003, TC-IADJ-710004)
 
 ## 6. แหล่งอ้างอิง
 

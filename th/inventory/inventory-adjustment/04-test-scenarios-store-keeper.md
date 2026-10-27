@@ -2,7 +2,7 @@
 title: การปรับสต๊อก (Inventory Adjustment) — Test Scenarios — Store Keeper
 description: Test cases สำหรับการกรอกเอกสาร Stock-In / Stock-Out — save draft, commit เพื่อ post พร้อม guard วันที่ในงวดและ on-hand
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: inventory-adjustment, test-scenarios, store-keeper, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -19,9 +19,9 @@ dateCreated: 2026-05-15T13:00:00.000Z
 
 | # | Scenario | Pre-condition | ขั้นตอน | Expected |
 | - | -------- | -------------- | ------- | -------- |
-| SK-HP-01 | Stock-In draft แล้ว commit (BU แบบ Average) | สินค้า `P-1` ที่ `LOC-A` ต้นทุนปัจจุบัน `฿10.00`; `si_date` อยู่ในงวดปัจจุบัน | 1. Add Stock-In 2. Reason (`stock_in`), ตำแหน่ง `LOC-A` 3. เพิ่มบรรทัด `P-1`, `qty = 10`; `cost_per_unit` เติมเริ่มต้น `฿10.00` เปลี่ยนเป็น `฿12.00` 4. **Save** 5. **Commit** → ยืนยัน | ขั้นที่ 4: `POST /stock-ins` → `draft`, `si_no` ออกเลขจาก `si_date`, ไม่มี ledger rows ขั้นที่ 5: `PATCH /stock-ins/{id}/commit` → `completed`; หนึ่ง `tb_inventory_transaction` (`stock_in`), layer ขาเข้า `in_qty 10 @ ฿12.00`, lot `{code ของ LOC-A}{YYMM}{seq4}`, `average_cost_per_unit` ถูก restamp; on-hand +10 |
+| SK-HP-01 | Stock-In draft แล้ว commit (BU แบบ Average) | สินค้า `P-1` ที่ `LOC-A` ต้นทุนปัจจุบัน `฿10.00`; `si_date` อยู่ในงวดปัจจุบัน | 1. Add Stock-In 2. Reason (`stock_in`), ตำแหน่ง `LOC-A` 3. เพิ่มบรรทัด `P-1`, `qty = 10`; `cost_per_unit` เติมเริ่มต้นจากค่า `si.cost-from` ของ BU (สมมติว่าได้ `฿10.00` ในที่นี้) เปลี่ยนเป็น `฿12.00` 4. **Save** 5. **Commit** → ยืนยัน | ขั้นที่ 4: `POST /stock-ins` → `draft`, `si_no` ออกเลขจาก `si_date`, ไม่มี ledger rows ขั้นที่ 5: `PATCH /stock-ins/{id}/commit` → `completed`; หนึ่ง `tb_inventory_transaction` (`stock_in`), layer ขาเข้า `in_qty 10 @ ฿12.00`, lot `{LOC-A code}{YYMM}{seq4}`, `average_cost_per_unit` ถูก restamp; on-hand +10 |
 | SK-HP-02 | Commit ตรงจากฟอร์มใหม่ | เหมือน SK-HP-01 แต่กด **Commit** โดยไม่ save | Frontend `POST` draft แล้ว commit ด้วย `doc_version` ที่คืนมา; สถานะปลายทางเหมือน SK-HP-01 |
-| SK-HP-03 | Stock-Out สำหรับของแตก สินค้า FIFO | BU แบบ FIFO; `P-2` ที่ `LOC-A`: 5 @ `฿10.00` (`lot_seq_no 1`), 3 @ `฿12.00` (`lot_seq_no 2`); `so_date` อยู่ในงวดปัจจุบัน | 1. Add Stock-Out, reason (`stock_out`), `LOC-A` 2. บรรทัด `P-2`, `qty = 6` (ไม่มีคอลัมน์ต้นทุน) 3. Save 4. Commit | `createFifoConsumption` บริโภค 5 จาก lot 1 และ 1 จาก lot 2 — layer ขาออกสองแถวที่ต้นทุนของ lot นั้น ๆ; `tb_stock_out_detail.cost_per_unit`/`total_cost` คงเป็น `0`; on-hand 8 → 2 |
+| SK-HP-03 | Stock-Out สำหรับของแตก สินค้า FIFO | BU แบบ FIFO; `P-2` ที่ `LOC-A`: 5 @ `฿10.00` (`lot_seq_no 1`), 3 @ `฿12.00` (`lot_seq_no 2`); `so_date` อยู่ในงวดปัจจุบัน | 1. Add Stock-Out, reason (`stock_out`), `LOC-A` 2. บรรทัด `P-2`, `qty = 6` (ไม่มีคอลัมน์ต้นทุน) 3. Save 4. Commit | `createFifoConsumption` บริโภค 5 จาก lot 1 และ 1 จาก lot 2 — layer ขาออกสองแถวที่ต้นทุนของ lot นั้น ๆ; `tb_stock_out_detail.cost_per_unit`/`total_cost` ถูก stamp ด้วยต้นทุนที่ post แล้ว (฿10.00 × 5 + ฿12.00 × 1 = ฿62.00 รวม); on-hand 8 → 2 |
 | SK-HP-04 | เอกสารหลายบรรทัด | สองสินค้าที่ location เดียวกัน | เพิ่มทั้งสองบรรทัด, Save, Commit | หนึ่ง header, สองแถว detail, หนึ่ง `tb_inventory_transaction` ต่อบรรทัดตอน commit |
 | SK-HP-05 | ปริมาณเศษส่วน | สินค้าที่มีหน่วยแบบเศษส่วน (กก.) | บรรทัด `qty = 1.5` | ยอมรับ (`qty ≥ 0`, `Decimal(20,5)`) |
 | SK-HP-06 | แก้ไข draft | draft จาก SK-HP-01 ก่อนขั้นที่ 5 | เปิด → **Edit** → เปลี่ยน qty → **Save** | `PATCH /stock-ins/{id}/save`; `doc_version` เพิ่มขึ้น; ยังเป็น `draft`; ไม่มี ledger rows |
@@ -35,7 +35,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 | SK-VAL-03 | ไม่มีบรรทัดสินค้า | Save โดยไม่มีบรรทัดเลย | Client (`atLeastOneItem`); API โดยตรง → 400 `Stock in detail items are required` |
 | SK-VAL-04 | Product id ที่ไม่รู้จัก | API โดยตรงด้วย `product_id` ที่ไม่รู้จัก | Enrichment ปฏิเสธบรรทัด / `PRODUCT_NOT_FOUND` บน endpoint ของ detail |
 | SK-VAL-05 | ต้นทุนติดลบบน Stock-In | `cost_per_unit = -1` | Client ปฏิเสธ (`minZero`) |
-| SK-VAL-06 | สต๊อกไม่พอบน Stock-Out | qty ที่ขอ > on-hand ที่ location (วิธีคิดต้นทุนใดก็ตาม) | **Commit** → 400 `Insufficient stock for {product} at {location}: on hand {x}, requested {y}` (`STOCK_OUT_INSUFFICIENT_STOCK`); draft ยังอยู่ ไม่มีอะไร post |
+| SK-VAL-06 | สต๊อกไม่พอบน Stock-Out | qty ที่ขอ > on-hand ที่ location (วิธีคิดต้นทุนใดก็ตาม) | **Commit** (และ **Save** draft ด้วย) → 400 `Insufficient stock for {product} at {location} on {date}: {x} available, requested {y} (lowest balance from {date} on falls on {day})` (`STOCK_OUT_INSUFFICIENT_STOCK`); ไม่มีอะไร post |
 | SK-VAL-07 | Stock-in ลงวันที่ในงวดที่ปิดแล้ว | `si_date` ก่อนงวดเปิดที่เร็วสุด | Client `dateOutsidePeriod`; API โดยตรง → 422 `The stock-in date does not fall inside any open period` ตอน create **และ** ตอน commit |
 | SK-VAL-08 | Stock-out ลงวันที่นอกงวดปัจจุบัน | `so_date` ในงวดก่อนหน้า (แม้ยังเปิดอยู่) | 422 `Stock-outs can only be dated inside the current period ({period}: {start} to {end})` ตอน create และ commit; 422 `No inventory period is open…` เมื่อไม่มีงวดเปิดเลย |
 | SK-VAL-09 | คำอธิบายว่าง | Save โดย `description` ว่าง | ยอมรับ — optional |

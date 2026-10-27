@@ -2,7 +2,7 @@
 title: รายการราคาผู้ขาย (Vendor Pricelist) — User Flow — Vendor
 description: Flow ของ Vendor ภายในโมดูล vendor-pricelist — external party ที่มีการเข้าถึง portal-token (ไม่มี Carmen Blue system login); เปิด ตั้งราคา save import submit; ลิงก์หมดอายุที่ end date ของ RFQ
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: vendor-pricelist, user-flow, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -12,6 +12,8 @@ dateCreated: 2026-05-15T15:00:00.000Z
 
 > **At a Glance**
 > **Persona:** Vendor (external — portal ที่ authenticate ด้วย token, ไม่มี Carmen Blue login) &nbsp;·&nbsp; **โมดูล:** [vendor-pricelist](/th/inventory/vendor-pricelist)
+> **Re-sync 2026-10-27:** portal มีตัวสลับภาษาไทย / อังกฤษ (ส่วนหัวและหน้า expired), กรอกราคา **ก่อนภาษี** พร้อม Tax Rate แบบ read-only และ Total ที่คำนวณ และ Excel import จับคู่แถวด้วย Row ID ที่ซ่อนอยู่
+>
 > **Re-sync 2026-09-22:** gap เรื่อง Save/Submit ที่รายงานเมื่อ 2026-07-16 **ปิดแล้ว** — `PATCH /api/pricelist-external/:url_token` และ `POST …/:url_token/submit` มีอยู่จริง (`pricelist-external.controller.ts`), ลิงก์หมดอายุที่ `end_date` ของ RFQ (`UrlTokenGuard`) และทุก action ของ portal ถูก log ลง `tb_activity`
 
 ## 1. Role ในโมดูลนี้
@@ -26,7 +28,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 
 1. **เปิด link** Frontend เรียก `POST /api/external/api/check-pricelist/:url_token` (`usePriceListExternal`) หลัง `UrlTokenGuard` `CheckPriceListService.checkPriceList()` lookup แถว invitation; ถ้ายังไม่มี pricelist **จะสร้างหนึ่งตัว** — `tb_pricelist` ที่ `status = draft`, `pricelist_no` จาก running code, `effective_from/to` = `start_date`/`end_date` ของ RFQ (fallback วันนี้ + `validity_period` ของ template), `url_token`, `submission_method = online` บวกแถว `tb_pricelist_detail` ราคาศูนย์หนึ่งแถวต่อสินค้าของ template × order unit / MOQ tier (dedupe ด้วย `unit::moq`) แต่ละแถวเติม tax profile ของสินค้าไว้ล่วงหน้า — และ link ไปยังแถว invitation (`pricelist_id`, `pricelist_no`) activity `create` ถูก log การเปิดครั้งถัดไป return pricelist ที่มีอยู่ token ที่หมดอายุหรือไม่รู้จักได้ 401 และหน้า render `price-list-external-expired.tsx` (*This link has expired … Contact the hotel that sent it*)
 2. **เลือกตัวเลือกต่อบรรทัด** หน้าโหลด tax profile ของ BU (`GET …/check-pricelist/:url_token/tax-profiles`) และ order unit ที่อนุญาตของแต่ละสินค้า (`GET …/units` มี flag default) เพื่อให้ vendor เลือก tax profile และ unit ต่อบรรทัดในโหมด edit
-3. **ตั้งราคาสินค้า** ตาราง (`price-list-external-product-table.tsx` พร้อม sub-table MOQ-tier ต่อสินค้า) ให้ vendor พิมพ์ `price_without_tax` / `price`, lead time และ note ต่อ tier หรือเพิ่มบรรทัด `(unit, MOQ)` อีกบรรทัด dialog **Import** (`price-list-external-import-dialog.tsx`) รับ sheet Excel ที่ parse ฝั่ง client (`price-list-external-excel.ts`) เข้าสู่ค่าฟอร์มเดียวกัน
+3. **ตั้งราคาสินค้า** ตาราง (`price-list-external-product-table.tsx` พร้อม sub-table MOQ-tier ต่อสินค้า) ให้ vendor พิมพ์ `price` ก่อนภาษี, lead time และ note ต่อ tier (คอลัมน์: Price · Tax Profile · Tax Rate — read-only จาก profile ที่เลือก · Tax Amount · Total; VAT ถูกบวกเพิ่ม, `price_without_tax` ถูกส่งเท่ากับ `price`) หรือเพิ่มบรรทัด `(unit, MOQ)` อีกบรรทัด dialog **Import** (`price-list-external-import-dialog.tsx`) รับ sheet Excel ที่ parse ฝั่ง client (`price-list-external-excel.ts`) เข้าสู่ค่าฟอร์มเดียวกัน sheet ที่ export มีคอลัมน์สุดท้ายที่ซ่อนชื่อ **Row ID**; import จับคู่ Row ID + รหัสสินค้าก่อน จากนั้น No. + รหัสสินค้า แล้วจึงรหัสสินค้าอย่างเดียวเฉพาะเมื่อรหัสนั้นปรากฏในแถวเดียว — รหัสซ้ำที่ไม่มี key ที่ใช้ได้จะถูกข้ามแทนที่จะเดา (ดังนั้นสินค้าเดียวกันที่สอง MOQ tier จะไม่เขียนทับตัวเองอีก) หัวคอลัมน์ใน sheet คงเป็นภาษาอังกฤษเพราะ import จับคู่ด้วยหัวเหล่านั้น แม้หน้าจะเป็นภาษาไทย ตัวสลับภาษาในส่วนหัวหน้า (`LocaleToggle`) สลับทั้ง portal (ข้อความ `priceListPortal`)
 4. **Save** `PATCH /api/external/api/pricelist-external/:url_token` พร้อม `{ note, pricelist_detail: { update: [...], add: [...] } }` (`useUpdatePriceListExternal`) backend ต้องการให้ pricelist ยังเป็น `draft` เขียนบรรทัด และ log `vendor.pricelist.draft_saved` พร้อม snapshot ก่อน/หลัง pricelist ยังคง `draft` ดังนั้น vendor กลับมาทำต่อได้จนกว่า link จะหมดอายุ
 5. **Submit** `POST /api/external/api/pricelist-external/:url_token/submit` (`useSubmitPriceListExternal`) ต้อง `status = draft`; ลบทุกบรรทัดที่ `price IS NULL OR price <= 0` (ศูนย์คือ "ไม่เสนอราคา" ไม่ใช่ของฟรี — `price-list.zero-price.ts`), ตั้ง `status = submitted` และ `submitted_at = now()`, log activity `submit` หน้าสลับเป็นอ่านอย่างเดียว (`data.status !== "submitted"` gate control การแก้ไข); แถว RFQ ของ Purchaser ตอนนี้แสดง `has_submitted = true` พร้อมเลขที่และสถานะของ pricelist
 

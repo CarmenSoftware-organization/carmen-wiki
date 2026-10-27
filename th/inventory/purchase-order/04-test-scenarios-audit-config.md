@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — Test Scenarios — Audit & Config
 description: เหตุผลที่ไม่มี audit-workspace เฉพาะหรือ test scenarios ด้าน configuration เฉพาะ PO ในซอร์สโค้ดปัจจุบัน และสิ่งที่ยืนยันได้แทน
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: purchase-order, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z

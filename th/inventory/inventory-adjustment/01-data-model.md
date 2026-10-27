@@ -2,7 +2,7 @@
 title: การปรับสต๊อก (Inventory Adjustment) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูล inventory-adjustment
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: inventory-adjustment, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -13,12 +13,14 @@ dateCreated: 2026-05-15T13:00:00.000Z
 > **At a Glance**
 > **ตาราง:** `tb_adjustment_type` (ตัวจำแนก reason) &nbsp;·&nbsp; `tb_stock_in` / `tb_stock_in_detail` (ขาเข้า) &nbsp;·&nbsp; `tb_stock_out` / `tb_stock_out_detail` (ขาออก) &nbsp;·&nbsp; ตาราง `_comment` แยกตามระดับ
 > **กลุ่มผู้ใช้:** Developer / Auditor (เอกสารอ้างอิงสำหรับ dev)
-> **FK สำคัญ:** `stock_in_detail.inventory_transaction_id` / `stock_out_detail.inventory_transaction_id → tb_inventory_transaction` (เติมตอน post); detail `→ tb_product`; header `→ tb_location` / `tb_adjustment_type` ลิงก์ variance rollup จาก [physical-count](/th/inventory/physical-count) / [spot-check](/th/inventory/spot-check) เป็น JSON เท่านั้น (`info.countId`) ไม่มี FK
-> **รูปแบบ audit:** มาตรฐาน `created_*` / `updated_*` / `deleted_*`; **สองต้นเอกสารคู่ขนาน ไม่มี parent `tb_inventory_adjustment` ร่วม**
+> **FK สำคัญ:** `stock_in_detail.inventory_transaction_id` / `stock_out_detail.inventory_transaction_id → tb_inventory_transaction` (เติมตอน post); detail `→ tb_product`; header `→ tb_location` / `tb_adjustment_type` ไม่มี FK หรือลิงก์ JSON จากเอกสาร rollup ของ [physical-count](/th/inventory/physical-count) กลับไปยังการนับ (spot-check ไม่เขียนอะไรเลย)
+> **รูปแบบ audit:** มาตรฐาน `created_*` / `updated_*` / `deleted_*`; **สองต้นเอกสารคู่ขนาน ไม่มี parent `tb_inventory_adjustment` ร่วม** — ทิศทางถูกกำกับโดย `tb_adjustment_type.type ∈ {stock_in, stock_out}`
 
 > **แหล่งความจริง:** Prisma schema ของ backend อ่านไฟล์เหล่านี้ก่อนเสมอเมื่อเขียนหรืออัปเดตหน้านี้:
 > - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma`
+>
+> ไฟล์ `generated/client/schema.prisma` ภายในแต่ละ package เป็นสำเนาที่ generate อัตโนมัติและไม่ใช่แหล่งอ้างอิงที่เชื่อถือได้
 
 ## 1. ภาพรวม
 
@@ -26,13 +28,13 @@ dateCreated: 2026-05-15T13:00:00.000Z
 
 ทั้ง `tb_stock_in` และ `tb_stock_out` ดำเนินตามโครงสร้างหลักของเอกสาร — header (`si_no` / `so_no`, `si_date` / `so_date`, location, adjustment-type, `doc_status`, คอลัมน์ workflow, comments) บวกแถวรายละเอียดลูก (ต่อ product พร้อม `qty`, `cost_per_unit`, `total_cost`, `expired_at` ฝั่ง stock-in และ back-reference `inventory_transaction_id` ไปยัง ledger ของ [inventory](/th/inventory/inventory)) **ตั้งแต่ 2026-07-30 (`281a16399`) `StockInService.create()` / `StockOutService.create()` เขียน `doc_status = draft`** และไม่แตะ ledger เลย; `commit()` (`PATCH /{id}/commit`) คือ posting event — มันเขียนแถว `tb_inventory_transaction` ที่มี `inventory_doc_type = stock_in` / `stock_out` ต่อบรรทัด ประทับ `inventory_transaction_id` บน detail และ flip header เป็น `completed` `voidStockIn` / `voidStockOut` ตั้ง `voided` (บวก `deleted_at`); `in_progress` และ `cancelled` อยู่ใน `enum_doc_status` ที่ใช้ร่วมกัน แต่โมดูลนี้ไม่เคยเขียน ข้อมูล lot อยู่ที่ฝั่ง inventory transaction (`current_lot_no` / `from_lot_no` บน `tb_inventory_transaction_detail`, `lot_no` / `lot_index` บน `tb_inventory_transaction_cost_layer` สร้างโดยระบบในรูปแบบ `{location_code}{YYMM}{seq4}` จาก `buildLotNo`) **ไม่ใช่** บนแถว detail ของ stock-in / stock-out และไม่มี UI เลือก lot ใด ๆ ใน frontend ของโมดูลนี้
 
-โมดูลนี้อยู่ **ระหว่างพื้นที่ปฏิบัติการและ ledger ของ inventory** เมธอด `submit()` ของ [physical-count](/th/inventory/physical-count) สร้างแถว `tb_stock_in` (ส่วนเกิน) / `tb_stock_out` (ขาด) โดยตรงที่ `doc_status = completed` โดยไม่ตั้งค่า `adjustment_type_id` — และ**ไม่เคยเรียก ledger** (ยืนยัน 2026-09-22: `grep inventoryTransactionService physical-count/*.ts` → ไม่พบ) แถวเหล่านั้นจึงเป็นบันทึก audit เท่านั้น write-off ของ [wastage-reporting](/th/inventory/inventory-adjustment/wastage-reporting) สร้าง `tb_stock_out` ต่อ location และ commit ผ่าน `executeAdjustmentOut` ในการเรียกเดียวกัน ทุก commit แบบ manual เรียก `InventoryTransactionService` ตัวเดียวกัน (`executeAdjustmentIn` / `executeAdjustmentOut`) กับที่ GRN, SR และ period-end ใช้ ป้อน [costing](/th/inventory/costing) สำหรับการสร้าง FIFO layer / refresh weighted-average ไม่มีโค้ด GL/journal ในโมดูลนี้ — แกน GL ของเดือน 2026-09 (`tb_gl_jv*`) ไม่มี hook จาก stock-in / stock-out
+โมดูลนี้อยู่ **ระหว่างพื้นที่ปฏิบัติการและ ledger ของ inventory** เมธอด `submit()` ของ [physical-count](/th/inventory/physical-count) สร้างแถว `tb_stock_in` (ส่วนเกิน) / `tb_stock_out` (ขาด) โดยตรงที่ `doc_status = completed` พร้อม `adjustment_type_id` แบบ `eop_in` / `eop_out` ของ BU — และตั้งแต่โค้ดรอบ 2026-10 มัน**post ผ่าน `executeAdjustmentIn/Out`** ใน transaction เดียวกัน (ตรวจซ้ำ 2026-10-27; ผลสรุป "ไม่เคยเรียก ledger" ของ 2026-09-22 ใช้ไม่ได้อีกแล้ว) แถวเหล่านั้นจึงมี `inventory_transaction_id` เหมือนเอกสาร manual ที่ commit แล้ว POS sale import เป็นผู้สร้าง `tb_stock_out` รายที่สาม (type `SALE`, ตั้ง `sales_consumption_id`) write-off ของ [wastage-reporting](/th/inventory/inventory-adjustment/wastage-reporting) สร้าง `tb_stock_out` ต่อ location และ commit ผ่าน `executeAdjustmentOut` ในการเรียกเดียวกัน ทุก commit แบบ manual เรียก `InventoryTransactionService` ตัวเดียวกัน (`executeAdjustmentIn` / `executeAdjustmentOut`) กับที่ GRN, SR และ period-end ใช้ ป้อน [costing](/th/inventory/costing) สำหรับการสร้าง FIFO layer / refresh weighted-average ไม่มีโค้ด GL/journal ในโมดูลนี้ — แกน GL ของเดือน 2026-09 (`tb_gl_jv*`) ไม่มี hook จาก stock-in / stock-out
 
 ## 2. เอนทิตี
 
 ### 2.1 tb_adjustment_type
 
-**ตัวจำแนก reason-code** สำหรับทั้งเอกสาร `tb_stock_in` และ `tb_stock_out` แถว reason-code มี `code` (เช่น `BREAKAGE`, `FOUND_STOCK`), `name` ที่อ่านได้, ทิศทางผ่าน `enum_adjustment_type` (สี่ค่า — ดู Section 4) และ `description` ที่เป็นข้อความอิสระ Reason code ถูกดูแลบนหน้าจอ master data แยกต่างหาก (`/config/adjustment-type`, [master-data/adjustment-type](/th/inventory/master-data/adjustment-type)) และตอนสร้างเอกสาร adjustment มีหน้าที่เพียงกรองรายการ reason ตามทิศทางฝั่ง frontend (`ADJUSTMENT_TYPE.STOCK_IN` / `STOCK_OUT` ใน `types/adjustment-type.ts`) ไม่มีฟิลด์บัญชี GL, flag บังคับแนบเอกสาร หรือ flag ตรวจสอบคุณภาพบนตารางนี้ และไม่มีโค้ดใดในโมดูลนี้อ่านหรือเขียน key ที่รู้จักบน `info`/`dimension` เลย
+**ตัวจำแนก reason-code** สำหรับทั้งเอกสาร `tb_stock_in` และ `tb_stock_out` แถว reason-code มี `code` (เช่น `BREAKAGE`, `FOUND_STOCK`), `name` ที่อ่านได้, ทิศทางที่ถูกจำกัดผ่าน `enum_adjustment_type` (สี่ค่า — ดูหัวข้อ 4) และ `description` แบบข้อความอิสระ Reason code ดูแลบนหน้าจอ master-data แยกต่างหาก (`/config/adjustment-type`, [master-data/adjustment-type](/th/inventory/master-data/adjustment-type)) และตอนสร้างเอกสาร adjustment ใช้เพียงขับการกรองรายการ reason ตามทิศทางฝั่ง frontend (`ADJUSTMENT_TYPE.STOCK_IN` / `STOCK_OUT` ใน `types/adjustment-type.ts`) ตารางนี้ตอนนี้มี `chart_of_accounts_id` ที่ nullable (contra GL account, ไม่มี Prisma relation; DTO ของ create/update รับค่านี้) แต่ไม่มีโค้ด stock-in/out ใดอ่านมัน; ไม่มี flag บังคับแนบเอกสารหรือ flag ตรวจสอบคุณภาพ — `info` และ `dimension` มีอยู่ใน schema แต่ไม่มีโค้ดในโมดูลนี้อ่านหรือเขียน key ที่รู้จักบนทั้งสอง
 
 | ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | -------- |
@@ -63,8 +65,8 @@ dateCreated: 2026-05-15T13:00:00.000Z
 | ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | -------- |
 | `id` | `String @db.Uuid` | No | Primary key |
-| `si_date` | `DateTime @db.Timestamptz(6)` | Yes | วันที่เอกสาร ตรวจสอบฝั่ง client เทียบกับช่วงงวดปัจจุบัน (Zod, `ia-form-schema.ts`) **และ**ฝั่ง server ตอน create และ commit — ต้องอยู่ใน `tb_inventory_period` ที่ `open`/`locked` (`assertDateInOpenPeriod`, `STOCK_IN_DATE_OUTSIDE_OPEN_PERIOD`, 422) ขับการออกเลข `si_no` และ `at_period` ของ ledger |
-| `si_no` | `String @db.VarChar` | Yes | เลขที่ stock-in ที่อ่านได้; unique ภายใน `deleted_at` สร้างตอน create ผ่าน running-code service จาก `si_date` (`generateSINo`) |
+| `si_date` | `DateTime @db.Timestamptz(6)` | Yes | วันที่เอกสาร ตรวจสอบฝั่ง client เทียบกับช่วงงวดปัจจุบัน (Zod, `ia-form-schema.ts`) **และ**ฝั่ง server ตอน create และ commit — ต้องอยู่ใน `tb_inventory_period` ที่ `open`/`locked` (`assertDateInOpenPeriod`, `STOCK_IN_DATE_OUTSIDE_OPEN_PERIOD`, 422); commit ปฏิเสธวันที่ null (`STOCK_IN_DATE_REQUIRED`) เมื่อ create ไม่ได้รับวันที่ จะตั้งค่าเริ่มต้นภายในงวดที่ active ภายใต้ FIFO stock-in ลงวันที่ก่อนการรับล่าสุดที่ post แล้วของสินค้าเดียวกันที่ location เดียวกันในงวดไม่ได้ (`STOCK_IN_DATE_BEFORE_LATEST_RECEIPT`, 422, ตรวจตอน create, save และ commit) ขับการออกเลข `si_no` และ `at_period` ของ ledger |
+| `si_no` | `String @db.VarChar` | Yes | เลขที่ stock-in ที่อ่านได้; unique ภายใน `deleted_at` จองตอน create จาก `si_date` โดย `reserveStockDocumentNumbers` (type `STOCK-IN`) ภายใน transaction ที่สร้างเอกสาร |
 | `description` | `String @db.VarChar` | Yes | คำอธิบายข้อความอิสระระดับ header; optional (สูงสุด 256 ตัวอักษรฝั่ง client) ไม่บังคับ |
 | `adjustment_type_id` | `String @db.Uuid` | Yes | FK ไป `tb_adjustment_type.id` (`onDelete: NoAction`) picker กรองเหลือ `type = stock_in` ฝั่ง client เท่านั้น; backend ตรวจสอบเพียงว่าแถวที่อ้างอิงมีอยู่จริง ไม่ตรวจ `type` |
 | `adjustment_type_code` | `String @db.VarChar` | Yes | Snapshot ของ reason code ที่เลือก |
@@ -115,7 +117,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 | `product_local_name` | `String @db.VarChar` | Yes | Snapshot แบบ localised |
 | `product_sku` | `String @db.VarChar` | Yes | Snapshot ของ SKU |
 | `qty` | `Decimal @db.Decimal(20, 5)` | Yes | ปริมาณขาเข้าใน UoM base Zod ฝั่ง client บังคับ `qty >= 0` (ผ่อนจาก `>= 1`; รับปริมาณเศษส่วน); default `0` |
-| `cost_per_unit` | `Decimal @db.Decimal(20, 5)` | Yes | ต้นทุนต่อหน่วยใน base currency ผู้ใช้กรอกบนบรรทัด Stock-In (เติมเริ่มต้นจากค่าเฉลี่ยปัจจุบันของ location เป็นข้อเสนอ แก้ไขได้); default `0` ส่งตรงไปยัง `executeAdjustmentIn` เป็นต้นทุนของ layer ใหม่ |
+| `cost_per_unit` | `Decimal @db.Decimal(20, 5)` | Yes | ต้นทุนต่อหน่วยใน base currency ผู้ใช้กรอกบนบรรทัด Stock-In (เติมเริ่มต้นจากค่า `si.cost-from` ของ BU เป็นค่าแนะนำ, แก้ไขได้); default `0` ส่งตรงไป `executeAdjustmentIn` เป็นต้นทุนของ layer ใหม่ |
 | `total_cost` | `Decimal @db.Decimal(20, 5)` | Yes | `qty × cost_per_unit` คำนวณฝั่ง client; default `0` |
 | `expired_at` | `DateTime @db.Timestamptz(6)` | Yes | วันหมดอายุของบรรทัด (migration `20260731120000_add_inflow_price_expiry`; DTO/swagger ตั้งแต่ 2026-08-03) รับตอน create, save และ endpoint ของ detail และคืนโดย `GET /details`; ฟอร์มที่ ship ไม่มีช่องกรอก |
 | `note` | `String @db.VarChar` | Yes | บันทึกแบบข้อความอิสระ |
@@ -142,7 +144,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 | ----- | ----------- | -------- | -------- |
 | `id` | `String @db.Uuid` | No | Primary key |
 | `so_date` | `DateTime @db.Timestamptz(6)` | Yes | วันที่เอกสาร |
-| `so_no` | `String @db.VarChar` | Yes | เลขที่ stock-out ที่อ่านได้; unique ภายใน `deleted_at` สร้างผ่าน running-code service (รูปแบบ `STOCK-OUT`) |
+| `so_no` | `String @db.VarChar` | Yes | เลขที่ stock-out ที่อ่านได้; unique ภายใน `deleted_at` จองตอน create จาก `so_date` โดย `reserveStockDocumentNumbers` (type `STOCK-OUT`) ภายใน transaction ที่สร้างเอกสาร |
 | `description` | `String @db.VarChar` | Yes | คำอธิบายระดับ header; optional |
 | `adjustment_type_id` | `String @db.Uuid` | Yes | FK ไป `tb_adjustment_type.id` (`onDelete: NoAction`) Picker กรองเหลือ `type = stock_out` ฝั่ง client เท่านั้น |
 | `adjustment_type_code` | `String @db.VarChar` | Yes | Snapshot |
@@ -177,7 +179,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 
 ### 2.5 tb_stock_out_detail
 
-**บรรทัด detail ต่อ product บนเอกสาร stock-out** รูปทรงคล้าย `tb_stock_in_detail` แต่ `cost_per_unit`/`total_cost` **ไม่เคยถูกเขียนโดย `create()` เลย** — การ insert ตั้งค่าเพียง `product_id`, `qty`, `description`, `note`, `info`, `dimension` ทั้งสองคอลัมน์ต้นทุนคงเป็นค่า default `0` ของ schema สำหรับทุกแถว stock-out detail Grid รายการซ่อนคอลัมน์ `cost_per_unit` ทั้งหมดสำหรับ Stock-Out (`ia-item-table.tsx` กรองออกจากคอลัมน์ที่แสดง) ต้นทุนจริงถูกแก้ไขอัตโนมัติโดย ledger ในเวลาที่เขียน — FIFO บริโภคจาก layer เก่าสุดก่อน, Average ใช้ค่าเฉลี่ยปัจจุบันของ BU — และอยู่เฉพาะบน `tb_inventory_transaction_detail`/`tb_inventory_transaction_cost_layer` ไม่ใช่ตารางนี้
+**บรรทัด detail ต่อ product บนเอกสาร stock-out** รูปทรงคล้าย `tb_stock_in_detail` แต่ `cost_per_unit`/`total_cost` **ไม่ถูกตั้งค่าโดย `create()`** (คงเป็น `0` ขณะเอกสารเป็น `draft`) Grid ซ่อนคอลัมน์ `cost_per_unit` สำหรับ Stock-Out ตอนแก้ไข ตอน **commit** ledger แก้ต้นทุนจริง — FIFO บริโภคจาก layer เก่าสุดก่อน, Average ใช้ค่าเฉลี่ยปัจจุบัน (ต่อ location บน `average_per_location`) — และ `getPostedCost` คัดลอก `cost_per_unit` / `total_cost` ที่ post แล้วกลับลงแถว detail พร้อม `inventory_transaction_id` (เช่นเดียวกับ wastage write-off, stock-out จาก POS sale และบรรทัดขาดของการนับ)
 
 | ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | -------- |
@@ -193,8 +195,8 @@ dateCreated: 2026-05-15T13:00:00.000Z
 | `product_local_name` | `String @db.VarChar` | Yes | Snapshot แบบ localised |
 | `product_sku` | `String @db.VarChar` | Yes | Snapshot ของ SKU |
 | `qty` | `Decimal @db.Decimal(20, 5)` | Yes | ปริมาณขาออก กรอกบวกบนฟอร์ม; default `0` Zod ฝั่ง client บังคับ `qty >= 0` (ผ่อนจาก `>= 1`) ตอน commit service ตรวจ Σ qty ต่อสินค้าเทียบกับ on-hand ล่วงหน้า (`STOCK_OUT_INSUFFICIENT_STOCK`) |
-| `cost_per_unit` | `Decimal @db.Decimal(20, 5)` | Yes | **เป็น `0` เสมอ** บนตารางนี้ — `create()` ไม่เคยตั้งค่าให้ stock-out (ดูหมายเหตุด้านบน) |
-| `total_cost` | `Decimal @db.Decimal(20, 5)` | Yes | **เป็น `0` เสมอ** บนตารางนี้ด้วยเหตุผลเดียวกัน; frontend คำนวณ preview ฝั่ง client (`useProductLastReceiving`) แต่ไม่เคย persist ที่นี่ |
+| `cost_per_unit` | `Decimal @db.Decimal(20, 5)` | Yes | `0` บน draft; ตั้งเป็นต้นทุนต่อหน่วยที่ **post แล้ว** (ค่าสัมบูรณ์) ตอน commit (ดูหมายเหตุด้านบน) |
+| `total_cost` | `Decimal @db.Decimal(20, 5)` | Yes | `0` บน draft; ตั้งเป็นต้นทุนรวมที่ **post แล้ว** (ค่าสัมบูรณ์) ตอน commit เช่นเดียวกับ `cost_per_unit` preview ฝั่ง client ของ frontend (`useProductLastReceiving`) ไม่เคย persist |
 | `note` | `String @db.VarChar` | Yes | ข้อความอิสระ |
 | `info` | `Json @db.JsonB` | Yes | Extension bag; default `{}` ส่งผ่านโดยไม่แก้ไข ไม่มี key ที่รู้จัก (ไม่มีฟิลด์ lot-override — โมดูลนี้ไม่มี UI สำหรับ lot) |
 | `dimension` | `Json @db.JsonB` | Yes | Cost-dimension array; default `[]` ส่งผ่านโดยไม่แก้ไข |
@@ -228,7 +230,7 @@ tb_adjustment_type  (master ของ reason-code — ทิศทาง stock_i
     │
     └─1──*──► tb_stock_out  (เอกสารขาออก — draft ตอนสร้าง, completed ตอน commit, voided โดย void)
                 │
-                ├─1──*──► tb_stock_out_detail   (บรรทัดต่อ product, cost_per_unit/total_cost เป็น 0 เสมอ)
+                ├─1──*──► tb_stock_out_detail   (บรรทัดต่อ product, cost_per_unit/total_cost เป็น 0 จน commit ประทับต้นทุนที่ post)
                 │           │
                 │           ├──► tb_inventory_transaction (inventory_transaction_id, ประทับตอน commit)
                 │           ├──► tb_product
@@ -257,7 +259,7 @@ tb_inventory_transaction  (header: inventory_doc_type ∈ {stock_in, stock_out},
 หมายเหตุ:
 
 - **สองต้นเอกสารคู่ขนาน หนึ่งตัวจำแนก** `tb_stock_in` และ `tb_stock_out` เป็นโมเดล Prisma อิสระที่มีรูปทรงเหมือนกัน; คอลัมน์ `type` ของแถว `tb_adjustment_type` ถูกใช้โดย frontend เพื่อกรองว่า reason ตัวไหนแสดงบน picker ของเอกสารไหน แต่การตรวจสอบ header ฝั่ง backend ยืนยันเพียงว่าแถว `tb_adjustment_type` ที่อ้างอิงมีอยู่จริง — ไม่ตรวจซ้ำว่า `type` ตรงกับทิศทางของเอกสาร ข้อจำกัดนี้จึงเป็นฝั่ง client เท่านั้น
-- **Back-reference ของ inventory transaction ถูกเติมตอน commit** แต่ละแถว detail ถือ `inventory_transaction_id` เป็น FK ที่ nullable: มันเป็น `null` ตลอดชีวิตของ `draft` และถูกประทับโดย `commit()` ในทรานแซกชันเดียวกับที่เขียน ledger rows (`executeAdjustmentIn` / `executeAdjustmentOut`) เอกสารที่ `completed` จึงมีค่านี้เสมอ; แถว rollup ของ physical-count ไม่เคยได้ค่านี้เพราะ path นั้นไม่เคย post ลิงก์ย้อนกลับเป็นแค่ id — ไม่มี Prisma `@relation` จาก ledger กลับมายังบรรทัด adjustment
+- **Back-reference ของ inventory transaction ถูกเติมตอน commit** แต่ละแถว detail ถือ `inventory_transaction_id` เป็น FK ที่ nullable: มันเป็น `null` ตลอดชีวิตของ `draft` และถูกประทับโดย `commit()` ในทรานแซกชันเดียวกับที่เขียน ledger rows (`executeAdjustmentIn` / `executeAdjustmentOut`) เอกสารที่ `completed` โดยปกติจึงมีค่านี้ — แถว rollup ของ physical-count ก็ได้ค่านี้ด้วยแล้ว (path นั้น post) ข้อยกเว้น: stock-in แบบ average-method ที่ลงวันที่ในงวดถัดไปจะ complete ตอน commit **โดยไม่มี** movement (`isHeldUntilBroughtForward`) และคงเป็น `null` จนกว่าการปิดงวดจะ post (`postHeldStockIns`) ลิงก์ย้อนกลับเป็นแค่ id — ไม่มี Prisma `@relation` จาก ledger กลับมายังบรรทัด adjustment
 - **ไม่มีข้อมูล lot ที่ไหนใน UI ของโมดูลนี้เลย** Identity ของ lot (`current_lot_no` / `from_lot_no` บน `tb_inventory_transaction_detail`, `lot_no` / `lot_index` บน `tb_inventory_transaction_cost_layer`) ถูกสร้างขึ้นเชิงกลไกโดย ledger (รูปแบบ `{location_code}{YYMM}{seq4}` จาก `buildLotNo`) — ไม่มี lot-picker, ฟิลด์ป้อน lot หรือฟิลด์วันหมดอายุที่ไหนใน `ia-item-fields.tsx` / `ia-item-table.tsx` / `ia-form-schema.ts`
 - **`adjustment_type_code` คือ snapshot ไม่ใช่ live join** เอกสารทั้งสอง persist รหัส snapshot บน header เพื่อ performance และ audit; การลบ / เปลี่ยนชื่อ reason code หลัง post ไม่เปลี่ยนเอกสารประวัติย้อนหลัง
 - **การประกาศ `@relation` FK ทั้งหมดที่ระบุชัดเจนใช้ `onDelete: NoAction, onUpdate: NoAction`** — ความถูกต้องของการอ้างอิงรักษาโดย soft-delete ระดับ application (`deleted_at`) ไม่ใช่ cascade
@@ -267,7 +269,7 @@ tb_inventory_transaction  (header: inventory_doc_type ∈ {stock_in, stock_out},
 - **`enum_adjustment_type`**: ตัวจำแนกทิศทางบน `tb_adjustment_type.type` สี่ค่า ไม่มี default ประกาศ:
   - `stock_in` — กรองเข้า reason picker ของ Stock-In
   - `stock_out` — กรองเข้า reason picker ของ Stock-Out
-  - `eop_in` / `eop_out` — ใช้โดย engine period-end (แสดงผ่านหน้ารายการ gateway ที่รวม `inventory-adjustments`, tag โดย filter `wantIn`/`wantOut` ใน `inventory-adjustments.service.ts`); ไม่ปรากฏใน reason picker ของหน้าจอสร้างทั้งสองแบบ
+  - `eop_in` / `eop_out` — type สิ้นงวดที่ rollup ของ physical-count ประทับบนเอกสาร (seed เป็น `EOP-IN` / `EOP-OUT`) หน้ารายการ gateway ที่รวม `inventory-adjustments` ตอนนี้ติดป้ายแต่ละแถว stock-in / stock-out ตาม adjustment type (`getAdjustmentTypeKinds` → `labelRow`) แถวเหล่านี้จึงแสดงเป็น `eop_in` / `eop_out` และ filter `type` เก็บเฉพาะแถวที่มีป้ายนั้น; ถ้าการ lookup type ล้มเหลว แถวจะ fallback เป็น `stock_in` / `stock_out` ธรรมดา ไม่ปรากฏใน reason picker ของหน้าจอสร้างทั้งสองแบบ
 - **`enum_doc_status`**: คอลัมน์วงจรชีวิตเอกสารบน `tb_stock_in.doc_status` / `tb_stock_out.doc_status` Schema default `draft` มีห้าค่าบน enum ที่ใช้ร่วมกัน; สามค่าถูกกำหนดโดยโค้ดของโมดูลนี้เอง:
   - `draft` — เขียนโดย `create()` (`POST /stock-ins` | `/stock-outs`); สถานะเดียวที่แก้ไข / ลบได้ draft ที่ลงวันที่ในงวด block **Start Period Close**
   - `in_progress` — ไม่เคยถูกกำหนดที่ไหนในโค้ดของโมดูลนี้

@@ -2,7 +2,7 @@
 title: คลังสินค้า (Inventory) — User Flow — Inventory Controller
 description: Flow ของ Inventory Controller ในโมดูล inventory — การ run review และปิดงวด (period-end)
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: inventory, user-flow, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -29,7 +29,7 @@ Persona **Inventory Controller** เป็นเจ้าของความ�
 3. **ไล่เคลียร์การ์ดเอกสาร** หนึ่งการ์ดต่อโมดูล — PR, PO, GRN, CN, SR, SI, SO — แต่ละการ์ดแสดงจำนวนเอกสารของงวดและ badge Complete/Incomplete คลิกการ์ดเปิด dialog แสดงรายการเอกสาร (ลิงก์ไปหน้าจอต้นทาง) เพื่อให้ Controller ตามเจ้าของเอกสารได้ Complete หมายถึง: PR `approved/completed/voided`; PO `completed/closed/voided`; SR `completed/cancelled/voided`; GRN `committed/voided`; CN `completed/cancelled/voided`; SI/SO `completed/cancelled/voided` เฉพาะ SR / GRN / CN / SI / SO เท่านั้นที่ป้อน gate ของการปิด — การ์ด PR และ PO เป็นเพียงข้อมูล
 4. **ไล่เคลียร์ section physical-count** หนึ่งการ์ดต่อ location ที่ต้องนับ (`location_type ∈ {inventory, consignment}`, `physical_count_type = yes`, active) พร้อมความคืบหน้า counted/total; คลิกการ์ดเปิดการนับของ location นั้น — สร้างให้ (`POST /physical-counts`) ถ้ายังไม่มี — ที่ `/inventory-management/physical-count/{id}/entry` การ์ดคง disable ("Counting has not started for this period yet.") จนกว่าขั้นที่ 2 จะรันแล้ว spot check **ไม่** เป็นส่วนหนึ่งของ gate นี้
 5. **ปิดงวด** เมื่อ payload ของ review รายงาน `can_close: true` ปุ่ม **Close Period** (สไตล์ destructive, มี confirm dialog) จะเปิดใช้งาน; การคลิก fire `POST /period-ends`
-6. **การปิด execute แบบ atomic** ภายใน transaction เดียว: lock `FOR UPDATE` + re-validate; lot carry-over (rows `close` ที่ zero ยอดทุก lot ที่งวดมี `end_at ≤` งวดนี้ และ rows `open` ที่สร้างใหม่ในงวดถัดไปที่ auto-provision ภายใต้ lot ใหม่ `{location_code}{YYMM}{seq4}`; บน tenant ที่ใช้ average method ยังรวม bucket `tb_inventory_period_snapshot` ด้วย); `tb_inventory_period.status = closed`; rows `tb_physical_count_period` ของงวดถูก mark เป็น `completed`
+6. **การปิด execute แบบ atomic** ภายใน transaction เดียว: lock `FOR UPDATE` + re-validate; lot carry-over (rows `close` ที่ zero ยอดทุก lot ที่งวดมี `end_at ≤` งวดนี้ และ rows `open` ที่สร้างใหม่ในงวดถัดไปที่ auto-provision ภายใต้ lot ใหม่ `{location_code}{YYMM}{seq4}`; บน tenant ที่ใช้ average method ยังรวม bucket `tb_inventory_period_snapshot` ด้วย และ post การรับที่ถูกพักไว้สำหรับงวดใหม่); หน้าจอแสดง rail สามขั้น (เคลียร์เอกสารสต๊อก → นับทุกตำแหน่ง → ปิด); `tb_inventory_period.status = closed`; rows `tb_physical_count_period` ของงวดถูก mark เป็น `completed`
 7. **ตรวจสอบบน ledger** filter Transaction Log ด้วย `inventory_doc_type IN ('close','open')` — การปิดงวดเองคือคู่ ledger event ที่ audit ได้
 
 ## 3. ทางแยกการตัดสินใจ (Decision Branches)

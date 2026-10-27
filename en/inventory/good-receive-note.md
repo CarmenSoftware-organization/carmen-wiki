@@ -1,18 +1,11 @@
 ---
 title: Good Receive Note (GRN)
-
 description: The receiving document that records physical goods received against a purchase order and adds them to inventory.
-
 published: true
-
 date: '2026-10-27T00:00:00.000Z'
-
 tags: good-receive-note, inventory, carmen-software
-
 editor: markdown
-
 dateCreated: 2026-05-15T07:48:00.000Z
-
 ---
 
 # Good Receive Note (GRN)

@@ -2,7 +2,7 @@
 title: บันทึกการเปลี่ยนแปลง (Changelog)
 description: บันทึกการเปลี่ยนแปลงของแพลตฟอร์มแบบมีเวอร์ชัน — ดึงข้อมูลจาก JSON, เปิดเป็นหน้า public /changelog (ตอนนี้ค้นหาได้แล้ว) เข้าถึงผ่าน version badge ในแถบด้านข้างและหน้า landing page
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: platform, changelog, versioning, carmen-software
 editor: markdown
 dateCreated: 2026-06-09T00:00:00.000Z
@@ -50,6 +50,7 @@ JSON มีบัฟเฟอร์ `unreleased` พร้อมกับ `versi
 | หน้า `/changelog` | เส้นทางสาธารณะ; แสดงบล็อก `unreleased` (ถ้ามีข้อมูล) ตามด้วยแต่ละเวอร์ชันที่ออกแล้วโดยเรียงล่าสุดก่อน และถูก filter ด้วยช่องค้นหา (§4) เมื่อมีคำค้นหา active |
 | ส่วนท้ายของแถบด้านข้าง | `VersionBadge` แสดง `v{latest}` ลิงก์ไปที่ `/changelog` |
 | Landing page | `VersionBadge` อยู่ถัดจากวันที่ build |
+| เวอร์ชัน build ของ backend | `VersionStamp` (`components/VersionStamp.tsx`) แสดงเวอร์ชันของ SPA (ลิงก์ไป `/changelog` เว้นแต่ `linkChangelog` เป็น false), build SHA และเวอร์ชันของ backend เองที่ `versionService.get()` ดึงจาก `GET /version` สาธารณะที่ root ของ API (ไม่อยู่ใต้ `/api` หรือ `/api-system`) แคชเป็น promise เดียวต่อ session; การดึงที่ล้มเหลวคืน `null` และส่วนของ backend จะหายไปเงียบ ๆ ใช้ `fetch` ธรรมดา ไม่ใช่ instance `api` ที่มี authentication เพราะถูกเรียกจากหน้าที่ไม่มี session (login, landing) ซึ่ง interceptor จะ redirect ไป `/login` วนซ้ำ |
 
 เวอร์ชันปัจจุบันสำหรับ badge ดึงมาจาก `versions[0].version` (ค่าสำรอง `0.0.0`) `/changelog` ถูกลงทะเบียนเป็น **public path ใน auth guard** ดังนั้นจึงแสดงผลได้สำหรับผู้เยี่ยมชมที่ยังไม่ได้ลงชื่อเข้าใช้
 

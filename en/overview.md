@@ -2,7 +2,7 @@
 title: System Overview
 description: What Carmen Blue is, why it exists, its requirements, tech stack and architecture diagrams — the starting point for new developers and testers.
 published: true
-date: 2026-09-23T08:30:00.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: overview, architecture, landing
 editor: markdown
 dateCreated: 2026-09-23T08:30:00.000Z
@@ -229,7 +229,7 @@ Where to look when this wiki is not enough. Implementation and E2E tests are the
 | `carmen-frontend` | Inventory screens, routes and client-side validation |
 | `carmen-backstage` | Platform admin screens (clusters, BUs, users, RBAC, report templates) |
 | `carmen-mobile` | Mobile screens |
-| `carmen-turborepo-backend` | Gateway routes and guards, domain logic, Prisma schemas (`packages/prisma-shared-schema-platform`, `-tenant`), nginx and k8s config |
+| `carmen-turborepo-backend` | Gateway routes and guards, domain logic, Prisma schemas (`packages/prisma-shared-schema-backstage`, `-tenant`), nginx and k8s config |
 | `micro-report`, `report-render` | Report data building and `.frx` rendering |
 | `micro-cronjobs` | Scheduled jobs (scheduled reports, GL template runs, cleanup) |
 | `micro-data` | Dataset execution for dashboards and widgets |

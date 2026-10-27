@@ -64,7 +64,7 @@ This pattern is the *escape hatch* — small settings that would otherwise pollu
 | `pr_approval_flow`, `po_approval_flow` | `ApprovalFlowSchema` | — | PR / PO approval-stage candidates (`min_required_last_n`) |
 | `pr_print_config`, `po_print_config`, `grn_print_config`, `sr_print_config` | `PrintConfigSchema` | — | print layer |
 | `interface_accounting_carmen_gl` | `InterfaceAccountingCarmenGlSchema` | `authorize_token` | `/system-admin/interface` |
-| `interface_accounting_<brand>` (blueledgers, external) | `InterfaceAccountingSchema` | — | `/system-admin/interface` |
+| `interface_accounting_blueledgers` | `InterfaceAccountingSchema` | — | `/system-admin/interface` |
 | `interface_export_external` | `InterfaceExportSchema` (`{ enabled? }`, passthrough) | — | `/system-admin/interface` (External API access, BU API key) |
 | `interface_pos_simphony` | `InterfacePosSimphonySchema` (SFTP pull) | `sftp_password` | `/system-admin/interface` (POS config owned by the operation-plan area) |
 | `interface_pos_micros3700` | `InterfacePosMicros3700Schema` (`{ enabled }`) | — | same |
@@ -146,7 +146,7 @@ Source: tenant schema.
 ## 7. Cross-References
 
 - [system-config/config-email](/en/inventory/system-config/config-email) — `email_profiles` + `email_templates` (and the legacy `report_email`).
-- `/system-admin/interface` (no wiki page yet) — `interface_*` keys, licence-only.
+- [system-config/interface](/en/inventory/system-config/interface) (`/system-admin/interface`) — `interface_*` keys, licence-only.
 - Workflow signature settings — consumer of `signature-candidates/:doc_type`.
 - Other modules' "list-view prefs via `tb_application_user_config`" — not independently re-verified this pass; kept as unconfirmed design intent.
 - [access-control/user](/en/inventory/access-control/user) — `user_id` resolution.

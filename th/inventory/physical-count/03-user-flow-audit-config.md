@@ -2,7 +2,7 @@
 title: การนับสต๊อกประจำงวด (Physical Count) — User Flow — Audit & Config (Correction)
 description: บันทึก correction — ไม่มี surface ของ Approver/Finance, Auditor หรือ Sysadmin สำหรับการนับสต๊อกประจำงวด
 published: true
-date: 2026-07-15T17:56:09.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: physical-count, user-flow, audit, config, inventory, carmen-software, correction
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -23,11 +23,11 @@ Draft ก่อนหน้าของโมดูลวิกินี้อ�
 
 | Claim | Status | Source แสดงอย่างไร |
 |---|---|---|
-| Approver/Finance Reviewer อนุมัติ rollup adjustment | ไม่พบ | เอกสาร rollup `tb_stock_in`/`tb_stock_out` ถูก insert **ที่ `doc_status = completed` ทันที** โดย `submit()` — ไม่มี draft หรือ in-progress stage ที่จะ route ไปให้ผู้อนุมัติได้ตั้งแต่แรก (ดู [02-business-rules.md](/th/inventory/physical-count/02-business-rules) `PHC_POST_001`) |
+| Approver/Finance Reviewer อนุมัติ rollup adjustment | ไม่พบ | เอกสาร rollup `tb_stock_in`/`tb_stock_out` ถูก insert **ที่ `doc_status = completed` ทันที** และ post เข้า ledger โดย `submit()` — ไม่มี draft หรือ in-progress stage ที่จะ route ไปให้ผู้อนุมัติได้ตั้งแต่แรก (ดู [02-business-rules.md](/th/inventory/physical-count/02-business-rules) `PHC_POST_001`) |
 | Auditor มีสิทธิ์ตรวจสอบ read-only เต็ม chain | ไม่พบ | มี permission key เดียวสำหรับโมดูลนี้ คือ `inventory_management.physical_count` (CRUD) — ไม่มี variant read-only หรือ role auditor แยก |
 | Sysadmin ตั้งค่า tolerance threshold | ไม่พบ | ไม่มีกลไก tolerance ใด ๆ ทั้ง frontend หรือ backend สำหรับโมดูลนี้ |
-| Sysadmin ตั้งค่า default costing method | จริงบางส่วน แต่ไม่ผ่านหน้าจอใด | `enum_business_unit_config_key.physical_count_costing_method` เป็น tenant config key จริงระดับ business-unit อ่านครั้งเดียวต่อ Submit สุดท้าย (default `last_receiving` ถ้าไม่ตั้งค่า/ไม่ถูกต้อง) — แต่ไม่พบหน้าจอ frontend ใดที่ตั้งค่า key นี้เลย |
-| Sysadmin map reason code `COUNT_OVERAGE`/`COUNT_SHORTAGE` | ไม่พบ | Rollup ไม่เคยตั้งค่า `adjustment_type_id` บน header `tb_stock_in`/`tb_stock_out` ที่สร้างขึ้นเลย — คงเป็น `null` ไม่มีการอ่านหรือเขียน reason-code mapping โดยโมดูลนี้ |
+| Sysadmin ตั้งค่า default costing method | จริงบางส่วน อยู่นอกโมดูลนี้ | key `physical_count_costing_method` เดิมไม่ถูกอ่านอีกต่อไป บรรทัดส่วนเกินตอนนี้ถูกตั้งราคาด้วย BU config key `si.cost-from` ("Default price for added items", ค่าเริ่มต้น `last_cost`; `average` เฉพาะบน BU ที่คิดต้นทุนแบบ average) ซึ่งเป็นการตั้งค่าเดียวกับที่ตั้งราคาบรรทัด stock-in ที่กรอกมือ ไม่ได้ตั้งจากหน้าจอ physical-count ใด ๆ |
+| Sysadmin map reason code `COUNT_OVERAGE`/`COUNT_SHORTAGE` | ไม่พบ (แทนที่ด้วย EOP type คงที่) | Rollup ตั้ง `adjustment_type_id` เป็น adjustment type `eop_in` / `eop_out` ที่ active ตัวแรกของ BU (จับคู่ด้วย `type`, seed เป็น `EOP-IN` / `EOP-OUT`) ไม่มี reason-code mapping ของส่วนเกิน/ส่วนขาดให้ตั้งค่า; ข้อกำหนดเบื้องต้นเดียวคือสอง type นั้นมีอยู่และ active |
 
 ## 3. ควรอ่านอะไรแทน
 

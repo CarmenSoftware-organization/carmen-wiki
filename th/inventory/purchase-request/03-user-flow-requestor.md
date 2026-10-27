@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — User Flow — Requestor
 description: เส้นทางการใช้งานของ Requestor ในโมดูล purchase-request
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: purchase-request, user-flow, requestor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 # ใบขอซื้อ (Purchase Request) — User Flow — Requestor
 
 > **At a Glance**
-> **Persona:** Requestor (พนักงานโรงแรม / แผนก) &nbsp;·&nbsp; **โมดูล:** [purchase-request](/th/inventory/purchase-request) &nbsp;·&nbsp; **Stage ของ workflow:** draft → submit → in_progress (+ การกลับเข้าจาก send-back ที่ stage `create`, การลบจาก draft) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** `procurement.purchase_request.view` (+ `view_department` / `view_all` สำหรับ scope ของ list), สร้าง / แก้ / ลบ draft ของตัวเอง, submit, resubmit หลัง send-back &nbsp;·&nbsp; **ตรวจสอบซ้ำ 2026-09-22** กับ `routes/procurement/purchase-request/` และ `purchase-request.validate.ts` — หน้านี้เขียนครั้งล่าสุดจาก concept docs เมื่อ 2026-05-20 และมีหน้าจอหลายอย่างที่ไม่มีอยู่จริง (ประเภท PR, แท็บ Review, budget validation, `Alt+N`, auto-save); ถูกตัดออกด้านล่างแล้ว
+> **Persona:** Requestor (พนักงานโรงแรม / แผนก) &nbsp;·&nbsp; **โมดูล:** [purchase-request](/th/inventory/purchase-request) &nbsp;·&nbsp; **Stage ของ workflow:** draft → submit → in_progress (+ การกลับเข้าจาก send-back ที่ stage `create`, การลบจาก draft) &nbsp;·&nbsp; **สิทธิ์สำคัญ:** `procurement.purchase_request.view` (+ `view_department` / `view_all` สำหรับ scope ของ list), สร้าง / แก้ / ลบ draft ของตัวเอง, submit, resubmit หลัง send-back &nbsp;·&nbsp; **ตรวจสอบซ้ำ 2026-10-27** (การเปลี่ยนแปลง 2026-10: เลข placeholder `draft-{n}`, toolbar ของ header, badge send-back) กับ `routes/procurement/purchase-request/` และ `purchase-request.validate.ts` — หน้านี้เขียนครั้งล่าสุดจาก concept docs เมื่อ 2026-05-20 และมีหน้าจอหลายอย่างที่ไม่มีอยู่จริง (ประเภท PR, แท็บ Review, budget validation, `Alt+N`, auto-save); ถูกตัดออกด้านล่างแล้ว
 > **persona นี้ทำอะไร:** ตั้ง PR — กรอก header และ list บรรทัด, แนบเอกสารประกอบ, submit ขออนุมัติ และแก้ไขเมื่อถูก send back
 
 ## 1. บทบาทในโมดูลนี้
@@ -47,7 +47,7 @@ Requestor เป็น **เจ้าของ** PR ขณะที่อยู�
 | Delete | ✅ (soft delete; เมนู row ของ list, **Delete** บน detail หรือ batch แบบ multi-select) | ❌ ("Only draft purchase requests can be deleted") | ❌ | ❌ | ❌ | — |
 | Duplicate | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ (ทุกสถานะ — `/new?duplicate_id=`) |
 
-> ℹ️ **Send-back loop:** `pr_status` ไม่กลับไป `draft` หลัง send-back เลย (`purchase-request.service.ts:2052` เขียนทับเป็น `in_progress`); สิ่งที่เปลี่ยนคือ `workflow_current_stage` ประวัติการแก้ไขถูกเก็บไว้ใน `workflow_history` และ log ของ comment (`PR_POST_008`)
+> ℹ️ **Send-back loop:** `pr_status` ไม่กลับไป `draft` หลัง send-back เลย (`review`, `purchase-request.service.ts:2053`, รับเฉพาะ PR ที่เป็น `in_progress` และไม่เคยเขียน `pr_status`); สิ่งที่เปลี่ยนคือ `workflow_current_stage` ประวัติการแก้ไขถูกเก็บไว้ใน `workflow_history` และ log ของ comment (`PR_POST_008`)
 
 ## 2. จุดเริ่มต้นและ flow หลัก
 
@@ -55,13 +55,13 @@ Requestor เป็น **เจ้าของ** PR ขณะที่อยู�
 
 **Flow หลัก (happy path):**
 
-1. เปิดฟอร์ม PR ใหม่ ยังไม่มีอะไรถูกเขียน — row ถูกสร้างตอน **Save** ครั้งแรก (`POST /:bu_code/purchase-requests`, `stage_role = create`) ซึ่งสร้าง `pr_no` ฝั่ง server, ประทับ `pr_date` (default วันนี้) และ snapshot requestor จากผู้ใช้ที่ล็อกอิน
+1. เปิดฟอร์ม PR ใหม่ ยังไม่มีอะไรถูกเขียน — row ถูกสร้างตอน **Save** ครั้งแรก (`POST /:bu_code/purchase-requests`, `stage_role = create`) ซึ่งให้ draft ได้ `pr_no` แบบ placeholder รูป `draft-{n}` (เลข PR จริงออกตอน **Submit** ครั้งแรก), ประทับ `pr_date` (default วันนี้) และ snapshot requestor จากผู้ใช้ที่ล็อกอิน
 2. กรอก header: เลือก **workflow** (บังคับ — ฟอร์มบล็อกการสร้างเมื่อไม่มี workflow ที่ผู้ใช้สร้างได้ "noCreatableWorkflow"), ยืนยัน **แผนก**, ใส่ **คำอธิบาย** สกุลเงินและอัตราแลกเปลี่ยนอยู่บนแต่ละบรรทัด ไม่ใช่บน header
-3. ใน grid รายการคลิก **Add Item** และต่อบรรทัด เลือก **สินค้า** (row แบบ hover / ขยายแสดง on-hand, on-order และข้อมูลการรับของล่าสุดแบบ live จาก [inventory](/th/inventory/inventory)), **location**, **delivery point**, **วันส่งของ** (บังคับ), **จำนวนที่ขอ + หน่วย**, **จำนวน FOC + หน่วย** แบบ optional และ **สกุลเงิน** บรรทัดบันทึกได้ด้วยจำนวน `0` — ฟอร์ม draft บังคับเฉพาะการอ้างอิงที่ required (`pr-form-schema.ts`)
+3. ใน grid รายการคลิก **Add Item** และต่อบรรทัด เลือก **สินค้า** (row แบบ hover / ขยายแสดง on-hand **ปัจจุบัน**, on-order และข้อมูลการรับของล่าสุดแบบ live จาก [inventory](/th/inventory/inventory)), **location**, **delivery point**, **วันส่งของ** (บังคับ), **จำนวนที่ขอ + หน่วย**, **จำนวน FOC + หน่วย** แบบ optional และ **สกุลเงิน** บรรทัดบันทึกได้ด้วยจำนวน `0` — ฟอร์ม draft บังคับเฉพาะการอ้างอิงที่ required (`pr-form-schema.ts`)
 4. คลิก **Save** เมื่อสะดวก; draft ที่ไม่ครบบันทึกได้ (commit `a848865f`) ทุกการ save echo `doc_version`; version ที่ stale ได้ `409` ([system-config/doc-version](/th/inventory/system-config/doc-version))
-5. เพิ่ม **comment / attachment** จาก sheet comment (`tb_purchase_request_comment`) และ **Print** / **Export** แบบ optional
+5. เพิ่ม **comment / attachment** จาก sheet comment (`tb_purchase_request_comment`; ชนิดและขนาดไฟล์ที่อนุญาตเป็นไปตามนโยบายไฟล์แนบของ business unit — ดู [01a](/th/inventory/purchase-request/01a-data-model-comments) §4) และ **Print** / **Export** แบบ optional ใน header ของฟอร์ม **Edit** เป็นปุ่มหลักในโหมด view (ซ่อนสำหรับ PR ที่ voided หรือ stage แบบ view-only); **Delete** แสดงสำหรับ `draft`; comment, activity, **Duplicate** และ **Print** อยู่ในเมนู **⋯** และ Duplicate / Print มีเฉพาะในโหมด view Duplicate จะถูกปฏิเสธด้วย dialog เมื่อผู้ใช้ไม่มี workflow ที่สร้างได้
 6. คลิก **Submit** client รัน `findRowsMissingQty` ก่อน — ทุกบรรทัดต้องมี `requested_qty > 0` **หรือ** `foc_qty > 0` — และแสดงคำเตือน "incompleteItems" แทน dialog ยืนยันเมื่อมี row ไม่ผ่าน เมื่อยืนยัน client เรียก `PATCH …/:id/submit` (`stage_role = create`, `doc_version`) server เช็คซ้ำกฎ workflow / requestor / แผนก / วันที่ PR / มีอย่างน้อยหนึ่งบรรทัด / จำนวนและหน่วยต่อบรรทัด (`purchase-request.validate.ts`) หยุดที่ความล้มเหลวแรก และเมื่อสำเร็จพลิก `pr_status` เป็น `in_progress`, ตั้ง `last_action = submitted`, initialise `workflow_current_stage` / `stages_status` และเติม `user_action.execute[]` สำหรับ stage แรก หากต้องการเห็น*ทุก*ปัญหาพร้อมกันก่อน submit client (หรือ tester) เรียก `POST …/verify` ด้วย `verify_state = submit` ได้ (`PR_VAL_017`)
-7. ติดตามความคืบหน้าจากแท็บ **My Pending** ของ list, badge สถานะบนหน้า detail และ sheet **Workflow History** หรือคิวข้ามโมดูล [My Approval](/th/inventory/purchase-request/my-approval) (ซึ่ง list draft ของผู้ใช้เองด้วย) เส้นทางหลักของ Requestor จบที่นี่; พวกเขากลับเข้าเฉพาะกรณี send-back (Section 3)
+7. ติดตามความคืบหน้าจากแท็บ **My Pending** ของ list (PR ที่ถูกส่งกลับมี badge **send back** ต่อท้ายเลขที่ ให้ hover เพื่ออ่านเหตุผล — ชื่อ Stage ตอนนี้เป็นบรรทัดที่สองของเซลล์ Status ไม่ใช่คอลัมน์แยก), badge สถานะบนหน้า detail และ sheet **Workflow History** หรือคิวข้ามโมดูล [My Approval](/th/inventory/purchase-request/my-approval) (ซึ่ง list draft ของผู้ใช้เองด้วย) เส้นทางหลักของ Requestor จบที่นี่; พวกเขากลับเข้าเฉพาะกรณี send-back (Section 3)
 
 ## 3. แขนงการตัดสินใจ
 

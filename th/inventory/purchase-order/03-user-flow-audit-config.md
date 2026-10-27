@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — User Flow — Audit & Config
 description: เส้นทางของ Auditor (activity log แบบ read-only) และ System Administrator (การตั้งค่า workflow / RBAC / numbering) สำหรับ purchase-order
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: purchase-order, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -77,7 +77,7 @@ graph LR
 ## 3. Decision Branches
 
 - **หาก Auditor พบช่องว่างใน workflow-history หรือ timestamp ที่ผิดลำดับ**: escalate ออกนอกโมดูล PO — ไม่มี feature "case file" หรือ flagging ระดับโมดูล PO ที่ยืนยันได้ feature activity-log หรือ audit trail แบบ generic ถ้ามีอยู่จริง จะบันทึกไว้ใน [reporting-audit](/th/inventory/reporting-audit) ไม่ใช่ที่นี่
-- **หาก Sysadmin ต้องการยุติ PO ที่ค้างอยู่** (เช่น ไม่มี approver ที่ eligible เหลืออยู่ที่ stage หนึ่งหลังจากเปลี่ยน RBAC): remediation ที่ยืนยันแล้วคือ **Cancel** / **Close** (ไม่มี role gate) หรือ **Reject** ของ approver ที่ stage ปัจจุบัน ตามที่บันทึกไว้ใน [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md); platform super-admin ยัง **Delete** draft ที่ไม่ใช่ของตัวเองได้เพิ่มเติม (`remove()` branch `isSuperAdmin`) ไม่มี override ระดับ Sysadmin อื่นที่ mutate PO state โดยตรง สังเกตว่าการแก้ไข workflow definition ขณะที่เอกสารที่ใช้มันยัง `in_progress` ถูก block (`a1c435208`, 2026-08-14)
+- **หาก Sysadmin ต้องการยุติ PO ที่ค้างอยู่** (เช่น ไม่มี approver ที่ eligible เหลืออยู่ที่ stage หนึ่งหลังจากเปลี่ยน RBAC): remediation ที่ยืนยันแล้วคือ **Cancel** / **Close** (ไม่มี role gate) หรือ **Reject** ของ approver ที่ stage ปัจจุบัน ตามที่บันทึกไว้ใน [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md); Backstage super-admin ยัง **Delete** draft ที่ไม่ใช่ของตัวเองได้เพิ่มเติม (`remove()` branch `isSuperAdmin`) ไม่มี override ระดับ Sysadmin อื่นที่ mutate PO state โดยตรง สังเกตว่าการแก้ไข workflow definition ขณะที่เอกสารที่ใช้มันยัง `in_progress` ถูก block (`a1c435208`, 2026-08-14)
 
 ## 4. Exit Point / Handoffs
 

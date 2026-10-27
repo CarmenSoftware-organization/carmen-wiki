@@ -2,7 +2,7 @@
 title: ประเภทอาหาร (Cuisine Type)
 description: แคตตาล็อกประเภทอาหาร — label ตามภูมิภาค/สไตล์ที่ใช้กับสูตรอาหารสำหรับการแบ่งกลุ่มเมนู (ไทย อิตาเลียน ฝรั่งเศส ฟิวชัน ฯลฯ)
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: recipe, cuisine, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -18,6 +18,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 ![ประเภทอาหาร (Cuisine Type) detail screen](/screenshots/recipe/cuisine-detail.png)
 
 > **ตรวจสอบซ้ำ 2026-09-22** schema, enum และกฎของ service ด้านล่างไม่เปลี่ยน `GET /api/config/{bu}/recipe-cuisines` ตอนนี้ default เป็น `sort=name:asc` (`928f3b950`, 2026-09-13); คอลัมน์ Region ของ list เป็นข้อความธรรมดาแทน badge หกสี (`3174e9df`) E2E: `tests/111-cuisine.spec.ts` (17 test, 2026-09-20)
+
+> **ตรวจสอบซ้ำ 2026-10-27** Backend: `GET .../recipe-cuisines` (เฉพาะ list) คืน **`recipe_count`** — จำนวนสูตรที่ยังไม่ถูกลบและใช้ cuisine นี้ Frontend (`a86eb398`, `a96f2cfe`): Region แสดงอีกครั้งเป็น **จุดสี + label** (`cuisine-region-label.tsx`; ค่า region ที่ไม่รู้จักแสดงดิบพร้อมจุดสีกลาง), อาหารยอดนิยม / วัตถุดิบหลักแสดงเป็น chip ในตาราง Info และหน้ารายละเอียดมี section **Recipes** ที่แสดงสูตรที่ใช้ cuisine นี้ไม่เกิน 8 สูตร (`filter=cuisine_id|string:<id>` เรียงตามชื่อ; ส่วนที่เหลือแสดงเป็นจำนวน; แต่ละรายการลิงก์ไปยัง cook view ของสูตร `/operation-plan/recipe/:id`) — มีประโยชน์ก่อน deactivate หรือลบ (การบล็อกการลบเมื่อถูกใช้ `RECIPE_CUISINE_IN_USE` ไม่เปลี่ยน) หมายเหตุ 2026-09-22 ที่ว่า Region เป็นข้อความธรรมดาถูกแทนที่แล้ว
 
 ## 1. คืออะไรและใครใช้
 

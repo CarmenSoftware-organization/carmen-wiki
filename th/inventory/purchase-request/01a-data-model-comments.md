@@ -2,7 +2,7 @@
 title: ใบขอซื้อ — โมเดลข้อมูล — ตารางคอมเมนต์
 description: ตารางคอมเมนต์ / ไฟล์แนบระดับเอกสารและระดับบรรทัดสำหรับโมดูลใบขอซื้อ — ข้อความ, JSON ไฟล์แนบ, และ enum ประเภทคอมเมนต์ (user/system)
 published: true
-date: 2026-06-17T08:00:00.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: purchase-request, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -81,7 +81,15 @@ updated_by_id       uuid / FK ไปยัง tb_user
 **Constraints:** `@id` บน `id` FK `purchase_request_detail_id → tb_purchase_request_detail.id`
 **Indexes:** ไม่มีประกาศนอกเหนือจาก primary key
 
-## 4. การอ้างอิงข้าม
+## 4. การจัดการไฟล์แนบ (2026-10)
+
+JSON `attachments` ถูกเขียนผ่าน endpoint คอมเมนต์ของ gateway (`apps/backend-gateway/src/application/purchase-request-comments/`; controller คอมเมนต์ของ header, line และ template ใช้รูปแบบเดียวกัน): `GET :bu_code/purchase-request-comments/:purchase_request_id`, `POST` path เดียวกันเพื่อสร้าง (multipart field `files`), `PATCH …/:comment_id` เพื่อแก้ไข, `DELETE …/:comment_id`, และ `POST` / `DELETE …/:comment_id/attachment[/:fileToken]` เพื่อเพิ่มหรือลบไฟล์
+
+- **นโยบายรายหน่วยธุรกิจ (BU) แทนกฎ 10 MB / image+PDF แบบตายตัว** การอัปโหลดถูกตรวจกับนโยบายไฟล์แนบของ business unit (`AttachmentPolicyService.assertFiles`, `common/attachment-policy/`) อ่านจาก entry `attachment.allowed_types` และ `attachment.max_size_mb` ใน `tb_business_unit.config` ของ Backstage และ cache 60 วินาทีต่อ BU กลุ่มที่อนุญาต: `image`, `pdf`, `excel`, `word`, `csv`, `text`; ค่า default คือ `image` + `pdf`, ขนาด default 10 MB, เพดานสูงสุด 25 MB config ที่ผิดรูปแบบจะถอยไปใช้ค่า default การตรวจชนิดไฟล์เชื่อ MIME type; เฉพาะ MIME ที่ว่างหรือ `application/octet-stream` เท่านั้นที่ถอยไปใช้นามสกุลไฟล์ ความล้มเหลวเป็น `400` พร้อม `ATTACHMENT_TOO_LARGE` (`max_mb`) หรือ `ATTACHMENT_TYPE_NOT_ALLOWED` (`allowed`) key ของนโยบายตั้งได้จาก Backstage เท่านั้น — endpoint ของ BU เขียน key ที่ขึ้นต้นด้วย `attachment.` ไม่ได้
+- **การแก้ไขส่ง delta** ตอนนี้ `PATCH` ส่งต่อ `attachments` เป็น `{ add: [...], remove: [fileToken, ...] }` (service ยังรับ array เต็มได้) gateway อ่านคอมเมนต์ซ้ำก่อน และลบเฉพาะ object ใน S3 ที่ token นั้นเป็นของคอมเมนต์นั้นจริง ดังนั้น token `remove` ที่ปลอมจึงลบไฟล์ของคอมเมนต์อื่นไม่ได้; การลบ S3 เป็น best-effort และบันทึก log เมื่อสำเร็จเพียงบางส่วน
+- **การแบ่งหน้าใน UI** แผงคอมเมนต์โหลดครั้งละ 20 คอมเมนต์ เรียงใหม่สุดก่อน (`sort=created_at:desc`) และดึงหน้าถัดไปเมื่อท้ายรายการเลื่อนเข้ามาในมุมมอง; จุดคอมเมนต์ที่ header ของเอกสารใช้ `total` ของ backend ไม่ใช่จำนวนที่โหลดแล้ว (commit `61011d0e`)
+
+## 5. การอ้างอิงข้าม
 
 - ส่วนคู่ขนาน: [01 — โมเดลข้อมูล](/th/inventory/purchase-request/01-data-model) — `tb_purchase_request` และ `tb_purchase_request_detail` (ตาราง header / line), นิยาม enum, และคอลัมน์ JSON ของ workflow / history.
 - ส่วนคู่ขนาน: [02 — กฎเชิงธุรกิจ](/th/inventory/purchase-request/02-business-rules) — กฎ validation และพฤติกรรมคอมเมนต์ตาม workflow stage ที่บันทึกลง `tb_purchase_request_comment` / `tb_purchase_request_detail_comment`.

@@ -2,7 +2,7 @@
 title: การนำเข้าเทแนนต์ — หน้าจอ UI (UI Screens)
 description: ลำดับสี่หน้าจอของ TenantImportWizard — เลือก business unit, อัปโหลด Preconfig.xlsx, ทบทวนผลตรวจไฟล์ แล้วทำงานทีละขั้นตอน
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: book/platform, tenant-imports, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -23,11 +23,11 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 **ถามอะไร:** ยังไม่มีอะไร — มีข้อความกึ่งกลางหน้าจอ ("Pick the business unit that will receive the data," `pages.tenantImport.pickBuHint`) และปุ่ม "Select business unit" ที่เปิด `BuSwitcher` ซึ่งเป็น component เดียวกับที่ [SQL Workbench](/th/platform/sql-workbench) ใช้: พิมพ์เพื่อกรองตาม code/name/cluster, ใช้ลูกศรเลื่อน, กด Enter เพื่อเลือก นี่คือปุ่มเดิมที่ปรากฏบน header ทุกหน้าจอถัดไปด้วย ("BU: `{code}`") — เปิดใหม่จากที่ไหนก็ได้จะรีเซ็ต wizard ทั้งหมด (§6)
 
-**ตรวจอะไร:** ไม่มีอะไร — ยังไม่มีการแตะไฟล์เลย ระหว่างที่แสดงหน้าจอนี้ wizard ยิงคำขอสองตัวพร้อมกันอิสระต่อกัน (`Promise.allSettled`, `TenantImportWizard.tsx`): `businessUnitService.getAll({ perpage: 200 })` เพื่อเติมตัวเลือก และ `preconfigImportService.getSteps()` (`GET /steps`) เพื่อโหลดแคตตาล็อกขั้นตอน ความล้มเหลวของแต่ละอันแยก toast กันเอง และไม่บล็อกอีกอันหนึ่ง — session ที่ list business unit ได้แต่ไม่มี `data_import.manage` ยังเห็นตัวเลือกเติมข้อมูลได้ตามปกติ แต่จะมีแบนเนอร์ error ของแคตตาล็อกรอที่หน้าจอถัดไป (§3)
+**ตรวจอะไร:** ไม่มีอะไร — ยังไม่มีการแตะไฟล์เลย ระหว่างที่แสดงหน้าจอนี้ wizard ยิงคำขอสองตัวพร้อมกันอิสระต่อกัน (`Promise.allSettled`, `TenantImportWizard.tsx`): `fetchAllBusinessUnits()` (เดินทีละหน้าผ่านรายการ business unit หน้าละ 100 สูงสุด 10 หน้า) เพื่อเติมตัวเลือก และ `preconfigImportService.getSteps()` (`GET /steps`) เพื่อโหลดแคตตาล็อกขั้นตอน ความล้มเหลวของแต่ละอันแยก toast กันเอง และไม่บล็อกอีกอันหนึ่ง — session ที่ list business unit ได้แต่ไม่มี `data_import.manage` ยังเห็นตัวเลือกเติมข้อมูลได้ตามปกติ แต่จะมีแบนเนอร์ error ของแคตตาล็อกรอที่หน้าจอถัดไป (§3)
 
 **เกิดอะไรเมื่อล้มเหลว:** การดึงรายการ BU ล้มเหลว toast error และปล่อยตัวเลือกว่างเปล่า; การดึงแคตตาล็อกล้มเหลว toast error, ตั้ง `catalogError`, และแสดงเป็นแบนเนอร์ค้างเมื่อ wizard ไปถึง `upload` (§3) — wizard ไม่ retry อัตโนมัติทั้งสองกรณี ข้อความของแบนเนอร์เองอาสาบอกสาเหตุที่เป็นไปได้: *"this usually means the platform permission for Preconfig imports has not been granted yet"* (`pages.tenantImport.catalogError`) — จุดแรกที่ควรตรวจเมื่อ session เห็นหน้า Upload ว่างเปล่า
 
-**ข้อสังเกต ไม่ใช่ bug:** การดึง BU ถูกจำกัดที่ `perpage: 200` และ effect อ่านเฉพาะ `.data` จาก response — ฟิลด์ `total`/`paginate` ที่ `ApiListResponse` มี (`types/index.ts:20-24`) ไม่เคยถูกอ่านเลย ต่างจาก [Tenant Migrations](/th/platform/tenant-migrations) (§3.1 ที่นั่น) ที่เตือนชัดเจนเมื่อการดึง 1000 แถวของตัวเองไม่ครอบคลุมทุก business unit ตัวเลือกนี้ไม่มีสัญญาณใด ๆ บนหน้าจอเลยหาก cluster fleet มีเกิน 200 BU — รายการจะหยุดที่ 200 เฉย ๆ โดยไม่บอกอะไร
+**ข้อสังเกต ไม่ใช่ bug:** การดึง BU ถูกจำกัดที่ 10 หน้า หน้าละ 100 (`fetchAllBusinessUnits` → `fetchAllPages`, `maxPages: 10`) — 1,000 business unit เมื่อถึงเพดานก่อนที่ `paginate.total` จะครบ ร่องรอยเดียวคือ log ใน dev console (`devLog`); ตัวเลือกนี้ไม่มีสัญญาณบนหน้าจอ ดังนั้น fleet ที่เกิน 1,000 BU จะหยุดที่นั่นเฉย ๆ โดยไม่บอกอะไร (ก่อน 2026-09-30 เพดานคือคำขอ `perpage: 200` ครั้งเดียวที่อ่านเฉพาะ `.data`)
 
 **ย้อนกลับ:** ง่ายมาก — นี่คือหน้าจอเริ่มต้น และการเปิด `BuSwitcher` ใหม่จากหน้าจอถัดไปจะกลับมาที่นี่ก็ต่อเมื่อ operator เคลียร์การเลือก; การเลือก BU (แม้จะเป็นตัวเดิม) เดินหน้าไป `upload` เสมอ
 
@@ -38,7 +38,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 **ตรวจอะไร และตรวจที่ไหน:**
 
 - **ฝั่ง client ก่อนส่งคำขอใด ๆ:** ชื่อไฟล์ที่ลากวาง/เลือกต้องลงท้ายด้วย `.xlsx` (ไม่สนตัวพิมพ์) — `WorkbookDropzone.tsx:26-29` นามสกุลผิดจะถูกปฏิเสธด้วย toast ("Only .xlsx workbooks are supported," `pages.tenantImport.onlyXlsx`) และไม่ถึงเครือข่ายเลย
-- **ฝั่ง server อิสระ ในทุกคำขอที่รับไฟล์:** `assertXlsx()` (`preconfig-imports.controller.ts:29-36`) ตรวจนามสกุลซ้ำ **และ** ตรวจ MIME type ของ multipart ให้ตรงเป๊ะ (`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`) **และ** เพดานขนาด 10 MB (`MAX_FILE_SIZE_BYTES`, บรรทัด 11; บังคับซ้ำอิสระโดย limit ของ `FileInterceptor` ของ Multer เองที่แต่ละ route ด้วย) ไฟล์ที่ผ่านการตรวจแค่นามสกุลของเบราว์เซอร์ยังถูก server ปฏิเสธได้ (เช่นไฟล์ที่เปลี่ยนนามสกุลเป็น `.xlsx` แต่ชนิดจริงต่างออกไป หรือไฟล์เกิน 10 MB) — นี่คือกรณีที่ผู้ทดสอบต้องใช้ API ไม่ใช่แค่ UI เพื่อจำลองซ้ำ
+- **ฝั่ง server อิสระ ในทุกคำขอที่รับไฟล์:** `assertXlsx()` (`preconfig-imports.controller.ts:33-34,53-61`) ตรวจนามสกุลซ้ำ **และ** ตรวจ MIME type ของ multipart ให้ตรงเป๊ะ (`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`) **และ** เพดานขนาด 10 MB (`MAX_FILE_SIZE_BYTES`, บรรทัด 33; บังคับซ้ำอิสระโดย limit ของ `FileInterceptor` ของ Multer เองที่แต่ละ route ด้วย) ไฟล์ที่ผ่านการตรวจแค่นามสกุลของเบราว์เซอร์ยังถูก server ปฏิเสธได้ (เช่นไฟล์ที่เปลี่ยนนามสกุลเป็น `.xlsx` แต่ชนิดจริงต่างออกไป หรือไฟล์เกิน 10 MB) — นี่คือกรณีที่ผู้ทดสอบต้องใช้ API ไม่ใช่แค่ UI เพื่อจำลองซ้ำ
 
 ระหว่างที่คำขอ check กำลังทำงาน (`preconfigImportService.check()`) panel จะแสดงสปินเนอร์ "Checking workbook…" แทนที่ dropzone (สถานะ `busy`)
 
@@ -135,9 +135,9 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 - `src/pages/tenantImport/StepPanel.tsx:112,267,517` — เงื่อนไข disabled ของ checkbox clear-existing, การยืนยันด้วยการพิมพ์รหัส BU, และตรรกะตัวกรอง/คำบรรยายผลตรวจ (§5.2-§5.3)
 - `src/pages/tenantImport/CompanyProfilePanel.tsx` — ตาราง diff, สถานะการ resolve สกุลเงิน, และแบนเนอร์รหัส BU ไม่ตรงกัน (§7)
 - `src/services/preconfigImportService.ts` — รูปแบบคำขอ `check`/`preview`/`importStream`
-- `src/i18n/en.ts:3188-3283` (namespace `tenantImport`) — ทุกข้อความ UI ที่อ้างในหน้านี้
-- `src/types/index.ts:20-24` (`ApiListResponse`) — ฟิลด์ `total`/`paginate` ที่ไม่ถูกอ่าน อ้างใน §2
-- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/preconfig-imports/preconfig-imports.controller.ts:11,29-36` — `MAX_FILE_SIZE_BYTES`, `assertXlsx()` (§3)
+- `src/i18n/en.ts:3565-3669` (namespace `tenantImport`) — ทุกข้อความ UI ที่อ้างในหน้านี้
+- `src/utils/fetchAllBusinessUnits.ts`, `src/utils/fetchAllPages.ts` — การดึง BU แบบแบ่งหน้าและเพดาน 10 หน้า อ้างใน §2
+- `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/preconfig-imports/preconfig-imports.controller.ts:33-34,53-61` — `MAX_FILE_SIZE_BYTES`, `assertXlsx()` (§3)
 - `../carmen-turborepo-backend/apps/micro-business/src/preconfig-import/preconfig-import.service.ts` — การตรวจสอบค่า/lookup/แถวลูกที่ Preview และ Import เรียกใช้ (§5.2, §5.4)
 
 **ลิงก์เชื่อมโยง:** [หน้า landing ของ Tenant Imports](/th/platform/tenant-imports) &nbsp;·&nbsp; [Business Units](/th/platform/business-units) &nbsp;·&nbsp; [Tenant Migrations](/th/platform/tenant-migrations)

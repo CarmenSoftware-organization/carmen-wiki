@@ -2,7 +2,7 @@
 title: รายการอนุมัติของฉัน (My Approval)
 description: คิว pending ส่วนบุคคล — PR, PO และ SR ทุกใบที่ผู้ใช้ที่ล็อกอินต้องดำเนินการ ให้บริการเป็น list เดียวที่เรียงแล้วจาก view sys_v_my_pending ผ่าน GET /api/my-pending
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: purchase-request, approval, workflow, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -15,11 +15,11 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ![รายการอนุมัติของฉัน (My Approval) screen](/screenshots/purchase-request/my-approval.png)
 
-> **ตรวจสอบซ้ำ 2026-09-22** คิวถูกสร้างใหม่ทั้งสองฝั่งตั้งแต่เอกสารรุ่นก่อนของหน้านี้: backend เพิ่ม read model แบบรวม (`apps/backend-gateway/src/application/my-pending/unified/`, micro-business `src/my-pending/`, database view `sys_v_my_pending` — migration `20260916030000_add_sys_v_my_pending`) และ frontend เปลี่ยนมาใช้เมื่อ 2026-09-16 (`routes/procurement/approval/use-approval.ts`, commit `9bd21427` "หน้าอนุมัติใช้ /api/my-pending แทนการรวมสามกลุ่มฝั่ง client") Credit Note ไม่เคยเป็นส่วนหนึ่งของคิวนี้ — เอกสารรุ่นก่อนของหน้านี้ list ไว้ผิด
+> **ตรวจสอบซ้ำ 2026-10-27** ตั้งแต่ 2026-09-22 หน้านี้ย้ายไปที่ `/procurement/my-approval` (โฟลเดอร์ `routes/procurement/my-approval/`; `/procurement/approval` redirect มา), มี chip filter **Sent back** เพิ่มเข้ามา, ชุดคอลัมน์ Details / Stage / Amount / Waiting และการจัดการราคาที่ซ่อน (`hidden_fields`) **ก่อนหน้านั้น 2026-09-22:** คิวถูกสร้างใหม่ทั้งสองฝั่งตั้งแต่เอกสารรุ่นก่อนของหน้านี้: backend เพิ่ม read model แบบรวม (`apps/backend-gateway/src/application/my-pending/unified/`, micro-business `src/my-pending/`, database view `sys_v_my_pending` — migration `20260916030000_add_sys_v_my_pending`) และ frontend เปลี่ยนมาใช้เมื่อ 2026-09-16 (`routes/procurement/approval/use-approval.ts` — ตอนนี้คือ `routes/procurement/my-approval/`, commit `9bd21427` "หน้าอนุมัติใช้ /api/my-pending แทนการรวมสามกลุ่มฝั่ง client") Credit Note ไม่เคยเป็นส่วนหนึ่งของคิวนี้ — เอกสารรุ่นก่อนของหน้านี้ list ไว้ผิด
 
 ## 1. ภาพรวมและผู้ใช้งาน
 
-**My Approval** (`/procurement/approval`, `routes/router.tsx:287-288`) คือคิวต่อผู้ใช้ของ **Purchase Request, Purchase Order และ Store Requisition** ทุกใบที่ยังต้องการ action ของผู้ใช้ที่ล็อกอิน ในขณะที่แต่ละโมดูล list *เอกสารทั้งหมด*ของตน หน้านี้แสดงเฉพาะ**ส่วนที่ผู้ใช้ปัจจุบันต้องดำเนินการในตอนนี้เท่านั้น** — บวก draft ที่ยังไม่ submit ของผู้ใช้เอง หน้านี้เป็นแบบ **อ่านและ navigate เท่านั้น**: ไม่มีตารางของตัวเอง, ไม่ render ปุ่ม Approve / Reject และทุกการตัดสินใจทำบนหน้า detail ของเอกสารต้นทาง
+**My Approval** (`/procurement/my-approval`, `routes/router.tsx:357-360`; `/procurement/approval` เดิมเป็น redirect แบบ `<Navigate>`, `:364-366`) คือคิวต่อผู้ใช้ของ **Purchase Request, Purchase Order และ Store Requisition** ทุกใบที่ยังต้องการ action ของผู้ใช้ที่ล็อกอิน ในขณะที่แต่ละโมดูล list *เอกสารทั้งหมด*ของตน หน้านี้แสดงเฉพาะ**ส่วนที่ผู้ใช้ปัจจุบันต้องดำเนินการในตอนนี้เท่านั้น** — บวก draft ที่ยังไม่ submit ของผู้ใช้เอง หน้านี้เป็นแบบ **อ่านและ navigate เท่านั้น**: ไม่มีตารางของตัวเอง, ไม่ render ปุ่ม Approve / Reject และทุกการตัดสินใจทำบนหน้า detail ของเอกสารต้นทาง
 
 **ผู้ใช้งาน** คือใครก็ตามที่ถูกระบุใน `user_action.execute[]` ของ stage ใน workflow (HOD, Purchaser, FC, GM, …) และใครก็ตามที่เป็นเจ้าของ PR / PO / SR สถานะ `draft` &nbsp;·&nbsp; **ไม่มีการ write-back** — หน้านี้อ่านอย่างเดียว
 
@@ -27,8 +27,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 | วัตถุประสงค์ | Endpoint | แหล่งที่มา |
 |---|---|---|
-| แถวของคิว (list เดียวแบบ flat เรียงแล้ว แบ่งหน้า ของ PR + PO + SR) | `GET /api/my-pending` — query `bu_code` (optional; ถ้าไม่ระบุ = ทุก business unit ที่ผู้ใช้สังกัด), `page`, `perpage`, `sort`, `filter`, `search`, `searchfields` | `use-approval.ts` → `API_ENDPOINTS.APPROVAL_PENDING` (`constant/api-endpoints.ts:40`); backend `my-pending.unified.controller.ts` (`AppIdGuard('my-pending.unified.findAll')`) |
-| Card สรุป (จำนวน `total` / `pr` / `po` / `sr`) | `GET /api/my-approve/pending` | `use-approval.ts` → `APPROVAL_PENDING_SUMMARY` (`api-endpoints.ts:41`); backend `my-approve.controller.ts` (`AppIdGuard('my-approve.findAllPending.count')`) |
+| แถวของคิว (list เดียวแบบ flat เรียงแล้ว แบ่งหน้า ของ PR + PO + SR) | `GET /api/my-pending` — query `bu_code` (optional; ถ้าไม่ระบุ = ทุก business unit ที่ผู้ใช้สังกัด), `page`, `perpage`, `sort`, `filter`, `search`, `searchfields` | `use-approval.ts` → `API_ENDPOINTS.APPROVAL_PENDING` (`constant/api-endpoints.ts:51`); backend `my-pending.unified.controller.ts` (`AppIdGuard('my-pending.unified.findAll')`) |
+| Card สรุป (จำนวน `total` / `pr` / `po` / `sr`) | `GET /api/my-approve/pending` | `use-approval.ts` → `APPROVAL_PENDING_SUMMARY` (`api-endpoints.ts:52`); backend `my-approve.controller.ts` (`AppIdGuard('my-approve.findAllPending.count')`) |
 
 Endpoint ที่ยังมีอยู่แต่หน้า approval **ไม่เรียกแล้ว**: `GET /api/my-approve` (response แบบจัดกลุ่มรุ่นเก่า — สาม array แต่ละอันมี pagination envelope; `my-approve.controller.ts`) และตระกูลต่อประเภท `GET /api/my-pending/purchase-requests`, `/purchase-orders`, `/store-requisitions` (แต่ละอันมีจำนวน `/pending`, `:bu_code/workflow-stages`, `:bu_code/:id` และ verb submit / approve / reject / review / save ชุดเดียวกับ endpoint ของโมดูล — `apps/backend-gateway/src/application/my-pending/{purchase-request,purchase-order,store-requisition}/`) endpoint ต่อประเภทคือตัวที่แท็บ **My Pending** ของ list PR และแอป mobile ใช้; การค้นหาระดับบรรทัดสินค้าทำได้ที่นั่นเท่านั้น เพราะ view รวมมีเฉพาะข้อความ header สัญญา Bruno: `../carmen-turborepo-backend-bruno/collections/carmen-inventory/my-pending/`
 
@@ -43,7 +43,9 @@ Endpoint ที่ยังมีอยู่แต่หน้า approval **�
 | เปิดเอกสาร | link ในคอลัมน์ **Document** | `/procurement/purchase-request/:id`, `/procurement/purchase-order/:id` หรือ `/store-operation/store-requisition/:id` (`approve-queue-list.tsx` `DOC_TYPE_CONFIG`) — approve / reject / send back ที่นั่น |
 | อนุมัติแบบ bulk | *ไม่มีบนหน้านี้* | Mobile ใช้ `POST /:bu_code/purchase-requests/swipe-approve` / `swipe-reject` (และคู่แฝดของ PO); คิวบน web ไม่มี multi-select |
 
-คอลัมน์ที่ `approve-queue-list.tsx` render: `#`, Document (`doc_no` มี link), เครื่องหมาย Send-back, badge ประเภท (`pr` / `po` / `sr`), Date (`doc_date`), Status (`doc_status` render ด้วย label `PR_STATUS_CONFIG` สำหรับทุกประเภท)
+คอลัมน์ที่ `approve-queue-list.tsx` render (เขียนใหม่ 2026-10): **Document** (badge ประเภท `pr` / `po` / `sr`, `doc_no` ที่เป็นลิงก์, badge BU เมื่อผู้ใช้อยู่มากกว่าหนึ่งหน่วย และบรรทัดสถานะ send-back จาก `last_action`), **Details** (ผู้ขายสำหรับ PO, ต้นทาง → ปลายทางสำหรับ SR, นอกนั้นเป็นแผนก; `description` เป็นบรรทัดที่สอง; เรียงไม่ได้), **Requestor**, **Stage** (`workflow_current_stage`), **Amount** (`total_amount` จัดชิดขวา) และ **Waiting** (จำนวนวันเต็มนับจาก `doc_date` สีแดงเมื่อเกิน 7 สีเหลืองอำพันเมื่อเกิน 3 พร้อมวันที่; เรียงตาม `doc_date`) การ์ดสรุปสี่ใบคือ Total / Purchase Request / Purchase Order / Store Requisition chip **Sent back** ข้างช่องค้นหาเพิ่มเงื่อนไข `last_action|string:reviewed` (`SENDBACK_FILTER_CLAUSE`, `constant/last-action.ts`) และรวมกับการ์ดประเภท — เงื่อนไขถูกต่อด้วย `;` และ AND โดย backend; จำนวนของมันคือ `paginate.total` ของ query หนึ่งแถว toolbar ไม่มีปุ่ม Filter หรือ saved view อีกต่อไป (ไม่มีอะไรให้ filter)
+
+**ราคาที่ซ่อน** แต่ละแถวมี `hidden_fields` (`my-pending.serializer.ts`; backend resolve ให้แถว PR และ PO จาก stage ปัจจุบันของผู้เรียก) เมื่อมี `total_price` service จะทำให้ `net_amount` / `total_amount` เป็น null และเซลล์ Amount แสดง badge ซ่อน (`normalizeApproval` ใน `use-approval.ts`) แถว SR ไม่เคยมีจำนวนเงิน
 
 ## 4. ข้อผิดพลาดและการตรวจสอบ
 
@@ -79,7 +81,7 @@ Endpoint ที่ยังมีอยู่แต่หน้า approval **�
 | `last_action`, `last_action_at_date`, `last_action_by_id`, `last_action_by_name`, `user_action`, `created_at`, `created_by_id`, `doc_version` | คอลัมน์ header | เหมือนกัน | เหมือนกัน |
 | `bu_code`, `bu_name` | เพิ่มโดย service ต่อ business unit ที่อ่าน | | |
 
-`user_action` ถูกอ่าน (filter stage-role ของ mobile ต้องใช้) แต่**ถูกตัดออกก่อน row ออกจาก service** — มันระบุชื่อผู้ใช้อื่น gateway เพิ่ม `@EnrichAuditUsers()`; ตั้งแต่ 2026-09-18 ฟิลด์ vendor / audit บน list เป็น object ตรงกับ endpoint list ต่อ unit
+service เพิ่มสองฟิลด์ที่ **ไม่ใช่** คอลัมน์ของ view: `bu_code` / `bu_name` และ `hidden_fields` (`('price_per_unit' | 'total_price')[]`, default `[]`, resolve ต่อแถวสำหรับ `pr` และ `po` เท่านั้น, cache ต่อ workflow-stage — `my-pending.service.ts`); เมื่อ `total_price` ถูกซ่อนจะทำให้ `net_amount` และ `total_amount` เป็น null `user_action` ถูกอ่าน (filter stage-role ของ mobile ต้องใช้) แต่**ถูกตัดออกก่อน row ออกจาก service** — มันระบุชื่อผู้ใช้อื่น gateway เพิ่ม `@EnrichAuditUsers()`; ตั้งแต่ 2026-09-18 ฟิลด์ vendor / audit บน list เป็น object ตรงกับ endpoint list ต่อ unit
 
 ### 5.2 Predicate, การยกเว้น, index
 
@@ -118,6 +120,6 @@ LIMIT / OFFSET                                    -- perpage = -1 fetches everyt
 
 - **View + index:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/migrations/20260916030000_add_sys_v_my_pending/migration.sql`
 - **Backend:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/my-pending/unified/` (controller, service, `swagger/response.ts`), `.../my-pending/my-approve/` (จำนวนสรุป), `.../apps/micro-business/src/my-pending/` (`my-pending.sql.ts` predicate / allowlist / sort default, `my-pending.service.ts` การ merge หลาย unit)
-- **Frontend:** `../carmen-frontend/routes/procurement/approval/` (`approval.route.tsx`, `approval-component.tsx`, `approve-queue-list.tsx`, `use-approval.ts`), `types/approval.ts` (`RawApprovalUnified`, `ApprovalItem`, `ApprovalPendingSummary`)
+- **Frontend:** `../carmen-frontend/routes/procurement/my-approval/` (`my-approval.route.tsx`, `approval-component.tsx`, `approve-queue-list.tsx`, `use-approval.ts`), `types/approval.ts` (`RawApprovalUnified`, `ApprovalItem`, `ApprovalPendingSummary`)
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/my-pending/` (`my-approve/`, `purchase-request/`, `purchase-order/`, `store-requisition/`)
-- **E2E:** `../carmen-frontend-e2e/tests/201-my-approvals.spec.ts` (21 test), gap report `docs/test-cases/gaps/201-my-approvals-gap.md` (34 case ที่ catalogue ไว้), story ที่ generate `docs/user-stories/201-my-approvals.md`
+- **E2E:** `../carmen-frontend-e2e/tests/201-my-approvals.spec.ts` (21 test; navigate ไปที่ `/procurement/my-approval`), gap report `docs/test-cases/gaps/201-my-approvals-gap.md` (34 case ที่ catalogue ไว้), story ที่ generate `docs/user-stories/201-my-approvals.md`

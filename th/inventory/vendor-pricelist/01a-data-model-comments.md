@@ -2,7 +2,7 @@
 title: ราคาสินค้าจากผู้ขาย — โมเดลข้อมูล — ตารางคอมเมนต์
 description: ตารางคอมเมนต์ / ไฟล์แนบระดับเอกสารและระดับบรรทัดสำหรับโมดูลราคาสินค้าจากผู้ขาย ครอบคลุม sub-entity families: pricelist template, request-for-pricing, pricelist
 published: true
-date: 2026-07-16T00:00:00.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: vendor-pricelist, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -15,6 +15,8 @@ dateCreated: 2026-05-20T00:00:00.000Z
 โมดูล Vendor Price List เก็บโน้ตพร้อมไฟล์แนบลงในตาราง `*_comment` ที่แยกออกมาเฉพาะ ครอบคลุม sub-entity families สามกลุ่ม — pricelist template, request-for-pricing และ pricelist — โดยแยกจากตาราง header / detail ที่ถือ lifecycle ซึ่งบันทึกไว้ใน [01 — โมเดลข้อมูล](/th/inventory/vendor-pricelist/01-data-model) แถวคอมเมนต์ทุกแถวมีฟิลด์ `message` แบบข้อความอิสระ, ฟิลด์ `attachments` ที่เป็น JSON array ของ S3-token records (`{originalName, fileToken, contentType}`) และฟิลด์ `type` ที่แยก discriminator (`enum_comment_type`, default `user` | `system`) ที่ใช้ร่วมกับทุกตาราง comment อื่นในผลิตภัณฑ์ แต่ละ sub-entity family มีตารางคอมเมนต์ระดับ header และตารางคอมเมนต์ระดับ detail (ระดับบรรทัด) เป็นของตัวเอง พร้อม manual CRUD controller ของตัวเอง
 
 > **ยืนยันแล้ว (ตรวจสอบเมื่อ 2026-07-16):** ค่า `system` บน `enum_comment_type` มีอยู่จริงใน schema แต่ไม่มี service ใดในโมดูลนี้ (`price-list`, `price-list-template`, `request-for-pricing`, `check-price-list`) ที่สร้างแถวคอมเมนต์โดยอัตโนมัติ — `create()`/`update()`/`updateStatus()` ของทั้งสี่ตัวไม่แตะตาราง `*_comment` เลย ทุกแถวคอมเมนต์ที่มีอยู่วันนี้ถูกเขียนโดย call ของผู้ใช้ที่ชัดเจนไปยัง CRUD endpoint ของคอมเมนต์นั้นเอง ให้ถือว่าทุกคำกล่าวแบบ "system comment records..." ด้านล่างและใน [02-business-rules](/th/inventory/vendor-pricelist/02-business-rules) / หน้า user-flow เป็น design-target ไม่ใช่พฤติกรรมปัจจุบัน
+
+> **Re-sync 2026-10-27:** (a) master ผู้ขายมีคู่ comment เดียวกัน — `tb_vendor_comment` และ `tb_vendor_business_type_comment` — และหน้า vendor ตอนนี้เปิด sheet comment + attachment บน `/api/config/{bu}/vendor-comments` (`vendor-form.tsx` → `EntityCommentSheet`, `use-vendor-comments.ts`); (b) comment controller ทุกตัวในโมดูลนี้ (template, RFQ, pricelist, vendor — ทั้ง header และ detail) ตอนนี้ตรวจการอัปโหลดผ่าน `AttachmentPolicyService` / `CommentFilesInterceptor` แทนการตรวจ 10 MB + JPEG/PNG/WebP/GIF/PDF ที่ hard-code: กลุ่มไฟล์ที่อนุญาต (`image`, `pdf`, `excel`, `word`, `csv`, `text`) และเพดานขนาดมาจาก key `config` ของ business unit คือ `attachment.allowed_types` / `attachment.max_size_mb` (ค่า default: image + pdf, 10 MB; เพดานสูงสุด 25 MB; policy ถูก cache 60 วินาทีต่อ BU); (c) DTO ของ micro-service รับ `attachments` ได้ทั้งแบบ array เต็ม (แทนที่) หรือแบบ delta `{ add, remove }` — ก่อนหน้านี้ delta shape จาก gateway ทำให้ PATCH ที่แนบหรือลบไฟล์ล้มเหลวใน validation; (d) ตอน PATCH gateway ลบเฉพาะไฟล์ใน storage ที่ `fileToken` เป็นของ comment นั้นจริง และลบหลังจากเขียน DB สำเร็จแล้วเท่านั้น ยังเป็นจริงอยู่: ไม่มีสิ่งใดในโมดูลนี้เขียน comment แบบ `system` โดยอัตโนมัติ — การ void หรือ restore price list ไม่ทิ้งแถว comment
 
 ## 2. โครงสร้างร่วม
 
@@ -94,6 +96,10 @@ Activity-log surface บน header ของ pricelist และต่อแถ�
 | ----- | --------- | ------- |
 | `tb_pricelist_comment` | `pricelist_id → tb_pricelist.id` | โน้ตข้อความอิสระแนบกับ header ของ pricelist — เขียนโดยผู้ใช้เท่านั้น; `create()`/`update()` ของ `price-list.service.ts` ไม่เคยเขียนที่นี่ ดังนั้นจึงไม่มี entry อัตโนมัติสำหรับการเปลี่ยนสถานะ, การ submit หรือการ approve |
 | `tb_pricelist_detail_comment` | `pricelist_detail_id → tb_pricelist_detail.id` | โน้ตข้อความอิสระแนบกับแถวสินค้าหนึ่งแถว — เขียนโดยผู้ใช้เท่านั้น; ไม่มี entry อัตโนมัติสำหรับการ toggle `is_preferred` หรือการแก้ราคา |
+
+### 3.5 tb_vendor_comment / tb_vendor_business_type_comment
+
+รูปร่างเดียวกับ § 2 (`type`, `user_id`, `message`, `attachments`, `doc_version`, คอลัมน์ audit); FK ของ parent คือ `vendor_id → tb_vendor.id` และ `vendor_business_type_id → tb_vendor_business_type.id` Gateway: `GET/POST /api/config/{bu}/vendor-comments/:vendor_id`, `PATCH/DELETE …/:comment_id`, `POST …/:comment_id/attachment`, `DELETE …/:comment_id/attachment/:fileToken` (และคู่แฝด `vendor-business-type-comments`) หน้า vendor ของ React ใช้เฉพาะระดับ vendor
 
 ## 4. แหล่งอ้างอิงข้าม
 

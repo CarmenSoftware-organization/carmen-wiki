@@ -196,7 +196,7 @@ The **per-product detail line on a stock-out document**. Similar shape to `tb_st
 | `product_sku` | `String @db.VarChar` | Yes | SKU snapshot. |
 | `qty` | `Decimal @db.Decimal(20, 5)` | Yes | Outbound quantity, entered positive on the form; default `0`. Client-side Zod requires `qty >= 0` (relaxed from `>= 1`). At commit the service pre-checks Σ qty per product against on-hand (`STOCK_OUT_INSUFFICIENT_STOCK`). |
 | `cost_per_unit` | `Decimal @db.Decimal(20, 5)` | Yes | `0` on a draft; set to the **posted** unit cost (absolute value) at commit (see note above). |
-| `total_cost` | `Decimal @db.Decimal(20, 5)` | Yes | **Always `0`** on this table for the same reason; the frontend computes a preview client-side (`useProductLastReceiving`) but it is never persisted here. |
+| `total_cost` | `Decimal @db.Decimal(20, 5)` | Yes | `0` on a draft; set to the **posted** total cost (absolute value) at commit, like `cost_per_unit`. The frontend's client-side preview (`useProductLastReceiving`) is never persisted. |
 | `note` | `String @db.VarChar` | Yes | Free-text. |
 | `info` | `Json @db.JsonB` | Yes | Extension bag; default `{}`. Passed through unmodified; no recognised keys (no lot-override field — this module has no lot UI). |
 | `dimension` | `Json @db.JsonB` | Yes | Cost-dimension array; default `[]`. Passed through unmodified. |

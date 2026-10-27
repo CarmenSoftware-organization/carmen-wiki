@@ -1,8 +1,8 @@
 ---
 title: Widget Workspace แดชบอร์ด (Widget Workspace Dashboard)
-description: หน้า /dashboard ที่ live — workspace 12 คอลัมน์แบบ drag-and-drop ส่วนตัว ที่ผู้ใช้แต่ละคนปักหมุด widget ที่ขับเคลื่อนด้วย dataset (KPI, gauge, pie, bar, line, area, table) และ card pipeline สถานะ จาก catalog ของ micro-data
+description: หน้า /dashboard ที่ live — widget ที่ขับเคลื่อนด้วย dataset: กริด drag-and-drop 12 คอลัมน์ส่วนตัว ส่วน widget ของ BU ที่ใช้ร่วมกัน ชื่อสองภาษา และลิงก์เอกสารใน table
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: dashboard, widget-workspace, kpi, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -15,7 +15,11 @@ dateCreated: 2026-06-04T00:00:00.000Z
 
 ![Widget Workspace แดชบอร์ด (Widget Workspace Dashboard) screen](/screenshots/dashboard/widget-workspace.png)
 
-## สถานะการ implement (ตรวจสอบซ้ำ 2026-09-22)
+## สถานะการ implement (ตรวจสอบซ้ำ 2026-10-27)
+
+**การตรวจสอบซ้ำ 2026-10-27** กับ FE `391062b5`, backend `c9d788829`, micro-data `c9aa145` สิ่งใหม่ตั้งแต่ 2026-09-22 ทั้งหมด live: **ส่วน widget ของ BU** ที่ใช้ร่วมกันเหนือกริดส่วนตัว (§ 1.4), **ชื่อ widget สองภาษา** `title_i18n` (§ 1.5), **ลิงก์เอกสารภายใน widget แบบ table** และ dataset **`inventory.slow-moving`** (§ 1.6), **ปุ่มเพิ่มบน empty state** (`aa8c8689`), กราฟอ่านง่ายขึ้นในทุกขนาด card (`44d451fa`) และ header ของ status-group บรรทัดเดียวบนจอแคบ (`4050fa6b`) component ของ card/dialog ที่ใช้ร่วมกันถูกย้ายจาก `routes/dashboard/` ไป `components/dashboard-widget/` (`5d271cb9`) ข้อความระดับหน้าด้านล่างถูกตรวจซ้ำแล้ว และการอ้างตำแหน่งไฟล์เก่าถูกแก้ไขแล้ว
+
+**การตรวจสอบ 2026-09-22 (เก็บไว้)**
 
 ตรวจสอบซ้ำกับ `carmen-frontend`, `carmen-turborepo-backend` และ `micro-data` ที่ HEAD ตั้งแต่รอบ 2026-07 หน้านี้เพิ่มฟีเจอร์สี่อย่าง live ทั้งหมด: **(1)** การสลับ render ต่อ widget (`widget_type` บน `PATCH` ซึ่ง micro-data validate กับ shape ของ dataset, 2026-09-07 `74e3c795`), **(2)** card แบบ gauge บวก **กริด 12 คอลัมน์พร้อมขนาดต่อ widget** เก็บในคอลัมน์ JSONB ใหม่ `display` (2026-09-07 `493c78f0`; tenant migration `20260907143700_add_dashboard_widget_display`, micro-data migration `130_dash_widget_display`), **(3)** lazy loading ต่อ widget — แต่ละ card fetch ค่าของตัวเองเมื่อ scroll เข้ามาในสายตาเท่านั้น (`db046517`) และ **(4)** **dialog parameter/display** ของ widget บวก **card status-group** แบบเต็มความกว้าง (`f72f951c`) แก้ไขหนึ่งจุดจากเวอร์ชันก่อนของหน้านี้: backend ที่ให้บริการหน้านี้คือ **micro-data (Go, HTTP)** ไม่ใช่ `micro-cluster` ผ่าน TCP — ดู §5
 
@@ -23,17 +27,18 @@ dateCreated: 2026-06-04T00:00:00.000Z
 
 Widget Workspace คือ **หน้าเดียวเท่านั้นบน route `/dashboard`** — ไม่มีชุดหน้าย่อยแบบมีชื่อของโดเมนต่างๆ อยู่เบื้องหลังมันแต่อย่างใด (เอกสารฉบับก่อนหน้าของ wiki นี้เคยอ้างว่ามัน "แทนที่" หน้า mock 6 หน้าที่ `/dashboard/pr`, `/dashboard/po` ฯลฯ — หน้าเหล่านั้นไม่เคยมีอยู่จริงในฐานะ route เลย ดูหน้าพี่น้อง [dashboard/main](/th/inventory/dashboard/main), [pr](/th/inventory/dashboard/pr) ฯลฯ ซึ่งแต่ละหน้าถูก flag ว่าเป็นข้อมูลเชิงประวัติศาสตร์เท่านั้น) หน้านี้ render กริด widget แบบ drag-and-drop ส่วนตัว โดยแต่ละ widget ผูกกับ dataset จาก catalog ของ micro-data
 
-> **หมายเหตุเรื่องชื่อ (แก้ไขเมื่อ 2026-07-16, แก้ไขการระบุ backend เมื่อ 2026-09-22):** ตาราง backend จริงคือ `tb_dashboard_personal_widget` (ข้อมูลของหน้านี้ — tenant schema, `packages/prisma-shared-schema-tenant/prisma/schema.prisma` `model tb_dashboard_personal_widget`: `dataset_id`, `widget_type`, `title`, `order_index`, `params`, `display`, scope ด้วย `user_id`) และตารางพี่น้อง `tb_dashboard_bu_widget` (scope ระดับ BU; CRUD มีใน backend แต่**ไม่มีผู้เรียกฝั่ง frontend** — ดู [reporting-audit/widget](/th/inventory/reporting-audit/widget)) ทั้งสองตารางถูกอ่านและเขียนโดย Go service **micro-data** (`micro-data/controller/dashboard_controller.go`, `/api/dashboard/personal-widgets*`); `DashboardPersonalWidgetsService` ของ NestJS gateway เป็น HTTP proxy บางๆ ที่ตอนนี้ต้องแนบ `x-internal-token` ที่แชร์กัน (`INTERNAL_RPC_SECRET`) ทุกครั้งที่เรียก — micro-data guard ทุก route ยกเว้น `/health`, `/` และ Swagger ด้วย `GinInternalAuth` (`micro-data/routes/routes.go`; gateway fix `c94a625ed`, 2026-09-21 — ถ้าไม่มี header ทั้ง dashboard จะตอบ 401) หมายเหตุฉบับก่อนหน้าอ้างว่าตารางอีกสี่ตารางเป็นของจริง — **ทั้งสี่ตารางไม่มีอยู่แล้วหรือไม่เคยมีอยู่จริง**: `tb_widget_dashboard`, `tb_widget_dashboard_item` และ `tb_widget_default_layout` ไม่ปรากฏใน Prisma schema ใดๆ หรือใน micro-data/micro-report เลย; `tb_widget_workspace` เคยมีอยู่ช่วงสั้นๆ (migration `20260512180928_widget_system_replace_dashboard`) และถูก drop โดย `20260521040013_remove_widget_system`
+> **หมายเหตุเรื่องชื่อ (แก้ไขเมื่อ 2026-07-16, แก้ไขการระบุ backend เมื่อ 2026-09-22):** ตาราง backend จริงคือ `tb_dashboard_personal_widget` (ข้อมูลของหน้านี้ — tenant schema, `packages/prisma-shared-schema-tenant/prisma/schema.prisma` `model tb_dashboard_personal_widget`: `dataset_id`, `widget_type`, `title`, `order_index`, `params`, `display`, scope ด้วย `user_id`) และตารางพี่น้อง `tb_dashboard_bu_widget` (scope ระดับ BU แสดงในส่วนที่อธิบายใน § 1.4 — ดู [reporting-audit/widget](/th/inventory/reporting-audit/widget)) ทั้งสองตารางถูกอ่านและเขียนโดย Go service **micro-data** (`micro-data/controller/dashboard_controller.go`, `/api/dashboard/personal-widgets*`); `DashboardPersonalWidgetsService` ของ NestJS gateway เป็น HTTP proxy บางๆ ที่ตอนนี้ต้องแนบ `x-internal-token` ที่แชร์กัน (`INTERNAL_RPC_SECRET`) ทุกครั้งที่เรียก — micro-data guard ทุก route ยกเว้น `/health`, `/` และ Swagger ด้วย `GinInternalAuth` (`micro-data/routes/routes.go`; gateway fix `c94a625ed`, 2026-09-21 — ถ้าไม่มี header ทั้ง dashboard จะตอบ 401) หมายเหตุฉบับก่อนหน้าอ้างว่าตารางอีกสี่ตารางเป็นของจริง — **ทั้งสี่ตารางไม่มีอยู่แล้วหรือไม่เคยมีอยู่จริง**: `tb_widget_dashboard`, `tb_widget_dashboard_item` และ `tb_widget_default_layout` ไม่ปรากฏใน Prisma schema ใดๆ หรือใน micro-data/micro-report เลย; `tb_widget_workspace` เคยมีอยู่ช่วงสั้นๆ (migration `20260512180928_widget_system_replace_dashboard`) และถูก drop โดย `20260521040013_remove_widget_system`
 
-**Layout (`routes/dashboard/dashboard-component.tsx`, `sortable-widget-item.tsx`):**
+**Layout (`routes/dashboard/dashboard-component.tsx`, `components/dashboard-widget/sortable-widget-item.tsx`):**
 - Header ทักทาย (ตามช่วงเวลาของวัน + ชื่อเต็มของผู้ใช้) render จาก user profile
+- **ส่วน widget ของ BU** ("Business unit dashboard", § 1.4) ใต้ header ทักทายโดยตรง
 - Section "Saved Widgets" พร้อมจำนวน card ที่ render ได้แบบ live และ picker "+ Add widget" (`LookupDataset`)
 - **Card status-group** (ถ้ามี) render ก่อน แบบเต็มความกว้าง นอกกริด drag — ดู §1.2
 - กริด widget เป็น CSS grid **12 คอลัมน์บน `lg`, 6 บน `md`, 1 บน mobile** โดยแถวสูงคงที่ **4 rem** (`auto-rows-[4rem]`) แต่ละ card กิน `display.width` คอลัมน์ × `display.height` แถว (`components/dashboard-widget/widget-display.ts` `gridClasses()`); บน `md` ความกว้างถูกหารครึ่ง card เรียงตาม `order_index`
 - แต่ละ card ลาก (drag) ได้ผ่าน `@dnd-kit/core` (activation distance 6 px) การตรวจจับการชนใช้ `pointerWithin` โดยมี `closestCorners` เป็น fallback (`bc38a34c`) เพื่อให้ card ขนาดไม่เท่ากันลงตรงที่ pointer อยู่; การ drop เรียง list ใหม่และ PATCH อัปเดต `order_index` แบบ optimistic (`(index + 1) * 10`)
 - ข้อมูลของแต่ละ card ถูก fetch **เมื่อ card scroll เข้ามาในสายตาเท่านั้น** (`useInViewport` → `onVisible`) หนึ่ง query ต่อ widget (`useQueries`)
 - ปุ่มควบคุมเมื่อ hover ต่อ card: drag handle · **dropdown ประเภทกราฟ** (เฉพาะเมื่อมี render ให้เลือกมากกว่าหนึ่ง) · **gear** (เปิด dialog param/display; แสดงเสมอเมื่อ dataset ยังอยู่ใน catalog) · delete
-- Empty state: placeholder ตกแต่งพร้อม chip hints (KPI / Pie / Bar)
+- Empty state: แสดงเฉพาะเมื่อผู้ใช้ไม่มี widget ส่วนตัว ไม่มี card status-group **และ**ส่วน BU ว่าง (`buEmpty` เพื่อไม่ให้กะพริบก่อนส่วน BU โหลดเสร็จ) มีปุ่ม "add widget" ที่เปิด picker เดียวกับปุ่มบน header (state `pickerOpen`); chip KPI / Pie / Bar เป็นแค่ของตกแต่ง ไม่ใช่ปุ่ม
 
 ### 1.1 Shape ของ widget และประเภทการ render
 
@@ -48,7 +53,7 @@ Dataset เป็นเจ้าของ **shape** (ชนิดข้อมู
 | `table` | `table` | `table` | `table` |
 | `matrix` | `heatmap`, `table` | — (ยังไม่มี converter) | เลือกไม่ได้ |
 
-Picker (`SUPPORTED_SHAPES` ใน `routes/dashboard/widget-shape.ts`) เสนอทั้งหก shape ที่ไม่ใช่ matrix `enum_dashboard_widget_type` ยังมี 9 ค่า (`kpi`/`line`/`area`/`bar`/`pie`/`heatmap`/`gauge`/`table`/`sparkline`); `sparkline` และ `heatmap` ไม่มี card ใน frontend การสลับ render เป็น optimistic ใน cache และ `PATCH` `{ widget_type }`; micro-data ตอบ **400** เมื่อ shape นั้นวาดแบบนั้นไม่ได้ (`micro-data/service/widget_service.go` `validateRender()` — เช่น pie ของ scalar)
+Picker (`SUPPORTED_SHAPES` ใน `components/dashboard-widget/widget-shape.ts`) เสนอทั้งหก shape ที่ไม่ใช่ matrix `enum_dashboard_widget_type` ยังมี 9 ค่า (`kpi`/`line`/`area`/`bar`/`pie`/`heatmap`/`gauge`/`table`/`sparkline`); `sparkline` และ `heatmap` ไม่มี card ใน frontend การสลับ render เป็น optimistic ใน cache และ `PATCH` `{ widget_type }`; micro-data ตอบ **400** เมื่อ shape นั้นวาดแบบนั้นไม่ได้ (`micro-data/service/widget_service.go` `validateRender()` — เช่น pie ของ scalar)
 
 ### 1.2 Card status-group
 
@@ -57,6 +62,34 @@ Card status-group คือ **การ encode เฉพาะฝั่ง front
 ### 1.3 Parameter และการตั้งค่า display
 
 Dataset ที่ประกาศ `params[]` (เฉพาะ endpoint catalog ของ `dashboard-lab` ที่คืน descriptor: `name`, `label`, `type` `text|int`, `required`, `default`, `options`) จะเปิด `WidgetConfigDialog` ก่อนสร้าง widget; dataset ที่มี parameter ปักหมุดได้มากกว่าหนึ่งครั้ง (เช่น trend 30 วันและ 365 วัน) dialog เดียวกันแก้ไขการตั้งค่า **display** ของทุก widget: ขนาด (`width × height` จาก list ต่อประเภท — `widget-display.ts` `SIZE_OPTIONS`), `decimals` (0–4) และสำหรับ gauge `min`, `max` และ `thresholds[0] {value, color}` หนึ่งค่า ค่าเริ่มต้นเมื่อไม่ตั้ง: `kpi` 3×2, `gauge` 3×3, `pie`/`bar`/`line`/`area` 6×3, `table` 12×4; ขนาดที่ต่ำกว่าขั้นต่ำของประเภทถูก clamp ตอน render (เกี่ยวข้องหลังสลับ render) `display` เก็บแบบทึบ — micro-data ตรวจแค่ว่าเป็น JSON object ≤ 8 KB (`maxDisplayBytes`) ดังนั้น frontend เพิ่ม key ได้โดยไม่ต้อง release backend (ข้อความ swagger ของ gateway ยังอธิบาย shape เก่า `width: 1|2|4, height: "sm"|"md"|"lg"` — `WidgetDisplay` ใน `types/dashboard-widget.ts` ของ frontend คือ authority)
+
+### 1.4 ส่วน widget ของ BU (ใช้ร่วมกันโดยทุกคนใน business unit)
+
+`BuWidgetSection` (`components/dashboard-widget/bu-widget-section.tsx`) render แถวของ `tb_dashboard_bu_widget` ตาม `module`: `main` บน `/dashboard` และ `procurement`, `inventory`, `product`, `config`, `vendor-management`, `operation-plan` หรือ `store-operation` ที่ท้ายของ dashboard โมดูลที่ตรงกัน (`routes/{procurement,inventory-management,product-management,vendor-management,store-operation,operation-plan,config}/…-dashboard.tsx`) ใช้ component ของ card, ขนาด, param และการสลับ render ชุดเดียวกับกริดส่วนตัว
+
+| ประเด็น | พฤติกรรม |
+|---|---|
+| ใครเห็น | ทุกคนใน BU เห็นชุดเดียวกัน (แถวอยู่ใน tenant schema ของ BU ไม่มี `user_id`) |
+| ใครแก้ไข | `useCan(PERMISSIONS.dashboard.bu_widget.{create,update,delete})` = `dashboard.bu_widget:create/update/delete`; ถ้าไม่มี card เป็นแบบอ่านอย่างเดียว (ไม่มี handle, gear, delete) Backend บังคับ key เดียวกันด้วย `@Permission` บน `POST`, `PATCH reorder`, `PATCH :id`, `DELETE :id` (`dashboard-bu-widgets.controller.ts:139,171,203,236`); `GET` สองตัวไม่มี |
+| การมองเห็น | ซ่อนทั้งส่วนเมื่อการเรียก list ล้มเหลวและไม่มีข้อมูลใน cache (backend ยังไม่ deploy) หรือเมื่อ BU ไม่มี widget และผู้ดูสร้างไม่ได้ |
+| ลำดับ | `order_index` จากน้อยไปมาก; drag-reorder ส่ง `PATCH …/dashboard-widgets/bu/reorder` (bulk, micro-data `POST /api/dashboard/bu-widgets/reorder`); แถวใหม่ได้ `last + 10` |
+| ข้อมูล | `GET …/dashboard-lab/widgets/{id}/data?scope=bu` แบบ lazy หนึ่งครั้งต่อ card ผ่านคิว concurrency เดียวกัน (`runWidgetDataTask`) กับ widget ส่วนตัว |
+| ค่าเริ่มต้นของ platform | response ของ list มี `deploy_state { deployed_version, deployed_at, customized_at }` platform admin deploy ชุดเริ่มต้นได้ (Backstage dashboard-templates → micro-data `POST /api/dashboard/bu-widgets/deploy`, `skip_customized` หรือ `overwrite`; ชุดว่างถูกปฏิเสธ) การเปลี่ยนด้วยมือใดๆ จะประทับ `customized_at`; การแก้ไขครั้งแรกต่อการโหลดหน้าแสดง toast เตือนว่าการอัปเดตของ platform ในอนาคตจะไม่ถูกนำมาใช้อัตโนมัติอีก (`dashboard.buWidget.customizeWarning`) |
+| การจัดเก็บ | `tb_dashboard_bu_widget` เพิ่ม `module` ที่เป็น nullable (`NULL` = หน้า main) และ `tb_dashboard_bu_widget_deploy` แถวเดียว (`id = 1`) — micro-data migration `131_dash_bu_widget_module`, tenant migration `20261006100100_dashboard_bu_widget_module_deploy` (ทั้งสองใช้ `IF NOT EXISTS`) BU ที่มี BU widget อยู่แล้วถูก seed เป็น customised |
+| ส่วนตัว vs BU | `PATCH` บน widget ส่วนตัวที่ส่งแค่ `module` ได้ 400; `module` มีความหมายสำหรับ BU widget เท่านั้น |
+
+### 1.5 ชื่อสองภาษา (`title_i18n`)
+
+ชื่อของ widget คือ `{ en, th? }` (`LocalizedTitle`) dialog ให้ผู้ใช้ตั้งชื่อภาษาอังกฤษและชื่อภาษาไทย (ไม่บังคับ); เมื่อบันทึกจะส่งทั้ง `title` (= `en` สำหรับ backend รุ่นเก่า) และ `title_i18n` **widget ใหม่ไม่เก็บชื่อ dataset เป็น `title` อีกต่อไป** (`afcf28b2`/`79e1c8aa`): เมื่อไม่มีชื่อที่กำหนดเอง card จะแสดงชื่อ dataset ที่แปลแล้ว (ชื่อ dataset 94 รายการถูกแปลในไฟล์ message ของ FE) ถอยไปใช้ชื่อใน catalog แล้วจึง `dataset_id` แถวเก่าที่ title เท่ากับชื่อ dataset และไม่มีข้อความภาษาไทยถือว่า "ไม่ได้กำหนดเอง" (`customWidgetTitle`, `components/dashboard-widget/widget-title.ts`) มิฉะนั้นผู้ใช้ภาษาไทยจะเห็นชื่อภาษาอังกฤษตลอดไป กฎฝั่ง backend (micro-data `service/widget_title.go`, migration `132_dash_widget_title_i18n`): รองรับเฉพาะ locale `en` และ `th`; ต้องมี `en` เมื่อมีการให้ title ใดๆ; ค่าถูก trim และจำกัด 255 ตัวอักษร; `null`, `{}` หรือค่าว่างจะล้าง title; คอลัมน์ `title` เดิมถูกเขียนคู่เป็น `title_i18n.en` แถวที่มีอยู่ถูก backfill เป็น `{ "en": title }`
+
+### 1.6 Widget แบบ table: ลิงก์แถวและ dataset slow-moving
+
+Widget รูป table เปิดเอกสารต้นทางได้ มีสองกลไก ทั้งสองแก้ใน frontend (micro-data ส่งแค่ id — `components/dashboard-widget/table-row-link.ts`):
+
+- **ลิงก์ทั้งแถว** (`docHref`) สำหรับ dataset ใน map ขนาดเล็ก (`document.pr-table`, `document.pr-sent-back`, `document.pr-rejected`, `document.po-sent-back`, `document.po-rejected`, `document.sr-sent-back`, `document.sr-rejected`, `procurement.slowest-pr-approvals`, `procurement.slowest-po-approvals`, `workflow.my-pending-pr`) โดยใช้คอลัมน์ `id` ที่ซ่อนอยู่
+- **ลิงก์ระดับเซลล์** (`cellDocHref`, 2026-10-22) สำหรับคอลัมน์ที่มี `link { doc_type, doc_id, title? }`: เซลล์ลิงก์ไปยังเอกสารที่ระบุโดยอีกสองคอลัมน์ ประเภทที่ map: `good_received_note` → `/procurement/goods-receive-note/{id}`, `credit_note` → `/procurement/credit-note/{id}`, `store_requisition` → `/store-operation/store-requisition/{id}`, `stock_in` / `stock_out` → `/inventory-management/inventory-adjustment/{id}?type=stock-in|stock-out` ประเภทอื่นแสดงเป็นข้อความธรรมดา
+
+`inventory.slow-moving` (micro-data `service/dashboard/slow_moving.go`, shape `table`, group `inventory`) แสดง **หนึ่งแถวต่อสินค้าทั้ง BU** ของสินค้าที่สต๊อกไม่เคลื่อนไหวอย่างน้อย N วัน เรียงมูลค่าสูงสุดก่อน Params: `days` (30 / 60 / 90 / 180, ค่าเริ่มต้น 30), `limit` (10 / 20 / 50 / 100, ค่าเริ่มต้น 20) และ `calculation_method` ที่ context ฉีดให้จาก BU (`fifo`, `average`, `average_per_location`) ส่งให้ SQL function `f_inventory_slow_moving_product` "เคลื่อนไหว" = เอกสารจริงใดๆ (RC, CN, SR, SI, SO, EOP-IN, EOP-OUT) ที่ location ใดก็ได้ ตามวันที่เอกสาร; ยอดยกมาตอนเปิด/ปิดงวดไม่นับ; "slow" = การเคลื่อนไหวล่าสุดเมื่อหรือก่อนวันนี้ − N (Asia/Bangkok) หรือไม่เคยเคลื่อนไหว คอลัมน์: Product ID, Product, Last Active, Type (ลิงก์ระดับเซลล์ไปยังเอกสารล่าสุด), Idle (วัน), On Hand, Unit, Amount รายงานที่ตรงกันคือ Slow Moving Report (ดู [reporting-audit/report](/th/inventory/reporting-audit/report)) สิ่งที่เปลี่ยนใน micro-data เพิ่มเติม: dashboard ฝั่ง inventory ตอนนี้ไม่รวมเอกสารที่ void (`cadf401`, 2026-10-01) และ dataset รับ `@calculation_method` ของ BU หรือค่า `@bu_config:<key>` เป็น source parameter ได้
 
 **กลุ่มผู้ใช้**
 
@@ -73,7 +106,7 @@ Widget Workspace ไม่มีชุด tile ตายตัว — กริ�
 | Card status-group | `POST /api/{bu}/dashboard-lab/datasets/document.{doc}-by-status` พร้อม `{ params: { time_range, owner_visibility } }` | picker "+ Add widget" → "PR/PO/SR summary (status pipeline)" |
 | Dataset shape `table` (เช่น `document.pr-table`) | Row มีคอลัมน์ `id` ที่ซ่อนอยู่ (`TableColumn.type = "id"`, micro-data `dbfde10`) ทำให้คลิก row เปิดเอกสารได้ (`3bd0b68f`) | picker |
 
-สีของ tile ตาม prefix ของ dataset id (`inventory.*` → Inventory Management ที่เหลือ Procurement) ผ่าน `inferModuleName` / `inferSubTile` ใน `widget-shape.ts`
+สีของ tile ตาม prefix ของ dataset id (`inventory.*` → Inventory Management ที่เหลือ Procurement) ผ่าน `inferModuleName` / `inferSubTile` ใน `components/dashboard-widget/widget-shape.ts`
 
 ## 3. คำถามที่พบบ่อย
 
@@ -113,12 +146,14 @@ Widget Workspace ไม่มีชุด tile ตายตัว — กริ�
 - **ค่าของ widget** — `GET /api/{bu}/dashboard-lab/widgets/{widget_id}/data?scope=personal` → `{ meta, data }` (gateway `dashboard-lab.controller.ts` `widgetData`, micro-data `/api/dashboard-lab/widgets/{id}/data`; `scope` default เป็น `bu`) Query options: `myDashboardWidgetDataQueryOptions(buCode, widgetId, enabled)` — `enabled` เปลี่ยนเมื่อ card อยู่ในสายตา Bruno: `_uncategorized/dashboard-lab/GET-widget-data-dashboard-lab.bru`
 - **Dataset catalog** — `GET /api/{bu}/dashboard-lab/datasets` → `{ items: DashboardDataset[], count }` พร้อม descriptor `params[]` และ `supported_renders[]` ต่อ dataset (`6dfe58992`) Hook: `useDashboardDatasets` (`CACHE_STATIC`) Bruno: `GET-list-dashboard-lab.bru`
 - **Preview / tile ของ group** — `POST /api/{bu}/dashboard-lab/datasets/{dataset_id}` พร้อม `{ params }` → `{ meta, data }` Hook: `useDashboardDatasetPreview` Bruno: `POST-preview-dashboard-lab.bru`
-- **สร้าง widget** — `POST /api/me/dashboard-widgets?bu_code=` พร้อม `{ dataset_id, widget_type, title?, order_index?, params?, display? }` → `{ id }` (201) Hook: `useCreateMyDashboardWidget`
-- **อัปเดต widget** — `PATCH /api/me/dashboard-widgets/{id}?bu_code=` พร้อมฟิลด์ใดก็ได้ใน `{ title, order_index, params, widget_type, display }` — `params` และ `display` **แทนที่**ทั้ง object (ไม่ merge); `widget_type` ถูก validate กับ shape ของ dataset (400) Hook: `useUpdateMyDashboardWidget` Bruno: `_uncategorized/dashboard-widgets/PATCH-update-dashboard-widgets-dashboard-widgets.bru`
+- **สร้าง widget** — `POST /api/me/dashboard-widgets?bu_code=` พร้อม `{ dataset_id, widget_type, title?, title_i18n?, order_index?, params?, display? }` → `{ id }` (201); picker ไม่ส่ง `title` อีกต่อไป ส่วน config dialog ส่ง `title` + `title_i18n` Hook: `useCreateMyDashboardWidget`
+- **อัปเดต widget** — `PATCH /api/me/dashboard-widgets/{id}?bu_code=` พร้อมฟิลด์ใดก็ได้ใน `{ title, title_i18n, order_index, params, widget_type, display }` — `params` และ `display` **แทนที่**ทั้ง object (ไม่ merge); `widget_type` ถูก validate กับ shape ของ dataset (400) Hook: `useUpdateMyDashboardWidget` Bruno: `_uncategorized/dashboard-widgets/PATCH-update-dashboard-widgets-dashboard-widgets.bru`
 - **เรียงใหม่แบบ bulk** — `PATCH /api/me/dashboard-widgets/reorder?bu_code=` พร้อม `{ items: [{ id, order_index }] }` (atomic, micro-data `PersonalReorder` ใน transaction เดียว) — มีบน gateway และใน Bruno (`PATCH-reorder-dashboard-widgets.bru`) แต่หน้านี้ปัจจุบันยิง `PATCH /{id}` หนึ่งครั้งต่อ widget ที่ย้ายแทน
 - **ลบ widget** — `DELETE /api/me/dashboard-widgets/{id}?bu_code=` (soft delete) Hook: `useDeleteMyDashboardWidget`
 - **ทางเลือกแบบรวม (หน้านี้ไม่ใช้)** — `GET /api/{bu}/dashboard-widgets/me` คืน list ส่วนตัวเดียวกันพร้อม `{ meta, data }` แนบต่อรายการใน round-trip เดียว (`system-widgets.controller.ts` `@Get('me')`); ไม่มีผู้เรียกฝั่ง frontend
 - **ตาราง backend:** `tb_dashboard_personal_widget` (tenant schema) — `id`, `user_id`, `dataset_id` (VarChar 100), `widget_type` (`enum_dashboard_widget_type`), `title`, `order_index` (default 0), `params` (JSONB), `display` (JSONB เพิ่มโดย `20260907143700_add_dashboard_widget_display` / micro-data `130_dash_widget_display.up.sql` ใช้ `IF NOT EXISTS` ทั้งสองฝั่งเพื่อให้ migration ทางไหนรันก่อนก็ได้), `doc_version`, คอลัมน์ audit มาตรฐาน; index `[user_id, deleted_at]` ให้บริการโดย **micro-data** (`controller/dashboard_controller.go` → `service/widget_service.go` → `db/widget_repo.go`) หน้าด่านโดย `DashboardPersonalWidgetsController` ของ `backend-gateway` (`api/me/dashboard-widgets`, `KeycloakGuard` + `x-app-id`) ซึ่ง service `fetch` ไปที่ `http://DATASET_SERVICE_HOST:DATASET_SERVICE_HTTP_PORT/api/dashboard/personal-widgets…` พร้อม header `x-internal-token` ไม่มี default/seed layout
+
+- **BU widgets** — ดู § 1.4: `GET/POST /api/{bu}/dashboard-widgets/bu[?module=]`, `PATCH/DELETE …/bu/{id}`, `PATCH …/bu/reorder`; hooks ใน `hooks/use-bu-dashboard-widgets.ts`
 
 ## 6. จังหวะการ Refresh
 
@@ -138,12 +173,12 @@ Widget Workspace ไม่มีชุด tile ตายตัว — กริ�
 
 - **Route:** `../carmen-frontend/routes/dashboard/dashboard.route.tsx`
 - **Composition:** `../carmen-frontend/routes/dashboard/dashboard-component.tsx` (กริด, dnd, ชุด lazy visibility, handler add/config/type-switch)
-- **Card และ helper:** `routes/dashboard/sortable-widget-item.tsx` (drag handle, dropdown render, gear, delete), `status-group.ts` + `status-group-card.tsx`, `widget-config-dialog.tsx` + `widget-param-fields.tsx` + `widget-display-fields.tsx`, `widget-shape.ts`; `components/dashboard-widget/widget-display.ts` (ขนาดกริด, gauge range, thresholds), `render-support.ts` (shape ↔ render), `dashboard-widget-grid.tsx` (`WidgetRouter`, card, `LazyWidget`)
+- **Card และ helper:** `routes/dashboard/status-group.ts` + `status-group-card.tsx`; `components/dashboard-widget/sortable-widget-item.tsx` (drag handle, dropdown render, gear, delete), `bu-widget-section.tsx`, `widget-config-dialog.tsx` + `widget-param-fields.tsx` + `widget-display-fields.tsx`, `widget-shape.ts`, `widget-title.ts` + `use-widget-title.ts`, `table-row-link.ts`, `widget-display.ts` (ขนาดกริด, gauge range, thresholds), `render-support.ts` (shape ↔ render), `dashboard-widget-grid.tsx` (`WidgetRouter`, card, `LazyWidget`)
 - **Hooks:** `routes/dashboard/use-my-dashboard-widgets.ts` (ย้ายออกจาก `hooks/` เมื่อ 2026-08-28, `0d9757f3`), `hooks/use-dashboard-dataset.ts`
 - **Types:** `types/dashboard-widget.ts` (`WidgetConfig`, `WidgetDisplay`, `DatasetParam`, `TableColumn`, shape guard), `types/dashboard-dataset.ts` (`supported_renders`)
 - **API constants:** `constant/api-endpoints.ts` → `MY_DASHBOARD_WIDGETS`, `MY_DASHBOARD_WIDGET_BY_ID`, `DASHBOARD_LAB_DATASETS`, `DASHBOARD_LAB_DATASET_EXEC`, `DASHBOARD_LAB_WIDGET_DATA`
 - **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/dashboard-widgets/dashboard-personal-widgets.controller.ts` + `.service.ts` (HTTP proxy, `x-internal-token`), `swagger/response.ts` (`WidgetUpdateRequestDto.widget_type`/`display`), `dashboard-lab/dashboard-lab.controller.ts` (`GET widgets/:widget_id/data`)
 - **micro-data:** `../micro-data/controller/dashboard_controller.go`, `service/widget_service.go` (`validateRender`, `validateDisplay`, cap 8 KB), `service/dashboard/dashboard.go` (`SupportedRenders`), `service/dashboard/lab.go` (catalog พร้อม `params`/`supported_renders`), `service/dashboard/document.go` (dataset `document.*`, row ตารางพร้อม `id`), `model/dashboard.go`, `migrations/tenant/130_dash_widget_display.up.sql`
-- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_dashboard_personal_widget`, `tb_dashboard_bu_widget`, `enum_dashboard_widget_type`; migration `20260907143700_add_dashboard_widget_display`
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_dashboard_personal_widget`, `tb_dashboard_bu_widget`, `tb_dashboard_bu_widget_deploy` (`:7040`), `enum_dashboard_widget_type`; migration `20260907143700_add_dashboard_widget_display`
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/_uncategorized/dashboard-lab/*`, `_uncategorized/dashboard-widgets/*` (`GET-me`, `PATCH-reorder`, `PATCH-update`, `POST-create`, `GET-module-config`)
 - **Backend design (ประวัติศาสตร์):** `../carmen-turborepo-backend/docs/superpowers/archive/widget/2026-05-12-widget-backend-design.md`

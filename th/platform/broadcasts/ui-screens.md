@@ -2,7 +2,7 @@
 title: Broadcasts — หน้าจอ UI (UI Screens)
 description: สามหน้าจอของ Broadcasts — BroadcastManagement (list, filter, CSV export), BroadcastCompose (target, preset วันหมดอายุ, preview) และ BroadcastEdit
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: book/platform, broadcasts, ui
 editor: markdown
 dateCreated: 2026-06-10T16:00:00.000Z
@@ -37,7 +37,7 @@ Broadcasts เป็นโมดูลสามหน้าจอแล้วต
 
 - `SearchInput` แบบ debounce (400 ms) จับคู่ title หรือ message แบบไม่สนตัวพิมพ์เล็กใหญ่ กลับไปหน้า 1 ทุกครั้งที่พิมพ์คำใหม่
 - Sheet ของ **Filters** (`BroadcastFilters`) มี: ปุ่ม toggle สถานะ (Active/Scheduled/Expired, เลือกได้หลายอัน), ปุ่ม toggle scope (System/Business Unit, เลือกได้หลายอัน) และ checkbox "Show deleted broadcasts" — บวกปุ่ม "Clear all" เมื่อมี filter ใดถูกเปิดใช้งาน ปุ่ม Filters ของ header มี badge ตัวเลขนับกลุ่ม filter ที่ active อยู่ (status-any, scope-any, deleted)
-- **เจ็ด `localStorage` key** เก็บ state ของหน้า List ข้ามการเข้าชม: `search_broadcasts`, `filters_broadcast_status` (JSON array), `filters_broadcast_scope` (JSON array), `filter_broadcast_deleted` (JSON boolean), `page_broadcasts`, `perpage_broadcasts`, `sort_broadcasts` (ค่าเริ่มต้น `created_at:desc`)
+- **เจ็ด `localStorage` key** เก็บ state ของหน้า List ข้ามการเข้าชม: `search_broadcasts`, `filters_broadcast_status` (JSON array), `filters_broadcast_scope` (JSON array), `filter_broadcast_deleted` (JSON boolean), `page_broadcasts`, `perpage_broadcasts` (กู้คืนเฉพาะเมื่อเป็นจำนวนเต็ม 1–100 ไม่งั้นใช้ค่าเริ่มต้น 20 — `readStoredPerpage()`), `sort_broadcasts` (ค่าเริ่มต้น `created_at:desc`)
 
 ### 2.3 คอลัมน์
 
@@ -161,6 +161,6 @@ Body ของ PATCH ส่งแค่**ฟิลด์ที่เปลี่
 - `../carmen-backstage/src/utils/audit.ts` — `normalizeAudit()` (รูปแบบแบน `created_by: { id, name }` ที่ broadcast ใช้ — ถูกเอ่ยชื่อตรง ๆ ใน comment ของ source ไฟล์นี้เองว่าเป็นหนึ่งใน endpoint ที่ไม่มีรูปแบบ `audit.*` แบบ nested)
 - `../carmen-backstage/src/utils/docVersion.ts` — `isVersionConflict`/`notifyVersionConflict`/`getDocVersion`
 - `../carmen-backstage/src/components/KeyboardShortcuts.tsx`, `src/hooks/useUnsavedChanges.ts` — shortcut และ navigation guard
-- `../carmen-backstage/src/App.tsx` (สาม route), `src/components/nav/platformNav.ts` (รายการ nav "Broadcasts")
+- `../carmen-backstage/src/App.tsx` (สาม route), `src/components/nav/backstageNav.ts` (รายการ nav "Broadcasts")
 
 **Cross-links:** [หน้าแรก Broadcasts](/th/platform/broadcasts) &nbsp;·&nbsp; [Data Model](/th/platform/broadcasts/data-model) &nbsp;·&nbsp; [Permissions](/th/platform/broadcasts/permissions)

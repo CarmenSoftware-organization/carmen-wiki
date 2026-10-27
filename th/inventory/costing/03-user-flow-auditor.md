@@ -2,7 +2,7 @@
 title: การคำนวณต้นทุน (Costing) — User Flow — Auditor (แก้ไข)
 description: หน้าแก้ไข — ไม่มี read-only audit workspace, chain-of-custody trace tool, หรือ FIFO-vs-Average shadow-drift audit screen ในโมดูล costing
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: costing, user-flow, auditor, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -21,7 +21,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 - **ไม่มี Auditor role หรือ permission key อยู่จริง** `enum_stage_role` ไม่มีสมาชิก `auditor`; ไม่มี key เฉพาะ auditor ใน `constant/permissions.ts` สอดคล้องกับข้อค้นพบเดียวกันบน [inventory/03-user-flow-audit-config](/th/inventory/inventory/03-user-flow-audit-config) (แก้ไขแล้ว): "ไม่พบหน้าจอหรือ permission เฉพาะ audit-only ที่แยกจาก `inventory_management.view` ในโมดูลนี้"
 - **ไม่มี chain-of-custody trace tool, snapshot-verification tool, หรือ shadow-drift tool อยู่ที่ใดใน frontend เลย** ทั้งหมดนี้เป็นแนวคิด UI ที่ถูกคิดขึ้นเองโดยไม่มี route หรือ component ตรงกัน
 - **claim "GL absorbs the difference" / "GL Inventory control-account" ที่ checklist audit ของหน้านี้พึ่งพาไม่มีอยู่จริง** — ดูการแก้ไข [02-business-rules](./02-business-rules.md) § 4/§ 6; ตอนนี้มีโมดูล GL แล้ว (2026-09) แต่ inventory ไม่เคยโพสต์เข้าไป จึงยังไม่มี inventory control account ให้ audit เทียบ
-- **"shadow average ภายใต้ FIFO" ที่ drift audit พึ่งพาไม่มีอยู่จริง** — การรับ FIFO เขียน `average_cost_per_unit = 0` (`inventory-transaction.service.ts:998`)
+- **"shadow average ภายใต้ FIFO" ที่ drift audit พึ่งพาไม่มีอยู่จริง** — การรับ FIFO เขียน `average_cost_per_unit = 0` (`inventory-transaction.service.ts:1111`)
 - **guard `COST_VAL_009` ที่ configuration-history audit ของหน้านี้ตรวจหาไม่มีอยู่ใน code** — ดูการแก้ไข [02-business-rules](./02-business-rules.md) § 2
 
 ## 2. พฤติกรรมจริงอยู่ที่ไหน

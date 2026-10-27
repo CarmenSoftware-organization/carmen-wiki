@@ -1,8 +1,8 @@
 ---
 title: ช่วงงวดสินค้าคงคลัง (Inventory Period — เดิมชื่อ Period)
-description: ช่วงงวดสินค้าคงคลัง (บัญชี) และ snapshot ต้นทุนต่องวด เปลี่ยนชื่อจาก Period เมื่อ 2026-09-16 — tb_inventory_period*, /system-admin/inventory-period, api/:bu_code/inventory-periods, key system_admin.inventory_period CRUD ธรรมดา
+description: ช่วงงวดสินค้าคงคลังและ snapshot ต้นทุนต่องวด (tb_inventory_period*, /system-admin/inventory-period) — สถานะเปลี่ยนได้ผ่านการสิ้นสุดงวด (period end) เท่านั้น ไม่ใช่ dialog แก้ไข
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: system-config, period, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -26,14 +26,23 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | api name ของ `AppIdGuard` | `period.*` | `inventoryPeriod.findOne` / `findAll` / `create` / `update` / `delete` | controller เดียวกัน |
 | Permission resource | `system_admin.period` | `system_admin.inventory_period` (`view`/`create`/`update`/`delete`) | platform migration `20260916140000_rename_period_to_inventory_period`; `seed.permission.data.ts` |
 | Licence feature | `system_admin.period` ("Period") | `system_admin.inventory_period` ("Inventory Period") | migration เดียวกัน + `20260916150000_fix_license_group_item_inventory_period_key`; `license-catalog.generated.ts` |
-| Licence route map | `app:periods` | `app:inventory-periods` → `system_admin.inventory_period`; `config:period-comments` ก็ชี้ไปที่ key ใหม่ | `packages/prisma-shared-schema-platform/prisma/permission.route-map.ts` |
+| Licence route map | `app:periods` | `app:inventory-periods` → `system_admin.inventory_period`; `config:period-comments` ก็ชี้ไปที่ key ใหม่ | `packages/prisma-shared-schema-backstage/prisma/permission.route-map.ts` |
 | Frontend | `routes/system-admin/period/`, `/system-admin/period` | `routes/system-admin/inventory-period/` (`inventory-period-component.tsx`, `-dialog.tsx`, `-card.tsx`, `-form-schema.ts`, `use-inventory-period.ts`, `use-inventory-period-table.tsx`), `/system-admin/inventory-period`; `router.tsx:640-643` คง `period` ไว้เป็น redirect `<Navigate replace>` "so old bookmarks don't break"; `constant/permissions.ts:119` `system_admin.inventory_period`; `constant/module-list.ts:611-615` | FE `06c68975`, `1caecb42` |
 | Bruno | `master-data/period/*` | folder **ไม่ได้เปลี่ยนชื่อ** แต่ URL ของทุก request ข้างในชี้ไปที่ `/api/{{bu_code}}/inventory-periods…` แล้ว (Bruno PR #27); `config/period-comment/*` ยังใช้ `api/config/:bu_code/period-comments/:period_id` (controller นั้นไม่ได้เปลี่ยนชื่อ) | `carmen-turborepo-backend-bruno/collections/carmen-inventory/master-data/period/` |
 | Comments | controller `config_period-comments`, `tb_period_comment` | path ของ controller ไม่เปลี่ยน (`api/config/:bu_code/period-comments`) ตารางเปลี่ยนชื่อเป็น `tb_inventory_period_comment` | `apps/backend-gateway/src/config/config_period-comments/` |
 
 ลำดับการ deploy สำคัญ: platform migration ต้องรันก่อนหรือพร้อม gateway — gateway ที่เปลี่ยนชื่อ `api_name` ก่อนที่แถว `tb_application_api` ถูกเปลี่ยนชื่อจะตอบ 401 และเด้งผู้ใช้ไปหน้า login (commit message ของ `c8de2fa76`) การเปลี่ยนชื่อตาราง tenant เป็น hard cutover: โค้ดเก่าที่ชี้ไป `tb_period` พังทันทีที่ migration รัน
 
-## สถานะการ implement (ตรวจสอบซ้ำ 2026-09-22)
+## สถานะการ implement (ตรวจสอบซ้ำ 2026-10-27)
+
+- **สถานะเปลี่ยนจากหน้าจอนี้ไม่ได้อีกแล้ว** (BE `8b87e475b`, 2026-09-23) `PATCH api/:bu_code/inventory-periods/:id` ปฏิเสธ `status` ใดที่ต่างจากค่าที่เก็บไว้ด้วย `PERIOD_STATUS_VIA_PERIOD_END_ONLY` (422, "Period status can only be changed through period end"); การปิดและล็อกเป็นของ period end (ดู [inventory/period-end](/th/inventory/inventory/period-end)) `PATCH` และ `DELETE` ยังปฏิเสธเพิ่มเติม (422 ทั้งหมด, `findMutationBlock`, `inventory-period.service.ts:269-329`): งวดที่ **closed** (`PERIOD_CLOSED_NOT_EDITABLE`), งวดที่รอบนับสินค้าเป็น `counting` (`PERIOD_COUNTING_NOT_EDITABLE`) และงวด **ปัจจุบัน** — งวด `open`/`locked` ที่เก่าที่สุด (`PERIOD_CURRENT_NOT_EDITABLE`) หน้านี้ฉบับก่อนระบุว่าสถานะเป็นฟิลด์อิสระและ dialog เปิดเดือนที่ปิดแล้วได้ — ไม่เป็นจริงอีกแล้ว dialog แก้ไข **ยัง render `<Select>` สถานะ** ครบสามค่า (`inventory-period-dialog.tsx:192-215`) และส่งค่านั้น การเลือกค่าที่ต่างออกไปจึงได้ error ข้างต้น — ส่วนที่ค้างใน front-end ควรเปิด ticket
+- **สร้างหรือย้ายก่อนงวดปัจจุบันไม่ได้** (BE `68b20ad71`): `create` และ `update` ที่เปลี่ยน `fiscal_year` / `fiscal_month` / `start_at` ล้มเหลวด้วย `PERIOD_BEFORE_CURRENT_NOT_ALLOWED` ("Period {period} would fall before the current period {current}") เมื่อเดือนหรือวันเริ่มของงวดที่เสนออยู่ก่อนงวดปัจจุบัน (`findBeforeCurrentBlock`, `:331`)
+- **error ซ้ำตอนนี้มี catalog code** (`PERIOD_ALREADY_EXISTS`, `PERIOD_FISCAL_COMBINATION_EXISTS`; BE `016b62808`)
+- **"ปัจจุบัน" หมายถึงงวด open/locked ที่เก่าที่สุดทุกที่** (BE `f37b35881`): โค้ด inventory ไม่ resolve "งวดที่วันนี้ตกอยู่" อีกต่อไปสำหรับ on-hand, SR submit/issue, เอกสารขาออกที่มี `doc_date`, การเริ่มนับของ period-end, การสร้าง/current ของงวดใน physical-count, `generateNextPeriods` หรือวันที่ default ของ stock-out / stock-in / wastage; `locked` ไม่ถูกถือเป็น closed โดยการตรวจเหล่านั้นอีกต่อไป (มีเพียง `closed`, `getClosedPeriods` / `isLotPeriodClosed`) `cn_date` ของ Credit-note ต้องอยู่ในงวด active ตอนสร้างและ submit (catalog code 3050003 / 3050004) GRN / Stock-In ยังลงวันที่เข้างวด open ถัดไปได้ (คงกฎ #719 ไว้)
+- **Generate Next นับ `locked` เป็น open**: ตอนนี้เติมจนครบ `count` งวด open-หรือ-locked (`generateNextPeriods`, `:510`, `:542-548`) ปุ่มใน FE คำนวณ `toCreate = 12 − (periods with status "open")` (`inventory-period-component.tsx:174-175`) ดังนั้นบน BU ที่มีงวด `locked` ข้อความยืนยันอาจบอกว่าจะสร้างมากกว่าที่ backend สร้างจริง
+- **ออกแบบหน้าจอใหม่** (FE `54d095d1`, `c3fe01ea`): เหนือรายการมี **แถบ timeline ปีงบประมาณ** (`inventory-period-timeline.tsx`) หนึ่งช่องต่อเดือนของปีงบประมาณที่เลือก (ลูกศรเปลี่ยนปี) ระบายสีตาม *phase* — `closed`, `locked`, `overdue` (สถานะ `open` แต่ `end_at` ก่อนวันนี้), `active` (open และวันนี้อยู่ในช่วง) และ `upcoming` (open, `start_at` หลังวันนี้); แถบบอกชื่องวดปัจจุบันและนับงวดที่เกินกำหนด และการคลิกช่องเปิด dialog แก้ไขของงวดนั้น (`inventory-period-phase.ts`) รายการกว้างเต็มภายใน `ListPageShell`, เซลล์งวดมี badge "Current" และไอคอนเตือนเกินกำหนด และแถบโหลดงวด **ทั้งหมด** (`useInventoryPeriodAll`) ไม่ใช่แค่หน้าของตาราง error จาก backend แสดงใน toast (FE `6e09a459`)
+
+### สถานะก่อนหน้า (ตรวจสอบซ้ำ 2026-09-22)
 
 หน้าจอ `/system-admin/inventory-period` (`inventory-period-component.tsx` + `inventory-period-dialog.tsx`) ยังคงเป็น **รายการ CRUD ทั่วไป**: ค้นหา, filter สถานะ, Add / Generate Next / Export / Print และ dialog แก้ไข row ที่มีฟิลด์ธรรมดา — `fiscal_year`, `fiscal_month`, `start_at`, `end_at` และ **`<Select>` สถานะ** ที่เสนอ `open`/`closed`/`locked` ตรงๆ (`inventory-period-form-schema.ts:17` `z.enum(["open","closed","locked"])`, dialog `:192-207`) ส่งเหมือนฟิลด์อื่นผ่าน `PATCH` สถานะ render เป็นไอคอน + label ในรายการตั้งแต่ 2026-08-24 (`26a403d4`) ยังคงไม่มี button "Close" / "Lock" / "Reopen" เฉพาะ, prompt ยืนยันหรือเหตุผล audit หรือ tab "Snapshot" ที่ไหนในโครงสร้าง component ค่า enum และความหมายของการ์ด posting (§5, §6) ไม่ได้รับผลกระทบจากการเปลี่ยนชื่อ — แต่คำอธิบายการ์ดใน §6 ถูกแก้ในรอบนี้หลังอ่าน `inventory-period.helper.ts`: **`locked` ไม่บล็อกการ post ขาเข้า; มีเพียง `closed` ที่บล็อก**
 
@@ -51,8 +60,8 @@ Inventory period นิยามปฏิทินบัญชีที่ ledge
 
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
-| เปิดงวดถัดไป | รายการ Inventory Period → **Generate Next** (button `CalendarPlus`) | `POST api/:bu_code/inventory-periods/next` พร้อม `{ count, start_day }` (`types/inventory-period.ts` `GenerateNextInventoryPeriodDto`); `count` ต้องเป็นบวก (`COMMON_COUNT_MUST_BE_POSITIVE`); service เริ่มจากเดือนถัดจากงวด *open* ล่าสุด ไม่งั้นงวดล่าสุดไม่ว่าสถานะใด ไม่งั้นเดือนปัจจุบัน และสร้างเป็น `open` (`inventory-period.service.ts:315-470`) |
-| เปลี่ยนสถานะของงวด | Row → **Edit** → dropdown **Status** → Save | Dialog แก้ไขเดียวกันกับ fiscal year/month/date — การเลือก `closed` หรือ `locked` ที่นี่คือการแก้ฟิลด์ธรรมดา ไม่ใช่ workflow action เฉพาะ; `PATCH` ต้องมี `doc_version` (`COMMON_DOC_VERSION_REQUIRED`, `:243`) |
+| เปิดงวดถัดไป | รายการ Inventory Period → **Generate Next** (button `CalendarPlus`) | `POST api/:bu_code/inventory-periods/next` พร้อม `{ count, start_day }` (`types/inventory-period.ts` `GenerateNextInventoryPeriodDto`); `count` ต้องเป็นบวก (`COMMON_COUNT_MUST_BE_POSITIVE`); service เริ่มจากเดือนถัดจากงวด *open* ล่าสุด ไม่งั้นงวดล่าสุดไม่ว่าสถานะใด ไม่งั้นเดือนปัจจุบัน และสร้างเป็น `open` (`inventory-period.service.ts:510-682`) |
+| เปลี่ยนสถานะของงวด | **ไม่ใช่จากหน้าจอนี้** — ใช้ period end ([inventory/period-end](/th/inventory/inventory/period-end)) | dialog แก้ไขยังแสดง dropdown Status แต่ค่าที่เปลี่ยนจะถูกปฏิเสธด้วย `PERIOD_STATUS_VIA_PERIOD_END_ONLY`; `PATCH` ต้องมี `doc_version` (`COMMON_DOC_VERSION_REQUIRED`, `:406`) |
 | หางวดปัจจุบัน | `GET api/:bu_code/inventory-periods/current` | งวดแรกสุดที่สถานะเป็น `open` **หรือ `locked`** (`:478-497`) |
 | ดู snapshot | ~~Period detail → Snapshot tab~~ | **ไม่มีหน้าจอนี้อยู่จริง** — snapshot เป็นเรื่องภายในของ costing engine |
 | สร้าง snapshot ปิด | Job engine ต้นทุน | เขียน `tb_inventory_period_snapshot` ทุก (location, product, lot); ไม่ได้ trigger จากหน้าจอนี้ |
@@ -67,14 +76,16 @@ Inventory period นิยามปฏิทินบัญชีที่ ledge
 | `PERIOD_NOT_FOUND` | `period_id` ไม่รู้จัก | refresh รายการ |
 | `period` ไม่ตรงกับ fiscal date | `period != (fiscal_year-2000) * 100 + fiscal_month` | คำนวณใหม่และแก้ค่าใดค่าหนึ่ง |
 | ความไม่ตรงกันของ roll-forward | Closing N ≠ Opening N+1 | ปรากฏใน `diff_amount`; review snapshot (ไม่แสดงใน UI ใดเลย — query โดยตรง) |
-| เปลี่ยนสถานะเป็น `closed`/`locked` โดยไม่มีขั้นตอนยืนยัน | คาดหวัง — dialog แก้ไขไม่มี guard เฉพาะสำหรับฟิลด์นี้ | ไม่มีหน้าจอ undo; แก้ row กลับเป็น `open` ถ้านี่คือความผิดพลาด |
+| `PERIOD_STATUS_VIA_PERIOD_END_ONLY` หลังเปลี่ยน dropdown Status | สถานะเป็นของ period end ตั้งแต่ 2026-09-23 | ปล่อย Status ไว้เหมือนเดิม; ปิดงวดผ่าน period end |
+| `PERIOD_CLOSED_NOT_EDITABLE` / `PERIOD_COUNTING_NOT_EDITABLE` / `PERIOD_CURRENT_NOT_EDITABLE` ตอนแก้ไขหรือลบ | งวดปิดแล้ว, มีรอบนับกำลังดำเนินอยู่ หรือเป็นงวดปัจจุบัน | แก้ไขไม่ได้ตามที่ออกแบบ; งวดที่ปิดแล้วเปิดใหม่จากที่นี่ไม่ได้ |
+| `PERIOD_BEFORE_CURRENT_NOT_ALLOWED` | งวดใหม่หรือที่ย้ายเริ่มก่อนงวดปัจจุบัน | เลือกเดือนที่หลังกว่า |
 | bookmark เก่า `/system-admin/period` | route เปลี่ยนชื่อ | redirect ฝั่ง client ไป `/system-admin/inventory-period` (`router.tsx:640-643`) |
 | 401 เด้งไป login ทันทีหลัง deploy | gateway deploy ก่อน platform migration `20260916140000` เปลี่ยนชื่อ `tb_application_api.api_name` | apply migration; ดูประกาศการเปลี่ยนชื่อ |
 
 ## 4. กรณีพิเศษ
 
-- **สถานะคือฟิลด์แก้ไขได้ธรรมดา ไม่ใช่ workflow** ผู้ใช้ใดก็ตามที่มี `system_admin.inventory_period.update` สามารถตั้งค่าสถานะใดก็ได้โดยตรง — ไม่มี prompt เหตุผล audit แยกสำหรับการ reopen งวดที่ปิดแล้ว
-- **`locked` ไม่ใช่ "closed" สำหรับการ์ด posting** `OPEN_STATUSES = [open, locked]` ใน `inventory-period.helper.ts:18`; ทั้ง `findOpenPeriodForDate` และ `findCurrentOpenPeriod` ยอมรับ `locked` สถานะเดียวที่บล็อกการ post คือ `closed` ถือว่า `locked` เป็น label สำหรับ Finance ที่ไม่มีผลตอน runtime ที่ HEAD
+- **สถานะไม่ใช่ฟิลด์แก้ไขได้ธรรมดาอีกแล้ว** `update()` ปฏิเสธ `status` ที่เปลี่ยน (`PERIOD_STATUS_VIA_PERIOD_END_ONLY`); มีเพียง period end ที่เขียนมัน dropdown Status ใน dialog เป็นส่วนค้างของ front-end
+- **`locked` ไม่ใช่ "closed" สำหรับการ์ด posting** `OPEN_STATUSES = [open, locked]` ใน `inventory-period.helper.ts:19`; ทั้ง `findOpenPeriodForDate` และ `findCurrentOpenPeriod` ยอมรับ `locked` สถานะเดียวที่บล็อกการ post คือ `closed` ถือว่า `locked` เป็น label สำหรับ Finance ที่ไม่มีผลตอน runtime ที่ HEAD
 - **การเป็นสมาชิกของวันสุดท้าย** `end_at` เก็บเป็นเที่ยงคืน UTC ของวันสุดท้ายของเดือน การ์ดจึงเทียบแบบวันต่อวัน (`toValidDate` + การ normalise วัน, `:20-42`); เอกสารที่ลงวันที่วันสุดท้ายเป็นของงวดนั้น (bug จริงที่ถูกแก้หลัง baseline — ทุก tenant เคยรายงาน "no open period" ในวันที่ 31)
 - **การ์ดรันตรงจุดที่ออกเลขที่เอกสาร** ไม่ใช่แค่ตอนสร้าง — draft ที่สร้างขณะงวดเปิดและ submit หลังงวดปิดจะถูกปฏิเสธตอน submit (`:167-176`)
 - **การสร้าง snapshot ใหม่** การรัน close ซ้ำสำหรับงวดเดียวกันจะ overwrite หรือ append ตามนโยบาย Finance; **append ที่ `snapshot_at` ใหม่** คือรูปแบบที่แนะนำเพื่อรักษา audit (พฤติกรรมของ costing engine ยังไม่ยืนยันกับ UI ใดเพราะไม่มี UI)
@@ -140,7 +151,7 @@ DELETE api/:bu_code/inventory-periods/:period_id
 
 - **ความเป็นหนึ่งเดียว** ทั้ง `period` และ `(fiscal_year, fiscal_month)` unique ในกลุ่มที่ไม่ถูก delete; ควรสอดคล้องกัน (`period == (fiscal_year-2000) * 100 + fiscal_month` สำหรับ 2000-2099)
 - **Date integrity** `start_at < end_at`; งวด contiguous ไม่ทับซ้อน (Generate Next สร้างแบบนั้น; dialog แก้ไขไม่เช็คการทับซ้อนซ้ำฝั่ง server — ยังไม่ยืนยัน ไม่มี error การทับซ้อนใน catalog)
-- **สถานะเป็นฟิลด์อิสระใน UI ไม่ใช่ state machine ที่บังคับ** `<Select>` สถานะของ dialog แก้ไขเสนอทั้งสามค่าโดยไม่มีเงื่อนไขไม่ว่าสถานะปัจจุบันของ row จะเป็นอะไร และไม่มี backend transition guard (เช่น การบล็อก `locked → open`) ใน `inventory-period.service.ts` ถือว่า `open → closed → locked` เป็นวินัยการใช้งาน *ตามเจตนา*
+- **การเปลี่ยนสถานะเกิดใน period end ไม่ใช่ใน CRUD** `<Select>` สถานะของ dialog แก้ไขยังเสนอทั้งสามค่าโดยไม่มีเงื่อนไข แต่ service ปฏิเสธทุกการเปลี่ยน (`PERIOD_STATUS_VIA_PERIOD_END_ONLY`) dialog จึงเปิดหรือปิดเดือนไม่ได้; กฎการเปลี่ยนสถานะอยู่ใน service ของ period end
 - **การ์ด posting ขาเข้า (GRN, stock-in): วันที่เอกสารต้องอยู่ในงวดที่สถานะเป็น `open` หรือ `locked`** `assertDateInOpenPeriod` — `good-received-note.logic.ts:113`, `good-received-note.verify-create.ts`, `stock-in.service.ts:525`
 - **การ์ด posting ขาออก (stock-out, การจ่าย SR): วันที่เอกสารต้องอยู่ในงวด *ปัจจุบัน*** (งวดแรกสุดที่ยัง open/locked) เข้มกว่าโดยตั้งใจเพื่อไม่ให้การจ่ายที่ back-date กิน lot ในลำดับที่ ledger ไม่เคยเห็น — `assertDateInCurrentPeriod`, `stock-out.service.ts:400,534`, `sr-date.helper.ts`
 - **`closed` เป็นสถานะเดียวที่บล็อก** หน้านี้ฉบับก่อนระบุ "closed/locked"; แก้เมื่อ 2026-09-22
@@ -159,7 +170,7 @@ DELETE api/:bu_code/inventory-periods/:period_id
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `enum_period_status` (line 1223), `tb_inventory_period` (1229-1261), `tb_inventory_period_comment` (1263-1296), `tb_inventory_period_snapshot` (1298-1351)
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `enum_period_status` (line 1342), `tb_inventory_period` (1229-1261), `tb_inventory_period_comment` (1263-1296), `tb_inventory_period_snapshot` (1298-1351)
 - **Migrations:** tenant `20260916141000_rename_tb_period_to_tb_inventory_period`; platform `20260916140000_rename_period_to_inventory_period`, `20260916150000_fix_license_group_item_inventory_period_key`
 - **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/inventory-periods/inventory-periods.controller.ts` (+ alias `inventory-periods-legacy.controller.ts`)
 - **Service / guards:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/inventory-period/inventory-period.service.ts`; `.../inventory/inventory-period.helper.ts` (`findOpenPeriodForDate`, `findCurrentOpenPeriod`, `assertDateInOpenPeriod`, `assertDateInCurrentPeriod`)

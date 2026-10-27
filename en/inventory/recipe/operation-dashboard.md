@@ -2,7 +2,7 @@
 title: Operation Plan Dashboard
 description: The /operation-plan landing screen: 10 recipe and equipment KPI/chart tiles from the Backstage widget-template table plus a BU widget section; not a user-configurable board.
 published: true
-date: 2026-10-27T00:00:00.000Z
+date: 2026-10-27T15:00:00.000Z
 tags: recipe, operation-plan, dashboard, widget, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T10:00:00.000Z
@@ -25,7 +25,7 @@ The Operation Plan Dashboard is the landing screen shown at `/operation-plan` be
 
 **This is not the same mechanism as [dashboard/widget-workspace](/en/inventory/dashboard/widget-workspace) or [reporting-audit/widget](/en/inventory/reporting-audit/widget).** Those pages document `tb_dashboard_bu_widget` (BU-curated, addable/removable) and `tb_dashboard_personal_widget` (per-user, addable/removable) — both real, editable widget tables served by the **micro-data** Go service. This screen's 10 tiles are a **third, separate mechanism**: *system* widget templates (rows in the backstage database, cached in the gateway) — not editable by the tenant, unlike the BU / personal widgets (as of 2026-10-27; before that they were a hardcoded TypeScript array). See §6 for the exact distinction and the one prior-page citation this corrects.
 
-**Maintained by** Engineering (code change + deploy to add/remove/reorder a tile — there is no admin screen). **Read by** any authenticated user who can load `/operation-plan` — no permission check was found gating the data endpoint itself (see §4).
+**Maintained by** Engineering / platform operators (system templates are edited in the Backstage dashboard-template admin or its seed file; there is no tenant-side screen). **Read by** any authenticated user who can load `/operation-plan` — no permission check was found gating the data endpoint itself (see §4).
 
 ## 2. Common Tasks
 
@@ -33,7 +33,7 @@ The Operation Plan Dashboard is the landing screen shown at `/operation-plan` be
 |---|---|---|
 | View operation-plan KPIs | Navigate to `/operation-plan` | Loads automatically; no filter/date-range controls exist |
 | Drill into a metric | Click a tile (visual only) | Tiles are not links — `KpiCard`/`BarCard`/`PieCard` render read-only; to inspect the underlying data, navigate to the relevant sub-module screen manually |
-| Add/remove/reorder a tile | **Not possible from the UI** | Requires a code change to `system-widgets.config.ts` (backend-gateway) — see §6 |
+| Add/remove/reorder a tile | **Not possible from the tenant UI** | An operator edits the system template in the Backstage dashboard-template admin (or the seed file) — see §6 |
 | Retry after a load error | Reload the page | The screen shows a single inline error banner (`dashboardWidget.loadError`) for the whole tile set; there is no per-tile retry |
 
 ## 3. Validation & Errors
@@ -99,6 +99,6 @@ Titles come from the template row (`title` plus `title_i18n` `{ en, th }`, e.g. 
 - **Frontend hook:** `../carmen-frontend/hooks/use-dashboard-widgets.ts` — `useOperationPlanWidgets()` → `useDashboardWidgetConfigs("operation-plan")`; per-tile `dashboardDatasetDataQueryOptions()` in `hooks/use-dashboard-dataset.ts`.
 - **Frontend shared cards:** `../carmen-frontend/components/dashboard-widget/dashboard-widget-grid.tsx` — `LazyWidget`, `KpiCard`, `BarCard`, `PieCard`, `LineCard`, `WidgetSkeleton` (reused by this screen's bespoke layout, not the shared `DashboardWidgetGrid` wrapper); `widget-display.ts` — `gridClasses()`.
 - **Gateway controller:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/dashboard-widgets/system-widgets.controller.ts` — `DashboardSystemWidgetsController`, `@Get(':module/config')` (2026-09-07) and the bundled `@Get('operation-plan')`. Bruno: `_uncategorized/dashboard-widgets/GET-module-config-dashboard-widgets.bru`, `GET-operation-plan-dashboard-widgets.bru`.
-- **Gateway config:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/dashboard-widgets/system-widgets.config.ts` — `OPERATION_PLAN_WIDGETS`, `getSystemWidgets()`.
+- **Gateway template cache:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/dashboard-widgets/system-widget-cache.service.ts` — `SystemWidgetCache.forBu()`; the former `system-widgets.config.ts` (`OPERATION_PLAN_WIDGETS`) was deleted in `3ea25956f`.
 - **Dataset registry:** `../micro-data/service/dashboard/registry.go` — `recipe.*` (lines ~150-165), `equipment.*` (lines ~166-169) entries.
 - **Translations:** `../carmen-frontend/messages/en.json` — `operationPlan.dashboard.title`/`.description`, `dashboardWidget.section*`.

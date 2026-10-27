@@ -2,7 +2,7 @@
 title: การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios
 description: Test case ต่อ persona, scenario end-to-end และการ map ไปยัง E2E สำหรับการนับสต๊อกประจำงวด
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: physical-count, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T14:00:00.000Z
 > **At a Glance**
 > **โมดูล:** [physical-count](/th/inventory/physical-count) &nbsp;·&nbsp; **ขอบเขต:** role permission-gated จริงหนึ่งเดียว แบ่งตามสองหน้าจอ (list; entry/review) บวกกลุ่มที่สามที่ยืนยันแล้วว่าไม่มีอยู่จริง
 > **ลำดับการรัน:** ตรวจสอบ period/การ provision period → scenario หน้ารายการ → scenario หน้า entry/review → scenario end-to-end ด้านล่าง
-> **ความครอบคลุมที่รันได้ (2026-09-22):** ไม่มี Playwright spec ของ `physical-count` ที่ `../carmen-frontend-e2e/tests/` manual catalog `docs/test-cases/750-physical-count.md` (41 case, ตรวจทานซ้ำกับ component จริงเมื่อ 2026-09-20 — ตอนนี้บันทึกกลไกจริงแล้ว รวมเงื่อนไขก่อนหน้า Start Period Close และ dialog "Counting has not started") และ generated stories `docs/user-stories/750-physical-count.md` (33) ส่วน `docs/persona-doc/System Process/tx-08-physical-stocktake.md` ยังเป็นการออกแบบระดับวางแผนที่ implementation ไม่ตรงด้วย — ดู [02-business-rules.md](/th/inventory/physical-count/02-business-rules) § 5.1 gap catalog ของ period-end `docs/test-cases/gaps/900-period-end-gap.md` (TC-PE-31xxxx) ครอบคลุมการ unlock ด้วยปุ่ม Start
+> **ความครอบคลุมที่รันได้ (2026-10-27):** ไม่มี Playwright spec ของ `physical-count` โดยเฉพาะที่ `../carmen-frontend-e2e/tests/`; spec period-close แบบ opt-in `921-period-close-count.spec.ts` / `922-period-close-verify.spec.ts` (TC-PE-51xxxx / 52xxxx) ครอบคลุมการนับพร้อมเอกสารชดเชยแบบ end-to-end ช่องว่าง: ไม่มีอะไรอัตโนมัติที่ยืนยันการ rollback เมื่อส่วนขาดเกินสต๊อก (สต๊อกไม่พอตอน submit), การปฏิเสธเมื่อไม่มี EOP type หรือพฤติกรรม Enter-ไปแถวถัดไปบนหน้า entry manual catalog `docs/test-cases/750-physical-count.md` (41 case, ตรวจทานซ้ำกับ component จริงเมื่อ 2026-09-20 — ตอนนี้บันทึกกลไกจริงแล้ว รวมเงื่อนไขก่อนหน้า Start Period Close และ dialog "Counting has not started") และ generated stories `docs/user-stories/750-physical-count.md` (33) ส่วน `docs/persona-doc/System Process/tx-08-physical-stocktake.md` ยังเป็นการออกแบบระดับวางแผนที่ implementation ไม่ตรงด้วย — ดู [02-business-rules.md](/th/inventory/physical-count/02-business-rules) § 5.1 gap catalog ของ period-end `docs/test-cases/gaps/900-period-end-gap.md` (TC-PE-31xxxx) ครอบคลุมการ unlock ด้วยปุ่ม Start
 
 ## 1. ภาพรวม
 
@@ -38,7 +38,7 @@ dateCreated: 2026-05-15T14:00:00.000Z
 | # | Scenario | ขั้นตอน | สถานะปลายทางที่คาดหวัง |
 | - | -------- | ----- | ------------------- |
 | 1 | การนับเต็มโดยไม่มี variance | เริ่มการนับสำหรับสถานที่หนึ่ง → ป้อน `actual_qty` ให้เท่ากับสิ่งที่ขั้นตอน review คำนวณได้ทุกบรรทัด → Save → Submit for Review → Submit | `tb_physical_count.status = completed`; ไม่มี `tb_stock_in`/`tb_stock_out` สร้าง (ทุก `diff_qty = 0`) |
-| 2 | การนับเต็มที่มีทั้ง overage และ shortage ผสม | เริ่มการนับ → ป้อนปริมาณที่สร้างทั้งบรรทัด variance บวกและลบ → Save แต่ละบรรทัด → Submit for Review → Submit | สร้างทั้ง `tb_stock_in` (บรรทัด overage) และ `tb_stock_out` (บรรทัด shortage) ทั้งคู่ `doc_status = completed` แล้ว; ไม่มี row `tb_inventory_transaction` ถูกเขียนโดย action นี้ (`PHC_POST_003`) |
+| 2 | การนับเต็มที่มีทั้ง overage และ shortage ผสม | เริ่มการนับ → ป้อนปริมาณที่สร้างทั้งบรรทัด variance บวกและลบ → Save แต่ละบรรทัด → Submit for Review → Submit | สร้างทั้ง `tb_stock_in` (บรรทัด overage, adjustment type `eop_in`) และ `tb_stock_out` (บรรทัด shortage, `eop_out`) ทั้งคู่ `doc_status = completed` แล้ว ลงวันที่สิ้นงวดที่นับ; แต่ละบรรทัดมี `inventory_transaction_id` และ row cost-layer `adjustment_in` / `adjustment_out` on-hand ของ location จึงเท่ากับปริมาณที่นับ (`PHC_POST_003`) บรรทัด shortage แสดงต้นทุนที่ post แล้ว |
 | 3 | ทำต่อการนับที่ in-progress | Save บรรทัดบางส่วน → navigate ออก → กลับมาหน้ารายการ → คลิก Resume บนสถานที่เดียวกัน | Navigate กลับไป `/:id/entry` พร้อมบรรทัดที่ save ไว้ก่อนหน้ายังคงอยู่; ไม่มีเอกสารใหม่สร้าง |
 | 4 | Refresh ระหว่างการนับจับสินค้าที่เพิ่งมีสต๊อก | สินค้าได้รับการเคลื่อนไหวสต๊อกครั้งแรกที่สถานที่หลัง count sheet ถูกสร้าง → คลิก Refresh บนหน้า entry | บรรทัดสินค้าใหม่ถูกเพิ่มเข้า sheet (`product_total` เพิ่มขึ้น); บรรทัดที่ป้อนไว้ก่อนหน้าไม่ได้รับผลกระทบ |
 | 5 | ความขัดแย้งของ `doc_version` | Browser สองแท็บเปิดการนับเดียวกัน; แท็บ A save; แท็บ B save โดยใช้ `doc_version` ที่เก่าแล้ว | Save ของแท็บ B ถูก reject ด้วย conflict แบบ `409` (`PHC_VAL_007`); แท็บ B ต้อง reload แล้วลองใหม่ |
@@ -54,5 +54,5 @@ dateCreated: 2026-05-15T14:00:00.000Z
 
 - **Frontend:** `../carmen-frontend/routes/inventory-management/physical-count/`
 - **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts`, `.../physical-count-period/physical-count-period.service.ts`, `.../period-end/period-end.validate.ts`
-- **E2E:** `../carmen-frontend-e2e/tests/` — ยังไม่มี spec physical-count; manual catalog `docs/test-cases/750-physical-count.md` (41), stories `docs/user-stories/750-physical-count.md` (33), เอกสารวางแผน `docs/persona-doc/System Process/tx-08-physical-stocktake.md`, การ unlock ของ period-end ใน `docs/test-cases/gaps/900-period-end-gap.md`
+- **E2E:** `../carmen-frontend-e2e/tests/` — ไม่มี spec `750-physical-count` โดยเฉพาะ แต่การนับถูก exercise ผ่านหน้าจอจริงโดย spec period-close แบบ opt-in `921-period-close-count.spec.ts` และ `922-period-close-verify.spec.ts` (TC-PE-51xxxx / 52xxxx: นับทุก location, เอกสารชดเชย EOP-IN / EOP-OUT ลงวันที่วันสุดท้ายของงวด, ต้นทุนเทียบกับ `si.cost-from` ของ BU, system quantity = ยอด ณ สิ้นงวดที่นับ); รันด้วย `bun run test:period-close` (ดู [inventory/period-end](/th/inventory/inventory/period-end) § 8); manual catalog `docs/test-cases/750-physical-count.md` (41), stories `docs/user-stories/750-physical-count.md` (33), เอกสารวางแผน `docs/persona-doc/System Process/tx-08-physical-stocktake.md`, การ unlock ของ period-end ใน `docs/test-cases/gaps/900-period-end-gap.md`
 - ที่เกี่ยวข้อง: [physical-count/03-user-flow](/th/inventory/physical-count/03-user-flow) (state machine ที่หน้านี้ใช้), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_VAL_*` / `PHC_AUTH_*` / `PHC_POST_*`), [inventory-adjustment/04-test-scenarios](/th/inventory/inventory-adjustment/04-test-scenarios) (ตารางที่ rollup เขียนเข้า)

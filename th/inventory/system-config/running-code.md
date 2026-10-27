@@ -1,8 +1,8 @@
 ---
 title: Running Code
-description: pattern เลขที่เอกสาร — prefix, date token, running counter ต่อประเภทเอกสาร (PR, PO, GRN, SR, GL-JV, …) ตั้งแต่ 2026-08-27 dialog ของ admin เป็น editor แบบทีละส่วนพร้อม preview สด; JSON ดิบเป็น fallback ที่พับไว้
+description: pattern เลขที่เอกสาร — prefix, date token, running counter ต่อประเภทเอกสาร; dialog เป็น editor ทีละส่วนพร้อม preview สด, engine เดียวทุกเอกสาร และ backend ตรวจ config ตอนบันทึก
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: system-config, running-code, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -15,7 +15,14 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ![Running Code screen](/screenshots/system-config/running-code.png)
 
-## สถานะการ implement (ตรวจสอบ 2026-07-16; ตรวจสอบซ้ำ 2026-09-22)
+## สถานะการ implement (ตรวจสอบซ้ำ 2026-10-27)
+
+- **engine การกำหนดเลขตัวเดียวสำหรับทุกเอกสาร** (BE `48c3fc817`): `reserveDocumentNumbers` (`common/helpers/document-number.helper.ts`) ตอนนี้เป็นวิธีเดียวที่ใช้ออกเลข PR, PO, GRN, SR, CN, SC, price list, vendor portal, Stock-In/Out, AP, AR, tax invoice และ GL JV มันอ่าน config ทั้งก้อนและแยกเป็น head / running digits / tail ด้วย `GenerateCode` เอง (`getRunningCodeShape`) เลข running จึงอยู่ที่ **ตำแหน่งใดก็ได้** ใน pattern และวันที่ตามปฏิทินของ BU เลขถูกออกภายใต้ lock ต่อ (BU, table, head, tail) ภายใน transaction ที่เขียนเอกสาร ซึ่งกำจัดเลขซ้ำเมื่อเอกสารเข้ามาพร้อมกัน; เลขล่าสุดหาจากเลขที่มีความกว้างตาม config เท่านั้น, ความกว้างถัดไปถูกอ่านเมื่อหลักล้น (รวมบล็อกที่ข้ามขอบความกว้าง, BE `2a343f502`) และเอกสารที่ soft-delete ยังถือเลขของตัวเอง `running-code.generateCode` จับคู่ config ด้วย `type` ตรงตัว (เดิมใช้ `contains`)
+- **config ที่ใช้กำหนดเลขไม่ได้จะถูกปฏิเสธตอนบันทึก** (BE `8b42ca451`): `POST`/`PUT api/config/:bu_code/running-codes` รันการตรวจของ generator เองและตอบ **400** ด้วยหนึ่งในแปด catalog code `RUNNING_CODE_*` — `FORMAT_REQUIRED`, `FORMAT_PART_UNDEFINED`, `FORMAT_PART_REPEATED`, `PART_MALFORMED`, `RANDOM_NOT_ALLOWED`, `RUNNING_COUNT` (ต้องมี part `running()` พอดีหนึ่ง), `RUNNING_PAD` (`running(n, '0')`, n ≥ 1, pad ต้องเป็น `0`), `RUNNING_NOT_PLACED` (`packages/error-catalog/src/catalog.ts:1203-1270`) config ที่ถูกเก็บในสภาพนั้นอยู่แล้ว (หรือถูกแก้ในฐานข้อมูล) จะตอบ **422 `RUNNING_CODE_CONFIG_UNUSABLE`** ระบุ type พร้อมเหตุผลใน `params.reason` แทน 500 (BE `d17d08156`) ข้อควรระวัง "Format must reference at least one segment" ใน Edge Cases และ §6 ด้านล่างจึง **ถูกแทนที่**: slot ที่ไม่ได้อ้างอิงยังอนุญาต แต่ format ที่ไม่มี part running, ซ้ำ part นั้น หรือใช้ `random()` บันทึกไม่ได้
+- **`type` ซ้ำ** ตอนนี้มี `RUNNING_CODE_ALREADY_EXISTS` (409) และ dialog แสดงใต้ช่อง Type (FE `useServerFieldErrors`, `running-code-dialog.tsx:66`; FE `b71f86ea`)
+- รายการย้ายเข้า `ListPageShell` (FE `c3fe01ea`) ไม่เปลี่ยนพฤติกรรม รายละเอียด editor ด้านล่างตรวจสอบเมื่อ 2026-09-22 และไฟล์ FE อื่นไม่เปลี่ยนนอกจากข้างต้น
+
+### สถานะก่อนหน้า (ตรวจสอบ 2026-07-16; ตรวจสอบซ้ำ 2026-09-22)
 
 **ข้อค้นพบเมื่อ 2026-07-16 ถูกแทนที่แล้ว** FE commit `704f1f9f` (2026-08-27, *"edit the document-number format part by part instead of typing JSON"*) แทนที่ textarea ดิบด้วย editor แบบมีโครงสร้าง:
 
@@ -51,7 +58,8 @@ Running code คือ **กฎ document-numbering** สำหรับทุก
 | อาการ | สาเหตุ | การดำเนินการ |
 |---|---|---|
 | "Duplicate type" | Row ที่มีอยู่ที่ไม่ถูก delete | แก้ row ที่มีอยู่แทน |
-| Textarea ของ Advanced-config reject ค่าตอนบันทึก | `config` ไม่ใช่ JSON ที่ valid | แก้ syntax |
+| Textarea ของ Advanced-config reject ค่าตอนบันทึก | `config` ไม่ใช่ JSON ที่ valid หรือ backend ปฏิเสธด้วย 400 `RUNNING_CODE_*` (ไม่มี/ซ้ำ `running()`, pad ที่ไม่ใช่ `0`, `random()`, slot ที่ไม่ได้นิยาม) | แก้ syntax / part ที่ระบุ |
+| `RUNNING_CODE_CONFIG_UNUSABLE` (422) ตอนสร้างเอกสาร | config ที่เก็บไว้ของ type นั้นกำหนดเลขเอกสารไม่ได้ (บันทึกก่อนมีการตรวจตอนบันทึก หรือถูกแก้ในฐานข้อมูล) | แก้ row ที่นี่; error ระบุ type และเหตุผล |
 | Part editor ถูกปิด แสดง `configUnreadable` | `config` ไม่มี `format` หรือ `format` อ้าง slot ที่ไม่มีอยู่ | ซ่อมใน Advanced config; editor ปฏิเสธที่จะเดาและเขียนทับ |
 | Counter รีเซ็ตโดยไม่คาดคิด | Dated segment เปลี่ยน | Counter scope โดย `type + dated-segment` — การเพิ่ม `yyyyMM` รีเซ็ตรายเดือน |
 | 500 `Cannot read properties of undefined (reading 'config')` ที่เอกสารแรกของ type | BU ไม่มี row สำหรับ type นั้น **และ** ไม่มี preset (`RUNNING_CODE_PRESET`) | เพิ่ม row ที่นี่ หรือเพิ่ม preset ในโค้ด (`GL-JV` ถูกแก้แบบนี้เมื่อ 2026-09-15) |
@@ -61,11 +69,11 @@ Running code คือ **กฎ document-numbering** สำหรับทุก
 ## 4. กรณีพิเศษ
 
 - **Editor แบบมีโครงสร้างพร้อมทางออก JSON** part editor รับประกัน `format` ที่สอดคล้องกันสำหรับทุกอย่างที่มันบันทึก; มีเพียงเส้นทาง Advanced-config ที่ยังเก็บ `format` ที่อ้าง slot ที่ไม่ได้นิยามได้ ซึ่งจะ fail ตอนสร้างเอกสาร
-- **`GL-JV` ไม่มี part prefix แบบ literal โดยตั้งใจ** — prefix อยู่บน `tb_gl_jv_header.prefix_code` และ `jv_no` มีเพียง `date('yyyyMM') + running(5,'0')`; การเพิ่ม literal จะทำให้ lookup แบบ `startsWith` และการรีเซ็ต counter ของโมดูล GL พัง (`running-code.const.ts:119`)
+- **`GL-JV` ไม่มี part prefix แบบ literal โดยตั้งใจ** — prefix อยู่บน `tb_gl_jv_header.prefix_code` และ `jv_no` มีเพียง `date('yyyyMM') + running(5,'0')`; series ถูก scope ด้วย `prefix_code` โดย `generateJvNo` ดังนั้นแต่ละ prefix นับแยกกัน (`running-code.const.ts:109-117`; เหตุผลเดิมเรื่อง `startsWith` ถูกตัดออกจาก comment ของ source ใน BE `2a343f502`) รายการ preset ยังเพิ่มรหัส AP/AR/tax (`AP-IV`, `AP-DN`, `AP-CN`, `AP-DP`, `AP-PV`, `AR-IV`, `AR-DN`, `AR-CN`, `TX-IV`, `TX-DN`, `TX-CN`)
 - **Counter scope** Implicit — scope โดย `type + dated-segment` หากไม่มี dated segment counter จะ global ต่อ type
 - **การ persist counter** เป็น state ของบริการ (advisory lock / sequence) ไม่ใช่ตารางนี้ — เอนทิตีนี้นิยาม *pattern* เท่านั้น
 - **การเปลี่ยน pattern กลางงวด** มีผลตอน mint ครั้งถัดไป; reference ที่มีอยู่ render ตามที่เก็บ
-- **Format ต้องอ้างอิงอย่างน้อยหนึ่ง segment** — segment ที่ไม่ได้อ้างอิงอนุญาต; ไม่พบ UI warning สำหรับกรณีนี้ (ต่างจากเวอร์ชันก่อนหน้าของหน้านี้)
+- **Format ต้องวาง part `running()` พอดีหนึ่งตัว** — บังคับตอนบันทึกตั้งแต่ 2026-10 (ดูสถานะการ implement); slot เสริมที่ไม่ได้อ้างอิงยังอนุญาต
 
 ---
 
@@ -107,7 +115,7 @@ Running code คือ **กฎ document-numbering** สำหรับทุก
 - **ความเป็นหนึ่งเดียว** `type` unique ในกลุ่มที่ไม่ถูก delete — หนึ่ง pattern ต่อ doc type
 - **Counter scope** Implicit ต่อ `type + dated-segment`; global ต่อ type หากไม่มี dated segment
 - **การ persist counter** State ของบริการ ไม่ใช่ตารางนี้
-- **Format validation** ต้องอ้างอิงอย่างน้อยหนึ่ง segment เพื่อใช้งานได้ตอน mint; part editor emit `format` ที่สอดคล้องกันเสมอ textarea ของ Advanced-config ตรวจแค่ `config` parse เป็น JSON ได้
+- **Format validation** backend ปฏิเสธตอนบันทึก `format` ที่ขาด, ใช้ slot ที่ไม่ได้นิยามหรือซ้ำ, มี part ผิดรูป, ใช้ `random()`, ไม่มี part `running(n, '0')` พอดีหนึ่ง หรือไม่วางมันเพียงครั้งเดียว (`RUNNING_CODE_*`, 400) part editor emit `format` ที่สอดคล้องกันเสมอ; textarea ของ Advanced-config ถูก backend ตรวจแทน ไม่ได้ตรวจแค่ syntax JSON
 - **Preset fallback** BU ที่ไม่มี row สำหรับ type ใช้ `RUNNING_CODE_PRESET[type]`; type ที่ไม่มีทั้งสองอย่าง fail อย่างแรง
 - **การเปลี่ยน pattern** มีผลตอน mint ครั้งถัดไป; reference ประวัติศาสตร์ไม่เปลี่ยน
 - **การ์ดการลบ** ประเภทที่ active ไม่สามารถ delete; soft-delete เฉพาะประเภทที่ปลดระวาง
@@ -125,8 +133,8 @@ Running code คือ **กฎ document-numbering** สำหรับทุก
 ## 8. แหล่งข้อมูลอ้างอิง
 
 - **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_config_running_code` (lines ~4864-4883)
-- **Backend pattern logic:** `../carmen-turborepo-backend/apps/micro-business/src/common/helpers/running-code.helper.ts` — `GenerateCode`, `getPattern`; preset `apps/micro-business/src/master/running-code/const/running-code.const.ts` (`RUNNING_CODE_PRESET`); service `apps/micro-business/src/master/running-code/running-code.service.ts` (`update` guard ด้วย `doc_version`, `:301`)
-- **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_running-codes/` — `api/config/:bu_code/running-codes`; licence `system_admin.running_code` (`permission.route-map.ts:121`)
+- **Backend pattern logic:** `../carmen-turborepo-backend/apps/micro-business/src/common/helpers/running-code.helper.ts` — `GenerateCode`, `getPattern`; preset `apps/micro-business/src/master/running-code/const/running-code.const.ts` (`RUNNING_CODE_PRESET`); service `apps/micro-business/src/master/running-code/running-code.service.ts` (`update` guard ด้วย `doc_version`, `:309`)
+- **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_running-codes/` — `api/config/:bu_code/running-codes`; licence `system_admin.running_code` (`permission.route-map.ts:125`)
 - **Seed:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/seed-data-a01/tb_config_running_code.json`; `packages/prisma-shared-schema-tenant/src/seed-data/running-code.ts` (รวม `GL-JV`)
 - **Frontend:** `../carmen-frontend/routes/system-admin/running-code/` — `running-code-component.tsx` (list), `running-code-dialog.tsx` (สร้าง/แก้ไข), `running-code-config-fields.tsx` (part editor + preview), `running-code-config.ts` (`parseConfig`, `serializeConfig`, `previewCode`, `slotName`), `running-code-form-schema.ts`
 - **E2E:** `../carmen-frontend-e2e/docs/test-cases/1110-running-code.md` — แคตตาล็อกเท่านั้น

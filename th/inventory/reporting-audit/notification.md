@@ -1,8 +1,8 @@
 ---
 title: การแจ้งเตือน (Notification)
-description: Fan-out การแจ้งเตือนหลัง redesign 2026-08 — แถวส่วนตัว (doc_type + event), broadcast ของระบบ/BU พร้อมสถานะอ่านต่อผู้ใช้แบบ lazy, bridge ภายใน NotifyInput และข่าวแพลตฟอร์มที่ scope ตาม BU พร้อม lifecycle การ publish
+description: Fan-out การแจ้งเตือนหลัง redesign 2026-08 — แถวส่วนตัว (doc_type + event), broadcast ของระบบ/BU พร้อมสถานะอ่านแบบ lazy, bridge NotifyInput และข่าวของแพลตฟอร์มที่ scope ตาม BU
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: reporting-audit, notification, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,13 +11,23 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # การแจ้งเตือน (Notification)
 
 > **At a Glance**
-> **เจ้าของ:** Workflow runtime + micro-cronjobs/micro-report (เขียน) · Platform Admin (broadcast `broadcast.send`, ข่าว) · BU admin (`tb_notification_template` ต่อ BU สำหรับข้อความอีเมล/in-app) &nbsp;·&nbsp; **ตาราง (platform):** `tb_notification` (ส่วนตัว) + `tb_broadcast_notification` / `tb_user_broadcast_action` (broadcast) + `tb_news` &nbsp;·&nbsp; **หายไปแล้ว:** `tb_message_format` (ลบเมื่อ 2026-08-11) &nbsp;·&nbsp; **ใช้โดย:** ทุกการเปลี่ยน stage ของ workflow, comment, การส่งมอบรายงานตามเวลา, ข่าวประกาศแพลตฟอร์ม
+> **เจ้าของ:** Workflow runtime + micro-cronjobs/micro-report (เขียน) · Backstage admin (broadcast `broadcast.send`, ข่าว) · BU admin (`tb_notification_template` ต่อ BU สำหรับข้อความอีเมล/in-app) &nbsp;·&nbsp; **ตาราง (Backstage):** `tb_notification` (ส่วนตัว) + `tb_broadcast_notification` / `tb_user_broadcast_action` (broadcast) + `tb_news` &nbsp;·&nbsp; **หายไปแล้ว:** `tb_message_format` (ลบเมื่อ 2026-08-11) &nbsp;·&nbsp; **ใช้โดย:** ทุกการเปลี่ยน stage ของ workflow, comment, การส่งมอบรายงานตามเวลา, ข่าวประกาศแพลตฟอร์ม
 
 ![การแจ้งเตือน (Notification) screen](/screenshots/reporting-audit/notification.png)
 
-## สถานะการทำงานจริง (ตรวจสอบซ้ำเมื่อ 2026-09-22)
+## สถานะการทำงานจริง (ตรวจสอบซ้ำเมื่อ 2026-10-27)
 
-ตาราง notification ถูก **redesign ในเดือนสิงหาคม 2026** (platform migration `20260810000000_notification_redesign_additive` และ `20260811000000_notification_redesign_drop_legacy`; contract ฝั่ง frontend `ac44c550`) การแก้ไขจากหน้านี้ฉบับ 2026-07-22:
+**การเปลี่ยนแปลง 2026-10-27** (backend `ef4d6f08f..c9d788829`, การแยก repo 2026-10-05):
+
+1. **`micro-notification` ออกจาก monorepo** (`c22fbb5de`, 2026-10-05) และตอนนี้เป็น repository ของตัวเอง (`../micro-notification`) deploy แยกจากแอป backend ห้าตัวที่ปล่อยพร้อมกัน ("server-first": ต้อง apply Backstage migration ก่อน deploy) contract อยู่ใน `packages/notification-contract` (19 command, schema ของ request/response/socket, `c72bbde63`) path ด้านล่างที่เขียนว่า `apps/micro-notification/...` ตอนนี้หมายถึง `../micro-notification/src/...`
+2. **socket `/ws` ต้อง authenticate** Gateway `notification-native.gateway.ts` (path `/ws`): client ต้องส่ง `{ type: "auth", token }` ภายใน 5 วินาที (`WS_AUTH_TIMEOUT_MS`); identity มาจาก Keycloak token ที่ตรวจแล้วเท่านั้น (ข้อความ `register` จาก client ถูกเมิน); เมื่อสำเร็จ gateway ตอบ `{ type: "authenticated", user_id }` และ push `{ type: "notification", data }` ไปยัง **ทุกแท็บของเจ้าของเท่านั้น** (พฤติกรรม broadcast-to-all เดิมหายไปแล้ว) Close code: `4401` (auth timeout, token ไม่ถูกต้อง, token หมดอายุระหว่าง session — client ต้อง refresh token แล้ว reconnect; FE เลิก refresh หลังได้ 4401 ติดกันหลายครั้ง, `hooks/use-notification.ts`), `1013` (Keycloak เข้าถึงไม่ได้ หรือมี socket รอ auth เกิน 500 — client ถอยออกโดยไม่ refresh) Gateway ลงทะเบียนกับ micro-notification เฉพาะแท็บแรกของผู้ใช้
+3. **ความเป็นเจ้าของของ mark-as-read (แก้ IDOR)** notification ส่วนตัวถูกค้นด้วย `id` **และ** `to_user_id = caller`; id ของคนอื่นคืน 404 (ไม่ใช่ 403) `markAsRead` ผ่าน socket ถูกลบแล้ว — ใช้ REST route แทน (`d09e94f8a`)
+4. **REST `/v1` ภายนอก** micro-notification เปิด endpoint `/v1` สำหรับระบบอื่นด้วย API key และ scope ต่อผู้เรียก: allow-list โดเมนอีเมลผู้รับ, ปลอม `from_user_id` ไม่ได้, broadcast ต้องมี scope ของตัวเอง และ `/v1/emails` รับเฉพาะ flow `notification` (`d84fa51f7`, `fac9658cf`, `d0d9827dd`) UI ของ inventory ไม่ได้ใช้
+5. endpoint รายการของ gateway สำหรับ notification, ข่าวสาธารณะ และรายงาน ใช้กฎ `perpage` เดียวกันคือ 1-100 (`fe80fc14b`) การเปลี่ยนชื่อเป็น Backstage: ตารางยังคงเป็น `tb_notification`, `tb_broadcast_notification`, `tb_user_broadcast_action`, `tb_news` ตอนนี้อยู่ใน Backstage schema (`prisma-shared-schema-backstage`)
+
+**การตรวจสอบ 2026-09-22 (คงไว้)**
+
+ตาราง notification ถูก **redesign ในเดือนสิงหาคม 2026** (Backstage migration `20260810000000_notification_redesign_additive` และ `20260811000000_notification_redesign_drop_legacy`; contract ฝั่ง frontend `ac44c550`) การแก้ไขจากหน้านี้ฉบับ 2026-07-22:
 
 1. `tb_notification` เสีย `type`, `category` และ `is_sent` ไป; ตอนนี้มี `doc_type enum_notification_doc_type` (`system`, `business_unit`, `purchase_request`, `store_requisition`, `purchase_order`, `good_received_note`, `credit_note`), `event enum_notification_event` (`info`, `workflow`, `comment`) และ `pushed_at` string discriminator `SYS_INFO` / `BU_INFO` / `PR_COMMENT` และ category `system` / `user-to-user` หายไปแล้ว
 2. `tb_broadcast_notification` เสีย `category` และ `type` ไป; ตอนนี้มี `scope enum_broadcast_scope` (`system` | `business_unit`) + `scope_id` บวกคู่ `doc_type` / `event` แบบเดียวกัน string `'system-to-user'` / `'bu-to-user'` บนหน้านี้คือ contract ก่อน redesign
@@ -31,15 +41,15 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 เอนทิตี notification คือ **ท่อข้อความขาเข้า** — ทุกการเปลี่ยน stage ของ workflow, comment, การส่งมอบรายงานตามเวลา, ข่าวประกาศของระบบ และข่าวสารของแพลตฟอร์มถูก materialise ขึ้นมาให้ shell ของแอป render badge + drawer inbox (และส่งอีเมลผ่าน email profile ของ BU ได้ตามต้องการ)
 
-ตารางในระดับ platform schema สี่ตัวทำงานร่วมกัน:
+ตารางในระดับ Backstage schema สี่ตัวทำงานร่วมกัน:
 
 - `tb_notification` — inbox ส่วนตัวหนึ่งแถวต่อผู้รับหนึ่งคน (event ของ workflow, comment, แจ้งรายงานพร้อมแล้ว)
 - `tb_broadcast_notification` + `tb_user_broadcast_action` — mechanism broadcast: หนึ่งแถวต่อ broadcast ไม่ว่าขนาดกลุ่มผู้รับจะเป็นเท่าไร พร้อมสถานะอ่านต่อผู้ใช้ที่สร้างแบบ lazy ตอน action ครั้งแรก (เปิด/dismiss) แทนที่จะ fan-out ตอนเขียน
 - `tb_news` — ข่าวประกาศทั่วทั้งแพลตฟอร์มหรือ scope ตาม BU พร้อม lifecycle `draft` / `published` / `archived`
 
-ทั้งหมดอยู่ใน **platform schema** เพราะการแจ้งเตือนข้ามขอบเขต BU และการ broadcast ต้องเข้าถึงทุก tenant
+ทั้งหมดอยู่ใน **Backstage schema** เพราะการแจ้งเตือนข้ามขอบเขต BU และการ broadcast ต้องเข้าถึงทุก tenant
 
-**ดูแลโดย** workflow runtime และ service อื่น ๆ ผ่าน `NotifyInput` (แถวส่วนตัว + broadcast ต่อ event), Platform Admin (broadcast, ข่าว), BU admin (ข้อความใน `tb_notification_template`) **อ่านโดย** inbox ของ shell แอป (รายการรวมของ `notification.controller.ts` ที่ merge ทั้งสองแหล่ง)
+**ดูแลโดย** workflow runtime และ service อื่น ๆ ผ่าน `NotifyInput` (แถวส่วนตัว + broadcast ต่อ event), Backstage admin (broadcast, ข่าว), BU admin (ข้อความใน `tb_notification_template`) **อ่านโดย** inbox ของ shell แอป (รายการรวมของ `notification.controller.ts` ที่ merge ทั้งสองแหล่ง)
 
 ## 2. งานที่พบบ่อย
 
@@ -49,9 +59,9 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | Mark การแจ้งเตือนส่วนตัวเป็นอ่านแล้ว | คลิกข้อความ | `PUT /api/notifications/{id}/read` พร้อม `{ source: "personal" }` (หรือไม่ส่ง) → `tb_notification.is_read = true` |
 | Mark broadcast เป็นอ่านแล้ว | คลิกข้อความ | endpoint เดียวกันพร้อม `{ source: "broadcast" }` → upsert แถว `tb_user_broadcast_action` (สร้างแบบ lazy ตอน action ครั้งแรก) |
 | Mark ทั้งหมดเป็นอ่านแล้ว | Inbox → mark all | `PUT /api/notifications/mark-all-read` |
-| ส่ง broadcast ทั้งระบบหรือระดับ BU | Platform admin | `POST /api/notifications/broadcasts/system` / `broadcasts/bu` — สิทธิ์ platform `broadcast.send`; รายการ/แก้ไข/ลบฝั่งผู้ส่งที่ `GET/PATCH/DELETE /api/notifications/broadcasts[/:id]` |
+| ส่ง broadcast ทั้งระบบหรือระดับ BU | Backstage admin | `POST /api/notifications/broadcasts/system` / `broadcasts/bu` — สิทธิ์ Backstage `broadcast.send`; รายการ/แก้ไข/ลบฝั่งผู้ส่งที่ `GET/PATCH/DELETE /api/notifications/broadcasts[/:id]` |
 | แก้ไขข้อความอีเมล workflow / รายงานของ BU นี้ | `/system-admin/notification-template` | แถว `tb_notification_template` ของ tenant ต่อ channel (`enum_notification_channel`) — ดู [system-config/notification-template](/th/inventory/system-config/notification-template) |
-| โพสต์ข่าวประกาศแพลตฟอร์ม | Platform Admin → News | Default เป็น `status = draft` — **ไม่** มองเห็นสาธารณะจนกว่าจะตั้งเป็น `published` อย่างชัดเจน; scope เฉพาะ BU ได้ผ่าน `business_unit_ids` |
+| โพสต์ข่าวประกาศแพลตฟอร์ม | Backstage admin → News | Default เป็น `status = draft` — **ไม่** มองเห็นสาธารณะจนกว่าจะตั้งเป็น `published` อย่างชัดเจน; scope เฉพาะ BU ได้ผ่าน `business_unit_ids` |
 | ตั้งเวลาการแจ้งเตือน | ตั้ง `scheduled_at` ใน `NotifyInput` | Dispatcher fire เมื่อเวลาผ่าน; `pushed_at` บันทึกการส่ง |
 | แจ้งเตือนจาก service อื่น | `POST /api/internal/notifications` | envelope `NotifyInput` (§5.6); ใช้โดยการ fire รายงานของ micro-cronjobs และ micro-report |
 
@@ -68,7 +78,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 4. กรณีพิเศษ
 
-- **การเชื่อมโยงข้าม schema** `metadata` อาจ carry identifier ของ tenant (เส้นทางการเขียนใหม่ใส่ id ของเอกสารใน `metadata.id` เสมอ; แถวเก่าอาจยังมี `pr_id` / `po_id` / `sr_id` / `grn_id` / `cn_id` — ไม่มีแถวใหม่ที่สร้างด้วย key เหล่านั้นอีก) Platform schema ไม่บังคับ FK เข้าตาราง tenant
+- **การเชื่อมโยงข้าม schema** `metadata` อาจ carry identifier ของ tenant (เส้นทางการเขียนใหม่ใส่ id ของเอกสารใน `metadata.id` เสมอ; แถวเก่าอาจยังมี `pr_id` / `po_id` / `sr_id` / `grn_id` / `cn_id` — ไม่มีแถวใหม่ที่สร้างด้วย key เหล่านั้นอีก) Backstage schema ไม่บังคับ FK เข้าตาราง tenant
 - **Scope ของข่าวเป็นจริง ไม่ใช่ global เท่านั้น** `business_unit_ids` (JSONB array) — array ว่างหมายถึงมองเห็นได้ทุกที่ (global); array ที่ไม่ว่าง scope เฉพาะ BU เหล่านั้น `findPublicAll()` ใช้ `OR: [{business_unit_ids: {equals: []}}, {business_unit_ids: {array_contains: [bu_id]}}]` เมื่อมี `bu_id` ส่งมา
 - **ข่าวมี lifecycle draft/published/archived** `status` default เป็น `draft` ตอนสร้าง; `create()`/`update()` ตั้ง `published_at = now()` อัตโนมัติครั้งแรกที่ `status` เปลี่ยนเป็น `published` (เว้นแต่ส่ง `published_at` มาชัดเจน) Query สาธารณะ filter แบบ hard ด้วย `status: published AND published_at <= now()`
 - **สถานะการอ่านของ broadcast เป็นแบบ lazy ไม่ fan-out** แถว `tb_user_broadcast_action` ถูกสร้างตอน action อ่าน/dismiss ครั้งแรกต่อผู้ใช้ — นี่คือเหตุผลการออกแบบที่ชัดเจนว่าทำไม `tb_broadcast_notification` มาแทนที่ fan-out แบบต่อผู้รับของ `tb_notification` เดิมสำหรับ broadcast
@@ -80,7 +90,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 5. โมเดลข้อมูล (Dev)
 
-แหล่ง: platform schema (`packages/prisma-shared-schema-platform/prisma/schema.prisma`)
+แหล่ง: Backstage schema (`packages/prisma-shared-schema-backstage/prisma/schema.prisma`)
 
 ### 5.1 `tb_notification`
 
@@ -175,7 +185,7 @@ NotifyInput {
 
 - **Mechanism การส่งมอบสองแบบ envelope เดียว** Event ส่วนตัวต่อผู้รับใช้ `tb_notification`; broadcast ของระบบ/BU ใช้ `tb_broadcast_notification` + แถว `tb_user_broadcast_action` ที่สร้างแบบ lazy ทั้งสองแบบผลิตจาก `NotifyInput.audience.kind`
 - **สถานะการอ่าน** เป็นของผู้รับในทั้งสอง mechanism; client ต้องส่ง `source` ของแถวกลับไปตอน mark อ่านแล้ว
-- **การส่ง broadcast เป็นสิทธิ์ระดับ platform** (`broadcast.send`) ไม่ใช่สิทธิ์ tenant
+- **การส่ง broadcast เป็นสิทธิ์ระดับ Backstage** (`broadcast.send`) ไม่ใช่สิทธิ์ tenant
 - **ข่าว scope ตาม BU ได้และถูกจำกัดด้วยสถานะ publish** `business_unit_ids` (ว่าง = global) และ `status` (default `draft`; มีเฉพาะแถว `published` + `published_at <= now()` เท่านั้นที่มองเห็นสาธารณะ) ทั้งคู่บังคับใช้ที่ server ใน `news.service.ts`
 - **การตั้งเวลา** `scheduled_at` เลื่อนการส่ง; `pushed_at` บันทึกการส่ง (ส่วนตัว) `tb_broadcast_notification` มี `scheduled_at` / `end_at`; mechanism การจับเวลา dispatch ของ broadcast ยังไม่ได้ตรวจสอบแยกในรอบนี้
 
@@ -191,9 +201,9 @@ NotifyInput {
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_notification`, `tb_broadcast_notification`, `tb_user_broadcast_action`, `tb_news`, `enum_notification_doc_type`, `enum_notification_event`, `enum_broadcast_scope`, `enum_news_status`; migration `20260810000000_notification_redesign_additive`, `20260811000000_notification_redesign_drop_legacy`
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_notification`, `tb_broadcast_notification`, `tb_user_broadcast_action`, `tb_news`, `enum_notification_doc_type`, `enum_notification_event`, `enum_broadcast_scope`, `enum_news_status`; migration `20260810000000_notification_redesign_additive`, `20260811000000_notification_redesign_drop_legacy`
 - **Contract:** `../carmen-turborepo-backend/packages/notification-contract/src/notify-input.schema.ts`
-- **Backend (อ่าน/เขียนแบบรวม):** `../carmen-turborepo-backend/apps/micro-notification/src/notification/notification.service.ts`, `../carmen-turborepo-backend/apps/backend-gateway/src/notification/notification.controller.ts` (`GET /`, `recent`, `unread`, `broadcasts*`, `:id`, `PUT :id/read`, `PUT mark-all-read`, `POST broadcasts/system|bu`), `internal-notification.controller.ts` (`POST /api/internal/notifications`)
+- **Backend (อ่าน/เขียนแบบรวม):** `../micro-notification/src/notification/notification.service.ts` (แยกออกจาก monorepo 2026-10-05), `../carmen-turborepo-backend/apps/backend-gateway/src/notification/notification.controller.ts` (`GET /`, `recent`, `unread`, `broadcasts*`, `:id`, `PUT :id/read`, `PUT mark-all-read`, `POST broadcasts/system|bu`), `internal-notification.controller.ts` (`POST /api/internal/notifications`)
 - **Backend (ข่าว):** `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/news/news.service.ts` (CRUD ของ admin), `../carmen-turborepo-backend/apps/backend-gateway/src/application/news/public-news.service.ts` (อ่านสาธารณะ)
 - **Backend (template ต่อ BU):** `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_notification-templates/config_notification-templates.controller.ts`; `tb_notification_template` ของ tenant (migration `20260525041511_add_notification_template`)
 - **Frontend:** `../carmen-frontend/types/notification.ts` (`Notification`, `NotificationSource`, `NotificationDocType`, `NotificationListResponse.summary`), `constant/api-endpoints.ts` (`NOTIFICATIONS`, `NOTIFICATIONS_UNREAD`, `NOTIFICATIONS_MARK_ALL_READ`, `NOTIFICATION_MARK_READ`, `NOTIFICATION_TEMPLATES`)

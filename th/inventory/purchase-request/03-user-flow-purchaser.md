@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — User Flow — Purchaser
 description: เส้นทางการใช้งานของ Purchaser ในโมดูล purchase-request
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: purchase-request, user-flow, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -27,7 +27,7 @@ graph LR
     inprog(("in_progress<br/>(purchase stage)")):::current -->|"แก้ vendor/price<br/>+ Auto Allocate"| decide["Bulk-decide<br/>(toolbar)"]:::current
     decide -->|"Approve (stage สุดท้าย)"| approved(("approved"))
     decide -->|"Reject"| voided(("voided"))
-    decide -->|"Send for Review"| prior["Stage ก่อนหน้า / draft"]
+    decide -->|"Send for Review"| prior["Prior stage<br/>(stays in_progress)"]
     approved -.->|"Convert to PO<br/>(dialog แยก,<br/>โมดูล Purchase Order)"| completed(("completed"))
     classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
 ```
@@ -61,9 +61,9 @@ graph LR
 
 1. เปิด PR ที่อยู่ที่ stage `purchase` (`pr_status = in_progress`, `workflow_current_stage` มอบหมายให้ Purchaser) หน้า detail เปิดในโหมด view พร้อม header, บรรทัด และ Activity Log เต็มจากทุก stage ก่อนหน้า
 2. คลิก **Edit** เพื่อเข้า Edit Mode vendor, ราคาต่อหน่วย, ส่วนลด และ tax profile กลายเป็นแก้ไขได้ต่อบรรทัด; `approved_qty` ยังคง read-only
-3. แบบ optional คลิก **Auto Allocate** เพื่อเติม vendor, ราคา, pricelist reference, tax profile และอัตราแลกเปลี่ยนแบบ bulk จาก endpoint price-compare สำหรับทุกบรรทัดที่มีสินค้า, หน่วยที่ขอ และสกุลเงินตั้งไว้ (`pr-auto-allocate.ts`; backend เลือก preferred ก่อน แล้วถูกที่สุด ที่ MOQ tier ซึ่ง `qty` ที่ขอไปถึง — `price-list.service.ts:715`) หรือเปิด dialog **Price Comparison** บนบรรทัดเดี่ยว (`pr-pricelist-dialog.tsx`) — vendor, เลขที่ pricelist, หน่วย, ราคาพร้อมเครื่องหมาย "best", ช่วงวันที่มีผล และปุ่ม **Assign** ต่อแถว; header ของ dialog แสดงจำนวนที่ขอ / ที่อนุมัติ และ**ราคาซื้อล่าสุด**ของสินค้า
-4. ก่อน approve ทุกบรรทัดที่ไม่ได้ reject / ส่งกลับต้องมี vendor, ราคาต่อหน่วย `> 0`, สกุลเงิน และ tax profile (`pr-form-schema.ts` `superRefine` สำหรับ stage `purchase`; ปุ่ม Approve ใน footer แสดง "purchaseIncomplete" ถ้าไม่ครบ) ฝั่ง server คือ `POST …/verify` ด้วย `verify_state = approve`, `stage_role = purchase` ซึ่งคำนวณทุกยอดใหม่และปฏิเสธส่วนลดหรือภาษีที่เกินมูลค่าบรรทัดด้วย (`PR_VAL_012`) จากนั้นเลือกบรรทัดที่จะดำเนินการ (หรือ **Select All**) แล้วเลือก bulk action จาก toolbar: **Approve** (เดินหน้า — หรือถ้าเป็น stage สุดท้ายของ chain พลิกเป็น `approved`), **Reject** (ยุติ → `voided`, ต้องมีเหตุผล), **Send for Review** (ส่งกลับไป stage ก่อนหน้า, ต้องมีเหตุผล) หรือ **Split** (accept บางบรรทัด, reject บรรทัดอื่น)
-5. ยืนยันใน dialog PR จะเดินหน้าต่อ (`pr_status` ยังคง `in_progress` พร้อม stage cursor ที่ย้าย), พลิกเป็น `approved` (stage สุดท้าย clear แล้ว), กลับไป stage ก่อนหน้า / `draft` (send-back) หรือยุติ (`voided`)
+3. แบบ optional คลิก **Auto Allocate** เพื่อเติม vendor, ราคา, pricelist reference, tax profile และอัตราแลกเปลี่ยนแบบ bulk จาก endpoint price-compare สำหรับทุกบรรทัดที่มีสินค้า, หน่วยที่ขอ และสกุลเงินตั้งไว้ (`pr-auto-allocate.ts`; backend เลือก preferred ก่อน แล้วถูกที่สุด ที่ MOQ tier ซึ่ง `qty` ของบรรทัดไปถึง — ปริมาณที่อนุมัติเมื่อมี ไม่เช่นนั้นปริมาณที่ขอ (`resolveApprovedQty`, `pr-auto-allocate.ts`) — `price-list.service.ts:715`) หรือเปิด dialog **Price Comparison** บนบรรทัดเดี่ยว (`pr-pricelist-dialog.tsx`) — vendor, เลขที่ pricelist, หน่วย, ราคาพร้อมเครื่องหมาย "best", ช่วงวันที่มีผล และปุ่ม **Assign** ต่อแถว; header ของ dialog แสดงจำนวนที่ขอ / ที่อนุมัติ และ**ราคาซื้อล่าสุด**ของสินค้า และแถว vendor ถูกคิดราคาที่ tier ซึ่งปริมาณที่อนุมัติ (ไม่เช่นนั้นปริมาณที่ขอ) ไปถึง ถ้า stage ซ่อนราคาจากคุณ (`hidden_fields`) เซลล์ vendor / pricelist / tax / discount จะเป็นข้อความ read-only และแอปไม่ส่ง key ราคาเลย (`PR_AUTH_011`) — stage ที่ให้ Purchaser เห็นแบบซ่อนราคาเป็นความผิดพลาดในการตั้งค่า workflow เพราะหน้าที่ทั้งหมดของ stage `purchase` คือการกำหนดราคา
+4. ก่อน approve ทุกบรรทัดที่ไม่ได้ reject / ส่งกลับต้องมี vendor, ราคาต่อหน่วย `> 0`, สกุลเงิน และ tax profile (`pr-form-schema.ts` `superRefine` สำหรับ stage `purchase`; ปุ่ม Approve ใน footer แสดง "purchaseIncomplete" ถ้าไม่ครบ) ฝั่ง server คือ `POST …/verify` ด้วย `verify_state = approve`, `stage_role = purchase` ซึ่งคำนวณทุกยอดใหม่และปฏิเสธส่วนลดหรือภาษีที่เกินมูลค่าบรรทัดด้วย (`PR_VAL_012`) จากนั้นเลือกบรรทัดที่จะดำเนินการ (หรือ **Select All**) แล้วเลือก bulk action จาก toolbar: **Approve** (เดินหน้า — หรือถ้าเป็น stage สุดท้ายของ chain พลิกเป็น `approved`), **Reject** (ยุติ → `voided`, ต้องมีเหตุผล), **Send for Review** (ส่งกลับไป stage ก่อนหน้า, ต้องมีเหตุผล) หรือ **Split** (accept บางบรรทัด, reject บรรทัดอื่น) ปุ่มที่ stage ปิดไว้จะไม่แสดง (`PR_AUTH_010`)
+5. ยืนยันใน dialog PR จะเดินหน้าต่อ (`pr_status` ยังคง `in_progress` พร้อม stage cursor ที่ย้าย), พลิกเป็น `approved` (stage สุดท้าย clear แล้ว), กลับไป stage ก่อนหน้า (send-back — `pr_status` ยังคง `in_progress` แม้ที่ create stage) หรือยุติ (`voided`)
 
 **จุดเริ่มต้น — การแปลงเป็น PO:** Sidebar → โมดูล **Purchase Order** → **Create from PR** (`PoFromPrDialog`)
 
@@ -78,7 +78,7 @@ graph LR
 
 - **ถ้าบรรทัดไม่มี vendor จัดสรรที่ stage `purchase`**: รัน **Auto Allocate** อีกครั้ง (เติมจาก pricelist ปัจจุบัน) หรือเปิด Price Comparison บนบรรทัดเพื่อเลือก vendor ด้วยมือก่อน bulk-approve
 - **ถ้า PR ขาดข้อมูลราคาที่จำเป็นตอนพยายาม bulk action**: validation block action ไว้; Purchaser แก้บรรทัดที่ถูก flag แล้วลองใหม่
-- **ถ้า Purchaser ไม่เห็นด้วยกับคำขอทั้งใบ**: เลือก bulk **Reject** พร้อมเหตุผล (`pr_status → voided`, terminal) หรือ bulk **Send for Review** พร้อมเหตุผลและ stage เป้าหมาย (กลับไป stage ก่อนหน้า หรือไปที่ `draft` ถ้าเป้าหมายคือ create stage ของ Requestor)
+- **ถ้า Purchaser ไม่เห็นด้วยกับคำขอทั้งใบ**: เลือก bulk **Reject** พร้อมเหตุผล (`pr_status → voided`, terminal) หรือ bulk **Send for Review** พร้อมเหตุผลและ stage เป้าหมาย (กลับไป stage ก่อนหน้า; ถ้าเป้าหมายคือ create stage ของ Requestor PR ยังคง `in_progress` และ Requestor แก้ไขที่นั่น)
 - **ถ้าบางบรรทัดยอมรับได้และบางบรรทัดไม่ได้**: ใช้ **Split** เพื่อ accept บางส่วนและ reject ที่เหลือ; บรรทัดที่ reject ถูก flag `current_stage_status = rejected` และหลุดจากการดำเนินการต่อไป ขณะที่บรรทัดที่ accept เดินต่อ
 - **ถ้า PR ที่เลือกเพื่อแปลงเป็น PO มีมากกว่าหนึ่ง vendor, วันส่งของ หรือสกุลเงิน**: ขั้นตอน group-PR สร้าง draft-PO group หลายใบอัตโนมัติ — หนึ่ง PO ต่อ combination `(vendor, delivery_date, currency)` ที่แตกต่างกัน Purchaser ไม่ต้อง split ด้วยมือ
 - **ถ้า PR ที่เลือกเพื่อแปลงถูกแปลงครบแล้ว (`pr_status = completed`)**: มันจะไม่ปรากฏในรายการ PR-for-PO ดังนั้นจึงเลือกซ้ำไม่ได้
@@ -87,7 +87,7 @@ graph LR
 
 - **Bulk Approve ที่ stage สุดท้ายของ chain** `pr_status` พลิกจาก `in_progress` เป็น `approved` (`PR_POST_005`); PR เข้าเกณฑ์การแปลงเป็น PO Handoff ไปยังใครก็ตามที่เปิด dialog Convert-to-PO ในโมดูล Purchase Order ในภายหลัง — ไม่จำเป็นต้องเป็นผู้ใช้คนเดียวกัน
 - **Bulk Approve ที่ stage กลาง** `pr_status` ยังคง `in_progress`; handoff ไปยังผู้ใช้ที่มอบหมายของ stage ถัดไป
-- **Bulk Send for Review** PR กลับไป stage ก่อนหน้า (หรือไปที่ `draft`, handoff ให้ **Requestor** — ดู [03-user-flow-requestor.md](./03-user-flow-requestor.md))
+- **Bulk Send for Review** PR กลับไป stage ก่อนหน้า (ถ้านั่นคือ create stage ก็ยัง `in_progress`, handoff ให้ **Requestor** — ดู [03-user-flow-requestor.md](./03-user-flow-requestor.md))
 - **Bulk Reject** `pr_status` พลิกเป็น `voided` (terminal); **Auditor** review ภายหลัง
 - **ยืนยัน Convert to PO แล้ว** PR ต้นทางที่ bridge ครบแล้วพลิกจาก `approved` เป็น `completed` (`PR_POST_007`); handoff ไปยังโมดูล [purchase-order](/th/inventory/purchase-order) สำหรับการผูกพัน vendor และติดตามจนถึงรับของ PR ที่ bridge บางส่วน (ถ้า release ในอนาคตเพิ่มการแปลงบางส่วน) จะยังคง `approved`; UI ปัจจุบันแปลง PR ทั้งใบครั้งละใบ
 

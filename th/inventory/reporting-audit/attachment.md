@@ -1,8 +1,8 @@
 ---
 title: ไฟล์แนบ (Attachment)
-description: registry ของ file-metadata ที่ทุกโมดูลที่มีการอัปโหลดใช้ — tb_file_tag เก็บบน MinIO ในฐานข้อมูล file-service แยกต่างหาก ให้บริการโดย micro-file ตาราง tb_attachment ของ tenant ไม่มีการอ้างอิงจากโค้ดเลยและตายแล้ว
+description: registry file-metadata ที่ทุกโมดูลที่อัปโหลดไฟล์ใช้ — tb_file_tag เก็บบน MinIO ในฐานข้อมูล file-service แยก (micro-file); tb_attachment ของ tenant ไม่มีการอ้างอิงจากโค้ดและตายแล้ว
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: reporting-audit, attachment, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # ไฟล์แนบ (Attachment)
 
 > **At a Glance**
-> **เจ้าของ:** flow การอัปโหลดของโมดูลเจ้าของ &nbsp;·&nbsp; **ตาราง:** `tb_file_tag` — อยู่ใน **ฐานข้อมูล `prisma-shared-schema-file` (`CARMEN_FILE`) แยกต่างหาก** ไม่ใช่ tenant schema &nbsp;·&nbsp; **การจัดเก็บ:** MinIO &nbsp;·&nbsp; **ใช้โดย:** ทุกโมดูลที่มีการอัปโหลดไฟล์ &nbsp;·&nbsp; ตาราง `tb_attachment` ใน tenant schema ตายแล้ว — ไม่มีการอ้างอิงจากโค้ดนอกเหนือจาก schema เลย
+> **เจ้าของ:** flow การอัปโหลดของโมดูลเจ้าของ &nbsp;·&nbsp; **ตาราง:** `tb_file_tag` — อยู่ใน **ฐานข้อมูล file-service แยกต่างหาก (Prisma schema อยู่ใน repo `micro-file`, `CARMEN_FILE`)** ไม่ใช่ tenant schema &nbsp;·&nbsp; **การจัดเก็บ:** MinIO &nbsp;·&nbsp; **ใช้โดย:** ทุกโมดูลที่มีการอัปโหลดไฟล์ &nbsp;·&nbsp; ตาราง `tb_attachment` ใน tenant schema ตายแล้ว — ไม่มีการอ้างอิงจากโค้ดนอกเหนือจาก schema เลย
 
 ![ไฟล์แนบ (Attachment) screen](/screenshots/reporting-audit/attachment.png)
 
@@ -19,7 +19,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 หน้านี้ฉบับก่อนหน้าบันทึก `tb_attachment` (tenant schema) ว่าเป็นแคตตาล็อกไฟล์-metadata ที่ใช้ร่วมกันและใช้งานจริง เก็บบน S3 ด้วยรูปแบบ `s3_token`/`s3_folder` และมี `doc_version` เป็น "ตัวนับการ re-render... เพิ่มเมื่อ re-render; เวอร์ชันเก่าคงไว้สำหรับ audit" การค้นหาทั่ว `carmen-turborepo-backend/apps` พบว่า **ไม่มีการอ้างอิง `tb_attachment` เลยนอกเหนือจากการประกาศ Prisma model ของมันเอง** — ไม่มี service, controller, repository หรือ DTO ใดอ่านหรือเขียนตารางนี้เลย `tb_attachment.doc_version` เองก็ไม่เคยถูกเพิ่มค่าหรืออ่านโดยโค้ดใด ๆ เช่นกัน — เป็น schema เฉย ๆ ไม่ใช่ตัวนับการ re-render ที่ทำงานจริง ผลนี้สอดคล้องกับสิ่งที่ยืนยันไว้แล้วใน [system-config/document](/th/inventory/system-config/document)
 
-เส้นทางการจัดเก็บไฟล์ที่แท้จริงคือ microservice **`micro-file`** (`micro-file/src/files/files.service.ts`) ซึ่งเขียนไปที่ **MinIO** object storage และไปที่ **`tb_file_tag`** — ตารางในฐานข้อมูล `@repo/prisma-shared-schema-file` แยกต่างหากทั้งหมด (schema `CARMEN_FILE`) ไม่ใช่ tenant หรือ platform schema หน้านี้ถูกแก้ไขให้อธิบาย mechanism นี้ ดู [system-config/document](/th/inventory/system-config/document) สำหรับ UI walkthrough แบบเต็มของหน้าจอ admin (`/system-admin/document`) — หน้านี้เน้นที่เอนทิตีในแง่ที่ถูกโมดูลอื่นใช้งาน
+เส้นทางการจัดเก็บไฟล์ที่แท้จริงคือ microservice **`micro-file`** ซึ่งตั้งแต่ 2026-10-05 อยู่ใน **repository ของตัวเอง** (`../micro-file`; ถูกลบออกจาก monorepo ใน `73c80a0de` พร้อมกับ `packages/prisma-shared-schema-file`) (`micro-file/src/files/files.service.ts`) ซึ่งเขียนไปที่ **MinIO** object storage และไปที่ **`tb_file_tag`** — ตารางในฐานข้อมูลแยกต่างหากทั้งหมดที่ Prisma schema คือ `micro-file/prisma/schema.prisma` (schema `CARMEN_FILE`) ไม่ใช่ tenant หรือ Backstage schema หน้านี้ถูกแก้ไขให้อธิบาย mechanism นี้ ดู [system-config/document](/th/inventory/system-config/document) สำหรับ UI walkthrough แบบเต็มของหน้าจอ admin (`/system-admin/document`) — หน้านี้เน้นที่เอนทิตีในแง่ที่ถูกโมดูลอื่นใช้งาน
 
 ## 1. ภาพรวมและผู้ใช้งาน
 
@@ -27,7 +27,7 @@ Registry ไฟล์ที่แท้จริงคือ `tb_file_tag` ห�
 
 แต่ละแถวของ `tb_file_tag` เก็บ MinIO object key (`object_name`), metadata ไฟล์ต้นฉบับ (`original_name`, `content_type`, `size`) และ tag แบบมีโครงสร้าง/อิสระ (`reference_type`/`reference_id`/`reference_no`, `tags` JSONB) สำหรับการค้นหา **ไม่มีคอลัมน์ `doc_version`/versioning สำหรับการ re-render บน `tb_file_tag`** — การอัปโหลด PDF ของเอกสารใหม่คือการอัปโหลดครั้งใหม่ธรรมดา ไม่ใช่ revision ที่มีเวอร์ชันของแถวเดิม
 
-**ดูแลโดย** flow การอัปโหลดของโมดูลเจ้าของ ผ่านคำสั่ง RPC ของ `micro-file` (`Files.upload` / `get` / `info` / `findAll` / `summary` / `delete` / `presignedUrl` / `updateTags` / `uploadLegacy` — `micro-file/src/files/files.controller.ts`; RPC ตอนนี้รันแบบ HTTP-as-RPC ไม่ใช่ TCP) *(spot-check 2026-09-22: คอลัมน์ของ `tb_file_tag`, presigned TTL 3600 วินาที และ route fallback `/:filetoken/download` ล้วนตรงกับ HEAD; รายการคำสั่งข้างต้นเพิ่ม `summary` และ `uploadLegacy`)* **อ่านโดย** หน้ารายละเอียดของโมดูลเจ้าของ ซึ่ง resolve แต่ละ `fileToken` กลับเป็น MinIO URL ใหม่ที่มีเวลาจำกัด
+**ดูแลโดย** flow การอัปโหลดของโมดูลเจ้าของ ผ่านคำสั่ง RPC ของ `micro-file` (`Files.upload` / `get` / `info` / `findAll` / `summary` / `delete` / `presignedUrl` / `updateTags` / `uploadLegacy` — `../micro-file/src/files/files.controller.ts`; RPC ตอนนี้รันแบบ HTTP-as-RPC ไม่ใช่ TCP) *(spot-check 2026-09-22: คอลัมน์ของ `tb_file_tag`, presigned TTL 3600 วินาที และ route fallback `/:filetoken/download` ล้วนตรงกับ HEAD; รายการคำสั่งข้างต้นเพิ่ม `summary` และ `uploadLegacy`)* **อ่านโดย** หน้ารายละเอียดของโมดูลเจ้าของ ซึ่ง resolve แต่ละ `fileToken` กลับเป็น MinIO URL ใหม่ที่มีเวลาจำกัด
 
 ### 1.1 การดึงไฟล์ — URL ที่บันทึกไว้ไม่เคยถูกไว้ใจ
 
@@ -68,13 +68,13 @@ Comment responses ยังจะ **ลบฟิลด์ผู้แต่ง�
 - **การลบเป็น hard บน storage, soft บนแถว registry และไม่เคย cascade** `deleteFile()` ลบ MinIO object ทันที (กู้คืนไม่ได้) และตั้ง `tb_file_tag.deleted_at` แบบ best-effort JSONB `attachments` ของเอกสารเจ้าของ **ไม่ถูก** อัปเดต — token ของไฟล์ที่ถูกลบจะแสดงเป็น "missing" บนเอกสารใดก็ตามที่ยังอ้างอิงอยู่
 - **ไม่มี FK แบบ polymorphic — โดยการออกแบบ** การเชื่อมโยงเป็นทิศทางเดียว: JSONB `attachments` ของตารางเจ้าของเก็บ `fileToken` ที่ชี้ไปยัง `tb_file_tag`; ไม่มี index ย้อนกลับบน `tb_file_tag` กลับไปยังทุกแถวเจ้าของ
 - **ความน่าเชื่อถือของ MIME / ขนาด** ทั้งสองมาจาก request การอัปโหลดและไม่ได้ตรวจสอบใหม่ที่ server — อย่าพึ่งพาเพื่อความปลอดภัย
-- **ฐานข้อมูลแยกต่างหาก** `tb_file_tag` อยู่ใน Postgres database/schema ที่แยกต่างหาก (`CARMEN_FILE`) จากทั้ง tenant และ platform schema — join ข้าม schema ที่ระดับ SQL ทำไม่ได้; การ resolve ต้องผ่าน API ของ service `micro-file` เสมอ
+- **ฐานข้อมูลแยกต่างหาก** `tb_file_tag` อยู่ใน Postgres database/schema ที่แยกต่างหาก (`CARMEN_FILE`) จากทั้ง tenant และ Backstage schema — join ข้าม schema ที่ระดับ SQL ทำไม่ได้; การ resolve ต้องผ่าน API ของ service `micro-file` เสมอ
 
 ---
 
 ## 5. โมเดลข้อมูล (Dev)
 
-แหล่ง: **ฐานข้อมูล `prisma-shared-schema-file` แยกต่างหาก** — ไม่ใช่ tenant schema
+แหล่ง: **ฐานข้อมูล file-service แยกต่างหาก** (`../micro-file/prisma/schema.prisma`) — ไม่ใช่ tenant schema
 
 ### 5.1 `tb_file_tag` (registry metadata ที่แท้จริง)
 
@@ -116,7 +116,7 @@ Comment responses ยังจะ **ลบฟิลด์ผู้แต่ง�
 - **ไม่มีการตรวจสอบขนาดหรือ MIME ที่ server** บนเส้นทางการอัปโหลดที่แท้จริง (`uploadFile()` ของ `files.service.ts`)
 - **การลบเป็นการทันทีและกู้คืนไม่ได้บน MinIO** soft-delete แบบ best-effort บน `tb_file_tag` และไม่เคย cascade ไปยัง JSONB `attachments` ของเอกสารเจ้าของ
 - **Lifecycle ของ URL** resolve ผ่าน file service เสมอ — อย่า cache `fileUrl` ข้าม session; presigned URL หมดอายุหลัง 1 ชั่วโมง
-- **การเชื่อมโยงข้ามฐานข้อมูล** `tb_file_tag` ไม่สามารถ join กับตาราง tenant หรือ platform ได้ที่ระดับ SQL — การ resolve ต้องผ่าน API ของ service `micro-file` เสมอ
+- **การเชื่อมโยงข้ามฐานข้อมูล** `tb_file_tag` ไม่สามารถ join กับตาราง tenant หรือ Backstage ได้ที่ระดับ SQL — การ resolve ต้องผ่าน API ของ service `micro-file` เสมอ
 
 ## 7. ความเชื่อมโยงข้ามโมดูล
 
@@ -128,7 +128,7 @@ Comment responses ยังจะ **ลบฟิลด์ผู้แต่ง�
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma (file schema — registry ที่แท้จริง):** `../carmen-turborepo-backend/packages/prisma-shared-schema-file/prisma/schema.prisma` — `tb_file_tag` (บรรทัด ~19-49)
-- **Prisma (tenant schema — ตารางที่ตายแล้ว เพื่อเปรียบเทียบ):** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_attachment` (บรรทัด ~4790)
+- **Prisma (file schema — registry ที่แท้จริง):** `../micro-file/prisma/schema.prisma` — `tb_file_tag` (`:21-51`; ย้ายออกจาก monorepo เมื่อ 2026-10-05)
+- **Prisma (tenant schema — ตารางที่ตายแล้ว เพื่อเปรียบเทียบ):** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_attachment` (บรรทัด ~5570)
 - **Backend gateway (ชั้น proxy):** `../carmen-turborepo-backend/apps/backend-gateway/src/application/document-management/document-management.controller.ts` (fallback `GET :filetoken/download`) + `.service.ts` — forward ไปยัง microservice `FILE_SERVICE` ผ่านคำสั่ง RPC `Files.*` (HTTP-as-RPC)
-- **Backend file microservice (การจัดเก็บและ registry ที่แท้จริง):** `../carmen-turborepo-backend/apps/micro-file/src/files/files.controller.ts` + `files.service.ts` — MinIO client, CRUD ของ `tb_file_tag`
+- **Backend file microservice (การจัดเก็บและ registry ที่แท้จริง):** `../micro-file/src/files/files.controller.ts` + `files.service.ts` — MinIO client, CRUD ของ `tb_file_tag`; ให้บริการ `api/files/{upload,list,info/:filetoken,download/:filetoken,presigned-url/:filetoken}` และ `DELETE api/files/:filetoken` ผ่าน HTTP นอกเหนือจาก command handler `Files.*` ด้วย นิยามคำสั่งอยู่ใน contract package ภายนอก `@repo/file-contract` (`../carmen-turborepo-backend/packages/file-contract`, แยกจาก `rpc-contract` ใน `8b4dd9e75`, 2026-10-05)

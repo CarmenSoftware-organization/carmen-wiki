@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูล purchase-request
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: purchase-request, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -18,7 +18,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 
 > **Source of truth:** Prisma schema ฝั่ง backend อ่านไฟล์เหล่านี้ก่อนเขียนหรือแก้ไขหน้านี้ทุกครั้ง:
 > - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma`
 >
 > ไฟล์ `generated/client/schema.prisma` ใต้ package แต่ละตัวเป็น copy ที่ generate อัตโนมัติและไม่ถือว่าเป็นต้นฉบับ
 
@@ -32,7 +32,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 
 **View คิว pending:** `sys_v_my_pending` (migration `20260916030000_add_sys_v_my_pending`) project row ของ `tb_purchase_request` ที่ยังเป็น `draft` / `in_progress` เข้าคิวข้ามเอกสารที่ documented ใน [my-approval](/th/inventory/purchase-request/my-approval); เพิ่ม GIN index `ix_pr_user_action_execute` บน `(user_action -> 'execute')`
 
-PR อยู่ต้นน้ำของ [purchase-order](/th/inventory/purchase-order) ในห่วงโซ่ procure-to-pay บรรทัดของ PR ที่อนุมัติแล้วจะถูก link ไปยังบรรทัด PO ที่เกิดขึ้นผ่านตาราง bridge `tb_purchase_order_detail_tb_purchase_request_detail` (PO line หนึ่งสามารถรวมจาก PR line หลายบรรทัดเพื่อ consolidate, PR line หนึ่งสามารถกระจายไปหลาย PO สำหรับการแปลงบางส่วน) แถวรายละเอียดของ PR ยังอ้างอิงถึง [product](/th/inventory/product), [vendor-pricelist](/th/inventory/vendor-pricelist), `tb_tax_profile`, `tb_currency`, `tb_unit`, `tb_location`, `tb_delivery_point`, และ `tb_vendor` โดย denormalize ฟิลด์ lookup (รหัส, ชื่อ, snapshot ของราคา) ลงบนบรรทัดตอน submit เพื่อให้ข้อมูล PR ในอดีตคงที่แม้ master record จะเปลี่ยน entity ของ PR ทั้งหมดอยู่ใน tenant Prisma schema ส่วน platform schema ไม่มี model ของ purchase-request
+PR อยู่ต้นน้ำของ [purchase-order](/th/inventory/purchase-order) ในห่วงโซ่ procure-to-pay บรรทัดของ PR ที่อนุมัติแล้วจะถูก link ไปยังบรรทัด PO ที่เกิดขึ้นผ่านตาราง bridge `tb_purchase_order_detail_tb_purchase_request_detail` (PO line หนึ่งสามารถรวมจาก PR line หลายบรรทัดเพื่อ consolidate, PR line หนึ่งสามารถกระจายไปหลาย PO สำหรับการแปลงบางส่วน) แถวรายละเอียดของ PR ยังอ้างอิงถึง [product](/th/inventory/product), [vendor-pricelist](/th/inventory/vendor-pricelist), `tb_tax_profile`, `tb_currency`, `tb_unit`, `tb_location`, `tb_delivery_point`, และ `tb_vendor` โดย denormalize ฟิลด์ lookup (รหัส, ชื่อ, snapshot ของราคา) ลงบนบรรทัดตอน submit เพื่อให้ข้อมูล PR ในอดีตคงที่แม้ master record จะเปลี่ยน entity ของ PR ทั้งหมดอยู่ใน tenant Prisma schema ส่วน Backstage schema ไม่มี model ของ purchase-request
 
 ## 2. เอนทิตี
 
@@ -74,7 +74,7 @@ graph LR
 | ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key สร้างผ่าน `gen_random_uuid()` |
-| `pr_no` | `String @db.VarChar` | No | หมายเลขอ้างอิง PR ที่อ่านง่าย (เช่น `PR-2301-0001`) |
+| `pr_no` | `String @db.VarChar` | No | หมายเลขอ้างอิง PR ที่อ่านง่าย draft มี placeholder `draft-{n}` (ตัวนับต่อ BU); การ submit ครั้งแรกแทนที่ด้วยเลขจาก running-code — ดู [02-business-rules](/th/inventory/purchase-request/02-business-rules) `PR_VAL_001` |
 | `pr_date` | `DateTime @db.Timestamptz(6)` | Yes | วันที่เอกสารที่ requestor เลือกตอน submit |
 | `description` | `String @db.VarChar` | Yes | คำอธิบาย / เหตุผลประกอบแบบ free-text ที่ใส่บน header |
 | `workflow_id` | `String @db.Uuid` | Yes | FK ไปยัง `tb_workflow` — เลือกนิยามสายอนุมัติที่ PR ใบนี้ใช้ |
@@ -117,7 +117,7 @@ graph LR
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key |
 | `purchase_request_id` | `String @db.Uuid` | Yes | FK ไปยัง `tb_purchase_request.id` Nullable เพื่อรองรับ draft line ที่ยังไม่ผูกกับ header |
-| `sequence_no` | `Int` | Yes | ลำดับของบรรทัดภายใน PR; default `1` ทุกการอ่าน PR คืนบรรทัดแบบ `orderBy: { sequence_no: 'asc' }` (`purchase-request.service.ts:163`, 2026-09-18) |
+| `sequence_no` | `Int` | Yes | ลำดับของบรรทัดภายใน PR; default `1` ทุกการอ่าน PR คืนบรรทัดแบบ `orderBy: { sequence_no: 'asc' }` (`purchase-request.service.ts:166`, 2026-09-18) |
 | `location_id` | `String @db.Uuid` | Yes | คลัง / สถานที่ที่ต้องการของ |
 | `location_code` | `String @db.VarChar` | Yes | snapshot ของรหัส location |
 | `location_name` | `String @db.VarChar` | Yes | snapshot ของชื่อ location |
@@ -147,17 +147,17 @@ graph LR
 | `requested_qty` | `Decimal @db.Decimal(20, 5)` | Yes | จำนวนในหน่วยที่ขอ; default `0` |
 | `requested_unit_id` | `String @db.Uuid` | Yes | UoM ที่ requestor ใส่ |
 | `requested_unit_name` | `String @db.VarChar` | Yes | snapshot |
-| `requested_unit_conversion_factor` | `Decimal @db.Decimal(20, 5)` | Yes | factor การแปลงไปยังหน่วยฐาน inventory |
+| `requested_unit_conversion_factor` | `Decimal @db.Decimal(20, 5)` | Yes | factor การแปลงไปยังหน่วยฐาน inventory resolve ฝั่ง server ตอน create / save (`PR_VAL_019` ใน [02-business-rules](/th/inventory/purchase-request/02-business-rules)) |
 | `requested_base_qty` | `Decimal @db.Decimal(20, 5)` | Yes | `requested_qty × requested_unit_conversion_factor` |
 | `approved_qty` | `Decimal @db.Decimal(20, 5)` | Yes | จำนวนในหน่วยที่อนุมัติ อาจต่างจาก `requested_qty` server ปฏิเสธเฉพาะค่าติดลบ (`verify-approve.ts:172-181`) — ไม่มีเพดาน |
 | `approved_unit_id` | `String @db.Uuid` | Yes | UoM ที่ใช้สำหรับจำนวนที่อนุมัติ |
 | `approved_unit_name` | `String @db.VarChar` | Yes | snapshot |
-| `approved_unit_conversion_factor` | `Decimal @db.Decimal(20, 5)` | Yes | factor การแปลงไปยังหน่วยฐาน |
+| `approved_unit_conversion_factor` | `Decimal @db.Decimal(20, 5)` | Yes | factor การแปลงไปยังหน่วยฐาน resolve ฝั่ง server ตอน create / save (`PR_VAL_019` ใน [02-business-rules](/th/inventory/purchase-request/02-business-rules)) |
 | `approved_base_qty` | `Decimal @db.Decimal(20, 5)` | Yes | `approved_qty × approved_unit_conversion_factor` |
 | `foc_qty` | `Decimal @db.Decimal(20, 5)` | Yes | จำนวน FOC ในหน่วย FOC; default `0` บรรทัดอาจเป็น FOC-only (`requested_qty = 0`, `foc_qty > 0`) — รับตอน submit ได้ตั้งแต่ 2026-09 (`purchase-request.validate.ts:105-131`) |
 | `foc_unit_id` | `String @db.Uuid` | Yes | UoM ของจำนวน FOC |
 | `foc_unit_name` | `String @db.VarChar` | Yes | snapshot |
-| `foc_unit_conversion_factor` | `Decimal @db.Decimal(20, 5)` | Yes | factor การแปลงไปยังหน่วยฐาน |
+| `foc_unit_conversion_factor` | `Decimal @db.Decimal(20, 5)` | Yes | factor การแปลงไปยังหน่วยฐาน resolve ฝั่ง server ตอน create / save (`PR_VAL_019` ใน [02-business-rules](/th/inventory/purchase-request/02-business-rules)) |
 | `foc_base_qty` | `Decimal @db.Decimal(20, 5)` | Yes | `foc_qty × foc_unit_conversion_factor` |
 | `tax_profile_id` | `String @db.Uuid` | Yes | FK ไปยัง `tb_tax_profile.id` |
 | `tax_profile_name` | `String @db.VarChar` | Yes | snapshot |
@@ -194,7 +194,7 @@ graph LR
 
 ตารางคอมเมนต์ / ไฟล์แนบของโมดูลนี้ถูกแยกไปอีกหน้า — ดู [01a — โมเดลข้อมูล — ตารางคอมเมนต์](/th/inventory/purchase-request/01a-data-model-comments)
 
-**Semantics ของการลบ:** PR ไม่เคยถูก hard-delete `DELETE /:bu_code/purchase-requests/:id` (และ `DELETE …/batch`) ประทับ `deleted_at` บน header และบน detail row แต่ละแถว — detail row ที่ key ซ้ำได้ timestamp ที่เหลื่อมกันเพื่อไม่ละเมิด partial unique index `PR1_purchase_request_product_location_dimension_u` (`purchase-request.service.ts:1688-1716`) ลบได้เฉพาะ row สถานะ `draft` และเฉพาะโดยเจ้าของ (`created_by_id` หรือ `requestor_id`, `common/helpers/document-ownership.helper.ts`) หรือ platform super-admin
+**Semantics ของการลบ:** PR ไม่เคยถูก hard-delete `DELETE /:bu_code/purchase-requests/:id` (และ `DELETE …/batch`) ประทับ `deleted_at` บน header และบน detail row แต่ละแถว — detail row ที่ key ซ้ำได้ timestamp ที่เหลื่อมกันเพื่อไม่ละเมิด partial unique index `PR1_purchase_request_product_location_dimension_u` (`purchase-request.service.ts:1753-1850`, batch path) ลบได้เฉพาะ row สถานะ `draft` และเฉพาะโดยเจ้าของ (`created_by_id` หรือ `requestor_id`, `common/helpers/document-ownership.helper.ts`) หรือ Backstage super-admin
 
 ### 2.3 tb_purchase_request_template
 
@@ -306,8 +306,11 @@ header {
   id, pr_no, pr_date, pr_status, description, doc_version,
   requestor: { id, name }, department: { id, name }, workflow: { id, name },
   workflow_history[], workflow_current_stage, workflow_next_stage, workflow_previous_stage,
-  last_action, info, audit..., purchase_request_detail[]
+  last_action, info, audit..., purchase_request_detail[],
+  hidden_fields: ('price_per_unit' | 'total_price')[],        // [] เว้นแต่ stage ของผู้เรียกซ่อนราคา
+  stage_actions: { approve, reject, sendback } | null         // เฉพาะ detail; false = stage ปิด action นั้น
 }
+// แถวของ list ก็มี hidden_fields เช่นกัน; key ที่ถูกซ่อนเป็น null ไม่ใช่หายไป
 ```
 
 Type ฝั่ง frontend สะท้อนแบบเดียวกัน (`../carmen-frontend/types/purchase-request.ts` — `product: EntityRef | null`, `vendor: EntityRef | null`, …; commit `f303dd96`, 2026-09-17) payload สร้าง / บันทึกยังส่งฟิลด์ `*_id` แบบ flat; `@ExpandRefs` ของ gateway resolve ให้ การยุบแบบเดียวกันใช้กับ `tb_purchase_request_template` (หัวข้อ 2.4): `workflow`, `product`, `location`, `requested_unit`, `foc_unit`, `currency`, `delivery_point`, `inventory_unit` เป็น object บน wire (commit `16069088`)
@@ -393,6 +396,6 @@ tb_purchase_request_template_detail
 
 ## 6. แหล่งอ้างอิง
 
-- **หลัก (source of truth):** Prisma schema ตามที่ระบุใน callout ส่วนหัว — โดยเฉพาะ `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (model PR ทั้งหมด) และ `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (ตรวจแล้วว่าไม่มี model ของ PR)
+- **หลัก (source of truth):** Prisma schema ตามที่ระบุใน callout ส่วนหัว — โดยเฉพาะ `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (model PR ทั้งหมด) และ `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` (เปลี่ยนชื่อจาก `-platform` เมื่อ 2026-10; ตรวจแล้วว่าไม่มี model ของ PR)
 - **รอง (cross-check ระดับแนวคิด):** `../carmen/docs/purchase-request-management/data-models.md` — interface ของ TypeScript ฝั่ง front-end; ความต่างจับไว้ใน Section 5
 - โมดูลที่เกี่ยวข้อง: [purchase-order](/th/inventory/purchase-order) (เป้าหมายของการแปลง), [product](/th/inventory/product) (reference สินค้าของบรรทัด), [vendor-pricelist](/th/inventory/vendor-pricelist) (แหล่ง snapshot ราคา + ภาษี), [inventory](/th/inventory/inventory) (บริบท on-hand สำหรับ requestor)

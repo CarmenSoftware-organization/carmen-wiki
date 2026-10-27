@@ -2,7 +2,7 @@
 title: โปรไฟล์ (Profile)
 description: หน้าจัดการตนเองสำหรับผู้ใช้ที่ล็อกอินอยู่ ดูและแก้ไขข้อมูลตัวตนของตน รวมถึงเปลี่ยนรหัสผ่าน mount อยู่สอง route ที่ใช้ component เดียวกัน
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: platform/profile, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -34,7 +34,7 @@ Profile คือหน้าบัญชีส่วนตัวของผล
 | | `/profile` (`Layout`) | `/cluster-admin/:clusterId/profile` (`ClusterAdminLayout`) |
 |---|---|---|
 | Route guard | `<PrivateRoute>` เปล่า ๆ — ไม่มี `requiredPermission`, ไม่มี `feature` (§4) | `<ClusterAdminRoute>` — ไม่ส่ง prop `feature` จึงไม่มี feature gate เช่นกัน; ต้องการ `isClusterAdminOf(clusterId)` (§4) |
-| Nav ของ sidebar | platform nav เต็มรูปแบบ (`buildPlatformNav()`) ถ้า session มี platform authority | cluster-admin nav (`buildClusterAdminNav()`) จำกัดเฉพาะคลัสเตอร์เดียวนั้น |
+| Nav ของ sidebar | platform nav เต็มรูปแบบ (`buildBackstageNav()`) ถ้า session มี platform authority | cluster-admin nav (`buildClusterAdminNav()`) จำกัดเฉพาะคลัสเตอร์เดียวนั้น |
 | ตัวตนของแบรนด์ | แบรนด์ผลิตภัณฑ์ "Carmen Blue Backstage" | ชื่อ/code/โลโก้ของคลัสเตอร์ที่ดูแลอยู่ |
 | ปลายทางของสัญลักษณ์แบรนด์ | `/dashboard` | `/cluster-admin/:clusterId/cluster` |
 | ส่วนเสริมของ header | ไม่มี | `ClusterSwitcher` สำหรับสลับไปคลัสเตอร์อื่นที่ดูแลอยู่ |
@@ -57,6 +57,14 @@ Profile เป็นหน้าจัดการตนเองแบบ self-
 - **การ validate field แบบ inline**: Alias Name และ Telephone validate ตอน blur ผ่าน helper `validateField` ที่ใช้ร่วมกัน — Alias Name เทียบกับ `^[a-zA-Z0-9]{0,3}$` ("Alias must be 1-3 alphanumeric characters"), Telephone เทียบกับ `^\+?[\d\s\-()]{8,20}$` ("Invalid phone number format") error แสดงแบบ inline เฉพาะในโหมดแก้ไขและเคลียร์ทันทีที่ field เปลี่ยน ทั้งสองการตรวจสอบผ่านแบบเงียบ ๆ เมื่อค่าว่าง (ไม่มี field ใดจำเป็น)
 - **การมองเห็นเมื่อ fetch ล้มเหลว**: การ `GET /api/user/profile` เริ่มต้นที่ล้มเหลวตอนนี้แสดง error banner ที่มองเห็นได้ ("Failed to load profile: …") เพิ่มเติมจาก dev-console log เดิม — ก่อนหน้านี้ fetch ที่ล้มเหลวจะทำให้หน้าค้างอยู่แบบเงียบ ๆ โดยไม่มีข้อมูลและไม่มีคำอธิบายบนหน้าจอ
 
+### 3.1 Route auth ที่เกี่ยวข้อง: `/login/callback` และ `/403`
+
+สอง route นี้อยู่ข้าง Profile ใน `App.tsx` แต่ไม่ใช่หน้าจอ Profile
+
+- **`/login/callback` (`AuthCallback`, `App.tsx:105`)** คือที่ที่ gateway ส่ง browser กลับมาหลัง sign-in ด้วย Google หน้า Login แสดงปุ่ม Google เฉพาะเมื่อ `GET /api/auth/google/status?app=backstage` ตอบ `enabled: true` (`googleSignInService.ts`; สวิตช์คือ flag `google_sign_in.backstage` ใน [Platform Config](/th/platform/platform-config)) และปุ่มนำทางไปยัง `/api/auth/google/authorize` (`Login.tsx:182`) callback อ่าน `access_token`, `refresh_token` และ `next` จาก **fragment** ของ URL (ไม่เคยถูกส่งไปที่ server) แล้วล้าง fragment ทันทีด้วย `history.replaceState` และส่ง token ให้ `loginWithTokens()` ซึ่งใช้ authority gate เดียวกับการ login ด้วยรหัสผ่าน เมื่อสำเร็จจะนำทางไป `resolveNextPath(next)`; หากไม่มี token หรือ gate ไม่ผ่านจะกลับไป `/login?error=<code>` (`google_failed` หรือ `access_denied_backstage` เมื่อ gate ปฏิเสธบัญชี) ค่า `next` จะถูกส่งต่อเฉพาะเมื่อเป็น path ภายใน site เดียวกันที่ปลอดภัย หน้านี้ไม่ render อะไร (`return null`) และกัน effect ซ้ำสองรอบของ React StrictMode ด้วย ref
+- **`/403` (`Forbidden`, `App.tsx:617-623`)** เป็น route ตรงที่ห่อด้วย `<PrivateRoute>` เปล่า ๆ (เฉพาะผู้ใช้ที่ sign-in แล้ว); component เดียวกันนี้คือสิ่งที่ route gate render แทนเมื่อการตรวจ permission ไม่ผ่าน
+- การ refresh token อยู่ใน `services/tokenRefresh.ts` (`refreshAccessToken()` ใช้ promise ที่กำลังทำงานอยู่ร่วมกันระหว่างผู้เรียกที่ทำงานพร้อมกัน และใช้ `refresh_token` ที่เก็บไว้)
+
 ## 4. บทบาทและ Persona
 
 ใช้โดยผู้ใช้ที่ล็อกอินอยู่ (เจ้าของบัญชีเอง) จากทั้งสอง mount (§1.1) ทั้งสอง route ถูก gate ต่างกัน แม้เนื้อหาของหน้าจะเหมือนกันทุกประการ:
@@ -76,7 +84,7 @@ Profile เป็นหน้าจัดการตนเองแบบ self-
 
 ## 6. แหล่งข้อมูลอ้างอิง
 
-- Frontend: `../carmen-backstage/SITEMAP.md`, `../carmen-backstage/src/pages/Profile.tsx` (เรียก `GET` / `PATCH /api/user/profile` ตรง ๆ ผ่าน axios instance ที่ใช้ร่วมกันใน `src/services/api.ts` — ไม่มีไฟล์ profile service แยก; บรรทัด 53-57 คือ branch `clusterId`/`Shell` ที่อธิบายใน §1.1), `../carmen-backstage/src/App.tsx:563-568` (`<PrivateRoute>` เปล่า ๆ บน `/profile`) และ `:603-604` (`<ClusterAdminRoute><Profile /></ClusterAdminRoute>` บน `/cluster-admin/:clusterId/profile`), `../carmen-backstage/src/components/ClusterAdminRoute.tsx` (การตรวจสอบสมาชิกภาพ `isClusterAdminOf(clusterId)` ที่อธิบายใน §4), `../carmen-backstage/src/components/ClusterAdminLayout.tsx` (ตัวตนแบรนด์ของคลัสเตอร์, header slot ของ `ClusterSwitcher`, และ nav `buildClusterAdminNav()` ในตารางเปรียบเทียบของ §1.1), `../carmen-backstage/src/utils/validation.ts` (`validateField`, regex ของ Alias Name / Telephone), `../carmen-backstage/src/components/PageHeader.tsx` และ `EmptyState.tsx` (component header และ empty-state ที่ใช้ร่วมกันซึ่งถูกนำมาใช้ในหน้านี้), `../carmen-backstage/src/components/AuditMeta.tsx` และ `src/utils/audit.ts` (`normalizeAudit` ที่ป้อนวันที่เป็นสมาชิกใน §3)
+- Frontend: `../carmen-backstage/SITEMAP.md`, `../carmen-backstage/src/pages/Profile.tsx` (เรียก `GET` / `PATCH /api/user/profile` ตรง ๆ ผ่าน axios instance ที่ใช้ร่วมกันใน `src/services/api.ts` — ไม่มีไฟล์ profile service แยก; บรรทัด 53-58 คือ branch `clusterId`/`Shell` ที่อธิบายใน §1.1), `../carmen-backstage/src/App.tsx:609-616` (`<PrivateRoute>` เปล่า ๆ บน `/profile`) และ `:649-652` (`<ClusterAdminRoute><Profile /></ClusterAdminRoute>` บน `/cluster-admin/:clusterId/profile`), `../carmen-backstage/src/components/ClusterAdminRoute.tsx` (การตรวจสอบสมาชิกภาพ `isClusterAdminOf(clusterId)` ที่อธิบายใน §4), `../carmen-backstage/src/components/ClusterAdminLayout.tsx` (ตัวตนแบรนด์ของคลัสเตอร์, header slot ของ `ClusterSwitcher`, และ nav `buildClusterAdminNav()` ในตารางเปรียบเทียบของ §1.1), `../carmen-backstage/src/utils/validation.ts` (`validateField`, regex ของ Alias Name / Telephone), `../carmen-backstage/src/components/PageHeader.tsx` และ `EmptyState.tsx` (component header และ empty-state ที่ใช้ร่วมกันซึ่งถูกนำมาใช้ในหน้านี้), `../carmen-backstage/src/components/AuditMeta.tsx` และ `src/utils/audit.ts` (`normalizeAudit` ที่ป้อนวันที่เป็นสมาชิกใน §3)
 
 ## 7. หน้าในโมดูลนี้
 
