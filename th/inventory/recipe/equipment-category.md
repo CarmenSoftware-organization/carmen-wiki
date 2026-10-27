@@ -2,7 +2,7 @@
 title: หมวดหมู่อุปกรณ์ (Equipment Category)
 description: การจัดกลุ่มตามฟังก์ชันสำหรับอุปกรณ์ครัว — preparation, cooking, holding, refrigeration, dispense, cleaning ฯลฯ
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: recipe, equipment, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -16,6 +16,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 ![หมวดหมู่อุปกรณ์ (Equipment Category) screen](/screenshots/recipe/equipment-category.png)
 
 > **ตรวจสอบซ้ำ 2026-09-22** schema และกฎของ service ด้านล่างไม่เปลี่ยน `GET /api/config/{bu}/recipe-equipment-categories` default เป็น `sort=name:asc` (`928f3b950`) E2E: ทั้งสองหน้าจอเหนือตารางนี้ automate แล้ว — `tests/131-equipment-category.spec.ts` (12 test; เหลือ 4 กรณี manual ใน `docs/test-cases/gaps/131-equipment-category-gap.md`) และ `tests/121-recipe-equipment-category.spec.ts` (12 test; 3 กรณี manual ใน `gaps/121-recipe-equipment-category-gap.md`)
+
+> **ตรวจสอบซ้ำ 2026-10-27** Backend (`recipe-equipment-category.service.ts`, serializer): `GET .../recipe-equipment-categories` (เฉพาะ list) ตอนนี้คืน **`equipment_count`** — จำนวนอุปกรณ์ที่ยังไม่ถูกลบในหมวดหมู่ Frontend (`5ac1f4b5`): list เพิ่มคอลัมน์ **Description** และเซลล์จำนวนที่ลิงก์ไป `/operation-plan/equipment?category=category_id|string:<id>` (list อุปกรณ์ที่ filter ไว้แล้ว); เซลล์แสดง `—` เมื่อ backend ไม่ส่ง field (deployment เก่า) และ `0` แบบไม่มีลิงก์ ทั้งหน้าจอนี้และหน้าจอซ้ำ `/operation-plan/recipe-equipment-category` ย้ายไปใช้ list shell ร่วมกันและเอาปุ่ม Export / Print ที่ถูกปิดออก; พฤติกรรมและกฎอื่นไม่เปลี่ยน E2E spec `121` และ `131` ไม่เปลี่ยน
 
 ## 1. คืออะไรและใครใช้
 

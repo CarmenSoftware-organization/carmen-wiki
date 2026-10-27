@@ -2,7 +2,7 @@
 title: อุปกรณ์ (Equipment)
 description: ข้อมูลหลักของอุปกรณ์ครัว — อ้างอิงจากขั้นตอนการเตรียมในสูตรอาหารที่ต้องใช้เครื่องมือเฉพาะ (อ่าง sous-vide, deep fryer, smoker ฯลฯ)
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: recipe, equipment, master-data, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -19,6 +19,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **ตรวจสอบซ้ำ 2026-09-22** schema และกฎของ service ด้านล่างไม่เปลี่ยน `GET /api/config/{bu}/recipe-equipment` default เป็น `sort=code:asc` (`b375b078b`); response serialize ผ่าน `RecipeEquipmentResponseSchema` ซึ่งคืน ref `category` `{ id, name }` **ควบคู่กับ** `category_id` / `category_name` แบบแบน (สตริง denormalise ยังคงเป็นสิ่งที่ list แสดง) ฟอร์มตอนนี้เป็นบล็อก `SettingSection` เจ็ดบล็อก (General → Specifications → Photo → Quantity & Settings → Instructions → Maintenance → Additional); สร้างแล้วกลับไป list ส่วนแก้ไขอยู่หน้าเดิม E2E: catalog เท่านั้น — `../carmen-frontend-e2e/docs/test-cases/130-equipment.md` (45 กรณี ไม่มี spec)
 
+> **ตรวจสอบซ้ำ 2026-10-27** ไม่มีการเปลี่ยนแปลง backend ของ equipment ตั้งแต่ 2026-09-22 เฉพาะ frontend (`3c93ea06`, `1cd157b1`): list และหน้ารายละเอียดตอนนี้แสดง **thumbnail**, เซลล์ **availability** `available / total` (`eq-availability.tsx`; ตัวเลข available เป็นสีแดงเมื่อเป็น 0 ขณะมีหน่วย, `—` เมื่อไม่ตั้งจำนวน), badge maintenance ตามที่อธิบายด้านล่าง, แถบสรุปโหมดอ่าน (รูป · สถานะ maintenance · availability · station) และโหมดอ่านซ่อนบล็อกรูปที่ว่าง `available_qty` / `total_qty` ยังเป็นตัวนับธรรมดาที่ไม่มี flow checkout
+
 ## 1. คืออะไรและใครใช้
 
 อุปกรณ์คือ master ของเครื่องมือและอุปกรณ์ครัว — ตั้งแต่เครื่องมือมือ (ตะกร้อตี mandolin) ผ่านอุปกรณ์ขนาดใหญ่ (combi-oven, blast chiller, sous-vide) ไปจนถึงอุปกรณ์ mise-en-place แบบพกพา แต่ละแถวมี **การระบุ** (`code`, `name`, `brand`, `model`, `serial_no`), **สเปก** (capacity, power), **ข้อความการใช้งาน** (operation / safety / cleaning), **ตาราง maintenance + วันที่**, **การกำหนดสถานี** และ **ตัวนับปริมาณ** (`total_qty`, `available_qty`)
@@ -30,7 +32,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
 | เพิ่มอุปกรณ์ชิ้นใหม่ | Operation Plan → Equipment → **+ New** | เลือก `category_id` กรอก code + name (จำเป็น) |
-| อัปเดตวันที่ maintenance หลังบริการ | หน้ารายละเอียด → section Maintenance | ฟิลด์วันที่ธรรมดา ไม่พบ indicator "overdue" ใน source |
+| อัปเดตวันที่ maintenance หลังบริการ | หน้ารายละเอียด → section Maintenance | ฟิลด์วันที่; list/detail ตอนนี้แสดง **badge maintenance** จาก `next_maintenance_date` (`eq-maintenance.ts`): `overdue` (วันที่ก่อนวันนี้), `due-soon` (ล่วงหน้า 0–14 วัน, `MAINTENANCE_DUE_SOON_DAYS`), `ok` หรือ `unset` เปรียบเทียบตามวันในปฏิทินท้องถิ่น แสดงผลเท่านั้น — ไม่มีการแจ้งเตือน ไม่มี validation |
 | มาร์คอุปกรณ์เป็นพกพา | หน้ารายละเอียด → `is_portable` | บ่งบอกว่าสามารถย้ายระหว่างสถานีได้ |
 | ปรับจำนวนนับใน property | หน้ารายละเอียด → `total_qty` / `available_qty` | ทั้งสองเป็นฟิลด์ integer ธรรมดาที่ผู้ใช้แก้ตรง ๆ — ไม่มี flow checkout ที่ลด `available_qty` อัตโนมัติ |
 | ปลดประจำการอุปกรณ์ | edit → `is_active = false` (soft-delete) | ยังอ้างอิงได้บนสูตรในประวัติ ซ่อนจาก picker |
@@ -71,7 +73,7 @@ flowchart TD
 - **`category_name` ถูก denormalise** สำหรับแสดงผล และรีเฟรชเฉพาะตอน save ของแถวอุปกรณ์เองเท่านั้น ถือ FK (`category_id`) เป็นแหล่งความจริง string เป็น cache ที่ไม่มี fan-out การเปลี่ยนชื่อจากฝั่งหมวดหมู่
 - **Flow checkout ยังไม่ได้ implement** — `available_qty` / `total_qty` มีใน schema แต่ยังไม่มี UI ที่ใช้งานหรือ validation ข้ามฟิลด์ wire วันนี้ ไม่มีอะไรป้องกัน `available_qty` เกิน `total_qty`
 - **อุปกรณ์บนขั้นตอนการเตรียมถูก denormalise** ลงบน payload `tb_recipe_preparation_step.equipment` ไม่ใช่ตาราง join (ดู [recipe/01-data-model](/th/inventory/recipe/01-data-model)) หมายเหตุ: หน้าจอ create/edit สูตรปัจจุบัน (`recipe-form.tsx`) ไม่มี UI ที่อ่านหรือเขียนขั้นตอนการเตรียมเลย ดังนั้นการเชื่อมอุปกรณ์บนขั้นตอนนี้ยังเข้าถึงไม่ได้จากฟอร์มสูตรในปัจจุบัน
-- **ไม่พบ badge "overdue"** `last_maintenance_date` / `next_maintenance_date` เป็นฟิลด์วันที่ธรรมดาบนฟอร์มอุปกรณ์ ไม่พบ logic เปรียบเทียบ overdue ใน component ของ frontend หรือ service ของ backend — callout นี้ควรถือเป็นความคาดหวัง (aspirational) จนกว่าจะพบ indicator สถานะ maintenance ใน source
+- **Badge maintenance แสดงผลเท่านั้น** `next_maintenance_date` ขับเคลื่อน badge `overdue` / `due-soon` (≤ 14 วัน) / `ok` / `unset` บน list และในสรุปรายละเอียด (`eq-maintenance.ts`, `eq-maintenance-badge.tsx`, 2026-10); ไม่มีการ validate หรือแจ้งเตือนใด ๆ และ `last_maintenance_date` / `next_maintenance_date` ยังไม่มีการตรวจข้ามฟิลด์ใน service หรือ zod DTO
 
 ---
 

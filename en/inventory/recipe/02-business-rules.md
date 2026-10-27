@@ -2,7 +2,7 @@
 title: Recipe — Business Rules
 description: Validation, calculation, authorization, posting, and cross-module rules for the recipe module.
 published: true
-date: 2026-10-27T00:00:00.000Z
+date: 2026-10-27T15:00:00.000Z
 tags: recipe, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -76,9 +76,8 @@ The recipe is a **cost-engineering document**: the calculation surface is rich. 
 > **Status (re-verified 2026-10-27): two live calculators.** (1) **Server, per ingredient line** (`computeLine` / `costIngredients` in `recipe-ingredient-cost.ts`, run by `POST .../ingredients/preview` and `PUT .../ingredients`): `inventory_qty = qty × from_qty / to_qty` (unrounded ratio), `net_cost = inventory_qty × cost_per_unit`, `wastage_cost = net_cost × wastage% / 100`, line cost = `net_cost + wastage_cost`, each rounded half-up to 5 dp; `total_ingredient_cost` = Σ line costs. Unit cost fallback: net moving average → latest cost layer average → standard cost → 0; a sub-recipe line costs `sub.total_ingredient_cost ÷ sub.base_yield` per yield unit (1:1 unit). (2) **Client, header** (`computeRecipeCost` in `use-recipe-cost-calc.ts`) from `total_ingredient_cost` (now server-derived when lines exist), `labor_cost`, `overhead_cost` (still typed in), `base_yield`, `selling_price`, `target_food_cost_percentage`, `max_food_cost_percentage`. All header figures are for the whole batch, divided by `base_yield` first. Formulas (rounded half-up to 2 dp via `round2`):
 > - `cost_per_portion = (total_ingredient_cost + labor_cost + overhead_cost) / base_yield` (0 when yield ≤ 0) — matches `REC_CALC_006`–`007`.
 > - `suggested_price = (total_ingredient_cost / base_yield) / (target/100)` when `0 < target ≤ 100`, yield > 0 and ingredient cost > 0 — **differs from `REC_CALC_008`** (the price at which *ingredient* food cost hits the target; labor/overhead excluded; fixed in `37c12897`). `min_price` uses the same formula with `max_food_cost_percentage`; below it only warns.
-> - `actual_food_cost_percentage = (total_ingredient_cost / base_yield) / selling_price × 100`.
+> - `actual_food_cost_percentage = (total_ingredient_cost / base_yield) / selling_price × 100` — **differs from `REC_CALC_009`** (which specifies `cost_per_portion / selling_price`): the implemented figure excludes labor/overhead.
 > - `gross_margin = selling_price − cost_per_portion`; `gross_margin_percentage = gross_margin / selling_price × 100` — matches `REC_CALC_010`.
-> - `actual_food_cost_percentage = total_ingredient_cost / selling_price × 100` — **differs from `REC_CALC_009`** (which specifies `cost_per_portion / selling_price`): the implemented figure excludes labor/overhead and ignores yield division.
 > - `labor_cost_percentage = labor_cost / selling_price × 100`; `overhead_percentage = overhead_cost / selling_price × 100` — **differs from the schema-default semantics** (30%/20% "share of cost" defaults); the hook overwrites the stored values with price-relative percentages.
 >
 > Line-level rules `REC_CALC_001`–`003` are implemented server-side as above (note `REC_CALC_002`'s text is wrong for the code: `net_cost` excludes wastage; the line cost is `net_cost + wastage_cost`). Rules `011`–`014` (cascade, variants) have no implementation; there is no `labor_rate` config for `REC_CALC_004`, and `REC_CALC_005`'s overhead derivation is not computed anywhere (overhead is typed in by the user).
