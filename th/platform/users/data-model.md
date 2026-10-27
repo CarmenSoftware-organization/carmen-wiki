@@ -22,7 +22,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 ## 2. References
 
-- ../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma (backend HEAD `3bae0679d`) — `tb_cluster_user` (บรรทัด 299), `tb_user_profile` (บรรทัด 564), `tb_user_tb_business_unit` (บรรทัด 612), `tb_user` (บรรทัด 476)
+- ../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma (เลขบรรทัดตรวจซ้ำกับ backend HEAD `c9d788829`, 2026-10-27) — `tb_cluster_user` (บรรทัด 405), `tb_user_profile` (บรรทัด 778), `tb_user_tb_business_unit` (บรรทัด 826), `tb_user` (บรรทัด 582)
 - ../carmen-backstage/src/pages/UserEdit.tsx — interface `UserFormData` (7 ฟิลด์, บรรทัด 73–81)
 - ../carmen-backstage/src/utils/audit.ts — `normalizeAudit()`, `latestActor()`, `auditCsvFields()`
 - ../carmen-backstage/src/utils/docVersion.ts — helper optimistic-lock
