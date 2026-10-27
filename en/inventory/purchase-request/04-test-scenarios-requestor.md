@@ -2,7 +2,7 @@
 title: Purchase Request — Test Scenarios — Requestor
 description: Requestor's test cases (happy path, permission, validation, edge cases) for purchase-request.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: purchase-request, test-scenarios, requestor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -57,9 +57,9 @@ This page captures the test scenarios that the Requestor persona directly drives
 | REQ-VAL-06 | Submit a PR with zero non-deleted lines | Save header only, then click Submit | `PR_VAL_006` — reject with `"A PR must contain at least one line item"`. Submit button is also disabled in the UI per `TC-PR-050604`. |
 | REQ-VAL-07 | Save a line without a `product_id` (or with an inactive product) | Free-text description only, no product picked; or product was soft-deleted in the catalogue | `PR_VAL_007` — reject with `"Product is required on every line"`. NOT NULL also enforced at the DB layer. |
 | REQ-VAL-08 | Submit a line that orders nothing (`requested_qty = 0` and `foc_qty = 0`), or a negative qty | Leave both quantities at `0` on a line and click Submit; or type `-1` | `PR_VAL_008` — the client toast "incompleteItems" names the row and the confirm dialog does not open (`findRowsMissingQty`); the server answers `"Detail line N: needs a requested_qty or a foc_qty"` / `"requested_qty must be positive"`. **Save** of the same draft succeeds — the rule is submit-time only. A FOC-only line (`requested_qty = 0`, `foc_qty > 0`, FOC unit set) passes. |
-| REQ-VAL-09 | Save a line without a `delivery_date` | Clear the delivery-date cell | Client Zod (`pr-form-schema.ts:83`) — "required". *Rejecting a `delivery_date` earlier than `pr_date` — unconfirmed, no code path (`TC-PR-050211` asserts the UI only).* |
+| REQ-VAL-09 | Save a line without a `delivery_date` | Clear the delivery-date cell | Client Zod (`pr-form-schema.ts:82`) — "required". *Rejecting a `delivery_date` earlier than `pr_date` — unconfirmed, no code path (`TC-PR-050211` asserts the UI only).* |
 | REQ-VAL-10 | Add a second line for the same `(product_id, location_id, dimension)` already on the PR | Duplicate line entry within the same PR | `PR_VAL_010` — reject with `"Same product cannot be requested twice for the same location and dimension"`. Unique index `PR1_purchase_request_product_location_dimension_u` enforces. |
-| REQ-VAL-11 | Save a line with `currency_id` missing | Clear the currency cell | Client Zod (`pr-form-schema.ts:73`) — "required". *`exchange_rate ≤ 0` and `exchange_rate_date` later than `pr_date` — unconfirmed, no code path.* |
+| REQ-VAL-11 | Save a line with `currency_id` missing | Clear the currency cell | Client Zod (`pr-form-schema.ts:71`) — "required". *`exchange_rate ≤ 0` and `exchange_rate_date` later than `pr_date` — unconfirmed, no code path.* |
 | REQ-VAL-12 | Enter a discount or tax larger than the line value | Not reachable by the Requestor — discount / tax are edited at the `purchase` stage | See `PR_VAL_012` (line-amount caps, checked by `POST …/verify` with `stage_role = purchase`). *A `0–100` percent range check — unconfirmed, no code path.* |
 | REQ-VAL-13 | Two browser tabs edit the same draft and the second one tries to save | Tab A saves description; Tab B (still on the older `doc_version`) clicks Save | `PR_VAL_016` — reject with `"Document was modified by another user; reload and retry"`. Successful saves bump `doc_version` by 1. |
 

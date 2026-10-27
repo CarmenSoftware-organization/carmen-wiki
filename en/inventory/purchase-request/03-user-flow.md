@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow
 description: Document lifecycle and persona-specific flow files for purchase-request.
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: purchase-request, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -64,10 +64,10 @@ stateDiagram-v2
 | `(none)` | create | `draft` | Requestor | Header fields validated (`requestor_id`, `department_id`, `pr_date`, `workflow_id`); no lines required yet. |
 | `draft` | save (edit) | `draft` | Requestor (owner) | PR still owned by the requestor; no workflow stage advanced. |
 | `draft` | submit | `in_progress` | Requestor (owner) | `workflow_id`, `requestor_id`, `department_id`, `pr_date` present; at least one line (`PR_VAL_006`); every line buys or receives FOC (`PR_VAL_008`); `POST …/verify` (`verify_state = submit`) lists every failing rule beforehand (`PR_VAL_017`). |
-| `draft` | delete | *(row soft-deleted)* | Requestor (owner: `created_by_id` or `requestor_id`) or platform super-admin | `pr_status` must be `draft`; header and lines get `deleted_at` (`PR_VAL_018` / `PR_POST_009`). **Not** a transition to `voided` — earlier revisions were wrong. |
+| `draft` | delete | *(row soft-deleted)* | Requestor (owner: `created_by_id` or `requestor_id`) or Backstage super-admin | `pr_status` must be `draft`; header and lines get `deleted_at` (`PR_VAL_018` / `PR_POST_009`). **Not** a transition to `voided` — earlier revisions were wrong. |
 | `in_progress` | approve (this stage, not final) | `in_progress` | Current-stage approver | Approver is assigned to the current `workflow_current_stage` with `stage_role = approve`; `last_action` becomes `approved` and the stage cursor advances. |
-| `in_progress` | approve (final stage) | `approved` | Final-stage approver | Approver is assigned to the final approval stage; all prior stages have signed off (`purchase-request.service.ts:1913`). |
-| `in_progress` | send-back (review) | `in_progress` | Any approver on the chain | Reason and target stage required; `workflow_current_stage` moves to the target, `last_action = reviewed`, `pr_status` is rewritten as `in_progress` (`purchase-request.service.ts:2052`) — the PR never returns to `draft`. Audit comment written. |
+| `in_progress` | approve (final stage) | `approved` | Final-stage approver | Approver is assigned to the final approval stage; all prior stages have signed off (`purchase-request.service.ts:1932-1936`). |
+| `in_progress` | send-back (review) | `in_progress` | Any approver on the chain | Reason and target stage required; `workflow_current_stage` moves to the target, `last_action = reviewed`, `pr_status` is left as is (`review`, `purchase-request.service.ts:2053`, only accepts an `in_progress` PR and never writes the column) — the PR never returns to `draft`. A stage can switch the option off (`PR_AUTH_010`). Audit comment written. |
 | `in_progress` | reject | `voided` | Any approver on the chain | Reason text required; workflow terminates with no further actions allowed (`purchase-request.service.ts:2201` — the only writer of `voided`). |
 | `in_progress` | routing rule (threshold) | `in_progress` | Workflow engine | A `tb_workflow.data.routing_rules` condition on `total_amount` / `department` matches on submit or approve; the engine skips or jumps to the named stage (`PR_AUTH_005`). State unchanged but stage cursor jumps. |
 | `approved` | convert to PO | `completed` | Purchaser (no permission enforced on the dialog) | All approved lines bridged into one or more `tb_purchase_order` records; the PR is closed against further conversion. |

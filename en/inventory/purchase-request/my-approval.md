@@ -2,7 +2,7 @@
 title: My Approval
 description: Personal pending queue — every PR, PO and SR the signed-in user must act on, served as one sorted list from the sys_v_my_pending view via GET /api/my-pending.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: purchase-request, approval, workflow, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -15,11 +15,11 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ![My Approval screen](/screenshots/purchase-request/my-approval.png)
 
-> **Re-verified 2026-09-22.** The queue was rebuilt on both sides since the previous revision of this page: the backend added a unified read model (`apps/backend-gateway/src/application/my-pending/unified/`, micro-business `src/my-pending/`, database view `sys_v_my_pending` — migration `20260916030000_add_sys_v_my_pending`), and the frontend switched to it on 2026-09-16 (`routes/procurement/approval/use-approval.ts`, commit `9bd21427` "หน้าอนุมัติใช้ /api/my-pending แทนการรวมสามกลุ่มฝั่ง client"). Credit Notes were never part of this queue — earlier revisions of this page listed them by mistake.
+> **Re-verified 2026-10-27.** Since 2026-09-22 the page moved to `/procurement/my-approval` (folder `routes/procurement/my-approval/`; `/procurement/approval` redirects), gained a **Sent back** filter chip, a Details / Stage / Amount / Waiting column set, and hidden-price handling (`hidden_fields`). **Earlier, 2026-09-22:** The queue was rebuilt on both sides since the previous revision of this page: the backend added a unified read model (`apps/backend-gateway/src/application/my-pending/unified/`, micro-business `src/my-pending/`, database view `sys_v_my_pending` — migration `20260916030000_add_sys_v_my_pending`), and the frontend switched to it on 2026-09-16 (`routes/procurement/approval/use-approval.ts` — now `routes/procurement/my-approval/`, commit `9bd21427` "หน้าอนุมัติใช้ /api/my-pending แทนการรวมสามกลุ่มฝั่ง client"). Credit Notes were never part of this queue — earlier revisions of this page listed them by mistake.
 
 ## 1. What & Who
 
-**My Approval** (`/procurement/approval`, `routes/router.tsx:287-288`) is the per-user queue of every **Purchase Request, Purchase Order and Store Requisition** that still needs the signed-in user's action. Where each module lists *all* of its documents, this page shows **only the slice the current user must act on right now** — plus the user's own unsubmitted drafts. The page is **read-and-navigate only**: it owns no table, renders no Approve / Reject buttons, and every decision is taken on the source document's detail page.
+**My Approval** (`/procurement/my-approval`, `routes/router.tsx:357-360`; the legacy `/procurement/approval` is a `<Navigate>` redirect, `:364-366`) is the per-user queue of every **Purchase Request, Purchase Order and Store Requisition** that still needs the signed-in user's action. Where each module lists *all* of its documents, this page shows **only the slice the current user must act on right now** — plus the user's own unsubmitted drafts. The page is **read-and-navigate only**: it owns no table, renders no Approve / Reject buttons, and every decision is taken on the source document's detail page.
 
 **Used by** anyone named in a workflow stage's `user_action.execute[]` (HOD, Purchaser, FC, GM, …) and anyone who owns a `draft` PR / PO / SR &nbsp;·&nbsp; **No write-back** — the page only reads.
 
@@ -27,8 +27,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 | Purpose | Endpoint | Source |
 |---|---|---|
-| Queue rows (one flat, sorted, paginated list of PR + PO + SR) | `GET /api/my-pending` — query `bu_code` (optional; omitted = every business unit the user belongs to), `page`, `perpage`, `sort`, `filter`, `search`, `searchfields` | `use-approval.ts` → `API_ENDPOINTS.APPROVAL_PENDING` (`constant/api-endpoints.ts:40`); backend `my-pending.unified.controller.ts` (`AppIdGuard('my-pending.unified.findAll')`) |
-| Summary cards (`total` / `pr` / `po` / `sr` counts) | `GET /api/my-approve/pending` | `use-approval.ts` → `APPROVAL_PENDING_SUMMARY` (`api-endpoints.ts:41`); backend `my-approve.controller.ts` (`AppIdGuard('my-approve.findAllPending.count')`) |
+| Queue rows (one flat, sorted, paginated list of PR + PO + SR) | `GET /api/my-pending` — query `bu_code` (optional; omitted = every business unit the user belongs to), `page`, `perpage`, `sort`, `filter`, `search`, `searchfields` | `use-approval.ts` → `API_ENDPOINTS.APPROVAL_PENDING` (`constant/api-endpoints.ts:51`); backend `my-pending.unified.controller.ts` (`AppIdGuard('my-pending.unified.findAll')`) |
+| Summary cards (`total` / `pr` / `po` / `sr` counts) | `GET /api/my-approve/pending` | `use-approval.ts` → `APPROVAL_PENDING_SUMMARY` (`api-endpoints.ts:52`); backend `my-approve.controller.ts` (`AppIdGuard('my-approve.findAllPending.count')`) |
 
 Endpoints that still exist but the approval page **no longer calls**: `GET /api/my-approve` (the older grouped response — three arrays with a pagination envelope each; `my-approve.controller.ts`), and the per-type family `GET /api/my-pending/purchase-requests`, `/purchase-orders`, `/store-requisitions` (each with `/pending` counts, `:bu_code/workflow-stages`, `:bu_code/:id` and the same submit / approve / reject / review / save verbs as the module endpoints — `apps/backend-gateway/src/application/my-pending/{purchase-request,purchase-order,store-requisition}/`). The per-type endpoints are the ones the PR list's **My Pending** tab and the mobile app use; product-line search only works there, because the unified view carries header text only. Bruno contracts: `../carmen-turborepo-backend-bruno/collections/carmen-inventory/my-pending/`.
 
@@ -43,7 +43,9 @@ Endpoints that still exist but the approval page **no longer calls**: `GET /api/
 | Open a document | **Document** column link | `/procurement/purchase-request/:id`, `/procurement/purchase-order/:id` or `/store-operation/store-requisition/:id` (`approve-queue-list.tsx` `DOC_TYPE_CONFIG`) — approve / reject / send back there |
 | Bulk approve | *Not on this page* | Mobile uses `POST /:bu_code/purchase-requests/swipe-approve` / `swipe-reject` (and the PO twin); the web queue has no multi-select |
 
-Columns rendered by `approve-queue-list.tsx`: `#`, Document (`doc_no`, linked), Send-back marker, Type badge (`pr` / `po` / `sr`), Date (`doc_date`), Status (`doc_status`, rendered with `PR_STATUS_CONFIG` labels for every type).
+Columns rendered by `approve-queue-list.tsx` (rewritten 2026-10): **Document** (type badge `pr` / `po` / `sr`, linked `doc_no`, a BU badge when the user belongs to more than one unit, and a send-back status line from `last_action`), **Details** (vendor for a PO, source → destination for an SR, otherwise department; `description` as a second line; not sortable), **Requestor**, **Stage** (`workflow_current_stage`), **Amount** (`total_amount`, right-aligned) and **Waiting** (whole days since `doc_date`, red above 7, amber above 3, plus the date; sorts by `doc_date`). The four summary cards are Total / Purchase Request / Purchase Order / Store Requisition. A **Sent back** chip beside the search box adds the clause `last_action|string:reviewed` (`SENDBACK_FILTER_CLAUSE`, `constant/last-action.ts`) and combines with the type card — clauses are joined with `;` and ANDed by the backend; its count is the `paginate.total` of a one-row query. The toolbar no longer has a Filter button or saved views (nothing to filter on).
+
+**Hidden prices.** Each row carries `hidden_fields` (`my-pending.serializer.ts`; the backend resolves it for PR and PO rows from the caller's current stage). When it contains `total_price` the service nulls `net_amount` / `total_amount` and the Amount cell shows a hidden badge (`normalizeApproval` in `use-approval.ts`). SR rows never carry money.
 
 ## 4. Validation & Errors
 
@@ -79,7 +81,7 @@ Columns rendered by `approve-queue-list.tsx`: `#`, Document (`doc_no`, linked), 
 | `last_action`, `last_action_at_date`, `last_action_by_id`, `last_action_by_name`, `user_action`, `created_at`, `created_by_id`, `doc_version` | header columns | same | same |
 | `bu_code`, `bu_name` | added by the service per business unit read | | |
 
-`user_action` is read (the mobile stage-role filter needs it) but **stripped before the row leaves the service** — it names other users. The gateway adds `@EnrichAuditUsers()`; since 2026-09-18 vendor / audit fields on the list are objects, matching the per-unit list endpoints.
+The service adds two fields that are **not** view columns: `bu_code` / `bu_name` and `hidden_fields` (`('price_per_unit' | 'total_price')[]`, default `[]`, resolved per row for `pr` and `po` only, cached per workflow-stage — `my-pending.service.ts`); `total_price` hidden nulls `net_amount` and `total_amount`. `user_action` is read (the mobile stage-role filter needs it) but **stripped before the row leaves the service** — it names other users. The gateway adds `@EnrichAuditUsers()`; since 2026-09-18 vendor / audit fields on the list are objects, matching the per-unit list endpoints.
 
 ### 5.2 Predicate, exclusions, indexes
 
@@ -118,6 +120,6 @@ The queue **has no status of its own** — behaviour is entirely a projection:
 
 - **View + indexes:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/migrations/20260916030000_add_sys_v_my_pending/migration.sql`.
 - **Backend:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/my-pending/unified/` (controller, service, `swagger/response.ts`), `.../my-pending/my-approve/` (summary counts), `.../apps/micro-business/src/my-pending/` (`my-pending.sql.ts` predicate / allowlists / default sort, `my-pending.service.ts` multi-unit merge).
-- **Frontend:** `../carmen-frontend/routes/procurement/approval/` (`approval.route.tsx`, `approval-component.tsx`, `approve-queue-list.tsx`, `use-approval.ts`), `types/approval.ts` (`RawApprovalUnified`, `ApprovalItem`, `ApprovalPendingSummary`).
+- **Frontend:** `../carmen-frontend/routes/procurement/my-approval/` (`my-approval.route.tsx`, `approval-component.tsx`, `approve-queue-list.tsx`, `use-approval.ts`), `types/approval.ts` (`RawApprovalUnified`, `ApprovalItem`, `ApprovalPendingSummary`).
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/my-pending/` (`my-approve/`, `purchase-request/`, `purchase-order/`, `store-requisition/`).
-- **E2E:** `../carmen-frontend-e2e/tests/201-my-approvals.spec.ts` (21 tests), gap report `docs/test-cases/gaps/201-my-approvals-gap.md` (34 catalogued cases), generated story `docs/user-stories/201-my-approvals.md`.
+- **E2E:** `../carmen-frontend-e2e/tests/201-my-approvals.spec.ts` (21 tests; navigates to `/procurement/my-approval`), gap report `docs/test-cases/gaps/201-my-approvals-gap.md` (34 catalogued cases), generated story `docs/user-stories/201-my-approvals.md`.

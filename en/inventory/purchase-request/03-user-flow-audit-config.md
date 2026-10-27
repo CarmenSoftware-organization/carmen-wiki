@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow — Audit & Config
 description: Auditor (read-only activity log) and System Administrator (generic workflow / master-data configuration) flows for purchase-request — no PR-specific audit workspace or configuration workbench exists.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: purchase-request, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -27,7 +27,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 
 The **Auditor** is a read-only role. The one confirmed surface is the generic **`/system-admin/activity-log`** screen — a filterable list of `action` / `entity_type` / `user` events across all document types, including `purchase_request` rows — plus the PR detail page's own comment sheet (`tb_purchase_request_comment`, immutable for `type = system` rows per `PR_POST_008`) that any user with read access to a PR can already see. Whether a distinct "Auditor" role gates either surface differently from any other viewer with read access was not confirmed this pass. The Auditor cannot approve, reject, send back, edit lines, or void a PR.
 
-The **System Administrator** configures the workflow definition referenced by a PR's `workflow_id` (stages, `stage_role`, `user_action.execute[]` membership, and the **Routing** tab's amount/department/category-threshold rules — generic system-config functionality shared across document types via `/system-admin/workflow`, not PR-specific), tax rates (`/config/tax-profile`), currency and exchange-rate masters (`/config/currency`, `/config/exchange-rate`), and RBAC user/role assignments (`/system-admin/user`, `/system-admin/role`). No PR-specific amount-threshold editor (the real one is generic, not PR-specific), delegation-window manager (no equivalent anywhere), or per-PR-type default screen was found. *(An elevated **void** right under `PR_AUTH_007` was described here as confirmed in the previous revision — it is not: no void endpoint exists in `purchase-requests.controller.ts`, no Void control exists in the PR form, and `enum_purchase_request_doc_status.voided` is written only by the approver Reject path, `purchase-request.service.ts:2201`. A platform super-admin can only bypass the *ownership* rule when deleting a `draft` (`PR_VAL_018`).)*
+The **System Administrator** configures the workflow definition referenced by a PR's `workflow_id` (stages, `stage_role`, `user_action.execute[]` membership, and the **Routing** tab's amount/department/category-threshold rules — generic system-config functionality shared across document types via `/system-admin/workflow`, not PR-specific), tax rates (`/config/tax-profile`), currency and exchange-rate masters (`/config/currency`, `/config/exchange-rate`), and RBAC user/role assignments (`/system-admin/user`, `/system-admin/role`). Two stage-level switches that change what PR approvers see and may do also live in the workflow editor: **hide price** (`price_per_unit`, `total_price`) and per-stage **available actions** (approve / reject / send back) — see `PR_AUTH_010` / `PR_AUTH_011` in [02-business-rules](/en/inventory/purchase-request/02-business-rules); and the BU's **Ask AI** providers and **attachment policy** (file types, size) are BU settings (Ask AI under System Admin; attachment policy from Backstage only). No PR-specific amount-threshold editor (the real one is generic, not PR-specific), delegation-window manager (no equivalent anywhere), or per-PR-type default screen was found. *(An elevated **void** right under `PR_AUTH_007` was described here as confirmed in the previous revision — it is not: no void endpoint exists in `purchase-requests.controller.ts`, no Void control exists in the PR form, and `enum_purchase_request_doc_status.voided` is written only by the approver Reject path, `purchase-request.service.ts:2201`. A platform super-admin can only bypass the *ownership* rule when deleting a `draft` (`PR_VAL_018`).)*
 
 ### Position relative to the transactional flow
 
@@ -61,7 +61,7 @@ graph LR
 | Edit PR header / lines / vendor / pricing | ❌ | ❌ |
 | Approve / Reject / Send-back / Split-Reject | ❌ | ❌ |
 | Void an in-flight or approved PR (`PR_AUTH_007`) | **Not confirmed to exist** | **Not confirmed to exist** |
-| Delete another user's `draft` PR (super-admin bypass of the ownership rule, `PR_VAL_018`) | ❌ | ✅ (platform super-admin only) |
+| Delete another user's `draft` PR (super-admin bypass of the ownership rule, `PR_VAL_018`) | ❌ | ✅ (Backstage super-admin only) |
 
 ## 2. Entry Point and Primary Flow
 
