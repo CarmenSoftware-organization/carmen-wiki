@@ -2,7 +2,7 @@
 title: Carmen Blue Backstage
 description: Overview of the Carmen Blue Backstage admin product — entry point for the book, organized by the ungrouped Dashboard row and the SPA's own seven sidebar `groupKey` groups (eight sections in total), plus the separate cluster-admin persona.
 published: true
-date: 2026-09-06T23:30:00.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: book/platform, home
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -12,7 +12,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 Reference manual for developers and QA engineers working on the Carmen Blue Backstage admin product — tenancy (clusters and business units), licensing, identity and access, content delivery, analytics, scheduling, platform-wide configuration, and shared databases.
 
-The module list below reads top to bottom in the same order as the sidebar a reader just came from: the ungrouped Dashboard row, then the seven `groupKey` groups the SPA itself builds its navigation from (`../carmen-backstage/src/components/nav/platformNav.ts`) — eight sections in total — then a final section for the cluster-admin console: a separate persona with its own nav file, not a ninth menu group.
+The module list below reads top to bottom in the same order as the sidebar a reader just came from: the ungrouped Dashboard row, then the seven `groupKey` groups the SPA itself builds its navigation from (`../carmen-backstage/src/components/nav/backstageNav.ts`) — eight sections in total — then a final section for the cluster-admin console: a separate persona with its own nav file, not a ninth menu group.
 
 ## 1. Dashboard
 
