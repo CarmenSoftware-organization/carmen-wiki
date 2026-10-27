@@ -2,7 +2,7 @@
 title: Store Requisition — Data Model — Comment Tables
 description: Document-level and line-level comment / attachment tables for the Store Requisition module — message text, attachments JSON, and the user/system comment-type enum.
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: '2026-10-27T00:00:00.000Z'
 tags: store-requisition, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -80,6 +80,10 @@ Line-level counterpart of `tb_store_requisition_comment`. Captures comments and 
 
 **Constraints:** `@id` on `id`. FK `store_requisition_detail_id → tb_store_requisition_detail.id` (`NoAction` on delete/update).
 **Indexes:** None declared beyond the primary key.
+
+## 3a. Attachment upload policy (re-synced 2026-10-27)
+
+The gateway comment controllers no longer hard-code a 10 MB / five-MIME limit. Uploads go through `CommentFilesInterceptor()` and `AttachmentPolicyService.assertFiles(bu_code, files)` (`apps/backend-gateway/src/common/attachment-policy/`), which reads the business unit's `config` entries `attachment.allowed_types` and `attachment.max_size_mb`. Defaults when unset: type groups `image` + `pdf`, 10 MB per file; the size is capped at 25 MB and the selectable groups are image, pdf, excel, word, csv and text. The policy is cached per BU for 60 s. On update, the micro-service accepts `attachments` either as a full array or as `{ add, remove }` (removal by `fileToken`), and `addAttachment` takes a list.
 
 ## 4. Cross-References
 

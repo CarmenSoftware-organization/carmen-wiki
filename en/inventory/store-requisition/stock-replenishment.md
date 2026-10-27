@@ -2,7 +2,7 @@
 title: Stock Replenishment
 description: Below-par list driven by par / max thresholds on tb_product_location, with wizards that raise PR or SR drafts — real API since 2026-08; no scheduled sweep.
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: store-requisition, replenishment, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -14,6 +14,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **Owner:** Purchaser / Requester (reviews the below-par list, raises PR or SR drafts) &nbsp;·&nbsp; **Table:** none dedicated — reads `tb_product_location` + on-hand, writes ordinary `tb_purchase_request` / `tb_store_requisition` drafts &nbsp;·&nbsp; **Trigger:** on demand (screen load) — **no cron** &nbsp;·&nbsp; **Endpoints:** `GET /api/{bu}/stock-replenishment`, `GET …/location-products/:location_id/:product_id/pending-documents`, `POST …/stock-replenishment/pr`, `POST …/stock-replenishment/sr` &nbsp;·&nbsp; **1-liner:** the screen lists every `(location, product)` below par; humans pick rows and raise the documents.
 
 > ✅ **Implementation status (re-verified 2026-09-22):** the 2026-07-15 note that this screen was mock-data-driven is obsolete. `feat: add stock replenishment and wastage reporting api` (`c9348f667`, 2026-08) added the backend (`apps/micro-business/src/inventory/stock-replenishment/`, gateway `apps/backend-gateway/src/application/stock-replenishment/`), `57d5715a0` (2026-08-26) added the PR/SR creation endpoints, and the frontend hook `routes/store-operation/stock-replenishment/use-stock-replenishment.ts` now calls the real API. What is **still** not implemented: any scheduled sweep (no `replenish` / `par_qty` hit in `../micro-cronjobs/`), idempotent "one draft per day", an `on_order` term, a source-location configuration, and a period gate — Sections 2–6 below describe the code as it is.
+> **Re-synced 2026-10-27 (backend `c9d788829`, frontend `391062b5`):** the on-hand figure is now scoped to the **active inventory period** (`buildOnHandPeriodWhere()` adds `at_period = <active period>` to the cost-layer sums in `stock-replenishment.service.ts` and `products.replenishment.ts`; see §6) — stock sitting in an older, never-closed period is not counted until that period is closed; the screen was rebuilt on `ListPageShell` with a stock-level bar per row, an "N to reorder" count (no more cross-unit total), a sticky bottom action bar and empty states (§2). The API, payloads and status ratios are unchanged.
 
 ![Stock Replenishment screen](/screenshots/store-requisition/stock-replenishment.png)
 
@@ -58,8 +59,8 @@ graph LR
 
 | Task | Where | Notes |
 |---|---|---|
-| See what is below par | Store Operation → Stock Replenishment | Summary bar: locations / items / critical / warning / low / total reorder qty; one collapsible group per location; each row shows on-hand, min, max, par, reorder qty and a status badge |
-| Raise a PR for the shortfall | Select rows → **Create PR** wizard → pick workflow, adjust `request_qty` / order unit → confirm | `POST …/stock-replenishment/pr` — one PR draft per call; the location rides on each line |
+| See what is below par | Store Operation → Stock Replenishment | Summary bar: locations, **"N to reorder"** (count of rows with `reorder_qty > 0` — the earlier cross-unit total of reorder quantities was dropped because units differ) and critical / warning / low badges (a badge with count 0 is hidden). One collapsible group per location; on first load only groups holding a `critical` row are expanded (Expand all / Collapse all override and are then remembered). Each row shows a **stock-level bar** (`stock-level-bar.tsx`: fill = on-hand coloured by status, ticks at min and par, scale = the largest of on-hand / min / max / par; the four raw numbers sit in a tooltip) plus the reorder qty and status badge. Nothing below par → an "all stocked" empty state; a search with no hits → a "no results" state with a clear-search button |
+| Raise a PR for the shortfall | Select rows → **Create PR** (sticky bar at the bottom shows "N selected", a Clear button, and a note when some selected rows are hidden by the current search — they are still sent) → wizard → pick workflow, adjust `request_qty` / order unit → confirm | `POST …/stock-replenishment/pr` — one PR draft per call; the location rides on each line |
 | Raise an SR for the shortfall | Select rows → **Create SR** wizard → pick source location + SR workflow → confirm | `POST …/stock-replenishment/sr` — lines sharing a `(from_location, location_id)` pair become one SR draft; the response is the array of created ids |
 | See what is already on the way for a row | Row → pending documents | `GET …/location-products/:location_id/:product_id/pending-documents` (`stock-replenishment.pending.ts`) lists PRs in `draft` / `in_progress` / `approved` (approved counts as pending on purpose — cleared the workflow, goods not yet received), SRs in `draft` / `in_progress`, and the PO lines linked to those PR lines, for that pair. Informational — the list does **not** subtract them from the shortfall |
 | Change the thresholds | [product](/en/inventory/product) → location tab → edit `tb_product_location.par_qty` / `max_qty` / `min_qty` | Takes effect on the next screen load |
@@ -97,7 +98,7 @@ flowchart TD
 
 - **Reorder level prefers `max_qty`.** `reorder_level = max_qty > 0 ? max_qty : par_qty`; `reorder_qty = max(reorder_level − on_hand, 0)`. `min_qty` is returned for display only.
 - **No `on_order` term.** Open POs and in-flight SR transfers do not reduce the shortfall; the pending-documents endpoint is the manual substitute.
-- **No cron, no idempotency, no period gate.** Every wizard run creates fresh drafts; nothing checks the inventory period here (the SR's own submit/issue date rules apply later — see [store-requisition/02-business-rules](/en/inventory/store-requisition/02-business-rules) `SR_VAL_014`).
+- **No cron, no idempotency, no period gate on creation.** Every wizard run creates fresh drafts; nothing checks the inventory period when a draft is created (the SR's own submit/issue date rules apply later — see [store-requisition/02-business-rules](/en/inventory/store-requisition/02-business-rules) `SR_VAL_014`). The **on-hand read** is period-scoped, though: it counts only cost layers stamped with the active period (`at_period`), which includes the balance brought forward into it. With no active period the filter is empty and every layer counts.
 - **Source location is chosen per wizard run**, not configured per BU; the SR wizard excludes the destination from the source picker.
 - **The draft header comes from the caller**: `buildDraftHeader()` takes the caller's first `tb_department_user` membership as the department and the chosen workflow; `requestor_id` is the caller.
 - **Pagination is by location group** (`perpage < 0` returns all); rows inside a group are sorted `reorder_qty desc, name asc`.
@@ -158,7 +159,8 @@ GET (on screen load, optional ?location_id=, ?search=):
 1. candidates = tb_product_location WHERE deleted_at IS NULL AND par_qty > 0
                 AND location IS active AND location_type <> direct
                 (optionally filtered by ?location_id= / product search)
-2. on_hand[(location, product)] = Σ balance from the inventory ledger for the pair
+2. on_hand[(location, product)] = Σ (in_qty − out_qty) over cost layers of the pair WHERE at_period = <active period>
+                (buildOnHandPeriodWhere; no active period → all layers)
 3. for each candidate:
      par = par_qty; on_hand = max(raw_balance, 0); if on_hand >= par: skip
      reorder_level = max_qty > 0 ? max_qty : par
@@ -172,7 +174,7 @@ POST …/sr (user action):
              every product is allowed by workflow.data.products (when that list is non-empty)
 2. header = { requestor = caller, department = caller's first tb_department_user, workflow }
 3. group lines by (from_location, location_id) → one StoreRequisitionLogic.create() per group
-   (sr_type derived from the two locations; sr_no = draft-<hex>)
+   (sr_type derived from the two locations; sr_no = draft-<seq>)
 4. return the created ids → the SRs continue as ordinary drafts
 ```
 
@@ -189,10 +191,10 @@ POST …/sr (user action):
 
 ## 8. References
 
-- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/stock-replenishment/` — `stock-replenishment.service.ts` (`findAll`, `selectBelowPar`, `createPrByReplenishmentProduct`, `createSrByReplenishmentProduct`, `findPendingDocuments`, `buildDraftHeader`), `stock-replenishment.helper.ts` (`toReplenishmentStatus`, `toReorderQty`, `RATIO_CRITICAL = 0.25`, `RATIO_WARNING = 0.5`), `stock-replenishment.verify.ts`, `stock-replenishment.draft.ts`, `dto/stock-replenishment.dto.ts`, `dto/stock-replenishment.serializer.ts`; gateway `apps/backend-gateway/src/application/stock-replenishment/stock-replenishment.controller.ts` (app-ids `stockReplenishment.findAll` / `findPendingDocuments` / `createPr` / `createSr`).
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/stock-replenishment/` — `stock-replenishment.service.ts` (`findAll`, `selectBelowPar`, `createPrByReplenishmentProduct`, `createSrByReplenishmentProduct`, `findPendingDocuments`, `buildDraftHeader`), `../on-hand-period.helper.ts` (`buildOnHandPeriodWhere`), `stock-replenishment.helper.ts` (`toReplenishmentStatus`, `toReorderQty`, `RATIO_CRITICAL = 0.25`, `RATIO_WARNING = 0.5`), `stock-replenishment.verify.ts`, `stock-replenishment.draft.ts`, `dto/stock-replenishment.dto.ts`, `dto/stock-replenishment.serializer.ts`; gateway `apps/backend-gateway/src/application/stock-replenishment/stock-replenishment.controller.ts` (app-ids `stockReplenishment.findAll` / `findPendingDocuments` / `createPr` / `createSr`).
 - **Error catalogue:** `STOCK_REPLENISHMENT_WORKFLOW_NOT_FOUND`, `STOCK_REPLENISHMENT_WORKFLOW_PERMISSION_DENIED`, `STOCK_REPLENISHMENT_LOCATION_PERMISSION_DENIED`, `STOCK_REPLENISHMENT_PRODUCTS_NOT_APPLICABLE` in `packages/error-catalog/src/catalog.ts`.
 - **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_product_location`, `tb_store_requisition`, `enum_sr_type`.
-- **Frontend:** `../carmen-frontend/routes/store-operation/stock-replenishment/` — `use-stock-replenishment.ts` (`useStockReplenishment`, `useCreateStockReplPr`, `useCreateStockReplSr`), `stock-repl-component.tsx`, `stock-repl-location.tsx`, `stock-repl-pr-wizard.tsx`, `stock-repl-sr-wizard.tsx`; `types/stock-replenishment.ts`.
+- **Frontend:** `../carmen-frontend/routes/store-operation/stock-replenishment/` — `use-stock-replenishment.ts` (`useStockReplenishment`, `useCreateStockReplPr`, `useCreateStockReplSr`), `stock-repl-component.tsx`, `stock-repl-location.tsx`, `stock-level-bar.tsx`, `stock-repl-pr-wizard.tsx`, `stock-repl-sr-wizard.tsx`; `types/stock-replenishment.ts`.
 - **E2E:** `../carmen-frontend-e2e/tests/711-stock-replenishment.spec.ts` (33 cases, `TC-SRPL-*`: page load, summary bar, location groups, expand/collapse, selection, wizards); narrative in `docs/user-stories/711-stock-replenishment.md`.
 - **Cron job:** none — `../micro-cronjobs/` has no replenishment code as of this pass.
 - **Module landing:** [store-requisition](/en/inventory/store-requisition) § 7.
