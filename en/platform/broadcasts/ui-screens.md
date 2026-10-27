@@ -2,7 +2,7 @@
 title: Broadcasts — UI Screens
 description: The three Broadcasts screens — BroadcastManagement (list/filters/CSV export), BroadcastCompose (target/expiry/preview), and BroadcastEdit (content lock).
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: book/platform, broadcasts, ui
 editor: markdown
 dateCreated: 2026-06-10T13:15:00.000Z
@@ -37,7 +37,7 @@ A `PageHeader` ("Broadcasts") with a subtitle plus an explicit note — *"Broadc
 
 - A debounced (400 ms) `SearchInput` matches title or message, case-insensitively, resetting to page 1 on each new term.
 - A **Filters** sheet (`BroadcastFilters`) offers: Status toggle-buttons (Active/Scheduled/Expired, multi-select), Scope toggle-buttons (System/Business Unit, multi-select), and a "Show deleted broadcasts" checkbox — plus a "Clear all" button once any filter is active. The header's Filters button carries a numeric badge counting active filter groups (status-any, scope-any, deleted).
-- **Seven `localStorage` keys** persist List-screen state across visits: `search_broadcasts`, `filters_broadcast_status` (JSON array), `filters_broadcast_scope` (JSON array), `filter_broadcast_deleted` (JSON boolean), `page_broadcasts`, `perpage_broadcasts`, `sort_broadcasts` (default `created_at:desc`).
+- **Seven `localStorage` keys** persist List-screen state across visits: `search_broadcasts`, `filters_broadcast_status` (JSON array), `filters_broadcast_scope` (JSON array), `filter_broadcast_deleted` (JSON boolean), `page_broadcasts`, `perpage_broadcasts` (restored only when it is a whole number 1–100, else the default of 20 — `readStoredPerpage()`), `sort_broadcasts` (default `created_at:desc`).
 
 ### 2.3 Columns
 
@@ -161,6 +161,6 @@ The same glassy `.unsaved-bar` as Compose appears only while editing, showing Ca
 - `../carmen-backstage/src/utils/audit.ts` — `normalizeAudit()` (the flat `created_by: { id, name }` shape broadcasts use, named directly in this file's own source comment as one of the endpoints without a nested `audit.*` shape).
 - `../carmen-backstage/src/utils/docVersion.ts` — `isVersionConflict`/`notifyVersionConflict`/`getDocVersion`.
 - `../carmen-backstage/src/components/KeyboardShortcuts.tsx`, `src/hooks/useUnsavedChanges.ts` — shortcuts and the navigation guard.
-- `../carmen-backstage/src/App.tsx` (three routes), `src/components/nav/platformNav.ts` ("Broadcasts" nav entry).
+- `../carmen-backstage/src/App.tsx` (three routes), `src/components/nav/backstageNav.ts` ("Broadcasts" nav entry).
 
 **Cross-links:** [Broadcasts landing](/en/platform/broadcasts) &nbsp;·&nbsp; [Data Model](/en/platform/broadcasts/data-model) &nbsp;·&nbsp; [Permissions](/en/platform/broadcasts/permissions)

@@ -2,7 +2,7 @@
 title: Business Unit — Data Model
 description: BU entity, formatting/locale block, database-pool + schema pointer, config array, branding tokens, module activation join, and the per-BU license ledger that replaced the old max_license_users column.
 published: true
-date: '2026-09-22T17:30:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: book/platform, business-units, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -11,10 +11,10 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 # Business Unit — Data Model
 
 > **At a Glance**
-> **Tables:** `tb_business_unit` (primary) &nbsp;·&nbsp; `tb_business_unit_tb_module` (M:N modules activation) &nbsp;·&nbsp; `tb_business_unit_license` (per-BU seat-purchase ledger, replaces the old `max_license_users` column) &nbsp;·&nbsp; `tb_business_unit_interface_license` (per-BU interface-licence ledger, since 2026-09-10 — documented in [Licenses — Data Model](/en/platform/licenses/data-model) §2.4; `tb_business_unit_interface`, the flat entitlement table it replaces, was dropped on 2026-09-08) &nbsp;·&nbsp; `tb_database_pool` (referenced — shared DB server a BU's tenant schema lives in) &nbsp;·&nbsp; `tb_user_tb_business_unit` (M:N user-join, full doc in [users](/en/platform/users)) &nbsp;·&nbsp; `tb_module` (referenced, full catalog out of scope) &nbsp;·&nbsp; **Enums:** `enum_user_business_unit_role` (admin/user) &nbsp;·&nbsp; `enum_calculation_method` (average/fifo) &nbsp;·&nbsp; **Schema features:** formatting/locale block (date/time/currency/decimal/timezone) &nbsp;·&nbsp; `config` JSON column (key/value config pairs managed via SPA) &nbsp;·&nbsp; `info` JSON column (free-form metadata, no SPA path) &nbsp;·&nbsp; structured hotel/company address columns (10 fields each) &nbsp;·&nbsp; **Branding:** `logo_file_token` / `avatar_file_token`, resolved to embedded presigned `logo`/`avatar` objects &nbsp;·&nbsp; **Removed since the last sync:** `max_license_users` (column physically dropped) and `db_connection` (JSON blob physically dropped, replaced by `database_pool_id` + `db_schema`) &nbsp;·&nbsp; **`code` is now platform-wide unique**, not cluster-scoped, and is server-generated — see §2.1 &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` (added 2026-07-16), enforced as an optimistic lock on `PUT`
+> **Tables:** `tb_business_unit` (primary) &nbsp;·&nbsp; `tb_business_unit_note` (internal staff notes + files, new 2026-10-26) &nbsp;·&nbsp; `tb_business_unit_license` (per-BU seat-purchase ledger, replaces the old `max_license_users` column) &nbsp;·&nbsp; `tb_business_unit_interface_license` (per-BU interface-licence ledger, since 2026-09-10 — documented in [Licenses — Data Model](/en/platform/licenses/data-model) §2.4; `tb_business_unit_interface`, the flat entitlement table it replaces, was dropped on 2026-09-08) &nbsp;·&nbsp; `tb_database_pool` (referenced — shared DB server a BU's tenant schema lives in) &nbsp;·&nbsp; `tb_user_tb_business_unit` (M:N user-join, full doc in [users](/en/platform/users)) &nbsp;·&nbsp; **Enums:** `enum_user_business_unit_role` (admin/user) &nbsp;·&nbsp; `enum_calculation_method` (average/fifo/average_per_location) &nbsp;·&nbsp; **Schema features:** formatting/locale block (date/time/currency/decimal/timezone) &nbsp;·&nbsp; `config` JSON column (key/value config pairs managed via SPA) &nbsp;·&nbsp; `info` JSON column (free-form metadata, no SPA path) &nbsp;·&nbsp; structured hotel/company address columns (10 fields each) &nbsp;·&nbsp; **Branding:** `logo_file_token` / `avatar_file_token`, resolved to embedded presigned `logo`/`avatar` objects &nbsp;·&nbsp; **Removed since the last sync:** `max_license_users` (column physically dropped) and `db_connection` (JSON blob physically dropped, replaced by `database_pool_id` + `db_schema`) &nbsp;·&nbsp; **`code` is now platform-wide unique**, not cluster-scoped, and is server-generated — see §2.1 &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` (added 2026-07-16), enforced as an optimistic lock on `PUT`
 
 > **Source of truth:** Backend Prisma platform schema. Always read this first when writing or updating this page:
-> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (read at commit `1aaab3c`, 2026-09-05)
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` (read at HEAD `c9d788829`, 2026-10-27)
 >
 > The `generated/client/schema.prisma` file is an auto-generated copy and not authoritative.
 
@@ -29,13 +29,13 @@ Two structural changes landed since the last sync, both confirmed directly again
 
 The schema is still notably richer than `tb_cluster`. Three groups of optional fields extend the core identity:
 
-1. **Formatting/locale block** — nine columns (`date_format`, `date_time_format`, `time_format`, `short_time_format`, `long_time_format`, `timezone`, `amount_format`, `quantity_format`, `recipe_format`) that define how dates, times, and numbers are rendered in the inventory UI for this BU. All have application-level defaults pre-populated by the SPA (`BusinessUnitEdit.tsx`, `initialFormData`). The amount/quantity/recipe formats are stored as JSON objects (`{"locales":"th-TH","minimumIntegerDigits":2}`); the date/time formats are plain strings (`"yyyy-MM-dd"`).
+1. **Formatting/locale block** — nine columns (`date_format`, `date_time_format`, `time_format`, `short_time_format`, `long_time_format`, `timezone`, `amount_format`, `quantity_format`, `recipe_format`; a tenth, `perpage_format`, was dropped by migration `20260928100000_drop_business_unit_perpage_format`) that define how dates, times, and numbers are rendered in the inventory UI for this BU. All have application-level defaults pre-populated by the SPA (`BusinessUnitEdit.tsx`, `initialFormData`). The amount/quantity/recipe formats are stored as JSON objects (`{"locales":"th-TH","minimumIntegerDigits":2}`); the date/time formats are plain strings (`"yyyy-MM-dd"`).
 
 2. **JSON config** — a `config` JSON column that stores an array of `BusinessUnitConfig` objects (shape: `{ id?, key, label, datatype?, value? }`). The SPA surfaces this as an editable list on the edit page's Technical tab, allowing operators to add, remove, and edit arbitrary key/value config pairs for the BU. These are not a fixed key namespace — they are open-ended operator-defined entries.
 
 3. **Branding tokens** — a `logo_file_token` / `avatar_file_token` pair (`String? @db.VarChar`) storing file-service references for the BU's rectangular logo and square avatar. The same token pair exists on `tb_cluster`. The raw tokens never appear on list/detail read responses — those resolve the tokens to embedded presigned objects (`logo: { url, expires_at }`, `avatar: { url, expires_at }`); the upload endpoints do return the raw `file_token` alongside the URL. Writes go through dedicated multipart upload endpoints rather than the regular `PUT` payload (see §6 item 8).
 
-Two M:N join tables extend the BU: `tb_business_unit_tb_module` activates which platform modules are enabled for a BU, and `tb_user_tb_business_unit` records which users are assigned to it (documented in full in [users](/en/platform/users)). A third table, `tb_business_unit_license` (§2.3), is a 1:M ledger, not a join — one row per seat purchase.
+One M:N join table extends the BU: `tb_user_tb_business_unit` records which users are assigned to it (documented in full in [users](/en/platform/users)). `tb_business_unit_license` (§2.3) is a 1:M ledger, not a join — one row per seat purchase; `tb_business_unit_note` (§2.7) is a 1:M table of internal staff notes. **The old `tb_business_unit_tb_module` modules-activation join and the `tb_module` catalog no longer exist** — both were dropped by migration `20260818000000_license_model` (2026-08-18); earlier revisions of this page documented them in error.
 
 ## 2. Entities
 
@@ -63,7 +63,7 @@ The primary business unit record. One row per operational BU, holding the identi
 | `config` | `Json?` | Yes | — | Array of `BusinessUnitConfig` objects (`{ id?, key, label, datatype?, value? }`); editable key/value pairs maintained via the SPA config panel — see §5 |
 | **— License —** | | | | |
 | `default_currency_id` | `String? @db.Uuid` | Yes | — | FK (logical, no Prisma `@relation`) to the default currency for this BU; displayed via the currency selector in `BusinessUnitEdit.tsx` |
-| `calculation_method` | `enum_calculation_method` | No | `average` | Costing method used for inventory valuation: `average` or `fifo` |
+| `calculation_method` | `enum_calculation_method` | No | `average` | Costing method used for inventory valuation: `average`, `fifo` or `average_per_location` (added by migration `20260928090000_add_average_per_location_calculation_method`) |
 | ~~`max_license_users`~~ | — | — | — | **Removed.** Physically dropped by migration `20260821000000_drop_bu_max_license_users`. Seats are now dated purchase rows in `tb_business_unit_license` (§2.3), summed via view `v_business_unit_seat`. |
 | **— Company —** | | | | |
 | `branch_no` | `String?` | Yes | — | Thai tax branch number (สาขา) for the BU's company entity |
@@ -135,31 +135,9 @@ The primary business unit record. One row per operational BU, holding the identi
 - `@@index([cluster_id, code, deleted_at])` — map `"business_unit_cluster_code_deleted_at_idx"` — composite; overlaps with the (inert) unique constraint but retained as an explicit index for query planning
 - `@@index([database_pool_id])` — map `"business_unit_database_pool_idx"` — new, supports the pool→BUs lookup direction
 
-### 2.2 `tb_business_unit_tb_module`
+### 2.2 (removed) `tb_business_unit_tb_module`
 
-Many-to-many join that activates which platform modules are enabled for a given business unit. Each row asserts that module `module_id` is active for business unit `business_unit_id`. The M:N activation means a BU can have any subset of the available modules enabled; adding or removing a module creates or soft-deletes a row in this table. The full module catalog lives in `tb_module` (§2.6), which is referenced but not owned by the BU. Unchanged since the last sync.
-
-| Field | Prisma Type | Nullable | Default | Description |
-| ----- | ----------- | -------- | ------- | ----------- |
-| `id` | `String @db.Uuid` | No | `gen_random_uuid()` | Primary key, UUID v4 |
-| `business_unit_id` | `String @db.Uuid` | No | — | FK to `tb_business_unit.id`; the BU whose module set this row belongs to |
-| `module_id` | `String @db.Uuid` | No | — | FK to `tb_module.id`; the module being activated |
-| `created_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: row creation time |
-| `created_by_id` | `String? @db.Uuid` | Yes | — | Audit: FK to `tb_user.id` of the creator |
-| `updated_at` | `DateTime? @db.Timestamptz(6)` | Yes | `now()` | Audit: last update time |
-| `updated_by_id` | `String? @db.Uuid` | Yes | — | Audit: FK to `tb_user.id` of the last updater |
-| `deleted_at` | `DateTime? @db.Timestamptz(6)` | Yes | — | Soft-delete timestamp; `NULL` = activation is live |
-| `deleted_by_id` | `String? @db.Uuid` | Yes | — | Audit: deleter's `tb_user.id` (stored by convention; no Prisma `@relation`) |
-
-**Constraints:**
-- `@id` on `id`
-- FK: `business_unit_id` → `tb_business_unit.id` (NoAction / NoAction) — Prisma relation `tb_business_unit`
-- FK: `module_id` → `tb_module.id` (NoAction / NoAction) — Prisma relation `tb_module`
-- FK: `created_by_id` → `tb_user.id` (NoAction / NoAction) — Prisma named relation `"tb_business_unit_tb_module_created_by_idTotb_user"`
-- FK: `updated_by_id` → `tb_user.id` (NoAction / NoAction) — Prisma named relation `"tb_business_unit_tb_module_updated_by_idTotb_user"`
-
-**Indexes:**
-- `@@index([business_unit_id, module_id, deleted_at])` — map `"businessunit_module_business_unit_module_deleted_at_idx"` — supports querying all active modules for a BU
+This modules-activation join and the `tb_module` catalog were dropped by migration `20260818000000_license_model`; module/feature entitlement is now carried by the licence ledgers (§2.3 and [Licenses](/en/platform/licenses)). Numbering is kept so existing `§2.3`/`§2.4` cross-references stay valid.
 
 ### 2.3 `tb_business_unit_license` — NEW, the per-BU seat ledger
 
@@ -191,7 +169,7 @@ Replaces the single `max_license_users` integer with dated, individually-purchas
 
 ### 2.4 `tb_database_pool` (referenced) — NEW, replaces `db_connection`
 
-A BU no longer owns its database credentials. Instead it points at a shared, platform-managed database server record via `database_pool_id`, and supplies only its own `db_schema` name within that server. This table is owned by the `database-pools` module (`/platform/database-pools`, permission `database_pool.read`/`database_pool.manage`) — documented here only to the depth a Business Units reader needs; the full module is out of this page's scope.
+A BU no longer owns its database credentials. Instead it points at a shared, platform-managed database server record via `database_pool_id`, and supplies only its own `db_schema` name within that server. This table is owned by the `database-pools` module (`/backstage/database-pools`, permission `database_pool.read`/`database_pool.manage`) — documented here only to the depth a Business Units reader needs; the full module is out of this page's scope.
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
@@ -219,28 +197,31 @@ The full field table for `tb_user_tb_business_unit` is documented in [users data
 - **`is_default`** — `Boolean?` (default `false`). Marks the BU as the user's default; the inventory application lands the user on their default BU at login. Only one BU per user should carry `is_default = true` at a given time; the uniqueness constraint does not enforce this — it is an application-layer convention.
 - **`is_active`** — `Boolean?` (default `true`). Soft-activity flag for the assignment.
 - **Cluster-scoping rule** — the Add BU dialog in the user edit screen (`UserEdit.tsx`) filters the available BU list to those BUs whose `cluster_id` matches a cluster the user already belongs to (via `tb_cluster_user`). This scoping is enforced at the application layer, not as a FK constraint — `tb_user_tb_business_unit` does not carry a `cluster_id` column in Prisma.
-- **`frees_seat` (SPA-only, backend-optional field)** — not a Prisma column; an optional boolean the backend attaches to a user row when available, read by `BUUser.frees_seat` in the SPA. When a user is active but `frees_seat === false`, the Users tab shows a "Shared" badge — the user holds membership in more than one BU inside the same cluster, so deactivating them here alone would not return a seat to the cluster's shared pool. Being `optional` (not `false`) matters: `undefined` means the backend in this environment hasn't shipped the field yet, and the SPA is explicit about not guessing in that case.
+- **`frees_seat` (SPA-only, backend-optional field)** — not a Prisma column; an optional boolean the backend attaches to a user row when available, read by `BUUser.frees_seat` in the SPA. When a user is active but `frees_seat === false`, the edit/remove dialogs on the Users tab warn that removing them here will not free a cluster seat (the per-row "Shared" badge was removed in the 2026-10 UI pass) — the user holds membership in more than one BU inside the same cluster, so deactivating them here alone would not return a seat to the cluster's shared pool. Being `optional` (not `false`) matters: `undefined` means the backend in this environment hasn't shipped the field yet, and the SPA is explicit about not guessing in that case.
+- **`seat_released_at`** — `DateTime? @db.Timestamptz(6)`, new 2026-10-27 (migration `20261027090000_add_user_bu_seat_released_at`). Stamped by the cluster **Release seat** action, which also sets `is_active = false`; **Restore seat** re-activates only links carrying the stamp. See [Clusters — UI Screens](/en/platform/clusters/ui-screens) §4.4.
 - **Unique constraint** — `@@unique([user_id, business_unit_id, deleted_at])` — map `"user_businessunit_user_business_unit_deleted_at_u"` — allows a user to be re-assigned to a BU after the original assignment is soft-deleted.
 
-### 2.6 `tb_module` (referenced, brief)
+### 2.6 `tb_business_unit_note` — internal staff notes (new 2026-10-26)
 
-The module catalog table. Each row names one activatable platform module (e.g. Inventory, Purchase Request, Store Requisition). `tb_business_unit_tb_module` references `tb_module.id` on the FK side — the BU side of the relationship activates modules, but does not own the module catalog.
+Added by migration `20261026160000_add_business_unit_note` (schema line 311). Free-form notes and file attachments that Backstage staff leave on a BU; **never shown to tenants**. The cluster-side twin is `tb_cluster_note` ([Clusters — Data Model](/en/platform/clusters/data-model) §2.6) and the two share one shape.
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key |
-| `name` | `String @db.VarChar` | No | Module name; unique with `deleted_at` |
-| `description` | `String?` | Yes | Optional description |
-| (audit columns) | — | Yes | Standard `created_*`/`updated_*`/`deleted_*` trio |
+| `business_unit_id` | `String @db.Uuid` | No | FK to `tb_business_unit.id` (`NoAction`/`NoAction`) |
+| `message` | `String?` | Yes | Note text (a note may be attachments only) |
+| `attachments` | `Json @default("[]") @db.JsonB` | No | Array of `{ fileName, fileToken, contentType, size?, uploaded_at, uploaded_by_id, removed_at?, removed_by_id? }`; removing a single file sets `removed_at` instead of deleting the element |
+| `doc_version` | `Int @default(0)` | No | Optimistic lock; `PATCH` requires it |
+| audit trio + soft delete | — | Yes | `created_*`, `updated_*`, `deleted_*` |
 
-**Unique constraint:** `@@unique([name, deleted_at])` — map `"module_name_deleted_at_u"`. From the BU perspective, only `id` and `name` are relevant — the rest of the module catalog is out of scope for this page.
+**Index:** `(business_unit_id, deleted_at, created_at DESC)`. Permissions `bu_note.view` / `bu_note.manage` — see [UI Screens](/en/platform/business-units/ui-screens) §4.8.
 
 ## 3. Relationships
 
 ```
 tb_business_unit  M ─── 1  tb_cluster                         (via tb_business_unit.cluster_id)
 tb_business_unit  M ─── 1  tb_database_pool                   (via tb_business_unit.database_pool_id, nullable)
-tb_business_unit  1 ─── M  tb_business_unit_tb_module  M ─── 1  tb_module
+tb_business_unit  1 ─── M  tb_business_unit_note              (internal staff notes, §2.6)
 tb_business_unit  1 ─── M  tb_business_unit_license            (per-BU seat purchases)
 tb_business_unit  1 ─── M  tb_business_unit_interface_license  (per-BU interface licences, one kind='interface' group each)
 tb_business_unit  1 ─── M  tb_user_tb_business_unit    M ─── 1  tb_user
@@ -255,13 +236,12 @@ FK directions (all `onDelete: NoAction, onUpdate: NoAction` unless noted):
 - `tb_business_unit.database_pool_id` → `tb_database_pool.id` (nullable — a BU may have no pool assigned yet)
 - `tb_business_unit.created_by_id` → `tb_user.id` — Prisma named relation `"tb_business_unit_created_by_idTotb_user"`
 - `tb_business_unit.updated_by_id` → `tb_user.id` — Prisma named relation `"tb_business_unit_updated_by_idTotb_user"`
-- `tb_business_unit_tb_module.business_unit_id` → `tb_business_unit.id`
-- `tb_business_unit_tb_module.module_id` → `tb_module.id`
+- `tb_business_unit_note.business_unit_id` → `tb_business_unit.id`
 - `tb_business_unit_license.business_unit_id` → `tb_business_unit.id`
 - `tb_business_unit_interface_license.business_unit_id` → `tb_business_unit.id`; its other FK, `license_feature_group_id` → `tb_license_feature_group.id`, is the only path from a BU to the licence catalog that does not pass through `tb_subscription_bu`
 - `tb_user_tb_business_unit.business_unit_id` → `tb_business_unit.id`
 
-Note: `deleted_by_id` on both `tb_business_unit` and `tb_business_unit_tb_module` is stored as `String? @db.Uuid` by convention but is **not** declared as a Prisma `@relation` — the FK is not enforced at the database level for the delete path, consistent with the pattern used across the platform schema.
+Note: `deleted_by_id` on `tb_business_unit` is stored as `String? @db.Uuid` by convention but is **not** declared as a Prisma `@relation` — the FK is not enforced at the database level for the delete path, consistent with the pattern used across the platform schema.
 
 Note: `default_currency_id` on `tb_business_unit` is a logical reference to the currency catalog but carries no Prisma `@relation` directive — it is enforced at the application layer only.
 
@@ -269,14 +249,14 @@ Note: `default_currency_id` on `tb_business_unit` is a logical reference to the 
 
 ### `enum_user_business_unit_role` — 2 values
 
-Carried on `tb_user_tb_business_unit.role`. Controls what a user can do within a specific business unit. Orthogonal to both the platform RBAC assignments on the user account ([rbac](/en/platform/rbac) — which replaced the removed `platform_role` enum) and `enum_cluster_user_role` on `tb_cluster_user` — the role axes are evaluated independently. This enum is also documented in [users data-model](/en/platform/users/data-model) §4 — restated here for readers who arrive from the business-units module.
+Carried on `tb_user_tb_business_unit.role`. Controls what a user can do within a specific business unit. Orthogonal to both the platform RBAC assignments on the user account ([rbac](/en/platform/rbac) — which replaced the removed `backstage_role` enum) and `enum_cluster_user_role` on `tb_cluster_user` — the role axes are evaluated independently. This enum is also documented in [users data-model](/en/platform/users/data-model) §4 — restated here for readers who arrive from the business-units module.
 
 | Value | Meaning |
 | ----- | ------- |
 | `admin` | BU-level administrator; can manage the BU's settings and inventory operations |
 | `user` | Standard BU member; operational access to the BU's inventory workflows |
 
-### `enum_calculation_method` — 2 values
+### `enum_calculation_method` — 3 values
 
 Carried on `tb_business_unit.calculation_method`. Determines the costing method used when the inventory system calculates the cost of goods for this BU.
 
@@ -284,8 +264,9 @@ Carried on `tb_business_unit.calculation_method`. Determines the costing method 
 | ----- | ------- |
 | `average` | Weighted average cost method (default). Each receipt adjusts the running average cost of inventory items |
 | `fifo` | First-In First-Out method. Issues are costed at the price of the oldest stock layer |
+| `average_per_location` | Moving-average cost kept per storage location (added 2026-09-28). The SPA's Calculation Method `<select>` offers it (label from `common.option.averagePerLocation`) |
 
-The default is `average`. Both values match the costing methods documented in the Carmen Blue ERP ([calculation-methods](/en/inventory/costing/calculation-methods)).
+The default is `average`. The first two values match the costing methods documented in the Carmen Blue ERP ([calculation-methods](/en/inventory/costing/calculation-methods)).
 
 ## 5. The `config` and `info` JSON columns
 
@@ -329,15 +310,17 @@ The `BusinessUnit` interface in `../carmen-backstage/src/types/index.ts` and the
 | 8 | Branding | `logo_file_token`, `avatar_file_token` (`String? @db.VarChar` storage tokens) | `logo?: PresignedImage \| null`, `avatar?: PresignedImage \| null` — embedded objects `{ url, expires_at }` on list and detail responses | Read responses never carry the raw tokens. Images are written through dedicated multipart endpoints (`POST /api-system/business-units/:id/logo` with form field `logo`, `POST /api-system/business-units/:id/avatar` with form field `avatar`), each returning `{ file_token, url, expires_at }`; the regular `PUT` update payload does not carry branding fields. |
 | 9 | `doc_version` | `Int @default(0)` | `doc_version?: number` on `BusinessUnit` | Aligned, not a divergence — both sides carry the optimistic-lock counter (added 2026-07-16). |
 | 10 | `code` | `String @db.VarChar(30)`, no `@default` — caller (or the generator) must supply it | `code: string` on `BusinessUnit`; **absent from the create payload, stripped from the update payload** | `BusinessUnitEdit.tsx`'s `buildPayload()` deletes `code` unconditionally before every submit — the platform assigns it on create and ignores any value sent on update. The form still displays it (read-only) once a BU exists. See §2.1. |
+| 11 | `perpage_format` | **Column dropped** (migration `20260928100000_drop_business_unit_perpage_format`) | Removed from `BusinessUnit`/`BusinessUnitFormData`; the Number Formats section no longer shows a Per Page field and `buildPayload()` iterates only `amount_format`/`quantity_format`/`recipe_format` | Aligned. A stale API client that still sends `perpage_format` is a backend concern, not the SPA's |
+| 12 | `attachment.*` rows in `config` | Plain entries in the `config` JSON array | `readAttachmentPolicy()` / `setAttachmentPolicy()` treat keys `attachment.allowed_types` (JSON array) and `attachment.max_size_mb` (number) specially; the generic Configuration list hides them | The gateway rejects any `attachment.`-prefixed key written from the tenant side (`PUT/PATCH api/business-units`) — only this SPA may set them. See [UI Screens](/en/platform/business-units/ui-screens) §4.4 |
 
 All core identity, hotel info, company info, format, locale, and soft-delete fields align between Prisma and the SPA shapes, as does the `doc_version` counter (item 9). The two structural removals (items 3 and 5) are the most consequential changes since the last sync — anything written against the old `max_license_users`/`db_connection` shapes needs to be re-derived from §2.3/§2.4 instead.
 
 ## 7. References
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (commit `1aaab3c`, 2026-09-05) — `model tb_business_unit`, `model tb_business_unit_tb_module`, `model tb_business_unit_license` (line 1133), `model tb_database_pool` (line 1382), `model tb_module`, `model tb_user_tb_business_unit`, `enum enum_user_business_unit_role`, `enum enum_calculation_method`. Line numbers shift often on this file (licensing models keep growing) — search by model name rather than trusting a cached line number.
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260821000000_drop_bu_max_license_users/` — drops `max_license_users`.
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260904000000_business_unit_code_global_unique/` and `.../20260904010000_business_unit_cluster_name_unique/` — the two partial-unique indexes that actually enforce code/name uniqueness (§2.1 Constraints).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` (HEAD `c9d788829`, 2026-10-27) — `model tb_business_unit` (213), `model tb_business_unit_note` (311), `model tb_business_unit_license` (1395), `model tb_database_pool` (1713), `model tb_user_tb_business_unit` (826), `enum enum_user_business_unit_role`, `enum enum_calculation_method`. Line numbers shift often on this file (licensing models keep growing) — search by model name rather than trusting a cached line number.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/migrations/20260821000000_drop_bu_max_license_users/` — drops `max_license_users`.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/migrations/20260904000000_business_unit_code_global_unique/` and `.../20260904010000_business_unit_cluster_name_unique/` — the two partial-unique indexes that actually enforce code/name uniqueness (§2.1 Constraints).
 - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/business-unit/business-unit.service.ts` — `createBusinessUnit()`: the BU-quota pre-flight check, the name-keyed duplicate-submission guard, and the `code`-generation retry loop.
 - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/business-unit/business-unit-code.helper.ts` — `generateBusinessUnitCode()` (Crockford base32, 8 chars, `randomBytes`-backed).
 

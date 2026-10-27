@@ -2,7 +2,7 @@
 title: Feature Flags
 description: The single screen that sets every feature's visibility (active/inactive/hide) across the Platform and Cluster-admin consoles — ungated by any feature key of its own.
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: book/platform, feature-flags
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -10,10 +10,10 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 # Feature Flags
 
-The **Feature Flags** module is one screen, `FeatureFlagManagement` at `/platform/features`, that sets a three-way visibility switch — `active`, `inactive`, or `hide` — for every gated menu row in both the Platform admin sidebar and the separate Cluster-admin sidebar. It is the mechanism every other module in this book states a feature key for, and the one module whose own menu row deliberately carries no feature key of its own (§2). Nothing else in the product resembles this page: it has no table, no search, no pagination, and edits nothing a person created — it edits a fixed catalog baked into the frontend build (§3.3).
+The **Feature Flags** module is one screen, `FeatureFlagManagement` at `/backstage/features`, that sets a three-way visibility switch — `active`, `inactive`, or `hide` — for every gated menu row in both the Platform admin sidebar and the separate Cluster-admin sidebar. It is the mechanism every other module in this book states a feature key for, and the one module whose own menu row deliberately carries no feature key of its own (§2). Nothing else in the product resembles this page: it has no table, no search, no pagination, and edits nothing a person created — it edits a fixed catalog baked into the frontend build (§3.3).
 
 > **At a Glance**
-> **Component:** `FeatureFlagManagement` &nbsp;·&nbsp; **Route:** `/platform/features` &nbsp;·&nbsp; **Nav:** `permission: 'feature_flag.manage'`, **no `feature` key** — deliberately not gated by a feature flag (§2) &nbsp;·&nbsp; **Read gate:** none — `GET` is open to every signed-in user (§4.2) &nbsp;·&nbsp; **Write gate:** `feature_flag.manage` alone, held only by the `Platform Admin` role bundle among the four seeded platform roles (§4.1) &nbsp;·&nbsp; **Scope:** 28 flag keys total — 24 for the Platform console, 4 for the separate Cluster-admin console (§3.3) &nbsp;·&nbsp; **e2e suite:** **none** — `../carmen-backstage-e2e/tests/` has no `feature-flags` directory; every claim below is sourced from `../carmen-backstage` and `../carmen-turborepo-backend` implementation directly (§4.4) &nbsp;·&nbsp; **Sub-pages:** 1
+> **Component:** `FeatureFlagManagement` &nbsp;·&nbsp; **Route:** `/backstage/features` &nbsp;·&nbsp; **Nav:** `permission: 'feature_flag.manage'`, **no `feature` key** — deliberately not gated by a feature flag (§2) &nbsp;·&nbsp; **Read gate:** none — `GET` is open to every signed-in user (§4.2) &nbsp;·&nbsp; **Write gate:** `feature_flag.manage` alone, held only by the `Backstage Admin` role bundle among the four seeded platform roles (§4.1) &nbsp;·&nbsp; **Scope:** 28 flag keys total — 24 for the Platform console, 4 for the separate Cluster-admin console (§3.3) &nbsp;·&nbsp; **e2e suite:** **none** — `../carmen-backstage-e2e/tests/` has no `feature-flags` directory; every claim below is sourced from `../carmen-backstage` and `../carmen-turborepo-backend` implementation directly (§4.4) &nbsp;·&nbsp; **Sub-pages:** 1
 
 ![Feature Flags screen](/screenshots/platform/feature-flags/index.png)
 
@@ -23,17 +23,17 @@ The **Feature Flags** module is one screen, `FeatureFlagManagement` at `/platfor
 
 ## 2. Business Context
 
-This module exists because every other gated screen in the product needs an operator-controllable kill switch that does not require a redeploy — `hide` lets an unfinished or broken feature disappear from the menu entirely, and `inactive` lets it stay visible as a "coming soon" preview without being reachable. Both states are read from the identical `tb_platform_config` row every other config key shares (data model page §2).
+This module exists because every other gated screen in the product needs an operator-controllable kill switch that does not require a redeploy — `hide` lets an unfinished or broken feature disappear from the menu entirely, and `inactive` lets it stay visible as a "coming soon" preview without being reachable. Both states are read from the identical `tb_backstage_config` row every other config key shares (data model page §2).
 
-**Why this page's own row carries no `feature` key: no feature-flag comment is quoted as fact without being checked against the code around it.** `platformNav.ts` states the reasoning directly above the row: "ไม่มี feature โดยเจตนา — สวิตช์ที่ปิดตัวเองได้จะเปิดกลับไม่ได้อีกจากหน้าจอ" / "Deliberately ungated: a switch that could hide itself could never be restored from the UI" (`platformNav.ts:47-48`), and the row itself confirms it — it is the **only** entry in the entire 26-row `ALL_PLATFORM_NAV_ITEMS` array with a `permission` but genuinely no `feature` property at all (verified by reading every row in the file, not by trusting the comment). The honest phrasing for this row is **"no feature key, deliberately — gated by `feature_flag.manage`,"** never "no permission check" or "unguarded" — the permission gate is real and separately enforced server-side (§4.2).
+**Why this page's own row carries no `feature` key: no feature-flag comment is quoted as fact without being checked against the code around it.** `backstageNav.ts` states the reasoning directly above the row: "ไม่มี feature โดยเจตนา — สวิตช์ที่ปิดตัวเองได้จะเปิดกลับไม่ได้อีกจากหน้าจอ" / "Deliberately ungated: a switch that could hide itself could never be restored from the UI" (`backstageNav.ts:52-53`), and the row itself confirms it — it is the **only** entry in the entire 26-row `ALL_BACKSTAGE_NAV_ITEMS` array with a `permission` but genuinely no `feature` property at all (verified by reading every row in the file, not by trusting the comment). The honest phrasing for this row is **"no feature key, deliberately — gated by `feature_flag.manage`,"** never "no permission check" or "unguarded" — the permission gate is real and separately enforced server-side (§4.2).
 
-A second, broader comment in `featureFlags.ts` lists eight routes as deliberately carrying no feature key at all: `/dashboard`, `/platform/features`, `/profile`, `/changelog`, `/login`, `/`, `/403`, `/404` (lines 39-41). Reading `App.tsx` confirms every one of them: `/`, `/login`, and `/changelog` are not wrapped in `PrivateRoute` at all; `/dashboard`, `/profile`, and `/403` are wrapped in a bare `<PrivateRoute>` with no `feature` prop; and `/404` is the unauthenticated catch-all route. The comment's own wording already separates two distinct reasons rather than treating all eight identically — "closing any of them would lock the app **or the switch itself**" — and only the second half of that sentence applies to this page: the other seven are ungated because they are unauthenticated, universal, or error destinations that gating would make nonsensical, not because gating them would create a self-referential lock the way gating Feature Flags would.
+A second, broader comment in `featureFlags.ts` lists eight routes as deliberately carrying no feature key at all: `/dashboard`, `/backstage/features`, `/profile`, `/changelog`, `/login`, `/`, `/403`, `/404` (lines 39-41). Reading `App.tsx` confirms every one of them: `/`, `/login`, and `/changelog` are not wrapped in `PrivateRoute` at all; `/dashboard`, `/profile`, and `/403` are wrapped in a bare `<PrivateRoute>` with no `feature` prop; and `/404` is the unauthenticated catch-all route. The comment's own wording already separates two distinct reasons rather than treating all eight identically — "closing any of them would lock the app **or the switch itself**" — and only the second half of that sentence applies to this page: the other seven are ungated because they are unauthenticated, universal, or error destinations that gating would make nonsensical, not because gating them would create a self-referential lock the way gating Feature Flags would.
 
 ## 3. Key Concepts
 
 ### 3.1 Three states, three different effects — verified against the actual filter, not the comment beside it
 
-`buildPlatformNav()`'s own filter (`platformNav.ts:91-98`) is the ground truth for what each state does to a menu row, read directly rather than taken from its adjacent comment:
+`buildBackstageNav()`'s own filter (`backstageNav.ts:91-98`) is the ground truth for what each state does to a menu row, read directly rather than taken from its adjacent comment:
 
 | State | Effect on the sidebar row | Effect on the route |
 | --- | --- | --- |
@@ -45,13 +45,13 @@ A key with no state saved at all — including every key on a deployment that ha
 
 ### 3.2 Why `inactive` never changes a row's position — verified against `Sidebar.tsx`, not just quoted from the nav file
 
-The comment beside `buildPlatformNav()`'s filter states the reason `inactive` (unlike `hide`) never removes a row: "Sidebar จัดกลุ่มจากแถวที่ groupKey ซ้ำกันติด ๆ การตัดรายการกลางกลุ่มออกจึงทำให้กลุ่มเดียวแตกเป็นสองหัวข้อได้" / "the sidebar groups by consecutive runs of the same `groupKey`; dropping one mid-group would split its heading in two" (`platformNav.ts:95-97`). This is not just asserted by the nav file — reading `Sidebar.tsx`'s own `navGroups` computation confirms the actual rendering behavior matches: it walks the (already `hide`-filtered) array and starts a new heading only when the current item's `groupKey` differs from the previous item's, exactly the algorithm the comment describes (`Sidebar.tsx:105-114`). Several of `platformNav.ts`'s own inline comments exist purely to keep this invariant intact by hand — e.g. the note that Database's two rows "must stay last" because pulling them out mid-group once split the Platform heading in two (`platformNav.ts:50-52`) — a maintenance hazard the contiguity rule creates, not something `buildPlatformNav()` itself protects against.
+The comment beside `buildBackstageNav()`'s filter states the reason `inactive` (unlike `hide`) never removes a row: "Sidebar จัดกลุ่มจากแถวที่ groupKey ซ้ำกันติด ๆ การตัดรายการกลางกลุ่มออกจึงทำให้กลุ่มเดียวแตกเป็นสองหัวข้อได้" / "the sidebar groups by consecutive runs of the same `groupKey`; dropping one mid-group would split its heading in two" (`backstageNav.ts:120-122`). This is not just asserted by the nav file — reading `Sidebar.tsx`'s own `navGroups` computation confirms the actual rendering behavior matches: it walks the (already `hide`-filtered) array and starts a new heading only when the current item's `groupKey` differs from the previous item's, exactly the algorithm the comment describes (`Sidebar.tsx:130-139`). Several of `backstageNav.ts`'s own inline comments exist purely to keep this invariant intact by hand — e.g. the note that Database's two rows "must stay last" because pulling them out mid-group once split the Platform heading in two (`backstageNav.ts:50-52`) — a maintenance hazard the contiguity rule creates, not something `buildBackstageNav()` itself protects against.
 
 ### 3.3 Full flag-key inventory — both consoles
 
 All 28 keys `FEATURE_CATALOG` defines, the menu each one controls, and which console it belongs to (full field-level detail — `groupKey`, default state — is on the [data model page](/en/platform/feature-flags/data-model) §3):
 
-**Platform console (24 keys)** — `clusters`, `business_units`, `tenant_migrations`, `tenant_imports`, `users` (Organization); `licenses`, `license_feature_groups`, `license_features` (License Management); `report_templates`, `report_form_groups`, `news`, `broadcasts` (Content); `usage_analytics`, `activity_events` (Analytics); `cronjobs` (Scheduling); `applications`, `email_settings`, `platform_config`, `platform_roles`, `super_admins`, `user_platform` (Platform); `platform_migrations`, `sql_workbench`, `database_pools` (Database).
+**Platform console (24 keys)** — `clusters`, `business_units`, `tenant_migrations`, `tenant_imports`, `users` (Organization); `licenses`, `license_feature_groups`, `license_features` (License Management); `report_templates`, `report_form_groups`, `news`, `broadcasts` (Content); `usage_analytics`, `activity_events` (Analytics); `cronjobs` (Scheduling); `applications`, `email_settings`, `backstage_config`, `backstage_roles`, `super_admins`, `user_backstage` (Platform); `backstage_migrations`, `sql_workbench`, `database_pools` (Database).
 
 **Cluster-admin console (4 keys, a separate namespace)** — `cluster_admin_cluster` (Cluster), `cluster_admin_business_units` (Business Units), `cluster_admin_licenses` (Licenses), `cluster_admin_users` (Users). `clusterAdminNav.ts`'s own comment states these are deliberately separate from the platform side "ที่ชื่อเมนูซ้ำกัน" ("whose menu names happen to be the same," line 12) — three of the four labels (Business Units, Licenses, Users) are identical strings to a platform-console row, but setting the platform key `hide` never touches the cluster-admin row of the same name, and vice versa; a reader who assumes one key covers both consoles will be wrong.
 
@@ -63,28 +63,28 @@ All 28 keys `FEATURE_CATALOG` defines, the menu each one controls, and which con
 
 | Surface | Gate | Source |
 | --- | --- | --- |
-| Sidebar "Feature Flags" entry, `/platform/features` route | `permission: 'feature_flag.manage'` — **no `feature` key** | `platformNav.ts:49`; `App.tsx:555-561` (`<PrivateRoute requiredPermission="feature_flag.manage">`, no `feature` prop) |
+| Sidebar "Feature Flags" entry, `/backstage/features` route | `permission: 'feature_flag.manage'` — **no `feature` key** | `backstageNav.ts:49`; `App.tsx:586-592` (`<PrivateRoute requiredPermission="feature_flag.manage">`, no `feature` prop) |
 | Every toggle on the page | No separate UI gate beyond reaching the route at all — a session that can open the page can flip any toggle | `FeatureFlagManagement.tsx` (no `hasPermission` call anywhere in the component) |
 
-`feature_flag.manage` is seeded on exactly one of the four platform role bundles (`seed.platform-role-permission.data.ts:11-52`): `Platform Admin` (`feature_flag.*`, line 33). `Support Manager`, `Support Staff`, and `Security Officer` hold neither this key nor any other `feature_flag.*` permission — confirmed by reading all four role arrays in full, not just the one that has it. The permission catalog's own description states the resource was deliberately split out from `platform_config` rather than made an action of it, "so whoever gates unfinished features is not necessarily whoever edits invitation links or SMTP routing" (`seed.platform-permission.data.ts`, comment above the `feature_flag.manage` entry).
+`feature_flag.manage` is seeded on exactly one of the four platform role bundles (`seed.backstage-role-permission.data.ts:11-52`): `Backstage Admin` (`feature_flag.*`, line 33). `Support Manager`, `Support Staff`, and `Security Officer` hold neither this key nor any other `feature_flag.*` permission — confirmed by reading all four role arrays in full, not just the one that has it. The permission catalog's own description states the resource was deliberately split out from `backstage_config` rather than made an action of it, "so whoever gates unfinished features is not necessarily whoever edits invitation links or SMTP routing" (`seed.backstage-permission.data.ts`, comment above the `feature_flag.manage` entry).
 
 ### 4.2 Backend enforcement
 
-`../carmen-turborepo-backend/apps/backend-gateway/src/platform/feature_flags/feature_flags.controller.ts`, HEAD `937cf5ac4` (2026-09-06):
+`../carmen-turborepo-backend/apps/backend-gateway/src/backstage/feature_flags/feature_flags.controller.ts`, HEAD `937cf5ac4` (2026-09-06):
 
 | Route | Guard | Source |
 | --- | --- | --- |
-| `GET /api-system/platform/feature-flags` | `KeycloakGuard` + `AppIdGuard('feature-flags.get')` **only** — no RBAC permission of any kind | lines 65-108 |
-| `PUT /api-system/platform/feature-flags` | `KeycloakGuard` + `AppIdGuard('feature-flags.update')` + `PlatformPermissionGuard` + `@RequirePlatformPermission('feature_flag.manage')` | lines 65, 118-120 |
+| `GET /api-system/backstage/feature-flags` | `KeycloakGuard` + `AppIdGuard('feature-flags.get')` **only** — no RBAC permission of any kind | lines 65-108 |
+| `PUT /api-system/backstage/feature-flags` | `KeycloakGuard` + `AppIdGuard('feature-flags.update')` + `BackstagePermissionGuard` + `@RequireBackstagePermission('feature_flag.manage')` | lines 65, 118-120 |
 
-The `GET` being open to every authenticated caller — not just Platform Admins — is stated by the controller's own Swagger description as deliberate: "the map decides what the UI renders, so a user who cannot read it sees the frontend built-in defaults instead" (`feature_flags.controller.ts:88-89`). Reading `PlatformPermissionGuard.canActivate()` in full confirms the super-admin short-circuit applies here exactly as it does on every other `@RequirePlatformPermission` route: `is_super_admin === true` returns `true` before `feature_flag.manage` is checked at all — a super admin can write this endpoint with no `feature_flag.*` grant of their own.
+The `GET` being open to every authenticated caller — not just Backstage Admins — is stated by the controller's own Swagger description as deliberate: "the map decides what the UI renders, so a user who cannot read it sees the frontend built-in defaults instead" (`feature_flags.controller.ts:88-89`). Reading `BackstagePermissionGuard.canActivate()` in full confirms the super-admin short-circuit applies here exactly as it does on every other `@RequireBackstagePermission` route: `is_super_admin === true` returns `true` before `feature_flag.manage` is checked at all — a super admin can write this endpoint with no `feature_flag.*` grant of their own.
 
 ### 4.3 This module's own row is UI-only — a security fact, not an inference
 
 Three independent sources state the same thing, so this is reported as fact, not inferred from reading one mechanism and extrapolating:
 
-1. **The permission catalog's own description**, seeded alongside every other permission key: "Frontend visibility only — it does NOT block the corresponding backend endpoints" (`seed.platform-permission.data.ts`, `feature_flag.manage` entry).
-2. **The page's own subtitle, shown to every admin who opens it**: "Choose what each feature shows on screen. Frontend visibility only — it does not close the matching API" (`en.ts:967-968`, `pages.featureFlags.subtitle`).
+1. **The permission catalog's own description**, seeded alongside every other permission key: "Frontend visibility only — it does NOT block the corresponding backend endpoints" (`seed.backstage-permission.data.ts`, `feature_flag.manage` entry).
+2. **The page's own subtitle, shown to every admin who opens it**: "Choose what each feature shows on screen. Frontend visibility only — it does not close the matching API" (`en.ts:1129-1130`, `pages.featureFlags.subtitle`).
 3. **`ComingSoon.tsx`'s own design comment**, on what setting a flag to `inactive` actually produces at the route level: no HTTP status code, "because the server refused nothing — the UI did" (data model page §5).
 
 The practical consequence for a tester: setting a route's feature to `hide` or `inactive` changes only what the SPA renders for that path. It has no bearing on whether the corresponding backend endpoint accepts a direct request — that is decided entirely by whatever RBAC permission the endpoint itself requires (documented on that module's own page), which continues to apply whether or not the frontend currently shows a menu entry for it.
@@ -95,7 +95,7 @@ The practical consequence for a tester: setting a route's feature to `hide` or `
 
 ## 5. Related Modules
 
-- [Platform Config](/en/platform/platform-config) and its [data model](/en/platform/platform-config/data-model) — the shared `tb_platform_config` table this key's row lives on, including the general-purpose write-path mechanics (validation, the non-enforced `doc_version` column, the duplicate-live-row race) this module inherits without modification.
+- [Platform Config](/en/platform/platform-config) and its [data model](/en/platform/platform-config/data-model) — the shared `tb_backstage_config` table this key's row lives on, including the general-purpose write-path mechanics (validation, the non-enforced `doc_version` column, the duplicate-live-row race) this module inherits without modification.
 - [Platform RBAC](/en/platform/rbac) — the permission catalog where `feature_flag.manage` and the four seeded role bundles referenced in §4.1 are defined and browsable in full.
 - Every other module in this book — each states the feature key that gates its own menu row; this page is where a reader learns what setting that key to `active`/`inactive`/`hide` actually does.
 
@@ -105,14 +105,14 @@ All paths below are `../carmen-backstage` (the Platform admin SPA, HEAD `157a65e
 
 - `../carmen-backstage/src/pages/FeatureFlagManagement.tsx` — the page component, its own "Config page, not Management" doc-comment (§1).
 - `../carmen-backstage/src/constants/featureFlags.ts` — `FEATURE_CATALOG`, the ungated-pages comment (§2), the contiguity-rule comment.
-- `../carmen-backstage/src/components/nav/platformNav.ts` (lines 9-56, 47-49, 91-103) and `src/components/nav/clusterAdminNav.ts` (lines 10-26) — the nav row itself, `buildPlatformNav()`/`buildClusterAdminNav()` (§2, §3).
+- `../carmen-backstage/src/components/nav/backstageNav.ts` (lines 9-56, 47-49, 91-103) and `src/components/nav/clusterAdminNav.ts` (lines 10-26) — the nav row itself, `buildBackstageNav()`/`buildClusterAdminNav()` (§2, §3).
 - `../carmen-backstage/src/components/Sidebar.tsx` (lines 105-114) — the consecutive-run grouping this page's contiguity claims are checked against (§3.2).
 - `../carmen-backstage/src/App.tsx` (lines 99-106, 555-561, 563-575, 606) — every route cited in §2 and §4.1.
 - `../carmen-backstage/src/pages/ComingSoon.tsx` — the no-status-code design note (§4.3).
 - `../carmen-backstage/src/i18n/en.ts` (lines 15-43, 965-985) — nav labels and the page's own copy (§4.3).
-- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/feature_flags/feature_flags.controller.ts` — the dedicated `GET`/`PUT` pair and guards (§4.2).
-- `../carmen-turborepo-backend/apps/backend-gateway/src/auth/guards/platform-permission.guard.ts` — the super-admin short-circuit shared by every `@RequirePlatformPermission` route (§4.2).
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts` and `seed.platform-role-permission.data.ts` — the `feature_flag.manage` catalog entry and its single role assignment (§4.1, §4.3).
+- `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/feature_flags/feature_flags.controller.ts` — the dedicated `GET`/`PUT` pair and guards (§4.2).
+- `../carmen-turborepo-backend/apps/backend-gateway/src/auth/guards/backstage-permission.guard.ts` — the super-admin short-circuit shared by every `@RequireBackstagePermission` route (§4.2).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/seed.backstage-permission.data.ts` and `seed.backstage-role-permission.data.ts` — the `feature_flag.manage` catalog entry and its single role assignment (§4.1, §4.3).
 - `../carmen-backstage-e2e/tests/` — listed directly to confirm no `feature-flags` suite exists (§4.4).
 
 ## 7. Pages in This Module

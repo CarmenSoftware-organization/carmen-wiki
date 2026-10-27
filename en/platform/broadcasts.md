@@ -2,7 +2,7 @@
 title: Broadcasts
 description: Broadcasts module overview — three screens covering push notifications with three target modes, a mandatory expiry, and a full sender-side lifecycle.
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: platform/broadcasts, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T13:15:00.000Z
@@ -21,7 +21,7 @@ The **Broadcasts** module pushes a notification to platform users: all of them, 
 
 ## 1. Overview
 
-The sidebar entry ("Broadcasts", Megaphone icon, Content group) is defined in `platformNav.ts` with `permission: 'broadcast.read'` and `feature: 'broadcasts'` — no `superAdminOnly`. It opens the **List** screen, `BroadcastManagement`: a `PageHeader` (subtitle plus an explicit note that targeted sends don't appear here), a clickable status-summary strip (All / Active / Scheduled / Expired / Deleted counts, each toggling the matching filter), a search box, a Filters sheet (status, scope, "show deleted"), a server-side `DataTable` (Title+message, Scope, Severity, Status, Scheduled Date, Expires, Created), a CSV Export button, and a "New Broadcast" button gated on `broadcast.send`. Each row's action menu offers Edit (`broadcast.update`, hidden once deleted), Expire Now (`broadcast.update`, active rows only), and Delete (`broadcast.delete`, hidden once deleted).
+The sidebar entry ("Broadcasts", Megaphone icon, Content group) is defined in `backstageNav.ts` with `permission: 'broadcast.read'` and `feature: 'broadcasts'` — no `superAdminOnly`. It opens the **List** screen, `BroadcastManagement`: a `PageHeader` (subtitle plus an explicit note that targeted sends don't appear here), a clickable status-summary strip (All / Active / Scheduled / Expired / Deleted counts, each toggling the matching filter), a search box, a Filters sheet (status, scope, "show deleted"), a server-side `DataTable` (Title+message, Scope, Severity, Status, Scheduled Date, Expires, Created), a CSV Export button, and a "New Broadcast" button gated on `broadcast.send`. Each row's action menu offers Edit (`broadcast.update`, hidden once deleted), Expire Now (`broadcast.update`, active rows only), and Delete (`broadcast.delete`, hidden once deleted).
 
 **Compose** (`/broadcasts/new` → `BroadcastCompose`) is the send screen: a Target tab strip (All users / Specific users / Business Unit), a conditional recipient picker (`UserMultiSelect`) or BU select, an optional "Related Business Unit" metadata tag (independent of the actual audience), Title/Message with live counters, a Type preset (Info / Warning / Critical / Maintenance / Other…) that is **purely a sender-side label** — it is never shown to recipients — a Send-time tab strip (immediate or scheduled), and a required Expiry (7/30/90 days or a custom date). A shared `BroadcastPreview` card renders the notification, its reach, and its delivery/expiry timing live from the form state. Send always confirms first, with red styling reserved for the system-wide blast.
 
@@ -49,7 +49,7 @@ Scheduling still lets an operator stage a notice ahead of time: a scheduled broa
 
 ## 4. Roles and Personas
 
-Four permission keys now gate the module, through [Platform RBAC](/en/platform/rbac), seeded per role in `seed.platform-role-permission.data.ts`:
+Four permission keys now gate the module, through [Platform RBAC](/en/platform/rbac), seeded per role in `seed.backstage-role-permission.data.ts`:
 
 | Surface | Gate | Key |
 |---|---|---|
@@ -60,16 +60,16 @@ Four permission keys now gate the module, through [Platform RBAC](/en/platform/r
 | Edit button (List row + Edit page) | `<Can>` | `broadcast.update` |
 | Expire Now (List row) | `<Can>` | `broadcast.update` |
 | Delete (List row) | `<Can>` | `broadcast.delete` |
-| `GET/PATCH/DELETE .../broadcasts*` | `KeycloakGuard` + `PlatformPermissionGuard` | matching key, server-side |
+| `GET/PATCH/DELETE .../broadcasts*` | `KeycloakGuard` + `BackstagePermissionGuard` | matching key, server-side |
 
 | Role | Keys granted |
 |---|---|
-| Platform Admin | `broadcast.*` (all four) |
+| Backstage Admin | `broadcast.*` (all four) |
 | Support Manager | `read`, `send`, `update` — **not** `delete` |
 | Support Staff | `read` only |
 | Security Officer | none |
 
-`broadcast.read` is **no longer an orphan key** — it now gates the List route, the nav entry, and the Edit page's view mode. Every server-side route enforces the matching key via `PlatformPermissionGuard`, coarsely: a platform-wide grant **or** a grant in any single cluster passes, matching the SPA's own unscoped checks; true per-cluster scoping remains an explicitly deferred gap. The full matrix, the content-lock rule, and the per-mode delivery/scheduling semantics are in [Permissions](/en/platform/broadcasts/permissions).
+`broadcast.read` is **no longer an orphan key** — it now gates the List route, the nav entry, and the Edit page's view mode. Every server-side route enforces the matching key via `BackstagePermissionGuard`, coarsely: a platform-wide grant **or** a grant in any single cluster passes, matching the SPA's own unscoped checks; true per-cluster scoping remains an explicitly deferred gap. The full matrix, the content-lock rule, and the per-mode delivery/scheduling semantics are in [Permissions](/en/platform/broadcasts/permissions).
 
 ## 5. Related Modules
 
@@ -81,7 +81,7 @@ Four permission keys now gate the module, through [Platform RBAC](/en/platform/r
 ## 6. Reference Sources
 
 - `../carmen-backstage/src/App.tsx` — the three route guards (`broadcast.read`, `broadcast.send`, `broadcast.read`) and `feature="broadcasts"`.
-- `../carmen-backstage/src/components/nav/platformNav.ts` — the "Broadcasts" nav entry (`permission: 'broadcast.read'`, `feature: 'broadcasts'`, no `superAdminOnly`).
+- `../carmen-backstage/src/components/nav/backstageNav.ts` — the "Broadcasts" nav entry (`permission: 'broadcast.read'`, `feature: 'broadcasts'`, no `superAdminOnly`).
 - `../carmen-backstage/src/pages/BroadcastManagement.tsx`, `src/pages/broadcastManagement/{BroadcastSummary,BroadcastFilters,broadcastColumns}.tsx` — the List screen.
 - `../carmen-backstage/src/pages/BroadcastCompose.tsx` — the Compose screen: tabs, validation, payload builders, expiry presets, confirm dialog, shortcuts.
 - `../carmen-backstage/src/pages/BroadcastEdit.tsx` — the Edit screen: content lock, schedule/expiry editing, past/reschedule confirmations.
@@ -89,11 +89,11 @@ Four permission keys now gate the module, through [Platform RBAC](/en/platform/r
 - `../carmen-backstage/src/utils/broadcastExpiry.ts` — `resolveExpiryIso()`, the 7/30/90-day presets.
 - `../carmen-backstage/src/services/broadcastService.ts` — `sendSystem`/`sendBu`/`getAll`/`getById`/`update`/`remove`; `src/types/index.ts` — `BroadcastTargetMode`, `BroadcastTypePreset`, `BroadcastListItem`, `BroadcastStatus`, `BroadcastUpdatePayload`, `BroadcastSummary`.
 - `../carmen-backstage/src/utils/permissions.ts` — the `PERMISSIONS.BROADCAST.SEND` constant.
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_notification` (line 332), `tb_broadcast_notification` (line 369), `tb_user_broadcast_action` (line 403); enums `enum_broadcast_scope`, `enum_notification_doc_type`, `enum_notification_event` (lines 112–131).
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260810000000_notification_redesign_additive/`, `20260811000000_notification_redesign_drop_legacy/` — the redesign that dropped `type`/`category`/`is_sent` and added `scope`/`doc_type`/`event`/`pushed_at`.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_notification` (line 438), `tb_broadcast_notification` (line 475), `tb_user_broadcast_action` (line 509); enums `enum_notification_doc_type`, `enum_notification_event`, `enum_broadcast_scope` (lines 148–167).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/migrations/20260810000000_notification_redesign_additive/`, `20260811000000_notification_redesign_drop_legacy/` — the redesign that dropped `type`/`category`/`is_sent` and added `scope`/`doc_type`/`event`/`pushed_at`.
 - `../carmen-turborepo-backend/apps/backend-gateway/src/notification/notification.controller.ts` — all six broadcast routes and their guards.
-- `../carmen-turborepo-backend/apps/micro-notification/src/notification/broadcast.service.ts` (create path), `broadcast-admin.service.ts` (list/get/update/delete, status derivation), `schedule.worker.ts` (the 30-second due-notification push worker, `tb_notification` only).
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts`, `seed.platform-role-permission.data.ts` — the four `broadcast.*` keys and their per-role assignment.
+- `../micro-notification/src/notification/broadcast.service.ts` (create path), `broadcast-admin.service.ts` (list/get/update/delete, status derivation), `schedule.worker.ts` (the 30-second due-notification push worker, `tb_notification` only).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/seed.backstage-permission.data.ts`, `seed.backstage-role-permission.data.ts` — the four `broadcast.*` keys and their per-role assignment.
 
 ## 7. Pages in This Module
 

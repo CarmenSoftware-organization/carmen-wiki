@@ -2,7 +2,7 @@
 title: Database Pools — UI Screens
 description: DatabasePoolManagement's single-DSN-per-row list with copy-to-clipboard, and DatabasePoolEdit's record-style read view and create/edit form — including the masked, never-revealed password field.
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: book/platform, database-pools, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -10,7 +10,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 # Database Pools — UI Screens
 
-> **Screens:** `DatabasePoolManagement` (list, `/platform/database-pools`) &nbsp;·&nbsp; `DatabasePoolEdit` — one component for both create (`/platform/database-pools/new`) and edit (`/platform/database-pools/:id/edit`) &nbsp;·&nbsp; **No tabs, no wizard** — a single card in both create and edit mode &nbsp;·&nbsp; **Dialogs:** Delete-pool confirm &nbsp;·&nbsp; **Persisted UI state:** 5 `localStorage` keys on the list (search/filters/page/perpage/sort); the edit page persists nothing &nbsp;·&nbsp; **Concurrency:** `doc_version` optimistic lock, required on every save &nbsp;·&nbsp; **Screenshots:** deferred per plan — no screenshot assets exist for this module
+> **Screens:** `DatabasePoolManagement` (list, `/backstage/database-pools`) &nbsp;·&nbsp; `DatabasePoolEdit` — one component for both create (`/backstage/database-pools/new`) and edit (`/backstage/database-pools/:id/edit`) &nbsp;·&nbsp; **No tabs, no wizard** — a single card in both create and edit mode &nbsp;·&nbsp; **Dialogs:** Delete-pool confirm &nbsp;·&nbsp; **Persisted UI state:** 5 `localStorage` keys on the list (search/filters/page/perpage/sort); the edit page persists nothing &nbsp;·&nbsp; **Concurrency:** `doc_version` optimistic lock, required on every save &nbsp;·&nbsp; **Screenshots:** deferred per plan — no screenshot assets exist for this module
 
 ![Database Pools — UI Screens screen](/screenshots/platform/database-pools/ui-screens.png)
 
@@ -18,11 +18,11 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 1. Overview
 
-This module has two screens and no in-between states beyond loading/not-found/error, unlike the tabbed, multi-card edit pages elsewhere in this book ([Business Units](/en/platform/business-units/ui-screens), [Clusters](/en/platform/clusters/ui-screens)). `DatabasePoolManagement.tsx` (`../carmen-backstage/src/pages/DatabasePoolManagement.tsx`, 467 lines) is a standard server-paginated `DataTable`. `DatabasePoolEdit.tsx` (`../carmen-backstage/src/pages/DatabasePoolEdit.tsx`, 672 lines) is the create form and the single-record edit page in one component, following the same read-view/edit-mode toggle pattern this SPA uses elsewhere, but rendered as a plain labeled record (`RecordRow`) in read mode rather than a form with disabled inputs.
+This module has two screens and no in-between states beyond loading/not-found/error, unlike the tabbed, multi-card edit pages elsewhere in this book ([Business Units](/en/platform/business-units/ui-screens), [Clusters](/en/platform/clusters/ui-screens)). `DatabasePoolManagement.tsx` (`../carmen-backstage/src/pages/DatabasePoolManagement.tsx`, 468 lines) is a standard server-paginated `DataTable`. `DatabasePoolEdit.tsx` (`../carmen-backstage/src/pages/DatabasePoolEdit.tsx`, 672 lines) is the create form and the single-record edit page in one component, following the same read-view/edit-mode toggle pattern this SPA uses elsewhere, but rendered as a plain labeled record (`RecordRow`) in read mode rather than a form with disabled inputs.
 
-## 2. `DatabasePoolManagement` — list page (`/platform/database-pools`)
+## 2. `DatabasePoolManagement` — list page (`/backstage/database-pools`)
 
-**Columns** (`columns`, `DatabasePoolManagement.tsx:200-295`):
+**Columns** (`columns`, `DatabasePoolManagement.tsx:201-296`):
 
 | Column | Content |
 |---|---|
@@ -33,7 +33,7 @@ This module has two screens and no in-between states beyond loading/not-found/er
 
 The sort column's `id` is literally `'host'`, not `'connection'` — per the code's own comment, sorting groups pools by physical machine, which is what an operator actually wants from this column, and `'connection'` is not a real backend field to sort by.
 
-**Search** matches `name`/`host`/`database` (`defaultSearchFields`, confirmed identical to the backend's own `defaultSearchFields` in `database-pool.service.ts:80` — the frontend comment citing that exact file and line is accurate, verified by reading both). **Filters**: a Sheet panel with Active/Inactive toggle chips. Both chips can be selected at once in the UI, but `buildAdvance()` only emits a server-side `is_active` filter when **exactly one** is selected (`filters.length === 1`) — selecting neither or both both resolve to "no filter," showing every pool regardless of status.
+**Search** matches `name`/`host`/`database` (`defaultSearchFields`, confirmed identical to the backend's own `defaultSearchFields` at `database-pool.service.ts:83` — the frontend's code comment still says `:80`, so the line number in that comment has drifted though the field list matches). **Filters**: a Sheet panel with Active/Inactive toggle chips. Both chips can be selected at once in the UI, but `buildAdvance()` only emits a server-side `is_active` filter when **exactly one** is selected (`filters.length === 1`) — selecting neither or both both resolve to "no filter," showing every pool regardless of status.
 
 **CSV export** (`handleExport`) — 12 columns: `dsn` (composed, not stored), `name`, `host`, `port`, `database`, `username`, `is_active`, `note`, then the four audit fields (`created_at`/`created_by`/`updated_at`/`updated_by`). **`password` and `description` are not exported.**
 
@@ -43,9 +43,9 @@ The sort column's `id` is literally `'host'`, not `'connection'` — per the cod
 
 **Delete confirmation.** A `ConfirmDialog` on the row's Delete action; on confirm, a 409 `DATABASE_POOL_IN_USE` error is shown via its raw backend message (naming the blocking business units by `code`) rather than through the generic error-detail redactor, per the handler's own comment about not swallowing that BU list behind a generic "Please try again later." in production.
 
-**Dev tooling:** A `DevDebugSheet` showing the raw `GET /api-system/platform/database-pools` response, matching the pattern used across this book's other list pages.
+**Dev tooling:** A `DevDebugSheet` showing the raw `GET /api-system/backstage/database-pools` response, matching the pattern used across this book's other list pages.
 
-## 3. `DatabasePoolEdit` — create mode (`/platform/database-pools/new`)
+## 3. `DatabasePoolEdit` — create mode (`/backstage/database-pools/new`)
 
 The page opens already in edit mode (`editing = isNew`) — there is no separate "click Edit to start" step for a brand-new pool. See [landing page](/en/platform/database-pools) §4 for exactly which permission does and does not gate this.
 
@@ -65,7 +65,7 @@ The page opens already in edit mode (`editing = isNew`) — there is no separate
 
 On submit, a successful create shows a toast and navigates (`replace: true`) to the new pool's own edit URL — the page does not stay on `/new` after success. A 409 with the backend's `DATABASE_POOL_NAME_EXISTS` message is surfaced as a field-level error directly under Name, using the backend's own message text (which names the field) rather than the generic redacted message.
 
-## 4. `DatabasePoolEdit` — edit mode (`/platform/database-pools/:id/edit`)
+## 4. `DatabasePoolEdit` — edit mode (`/backstage/database-pools/:id/edit`)
 
 **Read mode** (default on load) renders as a labeled record, not a form:
 
@@ -85,7 +85,7 @@ Clicking **Edit** (gated `<Can permission="database_pool.manage">`) switches to 
 
 **Not-found state.** A dedicated `EmptyState` card ("pool not found") with a button back to the list — rendered instead of the edit shell whenever the id does not resolve, whether from a bad URL or a pool deleted in another tab between navigation and load.
 
-**Dev tooling:** A `DevDebugSheet` tab showing the raw `GET /api-system/platform/database-pools/:id` response (or a placeholder in create mode, since there is nothing to fetch yet).
+**Dev tooling:** A `DevDebugSheet` tab showing the raw `GET /api-system/backstage/database-pools/:id` response (or a placeholder in create mode, since there is nothing to fetch yet).
 
 ## 5. Dialogs
 
@@ -97,16 +97,16 @@ There is no dialog on the edit page equivalent to Business Units' "repoint datab
 
 ## 6. Persisted UI State
 
-The list page persists five `localStorage` keys, all namespaced `*_database_pools(_database_pool)`: `search_database_pools`, `filters_database_pools`, `page_database_pools`, `perpage_database_pool` (singular, unlike its siblings — confirmed as written in source, not a typo introduced by this page), and `sort_database_pools`. Default sort is `created_at:desc` — per the code's own comment, `updated_at` was rejected as the default because most pools are never edited after creation, which would make the list order look arbitrary on first load.
+The list page persists five `localStorage` keys, all namespaced `*_database_pools(_database_pool)`: `search_database_pools`, `filters_database_pools`, `page_database_pools`, `perpage_database_pool` (singular, unlike its siblings — confirmed as written in source, not a typo introduced by this page), and `sort_database_pools`. The stored per-page value is read through `readStoredPerpage('perpage_database_pool', 10)` (`src/utils/pageRange.ts`), which accepts only an integer from 1 to 100 and otherwise falls back to 10 — added because the gateway now answers `400 INVALID_PERPAGE` for anything else (carmen-backstage commit `caf5b2dd`). Default sort is `created_at:desc` — per the code's own comment, `updated_at` was rejected as the default because most pools are never edited after creation, which would make the list order look arbitrary on first load.
 
 The edit page persists nothing to `localStorage`; its only client-side state that survives a re-render is the in-memory unsaved-changes diff (`formData` vs. `savedFormData`), guarded by the shared `useUnsavedChanges` hook (browser "leave site?" prompt on an unsaved edit).
 
 ## 7. References
 
-- `../carmen-backstage/src/pages/DatabasePoolManagement.tsx` — read in full (467 lines).
+- `../carmen-backstage/src/pages/DatabasePoolManagement.tsx` — read in full (468 lines).
 - `../carmen-backstage/src/pages/DatabasePoolEdit.tsx` — read in full (672 lines).
 - `../carmen-backstage/src/services/databasePoolService.ts` — REST client.
 - `../carmen-backstage/src/utils/databasePool.ts` — `poolDsn()`, `isDerivedName()`.
-- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/database-pool/database-pool.service.ts:80` — `defaultSearchFields`, cross-checked against the frontend's own citing comment.
-- `../carmen-backstage-e2e/tests/` — listed directly; **no `database-pools` directory exists**, confirming the [landing page](/en/platform/database-pools) §1's "no e2e suite" claim.
-- No screenshot assets exist for this module (`assets/screenshots/platform/database-pools/`) — deferred per the resync plan, consistent with every other newly-written module in this batch.
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/database-pool/database-pool.service.ts:83` — `defaultSearchFields`, cross-checked against the frontend's own citing comment.
+- `../carmen-backstage-e2e/tests/database-pools/database-pools-smoke.spec.ts` (HEAD `9584887`) — two read-only smoke tests (page renders, sidebar link present), both written against the pre-rename `/platform/database-pools` path; the [landing page](/en/platform/database-pools) At a Glance has the detail. Nothing exercises the create/edit/delete flows described above.
+- Screenshots for this module live under `assets/screenshots/platform/database-pools/` (`index.png`, `ui-screens.png`, `ui-screens-form.png`), embedded at the top of this page.
