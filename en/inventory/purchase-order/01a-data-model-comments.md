@@ -2,7 +2,7 @@
 title: Purchase Order — Data Model — Comment Tables
 description: Document-level and line-level comment / attachment tables for the Purchase Order module — message text, attachments JSON, and the user/system comment-type enum.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: purchase-order, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -29,7 +29,7 @@ doc_version         int (default 0) — optimistic-lock counter, same as every o
 created_at / created_by_id / updated_at / updated_by_id / deleted_at / deleted_by_id
 ```
 
-The same shape applies to header-level comments and detail-level comments; only the parent FK differs. (Spot-checked against `schema.prisma` L2144-2177 and L2293-2326 on 2026-09-22: the `doc_version` column was missing from this page and is added below; no other drift.)
+The same shape applies to header-level comments and detail-level comments; only the parent FK differs. (Spot-checked against `schema.prisma` (now L2277-2310 and L2426-2459) on 2026-09-22: the `doc_version` column was missing from this page and is added below; no other drift.)
 
 Note that the workflow engine's own send / mark-sent / email events are **not** comment rows: `send-email` and `mark-sent` write `tb_activity` (`action = email_sent` / `other`, `entity_type = 'purchase_order'`), which the [reporting-audit/activity](/en/inventory/reporting-audit/activity) page documents. Comment rows remain the place for human notes, send-back / reject reasons, and attachments.
 
@@ -80,6 +80,12 @@ Line-level counterpart of `tb_purchase_order_comment`. Captures comments and sys
 
 **Constraints:** `@id` on `id`. FK `purchase_order_detail_id → tb_purchase_order_detail.id` (`NoAction` on delete/update).
 **Indexes:** None declared beyond the primary key.
+
+### 3.3 Attachment rules (changed 2026-10)
+
+The two comment endpoints no longer hard-code "10 MB; JPEG / PNG / WebP / GIF / PDF". The gateway controller (`purchase-order-comments.controller.ts`, and the same for the CN and every other comment controller) uses `CommentFilesInterceptor()` and calls `AttachmentPolicyService.assertFiles(bu_code, files)`, which reads a **per-BU policy** stored in `tb_business_unit.config` (`attachment.allowed_types`, `attachment.max_size_mb`) and set from Backstage only. Defaults when the BU sets nothing: groups `image` + `pdf`, 10 MB; selectable groups are image, pdf, excel, word, csv, text; the size ceiling is 25 MB (`attachment-policy.ts`). A rejected file raises a `400`.
+
+`PATCH` on a comment accepts `attachments` either as the full replacement array or as a delta `{ add: Attachment[], remove: fileToken[] }` (micro `purchase-order-comment.dto.ts`; before this change a PATCH that added or removed a file was rejected with `400`). The service applies the delta to the stored array: `current.filter(not in remove) + add`. In the SPA the comments panel loads one page at a time, newest to oldest, as the user scrolls to the bottom (`61011d0e`).
 
 ## 4. Cross-References
 

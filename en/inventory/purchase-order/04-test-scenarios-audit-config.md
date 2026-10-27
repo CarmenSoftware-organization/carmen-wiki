@@ -2,7 +2,7 @@
 title: Purchase Order — Test Scenarios — Audit & Config
 description: Why no dedicated audit-workspace or PO-specific configuration test scenarios exist for purchase-order in current source, and what is confirmed instead.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: purchase-order, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z

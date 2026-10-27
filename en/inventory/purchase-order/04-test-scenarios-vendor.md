@@ -1,8 +1,8 @@
 ---
 title: Purchase Order — Test Scenarios — Vendor
-description: Vendor's test cases (happy path, edge cases) for purchase-order. External party — no in-system permission scenarios; no confirmed invoice/AP-matching feature.
+description: Vendor's test cases (happy path, edge cases) for purchase-order. External party — no in-system permission scenarios; no PO-level invoice/AP-matching feature.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: purchase-order, test-scenarios, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z

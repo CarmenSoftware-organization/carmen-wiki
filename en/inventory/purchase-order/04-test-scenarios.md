@@ -2,7 +2,7 @@
 title: Purchase Order — Test Scenarios
 description: Test cases by persona, cross-persona scenarios, and Playwright mapping for purchase-order.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: purchase-order, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -17,7 +17,9 @@ dateCreated: 2026-05-15T10:00:00.000Z
 
 ## 1. Overview
 
-> **Executable coverage (e2e, `../carmen-frontend-e2e/` @ 809d8e3, 2026-09-20):** the Playwright suite is the executable spec — this page does not mirror it. Catalogs: `docs/user-stories/401-po.md` (60 cases — spec `tests/401-po.spec.ts`), `docs/user-stories/402-po-purchaser-journey.md` (32 cases — `tests/402-po-purchaser-journey.spec.ts`), `docs/user-stories/403-po-approver-journey.md` (19 cases — `tests/403-po-approver-journey.spec.ts`), `docs/user-stories/201-my-approvals.md` (20 cases — `tests/201-my-approvals.spec.ts`). Gap reports (cases the specs do **not** cover): `docs/test-cases/gaps/401-po-create-flows-gap.md` (29), `gaps/402-po-purchaser-journey-gap.md` (39), `gaps/403-po-approver-journey-gap.md` (49), `gaps/201-my-approvals-gap.md` (34). Credit-note: `docs/user-stories/601-cn.md` (124 cases, `tests/601-cn.spec.ts` — 82 skipped, ~6 real oracles per `gaps/601-cn-gap.md`, 65 gap cases) and `602-cn-reason` (18 / 27). **Known spec lag vs source HEAD:** the 402/403 specs still look for a **Send to Vendor** button and a `SENT` status; at HEAD the button is **Send Email** and the statuses are `approved` → `sent_or_print` (2026-09-14). The FE approve-dialog copy still reads "Once approved, the PO will be sent to the vendor" (`messages/en.json` L3899) although approval no longer transmits.
+> **Re-checked 2026-10-27 (e2e @ d795a25):** two new movement-suite specs landed: `tests/404-po-doc-flow.spec.ts` (`docs/user-stories/404-po-doc-flow.md`, 5 cases `TC-PO-700001..700005` — create draft and check the backend stored qty/price, reopen, edit header + lines, delete a draft from view mode, create + Submit gets a real number and moves to the HOD stage) and `tests/603-cn-doc-flow.spec.ts` (`603-cn-doc-flow.md`, 7 cases `TC-CN-700001..700007` — prepare a committed GRN, create a CN draft from it, reopen, the already-credited product is not selectable in a second CN, edit, delete a draft, Submit gives `completed` and stock goes back). They run on BU `CARMEN-AVG` with `requestor@carmen.com`. Nothing yet covers the 2026-10 additions in `02-business-rules.md` (`PO_AUTH_013` price hiding, `PO_AUTH_014` stage actions switched off) — those are untested gaps. **Spec lag still open:** `401-po` (7 hits) and `402-po-purchaser-journey` (12) still search for **Send to Vendor**; `403` no longer does.
+
+> **Executable coverage (e2e, `../carmen-frontend-e2e/` @ 809d8e3, 2026-09-20; counts unchanged for the older specs at d795a25):** the Playwright suite is the executable spec — this page does not mirror it. Catalogs: `docs/user-stories/401-po.md` (60 cases — spec `tests/401-po.spec.ts`), `docs/user-stories/402-po-purchaser-journey.md` (32 cases — `tests/402-po-purchaser-journey.spec.ts`), `docs/user-stories/403-po-approver-journey.md` (19 cases — `tests/403-po-approver-journey.spec.ts`), `docs/user-stories/201-my-approvals.md` (20 cases — `tests/201-my-approvals.spec.ts`). Gap reports (cases the specs do **not** cover): `docs/test-cases/gaps/401-po-create-flows-gap.md` (29), `gaps/402-po-purchaser-journey-gap.md` (39), `gaps/403-po-approver-journey-gap.md` (49), `gaps/201-my-approvals-gap.md` (34). Credit-note: `docs/user-stories/601-cn.md` (124 cases, `tests/601-cn.spec.ts` — 82 skipped, ~6 real oracles per `gaps/601-cn-gap.md`, 65 gap cases) and `602-cn-reason` (18 / 27). **Known spec lag vs source HEAD:** the 401/402 specs still look for a **Send to Vendor** button and a `SENT` status; at HEAD the button is **Send Email** and the statuses are `approved` → `sent_or_print` (2026-09-14). The FE approve-dialog copy still reads "Once approved, the PO will be sent to the vendor" (`messages/en.json` L5340, key `approveConfirm`) although approval no longer transmits.
 
 This page is the **overview entry point** for the test-scenario set of the `purchase-order` module. The PO lifecycle spans six personas — Purchaser, Procurement Manager, Vendor, Receiver, Finance, and Audit / Config — and test coverage is split accordingly: each persona has a dedicated file (linked in Section 3) that enumerates that persona's functional, authorization, validation, edge, and golden-journey scenarios. This overview file gives the global picture: who is in scope, what each persona's tests cover at the headline level, the cross-persona handoff scenarios that stitch the individual journeys into a complete end-to-end flow, and the mapping from each scenario back to the Playwright spec files that exercise it.
 
@@ -63,7 +65,7 @@ The scenarios below trace the PO across multiple personas. Each row anchors the 
 
 ## 5. E2E Test Mapping
 
-Three Playwright specs exist for the PO module under `../carmen-frontend-e2e/tests/` (plus `201-my-approvals.spec.ts` for the shared approval queue and `601-cn` / `602-cn-reason` for Credit Note). Only the Purchaser and Procurement Manager (FC Approver) personas have dedicated specs today. Vendor, Receiver, Finance, and Audit / Config persona files note "no dedicated E2E spec yet — see shared `401-po.spec.ts` for general PO list coverage" and rely on the cross-persona scenarios in Section 4 to anchor expected behaviour for downstream automation. Case counts below are from `docs/user-stories/*.md`; the `gaps/` twins list what is still uncovered.
+Three Playwright specs exist for the PO module (plus the 2026-10 movement spec `404-po-doc-flow`) under `../carmen-frontend-e2e/tests/` (plus `201-my-approvals.spec.ts` for the shared approval queue and `601-cn` / `602-cn-reason` for Credit Note). Only the Purchaser and Procurement Manager (FC Approver) personas have dedicated specs today. Vendor, Receiver, Finance, and Audit / Config persona files note "no dedicated E2E spec yet — see shared `401-po.spec.ts` for general PO list coverage" and rely on the cross-persona scenarios in Section 4 to anchor expected behaviour for downstream automation. Case counts below are from `docs/user-stories/*.md`; the `gaps/` twins list what is still uncovered.
 
 ### 5.1 `401-po.spec.ts` — General / shared coverage (60 cases; gap report `gaps/401-po-create-flows-gap.md`, 29)
 
@@ -103,7 +105,7 @@ Cross-persona coverage: X-PO-01 / X-PO-02 (approval leg), X-PO-06 (rejection), X
 
 ## 6. References
 
-- `../carmen-frontend-e2e/tests/401-po.spec.ts`
+- `../carmen-frontend-e2e/tests/401-po.spec.ts`, `tests/404-po-doc-flow.spec.ts`, `tests/603-cn-doc-flow.spec.ts`
 - `../carmen-frontend-e2e/tests/402-po-purchaser-journey.spec.ts`
 - `../carmen-frontend-e2e/tests/403-po-approver-journey.spec.ts`
 - `../carmen-frontend-e2e/tests/201-my-approvals.spec.ts`, `tests/601-cn.spec.ts`, `tests/602-cn-reason.spec.ts`
