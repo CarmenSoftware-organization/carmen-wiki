@@ -2,7 +2,7 @@
 title: Store Requisition — Data Model
 description: Entities, fields, relationships, and enums for the store-requisition module.
 published: true
-date: '2026-10-27T00:00:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: store-requisition, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:30:00.000Z
@@ -20,7 +20,7 @@ dateCreated: 2026-05-15T13:30:00.000Z
 
 > **Source of truth:** Backend Prisma schema. Always read these first when writing or updating this page:
 > - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma`
 >
 > The `generated/client/schema.prisma` files under each package are auto-generated copies and not authoritative.
 
@@ -217,7 +217,7 @@ The `SR-Overview.md`, `SR-Technical-Specification.md`, `SR-User-Experience.md`, 
 ## 6. References
 
 - **Backend logic cited above:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/store-requisition/store-requisition.service.ts` (`create`, `submit`, `approve`, `saveStageRoleDetails`, `generateSRNo`), `logic/sr-type.helper.ts`, `logic/sr-date.helper.ts`, `logic/sr-issue-qty.helper.ts`, `logic/store-requisition.logic.ts` (`prepareCompletion`, `findIssueShortage`, `postTransferOnComplete`), `logic/sr-department.helper.ts`, `dto/store-requisition.dto.ts` (`StoreRequisitionCreateSchema`, `ValidateSRBeforeSubmitSchema`), `dto/store-requisition-detail.dto.ts`; error codes in `packages/error-catalog/src/catalog.ts`; migration `20260619120000_sr_issue_fields`.
-- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (all four SR models, the SR-specific `enum_sr_type`, the shared `enum_doc_status` / `enum_inventory_doc_type` / `enum_comment_type` / `enum_last_action`, and the related `tb_inventory_transaction*` family) and `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (verified to contain no SR models).
+- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (all four SR models, the SR-specific `enum_sr_type`, the shared `enum_doc_status` / `enum_inventory_doc_type` / `enum_comment_type` / `enum_last_action`, and the related `tb_inventory_transaction*` family) and `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` (verified to contain no SR models).
 - **Secondary (concept cross-check):**
   - `../carmen/docs/store-requisitions/SR-Overview.md` — module purpose, business context, key features, user roles; divergences in Section 5 (items 2, 3, 4).
   - `../carmen/docs/store-requisitions/SR-Technical-Specification.md` — TypeScript interface model, `RequisitionItem.approvalStatus` enum, `StockMovement` / `JournalEntry` interfaces, validation rules; divergences in Section 5 (items 1, 2, 3, 4, 5, 6, 7, 8).

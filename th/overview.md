@@ -2,7 +2,7 @@
 title: ภาพรวมระบบ
 description: Carmen Blue คืออะไร ทำไมต้องมี requirement ของระบบ tech stack และ architecture diagram — จุดเริ่มต้นสำหรับนักพัฒนาและทีมทดสอบที่เพิ่งเข้ามา
 published: true
-date: 2026-09-23T08:30:00.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: overview, architecture, landing
 editor: markdown
 dateCreated: 2026-09-23T08:30:00.000Z
@@ -229,7 +229,7 @@ graph LR
 | `carmen-frontend` | หน้าจอ, route และ validation ฝั่ง client ของ Inventory |
 | `carmen-backstage` | หน้าจอ Platform admin (cluster, BU, ผู้ใช้, RBAC, report template) |
 | `carmen-mobile` | หน้าจอ mobile |
-| `carmen-turborepo-backend` | Route และ guard ของ gateway, domain logic, Prisma schema (`packages/prisma-shared-schema-platform`, `-tenant`), config ของ nginx และ k8s |
+| `carmen-turborepo-backend` | Route และ guard ของ gateway, domain logic, Prisma schema (`packages/prisma-shared-schema-backstage`, `-tenant`), config ของ nginx และ k8s |
 | `micro-report`, `report-render` | การเตรียมข้อมูลรายงานและการ render `.frx` |
 | `micro-cronjobs` | งานตามกำหนดเวลา (รายงานตามรอบ, การรัน GL template, cleanup) |
 | `micro-data` | การรัน dataset สำหรับ dashboard และ widget |
