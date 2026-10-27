@@ -2,7 +2,7 @@
 title: Good Receive Note (GRN) — User Flow — Purchaser
 description: Purchaser's flow within the good-receive-note module — own-PO GRN review and vendor coordination. Department Manager reviews cost-centre.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 dateCreated: 2026-05-15T11:00:00.000Z
 tags: good-receive-note, user-flow, purchaser, inventory, carmen-software
 editor: markdown
@@ -19,10 +19,10 @@ editor: markdown
 
 The **Purchaser** persona covers the **Purchaser / Procurement Officer** who raised the upstream PO and, as a subset, the **Department Manager** who owns the cost-centre that the GRN posts against. Within the GRN module the Purchaser is a **review-only** participant — they do **not** create the GRN at the dock, do **not** save it, and do **not** commit (commit is what posts inventory and advances the PO — see [03-user-flow-receiver.md](./03-user-flow-receiver.md)). The Purchaser opens the document in read mode to review receiving information against the PO they own (`received_qty` vs `order_qty`, `received_price` vs `order_price`, `expired_at`, the lots on the Stock Movement tab once committed, attached packing slips, and any comment written by the Receiver), and owns the **vendor-side follow-up** for a flagged variance — short-ship chase, substitution for wrong items. The Department Manager subset reviews GRNs hitting their department's cost-centre and validates that what was received matches what was ordered for the department. Neither sub-persona alters the GRN document state.
 
-**Re-checked 2026-09-22 — still not in code:**
+**Re-checked 2026-10-27 — still not in code:**
 - **Segregation of duties (Receiver ≠ Purchaser):** no `buyer_id` cross-check exists in `good-received-note.service.ts` / `.logic.ts`; whoever holds `procurement.goods_received_note.commit` can save and commit any GRN. Mirrors the PO module's `PO_AUTH_010`.
 - **Price variance against the vendor pricelist:** no pricelist lookup exists inside the GRN module (`GRN_XMOD_008`). What exists instead is a **PO-price deviation ceiling** enforced at save (`GRN_VAL_007`, `tb_product.price_deviation_limit`), so a receipt priced above the PO by more than the product's limit never reaches the Purchaser as a `saved` document.
-- **Credit-note / Finance handoff for damaged goods or price variance:** no three-way match or AP feature exists — see [03-user-flow-finance.md](./03-user-flow-finance.md). The real correction document is the credit note (one per product per GRN).
+- **Credit-note / Finance handoff for damaged goods or price variance:** the GRN has no such hand-off; a backend AP Invoice module can match committed GRN lines later (see [03-user-flow-finance.md](./03-user-flow-finance.md)). The correction document is the credit note (one per product per GRN), which also locks the credited GRN lines against edit.
 - **Purchaser-scoped visibility:** the GRN list is not filtered to the Purchaser's own POs by the backend (`findAll` has no `buyer_id` filter); "own PO" review below is a working convention, not an enforced scope.
 
 ### Workflow position (Purchaser highlighted)

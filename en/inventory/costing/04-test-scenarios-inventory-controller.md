@@ -2,7 +2,7 @@
 title: Costing — Test Scenarios — Inventory Controller (correction)
 description: Correction page — the Inventory Controller test suite previously documented here targeted a cost-pick-preview adjustment-approval queue that does not exist.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: costing, test-scenarios, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -15,7 +15,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 
 ## 1. Why these scenarios were removed
 
-- **No approval queue exists for `tb_stock_in` / `tb_stock_out`.** Updated 2026-09-22: creation now writes `doc_status = draft` (`stock-in.service.ts:418`) and posting happens at `PATCH …/commit` (`:471-575`) — but the same permission holder commits, so there is still no reviewable state for a distinct approver and no cost-pick preview.
+- **No approval queue exists for `tb_stock_in` / `tb_stock_out`.** Updated 2026-09-22: creation now writes `doc_status = draft` (`stock-in.service.ts:534`) and posting happens at `PATCH …/commit` (`:596`) — but the same permission holder commits, so there is still no reviewable state for a distinct approver and no cost-pick preview.
 - **No "cost-pick preview" screen exists** in the stock-in/stock-out forms.
 - **No Inventory-Controller-vs-Store-Keeper distinction exists in this module** — both gate on the single generic `inventory_management.view` permission.
 - **No Finance persona exists to escalate a variance to** — see [03-user-flow-finance](./03-user-flow-finance.md) (correction).
