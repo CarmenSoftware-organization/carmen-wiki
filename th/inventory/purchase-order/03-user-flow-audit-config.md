@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — User Flow — Audit & Config
 description: เส้นทางของ Auditor (activity log แบบ read-only) และ System Administrator (การตั้งค่า workflow / RBAC / numbering) สำหรับ purchase-order
 published: true
-date: '2026-10-27T15:00:00.000Z'
+date: '2026-10-28T00:00:00.000Z'
 tags: purchase-order, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -55,7 +55,7 @@ graph LR
 | Edit workflow stages / `stage_role` / `user_action.execute[]` (generic system-config) | ❌ | ✅ |
 | Edit running-code scheme (`po_no`) (generic system-config) | ❌ | ✅ |
 | Edit RBAC permission map | ❌ | ✅ (ผ่าน generic system-config, ยังไม่ยืนยันว่าเป็นหน้าจอเฉพาะของ PO) key ที่ SPA ประกาศ: `procurement.purchase_order` (resource แบบ view-only), `procurement.credit_note` (CRUD), `system_admin.workflow.purchase_order` (`constant/permissions.ts`); gateway บังคับเฉพาะ `procurement.purchase_order: create` บน `GET .../purchase-orders/grn/:id` |
-| ตั้งค่า BU email profile ที่ PO Send Email ใช้ | ❌ | ✅ ([system-config/config-email](/th/inventory/system-config/config-email); template PO / RFP seed ต่อ BU) |
+| ตั้งค่า BU email profile ที่ PO Send to vendor ใช้ | ❌ | ✅ ([system-config/config-email](/th/inventory/system-config/config-email); template PO / RFP seed ต่อ BU) |
 | Edit PO header / lines / vendor / qty | ❌ | ❌ |
 | Approve / Transmit / Send-back / Reject | ❌ | ❌ |
 | Close PO | ❌ | ❌ (escalate ไปยัง Procurement Manager หรือ Inventory Manager ภายใต้ `PO_AUTH_008`) |

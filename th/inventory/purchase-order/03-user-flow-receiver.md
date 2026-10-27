@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — User Flow — Receiver
 description: เส้นทางผู้ใช้งานของ Receiver ภายในโมดูล purchase-order — รับสินค้าจริง สร้าง GRN เทียบกับ PO และ trigger receipt state transition
 published: true
-date: '2026-10-27T15:00:00.000Z'
+date: '2026-10-28T00:00:00.000Z'
 tags: purchase-order, user-flow, receiver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -47,7 +47,7 @@ Store Keeper ขับเคลื่อน GRN ต่อ shipment; Inventory Ma
 | Early-close `→ closed` (`PO_POST_011`; ไม่มี role gate ไม่มี field เหตุผล) | ✅ | ✅ | ✅ | ❌ | — |
 | ปฏิเสธการส่งของที่ dock (ไม่มี GRN, ไม่มี system effect) | ✅ | ✅ | ✅ | — | — |
 | Edit PO header / lines | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Approve / Send Email / Void | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Approve / Send to vendor / Void | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Post GRN เทียบกับ PO ของ buyer ตัวเอง | ยังไม่ยืนยัน — ไม่พบ segregation-of-duties check ใน source ปัจจุบัน | — | — | — | — |
 
 > ℹ️ **ไม่มีปริมาณการยอมรับแยกต่างหาก:** การค้นหาทั่ว Prisma schema และโค้ดแอปพลิเคชันของ GRN ไม่พบฟิลด์ `accepted_qty` (หรือฟิลด์ acceptance/rejection ต่อบรรทัดใดๆ) เลย — ดู data model ที่แก้ไขแล้วของโมดูล [good-receive-note](/th/inventory/good-receive-note) เอง Inventory on-hand เพิ่มโดย `received_qty` เท่านั้น; ปัญหาคุณภาพหรือการรับของขาดถูกบันทึกเพียงแค่กรอก `received_qty` ให้น้อยกว่าที่สั่ง โดยมี comment แบบ free-text บน GRN บันทึกความคลาดเคลื่อนไว้ Write-off ที่ตกลงกันเทียบกับ balance ที่เหลือไปที่ `cancelled_qty` ผ่าน close action ของ Inventory Manager ไม่ใช่ฟิลด์ acceptance แยกต่างหาก
