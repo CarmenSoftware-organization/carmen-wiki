@@ -1,8 +1,8 @@
 ---
 title: ใบสั่งซื้อ (Purchase Order) — Test Scenarios — Vendor
-description: Test cases ของ Vendor (happy path, edge cases) สำหรับ purchase-order ฝ่ายภายนอก — ไม่มี in-system permission scenarios; ไม่มีฟีเจอร์ invoice/AP-matching ที่ยืนยันได้
+description: Test cases ของ Vendor (happy path, edge cases) สำหรับ purchase-order ฝ่ายภายนอก — ไม่มี in-system permission scenarios; ไม่มีฟีเจอร์ invoice/AP-matching ระดับ PO
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: purchase-order, test-scenarios, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z

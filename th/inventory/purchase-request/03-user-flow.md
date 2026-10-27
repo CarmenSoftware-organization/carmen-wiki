@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — User Flow
 description: วงจรชีวิตของเอกสารและไฟล์ flow แยกตาม persona สำหรับโมดูล purchase-request
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: purchase-request, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -64,10 +64,10 @@ stateDiagram-v2
 | `(none)` | create | `draft` | Requestor | ฟิลด์ header ผ่านการตรวจสอบ (`requestor_id`, `department_id`, `pr_date`, `workflow_id`); ยังไม่ต้องมี line |
 | `draft` | save (edit) | `draft` | Requestor (เจ้าของ) | PR ยังเป็นของ requestor; ยังไม่มีการเลื่อน stage ของ workflow |
 | `draft` | submit | `in_progress` | Requestor (เจ้าของ) | มี `workflow_id`, `requestor_id`, `department_id`, `pr_date`; มี line อย่างน้อยหนึ่งบรรทัด (`PR_VAL_006`); ทุกบรรทัดซื้อหรือรับ FOC (`PR_VAL_008`); `POST …/verify` (`verify_state = submit`) list ทุกกฎที่ไม่ผ่านล่วงหน้า (`PR_VAL_017`) |
-| `draft` | delete | *(row ถูก soft-delete)* | Requestor (เจ้าของ: `created_by_id` หรือ `requestor_id`) หรือ platform super-admin | `pr_status` ต้องเป็น `draft`; header และ line ได้ `deleted_at` (`PR_VAL_018` / `PR_POST_009`) **ไม่ใช่** transition ไป `voided` — เอกสารรุ่นก่อนผิด |
+| `draft` | delete | *(row ถูก soft-delete)* | Requestor (เจ้าของ: `created_by_id` หรือ `requestor_id`) หรือ Backstage super-admin | `pr_status` ต้องเป็น `draft`; header และ line ได้ `deleted_at` (`PR_VAL_018` / `PR_POST_009`) **ไม่ใช่** transition ไป `voided` — เอกสารรุ่นก่อนผิด |
 | `in_progress` | approve (stage นี้, ไม่ใช่ final) | `in_progress` | ผู้อนุมัติ stage ปัจจุบัน | ผู้อนุมัติถูก assign ที่ `workflow_current_stage` ปัจจุบันด้วย `stage_role = approve`; `last_action` กลายเป็น `approved` และ cursor ของ stage เลื่อนไป |
-| `in_progress` | approve (stage สุดท้าย) | `approved` | ผู้อนุมัติ stage สุดท้าย | ผู้อนุมัติถูก assign ที่ stage อนุมัติสุดท้าย; ทุก stage ก่อนหน้าเซ็นแล้ว (`purchase-request.service.ts:1913`) |
-| `in_progress` | send-back (review) | `in_progress` | ผู้อนุมัติคนใดบน chain | ต้องมีเหตุผลและ stage เป้าหมาย; `workflow_current_stage` ย้ายไปเป้าหมาย, `last_action = reviewed`, `pr_status` ถูกเขียนใหม่เป็น `in_progress` (`purchase-request.service.ts:2052`) — PR ไม่กลับไป `draft` เลย มี audit comment เขียน |
+| `in_progress` | approve (stage สุดท้าย) | `approved` | ผู้อนุมัติ stage สุดท้าย | ผู้อนุมัติถูก assign ที่ stage อนุมัติสุดท้าย; ทุก stage ก่อนหน้าเซ็นแล้ว (`purchase-request.service.ts:1932-1936`) |
+| `in_progress` | send-back (review) | `in_progress` | ผู้อนุมัติคนใดบน chain | ต้องมีเหตุผลและ stage เป้าหมาย; `workflow_current_stage` ย้ายไปเป้าหมาย, `last_action = reviewed`, `pr_status` ไม่ถูกแตะ (`review`, `purchase-request.service.ts:2053` รับเฉพาะ PR ที่เป็น `in_progress` และไม่เคยเขียนคอลัมน์นี้) — PR ไม่กลับไป `draft` เลย stage สามารถปิดตัวเลือกนี้ได้ (`PR_AUTH_010`) มี audit comment เขียน |
 | `in_progress` | reject | `voided` | ผู้อนุมัติคนใดบน chain | ต้องมีข้อความเหตุผล; workflow จบ ไม่อนุญาตให้ทำอะไรเพิ่ม (`purchase-request.service.ts:2201` — ผู้เขียน `voided` เพียงจุดเดียว) |
 | `in_progress` | routing rule (threshold) | `in_progress` | Workflow engine | เงื่อนไขใน `tb_workflow.data.routing_rules` บน `total_amount` / `department` match ตอน submit หรือ approve; engine ข้ามหรือกระโดดไป stage ที่ระบุ (`PR_AUTH_005`) สถานะไม่เปลี่ยนแต่ cursor ของ stage กระโดด |
 | `approved` | convert to PO | `completed` | Purchaser (ไม่มีการบังคับ permission บน dialog) | line ที่อนุมัติแล้วทั้งหมดถูก bridge เข้าสู่ `tb_purchase_order` หนึ่งใบหรือมากกว่า; PR ถูกปิดไม่ให้แปลงต่อ |

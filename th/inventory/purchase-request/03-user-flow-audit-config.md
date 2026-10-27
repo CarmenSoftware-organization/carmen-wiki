@@ -1,8 +1,8 @@
 ---
 title: ใบขอซื้อ (Purchase Request) — User Flow — Audit & Config
-description: เส้นทางการใช้งานของ Auditor (read-only activity log) และ System Administrator (ตั้งค่า workflow / master data แบบ generic) ในโมดูล purchase-request — ไม่มี audit workspace หรือ configuration workbench เฉพาะ PR อยู่จริง
+description: เส้นทางของ Auditor (activity log แบบอ่านอย่างเดียว) และ System Administrator (ตั้งค่า workflow / master data แบบ generic) ในโมดูล purchase-request — ไม่มี workbench เฉพาะ PR
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: purchase-request, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -27,7 +27,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 
 **Auditor** เป็น role read-only surface ที่ยืนยันได้มีเพียงหน้า **`/system-admin/activity-log`** แบบ generic — list ที่ filter ได้ของ event `action` / `entity_type` / `user` ข้ามทุกประเภทเอกสาร รวมถึงแถว `purchase_request` — บวก comment sheet ของหน้า detail PR เอง (`tb_purchase_request_comment`, immutable สำหรับแถว `type = system` ตาม `PR_POST_008`) ที่ผู้ใช้ที่มีสิทธิ์อ่าน PR เห็นได้อยู่แล้ว ยังไม่ยืนยันในรอบนี้ว่า role "Auditor" ที่แยกต่างหาก gate surface ใดต่างจากผู้อ่านคนอื่นหรือไม่ Auditor ไม่สามารถ approve, reject, send back, แก้บรรทัด หรือ void PR ได้
 
-**System Administrator** ตั้งค่า workflow definition ที่ PR อ้างอิงผ่าน `workflow_id` (stages, `stage_role`, การเป็นสมาชิกของ `user_action.execute[]`, และกฎ amount/department/category-threshold ในแท็บ **Routing** — เป็น system-config functionality แบบ generic ที่ใช้ร่วมกันข้ามประเภทเอกสารผ่าน `/system-admin/workflow` ไม่ใช่เฉพาะ PR), tax rate (`/config/tax-profile`), currency และ exchange-rate master (`/config/currency`, `/config/exchange-rate`), และ RBAC user/role assignment (`/system-admin/user`, `/system-admin/role`) ไม่พบ amount-threshold editor เฉพาะ PR (ตัวจริงเป็น generic ไม่ใช่เฉพาะ PR), delegation-window manager (ไม่มี equivalent อยู่เลย), หรือ screen default ต่อประเภท PR เฉพาะ PR ใดๆ *(สิทธิ์ **void** ระดับสูงตาม `PR_AUTH_007` ถูกอธิบายที่นี่ว่ายืนยันแล้วในเอกสารรุ่นก่อน — ไม่ใช่: ไม่มี endpoint void ใน `purchase-requests.controller.ts`, ไม่มี control Void ในฟอร์ม PR และ `enum_purchase_request_doc_status.voided` ถูกเขียนโดยเส้นทาง Reject ของผู้อนุมัติเท่านั้น `purchase-request.service.ts:2201` platform super-admin ทำได้เพียง bypass กฎ*ความเป็นเจ้าของ*ตอนลบ `draft` (`PR_VAL_018`))*
+**System Administrator** ตั้งค่า workflow definition ที่ PR อ้างอิงผ่าน `workflow_id` (stages, `stage_role`, การเป็นสมาชิกของ `user_action.execute[]`, และกฎ amount/department/category-threshold ในแท็บ **Routing** — เป็น system-config functionality แบบ generic ที่ใช้ร่วมกันข้ามประเภทเอกสารผ่าน `/system-admin/workflow` ไม่ใช่เฉพาะ PR), tax rate (`/config/tax-profile`), currency และ exchange-rate master (`/config/currency`, `/config/exchange-rate`), และ RBAC user/role assignment (`/system-admin/user`, `/system-admin/role`) สวิตช์ระดับ stage สองอย่างที่เปลี่ยนสิ่งที่ผู้อนุมัติ PR เห็นและทำได้ก็อยู่ใน workflow editor เช่นกัน: **hide price** (`price_per_unit`, `total_price`) และ **available actions** ต่อ stage (approve / reject / send back) — ดู `PR_AUTH_010` / `PR_AUTH_011` ใน [02-business-rules](/th/inventory/purchase-request/02-business-rules); และ provider **Ask AI** กับ **นโยบายไฟล์แนบ** (ชนิดไฟล์, ขนาด) ของ BU เป็นการตั้งค่าของ BU (Ask AI อยู่ใต้ System Admin; นโยบายไฟล์แนบตั้งจาก Backstage เท่านั้น) ไม่พบ amount-threshold editor เฉพาะ PR (ตัวจริงเป็น generic ไม่ใช่เฉพาะ PR), delegation-window manager (ไม่มี equivalent อยู่เลย), หรือ screen default ต่อประเภท PR เฉพาะ PR ใดๆ *(สิทธิ์ **void** ระดับสูงตาม `PR_AUTH_007` ถูกอธิบายที่นี่ว่ายืนยันแล้วในเอกสารรุ่นก่อน — ไม่ใช่: ไม่มี endpoint void ใน `purchase-requests.controller.ts`, ไม่มี control Void ในฟอร์ม PR และ `enum_purchase_request_doc_status.voided` ถูกเขียนโดยเส้นทาง Reject ของผู้อนุมัติเท่านั้น `purchase-request.service.ts:2201` Backstage super-admin ทำได้เพียง bypass กฎ*ความเป็นเจ้าของ*ตอนลบ `draft` (`PR_VAL_018`))*
 
 ### ตำแหน่งเทียบกับ flow transactional
 
@@ -61,7 +61,7 @@ graph LR
 | แก้ header / บรรทัด / vendor / pricing ของ PR | ❌ | ❌ |
 | Approve / Reject / Send-back / Split-Reject | ❌ | ❌ |
 | Void PR ที่ in-flight หรือ approved (`PR_AUTH_007`) | **ยังไม่ยืนยันว่ามีอยู่** | **ยังไม่ยืนยันว่ามีอยู่** |
-| ลบ PR สถานะ `draft` ของผู้ใช้อื่น (super-admin bypass กฎความเป็นเจ้าของ, `PR_VAL_018`) | ❌ | ✅ (platform super-admin เท่านั้น) |
+| ลบ PR สถานะ `draft` ของผู้ใช้อื่น (super-admin bypass กฎความเป็นเจ้าของ, `PR_VAL_018`) | ❌ | ✅ (Backstage super-admin เท่านั้น) |
 
 ## 2. Entry Point และ Primary Flow
 

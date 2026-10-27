@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — User Flow — Vendor
 description: เส้นทางผู้ใช้งานของ Vendor ภายในโมดูล purchase-order — ฝ่ายภายนอก (ไม่มี system login); รับ PO ตอบรับ ส่งของ และออก invoice
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: purchase-order, user-flow, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -28,7 +28,7 @@ graph LR
     vendor -->|"ส่งสินค้า"| recv["การส่งของจริง"]:::current
     recv -->|"Receiver post GRN"| partial(("partial"))
     recv -->|"Receiver post GRN"| completed(("completed"))
-    vendor -.->|"ออก invoice (feature ที่ยังไม่ยืนยัน)"| inv["? ไม่พบ invoice/AP code"]
+    vendor -.->|"ออก invoice (feature ที่ยังไม่ยืนยัน)"| inv["? ไม่มี invoice match ระดับ PO<br/>(AP module ทำงานจากรายการ GRN)"]
     sent -.->|"Cancel (ไม่ใช่ 'decline→void')"| closed(("closed"))
     classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
 ```
@@ -46,7 +46,7 @@ Vendor มี **สิทธิ์เขียนโดยตรงไม่ม�
 | ปฏิเสธ / vendor ไม่สามารถ fulfil ได้อีกต่อไป | **Cancel** (`{draft, in_progress, approved, sent_or_print} → closed`) หรือ **Close** (`{in_progress, approved, sent_or_print, partial} → closed`) | `→ closed`, remainder เขียนเป็น `cancelled_qty` — **ไม่ใช่** `voided`; ไม่มีเส้นทางจาก `sent_or_print` ไปยัง `voided` ใน source ปัจจุบัน |
 | ส่งของผิด / qty เกิน | Receiver (ปฏิเสธที่ dock) | ไม่มี — escalate ผ่าน comment |
 | ส่งของที่ failed คุณภาพ | Receiver บันทึก `received_qty` ให้น้อยกว่าที่สั่งและบันทึกการปฏิเสธไว้ใน comment แบบ free-text บน GRN — ไม่มีฟิลด์ acceptance quantity แยกต่างหากอยู่ทั้งใน schema ของ GRN หรือ PO (ยืนยันว่าไม่มีอยู่ทั่ว repo) | ตาม `PO_POST_006` / `PO_POST_007` |
-| ออก invoice | **ไม่ได้ implement** — ไม่มีหน้า capture invoice หรือ code AP-posting ใน source ปัจจุบัน | ไม่มี |
+| ออก invoice | **ไม่ได้ implement เทียบกับ PO** — AP module (2026-09-23) รับ invoice จากรายการ GRN ไม่ใช่จาก PO | ไม่มี |
 
 ## 2. Entry Point และ Primary Flow
 
@@ -57,7 +57,7 @@ Vendor มี **สิทธิ์เขียนโดยตรงไม่ม�
 1. **ตอบรับการรับ PO** (ยังไม่ยืนยันว่า Carmen Blue บันทึกสิ่งนี้หรือไม่)
 2. **เตรียมและส่งสินค้าตามวันส่งที่ตกลง** **System effect:** ไม่มี — การเคลื่อนไหวจริงมองไม่เห็นใน Carmen Blue จนกว่า Receiver จะเปิดที่ dock
 3. **ส่งสินค้าไปยัง receiving location** **System effect:** ไม่มีโดยตรง — persona **Receiver** raise GRN ในโมดูล [good-receive-note](/th/inventory/good-receive-note) ปลายน้ำ ซึ่งจริง ๆ flip `po_status` (`sent → partial` หรือ `sent → completed`)
-4. **ออก invoice** — **ไม่ได้ implement** ใน source ปัจจุบัน ดู [03-user-flow-finance.md](./03-user-flow-finance.md) สำหรับการแก้ไขเต็มว่าทำไมไม่พบ feature invoice / AP-matching
+4. **ออก invoice** — **ไม่ได้ implement เทียบกับ PO** (AP invoice สร้างจากรายการ GRN) ดู [03-user-flow-finance.md](./03-user-flow-finance.md) สำหรับการแก้ไขเต็มว่าทำไมไม่พบ feature invoice / AP-matching
 
 ## 3. Decision Branches
 
@@ -68,7 +68,7 @@ Vendor มี **สิทธิ์เขียนโดยตรงไม่ม�
 
 ## 4. Exit Point / Handoffs
 
-การมีส่วนร่วมของ vendor บน PO ที่กำหนดจบที่ **การส่งของจริง** (ยืนยันแล้ว) — invoice issuance เป็น documented design intent ไม่ใช่ confirmed system interaction จากจุดนั้น document state บน Carmen Blue เป็นหนึ่งใน:
+การมีส่วนร่วมของ vendor บน PO ที่กำหนดจบที่ **การส่งของจริง** (ยืนยันแล้ว) — invoice issuance เทียบกับ PO เป็น documented design intent; AP module บันทึก invoice เทียบกับรายการ GRN จากจุดนั้น document state บน Carmen Blue เป็นหนึ่งใน:
 
 - `approved` — workflow เสร็จแล้ว ยังไม่ส่งอีเมล; ของอาจถูกรับกับมันได้อยู่ดี
 - `sent_or_print` — PO transmit แล้วแต่ยังไม่ได้ post GRN (vendor ยังไม่ส่งของ หรือ delivery ระหว่าง transit)
@@ -81,7 +81,7 @@ Vendor มี **สิทธิ์เขียนโดยตรงไม่ม�
 - ภาพรวม parent: [03-user-flow.md](./03-user-flow.md) — global PO state machine และตาราง cross-persona handoff
 - Sibling: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — internal persona ที่ส่งอีเมล PO (dialog Send Email) และรัน cancel / close loop แทน vendor
 - Sibling: [03-user-flow-receiver.md](./03-user-flow-receiver.md) — internal persona ปลายน้ำที่รับการส่งของจริงของ vendor และ post GRN ที่ขับเคลื่อน `{approved, sent_or_print} → partial → completed`
-- Backend: `purchase-order.service.ts` `sendEmailToVendor` (L7264+), `markSent` (L6150+), `EMAILABLE_PO_STATUSES` (L7127); email template seed โดย `ccc72e78b`; PDF ผ่าน `exportPdfViaMicroReport` → micro-report → FastReport `POST /api/Report/Export/Pdf`
+- Backend: `purchase-order.service.ts` `sendEmailToVendor` (L7111+), `markSent` (L5966+), `EMAILABLE_PO_STATUSES` (L6976); email template seed โดย `ccc72e78b`; PDF ผ่าน `exportPdfViaMicroReport` → micro-report → FastReport `POST /api/Report/Export/Pdf`
 - Sibling: [03-user-flow-finance.md](./03-user-flow-finance.md) — บันทึกเหตุผลที่ไม่พบ feature invoice / three-way-match ใน source ปัจจุบัน
 - เกี่ยวข้อง: [good-receive-note](/th/inventory/good-receive-note) — โมดูลปลายน้ำที่บันทึกการส่งของจริงของ vendor และขับเคลื่อน receipt-state transitions บน PO
 - `../carmen/docs/purchase-order-management/purchase-order-module.md` — แหล่ง carmen/docs หลักสำหรับ business analysis โมดูล PO และ transmission flow; ถือคำอธิบาย three-way-match ของมันเป็น design intent ไม่ใช่ verified behavior ปัจจุบัน

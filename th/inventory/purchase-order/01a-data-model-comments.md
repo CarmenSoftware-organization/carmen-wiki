@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ — โมเดลข้อมูล — ตารางคอมเมนต์
 description: ตารางคอมเมนต์ / ไฟล์แนบระดับเอกสารและระดับบรรทัดสำหรับโมดูลใบสั่งซื้อ — ข้อความ, JSON ไฟล์แนบ, และ enum ประเภทคอมเมนต์ (user/system)
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: purchase-order, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -29,7 +29,7 @@ doc_version         int (default 0) — ตัวนับ optimistic-lock เ�
 created_at / created_by_id / updated_at / updated_by_id / deleted_at / deleted_by_id
 ```
 
-รูปแบบเดียวกันใช้กับคอมเมนต์ระดับ header และระดับ detail; ต่างกันแค่ FK ของ parent (spot-check กับ `schema.prisma` L2144-2177 และ L2293-2326 เมื่อ 2026-09-22: คอลัมน์ `doc_version` หายไปจากหน้านี้และเพิ่มไว้ด้านล่างแล้ว; ไม่มี drift อื่น)
+รูปแบบเดียวกันใช้กับคอมเมนต์ระดับ header และระดับ detail; ต่างกันแค่ FK ของ parent (spot-check กับ `schema.prisma` (ตอนนี้ L2277-2310 และ L2426-2459) เมื่อ 2026-09-22: คอลัมน์ `doc_version` หายไปจากหน้านี้และเพิ่มไว้ด้านล่างแล้ว; ไม่มี drift อื่น)
 
 โปรดสังเกตว่า event send / mark-sent / email ของ workflow engine เอง **ไม่ใช่** แถวคอมเมนต์: `send-email` และ `mark-sent` เขียนลง `tb_activity` (`action = email_sent` / `other`, `entity_type = 'purchase_order'`) ซึ่งหน้า [reporting-audit/activity](/th/inventory/reporting-audit/activity) เป็นผู้บันทึกไว้ แถวคอมเมนต์ยังคงเป็นที่สำหรับ note ของมนุษย์ เหตุผล send-back / reject และไฟล์แนบ
 
@@ -80,6 +80,12 @@ created_at / created_by_id / updated_at / updated_by_id / deleted_at / deleted_b
 
 **Constraints:** `@id` บน `id` FK `purchase_order_detail_id → tb_purchase_order_detail.id` (`NoAction` on delete/update)
 **Indexes:** ไม่มีประกาศนอกเหนือจาก primary key
+
+### 3.3 กฎการแนบไฟล์ (เปลี่ยน 2026-10)
+
+endpoint คอมเมนต์ทั้งสองไม่ได้ฮาร์ดโค้ด "10 MB; JPEG / PNG / WebP / GIF / PDF" อีกต่อไป gateway controller (`purchase-order-comments.controller.ts` และเช่นเดียวกันสำหรับ CN และ comment controller อื่นทุกตัว) ใช้ `CommentFilesInterceptor()` และเรียก `AttachmentPolicyService.assertFiles(bu_code, files)` ซึ่งอ่าน **นโยบายรายหน่วยธุรกิจ (BU)** ที่เก็บใน `tb_business_unit.config` (`attachment.allowed_types`, `attachment.max_size_mb`) และตั้งค่าได้จาก Backstage เท่านั้น ค่า default เมื่อ BU ไม่ได้ตั้งอะไร: กลุ่ม `image` + `pdf`, 10 MB; กลุ่มที่เลือกได้คือ image, pdf, excel, word, csv, text; เพดานขนาดคือ 25 MB (`attachment-policy.ts`) ไฟล์ที่ถูกปฏิเสธจะเกิด `400`
+
+`PATCH` บนคอมเมนต์รับ `attachments` ได้ทั้งแบบ array แทนที่ทั้งชุด หรือแบบ delta `{ add: Attachment[], remove: fileToken[] }` (micro `purchase-order-comment.dto.ts`; ก่อนการเปลี่ยนนี้ PATCH ที่เพิ่มหรือลบไฟล์จะถูกปฏิเสธด้วย `400`) service นำ delta ไปใช้กับ array ที่เก็บไว้: `current.filter(not in remove) + add` ใน SPA แผงคอมเมนต์โหลดทีละหน้า เรียงจากใหม่ไปเก่า เมื่อผู้ใช้เลื่อนลงถึงด้านล่าง (`61011d0e`)
 
 ## 4. การอ้างอิงข้าม
 

@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — User Flow — Purchaser
 description: เส้นทางผู้ใช้งานของ Purchaser ภายในโมดูล purchase-order
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: purchase-order, user-flow, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z

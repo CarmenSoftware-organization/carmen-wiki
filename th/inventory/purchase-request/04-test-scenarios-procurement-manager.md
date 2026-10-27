@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — Test Scenarios — Procurement Manager
 description: Test case ของ Procurement Manager (อนุมัติมูลค่าสูงแบบ escalated) สำหรับโมดูล purchase-request
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: purchase-request, test-scenarios, procurement-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -25,10 +25,10 @@ dateCreated: 2026-05-15T09:00:00.000Z
 
 | # | Scenario | Pre-condition | Steps | คาดหวัง |
 | - | -------- | ------------- | ----- | -------- |
-| PM-HP-01 | รับและ review PR ที่ถูก route มา | PR `pr_status = in_progress`, route ไปยัง Procurement Manager เพราะเงื่อนไข `routing_rules` บน `total_amount` match (`PR_AUTH_005`) หรือผ่านการตั้งค่า workflow ตรง | เปิด **My Approval** (`/procurement/approval`) หรือแท็บ **My Pending** ของ list PR; เปิด PR; review header, บรรทัด, Workflow History และ comment *(panel Budget Impact — ยังไม่ยืนยัน ไม่มี code path)* | หน้า PR detail load ด้วย UI read-mostly / Edit Mode เดียวกันกับ chain Approver พื้นฐาน; footer แสดง Approve / Reject / Send Back, bulk toolbar แสดง Approve / Reject / Send for Review / Split |
+| PM-HP-01 | รับและ review PR ที่ถูก route มา | PR `pr_status = in_progress`, route ไปยัง Procurement Manager เพราะเงื่อนไข `routing_rules` บน `total_amount` match (`PR_AUTH_005`) หรือผ่านการตั้งค่า workflow ตรง | เปิด **My Approval** (`/procurement/my-approval`) หรือแท็บ **My Pending** ของ list PR; เปิด PR; review header, บรรทัด, Workflow History และ comment *(panel Budget Impact — ยังไม่ยืนยัน ไม่มี code path)* | หน้า PR detail load ด้วย UI read-mostly / Edit Mode เดียวกันกับ chain Approver พื้นฐาน; footer แสดง Approve / Reject / Send Back, bulk toolbar แสดง Approve / Reject / Send for Review / Split |
 | PM-HP-02 | Approve PR ที่ escalated ที่ stage สุดท้าย | PR อยู่ที่ stage ของ Procurement Manager ซึ่งเป็น stage `approve`-role สุดท้ายของ chain | เข้า Edit Mode, เลือกทั้งหมด, bulk **Approve**, ยืนยัน | `PR_POST_005` fire: `pr_status` พลิก `in_progress → approved`; PR เข้าเกณฑ์สำหรับ dialog Convert-to-PO แยกต่างหาก |
 | PM-HP-03 | Reject PR มูลค่าสูงมาก | PR ถูกมอบหมายให้ Procurement Manager / General Manager เพื่ออนุมัติ (`TC-PR-060005`) | เปิด PR; คลิก **Reject**; กรอกเหตุผล; ยืนยัน | `pr_status` พลิกเป็น `voided`; requestor ได้รับแจ้ง; Auditor review เหตุผลได้ภายหลัง |
-| PM-HP-04 | ส่ง PR escalated กลับเพื่อแก้ไข | PR อยู่ที่ stage escalated; เหตุผลไม่เพียงพอ | Bulk **Send for Review** พร้อมเหตุผล | `workflow_current_stage` ย้ายกลับหนึ่ง step (หรือถึง create stage ของ Requestor ทั้งหมด ทำให้ `pr_status` กลับเป็น `draft` ขึ้นกับ workflow configuration) |
+| PM-HP-04 | ส่ง PR escalated กลับเพื่อแก้ไข | PR อยู่ที่ stage escalated; เหตุผลไม่เพียงพอ | Bulk **Send for Review** พร้อมเหตุผล | `workflow_current_stage` ย้ายกลับหนึ่ง step (หรือถึง create stage ของ Requestor ทั้งหมด — `pr_status` ยังคง `in_progress` ไม่เคยเป็น `draft`) |
 
 ## 2. Permission / Authorization
 

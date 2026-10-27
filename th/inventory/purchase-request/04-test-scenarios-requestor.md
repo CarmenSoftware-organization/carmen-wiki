@@ -2,7 +2,7 @@
 title: ใบขอซื้อ (Purchase Request) — Test Scenarios — Requestor
 description: Test case ของ Requestor (happy path, permission, validation, edge case) สำหรับโมดูล purchase-request
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: purchase-request, test-scenarios, requestor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -57,9 +57,9 @@ dateCreated: 2026-05-15T09:00:00.000Z
 | REQ-VAL-06 | Submit PR ที่มีบรรทัดที่ไม่ลบเป็น 0 | Save header เท่านั้น, แล้วคลิก Submit | `PR_VAL_006` — reject ด้วย `"A PR must contain at least one line item"` ปุ่ม Submit ก็ถูก disable ใน UI ตาม `TC-PR-050604` |
 | REQ-VAL-07 | Save บรรทัดโดยไม่มี `product_id` (หรือสินค้า inactive) | คำอธิบาย free-text เท่านั้น ไม่เลือกสินค้า; หรือสินค้าถูก soft-delete ใน catalog | `PR_VAL_007` — reject ด้วย `"Product is required on every line"` NOT NULL บังคับที่ DB layer ด้วย |
 | REQ-VAL-08 | Submit บรรทัดที่ไม่สั่งอะไรเลย (`requested_qty = 0` และ `foc_qty = 0`) หรือ qty ติดลบ | ทิ้งทั้งสองจำนวนไว้ที่ `0` บนบรรทัดแล้วคลิก Submit; หรือพิมพ์ `-1` | `PR_VAL_008` — toast ฝั่ง client "incompleteItems" ระบุ row และ dialog ยืนยันไม่เปิด (`findRowsMissingQty`); server ตอบ `"Detail line N: needs a requested_qty or a foc_qty"` / `"requested_qty must be positive"` **Save** ของ draft เดียวกันสำเร็จ — กฎเป็นเฉพาะตอน submit บรรทัด FOC-only (`requested_qty = 0`, `foc_qty > 0`, ตั้งหน่วย FOC) ผ่าน |
-| REQ-VAL-09 | Save บรรทัดโดยไม่มี `delivery_date` | ล้างช่อง delivery-date | Zod ฝั่ง client (`pr-form-schema.ts:83`) — "required" *การ reject `delivery_date` ที่ก่อน `pr_date` — ยังไม่ยืนยัน ไม่มี code path (`TC-PR-050211` assert แค่ UI)* |
+| REQ-VAL-09 | Save บรรทัดโดยไม่มี `delivery_date` | ล้างช่อง delivery-date | Zod ฝั่ง client (`pr-form-schema.ts:82`) — "required" *การ reject `delivery_date` ที่ก่อน `pr_date` — ยังไม่ยืนยัน ไม่มี code path (`TC-PR-050211` assert แค่ UI)* |
 | REQ-VAL-10 | เพิ่มบรรทัดที่สองสำหรับ `(product_id, location_id, dimension)` เดียวกันที่อยู่บน PR แล้ว | บรรทัด duplicate ใน PR เดียวกัน | `PR_VAL_010` — reject ด้วย `"Same product cannot be requested twice for the same location and dimension"` Unique index `PR1_purchase_request_product_location_dimension_u` บังคับ |
-| REQ-VAL-11 | Save บรรทัดด้วย `currency_id` ขาด | ล้างช่องสกุลเงิน | Zod ฝั่ง client (`pr-form-schema.ts:73`) — "required" *`exchange_rate ≤ 0` และ `exchange_rate_date` หลัง `pr_date` — ยังไม่ยืนยัน ไม่มี code path* |
+| REQ-VAL-11 | Save บรรทัดด้วย `currency_id` ขาด | ล้างช่องสกุลเงิน | Zod ฝั่ง client (`pr-form-schema.ts:71`) — "required" *`exchange_rate ≤ 0` และ `exchange_rate_date` หลัง `pr_date` — ยังไม่ยืนยัน ไม่มี code path* |
 | REQ-VAL-12 | ใส่ส่วนลดหรือภาษีมากกว่ามูลค่าบรรทัด | Requestor เข้าถึงไม่ได้ — ส่วนลด / ภาษีแก้ที่ stage `purchase` | ดู `PR_VAL_012` (เพดานยอดต่อบรรทัด เช็คโดย `POST …/verify` ด้วย `stage_role = purchase`) *การเช็คช่วง `0–100` เปอร์เซ็นต์ — ยังไม่ยืนยัน ไม่มี code path* |
 | REQ-VAL-13 | สอง browser tab edit draft เดียวกันและ tab ที่สองพยายาม save | Tab A save description; Tab B (ยังถือ `doc_version` เก่ากว่า) คลิก Save | `PR_VAL_016` — reject ด้วย `"Document was modified by another user; reload and retry"` Save สำเร็จ bump `doc_version` ขึ้น 1 |
 

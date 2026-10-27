@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — User Flow
 description: วงจรชีวิตของเอกสารและไฟล์ flow แยกตาม persona สำหรับ purchase-order
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: purchase-order, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -58,7 +58,7 @@ stateDiagram-v2
 | `(none)` | create | `draft` | Purchaser | ฟิลด์ header ถูก validate (`vendor_id`, `currency_id`, `order_date`, `delivery_date`, `workflow_id`); ต้องมีอย่างน้อยหนึ่งบรรทัดก่อน submission PR linkage เขียนเข้าตาราง bridge เมื่อมีต้นทางจาก PR; ไม่ต้องมี linkage สำหรับต้นทาง `manual` หรือ `pricelist` |
 | `draft` | save (edit) | `draft` | Purchaser (owner) | PO ยังแก้ไขได้; ไม่มี workflow stage advance Header totals (`total_qty`, `total_price`, `total_tax`, `total_amount`) คำนวณใหม่ตอน save |
 | `draft` | submit for approval | `in_progress` | Purchaser (owner) | อย่างน้อยบรรทัดที่ไม่ deleted หนึ่งบรรทัด; header ครบ; `workflow_id` ที่เลือก active สำหรับ scope `purchase-order` `last_action` ตั้งเป็น `submitted`; stage cursor advance ไปยัง stage approval แรก |
-| `draft` | delete | `(none)` | เจ้าของเอกสาร (`created_by_id`) หรือ platform super-admin | Soft-delete เท่านั้น (`deleted_at` ตั้ง); อนุญาตเฉพาะตอน PO อยู่ใน `draft` (`remove()`: "Only draft purchase orders can be deleted" + `isDocumentOwner` / `isSuperAdmin`) |
+| `draft` | delete | `(none)` | เจ้าของเอกสาร (`created_by_id`) หรือ Backstage super-admin | Soft-delete เท่านั้น (`deleted_at` ตั้ง); อนุญาตเฉพาะตอน PO อยู่ใน `draft` (`remove()`: "Only draft purchase orders can be deleted" + `isDocumentOwner` / `isSuperAdmin`) |
 | `draft` / `in_progress` / `approved` / `sent_or_print` | cancel | `closed` | ผู้ที่ถือ action นั้น (ไม่มี role gate นอกเหนือจาก authentication) | ถอน commitment; ทุกบรรทัด `cancelled_qty = order_qty − received_qty` (`cancel()`) ใช้จาก `partial` ไม่ได้ |
 | `in_progress` | approve (stage นี้ ไม่ใช่ final) | `in_progress` | Current-stage approver | Approver อยู่ใน `user_action.execute[]` สำหรับ `workflow_current_stage`; `last_action` กลายเป็น `approved`; stage cursor advance การอนุญาตให้ดำเนินการที่ stage นี้คือ membership ใน `user_action.execute[]` เท่านั้น — ไม่มี amount threshold ใดมา gate ว่า *ใคร* อนุมัติได้ แต่ stage ถัดไปเองอาจขับเคลื่อนด้วย amount ได้: `routing_rules` ของ workflow อาจ skip หรือกระโดดข้าม stage ตาม `total_amount` (`PO_AUTH_004`) |
 | `in_progress` | approve (final stage) | `approved` | ผู้ที่ถือ stage สุดท้ายของ workflow | `isFinalApproval` จาก `buildApproveWorkflow`; ตั้ง `approval_date`; `workflow_history` ได้ entry `completed` **ไม่มีการส่งอะไรออกไป** — PO รับของได้และส่งอีเมลได้แล้ว แต่ vendor ยังไม่เห็น |
@@ -66,12 +66,12 @@ stateDiagram-v2
 | `approved` | mark sent (พิมพ์ / แฟกซ์ / โทร) | `sent_or_print` | ผู้เรียก API (`POST .../:id/mark-sent`; ยังไม่มีปุ่ม React) | "Only approved orders can be marked as sent."; `tb_activity` "Marked as sent to vendor" |
 | `in_progress` | send-back / review | `in_progress` (ไม่เปลี่ยน) | ผู้อนุมัติใด ๆ บนห่วงโซ่ | รีเซ็ต `workflow_current_stage` ไปยัง stage ก่อนหน้า (เช่น กลับไปยังผู้สร้าง); `po_status` ไม่เปลี่ยน เหตุผล (ถ้ามี) บันทึกเป็น comment |
 | `in_progress` | reject | `voided` | ผู้อนุมัติใด ๆ บนห่วงโซ่ | Transition แบบตรงและสิ้นสุด — ไม่มี state ระหว่างทาง |
-| `{in_progress, approved, sent_or_print, partial}` | close | `closed` | ผู้ใช้ที่ authenticate แล้วคนใดก็ได้ (header ของ React แสดง **Close** บน `approved` / `sent_or_print` เมื่อ `canClose`, `po-header.tsx` L128-131); ไม่มี role gate ใน `closePO()` | Vendor ไม่สามารถ supply ปริมาณที่เหลือ; open qty ที่เหลือ (`> 0`) เขียนลงใน `cancelled_qty`; แจ้งเตือน buyer |
+| `{in_progress, approved, sent_or_print, partial}` | close | `closed` | ผู้ใช้ที่ authenticate แล้วคนใดก็ได้ (header ของ React แสดง **Close** บน `approved` / `sent_or_print` เมื่อ `canClose`, `po-header.tsx` L188-199); ไม่มี role gate ใน `closePO()` | Vendor ไม่สามารถ supply ปริมาณที่เหลือ; open qty ที่เหลือ (`> 0`) เขียนลงใน `cancelled_qty`; แจ้งเตือน buyer |
 | `approved` / `sent_or_print` | receive (partial) | `partial` | Receiver ผ่าน GRN posting (ต้องมี `can_use` ของ location) | อย่างน้อย PO line หนึ่งมี `received_qty > 0` แต่ `received_qty < order_qty − cancelled_qty` ข้าม PO State change คำนวณจาก GRN postings ระดับบรรทัด (`updatePoStatuses`) |
 | `approved` / `sent_or_print` | receive (full) | `completed` | Receiver ผ่าน GRN posting | ทุกบรรทัดเป็นไปตาม `received_qty + cancelled_qty ≥ order_qty`; ทุกบรรทัดปิดผ่าน GRN ใน transaction เดียว |
 | `partial` | receive (เพิ่มเติม) | `partial` | Receiver ผ่าน GRN posting | GRN ถัดไป post quantity เพิ่ม แต่ PO ยังมีอย่างน้อยหนึ่งบรรทัดที่เปิด; state ยังคงเป็น `partial` |
 | `partial` | receive (final balance) | `completed` | Receiver ผ่าน GRN posting | GRN สุดท้าย clear outstanding balance บนทุกบรรทัด; PO transition ไปยัง normal completion |
-| `completed` | (ไม่มี action เพิ่ม) | `completed` | — | Terminal state สำหรับเส้นทาง receipt ไม่พบฟีเจอร์ three-way-match / invoice ที่ยืนยันได้ใน source ปัจจุบันเพื่อ track ต่อจากนี้ |
+| `completed` | (ไม่มี action เพิ่ม) | `completed` | — | Terminal state สำหรับเส้นทาง receipt ไม่มีฟีเจอร์ three-way-match / invoice ระดับ PO ให้ track ต่อจากนี้ (AP module ทำงานจากรายการ GRN) |
 
 ## 3. สารบัญ Persona
 
@@ -81,7 +81,7 @@ stateDiagram-v2
 - [Procurement Manager](./03-user-flow-procurement-manager.md) — ทำหน้าที่เป็นผู้อนุมัติใน workflow stage ที่กำหนดไว้ (กลไกทั่วไปเดียวกับผู้อนุมัติรายอื่น; `routing_rules` ของ workflow ที่ assign ให้สามารถ skip/กระโดดข้าม stage ตาม `total_amount` ได้จริง ยืนยันแล้ว, `PO_AUTH_004`); ถือสิทธิ์ delete-in-draft
 - [Vendor](./03-user-flow-vendor.md) — ฝ่ายภายนอกไม่มี system login; รับ PO ทางอีเมล (พร้อม PDF แบบ optional) หรือการพิมพ์นอกระบบที่บันทึกผ่าน `mark-sent` และ fulfil การส่งของตามเงื่อนไขที่ตกลง ไม่พบฟีเจอร์การตอบรับในระบบหรือ invoice ที่ยืนยันได้
 - [Receiver](./03-user-flow-receiver.md) — Receiver / Store Keeper + Inventory Manager รับสินค้าจริง สร้าง GRN เทียบกับ PO ที่ `approved` / `sent_or_print` / `partial` ทีละบรรทัด และ trigger receipt-state transitions `→ partial → completed`
-- [Finance](./03-user-flow-finance.md) — ถูกระบุไว้ในเอกสารออกแบบรุ่นเก่าว่าเป็นผู้ review ก่อนส่งและเจ้าของ AP หลังรับของ; **ยังไม่ยืนยัน** ใน source ปัจจุบัน (ไม่พบ stage role แยกต่างหาก, การบันทึก invoice, หรือโค้ด AP-matching)
+- [Finance](./03-user-flow-finance.md) — ถูกระบุไว้ในเอกสารออกแบบรุ่นเก่าว่าเป็นผู้ review ก่อนส่งและเจ้าของ AP หลังรับของ; **ยังไม่ยืนยัน** ในฐานะ persona ของ PO (ไม่มี stage role แยกต่างหาก, ไม่มี invoice match ระดับ PO; มี AP module แต่เริ่มจากรายการ GRN)
 - [Audit / Config](./03-user-flow-audit-config.md) — Auditor (read-only review ของ POs, amendments, และ activity log) และ System Administrator (workflow stage configuration, RBAC, การเรียงเลข)
 
 ### 3.1 ภาพรวม Actor / Use Case
@@ -129,7 +129,7 @@ graph TB
 | Approver (stage ใด ๆ) | Send-back / review พร้อมเหตุผล | Purchaser (หรือ stage ที่เฉพาะผู้สร้าง) | `in_progress` ไม่เปลี่ยน (รีเซ็ตเฉพาะ `workflow_current_stage` — ไม่ถึง `draft`) |
 | Vendor | การส่งของจริง | Receiver | `approved` หรือ `sent_or_print` (state ระบบไม่เปลี่ยนจนกว่า GRN จะ post) |
 | Receiver | Post GRN — partial fulfilment | Purchaser, Inventory Manager | `partial` (บรรทัดหนึ่งหรือมากกว่ายังเปิดอยู่) |
-| Receiver | Post GRN — final balance | — | `completed` (ทุกบรรทัดรับครบ; ไม่พบ handoff invoice/AP ปลายน้ำที่ยืนยันได้) |
+| Receiver | Post GRN — final balance | — | `completed` (ทุกบรรทัดรับครบ; ไม่มี handoff invoice/AP ระดับ PO; AP อ่านรายการ GRN) |
 | Procurement Manager / Inventory Manager | Close PO ด้วย qty ที่เหลือเป็น cancelled | — (เป้าหมาย review close-out ยังไม่ยืนยัน) | `closed` (qty ที่เหลือเขียนเป็น `cancelled_qty`) |
 | ผู้อนุมัติใด ๆ ที่ stage ปัจจุบัน | Reject (แบบตรงและสิ้นสุด) | Auditor (review หลังเกิดเหตุเท่านั้น) | `voided` (เข้าถึงได้เฉพาะจาก `in_progress`) |
 
