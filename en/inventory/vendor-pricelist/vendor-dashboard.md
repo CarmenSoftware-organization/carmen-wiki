@@ -1,8 +1,8 @@
 ---
 title: Vendor Management Dashboard
-description: The /vendor-management landing screen — 10 hardcoded KPI/chart tiles (vendor + pricelist + RFP) sourced from a code-registered dataset catalog, not a user-configurable widget board.
+description: The /vendor-management landing screen — 10 KPI/chart system tiles (vendor + pricelist + RFP) read from Backstage-managed dashboard templates and a code-registered dataset catalog, followed by the shared BU widget section.
 published: true
-date: 2026-07-29T10:15:00.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: vendor-pricelist, vendor-management, dashboard, widget, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T10:15:00.000Z
@@ -11,19 +11,20 @@ dateCreated: 2026-07-29T10:15:00.000Z
 # Vendor Management Dashboard
 
 > **At a Glance**
-> **Route:** `/vendor-management` (index) &nbsp;·&nbsp; **Component:** `vendor-dashboard.tsx` &nbsp;·&nbsp; **Data:** `GET /api/{bu_code}/dashboard-widgets/vendor-management` &nbsp;·&nbsp; **Tiles:** 10 hardcoded (7 KPI, 2 chart, 1 line) covering vendor, pricelist, and RFP &nbsp;·&nbsp; **Not editable** — no add/remove/reorder UI, no per-tenant customization.
+> **Route:** `/vendor-management` (index) &nbsp;·&nbsp; **Component:** `vendor-dashboard.tsx` &nbsp;·&nbsp; **Data:** `GET /api/{bu_code}/dashboard-widgets/vendor-management` &nbsp;·&nbsp; **Tiles:** 10 seeded system templates (7 KPI, 2 chart, 1 line) covering vendor, pricelist, and RFP &nbsp;·&nbsp; **Not editable from this screen** — tiles come from `tb_dashboard_widget_template` (Backstage), cached 60 s, filterable per BU; below them the **BU widget section** (`module = vendor-management`) is editable by users with the `dashboard.bu_widget` permissions.
+> **Re-synced 2026-10-27:** the tile list is no longer the `VENDOR_MANAGEMENT_WIDGETS` TypeScript array (`system-widgets.config.ts` was deleted, `3ea25956f`); it is read from the Backstage database. The BU widget section was appended to this page (frontend `09bcd7af`, `5d54e8e9`). Everything else on this page (the 10 `dataset_id`s, the data endpoint, the no-permission-gate finding) is unchanged.
 
 ![Vendor Management dashboard](/screenshots/vendor-management/index.png)
 
 ## 1. What & Who
 
-The Vendor Management Dashboard is the landing screen at `/vendor-management`, shown before the user picks [Vendor](/en/inventory/vendor-pricelist), Price List, Price List Template, or [Request for Pricing](/en/inventory/vendor-pricelist/request-price-list). It renders a fixed set of **10 dashboard tiles** built from `vendor.*`, `pricelist.*`, and `rfp.*` entries in the [system-config/dashboard-dataset](/en/inventory/system-config/dashboard-dataset) catalog. The UI translation key is `vendorManagement.dashboard` (`title: "Vendor Overview"`, `description: "Vendor, pricelist, and RFP status"`).
+The Vendor Management Dashboard is the landing screen at `/vendor-management`, shown before the user picks [Vendor](/en/inventory/vendor-pricelist), Price List, Price List Template, or [Request for Pricing](/en/inventory/vendor-pricelist/request-price-list). It renders **10 system dashboard tiles** (the seeded set — Backstage admins can change it) built from `vendor.*`, `pricelist.*`, and `rfp.*` entries in the [system-config/dashboard-dataset](/en/inventory/system-config/dashboard-dataset) catalog. The UI translation key is `vendorManagement.dashboard` (`title: "Vendor Overview"`, `description: "Vendor, pricelist, and RFP status"`).
 
 Unlike [operation-dashboard](/en/inventory/recipe/operation-dashboard) (which has a bespoke layout component), this screen is a thin wrapper around the shared `DashboardWidgetGrid` component — the same one that would power any other module dashboard that chooses to reuse it. It renders one flat responsive grid instead of named sections, sorted by a fixed widget-type render-group (`kpi`/`gauge` → `sparkline` → `pie` → `bar` → `line`/`area` → `table` → `heatmap`) and then by `order_index` within each group.
 
-**This is the same hardcoded, non-editable mechanism documented in full at [recipe/operation-dashboard](/en/inventory/recipe/operation-dashboard) §6** — a fixed TypeScript array (`VENDOR_MANAGEMENT_WIDGETS` in `system-widgets.config.ts`) with no database row backing any tile, served by a dedicated per-module endpoint on `DashboardSystemWidgetsController` (`api/:bu_code/dashboard-widgets/vendor-management`) — **not** `tb_dashboard_bu_widget`/`tb_dashboard_personal_widget` (the real, editable widget tables documented at [reporting-audit/widget](/en/inventory/reporting-audit/widget)).
+**This is the system-widget mechanism (not the per-BU / personal widget tables).** Since 2026-10 the definitions are rows of the Backstage table `tb_dashboard_widget_template` (`kind = 'system'`, `module = 'vendor-management'`; seeded by migration `20261006100000_dashboard_widget_template` and `seed.dashboard-widget-template.data.ts`, each row with a Thai `title` plus an `title_i18n` `{ en, th }` pair), read by `SystemWidgetCache` (`DashboardTemplates.findActiveSystem`, 60 s in-process cache, last good copy kept if the read fails), filtered per business unit by the template's `allow_business_unit` / `deny_business_unit` lists (`visibleToBu`), and served by `DashboardSystemWidgetsController` — the web app calls `GET api/:bu_code/dashboard-widgets/:module/config` (definitions only, no values) and lazy-loads each tile's value from `GET api/:bu_code/datasets/:dataset_id`; the older bundled `GET …/dashboard-widgets/vendor-management` (values included) still exists — **not** `tb_dashboard_bu_widget`/`tb_dashboard_personal_widget` (the real, editable widget tables documented at [reporting-audit/widget](/en/inventory/reporting-audit/widget)).
 
-**Maintained by** Engineering (code change + deploy to add/remove/reorder a tile — no admin screen exists). **Read by** any authenticated user who can load `/vendor-management` — no permission check was found gating the data endpoint itself.
+**Maintained by** Backstage administrators (the dashboard-template records, then a deploy to tenants; no screen inside Carmen Blue) — and, for the BU widget section underneath, BU users holding `dashboard.bu_widget` create / update / delete. **Read by** any authenticated user who can load `/vendor-management` — no permission check was found gating the data endpoint itself.
 
 ## 2. Common Tasks
 
@@ -31,7 +32,7 @@ Unlike [operation-dashboard](/en/inventory/recipe/operation-dashboard) (which ha
 |---|---|---|
 | View vendor-management KPIs | Navigate to `/vendor-management` | Loads automatically; no filter/date-range controls exist |
 | Drill into a metric | Click a tile (visual only) | Tiles are read-only cards, not links — navigate to Vendor / Price List / Request for Pricing manually to inspect underlying records |
-| Add/remove/reorder a tile | **Not possible from the UI** | Requires a code change to `system-widgets.config.ts` (backend-gateway) |
+| Add/remove/reorder a system tile | **Not possible from this screen** | Edit the `kind = 'system'`, `module = 'vendor-management'` rows in `tb_dashboard_widget_template` via Backstage (visible after the 60 s cache). Add a BU-specific tile instead through the BU widget section below the grid. |
 | Retry after a load error | Reload the page | One inline error banner (`dashboardWidget.loadError`) covers the whole tile set — no per-tile retry |
 
 ## 3. Validation & Errors
@@ -47,7 +48,9 @@ Unlike [operation-dashboard](/en/inventory/recipe/operation-dashboard) (which ha
 ## 4. Edge Cases
 
 - **No permission gate found on the data endpoint.** `DashboardSystemWidgetsController` is guarded only by `KeycloakGuard` — no permission decorator was found on the `vendor-management` route handler. This is distinct from the sidebar's own `/vendor-management/*` sub-screen gates, which use real `vendor_management.*` permission keys (e.g. `vendor_management.vendor.view`) — those keys are confirmed live in the backend permission catalog (unlike `recipe`'s `operation_plan.view` placeholder), but none of them gate this dashboard's own data call either.
-- **Tiles are hardcoded, not stored.** Every business unit sees the identical 10 tiles in the identical order — nothing about tile selection, order, or title is tenant-configurable through this screen.
+- **Tiles come from templates, not from tenant data.** Unless a template carries `allow_business_unit` / `deny_business_unit` lists, every business unit sees the same 10 tiles in the same `order_index` — nothing about tile selection, order, or title is configurable by a tenant user on this screen. Titles resolve from `title_i18n` (en / th) with the Thai `title` as fallback.
+- **Voided price lists appear in `pricelist.by-status`.** The view behind it (`v_dash_pricelist_by_status`, micro-data migration `102_dash_views`) groups every row with `deleted_at IS NULL` by `status`. Lists removed before 2026-10 used to disappear via `deleted_at`; they are now `voided` with `deleted_at` null (migration `20261021120100`), so the pie gains a `voided` slice. The two KPIs and the by-vendor bar only count `status = 'active'`, so voiding a list lowers them. (Observation from reading the view definition, not from a running tenant.)
+- **BU widget section.** Under the grid the page renders `BuWidgetSection module="vendor-management"`; it hides itself entirely when the backend is unavailable or the BU has no widgets and the user cannot add any. Users with `dashboard.bu_widget.create` / `.update` can add, edit and drag-reorder those widgets (`/api/{bu}/dashboard-widgets/bu`). This supersedes the earlier statement that the BU widget table has no frontend caller.
 - **`rfp.issued-daily` is the only time-series tile** — a `line` chart despite the module having no dedicated Trends section (unlike [operation-dashboard](/en/inventory/recipe/operation-dashboard)'s explicit section grouping, this screen's shared grid just slots it after the bar/pie tiles per the fixed render-group order).
 - **Two pricelist-lifecycle KPIs sit side by side with no visual distinction of urgency:** `pricelist.active-count` (a plain scalar) and `pricelist.expiring-soon` (also a plain scalar, "≤30d") render as identical `KpiCard`s — there is no color/badge escalation on the expiring-soon tile despite its operational urgency.
 - **Cache.** The widget list query uses `CACHE_DYNAMIC` (`useVendorWidgets` → `useDashboardWidgets("vendor-management")`), the same tier as every other module dashboard.
@@ -56,7 +59,7 @@ Unlike [operation-dashboard](/en/inventory/recipe/operation-dashboard) (which ha
 
 ## 5. Tiles (Dev)
 
-Source: `apps/backend-gateway/src/application/dashboard-widgets/system-widgets.config.ts`, `VENDOR_MANAGEMENT_WIDGETS`.
+Source: `packages/prisma-shared-schema-backstage/prisma/seed.dashboard-widget-template.data.ts` (and migration `20261006100000_dashboard_widget_template`), rows `system.vendor-management.*` — the seed of `tb_dashboard_widget_template`; a deployed BU may differ if Backstage changed the rows.
 
 | # | `dataset_id` | Type | Title (Thai, as coded) |
 |---|---|---|---|
@@ -71,7 +74,7 @@ Source: `apps/backend-gateway/src/application/dashboard-widgets/system-widgets.c
 | 8 | `pricelist.by-vendor-top` | bar | Top 10 vendor ตามจำนวน pricelist |
 | 9 | `rfp.issued-daily` | line | RFP สร้างต่อวัน (30d) |
 
-Titles are hardcoded on the config entry (in Thai in the current source), not translated via `use-intl`. Each `dataset_id` resolves against `micro-data/service/dashboard/registry.go`'s **"Vendor management module"** section — see [system-config/dashboard-dataset](/en/inventory/system-config/dashboard-dataset) §5 for the full catalog contract, including the `spend` category these 10 all share.
+Titles shown are the seed `title` (Thai); each row also carries an English `title_i18n`. Each `dataset_id` resolves against `micro-data/service/dashboard/registry.go`'s **"Vendor management module"** section — see [system-config/dashboard-dataset](/en/inventory/system-config/dashboard-dataset) §5 for the full catalog contract, including the `spend` category these 10 all share.
 
 ## 6. Cross-References
 
@@ -86,7 +89,7 @@ Titles are hardcoded on the config entry (in Thai in the current source), not tr
 - **Frontend route:** `../carmen-frontend/routes/vendor-management/vendor-management.route.tsx` → `vendor-dashboard.tsx`.
 - **Frontend hook:** `../carmen-frontend/hooks/use-dashboard-widgets.ts` — `useVendorWidgets()`.
 - **Frontend shared component:** `../carmen-frontend/components/dashboard-widget/dashboard-widget-grid-lazy.tsx` (lazy wrapper) → `dashboard-widget-grid.tsx`'s `DashboardWidgetGrid`.
-- **Gateway controller:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/dashboard-widgets/system-widgets.controller.ts` — `DashboardSystemWidgetsController`, `@Get('vendor-management')`.
-- **Gateway config:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/dashboard-widgets/system-widgets.config.ts` — `VENDOR_MANAGEMENT_WIDGETS`, `getSystemWidgets()`.
+- **Gateway controller:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/dashboard-widgets/system-widgets.controller.ts` — `DashboardSystemWidgetsController`, `@Get(':module/config')` (used by the web app) and `@Get('vendor-management')` (bundled values).
+- **Gateway cache:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/dashboard-widgets/system-widget-cache.service.ts` (`SystemWidgetCache.forBu`, TTL 60 s), `visible-to-bu.ts`; the old `system-widgets.config.ts` is deleted. **Seed:** `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/seed.dashboard-widget-template.data.ts`. **BU section:** `../carmen-frontend/components/dashboard-widget/bu-widget-section.tsx`.
 - **Dataset registry:** `../micro-data/service/dashboard/registry.go` — vendor/pricelist/RFP entries (lines ~127-147).
 - **Translations:** `../carmen-frontend/messages/en.json` — `vendorManagement.dashboard.title`/`.description`.

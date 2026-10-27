@@ -2,7 +2,7 @@
 title: Vendor Pricelist — Test Scenarios — Vendor
 description: Vendor's test cases for vendor-pricelist. External party — portal open / save / submit / expiry; Permission section reduced to a single N/A row.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: vendor-pricelist, test-scenarios, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -13,6 +13,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 > **At a Glance**
 > **Persona:** Vendor (external — token-authenticated portal only) &nbsp;·&nbsp; **Module:** [vendor-pricelist](/en/inventory/vendor-pricelist)
 > **Executable coverage (2026-09-22):** no Playwright spec for the portal; the documentation-only catalog `../carmen-frontend-e2e/docs/test-cases/1002-external-price-list.md` (42 `TC-EPL-*` cases: load, header, product table, MOQ sub-table, tax-profile / unit pickers, save, Excel import, submit, expired screen) is the closest oracle. This page does not mirror it.
+> **Re-synced 2026-10-27:** prices are typed pre-tax (read-only Tax Rate, computed Total), Excel import matches by a hidden Row ID, and the page has a Thai / English toggle (rows HP-06, HP-08).
 > **Re-synced 2026-09-22:** the 2026-07-16 "Save/Submit confirmed non-functional" finding is obsolete — `PATCH /api/pricelist-external/:url_token` and `POST …/submit` exist; the link expires at the RFQ `end_date`.
 
 This page captures the test scenarios that exercise the **Vendor** persona's interaction with `/pl/:url_token`. Because there is no Carmen Blue login for the vendor, the Permission / Authorization section is a single N/A row.
@@ -26,7 +27,9 @@ This page captures the test scenarios that exercise the **Vendor** persona's int
 | VPL-VND-HP-03 | Pick a tax profile and order unit per line | Continue from HP-01; BU has ≥ 2 tax profiles; a product has ≥ 2 order units | Toggle Edit mode; change the tax profile and unit on one line | Options come from `GET …/check-pricelist/:url_token/tax-profiles` and `…/units` (default unit flagged); the line's `tax_rate` / `tax_amt` recompute client-side. |
 | VPL-VND-HP-04 | Save a draft | Continue from HP-03; type prices on two lines | Click **Save** | `PATCH …/pricelist-external/:url_token` with `{ note, pricelist_detail: { update: [...] } }` → 200; the pricelist stays `draft`; reloading the link shows the saved prices; `tb_activity` has a `vendor.pricelist.draft_saved` entry with before/after snapshots. |
 | VPL-VND-HP-05 | Add another MOQ tier for a product | Continue from HP-04 | In the MOQ sub-table add a tier (`moq_qty = 50`, lower price); Save | `pricelist_detail.add[]` creates a new `(product, unit, moq_qty)` row; the unique key permits it. |
-| VPL-VND-HP-06 | Import prices from Excel | Continue from HP-01; sheet in the portal's download format | **Import** → choose file → confirm | `price-list-external-excel.ts` parses the sheet into the form; rows match on product code + unit + MOQ; unmatched rows are reported in the dialog; nothing is persisted until **Save**. |
+| VPL-VND-HP-06 | Import prices from Excel | Continue from HP-01; sheet in the portal's download format | **Import** → choose file → confirm | `price-list-external-excel.ts` parses the sheet into the form; rows match on the hidden **Row ID** + product code, then No. + product code, then product code alone only if unique; a duplicate code without a usable key is skipped and counted, not guessed (two MOQ tiers of the same product keep their own prices); unmatched rows are reported in the dialog; nothing is persisted until **Save**. |
+| VPL-VND-HP-08 | Switch the portal language — **added 2026-10-27** | Continue from HP-01 | Use the language toggle in the page header (also present on the expired-link page) | Labels, buttons and toasts switch between Thai and English (`priceListPortal` messages); the exported Excel headers stay English because import matches on them. |
+| VPL-VND-HP-09 | Price a line before tax — **added 2026-10-27** | Continue from HP-03; a line with a 7 % tax profile | Type `Price = 100` | Tax Rate shows `7%` (read-only), Tax Amount `฿7.00`, Total `฿107.00`; the PATCH sends `price = 100`, `price_without_tax = 100`, `tax_amt = 7`. Lines with no tax profile show Tax Rate `—` and total = price. |
 | VPL-VND-HP-07 | Submit | Continue from HP-04; one line left at `price = 0` | Click **Submit** → confirm | `POST …/pricelist-external/:url_token/submit` → `status = submitted`, `submitted_at = now()`; the zero-priced line is deleted; a `submit` activity is logged; the page turns read-only; the Purchaser's RFQ row shows `has_submitted = true`, `pricelist.status = submitted`. |
 
 ## 2. Permission / Authorization

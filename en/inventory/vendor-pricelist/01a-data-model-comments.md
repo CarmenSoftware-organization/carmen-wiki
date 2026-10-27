@@ -2,7 +2,7 @@
 title: Vendor Price List — Data Model — Comment Tables
 description: Document-level and line-level comment / attachment tables for the Vendor Price List module across the pricelist-template, request-for-pricing, and pricelist sub-entity families.
 published: true
-date: 2026-07-16T00:00:00.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: vendor-pricelist, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -15,6 +15,8 @@ dateCreated: 2026-05-20T00:00:00.000Z
 The Vendor Price List module persists notes plus file attachments on dedicated `*_comment` tables across three sub-entity families — pricelist template, request-for-pricing, and pricelist — separate from the lifecycle-bearing header / detail tables documented in [01 — Data Model](/en/inventory/vendor-pricelist/01-data-model). Every comment row carries a free-text `message`, an `attachments` JSON array of S3-token records (`{originalName, fileToken, contentType}`), and a `type` discriminator (`enum_comment_type`, `user` default | `system`) shared with every other comment table in the product. Each sub-entity family has its own header-level comment table and detail-level (line-level) comment table with its own manual CRUD controller.
 >
 > **Confirmed (verified 2026-07-16):** the `system` value on `enum_comment_type` exists in the schema, but no service in this module (`price-list`, `price-list-template`, `request-for-pricing`, `check-price-list`) ever creates a comment row automatically — `create()`/`update()`/`updateStatus()` across all four never touch a `*_comment` table. Every comment row that exists today was written by an explicit user call to that comment's own CRUD endpoint. Treat every "system comment records..." claim below and in [02-business-rules](/en/inventory/vendor-pricelist/02-business-rules) / the user-flow pages as a design-target, not current behaviour.
+
+> **Re-synced 2026-10-27:** (a) the vendor master has the same comment pair — `tb_vendor_comment` and `tb_vendor_business_type_comment` — and the vendor page now opens a comment + attachment sheet on `/api/config/{bu}/vendor-comments` (`vendor-form.tsx` → `EntityCommentSheet`, `use-vendor-comments.ts`); (b) every comment controller in this module (template, RFQ, pricelist, vendor — headers and details) now validates uploads through `AttachmentPolicyService` / `CommentFilesInterceptor` instead of a hard-coded 10 MB + JPEG/PNG/WebP/GIF/PDF check: the allowed file groups (`image`, `pdf`, `excel`, `word`, `csv`, `text`) and the size cap come from the business unit's `config` keys `attachment.allowed_types` / `attachment.max_size_mb` (defaults: image + pdf, 10 MB; ceiling 25 MB; policy cached 60 s per BU); (c) the micro-service DTOs accept `attachments` either as a full array (replace) or as a `{ add, remove }` delta — before this the delta shape from the gateway made a PATCH that attached or removed files fail validation; (d) on PATCH the gateway only deletes storage files whose `fileToken` really belongs to that comment, and deletes them only after the DB write succeeds. Still true: nothing in this module writes a `system` comment automatically — voiding or restoring a price list leaves no comment row.
 
 ## 2. Shared Shape
 
@@ -94,6 +96,10 @@ Activity-log surfaces on the pricelist header and per-row. Same shape as the tem
 | ----- | --------- | ------- |
 | `tb_pricelist_comment` | `pricelist_id → tb_pricelist.id` | Free-text notes attached to the pricelist header — user-authored only; `price-list.service.ts`'s `create()`/`update()` never write here, so there is no automatic entry for status changes, submission, or approval. |
 | `tb_pricelist_detail_comment` | `pricelist_detail_id → tb_pricelist_detail.id` | Free-text notes attached to one product row — user-authored only; no automatic entry for an `is_preferred` toggle or a price edit. |
+
+### 3.5 tb_vendor_comment / tb_vendor_business_type_comment
+
+Same shape as § 2 (`type`, `user_id`, `message`, `attachments`, `doc_version`, audit columns); parent FKs `vendor_id → tb_vendor.id` and `vendor_business_type_id → tb_vendor_business_type.id`. Gateway: `GET/POST /api/config/{bu}/vendor-comments/:vendor_id`, `PATCH/DELETE …/:comment_id`, `POST …/:comment_id/attachment`, `DELETE …/:comment_id/attachment/:fileToken` (and the `vendor-business-type-comments` twin). The React vendor page uses only the vendor-level one.
 
 ## 4. Cross-References
 

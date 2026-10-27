@@ -2,7 +2,7 @@
 title: Request for Quotation
 description: Outbound request-for-price (RFQ) emailed to one or more vendors — each gets an expiring portal link; submissions land as submitted pricelists.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: vendor-pricelist, rfq, procurement, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **Owner:** Purchaser / Procurement Manager &nbsp;·&nbsp; **Table:** `tb_request_for_pricing` (+ detail, comments) &nbsp;·&nbsp; **Workflow:** none (date-window driven) &nbsp;·&nbsp; **Upstream:** [templates/price-list](/en/inventory/templates/price-list) &nbsp;·&nbsp; Solicits price quotes from vendors before a `tb_pricelist` is awarded.
+> **Re-synced 2026-10-27:** the list now shows a **Responses** column (`submitted / invited` with a progress bar, `vendor_count` and `vendors[].has_submitted` from the list response) and an **Upcoming / Open (N days left) / Closed** badge under the end date — the badge is computed in the browser from `start_date` / `end_date` against today's calendar day (`rfp-window.ts`; the backend has no such field, and closing within 3 days turns the badge amber); view mode shows "N of M vendors submitted" instead of the add-vendor prompt; removing a vendor now sends the invitation **line id** (the old `{ vendor_id }` payload could soft-delete the wrong RFQ's vendor row — fixed on both sides, see § 3); the page uses the shared list/form shells.
 > **Re-synced 2026-09-22:** per-vendor **Send email** action (`POST …/request-for-pricings/:id/send-email`, 2026-09-16); the portal link now expires at the RFQ `end_date` (`UrlTokenGuard`); the portal's Save/Submit work and produce a `submitted` pricelist; the detail response expands `vendor`, `pricelist { id, no, name, status }` and `pricelist_template { …, currency }` as objects.
 
 ![Request for Quotation screen](/screenshots/vendor-pricelist/request-price-list.png)
@@ -32,19 +33,21 @@ dateCreated: 2026-05-16T15:00:00.000Z
 | Invite vendors | Same create form → **Add vendors** dialog (multi-select, 2026-08-06) | All invitation rows (and their `pricelist_url_token`s, JWTs and `tb_shot_url` rows with `expired_at = end_date`) are created in the same `POST` call as the RFQ header — there is no separate "launch" step. |
 | Email the link to a vendor | Detail → vendor row → **Send email** (action column, 2026-09-10) | Opens the same dialog as the PO email: pick an email profile (`profile_id`), enter `to` / optional `cc`, and a `subject` / HTML `body` pre-filled from an email template with `rfp` placeholders (the portal link `/pl/:url_token` is composed client-side); `POST …/request-for-pricings/:id/send-email` (`vendor_id` optional) → `email_sent` activity. One vendor per send; there is no "send to all" button. |
 | Add more vendors to an existing RFQ | Detail → edit → add vendor row | `PATCH` supports `vendors.add`/`vendors.remove`/`vendors.update`; unique constraint on `(request_for_pricing_id, vendor_id)` enforces no double-invite. |
-| Track responses | RFQ detail → vendor rows | `has_submitted` and the linked `pricelist { no, status }` per vendor (`submitted` once the vendor clicks Submit; still `draft` if they only opened/saved). |
+| Track responses | RFQ list **Responses** column; RFQ detail → vendor rows | `has_submitted` and the linked `pricelist { no, status }` per vendor (`submitted` once the vendor clicks Submit; still `draft` if they only opened/saved). **Caveat:** the backend computes `has_submitted` as `!!pricelist_id`, and `pricelist_id` is filled when the vendor first *opens* the link (the draft is auto-created then), so the list's "N / M" counts vendors who have opened the portal, not only those who submitted — read the linked pricelist `status` for the real answer (open finding). |
 | Compare / award | Purchaser opens the vendor's `submitted` pricelist on the **Price List** screen | Awarding = setting the winning `tb_pricelist.status = active` from the Price List edit form — there is no "Compare" or "Activate" button on the RFQ screen itself, and no bid-comparison UI was found. |
 
 ## 3. Validation & Errors
 
 | Symptom / Message | Cause | Confirmed? |
 |---|---|---|
+| Removing a vendor does nothing / `RFP_VENDOR_REMOVE_ID_REQUIRED` | `vendors.remove` entry without an invitation line id | **Confirmed (2026-10)** — validated before any write; the delete is scoped to this RFQ's own live lines. The React form sends `{ id }` of the line (rows added in the same edit and not yet saved are skipped). |
 | "Vendor already invited" | A non-deleted detail row exists for (RFQ, vendor) | **Confirmed** — `@@unique([request_for_pricing_id, vendor_id, deleted_at])`. |
 | RFQ creation rejected with an invalid date range | `start_date > end_date` | **Confirmed** — `request-for-pricing.service.ts create()` explicitly checks this (`RFP_INVALID_DATE_RANGE`). |
 | "Cannot change template — invitations sent" | `pricelist_template_id` immutable post-dispatch | **Not confirmed.** `update()` accepts a new `pricelist_template_id` with no immutability check once vendor rows exist. |
 | Late submission rejected after `end_date` | The portal link expires | **Confirmed (2026-09-22) — at the guard, not in the service.** `UrlTokenGuard` returns 401 `url_token has expired` once `tb_shot_url.expired_at` (set to the RFQ `end_date` when the token is minted) has passed; every portal call, including the first open, is blocked and the React portal shows *This link has expired*. Extending `end_date` afterwards does **not** refresh existing tokens. |
 | "Vendor must be active" | `tb_vendor.is_active = false` blocks the invite | **Not confirmed.** No `is_active` check on the vendor was found in `create()` or `update()`. |
 | Invitation link returns 401 | Unknown token, or `expired_at` passed | `UrlTokenGuard`; a soft-deleted RFQ detail row is reported by `checkPriceList()` as `Request for pricing detail not found` (404). No token-rotation or revoke code exists. |
+| Send email fails with a "reconnect" style message | The chosen email profile's credentials need re-authorisation | **Confirmed (2026-10)** — `resolveSmtpConfigForProfile` runs first; an `EmailProfileAuthError` is returned as a readable invalid-argument error before any state changes. |
 | Send email fails with a permission/login bounce | App-id `requestForPricing.sendEmail` missing from the tenant's app-id allow-list | Add it in the platform app catalog before use (noted in commit `2b750267e`). |
 
 ## 4. Edge Cases
@@ -120,13 +123,13 @@ RFQ has **no status column and no workflow engine** — `tb_request_for_pricing`
 - [master-data/currency](/en/inventory/master-data/currency) — currency defaults from the template.
 - [purchase-request](/en/inventory/purchase-request) / [purchase-order](/en/inventory/purchase-order) — downstream consumers of the awarded pricelist.
 - [system-config/workflow](/en/inventory/system-config/workflow) — *not used* by RFQ; mentioned for contrast.
-- [03-user-flow-vendor](/en/inventory/vendor-pricelist/03-user-flow-vendor) — the confirmed gap in the portal's Save/Submit backend routes.
+- [03-user-flow-vendor](/en/inventory/vendor-pricelist/03-user-flow-vendor) — the portal's open → save → submit flow (the Save/Submit backend gap reported in 2026-07 is closed).
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_request_for_pricing` (line 4405), `tb_request_for_pricing_comment` (line 4438), `tb_request_for_pricing_detail` (line 4473), `tb_request_for_pricing_detail_comment` (line 4511). *(Corrected 2026-07-16 — the previous citation of lines 4039-4176 no longer matches the current schema file.)*
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_request_for_pricing` (line 5165), `tb_request_for_pricing_comment` (5198), `tb_request_for_pricing_detail` (5233), `tb_request_for_pricing_detail_comment` (5271) at backend `c9d788829` *(re-verified 2026-10-27; the schema file grows constantly, so search by model name rather than trusting a line number)*.
 - **Frontend route:** `../carmen-frontend/routes/vendor-management/request-price-list/`; external portal: `routes/external/pl/`.
-- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/request-for-pricing/request-for-pricing.service.ts` (`create`, `createVendorDetailWithToken`, `generateVendorToken`, `insertVendorPricelist`, `sendEmail`), `.../check-price-list/check-price-list.service.ts`; gateway `apps/backend-gateway/src/application/request-for-pricings/request-for-pricings.controller.ts` (`POST :id/send-email`, app-id `requestForPricing.sendEmail`; `GET :id/print-viewer`), `apps/backend-gateway/src/auth/guards/url-token.guard.ts`; platform schema `tb_shot_url`.
-- **Frontend:** `routes/vendor-management/request-price-list/` — `rfp-send-email-dialog.tsx`, `use-rfp-send-email.ts`, `rfp-vendor-add-dialog.tsx`, `rfp-vendor-cells.tsx`; `types/request-price-list.ts`.
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/request-for-pricing/request-for-pricing.service.ts` (`create`, `update` + `readVendorRemoveIds`, `createVendorDetailWithToken`, `generateVendorToken`, `insertVendorPricelist`, `sendEmail`), `.../check-price-list/check-price-list.service.ts`; gateway `apps/backend-gateway/src/application/request-for-pricings/request-for-pricings.controller.ts` (`POST :id/send-email`, app-id `requestForPricing.sendEmail`; `GET :id/print-viewer`), `apps/backend-gateway/src/auth/guards/url-token.guard.ts`; platform schema `tb_shot_url`.
+- **Frontend:** `routes/vendor-management/request-price-list/` — `rfp-send-email-dialog.tsx`, `use-rfp-send-email.ts`, `rfp-vendor-add-dialog.tsx`, `rfp-vendor-cells.tsx`, `rfp-list-cells.tsx` (`RfpResponses`, `RfpWindowBadge`), `rfp-window.ts` (`getRfpWindow`, `countSubmitted`); `types/request-price-list.ts`.
 - **E2E:** no spec for the RFQ screen; the portal has a documentation-only catalog `../carmen-frontend-e2e/docs/test-cases/1002-external-price-list.md` (42 cases, `TC-EPL-*`).
 - **Carmen docs:** `../carmen/docs/business-analysis/price-list-ba.md`; `../carmen/docs/business-analysis/procurement-ba.md` (RFQ section) — treat as design intent, not confirmed behaviour, per Section 6 above.
