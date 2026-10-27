@@ -202,7 +202,7 @@ The **conversion-factor row**. Defines how a quantity expressed in one unit tran
 | `from_unit_qty` | `Decimal? @db.Decimal(20, 5)` | Yes | Default `0`. Quantity on the source side of the conversion (e.g. `1` for "1 CASE = 12 EACH"). |
 | `to_unit_id` | `String? @db.Uuid` | Yes | FK to `tb_unit.id` — the destination unit. |
 | `to_unit_name` | `String @db.VarChar` | No | Snapshot. |
-| `to_unit_qty` | `Decimal? @db.Decimal(20, 5)` | Yes | Default `0`. Quantity on the destination side (e.g. `12` for "1 CASE = 12 EACH"). The conversion factor is `to_unit_qty / from_unit_qty`. |
+| `to_unit_qty` | `Decimal? @db.Decimal(20, 5)` | Yes | Default `0`. Quantity on the destination side (e.g. `12` for "1 CASE = 12 EACH"). The conversion factor is `to_unit_qty / from_unit_qty`. `GET units/ingredient/product/:id` now uses this ratio (it used `to_unit_qty` alone before `bff5956e6`, 2026-10), ignores soft-deleted rows, keeps only rows whose `from_unit` is the product's current inventory unit with positive quantities, and when several rows target the same unit picks `is_default` first, then the oldest (`pickIngredientConversions`, shared with recipe costing's `resolveConversion`). |
 | `decimal_place` | `Int` | No | Default `2`. Display precision. |
 | `is_default` | `Boolean?` | Yes | Default `false`. Marks this conversion as the default order-unit (or default ingredient-unit) for the product — surfaced first on pickers. |
 | `description` | `Json? @db.JsonB` | Yes | Free-text / structured note; default `{}`. |
