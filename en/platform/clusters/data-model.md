@@ -2,7 +2,7 @@
 title: Cluster — Data Model
 description: Cluster entity, relationships to BUs and users, and the licence-ledger model that replaced the static max_license_bu/max_license_users caps.
 published: true
-date: 2026-09-06T12:00:00.000Z
+date: '2026-10-27T00:00:00.000Z'
 tags: book/platform, clusters, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -11,10 +11,10 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 # Cluster — Data Model
 
 > **At a Glance**
-> **Tables:** `tb_cluster` (primary) &nbsp;·&nbsp; `tb_cluster_user` (M:N user-join, full doc in [users](/en/platform/users)) &nbsp;·&nbsp; `tb_business_unit` (`cluster_id` FK side, full doc in [business-units](/en/platform/business-units)) &nbsp;·&nbsp; `tb_cluster_license` (cluster's own BU-quota purchase ledger — new) &nbsp;·&nbsp; **Enums:** `enum_cluster_user_role` (admin/user) &nbsp;·&nbsp; **Branding:** `logo_file_token` / `avatar_file_token` columns, resolved to embedded presigned `logo`/`avatar` objects in API responses &nbsp;·&nbsp; **Audit columns:** standard `created_*`/`updated_*`/`deleted_*` trio on `tb_cluster`, surfaced as a nested `audit` object by the API &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` on `tb_cluster` and `tb_cluster_user`, enforced as an optimistic lock on `PUT` &nbsp;·&nbsp; **BU quota is no longer a static field.** `tb_cluster.max_license_bu` is gone; BU quota now comes from `tb_cluster_license`, a dated purchase ledger whose *winning* row (via view `v_cluster_bu_cap`) sets the effective cap — see §2.4.
+> **Tables:** `tb_cluster` (primary) &nbsp;·&nbsp; `tb_cluster_user` (M:N user-join, full doc in [users](/en/platform/users)) &nbsp;·&nbsp; `tb_business_unit` (`cluster_id` FK side, full doc in [business-units](/en/platform/business-units)) &nbsp;·&nbsp; `tb_cluster_license` (cluster's own BU-quota purchase ledger) &nbsp;·&nbsp; `tb_cluster_note` (internal staff notes + files, new 2026-10-26) &nbsp;·&nbsp; **Enums:** `enum_cluster_user_role` (admin/user) &nbsp;·&nbsp; **Branding:** `logo_file_token` / `avatar_file_token` columns, resolved to embedded presigned `logo`/`avatar` objects in API responses &nbsp;·&nbsp; **Audit columns:** standard `created_*`/`updated_*`/`deleted_*` trio on `tb_cluster`, surfaced as a nested `audit` object by the API &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` on `tb_cluster` and `tb_cluster_user`, enforced as an optimistic lock on `PUT` &nbsp;·&nbsp; **BU quota is no longer a static field.** `tb_cluster.max_license_bu` is gone; BU quota now comes from `tb_cluster_license`, a dated purchase ledger whose *winning* row (via view `v_cluster_bu_cap`) sets the effective cap — see §2.4.
 
 > **Source of truth:** Backend Prisma platform schema. Always read this first when writing or updating this page:
-> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma`
 >
 > The `generated/client/schema.prisma` file is an auto-generated copy and not authoritative. The full licensing/quota ledger (`tb_cluster_license`, `tb_business_unit_license`, `tb_subscription`, `tb_license_feature`, and their views) is the domain of the **licenses** module — this page documents only the cluster-side shape of that ledger; see [licenses](/en/platform/licenses) for the full model once that page exists.
 
@@ -30,7 +30,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 In their place, both caps are now the *effective* row of a dated purchase ledger:
 
 - **BU quota** — `tb_cluster_license` (§2.4): a cluster's BU-quota purchases over time. The quota in effect right now is the single **winning row** (current date falls in `[start_date, end_date]`, not cancelled), resolved by the view `v_cluster_bu_cap` — not a sum of every row. `0` (no winning row) is a real zero, never "unlimited".
-- **User seats** — `tb_business_unit_license` (§2.5): a per-BU ledger of seat purchases, summed across all of a cluster's BUs currently in effect via the view `v_business_unit_seat` to produce the cluster's aggregate seat cap (`total_max_license_users` in the SPA's `Cluster` read shape). `null`/absent still means "uncapped" for this dimension — the seat pool did **not** adopt the BU-quota ledger's "0 = zero" convention (see the file-header comment in `../carmen-backstage/src/utils/capacity.ts`).
+- **User seats** — `tb_business_unit_license` (§2.5): a per-BU ledger of seat purchases, summed across all of a cluster's BUs currently in effect via the view `v_business_unit_seat` to produce the cluster's aggregate seat cap (`total_max_license_users` in the SPA's `Cluster` read shape). **There is no "uncapped" seat pool any more**: since the 2026-10 round the SPA treats a 0/null/absent `total_max_license_users` as **zero seats** (`toSeatPool()` in `utils/seatPool.ts`, `seatUtilization()` in `utils/capacity.ts`; `CapacityMeter`/`CapacityGauge` are passed `finite`), matching the backend, whose `assertSeatAvailable` documents the pool cap as "never null, nothing means unlimited" (`apps/micro-cluster/src/cluster/common/seat.helper.ts`). An earlier revision of this page said `null` meant uncapped; that was reversed by commit `566418aa`.
 
 **`tb_cluster_user.parent_bu_id` is also gone.** The column does not appear in the current Prisma `tb_cluster_user` model at all (confirmed absent by grep across `schema.prisma`), matching the SPA's removal of the field from the Users tab UI (`../carmen-backstage` commit `1fbaf35`, "ถอด UI ของ parent_bu_id ออกจากหน้า Cluster Edit"). A cluster-user membership no longer names a "billing-owner BU" — see §2.2.
 
@@ -117,11 +117,30 @@ FK: `tb_cluster_license.cluster_id` → `tb_cluster.id` (`onDelete: NoAction, on
 - **`v_cluster_bu_cap`** — one row **per cluster** (`cluster_id`, `cap`). Picks the single winning `tb_cluster_license` row via a `LEFT JOIN LATERAL` (`deleted_at IS NULL AND cancelled_at IS NULL AND start_date <= now() AND end_date > now()`, tie-broken `start_date DESC, created_at DESC, id DESC`) and returns its `licensed_bus`, `COALESCE`d to `0` when no row wins. **This is the view that computes the effective quota** — its result becomes `bu_cap`/`bu_cap_end_date` on every SPA surface that reads a cluster (list, plate, CSV export), and it is what the Fleet Capacity band's "Quota expiring" filter resolves against (see [UI Screens](/en/platform/clusters/ui-screens) §2.1a).
 - **`v_cluster_bu_quota`** — one row **per business unit** (`business_unit_id`, `cluster_id`, `rank`, `cap`). Joins `tb_business_unit` to `v_cluster_bu_cap` and computes each BU's 1-based rank within its cluster (`ROW_NUMBER() OVER (PARTITION BY cluster_id ORDER BY COALESCE(is_hq, false) DESC, created_at ASC, id ASC)`) — it **borrows** the cap from `v_cluster_bu_cap` rather than recomputing it, and does not filter on `is_active` (an inactive BU still consumes quota and still gets a rank). **This is the view the "Over limit" ranking badge matches** (`../carmen-backstage/src/utils/businessUnitRank.ts`, §2.3 above and [UI Screens](/en/platform/clusters/ui-screens) §4.3) — it is not the source of `bu_cap` itself.
 
-No winning row in `v_cluster_bu_cap` ⇒ `bu_cap = 0` — a real zero, never "unlimited", unlike the seat dimension in §2.5. This page documents only the cluster-side shape of the ledger; the full purchase/cancel/edit UI lives in the **licenses** module (License Center, `/licenses/:clusterId`) — out of scope here, cross-linked from [UI Screens](/en/platform/clusters/ui-screens) §3.
+No winning row in `v_cluster_bu_cap` ⇒ `bu_cap = 0` — a real zero, never "unlimited" (and, since 2026-10, the same is true of the seat dimension in §2.5). This page documents only the cluster-side shape of the ledger; the full purchase/cancel/edit UI lives in the **licenses** module (License Center, `/licenses/:clusterId`) — out of scope here, cross-linked from [UI Screens](/en/platform/clusters/ui-screens) §3.
 
 ### 2.5 `tb_business_unit_license` — the per-BU seat ledger (cross-reference only)
 
-Also new, and also outside this module's scope to document in full (it belongs to **licenses**), but it is the reason `tb_business_unit.max_license_users` no longer exists: one row per BU seat-quota purchase (`license_number` format `SEAT-YYMM-####`, `business_unit_id` FK, `licensed_users Int`, `start_date`/`end_date`). Unlike the cluster-quota ledger, seats **sum**: every row currently in effect (via view `v_business_unit_seat`) for every BU in a cluster adds to that cluster's aggregate seat cap. `null`/no covering rows still means "uncapped" for this dimension.
+Also new, and also outside this module's scope to document in full (it belongs to **licenses**), but it is the reason `tb_business_unit.max_license_users` no longer exists: one row per BU seat-quota purchase (`license_number` format `SEAT-YYMM-####`, `business_unit_id` FK, `licensed_users Int`, `start_date`/`end_date`). Unlike the cluster-quota ledger, seats **sum**: every row currently in effect (via view `v_business_unit_seat`) for every BU in a cluster adds to that cluster's aggregate seat cap. No covering rows now means a pool of 0 seats (see §1).
+
+### 2.6 `tb_cluster_note` — internal staff notes (new 2026-10-26)
+
+Added by migration `20261026150000_add_cluster_note` (schema line 374). Free-form notes and file attachments Backstage staff keep on a cluster — **never shown to tenants** (the cluster-admin shell has no Notes tab). The BU-side twin is `tb_business_unit_note` ([Business Units — Data Model](/en/platform/business-units/data-model) §2.6); the shapes are identical.
+
+| Field | Prisma Type | Nullable | Description |
+| ----- | ----------- | -------- | ----------- |
+| `id` | `String @db.Uuid` | No | Primary key |
+| `cluster_id` | `String @db.Uuid` | No | FK to `tb_cluster.id` (`NoAction`/`NoAction`) |
+| `message` | `String?` | Yes | Note text; may be empty when the note is attachments-only |
+| `attachments` | `Json @default("[]") @db.JsonB` | No | Array of `{ fileName, fileToken, contentType, size?, uploaded_at, uploaded_by_id, removed_at?, removed_by_id? }`. Removing one file sets `removed_at`/`removed_by_id` on that element; the file token stays in the row so history can still show it |
+| `doc_version` | `Int @default(0)` | No | Optimistic lock — `PATCH` requires it, a stale value is a 409 |
+| audit trio + soft delete | — | Yes | `created_*`, `updated_*`, `deleted_*`; a deleted note is restorable |
+
+**Index:** `(cluster_id, deleted_at, created_at DESC)` (`cluster_note_cluster_id_deleted_at_created_at_idx`). Note history is not stored here — the history sheet reads the activity log. Permissions `cluster_note.view` / `cluster_note.manage`; see [Permissions](/en/platform/clusters/permissions) §9.
+
+#### Seat release marker (not on `tb_cluster`)
+
+Cluster seat release/restore (UI Screens §4.4) writes to the user↔BU join, not to a cluster table: `tb_user_tb_business_unit.seat_released_at` (`DateTime?`, migration `20261027090000_add_user_bu_seat_released_at`) is stamped when a link is released (the same update sets `is_active = false`), and restore re-activates only links that carry the stamp.
 
 ## 3. Relationships
 
@@ -129,6 +148,7 @@ Also new, and also outside this module's scope to document in full (it belongs t
 tb_cluster  1 ─── M  tb_business_unit          (via tb_business_unit.cluster_id)
 tb_cluster  1 ─── M  tb_cluster_user  M ─── 1  tb_user
 tb_cluster  1 ─── M  tb_cluster_license         (BU-quota purchase ledger)
+tb_cluster  1 ─── M  tb_cluster_note            (internal staff notes, §2.6)
 tb_cluster  1 ─── M  tb_subscription            (billing rows; 1 subscription : 1 BU as of 2026-08-21)
 tb_business_unit  1 ─── M  tb_business_unit_license  (per-BU seat purchase ledger)
 tb_cluster  self-FK  created_by_id, updated_by_id  → tb_user.id  (audit relations)
@@ -139,6 +159,7 @@ FK directions (all `onDelete: NoAction, onUpdate: NoAction` unless noted):
 - `tb_business_unit.cluster_id` → `tb_cluster.id`
 - `tb_cluster_user.cluster_id` → `tb_cluster.id`
 - `tb_cluster_license.cluster_id` → `tb_cluster.id`
+- `tb_cluster_note.cluster_id` → `tb_cluster.id`
 - `tb_business_unit_license.business_unit_id` → `tb_business_unit.id`
 - `tb_subscription.cluster_id` → `tb_cluster.id` (subscription rows reference the cluster; each also binds to exactly one BU via `tb_subscription_bu`)
 - `tb_cluster.created_by_id` → `tb_user.id`
@@ -165,15 +186,15 @@ There are no `tb_cluster`-local enums. `tb_cluster` itself does not carry a stat
 
 ## 5. Divergences from carmen-backstage SPA shape
 
-The `Cluster` interface in `../carmen-backstage/src/types/index.ts` (lines 26–51) and the `ClusterFormData` interface (`../carmen-backstage/src/pages/clusterManagement/ClusterIdentityFields.ts`, lines 12–21) were compared against the Prisma `tb_cluster` model (re-verified 2026-09-05, `../carmen-backstage` source HEAD `157a65e`).
+The `Cluster` interface in `../carmen-backstage/src/types/index.ts` (lines 26–51) and the `ClusterFormData` interface (`../carmen-backstage/src/pages/clusterManagement/ClusterIdentityFields.ts`, lines 12–21) were compared against the Prisma `tb_cluster` model (re-verified 2026-10-27, `../carmen-backstage` source HEAD `8405788f`).
 
 | # | Item | Prisma has | SPA expects | Notes |
 | - | ---- | ---------- | ----------- | ----- |
 | 1 | `description` | Not present on `tb_cluster` | `description?: string` on `Cluster` interface | Carried over from an earlier schema version; `ClusterFormData` does not include it, so no edit path writes this field. |
 | 2 | `bu_cap` / `bu_used` / `bu_cap_end_date` | Not present on `tb_cluster` (computed from `tb_cluster_license` via `v_cluster_bu_cap`) | `bu_cap?: number`, `bu_used?: number`, `bu_cap_end_date?: string \| null` on `Cluster` | Replaces the old `max_license_bu` field entirely (see §1). `bu_used` is the count of non-soft-deleted BUs, including inactive ones. `bu_cap_end_date` carries the perpetual-licence sentinel (year 2099) when the winning row never expires — the SPA hides that sentinel behind "No expiry" text, never a raw date. |
 | 3 | `bu_count` | Not present on `tb_cluster` | `bu_count?: number` on `Cluster` interface | Legacy alias for the same BU count `bu_used` now names; `ClusterManagement.tsx`'s row mapper still falls back to `item._count?.tb_business_unit` when neither is present. |
-| 4 | `users_count` | Not present on `tb_cluster` | `users_count?: number` on `Cluster` interface | Count of `tb_cluster_user` rows where `cluster_id = this cluster` and `deleted_at IS NULL`. |
-| 5 | `total_max_license_users` | Not present on `tb_cluster` (computed from `tb_business_unit_license` via `v_business_unit_seat`, aggregated per cluster) | `total_max_license_users?: number` on `Cluster` interface | **No longer** a sum of a static `tb_business_unit.max_license_users` column — that column is dropped (§2.3). `null`/absent still means "uncapped" for this dimension, unlike `bu_cap` above. |
+| 4 | `users_count` | Not present on `tb_cluster` | `users_count?: number` on `Cluster` interface | **On the cluster *detail* and *list* responses this is the number of seat holders as the backend counts them** (distinct people with an active link into one of the cluster's BUs — `seat.helper.ts`), not the membership-row count; `ClusterEdit` reads it as `users_count` for the Users rail (commit `566418aa`) while the Users tab badge keeps the membership count. |
+| 5 | `total_max_license_users` | Not present on `tb_cluster` (computed from `tb_business_unit_license` via `v_business_unit_seat`, aggregated per cluster) | `total_max_license_users?: number` on `Cluster` interface | **No longer** a sum of a static `tb_business_unit.max_license_users` column — that column is dropped (§2.3). Absent/`null`/`0` now reads as **0 seats** in the SPA, the same as `bu_cap` above (changed 2026-10; see §1). |
 | 6 | Audit columns | `created_at`/`created_by_id`, `updated_at`/`updated_by_id`, `deleted_at`/`deleted_by_id` (flat columns, raw IDs) | Nested `audit` object — `audit.created`, `audit.updated`, `audit.deleted`, each an `AuditEntry` `{ at, id, name, avatar }` | The API resolves the `_id` FKs to actor names and groups everything under `audit`. Every SPA reader now goes through the shared `normalizeAudit()` helper (`../carmen-backstage/src/utils/audit.ts`), which tolerates both the nested and the older flat shape (flat wins when present). |
 | 7 | Branding | `logo_file_token`, `avatar_file_token` (`String? @db.VarChar` storage tokens) | `logo?: PresignedImage \| null`, `avatar?: PresignedImage \| null` — embedded objects `{ url, expires_at }` | The raw tokens are never exposed. Images are written through dedicated multipart endpoints (`POST /api-system/clusters/:id/logo` with form field `logo`, `POST /api-system/clusters/:id/avatar` with form field `avatar`), each returning `{ file_token, url, expires_at }`; the regular `PUT` update payload does not carry branding fields. |
 | 8 | `doc_version` | `Int @default(0)` | `doc_version?: number` | Aligned — both carry the optimistic-lock counter, no divergence. |
@@ -185,15 +206,15 @@ All core identity fields (`id`, `code`, `name`, `alias_name`, `is_active`, `info
 ## 6. References
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `model tb_business_unit` (line 176), `model tb_cluster` (line 270), `model tb_cluster_user` (line 299), `model tb_business_unit_license` (line 1133), `model tb_cluster_license` (line 1168), `enum enum_cluster_user_role` (line 718). Line numbers as of 2026-09-05 (`../carmen-turborepo-backend` source HEAD `e0f7d0b`, a different repo from the `../carmen-backstage` HEAD cited above — both are correct, they are two separate checkouts); `doc_version` added to all 35 platform tables on 2026-07-16 (`8e53bbe`); `max_license_users` dropped from `tb_business_unit` by migration `20260821000000_drop_bu_max_license_users` (2026-08-21).
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260822000000_add_cluster_license/migration.sql` — `CREATE VIEW "v_cluster_bu_cap"` (the winning-row cap computation) and `CREATE VIEW "v_cluster_bu_quota"` (the per-BU rank, borrowing that cap) — read in full to resolve the two views' distinct jobs (§2.4).
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260901020000_cluster_license_cancel/migration.sql` — adds `cancelled_at`/`cancelled_by_id`/`cancel_reason` to `tb_cluster_license` and `CREATE OR REPLACE VIEW "v_cluster_bu_cap"` to add the `cancelled_at IS NULL` filter (column signature held identical, per the migration's own comment).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `model tb_business_unit` (line 213), `model tb_cluster` (line 342), `model tb_cluster_note` (line 374), `model tb_cluster_user` (line 405), `model tb_business_unit_license` (line 1395), `model tb_cluster_license` (line 1463), `enum enum_cluster_user_role` (line 934). Line numbers as of 2026-10-27 (`../carmen-turborepo-backend` source HEAD `c9d788829`, a different repo from the `../carmen-backstage` HEAD cited above — both are correct, they are two separate checkouts); `doc_version` added to all 35 platform tables on 2026-07-16 (`8e53bbe`); `max_license_users` dropped from `tb_business_unit` by migration `20260821000000_drop_bu_max_license_users` (2026-08-21).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/migrations/20260822000000_add_cluster_license/migration.sql` — `CREATE VIEW "v_cluster_bu_cap"` (the winning-row cap computation) and `CREATE VIEW "v_cluster_bu_quota"` (the per-BU rank, borrowing that cap) — read in full to resolve the two views' distinct jobs (§2.4).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/migrations/20260901020000_cluster_license_cancel/migration.sql` — adds `cancelled_at`/`cancelled_by_id`/`cancel_reason` to `tb_cluster_license` and `CREATE OR REPLACE VIEW "v_cluster_bu_cap"` to add the `cancelled_at IS NULL` filter (column signature held identical, per the migration's own comment).
 
 **Secondary (consumer shape):**
 - `../carmen-backstage/src/types/index.ts` — `Cluster` interface (lines 26–51, incl. `bu_cap`/`bu_used`/`bu_cap_end_date`/`doc_version`), `PresignedImage` (lines 100–103), `ClusterUser` (lines 448–464, no `parent_bu_id`), `AuditEntry` (lines 864–869), `Audit` (lines 871–875).
 - `../carmen-backstage/src/pages/clusterManagement/ClusterIdentityFields.ts` — `ClusterFormData` interface (lines 12–21; also carries the create-only `licensed_bus`/`license_end_date`/`license_no_expiry` fields used to seed the cluster's first `tb_cluster_license` row on create — see [UI Screens](/en/platform/clusters/ui-screens) §3).
 - `../carmen-backstage/src/utils/docVersion.ts` — `getDocVersion`/`isVersionConflict`/`notifyVersionConflict` optimistic-lock helpers used by `ClusterEdit.tsx`.
-- `../carmen-backstage/src/utils/capacity.ts` — `utilization()` (the `null`/`0`-means-uncapped rule, still used for the seat dimension) vs. `seatUtilization()` (the finite-always rule now used for BU quota); file-header comment is the authoritative statement of which rule applies to which field.
+- `../carmen-backstage/src/utils/capacity.ts` — `utilization()` (the legacy `null`/`0`-means-uncapped rule, kept only for callers that omit `finite`) vs. `seatUtilization()` (the finite-always rule now used for **both** BU quota and seats), plus `utils/seatPool.ts` `toSeatPool()`; file-header comment is the authoritative statement of which rule applies to which field.
 - `../carmen-backstage/src/utils/businessUnitRank.ts` — `rankBusinessUnits()`/`countOverLimit()`, the exact ranking (`is_hq DESC, created_at ASC, id ASC`) that must match the view `v_cluster_bu_quota`.
 - `../carmen-backstage/src/services/clusterService.ts` — REST client for cluster API calls (`/api-system/clusters`, `/api-system/clusters/summary`, plus the `/logo` and `/avatar` multipart upload endpoints).
 

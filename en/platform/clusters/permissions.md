@@ -2,7 +2,7 @@
 title: Cluster — Permissions
 description: Permission-key route guards, the feature-flag layer, in-page Can gates, the platform-authority/cluster-admin redirect, and what each cluster.* key opens.
 published: true
-date: 2026-09-06T23:00:00.000Z
+date: '2026-10-27T00:00:00.000Z'
 tags: book/platform, clusters, permissions
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -11,7 +11,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 # Cluster — Permissions
 
 > **At a Glance**
-> **Gate:** the three cluster routes carry `requiredPermission="cluster.read"` / `"cluster.create"` / `"cluster.update"` **and** `feature="clusters"` on `PrivateRoute` &nbsp;·&nbsp; **In-page gates:** `<Can>`/`canEdit` wraps Add Cluster (`cluster.create`), row Edit (`cluster.update`), row/header **View History** (`activity_log.read` — new), row Delete (`cluster.delete`), and every plate/tab field or action on the edit page (`cluster.update`, computed once as `canEdit`) — the row and edit-page gates are **cluster-scoped** via `clusterId` &nbsp;·&nbsp; **`cluster.delete` is in-page only** — no route requires it &nbsp;·&nbsp; **Bootstrap exception:** `hasPermission` returns `true` unconditionally when `userCount !== null && userCount <= 1` (first-admin setup) &nbsp;·&nbsp; **Platform-authority check runs before the permission check** — a session with no platform-wide or cluster-scoped grant at all is redirected to `/cluster-admin` (if it holds that scope) rather than shown a 403 &nbsp;·&nbsp; **On permission failure:** `<Forbidden>` (403 page) renders inside `<Layout>` (sidebar stays visible) &nbsp;·&nbsp; **Canonical model doc:** [rbac permissions](/en/platform/rbac/permissions)
+> **Gate:** the three cluster routes carry `requiredPermission="cluster.read"` / `"cluster.create"` / `"cluster.update"` **and** `feature="clusters"` on `PrivateRoute` &nbsp;·&nbsp; **In-page gates:** `<Can>`/`canEdit` wraps Add Cluster (`cluster.create`), row Edit (`cluster.update`), row/header **View History** (`activity_log.read` — new), row Delete (`cluster.delete`), and every plate/tab field or action on the edit page (`cluster.update`, computed once as `canEdit`) — the row and edit-page gates are **cluster-scoped** via `clusterId` &nbsp;·&nbsp; **`cluster.delete` is in-page only** — no route requires it &nbsp;·&nbsp; **Bootstrap exception:** `hasPermission` returns `true` unconditionally when `userCount !== null && userCount <= 1` (first-admin setup) &nbsp;·&nbsp; **Platform-authority check runs before the permission check** — a session with no platform-wide or cluster-scoped grant at all is redirected to `/cluster-admin` (if it holds that scope) rather than shown a 403 &nbsp;·&nbsp; **On permission failure:** `<Forbidden>` (403 page) renders inside `<Layout>` (sidebar stays visible) &nbsp;·&nbsp; **Canonical model doc:** [rbac permissions](/en/platform/rbac/permissions) &nbsp;·&nbsp; **New 2026-10:** Notes tab gated by `cluster_note.view`/`cluster_note.manage`; seat release/restore authorised by cluster-admin membership or super admin, not by an RBAC key (§9)
 
 ## 1. Overview
 
@@ -88,14 +88,14 @@ When `userCount !== null && userCount <= 1`, every route guard, sidebar filter, 
 `PrivateRoute` now resolves **who this session is** before it ever looks at `requiredPermission`. This did not exist at the prior sync and changes what a permission-less session actually experiences on `/clusters*`:
 
 ```
-if (effectivePermissions !== null && !hasPlatformAuthority) {
+if (effectivePermissions !== null && !hasBackstageAuthority) {
   if (adminScope === null) return <div className="loading">…</div>;
   if (hasClusterAdminScope) return <Navigate to="/cluster-admin" replace />;
   // else: falls through to the requiredPermission check below
 }
 ```
 
-`hasPlatformAuthority` (`../carmen-backstage/src/utils/permissions.ts`, `checkPlatformAuthority`) is `true` for a super-admin, for any platform-wide permission grant, or for **any** cluster-scoped grant — deliberately **not** true for a user whose only standing is a `tb_cluster_user.role = 'admin'` membership (that role, §4 of [Data Model](/en/platform/clusters/data-model), is a tenant-membership attribute, not platform authority). A session with a resolved permission payload and no platform authority at all is redirected to `/cluster-admin` if it has that scope (a distinct persona and route tree — see [business-units](/en/platform/business-units) and the source map's `cluster-admin` row); if it has neither authority, the check falls through to the ordinary `requiredPermission` gate below it, which will then 403 it exactly as before. This branch exists so a pure cluster-admin member is routed to the surface built for them instead of hitting a confusing 403 on the platform-admin list, and so it does not change the *outcome* for a genuinely permission-less session — only for one with legitimate cluster-admin-only standing.
+`hasBackstageAuthority` (`../carmen-backstage/src/utils/permissions.ts`, `checkBackstageAuthority`) is `true` for a super-admin, for any platform-wide permission grant, or for **any** cluster-scoped grant — deliberately **not** true for a user whose only standing is a `tb_cluster_user.role = 'admin'` membership (that role, §4 of [Data Model](/en/platform/clusters/data-model), is a tenant-membership attribute, not platform authority). A session with a resolved permission payload and no platform authority at all is redirected to `/cluster-admin` if it has that scope (a distinct persona and route tree — see [business-units](/en/platform/business-units) and the source map's `cluster-admin` row); if it has neither authority, the check falls through to the ordinary `requiredPermission` gate below it, which will then 403 it exactly as before. This branch exists so a pure cluster-admin member is routed to the surface built for them instead of hitting a confusing 403 on the platform-admin list, and so it does not change the *outcome* for a genuinely permission-less session — only for one with legitimate cluster-admin-only standing.
 
 ## 6. Forbidden (403) behaviour
 
@@ -107,15 +107,15 @@ if (effectivePermissions !== null && !hasPlatformAuthority) {
 
 ## 7. Sidebar filter
 
-`platformNav.ts` defines the Clusters entry (in the group `navGroup.organization`) as:
+`backstageNav.ts` defines the Clusters entry (in the group `navGroup.organization`) as:
 
 ```
 { path: '/clusters', labelKey: 'nav.clusters', icon: Network, permission: 'cluster.read', groupKey: 'navGroup.organization', feature: 'clusters' }
 ```
 
-**Nav item definitions moved from `src/components/Layout.tsx` to a dedicated `src/components/nav/platformNav.ts` since the prior sync** (part of the i18n rework — labels are now translation keys, not literal English strings), and the entry now also carries the `feature` key so the sidebar can hide/grey the item consistently with the route guard. The array is still filtered before rendering (`(!item.permission || hasPermission(item.permission)) && (!item.superAdminOnly || isSuperAdmin)`, plus a feature-flag pass), so there is no divergence where a visible entry leads to `Forbidden`.
+**Nav item definitions moved from `src/components/Layout.tsx` to a dedicated `src/components/nav/backstageNav.ts` since the prior sync** (part of the i18n rework — labels are now translation keys, not literal English strings), and the entry now also carries the `feature` key so the sidebar can hide/grey the item consistently with the route guard. The array is still filtered before rendering (`(!item.permission || hasPermission(item.permission)) && (!item.superAdminOnly || isSuperAdmin)`, plus a feature-flag pass), so there is no divergence where a visible entry leads to `Forbidden`.
 
-Two neighbouring entries in the same nav group reuse `cluster.read`: **Business Units** (`feature: 'business_units'`) and **Tenant Migrations** (`feature: 'tenant_migrations'`, a module outside this page's scope — see the source map). Any future change to which key gates Clusters must be applied in `src/App.tsx` (route) AND `src/components/nav/platformNav.ts` (sidebar) together.
+One neighbouring entry in the same nav group reuses `cluster.read`: **Business Units** (`feature: 'business_units'`). **Tenant Migrations** used to be the second; since the 2026-10 round it carries its own `tenant_migration.read` key (`feature: 'tenant_migrations'`, `parentPath: '/business-units'`, as do Tenant Seeds `tenant_seed.read` and Data Import `data_import.manage`) — a module outside this page's scope. Any future change to which key gates Clusters must be applied in `src/App.tsx` (route) AND `src/components/nav/backstageNav.ts` (sidebar) together.
 
 A user without `cluster.read` does not see the Clusters entry, and (per §5) a user with no platform authority at all is redirected away from the platform shell before the sidebar even renders it.
 
@@ -136,22 +136,37 @@ Passing the route guard does not unlock every button — the mutating actions ca
 | Save Changes / Cancel (sticky bar) | None of their own — the bar only appears when the plate's identity fields differ, and those fields are already `canEdit`-gated | Indirectly |
 | Licensing tab: subscription content | `subscription.read` internally (inside `SubscriptionCard`, out of this module's scope) — renders nothing without it | Yes, per the cluster |
 | Add User button, bulk Remove action, per-row Role edit, per-row Remove (Users tab) | `canEdit` (same boolean as the plate) | Yes |
+| Seat column **Release** / **Restore** buttons (Users tab, new) | `canEdit` in the UI — but the backend demands a cluster admin or super admin (§9) | Yes |
+| Notes tab (new) | tab shown when `hasPermission('cluster_note.view', { clusterId })`; composer/edit/delete/restore when `cluster_note.manage` as well (§9) | Yes |
 | Add BU (navigate-to-new, Business Units tab) | `<Can permission="cluster.create">` (unscoped) | No |
 | BU row Edit (Pencil, navigate-to-edit) | None in-page — the target `/business-units/:id/edit` route reuses `cluster.update` | — |
 
 Two tester-relevant consequences, both carried forward unchanged: the cluster-user management actions all still share the single page-level `canEdit` boolean rather than each carrying its own `<Can>` call; and the BU-quota cap that disables the Add BU button is now a licence-ledger fact (`bu_cap`, see [Data Model](/en/platform/clusters/data-model) §2.4) rather than a permission gate — all permitted sessions see the same enabled/disabled state. **The bulk "Move to BU" action documented in the prior sync no longer exists** — it depended on `parent_bu_id`, which has been removed (§ Data Model §2.2). Test plans should cover the scoped gates (§3) per cluster, not per persona, and should now also exercise the `clusters` feature flag's `hide`/`inactive` states (§2) alongside the permission matrix.
 
-## 9. References
+## 9. Notes and seat permissions (new in the 2026-10 round)
+
+**Notes (`cluster_note.view`, `cluster_note.manage`).** Two new catalog keys (`seed.backstage-permission.data.ts`: "View internal staff notes and files on a cluster" / "Add, edit and delete internal staff notes and files on a cluster"). Not route keys — they gate the Notes tab inside `/clusters/:id/edit`. In `ClusterEdit.tsx`: `canViewNotes = !isNew && hasPermission('cluster_note.view', { clusterId: id })`; `?tab=notes` without the key degrades silently to Licensing; the tab does not exist on `/clusters/new`. In `NotesSection.tsx`: `canManage` requires **both** `cluster_note.view` and `cluster_note.manage` for the cluster, and only then are the composer, inline edit, delete and restore rendered. Seeded roles: Backstage Admin `cluster_note.*`; Support Manager view + manage; Support Staff view only.
+
+| Endpoint (`backstage_cluster-notes.controller.ts`, `@Controller('api-system/clusters/:clusterId/notes')`) | Key | Lines |
+|---|---|---|
+| `GET` list (`?page`, `?perpage`, `?deleted=true`), `GET files`, `POST files/url`, `GET :noteId/history` | `cluster_note.view` | 180-182, 227-229, 260-262, 490-492 |
+| `POST` create, `PATCH :noteId`, `DELETE :noteId`, `POST :noteId/restore` | `cluster_note.manage` | 302-304, 346-348, 410-412, 449-451 |
+
+Create/update accept at most 5 files of 10 MB each (`FilesInterceptor('files', 5, { limits: { fileSize: 10 * 1024 * 1024 } })`).
+
+**Seats (release / restore).** `POST /api-system/clusters/:cluster_id/users/:user_id/seat/release` and `.../restore` (`backstage_cluster-seats.controller.ts:54-55,90-91`) carry **only `AppIdGuard`** — no `@RequireBackstagePermission`, by design (the controller comment: "so customer cluster admins can use it"). Authorisation is inside `micro-cluster` (`ClusterSeatService`): the caller must satisfy `ClusterAdminAuthzService.isClusterAdmin(actorId, clusterId)` — a **backstage super admin** or an active `tb_cluster_user` row with `role = 'admin'` for that cluster — otherwise `CLUSTER_USER_NOT_CLUSTER_ADMIN` (403). A backstage-role holder with `cluster.update` but neither of those gets buttons in the UI (`canEdit`) and a 403 on click. Restore additionally answers 403 `SEAT_LIMIT_REACHED` (body `{ used, cap, adding }`) when the shared pool is full.
+
+## 10. References
 
 **Primary sources (read these before updating this page):**
 - `../carmen-backstage/src/App.tsx` — the three cluster routes with `requiredPermission` + `feature` props.
 - `../carmen-backstage/src/components/PrivateRoute.tsx` — auth-fail redirect, platform-authority/cluster-admin resolution (§5, new), permission-fail `<Forbidden />`, `requireSuperAdmin`, and the feature-flag check (§2), in that order.
-- `../carmen-backstage/src/context/AuthContext.tsx` — `hasPermission`, `hasPlatformAuthority`, `userCount` state, `fetchUserCount`, login permission gate.
-- `../carmen-backstage/src/utils/permissions.ts` — pure `checkPermission` resolution, `checkPlatformAuthority`, and the `UNRESOLVED_CLUSTER_ID`/`PLATFORM_SCOPED_RECORD` sentinels used by other modules' `activity_log.read` call sites (not needed for clusters itself, since a cluster row always has a resolvable id).
+- `../carmen-backstage/src/context/AuthContext.tsx` — `hasPermission`, `hasBackstageAuthority`, `userCount` state, `fetchUserCount`, login permission gate.
+- `../carmen-backstage/src/utils/permissions.ts` — pure `checkPermission` resolution, `checkBackstageAuthority`, and the `UNRESOLVED_CLUSTER_ID`/`BACKSTAGE_SCOPED_RECORD` sentinels used by other modules' `activity_log.read` call sites (not needed for clusters itself, since a cluster row always has a resolvable id).
 - `../carmen-backstage/src/context/FeatureFlagContext.tsx` — `flagOf`/`isReady`, consumed by `PrivateRoute`'s `feature` check.
 - `../carmen-backstage/src/components/PrivateRoute.tsx`, `src/pages/Forbidden.tsx`, `src/pages/NotFound.tsx`, `src/pages/ComingSoon.tsx` — the three possible route-guard outcomes.
 - `../carmen-backstage/src/components/Can.tsx` — the in-page gate component (`permission`, optional `clusterId`, optional `fallback`) — unchanged.
-- `../carmen-backstage/src/components/nav/platformNav.ts` — nav item definitions (Clusters, Business Units, Tenant Migrations), including `permission`/`feature`/`groupKey`/`superAdminOnly`.
+- `../carmen-backstage/src/components/nav/backstageNav.ts` — nav item definitions (Clusters at line 14, Business Units line 15, and the Tenant Migrations/Seeds/Data Import children), including `permission`/`feature`/`groupKey`/`superAdminOnly`.
 - `../carmen-backstage/src/pages/ClusterManagement.tsx` / `ClusterEdit.tsx` and `clusterEdit/sections/*.tsx` — the `<Can>`/`canEdit` call sites listed in §8, including the new `activity_log.read` sites.
 
 **Cross-links:**
