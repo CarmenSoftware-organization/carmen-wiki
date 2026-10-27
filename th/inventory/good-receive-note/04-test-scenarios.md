@@ -2,7 +2,7 @@
 title: ใบรับสินค้า (Goods Receive Note) — Test Scenarios
 description: เคสทดสอบตาม persona scenario ข้าม persona และการ map Playwright ของ good-receive-note
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 dateCreated: 2026-05-15T11:00:00.000Z
 tags: good-receive-note, test-scenarios, inventory, carmen-software
 editor: markdown
@@ -22,25 +22,25 @@ editor: markdown
 
 หน้านี้เป็น **จุดเข้าภาพรวม** สำหรับชุด test-scenarios ของโมดูล `good-receive-note` จัดกลุ่มความครอบคลุมของ GRN ตาม persona (Receiver, Purchaser, Finance, Audit / Config) ทำบัญชีไฟล์ test ต่อ persona จับ scenario handoff ข้าม persona ที่ร้อยเส้นทางเดี่ยวเข้าด้วยกัน และ map scenario กลับไปยัง Playwright spec ทางการ [`501-grn.spec.ts`](../../../carmen-frontend-e2e/tests/501-grn.spec.ts) "ผลลัพธ์ three-way match" และ trace การตรวจคุณภาพต่อบรรทัดด้วย `accepted_qty` ยังคงอยู่นอกขอบเขต — ไม่มีฟีเจอร์ทั้งสอง (ตรวจซ้ำ 2026-09-22; ดู [01-data-model.md](./01-data-model.md) และ [03-user-flow-finance.md](./03-user-flow-finance.md))
 
-`501-grn.spec.ts` เป็นไฟล์ Playwright E2E **เดียว** สำหรับโมดูล GRN; สามในสี่ของ case เดิน UI โดยไม่ assert อะไรเลย (ดูหมายเหตุความครอบคลุมด้านบน) ดังนั้นให้ถือว่า id `TC-GRN-*` ที่ map ไว้หมายถึง "มี describe block ชื่อนี้อยู่" ไม่ใช่หลักฐานว่าพฤติกรรมที่บรรยายถูก assert แบบ end-to-end ตอนนี้ fixture ของ E2E login เป็นผู้ใช้ `…@carmensoftware.dev` กับ BU `GR2VYNKQ` (`d2b35a1`) ไม่ใช่ `@blueledgers.com`
+`501-grn.spec.ts` เป็นไฟล์ Playwright E2E หลักสำหรับโมดูล GRN (ไฟล์ที่สองแบบ opt-in `502-grn-doc-flow.spec.ts` ใน movement suite — `bun run test:movement`, ห้า case `TC-GRN-700001..700005` บน BU `CARMEN-AVG` — ครอบคลุม draft/edit/delete ของ GRN แบบ manual และ assert ว่า GRN แบบ average โพสต์สต๊อกเมื่อ **save**; comment หัวไฟล์ระบุว่า `TC-GRN-140003` ใน 501 พูดตรงข้ามสำหรับ BU แบบ average และหนึ่งในสองเป็นของเก่า); สามในสี่ของ case เดิน UI โดยไม่ assert อะไรเลย (ดูหมายเหตุความครอบคลุมด้านบน) ดังนั้นให้ถือว่า id `TC-GRN-*` ที่ map ไว้หมายถึง "มี describe block ชื่อนี้อยู่" ไม่ใช่หลักฐานว่าพฤติกรรมที่บรรยายถูก assert แบบ end-to-end ตอนนี้ fixture ของ E2E login เป็นผู้ใช้ `…@carmensoftware.dev` กับ BU `GR2VYNKQ` (`d2b35a1`) ไม่ใช่ `@blueledgers.com`
 
 ## 2. Persona ในขอบเขต
 
 - **Receiver**: พนักงานรับของ / คลังสินค้าที่รับของจริง ขึ้น GRN ที่ `draft` save (`draft → saved` — ตรวจสอบ ออกเลข และบน BU แบบ average โพสต์สต๊อก) และ commit (`saved → committed` — โพสต์สต๊อกถ้ายังไม่ เลื่อน PO)
 - **Purchaser**: พนักงานจัดซื้อที่เป็นเจ้าของ PO ต้นทางและ review variance การรับ; การประสานฝั่ง vendor เกิดขึ้นนอกเอกสาร
-- **Finance**: **หน้าแก้ไข** — ไม่พบฟีเจอร์ three-way match, การ post AP หรือบทบาท Finance สำหรับโมดูลนี้
+- **Finance**: **หน้าสถานะ** — GRN ไม่มีบทบาทหรือหน้าจอ Finance; โมดูล AP Invoice ใน backend จับคู่บรรทัด GRN ที่ committed (scenario ระดับ API `FIN-AP-01..06` ระบุไว้ที่นั่น)
 - **Audit / Config**: **หน้าแก้ไข** — ไม่พบ GRN configuration console เฉพาะทางหรือเครื่องมือ lot-recall สำหรับโมดูลนี้
 
 ## 3. ไฟล์ทดสอบต่อ Persona
 
 - [Receiver scenarios](./04-test-scenarios-receiver.md)
 - [Purchaser scenarios](./04-test-scenarios-purchaser.md)
-- [Finance scenarios](./04-test-scenarios-finance.md) — หน้าแก้ไข
+- [Finance scenarios](./04-test-scenarios-finance.md) — หน้าสถานะพร้อม scenario ฝั่ง GRN ของลิงก์ AP
 - [Audit / Config scenarios](./04-test-scenarios-audit-config.md) — หน้าแก้ไข
 
 ## 4. Scenario ข้าม Persona / Handoff
 
-ตารางด้านล่าง span handoff ที่บันทึกไว้ใน [03-user-flow.md](./03-user-flow.md) ส่วน 4 แถวสำหรับ "การ review การจัดสรร extra-cost โดย Finance", "batch commit", "void หลัง commit พร้อม co-auth ระดับสูง" และ "scheduled auto-commit sweep" ยังคงถูกตัดออก — ไม่มีอยู่จริง (ตรวจซ้ำ 2026-09-22; ตอนนี้ server ปฏิเสธการ void หลัง commit ทันที)
+ตารางด้านล่าง span handoff ที่บันทึกไว้ใน [03-user-flow.md](./03-user-flow.md) ส่วน 4 แถวสำหรับ "การ review การจัดสรร extra-cost โดย Finance", "batch commit", "void หลัง commit พร้อม co-auth ระดับสูง" และ "scheduled auto-commit sweep" ยังคงถูกตัดออก — ไม่มีอยู่จริง (ตรวจซ้ำ 2026-10-27; server ปฏิเสธการ void หลัง commit ทันที)
 
 | # | Scenario | Persona ตามลำดับ | เงื่อนไขก่อน | สถานะปลายทางที่คาด |
 | - | -------- | ----------------- | ------------- | ------------------ |
@@ -50,13 +50,17 @@ editor: markdown
 | 3 | การรับบางส่วนข้ามสอง GRN | Receiver → Inventory Manager → Receiver → Inventory Manager | บรรทัด PO ต้นทางมี pending qty มากกว่าการส่งครั้งแรก | GRN ใบแรก committed → บรรทัด PO `received_qty < order_qty − cancelled_qty`, `po_status = partial`; GRN ใบที่สอง committed → `po_status = completed` ไม่มีอะไรบน PO เปลี่ยนตอน save ทั้งสองครั้ง |
 | 4 | การรับของขาดที่ flag เพื่อตาม vendor | Receiver → Purchaser | การส่งของมีบรรทัดที่ส่งขาด; receiver บันทึก `received_qty < order_qty` พร้อม comment variance บนบรรทัด | save ผ่าน (การขาดไม่มีวันฝ่าเพดาน deviation); commit โพสต์เฉพาะ `received_qty` จริง; Purchaser review และประสานการตาม vendor นอกเอกสาร — ไม่มี workflow แก้ไขในแอป |
 | 5 | Extra cost และ FOC ใน landed cost | Receiver → Inventory Manager | header extra-cost ที่ `allocate_extra_cost_type = by_value` และ detail รวมกัน ฿200; สองบรรทัดที่ปริมาณสต๊อก 10 และ 4 (บรรทัดหนึ่งมี `foc_qty = 1` ด้วย) | ตอนโพสต์: ส่วนแบ่ง `฿200 × 11/15` และ `฿200 × 4/15` (`by_value` ถ่วงตาม `received_base + foc_base`); cost layer ของแต่ละบรรทัด `total_cost = base_net_amount + share`, `extra_cost_amount = share`, `in_qty` รวมหน่วย FOC; `cost_per_unit` ปัด 2 ตำแหน่ง ด้วย `by_qty` แต่ละบรรทัดได้ ฿100; ด้วย `manual` ไม่มีการจัดสรร ตัวนับ FOC ที่รับของ junction PO เพิ่ม 1 |
-| 6 | การรวมหลาย PO เข้า GRN เดียว | Receiver | vendor และสกุลเงินเดียวกันข้ามสอง PO ที่รับได้; wizard ขั้น 2 เลือกหลายรายการ; การเลือกที่มีสกุลเงินต่างกันถูกปฏิเสธด้วย toast `mixedCurrencyError` (`from-po-content.tsx:93-95`) | GRN เดียวที่บรรทัด span ทั้งสอง PO; commit เลื่อน `received_qty` บนทั้งสอง PO ในธุรกรรมเดียว |
+| 6 | การรวมหลาย PO เข้า GRN เดียว | Receiver | vendor และสกุลเงินเดียวกันข้ามสอง PO ที่รับได้; wizard ขั้น 2 เลือกหลายรายการ; การเลือกที่มีสกุลเงินต่างกันถูกปฏิเสธด้วย toast `mixedCurrencyError` (`from-po-content.tsx:94-97`) | GRN เดียวที่บรรทัด span ทั้งสอง PO; commit เลื่อน `received_qty` บนทั้งสอง PO ในธุรกรรมเดียว |
 | 7 | Void GRN ที่ saved บน BU แบบ average หลังสต๊อกถูกเบิกแล้ว | Receiver → Store Keeper (เบิก SR) → Receiver | BU แบบ average; GRN `saved` (โพสต์สต๊อกแล้ว); SR / stock-out ใช้ lot ที่รับไปบางส่วน | `DELETE …/void` และ `POST …/reject` ต่างคืน **409 `GRN_RECEIPT_ALREADY_CONSUMED`**; เอกสารคงเป็น `saved` หากไม่มีการเบิก void สำเร็จ การเคลื่อนไหวถูก soft-delete `inventory_transaction_id` ถูกล้าง และ average ของสินค้าถูกประทับใหม่ |
 | 8 | วันที่รับอยู่นอกงวดเปิด | Receiver | draft ที่ `grn_date` อยู่ในงวด `closed` (หรือไม่มีงวด) | `POST …/verify` (`verify_state = create`) และ commit / approve (และ save บน BU แบบ average) คืน **422 `GRN_DATE_OUTSIDE_OPEN_PERIOD`**; dialog commit บน UI เสนอ "ย้ายไปงวดเปิด" ซึ่งเขียน `grn_date` ใหม่เป็น `start_at` ของงวดก่อนลูกโซ่ `PATCH → /save → /commit` |
+| 9 | แก้ไข GRN สถานะ `saved` (ใหม่ 2026-10-24) | Receiver | GRN `saved`; บน BU แบบ average การเคลื่อนไหวถูกโพสต์แล้ว | อนุญาต: ปริมาณ/ราคาของบรรทัด, extra cost, ฟิลด์ส่วนหัวยกเว้นผู้ขายและ `grn_date` ปฏิเสธ: ผู้ขาย/วันที่ (`GRN_SAVED_IDENTITY_LOCKED`), การเปลี่ยน `doc_status` (`GRN_STATUS_CHANGE_NOT_ALLOWED`), บรรทัดที่ lot ถูก issue หรือออก credit note (`GRN_LINE_STOCK_LOCKED` / `GRN_COST_STOCK_LOCKED`, 409) BU แบบ average: โพสต์ใหม่เฉพาะบรรทัดที่เปลี่ยน (`GRN_POST_013`) **ยังไม่มี E2E case ครอบคลุม** |
+| 10 | รับของย้อนหลังบน BU แบบ FIFO | Receiver | BU แบบ FIFO; มี GRN หรือ stock-in ของสินค้า/location เดียวกันที่ลงวันที่ 2026-10-20 ในงวดเปิดอยู่แล้ว | Create/save/commit ด้วย `grn_date` 2026-10-15 → **422 `GRN_DATE_BEFORE_LATEST_RECEIPT`**; BU แบบ average ยอมรับ **ยังไม่มี E2E case ครอบคลุม** |
+| 11 | แก้ส่วนหัว GRN ที่ committed และการตรึงโดย AP | Receiver / Finance | GRN `committed` | แก้ `invoice_no` / `invoice_date` / `post_type` ได้; แก้บรรทัดหรือ `grn_date` ใด ๆ → `GRN_COMMITTED_HEADER_ONLY`; หลัง AP invoice ดึง GRN ไป → `GRN_AP_LINKED_NOT_EDITABLE` ดู `FIN-AP-01..03` **ยังไม่มี E2E case ครอบคลุม** |
+| 12 | เอกสารที่เป็น FOC ล้วน | Receiver → Inventory Manager | บรรทัดเดียว `received_qty = 0`, `foc_qty = 5` | Commit (และ save บน BU แบบ average) เขียนการเคลื่อนไหว `qty = 5` ต้นทุน 0; ตัวนับ FOC ของ PO +5 ก่อนหน้านี้ (ก่อน 2026-10-24) ไม่มีการเขียนการเคลื่อนไหว — ดู `RCV-EDGE-05`
 
 ## 5. E2E Test Mapping
 
-`501-grn.spec.ts` เป็นไฟล์ Playwright E2E **เดียว** สำหรับโมดูล GRN มีโครงสร้างเป็นไฟล์เดียวที่มีหลาย `describe` block ต่อพื้นที่ฟังก์ชัน; auth เป็นหลาย role ผ่าน `createAuthTest` โดยผู้ใช้บทบาท Purchase สำหรับ happy / functional path และผู้ใช้บทบาท Requestor สำหรับ case permission-denial (ผู้ใช้ย้ายไปโดเมน `carmensoftware.dev`, BU `GR2VYNKQ`) route ของ wizard `/from-po` **ไม่** ถูกเยี่ยมโดย case ใด — ดู `gaps/501-grn-from-po-gap.md`
+`501-grn.spec.ts` เป็นไฟล์ Playwright E2E หลักสำหรับโมดูล GRN (บวก `502-grn-doc-flow.spec.ts` แบบ opt-in ดู §1) มีโครงสร้างเป็นไฟล์เดียวที่มีหลาย `describe` block ต่อพื้นที่ฟังก์ชัน; auth เป็นหลาย role ผ่าน `createAuthTest` โดยผู้ใช้บทบาท Purchase สำหรับ happy / functional path และผู้ใช้บทบาท Requestor สำหรับ case permission-denial (ผู้ใช้ย้ายไปโดเมน `carmensoftware.dev`, BU `GR2VYNKQ`) route ของ wizard `/from-po` **ไม่** ถูกเยี่ยมโดย case ใด — ดู `gaps/501-grn-from-po-gap.md`
 
 | `501-grn.spec.ts` describe block (กลุ่ม TC) | Scenario ข้าม persona ที่ครอบคลุม (ส่วน 4) |
 | ------------------------------------------- | ------------------------------------------- |

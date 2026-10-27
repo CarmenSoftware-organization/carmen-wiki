@@ -2,7 +2,7 @@
 title: การคำนวณต้นทุน (Costing) — User Flow
 description: วงจรชีวิต cost-flow และไฟล์ flow ตาม persona สำหรับ costing
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: costing, user-flow, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -14,7 +14,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 > **Module:** [costing](/th/inventory/costing) &nbsp;·&nbsp; **Personas:** ไม่มีที่แยกจริง — ดูหมายเหตุแก้ไขด้านล่าง โมดูลนี้ไม่มีหน้าจอที่ gate ด้วย persona
 > **Workflow lifecycle:** Cost-layer row born (inbound — GRN commit หรือ GRN save บน BU แบบ average) → picked (FIFO/WA outbound) → revalued (credit-note) → period-close anchor (เฉพาะวิธี average เขียน `tb_inventory_period_snapshot`; FIFO นำ lot ไปต่อแทน) → period-open rollforward
 > **เจาะลึกหน้า per-persona ด้านล่าง — แต่ละหน้าคือหน้าแก้ไขที่ชี้ไปพฤติกรรมจริง**
-> **ตรวจสอบซ้ำ 2026-09-22:** `tb_period*` เปลี่ยนชื่อเป็น `tb_inventory_period*`; ค่าเฉลี่ยเป็นต่อสินค้า; การรับ GRN พก landed cost (extra cost + FOC); GRN บน BU แบบ average โพสต์ตอน save และถอนได้ก่อน commit; stock-in / stock-out ตอนนี้มีขั้น draft → commit; มีโมดูล GL แล้วแต่ไม่เชื่อมกับ inventory
+> **ตรวจสอบซ้ำ 2026-09-22:** `tb_period*` เปลี่ยนชื่อเป็น `tb_inventory_period*`; ค่าเฉลี่ยเป็นต่อสินค้า; การรับ GRN พก landed cost (extra cost + FOC); GRN บน BU แบบ average โพสต์ตอน save และถอนได้ก่อน commit; stock-in / stock-out ตอนนี้มีขั้น draft → commit; มีโมดูล GL แล้วแต่ไม่เชื่อมกับ inventory  **ตรวจสอบซ้ำ 2026-10-27:** `average_per_location` เป็นวิธีที่สาม (ค่าเฉลี่ยต่อสินค้าและ location; ปิดงวดแบบ perpetual); FIFO ดึง lot ตามลำดับ commit (transaction clock); การ resolve งวดเข้มขึ้น — การเคลื่อนไหวที่มี document date ต้องอยู่ใน **งวดที่ active** (`open`/`locked` เก่าสุด) ส่วนอื่นโพสต์เข้างวด active; ส่วนเกินจากการนับตั้งราคาจาก `si.cost-from` ของ BU
 
 > **แก้ไข (ยืนยันแล้ว 2026-07-22, ตรวจซ้ำ 2026-09-22):** สามหน้า per-persona ที่ลิงก์จาก Section 3 (Finance, Inventory Controller, Auditor) เคยเอกสารหน้าจอเฉพาะ — valuation-policy console, sub-ledger ↔ GL reconciliation dashboard, adjustment cost-pick-preview approval queue, read-only audit workspace — ไม่มีสิ่งใดมีอยู่จริง Engine **ไม่มี UI ที่ gate ด้วย persona ของตัวเอง**: มันทำงานเป็นผลข้างเคียงของ GRN commit (หรือ save บน BU แบบ average), SR issue, inventory-adjustment commit, credit-note approval, และ period-end close โดยแต่ละอย่าง gate ด้วย permission ทั่วไปของ source document นั้นเอง `enum_stage_role` (enum role เดียวใน tenant schema) คือ `{create, approve, purchase, issue, view_only}` — ไม่มีสมาชิก `finance` หรือ `auditor` สอดคล้องกับการแก้ไขเดียวกันที่ทำแล้วบน [inventory/03-user-flow](/th/inventory/inventory/03-user-flow) ซึ่งพบว่า "ไม่มี Finance role, GL reconciliation, หรือ period-lock flow" สำหรับ period-end surface เดียวกันที่ engine โมดูลนี้เชื่อมต่อด้วย
 
@@ -55,7 +55,7 @@ sequenceDiagram
     Note over TX,COST: Physical Count — variance exists
     TX->>INV: ±qty variance (physical count transaction type)
     INV->>LOT: Lots ปรับขึ้น (overage) หรือ consume ลง (shortage)
-    LOT->>COST: Recalc เฉพาะถ้ามี variance — cost source ตาม enum_physical_count_costing_method (COST_CALC_008)
+    LOT->>COST: Recalc เฉพาะถ้ามี variance — cost source ตาม BU si.cost-from (COST_CALC_008)
 
     Note over TX,COST: Physical Count — no variance
     TX->>INV: ยืนยัน count ไม่มี qty change
@@ -89,7 +89,7 @@ State machines สองตัวอยู่ในโมดูลนี้: **p
 | From state | Action | To state | Allowed for | Pre-conditions |
 | ---------- | ------ | -------- | ----------- | -------------- |
 | `(none)` | สร้าง period | `open` | System-provisioned — `ensureNextPeriod` สร้างงวดถัดไปอัตโนมัติเป็นส่วนหนึ่งของทุกการปิดงวด | Fiscal year/month sequencing; ไม่ทับซ้อนกับ period rows ที่มีอยู่ |
-| `open` (หรือ `locked`) | accept cost-layer writes | เหมือนเดิม | ผู้ถือ permission ของเอกสารที่ trigger เอง | **แก้ไข 2026-09-22 — มีกฎ resolve สองแบบอยู่ร่วมกัน** **การรับ GRN** ถูก stamp เข้างวดที่ช่วงวันที่ครอบคลุม `grn_date` (`resolvePeriodForDate` → `findOpenPeriodForDate`, `inventory-period.helper.ts`; นับรวมวันสุดท้าย; งวดที่แคบที่สุดชนะเมื่อทับซ้อน) และถูก **ปฏิเสธ** (`GRN_DATE_OUTSIDE_OPEN_PERIOD`, 422) เมื่อไม่มีงวด `open`/`locked` ครอบคลุมวันที่นั้น — ไม่มีการ re-date **Issue, transfer, credit note, แถว EOP** ยังใช้งวดเปิดปัจจุบันหรือ `resolveDocumentPeriod` (`inventory-transaction.service.ts:1801,1910,2274,2752…`) ดังนั้น issue ที่ backdate จะตกในงวดเปิดแทนที่จะถูกปฏิเสธ |
+| `open` (หรือ `locked`) | accept cost-layer writes | เหมือนเดิม | ผู้ถือ permission ของเอกสารที่ trigger เอง | **แก้ไข 2026-09-22 — มีกฎ resolve สองแบบอยู่ร่วมกัน** **การรับ GRN** ถูก stamp เข้างวดที่ช่วงวันที่ครอบคลุม `grn_date` (`resolvePeriodForDate` → `findOpenPeriodForDate`, `inventory-period.helper.ts`; นับรวมวันสุดท้าย; งวดที่แคบที่สุดชนะเมื่อทับซ้อน) และถูก **ปฏิเสธ** (`GRN_DATE_OUTSIDE_OPEN_PERIOD`, 422) เมื่อไม่มีงวด `open`/`locked` ครอบคลุมวันที่นั้น — ไม่มีการ re-date **Issue, transfer, credit note, แถว EOP** ใช้งวดที่ **active** — งวด `open`/`locked` ที่เก่าที่สุด: การเคลื่อนไหวที่ไม่มี document date ผ่าน `resolveCurrentPeriod` (`inventory-transaction.service.ts:1588`) และที่มี document date (SR issue) ผ่าน `resolveDocumentPeriod` (`:1569`) ซึ่ง throw เมื่อวันที่อยู่นอกงวด active แทนที่จะย้ายเข้างวดนั้น (เปลี่ยน 2026-10, `f37b35881`) วันของเอกสารตัดตาม timezone ของ BU ไม่ใช่ของ server (`ef78ac667`) |
 | `open` (หรือ `locked`) | close period | `closed` | ผู้ถือ `inventory_management.period_end.execute` | Blocking-document gate ทั้งหมดผ่าน (ดู [inventory/period-end](/th/inventory/inventory/period-end) § 2) รันแบบ atomic ภายใต้ row lock พร้อม re-validation; เขียน lot carry-over; tenant ที่ใช้วิธี average ได้แถว `tb_inventory_period_snapshot` ด้วย; สร้างงวดถัดไปแบบ `open` อัตโนมัติ route ของโมดูลนี้เอง (`period-end.controller.ts`) เปิดเผยแค่ `find-all` / `find-current` / `close` / `find-review` — ไม่มี action lock หรือ re-open ที่นี่ |
 | `closed` | — | — | — | `locked` เป็นค่า status ที่โมดูลนี้สังเกตได้ (หน้าจอ period-end ปฏิบัติกับงวดที่ `locked` เหมือน `open` สำหรับการค้นหา "งวดปัจจุบัน" และ `findOpenPeriodForDate` รับทั้งสองค่า) แต่ไม่ได้ตั้งค่าเอง — มันถูกเขียนโดย inventory-period service **แยกต่างหาก** ที่อยู่หลังหน้าจอ [system-config/period](/th/inventory/system-config/period) นอกขอบเขตของ wiki module นี้ |
 

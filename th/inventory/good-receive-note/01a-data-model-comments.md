@@ -2,7 +2,7 @@
 title: ใบรับสินค้า — โมเดลข้อมูล — ตารางคอมเมนต์
 description: ตารางคอมเมนต์ / ไฟล์แนบระดับเอกสารและระดับบรรทัดสำหรับโมดูลใบรับสินค้า — ข้อความ, JSON ไฟล์แนบ, และ enum ประเภทคอมเมนต์ (user/system)
 published: true
-date: 2026-07-15T00:00:00.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: good-receive-note, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -41,11 +41,12 @@ updated_by_id       uuid / FK to tb_user
 | Field | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key |
+| `doc_version` | `Int` | No | ตัวนับ optimistic-lock default `0` (`@default(0)`) เพิ่มขึ้นเมื่อ update โดย tenant client |
 | `good_received_note_id` | `String @db.Uuid` | No | FK ไปยัง `tb_good_received_note.id` |
 | `type` | `enum_comment_type` | No | `user` หรือ `system` default `user` |
 | `user_id` | `String @db.Uuid` | Yes | user id ผู้เขียน (null สำหรับ `system`) |
 | `message` | `String` | Yes | เนื้อ comment free-text |
-| `attachments` | `Json @db.JsonB` | Yes | array ของ `{ originalName, fileToken, contentType }` default `[]` |
+| `attachments` | `Json @db.JsonB` | Yes | array ของ `{ originalName, fileToken, contentType }` default `[]` การอัปโหลดผ่าน gateway ถูกตรวจด้วย attachment policy ร่วม (`AttachmentPolicyService.assertFiles` ขับด้วย config key `attachment.*` ของ BU — ค่าเริ่มต้น 10 MB ต่อไฟล์ และกลุ่มชนิด `image` + `pdf`, `attachment-policy.ts:12-50`) แทนค่าคงที่ 10 MB / mime type ห้าชนิดที่ controller เคยฝังไว้ |
 | `created_at` | `DateTime @db.Timestamptz(6)` | Yes | timestamp การสร้าง |
 | `created_by_id` | `String @db.Uuid` | Yes | id ผู้สร้าง |
 | `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | timestamp การอัปเดตล่าสุด |
@@ -63,6 +64,7 @@ updated_by_id       uuid / FK to tb_user
 | Field | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key |
+| `doc_version` | `Int` | No | ตัวนับ optimistic-lock default `0` (`@default(0)`) เพิ่มขึ้นเมื่อ update โดย tenant client |
 | `good_received_note_detail_id` | `String @db.Uuid` | No | FK ไปยัง `tb_good_received_note_detail.id` |
 | `type` | `enum_comment_type` | No | `user` หรือ `system` default `user` |
 | `user_id` | `String @db.Uuid` | Yes | user id ผู้เขียน (null สำหรับ `system`) |

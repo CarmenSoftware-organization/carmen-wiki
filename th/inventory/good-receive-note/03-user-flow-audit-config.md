@@ -2,7 +2,7 @@
 title: ใบรับสินค้า (Goods Receive Note) — User Flow — Audit & Config
 description: เหตุผลที่ไม่พบ GRN configuration console เฉพาะทางหรือเครื่องมือ lot-recall สำหรับ good-receive-note ในซอร์สปัจจุบัน และสิ่งที่ยืนยันได้จริง
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 dateCreated: 2026-05-15T11:00:00.000Z
 tags: good-receive-note, user-flow, audit-config, inventory, carmen-software
 editor: markdown
@@ -19,14 +19,14 @@ editor: markdown
 
 | ข้อกล่าวอ้าง | สถานะ |
 | --- | --- |
-| การสร้างหมายเลข lot | **ยืนยันแล้ว แต่ตั้งค่าไม่ได้** **แก้ไข 2026-09-22:** รูปแบบคือ `<location_code><YYMM><ลำดับ 4 หลัก>` (เช่น `MK-0126070246`) สร้างโดย `buildLotNo()` ใน `apps/micro-business/src/common/helpers/lot-number.helper.ts:27-35`; เลขลำดับคือ `lot_seq_no` ของ cost layer ซึ่งเริ่มนับใหม่ที่ 1 ทุกงวดสินค้าคงคลัง รูปแบบเดิม `RC{YY}{MM}{seq}` ไม่มีอยู่แล้ว ไม่มีตัวแก้ไขรูปแบบเลข lot ใน frontend และไม่มีการเขียนทับด้วยมือบน GRN |
+| การสร้างหมายเลข lot | **ยืนยันแล้ว แต่ตั้งค่าไม่ได้** **แก้ไข 2026-09-22:** รูปแบบคือ `<location_code><YYMM><ลำดับ 4 หลัก>` (เช่น `MK-0126070246`) สร้างโดย `buildLotNo()` ใน `apps/micro-business/src/common/helpers/lot-number.helper.ts:27-35`; เลขลำดับคือ `lot_seq_no` ของ cost layer ซึ่งเริ่มนับใหม่ที่ 1 ทุกงวดสินค้าคงคลังและนับ layer ที่ soft-delete ด้วย (`common/helpers/lot-seq-no.helper.ts`) เลขของ GRN ที่ void จึงไม่ถูกออกซ้ำ รูปแบบเดิม `RC{YY}{MM}{seq}` ไม่มีอยู่แล้ว ไม่มีตัวแก้ไขรูปแบบเลข lot ใน frontend และไม่มีการเขียนทับด้วยมือบน GRN |
 | บทบาท RBAC และเกณฑ์อนุมัติเฉพาะ GRN | **ยังไม่ implement เป็น panel เฉพาะของ GRN** Authorization เป็น RBAC ทั่วไปที่ใช้ร่วมกันข้ามโมดูล (ดู [access-control](/th/inventory/access-control)); ไม่พบแนวคิด "เกณฑ์อนุมัติ" ใดในโมดูลนี้ทั้ง backend (ตรงกับข้อสรุปเดียวกันที่ยืนยันแล้วสำหรับ `PO_AUTH_004` ของโมดูล PO) |
 | รหัสภาษี, อัตราแลกเปลี่ยน, รหัสเหตุผลการยกเลิก/ปฏิเสธ | **จริง แต่ทั่วไป — ไม่ใช่ของ GRN** Tax profile, สกุลเงิน และการกำหนดลำดับ running-code ตั้งค่าผ่านหน้าจอ [system-config](/th/inventory/system-config) และ [master-data](/th/inventory/master-data) ข้ามโมดูล ไม่ใช่ console เฉพาะของ GRN |
-| Endpoint integration ไปยัง PO / Inventory / Finance / Vendor (พร้อม workflow cutover แบบ dual-write) | **ยังไม่ implement** ไม่พบ UI ตั้งค่า integration-endpoint หรือกลไก dual-write ใดสำหรับโมดูลนี้ |
+| Endpoint integration ไปยัง PO / Inventory / Finance / Vendor (พร้อม workflow cutover แบบ dual-write) | **ยังไม่ implement ในฐานะ console ของ GRN** พื้นผิว integration จริงเพียงอย่างเดียวคือ external accounting export แบบอ่านอย่างเดียว (`GET /api/ext/v1/ap-invoices`, API key ต่อ BU, `inventory/accounting-export`) ที่เผยแพร่ GRN ที่ committed; ไม่มี workflow cutover |
 | Auditor review activity log แบบ read-only | **น่าเป็นไปได้แต่ยังไม่ยืนยันว่าเป็น screen เฉพาะ** `tb_good_received_note.workflow_history` (JSON) เป็นฟิลด์จริงที่มีข้อมูล ซึ่ง screen activity-log / reporting ทั่วไปสามารถอ่านได้; ไม่พบ route "audit module" เฉพาะของ GRN — ดู [reporting-audit](/th/inventory/reporting-audit) สำหรับ equivalent ทั่วไป |
 | เครื่องมือ lot-recall trace (forward/backward trace ผ่าน `lot_no`) | **ยังไม่ implement เป็นเครื่องมือเฉพาะ** การเชื่อมโยงข้อมูลพื้นฐานมีจริงและตั้งแต่ 2026-08-10 เป็นแบบตรง: `tb_inventory_transaction_detail.good_received_note_detail_item_id → tb_good_received_note_detail_item` (`@relation` จริง) บวก `GET …/good-received-notes/:id/stock-movements` ซึ่งคืน lot ต่อบรรทัด GRN ไม่มีหน้าจอ recall-trace หรือ workflow export ที่สร้างขึ้นเฉพาะ |
 | การ export field แบบ sensitive ที่ต้องการอนุมัติจาก Controller/DPO | **ยังไม่ implement** ไม่พบโค้ด workflow การอนุมัติสำหรับ export ใดๆ ในโมดูลนี้ |
-| การ void หลัง commit ที่ต้องการ co-authorisation ระหว่าง Inventory Manager + Finance | **ยังไม่ implement — และตอนนี้การ void หลัง commit ถูกปฏิเสธทันที** `voidGrnById()` (`good-received-note.service.ts:2244-2256`) คืน `GRN_COMMITTED_NOT_VOIDABLE` สำหรับ GRN ที่ `committed`; เส้นทางแก้ไขเดียวคือ credit note หรือ inventory adjustment — ดู [02-business-rules.md](./02-business-rules.md) `GRN_POST_010` |
+| การ void หลัง commit ที่ต้องการ co-authorisation ระหว่าง Inventory Manager + Finance | **ยังไม่ implement — และตอนนี้การ void หลัง commit ถูกปฏิเสธทันที** `voidGrnById()` (`good-received-note.service.ts:2344-2358`) คืน `GRN_COMMITTED_NOT_VOIDABLE` สำหรับ GRN ที่ `committed`; เส้นทางแก้ไขเดียวคือ credit note หรือ inventory adjustment — ดู [02-business-rules.md](./02-business-rules.md) `GRN_POST_010` |
 
 เนื้อหานี้ทับซ้อนกับขอบเขตของโมดูล **system-config** และ **access-control** อย่างมาก — หน้าจอทั่วไปข้ามโมดูล (การตั้งค่า workflow-stage, การกำหนดลำดับ running-code / เลข GRN, tax-profile, สกุลเงิน) มีอยู่จริงในผลิตภัณฑ์ เพียงแต่ไม่ได้อยู่ภายใต้ชื่อ "configuration console" เฉพาะของ GRN แนะนำให้ดูหน้าของโมดูลเหล่านั้นสำหรับสิ่งที่ตั้งค่าได้จริง
 

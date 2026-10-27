@@ -2,7 +2,7 @@
 title: ใบรับสินค้า (Goods Receive Note) — User Flow — Purchaser
 description: Flow ของ Purchaser ในโมดูล good-receive-note — การ review GRN บน PO ของตัวเอง และการประสานกับ vendor Department Manager review cost-centre
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 dateCreated: 2026-05-15T11:00:00.000Z
 tags: good-receive-note, user-flow, purchaser, inventory, carmen-software
 editor: markdown
@@ -19,10 +19,10 @@ editor: markdown
 
 Persona **Purchaser** ครอบคลุม **Purchaser / Procurement Officer** ที่ออก PO ต้นทาง และในฐานะ subset **Department Manager** ที่เป็นเจ้าของ cost-centre ที่ GRN โพสต์เข้า ภายในโมดูล GRN Purchaser เป็นผู้มีส่วนร่วมแบบ **review-only** — **ไม่** สร้าง GRN ที่ dock, **ไม่** save และ **ไม่** commit (commit คือสิ่งที่โพสต์ inventory และเลื่อน PO — ดู [03-user-flow-receiver.md](./03-user-flow-receiver.md)) Purchaser เปิดเอกสารในโหมด read เพื่อ review ข้อมูลการรับของเทียบกับ PO ที่ตนเป็นเจ้าของ (`received_qty` เทียบ `order_qty`, `received_price` เทียบ `order_price`, `expired_at`, lot บนแท็บ Stock Movement เมื่อ committed แล้ว, ใบส่งสินค้าที่แนบ และ comment ใดที่ Receiver เขียน) และเป็นเจ้าของ **การติดตามฝั่ง vendor** สำหรับ variance ที่ถูกทำเครื่องหมาย — ตามของที่ส่งขาด การแทนที่สินค้าที่ผิด subset Department Manager review GRN ที่กระทบ cost-centre ของแผนกและยืนยันว่าสิ่งที่รับตรงกับที่สั่งสำหรับแผนก ทั้งสอง sub-persona ไม่เปลี่ยนสถานะเอกสาร GRN
 
-**ตรวจซ้ำ 2026-09-22 — ยังไม่มีในโค้ด:**
+**ตรวจซ้ำ 2026-10-27 — ยังไม่มีในโค้ด:**
 - **การแยกหน้าที่ (Receiver ≠ Purchaser):** ไม่มีการตรวจ `buyer_id` ไขว้ใน `good-received-note.service.ts` / `.logic.ts`; ใครก็ตามที่ถือ `procurement.goods_received_note.commit` สามารถ save และ commit GRN ใดก็ได้ ตรงกับ `PO_AUTH_010` ของโมดูล PO
 - **ความคลาดเคลื่อนของราคาเทียบกับ vendor pricelist:** ไม่มีการ lookup pricelist ภายในโมดูล GRN (`GRN_XMOD_008`) สิ่งที่มีแทนคือ **เพดาน deviation เทียบราคา PO** บังคับใช้ตอน save (`GRN_VAL_007`, `tb_product.price_deviation_limit`) ดังนั้นการรับของที่ราคาสูงกว่า PO เกิน limit ของสินค้าจะไม่มีวันมาถึง Purchaser ในฐานะเอกสาร `saved`
-- **Handoff Finance / credit note สำหรับสินค้าเสียหายหรือความคลาดเคลื่อนของราคา:** ไม่มีฟีเจอร์ three-way match หรือ AP — ดู [03-user-flow-finance.md](./03-user-flow-finance.md) เอกสารแก้ไขจริงคือ credit note (หนึ่งใบต่อสินค้าต่อ GRN)
+- **Handoff Finance / credit note สำหรับสินค้าเสียหายหรือความคลาดเคลื่อนของราคา:** GRN ไม่มี hand-off ดังกล่าว; โมดูล AP Invoice ใน backend จับคู่บรรทัด GRN ที่ committed ได้ทีหลัง (ดู [03-user-flow-finance.md](./03-user-flow-finance.md)) เอกสารแก้ไขจริงคือ credit note (หนึ่งใบต่อสินค้าต่อ GRN) ซึ่งล็อกบรรทัด GRN ที่ถูกออก credit note ไม่ให้แก้ไขด้วย
 - **การมองเห็นในขอบเขตของ Purchaser:** backend ไม่ได้กรอง list GRN ให้เหลือเฉพาะ PO ของ Purchaser เอง (`findAll` ไม่มีตัวกรอง `buyer_id`); การ review "PO ของตัวเอง" ด้านล่างเป็นธรรมเนียมการทำงาน ไม่ใช่ขอบเขตที่บังคับใช้
 
 ### ตำแหน่ง Workflow (Purchaser highlighted)

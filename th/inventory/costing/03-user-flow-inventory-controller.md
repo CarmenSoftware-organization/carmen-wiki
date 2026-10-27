@@ -2,7 +2,7 @@
 title: การคำนวณต้นทุน (Costing) — User Flow — Inventory Controller (แก้ไข)
 description: หน้าแก้ไข — ไม่มี approval queue สำหรับ cost-pick preview ในโมดูล costing; stock-in/stock-out เป็น draft จนกว่าผู้ถือ permission เดียวกันจะ commit
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: costing, user-flow, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -18,7 +18,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 
 ฉบับร่างก่อนหน้าอธิบาย persona Inventory Controller ที่ทบทวน "cost-pick preview" (FIFO lot walk หรือ running cost แบบ Average) บนทุกเอกสาร `tb_stock_in` / `tb_stock_out` ก่อนอนุมัติ, cross-reference ต้นทุน lot ใหม่กับ tolerance ของ vendor pricelist, และรัน "cost-anomaly dashboard" เชิงรุก การตรวจสอบกับซอร์สปัจจุบันไม่พบสิ่งใดเลย:
 
-- **ไม่มี approval queue สำหรับ stock-in / stock-out — อัปเดต 2026-09-22** ข้อค้นพบ 2026-07-22 ("การสร้างคือการ post") ล้าสมัยแล้ว: ตอนนี้ `StockInService.create()` เขียน `doc_status = draft` (`stock-in.service.ts:418`) และ ledger ถูกเขียนเฉพาะโดย `PATCH …/stock-ins/:id/commit` (`:471-575`, `draft → completed`; มีขั้น `…/save` ด้วย) stock-out ก็เช่นกัน แต่ draft ถูก commit โดยใครก็ตามที่ถือ permission ทั่วไป `inventory_management.*` เดียวกับที่สร้างมัน — ไม่มีผู้อนุมัติแยก ไม่มี queue "pending" ที่ทวนได้ และไม่มี preview ว่า FIFO lot ใดจะถูก consume ตอน commit
+- **ไม่มี approval queue สำหรับ stock-in / stock-out — อัปเดต 2026-09-22** ข้อค้นพบ 2026-07-22 ("การสร้างคือการ post") ล้าสมัยแล้ว: ตอนนี้ `StockInService.create()` เขียน `doc_status = draft` (`stock-in.service.ts:534`) และ ledger ถูกเขียนเฉพาะโดย `PATCH …/stock-ins/:id/commit` (`:596`, `draft → completed`; มีขั้น `…/save` ด้วย) stock-out ก็เช่นกัน แต่ draft ถูก commit โดยใครก็ตามที่ถือ permission ทั่วไป `inventory_management.*` เดียวกับที่สร้างมัน — ไม่มีผู้อนุมัติแยก ไม่มี queue "pending" ที่ทวนได้ และไม่มี preview ว่า FIFO lot ใดจะถูก consume ตอน commit
 - **ไม่มีการแยก Store Keeper กับ Inventory Controller ในโมดูลนี้** nav entry, หน้าจอ create/edit, และ list ทั้งหมด gate ด้วย permission ทั่วไปเดียวคือ `inventory_management.view`; ไม่มี workflow stage, approval queue, หรือการกำหนด `enum_stage_role` ที่ใดเลยใน `stock-in.service.ts` / `stock-out.service.ts`
 - **ไม่มีหน้าจอ "cost-pick preview" อยู่จริง** ฟอร์ม stock-in/stock-out แสดงฟิลด์ที่ user กรอก (cost แก้ไขได้บน stock-in, ซ่อนทั้งหมดบน stock-out — ledger เลือกเองตอนเขียน) ไม่มีขั้นตอน preview แยกที่แสดงว่า FIFO lot ไหนจะถูก consume ก่อนเอกสาร post
 - **ไม่พบการตรวจ adjustment-cost-basis เทียบ vendor-pricelist tolerance ในโค้ดของโมดูลนี้** แม้ `tb_product.price_deviation_limit` จะเป็นฟิลด์ที่มีอยู่จริง (มันถูกอ่านที่อื่น — ดู [product](/th/inventory/product))
@@ -36,7 +36,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 
 ## 3. References
 
-- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/stock-in/stock-in.service.ts` (`create()` → `draft` `:418`; `commit()` `:471-575`), `.../stock-out/stock-out.service.ts`, `.../period-end/`
+- Backend: `../carmen-turborepo-backend/apps/micro-business/src/inventory/stock-in/stock-in.service.ts` (`create()` → `draft` `:534`; `commit()` `:596`), `.../stock-out/stock-out.service.ts`, `.../period-end/`
 - Frontend: `../carmen-frontend/routes/inventory-management/inventory-adjustment/`, `.../period-end/`
 - Parent overview: [03-user-flow](./03-user-flow.md)
 - Cross-link: [inventory-adjustment](/th/inventory/inventory-adjustment) — โมดูลที่เป็นเจ้าของ `tb_stock_in`/`tb_stock_out` จริง ๆ ที่ฉบับร่างก่อนหน้าของหน้านี้อธิบายผิด
